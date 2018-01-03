@@ -57,6 +57,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			break;
 
 		case '!':
+
 			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
@@ -78,6 +79,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			break;
 
 		case '%':
+
 			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
