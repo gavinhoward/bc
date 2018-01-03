@@ -26,6 +26,11 @@ BcLexStatus bc_lex_init(BcLex* lex, const char* text) {
 
 BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
+	// Check for error.
+	if (lex == NULL || token == NULL) {
+		return BC_LEX_STATUS_INVALID_PARAM;
+	}
+
 	BcLexStatus status = BC_LEX_STATUS_SUCCESS;
 
 	// Get the character.
