@@ -95,6 +95,33 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 			break;
 
+		case '(':
+			token->type = BC_LEX_LEFT_PAREN;
+			++lex->idx;
+			break;
+
+		case ')':
+			token->type = BC_LEX_RIGHT_PAREN;
+			++lex->idx;
+			break;
+
+		case '*':
+
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or as an assignment.
+			// If it's an assignment, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_ASSIGN_MULTIPLY;
+			}
+			else {
+				token->type = BC_LEX_OP_MULTIPLY;
+			}
+
+			break;
+
 		default:
 
 			// All other characters are invalid.
