@@ -1,0 +1,10 @@
+Q: 
+is there a smart way to optimize i = i % 0x7fffffff; into bit ops, where i is usigned int ?
+
+A:
+not sure about bit ops but you can trivially do it with conditional subtraction
+i==0xffffffff ? 1 : i>0x7fffffff ? i-0x7fffffff : i
+if we leave out the 0xffffffff case for now, that's
+i -= -(i>>31) & 0x7fffffff;
+and you could just repeat that twice i think
+

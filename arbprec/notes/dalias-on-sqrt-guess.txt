@@ -1,0 +1,3 @@
+17:34 < dalias> graff, for sqrt you can assume the argument is in the interval [1,4)
+17:35 < dalias> otherwise just factor out a power of 4 and replace it with a power of 2
+

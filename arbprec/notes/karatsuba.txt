@@ -1,0 +1,89 @@
+14:48 < graff> i see that he is breaking the number apart, multiplying it using a method such as lon-multiplication and then summating 
+               the parts
+14:49 < graff> but I am not quite sure where the number gets broken up
+
+
+
+
+
+
+14:49 < graff> an example with say: 12345 * 678 would be nice. in simple lay person terms.
+
+
+14:50 < dipole> graff: (10*a + b)(10*c + d) = 10^2*(a*c) + 10*(a*d + c*b) + b*d     You find (a+b)(c+d) then find a*c and then b*d, so 
+                you need 3 multiplications instead of 4
+
+14:50 < dipole> graff: you break numbers in half
+14:50 < graff> dipole: alright thank you. let me copy that down and work with it for a while.
+
+
+
+even easier:
+
+
+14:55 < dipole> graff: ok, so you have 12345678 * 55559999 
+
+14:56 < dipole> graff: (1234*10^4 + 5678) * (5555*10^4 + 9999)
+14:56 < dipole> graff: so you expand the braces
+14:57 < dipole> 1234*5555*10^8 + (1234*9999 + 5678*5555)*10^4 + 5678*9999
+14:57 < dipole> graff: good so far?
+
+
+14:58 < graff> yeah perfect. just what are the two numbers we started with? 1234 and 5678?
+14:59 < graff> ah i see, you told me already. sorry
+14:59 < cauchy> mancha: here?
+14:59 < graff> sorry should have scrolled back. thank you very much dipole :)
+14:59 < dipole> graff: but, wait, now you need to compute 4 products rigth?
+15:00 < dipole> graff: 1234*5555, 1234*9999, 5678*5555, 5678*9999 ?
+15:01 < math894> You have 7c1 ways to arrange the rare pack, 7c6 ways to arrange the rest, 7c1*0.05+7c6 in the numerator, all events (denominator) are when you get 0 rare 7c0, 1 rare 7c1 etc 
+                 ... until 7c7 so 128; meaning the chance of getting exactly 1 rare out of 7 packs is (0.05*7+7c6)/(128), correct?
+15:01 -!- zautomata [~zautomata@unaffiliated/zautomata] has quit [Quit: WeeChat 1.7]
+15:02 -!- corsaere [~corsaere@unaffiliated/corsaere] has quit [Read error: Connection reset by peer]
+15:02 -!- kiddo_ [~kiddo@x1-6-b8-ee-0e-40-a7-e6.cpe.webspeed.dk] has joined ##math
+15:02 < math894> = cca 0.057
+15:02 -!- Torigg [~Deadly_Pa@104.153.41.167] has quit [Ping timeout: 248 seconds]
+15:03 < Padawan-> math894: No.
+15:03 < math894> what
+15:03 < graff> dipole: and well the usage of ^ confuses me. because that is an additional computation. I suppose those will just be computed logically
+15:03 < math894> ok idk then
+15:03 -!- neoncont_ [~neoncontr@wsip-174-79-243-9.sd.sd.cox.net] has quit []
+15:04 < graff> by matching the "width" of the number
+
+
+
+
+
+15:05 < dipole> graff: well, 10^ is something you get very cheap, if you keep numbers as arrays of digits
+
+15:05 < dipole> e.g. [1,2,3,4]
+
+15:05 < dipole> graff: in computer they are stored as arrays of bits, so you'd use 2^, I'm just using 10^ here for simplicity
+
+15:09 < graff> dipole: sure, well this is emulated fixed-point arbitrary precision in any base.
+
+
+
+15:10 < graff> interestingly most of it is just basic arithemetic so even a non-mathematician can hold their own up to a certain point
+
+15:10 < dipole> graff: yeah. but, well, let's continue with karatsuba.
+
+15:10 < graff> crushing my brains over knuths' algorithm D but have basically gotten it
+15:10 < dipole> graff: 1234*5555, 1234*9999, 5678*5555, 5678*9999 - you need to compute this stuff right?
+
+15:10 < graff> dipole: of course yes, thank you
+
+15:10 < dipole> graff: ah, you don't need help anymore? :)
+
+15:11 < graff> dipole: I will need help tomorrow probably. but this is as much as I can absorb for now. I am taking notes and will be doing it on my whiteboard in a moment
+
+
+
+
+
+
+
+15:12 < dipole> graff: cool. ask if you need something. oh hell, algorithm D looks like hell
+
+
+
+

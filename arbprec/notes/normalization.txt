@@ -1,0 +1,4 @@
+        //if (d = b / (v[0] + 1) != 1){
+                //arb_short_mul(u, lea+uscal+offset+1, d, b); 
+                //arb_short_mul(v, leb, d, b); 
+        //}

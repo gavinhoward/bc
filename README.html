@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+</pre><dt><strong>arbsh</strong></dt><pre>
+
+</pre><dt><strong>DESCRIPTION:</strong></dt><pre>
+</pre><hr><pre>
+
+	arbsh is a collection of original software written by CM Graff et al.
+
+
+	Navigating to a subdirectory of arbsh and inspecting the README 
+	will reveal more about what that particular project contains.
+
+
+	
+
+</pre><dt><strong>HIER:</strong></dt><pre>
+</pre><hr><pre>
+
+	<a href="arbprec/">arbprec/</a>
+		An arbitrary precision mathematics library.
+
+	<a href="readline/">readline/</a>
+		Readline line editing library. An editline/readline like 
+		implementation.  
+
+	<a href="gsh/">gsh/</a>
+		Gsh supports a subset of POSIX shell.  
+
+	<a href="posix/">posix/</a>
+		Userland utilities such as cp, ls, fetch, dd, find etc.
+		implemented to subsets of their POSIX specifications.
+
+	<a href="ironwill/">ironwill/</a>
+		A cross compiling toolchain and package build system similiar
+		to buildroot or yocto but much simpler.  
+
+	<a href="newlibm/">newlibm/</a>
+		A set of mathematics functions to operate on double precision
+		types. This area contains code derived from Sun's fdlibm. And
+		is the only part of arbsh which is not 100 percent original.
+
+	arbsh will also retrieve and build a collection of heavily modified
+	outside software which is also maintained by CM Graff et al.
+	
+	hlibc
+		hlibc is a new libc that draws on parts of musl libc.
+		<a href="https://github.com/cmgraff/hlibc ">https://github.com/cmgraff/hlibc </a>
+
+	cube-zero
+		A verion of the cube 1 3D video game which is being slowly
+		rewritten in C. <a href="https://github.com/cmgraff/cube-zero ">https://github.com/cmgraff/cube-zero </a>
+
+	ash 
+		A new version of the Almquist shell forked from debian dash.
+		<a href="https://github.com/cmgraff/ash">https://github.com/cmgraff/ash</a>
+
+
+</pre><dt><strong>BUILDING:</strong></dt><pre>
+</pre><hr><pre>
+
+	make
+	make install DESTDIR=$(pwd)/myroot
+
+	Install a single component of arbsh: 
+	  
+       		cd arbsh/posix
+		make
+		make install DESTDIR=/path/to/target
+
+
+</pre><dt><strong>CROSSBUILDING:</strong></dt><pre>
+</pre><hr><pre>
+
+	Use arbsh's internal gcc based cross compile system to build itself
+	or outside software. Links and build specifics are supplied for 50 
+	target packages.  
+
+
+		make ironwill
+
+		export `make buildenvars`
+
+		make
+
+		make install DESTDIR=$(pwd)/myroot
+
+
+	For finer grained control over the cross toolchain (such as changing 
+	architectures or using the toolchain to build other OS)), view the 
+	documentation within toolchain/README and run the build system from 
+	toolchain/.
+
+
+</pre><dt><strong>PORTABILITY:</strong></dt><pre>
+</pre><hr><pre>
+
+	To some extent all of the components of arbsh are standalone. The 
+	core functionality (excluding the toolchain) only depends on the 
+	standard C library and a few POSIX extensions to it. This being the 
+	case it should work fine on Linux, mac, NetBSD and FreeBSD.
+
+
+</pre><dt><strong>CONTACT:</strong></dt><pre>
+</pre><hr><pre>
+	CM Graff <a href="mailto:cm0graff@gmail.com">cm0graff@gmail.com</a>
+
+</pre><dt><strong>UPSTREAM:</strong></dt><pre>
+</pre><hr><pre>
+	<a href="https://github.com/cmgraff/arbsh">https://github.com/cmgraff/arbsh</a>
+
+
+</pre><dt><strong>REFERENCES:</strong></dt><pre>
+</pre><hr><pre>
+
+	POSIX:
+		<a href="http://pubs.opengroup.org/onlinepubs">http://pubs.opengroup.org/onlinepubs</a>
+
+
+</pre><dt><strong>RELEASES:</strong></dt><pre>
+</pre><hr><pre>
+
+	<a href="http://www.csit.parkland.edu/~cgraff1/arbsh-0.1a.tar.gz">http://www.csit.parkland.edu/~cgraff1/arbsh-0.1a.tar.gz</a>
+
+</pre>

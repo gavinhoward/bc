@@ -1,0 +1,7 @@
+IndexOptions FancyIndexing FoldersFirst 
+HeaderName README.html
+ReadmeName none
+DefaultIcon none
+AddType text/plain .c text/plain .h text/plain .sh
+#SuppressHTMLPreamble
+

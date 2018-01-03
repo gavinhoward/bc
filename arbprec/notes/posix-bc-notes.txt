@@ -1,0 +1,20 @@
+
+All internal computations must be done in base 10:
+
+"Internal computations shall be conducted as if in decimal, regardless of the 
+input and output bases, to the specified number of decimal digits"
+
+This creates serious problem, and disallows the passing of "base" to the
+arithmetic functions when obase=ibase and obase comes before ibase.
+
+Due to inherent incompatabilities it is not always possible to directly
+translate one base to another.
+
+
+
+"Exact calculation of the number of fractional digits to output for a given 
+value in a base other than 10 can be computationally expensive. Historical 
+implementations use a faster approximation, and this is permitted."
+
+
+

@@ -1,0 +1,42 @@
+fxdpnt *new_addition(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
+{
+        fxdpnt *a_t = a;
+        fxdpnt *b_t = b;
+        size_t diff = 0;
+        int carry = 0;
+        c = arb_expand(c, a->len + b->len);
+        if (a->lp < b->lp)
+        {
+                a_t = b;
+                b_t = a;
+        }
+        c->len = a_t->len;
+        c->rp = a_t->rp;
+        c->lp = a_t->lp;
+
+        for (diff = 0;diff < a_t->lp - b_t->lp; diff++)
+        {
+                c->number[diff] = a_t->number[diff];
+        }
+
+        size_t len = MIN(a_t->len - diff, b_t->len);
+
+        carry = long_add(a_t->number + diff, len, b_t->number, len , c->number + diff, base);
+        // more work needs to go here
+        //  a second long_add, properly offset and with the carry added to it may suffice
+        if (carry == 1)
+        {
+                fprintf(stderr, "we have a carry\n");
+                a_t = a;
+                b_t = b;
+                if (a->rp < b->rp)
+                {
+                        a_t = b;
+                        b_t = a;
+                }
+                // operate on "b" which is not the longest value to the right of the radix.
+                //apply the carry step to it 
+        }
+        return c;
+}
+
