@@ -43,6 +43,7 @@ static const uint32_t keyword_lens[] = {
 
 static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token);
+static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start);
 static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token);
 
@@ -213,6 +214,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 			// This character can either be alone or as an assignment.
 			// If it's an assignment, we need to increment the index.
+			// We also need to handle numbers.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_MINUS;
@@ -240,9 +242,13 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 			// This character can either be alone or as an assignment.
 			// If it's an assignment, we need to increment the index.
+			// We also need to handle comments.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_DIVIDE;
+			}
+			else if (c2 == '*') {
+				status = bc_lex_comment(lex, token);
 			}
 			else {
 				token->type = BC_LEX_OP_DIVIDE;
@@ -510,6 +516,47 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 	// Set the index. We need to go one
 	// past because of the closing quote.
 	lex->idx = i + 1;
+
+	return BC_LEX_STATUS_SUCCESS;
+}
+
+static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
+
+	// Set the token type.
+	token->type = BC_LEX_WHITESPACE;
+
+	// Increment the index.
+	++lex->idx;
+
+	// Get the starting index and character.
+	size_t i = lex->idx;
+	const char* buffer = lex->buffer;
+	char c = buffer[i];
+
+	// The end condition.
+	int end = 0;
+
+	// Loop until we have found the end.
+	while (!end) {
+
+		// Find the end of the string, one way or the other.
+		while (c != '*' && c != '\0') {
+			c = buffer[++i];
+		}
+
+		// If we've reached the end of the string,
+		// but not the comment, complain.
+		if (c == '\0' || buffer[i + 1] == '\0') {
+			lex->idx = i;
+			return BC_LEX_STATUS_NO_COMMENT_END;
+		}
+
+		// If we've reached the end, set the end.
+		end = buffer[i + 1] == '/';
+	}
+
+	// Set the index. Plus 2 is to get past the commen end.
+	lex->idx = i + 2;
 
 	return BC_LEX_STATUS_SUCCESS;
 }

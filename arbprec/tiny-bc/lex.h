@@ -12,6 +12,8 @@ typedef enum BcLexStatus {
 
 	BC_LEX_STATUS_NO_STRING_END,
 
+	BC_LEX_STATUS_NO_COMMENT_END,
+
 } BcLexStatus;
 
 typedef enum BcLexTokenType {
