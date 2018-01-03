@@ -43,7 +43,7 @@ static const uint32_t keyword_lens[] = {
 
 static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token);
-static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token);
+static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start);
 static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token);
 
 BcLexStatus bc_lex_init(BcLex* lex, const char* text) {
@@ -218,7 +218,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 				token->type = BC_LEX_OP_ASSIGN_MINUS;
 			}
 			else if (isdigit(c2) || c2 == '.') {
-				status = bc_lex_number(lex, token);
+				status = bc_lex_number(lex, token, c);
 			}
 			else {
 				token->type = BC_LEX_OP_MINUS;
@@ -229,7 +229,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 		case '.':
 		{
-			status = bc_lex_number(lex, token);
+			status = bc_lex_number(lex, token, c);
 			break;
 		}
 
@@ -262,7 +262,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 		case '8':
 		case '9':
 		{
-			status = bc_lex_number(lex, token);
+			status = bc_lex_number(lex, token, c);
 			break;
 		}
 
@@ -333,7 +333,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 		case 'E':
 		case 'F':
 		{
-			status = bc_lex_number(lex, token);
+			status = bc_lex_number(lex, token, c);
 			break;
 		}
 
@@ -514,8 +514,81 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 	return BC_LEX_STATUS_SUCCESS;
 }
 
-static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token) {
-	// TODO: Write this function.
+static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
+
+	// Set the token type.
+	token->type = BC_LEX_NUMBER;
+
+	// Whether or not we already have passed a decimal point.
+	int point = start == '.';
+
+	// Get a pointer to the place in the buffer.
+	const char* buffer = lex->buffer + lex->idx;
+
+	// Cache these for the upcoming loop.
+	size_t backslashes = 0;
+	size_t i = 0;
+	char c = buffer[i];
+
+	// Find the end of the number.
+	while (c && (isdigit(c) || (c >= 'A' && c <= 'F') || (c == '.' && !point) ||
+	             (c == '\\' && buffer[i + 1] == '\n')))
+	{
+		// If we ran into a backslash, handle it.
+		if (c == '\\') {
+			++i;
+			backslashes += 1;
+		}
+
+		// Increment and get the character.
+		c = buffer[++i];
+	}
+
+	// Calculate the length of the string.
+	size_t len = i - lex->idx + 1;
+
+	// Allocate the string.
+	token->data.string = malloc(len - backslashes + 1);
+
+	// Check for error.
+	if (token->data.string == NULL) {
+		return BC_LEX_STATUS_MALLOC_FAIL;
+	}
+
+	// Set the starting character.
+	token->data.string[0] = start;
+
+	// The copy start and the number of backslash
+	// hits. These are for the upcoming loop.
+	const char* buf = buffer - 1;
+	size_t hits = 0;
+
+	// Copy the string.
+	for (size_t j = 1; j < len; ++j) {
+
+		// Get the character.
+		char c = buf[j];
+
+		// If we have hit a backslash, skip it.
+		// We don't have to check for a newline
+		// because it's guaranteed.
+		if (hits < backslashes && c == '\\') {
+			++hits;
+			++j;
+			continue;
+		}
+
+		// Copy the character.
+		token->data.string[j - (hits * 2)] = c;
+	}
+
+	// Make sure to set the null character.
+	token->data.string[len] = '\0';
+
+	// Set the index. We need to go one
+	// past because of the closing quote.
+	lex->idx += i;
+
 	return BC_LEX_STATUS_SUCCESS;
 }
 
