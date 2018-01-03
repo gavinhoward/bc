@@ -504,6 +504,9 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 		token->data.string[j - hits] = c;
 	}
 
+	// Make sure to set the null character.
+	token->data.string[len] = '\0';
+
 	// Set the index. We need to go one
 	// past because of the closing quote.
 	lex->idx = i + 1;
@@ -518,8 +521,9 @@ static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token) {
 
 static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token) {
 
-	// Get a pointer to the place in the buffer.
-	const char* buffer = lex->buffer + lex->idx;
+	// Get a pointer to the place in the buffer. We subtract
+	// one because the index is already incremented.
+	const char* buffer = lex->buffer + lex->idx - 1;
 
 	// Loop through the keywords.
 	for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
