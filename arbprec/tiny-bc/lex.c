@@ -106,6 +106,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
 
+	// Set the token type.
 	token->type = BC_LEX_WHITESPACE;
 
 	// Get the character.
