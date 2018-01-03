@@ -7,6 +7,8 @@
 
 static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token);
+static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token);
+static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token);
 
 BcLexStatus bc_lex_init(BcLex* lex, const char* text) {
 
@@ -139,6 +141,240 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			break;
 		}
 
+		case '+':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or as an assignment.
+			// If it's an assignment, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_ASSIGN_PLUS;
+			}
+			else {
+				token->type = BC_LEX_OP_PLUS;
+			}
+
+			break;
+		}
+
+		case ',':
+		{
+			token->type = BC_LEX_COMMA;
+			break;
+		}
+
+		case '-':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or as an assignment.
+			// If it's an assignment, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_ASSIGN_MINUS;
+			}
+			else if (isdigit(c2) || c2 == '.') {
+				status = bc_lex_number(lex, token);
+			}
+			else {
+				token->type = BC_LEX_OP_MINUS;
+			}
+
+			break;
+		}
+
+		case '.':
+		{
+			status = bc_lex_number(lex, token);
+			break;
+		}
+
+		case '/':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or as an assignment.
+			// If it's an assignment, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_ASSIGN_DIVIDE;
+			}
+			else {
+				token->type = BC_LEX_OP_DIVIDE;
+			}
+
+			break;
+		}
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		{
+			status = bc_lex_number(lex, token);
+			break;
+		}
+
+		case ';':
+		{
+			token->type = BC_LEX_SEMICOLON;
+			break;
+		}
+
+		case '<':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or with an equals.
+			// If with an equals, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_REL_LESS_EQ;
+			}
+			else {
+				token->type = BC_LEX_OP_REL_LESS;
+			}
+
+			break;
+		}
+
+		case '=':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or with another equals.
+			// If with another equals, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_REL_EQUAL;
+			}
+			else {
+				token->type = BC_LEX_OP_ASSIGN;
+			}
+
+			break;
+		}
+
+		case '>':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or with an equals.
+			// If with an equals, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_REL_GREATER_EQ;
+			}
+			else {
+				token->type = BC_LEX_OP_REL_GREATER;
+			}
+
+			break;
+		}
+
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		{
+			status = bc_lex_number(lex, token);
+			break;
+		}
+
+		case '[':
+		{
+			token->type = BC_LEX_LEFT_BRACKET;
+			break;
+		}
+
+		case '\\':
+		{
+			status = bc_lex_whitespace(lex, token);
+			break;
+		}
+
+		case ']':
+		{
+			token->type = BC_LEX_RIGHT_BRACKET;
+			break;
+		}
+
+		case '^':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or as an assignment.
+			// If it's an assignment, we need to increment the index.
+			if (c2 == '=') {
+				++lex->idx;
+				token->type = BC_LEX_OP_ASSIGN_POWER;
+			}
+			else {
+				token->type = BC_LEX_OP_POWER;
+			}
+
+			break;
+		}
+
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		case 'e':
+		case 'f':
+		case 'g':
+		case 'h':
+		case 'i':
+		case 'j':
+		case 'k':
+		case 'l':
+		case 'm':
+		case 'n':
+		case 'o':
+		case 'p':
+		case 'q':
+		case 'r':
+		case 's':
+		case 't':
+		case 'u':
+		case 'v':
+		case 'w':
+		case 'x':
+		case 'y':
+		case 'z':
+		{
+			status = bc_lex_key(lex, token);
+			break;
+		}
+
+		case '{':
+		{
+			token->type = BC_LEX_LEFT_BRACE;
+			break;
+		}
+
+		case '}':
+		{
+			token->type = BC_LEX_RIGHT_BRACE;
+			break;
+		}
+
 		default:
 		{
 			// All other characters are invalid.
@@ -160,7 +396,7 @@ static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
 	char c = lex->buffer[lex->idx];
 
 	// Eat all whitespace (and non-newline) characters.
-	while (isspace(c) && c != '\n') {
+	while ((isspace(c) && c != '\n') || c == '\\') {
 		++lex->idx;
 		c = lex->buffer[lex->idx];
 	}
@@ -208,7 +444,7 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
 	// The copy start and the number of backslash
 	// hits. These are for the upcoming loop.
-	char* start = lex->buffer + lex->idx;
+	const char* start = lex->buffer + lex->idx;
 	size_t hits = 0;
 
 	// Copy the string.
@@ -231,5 +467,15 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 	// past because of the closing quote.
 	lex->idx = i + 1;
 
+	return BC_LEX_STATUS_SUCCESS;
+}
+
+static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token) {
+	// TODO: Write this function.
+	return BC_LEX_STATUS_SUCCESS;
+}
+
+static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token) {
+	// TODO: Write this function.
 	return BC_LEX_STATUS_SUCCESS;
 }
