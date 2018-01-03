@@ -38,26 +38,34 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 	switch (c) {
 
 		case '\0':
+		{
 			token->type = BC_LEX_EOF;
 			break;
+		}
 
 		case '\t':
+		{
 			status = bc_lex_whitespace(lex, token);
 			break;
+		}
 
 		case '\n':
+		{
 			token->type = BC_LEX_NEWLINE;
 			break;
+		}
 
 		case '\v':
 		case '\f':
 		case '\r':
 		case ' ':
+		{
 			status = bc_lex_whitespace(lex, token);
 			break;
+		}
 
 		case '!':
-
+		{
 			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
@@ -73,13 +81,16 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			}
 
 			break;
+		}
 
 		case '"':
+		{
 			status = bc_lex_string(lex, token);
 			break;
+		}
 
 		case '%':
-
+		{
 			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
@@ -94,19 +105,24 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			}
 
 			break;
+		}
 
 		case '(':
+		{
 			token->type = BC_LEX_LEFT_PAREN;
 			++lex->idx;
 			break;
+		}
 
 		case ')':
+		{
 			token->type = BC_LEX_RIGHT_PAREN;
 			++lex->idx;
 			break;
+		}
 
 		case '*':
-
+		{
 			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
@@ -121,13 +137,15 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			}
 
 			break;
+		}
 
 		default:
-
+		{
 			// All other characters are invalid.
 			token->type = BC_LEX_INVALID;
 			status = BC_LEX_STATUS_INVALID_TOKEN;
 			break;
+		}
 	}
 
 	return status;
