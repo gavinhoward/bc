@@ -123,8 +123,6 @@ static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
 
 static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
-	// TODO: Handle backslashes and other string weirdness.
-
 	// Set the token type.
 	token->type = BC_LEX_STRING;
 
@@ -146,17 +144,41 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 	// Calculate the length of the string.
 	size_t len = i - lex->idx;
 
+	// Figure out the number of backslash newlines in a string.
+	size_t backslashes = 0;
+	for (size_t j = lex->idx; j < i; ++j) {
+		c = lex->buffer[j];
+		backslashes += c == '\\' && lex->buffer[j + 1] == '\n' ? 1 : 0;
+	}
+
 	// Allocate the string.
-	token->data.string = malloc(len + 1);
+	token->data.string = malloc(len - backslashes + 1);
 
 	// Check for error.
 	if (token->data.string == NULL) {
 		return BC_LEX_STATUS_MALLOC_FAIL;
 	}
 
+	// The copy start and the number of backslash
+	// hits. These are for the upcoming loop.
+	char* start = lex->buffer + lex->idx;
+	size_t hits = 0;
+
 	// Copy the string.
-	token->data.string[0] = '\0';
-	strncpy(token->data.string, lex->buffer + lex->idx, len);
+	for (size_t j = 0; j < len; ++j) {
+
+		// Get the character.
+		char c = start[j];
+
+		// If we have hit a backslash, skip it.
+		if (hits < backslashes && c == '\\' && start[j + 1] == '\n') {
+			++hits;
+			continue;
+		}
+
+		// Copy the character.
+		token->data.string[j - hits] = c;
+	}
 
 	// Set the index. We need to go one
 	// past because of the closing quote.
