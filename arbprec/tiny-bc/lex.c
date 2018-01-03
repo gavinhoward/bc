@@ -5,6 +5,42 @@
 
 #include "lex.h"
 
+static const char* const keywords[] = {
+
+    "auto",
+    "break",
+    "define",
+    "for",
+    "ibase",
+    "if",
+    "length",
+    "obase",
+    "quit",
+    "return",
+    "scale",
+    "sqrt",
+    "while",
+
+};
+
+static const uint32_t keyword_lens[] = {
+
+    4,
+    5,
+    6,
+    3,
+    5,
+    2,
+    6,
+    5,
+    4,
+    6,
+    5,
+    4,
+    5,
+
+};
+
 static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token);
@@ -481,6 +517,32 @@ static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token) {
 }
 
 static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token) {
-	// TODO: Write this function.
+
+	// Get a pointer to the place in the buffer.
+	const char* buffer = lex->buffer + lex->idx;
+
+	// Loop through the keywords.
+	for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
+
+		// If a keyword matches, set it, increment, and return.
+		if (!strncmp(buffer, keywords[i], keyword_lens[i])) {
+
+			// We just need to add the starting
+			// index of keyword token types.
+			token->type = BC_LEX_KEY_AUTO + i;
+
+			// We need to minus one because the
+			// index has already been incremented.
+			lex->idx += keyword_lens[i] - 1;
+
+			return BC_LEX_STATUS_SUCCESS;
+		}
+	}
+
+	// We have a letter, so get the
+	// character and set the type.
+	token->data.character = buffer[0];
+	token->type = BC_LEX_LETTER;
+
 	return BC_LEX_STATUS_SUCCESS;
 }
