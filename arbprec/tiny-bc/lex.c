@@ -180,6 +180,10 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_PLUS;
 			}
+			else if (c2 == '+') {
+				++lex->idx;
+				token->type = BC_LEX_OP_INC;
+			}
 			else {
 				token->type = BC_LEX_OP_PLUS;
 			}
@@ -204,6 +208,10 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_MINUS;
+			}
+			else if (c2 == '-') {
+				++lex->idx;
+				token->type = BC_LEX_OP_DEC;
 			}
 			else if (isdigit(c2) || c2 == '.') {
 				status = bc_lex_number(lex, token, c);
