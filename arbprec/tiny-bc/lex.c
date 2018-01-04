@@ -22,6 +22,7 @@ static const char* const keywords[] = {
     "halt",
     "ibase",
     "if",
+    "last",
     "length",
     "limits",
     "obase",
@@ -46,6 +47,7 @@ static const uint32_t keyword_lens[] = {
     4, // halt
     5, // ibase
     2, // if
+    4, // last
     6, // length
     6, // limits
     5, // obase
