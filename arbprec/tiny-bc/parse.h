@@ -10,11 +10,13 @@
 
 #define BC_PARSE_FLAG_FUNC (0x01)
 
-#define BC_PARSE_IN_FUNC(parse) ((parse)->flags & BC_PARSE_FLAG_FUNC)
+#define BC_PARSE_IN_FUNC(parse)  \
+	((parse)->stack[(parse)->stack_len - 1] & BC_PARSE_FLAG_FUNC)
 
 #define BC_PARSE_FLAG_LOOP (0x02)
 
-#define BC_PARSE_IN_LOOP(parse) ((parse)->flags & BC_PARSE_FLAG_LOOP)
+#define BC_PARSE_IN_LOOP(parse)  \
+	((parse)->stack[(parse)->stack_len - 1] & BC_PARSE_FLAG_LOOP)
 
 typedef enum BcParseStatus {
 

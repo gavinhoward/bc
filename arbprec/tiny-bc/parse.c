@@ -3,6 +3,7 @@
 
 #include "parse.h"
 
+static BcStatus bc_parse_preinc(BcParse* parse);
 static BcStatus bc_parse_expandStack(BcParse* parse);
 
 BcStatus bc_parse_init(BcParse* parse, BcProgram* program, const char* text) {
@@ -169,6 +170,41 @@ void bc_parse_free(BcParse* parse) {
 			parse->stack = NULL;
 		}
 	}
+}
+
+static BcStatus bc_parse_preinc(BcParse* parse) {
+
+	int inc = parse->token.type == BC_LEX_OP_INC;
+
+	BcStatus status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status != BC_STATUS_SUCCESS) {
+		return status;
+	}
+
+	switch (parse->token.type) {
+
+		case BC_LEX_NAME:
+			break;
+
+		case BC_LEX_KEY_IBASE:
+			break;
+
+		case BC_LEX_KEY_LAST:
+			break;
+
+		case BC_LEX_KEY_OBASE:
+			break;
+
+		case BC_LEX_KEY_SCALE:
+			break;
+
+		default:
+			status = BC_STATUS_PARSE_INVALID_TOKEN;
+			break;
+	}
+
+	return status;
 }
 
 static BcStatus bc_parse_expandStack(BcParse* parse) {
