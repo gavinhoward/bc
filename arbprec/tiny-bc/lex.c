@@ -166,8 +166,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 				token->type = BC_LEX_OP_REL_NOT_EQ;
 			}
 			else {
-				token->type = BC_LEX_INVALID;
-				status = BC_LEX_STATUS_INVALID_TOKEN;
+				token->type = BC_LEX_OP_BOOL_NOT;
 			}
 
 			break;
@@ -192,6 +191,25 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			}
 			else {
 				token->type = BC_LEX_OP_MODULUS;
+			}
+
+			break;
+		}
+
+		case '&':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or as an assignment.
+			// If it's an assignment, we need to increment the index.
+			if (c2 == '&') {
+				++lex->idx;
+				token->type = BC_LEX_OP_BOOL_AND;
+			}
+			else {
+				token->type = BC_LEX_INVALID;
+				status = BC_LEX_STATUS_INVALID_TOKEN;
 			}
 
 			break;
@@ -468,6 +486,25 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 			break;
 		}
 
+		case '|':
+		{
+			// Get the next character.
+			c2 = lex->buffer[lex->idx];
+
+			// This character can either be alone or as an assignment.
+			// If it's an assignment, we need to increment the index.
+			if (c2 == '|') {
+				++lex->idx;
+				token->type = BC_LEX_OP_BOOL_OR;
+			}
+			else {
+				token->type = BC_LEX_INVALID;
+				status = BC_LEX_STATUS_INVALID_TOKEN;
+			}
+
+			break;
+		}
+
 		case '}':
 		{
 			token->type = BC_LEX_RIGHT_BRACE;
@@ -724,7 +761,7 @@ static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 	char c = buffer[i];
 
 	// Find the end of the name.
-	while (isalpha(c) || c == '_') {
+	while (islower(c) || c == '_') {
 		++i;
 		c = buffer[i];
 	}
