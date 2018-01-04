@@ -1,8 +1,8 @@
 #include <arbprec/arbprec.h>
 
-int arb_place(fxdpnt *a, fxdpnt *b, size_t *cnt, size_t r)
+ARBT arb_place(fxdpnt *a, fxdpnt *b, size_t *cnt, size_t r)
 {
-	int temp = 0;
+	ARBT temp = 0;
 	if ((a->len - a->lp) < (b->len - b->lp))
 		if((b->len - b->lp) - (a->len - a->lp) > r)
 			return 0;

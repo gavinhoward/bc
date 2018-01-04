@@ -30,7 +30,7 @@ fxdpnt *arb_add_inter(fxdpnt *, fxdpnt *, fxdpnt *, int);
 fxdpnt *arb_sub_inter(fxdpnt *, fxdpnt *, fxdpnt *, int);
 fxdpnt *arb_sub(fxdpnt *, fxdpnt *, fxdpnt *, int);
 fxdpnt *arb_add(fxdpnt *, fxdpnt *, fxdpnt *, int);
-int arb_place(fxdpnt *, fxdpnt *, size_t *, size_t);
+ARBT arb_place(fxdpnt *, fxdpnt *, size_t *, size_t);
 fxdpnt *arb_newtonian_div(fxdpnt *, fxdpnt *, fxdpnt *, int, int);
 fxdpnt *arb_alg_d(fxdpnt *, fxdpnt *, fxdpnt *, int, int);
 int _long_sub(ARBT *, size_t, ARBT *, size_t, int);
