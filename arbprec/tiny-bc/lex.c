@@ -4,13 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bc.h"
 #include "lex.h"
 
-#ifndef NDEBUG
 static const char* const token_type_strs[] = {
     BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
 };
-#endif
 
 static const char* const keywords[] = {
 
@@ -60,15 +59,14 @@ static const uint32_t keyword_lens[] = {
 
 };
 
-static BcLexStatus bc_lex_token(BcLex* lex, BcLexToken* token);
-static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
-static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token);
-static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token);
-static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start);
-static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token);
+static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token);
+static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
+static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token);
+static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token);
+static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start);
+static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token);
 
-#ifndef NDEBUG
-BcLexStatus bc_lex_printToken(BcLexToken* token) {
+BcStatus bc_lex_printToken(BcLexToken* token) {
 
 	// Print the type.
 	printf("<%s", token_type_strs[token->type]);
@@ -90,46 +88,45 @@ BcLexStatus bc_lex_printToken(BcLexToken* token) {
 	putchar('>');
 	putchar('\n');
 
-	return BC_LEX_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
-#endif
 
-BcLexStatus bc_lex_init(BcLex* lex, const char* text) {
+BcStatus bc_lex_init(BcLex* lex, const char* text) {
 
 	// Check for error.
 	if (lex == NULL) {
-		return BC_LEX_STATUS_INVALID_PARAM;
+		return BC_STATUS_INVALID_PARAM;
 	}
 
 	// Set the data.
 	lex->buffer = text;
 	lex->idx = 0;
 
-	return BC_LEX_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
-BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
+BcStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 	// Check for error.
 	if (lex == NULL || token == NULL) {
-		return BC_LEX_STATUS_INVALID_PARAM;
+		return BC_STATUS_INVALID_PARAM;
 	}
 
-	BcLexStatus status;
+	BcStatus status;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
 	do {
 		status = bc_lex_token(lex, token);
-	} while (token->type == BC_LEX_WHITESPACE && status == BC_LEX_STATUS_SUCCESS);
+	} while (token->type == BC_LEX_WHITESPACE && status == BC_STATUS_SUCCESS);
 
 	return status;
 }
 
-static BcLexStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 	// We want to make sure this is cleared.
-	BcLexStatus status = BC_LEX_STATUS_SUCCESS;
+	BcStatus status = BC_STATUS_SUCCESS;
 
 	// Get the character.
 	char c = lex->buffer[lex->idx];
@@ -535,7 +532,7 @@ static BcLexStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 	return status;
 }
 
-static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
 
 	// Set the token type.
 	token->type = BC_LEX_WHITESPACE;
@@ -549,10 +546,10 @@ static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
 		c = lex->buffer[lex->idx];
 	}
 
-	return BC_LEX_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
-static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
 	// Set the token type.
 	token->type = BC_LEX_STRING;
@@ -569,7 +566,7 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 	// If we have reached the end of the buffer, complain.
 	if (c == '\0') {
 		lex->idx = i;
-		return BC_LEX_STATUS_NO_STRING_END;
+		return BC_STATUS_LEX_NO_STRING_END;
 	}
 
 	// Calculate the length of the string.
@@ -587,7 +584,7 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
 	// Check for error.
 	if (token->data.string == NULL) {
-		return BC_LEX_STATUS_MALLOC_FAIL;
+		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	// The copy start and the number of backslash
@@ -618,10 +615,10 @@ static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 	// past because of the closing quote.
 	lex->idx = i + 1;
 
-	return BC_LEX_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
-static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 
 	// Set the token type.
 	token->type = BC_LEX_WHITESPACE;
@@ -649,7 +646,7 @@ static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 		// but not the comment, complain.
 		if (c == '\0' || buffer[i + 1] == '\0') {
 			lex->idx = i;
-			return BC_LEX_STATUS_NO_COMMENT_END;
+			return BC_STATUS_LEX_NO_COMMENT_END;
 		}
 
 		// If we've reached the end, set the end.
@@ -660,10 +657,10 @@ static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 	// Set the index. Plus 2 is to get past the comment end.
 	lex->idx = i + 2;
 
-	return BC_LEX_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
-static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
+static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 
 	// Set the token type.
 	token->type = BC_LEX_NUMBER;
@@ -701,7 +698,7 @@ static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 
 	// Check for error.
 	if (token->data.string == NULL) {
-		return BC_LEX_STATUS_MALLOC_FAIL;
+		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	// Set the starting character.
@@ -738,10 +735,10 @@ static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 	// past because of the closing quote.
 	lex->idx += i;
 
-	return BC_LEX_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
-static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 
 	// Get a pointer to the place in the buffer. We subtract
 	// one because the index is already incremented.
@@ -761,7 +758,7 @@ static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 			// index has already been incremented.
 			lex->idx += keyword_lens[i] - 1;
 
-			return BC_LEX_STATUS_SUCCESS;
+			return BC_STATUS_SUCCESS;
 		}
 	}
 
@@ -783,7 +780,7 @@ static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 
 	// Check for error.
 	if (token->data.string == NULL) {
-		return BC_LEX_STATUS_MALLOC_FAIL;
+		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	// Copy the string.
@@ -794,5 +791,5 @@ static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 	// because it has already been incremented.
 	lex->idx += i - 1;
 
-	return BC_LEX_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
