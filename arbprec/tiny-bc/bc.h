@@ -14,6 +14,8 @@ typedef enum BcStatus {
 	BC_STATUS_LEX_NO_STRING_END,
 	BC_STATUS_LEX_NO_COMMENT_END,
 
+	BC_STATUS_PARSE_INVALID_TOKEN,
+
 } BcStatus;
 
 #endif // BC_H
