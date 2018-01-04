@@ -9,13 +9,19 @@ static const char* const keywords[] = {
 
     "auto",
     "break",
+    "continue",
     "define",
+    "else",
     "for",
+    "halt",
     "ibase",
     "if",
     "length",
+    "limits",
     "obase",
+    "print",
     "quit",
+    "read",
     "return",
     "scale",
     "sqrt",
@@ -24,7 +30,27 @@ static const char* const keywords[] = {
 };
 
 static const uint32_t keyword_lens[] = {
-    4, 5, 6, 3, 5, 2, 6, 5, 4, 6, 5, 4, 5,
+
+    4, // auto
+    5, // break
+    8, // continue
+    6, // define
+    4, // else
+    3, // for
+    4, // halt
+    5, // ibase
+    2, // if
+    6, // length
+    6, // limits
+    5, // obase
+    5, // print
+    4, // quit
+    4, // read
+    6, // return
+    5, // scale
+    4, // sqrt
+    5, // while
+
 };
 
 static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
