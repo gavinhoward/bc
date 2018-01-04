@@ -290,9 +290,6 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 				++lex->idx;
 				token->type = BC_LEX_OP_DEC;
 			}
-			else if (isdigit(c2) || c2 == '.') {
-				status = bc_lex_number(lex, token, c);
-			}
 			else {
 				token->type = BC_LEX_OP_MINUS;
 			}
