@@ -223,7 +223,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 			}
 			else {
 				token->type = BC_LEX_INVALID;
-				status = BC_LEX_STATUS_INVALID_TOKEN;
+				status = BC_STATUS_LEX_INVALID_TOKEN;
 			}
 
 			break;
@@ -510,7 +510,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 			}
 			else {
 				token->type = BC_LEX_INVALID;
-				status = BC_LEX_STATUS_INVALID_TOKEN;
+				status = BC_STATUS_LEX_INVALID_TOKEN;
 			}
 
 			break;
@@ -526,7 +526,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 		{
 			// All other characters are invalid.
 			token->type = BC_LEX_INVALID;
-			status = BC_LEX_STATUS_INVALID_TOKEN;
+			status = BC_STATUS_LEX_INVALID_TOKEN;
 			break;
 		}
 	}
