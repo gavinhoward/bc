@@ -114,6 +114,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 		return BC_LEX_STATUS_INVALID_PARAM;
 	}
 
+	// We want to make sure this is cleared.
 	BcLexStatus status = BC_LEX_STATUS_SUCCESS;
 
 	// Get the character.
