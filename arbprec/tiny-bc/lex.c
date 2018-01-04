@@ -60,6 +60,7 @@ static const uint32_t keyword_lens[] = {
 
 };
 
+static BcLexStatus bc_lex_token(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token);
@@ -113,6 +114,19 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 	if (lex == NULL || token == NULL) {
 		return BC_LEX_STATUS_INVALID_PARAM;
 	}
+
+	BcLexStatus status;
+
+	// Loop until failure or we don't have whitespace. This
+	// is so the parser doesn't get inundated with whitespace.
+	do {
+		status = bc_lex_token(lex, token);
+	} while (token->type == BC_LEX_WHITESPACE && status == BC_LEX_STATUS_SUCCESS);
+
+	return status;
+}
+
+static BcLexStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 	// We want to make sure this is cleared.
 	BcLexStatus status = BC_LEX_STATUS_SUCCESS;
