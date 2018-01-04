@@ -773,7 +773,7 @@ static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 	char c = buffer[i];
 
 	// Find the end of the name.
-	while (islower(c) || c == '_') {
+	while (islower(c) || isdigit(c) || c == '_') {
 		++i;
 		c = buffer[i];
 	}
