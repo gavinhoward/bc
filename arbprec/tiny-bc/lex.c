@@ -94,7 +94,7 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
 BcStatus bc_lex_init(BcLex* lex, const char* text) {
 
 	// Check for error.
-	if (lex == NULL) {
+	if (lex == NULL || text == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
