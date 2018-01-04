@@ -541,7 +541,7 @@ static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 		end = buffer[i + 1] == '/';
 	}
 
-	// Set the index. Plus 2 is to get past the commen end.
+	// Set the index. Plus 2 is to get past the comment end.
 	lex->idx = i + 2;
 
 	return BC_LEX_STATUS_SUCCESS;
