@@ -16,85 +16,93 @@ typedef enum BcLexStatus {
 
 } BcLexStatus;
 
+#define BC_LEX_GEN_ENUM(ENUM) ENUM,
+#define BC_LEX_GEN_STR(STRING) #STRING,
+
+#define BC_LEX_TOKEN_FOREACH(TOKEN) \
+	TOKEN(BC_LEX_OP_INC)  \
+	TOKEN(BC_LEX_OP_DEC)  \
+	                      \
+	TOKEN(BC_LEX_OP_POWER)  \
+	                        \
+	TOKEN(BC_LEX_OP_MULTIPLY)  \
+	TOKEN(BC_LEX_OP_DIVIDE)    \
+	TOKEN(BC_LEX_OP_MODULUS)   \
+	                           \
+	TOKEN(BC_LEX_OP_PLUS)   \
+	TOKEN(BC_LEX_OP_MINUS)  \
+	                        \
+	TOKEN(BC_LEX_OP_ASSIGN)           \
+	TOKEN(BC_LEX_OP_ASSIGN_PLUS)      \
+	TOKEN(BC_LEX_OP_ASSIGN_MINUS)     \
+	TOKEN(BC_LEX_OP_ASSIGN_MULTIPLY)  \
+	TOKEN(BC_LEX_OP_ASSIGN_DIVIDE)    \
+	TOKEN(BC_LEX_OP_ASSIGN_MODULUS)   \
+	TOKEN(BC_LEX_OP_ASSIGN_POWER)     \
+	                                  \
+	TOKEN(BC_LEX_OP_REL_EQUAL)       \
+	TOKEN(BC_LEX_OP_REL_LESS_EQ)     \
+	TOKEN(BC_LEX_OP_REL_GREATER_EQ)  \
+	TOKEN(BC_LEX_OP_REL_NOT_EQ)      \
+	TOKEN(BC_LEX_OP_REL_LESS)        \
+	TOKEN(BC_LEX_OP_REL_GREATER)     \
+	                                 \
+	TOKEN(BC_LEX_OP_BOOL_NOT)  \
+	                           \
+	TOKEN(BC_LEX_OP_BOOL_OR)   \
+	TOKEN(BC_LEX_OP_BOOL_AND)  \
+	                           \
+	TOKEN(BC_LEX_NEWLINE)  \
+	                       \
+	TOKEN(BC_LEX_WHITESPACE)  \
+	                          \
+	TOKEN(BC_LEX_LEFT_PAREN)   \
+	TOKEN(BC_LEX_RIGHT_PAREN)  \
+	                           \
+	TOKEN(BC_LEX_LEFT_BRACKET)   \
+	TOKEN(BC_LEX_RIGHT_BRACKET)  \
+	                             \
+	TOKEN(BC_LEX_LEFT_BRACE)   \
+	TOKEN(BC_LEX_RIGHT_BRACE)  \
+	                           \
+	TOKEN(BC_LEX_COMMA)      \
+	TOKEN(BC_LEX_SEMICOLON)  \
+	                         \
+	TOKEN(BC_LEX_STRING)  \
+	TOKEN(BC_LEX_NAME)    \
+	TOKEN(BC_LEX_NUMBER)  \
+	                      \
+	TOKEN(BC_LEX_KEY_AUTO)      \
+	TOKEN(BC_LEX_KEY_BREAK)     \
+	TOKEN(BC_LEX_KEY_CONTINUE)  \
+	TOKEN(BC_LEX_KEY_DEFINE)    \
+	TOKEN(BC_LEX_KEY_ELSE)      \
+	TOKEN(BC_LEX_KEY_FOR)       \
+	TOKEN(BC_LEX_KEY_HALT)      \
+	TOKEN(BC_LEX_KEY_IBASE)     \
+	TOKEN(BC_LEX_KEY_IF)        \
+	TOKEN(BC_LEX_KEY_LENGTH)    \
+	TOKEN(BC_LEX_KEY_LIMITS)    \
+	TOKEN(BC_LEX_KEY_OBASE)     \
+	TOKEN(BC_LEX_KEY_PRINT)     \
+	TOKEN(BC_LEX_KEY_QUIT)      \
+	TOKEN(BC_LEX_KEY_READ)      \
+	TOKEN(BC_LEX_KEY_RETURN)    \
+	TOKEN(BC_LEX_KEY_SCALE)     \
+	TOKEN(BC_LEX_KEY_SQRT)      \
+	TOKEN(BC_LEX_KEY_WHILE)     \
+	                            \
+	TOKEN(BC_LEX_EOF)           \
+	                            \
+	TOKEN(BC_LEX_INVALID)       \
+
 typedef enum BcLexTokenType {
-
-	BC_LEX_OP_INC,
-	BC_LEX_OP_DEC,
-
-	BC_LEX_OP_POWER,
-
-	BC_LEX_OP_MULTIPLY,
-	BC_LEX_OP_DIVIDE,
-	BC_LEX_OP_MODULUS,
-
-	BC_LEX_OP_PLUS,
-	BC_LEX_OP_MINUS,
-
-	BC_LEX_OP_ASSIGN,
-	BC_LEX_OP_ASSIGN_PLUS,
-	BC_LEX_OP_ASSIGN_MINUS,
-	BC_LEX_OP_ASSIGN_MULTIPLY,
-	BC_LEX_OP_ASSIGN_DIVIDE,
-	BC_LEX_OP_ASSIGN_MODULUS,
-	BC_LEX_OP_ASSIGN_POWER,
-
-	BC_LEX_OP_REL_EQUAL,
-	BC_LEX_OP_REL_LESS_EQ,
-	BC_LEX_OP_REL_GREATER_EQ,
-	BC_LEX_OP_REL_NOT_EQ,
-	BC_LEX_OP_REL_LESS,
-	BC_LEX_OP_REL_GREATER,
-
-	BC_LEX_NEWLINE,
-
-	BC_LEX_WHITESPACE,
-
-	BC_LEX_LEFT_PAREN,
-	BC_LEX_RIGHT_PAREN,
-
-	BC_LEX_LEFT_BRACKET,
-	BC_LEX_RIGHT_BRACKET,
-
-	BC_LEX_LEFT_BRACE,
-	BC_LEX_RIGHT_BRACE,
-
-	BC_LEX_COMMA,
-	BC_LEX_SEMICOLON,
-
-	BC_LEX_STRING,
-	BC_LEX_LETTER,
-	BC_LEX_NUMBER,
-
-	BC_LEX_KEY_AUTO,
-	BC_LEX_KEY_BREAK,
-	BC_LEX_KEY_CONTINUE,
-	BC_LEX_KEY_DEFINE,
-	BC_LEX_KEY_ELSE,
-	BC_LEX_KEY_FOR,
-	BC_LEX_KEY_HALT,
-	BC_LEX_KEY_IBASE,
-	BC_LEX_KEY_IF,
-	BC_LEX_KEY_LENGTH,
-	BC_LEX_KEY_LIMITS,
-	BC_LEX_KEY_OBASE,
-	BC_LEX_KEY_PRINT,
-	BC_LEX_KEY_QUIT,
-	BC_LEX_KEY_READ,
-	BC_LEX_KEY_RETURN,
-	BC_LEX_KEY_SCALE,
-	BC_LEX_KEY_SQRT,
-	BC_LEX_KEY_WHILE,
-
-	BC_LEX_EOF,
-
-	BC_LEX_INVALID,
-
+	BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_ENUM)
 } BcLexTokenType;
 
 typedef union BcLexData {
 
 	char* string;
-	char character;
 
 } BcLexData;
 
@@ -116,4 +124,6 @@ BcLexStatus bc_lex_init(BcLex* lex, const char* text);
 
 BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token);
 
-
+#ifndef NDEBUG
+BcLexStatus bc_lex_printToken(BcLexToken* token);
+#endif

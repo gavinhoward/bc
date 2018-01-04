@@ -1,9 +1,16 @@
 #include <ctype.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "lex.h"
+
+#ifndef NDEBUG
+static const char* const token_type_strs[] = {
+    BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
+};
+#endif
 
 static const char* const keywords[] = {
 
@@ -57,7 +64,34 @@ static BcLexStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_string(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token);
 static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start);
-static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token);
+static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token);
+
+#ifndef NDEBUG
+BcLexStatus bc_lex_printToken(BcLexToken* token) {
+
+	// Print the type.
+	printf("<%s", token_type_strs[token->type]);
+
+	// Figure out if more needs to be done.
+	switch (token->type) {
+
+		case BC_LEX_STRING:
+		case BC_LEX_NAME:
+		case BC_LEX_NUMBER:
+			printf(":%s", token->data.string);
+			break;
+
+		default:
+			break;
+	}
+
+	// Print the end.
+	putchar('>');
+	putchar('\n');
+
+	return BC_LEX_STATUS_SUCCESS;
+}
+#endif
 
 BcLexStatus bc_lex_init(BcLex* lex, const char* text) {
 
@@ -166,14 +200,12 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 		case '(':
 		{
 			token->type = BC_LEX_LEFT_PAREN;
-			++lex->idx;
 			break;
 		}
 
 		case ')':
 		{
 			token->type = BC_LEX_RIGHT_PAREN;
-			++lex->idx;
 			break;
 		}
 
@@ -426,7 +458,7 @@ BcLexStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 		case 'y':
 		case 'z':
 		{
-			status = bc_lex_key(lex, token);
+			status = bc_lex_name(lex, token);
 			break;
 		}
 
@@ -573,6 +605,7 @@ static BcLexStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 
 		// If we've reached the end, set the end.
 		end = buffer[i + 1] == '/';
+		i += end ? 0 : 1;
 	}
 
 	// Set the index. Plus 2 is to get past the comment end.
@@ -612,7 +645,7 @@ static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 	}
 
 	// Calculate the length of the string.
-	size_t len = i - lex->idx + 1;
+	size_t len = i + 1;
 
 	// Allocate the string.
 	token->data.string = malloc(len - backslashes + 1);
@@ -659,7 +692,7 @@ static BcLexStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 	return BC_LEX_STATUS_SUCCESS;
 }
 
-static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token) {
+static BcLexStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 
 	// Get a pointer to the place in the buffer. We subtract
 	// one because the index is already incremented.
@@ -683,10 +716,34 @@ static BcLexStatus bc_lex_key(BcLex* lex, BcLexToken* token) {
 		}
 	}
 
-	// We have a letter, so get the
-	// character and set the type.
-	token->data.character = buffer[0];
-	token->type = BC_LEX_LETTER;
+	// Set the type.
+	token->type = BC_LEX_NAME;
+
+	// These are for the next loop.
+	size_t i = 0;
+	char c = buffer[i];
+
+	// Find the end of the name.
+	while (isalpha(c) || c == '_') {
+		++i;
+		c = buffer[i];
+	}
+
+	// Malloc the name.
+	token->data.string = malloc(i + 1);
+
+	// Check for error.
+	if (token->data.string == NULL) {
+		return BC_LEX_STATUS_MALLOC_FAIL;
+	}
+
+	// Copy the string.
+	strncpy(token->data.string, buffer, i);
+	token->data.string[i] = '\0';
+
+	// Increment the index. It is minus one
+	// because it has already been incremented.
+	lex->idx += i - 1;
 
 	return BC_LEX_STATUS_SUCCESS;
 }
