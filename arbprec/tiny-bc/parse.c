@@ -52,94 +52,151 @@ BcStatus bc_parse_parse(BcParse* parse) {
 
 			case BC_LEX_OP_INC:
 			case BC_LEX_OP_DEC:
+			{
 				break;
+			}
 
 			case BC_LEX_OP_MINUS:
+			{
 				break;
+			}
 
 			case BC_LEX_OP_BOOL_NOT:
+			{
 				break;
+			}
 
 			case BC_LEX_NEWLINE:
+			{
 				break;
+			}
 
 			case BC_LEX_LEFT_PAREN:
+			{
 				break;
+			}
 
 			case BC_LEX_SEMICOLON:
+			{
 				break;
+			}
 
 			case BC_LEX_STRING:
+			{
 				break;
+			}
 
 			case BC_LEX_NAME:
+			{
 				break;
+			}
 
 			case BC_LEX_NUMBER:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_BREAK:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_CONTINUE:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_DEFINE:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_FOR:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_HALT:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_IBASE:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_IF:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_LAST:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_LENGTH:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_LIMITS:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_OBASE:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_PRINT:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_QUIT:
+			{
 				exit(0);
 				break;
+			}
 
 			case BC_LEX_KEY_READ:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_RETURN:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_SCALE:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_SQRT:
+			{
 				break;
+			}
 
 			case BC_LEX_KEY_WHILE:
+			{
 				break;
+			}
 
 			case BC_LEX_EOF:
+			{
 				return status;
+			}
 
 			default:
+			{
 				status = BC_STATUS_PARSE_INVALID_TOKEN;
 				break;
-
+			}
 		}
 
 		// Break on error.
@@ -173,8 +230,6 @@ void bc_parse_free(BcParse* parse) {
 }
 
 static BcStatus bc_parse_preinc(BcParse* parse) {
-
-	int inc = parse->token.type == BC_LEX_OP_INC;
 
 	BcStatus status = bc_lex_next(&parse->lex, &parse->token);
 
