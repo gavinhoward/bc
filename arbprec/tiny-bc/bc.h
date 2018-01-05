@@ -18,4 +18,6 @@ typedef enum BcStatus {
 
 } BcStatus;
 
+BcStatus bc_main(int filec, const char* filev[]);
+
 #endif // BC_H
