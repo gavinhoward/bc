@@ -21,19 +21,18 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 	// Set the data.
 	parse->program = program;
 
-	// Malloc a stack.
-	parse->stack = malloc(sizeof(uint8_t) * BC_PARSE_STACK_START);
+	// Prepare the flag stack.
+	BcStatus status = bc_stack_init(&parse->flag_stack, sizeof(uint8_t));
 
 	// Check for error.
-	if (parse->stack == NULL) {
-		return BC_STATUS_MALLOC_FAIL;
+	if (status != BC_STATUS_SUCCESS) {
+		return status;
 	}
 
-	// Set the cap and length.
-	parse->stack_cap = BC_PARSE_STACK_START;
-	parse->stack_len = 0;
+	// Prepare the context stack.
+	status = bc_stack_init(&parse->ctx_stack, sizeof(BcContext));
 
-	return BC_STATUS_SUCCESS;
+	return status;
 }
 
 BcStatus bc_parse_text(BcParse* parse, const char* text) {
@@ -53,8 +52,6 @@ BcStatus bc_parse_parse(BcParse* parse) {
 	if (parse == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
-
-
 
 	BcStmt stmt;
 
@@ -102,16 +99,9 @@ void bc_parse_free(BcParse* parse) {
 	// Don't do anything if the parameter doesn't exist.
 	if (parse) {
 
-		// Set all this to NULL.
-		parse->stack_cap = 0;
-		parse->stack_len = 0;
-		parse->program = NULL;
-
-		// Free the stack.
-		if (parse->stack) {
-			free(parse->stack);
-			parse->stack = NULL;
-		}
+		// Free the stacks.
+		bc_stack_free(&parse->flag_stack);
+		bc_stack_free(&parse->ctx_stack);
 	}
 }
 
@@ -216,24 +206,4 @@ static BcStatus bc_parse_call(BcParse* parse) {
 
 static BcStatus bc_parse_params(BcParse* parse) {
 
-}
-
-static BcStatus bc_parse_expandStack(BcParse* parse) {
-
-	// Calculate the size of the new allocation.
-	size_t alloc = parse->stack_cap + BC_PARSE_STACK_START;
-
-	// Reallocate.
-	uint8_t* ptr = realloc(parse->stack, alloc);
-
-	// Check for error.
-	if (ptr == NULL) {
-		return BC_STATUS_MALLOC_FAIL;
-	}
-
-	// Set the fields.
-	parse->stack = ptr;
-	parse->stack_cap = alloc;
-
-	return BC_STATUS_SUCCESS;
 }

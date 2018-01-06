@@ -148,6 +148,13 @@ typedef struct BcArray {
 
 } BcArray;
 
+typedef struct BcContext {
+
+	BcStmtList* list;
+	uint32_t stmt_idx;
+
+} BcContext;
+
 /**
  * A program. This holds all of the data
  * that allows the program to be executed.
