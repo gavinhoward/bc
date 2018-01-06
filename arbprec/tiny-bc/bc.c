@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 	uint32_t num_files = argc - optind;
 
 	// Get the list of file names.
-	const char** file_names = num_files == 0 ? stdin_array : argv + optind;
+	const char** file_names = num_files == 0 ? stdin_array : (const char**) argv + optind;
 
 	// Make sure the number of files is correct.
 	num_files = num_files == 0 ? num_files : 1;
