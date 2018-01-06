@@ -89,22 +89,11 @@ int main(int argc, char* argv[]) {
 	// Get the number of files.
 	uint32_t num_files = argc - optind;
 
-	const char** file_names;
+	// Get the list of file names.
+	const char** file_names = num_files == 0 ? stdin_array : argv + optind;
 
-	// If there are no names...
-	if (num_files == 0) {
-
-		// Assign stdin and number of files.
-		file_names = stdin_array;
-		num_files = 1;
-	}
-
-	// If there are names...
-	else {
-
-		// Assign the file names.
-		file_names = (const char**) argv + optind;
-	}
+	// Make sure the number of files is correct.
+	num_files = num_files == 0 ? num_files : 1;
 
 	return bc_main(num_files, file_names);
 }
