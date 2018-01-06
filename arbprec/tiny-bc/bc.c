@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 			case '?':
 				// Getopt printed an error message, but we should exit.
 			default:
-				abort();
+				exit(BC_STATUS_INVALID_OPTION);
 				break;
 		}
 	}
