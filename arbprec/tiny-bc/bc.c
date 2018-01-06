@@ -28,6 +28,9 @@ static const char* const bc_stdin_name = "-";
 
 int main(int argc, char* argv[]) {
 
+	// Create a one-name array.
+	const char* stdin_array[] = { bc_stdin_name };
+
 	int c;
 
 	while (1) {
@@ -91,34 +94,16 @@ int main(int argc, char* argv[]) {
 	// If there are no names...
 	if (num_files == 0) {
 
-		// Malloc the array.
-		file_names = malloc(sizeof(char*));
-
-		// Check for error.
-		if (file_names == NULL) {
-			return BC_STATUS_MALLOC_FAIL;
-		}
-
 		// Assign stdin and number of files.
-		file_names[0] = bc_stdin_name;
+		file_names = stdin_array;
 		num_files = 1;
 	}
 
 	// If there are names...
 	else {
 
-		// Malloc the array.
-		file_names = malloc(sizeof(char*)* num_files);
-
-		// Check for error.
-		if (file_names == NULL) {
-			return BC_STATUS_MALLOC_FAIL;
-		}
-
 		// Assign the file names.
-		for (int i = optind; i < argc; ++i) {
-			file_names[i] = argv[i + optind];
-		}
+		file_names = (const char**) argv + optind;
 	}
 
 	return bc_main(num_files, file_names);
@@ -136,9 +121,6 @@ BcStatus bc_main(int filec, const char* filev[]) {
 	for (int i = 0; i < filec; ++i) {
 		printf("File[%d]: %s\n", i, filev[i]);
 	}
-
-	// Free the list of files.
-	free(filev);
 
 	return status;
 }
