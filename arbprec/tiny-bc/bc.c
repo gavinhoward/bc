@@ -49,6 +49,8 @@ int main(int argc, char* argv[]) {
 		switch (c) {
 
 			case 0:
+				// This is the case when a long option is
+				// found, so we don't need to do anything.
 				break;
 
 			case 'h':
@@ -76,11 +78,8 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case '?':
-				// Getopt printed an error message.
-				break;
-
+				// Getopt printed an error message, but we should exit.
 			default:
-				printf("c: %d\n", c);
 				abort();
 				break;
 		}
