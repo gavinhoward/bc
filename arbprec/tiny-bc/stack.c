@@ -69,6 +69,17 @@ void* bc_stack_top(BcStack* stack) {
 	return stack->stack + stack->size * (stack->len - 1);
 }
 
+void* bc_stack_item(BcStack* stack, uint32_t idx) {
+
+	// Check for invalid state.
+	if (stack == NULL || stack->len == 0 || idx >= stack->len) {
+		return NULL;
+	}
+
+	// Calculate the return pointer.
+	return stack->stack + stack->size * (stack->len - idx - 1);
+}
+
 BcStatus bc_stack_pop(BcStack* stack) {
 
 	// Check for invalid params.

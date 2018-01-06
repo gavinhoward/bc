@@ -23,6 +23,8 @@ BcStatus bc_stack_push(BcStack* stack, void* data);
 
 void* bc_stack_top(BcStack* stack);
 
+void* bc_stack_item(BcStack* stack, uint32_t idx);
+
 BcStatus bc_stack_pop(BcStack* stack);
 
 void bc_stack_free(BcStack* stack);
