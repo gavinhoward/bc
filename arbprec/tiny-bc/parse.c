@@ -9,7 +9,6 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStmt* stmt);
 static BcStatus bc_parse_name(BcParse* parse, BcStmt* stmt);
 static BcStatus bc_parse_call(BcParse* parse);
 static BcStatus bc_parse_params(BcParse* parse);
-static BcStatus bc_parse_expandStack(BcParse* parse);
 
 BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
@@ -31,6 +30,26 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
 	// Prepare the context stack.
 	status = bc_stack_init(&parse->ctx_stack, sizeof(BcContext));
+
+	// Check for error.
+	if (status != BC_STATUS_SUCCESS) {
+		return status;
+	}
+
+	// Create zero data.
+	uint8_t flags = 0;
+	BcContext ctx;
+	ctx.list = program->first;
+	ctx.stmt_idx = 0;
+
+	// Init the top thing in the flag stack and check for error.
+	status = bc_stack_push(&parse->flag_stack, &flags);
+	if (status != BC_STATUS_SUCCESS) {
+		return status;
+	}
+
+	// Init the top thing in the context stack.
+	status = bc_stack_push(&parse->ctx_stack, &ctx);
 
 	return status;
 }
