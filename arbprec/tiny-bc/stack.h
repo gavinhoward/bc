@@ -1,3 +1,6 @@
+#ifndef BC_STACK_H
+#define BC_STACK_H
+
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -23,3 +26,5 @@ void* bc_stack_top(BcStack* stack);
 BcStatus bc_stack_pop(BcStack* stack);
 
 void bc_stack_free(BcStack* stack);
+
+#endif // BC_STACK_H
