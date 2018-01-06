@@ -89,13 +89,14 @@ void bc_stack_free(BcStack* stack) {
 		return;
 	}
 
-	// Zero the fields.
-	stack->size = 0;
-	stack->len = 0;
-	stack->cap = 0;
-
 	// Free the stack.
 	free(stack->stack);
+
+	// Zero the fields.
+	stack->size = 0;
+	stack->stack = NULL;
+	stack->len = 0;
+	stack->cap = 0;
 }
 
 static BcStatus bc_stack_expand(BcStack* stack) {
