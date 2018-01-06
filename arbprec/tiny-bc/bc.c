@@ -88,6 +88,7 @@ int main(int argc, char* argv[]) {
 
 	const char** file_names;
 
+	// If there are no names...
 	if (num_files == 0) {
 
 		// Malloc the array.
@@ -98,10 +99,12 @@ int main(int argc, char* argv[]) {
 			return BC_STATUS_MALLOC_FAIL;
 		}
 
-		// Assign the name and number of files.
+		// Assign stdin and number of files.
 		file_names[0] = bc_stdin_name;
 		num_files = 1;
 	}
+
+	// If there are names...
 	else {
 
 		// Malloc the array.
