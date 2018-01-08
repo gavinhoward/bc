@@ -17,24 +17,18 @@ fxdpnt *arb_leftshift(fxdpnt *a, size_t n, int faux)
 	return a;
 }
 
+void rightshift_core(ARBT *a, size_t len, size_t n)
+{ 
+	memmove(a + n, a, (len - n) * sizeof(ARBT));
+        while (n-- > 0)
+                 a[n] = 0;
+}
+
 fxdpnt *arb_rightshift(fxdpnt *a, size_t n, int faux)
 {
-	/* logical right shift, turns base 10 "990" into "099" 
-		else
-	   "faux" logical shift turns "990" into "99"
-	*/
-	size_t i = 0;
-	size_t j = a->len - n - 1;
-	size_t k = a->len - 1;
-	size_t l = 0;
-
-	if (faux == 0)
-	{
-		for (i = n-1;i < a->len-1; ++i, --j, --k)
-			a->number[k] = a->number[j];
-
-		while (n-- > 0)
-			a->number[l++] = 0;
+	/* logical right shift, turns base 10 "990" into "099" */
+	if (faux == 0) {
+		rightshift_core(a->number, a->len, n);
 	}
 	else {
 		while (n--&& a->len > 0)

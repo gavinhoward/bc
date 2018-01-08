@@ -20,11 +20,10 @@ fxdpnt *arb_babylonian_sqrt(fxdpnt *x, fxdpnt *c, int base, int scale)
 		if (arb_compare(c, last, base) == 0)
 			break;
 		arb_copy(last, c);
-		arb_print(c);
+		//arb_print(c);
 	}
 	if (i > 9998)
 		fprintf(stderr, "sqrt had a problem\n");
-	fprintf(stderr, "%zu iterations\n", i);
 	
 	arb_free(sum);
 	arb_free(quo);

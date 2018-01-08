@@ -25,6 +25,7 @@ double newton_iteration(double x, double eps)
 fxdpnt *arb_newtonian_div(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base, int scale)
 {
 	(void)scale;
+	// experimental function -- not working!!
 	fxdpnt *guess = arb_expand(NULL, a->len);
 	fxdpnt *newguess = arb_expand(NULL, 1); 
 	fxdpnt *hold = arb_expand(NULL, 1);
@@ -47,7 +48,7 @@ fxdpnt *arb_newtonian_div(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base, int scale)
 		hold2 = arb_sub(two, hold, hold2, base); // 2 - x * guess
 		newguess = arb_mul(guess, hold2, newguess, base); // guess * (2-x*guess)
 		arb_copy(guess, newguess);
-		arb_print(guess);
+		//arb_print(guess);
 		++i;
 	}
 	reciprocal = guess;

@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[])
 {
-        if (argc < 5)
+        if (argc < 4)
         {
                 printf("needs 4 args: bignum bignum   base  scale\n");
                 return 0;

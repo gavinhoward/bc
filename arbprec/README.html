@@ -13,13 +13,23 @@
 </pre><dt><strong>TESTING:</strong></dt><pre>
 </pre><hr><pre>
 
-	Run the test binary:
+	Run the test wrappers and binaries:
 
-		./tests/test-arbitrary-precision number number base scale
+		./tests/divregression.sh
+		./tests/mulregression.sh
+		./tests/subregression.sh
+		./tests/addregressions.sh
 
-	Run the algorithm D division test suite:
+	Run division with an increased scale size:
 
-		make test
+		./tests/algd 123123.23 12.123 10 10000
+
+	Other binaries:
+
+		./tests/add  123123612837612836871212.123 10 10
+		./tests/sub  123123612837612836871212.123 10 10
+		./tests/mul  123123612837612836871212.123 10 10
+		./tests/nsqrt 123123612837612836871212.123 10 10
 
 
 </pre><dt><strong>USING THE API:</strong></dt><pre>
