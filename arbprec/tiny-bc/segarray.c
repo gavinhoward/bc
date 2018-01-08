@@ -4,6 +4,7 @@
 #include "segarray.h"
 
 static BcStatus bc_segarray_addArray(BcSegArray* sa);
+static BcStatus bc_segarray_insert(BcSegArray* sa, void* data);
 
 BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp) {
 
@@ -33,6 +34,38 @@ BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp) {
 
 BcStatus bc_segarrary_add(BcSegArray* sa, void* data) {
 
+	BcStatus status;
+
+	// Check for invalid params.
+	if (sa == NULL || data == NULL) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	// Get the indices of the end.
+	uint32_t end1 = BC_SEGARRAY_IDX1(sa->num);
+	uint32_t end2 = BC_SEGARRAY_IDX2(sa->num);
+
+	// If we need to expand...
+	if (end2 == 0) {
+
+		// Do the expand.
+		status = bc_segarray_addArray(sa);
+
+		// Check for error.
+		if (status != BC_STATUS_SUCCESS) {
+			return status;
+		}
+	}
+
+	// Get the insert index and split it.
+	uint32_t idx = bc_segarray_find(sa, data);
+	uint32_t idx1 = BC_SEGARRAY_IDX1(idx);
+	uint32_t idx2 = BC_SEGARRAY_IDX2(idx);
+
+	uint32_t moveIdx = idx1;
+	while (moveIdx < end1) {
+
+	}
 }
 
 void* bc_segarray_item(BcSegArray* sa, uint32_t idx) {
@@ -57,6 +90,36 @@ void* bc_segarray_item2(BcSegArray* sa, uint32_t idx1, uint32_t idx2) {
 
 	// Calculate the return pointer.
 	return ptr + sa->esize * idx2;
+}
+
+uint32_t bc_segarray_find(BcSegArray* sa, void* data) {
+
+	// Cache this.
+	BcSegArrayCmpFunc cmp = sa->cmp;
+
+	// Set the high and low.
+	uint32_t low = 0;
+	uint32_t high = sa->num;
+
+	// Loop until the index is found.
+	while (low < high) {
+
+		// Calculate the mid point.
+		uint32_t mid = (low + high) / 2;
+
+		// Get the pointer.
+		uint8_t* ptr = bc_segarray_item(sa, mid);
+
+		// Figure out what to do.
+		if (cmp(ptr, data) > 0) {
+			high = mid;
+		}
+		else {
+			low = mid + 1;
+		}
+	}
+
+	return low;
 }
 
 void bc_segarray_free(BcSegArray* sa) {
@@ -93,4 +156,8 @@ static BcStatus bc_segarray_addArray(BcSegArray* sa) {
 
 	// Push the array onto the stack.
 	return bc_stack_push(&sa->stack, &ptr);
+}
+
+static BcStatus bc_segarray_insert(BcSegArray* sa, void* data) {
+
 }

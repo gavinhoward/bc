@@ -38,6 +38,8 @@ void* bc_segarray_item(BcSegArray* sa, uint32_t idx);
 
 void* bc_segarray_item2(BcSegArray* sa, uint32_t idx1, uint32_t idx2);
 
+uint32_t bc_segarray_find(BcSegArray* sa, void* data);
+
 void bc_segarray_free(BcSegArray* sa);
 
 #endif // BC_SEGARRAY_H
