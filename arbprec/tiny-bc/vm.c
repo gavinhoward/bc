@@ -64,9 +64,7 @@ BcStatus bc_vm_exec(BcVm* vm) {
 		return status;
 	}
 
-	status = bc_vm_execStdin(vm);
-
-	return status;
+	return bc_vm_execStdin(vm);
 }
 
 void bc_vm_free(BcVm* vm) {
