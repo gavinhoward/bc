@@ -4,6 +4,42 @@
 
 #include "parse.h"
 
+static const BcOp bc_ops[] = {
+
+    { 0, false },
+    { 0, false },
+
+    { 2, false },
+
+    { 3, true },
+    { 3, true },
+    { 3, true },
+
+    { 4, true },
+    { 4, true },
+
+    { 5, false },
+    { 5, false },
+    { 5, false },
+    { 5, false },
+    { 5, false },
+    { 5, false },
+    { 5, false },
+
+    { 6, true },
+    { 6, true },
+    { 6, true },
+    { 6, true },
+    { 6, true },
+    { 6, true },
+
+    { 7, false },
+
+    { 8, true },
+    { 8, true },
+
+};
+
 static BcStatus bc_parse_func(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_semicolonList(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_semicolon(BcParse* parse, BcProgram* program);

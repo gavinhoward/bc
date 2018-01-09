@@ -1,6 +1,7 @@
 #ifndef BC_PARSE_H
 #define BC_PARSE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "stack.h"
@@ -40,6 +41,13 @@
 	                               BC_PARSE_FLAG_FUNC |        \
 	                               BC_PARSE_FLAG_HEADER |      \
 	                               BC_PARSE_FLAG_LOOP_INNER)))
+
+typedef struct BcOp {
+
+	uint8_t prec;
+	bool left;
+
+} BcOp;
 
 typedef struct BcParse {
 
