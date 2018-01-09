@@ -27,8 +27,6 @@ static const struct option bc_opts[] = {
 
 static const char* const bc_short_opts = "hlqsvw";
 
-static const char* const bc_stdin_name = "-";
-
 int main(int argc, char* argv[]) {
 
 	BcStatus status;
