@@ -48,10 +48,6 @@ BcStatus bc_segarray_add(BcSegArray* sa, void* data) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	if (sa->num >= BC_SEGARRAY_MAX) {
-		return BC_STATUS_SEGARRAY_MAX;
-	}
-
 	// Get the indices of the end.
 	uint32_t end = sa->num;
 	uint32_t end1 = BC_SEGARRAY_IDX1(end);
