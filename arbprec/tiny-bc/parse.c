@@ -44,12 +44,12 @@ static const BcOp bc_ops[] = {
 
 static BcStatus bc_parse_func(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_semicolonList(BcParse* parse, BcProgram* program);
-static BcStatus bc_parse_semicolon(BcParse* parse, BcProgram* program);
-static BcStatus bc_parse_stmt(BcParse* parse, BcStmt* stmt);
-static BcStatus bc_parse_expr(BcParse* parse, BcStmt* stmt);
-static BcStatus bc_parse_name(BcParse* parse, BcStmt* stmt);
+static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcProgram* program);
+static BcStatus bc_parse_stmt(BcParse* parse, BcProgram* program);
+static BcStatus bc_parse_expr(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_call(BcParse* parse);
 static BcStatus bc_parse_params(BcParse* parse);
+static BcStatus bc_parse_string(BcParse* parse, BcProgram* program);
 
 BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
@@ -113,8 +113,6 @@ BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	BcStmt stmt;
-
 	// Get the next token.
 	BcStatus status = bc_lex_next(&parse->lex, &parse->token);
 
@@ -144,7 +142,7 @@ BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 
 		default:
 		{
-			status = bc_parse_stmt(parse, &stmt);
+			status = bc_parse_stmt(parse, program);
 			break;
 		}
 	}
@@ -178,66 +176,62 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcProgram* program) {
 
 		case BC_LEX_OP_INC:
 		case BC_LEX_OP_DEC:
-		{
-			// TODO: Expression.
-			break;
-		}
-
 		case BC_LEX_OP_MINUS:
-		{
-			// TODO: Negate expression.
-			break;
-		}
-
 		case BC_LEX_OP_BOOL_NOT:
-		{
-			// TODO: Not the expression.
-			break;
-		}
-
 		case BC_LEX_NEWLINE:
-		{
-			// Do nothing.
-			break;
-		}
-
 		case BC_LEX_LEFT_PAREN:
 		{
-			// TODO: Expression.
+			status = bc_parse_stmt(parse, program);
 			break;
 		}
 
 		case BC_LEX_SEMICOLON:
 		{
-			status = bc_lex_next(&parse->lex, &parse->token);
-
-			if (status) {
-				break;
-			}
-
-			if (parse->token.type != BC_LEX_NEWLINE) {
-				status = bc_parse_semicolonList(parse, program);
-			}
-
+			status = bc_parse_semicolonListEnd(parse, program);
 			break;
 		}
 
 		case BC_LEX_STRING:
+		case BC_LEX_NAME:
+		case BC_LEX_NUMBER:
+		case BC_LEX_KEY_AUTO:
+		case BC_LEX_KEY_BREAK:
+		case BC_LEX_KEY_CONTINUE:
+		case BC_LEX_KEY_FOR:
+		case BC_LEX_KEY_HALT:
+		case BC_LEX_KEY_IBASE:
+		case BC_LEX_KEY_IF:
+		case BC_LEX_KEY_LAST:
+		case BC_LEX_KEY_LENGTH:
+		case BC_LEX_KEY_LIMITS:
+		case BC_LEX_KEY_OBASE:
+		case BC_LEX_KEY_PRINT:
 		{
-			// TODO: Print the string.
-			status = bc_lex_next(&parse->lex, &parse->token);
+			status = bc_parse_stmt(parse, program);
+			break;
+		}
 
-			if (status) {
-				break;
-			}
+		case BC_LEX_KEY_QUIT:
+		{
+			// Quit is a compile-time command,
+			// so we just do it.
+			exit(status);
+			break;
+		}
 
-			if (parse->token.type == BC_LEX_SEMICOLON) {
-				status = bc_parse_semicolon(parse, program);
-			}
-			else if (parse->token.type == BC_LEX_NEWLINE) {
-				break;
-			}
-			else {
+		case BC_LEX_KEY_READ:
+		case BC_LEX_KEY_RETURN:
+		case BC_LEX_KEY_SCALE:
+		case BC_LEX_KEY_SQRT:
+		case BC_LEX_KEY_WHILE:
+		{
+			status = bc_parse_stmt(parse, program);
+			break;
+		}
+
+		case BC_LEX_EOF:
+		{
+			if (parse->ctx_stack.len > 0 || parse->ctx_stack.stack[0]) {
 				status = BC_STATUS_PARSE_INVALID_TOKEN;
 			}
 
@@ -254,69 +248,161 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcProgram* program) {
 	return status;
 }
 
-static BcStatus bc_parse_semicolon(BcParse* parse, BcProgram* program) {
+static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcProgram* program) {
 
 	BcStatus status;
 
-	status = bc_lex_next(&parse->lex, &parse->token);
+	if (parse->token.type == BC_LEX_SEMICOLON) {
 
-	if (status) {
-		return status;
+		status = bc_lex_next(&parse->lex, &parse->token);
+
+		if (status) {
+			return status;
+		}
+
+		status = bc_parse_semicolonList(parse, program);
+	}
+	else if (parse->token.type == BC_LEX_NEWLINE) {
+		status = BC_STATUS_SUCCESS;
+	}
+	else {
+		status = BC_STATUS_PARSE_INVALID_TOKEN;
 	}
 
-	if (parse->token.type == BC_LEX_NEWLINE) {
-		return BC_STATUS_SUCCESS;
-	}
-
-	return bc_parse_semicolonList(parse, program);
+	return status;
 }
 
-static BcStatus bc_parse_stmt(BcParse* parse, BcStmt* stmt) {
+static BcStatus bc_parse_stmt(BcParse* parse, BcProgram* program) {
 
-}
-
-static BcStatus bc_parse_expr(BcParse* parse, BcStmt* stmt) {
-
-}
-
-static BcStatus bc_parse_name(BcParse* parse, BcStmt* stmt) {
-
-	BcStatus status = bc_lex_next(&parse->lex, &parse->token);
-
-	if (status != BC_STATUS_SUCCESS) {
-		return status;
-	}
+	BcStatus status = BC_STATUS_SUCCESS;
 
 	switch (parse->token.type) {
 
-		case BC_LEX_NAME:
+		case BC_LEX_OP_INC:
+		case BC_LEX_OP_DEC:
+		case BC_LEX_OP_MINUS:
+		case BC_LEX_OP_BOOL_NOT:
 		{
-			stmt->type = BC_STMT_EXPR_NAME;
-			stmt->data.string = parse->token.data.string;
+			status = bc_parse_expr(parse, program);
+			break;
+		}
+
+		case BC_LEX_NEWLINE:
+		{
+			// Do nothing.
+			break;
+		}
+
+		case BC_LEX_LEFT_PAREN:
+		{
+			status = bc_parse_expr(parse, program);
+			break;
+		}
+
+		case BC_LEX_STRING:
+		{
+			status = bc_parse_string(parse, program);
+			break;
+		}
+
+		case BC_LEX_NAME:
+		case BC_LEX_NUMBER:
+		{
+			status = bc_parse_expr(parse, program);
+			break;
+		}
+
+		case BC_LEX_KEY_AUTO:
+		{
+			// TODO: Make sure we're in auto place.
+			break;
+		}
+
+		case BC_LEX_KEY_BREAK:
+		{
+			// TODO: Make sure we're in a loop.
+			break;
+		}
+
+		case BC_LEX_KEY_CONTINUE:
+		{
+			// TODO: Same as above. Combine?
+			break;
+		}
+
+		case BC_LEX_KEY_FOR:
+		{
+			// TODO: Set up context for loop.
+			break;
+		}
+
+		case BC_LEX_KEY_HALT:
+		{
+			BcStmt stmt;
+
+			stmt.type = BC_STMT_HALT;
+			bc_program_insert(program, &stmt);
+
+			status = bc_lex_next(&parse->lex, &parse->token);
+
+			if (status) {
+				return status;
+			}
+
+			status = bc_parse_semicolonListEnd(parse, program);
+
 			break;
 		}
 
 		case BC_LEX_KEY_IBASE:
 		{
-			stmt->type = BC_STMT_EXPR_IBASE;
+			status = bc_parse_expr(parse, program);
+			break;
+		}
+
+		case BC_LEX_KEY_IF:
+		{
+			// TODO: If statement.
 			break;
 		}
 
 		case BC_LEX_KEY_LAST:
+		case BC_LEX_KEY_LENGTH:
+		case BC_LEX_KEY_LIMITS:
+		case BC_LEX_KEY_OBASE:
 		{
-			stmt->type = BC_STMT_EXPR_LAST;
+			status = bc_parse_expr(parse, program);
 			break;
 		}
 
-		case BC_LEX_KEY_OBASE:
+		case BC_LEX_KEY_PRINT:
 		{
-			stmt->type = BC_STMT_EXPR_OBASE;
+			// TODO: Parse print.
+			break;
+		}
+
+		case BC_LEX_KEY_READ:
+		{
+			status = bc_parse_expr(parse, program);
+			break;
+		}
+
+		case BC_LEX_KEY_RETURN:
+		{
+			// TODO: Check for in function and parse.
 			break;
 		}
 
 		case BC_LEX_KEY_SCALE:
+		case BC_LEX_KEY_SQRT:
 		{
-			stmt->type = BC_STMT_EXPR_SCALE;
+			status = bc_parse_expr(parse, program);
+			break;
+		}
+
+		case BC_LEX_KEY_WHILE:
+		{
+			// TODO: Set up context for loop.
 			break;
 		}
 
@@ -328,6 +414,10 @@ static BcStatus bc_parse_name(BcParse* parse, BcStmt* stmt) {
 	}
 
 	return status;
+}
+
+static BcStatus bc_parse_expr(BcParse* parse, BcProgram* program) {
+
 }
 
 static BcStatus bc_parse_call(BcParse* parse) {
@@ -365,4 +455,27 @@ static BcStatus bc_parse_call(BcParse* parse) {
 
 static BcStatus bc_parse_params(BcParse* parse) {
 
+}
+
+static BcStatus bc_parse_string(BcParse* parse, BcProgram* program) {
+
+	BcStatus status;
+	BcStmt stmt;
+
+	stmt.type = BC_STMT_STRING;
+	stmt.data.string = parse->token.data.string;
+
+	status = bc_program_insert(program, &stmt);
+
+	if (status) {
+		return status;
+	}
+
+	status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status) {
+		return status;
+	}
+
+	return bc_parse_semicolonListEnd(parse, program);
 }
