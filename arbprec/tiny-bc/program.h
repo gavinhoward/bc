@@ -193,10 +193,8 @@ BcStatus bc_program_init(BcProgram* p);
  */
 BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt);
 
-/**
- * Frees @a program and all associated data.
- * @param program	The program to free.
- */
+BcStatus bc_program_exec(BcProgram* p);
+
 void bc_program_free(BcProgram* program);
 
 #endif // BC_PROGRAM_H

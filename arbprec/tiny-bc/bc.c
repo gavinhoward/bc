@@ -5,7 +5,7 @@
 
 #include <getopt.h>
 
-#include "lex.h"
+#include "vm.h"
 
 uint32_t bc_ibase = 10;
 uint32_t bc_obase = 10;
@@ -31,8 +31,8 @@ static const char* const bc_stdin_name = "-";
 
 int main(int argc, char* argv[]) {
 
-	// Create a one-name array.
-	const char* stdin_array[] = { bc_stdin_name };
+	BcStatus status;
+	BcVm vm;
 
 	// Getopt needs this.
 	int opt_idx = 0;
@@ -83,30 +83,18 @@ int main(int argc, char* argv[]) {
 		c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
 	}
 
-	// Get the number of files.
 	uint32_t num_files = argc - optind;
+	const char** file_names = (const char**) (argv + optind);
 
-	// Get the list of file names.
-	const char** file_names = num_files == 0 ? stdin_array : (const char**) argv + optind;
+	status = bc_vm_init(&vm, num_files, file_names);
 
-	// Make sure the number of files is correct.
-	num_files = num_files == 0 ? num_files : 1;
-
-	return bc_main(num_files, file_names);
-}
-
-BcStatus bc_main(int filec, const char* filev[]) {
-
-	BcStatus status = BC_STATUS_SUCCESS;
-
-	// Print out the options.
-	printf("mathlib: %d, quiet: %d, standard: %d, warn: %d\n",
-	       bc_mathlib, bc_quiet, bc_std, bc_warn);
-
-	// Print out the file names.
-	for (int i = 0; i < filec; ++i) {
-		printf("File[%d]: %s\n", i, filev[i]);
+	if (status) {
+		return status;
 	}
+
+	status = bc_vm_exec(&vm);
+
+	bc_vm_free(&vm);
 
 	return status;
 }

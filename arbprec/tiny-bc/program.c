@@ -68,6 +68,10 @@ BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt) {
 	return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_program_exec(BcProgram* p) {
+	// TODO: Write this function.
+}
+
 void bc_program_free(BcProgram* p) {
 
 	if (p == NULL) {
