@@ -94,17 +94,17 @@ BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt) {
 
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
 	assert(p && func);
-	return bc_segarrary_add(&p->funcs, func);
+	return bc_segarray_add(&p->funcs, func);
 }
 
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var) {
 	assert(p && var);
-	return bc_segarrary_add(&p->vars, var);
+	return bc_segarray_add(&p->vars, var);
 }
 
 BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
 	assert(p && array);
-	return bc_segarrary_add(&p->arrays, array);
+	return bc_segarray_add(&p->arrays, array);
 }
 
 BcStatus bc_program_exec(BcProgram* p) {

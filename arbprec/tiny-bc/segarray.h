@@ -38,7 +38,7 @@ typedef struct BcSegArray {
 
 BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp);
 
-BcStatus bc_segarrary_add(BcSegArray* sa, void* data);
+BcStatus bc_segarray_add(BcSegArray* sa, void* data);
 
 void* bc_segarray_item(BcSegArray* sa, uint32_t idx);
 

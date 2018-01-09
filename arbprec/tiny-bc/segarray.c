@@ -34,7 +34,7 @@ BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp) {
 	return bc_segarray_addArray(sa, 0);
 }
 
-BcStatus bc_segarrary_add(BcSegArray* sa, void* data) {
+BcStatus bc_segarray_add(BcSegArray* sa, void* data) {
 
 	BcStatus status;
 
