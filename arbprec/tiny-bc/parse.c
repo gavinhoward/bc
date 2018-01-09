@@ -38,6 +38,8 @@ static const BcOp bc_ops[] = {
     { 8, true },
     { 8, true },
 
+    { 1, false }
+
 };
 
 static BcStatus bc_parse_func(BcParse* parse, BcProgram* program);
