@@ -104,8 +104,8 @@ uint32_t bc_segarray_find(BcSegArray* sa, void* data) {
 
 	for (uint32_t i = 0; i < num; ++i) {
 
-		uint32_t idx1 = BC_SEGARRAY_IDX1(num);
-		uint32_t idx2 = BC_SEGARRAY_IDX2(num);
+		uint32_t idx1 = BC_SEGARRAY_IDX1(i);
+		uint32_t idx2 = BC_SEGARRAY_IDX2(i);
 
 		if (!cmp(bc_segarray_item2(sa, idx1, idx2), data)) {
 			return i;
