@@ -6,9 +6,13 @@
 
 #include "stack.h"
 
+#define BC_SEGARRAY_NUM_ARRAYS (32)
+
 #define BC_SEGARRAY_SEG_POWER (10)
 
 #define BC_SEGARRAY_SEG_SIZE (1 << BC_SEGARRAY_SEG_POWER)
+
+#define BC_SEGARRAY_SEG_LAST (BC_SEGARRAY_SEG_SIZE - 1)
 
 #define BC_SEGARRAY_SEG_IDX2_MASK (BC_SEGARRAY_SEG_SIZE - 1)
 
@@ -19,13 +23,15 @@
 
 #define BC_SEGARRAY_IDX2(idx) ((idx) & BC_SEGARRAY_SEG_IDX2_MASK)
 
+#define BC_SEGARRAY_MAX (BC_SEGARRAY_NUM_ARRAYS << (BC_SEGARRAY_SEG_POWER))
+
 typedef int (*BcSegArrayCmpFunc)(void*, void*);
 
 typedef struct BcSegArray {
 
 	size_t esize;
 	uint32_t num;
-	BcStack stack;
+	uint8_t** ptrs;
 	BcSegArrayCmpFunc cmp;
 
 } BcSegArray;
