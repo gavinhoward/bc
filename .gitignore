@@ -4,3 +4,5 @@
 *.includes
 *.creator.user
 bc
+*.o
+*.a
