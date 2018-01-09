@@ -4,7 +4,7 @@
 
 typedef struct BcVm {
 
-	BcProgram* program;
+	BcProgram program;
 	BcParse parse;
 
 	BcStack ctx_stack;

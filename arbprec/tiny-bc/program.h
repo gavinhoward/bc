@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "segarray.h"
 #include "bc.h"
 
 /**
@@ -167,23 +168,11 @@ typedef struct BcProgram {
 	/// The pointer to the current statement list.
 	BcStmtList* cur;
 
-	/// The number of functions in the program.
-	uint32_t num_funcs;
+	BcSegArray funcs;
 
-	/// The list of functions.
-	BcFunc funcs[BC_PROGRAM_MAX_NAMES];
+	BcSegArray vars;
 
-	/// The number of variables in the program.
-	uint32_t num_vars;
-
-	/// The list of variables.
-	BcVar vars[BC_PROGRAM_MAX_NAMES];
-
-	/// The number of arrays in the program.
-	uint32_t num_arrays;
-
-	/// The list of arrays.
-	BcArray arrays[BC_PROGRAM_MAX_NAMES];
+	BcSegArray arrays;
 
 } BcProgram;
 
@@ -193,7 +182,7 @@ typedef struct BcProgram {
  * @return			BC_STATUS_SUCCESS on success,
  *					an error code otherwise.
  */
-BcStatus bc_program_init(BcProgram* program);
+BcStatus bc_program_init(BcProgram* p);
 
 /**
  * Inserts @a stmt into @a program.
@@ -202,7 +191,7 @@ BcStatus bc_program_init(BcProgram* program);
  * @return			BC_STATUS_SUCCESS on success,
  *					an error code otherwise.
  */
-BcStatus bc_program_insert(BcProgram* program, BcStmt* stmt);
+BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt);
 
 /**
  * Frees @a program and all associated data.
