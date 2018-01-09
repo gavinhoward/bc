@@ -14,6 +14,8 @@ static int bc_program_var_cmp(void* var1, void* var2);
 static void bc_program_var_free(BcVar* var);
 static int bc_program_array_cmp(void* array1, void* array2);
 static void bc_program_array_free(BcArray* array);
+static BcStatus bc_program_stmt_init(BcStmt* stmt);
+static void bc_program_stmt_free(BcStmt* stmt);
 
 BcStatus bc_program_init(BcProgram* p) {
 
@@ -66,6 +68,21 @@ BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt) {
 	memcpy(cur->stmts + cur->num_stmts, stmt, sizeof(BcStmt));
 
 	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
+	assert(p && func);
+	return bc_segarrary_add(&p->funcs, func);
+}
+
+BcStatus bc_program_var_add(BcProgram* p, BcVar* var) {
+	assert(p && var);
+	return bc_segarrary_add(&p->vars, var);
+}
+
+BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
+	assert(p && array);
+	return bc_segarrary_add(&p->arrays, array);
 }
 
 BcStatus bc_program_exec(BcProgram* p) {
@@ -161,7 +178,14 @@ static void bc_program_func_free(BcFunc* func) {
 		return;
 	}
 
-	// TODO: Write this function.
+	free(func->name);
+
+	bc_program_list_free(func->first);
+
+	func->name = NULL;
+	func->first = NULL;
+	func->cur = NULL;
+	func->num_autos = 0;
 }
 
 static int bc_program_var_cmp(void* var1, void* var2) {
@@ -180,7 +204,11 @@ static void bc_program_var_free(BcVar* var) {
 		return;
 	}
 
-	// TODO: Write this function.
+	free(var->name);
+	arb_free(var->data);
+
+	var->name = NULL;
+	var->data = NULL;
 }
 
 static int bc_program_array_cmp(void* array1, void* array2) {
@@ -199,5 +227,22 @@ static void bc_program_array_free(BcArray* array) {
 		return;
 	}
 
+	free(array->name);
+
+	uint32_t elems = array->elems;
+	fxdpnt** nums = array->array;
+	for (uint32_t i = 0; i < elems; ++i) {
+		arb_free(nums[i]);
+	}
+
+	array->name = NULL;
+	array->array = NULL;
+}
+
+static BcStatus bc_program_stmt_init(BcStmt* stmt) {
+	// TODO: Write this function.
+}
+
+static void bc_program_stmt_free(BcStmt* stmt) {
 	// TODO: Write this function.
 }

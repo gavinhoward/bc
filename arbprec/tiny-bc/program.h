@@ -3,24 +3,13 @@
 
 #include <stdint.h>
 
+#include "../../arbprec/include/arbprec/arbprec.h"
+
 #include "segarray.h"
 #include "bc.h"
 
-/**
- * @def BC_PROGRAM_MAX_STMTS
- * The max number of statements in one statement list.
- */
 #define BC_PROGRAM_MAX_STMTS (128)
 
-/**
- * @def BC_PROGRAM_MAX_NAMES
- * The max number of names that the program can have.
- */
-#define BC_PROGRAM_MAX_NAMES (32767)
-
-/**
- * The types that any statement can be.
- */
 typedef enum BcStmtType {
 
 	BC_STMT_STRING,
@@ -66,18 +55,15 @@ typedef enum BcStmtType {
 
 } BcStmtType;
 
-/**
- * A union of data that statement types need.
- */
+typedef struct BcStmtList BcStmtList;
+
 typedef union BcStmtData {
 
 	char* string;
+	BcStmtList* list;
 
 } BcStmtData;
 
-/**
- * One statement in a program.
- */
 typedef struct BcStmt {
 
 	BcStmtType type;
@@ -85,18 +71,12 @@ typedef struct BcStmt {
 
 } BcStmt;
 
-/**
- * A list of statements. Lists can be chained together.
- */
 typedef struct BcStmtList {
 
-	/// The next list. NULL if none.
 	struct BcStmtList* next;
 
-	/// The number of statements that this list has.
 	uint32_t num_stmts;
 
-	/// The list of statements.
 	BcStmt stmts[BC_PROGRAM_MAX_STMTS];
 
 } BcStmtList;
@@ -106,32 +86,21 @@ typedef struct BcStmtList {
  */
 typedef struct BcFunc {
 
-	/// The name of the function.
 	char* name;
 
-	/// The first of the statement lists.
 	BcStmtList* first;
 
-	/// The current statement list.
 	BcStmtList* cur;
 
-	/// The number of auto variables the function
-	/// has. This number includes parameters.
 	uint32_t num_autos;
 
 } BcFunc;
 
-/**
- * A variable.
- */
 typedef struct BcVar {
 
-	/// The name of the variable.
 	char* name;
 
-	/// The data. This will a pointer to the value
-	/// struct that will actually hold a value.
-	void* data;
+	fxdpnt* data;
 
 } BcVar;
 
@@ -140,12 +109,11 @@ typedef struct BcVar {
  */
 typedef struct BcArray {
 
-	/// The name of the array.
 	char* name;
 
-	/// An array of data. This will be an array of
-	/// pointers to the structs that hold values.
-	void** array;
+	fxdpnt** array;
+
+	uint32_t elems;
 
 } BcArray;
 
@@ -156,16 +124,10 @@ typedef struct BcContext {
 
 } BcContext;
 
-/**
- * A program. This holds all of the data
- * that allows the program to be executed.
- */
 typedef struct BcProgram {
 
-	/// The first of the statement lists.
 	BcStmtList* first;
 
-	/// The pointer to the current statement list.
 	BcStmtList* cur;
 
 	BcSegArray funcs;
@@ -176,22 +138,15 @@ typedef struct BcProgram {
 
 } BcProgram;
 
-/**
- * Initializes @a program.
- * @param program	The program to initialize.
- * @return			BC_STATUS_SUCCESS on success,
- *					an error code otherwise.
- */
 BcStatus bc_program_init(BcProgram* p);
 
-/**
- * Inserts @a stmt into @a program.
- * @param program	The program to insert into.
- * @param stmt		The statement to insert.
- * @return			BC_STATUS_SUCCESS on success,
- *					an error code otherwise.
- */
 BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt);
+
+BcStatus bc_program_func_add(BcProgram* p, BcFunc* func);
+
+BcStatus bc_program_var_add(BcProgram* p, BcVar* var);
+
+BcStatus bc_program_array_add(BcProgram* p, BcArray* array);
 
 BcStatus bc_program_exec(BcProgram* p);
 
