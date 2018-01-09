@@ -1,9 +1,12 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "parse.h"
 
 static BcStatus bc_parse_func(BcParse* parse, BcProgram* program);
+static BcStatus bc_parse_semicolonList(BcParse* parse, BcProgram* program);
+static BcStatus bc_parse_semicolon(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmt* stmt);
 static BcStatus bc_parse_expr(BcParse* parse, BcStmt* stmt);
 static BcStatus bc_parse_name(BcParse* parse, BcStmt* stmt);
@@ -92,12 +95,10 @@ BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 
 		case BC_LEX_KEY_DEFINE:
 		{
-			// Check for error.
 			if (!BC_PARSE_CAN_EXEC(parse)) {
 				return BC_STATUS_PARSE_INVALID_TOKEN;
 			}
-
-			// Parse a function definition.
+.
 			status = bc_parse_func(parse, program);
 
 			break;
@@ -129,6 +130,107 @@ static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
 	// TODO: Add to the symbol table.
 
 
+}
+
+static BcStatus bc_parse_semicolonList(BcParse* parse, BcProgram* program) {
+
+	BcStatus status = BC_STATUS_SUCCESS;
+
+	switch (parse->token.type) {
+
+		case BC_LEX_OP_INC:
+		case BC_LEX_OP_DEC:
+		{
+			// TODO: Expression.
+			break;
+		}
+
+		case BC_LEX_OP_MINUS:
+		{
+			// TODO: Negate expression.
+			break;
+		}
+
+		case BC_LEX_OP_BOOL_NOT:
+		{
+			// TODO: Not the expression.
+			break;
+		}
+
+		case BC_LEX_NEWLINE:
+		{
+			// Do nothing.
+			break;
+		}
+
+		case BC_LEX_LEFT_PAREN:
+		{
+			// TODO: Expression.
+			break;
+		}
+
+		case BC_LEX_SEMICOLON:
+		{
+			status = bc_lex_next(&parse->lex, &parse->token);
+
+			if (status) {
+				break;
+			}
+
+			if (parse->token.type != BC_LEX_NEWLINE) {
+				status = bc_parse_semicolonList(parse, program);
+			}
+
+			break;
+		}
+
+		case BC_LEX_STRING:
+		{
+			// TODO: Print the string.
+			status = bc_lex_next(&parse->lex, &parse->token);
+
+			if (status) {
+				break;
+			}
+
+			if (parse->token.type == BC_LEX_SEMICOLON) {
+				status = bc_parse_semicolon(parse, program);
+			}
+			else if (parse->token.type == BC_LEX_NEWLINE) {
+				break;
+			}
+			else {
+				status = BC_STATUS_PARSE_INVALID_TOKEN;
+			}
+
+			break;
+		}
+
+		default:
+		{
+			status = BC_STATUS_PARSE_INVALID_TOKEN;
+			break;
+		}
+	}
+
+	return status;
+}
+
+static BcStatus bc_parse_semicolon(BcParse* parse, BcProgram* program) {
+
+	BcStatus status;
+
+	status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status) {
+		return status;
+	}
+
+	if (parse->token.type == BC_LEX_NEWLINE) {
+		return BC_STATUS_SUCCESS;
+	}
+
+	return bc_parse_semicolonList(parse, program);
 }
 
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmt* stmt) {
