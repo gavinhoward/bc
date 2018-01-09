@@ -31,6 +31,8 @@ typedef struct BcSegArray {
 
 	size_t esize;
 	uint32_t num;
+	uint32_t num_ptrs;
+	uint32_t ptr_cap;
 	uint8_t** ptrs;
 	BcSegArrayCmpFunc cmp;
 

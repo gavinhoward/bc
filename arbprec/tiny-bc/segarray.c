@@ -9,8 +9,10 @@
 #include "program.h"
 
 static BcStatus bc_segarray_addArray(BcSegArray* sa, uint32_t idx);
+static uint32_t bc_segarray_findIndex(BcSegArray* sa, void* data);
 static inline void bc_segarray_moveLast(BcSegArray* sa, uint32_t end1);
-static void bc_segarray_move(BcSegArray* sa, uint32_t idx1, uint32_t start, uint32_t num_elems);
+static void bc_segarray_move(BcSegArray* sa, uint32_t idx1,
+                             uint32_t start, uint32_t num_elems);
 
 BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp) {
 
@@ -29,6 +31,9 @@ BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp) {
 	if (!sa->ptrs) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
+
+	sa->num_ptrs = 0;
+	sa->ptr_cap = BC_SEGARRAY_NUM_ARRAYS;
 
 	// Add an array.
 	return bc_segarray_addArray(sa, 0);
@@ -53,7 +58,7 @@ BcStatus bc_segarray_add(BcSegArray* sa, void* data) {
 	uint32_t end2 = BC_SEGARRAY_IDX2(end);
 
 	// Get the insert index and split it.
-	uint32_t idx = bc_segarray_find(sa, data);
+	uint32_t idx = bc_segarray_findIndex(sa, data);
 	idx = idx == (uint32_t) -1 ? end : idx;
 	uint32_t idx1 = BC_SEGARRAY_IDX1(idx);
 	uint32_t idx2 = BC_SEGARRAY_IDX2(idx);
@@ -125,32 +130,17 @@ void* bc_segarray_item2(BcSegArray* sa, uint32_t idx1, uint32_t idx2) {
 
 uint32_t bc_segarray_find(BcSegArray* sa, void* data) {
 
-	// Cache this.
-	BcSegArrayCmpFunc cmp = sa->cmp;
-
-	// Set the high and low.
-	uint32_t low = 0;
-	uint32_t high = sa->num;
-
-	// Loop until the index is found.
-	while (low < high) {
-
-		// Calculate the mid point.
-		uint32_t mid = (low + high) / 2;
-
-		// Get the pointer.
-		uint8_t* ptr = bc_segarray_item(sa, mid);
-
-		// Figure out what to do.
-		if (cmp(ptr, data) > 0) {
-			high = mid;
-		}
-		else {
-			low = mid + 1;
-		}
+	if (!sa) {
+		return (uint32_t) -1;
 	}
 
-	return low;
+	uint32_t idx = bc_segarray_findIndex(sa, data);
+
+	if (!sa->cmp(bc_segarray_item(sa, idx), data)) {
+		return idx;
+	}
+
+	return (uint32_t) -1;
 }
 
 void bc_segarray_free(BcSegArray* sa) {
@@ -178,17 +168,59 @@ void bc_segarray_free(BcSegArray* sa) {
 
 static BcStatus bc_segarray_addArray(BcSegArray* sa, uint32_t idx) {
 
-	// Malloc space.
+	if (sa->num_ptrs == sa->ptr_cap) {
+
+		uint32_t new_cap = sa->ptr_cap + BC_SEGARRAY_NUM_ARRAYS;
+		uint8_t** temp = realloc(sa->ptrs, sizeof(uint8_t*) * new_cap);
+
+		if (!temp) {
+			return BC_STATUS_MALLOC_FAIL;
+		}
+
+		sa->ptrs = temp;
+		sa->ptr_cap = new_cap;
+	}
+
 	uint8_t* ptr = malloc(sa->esize * BC_SEGARRAY_SEG_SIZE);
 
-	// Check for error.
 	if (ptr == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	sa->ptrs[idx] = ptr;
+	++sa->num_ptrs;
 
 	return BC_STATUS_SUCCESS;
+}
+
+static uint32_t bc_segarray_findIndex(BcSegArray* sa, void* data) {
+
+	// Cache this.
+	BcSegArrayCmpFunc cmp = sa->cmp;
+
+	// Set the high and low.
+	uint32_t low = 0;
+	uint32_t high = sa->num;
+
+	// Loop until the index is found.
+	while (low < high) {
+
+		// Calculate the mid point.
+		uint32_t mid = (low + high) / 2;
+
+		// Get the pointer.
+		uint8_t* ptr = bc_segarray_item(sa, mid);
+
+		// Figure out what to do.
+		if (cmp(ptr, data) > 0) {
+			high = mid;
+		}
+		else {
+			low = mid + 1;
+		}
+	}
+
+	return low;
 }
 
 static void bc_segarray_moveLast(BcSegArray* sa, uint32_t end1) {
