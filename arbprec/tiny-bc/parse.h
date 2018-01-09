@@ -7,7 +7,8 @@
 #include "program.h"
 #include "lex.h"
 
-#define BC_PARSE_TOP_FLAG(parse) (*((uint8_t*) bc_stack_top(&(parse)->flag_stack)))
+#define BC_PARSE_TOP_FLAG(parse)  \
+	(*((uint8_t*) bc_stack_top(&(parse)->flag_stack)))
 
 #define BC_PARSE_FLAG_FUNC_INNER (0x01)
 
@@ -55,7 +56,7 @@ typedef struct BcParse {
 BcStatus bc_parse_init(BcParse* parse, BcProgram* program);
 BcStatus bc_parse_text(BcParse* parse, const char* text);
 
-BcStatus bc_parse_parse(BcParse* parse);
+BcStatus bc_parse_parse(BcParse* parse, BcProgram* program);
 
 void bc_parse_free(BcParse* parse);
 

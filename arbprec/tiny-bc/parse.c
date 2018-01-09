@@ -3,7 +3,7 @@
 
 #include "parse.h"
 
-static BcStatus bc_parse_func(BcParse* parse, BcStmt* stmt);
+static BcStatus bc_parse_func(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmt* stmt);
 static BcStatus bc_parse_expr(BcParse* parse, BcStmt* stmt);
 static BcStatus bc_parse_name(BcParse* parse, BcStmt* stmt);
@@ -65,7 +65,7 @@ BcStatus bc_parse_text(BcParse* parse, const char* text) {
 	return bc_lex_init(&parse->lex, text);
 }
 
-BcStatus bc_parse_parse(BcParse* parse) {
+BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 
 	// Check for error.
 	if (parse == NULL) {
@@ -98,7 +98,7 @@ BcStatus bc_parse_parse(BcParse* parse) {
 			}
 
 			// Parse a function definition.
-			status = bc_parse_func(parse, &stmt);
+			status = bc_parse_func(parse, program);
 
 			break;
 		}
@@ -124,7 +124,7 @@ void bc_parse_free(BcParse* parse) {
 	}
 }
 
-static BcStatus bc_parse_func(BcParse* parse, BcStmt* stmt) {
+static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
 
 	// TODO: Add to the symbol table.
 

@@ -111,7 +111,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 	bc_parse_text(&vm->parse, data);
 
-	status = bc_parse_parse(&vm->parse);
+	status = bc_parse_parse(&vm->parse, &vm->program);
 
 	while (status == BC_STATUS_SUCCESS) {
 
@@ -121,7 +121,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 			break;
 		}
 
-		status = bc_parse_parse(&vm->parse);
+		status = bc_parse_parse(&vm->parse, &vm->program);
 	}
 
 	free(data);
@@ -224,7 +224,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 			goto exit_err;
 		}
 
-		status = bc_parse_parse(&vm->parse);
+		status = bc_parse_parse(&vm->parse, &vm->program);
 
 		if (status) {
 			goto exit_err;
