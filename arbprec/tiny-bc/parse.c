@@ -136,7 +136,7 @@ BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 			if (!BC_PARSE_CAN_EXEC(parse)) {
 				return BC_STATUS_PARSE_INVALID_TOKEN;
 			}
-.
+
 			status = bc_parse_func(parse, program);
 
 			break;
