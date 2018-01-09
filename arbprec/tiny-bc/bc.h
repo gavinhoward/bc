@@ -18,6 +18,8 @@ typedef enum BcStatus {
 
 	BC_STATUS_PARSE_INVALID_TOKEN,
 
+	BC_STATUS_SEGARRAY_MAX,
+
 } BcStatus;
 
 BcStatus bc_main(int filec, const char* filev[]);
