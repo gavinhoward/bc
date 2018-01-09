@@ -5,9 +5,6 @@
 
 #include "program.h"
 
-static BcStatus bc_program_expand(BcProgram* program);
-static void bc_program_list_init(BcStmtList* list);
-static void bc_program_list_free(BcStmtList* list);
 static int bc_program_func_cmp(void* func1, void* func2);
 static void bc_program_func_free(BcFunc* func);
 static int bc_program_var_cmp(void* var1, void* var2);
@@ -31,7 +28,12 @@ BcStatus bc_program_init(BcProgram* p) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	bc_program_list_init(p->first);
+	p->first = bc_program_list_create();
+
+	if (!p->first) {
+		return BC_STATUS_MALLOC_FAIL;
+	}
+
 	p->cur = p->first;
 
 	st = bc_segarray_init(&p->funcs, sizeof(BcFunc), bc_program_func_cmp);
@@ -51,20 +53,25 @@ BcStatus bc_program_init(BcProgram* p) {
 
 BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt) {
 
+	BcStmtList* cur;
+
 	if (p == NULL || stmt == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	if (p->cur->num_stmts == BC_PROGRAM_MAX_STMTS) {
+	cur = p->cur;
 
-		BcStatus status = bc_program_expand(p);
+	if (cur->num_stmts == BC_PROGRAM_MAX_STMTS) {
+
+		BcStatus status = bc_program_list_expand(cur);
 
 		if (status != BC_STATUS_SUCCESS) {
 			return status;
 		}
+
+		cur = cur->next;
 	}
 
-	BcStmtList* cur = p->cur;
 	memcpy(cur->stmts + cur->num_stmts, stmt, sizeof(BcStmt));
 
 	return BC_STATUS_SUCCESS;
@@ -123,9 +130,25 @@ void bc_program_free(BcProgram* p) {
 	}
 }
 
-static BcStatus bc_program_expand(BcProgram* program) {
+BcStmtList* bc_program_list_create() {
 
-	if (program == NULL) {
+	BcStmtList* list;
+
+	list = malloc(sizeof(BcStmtList));
+
+	if (list == NULL) {
+		return NULL;
+	}
+
+	list->next = NULL;
+	list->num_stmts = 0;
+
+	return list;
+}
+
+BcStatus bc_program_list_expand(BcStmtList* list) {
+
+	if (list == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
@@ -135,31 +158,40 @@ static BcStatus bc_program_expand(BcProgram* program) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	bc_program_list_init(next);
+	next->next = NULL;
+	next->num_stmts = 0;
 
-	program->cur->next = next;
-	program->cur = next;
+	list->next = next;
 
 	return BC_STATUS_SUCCESS;
 }
 
-static void bc_program_list_init(BcStmtList* list) {
+void bc_program_list_free(BcStmtList* list) {
+
+	BcStmtList* temp;
+	uint32_t num;
+	BcStmt* stmts;
 
 	if (list == NULL) {
 		return;
 	}
 
-	list->next = NULL;
-	list->num_stmts = 0;
-}
+	do {
 
-static void bc_program_list_free(BcStmtList* list) {
+		temp = list->next;
 
-	if (list == NULL) {
-		return;
-	}
+		num = list->num_stmts;
+		stmts = list->stmts;
 
-	// TODO: Write this function.
+		for (uint32_t i = 0; i < num; ++i) {
+			bc_program_stmt_free(stmts + i);
+		}
+
+		free(list);
+
+		list = temp;
+
+	} while (list);
 }
 
 static int bc_program_func_cmp(void* func1, void* func2) {

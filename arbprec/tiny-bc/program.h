@@ -139,17 +139,15 @@ typedef struct BcProgram {
 } BcProgram;
 
 BcStatus bc_program_init(BcProgram* p);
-
 BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt);
-
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func);
-
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var);
-
 BcStatus bc_program_array_add(BcProgram* p, BcArray* array);
-
 BcStatus bc_program_exec(BcProgram* p);
-
 void bc_program_free(BcProgram* program);
+
+BcStmtList* bc_program_list_create();
+BcStatus bc_program_list_expand(BcStmtList* list);
+void bc_program_list_free(BcStmtList* list);
 
 #endif // BC_PROGRAM_H
