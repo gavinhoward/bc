@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "../../arbprec/include/arbprec/arbprec.h"
+#include <arbprec/arbprec.h>
 
 #include "segarray.h"
 #include "bc.h"
