@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <getopt.h>
 
@@ -24,6 +25,8 @@ static const struct option bc_opts[] = {
     { 0, 0, 0, 0},
 };
 
+static const char* const bc_short_opts = "hlqsvw";
+
 static const char* const bc_stdin_name = "-";
 
 int main(int argc, char* argv[]) {
@@ -31,20 +34,12 @@ int main(int argc, char* argv[]) {
 	// Create a one-name array.
 	const char* stdin_array[] = { bc_stdin_name };
 
-	int c;
+	// Getopt needs this.
+	int opt_idx = 0;
 
-	while (1) {
+	int c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
 
-		// Getopt needs this.
-		int opt_idx = 0;
-
-		// Get the next option.
-		c = getopt_long(argc, argv, "hlqsvw", bc_opts, &opt_idx);
-
-		// End looping if we didn't get an option.
-		if (c == -1) {
-			break;
-		}
+	while (c != -1) {
 
 		switch (c) {
 
@@ -83,6 +78,9 @@ int main(int argc, char* argv[]) {
 				exit(BC_STATUS_INVALID_OPTION);
 				break;
 		}
+
+		// Get the next option.
+		c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
 	}
 
 	// Get the number of files.
