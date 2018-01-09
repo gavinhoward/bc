@@ -11,7 +11,6 @@ static int bc_program_var_cmp(void* var1, void* var2);
 static void bc_program_var_free(BcVar* var);
 static int bc_program_array_cmp(void* array1, void* array2);
 static void bc_program_array_free(BcArray* array);
-static BcStatus bc_program_stmt_init(BcStmt* stmt);
 static void bc_program_stmt_free(BcStmt* stmt);
 
 BcStatus bc_program_init(BcProgram* p) {
@@ -20,12 +19,6 @@ BcStatus bc_program_init(BcProgram* p) {
 
 	if (p == NULL) {
 		return BC_STATUS_INVALID_PARAM;
-	}
-
-	p->first = malloc(sizeof(BcStmtList));
-
-	if (p->first == NULL) {
-		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	p->first = bc_program_list_create();
@@ -37,16 +30,38 @@ BcStatus bc_program_init(BcProgram* p) {
 	p->cur = p->first;
 
 	st = bc_segarray_init(&p->funcs, sizeof(BcFunc), bc_program_func_cmp);
+
 	if (st) {
-		return st;
+		goto func_err;
 	}
 
 	st = bc_segarray_init(&p->vars, sizeof(BcVar), bc_program_var_cmp);
+
 	if (st) {
-		return st;
+		goto var_err;
 	}
 
 	st = bc_segarray_init(&p->arrays, sizeof(BcArray), bc_program_array_cmp);
+
+	if (st) {
+		goto array_err;
+	}
+
+	return st;
+
+array_err:
+
+	bc_segarray_free(&p->vars);
+
+var_err:
+
+	bc_segarray_free(&p->funcs);
+
+func_err:
+
+	bc_program_list_free(p->first);
+	p->first = NULL;
+	p->cur = NULL;
 
 	return st;
 }
@@ -271,7 +286,7 @@ static void bc_program_array_free(BcArray* array) {
 	array->array = NULL;
 }
 
-static BcStatus bc_program_stmt_init(BcStmt* stmt) {
+BcStatus bc_program_stmt_init(BcStmt* stmt) {
 	// TODO: Write this function.
 }
 

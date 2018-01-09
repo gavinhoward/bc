@@ -150,4 +150,6 @@ BcStmtList* bc_program_list_create();
 BcStatus bc_program_list_expand(BcStmtList* list);
 void bc_program_list_free(BcStmtList* list);
 
+BcStatus bc_program_stmt_init(BcStmt* stmt);
+
 #endif // BC_PROGRAM_H
