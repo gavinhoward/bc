@@ -49,9 +49,9 @@ typedef enum BcExprType {
 	BC_EXPR_BOOL_OR,
 	BC_EXPR_BOOL_AND,
 
-	BC_EXPR_VAR,
-	BC_EXPR_ARRAY,
 	BC_EXPR_NUMBER,
+	BC_EXPR_VAR,
+	BC_EXPR_ARRAY_ELEM,
 
 	BC_EXPR_FUNC_CALL,
 
@@ -60,6 +60,9 @@ typedef enum BcExprType {
 	BC_EXPR_IBASE,
 	BC_EXPR_OBASE,
 	BC_EXPR_LAST,
+	BC_EXPR_LENGTH,
+	BC_EXPR_READ,
+	BC_EXPR_SQRT,
 
 	BC_EXPR_PRINT,
 
@@ -84,10 +87,21 @@ typedef enum BcStmtType {
 
 } BcStmtType;
 
+typedef struct BcCall {
+
+	char* name;
+	BcSegArray params;
+
+} BcCall;
+
 typedef struct BcExpr {
 
 	BcExprType type;
-	char* string;
+	union {
+		char* string;
+		BcStack expr_stack;
+		BcCall call;
+	};
 
 } BcExpr;
 

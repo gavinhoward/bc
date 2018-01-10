@@ -27,6 +27,6 @@ void* bc_stack_item(BcStack* stack, uint32_t idx);
 
 BcStatus bc_stack_pop(BcStack* stack);
 
-void bc_stack_free(BcStack* stack);
+void bc_stack_free(void* stack);
 
 #endif // BC_STACK_H

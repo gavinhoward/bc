@@ -93,21 +93,25 @@ BcStatus bc_stack_pop(BcStack* stack) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_stack_free(BcStack* stack) {
+void bc_stack_free(void* stack) {
+
+	BcStack* s;
+
+	s = (BcStack*) stack;
 
 	// Check for NULL.
-	if (stack == NULL) {
+	if (s == NULL) {
 		return;
 	}
 
 	// Free the stack.
-	free(stack->stack);
+	free(s->stack);
 
 	// Zero the fields.
-	stack->size = 0;
-	stack->stack = NULL;
-	stack->len = 0;
-	stack->cap = 0;
+	s->size = 0;
+	s->stack = NULL;
+	s->len = 0;
+	s->cap = 0;
 }
 
 static BcStatus bc_stack_expand(BcStack* stack) {
