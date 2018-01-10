@@ -90,16 +90,10 @@ typedef enum BcLexTokenType {
 	BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_ENUM)
 } BcLexTokenType;
 
-typedef union BcLexData {
-
-	char* string;
-
-} BcLexData;
-
 typedef struct BcLexToken {
 
 	BcLexTokenType type;
-	BcLexData data;
+	char* string;
 
 } BcLexToken;
 

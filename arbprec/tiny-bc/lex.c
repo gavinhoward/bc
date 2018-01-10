@@ -79,7 +79,7 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
 		case BC_LEX_STRING:
 		case BC_LEX_NAME:
 		case BC_LEX_NUMBER:
-			printf(":%s", token->data.string);
+			printf(":%s", token->string);
 			break;
 
 		default:
@@ -582,10 +582,10 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 	}
 
 	// Allocate the string.
-	token->data.string = malloc(len - backslashes + 1);
+	token->string = malloc(len - backslashes + 1);
 
 	// Check for error.
-	if (token->data.string == NULL) {
+	if (token->string == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
@@ -607,11 +607,11 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 		}
 
 		// Copy the character.
-		token->data.string[j - hits] = c;
+		token->string[j - hits] = c;
 	}
 
 	// Make sure to set the null character.
-	token->data.string[len] = '\0';
+	token->string[len] = '\0';
 
 	// Set the index. We need to go one
 	// past because of the closing quote.
@@ -696,15 +696,15 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 	size_t len = i + 1;
 
 	// Allocate the string.
-	token->data.string = malloc(len - backslashes + 1);
+	token->string = malloc(len - backslashes + 1);
 
 	// Check for error.
-	if (token->data.string == NULL) {
+	if (token->string == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	// Set the starting character.
-	token->data.string[0] = start;
+	token->string[0] = start;
 
 	// The copy start and the number of backslash
 	// hits. These are for the upcoming loop.
@@ -727,11 +727,11 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 		}
 
 		// Copy the character.
-		token->data.string[j - (hits * 2)] = c;
+		token->string[j - (hits * 2)] = c;
 	}
 
 	// Make sure to set the null character.
-	token->data.string[len] = '\0';
+	token->string[len] = '\0';
 
 	// Set the index. We need to go one
 	// past because of the closing quote.
@@ -778,16 +778,16 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 	}
 
 	// Malloc the name.
-	token->data.string = malloc(i + 1);
+	token->string = malloc(i + 1);
 
 	// Check for error.
-	if (token->data.string == NULL) {
+	if (token->string == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	// Copy the string.
-	strncpy(token->data.string, buffer, i);
-	token->data.string[i] = '\0';
+	strncpy(token->string, buffer, i);
+	token->string[i] = '\0';
 
 	// Increment the index. It is minus one
 	// because it has already been incremented.

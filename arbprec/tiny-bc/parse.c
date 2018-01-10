@@ -519,8 +519,8 @@ static BcStatus bc_parse_expr(BcParse* parse, BcProgram* program) {
 			case BC_LEX_NUMBER:
 			{
 				expr.type = BC_EXPR_NUMBER;
-				expr.string = parse->token.data.string;
-				status = bc_stack_push(&exprs, &expr);
+				expr.string = parse->token.string;
+				status = bc_stack_push(exprs, &expr);
 
 				++num_exprs;
 
@@ -566,7 +566,7 @@ static BcStatus bc_parse_call(BcParse* parse) {
 	}
 
 	// Get the name of the function.
-	char* name = parse->token.data.string;
+	char* name = parse->token.string;
 
 	status = bc_lex_next(&parse->lex, &parse->token);
 	if (status != BC_STATUS_SUCCESS) {
@@ -597,7 +597,7 @@ static BcStatus bc_parse_string(BcParse* parse, BcProgram* program) {
 	BcStmt stmt;
 
 	stmt.type = BC_STMT_STRING;
-	stmt.data.string = parse->token.data.string;
+	stmt.data.string = parse->token.string;
 
 	status = bc_program_insert(program, &stmt);
 
