@@ -22,7 +22,7 @@ BC_OBJ = $(shell for i in tiny-bc/*.c ; do printf "%s\n" $${i%.c}.o ; done )
 
 BC_EXEC = tiny-bc/bc
 
-LDLIBS += -L. -l$(LIBNAME)
+LDLIBS += -L. -l$(LIBNAME) -lm
 
 all:
 
