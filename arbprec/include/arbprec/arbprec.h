@@ -1,3 +1,6 @@
+#ifndef ARBSH_ARBPREC_H
+#define ARBSH_ARBPREC_H
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -78,3 +81,5 @@ ARBT arb2hrdware(ARBT *, size_t, int);
 
 fxdpnt *hrdware2arb(size_t);
 fxdpnt *convall(fxdpnt *, fxdpnt *, int, int);
+
+#endif // ARBSH_ARBPREC_H
