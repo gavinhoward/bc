@@ -2,7 +2,88 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "lex.h"
 #include "parse.h"
+
+static const bool bc_token_exprs[] = {
+
+    true,
+    true,
+
+    true,
+
+    true,
+    true,
+    true,
+
+    true,
+    true,
+
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+
+    true,
+
+    true,
+    true,
+
+    false,
+
+    false,
+
+    true,
+    true,
+
+    true,
+    true,
+
+    false,
+    false,
+
+    false,
+    false,
+
+    false,
+    true,
+    true,
+
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    true,
+    false,
+    true,
+    true,
+    false,
+
+    false,
+
+    false,
+};
 
 static const BcOp bc_ops[] = {
 
@@ -47,49 +128,41 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_stmt(BcParse* parse, BcProgram* program);
 static BcStatus bc_parse_expr(BcParse* parse, BcProgram* program);
+static BcStatus bc_parse_operator(BcLexToken* token, BcExpr* expr);
 static BcStatus bc_parse_call(BcParse* parse);
 static BcStatus bc_parse_params(BcParse* parse);
 static BcStatus bc_parse_string(BcParse* parse, BcProgram* program);
 
 BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
-	// Check for error.
 	if (parse == NULL || program == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	// Set the data.
 	parse->program = program;
 
-	// Prepare the flag stack.
 	BcStatus status = bc_stack_init(&parse->flag_stack, sizeof(uint8_t));
 
-	// Check for error.
 	if (status != BC_STATUS_SUCCESS) {
 		return status;
 	}
 
-	// Prepare the context stack.
 	status = bc_stack_init(&parse->ctx_stack, sizeof(BcContext));
 
-	// Check for error.
 	if (status != BC_STATUS_SUCCESS) {
 		return status;
 	}
 
-	// Create zero data.
 	uint8_t flags = 0;
 	BcContext ctx;
 	ctx.list = program->first;
 	ctx.stmt_idx = 0;
 
-	// Init the top thing in the flag stack and check for error.
 	status = bc_stack_push(&parse->flag_stack, &flags);
 	if (status != BC_STATUS_SUCCESS) {
 		return status;
 	}
 
-	// Init the top thing in the context stack.
 	status = bc_stack_push(&parse->ctx_stack, &ctx);
 
 	return status;
@@ -97,26 +170,21 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
 BcStatus bc_parse_text(BcParse* parse, const char* text) {
 
-	// Check for error.
 	if (parse == NULL || text == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	// Init the lexer.
 	return bc_lex_init(&parse->lex, text);
 }
 
 BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 
-	// Check for error.
 	if (parse == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	// Get the next token.
 	BcStatus status = bc_lex_next(&parse->lex, &parse->token);
 
-	// Check for error.
 	if (status != BC_STATUS_SUCCESS) {
 		return status;
 	}
@@ -418,6 +486,67 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcProgram* program) {
 
 static BcStatus bc_parse_expr(BcParse* parse, BcProgram* program) {
 
+	BcStatus status;
+	BcStack exprs;
+	BcStack ops;
+	BcExpr expr;
+	BcStmt stmt;
+	uint32_t num_exprs;
+
+	status = bc_stack_init(&exprs, sizeof(BcExpr));
+
+	if (status) {
+		return status;
+	}
+
+	status = bc_stack_init(&ops, sizeof(BcLexToken));
+
+	if (status) {
+		return status;
+	}
+
+	num_exprs = 0;
+
+	while (!status && bc_token_exprs[parse->token.type]) {
+
+		switch (parse->token.type) {
+
+			case BC_LEX_NUMBER:
+			{
+				expr.type = BC_EXPR_NUMBER;
+				expr.string = parse->token.data.string;
+				status = bc_stack_push(&exprs, &expr);
+
+				++num_exprs;
+
+				break;
+			}
+		}
+
+		if (status) {
+			return status;
+		}
+
+		status = bc_lex_next(&parse->lex, &parse->token);
+	}
+
+	if (status) {
+		return status;
+	}
+
+	if (num_exprs != 1) {
+		return BC_STATUS_PARSE_INVALID_EXPR;
+	}
+
+	while (!status && ops.len > 0) {
+
+
+	}
+
+	stmt.type = BC_STMT_EXPR;
+	stmt.data.expr_stack = exprs;
+
+	return bc_program_insert(program, &stmt);
 }
 
 static BcStatus bc_parse_call(BcParse* parse) {
