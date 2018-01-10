@@ -8,20 +8,23 @@
 #include "segarray.h"
 #include "program.h"
 
+static BcStatus bc_segarray_addUnsorted(BcSegArray* sa, void* data) ;
+static BcStatus bc_segarray_addSorted(BcSegArray* sa, void* data);
 static BcStatus bc_segarray_addArray(BcSegArray* sa, uint32_t idx);
 static uint32_t bc_segarray_findIndex(BcSegArray* sa, void* data);
 static inline void bc_segarray_moveLast(BcSegArray* sa, uint32_t end1);
 static void bc_segarray_move(BcSegArray* sa, uint32_t idx1,
                              uint32_t start, uint32_t num_elems);
 
-BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp) {
+BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayFreeFunc sfree, BcSegArrayCmpFunc cmp) {
 
-	if (sa == NULL || esize == 0 || cmp == NULL) {
+	if (sa == NULL || esize == 0) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
 	sa->esize = esize;
 	sa->cmp = cmp;
+	sa->sfree = sfree;
 	sa->num = 0;
 
 	sa->ptrs = malloc(sizeof(uint8_t*) * BC_SEGARRAY_NUM_ARRAYS);
@@ -42,6 +45,116 @@ BcStatus bc_segarray_add(BcSegArray* sa, void* data) {
 	if (sa == NULL || data == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
+
+	if (sa->cmp) {
+		status = bc_segarray_addSorted(sa, data);
+	}
+	else {
+		status = bc_segarray_addUnsorted(sa, data);
+	}
+
+	return status;
+}
+
+void* bc_segarray_item(BcSegArray* sa, uint32_t idx) {
+	return bc_segarray_item2(sa, BC_SEGARRAY_IDX1(idx), BC_SEGARRAY_IDX2(idx));
+}
+
+void* bc_segarray_item2(BcSegArray* sa, uint32_t idx1, uint32_t idx2) {
+
+	uint32_t num = sa->num;
+	uint32_t num1 = BC_SEGARRAY_IDX1(num);
+	uint32_t num2 = BC_SEGARRAY_IDX2(num);
+	if (sa == NULL || idx1 > num1 || (idx1 == num1 && idx2 >= num2)) {
+		return NULL;
+	}
+
+	uint8_t* ptr = sa->ptrs[idx1];
+
+	if (ptr == NULL) {
+		return NULL;
+	}
+
+	return ptr + sa->esize * idx2;
+}
+
+uint32_t bc_segarray_find(BcSegArray* sa, void* data) {
+
+	if (!sa) {
+		return (uint32_t) -1;
+	}
+
+	uint32_t idx = bc_segarray_findIndex(sa, data);
+
+	if (!sa->cmp(bc_segarray_item(sa, idx), data)) {
+		return idx;
+	}
+
+	return (uint32_t) -1;
+}
+
+void bc_segarray_free(BcSegArray* sa) {
+
+	BcSegArrayFreeFunc sfree;
+	uint32_t num;
+
+	if (sa == NULL) {
+		return;
+	}
+
+	sfree = sa->sfree;
+
+	if (sfree) {
+
+		num = sa->num;
+		for (uint32_t i = 0; i < num; ++i) {
+			sfree(bc_segarray_item(sa, i));
+		}
+	}
+
+	num = BC_SEGARRAY_IDX1(sa->num - 1);
+	for (uint32_t i = num - 1; i < num; --i) {
+		free(sa->ptrs[i]);
+	}
+
+	free(sa->ptrs);
+	sa->ptrs = NULL;
+
+	sa->esize = 0;
+	sa->num = 0;
+	sa->num_ptrs = 0;
+	sa->cmp = NULL;
+	sa->sfree = NULL;
+}
+
+static BcStatus bc_segarray_addUnsorted(BcSegArray* sa, void* data) {
+
+	BcStatus status;
+
+	uint32_t end = sa->num;
+	uint32_t end1 = BC_SEGARRAY_IDX1(end);
+	uint32_t end2 = BC_SEGARRAY_IDX2(end);
+
+	if (end2 == 0 && end1 > 0) {
+
+		status = bc_segarray_addArray(sa, end1);
+
+		if (status != BC_STATUS_SUCCESS) {
+			return status;
+		}
+	}
+
+	uint8_t* ptr = sa->ptrs[end1];
+	memcpy(ptr + sa->esize * end2, data, sa->esize);
+
+	++sa->num;
+
+	return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_segarray_addSorted(BcSegArray* sa, void* data) {
+
+	BcStatus status;
 
 	uint32_t end = sa->num;
 	uint32_t end1 = BC_SEGARRAY_IDX1(end);
@@ -85,62 +198,6 @@ BcStatus bc_segarray_add(BcSegArray* sa, void* data) {
 	++sa->num;
 
 	return BC_STATUS_SUCCESS;
-}
-
-void* bc_segarray_item(BcSegArray* sa, uint32_t idx) {
-	return bc_segarray_item2(sa, BC_SEGARRAY_IDX1(idx), BC_SEGARRAY_IDX2(idx));
-}
-
-void* bc_segarray_item2(BcSegArray* sa, uint32_t idx1, uint32_t idx2) {
-
-	uint32_t num = sa->num;
-	uint32_t num1 = BC_SEGARRAY_IDX1(num);
-	uint32_t num2 = BC_SEGARRAY_IDX2(num);
-	if (sa == NULL || idx1 > num1 || (idx1 == num1 && idx2 >= num2)) {
-		return NULL;
-	}
-
-	uint8_t* ptr = sa->ptrs[idx1];
-
-	if (ptr == NULL) {
-		return NULL;
-	}
-
-	return ptr + sa->esize * idx2;
-}
-
-uint32_t bc_segarray_find(BcSegArray* sa, void* data) {
-
-	if (!sa) {
-		return (uint32_t) -1;
-	}
-
-	uint32_t idx = bc_segarray_findIndex(sa, data);
-
-	if (!sa->cmp(bc_segarray_item(sa, idx), data)) {
-		return idx;
-	}
-
-	return (uint32_t) -1;
-}
-
-void bc_segarray_free(BcSegArray* sa) {
-
-	if (sa == NULL) {
-		return;
-	}
-
-	uint32_t num_arrays = BC_SEGARRAY_IDX1(sa->num - 1);
-	for (uint32_t i = num_arrays - 1; i < num_arrays; --i) {
-		uint8_t* ptr = bc_segarray_item(sa, i);
-		free(ptr);
-	}
-
-	free(sa->ptrs);
-	sa->ptrs = NULL;
-
-	sa->esize = 0;
-	sa->cmp = NULL;
 }
 
 static BcStatus bc_segarray_addArray(BcSegArray* sa, uint32_t idx) {

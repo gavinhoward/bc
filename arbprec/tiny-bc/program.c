@@ -3,14 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <arbprec/arbprec.h>
+
 #include "program.h"
 
+static BcStatus bc_program_list_expand(BcStmtList* list);
+
 static int bc_program_func_cmp(void* func1, void* func2);
-static void bc_program_func_free(BcFunc* func);
+static void bc_program_func_free(void* func);
 static int bc_program_var_cmp(void* var1, void* var2);
-static void bc_program_var_free(BcVar* var);
+static void bc_program_var_free(void* var);
 static int bc_program_array_cmp(void* array1, void* array2);
-static void bc_program_array_free(BcArray* array);
+static void bc_program_array_free(void* array);
 static void bc_program_stmt_free(BcStmt* stmt);
 
 BcStatus bc_program_init(BcProgram* p) {
@@ -29,19 +33,22 @@ BcStatus bc_program_init(BcProgram* p) {
 
 	p->cur = p->first;
 
-	st = bc_segarray_init(&p->funcs, sizeof(BcFunc), bc_program_func_cmp);
+	st = bc_segarray_init(&p->funcs, sizeof(BcFunc), bc_program_func_free,
+	                      bc_program_func_cmp);
 
 	if (st) {
 		goto func_err;
 	}
 
-	st = bc_segarray_init(&p->vars, sizeof(BcVar), bc_program_var_cmp);
+	st = bc_segarray_init(&p->vars, sizeof(BcVar), bc_program_var_free,
+	                      bc_program_var_cmp);
 
 	if (st) {
 		goto var_err;
 	}
 
-	st = bc_segarray_init(&p->arrays, sizeof(BcArray), bc_program_array_cmp);
+	st = bc_segarray_init(&p->arrays, sizeof(BcArray), bc_program_array_free,
+	                      bc_program_array_cmp);
 
 	if (st) {
 		goto array_err;
@@ -64,32 +71,6 @@ func_err:
 	p->cur = NULL;
 
 	return st;
-}
-
-BcStatus bc_program_insert(BcProgram* p, BcStmt* stmt) {
-
-	BcStmtList* cur;
-
-	if (p == NULL || stmt == NULL) {
-		return BC_STATUS_INVALID_PARAM;
-	}
-
-	cur = p->cur;
-
-	if (cur->num_stmts == BC_PROGRAM_MAX_STMTS) {
-
-		BcStatus status = bc_program_list_expand(cur);
-
-		if (status != BC_STATUS_SUCCESS) {
-			return status;
-		}
-
-		cur = cur->next;
-	}
-
-	memcpy(cur->stmts + cur->num_stmts, stmt, sizeof(BcStmt));
-
-	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
@@ -161,22 +142,30 @@ BcStmtList* bc_program_list_create() {
 	return list;
 }
 
-BcStatus bc_program_list_expand(BcStmtList* list) {
+BcStatus bc_program_list_insert(BcStmtList* list, BcStmt* stmt) {
 
-	if (list == NULL) {
+	if (list == NULL || stmt == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	BcStmtList* next = malloc(sizeof(BcStmtList));
-
-	if (next == NULL) {
-		return BC_STATUS_MALLOC_FAIL;
+	// Find the end list.
+	while (list->num_stmts == BC_PROGRAM_MAX_STMTS && list->next) {
+		list = list->next;
 	}
 
-	next->next = NULL;
-	next->num_stmts = 0;
+	if (list->num_stmts == BC_PROGRAM_MAX_STMTS) {
 
-	list->next = next;
+		BcStatus status = bc_program_list_expand(list);
+
+		if (status != BC_STATUS_SUCCESS) {
+			return status;
+		}
+
+		list = list->next;
+	}
+
+	memcpy(list->stmts + list->num_stmts, stmt, sizeof(BcStmt));
+	++list->num_stmts;
 
 	return BC_STATUS_SUCCESS;
 }
@@ -209,6 +198,42 @@ void bc_program_list_free(BcStmtList* list) {
 	} while (list);
 }
 
+static BcStatus bc_program_list_expand(BcStmtList* list) {
+
+	if (list == NULL) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	BcStmtList* next = bc_program_list_create();
+
+	if (next == NULL) {
+		return BC_STATUS_MALLOC_FAIL;
+	}
+
+	list->next = next;
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_program_func_init(BcFunc* func, char* name) {
+
+	if (!func || !name) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	func->first = bc_program_list_create();
+
+	if (!func->first) {
+		return BC_STATUS_MALLOC_FAIL;
+	}
+
+	func->name = name;
+	func->cur = func->first;
+	func->num_autos = 0;
+
+	return BC_STATUS_SUCCESS;
+}
+
 static int bc_program_func_cmp(void* func1, void* func2) {
 
 	assert(func1 && func2);
@@ -219,20 +244,37 @@ static int bc_program_func_cmp(void* func1, void* func2) {
 	return strcmp(f1->name, f2name);
 }
 
-static void bc_program_func_free(BcFunc* func) {
+static void bc_program_func_free(void* func) {
 
-	if (func == NULL) {
+	BcFunc* f;
+
+	f = (BcFunc*) func;
+
+	if (f == NULL) {
 		return;
 	}
 
-	free(func->name);
+	free(f->name);
 
-	bc_program_list_free(func->first);
+	bc_program_list_free(f->first);
 
-	func->name = NULL;
-	func->first = NULL;
-	func->cur = NULL;
-	func->num_autos = 0;
+	f->name = NULL;
+	f->first = NULL;
+	f->cur = NULL;
+	f->num_autos = 0;
+}
+
+BcStatus bc_program_var_init(BcVar* var, char* name) {
+
+	if (!var || !name) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	var->name = name;
+
+	var->data = arb_alloc(16);
+
+	return BC_STATUS_SUCCESS;
 }
 
 static int bc_program_var_cmp(void* var1, void* var2) {
@@ -245,17 +287,33 @@ static int bc_program_var_cmp(void* var1, void* var2) {
 	return strcmp(v1->name, v2name);
 }
 
-static void bc_program_var_free(BcVar* var) {
+static void bc_program_var_free(void* var) {
 
-	if (var == NULL) {
+	BcVar* v;
+
+	v = (BcVar*) var;
+
+	if (v == NULL) {
 		return;
 	}
 
-	free(var->name);
-	arb_free(var->data);
+	free(v->name);
+	arb_free(v->data);
 
-	var->name = NULL;
-	var->data = NULL;
+	v->name = NULL;
+	v->data = NULL;
+}
+
+BcStatus bc_program_array_init(BcArray* array, char* name) {
+
+	if (!array || !name) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	array->name = name;
+
+	return bc_segarray_init(&array->array, sizeof(fxdpnt),
+	                        (BcSegArrayFreeFunc) arb_free, NULL);
 }
 
 static int bc_program_array_cmp(void* array1, void* array2) {
@@ -268,22 +326,20 @@ static int bc_program_array_cmp(void* array1, void* array2) {
 	return strcmp(a1->name, a2name);
 }
 
-static void bc_program_array_free(BcArray* array) {
+static void bc_program_array_free(void* array) {
 
-	if (array == NULL) {
+	BcArray* a;
+
+	a = (BcArray*) array;
+
+	if (a == NULL) {
 		return;
 	}
 
-	free(array->name);
+	free(a->name);
+	a->name = NULL;
 
-	uint32_t elems = array->elems;
-	fxdpnt** nums = array->array;
-	for (uint32_t i = 0; i < elems; ++i) {
-		arb_free(nums[i]);
-	}
-
-	array->name = NULL;
-	array->array = NULL;
+	bc_segarray_free(&a->array);
 }
 
 BcStatus bc_program_stmt_init(BcStmt* stmt) {

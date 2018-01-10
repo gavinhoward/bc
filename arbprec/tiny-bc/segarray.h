@@ -25,6 +25,7 @@
 
 #define BC_SEGARRAY_MAX (BC_SEGARRAY_NUM_ARRAYS << (BC_SEGARRAY_SEG_POWER))
 
+typedef void (*BcSegArrayFreeFunc)(void*);
 typedef int (*BcSegArrayCmpFunc)(void*, void*);
 
 typedef struct BcSegArray {
@@ -35,10 +36,11 @@ typedef struct BcSegArray {
 	uint32_t ptr_cap;
 	uint8_t** ptrs;
 	BcSegArrayCmpFunc cmp;
+	BcSegArrayFreeFunc sfree;
 
 } BcSegArray;
 
-BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayCmpFunc cmp);
+BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayFreeFunc sfree, BcSegArrayCmpFunc cmp);
 
 BcStatus bc_segarray_add(BcSegArray* sa, void* data);
 
