@@ -5,6 +5,8 @@
 #include "lex.h"
 #include "parse.h"
 
+// This is an array that corresponds to token types. An entry is
+// true if the token is valid in an expression, false otherwise.
 static const bool bc_token_exprs[] = {
 
     true,
@@ -85,6 +87,9 @@ static const bool bc_token_exprs[] = {
     false,
 };
 
+// This is an array of data for operators that correspond to token types.
+// The last corresponds to BC_PARSE_OP_NEGATE_IDX since it doesn't have
+// its own token type (it is the same token at the binary minus operator).
 static const BcOp bc_ops[] = {
 
     { 0, false },
