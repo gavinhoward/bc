@@ -42,7 +42,7 @@
 	                               BC_PARSE_FLAG_HEADER |      \
 	                               BC_PARSE_FLAG_LOOP_INNER)))
 
-#define BC_PARSE_OP_UNARY_IDX (BC_LEX_OP_BOOL_AND + 1)
+#define BC_PARSE_OP_NEGATE_IDX (BC_LEX_OP_BOOL_AND + 1)
 
 typedef struct BcOp {
 
