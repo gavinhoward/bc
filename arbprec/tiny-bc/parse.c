@@ -510,6 +510,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	bool paren_first;
 	bool paren_expr;
 	bool rparen;
+	bool done;
 	BcExprType prev;
 	BcLexTokenType type;
 	BcLexTokenType* ptr;
@@ -535,10 +536,11 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	nexprs = 0;
 	paren_expr = false;
 	rparen = false;
+	done = false;
 
 	type = parse->token.type;
 
-	while (!status && bc_token_exprs[type]) {
+	while (!status && !done && bc_token_exprs[type]) {
 
 		switch (type) {
 
@@ -600,8 +602,9 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			case BC_LEX_RIGHT_PAREN:
 			{
 				if (num_parens == 0) {
-					return nexprs != 1 ? BC_STATUS_PARSE_INVALID_EXPR :
-					                        BC_STATUS_SUCCESS;
+					status = nexprs != 1 ? BC_STATUS_PARSE_INVALID_EXPR :
+					                       BC_STATUS_SUCCESS;
+					done = true;
 				}
 				else if (!paren_expr) {
 					return BC_STATUS_PARSE_INVALID_EXPR;
