@@ -545,151 +545,30 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			}
 
 			case BC_LEX_OP_POWER:
-			{
-				prev = BC_EXPR_POWER;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_MULTIPLY:
-			{
-				prev = BC_EXPR_MULTIPLY;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_DIVIDE:
-			{
-				prev = BC_EXPR_DIVIDE;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_MODULUS:
-			{
-				prev = BC_EXPR_MODULUS;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_PLUS:
-			{
-				prev = BC_EXPR_PLUS;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_ASSIGN:
-			{
-				prev = BC_EXPR_ASSIGN;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_ASSIGN_PLUS:
-			{
-				prev = BC_EXPR_ASSIGN_PLUS;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_ASSIGN_MINUS:
-			{
-				prev = BC_EXPR_ASSIGN_MINUS;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_ASSIGN_MULTIPLY:
-			{
-				prev = BC_EXPR_ASSIGN_MULTIPLY;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_ASSIGN_DIVIDE:
-			{
-				prev = BC_EXPR_ASSIGN_DIVIDE;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_ASSIGN_MODULUS:
-			{
-				prev = BC_EXPR_ASSIGN_MODULUS;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_ASSIGN_POWER:
-			{
-				prev = BC_EXPR_ASSIGN_POWER;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_REL_EQUAL:
-			{
-				prev = BC_EXPR_REL_EQUAL;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_REL_LESS_EQ:
-			{
-				prev = BC_EXPR_REL_LESS_EQ;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_REL_GREATER_EQ:
-			{
-				prev = BC_EXPR_REL_GREATER_EQ;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_REL_NOT_EQ:
-			{
-				prev = BC_EXPR_REL_NOT_EQ;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_REL_LESS:
-			{
-				prev = BC_EXPR_REL_LESS;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_REL_GREATER:
-			{
-				prev = BC_EXPR_REL_GREATER;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_BOOL_NOT:
-			{
 				// TODO: Handle these specially.
 				// We may not have to though...
-
-				prev = BC_EXPR_REL_EQUAL;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_BOOL_OR:
-			{
-				prev = BC_EXPR_REL_GREATER;
-				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
-				break;
-			}
-
 			case BC_LEX_OP_BOOL_AND:
 			{
-				prev = BC_EXPR_REL_GREATER;
+				prev = BC_PARSE_TOKEN_TO_EXPR(type);
 				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
 				break;
 			}
@@ -1117,7 +996,7 @@ static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops, BcLexTokenType t,
 			// We can calculate this by subtracting the position of the
 			// first operator in the lex enum and adding the position of
 			// the first in the expression enum.
-			expr.type = top - BC_LEX_OP_POWER + BC_EXPR_POWER;
+			expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
 
 			status = bc_stack_push(exs, &expr);
 

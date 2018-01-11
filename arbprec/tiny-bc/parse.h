@@ -44,6 +44,8 @@
 
 #define BC_PARSE_OP_NEGATE_IDX (BC_LEX_OP_BOOL_AND + 1)
 
+#define BC_PARSE_TOKEN_TO_EXPR(type) ((type) - BC_LEX_OP_POWER + BC_EXPR_POWER)
+
 typedef struct BcOp {
 
 	uint8_t prec;
