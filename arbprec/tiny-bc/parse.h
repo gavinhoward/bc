@@ -42,8 +42,6 @@
 	                               BC_PARSE_FLAG_HEADER |      \
 	                               BC_PARSE_FLAG_LOOP_INNER)))
 
-#define BC_PARSE_OP_NEGATE_IDX (BC_LEX_OP_BOOL_AND + 1)
-
 // We can calculate the conversion between tokens and exprs
 // by subtracting the position of the first operator in the
 // lex enum and adding the position of the first in the expr

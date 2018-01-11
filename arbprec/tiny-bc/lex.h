@@ -8,6 +8,8 @@
 #define BC_LEX_GEN_ENUM(ENUM) ENUM,
 #define BC_LEX_GEN_STR(STRING) #STRING,
 
+// BC_LEX_OP_NEGATE is not used in lexing;
+// it is only for parsing.
 #define BC_LEX_TOKEN_FOREACH(TOKEN) \
 	TOKEN(BC_LEX_OP_INC)  \
 	TOKEN(BC_LEX_OP_DEC)  \
@@ -40,6 +42,8 @@
 	                           \
 	TOKEN(BC_LEX_OP_BOOL_OR)   \
 	TOKEN(BC_LEX_OP_BOOL_AND)  \
+	                           \
+	TOKEN(BC_LEX_OP_NEGATE)    \
 	                           \
 	TOKEN(BC_LEX_NEWLINE)  \
 	                       \
