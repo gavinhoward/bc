@@ -133,12 +133,16 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs);
-static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs);
-static BcStatus bc_parse_operator(BcLexToken* token, BcExpr* expr);
+static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
+                                   BcExprType* type);
+static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops,BcLexTokenType t,
+                                  uint32_t* num_exprs);
 static BcStatus bc_parse_call(BcParse* parse, BcExpr* expr);
 static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr);
 static BcStatus bc_parse_read(BcParse* parse, BcStack* exprs);
 static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs, BcExprType type);
+static BcStatus bc_parse_scale(BcParse* parse, BcStack* exs, BcExprType* type);
+static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev);
 static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list);
 
@@ -498,6 +502,10 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	uint32_t num_exprs;
 	uint32_t num_parens;
 	bool paren_first;
+	BcExprType prev;
+	BcLexTokenType type;
+
+	prev = BC_EXPR_PRINT;
 
 	paren_first = parse->token.type == BC_LEX_LEFT_PAREN;
 	num_parens = paren_first ? 1 : 0;
@@ -508,7 +516,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 		return status;
 	}
 
-	status = bc_stack_init(&ops, sizeof(BcLexToken));
+	status = bc_stack_init(&ops, sizeof(BcLexTokenType));
 
 	if (status) {
 		return status;
@@ -516,45 +524,190 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 	num_exprs = 0;
 
-	while (!status && bc_token_exprs[parse->token.type]) {
+	type = parse->token.type;
 
-		switch (parse->token.type) {
+	while (!status && bc_token_exprs[type]) {
+
+		switch (type) {
 
 			case BC_LEX_OP_INC:
 			case BC_LEX_OP_DEC:
-			case BC_LEX_OP_BOOL_NOT:
 			{
-				// TODO: Handle these specially.
+				status = bc_parse_incdec(parse, exprs, &prev);
+				break;
+			}
+
+			case BC_LEX_OP_MINUS:
+			{
+				// Handle this one even more carefully.
 				break;
 			}
 
 			case BC_LEX_OP_POWER:
+			{
+				prev = BC_EXPR_POWER;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_MULTIPLY:
+			{
+				prev = BC_EXPR_MULTIPLY;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_DIVIDE:
+			{
+				prev = BC_EXPR_DIVIDE;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_MODULUS:
+			{
+				prev = BC_EXPR_MODULUS;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_PLUS:
-			case BC_LEX_OP_MINUS:
+			{
+				prev = BC_EXPR_PLUS;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_ASSIGN:
+			{
+				prev = BC_EXPR_ASSIGN;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_ASSIGN_PLUS:
+			{
+				prev = BC_EXPR_ASSIGN_PLUS;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_ASSIGN_MINUS:
+			{
+				prev = BC_EXPR_ASSIGN_MINUS;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_ASSIGN_MULTIPLY:
+			{
+				prev = BC_EXPR_ASSIGN_MULTIPLY;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_ASSIGN_DIVIDE:
+			{
+				prev = BC_EXPR_ASSIGN_DIVIDE;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_ASSIGN_MODULUS:
+			{
+				prev = BC_EXPR_ASSIGN_MODULUS;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_ASSIGN_POWER:
+			{
+				prev = BC_EXPR_ASSIGN_POWER;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_REL_EQUAL:
+			{
+				prev = BC_EXPR_REL_EQUAL;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_REL_LESS_EQ:
+			{
+				prev = BC_EXPR_REL_LESS_EQ;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_REL_GREATER_EQ:
+			{
+				prev = BC_EXPR_REL_GREATER_EQ;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_REL_NOT_EQ:
+			{
+				prev = BC_EXPR_REL_NOT_EQ;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_REL_LESS:
+			{
+				prev = BC_EXPR_REL_LESS;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
 			case BC_LEX_OP_REL_GREATER:
 			{
-				// TODO: Do this.
+				prev = BC_EXPR_REL_GREATER;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
+			case BC_LEX_OP_BOOL_NOT:
+			{
+				// TODO: Handle these specially.
+				// We may not have to though...
+
+				prev = BC_EXPR_REL_EQUAL;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
+			case BC_LEX_OP_BOOL_OR:
+			{
+				prev = BC_EXPR_REL_GREATER;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
+			case BC_LEX_OP_BOOL_AND:
+			{
+				prev = BC_EXPR_REL_GREATER;
+				status = bc_parse_operator(exprs, &ops, type, &num_exprs);
+				break;
+			}
+
+			case BC_LEX_LEFT_PAREN:
+			{
+				// TODO: Handle this.
+				break;
+			}
+
+			case BC_LEX_RIGHT_PAREN:
+			{
+				// TODO: Handle this.
 				break;
 			}
 
 			case BC_LEX_NAME:
 			{
-				status = bc_parse_expr_name(parse, exprs);
+				status = bc_parse_expr_name(parse, exprs, &prev);
 				++num_exprs;
 				break;
 			}
@@ -566,6 +719,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 				status = bc_stack_push(exprs, &expr);
 
 				++num_exprs;
+				prev = BC_EXPR_NUMBER;
 
 				break;
 			}
@@ -576,6 +730,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 				status = bc_stack_push(exprs, &expr);
 
 				++num_exprs;
+				prev = BC_EXPR_IBASE;
 
 				break;
 			}
@@ -584,6 +739,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			{
 				status = bc_parse_builtin(parse, exprs, BC_EXPR_LENGTH);
 				++num_exprs;
+				prev = BC_EXPR_LENGTH;
 				break;
 			}
 
@@ -593,6 +749,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 				status = bc_stack_push(exprs, &expr);
 
 				++num_exprs;
+				prev = BC_EXPR_OBASE;
 
 				break;
 			}
@@ -601,12 +758,15 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			{
 				status = bc_parse_read(parse, exprs);
 				++num_exprs;
+				prev = BC_EXPR_READ;
 				break;
 			}
 
 			case BC_LEX_KEY_SCALE:
 			{
-				// TODO: Do this.
+				status = bc_parse_scale(parse, exprs, &prev);
+				++num_exprs;
+				prev = BC_EXPR_SCALE;
 				break;
 			}
 
@@ -614,6 +774,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			{
 				status = bc_parse_builtin(parse, exprs, BC_EXPR_SQRT);
 				++num_exprs;
+				prev = BC_EXPR_SQRT;
 				break;
 			}
 
@@ -624,11 +785,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			}
 		}
 
-		if (status) {
-			return status;
-		}
-
-		status = bc_lex_next(&parse->lex, &parse->token);
+		type = parse->token.type;
 	}
 
 	if (status) {
@@ -647,8 +804,9 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs) {
-
+static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
+                                   BcExprType* type)
+{
 	BcStatus status;
 	BcStack stack;
 	BcExpr expr;
@@ -662,6 +820,7 @@ static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs) {
 	if (parse->token.type == BC_LEX_LEFT_BRACKET) {
 
 		expr.type = BC_EXPR_ARRAY_ELEM;
+		*type = BC_EXPR_ARRAY_ELEM;
 		expr.string = parse->token.string;
 
 		status = bc_lex_next(&parse->lex, &parse->token);
@@ -681,10 +840,12 @@ static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs) {
 		}
 	}
 	else if (parse->token.type == BC_LEX_LEFT_PAREN) {
+		*type = BC_EXPR_FUNC_CALL;
 		status = bc_parse_call(parse, &expr);
 	}
 	else {
 		expr.type = BC_EXPR_VAR;
+		*type = BC_EXPR_VAR;
 		expr.string = parse->token.string;
 	}
 
@@ -700,11 +861,15 @@ static BcStatus bc_parse_call(BcParse* parse, BcExpr* expr) {
 
 	status = bc_parse_params(parse, expr);
 
-	if (!status && parse->token.type != BC_LEX_RIGHT_PAREN) {
+	if (status) {
+		return status;
+	}
+
+	if (parse->token.type != BC_LEX_RIGHT_PAREN) {
 		return BC_STATUS_PARSE_INVALID_TOKEN;
 	}
 
-	return status;
+	return bc_lex_next(&parse->lex, &parse->token);
 }
 
 static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr) {
@@ -765,7 +930,13 @@ static BcStatus bc_parse_read(BcParse* parse, BcStack* exprs) {
 
 	expr.type = BC_EXPR_READ;
 
-	return bc_stack_push(exprs, &expr);
+	status = bc_stack_push(exprs, &expr);
+
+	if (status) {
+		return status;
+	}
+
+	return bc_lex_next(&parse->lex, &parse->token);
 }
 
 static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs, BcExprType type)
@@ -807,7 +978,169 @@ static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs, BcExprType type)
 		return BC_STATUS_PARSE_INVALID_TOKEN;
 	}
 
-	return bc_stack_push(exs, &expr);
+	status = bc_stack_push(exs, &expr);
+
+	if (status) {
+		return status;
+	}
+
+	return bc_lex_next(&parse->lex, &parse->token);
+}
+
+static BcStatus bc_parse_scale(BcParse* parse, BcStack* exs, BcExprType* type) {
+
+	BcStatus status;
+	BcExpr expr;
+
+	status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status) {
+		return status;
+	}
+
+	if (parse->token.type != BC_LEX_LEFT_PAREN) {
+
+		expr.type = BC_EXPR_SCALE;
+		*type = BC_EXPR_SCALE;
+
+		return bc_stack_push(exs, &expr);
+	}
+
+	expr.type = BC_EXPR_SCALE_FUNC;
+	*type = BC_EXPR_SCALE_FUNC;
+
+	status = bc_stack_init(&expr.expr_stack, sizeof(BcExpr));
+
+	if (status) {
+		return status;
+	}
+
+	status = bc_parse_expr(parse, &expr.expr_stack);
+
+	if (status) {
+		return status;
+	}
+
+	status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status) {
+		return status;
+	}
+
+	if (parse->token.type != BC_LEX_RIGHT_PAREN) {
+		return BC_STATUS_PARSE_INVALID_TOKEN;
+	}
+
+	status = bc_stack_push(exs, &expr);
+
+	if (status) {
+		return status;
+	}
+
+	return bc_lex_next(&parse->lex, &parse->token);
+}
+
+static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev)
+{
+	BcStatus status;
+	BcLexTokenType type;
+	BcExpr expr;
+	BcExprType etype;
+
+	etype = *prev;
+
+	if (etype == BC_EXPR_VAR || etype == BC_EXPR_ARRAY_ELEM ||
+	    etype == BC_EXPR_SCALE || etype == BC_EXPR_LAST ||
+	    etype == BC_EXPR_IBASE || etype == BC_EXPR_OBASE)
+	{
+		expr.type = parse->token.type == BC_LEX_OP_INC ?
+		                BC_EXPR_INC_POST : BC_EXPR_DEC_POST;
+		*prev = expr.type;
+
+		status = bc_stack_push(exs, &expr);
+	}
+	else {
+
+		expr.type = parse->token.type == BC_LEX_OP_INC ?
+		                BC_EXPR_INC_PRE : BC_EXPR_DEC_PRE;
+		*prev = expr.type;
+
+		status = bc_lex_next(&parse->lex, &parse->token);
+
+		if (status) {
+			return status;
+		}
+
+		type = parse->token.type;
+
+		if (type != BC_LEX_NAME && type != BC_LEX_KEY_SCALE &&
+		    type != BC_LEX_KEY_LAST && type != BC_LEX_KEY_IBASE &&
+		    type != BC_LEX_KEY_OBASE)
+		{
+			return BC_STATUS_PARSE_INVALID_TOKEN;
+		}
+
+		status = bc_stack_push(exs, &expr);
+	}
+
+	if (status) {
+		return status;
+	}
+
+	return bc_lex_next(&parse->lex, &parse->token);
+}
+
+static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops, BcLexTokenType t,
+                                  uint32_t* num_exprs)
+{
+	BcExpr expr;
+	BcStatus status;
+	BcLexTokenType top;
+	BcLexTokenType* ptr;
+	uint8_t lp;
+	uint8_t rp;
+	bool rleft;
+
+	rp = bc_ops[t].prec;
+	rleft = bc_ops[t].left;
+
+	ptr = bc_stack_top(ops);
+
+	if (ptr) {
+
+		top = *ptr;
+		lp = bc_ops[top].prec;
+
+		while (top != BC_LEX_LEFT_PAREN && (lp < rp || (lp == rp && rleft))) {
+
+			// We can calculate this by subtracting the position of the
+			// first operator in the lex enum and adding the position of
+			// the first in the expression enum.
+			expr.type = top - BC_LEX_OP_POWER + BC_EXPR_POWER;
+
+			status = bc_stack_push(exs, &expr);
+
+			if (status) {
+				return status;
+			}
+
+			status = bc_stack_pop(ops);
+
+			if (status) {
+				return status;
+			}
+
+			ptr = bc_stack_top(ops);
+
+			if (!ptr) {
+				break;
+			}
+		}
+	}
+
+	// TODO: Handle num_exprs.
+
+	return bc_stack_push(ops, &t);
 }
 
 static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list) {
