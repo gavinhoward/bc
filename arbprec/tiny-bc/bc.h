@@ -22,10 +22,17 @@ typedef enum BcStatus {
 	BC_STATUS_LEX_INVALID_TOKEN,
 	BC_STATUS_LEX_NO_STRING_END,
 	BC_STATUS_LEX_NO_COMMENT_END,
+	BC_STATUS_LEX_EOF,
 
 	BC_STATUS_PARSE_INVALID_TOKEN,
 	BC_STATUS_PARSE_INVALID_EXPR,
+	BC_STATUS_PARSE_INVALID_PRINT,
+	BC_STATUS_PARSE_INVALID_FUNC,
+	BC_STATUS_PARSE_EOF,
 
 } BcStatus;
+
+void bc_error(BcStatus status);
+void bc_error_file(const char* file, uint32_t line, BcStatus status);
 
 #endif // BC_H

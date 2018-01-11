@@ -1,6 +1,7 @@
 #ifndef BC_LEX_H
 #define BC_LEX_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "bc.h"
@@ -105,10 +106,16 @@ typedef struct BcLex {
 
 	const char* buffer;
 	size_t idx;
+	uint32_t line;
+	bool newline;
+	const char* file;
+	size_t len;
 
 } BcLex;
 
-BcStatus bc_lex_init(BcLex* lex, const char* text);
+BcStatus bc_lex_init(BcLex* lex);
+
+BcStatus bc_lex_text(BcLex* lex, const char* text);
 
 BcStatus bc_lex_next(BcLex* lex, BcLexToken* token);
 

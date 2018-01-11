@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -93,34 +94,54 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_init(BcLex* lex, const char* text) {
+BcStatus bc_lex_init(BcLex* lex) {
 
-	// Check for error.
+	if (lex == NULL ) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	lex->line = 1;
+	lex->newline = false;
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_lex_text(BcLex* lex, const char* text) {
+
 	if (lex == NULL || text == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	// Set the data.
 	lex->buffer = text;
 	lex->idx = 0;
+	lex->len = strlen(text);
 
 	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
-	// Check for error.
+	BcStatus status;
+
 	if (lex == NULL || token == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	BcStatus status;
+	if (lex->idx == lex->len) {
+		token->type = BC_LEX_EOF;
+		return BC_STATUS_LEX_EOF;
+	}
+
+	if (lex->newline) {
+		++lex->line;
+		lex->newline = false;
+	}
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
 	do {
 		status = bc_lex_token(lex, token);
-	} while (token->type == BC_LEX_WHITESPACE && status == BC_STATUS_SUCCESS);
+	} while (!status && token->type == BC_LEX_WHITESPACE);
 
 	return status;
 }
@@ -155,6 +176,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '\n':
 		{
+			lex->newline = true;
 			token->type = BC_LEX_NEWLINE;
 			break;
 		}

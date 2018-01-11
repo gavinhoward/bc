@@ -150,6 +150,7 @@ static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list);
+static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list);
 
 BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
@@ -183,7 +184,11 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
 	status = bc_stack_push(&parse->ctx_stack, &ctx);
 
-	return status;
+	if (status) {
+		return status;
+	}
+
+	return bc_lex_init(&parse->lex);
 }
 
 BcStatus bc_parse_text(BcParse* parse, const char* text) {
@@ -192,7 +197,7 @@ BcStatus bc_parse_text(BcParse* parse, const char* text) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	return bc_lex_init(&parse->lex, text);
+	return bc_lex_text(&parse->lex, text);
 }
 
 BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
@@ -223,6 +228,12 @@ BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 
 			status = bc_parse_func(parse, program);
 
+			break;
+		}
+
+		case BC_LEX_EOF:
+		{
+			status = BC_STATUS_PARSE_EOF;
 			break;
 		}
 
@@ -268,9 +279,56 @@ void bc_parse_free(BcParse* parse) {
 
 static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
 
+	BcStatus status;
+	BcFunc func;
+	bool comma;
+
 	// TODO: Add to the symbol table.
 
+	status = bc_lex_next(&parse->lex, &parse->token);
 
+	if (status) {
+		return status;
+	}
+
+	if (parse->token.type != BC_LEX_NAME) {
+		return BC_STATUS_PARSE_INVALID_FUNC;
+	}
+
+	func.name = parse->token.string;
+
+	status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status) {
+		return status;
+	}
+
+	if (parse->token.type != BC_LEX_LEFT_PAREN) {
+		return BC_STATUS_PARSE_INVALID_FUNC;
+	}
+
+	status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status) {
+		return status;
+	}
+
+	comma = false;
+
+	while (!status && parse->token.type != BC_LEX_RIGHT_PAREN) {
+
+
+	}
+
+	if (status) {
+		return status;
+	}
+
+	if (comma) {
+		return BC_STATUS_PARSE_INVALID_FUNC;
+	}
+
+	// TODO: Set context.
 }
 
 static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list) {
@@ -387,7 +445,6 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 
 	BcStatus status;
 	BcStmt stmt;
-	BcExpr expr;
 
 	status = BC_STATUS_SUCCESS;
 
@@ -474,7 +531,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 
 		case BC_LEX_KEY_PRINT:
 		{
-			// TODO: Parse print.
+			status = bc_parse_print(parse, list);
 			break;
 		}
 
@@ -1256,4 +1313,95 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
 	}
 
 	return status;
+}
+
+static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
+
+	BcStatus status;
+	BcLexTokenType type;
+	BcStack exprs;
+	BcExpr expr;
+	BcStmt stmt;
+	bool comma;
+
+	status = bc_lex_next(&parse->lex, &parse->token);
+
+	if (status) {
+		return status;
+	}
+
+	type = parse->token.type;
+
+	if (type == BC_LEX_SEMICOLON || type == BC_LEX_NEWLINE) {
+		return BC_STATUS_PARSE_INVALID_PRINT;
+	}
+
+	comma = false;
+
+	while (!status && type != BC_LEX_SEMICOLON && type != BC_LEX_NEWLINE) {
+
+		if (type == BC_LEX_STRING) {
+
+			status = bc_parse_string(parse, list);
+
+			if (status) {
+				return status;
+			}
+
+			stmt.type = BC_STMT_STRING;
+			stmt.data.string = parse->token.string;
+		}
+		else {
+
+			status = bc_stack_init(&exprs, sizeof(BcExpr));
+
+			if (status) {
+				return status;
+			}
+
+			status = bc_parse_expr(parse, &exprs);
+
+			if (status) {
+				return status;
+			}
+
+			expr.type = BC_EXPR_PRINT;
+			status = bc_stack_push(&exprs, &expr);
+
+			stmt.type = BC_STMT_EXPR;
+			stmt.data.expr_stack = exprs;
+		}
+
+		status = bc_program_list_insert(list, &stmt);
+
+		if (status) {
+			return status;
+		}
+
+		status = bc_lex_next(&parse->lex, &parse->token);
+
+		if (status) {
+			return status;
+		}
+
+		type = parse->token.type;
+
+		if (type == BC_LEX_COMMA) {
+			comma = true;
+			status = bc_lex_next(&parse->lex, &parse->token);
+		}
+		else {
+			comma = false;
+		}
+	}
+
+	if (status) {
+		return status;
+	}
+
+	if (comma) {
+		return BC_STATUS_PARSE_INVALID_TOKEN;
+	}
+
+	return bc_lex_next(&parse->lex, &parse->token);
 }

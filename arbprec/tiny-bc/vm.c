@@ -9,42 +9,10 @@ static BcStatus bc_vm_execStdin(BcVm* vm);
 
 BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
 
-	BcStatus status;
-
 	vm->filec = filec;
 	vm->filev = filev;
 
-	status = bc_program_init(&vm->program);
-
-	if (status) {
-		goto program_err;
-	}
-
-	status = bc_parse_init(&vm->parse, &vm->program);
-
-	if (status) {
-		goto parse_err;
-	}
-
-	status = bc_stack_init(&vm->ctx_stack, sizeof(BcContext));
-
-	if (status) {
-		goto stack_err;
-	}
-
-	return BC_STATUS_SUCCESS;
-
-stack_err:
-
-	bc_parse_free(&vm->parse);
-
-parse_err:
-
-	bc_program_free(&vm->program);
-
-program_err:
-
-	return status;
+	return bc_stack_init(&vm->ctx_stack, sizeof(BcContext));
 }
 
 BcStatus bc_vm_exec(BcVm* vm) {
@@ -80,10 +48,23 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 	size_t size;
 	size_t read_size;
 
+	status = bc_program_init(&vm->program, vm->filev[idx]);
+
+	if (status) {
+		return status;
+	}
+
+	status = bc_parse_init(&vm->parse, &vm->program);
+
+	if (status) {
+		goto parse_err;
+	}
+
 	f = fopen(vm->filev[idx], "r");
 
 	if (!f) {
-		return BC_STATUS_VM_FILE_ERR;
+		status = BC_STATUS_VM_FILE_ERR;
+		goto file_err;
 	}
 
 	fseek(f, 0, SEEK_END);
@@ -113,16 +94,24 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 	status = bc_parse_parse(&vm->parse, &vm->program);
 
-	while (status == BC_STATUS_SUCCESS) {
+	while (!status) {
 
 		status = bc_program_exec(&vm->program);
 
 		if (status) {
+			bc_error(status);
 			break;
 		}
 
 		status = bc_parse_parse(&vm->parse, &vm->program);
 	}
+
+	if (status != BC_STATUS_LEX_EOF || status != BC_STATUS_PARSE_EOF) {
+		bc_error_file(vm->program.file, vm->parse.lex.line, status);
+	}
+
+	bc_program_free(&vm->program);
+	bc_parse_free(&vm->parse);
 
 	free(data);
 
@@ -135,6 +124,14 @@ read_err:
 data_err:
 
 	fclose(f);
+
+file_err:
+
+	bc_parse_free(&vm->parse);
+
+parse_err:
+
+	bc_program_free(&vm->program);
 
 	return status;
 }
@@ -150,21 +147,32 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	size_t slen;
 	size_t total_len;
 
-	status = BC_STATUS_SUCCESS;
+	status = bc_program_init(&vm->program, "-");
+
+	if (status) {
+		return status;
+	}
+
+	status = bc_parse_init(&vm->parse, &vm->program);
+
+	if (status) {
+		goto parse_err;
+	}
 
 	n = BC_VM_BUF_SIZE;
 	bufn = BC_VM_BUF_SIZE;
 	buffer = malloc(BC_VM_BUF_SIZE + 1);
 
 	if (!buffer) {
-		return BC_STATUS_MALLOC_FAIL;
+		status = BC_STATUS_MALLOC_FAIL;
+		goto buffer_err;
 	}
 
 	buf = malloc(BC_VM_BUF_SIZE + 1);
 
 	if (!buf) {
-		free(buffer);
-		return BC_STATUS_MALLOC_FAIL;
+		status = BC_STATUS_MALLOC_FAIL;
+		goto buf_err;
 	}
 
 	// The following loop is complicated because the vm tries
@@ -238,7 +246,18 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 exit_err:
 
 	free(buf);
+
+buf_err:
+
 	free(buffer);
+
+buffer_err:
+
+	bc_parse_free(&vm->parse);
+
+parse_err:
+
+	bc_program_free(&vm->program);
 
 	return status;
 }

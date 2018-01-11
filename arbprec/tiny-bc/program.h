@@ -10,6 +10,8 @@
 
 #define BC_PROGRAM_MAX_STMTS (128)
 
+#define BC_PROGRAM_NUM_SIZE (16)
+
 typedef enum BcExprType {
 
 	BC_EXPR_INC_PRE,
@@ -85,6 +87,8 @@ typedef enum BcStmtType {
 	BC_STMT_WHILE,
 	BC_STMT_FOR,
 
+	BC_STMT_LIST,
+
 } BcStmtType;
 
 typedef struct BcCall {
@@ -107,11 +111,36 @@ typedef struct BcExpr {
 
 typedef struct BcStmtList BcStmtList;
 
+typedef struct BcIf {
+
+	BcStack cond;
+	BcStmtList* then_list;
+	BcStmtList* else_list;
+
+} BcIf;
+
+typedef struct BcWhile {
+
+	BcStack cond;
+	BcStmtList* body;
+
+} BcWhile;
+
+typedef struct BcFor {
+
+	BcStmtList* body;
+	BcStack cond;
+	BcStack update;
+	BcStack init;
+
+} BcFor;
+
 typedef union BcStmtData {
 
 	char* string;
 	BcStmtList* list;
 	BcStack expr_stack;
+	BcIf ifstmt;
 
 } BcStmtData;
 
@@ -175,6 +204,8 @@ typedef struct BcContext {
 
 typedef struct BcProgram {
 
+	const char* file;
+
 	BcStmtList* first;
 
 	BcStmtList* cur;
@@ -187,7 +218,7 @@ typedef struct BcProgram {
 
 } BcProgram;
 
-BcStatus bc_program_init(BcProgram* p);
+BcStatus bc_program_init(BcProgram* p, const char* file);
 BcStatus bc_program_list_insert(BcStmtList* list, BcStmt* stmt);
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func);
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var);

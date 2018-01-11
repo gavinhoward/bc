@@ -17,13 +17,17 @@ static int bc_program_array_cmp(void* array1, void* array2);
 static void bc_program_array_free(void* array);
 static void bc_program_stmt_free(BcStmt* stmt);
 
-BcStatus bc_program_init(BcProgram* p) {
+static void bc_program_num_init(fxdpnt* num);
+
+BcStatus bc_program_init(BcProgram* p, const char* file) {
 
 	BcStatus st;
 
 	if (p == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
+
+	p->file = file;
 
 	p->first = bc_program_list_create();
 
@@ -348,4 +352,20 @@ BcStatus bc_program_stmt_init(BcStmt* stmt) {
 
 static void bc_program_stmt_free(BcStmt* stmt) {
 	// TODO: Write this function.
+}
+
+static void bc_program_num_init(fxdpnt* num) {
+
+	num->number = arb_calloc(1, sizeof(ARBT) * BC_PROGRAM_NUM_SIZE);
+	num->sign = '+';
+
+	// FIXME: this should likely be "len"
+	// Look at arb_alloc().
+	num->lp = 0;
+
+	num->rp = 0;
+	num->allocated = BC_PROGRAM_NUM_SIZE;
+	//num->len = len;
+	num->len = 0;
+	num->chunk = 4;
 }
