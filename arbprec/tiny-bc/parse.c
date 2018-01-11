@@ -133,10 +133,10 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs);
-static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
-                                   BcExprType* type);
 static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops,BcLexTokenType t,
                                   uint32_t* num_exprs);
+static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
+                                   BcExprType* type);
 static BcStatus bc_parse_call(BcParse* parse, BcExpr* expr);
 static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr);
 static BcStatus bc_parse_read(BcParse* parse, BcStack* exprs);
@@ -684,6 +684,58 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	return BC_STATUS_SUCCESS;
 }
 
+static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops, BcLexTokenType t,
+                                  uint32_t* num_exprs)
+{
+	BcExpr expr;
+	BcStatus status;
+	BcLexTokenType top;
+	BcLexTokenType* ptr;
+	uint8_t lp;
+	uint8_t rp;
+	bool rleft;
+
+	rp = bc_ops[t].prec;
+	rleft = bc_ops[t].left;
+
+	ptr = bc_stack_top(ops);
+
+	if (ptr) {
+
+		top = *ptr;
+		lp = bc_ops[top].prec;
+
+		while (top != BC_LEX_LEFT_PAREN && (lp < rp || (lp == rp && rleft))) {
+
+			expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
+
+			status = bc_stack_push(exs, &expr);
+
+			if (status) {
+				return status;
+			}
+
+			status = bc_stack_pop(ops);
+
+			if (status) {
+				return status;
+			}
+
+			ptr = bc_stack_top(ops);
+
+			if (!ptr) {
+				break;
+			}
+
+			top = *ptr;
+		}
+	}
+
+	// TODO: Handle num_exprs.
+
+	return bc_stack_push(ops, &t);
+}
+
 static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
                                    BcExprType* type)
 {
@@ -968,61 +1020,6 @@ static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev)
 	}
 
 	return bc_lex_next(&parse->lex, &parse->token);
-}
-
-static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops, BcLexTokenType t,
-                                  uint32_t* num_exprs)
-{
-	BcExpr expr;
-	BcStatus status;
-	BcLexTokenType top;
-	BcLexTokenType* ptr;
-	uint8_t lp;
-	uint8_t rp;
-	bool rleft;
-
-	rp = bc_ops[t].prec;
-	rleft = bc_ops[t].left;
-
-	ptr = bc_stack_top(ops);
-
-	if (ptr) {
-
-		top = *ptr;
-		lp = bc_ops[top].prec;
-
-		while (top != BC_LEX_LEFT_PAREN && (lp < rp || (lp == rp && rleft))) {
-
-			// We can calculate this by subtracting the position of the
-			// first operator in the lex enum and adding the position of
-			// the first in the expression enum.
-			expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
-
-			status = bc_stack_push(exs, &expr);
-
-			if (status) {
-				return status;
-			}
-
-			status = bc_stack_pop(ops);
-
-			if (status) {
-				return status;
-			}
-
-			ptr = bc_stack_top(ops);
-
-			if (!ptr) {
-				break;
-			}
-
-			top = *ptr;
-		}
-	}
-
-	// TODO: Handle num_exprs.
-
-	return bc_stack_push(ops, &t);
 }
 
 static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list) {

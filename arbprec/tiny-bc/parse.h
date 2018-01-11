@@ -44,6 +44,10 @@
 
 #define BC_PARSE_OP_NEGATE_IDX (BC_LEX_OP_BOOL_AND + 1)
 
+// We can calculate the conversion between tokens and exprs
+// by subtracting the position of the first operator in the
+// lex enum and adding the position of the first in the expr
+// enum. WARNING: This only works for binary operators.
 #define BC_PARSE_TOKEN_TO_EXPR(type) ((type) - BC_LEX_OP_POWER + BC_EXPR_POWER)
 
 typedef struct BcOp {
