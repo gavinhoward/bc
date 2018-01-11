@@ -744,7 +744,17 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 		return BC_STATUS_PARSE_INVALID_EXPR;
 	}
 
-	return BC_STATUS_SUCCESS;
+	expr.type = ((BcExpr*) bc_stack_top(exprs))->type;
+
+	if (expr.type < BC_EXPR_ASSIGN ||
+	    expr.type > BC_EXPR_ASSIGN_POWER ||
+	    paren_first)
+	{
+		expr.type = BC_EXPR_PRINT;
+		status = bc_stack_push(exprs, &expr);
+	}
+
+	return status;
 }
 
 static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops, BcLexTokenType t,
