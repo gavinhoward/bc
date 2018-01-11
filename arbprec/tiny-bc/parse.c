@@ -703,6 +703,10 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 		ptr = bc_stack_top(&ops);
 		top = *ptr;
 
+		if (top == BC_LEX_LEFT_PAREN || top == BC_LEX_RIGHT_PAREN) {
+			return BC_STATUS_PARSE_INVALID_EXPR;
+		}
+
 		expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
 
 		status = bc_stack_push(exprs, &expr);
