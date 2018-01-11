@@ -104,10 +104,12 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 		}
 
 		status = bc_parse_parse(&vm->parse, &vm->program);
-	}
 
-	if (status != BC_STATUS_LEX_EOF || status != BC_STATUS_PARSE_EOF) {
-		bc_error_file(vm->program.file, vm->parse.lex.line, status);
+		if (status && (status != BC_STATUS_LEX_EOF ||
+		               status != BC_STATUS_PARSE_EOF))
+		{
+			bc_error_file(vm->program.file, vm->parse.lex.line, status);
+		}
 	}
 
 	bc_program_free(&vm->program);
