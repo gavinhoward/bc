@@ -313,6 +313,7 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list) {
 		case BC_LEX_KEY_LIMITS:
 		{
 			// TODO: Print limits and get next token.
+			// Limit is a compile-time command.
 			break;
 		}
 
