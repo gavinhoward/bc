@@ -26,21 +26,33 @@
 #define BC_PARSE_HEADER(parse)  \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_HEADER)
 
-#define BC_PARSE_FLAG_LINE_END (0x08)
+#define BC_PARSE_FLAG_AUTO (0x08)
 
-#define BC_PARSE_LINE_END(parse)  \
-	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LINE_END)
+#define BC_PARSE_AUTO(parse)  \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_AUTO)
 
-#define BC_PARSE_FLAG_LOOP_INNER (0x10)
+#define BC_PARSE_FLAG_LOOP (0x10)
 
-#define BC_PARSE_LOOP_INNER(parse)  \
+#define BC_PARSE_LOOP(parse)  \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP)
+
+#define BC_PARSE_FLAG_LOOP_INNER (0x20)
+
+#define BC_PARSE_LOOP_INNER(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP_INNER)
+
+#define BC_PARSE_FLAG_IF (0x40)
+
+#define BC_PARSE_IF(parse)  \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF)
 
 #define BC_PARSE_CAN_EXEC(parse)  \
 	(!(BC_PARSE_TOP_FLAG(parse) & (BC_PARSE_FLAG_FUNC_INNER |  \
 	                               BC_PARSE_FLAG_FUNC |        \
 	                               BC_PARSE_FLAG_HEADER |      \
-	                               BC_PARSE_FLAG_LOOP_INNER)))
+	                               BC_PARSE_FLAG_LOOP |        \
+	                               BC_PARSE_FLAG_LOOP_INNER |  \
+	                               BC_PARSE_FLAG_IF)))
 
 // We can calculate the conversion between tokens and exprs
 // by subtracting the position of the first operator in the
@@ -64,6 +76,10 @@ typedef struct BcParse {
 	BcStack flag_stack;
 
 	BcStack ctx_stack;
+
+	BcFunc* func;
+
+	BcStmt partial;
 
 } BcParse;
 

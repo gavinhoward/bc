@@ -1,6 +1,7 @@
 #ifndef BC_PROGRAM_H
 #define BC_PROGRAM_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include <arbprec/arbprec.h>
@@ -10,7 +11,7 @@
 
 #define BC_PROGRAM_MAX_STMTS (128)
 
-#define BC_PROGRAM_NUM_SIZE (16)
+#define BC_PROGRAM_DEF_SIZE (16)
 
 typedef enum BcExprType {
 
@@ -161,9 +162,13 @@ typedef struct BcStmtList {
 
 } BcStmtList;
 
-/**
- * A function.
- */
+typedef struct BcAuto {
+
+	char* name;
+	bool var;
+
+} BcAuto;
+
 typedef struct BcFunc {
 
 	char* name;
@@ -172,7 +177,13 @@ typedef struct BcFunc {
 
 	BcStmtList* cur;
 
+	BcAuto* params;
+	uint32_t num_params;
+	uint32_t param_cap;
+
+	BcAuto* autos;
 	uint32_t num_autos;
+	uint32_t auto_cap;
 
 } BcFunc;
 
@@ -194,13 +205,6 @@ typedef struct BcArray {
 	BcSegArray array;
 
 } BcArray;
-
-typedef struct BcContext {
-
-	BcStmtList* list;
-	uint32_t stmt_idx;
-
-} BcContext;
 
 typedef struct BcProgram {
 
@@ -230,6 +234,8 @@ BcStmtList* bc_program_list_create();
 void bc_program_list_free(BcStmtList* list);
 
 BcStatus bc_program_func_init(BcFunc* func, char* name);
+BcStatus bc_program_func_insertParam(BcFunc* func, char* name, bool var);
+BcStatus bc_program_func_insertAuto(BcFunc* func, char* name, bool var);
 BcStatus bc_program_var_init(BcVar* var, char* name);
 BcStatus bc_program_array_init(BcArray* array, char* name);
 

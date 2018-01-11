@@ -221,9 +221,16 @@ static BcStatus bc_program_list_expand(BcStmtList* list) {
 
 BcStatus bc_program_func_init(BcFunc* func, char* name) {
 
+	BcStatus status;
+
+	status = BC_STATUS_SUCCESS;
+
 	if (!func || !name) {
 		return BC_STATUS_INVALID_PARAM;
 	}
+
+	func->num_params = 0;
+	func->num_autos = 0;
 
 	func->first = bc_program_list_create();
 
@@ -233,7 +240,91 @@ BcStatus bc_program_func_init(BcFunc* func, char* name) {
 
 	func->name = name;
 	func->cur = func->first;
-	func->num_autos = 0;
+
+	func->param_cap = BC_PROGRAM_DEF_SIZE;
+	func->params = malloc(sizeof(BcAuto) * BC_PROGRAM_DEF_SIZE);
+
+	if (!func->params) {
+		goto param_err;
+	}
+
+	func->auto_cap = BC_PROGRAM_DEF_SIZE;
+	func->autos = malloc(sizeof(BcAuto) * BC_PROGRAM_DEF_SIZE);
+
+	if (!func->autos) {
+		func->auto_cap = 0;
+		goto auto_err;
+	}
+
+	return BC_STATUS_SUCCESS;
+
+auto_err:
+
+	free(func->params);
+	func->param_cap = 0;
+
+param_err:
+
+	bc_program_list_free(func->first);
+	func->first = func->cur = NULL;
+
+	return status;
+}
+
+BcStatus bc_program_func_insertParam(BcFunc* func, char* name, bool var) {
+
+	BcAuto* params;
+	size_t new_cap;
+
+	if (!func || !name) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	if (func->num_params == func->param_cap) {
+
+		new_cap = sizeof(BcAuto) * (func->param_cap + BC_PROGRAM_DEF_SIZE);
+		params = realloc(func->params, new_cap);
+
+		if (!params) {
+			return BC_STATUS_MALLOC_FAIL;
+		}
+
+		func->param_cap = new_cap;
+	}
+
+	func->params[func->num_params].name = name;
+	func->params[func->num_params].var = var;
+
+	++func->num_params;
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_program_func_insertAuto(BcFunc* func, char* name, bool var) {
+
+	BcAuto* autos;
+	size_t new_cap;
+
+	if (!func || !name) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
+	if (func->num_autos == func->auto_cap) {
+
+		new_cap = sizeof(BcAuto) * (func->auto_cap + BC_PROGRAM_DEF_SIZE);
+		autos = realloc(func->autos, new_cap);
+
+		if (!autos) {
+			return BC_STATUS_MALLOC_FAIL;
+		}
+
+		func->auto_cap = new_cap;
+	}
+
+	func->autos[func->num_autos].name = name;
+	func->autos[func->num_autos].var = var;
+
+	++func->num_autos;
 
 	return BC_STATUS_SUCCESS;
 }
@@ -265,7 +356,16 @@ static void bc_program_func_free(void* func) {
 	f->name = NULL;
 	f->first = NULL;
 	f->cur = NULL;
+
+	free(f->params);
+	free(f->autos);
+
+	f->params = NULL;
+	f->num_params = 0;
+	f->param_cap = 0;
+	f->autos = NULL;
 	f->num_autos = 0;
+	f->auto_cap = 0;
 }
 
 BcStatus bc_program_var_init(BcVar* var, char* name) {
@@ -356,7 +456,7 @@ static void bc_program_stmt_free(BcStmt* stmt) {
 
 static void bc_program_num_init(fxdpnt* num) {
 
-	num->number = arb_calloc(1, sizeof(ARBT) * BC_PROGRAM_NUM_SIZE);
+	num->number = arb_calloc(1, sizeof(ARBT) * BC_PROGRAM_DEF_SIZE);
 	num->sign = '+';
 
 	// FIXME: this should likely be "len"
@@ -364,7 +464,7 @@ static void bc_program_num_init(fxdpnt* num) {
 	num->lp = 0;
 
 	num->rp = 0;
-	num->allocated = BC_PROGRAM_NUM_SIZE;
+	num->allocated = BC_PROGRAM_DEF_SIZE;
 	//num->len = len;
 	num->len = 0;
 	num->chunk = 4;

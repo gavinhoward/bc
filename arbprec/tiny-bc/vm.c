@@ -12,7 +12,7 @@ BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
 	vm->filec = filec;
 	vm->filev = filev;
 
-	return bc_stack_init(&vm->ctx_stack, sizeof(BcContext));
+	return bc_stack_init(&vm->ctx_stack, sizeof(BcStmtList*));
 }
 
 BcStatus bc_vm_exec(BcVm* vm) {

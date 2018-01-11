@@ -29,6 +29,7 @@ static const char* const bc_err_types[] = {
     "parse",
     "parse",
     "parse",
+    "parse",
 
 };
 
@@ -58,6 +59,7 @@ static const char* const bc_err_descs[] = {
     "invalid print statement",
     "invalid function definition",
     "end of file",
+    "bug in parser",
 
 };
 
