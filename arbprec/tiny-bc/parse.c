@@ -1136,6 +1136,8 @@ static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops, BcLexTokenType t,
 			if (!ptr) {
 				break;
 			}
+
+			top = *ptr;
 		}
 	}
 
