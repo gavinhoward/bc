@@ -86,7 +86,6 @@ typedef enum BcStmtType {
 
 	BC_STMT_IF,
 	BC_STMT_WHILE,
-	BC_STMT_FOR,
 
 	BC_STMT_LIST,
 

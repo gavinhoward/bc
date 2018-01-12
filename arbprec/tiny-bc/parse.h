@@ -46,6 +46,11 @@
 #define BC_PARSE_IF(parse)  \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF)
 
+#define BC_PARSE_FLAG_ELSE (0x80)
+
+#define BC_PARSE_ELSE(parse)  \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_ELSE)
+
 #define BC_PARSE_CAN_EXEC(parse)  \
 	(!(BC_PARSE_TOP_FLAG(parse) & (BC_PARSE_FLAG_FUNC_INNER |  \
 	                               BC_PARSE_FLAG_FUNC |        \
@@ -80,6 +85,10 @@ typedef struct BcParse {
 	BcFunc* func;
 
 	BcStmt partial;
+
+	uint32_t num_braces;
+
+	BcStack for_update;
 
 } BcParse;
 
