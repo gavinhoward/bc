@@ -6,3 +6,17 @@
 bc
 *.o
 *.a
+arbprec/tests/add
+arbprec/tests/algd
+arbprec/tests/convall
+arbprec/tests/convscaled
+arbprec/tests/karatsuba-mul
+arbprec/tests/left-shift
+arbprec/tests/mul
+arbprec/tests/nsqrt
+arbprec/tests/sqrt
+arbprec/tests/sub
+arbprec/tests/test-arbitrary-precision
+readline/tests/ircline-driver
+readline/tests/readline-driver
+
