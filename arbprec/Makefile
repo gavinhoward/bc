@@ -28,7 +28,7 @@ all:
 
 	$(MAKE) static
 	$(MAKE) create_test
-	$(MAKE) create_bc
+	#$(MAKE) create_bc
 
 static: $(OBJ)
 

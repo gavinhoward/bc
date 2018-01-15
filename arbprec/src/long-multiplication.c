@@ -26,16 +26,25 @@ size_t arb_mul_core(ARBT *a, size_t alen, ARBT *b, size_t blen, ARBT *c, int bas
 	return ret;
 }
 
-fxdpnt *arb_mul(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
+fxdpnt *arb_mul(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base, size_t scale)
 {
 	arb_setsign(a, b, c);
 	c = arb_expand(c, a->len + b->len);
-	arb_mul_core(a->number, a->len, b->number, b->len, c->number, base);
-	c->lp = a->lp + b->lp;
-	c->rp = a->rp + b->rp;
-	c->rp = MAX(a->rp, b->rp);
-	c->rp = MIN(a->rp + b->rp, maxi(20, a->rp, b->rp));
+	//arb_mul_core(a->number, a->len, b->number, b->len, c->number, base);
+	fxdpnt *a2 = arb_expand(NULL, a->len);
+	fxdpnt *b2 = arb_expand(NULL, b->len);
+	arb_copy(a2, a);
+	arb_copy(b2, b);
+	arb_expand(a2, MAX(scale, a2->len));
+	arb_expand(b2, MAX(scale, b2->len));
+	arb_mul_core(a2->number, a2->len, b2->number, b2->len, c->number, base);
+	c->lp = a2->lp + b2->lp;
+	c->rp = a2->rp + b2->rp;
+	c->rp = MAX(a2->rp, b2->rp);
+	c->rp = MIN(a2->rp + b2->rp, maxi(scale, a2->rp, b2->rp));
 	c->len = c->rp + c->lp;
+	arb_free(a2);
+	arb_free(b2);
 	return c;
 }
 
