@@ -5,10 +5,7 @@
 
 #include <getopt.h>
 
-#include "vm.h"
-
-uint32_t bc_ibase = 10;
-uint32_t bc_obase = 10;
+#include <bc/vm.h>
 
 int bc_mathlib = 0;
 int bc_quiet = 0;
@@ -16,6 +13,7 @@ int bc_std = 0;
 int bc_warn = 0;
 
 static const struct option bc_opts[] = {
+
     { "help", no_argument, NULL, 'h' },
     { "mathlib", no_argument, &bc_mathlib, 'l' },
     { "quiet", no_argument, &bc_quiet, 'q' },
@@ -23,6 +21,7 @@ static const struct option bc_opts[] = {
     { "version", no_argument, NULL, 'v' },
     { "warn", no_argument, &bc_warn, 'w' },
     { 0, 0, 0, 0},
+
 };
 
 static const char* const bc_short_opts = "hlqsvw";

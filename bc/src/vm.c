@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "vm.h"
+#include <bc/vm.h>
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx);
 static BcStatus bc_vm_execStdin(BcVm* vm);

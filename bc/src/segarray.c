@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "segarray.h"
-#include "program.h"
+#include <bc/segarray.h>
+#include <bc/program.h>
 
 static BcStatus bc_segarray_addUnsorted(BcSegArray* sa, void* data) ;
 static BcStatus bc_segarray_addSorted(BcSegArray* sa, void* data);

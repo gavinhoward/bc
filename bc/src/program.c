@@ -5,7 +5,7 @@
 
 #include <arbprec/arbprec.h>
 
-#include "program.h"
+#include <bc/program.h>
 
 static BcStatus bc_program_list_expand(BcStmtList* list);
 
