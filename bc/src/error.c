@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bc.h"
+#include <bc/bc.h>
 
 static const char* const bc_err_types[] = {
 

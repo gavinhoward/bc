@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "lex.h"
-#include "parse.h"
+#include <bc/lex.h>
+#include <bc/parse.h>
 
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.

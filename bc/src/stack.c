@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "stack.h"
+#include <bc/stack.h>
 
 static BcStatus bc_stack_expand(BcStack* stack);
 
