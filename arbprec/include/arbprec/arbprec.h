@@ -23,11 +23,12 @@ typedef struct {	// Toym fixed point type
 	size_t len;	// Length of number (count of digits / limbs)
 	size_t allocated;// Length of allocated memory
 	size_t chunk;	// Allocation chunk size (just avoids globals)
+	size_t scale;
 } fxdpnt;
 
 /* function prototypes */
 /* arithmetic */
-fxdpnt *arb_mul(fxdpnt *, fxdpnt *, fxdpnt *, int);
+fxdpnt *arb_mul(fxdpnt *, fxdpnt *, fxdpnt *, int, size_t);
 size_t arb_mul_core(ARBT *, size_t, ARBT *, size_t, ARBT *, int);
 fxdpnt *arb_karatsuba_mul(fxdpnt *, fxdpnt *, fxdpnt *, int);
 fxdpnt *arb_add_inter(fxdpnt *, fxdpnt *, fxdpnt *, int);
@@ -36,7 +37,7 @@ fxdpnt *arb_sub(fxdpnt *, fxdpnt *, fxdpnt *, int);
 fxdpnt *arb_add(fxdpnt *, fxdpnt *, fxdpnt *, int);
 ARBT arb_place(fxdpnt *, fxdpnt *, size_t *, size_t);
 fxdpnt *arb_newtonian_div(fxdpnt *, fxdpnt *, fxdpnt *, int, int);
-fxdpnt *arb_alg_d(fxdpnt *, fxdpnt *, fxdpnt *, int, int);
+fxdpnt *arb_alg_d(fxdpnt *, fxdpnt *, fxdpnt *, int, size_t);
 int _long_sub(ARBT *, size_t, ARBT *, size_t, int);
 int _long_add(ARBT *, size_t, ARBT *, size_t, int);
 /* logical shift */
@@ -81,5 +82,5 @@ ARBT arb2hrdware(ARBT *, size_t, int);
 
 fxdpnt *hrdware2arb(size_t);
 fxdpnt *convall(fxdpnt *, fxdpnt *, int, int);
-
+fxdpnt *convscaled(fxdpnt *, fxdpnt *, int, int, size_t);
 #endif // ARBSH_ARBPREC_H

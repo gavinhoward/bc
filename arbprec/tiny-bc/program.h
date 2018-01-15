@@ -103,8 +103,8 @@ typedef struct BcExpr {
 	BcExprType type;
 	union {
 		char* string;
-		BcStack expr_stack;
-		BcCall call;
+		BcStack* expr_stack;
+		BcCall* call;
 	};
 
 } BcExpr;
@@ -139,8 +139,10 @@ typedef union BcStmtData {
 
 	char* string;
 	BcStmtList* list;
-	BcStack expr_stack;
-	BcIf ifstmt;
+	BcStack* expr_stack;
+	BcIf* if_stmt;
+	BcWhile* while_stmt;
+	BcFor* for_stmt;
 
 } BcStmtData;
 

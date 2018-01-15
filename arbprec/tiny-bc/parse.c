@@ -133,7 +133,7 @@ static BcStatus bc_parse_funcStart(BcParse* parse, BcFunc* func);
 static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list);
-static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs);
+static BcStatus bc_parse_expr(BcParse* parse, BcStack** exprs);
 static BcStatus bc_parse_operator(BcStack* exs, BcStack* ops,BcLexTokenType t,
                                   uint32_t* num_exprs);
 static BcStatus bc_parse_rightParen(BcStack* exs, BcStack* ops, uint32_t* nexs);
@@ -157,7 +157,7 @@ static BcStatus bc_parse_while(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_loop(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
-                                   uint8_t flags);
+                                   uint16_t flags);
 static BcStatus bc_parse_loopExit(BcParse* parse, BcStmtList* list,
                                   BcLexTokenType type);
 static BcStatus bc_parse_rightBrace(BcParse* parse, BcStmtList* list);
@@ -170,7 +170,7 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 
 	parse->program = program;
 
-	BcStatus status = bc_stack_init(&parse->flag_stack, sizeof(uint8_t));
+	BcStatus status = bc_stack_init(&parse->flag_stack, sizeof(uint16_t));
 
 	if (status != BC_STATUS_SUCCESS) {
 		return status;
@@ -182,7 +182,7 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 		return status;
 	}
 
-	uint8_t flags = 0;
+	uint16_t flags = 0;
 
 	status = bc_stack_push(&parse->flag_stack, &flags);
 	if (status != BC_STATUS_SUCCESS) {
@@ -296,7 +296,7 @@ static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
 	BcStatus status;
 	BcFunc func;
 	bool comma;
-	uint8_t flags;
+	uint16_t flags;
 	char* name;
 	bool var;
 
@@ -419,6 +419,8 @@ static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
 
 static BcStatus bc_parse_funcStart(BcParse* parse, BcFunc* func) {
 
+	// TODO: Write this function.
+
 }
 
 static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list) {
@@ -534,7 +536,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 
 	BcStatus status;
 	BcStmt stmt;
-	uint8_t* flag_ptr;
+	uint16_t* flag_ptr;
 
 	status = BC_STATUS_SUCCESS;
 
@@ -578,8 +580,11 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 				if (BC_PARSE_FUNC_INNER(parse)) {
 					status = bc_parse_funcStart(parse, parse->func);
 				}
-				else if (BC_PARSE_LOOP(parse)) {
-					status = bc_parse_loop(parse, list);
+				else if (BC_PARSE_FOR_LOOP(parse)) {
+					status = bc_parse_for(parse, list);
+				}
+				else if (BC_PARSE_WHILE_LOOP(parse)) {
+					status = bc_parse_while(parse, list);
 				}
 				else if (BC_PARSE_IF(parse)) {
 					status = bc_parse_if(parse, list);
@@ -669,7 +674,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 	return status;
 }
 
-static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
+static BcStatus bc_parse_expr(BcParse* parse, BcStack** exprs) {
 
 	BcStatus status;
 	BcStack ops;
@@ -684,13 +689,20 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	BcLexTokenType type;
 	BcLexTokenType* ptr;
 	BcLexTokenType top;
+	BcStack* stack;
 
 	prev = BC_EXPR_PRINT;
 
 	paren_first = parse->token.type == BC_LEX_LEFT_PAREN;
 	num_parens = paren_first ? 1 : 0;
 
-	status = bc_stack_init(exprs, sizeof(BcExpr));
+	stack = malloc(sizeof(BcStack));
+
+	if (!stack) {
+		return BC_STATUS_MALLOC_FAIL;
+	}
+
+	status = bc_stack_init(stack, sizeof(BcExpr));
 
 	if (status) {
 		return status;
@@ -716,14 +728,14 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			case BC_LEX_OP_INC:
 			case BC_LEX_OP_DEC:
 			{
-				status = bc_parse_incdec(parse, exprs, &prev);
+				status = bc_parse_incdec(parse, stack, &prev);
 				rparen = false;
 				break;
 			}
 
 			case BC_LEX_OP_MINUS:
 			{
-				status = bc_parse_minus(parse, exprs, &ops, &prev,
+				status = bc_parse_minus(parse, stack, &ops, &prev,
 				                        rparen, &nexprs);
 				rparen = false;
 				break;
@@ -754,7 +766,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			case BC_LEX_OP_BOOL_AND:
 			{
 				prev = BC_PARSE_TOKEN_TO_EXPR(type);
-				status = bc_parse_operator(exprs, &ops, type, &nexprs);
+				status = bc_parse_operator(stack, &ops, type, &nexprs);
 				rparen = false;
 				break;
 			}
@@ -782,7 +794,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 				paren_expr = true;
 				rparen = true;
 
-				status = bc_parse_rightParen(exprs, &ops, &nexprs);
+				status = bc_parse_rightParen(stack, &ops, &nexprs);
 
 				break;
 			}
@@ -791,7 +803,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			{
 				paren_expr = true;
 				rparen = false;
-				status = bc_parse_expr_name(parse, exprs, &prev);
+				status = bc_parse_expr_name(parse, stack, &prev);
 				++nexprs;
 				break;
 			}
@@ -800,7 +812,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			{
 				expr.type = BC_EXPR_NUMBER;
 				expr.string = parse->token.string;
-				status = bc_stack_push(exprs, &expr);
+				status = bc_stack_push(stack, &expr);
 
 				paren_expr = true;
 				rparen = false;
@@ -813,7 +825,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			case BC_LEX_KEY_IBASE:
 			{
 				expr.type = BC_EXPR_IBASE;
-				status = bc_stack_push(exprs, &expr);
+				status = bc_stack_push(stack, &expr);
 
 				paren_expr = true;
 				rparen = false;
@@ -825,7 +837,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 			case BC_LEX_KEY_LENGTH:
 			{
-				status = bc_parse_builtin(parse, exprs, BC_EXPR_LENGTH);
+				status = bc_parse_builtin(parse, stack, BC_EXPR_LENGTH);
 				paren_expr = true;
 				rparen = false;
 				++nexprs;
@@ -836,7 +848,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			case BC_LEX_KEY_OBASE:
 			{
 				expr.type = BC_EXPR_OBASE;
-				status = bc_stack_push(exprs, &expr);
+				status = bc_stack_push(stack, &expr);
 
 				paren_expr = true;
 				rparen = false;
@@ -848,7 +860,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 			case BC_LEX_KEY_READ:
 			{
-				status = bc_parse_read(parse, exprs);
+				status = bc_parse_read(parse, stack);
 				paren_expr = true;
 				rparen = false;
 				++nexprs;
@@ -858,7 +870,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 			case BC_LEX_KEY_SCALE:
 			{
-				status = bc_parse_scale(parse, exprs, &prev);
+				status = bc_parse_scale(parse, stack, &prev);
 				paren_expr = true;
 				rparen = false;
 				++nexprs;
@@ -868,7 +880,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 			case BC_LEX_KEY_SQRT:
 			{
-				status = bc_parse_builtin(parse, exprs, BC_EXPR_SQRT);
+				status = bc_parse_builtin(parse, stack, BC_EXPR_SQRT);
 				paren_expr = true;
 				rparen = false;
 				++nexprs;
@@ -901,7 +913,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 		expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
 
-		status = bc_stack_push(exprs, &expr);
+		status = bc_stack_push(stack, &expr);
 
 		if (status) {
 			return status;
@@ -916,15 +928,17 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 		return BC_STATUS_PARSE_INVALID_EXPR;
 	}
 
-	expr.type = ((BcExpr*) bc_stack_top(exprs))->type;
+	expr.type = ((BcExpr*) bc_stack_top(stack))->type;
 
 	if (expr.type < BC_EXPR_ASSIGN ||
 	    expr.type > BC_EXPR_ASSIGN_POWER ||
 	    paren_first)
 	{
 		expr.type = BC_EXPR_PRINT;
-		status = bc_stack_push(exprs, &expr);
+		status = bc_stack_push(stack, &expr);
 	}
+
+	*exprs = stack;
 
 	return status;
 }
@@ -1029,7 +1043,7 @@ static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
                                    BcExprType* type)
 {
 	BcStatus status;
-	BcStack stack;
+	BcStack* stack;
 	BcExpr expr;
 
 	status = bc_lex_next(&parse->lex, &parse->token);
@@ -1078,7 +1092,7 @@ static BcStatus bc_parse_call(BcParse* parse, BcExpr* expr) {
 	BcStatus status;
 
 	expr->type = BC_EXPR_FUNC_CALL;
-	expr->call.name = parse->token.string;
+	expr->call->name = parse->token.string;
 
 	status = bc_parse_params(parse, expr);
 
@@ -1095,10 +1109,10 @@ static BcStatus bc_parse_call(BcParse* parse, BcExpr* expr) {
 
 static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr) {
 
-	BcStack exprs;
+	BcStack* exprs;
 	BcStatus status;
 
-	status = bc_segarray_init(&expr->call.params, sizeof(BcStack),
+	status = bc_segarray_init(&expr->call->params, sizeof(BcStack),
 	                          bc_stack_free, NULL);
 
 	if (status) {
@@ -1117,7 +1131,7 @@ static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr) {
 			return status;
 		}
 
-		status = bc_segarray_add(&expr->call.params, &exprs);
+		status = bc_segarray_add(&expr->call->params, &exprs);
 
 	} while (!status && parse->token.type == BC_LEX_COMMA);
 
@@ -1167,7 +1181,13 @@ static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs, BcExprType type)
 
 	expr.type = type;
 
-	status = bc_stack_init(&expr.expr_stack, sizeof(BcExpr));
+	expr.expr_stack = malloc(sizeof(BcStack));
+
+	if (!expr.expr_stack) {
+		return BC_STATUS_MALLOC_FAIL;
+	}
+
+	status = bc_stack_init(expr.expr_stack, sizeof(BcExpr));
 
 	if (status) {
 		return status;
@@ -1230,7 +1250,13 @@ static BcStatus bc_parse_scale(BcParse* parse, BcStack* exs, BcExprType* type) {
 	expr.type = BC_EXPR_SCALE_FUNC;
 	*type = BC_EXPR_SCALE_FUNC;
 
-	status = bc_stack_init(&expr.expr_stack, sizeof(BcExpr));
+	expr.expr_stack = malloc(sizeof(BcStack));
+
+	if (!expr.expr_stack) {
+		return BC_STATUS_MALLOC_FAIL;
+	}
+
+	status = bc_stack_init(expr.expr_stack, sizeof(BcExpr));
 
 	if (status) {
 		return status;
@@ -1399,7 +1425,13 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
 		if (parse->token.type == BC_LEX_NEWLINE ||
 		    parse->token.type == BC_LEX_SEMICOLON)
 		{
-			status = bc_stack_init(&stmt.data.expr_stack, sizeof(BcExpr));
+			stmt.data.expr_stack = malloc(sizeof(BcStack));
+
+			if (!stmt.data.expr_stack) {
+				return BC_STATUS_MALLOC_FAIL;
+			}
+
+			status = bc_stack_init(stmt.data.expr_stack, sizeof(BcExpr));
 
 			if (status) {
 				return status;
@@ -1408,7 +1440,7 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
 			expr.type = BC_EXPR_NUMBER;
 			expr.string = NULL;
 
-			status = bc_stack_push(&stmt.data.expr_stack, &expr);
+			status = bc_stack_push(stmt.data.expr_stack, &expr);
 
 			if (status) {
 				return status;
@@ -1431,7 +1463,7 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
 
 	BcStatus status;
 	BcLexTokenType type;
-	BcStack exprs;
+	BcStack* exprs;
 	BcExpr expr;
 	BcStmt stmt;
 	bool comma;
@@ -1465,12 +1497,6 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
 		}
 		else {
 
-			status = bc_stack_init(&exprs, sizeof(BcExpr));
-
-			if (status) {
-				return status;
-			}
-
 			status = bc_parse_expr(parse, &exprs);
 
 			if (status) {
@@ -1478,9 +1504,10 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
 			}
 
 			expr.type = BC_EXPR_PRINT;
-			status = bc_stack_push(&exprs, &expr);
+			status = bc_stack_push(exprs, &expr);
 
 			stmt.type = BC_STMT_EXPR;
+
 			stmt.data.expr_stack = exprs;
 		}
 
@@ -1520,6 +1547,8 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
 
 static BcStatus bc_parse_if(BcParse* parse, BcStmtList* list) {
 
+	// TODO: Write this function.
+
 	BcStatus status;
 
 	status = bc_lex_next(&parse->lex, &parse->token);
@@ -1527,22 +1556,28 @@ static BcStatus bc_parse_if(BcParse* parse, BcStmtList* list) {
 
 static BcStatus bc_parse_while(BcParse* parse, BcStmtList* list) {
 
+	// TODO: Write this function.
+
 }
 
 static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
+
+	// TODO: Write this function.
 
 }
 
 static BcStatus bc_parse_loop(BcParse* parse, BcStmtList* list) {
 
+	// TODO: Write this function.
+
 }
 
 static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
-                                   uint8_t flags)
+                                   uint16_t flags)
 {
 	BcStatus status;
 	BcStmtList* list;
-	uint8_t* flag_ptr;
+	uint16_t* flag_ptr;
 
 	list = bc_program_list_create();
 
@@ -1562,7 +1597,8 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 		return BC_STATUS_PARSE_BUG;
 	}
 
-	flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
+	flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FOR_LOOP |
+	                       BC_PARSE_FLAG_WHILE_LOOP));
 
 	status = bc_stack_push(&parse->flag_stack, &flags);
 
@@ -1602,7 +1638,7 @@ static BcStatus bc_parse_loopExit(BcParse* parse, BcStmtList* list,
 	BcStatus status;
 	BcStmt stmt;
 
-	if (!BC_PARSE_LOOP(parse)) {
+	if (!BC_PARSE_FOR_LOOP(parse) && !BC_PARSE_WHILE_LOOP(parse)) {
 		return BC_STATUS_PARSE_INVALID_TOKEN;
 	}
 
@@ -1633,7 +1669,6 @@ static BcStatus bc_parse_rightBrace(BcParse* parse, BcStmtList* list) {
 
 	BcStatus status;
 	BcStmtList** list_ptr;
-	BcStmt stmt;
 
 	if (parse->ctx_stack.len <= 1 || parse->num_braces == 0) {
 		return BC_STATUS_PARSE_INVALID_TOKEN;
@@ -1643,21 +1678,7 @@ static BcStatus bc_parse_rightBrace(BcParse* parse, BcStmtList* list) {
 		return BC_STATUS_PARSE_BUG;
 	}
 
-	if (BC_PARSE_LOOP(parse)) {
-
-		if (parse->for_update.stack) {
-
-			stmt.type = BC_STMT_EXPR;
-			stmt.data.expr_stack = parse->for_update;
-
-			status = bc_program_list_insert(list, &stmt);
-
-			if (status) {
-				return status;
-			}
-		}
-	}
-	else if (BC_PARSE_IF(parse)) {
+	if (BC_PARSE_IF(parse)) {
 
 		status = bc_lex_next(&parse->lex, &parse->token);
 
@@ -1673,7 +1694,7 @@ static BcStatus bc_parse_rightBrace(BcParse* parse, BcStmtList* list) {
 				return status;
 			}
 
-			list_ptr = &parse->partial.data.ifstmt.else_list;
+			list_ptr = &parse->partial.data.if_stmt->else_list;
 
 			status = bc_parse_startBody(parse, list_ptr, BC_PARSE_FLAG_ELSE);
 

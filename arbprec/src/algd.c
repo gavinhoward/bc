@@ -32,7 +32,7 @@ int _long_add(ARBT *u, size_t i, ARBT *v, size_t k, int b)
 	return carry;
 }
 
-fxdpnt *arb_alg_d(fxdpnt *num, fxdpnt *den, fxdpnt *q, int b, int scale)
+fxdpnt *arb_alg_d(fxdpnt *num, fxdpnt *den, fxdpnt *q, int b, size_t scale)
 { 
 	ARBT *u;
 	ARBT *v;
@@ -49,7 +49,7 @@ fxdpnt *arb_alg_d(fxdpnt *num, fxdpnt *den, fxdpnt *q, int b, int scale)
 
 	lea = num->lp + den->rp;
 	uscal = num->rp - den->rp;
-	if (uscal < scale)
+	if (uscal < (ssize_t)scale)
 		offset = scale - uscal; 
 	else
 		offset = 0;
