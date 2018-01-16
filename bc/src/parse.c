@@ -555,10 +555,16 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list) {
 		case BC_LEX_OP_DEC:
 		case BC_LEX_OP_MINUS:
 		case BC_LEX_OP_BOOL_NOT:
-		case BC_LEX_NEWLINE:
 		case BC_LEX_LEFT_PAREN:
 		{
 			status = bc_parse_stmt(parse, list);
+			break;
+		}
+
+
+		case BC_LEX_NEWLINE:
+		{
+			status = bc_lex_next(&parse->lex, &parse->token);
 			break;
 		}
 
@@ -688,6 +694,12 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 			}
 
 			status = bc_parse_expr(parse, stmt.data.expr_stack);
+
+			if (status) {
+				break;
+			}
+
+			status = bc_parse_semicolonListEnd(parse, list);
 
 			break;
 		}
@@ -820,6 +832,12 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 			parse->auto_part = false;
 
 			status = bc_parse_return(parse, list);
+
+			if (status) {
+				return status;
+			}
+
+			status = bc_parse_semicolonListEnd(parse, list);
 
 			break;
 		}
@@ -1121,19 +1139,6 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	{
 		expr.type = BC_EXPR_PRINT;
 		status = bc_stack_push(exprs, &expr);
-
-		if (status) {
-			return status;
-		}
-	}
-
-	if (type == BC_LEX_SEMICOLON || type == BC_LEX_NEWLINE) {
-
-		status = bc_lex_next(&parse->lex, &parse->token);
-
-		if (status) {
-			return status;
-		}
 	}
 
 	return status;
