@@ -99,6 +99,13 @@ typedef struct BcCall {
 
 } BcCall;
 
+typedef struct BcArrayElem {
+
+	char* name;
+	BcStack expr_stack;
+
+} BcArrayElem;
+
 typedef struct BcExpr {
 
 	BcExprType type;
@@ -106,6 +113,7 @@ typedef struct BcExpr {
 		char* string;
 		BcStack* expr_stack;
 		BcCall* call;
+		BcArrayElem* elem;
 	};
 
 } BcExpr;
