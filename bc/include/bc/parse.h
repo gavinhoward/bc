@@ -11,6 +11,9 @@
 #define BC_PARSE_TOP_FLAG(parse)  \
 	(*((uint8_t*) bc_stack_top(&(parse)->flag_stack)))
 
+#define BC_PARSE_TOP_FLAG_PTR(parse)  \
+	((uint8_t*) bc_stack_top(&(parse)->flag_stack))
+
 #define BC_PARSE_FLAG_FUNC_INNER (0x01)
 
 #define BC_PARSE_FUNC_INNER(parse)  \
@@ -88,6 +91,8 @@ typedef struct BcParse {
 	BcStmt partial;
 
 	uint32_t num_braces;
+
+	bool auto_part;
 
 } BcParse;
 
