@@ -20,3 +20,5 @@ arbprec/tests/test-arbitrary-precision
 readline/tests/ircline-driver
 readline/tests/readline-driver
 
+arbprec/tests/karatsuba-mul-giant
+arbprec/tests/long-mul-giant
