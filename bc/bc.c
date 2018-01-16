@@ -20,7 +20,7 @@ static const struct option bc_opts[] = {
     { "standard", no_argument, &bc_std, 's' },
     { "version", no_argument, NULL, 'v' },
     { "warn", no_argument, &bc_warn, 'w' },
-    { 0, 0, 0, 0},
+    { 0, 0, 0, 0 },
 
 };
 
