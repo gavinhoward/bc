@@ -600,6 +600,40 @@ static void bc_program_stmt_free(BcStmt* stmt) {
 	stmt->data.expr_stack = NULL;
 }
 
+BcIf* bc_program_if_create() {
+
+	BcIf* if_stmt;
+
+	if_stmt = malloc(sizeof(BcIf));
+
+	if (!if_stmt) {
+		return NULL;
+	}
+
+	if_stmt->then_list = NULL;
+	if_stmt->else_list = NULL;
+
+	return if_stmt;
+}
+
+BcWhile* bc_program_while_create() {
+
+	BcWhile* while_stmt;
+
+	while_stmt = malloc(sizeof(BcWhile));
+
+	return while_stmt;
+}
+
+BcFor* bc_program_for_create() {
+
+	BcFor* for_stmt;
+
+	for_stmt = malloc(sizeof(BcFor));
+
+	return for_stmt;
+}
+
 BcStatus bc_program_expr_init(BcExpr* expr, BcExprType type) {
 
 	expr->type = type;
@@ -659,6 +693,21 @@ static void bc_program_expr_free(BcExpr* expr) {
 	}
 
 	expr->string = NULL;
+}
+
+BcCall* bc_program_call_create() {
+
+	BcCall* call;
+
+	call = malloc(sizeof(BcCall));
+
+	if (!call) {
+		return NULL;
+	}
+
+	call->name = NULL;
+
+	return call;
 }
 
 static void bc_program_num_init(fxdpnt* num) {

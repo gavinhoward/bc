@@ -248,6 +248,11 @@ BcStatus bc_program_var_init(BcVar* var, char* name);
 BcStatus bc_program_array_init(BcArray* array, char* name);
 
 BcStatus bc_program_stmt_init(BcStmt* stmt, BcStmtType type);
+BcIf* bc_program_if_create();
+BcWhile* bc_program_while_create();
+BcFor* bc_program_for_create();
+
 BcStatus bc_program_expr_init(BcExpr* expr, BcExprType type);
+BcCall* bc_program_call_create();
 
 #endif // BC_PROGRAM_H
