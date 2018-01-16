@@ -89,6 +89,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 	data[size] = '\0';
 
 	fclose(f);
+	f = NULL;
 
 	bc_parse_text(&vm->parse, data);
 
@@ -105,10 +106,11 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 		status = bc_parse_parse(&vm->parse, &vm->program);
 
-		if (status && (status != BC_STATUS_LEX_EOF ||
+		if (status && (status != BC_STATUS_LEX_EOF &&
 		               status != BC_STATUS_PARSE_EOF))
 		{
 			bc_error_file(vm->program.file, vm->parse.lex.line, status);
+			goto read_err;
 		}
 	}
 
@@ -117,7 +119,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 	free(data);
 
-	return status;
+	return BC_STATUS_SUCCESS;
 
 read_err:
 
@@ -125,7 +127,9 @@ read_err:
 
 data_err:
 
-	fclose(f);
+	if (f) {
+		fclose(f);
+	}
 
 file_err:
 
