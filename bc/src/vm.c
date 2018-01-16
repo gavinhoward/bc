@@ -239,9 +239,11 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 			goto exit_err;
 		}
 
-		status = bc_parse_parse(&vm->parse, &vm->program);
+		while (!status) {
+			status = bc_parse_parse(&vm->parse, &vm->program);
+		}
 
-		if (status) {
+		if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
 			goto exit_err;
 		}
 
