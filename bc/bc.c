@@ -27,7 +27,8 @@ static const struct option bc_opts[] = {
 static const char* const bc_copyright = "Copyright (c) 2018 Gavin D. Howard";
 
 static const char* const bc_help =
-  "usage: bc [options] [file ...]\n\n"
+  "usage: bc [options] [file ...]\n"
+  "\n"
   "  -h  --help         print this usage message and exit\n"
   "  -i  --interactive  force interactive mode (currently unused)\n"
   "  -l  --mathlib      use predefined math routines:\n\n"
@@ -36,13 +37,16 @@ static const char* const bc_help =
   "                       a(expr)  =  arctangent of expr, returning radians\n"
   "                       l(expr)  =  natural log of expr\n"
   "                       e(expr)  =  raises e to the power of expr\n"
-  "                       j(n, x)  =  Bessel function of integer order n of x\n\n"
+  "                       j(n, x)  =  Bessel function of integer order n of x\n"
+  "\n"
   "  -q  --quiet        don't print version and copyright\n"
   "  -s  --standard     error if any non-POSIX extensions are used\n"
   "  -w  --warn         warn if any non-POSIX extensions are used\n"
   "  -v  --version      print version information and copyright and exit\n\n";
 
 static const char* const bc_short_opts = "hlqsvw";
+
+static const char* const bc_version = "0.1";
 
 static const char* const bc_version_fmt = "bc %s\n%s\n";
 
@@ -86,7 +90,7 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case 'v':
-				printf(bc_version_fmt, GIT_VERSION, bc_copyright);
+				printf(bc_version_fmt, bc_version, bc_copyright);
 				do_exit = true;
 				break;
 
@@ -111,7 +115,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (!bc_quiet) {
-		printf(bc_version_fmt, GIT_VERSION, bc_copyright);
+		printf(bc_version_fmt, bc_version, bc_copyright);
 		putchar('\n');
 	}
 
