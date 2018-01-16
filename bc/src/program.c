@@ -7,6 +7,84 @@
 
 #include <bc/program.h>
 
+static const uint32_t bc_stmt_sizes[] = {
+
+    sizeof(BcStack),
+
+    0,
+
+    0,
+    0,
+
+    0,
+
+    sizeof(BcStack),
+
+    sizeof(BcIf),
+    sizeof(BcWhile),
+    sizeof(BcFor),
+
+    0,
+
+};
+
+static const uint32_t bc_expr_sizes[] = {
+
+    0,
+    0,
+
+    0,
+    0,
+
+    0,
+
+    0,
+
+    0,
+    0,
+    0,
+
+    0,
+    0,
+
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+
+    0,
+
+    0,
+    0,
+
+    0,
+    0,
+    0,
+
+    sizeof(BcCall),
+
+    0,
+    sizeof(BcStack),
+    0,
+    0,
+    0,
+    sizeof(BcStack),
+    0,
+    sizeof(BcStack),
+
+    0
+
+};
+
 static BcStatus bc_program_list_expand(BcStmtList* list);
 
 static int bc_program_func_cmp(void* func1, void* func2);
@@ -446,12 +524,87 @@ static void bc_program_array_free(void* array) {
 	bc_segarray_free(&a->array);
 }
 
-BcStatus bc_program_stmt_init(BcStmt* stmt) {
-	// TODO: Write this function.
+BcStatus bc_program_stmt_init(BcStmt* stmt, BcStmtType type) {
+
+	stmt->type = type;
+
+	if (bc_stmt_sizes[type]) {
+
+		stmt->data.expr_stack = malloc(bc_stmt_sizes[type]);
+
+		if (!stmt->data.expr_stack) {
+			return BC_STATUS_MALLOC_FAIL;
+		}
+	}
+	else if (type == BC_STMT_LIST) {
+
+		stmt->data.list = bc_program_list_create();
+
+		if (!stmt->data.list) {
+			return BC_STATUS_MALLOC_FAIL;
+		}
+	}
+
+	return BC_STATUS_SUCCESS;
 }
 
 static void bc_program_stmt_free(BcStmt* stmt) {
-	// TODO: Write this function.
+
+	switch (stmt->type) {
+
+		case BC_STMT_EXPR:
+		case BC_STMT_RETURN:
+		{
+			bc_stack_free(stmt->data.expr_stack);
+			break;
+		}
+
+		case BC_STMT_STRING:
+		{
+			free(stmt->data.string);
+			break;
+		}
+
+		case BC_STMT_IF:
+		{
+			// TODO: Free for if statements.
+			break;
+		}
+
+		case BC_STMT_WHILE:
+		{
+			// TODO: Free for while statements.
+			break;
+		}
+
+		case BC_STMT_FOR:
+		{
+			// TODO: Free for for statements.
+			break;
+		}
+
+		case BC_STMT_LIST:
+		{
+			bc_program_list_free(stmt->data.list);
+			break;
+		}
+
+		default:
+		{
+			// Do nothing.
+			break;
+		}
+	}
+
+	stmt->data.expr_stack = NULL;
+}
+
+BcStatus bc_program_expr_init(BcExpr* expr, BcExprType type) {
+
+}
+
+static void bc_program_expr_free(BcExpr* expr) {
+
 }
 
 static void bc_program_num_init(fxdpnt* num) {
