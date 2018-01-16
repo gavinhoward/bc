@@ -981,6 +981,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 					return BC_STATUS_PARSE_INVALID_EXPR;
 				}
 
+				--num_parens;
 				paren_expr = true;
 				rparen = true;
 				get_token = false;
@@ -1313,7 +1314,7 @@ static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
 
 		*type = BC_EXPR_FUNC_CALL;
 
-		expr.call = malloc(sizeof(BcCall));
+		expr.call = bc_program_call_create();
 
 		if (!expr.call) {
 			return BC_STATUS_MALLOC_FAIL;
@@ -1829,7 +1830,7 @@ static BcStatus bc_parse_if(BcParse* parse, BcStmtList* list) {
 	}
 
 	stmt.type = BC_STMT_IF;
-	stmt.data.if_stmt = malloc(sizeof(BcIf));
+	stmt.data.if_stmt = bc_program_if_create();
 
 	if (!stmt.data.if_stmt) {
 		return BC_STATUS_MALLOC_FAIL;
@@ -1883,7 +1884,7 @@ static BcStatus bc_parse_while(BcParse* parse, BcStmtList* list) {
 	}
 
 	stmt.type = BC_STMT_WHILE;
-	stmt.data.while_stmt = malloc(sizeof(BcWhile));
+	stmt.data.while_stmt = bc_program_while_create();
 
 	if (!stmt.data.while_stmt) {
 		return BC_STATUS_MALLOC_FAIL;
@@ -1937,7 +1938,7 @@ static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
 	}
 
 	stmt.type = BC_STMT_FOR;
-	stmt.data.for_stmt = malloc(sizeof(BcFor));
+	stmt.data.for_stmt = bc_program_for_create();
 
 	if (!stmt.data.for_stmt) {
 		return BC_STATUS_MALLOC_FAIL;
@@ -2067,16 +2068,38 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 		}
 
 		status = bc_parse_stmt(parse, list);
-	}
-	else {
-		status = bc_parse_stmt(parse, list);
-	}
 
-	if (status) {
-		bc_program_list_free(list);
+		if (status) {
+			bc_program_list_free(list);
+		}
+		else {
+			*new_list = list;
+		}
 	}
 	else {
-		*new_list = list;
+
+		while (parse->token.type == BC_LEX_NEWLINE) {
+
+			status = bc_lex_next(&parse->lex, &parse->token);
+
+			if (status) {
+				return status;
+			}
+		}
+
+		status = bc_parse_stmt(parse, list);
+
+		if (status) {
+			return status;
+		}
+
+		status = bc_stack_pop(&parse->flag_stack);
+
+		if (status) {
+			return status;
+		}
+
+		status = bc_stack_pop(&parse->ctx_stack);
 	}
 
 	return status;
@@ -2135,6 +2158,15 @@ static BcStatus bc_parse_rightBrace(BcParse* parse) {
 	}
 
 	if (BC_PARSE_IF(parse)) {
+
+		while (parse->token.type == BC_LEX_NEWLINE) {
+
+			status = bc_lex_next(&parse->lex, &parse->token);
+
+			if (status) {
+				return status;
+			}
+		}
 
 		if (parse->token.type == BC_LEX_KEY_ELSE) {
 
