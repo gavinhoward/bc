@@ -24,12 +24,35 @@ static const struct option bc_opts[] = {
 
 };
 
+static const char* const bc_copyright = "Copyright (c) 2018 Gavin D. Howard";
+
+static const char* const bc_help =
+  "usage: bc [options] [file ...]\n\n"
+  "  -h  --help         print this usage message and exit\n"
+  "  -i  --interactive  force interactive mode (currently unused)\n"
+  "  -l  --mathlib      use predefined math routines:\n\n"
+  "                       s(expr)  =  sine of expr in radians\n"
+  "                       c(expr)  =  cosine of expr in radians\n"
+  "                       a(expr)  =  arctangent of expr, returning radians\n"
+  "                       l(expr)  =  natural log of expr\n"
+  "                       e(expr)  =  raises e to the power of expr\n"
+  "                       j(n, x)  =  Bessel function of integer order n of x\n\n"
+  "  -q  --quiet        don't print version and copyright\n"
+  "  -s  --standard     error if any non-POSIX extensions are used\n"
+  "  -w  --warn         warn if any non-POSIX extensions are used\n"
+  "  -v  --version      print version information and copyright and exit\n\n";
+
 static const char* const bc_short_opts = "hlqsvw";
+
+static const char* const bc_version_fmt = "bc %s\n%s\n";
 
 int main(int argc, char* argv[]) {
 
 	BcStatus status;
 	BcVm vm;
+	bool do_exit;
+
+	do_exit = false;
 
 	// Getopt needs this.
 	int opt_idx = 0;
@@ -46,7 +69,8 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case 'h':
-				// TODO: Print help.
+				printf(bc_help);
+				do_exit = true;
 				break;
 
 			case 'l':
@@ -62,8 +86,8 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case 'v':
-				printf("bc %s\n", GIT_VERSION);
-				exit(0);
+				printf(bc_version_fmt, GIT_VERSION, bc_copyright);
+				do_exit = true;
 				break;
 
 			case 'w':
@@ -73,12 +97,22 @@ int main(int argc, char* argv[]) {
 			case '?':
 				// Getopt printed an error message, but we should exit.
 			default:
-				exit(BC_STATUS_INVALID_OPTION);
+				do_exit = true;
+				status = BC_STATUS_INVALID_OPTION;
 				break;
 		}
 
 		// Get the next option.
 		c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
+	}
+
+	if (do_exit) {
+		exit(status);
+	}
+
+	if (!bc_quiet) {
+		printf(bc_version_fmt, GIT_VERSION, bc_copyright);
+		putchar('\n');
 	}
 
 	uint32_t num_files = argc - optind;
