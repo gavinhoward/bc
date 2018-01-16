@@ -172,6 +172,7 @@ BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
 
 BcStatus bc_program_exec(BcProgram* p) {
 	// TODO: Write this function.
+	return BC_STATUS_SUCCESS;
 }
 
 void bc_program_free(BcProgram* p) {

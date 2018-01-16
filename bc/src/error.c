@@ -38,11 +38,10 @@ static const char* const bc_err_descs[] = {
     NULL,
 
     "invalid option",
-
     "memory allocation error",
     "invalid parameter",
 
-    "couldn't open file"
+    "couldn't open file",
     "file read error",
     "divide by zero",
     "negative square root",

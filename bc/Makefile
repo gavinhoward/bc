@@ -1,6 +1,7 @@
 CFLAGS += -Wall -Wextra -I./include/ -I../arbprec/include -std=c99 -fsanitize=address -fsanitize=undefined -g -O0
 
-BC_OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done )
+BC_OBJ = $(shell for i in ./*.c ; do printf "%s\n" $${i%.c}.o ; done )
+BC_OBJ += $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done )
 
 BC_EXEC = bc
 
@@ -10,7 +11,7 @@ all:
 
 create_bc: $(BC_OBJ)
 
-	$(CC) $(CFLAGS) -o $(BC_EXEC) src/*.c ../arbprec/libarbprec.a
+	$(CC) $(CFLAGS) -o $(BC_EXEC) ./*.c src/*.c ../arbprec/libarbprec.a
 
 clean:
 

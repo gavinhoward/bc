@@ -113,7 +113,7 @@ typedef struct BcLex {
 
 } BcLex;
 
-BcStatus bc_lex_init(BcLex* lex);
+BcStatus bc_lex_init(BcLex* lex, const char* file);
 
 BcStatus bc_lex_text(BcLex* lex, const char* text);
 

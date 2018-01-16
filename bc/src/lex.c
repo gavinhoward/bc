@@ -94,7 +94,7 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_init(BcLex* lex) {
+BcStatus bc_lex_init(BcLex* lex, const char* file) {
 
 	if (lex == NULL ) {
 		return BC_STATUS_INVALID_PARAM;
@@ -102,6 +102,7 @@ BcStatus bc_lex_init(BcLex* lex) {
 
 	lex->line = 1;
 	lex->newline = false;
+	lex->file = file;
 
 	return BC_STATUS_SUCCESS;
 }
