@@ -601,10 +601,63 @@ static void bc_program_stmt_free(BcStmt* stmt) {
 
 BcStatus bc_program_expr_init(BcExpr* expr, BcExprType type) {
 
+	expr->type = type;
+
+	if (bc_expr_sizes[type]) {
+
+		expr->string = malloc(bc_expr_sizes[type]);
+
+		if (!expr->string) {
+			return BC_STATUS_MALLOC_FAIL;
+		}
+	}
+
+	return BC_STATUS_SUCCESS;
 }
 
 static void bc_program_expr_free(BcExpr* expr) {
 
+	switch (expr->type) {
+
+		case BC_EXPR_NUMBER:
+		case BC_EXPR_VAR:
+		{
+			free(expr->string);
+			break;
+		}
+
+		case BC_EXPR_ARRAY_ELEM:
+		{
+			free(expr->elem->name);
+			bc_stack_free(&expr->elem->expr_stack);
+			free(expr->elem);
+			break;
+		}
+
+		case BC_EXPR_FUNC_CALL:
+		{
+			free(expr->call->name);
+			bc_segarray_free(&expr->call->params);
+			free(expr->call);
+			break;
+		}
+
+		case BC_EXPR_SCALE_FUNC:
+		case BC_EXPR_LENGTH:
+		case BC_EXPR_SQRT:
+		{
+			bc_stack_free(&expr->expr_stack);
+			break;
+		}
+
+		default:
+		{
+			// Do nothing.
+			break;
+		}
+	}
+
+	expr->string = NULL;
 }
 
 static void bc_program_num_init(fxdpnt* num) {
