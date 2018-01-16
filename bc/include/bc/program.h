@@ -86,6 +86,7 @@ typedef enum BcStmtType {
 
 	BC_STMT_IF,
 	BC_STMT_WHILE,
+	BC_STMT_FOR,
 
 	BC_STMT_LIST,
 
@@ -109,27 +110,25 @@ typedef struct BcExpr {
 
 } BcExpr;
 
-typedef struct BcStmtList BcStmtList;
-
 typedef struct BcIf {
 
 	BcStack cond;
-	BcStmtList* then_list;
-	BcStmtList* else_list;
+	struct BcStmtList* then_list;
+	struct BcStmtList* else_list;
 
 } BcIf;
 
 typedef struct BcWhile {
 
 	BcStack cond;
-	BcStmtList* body;
+	struct BcStmtList* body;
 
 } BcWhile;
 
 typedef struct BcFor {
 
-	BcStmtList* body;
 	BcStack cond;
+	struct BcStmtList* body;
 	BcStack update;
 	BcStack init;
 
@@ -138,7 +137,7 @@ typedef struct BcFor {
 typedef union BcStmtData {
 
 	char* string;
-	BcStmtList* list;
+	struct BcStmtList* list;
 	BcStack* expr_stack;
 	BcIf* if_stmt;
 	BcWhile* while_stmt;
@@ -240,6 +239,7 @@ BcStatus bc_program_func_insertAuto(BcFunc* func, char* name, bool var);
 BcStatus bc_program_var_init(BcVar* var, char* name);
 BcStatus bc_program_array_init(BcArray* array, char* name);
 
-BcStatus bc_program_stmt_init(BcStmt* stmt);
+BcStatus bc_program_stmt_init(BcStmt* stmt, BcStmtType type);
+BcStatus bc_program_expr_init(BcExpr* expr, BcExprType type);
 
 #endif // BC_PROGRAM_H
