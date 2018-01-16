@@ -76,6 +76,7 @@ typedef enum BcStmtType {
 	BC_STMT_EXPR,
 
 	BC_STMT_STRING,
+	BC_STMT_STRING_PRINT,
 
 	BC_STMT_BREAK,
 	BC_STMT_CONTINUE,
@@ -231,7 +232,6 @@ typedef struct BcProgram {
 } BcProgram;
 
 BcStatus bc_program_init(BcProgram* p, const char* file);
-BcStatus bc_program_list_insert(BcStmtList* list, BcStmt* stmt);
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func);
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var);
 BcStatus bc_program_array_add(BcProgram* p, BcArray* array);
@@ -239,6 +239,8 @@ BcStatus bc_program_exec(BcProgram* p);
 void bc_program_free(BcProgram* program);
 
 BcStmtList* bc_program_list_create();
+BcStatus bc_program_list_insert(BcStmtList* list, BcStmt* stmt);
+BcStmt* bc_program_list_last(BcStmtList* list);
 void bc_program_list_free(BcStmtList* list);
 
 BcStatus bc_program_func_init(BcFunc* func, char* name);
