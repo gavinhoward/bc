@@ -253,6 +253,19 @@ BcStatus bc_program_list_insert(BcStmtList* list, BcStmt* stmt) {
 	return BC_STATUS_SUCCESS;
 }
 
+BcStmt* bc_program_list_last(BcStmtList* list) {
+
+	if (!list) {
+		return NULL;
+	}
+
+	while (list->next) {
+		list = list->next;
+	}
+
+	return list->stmts + (list->num_stmts - 1);
+}
+
 void bc_program_list_free(BcStmtList* list) {
 
 	BcStmtList* temp;
