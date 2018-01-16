@@ -62,7 +62,8 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case 'v':
-				// TODO: Print version.
+				printf("bc %s\n", GIT_VERSION);
+				exit(0);
 				break;
 
 			case 'w':
