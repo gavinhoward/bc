@@ -168,6 +168,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	n = BC_VM_BUF_SIZE;
 	bufn = BC_VM_BUF_SIZE;
 	buffer = malloc(BC_VM_BUF_SIZE + 1);
+	buffer[0] = '\0';
 
 	if (!buffer) {
 		status = BC_STATUS_MALLOC_FAIL;
