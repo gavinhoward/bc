@@ -93,7 +93,6 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 	status = bc_parse_text(&vm->parse, data);
 
 	if (status) {
-		bc_error(status);
 		goto read_err;
 	}
 
@@ -101,33 +100,27 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 		status = bc_parse_parse(&vm->parse, &vm->program);
 
-		if (status && (status != BC_STATUS_LEX_EOF &&
-		               status != BC_STATUS_PARSE_EOF))
-		{
-			bc_error_file(vm->program.file, vm->parse.lex.line, status);
-			goto read_err;
+		if (status) {
+
+			if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
+				bc_error_file(vm->program.file, vm->parse.lex.line, status);
+			}
+			else {
+				status = BC_STATUS_SUCCESS;
+			}
+
+			break;
 		}
 
 		if (BC_PARSE_CAN_EXEC(&vm->parse)) {
-
 			status = bc_program_exec(&vm->program);
-
-			if (status) {
-				bc_error(status);
-				goto read_err;
-			}
 		}
 
 	} while (!status);
 
-	bc_program_free(&vm->program);
-	bc_parse_free(&vm->parse);
-
-	free(data);
-
-	return BC_STATUS_SUCCESS;
-
 read_err:
+
+	bc_error(status);
 
 	free(data);
 
