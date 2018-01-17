@@ -576,35 +576,37 @@ static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
 
 static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
-	// Set the token type.
+	uint32_t newlines;
+
+	newlines = 0;
+
 	token->type = BC_LEX_STRING;
 
-	// Get the starting index and character.
 	size_t i = lex->idx;
 	char c = lex->buffer[i];
 
-	// Find the end of the string, one way or the other.
 	while (c != '"' && c != '\0') {
+
+		if (c == '\n') {
+			++newlines;
+		}
+
 		c = lex->buffer[++i];
 	}
 
-	// If we have reached the end of the buffer, complain.
 	if (c == '\0') {
 		lex->idx = i;
 		return BC_STATUS_LEX_NO_STRING_END;
 	}
 
-	// Calculate the length of the string.
 	size_t len = i - lex->idx;
 
-	// Figure out the number of backslash newlines in a string.
 	size_t backslashes = 0;
 	for (size_t j = lex->idx; j < i; ++j) {
 		c = lex->buffer[j];
 		backslashes += c == '\\' && lex->buffer[j + 1] == '\n' ? 1 : 0;
 	}
 
-	// Allocate the string.
 	token->string = malloc(len - backslashes + 1);
 
 	// Check for error.
@@ -612,75 +614,70 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	// The copy start and the number of backslash
-	// hits. These are for the upcoming loop.
 	const char* start = lex->buffer + lex->idx;
 	size_t hits = 0;
 
-	// Copy the string.
 	for (size_t j = 0; j < len; ++j) {
 
-		// Get the character.
 		char c = start[j];
 
-		// If we have hit a backslash, skip it.
 		if (hits < backslashes && c == '\\' && start[j + 1] == '\n') {
 			++hits;
 			continue;
 		}
 
-		// Copy the character.
 		token->string[j - hits] = c;
 	}
 
-	// Make sure to set the null character.
 	token->string[len] = '\0';
 
-	// Set the index. We need to go one
-	// past because of the closing quote.
 	lex->idx = i + 1;
+	lex->line += newlines;
 
 	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 
-	// Set the token type.
+	uint32_t newlines;
+
+	newlines = 0;
+
 	token->type = BC_LEX_WHITESPACE;
 
-	// Increment the index.
 	++lex->idx;
 
-	// Get the starting index and character.
 	size_t i = lex->idx;
 	const char* buffer = lex->buffer;
 	char c = buffer[i];
 
-	// The end condition.
+	if (c == '\n') {
+		++newlines;
+	}
+
 	int end = 0;
 
-	// Loop until we have found the end.
 	while (!end) {
 
-		// Find the end of the string, one way or the other.
 		while (c != '*' && c != '\0') {
 			c = buffer[++i];
 		}
 
-		// If we've reached the end of the string,
-		// but not the comment, complain.
+		if (c == '\n') {
+			++newlines;
+		}
+
 		if (c == '\0' || buffer[i + 1] == '\0') {
 			lex->idx = i;
 			return BC_STATUS_LEX_NO_COMMENT_END;
 		}
 
-		// If we've reached the end, set the end.
 		end = buffer[i + 1] == '/';
 		i += end ? 0 : 1;
 	}
 
-	// Set the index. Plus 2 is to get past the comment end.
 	lex->idx = i + 2;
+	lex->line += newlines;
 
 	return BC_STATUS_SUCCESS;
 }
