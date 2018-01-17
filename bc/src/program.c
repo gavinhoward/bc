@@ -5,6 +5,7 @@
 #include <arbprec/arbprec.h>
 
 #include <bc/program.h>
+#include <bc/parse.h>
 
 BcStatus bc_program_init(BcProgram* p, const char* file) {
 
@@ -43,7 +44,19 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 		goto array_err;
 	}
 
+	st = bc_stack_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
+
+	if (st) {
+		goto stack_err;
+	}
+
+	printf("Init program\n");
+
 	return st;
+
+stack_err:
+
+	bc_segarray_free(&p->arrays);
 
 array_err:
 
@@ -91,6 +104,7 @@ BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
 
 BcStatus bc_program_exec(BcProgram* p) {
 	// TODO: Write this function.
+
 	return BC_STATUS_SUCCESS;
 }
 
@@ -105,4 +119,6 @@ void bc_program_free(BcProgram* p) {
 	bc_segarray_free(&p->funcs);
 	bc_segarray_free(&p->vars);
 	bc_segarray_free(&p->arrays);
+
+	printf("Free program\n");
 }

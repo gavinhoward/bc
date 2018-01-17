@@ -16,8 +16,9 @@ static inline void bc_segarray_moveLast(BcSegArray* sa, uint32_t end1);
 static void bc_segarray_move(BcSegArray* sa, uint32_t idx1,
                              uint32_t start, uint32_t num_elems);
 
-BcStatus bc_segarray_init(BcSegArray* sa, size_t esize, BcSegArrayFreeFunc sfree, BcSegArrayCmpFunc cmp) {
-
+BcStatus bc_segarray_init(BcSegArray* sa, size_t esize,
+                          BcFreeFunc sfree, BcCmpFunc cmp)
+{
 	if (sa == NULL || esize == 0) {
 		return BC_STATUS_INVALID_PARAM;
 	}
@@ -95,7 +96,7 @@ uint32_t bc_segarray_find(BcSegArray* sa, void* data) {
 
 void bc_segarray_free(BcSegArray* sa) {
 
-	BcSegArrayFreeFunc sfree;
+	BcFreeFunc sfree;
 	uint32_t num;
 
 	if (sa == NULL) {
@@ -117,9 +118,11 @@ void bc_segarray_free(BcSegArray* sa) {
 
 		num = BC_SEGARRAY_IDX1(sa->num - 1);
 
-		for (uint32_t i = num - 1; i < num; --i) {
+		for (uint32_t i = 0; i < num; ++i) {
 			free(sa->ptrs[i]);
 		}
+
+		free(sa->ptrs[num]);
 	}
 	else {
 		free(sa->ptrs[0]);
@@ -237,7 +240,7 @@ static BcStatus bc_segarray_addArray(BcSegArray* sa, uint32_t idx) {
 
 static uint32_t bc_segarray_findIndex(BcSegArray* sa, void* data) {
 
-	BcSegArrayCmpFunc cmp = sa->cmp;
+	BcCmpFunc cmp = sa->cmp;
 
 	uint32_t low = 0;
 	uint32_t high = sa->num;

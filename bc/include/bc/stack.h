@@ -15,9 +15,11 @@ typedef struct BcStack {
 	uint32_t len;
 	uint32_t cap;
 
+	BcFreeFunc sfree;
+
 } BcStack;
 
-BcStatus bc_stack_init(BcStack* stack, size_t esize);
+BcStatus bc_stack_init(BcStack* stack, size_t esize, BcFreeFunc sfree);
 
 BcStatus bc_stack_push(BcStack* stack, void* data);
 

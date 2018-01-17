@@ -13,7 +13,7 @@ BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
 	vm->filec = filec;
 	vm->filev = filev;
 
-	return bc_stack_init(&vm->ctx_stack, sizeof(BcStmtList*));
+	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_vm_exec(BcVm* vm) {
@@ -34,10 +34,6 @@ BcStatus bc_vm_exec(BcVm* vm) {
 	}
 
 	return bc_vm_execStdin(vm);
-}
-
-void bc_vm_free(BcVm* vm) {
-	bc_stack_free(&vm->ctx_stack);
 }
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx) {

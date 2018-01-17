@@ -5,6 +5,9 @@
 
 #define BC_VERSION_STR ("BC_VERSION")
 
+typedef void (*BcFreeFunc)(void*);
+typedef int (*BcCmpFunc)(void*, void*);
+
 typedef enum BcStatus {
 
 	BC_STATUS_SUCCESS,
