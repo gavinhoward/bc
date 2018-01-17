@@ -581,19 +581,35 @@ static void bc_program_stmt_free(BcStmt* stmt) {
 
 		case BC_STMT_IF:
 		{
-			// TODO: Free for if statements.
+			bc_stack_free(&stmt->data.if_stmt->cond);
+			bc_program_list_free(stmt->data.if_stmt->then_list);
+			bc_program_list_free(stmt->data.if_stmt->else_list);
+
+			stmt->data.if_stmt->then_list = NULL;
+			stmt->data.if_stmt->else_list = NULL;
+
 			break;
 		}
 
 		case BC_STMT_WHILE:
 		{
-			// TODO: Free for while statements.
+			bc_stack_free(&stmt->data.while_stmt->cond);
+			bc_program_list_free(stmt->data.while_stmt->body);
+
+			stmt->data.while_stmt->body = NULL;
+
 			break;
 		}
 
 		case BC_STMT_FOR:
 		{
-			// TODO: Free for for statements.
+			bc_stack_free(&stmt->data.for_stmt->cond);
+			bc_stack_free(&stmt->data.for_stmt->update);
+			bc_stack_free(&stmt->data.for_stmt->init);
+			bc_program_list_free(stmt->data.for_stmt->body);
+
+			stmt->data.for_stmt->body = NULL;
+
 			break;
 		}
 
