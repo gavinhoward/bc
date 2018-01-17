@@ -71,10 +71,8 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token);
 
 BcStatus bc_lex_printToken(BcLexToken* token) {
 
-	// Print the type.
 	printf("<%s", token_type_strs[token->type]);
 
-	// Figure out if more needs to be done.
 	switch (token->type) {
 
 		case BC_LEX_STRING:
@@ -87,7 +85,6 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
 			break;
 	}
 
-	// Print the end.
 	putchar('>');
 	putchar('\n');
 
@@ -149,13 +146,10 @@ BcStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
-	// We want to make sure this is cleared.
 	BcStatus status = BC_STATUS_SUCCESS;
 
-	// Get the character.
 	char c = lex->buffer[lex->idx];
 
-	// Increment the index.
 	++lex->idx;
 
 	char c2;
@@ -193,11 +187,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '!':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// The only valid way to have a bang is a NOT_EQ token.
-			// If it's not valid, we do not want to increment twice.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_REL_NOT_EQ;
@@ -217,11 +208,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '%':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_MODULUS;
@@ -235,11 +223,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '&':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
 			if (c2 == '&') {
 				++lex->idx;
 				token->type = BC_LEX_OP_BOOL_AND;
@@ -266,11 +251,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '*':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_MULTIPLY;
@@ -284,11 +266,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '+':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_PLUS;
@@ -312,12 +291,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '-':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
-			// We also need to handle numbers.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_MINUS;
@@ -341,12 +316,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '/':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
-			// We also need to handle comments.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_DIVIDE;
@@ -384,11 +355,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '<':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or with an equals.
-			// If with an equals, we need to increment the index.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_REL_LESS_EQ;
@@ -402,11 +370,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '=':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or with another equals.
-			// If with another equals, we need to increment the index.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_REL_EQUAL;
@@ -420,11 +385,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '>':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or with an equals.
-			// If with an equals, we need to increment the index.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_REL_GREATER_EQ;
@@ -467,11 +429,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '^':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
 			if (c2 == '=') {
 				++lex->idx;
 				token->type = BC_LEX_OP_ASSIGN_POWER;
@@ -522,11 +481,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		case '|':
 		{
-			// Get the next character.
 			c2 = lex->buffer[lex->idx];
 
-			// This character can either be alone or as an assignment.
-			// If it's an assignment, we need to increment the index.
 			if (c2 == '|') {
 				++lex->idx;
 				token->type = BC_LEX_OP_BOOL_OR;
@@ -547,7 +503,6 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 		default:
 		{
-			// All other characters are invalid.
 			token->type = BC_LEX_INVALID;
 			status = BC_STATUS_LEX_INVALID_TOKEN;
 			break;
@@ -559,13 +514,10 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
 static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
 
-	// Set the token type.
 	token->type = BC_LEX_WHITESPACE;
 
-	// Get the character.
 	char c = lex->buffer[lex->idx];
 
-	// Eat all whitespace (and non-newline) characters.
 	while ((isspace(c) && c != '\n') || c == '\\') {
 		++lex->idx;
 		c = lex->buffer[lex->idx];
@@ -609,7 +561,6 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
 	token->string = malloc(len - backslashes + 1);
 
-	// Check for error.
 	if (token->string == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
@@ -684,57 +635,42 @@ static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 
 static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 
-	// Set the token type.
 	token->type = BC_LEX_NUMBER;
 
-	// Whether or not we already have passed a decimal point.
 	int point = start == '.';
 
-	// Get a pointer to the place in the buffer.
 	const char* buffer = lex->buffer + lex->idx;
 
-	// Cache these for the upcoming loop.
 	size_t backslashes = 0;
 	size_t i = 0;
 	char c = buffer[i];
 
-	// Find the end of the number.
 	while (c && (isdigit(c) || (c >= 'A' && c <= 'F') || (c == '.' && !point) ||
 	             (c == '\\' && buffer[i + 1] == '\n')))
 	{
-		// If we ran into a backslash, handle it.
 		if (c == '\\') {
 			++i;
 			backslashes += 1;
 		}
 
-		// Increment and get the character.
 		c = buffer[++i];
 	}
 
-	// Calculate the length of the string.
 	size_t len = i + 1;
 
-	// Allocate the string.
 	token->string = malloc(len - backslashes + 1);
 
-	// Check for error.
 	if (token->string == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	// Set the starting character.
 	token->string[0] = start;
 
-	// The copy start and the number of backslash
-	// hits. These are for the upcoming loop.
 	const char* buf = buffer - 1;
 	size_t hits = 0;
 
-	// Copy the string.
 	for (size_t j = 1; j < len; ++j) {
 
-		// Get the character.
 		char c = buf[j];
 
 		// If we have hit a backslash, skip it.
@@ -746,15 +682,11 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 			continue;
 		}
 
-		// Copy the character.
 		token->string[j - (hits * 2)] = c;
 	}
 
-	// Make sure to set the null character.
 	token->string[len] = '\0';
 
-	// Set the index. We need to go one
-	// past because of the closing quote.
 	lex->idx += i;
 
 	return BC_STATUS_SUCCESS;
@@ -762,18 +694,12 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 
 static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 
-	// Get a pointer to the place in the buffer. We subtract
-	// one because the index is already incremented.
 	const char* buffer = lex->buffer + lex->idx - 1;
 
-	// Loop through the keywords.
 	for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
 
-		// If a keyword matches, set it, increment, and return.
 		if (!strncmp(buffer, keywords[i], keyword_lens[i])) {
 
-			// We just need to add the starting
-			// index of keyword token types.
 			token->type = BC_LEX_KEY_AUTO + i;
 
 			// We need to minus one because the
@@ -784,28 +710,22 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 		}
 	}
 
-	// Set the type.
 	token->type = BC_LEX_NAME;
 
-	// These are for the next loop.
 	size_t i = 0;
 	char c = buffer[i];
 
-	// Find the end of the name.
 	while (islower(c) || isdigit(c) || c == '_') {
 		++i;
 		c = buffer[i];
 	}
 
-	// Malloc the name.
 	token->string = malloc(i + 1);
 
-	// Check for error.
 	if (token->string == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	// Copy the string.
 	strncpy(token->string, buffer, i);
 	token->string[i] = '\0';
 
