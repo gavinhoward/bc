@@ -1,4 +1,4 @@
-CFLAGS += -fPIC -Wall -Wextra -I./include/ -I../arbprec/include -std=c99 -g -O0
+CFLAGS += -Wall -Wextra -I./include/ -I../arbprec/include -std=c99 -g -O0
 
 ifeq "$(CC)" "clang"
 	CFLAGS += -fsanitize=address -fsanitize=undefined
@@ -13,6 +13,8 @@ all:
 	$(MAKE) $(BC_EXEC)
 
 $(BC_EXEC): $(BC_OBJ) ../arbprec/libarbprec.a
+
+	$(CC) $(CFLAGS) -o $(BC_EXEC) ./*.c src/*.c ../arbprec/libarbprec.a
 
 clean:
 
