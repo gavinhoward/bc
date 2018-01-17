@@ -878,6 +878,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	BcExpr expr;
 	uint32_t nexprs;
 	uint32_t num_parens;
+	uint32_t ops_start_len;
 	bool paren_first;
 	bool paren_expr;
 	bool rparen;
@@ -887,6 +888,8 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	BcLexTokenType type;
 	BcLexTokenType* ptr;
 	BcLexTokenType top;
+
+	ops_start_len = parse->ops.len;
 
 	prev = BC_EXPR_PRINT;
 
@@ -1107,7 +1110,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 		return status;
 	}
 
-	while (!status && parse->ops.len > 0) {
+	while (!status && parse->ops.len > ops_start_len) {
 
 		ptr = bc_stack_top(&parse->ops);
 		top = *ptr;
