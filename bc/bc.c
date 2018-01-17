@@ -50,6 +50,8 @@ static const char* const bc_short_opts = "hlqsvw";
 
 static const char* const bc_version_fmt = "bc %s\n%s\n";
 
+static const char* const bc_version = "0.1";
+
 int main(int argc, char* argv[]) {
 
 	BcStatus status;
@@ -90,7 +92,7 @@ int main(int argc, char* argv[]) {
 				break;
 
 			case 'v':
-				printf(bc_version_fmt, BC_VERSION_STR, bc_copyright);
+				printf(bc_version_fmt, bc_version, bc_copyright);
 				do_exit = true;
 				break;
 
@@ -114,7 +116,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (!bc_quiet) {
-		printf(bc_version_fmt, BC_VERSION_STR, bc_copyright);
+		printf(bc_version_fmt, bc_version, bc_copyright);
 		putchar('\n');
 	}
 
@@ -129,7 +131,7 @@ int main(int argc, char* argv[]) {
 
 	status = bc_vm_exec(&vm);
 
-	return status;
+	return !status;
 }
 
 void bc_limits() {
