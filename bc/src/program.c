@@ -181,17 +181,7 @@ void bc_program_free(BcProgram* p) {
 		return;
 	}
 
-	BcStmtList* temp;
-	BcStmtList* cur = p->first;
-
-	while (cur != NULL) {
-		temp = cur->next;
-		bc_program_list_free(cur);
-		cur = temp;
-	}
-
-	p->cur = NULL;
-	p->first = NULL;
+	bc_program_list_free(p->first);
 
 	uint32_t num = p->funcs.num;
 	for (uint32_t i = 0; i < num; ++i) {
@@ -279,6 +269,8 @@ void bc_program_list_free(BcStmtList* list) {
 	do {
 
 		temp = list->next;
+
+		assert(list != temp);
 
 		num = list->num_stmts;
 		stmts = list->stmts;

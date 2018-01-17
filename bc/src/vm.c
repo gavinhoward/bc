@@ -38,8 +38,6 @@ BcStatus bc_vm_exec(BcVm* vm) {
 
 void bc_vm_free(BcVm* vm) {
 	bc_stack_free(&vm->ctx_stack);
-	bc_parse_free(&vm->parse);
-	bc_program_free(&vm->program);
 }
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
