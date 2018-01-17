@@ -1,3 +1,6 @@
+#include <assert.h>
+#include <stdlib.h>
+
 #include <bc/data.h>
 
 static const uint32_t bc_stmt_sizes[] = {
