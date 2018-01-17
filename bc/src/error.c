@@ -30,6 +30,7 @@ static const char* const bc_err_types[] = {
     "parse",
     "parse",
     "parse",
+    "parse",
 
 };
 
@@ -57,6 +58,7 @@ static const char* const bc_err_descs[] = {
     "invalid expression",
     "invalid print statement",
     "invalid function definition",
+    "no auto variable found",
     "end of file",
     "bug in parser",
 
