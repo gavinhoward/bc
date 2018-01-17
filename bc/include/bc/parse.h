@@ -89,6 +89,8 @@ typedef struct BcParse {
 
 	BcStack ctx_stack;
 
+	BcStack ops;
+
 	BcFunc* func;
 
 	uint32_t num_braces;

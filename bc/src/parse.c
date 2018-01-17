@@ -197,6 +197,12 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 		return status;
 	}
 
+	status = bc_stack_init(&parse->ops, sizeof(BcLexTokenType));
+
+	if (status) {
+		return status;
+	}
+
 	parse->func = NULL;
 	parse->num_braces = 0;
 	parse->auto_part = false;
@@ -276,6 +282,7 @@ void bc_parse_free(BcParse* parse) {
 
 	bc_stack_free(&parse->flag_stack);
 	bc_stack_free(&parse->ctx_stack);
+	bc_stack_free(&parse->ops);
 
 	switch (parse->token.type) {
 
@@ -868,7 +875,6 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 	BcStatus status;
-	BcStack ops;
 	BcExpr expr;
 	uint32_t nexprs;
 	uint32_t num_parens;
@@ -887,12 +893,6 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 	paren_first = parse->token.type == BC_LEX_LEFT_PAREN;
 
 	status = bc_stack_init(exprs, sizeof(BcExpr));
-
-	if (status) {
-		return status;
-	}
-
-	status = bc_stack_init(&ops, sizeof(BcLexTokenType));
 
 	if (status) {
 		return status;
@@ -922,7 +922,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 			case BC_LEX_OP_MINUS:
 			{
-				status = bc_parse_minus(parse, exprs, &ops, &prev,
+				status = bc_parse_minus(parse, exprs, &parse->ops, &prev,
 				                        rparen, &nexprs);
 				rparen = false;
 				get_token = false;
@@ -954,7 +954,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			case BC_LEX_OP_BOOL_AND:
 			{
 				prev = BC_PARSE_TOKEN_TO_EXPR(type);
-				status = bc_parse_operator(parse, exprs, &ops, type, &nexprs, true);
+				status = bc_parse_operator(parse, exprs, &parse->ops, type, &nexprs, true);
 				rparen = false;
 				get_token = false;
 				break;
@@ -966,7 +966,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 				paren_expr = false;
 				rparen = false;
 				get_token = true;
-				status = bc_stack_push(&ops, &type);
+				status = bc_stack_push(&parse->ops, &type);
 				break;
 			}
 
@@ -987,7 +987,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 				rparen = true;
 				get_token = false;
 
-				status = bc_parse_rightParen(parse, exprs, &ops, &nexprs);
+				status = bc_parse_rightParen(parse, exprs, &parse->ops, &nexprs);
 
 				break;
 			}
@@ -1107,9 +1107,9 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 		return status;
 	}
 
-	while (!status && ops.len > 0) {
+	while (!status && parse->ops.len > 0) {
 
-		ptr = bc_stack_top(&ops);
+		ptr = bc_stack_top(&parse->ops);
 		top = *ptr;
 
 		if (top == BC_LEX_LEFT_PAREN || top == BC_LEX_RIGHT_PAREN) {
@@ -1126,7 +1126,7 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 		nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEGATE ? 1 : 0;
 
-		status = bc_stack_pop(&ops);
+		status = bc_stack_pop(&parse->ops);
 	}
 
 	if (nexprs != 1) {
