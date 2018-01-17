@@ -1,4 +1,4 @@
-CFLAGS += -Wall -Wextra -I./include/ -fPIC
+CFLAGS += -Wall -Wextra -I./include/
 
 OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done )
 
