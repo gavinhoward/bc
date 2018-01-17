@@ -2192,7 +2192,7 @@ static BcStatus bc_parse_rightBrace(BcParse* parse) {
 
 			top = *(BC_PARSE_TOP_CTX(parse));
 			if_stmt = bc_list_last(top);
-			list_ptr = &if_stmt->data.if_stmt->then_list;
+			list_ptr = &if_stmt->data.if_stmt->else_list;
 
 			return bc_parse_startBody(parse, list_ptr, BC_PARSE_FLAG_ELSE);
 		}
