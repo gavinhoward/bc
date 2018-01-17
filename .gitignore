@@ -4,6 +4,7 @@
 *.includes
 *.creator.user
 bc
+!bc/
 *.o
 *.a
 arbprec/tests/add
