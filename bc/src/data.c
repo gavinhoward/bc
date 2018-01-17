@@ -140,6 +140,12 @@ BcStmt* bc_list_last(BcStmtList* list) {
 
 void bc_list_free(BcStmtList* list) {
 
+	static int times = -1;
+
+	++times;
+
+	printf("List free start %d\n", times);
+
 	BcStmtList* temp;
 	uint32_t num;
 	BcStmt* stmts;
@@ -164,6 +170,10 @@ void bc_list_free(BcStmtList* list) {
 		list = temp;
 
 	} while (list);
+
+	printf("List free end %d\n", times);
+
+	--times;
 }
 
 static BcStatus bc_program_list_expand(BcStmtList* list) {
@@ -306,6 +316,8 @@ int bc_func_cmp(void* func1, void* func2) {
 void bc_func_free(void* func) {
 
 	BcFunc* f;
+	uint32_t num;
+	BcAuto* vars;
 
 	f = (BcFunc*) func;
 
@@ -320,6 +332,20 @@ void bc_func_free(void* func) {
 	f->name = NULL;
 	f->first = NULL;
 	f->cur = NULL;
+
+	num = f->num_params;
+	vars = f->params;
+
+	for (uint32_t i = 0; i < num; ++i) {
+		free(vars[i].name);
+	}
+
+	num = f->num_autos;
+	vars = f->autos;
+
+	for (uint32_t i = 0; i < num; ++i) {
+		free(vars[i].name);
+	}
 
 	free(f->params);
 	free(f->autos);
@@ -436,12 +462,19 @@ BcStatus bc_stmt_init(BcStmt* stmt, BcStmtType type) {
 
 void bc_stmt_free(BcStmt* stmt) {
 
+	static int times = -1;
+
+	++times;
+
+	printf("Stmt free start %d\n", times);
+
 	switch (stmt->type) {
 
 		case BC_STMT_EXPR:
 		case BC_STMT_RETURN:
 		{
 			bc_stack_free(stmt->data.expr_stack);
+			free(stmt->data.expr_stack);
 			break;
 		}
 
@@ -454,15 +487,16 @@ void bc_stmt_free(BcStmt* stmt) {
 
 		case BC_STMT_IF:
 		{
+			printf("Got here!\n");
 			bc_stack_free(&stmt->data.if_stmt->cond);
 
 			bc_list_free(stmt->data.if_stmt->then_list);
-			stmt->data.if_stmt->then_list = NULL;
 
 			if (stmt->data.if_stmt->else_list) {
 				bc_list_free(stmt->data.if_stmt->else_list);
-				stmt->data.if_stmt->else_list = NULL;
 			}
+
+			free(stmt->data.if_stmt);
 
 			break;
 		}
@@ -472,7 +506,7 @@ void bc_stmt_free(BcStmt* stmt) {
 			bc_stack_free(&stmt->data.while_stmt->cond);
 			bc_list_free(stmt->data.while_stmt->body);
 
-			stmt->data.while_stmt->body = NULL;
+			free(stmt->data.while_stmt);
 
 			break;
 		}
@@ -484,7 +518,7 @@ void bc_stmt_free(BcStmt* stmt) {
 			bc_stack_free(&stmt->data.for_stmt->init);
 			bc_list_free(stmt->data.for_stmt->body);
 
-			stmt->data.for_stmt->body = NULL;
+			free(stmt->data.for_stmt);
 
 			break;
 		}
@@ -503,6 +537,10 @@ void bc_stmt_free(BcStmt* stmt) {
 	}
 
 	stmt->data.expr_stack = NULL;
+
+	printf("Stmt free end %d\n", times);
+
+	--times;
 }
 
 BcIf* bc_if_create() {
@@ -590,7 +628,8 @@ void bc_expr_free(void* expr) {
 		case BC_EXPR_LENGTH:
 		case BC_EXPR_SQRT:
 		{
-			bc_stack_free(&e->expr_stack);
+			bc_stack_free(e->expr_stack);
+			free(e->expr_stack);
 			break;
 		}
 

@@ -50,8 +50,6 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 		goto stack_err;
 	}
 
-	printf("Init program\n");
-
 	return st;
 
 stack_err:
@@ -120,5 +118,5 @@ void bc_program_free(BcProgram* p) {
 	bc_segarray_free(&p->vars);
 	bc_segarray_free(&p->arrays);
 
-	printf("Free program\n");
+	bc_stack_free(&p->ctx_stack);
 }
