@@ -131,3 +131,7 @@ int main(int argc, char* argv[]) {
 
 	return status;
 }
+
+void bc_limits() {
+	// TODO: Print the limits.
+}
