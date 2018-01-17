@@ -685,6 +685,12 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 				break;
 			}
 
+			status = bc_list_insert(list, &stmt);
+
+			if (status) {
+				break;
+			}
+
 			status = bc_parse_semicolonListEnd(parse, list);
 
 			break;
@@ -1783,6 +1789,10 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
 			expr.type = BC_EXPR_PRINT;
 			status = bc_stack_push(stmt.data.expr_stack, &expr);
 
+			if (status) {
+				return status;
+			}
+
 			stmt.type = BC_STMT_EXPR;
 		}
 
@@ -2084,7 +2094,8 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 
 	status = bc_parse_stmt(parse, list);
 
-	if (status) {
+	if (status || (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF))
+	{
 		bc_list_free(list);
 	}
 	else {
