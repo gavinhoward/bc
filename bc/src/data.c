@@ -446,6 +446,7 @@ void bc_stmt_free(BcStmt* stmt) {
 		}
 
 		case BC_STMT_STRING:
+		case BC_STMT_STRING_PRINT:
 		{
 			free(stmt->data.string);
 			break;
