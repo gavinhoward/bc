@@ -204,7 +204,7 @@ static BcStatus bc_segarray_addArray(BcSegArray* sa, uint32_t idx) {
 
 	if (sa->num_ptrs == sa->ptr_cap) {
 
-		uint32_t new_cap = sa->ptr_cap + BC_SEGARRAY_NUM_ARRAYS;
+		uint32_t new_cap = sa->ptr_cap * 2;
 		uint8_t** temp = realloc(sa->ptrs, sizeof(uint8_t*) * new_cap);
 
 		if (!temp) {

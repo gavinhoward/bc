@@ -374,8 +374,8 @@ BcStatus bc_program_func_insertParam(BcFunc* func, char* name, bool var) {
 
 	if (func->num_params == func->param_cap) {
 
-		new_cap = sizeof(BcAuto) * (func->param_cap + BC_PROGRAM_DEF_SIZE);
-		params = realloc(func->params, new_cap);
+		new_cap = func->param_cap * 2;
+		params = realloc(func->params, new_cap * sizeof(BcAuto));
 
 		if (!params) {
 			return BC_STATUS_MALLOC_FAIL;
@@ -403,8 +403,8 @@ BcStatus bc_program_func_insertAuto(BcFunc* func, char* name, bool var) {
 
 	if (func->num_autos == func->auto_cap) {
 
-		new_cap = sizeof(BcAuto) * (func->auto_cap + BC_PROGRAM_DEF_SIZE);
-		autos = realloc(func->autos, new_cap);
+		new_cap = func->auto_cap * 2;
+		autos = realloc(func->autos, new_cap * sizeof(BcAuto));
 
 		if (!autos) {
 			return BC_STATUS_MALLOC_FAIL;
