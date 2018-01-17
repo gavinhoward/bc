@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "stack.h"
-#include "program.h"
-#include "lex.h"
+#include <bc/stack.h>
+#include <bc/program.h>
+#include <bc/lex.h>
 
 #define BC_PARSE_TOP_FLAG(parse)  \
 	(*((uint8_t*) bc_stack_top(&(parse)->flag_stack)))

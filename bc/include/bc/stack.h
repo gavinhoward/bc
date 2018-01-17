@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "bc.h"
+#include <bc/bc.h>
 
 #define BC_STACK_START (16)
 
