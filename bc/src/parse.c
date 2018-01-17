@@ -948,8 +948,6 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 			case BC_LEX_OP_REL_LESS:
 			case BC_LEX_OP_REL_GREATER:
 			case BC_LEX_OP_BOOL_NOT:
-				// TODO: Handle these specially.
-				// We may not have to though...
 			case BC_LEX_OP_BOOL_OR:
 			case BC_LEX_OP_BOOL_AND:
 			{
