@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <bc/io.h>
 #include <bc/vm.h>
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx);
@@ -187,7 +188,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	// parser. The reason for that is because the parser treats
 	// a backslash newline combo as whitespace, per the bc
 	// spec. Thus, the parser will expect more stuff.
-	while (!status && getline(&buf, &bufn, stdin) != -1) {
+	while (!status && bc_io_getline(&buf, &bufn) != (size_t) -1) {
 
 		size_t len;
 
@@ -251,6 +252,10 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
 		buffer[0] = '\0';
 	}
+
+	status = !status || status == BC_STATUS_LEX_EOF ||
+	         status == BC_STATUS_PARSE_EOF ?
+	             BC_STATUS_SUCCESS : status;
 
 exit_err:
 
