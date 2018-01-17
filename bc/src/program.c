@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,17 +63,29 @@ func_err:
 }
 
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
-	assert(p && func);
+
+	if (!p || !func) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
 	return bc_segarray_add(&p->funcs, func);
 }
 
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var) {
-	assert(p && var);
+
+	if (!p || !var) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
 	return bc_segarray_add(&p->vars, var);
 }
 
 BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
-	assert(p && array);
+
+	if (!p || !array) {
+		return BC_STATUS_INVALID_PARAM;
+	}
+
 	return bc_segarray_add(&p->arrays, array);
 }
 
