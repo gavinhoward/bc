@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "stack.h"
+#include <bc/stack.h>
 
 #define BC_SEGARRAY_NUM_ARRAYS (32)
 

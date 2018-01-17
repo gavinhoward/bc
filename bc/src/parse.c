@@ -325,7 +325,7 @@ static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
 		return BC_STATUS_PARSE_INVALID_FUNC;
 	}
 
-	status = bc_program_func_init(&func, parse->token.string);
+	status = bc_func_init(&func, parse->token.string);
 
 	if (status) {
 		return status;
@@ -397,7 +397,7 @@ static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
 			comma = false;
 		}
 
-		status = bc_program_func_insertParam(&func, name, var);
+		status = bc_func_insertParam(&func, name, var);
 
 		if (status) {
 			return status;
@@ -527,7 +527,7 @@ static BcStatus bc_parse_auto(BcParse* parse) {
 			comma = false;
 		}
 
-		status = bc_program_func_insertAuto(parse->func, name, var);
+		status = bc_func_insertAuto(parse->func, name, var);
 
 		if (status) {
 			return status;
@@ -695,7 +695,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 		{
 			parse->auto_part = false;
 
-			status = bc_program_stmt_init(&stmt, BC_STMT_EXPR);
+			status = bc_stmt_init(&stmt, BC_STMT_EXPR);
 
 			if (status) {
 				break;
@@ -800,7 +800,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 			parse->auto_part = false;
 
 			stmt.type = BC_STMT_HALT;
-			status = bc_program_list_insert(list, &stmt);
+			status = bc_list_insert(list, &stmt);
 
 			if (status) {
 				return status;
@@ -1319,7 +1319,7 @@ static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
 
 		*type = BC_EXPR_FUNC_CALL;
 
-		expr.call = bc_program_call_create();
+		expr.call = bc_call_create();
 
 		if (!expr.call) {
 			return BC_STATUS_MALLOC_FAIL;
@@ -1666,7 +1666,7 @@ static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list) {
 	stmt.type = BC_STMT_STRING;
 	stmt.data.string = parse->token.string;
 
-	status = bc_program_list_insert(list, &stmt);
+	status = bc_list_insert(list, &stmt);
 
 	if (status) {
 		return status;
@@ -1727,7 +1727,7 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
 		status = bc_parse_expr(parse, stmt.data.expr_stack);
 	}
 
-	return bc_program_list_insert(list, &stmt);
+	return bc_list_insert(list, &stmt);
 }
 
 static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
@@ -1785,7 +1785,7 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
 			stmt.type = BC_STMT_EXPR;
 		}
 
-		status = bc_program_list_insert(list, &stmt);
+		status = bc_list_insert(list, &stmt);
 
 		if (status) {
 			return status;
@@ -1829,7 +1829,7 @@ static BcStatus bc_parse_if(BcParse* parse, BcStmtList* list) {
 	}
 
 	stmt.type = BC_STMT_IF;
-	stmt.data.if_stmt = bc_program_if_create();
+	stmt.data.if_stmt = bc_if_create();
 
 	if (!stmt.data.if_stmt) {
 		return BC_STATUS_MALLOC_FAIL;
@@ -1864,7 +1864,7 @@ static BcStatus bc_parse_if(BcParse* parse, BcStmtList* list) {
 		return status;
 	}
 
-	return bc_program_list_insert(list, &stmt);
+	return bc_list_insert(list, &stmt);
 }
 
 static BcStatus bc_parse_while(BcParse* parse, BcStmtList* list) {
@@ -1883,7 +1883,7 @@ static BcStatus bc_parse_while(BcParse* parse, BcStmtList* list) {
 	}
 
 	stmt.type = BC_STMT_WHILE;
-	stmt.data.while_stmt = bc_program_while_create();
+	stmt.data.while_stmt = bc_while_create();
 
 	if (!stmt.data.while_stmt) {
 		return BC_STATUS_MALLOC_FAIL;
@@ -1918,7 +1918,7 @@ static BcStatus bc_parse_while(BcParse* parse, BcStmtList* list) {
 		return status;
 	}
 
-	return bc_program_list_insert(list, &stmt);
+	return bc_list_insert(list, &stmt);
 }
 
 static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
@@ -1937,7 +1937,7 @@ static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
 	}
 
 	stmt.type = BC_STMT_FOR;
-	stmt.data.for_stmt = bc_program_for_create();
+	stmt.data.for_stmt = bc_for_create();
 
 	if (!stmt.data.for_stmt) {
 		return BC_STATUS_MALLOC_FAIL;
@@ -2019,7 +2019,7 @@ static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
 		return status;
 	}
 
-	return bc_program_list_insert(list, &stmt);
+	return bc_list_insert(list, &stmt);
 }
 
 static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
@@ -2029,7 +2029,7 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 	BcStmtList* list;
 	uint8_t* flag_ptr;
 
-	list = bc_program_list_create();
+	list = bc_list_create();
 
 	if (!list) {
 		return BC_STATUS_MALLOC_FAIL;
@@ -2069,7 +2069,7 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 		status = bc_parse_stmt(parse, list);
 
 		if (status) {
-			bc_program_list_free(list);
+			bc_list_free(list);
 		}
 		else {
 			*new_list = list;
@@ -2116,7 +2116,7 @@ static BcStatus bc_parse_loopExit(BcParse* parse, BcStmtList* list,
 
 	stmt.type = type == BC_LEX_KEY_BREAK ? BC_STMT_BREAK : BC_STMT_CONTINUE;
 
-	status = bc_program_list_insert(list, &stmt);
+	status = bc_list_insert(list, &stmt);
 
 	if (status) {
 		return status;
@@ -2190,7 +2190,7 @@ static BcStatus bc_parse_rightBrace(BcParse* parse) {
 			}
 
 			top = *(BC_PARSE_TOP_CTX(parse));
-			if_stmt = bc_program_list_last(top);
+			if_stmt = bc_list_last(top);
 			list_ptr = &if_stmt->data.if_stmt->then_list;
 
 			return bc_parse_startBody(parse, list_ptr, BC_PARSE_FLAG_ELSE);
