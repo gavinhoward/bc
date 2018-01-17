@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define BC_VERSION_STR ("BC_VERSION")
-
 typedef void (*BcFreeFunc)(void*);
 typedef int (*BcCmpFunc)(void*, void*);
 
@@ -33,6 +31,7 @@ typedef enum BcStatus {
 	BC_STATUS_PARSE_INVALID_PRINT,
 	BC_STATUS_PARSE_INVALID_FUNC,
 	BC_STATUS_PARSE_NO_AUTO,
+	BC_STATUS_PARSE_QUIT,
 	BC_STATUS_PARSE_EOF,
 	BC_STATUS_PARSE_BUG,
 

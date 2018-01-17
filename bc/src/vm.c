@@ -30,10 +30,12 @@ BcStatus bc_vm_exec(BcVm* vm) {
 	}
 
 	if (status) {
-		return status;
+		return status == BC_STATUS_PARSE_QUIT ? BC_STATUS_SUCCESS : status;
 	}
 
-	return bc_vm_execStdin(vm);
+	status = bc_vm_execStdin(vm);
+
+	return status == BC_STATUS_PARSE_QUIT ? BC_STATUS_SUCCESS : status;
 }
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
@@ -42,6 +44,9 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 	FILE* f;
 	size_t size;
 	size_t read_size;
+	bool quit;
+
+	quit = false;
 
 	status = bc_program_init(&vm->program, vm->filev[idx]);
 
@@ -98,7 +103,12 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 		if (status) {
 
-			if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
+			if (status == BC_STATUS_PARSE_QUIT) {
+				quit = true;
+			}
+			else if (status != BC_STATUS_LEX_EOF &&
+			    status != BC_STATUS_PARSE_EOF)
+			{
 				bc_error_file(status, vm->program.file, vm->parse.lex.line);
 			}
 			else {
@@ -233,7 +243,10 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
 		if (status) {
 
-			if (status == BC_STATUS_LEX_EOF || status == BC_STATUS_PARSE_EOF) {
+			if (status == BC_STATUS_LEX_EOF ||
+			    status == BC_STATUS_PARSE_EOF ||
+			    status == BC_STATUS_PARSE_QUIT)
+			{
 				break;
 			}
 
@@ -260,7 +273,8 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 		buffer[0] = '\0';
 	}
 
-	status = !status || status == BC_STATUS_LEX_EOF ||
+	status = !status || status == BC_STATUS_PARSE_QUIT ||
+	         status == BC_STATUS_LEX_EOF ||
 	         status == BC_STATUS_PARSE_EOF ?
 	             BC_STATUS_SUCCESS : status;
 

@@ -31,6 +31,7 @@ static const char* const bc_err_types[] = {
     "parse",
     "parse",
     "parse",
+    "parse",
 
 };
 
@@ -59,6 +60,7 @@ static const char* const bc_err_descs[] = {
     "invalid print statement",
     "invalid function definition",
     "no auto variable found",
+    "quit statement in file",
     "end of file",
     "bug in parser",
 
@@ -66,7 +68,7 @@ static const char* const bc_err_descs[] = {
 
 void bc_error(BcStatus status) {
 
-	if (!status) {
+	if (!status || status == BC_STATUS_PARSE_QUIT) {
 		return;
 	}
 
@@ -75,7 +77,7 @@ void bc_error(BcStatus status) {
 
 void bc_error_file(BcStatus status, const char* file, uint32_t line) {
 
-	if (!status || !file) {
+	if (!status || status == BC_STATUS_PARSE_QUIT || !file) {
 		return;
 	}
 

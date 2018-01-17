@@ -831,8 +831,10 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 		case BC_LEX_KEY_QUIT:
 		{
 			// Quit is a compile-time command,
-			// so we just do it.
-			exit(status);
+			// so we send an exit command. We
+			// don't exit directly, so the vm
+			// can clean up.
+			status = BC_STATUS_PARSE_QUIT;
 			break;
 		}
 
@@ -2037,28 +2039,28 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	status = bc_stack_push(&parse->ctx_stack, &list);
-
-	if (status) {
-		return status;
-	}
-
-	flag_ptr = bc_stack_top(&parse->flag_stack);
-
-	if (!flag_ptr) {
-		return BC_STATUS_PARSE_BUG;
-	}
-
-	flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FOR_LOOP |
-	                       BC_PARSE_FLAG_WHILE_LOOP));
-
-	status = bc_stack_push(&parse->flag_stack, &flags);
-
-	if (status) {
-		return status;
-	}
-
 	if (parse->token.type == BC_LEX_LEFT_BRACE) {
+
+		status = bc_stack_push(&parse->ctx_stack, &list);
+
+		if (status) {
+			return status;
+		}
+
+		flag_ptr = bc_stack_top(&parse->flag_stack);
+
+		if (!flag_ptr) {
+			return BC_STATUS_PARSE_BUG;
+		}
+
+		flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FOR_LOOP |
+		                       BC_PARSE_FLAG_WHILE_LOOP));
+
+		status = bc_stack_push(&parse->flag_stack, &flags);
+
+		if (status) {
+			return status;
+		}
 
 		++parse->num_braces;
 
@@ -2066,15 +2068,6 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 
 		if (status) {
 			return status;
-		}
-
-		status = bc_parse_stmt(parse, list);
-
-		if (status) {
-			bc_list_free(list);
-		}
-		else {
-			*new_list = list;
 		}
 	}
 	else {
@@ -2087,20 +2080,15 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 				return status;
 			}
 		}
+	}
 
-		status = bc_parse_stmt(parse, list);
+	status = bc_parse_stmt(parse, list);
 
-		if (status) {
-			return status;
-		}
-
-		status = bc_stack_pop(&parse->flag_stack);
-
-		if (status) {
-			return status;
-		}
-
-		status = bc_stack_pop(&parse->ctx_stack);
+	if (status) {
+		bc_list_free(list);
+	}
+	else {
+		*new_list = list;
 	}
 
 	return status;
