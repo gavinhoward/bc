@@ -41,6 +41,6 @@ typedef enum BcStatus {
 void bc_limits();
 
 void bc_error(BcStatus status);
-void bc_error_file(const char* file, uint32_t line, BcStatus status);
+void bc_error_file(BcStatus status, const char* file, uint32_t line);
 
 #endif // BC_H

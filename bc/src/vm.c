@@ -99,7 +99,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 		if (status) {
 
 			if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
-				bc_error_file(vm->program.file, vm->parse.lex.line, status);
+				bc_error_file(status, vm->program.file, vm->parse.lex.line);
 			}
 			else {
 				status = BC_STATUS_SUCCESS;
@@ -246,7 +246,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 		}
 
 		if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
-			bc_error_file(vm->program.file, vm->parse.lex.line, status);
+			bc_error_file(status, vm->program.file, vm->parse.lex.line);
 			goto exit_err;
 		}
 
