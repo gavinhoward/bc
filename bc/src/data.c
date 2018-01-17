@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <stdlib.h>
 
 #include <bc/data.h>
@@ -152,8 +151,6 @@ void bc_list_free(BcStmtList* list) {
 	do {
 
 		temp = list->next;
-
-		assert(list != temp);
 
 		num = list->num_stmts;
 		stmts = list->stmts;
@@ -384,7 +381,7 @@ BcStatus bc_array_init(BcArray* array, char* name) {
 	array->name = name;
 
 	return bc_segarray_init(&array->array, sizeof(fxdpnt),
-	                        (BcSegArrayFreeFunc) arb_free, NULL);
+	                        (BcFreeFunc) arb_free, NULL);
 }
 
 int bc_array_cmp(void* array1, void* array2) {
@@ -457,11 +454,14 @@ void bc_stmt_free(BcStmt* stmt) {
 		case BC_STMT_IF:
 		{
 			bc_stack_free(&stmt->data.if_stmt->cond);
-			bc_list_free(stmt->data.if_stmt->then_list);
-			bc_list_free(stmt->data.if_stmt->else_list);
 
+			bc_list_free(stmt->data.if_stmt->then_list);
 			stmt->data.if_stmt->then_list = NULL;
-			stmt->data.if_stmt->else_list = NULL;
+
+			if (stmt->data.if_stmt->else_list) {
+				bc_list_free(stmt->data.if_stmt->else_list);
+				stmt->data.if_stmt->else_list = NULL;
+			}
 
 			break;
 		}
@@ -554,30 +554,34 @@ BcStatus bc_expr_init(BcExpr* expr, BcExprType type) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_expr_free(BcExpr* expr) {
+void bc_expr_free(void* expr) {
 
-	switch (expr->type) {
+	BcExpr* e;
+
+	e = (BcExpr*) expr;
+
+	switch (e->type) {
 
 		case BC_EXPR_NUMBER:
 		case BC_EXPR_VAR:
 		{
-			free(expr->string);
+			free(e->string);
 			break;
 		}
 
 		case BC_EXPR_ARRAY_ELEM:
 		{
-			free(expr->elem->name);
-			bc_stack_free(&expr->elem->expr_stack);
-			free(expr->elem);
+			free(e->elem->name);
+			bc_stack_free(&e->elem->expr_stack);
+			free(e->elem);
 			break;
 		}
 
 		case BC_EXPR_FUNC_CALL:
 		{
-			free(expr->call->name);
-			bc_segarray_free(&expr->call->params);
-			free(expr->call);
+			free(e->call->name);
+			bc_segarray_free(&e->call->params);
+			free(e->call);
 			break;
 		}
 
@@ -585,7 +589,7 @@ void bc_expr_free(BcExpr* expr) {
 		case BC_EXPR_LENGTH:
 		case BC_EXPR_SQRT:
 		{
-			bc_stack_free(&expr->expr_stack);
+			bc_stack_free(&e->expr_stack);
 			break;
 		}
 
@@ -596,7 +600,7 @@ void bc_expr_free(BcExpr* expr) {
 		}
 	}
 
-	expr->string = NULL;
+	e->string = NULL;
 }
 
 BcCall* bc_call_create() {

@@ -238,6 +238,8 @@ BcWhile* bc_while_create();
 BcFor* bc_for_create();
 
 BcStatus bc_expr_init(BcExpr* expr, BcExprType type);
+void bc_expr_free(void* expr);
+
 BcCall* bc_call_create();
 
 void bc_num_init(fxdpnt* num);

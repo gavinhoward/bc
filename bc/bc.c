@@ -129,8 +129,6 @@ int main(int argc, char* argv[]) {
 
 	status = bc_vm_exec(&vm);
 
-	bc_vm_free(&vm);
-
 	return status;
 }
 

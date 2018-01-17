@@ -9,17 +9,20 @@
 
 typedef struct BcProgram {
 
-	const char* file;
-
 	BcStmtList* first;
-
 	BcStmtList* cur;
+
+	uint32_t stmt_idx;
+
+	BcStack ctx_stack;
 
 	BcSegArray funcs;
 
 	BcSegArray vars;
 
 	BcSegArray arrays;
+
+	const char* file;
 
 } BcProgram;
 

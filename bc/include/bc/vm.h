@@ -12,8 +12,6 @@ typedef struct BcVm {
 	BcProgram program;
 	BcParse parse;
 
-	BcStack ctx_stack;
-
 	int filec;
 	const char** filev;
 
@@ -22,7 +20,5 @@ typedef struct BcVm {
 BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]);
 
 BcStatus bc_vm_exec(BcVm* vm);
-
-void bc_vm_free(BcVm* vm);
 
 #endif // BC_VM_H

@@ -2,26 +2,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <bc/bc.h>
 #include <bc/stack.h>
 
 static BcStatus bc_stack_expand(BcStack* stack);
 
-BcStatus bc_stack_init(BcStack* stack, size_t esize) {
+BcStatus bc_stack_init(BcStack* stack, size_t esize, BcFreeFunc sfree) {
 
-	// Check for invalid params.
 	if (stack == NULL || esize == 0) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	// Set the fields.
 	stack->size = esize;
 	stack->cap = BC_STACK_START;
 	stack->len = 0;
+	stack->sfree = sfree;
 
-	// Allocate the array.
 	stack->stack = malloc(esize * BC_STACK_START);
 
-	// Check for error.
 	if (stack->stack == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
@@ -31,28 +29,22 @@ BcStatus bc_stack_init(BcStack* stack, size_t esize) {
 
 BcStatus bc_stack_push(BcStack* stack, void* data) {
 
-	// Check for invalid params.
 	if (stack == NULL || data == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	// Check if we need to expand.
 	if (stack->len == stack->cap) {
 
-		// Expand the stack.
 		BcStatus status = bc_stack_expand(stack);
 
-		// Check for error.
 		if (status != BC_STATUS_SUCCESS) {
 			return status;
 		}
 	}
 
-	// Copy the data.
 	size_t size = stack->size;
 	memmove(stack->stack + (size * stack->len), data, size);
 
-	// Increment the length.
 	++stack->len;
 
 	return BC_STATUS_SUCCESS;
@@ -60,34 +52,28 @@ BcStatus bc_stack_push(BcStack* stack, void* data) {
 
 void* bc_stack_top(BcStack* stack) {
 
-	// Check for invalid state.
 	if (stack == NULL || stack->len == 0) {
 		return NULL;
 	}
 
-	// Calculate the return pointer.
 	return stack->stack + stack->size * (stack->len - 1);
 }
 
 void* bc_stack_item(BcStack* stack, uint32_t idx) {
 
-	// Check for invalid state.
 	if (stack == NULL || stack->len == 0 || idx >= stack->len) {
 		return NULL;
 	}
 
-	// Calculate the return pointer.
 	return stack->stack + stack->size * (stack->len - idx - 1);
 }
 
 BcStatus bc_stack_pop(BcStack* stack) {
 
-	// Check for invalid params.
 	if (stack == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
 
-	// Decrement the length.
 	--stack->len;
 
 	return BC_STATUS_SUCCESS;
@@ -96,18 +82,32 @@ BcStatus bc_stack_pop(BcStack* stack) {
 void bc_stack_free(void* stack) {
 
 	BcStack* s;
+	size_t len;
+	size_t esize;
+	BcFreeFunc sfree;
+	uint8_t* array;
 
 	s = (BcStack*) stack;
 
-	// Check for NULL.
 	if (s == NULL) {
 		return;
 	}
 
-	// Free the stack.
+	sfree = s->sfree;
+
+	if (sfree) {
+
+		len = s->len;
+		array = s->stack;
+		esize = s->size;
+
+		for (size_t i = 0; i < len; ++i) {
+			sfree(array + (i * esize));
+		}
+	}
+
 	free(s->stack);
 
-	// Zero the fields.
 	s->size = 0;
 	s->stack = NULL;
 	s->len = 0;
@@ -116,15 +116,12 @@ void bc_stack_free(void* stack) {
 
 static BcStatus bc_stack_expand(BcStack* stack) {
 
-	// Realloc.
 	uint8_t* ptr = realloc(stack->stack, stack->size * (stack->cap + BC_STACK_START));
 
-	// Check for error.
 	if (ptr == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	// Assign the fields.
 	stack->stack = ptr;
 	stack->cap += BC_STACK_START;
 
