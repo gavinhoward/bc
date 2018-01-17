@@ -104,7 +104,6 @@ int main(int argc, char* argv[]) {
 				break;
 		}
 
-		// Get the next option.
 		c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
 	}
 
