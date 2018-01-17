@@ -544,7 +544,11 @@ static BcStatus bc_parse_auto(BcParse* parse) {
 		return BC_STATUS_PARSE_INVALID_FUNC;
 	}
 
-	if (!one || (type != BC_LEX_NEWLINE && type != BC_LEX_SEMICOLON)) {
+	if (!one) {
+		return BC_STATUS_PARSE_NO_AUTO;
+	}
+
+	if (type != BC_LEX_NEWLINE && type != BC_LEX_SEMICOLON) {
 		return BC_STATUS_PARSE_INVALID_TOKEN;
 	}
 
