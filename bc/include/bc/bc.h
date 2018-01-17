@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define BC_VERSION_STR (BC_VERSION)
+
 typedef enum BcStatus {
 
 	BC_STATUS_SUCCESS,
