@@ -102,19 +102,27 @@ void bc_segarray_free(BcSegArray* sa) {
 		return;
 	}
 
-	sfree = sa->sfree;
+	num = sa->num;
 
-	if (sfree) {
+	if (num) {
 
-		num = sa->num;
-		for (uint32_t i = 0; i < num; ++i) {
-			sfree(bc_segarray_item(sa, i));
+		sfree = sa->sfree;
+
+		if (sfree) {
+
+			for (uint32_t i = 0; i < num; ++i) {
+				sfree(bc_segarray_item(sa, i));
+			}
+		}
+
+		num = BC_SEGARRAY_IDX1(sa->num - 1);
+
+		for (uint32_t i = num - 1; i < num; --i) {
+			free(sa->ptrs[i]);
 		}
 	}
-
-	num = BC_SEGARRAY_IDX1(sa->num - 1);
-	for (uint32_t i = num - 1; i < num; --i) {
-		free(sa->ptrs[i]);
+	else {
+		free(sa->ptrs[0]);
 	}
 
 	free(sa->ptrs);
