@@ -73,7 +73,7 @@ void bc_error(BcStatus status) {
 	fprintf(stderr, "%s error: %s\n", bc_err_types[status], bc_err_descs[status]);
 }
 
-void bc_error_file(const char* file, uint32_t line, BcStatus status) {
+void bc_error_file(BcStatus status, const char* file, uint32_t line) {
 
 	if (!status || !file) {
 		return;
