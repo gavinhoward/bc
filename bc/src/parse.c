@@ -562,11 +562,30 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list) {
 		case BC_LEX_OP_MINUS:
 		case BC_LEX_OP_BOOL_NOT:
 		case BC_LEX_LEFT_PAREN:
+		case BC_LEX_STRING:
+		case BC_LEX_NAME:
+		case BC_LEX_NUMBER:
+		case BC_LEX_KEY_BREAK:
+		case BC_LEX_KEY_CONTINUE:
+		case BC_LEX_KEY_FOR:
+		case BC_LEX_KEY_HALT:
+		case BC_LEX_KEY_IBASE:
+		case BC_LEX_KEY_IF:
+		case BC_LEX_KEY_LAST:
+		case BC_LEX_KEY_LENGTH:
+		case BC_LEX_KEY_LIMITS:
+		case BC_LEX_KEY_OBASE:
+		case BC_LEX_KEY_PRINT:
+		case BC_LEX_KEY_QUIT:
+		case BC_LEX_KEY_READ:
+		case BC_LEX_KEY_RETURN:
+		case BC_LEX_KEY_SCALE:
+		case BC_LEX_KEY_SQRT:
+		case BC_LEX_KEY_WHILE:
 		{
 			status = bc_parse_stmt(parse, list);
 			break;
 		}
-
 
 		case BC_LEX_NEWLINE:
 		{
@@ -580,55 +599,10 @@ static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list) {
 			break;
 		}
 
-		case BC_LEX_STRING:
-		case BC_LEX_NAME:
-		case BC_LEX_NUMBER:
-		case BC_LEX_KEY_BREAK:
-		case BC_LEX_KEY_CONTINUE:
-		case BC_LEX_KEY_FOR:
-		case BC_LEX_KEY_HALT:
-		case BC_LEX_KEY_IBASE:
-		case BC_LEX_KEY_IF:
-		case BC_LEX_KEY_LAST:
-		case BC_LEX_KEY_LENGTH:
-		case BC_LEX_KEY_OBASE:
-		case BC_LEX_KEY_PRINT:
-		{
-			status = bc_parse_stmt(parse, list);
-			break;
-		}
-
-		case BC_LEX_KEY_LIMITS:
-		{
-			bc_limits();
-
-			status = bc_lex_next(&parse->lex, &parse->token);
-
-			break;
-		}
-
-		case BC_LEX_KEY_QUIT:
-		{
-			// Quit is a compile-time command,
-			// so we just do it.
-			exit(status);
-			break;
-		}
-
-		case BC_LEX_KEY_READ:
-		case BC_LEX_KEY_RETURN:
-		case BC_LEX_KEY_SCALE:
-		case BC_LEX_KEY_SQRT:
-		case BC_LEX_KEY_WHILE:
-		{
-			status = bc_parse_stmt(parse, list);
-			break;
-		}
-
 		case BC_LEX_EOF:
 		{
 			if (parse->ctx_stack.len > 0) {
-				status = BC_STATUS_PARSE_INVALID_TOKEN;
+				status = BC_STATUS_PARSE_EOF;
 			}
 
 			break;
@@ -826,12 +800,35 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 			break;
 		}
 
+		case BC_LEX_KEY_LIMITS:
+		{
+			bc_limits();
+
+			status = bc_lex_next(&parse->lex, &parse->token);
+
+			if (status) {
+				return status;
+			}
+
+			status = bc_parse_semicolonListEnd(parse, list);
+
+			break;
+		}
+
 		case BC_LEX_KEY_PRINT:
 		{
 			parse->auto_part = false;
 
 			status = bc_parse_print(parse, list);
 
+			break;
+		}
+
+		case BC_LEX_KEY_QUIT:
+		{
+			// Quit is a compile-time command,
+			// so we just do it.
+			exit(status);
 			break;
 		}
 
