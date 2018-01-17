@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
+
 #include <getopt.h>
 
 #include <bc/vm.h>
@@ -133,5 +135,15 @@ int main(int argc, char* argv[]) {
 }
 
 void bc_limits() {
-	// TODO: Print the limits.
+
+	putchar('\n');
+
+	printf("BC_BASE_MAX     = %d\n", INT32_MAX);
+	printf("BC_DIM_MAX      = %d\n", INT32_MAX);
+	printf("BC_SCALE_MAX    = %d\n", INT32_MAX);
+	printf("BC_STRING_MAX   = %d\n", INT32_MAX);
+	printf("Max Exponent    = %ld\n", INT64_MAX);
+	printf("Number of Vars  = %u\n", UINT32_MAX - 1);
+
+	putchar('\n');
 }
