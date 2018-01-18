@@ -160,6 +160,9 @@ BcStatus bc_limits() {
 
 		base_max = BC_BASE_MAX_DEF;
 	}
+	else if (base_max > BC_BASE_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
+	}
 #endif
 
 #ifdef _POSIX_BC_DIM_MAX
@@ -177,6 +180,9 @@ BcStatus bc_limits() {
 		}
 
 		dim_max = BC_DIM_MAX_DEF;
+	}
+	else if (dim_max > BC_DIM_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
 	}
 #endif
 
@@ -196,6 +202,9 @@ BcStatus bc_limits() {
 
 		scale_max = BC_SCALE_MAX_DEF;
 	}
+	else if (scale_max > BC_SCALE_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
+	}
 #endif
 
 #ifdef _POSIX_BC_STRING_MAX
@@ -213,6 +222,9 @@ BcStatus bc_limits() {
 		}
 
 		string_max = BC_STRING_MAX_DEF;
+	}
+	else if (string_max > BC_STRING_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
 	}
 #endif
 

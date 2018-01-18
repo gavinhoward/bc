@@ -12,6 +12,9 @@ static const char* const bc_err_types[] = {
     "bc",
     "bc",
 
+    "bc",
+    "bc",
+
     "runtime",
     "runtime",
     "runtime",
@@ -42,6 +45,9 @@ static const char* const bc_err_descs[] = {
     "invalid option",
     "memory allocation error",
     "invalid parameter",
+
+    "one or more limits not specified",
+    "invalid limit; this is a bug in bc",
 
     "couldn't open file",
     "file read error",
