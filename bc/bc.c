@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 
 	status = bc_vm_exec(&vm);
 
-	return !status;
+	return status;
 }
 
 void bc_limits() {
