@@ -26,7 +26,8 @@ static const struct option bc_opts[] = {
 
 };
 
-static const char* const bc_copyright = "Copyright (c) 2018 Gavin D. Howard";
+static const char* const bc_copyright =
+  "Copyright (c) 2018 CM Graff, Bao Hexing, and Gavin D. Howard.";
 
 static const char* const bc_help =
   "usage: bc [options] [file ...]\n"
