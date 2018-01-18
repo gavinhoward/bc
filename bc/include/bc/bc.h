@@ -6,6 +6,11 @@
 typedef void (*BcFreeFunc)(void*);
 typedef int (*BcCmpFunc)(void*, void*);
 
+#define BC_BASE_MAX_DEF (99)
+#define BC_DIM_MAX_DEF (2048)
+#define BC_SCALE_MAX_DEF (99)
+#define BC_STRING_MAX_DEF (1024)
+
 typedef enum BcStatus {
 
 	BC_STATUS_SUCCESS,
@@ -13,6 +18,8 @@ typedef enum BcStatus {
 	BC_STATUS_INVALID_OPTION,
 	BC_STATUS_MALLOC_FAIL,
 	BC_STATUS_INVALID_PARAM,
+
+	BC_STATUS_NO_LIMIT,
 
 	BC_STATUS_VM_FILE_ERR,
 	BC_STATUS_VM_FILE_READ_ERR,
@@ -37,7 +44,7 @@ typedef enum BcStatus {
 
 } BcStatus;
 
-void bc_limits();
+BcStatus bc_limits();
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);

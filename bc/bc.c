@@ -1,9 +1,11 @@
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <unistd.h>
+#include <limits.h>
 
 #include <getopt.h>
 
@@ -135,16 +137,95 @@ int main(int argc, char* argv[]) {
 	return status;
 }
 
-void bc_limits() {
+BcStatus bc_limits() {
+
+	long base_max;
+	long dim_max;
+	long scale_max;
+	long string_max;
+
+#ifdef _POSIX_BC_BASE_MAX
+	base_max = _POSIX_BC_BASE_MAX;
+#elif defined(_BC_BASE_MAX)
+	base_max = _BC_BASE_MAX;
+#else
+	errno = 0;
+	base_max = sysconf(_SC_BC_BASE_MAX);
+
+	if (base_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		base_max = BC_BASE_MAX_DEF;
+	}
+#endif
+
+#ifdef _POSIX_BC_DIM_MAX
+	dim_max = _POSIX_BC_DIM_MAX;
+#elif defined(_BC_DIM_MAX)
+	dim_max = _BC_DIM_MAX;
+#else
+	errno = 0;
+	dim_max = sysconf(_SC_BC_DIM_MAX);
+
+	if (dim_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		dim_max = BC_DIM_MAX_DEF;
+	}
+#endif
+
+#ifdef _POSIX_BC_SCALE_MAX
+	scale_max = _POSIX_BC_SCALE_MAX;
+#elif defined(_BC_SCALE_MAX)
+	scale_max = _BC_SCALE_MAX;
+#else
+	errno = 0;
+	scale_max = sysconf(_SC_BC_SCALE_MAX);
+
+	if (scale_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		scale_max = BC_SCALE_MAX_DEF;
+	}
+#endif
+
+#ifdef _POSIX_BC_STRING_MAX
+	string_max = _POSIX_BC_STRING_MAX;
+#elif defined(_BC_STRING_MAX)
+	string_max = _BC_STRING_MAX;
+#else
+	errno = 0;
+	string_max = sysconf(_SC_BC_STRING_MAX);
+
+	if (string_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		string_max = BC_STRING_MAX_DEF;
+	}
+#endif
 
 	putchar('\n');
 
-	printf("BC_BASE_MAX     = %d\n", INT32_MAX);
-	printf("BC_DIM_MAX      = %d\n", INT32_MAX);
-	printf("BC_SCALE_MAX    = %d\n", INT32_MAX);
-	printf("BC_STRING_MAX   = %d\n", INT32_MAX);
+	printf("BC_BASE_MAX     = %ld\n", base_max);
+	printf("BC_DIM_MAX      = %ld\n", dim_max);
+	printf("BC_SCALE_MAX    = %ld\n", scale_max);
+	printf("BC_STRING_MAX   = %ld\n", string_max);
 	printf("Max Exponent    = %ld\n", INT64_MAX);
-	printf("Number of Vars  = %u\n", UINT32_MAX - 1);
+	printf("Number of Vars  = %u\n", UINT32_MAX);
 
 	putchar('\n');
+
+	return BC_STATUS_SUCCESS;
 }
