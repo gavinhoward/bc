@@ -104,6 +104,6 @@ BcStatus bc_parse_text(BcParse* parse, const char* text);
 
 BcStatus bc_parse_parse(BcParse* parse, BcProgram* program);
 
-void bc_parse_free(BcParse* parse);
+void bc_parse_free(BcParse* parse, BcStatus status);
 
 #endif // BC_PARSE_H

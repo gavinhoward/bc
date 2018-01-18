@@ -132,7 +132,7 @@ data_err:
 
 file_err:
 
-	bc_parse_free(&vm->parse);
+	bc_parse_free(&vm->parse, status);
 
 parse_err:
 
@@ -282,7 +282,7 @@ buf_err:
 
 buffer_err:
 
-	bc_parse_free(&vm->parse);
+	bc_parse_free(&vm->parse, status);
 
 parse_err:
 
