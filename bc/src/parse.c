@@ -812,7 +812,11 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 
 		case BC_LEX_KEY_LIMITS:
 		{
-			bc_limits();
+			status = bc_limits();
+
+			if (status) {
+				break;
+			}
 
 			status = bc_lex_next(&parse->lex, &parse->token);
 
