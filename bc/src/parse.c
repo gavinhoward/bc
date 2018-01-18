@@ -2094,7 +2094,7 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 
 	status = bc_parse_stmt(parse, list);
 
-	if (status || (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF))
+	if (status && status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF)
 	{
 		bc_list_free(list);
 	}

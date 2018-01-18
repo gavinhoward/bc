@@ -44,9 +44,6 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 	FILE* f;
 	size_t size;
 	size_t read_size;
-	bool quit;
-
-	quit = false;
 
 	status = bc_program_init(&vm->program, vm->filev[idx]);
 
@@ -103,10 +100,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 		if (status) {
 
-			if (status == BC_STATUS_PARSE_QUIT) {
-				quit = true;
-			}
-			else if (status != BC_STATUS_LEX_EOF &&
+			if (status != BC_STATUS_LEX_EOF &&
 			    status != BC_STATUS_PARSE_EOF)
 			{
 				bc_error_file(status, vm->program.file, vm->parse.lex.line);
