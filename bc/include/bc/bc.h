@@ -28,6 +28,8 @@ typedef enum BcStatus {
 	BC_STATUS_VM_NEG_SQRT,
 	BC_STATUS_VM_MISMATCHED_PARAMS,
 	BC_STATUS_VM_UNDEFINED_FUNC,
+	BC_STATUS_VM_FILE_NOT_EXECUTABLE,
+	BC_STATUS_VM_SIGACTION_FAIL,
 
 	BC_STATUS_LEX_INVALID_TOKEN,
 	BC_STATUS_LEX_NO_STRING_END,
@@ -49,5 +51,11 @@ BcStatus bc_limits();
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);
+
+extern int bc_interactive;
+extern int bc_standard;
+extern int bc_warn;
+
+extern int bc_had_sigint;
 
 #endif // BC_H
