@@ -1,16 +1,45 @@
+#include <assert.h>
+
 #include <arbprec/arbprec.h>
 
 void arb_free(fxdpnt *flt)
 {
-	if (flt->number)
-		free(flt->number);
+	arb_destruct(flt);
 	free(flt);
+}
+
+void arb_destruct(fxdpnt *flt)
+{
+	if (flt->number) {
+		free(flt->number);
+		flt->number = NULL;
+		flt->allocated = 0;
+	}
 }
 
 void arb_init(fxdpnt *flt)
 {
+	assert(flt);
 	flt->sign = '+';
-	flt->len = flt->lp = 0;
+	flt->len = 0;
+}
+
+fxdpnt *arb_construct(fxdpnt *flt, size_t len)
+{
+	if (!flt) {
+		flt = arb_malloc(sizeof(fxdpnt));
+	}
+
+	arb_init(flt);
+	flt->number = arb_calloc(1, sizeof(ARBT) * len);
+	flt->allocated = len;
+	flt->rp = 0;
+	//flt->len = len;
+	flt->chunk = 4;
+
+	//FIXME: lp should likely be "len"
+
+	return flt;
 }
 
 void arb_flipsign(fxdpnt *flt)
@@ -46,7 +75,7 @@ void *arb_malloc(size_t len)
 
 void *arb_calloc(size_t nmemb, size_t len)
 {
-	void *ret; 
+	void *ret;
 	if(!(ret = calloc(nmemb, len)))
 		arb_error("arb_calloc (calloc) failed\n");
 	return ret;
@@ -54,16 +83,7 @@ void *arb_calloc(size_t nmemb, size_t len)
 
 fxdpnt *arb_alloc(size_t len)
 {
-	fxdpnt *ret = arb_malloc(sizeof(fxdpnt));
-	ret->number = arb_calloc(1, sizeof(ARBT) * len);
-	ret->sign = '+';
-	ret->lp = 0; //FIXME: this should likely be "len"
-	ret->rp = 0;
-	ret->allocated = len;
-	//ret->len = len;
-	ret->len = 0;
-	ret->chunk = 4;
-	return ret;
+	return arb_construct(NULL, len);
 }
 
 void *arb_realloc(void *ptr, size_t len)

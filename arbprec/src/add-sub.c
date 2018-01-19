@@ -1,3 +1,6 @@
+#include <stdbool.h>
+#include <string.h>
+
 #include <arbprec/arbprec.h>
 
 ARBT arb_place(fxdpnt *a, fxdpnt *b, size_t *cnt, size_t r)
@@ -100,26 +103,108 @@ fxdpnt *arb_sub_inter(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 
 fxdpnt *arb_add(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 {
-	arb_init(c);
-	if (a->sign == '-' && b->sign == '-')
+	fxdpnt tempa;
+	fxdpnt tempb;
+	fxdpnt *ptra;
+	fxdpnt *ptrb;
+	bool construct;
+
+	assert(a && b);
+
+	construct = false;
+
+	if (a == c) {
+		memcpy(&tempa, a, sizeof(fxdpnt));
+		ptra = &tempa;
+		construct = true;
+	}
+	else {
+		ptra = a;
+	}
+
+	if (b == c) {
+		memcpy(&tempb, b, sizeof(fxdpnt));
+		ptrb = &tempb;
+		construct = true;
+	}
+	else {
+		ptrb = b;
+	}
+
+	if (construct)
+		arb_construct(c, maxi(ptra->allocated, ptrb->allocated, 1));
+	else
+		arb_init(c);
+
+	if (ptra->sign == '-' && ptrb->sign == '-') {
 		arb_flipsign(c);
-	else if (a->sign == '-')
-		return c = arb_sub_inter(b, a, c, base);
-	else if (b->sign == '-')
-		return c = arb_sub_inter(a, b, c, base);
-	return c = arb_add_inter(a, b, c, base);
+		c = arb_add_inter(ptra, ptrb, c, base);
+	}
+	else if (ptra->sign == '-')
+		c = arb_sub_inter(ptrb, ptra, c, base);
+	else if (ptrb->sign == '-')
+		c = arb_sub_inter(ptra, ptrb, c, base);
+
+	if (ptra != a)
+		arb_destruct(ptra);
+
+	if (ptrb != b)
+		arb_destruct(ptrb);
+
+	return c;
 }
 
 fxdpnt *arb_sub(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 {
-	arb_init(c);
-	if (a->sign == '-' && b->sign == '-')
-		arb_flipsign(c);
-	else if (a->sign == '-'){
-		arb_flipsign(c);
-		return c = arb_add_inter(a, b, c, base);
+	fxdpnt tempa;
+	fxdpnt tempb;
+	fxdpnt *ptra;
+	fxdpnt *ptrb;
+	bool construct;
+
+	assert(a && b);
+
+	construct = false;
+
+	if (a == c) {
+		memcpy(&tempa, a, sizeof(fxdpnt));
+		ptra = &tempa;
+		construct = true;
 	}
-	else if (b->sign == '-' || a->sign == '-')
-		return c = arb_add_inter(a, b, c, base);
-	return c = arb_sub_inter(a, b, c, base);
+	else {
+		ptra = a;
+	}
+
+	if (b == c) {
+		memcpy(&tempb, b, sizeof(fxdpnt));
+		ptrb = &tempb;
+		construct = true;
+	}
+	else {
+		ptrb = b;
+	}
+
+	if (construct)
+		arb_construct(c, maxi(ptra->allocated, ptrb->allocated, 1));
+	else
+		arb_init(c);
+
+	if (ptra->sign == '-' && ptrb->sign == '-') {
+		arb_flipsign(c);
+		c = arb_sub_inter(ptra, ptrb, c, base);
+	}
+	else if (ptra->sign == '-'){
+		arb_flipsign(c);
+		return c = arb_add_inter(ptra, ptrb, c, base);
+	}
+	else if (ptrb->sign == '-' || ptra->sign == '-')
+		c = arb_add_inter(ptra, ptrb, c, base);
+
+	if (ptra != a)
+		arb_destruct(ptra);
+
+	if (ptrb != b)
+		arb_destruct(ptrb);
+
+	return c;
 }

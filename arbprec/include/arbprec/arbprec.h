@@ -63,6 +63,7 @@ fxdpnt *arb_babylonian_sqrt(fxdpnt *, fxdpnt *, int, int);
 fxdpnt *arb_newton_sqrt(fxdpnt *, fxdpnt *, int, int);
 /* general */
 void arb_init(fxdpnt *);
+fxdpnt *arb_construct(fxdpnt *flt, size_t len);
 void arb_error(char *);
 /* allocation */
 fxdpnt *arb_alloc(size_t);
@@ -71,6 +72,7 @@ void *arb_malloc(size_t);
 void *arb_realloc(void *, size_t);
 void *arb_calloc(size_t, size_t);
 void arb_free(fxdpnt *);
+void arb_destruct(fxdpnt *flt);
 /* min / max */
 size_t maxi(size_t, size_t, size_t);
 /* base conversion */
