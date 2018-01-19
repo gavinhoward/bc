@@ -82,7 +82,7 @@ void bc_error(BcStatus status) {
 		return;
 	}
 
-	fprintf(stderr, "%s error: %s\n", bc_err_types[status], bc_err_descs[status]);
+	fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[status], bc_err_descs[status]);
 }
 
 void bc_error_file(BcStatus status, const char* file, uint32_t line) {
@@ -91,13 +91,14 @@ void bc_error_file(BcStatus status, const char* file, uint32_t line) {
 		return;
 	}
 
-	fprintf(stderr, "%s error: %s\n", bc_err_types[status], bc_err_descs[status]);
+	fprintf(stderr, "\n%s error: %s\n", bc_err_types[status], bc_err_descs[status]);
 	fprintf(stderr, "    %s", file);
 
 	if (line) {
-		fprintf(stderr, ":%d\n", line);
+		fprintf(stderr, ":%d\n\n", line);
 	}
 	else {
+		fputc('\n', stderr);
 		fputc('\n', stderr);
 	}
 }

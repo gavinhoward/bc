@@ -119,26 +119,42 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
 		if (status) {
 
+			if (bc_had_sigint && !bc_interactive) {
+				goto read_err;
+			}
+			else {
+				bc_had_sigint = 0;
+			}
+
 			if (status != BC_STATUS_LEX_EOF &&
-			    status != BC_STATUS_PARSE_EOF)
+			    status != BC_STATUS_PARSE_EOF &&
+			    status != BC_STATUS_PARSE_QUIT)
 			{
 				bc_error_file(status, vm->program.file, vm->parse.lex.line);
 			}
-			else {
-				status = BC_STATUS_SUCCESS;
+			else if (status == BC_STATUS_PARSE_QUIT) {
+				break;
 			}
 
-			break;
-		}
+			while (vm->parse.token.type != BC_LEX_NEWLINE &&
+			       vm->parse.token.type != BC_LEX_SEMICOLON)
+			{
+				status = bc_lex_next(&vm->parse.lex, &vm->parse.token);
 
-		if (bc_had_sigint && !bc_interactive) {
-			goto read_err;
-		}
-		else {
-			bc_had_sigint = 0;
+				if (status) {
+					break;
+				}
+			}
 		}
 
 	} while (!status);
+
+	if (status != BC_STATUS_PARSE_EOF &&
+	    status != BC_STATUS_LEX_EOF &&
+	    status != BC_STATUS_PARSE_QUIT)
+	{
+		goto read_err;
+	}
 
 	do {
 
@@ -147,7 +163,6 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 			status = bc_program_exec(&vm->program);
 
 			if (status) {
-				bc_error(status);
 				goto read_err;
 			}
 
@@ -168,7 +183,6 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 		}
 		else {
 			status = BC_STATUS_VM_FILE_NOT_EXECUTABLE;
-			bc_error(status);
 		}
 
 	} while (!status);
@@ -207,7 +221,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	size_t slen;
 	size_t total_len;
 
-	status = bc_program_init(&vm->program, "-");
+	status = bc_program_init(&vm->program, "<stdin>");
 
 	if (status) {
 		return status;
@@ -315,9 +329,27 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 			status = bc_parse_parse(&vm->parse, &vm->program);
 		}
 
+		if (status == BC_STATUS_PARSE_QUIT) {
+			break;
+		}
 		if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
+
 			bc_error_file(status, vm->program.file, vm->parse.lex.line);
-			goto exit_err;
+
+			while (vm->parse.token.type != BC_LEX_NEWLINE &&
+			       vm->parse.token.type != BC_LEX_SEMICOLON)
+			{
+				status = bc_lex_next(&vm->parse.lex, &vm->parse.token);
+
+				if (status && status != BC_STATUS_LEX_EOF) {
+					bc_error_file(status, vm->program.file, vm->parse.lex.line);
+					break;
+				}
+				else if (status == BC_STATUS_LEX_EOF) {
+					status = BC_STATUS_SUCCESS;
+					break;
+				}
+			}
 		}
 
 		if (BC_PARSE_CAN_EXEC(&vm->parse)) {

@@ -39,7 +39,7 @@ static const char* const bc_help =
   "usage: bc [options] [file ...]\n"
   "\n"
   "  -h  --help         print this usage message and exit\n"
-  "  -i  --interactive  force interactive mode (currently unused)\n"
+  "  -i  --interactive  force interactive mode\n"
   "  -l  --mathlib      use predefined math routines:\n\n"
   "                       s(expr)  =  sine of expr in radians\n"
   "                       c(expr)  =  cosine of expr in radians\n"
