@@ -11,14 +11,18 @@
 
 #include <bc/vm.h>
 
+int bc_interactive = 0;
 int bc_mathlib = 0;
 int bc_quiet = 0;
 int bc_std = 0;
 int bc_warn = 0;
 
+int bc_had_sigint = 0;
+
 static const struct option bc_opts[] = {
 
     { "help", no_argument, NULL, 'h' },
+    { "interactive", no_argument, &bc_interactive, 'i' },
     { "mathlib", no_argument, &bc_mathlib, 'l' },
     { "quiet", no_argument, &bc_quiet, 'q' },
     { "standard", no_argument, &bc_std, 's' },
@@ -66,6 +70,13 @@ int main(int argc, char* argv[]) {
 	// Getopt needs this.
 	int opt_idx = 0;
 
+	if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
+		bc_interactive = 'i';
+	}
+	else {
+		bc_interactive = 0;
+	}
+
 	int c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
 
 	while (c != -1) {
@@ -80,6 +91,10 @@ int main(int argc, char* argv[]) {
 			case 'h':
 				printf(bc_help);
 				do_exit = true;
+				break;
+
+			case 'i':
+				bc_interactive = 'i';
 				break;
 
 			case 'l':
@@ -130,6 +145,10 @@ int main(int argc, char* argv[]) {
 
 	if (status) {
 		return status;
+	}
+
+	if (bc_mathlib) {
+		// TODO: Load the math functions.
 	}
 
 	status = bc_vm_exec(&vm);

@@ -2,11 +2,26 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <signal.h>
+#include <unistd.h>
+
+#include <bc/bc.h>
 #include <bc/io.h>
 #include <bc/vm.h>
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx);
 static BcStatus bc_vm_execStdin(BcVm* vm);
+
+static void bc_vm_sigint(int sig) {
+
+	signal(sig, bc_vm_sigint);
+
+	const char* buf = "\nSIGINT detected\ntype \"quit\" to exit\n";
+
+	write(STDERR_FILENO, buf, strlen(buf));
+
+	bc_had_sigint = 1;
+}
 
 BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
 
@@ -20,6 +35,10 @@ BcStatus bc_vm_exec(BcVm* vm) {
 
 	BcStatus status;
 	int num_files;
+
+	if (signal(SIGINT, bc_vm_sigint) < 0) {
+		return BC_STATUS_VM_SIGACTION_FAIL;
+	}
 
 	status = BC_STATUS_SUCCESS;
 
@@ -112,8 +131,44 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 			break;
 		}
 
+		if (bc_had_sigint && !bc_interactive) {
+			goto read_err;
+		}
+		else {
+			bc_had_sigint = 0;
+		}
+
+	} while (!status);
+
+	do {
+
 		if (BC_PARSE_CAN_EXEC(&vm->parse)) {
+
 			status = bc_program_exec(&vm->program);
+
+			if (status) {
+				bc_error(status);
+				goto read_err;
+			}
+
+			if (bc_interactive) {
+
+				fflush(stdout);
+
+				if (bc_had_sigint) {
+					fprintf(stderr, "ready for more input\n");
+					fflush(stderr);
+					bc_had_sigint = 0;
+				}
+			}
+			else if (bc_had_sigint) {
+				bc_had_sigint = 0;
+				goto read_err;
+			}
+		}
+		else {
+			status = BC_STATUS_VM_FILE_NOT_EXECUTABLE;
+			bc_error(status);
 		}
 
 	} while (!status);
@@ -187,7 +242,9 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	// parser. The reason for that is because the parser treats
 	// a backslash newline combo as whitespace, per the bc
 	// spec. Thus, the parser will expect more stuff.
-	while (!status && bc_io_getline(&buf, &bufn) != (size_t) -1) {
+	while ((!status || status != BC_STATUS_PARSE_QUIT) &&
+	       bc_io_getline(&buf, &bufn) != (size_t) -1)
+	{
 
 		size_t len;
 
@@ -235,17 +292,23 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
 		status = bc_parse_text(&vm->parse, buffer);
 
-		if (status) {
+		if (!bc_had_sigint) {
 
-			if (status == BC_STATUS_LEX_EOF ||
-			    status == BC_STATUS_PARSE_EOF ||
-			    status == BC_STATUS_PARSE_QUIT)
-			{
-				break;
+			if (status) {
+
+				if (status == BC_STATUS_PARSE_QUIT ||
+				    status == BC_STATUS_LEX_EOF ||
+				      status == BC_STATUS_PARSE_EOF)
+				{
+					break;
+				}
+
+				bc_error(status);
+				goto exit_err;
 			}
-
-			bc_error(status);
-			goto exit_err;
+		}
+		else if (status == BC_STATUS_PARSE_QUIT) {
+			break;
 		}
 
 		while (!status) {
@@ -257,11 +320,28 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 			goto exit_err;
 		}
 
-		status = bc_program_exec(&vm->program);
+		if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
-		if (status) {
-			bc_error(status);
-			goto exit_err;
+			status = bc_program_exec(&vm->program);
+
+			if (status) {
+				bc_error(status);
+				goto exit_err;
+			}
+
+			if (bc_interactive) {
+
+				fflush(stdout);
+
+				if (bc_had_sigint) {
+					fprintf(stderr, "ready for more input\n");
+					bc_had_sigint = 0;
+				}
+			}
+			else if (bc_had_sigint) {
+				bc_had_sigint = 0;
+				goto exit_err;
+			}
 		}
 
 		buffer[0] = '\0';

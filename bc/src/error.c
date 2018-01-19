@@ -21,6 +21,8 @@ static const char* const bc_err_types[] = {
     "runtime",
     "runtime",
     "runtime",
+    "runtime",
+    "runtime",
 
     "lex",
     "lex",
@@ -55,6 +57,8 @@ static const char* const bc_err_descs[] = {
     "negative square root",
     "mismatched parameters",
     "undefined function",
+    "file is not executable",
+    "could not install signal handler",
 
     "invalid token",
     "string end could not be found",
