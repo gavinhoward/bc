@@ -23,8 +23,6 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
-	p->cur = p->first;
-
 	st = bc_segarray_init(&p->funcs, sizeof(BcFunc), bc_func_free, bc_func_cmp);
 
 	if (st) {
@@ -68,7 +66,6 @@ func_err:
 
 	bc_list_free(p->first);
 	p->first = NULL;
-	p->cur = NULL;
 
 	return st;
 }
