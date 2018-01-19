@@ -33,7 +33,9 @@ static const struct option bc_opts[] = {
 };
 
 static const char* const bc_copyright =
-  "Copyright (c) 2018 CM Graff, Bao Hexing, and Gavin D. Howard.";
+  "bc copyright (c) 2018 Gavin D. Howard.\n"
+  "arbprec copyright (c) 2016-2018 CM Graff,\n"
+  "        copyright (c) 2018 Bao Hexing and Gavin D. Howard.";
 
 static const char* const bc_help =
   "usage: bc [options] [file ...]\n"
