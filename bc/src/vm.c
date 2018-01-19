@@ -16,7 +16,7 @@ static void bc_vm_sigint(int sig) {
 
 	signal(sig, bc_vm_sigint);
 
-	const char* buf = "\nSIGINT detected\ntype \"quit\" to exit\n";
+	const char* buf = "\n\nSIGINT detected\ntype \"quit\" to exit\n\n";
 
 	write(STDERR_FILENO, buf, strlen(buf));
 
