@@ -7,7 +7,7 @@ BUILDING:
 ---------
 
 	cd arbprec
-	make 
+	make
 
 
 TESTING:
@@ -15,21 +15,11 @@ TESTING:
 
 	Run the test wrappers and binaries:
 
-		./tests/divregression.sh
-		./tests/mulregression.sh
-		./tests/subregression.sh
-		./tests/addregressions.sh
-
-	Run division with an increased scale size:
-
-		./tests/algd 123123.23 12.123 10 10000
-
-	Other binaries:
-
-		./tests/add  123123612837612836871212.123 10 10
-		./tests/sub  123123612837612836871212.123 10 10
-		./tests/mul  123123612837612836871212.123 10 10
-		./tests/nsqrt 123123612837612836871212.123 10 10
+		./tests/testall.sh div
+		./tests/testall.sh mul
+		./tests/testall.sh add
+		./tests/testall.sh sub
+		./tests/testall.sh karatsuba-mul
 
 
 USING THE API:
@@ -70,7 +60,7 @@ REFERENCES:
 
         pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
 
-        https://en.wikipedia.org/wiki/Karatsuba_algorithm 
+        https://en.wikipedia.org/wiki/Karatsuba_algorithm
 
         https://stackoverflow.com/questions/2661541/picking-good-first-estimates-for-goldschmidt-division
 
@@ -80,10 +70,12 @@ REFERENCES:
 	http://mathforum.org/library/drmath/view/55744.html
 
 
-CONTACT:
---------
+CONTACTS:
+---------
 
-	CM Graff <cm0graff@gmail.com>
+	CM Graff   cm0graff@gmail.com
 
-	Gavin Howard <yzena.tech@gmail.com>
+	Gavin Howard   yzena.tech@gmail.com
+
+	Bao Hexing   HexingB@qq.com
 
