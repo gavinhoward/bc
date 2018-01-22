@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 #include <arbprec/arbprec.h>
 
@@ -36,6 +37,8 @@ fxdpnt *arb_construct(fxdpnt *flt, size_t len)
 	flt->rp = 0;
 	//flt->len = len;
 	flt->chunk = 4;
+
+	memset(flt->number, 0, sizeof(ARBT) * len);
 
 	//FIXME: lp should likely be "len"
 

@@ -144,11 +144,13 @@ fxdpnt *arb_add(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 		c = arb_sub_inter(ptrb, ptra, c, base);
 	else if (ptrb->sign == '-')
 		c = arb_sub_inter(ptra, ptrb, c, base);
+	else
+		c = arb_add_inter(ptra, ptrb, c, base);
 
 	if (ptra != a)
 		arb_destruct(ptra);
 
-	if (ptrb != b)
+	if (ptrb != b && a != b)
 		arb_destruct(ptrb);
 
 	return c;
@@ -195,15 +197,17 @@ fxdpnt *arb_sub(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 	}
 	else if (ptra->sign == '-'){
 		arb_flipsign(c);
-		return c = arb_add_inter(ptra, ptrb, c, base);
+		c = arb_add_inter(ptra, ptrb, c, base);
 	}
 	else if (ptrb->sign == '-' || ptra->sign == '-')
 		c = arb_add_inter(ptra, ptrb, c, base);
+	else
+		c = arb_sub_inter(ptra, ptrb, c, base);
 
 	if (ptra != a)
 		arb_destruct(ptra);
 
-	if (ptrb != b)
+	if (ptrb != b && a != b)
 		arb_destruct(ptrb);
 
 	return c;
