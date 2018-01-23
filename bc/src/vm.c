@@ -49,12 +49,16 @@ BcStatus bc_vm_exec(BcVm* vm) {
 	}
 
 	if (status) {
-		return status == BC_STATUS_PARSE_QUIT ? BC_STATUS_SUCCESS : status;
+		return status == BC_STATUS_PARSE_QUIT ||
+		       status == BC_STATUS_VM_HALT ?
+		            BC_STATUS_SUCCESS : status;
 	}
 
 	status = bc_vm_execStdin(vm);
 
-	return status == BC_STATUS_PARSE_QUIT ? BC_STATUS_SUCCESS : status;
+	return status == BC_STATUS_PARSE_QUIT ||
+	       status == BC_STATUS_VM_HALT ?
+	            BC_STATUS_SUCCESS : status;
 }
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
@@ -380,6 +384,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	}
 
 	status = !status || status == BC_STATUS_PARSE_QUIT ||
+	         status == BC_STATUS_VM_HALT ||
 	         status == BC_STATUS_LEX_EOF ||
 	         status == BC_STATUS_PARSE_EOF ?
 	             BC_STATUS_SUCCESS : status;

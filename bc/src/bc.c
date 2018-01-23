@@ -22,15 +22,6 @@ static const char* const bc_err_types[] = {
     "bc",
     "bc",
 
-    "runtime",
-    "runtime",
-    "runtime",
-    "runtime",
-    "runtime",
-    "runtime",
-    "runtime",
-    "runtime",
-
     "lex",
     "lex",
     "lex",
@@ -44,6 +35,21 @@ static const char* const bc_err_types[] = {
     "parse",
     "parse",
     "parse",
+
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
 
 };
 
@@ -58,15 +64,6 @@ static const char* const bc_err_descs[] = {
     "one or more limits not specified",
     "invalid limit; this is a bug in bc",
 
-    "couldn't open file",
-    "file read error",
-    "divide by zero",
-    "negative square root",
-    "mismatched parameters",
-    "undefined function",
-    "file is not executable",
-    "could not install signal handler",
-
     "invalid token",
     "string end could not be found",
     "comment end could not be found",
@@ -80,6 +77,23 @@ static const char* const bc_err_descs[] = {
     "quit statement in file",
     "end of file",
     "bug in parser",
+
+    "couldn't open file",
+    "file read error",
+    "divide by zero",
+    "negative square root",
+    "mismatched parameters",
+    "undefined function",
+    "file is not executable",
+    "could not install signal handler",
+    "invalid statement; this is most likely a bug in bc",
+    "invalid string",
+    "print error",
+    "break statement outside loop; "
+        "this is a bug in bc (parser should have caught it)",
+    "continue statement outside loop; "
+        "this is a bug in bc (parser should have caught it)",
+    "bc was not halted correctly; this is a bug in bc",
 
 };
 
@@ -337,7 +351,8 @@ BcStatus bc_limits() {
 
 void bc_error(BcStatus status) {
 
-	if (!status || status == BC_STATUS_PARSE_QUIT) {
+	if (!status || status == BC_STATUS_PARSE_QUIT || status == BC_STATUS_VM_HALT)
+	{
 		return;
 	}
 

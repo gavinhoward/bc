@@ -93,6 +93,7 @@ BcStmtList* bc_list_create() {
 	}
 
 	list->next = NULL;
+	list->idx = 0;
 	list->num_stmts = 0;
 
 	return list;
@@ -138,11 +139,24 @@ BcStmt* bc_list_last(BcStmtList* list) {
 	return list->stmts + (list->num_stmts - 1);
 }
 
+void bc_list_destruct(BcStmtList* list) {
+
+	uint32_t num;
+	BcStmt* stmts;
+
+	num = list->num_stmts;
+	stmts = list->stmts;
+
+	for (uint32_t i = 0; i < num; ++i) {
+		bc_stmt_free(stmts + i);
+	}
+
+	free(list);
+}
+
 void bc_list_free(BcStmtList* list) {
 
 	BcStmtList* temp;
-	uint32_t num;
-	BcStmt* stmts;
 
 	if (list == NULL) {
 		return;
@@ -152,14 +166,7 @@ void bc_list_free(BcStmtList* list) {
 
 		temp = list->next;
 
-		num = list->num_stmts;
-		stmts = list->stmts;
-
-		for (uint32_t i = 0; i < num; ++i) {
-			bc_stmt_free(stmts + i);
-		}
-
-		free(list);
+		bc_list_destruct(list);
 
 		list = temp;
 
@@ -637,18 +644,64 @@ BcCall* bc_call_create() {
 	return call;
 }
 
-void bc_num_init(fxdpnt* num) {
+BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num) {
 
-	num->number = arb_calloc(1, sizeof(ARBT) * BC_PROGRAM_DEF_SIZE);
-	num->sign = '+';
+	local->name = name;
+	local->var = true;
 
-	// FIXME: this should likely be "len"
-	// Look at arb_alloc().
-	num->lp = 0;
+	// TODO: Don't malloc.
+	arb_str2fxdpnt(num);
 
-	num->rp = 0;
-	num->allocated = BC_PROGRAM_DEF_SIZE;
-	//num->len = len;
-	num->len = 0;
-	num->chunk = 4;
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
+
+	fxdpnt* array;
+
+	assert(nelems);
+
+	local->name = name;
+	local->var = false;
+
+	array = malloc(nelems * sizeof(fxdpnt));
+
+	if (!array) {
+		return BC_STATUS_MALLOC_FAIL;
+	}
+
+	for (uint32_t i = 0; i < nelems; ++i) {
+		arb_construct(array + i, BC_PROGRAM_DEF_SIZE);
+	}
+
+	return BC_STATUS_SUCCESS;
+}
+
+void bc_local_free(void* local) {
+
+	BcLocal* l;
+	fxdpnt* array;
+	uint32_t nelems;
+
+	l = (BcLocal*) local;
+
+	free((void*) l->name);
+
+	if (l->var) {
+		arb_destruct(&l->num);
+	}
+	else {
+
+		nelems = l->num_elems;
+		array = l->array;
+
+		for (uint32_t i = 0; i < nelems; ++i) {
+			arb_destruct(array + i);
+		}
+
+		free(array);
+
+		l->array = NULL;
+		l->num_elems = 0;
+	}
 }
