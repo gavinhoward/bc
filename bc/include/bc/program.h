@@ -9,7 +9,7 @@
 
 typedef struct BcProgram {
 
-	BcStmtList* first;
+	BcStmtList* list;
 
 	uint32_t stmt_idx;
 
