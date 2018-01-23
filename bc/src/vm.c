@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -35,8 +36,12 @@ BcStatus bc_vm_exec(BcVm* vm) {
 
 	BcStatus status;
 	int num_files;
+	struct sigaction act;
 
-	if (signal(SIGINT, bc_vm_sigint) < 0) {
+	sigemptyset(&act.sa_mask);
+	act.sa_handler = bc_vm_sigint;
+
+	if (sigaction(SIGINT, &act, NULL) < 0) {
 		return BC_STATUS_VM_SIGACTION_FAIL;
 	}
 
