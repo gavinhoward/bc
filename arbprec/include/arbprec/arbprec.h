@@ -54,6 +54,7 @@ void arb_setsign(fxdpnt *, fxdpnt *, fxdpnt *);
 void arb_print(fxdpnt *);
 void _print_core(FILE *, ARBT *, size_t, size_t, size_t);
 fxdpnt *arb_str2fxdpnt(const char *);
+fxdpnt *arb_parse_str(fxdpnt *, const char *);
 int arb_highbase(int);
 /* comparison */
 int arb_compare(fxdpnt *, fxdpnt *, int);
@@ -65,7 +66,7 @@ fxdpnt *arb_babylonian_sqrt(fxdpnt *, fxdpnt *, int, int);
 fxdpnt *arb_newton_sqrt(fxdpnt *, fxdpnt *, int, int);
 /* general */
 void arb_init(fxdpnt *);
-fxdpnt *arb_construct(fxdpnt *flt, size_t len);
+fxdpnt *arb_construct(fxdpnt *, size_t);
 void arb_error(char *);
 /* allocation */
 fxdpnt *arb_alloc(size_t);
@@ -74,7 +75,7 @@ void *arb_malloc(size_t);
 void *arb_realloc(void *, size_t);
 void *arb_calloc(size_t, size_t);
 void arb_free(fxdpnt *);
-void arb_destruct(fxdpnt *flt);
+void arb_destruct(fxdpnt *);
 /* min / max */
 size_t maxi(size_t, size_t, size_t);
 /* base conversion */
