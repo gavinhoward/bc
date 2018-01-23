@@ -7,6 +7,7 @@ static const uint32_t bc_stmt_sizes[] = {
     sizeof(BcStack),
 
     0,
+    0,
 
     0,
     0,

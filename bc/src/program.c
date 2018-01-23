@@ -127,6 +127,7 @@ void bc_program_free(BcProgram* p) {
 	bc_segarray_free(&p->arrays);
 
 	bc_stack_free(&p->ctx_stack);
+	bc_stack_free(&p->locals);
 }
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
@@ -138,12 +139,15 @@ static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
 	BcStmt* stmt;
 	int pchars;
 
+	assert(list);
+
 	status = BC_STATUS_SUCCESS;
 
 	cur = list;
-	next = list->next;
 
 	do {
+
+		next = cur->next;
 
 		while (cur->idx < cur->num_stmts) {
 
@@ -226,7 +230,6 @@ static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
 
 		if (cur->idx == cur->num_stmts) {
 			cur = next;
-			next = cur->next;
 		}
 		else {
 			cur = NULL;
