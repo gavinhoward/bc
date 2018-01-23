@@ -17,9 +17,9 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 
 	p->file = file;
 
-	p->first = bc_list_create();
+	p->list = bc_list_create();
 
-	if (!p->first) {
+	if (!p->list) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
@@ -64,8 +64,8 @@ var_err:
 
 func_err:
 
-	bc_list_free(p->first);
-	p->first = NULL;
+	bc_list_free(p->list);
+	p->list = NULL;
 
 	return st;
 }
@@ -109,7 +109,7 @@ void bc_program_free(BcProgram* p) {
 		return;
 	}
 
-	bc_list_free(p->first);
+	bc_list_free(p->list);
 
 	bc_segarray_free(&p->funcs);
 	bc_segarray_free(&p->vars);

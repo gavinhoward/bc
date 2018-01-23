@@ -191,7 +191,7 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
 		goto push_err;
 	}
 
-	status = bc_stack_push(&parse->ctx_stack, &program->first);
+	status = bc_stack_push(&parse->ctx_stack, &program->list);
 
 	if (status) {
 		goto push_err;
