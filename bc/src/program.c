@@ -224,6 +224,14 @@ static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
 			}
 		}
 
+		if (cur->idx == cur->num_stmts) {
+			cur = next;
+			next = cur->next;
+		}
+		else {
+			cur = NULL;
+		}
+
 	} while (!status && cur);
 
 	return status;
