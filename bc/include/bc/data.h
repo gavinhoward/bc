@@ -164,6 +164,7 @@ typedef struct BcStmtList {
 
 	struct BcStmtList* next;
 
+	uint32_t idx;
 	uint32_t num_stmts;
 
 	BcStmt stmts[BC_PROGRAM_MAX_STMTS];
@@ -176,6 +177,21 @@ typedef struct BcAuto {
 	bool var;
 
 } BcAuto;
+
+typedef struct BcLocal {
+
+	const char* name;
+	bool var;
+
+	union {
+		fxdpnt num;
+		struct {
+			fxdpnt* array;
+			uint32_t num_elems;
+		};
+	};
+
+} BcLocal;
 
 typedef struct BcFunc {
 
@@ -214,6 +230,7 @@ typedef struct BcArray {
 BcStmtList* bc_list_create();
 BcStatus bc_list_insert(BcStmtList* list, BcStmt* stmt);
 BcStmt* bc_list_last(BcStmtList* list);
+void bc_list_destruct(BcStmtList* list);
 void bc_list_free(BcStmtList* list);
 
 BcStatus bc_func_init(BcFunc* func, char* name);
@@ -242,6 +259,8 @@ void bc_expr_free(void* expr);
 
 BcCall* bc_call_create();
 
-void bc_num_init(fxdpnt* num);
+BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num);
+BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems);
+void bc_local_free(void* local);
 
 #endif // BC_DATA_H

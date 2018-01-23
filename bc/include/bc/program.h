@@ -15,6 +15,8 @@ typedef struct BcProgram {
 
 	BcStack ctx_stack;
 
+	BcStack locals;
+
 	BcSegArray funcs;
 
 	BcSegArray vars;

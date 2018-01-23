@@ -7,6 +7,9 @@
 #include <bc/program.h>
 #include <bc/parse.h>
 
+static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list);
+static BcStatus bc_program_printString(const char* str);
+
 BcStatus bc_program_init(BcProgram* p, const char* file) {
 
 	BcStatus st;
@@ -45,12 +48,22 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 	st = bc_stack_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
 
 	if (st) {
-		goto stack_err;
+		goto ctx_err;
+	}
+
+	st = bc_stack_init(&p->locals, sizeof(BcLocal), bc_local_free);
+
+	if (st) {
+		goto local_err;
 	}
 
 	return st;
 
-stack_err:
+local_err:
+
+	bc_stack_free(&p->ctx_stack);
+
+ctx_err:
 
 	bc_segarray_free(&p->arrays);
 
@@ -98,9 +111,7 @@ BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
 }
 
 BcStatus bc_program_exec(BcProgram* p) {
-	// TODO: Write this function.
-
-	return BC_STATUS_SUCCESS;
+	return bc_program_execList(p, p->list);
 }
 
 void bc_program_free(BcProgram* p) {
@@ -116,4 +127,197 @@ void bc_program_free(BcProgram* p) {
 	bc_segarray_free(&p->arrays);
 
 	bc_stack_free(&p->ctx_stack);
+}
+
+static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
+
+	BcStatus status;
+	BcStmtList* next;
+	BcStmtList* cur;
+	BcStmtType type;
+	BcStmt* stmt;
+	int pchars;
+
+	status = BC_STATUS_SUCCESS;
+
+	cur = list;
+	next = list->next;
+
+	do {
+
+		while (cur->idx < cur->num_stmts) {
+
+			stmt = cur->stmts + cur->idx;
+			type = stmt->type;
+
+			++cur->idx;
+
+			switch (type) {
+
+				case BC_STMT_EXPR:
+				{
+					break;
+				}
+
+				case BC_STMT_STRING:
+				{
+					pchars = fprintf(stdout, "%s", stmt->data.string);
+					status = pchars > 0 ? BC_STATUS_SUCCESS :
+					                      BC_STATUS_VM_PRINT_ERR;
+					break;
+				}
+
+				case BC_STMT_STRING_PRINT:
+				{
+					status = bc_program_printString(stmt->data.string);
+					break;
+				}
+
+				case BC_STMT_BREAK:
+				{
+					status = BC_STATUS_VM_BREAK;
+					break;
+				}
+
+				case BC_STMT_CONTINUE:
+				{
+					status = BC_STATUS_VM_CONTINUE;
+					break;
+				}
+
+				case BC_STMT_HALT:
+				{
+					status = BC_STATUS_VM_HALT;
+					break;
+				}
+
+				case BC_STMT_RETURN:
+				{
+					break;
+				}
+
+				case BC_STMT_IF:
+				{
+					break;
+				}
+
+				case BC_STMT_WHILE:
+				{
+					break;
+				}
+
+				case BC_STMT_FOR:
+				{
+					break;
+				}
+
+				case BC_STMT_LIST:
+				{
+					status = bc_program_execList(p, stmt->data.list);
+					break;
+				}
+
+				default:
+				{
+					return BC_STATUS_VM_INVALID_STMT;
+				}
+			}
+		}
+
+	} while (!status && cur);
+
+	return status;
+}
+
+static BcStatus bc_program_printString(const char* str) {
+
+	char c;
+	char c2;
+	size_t len;
+	int err;
+
+	len = strlen(str);
+
+	for (size_t i = 0; i < len; ++i) {
+
+		c = str[i];
+
+		if (c != '\\') {
+			err = fputc(c, stdout);
+		}
+		else {
+
+			++i;
+
+			if (i >= len) {
+				return BC_STATUS_VM_INVALID_STRING;
+			}
+
+			c2 = str[i];
+
+			switch (c2) {
+
+				case 'a':
+				{
+					err = fputc('\a', stdout);
+					break;
+				}
+
+				case 'b':
+				{
+					err = fputc('\b', stdout);
+					break;
+				}
+
+				case 'e':
+				{
+					err = fputc('\\', stdout);
+					break;
+				}
+
+				case 'f':
+				{
+					err = fputc('\f', stdout);
+					break;
+				}
+
+				case 'n':
+				{
+					err = fputc('\n', stdout);
+					break;
+				}
+
+				case 'r':
+				{
+					err = fputc('\r', stdout);
+					break;
+				}
+
+				case 'q':
+				{
+					fputc('"', stdout);
+					break;
+				}
+
+				case 't':
+				{
+					err = fputc('\t', stdout);
+					break;
+				}
+
+				default:
+				{
+					// Do nothing.
+					err = 0;
+					break;
+				}
+			}
+		}
+
+		if (err == EOF) {
+			return BC_STATUS_VM_PRINT_ERR;
+		}
+	}
+
+	return BC_STATUS_SUCCESS;
 }
