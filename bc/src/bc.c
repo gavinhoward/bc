@@ -11,6 +11,78 @@
 
 #include <bc/vm.h>
 
+static const char* const bc_err_types[] = {
+
+    NULL,
+
+    "bc",
+    "bc",
+    "bc",
+
+    "bc",
+    "bc",
+
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+
+    "lex",
+    "lex",
+    "lex",
+    "lex",
+
+    "parse",
+    "parse",
+    "parse",
+    "parse",
+    "parse",
+    "parse",
+    "parse",
+    "parse",
+
+};
+
+static const char* const bc_err_descs[] = {
+
+    NULL,
+
+    "invalid option",
+    "memory allocation error",
+    "invalid parameter",
+
+    "one or more limits not specified",
+    "invalid limit; this is a bug in bc",
+
+    "couldn't open file",
+    "file read error",
+    "divide by zero",
+    "negative square root",
+    "mismatched parameters",
+    "undefined function",
+    "file is not executable",
+    "could not install signal handler",
+
+    "invalid token",
+    "string end could not be found",
+    "comment end could not be found",
+    "end of file",
+
+    "invalid token",
+    "invalid expression",
+    "invalid print statement",
+    "invalid function definition",
+    "no auto variable found",
+    "quit statement in file",
+    "end of file",
+    "bug in parser",
+
+};
+
 int bc_interactive = 0;
 int bc_mathlib = 0;
 int bc_quiet = 0;
@@ -61,7 +133,7 @@ static const char* const bc_version_fmt = "bc %s\n%s\n";
 
 static const char* const bc_version = "0.1";
 
-int main(int argc, char* argv[]) {
+BcStatus bc_main(int argc, char* argv[]) {
 
 	BcStatus status;
 	BcVm vm;
@@ -261,4 +333,31 @@ BcStatus bc_limits() {
 	putchar('\n');
 
 	return BC_STATUS_SUCCESS;
+}
+
+void bc_error(BcStatus status) {
+
+	if (!status || status == BC_STATUS_PARSE_QUIT) {
+		return;
+	}
+
+	fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[status], bc_err_descs[status]);
+}
+
+void bc_error_file(BcStatus status, const char* file, uint32_t line) {
+
+	if (!status || status == BC_STATUS_PARSE_QUIT || !file) {
+		return;
+	}
+
+	fprintf(stderr, "\n%s error: %s\n", bc_err_types[status], bc_err_descs[status]);
+	fprintf(stderr, "    %s", file);
+
+	if (line) {
+		fprintf(stderr, ":%d\n\n", line);
+	}
+	else {
+		fputc('\n', stderr);
+		fputc('\n', stderr);
+	}
 }
