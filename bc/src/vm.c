@@ -229,6 +229,8 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	size_t bufn;
 	size_t slen;
 	size_t total_len;
+	bool string;
+	bool comment;
 
 	status = bc_program_init(&vm->program, "<stdin>");
 
@@ -260,6 +262,9 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 		goto buf_err;
 	}
 
+	string = false;
+	comment = false;
+
 	// The following loop is complicated because the vm tries
 	// not to send any lines that end with a backslash to the
 	// parser. The reason for that is because the parser treats
@@ -268,16 +273,38 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 	while ((!status || status != BC_STATUS_PARSE_QUIT) &&
 	       bc_io_getline(&buf, &bufn) != (size_t) -1)
 	{
-
 		size_t len;
 
 		len = strlen(buf);
 		slen = strlen(buffer);
 		total_len = slen + len;
 
-		if (len > 1) {
+		if (len == 1 && buf[0] == '"') {
+			string = !string;
+		}
+		else if (len > 1) {
 
-			if (buf[len - 2] == '\\') {
+			for (uint32_t i = 0; i < len; ++i) {
+
+				char c;
+				bool notend;
+
+				notend = len > i + 1;
+
+				c = buf[i];
+
+				if (c == '"') {
+					string = !string;
+				}
+				else if (c == '/' && notend && comment && buf[i + 1] == '*') {
+					comment = true;
+				}
+				else if (c == '*' && notend && !comment && buf[i + 1] == '/') {
+					comment = false;
+				}
+			}
+
+			if (string || comment || buf[len - 2] == '\\') {
 
 				if (total_len > n) {
 
