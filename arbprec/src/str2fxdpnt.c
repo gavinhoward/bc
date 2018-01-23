@@ -64,4 +64,3 @@ fxdpnt *arb_parse_str(fxdpnt *flt, const char *str)
 
 	return flt;
 }
-
