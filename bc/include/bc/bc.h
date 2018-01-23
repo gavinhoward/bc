@@ -47,6 +47,8 @@ typedef enum BcStatus {
 
 } BcStatus;
 
+BcStatus bc_main(int argc, char* argv[]);
+
 BcStatus bc_limits();
 
 void bc_error(BcStatus status);
