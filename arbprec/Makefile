@@ -18,9 +18,6 @@ INCLUDES_TARG = $(shell for i in include/$(PREFIX)/*.h ; do printf "%s\n" $(DEST
 
 TEST_OBJ = $(shell for i in tests/*.c ; do printf "%s\n" $${i%.c} ; done )
 
-BC_OBJ = $(shell for i in tiny-bc/*.c ; do printf "%s\n" $${i%.c}.o ; done )
-
-BC_EXEC = tiny-bc/bc
 
 LDLIBS += -L. -l$(LIBNAME) -lm
 
@@ -28,7 +25,6 @@ all:
 
 	$(MAKE) static
 	$(MAKE) create_test
-	#$(MAKE) create_bc
 
 static: $(OBJ)
 
@@ -41,10 +37,6 @@ static_link:
 
 create_test: $(TEST_OBJ)
 
-create_bc: $(BC_OBJ) static
-
-	cd tiny-bc && sh ./compile.sh
-
 cleanobj:
 
 	$(RM) $(OBJ)
@@ -53,8 +45,6 @@ clean:
 	$(MAKE) cleanobj
 	$(RM) $(STATLIB)
 	$(RM) $(TEST_OBJ)
-	$(RM) $(BC_OBJ)
-	$(RM) $(BC_EXEC)
 	$(RM) uninstall
 	$(RM) log log2 log1
 
