@@ -63,8 +63,6 @@ fxdpnt *arb_construct(fxdpnt *flt, size_t len)
 	//flt->len = len;
 	flt->chunk = 4;
 
-	memset(flt->number, 0, sizeof(ARBT) * len);
-
 	//FIXME: lp should likely be "len"
 
 	return flt;
