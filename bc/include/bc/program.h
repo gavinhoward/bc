@@ -17,6 +17,8 @@ typedef struct BcProgram {
 
 	BcStack locals;
 
+	BcStack temps;
+
 	BcSegArray funcs;
 
 	BcSegArray vars;

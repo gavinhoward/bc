@@ -348,7 +348,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
 				if (status == BC_STATUS_PARSE_QUIT ||
 				    status == BC_STATUS_LEX_EOF ||
-				      status == BC_STATUS_PARSE_EOF)
+				    status == BC_STATUS_PARSE_EOF)
 				{
 					break;
 				}

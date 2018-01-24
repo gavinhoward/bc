@@ -9,6 +9,8 @@
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list);
 static BcStatus bc_program_printString(const char* str);
+static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
+                                    fxdpnt* num, bool print);
 
 BcStatus bc_program_init(BcProgram* p, const char* file) {
 
@@ -57,7 +59,17 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 		goto local_err;
 	}
 
+	st = bc_stack_init(&p->temps, sizeof(fxdpnt), (BcFreeFunc) arb_free);
+
+	if (st) {
+		goto temps_err;
+	}
+
 	return st;
+
+temps_err:
+
+	bc_stack_free(&p->locals);
 
 local_err:
 
@@ -128,6 +140,7 @@ void bc_program_free(BcProgram* p) {
 
 	bc_stack_free(&p->ctx_stack);
 	bc_stack_free(&p->locals);
+	bc_stack_free(&p->temps);
 }
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
@@ -138,6 +151,7 @@ static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
 	BcStmtType type;
 	BcStmt* stmt;
 	int pchars;
+	fxdpnt result;
 
 	assert(list);
 
@@ -160,6 +174,14 @@ static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
 
 				case BC_STMT_EXPR:
 				{
+					status = bc_program_execExpr(p, stmt, &result, true);
+
+					if (status) {
+						break;
+					}
+
+
+
 					break;
 				}
 
@@ -331,4 +353,10 @@ static BcStatus bc_program_printString(const char* str) {
 	}
 
 	return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
+                                    fxdpnt* num, bool print)
+{
+
 }
