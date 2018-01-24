@@ -123,7 +123,38 @@ BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
 }
 
 BcStatus bc_program_exec(BcProgram* p) {
-	return bc_program_execList(p, p->list);
+
+	BcStmtList* list;
+	BcStatus status;
+
+	status = bc_program_execList(p, p->list);
+
+	if (status) {
+		return status;
+	}
+
+	while (p->list->idx >= BC_PROGRAM_MAX_STMTS) {
+
+		if (p->list->next) {
+
+			list = p->list;
+			p->list = list->next;
+
+			bc_list_destruct(list);
+		}
+		else {
+
+			bc_list_destruct(p->list);
+
+			p->list = bc_list_create();
+
+			if (!p->list) {
+				return BC_STATUS_MALLOC_FAIL;
+			}
+		}
+	}
+
+	return BC_STATUS_SUCCESS;
 }
 
 void bc_program_free(BcProgram* p) {
