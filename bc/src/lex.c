@@ -553,31 +553,16 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
 	size_t len = i - lex->idx;
 
-	size_t backslashes = 0;
-	for (size_t j = lex->idx; j < i; ++j) {
-		c = lex->buffer[j];
-		backslashes += c == '\\' && lex->buffer[j + 1] == '\n' ? 1 : 0;
-	}
-
-	token->string = malloc(len - backslashes + 1);
+	token->string = malloc(len + 1);
 
 	if (token->string == NULL) {
 		return BC_STATUS_MALLOC_FAIL;
 	}
 
 	const char* start = lex->buffer + lex->idx;
-	size_t hits = 0;
 
 	for (size_t j = 0; j < len; ++j) {
-
-		char c = start[j];
-
-		if (hits < backslashes && c == '\\' && start[j + 1] == '\n') {
-			++hits;
-			continue;
-		}
-
-		token->string[j - hits] = c;
+		token->string[j] = start[j];
 	}
 
 	token->string[len] = '\0';
