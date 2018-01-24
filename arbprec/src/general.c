@@ -1,7 +1,31 @@
 #include <assert.h>
 #include <string.h>
-
 #include <arbprec/arbprec.h>
+#include <stdbool.h>
+
+fxdpnt *remove_leading_zeros(fxdpnt *c)
+{
+	bool effect = false;
+	size_t i = 0;
+	while (c->number[i] == 0)
+        {
+                if (c->lp > 0)
+                {
+                        c->lp--;
+			++i;
+                }else
+			break;
+		effect = true;
+        }
+	if (effect)
+	{
+		c = arb_leftshift(c, i, 1);
+		c->len -=i;
+		c->rp = c->len - c->lp;
+	}
+
+	return c;
+}
 
 void arb_free(fxdpnt *flt)
 {

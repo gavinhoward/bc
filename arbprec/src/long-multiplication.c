@@ -39,6 +39,7 @@ fxdpnt *arb_mul(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base, size_t scale)
 	c->rp = MAX(a->rp, b->rp);
 	c->rp = MIN(a->rp + b->rp, maxi(scale, a->rp, b->rp));
 	c->len = c->rp + c->lp;
+	c = remove_leading_zeros(c);
 
 	return c;
 }

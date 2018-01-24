@@ -112,6 +112,8 @@ fxdpnt *arb_alg_d(fxdpnt *num, fxdpnt *den, fxdpnt *q, int b, size_t scale)
 	free(temp);
 	free(u);
 
+	q = remove_leading_zeros(q);
+
 	return q;
 }
 
