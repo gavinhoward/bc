@@ -13,6 +13,10 @@ typedef struct BcProgram {
 
 	uint32_t stmt_idx;
 
+	uint32_t scale;
+	uint32_t ibase;
+	uint32_t obase;
+
 	BcStack ctx_stack;
 
 	BcStack locals;

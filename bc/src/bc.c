@@ -52,6 +52,7 @@ static const char* const bc_err_types[] = {
     "runtime",
     "runtime",
     "runtime",
+    "runtime",
 
 };
 
@@ -93,6 +94,7 @@ static const char* const bc_err_descs[] = {
     "invalid statement; this is most likely a bug in bc",
     "invalid expression; this is most likely a bug in bc",
     "invalid string",
+    "invalid name/identifier",
     "print error",
     "break statement outside loop; "
         "this is a bug in bc (parser should have caught it)",
