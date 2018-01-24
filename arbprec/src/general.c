@@ -47,6 +47,7 @@ void arb_init(fxdpnt *flt)
 	assert(flt);
 	flt->sign = '+';
 	flt->len = 0;
+	flt->lp = 0;
 }
 
 fxdpnt *arb_construct(fxdpnt *flt, size_t len)
