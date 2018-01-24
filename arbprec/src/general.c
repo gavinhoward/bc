@@ -60,11 +60,9 @@ fxdpnt *arb_construct(fxdpnt *flt, size_t len)
 	flt->number = arb_calloc(1, sizeof(ARBT) * len);
 	flt->allocated = len;
 	flt->rp = 0;
-	//flt->len = len;
+	flt->len = len;
 	flt->chunk = 4;
-
-	//FIXME: lp should likely be "len"
-
+	flt->lp = 0;
 	return flt;
 }
 
