@@ -31,53 +31,14 @@ size_t arb_mul_core(ARBT *a, size_t alen, ARBT *b, size_t blen, ARBT *c, int bas
 
 fxdpnt *arb_mul(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base, size_t scale)
 {
-	fxdpnt a2;
-	fxdpnt b2;
-	bool construct;
+	arb_setsign(a, b, c);
 
-	construct = false;
-
-	if (a == c) {
-		memcpy(&a2, a, sizeof(fxdpnt));
-		construct = true;
-	}
-	else {
-		arb_construct(&a2, a->len);
-		arb_copy(&a2, a);
-	}
-
-	if (b == c) {
-		memcpy(&b2, b, sizeof(fxdpnt));
-		construct = true;
-	}
-	else {
-		arb_construct(&b2, b->len);
-		arb_copy(&b2, b);
-	}
-
-	arb_expand(&a2, MAX(scale, a2.len));
-	arb_expand(&b2, MAX(scale, b2.len));
-
-	if (construct) {
-		arb_construct(c, a2.len + b2.len);
-	}
-	else {
-		c = arb_expand(c, a2.len + b2.len);
-	}
-
-	arb_setsign(&a2, &b2, c);
-
-	arb_mul_core(a2.number, a2.len, b2.number, b2.len, c->number, base);
-	c->lp = a2.lp + b2.lp;
-	c->rp = a2.rp + b2.rp;
-	c->rp = MAX(a2.rp, b2.rp);
-	c->rp = MIN(a2.rp + b2.rp, maxi(scale, a2.rp, b2.rp));
+	arb_mul_core(a->number, a->len, b->number, b->len, c->number, base);
+	c->lp = a->lp + b->lp;
+	c->rp = a->rp + b->rp;
+	c->rp = MAX(a->rp, b->rp);
+	c->rp = MIN(a->rp + b->rp, maxi(scale, a->rp, b->rp));
 	c->len = c->rp + c->lp;
-
-	arb_destruct(&a2);
-
-	if (a != b)
-		arb_destruct(&b2);
 
 	return c;
 }

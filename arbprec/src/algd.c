@@ -39,10 +39,6 @@ fxdpnt *arb_alg_d(fxdpnt *num, fxdpnt *den, fxdpnt *q, int b, size_t scale)
 	ARBT *u;
 	ARBT *v;
 	ARBT *temp;
-	fxdpnt tempnum;
-	fxdpnt tempden;
-	fxdpnt *pnum;
-	fxdpnt *pden;
 	ssize_t uscal = 0;
 	int out_of_scale = 0;
 	size_t quodig = 0;
@@ -52,45 +48,21 @@ fxdpnt *arb_alg_d(fxdpnt *num, fxdpnt *den, fxdpnt *q, int b, size_t scale)
 	size_t j = 0;
 	size_t k = 0;
 	ARBT qg = 0;
-	bool construct = false;
 
-	if (num == q) {
-		memcpy(&tempnum, num, sizeof(fxdpnt));
-		pnum = &tempnum;
-		construct = true;
-	}
-	else {
-		pnum = num;
-	}
+	arb_init(q);
 
-	if (den == q) {
-		memcpy(&tempden, den, sizeof(fxdpnt));
-		pden = &tempden;
-		construct = true;
-	}
-	else {
-		pden = den;
-	}
-
-	if (construct)
-		arb_construct(q, maxi(pnum->allocated, pden->allocated, 1));
-	else
-		arb_init(q);
-
-	assert(q->sign == '+');
-
-	lea = pnum->lp + pden->rp;
-	uscal = pnum->rp - pden->rp;
+	lea = num->lp + den->rp;
+	uscal = num->rp - den->rp;
 	if (uscal < (ssize_t)scale)
 		offset = scale - uscal;
 	else
 		offset = 0;
 
-	u = arb_calloc(1, (pnum->lp + pnum->rp + offset + 3) * sizeof(ARBT));
-	_arb_copy_core(u + 1, pnum->number, (pnum->lp + pnum->rp));
+	u = arb_calloc(1, (num->lp + num->rp + offset + 3) * sizeof(ARBT));
+	_arb_copy_core(u + 1, num->number, (num->lp + num->rp));
 
-	leb = pden->lp + pden->rp;
-	v = pden->number;
+	leb = den->lp + den->rp;
+	v = den->number;
 	for (;*v == 0;v++,leb--); // this can run leb into the ground, be careful!!
 
 	quodig = scale+1;
@@ -139,12 +111,6 @@ fxdpnt *arb_alg_d(fxdpnt *num, fxdpnt *den, fxdpnt *q, int b, size_t scale)
     end:
 	free(temp);
 	free(u);
-
-	if (pnum != num)
-		arb_destruct(pnum);
-
-	if (pden != den && num != den)
-		arb_destruct(pden);
 
 	return q;
 }
