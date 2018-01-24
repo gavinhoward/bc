@@ -457,11 +457,113 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
 			}
 
 			case BC_EXPR_ASSIGN_POWER:
+			case BC_EXPR_ASSIGN_MULTIPLY:
+			case BC_EXPR_ASSIGN_DIVIDE:
+			case BC_EXPR_ASSIGN_MODULUS:
+			case BC_EXPR_ASSIGN_PLUS:
+			case BC_EXPR_ASSIGN_MINUS:
 			{
-
+				// Fallthrough.
 			}
 			case BC_EXPR_ASSIGN:
 			{
+				break;
+			}
+
+			case BC_EXPR_REL_EQUAL:
+			case BC_EXPR_REL_LESS_EQ:
+			case BC_EXPR_REL_GREATER_EQ:
+			case BC_EXPR_REL_NOT_EQ:
+			case BC_EXPR_REL_LESS:
+			case BC_EXPR_REL_GREATER:
+			{
+				break;
+			}
+
+			case BC_EXPR_BOOL_NOT:
+			{
+				break;
+			}
+
+			case BC_EXPR_BOOL_OR:
+			{
+				break;
+			}
+
+			case BC_EXPR_BOOL_AND:
+			{
+				break;
+			}
+
+			case BC_EXPR_NUMBER:
+			{
+				break;
+			}
+
+			case BC_EXPR_VAR:
+			{
+				break;
+			}
+
+			case BC_EXPR_ARRAY_ELEM:
+			{
+				break;
+			}
+
+			case BC_EXPR_FUNC_CALL:
+			{
+				break;
+			}
+
+			case BC_EXPR_SCALE:
+			{
+				break;
+			}
+
+			case BC_EXPR_SCALE_FUNC:
+			{
+				break;
+			}
+
+			case BC_EXPR_IBASE:
+			{
+				break;
+			}
+
+			case BC_EXPR_OBASE:
+			{
+				break;
+			}
+
+			case BC_EXPR_LAST:
+			{
+				break;
+			}
+
+			case BC_EXPR_LENGTH:
+			{
+				break;
+			}
+
+			case BC_EXPR_READ:
+			{
+				break;
+			}
+
+			case BC_EXPR_SQRT:
+			{
+				break;
+			}
+
+			case BC_EXPR_PRINT:
+			{
+				// TODO: Store to last and print.
+				break;
+			}
+
+			default:
+			{
+				status = BC_STATUS_VM_INVALID_EXPR;
 				break;
 			}
 		}
