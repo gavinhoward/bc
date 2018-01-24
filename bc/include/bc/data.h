@@ -111,7 +111,7 @@ typedef struct BcExpr {
 	BcExprType type;
 	union {
 		char* string;
-		BcStack* expr_stack;
+		BcStack* exprs;
 		BcCall* call;
 		BcArrayElem* elem;
 	};
@@ -146,7 +146,7 @@ typedef union BcStmtData {
 
 	char* string;
 	struct BcStmtList* list;
-	BcStack* expr_stack;
+	BcStack* exprs;
 	BcIf* if_stmt;
 	BcWhile* while_stmt;
 	BcFor* for_stmt;
@@ -192,6 +192,19 @@ typedef struct BcLocal {
 	};
 
 } BcLocal;
+
+typedef struct BcTemp {
+
+	bool is_num;
+
+	union {
+
+		fxdpnt* num;
+		const char* name;
+
+	};
+
+} BcTemp;
 
 typedef struct BcFunc {
 
@@ -262,5 +275,9 @@ BcCall* bc_call_create();
 BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num);
 BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems);
 void bc_local_free(void* local);
+
+BcStatus bc_temp_initNum(BcTemp* temp, const char* val);
+BcStatus bc_temp_initName(BcTemp* temp, const char* name);
+void bc_temp_free(void* temp);
 
 #endif // BC_DATA_H

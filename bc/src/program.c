@@ -9,7 +9,7 @@
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list);
 static BcStatus bc_program_printString(const char* str);
-static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
+static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
                                     fxdpnt* num, bool print);
 
 BcStatus bc_program_init(BcProgram* p, const char* file) {
@@ -59,7 +59,7 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 		goto local_err;
 	}
 
-	st = bc_stack_init(&p->temps, sizeof(fxdpnt), (BcFreeFunc) arb_free);
+	st = bc_stack_init(&p->temps, sizeof(BcTemp), bc_temp_free);
 
 	if (st) {
 		goto temps_err;
@@ -205,7 +205,7 @@ static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
 
 				case BC_STMT_EXPR:
 				{
-					status = bc_program_execExpr(p, stmt, &result, true);
+					status = bc_program_execExpr(p, stmt->data.exprs, &result, true);
 
 					if (status) {
 						break;
@@ -386,22 +386,25 @@ static BcStatus bc_program_printString(const char* str) {
 	return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
+static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
                                     fxdpnt* num, bool print)
 {
 	BcStatus status;
 	uint32_t idx;
 	BcExpr* expr;
-	BcStmtData data;
+	BcTemp temp;
+	uint32_t temp_len;
+	fxdpnt temp_num;
 
 	status = BC_STATUS_SUCCESS;
 
-	data = stmt->data;
-	idx = data.expr_stack->len - 1;
+	temp_len = p->temps.len;
 
-	while (idx < stmt->data.expr_stack->len) {
+	idx = exprs->len - 1;
 
-		expr = bc_stack_item(data.expr_stack, idx);
+	while (idx < exprs->len) {
+
+		expr = bc_stack_item(exprs, idx);
 
 		if (!expr) {
 			return BC_STATUS_VM_INVALID_EXPR;
@@ -497,6 +500,14 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
 
 			case BC_EXPR_NUMBER:
 			{
+				status = bc_temp_initNum(&temp, expr->string);
+
+				if (status) {
+					break;
+				}
+
+				status = bc_stack_push(&p->temps, &temp);
+
 				break;
 			}
 
@@ -552,12 +563,36 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
 
 			case BC_EXPR_SQRT:
 			{
+				status = bc_program_execExpr(p, expr->exprs, &temp_num, false);
+
+				if (status) {
+					break;
+				}
+
+				if (temp_num.sign != '-') {
+
+					status = bc_temp_initNum(&temp, NULL);
+
+					if (status) {
+						break;
+					}
+
+					arb_newton_sqrt(&temp_num, temp.num, 10, p->scale);
+				}
+				else {
+					status = BC_STATUS_VM_NEG_SQRT;
+				}
+
 				break;
 			}
 
 			case BC_EXPR_PRINT:
 			{
 				// TODO: Store to last and print.
+				if (!print) {
+					break;
+				}
+
 				break;
 			}
 
@@ -567,6 +602,14 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
 				break;
 			}
 		}
+	}
+
+	if (status) {
+		return status;
+	}
+
+	if (p->temps.len != temp_len) {
+		return BC_STATUS_VM_INVALID_EXPR;
 	}
 
 	return status;

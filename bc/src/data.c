@@ -440,9 +440,9 @@ BcStatus bc_stmt_init(BcStmt* stmt, BcStmtType type) {
 
 	if (bc_stmt_sizes[type]) {
 
-		stmt->data.expr_stack = malloc(bc_stmt_sizes[type]);
+		stmt->data.exprs = malloc(bc_stmt_sizes[type]);
 
-		if (!stmt->data.expr_stack) {
+		if (!stmt->data.exprs) {
 			return BC_STATUS_MALLOC_FAIL;
 		}
 	}
@@ -465,8 +465,8 @@ void bc_stmt_free(BcStmt* stmt) {
 		case BC_STMT_EXPR:
 		case BC_STMT_RETURN:
 		{
-			bc_stack_free(stmt->data.expr_stack);
-			free(stmt->data.expr_stack);
+			bc_stack_free(stmt->data.exprs);
+			free(stmt->data.exprs);
 			break;
 		}
 
@@ -527,7 +527,7 @@ void bc_stmt_free(BcStmt* stmt) {
 		}
 	}
 
-	stmt->data.expr_stack = NULL;
+	stmt->data.exprs = NULL;
 }
 
 BcIf* bc_if_create() {
@@ -615,8 +615,8 @@ void bc_expr_free(void* expr) {
 		case BC_EXPR_LENGTH:
 		case BC_EXPR_SQRT:
 		{
-			bc_stack_free(e->expr_stack);
-			free(e->expr_stack);
+			bc_stack_free(e->exprs);
+			free(e->exprs);
 			break;
 		}
 
@@ -704,5 +704,43 @@ void bc_local_free(void* local) {
 
 		l->array = NULL;
 		l->num_elems = 0;
+	}
+}
+
+BcStatus bc_temp_initNum(BcTemp* temp, const char* val) {
+
+	temp->is_num = true;
+
+	if (val) {
+		temp->num = arb_str2fxdpnt(val);
+	}
+	else {
+		temp->num = arb_alloc(BC_PROGRAM_DEF_SIZE);
+	}
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_temp_initName(BcTemp* temp, const char* name) {
+
+	temp->is_num = false;
+
+	if (!name) {
+		return BC_STATUS_VM_INVALID_NAME;
+	}
+
+	temp->name = name;
+
+	return BC_STATUS_SUCCESS;
+}
+
+void bc_temp_free(void* temp) {
+
+	BcTemp* t;
+
+	t = (BcTemp*) temp;
+
+	if (t->is_num) {
+		arb_free(t->num);
 	}
 }
