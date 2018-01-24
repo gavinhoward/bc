@@ -8,15 +8,15 @@ fxdpnt *remove_leading_zeros(fxdpnt *c)
 	bool effect = false;
 	size_t i = 0;
 	while (c->number[i] == 0)
-        {
-                if (c->lp > 1 || c->lp > 0 && c->rp)
-                {
-                        c->lp--;
+	{
+		if (c->lp > 1 || (c->lp > 0 && c->rp))
+		{
+			c->lp--;
 			++i;
-                }else
+		}else
 			break;
 		effect = true;
-        }
+	}
 	if (effect)
 	{
 		c = arb_leftshift(c, i, 1);
