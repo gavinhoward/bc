@@ -630,8 +630,8 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 	size_t i = 0;
 	char c = buffer[i];
 
-	while (c && (isdigit(c) || (c >= 'A' && c <= 'F') || (c == '.' && !point) ||
-	             (c == '\\' && buffer[i + 1] == '\n')))
+	while (c && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
+	             (c == '.' && !point) || (c == '\\' && buffer[i + 1] == '\n')))
 	{
 		if (c == '\\') {
 			++i;
@@ -700,7 +700,7 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 	size_t i = 0;
 	char c = buffer[i];
 
-	while (islower(c) || isdigit(c) || c == '_') {
+	while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_') {
 		++i;
 		c = buffer[i];
 	}
