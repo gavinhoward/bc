@@ -389,5 +389,83 @@ static BcStatus bc_program_printString(const char* str) {
 static BcStatus bc_program_execExpr(BcProgram* p, BcStmt* stmt,
                                     fxdpnt* num, bool print)
 {
+	BcStatus status;
+	uint32_t idx;
+	BcExpr* expr;
+	BcStmtData data;
 
+	status = BC_STATUS_SUCCESS;
+
+	data = stmt->data;
+	idx = data.expr_stack->len - 1;
+
+	while (idx < stmt->data.expr_stack->len) {
+
+		expr = bc_stack_item(data.expr_stack, idx);
+
+		if (!expr) {
+			return BC_STATUS_VM_INVALID_EXPR;
+		}
+
+		switch (expr->type) {
+
+			case BC_EXPR_INC_PRE:
+			case BC_EXPR_DEC_PRE:
+			{
+				break;
+			}
+
+			case BC_EXPR_INC_POST:
+			case BC_EXPR_DEC_POST:
+			{
+				break;
+			}
+
+			case BC_EXPR_NEGATE:
+			{
+				break;
+			}
+
+			case BC_EXPR_POWER:
+			{
+				break;
+			}
+
+			case BC_EXPR_MULTIPLY:
+			{
+				break;
+			}
+
+			case BC_EXPR_DIVIDE:
+			{
+				break;
+			}
+
+			case BC_EXPR_MODULUS:
+			{
+				break;
+			}
+
+			case BC_EXPR_PLUS:
+			{
+				break;
+			}
+
+			case BC_EXPR_MINUS:
+			{
+				break;
+			}
+
+			case BC_EXPR_ASSIGN_POWER:
+			{
+
+			}
+			case BC_EXPR_ASSIGN:
+			{
+				break;
+			}
+		}
+	}
+
+	return status;
 }

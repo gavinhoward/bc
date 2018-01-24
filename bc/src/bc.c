@@ -51,6 +51,7 @@ static const char* const bc_err_types[] = {
     "runtime",
     "runtime",
     "runtime",
+    "runtime",
 
 };
 
@@ -90,6 +91,7 @@ static const char* const bc_err_descs[] = {
     "file is not executable",
     "could not install signal handler",
     "invalid statement; this is most likely a bug in bc",
+    "invalid expression; this is most likely a bug in bc",
     "invalid string",
     "print error",
     "break statement outside loop; "
