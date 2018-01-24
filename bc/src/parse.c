@@ -999,13 +999,13 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 				break;
 			}
 
-			case BC_LEX_OP_ASSIGN:
-			case BC_LEX_OP_ASSIGN_PLUS:
-			case BC_LEX_OP_ASSIGN_MINUS:
+			case BC_LEX_OP_ASSIGN_POWER:
 			case BC_LEX_OP_ASSIGN_MULTIPLY:
 			case BC_LEX_OP_ASSIGN_DIVIDE:
 			case BC_LEX_OP_ASSIGN_MODULUS:
-			case BC_LEX_OP_ASSIGN_POWER:
+			case BC_LEX_OP_ASSIGN_PLUS:
+			case BC_LEX_OP_ASSIGN_MINUS:
+			case BC_LEX_OP_ASSIGN:
 			{
 				if (prev != BC_EXPR_VAR && prev != BC_EXPR_ARRAY_ELEM &&
 				    prev != BC_EXPR_SCALE && prev != BC_EXPR_IBASE &&
@@ -1215,8 +1215,8 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
 	expr.type = ((BcExpr*) bc_stack_top(exprs))->type;
 
-	if (expr.type < BC_EXPR_ASSIGN ||
-	    expr.type > BC_EXPR_ASSIGN_POWER ||
+	if (expr.type < BC_EXPR_ASSIGN_POWER ||
+	    expr.type > BC_EXPR_ASSIGN ||
 	    paren_first)
 	{
 		expr.type = BC_EXPR_PRINT;
