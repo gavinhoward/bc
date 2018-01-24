@@ -9,7 +9,7 @@ fxdpnt *remove_leading_zeros(fxdpnt *c)
 	size_t i = 0;
 	while (c->number[i] == 0)
         {
-                if (c->lp > 0)
+                if (c->lp > 1 || c->lp > 0 && c->rp)
                 {
                         c->lp--;
 			++i;

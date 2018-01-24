@@ -1,6 +1,3 @@
-#include <stdbool.h>
-#include <string.h>
-
 #include <arbprec/arbprec.h>
 
 ARBT arb_place(fxdpnt *a, fxdpnt *b, size_t *cnt, size_t r)
@@ -106,27 +103,25 @@ fxdpnt *arb_sub_inter(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 fxdpnt *arb_add(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 {
 	arb_init(c);
-
 	if (a->sign == '-' && b->sign == '-')
 		arb_flipsign(c);
 	else if (a->sign == '-')
-		return arb_sub_inter(b, a, c, base);
+		return c = arb_sub_inter(b, a, c, base);
 	else if (b->sign == '-')
-		return arb_sub_inter(a, b, c, base);
-	return arb_add_inter(a, b, c, base);
+		return c = arb_sub_inter(a, b, c, base);
+	return c = arb_add_inter(a, b, c, base);
 }
 
 fxdpnt *arb_sub(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base)
 {
 	arb_init(c);
-
 	if (a->sign == '-' && b->sign == '-')
 		arb_flipsign(c);
 	else if (a->sign == '-'){
 		arb_flipsign(c);
-		return arb_add_inter(a, b, c, base);
+		return c = arb_add_inter(a, b, c, base);
 	}
 	else if (b->sign == '-' || a->sign == '-')
-		return arb_add_inter(a, b, c, base);
-	return arb_sub_inter(a, b, c, base);
+		return c = arb_add_inter(a, b, c, base);
+	return c = arb_sub_inter(a, b, c, base);
 }
