@@ -12,6 +12,18 @@
 
 #define BC_PROGRAM_DEF_SIZE (16)
 
+typedef enum BcTempType {
+
+	BC_TEMP_NUM,
+	BC_TEMP_NAME,
+
+	BC_TEMP_SCALE,
+	BC_TEMP_IBASE,
+	BC_TEMP_OBASE,
+	BC_TEMP_LAST,
+
+} BcTempType;
+
 typedef enum BcExprType {
 
 	BC_EXPR_INC_PRE,
@@ -57,8 +69,8 @@ typedef enum BcExprType {
 
 	BC_EXPR_FUNC_CALL,
 
-	BC_EXPR_SCALE,
 	BC_EXPR_SCALE_FUNC,
+	BC_EXPR_SCALE,
 	BC_EXPR_IBASE,
 	BC_EXPR_OBASE,
 	BC_EXPR_LAST,
@@ -195,7 +207,7 @@ typedef struct BcLocal {
 
 typedef struct BcTemp {
 
-	bool is_num;
+	BcTempType type;
 
 	union {
 
@@ -278,6 +290,7 @@ void bc_local_free(void* local);
 
 BcStatus bc_temp_initNum(BcTemp* temp, const char* val);
 BcStatus bc_temp_initName(BcTemp* temp, const char* name);
+BcStatus bc_temp_init(BcTemp* temp, BcTempType type);
 void bc_temp_free(void* temp);
 
 #endif // BC_DATA_H

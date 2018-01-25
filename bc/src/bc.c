@@ -53,6 +53,12 @@ static const char* const bc_err_types[] = {
     "runtime",
     "runtime",
     "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
+    "runtime",
 
 };
 
@@ -91,10 +97,16 @@ static const char* const bc_err_descs[] = {
     "undefined function",
     "file is not executable",
     "could not install signal handler",
+    "invalid value for scale; must be an integer in the range [0, BC_SCALE_MAX]",
+    "invalid value for ibase; must be an integer in the range [2, 16]",
+    "invalid value for obase; must be an integer in the range [2, BC_BASE_MAX]",
     "invalid statement; this is most likely a bug in bc",
     "invalid expression; this is most likely a bug in bc",
     "invalid string",
+    "string too long: length must be in the range [0, BC_STRING_MAX]",
     "invalid name/identifier",
+    "invalid array length; must be an integer in the range [1, BC_DIM_MAX]",
+    "invalid temp variable; this is most likely a bug in bc",
     "print error",
     "break statement outside loop; "
         "this is a bug in bc (parser should have caught it)",
@@ -249,111 +261,6 @@ BcStatus bc_main(int argc, char* argv[]) {
 	status = bc_vm_exec(&vm);
 
 	return status;
-}
-
-BcStatus bc_limits() {
-
-	long base_max;
-	long dim_max;
-	long scale_max;
-	long string_max;
-
-#ifdef _POSIX_BC_BASE_MAX
-	base_max = _POSIX_BC_BASE_MAX;
-#elif defined(_BC_BASE_MAX)
-	base_max = _BC_BASE_MAX;
-#else
-	errno = 0;
-	base_max = sysconf(_SC_BC_BASE_MAX);
-
-	if (base_max == -1) {
-
-		if (errno) {
-			return BC_STATUS_NO_LIMIT;
-		}
-
-		base_max = BC_BASE_MAX_DEF;
-	}
-	else if (base_max > BC_BASE_MAX_DEF) {
-		return BC_STATUS_INVALID_LIMIT;
-	}
-#endif
-
-#ifdef _POSIX_BC_DIM_MAX
-	dim_max = _POSIX_BC_DIM_MAX;
-#elif defined(_BC_DIM_MAX)
-	dim_max = _BC_DIM_MAX;
-#else
-	errno = 0;
-	dim_max = sysconf(_SC_BC_DIM_MAX);
-
-	if (dim_max == -1) {
-
-		if (errno) {
-			return BC_STATUS_NO_LIMIT;
-		}
-
-		dim_max = BC_DIM_MAX_DEF;
-	}
-	else if (dim_max > BC_DIM_MAX_DEF) {
-		return BC_STATUS_INVALID_LIMIT;
-	}
-#endif
-
-#ifdef _POSIX_BC_SCALE_MAX
-	scale_max = _POSIX_BC_SCALE_MAX;
-#elif defined(_BC_SCALE_MAX)
-	scale_max = _BC_SCALE_MAX;
-#else
-	errno = 0;
-	scale_max = sysconf(_SC_BC_SCALE_MAX);
-
-	if (scale_max == -1) {
-
-		if (errno) {
-			return BC_STATUS_NO_LIMIT;
-		}
-
-		scale_max = BC_SCALE_MAX_DEF;
-	}
-	else if (scale_max > BC_SCALE_MAX_DEF) {
-		return BC_STATUS_INVALID_LIMIT;
-	}
-#endif
-
-#ifdef _POSIX_BC_STRING_MAX
-	string_max = _POSIX_BC_STRING_MAX;
-#elif defined(_BC_STRING_MAX)
-	string_max = _BC_STRING_MAX;
-#else
-	errno = 0;
-	string_max = sysconf(_SC_BC_STRING_MAX);
-
-	if (string_max == -1) {
-
-		if (errno) {
-			return BC_STATUS_NO_LIMIT;
-		}
-
-		string_max = BC_STRING_MAX_DEF;
-	}
-	else if (string_max > BC_STRING_MAX_DEF) {
-		return BC_STATUS_INVALID_LIMIT;
-	}
-#endif
-
-	putchar('\n');
-
-	printf("BC_BASE_MAX     = %ld\n", base_max);
-	printf("BC_DIM_MAX      = %ld\n", dim_max);
-	printf("BC_SCALE_MAX    = %ld\n", scale_max);
-	printf("BC_STRING_MAX   = %ld\n", string_max);
-	printf("Max Exponent    = %ld\n", INT64_MAX);
-	printf("Number of Vars  = %u\n", UINT32_MAX);
-
-	putchar('\n');
-
-	return BC_STATUS_SUCCESS;
 }
 
 void bc_error(BcStatus status) {

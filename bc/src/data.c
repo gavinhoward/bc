@@ -68,8 +68,8 @@ static const uint32_t bc_expr_sizes[] = {
 
     sizeof(BcCall),
 
-    0,
     sizeof(BcStack),
+    0,
     0,
     0,
     0,
@@ -709,7 +709,7 @@ void bc_local_free(void* local) {
 
 BcStatus bc_temp_initNum(BcTemp* temp, const char* val) {
 
-	temp->is_num = true;
+	temp->type = BC_TEMP_NUM;
 
 	if (val) {
 		temp->num = arb_str2fxdpnt(val);
@@ -723,7 +723,7 @@ BcStatus bc_temp_initNum(BcTemp* temp, const char* val) {
 
 BcStatus bc_temp_initName(BcTemp* temp, const char* name) {
 
-	temp->is_num = false;
+	temp->type = BC_TEMP_NAME;
 
 	if (!name) {
 		return BC_STATUS_VM_INVALID_NAME;
@@ -734,13 +734,24 @@ BcStatus bc_temp_initName(BcTemp* temp, const char* name) {
 	return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_temp_init(BcTemp* temp, BcTempType type) {
+
+	if (type > BC_TEMP_LAST || type == BC_TEMP_NUM || type == BC_TEMP_NAME) {
+		return BC_STATUS_VM_INVALID_TEMP;
+	}
+
+	temp->type = type;
+
+	return BC_STATUS_SUCCESS;
+}
+
 void bc_temp_free(void* temp) {
 
 	BcTemp* t;
 
 	t = (BcTemp*) temp;
 
-	if (t->is_num) {
+	if (t->type == BC_TEMP_NUM) {
 		arb_free(t->num);
 	}
 }
