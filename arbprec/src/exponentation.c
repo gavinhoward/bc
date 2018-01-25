@@ -26,7 +26,7 @@ fxdpnt *arb_exp(fxdpnt *a, fxdpnt *b, fxdpnt *c, int base, size_t scale)
 			arb_mul(c_, a, c, base, scale);
 		}
 	
- cleanup:
+ 
 	arb_free(two);
 	arb_free(one);
 	arb_free(zero);

@@ -1,6 +1,6 @@
 #include <arbprec/arbprec.h>
 #define MAXIMA 10000
-int main(int argc, char *argv[])
+int main(void)
 {
 
 	char *string1 = malloc(MAXIMA + 1);

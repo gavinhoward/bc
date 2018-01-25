@@ -9,8 +9,6 @@
 
 #include <arbprec/arbprec.h>
 
-static fxdpnt *arb_karatsuba_mul_inter(fxdpnt *x, fxdpnt *y, fxdpnt *z, int base);
-
 /* use x[len], y[len], to calculate z[2 * len], or z[2 * len - 1] */
 /*
   x = x1 * 10 ^ m + x0

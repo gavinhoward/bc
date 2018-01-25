@@ -72,6 +72,7 @@ fxdpnt *convall(fxdpnt *a, fxdpnt *b, int ibase, int obase)
 
 fxdpnt *convscaled(fxdpnt *a, fxdpnt *b, int ibase, int obase, size_t scale)
 {
+	scale = scale; // get rid of compiler warnings until this is used
 	arb_copy(b, a);
 	ARBT *sv;
 	long long carry = 0;
