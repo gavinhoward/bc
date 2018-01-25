@@ -1,13 +1,22 @@
+CFLAGS += -Wall -Wextra -I./include/ -I../arbprec/include -std=c99 -D_POSIX_C_SOURCE -g -O0
 
-all: 
+ifeq "$(CC)" "clang"
+	CFLAGS += -fsanitize=address -fsanitize=undefined
+endif
 
-	-$(MAKE) -C readline
-	-$(MAKE) -C arbprec
-	-$(MAKE) -C bc
-	
+BC_OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done )
+
+BC_EXEC = bc
+
+all:
+	$(MAKE) $(BC_EXEC)
+
+$(BC_EXEC): $(BC_OBJ) ../arbprec/libarbprec.a
+
+	$(CC) $(CFLAGS) -o $(BC_EXEC) ./*.c $(BC_OBJ) ../arbprec/libarbprec.a
+
 clean:
 
-	$(MAKE) -C readline clean
-	$(MAKE) -C arbprec clean
-	$(MAKE) -C bc clean
+	$(RM) $(BC_OBJ)
+	$(RM) $(BC_EXEC)
 
