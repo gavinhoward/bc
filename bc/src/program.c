@@ -184,7 +184,7 @@ func_err:
 	return st;
 }
 
-BcStatus bc_program_limits(BcProgram* p) {
+void bc_program_limits(BcProgram* p) {
 
 	putchar('\n');
 
@@ -196,8 +196,6 @@ BcStatus bc_program_limits(BcProgram* p) {
 	printf("Number of Vars  = %u\n", UINT32_MAX);
 
 	putchar('\n');
-
-	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
