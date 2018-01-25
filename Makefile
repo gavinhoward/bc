@@ -4,16 +4,16 @@ ifeq "$(CC)" "clang"
 	CFLAGS += -fsanitize=address -fsanitize=undefined
 endif
 
-BC_OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done )
+BC_OBJ = $(shell for i in src/bc/*.c ; do printf "%s\n" $${i%.c}.o ; done )
 
 BC_EXEC = bc
 
 all:
 	$(MAKE) $(BC_EXEC)
 
-$(BC_EXEC): $(BC_OBJ) ../arbprec/libarbprec.a
+$(BC_EXEC): $(BC_OBJ)
 
-	$(CC) $(CFLAGS) -o $(BC_EXEC) ./*.c $(BC_OBJ) ../arbprec/libarbprec.a
+	$(CC) $(CFLAGS) -o $(BC_EXEC) ./src/*.c $(BC_OBJ) -larbprec
 
 clean:
 
