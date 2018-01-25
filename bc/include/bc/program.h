@@ -13,9 +13,14 @@ typedef struct BcProgram {
 
 	uint32_t stmt_idx;
 
-	uint32_t scale;
-	uint32_t ibase;
-	uint32_t obase;
+	long scale;
+	long ibase;
+	long obase;
+
+	long base_max;
+	long dim_max;
+	long scale_max;
+	long string_max;
 
 	BcStack ctx_stack;
 
@@ -34,6 +39,7 @@ typedef struct BcProgram {
 } BcProgram;
 
 BcStatus bc_program_init(BcProgram* p, const char* file);
+BcStatus bc_program_limits(BcProgram* p);
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func);
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var);
 BcStatus bc_program_array_add(BcProgram* p, BcArray* array);

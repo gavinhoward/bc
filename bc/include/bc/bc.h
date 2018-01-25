@@ -45,10 +45,16 @@ typedef enum BcStatus {
 	BC_STATUS_VM_UNDEFINED_FUNC,
 	BC_STATUS_VM_FILE_NOT_EXECUTABLE,
 	BC_STATUS_VM_SIGACTION_FAIL,
+	BC_STATUS_VM_INVALID_SCALE,
+	BC_STATUS_VM_INVALID_IBASE,
+	BC_STATUS_VM_INVALID_OBASE,
 	BC_STATUS_VM_INVALID_STMT,
 	BC_STATUS_VM_INVALID_EXPR,
 	BC_STATUS_VM_INVALID_STRING,
+	BC_STATUS_VM_STRING_LEN,
 	BC_STATUS_VM_INVALID_NAME,
+	BC_STATUS_VM_ARRAY_LENGTH,
+	BC_STATUS_VM_INVALID_TEMP,
 	BC_STATUS_VM_PRINT_ERR,
 	BC_STATUS_VM_BREAK,
 	BC_STATUS_VM_CONTINUE,
@@ -57,8 +63,6 @@ typedef enum BcStatus {
 } BcStatus;
 
 BcStatus bc_main(int argc, char* argv[]);
-
-BcStatus bc_limits();
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);

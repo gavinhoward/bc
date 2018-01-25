@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,6 +20,94 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
 	if (p == NULL) {
 		return BC_STATUS_INVALID_PARAM;
 	}
+
+	p->scale = 0;
+	p->ibase = 10;
+	p->obase = 10;
+
+#ifdef _POSIX_BC_BASE_MAX
+	p->base_max = _POSIX_BC_BASE_MAX;
+#elif defined(_BC_BASE_MAX)
+	p->base_max = _BC_BASE_MAX;
+#else
+	errno = 0;
+	p->base_max = sysconf(_SC_BC_BASE_MAX);
+
+	if (p->base_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		p->base_max = BC_BASE_MAX_DEF;
+	}
+	else if (p->base_max > BC_BASE_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
+	}
+#endif
+
+#ifdef _POSIX_BC_DIM_MAX
+	p->dim_max = _POSIX_BC_DIM_MAX;
+#elif defined(_BC_DIM_MAX)
+	p->dim_max = _BC_DIM_MAX;
+#else
+	errno = 0;
+	p->dim_max = sysconf(_SC_BC_DIM_MAX);
+
+	if (p->dim_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		p->dim_max = BC_DIM_MAX_DEF;
+	}
+	else if (p->dim_max > BC_DIM_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
+	}
+#endif
+
+#ifdef _POSIX_BC_SCALE_MAX
+	p->scale_max = _POSIX_BC_SCALE_MAX;
+#elif defined(_BC_SCALE_MAX)
+	p->scale_max = _BC_SCALE_MAX;
+#else
+	errno = 0;
+	p->scale_max = sysconf(_SC_BC_SCALE_MAX);
+
+	if (p->scale_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		p->scale_max = BC_SCALE_MAX_DEF;
+	}
+	else if (p->scale_max > BC_SCALE_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
+	}
+#endif
+
+#ifdef _POSIX_BC_STRING_MAX
+	p->string_max = _POSIX_BC_STRING_MAX;
+#elif defined(_BC_STRING_MAX)
+	p->string_max = _BC_STRING_MAX;
+#else
+	errno = 0;
+	p->string_max = sysconf(_SC_BC_STRING_MAX);
+
+	if (p->string_max == -1) {
+
+		if (errno) {
+			return BC_STATUS_NO_LIMIT;
+		}
+
+		p->string_max = BC_STRING_MAX_DEF;
+	}
+	else if (p->string_max > BC_STRING_MAX_DEF) {
+		return BC_STATUS_INVALID_LIMIT;
+	}
+#endif
 
 	p->file = file;
 
@@ -93,6 +182,22 @@ func_err:
 	p->list = NULL;
 
 	return st;
+}
+
+BcStatus bc_program_limits(BcProgram* p) {
+
+	putchar('\n');
+
+	printf("BC_BASE_MAX     = %ld\n", p->base_max);
+	printf("BC_DIM_MAX      = %ld\n", p->dim_max);
+	printf("BC_SCALE_MAX    = %ld\n", p->scale_max);
+	printf("BC_STRING_MAX   = %ld\n", p->string_max);
+	printf("Max Exponent    = %ld\n", INT64_MAX);
+	printf("Number of Vars  = %u\n", UINT32_MAX);
+
+	putchar('\n');
+
+	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
@@ -395,6 +500,8 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 	BcTemp temp;
 	uint32_t temp_len;
 	fxdpnt temp_num;
+	BcExprType etype;
+	BcTempType ttype;
 
 	status = BC_STATUS_SUCCESS;
 
@@ -410,7 +517,9 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 			return BC_STATUS_VM_INVALID_EXPR;
 		}
 
-		switch (expr->type) {
+		etype = expr->type;
+
+		switch (etype) {
 
 			case BC_EXPR_INC_PRE:
 			case BC_EXPR_DEC_PRE:
@@ -526,28 +635,26 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 				break;
 			}
 
-			case BC_EXPR_SCALE:
-			{
-				break;
-			}
-
 			case BC_EXPR_SCALE_FUNC:
 			{
 				break;
 			}
 
+			case BC_EXPR_SCALE:
 			case BC_EXPR_IBASE:
-			{
-				break;
-			}
-
 			case BC_EXPR_OBASE:
-			{
-				break;
-			}
-
 			case BC_EXPR_LAST:
 			{
+				ttype = etype - BC_EXPR_SCALE + BC_TEMP_SCALE;
+
+				status = bc_temp_init(&temp, ttype);
+
+				if (status) {
+					break;
+				}
+
+				status = bc_stack_push(&p->temps, &temp);
+
 				break;
 			}
 
