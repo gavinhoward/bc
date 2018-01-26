@@ -34,6 +34,7 @@ static const char* const bc_err_types[] = {
   "parse",
   "parse",
   "parse",
+  "parse",
 
   "runtime",
   "runtime",
@@ -83,7 +84,10 @@ static const char* const bc_err_descs[] = {
   "invalid assignment: must assign to scale, "
     "ibase, obase, last, a variable, or an array element",
   "no auto variable found",
-  "quit statement in file",
+  "limits statement in file not handled correctly; "
+    "this is most likely a bug in bc",
+  "quit statement in file not exited correctly; "
+    "this is most likely a bug in bc",
   "end of file",
   "bug in parser",
 
