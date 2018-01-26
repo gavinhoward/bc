@@ -7,8 +7,6 @@
 #include <unistd.h>
 #include <limits.h>
 
-#include <getopt.h>
-
 #include <bc/vm.h>
 
 static const char* const bc_err_types[] = {
@@ -117,25 +115,10 @@ static const char* const bc_err_descs[] = {
 };
 
 int bc_interactive = 0;
-int bc_mathlib = 0;
-int bc_quiet = 0;
 int bc_std = 0;
 int bc_warn = 0;
 
 int bc_had_sigint = 0;
-
-static const struct option bc_opts[] = {
-
-  { "help", no_argument, NULL, 'h' },
-  { "interactive", no_argument, &bc_interactive, 'i' },
-  { "mathlib", no_argument, &bc_mathlib, 'l' },
-  { "quiet", no_argument, &bc_quiet, 'q' },
-  { "standard", no_argument, &bc_std, 's' },
-  { "version", no_argument, NULL, 'v' },
-  { "warn", no_argument, &bc_warn, 'w' },
-  { 0, 0, 0, 0 },
-
-};
 
 static const char* const bc_copyright =
   "bc copyright (c) 2018 Gavin D. Howard and arbprec contributors.\n"
@@ -160,101 +143,53 @@ static const char* const bc_help =
   "  -w  --warn         warn if any non-POSIX extensions are used\n"
   "  -v  --version      print version information and copyright and exit\n\n";
 
-static const char* const bc_short_opts = "hlqsvw";
-
 static const char* const bc_version_fmt = "bc %s\n%s\n";
 
 static const char* const bc_version = "0.1";
 
-BcStatus bc_main(int argc, char* argv[]) {
+BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
 
   BcStatus status;
   BcVm vm;
-  bool do_exit;
+  int do_exit;
 
-  do_exit = false;
+  status = BC_STATUS_SUCCESS;
+  do_exit = 0;
 
-  // Getopt needs this.
-  int opt_idx = 0;
-
-  if (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)) {
-    bc_interactive = 'i';
-  }
-  else {
-    bc_interactive = 0;
+  if (flags & BC_FLAG_HELP) {
+    printf(bc_help);
+    do_exit = 1;
   }
 
-  int c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
-
-  while (c != -1) {
-
-    switch (c) {
-
-      case 0:
-        // This is the case when a long option is
-        // found, so we don't need to do anything.
-        break;
-
-      case 'h':
-        printf(bc_help);
-        do_exit = true;
-        break;
-
-      case 'i':
-        bc_interactive = 'i';
-        break;
-
-      case 'l':
-        bc_mathlib = 'l';
-        break;
-
-      case 'q':
-        bc_quiet = 'q';
-        break;
-
-      case 's':
-        bc_std = 's';
-        break;
-
-      case 'v':
-        printf(bc_version_fmt, bc_version, bc_copyright);
-        do_exit = true;
-        break;
-
-      case 'w':
-        bc_warn = 'w';
-        break;
-
-      case '?':
-        // Getopt printed an error message, but we should exit.
-      default:
-        do_exit = true;
-        status = BC_STATUS_INVALID_OPTION;
-        break;
-    }
-
-    c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
+  if (flags & BC_FLAG_VERSION) {
+    printf(bc_version_fmt, bc_version, bc_copyright);
+    do_exit = 1;
   }
 
-  if (do_exit) {
-    exit(status);
+  if (flags & BC_FLAG_INTERACTIVE ||
+      (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)))
+  {
+    bc_interactive = 1;
   }
+  else bc_interactive = 0;
 
-  if (!bc_quiet) {
+  bc_std = flags & BC_FLAG_STANDARD;
+  bc_warn = flags & BC_FLAG_WARN;
+
+  if (do_exit) return status;
+
+  if (!(flags & BC_FLAG_QUIET)) {
     printf(bc_version_fmt, bc_version, bc_copyright);
     putchar('\n');
   }
 
-  uint32_t num_files = argc - optind;
-  const char** file_names = (const char**) (argv + optind);
-
-  status = bc_vm_init(&vm, num_files, file_names);
+  status = bc_vm_init(&vm, filec, filev);
 
   if (status) {
     return status;
   }
 
-  if (bc_mathlib) {
+  if (flags & BC_FLAG_MATHLIB) {
     // TODO: Load the math functions.
   }
 
