@@ -138,7 +138,7 @@ static const struct option bc_opts[] = {
 };
 
 static const char* const bc_copyright =
-  "bc copyright (c) 2018 Gavin D. Howard.\n"
+  "bc copyright (c) 2018 Gavin D. Howard and arbprec contributors.\n"
   "arbprec copyright (c) 2016-2018 CM Graff,\n"
   "        copyright (c) 2018 Bao Hexing.";
 
