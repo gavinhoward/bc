@@ -137,12 +137,18 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
       if (status != BC_STATUS_LEX_EOF &&
           status != BC_STATUS_PARSE_EOF &&
-          status != BC_STATUS_PARSE_QUIT)
+          status != BC_STATUS_PARSE_QUIT &&
+          status != BC_STATUS_PARSE_LIMITS)
       {
         bc_error_file(status, vm->program.file, vm->parse.lex.line);
       }
       else if (status == BC_STATUS_PARSE_QUIT) {
         break;
+      }
+      else if (status == BC_STATUS_PARSE_LIMITS) {
+        bc_program_limits(&vm->program);
+        status = BC_STATUS_SUCCESS;
+        continue;
       }
 
       while (vm->parse.token.type != BC_LEX_NEWLINE &&
@@ -352,13 +358,22 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
         {
           break;
         }
-
-        bc_error(status);
-        goto exit_err;
+        else if (status == BC_STATUS_PARSE_LIMITS) {
+          bc_program_limits(&vm->program);
+          status = BC_STATUS_SUCCESS;
+        }
+        else {
+          bc_error(status);
+          goto exit_err;
+        }
       }
     }
     else if (status == BC_STATUS_PARSE_QUIT) {
       break;
+    }
+    else if (status == BC_STATUS_PARSE_LIMITS) {
+      bc_program_limits(&vm->program);
+      status = BC_STATUS_SUCCESS;
     }
 
     while (!status) {
@@ -368,7 +383,11 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
     if (status == BC_STATUS_PARSE_QUIT) {
       break;
     }
-    if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
+    else if (status == BC_STATUS_PARSE_LIMITS) {
+      bc_program_limits(&vm->program);
+      status = BC_STATUS_SUCCESS;
+    }
+    else if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
 
       bc_error_file(status, vm->program.file, vm->parse.lex.line);
 
