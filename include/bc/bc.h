@@ -3,6 +3,14 @@
 
 #include <stdint.h>
 
+#define BC_FLAG_HELP (0x01)
+#define BC_FLAG_INTERACTIVE (0x02)
+#define BC_FLAG_MATHLIB (0x04)
+#define BC_FLAG_QUIET (0x08)
+#define BC_FLAG_STANDARD (0x10)
+#define BC_FLAG_VERSION (0x20)
+#define BC_FLAG_WARN (0x40)
+
 typedef void (*BcFreeFunc)(void*);
 typedef int (*BcCmpFunc)(void*, void*);
 
@@ -62,7 +70,7 @@ typedef enum BcStatus {
 
 } BcStatus;
 
-BcStatus bc_main(int argc, char* argv[]);
+BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);
