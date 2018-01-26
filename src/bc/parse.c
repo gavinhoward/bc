@@ -1006,7 +1006,6 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
       case BC_LEX_OP_ASSIGN_PLUS:
       case BC_LEX_OP_ASSIGN_MINUS:
       case BC_LEX_OP_ASSIGN:
-      {
         if (prev != BC_EXPR_VAR && prev != BC_EXPR_ARRAY_ELEM &&
             prev != BC_EXPR_SCALE && prev != BC_EXPR_IBASE &&
             prev != BC_EXPR_OBASE && prev != BC_EXPR_LAST)
@@ -1015,7 +1014,6 @@ static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
           break;
         }
         // Fallthrough.
-      }
       case BC_LEX_OP_POWER:
       case BC_LEX_OP_MULTIPLY:
       case BC_LEX_OP_DIVIDE:
