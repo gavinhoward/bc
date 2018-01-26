@@ -10,12 +10,12 @@
 
 typedef struct BcStack {
 
-	size_t size;
-	uint8_t* stack;
-	uint32_t len;
-	uint32_t cap;
+  size_t size;
+  uint8_t* stack;
+  uint32_t len;
+  uint32_t cap;
 
-	BcFreeFunc sfree;
+  BcFreeFunc sfree;
 
 } BcStack;
 

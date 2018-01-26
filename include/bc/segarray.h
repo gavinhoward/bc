@@ -19,7 +19,7 @@
 #define BC_SEGARRAY_SEG_IDX1_MASK (~BC_SEGARRAY_SEG_IDX2_MASK)
 
 #define BC_SEGARRAY_IDX1(idx)  \
-	(((idx) & BC_SEGARRAY_SEG_IDX1_MASK) >> BC_SEGARRAY_SEG_POWER)
+  (((idx) & BC_SEGARRAY_SEG_IDX1_MASK) >> BC_SEGARRAY_SEG_POWER)
 
 #define BC_SEGARRAY_IDX2(idx) ((idx) & BC_SEGARRAY_SEG_IDX2_MASK)
 
@@ -27,13 +27,13 @@
 
 typedef struct BcSegArray {
 
-	size_t esize;
-	uint32_t num;
-	uint32_t num_ptrs;
-	uint32_t ptr_cap;
-	uint8_t** ptrs;
-	BcCmpFunc cmp;
-	BcFreeFunc sfree;
+  size_t esize;
+  uint32_t num;
+  uint32_t num_ptrs;
+  uint32_t ptr_cap;
+  uint8_t** ptrs;
+  BcCmpFunc cmp;
+  BcFreeFunc sfree;
 
 } BcSegArray;
 
