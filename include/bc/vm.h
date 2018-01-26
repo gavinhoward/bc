@@ -9,11 +9,11 @@
 
 typedef struct BcVm {
 
-	BcProgram program;
-	BcParse parse;
+  BcProgram program;
+  BcParse parse;
 
-	int filec;
-	const char** filev;
+  int filec;
+  const char** filev;
 
 } BcVm;
 

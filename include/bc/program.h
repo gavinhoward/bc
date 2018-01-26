@@ -9,32 +9,32 @@
 
 typedef struct BcProgram {
 
-	BcStmtList* list;
+  BcStmtList* list;
 
-	uint32_t stmt_idx;
+  uint32_t stmt_idx;
 
-	long scale;
-	long ibase;
-	long obase;
+  long scale;
+  long ibase;
+  long obase;
 
-	long base_max;
-	long dim_max;
-	long scale_max;
-	long string_max;
+  long base_max;
+  long dim_max;
+  long scale_max;
+  long string_max;
 
-	BcStack ctx_stack;
+  BcStack ctx_stack;
 
-	BcStack locals;
+  BcStack locals;
 
-	BcStack temps;
+  BcStack temps;
 
-	BcSegArray funcs;
+  BcSegArray funcs;
 
-	BcSegArray vars;
+  BcSegArray vars;
 
-	BcSegArray arrays;
+  BcSegArray arrays;
 
-	const char* file;
+  const char* file;
 
 } BcProgram;
 

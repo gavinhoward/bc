@@ -14,241 +14,241 @@
 
 typedef enum BcTempType {
 
-	BC_TEMP_NUM,
-	BC_TEMP_NAME,
+  BC_TEMP_NUM,
+  BC_TEMP_NAME,
 
-	BC_TEMP_SCALE,
-	BC_TEMP_IBASE,
-	BC_TEMP_OBASE,
-	BC_TEMP_LAST,
+  BC_TEMP_SCALE,
+  BC_TEMP_IBASE,
+  BC_TEMP_OBASE,
+  BC_TEMP_LAST,
 
 } BcTempType;
 
 typedef enum BcExprType {
 
-	BC_EXPR_INC_PRE,
-	BC_EXPR_DEC_PRE,
+  BC_EXPR_INC_PRE,
+  BC_EXPR_DEC_PRE,
 
-	BC_EXPR_INC_POST,
-	BC_EXPR_DEC_POST,
+  BC_EXPR_INC_POST,
+  BC_EXPR_DEC_POST,
 
-	BC_EXPR_NEGATE,
+  BC_EXPR_NEGATE,
 
-	BC_EXPR_POWER,
+  BC_EXPR_POWER,
 
-	BC_EXPR_MULTIPLY,
-	BC_EXPR_DIVIDE,
-	BC_EXPR_MODULUS,
+  BC_EXPR_MULTIPLY,
+  BC_EXPR_DIVIDE,
+  BC_EXPR_MODULUS,
 
-	BC_EXPR_PLUS,
-	BC_EXPR_MINUS,
+  BC_EXPR_PLUS,
+  BC_EXPR_MINUS,
 
-	BC_EXPR_ASSIGN_POWER,
-	BC_EXPR_ASSIGN_MULTIPLY,
-	BC_EXPR_ASSIGN_DIVIDE,
-	BC_EXPR_ASSIGN_MODULUS,
-	BC_EXPR_ASSIGN_PLUS,
-	BC_EXPR_ASSIGN_MINUS,
-	BC_EXPR_ASSIGN,
+  BC_EXPR_ASSIGN_POWER,
+  BC_EXPR_ASSIGN_MULTIPLY,
+  BC_EXPR_ASSIGN_DIVIDE,
+  BC_EXPR_ASSIGN_MODULUS,
+  BC_EXPR_ASSIGN_PLUS,
+  BC_EXPR_ASSIGN_MINUS,
+  BC_EXPR_ASSIGN,
 
-	BC_EXPR_REL_EQUAL,
-	BC_EXPR_REL_LESS_EQ,
-	BC_EXPR_REL_GREATER_EQ,
-	BC_EXPR_REL_NOT_EQ,
-	BC_EXPR_REL_LESS,
-	BC_EXPR_REL_GREATER,
+  BC_EXPR_REL_EQUAL,
+  BC_EXPR_REL_LESS_EQ,
+  BC_EXPR_REL_GREATER_EQ,
+  BC_EXPR_REL_NOT_EQ,
+  BC_EXPR_REL_LESS,
+  BC_EXPR_REL_GREATER,
 
-	BC_EXPR_BOOL_NOT,
+  BC_EXPR_BOOL_NOT,
 
-	BC_EXPR_BOOL_OR,
-	BC_EXPR_BOOL_AND,
+  BC_EXPR_BOOL_OR,
+  BC_EXPR_BOOL_AND,
 
-	BC_EXPR_NUMBER,
-	BC_EXPR_VAR,
-	BC_EXPR_ARRAY_ELEM,
+  BC_EXPR_NUMBER,
+  BC_EXPR_VAR,
+  BC_EXPR_ARRAY_ELEM,
 
-	BC_EXPR_FUNC_CALL,
+  BC_EXPR_FUNC_CALL,
 
-	BC_EXPR_SCALE_FUNC,
-	BC_EXPR_SCALE,
-	BC_EXPR_IBASE,
-	BC_EXPR_OBASE,
-	BC_EXPR_LAST,
-	BC_EXPR_LENGTH,
-	BC_EXPR_READ,
-	BC_EXPR_SQRT,
+  BC_EXPR_SCALE_FUNC,
+  BC_EXPR_SCALE,
+  BC_EXPR_IBASE,
+  BC_EXPR_OBASE,
+  BC_EXPR_LAST,
+  BC_EXPR_LENGTH,
+  BC_EXPR_READ,
+  BC_EXPR_SQRT,
 
-	BC_EXPR_PRINT,
+  BC_EXPR_PRINT,
 
 } BcExprType;
 
 typedef enum BcStmtType {
 
-	BC_STMT_EXPR,
+  BC_STMT_EXPR,
 
-	BC_STMT_STRING,
-	BC_STMT_STRING_PRINT,
+  BC_STMT_STRING,
+  BC_STMT_STRING_PRINT,
 
-	BC_STMT_BREAK,
-	BC_STMT_CONTINUE,
+  BC_STMT_BREAK,
+  BC_STMT_CONTINUE,
 
-	BC_STMT_HALT,
+  BC_STMT_HALT,
 
-	BC_STMT_RETURN,
+  BC_STMT_RETURN,
 
-	BC_STMT_IF,
-	BC_STMT_WHILE,
-	BC_STMT_FOR,
+  BC_STMT_IF,
+  BC_STMT_WHILE,
+  BC_STMT_FOR,
 
-	BC_STMT_LIST,
+  BC_STMT_LIST,
 
 } BcStmtType;
 
 typedef struct BcCall {
 
-	char* name;
-	BcSegArray params;
+  char* name;
+  BcSegArray params;
 
 } BcCall;
 
 typedef struct BcArrayElem {
 
-	char* name;
-	BcStack expr_stack;
+  char* name;
+  BcStack expr_stack;
 
 } BcArrayElem;
 
 typedef struct BcExpr {
 
-	BcExprType type;
-	union {
-		char* string;
-		BcStack* exprs;
-		BcCall* call;
-		BcArrayElem* elem;
-	};
+  BcExprType type;
+  union {
+    char* string;
+    BcStack* exprs;
+    BcCall* call;
+    BcArrayElem* elem;
+  };
 
 } BcExpr;
 
 typedef struct BcIf {
 
-	BcStack cond;
-	struct BcStmtList* then_list;
-	struct BcStmtList* else_list;
+  BcStack cond;
+  struct BcStmtList* then_list;
+  struct BcStmtList* else_list;
 
 } BcIf;
 
 typedef struct BcWhile {
 
-	BcStack cond;
-	struct BcStmtList* body;
+  BcStack cond;
+  struct BcStmtList* body;
 
 } BcWhile;
 
 typedef struct BcFor {
 
-	BcStack cond;
-	struct BcStmtList* body;
-	BcStack update;
-	BcStack init;
+  BcStack cond;
+  struct BcStmtList* body;
+  BcStack update;
+  BcStack init;
 
 } BcFor;
 
 typedef union BcStmtData {
 
-	char* string;
-	struct BcStmtList* list;
-	BcStack* exprs;
-	BcIf* if_stmt;
-	BcWhile* while_stmt;
-	BcFor* for_stmt;
+  char* string;
+  struct BcStmtList* list;
+  BcStack* exprs;
+  BcIf* if_stmt;
+  BcWhile* while_stmt;
+  BcFor* for_stmt;
 
 } BcStmtData;
 
 typedef struct BcStmt {
 
-	BcStmtType type;
-	BcStmtData data;
+  BcStmtType type;
+  BcStmtData data;
 
 } BcStmt;
 
 typedef struct BcStmtList {
 
-	struct BcStmtList* next;
+  struct BcStmtList* next;
 
-	uint32_t idx;
-	uint32_t num_stmts;
+  uint32_t idx;
+  uint32_t num_stmts;
 
-	BcStmt stmts[BC_PROGRAM_MAX_STMTS];
+  BcStmt stmts[BC_PROGRAM_MAX_STMTS];
 
 } BcStmtList;
 
 typedef struct BcAuto {
 
-	char* name;
-	bool var;
+  char* name;
+  bool var;
 
 } BcAuto;
 
 typedef struct BcLocal {
 
-	const char* name;
-	bool var;
+  const char* name;
+  bool var;
 
-	union {
-		fxdpnt num;
-		struct {
-			fxdpnt* array;
-			uint32_t num_elems;
-		};
-	};
+  union {
+    fxdpnt num;
+    struct {
+      fxdpnt* array;
+      uint32_t num_elems;
+    };
+  };
 
 } BcLocal;
 
 typedef struct BcTemp {
 
-	BcTempType type;
+  BcTempType type;
 
-	union {
+  union {
 
-		fxdpnt* num;
-		const char* name;
+    fxdpnt* num;
+    const char* name;
 
-	};
+  };
 
 } BcTemp;
 
 typedef struct BcFunc {
 
-	char* name;
+  char* name;
 
-	BcStmtList* first;
+  BcStmtList* first;
 
-	BcStmtList* cur;
+  BcStmtList* cur;
 
-	BcAuto* params;
-	uint32_t num_params;
-	uint32_t param_cap;
+  BcAuto* params;
+  uint32_t num_params;
+  uint32_t param_cap;
 
-	BcAuto* autos;
-	uint32_t num_autos;
-	uint32_t auto_cap;
+  BcAuto* autos;
+  uint32_t num_autos;
+  uint32_t auto_cap;
 
 } BcFunc;
 
 typedef struct BcVar {
 
-	char* name;
+  char* name;
 
-	fxdpnt* data;
+  fxdpnt* data;
 
 } BcVar;
 
 typedef struct BcArray {
 
-	char* name;
+  char* name;
 
-	BcSegArray array;
+  BcSegArray array;
 
 } BcArray;
 
