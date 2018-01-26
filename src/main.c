@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
     c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
   }
 
-  if (strcmp(argv[optind], "--") == 0) {
+  if (argv[optind] && strcmp(argv[optind], "--") == 0) {
     ++optind;
   }
 
