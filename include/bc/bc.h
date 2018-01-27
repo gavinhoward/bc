@@ -3,13 +3,13 @@
 
 #include <stdint.h>
 
-#define BC_FLAG_HELP (0x01)
-#define BC_FLAG_INTERACTIVE (0x02)
-#define BC_FLAG_MATHLIB (0x04)
-#define BC_FLAG_QUIET (0x08)
-#define BC_FLAG_STANDARD (0x10)
-#define BC_FLAG_VERSION (0x20)
-#define BC_FLAG_WARN (0x40)
+#define BC_FLAG_WARN (1<<0)
+#define BC_FLAG_VERSION (1<<1)
+#define BC_FLAG_STANDARD (1<<2)
+#define BC_FLAG_QUIET (1<<3)
+#define BC_FLAG_MATHLIB (1<<4)
+#define BC_FLAG_INTERACTIVE (1<<5)
+#define BC_FLAG_HELP (1<<6)
 
 typedef void (*BcFreeFunc)(void*);
 typedef int (*BcCmpFunc)(void*, void*);
