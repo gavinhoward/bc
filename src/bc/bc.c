@@ -9,6 +9,8 @@
 
 #include <bc/vm.h>
 
+#include <bc/bc.h>
+
 static const char* const bc_err_types[] = {
 
   NULL,
@@ -129,24 +131,6 @@ static const char* const bc_copyright =
   "arbprec copyright (c) 2016-2018 CM Graff,\n"
   "        copyright (c) 2018 Bao Hexing.";
 
-static const char* const bc_help =
-  "usage: bc [options] [file ...]\n"
-  "\n"
-  "  -h  --help         print this usage message and exit\n"
-  "  -i  --interactive  force interactive mode\n"
-  "  -l  --mathlib      use predefined math routines:\n\n"
-  "                       s(expr)  =  sine of expr in radians\n"
-  "                       c(expr)  =  cosine of expr in radians\n"
-  "                       a(expr)  =  arctangent of expr, returning radians\n"
-  "                       l(expr)  =  natural log of expr\n"
-  "                       e(expr)  =  raises e to the power of expr\n"
-  "                       j(n, x)  =  Bessel function of integer order n of x\n"
-  "\n"
-  "  -q  --quiet        don't print version and copyright\n"
-  "  -s  --standard     error if any non-POSIX extensions are used\n"
-  "  -w  --warn         warn if any non-POSIX extensions are used\n"
-  "  -v  --version      print version information and copyright and exit\n\n";
-
 static const char* const bc_version_fmt = "bc %s\n%s\n";
 
 static const char* const bc_version = "0.1";
@@ -160,10 +144,7 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
   status = BC_STATUS_SUCCESS;
   do_exit = 0;
 
-  if (flags & BC_FLAG_HELP) {
-    printf(bc_help);
-    do_exit = 1;
-  }
+  if (flags & BC_FLAG_HELP) do_exit = 1;
 
   if (flags & BC_FLAG_VERSION) {
     printf(bc_version_fmt, bc_version, bc_copyright);
