@@ -48,6 +48,10 @@ long bc_warn = 0;
 
 long bc_had_sigint = 0;
 
+const char* const bc_mathlib = BC_MATHLIB_PATH "mathlib.bc";
+
+const char* const bc_version = VERSION;
+
 int main(int argc, char* argv[]) {
 
   unsigned int flags;

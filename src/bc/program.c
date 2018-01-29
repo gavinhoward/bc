@@ -13,7 +13,7 @@ static BcStatus bc_program_printString(const char* str);
 static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
                                     fxdpnt* num, bool print);
 
-BcStatus bc_program_init(BcProgram* p, const char* file) {
+BcStatus bc_program_init(BcProgram* p) {
 
   BcStatus st;
 
@@ -24,6 +24,9 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
   p->scale = 0;
   p->ibase = 10;
   p->obase = 10;
+
+  p->zero = arb_str2fxdpnt("0");
+  p->one = arb_str2fxdpnt("1");
 
 #ifdef _POSIX_BC_BASE_MAX
   p->base_max = _POSIX_BC_BASE_MAX;
@@ -108,8 +111,6 @@ BcStatus bc_program_init(BcProgram* p, const char* file) {
     return BC_STATUS_INVALID_LIMIT;
   }
 #endif
-
-  p->file = file;
 
   p->list = bc_list_create();
 
@@ -275,6 +276,9 @@ void bc_program_free(BcProgram* p) {
   bc_stack_free(&p->ctx_stack);
   bc_stack_free(&p->locals);
   bc_stack_free(&p->temps);
+
+  arb_free(p->zero);
+  arb_free(p->one);
 }
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {

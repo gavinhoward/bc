@@ -36,9 +36,12 @@ typedef struct BcProgram {
 
   const char* file;
 
+  fxdpnt* zero;
+  fxdpnt* one;
+
 } BcProgram;
 
-BcStatus bc_program_init(BcProgram* p, const char* file);
+BcStatus bc_program_init(BcProgram* p);
 void bc_program_limits(BcProgram* p);
 BcStatus bc_program_func_add(BcProgram* p, BcFunc* func);
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var);

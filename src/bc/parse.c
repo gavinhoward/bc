@@ -164,13 +164,11 @@ static BcStatus bc_parse_loopExit(BcParse* parse, BcStmtList* list,
                                   BcLexTokenType type);
 static BcStatus bc_parse_rightBrace(BcParse* parse);
 
-BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
+BcStatus bc_parse_init(BcParse* parse, BcStmtList* start) {
 
-  if (parse == NULL || program == NULL) {
+  if (parse == NULL || start == NULL) {
     return BC_STATUS_INVALID_PARAM;
   }
-
-  parse->program = program;
 
   BcStatus status = bc_stack_init(&parse->flag_stack, sizeof(uint8_t), NULL);
 
@@ -191,7 +189,7 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
     goto push_err;
   }
 
-  status = bc_stack_push(&parse->ctx_stack, &program->list);
+  status = bc_stack_push(&parse->ctx_stack, &start);
 
   if (status) {
     goto push_err;
@@ -207,17 +205,7 @@ BcStatus bc_parse_init(BcParse* parse, BcProgram* program) {
   parse->num_braces = 0;
   parse->auto_part = false;
 
-  status = bc_lex_init(&parse->lex, program->file);
-
-  if (status) {
-    goto lex_err;
-  }
-
   return status;
-
-lex_err:
-
-  bc_stack_free(&parse->ops);
 
 push_err:
 
@@ -228,6 +216,15 @@ ctx_err:
   bc_stack_free(&parse->flag_stack);
 
   return status;
+}
+
+BcStatus bc_parse_file(BcParse* parse, const char* file) {
+
+  if (parse == NULL || file == NULL) {
+    return BC_STATUS_INVALID_PARAM;
+  }
+
+  return bc_lex_init(&parse->lex, file);
 }
 
 BcStatus bc_parse_text(BcParse* parse, const char* text) {
@@ -294,7 +291,7 @@ BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
   return status;
 }
 
-void bc_parse_free(BcParse* parse, BcStatus status) {
+void bc_parse_free(BcParse* parse) {
 
   if (!parse) {
     return;
@@ -303,12 +300,6 @@ void bc_parse_free(BcParse* parse, BcStatus status) {
   bc_stack_free(&parse->flag_stack);
   bc_stack_free(&parse->ctx_stack);
   bc_stack_free(&parse->ops);
-
-  if (!status || status == BC_STATUS_PARSE_QUIT ||
-      status == BC_STATUS_LEX_EOF || status == BC_STATUS_PARSE_EOF)
-  {
-    return;
-  }
 
   switch (parse->token.type) {
 

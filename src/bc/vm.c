@@ -13,6 +13,8 @@
 static BcStatus bc_vm_execFile(BcVm* vm, int idx);
 static BcStatus bc_vm_execStdin(BcVm* vm);
 
+static const char* const stdin_filename = "<stdin>";
+
 static void bc_vm_sigint(int sig) {
 
   signal(sig, bc_vm_sigint);
@@ -49,21 +51,44 @@ BcStatus bc_vm_exec(BcVm* vm) {
 
   num_files = vm->filec;
 
+  status = bc_program_init(&vm->program);
+
+  if (status) {
+    return status;
+  }
+
+  status = bc_parse_init(&vm->parse, vm->program.list);
+
+  if (status) {
+    goto parse_err;
+  }
+
   for (int i = 0; !status && i < num_files; ++i) {
     status = bc_vm_execFile(vm, i);
   }
 
   if (status) {
-    return status == BC_STATUS_PARSE_QUIT ||
-           status == BC_STATUS_VM_HALT ?
-                BC_STATUS_SUCCESS : status;
+    status = status == BC_STATUS_PARSE_QUIT ||
+             status == BC_STATUS_VM_HALT ?
+                 BC_STATUS_SUCCESS : status;
+    goto exec_err;
   }
 
   status = bc_vm_execStdin(vm);
 
-  return status == BC_STATUS_PARSE_QUIT ||
+  status = status == BC_STATUS_PARSE_QUIT ||
          status == BC_STATUS_VM_HALT ?
               BC_STATUS_SUCCESS : status;
+
+exec_err:
+
+  bc_parse_free(&vm->parse);
+
+parse_err:
+
+  bc_program_free(&vm->program);
+
+  return status;
 }
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
@@ -72,24 +97,15 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
   FILE* f;
   size_t size;
   size_t read_size;
+  const char* file;
 
-  status = bc_program_init(&vm->program, vm->filev[idx]);
+  file = vm->filev[idx];
+  vm->program.file = file;
 
-  if (status) {
-    return status;
-  }
-
-  status = bc_parse_init(&vm->parse, &vm->program);
-
-  if (status) {
-    goto parse_err;
-  }
-
-  f = fopen(vm->filev[idx], "r");
+  f = fopen(file, "r");
 
   if (!f) {
-    status = BC_STATUS_VM_FILE_ERR;
-    goto file_err;
+    return BC_STATUS_VM_FILE_ERR;
   }
 
   fseek(f, 0, SEEK_END);
@@ -115,6 +131,12 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
   fclose(f);
   f = NULL;
+
+  status = bc_parse_file(&vm->parse, file);
+
+  if (status) {
+    goto read_err;
+  }
 
   status = bc_parse_text(&vm->parse, data);
 
@@ -214,14 +236,6 @@ data_err:
     fclose(f);
   }
 
-file_err:
-
-  bc_parse_free(&vm->parse, status);
-
-parse_err:
-
-  bc_program_free(&vm->program);
-
   return status;
 }
 
@@ -238,16 +252,12 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
   bool string;
   bool comment;
 
-  status = bc_program_init(&vm->program, "<stdin>");
+  vm->program.file = stdin_filename;
+
+  status = bc_parse_file(&vm->parse, stdin_filename);
 
   if (status) {
     return status;
-  }
-
-  status = bc_parse_init(&vm->parse, &vm->program);
-
-  if (status) {
-    goto parse_err;
   }
 
   n = BC_VM_BUF_SIZE;
@@ -255,8 +265,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
   buffer = malloc(BC_VM_BUF_SIZE + 1);
 
   if (!buffer) {
-    status = BC_STATUS_MALLOC_FAIL;
-    goto buffer_err;
+    return BC_STATUS_MALLOC_FAIL;
   }
 
   buffer[0] = '\0';
@@ -447,14 +456,6 @@ exit_err:
 buf_err:
 
   free(buffer);
-
-buffer_err:
-
-  bc_parse_free(&vm->parse, status);
-
-parse_err:
-
-  bc_program_free(&vm->program);
 
   return status;
 }
