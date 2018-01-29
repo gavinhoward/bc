@@ -81,7 +81,6 @@ typedef struct BcOp {
 
 typedef struct BcParse {
 
-  BcProgram* program;
   BcLex lex;
   BcLexToken token;
 
@@ -99,11 +98,12 @@ typedef struct BcParse {
 
 } BcParse;
 
-BcStatus bc_parse_init(BcParse* parse, BcProgram* program);
+BcStatus bc_parse_init(BcParse* parse, BcStmtList *start);
+BcStatus bc_parse_file(BcParse* parse, const char* file);
 BcStatus bc_parse_text(BcParse* parse, const char* text);
 
 BcStatus bc_parse_parse(BcParse* parse, BcProgram* program);
 
-void bc_parse_free(BcParse* parse, BcStatus status);
+void bc_parse_free(BcParse* parse);
 
 #endif // BC_PARSE_H

@@ -120,12 +120,6 @@ static const char* const bc_err_descs[] = {
 
 };
 
-int bc_interactive = 0;
-int bc_std = 0;
-int bc_warn = 0;
-
-int bc_had_sigint = 0;
-
 static const char* const bc_copyright =
   "bc copyright (c) 2018 Gavin D. Howard and arbprec contributors.\n"
   "arbprec copyright (c) 2016-2018 CM Graff,\n"
@@ -133,16 +127,16 @@ static const char* const bc_copyright =
 
 static const char* const bc_version_fmt = "bc %s\n%s\n";
 
-static const char* const bc_version = "0.1";
-
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
 
   BcStatus status;
   BcVm vm;
   int do_exit;
+  const char** files;
 
   status = BC_STATUS_SUCCESS;
   do_exit = 0;
+  files = NULL;
 
   if (flags & BC_FLAG_HELP) do_exit = 1;
 
@@ -168,17 +162,21 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
     putchar('\n');
   }
 
+  if (flags & BC_FLAG_MATHLIB) {
+    // TODO: Load the math functions.
+  }
+
   status = bc_vm_init(&vm, filec, filev);
 
   if (status) {
     return status;
   }
 
-  if (flags & BC_FLAG_MATHLIB) {
-    // TODO: Load the math functions.
-  }
-
   status = bc_vm_exec(&vm);
+
+  if (files) {
+    free(files);
+  }
 
   return status;
 }

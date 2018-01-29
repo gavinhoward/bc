@@ -76,10 +76,13 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);
 
-extern int bc_interactive;
-extern int bc_standard;
-extern int bc_warn;
+extern long bc_interactive;
+extern long bc_std;
+extern long bc_warn;
 
-extern int bc_had_sigint;
+extern long bc_had_sigint;
+
+extern const char* const bc_mathlib;
+extern const char* const bc_version;
 
 #endif // BC_H
