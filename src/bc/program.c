@@ -9,10 +9,28 @@
 #include <bc/program.h>
 #include <bc/parse.h>
 
+static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
+static fxdpnt* bc_program_sub(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
+
+static const BcMathOpFunc bc_math_ops[] = {
+
+  NULL,//arb_exp,
+
+  arb_mul,
+  arb_alg_d,
+  arb_mod,
+
+  bc_program_add,
+  bc_program_sub
+
+};
+
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list);
 static BcStatus bc_program_printString(const char* str);
 static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
                                     fxdpnt** num, bool print);
+static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
+                                  BcExprType op, fxdpnt* amt);
 static BcStatus bc_program_read(BcProgram* p);
 
 BcStatus bc_program_init(BcProgram* p) {
@@ -115,10 +133,19 @@ BcStatus bc_program_init(BcProgram* p) {
   }
 #endif
 
+  p->num_buf = malloc(BC_PROGRAM_BUF_SIZE + 1);
+
+  if (!p->num_buf) {
+    return BC_STATUS_MALLOC_FAIL;
+  }
+
+  p->buf_size = BC_PROGRAM_BUF_SIZE;
+
   p->list = bc_list_create();
 
   if (!p->list) {
-    return BC_STATUS_MALLOC_FAIL;
+    st = BC_STATUS_MALLOC_FAIL;
+    goto list_err;
   }
 
   st = bc_segarray_init(&p->funcs, sizeof(BcFunc), bc_func_free, bc_func_cmp);
@@ -159,6 +186,10 @@ BcStatus bc_program_init(BcProgram* p) {
   }
 
   return st;
+
+list_err:
+
+  free(p->num_buf);
 
 temps_err:
 
@@ -269,6 +300,9 @@ void bc_program_free(BcProgram* p) {
   if (p == NULL) {
     return;
   }
+
+  free(p->num_buf);
+  p->buf_size = 0;
 
   bc_list_free(p->list);
 
@@ -508,6 +542,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
   fxdpnt* temp_num;
   BcExprType etype;
   BcTempType ttype;
+  BcTemp* temp_ptr;
 
   status = BC_STATUS_SUCCESS;
 
@@ -530,18 +565,39 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
       case BC_EXPR_INC_PRE:
       case BC_EXPR_DEC_PRE:
       {
+        if (idx - 1 >= exprs->len) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        expr = bc_stack_item(exprs, idx - 1);
+
+        if (!expr) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        if (expr->type != BC_EXPR_VAR && expr->type != BC_EXPR_ARRAY_ELEM &&
+            !(expr->type < BC_EXPR_SCALE || expr->type > BC_EXPR_LAST))
+        {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        status = bc_program_assign(p, expr, etype + BC_EXPR_ASSIGN_PLUS, p->one);
+
         break;
       }
 
       case BC_EXPR_INC_POST:
       case BC_EXPR_DEC_POST:
       {
+        // TODO: Do this.
         break;
       }
 
       case BC_EXPR_NEGATE:
       {
-        BcTemp* temp_ptr;
         char sign;
 
         if (p->temps.len <= temp_len) {
@@ -564,32 +620,57 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
       }
 
       case BC_EXPR_POWER:
-      {
-        break;
-      }
-
       case BC_EXPR_MULTIPLY:
-      {
-        break;
-      }
-
       case BC_EXPR_DIVIDE:
-      {
-        break;
-      }
-
       case BC_EXPR_MODULUS:
-      {
-        break;
-      }
-
       case BC_EXPR_PLUS:
-      {
-        break;
-      }
-
       case BC_EXPR_MINUS:
       {
+        BcTemp* a;
+        BcTemp* b;
+        BcTemp result;
+        BcMathOpFunc op;
+
+        if (p->temps.len < temp_len + 2) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        b = bc_stack_top(&p->temps);
+
+        if (!b) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        status = bc_stack_pop(&p->temps);
+
+        if (status) {
+          break;
+        }
+
+        a = bc_stack_top(&p->temps);
+
+        if (!a) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        status = bc_stack_pop(&p->temps);
+
+        if (status) {
+          break;
+        }
+
+        result.type = BC_TEMP_NUM;
+        result.num = arb_alloc(a->num->len + b->num->len);
+
+        // TODO: Handle scale.
+        op = bc_math_ops[etype - BC_EXPR_POWER];
+        result.num = op(a->num, b->num, result.num, 10, 0);
+
+        status = bc_stack_push(&p->temps, &result);
+
         break;
       }
 
@@ -599,11 +680,10 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
       case BC_EXPR_ASSIGN_MODULUS:
       case BC_EXPR_ASSIGN_PLUS:
       case BC_EXPR_ASSIGN_MINUS:
-      {
-        // Fallthrough.
-      }
       case BC_EXPR_ASSIGN:
       {
+        // TODO: Get the amount.
+        status = bc_program_assign(p, expr, etype, NULL);
         break;
       }
 
@@ -734,9 +814,13 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        p->last = ((BcTemp*) bc_stack_top(&p->temps))->num;
+        temp_ptr = bc_stack_top(&p->temps);
+
+        arb_copy(p->last, temp_ptr->num);
 
         arb_print(p->last);
+
+        status = bc_stack_pop(&p->temps);
 
         break;
       }
@@ -747,6 +831,8 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
         break;
       }
     }
+
+    --idx;
   }
 
   if (status) {
@@ -755,6 +841,84 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 
   if (p->temps.len != temp_len) {
     return BC_STATUS_VM_INVALID_EXPR;
+  }
+
+  return status;
+}
+
+static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
+                                  BcExprType op, fxdpnt* amt)
+{
+  BcStatus status;
+  fxdpnt* left;
+
+  switch (expr->type) {
+
+    case BC_EXPR_VAR:
+    {
+      break;
+    }
+
+    case BC_EXPR_ARRAY_ELEM:
+    {
+      break;
+    }
+
+    case BC_EXPR_SCALE:
+    {
+      break;
+    }
+
+    case BC_EXPR_IBASE:
+    {
+      break;
+    }
+
+    case BC_EXPR_OBASE:
+    {
+      break;
+    }
+
+    case BC_EXPR_LAST:
+    {
+      break;
+    }
+
+    default:
+    {
+      return BC_STATUS_VM_INVALID_EXPR;
+    }
+  }
+
+  switch (op) {
+
+    case BC_EXPR_ASSIGN_DIVIDE:
+      if (!arb_compare(amt, p->zero, 10)) {
+        return BC_STATUS_VM_DIVIDE_BY_ZERO;
+      }
+      // Fallthrough.
+    case BC_EXPR_ASSIGN_POWER:
+    case BC_EXPR_ASSIGN_MULTIPLY:
+    case BC_EXPR_ASSIGN_MODULUS:
+    case BC_EXPR_ASSIGN_PLUS:
+    case BC_EXPR_ASSIGN_MINUS:
+    {
+      // TODO: Get the right scale.
+      left = bc_math_ops[op - BC_EXPR_ASSIGN_POWER](left, amt, left, 10, 10);
+      status = BC_STATUS_SUCCESS;
+      break;
+    }
+
+    case BC_EXPR_ASSIGN:
+    {
+      break;
+    }
+
+    default:
+    {
+      status = BC_STATUS_VM_INVALID_EXPR;
+      break;
+    }
   }
 
   return status;
@@ -836,4 +1000,18 @@ stack_err:
   free(buffer);
 
   return status;
+}
+
+static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c,
+                              int base, size_t scale)
+{
+  (void) scale;
+  return arb_add(a, b, c, base);
+}
+
+static fxdpnt* bc_program_sub(fxdpnt* a, fxdpnt* b, fxdpnt* c,
+                              int base, size_t scale)
+{
+  (void) scale;
+  return arb_sub(a, b, c, base);
 }

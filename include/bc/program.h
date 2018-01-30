@@ -7,7 +7,11 @@
 #include <bc/bc.h>
 #include <bc/data.h>
 
+#include <arbprec/arbprec.h>
+
 #define BC_PROGRAM_BUF_SIZE (1024)
+
+typedef fxdpnt* (*BcMathOpFunc)(fxdpnt*, fxdpnt*, fxdpnt*, int, size_t);
 
 typedef struct BcProgram {
 
@@ -42,6 +46,9 @@ typedef struct BcProgram {
 
   fxdpnt* zero;
   fxdpnt* one;
+
+  char* num_buf;
+  size_t buf_size;
 
 } BcProgram;
 
