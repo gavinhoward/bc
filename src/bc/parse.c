@@ -136,7 +136,6 @@ static BcStatus bc_parse_auto(BcParse* parse);
 static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list);
-static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs);
 static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
                                   BcLexTokenType t, uint32_t* num_exprs,
                                   bool next);
@@ -930,7 +929,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
   return status;
 }
 
-static BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
+BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs) {
 
   BcStatus status;
   BcExpr expr;

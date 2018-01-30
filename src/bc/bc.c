@@ -60,6 +60,7 @@ static const char* const bc_err_types[] = {
   "runtime",
   "runtime",
   "runtime",
+  "runtime",
 
 };
 
@@ -111,6 +112,7 @@ static const char* const bc_err_descs[] = {
   "invalid name/identifier",
   "invalid array length; must be an integer in the range [1, BC_DIM_MAX]",
   "invalid temp variable; this is most likely a bug in bc",
+  "invalid read() expression",
   "print error",
   "break statement outside loop; "
     "this is a bug in bc (parser should have caught it)",

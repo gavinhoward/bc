@@ -7,6 +7,8 @@
 #include <bc/bc.h>
 #include <bc/data.h>
 
+#define BC_PROGRAM_BUF_SIZE (1024)
+
 typedef struct BcProgram {
 
   BcStmtList* list;
@@ -35,6 +37,8 @@ typedef struct BcProgram {
   BcSegArray arrays;
 
   const char* file;
+
+  fxdpnt* last;
 
   fxdpnt* zero;
   fxdpnt* one;
