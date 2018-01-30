@@ -5,13 +5,15 @@
 
 #include <arbprec/arbprec.h>
 
+#include <bc/io.h>
 #include <bc/program.h>
 #include <bc/parse.h>
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list);
 static BcStatus bc_program_printString(const char* str);
 static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
-                                    fxdpnt* num, bool print);
+                                    fxdpnt** num, bool print);
+static BcStatus bc_program_read(BcProgram* p);
 
 BcStatus bc_program_init(BcProgram* p) {
 
@@ -25,6 +27,7 @@ BcStatus bc_program_init(BcProgram* p) {
   p->ibase = 10;
   p->obase = 10;
 
+  p->last = arb_str2fxdpnt("0");
   p->zero = arb_str2fxdpnt("0");
   p->one = arb_str2fxdpnt("1");
 
@@ -277,6 +280,7 @@ void bc_program_free(BcProgram* p) {
   bc_stack_free(&p->locals);
   bc_stack_free(&p->temps);
 
+  arb_free(p->last);
   arb_free(p->zero);
   arb_free(p->one);
 }
@@ -289,7 +293,7 @@ static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
   BcStmtType type;
   BcStmt* stmt;
   int pchars;
-  fxdpnt result;
+  fxdpnt* result;
 
   assert(list);
 
@@ -494,14 +498,14 @@ static BcStatus bc_program_printString(const char* str) {
 }
 
 static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
-                                    fxdpnt* num, bool print)
+                                    fxdpnt** num, bool print)
 {
   BcStatus status;
   uint32_t idx;
   BcExpr* expr;
   BcTemp temp;
   uint32_t temp_len;
-  fxdpnt temp_num;
+  fxdpnt* temp_num;
   BcExprType etype;
   BcTempType ttype;
 
@@ -537,6 +541,25 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 
       case BC_EXPR_NEGATE:
       {
+        BcTemp* temp_ptr;
+        char sign;
+
+        if (p->temps.len <= temp_len) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        temp_ptr = bc_stack_top(&p->temps);
+
+        if (!temp_ptr) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        sign = temp_ptr->num->sign;
+
+        temp_ptr->num->sign = sign == '+' ? '-' : '+';
+
         break;
       }
 
@@ -645,7 +668,6 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
       case BC_EXPR_SCALE:
       case BC_EXPR_IBASE:
       case BC_EXPR_OBASE:
-      case BC_EXPR_LAST:
       {
         ttype = etype - BC_EXPR_SCALE + BC_TEMP_SCALE;
 
@@ -660,6 +682,11 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
         break;
       }
 
+      case BC_EXPR_LAST:
+      {
+        break;
+      }
+
       case BC_EXPR_LENGTH:
       {
         break;
@@ -667,6 +694,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 
       case BC_EXPR_READ:
       {
+        status = bc_program_read(p);
         break;
       }
 
@@ -678,7 +706,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        if (temp_num.sign != '-') {
+        if (temp_num->sign != '-') {
 
           status = bc_temp_initNum(&temp, NULL);
 
@@ -686,7 +714,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
             break;
           }
 
-          arb_newton_sqrt(&temp_num, temp.num, 10, p->scale);
+          arb_newton_sqrt(temp_num, temp.num, 10, p->scale);
         }
         else {
           status = BC_STATUS_VM_NEG_SQRT;
@@ -697,10 +725,18 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 
       case BC_EXPR_PRINT:
       {
-        // TODO: Store to last and print.
         if (!print) {
           break;
         }
+
+        if (p->temps.len != temp_len + 1) {
+          status = BC_STATUS_VM_INVALID_EXPR;
+          break;
+        }
+
+        p->last = ((BcTemp*) bc_stack_top(&p->temps))->num;
+
+        arb_print(p->last);
 
         break;
       }
@@ -720,6 +756,84 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
   if (p->temps.len != temp_len) {
     return BC_STATUS_VM_INVALID_EXPR;
   }
+
+  return status;
+}
+
+static BcStatus bc_program_read(BcProgram* p) {
+
+  BcStatus status;
+  BcParse parse;
+  char* buffer;
+  BcStack exprs;
+  BcTemp temp;
+  size_t size;
+
+  buffer = malloc(BC_PROGRAM_BUF_SIZE + 1);
+
+  if (!buffer) {
+    return BC_STATUS_MALLOC_FAIL;
+  }
+
+  status = bc_stack_init(&exprs, sizeof(BcExpr), bc_expr_free);
+
+  if (status) {
+    goto stack_err;
+  }
+
+  size = BC_PROGRAM_BUF_SIZE;
+
+  if (bc_io_getline(&buffer, &size) == (size_t) -1) {
+    status = BC_STATUS_VM_FILE_READ_ERR;
+    goto io_err;
+  }
+
+  status = bc_parse_init(&parse, p->list);
+
+  if (status) {
+    goto io_err;
+  }
+
+  status = bc_parse_file(&parse, "<stdin>");
+
+  if (status) {
+    goto exec_err;
+  }
+
+  status = bc_parse_text(&parse, buffer);
+
+  if (status) {
+    goto exec_err;
+  }
+
+  status = bc_parse_expr(&parse, &exprs);
+
+  if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
+    status = status ? status : BC_STATUS_VM_INVALID_READ_EXPR;
+    goto exec_err;
+  }
+
+  temp.type = BC_TEMP_NUM;
+
+  status = bc_program_execExpr(p, &exprs, &temp.num, false);
+
+  if (status) {
+    goto exec_err;
+  }
+
+  status = bc_stack_push(&p->temps, &temp);
+
+exec_err:
+
+  bc_parse_free(&parse);
+
+io_err:
+
+  bc_stack_free(&exprs);
+
+stack_err:
+
+  free(buffer);
 
   return status;
 }
