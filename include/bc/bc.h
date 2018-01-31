@@ -73,23 +73,24 @@ typedef enum BcStatus {
   BC_STATUS_POSIX_NAME_LEN,
   BC_STATUS_POSIX_SCRIPT_COMMENT,
   BC_STATUS_POSIX_INVALID_KEYWORD,
+  BC_STATUS_POSIX_RETURN_PARENS,
+  BC_STATUS_POSIX_BOOL_OPS,
+  BC_STATUS_POSIX_REL_OUTSIDE,
+  BC_STATUS_POSIX_MULTIPLE_REL,
+  BC_STATUS_POSIX_MISSING_FOR_INIT,
+  BC_STATUS_POSIX_MISSING_FOR_COND,
+  BC_STATUS_POSIX_MISSING_FOR_UPDATE,
+  BC_STATUS_POSIX_FUNC_HEADER_LEFT_BRACE,
 
 } BcStatus;
-
-#define BC_POSIX_ERR_EXIT_OR_WARN(status, file, line, msg)  \
-  do {                                                   \
-    if (bc_std || bc_warn) {                             \
-      bc_posix((status), (file), (line), (msg));         \
-      if (bc_std) return (status);                       \
-    }                                                    \
-  } while (0)
 
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);
 
-void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg);
+BcStatus bc_posix_error(BcStatus status, const char* file,
+                        uint32_t line, const char* msg);
 
 extern long bc_interactive;
 extern long bc_std;

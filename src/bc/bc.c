@@ -65,6 +65,14 @@ static const char* const bc_err_types[] = {
   "POSIX",
   "POSIX",
   "POSIX",
+  "POSIX",
+  "POSIX",
+  "POSIX",
+  "POSIX",
+  "POSIX",
+  "POSIX",
+  "POSIX",
+  "POSIX",
 
 };
 
@@ -127,6 +135,14 @@ static const char* const bc_err_descs[] = {
   "POSIX bc only allows one character names; the following is invalid:",
   "POSIX bc does not allow '#' script comments",
   "POSIX bc does not allow the following keyword:",
+  "POSIX bc requires parentheses around return expressions",
+  "POSIX bc does not allow boolean operators; the following is invalid:",
+  "POSIX bc does not allow comparison operators outside if or loops",
+  "POSIX bc does not allow more than one comparison operator per condition",
+  "POSIX bc does not allow an empty init expression in a for loop",
+  "POSIX bc does not allow an empty condition expression in a for loop",
+  "POSIX bc does not allow an empty update expression in a for loop",
+  "POSIX bc requires the left brace be on the same line as the function header",
 
 };
 
@@ -219,10 +235,11 @@ void bc_error_file(BcStatus status, const char* file, uint32_t line) {
   }
 }
 
-void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg)
+BcStatus bc_posix_error(BcStatus status, const char* file,
+                        uint32_t line, const char* msg)
 {
-  if (status < BC_STATUS_POSIX_NAME_LEN || !f) {
-    return;
+  if (!(bc_std || bc_warn) || status < BC_STATUS_POSIX_NAME_LEN || !file) {
+    return BC_STATUS_SUCCESS;
   }
 
   fprintf(stderr, "\n%s %s: %s", bc_err_types[status],
@@ -232,7 +249,7 @@ void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg)
     fprintf(stderr, "    %s\n", msg);
   }
 
-  fprintf(stderr, "    %s", f);
+  fprintf(stderr, "    %s", file);
 
   if (line) {
     fprintf(stderr, ":%d\n\n", line);
@@ -241,4 +258,6 @@ void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg)
     fputc('\n', stderr);
     fputc('\n', stderr);
   }
+
+  return bc_std ? status : BC_STATUS_SUCCESS;
 }
