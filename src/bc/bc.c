@@ -64,6 +64,7 @@ static const char* const bc_err_types[] = {
 
   "POSIX",
   "POSIX",
+  "POSIX",
 
 };
 
@@ -123,8 +124,9 @@ static const char* const bc_err_descs[] = {
     "this is a bug in bc (parser should have caught it)",
   "bc was not halted correctly; this is a bug in bc",
 
-  "POSIX bc only allows one character names",
+  "POSIX bc only allows one character names; the following is invalid:",
   "POSIX bc does not allow '#' script comments",
+  "POSIX bc does not allow the following keyword:",
 
 };
 
@@ -225,19 +227,18 @@ void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg)
 
   fprintf(stderr, "\n%s %s: %s", bc_err_types[status],
           bc_std ? "Error" : "Warning", bc_err_descs[status]);
+
+  if (msg) {
+    fprintf(stderr, "    %s\n", msg);
+  }
+
   fprintf(stderr, "    %s", f);
 
   if (line) {
-    fprintf(stderr, ":%d\n", line);
+    fprintf(stderr, ":%d\n\n", line);
   }
   else {
     fputc('\n', stderr);
-  }
-
-  if (msg) {
-    fprintf(stderr, "%s\n\n", msg);
-  }
-  else {
     fputc('\n', stderr);
   }
 }
