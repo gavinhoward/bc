@@ -62,6 +62,31 @@ static const uint32_t keyword_lens[] = {
 
 };
 
+static const bool keyword_posix[] = {
+
+  true, // auto
+  true, // break
+  false, // continue
+  true, // define
+  false, // else
+  true, // for
+  false, // halt
+  true, // ibase
+  true, // if
+  false, // last
+  true, // length
+  false, // limits
+  true, // obase
+  false, // print
+  true, // quit
+  false, // read
+  true, // return
+  true, // scale
+  true, // sqrt
+  true, // while
+
+};
+
 static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token);
 static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
 static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token);
@@ -699,6 +724,10 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
     if (!strncmp(buffer, keywords[i], keyword_lens[i])) {
 
       token->type = BC_LEX_KEY_AUTO + i;
+
+      if (!keyword_posix[i])
+        BC_POSIX_ERR_EXIT_OR_WARN(BC_STATUS_POSIX_INVALID_KEYWORD,
+                                  lex->file, lex->line, keywords[i]);
 
       // We need to minus one because the
       // index has already been incremented.
