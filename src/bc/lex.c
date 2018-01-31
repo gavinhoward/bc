@@ -206,6 +206,19 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
       break;
     }
 
+    case '#':
+    {
+      BC_POSIX_ERR_EXIT_OR_WARN(BC_STATUS_POSIX_SCRIPT_COMMENT,
+                                  lex->file, lex->line, NULL);
+
+      token->type = BC_LEX_WHITESPACE;
+
+      ++lex->idx;
+      while (lex->idx < lex->len && lex->buffer[lex->idx] != '\n') ++lex->idx;
+
+      break;
+    }
+
     case '%':
     {
       c2 = lex->buffer[lex->idx];
@@ -705,12 +718,9 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
     c = buffer[i];
   }
 
-  if (bc_std || bc_warn) {
-
-    bc_posix(BC_STATUS_POSIX_NAME_LEN, lex->file, lex->line, buffer);
-
-    if (bc_std) return BC_STATUS_POSIX_NAME_LEN;
-  }
+  if (i > 1)
+    BC_POSIX_ERR_EXIT_OR_WARN(BC_STATUS_POSIX_NAME_LEN,
+                              lex->file, lex->line, buffer);
 
   token->string = malloc(i + 1);
 
