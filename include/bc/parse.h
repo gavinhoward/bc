@@ -104,7 +104,7 @@ BcStatus bc_parse_text(BcParse* parse, const char* text);
 
 BcStatus bc_parse_parse(BcParse* parse, BcProgram* program);
 
-BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs);
+BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel);
 
 void bc_parse_free(BcParse* parse);
 

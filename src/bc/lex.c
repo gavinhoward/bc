@@ -219,6 +219,13 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         token->type = BC_LEX_OP_REL_NOT_EQ;
       }
       else {
+
+        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                     lex->file, lex->line, "!")))
+        {
+          return status;
+        }
+
         token->type = BC_LEX_OP_BOOL_NOT;
       }
 
@@ -233,8 +240,11 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
     case '#':
     {
-      BC_POSIX_ERR_EXIT_OR_WARN(BC_STATUS_POSIX_SCRIPT_COMMENT,
-                                  lex->file, lex->line, NULL);
+      if ((status = bc_posix_error(BC_STATUS_POSIX_SCRIPT_COMMENT,
+                                  lex->file, lex->line, NULL)))
+      {
+        return status;
+      }
 
       token->type = BC_LEX_WHITESPACE;
 
@@ -264,6 +274,13 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
       c2 = lex->buffer[lex->idx];
 
       if (c2 == '&') {
+
+        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                     lex->file, lex->line, "&&")))
+        {
+          return status;
+        }
+
         ++lex->idx;
         token->type = BC_LEX_OP_BOOL_AND;
       }
@@ -522,6 +539,13 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
       c2 = lex->buffer[lex->idx];
 
       if (c2 == '|') {
+
+        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                     lex->file, lex->line, "||")))
+        {
+          return status;
+        }
+
         ++lex->idx;
         token->type = BC_LEX_OP_BOOL_OR;
       }
@@ -717,6 +741,8 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 
 static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 
+  BcStatus status;
+
   const char* buffer = lex->buffer + lex->idx - 1;
 
   for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
@@ -725,9 +751,12 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
 
       token->type = BC_LEX_KEY_AUTO + i;
 
-      if (!keyword_posix[i])
-        BC_POSIX_ERR_EXIT_OR_WARN(BC_STATUS_POSIX_INVALID_KEYWORD,
-                                  lex->file, lex->line, keywords[i]);
+      if (!keyword_posix[i] &&
+          (status = bc_posix_error(BC_STATUS_POSIX_INVALID_KEYWORD,
+                                   lex->file, lex->line, keywords[i])))
+      {
+        return status;
+      }
 
       // We need to minus one because the
       // index has already been incremented.
@@ -747,9 +776,11 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
     c = buffer[i];
   }
 
-  if (i > 1)
-    BC_POSIX_ERR_EXIT_OR_WARN(BC_STATUS_POSIX_NAME_LEN,
-                              lex->file, lex->line, buffer);
+  if (i > 1 && (status = bc_posix_error(BC_STATUS_POSIX_NAME_LEN,
+                                        lex->file, lex->line, buffer)))
+  {
+    return status;
+  }
 
   token->string = malloc(i + 1);
 

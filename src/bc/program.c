@@ -970,7 +970,7 @@ static BcStatus bc_program_read(BcProgram* p) {
     goto exec_err;
   }
 
-  status = bc_parse_expr(&parse, &exprs);
+  status = bc_parse_expr(&parse, &exprs, false);
 
   if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
     status = status ? status : BC_STATUS_VM_INVALID_READ_EXPR;
