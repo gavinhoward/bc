@@ -705,6 +705,13 @@ static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
     c = buffer[i];
   }
 
+  if (bc_std || bc_warn) {
+
+    bc_posix(BC_STATUS_POSIX_NAME_LEN, lex->file, lex->line, buffer);
+
+    if (bc_std) return BC_STATUS_POSIX_NAME_LEN;
+  }
+
   token->string = malloc(i + 1);
 
   if (token->string == NULL) {

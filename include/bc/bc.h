@@ -70,12 +70,17 @@ typedef enum BcStatus {
   BC_STATUS_VM_CONTINUE,
   BC_STATUS_VM_HALT,
 
+  BC_STATUS_POSIX_NAME_LEN,
+  BC_STATUS_POSIX_SCRIPT_COMMENT,
+
 } BcStatus;
 
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);
+
+void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg);
 
 extern long bc_interactive;
 extern long bc_std;

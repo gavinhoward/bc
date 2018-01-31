@@ -62,6 +62,9 @@ static const char* const bc_err_types[] = {
   "runtime",
   "runtime",
 
+  "POSIX",
+  "POSIX",
+
 };
 
 static const char* const bc_err_descs[] = {
@@ -119,6 +122,9 @@ static const char* const bc_err_descs[] = {
   "continue statement outside loop; "
     "this is a bug in bc (parser should have caught it)",
   "bc was not halted correctly; this is a bug in bc",
+
+  "POSIX bc only allows one character names",
+  "POSIX bc does not allow '#' script comments",
 
 };
 
@@ -207,6 +213,31 @@ void bc_error_file(BcStatus status, const char* file, uint32_t line) {
   }
   else {
     fputc('\n', stderr);
+    fputc('\n', stderr);
+  }
+}
+
+void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg)
+{
+  if (status < BC_STATUS_POSIX_NAME_LEN || !f) {
+    return;
+  }
+
+  fprintf(stderr, "\n%s %s: %s", bc_err_types[status],
+          bc_std ? "ERROR" : "Warning", bc_err_descs[status]);
+  fprintf(stderr, "    %s", f);
+
+  if (line) {
+    fprintf(stderr, ":%d\n", line);
+  }
+  else {
+    fputc('\n', stderr);
+  }
+
+  if (msg) {
+    fprintf(stderr, "%s\n\n", msg);
+  }
+  else {
     fputc('\n', stderr);
   }
 }
