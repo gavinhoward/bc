@@ -209,7 +209,9 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
 
 void bc_error(BcStatus status) {
 
-  if (!status || status == BC_STATUS_PARSE_QUIT || status == BC_STATUS_VM_HALT)
+  if (!status || status == BC_STATUS_PARSE_QUIT ||
+      status == BC_STATUS_VM_HALT ||
+      status >= BC_STATUS_POSIX_NAME_LEN)
   {
     return;
   }
@@ -219,7 +221,9 @@ void bc_error(BcStatus status) {
 
 void bc_error_file(BcStatus status, const char* file, uint32_t line) {
 
-  if (!status || status == BC_STATUS_PARSE_QUIT || !file) {
+  if (!status || status == BC_STATUS_PARSE_QUIT ||
+      !file || status >= BC_STATUS_POSIX_NAME_LEN)
+  {
     return;
   }
 
@@ -242,7 +246,7 @@ BcStatus bc_posix_error(BcStatus status, const char* file,
     return BC_STATUS_SUCCESS;
   }
 
-  fprintf(stderr, "\n%s %s: %s", bc_err_types[status],
+  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[status],
           bc_std ? "Error" : "Warning", bc_err_descs[status]);
 
   if (msg) {
