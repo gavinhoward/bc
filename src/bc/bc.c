@@ -22,45 +22,45 @@ static const char* const bc_err_types[] = {
   "bc",
   "bc",
 
-  "lex",
-  "lex",
-  "lex",
-  "lex",
+  "Lex",
+  "Lex",
+  "Lex",
+  "Lex",
 
-  "parse",
-  "parse",
-  "parse",
-  "parse",
-  "parse",
-  "parse",
-  "parse",
-  "parse",
-  "parse",
-  "parse",
+  "Parse",
+  "Parse",
+  "Parse",
+  "Parse",
+  "Parse",
+  "Parse",
+  "Parse",
+  "Parse",
+  "Parse",
+  "Parse",
 
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
-  "runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
+  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -196,7 +196,7 @@ void bc_error(BcStatus status) {
     return;
   }
 
-  fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[status], bc_err_descs[status]);
+  fprintf(stderr, "\n%s Error: %s\n\n", bc_err_types[status], bc_err_descs[status]);
 }
 
 void bc_error_file(BcStatus status, const char* file, uint32_t line) {
@@ -205,7 +205,7 @@ void bc_error_file(BcStatus status, const char* file, uint32_t line) {
     return;
   }
 
-  fprintf(stderr, "\n%s error: %s\n", bc_err_types[status], bc_err_descs[status]);
+  fprintf(stderr, "\n%s Error: %s\n", bc_err_types[status], bc_err_descs[status]);
   fprintf(stderr, "    %s", file);
 
   if (line) {
@@ -224,7 +224,7 @@ void bc_posix(BcStatus status, const char* f, uint32_t line, const char* msg)
   }
 
   fprintf(stderr, "\n%s %s: %s", bc_err_types[status],
-          bc_std ? "ERROR" : "Warning", bc_err_descs[status]);
+          bc_std ? "Error" : "Warning", bc_err_descs[status]);
   fprintf(stderr, "    %s", f);
 
   if (line) {
