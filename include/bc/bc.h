@@ -75,6 +75,14 @@ typedef enum BcStatus {
 
 } BcStatus;
 
+#define BC_POSIX_ERR_EXIT_OR_WARN(status, file, line, msg)  \
+  do {                                                   \
+    if (bc_std || bc_warn) {                             \
+      bc_posix((status), (file), (line), (msg));         \
+      if (bc_std) return (status);                       \
+    }                                                    \
+  } while (0)
+
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 
 void bc_error(BcStatus status);
