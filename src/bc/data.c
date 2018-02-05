@@ -4,7 +4,7 @@
 
 static const uint32_t bc_stmt_sizes[] = {
 
-  sizeof(BcStack),
+  sizeof(BcVec),
 
   0,
   0,
@@ -14,7 +14,7 @@ static const uint32_t bc_stmt_sizes[] = {
 
   0,
 
-  sizeof(BcStack),
+  sizeof(BcVec),
 
   sizeof(BcIf),
   sizeof(BcWhile),
@@ -68,14 +68,14 @@ static const uint32_t bc_expr_sizes[] = {
 
   sizeof(BcCall),
 
-  sizeof(BcStack),
+  sizeof(BcVec),
   0,
   0,
   0,
   0,
-  sizeof(BcStack),
+  sizeof(BcVec),
   0,
-  sizeof(BcStack),
+  sizeof(BcVec),
 
   0
 
@@ -465,7 +465,7 @@ void bc_stmt_free(BcStmt* stmt) {
     case BC_STMT_EXPR:
     case BC_STMT_RETURN:
     {
-      bc_stack_free(stmt->data.exprs);
+      bc_vec_free(stmt->data.exprs);
       free(stmt->data.exprs);
       break;
     }
@@ -479,7 +479,7 @@ void bc_stmt_free(BcStmt* stmt) {
 
     case BC_STMT_IF:
     {
-      bc_stack_free(&stmt->data.if_stmt->cond);
+      bc_vec_free(&stmt->data.if_stmt->cond);
 
       bc_list_free(stmt->data.if_stmt->then_list);
 
@@ -494,7 +494,7 @@ void bc_stmt_free(BcStmt* stmt) {
 
     case BC_STMT_WHILE:
     {
-      bc_stack_free(&stmt->data.while_stmt->cond);
+      bc_vec_free(&stmt->data.while_stmt->cond);
       bc_list_free(stmt->data.while_stmt->body);
 
       free(stmt->data.while_stmt);
@@ -504,9 +504,9 @@ void bc_stmt_free(BcStmt* stmt) {
 
     case BC_STMT_FOR:
     {
-      bc_stack_free(&stmt->data.for_stmt->cond);
-      bc_stack_free(&stmt->data.for_stmt->update);
-      bc_stack_free(&stmt->data.for_stmt->init);
+      bc_vec_free(&stmt->data.for_stmt->cond);
+      bc_vec_free(&stmt->data.for_stmt->update);
+      bc_vec_free(&stmt->data.for_stmt->init);
       bc_list_free(stmt->data.for_stmt->body);
 
       free(stmt->data.for_stmt);
@@ -598,7 +598,7 @@ void bc_expr_free(void* expr) {
     case BC_EXPR_ARRAY_ELEM:
     {
       free(e->elem->name);
-      bc_stack_free(&e->elem->expr_stack);
+      bc_vec_free(&e->elem->expr_stack);
       free(e->elem);
       break;
     }
@@ -615,7 +615,7 @@ void bc_expr_free(void* expr) {
     case BC_EXPR_LENGTH:
     case BC_EXPR_SQRT:
     {
-      bc_stack_free(e->exprs);
+      bc_vec_free(e->exprs);
       free(e->exprs);
       break;
     }

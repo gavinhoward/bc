@@ -114,7 +114,7 @@ typedef struct BcCall {
 typedef struct BcArrayElem {
 
   char* name;
-  BcStack expr_stack;
+  BcVec expr_stack;
 
 } BcArrayElem;
 
@@ -123,7 +123,7 @@ typedef struct BcExpr {
   BcExprType type;
   union {
     char* string;
-    BcStack* exprs;
+    BcVec* exprs;
     BcCall* call;
     BcArrayElem* elem;
   };
@@ -132,7 +132,7 @@ typedef struct BcExpr {
 
 typedef struct BcIf {
 
-  BcStack cond;
+  BcVec cond;
   struct BcStmtList* then_list;
   struct BcStmtList* else_list;
 
@@ -140,17 +140,17 @@ typedef struct BcIf {
 
 typedef struct BcWhile {
 
-  BcStack cond;
+  BcVec cond;
   struct BcStmtList* body;
 
 } BcWhile;
 
 typedef struct BcFor {
 
-  BcStack cond;
+  BcVec cond;
   struct BcStmtList* body;
-  BcStack update;
-  BcStack init;
+  BcVec update;
+  BcVec init;
 
 } BcFor;
 
@@ -158,7 +158,7 @@ typedef union BcStmtData {
 
   char* string;
   struct BcStmtList* list;
-  BcStack* exprs;
+  BcVec* exprs;
   BcIf* if_stmt;
   BcWhile* while_stmt;
   BcFor* for_stmt;
