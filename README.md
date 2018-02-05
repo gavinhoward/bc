@@ -10,5 +10,5 @@ considered `bc` contributors.
 
 ## Cloning
 
-After cloning, make sure to run `git submodule init` to initialize the `arbprec`
-submodule.
+After cloning, make sure to run `git submodule update --init --recursive` to
+clone the `arbprec` submodule.
