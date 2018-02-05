@@ -404,8 +404,8 @@ BcStatus bc_array_init(BcArray* array, char* name) {
 
   array->name = name;
 
-  return bc_segarray_init(&array->array, sizeof(fxdpnt),
-                          (BcFreeFunc) arb_free, NULL);
+  return bc_vec_init(&array->array, sizeof(fxdpnt),
+                          (BcFreeFunc) arb_free);
 }
 
 int bc_array_cmp(void* array1, void* array2) {
@@ -431,7 +431,7 @@ void bc_array_free(void* array) {
   free(a->name);
   a->name = NULL;
 
-  bc_segarray_free(&a->array);
+  bc_vec_free(&a->array);
 }
 
 BcStatus bc_stmt_init(BcStmt* stmt, BcStmtType type) {
@@ -606,7 +606,7 @@ void bc_expr_free(void* expr) {
     case BC_EXPR_FUNC_CALL:
     {
       free(e->call->name);
-      bc_segarray_free(&e->call->params);
+      bc_vec_free(&e->call->params);
       free(e->call);
       break;
     }

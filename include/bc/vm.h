@@ -2,7 +2,6 @@
 #define BC_VM_H
 
 #include <bc/program.h>
-#include <bc/stack.h>
 #include <bc/parse.h>
 
 #define BC_VM_BUF_SIZE (1024)

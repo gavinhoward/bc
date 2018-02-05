@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include <bc/bc.h>
-#include <bc/stack.h>
+#include <bc/vector.h>
 
 static BcStatus bc_vec_expand(BcVec* vec);
 
