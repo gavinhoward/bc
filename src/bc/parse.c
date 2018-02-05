@@ -448,13 +448,13 @@ static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
     goto lex_err;
   }
 
-  status = bc_segarray_add(&program->funcs, &func);
+  status = bc_vec_push(&program->funcs, &func);
 
   if (status) {
     goto lex_err;
   }
 
-  parse->func = bc_segarray_item(&program->funcs, program->funcs.num - 1);
+  parse->func = bc_vec_item(&program->funcs, program->funcs.len - 1);
 
   if (!parse->func) {
     return BC_STATUS_PARSE_BUG;
@@ -1490,8 +1490,7 @@ static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr, bool posix_rel) {
   BcStatus status;
   bool comma;
 
-  status = bc_segarray_init(&expr->call->params, sizeof(BcVec),
-                            bc_vec_free, NULL);
+  status = bc_vec_init(&expr->call->params, sizeof(BcVec), bc_vec_free);
 
   if (status) {
     return status;
@@ -1517,7 +1516,7 @@ static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr, bool posix_rel) {
       goto params_err;
     }
 
-    status = bc_segarray_add(&expr->call->params, &exprs);
+    status = bc_vec_push(&expr->call->params, &exprs);
 
     if (status) {
       goto params_err;
@@ -1541,7 +1540,7 @@ static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr, bool posix_rel) {
 
 params_err:
 
-  bc_segarray_free(&expr->call->params);
+  bc_vec_free(&expr->call->params);
 
   return status;
 }

@@ -148,20 +148,19 @@ BcStatus bc_program_init(BcProgram* p) {
     goto list_err;
   }
 
-  st = bc_segarray_init(&p->funcs, sizeof(BcFunc), bc_func_free, bc_func_cmp);
+  st = bc_vec_init(&p->funcs, sizeof(BcFunc), bc_func_free);
 
   if (st) {
     goto func_err;
   }
 
-  st = bc_segarray_init(&p->vars, sizeof(BcVar), bc_var_free, bc_var_cmp);
+  st = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
 
   if (st) {
     goto var_err;
   }
 
-  st = bc_segarray_init(&p->arrays, sizeof(BcArray),
-                        bc_array_free, bc_array_cmp);
+  st = bc_vec_init(&p->arrays, sizeof(BcArray), bc_array_free);
 
   if (st) {
     goto array_err;
@@ -201,15 +200,15 @@ local_err:
 
 ctx_err:
 
-  bc_segarray_free(&p->arrays);
+  bc_vec_free(&p->arrays);
 
 array_err:
 
-  bc_segarray_free(&p->vars);
+  bc_vec_free(&p->vars);
 
 var_err:
 
-  bc_segarray_free(&p->funcs);
+  bc_vec_free(&p->funcs);
 
 func_err:
 
@@ -239,7 +238,7 @@ BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_segarray_add(&p->funcs, func);
+  return bc_vec_push(&p->funcs, func);
 }
 
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var) {
@@ -248,7 +247,7 @@ BcStatus bc_program_var_add(BcProgram* p, BcVar* var) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_segarray_add(&p->vars, var);
+  return bc_vec_push(&p->vars, var);
 }
 
 BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
@@ -257,7 +256,7 @@ BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_segarray_add(&p->arrays, array);
+  return bc_vec_push(&p->arrays, array);
 }
 
 BcStatus bc_program_exec(BcProgram* p) {
@@ -306,9 +305,9 @@ void bc_program_free(BcProgram* p) {
 
   bc_list_free(p->list);
 
-  bc_segarray_free(&p->funcs);
-  bc_segarray_free(&p->vars);
-  bc_segarray_free(&p->arrays);
+  bc_vec_free(&p->funcs);
+  bc_vec_free(&p->vars);
+  bc_vec_free(&p->arrays);
 
   bc_vec_free(&p->ctx_stack);
   bc_vec_free(&p->locals);

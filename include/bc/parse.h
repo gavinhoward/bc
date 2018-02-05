@@ -4,18 +4,18 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <bc/stack.h>
+#include <bc/vector.h>
 #include <bc/program.h>
 #include <bc/lex.h>
 
 #define BC_PARSE_TOP_FLAG(parse)  \
-  (*((uint8_t*) bc_stack_top(&(parse)->flag_stack)))
+  (*((uint8_t*) bc_vec_top(&(parse)->flag_stack)))
 
 #define BC_PARSE_TOP_FLAG_PTR(parse)  \
-  ((uint8_t*) bc_stack_top(&(parse)->flag_stack))
+  ((uint8_t*) bc_vec_top(&(parse)->flag_stack))
 
 #define BC_PARSE_TOP_CTX(parse)  \
-  ((BcStmtList**) bc_stack_top(&(parse)->ctx_stack))
+  ((BcStmtList**) bc_vec_top(&(parse)->ctx_stack))
 
 #define BC_PARSE_FLAG_FUNC_INNER (0x01)
 

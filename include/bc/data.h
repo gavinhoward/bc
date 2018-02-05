@@ -5,8 +5,8 @@
 
 #include <arbprec/arbprec.h>
 
-#include <bc/segarray.h>
 #include <bc/bc.h>
+#include <bc/vector.h>
 
 #define BC_PROGRAM_MAX_STMTS (128)
 
@@ -107,7 +107,7 @@ typedef enum BcStmtType {
 typedef struct BcCall {
 
   char* name;
-  BcSegArray params;
+  BcVec params;
 
 } BcCall;
 
@@ -248,7 +248,7 @@ typedef struct BcArray {
 
   char* name;
 
-  BcSegArray array;
+  BcVec array;
 
 } BcArray;
 

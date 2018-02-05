@@ -34,11 +34,11 @@ typedef struct BcProgram {
 
   BcVec temps;
 
-  BcSegArray funcs;
+  BcVec funcs;
 
-  BcSegArray vars;
+  BcVec vars;
 
-  BcSegArray arrays;
+  BcVec arrays;
 
   const char* file;
 
