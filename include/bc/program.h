@@ -28,11 +28,11 @@ typedef struct BcProgram {
   long scale_max;
   long string_max;
 
-  BcStack ctx_stack;
+  BcVec ctx_stack;
 
-  BcStack locals;
+  BcVec locals;
 
-  BcStack temps;
+  BcVec temps;
 
   BcSegArray funcs;
 

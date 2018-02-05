@@ -136,22 +136,22 @@ static BcStatus bc_parse_auto(BcParse* parse);
 static BcStatus bc_parse_semicolonList(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list);
-static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
+static BcStatus bc_parse_operator(BcParse* parse, BcVec* exs, BcVec* ops,
                                   BcLexTokenType t, uint32_t* num_exprs,
                                   bool next);
-static BcStatus bc_parse_rightParen(BcParse* parse, BcStack* exs,
-                                    BcStack* ops, uint32_t* nexs);
-static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
+static BcStatus bc_parse_rightParen(BcParse* parse, BcVec* exs,
+                                    BcVec* ops, uint32_t* nexs);
+static BcStatus bc_parse_expr_name(BcParse* parse, BcVec* exprs,
                                    BcExprType* type, bool posix_rel);
 static BcStatus bc_parse_call(BcParse* parse, BcExpr* expr, bool posix_rel);
 static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr, bool posix_rel);
-static BcStatus bc_parse_read(BcParse* parse, BcStack* exprs);
-static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs,
+static BcStatus bc_parse_read(BcParse* parse, BcVec* exprs);
+static BcStatus bc_parse_builtin(BcParse* parse, BcVec* exs,
                                  BcExprType type, bool posix_rel);
-static BcStatus bc_parse_scale(BcParse* parse, BcStack* exs,
+static BcStatus bc_parse_scale(BcParse* parse, BcVec* exs,
                                BcExprType* type, bool posix_rel);
-static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev);
-static BcStatus bc_parse_minus(BcParse* parse, BcStack* exs, BcStack* ops,
+static BcStatus bc_parse_incdec(BcParse* parse, BcVec* exs, BcExprType* prev);
+static BcStatus bc_parse_minus(BcParse* parse, BcVec* exs, BcVec* ops,
                                BcExprType* prev, bool rparen, uint32_t* nexprs);
 static BcStatus bc_parse_string(BcParse* parse, BcStmtList* list);
 static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list);
@@ -171,13 +171,13 @@ BcStatus bc_parse_init(BcParse* parse, BcStmtList* start) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  BcStatus status = bc_stack_init(&parse->flag_stack, sizeof(uint8_t), NULL);
+  BcStatus status = bc_vec_init(&parse->flag_stack, sizeof(uint8_t), NULL);
 
   if (status != BC_STATUS_SUCCESS) {
     return status;
   }
 
-  status = bc_stack_init(&parse->ctx_stack, sizeof(BcStmtList*), NULL);
+  status = bc_vec_init(&parse->ctx_stack, sizeof(BcStmtList*), NULL);
 
   if (status != BC_STATUS_SUCCESS) {
     goto ctx_err;
@@ -185,18 +185,18 @@ BcStatus bc_parse_init(BcParse* parse, BcStmtList* start) {
 
   uint8_t flags = 0;
 
-  status = bc_stack_push(&parse->flag_stack, &flags);
+  status = bc_vec_push(&parse->flag_stack, &flags);
   if (status != BC_STATUS_SUCCESS) {
     goto push_err;
   }
 
-  status = bc_stack_push(&parse->ctx_stack, &start);
+  status = bc_vec_push(&parse->ctx_stack, &start);
 
   if (status) {
     goto push_err;
   }
 
-  status = bc_stack_init(&parse->ops, sizeof(BcLexTokenType), NULL);
+  status = bc_vec_init(&parse->ops, sizeof(BcLexTokenType), NULL);
 
   if (status) {
     goto push_err;
@@ -210,11 +210,11 @@ BcStatus bc_parse_init(BcParse* parse, BcStmtList* start) {
 
 push_err:
 
-  bc_stack_free(&parse->ctx_stack);
+  bc_vec_free(&parse->ctx_stack);
 
 ctx_err:
 
-  bc_stack_free(&parse->flag_stack);
+  bc_vec_free(&parse->flag_stack);
 
   return status;
 }
@@ -283,7 +283,7 @@ BcStatus bc_parse_parse(BcParse* parse, BcProgram* program) {
 
     default:
     {
-      ptr = bc_stack_top(&parse->ctx_stack);
+      ptr = bc_vec_top(&parse->ctx_stack);
       status = bc_parse_stmt(parse, *ptr);
       break;
     }
@@ -298,9 +298,9 @@ void bc_parse_free(BcParse* parse) {
     return;
   }
 
-  bc_stack_free(&parse->flag_stack);
-  bc_stack_free(&parse->ctx_stack);
-  bc_stack_free(&parse->ops);
+  bc_vec_free(&parse->flag_stack);
+  bc_vec_free(&parse->ctx_stack);
+  bc_vec_free(&parse->ops);
 
   switch (parse->token.type) {
 
@@ -436,13 +436,13 @@ static BcStatus bc_parse_func(BcParse* parse, BcProgram* program) {
   }
 
   flags = BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FUNC_INNER | BC_PARSE_FLAG_HEADER;
-  status = bc_stack_push(&parse->flag_stack, &flags);
+  status = bc_vec_push(&parse->flag_stack, &flags);
 
   if (status) {
     goto lex_err;
   }
 
-  status = bc_stack_push(&parse->ctx_stack, &func.first);
+  status = bc_vec_push(&parse->ctx_stack, &func.first);
 
   if (status) {
     goto lex_err;
@@ -751,7 +751,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
 
       if (BC_PARSE_HEADER(parse)) {
 
-        flag_ptr = bc_stack_top(&parse->flag_stack);
+        flag_ptr = bc_vec_top(&parse->flag_stack);
         *flag_ptr = *flag_ptr & ~(BC_PARSE_FLAG_HEADER);
 
         if (BC_PARSE_FUNC_INNER(parse)) {
@@ -942,7 +942,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcStmtList* list) {
   return status;
 }
 
-BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
+BcStatus bc_parse_expr(BcParse* parse, BcVec* exprs, bool posix_rel) {
 
   BcStatus status;
   BcExpr expr;
@@ -966,7 +966,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
 
   paren_first = parse->token.type == BC_LEX_LEFT_PAREN;
 
-  status = bc_stack_init(exprs, sizeof(BcExpr), bc_expr_free);
+  status = bc_vec_init(exprs, sizeof(BcExpr), bc_expr_free);
 
   if (status) {
     return status;
@@ -1052,7 +1052,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
         paren_expr = false;
         rparen = false;
         get_token = true;
-        status = bc_stack_push(&parse->ops, &type);
+        status = bc_vec_push(&parse->ops, &type);
         break;
       }
 
@@ -1092,7 +1092,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
       {
         expr.type = BC_EXPR_NUMBER;
         expr.string = parse->token.string;
-        status = bc_stack_push(exprs, &expr);
+        status = bc_vec_push(exprs, &expr);
 
         paren_expr = true;
         rparen = false;
@@ -1106,7 +1106,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
       case BC_LEX_KEY_IBASE:
       {
         expr.type = BC_EXPR_IBASE;
-        status = bc_stack_push(exprs, &expr);
+        status = bc_vec_push(exprs, &expr);
 
         paren_expr = true;
         rparen = false;
@@ -1131,7 +1131,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
       case BC_LEX_KEY_OBASE:
       {
         expr.type = BC_EXPR_OBASE;
-        status = bc_stack_push(exprs, &expr);
+        status = bc_vec_push(exprs, &expr);
 
         paren_expr = true;
         rparen = false;
@@ -1195,7 +1195,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
 
   while (!status && parse->ops.len > ops_start_len) {
 
-    ptr = bc_stack_top(&parse->ops);
+    ptr = bc_vec_top(&parse->ops);
     top = *ptr;
 
     if (top == BC_LEX_LEFT_PAREN || top == BC_LEX_RIGHT_PAREN) {
@@ -1205,7 +1205,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
 
     expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
 
-    status = bc_stack_push(exprs, &expr);
+    status = bc_vec_push(exprs, &expr);
 
     if (status) {
       goto expr_err;
@@ -1213,7 +1213,7 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
 
     nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEGATE ? 1 : 0;
 
-    status = bc_stack_pop(&parse->ops);
+    status = bc_vec_pop(&parse->ops);
   }
 
   if (nexprs != 1) {
@@ -1234,14 +1234,14 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
     return status;
   }
 
-  expr.type = ((BcExpr*) bc_stack_top(exprs))->type;
+  expr.type = ((BcExpr*) bc_vec_top(exprs))->type;
 
   if (expr.type < BC_EXPR_ASSIGN_POWER ||
       expr.type > BC_EXPR_ASSIGN ||
       paren_first)
   {
     expr.type = BC_EXPR_PRINT;
-    status = bc_stack_push(exprs, &expr);
+    status = bc_vec_push(exprs, &expr);
 
     if (status) {
       goto expr_err;
@@ -1252,12 +1252,12 @@ BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel) {
 
 expr_err:
 
-  bc_stack_free(exprs);
+  bc_vec_free(exprs);
 
   return status;
 }
 
-static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
+static BcStatus bc_parse_operator(BcParse* parse, BcVec* exs, BcVec* ops,
                                   BcLexTokenType t, uint32_t* num_exprs,
                                   bool next)
 {
@@ -1274,7 +1274,7 @@ static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
 
   if (ops->len != 0) {
 
-    ptr = bc_stack_top(ops);
+    ptr = bc_vec_top(ops);
     top = *ptr;
 
     if (top != BC_LEX_LEFT_PAREN) {
@@ -1285,13 +1285,13 @@ static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
 
         expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
 
-        status = bc_stack_push(exs, &expr);
+        status = bc_vec_push(exs, &expr);
 
         if (status) {
           return status;
         }
 
-        status = bc_stack_pop(ops);
+        status = bc_vec_pop(ops);
 
         if (status) {
           return status;
@@ -1304,7 +1304,7 @@ static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
           break;
         }
 
-        ptr = bc_stack_top(ops);
+        ptr = bc_vec_top(ops);
         top = *ptr;
 
         if (top == BC_LEX_LEFT_PAREN) {
@@ -1316,7 +1316,7 @@ static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
     }
   }
 
-  status = bc_stack_push(ops, &t);
+  status = bc_vec_push(ops, &t);
 
   if (status) {
     return status;
@@ -1329,8 +1329,8 @@ static BcStatus bc_parse_operator(BcParse* parse, BcStack* exs, BcStack* ops,
   return status;
 }
 
-static BcStatus bc_parse_rightParen(BcParse* parse, BcStack* exs,
-                                    BcStack* ops, uint32_t* nexs)
+static BcStatus bc_parse_rightParen(BcParse* parse, BcVec* exs,
+                                    BcVec* ops, uint32_t* nexs)
 {
   BcStatus status;
   BcExpr expr;
@@ -1341,20 +1341,20 @@ static BcStatus bc_parse_rightParen(BcParse* parse, BcStack* exs,
     return BC_STATUS_PARSE_INVALID_EXPR;
   }
 
-  ptr = bc_stack_top(ops);
+  ptr = bc_vec_top(ops);
   top = *ptr;
 
   while (top != BC_LEX_LEFT_PAREN) {
 
     expr.type = BC_PARSE_TOKEN_TO_EXPR(top);
 
-    status = bc_stack_push(exs, &expr);
+    status = bc_vec_push(exs, &expr);
 
     if (status) {
       return status;
     }
 
-    status = bc_stack_pop(ops);
+    status = bc_vec_pop(ops);
 
     if (status) {
       return status;
@@ -1367,11 +1367,11 @@ static BcStatus bc_parse_rightParen(BcParse* parse, BcStack* exs,
       return BC_STATUS_PARSE_INVALID_EXPR;
     }
 
-    ptr = bc_stack_top(ops);
+    ptr = bc_vec_top(ops);
     top = *ptr;
   }
 
-  status = bc_stack_pop(ops);
+  status = bc_vec_pop(ops);
 
   if (status) {
     return status;
@@ -1380,7 +1380,7 @@ static BcStatus bc_parse_rightParen(BcParse* parse, BcStack* exs,
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
+static BcStatus bc_parse_expr_name(BcParse* parse, BcVec* exprs,
                                    BcExprType* type, bool posix_rel)
 {
   BcStatus status;
@@ -1402,7 +1402,7 @@ static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
     *type = BC_EXPR_ARRAY_ELEM;
     expr.string = name;
 
-    expr.exprs = malloc(sizeof(BcStack));
+    expr.exprs = malloc(sizeof(BcVec));
 
     if (!expr.exprs) {
       return BC_STATUS_MALLOC_FAIL;
@@ -1449,7 +1449,7 @@ static BcStatus bc_parse_expr_name(BcParse* parse, BcStack* exprs,
     expr.string = parse->token.string;
   }
 
-  status = bc_stack_push(exprs, &expr);
+  status = bc_vec_push(exprs, &expr);
 
   if (status && expr.exprs) {
     goto name_err;
@@ -1486,12 +1486,12 @@ static BcStatus bc_parse_call(BcParse* parse, BcExpr* expr, bool posix_rel) {
 
 static BcStatus bc_parse_params(BcParse* parse, BcExpr* expr, bool posix_rel) {
 
-  BcStack exprs;
+  BcVec exprs;
   BcStatus status;
   bool comma;
 
-  status = bc_segarray_init(&expr->call->params, sizeof(BcStack),
-                            bc_stack_free, NULL);
+  status = bc_segarray_init(&expr->call->params, sizeof(BcVec),
+                            bc_vec_free, NULL);
 
   if (status) {
     return status;
@@ -1546,7 +1546,7 @@ params_err:
   return status;
 }
 
-static BcStatus bc_parse_read(BcParse* parse, BcStack* exprs) {
+static BcStatus bc_parse_read(BcParse* parse, BcVec* exprs) {
 
   BcStatus status;
   BcExpr expr;
@@ -1573,7 +1573,7 @@ static BcStatus bc_parse_read(BcParse* parse, BcStack* exprs) {
 
   expr.type = BC_EXPR_READ;
 
-  status = bc_stack_push(exprs, &expr);
+  status = bc_vec_push(exprs, &expr);
 
   if (status) {
     return status;
@@ -1582,7 +1582,7 @@ static BcStatus bc_parse_read(BcParse* parse, BcStack* exprs) {
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs,
+static BcStatus bc_parse_builtin(BcParse* parse, BcVec* exs,
                                  BcExprType type, bool posix_rel)
 {
   BcStatus status;
@@ -1606,7 +1606,7 @@ static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs,
     return status;
   }
 
-  expr.exprs = malloc(sizeof(BcStack));
+  expr.exprs = malloc(sizeof(BcVec));
 
   if (!expr.exprs) {
     return BC_STATUS_MALLOC_FAIL;
@@ -1623,7 +1623,7 @@ static BcStatus bc_parse_builtin(BcParse* parse, BcStack* exs,
     goto init_err;
   }
 
-  status = bc_stack_push(exs, &expr);
+  status = bc_vec_push(exs, &expr);
 
   if (status) {
     goto init_err;
@@ -1638,7 +1638,7 @@ init_err:
   return status;
 }
 
-static BcStatus bc_parse_scale(BcParse* parse, BcStack* exs,
+static BcStatus bc_parse_scale(BcParse* parse, BcVec* exs,
                                BcExprType* type, bool posix_rel)
 {
   BcStatus status;
@@ -1655,13 +1655,13 @@ static BcStatus bc_parse_scale(BcParse* parse, BcStack* exs,
     expr.type = BC_EXPR_SCALE;
     *type = BC_EXPR_SCALE;
 
-    return bc_stack_push(exs, &expr);
+    return bc_vec_push(exs, &expr);
   }
 
   expr.type = BC_EXPR_SCALE_FUNC;
   *type = BC_EXPR_SCALE_FUNC;
 
-  expr.exprs = malloc(sizeof(BcStack));
+  expr.exprs = malloc(sizeof(BcVec));
 
   if (!expr.exprs) {
     return BC_STATUS_MALLOC_FAIL;
@@ -1684,7 +1684,7 @@ static BcStatus bc_parse_scale(BcParse* parse, BcStack* exs,
     goto parse_err;
   }
 
-  status = bc_stack_push(exs, &expr);
+  status = bc_vec_push(exs, &expr);
 
   if (status) {
     goto parse_err;
@@ -1699,7 +1699,7 @@ parse_err:
   return status;
 }
 
-static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev)
+static BcStatus bc_parse_incdec(BcParse* parse, BcVec* exs, BcExprType* prev)
 {
   BcStatus status;
   BcLexTokenType type;
@@ -1716,7 +1716,7 @@ static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev)
                     BC_EXPR_INC_POST : BC_EXPR_DEC_POST;
     *prev = expr.type;
 
-    status = bc_stack_push(exs, &expr);
+    status = bc_vec_push(exs, &expr);
   }
   else {
 
@@ -1739,7 +1739,7 @@ static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev)
       return BC_STATUS_PARSE_INVALID_TOKEN;
     }
 
-    status = bc_stack_push(exs, &expr);
+    status = bc_vec_push(exs, &expr);
   }
 
   if (status) {
@@ -1749,7 +1749,7 @@ static BcStatus bc_parse_incdec(BcParse* parse, BcStack* exs, BcExprType* prev)
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_minus(BcParse* parse, BcStack* exs, BcStack* ops,
+static BcStatus bc_parse_minus(BcParse* parse, BcVec* exs, BcVec* ops,
                                BcExprType* prev, bool rparen, uint32_t* nexprs)
 {
   BcStatus status;
@@ -1789,7 +1789,7 @@ static BcStatus bc_parse_minus(BcParse* parse, BcStack* exs, BcStack* ops,
 
     // We can just push onto the op stack because this is the largest
     // precedence operator that gets pushed. Inc/dec does not.
-    status = bc_stack_push(ops, &type);
+    status = bc_vec_push(ops, &type);
   }
 
   return status;
@@ -1845,7 +1845,7 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
 
   stmt.type = BC_STMT_RETURN;
 
-  stmt.data.exprs = malloc(sizeof(BcStack));
+  stmt.data.exprs = malloc(sizeof(BcVec));
 
   if (!stmt.data.exprs) {
     return BC_STATUS_MALLOC_FAIL;
@@ -1854,7 +1854,7 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
   if (parse->token.type == BC_LEX_NEWLINE ||
       parse->token.type == BC_LEX_SEMICOLON)
   {
-    status = bc_stack_init(stmt.data.exprs, sizeof(BcExpr), bc_expr_free);
+    status = bc_vec_init(stmt.data.exprs, sizeof(BcExpr), bc_expr_free);
 
     if (status) {
       goto parse_err;
@@ -1863,7 +1863,7 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
     expr.type = BC_EXPR_NUMBER;
     expr.string = NULL;
 
-    status = bc_stack_push(stmt.data.exprs, &expr);
+    status = bc_vec_push(stmt.data.exprs, &expr);
 
     if (status) {
       goto push_err;
@@ -1888,7 +1888,7 @@ static BcStatus bc_parse_return(BcParse* parse, BcStmtList* list) {
 
 push_err:
 
-  bc_stack_free(stmt.data.exprs);
+  bc_vec_free(stmt.data.exprs);
 
 parse_err:
 
@@ -1952,7 +1952,7 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
       }
 
       expr.type = BC_EXPR_PRINT;
-      status = bc_stack_push(stmt.data.exprs, &expr);
+      status = bc_vec_push(stmt.data.exprs, &expr);
 
       if (status) {
         goto parse_err;
@@ -1993,7 +1993,7 @@ static BcStatus bc_parse_print(BcParse* parse, BcStmtList* list) {
 
 parse_err:
 
-  bc_stack_free(stmt.data.exprs);
+  bc_vec_free(stmt.data.exprs);
 
 expr_err:
 
@@ -2175,7 +2175,7 @@ static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
       goto parse_err;
     }
 
-    status = bc_stack_init(&stmt.data.for_stmt->init,
+    status = bc_vec_init(&stmt.data.for_stmt->init,
                            sizeof(BcExpr), bc_expr_free);
   }
 
@@ -2205,7 +2205,7 @@ static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
       goto init_err;
     }
 
-    status = bc_stack_init(&stmt.data.for_stmt->cond,
+    status = bc_vec_init(&stmt.data.for_stmt->cond,
                            sizeof(BcExpr), bc_expr_free);
   }
 
@@ -2235,7 +2235,7 @@ static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
       goto cond_err;
     }
 
-    status = bc_stack_init(&stmt.data.for_stmt->update,
+    status = bc_vec_init(&stmt.data.for_stmt->update,
                            sizeof(BcExpr), bc_expr_free);
   }
 
@@ -2271,15 +2271,15 @@ static BcStatus bc_parse_for(BcParse* parse, BcStmtList* list) {
 
 update_err:
 
-  bc_stack_free(&stmt.data.for_stmt->update);
+  bc_vec_free(&stmt.data.for_stmt->update);
 
 cond_err:
 
-  bc_stack_free(&stmt.data.for_stmt->cond);
+  bc_vec_free(&stmt.data.for_stmt->cond);
 
 init_err:
 
-  bc_stack_free(&stmt.data.for_stmt->init);
+  bc_vec_free(&stmt.data.for_stmt->init);
 
 parse_err:
 
@@ -2303,13 +2303,13 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
 
   if (parse->token.type == BC_LEX_LEFT_BRACE) {
 
-    status = bc_stack_push(&parse->ctx_stack, &list);
+    status = bc_vec_push(&parse->ctx_stack, &list);
 
     if (status) {
       goto parse_err;
     }
 
-    flag_ptr = bc_stack_top(&parse->flag_stack);
+    flag_ptr = bc_vec_top(&parse->flag_stack);
 
     if (!flag_ptr) {
       status = BC_STATUS_PARSE_BUG;
@@ -2319,7 +2319,7 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcStmtList** new_list,
     flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FOR_LOOP |
                            BC_PARSE_FLAG_WHILE_LOOP));
 
-    status = bc_stack_push(&parse->flag_stack, &flags);
+    status = bc_vec_push(&parse->flag_stack, &flags);
 
     if (status) {
       goto parse_err;
@@ -2437,13 +2437,13 @@ static BcStatus bc_parse_rightBrace(BcParse* parse) {
 
     if (parse->token.type == BC_LEX_KEY_ELSE) {
 
-      status = bc_stack_pop(&parse->flag_stack);
+      status = bc_vec_pop(&parse->flag_stack);
 
       if (status) {
         return status;
       }
 
-      status = bc_stack_pop(&parse->ctx_stack);
+      status = bc_vec_pop(&parse->ctx_stack);
 
       if (status) {
         return status;
@@ -2466,11 +2466,11 @@ static BcStatus bc_parse_rightBrace(BcParse* parse) {
     parse->func = NULL;
   }
 
-  status = bc_stack_pop(&parse->flag_stack);
+  status = bc_vec_pop(&parse->flag_stack);
 
   if (status) {
     return status;
   }
 
-  return bc_stack_pop(&parse->ctx_stack);
+  return bc_vec_pop(&parse->ctx_stack);
 }

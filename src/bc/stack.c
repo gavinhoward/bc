@@ -5,89 +5,120 @@
 #include <bc/bc.h>
 #include <bc/stack.h>
 
-static BcStatus bc_stack_expand(BcStack* stack);
+static BcStatus bc_vec_expand(BcVec* vec);
 
-BcStatus bc_stack_init(BcStack* stack, size_t esize, BcFreeFunc sfree) {
+BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc sfree) {
 
-  if (stack == NULL || esize == 0) {
+  if (vec == NULL || esize == 0) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  stack->size = esize;
-  stack->cap = BC_STACK_START;
-  stack->len = 0;
-  stack->sfree = sfree;
+  vec->size = esize;
+  vec->cap = BC_VEC_INITIAL_CAP;
+  vec->len = 0;
+  vec->sfree = sfree;
 
-  stack->stack = malloc(esize * BC_STACK_START);
+  vec->array = malloc(esize * BC_VEC_INITIAL_CAP);
 
-  if (stack->stack == NULL) {
+  if (vec->array == NULL) {
     return BC_STATUS_MALLOC_FAIL;
   }
 
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_stack_push(BcStack* stack, void* data) {
+BcStatus bc_vec_push(BcVec* vec, void* data) {
 
-  if (stack == NULL || data == NULL) {
+  if (vec == NULL || data == NULL) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  if (stack->len == stack->cap) {
+  if (vec->len == vec->cap) {
 
-    BcStatus status = bc_stack_expand(stack);
+    BcStatus status = bc_vec_expand(vec);
 
     if (status != BC_STATUS_SUCCESS) {
       return status;
     }
   }
 
-  size_t size = stack->size;
-  memmove(stack->stack + (size * stack->len), data, size);
+  size_t size = vec->size;
+  memmove(vec->array + (size * vec->len), data, size);
 
-  ++stack->len;
+  ++vec->len;
 
   return BC_STATUS_SUCCESS;
 }
 
-void* bc_stack_top(BcStack* stack) {
+BcStatus bc_vec_pushAt(BcVec* vec, void* data, uint32_t idx) {
 
-  if (stack == NULL || stack->len == 0) {
-    return NULL;
-  }
+  uint8_t* ptr;
+  size_t size;
 
-  return stack->stack + stack->size * (stack->len - 1);
-}
-
-void* bc_stack_item(BcStack* stack, uint32_t idx) {
-
-  if (stack == NULL || stack->len == 0 || idx >= stack->len) {
-    return NULL;
-  }
-
-  return stack->stack + stack->size * (stack->len - idx - 1);
-}
-
-BcStatus bc_stack_pop(BcStack* stack) {
-
-  if (stack == NULL) {
+  if (vec == NULL || data == NULL || idx > vec->len) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  --stack->len;
+  if (idx == vec->len) return bc_vec_push(vec, data);
+
+  if (vec->len == vec->cap) {
+
+    BcStatus status = bc_vec_expand(vec);
+
+    if (status != BC_STATUS_SUCCESS) {
+      return status;
+    }
+  }
+
+  size = vec->size;
+  ptr = vec->array + size * idx;
+
+  memmove(ptr + size, ptr, size * (vec->len - idx));
+  memmove(ptr, data, size);
+
+  ++vec->len;
+}
+
+void* bc_vec_top(BcVec* vec) {
+
+  if (vec == NULL || vec->len == 0) {
+    return NULL;
+  }
+
+  return vec->array + vec->size * (vec->len - 1);
+}
+
+void* bc_vec_item(BcVec* vec, uint32_t idx) {
+
+  if (vec == NULL || vec->len == 0 || idx >= vec->len) {
+    return NULL;
+  }
+
+  return vec->array + vec->size * idx;
+}
+
+BcStatus bc_vec_pop(BcVec* vec) {
+
+  if (vec == NULL) {
+    return BC_STATUS_INVALID_PARAM;
+  }
+
+  --vec->len;
+
+  if (vec->sfree) vec->sfree(vec->array + (vec->size * vec->len));
 
   return BC_STATUS_SUCCESS;
 }
 
-void bc_stack_free(void* stack) {
+void bc_vec_free(void* vec) {
 
-  BcStack* s;
+  BcVec* s;
   size_t len;
   size_t esize;
   BcFreeFunc sfree;
   uint8_t* array;
 
-  s = (BcStack*) stack;
+  s = (BcVec*) vec;
 
   if (s == NULL) {
     return;
@@ -98,7 +129,7 @@ void bc_stack_free(void* stack) {
   if (sfree) {
 
     len = s->len;
-    array = s->stack;
+    array = s->array;
     esize = s->size;
 
     for (size_t i = 0; i < len; ++i) {
@@ -106,24 +137,24 @@ void bc_stack_free(void* stack) {
     }
   }
 
-  free(s->stack);
+  free(s->array);
 
   s->size = 0;
-  s->stack = NULL;
+  s->array = NULL;
   s->len = 0;
   s->cap = 0;
 }
 
-static BcStatus bc_stack_expand(BcStack* stack) {
+static BcStatus bc_vec_expand(BcVec* vec) {
 
-  uint8_t* ptr = realloc(stack->stack, stack->size * (stack->cap + BC_STACK_START));
+  uint8_t* ptr = realloc(vec->array, vec->size * (vec->cap + BC_VEC_INITIAL_CAP));
 
   if (ptr == NULL) {
     return BC_STATUS_MALLOC_FAIL;
   }
 
-  stack->stack = ptr;
-  stack->cap += BC_STACK_START;
+  vec->array = ptr;
+  vec->cap += BC_VEC_INITIAL_CAP;
 
   return BC_STATUS_SUCCESS;
 }

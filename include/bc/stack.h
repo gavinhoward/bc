@@ -1,34 +1,36 @@
-#ifndef BC_STACK_H
-#define BC_STACK_H
+#ifndef BC_VECTOR_H
+#define BC_VECTOR_H
 
 #include <stdlib.h>
 #include <stdint.h>
 
 #include <bc/bc.h>
 
-#define BC_STACK_START (16)
+#define BC_VEC_INITIAL_CAP (32)
 
-typedef struct BcStack {
+typedef struct BcVec {
 
-  size_t size;
-  uint8_t* stack;
+  uint8_t* array;
   uint32_t len;
   uint32_t cap;
+  size_t size;
 
   BcFreeFunc sfree;
 
-} BcStack;
+} BcVec;
 
-BcStatus bc_stack_init(BcStack* stack, size_t esize, BcFreeFunc sfree);
+BcStatus bc_vec_init(BcVec* stack, size_t esize, BcFreeFunc sfree);
 
-BcStatus bc_stack_push(BcStack* stack, void* data);
+BcStatus bc_vec_push(BcVec* stack, void* data);
 
-void* bc_stack_top(BcStack* stack);
+BcStatus bc_vec_pushAt(BcVec* vec, void* data, uint32_t idx);
 
-void* bc_stack_item(BcStack* stack, uint32_t idx);
+void* bc_vec_top(BcVec* stack);
 
-BcStatus bc_stack_pop(BcStack* stack);
+void* bc_vec_item(BcVec* stack, uint32_t idx);
 
-void bc_stack_free(void* stack);
+BcStatus bc_vec_pop(BcVec* stack);
 
-#endif // BC_STACK_H
+void bc_vec_free(void* stack);
+
+#endif // BC_VECTOR_H

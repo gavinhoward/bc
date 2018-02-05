@@ -27,7 +27,7 @@ static const BcMathOpFunc bc_math_ops[] = {
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list);
 static BcStatus bc_program_printString(const char* str);
-static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
+static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
                                     fxdpnt** num, bool print);
 static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
                                   BcExprType op, fxdpnt* amt);
@@ -167,19 +167,19 @@ BcStatus bc_program_init(BcProgram* p) {
     goto array_err;
   }
 
-  st = bc_stack_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
+  st = bc_vec_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
 
   if (st) {
     goto ctx_err;
   }
 
-  st = bc_stack_init(&p->locals, sizeof(BcLocal), bc_local_free);
+  st = bc_vec_init(&p->locals, sizeof(BcLocal), bc_local_free);
 
   if (st) {
     goto local_err;
   }
 
-  st = bc_stack_init(&p->temps, sizeof(BcTemp), bc_temp_free);
+  st = bc_vec_init(&p->temps, sizeof(BcTemp), bc_temp_free);
 
   if (st) {
     goto temps_err;
@@ -193,11 +193,11 @@ list_err:
 
 temps_err:
 
-  bc_stack_free(&p->locals);
+  bc_vec_free(&p->locals);
 
 local_err:
 
-  bc_stack_free(&p->ctx_stack);
+  bc_vec_free(&p->ctx_stack);
 
 ctx_err:
 
@@ -310,9 +310,9 @@ void bc_program_free(BcProgram* p) {
   bc_segarray_free(&p->vars);
   bc_segarray_free(&p->arrays);
 
-  bc_stack_free(&p->ctx_stack);
-  bc_stack_free(&p->locals);
-  bc_stack_free(&p->temps);
+  bc_vec_free(&p->ctx_stack);
+  bc_vec_free(&p->locals);
+  bc_vec_free(&p->temps);
 
   arb_free(p->last);
   arb_free(p->zero);
@@ -531,7 +531,7 @@ static BcStatus bc_program_printString(const char* str) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
+static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
                                     fxdpnt** num, bool print)
 {
   BcStatus status;
@@ -552,7 +552,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
 
   while (idx < exprs->len) {
 
-    expr = bc_stack_item(exprs, idx);
+    expr = bc_vec_item(exprs, idx);
 
     if (!expr) {
       return BC_STATUS_VM_INVALID_EXPR;
@@ -570,7 +570,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        expr = bc_stack_item(exprs, idx - 1);
+        expr = bc_vec_item(exprs, idx - 1);
 
         if (!expr) {
           status = BC_STATUS_VM_INVALID_EXPR;
@@ -605,7 +605,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        temp_ptr = bc_stack_top(&p->temps);
+        temp_ptr = bc_vec_top(&p->temps);
 
         if (!temp_ptr) {
           status = BC_STATUS_VM_INVALID_EXPR;
@@ -636,27 +636,27 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        b = bc_stack_top(&p->temps);
+        b = bc_vec_top(&p->temps);
 
         if (!b) {
           status = BC_STATUS_VM_INVALID_EXPR;
           break;
         }
 
-        status = bc_stack_pop(&p->temps);
+        status = bc_vec_pop(&p->temps);
 
         if (status) {
           break;
         }
 
-        a = bc_stack_top(&p->temps);
+        a = bc_vec_top(&p->temps);
 
         if (!a) {
           status = BC_STATUS_VM_INVALID_EXPR;
           break;
         }
 
-        status = bc_stack_pop(&p->temps);
+        status = bc_vec_pop(&p->temps);
 
         if (status) {
           break;
@@ -669,7 +669,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
         op = bc_math_ops[etype - BC_EXPR_POWER];
         result.num = op(a->num, b->num, result.num, 10, 0);
 
-        status = bc_stack_push(&p->temps, &result);
+        status = bc_vec_push(&p->temps, &result);
 
         break;
       }
@@ -720,7 +720,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        status = bc_stack_push(&p->temps, &temp);
+        status = bc_vec_push(&p->temps, &temp);
 
         break;
       }
@@ -757,7 +757,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        status = bc_stack_push(&p->temps, &temp);
+        status = bc_vec_push(&p->temps, &temp);
 
         break;
       }
@@ -814,13 +814,13 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcStack* exprs,
           break;
         }
 
-        temp_ptr = bc_stack_top(&p->temps);
+        temp_ptr = bc_vec_top(&p->temps);
 
         arb_copy(p->last, temp_ptr->num);
 
         arb_print(p->last);
 
-        status = bc_stack_pop(&p->temps);
+        status = bc_vec_pop(&p->temps);
 
         break;
       }
@@ -929,7 +929,7 @@ static BcStatus bc_program_read(BcProgram* p) {
   BcStatus status;
   BcParse parse;
   char* buffer;
-  BcStack exprs;
+  BcVec exprs;
   BcTemp temp;
   size_t size;
 
@@ -939,7 +939,7 @@ static BcStatus bc_program_read(BcProgram* p) {
     return BC_STATUS_MALLOC_FAIL;
   }
 
-  status = bc_stack_init(&exprs, sizeof(BcExpr), bc_expr_free);
+  status = bc_vec_init(&exprs, sizeof(BcExpr), bc_expr_free);
 
   if (status) {
     goto stack_err;
@@ -985,7 +985,7 @@ static BcStatus bc_program_read(BcProgram* p) {
     goto exec_err;
   }
 
-  status = bc_stack_push(&p->temps, &temp);
+  status = bc_vec_push(&p->temps, &temp);
 
 exec_err:
 
@@ -993,7 +993,7 @@ exec_err:
 
 io_err:
 
-  bc_stack_free(&exprs);
+  bc_vec_free(&exprs);
 
 stack_err:
 

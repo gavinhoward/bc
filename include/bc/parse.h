@@ -84,11 +84,11 @@ typedef struct BcParse {
   BcLex lex;
   BcLexToken token;
 
-  BcStack flag_stack;
+  BcVec flag_stack;
 
-  BcStack ctx_stack;
+  BcVec ctx_stack;
 
-  BcStack ops;
+  BcVec ops;
 
   BcFunc* func;
 
@@ -104,7 +104,7 @@ BcStatus bc_parse_text(BcParse* parse, const char* text);
 
 BcStatus bc_parse_parse(BcParse* parse, BcProgram* program);
 
-BcStatus bc_parse_expr(BcParse* parse, BcStack* exprs, bool posix_rel);
+BcStatus bc_parse_expr(BcParse* parse, BcVec* exprs, bool posix_rel);
 
 void bc_parse_free(BcParse* parse);
 
