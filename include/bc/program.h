@@ -15,9 +15,9 @@ typedef fxdpnt* (*BcMathOpFunc)(fxdpnt*, fxdpnt*, fxdpnt*, int, size_t);
 
 typedef struct BcProgram {
 
-  BcStmtList* list;
+  BcVec code;
 
-  uint32_t stmt_idx;
+  BcVec ip_stack;
 
   long scale;
   long ibase;
@@ -39,6 +39,8 @@ typedef struct BcProgram {
   BcVec vars;
 
   BcVec arrays;
+
+  BcVec strings;
 
   const char* file;
 

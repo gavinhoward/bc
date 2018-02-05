@@ -82,107 +82,6 @@ typedef enum BcExprType {
 
 } BcExprType;
 
-typedef enum BcStmtType {
-
-  BC_STMT_EXPR,
-
-  BC_STMT_STRING,
-  BC_STMT_STRING_PRINT,
-
-  BC_STMT_BREAK,
-  BC_STMT_CONTINUE,
-
-  BC_STMT_HALT,
-
-  BC_STMT_RETURN,
-
-  BC_STMT_IF,
-  BC_STMT_WHILE,
-  BC_STMT_FOR,
-
-  BC_STMT_LIST,
-
-} BcStmtType;
-
-typedef struct BcCall {
-
-  char* name;
-  BcVec params;
-
-} BcCall;
-
-typedef struct BcArrayElem {
-
-  char* name;
-  BcVec expr_stack;
-
-} BcArrayElem;
-
-typedef struct BcExpr {
-
-  BcExprType type;
-  union {
-    char* string;
-    BcVec* exprs;
-    BcCall* call;
-    BcArrayElem* elem;
-  };
-
-} BcExpr;
-
-typedef struct BcIf {
-
-  BcVec cond;
-  struct BcStmtList* then_list;
-  struct BcStmtList* else_list;
-
-} BcIf;
-
-typedef struct BcWhile {
-
-  BcVec cond;
-  struct BcStmtList* body;
-
-} BcWhile;
-
-typedef struct BcFor {
-
-  BcVec cond;
-  struct BcStmtList* body;
-  BcVec update;
-  BcVec init;
-
-} BcFor;
-
-typedef union BcStmtData {
-
-  char* string;
-  struct BcStmtList* list;
-  BcVec* exprs;
-  BcIf* if_stmt;
-  BcWhile* while_stmt;
-  BcFor* for_stmt;
-
-} BcStmtData;
-
-typedef struct BcStmt {
-
-  BcStmtType type;
-  BcStmtData data;
-
-} BcStmt;
-
-typedef struct BcStmtList {
-
-  struct BcStmtList* next;
-
-  uint32_t idx;
-  uint32_t num_stmts;
-
-  BcStmt stmts[BC_PROGRAM_MAX_STMTS];
-
-} BcStmtList;
-
 typedef struct BcAuto {
 
   char* name;
@@ -222,9 +121,7 @@ typedef struct BcFunc {
 
   char* name;
 
-  BcStmtList* first;
-
-  BcStmtList* cur;
+  BcVec code;
 
   BcAuto* params;
   uint32_t num_params;
@@ -252,11 +149,12 @@ typedef struct BcArray {
 
 } BcArray;
 
-BcStmtList* bc_list_create();
-BcStatus bc_list_insert(BcStmtList* list, BcStmt* stmt);
-BcStmt* bc_list_last(BcStmtList* list);
-void bc_list_destruct(BcStmtList* list);
-void bc_list_free(BcStmtList* list);
+typedef struct BcInstPtr {
+
+  size_t func;
+  size_t idx;
+
+} BcInstPtr;
 
 BcStatus bc_func_init(BcFunc* func, char* name);
 BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var);
@@ -272,18 +170,6 @@ BcStatus bc_array_init(BcArray* array, char* name);
 int bc_array_cmp(void* array1, void* array2);
 void bc_array_free(void* array);
 
-BcStatus bc_stmt_init(BcStmt* stmt, BcStmtType type);
-void bc_stmt_free(BcStmt* stmt);
-
-BcIf* bc_if_create();
-BcWhile* bc_while_create();
-BcFor* bc_for_create();
-
-BcStatus bc_expr_init(BcExpr* expr, BcExprType type);
-void bc_expr_free(void* expr);
-
-BcCall* bc_call_create();
-
 BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num);
 BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems);
 void bc_local_free(void* local);
@@ -292,5 +178,7 @@ BcStatus bc_temp_initNum(BcTemp* temp, const char* val);
 BcStatus bc_temp_initName(BcTemp* temp, const char* name);
 BcStatus bc_temp_init(BcTemp* temp, BcTempType type);
 void bc_temp_free(void* temp);
+
+void bc_string_free(void* string);
 
 #endif // BC_DATA_H

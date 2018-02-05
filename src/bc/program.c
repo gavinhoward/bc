@@ -45,10 +45,6 @@ BcStatus bc_program_init(BcProgram* p) {
   p->ibase = 10;
   p->obase = 10;
 
-  p->last = arb_str2fxdpnt("0");
-  p->zero = arb_str2fxdpnt("0");
-  p->one = arb_str2fxdpnt("1");
-
 #ifdef _POSIX_BC_BASE_MAX
   p->base_max = _POSIX_BC_BASE_MAX;
 #elif defined(_BC_BASE_MAX)
@@ -133,19 +129,23 @@ BcStatus bc_program_init(BcProgram* p) {
   }
 #endif
 
+  p->last = arb_str2fxdpnt("0");
+  p->zero = arb_str2fxdpnt("0");
+  p->one = arb_str2fxdpnt("1");
+
   p->num_buf = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
   if (!p->num_buf) {
-    return BC_STATUS_MALLOC_FAIL;
+    st = BC_STATUS_MALLOC_FAIL;
+    goto num_buf_err;
   }
 
   p->buf_size = BC_PROGRAM_BUF_SIZE;
 
-  p->list = bc_list_create();
+  st = bc_vec_init(&p->code, sizeof(uint8_t), NULL);
 
-  if (!p->list) {
-    st = BC_STATUS_MALLOC_FAIL;
-    goto list_err;
+  if (st) {
+    goto code_err;
   }
 
   st = bc_vec_init(&p->funcs, sizeof(BcFunc), bc_func_free);
@@ -164,6 +164,12 @@ BcStatus bc_program_init(BcProgram* p) {
 
   if (st) {
     goto array_err;
+  }
+
+  st = bc_vec_init(&p->strings, sizeof(char*), bc_string_free);
+
+  if (st) {
+    goto string_err;
   }
 
   st = bc_vec_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
@@ -186,10 +192,6 @@ BcStatus bc_program_init(BcProgram* p) {
 
   return st;
 
-list_err:
-
-  free(p->num_buf);
-
 temps_err:
 
   bc_vec_free(&p->locals);
@@ -199,6 +201,10 @@ local_err:
   bc_vec_free(&p->ctx_stack);
 
 ctx_err:
+
+  bc_vec_free(&p->strings);
+
+string_err:
 
   bc_vec_free(&p->arrays);
 
@@ -212,8 +218,17 @@ var_err:
 
 func_err:
 
-  bc_list_free(p->list);
-  p->list = NULL;
+  bc_vec_free(&p->code);
+
+code_err:
+
+  free(p->num_buf);
+
+num_buf_err:
+
+  arb_free(p->last);
+  arb_free(p->zero);
+  arb_free(p->one);
 
   return st;
 }
@@ -303,11 +318,12 @@ void bc_program_free(BcProgram* p) {
   free(p->num_buf);
   p->buf_size = 0;
 
-  bc_list_free(p->list);
+  bc_vec_free(&p->code);
 
   bc_vec_free(&p->funcs);
   bc_vec_free(&p->vars);
   bc_vec_free(&p->arrays);
+  bc_vec_free(&p->strings);
 
   bc_vec_free(&p->ctx_stack);
   bc_vec_free(&p->locals);

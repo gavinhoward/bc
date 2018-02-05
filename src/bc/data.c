@@ -2,195 +2,6 @@
 
 #include <bc/data.h>
 
-static const uint32_t bc_stmt_sizes[] = {
-
-  sizeof(BcVec),
-
-  0,
-  0,
-
-  0,
-  0,
-
-  0,
-
-  sizeof(BcVec),
-
-  sizeof(BcIf),
-  sizeof(BcWhile),
-  sizeof(BcFor),
-
-  0,
-
-};
-
-static const uint32_t bc_expr_sizes[] = {
-
-  0,
-  0,
-
-  0,
-  0,
-
-  0,
-
-  0,
-
-  0,
-  0,
-  0,
-
-  0,
-  0,
-
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-
-  0,
-
-  0,
-  0,
-
-  0,
-  0,
-  0,
-
-  sizeof(BcCall),
-
-  sizeof(BcVec),
-  0,
-  0,
-  0,
-  0,
-  sizeof(BcVec),
-  0,
-  sizeof(BcVec),
-
-  0
-
-};
-
-static BcStatus bc_program_list_expand(BcStmtList* list);
-
-BcStmtList* bc_list_create() {
-
-  BcStmtList* list;
-
-  list = malloc(sizeof(BcStmtList));
-
-  if (list == NULL) {
-    return NULL;
-  }
-
-  list->next = NULL;
-  list->idx = 0;
-  list->num_stmts = 0;
-
-  return list;
-}
-
-BcStatus bc_list_insert(BcStmtList* list, BcStmt* stmt) {
-
-  if (list == NULL || stmt == NULL) {
-    return BC_STATUS_INVALID_PARAM;
-  }
-
-  while (list->num_stmts == BC_PROGRAM_MAX_STMTS && list->next) {
-    list = list->next;
-  }
-
-  if (list->num_stmts == BC_PROGRAM_MAX_STMTS) {
-
-    BcStatus status = bc_program_list_expand(list);
-
-    if (status != BC_STATUS_SUCCESS) {
-      return status;
-    }
-
-    list = list->next;
-  }
-
-  memcpy(list->stmts + list->num_stmts, stmt, sizeof(BcStmt));
-  ++list->num_stmts;
-
-  return BC_STATUS_SUCCESS;
-}
-
-BcStmt* bc_list_last(BcStmtList* list) {
-
-  if (!list) {
-    return NULL;
-  }
-
-  while (list->next) {
-    list = list->next;
-  }
-
-  return list->stmts + (list->num_stmts - 1);
-}
-
-void bc_list_destruct(BcStmtList* list) {
-
-  uint32_t num;
-  BcStmt* stmts;
-
-  num = list->num_stmts;
-  stmts = list->stmts;
-
-  for (uint32_t i = 0; i < num; ++i) {
-    bc_stmt_free(stmts + i);
-  }
-
-  free(list);
-}
-
-void bc_list_free(BcStmtList* list) {
-
-  BcStmtList* temp;
-
-  if (list == NULL) {
-    return;
-  }
-
-  do {
-
-    temp = list->next;
-
-    bc_list_destruct(list);
-
-    list = temp;
-
-  } while (list);
-}
-
-static BcStatus bc_program_list_expand(BcStmtList* list) {
-
-  if (list == NULL) {
-    return BC_STATUS_INVALID_PARAM;
-  }
-
-  BcStmtList* next = bc_list_create();
-
-  if (next == NULL) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
-
-  list->next = next;
-
-  return BC_STATUS_SUCCESS;
-}
-
 BcStatus bc_func_init(BcFunc* func, char* name) {
 
   BcStatus status;
@@ -204,14 +15,13 @@ BcStatus bc_func_init(BcFunc* func, char* name) {
   func->num_params = 0;
   func->num_autos = 0;
 
-  func->first = bc_list_create();
+  status = bc_vec_init(&func->code, sizeof(uint8_t), NULL);
 
-  if (!func->first) {
-    return BC_STATUS_MALLOC_FAIL;
+  if (status) {
+    return status;
   }
 
   func->name = name;
-  func->cur = func->first;
 
   func->param_cap = BC_PROGRAM_DEF_SIZE;
   func->params = malloc(sizeof(BcAuto) * BC_PROGRAM_DEF_SIZE);
@@ -237,8 +47,7 @@ auto_err:
 
 param_err:
 
-  bc_list_free(func->first);
-  func->first = func->cur = NULL;
+  bc_vec_free(&func->code);
 
   return status;
 }
@@ -325,11 +134,9 @@ void bc_func_free(void* func) {
 
   free(f->name);
 
-  bc_list_free(f->first);
+  bc_vec_free(&f->code);
 
   f->name = NULL;
-  f->first = NULL;
-  f->cur = NULL;
 
   num = f->num_params;
   vars = f->params;
@@ -432,217 +239,6 @@ void bc_array_free(void* array) {
   a->name = NULL;
 
   bc_vec_free(&a->array);
-}
-
-BcStatus bc_stmt_init(BcStmt* stmt, BcStmtType type) {
-
-  stmt->type = type;
-
-  if (bc_stmt_sizes[type]) {
-
-    stmt->data.exprs = malloc(bc_stmt_sizes[type]);
-
-    if (!stmt->data.exprs) {
-      return BC_STATUS_MALLOC_FAIL;
-    }
-  }
-  else if (type == BC_STMT_LIST) {
-
-    stmt->data.list = bc_list_create();
-
-    if (!stmt->data.list) {
-      return BC_STATUS_MALLOC_FAIL;
-    }
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
-void bc_stmt_free(BcStmt* stmt) {
-
-  switch (stmt->type) {
-
-    case BC_STMT_EXPR:
-    case BC_STMT_RETURN:
-    {
-      bc_vec_free(stmt->data.exprs);
-      free(stmt->data.exprs);
-      break;
-    }
-
-    case BC_STMT_STRING:
-    case BC_STMT_STRING_PRINT:
-    {
-      free(stmt->data.string);
-      break;
-    }
-
-    case BC_STMT_IF:
-    {
-      bc_vec_free(&stmt->data.if_stmt->cond);
-
-      bc_list_free(stmt->data.if_stmt->then_list);
-
-      if (stmt->data.if_stmt->else_list) {
-        bc_list_free(stmt->data.if_stmt->else_list);
-      }
-
-      free(stmt->data.if_stmt);
-
-      break;
-    }
-
-    case BC_STMT_WHILE:
-    {
-      bc_vec_free(&stmt->data.while_stmt->cond);
-      bc_list_free(stmt->data.while_stmt->body);
-
-      free(stmt->data.while_stmt);
-
-      break;
-    }
-
-    case BC_STMT_FOR:
-    {
-      bc_vec_free(&stmt->data.for_stmt->cond);
-      bc_vec_free(&stmt->data.for_stmt->update);
-      bc_vec_free(&stmt->data.for_stmt->init);
-      bc_list_free(stmt->data.for_stmt->body);
-
-      free(stmt->data.for_stmt);
-
-      break;
-    }
-
-    case BC_STMT_LIST:
-    {
-      bc_list_free(stmt->data.list);
-      break;
-    }
-
-    default:
-    {
-      // Do nothing.
-      break;
-    }
-  }
-
-  stmt->data.exprs = NULL;
-}
-
-BcIf* bc_if_create() {
-
-  BcIf* if_stmt;
-
-  if_stmt = malloc(sizeof(BcIf));
-
-  if (!if_stmt) {
-    return NULL;
-  }
-
-  if_stmt->then_list = NULL;
-  if_stmt->else_list = NULL;
-
-  return if_stmt;
-}
-
-BcWhile* bc_while_create() {
-
-  BcWhile* while_stmt;
-
-  while_stmt = malloc(sizeof(BcWhile));
-
-  return while_stmt;
-}
-
-BcFor* bc_for_create() {
-
-  BcFor* for_stmt;
-
-  for_stmt = malloc(sizeof(BcFor));
-
-  return for_stmt;
-}
-
-BcStatus bc_expr_init(BcExpr* expr, BcExprType type) {
-
-  expr->type = type;
-
-  if (bc_expr_sizes[type]) {
-
-    expr->string = malloc(bc_expr_sizes[type]);
-
-    if (!expr->string) {
-      return BC_STATUS_MALLOC_FAIL;
-    }
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
-void bc_expr_free(void* expr) {
-
-  BcExpr* e;
-
-  e = (BcExpr*) expr;
-
-  switch (e->type) {
-
-    case BC_EXPR_NUMBER:
-    case BC_EXPR_VAR:
-    {
-      free(e->string);
-      break;
-    }
-
-    case BC_EXPR_ARRAY_ELEM:
-    {
-      free(e->elem->name);
-      bc_vec_free(&e->elem->expr_stack);
-      free(e->elem);
-      break;
-    }
-
-    case BC_EXPR_FUNC_CALL:
-    {
-      free(e->call->name);
-      bc_vec_free(&e->call->params);
-      free(e->call);
-      break;
-    }
-
-    case BC_EXPR_SCALE_FUNC:
-    case BC_EXPR_LENGTH:
-    case BC_EXPR_SQRT:
-    {
-      bc_vec_free(e->exprs);
-      free(e->exprs);
-      break;
-    }
-
-    default:
-    {
-      // Do nothing.
-      break;
-    }
-  }
-
-  e->string = NULL;
-}
-
-BcCall* bc_call_create() {
-
-  BcCall* call;
-
-  call = malloc(sizeof(BcCall));
-
-  if (!call) {
-    return NULL;
-  }
-
-  call->name = NULL;
-
-  return call;
 }
 
 BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num) {
@@ -754,4 +350,13 @@ void bc_temp_free(void* temp) {
   if (t->type == BC_TEMP_NUM) {
     arb_free(t->num);
   }
+}
+
+void bc_string_free(void* string) {
+
+  char* s;
+
+  s = *((char**) string);
+
+  free(s);
 }

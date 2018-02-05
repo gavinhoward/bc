@@ -11,26 +11,28 @@
 typedef struct BcVec {
 
   uint8_t* array;
-  uint32_t len;
-  uint32_t cap;
+  size_t len;
+  size_t cap;
   size_t size;
 
-  BcFreeFunc sfree;
+  BcFreeFunc dtor;
 
 } BcVec;
 
-BcStatus bc_vec_init(BcVec* stack, size_t esize, BcFreeFunc sfree);
+BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc dtor);
 
-BcStatus bc_vec_push(BcVec* stack, void* data);
+BcStatus bc_vec_push(BcVec* vec, void* data);
 
-BcStatus bc_vec_pushAt(BcVec* vec, void* data, uint32_t idx);
+BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data);
 
-void* bc_vec_top(BcVec* stack);
+BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx);
 
-void* bc_vec_item(BcVec* stack, uint32_t idx);
+void* bc_vec_top(BcVec* vec);
 
-BcStatus bc_vec_pop(BcVec* stack);
+void* bc_vec_item(BcVec* vec, size_t idx);
 
-void bc_vec_free(void* stack);
+BcStatus bc_vec_pop(BcVec* vec);
+
+void bc_vec_free(void* vec);
 
 #endif // BC_VECTOR_H
