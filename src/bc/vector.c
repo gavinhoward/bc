@@ -174,14 +174,14 @@ void bc_vec_free(void* vec) {
 
 static BcStatus bc_vec_expand(BcVec* vec) {
 
-  uint8_t* ptr = realloc(vec->array, vec->size * (vec->cap + BC_VEC_INITIAL_CAP));
+  uint8_t* ptr = realloc(vec->array, vec->size * (vec->cap * 2));
 
   if (ptr == NULL) {
     return BC_STATUS_MALLOC_FAIL;
   }
 
   vec->array = ptr;
-  vec->cap += BC_VEC_INITIAL_CAP;
+  vec->cap *= 2;
 
   return BC_STATUS_SUCCESS;
 }
