@@ -15,7 +15,7 @@
   ((uint8_t*) bc_vec_top(&(parse)->flag_stack))
 
 #define BC_PARSE_TOP_CTX(parse)  \
-  ((BcStmtList**) bc_vec_top(&(parse)->ctx_stack))
+  ((BcVec**) bc_vec_top(&(parse)->ctx_stack))
 
 #define BC_PARSE_FLAG_FUNC_INNER (0x01)
 
@@ -90,6 +90,7 @@ typedef struct BcParse {
 
   BcVec ops;
 
+  BcProgram* program;
   BcFunc* func;
 
   uint32_t num_braces;
@@ -98,7 +99,7 @@ typedef struct BcParse {
 
 } BcParse;
 
-BcStatus bc_parse_init(BcParse* parse, BcStmtList *start);
+BcStatus bc_parse_init(BcParse* parse, BcProgram *program, BcVec* code);
 BcStatus bc_parse_file(BcParse* parse, const char* file);
 BcStatus bc_parse_text(BcParse* parse, const char* text);
 

@@ -7,7 +7,7 @@
 
 static BcStatus bc_vec_expand(BcVec* vec);
 
-BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc sfree) {
+BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc dtor) {
 
   if (vec == NULL || esize == 0) {
     return BC_STATUS_INVALID_PARAM;
@@ -16,7 +16,7 @@ BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc sfree) {
   vec->size = esize;
   vec->cap = BC_VEC_INITIAL_CAP;
   vec->len = 0;
-  vec->sfree = sfree;
+  vec->dtor = dtor;
 
   vec->array = malloc(esize * BC_VEC_INITIAL_CAP);
 
@@ -28,6 +28,8 @@ BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc sfree) {
 }
 
 BcStatus bc_vec_push(BcVec* vec, void* data) {
+
+  size_t size;
 
   if (vec == NULL || data == NULL) {
     return BC_STATUS_INVALID_PARAM;
@@ -42,7 +44,7 @@ BcStatus bc_vec_push(BcVec* vec, void* data) {
     }
   }
 
-  size_t size = vec->size;
+  size = vec->size;
   memmove(vec->array + (size * vec->len), data, size);
 
   ++vec->len;
@@ -50,7 +52,32 @@ BcStatus bc_vec_push(BcVec* vec, void* data) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_pushAt(BcVec* vec, void* data, uint32_t idx) {
+BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data) {
+
+  size_t size;
+
+  if (vec == NULL || vec->size != sizeof(uint8_t)) {
+    return BC_STATUS_INVALID_PARAM;
+  }
+
+  if (vec->len == vec->cap) {
+
+    BcStatus status = bc_vec_expand(vec);
+
+    if (status != BC_STATUS_SUCCESS) {
+      return status;
+    }
+  }
+
+  size = vec->size;
+  vec->array[vec->len] = data;
+
+  ++vec->len;
+
+  return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx) {
 
   uint8_t* ptr;
   size_t size;
@@ -88,7 +115,7 @@ void* bc_vec_top(BcVec* vec) {
   return vec->array + vec->size * (vec->len - 1);
 }
 
-void* bc_vec_item(BcVec* vec, uint32_t idx) {
+void* bc_vec_item(BcVec* vec, size_t idx) {
 
   if (vec == NULL || vec->len == 0 || idx >= vec->len) {
     return NULL;
@@ -105,7 +132,7 @@ BcStatus bc_vec_pop(BcVec* vec) {
 
   --vec->len;
 
-  if (vec->sfree) vec->sfree(vec->array + (vec->size * vec->len));
+  if (vec->dtor) vec->dtor(vec->array + (vec->size * vec->len));
 
   return BC_STATUS_SUCCESS;
 }
@@ -124,7 +151,7 @@ void bc_vec_free(void* vec) {
     return;
   }
 
-  sfree = s->sfree;
+  sfree = s->dtor;
 
   if (sfree) {
 
