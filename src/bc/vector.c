@@ -185,3 +185,101 @@ static BcStatus bc_vec_expand(BcVec* vec) {
 
   return BC_STATUS_SUCCESS;
 }
+
+static size_t bc_veco_find(BcVecO* vec, void *data);
+
+BcStatus bc_veco_init(BcVecO* vec, size_t esize,
+                      BcFreeFunc dtor, BcVecCmpFunc cmp)
+{
+  if (!vec || esize == 0 || !cmp) {
+    return BC_STATUS_INVALID_PARAM;
+  }
+
+  vec->cmp = cmp;
+
+  return bc_vec_init(&vec->vec, esize, dtor);
+}
+
+size_t bc_veco_insert(BcVecO* vec, void* data) {
+
+  size_t idx;
+
+  if (!vec || !data) {
+    return (size_t) -1;
+  }
+
+  idx = bc_veco_find(vec, data);
+
+  if (idx >= vec->vec.len) {
+    return (size_t) -1;
+  }
+
+  if (!vec->cmp(data, bc_vec_item(&vec->vec, idx))) {
+    return idx;
+  }
+
+  if (bc_vec_pushAt(&vec->vec, data, idx)) {
+    return (size_t) -1;
+  }
+
+  return idx;
+}
+
+size_t bc_veco_index(BcVecO* vec, void* data) {
+
+  size_t idx;
+
+  if (!vec || !data) {
+    return BC_STATUS_INVALID_PARAM;
+  }
+
+  idx = bc_veco_find(vec, data);
+
+  if (idx >= vec->vec.len || vec->cmp(data, bc_vec_item(&vec->vec, idx))) {
+    return (size_t) -1;
+  }
+
+  return idx;
+}
+
+void* bc_veco_item(BcVecO* vec, size_t idx) {
+  return bc_vec_item(&vec->vec, idx);
+}
+
+void bc_veco_free(BcVecO* vec) {
+  bc_vec_free(&vec->vec);
+}
+
+static size_t bc_veco_find(BcVecO* vec, void* data) {
+
+  BcVecCmpFunc cmp = vec->cmp;
+
+  size_t low = 0;
+  size_t high = vec->vec.len;
+
+  while (low < high) {
+
+    size_t mid;
+    int result;
+    uint8_t* ptr;
+
+    mid = (low + high) / 2;
+
+    ptr = bc_vec_item(&vec->vec, mid);
+
+    result = cmp(ptr, data);
+
+    if (!result) {
+      return mid;
+    }
+
+    if (result > 0) {
+      high = mid;
+    }
+    else {
+      low = mid + 1;
+    }
+  }
+
+  return low;
+}

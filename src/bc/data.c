@@ -360,3 +360,23 @@ void bc_string_free(void* string) {
 
   free(s);
 }
+
+int bc_entry_cmp(void* entry1, void*entry2) {
+
+  BcEntry* e1;
+  BcEntry* e2;
+
+  e1 = (BcEntry*) entry1;
+  e2 = (BcEntry*) entry2;
+
+  return strcmp(e1->name, e2->name);
+}
+
+void bc_entry_free(void* entry) {
+
+  BcEntry* e;
+
+  e = (BcEntry*) entry;
+
+  free(e->name);
+}

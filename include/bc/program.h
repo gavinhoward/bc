@@ -36,9 +36,15 @@ typedef struct BcProgram {
 
   BcVec funcs;
 
+  BcVecO func_map;
+
   BcVec vars;
 
+  BcVecO var_map;
+
   BcVec arrays;
+
+  BcVecO array_map;
 
   BcVec strings;
 

@@ -9,13 +9,13 @@
 #include <bc/lex.h>
 
 #define BC_PARSE_TOP_FLAG(parse)  \
-  (*((uint8_t*) bc_vec_top(&(parse)->flag_stack)))
+  (*((uint8_t*) bc_vec_top(&(parse)->flags)))
 
 #define BC_PARSE_TOP_FLAG_PTR(parse)  \
-  ((uint8_t*) bc_vec_top(&(parse)->flag_stack))
+  ((uint8_t*) bc_vec_top(&(parse)->flags))
 
 #define BC_PARSE_TOP_CTX(parse)  \
-  ((BcVec**) bc_vec_top(&(parse)->ctx_stack))
+  ((BcVec**) bc_vec_top(&(parse)->ctxs))
 
 #define BC_PARSE_FLAG_FUNC_INNER (0x01)
 
@@ -84,14 +84,16 @@ typedef struct BcParse {
   BcLex lex;
   BcLexToken token;
 
-  BcVec flag_stack;
+  BcVec flags;
 
-  BcVec ctx_stack;
+  BcVec ctxs;
+
+  BcVec labels;
 
   BcVec ops;
 
   BcProgram* program;
-  BcFunc* func;
+  size_t func;
 
   uint32_t num_braces;
 
@@ -105,7 +107,7 @@ BcStatus bc_parse_text(BcParse* parse, const char* text);
 
 BcStatus bc_parse_parse(BcParse* parse, BcProgram* program);
 
-BcStatus bc_parse_expr(BcParse* parse, BcVec* exprs, bool posix_rel);
+BcStatus bc_parse_expr(BcParse* parse, BcVec* code, bool posix_rel, bool print);
 
 void bc_parse_free(BcParse* parse);
 

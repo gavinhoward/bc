@@ -148,14 +148,14 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
     status = bc_parse_parse(&vm->parse, &vm->program);
 
-    if (status) {
+    if (bc_had_sigint && !bc_interactive) {
+      goto read_err;
+    }
+    else {
+      bc_had_sigint = 0;
+    }
 
-      if (bc_had_sigint && !bc_interactive) {
-        goto read_err;
-      }
-      else {
-        bc_had_sigint = 0;
-      }
+    if (status) {
 
       if (status != BC_STATUS_LEX_EOF &&
           status != BC_STATUS_PARSE_EOF &&
