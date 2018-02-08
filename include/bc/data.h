@@ -82,6 +82,13 @@ typedef enum BcExprType {
 
 } BcExprType;
 
+typedef struct BcEntry {
+
+  char* name;
+  size_t idx;
+
+} BcEntry;
+
 typedef struct BcAuto {
 
   char* name;
@@ -180,5 +187,8 @@ BcStatus bc_temp_init(BcTemp* temp, BcTempType type);
 void bc_temp_free(void* temp);
 
 void bc_string_free(void* string);
+
+int bc_entry_cmp(void* entry1, void*entry2);
+void bc_entry_free(void* entry);
 
 #endif // BC_DATA_H

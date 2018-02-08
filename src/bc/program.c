@@ -35,7 +35,7 @@ static BcStatus bc_program_read(BcProgram* p);
 
 BcStatus bc_program_init(BcProgram* p) {
 
-  BcStatus st;
+  BcStatus s;
 
   if (p == NULL) {
     return BC_STATUS_INVALID_PARAM;
@@ -136,61 +136,79 @@ BcStatus bc_program_init(BcProgram* p) {
   p->num_buf = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
   if (!p->num_buf) {
-    st = BC_STATUS_MALLOC_FAIL;
+    s = BC_STATUS_MALLOC_FAIL;
     goto num_buf_err;
   }
 
   p->buf_size = BC_PROGRAM_BUF_SIZE;
 
-  st = bc_vec_init(&p->code, sizeof(uint8_t), NULL);
+  s = bc_vec_init(&p->code, sizeof(uint8_t), NULL);
 
-  if (st) {
+  if (s) {
     goto code_err;
   }
 
-  st = bc_vec_init(&p->funcs, sizeof(BcFunc), bc_func_free);
+  s = bc_vec_init(&p->funcs, sizeof(BcFunc), bc_func_free);
 
-  if (st) {
+  if (s) {
     goto func_err;
   }
 
-  st = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
+  s = bc_veco_init(&p->func_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 
-  if (st) {
+  if (s) {
+    goto func_map_err;
+  }
+
+  s = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
+
+  if (s) {
     goto var_err;
   }
 
-  st = bc_vec_init(&p->arrays, sizeof(BcArray), bc_array_free);
+  s = bc_veco_init(&p->var_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 
-  if (st) {
+  if (s) {
+    goto var_map_err;
+  }
+
+  s = bc_vec_init(&p->arrays, sizeof(BcArray), bc_array_free);
+
+  if (s) {
     goto array_err;
   }
 
-  st = bc_vec_init(&p->strings, sizeof(char*), bc_string_free);
+  s = bc_veco_init(&p->array_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 
-  if (st) {
+  if (s) {
+    goto array_map_err;
+  }
+
+  s = bc_vec_init(&p->strings, sizeof(char*), bc_string_free);
+
+  if (s) {
     goto string_err;
   }
 
-  st = bc_vec_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
+  s = bc_vec_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
 
-  if (st) {
+  if (s) {
     goto ctx_err;
   }
 
-  st = bc_vec_init(&p->locals, sizeof(BcLocal), bc_local_free);
+  s = bc_vec_init(&p->locals, sizeof(BcLocal), bc_local_free);
 
-  if (st) {
+  if (s) {
     goto local_err;
   }
 
-  st = bc_vec_init(&p->temps, sizeof(BcTemp), bc_temp_free);
+  s = bc_vec_init(&p->temps, sizeof(BcTemp), bc_temp_free);
 
-  if (st) {
+  if (s) {
     goto temps_err;
   }
 
-  return st;
+  return s;
 
 temps_err:
 
@@ -206,13 +224,25 @@ ctx_err:
 
 string_err:
 
+  bc_veco_free(&p->array_map);
+
+array_map_err:
+
   bc_vec_free(&p->arrays);
 
 array_err:
 
+  bc_veco_free(&p->var_map);
+
+var_map_err:
+
   bc_vec_free(&p->vars);
 
 var_err:
+
+  bc_veco_free(&p->func_map);
+
+func_map_err:
 
   bc_vec_free(&p->funcs);
 
@@ -230,7 +260,7 @@ num_buf_err:
   arb_free(p->zero);
   arb_free(p->one);
 
-  return st;
+  return s;
 }
 
 void bc_program_limits(BcProgram* p) {
@@ -321,8 +351,11 @@ void bc_program_free(BcProgram* p) {
   bc_vec_free(&p->code);
 
   bc_vec_free(&p->funcs);
+  bc_veco_free(&p->func_map);
   bc_vec_free(&p->vars);
+  bc_veco_free(&p->var_map);
   bc_vec_free(&p->arrays);
+  bc_veco_free(&p->array_map);
   bc_vec_free(&p->strings);
 
   bc_vec_free(&p->ctx_stack);
