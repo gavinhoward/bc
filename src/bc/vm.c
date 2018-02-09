@@ -13,17 +13,26 @@
 static BcStatus bc_vm_execFile(BcVm* vm, int idx);
 static BcStatus bc_vm_execStdin(BcVm* vm);
 
-static const char* const stdin_filename = "<stdin>";
+static const char* const bc_stdin_filename = "<stdin>";
+
+static const char* const bc_ready_prompt = "ready for more input\n\n";
+
+static const char* const bc_sigint_msg =
+  "\n\nSIGINT detected (type \"quit\" to exit)\n\n";
 
 static void bc_vm_sigint(int sig) {
 
-  signal(sig, bc_vm_sigint);
+  struct sigaction act;
 
-  const char* buf = "\n\nSIGINT detected\ntype \"quit\" to exit\n\n";
+  sigemptyset(&act.sa_mask);
+  act.sa_handler = bc_vm_sigint;
 
-  write(STDERR_FILENO, buf, strlen(buf));
+  sigaction(SIGINT, &act, NULL);
 
-  bc_had_sigint = 1;
+  if (sig == SIGINT) {
+    write(STDERR_FILENO, bc_sigint_msg, strlen(bc_sigint_msg));
+    bc_had_sigint = 1;
+  }
 }
 
 BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
@@ -210,7 +219,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
           fflush(stdout);
 
           if (bc_had_sigint) {
-            fprintf(stderr, "ready for more input\n");
+            fprintf(stderr, bc_ready_prompt);
             fflush(stderr);
             bc_had_sigint = 0;
           }
@@ -239,7 +248,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
           fflush(stdout);
 
           if (bc_had_sigint) {
-            fprintf(stderr, "ready for more input\n");
+            fprintf(stderr, bc_ready_prompt);
             fflush(stderr);
             bc_had_sigint = 0;
           }
@@ -284,9 +293,9 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
   bool string;
   bool comment;
 
-  vm->program.file = stdin_filename;
+  vm->program.file = bc_stdin_filename;
 
-  status = bc_parse_file(&vm->parse, stdin_filename);
+  status = bc_parse_file(&vm->parse, bc_stdin_filename);
 
   if (status) {
     return status;
@@ -464,7 +473,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
           fflush(stdout);
 
           if (bc_had_sigint) {
-            fprintf(stderr, "ready for more input\n");
+            fprintf(stderr, bc_ready_prompt);
             bc_had_sigint = 0;
           }
         }
@@ -482,7 +491,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
           fflush(stdout);
 
           if (bc_had_sigint) {
-            fprintf(stderr, "ready for more input\n");
+            fprintf(stderr, bc_ready_prompt);
             bc_had_sigint = 0;
           }
         }
