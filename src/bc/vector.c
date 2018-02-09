@@ -54,7 +54,6 @@ BcStatus bc_vec_push(BcVec* vec, void* data) {
 
 BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data) {
 
-  size_t size;
 
   if (vec == NULL || vec->size != sizeof(uint8_t)) {
     return BC_STATUS_INVALID_PARAM;
@@ -69,7 +68,6 @@ BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data) {
     }
   }
 
-  size = vec->size;
   vec->array[vec->len] = data;
 
   ++vec->len;
@@ -104,6 +102,8 @@ BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx) {
   memmove(ptr, data, size);
 
   ++vec->len;
+
+  return BC_STATUS_SUCCESS;
 }
 
 void* bc_vec_top(BcVec* vec) {
@@ -200,33 +200,23 @@ BcStatus bc_veco_init(BcVecO* vec, size_t esize,
   return bc_vec_init(&vec->vec, esize, dtor);
 }
 
-size_t bc_veco_insert(BcVecO* vec, void* data) {
-
-  size_t idx;
+BcStatus bc_veco_insert(BcVecO* vec, void* data, size_t* idx) {
 
   if (!vec || !data) {
-    return BC_INVALID_IDX;
+    return BC_STATUS_INVALID_PARAM;
   }
 
-  idx = bc_veco_find(vec, data);
+  *idx = bc_veco_find(vec, data);
 
-  if (idx > vec->vec.len) {
-    return BC_INVALID_IDX;
+  if (*idx > vec->vec.len) {
+    return BC_STATUS_VECO_OUT_OF_BOUNDS;
   }
 
-  if (idx == vec->vec.len) {
-    return idx;
+  if (*idx != vec->vec.len && !vec->cmp(data, bc_vec_item(&vec->vec, *idx))) {
+    return BC_STATUS_VECO_ITEM_EXISTS;
   }
 
-  if (!vec->cmp(data, bc_vec_item(&vec->vec, idx))) {
-    return idx;
-  }
-
-  if (bc_vec_pushAt(&vec->vec, data, idx)) {
-    return BC_INVALID_IDX;
-  }
-
-  return idx;
+  return bc_vec_pushAt(&vec->vec, data, *idx);
 }
 
 size_t bc_veco_index(BcVecO* vec, void* data) {

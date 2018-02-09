@@ -22,6 +22,8 @@ static const char* const bc_err_types[] = {
   "bc",
   "bc",
 
+  "vector",
+
   "Lex",
   "Lex",
   "Lex",
@@ -85,6 +87,11 @@ static const char* const bc_err_descs[] = {
 
   "one or more limits not specified",
   "invalid limit; this is a bug in bc",
+
+  "index is out of bounds for the ordered vector and error was not caught; "
+    "this is probably a bug in bc",
+  "item already exists in ordered vector and error was not caught; "
+    "this is probably a bug in bc",
 
   "invalid token",
   "string end could not be found",

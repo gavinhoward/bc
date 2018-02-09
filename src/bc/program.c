@@ -43,15 +43,14 @@ static void bc_program_printName(uint8_t* code, size_t* start);
 BcStatus bc_program_init(BcProgram* p) {
 
   BcStatus s;
-  BcFunc func;
-  BcEntry entry;
   size_t idx;
+  char* name;
 
   if (p == NULL) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  entry.name = NULL;
+  name = NULL;
 
   p->idx = 0;
   p->scale = 0;
@@ -167,33 +166,22 @@ BcStatus bc_program_init(BcProgram* p) {
     goto func_map_err;
   }
 
-  s = bc_func_init(&func);
+  name = malloc(1);
 
-  if (s) {
-    goto name_err;
-  }
-
-  s = bc_vec_push(&p->funcs, &func);
-
-  if (s) {
-    goto name_err;
-  }
-
-  entry.idx = 0;
-  entry.name = malloc(16);
-
-  if (!entry.name) {
+  if (!name) {
     s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
 
-  idx = bc_veco_insert(&p->func_map, &entry);
+  name[0] = '\0';
 
-  if (idx) {
+  s = bc_program_func_add(p, name, &idx);
+
+  if (s) {
     goto var_err;
   }
 
-  entry.name = NULL;
+  name = NULL;
 
   s = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
 
@@ -299,8 +287,8 @@ var_map_err:
 
 var_err:
 
-  if (entry.name) {
-    free(entry.name);
+  if (name) {
+    free(name);
   }
 
 name_err:
@@ -340,13 +328,50 @@ void bc_program_limits(BcProgram* p) {
   putchar('\n');
 }
 
-BcStatus bc_program_func_add(BcProgram* p, BcFunc* func) {
+BcStatus bc_program_func_add(BcProgram* p, char* name, size_t* idx) {
 
-  if (!p || !func) {
+  BcStatus status;
+  BcEntry entry;
+  BcFunc f;
+
+  if (!p || !name) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_vec_push(&p->funcs, func);
+  entry.name = name;
+  entry.idx = p->funcs.len;
+
+  status = bc_veco_insert(&p->func_map, &entry, idx);
+
+  if (status == BC_STATUS_VECO_ITEM_EXISTS) {
+
+    BcFunc* func;
+
+    func = bc_vec_item(&p->funcs, *idx);
+
+    if (!func) {
+      return BC_STATUS_VM_UNDEFINED_FUNC;
+    }
+
+    // We need to reset these so the function can be repopulated.
+    func->num_autos = 0;
+    func->num_params = 0;
+    func->code.len = 0;
+    func->labels.len = 0;
+
+    return BC_STATUS_SUCCESS;
+  }
+  else if (status) {
+    return status;
+  }
+
+  status = bc_func_init(&f);
+
+  if (status) {
+    return status;
+  }
+
+  return bc_vec_push(&p->funcs, &f);
 }
 
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var) {
