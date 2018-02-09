@@ -47,7 +47,7 @@ typedef struct BcVecO {
 BcStatus bc_veco_init(BcVecO* vec, size_t esize,
                       BcFreeFunc dtor, BcVecCmpFunc cmp);
 
-size_t bc_veco_insert(BcVecO* vec, void* data);
+BcStatus bc_veco_insert(BcVecO* vec, void* data, size_t* idx);
 
 size_t bc_veco_index(BcVecO* vec, void* data);
 
