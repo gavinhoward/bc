@@ -10,6 +10,8 @@
 #include <bc/parse.h>
 #include <bc/instructions.h>
 
+static const char* const bc_byte_fmt = "%02x";
+
 static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
 static fxdpnt* bc_program_sub(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
 
@@ -34,7 +36,9 @@ static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
                                   BcExprType op, fxdpnt* amt);
 #endif
 static BcStatus bc_program_read(BcProgram* p);
-static size_t bc_program_index(uint8_t* code, size_t *start);
+static size_t bc_program_index(uint8_t* code, size_t* start);
+static void bc_program_printIndex(uint8_t* code, size_t* start);
+static void bc_program_printName(uint8_t* code, size_t* start);
 
 BcStatus bc_program_init(BcProgram* p) {
 
@@ -448,6 +452,76 @@ BcStatus bc_program_exec(BcProgram* p) {
   return status;
 
   return BC_STATUS_SUCCESS;
+}
+
+void bc_program_printCode(BcProgram* p) {
+
+  BcFunc* func;
+  uint8_t* code;
+
+  func = bc_vec_item(&p->funcs, 0);
+
+  assert(func);
+
+  code = func->code.array;
+
+  for (; p->idx < func->code.len; ++p->idx) {
+
+    uint8_t inst;
+
+    inst = code[p->idx];
+
+    // TODO: Fill this out.
+    switch (inst) {
+
+      case BC_INST_PUSH_VAR:
+      case BC_INST_PUSH_ARRAY:
+      {
+        putchar(inst);
+
+        ++p->idx;
+        bc_program_printName(code, &p->idx);
+
+        break;
+      }
+
+      case BC_INST_CALL:
+      {
+        putchar(inst);
+
+        ++p->idx;
+        bc_program_printIndex(code, &p->idx);
+
+        ++p->idx;
+        bc_program_printIndex(code, &p->idx);
+
+        break;
+      }
+
+      case BC_INST_JUMP:
+      case BC_INST_JUMP_NOT_ZERO:
+      case BC_INST_JUMP_ZERO:
+      case BC_INST_PUSH_NUM:
+      case BC_INST_STR:
+      case BC_INST_PRINT_STR:
+      {
+        putchar(inst);
+
+        ++p->idx;
+        bc_program_printIndex(code, &p->idx);
+
+        break;
+      }
+
+      default:
+      {
+        putchar(inst);
+        break;
+      }
+    }
+  }
+
+  putchar('\n');
 }
 
 void bc_program_free(BcProgram* p) {
@@ -1069,6 +1143,40 @@ static size_t bc_program_index(uint8_t* code, size_t* start) {
   }
 
   return result;
+}
+
+static void bc_program_printIndex(uint8_t* code, size_t* start) {
+
+  uint8_t bytes;
+  uint8_t byte;
+
+  bytes = code[*start];
+
+  printf(bc_byte_fmt, bytes);
+
+  for (uint8_t i = 0; i < bytes; ++i) {
+
+    byte = code[++(*start)];
+
+    printf(bc_byte_fmt, byte);
+  }
+}
+
+static void bc_program_printName(uint8_t* code, size_t* start) {
+
+  uint8_t bytes;
+  char byte;
+
+  bytes = code[*start];
+
+  printf(bc_byte_fmt, bytes);
+
+  for (uint8_t i = 0; i < bytes; ++i) {
+
+    byte = (char) code[++(*start)];
+
+    putchar(byte);
+  }
 }
 
 static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c,

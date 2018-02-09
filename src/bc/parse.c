@@ -1580,12 +1580,6 @@ static BcStatus bc_parse_call(BcParse* parse, BcVec* code,
     return BC_STATUS_VM_UNDEFINED_FUNC;
   }
 
-  status = bc_vec_pushByte(code, BC_INST_CALL);
-
-  if (status) {
-    return status;
-  }
-
   status = bc_parse_pushIndex(code, idx);
 
   if (status) {

@@ -91,6 +91,7 @@ void bc_error_file(BcStatus status, const char* file, uint32_t line);
 BcStatus bc_posix_error(BcStatus status, const char* file,
                         uint32_t line, const char* msg);
 
+extern long bc_code;
 extern long bc_interactive;
 extern long bc_std;
 extern long bc_warn;

@@ -44,6 +44,7 @@ static const char* const bc_help =
   "  -w  --warn         warn if any non-POSIX extensions are used\n"
   "  -v  --version      print version information and copyright and exit\n\n";
 
+long bc_code = 0;
 long bc_interactive = 0;
 long bc_std = 0;
 long bc_warn = 0;
