@@ -15,7 +15,7 @@ typedef fxdpnt* (*BcMathOpFunc)(fxdpnt*, fxdpnt*, fxdpnt*, int, size_t);
 
 typedef struct BcProgram {
 
-  BcVec code;
+  size_t idx;
 
   BcVec ip_stack;
 

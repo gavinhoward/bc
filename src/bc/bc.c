@@ -60,8 +60,6 @@ static const char* const bc_err_types[] = {
   "Runtime",
   "Runtime",
   "Runtime",
-  "Runtime",
-  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -129,10 +127,6 @@ static const char* const bc_err_descs[] = {
   "invalid temp variable; this is most likely a bug in bc",
   "invalid read() expression",
   "print error",
-  "break statement outside loop; "
-    "this is a bug in bc (parser should have caught it)",
-  "continue statement outside loop; "
-    "this is a bug in bc (parser should have caught it)",
   "bc was not halted correctly; this is a bug in bc",
 
   "POSIX bc only allows one character names; the following is invalid:",
