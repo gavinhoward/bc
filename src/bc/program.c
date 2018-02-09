@@ -334,7 +334,7 @@ BcStatus bc_program_func_add(BcProgram* p, char* name, size_t* idx) {
   BcEntry entry;
   BcFunc f;
 
-  if (!p || !name) {
+  if (!p || !name || !idx) {
     return BC_STATUS_INVALID_PARAM;
   }
 
@@ -374,22 +374,62 @@ BcStatus bc_program_func_add(BcProgram* p, char* name, size_t* idx) {
   return bc_vec_push(&p->funcs, &f);
 }
 
-BcStatus bc_program_var_add(BcProgram* p, BcVar* var) {
+BcStatus bc_program_var_add(BcProgram* p, char* name, size_t* idx) {
 
-  if (!p || !var) {
+  BcStatus status;
+  BcEntry entry;
+  BcVar v;
+
+  if (!p || !name || !idx) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_vec_push(&p->vars, var);
+  entry.name = name;
+  entry.idx = p->vars.len;
+
+  status = bc_veco_insert(&p->var_map, &entry, idx);
+
+  if (status) {
+    return status == BC_STATUS_VECO_ITEM_EXISTS ?
+          BC_STATUS_SUCCESS : status;
+  }
+
+  status = bc_var_init(&v);
+
+  if (status) {
+    return status;
+  }
+
+  return bc_vec_push(&p->vars, &v);
 }
 
-BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
+BcStatus bc_program_array_add(BcProgram* p, char* name, size_t* idx) {
 
-  if (!p || !array) {
+  BcStatus status;
+  BcEntry entry;
+  BcArray a;
+
+  if (!p || !name || !idx) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_vec_push(&p->arrays, array);
+  entry.name = name;
+  entry.idx = p->arrays.len;
+
+  status = bc_veco_insert(&p->array_map, &entry, idx);
+
+  if (status) {
+    return status == BC_STATUS_VECO_ITEM_EXISTS ?
+          BC_STATUS_SUCCESS : status;
+  }
+
+  status = bc_array_init(&a);
+
+  if (status) {
+    return status;
+  }
+
+  return bc_vec_push(&p->arrays, &a);
 }
 
 BcStatus bc_program_exec(BcProgram* p) {
