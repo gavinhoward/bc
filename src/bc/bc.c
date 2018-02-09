@@ -161,6 +161,7 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
   do_exit = 0;
   files = NULL;
 
+
   if (flags & BC_FLAG_HELP) do_exit = 1;
 
   if (flags & BC_FLAG_VERSION) {
@@ -175,6 +176,7 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
   }
   else bc_interactive = 0;
 
+  bc_code = flags & BC_FLAG_CODE;
   bc_std = flags & BC_FLAG_STANDARD;
   bc_warn = flags & BC_FLAG_WARN;
 

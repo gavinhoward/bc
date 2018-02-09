@@ -193,36 +193,68 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
     goto read_err;
   }
 
-  do {
+  if (!bc_code) {
 
-    if (BC_PARSE_CAN_EXEC(&vm->parse)) {
+    do {
 
-      status = bc_program_exec(&vm->program);
+      if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
-      if (status) {
-        goto read_err;
-      }
+        status = bc_program_exec(&vm->program);
 
-      if (bc_interactive) {
+        if (status) {
+          goto read_err;
+        }
 
-        fflush(stdout);
+        if (bc_interactive) {
 
-        if (bc_had_sigint) {
-          fprintf(stderr, "ready for more input\n");
-          fflush(stderr);
+          fflush(stdout);
+
+          if (bc_had_sigint) {
+            fprintf(stderr, "ready for more input\n");
+            fflush(stderr);
+            bc_had_sigint = 0;
+          }
+        }
+        else if (bc_had_sigint) {
           bc_had_sigint = 0;
+          goto read_err;
         }
       }
-      else if (bc_had_sigint) {
-        bc_had_sigint = 0;
-        goto read_err;
+      else {
+        status = BC_STATUS_VM_FILE_NOT_EXECUTABLE;
       }
-    }
-    else {
-      status = BC_STATUS_VM_FILE_NOT_EXECUTABLE;
-    }
 
-  } while (!status);
+    } while (!status);
+  }
+  else {
+
+    do {
+
+      if (BC_PARSE_CAN_EXEC(&vm->parse)) {
+
+        bc_program_printCode(&vm->program);
+
+        if (bc_interactive) {
+
+          fflush(stdout);
+
+          if (bc_had_sigint) {
+            fprintf(stderr, "ready for more input\n");
+            fflush(stderr);
+            bc_had_sigint = 0;
+          }
+        }
+        else if (bc_had_sigint) {
+          bc_had_sigint = 0;
+          goto read_err;
+        }
+      }
+      else {
+        status = BC_STATUS_VM_FILE_NOT_EXECUTABLE;
+      }
+
+    } while (!status);
+  }
 
 read_err:
 
@@ -418,25 +450,46 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
     if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
-      status = bc_program_exec(&vm->program);
+      if (!bc_code) {
 
-      if (status) {
-        bc_error(status);
-        goto exit_err;
-      }
+        status = bc_program_exec(&vm->program);
 
-      if (bc_interactive) {
+        if (status) {
+          bc_error(status);
+          goto exit_err;
+        }
 
-        fflush(stdout);
+        if (bc_interactive) {
 
-        if (bc_had_sigint) {
-          fprintf(stderr, "ready for more input\n");
+          fflush(stdout);
+
+          if (bc_had_sigint) {
+            fprintf(stderr, "ready for more input\n");
+            bc_had_sigint = 0;
+          }
+        }
+        else if (bc_had_sigint) {
           bc_had_sigint = 0;
+          goto exit_err;
         }
       }
-      else if (bc_had_sigint) {
-        bc_had_sigint = 0;
-        goto exit_err;
+      else {
+
+        bc_program_printCode(&vm->program);
+
+        if (bc_interactive) {
+
+          fflush(stdout);
+
+          if (bc_had_sigint) {
+            fprintf(stderr, "ready for more input\n");
+            bc_had_sigint = 0;
+          }
+        }
+        else if (bc_had_sigint) {
+          bc_had_sigint = 0;
+          goto exit_err;
+        }
       }
     }
 

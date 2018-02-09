@@ -68,6 +68,7 @@ BcStatus bc_program_func_add(BcProgram* p, BcFunc* func);
 BcStatus bc_program_var_add(BcProgram* p, BcVar* var);
 BcStatus bc_program_array_add(BcProgram* p, BcArray* array);
 BcStatus bc_program_exec(BcProgram* p);
+void bc_program_printCode(BcProgram* p);
 void bc_program_free(BcProgram* program);
 
 #endif // BC_PROGRAM_H
