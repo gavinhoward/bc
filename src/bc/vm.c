@@ -318,7 +318,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
   // a backslash newline combo as whitespace, per the bc
   // spec. Thus, the parser will expect more stuff.
   while ((!status || status != BC_STATUS_PARSE_QUIT) &&
-         bc_io_getline(&buf, &bufn) != (size_t) -1)
+         bc_io_getline(&buf, &bufn) != BC_INVALID_IDX)
   {
     size_t len;
 

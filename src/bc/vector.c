@@ -205,13 +205,13 @@ size_t bc_veco_insert(BcVecO* vec, void* data) {
   size_t idx;
 
   if (!vec || !data) {
-    return (size_t) -1;
+    return BC_INVALID_IDX;
   }
 
   idx = bc_veco_find(vec, data);
 
   if (idx > vec->vec.len) {
-    return (size_t) -1;
+    return BC_INVALID_IDX;
   }
 
   if (idx == vec->vec.len) {
@@ -223,7 +223,7 @@ size_t bc_veco_insert(BcVecO* vec, void* data) {
   }
 
   if (bc_vec_pushAt(&vec->vec, data, idx)) {
-    return (size_t) -1;
+    return BC_INVALID_IDX;
   }
 
   return idx;
@@ -240,7 +240,7 @@ size_t bc_veco_index(BcVecO* vec, void* data) {
   idx = bc_veco_find(vec, data);
 
   if (idx >= vec->vec.len || vec->cmp(data, bc_vec_item(&vec->vec, idx))) {
-    return (size_t) -1;
+    return BC_INVALID_IDX;
   }
 
   return idx;

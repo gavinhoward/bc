@@ -1070,7 +1070,7 @@ static BcStatus bc_program_read(BcProgram* p) {
 
   size = BC_PROGRAM_BUF_SIZE;
 
-  if (bc_io_getline(&buffer, &size) == (size_t) -1) {
+  if (bc_io_getline(&buffer, &size) == BC_INVALID_IDX) {
     status = BC_STATUS_VM_FILE_READ_ERR;
     goto io_err;
   }

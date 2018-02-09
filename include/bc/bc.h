@@ -2,6 +2,7 @@
 #define BC_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define BC_FLAG_WARN (1<<0)
 #define BC_FLAG_VERSION (1<<1)
@@ -13,6 +14,8 @@
 #define BC_FLAG_CODE (1<<7)
 
 typedef void (*BcFreeFunc)(void*);
+
+#define BC_INVALID_IDX ((size_t) -1)
 
 #define BC_BASE_MAX_DEF (99)
 #define BC_DIM_MAX_DEF (2048)

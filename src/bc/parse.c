@@ -1576,7 +1576,7 @@ static BcStatus bc_parse_call(BcParse* parse, BcVec* code,
 
   idx = bc_veco_index(&parse->program->func_map, &entry);
 
-  if (idx == (size_t) -1) {
+  if (idx == BC_INVALID_IDX) {
     return BC_STATUS_VM_UNDEFINED_FUNC;
   }
 

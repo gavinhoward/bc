@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <bc/bc.h>
 #include <bc/io.h>
 
 long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void* ctx) {
@@ -53,7 +54,7 @@ size_t bc_io_fgetline(char** p, size_t* n, FILE* fp) {
   char* s;
   char* t;
 
-  if (!fp) return (size_t) -1;
+  if (!fp) return BC_INVALID_IDX;
 
   if (!p) {
 
@@ -96,5 +97,5 @@ size_t bc_io_fgetline(char** p, size_t* n, FILE* fp) {
     }
   }
 
-  return (size_t) -1;
+  return BC_INVALID_IDX;
 }
