@@ -176,4 +176,6 @@ void bc_string_free(void* string);
 int bc_entry_cmp(void* entry1, void*entry2);
 void bc_entry_free(void* entry);
 
+void bc_num_free(void* num);
+
 #endif // BC_DATA_H

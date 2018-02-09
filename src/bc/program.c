@@ -41,6 +41,7 @@ BcStatus bc_program_init(BcProgram* p) {
   BcStatus s;
   BcFunc func;
   BcEntry entry;
+  size_t idx;
 
   if (p == NULL) {
     return BC_STATUS_INVALID_PARAM;
@@ -178,12 +179,13 @@ BcStatus bc_program_init(BcProgram* p) {
   entry.name = malloc(16);
 
   if (!entry.name) {
+    s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
 
-  s = bc_veco_insert(&p->func_map, &entry);
+  idx = bc_veco_insert(&p->func_map, &entry);
 
-  if (s) {
+  if (idx) {
     goto var_err;
   }
 
@@ -219,7 +221,7 @@ BcStatus bc_program_init(BcProgram* p) {
     goto string_err;
   }
 
-  s = bc_vec_init(&p->constants, sizeof(fxdpnt*), (BcFreeFunc) arb_free);
+  s = bc_vec_init(&p->constants, sizeof(fxdpnt*), bc_num_free);
 
   if (s) {
     goto const_err;
@@ -268,6 +270,8 @@ local_err:
 ctx_err:
 
   bc_vec_free(&p->constants);
+  p->zero = NULL;
+  p->one = NULL;
 
 const_err:
 
@@ -310,8 +314,10 @@ func_err:
 num_buf_err:
 
   arb_free(p->last);
-  arb_free(p->zero);
-  arb_free(p->one);
+
+  if (p->zero) arb_free(p->zero);
+
+  if (p->one) arb_free(p->one);
 
   return s;
 }

@@ -210,8 +210,12 @@ size_t bc_veco_insert(BcVecO* vec, void* data) {
 
   idx = bc_veco_find(vec, data);
 
-  if (idx >= vec->vec.len) {
+  if (idx > vec->vec.len) {
     return (size_t) -1;
+  }
+
+  if (idx == vec->vec.len) {
+    return idx;
   }
 
   if (!vec->cmp(data, bc_vec_item(&vec->vec, idx))) {
