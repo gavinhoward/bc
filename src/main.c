@@ -21,7 +21,7 @@ static const struct option bc_opts[] = {
 
 };
 
-static const char* const bc_short_opts = "hilqsvw";
+static const char* const bc_short_opts = "chilqsvw";
 
 static const char* const bc_help =
   "usage: bc [-hilqsvw] [long-options] [ file ... ]\n"
