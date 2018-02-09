@@ -62,6 +62,8 @@ static const char* const bc_err_types[] = {
   "Runtime",
   "Runtime",
   "Runtime",
+  "Runtime",
+  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -120,6 +122,8 @@ static const char* const bc_err_descs[] = {
   "negative square root",
   "mismatched parameters",
   "undefined function",
+  "undefined variable",
+  "undefined array",
   "file is not executable",
   "could not install signal handler",
   "invalid value for scale; must be an integer in the range [0, BC_SCALE_MAX]",
