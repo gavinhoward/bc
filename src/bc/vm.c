@@ -57,7 +57,7 @@ BcStatus bc_vm_exec(BcVm* vm) {
     return status;
   }
 
-  status = bc_parse_init(&vm->parse, vm->program.list);
+  status = bc_parse_init(&vm->parse, &vm->program);
 
   if (status) {
     goto parse_err;
@@ -146,7 +146,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
   do {
 
-    status = bc_parse_parse(&vm->parse, &vm->program);
+    status = bc_parse_parse(&vm->parse);
 
     if (bc_had_sigint && !bc_interactive) {
       goto read_err;
@@ -386,7 +386,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
     }
 
     while (!status) {
-      status = bc_parse_parse(&vm->parse, &vm->program);
+      status = bc_parse_parse(&vm->parse);
     }
 
     if (status == BC_STATUS_PARSE_QUIT) {

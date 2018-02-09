@@ -8,6 +8,7 @@
 #include <bc/io.h>
 #include <bc/program.h>
 #include <bc/parse.h>
+#include <bc/instructions.h>
 
 static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
 static fxdpnt* bc_program_sub(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
@@ -25,22 +26,29 @@ static const BcMathOpFunc bc_math_ops[] = {
 
 };
 
-static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list);
 static BcStatus bc_program_printString(const char* str);
 static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
                                     fxdpnt** num, bool print);
+#if 0
 static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
                                   BcExprType op, fxdpnt* amt);
+#endif
 static BcStatus bc_program_read(BcProgram* p);
+static size_t bc_program_index(uint8_t* code, size_t *start);
 
 BcStatus bc_program_init(BcProgram* p) {
 
   BcStatus s;
+  BcFunc func;
+  BcEntry entry;
 
   if (p == NULL) {
     return BC_STATUS_INVALID_PARAM;
   }
 
+  entry.name = NULL;
+
+  p->idx = 0;
   p->scale = 0;
   p->ibase = 10;
   p->obase = 10;
@@ -142,12 +150,6 @@ BcStatus bc_program_init(BcProgram* p) {
 
   p->buf_size = BC_PROGRAM_BUF_SIZE;
 
-  s = bc_vec_init(&p->code, sizeof(uint8_t), NULL);
-
-  if (s) {
-    goto code_err;
-  }
-
   s = bc_vec_init(&p->funcs, sizeof(BcFunc), bc_func_free);
 
   if (s) {
@@ -159,6 +161,33 @@ BcStatus bc_program_init(BcProgram* p) {
   if (s) {
     goto func_map_err;
   }
+
+  s = bc_func_init(&func);
+
+  if (s) {
+    goto name_err;
+  }
+
+  s = bc_vec_push(&p->funcs, &func);
+
+  if (s) {
+    goto name_err;
+  }
+
+  entry.idx = 0;
+  entry.name = malloc(16);
+
+  if (!entry.name) {
+    goto name_err;
+  }
+
+  s = bc_veco_insert(&p->func_map, &entry);
+
+  if (s) {
+    goto var_err;
+  }
+
+  entry.name = NULL;
 
   s = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
 
@@ -262,6 +291,12 @@ var_map_err:
 
 var_err:
 
+  if (entry.name) {
+    free(entry.name);
+  }
+
+name_err:
+
   bc_veco_free(&p->func_map);
 
 func_map_err:
@@ -269,10 +304,6 @@ func_map_err:
   bc_vec_free(&p->funcs);
 
 func_err:
-
-  bc_vec_free(&p->code);
-
-code_err:
 
   free(p->num_buf);
 
@@ -328,35 +359,87 @@ BcStatus bc_program_array_add(BcProgram* p, BcArray* array) {
 
 BcStatus bc_program_exec(BcProgram* p) {
 
-  BcStmtList* list;
   BcStatus status;
+  int pchars;
+  BcFunc* func;
+  uint8_t* code;
+  size_t idx;
 
-  status = bc_program_execList(p, p->list);
+  status = BC_STATUS_SUCCESS;
 
-  if (status) {
-    return status;
-  }
+  func = bc_vec_item(&p->funcs, 0);
 
-  while (p->list->idx >= BC_PROGRAM_MAX_STMTS) {
+  assert(func);
 
-    if (p->list->next) {
+  code = func->code.array;
 
-      list = p->list;
-      p->list = list->next;
+  for (; p->idx < func->code.len; ++p->idx) {
 
-      bc_list_destruct(list);
-    }
-    else {
+    uint8_t inst;
 
-      bc_list_destruct(p->list);
+    inst = code[p->idx];
 
-      p->list = bc_list_create();
+    // TODO: Add all instructions.
+    switch (inst) {
 
-      if (!p->list) {
-        return BC_STATUS_MALLOC_FAIL;
+      case BC_INST_READ:
+      {
+        status = bc_program_read(p);
+        break;
+      }
+
+      case BC_INST_STR:
+      {
+        const char* string;
+
+        ++p->idx;
+        idx = bc_program_index(code, &p->idx);
+
+        if (idx >= p->strings.len) {
+          return BC_STATUS_VM_INVALID_STRING;
+        }
+
+        string = bc_vec_item(&p->strings, idx);
+
+        pchars = fprintf(stdout, "%s", string);
+        status = pchars > 0 ? BC_STATUS_SUCCESS :
+                              BC_STATUS_VM_PRINT_ERR;
+
+        break;
+      }
+
+      case BC_INST_PRINT_STR:
+      {
+        const char* string;
+
+        ++p->idx;
+        idx = bc_program_index(code, &p->idx);
+
+        if (idx >= p->strings.len) {
+          return BC_STATUS_VM_INVALID_STRING;
+        }
+
+        string = bc_vec_item(&p->strings, idx);
+
+        status = bc_program_printString(string);
+        break;
+      }
+
+      case BC_INST_HALT:
+      {
+        status = BC_STATUS_VM_HALT;
+        break;
+      }
+
+      default:
+      {
+        return BC_STATUS_VM_INVALID_STMT;
       }
     }
+
   }
+
+  return status;
 
   return BC_STATUS_SUCCESS;
 }
@@ -368,8 +451,6 @@ void bc_program_free(BcProgram* p) {
   }
 
   free(p->num_buf);
-
-  bc_vec_free(&p->code);
 
   bc_vec_free(&p->funcs);
   bc_veco_free(&p->func_map);
@@ -387,128 +468,11 @@ void bc_program_free(BcProgram* p) {
   bc_vec_free(&p->locals);
   bc_vec_free(&p->temps);
 
+  // p->zero and p->one are not freed because they are
+  // freed by bc_vec_free() run on p->constants.
   arb_free(p->last);
 
   memset(p, 0, sizeof(BcProgram));
-}
-
-static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {
-
-  BcStatus status;
-  BcStmtList* next;
-  BcStmtList* cur;
-  BcStmtType type;
-  BcStmt* stmt;
-  int pchars;
-  fxdpnt* result;
-
-  assert(list);
-
-  status = BC_STATUS_SUCCESS;
-
-  cur = list;
-
-  do {
-
-    next = cur->next;
-
-    while (cur->idx < cur->num_stmts) {
-
-      stmt = cur->stmts + cur->idx;
-      type = stmt->type;
-
-      ++cur->idx;
-
-      switch (type) {
-
-        case BC_STMT_EXPR:
-        {
-          status = bc_program_execExpr(p, stmt->data.exprs, &result, true);
-
-          if (status) {
-            break;
-          }
-
-
-
-          break;
-        }
-
-        case BC_STMT_STRING:
-        {
-          pchars = fprintf(stdout, "%s", stmt->data.string);
-          status = pchars > 0 ? BC_STATUS_SUCCESS :
-                                BC_STATUS_VM_PRINT_ERR;
-          break;
-        }
-
-        case BC_STMT_STRING_PRINT:
-        {
-          status = bc_program_printString(stmt->data.string);
-          break;
-        }
-
-        case BC_STMT_BREAK:
-        {
-          status = BC_STATUS_VM_BREAK;
-          break;
-        }
-
-        case BC_STMT_CONTINUE:
-        {
-          status = BC_STATUS_VM_CONTINUE;
-          break;
-        }
-
-        case BC_STMT_HALT:
-        {
-          status = BC_STATUS_VM_HALT;
-          break;
-        }
-
-        case BC_STMT_RETURN:
-        {
-          break;
-        }
-
-        case BC_STMT_IF:
-        {
-          break;
-        }
-
-        case BC_STMT_WHILE:
-        {
-          break;
-        }
-
-        case BC_STMT_FOR:
-        {
-          break;
-        }
-
-        case BC_STMT_LIST:
-        {
-          status = bc_program_execList(p, stmt->data.list);
-          break;
-        }
-
-        default:
-        {
-          return BC_STATUS_VM_INVALID_STMT;
-        }
-      }
-    }
-
-    if (cur->idx == cur->num_stmts) {
-      cur = next;
-    }
-    else {
-      cur = NULL;
-    }
-
-  } while (!status && cur);
-
-  return status;
 }
 
 static BcStatus bc_program_printString(const char* str) {
@@ -607,6 +571,7 @@ static BcStatus bc_program_printString(const char* str) {
 static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
                                     fxdpnt** num, bool print)
 {
+#if 0
   BcStatus status;
   uint32_t idx;
   BcExpr* expr;
@@ -917,8 +882,11 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
   }
 
   return status;
+#endif
+  return BC_STATUS_SUCCESS;
 }
 
+#if 0
 static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
                                   BcExprType op, fxdpnt* amt)
 {
@@ -996,6 +964,7 @@ static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
 
   return status;
 }
+#endif
 
 static BcStatus bc_program_read(BcProgram* p) {
 
@@ -1005,6 +974,7 @@ static BcStatus bc_program_read(BcProgram* p) {
   BcVec exprs;
   BcTemp temp;
   size_t size;
+  BcVec code;
 
   buffer = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
@@ -1012,10 +982,10 @@ static BcStatus bc_program_read(BcProgram* p) {
     return BC_STATUS_MALLOC_FAIL;
   }
 
-  status = bc_vec_init(&exprs, sizeof(BcExpr), bc_expr_free);
+  status = bc_vec_init(&code, sizeof(uint8_t), NULL);
 
   if (status) {
-    goto stack_err;
+    goto vec_err;
   }
 
   size = BC_PROGRAM_BUF_SIZE;
@@ -1025,7 +995,7 @@ static BcStatus bc_program_read(BcProgram* p) {
     goto io_err;
   }
 
-  status = bc_parse_init(&parse, p->list);
+  status = bc_parse_init(&parse, p);
 
   if (status) {
     goto io_err;
@@ -1043,7 +1013,7 @@ static BcStatus bc_program_read(BcProgram* p) {
     goto exec_err;
   }
 
-  status = bc_parse_expr(&parse, &exprs, false);
+  status = bc_parse_expr(&parse, &code, false, false);
 
   if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
     status = status ? status : BC_STATUS_VM_INVALID_READ_EXPR;
@@ -1066,13 +1036,33 @@ exec_err:
 
 io_err:
 
-  bc_vec_free(&exprs);
+  bc_vec_free(&code);
 
-stack_err:
+vec_err:
 
   free(buffer);
 
   return status;
+}
+
+static size_t bc_program_index(uint8_t* code, size_t* start) {
+
+  uint8_t bytes;
+  uint8_t byte;
+  size_t result;
+
+  bytes = code[*start];
+
+  result = 0;
+
+  for (uint8_t i = 0; i < bytes; ++i) {
+
+    byte = code[++(*start)];
+
+    result |= (((size_t) byte) << (i * 8));
+  }
+
+  return result;
 }
 
 static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c,
