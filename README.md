@@ -1,6 +1,7 @@
 # bc
 
-This is an implementation of POSIX `bc`, that implements GNU bc extensions.
+This is an implementation of POSIX `bc` that implements
+[GNU `bc`}(https://www.gnu.org/software/bc/) extensions.
 
 Because this `bc` makes use of [`arbprec`](https://github.com/cmgraff/arbsh) by
 [cmgraff](https://github.com/cmgraff) and [hexingb](https://github.com/hexingb)
