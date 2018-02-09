@@ -190,7 +190,25 @@ BcStatus bc_program_init(BcProgram* p) {
     goto string_err;
   }
 
-  s = bc_vec_init(&p->ctx_stack, sizeof(BcStmtList*), NULL);
+  s = bc_vec_init(&p->constants, sizeof(fxdpnt*), (BcFreeFunc) arb_free);
+
+  if (s) {
+    goto const_err;
+  }
+
+  s = bc_vec_push(&p->constants, &p->zero);
+
+  if (s) {
+    goto ctx_err;
+  }
+
+  s = bc_vec_push(&p->constants, &p->one);
+
+  if (s) {
+    goto ctx_err;
+  }
+
+  s = bc_vec_init(&p->ctx_stack, sizeof(BcVec*), NULL);
 
   if (s) {
     goto ctx_err;
@@ -219,6 +237,10 @@ local_err:
   bc_vec_free(&p->ctx_stack);
 
 ctx_err:
+
+  bc_vec_free(&p->constants);
+
+const_err:
 
   bc_vec_free(&p->strings);
 
@@ -346,25 +368,28 @@ void bc_program_free(BcProgram* p) {
   }
 
   free(p->num_buf);
-  p->buf_size = 0;
 
   bc_vec_free(&p->code);
 
   bc_vec_free(&p->funcs);
   bc_veco_free(&p->func_map);
+
   bc_vec_free(&p->vars);
   bc_veco_free(&p->var_map);
+
   bc_vec_free(&p->arrays);
   bc_veco_free(&p->array_map);
+
   bc_vec_free(&p->strings);
+  bc_vec_free(&p->constants);
 
   bc_vec_free(&p->ctx_stack);
   bc_vec_free(&p->locals);
   bc_vec_free(&p->temps);
 
   arb_free(p->last);
-  arb_free(p->zero);
-  arb_free(p->one);
+
+  memset(p, 0, sizeof(BcProgram));
 }
 
 static BcStatus bc_program_execList(BcProgram* p, BcStmtList* list) {

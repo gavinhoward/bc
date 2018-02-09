@@ -2,13 +2,13 @@
 
 #include <bc/data.h>
 
-BcStatus bc_func_init(BcFunc* func, char* name) {
+BcStatus bc_func_init(BcFunc* func) {
 
   BcStatus status;
 
   status = BC_STATUS_SUCCESS;
 
-  if (!func || !name) {
+  if (!func) {
     return BC_STATUS_INVALID_PARAM;
   }
 
@@ -20,8 +20,6 @@ BcStatus bc_func_init(BcFunc* func, char* name) {
   if (status) {
     return status;
   }
-
-  func->name = name;
 
   func->param_cap = BC_PROGRAM_DEF_SIZE;
   func->params = malloc(sizeof(BcAuto) * BC_PROGRAM_DEF_SIZE);
@@ -38,7 +36,18 @@ BcStatus bc_func_init(BcFunc* func, char* name) {
     goto auto_err;
   }
 
+  status = bc_vec_init(&func->labels, sizeof(size_t), NULL);
+
+  if (status) {
+    goto label_err;
+  }
+
   return BC_STATUS_SUCCESS;
+
+label_err:
+
+  free(func->autos);
+  func->auto_cap = 0;
 
 auto_err:
 
@@ -110,16 +119,6 @@ BcStatus bc_func_insertAuto(BcFunc* func, char* name, bool var) {
   return BC_STATUS_SUCCESS;
 }
 
-int bc_func_cmp(void* func1, void* func2) {
-
-  assert(func1 && func2);
-
-  BcFunc* f1 = (BcFunc*) func1;
-  char* f2name = (char*) func2;
-
-  return strcmp(f1->name, f2name);
-}
-
 void bc_func_free(void* func) {
 
   BcFunc* f;
@@ -132,11 +131,7 @@ void bc_func_free(void* func) {
     return;
   }
 
-  free(f->name);
-
   bc_vec_free(&f->code);
-
-  f->name = NULL;
 
   num = f->num_params;
   vars = f->params;
@@ -155,6 +150,8 @@ void bc_func_free(void* func) {
   free(f->params);
   free(f->autos);
 
+  bc_vec_free(&f->labels);
+
   f->params = NULL;
   f->num_params = 0;
   f->param_cap = 0;
@@ -163,27 +160,15 @@ void bc_func_free(void* func) {
   f->auto_cap = 0;
 }
 
-BcStatus bc_var_init(BcVar* var, char* name) {
+BcStatus bc_var_init(BcVar* var) {
 
-  if (!var || !name) {
+  if (!var) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  var->name = name;
-
-  var->data = arb_alloc(16);
+  *var = arb_alloc(16);
 
   return BC_STATUS_SUCCESS;
-}
-
-int bc_var_cmp(void* var1, void* var2) {
-
-  assert(var1 && var2);
-
-  BcFunc* v1 = (BcFunc*) var1;
-  char* v2name = (char*) var2;
-
-  return strcmp(v1->name, v2name);
 }
 
 void bc_var_free(void* var) {
@@ -196,33 +181,17 @@ void bc_var_free(void* var) {
     return;
   }
 
-  free(v->name);
-  arb_free(v->data);
-
-  v->name = NULL;
-  v->data = NULL;
+  arb_free(*v);
 }
 
-BcStatus bc_array_init(BcArray* array, char* name) {
+BcStatus bc_array_init(BcArray* array) {
 
-  if (!array || !name) {
+  if (!array) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  array->name = name;
-
-  return bc_vec_init(&array->array, sizeof(fxdpnt),
+  return bc_vec_init(array, sizeof(fxdpnt),
                           (BcFreeFunc) arb_free);
-}
-
-int bc_array_cmp(void* array1, void* array2) {
-
-  assert(array1 && array2);
-
-  BcFunc* a1 = (BcFunc*) array1;
-  char* a2name = (char*) array2;
-
-  return strcmp(a1->name, a2name);
 }
 
 void bc_array_free(void* array) {
@@ -235,10 +204,7 @@ void bc_array_free(void* array) {
     return;
   }
 
-  free(a->name);
-  a->name = NULL;
-
-  bc_vec_free(&a->array);
+  bc_vec_free(a);
 }
 
 BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num) {

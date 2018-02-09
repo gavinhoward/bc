@@ -126,9 +126,9 @@ typedef struct BcTemp {
 
 typedef struct BcFunc {
 
-  char* name;
-
   BcVec code;
+
+  BcVec labels;
 
   BcAuto* params;
   uint32_t num_params;
@@ -140,21 +140,9 @@ typedef struct BcFunc {
 
 } BcFunc;
 
-typedef struct BcVar {
+typedef fxdpnt* BcVar;
 
-  char* name;
-
-  fxdpnt* data;
-
-} BcVar;
-
-typedef struct BcArray {
-
-  char* name;
-
-  BcVec array;
-
-} BcArray;
+typedef BcVec BcArray;
 
 typedef struct BcInstPtr {
 
@@ -163,18 +151,15 @@ typedef struct BcInstPtr {
 
 } BcInstPtr;
 
-BcStatus bc_func_init(BcFunc* func, char* name);
+BcStatus bc_func_init(BcFunc* func);
 BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var);
 BcStatus bc_func_insertAuto(BcFunc* func, char* name, bool var);
-int bc_func_cmp(void* func1, void* func2);
 void bc_func_free(void* func);
 
-BcStatus bc_var_init(BcVar* var, char* name);
-int bc_var_cmp(void* var1, void* var2);
+BcStatus bc_var_init(BcVar* var);
 void bc_var_free(void* var);
 
-BcStatus bc_array_init(BcArray* array, char* name);
-int bc_array_cmp(void* array1, void* array2);
+BcStatus bc_array_init(BcArray* array);
 void bc_array_free(void* array);
 
 BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num);

@@ -24,14 +24,6 @@
   TOKEN(BC_LEX_OP_PLUS)   \
   TOKEN(BC_LEX_OP_MINUS)  \
                           \
-  TOKEN(BC_LEX_OP_ASSIGN_POWER)     \
-  TOKEN(BC_LEX_OP_ASSIGN_MULTIPLY)  \
-  TOKEN(BC_LEX_OP_ASSIGN_DIVIDE)    \
-  TOKEN(BC_LEX_OP_ASSIGN_MODULUS)   \
-  TOKEN(BC_LEX_OP_ASSIGN_PLUS)      \
-  TOKEN(BC_LEX_OP_ASSIGN_MINUS)     \
-  TOKEN(BC_LEX_OP_ASSIGN)           \
-                                    \
   TOKEN(BC_LEX_OP_REL_EQUAL)       \
   TOKEN(BC_LEX_OP_REL_LESS_EQ)     \
   TOKEN(BC_LEX_OP_REL_GREATER_EQ)  \
@@ -46,6 +38,14 @@
                              \
   TOKEN(BC_LEX_OP_NEGATE)    \
                              \
+  TOKEN(BC_LEX_OP_ASSIGN_POWER)     \
+  TOKEN(BC_LEX_OP_ASSIGN_MULTIPLY)  \
+  TOKEN(BC_LEX_OP_ASSIGN_DIVIDE)    \
+  TOKEN(BC_LEX_OP_ASSIGN_MODULUS)   \
+  TOKEN(BC_LEX_OP_ASSIGN_PLUS)      \
+  TOKEN(BC_LEX_OP_ASSIGN_MINUS)     \
+  TOKEN(BC_LEX_OP_ASSIGN)           \
+                                    \
   TOKEN(BC_LEX_NEWLINE)  \
                          \
   TOKEN(BC_LEX_WHITESPACE)  \

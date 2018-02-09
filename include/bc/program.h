@@ -48,6 +48,8 @@ typedef struct BcProgram {
 
   BcVec strings;
 
+  BcVec constants;
+
   const char* file;
 
   fxdpnt* last;

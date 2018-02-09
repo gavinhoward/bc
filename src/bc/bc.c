@@ -37,6 +37,7 @@ static const char* const bc_err_types[] = {
   "Parse",
   "Parse",
   "Parse",
+  "Parse",
 
   "Runtime",
   "Runtime",
@@ -103,6 +104,8 @@ static const char* const bc_err_descs[] = {
     "this is most likely a bug in bc",
   "quit statement in file not exited correctly; "
     "this is most likely a bug in bc",
+  "number of functions does not match the number of entries "
+    "in the function map; this is most likely a bug in bc",
   "end of file",
   "bug in parser",
 
