@@ -324,8 +324,9 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
   // The following loop is complicated because the vm tries
   // not to send any lines that end with a backslash to the
   // parser. The reason for that is because the parser treats
-  // a backslash newline combo as whitespace, per the bc
-  // spec. Thus, the parser will expect more stuff.
+  // a backslash newline combo as whitespace, per the bc spec.
+  // Thus, the parser will expect more stuff. That is also
+  // the case with strings and comments.
   while ((!status || status != BC_STATUS_PARSE_QUIT) &&
          bc_io_getline(&buf, &bufn) != BC_INVALID_IDX)
   {
