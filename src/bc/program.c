@@ -467,7 +467,6 @@ BcStatus bc_program_exec(BcProgram* p) {
       {
         const char* string;
 
-        ++p->idx;
         idx = bc_program_index(code, &p->idx);
 
         if (idx >= p->strings.len) {
@@ -487,7 +486,6 @@ BcStatus bc_program_exec(BcProgram* p) {
       {
         const char* string;
 
-        ++p->idx;
         idx = bc_program_index(code, &p->idx);
 
         if (idx >= p->strings.len) {
@@ -497,6 +495,7 @@ BcStatus bc_program_exec(BcProgram* p) {
         string = bc_vec_item(&p->strings, idx);
 
         status = bc_program_printString(string);
+
         break;
       }
 
@@ -543,10 +542,7 @@ void bc_program_printCode(BcProgram* p) {
       case BC_INST_PUSH_ARRAY:
       {
         putchar(inst);
-
-        ++p->idx;
         bc_program_printName(code, &p->idx);
-
         break;
       }
 
@@ -554,10 +550,7 @@ void bc_program_printCode(BcProgram* p) {
       {
         putchar(inst);
 
-        ++p->idx;
         bc_program_printIndex(code, &p->idx);
-
-        ++p->idx;
         bc_program_printIndex(code, &p->idx);
 
         break;
@@ -571,10 +564,7 @@ void bc_program_printCode(BcProgram* p) {
       case BC_INST_PRINT_STR:
       {
         putchar(inst);
-
-        ++p->idx;
         bc_program_printIndex(code, &p->idx);
-
         break;
       }
 
@@ -1196,7 +1186,7 @@ static size_t bc_program_index(uint8_t* code, size_t* start) {
   uint8_t byte;
   size_t result;
 
-  bytes = code[*start];
+  bytes = code[++(*start)];
 
   result = 0;
 
@@ -1215,7 +1205,7 @@ static void bc_program_printIndex(uint8_t* code, size_t* start) {
   uint8_t bytes;
   uint8_t byte;
 
-  bytes = code[*start];
+  bytes = code[++(*start)];
 
   printf(bc_byte_fmt, bytes);
 
@@ -1229,19 +1219,16 @@ static void bc_program_printIndex(uint8_t* code, size_t* start) {
 
 static void bc_program_printName(uint8_t* code, size_t* start) {
 
-  uint8_t bytes;
   char byte;
 
-  bytes = code[*start];
+  byte = code[++(*start)];
 
-  printf(bc_byte_fmt, bytes);
-
-  for (uint8_t i = 0; i < bytes; ++i) {
-
-    byte = (char) code[++(*start)];
-
+  while (byte != ':') {
     putchar(byte);
+    byte = code[++(*start)];
   }
+
+  putchar(byte);
 }
 
 static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c,
