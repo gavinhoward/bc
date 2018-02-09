@@ -144,6 +144,29 @@ typedef fxdpnt* BcVar;
 
 typedef BcVec BcArray;
 
+typedef enum BcNumType {
+
+  BC_NUM_RESULT,
+
+  BC_NUM_CONSTANT,
+
+  BC_NUM_VAR,
+  BC_NUM_ARRAY,
+
+  BC_NUM_SCALE,
+  BC_NUM_LAST,
+  BC_NUM_IBASE,
+  BC_NUM_OBASE,
+
+} BcNumType;
+
+typedef struct BcNum {
+
+  BcNumType type;
+  fxdpnt* num;
+
+} BcNum;
+
 typedef struct BcInstPtr {
 
   size_t func;
@@ -175,6 +198,8 @@ void bc_string_free(void* string);
 
 int bc_entry_cmp(void* entry1, void*entry2);
 void bc_entry_free(void* entry);
+
+void bc_arb_free(void* num);
 
 void bc_num_free(void* num);
 

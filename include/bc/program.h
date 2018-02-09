@@ -28,7 +28,7 @@ typedef struct BcProgram {
   long scale_max;
   long string_max;
 
-  BcVec ctx_stack;
+  BcVec stack;
 
   BcVec locals;
 

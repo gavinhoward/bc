@@ -347,11 +347,37 @@ void bc_entry_free(void* entry) {
   free(e->name);
 }
 
-void bc_num_free(void* num) {
+void bc_arb_free(void* num) {
 
   fxdpnt* n;
 
   n = *((fxdpnt**) num);
 
   arb_free(n);
+}
+
+void bc_num_free(void* num) {
+
+  BcNum* n;
+
+  n = (BcNum*) num;
+
+  switch (n->type) {
+
+    case BC_NUM_RESULT:
+    case BC_NUM_SCALE:
+    case BC_NUM_LAST:
+    case BC_NUM_IBASE:
+    case BC_NUM_OBASE:
+    {
+      arb_free(n->num);
+      break;
+    }
+
+    default:
+    {
+      // We don't have to anything.
+      break;
+    }
+  }
 }
