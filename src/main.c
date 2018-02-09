@@ -81,7 +81,8 @@ int main(int argc, char* argv[]) {
 
       case 'c':
       {
-        flags |= BC_FLAG_DEBUG;
+        flags |= BC_FLAG_CODE;
+        break;
       }
 
       case 'h':
