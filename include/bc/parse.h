@@ -8,14 +8,11 @@
 #include <bc/program.h>
 #include <bc/lex.h>
 
-#define BC_PARSE_TOP_FLAG(parse)  \
-  (*((uint8_t*) bc_vec_top(&(parse)->flags)))
-
 #define BC_PARSE_TOP_FLAG_PTR(parse)  \
   ((uint8_t*) bc_vec_top(&(parse)->flags))
 
-#define BC_PARSE_TOP_CTX(parse)  \
-  ((BcVec**) bc_vec_top(&(parse)->ctxs))
+#define BC_PARSE_TOP_FLAG(parse)  \
+  (*(BC_PARSE_TOP_FLAG_PTR(parse)))
 
 #define BC_PARSE_FLAG_FUNC_INNER (0x01)
 
@@ -32,39 +29,40 @@
 #define BC_PARSE_HEADER(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_HEADER)
 
-#define BC_PARSE_FLAG_FOR_LOOP (0x08)
+#define BC_PARSE_FLAG_LOOP (0x08)
 
-#define BC_PARSE_FOR_LOOP(parse)  \
-  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FOR_LOOP)
+#define BC_PARSE_LOOP(parse)  \
+  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP)
 
-#define BC_PARSE_FLAG_WHILE_LOOP (0x10)
-
-#define BC_PARSE_WHILE_LOOP(parse)  \
-  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_WHILE_LOOP)
-
-#define BC_PARSE_FLAG_LOOP_INNER (0x20)
+#define BC_PARSE_FLAG_LOOP_INNER (0x10)
 
 #define BC_PARSE_LOOP_INNER(parse) \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP_INNER)
 
-#define BC_PARSE_FLAG_IF (0x40)
+#define BC_PARSE_FLAG_IF (0x20)
 
 #define BC_PARSE_IF(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF)
 
-#define BC_PARSE_FLAG_ELSE (0x80)
+#define BC_PARSE_FLAG_ELSE (0x40)
 
 #define BC_PARSE_ELSE(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_ELSE)
+
+#define BC_PARSE_FLAG_IF_END (0x80)
+
+#define BC_PARSE_IF_END(parse)  \
+  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
 
 #define BC_PARSE_CAN_EXEC(parse)  \
   (!(BC_PARSE_TOP_FLAG(parse) & (BC_PARSE_FLAG_FUNC_INNER |  \
                                  BC_PARSE_FLAG_FUNC |        \
                                  BC_PARSE_FLAG_HEADER |      \
-                                 BC_PARSE_FLAG_FOR_LOOP |    \
-                                 BC_PARSE_FLAG_WHILE_LOOP |  \
+                                 BC_PARSE_FLAG_LOOP |        \
                                  BC_PARSE_FLAG_LOOP_INNER |  \
-                                 BC_PARSE_FLAG_IF)))
+                                 BC_PARSE_FLAG_IF |          \
+                                 BC_PARSE_FLAG_ELSE |        \
+                                 BC_PARSE_FLAG_IF_END)))
 
 // We can calculate the conversion between tokens and exprs
 // by subtracting the position of the first operator in the
@@ -86,9 +84,9 @@ typedef struct BcParse {
 
   BcVec flags;
 
-  BcVec ctxs;
+  BcVec exit_labels;
 
-  BcVec labels;
+  BcVec cond_labels;
 
   BcVec ops;
 
@@ -101,11 +99,11 @@ typedef struct BcParse {
 
 } BcParse;
 
-BcStatus bc_parse_init(BcParse* parse, BcProgram *program, BcVec* code);
+BcStatus bc_parse_init(BcParse* parse, BcProgram* program);
 BcStatus bc_parse_file(BcParse* parse, const char* file);
 BcStatus bc_parse_text(BcParse* parse, const char* text);
 
-BcStatus bc_parse_parse(BcParse* parse, BcProgram* program);
+BcStatus bc_parse_parse(BcParse* parse);
 
 BcStatus bc_parse_expr(BcParse* parse, BcVec* code, bool posix_rel, bool print);
 
