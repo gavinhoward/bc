@@ -9,8 +9,9 @@ considered `bc` contributors.
 
 ## Status
 
-This `bc is not even in alpha stage yet, so it is not ready for use. However, at
-this time, it does basic math operations (`+`, `-`, `*`, `/`, `%`) on constants.
+This `bc` is not even in alpha stage yet, so it is not ready for use. However,
+at this time, it can do basic math operations (`+`, `-`, `*`, `/`, `%`) on
+constants.
 
 ## Cloning
 
