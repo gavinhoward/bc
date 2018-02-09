@@ -17,14 +17,24 @@ static fxdpnt* bc_program_sub(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t 
 
 static const BcMathOpFunc bc_math_ops[] = {
 
-  NULL,//arb_exp,
-
-  arb_mul,
-  arb_alg_d,
   arb_mod,
 
+  NULL, // &
+  NULL, // '
+  NULL, // (
+  NULL, // )
+
+  arb_mul,
+
   bc_program_add,
-  bc_program_sub
+
+  NULL, // ,
+
+  bc_program_sub,
+
+  NULL, // .
+
+  arb_alg_d,
 
 };
 
@@ -213,7 +223,7 @@ BcStatus bc_program_init(BcProgram* p) {
     goto string_err;
   }
 
-  s = bc_vec_init(&p->constants, sizeof(fxdpnt*), bc_num_free);
+  s = bc_vec_init(&p->constants, sizeof(fxdpnt*), bc_arb_free);
 
   if (s) {
     goto const_err;
@@ -231,7 +241,7 @@ BcStatus bc_program_init(BcProgram* p) {
     goto ctx_err;
   }
 
-  s = bc_vec_init(&p->ctx_stack, sizeof(BcVec*), NULL);
+  s = bc_vec_init(&p->stack, sizeof(BcNum), bc_num_free);
 
   if (s) {
     goto ctx_err;
@@ -257,7 +267,7 @@ temps_err:
 
 local_err:
 
-  bc_vec_free(&p->ctx_stack);
+  bc_vec_free(&p->stack);
 
 ctx_err:
 
@@ -463,6 +473,19 @@ BcStatus bc_program_exec(BcProgram* p) {
         break;
       }
 
+      case BC_INST_PRINT:
+      {
+        BcNum* num;
+
+        num = bc_vec_top(&p->stack);
+
+        arb_print(num->num);
+
+        bc_vec_pop(&p->stack);
+
+        break;
+      }
+
       case BC_INST_STR:
       {
         const char* string;
@@ -502,6 +525,73 @@ BcStatus bc_program_exec(BcProgram* p) {
       case BC_INST_HALT:
       {
         status = BC_STATUS_VM_HALT;
+        break;
+      }
+
+      case BC_INST_PUSH_NUM:
+      {
+        size_t idx;
+        BcNum num;
+
+        idx = bc_program_index(code, &p->idx);
+
+        num.num = *((fxdpnt**) bc_vec_item(&p->constants, idx));
+
+        if (!num.num) {
+          return BC_STATUS_VM_INVALID_EXPR;
+        }
+
+        num.type = BC_NUM_CONSTANT;
+
+        status = bc_vec_push(&p->stack, &num);
+
+        break;
+      }
+
+      case BC_INST_OP_MODULUS:
+      case BC_INST_OP_MULTIPLY:
+      case BC_INST_OP_PLUS:
+      case BC_INST_OP_MINUS:
+      case BC_INST_OP_DIVIDE:
+      case BC_INST_OP_POWER:
+      {
+        BcNum* num1;
+        BcNum* num2;
+        BcNum result;
+
+        num2 = bc_vec_top(&p->stack);
+
+        if (!num2) return BC_STATUS_VM_INVALID_EXPR;
+
+        num1 = bc_vec_top(&p->stack);
+
+        if (!num1) return BC_STATUS_VM_INVALID_EXPR;
+
+        result.type = BC_NUM_RESULT;
+        result.num = arb_alloc(16);
+
+        if (inst != BC_INST_OP_POWER) {
+
+          BcMathOpFunc op;
+
+          op = bc_math_ops[inst - BC_INST_OP_MODULUS];
+
+          result.num = op(num1->num, num2->num, result.num, 10, 10);
+        }
+        else {
+          // TODO: Power.
+        }
+
+        status = bc_vec_pop(&p->stack);
+
+        if (status) return status;
+
+        status = bc_vec_pop(&p->stack);
+
+        if (status) return status;
+
+        status = bc_vec_push(&p->stack, &result);
+
         break;
       }
 
@@ -599,7 +689,7 @@ void bc_program_free(BcProgram* p) {
   bc_vec_free(&p->strings);
   bc_vec_free(&p->constants);
 
-  bc_vec_free(&p->ctx_stack);
+  bc_vec_free(&p->stack);
   bc_vec_free(&p->locals);
   bc_vec_free(&p->temps);
 

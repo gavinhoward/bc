@@ -1040,6 +1040,8 @@ BcStatus bc_parse_expr(BcParse* parse, BcVec* code, bool posix_rel, bool print)
   BcLexTokenType top;
   uint8_t inst;
 
+  status = BC_STATUS_SUCCESS;
+
   ops_start_len = parse->ops.len;
 
   prev = BC_EXPR_PRINT;
