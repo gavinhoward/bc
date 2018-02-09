@@ -9,6 +9,7 @@
 
 static const struct option bc_opts[] = {
 
+  { "code", no_argument, NULL, 'c' },
   { "help", no_argument, NULL, 'h' },
   { "interactive", no_argument, NULL, 'i' },
   { "mathlib", no_argument, NULL, 'l' },
@@ -76,6 +77,11 @@ int main(int argc, char* argv[]) {
         // This is the case when a long option is
         // found, so we don't need to do anything.
         break;
+      }
+
+      case 'c':
+      {
+        flags |= BC_FLAG_DEBUG;
       }
 
       case 'h':
