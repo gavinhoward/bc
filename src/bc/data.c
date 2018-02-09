@@ -346,3 +346,12 @@ void bc_entry_free(void* entry) {
 
   free(e->name);
 }
+
+void bc_num_free(void* num) {
+
+  fxdpnt* n;
+
+  n = *((fxdpnt**) num);
+
+  arb_free(n);
+}

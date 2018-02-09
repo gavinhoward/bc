@@ -28,6 +28,7 @@ static const char* const bc_help =
   "\n"
   "bc is a command-line calculator with a Turing-complete language.\n"
   "\n"
+  "  -c  --code         print bytecode instead of executing it\n"
   "  -h  --help         print this usage message and exit\n"
   "  -i  --interactive  force interactive mode\n"
   "  -l  --mathlib      use predefined math routines:\n\n"
