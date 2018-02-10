@@ -20,7 +20,7 @@ static const char* const bc_stdin_filename = "<stdin>";
 static const char* const bc_ready_prompt = "ready for more input\n\n";
 
 static const char* const bc_sigint_msg =
-  "\n\interrupt (type \"quit\" to exit)\n\n";
+  "\n\ninterrupt (type \"quit\" to exit)\n\n";
 
 static void bc_vm_sigint(int sig) {
 
