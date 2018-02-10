@@ -1,4 +1,4 @@
-#include <errno.h>
+﻿#include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,6 +55,7 @@ BcStatus bc_program_init(BcProgram* p) {
   BcStatus s;
   size_t idx;
   char* name;
+  BcInstPtr ip;
 
   if (p == NULL) {
     return BC_STATUS_INVALID_PARAM;
@@ -62,7 +63,6 @@ BcStatus bc_program_init(BcProgram* p) {
 
   name = NULL;
 
-  p->idx = 0;
   p->scale = 0;
   p->ibase = 10;
   p->obase = 10;
@@ -232,19 +232,34 @@ BcStatus bc_program_init(BcProgram* p) {
   s = bc_vec_push(&p->constants, &p->zero);
 
   if (s) {
-    goto ctx_err;
+    goto expr_err;
   }
 
   s = bc_vec_push(&p->constants, &p->one);
 
   if (s) {
-    goto ctx_err;
+    goto expr_err;
   }
 
-  s = bc_vec_init(&p->stack, sizeof(BcNum), bc_num_free);
+  s = bc_vec_init(&p->expr_stack, sizeof(BcNum), bc_num_free);
 
   if (s) {
-    goto ctx_err;
+    goto expr_err;
+  }
+
+  s = bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
+
+  if (s) {
+    goto stack_err;
+  }
+
+  ip.idx = 0;
+  ip.func = 0;
+
+  s = bc_vec_push(&p->stack, &ip);
+
+  if (s) {
+    goto local_err;
   }
 
   s = bc_vec_init(&p->locals, sizeof(BcLocal), bc_local_free);
@@ -269,7 +284,11 @@ local_err:
 
   bc_vec_free(&p->stack);
 
-ctx_err:
+stack_err:
+
+  bc_vec_free(&p->expr_stack);
+
+expr_err:
 
   bc_vec_free(&p->constants);
   p->zero = NULL;
@@ -448,21 +467,24 @@ BcStatus bc_program_exec(BcProgram* p) {
   int pchars;
   BcFunc* func;
   uint8_t* code;
+  BcInstPtr* ip;
   size_t idx;
 
   status = BC_STATUS_SUCCESS;
 
-  func = bc_vec_item(&p->funcs, 0);
+  ip = bc_vec_top(&p->stack);
+
+  func = bc_vec_item(&p->funcs, ip->func);
 
   assert(func);
 
   code = func->code.array;
 
-  for (; p->idx < func->code.len; ++p->idx) {
+  for (; ip->idx < func->code.len; ++ip->idx) {
 
     uint8_t inst;
 
-    inst = code[p->idx];
+    inst = code[ip->idx];
 
     // TODO: Add all instructions.
     switch (inst) {
@@ -477,11 +499,11 @@ BcStatus bc_program_exec(BcProgram* p) {
       {
         BcNum* num;
 
-        num = bc_vec_top(&p->stack);
+        num = bc_vec_top(&p->expr_stack);
 
         arb_print(num->num);
 
-        bc_vec_pop(&p->stack);
+        bc_vec_pop(&p->expr_stack);
 
         break;
       }
@@ -490,7 +512,7 @@ BcStatus bc_program_exec(BcProgram* p) {
       {
         const char* string;
 
-        idx = bc_program_index(code, &p->idx);
+        idx = bc_program_index(code, &ip->idx);
 
         if (idx >= p->strings.len) {
           return BC_STATUS_VM_INVALID_STRING;
@@ -509,7 +531,7 @@ BcStatus bc_program_exec(BcProgram* p) {
       {
         const char* string;
 
-        idx = bc_program_index(code, &p->idx);
+        idx = bc_program_index(code, &ip->idx);
 
         if (idx >= p->strings.len) {
           return BC_STATUS_VM_INVALID_STRING;
@@ -533,7 +555,7 @@ BcStatus bc_program_exec(BcProgram* p) {
         size_t idx;
         BcNum num;
 
-        idx = bc_program_index(code, &p->idx);
+        idx = bc_program_index(code, &ip->idx);
 
         num.num = *((fxdpnt**) bc_vec_item(&p->constants, idx));
 
@@ -543,7 +565,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
         num.type = BC_NUM_CONSTANT;
 
-        status = bc_vec_push(&p->stack, &num);
+        status = bc_vec_push(&p->expr_stack, &num);
 
         break;
       }
@@ -560,23 +582,23 @@ BcStatus bc_program_exec(BcProgram* p) {
         BcNum num2;
         BcNum result;
 
-        ptr = bc_vec_top(&p->stack);
+        ptr = bc_vec_top(&p->expr_stack);
 
         if (!ptr) return BC_STATUS_VM_INVALID_EXPR;
 
         num2 = *ptr;
 
-        status = bc_vec_pop(&p->stack);
+        status = bc_vec_pop(&p->expr_stack);
 
         if (status) return status;
 
-        ptr = bc_vec_top(&p->stack);
+        ptr = bc_vec_top(&p->expr_stack);
 
         if (!ptr) return BC_STATUS_VM_INVALID_EXPR;
 
         num1 = *ptr;
 
-        status = bc_vec_pop(&p->stack);
+        status = bc_vec_pop(&p->expr_stack);
 
         if (status) return status;
 
@@ -595,7 +617,7 @@ BcStatus bc_program_exec(BcProgram* p) {
           // TODO: Power.
         }
 
-        status = bc_vec_push(&p->stack, &result);
+        status = bc_vec_push(&p->expr_stack, &result);
 
         break;
       }
@@ -605,7 +627,6 @@ BcStatus bc_program_exec(BcProgram* p) {
         return BC_STATUS_VM_INVALID_STMT;
       }
     }
-
   }
 
   return status;
@@ -617,18 +638,21 @@ void bc_program_printCode(BcProgram* p) {
 
   BcFunc* func;
   uint8_t* code;
+  BcInstPtr* ip;
 
-  func = bc_vec_item(&p->funcs, 0);
+  ip = bc_vec_top(&p->stack);
+
+  func = bc_vec_item(&p->funcs, ip->func);
 
   assert(func);
 
   code = func->code.array;
 
-  for (; p->idx < func->code.len; ++p->idx) {
+  for (; ip->idx < func->code.len; ++ip->idx) {
 
     uint8_t inst;
 
-    inst = code[p->idx];
+    inst = code[ip->idx];
 
     // TODO: Fill this out.
     switch (inst) {
@@ -637,7 +661,7 @@ void bc_program_printCode(BcProgram* p) {
       case BC_INST_PUSH_ARRAY:
       {
         putchar(inst);
-        bc_program_printName(code, &p->idx);
+        bc_program_printName(code, &ip->idx);
         break;
       }
 
@@ -645,8 +669,8 @@ void bc_program_printCode(BcProgram* p) {
       {
         putchar(inst);
 
-        bc_program_printIndex(code, &p->idx);
-        bc_program_printIndex(code, &p->idx);
+        bc_program_printIndex(code, &ip->idx);
+        bc_program_printIndex(code, &ip->idx);
 
         break;
       }
@@ -659,7 +683,7 @@ void bc_program_printCode(BcProgram* p) {
       case BC_INST_PRINT_STR:
       {
         putchar(inst);
-        bc_program_printIndex(code, &p->idx);
+        bc_program_printIndex(code, &ip->idx);
         break;
       }
 
@@ -694,6 +718,7 @@ void bc_program_free(BcProgram* p) {
   bc_vec_free(&p->strings);
   bc_vec_free(&p->constants);
 
+  bc_vec_free(&p->expr_stack);
   bc_vec_free(&p->stack);
   bc_vec_free(&p->locals);
   bc_vec_free(&p->temps);
