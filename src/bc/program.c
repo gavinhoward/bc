@@ -555,17 +555,30 @@ BcStatus bc_program_exec(BcProgram* p) {
       case BC_INST_OP_DIVIDE:
       case BC_INST_OP_POWER:
       {
-        BcNum* num1;
-        BcNum* num2;
+        BcNum* ptr;
+        BcNum num1;
+        BcNum num2;
         BcNum result;
 
-        num2 = bc_vec_top(&p->stack);
+        ptr = bc_vec_top(&p->stack);
 
-        if (!num2) return BC_STATUS_VM_INVALID_EXPR;
+        if (!ptr) return BC_STATUS_VM_INVALID_EXPR;
 
-        num1 = bc_vec_top(&p->stack);
+        num2 = *ptr;
 
-        if (!num1) return BC_STATUS_VM_INVALID_EXPR;
+        status = bc_vec_pop(&p->stack);
+
+        if (status) return status;
+
+        ptr = bc_vec_top(&p->stack);
+
+        if (!ptr) return BC_STATUS_VM_INVALID_EXPR;
+
+        num1 = *ptr;
+
+        status = bc_vec_pop(&p->stack);
+
+        if (status) return status;
 
         result.type = BC_NUM_RESULT;
         result.num = arb_alloc(16);
@@ -576,19 +589,11 @@ BcStatus bc_program_exec(BcProgram* p) {
 
           op = bc_math_ops[inst - BC_INST_OP_MODULUS];
 
-          result.num = op(num1->num, num2->num, result.num, 10, 10);
+          result.num = op(num1.num, num2.num, result.num, 10, 10);
         }
         else {
           // TODO: Power.
         }
-
-        status = bc_vec_pop(&p->stack);
-
-        if (status) return status;
-
-        status = bc_vec_pop(&p->stack);
-
-        if (status) return status;
 
         status = bc_vec_push(&p->stack, &result);
 
