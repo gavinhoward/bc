@@ -13,12 +13,14 @@
 static BcStatus bc_vm_execFile(BcVm* vm, int idx);
 static BcStatus bc_vm_execStdin(BcVm* vm);
 
+static BcStatus bc_vm_handleSignal(BcVm* vm);
+
 static const char* const bc_stdin_filename = "<stdin>";
 
 static const char* const bc_ready_prompt = "ready for more input\n\n";
 
 static const char* const bc_sigint_msg =
-  "\n\nSIGINT detected (type \"quit\" to exit)\n\n";
+  "\n\interrupt (type \"quit\" to exit)\n\n";
 
 static void bc_vm_sigint(int sig) {
 
@@ -31,7 +33,7 @@ static void bc_vm_sigint(int sig) {
 
   if (sig == SIGINT) {
     write(STDERR_FILENO, bc_sigint_msg, strlen(bc_sigint_msg));
-    bc_had_sigint = 1;
+    bc_signal = 1;
   }
 }
 
@@ -157,11 +159,14 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
     status = bc_parse_parse(&vm->parse);
 
-    if (bc_had_sigint && !bc_interactive) {
+    if (bc_signal && !bc_interactive) {
       goto read_err;
     }
     else {
-      bc_had_sigint = 0;
+
+      status = bc_vm_handleSignal(vm);
+
+      if (status) return status;
     }
 
     if (status) {
@@ -218,14 +223,16 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
           fflush(stdout);
 
-          if (bc_had_sigint) {
+          if (bc_signal) {
+
+            status = bc_vm_handleSignal(vm);
+
             fprintf(stderr, bc_ready_prompt);
             fflush(stderr);
-            bc_had_sigint = 0;
           }
         }
-        else if (bc_had_sigint) {
-          bc_had_sigint = 0;
+        else if (bc_signal) {
+          status = bc_vm_handleSignal(vm);
           goto read_err;
         }
       }
@@ -247,14 +254,16 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
           fflush(stdout);
 
-          if (bc_had_sigint) {
+          if (bc_signal) {
+
+            status = bc_vm_handleSignal(vm);
+
             fprintf(stderr, bc_ready_prompt);
             fflush(stderr);
-            bc_had_sigint = 0;
           }
         }
-        else if (bc_had_sigint) {
-          bc_had_sigint = 0;
+        else if (bc_signal) {
+          status = bc_vm_handleSignal(vm);
           goto read_err;
         }
       }
@@ -399,7 +408,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
     status = bc_parse_text(&vm->parse, buffer);
 
-    if (!bc_had_sigint) {
+    if (!bc_signal) {
 
       if (status) {
 
@@ -473,13 +482,13 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
           fflush(stdout);
 
-          if (bc_had_sigint) {
+          if (bc_signal) {
+            status = bc_vm_handleSignal(vm);
             fprintf(stderr, bc_ready_prompt);
-            bc_had_sigint = 0;
           }
         }
-        else if (bc_had_sigint) {
-          bc_had_sigint = 0;
+        else if (bc_signal) {
+          status = bc_vm_handleSignal(vm);
           goto exit_err;
         }
       }
@@ -491,13 +500,13 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
           fflush(stdout);
 
-          if (bc_had_sigint) {
+          if (bc_signal) {
+            status = bc_vm_handleSignal(vm);
             fprintf(stderr, bc_ready_prompt);
-            bc_had_sigint = 0;
           }
         }
-        else if (bc_had_sigint) {
-          bc_had_sigint = 0;
+        else if (bc_signal) {
+          status = bc_vm_handleSignal(vm);
           goto exit_err;
         }
       }
@@ -521,4 +530,21 @@ buf_err:
   free(buffer);
 
   return status;
+}
+
+static BcStatus bc_vm_handleSignal(BcVm* vm) {
+
+  BcFunc* func;
+
+  bc_signal = 0;
+
+  func = bc_vec_item(&vm->program.funcs, 0);
+
+  if (!func) {
+    return BC_STATUS_VM_UNDEFINED_FUNC;
+  }
+
+  vm->program.idx = func->code.len;
+
+  return BC_STATUS_SUCCESS;
 }
