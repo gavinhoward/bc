@@ -104,7 +104,7 @@ extern long bc_interactive;
 extern long bc_std;
 extern long bc_warn;
 
-extern long bc_had_sigint;
+extern long bc_signal;
 
 extern const char* const bc_mathlib;
 extern const char* const bc_version;
