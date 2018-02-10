@@ -15,8 +15,6 @@ typedef fxdpnt* (*BcMathOpFunc)(fxdpnt*, fxdpnt*, fxdpnt*, int, size_t);
 
 typedef struct BcProgram {
 
-  size_t idx;
-
   BcVec ip_stack;
 
   long scale;
@@ -27,6 +25,8 @@ typedef struct BcProgram {
   long dim_max;
   long scale_max;
   long string_max;
+
+  BcVec expr_stack;
 
   BcVec stack;
 

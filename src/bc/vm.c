@@ -534,17 +534,28 @@ buf_err:
 
 static BcStatus bc_vm_handleSignal(BcVm* vm) {
 
+  BcStatus status;
   BcFunc* func;
+  BcInstPtr* ip;
 
   bc_signal = 0;
 
-  func = bc_vec_item(&vm->program.funcs, 0);
+  while (vm->program.stack.len > 1) {
 
-  if (!func) {
-    return BC_STATUS_VM_UNDEFINED_FUNC;
+    status = bc_vec_pop(&vm->program.stack);
+
+    if (status) return status;
   }
 
-  vm->program.idx = func->code.len;
+  func = bc_vec_item(&vm->program.funcs, 0);
+
+  if (!func) return BC_STATUS_VM_UNDEFINED_FUNC;
+
+  ip = bc_vec_top(&vm->program.stack);
+
+  if (!ip) return BC_STATUS_VM_INVALID_STMT;
+
+  ip->idx = func->code.len;
 
   return BC_STATUS_SUCCESS;
 }
