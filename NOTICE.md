@@ -2,8 +2,6 @@
 
 Copyright 2018 Contributors.
 
-License copyright 2013 Pixar.
-
 ## Contributors
 
 The contributors to `bc` are listed below in alphabetical order.
