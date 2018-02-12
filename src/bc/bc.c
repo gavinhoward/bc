@@ -69,6 +69,7 @@ static const char* const bc_err_types[] = {
 
   "bc",
   "bc",
+
   "bc",
 
   "bc",
@@ -135,9 +136,10 @@ static const char* const bc_err_descs[] = {
 
   NULL,
 
-  "invalid option",
   "memory allocation error",
   "invalid parameter",
+
+  "invalid option",
 
   "one or more limits not specified",
   "invalid limit; this is a bug in bc",
