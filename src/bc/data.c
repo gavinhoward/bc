@@ -399,15 +399,6 @@ void bc_entry_free(void* entry) {
   free(e->name);
 }
 
-void bc_arb_free(void* num) {
-
-  fxdpnt* n;
-
-  n = *((fxdpnt**) num);
-
-  arb_free(n);
-}
-
 void bc_num_free(void* num) {
 
   BcNum* n;
@@ -432,4 +423,13 @@ void bc_num_free(void* num) {
       break;
     }
   }
+}
+
+void bc_constant_free(void* constant) {
+
+  char* c;
+
+  c = *((char**) constant);
+
+  free(c);
 }

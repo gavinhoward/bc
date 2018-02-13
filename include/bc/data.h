@@ -251,8 +251,8 @@ void bc_string_free(void* string);
 int bc_entry_cmp(void* entry1, void*entry2);
 void bc_entry_free(void* entry);
 
-void bc_arb_free(void* num);
-
 void bc_num_free(void* num);
+
+void bc_constant_free(void* constant);
 
 #endif // BC_DATA_H
