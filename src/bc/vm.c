@@ -186,7 +186,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
   read_size = fread(data, 1, size, f);
 
   if (read_size != size) {
-    status = BC_STATUS_VM_FILE_READ_ERR;
+    status = BC_STATUS_IO_ERR;
     goto read_err;
   }
 

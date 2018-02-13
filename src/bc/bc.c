@@ -73,6 +73,8 @@ static const char* const bc_err_types[] = {
   "bc",
 
   "bc",
+
+  "bc",
   "bc",
 
   "vector",
@@ -116,7 +118,6 @@ static const char* const bc_err_types[] = {
   "Runtime",
   "Runtime",
   "Runtime",
-  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -137,6 +138,8 @@ static const char* const bc_err_descs[] = {
   NULL,
 
   "memory allocation error",
+  "I/O error",
+
   "invalid parameter",
 
   "invalid option",
@@ -171,7 +174,6 @@ static const char* const bc_err_descs[] = {
   "bug in parser",
 
   "couldn't open file",
-  "file read error",
   "divide by zero",
   "negative square root",
   "mismatched parameters",
