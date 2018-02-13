@@ -275,22 +275,10 @@ BcStatus bc_program_init(BcProgram* p) {
     goto string_err;
   }
 
-  s = bc_vec_init(&p->constants, sizeof(fxdpnt*), bc_arb_free);
+  s = bc_vec_init(&p->constants, sizeof(char*), bc_constant_free);
 
   if (s) {
     goto const_err;
-  }
-
-  s = bc_vec_push(&p->constants, &p->zero);
-
-  if (s) {
-    goto expr_err;
-  }
-
-  s = bc_vec_push(&p->constants, &p->one);
-
-  if (s) {
-    goto expr_err;
   }
 
   s = bc_vec_init(&p->expr_stack, sizeof(BcNum), bc_num_free);
@@ -343,8 +331,6 @@ stack_err:
 expr_err:
 
   bc_vec_free(&p->constants);
-  p->zero = NULL;
-  p->one = NULL;
 
 const_err:
 
@@ -606,10 +592,17 @@ BcStatus bc_program_exec(BcProgram* p) {
       {
         size_t idx;
         BcNum num;
+        char* str;
 
         idx = bc_program_index(code, &ip->idx);
 
-        num.num = *((fxdpnt**) bc_vec_item(&p->constants, idx));
+        str = *((char**) bc_vec_item(&p->constants, idx));
+
+        if (!str) {
+          return BC_STATUS_VM_INVALID_EXPR;
+        }
+
+        num.num = arb_str2fxdpnt(str);
 
         if (!num.num) {
           return BC_STATUS_VM_INVALID_EXPR;

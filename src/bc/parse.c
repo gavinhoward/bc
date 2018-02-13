@@ -1219,13 +1219,10 @@ BcStatus bc_parse_expr(BcParse* parse, BcVec* code, bool posix_rel, bool print)
       case BC_LEX_NUMBER:
       {
         size_t idx;
-        fxdpnt* num;
 
         idx = parse->program->constants.len;
 
-        num = arb_str2fxdpnt(parse->token.string);
-
-        status = bc_vec_push(&parse->program->constants, &num);
+        status = bc_vec_push(&parse->program->constants, &parse->token.string);
 
         if (status) {
           return status;
