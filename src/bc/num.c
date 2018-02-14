@@ -93,6 +93,8 @@ static BcStatus bc_num_printLowBase(BcNum* n, size_t base, FILE* f);
 static BcStatus bc_num_printHighBase(BcNum* n, size_t base, FILE* f);
 static BcStatus bc_num_printHighestBase(BcNum* n, size_t base, FILE* f);
 
+static BcStatus bc_num_removeLeadingZeros(BcNum* n);
+
 BcStatus bc_num_parse(BcNum* num, const char* val,
                        size_t base, size_t scale)
 {
@@ -433,6 +435,106 @@ static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c,
 
 static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
+  char* ptr;
+  char* ptr_a;
+  char* ptr_b;
+  char* ptr_c;
+  size_t scale_a;
+  size_t scale_b;
+  size_t i;
+  size_t min;
+  char carry;
+
+  memset(c->num, 0, (c->len + c->unused) * sizeof(char));
+
+  c->radix = BC_MAX(a->radix, b->radix) + 1;
+
+  scale_a = BC_NUM_SCALE(a);
+  scale_b = BC_NUM_SCALE(b);
+
+  scale = BC_MAX(scale_a, scale_b);
+
+  min = BC_MIN(scale_a, scale_b);
+
+  c->unused -= c->len - (c->radix + scale);
+  c->len = c->radix + scale;
+
+  ptr_a = a->num + a->radix;
+  ptr_b = b->num + b->radix;
+  ptr_c = c->num + c->radix;
+
+  ptr = scale_a > scale_b ? ptr_a : ptr_b;
+
+  i = scale - 1;
+
+  while (i >= min) {
+    ptr_c[i] = ptr[i];
+    --i;
+  }
+
+  carry = 0;
+
+  for (; i < scale; --i) {
+
+    ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
+
+    carry = 0;
+
+    while (ptr_c[i] >= 10) {
+      carry += 1;
+      ptr_c[i] -= 10;
+    }
+  }
+
+  if (a->radix == c->radix - 1) {
+
+    min = b->radix;
+    scale = a->radix - min;
+    i = min - 1;
+
+    ptr_a = a->num + scale;
+    ptr_b = b->num;
+    ptr_c = c->num + (c->radix - min);
+
+    ptr = a->num;
+  }
+  else {
+
+    min = a->radix;
+    scale = b->radix - min;
+    i = min - 1;
+
+    ptr_a = a->num;
+    ptr_b = b->num + scale;
+    ptr_c = c->num + (c->radix - min);
+
+    ptr = b->num;
+  }
+
+  for (; i < min; --i) {
+
+    ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
+
+    carry = 0;
+
+    while (ptr_c[i] >= 10) {
+      carry += 1;
+      ptr_c[i] -= 10;
+    }
+  }
+
+  --ptr_c;
+
+  *ptr_c = carry;
+
+  i = scale - 1;
+
+  while (i < scale) {
+    *ptr_c = ptr[i];
+    --ptr_c;
+  }
+
+  return bc_num_removeLeadingZeros(c);
 }
 
 static BcStatus bc_num_alg_s(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
@@ -779,4 +881,27 @@ static BcStatus bc_num_printHighBase(BcNum* n, size_t base, FILE* f) {
 
 static BcStatus bc_num_printHighestBase(BcNum* n, size_t base, FILE* f) {
 
+}
+
+static BcStatus bc_num_removeLeadingZeros(BcNum* n) {
+
+  size_t i;
+  char* ptr;
+
+  for (i = 0; n->num[i] == 0 && i < n->radix; ++i);
+
+  if (i == n->radix) {
+
+    n->unused += n->radix;
+    n->len -= n->radix;
+    n->radix = 0;
+
+    return BC_STATUS_SUCCESS;
+  }
+
+  ptr = n->num + i;
+
+  memmove(n->num, ptr, i * sizeof(char));
+
+  return BC_STATUS_SUCCESS;
 }

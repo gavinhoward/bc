@@ -77,6 +77,8 @@ extern "C" {
 
 #define BC_NUM_TO_CHAR(n) ((n) + '0')
 
+#define BC_NUM_SCALE(n) ((n)->len - (n)->radix)
+
 typedef struct BcNum {
 
   char* num;
