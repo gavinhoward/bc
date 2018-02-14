@@ -532,6 +532,7 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   while (i < scale) {
     *ptr_c = ptr[i];
     --ptr_c;
+    --i;
   }
 
   return bc_num_removeLeadingZeros(c);
