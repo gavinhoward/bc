@@ -107,7 +107,7 @@ BcStatus bc_vm_exec(BcVm* vm) {
   act.sa_handler = bc_vm_sigint;
 
   if (sigaction(SIGINT, &act, NULL) < 0) {
-    return BC_STATUS_VM_SIGACTION_FAIL;
+    return BC_STATUS_EXEC_SIGACTION_FAIL;
   }
 
   status = BC_STATUS_SUCCESS;
@@ -132,7 +132,7 @@ BcStatus bc_vm_exec(BcVm* vm) {
 
   if (status) {
     status = status == BC_STATUS_PARSE_QUIT ||
-             status == BC_STATUS_VM_HALT ?
+             status == BC_STATUS_EXEC_HALT ?
                  BC_STATUS_SUCCESS : status;
     goto exec_err;
   }
@@ -140,8 +140,8 @@ BcStatus bc_vm_exec(BcVm* vm) {
   status = bc_vm_execStdin(vm);
 
   status = status == BC_STATUS_PARSE_QUIT ||
-         status == BC_STATUS_VM_HALT ?
-              BC_STATUS_SUCCESS : status;
+           status == BC_STATUS_EXEC_HALT ?
+               BC_STATUS_SUCCESS : status;
 
 exec_err:
 
@@ -168,7 +168,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
   f = fopen(file, "r");
 
   if (!f) {
-    return BC_STATUS_VM_FILE_ERR;
+    return BC_STATUS_EXEC_FILE_ERR;
   }
 
   fseek(f, 0, SEEK_END);
@@ -289,7 +289,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
         }
       }
       else {
-        status = BC_STATUS_VM_FILE_NOT_EXECUTABLE;
+        status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
       }
 
     } while (!status);
@@ -320,7 +320,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
         }
       }
       else {
-        status = BC_STATUS_VM_FILE_NOT_EXECUTABLE;
+        status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
       }
 
     } while (!status);
@@ -568,7 +568,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
   }
 
   status = !status || status == BC_STATUS_PARSE_QUIT ||
-           status == BC_STATUS_VM_HALT ||
+           status == BC_STATUS_EXEC_HALT ||
            status == BC_STATUS_LEX_EOF ||
            status == BC_STATUS_PARSE_EOF ?
                BC_STATUS_SUCCESS : status;
@@ -601,11 +601,11 @@ static BcStatus bc_vm_handleSignal(BcVm* vm) {
 
   func = bc_vec_item(&vm->program.funcs, 0);
 
-  if (!func) return BC_STATUS_VM_UNDEFINED_FUNC;
+  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
   ip = bc_vec_top(&vm->program.stack);
 
-  if (!ip) return BC_STATUS_VM_INVALID_STMT;
+  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
 
   ip->idx = func->code.len;
 

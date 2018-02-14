@@ -385,7 +385,7 @@ BcStatus bc_parse_parse(BcParse* parse) {
       func = bc_vec_item(&parse->program->funcs, parse->func);
 
       if (!func) {
-        return BC_STATUS_VM_UNDEFINED_FUNC;
+        return BC_STATUS_EXEC_UNDEFINED_FUNC;
       }
 
       status = bc_parse_stmt(parse, &func->code);
@@ -612,7 +612,7 @@ static BcStatus bc_parse_auto(BcParse* parse) {
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
   if (!func) {
-    return BC_STATUS_VM_UNDEFINED_FUNC;
+    return BC_STATUS_EXEC_UNDEFINED_FUNC;
   }
 
   type = parse->token.type;
@@ -1602,7 +1602,7 @@ static BcStatus bc_parse_call(BcParse* parse, BcVec* code,
   idx = bc_veco_index(&parse->program->func_map, &entry);
 
   if (idx == BC_INVALID_IDX) {
-    return BC_STATUS_VM_UNDEFINED_FUNC;
+    return BC_STATUS_EXEC_UNDEFINED_FUNC;
   }
 
   status = bc_parse_pushIndex(code, idx);
@@ -2205,7 +2205,7 @@ static BcStatus bc_parse_if(BcParse* parse, BcVec* code) {
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
   if (!func) {
-    return BC_STATUS_VM_UNDEFINED_FUNC;
+    return BC_STATUS_EXEC_UNDEFINED_FUNC;
   }
 
   ip.idx = func->labels.len;
@@ -2365,7 +2365,7 @@ static BcStatus bc_parse_while(BcParse* parse, BcVec* code) {
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
   if (!func) {
-    return BC_STATUS_VM_UNDEFINED_FUNC;
+    return BC_STATUS_EXEC_UNDEFINED_FUNC;
   }
 
   ip.idx = func->labels.len;
@@ -2479,7 +2479,7 @@ static BcStatus bc_parse_for(BcParse* parse, BcVec* code) {
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
   if (!func) {
-    return BC_STATUS_VM_UNDEFINED_FUNC;
+    return BC_STATUS_EXEC_UNDEFINED_FUNC;
   }
 
   cond_idx = func->labels.len;

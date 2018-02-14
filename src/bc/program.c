@@ -417,7 +417,7 @@ BcStatus bc_program_func_add(BcProgram* p, char* name, size_t* idx) {
     func = bc_vec_item(&p->funcs, *idx);
 
     if (!func) {
-      return BC_STATUS_VM_UNDEFINED_FUNC;
+      return BC_STATUS_EXEC_UNDEFINED_FUNC;
     }
 
     // We need to reset these so the function can be repopulated.
@@ -553,14 +553,14 @@ BcStatus bc_program_exec(BcProgram* p) {
         idx = bc_program_index(code, &ip->idx);
 
         if (idx >= p->strings.len) {
-          return BC_STATUS_VM_INVALID_STRING;
+          return BC_STATUS_EXEC_INVALID_STRING;
         }
 
         string = bc_vec_item(&p->strings, idx);
 
         pchars = fprintf(stdout, "%s", string);
         status = pchars > 0 ? BC_STATUS_SUCCESS :
-                              BC_STATUS_VM_PRINT_ERR;
+                              BC_STATUS_EXEC_PRINT_ERR;
 
         break;
       }
@@ -572,7 +572,7 @@ BcStatus bc_program_exec(BcProgram* p) {
         idx = bc_program_index(code, &ip->idx);
 
         if (idx >= p->strings.len) {
-          return BC_STATUS_VM_INVALID_STRING;
+          return BC_STATUS_EXEC_INVALID_STRING;
         }
 
         string = bc_vec_item(&p->strings, idx);
@@ -584,7 +584,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
       case BC_INST_HALT:
       {
-        status = BC_STATUS_VM_HALT;
+        status = BC_STATUS_EXEC_HALT;
         break;
       }
 
@@ -599,13 +599,13 @@ BcStatus bc_program_exec(BcProgram* p) {
         str = *((char**) bc_vec_item(&p->constants, idx));
 
         if (!str) {
-          return BC_STATUS_VM_INVALID_EXPR;
+          return BC_STATUS_EXEC_INVALID_EXPR;
         }
 
         num.num = arb_str2fxdpnt(str);
 
         if (!num.num) {
-          return BC_STATUS_VM_INVALID_EXPR;
+          return BC_STATUS_EXEC_INVALID_EXPR;
         }
 
         num.type = BC_NUM_CONSTANT;
@@ -629,7 +629,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
         ptr = bc_vec_top(&p->expr_stack);
 
-        if (!ptr) return BC_STATUS_VM_INVALID_EXPR;
+        if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
 
         num2 = *ptr;
 
@@ -639,7 +639,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
         ptr = bc_vec_top(&p->expr_stack);
 
-        if (!ptr) return BC_STATUS_VM_INVALID_EXPR;
+        if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
 
         num1 = *ptr;
 
@@ -669,7 +669,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
       default:
       {
-        return BC_STATUS_VM_INVALID_STMT;
+        return BC_STATUS_EXEC_INVALID_STMT;
       }
     }
   }
@@ -796,7 +796,7 @@ static BcStatus bc_program_printString(const char* str) {
       ++i;
 
       if (i >= len) {
-        return BC_STATUS_VM_INVALID_STRING;
+        return BC_STATUS_EXEC_INVALID_STRING;
       }
 
       c2 = str[i];
@@ -861,7 +861,7 @@ static BcStatus bc_program_printString(const char* str) {
     }
 
     if (err == EOF) {
-      return BC_STATUS_VM_PRINT_ERR;
+      return BC_STATUS_EXEC_PRINT_ERR;
     }
   }
 
@@ -893,7 +893,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
     expr = bc_vec_item(exprs, idx);
 
     if (!expr) {
-      return BC_STATUS_VM_INVALID_EXPR;
+      return BC_STATUS_EXEC_INVALID_EXPR;
     }
 
     etype = expr->type;
@@ -904,21 +904,21 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
       case BC_EXPR_DEC_PRE:
       {
         if (idx - 1 >= exprs->len) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
         expr = bc_vec_item(exprs, idx - 1);
 
         if (!expr) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
         if (expr->type != BC_EXPR_VAR && expr->type != BC_EXPR_ARRAY_ELEM &&
             !(expr->type < BC_EXPR_SCALE || expr->type > BC_EXPR_LAST))
         {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
@@ -939,14 +939,14 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
         char sign;
 
         if (p->temps.len <= temp_len) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
         temp_ptr = bc_vec_top(&p->temps);
 
         if (!temp_ptr) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
@@ -970,14 +970,14 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
         BcMathOpFunc op;
 
         if (p->temps.len < temp_len + 2) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
         b = bc_vec_top(&p->temps);
 
         if (!b) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
@@ -990,7 +990,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
         a = bc_vec_top(&p->temps);
 
         if (!a) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
@@ -1135,7 +1135,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
           arb_newton_sqrt(temp_num, temp.num, 10, p->scale);
         }
         else {
-          status = BC_STATUS_VM_NEG_SQRT;
+          status = BC_STATUS_MATH_NEG_SQRT;
         }
 
         break;
@@ -1148,7 +1148,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
         }
 
         if (p->temps.len != temp_len + 1) {
-          status = BC_STATUS_VM_INVALID_EXPR;
+          status = BC_STATUS_EXEC_INVALID_EXPR;
           break;
         }
 
@@ -1165,7 +1165,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
 
       default:
       {
-        status = BC_STATUS_VM_INVALID_EXPR;
+        status = BC_STATUS_EXEC_INVALID_EXPR;
         break;
       }
     }
@@ -1178,7 +1178,7 @@ static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
   }
 
   if (p->temps.len != temp_len) {
-    return BC_STATUS_VM_INVALID_EXPR;
+    return BC_STATUS_EXEC_INVALID_EXPR;
   }
 
   return status;
@@ -1227,7 +1227,7 @@ static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
 
     default:
     {
-      return BC_STATUS_VM_INVALID_EXPR;
+      return BC_STATUS_EXEC_INVALID_EXPR;
     }
   }
 
@@ -1235,7 +1235,7 @@ static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
 
     case BC_EXPR_ASSIGN_DIVIDE:
       if (!arb_compare(amt, p->zero, 10)) {
-        return BC_STATUS_VM_DIVIDE_BY_ZERO;
+        return BC_STATUS_MATH_DIVIDE_BY_ZERO;
       }
       // Fallthrough.
     case BC_EXPR_ASSIGN_POWER:
@@ -1257,7 +1257,7 @@ static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
 
     default:
     {
-      status = BC_STATUS_VM_INVALID_EXPR;
+      status = BC_STATUS_EXEC_INVALID_EXPR;
       break;
     }
   }
@@ -1316,7 +1316,7 @@ static BcStatus bc_program_read(BcProgram* p) {
   status = bc_parse_expr(&parse, &code, false, false);
 
   if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
-    status = status ? status : BC_STATUS_VM_INVALID_READ_EXPR;
+    status = status ? status : BC_STATUS_EXEC_INVALID_READ_EXPR;
     goto exec_err;
   }
 

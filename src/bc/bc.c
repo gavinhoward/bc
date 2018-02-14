@@ -96,8 +96,11 @@ static const char* const bc_err_types[] = {
   "Parse",
   "Parse",
 
-  "Runtime",
-  "Runtime",
+  "Math",
+  "Math",
+  "Math",
+  "Math",
+
   "Runtime",
   "Runtime",
   "Runtime",
@@ -173,9 +176,13 @@ static const char* const bc_err_descs[] = {
   "end of file",
   "bug in parser",
 
-  "couldn't open file",
   "divide by zero",
   "negative square root",
+  "invalid input base",
+  "invalid output base",
+  "invalid number string",
+
+  "couldn't open file",
   "mismatched parameters",
   "undefined function",
   "undefined variable",
@@ -196,17 +203,17 @@ static const char* const bc_err_descs[] = {
   "print error",
   "bc was not halted correctly; this is a bug in bc",
 
-  "POSIX bc only allows one character names; the following is invalid:",
-  "POSIX bc does not allow '#' script comments",
-  "POSIX bc does not allow the following keyword:",
-  "POSIX bc requires parentheses around return expressions",
-  "POSIX bc does not allow boolean operators; the following is invalid:",
-  "POSIX bc does not allow comparison operators outside if or loops",
-  "POSIX bc does not allow more than one comparison operator per condition",
-  "POSIX bc does not allow an empty init expression in a for loop",
-  "POSIX bc does not allow an empty condition expression in a for loop",
-  "POSIX bc does not allow an empty update expression in a for loop",
-  "POSIX bc requires the left brace be on the same line as the function header",
+  "POSIX only allows one character names; the following is invalid:",
+  "POSIX does not allow '#' script comments",
+  "POSIX does not allow the following keyword:",
+  "POSIX requires parentheses around return expressions",
+  "POSIX does not allow boolean operators; the following is invalid:",
+  "POSIX does not allow comparison operators outside if or loops",
+  "POSIX does not allow more than one comparison operator per condition",
+  "POSIX does not allow an empty init expression in a for loop",
+  "POSIX does not allow an empty condition expression in a for loop",
+  "POSIX does not allow an empty update expression in a for loop",
+  "POSIX requires the left brace be on the same line as the function header",
 
 };
 
@@ -276,7 +283,7 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
 void bc_error(BcStatus status) {
 
   if (!status || status == BC_STATUS_PARSE_QUIT ||
-      status == BC_STATUS_VM_HALT ||
+      status == BC_STATUS_EXEC_HALT ||
       status >= BC_STATUS_POSIX_NAME_LEN)
   {
     return;
