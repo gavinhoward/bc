@@ -340,7 +340,7 @@ BcStatus bc_temp_initName(BcTemp* temp, const char* name) {
   temp->type = BC_TEMP_NAME;
 
   if (!name) {
-    return BC_STATUS_VM_INVALID_NAME;
+    return BC_STATUS_EXEC_INVALID_NAME;
   }
 
   temp->name = name;
@@ -351,7 +351,7 @@ BcStatus bc_temp_initName(BcTemp* temp, const char* name) {
 BcStatus bc_temp_init(BcTemp* temp, BcTempType type) {
 
   if (type > BC_TEMP_LAST || type == BC_TEMP_NUM || type == BC_TEMP_NAME) {
-    return BC_STATUS_VM_INVALID_TEMP;
+    return BC_STATUS_EXEC_INVALID_TEMP;
   }
 
   temp->type = type;
