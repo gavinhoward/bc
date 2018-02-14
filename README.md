@@ -64,7 +64,7 @@ Files:
 
 Folders:
 
-	docs        Contains all of the documentation for Gam (currently empty).
-	include     Contains all of the public header files for Gam.
-	src         All of Gam's source code.
-	tests       Tests for Gam.
+	docs        Contains all of the documentation (currently empty).
+	include     Contains all of the public header files.
+	src         All source code.
+	tests       Tests.
