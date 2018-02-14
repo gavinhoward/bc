@@ -74,6 +74,7 @@ static BcStatus bc_num_alg_s(BcNum* a, BcNum* b, BcNum* c, size_t scale);
 static BcStatus bc_num_alg_m(BcNum* a, BcNum* b, BcNum* c, size_t scale);
 static BcStatus bc_num_alg_d(BcNum* a, BcNum* b, BcNum* c, size_t scale);
 static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale);
+static BcStatus bc_num_alg_rem(BcNum* a, BcNum* b, BcNum* c);
 static BcStatus bc_num_alg_p(BcNum* a, BcNum* b, BcNum* c, size_t scale);
 
 static BcStatus bc_num_sqrt_newton(BcNum* a, BcNum* b, size_t scale);
@@ -171,76 +172,32 @@ BcStatus bc_num_fprint(BcNum* num, size_t base, FILE* f) {
 }
 
 BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_a, a->len + b->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_a, a->len + b->len + 1);
 }
 
 BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-
-  BcNum* a_num;
-  BcNum* b_num;
-
-  a_num = (BcNum*) a;
-  b_num = (BcNum*) b;
-
-  return bc_num_binary(a_num, b_num, result, scale, bc_num_alg_s,
-                       a_num->len + b_num->len);
+  return bc_num_binary(a, a, result, scale, bc_num_alg_s, a->len + b->len + 1);
 }
 
 BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-
-  BcNum* a_num;
-  BcNum* b_num;
-
-  a_num = (BcNum*) a;
-  b_num = (BcNum*) b;
-
-  return bc_num_binary(a_num, b_num, result, scale, bc_num_alg_m,
-                       a_num->len + b_num->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_m, a->len + b->len);
 }
 
 BcStatus bc_num_div(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-
-  BcNum* a_num;
-  BcNum* b_num;
-
-  a_num = (BcNum*) a;
-  b_num = (BcNum*) b;
-
-  return bc_num_binary(a_num, b_num, result, scale, bc_num_alg_d,
-                       a_num->len + b_num->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_d, a->len + b->len);
 }
 
 BcStatus bc_num_mod(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-
-  BcNum* a_num;
-  BcNum* b_num;
-
-  a_num = (BcNum*) a;
-  b_num = (BcNum*) b;
-
-  return bc_num_binary(a_num, b_num, result, scale, bc_num_alg_mod,
-                       a_num->len + b_num->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_mod, a->len + b->len);
 }
 
 BcStatus bc_num_pow(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-
-  BcNum* a_num;
-  BcNum* b_num;
-
-  a_num = (BcNum*) a;
-  b_num = (BcNum*) b;
-
-  return bc_num_binary(a_num, b_num, result, scale, bc_num_alg_p,
-                       a_num->len + b_num->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_p, a->len * b->len);
 }
 
 BcStatus bc_num_sqrt(BcNum* a, BcNum* result, size_t scale) {
-
-  BcNum* a_num;
-
-  a_num = (BcNum*) a;
-
-  return bc_num_unary(a_num, result, scale, bc_num_sqrt_newton, a_num->len * 2);
+  return bc_num_unary(a, result, scale, bc_num_sqrt_newton,
+                      a->radix + (a->len - a->radix) * 2);
 }
 
 bool bc_num_isInteger(BcNum* num) {
@@ -480,9 +437,21 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
 static BcStatus bc_num_alg_s(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
+  scale = BC_MAX(BC_NUM_SCALE(a), BC_NUM_SCALE(b));
+
 }
 
 static BcStatus bc_num_alg_m(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+
+  size_t scale_a;
+  size_t scale_b;
+
+  scale_a = BC_NUM_SCALE(a);
+  scale_b = BC_NUM_SCALE(b);
+
+  scale = BC_MAX(scale, scale_a);
+  scale = BC_MAX(scale, scale_b);
+  scale = BC_MIN(scale_a + scale_b, scale);
 
 }
 
@@ -491,6 +460,21 @@ static BcStatus bc_num_alg_d(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 }
 
 static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+
+  if (scale == 0) {
+    return bc_num_alg_rem(a, b, c);
+  }
+
+  // TODO: Compute a / b.
+
+  scale = BC_MAX(scale + b->len - b->radix, a->len - a->radix);
+
+  // TODO: Compute a - (a / b) * b.
+
+  return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_alg_rem(BcNum* a, BcNum* b, BcNum* c) {
 
 }
 
