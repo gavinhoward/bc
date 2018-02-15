@@ -99,6 +99,8 @@ static const char* const bc_err_types[] = {
   "Math",
   "Math",
   "Math",
+  "Math",
+  "Math",
 
   "Runtime",
   "Runtime",
@@ -175,10 +177,11 @@ static const char* const bc_err_descs[] = {
   "end of file",
   "bug in parser",
 
+  "negative number",
+  "non integer number",
+  "overflow",
   "divide by zero",
   "negative square root",
-  "invalid input base",
-  "invalid output base",
   "invalid number string",
 
   "couldn't open file",
