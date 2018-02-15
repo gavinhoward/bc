@@ -4,8 +4,8 @@ This is an implementation of POSIX `bc` that implements
 [GNU `bc`](https://www.gnu.org/software/bc/) extensions.
 
 This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
-3-clause License, with a special exemption for the Toybox project and the
-Android Open Source Project to use it under the BSD 0-clause License.
+3-clause License, with a special exemption for the Toybox project to use it
+under the BSD 0-clause License.
 
 Because this `bc` makes use of [`arbprec`](https://github.com/cmgraff/arbsh) by
 [cmgraff](https://github.com/cmgraff) and [hexingb](https://github.com/hexingb)
@@ -59,8 +59,8 @@ folders in that directory.
 
 Files:
 
-	LICENSE.md      A Markdown version of Pixar's modified Apache 2.0 license.
-	NOTICE.md       The NOTICE file required by the Apache License.
+	LICENSE.md      A Markdown the BSD 3-clause License.
+	NOTICE.md       List of contributors and copyright owners.
 
 Folders:
 
