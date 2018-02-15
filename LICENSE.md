@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Exemption
 
-A special license exemption is granted to the Toybox project and to the Android
-Open Source Project to use this source under the following BSD 0-Clause License:
+A special license exemption is granted to the Toybox project to use this source
+under the following BSD 0-Clause License:
 
 Permission to use, copy, modify, and/or distribute this software for any purpose
 with or without fee is hereby granted.
