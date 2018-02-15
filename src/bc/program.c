@@ -694,6 +694,36 @@ BcStatus bc_program_exec(BcProgram* p) {
         break;
       }
 
+      case BC_INST_OP_NEGATE:
+      {
+        BcResult* ptr;
+        BcResult result;
+
+        ptr = bc_vec_top(&p->expr_stack);
+
+        if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
+
+        result.type = BC_NUM_RESULT;
+
+        status = bc_num_construct(&result.num, BC_NUM_DEF_SIZE);
+
+        if (status) return status;
+
+        status = bc_num_copy(&result.num, &ptr->num);
+
+        if (status) return status;
+
+        result.num.neg = !result.num.neg;
+
+        status = bc_vec_pop(&p->expr_stack);
+
+        if (status) return status;
+
+        status = bc_vec_push(&p->expr_stack, &result);
+
+        break;
+      }
+
       default:
       {
         return BC_STATUS_EXEC_INVALID_STMT;
