@@ -64,35 +64,32 @@
 
 static const char* const bc_byte_fmt = "%02x";
 
-static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
-static fxdpnt* bc_program_sub(fxdpnt* a, fxdpnt* b, fxdpnt* c, int base, size_t scale);
-
 static const BcMathOpFunc bc_math_ops[] = {
 
-  arb_mod,
+  bc_num_mod,
 
   NULL, // &
   NULL, // '
   NULL, // (
   NULL, // )
 
-  arb_mul,
+  bc_num_mul,
 
-  bc_program_add,
+  bc_num_add,
 
   NULL, // ,
 
-  bc_program_sub,
+  bc_num_sub,
 
   NULL, // .
 
-  arb_alg_d,
+  bc_num_div,
 
 };
 
 static BcStatus bc_program_printString(const char* str);
 static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
-                                    fxdpnt** num, bool print);
+                                    BcNum* num, bool print);
 #if 0
 static BcStatus bc_program_assign(BcProgram* p, BcExpr* expr,
                                   BcExprType op, fxdpnt* amt);
@@ -203,9 +200,17 @@ BcStatus bc_program_init(BcProgram* p) {
   }
 #endif
 
-  p->last = arb_str2fxdpnt("0");
-  p->zero = arb_str2fxdpnt("0");
-  p->one = arb_str2fxdpnt("1");
+  s = bc_num_parse(&p->last, "0", 10, 0);
+
+  if (s) return s;
+
+  s = bc_num_parse(&p->zero, "0", 10, 0);
+
+  if (s) goto zero_err;
+
+  s = bc_num_parse(&p->one, "1", 10, 0);
+
+  if (s) goto one_err;
 
   p->num_buf = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
@@ -281,7 +286,7 @@ BcStatus bc_program_init(BcProgram* p) {
     goto const_err;
   }
 
-  s = bc_vec_init(&p->expr_stack, sizeof(BcNum), bc_num_free);
+  s = bc_vec_init(&p->expr_stack, sizeof(BcNum), bc_result_free);
 
   if (s) {
     goto expr_err;
@@ -372,11 +377,15 @@ func_err:
 
 num_buf_err:
 
-  arb_free(p->last);
+  bc_num_destruct(&p->one);
 
-  if (p->zero) arb_free(p->zero);
+one_err:
 
-  if (p->one) arb_free(p->one);
+  bc_num_destruct(&p->zero);
+
+zero_err:
+
+  bc_num_destruct(&p->last);
 
   return s;
 }
@@ -535,11 +544,11 @@ BcStatus bc_program_exec(BcProgram* p) {
 
       case BC_INST_PRINT:
       {
-        BcNum* num;
+        BcResult* num;
 
         num = bc_vec_top(&p->expr_stack);
 
-        arb_print(num->num);
+        bc_num_print(&num->num, p->obase);
 
         bc_vec_pop(&p->expr_stack);
 
@@ -591,7 +600,7 @@ BcStatus bc_program_exec(BcProgram* p) {
       case BC_INST_PUSH_NUM:
       {
         size_t idx;
-        BcNum num;
+        BcResult result;
         char* str;
 
         idx = bc_program_index(code, &ip->idx);
@@ -602,15 +611,15 @@ BcStatus bc_program_exec(BcProgram* p) {
           return BC_STATUS_EXEC_INVALID_EXPR;
         }
 
-        num.num = arb_str2fxdpnt(str);
+        //result.num = arb_str2fxdpnt(str);
 
-        if (!num.num) {
-          return BC_STATUS_EXEC_INVALID_EXPR;
-        }
+        //if (!result.num) {
+        //  return BC_STATUS_EXEC_INVALID_EXPR;
+        //}
 
-        num.type = BC_NUM_CONSTANT;
+        result.type = BC_NUM_CONSTANT;
 
-        status = bc_vec_push(&p->expr_stack, &num);
+        status = bc_vec_push(&p->expr_stack, &result);
 
         break;
       }
@@ -622,10 +631,10 @@ BcStatus bc_program_exec(BcProgram* p) {
       case BC_INST_OP_DIVIDE:
       case BC_INST_OP_POWER:
       {
-        BcNum* ptr;
-        BcNum num1;
-        BcNum num2;
-        BcNum result;
+        BcResult* ptr;
+        BcResult num1;
+        BcResult num2;
+        BcResult result;
 
         ptr = bc_vec_top(&p->expr_stack);
 
@@ -648,7 +657,10 @@ BcStatus bc_program_exec(BcProgram* p) {
         if (status) return status;
 
         result.type = BC_NUM_RESULT;
-        result.num = arb_alloc(16);
+
+        status = bc_num_construct(&result.num, BC_NUM_DEF_SIZE);
+
+        if (status) return status;
 
         if (inst != BC_INST_OP_POWER) {
 
@@ -656,11 +668,13 @@ BcStatus bc_program_exec(BcProgram* p) {
 
           op = bc_math_ops[inst - BC_INST_OP_MODULUS];
 
-          result.num = op(num1.num, num2.num, result.num, 10, 10);
+          status = op(&num1.num, &num2.num, &result.num, p->scale);
         }
         else {
           // TODO: Power.
         }
+
+        if (status) return status;
 
         status = bc_vec_push(&p->expr_stack, &result);
 
@@ -768,9 +782,9 @@ void bc_program_free(BcProgram* p) {
   bc_vec_free(&p->locals);
   bc_vec_free(&p->temps);
 
-  // p->zero and p->one are not freed because they are
-  // freed by bc_vec_free() run on p->constants.
-  arb_free(p->last);
+  bc_num_destruct(&p->last);
+  bc_num_destruct(&p->zero);
+  bc_num_destruct(&p->one);
 
   memset(p, 0, sizeof(BcProgram));
 }
@@ -869,7 +883,7 @@ static BcStatus bc_program_printString(const char* str) {
 }
 
 static BcStatus bc_program_execExpr(BcProgram* p, BcVec* exprs,
-                                    fxdpnt** num, bool print)
+                                    BcNum* num, bool print)
 {
 #if 0
   BcStatus status;
@@ -1394,18 +1408,4 @@ static void bc_program_printName(uint8_t* code, size_t* start) {
   }
 
   putchar(byte);
-}
-
-static fxdpnt* bc_program_add(fxdpnt* a, fxdpnt* b, fxdpnt* c,
-                              int base, size_t scale)
-{
-  (void) scale;
-  return arb_add(a, b, c, base);
-}
-
-static fxdpnt* bc_program_sub(fxdpnt* a, fxdpnt* b, fxdpnt* c,
-                              int base, size_t scale)
-{
-  (void) scale;
-  return arb_sub(a, b, c, base);
 }

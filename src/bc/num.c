@@ -57,12 +57,6 @@
 #include <bc/bc.h>
 #include <bc/num.h>
 
-static BcStatus bc_num_construct(BcNum* num, size_t request);
-
-static BcStatus bc_num_expand(BcNum* num, size_t request);
-
-static void bc_num_destruct(BcNum* num);
-
 static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
                                BcUnaryFunc op, size_t req);
 
@@ -95,8 +89,59 @@ static BcStatus bc_num_printHighestBase(BcNum* n, size_t base, FILE* f);
 
 static BcStatus bc_num_removeLeadingZeros(BcNum* n);
 
+BcStatus bc_num_construct(BcNum* num, size_t request) {
+
+  if (!num || !request) return BC_STATUS_INVALID_PARAM;
+
+  memset(num, 0, sizeof(BcNum));
+
+  num->num = malloc(request);
+
+  if (!num->num) {
+    return BC_STATUS_MALLOC_FAIL;
+  }
+
+  num->unused = request;
+
+  return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_num_expand(BcNum* num, size_t request) {
+
+  if (!num || !request) return BC_STATUS_INVALID_PARAM;
+
+  if (request > num->len + num->unused) {
+
+    size_t extra;
+    char* temp;
+
+    extra = request - (num->len + num->unused);
+
+    temp = realloc(num->num, request);
+
+    if (!temp) {
+      return BC_STATUS_MALLOC_FAIL;
+    }
+
+    num->num = temp;
+
+    num->unused += extra;
+  }
+
+  return BC_STATUS_SUCCESS;
+}
+
+void bc_num_destruct(BcNum* num) {
+
+  if (!num) return;
+
+  if (num->num) free(num->num);
+
+  memset(num, 0, sizeof(BcNum));
+}
+
 BcStatus bc_num_parse(BcNum* num, const char* val,
-                       size_t base, size_t scale)
+                      size_t base, size_t scale)
 {
   BcStatus status;
 
@@ -289,57 +334,6 @@ int bc_num_compare(BcNum* a, BcNum* b) {
   }
 
   return 0;
-}
-
-static BcStatus bc_num_construct(BcNum* num, size_t request) {
-
-  if (!num || !request) return BC_STATUS_INVALID_PARAM;
-
-  memset(num, 0, sizeof(BcNum));
-
-  num->num = malloc(request);
-
-  if (!num->num) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
-
-  num->unused = request;
-
-  return BC_STATUS_SUCCESS;
-}
-
-static BcStatus bc_num_expand(BcNum* num, size_t request) {
-
-  if (!num || !request) return BC_STATUS_INVALID_PARAM;
-
-  if (request > num->len + num->unused) {
-
-    size_t extra;
-    char* temp;
-
-    extra = request - (num->len + num->unused);
-
-    temp = realloc(num->num, request);
-
-    if (!temp) {
-      return BC_STATUS_MALLOC_FAIL;
-    }
-
-    num->num = temp;
-
-    num->unused += extra;
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
-static void bc_num_destruct(BcNum* num) {
-
-  if (!num) return;
-
-  if (num->num) free(num->num);
-
-  memset(num, 0, sizeof(BcNum));
 }
 
 static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,

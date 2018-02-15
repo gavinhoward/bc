@@ -45,9 +45,6 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-ARBPREC = arbprec
-ARBPREC_LIB = lib$(ARBPREC).a
-
 CFLAGS += -Wall -Wextra -I./include/ -I$(ARBPREC)/include -std=c99 -D_POSIX_C_SOURCE -g -O0
 
 BC_VERSION = 0.1
@@ -67,8 +64,8 @@ BC_EXEC = bc
 all:
 	$(MAKE) $(BC_EXEC)
 
-$(BC_EXEC): $(BC_OBJ) $(ARBPREC_LIB)
-	$(CC) $(CFLAGS) -o $(BC_EXEC) ./src/*.c $(BC_OBJ) $(ARBPREC)/$(ARBPREC_LIB)
+$(BC_EXEC): $(BC_OBJ)
+	$(CC) $(CFLAGS) -o $(BC_EXEC) ./src/*.c $(BC_OBJ)
 
 $(ARBPREC_LIB):
 	$(MAKE) -C $(ARBPREC)
@@ -76,5 +73,4 @@ $(ARBPREC_LIB):
 clean:
 	$(RM) $(BC_OBJ)
 	$(RM) $(BC_EXEC)
-	$(MAKE) -C $(ARBPREC) clean
 
