@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2018 Contributors
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,84 +45,31 @@
  *
  *******************************************************************************
  *
- * Definitions for the num type.
+ * Definitions for bc's virtual machine.
  *
  */
 
-#ifndef BC_NUM_H
-#define BC_NUM_H
+#ifndef BC_VM_H
+#define BC_VM_H
 
-// For C++ compatibility.
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <bc.h>
+#include <program.h>
+#include <parse.h>
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
+#define BC_VM_BUF_SIZE (1024)
 
-#include <bc/bc.h>
+typedef struct BcVm {
 
-#define BC_NUM_MIN_BASE (2)
+  BcProgram program;
+  BcParse parse;
 
-#define BC_NUM_MAX_INPUT_BASE (16)
+  int filec;
+  const char** filev;
 
-#define BC_NUM_MAX_OUTPUT_BASE (99)
+} BcVm;
 
-#define BC_NUM_DEF_SIZE (16)
+BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]);
 
-#define BC_NUM_FROM_CHAR(c) ((c) -'0')
+BcStatus bc_vm_exec(BcVm* vm);
 
-#define BC_NUM_TO_CHAR(n) ((n) + '0')
-
-#define BC_NUM_SCALE(n) ((n)->len - (n)->radix)
-
-typedef struct BcNum {
-
-  char* num;
-  size_t radix;
-  size_t len;
-  size_t unused;
-  bool neg;
-
-} BcNum;
-
-typedef BcStatus (*BcUnaryFunc)(BcNum* a, BcNum* res, size_t scale);
-typedef BcStatus (*BcBinaryFunc)(BcNum* a, BcNum* b, BcNum* res, size_t scale);
-
-BcStatus bc_num_construct(BcNum* n, size_t request);
-
-BcStatus bc_num_expand(BcNum* n, size_t request);
-
-void bc_num_destruct(BcNum* n);
-
-BcStatus bc_num_copy(BcNum* d, BcNum* s);
-
-BcStatus bc_num_parse(BcNum* n, const char* val,
-                       size_t base, size_t scale);
-
-BcStatus bc_num_print(BcNum* n, size_t base);
-BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f);
-
-BcStatus bc_num_long(BcNum* n, long* result);
-BcStatus bc_num_ulong(BcNum* n, unsigned long* result);
-
-BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_div(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_mod(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_pow(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-
-BcStatus bc_num_sqrt(BcNum* a, BcNum* result, size_t scale);
-
-bool bc_num_isInteger(BcNum* num);
-
-int bc_num_compare(BcNum* a, BcNum* b);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // BC_NUM_H
+#endif // BC_VM_H

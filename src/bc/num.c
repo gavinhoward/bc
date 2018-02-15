@@ -53,8 +53,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <bc/bc.h>
-#include <bc/num.h>
+#include <bc.h>
+#include <num.h>
 
 static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
                              BcUnaryFunc op, size_t req);

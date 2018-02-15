@@ -55,10 +55,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <bc/bc.h>
-#include <bc/data.h>
-
-#include <arbprec/arbprec.h>
+#include <bc.h>
+#include <data.h>
 
 #define BC_PROGRAM_BUF_SIZE (1024)
 

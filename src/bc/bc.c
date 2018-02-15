@@ -58,9 +58,8 @@
 #include <unistd.h>
 #include <limits.h>
 
-#include <bc/vm.h>
-
-#include <bc/bc.h>
+#include <bc.h>
+#include <vm.h>
 
 static const char* const bc_err_types[] = {
 

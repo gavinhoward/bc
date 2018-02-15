@@ -45,30 +45,65 @@
  *
  *******************************************************************************
  *
- * Definitions for bc's virtual machine.
+ * Definitions for bc vectors (resizable arrays).
  *
  */
 
-#ifndef BC_VM_H
-#define BC_VM_H
+#ifndef BC_VECTOR_H
+#define BC_VECTOR_H
 
-#include <bc/program.h>
-#include <bc/parse.h>
+#include <stdlib.h>
+#include <stdint.h>
 
-#define BC_VM_BUF_SIZE (1024)
+#include <bc.h>
 
-typedef struct BcVm {
+#define BC_VEC_INITIAL_CAP (32)
 
-  BcProgram program;
-  BcParse parse;
+typedef int (*BcVecCmpFunc)(void*, void*);
 
-  int filec;
-  const char** filev;
+typedef struct BcVec {
 
-} BcVm;
+  uint8_t* array;
+  size_t len;
+  size_t cap;
+  size_t size;
 
-BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]);
+  BcFreeFunc dtor;
 
-BcStatus bc_vm_exec(BcVm* vm);
+} BcVec;
 
-#endif // BC_VM_H
+BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc dtor);
+
+BcStatus bc_vec_push(BcVec* vec, void* data);
+
+BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data);
+
+BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx);
+
+void* bc_vec_top(BcVec* vec);
+
+void* bc_vec_item(BcVec* vec, size_t idx);
+
+BcStatus bc_vec_pop(BcVec* vec);
+
+void bc_vec_free(void* vec);
+
+typedef struct BcVecO {
+
+  BcVec vec;
+  BcVecCmpFunc cmp;
+
+} BcVecO;
+
+BcStatus bc_veco_init(BcVecO* vec, size_t esize,
+                      BcFreeFunc dtor, BcVecCmpFunc cmp);
+
+BcStatus bc_veco_insert(BcVecO* vec, void* data, size_t* idx);
+
+size_t bc_veco_index(BcVecO* vec, void* data);
+
+void* bc_veco_item(BcVecO* vec, size_t idx);
+
+void bc_veco_free(BcVecO* vec);
+
+#endif // BC_VECTOR_H

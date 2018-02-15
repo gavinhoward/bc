@@ -56,8 +56,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <bc/bc.h>
-#include <bc/lex.h>
+#include <bc.h>
+#include <lex.h>
 
 static const char* const token_type_strs[] = {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
