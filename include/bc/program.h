@@ -63,15 +63,15 @@
 
 #define BC_PROGRAM_BUF_SIZE (1024)
 
-typedef fxdpnt* (*BcMathOpFunc)(fxdpnt*, fxdpnt*, fxdpnt*, int, size_t);
+typedef BcStatus (*BcMathOpFunc)(BcNum*, BcNum*, BcNum*, size_t);
 
 typedef struct BcProgram {
 
   BcVec ip_stack;
 
-  long scale;
-  long ibase;
-  long obase;
+  size_t scale;
+  size_t ibase;
+  size_t obase;
 
   long base_max;
   long dim_max;
@@ -104,10 +104,10 @@ typedef struct BcProgram {
 
   const char* file;
 
-  fxdpnt* last;
+  BcNum last;
 
-  fxdpnt* zero;
-  fxdpnt* one;
+  BcNum zero;
+  BcNum one;
 
   char* num_buf;
   size_t buf_size;

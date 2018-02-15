@@ -55,10 +55,9 @@
 
 #include <stdbool.h>
 
-#include <arbprec/arbprec.h>
-
 #include <bc/bc.h>
 #include <bc/vector.h>
+#include <bc/num.h>
 
 #define BC_PROGRAM_MAX_STMTS (128)
 
@@ -154,9 +153,9 @@ typedef struct BcLocal {
   bool var;
 
   union {
-    fxdpnt num;
+    BcNum num;
     struct {
-      fxdpnt* array;
+      BcNum* array;
       uint32_t num_elems;
     };
   };
@@ -169,7 +168,7 @@ typedef struct BcTemp {
 
   union {
 
-    fxdpnt* num;
+    BcNum num;
     const char* name;
 
   };
@@ -192,11 +191,11 @@ typedef struct BcFunc {
 
 } BcFunc;
 
-typedef fxdpnt* BcVar;
+typedef BcNum BcVar;
 
 typedef BcVec BcArray;
 
-typedef enum BcNumType {
+typedef enum BcResultType {
 
   BC_NUM_RESULT,
 
@@ -210,14 +209,14 @@ typedef enum BcNumType {
   BC_NUM_IBASE,
   BC_NUM_OBASE,
 
-} BcNumType;
+} BcResultType;
 
-typedef struct BcNum {
+typedef struct BcResult {
 
-  BcNumType type;
-  fxdpnt* num;
+  BcResultType type;
+  BcNum num;
 
-} BcNum;
+} BcResult;
 
 typedef struct BcInstPtr {
 
@@ -251,7 +250,7 @@ void bc_string_free(void* string);
 int bc_entry_cmp(void* entry1, void*entry2);
 void bc_entry_free(void* entry);
 
-void bc_num_free(void* num);
+void bc_result_free(void* num);
 
 void bc_constant_free(void* constant);
 

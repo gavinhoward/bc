@@ -92,6 +92,12 @@ typedef struct BcNum {
 typedef BcStatus (*BcUnaryFunc)(BcNum* a, BcNum* res, size_t scale);
 typedef BcStatus (*BcBinaryFunc)(BcNum* a, BcNum* b, BcNum* res, size_t scale);
 
+BcStatus bc_num_construct(BcNum* num, size_t request);
+
+BcStatus bc_num_expand(BcNum* num, size_t request);
+
+void bc_num_destruct(BcNum* num);
+
 BcStatus bc_num_copy(BcNum* dest, BcNum* src);
 
 BcStatus bc_num_parse(BcNum* num, const char* val,

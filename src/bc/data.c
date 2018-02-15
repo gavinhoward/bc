@@ -50,6 +50,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include <bc/data.h>
@@ -218,7 +219,7 @@ BcStatus bc_var_init(BcVar* var) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  *var = arb_alloc(16);
+  return bc_num_construct(var, BC_NUM_DEF_SIZE);
 
   return BC_STATUS_SUCCESS;
 }
@@ -233,7 +234,7 @@ void bc_var_free(void* var) {
     return;
   }
 
-  arb_free(*v);
+  bc_num_destruct(v);
 }
 
 BcStatus bc_array_init(BcArray* array) {
@@ -242,8 +243,7 @@ BcStatus bc_array_init(BcArray* array) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_vec_init(array, sizeof(fxdpnt),
-                          (BcFreeFunc) arb_free);
+  return bc_vec_init(array, sizeof(BcNum), (BcFreeFunc) bc_num_destruct);
 }
 
 void bc_array_free(void* array) {
@@ -265,28 +265,28 @@ BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num) {
   local->var = true;
 
   // TODO: Don't malloc.
-  arb_str2fxdpnt(num);
+  //arb_str2fxdpnt(num);
 
   return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
 
-  fxdpnt* array;
+  BcNum* array;
 
   assert(nelems);
 
   local->name = name;
   local->var = false;
 
-  array = malloc(nelems * sizeof(fxdpnt));
+  array = malloc(nelems * sizeof(BcNum));
 
   if (!array) {
     return BC_STATUS_MALLOC_FAIL;
   }
 
   for (uint32_t i = 0; i < nelems; ++i) {
-    arb_construct(array + i, BC_PROGRAM_DEF_SIZE);
+    bc_num_construct(array + i, BC_PROGRAM_DEF_SIZE);
   }
 
   return BC_STATUS_SUCCESS;
@@ -295,7 +295,7 @@ BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
 void bc_local_free(void* local) {
 
   BcLocal* l;
-  fxdpnt* array;
+  BcNum* array;
   uint32_t nelems;
 
   l = (BcLocal*) local;
@@ -303,7 +303,7 @@ void bc_local_free(void* local) {
   free((void*) l->name);
 
   if (l->var) {
-    arb_destruct(&l->num);
+    bc_num_destruct(&l->num);
   }
   else {
 
@@ -311,7 +311,7 @@ void bc_local_free(void* local) {
     array = l->array;
 
     for (uint32_t i = 0; i < nelems; ++i) {
-      arb_destruct(array + i);
+      bc_num_destruct(array + i);
     }
 
     free(array);
@@ -326,10 +326,10 @@ BcStatus bc_temp_initNum(BcTemp* temp, const char* val) {
   temp->type = BC_TEMP_NUM;
 
   if (val) {
-    temp->num = arb_str2fxdpnt(val);
+    //temp->num = arb_str2fxdpnt(val);
   }
   else {
-    temp->num = arb_alloc(BC_PROGRAM_DEF_SIZE);
+    //temp->num = arb_alloc(BC_PROGRAM_DEF_SIZE);
   }
 
   return BC_STATUS_SUCCESS;
@@ -366,7 +366,7 @@ void bc_temp_free(void* temp) {
   t = (BcTemp*) temp;
 
   if (t->type == BC_TEMP_NUM) {
-    arb_free(t->num);
+    bc_num_destruct(&t->num);
   }
 }
 
@@ -399,11 +399,11 @@ void bc_entry_free(void* entry) {
   free(e->name);
 }
 
-void bc_num_free(void* num) {
+void bc_result_free(void* num) {
 
-  BcNum* n;
+  BcResult* n;
 
-  n = (BcNum*) num;
+  n = (BcResult*) num;
 
   switch (n->type) {
 
@@ -413,7 +413,7 @@ void bc_num_free(void* num) {
     case BC_NUM_IBASE:
     case BC_NUM_OBASE:
     {
-      arb_free(n->num);
+      bc_num_destruct(&n->num);
       break;
     }
 
