@@ -139,6 +139,30 @@ void bc_num_destruct(BcNum* num) {
   memset(num, 0, sizeof(BcNum));
 }
 
+BcStatus bc_num_copy(BcNum* dest, BcNum* src) {
+
+  BcStatus status;
+  BcNum* d;
+  BcNum* s;
+
+  d = (BcNum*) dest;
+  s = (BcNum*) src;
+
+  if (!d || !s || d == s) return BC_STATUS_INVALID_PARAM;
+
+  status = bc_num_expand(d, s->len + s->unused);
+
+  if (status) return status;
+
+  d->len = s->len;
+  d->neg = s->neg;
+  d->radix = s->radix;
+
+  memcpy(d->num, s->num, sizeof(char) * d->len);
+
+  return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_num_parse(BcNum* num, const char* val,
                       size_t base, size_t scale)
 {
@@ -162,30 +186,6 @@ BcStatus bc_num_parse(BcNum* num, const char* val,
   }
 
   return status;
-}
-
-BcStatus bc_num_copy(BcNum* dest, BcNum* src) {
-
-  BcStatus status;
-  BcNum* d;
-  BcNum* s;
-
-  d = (BcNum*) dest;
-  s = (BcNum*) src;
-
-  if (!d || !s || d == s) return BC_STATUS_INVALID_PARAM;
-
-  status = bc_num_expand(d, s->len + s->unused);
-
-  if (status) return status;
-
-  d->len = s->len;
-  d->neg = s->neg;
-  d->radix = s->radix;
-
-  memcpy(d->num, s->num, sizeof(char) * d->len);
-
-  return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_print(BcNum* num, size_t base) {
