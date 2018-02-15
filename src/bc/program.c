@@ -56,10 +56,10 @@
 
 #include <arbprec/arbprec.h>
 
-#include <bc/io.h>
-#include <bc/program.h>
-#include <bc/parse.h>
-#include <bc/instructions.h>
+#include <io.h>
+#include <program.h>
+#include <parse.h>
+#include <instructions.h>
 
 static const char* const bc_byte_fmt = "%02x";
 

@@ -74,8 +74,7 @@ static BcStatus bc_num_sqrt_newton(BcNum* a, BcNum* b, size_t scale);
 
 static bool bc_num_strValid(const char* val, size_t base);
 
-static BcStatus bc_num_parseDecimal(BcNum *n, const char* val,
-                                     size_t scale);
+static BcStatus bc_num_parseDecimal(BcNum *n, const char* val, size_t scale);
 static BcStatus bc_num_parseLowBase(BcNum* n, const char* val,
                                      size_t base, size_t scale);
 static BcStatus bc_num_parseHighBase(BcNum* n, const char* val,
@@ -692,8 +691,7 @@ static bool bc_num_strValid(const char* val, size_t base) {
   return true;
 }
 
-static BcStatus bc_num_parseDecimal(BcNum* n, const char* val,
-                                     size_t scale) {
+static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
 
   BcStatus status;
   size_t len;
