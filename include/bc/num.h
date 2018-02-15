@@ -91,19 +91,19 @@ typedef struct BcNum {
 typedef BcStatus (*BcUnaryFunc)(BcNum* a, BcNum* res, size_t scale);
 typedef BcStatus (*BcBinaryFunc)(BcNum* a, BcNum* b, BcNum* res, size_t scale);
 
-BcStatus bc_num_construct(BcNum* num, size_t request);
+BcStatus bc_num_construct(BcNum* n, size_t request);
 
-BcStatus bc_num_expand(BcNum* num, size_t request);
+BcStatus bc_num_expand(BcNum* n, size_t request);
 
-void bc_num_destruct(BcNum* num);
+void bc_num_destruct(BcNum* n);
 
-BcStatus bc_num_copy(BcNum* dest, BcNum* src);
+BcStatus bc_num_copy(BcNum* d, BcNum* s);
 
-BcStatus bc_num_parse(BcNum* num, const char* val,
+BcStatus bc_num_parse(BcNum* n, const char* val,
                        size_t base, size_t scale);
 
-BcStatus bc_num_print(BcNum* num, size_t base);
-BcStatus bc_num_fprint(BcNum* num, size_t base, FILE* f);
+BcStatus bc_num_print(BcNum* n, size_t base);
+BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f);
 
 BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale);
 BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale);
