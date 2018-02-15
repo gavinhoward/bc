@@ -85,7 +85,7 @@ typedef struct BcNum {
   char* num;
   size_t radix;
   size_t len;
-  size_t unused;
+  size_t cap;
   bool neg;
 
 } BcNum;
