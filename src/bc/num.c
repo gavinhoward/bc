@@ -873,25 +873,59 @@ static BcStatus bc_num_parseHighBase(BcNum* n, const char* val,
 static BcStatus bc_num_printDecimal(BcNum* n, FILE* f) {
 
   size_t i;
+  size_t chars;
+
+  chars = 0;
 
   if (n->len) {
 
-    if (n->neg) fputc('-', f);
+    if (n->neg) {
+      fputc('-', f);
+      ++chars;
+    }
 
-    for (i = 0; i < n->radix; ++i) fputc(BC_NUM_TO_CHAR(n->num[i]), f);
+    for (i = 0; i < n->radix; ++i) {
+
+      fputc(BC_NUM_TO_CHAR(n->num[i]), f);
+      ++chars;
+
+      if (chars == BC_NUM_PRINT_WIDTH) {
+        fputc('\\', f);
+        fputc('\n', f);
+        chars = 0;
+      }
+    }
 
     if (i < n->len) {
 
       fputc('.', f);
+      ++chars;
 
-      for (; i < n->len; ++i) fputc(BC_NUM_TO_CHAR(n->num[i]), f);
+      if (chars == BC_NUM_PRINT_WIDTH) {
+        fputc('\\', f);
+        fputc('\n', f);
+        chars = 0;
+      }
+
+      for (; i < n->len; ++i) {
+
+        fputc(BC_NUM_TO_CHAR(n->num[i]), f);
+        ++chars;
+
+        if (chars == BC_NUM_PRINT_WIDTH) {
+          fputc('\\', f);
+          fputc('\n', f);
+          chars = 0;
+        }
+      }
     }
   }
   else {
     fputc('0', f);
+    ++chars;
   }
 
-  fputc('\n', f);
+  if (chars) fputc('\n', f);
 
   return BC_STATUS_SUCCESS;
 }
