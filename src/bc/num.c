@@ -713,6 +713,8 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
     status = bc_num_expand(n, len);
 
     if (status) return status;
+
+    memset(n->num, 0, sizeof(char) * len);
   }
   else {
 
