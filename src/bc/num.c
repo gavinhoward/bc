@@ -99,7 +99,7 @@ BcStatus bc_num_construct(BcNum* n, size_t request) {
     return BC_STATUS_MALLOC_FAIL;
   }
 
-  n->unused = request;
+  n->cap = request;
 
   return BC_STATUS_SUCCESS;
 }
@@ -108,12 +108,9 @@ BcStatus bc_num_expand(BcNum* n, size_t request) {
 
   if (!n || !request) return BC_STATUS_INVALID_PARAM;
 
-  if (request > n->len + n->unused) {
+  if (request > n->cap) {
 
-    size_t extra;
     char* temp;
-
-    extra = request - (n->len + n->unused);
 
     temp = realloc(n->num, request);
 
@@ -122,8 +119,7 @@ BcStatus bc_num_expand(BcNum* n, size_t request) {
     }
 
     n->num = temp;
-
-    n->unused += extra;
+    n->cap = request;
   }
 
   return BC_STATUS_SUCCESS;
@@ -144,7 +140,7 @@ BcStatus bc_num_copy(BcNum* d, BcNum* s) {
 
   if (!d || !s || d == s) return BC_STATUS_INVALID_PARAM;
 
-  status = bc_num_expand(d, s->len + s->unused);
+  status = bc_num_expand(d, s->cap);
 
   if (status) return status;
 
@@ -485,7 +481,7 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   size_t min;
   char carry;
 
-  memset(c->num, 0, (c->len + c->unused) * sizeof(char));
+  memset(c->num, 0, c->cap * sizeof(char));
 
   c->radix = BC_MAX(a->radix, b->radix) + 1;
 
@@ -496,7 +492,6 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
   min = BC_MIN(scale_a, scale_b);
 
-  c->unused -= c->len - (c->radix + scale);
   c->len = c->radix + scale;
 
   ptr_a = a->num + a->radix;
@@ -733,10 +728,11 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
   radix -= i;
   len -= i;
 
+  scale = len - radix;
+
   for (i = 0; i < radix; ++i) {
     n->num[i] = BC_NUM_FROM_CHAR(ptr[i]);
     n->len += 1;
-    n->unused -= 1;
   }
 
   ptr += radix + 1;
@@ -749,7 +745,7 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
 
   while (inv_pow < scale && ptr[inv_pow] == '0') ++inv_pow;
 
-  if (inv_pow >= scale || ptr[inv_pow] == '\0') {
+  if (!radix && (inv_pow >= scale || ptr[inv_pow] == '\0')) {
 
     if (!n->len) n->neg = false;
 
@@ -763,7 +759,6 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
   for (i = 0; i < inv_pow; ++i) {
     num[i] = 0;
     ++n->len;
-    --n->unused;
   }
 
   c = ptr[i];
@@ -773,7 +768,6 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
     num[i] = BC_NUM_FROM_CHAR(c);
 
     ++n->len;
-    --n->unused;
 
     ++i;
     c = ptr[i];
@@ -957,7 +951,6 @@ static BcStatus bc_num_removeLeadingZeros(BcNum* n) {
 
   if (i == n->radix) {
 
-    n->unused += n->radix;
     n->len -= n->radix;
     n->radix = 0;
 
