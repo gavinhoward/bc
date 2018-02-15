@@ -212,6 +212,59 @@ BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f) {
   return status;
 }
 
+BcStatus bc_num_long(BcNum* n, long* result) {
+
+  size_t i;
+  unsigned long temp;
+  unsigned long prev;
+
+  if (!n || !result) return BC_STATUS_INVALID_PARAM;
+
+  if (n->radix != n->len) return BC_STATUS_MATH_NON_INTEGER;
+
+  temp = 0;
+
+  for (i = 0; i < n->len; ++i) {
+
+    prev = temp;
+
+    temp *= 10;
+    temp += n->num[i];
+
+    if (temp < prev) return BC_STATUS_MATH_OVERFLOW;
+  }
+
+  *result = temp;
+
+  return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_num_ulong(BcNum* n, unsigned long* result) {
+
+  size_t i;
+  unsigned long prev;
+
+  if (!n || !result) return BC_STATUS_INVALID_PARAM;
+
+  if (n->radix != n->len) return BC_STATUS_MATH_NON_INTEGER;
+
+  if (n->neg) return BC_STATUS_MATH_NEGATIVE;
+
+  *result = 0;
+
+  for (i = 0; i < n->len; ++i) {
+
+    prev = *result;
+
+    *result *= 10;
+    *result += n->num[i];
+
+    if (*result < prev) return BC_STATUS_MATH_OVERFLOW;
+  }
+
+  return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_a, a->len + b->len + 1);
 }

@@ -105,6 +105,9 @@ BcStatus bc_num_parse(BcNum* n, const char* val,
 BcStatus bc_num_print(BcNum* n, size_t base);
 BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f);
 
+BcStatus bc_num_long(BcNum* n, long* result);
+BcStatus bc_num_ulong(BcNum* n, unsigned long* result);
+
 BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale);
 BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale);
 BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale);
