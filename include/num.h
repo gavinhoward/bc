@@ -78,6 +78,8 @@ extern "C" {
 
 #define BC_NUM_SCALE(n) ((n)->len - (n)->radix)
 
+#define BC_NUM_PRINT_WIDTH (68)
+
 typedef struct BcNum {
 
   char* num;
