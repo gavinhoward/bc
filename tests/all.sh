@@ -1,10 +1,31 @@
 #! /bin/sh
 
-out1=../log_bc.txt
-out2=../log_test.txt
+if [ "$#" -lt 1 ]; then
+	bc="../bc"
+	testdir="."
+else
 
-rm -rf "$out1"
-rm -rf "$out2"
+	bc="$1"
 
-./parse_print_decimal.sh ../bc "$out1" "$out2" 1 11 0 00000.000000 120492435 1235.682358692356
+	if [ "$#" -lt 2]; then
+		testdir="."
+	else
+		testdir="$2"
+	fi
+fi
+
+set -e
+
+bcdir=$(dirname "${bc}")
+
+out1="$bcdir/log_bc.txt"
+out2="$bcdir/log_test.txt"
+
+while read t; do
+
+	"$testdir/test.sh" "$t" "$bc" "$out1" "$out2"
+
+done < "$testdir/all.txt"
+
+"$testdir/scripts.sh"
 
