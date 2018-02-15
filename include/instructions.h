@@ -100,6 +100,7 @@
 #define BC_INST_OP_REL_EQUAL ((uint8_t) '=')
 #define BC_INST_OP_REL_LESS_EQ ((uint8_t) ';')
 #define BC_INST_OP_REL_GREATER_EQ ((uint8_t) '?')
+#define BC_INST_OP_REL_NOT_EQ ((uint8_t) '~')
 #define BC_INST_OP_REL_LESS ((uint8_t) '<')
 #define BC_INST_OP_REL_GREATER ((uint8_t) '>')
 
@@ -113,7 +114,7 @@
 #define BC_INST_OP_ASSIGN_POWER ((uint8_t) '`')
 #define BC_INST_OP_ASSIGN_MULTIPLY ((uint8_t) '{')
 #define BC_INST_OP_ASSIGN_DIVIDE ((uint8_t) '}')
-#define BC_INST_OP_ASSIGN_MODULUS ((uint8_t) '~')
+#define BC_INST_OP_ASSIGN_MODULUS ((uint8_t) '@')
 #define BC_INST_OP_ASSIGN_PLUS ((uint8_t) '[')
 #define BC_INST_OP_ASSIGN_MINUS ((uint8_t) ']')
 #define BC_INST_OP_ASSIGN ((uint8_t) ',')
