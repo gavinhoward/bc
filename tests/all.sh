@@ -1,17 +1,13 @@
 #! /bin/sh
 
+script="$0"
+
+testdir=$(dirname "$script")
+
 if [ "$#" -lt 1 ]; then
-	bc="../bc"
-	testdir="."
+	bc="$testdir/../bc"
 else
-
 	bc="$1"
-
-	if [ "$#" -lt 2]; then
-		testdir="."
-	else
-		testdir="$2"
-	fi
 fi
 
 set -e
