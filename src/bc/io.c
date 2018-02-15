@@ -52,8 +52,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <bc/bc.h>
-#include <bc/io.h>
+#include <bc.h>
+#include <io.h>
 
 long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void* ctx) {
 

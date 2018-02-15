@@ -52,7 +52,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include <bc/data.h>
+#include <data.h>
 
 BcStatus bc_func_init(BcFunc* func) {
 

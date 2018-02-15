@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2018 Contributors
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,65 +45,84 @@
  *
  *******************************************************************************
  *
- * Definitions for bc vectors (resizable arrays).
+ * Definitions for the num type.
  *
  */
 
-#ifndef BC_VECTOR_H
-#define BC_VECTOR_H
+#ifndef BC_NUM_H
+#define BC_NUM_H
 
-#include <stdlib.h>
+// For C++ compatibility.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include <bc/bc.h>
+#include <bc.h>
 
-#define BC_VEC_INITIAL_CAP (32)
+#define BC_NUM_MIN_BASE (2)
 
-typedef int (*BcVecCmpFunc)(void*, void*);
+#define BC_NUM_MAX_INPUT_BASE (16)
 
-typedef struct BcVec {
+#define BC_NUM_MAX_OUTPUT_BASE (99)
 
-  uint8_t* array;
+#define BC_NUM_DEF_SIZE (16)
+
+#define BC_NUM_FROM_CHAR(c) ((c) -'0')
+
+#define BC_NUM_TO_CHAR(n) ((n) + '0')
+
+#define BC_NUM_SCALE(n) ((n)->len - (n)->radix)
+
+typedef struct BcNum {
+
+  char* num;
+  size_t radix;
   size_t len;
-  size_t cap;
-  size_t size;
+  size_t unused;
+  bool neg;
 
-  BcFreeFunc dtor;
+} BcNum;
 
-} BcVec;
+typedef BcStatus (*BcUnaryFunc)(BcNum* a, BcNum* res, size_t scale);
+typedef BcStatus (*BcBinaryFunc)(BcNum* a, BcNum* b, BcNum* res, size_t scale);
 
-BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc dtor);
+BcStatus bc_num_construct(BcNum* n, size_t request);
 
-BcStatus bc_vec_push(BcVec* vec, void* data);
+BcStatus bc_num_expand(BcNum* n, size_t request);
 
-BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data);
+void bc_num_destruct(BcNum* n);
 
-BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx);
+BcStatus bc_num_copy(BcNum* d, BcNum* s);
 
-void* bc_vec_top(BcVec* vec);
+BcStatus bc_num_parse(BcNum* n, const char* val,
+                       size_t base, size_t scale);
 
-void* bc_vec_item(BcVec* vec, size_t idx);
+BcStatus bc_num_print(BcNum* n, size_t base);
+BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f);
 
-BcStatus bc_vec_pop(BcVec* vec);
+BcStatus bc_num_long(BcNum* n, long* result);
+BcStatus bc_num_ulong(BcNum* n, unsigned long* result);
 
-void bc_vec_free(void* vec);
+BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale);
+BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale);
+BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale);
+BcStatus bc_num_div(BcNum* a, BcNum* b, BcNum* result, size_t scale);
+BcStatus bc_num_mod(BcNum* a, BcNum* b, BcNum* result, size_t scale);
+BcStatus bc_num_pow(BcNum* a, BcNum* b, BcNum* result, size_t scale);
 
-typedef struct BcVecO {
+BcStatus bc_num_sqrt(BcNum* a, BcNum* result, size_t scale);
 
-  BcVec vec;
-  BcVecCmpFunc cmp;
+bool bc_num_isInteger(BcNum* num);
 
-} BcVecO;
+int bc_num_compare(BcNum* a, BcNum* b);
 
-BcStatus bc_veco_init(BcVecO* vec, size_t esize,
-                      BcFreeFunc dtor, BcVecCmpFunc cmp);
+#ifdef __cplusplus
+}
+#endif
 
-BcStatus bc_veco_insert(BcVecO* vec, void* data, size_t* idx);
-
-size_t bc_veco_index(BcVecO* vec, void* data);
-
-void* bc_veco_item(BcVecO* vec, size_t idx);
-
-void bc_veco_free(BcVecO* vec);
-
-#endif // BC_VECTOR_H
+#endif // BC_NUM_H

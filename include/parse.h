@@ -55,9 +55,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <bc/vector.h>
-#include <bc/program.h>
-#include <bc/lex.h>
+#include <vector.h>
+#include <program.h>
+#include <lex.h>
 
 #define BC_PARSE_TOP_FLAG_PTR(parse)  \
   ((uint8_t*) bc_vec_top(&(parse)->flags))

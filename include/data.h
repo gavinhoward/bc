@@ -54,9 +54,9 @@
 
 #include <stdbool.h>
 
-#include <bc/bc.h>
-#include <bc/vector.h>
-#include <bc/num.h>
+#include <bc.h>
+#include <vector.h>
+#include <num.h>
 
 #define BC_PROGRAM_MAX_STMTS (128)
 
