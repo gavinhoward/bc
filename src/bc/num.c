@@ -642,16 +642,11 @@ static bool bc_num_strValid(const char* val, size_t base) {
   len = strlen(val);
 
   if (!len) return true;
-
-  c = val[0];
-
-  i = c == '-' || c == '+' ? 1 : 0;
-
   if (base <= 10) {
 
     b = base + '0';
 
-    for (; i < len; ++i) {
+    for (i = 0; i < len; ++i) {
 
       c = val[i];
 
@@ -732,13 +727,7 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
   if (ptr) radix = ptr - val;
   else radix = len;
 
-  c = val[0];
-
-  n->neg = c == '-';
-
-  i = c == '-' || c == '+' ? 1 : 0;
-
-  while (val[i] == '0') ++i;
+  for (i = 0; val[i] == '0'; ++i);
 
   ptr = val + i;
   radix -= i;
