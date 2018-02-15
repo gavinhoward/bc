@@ -24,7 +24,13 @@ rm -rf "$out2"
 
 while read e; do
 
-	echo $e
+	echo "$e" | bc -lq >> "$out1"
+
+done < "$name.txt"
+
+while read e; do
+
+	echo "$e" | "$bc" -lq >> "$out2"
 
 done < "$name.txt"
 

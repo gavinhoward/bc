@@ -1,2 +1,9 @@
 parse_print_decimal
 parse_print
+add
+subtract
+multiply
+divide
+modulus
+power
+basic

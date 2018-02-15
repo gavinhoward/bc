@@ -27,5 +27,14 @@ while read t; do
 
 done < "$testdir/all.txt"
 
-"$testdir/scripts.sh"
+"$testdir/scripts.sh" "$bc" "$out1" "$out2"
 
+set +e
+
+# TODO: Read tests
+# TODO: Lex errors
+# TODO: Parse errors
+# TODO: VM errors
+# TODO: Math errors
+# TODO: POSIX warnings
+# TODO: POSIX errors
