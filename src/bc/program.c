@@ -199,17 +199,29 @@ BcStatus bc_program_init(BcProgram* p) {
   }
 #endif
 
-  s = bc_num_parse(&p->last, "0", 10, 0);
+  s = bc_num_construct(&p->last, BC_NUM_DEF_SIZE);
 
   if (s) return s;
 
-  s = bc_num_parse(&p->zero, "0", 10, 0);
+  s = bc_num_parse(&p->last, "0", 10, 0);
 
   if (s) goto zero_err;
 
-  s = bc_num_parse(&p->one, "1", 10, 0);
+  s = bc_num_construct(&p->zero, BC_NUM_DEF_SIZE);
+
+  if (s) goto zero_err;
+
+  s = bc_num_parse(&p->zero, "0", 10, 0);
 
   if (s) goto one_err;
+
+  s = bc_num_construct(&p->one, BC_NUM_DEF_SIZE);
+
+  if (s) goto one_err;
+
+  s = bc_num_parse(&p->one, "1", 10, 0);
+
+  if (s) goto num_buf_err;
 
   p->num_buf = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
@@ -610,11 +622,13 @@ BcStatus bc_program_exec(BcProgram* p) {
           return BC_STATUS_EXEC_INVALID_EXPR;
         }
 
-        //result.num = arb_str2fxdpnt(str);
+        status = bc_num_construct(&result.num, strlen(str));
 
-        //if (!result.num) {
-        //  return BC_STATUS_EXEC_INVALID_EXPR;
-        //}
+        if (status) return status;
+
+        status = bc_num_parse(&result.num, str, p->ibase, p->scale);
+
+        if (status) return status;
 
         result.type = BC_NUM_CONSTANT;
 
@@ -688,8 +702,6 @@ BcStatus bc_program_exec(BcProgram* p) {
   }
 
   return status;
-
-  return BC_STATUS_SUCCESS;
 }
 
 void bc_program_printCode(BcProgram* p) {

@@ -1240,8 +1240,6 @@ BcStatus bc_parse_expr(BcParse* parse, BcVec* code, bool posix_rel, bool print)
           return status;
         }
 
-        free(parse->token.string);
-
         paren_expr = true;
         rparen = false;
         get_token = true;
