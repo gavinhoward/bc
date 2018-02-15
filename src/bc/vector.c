@@ -53,8 +53,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <bc/bc.h>
-#include <bc/vector.h>
+#include <bc.h>
+#include <vector.h>
 
 static BcStatus bc_vec_expand(BcVec* vec);
 

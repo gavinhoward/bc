@@ -57,9 +57,9 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <bc/bc.h>
-#include <bc/io.h>
-#include <bc/vm.h>
+#include <bc.h>
+#include <io.h>
+#include <vm.h>
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx);
 static BcStatus bc_vm_execStdin(BcVm* vm);

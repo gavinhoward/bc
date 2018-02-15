@@ -56,7 +56,7 @@
 
 #include <getopt.h>
 
-#include <bc/bc.h>
+#include <bc.h>
 
 static const struct option bc_opts[] = {
 
