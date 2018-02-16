@@ -780,7 +780,6 @@ void bc_program_printCode(BcProgram* p) {
 
     inst = code[ip->idx];
 
-    // TODO: Fill this out.
     switch (inst) {
 
       case BC_INST_PUSH_VAR:
