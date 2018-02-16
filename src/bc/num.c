@@ -1099,10 +1099,10 @@ static BcStatus bc_num_removeLeadingZeros(BcNum* n) {
 
   ptr = n->num + i;
 
-  memmove(n->num, ptr, i * sizeof(char));
-
   n->len -= i;
   n->rdx -= i;
+
+  memmove(n->num, ptr, n->len * sizeof(char));
 
   memset(n->num + n->len, 0, sizeof(char) * (n->cap - n->len));
 
