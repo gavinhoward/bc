@@ -219,9 +219,7 @@ static const char* const bc_err_descs[] = {
 };
 
 static const char* const bc_copyright =
-  "bc copyright (c) 2018 Gavin D. Howard and arbprec contributors.\n"
-  "arbprec copyright (c) 2016-2018 CM Graff,\n"
-  "        copyright (c) 2018 Bao Hexing.";
+  "bc copyright (c) 2018 Gavin D. Howard";
 
 static const char* const bc_version_fmt = "bc %s\n%s\n";
 
