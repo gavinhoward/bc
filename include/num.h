@@ -110,6 +110,9 @@ BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f);
 BcStatus bc_num_long(BcNum* n, long* result);
 BcStatus bc_num_ulong(BcNum* n, unsigned long* result);
 
+BcStatus bc_num_long2num(BcNum* n, long val);
+BcStatus bc_num_ulong2num(BcNum* n, unsigned long val);
+
 BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale);
 BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale);
 BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale);

@@ -53,6 +53,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <math.h>
+
+#include <limits.h>
+
 #include <bc.h>
 #include <num.h>
 
@@ -262,6 +266,106 @@ BcStatus bc_num_ulong(BcNum* n, unsigned long* result) {
   }
 
   return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_num_long2num(BcNum* n, long val) {
+
+  BcStatus status;
+  size_t len;
+  char* ptr;
+  char carry;
+
+  if (!n) return BC_STATUS_INVALID_PARAM;
+
+  if (!val) {
+
+    memset(n->num, 0, sizeof(char) * n->cap);
+
+    bc_num_blank(n);
+
+    return BC_STATUS_SUCCESS;
+  }
+
+  carry = 0;
+
+  if (val < 0) {
+
+    if (val == LONG_MIN) {
+      carry = 1;
+      val += 1;
+    }
+
+    val = -val;
+
+    n->neg = true;
+  }
+
+  len = (size_t) ceil(log10(CHAR_BIT * sizeof(unsigned long)));
+
+  status = bc_num_expand(n, len);
+
+  if (status) return status;
+
+  ptr = n->num + len - 1;
+
+  while (val) {
+
+    *ptr = (char) (val % 10);
+
+    val /= 10;
+    --ptr;
+  }
+
+  if (carry) {
+
+    ++ptr;
+
+    *ptr += carry;
+
+    if (*ptr >= 10) {
+      *ptr -= 10;
+      --ptr;
+      *ptr = 1;
+    }
+  }
+
+  return bc_num_removeLeadingZeros(n);
+}
+
+BcStatus bc_num_ulong2num(BcNum* n, unsigned long val) {
+
+  BcStatus status;
+  size_t len;
+  char* ptr;
+
+  if (!n) return BC_STATUS_INVALID_PARAM;
+
+  if (!val) {
+
+    memset(n->num, 0, sizeof(char) * n->cap);
+
+    bc_num_blank(n);
+
+    return BC_STATUS_SUCCESS;
+  }
+
+  len = (size_t) ceil(log10(CHAR_BIT * sizeof(unsigned long)));
+
+  status = bc_num_expand(n, len);
+
+  if (status) return status;
+
+  ptr = n->num + len - 1;
+
+  while (val) {
+
+    *ptr = (char) (val % 10);
+
+    val /= 10;
+    --ptr;
+  }
+
+  return bc_num_removeLeadingZeros(n);
 }
 
 BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
