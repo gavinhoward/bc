@@ -199,7 +199,7 @@ BcStatus bc_program_init(BcProgram* p) {
   }
 #endif
 
-  s = bc_num_construct(&p->last, BC_NUM_DEF_SIZE);
+  s = bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 
   if (s) return s;
 
@@ -207,7 +207,7 @@ BcStatus bc_program_init(BcProgram* p) {
 
   if (s) goto zero_err;
 
-  s = bc_num_construct(&p->zero, BC_NUM_DEF_SIZE);
+  s = bc_num_init(&p->zero, BC_NUM_DEF_SIZE);
 
   if (s) goto zero_err;
 
@@ -215,7 +215,7 @@ BcStatus bc_program_init(BcProgram* p) {
 
   if (s) goto one_err;
 
-  s = bc_num_construct(&p->one, BC_NUM_DEF_SIZE);
+  s = bc_num_init(&p->one, BC_NUM_DEF_SIZE);
 
   if (s) goto one_err;
 
@@ -388,15 +388,15 @@ func_err:
 
 num_buf_err:
 
-  bc_num_destruct(&p->one);
+  bc_num_free(&p->one);
 
 one_err:
 
-  bc_num_destruct(&p->zero);
+  bc_num_free(&p->zero);
 
 zero_err:
 
-  bc_num_destruct(&p->last);
+  bc_num_free(&p->last);
 
   return s;
 }
@@ -622,7 +622,7 @@ BcStatus bc_program_exec(BcProgram* p) {
           return BC_STATUS_EXEC_INVALID_EXPR;
         }
 
-        status = bc_num_construct(&result.num, strlen(str));
+        status = bc_num_init(&result.num, strlen(str));
 
         if (status) return status;
 
@@ -671,7 +671,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
         result.type = BC_NUM_RESULT;
 
-        status = bc_num_construct(&result.num, BC_NUM_DEF_SIZE);
+        status = bc_num_init(&result.num, BC_NUM_DEF_SIZE);
 
         if (status) return status;
 
@@ -705,7 +705,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
         result.type = BC_NUM_RESULT;
 
-        status = bc_num_construct(&result.num, BC_NUM_DEF_SIZE);
+        status = bc_num_init(&result.num, BC_NUM_DEF_SIZE);
 
         if (status) return status;
 
@@ -823,9 +823,9 @@ void bc_program_free(BcProgram* p) {
   bc_vec_free(&p->locals);
   bc_vec_free(&p->temps);
 
-  bc_num_destruct(&p->last);
-  bc_num_destruct(&p->zero);
-  bc_num_destruct(&p->one);
+  bc_num_free(&p->last);
+  bc_num_free(&p->zero);
+  bc_num_free(&p->one);
 
   memset(p, 0, sizeof(BcProgram));
 }

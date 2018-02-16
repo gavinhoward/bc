@@ -218,7 +218,7 @@ BcStatus bc_var_init(BcVar* var) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_num_construct(var, BC_NUM_DEF_SIZE);
+  return bc_num_init(var, BC_NUM_DEF_SIZE);
 
   return BC_STATUS_SUCCESS;
 }
@@ -233,7 +233,7 @@ void bc_var_free(void* var) {
     return;
   }
 
-  bc_num_destruct(v);
+  bc_num_free(v);
 }
 
 BcStatus bc_array_init(BcArray* array) {
@@ -242,7 +242,7 @@ BcStatus bc_array_init(BcArray* array) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  return bc_vec_init(array, sizeof(BcNum), (BcFreeFunc) bc_num_destruct);
+  return bc_vec_init(array, sizeof(BcNum), (BcFreeFunc) bc_num_free);
 }
 
 void bc_array_free(void* array) {
@@ -285,7 +285,7 @@ BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
   }
 
   for (uint32_t i = 0; i < nelems; ++i) {
-    bc_num_construct(array + i, BC_PROGRAM_DEF_SIZE);
+    bc_num_init(array + i, BC_PROGRAM_DEF_SIZE);
   }
 
   return BC_STATUS_SUCCESS;
@@ -302,7 +302,7 @@ void bc_local_free(void* local) {
   free((void*) l->name);
 
   if (l->var) {
-    bc_num_destruct(&l->num);
+    bc_num_free(&l->num);
   }
   else {
 
@@ -310,7 +310,7 @@ void bc_local_free(void* local) {
     array = l->array;
 
     for (uint32_t i = 0; i < nelems; ++i) {
-      bc_num_destruct(array + i);
+      bc_num_free(array + i);
     }
 
     free(array);
@@ -365,7 +365,7 @@ void bc_temp_free(void* temp) {
   t = (BcTemp*) temp;
 
   if (t->type == BC_TEMP_NUM) {
-    bc_num_destruct(&t->num);
+    bc_num_free(&t->num);
   }
 }
 
@@ -412,7 +412,7 @@ void bc_result_free(void* num) {
     case BC_NUM_IBASE:
     case BC_NUM_OBASE:
     {
-      bc_num_destruct(&n->num);
+      bc_num_free(&n->num);
       break;
     }
 
