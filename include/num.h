@@ -83,7 +83,7 @@ extern "C" {
 typedef struct BcNum {
 
   char* num;
-  size_t radix;
+  size_t rdx;
   size_t len;
   size_t cap;
   bool neg;
@@ -93,11 +93,11 @@ typedef struct BcNum {
 typedef BcStatus (*BcUnaryFunc)(BcNum* a, BcNum* res, size_t scale);
 typedef BcStatus (*BcBinaryFunc)(BcNum* a, BcNum* b, BcNum* res, size_t scale);
 
-BcStatus bc_num_construct(BcNum* n, size_t request);
+BcStatus bc_num_init(BcNum* n, size_t request);
 
 BcStatus bc_num_expand(BcNum* n, size_t request);
 
-void bc_num_destruct(BcNum* n);
+void bc_num_free(BcNum* n);
 
 BcStatus bc_num_copy(BcNum* d, BcNum* s);
 
