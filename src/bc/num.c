@@ -619,7 +619,7 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
   i = scale - 1;
 
-  while (i >= min) {
+  while (i < scale && i >= min) {
     ptr_c[i] = ptr[i];
     --i;
   }
@@ -682,7 +682,7 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   i = scale - 1;
 
   while (i < scale) {
-    *ptr_c = ptr[i];
+    *ptr_c += ptr[i];
     --ptr_c;
     --i;
   }
@@ -1075,6 +1075,9 @@ static BcStatus bc_num_removeLeadingZeros(BcNum* n) {
   ptr = n->num + i;
 
   memmove(n->num, ptr, i * sizeof(char));
+
+  n->len -= i;
+  n->rdx -= i;
 
   memset(n->num + n->len, 0, sizeof(char) * (n->cap - n->len));
 
