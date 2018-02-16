@@ -56,6 +56,8 @@
 #include <bc.h>
 #include <num.h>
 
+static void bc_num_blank(BcNum* n);
+
 static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
                              BcUnaryFunc op, size_t req);
 
@@ -117,6 +119,8 @@ BcStatus bc_num_expand(BcNum* n, size_t request) {
     if (!temp) {
       return BC_STATUS_MALLOC_FAIL;
     }
+
+    memset(temp + n->cap, 0, sizeof(char) * (request - n->cap));
 
     n->num = temp;
     n->cap = request;
@@ -376,6 +380,15 @@ int bc_num_compare(BcNum* a, BcNum* b) {
   }
 
   return 0;
+}
+
+static void bc_num_blank(BcNum* n) {
+
+  if (!n) return;
+
+  n->neg = false;
+  n->len = 0;
+  n->radix = 0;
 }
 
 static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
@@ -694,9 +707,7 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
 
   len = strlen(val);
 
-  n->len = 0;
-  n->neg = false;
-  n->radix = 0;
+  bc_num_blank(n);
 
   if (len) {
 
@@ -960,6 +971,8 @@ static BcStatus bc_num_removeLeadingZeros(BcNum* n) {
   ptr = n->num + i;
 
   memmove(n->num, ptr, i * sizeof(char));
+
+  memset(n->num + n->len, 0, sizeof(char) * (n->cap - n->len));
 
   return BC_STATUS_SUCCESS;
 }
