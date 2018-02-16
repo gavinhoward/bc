@@ -349,7 +349,7 @@ BcStatus bc_num_ulong2num(BcNum* n, unsigned long val) {
     return BC_STATUS_SUCCESS;
   }
 
-  len = (size_t) ceil(log10(CHAR_BIT * sizeof(unsigned long)));
+  len = (size_t) ceil(log10(((double) ULONG_MAX) + 1.0f));
 
   status = bc_num_expand(n, len);
 
