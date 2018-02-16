@@ -369,11 +369,34 @@ BcStatus bc_num_ulong2num(BcNum* n, unsigned long val) {
 }
 
 BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_a, a->len + b->len + 1);
+
+  BcBinaryFunc op;
+
+  if ((a->neg && b->neg) || (!a->neg && !b->neg)) {
+    op = bc_num_alg_a;
+  }
+  else {
+    op = bc_num_alg_s;
+  }
+
+  return bc_num_binary(a, b, result, scale, op, a->len + b->len + 1);
 }
 
 BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
-  return bc_num_binary(a, a, result, scale, bc_num_alg_s, a->len + b->len + 1);
+
+  BcBinaryFunc op;
+
+  if (a->neg && b->neg) {
+    op = bc_num_alg_s;
+  }
+  else if (a->neg || b->neg) {
+    op = bc_num_alg_a;
+  }
+  else {
+    op = bc_num_alg_s;
+  }
+
+  return bc_num_binary(a, a, result, scale, op, a->len + b->len + 1);
 }
 
 BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
@@ -527,8 +550,8 @@ static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
   return status;
 }
 
-static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c,
-                               size_t scale, BcBinaryFunc op, size_t req)
+static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c,  size_t scale,
+                              BcBinaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum a2;
@@ -597,6 +620,8 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   size_t i;
   size_t min;
   char carry;
+
+  c->neg = a->neg;
 
   memset(c->num, 0, c->cap * sizeof(char));
 

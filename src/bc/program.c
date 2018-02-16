@@ -297,7 +297,7 @@ BcStatus bc_program_init(BcProgram* p) {
     goto const_err;
   }
 
-  s = bc_vec_init(&p->expr_stack, sizeof(BcResult), bc_result_free);
+  s = bc_vec_init(&p->expr_stack, sizeof(BcResult), NULL);
 
   if (s) {
     goto expr_err;
@@ -657,23 +657,37 @@ BcStatus bc_program_exec(BcProgram* p) {
 
         status = bc_vec_pop(&p->expr_stack);
 
-        if (status) return status;
+        if (status) {
+          bc_result_free(&num2);
+          return status;
+        }
 
         ptr = bc_vec_top(&p->expr_stack);
 
-        if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
+        if (!ptr) {
+          bc_result_free(&num2);
+          return BC_STATUS_EXEC_INVALID_EXPR;
+        }
 
         num1 = *ptr;
 
         status = bc_vec_pop(&p->expr_stack);
 
-        if (status) return status;
+        if (status) {
+          bc_result_free(&num2);
+          bc_result_free(&num1);
+          return status;
+        }
 
         result.type = BC_NUM_RESULT;
 
         status = bc_num_init(&result.num, BC_NUM_DEF_SIZE);
 
-        if (status) return status;
+        if (status) {
+          bc_result_free(&num2);
+          bc_result_free(&num1);
+          return status;
+        }
 
         if (inst != BC_INST_OP_POWER) {
 
@@ -687,9 +701,21 @@ BcStatus bc_program_exec(BcProgram* p) {
           // TODO: Power.
         }
 
-        if (status) return status;
+        if (status) {
+          bc_result_free(&num2);
+          bc_result_free(&num1);
+          bc_result_free(&result);
+          return status;
+        }
 
         status = bc_vec_push(&p->expr_stack, &result);
+
+        if (status) {
+          bc_result_free(&num2);
+          bc_result_free(&num1);
+          bc_result_free(&result);
+          return status;
+        }
 
         break;
       }
