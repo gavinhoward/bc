@@ -76,7 +76,7 @@ extern "C" {
 
 #define BC_NUM_TO_CHAR(n) ((n) + '0')
 
-#define BC_NUM_SCALE(n) ((n)->len - (n)->radix)
+#define BC_NUM_SCALE(n) ((n)->len - (n)->rdx)
 
 #define BC_NUM_PRINT_WIDTH (68)
 
