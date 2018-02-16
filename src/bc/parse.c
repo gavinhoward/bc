@@ -167,6 +167,8 @@ static const BcOp bc_ops[] = {
   { 5, false },
   { 5, false },
 
+  { 1, false },
+
   { 6, true },
   { 6, true },
   { 6, true },
@@ -178,8 +180,6 @@ static const BcOp bc_ops[] = {
 
   { 8, true },
   { 8, true },
-
-  { 1, false }
 
 };
 
@@ -1415,7 +1415,7 @@ static BcStatus bc_parse_operator(BcParse* parse, BcVec* code, BcVec* ops,
 
     if (top != BC_LEX_LEFT_PAREN) {
 
-      lp = bc_ops[top].prec;
+      lp = bc_ops[top - BC_LEX_OP_POWER].prec;
 
       while (lp < rp || (lp == rp && rleft)) {
 
