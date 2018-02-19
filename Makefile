@@ -58,10 +58,22 @@ endif
 
 BC_OBJ = $(shell for i in src/bc/*.c ; do printf "%s\n" $${i%.c}.o ; done)
 
+GEN_LIB = gen
+
+GEN = gen
+
 BC_EXEC = bc
 
 all:
 	$(MAKE) $(BC_EXEC)
+
+$(GEN):
+	$(CC) -o $(GEN_LIB) src/lib/$(GEN_LIB).c
+
+gen_run: $(GEN)
+	./$(GEN) src/lib/lib.bc src/bc/lib.c
+
+$(BC_OBJ): gen_run
 
 $(BC_EXEC): $(BC_OBJ)
 	$(CC) $(CFLAGS) -o $(BC_EXEC) ./src/*.c $(BC_OBJ)
