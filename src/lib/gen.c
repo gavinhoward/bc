@@ -51,9 +51,14 @@
 
 #include <stdio.h>
 
-#include <io.h>
-
 static const char* const bc_gen_usage = "usage: gen bc_script output\n";
+static const char* const bc_gen_header =
+  "/*\n * *** AUTOMATICALLY GENERATED from %s. DO NOT MODIFY***\n*/\n\n";
+
+#define INVALID_PARAMS (1)
+#define INVALID_INPUT_FILE (2)
+#define INVALID_OUTPUT_FILE (3)
+#define IO_ERR (4)
 
 int main(int argc, char* argv[]) {
 
@@ -64,36 +69,48 @@ int main(int argc, char* argv[]) {
 
   if (argc != 3) {
     printf(bc_gen_usage);
-    return 1;
+    return INVALID_PARAMS;
   }
 
   in = fopen(argv[1], "r");
 
-  if (!in) return 2;
+  if (!in) return INVALID_INPUT_FILE;
 
   out = fopen(argv[2], "w");
 
-  if (!out) return 3;
+  if (!out) return INVALID_OUTPUT_FILE;
 
   count = 0;
 
-  fprintf(out, "const unsigned char bc_lib[] = {\n");
+  if (fprintf(out, bc_gen_header, basename(argv[1])) < 0) return IO_ERR;
+
+  if (fprintf(out, "const unsigned char bc_lib[] = {\n") < 0) return IO_ERR;
 
   while ((c = fgetc(in)) >= 0) {
 
-    if (!count) fprintf(out, "  ");
+    int val;
 
-    count += fprintf(out, "%d,", c);
+    if (!count) {
+      if (fprintf(out, "  ") < 0) return IO_ERR;
+    }
+
+    val = fprintf(out, "%d,", c);
+
+    if (val < 0) return IO_ERR;
+
+    count += val;
 
     if (count > 72) {
-      fputc('\n', out);
+      if (fputc('\n', out) == EOF) return IO_ERR;
       count = 0;
     }
   }
 
-  if (count) fputc('\n', out);
+  if (count) {
+    if (fputc('\n', out) == EOF) return IO_ERR;
+  }
 
-  fprintf(out, "};\n");
+  if (fprintf(out, "};\n") < 0) return IO_ERR;
 
   fclose(in);
   fclose(out);
