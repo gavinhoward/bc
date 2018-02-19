@@ -62,16 +62,22 @@ GEN_LIB = gen
 
 GEN = gen
 
+BC_LIB = src/lib/lib.bc
+
+BC_C_LIB = src/bc/lib.c
+BC_LIB_O = src/bc/lib.o
+
 BC_EXEC = bc
 
 all:
 	$(MAKE) $(BC_EXEC)
 
 $(GEN):
-	$(CC) -o $(GEN_LIB) src/lib/$(GEN_LIB).c
+	$(CC) $(CFLAGS) -o $(GEN_LIB) src/lib/$(GEN_LIB).c
 
 gen_run: $(GEN)
-	./$(GEN) src/lib/lib.bc src/bc/lib.c
+	./$(GEN) $(BC_LIB) $(BC_C_LIB)
+	$(CC) $(CFLAGS) -c $(BC_C_LIB) -o $(BC_LIB_O)
 
 $(BC_OBJ): gen_run
 
@@ -84,4 +90,6 @@ $(ARBPREC_LIB):
 clean:
 	$(RM) $(BC_OBJ)
 	$(RM) $(BC_EXEC)
+	$(RM) $(GEN)
+	$(RM) $(BC_C_LIB)
 
