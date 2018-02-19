@@ -9,3 +9,4 @@ bc
 *.a
 log_*.txt
 gen
+lib.c
