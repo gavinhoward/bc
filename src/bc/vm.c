@@ -153,6 +153,11 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
     status = bc_parse_parse(&vm->parse);
 
+    if (status) {
+      bc_error_file(status, vm->parse.lex.file, vm->parse.lex.line);
+      goto err;
+    }
+
     if (bc_signal && !bc_interactive) {
       goto read_err;
     }
@@ -160,7 +165,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
       status = bc_vm_handleSignal(vm);
 
-      if (status) return status;
+      if (status) goto read_err;
     }
 
     if (status) {
@@ -171,6 +176,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
           status != BC_STATUS_PARSE_LIMITS)
       {
         bc_error_file(status, vm->program.file, vm->parse.lex.line);
+        goto err;
       }
       else if (status == BC_STATUS_PARSE_QUIT) {
         break;
@@ -181,14 +187,10 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
         continue;
       }
 
-      while (vm->parse.token.type != BC_LEX_NEWLINE &&
+      while (!status && vm->parse.token.type != BC_LEX_NEWLINE &&
              vm->parse.token.type != BC_LEX_SEMICOLON)
       {
         status = bc_lex_next(&vm->parse.lex, &vm->parse.token);
-
-        if (status) {
-          break;
-        }
       }
     }
 
@@ -271,6 +273,8 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 read_err:
 
   bc_error(status);
+
+err:
 
   free(data);
 
@@ -424,9 +428,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
       status = BC_STATUS_SUCCESS;
     }
 
-    while (!status) {
-      status = bc_parse_parse(&vm->parse);
-    }
+    while (!status) status = bc_parse_parse(&vm->parse);
 
     if (status == BC_STATUS_PARSE_QUIT) {
       break;
@@ -437,7 +439,15 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
     }
     else if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
 
+      BcFunc*func;
+      BcInstPtr* ip;
+
       bc_error_file(status, vm->program.file, vm->parse.lex.line);
+
+      ip = bc_vec_item(&vm->program.stack, 0);
+      func = bc_vec_item(&vm->program.funcs, 0);
+
+      if (ip && func) ip->idx = func->code.len;
 
       while (vm->parse.token.type != BC_LEX_NEWLINE &&
              vm->parse.token.type != BC_LEX_SEMICOLON)
@@ -445,7 +455,14 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
         status = bc_lex_next(&vm->parse.lex, &vm->parse.token);
 
         if (status && status != BC_STATUS_LEX_EOF) {
+
           bc_error_file(status, vm->program.file, vm->parse.lex.line);
+
+          ip = bc_vec_item(&vm->program.stack, 0);
+          func = bc_vec_item(&vm->program.funcs, 0);
+
+          if (ip && func) ip->idx = func->code.len;
+
           break;
         }
         else if (status == BC_STATUS_LEX_EOF) {
