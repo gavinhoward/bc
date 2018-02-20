@@ -189,29 +189,22 @@ static const char* const bc_err_descs[] = {
 
 };
 
+static const char* const bc_version = "0.1";
+
 static const char* const bc_copyright =
   "bc copyright (c) 2018 Gavin D. Howard";
 
-static const char* const bc_version_fmt = "bc %s\n%s\n";
+static const char* const bc_warranty_short =
+  "This is free software with ABSOLUTELY NO WARRANTY.";
+
+static const char* const bc_version_fmt = "bc %s\n%s\n\n%s\n\n";
 
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
 
   BcStatus status;
   BcVm vm;
-  int do_exit;
-  const char** files;
 
   status = BC_STATUS_SUCCESS;
-  do_exit = 0;
-  files = NULL;
-
-
-  if (flags & BC_FLAG_HELP) do_exit = 1;
-
-  if (flags & BC_FLAG_VERSION) {
-    printf(bc_version_fmt, bc_version, bc_copyright);
-    do_exit = 1;
-  }
 
   if (flags & BC_FLAG_INTERACTIVE ||
       (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)))
@@ -224,30 +217,44 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
   bc_std = flags & BC_FLAG_STANDARD;
   bc_warn = flags & BC_FLAG_WARN;
 
-  if (do_exit) return status;
-
   if (!(flags & BC_FLAG_QUIET)) {
-    printf(bc_version_fmt, bc_version, bc_copyright);
-    putchar('\n');
-  }
 
-  if (flags & BC_FLAG_MATHLIB) {
-    // TODO: Load the math functions.
+    status = bc_print_version();
+
+    if (status) return status;
   }
 
   status = bc_vm_init(&vm, filec, filev);
 
-  if (status) {
-    return status;
+  if (status) return status;
+
+  if (flags & BC_FLAG_MATHLIB) {
+
+    status = bc_parse_file(&vm.parse, bc_lib_name);
+
+    if (status) goto err;
+
+    while (!status) status = bc_parse_parse(&vm.parse);
+
+    if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) goto err;
   }
 
   status = bc_vm_exec(&vm);
 
-  if (files) {
-    free(files);
-  }
+err:
+
+  bc_vm_free(&vm);
 
   return status;
+}
+
+BcStatus bc_print_version() {
+
+  int err;
+
+  err = printf(bc_version_fmt, bc_version, bc_copyright, bc_warranty_short);
+
+  return err < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
 }
 
 void bc_error(BcStatus status) {
@@ -270,41 +277,30 @@ void bc_error_file(BcStatus status, const char* file, uint32_t line) {
     return;
   }
 
-  fprintf(stderr, "\n%s Error: %s\n", bc_err_types[status], bc_err_descs[status]);
+  fprintf(stderr, "\n%s Error: %s\n", bc_err_types[status],
+          bc_err_descs[status]);
+
   fprintf(stderr, "    %s", file);
 
-  if (line) {
-    fprintf(stderr, ":%d\n\n", line);
-  }
-  else {
-    fputc('\n', stderr);
-    fputc('\n', stderr);
-  }
+  if (line) fprintf(stderr, ":%d\n\n", line);
+  else fprintf(stderr, "\n\n");
 }
 
 BcStatus bc_posix_error(BcStatus status, const char* file,
                         uint32_t line, const char* msg)
 {
-  if (!(bc_std || bc_warn) || status < BC_STATUS_POSIX_NAME_LEN || !file) {
+  if (!(bc_std || bc_warn) || status < BC_STATUS_POSIX_NAME_LEN || !file)
     return BC_STATUS_SUCCESS;
-  }
 
   fprintf(stderr, "\n%s %s: %s\n", bc_err_types[status],
           bc_std ? "Error" : "Warning", bc_err_descs[status]);
 
-  if (msg) {
-    fprintf(stderr, "    %s\n", msg);
-  }
+  if (msg) fprintf(stderr, "    %s\n", msg);
 
   fprintf(stderr, "    %s", file);
 
-  if (line) {
-    fprintf(stderr, ":%d\n\n", line);
-  }
-  else {
-    fputc('\n', stderr);
-    fputc('\n', stderr);
-  }
+  if (line) fprintf(stderr, ":%d\n\n", line);
+  else fprintf(stderr, "\n\n");
 
   return bc_std ? status : BC_STATUS_SUCCESS;
 }

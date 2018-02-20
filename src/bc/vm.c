@@ -61,16 +61,7 @@ static void bc_vm_sigint(int sig) {
 
 BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
 
-  vm->filec = filec;
-  vm->filev = filev;
-
-  return BC_STATUS_SUCCESS;
-}
-
-BcStatus bc_vm_exec(BcVm* vm) {
-
   BcStatus status;
-  int num_files;
   struct sigaction act;
 
   sigemptyset(&act.sa_mask);
@@ -80,31 +71,46 @@ BcStatus bc_vm_exec(BcVm* vm) {
     return BC_STATUS_EXEC_SIGACTION_FAIL;
   }
 
-  status = BC_STATUS_SUCCESS;
-
-  num_files = vm->filec;
-
   status = bc_program_init(&vm->program);
 
-  if (status) {
-    return status;
-  }
+  if (status) return status;
 
   status = bc_parse_init(&vm->parse, &vm->program);
 
   if (status) {
-    goto parse_err;
+    bc_program_free(&vm->program);
+    return status;
   }
+
+  vm->filec = filec;
+  vm->filev = filev;
+
+  return BC_STATUS_SUCCESS;
+}
+
+void bc_vm_free(BcVm* vm) {
+  bc_parse_free(&vm->parse);
+  bc_program_free(&vm->program);
+}
+
+BcStatus bc_vm_exec(BcVm* vm) {
+
+  BcStatus status;
+  int num_files;
+
+  status = BC_STATUS_SUCCESS;
+
+  num_files = vm->filec;
 
   for (int i = 0; !status && i < num_files; ++i) {
     status = bc_vm_execFile(vm, i);
   }
 
-  if (status) {
-    status = status == BC_STATUS_PARSE_QUIT ||
-             status == BC_STATUS_EXEC_HALT ?
-                 BC_STATUS_SUCCESS : status;
-    goto exec_err;
+  if (status != BC_STATUS_SUCCESS &&
+      status != BC_STATUS_PARSE_QUIT &&
+      status != BC_STATUS_EXEC_HALT)
+  {
+    return status;
   }
 
   status = bc_vm_execStdin(vm);
@@ -113,57 +119,23 @@ BcStatus bc_vm_exec(BcVm* vm) {
            status == BC_STATUS_EXEC_HALT ?
                BC_STATUS_SUCCESS : status;
 
-exec_err:
-
-  bc_parse_free(&vm->parse);
-
-parse_err:
-
-  bc_program_free(&vm->program);
-
   return status;
 }
 
 static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
   BcStatus status;
-  FILE* f;
-  size_t size;
-  size_t read_size;
   const char* file;
+  char* data;
 
   file = vm->filev[idx];
   vm->program.file = file;
 
-  f = fopen(file, "r");
+  status = bc_io_fread(file, &data);
 
-  if (!f) {
-    return BC_STATUS_EXEC_FILE_ERR;
+  if (status) {
+    return status;
   }
-
-  fseek(f, 0, SEEK_END);
-  size = ftell(f);
-
-  fseek(f, 0, SEEK_SET);
-
-  char* data = malloc(size + 1);
-
-  if (!data) {
-    status = BC_STATUS_MALLOC_FAIL;
-    goto data_err;
-  }
-
-  read_size = fread(data, 1, size, f);
-
-  if (read_size != size) {
-    status = BC_STATUS_IO_ERR;
-    goto read_err;
-  }
-
-  data[size] = '\0';
-
-  fclose(f);
-  f = NULL;
 
   status = bc_parse_file(&vm->parse, file);
 
@@ -302,12 +274,6 @@ read_err:
 
   free(data);
 
-data_err:
-
-  if (f) {
-    fclose(f);
-  }
-
   return status;
 }
 
@@ -359,7 +325,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
   while ((!status || status != BC_STATUS_PARSE_QUIT) &&
-         bc_io_getline(&buf, &bufn) != BC_INVALID_IDX)
+         !(status = bc_io_getline(&buf, &bufn)))
   {
     size_t len;
 
