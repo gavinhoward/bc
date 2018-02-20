@@ -1341,10 +1341,9 @@ static BcStatus bc_program_read(BcProgram* p) {
 
   size = BC_PROGRAM_BUF_SIZE;
 
-  if (bc_io_getline(&buffer, &size) == BC_INVALID_IDX) {
-    status = BC_STATUS_IO_ERR;
-    goto io_err;
-  }
+  status = bc_io_getline(&buffer, &size);
+
+  if (status) goto io_err;
 
   status = bc_parse_init(&parse, p);
 
