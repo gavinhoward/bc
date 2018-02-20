@@ -55,6 +55,8 @@ void* bc_vec_top(BcVec* vec);
 
 void* bc_vec_item(BcVec* vec, size_t idx);
 
+void* bc_vec_item_rev(BcVec* vec, size_t idx);
+
 BcStatus bc_vec_pop(BcVec* vec);
 
 void bc_vec_free(void* vec);
