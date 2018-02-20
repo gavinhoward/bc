@@ -167,24 +167,36 @@ typedef BcVec BcArray;
 
 typedef enum BcResultType {
 
-  BC_NUM_RESULT,
+  BC_RESULT_INTERMEDIATE,
 
-  BC_NUM_CONSTANT,
+  BC_RESULT_CONSTANT,
 
-  BC_NUM_VAR,
-  BC_NUM_ARRAY,
+  BC_RESULT_VAR,
+  BC_RESULT_ARRAY,
 
-  BC_NUM_SCALE,
-  BC_NUM_LAST,
-  BC_NUM_IBASE,
-  BC_NUM_OBASE,
+  BC_RESULT_SCALE,
+  BC_RESULT_LAST,
+  BC_RESULT_IBASE,
+  BC_RESULT_OBASE,
 
 } BcResultType;
 
 typedef struct BcResult {
 
   BcResultType type;
-  BcNum num;
+
+  union {
+
+    BcNum num;
+
+    struct {
+
+      char* name;
+      size_t idx;
+
+    };
+
+  };
 
 } BcResult;
 
@@ -220,7 +232,7 @@ void bc_string_free(void* string);
 int bc_entry_cmp(void* entry1, void*entry2);
 void bc_entry_free(void* entry);
 
-void bc_result_free(void* num);
+void bc_result_free(void* result);
 
 void bc_constant_free(void* constant);
 
