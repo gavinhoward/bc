@@ -608,10 +608,11 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   char* ptr_a;
   char* ptr_b;
   char* ptr_c;
-  size_t scale_a;
-  size_t scale_b;
   size_t i;
   size_t min;
+  size_t diff;
+  size_t a_whole;
+  size_t b_whole;
   char carry;
 
   c->neg = a->neg;
@@ -626,24 +627,62 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
   c->len = 0;
 
+  if (a->rdx > b->rdx) {
+
+    diff = a->rdx - b->rdx;
+
+    ptr = a->num;
+    ptr_a = a->num + diff;
+    ptr_b = b->num;
+  }
+  else {
+
+    diff = b->rdx - a->rdx;
+
+    ptr = b->num;
+    ptr_a = a->num;
+    ptr_b = b->num + diff;
+  }
+
+  ptr_c = c->num;
+
+  for (i = 0; i < diff; ++i) {
+    ptr_c[i] = ptr[i];
+    ++c->len;
+  }
+
+  ptr_c += diff;
+
+  carry = 0;
+
+  for (i = 0; i < min; ++i) {
+
+    ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
+    ++c->len;
+
+    carry = 0;
+
+    while (ptr_c[i] >= 10) {
+      carry += 1;
+      ptr_c[i] -= 10;
+    }
+  }
+
+  c->rdx = c->len;
+
+  a_whole = a->len - a->rdx;
+  b_whole = b->len - b->rdx;
+
+  min = BC_MIN(a_whole, b_whole);
+
   ptr_a = a->num + a->rdx;
   ptr_b = b->num + b->rdx;
   ptr_c = c->num + c->rdx;
 
-  ptr = scale_a > scale_b ? ptr_a : ptr_b;
-
-  i = scale - 1;
-
-  while (i < scale && i >= min) {
-    ptr_c[i] = ptr[i];
-    --i;
-  }
-
-  carry = 0;
-
-  for (; i < scale; --i) {
+  for (i = 0; i < min; ++i) {
 
     ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
+    ++c->len;
 
     carry = 0;
 
@@ -653,53 +692,25 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
     }
   }
 
-  if (a->rdx == c->rdx - 1) {
+  if (a_whole > b_whole) {
 
-    min = b->rdx;
-    scale = a->rdx - min;
-    i = min - 1;
+    for (; i < a_whole; ++i) {
 
-    ptr_a = a->num + scale;
-    ptr_b = b->num;
-    ptr_c = c->num + (c->rdx - min);
+      ptr_c[i] = ptr_a[i] + carry;
+      ++c->len;
 
-    ptr = a->num;
+      carry = 0;
+    }
   }
   else {
 
-    min = a->rdx;
-    scale = b->rdx - min;
-    i = min - 1;
+    for (; i < b_whole; ++i) {
 
-    ptr_a = a->num;
-    ptr_b = b->num + scale;
-    ptr_c = c->num + (c->rdx - min);
+      ptr_c[i] = ptr_b[i] + carry;
+      ++c->len;
 
-    ptr = b->num;
-  }
-
-  for (; i < min; --i) {
-
-    ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
-
-    carry = 0;
-
-    while (ptr_c[i] >= 10) {
-      carry += 1;
-      ptr_c[i] -= 10;
+      carry = 0;
     }
-  }
-
-  --ptr_c;
-
-  *ptr_c = carry;
-
-  i = scale - 1;
-
-  while (i < scale) {
-    *ptr_c += ptr[i];
-    --ptr_c;
-    --i;
   }
 
   return BC_STATUS_SUCCESS;
@@ -788,7 +799,7 @@ static bool bc_num_strValid(const char* val, size_t base) {
 
     b = base - 9 + 'A';
 
-    for (; i < len; ++i) {
+    for (i = 0; i < len; ++i) {
 
       c = val[i];
 
