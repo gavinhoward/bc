@@ -15,12 +15,6 @@
 
 CFLAGS += -Wall -Wextra -I./include/ -I$(ARBPREC)/include -std=c99 -D_POSIX_C_SOURCE -g -O0
 
-BC_VERSION = 0.1
-
-BC_MATHLIB_PATH =
-
-CFLAGS += -DVERSION='"$(BC_VERSION)"' -DBC_MATHLIB_PATH='"$(BC_MATHLIB_PATH)"'
-
 ifeq "$(CC)" "clang"
 	CFLAGS += -fsanitize=address -fsanitize=undefined
 endif

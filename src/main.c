@@ -46,7 +46,7 @@ static const struct option bc_opts[] = {
 static const char* const bc_short_opts = "chilqsvw";
 
 static const char* const bc_help =
-  "usage: bc [-hilqsvw] [long-options] [ file ... ]\n"
+  "usage: bc [-hilqsvw] [long-options] [file...]\n"
   "\n"
   "bc is a command-line calculator with a Turing-complete language.\n"
   "\n"
@@ -72,10 +72,6 @@ long bc_std = 0;
 long bc_warn = 0;
 
 long bc_signal = 0;
-
-const char* const bc_mathlib = BC_MATHLIB_PATH "mathlib.bc";
-
-const char* const bc_version = VERSION;
 
 int main(int argc, char* argv[]) {
 
