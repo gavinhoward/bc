@@ -22,16 +22,8 @@ shift
 rm -rf "$out1"
 rm -rf "$out2"
 
-while read e; do
+cat "$name.txt" | bc -lq >> "$out1"
 
-	echo "$e" | bc -lq >> "$out1"
-
-done < "$name.txt"
-
-while read e; do
-
-	echo "$e" | "$bc" -lq >> "$out2"
-
-done < "$name.txt"
+cat "$name.txt" | "$bc" -lq >> "$out2"
 
 diff "$out1" "$out2"
