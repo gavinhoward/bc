@@ -236,6 +236,10 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
 
     if (status) goto err;
 
+    status = bc_parse_text(&vm.parse, (const char*) bc_lib);
+
+    if (status) goto err;
+
     while (!status) status = bc_parse_parse(&vm.parse);
 
     if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) goto err;
