@@ -269,7 +269,7 @@ BcStatus bc_program_init(BcProgram* p) {
     goto const_err;
   }
 
-  s = bc_vec_init(&p->expr_stack, sizeof(BcResult), NULL);
+  s = bc_vec_init(&p->expr_stack, sizeof(BcResult), bc_result_free);
 
   if (s) {
     goto expr_err;
