@@ -50,15 +50,21 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <libgen.h>
 
 static const char* const bc_gen_usage = "usage: gen bc_script output\n";
 static const char* const bc_gen_header =
-  "/*\n * *** AUTOMATICALLY GENERATED from %s. DO NOT MODIFY***\n*/\n\n";
+  "/*\n * *** AUTOMATICALLY GENERATED from %s. ***\n"
+  " * *** DO NOT MODIFY ***\n */\n\n";
 
 #define INVALID_PARAMS (1)
-#define INVALID_INPUT_FILE (2)
-#define INVALID_OUTPUT_FILE (3)
-#define IO_ERR (4)
+#define MALLOC_FAIL (2)
+#define INVALID_INPUT_FILE (3)
+#define INVALID_OUTPUT_FILE (4)
+#define IO_ERR (5)
 
 int main(int argc, char* argv[]) {
 
@@ -66,11 +72,21 @@ int main(int argc, char* argv[]) {
   FILE* out;
   int c;
   int count;
+  char* buf;
+  char* base;
 
   if (argc != 3) {
     printf(bc_gen_usage);
     return INVALID_PARAMS;
   }
+
+  buf = malloc(strlen(argv[1]) + 1);
+
+  if (!buf) return MALLOC_FAIL;
+
+  strcpy(buf, argv[1]);
+
+  base = basename(buf);
 
   in = fopen(argv[1], "r");
 
@@ -82,7 +98,10 @@ int main(int argc, char* argv[]) {
 
   count = 0;
 
-  if (fprintf(out, bc_gen_header, basename(argv[1])) < 0) return IO_ERR;
+  if (fprintf(out, bc_gen_header, base) < 0) return IO_ERR;
+
+  if (fprintf(out, "const char* const bc_lib_name = \"%s\";\n\n", base) < 0)
+    return IO_ERR;
 
   if (fprintf(out, "const unsigned char bc_lib[] = {\n") < 0) return IO_ERR;
 
@@ -112,6 +131,7 @@ int main(int argc, char* argv[]) {
 
   if (fprintf(out, "};\n") < 0) return IO_ERR;
 
+  free(buf);
   fclose(in);
   fclose(out);
 
