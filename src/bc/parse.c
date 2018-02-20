@@ -225,7 +225,7 @@ static BcStatus bc_parse_startBody(BcParse* parse, BcVec* code, uint8_t flags);
 static BcStatus bc_parse_loopExit(BcParse* parse, BcVec* code,
                                   BcLexTokenType type);
 static BcStatus bc_parse_rightBrace(BcParse* parse, BcVec* code);
-static BcStatus bc_parse_pushName(BcVec* code, const char* name);
+static BcStatus bc_parse_pushName(BcVec* code, char *name);
 static BcStatus bc_parse_pushIndex(BcVec* code, size_t idx);
 static BcStatus bc_parse_endHeader(BcParse* parse, BcVec* code, BcFunc* func,
                                    size_t idx, uint8_t flags);
@@ -1818,7 +1818,7 @@ static BcStatus bc_parse_incdec(BcParse* parse, BcVec* code, BcExprType* prev)
 
       case BC_LEX_NAME:
       {
-        const char* name;
+        char* name;
 
         name = parse->token.string;
 
@@ -2770,7 +2770,7 @@ static BcStatus bc_parse_rightBrace(BcParse* parse, BcVec* code) {
   return bc_vec_pop(&parse->flags);
 }
 
-static BcStatus bc_parse_pushName(BcVec* code, const char* name) {
+static BcStatus bc_parse_pushName(BcVec* code, char* name) {
 
   BcStatus status;
   size_t len;
@@ -2785,6 +2785,8 @@ static BcStatus bc_parse_pushName(BcVec* code, const char* name) {
   if (status) {
     return status;
   }
+
+  free(name);
 
   return bc_vec_pushByte(code, (uint8_t) ':');
 }
