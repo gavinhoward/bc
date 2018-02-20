@@ -20,6 +20,7 @@
  *
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -75,13 +76,17 @@ long bc_signal = 0;
 
 int main(int argc, char* argv[]) {
 
+  BcStatus status;
   unsigned int flags;
   unsigned int filec;
   const char** filev;
+  bool do_exit;
 
   setlocale(LC_ALL, "");
 
+  do_exit = false;
   flags = 0;
+  status = BC_STATUS_SUCCESS;
 
   // Getopt needs this.
   int opt_idx = 0;
@@ -107,7 +112,8 @@ int main(int argc, char* argv[]) {
 
       case 'h':
       {
-        flags |= BC_FLAG_HELP;
+        if (printf(bc_help) < 0) return BC_STATUS_IO_ERR;
+        do_exit = true;
         break;
       }
 
@@ -137,7 +143,12 @@ int main(int argc, char* argv[]) {
 
       case 'v':
       {
-        flags |= BC_FLAG_VERSION;
+        status = bc_print_version();
+
+        if (status) return status;
+
+        do_exit = true;
+
         break;
       }
 
@@ -159,11 +170,9 @@ int main(int argc, char* argv[]) {
     c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
   }
 
-  if (flags & BC_FLAG_HELP) printf(bc_help);
+  if (do_exit) return status;
 
-  if (argv[optind] && strcmp(argv[optind], "--") == 0) {
-    ++optind;
-  }
+  if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
   filec = argc - optind;
   filev = (const char**) (argv + optind);

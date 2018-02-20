@@ -27,13 +27,11 @@
 #include <stdlib.h>
 
 #define BC_FLAG_WARN (1<<0)
-#define BC_FLAG_VERSION (1<<1)
-#define BC_FLAG_STANDARD (1<<2)
-#define BC_FLAG_QUIET (1<<3)
-#define BC_FLAG_MATHLIB (1<<4)
-#define BC_FLAG_INTERACTIVE (1<<5)
-#define BC_FLAG_HELP (1<<6)
-#define BC_FLAG_CODE (1<<7)
+#define BC_FLAG_STANDARD (1<<1)
+#define BC_FLAG_QUIET (1<<2)
+#define BC_FLAG_MATHLIB (1<<3)
+#define BC_FLAG_INTERACTIVE (1<<4)
+#define BC_FLAG_CODE (1<<5)
 
 typedef void (*BcFreeFunc)(void*);
 
@@ -125,6 +123,8 @@ typedef enum BcStatus {
 } BcStatus;
 
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
+
+BcStatus bc_print_version();
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char* file, uint32_t line);
