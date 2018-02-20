@@ -20,6 +20,7 @@
  *
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
