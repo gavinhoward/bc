@@ -70,13 +70,13 @@ long bc_io_fgets(char * buf, int n, FILE* fp) {
   return len;
 }
 
-size_t bc_io_fgetline(char** p, size_t* n, FILE* fp) {
+BcStatus bc_io_fgetline(char** p, size_t* n, FILE* fp) {
 
   size_t mlen, slen, dlen, len;
   char* s;
   char* t;
 
-  if (!fp) return BC_INVALID_IDX;
+  if (!p || !n || !fp) return BC_STATUS_INVALID_PARAM;
 
   if (!p) {
 
@@ -115,9 +115,56 @@ size_t bc_io_fgetline(char** p, size_t* n, FILE* fp) {
       *p = s;
       *n = slen;
 
-      return slen;
+      return BC_STATUS_SUCCESS;
     }
   }
 
-  return BC_INVALID_IDX;
+  return BC_STATUS_IO_ERR;
+}
+
+BcStatus bc_io_fread(const char* path, char** buf) {
+
+  BcStatus status;
+  FILE* f;
+  size_t size;
+  size_t read;
+
+  f = fopen(path, "r");
+
+  if (!f) return BC_STATUS_EXEC_FILE_ERR;
+
+  fseek(f, 0, SEEK_END);
+  size = ftell(f);
+
+  fseek(f, 0, SEEK_SET);
+
+  *buf = malloc(size + 1);
+
+  if (!*buf) {
+    status = BC_STATUS_MALLOC_FAIL;
+    goto malloc_err;
+  }
+
+  read = fread(*buf, 1, size, f);
+
+  if (read != size) {
+    status = BC_STATUS_IO_ERR;
+    goto read_err;
+  }
+
+  (*buf)[size] = '\0';
+
+  fclose(f);
+
+  return BC_STATUS_SUCCESS;
+
+read_err:
+
+  free(*buf);
+
+malloc_err:
+
+  fclose(f);
+
+  return status;
 }
