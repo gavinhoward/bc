@@ -342,9 +342,7 @@ var_map_err:
 
 var_err:
 
-  if (name) {
-    free(name);
-  }
+  if (name) free(name);
 
 name_err:
 
@@ -590,9 +588,7 @@ BcStatus bc_program_exec(BcProgram* p) {
 
         str = *((char**) bc_vec_item(&p->constants, idx));
 
-        if (!str) {
-          return BC_STATUS_EXEC_INVALID_EXPR;
-        }
+        if (!str) return BC_STATUS_EXEC_INVALID_EXPR;
 
         status = bc_num_init(&result.num, strlen(str));
 
