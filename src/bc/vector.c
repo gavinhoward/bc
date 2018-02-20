@@ -146,6 +146,15 @@ void* bc_vec_item(BcVec* vec, size_t idx) {
   return vec->array + vec->size * idx;
 }
 
+void* bc_vec_item_rev(BcVec* vec, size_t idx) {
+
+  if (vec == NULL || vec->len == 0 || idx >= vec->len) {
+    return NULL;
+  }
+
+  return vec->array + vec->size * (vec->len - idx - 1);
+}
+
 BcStatus bc_vec_pop(BcVec* vec) {
 
   if (vec == NULL) {
