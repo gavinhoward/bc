@@ -71,6 +71,7 @@ static const char* const bc_err_types[] = {
   "Math",
   "Math",
   "Math",
+  "Math",
 
   "Runtime",
   "Runtime",
@@ -153,6 +154,7 @@ static const char* const bc_err_descs[] = {
   "divide by zero",
   "negative square root",
   "invalid number string",
+  "cannot truncate more places than exist after the decimal point",
 
   "couldn't open file",
   "mismatched parameters",
