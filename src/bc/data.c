@@ -370,27 +370,24 @@ void bc_entry_free(void* entry) {
   free(e->name);
 }
 
-void bc_result_free(void* num) {
+void bc_result_free(void* result) {
 
-  BcResult* n;
+  BcResult* r;
 
-  n = (BcResult*) num;
+  r = (BcResult*) result;
 
-  switch (n->type) {
+  switch (r->type) {
 
-    case BC_NUM_RESULT:
-    case BC_NUM_SCALE:
-    case BC_NUM_LAST:
-    case BC_NUM_IBASE:
-    case BC_NUM_OBASE:
+    case BC_RESULT_INTERMEDIATE:
+    case BC_RESULT_CONSTANT:
     {
-      bc_num_free(&n->num);
+      bc_num_free(&r->num);
       break;
     }
 
     default:
     {
-      // We don't have to anything.
+      // Do nothing.
       break;
     }
   }
