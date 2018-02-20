@@ -140,7 +140,7 @@ extern long bc_warn;
 
 extern long bc_signal;
 
-extern const char* const bc_mathlib;
-extern const char* const bc_version;
+extern const unsigned char bc_lib[];
+extern const char* const bc_lib_name;
 
 #endif // BC_H
