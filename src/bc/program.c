@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <arbprec/arbprec.h>
+#include <unistd.h>
 
 #include <io.h>
 #include <program.h>
