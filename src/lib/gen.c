@@ -96,11 +96,11 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (count) {
+  if (!count) {
     if (fputc('\n', out) == EOF) return IO_ERR;
   }
 
-  if (fprintf(out, "};\n") < 0) return IO_ERR;
+  if (fprintf(out, "0\n};\n") < 0) return IO_ERR;
 
   free(buf);
   fclose(in);
