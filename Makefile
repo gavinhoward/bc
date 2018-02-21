@@ -13,7 +13,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-CFLAGS += -Wall -Wextra -I./include/ -I$(ARBPREC)/include -std=c99 -D_POSIX_C_SOURCE -g -O0
+CFLAGS ?= -Wall -Wextra -pedantic -I./include/ -std=c99 -D_POSIX_C_SOURCE -g -O0
 
 ifeq "$(CC)" "clang"
 	CFLAGS += -fsanitize=address -fsanitize=undefined

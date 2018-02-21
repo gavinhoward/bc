@@ -25,7 +25,7 @@ clone the `arbprec` submodule.
 
 ## Language
 
-This `bc` is written in pure ISO C11.
+This `bc` is written in pure ISO C99.
 
 ## Git Workflow
 

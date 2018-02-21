@@ -233,14 +233,14 @@ BcStatus bc_local_initVar(BcLocal* local, const char* name,
 {
   BcStatus status;
 
-  status = bc_num_init(&local->num, strlen(num));
+  status = bc_num_init(&local->data.num, strlen(num));
 
   if (status) return status;
 
   local->name = name;
   local->var = true;
 
-  return bc_num_parse(&local->num, num, base, scale);
+  return bc_num_parse(&local->data.num, num, base, scale);
 }
 
 BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
@@ -276,12 +276,12 @@ void bc_local_free(void* local) {
   free((void*) l->name);
 
   if (l->var) {
-    bc_num_free(&l->num);
+    bc_num_free(&l->data.num);
   }
   else {
 
-    nelems = l->num_elems;
-    array = l->array;
+    nelems = l->data.array.nelems;
+    array = l->data.array.array;
 
     for (uint32_t i = 0; i < nelems; ++i) {
       bc_num_free(array + i);
@@ -289,8 +289,8 @@ void bc_local_free(void* local) {
 
     free(array);
 
-    l->array = NULL;
-    l->num_elems = 0;
+    l->data.array.array = NULL;
+    l->data.array.nelems = 0;
   }
 }
 
@@ -316,7 +316,7 @@ BcStatus bc_temp_initName(BcTemp* temp, const char* name) {
     return BC_STATUS_EXEC_INVALID_NAME;
   }
 
-  temp->name = name;
+  temp->data.name = name;
 
   return BC_STATUS_SUCCESS;
 }
@@ -339,7 +339,7 @@ void bc_temp_free(void* temp) {
   t = (BcTemp*) temp;
 
   if (t->type == BC_TEMP_NUM) {
-    bc_num_free(&t->num);
+    bc_num_free(&t->data.num);
   }
 }
 
@@ -383,7 +383,7 @@ void bc_result_free(void* result) {
     case BC_RESULT_INTERMEDIATE:
     case BC_RESULT_CONSTANT:
     {
-      bc_num_free(&r->num);
+      bc_num_free(&r->data.num);
       break;
     }
 

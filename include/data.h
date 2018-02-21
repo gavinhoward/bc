@@ -123,12 +123,17 @@ typedef struct BcLocal {
   bool var;
 
   union {
+
     BcNum num;
+
     struct {
+
       BcNum* array;
-      uint32_t num_elems;
-    };
-  };
+      uint32_t nelems;
+
+    } array;
+
+  } data;
 
 } BcLocal;
 
@@ -141,7 +146,7 @@ typedef struct BcTemp {
     BcNum num;
     const char* name;
 
-  };
+  } data;
 
 } BcTemp;
 
@@ -194,9 +199,9 @@ typedef struct BcResult {
       char* name;
       size_t idx;
 
-    };
+    } id;
 
-  };
+  } data;
 
 } BcResult;
 
