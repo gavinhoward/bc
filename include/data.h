@@ -227,9 +227,6 @@ BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num, siz
 BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems);
 void bc_local_free(void* local);
 
-BcStatus bc_temp_initNum(BcTemp* temp, const char* val);
-BcStatus bc_temp_initName(BcTemp* temp, const char* name);
-BcStatus bc_temp_init(BcTemp* temp, BcTempType type);
 void bc_temp_free(void* temp);
 
 void bc_string_free(void* string);

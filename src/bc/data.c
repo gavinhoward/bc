@@ -294,44 +294,6 @@ void bc_local_free(void* local) {
   }
 }
 
-BcStatus bc_temp_initNum(BcTemp* temp, const char* val) {
-
-  temp->type = BC_TEMP_NUM;
-
-  if (val) {
-    //temp->num = arb_str2fxdpnt(val);
-  }
-  else {
-    //temp->num = arb_alloc(BC_PROGRAM_DEF_SIZE);
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
-BcStatus bc_temp_initName(BcTemp* temp, const char* name) {
-
-  temp->type = BC_TEMP_NAME;
-
-  if (!name) {
-    return BC_STATUS_EXEC_INVALID_NAME;
-  }
-
-  temp->data.name = name;
-
-  return BC_STATUS_SUCCESS;
-}
-
-BcStatus bc_temp_init(BcTemp* temp, BcTempType type) {
-
-  if (type > BC_TEMP_LAST || type == BC_TEMP_NUM || type == BC_TEMP_NAME) {
-    return BC_STATUS_EXEC_INVALID_TEMP;
-  }
-
-  temp->type = type;
-
-  return BC_STATUS_SUCCESS;
-}
-
 void bc_temp_free(void* temp) {
 
   BcTemp* t;
