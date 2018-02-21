@@ -45,6 +45,9 @@ int main(int argc, char* argv[]) {
   int count;
   char* buf;
   char* base;
+  int err;
+
+  err = 0;
 
   if (argc != 3) {
     printf(bc_gen_usage);
@@ -61,50 +64,89 @@ int main(int argc, char* argv[]) {
 
   in = fopen(argv[1], "r");
 
-  if (!in) return INVALID_INPUT_FILE;
+  if (!in) {
+    err = INVALID_INPUT_FILE;
+    goto in_err;
+  }
 
   out = fopen(argv[2], "w");
 
-  if (!out) return INVALID_OUTPUT_FILE;
+  if (!out) {
+    err = INVALID_OUTPUT_FILE;
+    goto out_err;
+  }
 
   count = 0;
 
-  if (fprintf(out, bc_gen_header, base) < 0) return IO_ERR;
+  if (fprintf(out, bc_gen_header, base) < 0) {
+    err = IO_ERR;
+    goto error;
+  }
 
-  if (fprintf(out, "const char* const bc_lib_name = \"%s\";\n\n", base) < 0)
-    return IO_ERR;
+  if (fprintf(out, "const char* const bc_lib_name = \"%s\";\n\n", base) < 0) {
+    err = IO_ERR;
+    goto error;
+  }
 
-  if (fprintf(out, "const unsigned char bc_lib[] = {\n") < 0) return IO_ERR;
+  if (fprintf(out, "const unsigned char bc_lib[] = {\n") < 0) {
+    err = IO_ERR;
+    goto error;
+  }
 
   while ((c = fgetc(in)) >= 0) {
 
     int val;
 
     if (!count) {
-      if (fprintf(out, "  ") < 0) return IO_ERR;
+      if (fprintf(out, "  ") < 0) {
+        err = IO_ERR;
+        goto error;
+      }
     }
 
     val = fprintf(out, "%d,", c);
 
-    if (val < 0) return IO_ERR;
+    if (val < 0) {
+      err = IO_ERR;
+      goto error;
+    }
 
     count += val;
 
     if (count > 72) {
-      if (fputc('\n', out) == EOF) return IO_ERR;
+
       count = 0;
+
+      if (fputc('\n', out) == EOF) {
+        err = IO_ERR;
+        goto error;
+      }
     }
   }
 
   if (!count) {
-    if (fputc('\n', out) == EOF) return IO_ERR;
+    if (fputc('\n', out) == EOF) {
+      err = IO_ERR;
+      goto error;
+    }
   }
 
-  if (fprintf(out, "0\n};\n") < 0) return IO_ERR;
+  if (fprintf(out, "0\n};\n") < 0) {
+    err = IO_ERR;
+    goto error;
+  }
 
-  free(buf);
-  fclose(in);
+error:
+
   fclose(out);
 
-  return 0;
+out_err:
+
+  fclose(in);
+
+in_err:
+
+  free(buf);
+
+  return err;
 }

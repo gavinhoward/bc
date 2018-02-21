@@ -30,11 +30,7 @@ BcStatus bc_func_init(BcFunc* func) {
 
   BcStatus status;
 
-  status = BC_STATUS_SUCCESS;
-
-  if (!func) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!func) return BC_STATUS_INVALID_PARAM;
 
   func->num_params = 0;
   func->num_autos = 0;
@@ -85,7 +81,7 @@ param_err:
   return status;
 }
 
-BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var) {
+BcStatus bc_func_insertsParam(BcFunc* func, char* name, bool var) {
 
   BcAuto* params;
   size_t new_cap;
