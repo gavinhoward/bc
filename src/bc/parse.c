@@ -324,8 +324,6 @@ BcStatus bc_parse_parse(BcParse* parse) {
     return BC_STATUS_INVALID_PARAM;
   }
 
-  status = BC_STATUS_SUCCESS;
-
   switch (parse->token.type) {
 
     case BC_LEX_NEWLINE:
@@ -627,8 +625,11 @@ static BcStatus bc_parse_auto(BcParse* parse) {
     }
 
     if (parse->token.type == BC_LEX_COMMA) {
+
       comma = true;
       status = bc_lex_next(&parse->lex, &parse->token);
+
+      if (status) return status;
     }
     else {
       comma = false;
@@ -759,8 +760,6 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
   BcStatus status;
   uint8_t* flag_ptr;
 
-  status = BC_STATUS_SUCCESS;
-
   switch (parse->token.type) {
 
     case BC_LEX_OP_INC:
@@ -780,6 +779,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -816,6 +816,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
 
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -848,6 +849,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -861,6 +863,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -874,6 +877,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       status = bc_parse_auto(parse);
@@ -886,6 +890,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -899,6 +904,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -912,6 +918,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -937,6 +944,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -950,6 +958,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       status = bc_lex_next(&parse->lex, &parse->token);
@@ -973,6 +982,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -986,6 +996,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -1002,6 +1013,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -1021,6 +1033,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -1034,6 +1047,7 @@ static BcStatus bc_parse_stmt(BcParse* parse, BcVec* code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
       }
 
       parse->auto_part = false;
@@ -1608,7 +1622,6 @@ static BcStatus bc_parse_params(BcParse* parse, BcVec* code, bool posix_rel) {
     return bc_vec_pushByte(code, 0);
   }
 
-  comma = false;
   nparams = 0;
 
   do {

@@ -99,6 +99,7 @@ BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var) {
       return BC_STATUS_MALLOC_FAIL;
     }
 
+    func->params = params;
     func->param_cap = new_cap;
   }
 
@@ -128,6 +129,7 @@ BcStatus bc_func_insertAuto(BcFunc* func, char* name, bool var) {
       return BC_STATUS_MALLOC_FAIL;
     }
 
+    func->autos = autos;
     func->auto_cap = new_cap;
   }
 
@@ -226,15 +228,19 @@ void bc_array_free(void* array) {
   bc_vec_free(a);
 }
 
-BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num) {
+BcStatus bc_local_initVar(BcLocal* local, const char* name,
+                          const char* num, size_t base, size_t scale)
+{
+  BcStatus status;
+
+  status = bc_num_init(&local->num, strlen(num));
+
+  if (status) return status;
 
   local->name = name;
   local->var = true;
 
-  // TODO: Don't malloc.
-  //arb_str2fxdpnt(num);
-
-  return BC_STATUS_SUCCESS;
+  return bc_num_parse(&local->num, num, base, scale);
 }
 
 BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {

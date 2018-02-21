@@ -715,20 +715,28 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
 static BcStatus bc_num_alg_s(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
-  scale = BC_MAX(a->rdx, b->rdx);
+  (void) scale;
 
+  c->rdx = BC_MAX(a->rdx, b->rdx);
+
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_alg_m(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
   scale = BC_MAX(scale, a->rdx);
   scale = BC_MAX(scale, b->rdx);
-  scale = BC_MIN(a->rdx + b->rdx, scale);
+  c->rdx = BC_MIN(a->rdx + b->rdx, scale);
 
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_alg_d(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
-
+  (void) a;
+  (void) b;
+  (void) c;
+  (void) scale;
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
@@ -739,7 +747,7 @@ static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
   // TODO: Compute a / b.
 
-  scale = BC_MAX(scale + b->rdx, a->rdx);
+  c->rdx = BC_MAX(scale + b->rdx, a->rdx);
 
   // TODO: Compute a - (a / b) * b.
 
@@ -747,15 +755,25 @@ static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 }
 
 static BcStatus bc_num_alg_rem(BcNum* a, BcNum* b, BcNum* c) {
-
+  (void) a;
+  (void) b;
+  (void) c;
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_alg_p(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
-
+  (void) a;
+  (void) b;
+  (void) c;
+  (void) scale;
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_sqrt_newton(BcNum* a, BcNum* b, size_t scale) {
-
+  (void) a;
+  (void) b;
+  (void) scale;
+  return BC_STATUS_SUCCESS;
 }
 
 static bool bc_num_strValid(const char* val, size_t base) {
@@ -912,78 +930,20 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
 static BcStatus bc_num_parseLowBase(BcNum* n, const char* val,
                                      size_t base, size_t scale)
 {
-  const char* ptr;
-  char* nptr;
-  size_t len;
-  size_t radix;
-  size_t digits;
-  char c;
-  char carry;
-  size_t pow;
-
-  len = strlen(val);
-
-  ptr = strchr(val, '.');
-
-  if (ptr) {
-    --ptr;
-  }
-  else {
-    ptr = val + len - 1;
-  }
-
-  radix = ptr - val;
-
-  nptr = n->num + radix;
-  ++radix;
-
-  c = 0;
-  carry = 0;
-  digits = 0;
-  pow = 1;
-
-  while (ptr >= val) {
-
-    c += BC_NUM_FROM_CHAR(*ptr) * pow;
-    --ptr;
-    pow *= base;
-
-    if (pow > 10) {
-
-      --nptr;
-
-      while (c >= 10) {
-        *nptr += 1;
-        c -= 10;
-      }
-
-      *(nptr + 1) += c;
-      ++digits;
-
-      carry = 1;
-      c = 0;
-      pow = 1;
-    }
-  }
-
-  if (c) {
-    *nptr += c;
-    --nptr;
-    ++digits;
-  }
-
-  if (nptr >= n->num) {
-    memmove(n->num, nptr + 1, digits * sizeof(char));
-  }
-
-  // TODO: After radix.
-
+  (void) n;
+  (void) val;
+  (void) base;
+  (void) scale;
   return BC_STATUS_SUCCESS;
 }
 static BcStatus bc_num_parseHighBase(BcNum* n, const char* val,
                                       size_t base, size_t scale)
 {
-
+  (void) n;
+  (void) val;
+  (void) base;
+  (void) scale;
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_printDecimal(BcNum* n, FILE* f) {
@@ -1050,15 +1010,12 @@ static BcStatus bc_num_printLowBase(BcNum* n, size_t base, FILE* f) {
 
   size_t size;
   char* buf;
-  size_t i;
 
   size = BC_MAX(n->rdx, n->len - n->rdx) * ((10 * 2) / base);
 
   buf = malloc(size);
 
   if (!buf) return BC_STATUS_MALLOC_FAIL;
-
-  i = 0;
 
   fputc('\n', f);
 
@@ -1068,11 +1025,17 @@ static BcStatus bc_num_printLowBase(BcNum* n, size_t base, FILE* f) {
 }
 
 static BcStatus bc_num_printHighBase(BcNum* n, size_t base, FILE* f) {
-
+  (void) n;
+  (void) base;
+  (void) f;
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_printHighestBase(BcNum* n, size_t base, FILE* f) {
-
+  (void) n;
+  (void) base;
+  (void) f;
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_trunc(BcNum* n, size_t places) {

@@ -218,7 +218,7 @@ void bc_var_free(void* var);
 BcStatus bc_array_init(BcArray* array);
 void bc_array_free(void* array);
 
-BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num);
+BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num, size_t base, size_t scale);
 BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems);
 void bc_local_free(void* local);
 
