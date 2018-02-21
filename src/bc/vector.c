@@ -161,6 +161,8 @@ BcStatus bc_vec_pop(BcVec* vec) {
     return BC_STATUS_INVALID_PARAM;
   }
 
+  if (!vec->len) return BC_STATUS_VEC_OUT_OF_BOUNDS,
+
   --vec->len;
 
   if (vec->dtor) vec->dtor(vec->array + (vec->size * vec->len));

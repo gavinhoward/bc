@@ -48,6 +48,9 @@ static const char* const bc_err_types[] = {
 
   "vector",
 
+  "ordered vector",
+  "ordered vector",
+
   "Lex",
   "Lex",
   "Lex",
@@ -122,6 +125,9 @@ static const char* const bc_err_descs[] = {
 
   "one or more limits not specified",
   "invalid limit; this is a bug in bc",
+
+  "index is out of bounds for the vector and error was not caught; "
+    "this is probably a bug in bc",
 
   "index is out of bounds for the ordered vector and error was not caught; "
     "this is probably a bug in bc",
