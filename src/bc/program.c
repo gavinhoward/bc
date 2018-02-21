@@ -569,9 +569,7 @@ void bc_program_printCode(BcProgram* p) {
 
 void bc_program_free(BcProgram* p) {
 
-  if (p == NULL) {
-    return;
-  }
+  if (p == NULL) return;
 
   free(p->num_buf);
 
@@ -644,9 +642,7 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
 
         idx = bc_program_index(code, &ip->idx);
 
-        if (idx >= p->strings.len) {
-          return BC_STATUS_EXEC_INVALID_STRING;
-        }
+        if (idx >= p->strings.len) return BC_STATUS_EXEC_INVALID_STRING;
 
         string = bc_vec_item(&p->strings, idx);
 
@@ -663,9 +659,7 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
 
         idx = bc_program_index(code, &ip->idx);
 
-        if (idx >= p->strings.len) {
-          return BC_STATUS_EXEC_INVALID_STRING;
-        }
+        if (idx >= p->strings.len) return BC_STATUS_EXEC_INVALID_STRING;
 
         string = bc_vec_item(&p->strings, idx);
 
@@ -783,10 +777,8 @@ static BcStatus bc_program_op(BcProgram* p, uint8_t inst) {
     status = op(&result1->data.num, &result2->data.num,
                 &result.data.num, p->scale);
   }
-  else {
-    status = bc_num_pow(&result1->data.num, &result2->data.num,
-                        &result.data.num, p->scale);
-  }
+  else status = bc_num_pow(&result1->data.num, &result2->data.num,
+                           &result.data.num, p->scale);
 
   if (status) return status;
 
@@ -812,15 +804,11 @@ static BcStatus bc_program_read(BcProgram* p) {
 
   buffer = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
-  if (!buffer) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
+  if (!buffer) return BC_STATUS_MALLOC_FAIL;
 
   status = bc_vec_init(&code, sizeof(uint8_t), NULL);
 
-  if (status) {
-    goto vec_err;
-  }
+  if (status) goto vec_err;
 
   size = BC_PROGRAM_BUF_SIZE;
 
@@ -830,21 +818,15 @@ static BcStatus bc_program_read(BcProgram* p) {
 
   status = bc_parse_init(&parse, p);
 
-  if (status) {
-    goto io_err;
-  }
+  if (status) goto io_err;
 
   status = bc_parse_file(&parse, "<stdin>");
 
-  if (status) {
-    goto exec_err;
-  }
+  if (status) goto exec_err;
 
   status = bc_parse_text(&parse, buffer);
 
-  if (status) {
-    goto exec_err;
-  }
+  if (status) goto exec_err;
 
   status = bc_parse_expr(&parse, &code, false, false);
 
@@ -858,9 +840,7 @@ static BcStatus bc_program_read(BcProgram* p) {
   // TODO: Execute the code, not the expression.
   //status = bc_program_execExpr(p, &exprs, &temp.num, false);
 
-  if (status) {
-    goto exec_err;
-  }
+  if (status) goto exec_err;
 
   status = bc_vec_push(&p->temps, &temp);
 
@@ -1021,16 +1001,12 @@ static BcStatus bc_program_printString(const char* str) {
 
     c = str[i];
 
-    if (c != '\\') {
-      err = fputc(c, stdout);
-    }
+    if (c != '\\') err = fputc(c, stdout);
     else {
 
       ++i;
 
-      if (i >= len) {
-        return BC_STATUS_EXEC_INVALID_STRING;
-      }
+      if (i >= len) return BC_STATUS_EXEC_INVALID_STRING;
 
       c2 = str[i];
 

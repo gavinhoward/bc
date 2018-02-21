@@ -72,9 +72,7 @@ BcStatus bc_num_init(BcNum* n, size_t request) {
 
   n->num = malloc(request);
 
-  if (!n->num) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
+  if (!n->num) return BC_STATUS_MALLOC_FAIL;
 
   n->cap = request;
 
@@ -91,9 +89,7 @@ BcStatus bc_num_expand(BcNum* n, size_t request) {
 
     temp = realloc(n->num, request);
 
-    if (!temp) {
-      return BC_STATUS_MALLOC_FAIL;
-    }
+    if (!temp) return BC_STATUS_MALLOC_FAIL;
 
     memset(temp + n->cap, 0, sizeof(char) * (request - n->cap));
 
@@ -143,15 +139,9 @@ BcStatus bc_num_parse(BcNum* n, const char* val, size_t base, size_t scale) {
 
   if (!bc_num_strValid(val, base)) return BC_STATUS_MATH_INVALID_STRING;
 
-  if (base == 10) {
-    status = bc_num_parseDecimal(n, val, scale);
-  }
-  else if (base < 10) {
-    status = bc_num_parseLowBase(n, val, base, scale);
-  }
-  else {
-    status = bc_num_parseHighBase(n, val, base, scale);
-  }
+  if (base == 10) status = bc_num_parseDecimal(n, val, scale);
+  else if (base < 10) status = bc_num_parseLowBase(n, val, base, scale);
+  else status = bc_num_parseHighBase(n, val, base, scale);
 
   return status;
 }
@@ -169,18 +159,10 @@ BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f) {
   if (base < BC_NUM_MIN_BASE || base > BC_NUM_MAX_OUTPUT_BASE)
     return BC_STATUS_EXEC_INVALID_OBASE;
 
-  if (base == 10) {
-    status = bc_num_printDecimal(n, f);
-  }
-  else if (base < 10) {
-    status = bc_num_printLowBase(n, base, f);
-  }
-  else if (base <= 16) {
-    status = bc_num_printHighBase(n, base, f);
-  }
-  else {
-    status = bc_num_printHighestBase(n, base, f);
-  }
+  if (base == 10) status = bc_num_printDecimal(n, f);
+  else if (base < 10) status = bc_num_printLowBase(n, base, f);
+  else if (base <= 16) status = bc_num_printHighBase(n, base, f);
+  else status = bc_num_printHighestBase(n, base, f);
 
   return status;
 }
@@ -271,7 +253,6 @@ BcStatus bc_num_long2num(BcNum* n, long val) {
     }
 
     val = -val;
-
     n->neg = true;
   }
 
@@ -334,12 +315,8 @@ BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
 
   BcBinaryFunc op;
 
-  if ((a->neg && b->neg) || (!a->neg && !b->neg)) {
-    op = bc_num_alg_a;
-  }
-  else {
-    op = bc_num_alg_s;
-  }
+  if ((a->neg && b->neg) || (!a->neg && !b->neg)) op = bc_num_alg_a;
+  else op = bc_num_alg_s;
 
   return bc_num_binary(a, b, result, scale, op, a->len + b->len + 1);
 }
@@ -348,15 +325,9 @@ BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
 
   BcBinaryFunc op;
 
-  if (a->neg && b->neg) {
-    op = bc_num_alg_s;
-  }
-  else if (a->neg || b->neg) {
-    op = bc_num_alg_a;
-  }
-  else {
-    op = bc_num_alg_s;
-  }
+  if (a->neg && b->neg) op = bc_num_alg_s;
+  else if (a->neg || b->neg) op = bc_num_alg_a;
+  else op = bc_num_alg_s;
 
   return bc_num_binary(a, a, result, scale, op, a->len + b->len + 1);
 }
@@ -403,16 +374,10 @@ int bc_num_compare(BcNum* a, BcNum* b) {
 
   if (!a2) {
 
-    if (b2== NULL) {
-      return 0;
-    }
-    else {
-      return b2->neg ? 1 : -1;
-    }
+    if (b2== NULL) return 0;
+    else return b2->neg ? 1 : -1;
   }
-  else if (!b2) {
-    return a2->neg ? -1 : 1;
-  }
+  else if (!b2) return a2->neg ? -1 : 1;
 
   neg = false;
 
@@ -426,12 +391,8 @@ int bc_num_compare(BcNum* a, BcNum* b) {
   a_int = a2->len - a2->rdx;
   b_int = b2->len - b2->rdx;
 
-  if (a_int > b_int) {
-    return 1;
-  }
-  else if (b_int > a_int) {
-    return -1;
-  }
+  if (a_int > b_int) return 1;
+  else if (b_int > a_int) return -1;
 
   ptr_a = a2->num + a2->rdx;
   ptr_b = b2->num + b2->rdx;
@@ -533,9 +494,7 @@ static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
 
   status = op(ptr_a, b, scale);
 
-  if (b == a) {
-    bc_num_free(&a2);
-  }
+  if (b == a) bc_num_free(&a2);
 
   return status;
 }
@@ -559,9 +518,7 @@ static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c,  size_t scale,
     ptr_a = &a2;
     init = true;
   }
-  else {
-    ptr_a = a;
-  }
+  else ptr_a = a;
 
   if (c == b) {
 
@@ -574,27 +531,17 @@ static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c,  size_t scale,
       init = true;
     }
   }
-  else {
-    ptr_b = b;
-  }
+  else ptr_b = b;
 
-  if (init) {
-    status = bc_num_init(c, req);
-  }
-  else {
-    status = bc_num_expand(c, req);
-  }
+  if (init) status = bc_num_init(c, req);
+  else status = bc_num_expand(c, req);
 
   if (status) return status;
 
   status = op(ptr_a, ptr_b, c, scale);
 
-  if (c == a) {
-    bc_num_free(&a2);
-  }
-  else if (c == b) {
-    bc_num_free(&b2);
-  }
+  if (c == a) bc_num_free(&a2);
+  else if (c == b) bc_num_free(&b2);
 
   return status;
 }
@@ -741,9 +688,7 @@ static BcStatus bc_num_alg_d(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
 static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
 
-  if (scale == 0) {
-    return bc_num_alg_rem(a, b, c);
-  }
+  if (scale == 0) return bc_num_alg_rem(a, b, c);
 
   // TODO: Compute a / b.
 
@@ -803,7 +748,6 @@ static bool bc_num_strValid(const char* val, size_t base) {
         if (radix) return false;
 
         radix = true;
-
         continue;
       }
 
@@ -823,7 +767,6 @@ static bool bc_num_strValid(const char* val, size_t base) {
         if (radix) return false;
 
         radix = true;
-
         continue;
       }
 

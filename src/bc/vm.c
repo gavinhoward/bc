@@ -67,9 +67,7 @@ BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
   sigemptyset(&act.sa_mask);
   act.sa_handler = bc_vm_sigint;
 
-  if (sigaction(SIGINT, &act, NULL) < 0) {
-    return BC_STATUS_EXEC_SIGACTION_FAIL;
-  }
+  if (sigaction(SIGINT, &act, NULL) < 0) return BC_STATUS_EXEC_SIGACTION_FAIL;
 
   status = bc_program_init(&vm->program);
 
@@ -102,9 +100,7 @@ BcStatus bc_vm_exec(BcVm* vm) {
 
   num_files = vm->filec;
 
-  for (int i = 0; !status && i < num_files; ++i) {
-    status = bc_vm_execFile(vm, i);
-  }
+  for (int i = 0; !status && i < num_files; ++i) status = bc_vm_execFile(vm, i);
 
   if (status != BC_STATUS_SUCCESS &&
       status != BC_STATUS_PARSE_QUIT &&
@@ -133,21 +129,15 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
   status = bc_io_fread(file, &data);
 
-  if (status) {
-    return status;
-  }
+  if (status) return status;
 
   status = bc_parse_file(&vm->parse, file);
 
-  if (status) {
-    goto read_err;
-  }
+  if (status) goto read_err;
 
   status = bc_parse_text(&vm->parse, data);
 
-  if (status) {
-    goto read_err;
-  }
+  if (status) goto read_err;
 
   do {
 
@@ -158,13 +148,9 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
       goto err;
     }
 
-    if (bc_signal && !bc_interactive) {
-      goto read_err;
-    }
+    if (bc_signal && !bc_interactive) goto read_err;
     else {
-
       status = bc_vm_handleSignal(vm);
-
       if (status) goto read_err;
     }
 
@@ -211,9 +197,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
         status = bc_program_exec(&vm->program);
 
-        if (status) {
-          goto read_err;
-        }
+        if (status) goto read_err;
 
         if (bc_interactive) {
 
@@ -232,9 +216,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
           goto read_err;
         }
       }
-      else {
-        status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
-      }
+      else status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
     } while (!status);
   }
@@ -263,9 +245,7 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
           goto read_err;
         }
       }
-      else {
-        status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
-      }
+      else status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
     } while (!status);
   }
@@ -298,17 +278,13 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
   status = bc_parse_file(&vm->parse, bc_stdin_filename);
 
-  if (status) {
-    return status;
-  }
+  if (status) return status;
 
   n = BC_VM_BUF_SIZE;
   bufn = BC_VM_BUF_SIZE;
   buffer = malloc(BC_VM_BUF_SIZE + 1);
 
-  if (!buffer) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
+  if (!buffer) return BC_STATUS_MALLOC_FAIL;
 
   buffer[0] = '\0';
 
@@ -337,9 +313,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
     slen = strlen(buffer);
     total_len = slen + len;
 
-    if (len == 1 && buf[0] == '"') {
-      string = !string;
-    }
+    if (len == 1 && buf[0] == '"') string = !string;
     else if (len > 1) {
 
       for (uint32_t i = 0; i < len; ++i) {
@@ -351,15 +325,11 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
         c = buf[i];
 
-        if (c == '"') {
-          string = !string;
-        }
-        else if (c == '/' && notend && comment && buf[i + 1] == '*') {
+        if (c == '"') string = !string;
+        else if (c == '/' && notend && comment && buf[i + 1] == '*')
           comment = true;
-        }
-        else if (c == '*' && notend && !comment && buf[i + 1] == '/') {
+        else if (c == '*' && notend && !comment && buf[i + 1] == '/')
           comment = false;
-        }
       }
 
       if (string || comment || buf[len - 2] == '\\') {
@@ -430,9 +400,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
 
     while (!status) status = bc_parse_parse(&vm->parse);
 
-    if (status == BC_STATUS_PARSE_QUIT) {
-      break;
-    }
+    if (status == BC_STATUS_PARSE_QUIT) break;
     else if (status == BC_STATUS_PARSE_LIMITS) {
       bc_program_limits(&vm->program);
       status = BC_STATUS_SUCCESS;
