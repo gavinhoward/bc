@@ -387,7 +387,6 @@ int bc_num_compare(BcNum* a, BcNum* b) {
   BcNum* a2;
   BcNum* b2;
   size_t i;
-  size_t max;
   size_t min;
   char* max_num;
   char* min_num;
@@ -450,7 +449,6 @@ int bc_num_compare(BcNum* a, BcNum* b) {
 
   if (a_max) {
 
-    max = a2->rdx;
     min = b2->rdx;
 
     diff = a2->rdx - b2->rdx;
@@ -475,7 +473,6 @@ int bc_num_compare(BcNum* a, BcNum* b) {
   }
   else {
 
-    max = b2->rdx;
     min = a2->rdx;
 
     diff = b2->rdx - a2->rdx;
@@ -615,13 +612,13 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   size_t b_whole;
   char carry;
 
+  (void) scale;
+
   c->neg = a->neg;
 
   memset(c->num, 0, c->cap * sizeof(char));
 
   c->rdx = BC_MAX(a->rdx, b->rdx);
-
-  scale = BC_MAX(a->rdx, b->rdx);
 
   min = BC_MIN(a->rdx, b->rdx);
 

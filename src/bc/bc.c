@@ -206,8 +206,6 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
   BcStatus status;
   BcVm vm;
 
-  status = BC_STATUS_SUCCESS;
-
   if (flags & BC_FLAG_INTERACTIVE ||
       (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)))
   {
