@@ -631,7 +631,7 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
 
         num = bc_vec_top(&p->expr_stack);
 
-        bc_num_print(&num->num, p->obase);
+        bc_num_print(&num->data.num, p->obase);
 
         bc_vec_pop(&p->expr_stack);
 
@@ -685,7 +685,7 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
         BcResult result;
 
         result.type = BC_RESULT_CONSTANT;
-        result.idx = bc_program_index(code, &ip->idx);
+        result.data.id.idx = bc_program_index(code, &ip->idx);
 
         status = bc_vec_push(&p->expr_stack, &result);
 
@@ -714,15 +714,15 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
 
         result.type = BC_RESULT_INTERMEDIATE;
 
-        status = bc_num_init(&result.num, BC_NUM_DEF_SIZE);
+        status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
 
         if (status) return status;
 
-        status = bc_num_copy(&result.num, &ptr->num);
+        status = bc_num_copy(&result.data.num, &ptr->data.num);
 
         if (status) return status;
 
-        result.num.neg = !result.num.neg;
+        result.data.num.neg = !result.data.num.neg;
 
         status = bc_vec_pop(&p->expr_stack);
 
@@ -762,7 +762,7 @@ static BcStatus bc_program_op(BcProgram* p, uint8_t inst) {
 
   result.type = BC_RESULT_INTERMEDIATE;
 
-  status = bc_num_init(&result.num, BC_NUM_DEF_SIZE);
+  status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
 
   if (status) return status;
 
@@ -780,10 +780,12 @@ static BcStatus bc_program_op(BcProgram* p, uint8_t inst) {
 
     op = bc_math_ops[inst - BC_INST_OP_MODULUS];
 
-    status = op(&result1->num, &result2->num, &result.num, p->scale);
+    status = op(&result1->data.num, &result2->data.num,
+                &result.data.num, p->scale);
   }
   else {
-    status = bc_num_pow(&result1->num, &result2->num, &result.num, p->scale);
+    status = bc_num_pow(&result1->data.num, &result2->data.num,
+                        &result.data.num, p->scale);
   }
 
   if (status) return status;
@@ -938,7 +940,7 @@ static BcStatus bc_program_num(BcProgram* p, BcResult* result, BcNum** num) {
 
     case BC_RESULT_INTERMEDIATE:
     {
-      *num = &result->num;
+      *num = &result->data.num;
       break;
     }
 
@@ -947,19 +949,19 @@ static BcStatus bc_program_num(BcProgram* p, BcResult* result, BcNum** num) {
       char** s;
       size_t idx;
 
-      idx = result->idx;
+      idx = result->data.id.idx;
 
       s = bc_vec_item(&p->constants, idx);
 
       if (!s) return BC_STATUS_EXEC_INVALID_CONSTANT;
 
-      status = bc_num_init(&result->num, strlen(*s));
+      status = bc_num_init(&result->data.num, strlen(*s));
 
       if (status) return status;
 
-      *num = &result->num;
+      *num = &result->data.num;
 
-      status = bc_num_parse(&result->num, *s, p->ibase, p->scale);
+      status = bc_num_parse(&result->data.num, *s, p->ibase, p->scale);
 
       break;
     }
