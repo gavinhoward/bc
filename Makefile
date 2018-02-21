@@ -19,7 +19,11 @@ ifeq "$(CC)" "clang"
 	CFLAGS += -fsanitize=address -fsanitize=undefined
 endif
 
+LDLIBS += -lm
+
 BC_OBJ = $(shell for i in src/bc/*.c ; do printf "%s\n" $${i%.c}.o ; done)
+
+BC_MAIN_OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done)
 
 GEN_LIB = gen
 
@@ -44,11 +48,8 @@ gen_run: $(GEN)
 
 $(BC_OBJ): gen_run
 
-$(BC_EXEC): $(BC_OBJ)
-	$(CC) $(CFLAGS) -o $(BC_EXEC) ./src/*.c $(BC_OBJ)
-
-$(ARBPREC_LIB):
-	$(MAKE) -C $(ARBPREC)
+$(BC_EXEC): $(BC_OBJ) $(BC_MAIN_OBJ)
+	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_MAIN_OBJ) $(BC_OBJ) $(LDLIBS)
 
 clean:
 	$(RM) $(BC_OBJ)
