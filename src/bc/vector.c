@@ -142,7 +142,7 @@ BcStatus bc_vec_pop(BcVec* vec) {
 
   if (vec == NULL) return BC_STATUS_INVALID_PARAM;
 
-  if (!vec->len) return BC_STATUS_VEC_OUT_OF_BOUNDS,
+  if (!vec->len) return BC_STATUS_VEC_OUT_OF_BOUNDS;
 
   --vec->len;
 
