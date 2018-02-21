@@ -2657,6 +2657,7 @@ static BcStatus bc_parse_loopExit(BcParse* parse, BcVec* code,
     ip = bc_vec_item(&parse->exit_labels, top);
 
     while (top < parse->exit_labels.len && ip && !ip->func) {
+      ip = bc_vec_item(&parse->exit_labels, top);
       --top;
     }
 
