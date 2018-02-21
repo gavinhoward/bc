@@ -81,7 +81,7 @@ param_err:
   return status;
 }
 
-BcStatus bc_func_insertsParam(BcFunc* func, char* name, bool var) {
+BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var) {
 
   BcAuto* params;
   size_t new_cap;
