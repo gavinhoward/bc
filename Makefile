@@ -53,6 +53,7 @@ $(BC_EXEC): $(BC_OBJ) $(BC_MAIN_OBJ)
 
 clean:
 	$(RM) $(BC_OBJ)
+	$(RM) $(BC_MAIN_OBJ)
 	$(RM) $(BC_EXEC)
 	$(RM) $(GEN)
 	$(RM) $(BC_C_LIB)
