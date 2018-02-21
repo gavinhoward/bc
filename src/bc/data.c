@@ -37,16 +37,12 @@ BcStatus bc_func_init(BcFunc* func) {
 
   status = bc_vec_init(&func->code, sizeof(uint8_t), NULL);
 
-  if (status) {
-    return status;
-  }
+  if (status) return status;
 
   func->param_cap = BC_PROGRAM_DEF_SIZE;
   func->params = malloc(sizeof(BcAuto) * BC_PROGRAM_DEF_SIZE);
 
-  if (!func->params) {
-    goto param_err;
-  }
+  if (!func->params) goto param_err;
 
   func->auto_cap = BC_PROGRAM_DEF_SIZE;
   func->autos = malloc(sizeof(BcAuto) * BC_PROGRAM_DEF_SIZE);
@@ -58,9 +54,7 @@ BcStatus bc_func_init(BcFunc* func) {
 
   status = bc_vec_init(&func->labels, sizeof(size_t), NULL);
 
-  if (status) {
-    goto label_err;
-  }
+  if (status) goto label_err;
 
   return BC_STATUS_SUCCESS;
 
@@ -86,18 +80,14 @@ BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var) {
   BcAuto* params;
   size_t new_cap;
 
-  if (!func || !name) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!func || !name) return BC_STATUS_INVALID_PARAM;
 
   if (func->num_params == func->param_cap) {
 
     new_cap = func->param_cap * 2;
     params = realloc(func->params, new_cap * sizeof(BcAuto));
 
-    if (!params) {
-      return BC_STATUS_MALLOC_FAIL;
-    }
+    if (!params) return BC_STATUS_MALLOC_FAIL;
 
     func->params = params;
     func->param_cap = new_cap;
@@ -116,18 +106,14 @@ BcStatus bc_func_insertAuto(BcFunc* func, char* name, bool var) {
   BcAuto* autos;
   size_t new_cap;
 
-  if (!func || !name) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!func || !name) return BC_STATUS_INVALID_PARAM;
 
   if (func->num_autos == func->auto_cap) {
 
     new_cap = func->auto_cap * 2;
     autos = realloc(func->autos, new_cap * sizeof(BcAuto));
 
-    if (!autos) {
-      return BC_STATUS_MALLOC_FAIL;
-    }
+    if (!autos) return BC_STATUS_MALLOC_FAIL;
 
     func->autos = autos;
     func->auto_cap = new_cap;
@@ -149,25 +135,19 @@ void bc_func_free(void* func) {
 
   f = (BcFunc*) func;
 
-  if (f == NULL) {
-    return;
-  }
+  if (f == NULL) return;
 
   bc_vec_free(&f->code);
 
   num = f->num_params;
   vars = f->params;
 
-  for (uint32_t i = 0; i < num; ++i) {
-    free(vars[i].name);
-  }
+  for (uint32_t i = 0; i < num; ++i) free(vars[i].name);
 
   num = f->num_autos;
   vars = f->autos;
 
-  for (uint32_t i = 0; i < num; ++i) {
-    free(vars[i].name);
-  }
+  for (uint32_t i = 0; i < num; ++i) free(vars[i].name);
 
   free(f->params);
   free(f->autos);
@@ -184,13 +164,9 @@ void bc_func_free(void* func) {
 
 BcStatus bc_var_init(BcVar* var) {
 
-  if (!var) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!var) return BC_STATUS_INVALID_PARAM;
 
   return bc_num_init(var, BC_NUM_DEF_SIZE);
-
-  return BC_STATUS_SUCCESS;
 }
 
 void bc_var_free(void* var) {
@@ -199,18 +175,14 @@ void bc_var_free(void* var) {
 
   v = (BcVar*) var;
 
-  if (v == NULL) {
-    return;
-  }
+  if (v == NULL) return;
 
   bc_num_free(v);
 }
 
 BcStatus bc_array_init(BcArray* array) {
 
-  if (!array) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!array) return BC_STATUS_INVALID_PARAM;
 
   return bc_vec_init(array, sizeof(BcNum), (BcFreeFunc) bc_num_free);
 }
@@ -221,9 +193,7 @@ void bc_array_free(void* array) {
 
   a = (BcArray*) array;
 
-  if (a == NULL) {
-    return;
-  }
+  if (a == NULL) return;
 
   bc_vec_free(a);
 }
@@ -254,13 +224,10 @@ BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
 
   array = malloc(nelems * sizeof(BcNum));
 
-  if (!array) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
+  if (!array) return BC_STATUS_MALLOC_FAIL;
 
-  for (uint32_t i = 0; i < nelems; ++i) {
+  for (uint32_t i = 0; i < nelems; ++i)
     bc_num_init(array + i, BC_PROGRAM_DEF_SIZE);
-  }
 
   return BC_STATUS_SUCCESS;
 }
@@ -275,17 +242,13 @@ void bc_local_free(void* local) {
 
   free((void*) l->name);
 
-  if (l->var) {
-    bc_num_free(&l->data.num);
-  }
+  if (l->var) bc_num_free(&l->data.num);
   else {
 
     nelems = l->data.array.nelems;
     array = l->data.array.array;
 
-    for (uint32_t i = 0; i < nelems; ++i) {
-      bc_num_free(array + i);
-    }
+    for (uint32_t i = 0; i < nelems; ++i) bc_num_free(array + i);
 
     free(array);
 
@@ -300,9 +263,7 @@ void bc_temp_free(void* temp) {
 
   t = (BcTemp*) temp;
 
-  if (t->type == BC_TEMP_NUM) {
-    bc_num_free(&t->data.num);
-  }
+  if (t->type == BC_TEMP_NUM) bc_num_free(&t->data.num);
 }
 
 void bc_string_free(void* string) {

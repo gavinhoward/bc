@@ -125,11 +125,16 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
     case BC_LEX_STRING:
     case BC_LEX_NAME:
     case BC_LEX_NUMBER:
+    {
       printf(":%s", token->string);
       break;
+    }
 
     default:
+    {
+      // Do nothing.
       break;
+    }
   }
 
   putchar('>');
@@ -140,9 +145,7 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
 
 BcStatus bc_lex_init(BcLex* lex, const char* file) {
 
-  if (lex == NULL ) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (lex == NULL ) return BC_STATUS_INVALID_PARAM;
 
   lex->line = 1;
   lex->newline = false;
@@ -153,9 +156,7 @@ BcStatus bc_lex_init(BcLex* lex, const char* file) {
 
 BcStatus bc_lex_text(BcLex* lex, const char* text) {
 
-  if (lex == NULL || text == NULL) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (lex == NULL || text == NULL) return BC_STATUS_INVALID_PARAM;
 
   lex->buffer = text;
   lex->idx = 0;
@@ -168,9 +169,7 @@ BcStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
   BcStatus status;
 
-  if (lex == NULL || token == NULL) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (lex == NULL || token == NULL) return BC_STATUS_INVALID_PARAM;
 
   if (lex->idx == lex->len) {
     token->type = BC_LEX_EOF;
@@ -284,9 +283,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_ASSIGN_MODULUS;
       }
-      else {
-        token->type = BC_LEX_OP_MODULUS;
-      }
+      else token->type = BC_LEX_OP_MODULUS;
 
       break;
     }
@@ -334,9 +331,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_ASSIGN_MULTIPLY;
       }
-      else {
-        token->type = BC_LEX_OP_MULTIPLY;
-      }
+      else token->type = BC_LEX_OP_MULTIPLY;
 
       break;
     }
@@ -353,9 +348,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_INC;
       }
-      else {
-        token->type = BC_LEX_OP_PLUS;
-      }
+      else token->type = BC_LEX_OP_PLUS;
 
       break;
     }
@@ -378,9 +371,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_DEC;
       }
-      else {
-        token->type = BC_LEX_OP_MINUS;
-      }
+      else token->type = BC_LEX_OP_MINUS;
 
       break;
     }
@@ -399,12 +390,8 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_ASSIGN_DIVIDE;
       }
-      else if (c2 == '*') {
-        status = bc_lex_comment(lex, token);
-      }
-      else {
-        token->type = BC_LEX_OP_DIVIDE;
-      }
+      else if (c2 == '*') status = bc_lex_comment(lex, token);
+      else token->type = BC_LEX_OP_DIVIDE;
 
       break;
     }
@@ -438,9 +425,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_REL_LESS_EQ;
       }
-      else {
-        token->type = BC_LEX_OP_REL_LESS;
-      }
+      else token->type = BC_LEX_OP_REL_LESS;
 
       break;
     }
@@ -453,9 +438,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_REL_EQUAL;
       }
-      else {
-        token->type = BC_LEX_OP_ASSIGN;
-      }
+      else token->type = BC_LEX_OP_ASSIGN;
 
       break;
     }
@@ -468,9 +451,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_REL_GREATER_EQ;
       }
-      else {
-        token->type = BC_LEX_OP_REL_GREATER;
-      }
+      else token->type = BC_LEX_OP_REL_GREATER;
 
       break;
     }
@@ -512,9 +493,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
         ++lex->idx;
         token->type = BC_LEX_OP_ASSIGN_POWER;
       }
-      else {
-        token->type = BC_LEX_OP_POWER;
-      }
+      else token->type = BC_LEX_OP_POWER;
 
       break;
     }
@@ -623,9 +602,7 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
   while (c != '"' && c != '\0') {
 
-    if (c == '\n') {
-      ++newlines;
-    }
+    if (c == '\n') ++newlines;
 
     c = lex->buffer[++i];
   }
@@ -639,15 +616,11 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
   token->string = malloc(len + 1);
 
-  if (token->string == NULL) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
+  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
 
   const char* start = lex->buffer + lex->idx;
 
-  for (size_t j = 0; j < len; ++j) {
-    token->string[j] = start[j];
-  }
+  for (size_t j = 0; j < len; ++j) token->string[j] = start[j];
 
   token->string[len] = '\0';
 
@@ -671,21 +644,15 @@ static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
   const char* buffer = lex->buffer;
   char c = buffer[i];
 
-  if (c == '\n') {
-    ++newlines;
-  }
+  if (c == '\n') ++newlines;
 
   int end = 0;
 
   while (!end) {
 
-    while (c != '*' && c != '\0') {
-      c = buffer[++i];
-    }
+    while (c != '*' && c != '\0') c = buffer[++i];
 
-    if (c == '\n') {
-      ++newlines;
-    }
+    if (c == '\n') ++newlines;
 
     if (c == '\0' || buffer[i + 1] == '\0') {
       lex->idx = i;
@@ -729,9 +696,7 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 
   token->string = malloc(len - backslashes + 1);
 
-  if (token->string == NULL) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
+  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
 
   token->string[0] = start;
 
