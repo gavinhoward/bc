@@ -123,6 +123,9 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
   BcStatus status;
   const char* file;
   char* data;
+  BcExecFunc exec;
+
+  exec = bc_code ? bc_program_printCode : bc_program_exec;
 
   file = vm->filev[idx];
   vm->program.file = file;
@@ -189,66 +192,34 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
     goto read_err;
   }
 
-  if (!bc_code) {
+  do {
 
-    do {
+    if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
-      if (BC_PARSE_CAN_EXEC(&vm->parse)) {
+      status = exec(&vm->program);
 
-        status = bc_program_exec(&vm->program);
+      if (status) goto read_err;
 
-        if (status) goto read_err;
+      if (bc_interactive) {
 
-        if (bc_interactive) {
+        fflush(stdout);
 
-          fflush(stdout);
+        if (bc_signal) {
 
-          if (bc_signal) {
-
-            status = bc_vm_handleSignal(vm);
-
-            fprintf(stderr, bc_ready_prompt);
-            fflush(stderr);
-          }
-        }
-        else if (bc_signal) {
           status = bc_vm_handleSignal(vm);
-          goto read_err;
+
+          fprintf(stderr, bc_ready_prompt);
+          fflush(stderr);
         }
       }
-      else status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
-
-    } while (!status);
-  }
-  else {
-
-    do {
-
-      if (BC_PARSE_CAN_EXEC(&vm->parse)) {
-
-        bc_program_printCode(&vm->program);
-
-        if (bc_interactive) {
-
-          fflush(stdout);
-
-          if (bc_signal) {
-
-            status = bc_vm_handleSignal(vm);
-
-            fprintf(stderr, bc_ready_prompt);
-            fflush(stderr);
-          }
-        }
-        else if (bc_signal) {
-          status = bc_vm_handleSignal(vm);
-          goto read_err;
-        }
+      else if (bc_signal) {
+        status = bc_vm_handleSignal(vm);
+        goto read_err;
       }
-      else status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
+    }
+    else status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
-    } while (!status);
-  }
+  } while (!status);
 
 read_err:
 
