@@ -504,7 +504,7 @@ BcStatus bc_program_exec(BcProgram* p) {
   return bc_program_execCode(p, func, ip);
 }
 
-void bc_program_printCode(BcProgram* p) {
+BcStatus bc_program_printCode(BcProgram* p) {
 
   BcFunc* func;
   uint8_t* code;
@@ -565,6 +565,8 @@ void bc_program_printCode(BcProgram* p) {
   }
 
   putchar('\n');
+
+  return BC_STATUS_SUCCESS;
 }
 
 void bc_program_free(BcProgram* p) {
