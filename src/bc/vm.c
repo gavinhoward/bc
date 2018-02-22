@@ -381,7 +381,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
     }
     else if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
 
-      BcFunc*func;
+      BcFunc* func;
       BcInstPtr* ip;
 
       bc_error_file(status, vm->program.file, vm->parse.lex.line);
