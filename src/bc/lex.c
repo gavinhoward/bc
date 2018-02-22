@@ -635,6 +635,10 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 
   uint32_t newlines;
+  bool end;
+  size_t i;
+  const char* buffer;
+  char c;
 
   newlines = 0;
 
@@ -642,19 +646,19 @@ static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
 
   ++lex->idx;
 
-  size_t i = lex->idx;
-  const char* buffer = lex->buffer;
-  char c = buffer[i];
+  i = lex->idx;
+  buffer = lex->buffer;
 
-  if (c == '\n') ++newlines;
-
-  int end = 0;
+  end = false;
 
   while (!end) {
 
-    while (c != '*' && c != '\0') c = buffer[++i];
+    c = buffer[i];
 
-    if (c == '\n') ++newlines;
+    while (c != '*' && c != '\0') {
+      if (c == '\n') ++newlines;
+      c = buffer[++i];
+    }
 
     if (c == '\0' || buffer[i + 1] == '\0') {
       lex->idx = i;
