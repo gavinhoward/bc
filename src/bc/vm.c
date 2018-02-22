@@ -284,7 +284,7 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
     total_len = slen + len;
 
     if (len == 1 && buf[0] == '"') string = !string;
-    else if (len > 1) {
+    else if (len > 1 || comment) {
 
       for (uint32_t i = 0; i < len; ++i) {
 
@@ -296,10 +296,13 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
         c = buf[i];
 
         if (c == '"') string = !string;
-        else if (c == '/' && notend && comment && buf[i + 1] == '*')
+        else if (c == '/' && notend && !comment && buf[i + 1] == '*') {
           comment = true;
-        else if (c == '*' && notend && !comment && buf[i + 1] == '/')
+          break;
+        }
+        else if (c == '*' && notend && comment && buf[i + 1] == '/') {
           comment = false;
+        }
       }
 
       if (string || comment || buf[len - 2] == '\\') {
