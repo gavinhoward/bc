@@ -5,9 +5,13 @@ if [ "$#" -lt 4 ]; then
 	exit 1
 fi
 
+script="$0"
+
+testdir=$(dirname "$script")
+
 set -e
 
-name="$1"
+name="$testdir/$1"
 shift
 
 bc="$1"
