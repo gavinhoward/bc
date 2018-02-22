@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <limits.h>
 #include <unistd.h>
 
 #include <io.h>
@@ -380,7 +381,7 @@ void bc_program_limits(BcProgram* p) {
   printf("BC_DIM_MAX      = %ld\n", p->dim_max);
   printf("BC_SCALE_MAX    = %ld\n", p->scale_max);
   printf("BC_STRING_MAX   = %ld\n", p->string_max);
-  printf("Max Exponent    = %ld\n", INT64_MAX);
+  printf("Max Exponent    = %ld\n", LONG_MAX);
   printf("Number of Vars  = %u\n", UINT32_MAX);
 
   putchar('\n');
