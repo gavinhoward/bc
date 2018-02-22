@@ -6,4 +6,5 @@ multiply
 divide
 modulus
 power
+sqrt
 basic
