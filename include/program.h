@@ -82,6 +82,8 @@ typedef struct BcProgram {
 
 } BcProgram;
 
+#define BC_PROGRAM_CHECK_EXPR_STACK(p, l) ((p)->expr_stack.len >= (l))
+
 typedef BcStatus (*BcExecFunc)(BcProgram*);
 
 BcStatus bc_program_init(BcProgram* p);

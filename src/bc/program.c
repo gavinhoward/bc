@@ -631,6 +631,9 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
         BcResult* result;
         BcNum* num;
 
+        if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1))
+          return BC_STATUS_EXEC_INVALID_EXPR;
+
         result = bc_vec_top(&p->expr_stack);
 
         status = bc_program_num(p, result, &num);
@@ -708,6 +711,9 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
         BcResult* result;
         BcNum* num;
 
+        if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1))
+          return BC_STATUS_EXEC_INVALID_EXPR;
+
         result = bc_vec_top(&p->expr_stack);
 
         if (!result) return BC_STATUS_EXEC_INVALID_EXPR;
@@ -740,6 +746,8 @@ static BcStatus bc_program_op(BcProgram* p, uint8_t inst) {
   BcResult result;
   BcNum* num1;
   BcNum* num2;
+
+  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 2)) return BC_STATUS_EXEC_INVALID_EXPR;
 
   result2 = bc_vec_item_rev(&p->expr_stack, 0);
 
