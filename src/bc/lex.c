@@ -192,13 +192,15 @@ BcStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
 
 static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
 
-  BcStatus status = BC_STATUS_SUCCESS;
+  BcStatus status;
+  char c;
+  char c2;
 
-  char c = lex->buffer[lex->idx];
+  status = BC_STATUS_SUCCESS;
+
+  c = lex->buffer[lex->idx];
 
   ++lex->idx;
-
-  char c2;
 
   // This is the workhorse of the lexer.
   switch (c) {
