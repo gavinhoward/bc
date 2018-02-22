@@ -304,7 +304,6 @@ void bc_result_free(void* result) {
   switch (r->type) {
 
     case BC_RESULT_INTERMEDIATE:
-    case BC_RESULT_CONSTANT:
     {
       bc_num_free(&r->data.num);
       break;
