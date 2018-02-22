@@ -51,7 +51,7 @@ static BcStatus bc_num_sqrt_newton(BcNum* a, BcNum* b, size_t scale);
 
 static bool bc_num_strValid(const char* val, size_t base);
 
-static BcStatus bc_num_parseDecimal(BcNum *n, const char* val, size_t scale);
+static BcStatus bc_num_parseDecimal(BcNum *n, const char* val);
 static BcStatus bc_num_parseLowBase(BcNum* n, const char* val,
                                      size_t base, size_t scale);
 static BcStatus bc_num_parseHighBase(BcNum* n, const char* val,
@@ -139,7 +139,7 @@ BcStatus bc_num_parse(BcNum* n, const char* val, size_t base, size_t scale) {
 
   if (!bc_num_strValid(val, base)) return BC_STATUS_MATH_INVALID_STRING;
 
-  if (base == 10) status = bc_num_parseDecimal(n, val, scale);
+  if (base == 10) status = bc_num_parseDecimal(n, val);
   else if (base < 10) status = bc_num_parseLowBase(n, val, base, scale);
   else status = bc_num_parseHighBase(n, val, base, scale);
 
@@ -777,15 +777,14 @@ static bool bc_num_strValid(const char* val, size_t base) {
   return true;
 }
 
-static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
+static BcStatus bc_num_parseDecimal(BcNum* n, const char* val) {
 
   BcStatus status;
   size_t len;
-  char c;
   size_t i;
   const char* ptr;
   size_t radix;
-  size_t inv_pow;
+  size_t end;
   char* num;
 
   len = strlen(val);
@@ -794,20 +793,28 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
 
   if (len) {
 
+    bool zero;
+
+    zero = true;
+
+    for (i = 0; zero && i < len; ++i) {
+      if (val[i] != '0' && val[i] != '.') zero = false;
+    }
+
+    if (zero) {
+      memset(n->num, 0, sizeof(char) * n->cap);
+      n->neg = false;
+      return BC_STATUS_SUCCESS;
+    }
+
     status = bc_num_expand(n, len);
 
     if (status) return status;
 
-    memset(n->num, 0, sizeof(char) * len);
   }
   else {
-
-    n->num = malloc(BC_NUM_DEF_SIZE);
-
-    if (!n->num) return BC_STATUS_MALLOC_FAIL;
-
-    memset(n->num, 0, sizeof(char) * BC_NUM_DEF_SIZE);
-
+    memset(n->num, 0, sizeof(char) * n->cap);
+    n->neg = false;
     return BC_STATUS_SUCCESS;
   }
 
@@ -822,49 +829,22 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val, size_t scale) {
   radix -= i;
   len -= i;
 
-  scale = len - radix;
+  n->rdx = len - radix;
+  end = len - 1;
 
-  for (i = 0; i < radix; ++i) {
-    n->num[i] = BC_NUM_FROM_CHAR(ptr[i]);
+  for (i = 0; i < n->rdx; ++i) {
+    n->num[i] = BC_NUM_FROM_CHAR(ptr[end - i]);
     n->len += 1;
   }
 
-  ptr += radix + 1;
-
-  n->rdx = radix;
-
   if (i >= len) return BC_STATUS_SUCCESS;
 
-  inv_pow = 0;
-
-  while (inv_pow < scale && ptr[inv_pow] == '0') ++inv_pow;
-
-  if (!radix && (inv_pow >= scale || ptr[inv_pow] == '\0')) {
-
-    if (!n->len) n->neg = false;
-
-    n->rdx = n->len;
-
-    return BC_STATUS_SUCCESS;
-  }
-
   num = n->num + n->len;
+  end = radix - 1;
 
-  for (i = 0; i < inv_pow; ++i) {
-    num[i] = 0;
+  for (i = 0; i < radix; ++i) {
+    num[i] = BC_NUM_FROM_CHAR(val[end - i]);
     ++n->len;
-  }
-
-  c = ptr[i];
-
-  while (i < scale && c != '\0') {
-
-    num[i] = BC_NUM_FROM_CHAR(c);
-
-    ++n->len;
-
-    ++i;
-    c = ptr[i];
   }
 
   return BC_STATUS_SUCCESS;
@@ -903,7 +883,7 @@ static BcStatus bc_num_printDecimal(BcNum* n, FILE* f) {
       ++chars;
     }
 
-    for (i = 0; i < n->rdx; ++i) {
+    for (i = n->len - 1; i >= n->rdx && i < n->len; --i) {
 
       fputc(BC_NUM_TO_CHAR(n->num[i]), f);
       ++chars;
@@ -915,7 +895,7 @@ static BcStatus bc_num_printDecimal(BcNum* n, FILE* f) {
       }
     }
 
-    if (i < n->len) {
+    if (n->rdx) {
 
       fputc('.', f);
       ++chars;
@@ -926,7 +906,7 @@ static BcStatus bc_num_printDecimal(BcNum* n, FILE* f) {
         chars = 0;
       }
 
-      for (; i < n->len; ++i) {
+      for (; i < n->len; --i) {
 
         fputc(BC_NUM_TO_CHAR(n->num[i]), f);
         ++chars;
