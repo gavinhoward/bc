@@ -627,11 +627,14 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
 
       case BC_INST_PRINT:
       {
-        BcResult* num;
+        BcResult* result;
+        BcNum* num;
 
-        num = bc_vec_top(&p->expr_stack);
+        result = bc_vec_top(&p->expr_stack);
 
-        bc_num_print(&num->data.num, p->obase);
+        status = bc_program_num(p, result, &num);
+
+        bc_num_print(num, p->obase);
 
         bc_vec_pop(&p->expr_stack);
 
@@ -701,30 +704,18 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
 
       case BC_INST_OP_NEGATE:
       {
-        BcResult* ptr;
-        BcResult result;
+        BcResult* result;
+        BcNum* num;
 
-        ptr = bc_vec_top(&p->expr_stack);
+        result = bc_vec_top(&p->expr_stack);
 
-        if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
+        if (!result) return BC_STATUS_EXEC_INVALID_EXPR;
 
-        result.type = BC_RESULT_INTERMEDIATE;
-
-        status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
+        status = bc_program_num(p, result, &num);
 
         if (status) return status;
 
-        status = bc_num_copy(&result.data.num, &ptr->data.num);
-
-        if (status) return status;
-
-        result.data.num.neg = !result.data.num.neg;
-
-        status = bc_vec_pop(&p->expr_stack);
-
-        if (status) return status;
-
-        status = bc_vec_push(&p->expr_stack, &result);
+        num->neg = !num->neg;
 
         break;
       }
@@ -944,6 +935,10 @@ static BcStatus bc_program_num(BcProgram* p, BcResult* result, BcNum** num) {
       *num = &result->data.num;
 
       status = bc_num_parse(&result->data.num, *s, p->ibase, p->scale);
+
+      if (status) return status;
+
+      result->type = BC_RESULT_INTERMEDIATE;
 
       break;
     }
