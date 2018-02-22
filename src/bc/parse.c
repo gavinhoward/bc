@@ -666,6 +666,8 @@ static BcStatus bc_parse_semicolonListEnd(BcParse* parse, BcVec* code) {
   }
   else if (parse->token.type == BC_LEX_NEWLINE)
     status = bc_lex_next(&parse->lex, &parse->token);
+  else if (parse->token.type == BC_LEX_EOF)
+    status = BC_STATUS_SUCCESS;
   else
     status = BC_STATUS_PARSE_INVALID_TOKEN;
 

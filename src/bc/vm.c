@@ -146,15 +146,18 @@ static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
 
     status = bc_parse_parse(&vm->parse);
 
-    if (status) {
+    if (status && status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF)
+    {
       bc_error_file(status, vm->parse.lex.file, vm->parse.lex.line);
       goto err;
     }
 
-    if (bc_signal && !bc_interactive) goto read_err;
-    else {
-      status = bc_vm_handleSignal(vm);
-      if (status) goto read_err;
+    if (bc_signal) {
+      if (!bc_interactive) goto read_err;
+      else {
+        status = bc_vm_handleSignal(vm);
+        if (status) goto read_err;
+      }
     }
 
     if (status) {
