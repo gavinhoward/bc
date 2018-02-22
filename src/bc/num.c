@@ -637,8 +637,6 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
     }
   }
 
-  if (carry) ptr_c[i] = carry;
-
   if (a_whole > b_whole) {
     max = a_whole;
     ptr = ptr_a;
@@ -649,12 +647,22 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   }
 
   for (; i < max; ++i) {
-    ptr_c[i] += ptr[i];
+
+    ptr_c[i] += ptr[i] + carry;
     ++c->len;
+
     carry = 0;
+
+    while (ptr_c[i] >= 10) {
+      carry += 1;
+      ptr_c[i] -= 10;
+    }
   }
 
-  if (carry) ++c->len;
+  if (carry) {
+    ++c->len;
+    ptr_c[i] = carry;
+  }
 
   return BC_STATUS_SUCCESS;
 }
