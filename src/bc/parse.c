@@ -338,9 +338,7 @@ BcStatus bc_parse_parse(BcParse* parse) {
 
       func = bc_vec_item(&parse->program->funcs, parse->func);
 
-      if (!func) {
-        return BC_STATUS_EXEC_UNDEFINED_FUNC;
-      }
+      if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
       status = bc_parse_stmt(parse, &func->code);
 
@@ -1217,9 +1215,8 @@ BcStatus bc_parse_expr(BcParse* parse, BcVec* code, bool posix_rel, bool print)
     ptr = bc_vec_top(&parse->ops);
     top = *ptr;
 
-    if (top == BC_LEX_LEFT_PAREN || top == BC_LEX_RIGHT_PAREN) {
+    if (top == BC_LEX_LEFT_PAREN || top == BC_LEX_RIGHT_PAREN)
       return BC_STATUS_PARSE_INVALID_EXPR;
-    }
 
     inst = bc_op_insts[top - BC_LEX_OP_POWER];
 
@@ -1328,9 +1325,7 @@ static BcStatus bc_parse_rightParen(BcParse* parse, BcVec* code,
   BcLexTokenType top;
   BcLexTokenType* ptr;
 
-  if (ops->len == 0) {
-    return BC_STATUS_PARSE_INVALID_EXPR;
-  }
+  if (ops->len == 0) return BC_STATUS_PARSE_INVALID_EXPR;
 
   ptr = bc_vec_top(ops);
   top = *ptr;
