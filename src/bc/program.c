@@ -722,7 +722,8 @@ static BcStatus bc_program_execCode(BcProgram* p, BcFunc* func, BcInstPtr* ip) {
 
       default:
       {
-        return BC_STATUS_EXEC_INVALID_STMT;
+        status = BC_STATUS_EXEC_INVALID_STMT;
+        break;
       }
     }
   }
