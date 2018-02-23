@@ -105,21 +105,21 @@ typedef enum BcExprType {
 
 typedef struct BcEntry {
 
-  char* name;
+  char *name;
   size_t idx;
 
 } BcEntry;
 
 typedef struct BcAuto {
 
-  char* name;
+  char *name;
   bool var;
 
 } BcAuto;
 
 typedef struct BcLocal {
 
-  const char* name;
+  const char *name;
   bool var;
 
   union {
@@ -128,7 +128,7 @@ typedef struct BcLocal {
 
     struct {
 
-      BcNum* array;
+      BcNum *array;
       uint32_t nelems;
 
     } array;
@@ -144,7 +144,7 @@ typedef struct BcTemp {
   union {
 
     BcNum num;
-    const char* name;
+    const char *name;
 
   } data;
 
@@ -156,11 +156,11 @@ typedef struct BcFunc {
 
   BcVec labels;
 
-  BcAuto* params;
+  BcAuto *params;
   uint32_t num_params;
   uint32_t param_cap;
 
-  BcAuto* autos;
+  BcAuto *autos;
   uint32_t num_autos;
   uint32_t auto_cap;
 
@@ -196,7 +196,7 @@ typedef struct BcResult {
 
     struct {
 
-      char* name;
+      char *name;
       size_t idx;
 
     } id;
@@ -212,30 +212,30 @@ typedef struct BcInstPtr {
 
 } BcInstPtr;
 
-BcStatus bc_func_init(BcFunc* func);
-BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var);
-BcStatus bc_func_insertAuto(BcFunc* func, char* name, bool var);
-void bc_func_free(void* func);
+BcStatus bc_func_init(BcFunc *func);
+BcStatus bc_func_insertParam(BcFunc *func, char *name, bool var);
+BcStatus bc_func_insertAuto(BcFunc *func, char *name, bool var);
+void bc_func_free(void *func);
 
-BcStatus bc_var_init(BcVar* var);
-void bc_var_free(void* var);
+BcStatus bc_var_init(BcVar *var);
+void bc_var_free(void *var);
 
-BcStatus bc_array_init(BcArray* array);
-void bc_array_free(void* array);
+BcStatus bc_array_init(BcArray *array);
+void bc_array_free(void *array);
 
-BcStatus bc_local_initVar(BcLocal* local, const char* name, const char* num, size_t base, size_t scale);
-BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems);
-void bc_local_free(void* local);
+BcStatus bc_local_initVar(BcLocal *local, const char *name, const char *num, size_t base, size_t scale);
+BcStatus bc_local_initArray(BcLocal *local, const char *name, uint32_t nelems);
+void bc_local_free(void *local);
 
-void bc_temp_free(void* temp);
+void bc_temp_free(void *temp);
 
-void bc_string_free(void* string);
+void bc_string_free(void *string);
 
-int bc_entry_cmp(void* entry1, void*entry2);
-void bc_entry_free(void* entry);
+int bc_entry_cmp(void *entry1, void*entry2);
+void bc_entry_free(void *entry);
 
-void bc_result_free(void* result);
+void bc_result_free(void *result);
 
-void bc_constant_free(void* constant);
+void bc_constant_free(void *constant);
 
 #endif // BC_DATA_H

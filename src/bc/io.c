@@ -26,7 +26,7 @@
 #include <bc.h>
 #include <io.h>
 
-long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void* ctx) {
+long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void *ctx) {
 
   long i;
   int c;
@@ -46,7 +46,7 @@ long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void* ctx) {
   return i;
 }
 
-static int bc_io_xfgetc(void* ctx) {
+static int bc_io_xfgetc(void *ctx) {
   return fgetc((FILE *) ctx);
 }
 
@@ -70,11 +70,11 @@ long bc_io_fgets(char * buf, int n, FILE* fp) {
   return len;
 }
 
-BcStatus bc_io_fgetline(char** p, size_t* n, FILE* fp) {
+BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
 
   size_t mlen, slen, dlen, len;
-  char* s;
-  char* t;
+  char *s;
+  char *t;
 
   if (!p || !n || !fp) return BC_STATUS_INVALID_PARAM;
 
@@ -122,7 +122,7 @@ BcStatus bc_io_fgetline(char** p, size_t* n, FILE* fp) {
   return BC_STATUS_IO_ERR;
 }
 
-BcStatus bc_io_fread(const char* path, char** buf) {
+BcStatus bc_io_fread(const char *path, char** buf) {
 
   BcStatus status;
   FILE* f;

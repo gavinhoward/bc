@@ -32,16 +32,16 @@
 #include <io.h>
 #include <vm.h>
 
-static BcStatus bc_vm_execFile(BcVm* vm, int idx);
-static BcStatus bc_vm_execStdin(BcVm* vm);
+static BcStatus bc_vm_execFile(BcVm *vm, int idx);
+static BcStatus bc_vm_execStdin(BcVm *vm);
 
-static BcStatus bc_vm_handleSignal(BcVm* vm);
+static BcStatus bc_vm_handleSignal(BcVm *vm);
 
-static const char* const bc_stdin_filename = "<stdin>";
+static const char *bc_stdin_filename = "<stdin>";
 
-static const char* const bc_ready_prompt = "ready for more input\n\n";
+static const char *bc_ready_prompt = "ready for more input\n\n";
 
-static const char* const bc_sigint_msg =
+static const char *bc_sigint_msg =
   "\n\ninterrupt (type \"quit\" to exit)\n\n";
 
 static void bc_vm_sigint(int sig) {
@@ -59,7 +59,7 @@ static void bc_vm_sigint(int sig) {
   }
 }
 
-BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
+BcStatus bc_vm_init(BcVm *vm, int filec, const char *filev[]) {
 
   BcStatus status;
   struct sigaction act;
@@ -86,12 +86,12 @@ BcStatus bc_vm_init(BcVm* vm, int filec, const char* filev[]) {
   return BC_STATUS_SUCCESS;
 }
 
-void bc_vm_free(BcVm* vm) {
+void bc_vm_free(BcVm *vm) {
   bc_parse_free(&vm->parse);
   bc_program_free(&vm->program);
 }
 
-BcStatus bc_vm_exec(BcVm* vm) {
+BcStatus bc_vm_exec(BcVm *vm) {
 
   BcStatus status;
   int num_files;
@@ -118,11 +118,11 @@ BcStatus bc_vm_exec(BcVm* vm) {
   return status;
 }
 
-static BcStatus bc_vm_execFile(BcVm* vm, int idx) {
+static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
   BcStatus status;
-  const char* file;
-  char* data;
+  const char *file;
+  char *data;
   BcExecFunc exec;
 
   exec = bc_code ? bc_program_printCode : bc_program_exec;
@@ -231,12 +231,12 @@ err:
   return status;
 }
 
-static BcStatus bc_vm_execStdin(BcVm* vm) {
+static BcStatus bc_vm_execStdin(BcVm *vm) {
 
   BcStatus status;
-  char* buf;
-  char* buffer;
-  char* temp;
+  char *buf;
+  char *buffer;
+  char *temp;
   size_t n;
   size_t bufn;
   size_t slen;
@@ -380,8 +380,8 @@ static BcStatus bc_vm_execStdin(BcVm* vm) {
     }
     else if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
 
-      BcFunc* func;
-      BcInstPtr* ip;
+      BcFunc *func;
+      BcInstPtr *ip;
 
       bc_error_file(status, vm->program.file, vm->parse.lex.line);
 
@@ -478,11 +478,11 @@ buf_err:
   return status;
 }
 
-static BcStatus bc_vm_handleSignal(BcVm* vm) {
+static BcStatus bc_vm_handleSignal(BcVm *vm) {
 
   BcStatus status;
-  BcFunc* func;
-  BcInstPtr* ip;
+  BcFunc *func;
+  BcInstPtr *ip;
 
   bc_signal = 0;
 

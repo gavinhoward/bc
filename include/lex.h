@@ -120,27 +120,27 @@ typedef enum BcLexTokenType {
 typedef struct BcLexToken {
 
   BcLexTokenType type;
-  char* string;
+  char *string;
 
 } BcLexToken;
 
 typedef struct BcLex {
 
-  const char* buffer;
+  const char *buffer;
   size_t idx;
   uint32_t line;
   bool newline;
-  const char* file;
+  const char *file;
   size_t len;
 
 } BcLex;
 
-BcStatus bc_lex_init(BcLex* lex, const char* file);
+BcStatus bc_lex_init(BcLex *lex, const char *file);
 
-BcStatus bc_lex_text(BcLex* lex, const char* text);
+BcStatus bc_lex_text(BcLex *lex, const char *text);
 
-BcStatus bc_lex_next(BcLex* lex, BcLexToken* token);
+BcStatus bc_lex_next(BcLex *lex, BcLexToken *token);
 
-BcStatus bc_lex_printToken(BcLexToken* token);
+BcStatus bc_lex_printToken(BcLexToken *token);
 
 #endif // BC_LEX_H

@@ -26,7 +26,7 @@
 
 #include <data.h>
 
-BcStatus bc_func_init(BcFunc* func) {
+BcStatus bc_func_init(BcFunc *func) {
 
   BcStatus status;
 
@@ -75,9 +75,9 @@ param_err:
   return status;
 }
 
-BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var) {
+BcStatus bc_func_insertParam(BcFunc *func, char *name, bool var) {
 
-  BcAuto* params;
+  BcAuto *params;
   size_t new_cap;
 
   if (!func || !name) return BC_STATUS_INVALID_PARAM;
@@ -101,9 +101,9 @@ BcStatus bc_func_insertParam(BcFunc* func, char* name, bool var) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_func_insertAuto(BcFunc* func, char* name, bool var) {
+BcStatus bc_func_insertAuto(BcFunc *func, char *name, bool var) {
 
-  BcAuto* autos;
+  BcAuto *autos;
   size_t new_cap;
 
   if (!func || !name) return BC_STATUS_INVALID_PARAM;
@@ -127,11 +127,11 @@ BcStatus bc_func_insertAuto(BcFunc* func, char* name, bool var) {
   return BC_STATUS_SUCCESS;
 }
 
-void bc_func_free(void* func) {
+void bc_func_free(void *func) {
 
-  BcFunc* f;
+  BcFunc *f;
   uint32_t num;
-  BcAuto* vars;
+  BcAuto *vars;
 
   f = (BcFunc*) func;
 
@@ -162,16 +162,16 @@ void bc_func_free(void* func) {
   f->auto_cap = 0;
 }
 
-BcStatus bc_var_init(BcVar* var) {
+BcStatus bc_var_init(BcVar *var) {
 
   if (!var) return BC_STATUS_INVALID_PARAM;
 
   return bc_num_init(var, BC_NUM_DEF_SIZE);
 }
 
-void bc_var_free(void* var) {
+void bc_var_free(void *var) {
 
-  BcVar* v;
+  BcVar *v;
 
   v = (BcVar*) var;
 
@@ -180,16 +180,16 @@ void bc_var_free(void* var) {
   bc_num_free(v);
 }
 
-BcStatus bc_array_init(BcArray* array) {
+BcStatus bc_array_init(BcArray *array) {
 
   if (!array) return BC_STATUS_INVALID_PARAM;
 
   return bc_vec_init(array, sizeof(BcNum), (BcFreeFunc) bc_num_free);
 }
 
-void bc_array_free(void* array) {
+void bc_array_free(void *array) {
 
-  BcArray* a;
+  BcArray *a;
 
   a = (BcArray*) array;
 
@@ -198,8 +198,8 @@ void bc_array_free(void* array) {
   bc_vec_free(a);
 }
 
-BcStatus bc_local_initVar(BcLocal* local, const char* name,
-                          const char* num, size_t base, size_t scale)
+BcStatus bc_local_initVar(BcLocal *local, const char *name,
+                          const char *num, size_t base, size_t scale)
 {
   BcStatus status;
 
@@ -213,9 +213,9 @@ BcStatus bc_local_initVar(BcLocal* local, const char* name,
   return bc_num_parse(&local->data.num, num, base, scale);
 }
 
-BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
+BcStatus bc_local_initArray(BcLocal *local, const char *name, uint32_t nelems) {
 
-  BcNum* array;
+  BcNum *array;
 
   assert(nelems);
 
@@ -232,10 +232,10 @@ BcStatus bc_local_initArray(BcLocal* local, const char* name, uint32_t nelems) {
   return BC_STATUS_SUCCESS;
 }
 
-void bc_local_free(void* local) {
+void bc_local_free(void *local) {
 
-  BcLocal* l;
-  BcNum* array;
+  BcLocal *l;
+  BcNum *array;
   uint32_t nelems;
 
   l = (BcLocal*) local;
@@ -257,28 +257,28 @@ void bc_local_free(void* local) {
   }
 }
 
-void bc_temp_free(void* temp) {
+void bc_temp_free(void *temp) {
 
-  BcTemp* t;
+  BcTemp *t;
 
   t = (BcTemp*) temp;
 
   if (t->type == BC_TEMP_NUM) bc_num_free(&t->data.num);
 }
 
-void bc_string_free(void* string) {
+void bc_string_free(void *string) {
 
-  char* s;
+  char *s;
 
   s = *((char**) string);
 
   free(s);
 }
 
-int bc_entry_cmp(void* entry1, void*entry2) {
+int bc_entry_cmp(void *entry1, void*entry2) {
 
-  BcEntry* e1;
-  BcEntry* e2;
+  BcEntry *e1;
+  BcEntry *e2;
 
   e1 = (BcEntry*) entry1;
   e2 = (BcEntry*) entry2;
@@ -286,18 +286,18 @@ int bc_entry_cmp(void* entry1, void*entry2) {
   return strcmp(e1->name, e2->name);
 }
 
-void bc_entry_free(void* entry) {
+void bc_entry_free(void *entry) {
 
-  BcEntry* e;
+  BcEntry *e;
 
   e = (BcEntry*) entry;
 
   free(e->name);
 }
 
-void bc_result_free(void* result) {
+void bc_result_free(void *result) {
 
-  BcResult* r;
+  BcResult *r;
 
   r = (BcResult*) result;
 
@@ -317,9 +317,9 @@ void bc_result_free(void* result) {
   }
 }
 
-void bc_constant_free(void* constant) {
+void bc_constant_free(void *constant) {
 
-  char* c;
+  char *c;
 
   c = *((char**) constant);
 

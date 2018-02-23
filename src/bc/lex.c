@@ -30,11 +30,11 @@
 #include <bc.h>
 #include <lex.h>
 
-static const char* const token_type_strs[] = {
+static const char *token_type_strs[] = {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
 };
 
-static const char* const keywords[] = {
+static const char *keywords[] = {
 
   "auto",
   "break",
@@ -109,14 +109,14 @@ static const bool keyword_posix[] = {
 
 };
 
-static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token);
-static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token);
-static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token);
-static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token);
-static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start);
-static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token);
+static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token);
+static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token);
+static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token);
+static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token);
+static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start);
+static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token);
 
-BcStatus bc_lex_printToken(BcLexToken* token) {
+BcStatus bc_lex_printToken(BcLexToken *token) {
 
   printf("<%s", token_type_strs[token->type]);
 
@@ -143,7 +143,7 @@ BcStatus bc_lex_printToken(BcLexToken* token) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_init(BcLex* lex, const char* file) {
+BcStatus bc_lex_init(BcLex *lex, const char *file) {
 
   if (lex == NULL ) return BC_STATUS_INVALID_PARAM;
 
@@ -154,7 +154,7 @@ BcStatus bc_lex_init(BcLex* lex, const char* file) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_text(BcLex* lex, const char* text) {
+BcStatus bc_lex_text(BcLex *lex, const char *text) {
 
   if (lex == NULL || text == NULL) return BC_STATUS_INVALID_PARAM;
 
@@ -165,7 +165,7 @@ BcStatus bc_lex_text(BcLex* lex, const char* text) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
+BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
 
@@ -190,7 +190,7 @@ BcStatus bc_lex_next(BcLex* lex, BcLexToken* token) {
   return status;
 }
 
-static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
   char c;
@@ -577,7 +577,7 @@ static BcStatus bc_lex_token(BcLex* lex, BcLexToken* token) {
   return status;
 }
 
-static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 
   token->type = BC_LEX_WHITESPACE;
 
@@ -591,7 +591,7 @@ static BcStatus bc_lex_whitespace(BcLex* lex, BcLexToken* token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
   uint32_t newlines;
 
@@ -620,7 +620,7 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
 
   if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
 
-  const char* start = lex->buffer + lex->idx;
+  const char *start = lex->buffer + lex->idx;
 
   for (size_t j = 0; j < len; ++j) token->string[j] = start[j];
 
@@ -632,12 +632,12 @@ static BcStatus bc_lex_string(BcLex* lex, BcLexToken* token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
 
   uint32_t newlines;
   bool end;
   size_t i;
-  const char* buffer;
+  const char *buffer;
   char c;
 
   newlines = 0;
@@ -675,13 +675,13 @@ static BcStatus bc_lex_comment(BcLex* lex, BcLexToken* token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
+static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
   token->type = BC_LEX_NUMBER;
 
   int point = start == '.';
 
-  const char* buffer = lex->buffer + lex->idx;
+  const char *buffer = lex->buffer + lex->idx;
 
   size_t backslashes = 0;
   size_t i = 0;
@@ -706,7 +706,7 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
 
   token->string[0] = start;
 
-  const char* buf = buffer - 1;
+  const char *buf = buffer - 1;
   size_t hits = 0;
 
   for (size_t j = 1; j < len; ++j) {
@@ -732,11 +732,11 @@ static BcStatus bc_lex_number(BcLex* lex, BcLexToken* token, char start) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_name(BcLex* lex, BcLexToken* token) {
+static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
 
-  const char* buffer = lex->buffer + lex->idx - 1;
+  const char *buffer = lex->buffer + lex->idx - 1;
 
   for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
 

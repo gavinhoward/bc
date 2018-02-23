@@ -46,7 +46,7 @@
 
 typedef struct BcNum {
 
-  char* num;
+  char *num;
   size_t rdx;
   size_t len;
   size_t cap;
@@ -54,39 +54,39 @@ typedef struct BcNum {
 
 } BcNum;
 
-typedef BcStatus (*BcUnaryFunc)(BcNum* a, BcNum* res, size_t scale);
-typedef BcStatus (*BcBinaryFunc)(BcNum* a, BcNum* b, BcNum* res, size_t scale);
+typedef BcStatus (*BcUnaryFunc)(BcNum *a, BcNum *res, size_t scale);
+typedef BcStatus (*BcBinaryFunc)(BcNum *a, BcNum *b, BcNum *res, size_t scale);
 
-BcStatus bc_num_init(BcNum* n, size_t request);
+BcStatus bc_num_init(BcNum *n, size_t request);
 
-BcStatus bc_num_expand(BcNum* n, size_t request);
+BcStatus bc_num_expand(BcNum *n, size_t request);
 
-void bc_num_free(BcNum* n);
+void bc_num_free(BcNum *n);
 
-BcStatus bc_num_copy(BcNum* d, BcNum* s);
+BcStatus bc_num_copy(BcNum *d, BcNum *s);
 
-BcStatus bc_num_parse(BcNum* n, const char* val, size_t base, size_t scale);
+BcStatus bc_num_parse(BcNum *n, const char *val, size_t base, size_t scale);
 
-BcStatus bc_num_print(BcNum* n, size_t base);
-BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f);
+BcStatus bc_num_print(BcNum *n, size_t base);
+BcStatus bc_num_fprint(BcNum *n, size_t base, FILE* f);
 
-BcStatus bc_num_long(BcNum* n, long* result);
-BcStatus bc_num_ulong(BcNum* n, unsigned long* result);
+BcStatus bc_num_long(BcNum *n, long *result);
+BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
 
-BcStatus bc_num_long2num(BcNum* n, long val);
-BcStatus bc_num_ulong2num(BcNum* n, unsigned long val);
+BcStatus bc_num_long2num(BcNum *n, long val);
+BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
 
-BcStatus bc_num_truncate(BcNum* n);
+BcStatus bc_num_truncate(BcNum *n);
 
-BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_div(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_mod(BcNum* a, BcNum* b, BcNum* result, size_t scale);
-BcStatus bc_num_pow(BcNum* a, BcNum* b, BcNum* result, size_t scale);
+BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale);
+BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale);
+BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale);
+BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale);
+BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale);
+BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale);
 
-BcStatus bc_num_sqrt(BcNum* a, BcNum* result, size_t scale);
+BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale);
 
-int bc_num_compare(BcNum* a, BcNum* b);
+int bc_num_compare(BcNum *a, BcNum *b);
 
 #endif // BC_NUM_H

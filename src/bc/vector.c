@@ -27,9 +27,9 @@
 #include <bc.h>
 #include <vector.h>
 
-static BcStatus bc_vec_expand(BcVec* vec);
+static BcStatus bc_vec_expand(BcVec *vec);
 
-BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc dtor) {
+BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor) {
 
   if (vec == NULL || esize == 0) return BC_STATUS_INVALID_PARAM;
 
@@ -45,7 +45,7 @@ BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc dtor) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_push(BcVec* vec, void* data) {
+BcStatus bc_vec_push(BcVec *vec, void *data) {
 
   BcStatus status;
   size_t size;
@@ -67,7 +67,7 @@ BcStatus bc_vec_push(BcVec* vec, void* data) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data) {
+BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 
   BcStatus status;
 
@@ -88,10 +88,10 @@ BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx) {
+BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
 
   BcStatus status;
-  uint8_t* ptr;
+  uint8_t *ptr;
   size_t size;
 
   if (vec == NULL || data == NULL || idx > vec->len)
@@ -117,28 +117,28 @@ BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx) {
   return BC_STATUS_SUCCESS;
 }
 
-void* bc_vec_top(BcVec* vec) {
+void* bc_vec_top(BcVec *vec) {
 
   if (vec == NULL || vec->len == 0) return NULL;
 
   return vec->array + vec->size * (vec->len - 1);
 }
 
-void* bc_vec_item(BcVec* vec, size_t idx) {
+void* bc_vec_item(BcVec *vec, size_t idx) {
 
   if (vec == NULL || vec->len == 0 || idx >= vec->len) return NULL;
 
   return vec->array + vec->size * idx;
 }
 
-void* bc_vec_item_rev(BcVec* vec, size_t idx) {
+void* bc_vec_item_rev(BcVec *vec, size_t idx) {
 
   if (vec == NULL || vec->len == 0 || idx >= vec->len) return NULL;
 
   return vec->array + vec->size * (vec->len - idx - 1);
 }
 
-BcStatus bc_vec_pop(BcVec* vec) {
+BcStatus bc_vec_pop(BcVec *vec) {
 
   if (vec == NULL) return BC_STATUS_INVALID_PARAM;
 
@@ -151,13 +151,13 @@ BcStatus bc_vec_pop(BcVec* vec) {
   return BC_STATUS_SUCCESS;
 }
 
-void bc_vec_free(void* vec) {
+void bc_vec_free(void *vec) {
 
-  BcVec* s;
+  BcVec *s;
   size_t len;
   size_t esize;
   BcFreeFunc sfree;
-  uint8_t* array;
+  uint8_t *array;
 
   s = (BcVec*) vec;
 
@@ -182,9 +182,9 @@ void bc_vec_free(void* vec) {
   s->cap = 0;
 }
 
-static BcStatus bc_vec_expand(BcVec* vec) {
+static BcStatus bc_vec_expand(BcVec *vec) {
 
-  uint8_t* ptr = realloc(vec->array, vec->size * (vec->cap * 2));
+  uint8_t *ptr = realloc(vec->array, vec->size * (vec->cap * 2));
 
   if (ptr == NULL) return BC_STATUS_MALLOC_FAIL;
 
@@ -206,7 +206,7 @@ BcStatus bc_veco_init(BcVecO* vec, size_t esize,
   return bc_vec_init(&vec->vec, esize, dtor);
 }
 
-BcStatus bc_veco_insert(BcVecO* vec, void* data, size_t* idx) {
+BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
 
   if (!vec || !data) return BC_STATUS_INVALID_PARAM;
 
@@ -220,7 +220,7 @@ BcStatus bc_veco_insert(BcVecO* vec, void* data, size_t* idx) {
   return bc_vec_pushAt(&vec->vec, data, *idx);
 }
 
-size_t bc_veco_index(BcVecO* vec, void* data) {
+size_t bc_veco_index(BcVecO* vec, void *data) {
 
   size_t idx;
 
@@ -242,7 +242,7 @@ void bc_veco_free(BcVecO* vec) {
   bc_vec_free(&vec->vec);
 }
 
-static size_t bc_veco_find(BcVecO* vec, void* data) {
+static size_t bc_veco_find(BcVecO* vec, void *data) {
 
   BcVecCmpFunc cmp = vec->cmp;
 
@@ -253,7 +253,7 @@ static size_t bc_veco_find(BcVecO* vec, void* data) {
 
     size_t mid;
     int result;
-    uint8_t* ptr;
+    uint8_t *ptr;
 
     mid = (low + high) / 2;
 

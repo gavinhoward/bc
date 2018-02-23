@@ -34,7 +34,7 @@ typedef int (*BcVecCmpFunc)(void*, void*);
 
 typedef struct BcVec {
 
-  uint8_t* array;
+  uint8_t *array;
   size_t len;
   size_t cap;
   size_t size;
@@ -43,23 +43,23 @@ typedef struct BcVec {
 
 } BcVec;
 
-BcStatus bc_vec_init(BcVec* vec, size_t esize, BcFreeFunc dtor);
+BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor);
 
-BcStatus bc_vec_push(BcVec* vec, void* data);
+BcStatus bc_vec_push(BcVec *vec, void *data);
 
-BcStatus bc_vec_pushByte(BcVec* vec, uint8_t data);
+BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data);
 
-BcStatus bc_vec_pushAt(BcVec* vec, void* data, size_t idx);
+BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx);
 
-void* bc_vec_top(BcVec* vec);
+void* bc_vec_top(BcVec *vec);
 
-void* bc_vec_item(BcVec* vec, size_t idx);
+void* bc_vec_item(BcVec *vec, size_t idx);
 
-void* bc_vec_item_rev(BcVec* vec, size_t idx);
+void* bc_vec_item_rev(BcVec *vec, size_t idx);
 
-BcStatus bc_vec_pop(BcVec* vec);
+BcStatus bc_vec_pop(BcVec *vec);
 
-void bc_vec_free(void* vec);
+void bc_vec_free(void *vec);
 
 typedef struct BcVecO {
 
@@ -71,9 +71,9 @@ typedef struct BcVecO {
 BcStatus bc_veco_init(BcVecO* vec, size_t esize,
                       BcFreeFunc dtor, BcVecCmpFunc cmp);
 
-BcStatus bc_veco_insert(BcVecO* vec, void* data, size_t* idx);
+BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx);
 
-size_t bc_veco_index(BcVecO* vec, void* data);
+size_t bc_veco_index(BcVecO* vec, void *data);
 
 void* bc_veco_item(BcVecO* vec, size_t idx);
 
