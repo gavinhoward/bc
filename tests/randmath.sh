@@ -66,8 +66,6 @@ num()
 	echo -n "$num"
 }
 
-echo `num 1 1 1`
-
 ops=( '+' '-' '*' '/' '%' '^' )
 files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" )
 
@@ -115,23 +113,13 @@ while [ "$t" -lt "$ntests" ]; do
 
 	operator=$(gen)
 
-	echo "op: $operator"
-
 	op=$(expr "$operator" % 7)
-
-	echo "op: $op"
 
 	if [ "$op" -ne 7 ]; then
 
-		echo "$line"
-
 		line=$(num 1 1 1)
 
-		echo "$line"
-
 		line="$line ${ops[$op]}"
-
-		echo "$line"
 
 		if [ "$op" -eq 3 ]; then
 			line="$line `num 1 1 0`"
