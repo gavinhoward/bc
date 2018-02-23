@@ -26,8 +26,8 @@
 
 #include <libgen.h>
 
-static const char* const bc_gen_usage = "usage: gen bc_script output\n";
-static const char* const bc_gen_header =
+static const char *bc_gen_usage = "usage: gen bc_script output\n";
+static const char *bc_gen_header =
   "/*\n * *** AUTOMATICALLY GENERATED from %s. ***\n"
   " * *** DO NOT MODIFY ***\n */\n\n";
 
@@ -37,14 +37,14 @@ static const char* const bc_gen_header =
 #define INVALID_OUTPUT_FILE (4)
 #define IO_ERR (5)
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
   FILE* in;
   FILE* out;
   int c;
   int count;
-  char* buf;
-  char* base;
+  char *buf;
+  char *base;
   int err;
 
   err = 0;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     goto error;
   }
 
-  if (fprintf(out, "const char* const bc_lib_name = \"%s\";\n\n", base) < 0) {
+  if (fprintf(out, "const char *bc_lib_name = \"%s\";\n\n", base) < 0) {
     err = IO_ERR;
     goto error;
   }

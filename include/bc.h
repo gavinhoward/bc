@@ -131,10 +131,10 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 BcStatus bc_print_version();
 
 void bc_error(BcStatus status);
-void bc_error_file(BcStatus status, const char* file, uint32_t line);
+void bc_error_file(BcStatus status, const char *file, uint32_t line);
 
-BcStatus bc_posix_error(BcStatus status, const char* file,
-                        uint32_t line, const char* msg);
+BcStatus bc_posix_error(BcStatus status, const char *file,
+                        uint32_t line, const char *msg);
 
 extern long bc_code;
 extern long bc_interactive;
@@ -144,6 +144,6 @@ extern long bc_warn;
 extern long bc_signal;
 
 extern const unsigned char bc_lib[];
-extern const char* const bc_lib_name;
+extern const char *bc_lib_name;
 
 #endif // BC_H

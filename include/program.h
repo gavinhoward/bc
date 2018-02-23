@@ -70,14 +70,14 @@ typedef struct BcProgram {
 
   BcVec constants;
 
-  const char* file;
+  const char *file;
 
   BcNum last;
 
   BcNum zero;
   BcNum one;
 
-  char* num_buf;
+  char *num_buf;
   size_t buf_size;
 
 } BcProgram;
@@ -86,13 +86,13 @@ typedef struct BcProgram {
 
 typedef BcStatus (*BcExecFunc)(BcProgram*);
 
-BcStatus bc_program_init(BcProgram* p);
-void bc_program_limits(BcProgram* p);
-BcStatus bc_program_func_add(BcProgram* p, char* name, size_t* idx);
-BcStatus bc_program_var_add(BcProgram* p, char *name, size_t *idx);
-BcStatus bc_program_array_add(BcProgram* p, char *name, size_t *idx);
-BcStatus bc_program_exec(BcProgram* p);
-BcStatus bc_program_printCode(BcProgram* p);
-void bc_program_free(BcProgram* program);
+BcStatus bc_program_init(BcProgram *p);
+void bc_program_limits(BcProgram *p);
+BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx);
+BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx);
+BcStatus bc_program_array_add(BcProgram *p, char *name, size_t *idx);
+BcStatus bc_program_exec(BcProgram *p);
+BcStatus bc_program_printCode(BcProgram *p);
+void bc_program_free(BcProgram *program);
 
 #endif // BC_PROGRAM_H

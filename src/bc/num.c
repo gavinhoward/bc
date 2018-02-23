@@ -31,40 +31,40 @@
 #include <bc.h>
 #include <num.h>
 
-static void bc_num_zero(BcNum* n);
+static void bc_num_zero(BcNum *n);
 
-static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
+static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
                              BcUnaryFunc op, size_t req);
 
-static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale,
+static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
                               BcBinaryFunc op, size_t req);
 
-static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale);
-static BcStatus bc_num_alg_s(BcNum* a, BcNum* b, BcNum* c, size_t scale);
-static BcStatus bc_num_alg_m(BcNum* a, BcNum* b, BcNum* c, size_t scale);
-static BcStatus bc_num_alg_d(BcNum* a, BcNum* b, BcNum* c, size_t scale);
-static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale);
-static BcStatus bc_num_alg_rem(BcNum* a, BcNum* b, BcNum* c);
-static BcStatus bc_num_alg_p(BcNum* a, BcNum* b, BcNum* c, size_t scale);
+static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+static BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+static BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c);
+static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 
-static BcStatus bc_num_sqrt_newton(BcNum* a, BcNum* b, size_t scale);
+static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale);
 
-static bool bc_num_strValid(const char* val, size_t base);
+static bool bc_num_strValid(const char *val, size_t base);
 
-static BcStatus bc_num_parseDecimal(BcNum *n, const char* val);
-static BcStatus bc_num_parseLowBase(BcNum* n, const char* val,
+static BcStatus bc_num_parseDecimal(BcNum *n, const char *val);
+static BcStatus bc_num_parseLowBase(BcNum *n, const char *val,
                                      size_t base, size_t scale);
-static BcStatus bc_num_parseHighBase(BcNum* n, const char* val,
+static BcStatus bc_num_parseHighBase(BcNum *n, const char *val,
                                       size_t base, size_t scale);
 
-static BcStatus bc_num_printDecimal(BcNum* n, FILE* f);
-static BcStatus bc_num_printLowBase(BcNum* n, size_t base, FILE* f);
-static BcStatus bc_num_printHighBase(BcNum* n, size_t base, FILE* f);
-static BcStatus bc_num_printHighestBase(BcNum* n, size_t base, FILE* f);
+static BcStatus bc_num_printDecimal(BcNum *n, FILE* f);
+static BcStatus bc_num_printLowBase(BcNum *n, size_t base, FILE* f);
+static BcStatus bc_num_printHighBase(BcNum *n, size_t base, FILE* f);
+static BcStatus bc_num_printHighestBase(BcNum *n, size_t base, FILE* f);
 
-static BcStatus bc_num_trunc(BcNum* n, size_t places);
+static BcStatus bc_num_trunc(BcNum *n, size_t places);
 
-BcStatus bc_num_init(BcNum* n, size_t request) {
+BcStatus bc_num_init(BcNum *n, size_t request) {
 
   if (!n || !request) return BC_STATUS_INVALID_PARAM;
 
@@ -79,13 +79,13 @@ BcStatus bc_num_init(BcNum* n, size_t request) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_expand(BcNum* n, size_t request) {
+BcStatus bc_num_expand(BcNum *n, size_t request) {
 
   if (!n || !request) return BC_STATUS_INVALID_PARAM;
 
   if (request > n->cap) {
 
-    char* temp;
+    char *temp;
 
     temp = realloc(n->num, request);
 
@@ -100,7 +100,7 @@ BcStatus bc_num_expand(BcNum* n, size_t request) {
   return BC_STATUS_SUCCESS;
 }
 
-void bc_num_free(BcNum* n) {
+void bc_num_free(BcNum *n) {
 
   if (!n) return;
 
@@ -109,7 +109,7 @@ void bc_num_free(BcNum* n) {
   memset(n, 0, sizeof(BcNum));
 }
 
-BcStatus bc_num_copy(BcNum* d, BcNum* s) {
+BcStatus bc_num_copy(BcNum *d, BcNum *s) {
 
   BcStatus status;
 
@@ -128,7 +128,7 @@ BcStatus bc_num_copy(BcNum* d, BcNum* s) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_parse(BcNum* n, const char* val, size_t base, size_t scale) {
+BcStatus bc_num_parse(BcNum *n, const char *val, size_t base, size_t scale) {
 
   BcStatus status;
 
@@ -146,11 +146,11 @@ BcStatus bc_num_parse(BcNum* n, const char* val, size_t base, size_t scale) {
   return status;
 }
 
-BcStatus bc_num_print(BcNum* n, size_t base) {
+BcStatus bc_num_print(BcNum *n, size_t base) {
   return bc_num_fprint(n, base, stdout);
 }
 
-BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f) {
+BcStatus bc_num_fprint(BcNum *n, size_t base, FILE* f) {
 
   BcStatus status;
 
@@ -167,7 +167,7 @@ BcStatus bc_num_fprint(BcNum* n, size_t base, FILE* f) {
   return status;
 }
 
-BcStatus bc_num_long(BcNum* n, long* result) {
+BcStatus bc_num_long(BcNum *n, long *result) {
 
   size_t i;
   unsigned long temp;
@@ -197,7 +197,7 @@ BcStatus bc_num_long(BcNum* n, long* result) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_ulong(BcNum* n, unsigned long* result) {
+BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
   size_t i;
   unsigned long prev;
@@ -226,12 +226,12 @@ BcStatus bc_num_ulong(BcNum* n, unsigned long* result) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_long2num(BcNum* n, long val) {
+BcStatus bc_num_long2num(BcNum *n, long val) {
 
   BcStatus status;
   size_t len;
   size_t i;
-  char* ptr;
+  char *ptr;
   char carry;
 
   if (!n) return BC_STATUS_INVALID_PARAM;
@@ -274,12 +274,12 @@ BcStatus bc_num_long2num(BcNum* n, long val) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_ulong2num(BcNum* n, unsigned long val) {
+BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
   BcStatus status;
   size_t len;
   size_t i;
-  char* ptr;
+  char *ptr;
 
   if (!n) return BC_STATUS_INVALID_PARAM;
 
@@ -306,12 +306,12 @@ BcStatus bc_num_ulong2num(BcNum* n, unsigned long val) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_truncate(BcNum* n) {
+BcStatus bc_num_truncate(BcNum *n) {
   if (!n) return BC_STATUS_INVALID_PARAM;
   return bc_num_trunc(n, n->rdx);
 }
 
-BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
+BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
   BcBinaryFunc op;
 
@@ -321,7 +321,7 @@ BcStatus bc_num_add(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
   return bc_num_binary(a, b, result, scale, op, a->len + b->len + 1);
 }
 
-BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
+BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
   BcBinaryFunc op;
 
@@ -332,41 +332,41 @@ BcStatus bc_num_sub(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
   return bc_num_binary(a, a, result, scale, op, a->len + b->len + 1);
 }
 
-BcStatus bc_num_mul(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
+BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_m, a->len + b->len);
 }
 
-BcStatus bc_num_div(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
+BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_d, a->len + b->len);
 }
 
-BcStatus bc_num_mod(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
+BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_mod, a->len + b->len);
 }
 
-BcStatus bc_num_pow(BcNum* a, BcNum* b, BcNum* result, size_t scale) {
+BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_p, a->len * b->len);
 }
 
-BcStatus bc_num_sqrt(BcNum* a, BcNum* result, size_t scale) {
+BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
   return bc_num_unary(a, result, scale, bc_num_sqrt_newton,
                       a->rdx + (a->len - a->rdx) * 2);
 }
 
-int bc_num_compare(BcNum* a, BcNum* b) {
+int bc_num_compare(BcNum *a, BcNum *b) {
 
-  BcNum* a2;
-  BcNum* b2;
+  BcNum *a2;
+  BcNum *b2;
   size_t i;
   size_t min;
-  char* max_num;
-  char* min_num;
+  char *max_num;
+  char *min_num;
   bool a_max;
   bool neg;
   size_t a_int;
   size_t b_int;
-  char* ptr_a;
-  char* ptr_b;
+  char *ptr_a;
+  char *ptr_b;
   size_t diff;
 
   a2 = (BcNum*) a;
@@ -460,7 +460,7 @@ int bc_num_compare(BcNum* a, BcNum* b) {
   return 0;
 }
 
-static void bc_num_zero(BcNum* n) {
+static void bc_num_zero(BcNum *n) {
 
   if (!n) return;
 
@@ -469,12 +469,12 @@ static void bc_num_zero(BcNum* n) {
   n->rdx = 0;
 }
 
-static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
+static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
                                BcUnaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum a2;
-  BcNum* ptr_a;
+  BcNum *ptr_a;
 
   if (!a || !b || !op) return BC_STATUS_INVALID_PARAM;
 
@@ -499,14 +499,14 @@ static BcStatus bc_num_unary(BcNum* a, BcNum* b, size_t scale,
   return status;
 }
 
-static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c,  size_t scale,
+static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
                               BcBinaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum a2;
   BcNum b2;
-  BcNum* ptr_a;
-  BcNum* ptr_b;
+  BcNum *ptr_a;
+  BcNum *ptr_b;
   bool init;
 
   if (!a || !b || !c || !op) return BC_STATUS_INVALID_PARAM;
@@ -546,12 +546,12 @@ static BcStatus bc_num_binary(BcNum* a, BcNum* b, BcNum* c,  size_t scale,
   return status;
 }
 
-static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
-  char* ptr;
-  char* ptr_a;
-  char* ptr_b;
-  char* ptr_c;
+  char *ptr;
+  char *ptr_a;
+  char *ptr_b;
+  char *ptr_c;
   size_t i;
   size_t max;
   size_t min;
@@ -667,7 +667,7 @@ static BcStatus bc_num_alg_a(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_s(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   (void) scale;
 
@@ -676,7 +676,7 @@ static BcStatus bc_num_alg_s(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_m(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   scale = BC_MAX(scale, a->rdx);
   scale = BC_MAX(scale, b->rdx);
@@ -685,7 +685,7 @@ static BcStatus bc_num_alg_m(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_d(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   (void) a;
   (void) b;
   (void) c;
@@ -693,7 +693,7 @@ static BcStatus bc_num_alg_d(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+static BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (scale == 0) return bc_num_alg_rem(a, b, c);
 
@@ -706,14 +706,14 @@ static BcStatus bc_num_alg_mod(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_rem(BcNum* a, BcNum* b, BcNum* c) {
+static BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c) {
   (void) a;
   (void) b;
   (void) c;
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_p(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
+static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   (void) a;
   (void) b;
   (void) c;
@@ -721,14 +721,14 @@ static BcStatus bc_num_alg_p(BcNum* a, BcNum* b, BcNum* c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_sqrt_newton(BcNum* a, BcNum* b, size_t scale) {
+static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
   (void) a;
   (void) b;
   (void) scale;
   return BC_STATUS_SUCCESS;
 }
 
-static bool bc_num_strValid(const char* val, size_t base) {
+static bool bc_num_strValid(const char *val, size_t base) {
 
   size_t len;
   size_t i;
@@ -784,15 +784,15 @@ static bool bc_num_strValid(const char* val, size_t base) {
   return true;
 }
 
-static BcStatus bc_num_parseDecimal(BcNum* n, const char* val) {
+static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 
   BcStatus status;
   size_t len;
   size_t i;
-  const char* ptr;
+  const char *ptr;
   size_t radix;
   size_t end;
-  char* num;
+  char *num;
 
   for (i = 0; val[i] == '0'; ++i);
 
@@ -861,7 +861,7 @@ static BcStatus bc_num_parseDecimal(BcNum* n, const char* val) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_parseLowBase(BcNum* n, const char* val,
+static BcStatus bc_num_parseLowBase(BcNum *n, const char *val,
                                      size_t base, size_t scale)
 {
   (void) n;
@@ -870,7 +870,7 @@ static BcStatus bc_num_parseLowBase(BcNum* n, const char* val,
   (void) scale;
   return BC_STATUS_SUCCESS;
 }
-static BcStatus bc_num_parseHighBase(BcNum* n, const char* val,
+static BcStatus bc_num_parseHighBase(BcNum *n, const char *val,
                                       size_t base, size_t scale)
 {
   (void) n;
@@ -880,7 +880,7 @@ static BcStatus bc_num_parseHighBase(BcNum* n, const char* val,
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printDecimal(BcNum* n, FILE* f) {
+static BcStatus bc_num_printDecimal(BcNum *n, FILE* f) {
 
   size_t i;
   size_t chars;
@@ -940,10 +940,10 @@ static BcStatus bc_num_printDecimal(BcNum* n, FILE* f) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printLowBase(BcNum* n, size_t base, FILE* f) {
+static BcStatus bc_num_printLowBase(BcNum *n, size_t base, FILE* f) {
 
   size_t size;
-  char* buf;
+  char *buf;
 
   size = BC_MAX(n->rdx, n->len - n->rdx) * ((10 * 2) / base);
 
@@ -958,23 +958,23 @@ static BcStatus bc_num_printLowBase(BcNum* n, size_t base, FILE* f) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printHighBase(BcNum* n, size_t base, FILE* f) {
+static BcStatus bc_num_printHighBase(BcNum *n, size_t base, FILE* f) {
   (void) n;
   (void) base;
   (void) f;
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printHighestBase(BcNum* n, size_t base, FILE* f) {
+static BcStatus bc_num_printHighestBase(BcNum *n, size_t base, FILE* f) {
   (void) n;
   (void) base;
   (void) f;
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_trunc(BcNum* n, size_t places) {
+static BcStatus bc_num_trunc(BcNum *n, size_t places) {
 
-  char* ptr;
+  char *ptr;
 
   if (places > n->rdx) return BC_STATUS_MATH_INVALID_TRUNCATE;
 

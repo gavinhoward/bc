@@ -44,9 +44,9 @@ static const struct option bc_opts[] = {
 
 };
 
-static const char* const bc_short_opts = "chilqsvw";
+static const char *bc_short_opts = "chilqsvw";
 
-static const char* const bc_help =
+static const char *bc_help =
   "usage: bc [-hilqsvw] [long-options] [file...]\n"
   "\n"
   "bc is a command-line calculator with a Turing-complete language.\n"
@@ -74,7 +74,7 @@ long bc_warn = 0;
 
 long bc_signal = 0;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
   BcStatus status;
   unsigned int flags;

@@ -112,7 +112,7 @@ typedef struct BcParse {
 
   BcVec ops;
 
-  BcProgram* program;
+  BcProgram *program;
   size_t func;
 
   uint32_t num_braces;
@@ -121,14 +121,14 @@ typedef struct BcParse {
 
 } BcParse;
 
-BcStatus bc_parse_init(BcParse* parse, BcProgram* program);
-BcStatus bc_parse_file(BcParse* parse, const char* file);
-BcStatus bc_parse_text(BcParse* parse, const char* text);
+BcStatus bc_parse_init(BcParse *parse, BcProgram *program);
+BcStatus bc_parse_file(BcParse *parse, const char *file);
+BcStatus bc_parse_text(BcParse *parse, const char *text);
 
-BcStatus bc_parse_parse(BcParse* parse);
+BcStatus bc_parse_parse(BcParse *parse);
 
-BcStatus bc_parse_expr(BcParse* parse, BcVec* code, bool posix_rel, bool print);
+BcStatus bc_parse_expr(BcParse *parse, BcVec *code, bool posix_rel, bool print);
 
-void bc_parse_free(BcParse* parse);
+void bc_parse_free(BcParse *parse);
 
 #endif // BC_PARSE_H

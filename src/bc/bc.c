@@ -32,7 +32,7 @@
 #include <bc.h>
 #include <vm.h>
 
-static const char* const bc_err_types[] = {
+static const char *bc_err_types[] = {
 
   NULL,
 
@@ -112,7 +112,7 @@ static const char* const bc_err_types[] = {
 
 };
 
-static const char* const bc_err_descs[] = {
+static const char *bc_err_descs[] = {
 
   NULL,
 
@@ -199,17 +199,17 @@ static const char* const bc_err_descs[] = {
 
 };
 
-static const char* const bc_version = "0.1";
+static const char *bc_version = "0.1";
 
-static const char* const bc_copyright =
+static const char *bc_copyright =
   "bc copyright (c) 2018 Gavin D. Howard";
 
-static const char* const bc_warranty_short =
+static const char *bc_warranty_short =
   "This is free software with ABSOLUTELY NO WARRANTY.";
 
-static const char* const bc_version_fmt = "bc %s\n%s\n\n%s\n\n";
+static const char *bc_version_fmt = "bc %s\n%s\n\n%s\n\n";
 
-BcStatus bc_exec(unsigned int flags, unsigned int filec, const char* filev[]) {
+BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
 
   BcStatus status;
   BcVm vm;
@@ -281,7 +281,7 @@ void bc_error(BcStatus status) {
   fprintf(stderr, "\n%s Error: %s\n\n", bc_err_types[status], bc_err_descs[status]);
 }
 
-void bc_error_file(BcStatus status, const char* file, uint32_t line) {
+void bc_error_file(BcStatus status, const char *file, uint32_t line) {
 
   if (!status || status == BC_STATUS_PARSE_QUIT ||
       !file || status >= BC_STATUS_POSIX_NAME_LEN)
@@ -298,8 +298,8 @@ void bc_error_file(BcStatus status, const char* file, uint32_t line) {
   else fprintf(stderr, "\n\n");
 }
 
-BcStatus bc_posix_error(BcStatus status, const char* file,
-                        uint32_t line, const char* msg)
+BcStatus bc_posix_error(BcStatus status, const char *file,
+                        uint32_t line, const char *msg)
 {
   if (!(bc_std || bc_warn) || status < BC_STATUS_POSIX_NAME_LEN || !file)
     return BC_STATUS_SUCCESS;
