@@ -5,7 +5,7 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 1 ]; then
-	echo "usage: test.sh test [bc test_output1 test_output2]"
+	echo "usage: $0 test [bc test_output1 test_output2]"
 	echo "valid tests are:"
 	echo ""
 	cat "$testdir/all.txt"
