@@ -333,15 +333,18 @@ BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 }
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_m, a->len + b->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_m,
+                       a->len + b->len + scale);
 }
 
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_d, a->len + b->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_d,
+                       a->len + b->len + scale);
 }
 
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_mod, a->len + b->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_mod,
+                       a->len + b->len + scale);
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
@@ -695,15 +698,44 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 static BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
+  BcStatus status;
+  BcNum c1;
+  BcNum c2;
+  size_t len;
+
   if (scale == 0) return bc_num_alg_rem(a, b, c);
 
-  // TODO: Compute a / b.
+  len = a->len + b->len + scale;
+
+  status = bc_num_init(&c1, len);
+
+  if (status) return status;
+
+  status = bc_num_init(&c2, len);
+
+  if (status) goto c2_err;
+
+  status = bc_num_div(a, b, &c1, scale);
+
+  if (status) goto err;
 
   c->rdx = BC_MAX(scale + b->rdx, a->rdx);
 
-  // TODO: Compute a - (a / b) * b.
+  status = bc_num_mul(&c1, b, &c2, scale);
 
-  return BC_STATUS_SUCCESS;
+  if (status) goto err;
+
+  status = bc_num_sub(a, &c2, c, scale);
+
+err:
+
+  bc_num_free(&c2);
+
+c2_err:
+
+  bc_num_free(&c1);
+
+  return status;
 }
 
 static BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c) {
