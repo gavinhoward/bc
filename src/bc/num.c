@@ -30,8 +30,10 @@
 
 #include <bc.h>
 #include <num.h>
+#include <vector.h>
 
 static void bc_num_zero(BcNum *n);
+static void bc_num_one(BcNum *n);
 
 static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
                              BcUnaryFunc op, size_t req);
@@ -191,6 +193,8 @@ BcStatus bc_num_long(BcNum *n, long *result) {
 
     if (temp < prev) return BC_STATUS_MATH_OVERFLOW;
   }
+
+  if (n->neg) temp = -temp;
 
   *result = temp;
 
@@ -472,6 +476,16 @@ static void bc_num_zero(BcNum *n) {
   n->rdx = 0;
 }
 
+static void bc_num_one(BcNum *n) {
+
+  if (!n) return;
+
+  n->neg = false;
+  n->len = 1;
+  n->rdx = 0;
+  n->num[0] = 1;
+}
+
 static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
                                BcUnaryFunc op, size_t req)
 {
@@ -746,11 +760,122 @@ static BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c) {
 }
 
 static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-  (void) a;
-  (void) b;
-  (void) c;
-  (void) scale;
-  return BC_STATUS_SUCCESS;
+
+  BcStatus status;
+  BcVec nums;
+  BcNum copy;
+  BcNum one;
+  long pow;
+  size_t i;
+  size_t len;
+  unsigned long flag;
+  bool neg;
+
+  len = a->len * b->len + scale;
+
+  if (b->rdx != 0) return BC_STATUS_MATH_NON_INTEGER;
+
+  status = bc_num_long(b, &pow);
+
+  if (status) return status;
+
+  if (pow == 0) {
+    bc_num_one(c);
+    return BC_STATUS_SUCCESS;
+  }
+  else if (pow == 1) {
+    return bc_num_copy(c, a);
+  }
+  else if (pow == -1) {
+
+    status = bc_num_init(&one, BC_NUM_DEF_SIZE);
+
+    if (status) return status;
+
+    bc_num_one(&one);
+
+    return bc_num_div(&one, a, c, scale);
+  }
+  else if (pow < 0) {
+    neg = true;
+    pow = -pow;
+  }
+  else neg = false;
+
+  status = bc_num_copy(c, a);
+
+  if (status) return status;
+
+  status = bc_vec_init(&nums, sizeof(BcNum), (BcFreeFunc) bc_num_free);
+
+  if (status) return status;
+
+  flag = 1;
+
+  for (i = 0; pow && i < CHAR_BIT * sizeof(long); ++i, flag <<= 1) {
+
+    if (pow & flag) {
+
+      status = bc_num_init(&copy, c->len);
+
+      if (status) goto err;
+
+      status = bc_num_copy(&copy, c);
+
+      if (status) {
+        bc_num_free(&copy);
+        goto err;
+      }
+
+      status = bc_vec_push(&nums, &copy);
+
+      if (status) {
+        bc_num_free(&copy);
+        goto err;
+      }
+
+      pow &= ~(flag);
+    }
+
+    status = bc_num_mul(c, c, c, scale);
+
+    if (status) goto err;
+  }
+
+  for (i = 0; i < nums.len; ++i) {
+
+    BcNum *ptr;
+
+    ptr = bc_vec_item_rev(&nums, i);
+
+    if (!ptr) return BC_STATUS_VEC_OUT_OF_BOUNDS;
+
+    status = bc_num_mul(c, ptr, c, scale);
+
+    if (status) goto err;
+  }
+
+  if (neg) {
+
+    status = bc_num_init(&one, BC_NUM_DEF_SIZE);
+
+    if (status) goto err;
+
+    bc_num_one(&one);
+
+    status = bc_num_div(&one, c, c, scale);
+
+    if (status) {
+      bc_num_free(&one);
+      goto err;
+    }
+  }
+
+err:
+
+  bc_vec_free(&nums);
+
+  return status;
 }
 
 static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
