@@ -622,12 +622,11 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
     ++c->len;
 
-    carry = 0;
-
-    while (ptr_c[i] >= 10) {
-      carry += 1;
-      ptr_c[i] -= 10;
+    if (ptr_c[i] >= 10) {
+      carry = ptr_c[i] / 10;
+      ptr_c[i] %= 10;
     }
+    else carry = 0;
   }
 
   c->rdx = c->len;
@@ -646,12 +645,11 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
     ++c->len;
 
-    carry = 0;
-
     if (ptr_c[i] >= 10) {
       carry = ptr_c[i] / 10;
       ptr_c[i] %= 10;
     }
+    else carry = 0;
   }
 
   if (a_whole > b_whole) {
@@ -668,12 +666,11 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     ptr_c[i] += ptr[i] + carry;
     ++c->len;
 
-    carry = 0;
-
     if (ptr_c[i] >= 10) {
       carry = ptr_c[i] / 10;
       ptr_c[i] %= 10;
     }
+    else carry = 0;
   }
 
   if (carry) {
@@ -695,19 +692,55 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
+  BcStatus status;
+  char carry;
+  size_t i;
+  size_t j;
+
   scale = BC_MAX(scale, a->rdx);
   scale = BC_MAX(scale, b->rdx);
-  c->rdx = BC_MIN(a->rdx + b->rdx, scale);
+  c->rdx = a->rdx + b->rdx;
 
-  return BC_STATUS_SUCCESS;
+  memset(c->num, 0, sizeof(char) * c->cap);
+  c->len = 0;
+
+  carry = 0;
+
+  for (i = 0; i < b->len; ++i) {
+
+    for (j = 0; j < a->len; ++j) {
+
+      c->num[i + j] += a->num[j] + b->num[i] + carry;
+
+      if (c->num[i + j] >= 10) {
+        carry = c->num[i + j] / 10;
+        c->num[i + j] %= 10;
+      }
+      else carry = 0;
+    }
+  }
+
+  c->len = BC_MAX(i + j, c->rdx);
+
+  c->neg = !a->neg != !b->neg;
+
+  if (scale < c->rdx) status = bc_num_trunc(c, c->rdx - scale);
+  else status = BC_STATUS_SUCCESS;
+
+  return status;
 }
 
 static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-  (void) a;
-  (void) b;
-  (void) c;
-  (void) scale;
-  return BC_STATUS_SUCCESS;
+
+  BcStatus status;
+
+  status = bc_num_copy(c, a);
+
+  if (status) return status;
+
+
+
+  return status;
 }
 
 static BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
