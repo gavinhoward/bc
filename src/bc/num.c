@@ -698,6 +698,21 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   size_t j;
   size_t len;
 
+  if (!a->len || !b->len) {
+    bc_num_zero(c);
+    return BC_STATUS_SUCCESS;
+  }
+  else if (a->len == 1 && a->rdx == 0 && a->num[0] == 1) {
+    status = bc_num_copy(c, b);
+    if (a->neg) c->neg = !c->neg;
+    return status;
+  }
+  else if (b->len == 1 && b->rdx == 0 && b->num[0] == 1) {
+    status = bc_num_copy(c, a);
+    if (b->neg) c->neg = !c->neg;
+    return status;
+  }
+
   scale = BC_MAX(scale, a->rdx);
   scale = BC_MAX(scale, b->rdx);
   c->rdx = a->rdx + b->rdx;
@@ -706,12 +721,14 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   c->len = 0;
 
   carry = 0;
+  j = 0;
+  len = 0;
 
   for (i = 0; i < b->len; ++i) {
 
     for (j = 0; j < a->len; ++j) {
 
-      c->num[i + j] += a->num[j] + b->num[i] + carry;
+      c->num[i + j] += a->num[j] * b->num[i] + carry;
 
       if (c->num[i + j] >= 10) {
         carry = c->num[i + j] / 10;
@@ -720,14 +737,12 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
       else carry = 0;
     }
 
-    if (carry) c->num[i + j] += carry;
-  }
-
-  len = i + j - 1;
-
-  if (carry) {
-    c->num[len] = carry;
-    len += 1;
+    if (carry) {
+      c->num[i + j] += carry;
+      carry = 0;
+      len = BC_MAX(len, i + j + 1);
+    }
+    else len = BC_MAX(len, i + j);
   }
 
   c->len = BC_MAX(len, c->rdx);
