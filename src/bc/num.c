@@ -648,9 +648,9 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     carry = 0;
 
-    while (ptr_c[i] >= 10) {
-      carry += 1;
-      ptr_c[i] -= 10;
+    if (ptr_c[i] >= 10) {
+      carry = ptr_c[i] / 10;
+      ptr_c[i] %= 10;
     }
   }
 
@@ -670,9 +670,9 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     carry = 0;
 
-    while (ptr_c[i] >= 10) {
-      carry += 1;
-      ptr_c[i] -= 10;
+    if (ptr_c[i] >= 10) {
+      carry = ptr_c[i] / 10;
+      ptr_c[i] %= 10;
     }
   }
 
