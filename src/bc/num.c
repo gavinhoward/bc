@@ -1051,7 +1051,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 }
 
 static BcStatus bc_num_parseLowBase(BcNum *n, const char *val,
-                                     size_t base, size_t scale)
+                                    size_t base, size_t scale)
 {
   (void) n;
   (void) val;
@@ -1060,7 +1060,7 @@ static BcStatus bc_num_parseLowBase(BcNum *n, const char *val,
   return BC_STATUS_SUCCESS;
 }
 static BcStatus bc_num_parseHighBase(BcNum *n, const char *val,
-                                      size_t base, size_t scale)
+                                     size_t base, size_t scale)
 {
   (void) n;
   (void) val;
