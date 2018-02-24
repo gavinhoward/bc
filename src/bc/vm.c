@@ -209,7 +209,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
         status = bc_vm_handleSignal(vm);
 
-        fprintf(stderr, bc_ready_prompt);
+        fprintf(stderr, "%s", bc_ready_prompt);
         fflush(stderr);
       }
     }
@@ -430,7 +430,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
           if (bc_signal) {
             status = bc_vm_handleSignal(vm);
-            fprintf(stderr, bc_ready_prompt);
+            fprintf(stderr, "%s", bc_ready_prompt);
           }
         }
         else if (bc_signal) {
@@ -448,7 +448,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
           if (bc_signal) {
             status = bc_vm_handleSignal(vm);
-            fprintf(stderr, bc_ready_prompt);
+            fprintf(stderr, "%s", bc_ready_prompt);
           }
         }
         else if (bc_signal) {
