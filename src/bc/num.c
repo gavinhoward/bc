@@ -753,10 +753,42 @@ c2_err:
 }
 
 static BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c) {
-  (void) a;
-  (void) b;
-  (void) c;
-  return BC_STATUS_SUCCESS;
+
+  BcStatus status;
+  BcNum quotient;
+  BcNum product;
+
+  status = bc_num_init(&quotient, a->len + b->len);
+
+  if (status) return status;
+
+  status = bc_num_div(a, b, &quotient, 0);
+
+  if (status) goto div_err;
+
+  status = bc_num_trunc(&quotient, quotient.rdx);
+
+  if (status) goto div_err;
+
+  status = bc_num_init(&product, quotient.len + b->len);
+
+  if (status) goto div_err;
+
+  status = bc_num_mul(b, &quotient, &product, b->rdx);
+
+  if (status) goto err;
+
+  status = bc_num_sub(a, &product, c, BC_MAX(a->rdx, b->rdx));
+
+err:
+
+  bc_num_free(&product);
+
+div_err:
+
+  bc_num_free(&quotient);
+
+  return status;
 }
 
 static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
@@ -1134,6 +1166,8 @@ static BcStatus bc_num_trunc(BcNum *n, size_t places) {
   char *ptr;
 
   if (places > n->rdx) return BC_STATUS_MATH_INVALID_TRUNCATE;
+
+  if (places == 0) return BC_STATUS_SUCCESS;
 
   ptr = n->num + places;
 
