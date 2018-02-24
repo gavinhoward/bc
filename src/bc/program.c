@@ -757,17 +757,17 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   if (!result1) return BC_STATUS_EXEC_INVALID_EXPR;
 
-  result.type = BC_RESULT_INTERMEDIATE;
-
-  status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
-
-  if (status) return status;
-
   status  = bc_program_num(p, result1, &num1);
 
   if (status) return status;
 
   status = bc_program_num(p, result2, &num2);
+
+  if (status) return status;
+
+  result.type = BC_RESULT_INTERMEDIATE;
+
+  status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
 
   if (status) return status;
 
@@ -783,17 +783,27 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
   else status = bc_num_pow(&result1->data.num, &result2->data.num,
                            &result.data.num, p->scale);
 
-  if (status) return status;
+  if (status) goto err;
 
   status = bc_vec_pop(&p->expr_stack);
 
-  if (status) return status;
+  if (status) goto err;
 
   status = bc_vec_pop(&p->expr_stack);
 
-  if (status) return status;
+  if (status) goto err;
 
-  return bc_vec_push(&p->expr_stack, &result);
+  status = bc_vec_push(&p->expr_stack, &result);
+
+  if (status) goto err;
+
+  return status;
+
+err:
+
+  bc_num_free(&result.data.num);
+
+  return status;
 }
 
 static BcStatus bc_program_read(BcProgram *p) {
