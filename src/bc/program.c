@@ -813,13 +813,14 @@ static BcStatus bc_program_read(BcProgram *p) {
   char *buffer;
   BcTemp temp;
   size_t size;
-  BcVec code;
+  BcFunc func;
+  BcInstPtr ip;
 
   buffer = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
   if (!buffer) return BC_STATUS_MALLOC_FAIL;
 
-  status = bc_vec_init(&code, sizeof(uint8_t), NULL);
+  status = bc_func_init(&func);
 
   if (status) goto vec_err;
 
@@ -841,7 +842,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   if (status) goto exec_err;
 
-  status = bc_parse_expr(&parse, &code, false, false);
+  status = bc_parse_expr(&parse, &func.code, false, false);
 
   if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
     status = status ? status : BC_STATUS_EXEC_INVALID_READ_EXPR;
@@ -849,9 +850,10 @@ static BcStatus bc_program_read(BcProgram *p) {
   }
 
   temp.type = BC_TEMP_NUM;
+  ip.func = 0;
+  ip.idx = 0;
 
-  // TODO: Execute the code, not the expression.
-  //status = bc_program_execExpr(p, &exprs, &temp.num, false);
+  status = bc_program_execCode(p, &func, &ip);
 
   if (status) goto exec_err;
 
@@ -863,7 +865,7 @@ exec_err:
 
 io_err:
 
-  bc_vec_free(&code);
+  bc_func_free(&func);
 
 vec_err:
 
