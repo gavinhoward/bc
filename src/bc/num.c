@@ -696,6 +696,7 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   char carry;
   size_t i;
   size_t j;
+  size_t len;
 
   scale = BC_MAX(scale, a->rdx);
   scale = BC_MAX(scale, b->rdx);
@@ -718,9 +719,18 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
       }
       else carry = 0;
     }
+
+    if (carry) c->num[i + j] += carry;
   }
 
-  c->len = BC_MAX(i + j, c->rdx);
+  len = i + j - 1;
+
+  if (carry) {
+    c->num[len] = carry;
+    len += 1;
+  }
+
+  c->len = BC_MAX(len, c->rdx);
 
   c->neg = !a->neg != !b->neg;
 
