@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   err = 0;
 
   if (argc != 3) {
-    printf(bc_gen_usage);
+    printf("%s", bc_gen_usage);
     return INVALID_PARAMS;
   }
 

@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 
       case 'h':
       {
-        if (printf(bc_help) < 0) return BC_STATUS_IO_ERR;
+        if (printf("%s", bc_help) < 0) return BC_STATUS_IO_ERR;
         do_exit = true;
         break;
       }
