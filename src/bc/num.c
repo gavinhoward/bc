@@ -65,6 +65,11 @@ static BcStatus bc_num_printHighBase(BcNum *n, size_t base, FILE* f);
 static BcStatus bc_num_printHighestBase(BcNum *n, size_t base, FILE* f);
 
 static BcStatus bc_num_trunc(BcNum *n, size_t places);
+static BcStatus bc_num_extend(BcNum *n, size_t places);
+
+static BcStatus bc_num_subtractArrays(char *array1, size_t len1,
+                                      char* array2, size_t len2);
+static int bc_num_compareArrays(char *array1, char *array2, size_t len);
 
 BcStatus bc_num_init(BcNum *n, size_t request) {
 
@@ -1237,4 +1242,72 @@ static BcStatus bc_num_trunc(BcNum *n, size_t places) {
   memset(n->num + n->len, 0, sizeof(char) * (n->cap - n->len));
 
   return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_extend(BcNum *n, size_t places) {
+
+  BcStatus status;
+  char *ptr;
+  size_t len;
+
+  if (places == 0) return BC_STATUS_SUCCESS;
+
+  len = n->len + places;
+
+  if (n->cap < len) {
+
+    status = bc_num_expand(n, len);
+
+    if (status) return status;
+  }
+
+  ptr = n->num + places;
+
+  memmove(ptr, n->num, sizeof(char) * n->len);
+
+  memset(n->num, 0, sizeof(char) * places);
+
+  n->len += places;
+  n->rdx -= places;
+
+  return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_subtractArrays(char *array1, size_t len1,
+                                      char* array2, size_t len2)
+{
+  size_t i;
+  size_t j;
+
+  for (i = 0; i < len2; ++i) {
+
+    array1[i] -= array2[i];
+
+    j = i;
+
+    while (array1[j] < 0) {
+
+      array1[j] += 10;
+      ++j;
+
+      if (j >= len1) return BC_STATUS_MATH_OVERFLOW;
+
+      array1[j] -= 1;
+    }
+  }
+
+  return BC_STATUS_SUCCESS;
+}
+
+static int bc_num_compareArrays(char *array1, char *array2, size_t len) {
+
+  size_t i;
+  char c;
+
+  for (i = len - 1; i < len; --i) {
+    c = array1[i] - array2[i];
+    if (c) return c;
+  }
+
+  return 0;
 }
