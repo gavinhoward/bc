@@ -906,31 +906,46 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num) {
 
     case BC_RESULT_VAR:
     {
+      // TODO: Search for var.
       break;
     }
 
     case BC_RESULT_ARRAY:
     {
+      // TODO Search for array.
       break;
     }
 
     case BC_RESULT_SCALE:
     {
+      status = bc_num_init(&result->data.num, BC_NUM_DEF_SIZE);
+
+      if (status) return status;
+
+      status = bc_num_ulong2num(&result->data.num, p->scale);
+
+      if (status) return status;
+
+      *num = &result->data.num;
+
       break;
     }
 
     case BC_RESULT_LAST:
     {
+      *num = &p->last;
       break;
     }
 
     case BC_RESULT_IBASE:
     {
+      *num = &p->ibase;
       break;
     }
 
     case BC_RESULT_OBASE:
     {
+      *num = &p->obase;
       break;
     }
 
