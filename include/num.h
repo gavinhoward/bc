@@ -91,5 +91,6 @@ int bc_num_compare(BcNum *a, BcNum *b);
 
 void bc_num_zero(BcNum *n);
 void bc_num_one(BcNum *n);
+void bc_num_ten(BcNum *n);
 
 #endif // BC_NUM_H

@@ -38,8 +38,11 @@ typedef struct BcProgram {
   BcVec ip_stack;
 
   size_t scale;
-  size_t ibase;
-  size_t obase;
+
+  BcNum ibase;
+  size_t ibase_t;
+  BcNum obase;
+  size_t obase_t;
 
   long base_max;
   long dim_max;
