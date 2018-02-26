@@ -79,9 +79,7 @@ BcStatus bc_program_init(BcProgram *p) {
   char *name;
   BcInstPtr ip;
 
-  if (p == NULL) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (p == NULL) return BC_STATUS_INVALID_PARAM;
 
   name = NULL;
 
@@ -98,16 +96,10 @@ BcStatus bc_program_init(BcProgram *p) {
   p->base_max = sysconf(_SC_BC_BASE_MAX);
 
   if (p->base_max == -1) {
-
-    if (errno) {
-      return BC_STATUS_NO_LIMIT;
-    }
-
+    if (errno) return BC_STATUS_NO_LIMIT;
     p->base_max = BC_BASE_MAX_DEF;
   }
-  else if (p->base_max > BC_BASE_MAX_DEF) {
-    return BC_STATUS_INVALID_LIMIT;
-  }
+  else if (p->base_max > BC_BASE_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
 #endif
 
 #ifdef _POSIX_BC_DIM_MAX
@@ -119,16 +111,10 @@ BcStatus bc_program_init(BcProgram *p) {
   p->dim_max = sysconf(_SC_BC_DIM_MAX);
 
   if (p->dim_max == -1) {
-
-    if (errno) {
-      return BC_STATUS_NO_LIMIT;
-    }
-
+    if (errno) return BC_STATUS_NO_LIMIT;
     p->dim_max = BC_DIM_MAX_DEF;
   }
-  else if (p->dim_max > BC_DIM_MAX_DEF) {
-    return BC_STATUS_INVALID_LIMIT;
-  }
+  else if (p->dim_max > BC_DIM_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
 #endif
 
 #ifdef _POSIX_BC_SCALE_MAX
@@ -140,16 +126,10 @@ BcStatus bc_program_init(BcProgram *p) {
   p->scale_max = sysconf(_SC_BC_SCALE_MAX);
 
   if (p->scale_max == -1) {
-
-    if (errno) {
-      return BC_STATUS_NO_LIMIT;
-    }
-
+    if (errno) return BC_STATUS_NO_LIMIT;
     p->scale_max = BC_SCALE_MAX_DEF;
   }
-  else if (p->scale_max > BC_SCALE_MAX_DEF) {
-    return BC_STATUS_INVALID_LIMIT;
-  }
+  else if (p->scale_max > BC_SCALE_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
 #endif
 
 #ifdef _POSIX_BC_STRING_MAX
@@ -161,16 +141,10 @@ BcStatus bc_program_init(BcProgram *p) {
   p->string_max = sysconf(_SC_BC_STRING_MAX);
 
   if (p->string_max == -1) {
-
-    if (errno) {
-      return BC_STATUS_NO_LIMIT;
-    }
-
+    if (errno) return BC_STATUS_NO_LIMIT;
     p->string_max = BC_STRING_MAX_DEF;
   }
-  else if (p->string_max > BC_STRING_MAX_DEF) {
-    return BC_STATUS_INVALID_LIMIT;
-  }
+  else if (p->string_max > BC_STRING_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
 #endif
 
   s = bc_num_init(&p->last, BC_NUM_DEF_SIZE);
@@ -208,15 +182,11 @@ BcStatus bc_program_init(BcProgram *p) {
 
   s = bc_vec_init(&p->funcs, sizeof(BcFunc), bc_func_free);
 
-  if (s) {
-    goto func_err;
-  }
+  if (s) goto func_err;
 
   s = bc_veco_init(&p->func_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 
-  if (s) {
-    goto func_map_err;
-  }
+  if (s) goto func_map_err;
 
   name = malloc(1);
 
@@ -229,80 +199,56 @@ BcStatus bc_program_init(BcProgram *p) {
 
   s = bc_program_func_add(p, name, &idx);
 
-  if (s) {
-    goto var_err;
-  }
+  if (s) goto var_err;
 
   name = NULL;
 
   s = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
 
-  if (s) {
-    goto var_err;
-  }
+  if (s) goto var_err;
 
   s = bc_veco_init(&p->var_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 
-  if (s) {
-    goto var_map_err;
-  }
+  if (s) goto var_map_err;
 
   s = bc_vec_init(&p->arrays, sizeof(BcArray), bc_array_free);
 
-  if (s) {
-    goto array_err;
-  }
+  if (s) goto array_err;
 
   s = bc_veco_init(&p->array_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 
-  if (s) {
-    goto array_map_err;
-  }
+  if (s) goto array_map_err;
 
   s = bc_vec_init(&p->strings, sizeof(char*), bc_string_free);
 
-  if (s) {
-    goto string_err;
-  }
+  if (s) goto string_err;
 
   s = bc_vec_init(&p->constants, sizeof(char*), bc_constant_free);
 
-  if (s) {
-    goto const_err;
-  }
+  if (s) goto const_err;
 
   s = bc_vec_init(&p->expr_stack, sizeof(BcResult), bc_result_free);
 
-  if (s) {
-    goto expr_err;
-  }
+  if (s) goto expr_err;
 
   s = bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
 
-  if (s) {
-    goto stack_err;
-  }
+  if (s) goto stack_err;
 
   ip.idx = 0;
   ip.func = 0;
 
   s = bc_vec_push(&p->stack, &ip);
 
-  if (s) {
-    goto local_err;
-  }
+  if (s) goto local_err;
 
   s = bc_vec_init(&p->locals, sizeof(BcLocal), bc_local_free);
 
-  if (s) {
-    goto local_err;
-  }
+  if (s) goto local_err;
 
   s = bc_vec_init(&p->temps, sizeof(BcTemp), bc_temp_free);
 
-  if (s) {
-    goto temps_err;
-  }
+  if (s) goto temps_err;
 
   return s;
 
@@ -393,9 +339,7 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
   BcEntry entry;
   BcFunc f;
 
-  if (!p || !name || !idx) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
 
   entry.name = name;
   entry.idx = p->funcs.len;
@@ -408,9 +352,7 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
     func = bc_vec_item(&p->funcs, *idx);
 
-    if (!func) {
-      return BC_STATUS_EXEC_UNDEFINED_FUNC;
-    }
+    if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
     // We need to reset these so the function can be repopulated.
     func->num_autos = 0;
@@ -420,15 +362,11 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
     return BC_STATUS_SUCCESS;
   }
-  else if (status) {
-    return status;
-  }
+  else if (status) return status;
 
   status = bc_func_init(&f);
 
-  if (status) {
-    return status;
-  }
+  if (status) return status;
 
   return bc_vec_push(&p->funcs, &f);
 }
@@ -439,25 +377,19 @@ BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx) {
   BcEntry entry;
   BcVar v;
 
-  if (!p || !name || !idx) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
 
   entry.name = name;
   entry.idx = p->vars.len;
 
   status = bc_veco_insert(&p->var_map, &entry, idx);
 
-  if (status) {
-    return status == BC_STATUS_VECO_ITEM_EXISTS ?
-          BC_STATUS_SUCCESS : status;
-  }
+  if (status) return status == BC_STATUS_VECO_ITEM_EXISTS ?
+                               BC_STATUS_SUCCESS : status;
 
   status = bc_var_init(&v);
 
-  if (status) {
-    return status;
-  }
+  if (status) return status;
 
   return bc_vec_push(&p->vars, &v);
 }
@@ -468,25 +400,19 @@ BcStatus bc_program_array_add(BcProgram *p, char *name, size_t *idx) {
   BcEntry entry;
   BcArray a;
 
-  if (!p || !name || !idx) {
-    return BC_STATUS_INVALID_PARAM;
-  }
+  if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
 
   entry.name = name;
   entry.idx = p->arrays.len;
 
   status = bc_veco_insert(&p->array_map, &entry, idx);
 
-  if (status) {
-    return status == BC_STATUS_VECO_ITEM_EXISTS ?
-          BC_STATUS_SUCCESS : status;
-  }
+  if (status) return status == BC_STATUS_VECO_ITEM_EXISTS ?
+                               BC_STATUS_SUCCESS : status;
 
   status = bc_array_init(&a);
 
-  if (status) {
-    return status;
-  }
+  if (status) return status;
 
   return bc_vec_push(&p->arrays, &a);
 }
@@ -885,9 +811,7 @@ static size_t bc_program_index(uint8_t *code, size_t *start) {
   result = 0;
 
   for (uint8_t i = 0; i < bytes; ++i) {
-
     byte = code[++(*start)];
-
     result |= (((size_t) byte) << (i * 8));
   }
 
@@ -904,9 +828,7 @@ static void bc_program_printIndex(uint8_t *code, size_t *start) {
   printf(bc_byte_fmt, bytes);
 
   for (uint8_t i = 0; i < bytes; ++i) {
-
     byte = code[++(*start)];
-
     printf(bc_byte_fmt, byte);
   }
 }
