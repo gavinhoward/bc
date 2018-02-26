@@ -35,7 +35,7 @@
 static BcStatus bc_vm_execFile(BcVm *vm, int idx);
 static BcStatus bc_vm_execStdin(BcVm *vm);
 
-static BcStatus bc_vm_handleSignal(BcVm *vm);
+static BcStatus bc_vm_signal(BcVm *vm);
 
 static const char *bc_stdin_filename = "<stdin>";
 
@@ -155,7 +155,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
     if (bc_signal) {
       if (!bc_interactive) goto read_err;
       else {
-        status = bc_vm_handleSignal(vm);
+        status = bc_vm_signal(vm);
         if (status) goto read_err;
       }
     }
@@ -207,14 +207,14 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
       if (bc_signal) {
 
-        status = bc_vm_handleSignal(vm);
+        status = bc_vm_signal(vm);
 
         fprintf(stderr, "%s", bc_ready_prompt);
         fflush(stderr);
       }
     }
     else if (bc_signal) {
-      status = bc_vm_handleSignal(vm);
+      status = bc_vm_signal(vm);
       goto read_err;
     }
   }
@@ -429,12 +429,12 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
           fflush(stdout);
 
           if (bc_signal) {
-            status = bc_vm_handleSignal(vm);
+            status = bc_vm_signal(vm);
             fprintf(stderr, "%s", bc_ready_prompt);
           }
         }
         else if (bc_signal) {
-          status = bc_vm_handleSignal(vm);
+          status = bc_vm_signal(vm);
           goto exit_err;
         }
       }
@@ -447,12 +447,12 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
           fflush(stdout);
 
           if (bc_signal) {
-            status = bc_vm_handleSignal(vm);
+            status = bc_vm_signal(vm);
             fprintf(stderr, "%s", bc_ready_prompt);
           }
         }
         else if (bc_signal) {
-          status = bc_vm_handleSignal(vm);
+          status = bc_vm_signal(vm);
           goto exit_err;
         }
       }
@@ -478,7 +478,7 @@ buf_err:
   return status;
 }
 
-static BcStatus bc_vm_handleSignal(BcVm *vm) {
+static BcStatus bc_vm_signal(BcVm *vm) {
 
   BcStatus status;
   BcFunc *func;
