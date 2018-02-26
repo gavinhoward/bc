@@ -61,7 +61,8 @@ static const BcMathOpFunc bc_math_ops[] = {
 
 static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func, BcInstPtr *ip);
 static BcStatus bc_program_op(BcProgram *p, uint8_t inst);
-static BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num);
+static BcStatus bc_program_num(BcProgram *p, BcResult *result,
+                               BcNum** num, bool ibase);
 static BcStatus bc_program_printString(const char *str);
 static BcStatus bc_program_read(BcProgram *p);
 static size_t bc_program_index(uint8_t *code, size_t *start);
@@ -582,7 +583,7 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func, BcInstPtr *ip) {
 
         result = bc_vec_top(&p->expr_stack);
 
-        status = bc_program_num(p, result, &num);
+        status = bc_program_num(p, result, &num, false);
 
         bc_num_print(num, p->obase_t);
 
@@ -664,7 +665,7 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func, BcInstPtr *ip) {
 
         if (!result) return BC_STATUS_EXEC_INVALID_EXPR;
 
-        status = bc_program_num(p, result, &num);
+        status = bc_program_num(p, result, &num, false);
 
         if (status) return status;
 
@@ -708,11 +709,11 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   if (status) return status;
 
-  status  = bc_program_num(p, result1, &num1);
+  status  = bc_program_num(p, result1, &num1, false);
 
   if (status) return status;
 
-  status = bc_program_num(p, result2, &num2);
+  status = bc_program_num(p, result2, &num2, result1->type == BC_RESULT_IBASE);
 
   if (status) return status;
 
@@ -864,7 +865,9 @@ static void bc_program_printName(uint8_t *code, size_t *start) {
   putchar(byte);
 }
 
-static BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num) {
+static BcStatus bc_program_num(BcProgram *p, BcResult *result,
+                               BcNum** num, bool ibase)
+{
 
   BcStatus status;
 
@@ -882,6 +885,8 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num) {
     {
       char** s;
       size_t idx;
+      size_t len;
+      size_t base;
 
       idx = result->data.id.idx;
 
@@ -889,15 +894,19 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num) {
 
       if (!s) return BC_STATUS_EXEC_INVALID_CONSTANT;
 
-      status = bc_num_init(&result->data.num, strlen(*s));
+      len = strlen(*s);
+
+      status = bc_num_init(&result->data.num, len);
+
+      if (status) return status;
+
+      base = ibase && len == 1 ? 16 : p->ibase_t;
+
+      status = bc_num_parse(&result->data.num, *s, base);
 
       if (status) return status;
 
       *num = &result->data.num;
-
-      status = bc_num_parse(&result->data.num, *s, p->ibase_t, p->scale);
-
-      if (status) return status;
 
       result->type = BC_RESULT_INTERMEDIATE;
 
@@ -1064,7 +1073,7 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_INTERMEDIATE)
     return BC_STATUS_EXEC_INVALID_LVALUE;
 
-  status = bc_program_num(p, right, &rval);
+  status = bc_program_num(p, right, &rval, left->type == BC_RESULT_IBASE);
 
   if (status) return status;
 
@@ -1073,7 +1082,7 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
   if (left->type != BC_RESULT_SCALE) {
 
-    status = bc_program_num(p, left, &lval);
+    status = bc_program_num(p, left, &lval, false);
 
     if (status) return status;
 
