@@ -63,14 +63,17 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func, BcInstPtr *ip);
 static BcStatus bc_program_op(BcProgram *p, uint8_t inst);
 static BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num);
 static BcStatus bc_program_printString(const char *str);
-#if 0
-static BcStatus bc_program_assign(BcProgram *p, BcExpr *expr,
-                                  BcExprType op, fxdpnt *amt);
-#endif
 static BcStatus bc_program_read(BcProgram *p);
 static size_t bc_program_index(uint8_t *code, size_t *start);
 static void bc_program_printIndex(uint8_t *code, size_t *start);
 static void bc_program_printName(uint8_t *code, size_t *start);
+static BcStatus bc_program_assign(BcProgram *p, uint8_t inst);
+static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst);
+static BcMathOpFunc bc_program_assignOp(uint8_t inst);
+
+static BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left,
+                                     BcResult **right);
+static BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *result);
 
 BcStatus bc_program_init(BcProgram *p) {
 
@@ -653,6 +656,17 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func, BcInstPtr *ip) {
         break;
       }
 
+      case BC_INST_OP_ASSIGN_POWER:
+      case BC_INST_OP_ASSIGN_MULTIPLY:
+      case BC_INST_OP_ASSIGN_DIVIDE:
+      case BC_INST_OP_ASSIGN_MODULUS:
+      case BC_INST_OP_ASSIGN_PLUS:
+      case BC_INST_OP_ASSIGN_MINUS:
+      {
+        status = bc_program_assign(p, inst);
+        break;
+      }
+
       default:
       {
         status = BC_STATUS_EXEC_INVALID_STMT;
@@ -673,15 +687,9 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
   BcNum *num1;
   BcNum *num2;
 
-  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 2)) return BC_STATUS_EXEC_INVALID_EXPR;
+  status = bc_program_binOpPrep(p, &result1, &result2);
 
-  result2 = bc_vec_item_rev(&p->expr_stack, 0);
-
-  if (!result2) return BC_STATUS_EXEC_INVALID_EXPR;
-
-  result1 = bc_vec_item_rev(&p->expr_stack, 1);
-
-  if (!result1) return BC_STATUS_EXEC_INVALID_EXPR;
+  if (status) return status;
 
   status  = bc_program_num(p, result1, &num1);
 
@@ -711,15 +719,7 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   if (status) goto err;
 
-  status = bc_vec_pop(&p->expr_stack);
-
-  if (status) goto err;
-
-  status = bc_vec_pop(&p->expr_stack);
-
-  if (status) goto err;
-
-  status = bc_vec_push(&p->expr_stack, &result);
+  status = bc_program_binOpRetire(p, &result);
 
   if (status) goto err;
 
@@ -1016,72 +1016,112 @@ static BcStatus bc_program_printString(const char *str) {
   return BC_STATUS_SUCCESS;
 }
 
-#if 0
-static BcStatus bc_program_assign(BcProgram *p, BcExpr *expr,
-                                  BcExprType op, fxdpnt *amt)
-{
+static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
+
   BcStatus status;
-  fxdpnt *left;
+  BcResult *left;
+  BcResult *right;
+  BcResult result;
+  BcNum *lval;
+  BcNum *rval;
 
-  switch (expr->type) {
+  status = bc_program_binOpPrep(p, &left, &right);
 
-    case BC_EXPR_VAR:
-    {
-      break;
-    }
+  if (status) return status;
 
-    case BC_EXPR_ARRAY_ELEM:
-    {
-      break;
-    }
+  if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_INTERMEDIATE)
+    return BC_STATUS_EXEC_INVALID_LVALUE;
 
-    case BC_EXPR_SCALE:
-    {
-      break;
-    }
+  status = bc_program_num(p, right, &rval);
 
-    case BC_EXPR_IBASE:
-    {
-      break;
-    }
+  if (status) return status;
 
-    case BC_EXPR_OBASE:
-    {
-      break;
-    }
+  if (inst == BC_EXPR_ASSIGN_DIVIDE && !bc_num_compare(rval, &p->zero))
+    return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
-    case BC_EXPR_LAST:
-    {
-      break;
-    }
+  if (left->type != BC_RESULT_SCALE) {
 
-    default:
-    {
-      return BC_STATUS_EXEC_INVALID_EXPR;
+    status = bc_program_num(p, left, &lval);
+
+    if (status) return status;
+
+    switch (inst) {
+
+      case BC_INST_OP_ASSIGN_POWER:
+      case BC_INST_OP_ASSIGN_MULTIPLY:
+      case BC_INST_OP_ASSIGN_DIVIDE:
+      case BC_INST_OP_ASSIGN_MODULUS:
+      case BC_INST_OP_ASSIGN_PLUS:
+      case BC_INST_OP_ASSIGN_MINUS:
+      {
+        BcMathOpFunc op;
+
+        op = bc_program_assignOp(inst);
+        status = op(lval, rval, lval, p->scale);
+
+        break;
+      }
+
+      case BC_INST_OP_ASSIGN:
+      {
+        status = bc_num_copy(lval, rval);
+        break;
+      }
+
+      default:
+      {
+        status = BC_STATUS_EXEC_INVALID_EXPR;
+        break;
+      }
     }
   }
+  else status = bc_program_assignScale(p, rval, inst);
 
-  switch (op) {
+  if (status) return status;
 
-    case BC_EXPR_ASSIGN_DIVIDE:
-      if (!arb_compare(amt, p->zero, 10)) {
-        return BC_STATUS_MATH_DIVIDE_BY_ZERO;
-      }
-      // Fallthrough.
-    case BC_EXPR_ASSIGN_POWER:
-    case BC_EXPR_ASSIGN_MULTIPLY:
-    case BC_EXPR_ASSIGN_MODULUS:
-    case BC_EXPR_ASSIGN_PLUS:
-    case BC_EXPR_ASSIGN_MINUS:
+  memcpy(&result, left, sizeof(BcResult));
+
+  return bc_program_binOpRetire(p, &result);
+}
+
+static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst)
+{
+  BcStatus status;
+  BcNum scale;
+  unsigned long result;
+
+  status = bc_num_init(&scale, BC_NUM_DEF_SIZE);
+
+  if (status) return status;
+
+  status = bc_num_ulong2num(&scale, (unsigned long) p->scale);
+
+  if (status) goto err;
+
+  switch (inst) {
+
+    case BC_INST_OP_ASSIGN_POWER:
+    case BC_INST_OP_ASSIGN_MULTIPLY:
+    case BC_INST_OP_ASSIGN_DIVIDE:
+    case BC_INST_OP_ASSIGN_MODULUS:
+    case BC_INST_OP_ASSIGN_PLUS:
+    case BC_INST_OP_ASSIGN_MINUS:
     {
-      // TODO: Get the right scale.
-      left = bc_math_ops[op - BC_EXPR_ASSIGN_POWER](left, amt, left, 10, 10);
-      status = BC_STATUS_SUCCESS;
+      BcMathOpFunc op;
+
+      op = bc_program_assignOp(inst);
+
+      status = op(&scale, rval, &scale, p->scale);
+
+      if (status) goto err;
+
       break;
     }
 
-    case BC_EXPR_ASSIGN:
+    case BC_INST_OP_ASSIGN:
     {
+      status = bc_num_copy(&scale, rval);
+      if (status) goto err;
       break;
     }
 
@@ -1092,6 +1132,85 @@ static BcStatus bc_program_assign(BcProgram *p, BcExpr *expr,
     }
   }
 
+  status = bc_num_ulong(&scale, &result);
+
+  if (status) goto err;
+
+  p->scale = (size_t) result;
+
+err:
+
+  bc_num_free(&scale);
+
   return status;
 }
-#endif
+
+static BcMathOpFunc bc_program_assignOp(uint8_t inst) {
+
+  switch (inst) {
+
+    case BC_INST_OP_ASSIGN_POWER:
+    {
+      return bc_num_pow;
+    }
+
+    case BC_INST_OP_ASSIGN_MULTIPLY:
+    {
+      return bc_num_mul;
+    }
+
+    case BC_INST_OP_ASSIGN_DIVIDE:
+    {
+      return bc_num_div;
+    }
+
+    case BC_INST_OP_ASSIGN_MODULUS:
+    {
+      return bc_num_mod;
+    }
+
+    case BC_INST_OP_ASSIGN_PLUS:
+    {
+      return bc_num_add;
+    }
+
+    case BC_INST_OP_ASSIGN_MINUS:
+    {
+      return bc_num_sub;
+    }
+
+    default:
+    {
+      return NULL;
+    }
+  }
+}
+
+static BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left,
+                                     BcResult **right)
+{
+
+  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 2)) return BC_STATUS_EXEC_INVALID_EXPR;
+
+  *right = bc_vec_item_rev(&p->expr_stack, 0);
+  *left = bc_vec_item_rev(&p->expr_stack, 1);
+
+  if (!(*right) || !(*left)) return BC_STATUS_EXEC_INVALID_EXPR;
+
+  return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *result) {
+
+  BcStatus status;
+
+  status = bc_vec_pop(&p->expr_stack);
+
+  if (status) return status;
+
+  status = bc_vec_pop(&p->expr_stack);
+
+  if (status) return status;
+
+  return bc_vec_push(&p->expr_stack, result);
+}
