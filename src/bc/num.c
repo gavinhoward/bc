@@ -70,9 +70,11 @@ static int bc_num_compareArrays(char *array1, char *array2, size_t len);
 
 BcStatus bc_num_init(BcNum *n, size_t request) {
 
-  if (!n || !request) return BC_STATUS_INVALID_PARAM;
+  if (!n) return BC_STATUS_INVALID_PARAM;
 
   memset(n, 0, sizeof(BcNum));
+
+  request = request >= BC_NUM_DEF_SIZE ? request : BC_NUM_DEF_SIZE;
 
   n->num = malloc(request);
 
@@ -484,12 +486,21 @@ void bc_num_one(BcNum *n) {
 
   if (!n) return;
 
-  memset(n->num, 0, n->cap * sizeof(char));
+  bc_num_zero(n);
 
-  n->neg = false;
   n->len = 1;
-  n->rdx = 0;
   n->num[0] = 1;
+}
+
+void bc_num_ten(BcNum *n) {
+
+  if (!n) return;
+
+  bc_num_zero(n);
+
+  n->len = 2;
+  n->num[0] = 0;
+  n->num[1] = 1;
 }
 
 static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,

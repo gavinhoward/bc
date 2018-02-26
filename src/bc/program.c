@@ -86,10 +86,6 @@ BcStatus bc_program_init(BcProgram *p) {
 
   name = NULL;
 
-  p->scale = 0;
-  p->ibase = 10;
-  p->obase = 10;
-
 #ifdef _POSIX_BC_BASE_MAX
   p->base_max = _POSIX_BC_BASE_MAX;
 #elif defined(_BC_BASE_MAX)
@@ -150,9 +146,25 @@ BcStatus bc_program_init(BcProgram *p) {
   else if (p->string_max > BC_STRING_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
 #endif
 
-  s = bc_num_init(&p->last, BC_NUM_DEF_SIZE);
+  p->scale = 0;
+
+  s = bc_num_init(&p->ibase, BC_NUM_DEF_SIZE);
 
   if (s) return s;
+
+  bc_num_ten(&p->ibase);
+  p->ibase_t = 10;
+
+  s = bc_num_init(&p->obase, BC_NUM_DEF_SIZE);
+
+  if (s) goto obase_err;
+
+  bc_num_ten(&p->obase);
+  p->obase_t = 10;
+
+  s = bc_num_init(&p->last, BC_NUM_DEF_SIZE);
+
+  if (s) goto last_err;
 
   bc_num_zero(&p->last);
 
@@ -312,6 +324,14 @@ one_err:
 zero_err:
 
   bc_num_free(&p->last);
+
+last_err:
+
+  bc_num_free(&p->obase);
+
+obase_err:
+
+  bc_num_free(&p->ibase);
 
   return s;
 }
@@ -499,6 +519,9 @@ void bc_program_free(BcProgram *p) {
 
   free(p->num_buf);
 
+  bc_num_free(&p->ibase);
+  bc_num_free(&p->obase);
+
   bc_vec_free(&p->funcs);
   bc_veco_free(&p->func_map);
 
@@ -561,7 +584,7 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func, BcInstPtr *ip) {
 
         status = bc_program_num(p, result, &num);
 
-        bc_num_print(num, p->obase);
+        bc_num_print(num, p->obase_t);
 
         bc_vec_pop(&p->expr_stack);
 
@@ -872,7 +895,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num) {
 
       *num = &result->data.num;
 
-      status = bc_num_parse(&result->data.num, *s, p->ibase, p->scale);
+      status = bc_num_parse(&result->data.num, *s, p->ibase_t, p->scale);
 
       if (status) return status;
 
@@ -1072,6 +1095,20 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   else status = bc_program_assignScale(p, rval, inst);
 
   if (status) return status;
+
+  if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
+
+    unsigned long base;
+    size_t *ptr;
+
+    ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
+
+    status = bc_num_ulong(lval, &base);
+
+    if (status) return status;
+
+    *ptr = (size_t) base;
+  }
 
   memcpy(&result, left, sizeof(BcResult));
 
