@@ -65,7 +65,7 @@ void bc_num_free(BcNum *n);
 
 BcStatus bc_num_copy(BcNum *d, BcNum *s);
 
-BcStatus bc_num_parse(BcNum *n, const char *val, size_t base, size_t scale);
+BcStatus bc_num_parse(BcNum *n, const char *val, size_t base);
 
 BcStatus bc_num_print(BcNum *n, size_t base);
 BcStatus bc_num_fprint(BcNum *n, size_t base, FILE* f);

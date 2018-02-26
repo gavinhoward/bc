@@ -51,10 +51,8 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale);
 static bool bc_num_strValid(const char *val, size_t base);
 
 static BcStatus bc_num_parseDecimal(BcNum *n, const char *val);
-static BcStatus bc_num_parseLowBase(BcNum *n, const char *val,
-                                     size_t base, size_t scale);
-static BcStatus bc_num_parseHighBase(BcNum *n, const char *val,
-                                      size_t base, size_t scale);
+static BcStatus bc_num_parseLowBase(BcNum *n, const char *val, size_t base);
+static BcStatus bc_num_parseHighBase(BcNum *n, const char *val, size_t base);
 
 static BcStatus bc_num_printDecimal(BcNum *n, FILE* f);
 static BcStatus bc_num_printLowBase(BcNum *n, size_t base, FILE* f);
@@ -134,7 +132,7 @@ BcStatus bc_num_copy(BcNum *d, BcNum *s) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_parse(BcNum *n, const char *val, size_t base, size_t scale) {
+BcStatus bc_num_parse(BcNum *n, const char *val, size_t base) {
 
   BcStatus status;
 
@@ -146,8 +144,8 @@ BcStatus bc_num_parse(BcNum *n, const char *val, size_t base, size_t scale) {
   if (!bc_num_strValid(val, base)) return BC_STATUS_MATH_INVALID_STRING;
 
   if (base == 10) status = bc_num_parseDecimal(n, val);
-  else if (base < 10) status = bc_num_parseLowBase(n, val, base, scale);
-  else status = bc_num_parseHighBase(n, val, base, scale);
+  else if (base < 10) status = bc_num_parseLowBase(n, val, base);
+  else status = bc_num_parseHighBase(n, val, base);
 
   return status;
 }
@@ -1125,22 +1123,16 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_parseLowBase(BcNum *n, const char *val,
-                                    size_t base, size_t scale)
-{
+static BcStatus bc_num_parseLowBase(BcNum *n, const char *val, size_t base) {
   (void) n;
   (void) val;
   (void) base;
-  (void) scale;
   return BC_STATUS_SUCCESS;
 }
-static BcStatus bc_num_parseHighBase(BcNum *n, const char *val,
-                                     size_t base, size_t scale)
-{
+static BcStatus bc_num_parseHighBase(BcNum *n, const char *val, size_t base) {
   (void) n;
   (void) val;
   (void) base;
-  (void) scale;
   return BC_STATUS_SUCCESS;
 }
 
