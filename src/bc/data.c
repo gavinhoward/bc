@@ -199,7 +199,7 @@ void bc_array_free(void *array) {
 }
 
 BcStatus bc_local_initVar(BcLocal *local, const char *name,
-                          const char *num, size_t base, size_t scale)
+                          const char *num, size_t base)
 {
   BcStatus status;
 
@@ -210,7 +210,7 @@ BcStatus bc_local_initVar(BcLocal *local, const char *name,
   local->name = name;
   local->var = true;
 
-  return bc_num_parse(&local->data.num, num, base, scale);
+  return bc_num_parse(&local->data.num, num, base);
 }
 
 BcStatus bc_local_initArray(BcLocal *local, const char *name, uint32_t nelems) {
