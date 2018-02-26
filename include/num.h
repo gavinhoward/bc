@@ -89,4 +89,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale);
 
 int bc_num_compare(BcNum *a, BcNum *b);
 
+void bc_num_zero(BcNum *n);
+void bc_num_one(BcNum *n);
+
 #endif // BC_NUM_H

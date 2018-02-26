@@ -32,9 +32,6 @@
 #include <num.h>
 #include <vector.h>
 
-static void bc_num_zero(BcNum *n);
-static void bc_num_one(BcNum *n);
-
 static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
                              BcUnaryFunc op, size_t req);
 
@@ -472,18 +469,22 @@ int bc_num_compare(BcNum *a, BcNum *b) {
   return 0;
 }
 
-static void bc_num_zero(BcNum *n) {
+void bc_num_zero(BcNum *n) {
 
   if (!n) return;
+
+  memset(n->num, 0, n->cap * sizeof(char));
 
   n->neg = false;
   n->len = 0;
   n->rdx = 0;
 }
 
-static void bc_num_one(BcNum *n) {
+void bc_num_one(BcNum *n) {
 
   if (!n) return;
+
+  memset(n->num, 0, n->cap * sizeof(char));
 
   n->neg = false;
   n->len = 1;

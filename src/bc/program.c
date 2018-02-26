@@ -154,25 +154,19 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if (s) return s;
 
-  s = bc_num_parse(&p->last, "0", 10, 0);
-
-  if (s) goto zero_err;
+  bc_num_zero(&p->last);
 
   s = bc_num_init(&p->zero, BC_NUM_DEF_SIZE);
 
   if (s) goto zero_err;
 
-  s = bc_num_parse(&p->zero, "0", 10, 0);
-
-  if (s) goto one_err;
+  bc_num_zero(&p->zero);
 
   s = bc_num_init(&p->one, BC_NUM_DEF_SIZE);
 
   if (s) goto one_err;
 
-  s = bc_num_parse(&p->one, "1", 10, 0);
-
-  if (s) goto num_buf_err;
+  bc_num_one(&p->one);
 
   p->num_buf = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
