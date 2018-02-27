@@ -856,7 +856,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
   BcResult result;
-  BcResult *result1;
+  BcResult *operand;
   size_t req;
   BcInstPtr *ip;
 
@@ -877,11 +877,11 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
     BcNum *num;
 
-    result1 = bc_vec_top(&p->expr_stack);
+    operand = bc_vec_top(&p->expr_stack);
 
-    if (!result1) return BC_STATUS_EXEC_INVALID_EXPR;
+    if (!operand) return BC_STATUS_EXEC_INVALID_EXPR;
 
-    status = bc_program_num(p, result1, &num, false);
+    status = bc_program_num(p, operand, &num, false);
 
     if (status) return status;
 
