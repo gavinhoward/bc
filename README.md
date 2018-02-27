@@ -7,21 +7,11 @@ This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 3-clause License, with a special exemption for the Toybox project to use it
 under the BSD 0-clause License.
 
-Because this `bc` makes use of [`arbprec`](https://github.com/cmgraff/arbsh) by
-[cmgraff](https://github.com/cmgraff) and [hexingb](https://github.com/hexingb)
-et al, this `bc` is a collaborative effort. All `arbprec` contributors are
-considered `bc` contributors.
-
 ## Status
 
 This `bc` is not even in alpha stage yet, so it is not ready for use. However,
 at this time, it can do basic math operations (`+`, `-`, `*`, `/`, `%`) on
 constants.
-
-## Cloning
-
-After cloning, make sure to run `git submodule update --init --recursive` to
-clone the `arbprec` submodule.
 
 ## Language
 
