@@ -859,6 +859,8 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   BcResult *operand;
   size_t req;
   BcInstPtr *ip;
+  BcFunc *func;
+  size_t len;
 
   if (!BC_PROGRAM_CHECK_STACK(p)) return BC_STATUS_EXEC_INVALID_RETURN;
 
@@ -870,6 +872,10 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
   if (!BC_PROGRAM_CHECK_EXPR_STACK(p, req))
     return BC_STATUS_EXEC_INVALID_EXPR;
+
+  func = bc_vec_item(&p->funcs, ip->func);
+
+  if (!func) return BC_STATUS_EXEC_INVALID_STMT;
 
   result.type = BC_RESULT_INTERMEDIATE;
 
@@ -902,14 +908,16 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
   if (status) goto err;
 
+  // We need to pop arguments as well, so this takes that into account.
+  len = ip->len - func->params.len;
+  while (p->expr_stack.len > len) {
+    status = bc_vec_pop(&p->expr_stack);
+    if (status) goto err;
+  }
+
   status = bc_vec_pushAt(&p->expr_stack, &result, ip->len);
 
   if (status) goto err;
-
-  while (p->expr_stack.len > ip->len + 1) {
-    status = bc_vec_pop(&p->expr_stack);
-    if (status) return status;
-  }
 
   return bc_vec_pop(&p->stack);
 
