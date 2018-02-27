@@ -99,6 +99,7 @@ static const char *bc_err_types[] = {
   "Runtime",
   "Runtime",
   "Runtime",
+  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -187,6 +188,7 @@ static const char *bc_err_descs[] = {
   "invalid constant",
   "invalid lvalue; cannot assign to constants or intermediate values",
   "cannot return from function; no function to return from",
+  "invalid label; this is probably a bug in bc",
   "bc was not halted correctly; this is a bug in bc",
 
   "POSIX only allows one character names; the following is invalid:",
