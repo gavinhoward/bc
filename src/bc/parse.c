@@ -202,7 +202,8 @@ static BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
 static BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
                                     BcVec *ops, uint32_t *nexs);
 static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
-                                   BcExprType *type, bool posix_rel);
+                                   BcExprType *type, bool posix_rel,
+                                   bool call_allowed);
 static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
                               char *name, bool posix_rel);
 static BcStatus bc_parse_params(BcParse *parse, BcVec *code, bool posix_rel);
@@ -211,7 +212,8 @@ static BcStatus bc_parse_builtin(BcParse *parse, BcVec *code,
                                  BcExprType type, bool posix_rel);
 static BcStatus bc_parse_scale(BcParse *parse, BcVec *code,
                                BcExprType *type, bool posix_rel);
-static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev);
+static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code,
+                                BcExprType *prev, bool posix_rel);
 static BcStatus bc_parse_minus(BcParse *parse, BcVec *exs, BcVec *ops,
                                BcExprType *prev, bool rparen, uint32_t *nexprs);
 static BcStatus bc_parse_string(BcParse *parse, BcVec *code);
@@ -1003,7 +1005,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, bool posix_rel, bool print)
       case BC_LEX_OP_INC:
       case BC_LEX_OP_DEC:
       {
-        status = bc_parse_incdec(parse, code, &prev);
+        status = bc_parse_incdec(parse, code, &prev, posix_rel);
         rparen = false;
         get_token = false;
         break;
@@ -1095,7 +1097,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, bool posix_rel, bool print)
         paren_expr = true;
         rparen = false;
         get_token = false;
-        status = bc_parse_expr_name(parse, code, &prev, posix_rel);
+        status = bc_parse_expr_name(parse, code, &prev, posix_rel, true);
         ++nexprs;
         break;
       }
@@ -1358,7 +1360,8 @@ static BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
 }
 
 static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
-                                   BcExprType *type, bool posix_rel)
+                                   BcExprType *type, bool posix_rel,
+                                   bool call_allowed)
 {
   BcStatus status;
   char *name;
@@ -1391,6 +1394,8 @@ static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
     status = bc_parse_pushName(code, name);
   }
   else if (parse->token.type == BC_LEX_LEFT_PAREN) {
+
+    if (!call_allowed) return BC_STATUS_PARSE_INVALID_TOKEN;
 
     *type = BC_EXPR_FUNC_CALL;
 
@@ -1582,7 +1587,8 @@ static BcStatus bc_parse_scale(BcParse *parse, BcVec *code,
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev)
+static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code,
+                                BcExprType *prev, bool posix_rel)
 {
   BcStatus status;
   BcLexTokenType type;
@@ -1620,49 +1626,7 @@ static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev)
 
       case BC_LEX_NAME:
       {
-        char *name;
-
-        name = parse->token.string;
-
-        status = bc_lex_next(&parse->lex, &parse->token);
-
-        if (status) return status;
-
-        if (parse->token.type == BC_LEX_LEFT_PAREN)
-          return BC_STATUS_PARSE_INVALID_TOKEN;
-
-        if (parse->token.type == BC_LEX_LEFT_BRACKET) {
-
-          status = bc_lex_next(&parse->lex, &parse->token);
-
-          if (status) return status;
-
-          status = bc_parse_expr(parse, code, false, false);
-
-          if (status) return status;
-
-          if (parse->token.type != BC_LEX_RIGHT_BRACKET)
-            return BC_STATUS_PARSE_INVALID_TOKEN;
-
-          status = bc_vec_pushByte(code, BC_INST_PUSH_ARRAY);
-
-          if (status) return status;
-
-          status = bc_parse_pushName(code, name);
-
-          if (status) return status;
-
-          status = bc_lex_next(&parse->lex, &parse->token);
-        }
-        else {
-
-          status = bc_vec_pushByte(code, BC_INST_PUSH_VAR);
-
-          if (status) return status;
-
-          status = bc_parse_pushName(code, name);
-        }
-
+        status = bc_parse_expr_name(parse, code, prev, posix_rel, false);
         break;
       }
 
