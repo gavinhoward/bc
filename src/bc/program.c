@@ -981,10 +981,11 @@ static size_t bc_program_index(uint8_t *code, size_t *start) {
   size_t result;
 
   bytes = code[(*start)++];
+  byte = 1;
 
   result = 0;
 
-  for (uint8_t i = 0; i < bytes; ++i) {
+  for (uint8_t i = 0; byte && i < bytes; ++i) {
     byte = code[(*start)++];
     result |= (((size_t) byte) << (i * 8));
   }
@@ -998,10 +999,11 @@ static BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
   uint8_t byte;
 
   bytes = code[(*start)++];
+  byte = 1;
 
   if (printf(bc_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
 
-  for (uint8_t i = 0; i < bytes; ++i) {
+  for (uint8_t i = 0; byte && i < bytes; ++i) {
     byte = code[(*start)++];
     if (printf(bc_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
   }
@@ -1015,7 +1017,7 @@ static BcStatus bc_program_printName(uint8_t *code, size_t *start) {
 
   byte = code[(*start)++];
 
-  while (byte != ':') {
+  while (byte && byte != ':') {
     if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
     byte = code[(*start)++];
   }
