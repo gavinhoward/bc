@@ -104,9 +104,13 @@ BcStatus bc_num_expand(BcNum *n, size_t request) {
   return BC_STATUS_SUCCESS;
 }
 
-void bc_num_free(BcNum *n) {
+void bc_num_free(void *num) {
 
-  if (!n) return;
+  BcNum *n;
+
+  if (!num) return;
+
+  n = (BcNum*) num;
 
   if (n->num) free(n->num);
 
@@ -911,7 +915,7 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (status) return status;
 
-  status = bc_vec_init(&nums, sizeof(BcNum), (BcFreeFunc) bc_num_free);
+  status = bc_vec_init(&nums, sizeof(BcNum), bc_num_free);
 
   if (status) return status;
 

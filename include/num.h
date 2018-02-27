@@ -61,7 +61,7 @@ BcStatus bc_num_init(BcNum *n, size_t request);
 
 BcStatus bc_num_expand(BcNum *n, size_t request);
 
-void bc_num_free(BcNum *n);
+void bc_num_free(void *num);
 
 BcStatus bc_num_copy(BcNum *d, BcNum *s);
 
