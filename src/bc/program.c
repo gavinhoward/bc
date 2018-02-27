@@ -858,8 +858,6 @@ void bc_program_free(BcProgram *p) {
 
   bc_vec_free(&p->expr_stack);
   bc_vec_free(&p->stack);
-  bc_vec_free(&p->locals);
-  bc_vec_free(&p->temps);
 
   bc_num_free(&p->last);
   bc_num_free(&p->zero);
