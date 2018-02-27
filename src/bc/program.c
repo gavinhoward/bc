@@ -61,7 +61,6 @@ static const BcMathOpFunc bc_math_ops[] = {
 
 };
 
-static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func);
 static BcStatus bc_program_op(BcProgram *p, uint8_t inst);
 static BcStatus bc_program_num(BcProgram *p, BcResult *result,
                                BcNum** num, bool ibase);
@@ -459,144 +458,29 @@ BcStatus bc_program_array_add(BcProgram *p, char *name, size_t *idx) {
 
 BcStatus bc_program_exec(BcProgram *p) {
 
-  BcFunc *func;
-  BcInstPtr *ip;
-
-  ip = bc_vec_top(&p->stack);
-
-  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
-
-  func = bc_vec_item(&p->funcs, ip->func);
-
-  assert(func);
-
-  return bc_program_execCode(p, func);
-}
-
-BcStatus bc_program_printCode(BcProgram *p) {
-
-  BcStatus status;
-  BcFunc *func;
-  uint8_t *code;
-  BcInstPtr *ip;
-
-  ip = bc_vec_top(&p->stack);
-
-  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
-
-  func = bc_vec_item(&p->funcs, ip->func);
-
-  assert(func);
-
-  code = func->code.array;
-  status = BC_STATUS_SUCCESS;
-
-  for (; ip->idx < func->code.len; ++ip->idx) {
-
-    uint8_t inst;
-
-    inst = code[ip->idx];
-
-    switch (inst) {
-
-      case BC_INST_PUSH_VAR:
-      case BC_INST_PUSH_ARRAY:
-      {
-        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-        status = bc_program_printName(code, &ip->idx);
-        break;
-      }
-
-      case BC_INST_CALL:
-      {
-        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-
-        status = bc_program_printIndex(code, &ip->idx);
-
-        if (status) return status;
-
-        status = bc_program_printIndex(code, &ip->idx);
-
-        break;
-      }
-
-      case BC_INST_JUMP:
-      case BC_INST_JUMP_NOT_ZERO:
-      case BC_INST_JUMP_ZERO:
-      case BC_INST_PUSH_NUM:
-      case BC_INST_STR:
-      case BC_INST_PRINT_STR:
-      {
-        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-        bc_program_printIndex(code, &ip->idx);
-        break;
-      }
-
-      default:
-      {
-        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-        break;
-      }
-    }
-  }
-
-  if (status) return status;
-
-  if (putchar('\n') == EOF) status = BC_STATUS_SUCCESS;
-
-  return status;
-}
-
-void bc_program_free(BcProgram *p) {
-
-  if (p == NULL) return;
-
-  free(p->num_buf);
-
-  bc_num_free(&p->ibase);
-  bc_num_free(&p->obase);
-
-  bc_vec_free(&p->funcs);
-  bc_veco_free(&p->func_map);
-
-  bc_vec_free(&p->vars);
-  bc_veco_free(&p->var_map);
-
-  bc_vec_free(&p->arrays);
-  bc_veco_free(&p->array_map);
-
-  bc_vec_free(&p->strings);
-  bc_vec_free(&p->constants);
-
-  bc_vec_free(&p->expr_stack);
-  bc_vec_free(&p->stack);
-  bc_vec_free(&p->locals);
-  bc_vec_free(&p->temps);
-
-  bc_num_free(&p->last);
-  bc_num_free(&p->zero);
-  bc_num_free(&p->one);
-
-  memset(p, 0, sizeof(BcProgram));
-}
-
-static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
-
   BcStatus status;
   uint8_t *code;
   size_t idx;
   int pchars;
   BcResult result;
+  BcFunc *func;
   BcInstPtr *ip;
 
-  status = BC_STATUS_SUCCESS;
-
-  code = func->code.array;
   ip = bc_vec_top(&p->stack);
 
   assert(ip);
 
-  while (!status && ip->idx < func->code.len) {
+  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+
+  func = bc_vec_item(&p->funcs, ip->func);
+
+  assert(func);
+
+  status = BC_STATUS_SUCCESS;
+
+  code = func->code.array;
+
+  while (ip->idx < func->code.len) {
 
     uint8_t inst;
 
@@ -861,12 +745,127 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
       }
     }
 
-    // We keep getting this because if the size of the
+    if (status) return status;
+
+    // We keep getting these because if the size of the
     // stack changes, pointers may end up being invalid.
     ip = bc_vec_top(&p->stack);
+
+    if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+
+    func = bc_vec_item(&p->funcs, ip->func);
+
+    assert(func);
   }
 
   return status;
+}
+
+BcStatus bc_program_printCode(BcProgram *p) {
+
+  BcStatus status;
+  BcFunc *func;
+  uint8_t *code;
+  BcInstPtr *ip;
+
+  ip = bc_vec_top(&p->stack);
+
+  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+
+  func = bc_vec_item(&p->funcs, ip->func);
+
+  assert(func);
+
+  code = func->code.array;
+  status = BC_STATUS_SUCCESS;
+
+  for (; ip->idx < func->code.len; ++ip->idx) {
+
+    uint8_t inst;
+
+    inst = code[ip->idx];
+
+    switch (inst) {
+
+      case BC_INST_PUSH_VAR:
+      case BC_INST_PUSH_ARRAY:
+      {
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
+        status = bc_program_printName(code, &ip->idx);
+        break;
+      }
+
+      case BC_INST_CALL:
+      {
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
+
+        status = bc_program_printIndex(code, &ip->idx);
+
+        if (status) return status;
+
+        status = bc_program_printIndex(code, &ip->idx);
+
+        break;
+      }
+
+      case BC_INST_JUMP:
+      case BC_INST_JUMP_NOT_ZERO:
+      case BC_INST_JUMP_ZERO:
+      case BC_INST_PUSH_NUM:
+      case BC_INST_STR:
+      case BC_INST_PRINT_STR:
+      {
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
+        bc_program_printIndex(code, &ip->idx);
+        break;
+      }
+
+      default:
+      {
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
+        break;
+      }
+    }
+  }
+
+  if (status) return status;
+
+  if (putchar('\n') == EOF) status = BC_STATUS_SUCCESS;
+
+  return status;
+}
+
+void bc_program_free(BcProgram *p) {
+
+  if (p == NULL) return;
+
+  free(p->num_buf);
+
+  bc_num_free(&p->ibase);
+  bc_num_free(&p->obase);
+
+  bc_vec_free(&p->funcs);
+  bc_veco_free(&p->func_map);
+
+  bc_vec_free(&p->vars);
+  bc_veco_free(&p->var_map);
+
+  bc_vec_free(&p->arrays);
+  bc_veco_free(&p->array_map);
+
+  bc_vec_free(&p->strings);
+  bc_vec_free(&p->constants);
+
+  bc_vec_free(&p->expr_stack);
+  bc_vec_free(&p->stack);
+  bc_vec_free(&p->locals);
+  bc_vec_free(&p->temps);
+
+  bc_num_free(&p->last);
+  bc_num_free(&p->zero);
+  bc_num_free(&p->one);
+
+  memset(p, 0, sizeof(BcProgram));
 }
 
 static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
