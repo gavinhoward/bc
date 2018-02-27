@@ -87,6 +87,8 @@ static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst);
 static unsigned long bc_program_scale(BcNum *n);
 static unsigned long bc_program_length(BcNum *n);
 
+static BcStatus bc_program_pushScale(BcProgram *p);
+
 BcStatus bc_program_init(BcProgram *p) {
 
   BcStatus s;
@@ -635,8 +637,7 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
 
       case BC_INST_PUSH_SCALE:
       {
-        result.type = BC_RESULT_SCALE;
-        status = bc_vec_push(&p->expr_stack, &result);
+        status = bc_program_pushScale(p);
         break;
       }
 
@@ -1004,6 +1005,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
   switch (result->type) {
 
     case BC_RESULT_INTERMEDIATE:
+    case BC_RESULT_SCALE:
     {
       *num = &result->data.num;
       break;
@@ -1050,21 +1052,6 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
     case BC_RESULT_ARRAY:
     {
       // TODO Search for array.
-      break;
-    }
-
-    case BC_RESULT_SCALE:
-    {
-      status = bc_num_init(&result->data.num, BC_NUM_DEF_SIZE);
-
-      if (status) return status;
-
-      status = bc_num_ulong2num(&result->data.num, p->scale);
-
-      if (status) return status;
-
-      *num = &result->data.num;
-
       break;
     }
 
@@ -1598,4 +1585,31 @@ static unsigned long bc_program_scale(BcNum *n) {
 
 static unsigned long bc_program_length(BcNum *n) {
   return (unsigned long) n->len;
+}
+
+static BcStatus bc_program_pushScale(BcProgram *p) {
+
+  BcStatus status;
+  BcResult result;
+
+  result.type = BC_RESULT_SCALE;
+  status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
+
+  if (status) return status;
+
+  status = bc_num_ulong2num(&result.data.num, (unsigned long) p->scale);
+
+  if (status) goto err;
+
+  status = bc_vec_push(&p->expr_stack, &result);
+
+  if (status) goto err;
+
+  return status;
+
+err:
+
+  bc_num_free(&result.data.num);
+
+  return status;
 }
