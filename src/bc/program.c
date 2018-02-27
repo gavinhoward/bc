@@ -1617,7 +1617,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   return status;
 }
 
-BcStatus bc_program_printCode(BcProgram *p) {
+BcStatus bc_program_print(BcProgram *p) {
 
   BcStatus status;
   BcFunc *func;

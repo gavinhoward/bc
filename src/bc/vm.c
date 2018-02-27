@@ -89,7 +89,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
   char *data;
   BcExecFunc exec;
 
-  exec = bc_code ? bc_program_printCode : bc_program_exec;
+  exec = bc_code ? bc_program_print : bc_program_exec;
 
   file = vm->filev[idx];
   vm->program.file = file;
@@ -404,7 +404,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
       }
       else {
 
-        bc_program_printCode(&vm->program);
+        bc_program_print(&vm->program);
 
         if (bc_interactive) {
 
