@@ -1484,11 +1484,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   // TODO: Handle arguments and autos.
 
-  status = bc_vec_push(&p->stack, &ip);
-
-  if (status) return status;
-
-  return bc_program_execCode(p, func);
+  return bc_vec_push(&p->stack, &ip);
 }
 
 static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
