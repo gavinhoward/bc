@@ -776,7 +776,26 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
 
       case BC_INST_OP_BOOL_NOT:
       {
-        // TODO: Fill this out.
+        BcResult *ptr;
+        BcNum *num;
+
+        status = bc_program_unaryOpPrep(p, &ptr, &num);
+
+        if (status) return status;
+
+        result.type = BC_RESULT_INTERMEDIATE;
+
+        status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
+
+        if (status) return status;
+
+        if (bc_num_compare(num, &p->zero)) bc_num_one(&result.data.num);
+        else bc_num_zero(&result.data.num);
+
+        status = bc_program_unaryOpRetire(p, &result);
+
+        if (status) bc_num_free(&result.data.num);
+
         break;
       }
 
