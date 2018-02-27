@@ -27,7 +27,17 @@
 #include <bc.h>
 #include <vector.h>
 
-static BcStatus bc_vec_expand(BcVec *vec);
+static BcStatus bc_vec_expand(BcVec *vec) {
+
+  uint8_t *ptr = realloc(vec->array, vec->size * (vec->cap * 2));
+
+  if (ptr == NULL) return BC_STATUS_MALLOC_FAIL;
+
+  vec->array = ptr;
+  vec->cap *= 2;
+
+  return BC_STATUS_SUCCESS;
+}
 
 BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor) {
 
@@ -182,19 +192,33 @@ void bc_vec_free(void *vec) {
   s->cap = 0;
 }
 
-static BcStatus bc_vec_expand(BcVec *vec) {
+static size_t bc_veco_find(BcVecO* vec, void *data) {
 
-  uint8_t *ptr = realloc(vec->array, vec->size * (vec->cap * 2));
+  BcVecCmpFunc cmp = vec->cmp;
 
-  if (ptr == NULL) return BC_STATUS_MALLOC_FAIL;
+  size_t low = 0;
+  size_t high = vec->vec.len;
 
-  vec->array = ptr;
-  vec->cap *= 2;
+  while (low < high) {
 
-  return BC_STATUS_SUCCESS;
+    size_t mid;
+    int result;
+    uint8_t *ptr;
+
+    mid = (low + high) / 2;
+
+    ptr = bc_vec_item(&vec->vec, mid);
+
+    result = cmp(ptr, data);
+
+    if (!result) return mid;
+
+    if (result > 0) high = mid;
+    else low = mid + 1;
+  }
+
+  return low;
 }
-
-static size_t bc_veco_find(BcVecO* vec, void *data);
 
 BcStatus bc_veco_init(BcVecO* vec, size_t esize,
                       BcFreeFunc dtor, BcVecCmpFunc cmp)
@@ -240,32 +264,4 @@ void* bc_veco_item(BcVecO* vec, size_t idx) {
 
 void bc_veco_free(BcVecO* vec) {
   bc_vec_free(&vec->vec);
-}
-
-static size_t bc_veco_find(BcVecO* vec, void *data) {
-
-  BcVecCmpFunc cmp = vec->cmp;
-
-  size_t low = 0;
-  size_t high = vec->vec.len;
-
-  while (low < high) {
-
-    size_t mid;
-    int result;
-    uint8_t *ptr;
-
-    mid = (low + high) / 2;
-
-    ptr = bc_vec_item(&vec->vec, mid);
-
-    result = cmp(ptr, data);
-
-    if (!result) return mid;
-
-    if (result > 0) high = mid;
-    else low = mid + 1;
-  }
-
-  return low;
 }
