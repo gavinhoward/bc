@@ -209,6 +209,7 @@ typedef struct BcInstPtr {
 
   size_t func;
   size_t idx;
+  size_t len;
 
 } BcInstPtr;
 
