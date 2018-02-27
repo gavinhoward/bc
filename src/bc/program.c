@@ -486,6 +486,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   while (ip->idx < func->code.len) {
 
     uint8_t inst;
+    bool cond;
 
     inst = code[(ip->idx)++];
 
@@ -512,9 +513,35 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_JUMP_NOT_ZERO:
       case BC_INST_JUMP_ZERO:
+      {
+        BcResult *operand;
+        BcNum *num;
+
+        status = bc_program_unaryOpPrep(p, &operand, &num);
+
+        if (status) return status;
+
+        cond = bc_num_compare(num, &p->zero) == 0;
+
+        // Fallthrough.
+      }
       case BC_INST_JUMP:
       {
-        // TODO: Fill this out.
+        size_t idx;
+        size_t *addr;
+
+        idx = bc_program_index(code, &ip->idx);
+        addr = bc_vec_item(&func->labels, idx);
+
+        if (!addr) return BC_STATUS_EXEC_INVALID_LABEL;
+
+        if (inst == BC_INST_JUMP ||
+            (inst == BC_INST_JUMP_ZERO && cond) ||
+            (inst == BC_INST_JUMP_NOT_ZERO && !cond))
+        {
+          ip->idx = *addr;
+        }
+
         break;
       }
 
