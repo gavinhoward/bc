@@ -1055,7 +1055,8 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, bool posix_rel, bool print)
         }
 
         prev = BC_PARSE_TOKEN_TO_EXPR(type);
-        status = bc_parse_operator(parse, code, &parse->ops, type, &nexprs, true);
+        status = bc_parse_operator(parse, code, &parse->ops,
+                                   type, &nexprs, true);
         rparen = false;
         get_token = false;
 
