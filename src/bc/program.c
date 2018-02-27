@@ -558,7 +558,7 @@ err:
   return status;
 }
 
-static BcStatus bc_program_bool(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
   BcResult *operand1;
@@ -1660,7 +1660,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_OP_REL_LESS:
       case BC_INST_OP_REL_GREATER:
       {
-        status = bc_program_bool(p, inst);
+        status = bc_program_logical(p, inst);
         break;
       }
 
@@ -1692,7 +1692,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_OP_BOOL_OR:
       case BC_INST_OP_BOOL_AND:
       {
-        status = bc_program_bool(p, inst);
+        status = bc_program_logical(p, inst);
         break;
       }
 
