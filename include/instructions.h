@@ -48,11 +48,10 @@
 #define BC_INST_SQRT ((uint8_t) 'q')
 
 #define BC_INST_PUSH_NUM ((uint8_t) 'N')
-#define BC_INST_PUSH_ZERO ((uint8_t) '0')
-#define BC_INST_POP ((uint8_t) 'P')
-#define BC_INST_DUP_NUM ((uint8_t) 'D')
+#define BC_INST_INC_DUP ((uint8_t) 'E')
+#define BC_INST_DEC_DUP ((uint8_t) 'D')
 
-#define BC_INST_INC ((uint8_t) 'i')
+#define BC_INST_INC ((uint8_t) 'e')
 #define BC_INST_DEC ((uint8_t) 'd')
 
 #define BC_INST_HALT ((uint8_t) 'H')
