@@ -589,11 +589,11 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
 
   assert(ip);
 
-  for (; ip->idx < func->code.len; ++ip->idx) {
+  while (!status && ip->idx < func->code.len) {
 
     uint8_t inst;
 
-    inst = code[ip->idx];
+    inst = code[(ip->idx)++];
 
     switch (inst) {
 
@@ -974,12 +974,12 @@ static size_t bc_program_index(uint8_t *code, size_t *start) {
   uint8_t byte;
   size_t result;
 
-  bytes = code[++(*start)];
+  bytes = code[(*start)++];
 
   result = 0;
 
   for (uint8_t i = 0; i < bytes; ++i) {
-    byte = code[++(*start)];
+    byte = code[(*start)++];
     result |= (((size_t) byte) << (i * 8));
   }
 
@@ -991,12 +991,12 @@ static void bc_program_printIndex(uint8_t *code, size_t *start) {
   uint8_t bytes;
   uint8_t byte;
 
-  bytes = code[++(*start)];
+  bytes = code[(*start)++];
 
   printf(bc_byte_fmt, bytes);
 
   for (uint8_t i = 0; i < bytes; ++i) {
-    byte = code[++(*start)];
+    byte = code[(*start)++];
     printf(bc_byte_fmt, byte);
   }
 }
@@ -1005,11 +1005,11 @@ static void bc_program_printName(uint8_t *code, size_t *start) {
 
   char byte;
 
-  byte = code[++(*start)];
+  byte = code[(*start)++];
 
   while (byte != ':') {
     putchar(byte);
-    byte = code[++(*start)];
+    byte = code[(*start)++];
   }
 
   putchar(byte);
