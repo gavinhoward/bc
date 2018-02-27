@@ -1566,6 +1566,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
     status = bc_num_sqrt(num1, &result.data.num, p->scale);
   }
   else {
+
     BcBuiltInFunc func;
     unsigned long ans;
 
