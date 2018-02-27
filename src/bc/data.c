@@ -218,6 +218,13 @@ void bc_result_free(void *result) {
       break;
     }
 
+    case BC_RESULT_VAR:
+    case BC_RESULT_ARRAY:
+    {
+      free(r->data.id.name);
+      break;
+    }
+
     default:
     {
       // Do nothing.
