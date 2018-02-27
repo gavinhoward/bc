@@ -859,10 +859,6 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
     ip = bc_vec_top(&p->stack);
   }
 
-  if (status) return status;
-
-  if (p->stack.len > 1) status = bc_vec_pop(&p->stack);
-
   return status;
 }
 
@@ -1489,7 +1485,6 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   BcResult *result1;
   size_t req;
   BcInstPtr *ip;
-  BcFunc *func;
 
   if (!BC_PROGRAM_CHECK_STACK(p)) return BC_STATUS_EXEC_INVALID_RETURN;
 
@@ -1542,13 +1537,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
     if (status) return status;
   }
 
-  func = bc_vec_item(&p->funcs, ip->func);
-
-  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
-
-  ip->idx = func->code.len;
-
-  return status;
+  return bc_vec_pop(&p->stack);
 
 err:
 
