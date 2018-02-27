@@ -109,85 +109,218 @@ static const bool keyword_posix[] = {
 
 };
 
-static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token);
-static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token);
-static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token);
-static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token);
-static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start);
-static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token);
+static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 
-BcStatus bc_lex_printToken(BcLexToken *token) {
+  token->type = BC_LEX_WHITESPACE;
 
-  printf("<%s", token_type_strs[token->type]);
+  char c = lex->buffer[lex->idx];
 
-  switch (token->type) {
-
-    case BC_LEX_STRING:
-    case BC_LEX_NAME:
-    case BC_LEX_NUMBER:
-    {
-      printf(":%s", token->string);
-      break;
-    }
-
-    default:
-    {
-      // Do nothing.
-      break;
-    }
+  while ((isspace(c) && c != '\n') || c == '\\') {
+    ++lex->idx;
+    c = lex->buffer[lex->idx];
   }
 
-  putchar('>');
-  putchar('\n');
+  return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
+
+  uint32_t newlines;
+
+  newlines = 0;
+
+  token->type = BC_LEX_STRING;
+
+  size_t i = lex->idx;
+  char c = lex->buffer[i];
+
+  while (c != '"' && c != '\0') {
+
+    if (c == '\n') ++newlines;
+
+    c = lex->buffer[++i];
+  }
+
+  if (c == '\0') {
+    lex->idx = i;
+    return BC_STATUS_LEX_NO_STRING_END;
+  }
+
+  size_t len = i - lex->idx;
+
+  token->string = malloc(len + 1);
+
+  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
+
+  const char *start = lex->buffer + lex->idx;
+
+  for (size_t j = 0; j < len; ++j) token->string[j] = start[j];
+
+  token->string[len] = '\0';
+
+  lex->idx = i + 1;
+  lex->line += newlines;
 
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_init(BcLex *lex, const char *file) {
+static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
 
-  if (lex == NULL ) return BC_STATUS_INVALID_PARAM;
+  uint32_t newlines;
+  bool end;
+  size_t i;
+  const char *buffer;
+  char c;
 
-  lex->line = 1;
-  lex->newline = false;
-  lex->file = file;
+  newlines = 0;
+
+  token->type = BC_LEX_WHITESPACE;
+
+  ++lex->idx;
+
+  i = lex->idx;
+  buffer = lex->buffer;
+
+  end = false;
+
+  while (!end) {
+
+    c = buffer[i];
+
+    while (c != '*' && c != '\0') {
+      if (c == '\n') ++newlines;
+      c = buffer[++i];
+    }
+
+    if (c == '\0' || buffer[i + 1] == '\0') {
+      lex->idx = i;
+      return BC_STATUS_LEX_NO_COMMENT_END;
+    }
+
+    end = buffer[i + 1] == '/';
+    i += end ? 0 : 1;
+  }
+
+  lex->idx = i + 2;
+  lex->line += newlines;
 
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_text(BcLex *lex, const char *text) {
+static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
-  if (lex == NULL || text == NULL) return BC_STATUS_INVALID_PARAM;
+  token->type = BC_LEX_NUMBER;
 
-  lex->buffer = text;
-  lex->idx = 0;
-  lex->len = strlen(text);
+  int point = start == '.';
+
+  const char *buffer = lex->buffer + lex->idx;
+
+  size_t backslashes = 0;
+  size_t i = 0;
+  char c = buffer[i];
+
+  while (c && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
+               (c == '.' && !point) || (c == '\\' && buffer[i + 1] == '\n')))
+  {
+    if (c == '\\') {
+      ++i;
+      backslashes += 1;
+    }
+
+    c = buffer[++i];
+  }
+
+  size_t len = i + 1;
+
+  token->string = malloc(len - backslashes + 1);
+
+  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
+
+  token->string[0] = start;
+
+  const char *buf = buffer - 1;
+  size_t hits = 0;
+
+  for (size_t j = 1; j < len; ++j) {
+
+    char c = buf[j];
+
+    // If we have hit a backslash, skip it.
+    // We don't have to check for a newline
+    // because it's guaranteed.
+    if (hits < backslashes && c == '\\') {
+      ++hits;
+      ++j;
+      continue;
+    }
+
+    token->string[j - (hits * 2)] = c;
+  }
+
+  token->string[len] = '\0';
+
+  lex->idx += i;
 
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
+static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
 
-  if (lex == NULL || token == NULL) return BC_STATUS_INVALID_PARAM;
+  const char *buffer = lex->buffer + lex->idx - 1;
 
-  if (lex->idx == lex->len) {
-    token->type = BC_LEX_EOF;
-    return BC_STATUS_LEX_EOF;
+  for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
+
+    if (!strncmp(buffer, keywords[i], keyword_lens[i])) {
+
+      token->type = BC_LEX_KEY_AUTO + i;
+
+      if (!keyword_posix[i] &&
+          (status = bc_posix_error(BC_STATUS_POSIX_INVALID_KEYWORD,
+                                   lex->file, lex->line, keywords[i])))
+      {
+        return status;
+      }
+
+      // We need to minus one because the
+      // index has already been incremented.
+      lex->idx += keyword_lens[i] - 1;
+
+      return BC_STATUS_SUCCESS;
+    }
   }
 
-  if (lex->newline) {
-    ++lex->line;
-    lex->newline = false;
+  token->type = BC_LEX_NAME;
+
+  size_t i = 0;
+  char c = buffer[i];
+
+  while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_') {
+    ++i;
+    c = buffer[i];
   }
 
-  // Loop until failure or we don't have whitespace. This
-  // is so the parser doesn't get inundated with whitespace.
-  do {
-    status = bc_lex_token(lex, token);
-  } while (!status && token->type == BC_LEX_WHITESPACE);
+  if (i > 1 && (status = bc_posix_error(BC_STATUS_POSIX_NAME_LEN,
+                                        lex->file, lex->line, buffer)))
+  {
+    return status;
+  }
 
-  return status;
+  token->string = malloc(i + 1);
+
+  if (token->string == NULL) {
+    return BC_STATUS_MALLOC_FAIL;
+  }
+
+  strncpy(token->string, buffer, i);
+  token->string[i] = '\0';
+
+  // Increment the index. It is minus one
+  // because it has already been incremented.
+  lex->idx += i - 1;
+
+  return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
@@ -577,216 +710,76 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
   return status;
 }
 
-static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_printToken(BcLexToken *token) {
 
-  token->type = BC_LEX_WHITESPACE;
+  printf("<%s", token_type_strs[token->type]);
 
-  char c = lex->buffer[lex->idx];
+  switch (token->type) {
 
-  while ((isspace(c) && c != '\n') || c == '\\') {
-    ++lex->idx;
-    c = lex->buffer[lex->idx];
+    case BC_LEX_STRING:
+    case BC_LEX_NAME:
+    case BC_LEX_NUMBER:
+    {
+      printf(":%s", token->string);
+      break;
+    }
+
+    default:
+    {
+      // Do nothing.
+      break;
+    }
   }
+
+  putchar('>');
+  putchar('\n');
 
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_init(BcLex *lex, const char *file) {
 
-  uint32_t newlines;
+  if (lex == NULL ) return BC_STATUS_INVALID_PARAM;
 
-  newlines = 0;
-
-  token->type = BC_LEX_STRING;
-
-  size_t i = lex->idx;
-  char c = lex->buffer[i];
-
-  while (c != '"' && c != '\0') {
-
-    if (c == '\n') ++newlines;
-
-    c = lex->buffer[++i];
-  }
-
-  if (c == '\0') {
-    lex->idx = i;
-    return BC_STATUS_LEX_NO_STRING_END;
-  }
-
-  size_t len = i - lex->idx;
-
-  token->string = malloc(len + 1);
-
-  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
-
-  const char *start = lex->buffer + lex->idx;
-
-  for (size_t j = 0; j < len; ++j) token->string[j] = start[j];
-
-  token->string[len] = '\0';
-
-  lex->idx = i + 1;
-  lex->line += newlines;
+  lex->line = 1;
+  lex->newline = false;
+  lex->file = file;
 
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_text(BcLex *lex, const char *text) {
 
-  uint32_t newlines;
-  bool end;
-  size_t i;
-  const char *buffer;
-  char c;
+  if (lex == NULL || text == NULL) return BC_STATUS_INVALID_PARAM;
 
-  newlines = 0;
-
-  token->type = BC_LEX_WHITESPACE;
-
-  ++lex->idx;
-
-  i = lex->idx;
-  buffer = lex->buffer;
-
-  end = false;
-
-  while (!end) {
-
-    c = buffer[i];
-
-    while (c != '*' && c != '\0') {
-      if (c == '\n') ++newlines;
-      c = buffer[++i];
-    }
-
-    if (c == '\0' || buffer[i + 1] == '\0') {
-      lex->idx = i;
-      return BC_STATUS_LEX_NO_COMMENT_END;
-    }
-
-    end = buffer[i + 1] == '/';
-    i += end ? 0 : 1;
-  }
-
-  lex->idx = i + 2;
-  lex->line += newlines;
+  lex->buffer = text;
+  lex->idx = 0;
+  lex->len = strlen(text);
 
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
-
-  token->type = BC_LEX_NUMBER;
-
-  int point = start == '.';
-
-  const char *buffer = lex->buffer + lex->idx;
-
-  size_t backslashes = 0;
-  size_t i = 0;
-  char c = buffer[i];
-
-  while (c && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
-               (c == '.' && !point) || (c == '\\' && buffer[i + 1] == '\n')))
-  {
-    if (c == '\\') {
-      ++i;
-      backslashes += 1;
-    }
-
-    c = buffer[++i];
-  }
-
-  size_t len = i + 1;
-
-  token->string = malloc(len - backslashes + 1);
-
-  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
-
-  token->string[0] = start;
-
-  const char *buf = buffer - 1;
-  size_t hits = 0;
-
-  for (size_t j = 1; j < len; ++j) {
-
-    char c = buf[j];
-
-    // If we have hit a backslash, skip it.
-    // We don't have to check for a newline
-    // because it's guaranteed.
-    if (hits < backslashes && c == '\\') {
-      ++hits;
-      ++j;
-      continue;
-    }
-
-    token->string[j - (hits * 2)] = c;
-  }
-
-  token->string[len] = '\0';
-
-  lex->idx += i;
-
-  return BC_STATUS_SUCCESS;
-}
-
-static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
 
-  const char *buffer = lex->buffer + lex->idx - 1;
+  if (lex == NULL || token == NULL) return BC_STATUS_INVALID_PARAM;
 
-  for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
-
-    if (!strncmp(buffer, keywords[i], keyword_lens[i])) {
-
-      token->type = BC_LEX_KEY_AUTO + i;
-
-      if (!keyword_posix[i] &&
-          (status = bc_posix_error(BC_STATUS_POSIX_INVALID_KEYWORD,
-                                   lex->file, lex->line, keywords[i])))
-      {
-        return status;
-      }
-
-      // We need to minus one because the
-      // index has already been incremented.
-      lex->idx += keyword_lens[i] - 1;
-
-      return BC_STATUS_SUCCESS;
-    }
+  if (lex->idx == lex->len) {
+    token->type = BC_LEX_EOF;
+    return BC_STATUS_LEX_EOF;
   }
 
-  token->type = BC_LEX_NAME;
-
-  size_t i = 0;
-  char c = buffer[i];
-
-  while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_') {
-    ++i;
-    c = buffer[i];
+  if (lex->newline) {
+    ++lex->line;
+    lex->newline = false;
   }
 
-  if (i > 1 && (status = bc_posix_error(BC_STATUS_POSIX_NAME_LEN,
-                                        lex->file, lex->line, buffer)))
-  {
-    return status;
-  }
+  // Loop until failure or we don't have whitespace. This
+  // is so the parser doesn't get inundated with whitespace.
+  do {
+    status = bc_lex_token(lex, token);
+  } while (!status && token->type == BC_LEX_WHITESPACE);
 
-  token->string = malloc(i + 1);
-
-  if (token->string == NULL) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
-
-  strncpy(token->string, buffer, i);
-  token->string[i] = '\0';
-
-  // Increment the index. It is minus one
-  // because it has already been incremented.
-  lex->idx += i - 1;
-
-  return BC_STATUS_SUCCESS;
+  return status;
 }
