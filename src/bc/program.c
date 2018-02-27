@@ -707,9 +707,15 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
 
         status = bc_program_num(p, result, &num, false);
 
-        bc_num_print(num, p->obase_t);
+        status = bc_num_print(num, p->obase_t);
 
-        bc_vec_pop(&p->expr_stack);
+        if (status) return status;
+
+        status = bc_num_copy(&p->last, num);
+
+        if (status) return status;
+
+        status = bc_vec_pop(&p->expr_stack);
 
         break;
       }
