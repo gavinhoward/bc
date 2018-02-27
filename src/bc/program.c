@@ -41,22 +41,15 @@ static const char *bc_byte_fmt = "%02x";
 static const BcMathOpFunc bc_math_ops[] = {
 
   bc_num_mod,
-
   NULL, // &
   NULL, // '
   NULL, // (
   NULL, // )
-
   bc_num_mul,
-
   bc_num_add,
-
   NULL, // ,
-
   bc_num_sub,
-
   NULL, // .
-
   bc_num_div,
 
 };
