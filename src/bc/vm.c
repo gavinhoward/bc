@@ -32,11 +32,6 @@
 #include <io.h>
 #include <vm.h>
 
-static BcStatus bc_vm_execFile(BcVm *vm, int idx);
-static BcStatus bc_vm_execStdin(BcVm *vm);
-
-static BcStatus bc_vm_signal(BcVm *vm);
-
 static const char *bc_stdin_filename = "<stdin>";
 
 static const char *bc_ready_prompt = "ready for more input\n\n";
@@ -59,63 +54,32 @@ static void bc_vm_sigint(int sig) {
   }
 }
 
-BcStatus bc_vm_init(BcVm *vm, int filec, const char *filev[]) {
+static BcStatus bc_vm_signal(BcVm *vm) {
 
   BcStatus status;
-  struct sigaction act;
+  BcFunc *func;
+  BcInstPtr *ip;
 
-  sigemptyset(&act.sa_mask);
-  act.sa_handler = bc_vm_sigint;
+  bc_signal = 0;
 
-  if (sigaction(SIGINT, &act, NULL) < 0) return BC_STATUS_EXEC_SIGACTION_FAIL;
+  while (vm->program.stack.len > 1) {
 
-  status = bc_program_init(&vm->program);
+    status = bc_vec_pop(&vm->program.stack);
 
-  if (status) return status;
-
-  status = bc_parse_init(&vm->parse, &vm->program);
-
-  if (status) {
-    bc_program_free(&vm->program);
-    return status;
+    if (status) return status;
   }
 
-  vm->filec = filec;
-  vm->filev = filev;
+  func = bc_vec_item(&vm->program.funcs, 0);
+
+  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
+  ip = bc_vec_top(&vm->program.stack);
+
+  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+
+  ip->idx = func->code.len;
 
   return BC_STATUS_SUCCESS;
-}
-
-void bc_vm_free(BcVm *vm) {
-  bc_parse_free(&vm->parse);
-  bc_program_free(&vm->program);
-}
-
-BcStatus bc_vm_exec(BcVm *vm) {
-
-  BcStatus status;
-  int num_files;
-
-  status = BC_STATUS_SUCCESS;
-
-  num_files = vm->filec;
-
-  for (int i = 0; !status && i < num_files; ++i) status = bc_vm_execFile(vm, i);
-
-  if (status != BC_STATUS_SUCCESS &&
-      status != BC_STATUS_PARSE_QUIT &&
-      status != BC_STATUS_EXEC_HALT)
-  {
-    return status;
-  }
-
-  status = bc_vm_execStdin(vm);
-
-  status = status == BC_STATUS_PARSE_QUIT ||
-           status == BC_STATUS_EXEC_HALT ?
-               BC_STATUS_SUCCESS : status;
-
-  return status;
 }
 
 static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
@@ -478,30 +442,61 @@ buf_err:
   return status;
 }
 
-static BcStatus bc_vm_signal(BcVm *vm) {
+BcStatus bc_vm_init(BcVm *vm, int filec, const char *filev[]) {
 
   BcStatus status;
-  BcFunc *func;
-  BcInstPtr *ip;
+  struct sigaction act;
 
-  bc_signal = 0;
+  sigemptyset(&act.sa_mask);
+  act.sa_handler = bc_vm_sigint;
 
-  while (vm->program.stack.len > 1) {
+  if (sigaction(SIGINT, &act, NULL) < 0) return BC_STATUS_EXEC_SIGACTION_FAIL;
 
-    status = bc_vec_pop(&vm->program.stack);
+  status = bc_program_init(&vm->program);
 
-    if (status) return status;
+  if (status) return status;
+
+  status = bc_parse_init(&vm->parse, &vm->program);
+
+  if (status) {
+    bc_program_free(&vm->program);
+    return status;
   }
 
-  func = bc_vec_item(&vm->program.funcs, 0);
-
-  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
-
-  ip = bc_vec_top(&vm->program.stack);
-
-  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
-
-  ip->idx = func->code.len;
+  vm->filec = filec;
+  vm->filev = filev;
 
   return BC_STATUS_SUCCESS;
+}
+
+void bc_vm_free(BcVm *vm) {
+  bc_parse_free(&vm->parse);
+  bc_program_free(&vm->program);
+}
+
+BcStatus bc_vm_exec(BcVm *vm) {
+
+  BcStatus status;
+  int num_files;
+
+  status = BC_STATUS_SUCCESS;
+
+  num_files = vm->filec;
+
+  for (int i = 0; !status && i < num_files; ++i) status = bc_vm_execFile(vm, i);
+
+  if (status != BC_STATUS_SUCCESS &&
+      status != BC_STATUS_PARSE_QUIT &&
+      status != BC_STATUS_EXEC_HALT)
+  {
+    return status;
+  }
+
+  status = bc_vm_execStdin(vm);
+
+  status = status == BC_STATUS_PARSE_QUIT ||
+           status == BC_STATUS_EXEC_HALT ?
+               BC_STATUS_SUCCESS : status;
+
+  return status;
 }
