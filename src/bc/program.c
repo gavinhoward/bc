@@ -34,6 +34,8 @@
 #include <parse.h>
 #include <instructions.h>
 
+static const char *bc_program_read_func = "read()";
+
 static const char *bc_byte_fmt = "%02x";
 
 static const BcMathOpFunc bc_math_ops[] = {
@@ -94,6 +96,7 @@ BcStatus bc_program_init(BcProgram *p) {
   BcStatus s;
   size_t idx;
   char *name;
+  char *read_name;
   BcInstPtr ip;
 
   if (p == NULL) return BC_STATUS_INVALID_PARAM;
@@ -222,9 +225,22 @@ BcStatus bc_program_init(BcProgram *p) {
 
   s = bc_program_func_add(p, name, &idx);
 
-  if (s) goto var_err;
+  if (s || idx != BC_PROGRAM_ROOT_FUNC) goto read_err;
 
   name = NULL;
+
+  read_name = malloc(strlen(bc_program_read_func));
+
+  if (!read_name) {
+    s = BC_STATUS_MALLOC_FAIL;
+    goto read_err;
+  }
+
+  s = bc_program_func_add(p, read_name, &idx);
+
+  if (s || idx != BC_PROGRAM_READ_FUNC) goto var_err;
+
+  read_name = NULL;
 
   s = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
 
@@ -264,23 +280,11 @@ BcStatus bc_program_init(BcProgram *p) {
 
   s = bc_vec_push(&p->stack, &ip);
 
-  if (s) goto local_err;
-
-  s = bc_vec_init(&p->locals, sizeof(BcLocal), bc_local_free);
-
-  if (s) goto local_err;
-
-  s = bc_vec_init(&p->temps, sizeof(BcTemp), bc_temp_free);
-
-  if (s) goto temps_err;
+  if (s) goto push_err;
 
   return s;
 
-temps_err:
-
-  bc_vec_free(&p->locals);
-
-local_err:
+push_err:
 
   bc_vec_free(&p->stack);
 
@@ -313,6 +317,10 @@ var_map_err:
   bc_vec_free(&p->vars);
 
 var_err:
+
+  if (read_name) free(read_name);
+
+read_err:
 
   if (name) free(name);
 
@@ -386,13 +394,13 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
     if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
-    // We need to reset these so the function can be repopulated.
-    func->num_autos = 0;
-    func->num_params = 0;
-    func->code.len = 0;
-    func->labels.len = 0;
+    status = BC_STATUS_SUCCESS;
 
-    return BC_STATUS_SUCCESS;
+    // We need to reset these so the function can be repopulated.
+    while (!status && func->autos.len) status = bc_vec_pop(&func->autos);
+    while (!status && func->params.len) status = bc_vec_pop(&func->params);
+
+    return status;
   }
   else if (status) return status;
 
@@ -909,18 +917,19 @@ static BcStatus bc_program_read(BcProgram *p) {
   BcStatus status;
   BcParse parse;
   char *buffer;
-  BcTemp temp;
   size_t size;
-  BcFunc func;
+  BcFunc *func;
   BcInstPtr ip;
+
+  func = bc_vec_item(&p->funcs, BC_PROGRAM_READ_FUNC);
+
+  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
+  func->code.len = 0;
 
   buffer = malloc(BC_PROGRAM_BUF_SIZE + 1);
 
   if (!buffer) return BC_STATUS_MALLOC_FAIL;
-
-  status = bc_func_init(&func);
-
-  if (status) goto vec_err;
 
   size = BC_PROGRAM_BUF_SIZE;
 
@@ -940,32 +949,23 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   if (status) goto exec_err;
 
-  status = bc_parse_expr(&parse, &func.code, false, false);
+  status = bc_parse_expr(&parse, &func->code, false, false);
 
   if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
     status = status ? status : BC_STATUS_EXEC_INVALID_READ_EXPR;
     goto exec_err;
   }
 
-  temp.type = BC_TEMP_NUM;
-  ip.func = 0;
+  ip.func = BC_PROGRAM_READ_FUNC;
   ip.idx = 0;
 
-  status = bc_program_execCode(p, &func);
-
-  if (status) goto exec_err;
-
-  status = bc_vec_push(&p->temps, &temp);
+  status = bc_program_execCode(p, func);
 
 exec_err:
 
   bc_parse_free(&parse);
 
 io_err:
-
-  bc_func_free(&func);
-
-vec_err:
 
   free(buffer);
 
@@ -1471,7 +1471,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
-  if (func->num_params != nparams) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
+  if (func->params.len != nparams) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
   // TODO: Handle arguments and autos.
 

@@ -33,18 +33,6 @@
 
 #define BC_PROGRAM_DEF_SIZE (16)
 
-typedef enum BcTempType {
-
-  BC_TEMP_NUM,
-  BC_TEMP_NAME,
-
-  BC_TEMP_SCALE,
-  BC_TEMP_IBASE,
-  BC_TEMP_OBASE,
-  BC_TEMP_LAST,
-
-} BcTempType;
-
 typedef enum BcExprType {
 
   BC_EXPR_INC_PRE,
@@ -115,40 +103,14 @@ typedef struct BcAuto {
   char *name;
   bool var;
 
+  union {
+
+    BcNum num;
+    BcVec array;
+
+  } data;
+
 } BcAuto;
-
-typedef struct BcLocal {
-
-  const char *name;
-  bool var;
-
-  union {
-
-    BcNum num;
-
-    struct {
-
-      BcNum *array;
-      uint32_t nelems;
-
-    } array;
-
-  } data;
-
-} BcLocal;
-
-typedef struct BcTemp {
-
-  BcTempType type;
-
-  union {
-
-    BcNum num;
-    const char *name;
-
-  } data;
-
-} BcTemp;
 
 typedef struct BcFunc {
 
@@ -156,13 +118,9 @@ typedef struct BcFunc {
 
   BcVec labels;
 
-  BcAuto *params;
-  uint32_t num_params;
-  uint32_t param_cap;
+  BcVec params;
 
-  BcAuto *autos;
-  uint32_t num_autos;
-  uint32_t auto_cap;
+  BcVec autos;
 
 } BcFunc;
 
@@ -224,17 +182,12 @@ void bc_var_free(void *var);
 BcStatus bc_array_init(BcArray *array);
 void bc_array_free(void *array);
 
-BcStatus bc_local_initVar(BcLocal *local, const char *name,
-                          const char *num, size_t base);
-BcStatus bc_local_initArray(BcLocal *local, const char *name, uint32_t nelems);
-void bc_local_free(void *local);
-
-void bc_temp_free(void *temp);
-
 void bc_string_free(void *string);
 
 int bc_entry_cmp(void *entry1, void*entry2);
 void bc_entry_free(void *entry);
+
+void bc_auto_free(void *auto1);
 
 void bc_result_free(void *result);
 
