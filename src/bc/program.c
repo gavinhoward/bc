@@ -509,6 +509,146 @@ static BcStatus bc_program_printString(const char *str) {
   return BC_STATUS_SUCCESS;
 }
 
+static BcStatus bc_program_push(BcProgram *p, uint8_t *code,
+                                size_t *start, bool var)
+{
+  BcStatus status;
+  BcResult result;
+  char *s;
+
+  s = bc_program_name(code, start);
+
+  if (!s) return BC_STATUS_EXEC_UNDEFINED_VAR;
+
+  result.data.id.name = s;
+
+  if (var) {
+    result.type = BC_RESULT_VAR;
+    status = bc_vec_push(&p->expr_stack, &result);
+  }
+  else {
+
+    BcResult *operand;
+    BcNum *num;
+    unsigned long temp;
+
+    result.type = BC_RESULT_ARRAY;
+
+    status = bc_program_unaryOpPrep(p, &operand, &num);
+
+    if (status) goto err;
+
+    status = bc_num_ulong(num, &temp);
+
+    if (status) goto err;
+
+    result.data.id.idx = (size_t) temp;
+
+    status = bc_program_unaryOpRetire(p, &result);
+  }
+
+  if (status) goto err;
+
+  return status;
+
+err:
+
+  free(s);
+
+  return status;
+}
+
+static BcStatus bc_program_bool(BcProgram *p, uint8_t inst) {
+
+  BcStatus status;
+  BcResult *operand1;
+  BcResult *operand2;
+  BcNum *num1;
+  BcNum *num2;
+  BcResult result;
+  BcNumInitFunc init;
+  bool cond;
+
+  status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
+
+  if (status) return status;
+
+  result.type = BC_RESULT_INTERMEDIATE;
+  status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
+
+  if (status) return status;
+
+  if (inst == BC_INST_OP_BOOL_AND)
+    init = bc_num_compare(num1, &p->zero) && bc_num_compare(num2, &p->zero);
+  else if (inst == BC_INST_OP_BOOL_OR)
+    init = bc_num_compare(num1, &p->zero) || bc_num_compare(num2, &p->zero);
+  else {
+
+    int cmp;
+
+    cmp = bc_num_compare(num1, num2);
+
+    switch (inst) {
+      case BC_INST_OP_REL_EQUAL:
+      {
+        cond = cmp == 0;
+        break;
+      }
+
+      case BC_INST_OP_REL_LESS_EQ:
+      {
+        cond = cmp <= 0;
+        break;
+      }
+
+      case BC_INST_OP_REL_GREATER_EQ:
+      {
+        cond = cmp >= 0;
+        break;
+      }
+
+      case BC_INST_OP_REL_NOT_EQ:
+      {
+        cond = cmp != 0;
+        break;
+      }
+
+      case BC_INST_OP_REL_LESS:
+      {
+        cond = cmp < 0;
+        break;
+      }
+
+      case BC_INST_OP_REL_GREATER:
+      {
+        cond = cmp > 0;
+        break;
+      }
+
+      default:
+      {
+        return BC_STATUS_EXEC_INVALID_EXPR;
+      }
+    }
+
+    init = cmp ? bc_num_one : bc_num_zero;
+  }
+
+  init(&result.data.num);
+
+  status = bc_program_binaryOpRetire(p, &result);
+
+  if (status) goto err;
+
+  return status;
+
+err:
+
+  bc_num_free(&result.data.num);
+
+  return status;
+}
+
 static BcMathOpFunc bc_program_assignOp(uint8_t inst) {
 
   switch (inst) {
@@ -1377,14 +1517,9 @@ BcStatus bc_program_exec(BcProgram *p) {
       }
 
       case BC_INST_PUSH_VAR:
-      {
-        // TODO: Fill this out.
-        break;
-      }
-
       case BC_INST_PUSH_ARRAY:
       {
-        // TODO: Fill this out.
+        status = bc_program_push(p, code, &ip->idx, inst == BC_INST_PUSH_VAR);
         break;
       }
 
@@ -1525,7 +1660,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_OP_REL_LESS:
       case BC_INST_OP_REL_GREATER:
       {
-        // TODO: Fill this out.
+        status = bc_program_bool(p, inst);
         break;
       }
 
@@ -1557,7 +1692,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_OP_BOOL_OR:
       case BC_INST_OP_BOOL_AND:
       {
-        // TODO: Fill this out.
+        status = bc_program_bool(p, inst);
         break;
       }
 

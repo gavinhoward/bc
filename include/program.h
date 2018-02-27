@@ -35,6 +35,8 @@ typedef BcStatus (*BcMathOpFunc)(BcNum*, BcNum*, BcNum*, size_t);
 
 typedef unsigned long (*BcBuiltInFunc)(BcNum*);
 
+typedef void (*BcNumInitFunc)(BcNum*);
+
 typedef struct BcProgram {
 
   BcVec ip_stack;
