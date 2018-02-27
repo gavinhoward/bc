@@ -808,17 +808,17 @@ static BcStatus bc_program_execCode(BcProgram *p, BcFunc *func) {
 
       case BC_INST_OP_NEGATE:
       {
-        BcResult *result;
+        BcResult *ptr;
         BcNum *num;
 
         if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1))
           return BC_STATUS_EXEC_INVALID_EXPR;
 
-        result = bc_vec_top(&p->expr_stack);
+        ptr = bc_vec_top(&p->expr_stack);
 
-        if (!result) return BC_STATUS_EXEC_INVALID_EXPR;
+        if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
 
-        status = bc_program_num(p, result, &num, false);
+        status = bc_program_num(p, ptr, &num, false);
 
         if (status) return status;
 
