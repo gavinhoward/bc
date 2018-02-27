@@ -55,10 +55,6 @@ typedef struct BcProgram {
 
   BcVec stack;
 
-  BcVec locals;
-
-  BcVec temps;
-
   BcVec funcs;
 
   BcVecO func_map;
