@@ -960,8 +960,13 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   ip.func = BC_PROGRAM_READ_FUNC;
   ip.idx = 0;
+  ip.len = p->expr_stack.len;
 
-  status = bc_program_execCode(p, func);
+  status = bc_vec_push(&p->stack, &ip);
+
+  if (status) goto exec_err;
+
+  status = bc_program_exec(p);
 
 exec_err:
 
