@@ -90,6 +90,8 @@ static unsigned long bc_program_length(BcNum *n);
 
 static BcStatus bc_program_pushScale(BcProgram *p);
 
+static BcStatus bc_program_incdec(BcProgram *p, uint8_t inst);
+
 BcStatus bc_program_init(BcProgram *p) {
 
   BcStatus s;
@@ -576,15 +578,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_INC_DUP:
       case BC_INST_DEC_DUP:
-      {
-        // TODO: Fill this out, if necessary.
-        break;
-      }
-
       case BC_INST_INC:
       case BC_INST_DEC:
       {
-        // TODO: Fill this out.
+        status = bc_program_incdec(p, inst);
         break;
       }
 
@@ -1102,6 +1099,12 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
     case BC_RESULT_OBASE:
     {
       *num = &p->obase;
+      break;
+    }
+
+    case BC_RESULT_ONE:
+    {
+      *num = &p->one;
       break;
     }
 
@@ -1631,6 +1634,66 @@ static BcStatus bc_program_pushScale(BcProgram *p) {
 err:
 
   bc_num_free(&result.data.num);
+
+  return status;
+}
+
+static BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
+
+  BcStatus status;
+  BcResult *ptr;
+  BcNum *num;
+  BcResult copy;
+  uint8_t inst2;
+  BcResult result;
+
+  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1))
+    return BC_STATUS_EXEC_INVALID_EXPR;
+
+  ptr = bc_vec_top(&p->expr_stack);
+
+  if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
+
+  status = bc_program_num(p, ptr, &num, false);
+
+  if (status) return status;
+
+  inst2 = inst == BC_INST_INC || inst == BC_INST_INC_DUP ?
+            BC_INST_OP_ASSIGN_PLUS : BC_INST_OP_ASSIGN_MINUS;
+
+  if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP) {
+    copy.type = BC_RESULT_INTERMEDIATE;
+    status = bc_num_init(&copy.data.num, num->len);
+    if (status) return status;
+  }
+
+  result.type = BC_RESULT_ONE;
+
+  status = bc_vec_push(&p->expr_stack, &result);
+
+  if (status) goto err;
+
+  status = bc_program_assign(p, inst2);
+
+  if (status) goto err;
+
+  if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP) {
+
+    status = bc_vec_pop(&p->expr_stack);
+
+    if (status) goto err;
+
+    status = bc_vec_push(&p->expr_stack, &copy);
+
+    if (status) goto err;
+  }
+
+  return status;
+
+err:
+
+  if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP)
+    bc_num_free(&copy.data.num);
 
   return status;
 }
