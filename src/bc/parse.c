@@ -1912,6 +1912,7 @@ static BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
 
   ip.idx = func->labels.len;
   ip.func = 0;
+  ip.len = 0;
 
   status = bc_vec_push(&parse->exit_labels, &ip);
 
@@ -1957,6 +1958,7 @@ static BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
 
   ip.idx = func->labels.len;
   ip.func = 0;
+  ip.len = 0;
 
   status = bc_vec_pushByte(code, BC_INST_JUMP);
 
@@ -1993,7 +1995,7 @@ static BcStatus bc_parse_noElse(BcParse *parse, BcVec *code) {
 
   ip = bc_vec_top(&parse->exit_labels);
 
-  if (!ip || ip->func) return BC_STATUS_PARSE_BUG;
+  if (!ip || ip->func || ip->len) return BC_STATUS_PARSE_BUG;
 
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
@@ -2042,6 +2044,7 @@ static BcStatus bc_parse_while(BcParse *parse, BcVec *code) {
 
   ip.idx = func->labels.len;
   ip.func = 1;
+  ip.len = 0;
 
   status = bc_vec_push(&parse->exit_labels, &ip);
 
@@ -2186,6 +2189,7 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   ip.idx = func->labels.len;
   ip.func = 1;
+  ip.len = 0;
 
   status = bc_vec_push(&parse->exit_labels, &ip);
 
