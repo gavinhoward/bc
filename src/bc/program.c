@@ -68,8 +68,8 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
 static BcStatus bc_program_printString(const char *str);
 static BcStatus bc_program_read(BcProgram *p);
 static size_t bc_program_index(uint8_t *code, size_t *start);
-static void bc_program_printIndex(uint8_t *code, size_t *start);
-static void bc_program_printName(uint8_t *code, size_t *start);
+static BcStatus bc_program_printIndex(uint8_t *code, size_t *start);
+static BcStatus bc_program_printName(uint8_t *code, size_t *start);
 static BcStatus bc_program_assign(BcProgram *p, uint8_t inst);
 static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst);
 static BcMathOpFunc bc_program_assignOp(uint8_t inst);
@@ -475,6 +475,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 BcStatus bc_program_printCode(BcProgram *p) {
 
+  BcStatus status;
   BcFunc *func;
   uint8_t *code;
   BcInstPtr *ip;
@@ -488,6 +489,7 @@ BcStatus bc_program_printCode(BcProgram *p) {
   assert(func);
 
   code = func->code.array;
+  status = BC_STATUS_SUCCESS;
 
   for (; ip->idx < func->code.len; ++ip->idx) {
 
@@ -500,17 +502,20 @@ BcStatus bc_program_printCode(BcProgram *p) {
       case BC_INST_PUSH_VAR:
       case BC_INST_PUSH_ARRAY:
       {
-        putchar(inst);
-        bc_program_printName(code, &ip->idx);
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
+        status = bc_program_printName(code, &ip->idx);
         break;
       }
 
       case BC_INST_CALL:
       {
-        putchar(inst);
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
 
-        bc_program_printIndex(code, &ip->idx);
-        bc_program_printIndex(code, &ip->idx);
+        status = bc_program_printIndex(code, &ip->idx);
+
+        if (status) return status;
+
+        status = bc_program_printIndex(code, &ip->idx);
 
         break;
       }
@@ -522,22 +527,24 @@ BcStatus bc_program_printCode(BcProgram *p) {
       case BC_INST_STR:
       case BC_INST_PRINT_STR:
       {
-        putchar(inst);
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
         bc_program_printIndex(code, &ip->idx);
         break;
       }
 
       default:
       {
-        putchar(inst);
+        if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
         break;
       }
     }
   }
 
-  putchar('\n');
+  if (status) return status;
 
-  return BC_STATUS_SUCCESS;
+  if (putchar('\n') == EOF) status = BC_STATUS_SUCCESS;
+
+  return status;
 }
 
 void bc_program_free(BcProgram *p) {
@@ -986,33 +993,35 @@ static size_t bc_program_index(uint8_t *code, size_t *start) {
   return result;
 }
 
-static void bc_program_printIndex(uint8_t *code, size_t *start) {
+static BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
 
   uint8_t bytes;
   uint8_t byte;
 
   bytes = code[(*start)++];
 
-  printf(bc_byte_fmt, bytes);
+  if (printf(bc_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
 
   for (uint8_t i = 0; i < bytes; ++i) {
     byte = code[(*start)++];
-    printf(bc_byte_fmt, byte);
+    if (printf(bc_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
   }
+
+  return BC_STATUS_SUCCESS;
 }
 
-static void bc_program_printName(uint8_t *code, size_t *start) {
+static BcStatus bc_program_printName(uint8_t *code, size_t *start) {
 
   char byte;
 
   byte = code[(*start)++];
 
   while (byte != ':') {
-    putchar(byte);
+    if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
     byte = code[(*start)++];
   }
 
-  putchar(byte);
+  return putchar(byte) == EOF ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_program_num(BcProgram *p, BcResult *result,
