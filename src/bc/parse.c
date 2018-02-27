@@ -1591,8 +1591,6 @@ static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev)
 
   etype = *prev;
 
-  inst = parse->token.type == BC_LEX_OP_INC ? BC_INST_INC : BC_INST_DEC;
-
   if (etype == BC_EXPR_VAR || etype == BC_EXPR_ARRAY_ELEM ||
       etype == BC_EXPR_SCALE || etype == BC_EXPR_LAST ||
       etype == BC_EXPR_IBASE || etype == BC_EXPR_OBASE)
@@ -1600,13 +1598,14 @@ static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev)
     *prev = parse->token.type == BC_LEX_OP_INC ?
               BC_EXPR_INC_POST : BC_EXPR_DEC_POST;
 
-    status = bc_vec_pushByte(code, BC_INST_DUP_NUM);
-
-    if (status) return status;
+    inst = parse->token.type == BC_LEX_OP_INC ?
+             BC_INST_INC_DUP : BC_INST_DEC_DUP;
 
     status = bc_vec_pushByte(code, inst);
   }
   else {
+
+    inst = parse->token.type == BC_LEX_OP_INC ? BC_INST_INC : BC_INST_DEC;
 
     *prev = parse->token.type == BC_LEX_OP_INC ?
               BC_EXPR_INC_PRE : BC_EXPR_DEC_PRE;
