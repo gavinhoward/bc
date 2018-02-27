@@ -777,12 +777,31 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
+  char *ptr;
+  size_t len;
+  size_t end;
+  size_t i;
 
   status = bc_num_copy(c, a);
 
   if (status) return status;
 
+  if (scale > a->rdx) {
+    status = bc_num_extend(c, scale - a->rdx);
+    if (status) return status;
+  }
+  else if (a->rdx > scale) {
+    status = bc_num_trunc(c, a->rdx - scale);
+    if (status) return status;
+  }
 
+  len = b->len;
+  end = c->len - len;
+
+  for (i = end - 1; i < end; --i) {
+
+    ptr = c->num + i;
+  }
 
   return status;
 }
