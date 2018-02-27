@@ -68,6 +68,7 @@ static BcStatus bc_program_printString(const char *str);
 static BcStatus bc_program_read(BcProgram *p);
 static size_t bc_program_index(uint8_t *code, size_t *start);
 static BcStatus bc_program_printIndex(uint8_t *code, size_t *start);
+static char* bc_program_name(uint8_t *code, size_t *start);
 static BcStatus bc_program_printName(uint8_t *code, size_t *start);
 static BcStatus bc_program_assign(BcProgram *p, uint8_t inst);
 static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst);
@@ -1009,6 +1010,39 @@ static BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
   }
 
   return BC_STATUS_SUCCESS;
+}
+
+static char* bc_program_name(uint8_t *code, size_t *start) {
+
+  char byte;
+  char *s;
+  char *string;
+  char *ptr;
+  size_t len;
+  size_t i;
+
+  string = (char*) (code + *start);
+
+  ptr = strchr((char*) code, ':');
+
+  if (ptr) len = ((unsigned long) ptr) - ((unsigned long) string);
+  else len = strlen(string);
+
+  s = malloc(len + 1);
+
+  if (!s) return NULL;
+
+  byte = code[(*start)++];
+  i = 0;
+
+  while (byte && byte != ':') {
+    s[i++] = byte;
+    byte = code[(*start)++];
+  }
+
+  s[i] = '\0';
+
+  return s;
 }
 
 static BcStatus bc_program_printName(uint8_t *code, size_t *start) {
