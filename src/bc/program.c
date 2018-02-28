@@ -579,9 +579,9 @@ static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
   if (status) return status;
 
   if (inst == BC_INST_OP_BOOL_AND)
-    cmp = bc_num_compare(num1, &p->zero) && bc_num_compare(num2, &p->zero);
+    cond = bc_num_compare(num1, &p->zero) && bc_num_compare(num2, &p->zero);
   else if (inst == BC_INST_OP_BOOL_OR)
-    cmp = bc_num_compare(num1, &p->zero) || bc_num_compare(num2, &p->zero);
+    cond = bc_num_compare(num1, &p->zero) || bc_num_compare(num2, &p->zero);
   else {
 
     cmp = bc_num_compare(num1, num2);
@@ -630,7 +630,7 @@ static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
     }
   }
 
-  init = cmp ? bc_num_one : bc_num_zero;
+  init = cond ? bc_num_one : bc_num_zero;
   init(&result.data.num);
 
   status = bc_program_binaryOpRetire(p, &result);
