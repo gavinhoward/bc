@@ -185,6 +185,8 @@ void bc_var_free(void *var);
 
 BcStatus bc_array_init(void *array);
 BcStatus bc_array_copy(void *dest, void *src);
+BcStatus bc_array_zero(BcArray *a);
+BcStatus bc_array_expand(BcArray *a, size_t len);
 void bc_array_free(void *array);
 
 void bc_string_free(void *string);
@@ -192,6 +194,7 @@ void bc_string_free(void *string);
 int bc_entry_cmp(void *entry1, void*entry2);
 void bc_entry_free(void *entry);
 
+BcStatus bc_auto_init(void *auto1, char *name, bool var);
 void bc_auto_free(void *auto1);
 
 void bc_result_free(void *result);
