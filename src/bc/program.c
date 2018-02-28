@@ -946,6 +946,8 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
     if (status) return status;
   }
 
+  result.type = BC_RESULT_INTERMEDIATE;
+
   status = bc_num_init(&result.data.num, lval->len);
 
   if (status) return status;
