@@ -38,7 +38,7 @@ static const char *bc_program_read_func = "read()";
 
 static const char *bc_byte_fmt = "%02x";
 
-static const BcMathOpFunc bc_math_ops[] = {
+static const BcNumBinaryFunc bc_math_ops[] = {
 
   bc_num_mod,
   NULL, // &
@@ -246,7 +246,7 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   if (inst != BC_INST_OP_POWER) {
 
-    BcMathOpFunc op;
+    BcNumBinaryFunc op;
 
     op = bc_math_ops[inst - BC_INST_OP_MODULUS];
 
@@ -647,7 +647,7 @@ err:
   return status;
 }
 
-static BcMathOpFunc bc_program_assignOp(uint8_t inst) {
+static BcNumBinaryFunc bc_program_assignOp(uint8_t inst) {
 
   switch (inst) {
 
@@ -711,7 +711,7 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst)
     case BC_INST_OP_ASSIGN_PLUS:
     case BC_INST_OP_ASSIGN_MINUS:
     {
-      BcMathOpFunc op;
+      BcNumBinaryFunc op;
 
       op = bc_program_assignOp(inst);
 
@@ -783,7 +783,7 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
       case BC_INST_OP_ASSIGN_PLUS:
       case BC_INST_OP_ASSIGN_MINUS:
       {
-        BcMathOpFunc op;
+        BcNumBinaryFunc op;
 
         op = bc_program_assignOp(inst);
         status = op(lval, rval, lval, p->scale);
@@ -958,7 +958,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
   }
   else {
 
-    BcBuiltInFunc func;
+    BcProgramBuiltInFunc func;
     unsigned long ans;
 
     func = inst == BC_INST_LENGTH ? bc_program_length : bc_program_scale;

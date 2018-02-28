@@ -31,12 +31,6 @@
 
 #define BC_PROGRAM_BUF_SIZE (1024)
 
-typedef BcStatus (*BcMathOpFunc)(BcNum*, BcNum*, BcNum*, size_t);
-
-typedef unsigned long (*BcBuiltInFunc)(BcNum*);
-
-typedef void (*BcNumInitFunc)(BcNum*);
-
 typedef struct BcProgram {
 
   BcVec ip_stack;
@@ -91,7 +85,9 @@ typedef struct BcProgram {
 #define BC_PROGRAM_ROOT_FUNC (0)
 #define BC_PROGRAM_READ_FUNC (1)
 
-typedef BcStatus (*BcExecFunc)(BcProgram*);
+typedef BcStatus (*BcProgramExecFunc)(BcProgram*);
+typedef unsigned long (*BcProgramBuiltInFunc)(BcNum*);
+typedef void (*BcNumInitFunc)(BcNum*);
 
 BcStatus bc_program_init(BcProgram *p);
 void bc_program_limits(BcProgram *p);
