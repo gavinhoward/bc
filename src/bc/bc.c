@@ -101,7 +101,6 @@ static const char *bc_err_types[] = {
   "Runtime",
   "Runtime",
   "Runtime",
-  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -184,7 +183,6 @@ static const char *bc_err_descs[] = {
   "string too long: length must be in the range [0, BC_STRING_MAX]",
   "invalid name/identifier",
   "invalid array length; must be an integer in the range [1, BC_DIM_MAX]",
-  "invalid temp variable; this is most likely a bug in bc",
   "invalid read() expression",
   "print error",
   "invalid constant",
