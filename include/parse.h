@@ -121,13 +121,18 @@ typedef struct BcParse {
 
 } BcParse;
 
+#define BC_PARSE_EXPR_POSIX_REL (1<<0)
+#define BC_PARSE_EXPR_PRINT (1<<1)
+#define BC_PARSE_EXPR_NO_CALL (1<<2)
+#define BC_PARSE_EXPR_NO_READ (1<<3)
+
 BcStatus bc_parse_init(BcParse *parse, BcProgram *program);
 BcStatus bc_parse_file(BcParse *parse, const char *file);
 BcStatus bc_parse_text(BcParse *parse, const char *text);
 
 BcStatus bc_parse_parse(BcParse *parse);
 
-BcStatus bc_parse_expr(BcParse *parse, BcVec *code, bool posix_rel, bool print);
+BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags);
 
 void bc_parse_free(BcParse *parse);
 
