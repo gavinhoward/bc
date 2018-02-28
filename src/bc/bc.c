@@ -257,6 +257,11 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
     while (!status) status = bc_parse_parse(&vm.parse);
 
     if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) goto err;
+
+    // Make sure to execute the math library.
+    status = bc_program_exec(&vm.program);
+
+    if (status) goto err;
   }
 
   status = bc_vm_exec(&vm);

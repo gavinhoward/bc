@@ -821,19 +821,11 @@ static BcNumBinaryFunc bc_program_assignOp(uint8_t inst) {
   }
 }
 
-static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst)
+static BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
+                                       BcNum *rval, uint8_t inst)
 {
   BcStatus status;
-  BcNum scale;
   unsigned long result;
-
-  status = bc_num_init(&scale, BC_NUM_DEF_SIZE);
-
-  if (status) return status;
-
-  status = bc_num_ulong2num(&scale, (unsigned long) p->scale);
-
-  if (status) goto err;
 
   switch (inst) {
 
@@ -848,17 +840,17 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst)
 
       op = bc_program_assignOp(inst);
 
-      status = op(&scale, rval, &scale, p->scale);
+      status = op(scale, rval, scale, p->scale);
 
-      if (status) goto err;
+      if (status) return status;
 
       break;
     }
 
     case BC_INST_OP_ASSIGN:
     {
-      status = bc_num_copy(&scale, rval);
-      if (status) goto err;
+      status = bc_num_copy(scale, rval);
+      if (status) return status;
       break;
     }
 
@@ -869,15 +861,11 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *rval, uint8_t inst)
     }
   }
 
-  status = bc_num_ulong(&scale, &result);
+  status = bc_num_ulong(scale, &result);
 
-  if (status) goto err;
+  if (status) return status;
 
   p->scale = (size_t) result;
-
-err:
-
-  bc_num_free(&scale);
 
   return status;
 }
@@ -936,28 +924,47 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
         break;
       }
     }
-  }
-  else status = bc_program_assignScale(p, rval, inst);
-
-  if (status) return status;
-
-  if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
-
-    unsigned long base;
-    size_t *ptr;
-
-    ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
-
-    status = bc_num_ulong(lval, &base);
 
     if (status) return status;
 
-    *ptr = (size_t) base;
+    if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
+
+      unsigned long base;
+      size_t *ptr;
+
+      ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
+
+      status = bc_num_ulong(lval, &base);
+
+      if (status) return status;
+
+      *ptr = (size_t) base;
+    }
+  }
+  else {
+    status = bc_program_assignScale(p, lval, rval, inst);
+    if (status) return status;
   }
 
-  memcpy(&result, left, sizeof(BcResult));
+  status = bc_num_init(&result.data.num, lval->len);
 
-  return bc_program_binaryOpRetire(p, &result);
+  if (status) return status;
+
+  status = bc_num_copy(&result.data.num, lval);
+
+  if (status) goto err;
+
+  status = bc_program_binaryOpRetire(p, &result);
+
+  if (status) goto err;
+
+  return status;
+
+err:
+
+  bc_num_free(&result.data.num);
+
+  return status;
 }
 
 static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
@@ -1629,6 +1636,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   BcResult result;
   BcFunc *func;
   BcInstPtr *ip;
+  bool cond;
 
   ip = bc_vec_top(&p->stack);
 
@@ -1641,13 +1649,11 @@ BcStatus bc_program_exec(BcProgram *p) {
   status = BC_STATUS_SUCCESS;
 
   code = func->code.array;
+  cond = false;
 
   while (ip->idx < func->code.len) {
 
     uint8_t inst;
-    bool cond;
-
-    cond = false;
 
     inst = code[(ip->idx)++];
 

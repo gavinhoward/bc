@@ -1018,7 +1018,7 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
   if (!n || !result) return BC_STATUS_INVALID_PARAM;
 
-  if (n->rdx != n->len) return BC_STATUS_MATH_NON_INTEGER;
+  if (n->rdx) return BC_STATUS_MATH_NON_INTEGER;
 
   if (n->neg) return BC_STATUS_MATH_NEGATIVE;
 
