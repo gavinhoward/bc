@@ -20,7 +20,6 @@
  *
  */
 
-#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -866,7 +865,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
   ip = bc_vec_top(&p->stack);
 
-  if (!ip) return BC_STATUS_EXEC_INVALID_EXPR;
+  if (!ip) return BC_STATUS_EXEC_INVALID_STACK;
 
   req = ip->len + (inst == BC_INST_RETURN ? 1 : 0);
 
@@ -1448,13 +1447,11 @@ BcStatus bc_program_exec(BcProgram *p) {
 
   ip = bc_vec_top(&p->stack);
 
-  assert(ip);
-
-  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+  if (!ip) return BC_STATUS_EXEC_INVALID_STACK;
 
   func = bc_vec_item(&p->funcs, ip->func);
 
-  assert(func);
+  if (!func) return BC_STATUS_EXEC_INVALID_STACK;
 
   status = BC_STATUS_SUCCESS;
 
@@ -1748,11 +1745,11 @@ BcStatus bc_program_exec(BcProgram *p) {
     // stack changes, pointers may end up being invalid.
     ip = bc_vec_top(&p->stack);
 
-    if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+    if (!ip) return BC_STATUS_EXEC_INVALID_STACK;
 
     func = bc_vec_item(&p->funcs, ip->func);
 
-    assert(func);
+    if (!func) return BC_STATUS_EXEC_INVALID_STACK;
   }
 
   return status;
@@ -1767,11 +1764,11 @@ BcStatus bc_program_print(BcProgram *p) {
 
   ip = bc_vec_top(&p->stack);
 
-  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+  if (!ip) return BC_STATUS_EXEC_INVALID_STACK;
 
   func = bc_vec_item(&p->funcs, ip->func);
 
-  assert(func);
+  if (!func) return BC_STATUS_EXEC_INVALID_STACK;
 
   code = func->code.array;
   status = BC_STATUS_SUCCESS;
