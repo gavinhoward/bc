@@ -308,6 +308,9 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if (scale < c->rdx) status = bc_num_trunc(c, c->rdx - scale);
   else status = BC_STATUS_SUCCESS;
 
+  // Remove leading zeros.
+  while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
+
   return status;
 }
 
