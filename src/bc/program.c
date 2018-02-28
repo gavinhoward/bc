@@ -56,6 +56,7 @@ static const BcNumBinaryFunc bc_math_ops[] = {
 static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
                                      BcNum **ret, uint8_t flags)
 {
+  BcStatus status;
   BcAuto *a;
   size_t i;
 
@@ -76,8 +77,15 @@ static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
 
       if (cond) *ret = &a->data.num;
       else if (flags & BC_PROGRAM_SEARCH_ARRAY_ONLY)
+        *ret = (BcNum*) &a->data.array;
+      else {
+
+        status = bc_array_expand(&a->data.array, result->data.id.idx + 1);
+
+        if (status) return status;
+
         *ret = bc_vec_item(&a->data.array, result->data.id.idx);
-      else *ret = (BcNum*) &a->data.array;
+      }
 
       return BC_STATUS_SUCCESS;
     }
@@ -95,13 +103,9 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
   BcEntry entry;
   BcVec *vec;
   BcVecO *veco;
-  BcVar v;
-  BcArray array;
   size_t idx;
   BcEntry *entry_ptr;
-  void *ptr;
-  BcDataInitFunc init;
-  BcFreeFunc dfree;
+  BcAuto a;
 
   ip = bc_vec_top(&p->stack);
 
@@ -127,40 +131,31 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
     if (status != BC_STATUS_EXEC_UNDEFINED_VAR) return status;
   }
 
-  if (flags & BC_PROGRAM_SEARCH_VAR) {
-    vec = &p->vars;
-    veco = &p->var_map;
-    ptr = &v;
-    init = bc_var_init;
-    dfree = bc_var_free;
-  }
-  else {
-    vec = &p->arrays;
-    veco = &p->array_map;
-    ptr = &array;
-    init = bc_array_init;
-    dfree = bc_array_free;
-  }
+  vec = (flags & BC_PROGRAM_SEARCH_VAR) ? &p->vars : &p->arrays;
+  veco = (flags & BC_PROGRAM_SEARCH_VAR) ? &p->var_map : &p->array_map;
 
   entry.name = result->data.id.name;
   entry.idx = vec->len;
 
   status = bc_veco_insert(veco, &entry, &idx);
 
-  if (status == BC_STATUS_VECO_ITEM_EXISTS) {
+  if (status) {
 
-    status = init(ptr);
+    if (status != BC_STATUS_VECO_ITEM_EXISTS) {
 
-    if (status) return status;
+      status = bc_auto_init(&a, NULL, flags & BC_PROGRAM_SEARCH_VAR);
 
-    status = bc_vec_push(vec, ptr);
+      if (status) return status;
 
-    if (status) {
-      dfree(ptr);
-      return status;
+      status = bc_vec_push(vec, &a.data);
+
+      if (status) {
+        bc_auto_free(&a);
+        return status;
+      }
     }
+    else return status;
   }
-  else if (status) return status;
 
   entry_ptr = bc_veco_item(veco, idx);
 
@@ -183,23 +178,9 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
       return BC_STATUS_SUCCESS;
     }
 
-    while (result->data.id.idx >= aptr->len) {
+    status = bc_array_expand(aptr, result->data.id.idx + 1);
 
-      BcNum num;
-
-      status = bc_num_init(&num, BC_NUM_DEF_SIZE);
-
-      if (status) return status;
-
-      bc_num_zero(&num);
-
-      status = bc_vec_push(aptr, &num);
-
-      if (status) {
-        bc_num_free(&num);
-        return status;
-      }
-    }
+    if (status) return status;
 
     *ret = bc_vec_item(aptr, result->data.id.idx);
   }
