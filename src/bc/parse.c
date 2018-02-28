@@ -2374,16 +2374,19 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, bool posix_rel, bool print)
 
   inst = *((uint8_t*) bc_vec_top(code));
 
-  if (print && (paren_first ||
-                (inst != BC_INST_OP_ASSIGN_POWER &&
-                 inst != BC_INST_OP_ASSIGN_MULTIPLY &&
-                 inst != BC_INST_OP_ASSIGN_DIVIDE &&
-                 inst != BC_INST_OP_ASSIGN_MODULUS &&
-                 inst != BC_INST_OP_ASSIGN_PLUS &&
-                 inst != BC_INST_OP_ASSIGN_MINUS &&
-                 inst != BC_INST_OP_ASSIGN)))
-  {
-    status = bc_vec_pushByte(code, BC_INST_PRINT);
+  if (print) {
+    if (paren_first ||
+        (inst != BC_INST_OP_ASSIGN_POWER &&
+         inst != BC_INST_OP_ASSIGN_MULTIPLY &&
+         inst != BC_INST_OP_ASSIGN_DIVIDE &&
+         inst != BC_INST_OP_ASSIGN_MODULUS &&
+         inst != BC_INST_OP_ASSIGN_PLUS &&
+         inst != BC_INST_OP_ASSIGN_MINUS &&
+         inst != BC_INST_OP_ASSIGN))
+    {
+      status = bc_vec_pushByte(code, BC_INST_PRINT);
+    }
+    else status = bc_vec_pushByte(code, BC_INST_POP);
   }
 
   return status;

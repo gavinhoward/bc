@@ -48,6 +48,7 @@
 #define BC_INST_SQRT ((uint8_t) 'q')
 
 #define BC_INST_PUSH_NUM ((uint8_t) 'N')
+#define BC_INST_POP ((uint8_t) 'P')
 #define BC_INST_INC_DUP ((uint8_t) 'E')
 #define BC_INST_DEC_DUP ((uint8_t) 'D')
 
@@ -56,9 +57,9 @@
 
 #define BC_INST_HALT ((uint8_t) 'H')
 
-#define BC_INST_PRINT ((uint8_t) 'P')
-#define BC_INST_STR ((uint8_t) 'S')
-#define BC_INST_PRINT_STR ((uint8_t) 's')
+#define BC_INST_PRINT ((uint8_t) 'p')
+#define BC_INST_STR ((uint8_t) 's')
+#define BC_INST_PRINT_STR ((uint8_t) 'S')
 
 #define BC_INST_OP_POWER ((uint8_t) '^')
 #define BC_INST_OP_MULTIPLY ((uint8_t) '*')

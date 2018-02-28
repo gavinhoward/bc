@@ -1768,6 +1768,12 @@ BcStatus bc_program_exec(BcProgram *p) {
         break;
       }
 
+      case BC_INST_POP:
+      {
+        status = bc_vec_pop(&p->expr_stack);
+        break;
+      }
+
       case BC_INST_INC_DUP:
       case BC_INST_DEC_DUP:
       case BC_INST_INC:
