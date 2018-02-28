@@ -517,7 +517,7 @@ static BcStatus bc_parse_builtin(BcParse *parse, BcVec *code,
   if (parse->token.type != BC_LEX_RIGHT_PAREN)
     return BC_STATUS_PARSE_INVALID_TOKEN;
 
-  inst = type == BC_EXPR_LENGTH ? BC_INST_LENGTH : BC_INST_SQRT;
+  inst = type == BC_LEX_KEY_LENGTH ? BC_INST_LENGTH : BC_INST_SQRT;
 
   status = bc_vec_pushByte(code, inst);
 

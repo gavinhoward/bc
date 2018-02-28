@@ -278,7 +278,6 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   c->len = 0;
 
   carry = 0;
-  j = 0;
   len = 0;
 
   for (i = 0; i < b->len; ++i) {
