@@ -441,7 +441,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   if (status) goto exec_err;
 
-  status = bc_parse_expr(&parse, &func->code, 0);
+  status = bc_parse_expr(&parse, &func->code, BC_PARSE_EXPR_NO_READ);
 
   if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
     status = status ? status : BC_STATUS_EXEC_INVALID_READ_EXPR;
