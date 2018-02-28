@@ -966,8 +966,11 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
   BcInstPtr ip;
   size_t nparams;
   BcFunc *func;
-  BcNum *auto_ptr;
+  BcAuto *auto_ptr;
+  BcResult *param;
   size_t i;
+
+  status = BC_STATUS_SUCCESS;
 
   nparams = bc_program_index(code, idx);
 
@@ -983,12 +986,52 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
   if (func->params.len != nparams) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
   for (i = 0; i < func->autos.len; ++i) {
+
     auto_ptr = bc_vec_item(&func->autos, i);
+
     if (!auto_ptr) return BC_STATUS_EXEC_UNDEFINED_VAR;
-    bc_num_zero(auto_ptr);
+
+    if (auto_ptr->var) bc_num_zero(&auto_ptr->data.num);
+    else {
+      status = bc_array_zero(&auto_ptr->data.array);
+      if (status) return status;
+    }
   }
 
-  // TODO: Search for and copy arguments.
+  for (i = 0; i < func->params.len; ++i) {
+
+    auto_ptr = bc_vec_item_rev(&func->params, i);
+    param = bc_vec_item_rev(&p->expr_stack, i);
+
+    if (!auto_ptr || !param) return BC_STATUS_EXEC_UNDEFINED_VAR;
+
+    if (auto_ptr->var) {
+
+      BcNum *num;
+
+      status = bc_program_num(p, param, &num, false);
+
+      if (status) return status;
+
+      status = bc_num_copy(&auto_ptr->data.num, num);
+    }
+    else {
+
+      BcArray *array;
+
+      if (param->type != BC_RESULT_VAR || param->type != BC_RESULT_ARRAY)
+        return BC_STATUS_EXEC_INVALID_TYPE;
+
+      status = bc_program_search(p, param, (BcNum**) &array,
+                                 BC_PROGRAM_SEARCH_ARRAY_ONLY);
+
+      if (status) return status;
+
+      status = bc_array_copy(&auto_ptr->data.array, array);
+    }
+
+    if (status) return status;
+  }
 
   return bc_vec_push(&p->stack, &ip);
 }
