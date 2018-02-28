@@ -32,8 +32,8 @@
 #include <num.h>
 #include <vector.h>
 
-static BcStatus bc_num_subtractArrays(char *array1, size_t len1,
-                                      char* array2, size_t len2)
+static BcStatus bc_num_subtractArrays(signed char *array1, size_t len1,
+                                      signed char* array2, size_t len2)
 {
   size_t i;
   size_t j;
@@ -58,8 +58,9 @@ static BcStatus bc_num_subtractArrays(char *array1, size_t len1,
   return BC_STATUS_SUCCESS;
 }
 
-static int bc_num_compareArrays(char *array1, char *array2, size_t len) {
-
+static int bc_num_compareArrays(signed char *array1, signed char *array2,
+                                size_t len)
+{
   size_t i;
   char c;
 
