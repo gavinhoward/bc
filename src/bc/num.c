@@ -552,7 +552,7 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 }
 
 static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
-                              BcBinaryFunc op, size_t req)
+                              BcNumBinaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum a2;
@@ -599,7 +599,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
 }
 
 static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
-                               BcUnaryFunc op, size_t req)
+                               BcNumUnaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum a2;
@@ -1123,7 +1123,7 @@ BcStatus bc_num_truncate(BcNum *n) {
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
-  BcBinaryFunc op;
+  BcNumBinaryFunc op;
 
   if ((a->neg && b->neg) || (!a->neg && !b->neg)) op = bc_num_alg_a;
   else op = bc_num_alg_s;
@@ -1133,7 +1133,7 @@ BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
-  BcBinaryFunc op;
+  BcNumBinaryFunc op;
 
   if (a->neg && b->neg) op = bc_num_alg_s;
   else if (a->neg || b->neg) op = bc_num_alg_a;

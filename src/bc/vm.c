@@ -87,7 +87,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
   BcStatus status;
   const char *file;
   char *data;
-  BcExecFunc exec;
+  BcProgramExecFunc exec;
 
   exec = bc_code ? bc_program_print : bc_program_exec;
 
