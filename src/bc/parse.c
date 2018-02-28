@@ -473,6 +473,8 @@ static BcStatus bc_parse_read(BcParse *parse, BcVec *code) {
 
   BcStatus status;
 
+  // TODO: Prevent recursive reads.
+
   status = bc_lex_next(&parse->lex, &parse->token);
 
   if (status) return status;
