@@ -127,21 +127,21 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
   return BC_STATUS_SUCCESS;
 }
 
-void* bc_vec_top(BcVec *vec) {
+void* bc_vec_top(const BcVec *vec) {
 
   if (vec == NULL || vec->len == 0) return NULL;
 
   return vec->array + vec->size * (vec->len - 1);
 }
 
-void* bc_vec_item(BcVec *vec, size_t idx) {
+void* bc_vec_item(const BcVec *vec, size_t idx) {
 
   if (vec == NULL || vec->len == 0 || idx >= vec->len) return NULL;
 
   return vec->array + vec->size * idx;
 }
 
-void* bc_vec_item_rev(BcVec *vec, size_t idx) {
+void* bc_vec_item_rev(const BcVec *vec, size_t idx) {
 
   if (vec == NULL || vec->len == 0 || idx >= vec->len) return NULL;
 
@@ -192,7 +192,7 @@ void bc_vec_free(void *vec) {
   s->cap = 0;
 }
 
-static size_t bc_veco_find(BcVecO* vec, void *data) {
+static size_t bc_veco_find(const BcVecO* vec, void *data) {
 
   BcVecCmpFunc cmp = vec->cmp;
 
@@ -244,7 +244,7 @@ BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
   return bc_vec_pushAt(&vec->vec, data, *idx);
 }
 
-size_t bc_veco_index(BcVecO* vec, void *data) {
+size_t bc_veco_index(const BcVecO* vec, void *data) {
 
   size_t idx;
 
@@ -258,7 +258,7 @@ size_t bc_veco_index(BcVecO* vec, void *data) {
   return idx;
 }
 
-void* bc_veco_item(BcVecO* vec, size_t idx) {
+void* bc_veco_item(const BcVecO* vec, size_t idx) {
   return bc_vec_item(&vec->vec, idx);
 }
 
