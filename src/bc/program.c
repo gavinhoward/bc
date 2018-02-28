@@ -856,8 +856,7 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
 
     default:
     {
-      status = BC_STATUS_EXEC_INVALID_EXPR;
-      break;
+      return BC_STATUS_EXEC_INVALID_EXPR;
     }
   }
 
@@ -978,8 +977,6 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
   BcAuto *auto_ptr;
   BcResult *param;
   size_t i;
-
-  status = BC_STATUS_SUCCESS;
 
   nparams = bc_program_index(code, idx);
 
