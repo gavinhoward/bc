@@ -53,6 +53,148 @@ static const BcNumBinaryFunc bc_math_ops[] = {
 
 };
 
+static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
+                                     BcNum **num, bool var)
+{
+  BcAuto *a;
+  size_t i;
+
+  for (i = 0; i < vec->len; ++i) {
+
+    a = bc_vec_item(vec, i);
+
+    if (!a) return BC_STATUS_EXEC_UNDEFINED_VAR;
+
+    if (!strcmp(a->name, result->data.id.name)) {
+
+      if (!a->var != !var) return BC_STATUS_EXEC_INVALID_TYPE;
+
+      if (var) *num = &a->data.num;
+      else *num = bc_vec_item(&a->data.array, result->data.id.idx);
+
+      return BC_STATUS_SUCCESS;
+    }
+  }
+
+  return BC_STATUS_EXEC_UNDEFINED_VAR;
+}
+
+static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
+                                  BcNum **num, bool var)
+{
+  BcStatus status;
+  BcFunc *func;
+  BcInstPtr *ip;
+  BcEntry entry;
+  BcVec *vec;
+  BcVecO *veco;
+  BcVar v;
+  BcArray array;
+  size_t idx;
+  BcEntry *entry_ptr;
+  void *ptr;
+  BcDataInitFunc init;
+  BcFreeFunc dfree;
+
+  ip = bc_vec_top(&p->stack);
+
+  if (!ip) return BC_STATUS_EXEC_INVALID_STACK;
+
+  if (ip->func == BC_PROGRAM_READ_FUNC) {
+    ip = bc_vec_item_rev(&p->stack, 1);
+    if (!ip) return BC_STATUS_EXEC_INVALID_STACK;
+  }
+
+  if (ip->func != BC_PROGRAM_ROOT_FUNC) {
+
+    func = bc_vec_item(&p->funcs, ip->func);
+
+    if (!func) return BC_STATUS_EXEC_INVALID_STACK;
+
+    status = bc_program_searchVec(&func->params, result, num, var);
+
+    if (status != BC_STATUS_EXEC_UNDEFINED_VAR) return status;
+
+    status = bc_program_searchVec(&func->autos, result, num, var);
+
+    if (status != BC_STATUS_EXEC_UNDEFINED_VAR) return status;
+  }
+
+  if (var) {
+    vec = &p->vars;
+    veco = &p->var_map;
+    ptr = &v;
+    init = bc_var_init;
+    dfree = bc_var_free;
+  }
+  else {
+    vec = &p->arrays;
+    veco = &p->array_map;
+    ptr = &array;
+    init = bc_array_init;
+    dfree = bc_array_free;
+  }
+
+  entry.name = result->data.id.name;
+  entry.idx = vec->len;
+
+  status = bc_veco_insert(veco, &entry, &idx);
+
+  if (status == BC_STATUS_VECO_ITEM_EXISTS) {
+
+    status = init(ptr);
+
+    if (status) return status;
+
+    status = bc_vec_push(vec, ptr);
+
+    if (status) {
+      dfree(ptr);
+      return status;
+    }
+  }
+  else if (status) return status;
+
+  entry_ptr = bc_veco_item(veco, idx);
+
+  if (!entry_ptr) return BC_STATUS_VECO_OUT_OF_BOUNDS;
+
+  if (var) {
+    *num = bc_vec_item(vec, entry_ptr->idx);
+    if (!(*num)) return BC_STATUS_EXEC_UNDEFINED_VAR;
+  }
+  else {
+
+    BcArray *aptr;
+
+    aptr = bc_vec_item(vec, entry_ptr->idx);
+
+    if (!aptr) return BC_STATUS_EXEC_UNDEFINED_ARRAY;
+
+    while (result->data.id.idx >= aptr->len) {
+
+      BcNum num;
+
+      status = bc_num_init(&num, BC_NUM_DEF_SIZE);
+
+      if (status) return status;
+
+      bc_num_zero(&num);
+
+      status = bc_vec_push(aptr, &num);
+
+      if (status) {
+        bc_num_free(&num);
+        return status;
+      }
+    }
+
+    *num = bc_vec_item(aptr, result->data.id.idx);
+  }
+
+  return BC_STATUS_SUCCESS;
+}
+
 static BcStatus bc_program_num(BcProgram *p, BcResult *result,
                                BcNum** num, bool ibase)
 {
@@ -103,14 +245,9 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
     }
 
     case BC_RESULT_VAR:
-    {
-      // TODO: Search for var.
-      break;
-    }
-
     case BC_RESULT_ARRAY:
     {
-      // TODO Search for array.
+      status = bc_program_search(p, result, num, result->type == BC_RESULT_VAR);
       break;
     }
 
