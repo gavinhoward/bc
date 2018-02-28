@@ -13,7 +13,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-CFLAGS ?= -Wall -Wextra -pedantic -I./include/ -std=c99 -D_POSIX_C_SOURCE -g -O0
+CFLAGS ?= -Wall -Wextra -pedantic -I./include/ -std=c99 -D_POSIX_C_SOURCE
 
 ifeq "$(CC)" "clang"
 	CFLAGS += -fsanitize=address -fsanitize=undefined
@@ -36,8 +36,14 @@ BC_LIB_O = src/bc/lib.o
 
 BC_EXEC = bc
 
-all:
-	$(MAKE) $(BC_EXEC)
+all: CFLAGS += -g -O0
+all: $(BC_EXEC)
+
+release: CFLAGS += -O3
+release: clean $(BC_EXEC)
+
+minrelease: CFLAGS += -Os
+minrelease: clean $(BC_EXEC)
 
 $(GEN):
 	$(CC) $(CFLAGS) -o $(GEN_LIB) src/lib/$(GEN_LIB).c
