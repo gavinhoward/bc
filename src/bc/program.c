@@ -1788,12 +1788,9 @@ BcStatus bc_program_exec(BcProgram *p) {
         BcResult *result;
         BcNum *num;
 
-        if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1))
-          return BC_STATUS_EXEC_INVALID_EXPR;
+        status = bc_program_unaryOpPrep(p, &result, &num);
 
-        result = bc_vec_top(&p->expr_stack);
-
-        status = bc_program_num(p, result, &num, false);
+        if (status) return status;
 
         status = bc_num_print(num, p->obase_t);
 
