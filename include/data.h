@@ -173,15 +173,17 @@ typedef struct BcInstPtr {
 
 } BcInstPtr;
 
+typedef BcStatus (*BcDataInitFunc)(void*);
+
 BcStatus bc_func_init(BcFunc *func);
 BcStatus bc_func_insertParam(BcFunc *func, char *name, bool var);
 BcStatus bc_func_insertAuto(BcFunc *func, char *name, bool var);
 void bc_func_free(void *func);
 
-BcStatus bc_var_init(BcVar *var);
+BcStatus bc_var_init(void *var);
 void bc_var_free(void *var);
 
-BcStatus bc_array_init(BcArray *array);
+BcStatus bc_array_init(void *array);
 void bc_array_free(void *array);
 
 void bc_string_free(void *string);

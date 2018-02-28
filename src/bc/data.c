@@ -120,11 +120,11 @@ void bc_func_free(void *func) {
   bc_vec_free(&f->labels);
 }
 
-BcStatus bc_var_init(BcVar *var) {
+BcStatus bc_var_init(void *var) {
 
   if (!var) return BC_STATUS_INVALID_PARAM;
 
-  return bc_num_init(var, BC_NUM_DEF_SIZE);
+  return bc_num_init((BcVar*) var, BC_NUM_DEF_SIZE);
 }
 
 void bc_var_free(void *var) {
@@ -138,11 +138,11 @@ void bc_var_free(void *var) {
   bc_num_free(v);
 }
 
-BcStatus bc_array_init(BcArray *array) {
+BcStatus bc_array_init(void *array) {
 
   if (!array) return BC_STATUS_INVALID_PARAM;
 
-  return bc_vec_init(array, sizeof(BcNum), bc_num_free);
+  return bc_vec_init((BcArray*) array, sizeof(BcNum), bc_num_free);
 }
 
 void bc_array_free(void *array) {
