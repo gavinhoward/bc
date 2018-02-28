@@ -33,7 +33,7 @@
 #include <vector.h>
 
 static BcStatus bc_num_subtractArrays(signed char *array1, size_t len1,
-                                      signed char* array2, size_t len2)
+                                      signed char *array2, size_t len2)
 {
   size_t i;
   size_t j;
