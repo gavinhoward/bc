@@ -1363,8 +1363,6 @@ static BcStatus bc_parse_func(BcParse *parse) {
   char *name;
   bool var;
 
-  // TODO: Make sure parameter and auto names do not clash.
-
   status = bc_lex_next(&parse->lex, &parse->token);
 
   if (status) return status;

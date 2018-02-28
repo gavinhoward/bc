@@ -26,12 +26,24 @@
 
 #include <data.h>
 
-static BcStatus bc_func_insert(char *name, bool var, BcVec *vec) {
+static BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
 
   BcStatus status;
   BcAuto a;
+  size_t i;
+  BcAuto *ptr;
 
   if (!name || !vec) return BC_STATUS_INVALID_PARAM;
+
+  for (i = 0; i < func->params.len; ++i) {
+    ptr = bc_vec_item(&func->params, i);
+    if (!strcmp(name, ptr->name)) return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+  }
+
+  for (i = 0; i < func->autos.len; ++i) {
+    ptr = bc_vec_item(&func->autos, i);
+    if (!strcmp(name, ptr->name)) return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+  }
 
   status = bc_auto_init(&a, name, var);
 
@@ -90,11 +102,11 @@ param_err:
 }
 
 BcStatus bc_func_insertParam(BcFunc *func, char *name, bool var) {
-  return bc_func_insert(name, var, &func->params);
+  return bc_func_insert(func, name, var, &func->params);
 }
 
 BcStatus bc_func_insertAuto(BcFunc *func, char *name, bool var) {
-  return bc_func_insert(name, var, &func->autos);
+  return bc_func_insert(func, name, var, &func->autos);
 }
 
 void bc_func_free(void *func) {
