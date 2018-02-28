@@ -33,8 +33,6 @@
 #define BC_FLAG_INTERACTIVE (1<<4)
 #define BC_FLAG_CODE (1<<5)
 
-typedef void (*BcFreeFunc)(void*);
-
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -129,6 +127,9 @@ typedef enum BcStatus {
   BC_STATUS_POSIX_FUNC_HEADER_LEFT_BRACE,
 
 } BcStatus;
+
+typedef void (*BcFreeFunc)(void*);
+typedef BcStatus (*BcCopyFunc)(void*, void*);
 
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 

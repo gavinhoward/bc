@@ -27,9 +27,11 @@
 #include <bc.h>
 #include <vector.h>
 
-static BcStatus bc_vec_expand(BcVec *vec) {
+static BcStatus bc_vec_double(BcVec *vec) {
 
-  uint8_t *ptr = realloc(vec->array, vec->size * (vec->cap * 2));
+  uint8_t *ptr;
+
+  ptr = realloc(vec->array, vec->size * (vec->cap * 2));
 
   if (ptr == NULL) return BC_STATUS_MALLOC_FAIL;
 
@@ -55,6 +57,24 @@ BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor) {
   return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_vec_expand(BcVec *vec, size_t request) {
+
+  uint8_t *ptr;
+
+  if (!vec) return BC_STATUS_INVALID_PARAM;
+
+  if (vec->cap >= request) return BC_STATUS_SUCCESS;
+
+  ptr = realloc(vec->array, vec->size * request);
+
+  if (ptr == NULL) return BC_STATUS_MALLOC_FAIL;
+
+  vec->array = ptr;
+  vec->cap = request;
+
+  return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_vec_push(BcVec *vec, void *data) {
 
   BcStatus status;
@@ -64,7 +84,7 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
 
   if (vec->len == vec->cap) {
 
-    status = bc_vec_expand(vec);
+    status = bc_vec_double(vec);
 
     if (status) return status;
   }
@@ -86,7 +106,7 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 
   if (vec->len == vec->cap) {
 
-    status = bc_vec_expand(vec);
+    status = bc_vec_double(vec);
 
     if (status) return status;
   }
@@ -111,7 +131,7 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
 
   if (vec->len == vec->cap) {
 
-    status = bc_vec_expand(vec);
+    status = bc_vec_double(vec);
 
     if (status) return status;
   }

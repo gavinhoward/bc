@@ -54,7 +54,7 @@ static const BcNumBinaryFunc bc_math_ops[] = {
 };
 
 static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
-                                     BcNum **num, bool var)
+                                     BcNum **ret, uint8_t flags)
 {
   BcAuto *a;
   size_t i;
@@ -67,10 +67,17 @@ static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
 
     if (!strcmp(a->name, result->data.id.name)) {
 
-      if (!a->var != !var) return BC_STATUS_EXEC_INVALID_TYPE;
+      uint8_t cond;
 
-      if (var) *num = &a->data.num;
-      else *num = bc_vec_item(&a->data.array, result->data.id.idx);
+      cond = flags & BC_PROGRAM_SEARCH_VAR;
+
+      if ((a->var && cond) || (!a->var && !cond))
+        return BC_STATUS_EXEC_INVALID_TYPE;
+
+      if (cond) *ret = &a->data.num;
+      else if (flags & BC_PROGRAM_SEARCH_ARRAY_ONLY)
+        *ret = bc_vec_item(&a->data.array, result->data.id.idx);
+      else *ret = (BcNum*) &a->data.array;
 
       return BC_STATUS_SUCCESS;
     }
@@ -80,7 +87,7 @@ static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
 }
 
 static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
-                                  BcNum **num, bool var)
+                                  BcNum **ret, uint8_t flags)
 {
   BcStatus status;
   BcFunc *func;
@@ -111,16 +118,16 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
 
     if (!func) return BC_STATUS_EXEC_INVALID_STACK;
 
-    status = bc_program_searchVec(&func->params, result, num, var);
+    status = bc_program_searchVec(&func->params, result, ret, flags);
 
     if (status != BC_STATUS_EXEC_UNDEFINED_VAR) return status;
 
-    status = bc_program_searchVec(&func->autos, result, num, var);
+    status = bc_program_searchVec(&func->autos, result, ret, flags);
 
     if (status != BC_STATUS_EXEC_UNDEFINED_VAR) return status;
   }
 
-  if (var) {
+  if (flags & BC_PROGRAM_SEARCH_VAR) {
     vec = &p->vars;
     veco = &p->var_map;
     ptr = &v;
@@ -159,9 +166,9 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
 
   if (!entry_ptr) return BC_STATUS_VECO_OUT_OF_BOUNDS;
 
-  if (var) {
-    *num = bc_vec_item(vec, entry_ptr->idx);
-    if (!(*num)) return BC_STATUS_EXEC_UNDEFINED_VAR;
+  if (flags & BC_PROGRAM_SEARCH_VAR) {
+    *ret = bc_vec_item(vec, entry_ptr->idx);
+    if (!(*ret)) return BC_STATUS_EXEC_UNDEFINED_VAR;
   }
   else {
 
@@ -170,6 +177,11 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
     aptr = bc_vec_item(vec, entry_ptr->idx);
 
     if (!aptr) return BC_STATUS_EXEC_UNDEFINED_ARRAY;
+
+    if (flags & BC_PROGRAM_SEARCH_ARRAY_ONLY) {
+      *ret = (BcNum*) aptr;
+      return BC_STATUS_SUCCESS;
+    }
 
     while (result->data.id.idx >= aptr->len) {
 
@@ -189,7 +201,7 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
       }
     }
 
-    *num = bc_vec_item(aptr, result->data.id.idx);
+    *ret = bc_vec_item(aptr, result->data.id.idx);
   }
 
   return BC_STATUS_SUCCESS;
@@ -969,6 +981,8 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
   BcInstPtr ip;
   size_t nparams;
   BcFunc *func;
+  BcNum *auto_ptr;
+  size_t i;
 
   nparams = bc_program_index(code, idx);
 
@@ -983,7 +997,13 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   if (func->params.len != nparams) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
-  // TODO: Handle arguments and autos.
+  for (i = 0; i < func->autos.len; ++i) {
+    auto_ptr = bc_vec_item(&func->autos, i);
+    if (!auto_ptr) return BC_STATUS_EXEC_UNDEFINED_VAR;
+    bc_num_zero(auto_ptr);
+  }
+
+  // TODO: Search for and copy arguments.
 
   return bc_vec_push(&p->stack, &ip);
 }

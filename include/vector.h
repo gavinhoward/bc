@@ -45,6 +45,8 @@ typedef struct BcVec {
 
 BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor);
 
+BcStatus bc_vec_expand(BcVec *vec, size_t request);
+
 BcStatus bc_vec_push(BcVec *vec, void *data);
 
 BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data);

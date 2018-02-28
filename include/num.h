@@ -63,7 +63,7 @@ BcStatus bc_num_expand(BcNum *n, size_t request);
 
 void bc_num_free(void *num);
 
-BcStatus bc_num_copy(BcNum *d, BcNum *s);
+BcStatus bc_num_copy(void *dest, void *src);
 
 BcStatus bc_num_parse(BcNum *n, const char *val, size_t base);
 
