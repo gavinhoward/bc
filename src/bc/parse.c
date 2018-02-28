@@ -2295,12 +2295,16 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
       case BC_LEX_KEY_READ:
       {
-        status = bc_parse_read(parse, code);
+        if (flags & BC_PARSE_EXPR_NO_READ)
+          status = BC_STATUS_EXEC_RECURSIVE_READ;
+        else status = bc_parse_read(parse, code);
+
         paren_expr = true;
         rparen = false;
         get_token = false;
         ++nexprs;
         prev = BC_EXPR_READ;
+
         break;
       }
 

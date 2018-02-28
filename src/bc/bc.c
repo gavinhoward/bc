@@ -101,6 +101,7 @@ static const char *bc_err_types[] = {
   "Runtime",
   "Runtime",
   "Runtime",
+  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -184,6 +185,7 @@ static const char *bc_err_descs[] = {
   "invalid name/identifier",
   "invalid array length; must be an integer in the range [1, BC_DIM_MAX]",
   "invalid read() expression",
+  "read() call inside of a read() call",
   "print error",
   "invalid constant",
   "invalid lvalue; cannot assign to constants or intermediate values",
