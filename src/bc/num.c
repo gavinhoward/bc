@@ -914,11 +914,17 @@ void bc_num_free(void *num) {
   memset(n, 0, sizeof(BcNum));
 }
 
-BcStatus bc_num_copy(BcNum *d, BcNum *s) {
+BcStatus bc_num_copy(void *dest, void *src) {
 
   BcStatus status;
 
-  if (!d || !s || d == s) return BC_STATUS_INVALID_PARAM;
+  BcNum *d;
+  BcNum *s;
+
+  if (!dest || !src || dest == src) return BC_STATUS_INVALID_PARAM;
+
+  d = (BcNum*) dest;
+  s = (BcNum*) src;
 
   status = bc_num_expand(d, s->cap);
 

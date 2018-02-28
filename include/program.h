@@ -85,6 +85,9 @@ typedef struct BcProgram {
 #define BC_PROGRAM_ROOT_FUNC (0)
 #define BC_PROGRAM_READ_FUNC (1)
 
+#define BC_PROGRAM_SEARCH_VAR (1<<0)
+#define BC_PROGRAM_SEARCH_ARRAY_ONLY (1<<1)
+
 typedef BcStatus (*BcProgramExecFunc)(BcProgram*);
 typedef unsigned long (*BcProgramBuiltInFunc)(BcNum*);
 typedef void (*BcNumInitFunc)(BcNum*);

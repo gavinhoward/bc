@@ -145,6 +145,55 @@ BcStatus bc_array_init(void *array) {
   return bc_vec_init((BcArray*) array, sizeof(BcNum), bc_num_free);
 }
 
+BcStatus bc_array_copy(void *dest, void *src) {
+
+  BcStatus status;
+  size_t i;
+  BcNum *dnum;
+  BcNum *snum;
+
+  BcArray *d;
+  BcArray *s;
+
+  d = (BcArray*) dest;
+  s = (BcArray*) src;
+
+  if (!d || !s || d == s || d->size != s->size || d->dtor != s->dtor)
+    return BC_STATUS_INVALID_PARAM;
+
+  while (d->len) {
+    status = bc_vec_pop(d);
+    if (status) return status;
+  }
+
+  status = bc_vec_expand(d, s->cap);
+
+  if (status) return status;
+
+  d->len = s->len;
+
+  for (i = 0; i < s->len; ++i) {
+
+    dnum = bc_vec_item(d, i);
+    snum = bc_vec_item(s, i);
+
+    if (!dnum || !snum) return BC_STATUS_VEC_OUT_OF_BOUNDS;
+
+    status = bc_num_init(dnum, snum->len);
+
+    if (status) return status;
+
+    status = bc_num_copy(dnum, snum);
+
+    if (status) {
+      bc_num_free(dnum);
+      return status;
+    }
+  }
+
+  return status;
+}
+
 void bc_array_free(void *array) {
 
   BcArray *a;

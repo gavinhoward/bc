@@ -184,6 +184,7 @@ BcStatus bc_var_init(void *var);
 void bc_var_free(void *var);
 
 BcStatus bc_array_init(void *array);
+BcStatus bc_array_copy(void *dest, void *src);
 void bc_array_free(void *array);
 
 void bc_string_free(void *string);
