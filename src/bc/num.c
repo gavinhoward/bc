@@ -433,11 +433,8 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   BcNum one;
   long pow;
   size_t i;
-  size_t len;
   unsigned long flag;
   bool neg;
-
-  len = a->len * b->len + scale;
 
   if (b->rdx != 0) return BC_STATUS_MATH_NON_INTEGER;
 

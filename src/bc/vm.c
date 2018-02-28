@@ -42,6 +42,7 @@ static const char *bc_sigint_msg =
 static void bc_vm_sigint(int sig) {
 
   struct sigaction act;
+  ssize_t err;
 
   sigemptyset(&act.sa_mask);
   act.sa_handler = bc_vm_sigint;
@@ -49,8 +50,8 @@ static void bc_vm_sigint(int sig) {
   sigaction(SIGINT, &act, NULL);
 
   if (sig == SIGINT) {
-    write(STDERR_FILENO, bc_sigint_msg, strlen(bc_sigint_msg));
-    bc_signal = 1;
+    err = write(STDERR_FILENO, bc_sigint_msg, strlen(bc_sigint_msg));
+    if (err >= 0) bc_signal = 1;
   }
 }
 

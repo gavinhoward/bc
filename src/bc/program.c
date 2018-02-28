@@ -1462,6 +1462,8 @@ BcStatus bc_program_exec(BcProgram *p) {
     uint8_t inst;
     bool cond;
 
+    cond = false;
+
     inst = code[(ip->idx)++];
 
     switch (inst) {
