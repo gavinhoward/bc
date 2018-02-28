@@ -165,7 +165,7 @@ void bc_string_free(void *string) {
   free(s);
 }
 
-int bc_entry_cmp(void *entry1, void*entry2) {
+int bc_entry_cmp(void *entry1, void *entry2) {
 
   BcEntry *e1;
   BcEntry *e2;
