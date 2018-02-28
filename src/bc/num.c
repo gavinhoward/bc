@@ -554,8 +554,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
                               BcNumBinaryFunc op, size_t req)
 {
   BcStatus status;
-  BcNum a2;
-  BcNum b2;
+  BcNum num2;
   BcNum *ptr_a;
   BcNum *ptr_b;
   bool init;
@@ -565,8 +564,8 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
   init = false;
 
   if (c == a) {
-    memcpy(&a2, c, sizeof(BcNum));
-    ptr_a = &a2;
+    memcpy(&num2, c, sizeof(BcNum));
+    ptr_a = &num2;
     init = true;
   }
   else ptr_a = a;
@@ -577,8 +576,8 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
       ptr_b = ptr_a;
     }
     else {
-      memcpy(&b2, c, sizeof(BcNum));
-      ptr_b = &b2;
+      memcpy(&num2, c, sizeof(BcNum));
+      ptr_b = &num2;
       init = true;
     }
   }
@@ -591,8 +590,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
 
   status = op(ptr_a, ptr_b, c, scale);
 
-  if (c == a) bc_num_free(&a2);
-  else if (c == b) bc_num_free(&b2);
+  if (c == a || c == b) bc_num_free(&num2);
 
   return status;
 }
