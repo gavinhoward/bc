@@ -32,37 +32,13 @@
 #include <num.h>
 #include <vector.h>
 
-static BcStatus bc_num_subtractArrays(signed char *array1, size_t len1,
-                                      signed char *array2, size_t len2)
-{
-  size_t i;
-  size_t j;
-
-  for (i = 0; i < len2; ++i) {
-
-    array1[i] -= array2[i];
-
-    j = i;
-
-    while (array1[j] < 0) {
-
-      array1[j] += 10;
-      ++j;
-
-      if (j >= len1) return BC_STATUS_MATH_OVERFLOW;
-
-      array1[j] -= 1;
-    }
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
 static int bc_num_compareArrays(signed char *array1, signed char *array2,
                                 size_t len)
 {
   size_t i;
   char c;
+
+  if (array1[len]) return 1;
 
   for (i = len - 1; i < len; --i) {
     c = array1[i] - array2[i];
@@ -318,31 +294,110 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
-  char *ptr;
+  signed char *ptr;
+  signed char *bptr;
   size_t len;
   size_t end;
   size_t i;
+  BcNum copy;
 
-  status = bc_num_copy(c, a);
+  if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+  else if (!a->len) {
+    bc_num_zero(c);
+    return BC_STATUS_SUCCESS;
+  }
+  else if (b->len == 1 && b->rdx == 0 && b->num[0] == 1) {
+    status = bc_num_copy(c, a);
+    if (b->neg) c->neg = !c->neg;
+    return status;
+  }
+
+  status = bc_num_init(&copy, a->len + b->rdx + scale + 1);
 
   if (status) return status;
 
-  if (scale > a->rdx) {
-    status = bc_num_extend(c, scale - a->rdx);
-    if (status) return status;
+  status = bc_num_copy(&copy, a);
+
+  if (status) goto err;
+
+  if (b->rdx > copy.rdx) {
+    status = bc_num_extend(&copy, b->rdx - copy.rdx);
+    if (status) goto err;
   }
-  else if (a->rdx > scale) {
-    status = bc_num_trunc(c, a->rdx - scale);
-    if (status) return status;
+
+  copy.rdx -= b->rdx;
+
+  if (scale > copy.rdx) {
+    status = bc_num_extend(&copy, scale - copy.rdx);
+    if (status) goto err;
   }
 
   len = b->len;
-  end = c->len - len;
+
+  if (b->len > copy.len) {
+    status = bc_num_extend(&copy, b->len + 2);
+    if (status) goto err;
+  }
+
+  end = copy.len - len;
+
+  status = bc_num_expand(c, end);
+
+  if (status) goto err;
+
+  // We want an extra zero in front to make things simpler.
+  copy.num[copy.len] = 0;
+  ++copy.len;
+
+  bc_num_zero(c);
+  c->rdx = copy.rdx;
+  c->len = copy.len;
+
+  bptr = (signed char*) b->num;
 
   for (i = end - 1; i < end; --i) {
 
-    ptr = c->num + i;
+    size_t j;
+    size_t k;
+    int quotient;
+
+    ptr = (signed char*) (copy.num + i);
+
+    quotient = 0;
+
+    while (bc_num_compareArrays(ptr, bptr, len) >= 0) {
+
+      for (j = 0; j < len; ++j) {
+
+        ptr[j] -= bptr[j];
+
+        k = j;
+
+        while (ptr[k] < 0) {
+
+          ptr[k] += 10;
+          ++k;
+
+          if (k > len) return BC_STATUS_MATH_OVERFLOW;
+
+          ptr[k] -= 1;
+        }
+      }
+
+      ++quotient;
+    }
+
+    c->num[i] = quotient;
   }
+
+  // Remove leading zeros.
+  while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
+
+  if (c->rdx > scale) status = bc_num_trunc(c, c->rdx - scale);
+
+err:
+
+  bc_num_free(&copy);
 
   return status;
 }
