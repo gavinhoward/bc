@@ -991,6 +991,7 @@ BcStatus bc_num_copy(void *dest, void *src) {
   d->rdx = s->rdx;
 
   memcpy(d->num, s->num, sizeof(char) * d->len);
+  memset(d->num + d->len, 0, sizeof(char) * (d->cap - d->len));
 
   return BC_STATUS_SUCCESS;
 }
