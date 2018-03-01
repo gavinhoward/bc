@@ -116,7 +116,7 @@ static BcStatus bc_num_extend(BcNum *n, size_t places) {
   memset(n->num, 0, sizeof(char) * places);
 
   n->len += places;
-  n->rdx -= places;
+  n->rdx += places;
 
   return BC_STATUS_SUCCESS;
 }
