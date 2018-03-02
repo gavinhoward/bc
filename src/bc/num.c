@@ -1105,7 +1105,7 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t) {
   return bc_num_fprint(n, base, base_t, stdout);
 }
 
-BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE* f) {
+BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE *f) {
 
   BcStatus status;
 
