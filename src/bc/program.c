@@ -226,7 +226,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
 
       base = ibase && len == 1 ? 16 : p->ibase_t;
 
-      status = bc_num_parse(&result->data.num, *s, base);
+      status = bc_num_parse(&result->data.num, *s, &p->ibase, base);
 
       if (status) return status;
 
@@ -1836,7 +1836,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (status) return status;
 
-        status = bc_num_print(num, p->obase_t);
+        status = bc_num_print(num, &p->obase, p->obase_t);
 
         if (status) return status;
 

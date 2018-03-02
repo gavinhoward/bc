@@ -933,13 +933,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_parseLowBase(BcNum *n, const char *val, size_t base) {
-  (void) n;
-  (void) val;
-  (void) base;
-  return BC_STATUS_SUCCESS;
-}
-static BcStatus bc_num_parseHighBase(BcNum *n, const char *val, size_t base) {
+static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   (void) n;
   (void) val;
   (void) base;
@@ -1006,32 +1000,7 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE* f) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printLowBase(BcNum *n, size_t base, FILE* f) {
-
-  size_t size;
-  char *buf;
-
-  size = BC_MAX(n->rdx, n->len - n->rdx) * ((10 * 2) / base);
-
-  buf = malloc(size);
-
-  if (!buf) return BC_STATUS_MALLOC_FAIL;
-
-  fputc('\n', f);
-
-  free(buf);
-
-  return BC_STATUS_SUCCESS;
-}
-
-static BcStatus bc_num_printHighBase(BcNum *n, size_t base, FILE* f) {
-  (void) n;
-  (void) base;
-  (void) f;
-  return BC_STATUS_SUCCESS;
-}
-
-static BcStatus bc_num_printHighestBase(BcNum *n, size_t base, FILE* f) {
+static BcStatus bc_num_printBase(BcNum *n, BcNum *base, FILE* f) {
   (void) n;
   (void) base;
   (void) f;
@@ -1115,41 +1084,38 @@ BcStatus bc_num_copy(void *dest, void *src) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_parse(BcNum *n, const char *val, size_t base) {
+BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 
   BcStatus status;
 
   if (!n || !val) return BC_STATUS_INVALID_PARAM;
 
-  if (base < BC_NUM_MIN_BASE || base > BC_NUM_MAX_INPUT_BASE)
+  if (base_t < BC_NUM_MIN_BASE || base_t > BC_NUM_MAX_INPUT_BASE)
     return BC_STATUS_EXEC_INVALID_IBASE;
 
-  if (!bc_num_strValid(val, base)) return BC_STATUS_MATH_INVALID_STRING;
+  if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_INVALID_STRING;
 
-  if (base == 10) status = bc_num_parseDecimal(n, val);
-  else if (base < 10) status = bc_num_parseLowBase(n, val, base);
-  else status = bc_num_parseHighBase(n, val, base);
+  if (base_t == 10) status = bc_num_parseDecimal(n, val);
+  else status = bc_num_parseBase(n, val, base);
 
   return status;
 }
 
-BcStatus bc_num_print(BcNum *n, size_t base) {
-  return bc_num_fprint(n, base, stdout);
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t) {
+  return bc_num_fprint(n, base, base_t, stdout);
 }
 
-BcStatus bc_num_fprint(BcNum *n, size_t base, FILE* f) {
+BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE* f) {
 
   BcStatus status;
 
   if (!n || !f) return BC_STATUS_INVALID_PARAM;
 
-  if (base < BC_NUM_MIN_BASE || base > BC_NUM_MAX_OUTPUT_BASE)
+  if (base_t < BC_NUM_MIN_BASE || base_t > BC_NUM_MAX_OUTPUT_BASE)
     return BC_STATUS_EXEC_INVALID_OBASE;
 
-  if (base == 10) status = bc_num_printDecimal(n, f);
-  else if (base < 10) status = bc_num_printLowBase(n, base, f);
-  else if (base <= 16) status = bc_num_printHighBase(n, base, f);
-  else status = bc_num_printHighestBase(n, base, f);
+  if (base_t == 10) status = bc_num_printDecimal(n, f);
+  else status = bc_num_printBase(n, base, f);
 
   return status;
 }
