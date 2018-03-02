@@ -339,15 +339,15 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     if (status) goto err;
   }
 
-  end = copy.len - len;
-
-  status = bc_num_expand(c, end);
-
-  if (status) goto err;
-
   // We want an extra zero in front to make things simpler.
   copy.num[copy.len] = 0;
   ++copy.len;
+
+  end = copy.len - len;
+
+  status = bc_num_expand(c, copy.len);
+
+  if (status) goto err;
 
   bc_num_zero(c);
   c->rdx = copy.rdx;
@@ -389,6 +389,8 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     c->num[i] = quotient;
   }
+
+  c->neg = !a->neg != !b->neg;
 
   // Remove leading zeros.
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
