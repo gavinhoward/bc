@@ -232,16 +232,16 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   size_t j;
   size_t len;
 
-  if (!a->len || !b->len) {
+  if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) {
     bc_num_zero(c);
     return BC_STATUS_SUCCESS;
   }
-  else if (a->len == 1 && a->rdx == 0 && a->num[0] == 1) {
+  else if (BC_NUM_ONE(a)) {
     status = bc_num_copy(c, b);
     if (a->neg) c->neg = !c->neg;
     return status;
   }
-  else if (b->len == 1 && b->rdx == 0 && b->num[0] == 1) {
+  else if (BC_NUM_ONE(b)) {
     status = bc_num_copy(c, a);
     if (b->neg) c->neg = !c->neg;
     return status;
@@ -301,12 +301,12 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   size_t i;
   BcNum copy;
 
-  if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
-  else if (!a->len) {
+  if (BC_NUM_ZERO(b)) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+  else if (BC_NUM_ZERO(a)) {
     bc_num_zero(c);
     return BC_STATUS_SUCCESS;
   }
-  else if (b->len == 1 && b->rdx == 0 && b->num[0] == 1) {
+  else if (BC_NUM_ONE(b)) {
     status = bc_num_copy(c, a);
     if (b->neg) c->neg = !c->neg;
     return status;

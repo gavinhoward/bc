@@ -30,6 +30,16 @@
 
 #include <bc.h>
 
+typedef struct BcNum {
+
+  char *num;
+  size_t rdx;
+  size_t len;
+  size_t cap;
+  bool neg;
+
+} BcNum;
+
 #define BC_NUM_MIN_BASE (2)
 
 #define BC_NUM_MAX_INPUT_BASE (16)
@@ -44,15 +54,12 @@
 
 #define BC_NUM_PRINT_WIDTH (68)
 
-typedef struct BcNum {
+#define BC_NUM_ZERO(n) (!(n)->len)
 
-  char *num;
-  size_t rdx;
-  size_t len;
-  size_t cap;
-  bool neg;
+#define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 
-} BcNum;
+#define BC_NUM_POS_ONE(n) (BC_NUM_ONE(n) && !(n)->neg)
+#define BC_NUM_NEG_ONE(n) (BC_NUM_ONE(n) && (n)->neg)
 
 typedef BcStatus (*BcNumUnaryFunc)(BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumBinaryFunc)(BcNum*, BcNum*, BcNum*, size_t);
