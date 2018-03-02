@@ -1,5 +1,6 @@
-parse_print_decimal
-parse_print
+decimal
+parse
+print
 add
 subtract
 multiply
