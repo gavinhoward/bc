@@ -72,10 +72,10 @@ void bc_num_free(void *num);
 
 BcStatus bc_num_copy(void *dest, void *src);
 
-BcStatus bc_num_parse(BcNum *n, const char *val, size_t base);
+BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t);
 
-BcStatus bc_num_print(BcNum *n, size_t base);
-BcStatus bc_num_fprint(BcNum *n, size_t base, FILE* f);
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t);
+BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE* f);
 
 BcStatus bc_num_long(BcNum *n, long *result);
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
