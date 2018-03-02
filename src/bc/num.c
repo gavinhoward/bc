@@ -602,10 +602,127 @@ err:
 }
 
 static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
-  (void) a;
-  (void) b;
-  (void) scale;
-  return BC_STATUS_SUCCESS;
+
+  BcStatus status;
+  BcNum num1;
+  BcNum num2;
+  BcNum two;
+  BcNum *x0;
+  BcNum *x1;
+  BcNum *temp;
+  size_t pow;
+  BcNum f;
+  BcNum fprime;
+  size_t len;
+  size_t i;
+
+  scale = BC_MAX(scale, a->rdx) + 1;
+
+  len = a->len;
+
+  status = bc_num_init(&num1, len);
+
+  if (status) return status;
+
+  status = bc_num_init(&num2, num1.len);
+
+  if (status) goto num2_err;
+
+  status = bc_num_init(&two, BC_NUM_DEF_SIZE);
+
+  if (status) goto two_err;
+
+  bc_num_one(&two);
+  two.num[0] = 2;
+
+  len += scale;
+
+  status = bc_num_init(&f, len);
+
+  if (status) goto f_err;
+
+  status = bc_num_init(&fprime, len + scale);
+
+  if (status) goto fprime_err;
+
+  x0 = &num1;
+  x1 = &num2;
+
+  bc_num_one(x0);
+
+  pow = a->len - a->rdx;
+
+  if (pow & 1) {
+    x0->num[0] = 2;
+    pow -= 1;
+  }
+  else {
+    x0->num[0] = 6;
+    pow -= 2;
+  }
+
+  status = bc_num_extend(x0, pow);
+
+  if (status) goto err;
+
+  x0->rdx = 0;
+
+  len = (x0->len + scale) * 2;
+
+  for (i = 1; i < len; i *= 2) {
+
+    status = bc_num_mul(x0, x0, &f, scale);
+
+    if (status) goto err;
+
+    status = bc_num_sub(&f, a, &f, scale);
+
+    if (status) goto err;
+
+    status = bc_num_mul(x0, &two, &fprime, scale);
+
+    if (status) goto err;
+
+    status = bc_num_div(&f, &fprime, &f, scale);
+
+    if (status) goto err;
+
+    status = bc_num_sub(x0, &f, x1, scale);
+
+    if (status) goto err;
+
+    temp = x0;
+    x0 = x1;
+    x1 = temp;
+  }
+
+  status = bc_num_copy(b, x1);
+
+  if (status) goto err;
+
+  if (b->rdx > scale) status = bc_num_trunc(b, b->rdx - scale);
+
+err:
+
+  bc_num_free(&fprime);
+
+fprime_err:
+
+  bc_num_free(&f);
+
+f_err:
+
+  bc_num_free(&two);
+
+two_err:
+
+  bc_num_free(&num2);
+
+num2_err:
+
+  bc_num_free(&num1);
+
+  return status;
 }
 
 static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
