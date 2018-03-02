@@ -933,10 +933,13 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
+static BcStatus bc_num_parseBase(BcNum *n, const char *val,
+                                 BcNum *base, size_t base_t)
+{
   (void) n;
   (void) val;
   (void) base;
+  (void) base_t;
   return BC_STATUS_SUCCESS;
 }
 
@@ -1000,9 +1003,10 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE* f) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printBase(BcNum *n, BcNum *base, FILE* f) {
+static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) {
   (void) n;
   (void) base;
+  (void) base_t;
   (void) f;
   return BC_STATUS_SUCCESS;
 }
@@ -1096,7 +1100,7 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
   if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_INVALID_STRING;
 
   if (base_t == 10) status = bc_num_parseDecimal(n, val);
-  else status = bc_num_parseBase(n, val, base);
+  else status = bc_num_parseBase(n, val, base, base_t);
 
   return status;
 }
@@ -1115,7 +1119,7 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE *f) {
     return BC_STATUS_EXEC_INVALID_OBASE;
 
   if (base_t == 10) status = bc_num_printDecimal(n, f);
-  else status = bc_num_printBase(n, base, f);
+  else status = bc_num_printBase(n, base, base_t, f);
 
   return status;
 }
