@@ -933,14 +933,109 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_parseBase(BcNum *n, const char *val,
-                                 BcNum *base, size_t base_t)
-{
-  (void) n;
-  (void) val;
-  (void) base;
-  (void) base_t;
-  return BC_STATUS_SUCCESS;
+static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
+
+  BcStatus status;
+  BcNum temp;
+  BcNum mult;
+  BcNum result;
+  size_t i;
+  size_t len;
+  size_t digits;
+  char c;
+  bool zero;
+
+  len = strlen(val);
+
+  zero = true;
+
+  for (i = 0; zero && i < len; ++i) {
+    c = val[i];
+    zero = (c == '.' || c == '0');
+  }
+
+  if (zero) {
+    bc_num_zero(n);
+    return BC_STATUS_SUCCESS;
+  }
+
+  status = bc_num_init(&temp, BC_NUM_DEF_SIZE);
+
+  if (status) return status;
+
+  status = bc_num_init(&mult, BC_NUM_DEF_SIZE);
+
+  if (status) goto mult_err;
+
+  bc_num_zero(n);
+
+  for (i = 0; i < len && (c = val[i]) != '.'; ++i) {
+
+    status = bc_num_mul(n, base, &mult, 0);
+
+    if (status) goto int_err;
+
+    status = bc_num_long2num(&temp, (long) c);
+
+    if (status) goto int_err;
+
+    status = bc_num_add(&mult, &temp, n, 0);
+
+    if (status) goto int_err;
+  }
+
+  if (c == '\0') goto int_err;
+
+  assert(c == '.');
+
+  status = bc_num_init(&result, base->len);
+
+  if (status) goto int_err;
+
+  ++i;
+  bc_num_zero(&result);
+  bc_num_one(&mult);
+
+  for (digits = 0; i < len; ++i, ++digits) {
+
+    c = val[i];
+
+    status = bc_num_mul(&result, base, &result, 0);
+
+    if (status) goto err;
+
+    status = bc_num_long2num(&temp, (long) c);
+
+    if (status) goto err;
+
+    status = bc_num_add(&result, &temp, &result, 0);
+
+    if (status) goto err;
+
+    status = bc_num_mul(&mult, base, &mult, 0);
+
+    if (status) goto err;
+  }
+
+  status = bc_num_div(&result, &mult, &result, digits);
+
+  if (status) goto err;
+
+  status = bc_num_add(n, &result, n, 0);
+
+err:
+
+  bc_num_free(&result);
+
+int_err:
+
+  bc_num_free(&mult);
+
+mult_err:
+
+  bc_num_free(&temp);
+
+  return status;
 }
 
 static BcStatus bc_num_printDecimal(BcNum *n, FILE* f) {
@@ -1100,7 +1195,7 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
   if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_INVALID_STRING;
 
   if (base_t == 10) status = bc_num_parseDecimal(n, val);
-  else status = bc_num_parseBase(n, val, base, base_t);
+  else status = bc_num_parseBase(n, val, base);
 
   return status;
 }
