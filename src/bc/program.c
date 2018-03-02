@@ -691,6 +691,39 @@ err:
   return status;
 }
 
+static BcStatus bc_program_negate(BcProgram *p) {
+
+  BcStatus status;
+  BcResult result;
+  BcResult *ptr;
+  BcNum *num;
+
+  status = bc_program_unaryOpPrep(p, &ptr, &num);
+
+  if (status) return status;
+
+  result.type = BC_RESULT_INTERMEDIATE;
+  status = bc_num_init(&result.data.num, num->len);
+
+  if (status) return status;
+
+  status = bc_num_copy(&result.data.num, num);
+
+  if (status) goto err;
+
+  status = bc_program_unaryOpRetire(p, &result);
+
+  if (status) goto err;
+
+  return status;
+
+err:
+
+  bc_num_free(&result.data.num);
+
+  return status;
+}
+
 static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
@@ -1904,22 +1937,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_OP_NEGATE:
       {
-        BcResult *ptr;
-        BcNum *num;
-
-        if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1))
-          return BC_STATUS_EXEC_INVALID_EXPR;
-
-        ptr = bc_vec_top(&p->expr_stack);
-
-        if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
-
-        status = bc_program_num(p, ptr, &num, false);
-
-        if (status) return status;
-
-        num->neg = !num->neg;
-
+        status = bc_program_negate(p);
         break;
       }
 
