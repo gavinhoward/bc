@@ -500,6 +500,11 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (b->rdx) return BC_STATUS_MATH_NON_INTEGER;
 
+  if (BC_NUM_ZERO(a)) {
+    bc_num_zero(c);
+    return BC_STATUS_SUCCESS;
+  }
+
   status = bc_num_long(b, &pow);
 
   if (status) return status;
@@ -1585,7 +1590,8 @@ BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_p, a->len * b->len);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_p,
+                       (a->len + 1) * (b->len + 1));
 }
 
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
