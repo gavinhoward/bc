@@ -1045,55 +1045,50 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
 
   chars = 0;
 
-  if (n->len) {
-
-    if (n->neg) {
-      fputc('-', f);
-      ++chars;
-    }
-
-    for (i = n->len - 1; i >= n->rdx && i < n->len; --i) {
-
-      fputc(BC_NUM_TO_CHAR(n->num[i]), f);
-      ++chars;
-
-      if (chars == BC_NUM_PRINT_WIDTH) {
-        fputc('\\', f);
-        fputc('\n', f);
-        chars = 0;
-      }
-    }
-
-    if (n->rdx) {
-
-      fputc('.', f);
-      ++chars;
-
-      if (chars == BC_NUM_PRINT_WIDTH) {
-        fputc('\\', f);
-        fputc('\n', f);
-        chars = 0;
-      }
-
-      for (; i < n->len; --i) {
-
-        fputc(BC_NUM_TO_CHAR(n->num[i]), f);
-        ++chars;
-
-        if (chars == BC_NUM_PRINT_WIDTH) {
-          fputc('\\', f);
-          fputc('\n', f);
-          chars = 0;
-        }
-      }
-    }
-  }
-  else {
-    fputc('0', f);
+  if (n->neg) {
+    if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
     ++chars;
   }
 
-  if (chars) fputc('\n', f);
+  for (i = n->len - 1; i >= n->rdx && i < n->len; --i) {
+
+    if (fputc(BC_NUM_TO_CHAR(n->num[i]), f) == EOF) return BC_STATUS_IO_ERR;
+    ++chars;
+
+    if (chars == BC_NUM_PRINT_WIDTH) {
+      if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+      chars = 0;
+    }
+  }
+
+  if (n->rdx) {
+
+    if (fputc('.', f) == EOF) return BC_STATUS_IO_ERR;
+    ++chars;
+
+    if (chars == BC_NUM_PRINT_WIDTH) {
+      if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+      chars = 0;
+    }
+
+    for (; i < n->len; --i) {
+
+      if (fputc(BC_NUM_TO_CHAR(n->num[i]), f) == EOF) return BC_STATUS_IO_ERR;
+      ++chars;
+
+      if (chars == BC_NUM_PRINT_WIDTH) {
+        if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+        if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+        chars = 0;
+      }
+    }
+  }
+
+  if (chars) {
+    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+  }
 
   return BC_STATUS_SUCCESS;
 }
@@ -1213,7 +1208,11 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE *f) {
   if (base_t < BC_NUM_MIN_BASE || base_t > BC_NUM_MAX_OUTPUT_BASE)
     return BC_STATUS_EXEC_INVALID_OBASE;
 
-  if (base_t == 10) status = bc_num_printDecimal(n, f);
+  if (BC_NUM_ZERO(n)) {
+    if (fputc('0', f) == EOF) return BC_STATUS_IO_ERR;
+    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+  }
+  else if (base_t == 10) status = bc_num_printDecimal(n, f);
   else status = bc_num_printBase(n, base, base_t, f);
 
   return status;
