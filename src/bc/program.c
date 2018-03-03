@@ -893,10 +893,6 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
     }
   }
 
-  status = bc_num_truncate(scale);
-
-  if (status) return status;
-
   status = bc_num_ulong(scale, &result);
 
   if (status) return status;
@@ -967,10 +963,6 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
       unsigned long base;
       size_t *ptr;
-
-      status = bc_num_truncate(lval);
-
-      if (status) return status;
 
       ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
 
