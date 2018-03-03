@@ -1446,6 +1446,8 @@ BcStatus bc_program_init(BcProgram *p) {
     goto read_err;
   }
 
+  strcpy(read_name, bc_program_read_func);
+
   s = bc_program_func_add(p, read_name, &idx);
 
   if (s || idx != BC_PROGRAM_READ_FUNC) goto var_err;
