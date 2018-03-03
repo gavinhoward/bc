@@ -64,6 +64,8 @@ typedef struct BcNum {
 typedef BcStatus (*BcNumUnaryFunc)(BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumBinaryFunc)(BcNum*, BcNum*, BcNum*, size_t);
 
+typedef BcStatus (*BcNumDigitFunc)(unsigned long, size_t, size_t*, FILE*);
+
 BcStatus bc_num_init(BcNum *n, size_t request);
 
 BcStatus bc_num_expand(BcNum *n, size_t request);
