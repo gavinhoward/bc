@@ -711,6 +711,8 @@ static BcStatus bc_program_negate(BcProgram *p) {
 
   if (status) goto err;
 
+  result.data.num.neg = !result.data.num.neg;
+
   status = bc_program_unaryOpRetire(p, &result);
 
   if (status) goto err;
