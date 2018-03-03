@@ -33,7 +33,8 @@
 #include <parse.h>
 #include <instructions.h>
 
-static const char *bc_program_read_func = "read()";
+static const char *bc_program_main_func = "(main)";
+static const char *bc_program_read_func = "(read)";
 
 static const char *bc_byte_fmt = "%02x";
 
@@ -116,7 +117,7 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
     if (!ip) return BC_STATUS_EXEC_INVALID_STACK;
   }
 
-  if (ip->func != BC_PROGRAM_ROOT_FUNC) {
+  if (ip->func != BC_PROGRAM_MAIN_FUNC) {
 
     func = bc_vec_item(&p->funcs, ip->func);
 
@@ -1418,22 +1419,22 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if (s) goto func_map_err;
 
-  name = malloc(1);
+  name = malloc(strlen(bc_program_main_func) + 1);
 
   if (!name) {
     s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
 
-  name[0] = '\0';
+  strcpy(name, bc_program_main_func);
 
   s = bc_program_func_add(p, name, &idx);
 
-  if (s || idx != BC_PROGRAM_ROOT_FUNC) goto read_err;
+  if (s || idx != BC_PROGRAM_MAIN_FUNC) goto read_err;
 
   name = NULL;
 
-  read_name = malloc(strlen(bc_program_read_func));
+  read_name = malloc(strlen(bc_program_read_func) + 1);
 
   if (!read_name) {
     s = BC_STATUS_MALLOC_FAIL;
