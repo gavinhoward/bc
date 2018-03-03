@@ -1396,6 +1396,7 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE *f) {
   if (BC_NUM_ZERO(n)) {
     if (fputc('0', f) == EOF) return BC_STATUS_IO_ERR;
     if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    status = BC_STATUS_SUCCESS;
   }
   else if (base_t == 10) status = bc_num_printDecimal(n, f);
   else status = bc_num_printBase(n, base, base_t, f);
