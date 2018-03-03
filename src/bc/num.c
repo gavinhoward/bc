@@ -1038,7 +1038,7 @@ mult_err:
   return status;
 }
 
-static BcStatus bc_num_printDecimal(BcNum *n, FILE* f) {
+static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
 
   size_t i;
   size_t chars;
