@@ -1,6 +1,4 @@
 decimal
-parse
-print
 add
 subtract
 multiply
@@ -8,4 +6,6 @@ divide
 modulus
 power
 sqrt
+parse
+print
 basic
