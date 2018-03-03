@@ -498,7 +498,7 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   unsigned long flag;
   bool neg;
 
-  if (b->rdx != 0) return BC_STATUS_MATH_NON_INTEGER;
+  if (b->rdx) return BC_STATUS_MATH_NON_INTEGER;
 
   status = bc_num_long(b, &pow);
 
@@ -1242,15 +1242,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
     if (status) goto err;
 
-    status = bc_num_copy(&digit, &fracp);
-
-    if (status) goto err;
-
-    status = bc_num_truncate(&digit);
-
-    if (status) goto err;
-
-    status = bc_num_ulong(&digit, &fdigit);
+    status = bc_num_ulong(&fracp, &fdigit);
 
     if (status) goto err;
 
@@ -1420,12 +1412,10 @@ BcStatus bc_num_long(BcNum *n, long *result) {
 
   if (!n || !result) return BC_STATUS_INVALID_PARAM;
 
-  if (n->rdx != n->len) return BC_STATUS_MATH_NON_INTEGER;
-
   temp = 0;
   pow = 1;
 
-  for (i = 0; i < n->len; ++i) {
+  for (i = n->rdx; i < n->len; ++i) {
 
     prev = temp;
 
@@ -1451,14 +1441,12 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
   if (!n || !result) return BC_STATUS_INVALID_PARAM;
 
-  if (n->rdx) return BC_STATUS_MATH_NON_INTEGER;
-
   if (n->neg) return BC_STATUS_MATH_NEGATIVE;
 
   *result = 0;
   pow = 1;
 
-  for (i = 0; i < n->len; ++i) {
+  for (i = n->rdx; i < n->len; ++i) {
 
     prev = *result;
 
