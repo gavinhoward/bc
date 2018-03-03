@@ -33,7 +33,7 @@ static BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
   size_t i;
   BcAuto *ptr;
 
-  if (!name || !vec) return BC_STATUS_INVALID_PARAM;
+  if (!func || !name || !vec) return BC_STATUS_INVALID_PARAM;
 
   for (i = 0; i < func->params.len; ++i) {
     ptr = bc_vec_item(&func->params, i);
