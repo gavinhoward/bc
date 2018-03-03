@@ -32,6 +32,8 @@
 #include <num.h>
 #include <vector.h>
 
+static const char bc_num_hex_digits[] = "0123456789ABCDEF";
+
 static int bc_num_compareArrays(signed char *array1, signed char *array2,
                                 size_t len)
 {
@@ -1093,12 +1095,203 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) {
-  (void) n;
-  (void) base;
-  (void) base_t;
-  (void) f;
+static BcStatus bc_num_printDigits(unsigned long num, size_t width,
+                                   size_t *nchars, FILE *f)
+{
+  if (*nchars + width + 1 >= BC_NUM_PRINT_WIDTH) {
+    if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    *nchars = 0;
+  }
+  else {
+    if (fputc(' ', f) == EOF) return BC_STATUS_IO_ERR;
+    ++(*nchars);
+  }
+
+  if (fprintf(f, "%0*lu", (unsigned int) width, num) < 0)
+    return BC_STATUS_IO_ERR;
+
+  *nchars = *nchars + width;
+
   return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_printHex(unsigned long num, size_t width,
+                                size_t *nchars, FILE *f)
+{
+  if (*nchars + width >= BC_NUM_PRINT_WIDTH) {
+    if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    *nchars = 0;
+  }
+
+  if (fputc(bc_num_hex_digits[num], f) == EOF) return BC_STATUS_IO_ERR;
+
+  *nchars = *nchars + width;
+
+  return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) {
+
+  BcStatus status;
+  BcVec stack;
+  BcNum intp;
+  BcNum fracp;
+  BcNum digit;
+  BcNum frac_len;
+  size_t nchars;
+  size_t width;
+  BcNumDigitFunc print;
+  size_t i;
+
+  nchars = 0;
+
+  if (n->neg) {
+    if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
+    ++nchars;
+  }
+
+  if (base_t <= 16) {
+    width = 1;
+    print = bc_num_printHex;
+  }
+  else {
+    width = (size_t) floor(log10((double) (base_t - 1)) + 1.0);
+    print = bc_num_printDigits;
+  }
+
+  status = bc_vec_init(&stack, sizeof(unsigned long), NULL);
+
+  if (status) return status;
+
+  status = bc_num_init(&intp, n->len);
+
+  if (status) goto int_err;
+
+  status = bc_num_init(&fracp, n->rdx);
+
+  if (status) goto frac_err;
+
+  status = bc_num_init(&digit, width);
+
+  if (status) goto digit_err;
+
+  status = bc_num_copy(&intp, n);
+
+  if (status) goto frac_len_err;
+
+  status = bc_num_truncate(&intp);
+
+  if (status) goto frac_len_err;
+
+  status = bc_num_sub(n, &intp, &fracp, 0);
+
+  if (status) goto frac_len_err;
+
+  while (!BC_NUM_ZERO(&intp)) {
+
+    unsigned long dig;
+
+    status = bc_num_mod(&intp, base, &digit, 0);
+
+    if (status) goto frac_len_err;
+
+    status = bc_num_ulong(&digit, &dig);
+
+    if (status) goto frac_len_err;
+
+    status = bc_vec_push(&stack, &dig);
+
+    if (status) goto frac_len_err;
+
+    status = bc_num_div(&intp, base, &intp, 0);
+
+    if (status) goto frac_len_err;
+  }
+
+  for (i = 0; i < stack.len; ++i) {
+
+    unsigned long *ptr;
+
+    ptr = bc_vec_item_rev(&stack, i);
+
+    status = print(*ptr, width, &nchars, f);
+
+    if (status) goto frac_len_err;
+  }
+
+  if (!n->rdx) goto frac_len_err;
+
+  if (fputc('.', f) == EOF) {
+    status = BC_STATUS_IO_ERR;
+    goto frac_len_err;
+  }
+
+  status = bc_num_init(&frac_len, n->len - n->rdx);
+
+  if (status) goto frac_len_err;
+
+  bc_num_one(&frac_len);
+
+  while (frac_len.len <= n->len) {
+
+    unsigned long fdigit;
+
+    status = bc_num_mul(&fracp, base, &fracp, n->rdx);
+
+    if (status) goto err;
+
+    status = bc_num_copy(&digit, &fracp);
+
+    if (status) goto err;
+
+    status = bc_num_truncate(&digit);
+
+    if (status) goto err;
+
+    status = bc_num_ulong(&digit, &fdigit);
+
+    if (status) goto err;
+
+    status = bc_num_ulong2num(&intp, fdigit);
+
+    if (status) goto err;
+
+    status = bc_num_sub(&fracp, &intp, &fracp, 0);
+
+    if (status) goto err;
+
+    status = print(fdigit, width, &nchars, f);
+
+    if (status) goto err;
+
+    status = bc_num_mul(&frac_len, base, &frac_len, 0);
+
+    if (status) goto err;
+  }
+
+err:
+
+  bc_num_free(&frac_len);
+
+frac_len_err:
+
+  bc_num_free(&digit);
+
+digit_err:
+
+  bc_num_free(&fracp);
+
+frac_err:
+
+  bc_num_free(&intp);
+
+int_err:
+
+  bc_vec_free(&stack);
+
+  return status;
 }
 
 BcStatus bc_num_init(BcNum *n, size_t request) {
