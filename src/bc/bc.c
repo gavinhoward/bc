@@ -295,7 +295,8 @@ void bc_error(BcStatus status) {
     return;
   }
 
-  fprintf(stderr, "\n%s Error: %s\n\n", bc_err_types[status], bc_err_descs[status]);
+  fprintf(stderr, "\n%s Error: %s\n\n",
+          bc_err_types[status], bc_err_descs[status]);
 }
 
 void bc_error_file(BcStatus status, const char *file, uint32_t line) {
