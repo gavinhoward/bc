@@ -535,31 +535,33 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (status) return status;
 
-  flag = 1;
-
-  for (i = 0; pow && i < CHAR_BIT * sizeof(long); ++i, flag <<= 1) {
+  for (flag = 1; pow; flag <<= 1) {
 
     if (pow & flag) {
 
-      status = bc_num_init(&copy, c->len);
-
-      if (status) goto err;
-
-      status = bc_num_copy(&copy, c);
-
-      if (status) {
-        bc_num_free(&copy);
-        goto err;
-      }
-
-      status = bc_vec_push(&nums, &copy);
-
-      if (status) {
-        bc_num_free(&copy);
-        goto err;
-      }
-
       pow &= ~(flag);
+
+      if (pow) {
+
+        status = bc_num_init(&copy, c->len);
+
+        if (status) goto err;
+
+        status = bc_num_copy(&copy, c);
+
+        if (status) {
+          bc_num_free(&copy);
+          goto err;
+        }
+
+        status = bc_vec_push(&nums, &copy);
+
+        if (status) {
+          bc_num_free(&copy);
+          goto err;
+        }
+      }
+      else break;
     }
 
     status = bc_num_mul(c, c, c, scale);
