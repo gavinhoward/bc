@@ -488,20 +488,17 @@ c2_err:
 static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
-  BcVec nums;
   BcNum copy;
   BcNum one;
   long pow;
+  unsigned long upow;
   size_t i;
-  unsigned long flag;
+  size_t powrdx;
+  size_t resrdx;
   bool neg;
+  bool zero;
 
   if (b->rdx) return BC_STATUS_MATH_NON_INTEGER;
-
-  if (BC_NUM_ZERO(a)) {
-    bc_num_zero(c);
-    return BC_STATUS_SUCCESS;
-  }
 
   status = bc_num_long(b, &pow);
 
@@ -509,6 +506,10 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (pow == 0) {
     bc_num_one(c);
+    return BC_STATUS_SUCCESS;
+  }
+  else if (BC_NUM_ZERO(a)) {
+    bc_num_zero(c);
     return BC_STATUS_SUCCESS;
   }
   else if (pow == 1) {
@@ -526,63 +527,56 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   }
   else if (pow < 0) {
     neg = true;
-    pow = -pow;
+    upow = -pow;
   }
-  else neg = false;
+  else {
+    neg = false;
+    upow = pow;
+    scale = BC_MIN(a->rdx * upow, BC_MAX(scale, a->rdx));
+  }
 
-  status = bc_num_copy(c, a);
+  status = bc_num_init(&copy, a->len);
 
   if (status) return status;
 
-  status = bc_vec_init(&nums, sizeof(BcNum), bc_num_free);
+  status = bc_num_copy(&copy, a);
 
-  if (status) return status;
+  if (status) goto err;
 
-  for (flag = 1; pow; flag <<= 1) {
+  powrdx = a->rdx;
 
-    if (pow & flag) {
+  while (!(upow & 1)) {
 
-      pow &= ~(flag);
+    powrdx <<= 1;
 
-      if (pow) {
+    status = bc_num_mul(&copy, &copy, &copy, powrdx);
 
-        status = bc_num_init(&copy, c->len);
+    if (status) goto err;
 
-        if (status) goto err;
+    upow >>= 1;
+  }
 
-        status = bc_num_copy(&copy, c);
+  status = bc_num_copy(c, &copy);
 
-        if (status) {
-          bc_num_free(&copy);
-          goto err;
-        }
+  if (status) goto err;
 
-        status = bc_vec_push(&nums, &copy);
+  resrdx = powrdx;
+  upow >>= 1;
 
-        if (status) {
-          bc_num_free(&copy);
-          goto err;
-        }
-      }
-      else break;
+  while (upow != 0) {
+
+    powrdx <<= 1;
+
+    status = bc_num_mul(&copy, &copy, &copy, powrdx);
+
+    if (status) goto err;
+
+    if (upow & 1) {
+      resrdx += powrdx;
+      bc_num_mul(c, &copy, c, resrdx);
     }
 
-    status = bc_num_mul(c, c, c, scale);
-
-    if (status) goto err;
-  }
-
-  for (i = 0; i < nums.len; ++i) {
-
-    BcNum *ptr;
-
-    ptr = bc_vec_item_rev(&nums, i);
-
-    if (!ptr) return BC_STATUS_VEC_OUT_OF_BOUNDS;
-
-    status = bc_num_mul(c, ptr, c, scale);
-
-    if (status) goto err;
+    upow >>= 1;
   }
 
   if (neg) {
@@ -601,9 +595,18 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     }
   }
 
+  if (c->rdx > scale) {
+    status = bc_num_trunc(c, c->rdx - scale);
+    if (status) goto err;
+  }
+
+  for (zero = true, i = 0; zero && i < c->len; ++i) zero = c->num[i] == 0;
+
+  if (zero) bc_num_zero(c);
+
 err:
 
-  bc_vec_free(&nums);
+  bc_num_free(&copy);
 
   return status;
 }
