@@ -265,11 +265,8 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
       c->num[i + j] += a->num[j] * b->num[i] + carry;
 
-      if (c->num[i + j] >= 10) {
-        carry = c->num[i + j] / 10;
-        c->num[i + j] %= 10;
-      }
-      else carry = 0;
+      carry = c->num[i + j] / 10;
+      c->num[i + j] %= 10;
     }
 
     if (carry) {
