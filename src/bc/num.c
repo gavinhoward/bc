@@ -308,6 +308,7 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   else if (BC_NUM_ONE(b)) {
     status = bc_num_copy(c, a);
     if (b->neg) c->neg = !c->neg;
+    status = bc_num_extend(c, scale);
     return status;
   }
 
