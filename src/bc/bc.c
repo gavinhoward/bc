@@ -297,7 +297,7 @@ void bc_error(BcStatus status) {
     return;
   }
 
-  fprintf(stderr, "\n%s Error: %s\n\n",
+  fprintf(stderr, "\n%s error: %s\n\n",
           bc_err_types[status], bc_err_descs[status]);
 }
 
@@ -309,7 +309,7 @@ void bc_error_file(BcStatus status, const char *file, uint32_t line) {
     return;
   }
 
-  fprintf(stderr, "\n%s Error: %s\n", bc_err_types[status],
+  fprintf(stderr, "\n%s error: %s\n", bc_err_types[status],
           bc_err_descs[status]);
 
   fprintf(stderr, "    %s", file);
@@ -325,7 +325,7 @@ BcStatus bc_posix_error(BcStatus status, const char *file,
     return BC_STATUS_SUCCESS;
 
   fprintf(stderr, "\n%s %s: %s\n", bc_err_types[status],
-          bc_std ? "Error" : "Warning", bc_err_descs[status]);
+          bc_std ? "error" : "warning", bc_err_descs[status]);
 
   if (msg) fprintf(stderr, "    %s\n", msg);
 
