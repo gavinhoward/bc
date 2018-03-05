@@ -388,11 +388,9 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
     op = bc_math_ops[inst - BC_INST_OP_MODULUS];
 
-    status = op(&result1->data.num, &result2->data.num,
-                &result.data.num, p->scale);
+    status = op(num1, num2, &result.data.num, p->scale);
   }
-  else status = bc_num_pow(&result1->data.num, &result2->data.num,
-                           &result.data.num, p->scale);
+  else status = bc_num_pow(num1, num2, &result.data.num, p->scale);
 
   if (status) goto err;
 
