@@ -2329,7 +2329,9 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
     type = parse->token.type;
   }
 
-  if (status) return status;
+  if (status && status != BC_STATUS_LEX_EOF) return status;
+
+  status = BC_STATUS_SUCCESS;
 
   while (!status && parse->ops.len > ops_start_len) {
 
@@ -2382,5 +2384,5 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
     else status = bc_vec_pushByte(code, BC_INST_POP);
   }
 
-  return status;
+  return type == BC_LEX_EOF ? BC_STATUS_LEX_EOF : status;
 }
