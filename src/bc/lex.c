@@ -111,9 +111,11 @@ static const bool keyword_posix[] = {
 
 static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 
+  char c;
+
   token->type = BC_LEX_WHITESPACE;
 
-  char c = lex->buffer[lex->idx];
+  c = lex->buffer[lex->idx];
 
   while ((isspace(c) && c != '\n') || c == '\\') {
     ++lex->idx;
@@ -125,19 +127,21 @@ static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 
 static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
+  const char *start;
   uint32_t newlines;
+  size_t len;
+  size_t i;
+  char c;
 
   newlines = 0;
 
   token->type = BC_LEX_STRING;
 
-  size_t i = lex->idx;
-  char c = lex->buffer[i];
+  i = lex->idx;
+  c = lex->buffer[i];
 
   while (c != '"' && c != '\0') {
-
     if (c == '\n') ++newlines;
-
     c = lex->buffer[++i];
   }
 
@@ -146,13 +150,13 @@ static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
     return BC_STATUS_LEX_NO_STRING_END;
   }
 
-  size_t len = i - lex->idx;
+  len = i - lex->idx;
 
   token->string = malloc(len + 1);
 
   if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
 
-  const char *start = lex->buffer + lex->idx;
+  start = lex->buffer + lex->idx;
 
   for (size_t j = 0; j < len; ++j) token->string[j] = start[j];
 
@@ -209,15 +213,24 @@ static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
 
 static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
+  const char *buffer;
+  const char *buf;
+  size_t backslashes;
+  size_t len;
+  size_t hits;
+  size_t i, j;
+  char c;
+  bool point;
+
   token->type = BC_LEX_NUMBER;
 
-  int point = start == '.';
+  point = start == '.';
 
-  const char *buffer = lex->buffer + lex->idx;
+  buffer = lex->buffer + lex->idx;
 
-  size_t backslashes = 0;
-  size_t i = 0;
-  char c = buffer[i];
+  backslashes = 0;
+  i = 0;
+  c = buffer[i];
 
   while (c && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
                (c == '.' && !point) || (c == '\\' && buffer[i + 1] == '\n')))
@@ -230,7 +243,7 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
     c = buffer[++i];
   }
 
-  size_t len = i + 1;
+  len = i + 1;
 
   token->string = malloc(len - backslashes + 1);
 
@@ -238,12 +251,12 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
   token->string[0] = start;
 
-  const char *buf = buffer - 1;
-  size_t hits = 0;
+  buf = buffer - 1;
+  hits = 0;
 
-  for (size_t j = 1; j < len; ++j) {
+  for (j = 1; j < len; ++j) {
 
-    char c = buf[j];
+    c = buf[j];
 
     // If we have hit a backslash, skip it.
     // We don't have to check for a newline
@@ -267,10 +280,13 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
+  const char *buffer;
+  size_t i;
+  char c;
 
-  const char *buffer = lex->buffer + lex->idx - 1;
+  buffer = lex->buffer + lex->idx - 1;
 
-  for (uint32_t i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
+  for (i = 0; i < sizeof(keywords) / sizeof(char*); ++i) {
 
     if (!strncmp(buffer, keywords[i], keyword_lens[i])) {
 
@@ -293,8 +309,8 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   token->type = BC_LEX_NAME;
 
-  size_t i = 0;
-  char c = buffer[i];
+  i = 0;
+  c = buffer[i];
 
   while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_') {
     ++i;
