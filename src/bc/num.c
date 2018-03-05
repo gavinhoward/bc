@@ -1711,6 +1711,7 @@ int bc_num_compare(BcNum *a, BcNum *b) {
   char *ptr_a;
   char *ptr_b;
   size_t diff;
+  int cmp;
 
   a2 = (BcNum*) a;
   b2 = (BcNum*) b;
@@ -1730,6 +1731,12 @@ int bc_num_compare(BcNum *a, BcNum *b) {
     else return -1;
   }
   else if (b2->neg) return 1;
+
+  if (BC_NUM_ZERO(a2)) {
+    cmp = b->neg ? 1 : -1;
+    return BC_NUM_ZERO(b2) ? 0 : cmp;
+  }
+  else if (BC_NUM_ZERO(b2)) return a->neg ? -1 : 1;
 
   a_int = a2->len - a2->rdx;
   b_int = b2->len - b2->rdx;
