@@ -368,13 +368,13 @@ static BcStatus bc_program_unaryOpRetire(BcProgram *p, BcResult *result,
 static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
-  BcResult *result1;
-  BcResult *result2;
+  BcResult *operand1;
+  BcResult *operand2;
   BcResult result;
   BcNum *num1;
   BcNum *num2;
 
-  status = bc_program_binaryOpPrep(p, &result1, &num1, &result2, &num2);
+  status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
 
   if (status) return status;
 
