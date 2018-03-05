@@ -1352,7 +1352,9 @@ BcStatus bc_num_copy(void *dest, void *src) {
   BcNum *d;
   BcNum *s;
 
-  if (!dest || !src || dest == src) return BC_STATUS_INVALID_PARAM;
+  if (!dest || !src) return BC_STATUS_INVALID_PARAM;
+
+  if (dest == src) return BC_STATUS_SUCCESS;
 
   d = (BcNum*) dest;
   s = (BcNum*) src;
