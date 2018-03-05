@@ -463,6 +463,10 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   status = bc_program_exec(p);
 
+  if (status) goto exec_err;
+
+  status = bc_vec_pop(&p->stack);
+
 exec_err:
 
   bc_parse_free(&parse);
