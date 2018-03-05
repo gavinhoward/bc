@@ -498,53 +498,12 @@ err:
   return status;
 }
 
-static BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c) {
-
-  BcStatus status;
-  BcNum quotient;
-  BcNum product;
-
-  status = bc_num_init(&quotient, a->len + b->len);
-
-  if (status) return status;
-
-  status = bc_num_div(a, b, &quotient, 0);
-
-  if (status) goto div_err;
-
-  status = bc_num_trunc(&quotient, quotient.rdx);
-
-  if (status) goto div_err;
-
-  status = bc_num_init(&product, quotient.len + b->len);
-
-  if (status) goto div_err;
-
-  status = bc_num_mul(b, &quotient, &product, b->rdx);
-
-  if (status) goto err;
-
-  status = bc_num_sub(a, &product, c, BC_MAX(a->rdx, b->rdx));
-
-err:
-
-  bc_num_free(&product);
-
-div_err:
-
-  bc_num_free(&quotient);
-
-  return status;
-}
-
 static BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
   BcNum c1;
   BcNum c2;
   size_t len;
-
-  if (scale == 0) return bc_num_alg_rem(a, b, c);
 
   len = a->len + b->len + scale;
 
