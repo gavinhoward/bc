@@ -217,7 +217,7 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   BcStatus status;
   int cmp;
@@ -225,7 +225,10 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   BcNum *subtrahend;
   size_t i, j, start;
   bool aneg, bneg, neg;
-  (void) scale;
+
+  // Because this function doesn't need to use scale (per the bc spec),
+  // I am hijacking it to tell this function whether it is doing an add
+  // or a subtract.
 
   if (BC_NUM_ZERO(a)) {
     status = bc_num_copy(c, b);
@@ -249,12 +252,12 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     return BC_STATUS_SUCCESS;
   }
   else if (cmp > 0) {
-    neg = a->neg;
+    neg = sub ? a->neg : !a->neg;
     minuend = a;
     subtrahend = b;
   }
   else {
-    neg = !b->neg;
+    neg = sub ? !b->neg : b->neg;
     minuend = b;
     subtrahend = a;
   }
@@ -1654,21 +1657,25 @@ BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
   BcNumBinaryFunc op;
 
+  (void) scale;
+
   if ((a->neg && b->neg) || (!a->neg && !b->neg)) op = bc_num_alg_a;
   else op = bc_num_alg_s;
 
-  return bc_num_binary(a, b, result, scale, op, a->len + b->len + 1);
+  return bc_num_binary(a, b, result, false, op, a->len + b->len + 1);
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
   BcNumBinaryFunc op;
 
+  (void) scale;
+
   if (a->neg && b->neg) op = bc_num_alg_s;
   else if (a->neg || b->neg) op = bc_num_alg_a;
   else op = bc_num_alg_s;
 
-  return bc_num_binary(a, b, result, scale, op, a->len + b->len + 1);
+  return bc_num_binary(a, b, result, true, op, a->len + b->len + 1);
 }
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
