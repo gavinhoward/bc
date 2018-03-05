@@ -547,7 +547,11 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     bc_num_one(&one);
 
-    return bc_num_div(&one, a, c, scale);
+    status = bc_num_div(&one, a, c, scale);
+
+    bc_num_free(&one);
+
+    return status;
   }
   else if (pow < 0) {
     neg = true;
@@ -613,10 +617,9 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     status = bc_num_div(&one, c, c, scale);
 
-    if (status) {
-      bc_num_free(&one);
-      goto err;
-    }
+    bc_num_free(&one);
+
+    if (status) goto err;
   }
 
   if (c->rdx > scale) {
