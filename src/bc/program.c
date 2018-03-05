@@ -1245,14 +1245,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
   uint8_t inst2;
   BcResult result;
 
-  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1))
-    return BC_STATUS_EXEC_INVALID_EXPR;
-
-  ptr = bc_vec_top(&p->expr_stack);
-
-  if (!ptr) return BC_STATUS_EXEC_INVALID_EXPR;
-
-  status = bc_program_num(p, ptr, &num, false);
+  status = bc_program_unaryOpPrep(p, &ptr, &num);
 
   if (status) return status;
 
