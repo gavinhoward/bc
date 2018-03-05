@@ -513,7 +513,19 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
     case '.':
     {
-      status = bc_lex_number(lex, token, c);
+      c2 = lex->buffer[lex->idx];
+
+      if (isdigit(c2)) {
+        status = bc_lex_number(lex, token, c);
+      }
+      else {
+
+        status = bc_posix_error(BC_STATUS_POSIX_DOT_LAST,
+                                lex->file, lex->line, NULL);
+
+        token->type = BC_LEX_KEY_LAST;
+      }
+
       break;
     }
 

@@ -115,6 +115,7 @@ static const char *bc_err_types[] = {
   "POSIX",
   "POSIX",
   "POSIX",
+  "POSIX",
 
 };
 
@@ -200,6 +201,7 @@ static const char *bc_err_descs[] = {
   "POSIX only allows one character names; the following is invalid:",
   "POSIX does not allow '#' script comments",
   "POSIX does not allow the following keyword:",
+  "POSIX does not allow a period ('.') as a shortcut for the last result",
   "POSIX requires parentheses around return expressions",
   "POSIX does not allow boolean operators; the following is invalid:",
   "POSIX does not allow comparison operators outside if or loops",
