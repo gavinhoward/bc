@@ -1693,7 +1693,7 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
   return bc_num_unary(a, result, scale, bc_num_sqrt_newton,
-                      a->rdx + (a->len - a->rdx) * 2);
+                      a->rdx + (a->len - a->rdx) * 2 + 1);
 }
 
 int bc_num_compare(BcNum *a, BcNum *b) {
