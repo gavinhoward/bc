@@ -875,7 +875,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
 }
 
 static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
-                               BcNumUnaryFunc op, size_t req)
+                             BcNumUnaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum a2;
