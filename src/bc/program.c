@@ -312,9 +312,12 @@ static BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left,
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_program_binaryOpRetire(BcProgram *p, BcResult *result) {
-
+static BcStatus bc_program_binaryOpRetire(BcProgram *p, BcResult *result,
+                                          BcResultType type)
+{
   BcStatus status;
+
+  result->type = type;
 
   status = bc_vec_pop(&p->expr_stack);
 
@@ -348,9 +351,12 @@ static BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result,
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_program_unaryOpRetire(BcProgram *p, BcResult *result) {
-
+static BcStatus bc_program_unaryOpRetire(BcProgram *p, BcResult *result,
+                                         BcResultType type)
+{
   BcStatus status;
+
+  result->type = type;
 
   status = bc_vec_pop(&p->expr_stack);
 
@@ -372,8 +378,6 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   if (status) return status;
 
-  result.type = BC_RESULT_INTERMEDIATE;
-
   status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
 
   if (status) return status;
@@ -392,7 +396,7 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   if (status) goto err;
 
-  status = bc_program_binaryOpRetire(p, &result);
+  status = bc_program_binaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
 
   if (status) goto err;
 
@@ -666,8 +670,6 @@ static BcStatus bc_program_push(BcProgram *p, uint8_t *code,
     BcNum *num;
     unsigned long temp;
 
-    result.type = BC_RESULT_ARRAY;
-
     status = bc_program_unaryOpPrep(p, &operand, &num);
 
     if (status) goto err;
@@ -678,7 +680,7 @@ static BcStatus bc_program_push(BcProgram *p, uint8_t *code,
 
     result.data.id.idx = (size_t) temp;
 
-    status = bc_program_unaryOpRetire(p, &result);
+    status = bc_program_unaryOpRetire(p, &result, BC_RESULT_ARRAY);
   }
 
   if (status) goto err;
@@ -703,7 +705,6 @@ static BcStatus bc_program_negate(BcProgram *p) {
 
   if (status) return status;
 
-  result.type = BC_RESULT_INTERMEDIATE;
   status = bc_num_init(&result.data.num, num->len);
 
   if (status) return status;
@@ -714,7 +715,7 @@ static BcStatus bc_program_negate(BcProgram *p) {
 
   result.data.num.neg = !result.data.num.neg;
 
-  status = bc_program_unaryOpRetire(p, &result);
+  status = bc_program_unaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
 
   if (status) goto err;
 
@@ -743,7 +744,6 @@ static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 
   if (status) return status;
 
-  result.type = BC_RESULT_INTERMEDIATE;
   status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
 
   if (status) return status;
@@ -803,7 +803,7 @@ static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
   init = cond ? bc_num_one : bc_num_zero;
   init(&result.data.num);
 
-  status = bc_program_binaryOpRetire(p, &result);
+  status = bc_program_binaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
 
   if (status) goto err;
 
@@ -981,8 +981,6 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
     if (status) return status;
   }
 
-  result.type = BC_RESULT_INTERMEDIATE;
-
   status = bc_num_init(&result.data.num, lval->len);
 
   if (status) return status;
@@ -991,7 +989,7 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
   if (status) goto err;
 
-  status = bc_program_binaryOpRetire(p, &result);
+  status = bc_program_binaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
 
   if (status) goto err;
 
@@ -1173,8 +1171,6 @@ static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 
   if (status) return status;
 
-  result.type = BC_RESULT_INTERMEDIATE;
-
   status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
 
   if (status) return status;
@@ -1196,7 +1192,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 
   if (status) goto err;
 
-  status = bc_program_unaryOpRetire(p, &result);
+  status = bc_program_unaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
 
   if (status) goto err;
 
@@ -1909,8 +1905,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (status) return status;
 
-        result.type = BC_RESULT_INTERMEDIATE;
-
         status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
 
         if (status) return status;
@@ -1918,7 +1912,7 @@ BcStatus bc_program_exec(BcProgram *p) {
         if (bc_num_compare(num, &p->zero)) bc_num_one(&result.data.num);
         else bc_num_zero(&result.data.num);
 
-        status = bc_program_unaryOpRetire(p, &result);
+        status = bc_program_unaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
 
         if (status) bc_num_free(&result.data.num);
 
