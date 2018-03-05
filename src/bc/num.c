@@ -1668,7 +1668,7 @@ BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   else if (a->neg || b->neg) op = bc_num_alg_a;
   else op = bc_num_alg_s;
 
-  return bc_num_binary(a, a, result, scale, op, a->len + b->len + 1);
+  return bc_num_binary(a, b, result, scale, op, a->len + b->len + 1);
 }
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
