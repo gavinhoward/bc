@@ -1720,6 +1720,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         cond = bc_num_compare(num, &p->zero) == 0;
 
+        status = bc_vec_pop(&p->expr_stack);
+
+        if (status) return status;
+
         // Fallthrough.
       }
       case BC_INST_JUMP:
