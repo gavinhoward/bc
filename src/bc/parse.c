@@ -685,7 +685,9 @@ static BcStatus bc_parse_minus(BcParse *parse, BcVec *exs, BcVec *ops,
   if (type != BC_LEX_NAME && type != BC_LEX_NUMBER &&
       type != BC_LEX_KEY_SCALE && type != BC_LEX_KEY_LAST &&
       type != BC_LEX_KEY_IBASE && type != BC_LEX_KEY_OBASE &&
-      type != BC_LEX_LEFT_PAREN)
+      type != BC_LEX_LEFT_PAREN && type != BC_LEX_OP_MINUS &&
+      type != BC_LEX_OP_INC && type != BC_LEX_OP_DEC &&
+      type != BC_LEX_OP_BOOL_NOT)
   {
     return BC_STATUS_PARSE_INVALID_TOKEN;
   }
