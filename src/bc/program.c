@@ -1124,6 +1124,8 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
     if (status) return status;
 
     status = bc_num_copy(&result.data.num, num);
+
+    if (status) goto err;
   }
   else {
 
@@ -1133,8 +1135,6 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
     bc_num_zero(&result.data.num);
   }
-
-  if (status) goto err;
 
   // We need to pop arguments as well, so this takes that into account.
   len = ip->len - func->params.len;
@@ -1167,11 +1167,11 @@ static unsigned long bc_program_length(BcNum *n) {
 static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
-  BcResult *result1;
+  BcResult *operand;
   BcNum *num1;
   BcResult result;
 
-  status = bc_program_unaryOpPrep(p, &result1, &num1);
+  status = bc_program_unaryOpPrep(p, &operand, &num1);
 
   if (status) return status;
 
@@ -1826,10 +1826,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_PRINT:
       {
-        BcResult *result;
+        BcResult *operand;
         BcNum *num;
 
-        status = bc_program_unaryOpPrep(p, &result, &num);
+        status = bc_program_unaryOpPrep(p, &operand, &num);
 
         if (status) return status;
 
