@@ -334,8 +334,32 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   len = b->len;
 
-  if (b->len > copy.len) {
-    status = bc_num_extend(&copy, b->len + 2);
+  if (len > copy.len) {
+
+    status = bc_num_expand(&copy, len + 2);
+
+    if (status) goto err;
+
+    status = bc_num_extend(&copy, len);
+
+    if (status) goto err;
+  }
+
+  if (b->rdx == b->len) {
+
+    bool zero;
+
+    zero = true;
+
+    for (i = 0; zero && i < len; ++i) zero = b->num[len - i - 1] == 0;
+
+    if (i == len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+
+    len -= i - 1;
+  }
+
+  if (copy.cap == copy.len) {
+    status = bc_num_expand(&copy, copy.len + 1);
     if (status) goto err;
   }
 
