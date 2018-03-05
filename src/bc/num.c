@@ -219,11 +219,78 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
+  BcStatus status;
+  int cmp;
+  BcNum *minuend;
+  BcNum *subtrahend;
+  size_t i, j, start;
+  bool aneg, bneg, neg;
   (void) scale;
 
-  c->rdx = BC_MAX(a->rdx, b->rdx);
+  if (BC_NUM_ZERO(a)) {
+    status = bc_num_copy(c, b);
+    c->neg = !b->neg;
+    return status;
+  }
+  else if (BC_NUM_ZERO(b)) return bc_num_copy(c, a);
 
-  return BC_STATUS_SUCCESS;
+  aneg = a->neg;
+  bneg = b->neg;
+
+  a->neg = b->neg = false;
+
+  cmp = bc_num_compare(a, b);
+
+  a->neg = aneg;
+  b->neg = bneg;
+
+  if (!cmp) {
+    bc_num_zero(c);
+    return BC_STATUS_SUCCESS;
+  }
+  else if (cmp > 0) {
+    neg = a->neg;
+    minuend = a;
+    subtrahend = b;
+  }
+  else {
+    neg = !b->neg;
+    minuend = b;
+    subtrahend = a;
+  }
+
+  status = bc_num_copy(c, minuend);
+
+  if (status) return status;
+
+  c->neg = neg;
+
+  if (c->rdx < subtrahend->rdx) {
+    status = bc_num_extend(c, subtrahend->rdx - c->rdx);
+    if (status) return status;
+    start = 0;
+  }
+  else start = c->rdx > subtrahend->rdx ? c->rdx - subtrahend->rdx : 0;
+
+  for (i = 0; i < subtrahend->len; ++i) {
+
+    c->num[i + start] -= subtrahend->num[i];
+
+    for (j = 0; c->num[i + j + start] < 0 && j < c->len - start;) {
+
+      c->num[i + j + start] += 10;
+      ++j;
+
+      if (j >= c->len - start) return BC_STATUS_MATH_OVERFLOW;
+
+      c->num[i + j + start] -= 1;
+    }
+  }
+
+  // Remove leading zeros.
+  while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
+
+  return status;
 }
 
 static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
