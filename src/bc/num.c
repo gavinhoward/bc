@@ -682,6 +682,18 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
   size_t len;
   size_t i;
 
+  if (BC_NUM_ZERO(a)) {
+    bc_num_zero(b);
+    return BC_STATUS_SUCCESS;
+  }
+  else if (BC_NUM_POS_ONE(a)) {
+    bc_num_one(b);
+    return bc_num_extend(b, scale);
+  }
+  else if (a->neg) return BC_STATUS_MATH_NEG_SQRT;
+
+  memset(b->num, 0, b->cap * sizeof(char));
+
   scale = BC_MAX(scale, a->rdx) + 1;
 
   len = a->len;
@@ -766,7 +778,10 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
   if (status) goto err;
 
+  --scale;
+
   if (b->rdx > scale) status = bc_num_trunc(b, b->rdx - scale);
+  else if (b->rdx < scale) status = bc_num_extend(b, scale - b->rdx);
 
 err:
 
