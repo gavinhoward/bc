@@ -804,6 +804,7 @@ BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
   // Loop until failure or we don't have whitespace. This
   // is so the parser doesn't get inundated with whitespace.
   do {
+    token->string = NULL;
     status = bc_lex_token(lex, token);
   } while (!status && token->type == BC_LEX_WHITESPACE);
 
