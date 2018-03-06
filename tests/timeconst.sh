@@ -46,7 +46,7 @@ fi
 rm -rf "$out1"
 rm -rf "$out2"
 
-for i in {1..10000}; do
+for i in $(seq 1 10000); do
 
 	echo "$i"
 
