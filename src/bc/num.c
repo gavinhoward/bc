@@ -785,7 +785,9 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
   BcNum f;
   BcNum fprime;
   size_t len;
-  size_t i;
+  size_t digits;
+  size_t resrdx;
+  int cmp;
 
   if (BC_NUM_ZERO(a)) {
     bc_num_zero(b);
@@ -835,44 +837,51 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
   pow = a->len - a->rdx;
 
-  if (pow & 1) {
-    x0->num[0] = 2;
-    pow -= 1;
+  if (pow) {
+
+    if (pow & 1) {
+      x0->num[0] = 2;
+      pow -= 1;
+    }
+    else {
+      x0->num[0] = 6;
+      pow -= 2;
+    }
+
+    status = bc_num_extend(x0, pow);
+
+    if (status) goto err;
   }
-  else {
-    x0->num[0] = 6;
-    pow -= 2;
-  }
 
-  status = bc_num_extend(x0, pow);
-
-  if (status) goto err;
-
+  cmp = 1;
   x0->rdx = 0;
+  digits = 0;
+  resrdx = scale + 1;
+  len = (x0->len - x0->rdx) + resrdx;
 
-  len = (x0->len + scale) * 2;
+  while (cmp && digits <= len) {
 
-  for (i = 1; i < len; i *= 2) {
-
-    status = bc_num_mul(x0, x0, &f, scale);
-
-    if (status) goto err;
-
-    status = bc_num_sub(&f, a, &f, scale);
+    status = bc_num_mul(x0, x0, &f, resrdx);
 
     if (status) goto err;
 
-    status = bc_num_mul(x0, &two, &fprime, scale);
+    status = bc_num_sub(&f, a, &f, resrdx);
 
     if (status) goto err;
 
-    status = bc_num_div(&f, &fprime, &f, scale);
+    status = bc_num_mul(x0, &two, &fprime, resrdx);
 
     if (status) goto err;
 
-    status = bc_num_sub(x0, &f, x1, scale);
+    status = bc_num_div(&f, &fprime, &f, resrdx);
 
     if (status) goto err;
+
+    status = bc_num_sub(x0, &f, x1, resrdx);
+
+    if (status) goto err;
+
+    cmp = bc_num_compareDigits(x1, x0, &digits);
 
     temp = x0;
     x0 = x1;
