@@ -1359,7 +1359,7 @@ static BcStatus bc_parse_func(BcParse *parse) {
 
   BcLexTokenType type;
   BcStatus status;
-  BcFunc func;
+  BcFunc *fptr;
   bool comma;
   uint8_t flags;
   char *name;
@@ -1425,6 +1425,10 @@ static BcStatus bc_parse_func(BcParse *parse) {
       var = true;
     }
 
+    fptr = bc_vec_item(&parse->program->funcs, parse->func);
+
+    if (!fptr) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
     if (parse->token.type == BC_LEX_COMMA) {
 
       comma = true;
@@ -1434,7 +1438,7 @@ static BcStatus bc_parse_func(BcParse *parse) {
     }
     else comma = false;
 
-    status = bc_func_insertParam(&func, name, var);
+    status = bc_func_insertParam(fptr, name, var);
 
     if (status) return status;
 
