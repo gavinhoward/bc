@@ -1381,6 +1381,10 @@ static BcStatus bc_parse_func(BcParse *parse) {
 
   if (!parse->func) return BC_STATUS_PARSE_BUG;
 
+  fptr = bc_vec_item(&parse->program->funcs, parse->func);
+
+  if (!fptr) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
   status = bc_lex_next(&parse->lex, &parse->token);
 
   if (status) return status;
@@ -1395,29 +1399,31 @@ static BcStatus bc_parse_func(BcParse *parse) {
   comma = false;
 
   type = parse->token.type;
+  name = parse->token.string;
 
   while (!status && type != BC_LEX_RIGHT_PAREN) {
 
-    if (type != BC_LEX_NAME) return BC_STATUS_PARSE_INVALID_FUNC;
-
-    name = parse->token.string;
+    if (type != BC_LEX_NAME) {
+      status = BC_STATUS_PARSE_INVALID_FUNC;
+      goto err;
+    }
 
     status = bc_lex_next(&parse->lex, &parse->token);
 
-    if (status) return status;
+    if (status) goto err;
 
     if (parse->token.type == BC_LEX_LEFT_BRACKET) {
 
       status = bc_lex_next(&parse->lex, &parse->token);
 
-      if (status) return status;
+      if (status) goto err;
 
       if (parse->token.type != BC_LEX_RIGHT_BRACKET)
         return BC_STATUS_PARSE_INVALID_FUNC;
 
       status = bc_lex_next(&parse->lex, &parse->token);
 
-      if (status) return status;
+      if (status) goto err;
 
       var = false;
     }
@@ -1425,24 +1431,21 @@ static BcStatus bc_parse_func(BcParse *parse) {
       var = true;
     }
 
-    fptr = bc_vec_item(&parse->program->funcs, parse->func);
-
-    if (!fptr) return BC_STATUS_EXEC_UNDEFINED_FUNC;
-
     if (parse->token.type == BC_LEX_COMMA) {
 
       comma = true;
       status = bc_lex_next(&parse->lex, &parse->token);
 
-      if (status) return status;
+      if (status) goto err;
     }
     else comma = false;
 
     status = bc_func_insertParam(fptr, name, var);
 
-    if (status) return status;
+    if (status) goto err;
 
     type = parse->token.type;
+    name = parse->token.string;
   }
 
   if (comma) return BC_STATUS_PARSE_INVALID_FUNC;
@@ -1459,6 +1462,12 @@ static BcStatus bc_parse_func(BcParse *parse) {
   if (parse->token.type != BC_LEX_LEFT_BRACE)
     return bc_posix_error(BC_STATUS_POSIX_FUNC_HEADER_LEFT_BRACE,
                           parse->lex.file, parse->lex.line, NULL);
+
+  return status;
+
+err:
+
+  free(name);
 
   return status;
 }

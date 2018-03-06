@@ -37,27 +37,23 @@ static BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
 
   for (i = 0; i < func->params.len; ++i) {
     ptr = bc_vec_item(&func->params, i);
-    if (!strcmp(name, ptr->name)) return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+    if (!strcmp(name, ptr->name))
+      return BC_STATUS_PARSE_DUPLICATE_LOCAL;
   }
 
   for (i = 0; i < func->autos.len; ++i) {
     ptr = bc_vec_item(&func->autos, i);
-    if (!strcmp(name, ptr->name)) return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+    if (!strcmp(name, ptr->name))
+      return BC_STATUS_PARSE_DUPLICATE_LOCAL;
   }
 
   status = bc_auto_init(&a, name, var);
 
-  if (status) goto err;
+  if (status) return status;
 
   status = bc_vec_push(vec, &a);
 
-  if (status) goto err;
-
-  return status;
-
-err:
-
-  free(name);
+  if (status) return status;
 
   return status;
 }

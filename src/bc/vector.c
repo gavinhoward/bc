@@ -252,6 +252,8 @@ BcStatus bc_veco_init(BcVecO* vec, size_t esize,
 
 BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
 
+  BcStatus status;
+
   if (!vec || !data) return BC_STATUS_INVALID_PARAM;
 
   *idx = bc_veco_find(vec, data);
@@ -261,7 +263,13 @@ BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
   if (*idx != vec->vec.len && !vec->cmp(data, bc_vec_item(&vec->vec, *idx)))
     return BC_STATUS_VECO_ITEM_EXISTS;
 
-  return bc_vec_pushAt(&vec->vec, data, *idx);
+  if (*idx < vec->vec.len) {
+    *idx = vec->vec.len;
+    status = bc_vec_push(&vec->vec, data);
+  }
+  else status = bc_vec_pushAt(&vec->vec, data, *idx);
+
+  return status;
 }
 
 size_t bc_veco_index(const BcVecO* vec, void *data) {
