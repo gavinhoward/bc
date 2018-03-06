@@ -76,6 +76,11 @@
 #define BC_PARSE_IF_END(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
 
+#define BC_PARSE_FLAG_BODY_START (0x100)
+
+#define BC_PARSE_BODY_START(parse)  \
+  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_BODY_START)
+
 #define BC_PARSE_CAN_EXEC(parse)  \
   (!(BC_PARSE_TOP_FLAG(parse) & (BC_PARSE_FLAG_FUNC_INNER |  \
                                  BC_PARSE_FLAG_FUNC |        \
@@ -84,7 +89,8 @@
                                  BC_PARSE_FLAG_LOOP_INNER |  \
                                  BC_PARSE_FLAG_IF |          \
                                  BC_PARSE_FLAG_ELSE |        \
-                                 BC_PARSE_FLAG_IF_END)))
+                                 BC_PARSE_FLAG_IF_END |
+                                 BC_PARSE_FLAG_BODY_START)))
 
 // We can calculate the conversion between tokens and exprs
 // by subtracting the position of the first operator in the
