@@ -46,10 +46,10 @@
 #define BC_PARSE_FUNC(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FUNC)
 
-#define BC_PARSE_FLAG_HEADER (0x04)
+#define BC_PARSE_FLAG_BODY (0x04)
 
-#define BC_PARSE_HEADER(parse)  \
-  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_HEADER)
+#define BC_PARSE_BODY(parse)  \
+  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_BODY)
 
 #define BC_PARSE_FLAG_LOOP (0x08)
 
@@ -76,21 +76,15 @@
 #define BC_PARSE_IF_END(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
 
-#define BC_PARSE_FLAG_BODY_START (0x100)
-
-#define BC_PARSE_BODY_START(parse)  \
-  (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_BODY_START)
-
 #define BC_PARSE_CAN_EXEC(parse)  \
   (!(BC_PARSE_TOP_FLAG(parse) & (BC_PARSE_FLAG_FUNC_INNER |  \
                                  BC_PARSE_FLAG_FUNC |        \
-                                 BC_PARSE_FLAG_HEADER |      \
+                                 BC_PARSE_FLAG_BODY |  \
                                  BC_PARSE_FLAG_LOOP |        \
                                  BC_PARSE_FLAG_LOOP_INNER |  \
                                  BC_PARSE_FLAG_IF |          \
                                  BC_PARSE_FLAG_ELSE |        \
-                                 BC_PARSE_FLAG_IF_END |
-                                 BC_PARSE_FLAG_BODY_START)))
+                                 BC_PARSE_FLAG_IF_END)))
 
 // We can calculate the conversion between tokens and exprs
 // by subtracting the position of the first operator in the
