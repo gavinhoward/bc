@@ -1694,6 +1694,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       parse->auto_part = false;
 
@@ -1729,6 +1733,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       parse->auto_part = false;
 
@@ -1755,6 +1763,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       parse->auto_part = false;
 
@@ -1767,6 +1779,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
+      }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
         if (status) return status;
       }
 
@@ -1783,6 +1799,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       status = bc_parse_auto(parse);
 
@@ -1794,6 +1814,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
+      }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
         if (status) return status;
       }
 
@@ -1810,6 +1834,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       parse->auto_part = false;
 
@@ -1822,6 +1850,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
+      }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
         if (status) return status;
       }
 
@@ -1846,6 +1878,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       parse->auto_part = false;
 
@@ -1858,6 +1894,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
+      }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
         if (status) return status;
       }
 
@@ -1880,6 +1920,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       parse->auto_part = false;
 
@@ -1892,6 +1936,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
+      }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
         if (status) return status;
       }
 
@@ -1909,6 +1957,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
+      }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
         if (status) return status;
       }
 
@@ -1929,6 +1981,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         status = bc_parse_noElse(parse, code);
         if (status) return status;
       }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
+        if (status) return status;
+      }
 
       parse->auto_part = false;
 
@@ -1941,6 +1997,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if (BC_PARSE_IF_END(parse)) {
         status = bc_parse_noElse(parse, code);
+        if (status) return status;
+      }
+      else if (BC_PARSE_HEADER(parse)) {
+        status = bc_parse_endHeader(parse, code, 0);
         if (status) return status;
       }
 
