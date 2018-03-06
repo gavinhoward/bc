@@ -1116,13 +1116,11 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   if (status) return status;
 
-  if (parse->token.type != BC_LEX_SEMICOLON) {
+  if (parse->token.type != BC_LEX_SEMICOLON)
     status = bc_parse_expr(parse, code, 0);
-  }
-  else {
+  else
     status = bc_posix_error(BC_STATUS_POSIX_MISSING_FOR_INIT,
                             parse->lex.file, parse->lex.line, NULL);
-  }
 
   if (status) return status;
 
