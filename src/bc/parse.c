@@ -1978,36 +1978,28 @@ void bc_parse_free(BcParse *parse) {
 BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
   BcStatus status;
-  uint32_t nexprs;
-  uint32_t num_parens;
-  uint32_t ops_start_len;
-  bool paren_first;
-  bool paren_expr;
-  bool rparen;
-  bool done;
-  bool get_token;
-  uint32_t num_rel_ops;
+  uint32_t nexprs, nparens, ops_start, nrelops;
+  bool paren_first, paren_expr, rparen, done, get_token;
   BcExprType prev;
-  BcLexTokenType type;
+  BcLexTokenType type, top;
   BcLexTokenType *ptr;
-  BcLexTokenType top;
   uint8_t inst;
 
   status = BC_STATUS_SUCCESS;
 
-  ops_start_len = parse->ops.len;
+  ops_start = parse->ops.len;
 
   prev = BC_EXPR_PRINT;
 
   paren_first = parse->token.type == BC_LEX_LEFT_PAREN;
 
   nexprs = 0;
-  num_parens = 0;
+  nparens = 0;
   paren_expr = false;
   rparen = false;
   done = false;
   get_token = false;
-  num_rel_ops = 0;
+  nrelops = 0;
 
   type = parse->token.type;
 
@@ -2064,7 +2056,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       case BC_LEX_OP_BOOL_AND:
       {
         if (type >= BC_LEX_OP_REL_EQUAL && type <= BC_LEX_OP_REL_GREATER) {
-          num_rel_ops += 1;
+          nrelops += 1;
         }
 
         prev = BC_PARSE_TOKEN_TO_EXPR(type);
@@ -2078,7 +2070,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
       case BC_LEX_LEFT_PAREN:
       {
-        ++num_parens;
+        ++nparens;
         paren_expr = false;
         rparen = false;
         get_token = true;
@@ -2088,7 +2080,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
       case BC_LEX_RIGHT_PAREN:
       {
-        if (num_parens == 0) {
+        if (nparens == 0) {
           status = BC_STATUS_SUCCESS;
           done = true;
           get_token = false;
@@ -2099,7 +2091,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
           goto err;
         }
 
-        --num_parens;
+        --nparens;
         paren_expr = true;
         rparen = true;
         get_token = false;
@@ -2229,7 +2221,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
   status = BC_STATUS_SUCCESS;
 
-  while (!status && parse->ops.len > ops_start_len) {
+  while (!status && parse->ops.len > ops_start) {
 
     ptr = bc_vec_top(&parse->ops);
     top = *ptr;
@@ -2257,13 +2249,13 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
     goto err;
   }
 
-  if (!(flags & BC_PARSE_EXPR_POSIX_REL) && num_rel_ops &&
+  if (!(flags & BC_PARSE_EXPR_POSIX_REL) && nrelops &&
       (status = bc_posix_error(BC_STATUS_POSIX_REL_OUTSIDE,
                                parse->lex.file, parse->lex.line, NULL)))
   {
     goto err;
   }
-  else if (num_rel_ops > 1 &&
+  else if (nrelops > 1 &&
            (status = bc_posix_error(BC_STATUS_POSIX_REL_OUTSIDE,
                                     parse->lex.file, parse->lex.line, NULL)))
   {
