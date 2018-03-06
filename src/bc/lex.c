@@ -154,7 +154,7 @@ static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
   token->string = malloc(len + 1);
 
-  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
+  if (!token->string) return BC_STATUS_MALLOC_FAIL;
 
   start = lex->buffer + lex->idx;
 
@@ -247,7 +247,7 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
   token->string = malloc(len - backslashes + 1);
 
-  if (token->string == NULL) return BC_STATUS_MALLOC_FAIL;
+  if (!token->string) return BC_STATUS_MALLOC_FAIL;
 
   token->string[0] = start;
 
@@ -325,9 +325,7 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   token->string = malloc(i + 1);
 
-  if (token->string == NULL) {
-    return BC_STATUS_MALLOC_FAIL;
-  }
+  if (!token->string) return BC_STATUS_MALLOC_FAIL;
 
   strncpy(token->string, buffer, i);
   token->string[i] = '\0';
