@@ -1668,7 +1668,7 @@ static BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code) {
   return status;
 }
 
-static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
+static BcStatus bc_parse_stmtHandler(BcParse *parse, BcVec *code) {
 
   BcStatus status;
   uint8_t *flag_ptr;
@@ -1690,17 +1690,6 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     case BC_LEX_KEY_SCALE:
     case BC_LEX_KEY_SQRT:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_expr(parse, code, BC_PARSE_EXPR_PRINT);
 
       if (status) break;
@@ -1710,35 +1699,15 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
       break;
     }
 
-    case BC_LEX_NEWLINE:
-    {
-      status = bc_lex_next(&parse->lex, &parse->token);
-      break;
-    }
-
     case BC_LEX_KEY_ELSE:
     {
-      parse->auto_part = false;
-
       status = bc_parse_else(parse, code);
-
       break;
     }
 
     case BC_LEX_LEFT_BRACE:
     {
       uint8_t flags;
-
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
 
       ++parse->num_braces;
 
@@ -1759,106 +1728,37 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     case BC_LEX_RIGHT_BRACE:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_rightBrace(parse, code);
-
       break;
     }
 
     case BC_LEX_STRING:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_string(parse, code);
-
       break;
     }
 
     case BC_LEX_KEY_AUTO:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
       status = bc_parse_auto(parse);
-
       break;
     }
 
     case BC_LEX_KEY_BREAK:
     case BC_LEX_KEY_CONTINUE:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_loopExit(parse, code, parse->token.type);
-
       break;
     }
 
     case BC_LEX_KEY_FOR:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_for(parse, code);
-
       break;
     }
 
     case BC_LEX_KEY_HALT:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_vec_pushByte(code, BC_INST_HALT);
 
       if (status) return status;
@@ -1874,33 +1774,12 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     case BC_LEX_KEY_IF:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_if(parse, code);
-
       break;
     }
 
     case BC_LEX_KEY_LIMITS:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
       status = bc_lex_next(&parse->lex, &parse->token);
 
       if (status && status != BC_STATUS_LEX_EOF) return status;
@@ -1916,35 +1795,12 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     case BC_LEX_KEY_PRINT:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_print(parse, code);
-
       break;
     }
 
     case BC_LEX_KEY_QUIT:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       // Quit is a compile-time command,
       // so we send an exit command. We
       // don't exit directly, so the vm
@@ -1955,17 +1811,6 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     case BC_LEX_KEY_RETURN:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_return(parse, code);
 
       if (status) return status;
@@ -1977,19 +1822,36 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     case BC_LEX_KEY_WHILE:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
-        if (status) return status;
-      }
-
-      parse->auto_part = false;
-
       status = bc_parse_while(parse, code);
+      break;
+    }
 
+    default:
+    {
+      status = BC_STATUS_PARSE_INVALID_TOKEN;
+      break;
+    }
+  }
+
+  return status;
+}
+
+static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
+
+  BcStatus status;
+
+  switch (parse->token.type) {
+
+    case BC_LEX_NEWLINE:
+    {
+      status = bc_lex_next(&parse->lex, &parse->token);
+      break;
+    }
+
+    case BC_LEX_KEY_ELSE:
+    {
+      parse->auto_part = false;
+      status = bc_parse_stmtHandler(parse, code);
       break;
     }
 
@@ -2000,13 +1862,20 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
         if (status) return status;
       }
       else if (BC_PARSE_HEADER(parse)) {
-        status = bc_parse_endHeader(parse, code, 0);
+
+        BcFunc *func;
+
+        func = bc_vec_item(&parse->program->funcs, parse->func);
+
+        if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
+        status = bc_parse_endHeader(parse, code, func, func->labels.len, 0);
         if (status) return status;
       }
 
-      parse->auto_part = false;
+      parse->auto_part = parse->token.type != BC_LEX_KEY_AUTO;
 
-      status = BC_STATUS_PARSE_INVALID_TOKEN;
+      status = bc_parse_stmtHandler(parse, code);
 
       break;
     }
