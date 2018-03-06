@@ -583,6 +583,10 @@ static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code,
              BC_INST_INC_DUP : BC_INST_DEC_DUP;
 
     status = bc_vec_pushByte(code, inst);
+
+    if (status) return status;
+
+    status = bc_lex_next(&parse->lex, &parse->token);
   }
   else {
 
@@ -1188,6 +1192,11 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
                             parse->lex.file, parse->lex.line, NULL);
 
   if (status) return status;
+
+  if (parse->token.type != BC_LEX_RIGHT_PAREN) {
+    status = bc_parse_expr(parse, code, BC_PARSE_EXPR_POSIX_REL);
+    if (status) return status;
+  }
 
   if (parse->token.type != BC_LEX_RIGHT_PAREN)
     return BC_STATUS_PARSE_INVALID_TOKEN;
