@@ -879,7 +879,7 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
     x1 = temp;
   }
 
-  status = bc_num_copy(b, x1);
+  status = bc_num_copy(b, x0);
 
   if (status) goto err;
 
