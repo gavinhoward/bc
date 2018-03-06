@@ -34,6 +34,111 @@
 
 static const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
+static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
+
+  BcNum *a2;
+  BcNum *b2;
+  size_t i;
+  size_t min;
+  char *max_num;
+  char *min_num;
+  bool a_max;
+  bool neg;
+  size_t a_int;
+  size_t b_int;
+  char *ptr_a;
+  char *ptr_b;
+  size_t diff;
+  int cmp;
+  char c;
+
+  a2 = (BcNum*) a;
+  b2 = (BcNum*) b;
+
+  *digits = 0;
+
+  if (!a2) {
+
+    if (b2== NULL) return 0;
+    else return b2->neg ? 1 : -1;
+  }
+  else if (!b2) return a2->neg ? -1 : 1;
+
+  neg = false;
+
+  if (a2->neg) {
+
+    if (b2->neg) neg = true;
+    else return -1;
+  }
+  else if (b2->neg) return 1;
+
+  if (BC_NUM_ZERO(a2)) {
+    cmp = b->neg ? 1 : -1;
+    return BC_NUM_ZERO(b2) ? 0 : cmp;
+  }
+  else if (BC_NUM_ZERO(b2)) return a->neg ? -1 : 1;
+
+  a_int = a2->len - a2->rdx;
+  b_int = b2->len - b2->rdx;
+
+  if (a_int > b_int) return 1;
+  else if (b_int > a_int) return -1;
+
+  ptr_a = a2->num + a2->rdx;
+  ptr_b = b2->num + b2->rdx;
+
+  for (i = a_int - 1; i < a_int; --i, ++(*digits)) {
+    c = ptr_a[i] - ptr_b[i];
+    if (c) return neg ? -c : c;
+  }
+
+  a_max = a2->rdx > b2->rdx;
+
+  if (a_max) {
+
+    min = b2->rdx;
+
+    diff = a2->rdx - b2->rdx;
+
+    max_num = a2->num + diff;
+    min_num = b2->num;
+
+    for (i = min - 1; i < min; --i, ++(*digits)) {
+      c = max_num[i] - min_num[i];
+      if (c) return neg ? -c : c;
+    }
+
+    max_num -= diff;
+
+    for (i = diff - 1; i < diff; --i) {
+      if (max_num[i]) return neg ? -1 : 1;
+    }
+  }
+  else {
+
+    min = a2->rdx;
+
+    diff = b2->rdx - a2->rdx;
+
+    max_num = b2->num + diff;
+    min_num = a2->num;
+
+    for (i = min - 1; i < min; --i, ++(*digits)) {
+      c = max_num[i] - min_num[i];
+      if (c) return neg ? c : -c;
+    }
+
+    max_num -= diff;
+
+    for (i = diff - 1; i < diff; --i) {
+      if (max_num[i]) return neg ? 1 : -1;
+    }
+  }
+
+  return 0;
+}
+
 static int bc_num_compareArrays(signed char *array1, signed char *array2,
                                 size_t len)
 {
@@ -1678,117 +1783,8 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 }
 
 int bc_num_compare(BcNum *a, BcNum *b) {
-
-  BcNum *a2;
-  BcNum *b2;
-  size_t i;
-  size_t min;
-  char *max_num;
-  char *min_num;
-  bool a_max;
-  bool neg;
-  size_t a_int;
-  size_t b_int;
-  char *ptr_a;
-  char *ptr_b;
-  size_t diff;
-  int cmp;
-
-  a2 = (BcNum*) a;
-  b2 = (BcNum*) b;
-
-  if (!a2) {
-
-    if (b2== NULL) return 0;
-    else return b2->neg ? 1 : -1;
-  }
-  else if (!b2) return a2->neg ? -1 : 1;
-
-  neg = false;
-
-  if (a2->neg) {
-
-    if (b2->neg) neg = true;
-    else return -1;
-  }
-  else if (b2->neg) return 1;
-
-  if (BC_NUM_ZERO(a2)) {
-    cmp = b->neg ? 1 : -1;
-    return BC_NUM_ZERO(b2) ? 0 : cmp;
-  }
-  else if (BC_NUM_ZERO(b2)) return a->neg ? -1 : 1;
-
-  a_int = a2->len - a2->rdx;
-  b_int = b2->len - b2->rdx;
-
-  if (a_int > b_int) return 1;
-  else if (b_int > a_int) return -1;
-
-  ptr_a = a2->num + a2->rdx;
-  ptr_b = b2->num + b2->rdx;
-
-  for (i = a_int - 1; i < a_int; --i) {
-
-    char c;
-
-    c = ptr_a[i] - ptr_b[i];
-
-    if (c) return neg ? -c : c;
-  }
-
-  a_max = a2->rdx > b2->rdx;
-
-  if (a_max) {
-
-    min = b2->rdx;
-
-    diff = a2->rdx - b2->rdx;
-
-    max_num = a2->num + diff;
-    min_num = b2->num;
-
-    for (i = min - 1; i < min; --i) {
-
-      char c;
-
-      c = max_num[i] - min_num[i];
-
-      if (c) return neg ? -c : c;
-    }
-
-    max_num -= diff;
-
-    for (i = diff - 1; i < diff; --i) {
-      if (max_num[i]) return neg ? -1 : 1;
-    }
-  }
-  else {
-
-    min = a2->rdx;
-
-    diff = b2->rdx - a2->rdx;
-
-    max_num = b2->num + diff;
-    min_num = a2->num;
-
-    for (i = min - 1; i < min; --i) {
-
-      char c;
-
-      c = max_num[i] - min_num[i];
-
-      if (c) return neg ? c : -c;
-    }
-
-    max_num -= diff;
-
-    for (i = diff - 1; i < diff; --i) {
-      if (max_num[i]) return neg ? 1 : -1;
-    }
-  }
-
-  return 0;
+  size_t digits;
+  return bc_num_compareDigits(a, b, &digits);
 }
 
 void bc_num_zero(BcNum *n) {
