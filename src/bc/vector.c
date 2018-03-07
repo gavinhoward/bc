@@ -214,10 +214,13 @@ void bc_vec_free(void *vec) {
 
 static size_t bc_veco_find(const BcVecO* vec, void *data) {
 
-  BcVecCmpFunc cmp = vec->cmp;
+  BcVecCmpFunc cmp;
+  size_t low, high;
 
-  size_t low = 0;
-  size_t high = vec->vec.len;
+  cmp = vec->cmp;
+
+  low = 0;
+  high = vec->vec.len;
 
   while (low < high) {
 
@@ -229,11 +232,11 @@ static size_t bc_veco_find(const BcVecO* vec, void *data) {
 
     ptr = bc_vec_item(&vec->vec, mid);
 
-    result = cmp(ptr, data);
+    result = cmp(data, ptr);
 
     if (!result) return mid;
 
-    if (result > 0) high = mid;
+    if (result < 0) high = mid;
     else low = mid + 1;
   }
 
@@ -263,7 +266,7 @@ BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
   if (*idx != vec->vec.len && !vec->cmp(data, bc_vec_item(&vec->vec, *idx)))
     return BC_STATUS_VECO_ITEM_EXISTS;
 
-  if (*idx < vec->vec.len) {
+  if (*idx >= vec->vec.len) {
     *idx = vec->vec.len;
     status = bc_vec_push(&vec->vec, data);
   }
