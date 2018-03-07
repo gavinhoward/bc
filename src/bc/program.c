@@ -1832,6 +1832,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       }
 
       case BC_INST_PRINT:
+      case BC_INST_PRINT_EXPR:
       {
         BcResult *operand;
         BcNum *num;
@@ -1840,7 +1841,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (status) return status;
 
-        status = bc_num_print(num, &p->obase, p->obase_t);
+        status = bc_num_print(num, &p->obase, p->obase_t,
+                              inst == BC_INST_PRINT);
 
         if (status) return status;
 

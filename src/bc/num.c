@@ -1237,8 +1237,10 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
 
   size_t i;
   size_t chars;
+  bool newline;
 
   chars = 0;
+  newline = false;
 
   if (n->neg) {
     if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
@@ -1247,42 +1249,50 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
 
   for (i = n->len - 1; i >= n->rdx && i < n->len; --i) {
 
+    if (!chars && newline) {
+      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    }
+
     if (fputc(BC_NUM_TO_CHAR(n->num[i]), f) == EOF) return BC_STATUS_IO_ERR;
     ++chars;
 
     if (chars == BC_NUM_PRINT_WIDTH) {
       if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
-      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
       chars = 0;
+      newline = true;
     }
   }
 
   if (n->rdx) {
+
+    if (!chars && newline) {
+      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    }
 
     if (fputc('.', f) == EOF) return BC_STATUS_IO_ERR;
     ++chars;
 
     if (chars == BC_NUM_PRINT_WIDTH) {
       if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
-      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
       chars = 0;
+      newline = true;
     }
 
     for (; i < n->len; --i) {
+
+      if (!chars && newline) {
+        if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+      }
 
       if (fputc(BC_NUM_TO_CHAR(n->num[i]), f) == EOF) return BC_STATUS_IO_ERR;
       ++chars;
 
       if (chars == BC_NUM_PRINT_WIDTH) {
         if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
-        if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
         chars = 0;
+        newline = true;
       }
     }
-  }
-
-  if (chars) {
-    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
   }
 
   return BC_STATUS_SUCCESS;
@@ -1575,12 +1585,13 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
   return status;
 }
 
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t) {
-  return bc_num_fprint(n, base, base_t, stdout);
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline) {
+  return bc_num_fprint(n, base, base_t, newline, stdout);
 }
 
-BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE *f) {
-
+BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
+                       bool newline, FILE *f)
+{
   BcStatus status;
 
   if (!n || !f) return BC_STATUS_INVALID_PARAM;
@@ -1590,11 +1601,16 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t, FILE *f) {
 
   if (BC_NUM_ZERO(n)) {
     if (fputc('0', f) == EOF) return BC_STATUS_IO_ERR;
-    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
     status = BC_STATUS_SUCCESS;
   }
   else if (base_t == 10) status = bc_num_printDecimal(n, f);
   else status = bc_num_printBase(n, base, base_t, f);
+
+  if (status) return status;
+
+  if (newline) {
+    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+  }
 
   return status;
 }

@@ -788,7 +788,7 @@ static BcStatus bc_parse_print(BcParse *parse, BcVec *code) {
 
       if (status) return status;
 
-      status = bc_vec_pushByte(code, BC_INST_PRINT);
+      status = bc_vec_pushByte(code, BC_INST_PRINT_EXPR);
     }
 
     if (status) return status;
