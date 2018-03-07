@@ -977,22 +977,6 @@ static BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
 
   if (status) return status;
 
-  func = bc_vec_item(&parse->program->funcs, parse->func);
-
-  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
-
-  ip.idx = func->labels.len;
-  ip.func = 0;
-  ip.len = 0;
-
-  status = bc_vec_push(&parse->exit_labels, &ip);
-
-  if (status) return status;
-
-  status = bc_vec_push(&func->labels, &ip.idx);
-
-  if (status) return status;
-
   status = bc_parse_expr(parse, code, BC_PARSE_EXPR_POSIX_REL);
 
   if (status) return status;
@@ -1008,7 +992,23 @@ static BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
 
   if (status) return status;
 
+  func = bc_vec_item(&parse->program->funcs, parse->func);
+
+  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
+  ip.idx = func->labels.len;
+  ip.func = 0;
+  ip.len = 0;
+
   status = bc_parse_pushIndex(code, ip.idx);
+
+  if (status) return status;
+
+  status = bc_vec_push(&parse->exit_labels, &ip);
+
+  if (status) return status;
+
+  status = bc_vec_push(&func->labels, &ip.idx);
 
   if (status) return status;
 
@@ -1044,6 +1044,10 @@ static BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
   if (status) return status;
 
   status = bc_vec_push(&parse->exit_labels, &ip);
+
+  if (status) return status;
+
+  status = bc_vec_push(&func->labels, &ip.idx);
 
   if (status) return status;
 

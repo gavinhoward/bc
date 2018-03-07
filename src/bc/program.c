@@ -140,22 +140,20 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
 
   status = bc_veco_insert(veco, &entry, &idx);
 
-  if (status) {
+  if (status != BC_STATUS_VECO_ITEM_EXISTS) {
 
-    if (status != BC_STATUS_VECO_ITEM_EXISTS) {
+    if (status) return status;
 
-      status = bc_auto_init(&a, NULL, flags & BC_PROGRAM_SEARCH_VAR);
+    status = bc_auto_init(&a, NULL, flags & BC_PROGRAM_SEARCH_VAR);
 
-      if (status) return status;
+    if (status) return status;
 
-      status = bc_vec_push(vec, &a.data);
+    status = bc_vec_push(vec, &a.data);
 
-      if (status) {
-        bc_auto_free(&a);
-        return status;
-      }
+    if (status) {
+      bc_auto_free(&a);
+      return status;
     }
-    else return status;
   }
 
   entry_ptr = bc_veco_item(veco, idx);
@@ -446,7 +444,10 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   status = bc_parse_expr(&parse, &func->code, BC_PARSE_EXPR_NO_READ);
 
-  if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
+  if (status != BC_STATUS_LEX_EOF &&
+      status != BC_STATUS_PARSE_EOF &&
+      parse.token.type != BC_LEX_NEWLINE)
+  {
     status = status ? status : BC_STATUS_EXEC_INVALID_READ_EXPR;
     goto exec_err;
   }
@@ -506,7 +507,7 @@ static char* bc_program_name(uint8_t *code, size_t *start) {
 
   string = (char*) (code + *start);
 
-  ptr = strchr((char*) code, ':');
+  ptr = strchr((char*) string, ':');
 
   if (ptr) len = ((unsigned long) ptr) - ((unsigned long) string);
   else len = strlen(string);
@@ -927,8 +928,6 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
   if (left->type != BC_RESULT_SCALE) {
-
-    status = bc_program_num(p, left, &lval, false);
 
     if (status) return status;
 
