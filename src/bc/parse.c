@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include <data.h>
 #include <lex.h>
@@ -225,7 +226,7 @@ static BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
   while (idx) {
     nums[amt] = (uint8_t) idx;
     idx &= ~(0xFF);
-    idx >>= sizeof(uint8_t);
+    idx >>= sizeof(uint8_t) * CHAR_BIT;
     ++amt;
   }
 
@@ -234,7 +235,7 @@ static BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
   if (status) return status;
 
   while (!status && i < amt) {
-    status = bc_vec_pushByte(code, nums[idx]);
+    status = bc_vec_pushByte(code, nums[i]);
     ++i;
   }
 
