@@ -275,9 +275,6 @@ int bc_entry_cmp(void *entry1, void *entry2) {
   else if (!strcmp(e2->name, bc_func_main)) cmp = 1;
   else cmp = strcmp(e1->name, e2->name);
 
-  fprintf(stderr, "Cmp: %d; Names: %s, %s\n", cmp, e1->name, e2->name);
-  fflush(stderr);
-
   return cmp;
 }
 
