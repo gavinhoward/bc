@@ -58,6 +58,7 @@
 #define BC_INST_HALT ((uint8_t) 'H')
 
 #define BC_INST_PRINT ((uint8_t) 'p')
+#define BC_INST_PRINT_EXPR ((uint8_t) 'Q')
 #define BC_INST_STR ((uint8_t) 's')
 #define BC_INST_PRINT_STR ((uint8_t) 'S')
 
