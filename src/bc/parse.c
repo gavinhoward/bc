@@ -398,6 +398,7 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
 {
   BcStatus status;
   BcEntry entry;
+  BcEntry *entry_ptr;
   size_t idx;
 
   entry.name = name;
@@ -413,7 +414,11 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
 
   if (idx == BC_INVALID_IDX) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
-  status = bc_parse_pushIndex(code, idx);
+  entry_ptr = bc_veco_item(&parse->program->func_map, idx);
+
+  if (!entry_ptr) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
+  status = bc_parse_pushIndex(code, entry_ptr->idx);
 
   if (status) return status;
 
@@ -837,7 +842,14 @@ static BcStatus bc_parse_return(BcParse *parse, BcVec *code) {
   {
     status = bc_vec_pushByte(code, BC_INST_RETURN_ZERO);
   }
-  else status = bc_parse_expr(parse, code, 0);
+  else {
+
+    status = bc_parse_expr(parse, code, 0);
+
+    if (status) return status;
+
+    status = bc_vec_pushByte(code, BC_INST_RETURN);
+  }
 
   return status;
 }
