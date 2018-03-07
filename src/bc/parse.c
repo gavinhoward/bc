@@ -856,6 +856,8 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
 
   if (parse->token.type == BC_LEX_RIGHT_BRACE) {
 
+    if (!parse->num_braces) return BC_STATUS_PARSE_INVALID_TOKEN;
+
     --parse->num_braces;
 
     status = bc_lex_next(&parse->lex, &parse->token);
