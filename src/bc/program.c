@@ -1153,7 +1153,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
     if (status) goto err;
   }
 
-  status = bc_vec_pushAt(&p->expr_stack, &result, ip->len);
+  status = bc_vec_pushAt(&p->expr_stack, &result, len);
 
   if (status) goto err;
 
