@@ -244,6 +244,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
       flags = result->type == BC_RESULT_VAR ? BC_PROGRAM_SEARCH_VAR : 0;
 
       status = bc_program_search(p, result, num, flags);
+
       break;
     }
 
