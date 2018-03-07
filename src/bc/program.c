@@ -1580,15 +1580,15 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
   if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
 
   entry.name = name;
-  entry.idx = p->funcs.len;
+  *idx = p->funcs.len;
 
-  status = bc_veco_insert(&p->func_map, &entry, idx);
+  status = bc_veco_insert(&p->func_map, &entry, &entry.idx);
 
   if (status == BC_STATUS_VECO_ITEM_EXISTS) {
 
     BcFunc *func;
 
-    func = bc_vec_item(&p->funcs, *idx);
+    func = bc_vec_item(&p->funcs, entry.idx);
 
     if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
