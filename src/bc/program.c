@@ -1606,16 +1606,7 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
   if (status) return status;
 
-  status = bc_vec_push(&p->funcs, &f);
-
-  for (size_t i = 0; i < p->func_map.vec.len; ++i) {
-    BcEntry *e = bc_veco_item(&p->func_map, i);
-    fprintf(stderr, "Name[%zu]: %s\n", i, e->name);
-  }
-
-  fflush(stderr);
-
-  return status;
+  return bc_vec_push(&p->funcs, &f);
 }
 
 BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx) {
