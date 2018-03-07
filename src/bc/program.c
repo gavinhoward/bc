@@ -73,7 +73,7 @@ static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
 
       cond = flags & BC_PROGRAM_SEARCH_VAR;
 
-      if ((a->var && cond) || (!a->var && !cond))
+      if (!a->var != !cond)
         return BC_STATUS_EXEC_INVALID_TYPE;
 
       if (cond) *ret = &a->data.num;
@@ -95,7 +95,7 @@ static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
   return BC_STATUS_EXEC_UNDEFINED_VAR;
 }
 
-static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
+static BcStatus bc_program_search(BcProgram *p, BcResult *result,
                                   BcNum **ret, uint8_t flags)
 {
   BcStatus status;
@@ -142,7 +142,19 @@ static BcStatus bc_program_search(BcProgram *p, const BcResult *result,
 
   if (status != BC_STATUS_VECO_ITEM_EXISTS) {
 
+    size_t len;
+
     if (status) return status;
+
+    len = strlen(entry.name) + 1;
+
+    result->data.id.name = malloc(len);
+    a.name = malloc(len);
+
+    if (!result->data.id.name || !a.name) return BC_STATUS_MALLOC_FAIL;
+
+    strcpy(result->data.id.name, entry.name);
+    strcpy(a.name, entry.name);
 
     status = bc_auto_init(&a, NULL, flags & BC_PROGRAM_SEARCH_VAR);
 
@@ -1860,7 +1872,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_PRINT_STR:
       {
-        const char *string;
+        const char **string;
 
         idx = bc_program_index(code, &ip->idx);
 
@@ -1868,7 +1880,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         string = bc_vec_item(&p->strings, idx);
 
-        status = bc_program_printString(string);
+        if (!string) return BC_STATUS_EXEC_INVALID_STRING;
+
+        status = bc_program_printString(*string);
 
         break;
       }
@@ -1961,6 +1975,8 @@ BcStatus bc_program_exec(BcProgram *p) {
     func = bc_vec_item(&p->funcs, ip->func);
 
     if (!func) return BC_STATUS_EXEC_INVALID_STACK;
+
+    code = func->code.array;
   }
 
   return status;

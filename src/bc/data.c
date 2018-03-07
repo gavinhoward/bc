@@ -341,7 +341,7 @@ void bc_result_free(void *result) {
     case BC_RESULT_VAR:
     case BC_RESULT_ARRAY:
     {
-      free(r->data.id.name);
+      if (r->data.id.name) free(r->data.id.name);
       break;
     }
 
