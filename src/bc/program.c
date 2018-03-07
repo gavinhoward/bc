@@ -33,8 +33,8 @@
 #include <parse.h>
 #include <instructions.h>
 
-static const char *bc_program_main_func = "(main)";
-static const char *bc_program_read_func = "(read)";
+extern const char *bc_func_main;
+extern const char *bc_func_read;
 
 static const char *bc_byte_fmt = "%02x";
 
@@ -1410,14 +1410,14 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if (s) goto func_map_err;
 
-  name = malloc(strlen(bc_program_main_func) + 1);
+  name = malloc(strlen(bc_func_main) + 1);
 
   if (!name) {
     s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
 
-  strcpy(name, bc_program_main_func);
+  strcpy(name, bc_func_main);
 
   s = bc_program_func_add(p, name, &idx);
 
@@ -1425,14 +1425,14 @@ BcStatus bc_program_init(BcProgram *p) {
 
   name = NULL;
 
-  read_name = malloc(strlen(bc_program_read_func) + 1);
+  read_name = malloc(strlen(bc_func_read) + 1);
 
   if (!read_name) {
     s = BC_STATUS_MALLOC_FAIL;
     goto read_err;
   }
 
-  strcpy(read_name, bc_program_read_func);
+  strcpy(read_name, bc_func_read);
 
   s = bc_program_func_add(p, read_name, &idx);
 
@@ -1606,7 +1606,16 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
   if (status) return status;
 
-  return bc_vec_push(&p->funcs, &f);
+  status = bc_vec_push(&p->funcs, &f);
+
+  for (size_t i = 0; i < p->func_map.vec.len; ++i) {
+    BcEntry *e = bc_veco_item(&p->func_map, i);
+    fprintf(stderr, "Name[%zu]: %s\n", i, e->name);
+  }
+
+  fflush(stderr);
+
+  return status;
 }
 
 BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx) {

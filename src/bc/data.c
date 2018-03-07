@@ -26,6 +26,9 @@
 
 #include <data.h>
 
+const char *bc_func_main = "(main)";
+const char *bc_func_read = "(read)";
+
 static BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
 
   BcStatus status;
@@ -255,11 +258,27 @@ int bc_entry_cmp(void *entry1, void *entry2) {
 
   BcEntry *e1;
   BcEntry *e2;
+  int cmp;
 
   e1 = (BcEntry*) entry1;
   e2 = (BcEntry*) entry2;
 
-  return strcmp(e1->name, e2->name);
+  if (!strcmp(e1->name, bc_func_main)) {
+    if (!strcmp(e2->name, bc_func_main)) cmp = 0;
+    else cmp = -1;
+  }
+  else if (!strcmp(e1->name, bc_func_read)) {
+    if (!strcmp(e2->name, bc_func_main)) cmp = 1;
+    else if (!strcmp(e2->name, bc_func_read)) cmp = 0;
+    else cmp = -1;
+  }
+  else if (!strcmp(e2->name, bc_func_main)) cmp = 1;
+  else cmp = strcmp(e1->name, e2->name);
+
+  fprintf(stderr, "Cmp: %d; Names: %s, %s\n", cmp, e1->name, e2->name);
+  fflush(stderr);
+
+  return cmp;
 }
 
 void bc_entry_free(void *entry) {

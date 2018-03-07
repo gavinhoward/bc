@@ -845,11 +845,14 @@ static BcStatus bc_parse_return(BcParse *parse, BcVec *code) {
 static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
 
   BcStatus status;
+  uint8_t *flag_ptr;
 
   if (parse->flags.len <= 1 || parse->num_braces == 0)
     return BC_STATUS_PARSE_INVALID_TOKEN;
 
-  if (!BC_PARSE_BODY(parse)) return BC_STATUS_PARSE_BUG;
+  flag_ptr = bc_vec_top(&parse->flags);
+
+  if (!flag_ptr) return BC_STATUS_PARSE_BUG;
 
   if (parse->token.type == BC_LEX_RIGHT_BRACE) {
 
@@ -867,27 +870,26 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
       if (status) return status;
     }
 
-    if (parse->token.type == BC_LEX_KEY_ELSE) {
+    status = bc_vec_pop(&parse->flags);
+
+    if (status) return status;
+
+    flag_ptr = BC_PARSE_TOP_FLAG_PTR(parse);
+
+    *flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
+
+    if (parse->token.type == BC_LEX_KEY_ELSE)
       status = bc_parse_else(parse, code);
-    }
-    else {
-
-      uint8_t *flag_ptr;
-
-      status = bc_vec_pop(&parse->flags);
-
-      if (status) return status;
-
-      flag_ptr = BC_PARSE_TOP_FLAG_PTR(parse);
-
-      *flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
-
-      return BC_STATUS_SUCCESS;
-    }
   }
   else if (BC_PARSE_FUNC_INNER(parse)) {
+
     parse->func = 0;
+
     status = bc_vec_pushByte(code, BC_INST_RETURN_ZERO);
+
+    if (status) return status;
+
+    status = bc_vec_pop(&parse->flags);
   }
   else {
 
@@ -908,11 +910,11 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
     if (!label) return BC_STATUS_PARSE_BUG;
 
     *label = code->len;
+
+    status = bc_vec_pop(&parse->flags);
   }
 
-  if (status) return status;
-
-  return bc_vec_pop(&parse->flags);
+  return status;
 }
 
 static BcStatus bc_parse_startBody(BcParse *parse, uint8_t flags) {
@@ -1426,19 +1428,6 @@ err:
   return status;
 }
 
-static BcStatus bc_parse_funcStart(BcParse *parse) {
-
-  BcStatus status;
-
-  status = bc_lex_next(&parse->lex, &parse->token);
-
-  if (status) return status;
-
-  parse->auto_part = true;
-
-  return BC_STATUS_SUCCESS;
-}
-
 static BcStatus bc_parse_auto(BcParse *parse) {
 
   BcLexTokenType type;
@@ -1527,22 +1516,41 @@ err:
   return status;
 }
 
-static BcStatus bc_parse_clearHeader(BcParse *parse, BcVec *code) {
+static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
 
   BcStatus status;
   uint8_t *flag_ptr;
   uint8_t flags;
 
+  if (parse->flags.len < 2) return BC_STATUS_PARSE_BUG;
+
   flag_ptr = bc_vec_top(&parse->flags);
-  *flag_ptr = *flag_ptr & ~(BC_PARSE_FLAG_BODY);
+
+  if (!flag_ptr) return BC_STATUS_PARSE_BUG;
+
+  *flag_ptr &= ~(BC_PARSE_FLAG_BODY);
+
   flags = *flag_ptr;
 
-  if (flags & BC_PARSE_FLAG_FUNC_INNER)
-    status = bc_parse_funcStart(parse);
+  if (flags & BC_PARSE_FLAG_FUNC_INNER) {
+    if (!brace) return BC_STATUS_PARSE_INVALID_TOKEN;
+    parse->auto_part = true;
+    status = bc_lex_next(&parse->lex, &parse->token);
+  }
   else if (flags) {
+
     status = bc_parse_stmt(parse, code);
-    if (status) return status;
-    status = bc_parse_endBody(parse, code);
+
+    if (!brace) {
+
+      if (status) return status;
+
+      status = bc_parse_endBody(parse, code);
+
+      if (status) return status;
+
+      status = bc_vec_pop(&parse->flags);
+    }
   }
   else status = BC_STATUS_PARSE_BUG;
 
@@ -1659,12 +1667,13 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       ++parse->num_braces;
 
-      if (BC_PARSE_BODY(parse)) {
-        status = bc_parse_clearHeader(parse, code);
-        if (status) return status;
-      }
+      if (!BC_PARSE_BODY(parse)) return BC_STATUS_PARSE_INVALID_TOKEN;
 
-      return bc_parse_startBody(parse, 0);
+      status = bc_lex_next(&parse->lex, &parse->token);
+
+      if (status) return status;
+
+      return bc_parse_body(parse, code, true);
     }
 
     case BC_LEX_KEY_AUTO:
@@ -1674,17 +1683,10 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     default:
     {
-      if (BC_PARSE_IF_END(parse)) {
-        status = bc_parse_noElse(parse, code);
-        if (status) return status;
-      }
-      else if (BC_PARSE_BODY(parse)) {
-        status = bc_parse_clearHeader(parse, code);
-        if (status) return status;
-        status = bc_parse_startBody(parse, 0);
-      }
-
       parse->auto_part = false;
+
+      if (BC_PARSE_IF_END(parse)) return bc_parse_noElse(parse, code);
+      else if (BC_PARSE_BODY(parse)) return bc_parse_body(parse, code, false);
 
       break;
     }
