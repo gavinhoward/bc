@@ -1594,20 +1594,29 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
   BcStatus status;
   BcEntry entry;
+  BcEntry *entry_ptr;
   BcFunc f;
 
   if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
 
   entry.name = name;
-  *idx = p->funcs.len;
+  entry.idx = p->funcs.len;
 
-  status = bc_veco_insert(&p->func_map, &entry, &entry.idx);
+  status = bc_veco_insert(&p->func_map, &entry, idx);
+
+  if (status && status != BC_STATUS_VECO_ITEM_EXISTS) return status;
+
+  entry_ptr = bc_veco_item(&p->func_map, *idx);
+
+  if (!entry_ptr) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+
+  *idx = entry_ptr->idx;
 
   if (status == BC_STATUS_VECO_ITEM_EXISTS) {
 
     BcFunc *func;
 
-    func = bc_vec_item(&p->funcs, entry.idx);
+    func = bc_vec_item(&p->funcs, entry_ptr->idx);
 
     if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
@@ -1616,16 +1625,17 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
     // We need to reset these so the function can be repopulated.
     while (!status && func->autos.len) status = bc_vec_pop(&func->autos);
     while (!status && func->params.len) status = bc_vec_pop(&func->params);
-
-    return status;
   }
-  else if (status) return status;
+  else {
 
-  status = bc_func_init(&f);
+    status = bc_func_init(&f);
 
-  if (status) return status;
+    if (status) return status;
 
-  return bc_vec_push(&p->funcs, &f);
+    status = bc_vec_push(&p->funcs, &f);
+  }
+
+  return status;
 }
 
 BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx) {
