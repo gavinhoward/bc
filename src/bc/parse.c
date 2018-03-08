@@ -889,12 +889,12 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
 
     if (status) return status;
 
-    flag_ptr = BC_PARSE_TOP_FLAG_PTR(parse);
-
-    *flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
-
     if (parse->token.type == BC_LEX_KEY_ELSE)
       status = bc_parse_else(parse, code);
+    else {
+      flag_ptr = BC_PARSE_TOP_FLAG_PTR(parse);
+      *flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
+    }
   }
   else if (BC_PARSE_FUNC_INNER(parse)) {
 
@@ -1580,10 +1580,6 @@ static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
       if (status) return status;
 
       status = bc_parse_endBody(parse, code);
-
-      if (status) return status;
-
-      status = bc_vec_pop(&parse->flags);
     }
   }
   else status = BC_STATUS_PARSE_BUG;
