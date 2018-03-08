@@ -916,6 +916,18 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
 
     if (!ip) return BC_STATUS_PARSE_BUG;
 
+    status = bc_vec_pushByte(code, BC_INST_JUMP);
+
+    if (status) return status;
+
+    label = bc_vec_top(&parse->cond_labels);
+
+    if (!label) return BC_STATUS_PARSE_BUG;
+
+    status = bc_parse_pushIndex(code, *label);
+
+    if (status) return status;
+
     func = bc_vec_item(&parse->program->funcs, parse->func);
 
     if (!func) return BC_STATUS_PARSE_BUG;
@@ -1144,7 +1156,7 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
   BcStatus status;
   BcFunc *func;
   BcInstPtr ip;
-  size_t cond_idx;
+  size_t cond_idx, exit_idx, body_idx, update_idx;
   uint8_t flags;
 
   status = bc_lex_next(&parse->lex, &parse->token);
@@ -1178,6 +1190,9 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
   if (!func) return BC_STATUS_PARSE_BUG;
 
   cond_idx = func->labels.len;
+  update_idx = cond_idx + 1;
+  body_idx = update_idx + 1;
+  exit_idx = body_idx + 1;
 
   status = bc_vec_push(&func->labels, &code->len);
 
@@ -1201,7 +1216,7 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   if (status) return status;
 
-  status = bc_parse_pushIndex(code, cond_idx + 3);
+  status = bc_parse_pushIndex(code, exit_idx);
 
   if (status) return status;
 
@@ -1209,13 +1224,13 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   if (status) return status;
 
-  status = bc_parse_pushIndex(code, cond_idx + 2);
+  status = bc_parse_pushIndex(code, body_idx);
 
   if (status) return status;
 
   ip.idx = func->labels.len;
 
-  status = bc_vec_push(&parse->cond_labels, &ip.idx);
+  status = bc_vec_push(&parse->cond_labels, &update_idx);
 
   if (status) return status;
 
@@ -1251,7 +1266,7 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   if (status) return status;
 
-  ip.idx = func->labels.len;
+  ip.idx = exit_idx;
   ip.func = 1;
   ip.len = 0;
 
