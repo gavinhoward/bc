@@ -855,7 +855,7 @@ static BcStatus bc_parse_return(BcParse *parse, BcVec *code) {
   return status;
 }
 
-static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
+static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
   BcStatus status;
   uint8_t *flag_ptr;
@@ -867,15 +867,19 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code) {
 
   if (!flag_ptr) return BC_STATUS_PARSE_BUG;
 
-  if (parse->token.type == BC_LEX_RIGHT_BRACE) {
+  if (brace) {
 
-    if (!parse->num_braces) return BC_STATUS_PARSE_INVALID_TOKEN;
+    if (parse->token.type == BC_LEX_RIGHT_BRACE) {
 
-    --parse->num_braces;
+      if (!parse->num_braces) return BC_STATUS_PARSE_INVALID_TOKEN;
 
-    status = bc_lex_next(&parse->lex, &parse->token);
+      --parse->num_braces;
 
-    if (status) return status;
+      status = bc_lex_next(&parse->lex, &parse->token);
+
+      if (status) return status;
+    }
+    else return BC_STATUS_PARSE_INVALID_TOKEN;
   }
 
   if (BC_PARSE_IF(parse)) {
@@ -1441,7 +1445,8 @@ static BcStatus bc_parse_func(BcParse *parse) {
   if (comma) return BC_STATUS_PARSE_INVALID_FUNC;
 
   flags = BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FUNC_INNER | BC_PARSE_FLAG_BODY;
-  status = bc_vec_push(&parse->flags, &flags);
+
+  status = bc_parse_startBody(parse, flags);
 
   if (status) return status;
 
@@ -1579,7 +1584,7 @@ static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
 
       if (status) return status;
 
-      status = bc_parse_endBody(parse, code);
+      status = bc_parse_endBody(parse, code, false);
     }
   }
   else status = BC_STATUS_PARSE_BUG;
@@ -1756,7 +1761,7 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     case BC_LEX_RIGHT_BRACE:
     {
-      status = bc_parse_endBody(parse, code);
+      status = bc_parse_endBody(parse, code, true);
       break;
     }
 
