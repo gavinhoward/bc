@@ -134,7 +134,7 @@ typedef enum BcStatus {
 typedef void (*BcFreeFunc)(void*);
 typedef BcStatus (*BcCopyFunc)(void*, void*);
 
-BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
+BcStatus bc_exec(unsigned int flags, unsigned int filec, char *filev[]);
 
 BcStatus bc_print_version();
 
