@@ -106,6 +106,9 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
   BcVecO *veco;
   size_t idx;
   BcEntry *entry_ptr;
+
+  // We use this as either a number or an array, since
+  // a BcAuto has a union inside that has both.
   BcAuto a;
 
   ip = bc_vec_top(&p->stack);
@@ -149,12 +152,10 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
     len = strlen(entry.name) + 1;
 
     result->data.id.name = malloc(len);
-    a.name = malloc(len);
 
     if (!result->data.id.name || !a.name) return BC_STATUS_MALLOC_FAIL;
 
     strcpy(result->data.id.name, entry.name);
-    strcpy(a.name, entry.name);
 
     status = bc_auto_init(&a, NULL, flags & BC_PROGRAM_SEARCH_VAR);
 
@@ -162,10 +163,7 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     status = bc_vec_push(vec, &a.data);
 
-    if (status) {
-      bc_auto_free(&a);
-      return status;
-    }
+    if (status) return status;
   }
 
   entry_ptr = bc_veco_item(veco, idx);
