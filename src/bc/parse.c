@@ -406,24 +406,38 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
 
   status = bc_parse_params(parse, code, flags);
 
-  if (status) return status;
+  if (status) goto err;
 
-  if (parse->token.type != BC_LEX_RIGHT_PAREN)
-    return BC_STATUS_PARSE_INVALID_TOKEN;
+  if (parse->token.type != BC_LEX_RIGHT_PAREN) {
+    status = BC_STATUS_PARSE_INVALID_TOKEN;
+    goto err;
+  }
 
   idx = bc_veco_index(&parse->program->func_map, &entry);
 
-  if (idx == BC_INVALID_IDX) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+  if (idx == BC_INVALID_IDX) {
+    status = BC_STATUS_EXEC_UNDEFINED_FUNC;
+    goto err;
+  }
 
   entry_ptr = bc_veco_item(&parse->program->func_map, idx);
 
-  if (!entry_ptr) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+  if (!entry_ptr) {
+    status = BC_STATUS_EXEC_UNDEFINED_FUNC;
+    goto err;
+  }
 
   status = bc_parse_pushIndex(code, entry_ptr->idx);
 
-  if (status) return status;
+  if (status) goto err;;
 
-  return bc_lex_next(&parse->lex, &parse->token);
+  status = bc_lex_next(&parse->lex, &parse->token);
+
+err:
+
+  free(name);
+
+  return status;
 }
 
 static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
