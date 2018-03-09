@@ -419,7 +419,7 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
 
     status = bc_program_func_add(parse->program, name, &idx);
 
-    if (status) goto err;
+    if (status) return status;
 
     name = NULL;
   }
@@ -433,9 +433,7 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
 
   if (status) return status;
 
-  status = bc_lex_next(&parse->lex, &parse->token);
-
-  return status;
+  return bc_lex_next(&parse->lex, &parse->token);
 
 err:
 
@@ -1397,10 +1395,15 @@ static BcStatus bc_parse_func(BcParse *parse) {
 
   name = parse->token.string;
 
-  if (parse->token.type != BC_LEX_NAME) return BC_STATUS_PARSE_INVALID_FUNC;
+  if (parse->token.type != BC_LEX_NAME) {
+    status = BC_STATUS_PARSE_INVALID_FUNC;
+    goto err;
+  }
 
-  if (parse->program->funcs.len != parse->program->func_map.vec.len)
-    return BC_STATUS_PARSE_MISMATCH_NUM_FUNCS;
+  if (parse->program->funcs.len != parse->program->func_map.vec.len) {
+    status = BC_STATUS_PARSE_MISMATCH_NUM_FUNCS;
+    goto err;
+  }
 
   status = bc_program_func_add(parse->program, name, &parse->func);
 

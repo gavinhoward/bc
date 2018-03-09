@@ -1438,9 +1438,9 @@ BcStatus bc_program_init(BcProgram *p) {
 
   s = bc_program_func_add(p, name, &idx);
 
-  if (s || idx != BC_PROGRAM_MAIN_FUNC) goto read_err;
-
   name = NULL;
+
+  if (s || idx != BC_PROGRAM_MAIN_FUNC) goto read_err;
 
   read_name = malloc(strlen(bc_func_read) + 1);
 
@@ -1453,9 +1453,9 @@ BcStatus bc_program_init(BcProgram *p) {
 
   s = bc_program_func_add(p, read_name, &idx);
 
-  if (s || idx != BC_PROGRAM_READ_FUNC) goto var_err;
-
   read_name = NULL;
+
+  if (s || idx != BC_PROGRAM_READ_FUNC) goto var_err;
 
   s = bc_vec_init(&p->vars, sizeof(BcVar), bc_var_free);
 
@@ -1602,7 +1602,10 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
   status = bc_veco_insert(&p->func_map, &entry, idx);
 
-  if (status && status != BC_STATUS_VECO_ITEM_EXISTS) return status;
+  if (status) {
+    free(name);
+    if (status != BC_STATUS_VECO_ITEM_EXISTS) return status;
+  }
 
   entry_ptr = bc_veco_item(&p->func_map, *idx);
 
