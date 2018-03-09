@@ -23,167 +23,12 @@
 scale = 20
 
 define e(x) {
-
-	auto b,s,n,d,r,p,f,e
-
-	if (x==0) return (1/1)
-
-	b = ibase
-	ibase = A
-
-	s = scale
-	scale = x*0.435 + 10
-
-	if (x<0) {
-		n = 1
-		x = -x
-	}
-
-	scale += s + length(scale + s) + 1
-
-	while (x>2) {
-		x/=2
-		d+=1
-	}
-
-	f = x
-	p = 1
-	for (i = 2; 1; ++i) {
-		f *= x
-		p *= i
-		e = f\p
-		if (e == 0) {
-			if (d>0) {
-				while (f--) r *= r
-			}
-			scale = s
-			ibase = b
-			if (n) return (1/r)
-			return (r/1)
-		}
-		r += e
-	}
 }
 
 define l(x) {
-
-	auto b,s,r,p,f,n,e,i
-
-	b = ibase
-	ibase = A
-
-	if (x<=10) {
-		r = 1-10^scale
-		ibase = b
-		return (r)
-	}
-
-	s = scale
-	scale += 10
-
-	while (x>=2) {
-		p *= 2
-		x = sqrt(x)
-	}
-
-	while (x<= 0.5) {
-		p *= 2
-		x = sqrt(x)
-	}
-
-	f = (x-1)/(x+1)
-	r = f
-	n = f*f
-
-	for (i=3; 1; i+=2) {
-		f *= n
-		e = f / i
-		if (e == 0) {
-			r *= f
-			scale = s
-			ibase = b
-			return (r/1)
-		}
-		r += e
-	}
-}
-
-define a(x) {
-
-	auto b,s,r,v,i,c,d,e,n
-
-	if (x==0) return (0)
-
-	i = ibase
-	ibase = A
-
-	s = scale
-	v = 1
-	while (x > .5) {
-		scale += 1
-		x = -(1-sqrt(1+x*x))/x
-		v *= 2
-	}
-	while (x < -.5) {
-		scale += 1
-		x = -(1-sqrt(1+x*x))/x
-		v *= 2
-	}
-
-	r = -x*x
-	c = v
-	d = e = 1
-	for (i=3; 1; i+=2) {
-		v *= r
-		c = c*i + d*v
-		d *= i
-		n = c/d
-		if (n == e) {
-			ibase = b
-			scale = s
-			return (x*c/d)
-		}
-		e = n
-	}
 }
 
 define s(x) {
-
-	auto b,s,r,a,y,m,o,p,t,i
-
-	b = ibase
-	ibase = A
-
-	s = scale
-
-	y = x/.7853
-	r = s + length(y) - scale(y)
-	if (r < s) r = s
-	scale = r
-	a = a(1)
-
-	scale = 0
-	if (x >= 0) m = (x/(2*a) + 1)/2
-	if (x < 0) m = (x/(2*a) - 1)/2
-	x -= 4*m*a
-	if (m % 2 != 0) x = -x
-
-	scale = s + length(1.25*s) - scale(1.25*s)
-	y = -x*x
-	r = o = x
-	p = 1
-
-	for (i=3; 1; i+=2) {
-		o *= y
-		p = p*i*(i - 1)
-		t = o/p
-		if (t == 0) {
-			scale = s
-			ibase = b
-			return (r/1)
-		}
-		r += t
-	}
 }
 
 define c(x) {
@@ -198,47 +43,9 @@ define c(x) {
 	return (x/1)
 }
 
+define a(x) {
+}
+
 define j(n,x) {
-
-	auto b,s,r,i,t,q,n,d,x,y,z,w
-
-	b = ibase
-	ibase = A
-	s = scale
-
-	t = 1.4*x + 1.2*s - n
-	t = length(t) - scale(t)
-	if (t>0) scale += t
-
-	q = -x*x/4
-
-	if (n < 0) {
-		n = -n
-		x = -x
-	}
-
-	n = 1
-	d = 1
-	for (i=1; i<=n; ++i) {
-		n *= x
-		d *= 2*i
-	}
-
-	x = n
-	y = 1
-	z = 1
-	for (i=1; 1; ++i) {
-		n *= q
-		w = i*(n+i)
-		x = x*w+a
-		c *= w
-		r = x/d
-		if (r == z) {
-			ibase = b
-			scale = s
-			return (r/1)
-		}
-		z = r
-	}
 }
 
