@@ -48,11 +48,18 @@ regexes = [
 	'^#endif \/\/ BC.*_H$',
 	'^extern.*$',
 	'^#define TT.*$',
+]
+
+regexes_all = [
 	'^typedef struct BcGlobals {.*} BcGlobals;$'
 ]
 
 for reg in regexes:
 	r = re.compile(reg, re.M)
+	content = r.sub('', content)
+
+for reg in regexes_all:
+	r = re.compile(reg, re.M | re.DOTALL)
 	content = r.sub('', content)
 
 with open(testdir + "/header.c") as f:
