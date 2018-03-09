@@ -158,6 +158,8 @@ static const BcOp bc_ops[] = {
 
 static const uint8_t bc_op_insts[] = {
 
+  BC_INST_OP_NEGATE,
+
   BC_INST_OP_POWER,
 
   BC_INST_OP_MULTIPLY,
@@ -178,8 +180,6 @@ static const uint8_t bc_op_insts[] = {
 
   BC_INST_OP_BOOL_NOT,
   BC_INST_OP_BOOL_AND,
-
-  BC_INST_OP_NEGATE,
 
   BC_INST_OP_ASSIGN_POWER,
   BC_INST_OP_ASSIGN_MULTIPLY,
@@ -2284,7 +2284,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       goto err;
     }
 
-    inst = bc_op_insts[top - BC_LEX_OP_POWER];
+    inst = bc_op_insts[top - BC_LEX_OP_NEGATE];
 
     status = bc_vec_pushByte(code, inst);
 
