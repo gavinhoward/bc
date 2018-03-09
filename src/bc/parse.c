@@ -2215,7 +2215,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
         status = bc_parse_builtin(parse, code, type, flags);
         paren_expr = true;
         rparen = false;
-        get_token = true;
+        get_token = false;
         ++nexprs;
         prev = type == BC_LEX_KEY_LENGTH ? BC_EXPR_LENGTH : BC_EXPR_SQRT;
         break;
