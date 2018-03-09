@@ -2105,9 +2105,8 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       case BC_LEX_OP_BOOL_OR:
       case BC_LEX_OP_BOOL_AND:
       {
-        if (type >= BC_LEX_OP_REL_EQUAL && type <= BC_LEX_OP_REL_GREATER) {
+        if (type >= BC_LEX_OP_REL_EQUAL && type <= BC_LEX_OP_REL_GREATER)
           nrelops += 1;
-        }
 
         prev = BC_PARSE_TOKEN_TO_EXPR(type);
         status = bc_parse_operator(parse, code, &parse->ops,
