@@ -592,8 +592,8 @@ static BcStatus bc_parse_scale(BcParse *parse, BcVec *code,
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code,
-                                BcExprType *prev, uint8_t flags)
+static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev,
+                                uint32_t *nexprs, uint8_t flags)
 {
   BcStatus status;
   BcLexTokenType type;
@@ -630,6 +630,10 @@ static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code,
     if (status) return status;
 
     type = parse->token.type;
+
+    // Because we parse the next part of the expression
+    // right here, we need to increment this.
+    *nexprs = *nexprs + 1;
 
     switch (type) {
 
@@ -2064,7 +2068,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       case BC_LEX_OP_INC:
       case BC_LEX_OP_DEC:
       {
-        status = bc_parse_incdec(parse, code, &prev, flags);
+        status = bc_parse_incdec(parse, code, &prev, &nexprs, flags);
         rparen = false;
         get_token = false;
         break;
