@@ -5,5 +5,5 @@ void bc_main(void) {
 
   flags = (unsigned int) toys.optflags;
 
-  toys.exitval = (char) bc_exec(flags, toys.optc, toys.optargs);
+  toys.exitval = (char) bc_exec(flags, toys.optc, (const char**) toys.optargs);
 }

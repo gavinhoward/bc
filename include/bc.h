@@ -26,6 +26,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define TT (bc_globals)
+
 #define BC_FLAG_WARN (1<<0)
 #define BC_FLAG_STANDARD (1<<1)
 #define BC_FLAG_QUIET (1<<2)
@@ -131,6 +133,17 @@ typedef enum BcStatus {
 
 } BcStatus;
 
+typedef struct BcGlobals {
+
+  long bc_code;
+  long bc_interactive;
+  long bc_std;
+  long bc_warn;
+
+  long bc_signal;
+
+} BcGlobals;
+
 typedef void (*BcFreeFunc)(void*);
 typedef BcStatus (*BcCopyFunc)(void*, void*);
 
@@ -144,12 +157,7 @@ void bc_error_file(BcStatus status, const char *file, uint32_t line);
 BcStatus bc_posix_error(BcStatus status, const char *file,
                         uint32_t line, const char *msg);
 
-extern long bc_code;
-extern long bc_interactive;
-extern long bc_std;
-extern long bc_warn;
-
-extern long bc_signal;
+extern BcGlobals bc_globals;
 
 extern const unsigned char bc_lib[];
 extern const char *bc_lib_name;

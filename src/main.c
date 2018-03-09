@@ -67,12 +67,7 @@ static const char *bc_help =
   "  -w  --warn         warn if any non-POSIX extensions are used\n"
   "  -v  --version      print version information and copyright and exit\n\n";
 
-long bc_code = 0;
-long bc_interactive = 0;
-long bc_std = 0;
-long bc_warn = 0;
-
-long bc_signal = 0;
+BcGlobals bc_globals;
 
 int main(int argc, char *argv[]) {
 
@@ -83,6 +78,8 @@ int main(int argc, char *argv[]) {
   bool do_exit;
 
   setlocale(LC_ALL, "");
+
+  memset(&bc_globals, 0, sizeof(BcGlobals));
 
   do_exit = false;
   flags = 0;
