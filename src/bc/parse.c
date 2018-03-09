@@ -454,7 +454,7 @@ static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
 
   status = bc_lex_next(&parse->lex, &parse->token);
 
-  if (status) return status;
+  if (status) goto err;
 
   if (parse->token.type == BC_LEX_LEFT_BRACKET) {
 
@@ -462,24 +462,29 @@ static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
 
     status = bc_lex_next(&parse->lex, &parse->token);
 
-    if (status) return status;
+    if (status) goto err;
 
     status = bc_parse_expr(parse, code, flags);
 
-    if (status) return status;
+    if (status) goto err;
 
-    if (parse->token.type != BC_LEX_RIGHT_BRACKET)
-      return BC_STATUS_PARSE_INVALID_TOKEN;
+    if (parse->token.type != BC_LEX_RIGHT_BRACKET) {
+      status = BC_STATUS_PARSE_INVALID_TOKEN;
+      goto err;
+    }
 
     status = bc_vec_pushByte(code, BC_INST_PUSH_ARRAY);
 
-    if (status) return status;
+    if (status) goto err;
 
     status = bc_parse_pushName(code, name);
   }
   else if (parse->token.type == BC_LEX_LEFT_PAREN) {
 
-    if (flags & BC_PARSE_EXPR_NO_CALL) return BC_STATUS_PARSE_INVALID_TOKEN;
+    if (flags & BC_PARSE_EXPR_NO_CALL) {
+      status = BC_STATUS_PARSE_INVALID_TOKEN;
+      goto err;
+    }
 
     *type = BC_EXPR_FUNC_CALL;
 
@@ -491,10 +496,16 @@ static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
 
     status = bc_vec_pushByte(code, BC_INST_PUSH_VAR);
 
-    if (status) return status;
+    if (status) goto err;
 
     status = bc_parse_pushName(code, name);
   }
+
+  return status;
+
+err:
+
+  free(name);
 
   return status;
 }
@@ -2182,11 +2193,11 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
         status = bc_vec_pushByte(code, BC_INST_PUSH_NUM);
 
-        if (status) goto err;
+        if (status) return status;
 
         status = bc_parse_pushIndex(code, idx);
 
-        if (status) goto err;
+        if (status) return status;
 
         paren_expr = true;
         rparen = false;
