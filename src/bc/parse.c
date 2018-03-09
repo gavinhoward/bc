@@ -416,26 +416,29 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
   idx = bc_veco_index(&parse->program->func_map, &entry);
 
   if (idx == BC_INVALID_IDX) {
-    status = BC_STATUS_EXEC_UNDEFINED_FUNC;
-    goto err;
+
+    status = bc_program_func_add(parse->program, name, &idx);
+
+    if (status) goto err;
+
+    name = NULL;
   }
 
   entry_ptr = bc_veco_item(&parse->program->func_map, idx);
 
-  if (!entry_ptr) {
-    status = BC_STATUS_EXEC_UNDEFINED_FUNC;
-    goto err;
-  }
+  if (!entry_ptr) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
   status = bc_parse_pushIndex(code, entry_ptr->idx);
 
-  if (status) goto err;;
+  if (status) return status;
 
   status = bc_lex_next(&parse->lex, &parse->token);
 
+  return status;
+
 err:
 
-  free(name);
+  if (name) free(name);
 
   return status;
 }
@@ -1376,15 +1379,16 @@ static BcStatus bc_parse_func(BcParse *parse) {
 
   if (status) return status;
 
+  name = parse->token.string;
+
   if (parse->token.type != BC_LEX_NAME) return BC_STATUS_PARSE_INVALID_FUNC;
 
   if (parse->program->funcs.len != parse->program->func_map.vec.len)
     return BC_STATUS_PARSE_MISMATCH_NUM_FUNCS;
 
-  status = bc_program_func_add(parse->program, parse->token.string,
-                               &parse->func);
+  status = bc_program_func_add(parse->program, name, &parse->func);
 
-  if (status) return status;
+  if (status) goto err;
 
   if (!parse->func) return BC_STATUS_PARSE_BUG;
 
