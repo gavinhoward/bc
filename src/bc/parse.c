@@ -423,6 +423,7 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
 
     name = NULL;
   }
+  else free(name);
 
   entry_ptr = bc_veco_item(&parse->program->func_map, idx);
 
