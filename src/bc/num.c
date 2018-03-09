@@ -1718,6 +1718,7 @@ BcStatus bc_num_long2num(BcNum *n, long val) {
   ptr = n->num;
 
   for (i = 0; val; ++i) {
+    ++n->len;
     ptr[i] = (char) (val % 10);
     val /= 10;
   }
@@ -1752,6 +1753,7 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
   ptr = n->num;
 
   for (i = 0; val; ++i) {
+    ++n->len;
     ptr[i] = (char) (val % 10);
     val /= 10;
   }
