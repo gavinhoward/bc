@@ -267,7 +267,7 @@ static BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
 
       while (lp < rp || (lp == rp && rleft)) {
 
-        status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_POWER]);
+        status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_NEGATE]);
 
         if (status) return status;
 
@@ -319,7 +319,7 @@ static BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
 
   while (top != BC_LEX_LEFT_PAREN) {
 
-    status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_POWER]);
+    status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_NEGATE]);
 
     if (status) return status;
 
