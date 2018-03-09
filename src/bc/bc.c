@@ -274,6 +274,8 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
 
 err:
 
+  bc_error(status);
+
   bc_vm_free(&vm);
 
   return status;
