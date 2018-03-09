@@ -1793,17 +1793,17 @@ BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_m,
-                       a->len + b->len + scale);
+                       a->len + b->len + scale + 1);
 }
 
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_d,
-                       a->len + b->len + scale);
+                       a->len + b->len + scale + 1);
 }
 
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   return bc_num_binary(a, b, result, scale, bc_num_alg_mod,
-                       a->len + b->len + scale);
+                       a->len + b->len + scale + 1);
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
