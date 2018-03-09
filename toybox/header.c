@@ -33,6 +33,7 @@ config BC
 
 */
 
+#include <assert.h>
 #include <stdbool.h>
 
 #define FOR_bc

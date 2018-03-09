@@ -41,7 +41,15 @@ for name in files:
 	for i in range(22, len(lines)):
 		content += lines[i]
 
-regexes = [ '^#include .*$', '^#ifndef BC.*_H$', '^#define BC.*_H$', '^#endif \/\/ BC.*_H$', '^extern.*$' ]
+regexes = [
+	'^#include .*$',
+	'^#ifndef BC.*_H$',
+	'^#define BC.*_H$',
+	'^#endif \/\/ BC.*_H$',
+	'^extern.*$',
+	'^#define TT.*$',
+	'^typedef struct BcGlobals {.*} BcGlobals;$'
+]
 
 for reg in regexes:
 	r = re.compile(reg, re.M)
