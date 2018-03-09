@@ -1240,67 +1240,17 @@ mult_err:
   return status;
 }
 
-static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
+static BcStatus bc_num_printRadix(size_t *nchars, FILE *f) {
 
-  size_t i;
-  size_t chars;
-  bool newline;
-
-  chars = 0;
-  newline = false;
-
-  if (n->neg) {
-    if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
-    ++chars;
+  if (*nchars + 1 >= BC_NUM_PRINT_WIDTH) {
+    if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    *nchars = 0;
   }
 
-  for (i = n->len - 1; i >= n->rdx && i < n->len; --i) {
+  if (fputc('.', f) == EOF) return BC_STATUS_IO_ERR;
 
-    if (!chars && newline) {
-      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
-    }
-
-    if (fputc(BC_NUM_TO_CHAR(n->num[i]), f) == EOF) return BC_STATUS_IO_ERR;
-    ++chars;
-
-    if (chars == BC_NUM_PRINT_WIDTH) {
-      if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
-      chars = 0;
-      newline = true;
-    }
-  }
-
-  if (n->rdx) {
-
-    if (!chars && newline) {
-      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
-    }
-
-    if (fputc('.', f) == EOF) return BC_STATUS_IO_ERR;
-    ++chars;
-
-    if (chars == BC_NUM_PRINT_WIDTH) {
-      if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
-      chars = 0;
-      newline = true;
-    }
-
-    for (; i < n->len; --i) {
-
-      if (!chars && newline) {
-        if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
-      }
-
-      if (fputc(BC_NUM_TO_CHAR(n->num[i]), f) == EOF) return BC_STATUS_IO_ERR;
-      ++chars;
-
-      if (chars == BC_NUM_PRINT_WIDTH) {
-        if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
-        chars = 0;
-        newline = true;
-      }
-    }
-  }
+  *nchars = *nchars + 1;
 
   return BC_STATUS_SUCCESS;
 }
@@ -1340,6 +1290,38 @@ static BcStatus bc_num_printHex(unsigned long num, size_t width,
   *nchars = *nchars + width;
 
   return BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
+
+  BcStatus status;
+  size_t i;
+  size_t nchars;
+  bool newline;
+
+  nchars = 0;
+  newline = false;
+
+  if (n->neg) {
+    if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
+    ++nchars;
+  }
+
+  status = BC_STATUS_SUCCESS;
+
+  for (i = n->len - 1; !status && i >= n->rdx && i < n->len; --i)
+    status = bc_num_printHex(n->num[i], 1, &nchars, f);
+
+  if (status || !n->rdx) return status;
+
+  status = bc_num_printRadix(&nchars, f);
+
+  if (status) return status;
+
+  for (; !status && i < n->len; --i)
+    status = bc_num_printHex(n->num[i], 1, &nchars, f);
+
+  return status;
 }
 
 static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) {
@@ -1433,10 +1415,9 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
   if (!n->rdx) goto frac_len_err;
 
-  if (fputc('.', f) == EOF) {
-    status = BC_STATUS_IO_ERR;
-    goto frac_len_err;
-  }
+  status = bc_num_printRadix(&nchars, f);
+
+  if (status) goto frac_len_err;
 
   status = bc_num_init(&frac_len, n->len - n->rdx);
 

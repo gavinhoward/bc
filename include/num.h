@@ -52,7 +52,7 @@ typedef struct BcNum {
 
 #define BC_NUM_TO_CHAR(n) ((n) + '0')
 
-#define BC_NUM_PRINT_WIDTH (68)
+#define BC_NUM_PRINT_WIDTH (69)
 
 #define BC_NUM_ZERO(n) (!(n)->len)
 
