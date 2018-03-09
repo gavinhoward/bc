@@ -37,6 +37,8 @@
   TOKEN(BC_LEX_OP_INC)  \
   TOKEN(BC_LEX_OP_DEC)  \
                         \
+  TOKEN(BC_LEX_OP_NEGATE)  \
+                           \
   TOKEN(BC_LEX_OP_POWER)  \
                           \
   TOKEN(BC_LEX_OP_MULTIPLY)  \
@@ -57,8 +59,6 @@
                              \
   TOKEN(BC_LEX_OP_BOOL_OR)   \
   TOKEN(BC_LEX_OP_BOOL_AND)  \
-                             \
-  TOKEN(BC_LEX_OP_NEGATE)    \
                              \
   TOKEN(BC_LEX_OP_ASSIGN_POWER)     \
   TOKEN(BC_LEX_OP_ASSIGN_MULTIPLY)  \
