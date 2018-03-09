@@ -740,10 +740,8 @@ static BcStatus bc_parse_minus(BcParse *parse, BcVec *exs, BcVec *ops,
     return BC_STATUS_PARSE_INVALID_TOKEN;
   }
 
-  type = rparen || etype == BC_EXPR_NUMBER ||
-              etype == BC_EXPR_VAR || etype == BC_EXPR_ARRAY_ELEM ||
-              etype == BC_EXPR_SCALE || etype == BC_EXPR_LAST ||
-              etype == BC_EXPR_IBASE || etype == BC_EXPR_OBASE ?
+  type = rparen || etype == BC_EXPR_INC_POST || etype == BC_EXPR_DEC_POST ||
+         (etype >= BC_EXPR_NUMBER && etype <= BC_EXPR_SQRT) ?
                   BC_LEX_OP_MINUS : BC_LEX_OP_NEGATE;
 
   *prev = BC_PARSE_TOKEN_TO_EXPR(type);
