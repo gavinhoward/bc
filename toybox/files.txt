@@ -12,6 +12,7 @@ src/bc/lib.c
 src/bc/bc.c
 src/bc/data.c
 src/bc/io.c
+src/bc/lex.c
 src/bc/num.c
 src/bc/parse.c
 src/bc/program.c
