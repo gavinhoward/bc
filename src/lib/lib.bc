@@ -66,6 +66,46 @@ define e(x) {
 }
 
 define l(x) {
+
+	auto b,s,r,p,a,q,i,v
+
+	b = ibase
+	ibase = A
+
+	if (x<=0) {
+		r = (1-10^scale)/1
+		ibase = b
+		return (r)
+	}
+
+	s = scale
+	scale += 7
+	p = 2
+
+	while (x>=2) {
+		p *= 2
+		x = sqrt(x)
+	}
+
+	while (x<=0.5) {
+		p *= 2
+		x = sqrt(x)
+	}
+
+	r = a = (x-1)/(x+1)
+	q = a*a
+
+	for (i=3; 1; i+=2) {
+		n *= m
+		v = n / i
+		if (e == 0) break
+		r += v
+	}
+
+	r *= p
+	scale = s
+	ibase = b
+	return (r/1)
 }
 
 define s(x) {
