@@ -35,6 +35,8 @@ static const char *bc_gen_usage = "usage: gen bc_script output [header]\n";
 #define INVALID_HEADER_FILE (5)
 #define IO_ERR (6)
 
+#define MAX_WIDTH (74)
+
 int main(int argc, char *argv[]) {
 
   FILE *in;
@@ -49,6 +51,7 @@ int main(int argc, char *argv[]) {
   char *buf;
   char *base;
   int err;
+  int slashes;
 
   err = 0;
 
@@ -138,6 +141,18 @@ int main(int argc, char *argv[]) {
     goto error;
   }
 
+  slashes = 0;
+
+  while (slashes < 2 && (c = fgetc(in)) >= 0) {
+    if (slashes == 1 && c == '/' && fgetc(in) == '\n') ++slashes;
+    if (!slashes && c == '/' && fgetc(in) == '*') ++slashes;
+  }
+
+  if (c < 0) {
+    err = INVALID_INPUT_FILE;
+    goto error;
+  }
+
   while ((c = fgetc(in)) >= 0) {
 
     int val;
@@ -158,7 +173,7 @@ int main(int argc, char *argv[]) {
 
     count += val;
 
-    if (count > 72) {
+    if (count > MAX_WIDTH) {
 
       count = 0;
 
@@ -170,12 +185,11 @@ int main(int argc, char *argv[]) {
   }
 
   if (!count) {
-    if (fputc('\n', out) == EOF) {
+    if (fputc(' ', out) == EOF || fputc(' ', out) == EOF) {
       err = IO_ERR;
       goto error;
     }
   }
-
   if (fprintf(out, "0\n};\n") < 0) {
     err = IO_ERR;
     goto error;
