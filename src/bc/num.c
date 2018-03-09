@@ -1166,11 +1166,16 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   for (i = 0; i < len && (c = val[i]) != '.'; ++i) {
 
+    long v;
+
     status = bc_num_mul(n, base, &mult, 0);
 
     if (status) goto int_err;
 
-    status = bc_num_long2num(&temp, (long) c);
+    if (c <= '9') v = c - '0';
+    else v = c - 'A' + 10;
+
+    status = bc_num_long2num(&temp, v);
 
     if (status) goto int_err;
 
@@ -1178,6 +1183,8 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
     if (status) goto int_err;
   }
+
+  if (i == len) c = val[i];
 
   if (c == '\0') goto int_err;
 
