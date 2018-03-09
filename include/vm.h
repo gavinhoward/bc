@@ -35,11 +35,11 @@ typedef struct BcVm {
   BcParse parse;
 
   int filec;
-  char** filev;
+  const char** filev;
 
 } BcVm;
 
-BcStatus bc_vm_init(BcVm *vm, int filec, char *filev[]);
+BcStatus bc_vm_init(BcVm *vm, int filec, const char *filev[]);
 
 void bc_vm_free(BcVm *vm);
 

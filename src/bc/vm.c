@@ -443,7 +443,7 @@ buf_err:
   return status;
 }
 
-BcStatus bc_vm_init(BcVm *vm, int filec, char *filev[]) {
+BcStatus bc_vm_init(BcVm *vm, int filec, const char *filev[]) {
 
   BcStatus status;
   struct sigaction act;
