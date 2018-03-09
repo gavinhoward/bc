@@ -160,6 +160,56 @@ define c(x) {
 }
 
 define a(x) {
+
+	auto b,s,r,n,a,m,t,f,i,u
+
+	b = ibase
+	ibase = A
+
+	n = 1
+	if (x<0) {
+		n = -1
+		x = -x
+	}
+
+	if (x==1) {
+		if (scale <= 64) {
+			return(.7853981633974483096156608458198757210492923498437764552437361480/n)
+		}
+	}
+	if (x==.267) {
+		if (scale <= 64) {
+			return(.2609135692329405795967852677779865639774740239882445822329882917/n)
+		}
+	}
+
+	s = scale
+
+	if (x>.267) {
+		scale += 5
+		a = a(.267)
+	}
+
+	scale = s + 3
+	while (x > .267) {
+		m += 1
+		x = (x-.267)/(1+.267*x)
+	}
+
+	r = u = x
+	f = -x*x
+
+	for (i=3; 1; i+=2) {
+		u *= f
+		t = u / i
+		if (t == 0) break
+		r += t
+	}
+
+	scale = s
+	ibase = b
+
+	return ((m*a+r)/n)
 }
 
 define j(n,x) {
