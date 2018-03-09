@@ -574,11 +574,11 @@ static BcStatus bc_parse_scale(BcParse *parse, BcVec *code,
 
   *type = BC_EXPR_SCALE_FUNC;
 
-  status = bc_parse_expr(parse, code, flags);
+  status = bc_lex_next(&parse->lex, &parse->token);
 
   if (status) return status;
 
-  status = bc_lex_next(&parse->lex, &parse->token);
+  status = bc_parse_expr(parse, code, flags);
 
   if (status) return status;
 
