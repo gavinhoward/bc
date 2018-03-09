@@ -357,6 +357,8 @@ void bc_constant_free(void *constant) {
 
   char *c;
 
+  if (!constant) return;
+
   c = *((char**) constant);
 
   free(c);
