@@ -163,5 +163,38 @@ define a(x) {
 }
 
 define j(n,x) {
+
+	auto b,s,o,a,i,v,f
+
+	b = ibase
+	ibase = A
+
+	s = scale
+	scale = 0
+	n /= 1
+	if (n<0) {
+		n = -n
+		if (n%2 ==1) o = 1
+	}
+
+	a = 1
+	for (i=2; i<=n; ++i) f *= i
+	scale = 1.5*s
+	a = (x^n)/(2^n*a)
+
+	r = v = 1
+	f = -x*x/4
+	scale += length(a)-scale(a)
+
+	for (i=1; 1; ++i) {
+		v = v*s/i/(n+i)
+		if (v == 0) break
+		r += v
+	}
+
+	scale = s
+	ibase = b
+	if (o) return (-a*r/1)
+	return (a*r/1)
 }
 
