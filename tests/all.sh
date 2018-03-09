@@ -19,6 +19,7 @@ out2="$bcdir/log_test.txt"
 
 while read t; do
 
+	echo "$t"
 	"$testdir/test.sh" "$t" "$bc" "$out1" "$out2"
 
 done < "$testdir/all.txt"
