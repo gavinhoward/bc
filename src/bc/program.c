@@ -153,7 +153,7 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     result->data.id.name = malloc(len);
 
-    if (!result->data.id.name || !a.name) return BC_STATUS_MALLOC_FAIL;
+    if (!result->data.id.name) return BC_STATUS_MALLOC_FAIL;
 
     strcpy(result->data.id.name, entry.name);
 
