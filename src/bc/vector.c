@@ -33,7 +33,7 @@ static BcStatus bc_vec_double(BcVec *vec) {
 
   ptr = realloc(vec->array, vec->size * (vec->cap * 2));
 
-  if (ptr == NULL) return BC_STATUS_MALLOC_FAIL;
+  if (!ptr) return BC_STATUS_MALLOC_FAIL;
 
   vec->array = ptr;
   vec->cap *= 2;
@@ -52,7 +52,7 @@ BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor) {
 
   vec->array = malloc(esize * BC_VEC_INITIAL_CAP);
 
-  if (vec->array == NULL) return BC_STATUS_MALLOC_FAIL;
+  if (!vec->array) return BC_STATUS_MALLOC_FAIL;
 
   return BC_STATUS_SUCCESS;
 }
@@ -67,7 +67,7 @@ BcStatus bc_vec_expand(BcVec *vec, size_t request) {
 
   ptr = realloc(vec->array, vec->size * request);
 
-  if (ptr == NULL) return BC_STATUS_MALLOC_FAIL;
+  if (!ptr) return BC_STATUS_MALLOC_FAIL;
 
   vec->array = ptr;
   vec->cap = request;
