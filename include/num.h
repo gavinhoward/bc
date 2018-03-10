@@ -32,7 +32,7 @@
 
 typedef struct BcNum {
 
-  char *num;
+  signed char *num;
   size_t rdx;
   size_t len;
   size_t cap;
