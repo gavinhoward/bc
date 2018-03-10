@@ -378,13 +378,13 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
     if (status) return status;
     start = 0;
   }
-  else start = c->rdx > subtrahend->rdx ? c->rdx - subtrahend->rdx : 0;
+  else start = c->rdx - subtrahend->rdx;
 
   for (i = 0; i < subtrahend->len; ++i) {
 
     c->num[i + start] -= subtrahend->num[i];
 
-    for (j = 0; c->num[i + j + start] < 0 && j < c->len - start;) {
+    for (j = 0; j < c->len - start && c->num[i + j + start] < 0;) {
 
       c->num[i + j + start] += 10;
       ++j;
