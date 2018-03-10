@@ -231,13 +231,13 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
   if (flags & BC_FLAG_INTERACTIVE ||
       (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)))
   {
-    TT.bc_interactive = 1;
+    bcg.bc_interactive = 1;
   }
-  else TT.bc_interactive = 0;
+  else bcg.bc_interactive = 0;
 
-  TT.bc_code = flags & BC_FLAG_CODE;
-  TT.bc_std = flags & BC_FLAG_STANDARD;
-  TT.bc_warn = flags & BC_FLAG_WARN;
+  bcg.bc_code = flags & BC_FLAG_CODE;
+  bcg.bc_std = flags & BC_FLAG_STANDARD;
+  bcg.bc_warn = flags & BC_FLAG_WARN;
 
   if (!(flags & BC_FLAG_QUIET)) {
 
@@ -321,11 +321,15 @@ void bc_error_file(BcStatus status, const char *file, uint32_t line) {
 BcStatus bc_posix_error(BcStatus status, const char *file,
                         uint32_t line, const char *msg)
 {
-  if (!(TT.bc_std || TT.bc_warn) || status < BC_STATUS_POSIX_NAME_LEN || !file)
+  if (!(bcg.bc_std || bcg.bc_warn) ||
+      status < BC_STATUS_POSIX_NAME_LEN ||
+      !file)
+  {
     return BC_STATUS_SUCCESS;
+  }
 
   fprintf(stderr, "\n%s %s: %s\n", bc_err_types[status],
-          TT.bc_std ? "error" : "warning", bc_err_descs[status]);
+          bcg.bc_std ? "error" : "warning", bc_err_descs[status]);
 
   if (msg) fprintf(stderr, "    %s\n", msg);
 
@@ -334,5 +338,5 @@ BcStatus bc_posix_error(BcStatus status, const char *file,
   if (line) fprintf(stderr, ":%d\n\n", line);
   else fprintf(stderr, "\n\n");
 
-  return TT.bc_std ? status : BC_STATUS_SUCCESS;
+  return bcg.bc_std ? status : BC_STATUS_SUCCESS;
 }
