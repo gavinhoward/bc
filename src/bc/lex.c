@@ -34,14 +34,7 @@ static const char *token_type_strs[] = {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
 };
 
-
-#define KW_TABLE_ENTRY(a, b, c) { .name = a, .lens = b, .posix = c }
-
-static const struct keyword_entry {
-  const char name[9];
-  const char lens;
-  const char posix;
-} keyword_table[] = {
+BcLexKeyword bc_lex_keywords[] = {
   KW_TABLE_ENTRY("auto", 4, 1),
   KW_TABLE_ENTRY("break", 5, 1),
   KW_TABLE_ENTRY("continue", 8, 0),
@@ -241,22 +234,23 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   buffer = lex->buffer + lex->idx - 1;
 
-  for (i = 0; i < sizeof(keyword_table) / sizeof(keyword_table[0]); ++i) {
+  for (i = 0; i < sizeof(bc_lex_keywords) / sizeof(bc_lex_keywords[0]); ++i) {
 
-    if (!strncmp(buffer, keyword_table[i].name, keyword_table[i].lens)) {
+    if (!strncmp(buffer, bc_lex_keywords[i].name, bc_lex_keywords[i].len)) {
 
       token->type = BC_LEX_KEY_AUTO + i;
 
-      if (!keyword_table[i].posix &&
+      if (!bc_lex_keywords[i].posix &&
           (status = bc_posix_error(BC_STATUS_POSIX_INVALID_KEYWORD,
-                                   lex->file, lex->line, keyword_table[i].name)))
+                                   lex->file, lex->line,
+                                   bc_lex_keywords[i].name)))
       {
         return status;
       }
 
       // We need to minus one because the
       // index has already been incremented.
-      lex->idx += keyword_table[i].lens - 1;
+      lex->idx += bc_lex_keywords[i].len - 1;
 
       return BC_STATUS_SUCCESS;
     }
