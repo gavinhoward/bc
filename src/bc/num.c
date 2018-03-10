@@ -38,17 +38,17 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
 
   size_t i;
   size_t min;
-  signed char *max_num;
-  signed char *min_num;
+  BcDigit *max_num;
+  BcDigit *min_num;
   bool a_max;
   bool neg;
   size_t a_int;
   size_t b_int;
-  signed char *ptr_a;
-  signed char *ptr_b;
+  BcDigit *ptr_a;
+  BcDigit *ptr_b;
   size_t diff;
   int cmp;
-  signed char c;
+  BcDigit c;
 
   *digits = 0;
 
@@ -84,7 +84,7 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
   ptr_b = b->num + b->rdx;
 
   for (i = a_int - 1; i < a_int; --i, ++(*digits)) {
-    c = ((signed char) ptr_a[i]) - ((signed char) ptr_b[i]);
+    c = ptr_a[i] - ptr_b[i];
     if (c) return neg ? -c : c;
   }
 
@@ -100,7 +100,7 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
     min_num = b->num;
 
     for (i = min - 1; i < min; --i, ++(*digits)) {
-      c = ((signed char) max_num[i]) - ((signed char) min_num[i]);
+      c = max_num[i] - min_num[i];
       if (c) return neg ? -c : c;
     }
 
@@ -134,11 +134,10 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
   return 0;
 }
 
-static int bc_num_compareArrays(signed char *array1, signed char *array2,
-                                size_t len)
-{
+static int bc_num_compareArrays(BcDigit *array1, BcDigit *array2, size_t len) {
+
   size_t i;
-  char c;
+  BcDigit c;
 
   if (array1[len]) return 1;
 
@@ -152,7 +151,7 @@ static int bc_num_compareArrays(signed char *array1, signed char *array2,
 
 static BcStatus bc_num_trunc(BcNum *n, size_t places) {
 
-  signed char *ptr;
+  BcDigit *ptr;
 
   if (places > n->rdx) return BC_STATUS_MATH_INVALID_TRUNCATE;
 
@@ -163,9 +162,9 @@ static BcStatus bc_num_trunc(BcNum *n, size_t places) {
   n->len -= places;
   n->rdx -= places;
 
-  memmove(n->num, ptr, n->len * sizeof(char));
+  memmove(n->num, ptr, n->len * sizeof(BcDigit));
 
-  memset(n->num + n->len, 0, sizeof(char) * (n->cap - n->len));
+  memset(n->num + n->len, 0, sizeof(BcDigit) * (n->cap - n->len));
 
   return BC_STATUS_SUCCESS;
 }
@@ -173,7 +172,7 @@ static BcStatus bc_num_trunc(BcNum *n, size_t places) {
 static BcStatus bc_num_extend(BcNum *n, size_t places) {
 
   BcStatus status;
-  signed char *ptr;
+  BcDigit *ptr;
   size_t len;
 
   if (places == 0) return BC_STATUS_SUCCESS;
@@ -189,9 +188,9 @@ static BcStatus bc_num_extend(BcNum *n, size_t places) {
 
   ptr = n->num + places;
 
-  memmove(ptr, n->num, sizeof(char) * n->len);
+  memmove(ptr, n->num, sizeof(BcDigit) * n->len);
 
-  memset(n->num, 0, sizeof(char) * places);
+  memset(n->num, 0, sizeof(BcDigit) * places);
 
   n->len += places;
   n->rdx += places;
@@ -201,23 +200,23 @@ static BcStatus bc_num_extend(BcNum *n, size_t places) {
 
 static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
-  signed char *ptr;
-  signed char *ptr_a;
-  signed char *ptr_b;
-  signed char *ptr_c;
+  BcDigit *ptr;
+  BcDigit *ptr_a;
+  BcDigit *ptr_b;
+  BcDigit *ptr_c;
   size_t i;
   size_t max;
   size_t min;
   size_t diff;
   size_t a_whole;
   size_t b_whole;
-  signed char carry;
+  BcDigit carry;
 
   (void) scale;
 
   c->neg = a->neg;
 
-  memset(c->num, 0, c->cap * sizeof(char));
+  memset(c->num, 0, c->cap * sizeof(BcDigit));
 
   c->rdx = BC_MAX(a->rdx, b->rdx);
 
@@ -399,7 +398,7 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
-  char carry;
+  BcDigit carry;
   size_t i;
   size_t j;
   size_t len;
@@ -423,7 +422,7 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   scale = BC_MAX(scale, b->rdx);
   c->rdx = a->rdx + b->rdx;
 
-  memset(c->num, 0, sizeof(char) * c->cap);
+  memset(c->num, 0, sizeof(BcDigit) * c->cap);
   c->len = 0;
 
   carry = 0;
@@ -463,8 +462,8 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
-  signed char *ptr;
-  signed char *bptr;
+  BcDigit *ptr;
+  BcDigit *bptr;
   size_t len;
   size_t end;
   size_t i;
@@ -490,6 +489,19 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (status) goto err;
 
+  len = b->len;
+
+  if (len > copy.len) {
+
+    status = bc_num_expand(&copy, len + 2);
+
+    if (status) goto err;
+
+    status = bc_num_extend(&copy, len - copy.len);
+
+    if (status) goto err;
+  }
+
   if (b->rdx > copy.rdx) {
     status = bc_num_extend(&copy, b->rdx - copy.rdx);
     if (status) goto err;
@@ -499,19 +511,6 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (scale > copy.rdx) {
     status = bc_num_extend(&copy, scale - copy.rdx);
-    if (status) goto err;
-  }
-
-  len = b->len;
-
-  if (len > copy.len) {
-
-    status = bc_num_expand(&copy, len + 2);
-
-    if (status) goto err;
-
-    status = bc_num_extend(&copy, len);
-
     if (status) goto err;
   }
 
@@ -547,15 +546,15 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   c->rdx = copy.rdx;
   c->len = copy.len;
 
-  bptr = (signed char*) b->num;
+  bptr = b->num;
 
   for (i = end - 1; i < end; --i) {
 
     size_t j;
     size_t k;
-    int quotient;
+    BcDigit quotient;
 
-    ptr = (signed char*) (copy.num + i);
+    ptr = copy.num + i;
 
     quotient = 0;
 
@@ -794,7 +793,7 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
   }
   else if (a->neg) return BC_STATUS_MATH_NEG_SQRT;
 
-  memset(b->num, 0, b->cap * sizeof(char));
+  memset(b->num, 0, b->cap * sizeof(BcDigit));
 
   scale = BC_MAX(scale, a->rdx) + 1;
 
@@ -994,8 +993,8 @@ static bool bc_num_strValid(const char *val, size_t base) {
 
   size_t len;
   size_t i;
-  char c;
-  char b;
+  BcDigit c;
+  BcDigit b;
   bool radix;
 
   radix = false;
@@ -1054,7 +1053,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   const char *ptr;
   size_t radix;
   size_t end;
-  signed char *num;
+  BcDigit *num;
 
   for (i = 0; val[i] == '0'; ++i);
 
@@ -1075,7 +1074,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
     }
 
     if (zero) {
-      memset(n->num, 0, sizeof(char) * n->cap);
+      memset(n->num, 0, sizeof(BcDigit) * n->cap);
       n->neg = false;
       return BC_STATUS_SUCCESS;
     }
@@ -1086,7 +1085,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 
   }
   else {
-    memset(n->num, 0, sizeof(char) * n->cap);
+    memset(n->num, 0, sizeof(BcDigit) * n->cap);
     n->neg = false;
     return BC_STATUS_SUCCESS;
   }
@@ -1132,7 +1131,7 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   size_t i;
   size_t len;
   size_t digits;
-  char c;
+  BcDigit c;
   bool zero;
 
   len = strlen(val);
@@ -1493,7 +1492,7 @@ BcStatus bc_num_expand(BcNum *n, size_t request) {
 
   if (request > n->cap) {
 
-    signed char *temp;
+    BcDigit *temp;
 
     temp = realloc(n->num, request);
 
@@ -1658,8 +1657,8 @@ BcStatus bc_num_long2num(BcNum *n, long val) {
   BcStatus status;
   size_t len;
   size_t i;
-  signed char *ptr;
-  signed char carry;
+  BcDigit *ptr;
+  BcDigit carry;
 
   if (!n) return BC_STATUS_INVALID_PARAM;
 
@@ -1707,7 +1706,7 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
   BcStatus status;
   size_t len;
   size_t i;
-  signed char *ptr;
+  BcDigit *ptr;
 
   if (!n) return BC_STATUS_INVALID_PARAM;
 
