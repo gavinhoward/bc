@@ -26,8 +26,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define TT (bc_globals)
-
 #define BC_FLAG_WARN (1<<0)
 #define BC_FLAG_STANDARD (1<<1)
 #define BC_FLAG_QUIET (1<<2)
@@ -157,7 +155,7 @@ void bc_error_file(BcStatus status, const char *file, uint32_t line);
 BcStatus bc_posix_error(BcStatus status, const char *file,
                         uint32_t line, const char *msg);
 
-extern BcGlobals bc_globals;
+extern BcGlobals bcg;
 
 extern const unsigned char bc_lib[];
 extern const char *bc_lib_name;
