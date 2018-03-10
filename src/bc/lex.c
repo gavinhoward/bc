@@ -30,7 +30,7 @@
 #include <bc.h>
 #include <lex.h>
 
-static const char *bc_lex_token_type_strs[] = {
+const char *bc_lex_token_type_strs[] = {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
 };
 
@@ -57,7 +57,7 @@ BcLexKeyword bc_lex_keywords[] = {
   KW_TABLE_ENTRY("while", 5, true),
 };
 
-static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 
   char c;
 
@@ -73,7 +73,7 @@ static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
   const char *start;
   uint32_t newlines;
@@ -116,7 +116,7 @@ static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
 
   uint32_t newlines;
   bool end;
@@ -159,7 +159,7 @@ static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
+BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
   const char *buffer;
   const char *buf;
@@ -225,7 +225,7 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
   const char *buffer;
@@ -286,7 +286,7 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
   char c;

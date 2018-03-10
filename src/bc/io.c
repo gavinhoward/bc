@@ -46,7 +46,7 @@ long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void *ctx) {
   return i;
 }
 
-static int bc_io_xfgetc(void *ctx) {
+int bc_io_xfgetc(void *ctx) {
   return fgetc((FILE *) ctx);
 }
 
