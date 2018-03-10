@@ -30,7 +30,7 @@
 #include <bc.h>
 #include <lex.h>
 
-static const char *token_type_strs[] = {
+static const char *bc_lex_token_type_strs[] = {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
 };
 
@@ -687,7 +687,7 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
 BcStatus bc_lex_printToken(BcLexToken *token) {
 
-  printf("<%s", token_type_strs[token->type]);
+  printf("<%s", bc_lex_token_type_strs[token->type]);
 
   switch (token->type) {
 
