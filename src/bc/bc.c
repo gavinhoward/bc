@@ -223,62 +223,6 @@ static const char *bc_warranty_short =
 
 static const char *bc_version_fmt = "bc %s\n%s\n\n%s\n\n";
 
-BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
-
-  BcStatus status;
-  BcVm vm;
-
-  if (flags & BC_FLAG_INTERACTIVE ||
-      (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)))
-  {
-    bcg.bc_interactive = 1;
-  }
-  else bcg.bc_interactive = 0;
-
-  bcg.bc_code = flags & BC_FLAG_CODE;
-  bcg.bc_std = flags & BC_FLAG_STANDARD;
-  bcg.bc_warn = flags & BC_FLAG_WARN;
-
-  if (!(flags & BC_FLAG_QUIET)) {
-
-    status = bc_print_version();
-
-    if (status) return status;
-  }
-
-  status = bc_vm_init(&vm, filec, filev);
-
-  if (status) return status;
-
-  if (flags & BC_FLAG_MATHLIB) {
-
-    status = bc_parse_file(&vm.parse, bc_lib_name);
-
-    if (status) goto err;
-
-    status = bc_parse_text(&vm.parse, (const char*) bc_lib);
-
-    if (status) goto err;
-
-    while (!status) status = bc_parse_parse(&vm.parse);
-
-    if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) goto err;
-
-    // Make sure to execute the math library.
-    status = bc_program_exec(&vm.program);
-
-    if (status) goto err;
-  }
-
-  status = bc_vm_exec(&vm);
-
-err:
-
-  bc_vm_free(&vm);
-
-  return status;
-}
-
 BcStatus bc_print_version() {
 
   int err;
@@ -339,4 +283,60 @@ BcStatus bc_posix_error(BcStatus status, const char *file,
   else fprintf(stderr, "\n\n");
 
   return bcg.bc_std ? status : BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
+
+  BcStatus status;
+  BcVm vm;
+
+  if (flags & BC_FLAG_INTERACTIVE ||
+      (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)))
+  {
+    bcg.bc_interactive = 1;
+  }
+  else bcg.bc_interactive = 0;
+
+  bcg.bc_code = flags & BC_FLAG_CODE;
+  bcg.bc_std = flags & BC_FLAG_STANDARD;
+  bcg.bc_warn = flags & BC_FLAG_WARN;
+
+  if (!(flags & BC_FLAG_QUIET)) {
+
+    status = bc_print_version();
+
+    if (status) return status;
+  }
+
+  status = bc_vm_init(&vm, filec, filev);
+
+  if (status) return status;
+
+  if (flags & BC_FLAG_MATHLIB) {
+
+    status = bc_parse_file(&vm.parse, bc_lib_name);
+
+    if (status) goto err;
+
+    status = bc_parse_text(&vm.parse, (const char*) bc_lib);
+
+    if (status) goto err;
+
+    while (!status) status = bc_parse_parse(&vm.parse);
+
+    if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) goto err;
+
+    // Make sure to execute the math library.
+    status = bc_program_exec(&vm.program);
+
+    if (status) goto err;
+  }
+
+  status = bc_vm_exec(&vm);
+
+err:
+
+  bc_vm_free(&vm);
+
+  return status;
 }
