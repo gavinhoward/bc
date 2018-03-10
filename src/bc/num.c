@@ -1297,10 +1297,8 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
   BcStatus status;
   size_t i;
   size_t nchars;
-  bool newline;
 
   nchars = 0;
-  newline = false;
 
   if (n->neg) {
     if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
