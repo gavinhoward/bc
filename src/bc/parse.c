@@ -2050,11 +2050,10 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
   BcStatus status;
   uint32_t nexprs, nparens, ops_start, nrelops;
-  bool paren_first, paren_expr, rparen, done, get_token;
+  bool paren_first, paren_expr, rparen, done, get_token, assign;
   BcExprType prev;
   BcLexTokenType type, top;
   BcLexTokenType *ptr;
-  uint8_t inst;
 
   status = BC_STATUS_SUCCESS;
 
@@ -2071,6 +2070,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
   done = false;
   get_token = false;
   nrelops = 0;
+  assign = false;
 
   type = parse->token.type;
 
@@ -2084,6 +2084,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
         status = bc_parse_incdec(parse, code, &prev, &nexprs, flags);
         rparen = false;
         get_token = false;
+        assign = false;
         break;
       }
 
@@ -2093,6 +2094,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
                                 rparen, &nexprs);
         rparen = false;
         get_token = false;
+        assign = false;
         break;
       }
 
@@ -2134,6 +2136,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
                                    type, &nexprs, true);
         rparen = false;
         get_token = false;
+        assign = type >= BC_LEX_OP_ASSIGN_POWER && type <= BC_LEX_OP_ASSIGN;
 
         break;
       }
@@ -2301,9 +2304,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       goto err;
     }
 
-    inst = bc_op_insts[top - BC_LEX_OP_NEGATE];
-
-    status = bc_vec_pushByte(code, inst);
+    status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_NEGATE]);
 
     if (status) goto err;
 
@@ -2332,20 +2333,8 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
     goto err;
   }
 
-  inst = *((uint8_t*) bc_vec_top(code));
-
   if (flags & BC_PARSE_EXPR_PRINT) {
-    if (paren_first ||
-        (inst != BC_INST_OP_ASSIGN_POWER &&
-         inst != BC_INST_OP_ASSIGN_MULTIPLY &&
-         inst != BC_INST_OP_ASSIGN_DIVIDE &&
-         inst != BC_INST_OP_ASSIGN_MODULUS &&
-         inst != BC_INST_OP_ASSIGN_PLUS &&
-         inst != BC_INST_OP_ASSIGN_MINUS &&
-         inst != BC_INST_OP_ASSIGN))
-    {
-      status = bc_vec_pushByte(code, BC_INST_PRINT);
-    }
+    if (paren_first || !assign) status = bc_vec_pushByte(code, BC_INST_PRINT);
     else status = bc_vec_pushByte(code, BC_INST_POP);
   }
 
