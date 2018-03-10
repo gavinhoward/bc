@@ -2069,8 +2069,8 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
   rparen = false;
   done = false;
   get_token = false;
-  nrelops = 0;
   assign = false;
+  nrelops = 0;
 
   type = parse->token.type;
 
@@ -2084,7 +2084,6 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
         status = bc_parse_incdec(parse, code, &prev, &nexprs, flags);
         rparen = false;
         get_token = false;
-        assign = false;
         break;
       }
 
@@ -2094,7 +2093,6 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
                                 rparen, &nexprs);
         rparen = false;
         get_token = false;
-        assign = false;
         break;
       }
 
@@ -2136,7 +2134,6 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
                                    type, &nexprs, true);
         rparen = false;
         get_token = false;
-        assign = type >= BC_LEX_OP_ASSIGN_POWER && type <= BC_LEX_OP_ASSIGN;
 
         break;
       }
@@ -2298,6 +2295,8 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
     ptr = bc_vec_top(&parse->ops);
     top = *ptr;
+
+    assign = top >= BC_LEX_OP_ASSIGN_POWER && top <= BC_LEX_OP_ASSIGN;
 
     if (top == BC_LEX_LEFT_PAREN || top == BC_LEX_RIGHT_PAREN) {
       status = BC_STATUS_PARSE_INVALID_EXPR;
