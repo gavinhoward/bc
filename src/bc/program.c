@@ -1158,7 +1158,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
     if (status) goto err;
   }
 
-  status = bc_vec_pushAt(&p->expr_stack, &result, len);
+  status = bc_vec_push(&p->expr_stack, &result);
 
   if (status) goto err;
 
@@ -1861,6 +1861,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         status = bc_num_print(num, &p->obase, p->obase_t,
                               inst == BC_INST_PRINT);
+
+        fflush(stdout);
 
         if (status) return status;
 
