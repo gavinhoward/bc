@@ -30,9 +30,11 @@
 
 #include <bc.h>
 
+typedef signed char BcDigit;
+
 typedef struct BcNum {
 
-  signed char *num;
+  BcDigit *num;
   size_t rdx;
   size_t len;
   size_t cap;
