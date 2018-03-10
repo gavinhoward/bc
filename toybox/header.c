@@ -10,7 +10,7 @@ config BC
   bool "bc"
   default n
   help
-    usage: bc [-cilqsw] [long-options] [file ...]
+    usage: bc [-cilqsw] [file ...]
 
     bc is a command-line calculator with a Turing-complete language.
 
@@ -47,4 +47,6 @@ GLOBALS(
 
     long bc_signal;
 )
+
+#define bcg (TT)
 
