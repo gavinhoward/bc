@@ -54,7 +54,7 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
 
   if (!a) {
 
-    if (b == NULL) return 0;
+    if (!b) return 0;
     else return b->neg ? 1 : -1;
   }
   else if (!b) return a->neg ? -1 : 1;
