@@ -39,10 +39,12 @@ typedef struct BcVm {
 
 } BcVm;
 
+// ** Exclude start. **
 BcStatus bc_vm_init(BcVm *vm, int filec, const char *filev[]);
 
 void bc_vm_free(BcVm *vm);
 
 BcStatus bc_vm_exec(BcVm *vm);
+// ** Exclude end. **
 
 #endif // BC_VM_H

@@ -131,6 +131,10 @@ typedef enum BcStatus {
 
 } BcStatus;
 
+typedef void (*BcFreeFunc)(void*);
+typedef BcStatus (*BcCopyFunc)(void*, void*);
+
+// ** Exclude start.
 typedef struct BcGlobals {
 
   long bc_code;
@@ -142,19 +146,10 @@ typedef struct BcGlobals {
 
 } BcGlobals;
 
-typedef void (*BcFreeFunc)(void*);
-typedef BcStatus (*BcCopyFunc)(void*, void*);
-
-extern const char *bc_version;
-extern const char *bc_copyright;
-extern const char *bc_warranty_short;
-extern const char *bc_version_fmt;
-extern const char *bc_err_types[];
-extern const char *bc_err_descs[];
-
+// ** Exclude start. **
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
-
 BcStatus bc_print_version();
+// ** Exclude end. **
 
 void bc_error(BcStatus status);
 void bc_error_file(BcStatus status, const char *file, uint32_t line);
@@ -166,5 +161,12 @@ extern BcGlobals bcg;
 
 extern const unsigned char bc_lib[];
 extern const char *bc_lib_name;
+
+extern const char *bc_version;
+extern const char *bc_copyright;
+extern const char *bc_warranty_short;
+extern const char *bc_version_fmt;
+extern const char *bc_err_types[];
+extern const char *bc_err_descs[];
 
 #endif // BC_H

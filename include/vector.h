@@ -43,6 +43,7 @@ typedef struct BcVec {
 
 } BcVec;
 
+// ** Exclude start. **
 BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor);
 
 BcStatus bc_vec_expand(BcVec *vec, size_t request);
@@ -62,6 +63,7 @@ void* bc_vec_item_rev(const BcVec *vec, size_t idx);
 BcStatus bc_vec_pop(BcVec *vec);
 
 void bc_vec_free(void *vec);
+// ** Exclude end. **
 
 typedef struct BcVecO {
 

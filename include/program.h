@@ -92,14 +92,17 @@ typedef BcStatus (*BcProgramExecFunc)(BcProgram*);
 typedef unsigned long (*BcProgramBuiltInFunc)(BcNum*);
 typedef void (*BcNumInitFunc)(BcNum*);
 
+// ** Exclude start. **
 BcStatus bc_program_init(BcProgram *p);
 void bc_program_limits(BcProgram *p);
-BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx);
 BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx);
 BcStatus bc_program_array_add(BcProgram *p, char *name, size_t *idx);
-BcStatus bc_program_exec(BcProgram *p);
 BcStatus bc_program_print(BcProgram *p);
 void bc_program_free(BcProgram *program);
+// ** Exclude end. **
+
+BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx);
+BcStatus bc_program_exec(BcProgram *p);
 
 extern const char *bc_program_byte_fmt;
 extern const BcNumBinaryFunc bc_program_math_ops[];

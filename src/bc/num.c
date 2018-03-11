@@ -1563,10 +1563,6 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
   return status;
 }
 
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline) {
-  return bc_num_fprint(n, base, base_t, newline, stdout);
-}
-
 BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
                        bool newline, FILE *f)
 {
@@ -1591,6 +1587,10 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
   }
 
   return status;
+}
+
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline) {
+  return bc_num_fprint(n, base, base_t, newline, stdout);
 }
 
 BcStatus bc_num_long(BcNum *n, long *result) {
