@@ -26,7 +26,7 @@
 
 #include <libgen.h>
 
-const char *bc_gen_usage = "usage: gen bc_script output [header]\n";
+static const char *bc_gen_usage = "usage: gen bc_script output [header]\n";
 
 #define INVALID_PARAMS (1)
 #define MALLOC_FAIL (2)

@@ -29,7 +29,7 @@
 const char *bc_func_main = "(main)";
 const char *bc_func_read = "(read)";
 
-BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
+static BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
 
   BcStatus status;
   BcAuto a;
