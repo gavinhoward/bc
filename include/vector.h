@@ -72,6 +72,7 @@ typedef struct BcVecO {
 
 } BcVecO;
 
+// ** Exclude start. **
 BcStatus bc_veco_init(BcVecO* vec, size_t esize,
                       BcFreeFunc dtor, BcVecCmpFunc cmp);
 
@@ -82,5 +83,6 @@ size_t bc_veco_index(const BcVecO *vec, void *data);
 void* bc_veco_item(const BcVecO* vec, size_t idx);
 
 void bc_veco_free(BcVecO* vec);
+// ** Exclude end. **
 
 #endif // BC_VECTOR_H
