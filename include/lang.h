@@ -175,6 +175,7 @@ typedef struct BcInstPtr {
 
 typedef BcStatus (*BcDataInitFunc)(void*);
 
+// ** Exclude start. **
 BcStatus bc_func_init(BcFunc *func);
 BcStatus bc_func_insertParam(BcFunc *func, char *name, bool var);
 BcStatus bc_func_insertAuto(BcFunc *func, char *name, bool var);
@@ -194,12 +195,13 @@ void bc_string_free(void *string);
 int bc_entry_cmp(void *entry1, void*entry2);
 void bc_entry_free(void *entry);
 
-BcStatus bc_auto_init(void *auto1, char *name, bool var);
-void bc_auto_free(void *auto1);
-
 void bc_result_free(void *result);
 
 void bc_constant_free(void *constant);
+// ** Exclude end. **
+
+BcStatus bc_auto_init(void *auto1, char *name, bool var);
+void bc_auto_free(void *auto1);
 
 extern const char *bc_lang_func_main;
 extern const char *bc_lang_func_read;

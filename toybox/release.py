@@ -52,7 +52,7 @@ regexes = [
 ]
 
 regexes_all = [
-	'^typedef struct BcGlobals {.*} BcGlobals;$'
+	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$'
 ]
 
 for reg in regexes:
