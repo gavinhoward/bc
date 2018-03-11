@@ -43,9 +43,6 @@ else
 	out2="$testdir/../log_test.txt"
 fi
 
-rm -rf "$out1"
-rm -rf "$out2"
-
 for i in $(seq 0 10000); do
 
 	echo "$i"
