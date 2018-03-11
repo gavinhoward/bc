@@ -101,4 +101,10 @@ BcStatus bc_program_exec(BcProgram *p);
 BcStatus bc_program_print(BcProgram *p);
 void bc_program_free(BcProgram *program);
 
+extern const char *bc_program_byte_fmt;
+extern const BcNumBinaryFunc bc_program_math_ops[];
+extern const char *bc_program_stdin_name;
+extern const char *bc_program_ready_prompt;
+extern const char *bc_program_sigint_msg;
+
 #endif // BC_PROGRAM_H

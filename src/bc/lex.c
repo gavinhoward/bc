@@ -30,33 +30,6 @@
 #include <bc.h>
 #include <lex.h>
 
-static const char *bc_lex_token_type_strs[] = {
-  BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
-};
-
-BcLexKeyword bc_lex_keywords[] = {
-  KW_TABLE_ENTRY("auto", 4, true),
-  KW_TABLE_ENTRY("break", 5, true),
-  KW_TABLE_ENTRY("continue", 8, false),
-  KW_TABLE_ENTRY("define", 6, true),
-  KW_TABLE_ENTRY("else", 4, false),
-  KW_TABLE_ENTRY("for", 3, true),
-  KW_TABLE_ENTRY("halt", 4, false),
-  KW_TABLE_ENTRY("ibase", 5, true),
-  KW_TABLE_ENTRY("if", 2, true),
-  KW_TABLE_ENTRY("last", 4, false),
-  KW_TABLE_ENTRY("length", 6, true),
-  KW_TABLE_ENTRY("limits", 6, false),
-  KW_TABLE_ENTRY("obase", 5, true),
-  KW_TABLE_ENTRY("print", 5, false),
-  KW_TABLE_ENTRY("quit", 4, true),
-  KW_TABLE_ENTRY("read", 4, false),
-  KW_TABLE_ENTRY("return", 6, true),
-  KW_TABLE_ENTRY("scale", 5, true),
-  KW_TABLE_ENTRY("sqrt", 4, true),
-  KW_TABLE_ENTRY("while", 5, true),
-};
-
 static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 
   char c;

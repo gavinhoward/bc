@@ -153,4 +153,7 @@ BcStatus bc_lex_next(BcLex *lex, BcLexToken *token);
 
 BcStatus bc_lex_printToken(BcLexToken *token);
 
+extern const char *bc_lex_token_type_strs[];
+extern const BcLexKeyword bc_lex_keywords[20];
+
 #endif // BC_LEX_H

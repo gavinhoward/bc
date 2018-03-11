@@ -105,4 +105,6 @@ void bc_num_zero(BcNum *n);
 void bc_num_one(BcNum *n);
 void bc_num_ten(BcNum *n);
 
+extern const char bc_num_hex_digits[];
+
 #endif // BC_NUM_H

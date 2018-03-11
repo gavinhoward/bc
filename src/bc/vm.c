@@ -32,13 +32,6 @@
 #include <io.h>
 #include <vm.h>
 
-static const char *bc_stdin_filename = "<stdin>";
-
-static const char *bc_ready_prompt = "ready for more input\n\n";
-
-static const char *bc_sigint_msg =
-  "\n\ninterrupt (type \"quit\" to exit)\n\n";
-
 static void bc_vm_sigint(int sig) {
 
   struct sigaction act;
@@ -50,7 +43,8 @@ static void bc_vm_sigint(int sig) {
   sigaction(SIGINT, &act, NULL);
 
   if (sig == SIGINT) {
-    err = write(STDERR_FILENO, bc_sigint_msg, strlen(bc_sigint_msg));
+    err = write(STDERR_FILENO, bc_program_sigint_msg,
+                strlen(bc_program_sigint_msg));
     if (err >= 0) bcg.bc_signal = 1;
   }
 }
@@ -174,7 +168,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
         status = bc_vm_signal(vm);
 
-        fprintf(stderr, "%s", bc_ready_prompt);
+        fprintf(stderr, "%s", bc_program_ready_prompt);
         fflush(stderr);
       }
     }
@@ -209,9 +203,9 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
   bool string;
   bool comment;
 
-  vm->program.file = bc_stdin_filename;
+  vm->program.file = bc_program_stdin_name;
 
-  status = bc_parse_file(&vm->parse, bc_stdin_filename);
+  status = bc_parse_file(&vm->parse, bc_program_stdin_name);
 
   if (status) return status;
 
@@ -395,7 +389,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
           if (bcg.bc_signal) {
             status = bc_vm_signal(vm);
-            fprintf(stderr, "%s", bc_ready_prompt);
+            fprintf(stderr, "%s", bc_program_ready_prompt);
           }
         }
         else if (bcg.bc_signal) {
@@ -413,7 +407,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
           if (bcg.bc_signal) {
             status = bc_vm_signal(vm);
-            fprintf(stderr, "%s", bc_ready_prompt);
+            fprintf(stderr, "%s", bc_program_ready_prompt);
           }
         }
         else if (bcg.bc_signal) {
