@@ -47,8 +47,8 @@ for i in $(seq 0 10000); do
 
 	echo "$i"
 
-	(echo $i | bc -q "$timeconst" ) > "$out1"
-	(echo $i | "$bc" -q "$timeconst" ) > "$out2"
+	(echo $i | bc -q "$timeconst") > "$out1"
+	(echo $i | "$bc" -q "$timeconst") > "$out2"
 
 	diff "$out1" "$out2"
 
