@@ -26,7 +26,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include <data.h>
+#include <lang.h>
 #include <lex.h>
 #include <parse.h>
 #include <instructions.h>

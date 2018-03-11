@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 #include <bc.h>
-#include <data.h>
+#include <lang.h>
 
 #define BC_PROGRAM_BUF_SIZE (1024)
 

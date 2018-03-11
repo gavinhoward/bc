@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <data.h>
+#include <lang.h>
 
 const char *bc_func_main = "(main)";
 const char *bc_func_read = "(read)";
