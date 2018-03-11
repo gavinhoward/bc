@@ -27,7 +27,7 @@
 #include <bc.h>
 #include <vector.h>
 
-BcStatus bc_vec_double(BcVec *vec) {
+static BcStatus bc_vec_double(BcVec *vec) {
 
   uint8_t *ptr;
 
@@ -212,7 +212,7 @@ void bc_vec_free(void *vec) {
   s->cap = 0;
 }
 
-size_t bc_veco_find(const BcVecO* vec, void *data) {
+static size_t bc_veco_find(const BcVecO* vec, void *data) {
 
   BcVecCmpFunc cmp;
   size_t low, high;

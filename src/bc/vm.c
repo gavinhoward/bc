@@ -32,14 +32,14 @@
 #include <io.h>
 #include <vm.h>
 
-const char *bc_stdin_filename = "<stdin>";
+static const char *bc_stdin_filename = "<stdin>";
 
-const char *bc_ready_prompt = "ready for more input\n\n";
+static const char *bc_ready_prompt = "ready for more input\n\n";
 
-const char *bc_sigint_msg =
+static const char *bc_sigint_msg =
   "\n\ninterrupt (type \"quit\" to exit)\n\n";
 
-void bc_vm_sigint(int sig) {
+static void bc_vm_sigint(int sig) {
 
   struct sigaction act;
   ssize_t err;
@@ -55,7 +55,7 @@ void bc_vm_sigint(int sig) {
   }
 }
 
-BcStatus bc_vm_signal(BcVm *vm) {
+static BcStatus bc_vm_signal(BcVm *vm) {
 
   BcStatus status;
   BcFunc *func;
@@ -83,7 +83,7 @@ BcStatus bc_vm_signal(BcVm *vm) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vm_execFile(BcVm *vm, int idx) {
+static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
   BcStatus status;
   const char *file;
@@ -196,7 +196,7 @@ err:
   return status;
 }
 
-BcStatus bc_vm_execStdin(BcVm *vm) {
+static BcStatus bc_vm_execStdin(BcVm *vm) {
 
   BcStatus status;
   char *buf;

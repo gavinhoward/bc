@@ -32,7 +32,7 @@
 #include <bc.h>
 #include <vm.h>
 
-const char *bc_err_types[] = {
+static const char *bc_err_types[] = {
 
   NULL,
 
@@ -119,7 +119,7 @@ const char *bc_err_types[] = {
 
 };
 
-const char *bc_err_descs[] = {
+static const char *bc_err_descs[] = {
 
   NULL,
 
@@ -213,15 +213,15 @@ const char *bc_err_descs[] = {
 
 };
 
-const char *bc_version = "0.1";
+static const char *bc_version = "0.1";
 
-const char *bc_copyright =
+static const char *bc_copyright =
   "bc copyright (c) 2018 Gavin D. Howard";
 
-const char *bc_warranty_short =
+static const char *bc_warranty_short =
   "This is free software with ABSOLUTELY NO WARRANTY.";
 
-const char *bc_version_fmt = "bc %s\n%s\n\n%s\n\n";
+static const char *bc_version_fmt = "bc %s\n%s\n\n%s\n\n";
 
 BcStatus bc_print_version() {
 
