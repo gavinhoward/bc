@@ -33,27 +33,6 @@
 #include <parse.h>
 #include <instructions.h>
 
-extern const char *bc_func_main;
-extern const char *bc_func_read;
-
-static const char *bc_byte_fmt = "%02x";
-
-static const BcNumBinaryFunc bc_math_ops[] = {
-
-  bc_num_mod,
-  NULL, // &
-  NULL, // '
-  NULL, // (
-  NULL, // )
-  bc_num_mul,
-  bc_num_add,
-  NULL, // ,
-  bc_num_sub,
-  NULL, // .
-  bc_num_div,
-
-};
-
 static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
                                      BcNum **ret, uint8_t flags)
 {
@@ -395,7 +374,7 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
     BcNumBinaryFunc op;
 
-    op = bc_math_ops[inst - BC_INST_OP_MODULUS];
+    op = bc_program_math_ops[inst - BC_INST_OP_MODULUS];
 
     status = op(num1, num2, &result.data.num, p->scale);
   }
@@ -548,11 +527,11 @@ static BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
   bytes = code[(*start)++];
   byte = 1;
 
-  if (printf(bc_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
+  if (printf(bc_program_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
 
   for (uint8_t i = 0; byte && i < bytes; ++i) {
     byte = code[(*start)++];
-    if (printf(bc_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
+    if (printf(bc_program_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
   }
 
   return BC_STATUS_SUCCESS;
@@ -1427,14 +1406,14 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if (s) goto func_map_err;
 
-  name = malloc(strlen(bc_func_main) + 1);
+  name = malloc(strlen(bc_lang_func_main) + 1);
 
   if (!name) {
     s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
 
-  strcpy(name, bc_func_main);
+  strcpy(name, bc_lang_func_main);
 
   s = bc_program_func_add(p, name, &idx);
 
@@ -1442,14 +1421,14 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if (s || idx != BC_PROGRAM_MAIN_FUNC) goto read_err;
 
-  read_name = malloc(strlen(bc_func_read) + 1);
+  read_name = malloc(strlen(bc_lang_func_read) + 1);
 
   if (!read_name) {
     s = BC_STATUS_MALLOC_FAIL;
     goto read_err;
   }
 
-  strcpy(read_name, bc_func_read);
+  strcpy(read_name, bc_lang_func_read);
 
   s = bc_program_func_add(p, read_name, &idx);
 

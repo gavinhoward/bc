@@ -136,4 +136,8 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags);
 
 void bc_parse_free(BcParse *parse);
 
+extern const bool bc_parse_token_exprs[];
+extern const BcOp bc_parse_ops[];
+extern const uint8_t bc_parse_insts[];
+
 #endif // BC_PARSE_H

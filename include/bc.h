@@ -145,6 +145,13 @@ typedef struct BcGlobals {
 typedef void (*BcFreeFunc)(void*);
 typedef BcStatus (*BcCopyFunc)(void*, void*);
 
+extern const char *bc_version;
+extern const char *bc_copyright;
+extern const char *bc_warranty_short;
+extern const char *bc_version_fmt;
+extern const char *bc_err_types[];
+extern const char *bc_err_descs[];
+
 BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]);
 
 BcStatus bc_print_version();

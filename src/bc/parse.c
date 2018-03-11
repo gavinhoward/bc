@@ -31,166 +31,6 @@
 #include <parse.h>
 #include <instructions.h>
 
-// This is an array that corresponds to token types. An entry is
-// true if the token is valid in an expression, false otherwise.
-static const bool bc_token_exprs[] = {
-
-  true,
-  true,
-
-  true,
-
-  true,
-  true,
-  true,
-
-  true,
-  true,
-
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-
-  true,
-
-  true,
-  true,
-
-  true,
-
-  false,
-
-  false,
-
-  true,
-  true,
-
-  false,
-  false,
-
-  false,
-  false,
-
-  false,
-  false,
-
-  false,
-  true,
-  true,
-
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  true,
-  false,
-  true,
-  true,
-  true,
-  true,
-  false,
-  false,
-  true,
-  false,
-  true,
-  true,
-  false,
-
-  false,
-
-  false,
-};
-
-// This is an array of data for operators that correspond to token types.
-// The last corresponds to BC_PARSE_OP_NEGATE_IDX since it doesn't have
-// its own token type (it is the same token at the binary minus operator).
-static const BcOp bc_ops[] = {
-
-  { 0, false },
-  { 0, false },
-
-  { 1, false },
-
-  { 2, false },
-
-  { 3, true },
-  { 3, true },
-  { 3, true },
-
-  { 4, true },
-  { 4, true },
-
-  { 6, true },
-  { 6, true },
-  { 6, true },
-  { 6, true },
-  { 6, true },
-  { 6, true },
-
-  { 7, false },
-
-  { 8, true },
-  { 8, true },
-
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-
-};
-
-static const uint8_t bc_op_insts[] = {
-
-  BC_INST_OP_NEGATE,
-
-  BC_INST_OP_POWER,
-
-  BC_INST_OP_MULTIPLY,
-  BC_INST_OP_DIVIDE,
-  BC_INST_OP_MODULUS,
-
-  BC_INST_OP_PLUS,
-  BC_INST_OP_MINUS,
-
-  BC_INST_OP_REL_EQUAL,
-  BC_INST_OP_REL_LESS_EQ,
-  BC_INST_OP_REL_GREATER_EQ,
-  BC_INST_OP_REL_NOT_EQ,
-  BC_INST_OP_REL_LESS,
-  BC_INST_OP_REL_GREATER,
-
-  BC_INST_OP_BOOL_NOT,
-
-  BC_INST_OP_BOOL_NOT,
-  BC_INST_OP_BOOL_AND,
-
-  BC_INST_OP_ASSIGN_POWER,
-  BC_INST_OP_ASSIGN_MULTIPLY,
-  BC_INST_OP_ASSIGN_DIVIDE,
-  BC_INST_OP_ASSIGN_MODULUS,
-  BC_INST_OP_ASSIGN_PLUS,
-  BC_INST_OP_ASSIGN_MINUS,
-  BC_INST_OP_ASSIGN,
-
-};
-
 static BcStatus bc_parse_else(BcParse *parse, BcVec *code);
 static BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code);
 static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code);
@@ -253,8 +93,8 @@ static BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
   uint8_t rp;
   bool rleft;
 
-  rp = bc_ops[t].prec;
-  rleft = bc_ops[t].left;
+  rp = bc_parse_ops[t].prec;
+  rleft = bc_parse_ops[t].left;
 
   if (ops->len != 0) {
 
@@ -263,11 +103,11 @@ static BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
 
     if (top != BC_LEX_LEFT_PAREN) {
 
-      lp = bc_ops[top].prec;
+      lp = bc_parse_ops[top].prec;
 
       while (lp < rp || (lp == rp && rleft)) {
 
-        status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_NEGATE]);
+        status = bc_vec_pushByte(code, bc_parse_insts[top - BC_LEX_OP_NEGATE]);
 
         if (status) return status;
 
@@ -285,7 +125,7 @@ static BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
 
         if (top == BC_LEX_LEFT_PAREN) break;
 
-        lp = bc_ops[top].prec;
+        lp = bc_parse_ops[top].prec;
       }
     }
   }
@@ -319,7 +159,7 @@ static BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
 
   while (top != BC_LEX_LEFT_PAREN) {
 
-    status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_NEGATE]);
+    status = bc_vec_pushByte(code, bc_parse_insts[top - BC_LEX_OP_NEGATE]);
 
     if (status) return status;
 
@@ -2074,7 +1914,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
   type = parse->token.type;
 
-  while (!status && !done && bc_token_exprs[type]) {
+  while (!status && !done && bc_parse_token_exprs[type]) {
 
     switch (type) {
 
@@ -2303,7 +2143,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       goto err;
     }
 
-    status = bc_vec_pushByte(code, bc_op_insts[top - BC_LEX_OP_NEGATE]);
+    status = bc_vec_pushByte(code, bc_parse_insts[top - BC_LEX_OP_NEGATE]);
 
     if (status) goto err;
 

@@ -201,4 +201,7 @@ void bc_result_free(void *result);
 
 void bc_constant_free(void *constant);
 
+extern const char *bc_lang_func_main;
+extern const char *bc_lang_func_read;
+
 #endif // BC_DATA_H

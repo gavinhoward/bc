@@ -32,8 +32,6 @@
 #include <num.h>
 #include <vector.h>
 
-static const char bc_num_hex_digits[] = "0123456789ABCDEF";
-
 static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
 
   size_t i;
