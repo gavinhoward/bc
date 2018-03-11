@@ -48,6 +48,7 @@ regexes = [
 	'^#endif \/\/ BC.*_H$',
 	'^extern.*$',
 	'^#define TT.*$',
+	'^static ',
 ]
 
 regexes_all = [
