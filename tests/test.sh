@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 script="$0"
 
@@ -15,7 +15,8 @@ fi
 
 set -e
 
-name="$testdir/$1.txt"
+t="$1"
+name="$testdir/$t.txt"
 shift
 
 if [ "$#" -gt 0 ]; then
@@ -39,11 +40,19 @@ else
 	out2="$testdir/../log_test.txt"
 fi
 
-rm -rf "$out1"
-rm -rf "$out2"
+if [[ "$t" = "parse" ]] || [[ "$t" = "print" ]]; then
 
-cat "$name" | bc -lq >> "$out1"
+	f="$testdir/$t.txt"
 
-cat "$name" | "$bc" -lq >> "$out2"
+	"$testdir/scripts/$t.bc" > "$f"
 
-diff "$out1" "$out2"
+	bc -lq "$f" > "$out1"
+	"$bc" -lq "$f" > "$out2"
+	diff "$out1" "$out2"
+
+else
+	cat "$name" | bc -lq > "$out1"
+	cat "$name" | "$bc" -lq > "$out2"
+	diff "$out1" "$out2"
+fi
+
