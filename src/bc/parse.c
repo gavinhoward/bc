@@ -38,12 +38,12 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code);
 static BcStatus bc_parse_pushName(BcVec *code, char *name) {
 
   BcStatus status;
-  size_t len;
+  size_t len, i;
 
   status = BC_STATUS_SUCCESS;
   len = strlen(name);
 
-  for (size_t i = 0; !status && i < len; ++i)
+  for (i = 0; !status && i < len; ++i)
     status = bc_vec_pushByte(code, (uint8_t) name[i]);
 
   if (status) return status;

@@ -184,8 +184,7 @@ BcStatus bc_vec_pop(BcVec *vec) {
 void bc_vec_free(void *vec) {
 
   BcVec *s;
-  size_t len;
-  size_t esize;
+  size_t esize, len, i;
   BcFreeFunc sfree;
   uint8_t *array;
 
@@ -201,7 +200,7 @@ void bc_vec_free(void *vec) {
     array = s->array;
     esize = s->size;
 
-    for (size_t i = 0; i < len; ++i) sfree(array + (i * esize));
+    for (i = 0; i < len; ++i) sfree(array + (i * esize));
   }
 
   free(s->array);

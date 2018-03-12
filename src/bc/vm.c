@@ -236,7 +236,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
   while ((!status || status != BC_STATUS_PARSE_QUIT) &&
          !(status = bc_io_getline(&buf, &bufn)))
   {
-    size_t len;
+    size_t len, i;
 
     len = strlen(buf);
     slen = strlen(buffer);
@@ -245,7 +245,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
     if (len == 1 && buf[0] == '"') string = !string;
     else if (len > 1 || comment) {
 
-      for (uint32_t i = 0; i < len; ++i) {
+      for (i = 0; i < len; ++i) {
 
         char c;
         bool notend;
@@ -472,13 +472,13 @@ void bc_vm_free(BcVm *vm) {
 BcStatus bc_vm_exec(BcVm *vm) {
 
   BcStatus status;
-  int num_files;
+  int num_files, i;
 
   status = BC_STATUS_SUCCESS;
 
   num_files = vm->filec;
 
-  for (int i = 0; !status && i < num_files; ++i) status = bc_vm_execFile(vm, i);
+  for (i = 0; !status && i < num_files; ++i) status = bc_vm_execFile(vm, i);
 
   if (status != BC_STATUS_SUCCESS &&
       status != BC_STATUS_PARSE_QUIT &&
