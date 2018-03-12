@@ -6,6 +6,6 @@ divide
 modulus
 power
 sqrt
+basic
 parse
 print
-basic
