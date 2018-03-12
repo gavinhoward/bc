@@ -49,9 +49,7 @@ static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
   const char *start;
-  uint32_t newlines;
-  size_t len;
-  size_t i;
+  size_t newlines, len, i, j;
   char c;
 
   newlines = 0;
@@ -79,7 +77,7 @@ static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
   start = lex->buffer + lex->idx;
 
-  for (size_t j = 0; j < len; ++j) token->string[j] = start[j];
+  for (j = 0; j < len; ++j) token->string[j] = start[j];
 
   token->string[len] = '\0';
 

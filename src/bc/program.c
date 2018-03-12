@@ -469,8 +469,7 @@ io_err:
 
 static size_t bc_program_index(uint8_t *code, size_t *start) {
 
-  uint8_t bytes;
-  uint8_t byte;
+  uint8_t bytes, byte, i;
   size_t result;
 
   bytes = code[(*start)++];
@@ -478,7 +477,7 @@ static size_t bc_program_index(uint8_t *code, size_t *start) {
 
   result = 0;
 
-  for (uint8_t i = 0; byte && i < bytes; ++i) {
+  for (i = 0; byte && i < bytes; ++i) {
     byte = code[(*start)++];
     result |= (((size_t) byte) << (i * 8));
   }
@@ -521,15 +520,14 @@ static char* bc_program_name(uint8_t *code, size_t *start) {
 
 static BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
 
-  uint8_t bytes;
-  uint8_t byte;
+  uint8_t bytes, byte, i;
 
   bytes = code[(*start)++];
   byte = 1;
 
   if (printf(bc_program_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
 
-  for (uint8_t i = 0; byte && i < bytes; ++i) {
+  for (i = 0; byte && i < bytes; ++i) {
     byte = code[(*start)++];
     if (printf(bc_program_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
   }
@@ -562,14 +560,14 @@ static BcStatus bc_program_printString(const char *str) {
 
   char c;
   char c2;
-  size_t len;
+  size_t len, i;
   int err;
 
   err = 0;
 
   len = strlen(str);
 
-  for (size_t i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i) {
 
     c = str[i];
 
