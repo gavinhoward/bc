@@ -1,11 +1,9 @@
 # Notice
 
-Copyright 2018 Contributors.
+Copyright 2018 Gavin D. Howard and contributors.
 
 ## Contributors
 
-The contributors to `bc` are listed below in alphabetical order.
+The contributors to `bc` (besides Gavin) are listed below in alphabetical order.
 
-* [CM Graff](https://github.com/cmgraff) (cm0graff@gmail.com)
-* [Bao Hexing](https://github.com/hexingb) (HexingB@qq.com)
-* [Gavin D. Howard](https://github.com/gavinhoward) (yzena.tech@gmail.com)
+* rofl0r
