@@ -138,7 +138,7 @@ typedef struct BcLex {
 typedef struct BcLexKeyword {
 
   const char name[9];
-  const unsigned char len;
+  const char len;
   const bool posix;
 
 } BcLexKeyword;

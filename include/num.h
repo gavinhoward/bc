@@ -56,12 +56,7 @@ typedef struct BcNum {
 
 #define BC_NUM_PRINT_WIDTH (69)
 
-#define BC_NUM_ZERO(n) (!(n)->len)
-
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
-
-#define BC_NUM_POS_ONE(n) (BC_NUM_ONE(n) && !(n)->neg)
-#define BC_NUM_NEG_ONE(n) (BC_NUM_ONE(n) && (n)->neg)
 
 typedef BcStatus (*BcNumUnaryFunc)(BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumBinaryFunc)(BcNum*, BcNum*, BcNum*, size_t);

@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     goto error;
   }
 
-  if (fprintf(out, "const unsigned char bc_lib[] = {\n") < 0) {
+  if (fprintf(out, "const char bc_lib[] = {\n") < 0) {
     err = IO_ERR;
     goto error;
   }
