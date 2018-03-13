@@ -145,7 +145,6 @@ typedef struct BcGlobals {
 } BcGlobals;
 
 BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]);
-BcStatus bc_print_version();
 // ** Exclude end. **
 
 void bc_error(BcStatus status);
@@ -159,10 +158,7 @@ extern BcGlobals bcg;
 extern const unsigned char bc_lib[];
 extern const char *bc_lib_name;
 
-extern const char *bc_version;
-extern const char *bc_copyright;
-extern const char *bc_warranty_short;
-extern const char *bc_version_fmt;
+extern const char *bc_header;
 extern const char *bc_err_types[];
 extern const char *bc_err_descs[];
 

@@ -140,12 +140,8 @@ int main(int argc, char *argv[]) {
 
       case 'v':
       {
-        status = bc_print_version();
-
-        if (status) return status;
-
+        if (printf("%s", bc_header) < 0) return BC_STATUS_IO_ERR;
         do_exit = true;
-
         break;
       }
 
