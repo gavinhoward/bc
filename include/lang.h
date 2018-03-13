@@ -177,8 +177,7 @@ typedef BcStatus (*BcDataInitFunc)(void*);
 
 // ** Exclude start. **
 BcStatus bc_func_init(BcFunc *func);
-BcStatus bc_func_insertParam(BcFunc *func, char *name, bool var);
-BcStatus bc_func_insertAuto(BcFunc *func, char *name, bool var);
+BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec);
 void bc_func_free(void *func);
 
 BcStatus bc_var_init(void *var);
