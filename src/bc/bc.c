@@ -32,56 +32,54 @@
 #include <bc.h>
 #include <vm.h>
 
-void bc_error(BcStatus status) {
+void bc_error(BcStatus st) {
 
-  if (!status || status == BC_STATUS_PARSE_QUIT ||
-      status == BC_STATUS_EXEC_HALT ||
-      status >= BC_STATUS_POSIX_NAME_LEN)
+  if (!st || st == BC_STATUS_PARSE_QUIT ||
+      st == BC_STATUS_EXEC_HALT ||
+      st >= BC_STATUS_POSIX_NAME_LEN)
   {
     return;
   }
 
   fprintf(stderr, "\n%s error: %s\n\n",
-          bc_err_types[status], bc_err_descs[status]);
+          bc_err_types[st], bc_err_descs[st]);
 }
 
-void bc_error_file(BcStatus status, const char *file, uint32_t line) {
+void bc_error_file(BcStatus st, const char *file, size_t line) {
 
-  if (!status || status == BC_STATUS_PARSE_QUIT ||
-      !file || status >= BC_STATUS_POSIX_NAME_LEN)
+  if (!st || st == BC_STATUS_PARSE_QUIT ||
+      !file || st >= BC_STATUS_POSIX_NAME_LEN)
   {
     return;
   }
 
-  fprintf(stderr, "\n%s error: %s\n", bc_err_types[status],
-          bc_err_descs[status]);
+  fprintf(stderr, "\n%s error: %s\n", bc_err_types[st],
+          bc_err_descs[st]);
 
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 }
 
-BcStatus bc_posix_error(BcStatus status, const char *file,
-                        uint32_t line, const char *msg)
+BcStatus bc_posix_error(BcStatus st, const char *file,
+                        size_t line, const char *msg)
 {
-  if (!(bcg.bc_std || bcg.bc_warn) ||
-      status < BC_STATUS_POSIX_NAME_LEN ||
-      !file)
-  {
-    return BC_STATUS_SUCCESS;
-  }
+  int s = bcg.bc_std, w = bcg.bc_warn;
 
-  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[status],
-          bcg.bc_std ? "error" : "warning", bc_err_descs[status]);
+  if (!(s || w) || st < BC_STATUS_POSIX_NAME_LEN || !file)
+    return BC_STATUS_SUCCESS;
+
+  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[st],
+          s ? "error" : "warning", bc_err_descs[st]);
 
   if (msg) fprintf(stderr, "    %s\n", msg);
 
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
-  return bcg.bc_std ? status : BC_STATUS_SUCCESS;
+  return st * !!s;
 }
 
-BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]) {
+BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
 
   BcStatus status;
   BcVm vm;
