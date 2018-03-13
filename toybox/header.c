@@ -40,7 +40,6 @@ config BC
 #include "toys.h"
 
 GLOBALS(
-  long bc_code;
   long bc_interactive;
   long bc_std;
   long bc_warn;

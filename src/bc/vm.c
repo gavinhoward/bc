@@ -403,8 +403,8 @@ buf_err:
   return status;
 }
 
-BcStatus bc_vm_init(BcVm *vm, int filec, char *filev[]) {
-
+BcStatus bc_vm_init(BcVm *vm, BcProgramExecFunc exec, int filec, char *filev[])
+{
   BcStatus status;
   struct sigaction act;
 
@@ -424,7 +424,7 @@ BcStatus bc_vm_init(BcVm *vm, int filec, char *filev[]) {
     return status;
   }
 
-  vm->exec = bcg.bc_code ? bc_program_print : bc_program_exec;
+  vm->exec = exec;
   vm->filec = filec;
   vm->filev = filev;
 

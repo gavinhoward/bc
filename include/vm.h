@@ -41,7 +41,7 @@ typedef struct BcVm {
 } BcVm;
 
 // ** Exclude start. **
-BcStatus bc_vm_init(BcVm *vm, int filec, char *filev[]);
+BcStatus bc_vm_init(BcVm *vm, BcProgramExecFunc exec, int filec, char *filev[]);
 
 void bc_vm_free(BcVm *vm);
 

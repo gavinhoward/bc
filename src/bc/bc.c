@@ -94,12 +94,12 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, char *filev[]) {
 
   BcStatus status;
   BcVm vm;
+  BcProgramExecFunc exec;
 
   if ((flags & BC_FLAG_INTERACTIVE) || (isatty(0) && isatty(1))) {
     bcg.bc_interactive = 1;
   } else bcg.bc_interactive = 0;
 
-  bcg.bc_code = flags & BC_FLAG_CODE;
   bcg.bc_std = flags & BC_FLAG_STANDARD;
   bcg.bc_warn = flags & BC_FLAG_WARN;
 
@@ -110,7 +110,8 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, char *filev[]) {
     if (status) return status;
   }
 
-  status = bc_vm_init(&vm, filec, filev);
+  exec = (flags & BC_FLAG_CODE) ? bc_program_print : bc_program_exec;
+  status = bc_vm_init(&vm, exec, filec, filev);
 
   if (status) return status;
 
