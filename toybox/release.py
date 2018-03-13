@@ -65,12 +65,27 @@ regexes = [
 	'^#define BC.*_H$',
 	'^#endif \/\/ BC.*_H$',
 	'^extern.*$',
-	'^#define TT.*$',
 	'^static ',
+	'^#define BC_FLAG_WARN \(1<<0\)$',
+	'^#define BC_FLAG_STANDARD \(1<<1\)$',
+	'^#define BC_FLAG_QUIET \(1<<2\)$',
+	'^#define BC_FLAG_MATHLIB \(1<<3\)$',
+	'^#define BC_FLAG_INTERACTIVE \(1<<4\)$',
+	'^#define BC_FLAG_CODE \(1<<5\)$',
 ]
 
 regexes_all = [
 	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$'
+]
+
+replacements = [
+	[ 'bcg.', 'TT.' ],
+	[ 'BC_FLAG_WARN', 'FLAG_w' ],
+	[ 'BC_FLAG_STANDARD', 'FLAG_s' ],
+	[ 'BC_FLAG_QUIET', 'FLAG_q' ],
+	[ 'BC_FLAG_MATHLIB', 'FLAG_l' ],
+	[ 'BC_FLAG_INTERACTIVE', 'FLAG_i' ],
+	[ 'BC_FLAG_CODE', 'FLAG_c' ],
 ]
 
 for reg in regexes:
@@ -80,6 +95,10 @@ for reg in regexes:
 for reg in regexes_all:
 	r = re.compile(reg, re.M | re.DOTALL)
 	content = r.sub('', content)
+
+for rep in replacements:
+	r = re.compile(rep[0], re.M)
+	content = r.sub(rep[1], content)
 
 with open(testdir + "/header.c") as f:
 	content = f.read() + content

@@ -31,7 +31,7 @@
 typedef int (*BcIoGetc)(void*);
 
 // ** Exclude start. **
-long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void *ctx);
+long bc_io_frag(char *buf, long len, int term, BcIoGetc bc_getc, void *ctx);
 
 long bc_io_fgets(char * buf, int n, FILE* fp);
 

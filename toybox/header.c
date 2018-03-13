@@ -48,5 +48,3 @@ GLOBALS(
     long bc_signal;
 )
 
-#define bcg (TT)
-
