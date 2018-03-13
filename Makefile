@@ -13,7 +13,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-CFLAGS ?= -Wall -Wextra -pedantic -I./include/ -std=c99 -D_POSIX_C_SOURCE
+CFLAGS ?= -Wall -Wextra -pedantic -I./include/ -std=c99 -funsigned-char -D_POSIX_C_SOURCE
 
 ifeq "$(CC)" "clang"
 	CFLAGS += -fsanitize=address -fsanitize=undefined

@@ -66,11 +66,11 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
   }
   else if (b->neg) return 1;
 
-  if (BC_NUM_ZERO(a)) {
+  if (!a->len) {
     cmp = b->neg ? 1 : -1;
-    return BC_NUM_ZERO(b) ? 0 : cmp;
+    return !b->len ? 0 : cmp;
   }
-  else if (BC_NUM_ZERO(b)) return a->neg ? -1 : 1;
+  else if (!b->len) return a->neg ? -1 : 1;
 
   a_int = a->len - a->rdx;
   b_int = b->len - b->rdx;
@@ -327,12 +327,12 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   // I am hijacking it to tell this function whether it is doing an add
   // or a subtract.
 
-  if (BC_NUM_ZERO(a)) {
+  if (!a->len) {
     status = bc_num_copy(c, b);
     c->neg = !b->neg;
     return status;
   }
-  else if (BC_NUM_ZERO(b)) return bc_num_copy(c, a);
+  else if (!b->len) return bc_num_copy(c, a);
 
   aneg = a->neg;
   bneg = b->neg;
@@ -401,7 +401,7 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   size_t j;
   size_t len;
 
-  if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) {
+  if (!a->len || !b->len) {
     bc_num_zero(c);
     return BC_STATUS_SUCCESS;
   }
@@ -467,8 +467,8 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   size_t i;
   BcNum copy;
 
-  if (BC_NUM_ZERO(b)) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
-  else if (BC_NUM_ZERO(a)) {
+  if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+  else if (!a->len) {
     bc_num_zero(c);
     return BC_STATUS_SUCCESS;
   }
@@ -658,7 +658,7 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     bc_num_one(c);
     return BC_STATUS_SUCCESS;
   }
-  else if (BC_NUM_ZERO(a)) {
+  else if (!a->len) {
     bc_num_zero(c);
     return BC_STATUS_SUCCESS;
   }
@@ -781,11 +781,11 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
   size_t resrdx;
   int cmp;
 
-  if (BC_NUM_ZERO(a)) {
+  if (!a->len) {
     bc_num_zero(b);
     return BC_STATUS_SUCCESS;
   }
-  else if (BC_NUM_POS_ONE(a)) {
+  else if (BC_NUM_ONE(a) && !(a)->neg) {
     bc_num_one(b);
     return bc_num_extend(b, scale);
   }
@@ -1371,7 +1371,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
   if (status) goto frac_len_err;
 
-  while (!BC_NUM_ZERO(&intp)) {
+  while (!intp.len) {
 
     unsigned long dig;
 
@@ -1573,7 +1573,7 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
   if (base_t < BC_NUM_MIN_BASE || base_t > BC_NUM_MAX_OUTPUT_BASE)
     return BC_STATUS_EXEC_INVALID_OBASE;
 
-  if (BC_NUM_ZERO(n)) {
+  if (!n->len) {
     if (fputc('0', f) == EOF) return BC_STATUS_IO_ERR;
     status = BC_STATUS_SUCCESS;
   }

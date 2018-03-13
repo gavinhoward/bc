@@ -66,9 +66,7 @@ void bc_error_file(BcStatus status, const char *file, uint32_t line) {
           bc_err_descs[status]);
 
   fprintf(stderr, "    %s", file);
-
-  if (line) fprintf(stderr, ":%d\n\n", line);
-  else fprintf(stderr, "\n\n");
+  fprintf(stderr, ":%d\n\n" + 3 * !line, line);
 }
 
 BcStatus bc_posix_error(BcStatus status, const char *file,
@@ -87,19 +85,17 @@ BcStatus bc_posix_error(BcStatus status, const char *file,
   if (msg) fprintf(stderr, "    %s\n", msg);
 
   fprintf(stderr, "    %s", file);
-
-  if (line) fprintf(stderr, ":%d\n\n", line);
-  else fprintf(stderr, "\n\n");
+  fprintf(stderr, ":%d\n\n" + 3 * !line, line);
 
   return bcg.bc_std ? status : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
+BcStatus bc_exec(unsigned int flags, unsigned int filec, char *filev[]) {
 
   BcStatus status;
   BcVm vm;
 
-  if ((flags & BC_FLAG_INTERACTIVE) || (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))) {
+  if ((flags & BC_FLAG_INTERACTIVE) || (isatty(0) && isatty(1))) {
     bcg.bc_interactive = 1;
   } else bcg.bc_interactive = 0;
 
