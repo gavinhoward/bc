@@ -56,28 +56,20 @@ static BcStatus bc_parse_pushName(BcVec *code, char *name) {
 static BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
 
   BcStatus status;
-  uint8_t amt;
+  uint8_t amt, i;
   uint8_t nums[sizeof(size_t)];
-  uint32_t i;
 
-  amt = 0;
-  i = 0;
-
-  while (idx) {
+  for (amt = 0; idx; ++amt) {
     nums[amt] = (uint8_t) idx;
-    idx &= ~(0xFF);
+    idx &= ~(UINT8_MAX);
     idx >>= sizeof(uint8_t) * CHAR_BIT;
-    ++amt;
   }
 
   status = bc_vec_pushByte(code, amt);
 
   if (status) return status;
 
-  while (!status && i < amt) {
-    status = bc_vec_pushByte(code, nums[i]);
-    ++i;
-  }
+  for (i = 0; !status && i < amt; ++i) status = bc_vec_pushByte(code, nums[i]);
 
   return status;
 }

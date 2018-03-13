@@ -475,7 +475,7 @@ static size_t bc_program_index(uint8_t *code, size_t *start) {
 
   for (i = 0; i < bytes; ++i) {
     byte = code[(*start)++];
-    result |= (((size_t) byte) << (i * 8));
+    result |= (((size_t) byte) << (i * CHAR_BIT));
   }
 
   return result;
