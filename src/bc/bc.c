@@ -85,39 +85,26 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
   BcVm vm;
   BcProgramExecFunc exec;
 
-  if ((flags & BC_FLAG_INTERACTIVE) || (isatty(0) && isatty(1))) {
-    bcg.bc_interactive = 1;
-  } else bcg.bc_interactive = 0;
+  bcg.bc_interactive = (flags & BC_FLAG_INTERACTIVE) || (isatty(0) && isatty(1));
 
   bcg.bc_std = flags & BC_FLAG_STANDARD;
   bcg.bc_warn = flags & BC_FLAG_WARN;
 
-  if (!(flags & BC_FLAG_QUIET) && (printf("%s", bc_header) < 0))
-    return BC_STATUS_IO_ERR;
+  if (!(flags & BC_FLAG_QUIET) && (printf("%s", bc_header) < 0)) return BC_STATUS_IO_ERR;
 
   exec = (flags & BC_FLAG_CODE) ? bc_program_print : bc_program_exec;
-  status = bc_vm_init(&vm, exec, filec, filev);
-
-  if (status) return status;
+  if ((status = bc_vm_init(&vm, exec, filec, filev))) return status;
 
   if (flags & BC_FLAG_MATHLIB) {
 
-    status = bc_parse_file(&vm.parse, bc_lib_name);
-
-    if (status) goto err;
-
-    status = bc_parse_text(&vm.parse, bc_lib);
-
-    if (status) goto err;
+    if ((status = bc_parse_file(&vm.parse, bc_lib_name))) goto err;
+    if ((status = bc_parse_text(&vm.parse, bc_lib))) goto err;
 
     while (!status) status = bc_parse_parse(&vm.parse);
-
     if (status != BC_STATUS_LEX_EOF) goto err;
 
     // Make sure to execute the math library.
-    status = vm.exec(&vm.program);
-
-    if (status) goto err;
+    if ((status = vm.exec(&vm.program))) goto err;
   }
 
   status = bc_vm_exec(&vm);

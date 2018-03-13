@@ -170,5 +170,5 @@ int main(int argc, char *argv[]) {
   filec = argc - optind;
   filev = argv + optind;
 
-  return bc_exec(flags, filec, filev);
+  return bc_main(flags, filec, filev);
 }
