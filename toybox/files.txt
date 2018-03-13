@@ -18,4 +18,3 @@ src/bc/lex.c
 src/bc/parse.c
 src/bc/program.c
 src/bc/vm.c
-src/bc/bc.c
