@@ -470,11 +470,10 @@ static size_t bc_program_index(uint8_t *code, size_t *start) {
   size_t result;
 
   bytes = code[(*start)++];
-  byte = 1;
 
   result = 0;
 
-  for (i = 0; byte && i < bytes; ++i) {
+  for (i = 0; i < bytes; ++i) {
     byte = code[(*start)++];
     result |= (((size_t) byte) << (i * 8));
   }
