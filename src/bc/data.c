@@ -24,16 +24,11 @@
 #include <lex.h>
 #include <parse.h>
 
-const char *bc_version = "0.1";
-
-const char *bc_copyright =
+const char *bc_header =
+  "bc 0.1\n"
   "bc copyright (c) 2018 Gavin D. Howard and contributors\n"
-  "Report bugs at: https://github.com/gavinhoward/bc";
-
-const char *bc_warranty_short =
-  "This is free software with ABSOLUTELY NO WARRANTY.";
-
-const char *bc_version_fmt = "bc %s\n%s\n\n%s\n\n";
+  "Report bugs at: https://github.com/gavinhoward/bc\n\n"
+  "This is free software with ABSOLUTELY NO WARRANTY.\n\n";
 
 const char *bc_err_types[] = {
 

@@ -32,15 +32,6 @@
 #include <bc.h>
 #include <vm.h>
 
-BcStatus bc_print_version() {
-
-  int err;
-
-  err = printf(bc_version_fmt, bc_version, bc_copyright, bc_warranty_short);
-
-  return err < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
-}
-
 void bc_error(BcStatus status) {
 
   if (!status || status == BC_STATUS_PARSE_QUIT ||
@@ -103,12 +94,8 @@ BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]) {
   bcg.bc_std = flags & BC_FLAG_STANDARD;
   bcg.bc_warn = flags & BC_FLAG_WARN;
 
-  if (!(flags & BC_FLAG_QUIET)) {
-
-    status = bc_print_version();
-
-    if (status) return status;
-  }
+  if (!(flags & BC_FLAG_QUIET) && (printf("%s", bc_header) < 0))
+    return BC_STATUS_IO_ERR;
 
   exec = (flags & BC_FLAG_CODE) ? bc_program_print : bc_program_exec;
   status = bc_vm_init(&vm, exec, filec, filev);
