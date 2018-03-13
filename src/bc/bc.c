@@ -90,7 +90,7 @@ BcStatus bc_posix_error(BcStatus status, const char *file,
   return bcg.bc_std ? status : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_exec(unsigned int flags, unsigned int filec, char *filev[]) {
+BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]) {
 
   BcStatus status;
   BcVm vm;

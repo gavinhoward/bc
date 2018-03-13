@@ -144,7 +144,7 @@ typedef struct BcGlobals {
 
 } BcGlobals;
 
-BcStatus bc_exec(unsigned int flags, unsigned int filec, char *filev[]);
+BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]);
 BcStatus bc_print_version();
 // ** Exclude end. **
 
