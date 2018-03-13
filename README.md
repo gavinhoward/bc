@@ -9,9 +9,8 @@ under the BSD 0-clause License.
 
 ## Status
 
-This `bc` is not even in alpha stage yet, so it is not ready for use. However,
-at this time, it can do basic math operations (`+`, `-`, `*`, `/`, `%`) on
-constants.
+This `bc` is in alpha stage, so it is ready for testing in the wild, but it is
+not ready to be officially distributed as an official part of any project.
 
 ## Language
 
@@ -49,7 +48,7 @@ folders in that directory.
 
 Files:
 
-	LICENSE.md      A Markdown the BSD 3-clause License.
+	LICENSE.md      A Markdown the BSD 0-clause License.
 	NOTICE.md       List of contributors and copyright owners.
 
 Folders:
