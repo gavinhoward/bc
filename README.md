@@ -1,7 +1,8 @@
 # bc
 
 This is an implementation of POSIX `bc` that implements
-[GNU `bc`](https://www.gnu.org/software/bc/) extensions.
+[GNU `bc`](https://www.gnu.org/software/bc/) extensions, as well as the period
+(`.`) extension for the BSD bc.
 
 This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 0-clause License.
