@@ -155,7 +155,7 @@ BcStatus bc_posix_error(BcStatus status, const char *file,
 
 extern BcGlobals bcg;
 
-extern const unsigned char bc_lib[];
+extern const char bc_lib[];
 extern const char *bc_lib_name;
 
 extern const char *bc_header;

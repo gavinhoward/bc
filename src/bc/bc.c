@@ -108,7 +108,7 @@ BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]) {
 
     if (status) goto err;
 
-    status = bc_parse_text(&vm.parse, (const char*) bc_lib);
+    status = bc_parse_text(&vm.parse, bc_lib);
 
     if (status) goto err;
 
