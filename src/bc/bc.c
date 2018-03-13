@@ -99,11 +99,9 @@ BcStatus bc_exec(unsigned int flags, unsigned int filec, const char *filev[]) {
   BcStatus status;
   BcVm vm;
 
-  if (flags & BC_FLAG_INTERACTIVE || (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO)))
-  {
+  if (flags & BC_FLAG_INTERACTIVE || (isatty(STDIN_FILENO) && isatty(STDOUT_FILENO))) {
     bcg.bc_interactive = 1;
-  }
-  else bcg.bc_interactive = 0;
+  } else bcg.bc_interactive = 0;
 
   bcg.bc_code = flags & BC_FLAG_CODE;
   bcg.bc_std = flags & BC_FLAG_STANDARD;
