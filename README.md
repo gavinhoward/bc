@@ -4,8 +4,7 @@ This is an implementation of POSIX `bc` that implements
 [GNU `bc`](https://www.gnu.org/software/bc/) extensions.
 
 This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
-3-clause License, with a special exemption for the Toybox project to use it
-under the BSD 0-clause License.
+0-clause License.
 
 ## Status
 
