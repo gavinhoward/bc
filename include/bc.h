@@ -144,14 +144,14 @@ typedef struct BcGlobals {
 
 } BcGlobals;
 
-BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]);
+BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]);
 // ** Exclude end. **
 
-void bc_error(BcStatus status);
-void bc_error_file(BcStatus status, const char *file, uint32_t line);
+void bc_error(BcStatus st);
+void bc_error_file(BcStatus st, const char *file, size_t line);
 
-BcStatus bc_posix_error(BcStatus status, const char *file,
-                        uint32_t line, const char *msg);
+BcStatus bc_posix_error(BcStatus st, const char *file,
+                        size_t line, const char *msg);
 
 extern BcGlobals bcg;
 
