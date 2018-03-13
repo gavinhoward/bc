@@ -1308,7 +1308,7 @@ static BcStatus bc_parse_func(BcParse *parse) {
     }
     else comma = false;
 
-    status = bc_func_insertParam(fptr, name, var);
+    status = bc_func_insert(fptr, name, var, &fptr->params);
 
     if (status) goto err;
 
@@ -1404,7 +1404,7 @@ static BcStatus bc_parse_auto(BcParse *parse) {
     }
     else comma = false;
 
-    status = bc_func_insertAuto(func, name, var);
+    status = bc_func_insert(func, name, var, &func->autos);
 
     if (status) goto err;
 

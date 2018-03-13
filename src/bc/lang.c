@@ -26,7 +26,7 @@
 
 #include <lang.h>
 
-static BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
+BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
 
   BcStatus status;
   BcAuto a;
@@ -95,14 +95,6 @@ param_err:
   bc_vec_free(&func->code);
 
   return status;
-}
-
-BcStatus bc_func_insertParam(BcFunc *func, char *name, bool var) {
-  return bc_func_insert(func, name, var, &func->params);
-}
-
-BcStatus bc_func_insertAuto(BcFunc *func, char *name, bool var) {
-  return bc_func_insert(func, name, var, &func->autos);
 }
 
 void bc_func_free(void *func) {
