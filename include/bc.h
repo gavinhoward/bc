@@ -136,7 +136,6 @@ typedef BcStatus (*BcCopyFunc)(void*, void*);
 // ** Exclude start. **
 typedef struct BcGlobals {
 
-  long bc_code;
   long bc_interactive;
   long bc_std;
   long bc_warn;
