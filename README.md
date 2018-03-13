@@ -27,9 +27,6 @@ a `develop`/`master` split. (Main development is on `develop`, and `master` just
 points to the latest tagged release to make it easy for users to get the latest
 release.)
 
-This `bc` includes scripts and a `.gitconfig` that helps manage the workflow. New
-contributors should familiarize themselves with them.
-
 ## Commit Messages
 
 This `bc` uses the commit message guidelines laid out in
