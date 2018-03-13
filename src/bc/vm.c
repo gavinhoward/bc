@@ -102,8 +102,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
     status = bc_parse_parse(&vm->parse);
 
-    if (status && status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF)
-    {
+    if (status && status != BC_STATUS_LEX_EOF) {
       bc_error_file(status, vm->parse.lex.file, vm->parse.lex.line);
       goto err;
     }
@@ -119,7 +118,6 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
     if (status) {
 
       if (status != BC_STATUS_LEX_EOF &&
-          status != BC_STATUS_PARSE_EOF &&
           status != BC_STATUS_PARSE_QUIT &&
           status != BC_STATUS_PARSE_LIMITS)
       {
@@ -144,12 +142,8 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
   } while (!status);
 
-  if (status != BC_STATUS_PARSE_EOF &&
-      status != BC_STATUS_LEX_EOF &&
-      status != BC_STATUS_PARSE_QUIT)
-  {
+  if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_QUIT)
     goto read_err;
-  }
 
   if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
@@ -303,10 +297,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
       if (status) {
 
-        if (status == BC_STATUS_PARSE_QUIT ||
-            status == BC_STATUS_LEX_EOF ||
-            status == BC_STATUS_PARSE_EOF)
-        {
+        if (status == BC_STATUS_PARSE_QUIT || status == BC_STATUS_LEX_EOF) {
           break;
         }
         else if (status == BC_STATUS_PARSE_LIMITS) {
@@ -334,7 +325,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
       bc_program_limits(&vm->program);
       status = BC_STATUS_SUCCESS;
     }
-    else if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_EOF) {
+    else if (status != BC_STATUS_LEX_EOF) {
 
       BcFunc *func;
       BcInstPtr *ip;
@@ -398,8 +389,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
   status = !status || status == BC_STATUS_PARSE_QUIT ||
            status == BC_STATUS_EXEC_HALT ||
-           status == BC_STATUS_LEX_EOF ||
-           status == BC_STATUS_PARSE_EOF ?
+           status == BC_STATUS_LEX_EOF ?
                BC_STATUS_SUCCESS : status;
 
 exit_err:

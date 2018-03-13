@@ -1518,7 +1518,7 @@ static BcStatus bc_parse_semicolonList(BcParse *parse, BcVec *code) {
 
     case BC_LEX_EOF:
     {
-      if (parse->flags.len > 0) status = BC_STATUS_PARSE_EOF;
+      if (parse->flags.len > 0) status = BC_STATUS_LEX_INVALID_TOKEN;
       break;
     }
 
@@ -1833,7 +1833,7 @@ BcStatus bc_parse_parse(BcParse *parse) {
 
     case BC_LEX_EOF:
     {
-      status = BC_STATUS_PARSE_EOF;
+      status = BC_STATUS_LEX_EOF;
       break;
     }
 
