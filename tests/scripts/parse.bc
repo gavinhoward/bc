@@ -12,5 +12,4 @@ for (b = 2; b <= 16; ++b) {
 	}
 }
 
-print "halt\n"
 halt

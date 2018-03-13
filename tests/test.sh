@@ -44,12 +44,15 @@ if [[ "$t" = "parse" ]] || [[ "$t" = "print" ]]; then
 
 	f="$testdir/$t.txt"
 
-	if [ ! -f "$testdir/scripts/$t.bc" ]; then
+	if [ ! -f "$f" ]; then
+		echo "Generating $t..."
 		"$testdir/scripts/$t.bc" > "$f"
 	fi
 
-	bc -lq "$f" > "$out1"
-	"$bc" -lq "$f" > "$out2"
+	echo "Running $t..."
+
+	echo "halt" | bc -lq "$f" > "$out1"
+	echo "halt" | "$bc" -lq "$f" > "$out2"
 	diff "$out1" "$out2"
 
 else
