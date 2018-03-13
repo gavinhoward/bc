@@ -34,6 +34,8 @@ typedef struct BcVm {
   BcProgram program;
   BcParse parse;
 
+  BcProgramExecFunc exec;
+
   int filec;
   char** filev;
 
