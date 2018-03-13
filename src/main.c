@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
   BcStatus status;
   unsigned int flags;
   unsigned int filec;
-  const char** filev;
+  char** filev;
   bool do_exit;
 
   setlocale(LC_ALL, "");
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
   if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
   filec = argc - optind;
-  filev = (const char**) (argv + optind);
+  filev = argv + optind;
 
   return bc_exec(flags, filec, filev);
 }

@@ -66,7 +66,7 @@ void bc_error_file(BcStatus status, const char *file, uint32_t line) {
           bc_err_descs[status]);
 
   fprintf(stderr, "    %s", file);
-  fprintf(stderr, ":%d\n\n" + 3 * !line, line);
+  fprintf(stderr, &":%d\n\n"[3 * !line], line);
 }
 
 BcStatus bc_posix_error(BcStatus status, const char *file,
@@ -85,7 +85,7 @@ BcStatus bc_posix_error(BcStatus status, const char *file,
   if (msg) fprintf(stderr, "    %s\n", msg);
 
   fprintf(stderr, "    %s", file);
-  fprintf(stderr, ":%d\n\n" + 3 * !line, line);
+  fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
   return bcg.bc_std ? status : BC_STATUS_SUCCESS;
 }
