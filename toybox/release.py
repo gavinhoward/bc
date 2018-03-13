@@ -72,6 +72,9 @@ regexes = [
 	'^#define BC_FLAG_MATHLIB \(1<<3\)$',
 	'^#define BC_FLAG_INTERACTIVE \(1<<4\)$',
 	'^#define BC_FLAG_CODE \(1<<5\)$',
+	'^#define BC_INVALID_IDX \(\(size_t\) -1\)$',
+	'^#define BC_MAX\(a, b\) \(\(a\) > \(b\) \? \(a\) : \(b\)\)$',
+	'^#define BC_MIN\(a, b\) \(\(a\) < \(b\) \? \(a\) : \(b\)\)$',
 ]
 
 regexes_all = [
@@ -86,6 +89,9 @@ replacements = [
 	[ 'BC_FLAG_MATHLIB', 'FLAG_l' ],
 	[ 'BC_FLAG_INTERACTIVE', 'FLAG_i' ],
 	[ 'BC_FLAG_CODE', 'FLAG_c' ],
+	[ 'BC_MAX', 'maxof' ],
+	[ 'BC_MIN', 'minof' ],
+	[ 'BC_INVALID_IDX', '-1' ],
 ]
 
 for reg in regexes:
