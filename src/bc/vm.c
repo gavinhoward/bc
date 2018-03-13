@@ -82,9 +82,6 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
   BcStatus status;
   const char *file;
   char *data;
-  BcProgramExecFunc exec;
-
-  exec = bcg.bc_code ? bc_program_print : bc_program_exec;
 
   file = vm->filev[idx];
   vm->program.file = file;
@@ -156,7 +153,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
   if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
-    status = exec(&vm->program);
+    status = vm->exec(&vm->program);
 
     if (status) goto read_err;
 
@@ -374,46 +371,25 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
     if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
-      if (!bcg.bc_code) {
+      status = vm->exec(&vm->program);
 
-        status = bc_program_exec(&vm->program);
+      if (status) {
+        bc_error(status);
+        goto exit_err;
+      }
 
-        if (status) {
-          bc_error(status);
-          goto exit_err;
-        }
+      if (bcg.bc_interactive) {
 
-        if (bcg.bc_interactive) {
+        fflush(stdout);
 
-          fflush(stdout);
-
-          if (bcg.bc_signal) {
-            status = bc_vm_signal(vm);
-            fprintf(stderr, "%s", bc_program_ready_prompt);
-          }
-        }
-        else if (bcg.bc_signal) {
+        if (bcg.bc_signal) {
           status = bc_vm_signal(vm);
-          goto exit_err;
+          fprintf(stderr, "%s", bc_program_ready_prompt);
         }
       }
-      else {
-
-        bc_program_print(&vm->program);
-
-        if (bcg.bc_interactive) {
-
-          fflush(stdout);
-
-          if (bcg.bc_signal) {
-            status = bc_vm_signal(vm);
-            fprintf(stderr, "%s", bc_program_ready_prompt);
-          }
-        }
-        else if (bcg.bc_signal) {
-          status = bc_vm_signal(vm);
-          goto exit_err;
-        }
+      else if (bcg.bc_signal) {
+        status = bc_vm_signal(vm);
+        goto exit_err;
       }
     }
 
@@ -458,6 +434,7 @@ BcStatus bc_vm_init(BcVm *vm, int filec, char *filev[]) {
     return status;
   }
 
+  vm->exec = bcg.bc_code ? bc_program_print : bc_program_exec;
   vm->filec = filec;
   vm->filev = filev;
 
