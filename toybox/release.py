@@ -59,6 +59,38 @@ for name in files:
 	for i in range(22, len(lines)):
 		content += lines[i]
 
+bc_c = "src/bc/bc.c"
+bc_c_stuff = ""
+
+with open(bc_c) as f:
+	bc_c_lines = f.readlines()
+
+for i in range(22, len(bc_c_lines)):
+	bc_c_stuff += bc_c_lines[i]
+
+bc_c_replacements = [
+	[ '^BcStatus bc_main\(unsigned long long flags, unsigned int filec, char \*filev\[\]\)',
+	  'void bc_main(void)' ],
+	[ '^  BcStatus status;$', '' ],
+	[ '^  bcg.bc_std = flags & BC_FLAG_STANDARD;$', '' ],
+	[ '^  bcg.bc_warn = flags & BC_FLAG_WARN;$', '' ],
+	[ 'flags ', 'toys.optflags ' ],
+	[ 'filec', 'toys.optc' ],
+	[ 'filev', 'toys.optargs' ],
+	[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
+	[ '^^err:$.*}$', '}' ],
+	[ '\n\n}$', '\n}' ],
+	[ 'return status;', 'return;' ],
+	[ 'status', 'toys.exitval' ],
+	[ 'goto err;', 'return;' ],
+]
+
+for rep in bc_c_replacements:
+	r = re.compile(rep[0], re.M | re.DOTALL)
+	bc_c_stuff = r.sub(rep[1], bc_c_stuff)
+
+content += bc_c_stuff
+
 regexes = [
 	'^#include .*$',
 	'^#ifndef BC.*_H$',
@@ -82,9 +114,9 @@ regexes_all = [
 ]
 
 replacements = [
+	[ 'bcg.bc_std', '(toys.optflags & FLAG_s)' ],
+	[ 'bcg.bc_warn', '(toys.optflags & FLAG_w)' ],
 	[ 'bcg.', 'TT.' ],
-	[ 'BC_FLAG_WARN', 'FLAG_w' ],
-	[ 'BC_FLAG_STANDARD', 'FLAG_s' ],
 	[ 'BC_FLAG_QUIET', 'FLAG_q' ],
 	[ 'BC_FLAG_MATHLIB', 'FLAG_l' ],
 	[ 'BC_FLAG_INTERACTIVE', 'FLAG_i' ],
@@ -108,9 +140,6 @@ for rep in replacements:
 
 with open(testdir + "/header.c") as f:
 	content = f.read() + content
-
-with open(testdir + "/footer.c") as f:
-	content += f.read()
 
 content = re.sub('\n\n\n+', '\n\n', content)
 

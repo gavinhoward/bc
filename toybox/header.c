@@ -41,9 +41,6 @@ config BC
 
 GLOBALS(
   long bc_interactive;
-  long bc_std;
-  long bc_warn;
-
   long bc_signal;
 )
 
