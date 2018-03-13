@@ -11,4 +11,6 @@ for (b = 2; b <= 16; ++b) {
 		print i, ".", i, "\n"
 	}
 }
+
+print "halt\n"
 halt
