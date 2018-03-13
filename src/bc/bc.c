@@ -117,7 +117,7 @@ BcStatus bc_exec(unsigned long long flags, unsigned int filec, char *filev[]) {
     if (status != BC_STATUS_LEX_EOF) goto err;
 
     // Make sure to execute the math library.
-    status = bc_program_exec(&vm.program);
+    status = vm.exec(&vm.program);
 
     if (status) goto err;
   }
