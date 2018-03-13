@@ -44,7 +44,9 @@ if [[ "$t" = "parse" ]] || [[ "$t" = "print" ]]; then
 
 	f="$testdir/$t.txt"
 
-	"$testdir/scripts/$t.bc" > "$f"
+	if [ ! -f "$testdir/scripts/$t.bc" ]; then
+		"$testdir/scripts/$t.bc" > "$f"
+	fi
 
 	bc -lq "$f" > "$out1"
 	"$bc" -lq "$f" > "$out2"
