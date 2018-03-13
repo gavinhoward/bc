@@ -26,16 +26,16 @@
 #include <bc.h>
 #include <io.h>
 
-long bc_io_frag(char *buf, long len, int term, BcIoGetc bcgetc, void *ctx) {
+long bc_io_frag(char *buf, long len, int term, BcIoGetc bc_getc, void *ctx) {
 
   long i;
   int c;
 
-  if (!buf || len < 0 || !bcgetc) return -1;
+  if (!buf || len < 0 || !bc_getc) return -1;
 
   for (c = (~term) | 1, i = 0; i < len; i++) {
 
-    if (c == (int) '\0' || c == term || (c = bcgetc(ctx)) == EOF) {
+    if (c == (int) '\0' || c == term || (c = bc_getc(ctx)) == EOF) {
       buf[i] = '\0';
       break;
     }
