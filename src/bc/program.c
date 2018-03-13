@@ -434,10 +434,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   status = bc_parse_expr(&parse, &func->code, BC_PARSE_EXPR_NO_READ);
 
-  if (status != BC_STATUS_LEX_EOF &&
-      status != BC_STATUS_PARSE_EOF &&
-      parse.token.type != BC_LEX_NEWLINE)
-  {
+  if (status != BC_STATUS_LEX_EOF && parse.token.type != BC_LEX_NEWLINE) {
     status = status ? status : BC_STATUS_EXEC_INVALID_READ_EXPR;
     goto exec_err;
   }
