@@ -1249,22 +1249,7 @@ mult_err:
   return status;
 }
 
-static BcStatus bc_num_printRadix(size_t *nchars, FILE *f) {
-
-  if (*nchars + 1 >= BC_NUM_PRINT_WIDTH) {
-    if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
-    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
-    *nchars = 0;
-  }
-
-  if (fputc('.', f) == EOF) return BC_STATUS_IO_ERR;
-
-  *nchars = *nchars + 1;
-
-  return BC_STATUS_SUCCESS;
-}
-
-static BcStatus bc_num_printDigits(unsigned long num, size_t width,
+static BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
                                    size_t *nchars, FILE *f)
 {
   if (*nchars + width + 1 >= BC_NUM_PRINT_WIDTH) {
@@ -1273,7 +1258,7 @@ static BcStatus bc_num_printDigits(unsigned long num, size_t width,
     *nchars = 0;
   }
   else {
-    if (fputc(' ', f) == EOF) return BC_STATUS_IO_ERR;
+    if (fputc(radix ? '.' : ' ', f) == EOF) return BC_STATUS_IO_ERR;
     ++(*nchars);
   }
 
@@ -1285,14 +1270,16 @@ static BcStatus bc_num_printDigits(unsigned long num, size_t width,
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printHex(unsigned long num, size_t width,
+static BcStatus bc_num_printHex(unsigned long num, size_t width, bool radix,
                                 size_t *nchars, FILE *f)
 {
-  if (*nchars + width >= BC_NUM_PRINT_WIDTH) {
+  if (*nchars + width + !!radix >= BC_NUM_PRINT_WIDTH) {
     if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
     if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
   }
+
+  if (radix && fputc('.', f) == EOF) return BC_STATUS_IO_ERR;
 
   if (fputc(bc_num_hex_digits[num], f) == EOF) return BC_STATUS_IO_ERR;
 
@@ -1306,6 +1293,7 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
   BcStatus status;
   size_t i;
   size_t nchars;
+  bool radix;
 
   nchars = 0;
 
@@ -1317,16 +1305,12 @@ static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
   status = BC_STATUS_SUCCESS;
 
   for (i = n->len - 1; !status && i >= n->rdx && i < n->len; --i)
-    status = bc_num_printHex(n->num[i], 1, &nchars, f);
+    status = bc_num_printHex(n->num[i], 1, false, &nchars, f);
 
   if (status || !n->rdx) return status;
 
-  status = bc_num_printRadix(&nchars, f);
-
-  if (status) return status;
-
-  for (; !status && i < n->len; --i)
-    status = bc_num_printHex(n->num[i], 1, &nchars, f);
+  for (radix = true; !status && i < n->len; --i, radix = false)
+    status = bc_num_printHex(n->num[i], 1, radix, &nchars, f);
 
   return status;
 }
@@ -1415,16 +1399,12 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
     ptr = bc_vec_item_rev(&stack, i);
 
-    status = print(*ptr, width, &nchars, f);
+    status = print(*ptr, width, false, &nchars, f);
 
     if (status) goto frac_len_err;
   }
 
   if (!n->rdx) goto frac_len_err;
-
-  status = bc_num_printRadix(&nchars, f);
-
-  if (status) goto frac_len_err;
 
   status = bc_num_init(&frac_len, n->len - n->rdx);
 
@@ -1432,19 +1412,17 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
   bc_num_one(&frac_len);
 
-  while (frac_len.len <= n->len) {
-
-    unsigned long fdigit;
+  for (radix = true; frac_len.len <= n->rdx; radix = false) {
 
     status = bc_num_mul(&fracp, base, &fracp, n->rdx);
 
     if (status) goto err;
 
-    status = bc_num_ulong(&fracp, &fdigit);
+    status = bc_num_ulong(&fracp, &dig);
 
     if (status) goto err;
 
-    status = bc_num_ulong2num(&intp, fdigit);
+    status = bc_num_ulong2num(&intp, dig);
 
     if (status) goto err;
 
@@ -1452,7 +1430,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
     if (status) goto err;
 
-    status = print(fdigit, width, &nchars, f);
+    status = print(dig, width, radix, &nchars, f);
 
     if (status) goto err;
 
