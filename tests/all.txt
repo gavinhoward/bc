@@ -9,4 +9,5 @@ sqrt
 basic
 parse
 print
+pi
 arctangent
