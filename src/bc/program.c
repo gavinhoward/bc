@@ -1307,6 +1307,7 @@ BcStatus bc_program_init(BcProgram *p) {
     p->base_max = BC_BASE_MAX_DEF;
   }
   else if (p->base_max > BC_BASE_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
+  else p->base_max = BC_BASE_MAX_DEF;
 #endif
 
 #ifdef _POSIX_BC_DIM_MAX
@@ -1322,6 +1323,7 @@ BcStatus bc_program_init(BcProgram *p) {
     p->dim_max = BC_DIM_MAX_DEF;
   }
   else if (p->dim_max > BC_DIM_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
+  else p->dim_max = BC_DIM_MAX_DEF;
 #endif
 
 #ifdef _POSIX_BC_SCALE_MAX
@@ -1337,6 +1339,7 @@ BcStatus bc_program_init(BcProgram *p) {
     p->scale_max = BC_SCALE_MAX_DEF;
   }
   else if (p->scale_max > BC_SCALE_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
+  else p->scale_max = BC_SCALE_MAX_DEF;
 #endif
 
 #ifdef _POSIX_BC_STRING_MAX
@@ -1352,6 +1355,7 @@ BcStatus bc_program_init(BcProgram *p) {
     p->string_max = BC_STRING_MAX_DEF;
   }
   else if (p->string_max > BC_STRING_MAX_DEF) return BC_STATUS_INVALID_LIMIT;
+  else p->string_max = BC_STRING_MAX_DEF;
 #endif
 
   p->scale = 0;
@@ -1561,7 +1565,7 @@ void bc_program_limits(BcProgram *p) {
   printf("BC_SCALE_MAX    = %ld\n", p->scale_max);
   printf("BC_STRING_MAX   = %ld\n", p->string_max);
   printf("Max Exponent    = %ld\n", LONG_MAX);
-  printf("Number of Vars  = %u\n", UINT32_MAX);
+  printf("Number of Vars  = %zu\n", SIZE_MAX);
 
   putchar('\n');
 }
