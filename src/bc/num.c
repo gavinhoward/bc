@@ -212,6 +212,9 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   (void) scale;
 
+  if (!a->len) return bc_num_copy(c, b);
+  else if (!b->len) return bc_num_copy(c, a);
+
   c->neg = a->neg;
 
   memset(c->num, 0, c->cap * sizeof(BcDigit));
