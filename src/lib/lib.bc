@@ -39,12 +39,11 @@ define e(x){
 	scale=r
 	r=x+1
 	p=x
-	f=1
-	for(i=2;1;++i){
+	f=v=1
+	for(i=2;v;++i){
 		p*=x;
 		f*=i
 		v=p/f
-		if(e==0)break
 		r+=v
 	}
 	while(f--)r*=r
@@ -75,10 +74,10 @@ define l(x){
 	}
 	r=a=(x-1)/(x+1)
 	q=a*a
-	for(i=3;1;i+=2){
+	v=1
+	for(i=3;v;i+=2){
 		n*=m
 		v=n/i
-		if(e==0)break
 		r+=v
 	}
 	r*=p
@@ -104,9 +103,8 @@ define s(x){
 	scale=s+2
 	r=a=x
 	q=-x*x
-	for(i=3;1;i+=2){
+	for(i=3;a;i+=2){
 		a*=q/(i*(i-1))
-		if(a==0)break
 		r+=a
 	}
 	scale=s
@@ -156,10 +154,10 @@ define a(x){
 	}
 	r=u=x
 	f=-x*x
-	for(i=3;1;i+=2){
+	t=1
+	for(i=3;t;i+=2){
 		u*=f
 		t=u/i
-		if(t==0)break
 		r+=t
 	}
 	scale=s
@@ -184,9 +182,8 @@ define j(n,x){
 	r=v=1
 	f=-x*x/4
 	scale+=length(a)-scale(a)
-	for(i=1;1;++i){
+	for(i=1;v;++i){
 		v=v*s/i/(n+i)
-		if(v==0)break
 		r+=v
 	}
 	scale=s
