@@ -965,6 +965,9 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
       if (status) return status;
 
+      if (base < 2)
+        return left->type - BC_RESULT_IBASE + BC_STATUS_EXEC_INVALID_IBASE;
+
       *ptr = (size_t) base;
     }
   }
