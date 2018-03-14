@@ -124,10 +124,6 @@ typedef struct BcFunc {
 
 } BcFunc;
 
-typedef BcNum BcVar;
-
-typedef BcVec BcArray;
-
 typedef enum BcResultType {
 
   BC_RESULT_INTERMEDIATE,
@@ -154,12 +150,9 @@ typedef struct BcResult {
 
     BcNum num;
 
-    struct {
+    BcVec array;
 
-      char *name;
-      size_t idx;
-
-    } id;
+    BcEntry id;
 
   } data;
 
@@ -180,14 +173,10 @@ BcStatus bc_func_init(BcFunc *func);
 BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec);
 void bc_func_free(void *func);
 
-BcStatus bc_var_init(void *var);
-void bc_var_free(void *var);
-
 BcStatus bc_array_init(void *array);
 BcStatus bc_array_copy(void *dest, void *src);
-BcStatus bc_array_zero(BcArray *a);
-BcStatus bc_array_expand(BcArray *a, size_t len);
-void bc_array_free(void *array);
+BcStatus bc_array_zero(BcVec *a);
+BcStatus bc_array_expand(BcVec *a, size_t len);
 
 void bc_string_free(void *string);
 
