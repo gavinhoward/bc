@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #define BC_FLAG_WARN (1<<0)
 #define BC_FLAG_STANDARD (1<<1)
@@ -39,10 +40,10 @@
 
 #define BC_INVALID_IDX ((size_t) -1)
 
-#define BC_BASE_MAX_DEF (99)
-#define BC_DIM_MAX_DEF (2048)
-#define BC_SCALE_MAX_DEF (99)
-#define BC_STRING_MAX_DEF (1024)
+#define BC_BASE_MAX_DEF (999)
+#define BC_DIM_MAX_DEF (INT_MAX)
+#define BC_SCALE_MAX_DEF (LONG_MAX)
+#define BC_STRING_MAX_DEF (INT_MAX)
 
 typedef enum BcStatus {
 
