@@ -9,3 +9,4 @@ sqrt
 basic
 parse
 print
+arctangent
