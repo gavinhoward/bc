@@ -1021,7 +1021,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   func = bc_vec_item(&p->funcs, ip.func);
 
-  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+  if (!func || !func->code.len) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
   if (func->params.len != nparams) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
