@@ -33,42 +33,48 @@
 #include <parse.h>
 #include <instructions.h>
 
-static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
-                                     BcNum **ret, uint8_t flags)
+static BcStatus bc_program_auto(BcProgram *p, BcInstPtr *ip,
+                                BcAuto *a, size_t idx, uint8_t flags)
+{
+  BcStatus status;
+  uint8_t cond;
+
+  cond = flags & BC_PROGRAM_SEARCH_VAR;
+
+  if (!a->var != !cond) return BC_STATUS_EXEC_INVALID_TYPE;
+
+  if (BC_PROGRAM_CHECK_EXPR_STACK(p, ip->len + idx))
+    return BC_STATUS_EXEC_INVALID_STACK;
+
+  if (cond) *ret = &a->data.num;
+  else if (flags & BC_PROGRAM_SEARCH_ARRAY_ONLY)
+    *ret = (BcNum*) &a->data.array;
+  else {
+
+    status = bc_array_expand(&a->data.array, result->data.id.idx + 1);
+
+    if (status) return status;
+
+    *ret = bc_vec_item(&a->data.array, result->data.id.idx);
+  }
+}
+
+static BcStatus bc_program_searchFunc(BcProgram *p, const BcFunc *func,
+                                      const BcInstPtr *ip,
+                                      const BcResult *result,
+                                      BcNum **ret, uint8_t flags)
 {
   BcStatus status;
   BcAuto *a;
-  size_t i;
+  size_t len, param_len, i;
 
-  for (i = 0; i < vec->len; ++i) {
+  param_len = func->params.len;
 
-    a = bc_vec_item(vec, i);
-
+  for (i = 0; i < func->params.len; ++i) {
+    a = bc_vec_item(&func->params, i);
     if (!a) return BC_STATUS_EXEC_UNDEFINED_VAR;
-
-    if (!strcmp(a->name, result->data.id.name)) {
-
-      uint8_t cond;
-
-      cond = flags & BC_PROGRAM_SEARCH_VAR;
-
-      if (!a->var != !cond)
-        return BC_STATUS_EXEC_INVALID_TYPE;
-
-      if (cond) *ret = &a->data.num;
-      else if (flags & BC_PROGRAM_SEARCH_ARRAY_ONLY)
-        *ret = (BcNum*) &a->data.array;
-      else {
-
-        status = bc_array_expand(&a->data.array, result->data.id.idx + 1);
-
-        if (status) return status;
-
-        *ret = bc_vec_item(&a->data.array, result->data.id.idx);
-      }
-
-      return BC_STATUS_SUCCESS;
-    }
+    if (!strcmp(a->name, result->data.id.name))
+      return bc_program_auto(p, a, flags);
   }
 
   return BC_STATUS_EXEC_UNDEFINED_VAR;
@@ -85,10 +91,7 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
   BcVecO *veco;
   size_t idx;
   BcEntry *entry_ptr;
-
-  // We use this as either a number or an array, since
-  // a BcAuto has a union inside that has both.
-  BcAuto a;
+  BcLocal l;
 
   ip = bc_vec_top(&p->stack);
 
@@ -105,11 +108,11 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     if (!func) return BC_STATUS_EXEC_INVALID_STACK;
 
-    status = bc_program_searchVec(&func->params, result, ret, flags);
+    status = bc_program_searchFunc(&func->params, result, ret, flags);
 
     if (status != BC_STATUS_EXEC_UNDEFINED_VAR) return status;
 
-    status = bc_program_searchVec(&func->autos, result, ret, flags);
+    status = bc_program_searchFunc(&func->autos, result, ret, flags);
 
     if (status != BC_STATUS_EXEC_UNDEFINED_VAR) return status;
   }
@@ -229,7 +232,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
     }
 
     case BC_RESULT_VAR:
-    case BC_RESULT_ARRAY:
+    case BC_RESULT_ARRAY_ELEM:
     {
       uint8_t flags;
 
@@ -678,7 +681,7 @@ static BcStatus bc_program_push(BcProgram *p, uint8_t *code,
 
     result.data.id.idx = (size_t) temp;
 
-    status = bc_program_unaryOpRetire(p, &result, BC_RESULT_ARRAY);
+    status = bc_program_unaryOpRetire(p, &result, BC_RESULT_ARRAY_ELEM);
   }
 
   if (status) goto err;
@@ -1060,7 +1063,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
       BcArray *array;
 
-      if (param->type != BC_RESULT_VAR || param->type != BC_RESULT_ARRAY)
+      if (param->type != BC_RESULT_VAR || param->type != BC_RESULT_ARRAY_ELEM)
         return BC_STATUS_EXEC_INVALID_TYPE;
 
       status = bc_program_search(p, param, (BcNum**) &array,

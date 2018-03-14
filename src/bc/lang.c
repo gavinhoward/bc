@@ -47,9 +47,7 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
       return BC_STATUS_PARSE_DUPLICATE_LOCAL;
   }
 
-  status = bc_auto_init(&a, name, var);
-
-  if (status) return status;
+  bc_auto_init(&a, name, var);
 
   status = bc_vec_push(vec, &a);
 
@@ -278,22 +276,16 @@ void bc_entry_free(void *entry) {
   free(e->name);
 }
 
-BcStatus bc_auto_init(void *auto1, char *name, bool var) {
+void bc_auto_init(void *auto1, char *name, bool var) {
 
-  BcStatus status;
   BcAuto *a;
 
-  if (!auto1) return BC_STATUS_INVALID_PARAM;
+  if (!auto1) return;
 
   a = (BcAuto*) auto1;
 
   a->var = var;
   a->name = name;
-
-  if (var) status = bc_num_init(&a->data.num, BC_NUM_DEF_SIZE);
-  else status = bc_vec_init(&a->data.array, sizeof(BcNum), bc_num_free);
-
-  return status;
 }
 
 void bc_auto_free(void *auto1) {
@@ -305,9 +297,6 @@ void bc_auto_free(void *auto1) {
   a = (BcAuto*) auto1;
 
   if (a->name) free(a->name);
-
-  if (a->var) bc_num_free(&a->data.num);
-  else bc_vec_free(&a->data.array);
 }
 
 void bc_result_free(void *result) {
@@ -322,13 +311,20 @@ void bc_result_free(void *result) {
 
     case BC_RESULT_INTERMEDIATE:
     case BC_RESULT_SCALE:
+    case BC_RESULT_AUTO_VAR:
     {
-      bc_num_free(&r->data.num);
+      bc_num_free(&r->data.local.num);
+      break;
+    }
+
+    case BC_RESULT_AUTO_ARRAY:
+    {
+      bc_vec_free(&r->data.local.array);
       break;
     }
 
     case BC_RESULT_VAR:
-    case BC_RESULT_ARRAY:
+    case BC_RESULT_ARRAY_ELEM:
     {
       if (r->data.id.name) free(r->data.id.name);
       break;
