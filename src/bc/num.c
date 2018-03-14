@@ -474,9 +474,16 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     return BC_STATUS_SUCCESS;
   }
   else if (BC_NUM_ONE(b)) {
+
     status = bc_num_copy(c, a);
+
+    if (status) return status;
+
     if (b->neg) c->neg = !c->neg;
-    status = bc_num_extend(c, scale);
+
+    if (c->rdx < scale) status = bc_num_extend(c, scale - c->rdx);
+    else status = bc_num_trunc(c, c->rdx - scale);
+
     return status;
   }
 
