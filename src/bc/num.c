@@ -1570,7 +1570,7 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
 
   if (!n || !f) return BC_STATUS_INVALID_PARAM;
 
-  if (base_t < BC_NUM_MIN_BASE || base_t > BC_NUM_MAX_OUTPUT_BASE)
+  if (base_t < BC_NUM_MIN_BASE || base_t > BC_BASE_MAX_DEF)
     return BC_STATUS_EXEC_INVALID_OBASE;
 
   if (!n->len) {

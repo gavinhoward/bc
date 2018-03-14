@@ -968,9 +968,9 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
       if (status) return status;
 
-      max = left->type == BC_RESULT_IBASE ? 16 : p->base_max;
+      max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : p->base_max;
 
-      if (base < 2 || base > max)
+      if (base < BC_NUM_MIN_BASE || base > max)
         return left->type - BC_RESULT_IBASE + BC_STATUS_EXEC_INVALID_IBASE;
 
       *ptr = (size_t) base;
