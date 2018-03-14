@@ -1,8 +1,9 @@
 #! /usr/bin/bc -q
 
-for (b = 2; b <= 1000; ++b) {
 
-	s = b ^ 3
+for (b = 2; b <= 101; ++b) {
+
+	s = b * b
 
 	print "obase = ", b, "\n"
 
