@@ -48,12 +48,9 @@ static BcStatus bc_program_searchVec(const BcVec *vec, const BcResult *result,
 
     if (!strcmp(a->name, result->data.id.name)) {
 
-      uint8_t cond;
+      uint8_t cond = flags & BC_PROGRAM_SEARCH_VAR;
 
-      cond = flags & BC_PROGRAM_SEARCH_VAR;
-
-      if (!a->var != !cond)
-        return BC_STATUS_EXEC_INVALID_TYPE;
+      if (!a->var != !cond) return BC_STATUS_EXEC_INVALID_TYPE;
 
       if (cond) *ret = &a->data.num;
       else if (flags & BC_PROGRAM_SEARCH_ARRAY_ONLY)
