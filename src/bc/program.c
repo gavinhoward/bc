@@ -1860,7 +1860,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_STR:
       {
-        const char *string;
+        const char **string;
 
         idx = bc_program_index(code, &ip->idx);
 
@@ -1868,7 +1868,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         string = bc_vec_item(&p->strings, idx);
 
-        pchars = fprintf(stdout, "%s", string);
+        if (!string) return BC_STATUS_EXEC_INVALID_STRING;
+
+        pchars = fprintf(stdout, "%s", *string);
         status = pchars > 0 ? BC_STATUS_SUCCESS :
                               BC_STATUS_EXEC_PRINT_ERR;
 
