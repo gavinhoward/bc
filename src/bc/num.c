@@ -1252,20 +1252,31 @@ mult_err:
 static BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
                                    size_t *nchars, FILE *f)
 {
-  if (*nchars + width + 1 >= BC_NUM_PRINT_WIDTH) {
+  size_t exp, pow, div;
+
+  if (*nchars == BC_NUM_PRINT_WIDTH - 1) {
     if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
     if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
   }
-  else {
-    if (fputc(radix ? '.' : ' ', f) == EOF) return BC_STATUS_IO_ERR;
-    ++(*nchars);
+
+  if (fputc(radix ? '.' : ' ', f) == EOF) return BC_STATUS_IO_ERR;
+  ++(*nchars);
+
+  for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
+
+  for (; pow; pow /= 10, ++(*nchars)) {
+
+    if (*nchars == BC_NUM_PRINT_WIDTH - 1) {
+      if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+      if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+      *nchars = 0;
+    }
+
+    div = num / pow;
+    if (fputc(((char) div) + '0', f) == EOF) return BC_STATUS_IO_ERR;
+    num -= div * pow;
   }
-
-  if (fprintf(f, "%0*lu", (unsigned int) width, num) < 0)
-    return BC_STATUS_IO_ERR;
-
-  *nchars = *nchars + width;
 
   return BC_STATUS_SUCCESS;
 }
