@@ -111,31 +111,6 @@ void bc_func_free(void *func) {
   bc_vec_free(&f->labels);
 }
 
-BcStatus bc_var_init(void *var) {
-
-  if (!var) return BC_STATUS_INVALID_PARAM;
-
-  return bc_num_init((BcVar*) var, BC_NUM_DEF_SIZE);
-}
-
-void bc_var_free(void *var) {
-
-  BcVar *v;
-
-  v = (BcVar*) var;
-
-  if (v == NULL) return;
-
-  bc_num_free(v);
-}
-
-BcStatus bc_array_init(void *array) {
-
-  if (!array) return BC_STATUS_INVALID_PARAM;
-
-  return bc_vec_init((BcArray*) array, sizeof(BcNum), bc_num_free);
-}
-
 BcStatus bc_array_copy(void *dest, void *src) {
 
   BcStatus status;
@@ -143,11 +118,11 @@ BcStatus bc_array_copy(void *dest, void *src) {
   BcNum *dnum;
   BcNum *snum;
 
-  BcArray *d;
-  BcArray *s;
+  BcVec *d;
+  BcVec *s;
 
-  d = (BcArray*) dest;
-  s = (BcArray*) src;
+  d = (BcVec*) dest;
+  s = (BcVec*) src;
 
   if (!d || !s || d == s || d->size != s->size || d->dtor != s->dtor)
     return BC_STATUS_INVALID_PARAM;
@@ -185,7 +160,7 @@ BcStatus bc_array_copy(void *dest, void *src) {
   return status;
 }
 
-BcStatus bc_array_zero(BcArray *a) {
+BcStatus bc_array_zero(BcVec *a) {
 
   BcStatus status;
 
@@ -196,7 +171,7 @@ BcStatus bc_array_zero(BcArray *a) {
   return status;
 }
 
-BcStatus bc_array_expand(BcArray *a, size_t len) {
+BcStatus bc_array_expand(BcVec *a, size_t len) {
 
   BcStatus status;
 
@@ -223,24 +198,9 @@ BcStatus bc_array_expand(BcArray *a, size_t len) {
   return status;
 }
 
-void bc_array_free(void *array) {
-
-  BcArray *a;
-
-  a = (BcArray*) array;
-
-  if (a == NULL) return;
-
-  bc_vec_free(a);
-}
-
 void bc_string_free(void *string) {
-
-  char *s;
-
-  s = *((char**) string);
-
-  free(s);
+  char **s = (char**) string;
+  if (s) free(*s);
 }
 
 int bc_entry_cmp(void *entry1, void *entry2) {
@@ -268,14 +228,8 @@ int bc_entry_cmp(void *entry1, void *entry2) {
 }
 
 void bc_entry_free(void *entry) {
-
-  BcEntry *e;
-
-  if (!entry) return;
-
-  e = (BcEntry*) entry;
-
-  free(e->name);
+  BcEntry *e = (BcEntry*) entry;
+  if (e) free(e->name);
 }
 
 BcStatus bc_auto_init(void *auto1, char *name, bool var) {
@@ -297,26 +251,18 @@ BcStatus bc_auto_init(void *auto1, char *name, bool var) {
 }
 
 void bc_auto_free(void *auto1) {
-
-  BcAuto *a;
-
-  if (!auto1) return;
-
-  a = (BcAuto*) auto1;
-
+  BcAuto *a = (BcAuto*) auto1;
+  if (!a) return;
   if (a->name) free(a->name);
-
   if (a->var) bc_num_free(&a->data.num);
   else bc_vec_free(&a->data.array);
 }
 
 void bc_result_free(void *result) {
 
-  BcResult *r;
+  BcResult *r = (BcResult*) result;
 
-  if (!result) return;
-
-  r = (BcResult*) result;
+  if (!r) return;
 
   switch (r->type) {
 
