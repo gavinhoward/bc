@@ -40,7 +40,7 @@ else
 	out2="$testdir/../log_test.txt"
 fi
 
-if [[ "$t" = "parse" ]] || [[ "$t" = "print" ]]; then
+if [[ "$t" = "parse" ]] || [[ "$t" = "print" ]] || [[ "$t" = "arctangent" ]]; then
 
 	f="$testdir/$t.txt"
 
