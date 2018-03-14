@@ -956,16 +956,18 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
     if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
 
-      unsigned long base;
+      long base, max;
       size_t *ptr;
 
       ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
 
-      status = bc_num_ulong(lval, &base);
+      status = bc_num_long(lval, &base);
 
       if (status) return status;
 
-      if (base < 2)
+      max = left->type == BC_RESULT_IBASE ? 16 : p->base_max;
+
+      if (base < 2 || base > max)
         return left->type - BC_RESULT_IBASE + BC_STATUS_EXEC_INVALID_IBASE;
 
       *ptr = (size_t) base;
