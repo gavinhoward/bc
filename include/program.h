@@ -77,6 +77,8 @@ typedef struct BcProgram {
   char *num_buf;
   size_t buf_size;
 
+  size_t nchars;
+
 } BcProgram;
 
 #define BC_PROGRAM_CHECK_STACK(p) ((p)->stack.len > 1)

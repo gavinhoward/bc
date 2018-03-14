@@ -97,9 +97,9 @@ void bc_num_ten(BcNum *n);
 // ** Exclude start. **
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t);
 
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline);
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline, size_t *nchars);
 BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
-                       bool newline, FILE *f);
+                       bool newline, size_t *nchars, FILE *f);
 // ** Exclude end. **
 
 extern const char bc_num_hex_digits[];
