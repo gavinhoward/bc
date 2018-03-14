@@ -1326,11 +1326,15 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
   size_t nchars;
   size_t width;
   BcNumDigitFunc print;
+  unsigned long dig;
   size_t i;
+  bool neg, radix;
 
   nchars = 0;
+  neg = n->neg;
+  n->neg = false;
 
-  if (n->neg) {
+  if (neg) {
     if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
     ++nchars;
   }
@@ -1372,9 +1376,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
   if (status) goto frac_len_err;
 
-  while (!intp.len) {
-
-    unsigned long dig;
+  while (intp.len) {
 
     status = bc_num_mod(&intp, base, &digit, 0);
 
@@ -1440,6 +1442,8 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
   }
 
 err:
+
+  n->neg = neg;
 
   bc_num_free(&frac_len);
 
