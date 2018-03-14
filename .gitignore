@@ -11,6 +11,7 @@ log_*.txt
 gen
 lib.c
 
-# Ignore the generated parse.txt and print.txt files
+# Ignore the generated test files
 parse.txt
 print.txt
+arctangent.txt
