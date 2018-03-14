@@ -1273,7 +1273,8 @@ static BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
 static BcStatus bc_num_printHex(unsigned long num, size_t width, bool radix,
                                 size_t *nchars, FILE *f)
 {
-  if (*nchars + width + !!radix >= BC_NUM_PRINT_WIDTH) {
+  width += !!radix;
+  if (*nchars + width  >= BC_NUM_PRINT_WIDTH) {
     if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
     if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
