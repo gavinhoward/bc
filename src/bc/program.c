@@ -1870,7 +1870,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (!string) return BC_STATUS_EXEC_INVALID_STRING;
 
-        pchars = fprintf(stdout, "%s", *string);
+        pchars = fprintf(stdout, "%s\n", *string);
         status = pchars > 0 ? BC_STATUS_SUCCESS :
                               BC_STATUS_EXEC_PRINT_ERR;
 
