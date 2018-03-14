@@ -148,17 +148,21 @@ define a(x){
 		a=a(.267)
 	}
 	scale=s+3
+	print "a=", a, "\nm=", m, "\nx=", x, "\n"
 	while(x>.267){
 		m+=1
 		x=(x-.267)/(1+.267*x)
+		print "m=", m, "\nx=", x, "\n"
 	}
 	r=u=x
 	f=-x*x
 	t=1
+	print "r=", r, "\nu=", u, "\nt=", t, "\ni=", i, "\n"
 	for(i=3;t;i+=2){
 		u*=f
 		t=u/i
 		r+=t
+		print "r=", r, "\nu=", u, "\nt=", t, "\ni=", i, "\n"
 	}
 	scale=s
 	ibase=b
