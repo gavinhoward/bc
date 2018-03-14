@@ -69,7 +69,7 @@ for i in range(22, len(bc_c_lines)):
 	bc_c_stuff += bc_c_lines[i]
 
 bc_c_replacements = [
-	[ '^BcStatus bc_main\(unsigned long long flags, unsigned int filec, char \*filev\[\]\)',
+	[ '^BcStatus bc_main\(unsigned int flags, unsigned int filec, char \*filev\[\]\)',
 	  'void bc_main(void)' ],
 	[ '^  BcStatus status;$', '' ],
 	[ '^  bcg.bc_std = flags & BC_FLAG_STANDARD;$', '' ],
@@ -78,11 +78,9 @@ bc_c_replacements = [
 	[ 'filec', 'toys.optc' ],
 	[ 'filev', 'toys.optargs' ],
 	[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
-	[ '^^err:$.*}$', '}' ],
-	[ '\n\n}$', '\n}' ],
+	[ '^  bc_vm_free\(&vm\);\n\n  return status;', '  if (CFG_TOYBOX_FREE) bc_vm_free(&vm);' ],
 	[ 'return status;', 'return;' ],
 	[ 'status', 'toys.exitval' ],
-	[ 'goto err;', 'return;' ],
 ]
 
 for rep in bc_c_replacements:
