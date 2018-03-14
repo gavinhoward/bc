@@ -466,6 +466,7 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   size_t end;
   size_t i;
   BcNum copy;
+  bool zero;
 
   if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
   else if (!a->len) {
@@ -587,6 +588,9 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
 
   if (c->rdx > scale) status = bc_num_trunc(c, c->rdx - scale);
+
+  for (i = 0, zero = true; zero && i < c->len; ++i) zero = !c->num[i];
+  if (zero) bc_num_zero(c);
 
 err:
 
@@ -1131,6 +1135,7 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   size_t digits;
   BcDigit c;
   bool zero;
+  unsigned long v;
 
   len = strlen(val);
 
@@ -1158,16 +1163,13 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   for (i = 0; i < len && (c = val[i]) != '.'; ++i) {
 
-    long v;
-
     status = bc_num_mul(n, base, &mult, 0);
 
     if (status) goto int_err;
 
-    if (c <= '9') v = c - '0';
-    else v = c - 'A' + 10;
+    v = c <= '9' ? c - '0' : c - 'A' + 10;
 
-    status = bc_num_long2num(&temp, v);
+    status = bc_num_ulong2num(&temp, v);
 
     if (status) goto int_err;
 
@@ -1190,15 +1192,15 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   bc_num_zero(&result);
   bc_num_one(&mult);
 
-  for (digits = 0; i < len; ++i, ++digits) {
+  for (digits = 0; i < len && (c = val[i]); ++i, ++digits) {
 
-    c = val[i];
+    v = c <= '9' ? c - '0' : c - 'A' + 10;
 
     status = bc_num_mul(&result, base, &result, 0);
 
     if (status) goto err;
 
-    status = bc_num_long2num(&temp, (long) c);
+    status = bc_num_ulong2num(&temp, v);
 
     if (status) goto err;
 
@@ -1215,7 +1217,15 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   if (status) goto err;
 
-  status = bc_num_add(n, &result, n, 0);
+  status = bc_num_add(n, &result, n, digits);
+
+  if (status) goto err;
+
+  if (n->len) {
+    if (n->rdx < digits && n->len)
+      status = bc_num_extend(n, digits - n->rdx);
+  }
+  else bc_num_zero(n);
 
 err:
 
