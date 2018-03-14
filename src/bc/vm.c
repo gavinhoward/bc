@@ -96,7 +96,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
   status = bc_parse_text(&vm->parse, data);
 
-  if (status) goto read_err;
+  if (status && status != BC_STATUS_LEX_EOF) goto read_err;
 
   do {
 
@@ -132,6 +132,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
         status = BC_STATUS_SUCCESS;
         continue;
       }
+      else status = BC_STATUS_SUCCESS;
 
       while (!status && vm->parse.token.type != BC_LEX_NEWLINE &&
              vm->parse.token.type != BC_LEX_SEMICOLON)
@@ -361,6 +362,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
         }
       }
     }
+    else status = BC_STATUS_SUCCESS;
 
     if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
