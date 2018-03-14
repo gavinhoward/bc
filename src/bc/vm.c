@@ -149,11 +149,11 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
     status = vm->exec(&vm->program);
 
-    if (status) goto read_err;
-
     if (bcg.bc_interactive) {
 
       fflush(stdout);
+
+      if (status) bc_error(status);
 
       if (bcg.bc_signal) {
 
@@ -163,9 +163,14 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
         fflush(stderr);
       }
     }
-    else if (bcg.bc_signal) {
-      status = bc_vm_signal(vm);
-      goto read_err;
+    else {
+
+      if (status) goto read_err;
+
+      if (bcg.bc_signal) {
+        status = bc_vm_signal(vm);
+        goto read_err;
+      }
     }
   }
   else status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
@@ -304,10 +309,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
           bc_program_limits(&vm->program);
           status = BC_STATUS_SUCCESS;
         }
-        else {
-          bc_error(status);
-          goto exit_err;
-        }
+        else goto exit_err;
       }
     }
     else if (status == BC_STATUS_PARSE_QUIT) {
@@ -364,23 +366,25 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
       status = vm->exec(&vm->program);
 
-      if (status) {
-        bc_error(status);
-        goto exit_err;
-      }
-
       if (bcg.bc_interactive) {
 
         fflush(stdout);
 
+        if (status) bc_error(status);
+
         if (bcg.bc_signal) {
-          status = bc_vm_signal(vm);
+          if ((status = bc_vm_signal(vm))) bc_error(status);
           fprintf(stderr, "%s", bc_program_ready_prompt);
         }
       }
-      else if (bcg.bc_signal) {
-        status = bc_vm_signal(vm);
-        goto exit_err;
+      else {
+
+        if (status) goto exit_err;
+
+        if (bcg.bc_signal) {
+          status = bc_vm_signal(vm);
+          goto exit_err;
+        }
       }
     }
 
@@ -393,6 +397,8 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
                BC_STATUS_SUCCESS : status;
 
 exit_err:
+
+  bc_error(status);
 
   free(buf);
 
