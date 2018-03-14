@@ -289,12 +289,6 @@ void bc_result_free(void *result) {
 }
 
 void bc_constant_free(void *constant) {
-
-  char *c;
-
-  if (!constant) return;
-
-  c = *((char**) constant);
-
-  free(c);
+  char **c = (char**) constant;
+  if (c) free(*c);
 }
