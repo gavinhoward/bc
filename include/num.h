@@ -46,8 +46,6 @@ typedef struct BcNum {
 
 #define BC_NUM_MAX_INPUT_BASE (16)
 
-#define BC_NUM_MAX_OUTPUT_BASE (99)
-
 #define BC_NUM_DEF_SIZE (16)
 
 #define BC_NUM_FROM_CHAR(c) ((c) -'0')
