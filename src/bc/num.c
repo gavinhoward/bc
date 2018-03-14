@@ -606,6 +606,13 @@ static BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   BcNum c2;
   size_t len;
 
+  if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+
+  if (!a->len) {
+    bc_num_zero(c);
+    return BC_STATUS_SUCCESS;
+  }
+
   len = a->len + b->len + scale;
 
   status = bc_num_init(&c1, len);
