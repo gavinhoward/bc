@@ -1310,49 +1310,45 @@ static BcStatus bc_num_printHex(unsigned long num, size_t width, bool radix,
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printDecimal(BcNum *n, FILE *f) {
+static BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, FILE *f) {
 
   BcStatus status;
   size_t i;
-  size_t nchars;
   bool radix;
-
-  nchars = 0;
 
   if (n->neg) {
     if (fputc('-', f) == EOF) return BC_STATUS_IO_ERR;
-    ++nchars;
+    ++(*nchars);
   }
 
   status = BC_STATUS_SUCCESS;
 
   for (i = n->len - 1; !status && i >= n->rdx && i < n->len; --i)
-    status = bc_num_printHex(n->num[i], 1, false, &nchars, f);
+    status = bc_num_printHex(n->num[i], 1, false, nchars, f);
 
   if (status || !n->rdx) return status;
 
   for (radix = true; !status && i < n->len; --i, radix = false)
-    status = bc_num_printHex(n->num[i], 1, radix, &nchars, f);
+    status = bc_num_printHex(n->num[i], 1, radix, nchars, f);
 
   return status;
 }
 
-static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) {
-
+static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
+                                 size_t *nchars, FILE* f)
+{
   BcStatus status;
   BcVec stack;
   BcNum intp;
   BcNum fracp;
   BcNum digit;
   BcNum frac_len;
-  size_t nchars;
   size_t width;
   BcNumDigitFunc print;
   unsigned long dig;
   size_t i;
   bool neg, radix;
 
-  nchars = 0;
   neg = n->neg;
   n->neg = false;
 
@@ -1423,7 +1419,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
     ptr = bc_vec_item_rev(&stack, i);
 
-    status = print(*ptr, width, false, &nchars, f);
+    status = print(*ptr, width, false, nchars, f);
 
     if (status) goto frac_len_err;
   }
@@ -1454,7 +1450,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, FILE* f) 
 
     if (status) goto err;
 
-    status = print(dig, width, radix, &nchars, f);
+    status = print(dig, width, radix, nchars, f);
 
     if (status) goto err;
 
@@ -1585,7 +1581,7 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 }
 
 BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
-                       bool newline, FILE *f)
+                       bool newline, size_t *nchars, FILE *f)
 {
   BcStatus status;
 
@@ -1594,24 +1590,34 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
   if (base_t < BC_NUM_MIN_BASE || base_t > BC_BASE_MAX_DEF)
     return BC_STATUS_EXEC_INVALID_OBASE;
 
+  if (*nchars  >= BC_NUM_PRINT_WIDTH) {
+    if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
+    if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    *nchars = 0;
+  }
+
   if (!n->len) {
     if (fputc('0', f) == EOF) return BC_STATUS_IO_ERR;
+    ++(*nchars);
     status = BC_STATUS_SUCCESS;
   }
-  else if (base_t == 10) status = bc_num_printDecimal(n, f);
-  else status = bc_num_printBase(n, base, base_t, f);
+  else if (base_t == 10) status = bc_num_printDecimal(n, nchars, f);
+  else status = bc_num_printBase(n, base, base_t, nchars, f);
 
   if (status) return status;
 
   if (newline) {
     if (fputc('\n', f) == EOF) return BC_STATUS_IO_ERR;
+    *nchars = 0;
   }
 
   return status;
 }
 
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline) {
-  return bc_num_fprint(n, base, base_t, newline, stdout);
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
+                      bool newline, size_t *nchars)
+{
+  return bc_num_fprint(n, base, base_t, newline, nchars, stdout);
 }
 
 BcStatus bc_num_long(BcNum *n, long *result) {

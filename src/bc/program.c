@@ -555,7 +555,7 @@ static BcStatus bc_program_printName(uint8_t *code, size_t *start) {
   return status;
 }
 
-static BcStatus bc_program_printString(const char *str) {
+static BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
   char c;
   char c2;
@@ -566,7 +566,7 @@ static BcStatus bc_program_printString(const char *str) {
 
   len = strlen(str);
 
-  for (i = 0; i < len; ++i) {
+  for (i = 0; i < len; ++i,  ++(*nchars)) {
 
     c = str[i];
 
@@ -608,6 +608,7 @@ static BcStatus bc_program_printString(const char *str) {
         case 'n':
         {
           err = fputc('\n', stdout);
+          *nchars = SIZE_MAX;
           break;
         }
 
@@ -1297,6 +1298,8 @@ BcStatus bc_program_init(BcProgram *p) {
 
   name = NULL;
 
+  p->nchars = 0;
+
 #ifdef _POSIX_BC_BASE_MAX
   p->base_max = _POSIX_BC_BASE_MAX;
 #elif defined(_BC_BASE_MAX)
@@ -1675,7 +1678,6 @@ BcStatus bc_program_exec(BcProgram *p) {
   BcStatus status;
   uint8_t *code;
   size_t idx;
-  int pchars;
   BcResult result;
   BcFunc *func;
   BcInstPtr *ip;
@@ -1845,7 +1847,7 @@ BcStatus bc_program_exec(BcProgram *p) {
         if (status) return status;
 
         status = bc_num_print(num, &p->obase, p->obase_t,
-                              inst == BC_INST_PRINT);
+                              inst == BC_INST_PRINT, &p->nchars);
 
         if (status) return status;
 
@@ -1861,6 +1863,8 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_STR:
       {
         const char **string;
+        const char *s;
+        size_t len;
 
         idx = bc_program_index(code, &ip->idx);
 
@@ -1870,9 +1874,15 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (!string) return BC_STATUS_EXEC_INVALID_STRING;
 
-        pchars = fprintf(stdout, "%s", *string);
-        status = pchars > 0 ? BC_STATUS_SUCCESS :
-                              BC_STATUS_EXEC_PRINT_ERR;
+        s = *string;
+        len = strlen(s);
+
+        for (idx = 0; idx < len; ++idx) {
+          char c = s[idx];
+          if (fputc(c, stdout) == EOF) return BC_STATUS_IO_ERR;
+          if (c == '\n') p->nchars = SIZE_MAX;
+          ++p->nchars;
+        }
 
         break;
       }
@@ -1889,7 +1899,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (!string) return BC_STATUS_EXEC_INVALID_STRING;
 
-        status = bc_program_printString(*string);
+        status = bc_program_printString(*string, &p->nchars);
 
         break;
       }
