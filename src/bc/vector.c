@@ -260,10 +260,10 @@ BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
 
   *idx = bc_veco_find(vec, data);
 
-  if (*idx > vec->vec.len) return BC_STATUS_VECO_OUT_OF_BOUNDS;
+  if (*idx > vec->vec.len) return BC_STATUS_VEC_OUT_OF_BOUNDS;
 
   if (*idx != vec->vec.len && !vec->cmp(data, bc_vec_item(&vec->vec, *idx)))
-    return BC_STATUS_VECO_ITEM_EXISTS;
+    return BC_STATUS_VEC_ITEM_EXISTS;
 
   if (*idx >= vec->vec.len) {
     *idx = vec->vec.len;
