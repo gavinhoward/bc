@@ -70,7 +70,7 @@ static BcStatus bc_vm_signal(BcVm *vm) {
 
   ip = bc_vec_top(&vm->program.stack);
 
-  if (!ip) return BC_STATUS_EXEC_INVALID_STMT;
+  if (!ip) return BC_STATUS_EXEC_BAD_STMT;
 
   ip->idx = func->code.len;
 

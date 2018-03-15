@@ -40,14 +40,10 @@ const char *bc_err_types[] = {
   "bc",
 
   "bc",
-
-  "bc",
   "bc",
 
   "vector",
-
-  "ordered vector",
-  "ordered vector",
+  "vector",
 
   "Lex",
   "Lex",
@@ -74,8 +70,6 @@ const char *bc_err_types[] = {
   "Math",
   "Math",
 
-  "Runtime",
-  "Runtime",
   "Runtime",
   "Runtime",
   "Runtime",
@@ -123,32 +117,25 @@ const char *bc_err_descs[] = {
   "memory allocation error",
   "I/O error",
 
-  "invalid parameter",
-
-  "invalid option",
+  "bad parameter",
 
   "one or more limits not specified",
-  "invalid limit; this is a bug in bc",
+  "bad limit; this is a bug in bc",
 
-  "index is out of bounds for the vector and error was not caught; "
-    "this is probably a bug in bc",
+  "index is out of bounds; this is probably a bug in bc",
+  "item already exists; this is a bug in bc",
 
-  "index is out of bounds for the ordered vector and error was not caught; "
-    "this is probably a bug in bc",
-  "item already exists in ordered vector and error was not caught; "
-    "this is probably a bug in bc",
-
-  "invalid token",
+  "bad character",
   "string end could not be found",
   "comment end could not be found",
   "end of file",
 
-  "invalid token",
-  "invalid expression",
-  "invalid print statement",
-  "invalid function definition",
-  "invalid assignment: must assign to scale, "
-    "ibase, obase, last, a variable, or an array element",
+  "bad token",
+  "bad expression",
+  "bad print statement",
+  "bad function definition",
+  "bad assignment: left must be scale, ibase, "
+    "obase, last, var, or array element",
   "no auto variable found",
   "limits statement in file not handled correctly; "
     "this is most likely a bug in bc",
@@ -164,7 +151,7 @@ const char *bc_err_descs[] = {
   "overflow",
   "divide by zero",
   "negative square root",
-  "invalid number string",
+  "bad number string",
   "cannot truncate more places than exist after the decimal point",
 
   "couldn't open file",
@@ -177,29 +164,27 @@ const char *bc_err_descs[] = {
   "bad scale; must be [0, BC_SCALE_MAX]",
   "bad ibase; must be [2, 16]",
   "bad obase; must be [2, BC_BASE_MAX]",
-  "invalid statement; this is a bug in bc",
-  "invalid expression; this is a bug in bc",
-  "invalid string",
-  "string too long: length must be [0, BC_STRING_MAX]",
-  "invalid name/identifier",
-  "invalid array length; must be [1, BC_DIM_MAX]",
-  "invalid read() expression",
+  "bad statement; this is a bug in bc",
+  "bad expression; this is a bug in bc",
+  "bad string",
+  "string too long: must be [1, BC_STRING_MAX]",
+  "array too long; must be [1, BC_DIM_MAX]",
+  "bad read() expression",
   "read() call inside of a read() call",
   "print error",
-  "invalid constant",
-  "invalid lvalue; cannot assign to constants or intermediate values",
+  "bad constant",
   "cannot return from function; no function to return from",
-  "invalid label; this is probably a bug in bc",
+  "bad label; this is probably a bug in bc",
   "variable is wrong type",
-  "invalid stack; this is a bug in bc",
+  "bad stack; this is a bug in bc",
   "bc stopped; this is a bug in bc",
 
-  "POSIX only allows one character names; the following is invalid:",
+  "POSIX only allows one character names; the following is bad:",
   "POSIX does not allow '#' script comments",
   "POSIX does not allow the following keyword:",
   "POSIX does not allow a period ('.') as a shortcut for the last result",
   "POSIX requires parentheses around return expressions",
-  "POSIX does not allow boolean operators; the following is invalid:",
+  "POSIX does not allow boolean operators; the following is bad:",
   "POSIX does not allow comparison operators outside if or loops",
   "POSIX does not allow more than one comparison operator per condition",
   "POSIX does not allow an empty init expression in a for loop",

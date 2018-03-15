@@ -151,7 +151,7 @@ static BcStatus bc_num_trunc(BcNum *n, size_t places) {
 
   BcDigit *ptr;
 
-  if (places > n->rdx) return BC_STATUS_MATH_INVALID_TRUNCATE;
+  if (places > n->rdx) return BC_STATUS_MATH_BAD_TRUNCATE;
 
   if (places == 0) return BC_STATUS_SUCCESS;
 
@@ -1570,9 +1570,9 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
   if (!n || !val) return BC_STATUS_INVALID_PARAM;
 
   if (base_t < BC_NUM_MIN_BASE || base_t > BC_NUM_MAX_INPUT_BASE)
-    return BC_STATUS_EXEC_INVALID_IBASE;
+    return BC_STATUS_EXEC_BAD_IBASE;
 
-  if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_INVALID_STRING;
+  if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_BAD_STRING;
 
   if (base_t == 10) status = bc_num_parseDecimal(n, val);
   else status = bc_num_parseBase(n, val, base);
@@ -1588,7 +1588,7 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
   if (!n || !f) return BC_STATUS_INVALID_PARAM;
 
   if (base_t < BC_NUM_MIN_BASE || base_t > BC_BASE_MAX_DEF)
-    return BC_STATUS_EXEC_INVALID_OBASE;
+    return BC_STATUS_EXEC_BAD_OBASE;
 
   if (*nchars  >= BC_NUM_PRINT_WIDTH) {
     if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;

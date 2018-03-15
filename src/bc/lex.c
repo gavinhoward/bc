@@ -212,7 +212,7 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
       token->type = BC_LEX_KEY_AUTO + i;
 
       if (!bc_lex_keywords[i].posix &&
-          (status = bc_posix_error(BC_STATUS_POSIX_INVALID_KEYWORD,
+          (status = bc_posix_error(BC_STATUS_POSIX_BAD_KEYWORD,
                                    lex->file, lex->line,
                                    bc_lex_keywords[i].name)))
       {
@@ -374,7 +374,7 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
       }
       else {
         token->type = BC_LEX_INVALID;
-        status = BC_STATUS_LEX_INVALID_TOKEN;
+        status = BC_STATUS_LEX_BAD_CHARACTER;
       }
 
       break;
@@ -633,7 +633,7 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
       }
       else {
         token->type = BC_LEX_INVALID;
-        status = BC_STATUS_LEX_INVALID_TOKEN;
+        status = BC_STATUS_LEX_BAD_CHARACTER;
       }
 
       break;
@@ -648,7 +648,7 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
     default:
     {
       token->type = BC_LEX_INVALID;
-      status = BC_STATUS_LEX_INVALID_TOKEN;
+      status = BC_STATUS_LEX_BAD_CHARACTER;
       break;
     }
   }
