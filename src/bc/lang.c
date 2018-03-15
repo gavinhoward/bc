@@ -26,20 +26,14 @@
 
 #include <lang.h>
 
-BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
+BcStatus bc_func_insert(BcFunc *func, char *name, bool var) {
 
   BcStatus status;
   BcAuto a;
   size_t i;
   BcAuto *ptr;
 
-  if (!func || !name || !vec) return BC_STATUS_INVALID_PARAM;
-
-  for (i = 0; i < func->params.len; ++i) {
-    ptr = bc_vec_item(&func->params, i);
-    if (!strcmp(name, ptr->name))
-      return BC_STATUS_PARSE_DUPLICATE_LOCAL;
-  }
+  if (!func || !name) return BC_STATUS_INVALID_PARAM;
 
   for (i = 0; i < func->autos.len; ++i) {
     ptr = bc_vec_item(&func->autos, i);
@@ -49,7 +43,7 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
 
   bc_auto_init(&a, name, var);
 
-  status = bc_vec_push(vec, &a);
+  status = bc_vec_push(&func->autos, &a);
 
   if (status) return status;
 
@@ -66,14 +60,6 @@ BcStatus bc_func_init(BcFunc *func) {
 
   if (status) return status;
 
-  status = bc_vec_init(&func->params, sizeof(BcAuto), bc_auto_free);
-
-  if (status) goto param_err;
-
-  status = bc_vec_init(&func->param_stack, sizeof(BcLocal), bc_local_free);
-
-  if (status) goto param_stack_err;
-
   status = bc_vec_init(&func->autos, sizeof(BcAuto), bc_auto_free);
 
   if (status) goto auto_err;
@@ -86,6 +72,8 @@ BcStatus bc_func_init(BcFunc *func) {
 
   if (status) goto label_err;
 
+  func->num_params = 0;
+
   return BC_STATUS_SUCCESS;
 
 label_err:
@@ -97,14 +85,6 @@ auto_stack_err:
   bc_vec_free(&func->autos);
 
 auto_err:
-
-  bc_vec_free(&func->param_stack);
-
-param_stack_err:
-
-  bc_vec_free(&func->params);
-
-param_err:
 
   bc_vec_free(&func->code);
 
@@ -120,8 +100,6 @@ void bc_func_free(void *func) {
   if (f == NULL) return;
 
   bc_vec_free(&f->code);
-  bc_vec_free(&f->params);
-  bc_vec_free(&f->param_stack);
   bc_vec_free(&f->autos);
   bc_vec_free(&f->auto_stack);
   bc_vec_free(&f->labels);

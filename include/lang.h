@@ -124,8 +124,7 @@ typedef struct BcFunc {
 
   BcVec labels;
 
-  BcVec params;
-  BcVec param_stack;
+  size_t num_params;
 
   BcVec autos;
   BcVec auto_stack;
@@ -178,7 +177,7 @@ typedef BcStatus (*BcDataInitFunc)(void*);
 
 // ** Exclude start. **
 BcStatus bc_func_init(BcFunc *func);
-BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec);
+BcStatus bc_func_insert(BcFunc *func, char *name, bool var);
 void bc_func_free(void *func);
 
 BcStatus bc_array_init(void *array);

@@ -1268,6 +1268,8 @@ static BcStatus bc_parse_func(BcParse *parse) {
       goto err;
     }
 
+    ++fptr->num_params;
+
     status = bc_lex_next(&parse->lex, &parse->token);
 
     if (status) goto err;
@@ -1300,7 +1302,7 @@ static BcStatus bc_parse_func(BcParse *parse) {
     }
     else comma = false;
 
-    status = bc_func_insert(fptr, name, var, &fptr->params);
+    status = bc_func_insert(fptr, name, var);
 
     if (status) goto err;
 
@@ -1396,7 +1398,7 @@ static BcStatus bc_parse_auto(BcParse *parse) {
     }
     else comma = false;
 
-    status = bc_func_insert(func, name, var, &func->autos);
+    status = bc_func_insert(func, name, var);
 
     if (status) goto err;
 
