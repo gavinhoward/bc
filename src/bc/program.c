@@ -33,32 +33,6 @@
 #include <parse.h>
 #include <instructions.h>
 
-static BcStatus bc_program_local(BcVec *vec, BcResult *result, BcNum **ret,
-                                 uint8_t flags, BcAuto *a, size_t idx)
-{
-  BcStatus status;
-  BcLocal *l;
-  uint8_t cond;
-
-  cond = flags & BC_PROGRAM_SEARCH_VAR;
-
-  if (!a->var != !cond) return BC_STATUS_EXEC_INVALID_TYPE;
-
-  l = bc_vec_item_rev(vec, idx);
-
-  if (!l) return cond ? BC_STATUS_EXEC_UNDEFINED_VAR :
-                        BC_STATUS_EXEC_UNDEFINED_ARRAY;
-
-  if (cond || flags & BC_PROGRAM_SEARCH_ARRAY_ONLY) *ret = &l->data.num;
-  else {
-    status = bc_array_expand(&l->data.array, result->data.id.idx + 1);
-    if (status) return status;
-    *ret = bc_vec_item(&l->data.array, result->data.id.idx);
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
 static BcStatus bc_program_search(BcProgram *p, BcResult *result,
                                   BcNum **ret, uint8_t flags)
 {
@@ -68,7 +42,7 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
   BcEntry entry;
   BcVec *vec;
   BcVecO *veco;
-  size_t i, idx;
+  size_t idx;
   BcEntry *entry_ptr;
   BcAuto *a;
 
@@ -87,18 +61,32 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     if (!func) return BC_STATUS_EXEC_INVALID_STACK;
 
-    for (i = 0; i < func->params.len; ++i) {
-      a = bc_vec_item(&func->params, i);
+    for (idx = 0; idx < func->autos.len; ++idx) {
+      a = bc_vec_item(&func->autos, idx);
       if (!a) return BC_STATUS_EXEC_UNDEFINED_VAR;
-      if (!strcmp(a->name, result->data.id.name))
-        return bc_program_local(&func->param_stack, result, ret, flags, a, i);
-    }
+      if (!strcmp(a->name, result->data.id.name)) {
 
-    for (i = 0; i < func->autos.len; ++i) {
-      a = bc_vec_item(&func->autos, i);
-      if (!a) return BC_STATUS_EXEC_UNDEFINED_VAR;
-      if (!strcmp(a->name, result->data.id.name))
-        return bc_program_local(&func->auto_stack, result, ret, flags, a, i);
+        BcLocal *l;
+        uint8_t cond;
+
+        cond = flags & BC_PROGRAM_SEARCH_VAR;
+
+        if (!a->var != !cond) return BC_STATUS_EXEC_INVALID_TYPE;
+
+        l = bc_vec_item_rev(&func->auto_stack, idx);
+
+        if (!l) return cond ? BC_STATUS_EXEC_UNDEFINED_VAR :
+                              BC_STATUS_EXEC_UNDEFINED_ARRAY;
+
+        if (cond || flags & BC_PROGRAM_SEARCH_ARRAY_ONLY) *ret = &l->data.num;
+        else {
+          status = bc_array_expand(&l->data.array, result->data.id.idx + 1);
+          if (status) return status;
+          *ret = bc_vec_item(&l->data.array, result->data.id.idx);
+        }
+
+        return BC_STATUS_SUCCESS;
+      }
     }
   }
 
@@ -992,11 +980,10 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   BcStatus status;
   BcInstPtr ip;
-  size_t nparams;
+  size_t nparams, i, diff;
   BcFunc *func;
   BcAuto *auto_ptr;
   BcResult *param;
-  size_t i;
   BcLocal local;
 
   nparams = bc_program_index(code, idx);
@@ -1010,9 +997,9 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   if (!func || !func->code.len) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
-  if (func->params.len != nparams) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
+  if (nparams != func->num_params) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
-  for (i = 0; i < func->autos.len; ++i) {
+  for (i = 0; i < func->autos.len - func->num_params; ++i) {
 
     auto_ptr = bc_vec_item_rev(&func->autos, i);
 
@@ -1027,10 +1014,12 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
     if (status) goto err;
   }
 
-  for (i = 0; i < func->params.len; ++i) {
+  diff = func->autos.len - func->num_params;
 
-    auto_ptr = bc_vec_item_rev(&func->params, i);
-    param = bc_vec_item_rev(&p->expr_stack, i);
+  for (; i < func->autos.len; ++i) {
+
+    auto_ptr = bc_vec_item_rev(&func->autos, i);
+    param = bc_vec_item_rev(&p->expr_stack, i - diff);
 
     if (!auto_ptr || !param) return BC_STATUS_EXEC_UNDEFINED_VAR;
 
@@ -1069,7 +1058,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
       if (status) goto err;
     }
 
-    status = bc_vec_push(&func->param_stack, &local);
+    status = bc_vec_push(&func->auto_stack, &local);
 
     if (status) goto err;
   }
@@ -1139,7 +1128,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   }
 
   // We need to pop arguments as well, so this takes that into account.
-  len = ip->len - func->params.len;
+  len = ip->len - func->num_params;
   while (p->expr_stack.len > len) {
     status = bc_vec_pop(&p->expr_stack);
     if (status) goto err;
@@ -1152,9 +1141,6 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   status = bc_vec_pop(&p->stack);
 
   if (status) return status;
-
-  for (i = 0; !status && i < func->params.len; ++i)
-    status = bc_vec_pop(&func->param_stack);
 
   for (i = 0; !status && i < func->autos.len; ++i)
     status = bc_vec_pop(&func->auto_stack);
@@ -1628,7 +1614,8 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
     // We need to reset these so the function can be repopulated.
     while (!status && func->autos.len) status = bc_vec_pop(&func->autos);
-    while (!status && func->params.len) status = bc_vec_pop(&func->params);
+    while (!status && func->auto_stack.len)
+      status = bc_vec_pop(&func->auto_stack);
   }
   else {
 
