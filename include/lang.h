@@ -195,7 +195,7 @@ void bc_result_free(void *result);
 void bc_constant_free(void *constant);
 // ** Exclude end. **
 
-void bc_auto_init(void *auto1, char *name, bool var);
+void bc_auto_init(BcAuto *a, char *name, bool var);
 void bc_auto_free(void *auto1);
 
 BcStatus bc_local_init(BcLocal *l, bool var);
