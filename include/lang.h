@@ -103,6 +103,12 @@ typedef struct BcAuto {
   char *name;
   bool var;
 
+} BcAuto;
+
+typedef struct BcLocal {
+
+  bool var;
+
   union {
 
     BcNum num;
@@ -110,7 +116,7 @@ typedef struct BcAuto {
 
   } data;
 
-} BcAuto;
+} BcLocal;
 
 typedef struct BcFunc {
 
@@ -119,8 +125,10 @@ typedef struct BcFunc {
   BcVec labels;
 
   BcVec params;
+  BcVec param_stack;
 
   BcVec autos;
+  BcVec auto_stack;
 
 } BcFunc;
 
@@ -188,8 +196,11 @@ void bc_result_free(void *result);
 void bc_constant_free(void *constant);
 // ** Exclude end. **
 
-BcStatus bc_auto_init(void *auto1, char *name, bool var);
+void bc_auto_init(void *auto1, char *name, bool var);
 void bc_auto_free(void *auto1);
+
+BcStatus bc_local_init(BcLocal *l, bool var);
+void bc_local_free(void *local);
 
 extern const char *bc_lang_func_main;
 extern const char *bc_lang_func_read;
