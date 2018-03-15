@@ -612,7 +612,7 @@ static BcStatus bc_program_printString(const char *str, size_t *nchars) {
       }
     }
 
-    if (err == EOF) return BC_STATUS_EXEC_PRINT_ERR;
+    if (err == EOF) return BC_STATUS_IO_ERR;
   }
 
   return BC_STATUS_SUCCESS;

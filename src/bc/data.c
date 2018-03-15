@@ -93,7 +93,6 @@ const char *bc_err_types[] = {
   "Runtime",
   "Runtime",
   "Runtime",
-  "Runtime",
 
   "POSIX",
   "POSIX",
@@ -171,7 +170,6 @@ const char *bc_err_descs[] = {
   "array too long; must be [1, BC_DIM_MAX]",
   "bad read() expression",
   "read() call inside of a read() call",
-  "print error",
   "bad constant",
   "cannot return from function; no function to return from",
   "bad label; this is probably a bug in bc",
