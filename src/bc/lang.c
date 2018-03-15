@@ -47,9 +47,7 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var, BcVec *vec) {
       return BC_STATUS_PARSE_DUPLICATE_LOCAL;
   }
 
-  status = bc_auto_init(&a, name, var);
-
-  if (status) return status;
+  bc_auto_init(&a, name, var);
 
   status = bc_vec_push(vec, &a);
 
@@ -72,9 +70,17 @@ BcStatus bc_func_init(BcFunc *func) {
 
   if (status) goto param_err;
 
+  status = bc_vec_init(&func->param_stack, sizeof(BcLocal), bc_local_free);
+
+  if (status) goto param_stack_err;
+
   status = bc_vec_init(&func->autos, sizeof(BcAuto), bc_auto_free);
 
   if (status) goto auto_err;
+
+  status = bc_vec_init(&func->auto_stack, sizeof(BcLocal), bc_local_free);
+
+  if (status) goto auto_stack_err;
 
   status = bc_vec_init(&func->labels, sizeof(size_t), NULL);
 
@@ -84,9 +90,17 @@ BcStatus bc_func_init(BcFunc *func) {
 
 label_err:
 
+  bc_vec_free(&func->auto_stack);
+
+auto_stack_err:
+
   bc_vec_free(&func->autos);
 
 auto_err:
+
+  bc_vec_free(&func->param_stack);
+
+param_stack_err:
 
   bc_vec_free(&func->params);
 
@@ -107,7 +121,9 @@ void bc_func_free(void *func) {
 
   bc_vec_free(&f->code);
   bc_vec_free(&f->params);
+  bc_vec_free(&f->param_stack);
   bc_vec_free(&f->autos);
+  bc_vec_free(&f->auto_stack);
   bc_vec_free(&f->labels);
 }
 
@@ -156,17 +172,6 @@ BcStatus bc_array_copy(void *dest, void *src) {
       return status;
     }
   }
-
-  return status;
-}
-
-BcStatus bc_array_zero(BcVec *a) {
-
-  BcStatus status;
-
-  status = BC_STATUS_SUCCESS;
-
-  while (!status && a->len) status = bc_vec_pop(a);
 
   return status;
 }
@@ -232,30 +237,17 @@ void bc_entry_free(void *entry) {
   if (e) free(e->name);
 }
 
-BcStatus bc_auto_init(void *auto1, char *name, bool var) {
-
-  BcStatus status;
-  BcAuto *a;
-
-  if (!auto1) return BC_STATUS_INVALID_PARAM;
-
-  a = (BcAuto*) auto1;
-
+void bc_auto_init(void *auto1, char *name, bool var) {
+  BcAuto *a = (BcAuto*) auto1;
+  if (!a) return;
   a->var = var;
   a->name = name;
-
-  if (var) status = bc_num_init(&a->data.num, BC_NUM_DEF_SIZE);
-  else status = bc_vec_init(&a->data.array, sizeof(BcNum), bc_num_free);
-
-  return status;
 }
 
 void bc_auto_free(void *auto1) {
   BcAuto *a = (BcAuto*) auto1;
   if (!a) return;
   if (a->name) free(a->name);
-  if (a->var) bc_num_free(&a->data.num);
-  else bc_vec_free(&a->data.array);
 }
 
 void bc_result_free(void *result) {
@@ -291,4 +283,18 @@ void bc_result_free(void *result) {
 void bc_constant_free(void *constant) {
   char **c = (char**) constant;
   if (c) free(*c);
+}
+
+BcStatus bc_local_init(BcLocal *l, bool var) {
+  if (!l) return BC_STATUS_INVALID_PARAM;
+  l->var = var;
+  if (var) return bc_num_init(&l->data.num, BC_NUM_DEF_SIZE);
+  else return bc_vec_init(&l->data.array, sizeof(BcNum), bc_num_free);
+}
+
+void bc_local_free(void *local) {
+  BcLocal *l = (BcLocal*) local;
+  if (!l) return;
+  if (l->var) bc_num_free(&l->data.num);
+  else bc_vec_free(&l->data.array);
 }
