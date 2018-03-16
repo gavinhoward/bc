@@ -42,7 +42,7 @@ void bc_error(BcStatus st) {
   }
 
   fprintf(stderr, "\n%s error: %s\n\n",
-          bc_err_types[st], bc_err_descs[st]);
+          bc_err_types[bc_err_type_indices[st]], bc_err_descs[st]);
 }
 
 void bc_error_file(BcStatus st, const char *file, size_t line) {
@@ -53,7 +53,7 @@ void bc_error_file(BcStatus st, const char *file, size_t line) {
     return;
   }
 
-  fprintf(stderr, "\n%s error: %s\n", bc_err_types[st],
+  fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[st]],
           bc_err_descs[st]);
 
   fprintf(stderr, "    %s", file);
@@ -68,7 +68,7 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
   if (!(s || w) || st < BC_STATUS_POSIX_NAME_LEN || !file)
     return BC_STATUS_SUCCESS;
 
-  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[st],
+  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[bc_err_type_indices[st]],
           s ? "error" : "warning", bc_err_descs[st]);
 
   if (msg) fprintf(stderr, "    %s\n", msg);

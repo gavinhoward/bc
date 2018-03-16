@@ -45,6 +45,14 @@
 #define BC_SCALE_MAX_DEF (LONG_MAX)
 #define BC_STRING_MAX_DEF (INT_MAX)
 
+#define BC_ERR_IDX_BC (0)
+#define BC_ERR_IDX_VEC (1)
+#define BC_ERR_IDX_LEX (2)
+#define BC_ERR_IDX_PARSE (3)
+#define BC_ERR_IDX_MATH (4)
+#define BC_ERR_IDX_EXEC (5)
+#define BC_ERR_IDX_POSIX (6)
+
 typedef enum BcStatus {
 
   BC_STATUS_SUCCESS,
@@ -157,6 +165,7 @@ extern const char *bc_lib_name;
 
 extern const char *bc_header;
 extern const char *bc_err_types[];
+extern const char bc_err_type_indices[];
 extern const char *bc_err_descs[];
 
 #endif // BC_H
