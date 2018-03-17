@@ -165,7 +165,7 @@ extern const char *bc_lib_name;
 
 extern const char *bc_header;
 extern const char *bc_err_types[];
-extern const char bc_err_type_indices[];
+extern const uint8_t bc_err_type_indices[];
 extern const char *bc_err_descs[];
 
 #endif // BC_H
