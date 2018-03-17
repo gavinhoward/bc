@@ -1290,7 +1290,7 @@ BcStatus bc_program_init(BcProgram *p) {
   char *read_name;
   BcInstPtr ip;
 
-  if (p == NULL) return BC_STATUS_INVALID_PARAM;
+  if (p == NULL) return BC_STATUS_INVALID_ARG;
 
   name = NULL;
 
@@ -1579,7 +1579,7 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
   BcEntry *entry_ptr;
   BcFunc f;
 
-  if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
+  if (!p || !name || !idx) return BC_STATUS_INVALID_ARG;
 
   entry.name = name;
   entry.idx = p->funcs.len;
@@ -1629,7 +1629,7 @@ BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx) {
   BcEntry entry;
   BcNum v;
 
-  if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
+  if (!p || !name || !idx) return BC_STATUS_INVALID_ARG;
 
   entry.name = name;
   entry.idx = p->vars.len;
@@ -1652,7 +1652,7 @@ BcStatus bc_program_array_add(BcProgram *p, char *name, size_t *idx) {
   BcEntry entry;
   BcVec a;
 
-  if (!p || !name || !idx) return BC_STATUS_INVALID_PARAM;
+  if (!p || !name || !idx) return BC_STATUS_INVALID_ARG;
 
   entry.name = name;
   entry.idx = p->arrays.len;
