@@ -110,7 +110,7 @@ BcStatus bc_array_copy(void *dest, void *src) {
   s = (BcVec*) src;
 
   if (!d || !s || d == s || d->size != s->size || d->dtor != s->dtor)
-    return BC_STATUS_INVALID_PARAM;
+    return BC_STATUS_INVALID_ARG;
 
   while (d->len) {
     status = bc_vec_pop(d);
