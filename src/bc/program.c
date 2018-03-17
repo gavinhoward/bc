@@ -1613,6 +1613,7 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
     status = bc_func_init(&f);
     if (status) return status;
     status = bc_vec_push(&p->funcs, &f);
+    if (status) bc_func_free(&f);
   }
 
   return status;
