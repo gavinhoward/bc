@@ -42,7 +42,7 @@ const char *bc_err_types[] = {
 
 };
 
-const char bc_err_type_indices[] = {
+const uint8_t bc_err_type_indices[] = {
 
   BC_ERR_IDX_BC,
 
