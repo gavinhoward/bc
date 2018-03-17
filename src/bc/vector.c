@@ -82,10 +82,7 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
 
   if (!vec || !data) return BC_STATUS_INVALID_ARG;
 
-  if (vec->len == vec->cap) {
-    status = bc_vec_double(vec);
-    if (status) return status;
-  }
+  if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
   size = vec->size;
   memmove(vec->array + (size * vec->len), data, size);
@@ -101,10 +98,7 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 
   if (!vec || vec->size != sizeof(uint8_t)) return BC_STATUS_INVALID_ARG;
 
-  if (vec->len == vec->cap) {
-    status = bc_vec_double(vec);
-    if (status) return status;
-  }
+  if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
   vec->array[vec->len] = data;
 
@@ -123,10 +117,7 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
 
   if (idx == vec->len) return bc_vec_push(vec, data);
 
-  if (vec->len == vec->cap) {
-    status = bc_vec_double(vec);
-    if (status) return status;
-  }
+  if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
   size = vec->size;
   ptr = vec->array + size * idx;
