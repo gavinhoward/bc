@@ -1619,52 +1619,6 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
   return status;
 }
 
-BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx) {
-
-  BcStatus status;
-  BcEntry entry;
-  BcNum v;
-
-  if (!p || !name || !idx) return BC_STATUS_INVALID_ARG;
-
-  entry.name = name;
-  entry.idx = p->vars.len;
-
-  status = bc_veco_insert(&p->var_map, &entry, idx);
-
-  if (status) return status == BC_STATUS_VEC_ITEM_EXISTS ?
-                               BC_STATUS_SUCCESS : status;
-
-  status = bc_num_init(&v, BC_NUM_DEF_SIZE);
-
-  if (status) return status;
-
-  return bc_vec_push(&p->vars, &v);
-}
-
-BcStatus bc_program_array_add(BcProgram *p, char *name, size_t *idx) {
-
-  BcStatus status;
-  BcEntry entry;
-  BcVec a;
-
-  if (!p || !name || !idx) return BC_STATUS_INVALID_ARG;
-
-  entry.name = name;
-  entry.idx = p->arrays.len;
-
-  status = bc_veco_insert(&p->array_map, &entry, idx);
-
-  if (status) return status == BC_STATUS_VEC_ITEM_EXISTS ?
-                               BC_STATUS_SUCCESS : status;
-
-  status = bc_vec_init(&a, sizeof(BcNum), bc_num_free);
-
-  if (status) return status;
-
-  return bc_vec_push(&p->arrays, &a);
-}
-
 BcStatus bc_program_exec(BcProgram *p) {
 
   BcStatus status;
