@@ -97,8 +97,6 @@ typedef void (*BcNumInitFunc)(BcNum*);
 // ** Exclude start. **
 BcStatus bc_program_init(BcProgram *p);
 void bc_program_limits(BcProgram *p);
-BcStatus bc_program_var_add(BcProgram *p, char *name, size_t *idx);
-BcStatus bc_program_array_add(BcProgram *p, char *name, size_t *idx);
 BcStatus bc_program_print(BcProgram *p);
 void bc_program_free(BcProgram *program);
 // ** Exclude end. **
