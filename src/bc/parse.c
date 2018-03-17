@@ -249,7 +249,7 @@ static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
 
   if (idx == BC_INVALID_IDX) {
 
-    status = bc_program_func_add(parse->program, name, &idx);
+    status = bc_program_addFunc(parse->program, name, &idx);
 
     if (status) return status;
 
@@ -1238,7 +1238,7 @@ static BcStatus bc_parse_func(BcParse *parse) {
     goto err;
   }
 
-  status = bc_program_func_add(parse->program, name, &parse->func);
+  status = bc_program_addFunc(parse->program, name, &parse->func);
 
   if (status) goto err;
 

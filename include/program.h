@@ -101,7 +101,7 @@ BcStatus bc_program_print(BcProgram *p);
 void bc_program_free(BcProgram *program);
 // ** Exclude end. **
 
-BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx);
+BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
 BcStatus bc_program_exec(BcProgram *p);
 
 extern const char *bc_program_byte_fmt;

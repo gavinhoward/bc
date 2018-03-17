@@ -1420,7 +1420,7 @@ BcStatus bc_program_init(BcProgram *p) {
 
   strcpy(name, bc_lang_func_main);
 
-  s = bc_program_func_add(p, name, &idx);
+  s = bc_program_addFunc(p, name, &idx);
 
   name = NULL;
 
@@ -1435,7 +1435,7 @@ BcStatus bc_program_init(BcProgram *p) {
 
   strcpy(read_name, bc_lang_func_read);
 
-  s = bc_program_func_add(p, read_name, &idx);
+  s = bc_program_addFunc(p, read_name, &idx);
 
   read_name = NULL;
 
@@ -1572,7 +1572,7 @@ void bc_program_limits(BcProgram *p) {
   putchar('\n');
 }
 
-BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
+BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 
   BcStatus status;
   BcEntry entry;
