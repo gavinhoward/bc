@@ -1738,7 +1738,7 @@ BcStatus bc_parse_init(BcParse *parse, BcProgram *program) {
 
   BcStatus status;
 
-  if (parse == NULL || program == NULL) return BC_STATUS_INVALID_PARAM;
+  if (parse == NULL || program == NULL) return BC_STATUS_INVALID_ARG;
 
   status = bc_vec_init(&parse->flags, sizeof(uint8_t), NULL);
 
@@ -1786,7 +1786,7 @@ exit_label_err:
 
 BcStatus bc_parse_file(BcParse *parse, const char *file) {
 
-  if (parse == NULL || file == NULL) return BC_STATUS_INVALID_PARAM;
+  if (parse == NULL || file == NULL) return BC_STATUS_INVALID_ARG;
 
   return bc_lex_init(&parse->lex, file);
 }
@@ -1795,7 +1795,7 @@ BcStatus bc_parse_text(BcParse *parse, const char *text) {
 
   BcStatus status;
 
-  if (parse == NULL || text == NULL) return BC_STATUS_INVALID_PARAM;
+  if (parse == NULL || text == NULL) return BC_STATUS_INVALID_ARG;
 
   status = bc_lex_text(&parse->lex, text);
 
@@ -1808,7 +1808,7 @@ BcStatus bc_parse_parse(BcParse *parse) {
 
   BcStatus status;
 
-  if (parse == NULL) return BC_STATUS_INVALID_PARAM;
+  if (parse == NULL) return BC_STATUS_INVALID_ARG;
 
   switch (parse->token.type) {
 

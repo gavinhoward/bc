@@ -685,7 +685,7 @@ BcStatus bc_lex_printToken(BcLexToken *token) {
 
 BcStatus bc_lex_init(BcLex *lex, const char *file) {
 
-  if (lex == NULL ) return BC_STATUS_INVALID_PARAM;
+  if (lex == NULL ) return BC_STATUS_INVALID_ARG;
 
   lex->line = 1;
   lex->newline = false;
@@ -696,7 +696,7 @@ BcStatus bc_lex_init(BcLex *lex, const char *file) {
 
 BcStatus bc_lex_text(BcLex *lex, const char *text) {
 
-  if (lex == NULL || text == NULL) return BC_STATUS_INVALID_PARAM;
+  if (lex == NULL || text == NULL) return BC_STATUS_INVALID_ARG;
 
   lex->buffer = text;
   lex->idx = 0;
@@ -709,7 +709,7 @@ BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
 
-  if (lex == NULL || token == NULL) return BC_STATUS_INVALID_PARAM;
+  if (lex == NULL || token == NULL) return BC_STATUS_INVALID_ARG;
 
   if (lex->idx == lex->len) {
     token->type = BC_LEX_EOF;
