@@ -43,7 +43,7 @@ static BcStatus bc_vec_double(BcVec *vec) {
 
 BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor) {
 
-  if (vec == NULL || esize == 0) return BC_STATUS_INVALID_ARG;
+  if (!vec || !esize) return BC_STATUS_INVALID_ARG;
 
   vec->size = esize;
   vec->cap = BC_VEC_INITIAL_CAP;
@@ -80,7 +80,7 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
   BcStatus status;
   size_t size;
 
-  if (vec == NULL || data == NULL) return BC_STATUS_INVALID_ARG;
+  if (!vec || !data) return BC_STATUS_INVALID_ARG;
 
   if (vec->len == vec->cap) {
 
@@ -101,13 +101,10 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 
   BcStatus status;
 
-  if (vec == NULL || vec->size != sizeof(uint8_t))
-    return BC_STATUS_INVALID_ARG;
+  if (!vec || vec->size != sizeof(uint8_t)) return BC_STATUS_INVALID_ARG;
 
   if (vec->len == vec->cap) {
-
     status = bc_vec_double(vec);
-
     if (status) return status;
   }
 
@@ -124,15 +121,12 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
   uint8_t *ptr;
   size_t size;
 
-  if (vec == NULL || data == NULL || idx > vec->len)
-    return BC_STATUS_INVALID_ARG;
+  if (!vec || !data || idx > vec->len) return BC_STATUS_INVALID_ARG;
 
   if (idx == vec->len) return bc_vec_push(vec, data);
 
   if (vec->len == vec->cap) {
-
     status = bc_vec_double(vec);
-
     if (status) return status;
   }
 
@@ -148,30 +142,23 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
 }
 
 void* bc_vec_top(const BcVec *vec) {
-
-  if (vec == NULL || vec->len == 0) return NULL;
-
+  if (!vec || !vec->len) return NULL;
   return vec->array + vec->size * (vec->len - 1);
 }
 
 void* bc_vec_item(const BcVec *vec, size_t idx) {
-
-  if (vec == NULL || vec->len == 0 || idx >= vec->len) return NULL;
-
+  if (!vec || !vec->len || idx >= vec->len) return NULL;
   return vec->array + vec->size * idx;
 }
 
 void* bc_vec_item_rev(const BcVec *vec, size_t idx) {
-
-  if (vec == NULL || vec->len == 0 || idx >= vec->len) return NULL;
-
+  if (!vec || !vec->len || idx >= vec->len) return NULL;
   return vec->array + vec->size * (vec->len - idx - 1);
 }
 
 BcStatus bc_vec_pop(BcVec *vec) {
 
-  if (vec == NULL) return BC_STATUS_INVALID_ARG;
-
+  if (!vec) return BC_STATUS_INVALID_ARG;
   if (!vec->len) return BC_STATUS_VEC_OUT_OF_BOUNDS;
 
   --vec->len;
@@ -190,7 +177,7 @@ void bc_vec_free(void *vec) {
 
   s = (BcVec*) vec;
 
-  if (s == NULL) return;
+  if (!s) return;
 
   sfree = s->dtor;
 
@@ -245,10 +232,8 @@ static size_t bc_veco_find(const BcVecO* vec, void *data) {
 BcStatus bc_veco_init(BcVecO* vec, size_t esize,
                       BcFreeFunc dtor, BcVecCmpFunc cmp)
 {
-  if (!vec || esize == 0 || !cmp) return BC_STATUS_INVALID_ARG;
-
+  if (!vec || !esize || !cmp) return BC_STATUS_INVALID_ARG;
   vec->cmp = cmp;
-
   return bc_vec_init(&vec->vec, esize, dtor);
 }
 
