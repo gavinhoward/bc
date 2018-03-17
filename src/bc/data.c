@@ -128,7 +128,7 @@ const char *bc_err_descs[] = {
   "memory allocation error",
   "I/O error",
 
-  "bad parameter",
+  "bad argument",
 
   "one or more limits not specified",
   "bad limit; this is a bug in bc",

@@ -76,7 +76,7 @@ BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
   char *s;
   char *t;
 
-  if (!p || !n || !fp) return BC_STATUS_INVALID_PARAM;
+  if (!p || !n || !fp) return BC_STATUS_INVALID_ARG;
 
   if (!p) {
 
