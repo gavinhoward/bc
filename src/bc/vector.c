@@ -83,9 +83,7 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
   if (!vec || !data) return BC_STATUS_INVALID_ARG;
 
   if (vec->len == vec->cap) {
-
     status = bc_vec_double(vec);
-
     if (status) return status;
   }
 
