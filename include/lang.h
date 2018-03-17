@@ -105,19 +105,6 @@ typedef struct BcAuto {
 
 } BcAuto;
 
-typedef struct BcLocal {
-
-  bool var;
-
-  union {
-
-    BcNum num;
-    BcVec array;
-
-  } data;
-
-} BcLocal;
-
 typedef struct BcFunc {
 
   BcVec code;
@@ -125,9 +112,7 @@ typedef struct BcFunc {
   BcVec labels;
 
   size_t num_params;
-
   BcVec autos;
-  BcVec auto_stack;
 
 } BcFunc;
 
@@ -136,6 +121,9 @@ typedef enum BcResultType {
   BC_RESULT_INTERMEDIATE,
 
   BC_RESULT_CONSTANT,
+
+  BC_RESULT_ARRAY_AUTO,
+  BC_RESULT_VAR_AUTO,
 
   BC_RESULT_VAR,
   BC_RESULT_ARRAY,
@@ -197,9 +185,6 @@ void bc_constant_free(void *constant);
 
 void bc_auto_init(BcAuto *a, char *name, bool var);
 void bc_auto_free(void *auto1);
-
-BcStatus bc_local_init(BcLocal *l, bool var);
-void bc_local_free(void *local);
 
 extern const char *bc_lang_func_main;
 extern const char *bc_lang_func_read;

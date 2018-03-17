@@ -66,23 +66,23 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
       if (!a) return BC_STATUS_EXEC_UNDEFINED_VAR;
       if (!strcmp(a->name, result->data.id.name)) {
 
-        BcLocal *l;
+        BcResult *r;
         uint8_t cond;
 
         cond = flags & BC_PROGRAM_SEARCH_VAR;
 
         if (!a->var != !cond) return BC_STATUS_EXEC_BAD_TYPE;
 
-        l = bc_vec_item_rev(&func->auto_stack, idx);
+        r = bc_vec_item(&p->expr_stack, ip->len + idx);
 
-        if (!l) return cond ? BC_STATUS_EXEC_UNDEFINED_VAR :
+        if (!r) return cond ? BC_STATUS_EXEC_UNDEFINED_VAR :
                               BC_STATUS_EXEC_UNDEFINED_ARRAY;
 
-        if (cond || flags & BC_PROGRAM_SEARCH_ARRAY_ONLY) *ret = &l->data.num;
+        if (cond || flags & BC_PROGRAM_SEARCH_ARRAY_ONLY) *ret = &r->data.num;
         else {
-          status = bc_array_expand(&l->data.array, result->data.id.idx + 1);
+          status = bc_array_expand(&r->data.array, result->data.id.idx + 1);
           if (status) return status;
-          *ret = bc_vec_item(&l->data.array, result->data.id.idx);
+          *ret = bc_vec_item(&r->data.array, result->data.id.idx);
         }
 
         return BC_STATUS_SUCCESS;
@@ -100,7 +100,8 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
   if (status != BC_STATUS_VEC_ITEM_EXISTS) {
 
-    BcLocal local;
+    // We use this because it has a union of BcNum and BcVec.
+    BcResult data;
     size_t len;
 
     if (status) return status;
@@ -113,11 +114,13 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     strcpy(result->data.id.name, entry.name);
 
-    status = bc_local_init(&local, flags & BC_PROGRAM_SEARCH_VAR);
+    if (flags & BC_PROGRAM_SEARCH_VAR)
+      status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
+    else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
 
     if (status) return status;
 
-    status = bc_vec_push(vec, &local.data);
+    status = bc_vec_push(vec, &data.data);
 
     if (status) return status;
   }
@@ -976,11 +979,11 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   BcStatus status;
   BcInstPtr ip;
-  size_t nparams, i, diff;
+  size_t nparams, i;
   BcFunc *func;
   BcAuto *auto_ptr;
-  BcResult *param;
-  BcLocal local;
+  BcResult param;
+  BcResult *arg;
 
   nparams = bc_program_index(code, idx);
 
@@ -995,66 +998,69 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   if (nparams != func->num_params) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
-  for (i = 0; i < func->autos.len - func->num_params; ++i) {
+  for (i = 0; i < func->num_params; ++i) {
 
     auto_ptr = bc_vec_item_rev(&func->autos, i);
+    arg = bc_vec_item_rev(&p->expr_stack, i);
 
-    if (!auto_ptr) return BC_STATUS_EXEC_UNDEFINED_VAR;
+    if (!auto_ptr || !arg) return BC_STATUS_EXEC_UNDEFINED_VAR;
 
-    status = bc_local_init(&local, auto_ptr->var);
-
-    if (status) return status;
-
-    status = bc_vec_push(&func->auto_stack, &local);
-
-    if (status) goto err;
-  }
-
-  diff = func->autos.len - func->num_params;
-
-  for (; i < func->autos.len; ++i) {
-
-    auto_ptr = bc_vec_item_rev(&func->autos, i);
-    param = bc_vec_item_rev(&p->expr_stack, i - diff);
-
-    if (!auto_ptr || !param) return BC_STATUS_EXEC_UNDEFINED_VAR;
-
-    status = bc_local_init(&local, auto_ptr->var);
-
-    if (status) return status;
+    param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
 
     if (auto_ptr->var) {
 
       BcNum *num;
 
-      status = bc_program_num(p, param, &num, false);
+      status = bc_program_num(p, arg, &num, false);
 
-      if (status) goto err;
+      if (status) return status;
 
-      status = bc_num_copy(&local.data.num, num);
+      status = bc_num_init(&param.data.num, num->len);
 
-      if (status) goto err;
+      if (status) return status;
+
+      status = bc_num_copy(&param.data.num, num);
     }
     else {
 
       BcVec *array;
 
-      if (param->type != BC_RESULT_VAR || param->type != BC_RESULT_ARRAY) {
-        status = BC_STATUS_EXEC_BAD_TYPE;
-        goto err;
-      }
+      if (arg->type != BC_RESULT_VAR || arg->type != BC_RESULT_ARRAY)
+        return BC_STATUS_EXEC_BAD_TYPE;
 
-      status = bc_program_search(p, param, (BcNum**) &array,
+      status = bc_program_search(p, arg, (BcNum**) &array,
                                  BC_PROGRAM_SEARCH_ARRAY_ONLY);
 
-      if (status) goto err;
+      if (status) return status;
 
-      status = bc_array_copy(&local.data.array, array);
+      status = bc_vec_init(&param.data.array, sizeof(BcNum), bc_num_free);
 
-      if (status) goto err;
+      if (status) return status;
+
+      status = bc_array_copy(&param.data.array, array);
     }
 
-    status = bc_vec_push(&func->auto_stack, &local);
+    if (status) goto err;
+
+    status = bc_vec_push(&p->expr_stack, &param);
+
+    if (status) goto err;
+  }
+
+  for (; i < func->autos.len; ++i) {
+
+    auto_ptr = bc_vec_item_rev(&func->autos, i);
+
+    if (!auto_ptr) return BC_STATUS_EXEC_UNDEFINED_VAR;
+
+    param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
+
+    if (auto_ptr->var) status = bc_num_init(&param.data.num, BC_NUM_DEF_SIZE);
+    else status = bc_vec_init(&param.data.array, sizeof(BcNum), bc_num_free);
+
+    if (status) return status;
+
+    status = bc_vec_push(&p->expr_stack, &param);
 
     if (status) goto err;
   }
@@ -1063,7 +1069,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
 err:
 
-  bc_local_free(&local);
+  bc_result_free(&param);
 
   return status;
 }
@@ -1073,7 +1079,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult result;
   BcResult *operand;
-  size_t req, len, i;
+  size_t req, len;
   BcInstPtr *ip;
   BcFunc *func;
 
@@ -1134,14 +1140,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
   if (status) goto err;
 
-  status = bc_vec_pop(&p->stack);
-
-  if (status) return status;
-
-  for (i = 0; !status && i < func->autos.len; ++i)
-    status = bc_vec_pop(&func->auto_stack);
-
-  return status;
+  return bc_vec_pop(&p->stack);
 
 err:
 
@@ -1608,10 +1607,9 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
     status = BC_STATUS_SUCCESS;
 
-    // We need to reset these so the function can be repopulated.
+    // We need to reset these, so the function can be repopulated.
+    func->num_params = 0;
     while (!status && func->autos.len) status = bc_vec_pop(&func->autos);
-    while (!status && func->auto_stack.len)
-      status = bc_vec_pop(&func->auto_stack);
   }
   else {
 

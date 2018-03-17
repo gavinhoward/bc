@@ -33,7 +33,7 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var) {
   size_t i;
   BcAuto *ptr;
 
-  if (!func || !name) return BC_STATUS_INVALID_PARAM;
+  if (!func || !name) return BC_STATUS_INVALID_ARG;
 
   for (i = 0; i < func->autos.len; ++i) {
     ptr = bc_vec_item(&func->autos, i);
@@ -54,7 +54,7 @@ BcStatus bc_func_init(BcFunc *func) {
 
   BcStatus status;
 
-  if (!func) return BC_STATUS_INVALID_PARAM;
+  if (!func) return BC_STATUS_INVALID_ARG;
 
   status = bc_vec_init(&func->code, sizeof(uint8_t), NULL);
 
@@ -63,10 +63,6 @@ BcStatus bc_func_init(BcFunc *func) {
   status = bc_vec_init(&func->autos, sizeof(BcAuto), bc_auto_free);
 
   if (status) goto auto_err;
-
-  status = bc_vec_init(&func->auto_stack, sizeof(BcLocal), bc_local_free);
-
-  if (status) goto auto_stack_err;
 
   status = bc_vec_init(&func->labels, sizeof(size_t), NULL);
 
@@ -77,10 +73,6 @@ BcStatus bc_func_init(BcFunc *func) {
   return BC_STATUS_SUCCESS;
 
 label_err:
-
-  bc_vec_free(&func->auto_stack);
-
-auto_stack_err:
 
   bc_vec_free(&func->autos);
 
@@ -101,7 +93,6 @@ void bc_func_free(void *func) {
 
   bc_vec_free(&f->code);
   bc_vec_free(&f->autos);
-  bc_vec_free(&f->auto_stack);
   bc_vec_free(&f->labels);
 }
 
@@ -237,8 +228,15 @@ void bc_result_free(void *result) {
 
     case BC_RESULT_INTERMEDIATE:
     case BC_RESULT_SCALE:
+    case BC_RESULT_VAR_AUTO:
     {
       bc_num_free(&r->data.num);
+      break;
+    }
+
+    case BC_RESULT_ARRAY_AUTO:
+    {
+      bc_vec_free(&r->data.array);
       break;
     }
 
@@ -260,18 +258,4 @@ void bc_result_free(void *result) {
 void bc_constant_free(void *constant) {
   char **c = constant;
   if (c) free(*c);
-}
-
-BcStatus bc_local_init(BcLocal *l, bool var) {
-  if (!l) return BC_STATUS_INVALID_PARAM;
-  l->var = var;
-  if (var) return bc_num_init(&l->data.num, BC_NUM_DEF_SIZE);
-  else return bc_vec_init(&l->data.array, sizeof(BcNum), bc_num_free);
-}
-
-void bc_local_free(void *local) {
-  BcLocal *l = local;
-  if (!l) return;
-  if (l->var) bc_num_free(&l->data.num);
-  else bc_vec_free(&l->data.array);
 }
