@@ -347,11 +347,7 @@ static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
   if (status) return status;
 
   if (inst != BC_INST_OP_POWER) {
-
-    BcNumBinaryFunc op;
-
-    op = bc_program_math_ops[inst - BC_INST_OP_MODULUS];
-
+    BcNumBinaryFunc op = bc_program_math_ops[inst - BC_INST_OP_MODULUS];
     status = op(num1, num2, &result.data.num, p->scale);
   }
   else status = bc_num_pow(num1, num2, &result.data.num, p->scale);
@@ -848,14 +844,9 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
     case BC_INST_OP_ASSIGN_PLUS:
     case BC_INST_OP_ASSIGN_MINUS:
     {
-      BcNumBinaryFunc op;
-
-      op = bc_program_assignOp(inst);
-
+      BcNumBinaryFunc op = bc_program_assignOp(inst);
       status = op(scale, rval, scale, p->scale);
-
       if (status) return status;
-
       break;
     }
 
@@ -876,8 +867,7 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
 
   if (status) return status;
 
-  if (result > (unsigned long) p->scale_max)
-    return BC_STATUS_EXEC_BAD_SCALE;
+  if (result > (unsigned long) p->scale_max) return BC_STATUS_EXEC_BAD_SCALE;
 
   p->scale = (size_t) result;
 
@@ -904,8 +894,6 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
   if (left->type != BC_RESULT_SCALE) {
-
-    if (status) return status;
 
     switch (inst) {
 
