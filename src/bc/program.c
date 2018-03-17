@@ -1599,9 +1599,7 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
 
   if (status == BC_STATUS_VEC_ITEM_EXISTS) {
 
-    BcFunc *func;
-
-    func = bc_vec_item(&p->funcs, entry_ptr->idx);
+    BcFunc *func = bc_vec_item(&p->funcs, entry_ptr->idx);
 
     if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
@@ -1612,11 +1610,8 @@ BcStatus bc_program_func_add(BcProgram *p, char *name, size_t *idx) {
     while (!status && func->autos.len) status = bc_vec_pop(&func->autos);
   }
   else {
-
     status = bc_func_init(&f);
-
     if (status) return status;
-
     status = bc_vec_push(&p->funcs, &f);
   }
 
