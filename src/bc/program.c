@@ -1290,7 +1290,7 @@ BcStatus bc_program_init(BcProgram *p) {
   char *read_name;
   BcInstPtr ip;
 
-  if (p == NULL) return BC_STATUS_INVALID_ARG;
+  if (!p) return BC_STATUS_INVALID_ARG;
 
   name = NULL;
 
