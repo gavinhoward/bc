@@ -50,12 +50,12 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
   if (!ip) return BC_STATUS_EXEC_BAD_STACK;
 
-  if (ip->func == BC_PROGRAM_READ_FUNC) {
+  if (ip->func == BC_PROGRAM_READ) {
     ip = bc_vec_item_rev(&p->stack, 1);
     if (!ip) return BC_STATUS_EXEC_BAD_STACK;
   }
 
-  if (ip->func != BC_PROGRAM_MAIN_FUNC) {
+  if (ip->func != BC_PROGRAM_MAIN) {
 
     func = bc_vec_item(&p->funcs, ip->func);
 
@@ -379,7 +379,7 @@ static BcStatus bc_program_read(BcProgram *p) {
   BcFunc *func;
   BcInstPtr ip;
 
-  func = bc_vec_item(&p->funcs, BC_PROGRAM_READ_FUNC);
+  func = bc_vec_item(&p->funcs, BC_PROGRAM_READ);
 
   if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
@@ -414,7 +414,7 @@ static BcStatus bc_program_read(BcProgram *p) {
     goto exec_err;
   }
 
-  ip.func = BC_PROGRAM_READ_FUNC;
+  ip.func = BC_PROGRAM_READ;
   ip.idx = 0;
   ip.len = p->expr_stack.len;
 
@@ -1424,7 +1424,7 @@ BcStatus bc_program_init(BcProgram *p) {
 
   name = NULL;
 
-  if (s || idx != BC_PROGRAM_MAIN_FUNC) goto read_err;
+  if (s || idx != BC_PROGRAM_MAIN) goto read_err;
 
   read_name = malloc(strlen(bc_lang_func_read) + 1);
 
@@ -1439,7 +1439,7 @@ BcStatus bc_program_init(BcProgram *p) {
 
   read_name = NULL;
 
-  if (s || idx != BC_PROGRAM_READ_FUNC) goto var_err;
+  if (s || idx != BC_PROGRAM_READ) goto var_err;
 
   s = bc_vec_init(&p->vars, sizeof(BcNum), bc_num_free);
 
