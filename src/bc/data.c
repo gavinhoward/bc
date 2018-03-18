@@ -125,6 +125,9 @@ const char *bc_err_descs[] = {
 
   NULL,
 
+  "bc stopped; this is a bug in bc",
+  "limits not printed; this is a bug in bc",
+
   "memory allocation error",
   "I/O error",
 
@@ -132,9 +135,6 @@ const char *bc_err_descs[] = {
 
   "one or more limits not specified",
   "bad limit; this is a bug in bc",
-
-  "bc stopped; this is a bug in bc",
-  "limits not printed; this is a bug in bc",
 
   "index is out of bounds; this is probably a bug in bc",
   "item already exists; this is a bug in bc",
