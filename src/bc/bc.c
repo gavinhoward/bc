@@ -32,24 +32,29 @@
 #include <bc.h>
 #include <vm.h>
 
-void bc_error(BcStatus st) {
+BcStatus bc_error(BcStatus st) {
 
-  if (!st || st == BC_STATUS_QUIT || st >= BC_STATUS_POSIX_NAME_LEN) return;
+  if (!st || st == BC_STATUS_QUIT || st >= BC_STATUS_POSIX_NAME_LEN)
+    return BC_STATUS_SUCCESS;
 
   fprintf(stderr, "\n%s error: %s\n\n",
           bc_err_types[bc_err_type_indices[st]], bc_err_descs[st]);
+
+  return st * !bcg.bc_interactive;
 }
 
-void bc_error_file(BcStatus st, const char *file, size_t line) {
+BcStatus bc_error_file(BcStatus st, const char *file, size_t line) {
 
   if (!st || st == BC_STATUS_QUIT || !file || st >= BC_STATUS_POSIX_NAME_LEN)
-    return;
+    return BC_STATUS_SUCCESS;
 
   fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[st]],
           bc_err_descs[st]);
 
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
+
+  return st * !bcg.bc_interactive;
 }
 
 BcStatus bc_posix_error(BcStatus st, const char *file,

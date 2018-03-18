@@ -83,27 +83,32 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
   status = bc_parse_text(&vm->parse, text);
 
-  if (status && status != BC_STATUS_LEX_EOF) goto err_print;
+  if (status && status != BC_STATUS_LEX_EOF &&
+      (status = bc_error_file(status, vm->parse.lex.file, vm->parse.lex.line)))
+  {
+    return status;
+  }
 
   do {
 
     status = bc_parse_parse(&vm->parse);
 
     if (status && status != BC_STATUS_LEX_EOF) {
-      bc_error_file(status, vm->parse.lex.file, vm->parse.lex.line);
-      goto err;
+      status = bc_error_file(status, vm->parse.lex.file, vm->parse.lex.line);
+      if (status) return status;
     }
 
-    if (bcg.bc_signal && (!bcg.bc_interactive || (status = bc_vm_signal(vm))))
-      goto err_print;
+    if (bcg.bc_signal && (!bcg.bc_interactive || (status = bc_vm_signal(vm)))) {
+      if ((status = bc_error(status))) return status;
+    }
 
     if (status) {
 
       if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_QUIT &&
           status != BC_STATUS_LIMITS)
       {
-        bc_error_file(status, vm->program.file, vm->parse.lex.line);
-        goto err;
+        status = bc_error_file(status, vm->program.file, vm->parse.lex.line);
+        if (status) return status;
       }
       else if (status == BC_STATUS_QUIT) {
         break;
@@ -124,7 +129,11 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
   } while (!status);
 
-  if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_QUIT) goto err_print;
+  if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_QUIT &&
+      (status = bc_error(status)))
+  {
+    return status;
+  }
 
   if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
@@ -134,7 +143,7 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
       fflush(stdout);
 
-      if (status) goto err_print;
+      if (status && (status = bc_error(status))) return status;
 
       if (bcg.bc_signal) {
 
@@ -146,20 +155,12 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
     }
     else {
 
-      if (status) goto err_print;
+      if (status && (status = bc_error(status))) return status;
 
-      if (bcg.bc_signal) {
-        status = bc_vm_signal(vm);
-        goto err_print;
-      }
+      if (bcg.bc_signal && (status = bc_vm_signal(vm)))
+        status = bc_error(status);
     }
   }
-
-err_print:
-
-  bc_error(status);
-
-err:
 
   return status;
 }
@@ -199,7 +200,7 @@ err:
 
   free(data);
 
-  bc_error(status);
+  status = bc_error(status);
 
   return status;
 }
@@ -324,8 +325,6 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
 exit_err:
 
-  bc_error(status);
-
   free(buf);
 
 buf_err:
@@ -381,7 +380,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 
   if (status) return status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
 
-  if (bcg.bc_interactive) status = bc_vm_execStdin(vm);
+  status = bc_vm_execStdin(vm);
 
   status = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
 
