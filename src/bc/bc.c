@@ -34,12 +34,7 @@
 
 void bc_error(BcStatus st) {
 
-  if (!st || st == BC_STATUS_PARSE_QUIT ||
-      st == BC_STATUS_EXEC_HALT ||
-      st >= BC_STATUS_POSIX_NAME_LEN)
-  {
-    return;
-  }
+  if (!st || st == BC_STATUS_QUIT || st >= BC_STATUS_POSIX_NAME_LEN) return;
 
   fprintf(stderr, "\n%s error: %s\n\n",
           bc_err_types[bc_err_type_indices[st]], bc_err_descs[st]);
@@ -47,11 +42,8 @@ void bc_error(BcStatus st) {
 
 void bc_error_file(BcStatus st, const char *file, size_t line) {
 
-  if (!st || st == BC_STATUS_PARSE_QUIT ||
-      !file || st >= BC_STATUS_POSIX_NAME_LEN)
-  {
+  if (!st || st == BC_STATUS_QUIT || !file || st >= BC_STATUS_POSIX_NAME_LEN)
     return;
-  }
 
   fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[st]],
           bc_err_descs[st]);

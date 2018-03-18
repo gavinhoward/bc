@@ -1778,7 +1778,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_HALT:
       {
-        status = BC_STATUS_EXEC_HALT;
+        status = BC_STATUS_QUIT;
         break;
       }
 

@@ -77,26 +77,13 @@ static BcStatus bc_vm_signal(BcVm *vm) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
+static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
   BcStatus status;
-  const char *file;
-  char *data;
 
-  file = vm->filev[idx];
-  vm->program.file = file;
+  status = bc_parse_text(&vm->parse, text);
 
-  status = bc_io_fread(file, &data);
-
-  if (status) return status;
-
-  status = bc_parse_file(&vm->parse, file);
-
-  if (status) goto read_err;
-
-  status = bc_parse_text(&vm->parse, data);
-
-  if (status && status != BC_STATUS_LEX_EOF) goto read_err;
+  if (status && status != BC_STATUS_LEX_EOF) goto err_print;
 
   do {
 
@@ -107,27 +94,21 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
       goto err;
     }
 
-    if (bcg.bc_signal) {
-      if (!bcg.bc_interactive) goto read_err;
-      else {
-        status = bc_vm_signal(vm);
-        if (status) goto read_err;
-      }
-    }
+    if (bcg.bc_signal && (!bcg.bc_interactive || (status = bc_vm_signal(vm))))
+      goto err_print;
 
     if (status) {
 
-      if (status != BC_STATUS_LEX_EOF &&
-          status != BC_STATUS_PARSE_QUIT &&
-          status != BC_STATUS_PARSE_LIMITS)
+      if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_QUIT &&
+          status != BC_STATUS_LIMITS)
       {
         bc_error_file(status, vm->program.file, vm->parse.lex.line);
         goto err;
       }
-      else if (status == BC_STATUS_PARSE_QUIT) {
+      else if (status == BC_STATUS_QUIT) {
         break;
       }
-      else if (status == BC_STATUS_PARSE_LIMITS) {
+      else if (status == BC_STATUS_LIMITS) {
         bc_program_limits(&vm->program);
         status = BC_STATUS_SUCCESS;
         continue;
@@ -143,8 +124,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
   } while (!status);
 
-  if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_PARSE_QUIT)
-    goto read_err;
+  if (status != BC_STATUS_LEX_EOF && status != BC_STATUS_QUIT) goto err_print;
 
   if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 
@@ -154,7 +134,7 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
 
       fflush(stdout);
 
-      if (status) goto read_err;
+      if (status) goto err_print;
 
       if (bcg.bc_signal) {
 
@@ -166,23 +146,60 @@ static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
     }
     else {
 
-      if (status) goto read_err;
+      if (status) goto err_print;
 
       if (bcg.bc_signal) {
         status = bc_vm_signal(vm);
-        goto read_err;
+        goto err_print;
       }
     }
   }
-  else status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
-read_err:
+err_print:
 
   bc_error(status);
 
 err:
 
+  return status;
+}
+
+static BcStatus bc_vm_execFile(BcVm *vm, int idx) {
+
+  BcStatus status;
+  const char *file;
+  char *data;
+  BcFunc *main_func;
+  BcInstPtr *ip;
+
+  file = vm->filev[idx];
+  vm->program.file = file;
+
+  status = bc_io_fread(file, &data);
+
+  if (status) return status;
+
+  status = bc_parse_file(&vm->parse, file);
+
+  if (status) goto err;
+
+  status = bc_vm_process(vm, data);
+
+  if (status) goto err;
+
+  main_func = bc_vec_item(&vm->program.funcs, BC_PROGRAM_MAIN);
+  ip = bc_vec_item(&vm->program.stack, 0);
+
+  if (!main_func) status = BC_STATUS_EXEC_UNDEFINED_FUNC;
+  else if (!ip) status = BC_STATUS_EXEC_BAD_STACK;
+  else if (main_func->code.len > ip->idx)
+    status = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
+
+err:
+
   free(data);
+
+  bc_error(status);
 
   return status;
 }
@@ -230,7 +247,7 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
   // a backslash newline combo as whitespace, per the bc spec.
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
-  while ((!status || status != BC_STATUS_PARSE_QUIT) &&
+  while ((!status || status != BC_STATUS_QUIT) &&
          !(status = bc_io_getline(&buf, &bufn)))
   {
     size_t len, i;
@@ -297,106 +314,13 @@ static BcStatus bc_vm_execStdin(BcVm *vm) {
 
     strcat(buffer, buf);
 
-    status = bc_parse_text(&vm->parse, buffer);
-
-    if (!bcg.bc_signal) {
-
-      if (status) {
-
-        if (status == BC_STATUS_PARSE_QUIT || status == BC_STATUS_LEX_EOF) {
-          break;
-        }
-        else if (status == BC_STATUS_PARSE_LIMITS) {
-          bc_program_limits(&vm->program);
-          status = BC_STATUS_SUCCESS;
-        }
-        else goto exit_err;
-      }
-    }
-    else if (status == BC_STATUS_PARSE_QUIT) {
-      break;
-    }
-    else if (status == BC_STATUS_PARSE_LIMITS) {
-      bc_program_limits(&vm->program);
-      status = BC_STATUS_SUCCESS;
-    }
-
-    while (!status) status = bc_parse_parse(&vm->parse);
-
-    if (status == BC_STATUS_PARSE_QUIT) break;
-    else if (status == BC_STATUS_PARSE_LIMITS) {
-      bc_program_limits(&vm->program);
-      status = BC_STATUS_SUCCESS;
-    }
-    else if (status != BC_STATUS_LEX_EOF) {
-
-      BcFunc *func;
-      BcInstPtr *ip;
-
-      bc_error_file(status, vm->program.file, vm->parse.lex.line);
-
-      ip = bc_vec_item(&vm->program.stack, 0);
-      func = bc_vec_item(&vm->program.funcs, 0);
-
-      if (ip && func) ip->idx = func->code.len;
-
-      while (vm->parse.token.type != BC_LEX_NEWLINE &&
-             vm->parse.token.type != BC_LEX_SEMICOLON)
-      {
-        status = bc_lex_next(&vm->parse.lex, &vm->parse.token);
-
-        if (status && status != BC_STATUS_LEX_EOF) {
-
-          bc_error_file(status, vm->program.file, vm->parse.lex.line);
-
-          ip = bc_vec_item(&vm->program.stack, 0);
-          func = bc_vec_item(&vm->program.funcs, 0);
-
-          if (ip && func) ip->idx = func->code.len;
-
-          break;
-        }
-        else if (status == BC_STATUS_LEX_EOF) {
-          status = BC_STATUS_SUCCESS;
-          break;
-        }
-      }
-    }
-    else status = BC_STATUS_SUCCESS;
-
-    if (BC_PARSE_CAN_EXEC(&vm->parse)) {
-
-      status = vm->exec(&vm->program);
-
-      if (bcg.bc_interactive) {
-
-        fflush(stdout);
-
-        if (status) goto exit_err;
-
-        if (bcg.bc_signal) {
-          if ((status = bc_vm_signal(vm))) bc_error(status);
-          fprintf(stderr, "%s", bc_program_ready_prompt);
-        }
-      }
-      else {
-
-        if (status) goto exit_err;
-
-        if (bcg.bc_signal) {
-          status = bc_vm_signal(vm);
-          goto exit_err;
-        }
-      }
-    }
+    status = bc_vm_process(vm, buffer);
 
     buffer[0] = '\0';
   }
 
-  status = !status || status == BC_STATUS_PARSE_QUIT ||
-           status == BC_STATUS_EXEC_HALT ||
-           status == BC_STATUS_LEX_EOF ?
-               BC_STATUS_SUCCESS : status;
+  status = !status || status == BC_STATUS_QUIT || status == BC_STATUS_LEX_EOF ?
+             BC_STATUS_SUCCESS : status;
 
 exit_err:
 
@@ -455,15 +379,11 @@ BcStatus bc_vm_exec(BcVm *vm) {
 
   for (i = 0; !status && i < num_files; ++i) status = bc_vm_execFile(vm, i);
 
-  if (status)
-    return status == BC_STATUS_PARSE_QUIT || status == BC_STATUS_EXEC_HALT ?
-          BC_STATUS_SUCCESS : status;
+  if (status) return status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
 
-  status = bc_vm_execStdin(vm);
+  if (bcg.bc_interactive) status = bc_vm_execStdin(vm);
 
-  status = status == BC_STATUS_PARSE_QUIT ||
-           status == BC_STATUS_EXEC_HALT ?
-               BC_STATUS_SUCCESS : status;
+  status = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
 
   return status;
 }

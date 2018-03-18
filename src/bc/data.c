@@ -54,6 +54,9 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_BC,
   BC_ERR_IDX_BC,
 
+  BC_ERR_IDX_BC,
+  BC_ERR_IDX_BC,
+
   BC_ERR_IDX_VEC,
   BC_ERR_IDX_VEC,
 
@@ -71,8 +74,6 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_PARSE,
   BC_ERR_IDX_PARSE,
   BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
 
   BC_ERR_IDX_MATH,
   BC_ERR_IDX_MATH,
@@ -82,7 +83,6 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_MATH,
   BC_ERR_IDX_MATH,
 
-  BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
@@ -133,6 +133,9 @@ const char *bc_err_descs[] = {
   "one or more limits not specified",
   "bad limit; this is a bug in bc",
 
+  "bc stopped; this is a bug in bc",
+  "limits not printed; this is a bug in bc",
+
   "index is out of bounds; this is probably a bug in bc",
   "item already exists; this is a bug in bc",
 
@@ -148,10 +151,6 @@ const char *bc_err_descs[] = {
   "bad assignment: left must be scale, ibase, "
     "obase, last, var, or array element",
   "no auto variable found",
-  "limits statement in file not handled correctly; "
-    "this is most likely a bug in bc",
-  "quit statement in file not exited correctly; "
-    "this is most likely a bug in bc",
   "number of functions does not match the number of entries "
     "in the function map; this is most likely a bug in bc",
   "function parameter or auto var has the same name as another",
@@ -187,7 +186,6 @@ const char *bc_err_descs[] = {
   "bad label; this is probably a bug in bc",
   "variable is wrong type",
   "bad stack; this is a bug in bc",
-  "bc stopped; this is a bug in bc",
 
   "POSIX only allows one character names; the following is bad:",
   "POSIX does not allow '#' script comments",
