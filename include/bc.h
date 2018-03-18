@@ -152,8 +152,8 @@ typedef struct BcGlobals {
 BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]);
 // ** Exclude end. **
 
-void bc_error(BcStatus st);
-void bc_error_file(BcStatus st, const char *file, size_t line);
+BcStatus bc_error(BcStatus st);
+BcStatus bc_error_file(BcStatus st, const char *file, size_t line);
 
 BcStatus bc_posix_error(BcStatus st, const char *file,
                         size_t line, const char *msg);
