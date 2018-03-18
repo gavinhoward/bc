@@ -53,11 +53,11 @@ if [[ "$t" = "parse" ]] || [[ "$t" = "print" ]] || [[ "$t" = "arctangent" ]]; th
 
 	echo "halt" | bc -lq "$f" > "$out1"
 	echo "halt" | "$bc" -lq "$f" > "$out2"
-	diff "$out1" "$out2"
 
 else
-	cat "$name" | bc -lq > "$out1"
-	cat "$name" | "$bc" -lq > "$out2"
-	diff "$out1" "$out2"
+	echo "halt" | bc -lq "$name" > "$out1"
+	echo "halt" | "$bc" -lq "$name" > "$out2"
 fi
+
+	diff "$out1" "$out2"
 
