@@ -1,7 +1,11 @@
 #! /bin/sh
 
+script="$0"
+
+testdir=$(dirname "${script}")
+
 if [ "$#" -lt 3 ]; then
-	echo "usage: scripts.sh <bc> <test_output1> <test_output2>"
+	echo "usage: $script <bc> <test_output1> <test_output2>"
 	exit 1
 fi
 
@@ -16,11 +20,9 @@ shift
 out2="$1"
 shift
 
-script="$0"
-
-testdir=$(dirname "${script}")
-
 for s in $testdir/scripts/*.bc; do
+
+	echo "Running script: $s"
 
 	rm -rf "$out1"
 	rm -rf "$out2"
