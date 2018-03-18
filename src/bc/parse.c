@@ -1686,7 +1686,7 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
       if (status && status != BC_STATUS_LEX_EOF) return status;
 
-      status = BC_STATUS_PARSE_LIMITS;
+      status = BC_STATUS_LIMITS;
 
       break;
     }
@@ -1703,7 +1703,7 @@ static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
       // so we send an exit command. We
       // don't exit directly, so the vm
       // can clean up.
-      status = BC_STATUS_PARSE_QUIT;
+      status = BC_STATUS_QUIT;
       break;
     }
 
