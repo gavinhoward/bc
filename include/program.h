@@ -84,8 +84,8 @@ typedef struct BcProgram {
 #define BC_PROGRAM_CHECK_STACK(p) ((p)->stack.len > 1)
 #define BC_PROGRAM_CHECK_EXPR_STACK(p, l) ((p)->expr_stack.len >= (l))
 
-#define BC_PROGRAM_MAIN_FUNC (0)
-#define BC_PROGRAM_READ_FUNC (1)
+#define BC_PROGRAM_MAIN (0)
+#define BC_PROGRAM_READ (1)
 
 #define BC_PROGRAM_SEARCH_VAR (1<<0)
 #define BC_PROGRAM_SEARCH_ARRAY_ONLY (1<<1)
