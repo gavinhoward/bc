@@ -806,6 +806,14 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
     *label = code->len;
 
     status = bc_vec_pop(&parse->flags);
+
+    if (status) return status;
+
+    status = bc_vec_pop(&parse->exit_labels);
+
+    if (status) return status;
+
+    status = bc_vec_pop(&parse->cond_labels);
   }
 
   return status;
