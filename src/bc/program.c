@@ -998,10 +998,10 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   if (nparams != func->num_params) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
-  for (i = 0; i < func->num_params; ++i) {
+  for (i = 0; i < nparams; ++i) {
 
-    auto_ptr = bc_vec_item_rev(&func->autos, i);
-    arg = bc_vec_item_rev(&p->expr_stack, i);
+    auto_ptr = bc_vec_item(&func->autos, i);
+    arg = bc_vec_item_rev(&p->expr_stack, nparams - 1);
 
     if (!auto_ptr || !arg) return BC_STATUS_EXEC_UNDEFINED_VAR;
 
