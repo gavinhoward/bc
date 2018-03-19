@@ -1079,7 +1079,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult result;
   BcResult *operand;
-  size_t req, len;
+  size_t req;
   BcInstPtr *ip;
   BcFunc *func;
 
@@ -1130,11 +1130,8 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   }
 
   // We need to pop arguments as well, so this takes that into account.
-  len = ip->len - func->num_params;
-  while (p->expr_stack.len > len) {
-    status = bc_vec_pop(&p->expr_stack);
-    if (status) goto err;
-  }
+  status = bc_vec_npop(&p->expr_stack, p->expr_stack.len - ip->len - func->num_params);
+  if (status) goto err;
 
   status = bc_vec_push(&p->expr_stack, &result);
 
@@ -1607,7 +1604,11 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 
     // We need to reset these, so the function can be repopulated.
     func->num_params = 0;
-    while (!status && func->autos.len) status = bc_vec_pop(&func->autos);
+    status = bc_vec_npop(&func->autos, func->autos.len);
+    if (status) return status;
+    status = bc_vec_npop(&func->code, func->code.len);
+    if (status) return status;
+    status = bc_vec_npop(&func->labels, func->labels.len);
   }
   else {
     status = bc_func_init(&f);

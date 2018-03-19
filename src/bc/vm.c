@@ -57,12 +57,9 @@ static BcStatus bc_vm_signal(BcVm *vm) {
 
   bcg.bc_signal = 0;
 
-  while (vm->program.stack.len > 1) {
+  status = bc_vec_npop(&vm->program.stack, vm->program.stack.len - 1);
 
-    status = bc_vec_pop(&vm->program.stack);
-
-    if (status) return status;
-  }
+  if (status) return status;
 
   func = bc_vec_item(&vm->program.funcs, 0);
 

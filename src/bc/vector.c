@@ -157,6 +157,19 @@ BcStatus bc_vec_pop(BcVec *vec) {
   return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_vec_npop(BcVec *vec, size_t n) {
+
+  BcStatus status = BC_STATUS_SUCCESS;
+
+  if (!vec || n > vec->len) return BC_STATUS_INVALID_ARG;
+  if (!vec->dtor) vec->len -= n;
+  else {
+    while (!status && vec->len > n) status = bc_vec_pop(vec);
+  }
+
+  return status;
+}
+
 void bc_vec_free(void *vec) {
 
   BcVec *s;
