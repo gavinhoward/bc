@@ -112,10 +112,9 @@ BcStatus bc_array_copy(void *dest, void *src) {
   if (!d || !s || d == s || d->size != s->size || d->dtor != s->dtor)
     return BC_STATUS_INVALID_ARG;
 
-  while (d->len) {
-    status = bc_vec_pop(d);
-    if (status) return status;
-  }
+  status = bc_vec_npop(d, d->len);
+
+  if (status) return status;
 
   status = bc_vec_expand(d, s->cap);
 
