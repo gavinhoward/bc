@@ -1130,7 +1130,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   }
 
   // We need to pop arguments as well, so this takes that into account.
-  status = bc_vec_npop(&p->expr_stack, p->expr_stack.len - ip->len - func->num_params);
+  status = bc_vec_npop(&p->expr_stack, p->expr_stack.len - (ip->len - func->num_params));
   if (status) goto err;
 
   status = bc_vec_push(&p->expr_stack, &result);
