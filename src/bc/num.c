@@ -85,9 +85,9 @@ int bc_num_compare(BcNum *a, BcNum *b, size_t *digits) {
 
   a_int = a->len - a->rdx;
   b_int = b->len - b->rdx;
+  a_int -= b_int;
 
-  if (a_int > b_int) return 1;
-  else if (b_int > a_int) return -1;
+  if (a_int) return a_int;
 
   a_max = a->rdx > b->rdx;
 
@@ -104,7 +104,7 @@ int bc_num_compare(BcNum *a, BcNum *b, size_t *digits) {
     min_num = a->num;
   }
 
-  cmp = bc_num_compareArrays(max_num, min_num, a_int + min, digits);
+  cmp = bc_num_compareArrays(max_num, min_num, b_int + min, digits);
 
   if (cmp) return cmp * neg;
 
