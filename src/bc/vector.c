@@ -164,7 +164,8 @@ BcStatus bc_vec_npop(BcVec *vec, size_t n) {
   if (!vec || n > vec->len) return BC_STATUS_INVALID_ARG;
   if (!vec->dtor) vec->len -= n;
   else {
-    while (!status && vec->len > n) status = bc_vec_pop(vec);
+    size_t len = vec->len - n;
+    while (!status && vec->len > len) status = bc_vec_pop(vec);
   }
 
   return status;
