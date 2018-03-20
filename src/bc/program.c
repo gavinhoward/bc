@@ -1685,9 +1685,8 @@ BcStatus bc_program_exec(BcProgram *p) {
         status = bc_vec_pop(&p->expr_stack);
 
         if (status) return status;
-
-        // Fallthrough.
       }
+      // Fallthrough.
       case BC_INST_JUMP:
       {
         size_t idx;
