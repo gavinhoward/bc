@@ -38,24 +38,20 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 {
   BcStatus status;
   BcFunc *func;
-  BcInstPtr *ip;
   BcEntry entry;
   BcVec *vec;
   BcVecO *veco;
-  size_t idx;
+  size_t idx, ip_idx;
   BcEntry *entry_ptr;
   BcAuto *a;
 
-  ip = bc_vec_top(&p->stack);
+  for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
 
-  if (!ip) return BC_STATUS_EXEC_BAD_STACK;
+    BcInstPtr *ip = bc_vec_item_rev(&p->stack, ip_idx);
 
-  if (ip->func == BC_PROGRAM_READ) {
-    ip = bc_vec_item_rev(&p->stack, 1);
     if (!ip) return BC_STATUS_EXEC_BAD_STACK;
-  }
 
-  if (ip->func != BC_PROGRAM_MAIN) {
+    if (ip->func == BC_PROGRAM_READ || ip->func == BC_PROGRAM_MAIN) continue;
 
     func = bc_vec_item(&p->funcs, ip->func);
 
