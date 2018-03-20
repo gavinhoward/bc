@@ -32,6 +32,28 @@
 #include <num.h>
 #include <vector.h>
 
+static BcStatus bc_num_subArrays(BcDigit *array1, BcDigit *array2, size_t len) {
+
+  size_t i, j;
+
+  for (i = 0; i < len; ++i) {
+
+    array1[i] -= array2[i];
+
+    for (j = 0; array1[i + j] < 0;) {
+
+      array1[i + j] += 10;
+      ++j;
+
+      if (j > len) return BC_STATUS_MATH_OVERFLOW;
+
+      array1[i + j] -= 1;
+    }
+  }
+
+  return BC_STATUS_SUCCESS;
+}
+
 static int bc_num_compareArrays(BcDigit *array1, BcDigit *array2,
                                 size_t len, size_t *digits)
 {
@@ -343,20 +365,9 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   }
   else start = c->rdx - subtrahend->rdx;
 
-  for (i = 0; i < subtrahend->len; ++i) {
+  status = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
 
-    c->num[i + start] -= subtrahend->num[i];
-
-    for (j = 0; c->num[i + j + start] < 0;) {
-
-      c->num[i + j + start] += 10;
-      ++j;
-
-      if (j >= c->len - start) return BC_STATUS_MATH_OVERFLOW;
-
-      c->num[i + j + start] -= 1;
-    }
-  }
+  if (status) return status;
 
   // Remove leading zeros.
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
@@ -535,25 +546,8 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     quotient = 0;
 
-    while (ptr[len] || bc_num_compareArrays(ptr, bptr, len, NULL) >= 0) {
-
-      for (j = 0; j < len; ++j) {
-
-        ptr[j] -= bptr[j];
-
-        k = j;
-
-        while (ptr[k] < 0) {
-
-          ptr[k] += 10;
-          ++k;
-
-          if (k > len) return BC_STATUS_MATH_OVERFLOW;
-
-          ptr[k] -= 1;
-        }
-      }
-
+    while (!status && (ptr[len] || bc_num_compareArrays(ptr, bptr, len, NULL) >= 0)) {
+      status = bc_num_subArrays(ptr, bptr, len);
       ++quotient;
     }
 
