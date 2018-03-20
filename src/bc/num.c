@@ -54,14 +54,13 @@ static BcStatus bc_num_subArrays(BcDigit *array1, BcDigit *array2, size_t len) {
   return BC_STATUS_SUCCESS;
 }
 
-static int bc_num_compareArrays(BcDigit *array1, BcDigit *array2,
-                                size_t len, size_t *digits)
+static int bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len, size_t *digits)
 {
   size_t i, digs;
   BcDigit c;
 
   for (digs = 0, i = len - 1; i < len; ++digs, --i) {
-    if ((c = array1[i] - array2[i])) break;
+    if ((c = n1[i] - n2[i])) break;
   }
 
   if (digits) *digits = digs;
@@ -69,7 +68,7 @@ static int bc_num_compareArrays(BcDigit *array1, BcDigit *array2,
   return c;
 }
 
-int bc_num_compare(BcNum *a, BcNum *b, size_t *digits) {
+int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
 
   size_t i;
   size_t min;
@@ -126,7 +125,7 @@ int bc_num_compare(BcNum *a, BcNum *b, size_t *digits) {
     min_num = a->num;
   }
 
-  cmp = bc_num_compareArrays(max_num, min_num, b_int + min, digits);
+  cmp = bc_num_compare(max_num, min_num, b_int + min, digits);
 
   if (cmp) return cmp * (!a_max * -2 + 1) * neg;
 
@@ -332,7 +331,7 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   a->neg = b->neg = false;
 
-  cmp = bc_num_compare(a, b, NULL);
+  cmp = bc_num_cmp(a, b, NULL);
 
   a->neg = aneg;
   b->neg = bneg;
@@ -546,7 +545,7 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     quotient = 0;
 
-    while (!status && (ptr[len] || bc_num_compareArrays(ptr, bptr, len, NULL) >= 0)) {
+    while (!status && (ptr[len] || bc_num_compare(ptr, bptr, len, NULL) >= 0)) {
       status = bc_num_subArrays(ptr, bptr, len);
       ++quotient;
     }
@@ -856,7 +855,7 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
     if (status) goto err;
 
-    cmp = bc_num_compare(x1, x0, &digits);
+    cmp = bc_num_cmp(x1, x0, &digits);
 
     temp = x0;
     x0 = x1;
