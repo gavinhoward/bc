@@ -197,8 +197,6 @@ err:
 
   free(data);
 
-  status = bc_error(status);
-
   return status;
 }
 
