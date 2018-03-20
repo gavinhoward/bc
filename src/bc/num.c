@@ -106,7 +106,7 @@ int bc_num_compare(BcNum *a, BcNum *b, size_t *digits) {
 
   cmp = bc_num_compareArrays(max_num, min_num, b_int + min, digits);
 
-  if (cmp) return cmp * neg;
+  if (cmp) return cmp * (!a_max * -2 + 1) * neg;
 
   for (max_num -= diff, i = diff - 1; i < diff; --i) {
     if (max_num[i]) return neg * -1;
