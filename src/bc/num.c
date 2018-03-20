@@ -32,23 +32,34 @@
 #include <num.h>
 #include <vector.h>
 
-static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
+static int bc_num_compareArrays(BcDigit *array1, BcDigit *array2,
+                                size_t len, size_t *digits)
+{
+  size_t i, digs;
+  BcDigit c;
+
+  for (digs = 0, i = len - 1; i < len; ++digs, --i) {
+    if ((c = array1[i] - array2[i])) break;
+  }
+
+  if (digits) *digits = digs;
+
+  return c;
+}
+
+int bc_num_compare(BcNum *a, BcNum *b, size_t *digits) {
 
   size_t i;
   size_t min;
   BcDigit *max_num;
   BcDigit *min_num;
   bool a_max;
-  bool neg;
   size_t a_int;
   size_t b_int;
-  BcDigit *ptr_a;
-  BcDigit *ptr_b;
   size_t diff;
-  int cmp;
-  BcDigit c;
+  int cmp, neg;
 
-  *digits = 0;
+  if (digits) *digits = 0;
 
   if (!a) {
 
@@ -57,11 +68,11 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
   }
   else if (!b) return a->neg ? -1 : 1;
 
-  neg = false;
+  neg = 1;
 
   if (a->neg) {
 
-    if (b->neg) neg = true;
+    if (b->neg) neg = -1;
     else return -1;
   }
   else if (b->neg) return 1;
@@ -78,70 +89,27 @@ static int bc_num_compareDigits(BcNum *a, BcNum *b, size_t *digits) {
   if (a_int > b_int) return 1;
   else if (b_int > a_int) return -1;
 
-  ptr_a = a->num + a->rdx;
-  ptr_b = b->num + b->rdx;
-
-  for (i = a_int - 1; i < a_int; --i, ++(*digits)) {
-    c = ptr_a[i] - ptr_b[i];
-    if (c) return neg ? -c : c;
-  }
-
   a_max = a->rdx > b->rdx;
 
   if (a_max) {
-
     min = b->rdx;
-
     diff = a->rdx - b->rdx;
-
     max_num = a->num + diff;
     min_num = b->num;
-
-    for (i = min - 1; i < min; --i, ++(*digits)) {
-      c = max_num[i] - min_num[i];
-      if (c) return neg ? -c : c;
-    }
-
-    max_num -= diff;
-
-    for (i = diff - 1; i < diff; --i) {
-      if (max_num[i]) return neg ? -1 : 1;
-    }
   }
   else {
-
     min = a->rdx;
-
     diff = b->rdx - a->rdx;
-
     max_num = b->num + diff;
     min_num = a->num;
-
-    for (i = min - 1; i < min; --i, ++(*digits)) {
-      c = max_num[i] - min_num[i];
-      if (c) return neg ? c : -c;
-    }
-
-    max_num -= diff;
-
-    for (i = diff - 1; i < diff; --i) {
-      if (max_num[i]) return neg ? 1 : -1;
-    }
   }
 
-  return 0;
-}
+  cmp = bc_num_compareArrays(max_num, min_num, a_int + min, digits);
 
-static int bc_num_compareArrays(BcDigit *array1, BcDigit *array2, size_t len) {
+  if (cmp) return cmp * neg;
 
-  size_t i;
-  BcDigit c;
-
-  if (array1[len]) return 1;
-
-  for (i = len - 1; i < len; --i) {
-    c = array1[i] - array2[i];
-    if (c) return c;
+  for (max_num -= diff, i = diff - 1; i < diff; --i) {
+    if (max_num[i]) return neg * -1;
   }
 
   return 0;
@@ -342,7 +310,7 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   a->neg = b->neg = false;
 
-  cmp = bc_num_compare(a, b);
+  cmp = bc_num_compare(a, b, NULL);
 
   a->neg = aneg;
   b->neg = bneg;
@@ -567,7 +535,7 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     quotient = 0;
 
-    while (bc_num_compareArrays(ptr, bptr, len) >= 0) {
+    while (ptr[len] || bc_num_compareArrays(ptr, bptr, len, NULL) >= 0) {
 
       for (j = 0; j < len; ++j) {
 
@@ -894,7 +862,7 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
     if (status) goto err;
 
-    cmp = bc_num_compareDigits(x1, x0, &digits);
+    cmp = bc_num_compare(x1, x0, &digits);
 
     temp = x0;
     x0 = x1;
@@ -1799,11 +1767,6 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
   return bc_num_unary(a, result, scale, bc_num_sqrt_newton,
                       a->rdx + (a->len - a->rdx) * 2 + 1);
-}
-
-int bc_num_compare(BcNum *a, BcNum *b) {
-  size_t digits;
-  return bc_num_compareDigits(a, b, &digits);
 }
 
 void bc_num_zero(BcNum *n) {
