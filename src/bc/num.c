@@ -32,8 +32,9 @@
 #include <num.h>
 #include <vector.h>
 
-static BcStatus bc_num_subArrays(BcDigit *array1, BcDigit *array2, size_t len) {
-
+static BcStatus bc_num_subArrays(BcDigit *array1, BcDigit *array2,
+                                 size_t len, size_t extra)
+{
   size_t i, j;
 
   for (i = 0; i < len; ++i) {
@@ -45,7 +46,7 @@ static BcStatus bc_num_subArrays(BcDigit *array1, BcDigit *array2, size_t len) {
       array1[i + j] += 10;
       ++j;
 
-      if (j > len) return BC_STATUS_MATH_OVERFLOW;
+      if (j >= len + extra) return BC_STATUS_MATH_OVERFLOW;
 
       array1[i + j] -= 1;
     }
@@ -364,7 +365,8 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   }
   else start = c->rdx - subtrahend->rdx;
 
-  status = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
+  status = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len,
+                            c->len - subtrahend->len);
 
   if (status) return status;
 
@@ -544,7 +546,7 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     quotient = 0;
 
     while (!status && (ptr[len] || bc_num_compare(ptr, bptr, len, NULL) >= 0)) {
-      status = bc_num_subArrays(ptr, bptr, len);
+      status = bc_num_subArrays(ptr, bptr, len, 1);
       ++quotient;
     }
 
