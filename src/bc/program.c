@@ -722,12 +722,14 @@ static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
   if (status) return status;
 
   if (inst == BC_INST_OP_BOOL_AND)
-    cond = bc_num_compare(num1, &p->zero) && bc_num_compare(num2, &p->zero);
+    cond = bc_num_compare(num1, &p->zero, NULL) &&
+           bc_num_compare(num2, &p->zero, NULL);
   else if (inst == BC_INST_OP_BOOL_OR)
-    cond = bc_num_compare(num1, &p->zero) || bc_num_compare(num2, &p->zero);
+    cond = bc_num_compare(num1, &p->zero, NULL) ||
+           bc_num_compare(num2, &p->zero, NULL);
   else {
 
-    cmp = bc_num_compare(num1, num2);
+    cmp = bc_num_compare(num1, num2, NULL);
 
     switch (inst) {
       case BC_INST_OP_REL_EQUAL:
@@ -891,7 +893,7 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_INTERMEDIATE)
     return BC_STATUS_PARSE_BAD_ASSIGN;
 
-  if (inst == BC_EXPR_ASSIGN_DIVIDE && !bc_num_compare(rval, &p->zero))
+  if (inst == BC_EXPR_ASSIGN_DIVIDE && !bc_num_compare(rval, &p->zero, NULL))
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
   if (left->type != BC_RESULT_SCALE) {
@@ -1678,7 +1680,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (status) return status;
 
-        cond = bc_num_compare(num, &p->zero) == 0;
+        cond = bc_num_compare(num, &p->zero, NULL) == 0;
 
         status = bc_vec_pop(&p->expr_stack);
 
@@ -1883,7 +1885,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (status) return status;
 
-        if (bc_num_compare(num, &p->zero)) bc_num_one(&result.data.num);
+        if (bc_num_compare(num, &p->zero, NULL)) bc_num_one(&result.data.num);
         else bc_num_zero(&result.data.num);
 
         status = bc_program_unaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
