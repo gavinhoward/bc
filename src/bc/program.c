@@ -157,7 +157,7 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 }
 
 static BcStatus bc_program_num(BcProgram *p, BcResult *result,
-                               BcNum** num, bool ibase)
+                               BcNum** num, bool hex)
 {
 
   BcStatus status;
@@ -192,7 +192,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
 
       if (status) return status;
 
-      base = ibase && len == 1 ? 16 : p->ibase_t;
+      base = hex && len == 1 ? 16 : p->ibase_t;
 
       status = bc_num_parse(&result->data.num, *s, &p->ibase, base);
 
@@ -257,6 +257,7 @@ static BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left,
   BcStatus status;
   BcResult *l;
   BcResult *r;
+  bool hex;
 
   if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 2)) return BC_STATUS_EXEC_BAD_EXPR;
 
@@ -269,7 +270,8 @@ static BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left,
 
   if (status) return status;
 
-  status = bc_program_num(p, r, rval, l->type == BC_RESULT_IBASE);
+  hex = l->type == BC_RESULT_IBASE || l->type == BC_RESULT_OBASE;
+  status = bc_program_num(p, r, rval, hex);
 
   if (status) return status;
 
