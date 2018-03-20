@@ -312,7 +312,7 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   int cmp;
   BcNum *minuend;
   BcNum *subtrahend;
-  size_t i, j, start;
+  size_t start;
   bool aneg, bneg, neg;
 
   // Because this function doesn't need to use scale (per the bc spec),
@@ -537,8 +537,6 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   for (i = end - 1; i < end; --i) {
 
-    size_t j;
-    size_t k;
     BcDigit quotient;
 
     ptr = copy.num + i;
