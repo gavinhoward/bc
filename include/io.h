@@ -28,10 +28,8 @@
 
 #include <status.h>
 
-typedef int (*BcIoGetc)(void*);
-
 // ** Exclude start. **
-long bc_io_frag(char *buf, long len, int term, BcIoGetc bc_getc, void *ctx);
+long bc_io_frag(char *buf, long len, int term, FILE *fp);
 
 BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp);
 
