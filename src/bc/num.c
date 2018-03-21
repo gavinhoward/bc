@@ -1319,7 +1319,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
     ++nchars;
   }
 
-  if (base_t <= 16) {
+  if (base_t <= BC_NUM_MAX_INPUT_BASE) {
     width = 1;
     print = bc_num_printHex;
   }
