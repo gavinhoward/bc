@@ -374,4 +374,4 @@ const char *bc_program_stdin_name = "<stdin>";
 
 const char *bc_program_ready_prompt = "ready for more input\n\n";
 
-const char *bc_program_sigint_msg = "\n\ninterrupt (type \"quit\" to exit)\n\n";
+const char *bc_program_sig_msg = "\n\ninterrupt (type \"quit\" to exit)\n\n";

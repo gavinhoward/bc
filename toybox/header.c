@@ -43,5 +43,6 @@ GLOBALS(
   long bc_interactive;
 
   long bc_sig;
+  Bc bc;
 )
 
