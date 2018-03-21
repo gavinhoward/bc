@@ -692,11 +692,15 @@ void bc_lex_init(BcLex *lex, const char *file) {
   lex->file = file;
 }
 
-void bc_lex_text(BcLex *lex, const char *text) {
-  assert(lex && text);
+BcStatus bc_lex_text(BcLex *lex, const char *text, BcLexToken *token) {
+
+  assert(lex && text && token);
+
   lex->buffer = text;
   lex->idx = 0;
   lex->len = strlen(text);
+
+  return bc_lex_next(lex, token);
 }
 
 BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
