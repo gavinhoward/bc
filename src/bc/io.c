@@ -20,6 +20,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -76,7 +77,7 @@ BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
   char *s;
   char *t;
 
-  if (!p || !n || !fp) return BC_STATUS_INVALID_ARG;
+  assert(p && n && fp);
 
   if (!p) {
 

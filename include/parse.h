@@ -129,7 +129,6 @@ typedef struct BcParse {
 
 // ** Exclude start. **
 BcStatus bc_parse_init(BcParse *parse, BcProgram *program);
-BcStatus bc_parse_file(BcParse *parse, const char *file);
 BcStatus bc_parse_text(BcParse *parse, const char *text);
 
 BcStatus bc_parse_parse(BcParse *parse);

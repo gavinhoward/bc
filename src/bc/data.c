@@ -34,7 +34,6 @@ const char *bc_header =
 const char *bc_err_types[] = {
 
   "bc",
-  "vector",
   "Lex",
   "Parse",
   "Math",
@@ -50,17 +49,6 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_BC,
   BC_ERR_IDX_BC,
 
-  BC_ERR_IDX_BC,
-
-  BC_ERR_IDX_BC,
-  BC_ERR_IDX_BC,
-
-  BC_ERR_IDX_BC,
-  BC_ERR_IDX_BC,
-
-  BC_ERR_IDX_VEC,
-  BC_ERR_IDX_VEC,
-
   BC_ERR_IDX_LEX,
   BC_ERR_IDX_LEX,
   BC_ERR_IDX_LEX,
@@ -73,8 +61,6 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_PARSE,
   BC_ERR_IDX_PARSE,
   BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
 
   BC_ERR_IDX_MATH,
   BC_ERR_IDX_MATH,
@@ -82,13 +68,7 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_MATH,
   BC_ERR_IDX_MATH,
   BC_ERR_IDX_MATH,
-  BC_ERR_IDX_MATH,
 
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
@@ -126,19 +106,8 @@ const char *bc_err_descs[] = {
 
   NULL,
 
-  "bc stopped; this is a bug in bc",
-  "limits not printed; this is a bug in bc",
-
   "memory allocation error",
   "I/O error",
-
-  "bad argument",
-
-  "one or more limits not specified",
-  "bad limit; this is a bug in bc",
-
-  "index is out of bounds; this is probably a bug in bc",
-  "item already exists; this is a bug in bc",
 
   "bad character",
   "string end could not be found",
@@ -152,10 +121,7 @@ const char *bc_err_descs[] = {
   "bad assignment: left must be scale, ibase, "
     "obase, last, var, or array element",
   "no auto variable found",
-  "number of functions does not match the number of entries "
-    "in the function map; this is most likely a bug in bc",
   "function parameter or auto var has the same name as another",
-  "bug in parser",
 
   "negative number",
   "non integer number",
@@ -163,9 +129,8 @@ const char *bc_err_descs[] = {
   "divide by zero",
   "negative square root",
   "bad number string",
-  "cannot truncate more places than exist after the decimal point",
 
-  "couldn't open file",
+  "could not open file",
   "mismatched parameters",
   "undefined function",
   "undefined variable",
@@ -175,18 +140,13 @@ const char *bc_err_descs[] = {
   "bad scale; must be [0, BC_SCALE_MAX]",
   "bad ibase; must be [2, 16]",
   "bad obase; must be [2, BC_BASE_MAX]",
-  "bad statement; this is a bug in bc",
-  "bad expression; this is a bug in bc",
   "bad string",
   "string too long: must be [1, BC_STRING_MAX]",
   "array too long; must be [1, BC_DIM_MAX]",
   "bad read() expression",
   "read() call inside of a read() call",
   "bad constant",
-  "cannot return from function; no function to return from",
-  "bad label; this is probably a bug in bc",
   "variable is wrong type",
-  "bad stack; this is a bug in bc",
 
   "POSIX only allows one character names; the following is bad:",
   "POSIX does not allow '#' script comments",

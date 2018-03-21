@@ -20,7 +20,7 @@
  *
  */
 
-#include <errno.h>
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,8 +37,7 @@
 
 BcStatus bc_error(BcStatus st) {
 
-  if (!st || st == BC_STATUS_QUIT || st >= BC_STATUS_POSIX_NAME_LEN)
-    return st == BC_STATUS_QUIT;
+  if (!st || st >= BC_STATUS_POSIX_NAME_LEN) return st == BC_STATUS_QUIT;
 
   fprintf(stderr, "\n%s error: %s\n\n",
           bc_err_types[bc_err_type_indices[st]], bc_err_descs[st]);
@@ -48,7 +47,7 @@ BcStatus bc_error(BcStatus st) {
 
 BcStatus bc_error_file(BcStatus st, const char *file, size_t line) {
 
-  if (!st || st == BC_STATUS_QUIT || !file || st >= BC_STATUS_POSIX_NAME_LEN)
+  if (!st || !file || st >= BC_STATUS_POSIX_NAME_LEN)
     return st == BC_STATUS_QUIT;
 
   fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[st]],
@@ -110,11 +109,11 @@ static BcStatus bc_signal(Bc *bc) {
 
   func = bc_vec_item(&bc->prog.funcs, 0);
 
-  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+  assert(func);
 
   ip = bc_vec_top(&bc->prog.stack);
 
-  if (!ip) return BC_STATUS_EXEC_BAD_STMT;
+  assert(ip);
 
   ip->idx = func->code.len;
   bc->parse.lex.idx = bc->parse.lex.len;
@@ -221,9 +220,7 @@ static BcStatus bc_file(Bc *bc, const char *file) {
 
   if (st) return st;
 
-  st = bc_parse_file(&bc->parse, file);
-
-  if (st) goto err;
+  bc_lex_init(&bc->parse.lex, file);
 
   st = bc_process(bc, data);
 
@@ -232,10 +229,9 @@ static BcStatus bc_file(Bc *bc, const char *file) {
   main_func = bc_vec_item(&bc->prog.funcs, BC_PROGRAM_MAIN);
   ip = bc_vec_item(&bc->prog.stack, 0);
 
-  if (!main_func) st = BC_STATUS_EXEC_UNDEFINED_FUNC;
-  else if (!ip) st = BC_STATUS_EXEC_BAD_STACK;
-  else if (main_func->code.len > ip->idx)
-    st = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
+  assert(main_func && ip);
+
+  if (main_func->code.len > ip->idx) st = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
 err:
 
@@ -259,9 +255,7 @@ static BcStatus bc_stdin(Bc *bc) {
 
   bc->prog.file = bc_program_stdin_name;
 
-  st = bc_parse_file(&bc->parse, bc_program_stdin_name);
-
-  if (st) return st;
+  bc_lex_init(&bc->parse.lex, bc_program_stdin_name);
 
   n = BC_BUF_SIZE;
   bufn = BC_BUF_SIZE;
@@ -410,7 +404,7 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
 
   if (flags & BC_FLAG_MATHLIB) {
 
-    if ((status = bc_parse_file(&bc.parse, bc_lib_name))) goto err;
+    bc_lex_init(&bc.parse.lex, bc_lib_name);
     if ((status = bc_parse_text(&bc.parse, bc_lib))) goto err;
 
     while (!status) status = bc_parse_parse(&bc.parse);

@@ -20,6 +20,7 @@
  *
  */
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -684,33 +685,25 @@ BcStatus bc_lex_printToken(BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_init(BcLex *lex, const char *file) {
-
-  if (!lex) return BC_STATUS_INVALID_ARG;
-
+void bc_lex_init(BcLex *lex, const char *file) {
+  assert(lex && file);
   lex->line = 1;
   lex->newline = false;
   lex->file = file;
-
-  return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_text(BcLex *lex, const char *text) {
-
-  if (!lex || !text) return BC_STATUS_INVALID_ARG;
-
+void bc_lex_text(BcLex *lex, const char *text) {
+  assert(lex && text);
   lex->buffer = text;
   lex->idx = 0;
   lex->len = strlen(text);
-
-  return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
 
-  if (!lex || !token) return BC_STATUS_INVALID_ARG;
+  assert(lex && token);
 
   if (lex->idx == lex->len) {
     token->type = BC_LEX_EOF;
