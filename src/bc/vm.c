@@ -70,6 +70,7 @@ static BcStatus bc_vm_signal(BcVm *vm) {
   if (!ip) return BC_STATUS_EXEC_BAD_STMT;
 
   ip->idx = func->code.len;
+  vm->parse.lex.idx = vm->parse.lex.len;
 
   return BC_STATUS_SUCCESS;
 }
