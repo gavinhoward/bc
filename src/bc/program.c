@@ -242,6 +242,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
     default:
     {
       assert(false);
+      *num = NULL;
       break;
     }
   }
@@ -770,6 +771,7 @@ static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
       default:
       {
         assert(false);
+        cond = 0;
         break;
       }
     }
@@ -1079,7 +1081,6 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult result;
   BcResult *operand;
-  size_t req;
   BcInstPtr *ip;
   BcFunc *func;
 
@@ -1089,9 +1090,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
   assert(ip);
 
-  req = ip->len + (inst == BC_INST_RETURN ? 1 : 0);
-
-  assert(BC_PROGRAM_CHECK_EXPR_STACK(p, req));
+  assert(BC_PROGRAM_CHECK_EXPR_STACK(p, ip->len + inst == BC_INST_RETURN));
 
   func = bc_vec_item(&p->funcs, ip->func);
 
