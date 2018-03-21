@@ -77,10 +77,9 @@ BcStatus bc_veco_init(BcVecO* vec, size_t esize,
 BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx);
 
 size_t bc_veco_index(const BcVecO *vec, void *data);
-
-void* bc_veco_item(const BcVecO* vec, size_t idx);
-
-void bc_veco_free(BcVecO* vec);
 // ** Exclude end. **
+
+#define bc_veco_item(v, idx) (bc_vec_item(&(v)->vec, (idx)))
+#define bc_veco_free(v) (bc_vec_free(&(v)->vec))
 
 #endif // BC_VECTOR_H
