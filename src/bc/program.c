@@ -1150,12 +1150,10 @@ static unsigned long bc_program_scale(BcNum *n) {
 
 static unsigned long bc_program_length(BcNum *n) {
 
-  size_t i;
-  unsigned long len;
-
-  len = n->len;
+  unsigned long len = n->len;
 
   if (n->rdx == n->len) {
+    size_t i;
     for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
   }
 
