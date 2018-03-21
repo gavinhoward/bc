@@ -16,20 +16,20 @@ config BC
 
     options:
 
-      -c  print generated code (for debugging)
-      -i  force interactive mode
-      -l  use predefined math routines:
+      --code         -c  print generated code (for debugging)
+      --interactive  -i  force interactive mode
+      --mathlib      -l  use predefined math routines:
 
-          s(expr)  =  sine of expr in radians
-          c(expr)  =  cosine of expr in radians
-          a(expr)  =  arctangent of expr, returning radians
-          l(expr)  =  natural log of expr
-          e(expr)  =  raises e to the power of expr
-          j(n, x)  =  Bessel function of integer order n of x
+                         s(expr)  =  sine of expr in radians
+                         c(expr)  =  cosine of expr in radians
+                         a(expr)  =  arctangent of expr, returning radians
+                         l(expr)  =  natural log of expr
+                         e(expr)  =  raises e to the power of expr
+                         j(n, x)  =  Bessel function of integer order n of x
 
-      -q  don't print version and copyright
-      -s  error if any non-POSIX extensions are used
-      -w  warn if any non-POSIX extensions are used
+      --quiet        -q  don't print version and copyright
+      --standard     -s  error if any non-POSIX extensions are used
+      --warn         -w  warn if any non-POSIX extensions are used
 
 */
 
