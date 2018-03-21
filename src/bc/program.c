@@ -191,7 +191,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
 
       if (status) return status;
 
-      base = hex && len == 1 ? 16 : p->ibase_t;
+      base = hex && len == 1 ? BC_NUM_MAX_INPUT_BASE : p->ibase_t;
 
       status = bc_num_parse(&result->data.num, *s, &p->ibase, base);
 
