@@ -2035,7 +2035,7 @@ BcStatus bc_program_print(BcProgram *p) {
 
 void bc_program_free(BcProgram *p) {
 
-  if (p == NULL) return;
+  if (!p) return;
 
   free(p->num_buf);
 

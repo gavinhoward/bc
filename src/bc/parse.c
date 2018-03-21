@@ -1747,7 +1747,7 @@ BcStatus bc_parse_init(BcParse *parse, BcProgram *program) {
 
   BcStatus status;
 
-  if (parse == NULL || program == NULL) return BC_STATUS_INVALID_ARG;
+  if (!parse || !program) return BC_STATUS_INVALID_ARG;
 
   status = bc_vec_init(&parse->flags, sizeof(uint8_t), NULL);
 
