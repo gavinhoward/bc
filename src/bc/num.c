@@ -138,11 +138,11 @@ int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
   return 0;
 }
 
-static BcStatus bc_num_trunc(BcNum *n, size_t places) {
+static BcStatus bc_num_truncate(BcNum *n, size_t places) {
 
   BcDigit *ptr;
 
-  if (places > n->rdx) return BC_STATUS_MATH_BAD_TRUNCATE;
+  assert(places <= n->rdx);
 
   if (places == 0) return BC_STATUS_SUCCESS;
 
@@ -432,7 +432,7 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   c->neg = !a->neg != !b->neg;
 
-  if (scale < c->rdx) status = bc_num_trunc(c, c->rdx - scale);
+  if (scale < c->rdx) status = bc_num_truncate(c, c->rdx - scale);
   else status = BC_STATUS_SUCCESS;
 
   // Remove leading zeros.
@@ -466,7 +466,7 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     if (b->neg) c->neg = !c->neg;
 
     if (c->rdx < scale) status = bc_num_extend(c, scale - c->rdx);
-    else status = bc_num_trunc(c, c->rdx - scale);
+    else status = bc_num_truncate(c, c->rdx - scale);
 
     return status;
   }
@@ -559,7 +559,7 @@ static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   // Remove leading zeros.
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
 
-  if (c->rdx > scale) status = bc_num_trunc(c, c->rdx - scale);
+  if (c->rdx > scale) status = bc_num_truncate(c, c->rdx - scale);
 
   for (i = 0, zero = true; zero && i < c->len; ++i) zero = !c->num[i];
   if (zero) bc_num_zero(c);
@@ -732,7 +732,7 @@ static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   }
 
   if (c->rdx > scale) {
-    status = bc_num_trunc(c, c->rdx - scale);
+    status = bc_num_truncate(c, c->rdx - scale);
     if (status) goto err;
   }
 
@@ -869,7 +869,7 @@ static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
   --scale;
 
-  if (b->rdx > scale) status = bc_num_trunc(b, b->rdx - scale);
+  if (b->rdx > scale) status = bc_num_truncate(b, b->rdx - scale);
   else if (b->rdx < scale) status = bc_num_extend(b, scale - b->rdx);
 
 err:
@@ -904,7 +904,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
   BcNum *ptr_b;
   bool init;
 
-  if (!a || !b || !c || !op) return BC_STATUS_INVALID_ARG;
+  assert(a && b && c && op);
 
   init = false;
 
@@ -947,7 +947,7 @@ static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
   BcNum a2;
   BcNum *ptr_a;
 
-  if (!a || !b || !op) return BC_STATUS_INVALID_ARG;
+  assert(a && b && op);
 
   if (b == a) {
 
@@ -1348,7 +1348,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
 
   if (status) goto frac_len_err;
 
-  status = bc_num_truncate(&intp);
+  status = bc_num_truncate(&intp, intp.rdx);
 
   if (status) goto frac_len_err;
 
@@ -1448,7 +1448,7 @@ int_err:
 
 BcStatus bc_num_init(BcNum *n, size_t request) {
 
-  if (!n) return BC_STATUS_INVALID_ARG;
+  assert(n);
 
   memset(n, 0, sizeof(BcNum));
 
@@ -1465,7 +1465,7 @@ BcStatus bc_num_init(BcNum *n, size_t request) {
 
 BcStatus bc_num_expand(BcNum *n, size_t request) {
 
-  if (!n || !request) return BC_STATUS_INVALID_ARG;
+  assert(n && request);
 
   if (request > n->cap) {
 
@@ -1504,7 +1504,7 @@ BcStatus bc_num_copy(void *dest, void *src) {
   BcNum *d;
   BcNum *s;
 
-  if (!dest || !src) return BC_STATUS_INVALID_ARG;
+  assert(dest && src);
 
   if (dest == src) return BC_STATUS_SUCCESS;
 
@@ -1529,10 +1529,8 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 
   BcStatus status;
 
-  if (!n || !val) return BC_STATUS_INVALID_ARG;
-
-  if (base_t < BC_NUM_MIN_BASE || base_t > BC_NUM_MAX_INPUT_BASE)
-    return BC_STATUS_EXEC_BAD_IBASE;
+  assert(n && val && base && base_t >= BC_NUM_MIN_BASE &&
+         base_t <= BC_NUM_MAX_INPUT_BASE);
 
   if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_BAD_STRING;
 
@@ -1547,10 +1545,8 @@ BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
 {
   BcStatus status;
 
-  if (!n || !f) return BC_STATUS_INVALID_ARG;
-
-  if (base_t < BC_NUM_MIN_BASE || base_t > BC_BASE_MAX_DEF)
-    return BC_STATUS_EXEC_BAD_OBASE;
+  assert(n && base && nchars && f && base_t >= BC_NUM_MIN_BASE &&
+         base_t <= BC_BASE_MAX_DEF);
 
   if (*nchars  >= BC_NUM_PRINT_WIDTH) {
     if (fputc('\\', f) == EOF) return BC_STATUS_IO_ERR;
@@ -1589,7 +1585,7 @@ BcStatus bc_num_long(BcNum *n, long *result) {
   unsigned long prev;
   unsigned long pow;
 
-  if (!n || !result) return BC_STATUS_INVALID_ARG;
+  assert(n && result);
 
   temp = 0;
   pow = 1;
@@ -1618,7 +1614,7 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
   unsigned long prev;
   unsigned long pow;
 
-  if (!n || !result) return BC_STATUS_INVALID_ARG;
+  assert(n && result);
 
   if (n->neg) return BC_STATUS_MATH_NEGATIVE;
 
@@ -1647,7 +1643,7 @@ BcStatus bc_num_long2num(BcNum *n, long val) {
   BcDigit *ptr;
   BcDigit carry;
 
-  if (!n) return BC_STATUS_INVALID_ARG;
+  assert(n);
 
   bc_num_zero(n);
 
@@ -1695,7 +1691,7 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
   size_t i;
   BcDigit *ptr;
 
-  if (!n) return BC_STATUS_INVALID_ARG;
+  assert(n);
 
   bc_num_zero(n);
 
@@ -1719,11 +1715,6 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
   }
 
   return BC_STATUS_SUCCESS;
-}
-
-BcStatus bc_num_truncate(BcNum *n) {
-  if (!n) return BC_STATUS_INVALID_ARG;
-  return bc_num_trunc(n, n->rdx);
 }
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {

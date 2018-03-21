@@ -20,6 +20,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -730,7 +731,7 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
   flag_ptr = bc_vec_top(&parse->flags);
 
-  if (!flag_ptr) return BC_STATUS_PARSE_BUG;
+  assert(flag_ptr);
 
   if (brace) {
 
@@ -782,7 +783,7 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     ip = bc_vec_top(&parse->exit_labels);
 
-    if (!ip) return BC_STATUS_PARSE_BUG;
+    assert(ip);
 
     status = bc_vec_pushByte(code, BC_INST_JUMP);
 
@@ -790,7 +791,7 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     label = bc_vec_top(&parse->cond_labels);
 
-    if (!label) return BC_STATUS_PARSE_BUG;
+    assert(label);
 
     status = bc_parse_pushIndex(code, *label);
 
@@ -798,11 +799,11 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     func = bc_vec_item(&parse->program->funcs, parse->func);
 
-    if (!func) return BC_STATUS_PARSE_BUG;
+    assert(func);
 
     label = bc_vec_item(&func->labels, ip->idx);
 
-    if (!label) return BC_STATUS_PARSE_BUG;
+    assert(label);
 
     *label = code->len;
 
@@ -826,7 +827,7 @@ static BcStatus bc_parse_startBody(BcParse *parse, uint8_t flags) {
 
   flag_ptr = BC_PARSE_TOP_FLAG_PTR(parse);
 
-  if (!flag_ptr) return BC_STATUS_PARSE_BUG;
+  assert(flag_ptr);
 
   flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
   flags |= BC_PARSE_FLAG_BODY;
@@ -846,15 +847,15 @@ static BcStatus bc_parse_noElse(BcParse *parse, BcVec *code) {
 
   ip = bc_vec_top(&parse->exit_labels);
 
-  if (!ip || ip->func || ip->len) return BC_STATUS_PARSE_BUG;
+  assert(ip && !ip->func && !ip->len);
 
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
-  if (!func || code != &func->code) return BC_STATUS_PARSE_BUG;
+  assert(func && code == &func->code);
 
   label = bc_vec_item(&func->labels, ip->idx);
 
-  if (!label) return BC_STATUS_PARSE_BUG;
+  assert(label);
 
   *label = code->len;
 
@@ -926,7 +927,7 @@ static BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
 
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
-  if (!func) return BC_STATUS_PARSE_BUG;
+  assert(func);
 
   ip.idx = func->labels.len;
   ip.func = 0;
@@ -1063,7 +1064,7 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   func = bc_vec_item(&parse->program->funcs, parse->func);
 
-  if (!func) return BC_STATUS_PARSE_BUG;
+  assert(func);
 
   cond_idx = func->labels.len;
   update_idx = cond_idx + 1;
@@ -1185,7 +1186,7 @@ static BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code,
       --top;
     }
 
-    if (top >= parse->exit_labels.len || !ip) return BC_STATUS_PARSE_BUG;
+    assert(top < parse->exit_labels.len && ip);
 
     idx = ip->idx;
   }
@@ -1195,7 +1196,7 @@ static BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code,
 
     ptr = bc_vec_top(&parse->cond_labels);
 
-    if (!ptr) return BC_STATUS_PARSE_BUG;
+    assert(ptr);
 
     idx = *ptr;
   }
@@ -1242,16 +1243,13 @@ static BcStatus bc_parse_func(BcParse *parse) {
     goto err;
   }
 
-  if (parse->program->funcs.len != parse->program->func_map.vec.len) {
-    status = BC_STATUS_PARSE_MISMATCH_NUM_FUNCS;
-    goto err;
-  }
+  assert(parse->program->funcs.len == parse->program->func_map.vec.len);
 
   status = bc_program_addFunc(parse->program, name, &parse->func);
 
   if (status) goto err;
 
-  if (!parse->func) return BC_STATUS_PARSE_BUG;
+  assert(parse->func);
 
   fptr = bc_vec_item(&parse->program->funcs, parse->func);
 
@@ -1441,11 +1439,11 @@ static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
   uint8_t *flag_ptr;
   uint8_t flags;
 
-  if (parse->flags.len < 2) return BC_STATUS_PARSE_BUG;
+  assert(parse->flags.len >= 2);
 
   flag_ptr = bc_vec_top(&parse->flags);
 
-  if (!flag_ptr) return BC_STATUS_PARSE_BUG;
+  assert(flag_ptr);
 
   *flag_ptr &= ~(BC_PARSE_FLAG_BODY);
 
@@ -1456,7 +1454,9 @@ static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
     parse->auto_part = true;
     status = bc_lex_next(&parse->lex, &parse->token);
   }
-  else if (flags) {
+  else {
+
+    assert(flags);
 
     status = bc_parse_stmt(parse, code);
 
@@ -1467,7 +1467,6 @@ static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
       status = bc_parse_endBody(parse, code, false);
     }
   }
-  else status = BC_STATUS_PARSE_BUG;
 
   return status;
 }
@@ -1747,7 +1746,7 @@ BcStatus bc_parse_init(BcParse *parse, BcProgram *program) {
 
   BcStatus status;
 
-  if (!parse || !program) return BC_STATUS_INVALID_ARG;
+  assert(parse && program);
 
   status = bc_vec_init(&parse->flags, sizeof(uint8_t), NULL);
 
@@ -1793,23 +1792,9 @@ exit_label_err:
   return status;
 }
 
-BcStatus bc_parse_file(BcParse *parse, const char *file) {
-
-  if (parse == NULL || file == NULL) return BC_STATUS_INVALID_ARG;
-
-  return bc_lex_init(&parse->lex, file);
-}
-
 BcStatus bc_parse_text(BcParse *parse, const char *text) {
-
-  BcStatus status;
-
-  if (parse == NULL || text == NULL) return BC_STATUS_INVALID_ARG;
-
-  status = bc_lex_text(&parse->lex, text);
-
-  if (status) return status;
-
+  assert(parse && text);
+  bc_lex_text(&parse->lex, text);
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
@@ -1817,7 +1802,7 @@ BcStatus bc_parse_parse(BcParse *parse) {
 
   BcStatus status;
 
-  if (parse == NULL) return BC_STATUS_INVALID_ARG;
+  assert(parse);
 
   switch (parse->token.type) {
 

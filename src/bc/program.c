@@ -20,7 +20,7 @@
  *
  */
 
-#include <errno.h>
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,13 +50,13 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     BcInstPtr *ip = bc_vec_item_rev(&p->stack, ip_idx);
 
-    if (!ip) return BC_STATUS_EXEC_BAD_STACK;
+    assert(ip);
 
     if (ip->func == BC_PROGRAM_READ || ip->func == BC_PROGRAM_MAIN) continue;
 
     func = bc_vec_item(&p->funcs, ip->func);
 
-    if (!func) return BC_STATUS_EXEC_BAD_STACK;
+    assert(func);
 
     for (idx = 0; idx < func->autos.len; ++idx) {
       a = bc_vec_item(&func->autos, idx);
@@ -239,7 +239,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *result,
 
     default:
     {
-      status = BC_STATUS_EXEC_BAD_EXPR;
+      assert(false);
       break;
     }
   }
@@ -256,12 +256,13 @@ static BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left,
   BcResult *r;
   bool hex;
 
-  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 2)) return BC_STATUS_EXEC_BAD_EXPR;
+  assert(p && left && lval && right && rval &&
+         BC_PROGRAM_CHECK_EXPR_STACK(p, 2));
 
   r = bc_vec_item_rev(&p->expr_stack, 0);
   l = bc_vec_item_rev(&p->expr_stack, 1);
 
-  if (!r || !l) return BC_STATUS_EXEC_BAD_EXPR;
+  assert(r && l);
 
   status = bc_program_num(p, l, lval, false);
 
@@ -302,11 +303,11 @@ static BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result,
   BcStatus status;
   BcResult *r;
 
-  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, 1)) return BC_STATUS_EXEC_BAD_EXPR;
+  assert(p && result && val && BC_PROGRAM_CHECK_EXPR_STACK(p, 1));
 
   r = bc_vec_item_rev(&p->expr_stack, 0);
 
-  if (!r) return BC_STATUS_EXEC_BAD_EXPR;
+  assert(r);
 
   status = bc_program_num(p, r, val, false);
 
@@ -398,9 +399,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   if (status) goto io_err;
 
-  status = bc_parse_file(&parse, "<stdin>");
-
-  if (status) goto exec_err;
+  bc_lex_init(&parse.lex, "<stdin>");
 
   status = bc_parse_text(&parse, buffer);
 
@@ -518,10 +517,9 @@ static BcStatus bc_program_printName(uint8_t *code, size_t *start) {
     byte = code[(*start)++];
   }
 
-  if (byte) {
-    if (putchar(byte) == EOF) status = BC_STATUS_IO_ERR;
-  }
-  else status = BC_STATUS_PARSE_BUG;
+  assert(byte);
+
+  if (putchar(byte) == EOF) status = BC_STATUS_IO_ERR;
 
   return status;
 }
@@ -769,7 +767,8 @@ static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 
       default:
       {
-        return BC_STATUS_EXEC_BAD_EXPR;
+        assert(false);
+        break;
       }
     }
   }
@@ -861,7 +860,8 @@ static BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
 
     default:
     {
-      return BC_STATUS_EXEC_BAD_EXPR;
+      assert(false);
+      break;
     }
   }
 
@@ -922,7 +922,7 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
       default:
       {
-        status = BC_STATUS_EXEC_BAD_EXPR;
+        assert(false);
         break;
       }
     }
@@ -1082,20 +1082,19 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   BcInstPtr *ip;
   BcFunc *func;
 
-  if (!BC_PROGRAM_CHECK_STACK(p)) return BC_STATUS_EXEC_BAD_RETURN;
+  assert(BC_PROGRAM_CHECK_STACK(p));
 
   ip = bc_vec_top(&p->stack);
 
-  if (!ip) return BC_STATUS_EXEC_BAD_STACK;
+  assert(ip);
 
   req = ip->len + (inst == BC_INST_RETURN ? 1 : 0);
 
-  if (!BC_PROGRAM_CHECK_EXPR_STACK(p, req))
-    return BC_STATUS_EXEC_BAD_EXPR;
+  assert(BC_PROGRAM_CHECK_EXPR_STACK(p, req));
 
   func = bc_vec_item(&p->funcs, ip->func);
 
-  if (!func) return BC_STATUS_EXEC_BAD_STMT;
+  assert(func);
 
   result.type = BC_RESULT_INTERMEDIATE;
 
@@ -1105,7 +1104,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
     operand = bc_vec_top(&p->expr_stack);
 
-    if (!operand) return BC_STATUS_EXEC_BAD_EXPR;
+    assert(operand);
 
     status = bc_program_num(p, operand, &num, false);
 
@@ -1294,7 +1293,7 @@ BcStatus bc_program_init(BcProgram *p) {
   char *read_name;
   BcInstPtr ip;
 
-  if (!p) return BC_STATUS_INVALID_ARG;
+  assert(p);
 
   name = NULL;
 
@@ -1305,64 +1304,44 @@ BcStatus bc_program_init(BcProgram *p) {
 #elif defined(_BC_BASE_MAX)
   p->base_max = _BC_BASE_MAX;
 #else
-  errno = 0;
   p->base_max = sysconf(_SC_BC_BASE_MAX);
-
-  if (p->base_max == -1) {
-    if (errno) return BC_STATUS_NO_LIMIT;
-    p->base_max = BC_BASE_MAX_DEF;
-  }
-  else if (p->base_max > BC_BASE_MAX_DEF) return BC_STATUS_BAD_LIMIT;
-  else p->base_max = BC_BASE_MAX_DEF;
 #endif
+
+  assert(p->base_max <= BC_BASE_MAX_DEF);
+  p->base_max = BC_BASE_MAX_DEF;
 
 #ifdef _POSIX_BC_DIM_MAX
   p->dim_max = _POSIX_BC_DIM_MAX;
 #elif defined(_BC_DIM_MAX)
   p->dim_max = _BC_DIM_MAX;
 #else
-  errno = 0;
   p->dim_max = sysconf(_SC_BC_DIM_MAX);
-
-  if (p->dim_max == -1) {
-    if (errno) return BC_STATUS_NO_LIMIT;
-    p->dim_max = BC_DIM_MAX_DEF;
-  }
-  else if (p->dim_max > BC_DIM_MAX_DEF) return BC_STATUS_BAD_LIMIT;
-  else p->dim_max = BC_DIM_MAX_DEF;
 #endif
+
+  assert(p->dim_max <= BC_DIM_MAX_DEF);
+  p->dim_max = BC_DIM_MAX_DEF;
 
 #ifdef _POSIX_BC_SCALE_MAX
   p->scale_max = _POSIX_BC_SCALE_MAX;
 #elif defined(_BC_SCALE_MAX)
   p->scale_max = _BC_SCALE_MAX;
 #else
-  errno = 0;
   p->scale_max = sysconf(_SC_BC_SCALE_MAX);
-
-  if (p->scale_max == -1) {
-    if (errno) return BC_STATUS_NO_LIMIT;
-    p->scale_max = BC_SCALE_MAX_DEF;
-  }
-  else if (p->scale_max > BC_SCALE_MAX_DEF) return BC_STATUS_BAD_LIMIT;
-  else p->scale_max = BC_SCALE_MAX_DEF;
 #endif
+
+  assert(p->scale_max <= BC_SCALE_MAX_DEF);
+  p->scale_max = BC_SCALE_MAX_DEF;
 
 #ifdef _POSIX_BC_STRING_MAX
   p->string_max = _POSIX_BC_STRING_MAX;
 #elif defined(_BC_STRING_MAX)
   p->string_max = _BC_STRING_MAX;
 #else
-  errno = 0;
   p->string_max = sysconf(_SC_BC_STRING_MAX);
-
-  if (p->string_max == -1) {
-    if (errno) return BC_STATUS_NO_LIMIT;
-    p->string_max = BC_STRING_MAX_DEF;
-  }
-  else if (p->string_max > BC_STRING_MAX_DEF) return BC_STATUS_BAD_LIMIT;
-  else p->string_max = BC_STRING_MAX_DEF;
 #endif
+
+  assert(p->string_max <= BC_STRING_MAX_DEF);
+  p->string_max = BC_STRING_MAX_DEF;
 
   p->scale = 0;
 
@@ -1583,7 +1562,7 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
   BcEntry *entry_ptr;
   BcFunc f;
 
-  if (!p || !name || !idx) return BC_STATUS_INVALID_ARG;
+  assert(p && name && idx);
 
   entry.name = name;
   entry.idx = p->funcs.len;
@@ -1639,11 +1618,11 @@ BcStatus bc_program_exec(BcProgram *p) {
 
   ip = bc_vec_top(&p->stack);
 
-  if (!ip) return BC_STATUS_EXEC_BAD_STACK;
+  assert(ip);
 
   func = bc_vec_item(&p->funcs, ip->func);
 
-  if (!func) return BC_STATUS_EXEC_BAD_STACK;
+  assert(func);
 
   status = BC_STATUS_SUCCESS;
 
@@ -1702,7 +1681,7 @@ BcStatus bc_program_exec(BcProgram *p) {
         idx = bc_program_index(code, &ip->idx);
         addr = bc_vec_item(&func->labels, idx);
 
-        if (!addr) return BC_STATUS_EXEC_BAD_LABEL;
+        assert(addr);
 
         if (inst == BC_INST_JUMP ||
             (inst == BC_INST_JUMP_ZERO && cond) ||
@@ -1929,7 +1908,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       default:
       {
-        status = BC_STATUS_EXEC_BAD_STMT;
+        assert(false);
         break;
       }
     }
@@ -1940,11 +1919,11 @@ BcStatus bc_program_exec(BcProgram *p) {
     // stack changes, pointers may end up being invalid.
     ip = bc_vec_top(&p->stack);
 
-    if (!ip) return BC_STATUS_EXEC_BAD_STACK;
+    assert(ip);
 
     func = bc_vec_item(&p->funcs, ip->func);
 
-    if (!func) return BC_STATUS_EXEC_BAD_STACK;
+    assert(func);
 
     code = func->code.array;
   }
@@ -1970,7 +1949,7 @@ BcStatus bc_program_print(BcProgram *p) {
 
     func = bc_vec_item(&p->funcs, ip.func);
 
-    if (!func) return BC_STATUS_EXEC_BAD_STACK;
+    assert(func);
 
     code = func->code.array;
 

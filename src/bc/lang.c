@@ -33,7 +33,7 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var) {
   size_t i;
   BcAuto *ptr;
 
-  if (!func || !name) return BC_STATUS_INVALID_ARG;
+  assert(func && name);
 
   for (i = 0; i < func->autos.len; ++i) {
     ptr = bc_vec_item(&func->autos, i);
@@ -54,7 +54,7 @@ BcStatus bc_func_init(BcFunc *func) {
 
   BcStatus status;
 
-  if (!func) return BC_STATUS_INVALID_ARG;
+  assert(func);
 
   status = bc_vec_init(&func->code, sizeof(uint8_t), NULL);
 
@@ -109,8 +109,7 @@ BcStatus bc_array_copy(void *dest, void *src) {
   d = (BcVec*) dest;
   s = (BcVec*) src;
 
-  if (!d || !s || d == s || d->size != s->size || d->dtor != s->dtor)
-    return BC_STATUS_INVALID_ARG;
+  assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
   status = bc_vec_npop(d, d->len);
 

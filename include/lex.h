@@ -146,9 +146,9 @@ typedef struct BcLexKeyword {
 #define KW_TABLE_ENTRY(a, b, c) { .name = a, .len = b, .posix = c }
 
 // ** Exclude start. **
-BcStatus bc_lex_init(BcLex *lex, const char *file);
+void bc_lex_init(BcLex *lex, const char *file);
 
-BcStatus bc_lex_text(BcLex *lex, const char *text);
+void bc_lex_text(BcLex *lex, const char *text);
 
 BcStatus bc_lex_next(BcLex *lex, BcLexToken *token);
 
