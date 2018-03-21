@@ -1149,7 +1149,17 @@ static unsigned long bc_program_scale(BcNum *n) {
 }
 
 static unsigned long bc_program_length(BcNum *n) {
-  return (unsigned long) n->len;
+
+  size_t i;
+  unsigned long len;
+
+  len = n->len;
+
+  if (n->rdx == n->len) {
+    for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
+  }
+
+  return len;
 }
 
 static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
