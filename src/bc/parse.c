@@ -30,6 +30,7 @@
 #include <lex.h>
 #include <parse.h>
 #include <instructions.h>
+#include <bc.h>
 
 static BcStatus bc_parse_else(BcParse *parse, BcVec *code);
 static BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code);

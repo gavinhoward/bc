@@ -24,8 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <bc.h>
+#include <status.h>
 #include <vector.h>
+#include <bc.h>
 
 static BcStatus bc_vec_double(BcVec *vec) {
 

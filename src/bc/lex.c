@@ -27,8 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <bc.h>
+#include <status.h>
 #include <lex.h>
+#include <bc.h>
 
 static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 

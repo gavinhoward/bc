@@ -32,6 +32,7 @@
 #include <program.h>
 #include <parse.h>
 #include <instructions.h>
+#include <bc.h>
 
 static BcStatus bc_program_search(BcProgram *p, BcResult *result,
                                   BcNum **ret, uint8_t flags)

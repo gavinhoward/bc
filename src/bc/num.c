@@ -28,9 +28,10 @@
 
 #include <limits.h>
 
-#include <bc.h>
+#include <status.h>
 #include <num.h>
 #include <vector.h>
+#include <bc.h>
 
 static BcStatus bc_num_subArrays(BcDigit *n1, BcDigit *n2,
                                  size_t len, size_t extra)

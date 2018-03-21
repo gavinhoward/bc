@@ -20,6 +20,7 @@
  *
  */
 
+#include <status.h>
 #include <instructions.h>
 #include <lex.h>
 #include <parse.h>

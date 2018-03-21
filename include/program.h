@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <bc.h>
+#include <status.h>
 #include <lang.h>
 
 #define BC_PROGRAM_BUF_SIZE (1024)

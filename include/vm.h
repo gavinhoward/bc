@@ -23,7 +23,7 @@
 #ifndef BC_VM_H
 #define BC_VM_H
 
-#include <bc.h>
+#include <status.h>
 #include <program.h>
 #include <parse.h>
 
