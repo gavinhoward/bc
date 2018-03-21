@@ -135,9 +135,6 @@ typedef enum BcStatus {
 
 } BcStatus;
 
-typedef void (*BcFreeFunc)(void*);
-typedef BcStatus (*BcCopyFunc)(void*, void*);
-
 // ** Exclude start. **
 typedef struct BcGlobals {
 
