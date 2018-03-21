@@ -50,11 +50,11 @@ minrelease: clean $(BC_EXEC)
 $(GEN):
 	$(CC) $(CFLAGS) -o $(GEN_LIB) src/lib/$(GEN_LIB).c
 
-bc_mathlib: $(GEN)
+mathlib: $(GEN)
 	./$(GEN) $(BC_LIB) $(BC_C_LIB)
 	$(CC) $(CFLAGS) -c $(BC_C_LIB) -o $(BC_LIB_O)
 
-$(BC_OBJ): bc_mathlib
+$(BC_OBJ): mathlib
 
 $(BC_EXEC): $(BC_OBJ) $(BC_MAIN_OBJ)
 	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_MAIN_OBJ) $(BC_OBJ) $(LDLIBS)
