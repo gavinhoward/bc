@@ -47,7 +47,7 @@ long bc_io_frag(char *buf, long len, int term, FILE *fp) {
   return i;
 }
 
-BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
+BcStatus bc_io_fgetline(char** p, size_t *n, FILE *fp) {
 
   size_t mlen, slen, dlen, len;
   char *s;
@@ -99,12 +99,13 @@ BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
   return BC_STATUS_IO_ERR;
 }
 
-BcStatus bc_io_fread(const char *path, char** buf) {
+BcStatus bc_io_fread(const char *path, char **buf) {
 
   BcStatus status;
-  FILE* f;
-  size_t size;
-  size_t read;
+  FILE *f;
+  size_t size, read;
+
+  assert(path && buf);
 
   f = fopen(path, "r");
 

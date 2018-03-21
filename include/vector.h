@@ -31,7 +31,6 @@
 #define BC_VEC_INITIAL_CAP (32)
 
 typedef void (*BcVecFreeFunc)(void*);
-typedef BcStatus (*BcVecCopyFunc)(void*, void*);
 typedef int (*BcVecCmpFunc)(void*, void*);
 
 typedef struct BcVec {

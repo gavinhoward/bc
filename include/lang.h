@@ -29,10 +29,6 @@
 #include <vector.h>
 #include <num.h>
 
-#define BC_PROGRAM_MAX_STMTS (128)
-
-#define BC_PROGRAM_DEF_SIZE (16)
-
 typedef enum BcExprType {
 
   BC_EXPR_INC_PRE,
@@ -161,15 +157,13 @@ typedef struct BcInstPtr {
 
 } BcInstPtr;
 
-typedef BcStatus (*BcDataInitFunc)(void*);
-
 // ** Exclude start. **
 BcStatus bc_func_init(BcFunc *func);
 BcStatus bc_func_insert(BcFunc *func, char *name, bool var);
 void bc_func_free(void *func);
 
 BcStatus bc_array_init(void *array);
-BcStatus bc_array_copy(void *dest, void *src);
+BcStatus bc_array_copy(BcVec *d, BcVec *s);
 BcStatus bc_array_zero(BcVec *a);
 BcStatus bc_array_expand(BcVec *a, size_t len);
 

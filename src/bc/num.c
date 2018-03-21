@@ -1086,7 +1086,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   end = n->rdx - 1;
 
   for (i = 0; i < n->rdx; ++i) {
-    n->num[i] = BC_NUM_FROM_CHAR(ptr[end - i]);
+    n->num[i] = ptr[end - i] - '0';
     n->len += 1;
   }
 
@@ -1096,7 +1096,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   end = radix - 1;
 
   for (i = 0; i < radix; ++i) {
-    num[i] = BC_NUM_FROM_CHAR(val[end - i]);
+    num[i] = val[end - i] - '0';
     ++n->len;
   }
 

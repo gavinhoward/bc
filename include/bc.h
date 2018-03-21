@@ -31,12 +31,12 @@
 #include <parse.h>
 #include <program.h>
 
-#define BC_FLAG_WARN (1<<0)
-#define BC_FLAG_STANDARD (1<<1)
-#define BC_FLAG_QUIET (1<<2)
-#define BC_FLAG_MATHLIB (1<<3)
-#define BC_FLAG_INTERACTIVE (1<<4)
-#define BC_FLAG_CODE (1<<5)
+#define BC_FLAG_W (1<<0)
+#define BC_FLAG_S (1<<1)
+#define BC_FLAG_Q (1<<2)
+#define BC_FLAG_L (1<<3)
+#define BC_FLAG_I (1<<4)
+#define BC_FLAG_C (1<<5)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 
