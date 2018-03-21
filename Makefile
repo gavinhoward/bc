@@ -41,10 +41,10 @@ PREFIX ?= /usr/local
 all: CFLAGS += -g -O0
 all: $(BC_EXEC)
 
-release: CFLAGS += -O3
+release: CFLAGS += -O3 -DNDEBUG
 release: clean $(BC_EXEC)
 
-minrelease: CFLAGS += -Os
+minrelease: CFLAGS += -Os -DNDEBUG
 minrelease: clean $(BC_EXEC)
 
 $(GEN):
