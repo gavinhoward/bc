@@ -41,7 +41,7 @@ static BcStatus bc_vec_double(BcVec *vec) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_init(BcVec *vec, size_t esize, BcFreeFunc dtor) {
+BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFreeFunc dtor) {
 
   if (!vec || !esize) return BC_STATUS_INVALID_ARG;
 
@@ -175,7 +175,7 @@ void bc_vec_free(void *vec) {
 
   BcVec *s;
   size_t esize, len, i;
-  BcFreeFunc sfree;
+  BcVecFreeFunc sfree;
   uint8_t *array;
 
   s = (BcVec*) vec;
@@ -233,7 +233,7 @@ static size_t bc_veco_find(const BcVecO* vec, void *data) {
 }
 
 BcStatus bc_veco_init(BcVecO* vec, size_t esize,
-                      BcFreeFunc dtor, BcVecCmpFunc cmp)
+                      BcVecFreeFunc dtor, BcVecCmpFunc cmp)
 {
   if (!vec || !esize || !cmp) return BC_STATUS_INVALID_ARG;
   vec->cmp = cmp;
