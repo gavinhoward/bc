@@ -68,6 +68,8 @@ typedef struct BcGlobals {
 
   long bc_sig;
 
+  Bc bc;
+
 } BcGlobals;
 
 BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]);
