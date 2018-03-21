@@ -394,7 +394,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   size = BC_PROGRAM_BUF_SIZE;
 
-  status = bc_io_getline(&buffer, &size);
+  status = bc_io_fgetline(&buffer, &size, stdin);
 
   if (status) goto io_err;
 

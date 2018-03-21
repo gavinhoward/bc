@@ -51,26 +51,6 @@ static int bc_io_xfgetc(void *ctx) {
   return fgetc((FILE *) ctx);
 }
 
-long bc_io_fgets(char * buf, int n, FILE* fp) {
-
-  long len;
-
-  if (!buf) return -1;
-
-  if (n == 1) {
-    buf[0] = '\0';
-    return 0;
-  }
-
-  if (n < 1 || !fp) return -1;
-
-  len = bc_io_frag(buf, n - 1, (int) '\n', bc_io_xfgetc, fp);
-
-  if (len >= 0) buf[len] = '\0';
-
-  return len;
-}
-
 BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
 
   size_t mlen, slen, dlen, len;

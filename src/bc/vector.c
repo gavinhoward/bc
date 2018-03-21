@@ -279,11 +279,3 @@ size_t bc_veco_index(const BcVecO* vec, void *data) {
 
   return idx;
 }
-
-void* bc_veco_item(const BcVecO* vec, size_t idx) {
-  return bc_vec_item(&vec->vec, idx);
-}
-
-void bc_veco_free(BcVecO* vec) {
-  bc_vec_free(&vec->vec);
-}

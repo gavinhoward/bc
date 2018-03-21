@@ -282,7 +282,7 @@ static BcStatus bc_stdin(Bc *bc) {
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
   while ((!st || st != BC_STATUS_QUIT) &&
-         !(st = bc_io_getline(&buf, &bufn)))
+         !(st = bc_io_fgetline(&buf, &bufn, stdin)))
   {
     size_t len, i;
 
