@@ -47,6 +47,9 @@ release: clean $(BC_EXEC)
 minrelease: CFLAGS += -Os -DNDEBUG
 minrelease: clean $(BC_EXEC)
 
+reldebug: CLAGS += -O1 -g
+reldebug: clean $(BC_EXEC)
+
 $(GEN):
 	$(CC) $(CFLAGS) -o $(GEN_LIB) src/lib/$(GEN_LIB).c
 
