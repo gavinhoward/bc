@@ -32,23 +32,23 @@
 #include <num.h>
 #include <vector.h>
 
-static BcStatus bc_num_subArrays(BcDigit *array1, BcDigit *array2,
+static BcStatus bc_num_subArrays(BcDigit *n1, BcDigit *n2,
                                  size_t len, size_t extra)
 {
   size_t i, j;
 
   for (i = 0; i < len; ++i) {
 
-    array1[i] -= array2[i];
+    n1[i] -= n2[i];
 
-    for (j = 0; array1[i + j] < 0;) {
+    for (j = 0; n1[i + j] < 0;) {
 
-      array1[i + j] += 10;
+      n1[i + j] += 10;
       ++j;
 
       if (j >= len + extra) return BC_STATUS_MATH_OVERFLOW;
 
-      array1[i + j] -= 1;
+      n1[i + j] -= 1;
     }
   }
 
