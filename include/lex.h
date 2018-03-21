@@ -26,7 +26,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <bc.h>
+#include <status.h>
 
 #define BC_LEX_GEN_ENUM(ENUM) ENUM,
 #define BC_LEX_GEN_STR(STRING) #STRING,

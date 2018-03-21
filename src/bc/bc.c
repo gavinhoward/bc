@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <limits.h>
 
+#include <status.h>
 #include <bc.h>
 #include <vm.h>
 

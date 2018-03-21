@@ -28,9 +28,10 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <bc.h>
+#include <status.h>
 #include <io.h>
 #include <vm.h>
+#include <bc.h>
 
 static void bc_vm_sigint(int sig) {
 

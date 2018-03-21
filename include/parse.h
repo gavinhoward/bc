@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <status.h>
 #include <vector.h>
 #include <program.h>
 #include <lex.h>

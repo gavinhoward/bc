@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <bc.h>
+#include <status.h>
 
 typedef signed char BcDigit;
 

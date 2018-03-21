@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <bc.h>
+#include <status.h>
 #include <io.h>
 
 long bc_io_frag(char *buf, long len, int term, BcIoGetc bc_getc, void *ctx) {

@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include <bc.h>
+#include <status.h>
 
 #define BC_VEC_INITIAL_CAP (32)
 
