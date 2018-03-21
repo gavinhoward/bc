@@ -38,7 +38,6 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
                                   BcNum **ret, uint8_t flags)
 {
   BcStatus status;
-  BcFunc *func;
   BcEntry entry;
   BcVec *vec;
   BcVecO *veco;
@@ -48,7 +47,10 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
   for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
 
-    BcInstPtr *ip = bc_vec_item_rev(&p->stack, ip_idx);
+    BcFunc *func;
+    BcInstPtr *ip;
+
+    ip = bc_vec_item_rev(&p->stack, ip_idx);
 
     assert(ip);
 
@@ -906,11 +908,8 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
       case BC_INST_OP_ASSIGN_PLUS:
       case BC_INST_OP_ASSIGN_MINUS:
       {
-        BcNumBinaryFunc op;
-
-        op = bc_program_assignOp(inst);
+        BcNumBinaryFunc op = bc_program_assignOp(inst);
         status = op(lval, rval, lval, p->scale);
-
         break;
       }
 
