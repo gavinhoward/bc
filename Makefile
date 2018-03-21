@@ -41,6 +41,26 @@ PREFIX ?= /usr/local
 all: CFLAGS += -g -O0
 all: $(BC_EXEC)
 
+help:
+	@echo "available targets:"
+	@echo ""
+	@echo "    all         build a debug executable"
+	@echo "    release     build a release executable"
+	@echo "    minrelease  build a min size executable"
+	@echo "    reldebug    build a release executable with debug info"
+	@echo "    mathlib     create the library C source file"
+	@echo "    clean       remove all build files"
+	@echo "    install     install to $(PREFIX)/bin"
+	@echo "    replace     move the currently installed $(BC_EXEC) and install to $(PREFIX)/bin"
+	@echo "    uninstall   uninstall from $(PREFIX)/bin"
+	@echo ""
+	@echo "useful environment variables:"
+	@echo ""
+	@echo "CC      C compiler"
+	@echo "CFLAGS  C compiler flags"
+	@echo "PREFIX  the prefix to install to"
+	@echo "        if PREFIX is \"/usr\", $(BC_EXEC) will be installed to \"/usr/bin\""
+
 release: CFLAGS += -O3 -DNDEBUG
 release: clean $(BC_EXEC)
 
