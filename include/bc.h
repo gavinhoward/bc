@@ -28,6 +28,8 @@
 #include <limits.h>
 
 #include <status.h>
+#include <parse.h>
+#include <program.h>
 
 #define BC_FLAG_WARN (1<<0)
 #define BC_FLAG_STANDARD (1<<1)
@@ -47,6 +49,8 @@
 #define BC_SCALE_MAX_DEF (LONG_MAX)
 #define BC_STRING_MAX_DEF (INT_MAX)
 
+#define BC_BUF_SIZE (1024)
+
 // ** Exclude start. **
 typedef struct BcGlobals {
 
@@ -57,6 +61,14 @@ typedef struct BcGlobals {
   long bc_sig;
 
 } BcGlobals;
+
+typedef struct Bc {
+
+  BcParse parse;
+  BcProgram prog;
+  BcProgramExecFunc exec;
+
+} Bc;
 
 BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]);
 // ** Exclude end. **
