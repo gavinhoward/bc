@@ -45,7 +45,7 @@ static void bc_vm_sigint(int sig) {
   if (sig == SIGINT) {
     err = write(STDERR_FILENO, bc_program_sigint_msg,
                 strlen(bc_program_sigint_msg));
-    if (err >= 0) bcg.bc_signal = 1;
+    if (err >= 0) bcg.bc_sig = 1;
   }
 }
 
@@ -55,7 +55,7 @@ static BcStatus bc_vm_signal(BcVm *vm) {
   BcFunc *func;
   BcInstPtr *ip;
 
-  bcg.bc_signal = 0;
+  bcg.bc_sig = 0;
 
   status = bc_vec_npop(&vm->program.stack, vm->program.stack.len - 1);
 
@@ -96,7 +96,7 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
       if (status) return status;
     }
 
-    if (bcg.bc_signal && (!bcg.bc_interactive || (status = bc_vm_signal(vm)))) {
+    if (bcg.bc_sig && (!bcg.bc_interactive || (status = bc_vm_signal(vm)))) {
       if ((status = bc_error(status))) return status;
     }
 
@@ -143,7 +143,7 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
       if (status && (status = bc_error(status))) return status;
 
-      if (bcg.bc_signal) {
+      if (bcg.bc_sig) {
 
         status = bc_vm_signal(vm);
 
@@ -155,7 +155,7 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
       if (status && (status = bc_error(status))) return status;
 
-      if (bcg.bc_signal && (status = bc_vm_signal(vm)))
+      if (bcg.bc_sig && (status = bc_vm_signal(vm)))
         status = bc_error(status);
     }
   }

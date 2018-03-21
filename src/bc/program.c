@@ -1649,7 +1649,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   code = func->code.array;
   cond = false;
 
-  while (!bcg.bc_signal && ip->idx < func->code.len) {
+  while (!bcg.bc_sig && ip->idx < func->code.len) {
 
     uint8_t inst;
 

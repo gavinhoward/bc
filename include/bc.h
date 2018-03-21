@@ -145,7 +145,7 @@ typedef struct BcGlobals {
   long bc_std;
   long bc_warn;
 
-  long bc_signal;
+  long bc_sig;
 
 } BcGlobals;
 
