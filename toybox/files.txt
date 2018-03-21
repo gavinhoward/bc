@@ -1,4 +1,4 @@
-include/bc.h
+include/status.h
 include/vector.h
 include/num.h
 include/lang.h
@@ -7,7 +7,7 @@ include/io.h
 include/lex.h
 include/program.h
 include/parse.h
-include/vm.h
+include/bc.h
 src/bc/data.c
 src/bc/lib.c
 src/bc/vector.c
@@ -17,4 +17,3 @@ src/bc/io.c
 src/bc/lex.c
 src/bc/parse.c
 src/bc/program.c
-src/bc/vm.c

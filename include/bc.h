@@ -51,6 +51,14 @@
 
 #define BC_BUF_SIZE (1024)
 
+typedef struct Bc {
+
+  BcParse parse;
+  BcProgram prog;
+  BcProgramExecFunc exec;
+
+} Bc;
+
 // ** Exclude start. **
 typedef struct BcGlobals {
 
@@ -61,14 +69,6 @@ typedef struct BcGlobals {
   long bc_sig;
 
 } BcGlobals;
-
-typedef struct Bc {
-
-  BcParse parse;
-  BcProgram prog;
-  BcProgramExecFunc exec;
-
-} Bc;
 
 BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]);
 // ** Exclude end. **

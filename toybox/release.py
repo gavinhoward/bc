@@ -78,7 +78,10 @@ bc_c_replacements = [
 	[ 'filec', 'toys.optc' ],
 	[ 'filev', 'toys.optargs' ],
 	[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
-	[ '^  bc_vm_free\(&vm\);\n\n  return status;', '  if (CFG_TOYBOX_FREE) bc_vm_free(&vm);' ],
+	[ '^  bc_parse_free\(&bc\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&bc.parse);' ],
+	[ '^  bc_program_free\(&bc\.prog\);\n\n  return status;', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
+	[ 'return status == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : status;',
+	  '{\n    toys.exitval = toys.exitval == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : toys.exitval\n    return;\n  }' ],
 	[ 'return status;', 'return;' ],
 	[ 'status', 'toys.exitval' ],
 ]
