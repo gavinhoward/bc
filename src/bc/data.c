@@ -32,20 +32,17 @@ const char *bc_header =
   "This is free software with ABSOLUTELY NO WARRANTY.\n\n";
 
 const char *bc_err_types[] = {
-
   "bc",
   "Lex",
   "Parse",
   "Math",
   "Runtime",
   "POSIX",
-
 };
 
 const uint8_t bc_err_type_indices[] = {
 
   BC_ERR_IDX_BC,
-
   BC_ERR_IDX_BC,
   BC_ERR_IDX_BC,
 

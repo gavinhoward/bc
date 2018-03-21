@@ -72,7 +72,7 @@ static BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
         if (!a->var != !cond) return BC_STATUS_EXEC_BAD_TYPE;
 
-        r = bc_vec_item(&p->expr_stack, ip->len + idx);
+        r = bc_vec_item(&p->results, ip->len + idx);
 
         if (!r) return cond ? BC_STATUS_EXEC_UNDEFINED_VAR :
                               BC_STATUS_EXEC_UNDEFINED_ARRAY;
@@ -260,10 +260,10 @@ static BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left,
   bool hex;
 
   assert(p && left && lval && right && rval &&
-         BC_PROGRAM_CHECK_EXPR_STACK(p, 2));
+         BC_PROGRAM_CHECK_RESULTS(p, 2));
 
-  r = bc_vec_item_rev(&p->expr_stack, 0);
-  l = bc_vec_item_rev(&p->expr_stack, 1);
+  r = bc_vec_item_rev(&p->results, 0);
+  l = bc_vec_item_rev(&p->results, 1);
 
   assert(r && l);
 
@@ -289,15 +289,15 @@ static BcStatus bc_program_binaryOpRetire(BcProgram *p, BcResult *result,
 
   result->type = type;
 
-  status = bc_vec_pop(&p->expr_stack);
+  status = bc_vec_pop(&p->results);
 
   if (status) return status;
 
-  status = bc_vec_pop(&p->expr_stack);
+  status = bc_vec_pop(&p->results);
 
   if (status) return status;
 
-  return bc_vec_push(&p->expr_stack, result);
+  return bc_vec_push(&p->results, result);
 }
 
 static BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result,
@@ -306,9 +306,9 @@ static BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result,
   BcStatus status;
   BcResult *r;
 
-  assert(p && result && val && BC_PROGRAM_CHECK_EXPR_STACK(p, 1));
+  assert(p && result && val && BC_PROGRAM_CHECK_RESULTS(p, 1));
 
-  r = bc_vec_item_rev(&p->expr_stack, 0);
+  r = bc_vec_item_rev(&p->results, 0);
 
   assert(r);
 
@@ -328,11 +328,11 @@ static BcStatus bc_program_unaryOpRetire(BcProgram *p, BcResult *result,
 
   result->type = type;
 
-  status = bc_vec_pop(&p->expr_stack);
+  status = bc_vec_pop(&p->results);
 
   if (status) return status;
 
-  return bc_vec_push(&p->expr_stack, result);
+  return bc_vec_push(&p->results, result);
 }
 
 static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
@@ -417,7 +417,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   ip.func = BC_PROGRAM_READ;
   ip.idx = 0;
-  ip.len = p->expr_stack.len;
+  ip.len = p->results.len;
 
   status = bc_vec_push(&p->stack, &ip);
 
@@ -632,7 +632,7 @@ static BcStatus bc_program_push(BcProgram *p, uint8_t *code,
 
   if (var) {
     result.type = BC_RESULT_VAR;
-    status = bc_vec_push(&p->expr_stack, &result);
+    status = bc_vec_push(&p->results, &result);
   }
   else {
 
@@ -988,7 +988,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
   nparams = bc_program_index(code, idx);
 
   ip.idx = 0;
-  ip.len = p->expr_stack.len;
+  ip.len = p->results.len;
 
   ip.func = bc_program_index(code, idx);
 
@@ -1003,7 +1003,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
   for (i = 0; i < nparams; ++i) {
 
     auto_ptr = bc_vec_item(&func->autos, i);
-    arg = bc_vec_item_rev(&p->expr_stack, nparams - 1);
+    arg = bc_vec_item_rev(&p->results, nparams - 1);
 
     if (!auto_ptr || !arg) return BC_STATUS_EXEC_UNDEFINED_VAR;
 
@@ -1044,7 +1044,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
     if (status) goto err;
 
-    status = bc_vec_push(&p->expr_stack, &param);
+    status = bc_vec_push(&p->results, &param);
 
     if (status) goto err;
   }
@@ -1062,7 +1062,7 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
     if (status) return status;
 
-    status = bc_vec_push(&p->expr_stack, &param);
+    status = bc_vec_push(&p->results, &param);
 
     if (status) goto err;
   }
@@ -1090,7 +1090,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
   assert(ip);
 
-  assert(BC_PROGRAM_CHECK_EXPR_STACK(p, ip->len + inst == BC_INST_RETURN));
+  assert(BC_PROGRAM_CHECK_RESULTS(p, ip->len + inst == BC_INST_RETURN));
 
   func = bc_vec_item(&p->funcs, ip->func);
 
@@ -1102,7 +1102,7 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
     BcNum *num;
 
-    operand = bc_vec_top(&p->expr_stack);
+    operand = bc_vec_top(&p->results);
 
     assert(operand);
 
@@ -1128,10 +1128,10 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   }
 
   // We need to pop arguments as well, so this takes that into account.
-  status = bc_vec_npop(&p->expr_stack, p->expr_stack.len - (ip->len - func->num_params));
+  status = bc_vec_npop(&p->results, p->results.len - (ip->len - func->num_params));
   if (status) goto err;
 
-  status = bc_vec_push(&p->expr_stack, &result);
+  status = bc_vec_push(&p->results, &result);
 
   if (status) goto err;
 
@@ -1219,7 +1219,7 @@ static BcStatus bc_program_pushScale(BcProgram *p) {
 
   if (status) goto err;
 
-  status = bc_vec_push(&p->expr_stack, &result);
+  status = bc_vec_push(&p->results, &result);
 
   if (status) goto err;
 
@@ -1256,7 +1256,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 
   result.type = BC_RESULT_ONE;
 
-  status = bc_vec_push(&p->expr_stack, &result);
+  status = bc_vec_push(&p->results, &result);
 
   if (status) goto err;
 
@@ -1266,11 +1266,11 @@ static BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 
   if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP) {
 
-    status = bc_vec_pop(&p->expr_stack);
+    status = bc_vec_pop(&p->results);
 
     if (status) goto err;
 
-    status = bc_vec_push(&p->expr_stack, &copy);
+    status = bc_vec_push(&p->results, &copy);
 
     if (status) goto err;
   }
@@ -1448,7 +1448,7 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if (s) goto const_err;
 
-  s = bc_vec_init(&p->expr_stack, sizeof(BcResult), bc_result_free);
+  s = bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
 
   if (s) goto expr_err;
 
@@ -1472,7 +1472,7 @@ push_err:
 
 stack_err:
 
-  bc_vec_free(&p->expr_stack);
+  bc_vec_free(&p->results);
 
 expr_err:
 
@@ -1668,7 +1668,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         cond = bc_num_cmp(num, &p->zero, NULL) == 0;
 
-        status = bc_vec_pop(&p->expr_stack);
+        status = bc_vec_pop(&p->results);
 
         if (status) return status;
       }
@@ -1703,7 +1703,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_PUSH_LAST:
       {
         result.type = BC_RESULT_LAST;
-        status = bc_vec_push(&p->expr_stack, &result);
+        status = bc_vec_push(&p->results, &result);
         break;
       }
 
@@ -1716,14 +1716,14 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_PUSH_IBASE:
       {
         result.type = BC_RESULT_IBASE;
-        status = bc_vec_push(&p->expr_stack, &result);
+        status = bc_vec_push(&p->results, &result);
         break;
       }
 
       case BC_INST_PUSH_OBASE:
       {
         result.type = BC_RESULT_OBASE;
-        status = bc_vec_push(&p->expr_stack, &result);
+        status = bc_vec_push(&p->results, &result);
         break;
       }
 
@@ -1742,14 +1742,14 @@ BcStatus bc_program_exec(BcProgram *p) {
         result.type = BC_RESULT_CONSTANT;
         result.data.id.idx = bc_program_index(code, &ip->idx);
 
-        status = bc_vec_push(&p->expr_stack, &result);
+        status = bc_vec_push(&p->results, &result);
 
         break;
       }
 
       case BC_INST_POP:
       {
-        status = bc_vec_pop(&p->expr_stack);
+        status = bc_vec_pop(&p->results);
         break;
       }
 
@@ -1787,7 +1787,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if (status) return status;
 
-        status = bc_vec_pop(&p->expr_stack);
+        status = bc_vec_pop(&p->results);
 
         break;
       }
@@ -2033,7 +2033,7 @@ void bc_program_free(BcProgram *p) {
   bc_vec_free(&p->strings);
   bc_vec_free(&p->constants);
 
-  bc_vec_free(&p->expr_stack);
+  bc_vec_free(&p->results);
   bc_vec_free(&p->stack);
 
   bc_num_free(&p->last);

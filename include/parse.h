@@ -31,11 +31,9 @@
 #include <program.h>
 #include <lex.h>
 
-#define BC_PARSE_TOP_FLAG_PTR(parse)  \
-  ((uint8_t*) bc_vec_top(&(parse)->flags))
+#define BC_PARSE_TOP_FLAG_PTR(parse)  ((uint8_t*) bc_vec_top(&(parse)->flags))
 
-#define BC_PARSE_TOP_FLAG(parse)  \
-  (*(BC_PARSE_TOP_FLAG_PTR(parse)))
+#define BC_PARSE_TOP_FLAG(parse)  (*(BC_PARSE_TOP_FLAG_PTR(parse)))
 
 #define BC_PARSE_FLAG_FUNC_INNER (0x01)
 

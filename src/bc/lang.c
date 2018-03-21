@@ -28,7 +28,6 @@
 
 BcStatus bc_func_insert(BcFunc *func, char *name, bool var) {
 
-  BcStatus status;
   BcAuto a;
   size_t i;
   BcAuto *ptr;
@@ -37,17 +36,13 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var) {
 
   for (i = 0; i < func->autos.len; ++i) {
     ptr = bc_vec_item(&func->autos, i);
-    if (!strcmp(name, ptr->name))
-      return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+    assert(ptr);
+    if (!strcmp(name, ptr->name)) return BC_STATUS_PARSE_DUPLICATE_LOCAL;
   }
 
   bc_auto_init(&a, name, var);
 
-  status = bc_vec_push(&func->autos, &a);
-
-  if (status) return status;
-
-  return status;
+  return bc_vec_push(&func->autos, &a);
 }
 
 BcStatus bc_func_init(BcFunc *func) {
@@ -56,16 +51,12 @@ BcStatus bc_func_init(BcFunc *func) {
 
   assert(func);
 
-  status = bc_vec_init(&func->code, sizeof(uint8_t), NULL);
-
-  if (status) return status;
+  if ((status = bc_vec_init(&func->code, sizeof(uint8_t), NULL))) return status;
 
   status = bc_vec_init(&func->autos, sizeof(BcAuto), bc_auto_free);
-
   if (status) goto auto_err;
 
   status = bc_vec_init(&func->labels, sizeof(size_t), NULL);
-
   if (status) goto label_err;
 
   func->num_params = 0;
@@ -85,59 +76,38 @@ auto_err:
 
 void bc_func_free(void *func) {
 
-  BcFunc *f;
+  BcFunc *f = (BcFunc*) func;
 
-  f = (BcFunc*) func;
-
-  if (f == NULL) return;
+  if (!f) return;
 
   bc_vec_free(&f->code);
   bc_vec_free(&f->autos);
   bc_vec_free(&f->labels);
 }
 
-BcStatus bc_array_copy(void *dest, void *src) {
+BcStatus bc_array_copy(BcVec *d, BcVec *s) {
 
   BcStatus status;
   size_t i;
   BcNum *dnum;
   BcNum *snum;
 
-  BcVec *d;
-  BcVec *s;
-
-  d = (BcVec*) dest;
-  s = (BcVec*) src;
-
   assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
-  status = bc_vec_npop(d, d->len);
-
-  if (status) return status;
-
-  status = bc_vec_expand(d, s->cap);
-
-  if (status) return status;
+  if ((status = bc_vec_npop(d, d->len))) return status;
+  if ((status = bc_vec_expand(d, s->cap))) return status;
 
   d->len = s->len;
 
-  for (i = 0; i < s->len; ++i) {
+  for (i = 0; !status && i < s->len; ++i) {
 
     dnum = bc_vec_item(d, i);
     snum = bc_vec_item(s, i);
 
     if (!dnum || !snum) return BC_STATUS_VEC_OUT_OF_BOUNDS;
 
-    status = bc_num_init(dnum, snum->len);
-
-    if (status) return status;
-
-    status = bc_num_copy(dnum, snum);
-
-    if (status) {
-      bc_num_free(dnum);
-      return status;
-    }
+    if ((status = bc_num_init(dnum, snum->len))) return status;
+    if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
   }
 
   return status;
@@ -145,26 +115,17 @@ BcStatus bc_array_copy(void *dest, void *src) {
 
 BcStatus bc_array_expand(BcVec *a, size_t len) {
 
-  BcStatus status;
+  BcStatus status = BC_STATUS_SUCCESS;
 
-  status = BC_STATUS_SUCCESS;
-
-  while (len > a->len) {
+  while (!status && len > a->len) {
 
     BcNum num;
 
-    status = bc_num_init(&num, BC_NUM_DEF_SIZE);
-
-    if (status) return status;
+    if ((status = bc_num_init(&num, BC_NUM_DEF_SIZE))) return status;
 
     bc_num_zero(&num);
 
-    status = bc_vec_push(a, &num);
-
-    if (status) {
-      bc_num_free(&num);
-      return status;
-    }
+    if ((status = bc_vec_push(a, &num))) bc_num_free(&num);
   }
 
   return status;

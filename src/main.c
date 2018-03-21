@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 
       case 'c':
       {
-        flags |= BC_FLAG_CODE;
+        flags |= BC_FLAG_C;
         break;
       }
 
@@ -116,25 +116,25 @@ int main(int argc, char *argv[]) {
 
       case 'i':
       {
-        flags |= BC_FLAG_INTERACTIVE;
+        flags |= BC_FLAG_I;
         break;
       }
 
       case 'l':
       {
-        flags |= BC_FLAG_MATHLIB;
+        flags |= BC_FLAG_L;
         break;
       }
 
       case 'q':
       {
-        flags |= BC_FLAG_QUIET;
+        flags |= BC_FLAG_Q;
         break;
       }
 
       case 's':
       {
-        flags |= BC_FLAG_STANDARD;
+        flags |= BC_FLAG_S;
         break;
       }
 
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
 
       case 'w':
       {
-        flags |= BC_FLAG_WARN;
+        flags |= BC_FLAG_W;
         break;
       }
 

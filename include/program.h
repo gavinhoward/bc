@@ -47,24 +47,19 @@ typedef struct BcProgram {
   long scale_max;
   long string_max;
 
-  BcVec expr_stack;
-
+  BcVec results;
   BcVec stack;
 
   BcVec funcs;
-
   BcVecO func_map;
 
   BcVec vars;
-
   BcVecO var_map;
 
   BcVec arrays;
-
   BcVecO array_map;
 
   BcVec strings;
-
   BcVec constants;
 
   const char *file;
@@ -82,7 +77,7 @@ typedef struct BcProgram {
 } BcProgram;
 
 #define BC_PROGRAM_CHECK_STACK(p) ((p)->stack.len > 1)
-#define BC_PROGRAM_CHECK_EXPR_STACK(p, l) ((p)->expr_stack.len >= (l))
+#define BC_PROGRAM_CHECK_RESULTS(p, l) ((p)->results.len >= (l))
 
 #define BC_PROGRAM_MAIN (0)
 #define BC_PROGRAM_READ (1)
