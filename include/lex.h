@@ -148,7 +148,7 @@ typedef struct BcLexKeyword {
 // ** Exclude start. **
 void bc_lex_init(BcLex *lex, const char *file);
 
-void bc_lex_text(BcLex *lex, const char *text);
+BcStatus bc_lex_text(BcLex *lex, const char *text, BcLexToken *token);
 
 BcStatus bc_lex_next(BcLex *lex, BcLexToken *token);
 

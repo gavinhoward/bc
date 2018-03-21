@@ -404,7 +404,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   bc_lex_init(&parse.lex, "<stdin>");
 
-  status = bc_parse_text(&parse, buffer);
+  status = bc_lex_text(&parse.lex, buffer, &parse.token);
 
   if (status) goto exec_err;
 

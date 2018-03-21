@@ -1792,12 +1792,6 @@ exit_label_err:
   return status;
 }
 
-BcStatus bc_parse_text(BcParse *parse, const char *text) {
-  assert(parse && text);
-  bc_lex_text(&parse->lex, text);
-  return bc_lex_next(&parse->lex, &parse->token);
-}
-
 BcStatus bc_parse_parse(BcParse *parse) {
 
   BcStatus status;
