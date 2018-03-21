@@ -36,6 +36,8 @@ BC_LIB_O = src/bc/lib.o
 
 BC_EXEC = bc
 
+PREFIX ?= /usr/local
+
 all: CFLAGS += -g -O0
 all: $(BC_EXEC)
 
@@ -64,3 +66,11 @@ clean:
 	$(RM) $(GEN)
 	$(RM) $(BC_C_LIB)
 
+install:
+	cp $(BC_EXEC) $(PREFIX)/bin
+
+replace:
+	cp --backup=t $(BC_EXEC) $(PREFIX)/bin/$(BC_EXEC)
+
+uninstall:
+	rm -rf $(PREFIX)/bin/$(BC_EXEC)
