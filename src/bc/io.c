@@ -27,16 +27,16 @@
 #include <status.h>
 #include <io.h>
 
-long bc_io_frag(char *buf, long len, int term, BcIoGetc bc_getc, void *ctx) {
+long bc_io_frag(char *buf, long len, int term, FILE *fp) {
 
   long i;
   int c;
 
-  if (!buf || len < 0 || !bc_getc) return -1;
+  assert(buf && len >= 0);
 
   for (c = (~term) | 1, i = 0; i < len; i++) {
 
-    if (c == (int) '\0' || c == term || (c = bc_getc(ctx)) == EOF) {
+    if (c == (int) '\0' || c == term || (c = fgetc(fp)) == EOF) {
       buf[i] = '\0';
       break;
     }
@@ -45,10 +45,6 @@ long bc_io_frag(char *buf, long len, int term, BcIoGetc bc_getc, void *ctx) {
   }
 
   return i;
-}
-
-static int bc_io_xfgetc(void *ctx) {
-  return fgetc((FILE *) ctx);
 }
 
 BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
@@ -65,7 +61,7 @@ BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
 
     for (slen = 0; ; slen += 64) {
 
-      len = (size_t) bc_io_frag(blk, 64, (int) '\n', bc_io_xfgetc, fp);
+      len = (size_t) bc_io_frag(blk, 64, (int) '\n', fp);
 
       if (len != 64 || blk[len - 1] == '\n' || blk[len - 1] == '\0')
         return slen + len;
@@ -86,7 +82,7 @@ BcStatus bc_io_fgetline(char** p, size_t *n, FILE* fp) {
     s = t;
     dlen = mlen - slen - 1;
 
-    len = (size_t) bc_io_frag(s + slen, dlen, (int) '\n', bc_io_xfgetc, fp);
+    len = (size_t) bc_io_frag(s + slen, dlen, (int) '\n', fp);
 
     slen += len;
 
