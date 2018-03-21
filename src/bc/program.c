@@ -381,7 +381,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
   func = bc_vec_item(&p->funcs, BC_PROGRAM_READ);
 
-  if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+  assert(func);
 
   func->code.len = 0;
 
@@ -993,7 +993,9 @@ static BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
   func = bc_vec_item(&p->funcs, ip.func);
 
-  if (!func || !func->code.len) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+  assert(func);
+
+  if (!func->code.len) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 
   if (nparams != func->num_params) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
 
@@ -1584,7 +1586,7 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 
     BcFunc *func = bc_vec_item(&p->funcs, entry_ptr->idx);
 
-    if (!func) return BC_STATUS_EXEC_UNDEFINED_FUNC;
+    assert(func);
 
     status = BC_STATUS_SUCCESS;
 
