@@ -79,6 +79,7 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
 }
 
 static void bc_sig(int sig) {
+
   if (sig == SIGINT) {
     if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
       bcg.sig_int = 1;
@@ -94,8 +95,7 @@ static BcStatus bc_signal(Bc *bc) {
 
   bcg.sig_int = 0;
 
-  if ((st = bc_vec_npop(&bc->prog.stack, bc->prog.stack.len - 1)))
-    return st;
+  if ((st = bc_vec_npop(&bc->prog.stack, bc->prog.stack.len - 1))) return st;
 
   func = bc_vec_item(&bc->prog.funcs, 0);
   assert(func);
@@ -284,9 +284,8 @@ static BcStatus bc_stdin(Bc *bc) {
           comment = true;
           break;
         }
-        else if (c == '*' && notend && comment && buf[i + 1] == '/') {
+        else if (c == '*' && notend && comment && buf[i + 1] == '/')
           comment = false;
-        }
       }
 
       if (string || comment || buf[len - 2] == '\\') {

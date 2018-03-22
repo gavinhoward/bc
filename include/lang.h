@@ -173,11 +173,8 @@ int bc_entry_cmp(void *entry1, void*entry2);
 void bc_entry_free(void *entry);
 
 void bc_result_free(void *result);
-
-void bc_constant_free(void *constant);
 // ** Exclude end. **
 
-void bc_auto_init(BcAuto *a, char *name, bool var);
 void bc_auto_free(void *auto1);
 
 extern const char *bc_lang_func_main;

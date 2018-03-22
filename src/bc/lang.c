@@ -40,7 +40,8 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var) {
     if (!strcmp(name, ptr->name)) return BC_STATUS_PARSE_DUPLICATE_LOCAL;
   }
 
-  bc_auto_init(&a, name, var);
+  a.var = var;
+  a.name = name;
 
   return bc_vec_push(&func->autos, &a);
 }
@@ -115,16 +116,14 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
 
 BcStatus bc_array_expand(BcVec *a, size_t len) {
 
-  BcStatus status = BC_STATUS_SUCCESS;
+  BcStatus status;
+  BcNum num;
+
+  status = BC_STATUS_SUCCESS;
 
   while (!status && len > a->len) {
-
-    BcNum num;
-
     if ((status = bc_num_init(&num, BC_NUM_DEF_SIZE))) return status;
-
     bc_num_zero(&num);
-
     if ((status = bc_vec_push(a, &num))) bc_num_free(&num);
   }
 
@@ -143,12 +142,6 @@ int bc_entry_cmp(void *entry1, void *entry2) {
 void bc_entry_free(void *entry) {
   BcEntry *e = entry;
   if (e) free(e->name);
-}
-
-void bc_auto_init(BcAuto *a, char *name, bool var) {
-  if (!a) return;
-  a->var = var;
-  a->name = name;
 }
 
 void bc_auto_free(void *auto1) {
@@ -192,9 +185,4 @@ void bc_result_free(void *result) {
       break;
     }
   }
-}
-
-void bc_constant_free(void *constant) {
-  char **c = constant;
-  if (c) free(*c);
 }

@@ -1444,7 +1444,7 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if (s) goto string_err;
 
-  s = bc_vec_init(&p->constants, sizeof(char*), bc_constant_free);
+  s = bc_vec_init(&p->constants, sizeof(char*), bc_string_free);
 
   if (s) goto const_err;
 
