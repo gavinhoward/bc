@@ -78,11 +78,6 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
   return st * !!s;
 }
 
-void bc_free(Bc *bc) {
-  bc_parse_free(&bc->parse);
-  bc_program_free(&bc->prog);
-}
-
 static void bc_sig(int sig) {
   if (sig == SIGINT) {
     if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
@@ -175,7 +170,7 @@ static BcStatus bc_process(Bc *bc, const char *text) {
 
     st = bc->exec(&bc->prog);
 
-    if (bcg.sig_other) return st;
+    if (bcg.sig_other || st == BC_STATUS_QUIT) return st;
 
     if (bcg.interactive) {
 
@@ -256,6 +251,7 @@ static BcStatus bc_stdin(Bc *bc) {
 
   string = false;
   comment = false;
+  st = BC_STATUS_SUCCESS;
 
   // The following loop is complicated because the vm tries
   // not to send any lines that end with a backslash to the
@@ -361,10 +357,7 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
 
   if ((status = bc_program_init(&bc.prog))) return status;
 
-  if ((status = bc_parse_init(&bc.parse, &bc.prog))) {
-    bc_program_free(&bc.prog);
-    return status;
-  }
+  if ((status = bc_parse_init(&bc.parse, &bc.prog))) goto parse_err;
 
   sigemptyset(&sa.sa_mask);
   sa.sa_handler = bc_sig;
@@ -404,7 +397,11 @@ err:
 
   status = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
 
-  bc_free(&bc);
+  bc_parse_free(&bc.parse);
+
+parse_err:
+
+  bc_program_free(&bc.prog);
 
   return status;
 }

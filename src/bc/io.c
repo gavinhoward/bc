@@ -63,8 +63,10 @@ BcStatus bc_io_fgetline(char** p, size_t *n, FILE *fp) {
 
       len = (size_t) bc_io_frag(blk, 64, (int) '\n', fp);
 
-      if (len != 64 || blk[len - 1] == '\n' || blk[len - 1] == '\0')
-        return slen + len;
+      if (len != 64 || blk[len - 1] == '\n' || blk[len - 1] == '\0') {
+        *n = slen + len;
+        return BC_STATUS_SUCCESS;
+      }
     }
   }
 
@@ -77,7 +79,7 @@ BcStatus bc_io_fgetline(char** p, size_t *n, FILE *fp) {
 
     mlen += mlen;
 
-    if ((t = realloc(s, mlen)) == NULL) break;
+    if (!(t = realloc(s, mlen))) break;
 
     s = t;
     dlen = mlen - slen - 1;
