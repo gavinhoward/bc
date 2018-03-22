@@ -193,12 +193,7 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   BcDigit *ptr_a;
   BcDigit *ptr_b;
   BcDigit *ptr_c;
-  size_t i;
-  size_t max;
-  size_t min;
-  size_t diff;
-  size_t a_whole;
-  size_t b_whole;
+  size_t i, max, min_rdx, min_int, diff, a_int, b_int;
   BcDigit carry;
 
   (void) scale;
@@ -211,99 +206,58 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   memset(c->num, 0, c->cap * sizeof(BcDigit));
 
   c->rdx = BC_MAX(a->rdx, b->rdx);
-
-  min = BC_MIN(a->rdx, b->rdx);
+  min_rdx = BC_MIN(a->rdx, b->rdx);
 
   c->len = 0;
 
   if (a->rdx > b->rdx) {
-
     diff = a->rdx - b->rdx;
-
     ptr = a->num;
     ptr_a = a->num + diff;
     ptr_b = b->num;
   }
   else {
-
     diff = b->rdx - a->rdx;
-
     ptr = b->num;
     ptr_a = a->num;
     ptr_b = b->num + diff;
   }
 
-  ptr_c = c->num;
-
-  for (i = 0; i < diff; ++i) {
-    ptr_c[i] = ptr[i];
-    ++c->len;
-  }
+  for (ptr_c = c->num, i = 0; i < diff; ++i, ++c->len) ptr_c[i] = ptr[i];
 
   ptr_c += diff;
 
-  carry = 0;
+  a_int = a->len - a->rdx;
+  b_int = b->len - b->rdx;
 
-  for (i = 0; i < min; ++i) {
-
-    ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
-    ++c->len;
-
-    if (ptr_c[i] >= 10) {
-      carry = ptr_c[i] / 10;
-      ptr_c[i] %= 10;
-    }
-    else carry = 0;
+  if (a_int > b_int) {
+    min_int = b_int;
+    max = a_int;
+    ptr = ptr_a;
   }
-
-  c->rdx = c->len;
-
-  a_whole = a->len - a->rdx;
-  b_whole = b->len - b->rdx;
-
-  min = BC_MIN(a_whole, b_whole);
+  else {
+    min_int = a_int;
+    max = b_int;
+    ptr = ptr_b;
+  }
 
   ptr_a = a->num + a->rdx;
   ptr_b = b->num + b->rdx;
   ptr_c = c->num + c->rdx;
 
-  for (i = 0; i < min; ++i) {
-
+  for (carry = 0, i = 0; i < min_rdx + min_int; ++i, ++c->len) {
     ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
-    ++c->len;
-
-    if (ptr_c[i] >= 10) {
-      carry = ptr_c[i] / 10;
-      ptr_c[i] %= 10;
-    }
-    else carry = 0;
+    carry = ptr_c[i] / 10;
+    ptr_c[i] %= 10;
   }
 
-  if (a_whole > b_whole) {
-    max = a_whole;
-    ptr = ptr_a;
-  }
-  else {
-    max = b_whole;
-    ptr = ptr_b;
-  }
-
-  for (; i < max; ++i) {
-
+  for (; i < max; ++i, ++c->len) {
     ptr_c[i] += ptr[i] + carry;
-    ++c->len;
-
-    if (ptr_c[i] >= 10) {
-      carry = ptr_c[i] / 10;
-      ptr_c[i] %= 10;
-    }
-    else carry = 0;
+    carry = ptr_c[i] / 10;
+    ptr_c[i] %= 10;
   }
 
-  if (carry) {
-    ++c->len;
-    ptr_c[i] = carry;
-  }
+  if (carry) c->num[c->len++] = carry;
 
   return BC_STATUS_SUCCESS;
 }
