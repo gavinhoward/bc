@@ -37,7 +37,6 @@ static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
   char c;
 
   token->type = BC_LEX_WHITESPACE;
-
   c = lex->buffer[lex->idx];
 
   while ((isspace(c) && c != '\n') || c == '\\') {
@@ -55,9 +54,7 @@ static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
   char c;
 
   newlines = 0;
-
   token->type = BC_LEX_STRING;
-
   i = lex->idx;
   c = lex->buffer[i];
 
@@ -74,7 +71,6 @@ static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
   len = i - lex->idx;
 
   token->string = malloc(len + 1);
-
   if (!token->string) return BC_STATUS_MALLOC_FAIL;
 
   start = lex->buffer + lex->idx;
@@ -98,15 +94,12 @@ static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
   char c;
 
   newlines = 0;
-
   token->type = BC_LEX_WHITESPACE;
+  end = false;
 
   ++lex->idx;
-
   i = lex->idx;
   buffer = lex->buffer;
-
-  end = false;
 
   while (!end) {
 
@@ -144,11 +137,8 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
   bool point;
 
   token->type = BC_LEX_NUMBER;
-
   point = start == '.';
-
   buffer = lex->buffer + lex->idx;
-
   backslashes = 0;
   i = 0;
   c = buffer[i];
@@ -167,7 +157,6 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
   len = i + 1;
 
   token->string = malloc(len - backslashes * 2 + 1);
-
   if (!token->string) return BC_STATUS_MALLOC_FAIL;
 
   token->string[0] = start;
@@ -192,7 +181,6 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
   }
 
   token->string[j - (hits * 2)] = '\0';
-
   lex->idx += i;
 
   return BC_STATUS_SUCCESS;
@@ -234,10 +222,8 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
   i = 0;
   c = buffer[i];
 
-  while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_') {
-    ++i;
-    c = buffer[i];
-  }
+  while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_')
+    c = buffer[++i];
 
   if (i > 1 && (status = bc_posix_error(BC_STATUS_POSIX_NAME_LEN,
                                         lex->file, lex->line, buffer)))
@@ -246,7 +232,6 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
   }
 
   token->string = malloc(i + 1);
-
   if (!token->string) return BC_STATUS_MALLOC_FAIL;
 
   strncpy(token->string, buffer, i);
@@ -267,9 +252,7 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
   status = BC_STATUS_SUCCESS;
 
-  c = lex->buffer[lex->idx];
-
-  ++lex->idx;
+  c = lex->buffer[lex->idx++];
 
   // This is the workhorse of the lexer.
   switch (c) {
@@ -656,33 +639,6 @@ static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
   }
 
   return status;
-}
-
-BcStatus bc_lex_printToken(BcLexToken *token) {
-
-  printf("<%s", bc_lex_token_type_strs[token->type]);
-
-  switch (token->type) {
-
-    case BC_LEX_STRING:
-    case BC_LEX_NAME:
-    case BC_LEX_NUMBER:
-    {
-      printf(":%s", token->string);
-      break;
-    }
-
-    default:
-    {
-      // Do nothing.
-      break;
-    }
-  }
-
-  putchar('>');
-  putchar('\n');
-
-  return BC_STATUS_SUCCESS;
 }
 
 void bc_lex_init(BcLex *lex, const char *file) {
