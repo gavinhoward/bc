@@ -72,13 +72,14 @@ bc_c_replacements = [
 	[ '^BcStatus bc_main\(unsigned int flags, unsigned int filec, char \*filev\[\]\)',
 	  'void bc_main(void)' ],
 	[ '^  BcStatus status;$', '' ],
-	[ '^  bcg.bc_std = flags & BC_FLAG_STANDARD;$', '' ],
-	[ '^  bcg.bc_warn = flags & BC_FLAG_WARN;$', '' ],
+	[ '^  bcg.std = flags & BC_FLAG_S;$', '' ],
+	[ '^  bcg.warn = flags & BC_FLAG_W;$', '' ],
 	[ 'flags ', 'toys.optflags ' ],
 	[ 'filec', 'toys.optc' ],
 	[ 'filev', 'toys.optargs' ],
 	[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
-	[ '^  bc_free\(\);\n\n  return status;', '  if (CFG_TOYBOX_FREE) bc_free();' ],
+	[ '^  bc_parse_free\(&bc\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&bc.parse);' ],
+	[ '^  bc_program_free\(&bc\.prog\);\n\n  return status;', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
 	[ 'return status == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : status;',
 	  '{\n    toys.exitval = toys.exitval == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : toys.exitval\n    return;\n  }' ],
 	[ 'return status;', 'return;' ],
@@ -115,8 +116,8 @@ regexes_all = [
 ]
 
 replacements = [
-	[ 'bcg.bc_std', '(toys.optflags & FLAG_s)' ],
-	[ 'bcg.bc_warn', '(toys.optflags & FLAG_w)' ],
+	[ 'bcg.std', '(toys.optflags & FLAG_s)' ],
+	[ 'bcg.warn', '(toys.optflags & FLAG_w)' ],
 	[ 'bcg.', 'TT.' ],
 	[ 'BC_FLAG_Q', 'FLAG_q' ],
 	[ 'BC_FLAG_L', 'FLAG_l' ],

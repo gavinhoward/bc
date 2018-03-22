@@ -40,9 +40,9 @@ config BC
 #include "toys.h"
 
 GLOBALS(
-  long bc_interactive;
+  long interactive;
 
-  long bc_sig_int;
-  long bc_sig_other;
+  long sig_int;
+  long sig_other;
 )
 
