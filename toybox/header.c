@@ -42,7 +42,7 @@ config BC
 GLOBALS(
   long bc_interactive;
 
-  long bc_sig;
-  Bc bc;
+  long bc_sig_int;
+  long bc_sig_other;
 )
 

@@ -62,13 +62,12 @@ typedef struct Bc {
 // ** Exclude start. **
 typedef struct BcGlobals {
 
-  long bc_interactive;
-  long bc_std;
-  long bc_warn;
+  long interactive;
+  long std;
+  long warn;
 
-  long bc_sig;
-
-  Bc bc;
+  long sig_int;
+  long sig_other;
 
 } BcGlobals;
 
