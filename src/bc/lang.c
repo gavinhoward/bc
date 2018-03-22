@@ -137,27 +137,7 @@ void bc_string_free(void *string) {
 }
 
 int bc_entry_cmp(void *entry1, void *entry2) {
-
-  BcEntry *e1;
-  BcEntry *e2;
-  int cmp;
-
-  e1 = (BcEntry*) entry1;
-  e2 = (BcEntry*) entry2;
-
-  if (!strcmp(e1->name, bc_lang_func_main)) {
-    if (!strcmp(e2->name, bc_lang_func_main)) cmp = 0;
-    else cmp = -1;
-  }
-  else if (!strcmp(e1->name, bc_lang_func_read)) {
-    if (!strcmp(e2->name, bc_lang_func_main)) cmp = 1;
-    else if (!strcmp(e2->name, bc_lang_func_read)) cmp = 0;
-    else cmp = -1;
-  }
-  else if (!strcmp(e2->name, bc_lang_func_main)) cmp = 1;
-  else cmp = strcmp(e1->name, e2->name);
-
-  return cmp;
+  return strcmp(((BcEntry*) entry1)->name, ((BcEntry*) entry2)->name);
 }
 
 void bc_entry_free(void *entry) {
