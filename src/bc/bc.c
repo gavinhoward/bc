@@ -42,7 +42,7 @@ BcStatus bc_error(BcStatus st) {
   fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[bc_err_type_indices[st]],
           bc_err_descs[st]);
 
-  return st * !bcg.bc_interactive;
+  return st * !bcg.interactive;
 }
 
 BcStatus bc_error_file(BcStatus st, const char *file, size_t line) {
@@ -56,13 +56,13 @@ BcStatus bc_error_file(BcStatus st, const char *file, size_t line) {
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
-  return st * !bcg.bc_interactive;
+  return st * !bcg.interactive;
 }
 
 BcStatus bc_posix_error(BcStatus st, const char *file,
                         size_t line, const char *msg)
 {
-  int s = bcg.bc_std, w = bcg.bc_warn;
+  int s = bcg.std, w = bcg.warn;
 
   if (!(s || w) || st < BC_STATUS_POSIX_NAME_LEN || !file)
     return BC_STATUS_SUCCESS;
@@ -78,70 +78,63 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
   return st * !!s;
 }
 
-void bc_free() {
-  bc_parse_free(&bcg.bc.parse);
-  bc_program_free(&bcg.bc.prog);
+void bc_free(Bc *bc) {
+  bc_parse_free(&bc->parse);
+  bc_program_free(&bc->prog);
 }
 
-static void bc_sigint(int sig) {
-  if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
-    bcg.bc_sig = ~(sig);
+static void bc_sig(int sig) {
+  if (sig == SIGINT) {
+    if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
+      bcg.sig_int = 1;
+  }
+  else bcg.sig_other = 1;
 }
 
-static void bc_signal_handler(int sig) {
-
-  struct sigaction act;
-
-  bc_free();
-
-  sigemptyset(&act.sa_mask);
-  act.sa_handler = SIG_DFL;
-
-  raise(sig);
-}
-
-static BcStatus bc_signal() {
+static BcStatus bc_signal(Bc *bc) {
 
   BcStatus st;
   BcFunc *func;
   BcInstPtr *ip;
 
-  bcg.bc_sig = 0;
+  bcg.sig_int = 0;
 
-  if ((st = bc_vec_npop(&bcg.bc.prog.stack, bcg.bc.prog.stack.len - 1)))
+  if ((st = bc_vec_npop(&bc->prog.stack, bc->prog.stack.len - 1)))
     return st;
 
-  func = bc_vec_item(&bcg.bc.prog.funcs, 0);
+  func = bc_vec_item(&bc->prog.funcs, 0);
   assert(func);
-  ip = bc_vec_top(&bcg.bc.prog.stack);
+  ip = bc_vec_top(&bc->prog.stack);
   assert(ip);
 
   ip->idx = func->code.len;
-  bcg.bc.parse.lex.idx = bcg.bc.parse.lex.len;
+  bc->parse.lex.idx = bc->parse.lex.len;
 
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_process(const char *text) {
+static BcStatus bc_process(Bc *bc, const char *text) {
 
-  BcStatus st = bc_lex_text(&bcg.bc.parse.lex, text, &bcg.bc.parse.token);
+  BcStatus st = bc_lex_text(&bc->parse.lex, text, &bc->parse.token);
 
   if (st && st != BC_STATUS_LEX_EOF &&
-      (st = bc_error_file(st, bcg.bc.parse.lex.file, bcg.bc.parse.lex.line)))
+      (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line)))
   {
     return st;
   }
 
   do {
 
-    st = bc_parse_parse(&bcg.bc.parse);
+    st = bc_parse_parse(&bc->parse);
 
     if (st && st != BC_STATUS_LEX_EOF) {
-      st = bc_error_file(st, bcg.bc.parse.lex.file, bcg.bc.parse.lex.line);
+      st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line);
       if (st) return st;
     }
 
-    if (bcg.bc_sig && (!bcg.bc_interactive || (st = bc_signal()))) {
+    if (bcg.sig_other) return st;
+
+    if (bcg.sig_int && (!bcg.interactive || (st = bc_signal(bc)))) {
       if ((st = bc_error(st))) return st;
     }
 
@@ -150,73 +143,78 @@ static BcStatus bc_process(const char *text) {
       if (st != BC_STATUS_LEX_EOF && st != BC_STATUS_QUIT &&
           st != BC_STATUS_LIMITS)
       {
-        st = bc_error_file(st, bcg.bc.prog.file, bcg.bc.parse.lex.line);
+        st = bc_error_file(st, bc->prog.file, bc->parse.lex.line);
         if (st) return st;
       }
       else if (st == BC_STATUS_QUIT) {
         break;
       }
       else if (st == BC_STATUS_LIMITS) {
-        bc_program_limits(&bcg.bc.prog);
+        bc_program_limits(&bc->prog);
         st = BC_STATUS_SUCCESS;
         continue;
       }
       else st = BC_STATUS_SUCCESS;
 
-      while (!st && bcg.bc.parse.token.type != BC_LEX_NEWLINE &&
-             bcg.bc.parse.token.type != BC_LEX_SEMICOLON)
+      while (!st && bc->parse.token.type != BC_LEX_NEWLINE &&
+             bc->parse.token.type != BC_LEX_SEMICOLON)
       {
-        st = bc_lex_next(&bcg.bc.parse.lex, &bcg.bc.parse.token);
+        st = bc_lex_next(&bc->parse.lex, &bc->parse.token);
       }
     }
 
-  } while (!st);
+  } while (!bcg.sig_other && !st);
 
-  if (st != BC_STATUS_LEX_EOF && st != BC_STATUS_QUIT && (st = bc_error(st)))
+  if (bcg.sig_other ||
+      (st != BC_STATUS_LEX_EOF && st != BC_STATUS_QUIT && (st = bc_error(st))))
+  {
     return st;
+  }
 
-  if (BC_PARSE_CAN_EXEC(&bcg.bc.parse)) {
+  if (BC_PARSE_CAN_EXEC(&bc->parse)) {
 
-    st = bcg.bc.exec(&bcg.bc.prog);
+    st = bc->exec(&bc->prog);
 
-    if (bcg.bc_interactive) {
+    if (bcg.sig_other) return st;
+
+    if (bcg.interactive) {
 
       fflush(stdout);
 
       if (st && (st = bc_error(st))) return st;
 
-      if (bcg.bc_sig) {
-        st = bc_signal();
+      if (bcg.sig_int) {
+        st = bc_signal(bc);
         fprintf(stderr, "%s", bc_program_ready_prompt);
         fflush(stderr);
       }
     }
     else {
       if (st && (st = bc_error(st))) return st;
-      if (bcg.bc_sig && (st = bc_signal())) st = bc_error(st);
+      if (bcg.sig_int && (st = bc_signal(bc))) st = bc_error(st);
     }
   }
 
   return st;
 }
 
-static BcStatus bc_file(const char *file) {
+static BcStatus bc_file(Bc *bc, const char *file) {
 
   BcStatus st;
   char *data;
   BcFunc *main_func;
   BcInstPtr *ip;
 
-  bcg.bc.prog.file = file;
+  bc->prog.file = file;
 
   if ((st = bc_io_fread(file, &data))) return st;
 
-  bc_lex_init(&bcg.bc.parse.lex, file);
+  bc_lex_init(&bc->parse.lex, file);
 
-  if ((st = bc_process(data))) goto err;
+  if ((st = bc_process(bc, data))) goto err;
 
-  main_func = bc_vec_item(&bcg.bc.prog.funcs, BC_PROGRAM_MAIN);
-  ip = bc_vec_item(&bcg.bc.prog.stack, 0);
+  main_func = bc_vec_item(&bc->prog.funcs, BC_PROGRAM_MAIN);
+  ip = bc_vec_item(&bc->prog.stack, 0);
 
   assert(main_func && ip);
 
@@ -229,7 +227,7 @@ err:
   return st;
 }
 
-static BcStatus bc_stdin() {
+static BcStatus bc_stdin(Bc *bc) {
 
   BcStatus st;
   char *buf;
@@ -238,8 +236,8 @@ static BcStatus bc_stdin() {
   size_t n, bufn, slen, total_len;
   bool string, comment;
 
-  bcg.bc.prog.file = bc_program_stdin_name;
-  bc_lex_init(&bcg.bc.parse.lex, bc_program_stdin_name);
+  bc->prog.file = bc_program_stdin_name;
+  bc_lex_init(&bc->parse.lex, bc_program_stdin_name);
 
   n = BC_BUF_SIZE;
   bufn = BC_BUF_SIZE;
@@ -265,7 +263,7 @@ static BcStatus bc_stdin() {
   // a backslash newline combo as whitespace, per the bc spec.
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
-  while ((!st || st != BC_STATUS_QUIT) &&
+  while (!bcg.sig_other && (!st || st != BC_STATUS_QUIT) &&
          !(st = bc_io_fgetline(&buf, &bufn, stdin)))
   {
     size_t len, i;
@@ -329,7 +327,7 @@ static BcStatus bc_stdin() {
     }
 
     strcat(buffer, buf);
-    st = bc_process(buffer);
+    st = bc_process(bc, buffer);
     buffer[0] = '\0';
   }
 
@@ -350,30 +348,29 @@ buf_err:
 BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
 
   BcStatus status;
-  struct sigaction sa1, sa2;
+  Bc bc;
+  struct sigaction sa;
   size_t i;
 
-  bcg.bc_interactive = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
+  bcg.interactive = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
 
-  bcg.bc_std = flags & BC_FLAG_S;
-  bcg.bc_warn = flags & BC_FLAG_W;
+  bcg.std = flags & BC_FLAG_S;
+  bcg.warn = flags & BC_FLAG_W;
 
-  bcg.bc.exec = (flags & BC_FLAG_C) ? bc_program_print : bc_program_exec;
+  bc.exec = (flags & BC_FLAG_C) ? bc_program_print : bc_program_exec;
 
-  if ((status = bc_program_init(&bcg.bc.prog))) return status;
+  if ((status = bc_program_init(&bc.prog))) return status;
 
-  if ((status = bc_parse_init(&bcg.bc.parse, &bcg.bc.prog))) {
-    bc_program_free(&bcg.bc.prog);
+  if ((status = bc_parse_init(&bc.parse, &bc.prog))) {
+    bc_program_free(&bc.prog);
     return status;
   }
 
-  sigemptyset(&sa1.sa_mask);
-  sa1.sa_handler = bc_sigint;
-  sigemptyset(&sa2.sa_mask);
-  sa2.sa_handler = bc_signal_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_handler = bc_sig;
 
-  if (sigaction(SIGINT, &sa1, NULL) < 0 || sigaction(SIGPIPE, &sa2, NULL) < 0 ||
-      sigaction(SIGHUP, &sa2, NULL) < 0 || sigaction(SIGTERM, &sa2, NULL) < 0)
+  if (sigaction(SIGINT, &sa, NULL) < 0 || sigaction(SIGPIPE, &sa, NULL) < 0 ||
+      sigaction(SIGHUP, &sa, NULL) < 0 || sigaction(SIGTERM, &sa, NULL) < 0)
   {
     status = BC_STATUS_EXEC_SIGACTION_FAIL;
     goto err;
@@ -386,27 +383,28 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
 
   if (flags & BC_FLAG_L) {
 
-    bc_lex_init(&bcg.bc.parse.lex, bc_lib_name);
-    if ((status = bc_lex_text(&bcg.bc.parse.lex, bc_lib, &bcg.bc.parse.token)))
+    bc_lex_init(&bc.parse.lex, bc_lib_name);
+    if ((status = bc_lex_text(&bc.parse.lex, bc_lib, &bc.parse.token)))
       goto err;
 
-    while (!status) status = bc_parse_parse(&bcg.bc.parse);
+    while (!status) status = bc_parse_parse(&bc.parse);
     if (status != BC_STATUS_LEX_EOF) goto err;
 
     // Make sure to execute the math library.
-    if ((status = bcg.bc.exec(&bcg.bc.prog))) goto err;
+    if ((status = bc.exec(&bc.prog))) goto err;
   }
 
-  for (i = 0; !status && i < filec; ++i) status = bc_file(filev[i]);
-  if (status) goto err;
+  for (i = 0; !bcg.sig_other && !status && i < filec; ++i)
+    status = bc_file(&bc, filev[i]);
+  if (status || bcg.sig_other) goto err;
 
-  status = bc_stdin();
+  status = bc_stdin(&bc);
 
 err:
 
   status = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
 
-  bc_free();
+  bc_free(&bc);
 
   return status;
 }
