@@ -87,11 +87,10 @@ BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
 BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
 
-  uint32_t newlines;
-  bool end;
-  size_t i;
+  size_t newlines, i;
   const char *buffer;
   char c;
+  bool end;
 
   newlines = 0;
   token->type = BC_LEX_WHITESPACE;
@@ -127,12 +126,8 @@ BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
 
 BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
-  const char *buffer;
-  const char *buf;
-  size_t backslashes;
-  size_t len;
-  size_t hits;
-  size_t i, j;
+  const char *buffer, *buf;
+  size_t backslashes, len, hits, i, j;
   char c;
   bool point;
 
@@ -247,8 +242,7 @@ BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
-  char c;
-  char c2;
+  char c, c2;
 
   status = BC_STATUS_SUCCESS;
 

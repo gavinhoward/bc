@@ -90,8 +90,7 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
 
   BcStatus status;
   size_t i;
-  BcNum *dnum;
-  BcNum *snum;
+  BcNum *dnum, *snum;
 
   assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
@@ -146,8 +145,7 @@ void bc_entry_free(void *entry) {
 
 void bc_auto_free(void *auto1) {
   BcAuto *a = (BcAuto*) auto1;
-  if (!a) return;
-  if (a->name) free(a->name);
+  if (a && a->name) free(a->name);
 }
 
 void bc_result_free(void *result) {

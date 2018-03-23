@@ -274,9 +274,7 @@ err:
 BcStatus bc_stdin(Bc *bc) {
 
   BcStatus st;
-  char *buf;
-  char *buffer;
-  char *temp;
+  char *buf, *buffer, *temp;
   size_t n, bufn, slen, total_len;
   bool string, comment;
 

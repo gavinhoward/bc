@@ -66,8 +66,7 @@ int bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len, size_t *digits) {
 int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
 
   size_t i, min, a_int, b_int, diff;
-  BcDigit *max_num;
-  BcDigit *min_num;
+  BcDigit *max_num, *min_num;
   bool a_max;
   int cmp, neg;
 
@@ -176,10 +175,7 @@ BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 
 BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
-  BcDigit *ptr;
-  BcDigit *ptr_a;
-  BcDigit *ptr_b;
-  BcDigit *ptr_c;
+  BcDigit *ptr, *ptr_a, *ptr_b, *ptr_c;
   size_t i, max, min_rdx, min_int, diff, a_int, b_int;
   BcDigit carry;
 
@@ -249,8 +245,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   BcStatus status;
   int cmp;
-  BcNum *minuend;
-  BcNum *subtrahend;
+  BcNum *minuend, *subtrahend;
   size_t start;
   bool aneg, bneg, neg;
 
@@ -365,10 +360,8 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
-  BcDigit *ptr;
-  BcDigit *bptr;
+  BcDigit *ptr, *bptr, q;
   size_t len, end, i;
-  BcDigit q;
   BcNum copy;
   bool zero;
 
@@ -571,10 +564,7 @@ err:
 BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
   BcStatus status;
-  BcNum num1, num2, two, f, fprime;
-  BcNum *x0;
-  BcNum *x1;
-  BcNum *temp;
+  BcNum num1, num2, two, f, fprime, *x0, *x1, *temp;
   size_t pow, len, digits, resrdx;
   int cmp;
 
@@ -680,9 +670,7 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
                        BcNumBinaryFunc op, size_t req)
 {
   BcStatus status;
-  BcNum num2;
-  BcNum *ptr_a;
-  BcNum *ptr_b;
+  BcNum num2, *ptr_a, *ptr_b;
   bool init;
 
   assert(a && b && c && op);
@@ -727,8 +715,7 @@ BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
                       BcNumUnaryFunc op, size_t req)
 {
   BcStatus status;
-  BcNum a2;
-  BcNum *ptr_a;
+  BcNum a2, *ptr_a;
 
   assert(a && b && op);
 
@@ -971,8 +958,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
   BcNum intp, fracp, digit, frac_len;
   size_t width, i;
   BcNumDigitFunc print;
-  unsigned long dig;
-  long *ptr;
+  unsigned long dig, *ptr;
   bool neg, radix;
 
   neg = n->neg;
