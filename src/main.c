@@ -30,7 +30,7 @@
 
 #include <bc.h>
 
-static const struct option bc_opts[] = {
+const struct option bc_opts[] = {
 
   { "code", no_argument, NULL, 'c' },
   { "help", no_argument, NULL, 'h' },
@@ -44,9 +44,9 @@ static const struct option bc_opts[] = {
 
 };
 
-static const char *bc_short_opts = "chilqsvw";
+const char *bc_short_opts = "chilqsvw";
 
-static const char *bc_help =
+const char *bc_help =
   "usage: bc [-hilqsvw] [long-options] [file...]\n"
   "\n"
   "bc is a command-line calculator with a Turing-complete language.\n"

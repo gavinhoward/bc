@@ -78,7 +78,7 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
   return st * !!s;
 }
 
-static void bc_sig(int sig) {
+void bc_sig(int sig) {
 
   if (sig == SIGINT) {
     if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
@@ -87,7 +87,7 @@ static void bc_sig(int sig) {
   else bcg.sig_other = 1;
 }
 
-static BcStatus bc_signal(Bc *bc) {
+BcStatus bc_signal(Bc *bc) {
 
   BcStatus st;
   BcFunc *func;
@@ -108,7 +108,7 @@ static BcStatus bc_signal(Bc *bc) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_process(Bc *bc, const char *text) {
+BcStatus bc_process(Bc *bc, const char *text) {
 
   BcStatus st = bc_lex_text(&bc->parse.lex, text, &bc->parse.token);
 
@@ -193,7 +193,7 @@ static BcStatus bc_process(Bc *bc, const char *text) {
   return st;
 }
 
-static BcStatus bc_file(Bc *bc, const char *file) {
+BcStatus bc_file(Bc *bc, const char *file) {
 
   BcStatus st;
   char *data;
@@ -222,7 +222,7 @@ err:
   return st;
 }
 
-static BcStatus bc_stdin(Bc *bc) {
+BcStatus bc_stdin(Bc *bc) {
 
   BcStatus st;
   char *buf;

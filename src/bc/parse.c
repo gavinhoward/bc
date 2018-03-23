@@ -33,11 +33,11 @@
 #include <instructions.h>
 #include <bc.h>
 
-static BcStatus bc_parse_else(BcParse *parse, BcVec *code);
-static BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code);
-static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code);
+BcStatus bc_parse_else(BcParse *parse, BcVec *code);
+BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code);
+BcStatus bc_parse_stmt(BcParse *parse, BcVec *code);
 
-static BcStatus bc_parse_pushName(BcVec *code, char *name) {
+BcStatus bc_parse_pushName(BcVec *code, char *name) {
 
   BcStatus status;
   size_t len, i;
@@ -55,7 +55,7 @@ static BcStatus bc_parse_pushName(BcVec *code, char *name) {
   return bc_vec_pushByte(code, (uint8_t) ':');
 }
 
-static BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
+BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
 
   BcStatus status;
   uint8_t amt, i;
@@ -76,9 +76,8 @@ static BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
   return status;
 }
 
-static BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
-                                  BcLexTokenType t, uint32_t *num_exprs,
-                                  bool next)
+BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
+                           BcLexTokenType t, uint32_t *num_exprs, bool next)
 {
   BcStatus status;
   BcLexTokenType top;
@@ -139,8 +138,8 @@ err:
   return status;
 }
 
-static BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
-                                    BcVec *ops, uint32_t *nexs)
+BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
+                             BcVec *ops, uint32_t *nexs)
 {
   BcStatus status;
   BcLexTokenType top;
@@ -177,7 +176,7 @@ static BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_params(BcParse *parse, BcVec *code, uint8_t flags) {
+BcStatus bc_parse_params(BcParse *parse, BcVec *code, uint8_t flags) {
 
   BcStatus status;
   bool comma;
@@ -228,9 +227,8 @@ static BcStatus bc_parse_params(BcParse *parse, BcVec *code, uint8_t flags) {
   return bc_parse_pushIndex(code, nparams);
 }
 
-static BcStatus bc_parse_call(BcParse *parse, BcVec *code,
-                              char *name, uint8_t flags)
-{
+BcStatus bc_parse_call(BcParse *parse, BcVec *code, char *name, uint8_t flags) {
+
   BcStatus status;
   BcEntry entry;
   BcEntry *entry_ptr;
@@ -276,8 +274,8 @@ err:
   return status;
 }
 
-static BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
-                                   BcExprType *type, uint8_t flags)
+BcStatus bc_parse_expr_name(BcParse *parse, BcVec *code,
+                            BcExprType *type, uint8_t flags)
 {
   BcStatus status;
   char *name;
@@ -342,7 +340,7 @@ err:
   return status;
 }
 
-static BcStatus bc_parse_read(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_read(BcParse *parse, BcVec *code) {
 
   BcStatus status;
 
@@ -367,8 +365,8 @@ static BcStatus bc_parse_read(BcParse *parse, BcVec *code) {
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_builtin(BcParse *parse, BcVec *code,
-                                 BcLexTokenType type, uint8_t flags)
+BcStatus bc_parse_builtin(BcParse *parse, BcVec *code,
+                          BcLexTokenType type, uint8_t flags)
 {
   BcStatus status;
   uint8_t inst;
@@ -400,8 +398,8 @@ static BcStatus bc_parse_builtin(BcParse *parse, BcVec *code,
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_scale(BcParse *parse, BcVec *code,
-                               BcExprType *type, uint8_t flags)
+BcStatus bc_parse_scale(BcParse *parse, BcVec *code,
+                        BcExprType *type, uint8_t flags)
 {
   BcStatus status;
 
@@ -436,8 +434,8 @@ static BcStatus bc_parse_scale(BcParse *parse, BcVec *code,
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev,
-                                uint32_t *nexprs, uint8_t flags)
+BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev,
+                         uint32_t *nexprs, uint8_t flags)
 {
   BcStatus status;
   BcLexTokenType type;
@@ -549,8 +547,8 @@ static BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcExprType *prev,
   return status;
 }
 
-static BcStatus bc_parse_minus(BcParse *parse, BcVec *exs, BcVec *ops,
-                               BcExprType *prev, bool rparen, uint32_t *nexprs)
+BcStatus bc_parse_minus(BcParse *parse, BcVec *exs, BcVec *ops,
+                        BcExprType *prev, bool rparen, uint32_t *nexprs)
 {
   BcStatus status;
   BcLexTokenType type;
@@ -590,7 +588,7 @@ static BcStatus bc_parse_minus(BcParse *parse, BcVec *exs, BcVec *ops,
   return status;
 }
 
-static BcStatus bc_parse_string(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_string(BcParse *parse, BcVec *code) {
 
   BcStatus status;
   size_t len;
@@ -619,7 +617,7 @@ static BcStatus bc_parse_string(BcParse *parse, BcVec *code) {
   return bc_parse_semicolonListEnd(parse, code);
 }
 
-static BcStatus bc_parse_print(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_print(BcParse *parse, BcVec *code) {
 
   BcStatus status;
   BcLexTokenType type;
@@ -685,7 +683,7 @@ static BcStatus bc_parse_print(BcParse *parse, BcVec *code) {
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_return(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_return(BcParse *parse, BcVec *code) {
 
   BcStatus status;
 
@@ -721,7 +719,7 @@ static BcStatus bc_parse_return(BcParse *parse, BcVec *code) {
   return status;
 }
 
-static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
+BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
   BcStatus status;
   uint8_t *flag_ptr;
@@ -821,7 +819,7 @@ static BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
   return status;
 }
 
-static BcStatus bc_parse_startBody(BcParse *parse, uint8_t flags) {
+BcStatus bc_parse_startBody(BcParse *parse, uint8_t flags) {
 
   uint8_t *flag_ptr;
 
@@ -835,7 +833,7 @@ static BcStatus bc_parse_startBody(BcParse *parse, uint8_t flags) {
   return bc_vec_push(&parse->flags, &flags);
 }
 
-static BcStatus bc_parse_noElse(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_noElse(BcParse *parse, BcVec *code) {
 
   uint8_t *flag_ptr;
   BcInstPtr *ip;
@@ -862,7 +860,7 @@ static BcStatus bc_parse_noElse(BcParse *parse, BcVec *code) {
   return bc_vec_pop(&parse->exit_labels);
 }
 
-static BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
 
   BcStatus status;
   BcInstPtr ip;
@@ -917,7 +915,7 @@ static BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
   return bc_parse_startBody(parse, BC_PARSE_FLAG_IF);
 }
 
-static BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
 
   BcStatus status;
   BcInstPtr ip;
@@ -960,7 +958,7 @@ static BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
   return bc_parse_startBody(parse, BC_PARSE_FLAG_ELSE);
 }
 
-static BcStatus bc_parse_while(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_while(BcParse *parse, BcVec *code) {
 
   BcStatus status;
   uint8_t flags;
@@ -1028,7 +1026,7 @@ static BcStatus bc_parse_while(BcParse *parse, BcVec *code) {
   return bc_parse_startBody(parse, flags);
 }
 
-static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   BcStatus status;
   BcFunc *func;
@@ -1164,9 +1162,8 @@ static BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
   return bc_parse_startBody(parse, flags);
 }
 
-static BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code,
-                                  BcLexTokenType type)
-{
+BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code, BcLexTokenType type) {
+
   BcStatus status;
   size_t idx;
 
@@ -1222,7 +1219,7 @@ static BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code,
   return bc_lex_next(&parse->lex, &parse->token);
 }
 
-static BcStatus bc_parse_func(BcParse *parse) {
+BcStatus bc_parse_func(BcParse *parse) {
 
   BcLexTokenType type;
   BcStatus status;
@@ -1345,7 +1342,7 @@ err:
   return status;
 }
 
-static BcStatus bc_parse_auto(BcParse *parse) {
+BcStatus bc_parse_auto(BcParse *parse) {
 
   BcLexTokenType type;
   BcStatus status;
@@ -1433,7 +1430,7 @@ err:
   return status;
 }
 
-static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
+BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
 
   BcStatus status;
   uint8_t *flag_ptr;
@@ -1471,7 +1468,7 @@ static BcStatus bc_parse_body(BcParse *parse, BcVec *code, bool brace) {
   return status;
 }
 
-static BcStatus bc_parse_semicolonList(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_semicolonList(BcParse *parse, BcVec *code) {
 
   BcStatus status;
 
@@ -1537,7 +1534,7 @@ static BcStatus bc_parse_semicolonList(BcParse *parse, BcVec *code) {
   return status;
 }
 
-static BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code) {
 
   BcStatus status;
 
@@ -1559,7 +1556,7 @@ static BcStatus bc_parse_semicolonListEnd(BcParse *parse, BcVec *code) {
   return status;
 }
 
-static BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
+BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
   BcStatus status;
 

@@ -33,9 +33,8 @@
 #include <vector.h>
 #include <bc.h>
 
-static void bc_num_subArrays(BcDigit *n1, BcDigit *n2,
-                             size_t len, size_t extra)
-{
+void bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len, size_t extra) {
+
   size_t i, j;
 
   for (i = 0; i < len; ++i) {
@@ -50,8 +49,8 @@ static void bc_num_subArrays(BcDigit *n1, BcDigit *n2,
   }
 }
 
-static int bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len, size_t *digits)
-{
+int bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len, size_t *digits) {
+
   size_t i, digs;
   BcDigit c;
 
@@ -120,7 +119,7 @@ int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
   return 0;
 }
 
-static BcStatus bc_num_truncate(BcNum *n, size_t places) {
+BcStatus bc_num_truncate(BcNum *n, size_t places) {
 
   BcDigit *ptr;
 
@@ -138,7 +137,7 @@ static BcStatus bc_num_truncate(BcNum *n, size_t places) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_extend(BcNum *n, size_t places) {
+BcStatus bc_num_extend(BcNum *n, size_t places) {
 
   BcStatus status;
   BcDigit *ptr;
@@ -175,7 +174,7 @@ BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
   return status;
 }
 
-static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcDigit *ptr;
   BcDigit *ptr_a;
@@ -250,7 +249,7 @@ static BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
+BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   BcStatus status;
   int cmp;
@@ -312,7 +311,7 @@ static BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   return status;
 }
 
-static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
   BcDigit carry;
@@ -367,7 +366,7 @@ static BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   return status;
 }
 
-static BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
   BcDigit *ptr;
@@ -465,7 +464,7 @@ err:
   return status;
 }
 
-static BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
   BcNum c1, c2;
@@ -501,7 +500,7 @@ c2_err:
   return status;
 }
 
-static BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
   BcNum copy;
@@ -571,7 +570,7 @@ err:
   return status;
 }
 
-static BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
+BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
   BcStatus status;
   BcNum num1, num2, two, f, fprime;
@@ -679,8 +678,8 @@ num2_err:
   return status;
 }
 
-static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
-                              BcNumBinaryFunc op, size_t req)
+BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
+                       BcNumBinaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum num2;
@@ -726,8 +725,8 @@ err:
   return status;
 }
 
-static BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
-                             BcNumUnaryFunc op, size_t req)
+BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
+                      BcNumUnaryFunc op, size_t req)
 {
   BcStatus status;
   BcNum a2;
@@ -756,7 +755,7 @@ err:
   return status;
 }
 
-static bool bc_num_strValid(const char *val, size_t base) {
+bool bc_num_strValid(const char *val, size_t base) {
 
   size_t len, i;
   BcDigit c, b;
@@ -789,7 +788,7 @@ static bool bc_num_strValid(const char *val, size_t base) {
   return true;
 }
 
-static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
+BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 
   BcStatus status;
   size_t len, i;
@@ -825,7 +824,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
+BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   BcStatus status;
   BcNum temp, mult, result;
@@ -902,8 +901,8 @@ mult_err:
   return status;
 }
 
-static BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
-                                   size_t *nchars)
+BcStatus bc_num_printDigits(unsigned long num, size_t width,
+                            bool radix, size_t *nchars)
 {
   size_t exp, pow, div;
 
@@ -935,8 +934,8 @@ static BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printHex(unsigned long num, size_t width, bool radix,
-                                size_t *nchars)
+BcStatus bc_num_printHex(unsigned long num, size_t width,
+                         bool radix, size_t *nchars)
 {
   width += !!radix;
   if (*nchars + width  >= BC_NUM_PRINT_WIDTH) {
@@ -953,7 +952,7 @@ static BcStatus bc_num_printHex(unsigned long num, size_t width, bool radix,
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars) {
+BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars) {
 
   BcStatus status;
   size_t i;
@@ -971,8 +970,7 @@ static BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars) {
   return status;
 }
 
-static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
-                                 size_t *nchars)
+BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
 {
   BcStatus status;
   BcVec stack;
