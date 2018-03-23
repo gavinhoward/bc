@@ -31,10 +31,7 @@
 
 BcStatus bc_vec_double(BcVec *vec) {
 
-  uint8_t *ptr;
-
-  ptr = realloc(vec->array, vec->size * (vec->cap * 2));
-
+  uint8_t *ptr = realloc(vec->array, vec->size * (vec->cap * 2));
   if (!ptr) return BC_STATUS_MALLOC_FAIL;
 
   vec->array = ptr;
@@ -53,7 +50,6 @@ BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFreeFunc dtor) {
   vec->dtor = dtor;
 
   vec->array = malloc(esize * BC_VEC_INITIAL_CAP);
-
   if (!vec->array) return BC_STATUS_MALLOC_FAIL;
 
   return BC_STATUS_SUCCESS;
@@ -68,7 +64,6 @@ BcStatus bc_vec_expand(BcVec *vec, size_t request) {
   if (vec->cap >= request) return BC_STATUS_SUCCESS;
 
   ptr = realloc(vec->array, vec->size * request);
-
   if (!ptr) return BC_STATUS_MALLOC_FAIL;
 
   vec->array = ptr;
@@ -87,9 +82,7 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
   if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
   size = vec->size;
-  memmove(vec->array + (size * vec->len), data, size);
-
-  ++vec->len;
+  memmove(vec->array + (size * vec->len++), data, size);
 
   return BC_STATUS_SUCCESS;
 }
@@ -102,9 +95,7 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 
   if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
-  vec->array[vec->len] = data;
-
-  ++vec->len;
+  vec->array[vec->len++] = data;
 
   return BC_STATUS_SUCCESS;
 }
@@ -124,10 +115,8 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
   size = vec->size;
   ptr = vec->array + size * idx;
 
-  memmove(ptr + size, ptr, size * (vec->len - idx));
+  memmove(ptr + size, ptr, size * (vec->len++ - idx));
   memmove(ptr, data, size);
-
-  ++vec->len;
 
   return BC_STATUS_SUCCESS;
 }
@@ -152,9 +141,7 @@ BcStatus bc_vec_pop(BcVec *vec) {
   assert(vec);
 
   if (!vec->len) return BC_STATUS_VEC_OUT_OF_BOUNDS;
-
-  --vec->len;
-
+  vec->len -= 1;
   if (vec->dtor) vec->dtor(vec->array + (vec->size * vec->len));
 
   return BC_STATUS_SUCCESS;
@@ -248,7 +235,7 @@ BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
 
   BcStatus status;
 
-  assert(vec && data);
+  assert(vec && data && idx);
 
   *idx = bc_veco_find(vec, data);
 
@@ -266,16 +253,15 @@ BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
   return status;
 }
 
-size_t bc_veco_index(const BcVecO* vec, void *data) {
+size_t bc_veco_index(const BcVecO* v, void *data) {
 
-  size_t idx;
+  size_t i;
 
-  assert(vec && data);
+  assert(v && data);
 
-  idx = bc_veco_find(vec, data);
+  i = bc_veco_find(v, data);
 
-  if (idx >= vec->vec.len || vec->cmp(data, bc_vec_item(&vec->vec, idx)))
-    return BC_INVALID_IDX;
+  if (i >= v->vec.len || v->cmp(data, bc_vec_item(&v->vec, i))) return BC_INVALID_IDX;
 
-  return idx;
+  return i;
 }
