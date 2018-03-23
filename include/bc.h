@@ -80,6 +80,8 @@ BcStatus bc_error_file(BcStatus st, const char *file, size_t line);
 BcStatus bc_posix_error(BcStatus st, const char *file,
                         size_t line, const char *msg);
 
+BcStatus bc_fread(const char *path, char** buf);
+
 extern BcGlobals bcg;
 
 extern const char bc_lib[];

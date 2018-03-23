@@ -390,9 +390,10 @@ BcStatus bc_program_read(BcProgram *p) {
 
   size = BC_PROGRAM_BUF_SIZE;
 
-  status = bc_io_fgetline(&buffer, &size, stdin);
-
-  if (status) goto io_err;
+  if (getline(&buffer, &size, stdin) < 0) {
+    status = BC_STATUS_IO_ERR;
+    goto io_err;
+  }
 
   status = bc_parse_init(&parse, p);
 
