@@ -932,16 +932,13 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
     if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
 
-      long base, max;
+      unsigned long base, max;
       size_t *ptr;
 
       ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
-
-      status = bc_num_long(lval, &base);
-
-      if (status) return status;
-
       max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : p->base_max;
+
+      if ((status = bc_num_ulong(lval, &base))) return status;
 
       if (base < BC_NUM_MIN_BASE || base > max)
         return left->type - BC_RESULT_IBASE + BC_STATUS_EXEC_BAD_IBASE;
@@ -949,21 +946,13 @@ static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
       *ptr = (size_t) base;
     }
   }
-  else {
-    status = bc_program_assignScale(p, lval, rval, inst);
-    if (status) return status;
-  }
+  else if ((status = bc_program_assignScale(p, lval, rval, inst)))
+    return status;
 
-  status = bc_num_init(&result.data.num, lval->len);
-
-  if (status) return status;
-
-  status = bc_num_copy(&result.data.num, lval);
-
-  if (status) goto err;
+  if ((status = bc_num_init(&result.data.num, lval->len))) return status;
+  if ((status = bc_num_copy(&result.data.num, lval))) goto err;
 
   status = bc_program_binaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
-
   if (status) goto err;
 
   return status;

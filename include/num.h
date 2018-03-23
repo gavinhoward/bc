@@ -53,7 +53,7 @@ typedef struct BcNum {
 typedef BcStatus (*BcNumUnaryFunc)(BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumBinaryFunc)(BcNum*, BcNum*, BcNum*, size_t);
 
-typedef BcStatus (*BcNumDigitFunc)(unsigned long, size_t, bool, size_t*, FILE*);
+typedef BcStatus (*BcNumDigitFunc)(unsigned long, size_t, bool, size_t*);
 
 BcStatus bc_num_init(BcNum *n, size_t request);
 
@@ -61,12 +61,10 @@ BcStatus bc_num_expand(BcNum *n, size_t request);
 
 void bc_num_free(void *num);
 
-BcStatus bc_num_copy(void *dest, void *src);
+BcStatus bc_num_copy(BcNum *d, BcNum *s);
 
-BcStatus bc_num_long(BcNum *n, long *result);
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
 
-BcStatus bc_num_long2num(BcNum *n, long val);
 BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale);
