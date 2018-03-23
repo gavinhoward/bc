@@ -113,7 +113,7 @@ regexes = [
 
 regexes_all = [
 	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$',
-	'^  [ ]*assert\(.*?\);$'
+	'\n  [ ]*assert\(.*?\);$'
 ]
 
 replacements = [
