@@ -888,28 +888,30 @@ BcStatus bc_num_printDigits(unsigned long num, size_t width,
   size_t exp, pow, div;
 
   if (*nchars == BC_NUM_PRINT_WIDTH - 1) {
-    if (fputc('\\', stdout) == EOF) return BC_STATUS_IO_ERR;
-    if (fputc('\n', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
   }
 
-  if (fputc(radix ? '.' : ' ', stdout) == EOF) return BC_STATUS_IO_ERR;
-  ++(*nchars);
+  if (*nchars || radix) {
+    if (putchar(radix ? '.' : ' ') == EOF) return BC_STATUS_IO_ERR;
+    ++(*nchars);
+  }
 
   for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
-  for (; pow; pow /= 10, ++(*nchars)) {
+  for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
 
     if (*nchars == BC_NUM_PRINT_WIDTH - 1) {
-      if (fputc('\\', stdout) == EOF) return BC_STATUS_IO_ERR;
-      if (fputc('\n', stdout) == EOF) return BC_STATUS_IO_ERR;
+      if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
+      if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
       *nchars = 0;
     }
 
     div = num / pow;
     num -= div * pow;
 
-    if (fputc(((char) div) + '0', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar(((char) div) + '0') == EOF) return BC_STATUS_IO_ERR;
   }
 
   return BC_STATUS_SUCCESS;
@@ -920,13 +922,13 @@ BcStatus bc_num_printHex(unsigned long num, size_t width,
 {
   width += !!radix;
   if (*nchars + width  >= BC_NUM_PRINT_WIDTH) {
-    if (fputc('\\', stdout) == EOF) return BC_STATUS_IO_ERR;
-    if (fputc('\n', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
   }
 
-  if (radix && fputc('.', stdout) == EOF) return BC_STATUS_IO_ERR;
-  if (fputc(bc_num_hex_digits[num], stdout) == EOF) return BC_STATUS_IO_ERR;
+  if (radix && putchar('.') == EOF) return BC_STATUS_IO_ERR;
+  if (putchar(bc_num_hex_digits[num]) == EOF) return BC_STATUS_IO_ERR;
 
   *nchars = *nchars + width;
 
@@ -939,7 +941,7 @@ BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars) {
   size_t i;
 
   if (n->neg) {
-    if (fputc('-', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
     ++(*nchars);
   }
 
@@ -965,7 +967,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
   n->neg = false;
 
   if (neg) {
-    if (fputc('-', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
     ++nchars;
   }
 
@@ -1126,13 +1128,13 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
          base_t <= BC_BASE_MAX_DEF);
 
   if (*nchars  >= BC_NUM_PRINT_WIDTH) {
-    if (fputc('\\', stdout) == EOF) return BC_STATUS_IO_ERR;
-    if (fputc('\n', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
   }
 
   if (!n->len) {
-    if (fputc('0', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('0') == EOF) return BC_STATUS_IO_ERR;
     ++(*nchars);
     status = BC_STATUS_SUCCESS;
   }
@@ -1142,7 +1144,7 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
   if (status) return status;
 
   if (newline) {
-    if (fputc('\n', stdout) == EOF) return BC_STATUS_IO_ERR;
+    if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
   }
 

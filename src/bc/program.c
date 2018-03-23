@@ -475,7 +475,7 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
     c = str[i];
 
-    if (c != '\\') err = fputc(c, stdout);
+    if (c != '\\') err = putchar(c);
     else {
 
       ++i;
@@ -486,50 +486,50 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
         case 'a':
         {
-          err = fputc('\a', stdout);
+          err = putchar('\a');
           break;
         }
 
         case 'b':
         {
-          err = fputc('\b', stdout);
+          err = putchar('\b');
           break;
         }
 
         case 'e':
         {
-          err = fputc('\\', stdout);
+          err = putchar('\\');
           break;
         }
 
         case 'f':
         {
-          err = fputc('\f', stdout);
+          err = putchar('\f');
           break;
         }
 
         case 'n':
         {
-          err = fputc('\n', stdout);
+          err = putchar('\n');
           *nchars = SIZE_MAX;
           break;
         }
 
         case 'r':
         {
-          err = fputc('\r', stdout);
+          err = putchar('\r');
           break;
         }
 
         case 'q':
         {
-          err = fputc('"', stdout);
+          err = putchar('"');
           break;
         }
 
         case 't':
         {
-          err = fputc('\t', stdout);
+          err = putchar('\t');
           break;
         }
 
@@ -1537,7 +1537,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         for (idx = 0; idx < len; ++idx) {
           char c = s[idx];
-          if (fputc(c, stdout) == EOF) return BC_STATUS_IO_ERR;
+          if (putchar(c) == EOF) return BC_STATUS_IO_ERR;
           if (c == '\n') p->nchars = SIZE_MAX;
           ++p->nchars;
         }
