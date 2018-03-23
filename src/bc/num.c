@@ -228,17 +228,13 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     ptr = ptr_b;
   }
 
-  ptr_a = a->num + a->rdx;
-  ptr_b = b->num + b->rdx;
-  ptr_c = c->num + c->rdx;
-
   for (carry = 0, i = 0; i < min_rdx + min_int; ++i, ++c->len) {
     ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
     carry = ptr_c[i] / 10;
     ptr_c[i] %= 10;
   }
 
-  for (; i < max; ++i, ++c->len) {
+  for (; i < max + min_rdx; ++i, ++c->len) {
     ptr_c[i] += ptr[i] + carry;
     carry = ptr_c[i] / 10;
     ptr_c[i] %= 10;
@@ -529,11 +525,13 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   neg = b->neg;
   b->neg = false;
 
-  if (!neg) scale = BC_MIN(a->rdx * pow, BC_MAX(scale, a->rdx));
-
   if ((status = bc_num_ulong(b, &pow))) return status;
   if ((status = bc_num_init(&copy, a->len))) return status;
   if ((status = bc_num_copy(&copy, a))) goto err;
+
+  if (!neg) scale = BC_MIN(a->rdx * pow, BC_MAX(scale, a->rdx));
+
+  b->neg = neg;
 
   for (powrdx = a->rdx; !(pow & 1); pow >>= 1) {
     powrdx <<= 1;
@@ -556,11 +554,11 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     }
   }
 
-  if (neg && (status = bc_num_inv(a, c, scale))) goto err;
+  if (neg && (status = bc_num_inv(c, c, scale))) goto err;
 
   if (c->rdx > scale && (status = bc_num_truncate(c, c->rdx - scale))) goto err;
 
-  for (zero = true, i = 0; zero && i < c->len; ++i) zero = c->num[i] == 0;
+  for (zero = true, i = 0; zero && i < c->len; ++i) zero = !c->num[i];
   if (zero) bc_num_zero(c);
 
 err:
@@ -816,10 +814,11 @@ BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 
   ptr = strchr(val, '.');
 
-  n->rdx = (ptr != 0) * ((val + len) - (ptr + 1));
+  // Explicitly test for NULL here to produce either a 0 or 1.
+  n->rdx = (ptr != NULL) * ((val + len) - (ptr + 1));
 
   for (i = len - 1; i < len; ++n->len, i -= 1 + (val[i - 1] == '.'))
-    n->num[i] = val[i] - '0';
+    n->num[n->len] = val[i] - '0';
 
   return BC_STATUS_SUCCESS;
 }
@@ -835,19 +834,15 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   len = strlen(val);
   zero = true;
+  bc_num_zero(n);
 
   for (zero = true, i = 0; zero && i < len; ++i)
     zero = (val[i] == '.' || val[i] == '0');
 
-  if (zero) {
-    bc_num_zero(n);
-    return BC_STATUS_SUCCESS;
-  }
+  if (zero) return BC_STATUS_SUCCESS;
 
   if ((status = bc_num_init(&temp, BC_NUM_DEF_SIZE))) return status;
   if ((status = bc_num_init(&mult, BC_NUM_DEF_SIZE))) goto mult_err;
-
-  bc_num_zero(n);
 
   for (i = 0; i < len && (c = val[i]) != '.'; ++i) {
 
@@ -858,8 +853,7 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
     if ((status = bc_num_add(&mult, &temp, n, 0))) goto int_err;
   }
 
-  if (i == len) c = val[i++];
-  if (c == '\0') goto int_err;
+  if (i == len && !(c = val[i])) goto int_err;
 
   assert(c == '.');
 
@@ -868,7 +862,7 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   bc_num_zero(&result);
   bc_num_one(&mult);
 
-  for (digits = 0; i < len && (c = val[i]); ++i, ++digits) {
+  for (i += 1, digits = 0; i < len && (c = val[i]); ++i, ++digits) {
 
     v = c <= '9' ? c - '0' : c - 'A' + 10;
 
