@@ -32,7 +32,6 @@
 #include <limits.h>
 
 #include <status.h>
-#include <io.h>
 #include <bc.h>
 
 BcStatus bc_error(BcStatus st) {

@@ -28,7 +28,6 @@
 #include <limits.h>
 #include <unistd.h>
 
-#include <io.h>
 #include <program.h>
 #include <parse.h>
 #include <instructions.h>
