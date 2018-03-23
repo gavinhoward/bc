@@ -122,6 +122,8 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
     st = bc_parse_parse(&bc->parse);
 
+    if (st == BC_STATUS_QUIT) return st;
+
     if (st && st != BC_STATUS_LEX_EOF) {
       st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line);
       if (st) return st;
