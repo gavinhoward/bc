@@ -96,36 +96,29 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   entry.name = result->data.id.name;
   entry.idx = vec->len;
 
-  if (p->stack.len > 1) {
-    idx = bc_veco_index(veco, &entry);
-    if (idx == BC_INVALID_IDX) return var + BC_STATUS_EXEC_UNDEFINED_ARRAY;
-  }
-  else {
+  status = bc_veco_insert(veco, &entry, &idx);
 
-    status = bc_veco_insert(veco, &entry, &idx);
+  if (status != BC_STATUS_VEC_ITEM_EXISTS) {
 
-    if (status != BC_STATUS_VEC_ITEM_EXISTS) {
+    // We use this because it has a union of BcNum and BcVec.
+    BcResult data;
+    size_t len;
 
-      // We use this because it has a union of BcNum and BcVec.
-      BcResult data;
-      size_t len;
+    if (status) return status;
 
-      if (status) return status;
+    len = strlen(entry.name) + 1;
 
-      len = strlen(entry.name) + 1;
+    if (!(result->data.id.name = malloc(len))) return BC_STATUS_MALLOC_FAIL;
 
-      if (!(result->data.id.name = malloc(len))) return BC_STATUS_MALLOC_FAIL;
+    strcpy(result->data.id.name, entry.name);
 
-      strcpy(result->data.id.name, entry.name);
+    if (flags & BC_PROGRAM_SEARCH_VAR)
+      status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
+    else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
 
-      if (flags & BC_PROGRAM_SEARCH_VAR)
-        status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
-      else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
+    if (status) return status;
 
-      if (status) return status;
-
-      if ((status = bc_vec_push(vec, &data.data))) return status;
-    }
+    if ((status = bc_vec_push(vec, &data.data))) return status;
   }
 
   entry_ptr = bc_veco_item(veco, idx);
