@@ -1,6 +1,7 @@
 #! /usr/bin/bc -q
 
 for (b = 2; b <= 16; ++b) {
+	if (b == 10) continue
 	obase = 10
 	print "ibase = A; ibase = ", b, "\n"
 	obase = b
