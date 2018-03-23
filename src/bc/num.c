@@ -33,7 +33,7 @@
 #include <vector.h>
 #include <bc.h>
 
-void bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len, size_t extra) {
+void bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
 
   size_t i, j;
 
@@ -42,7 +42,6 @@ void bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len, size_t extra) {
     n1[i] -= n2[i];
 
     for (j = 0; n1[i + j] < 0;) {
-      assert(j < len + extra + 1);
       n1[i + j++] += 10;
       n1[i + j] -= 1;
     }
@@ -294,8 +293,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   }
   else start = c->rdx - subtrahend->rdx;
 
-  bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len,
-                   c->len - subtrahend->len);
+  bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
 
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
 
@@ -432,7 +430,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     ptr = copy.num + i;
 
     for (q = 0; ptr[len] || bc_num_compare(ptr, bptr, len, NULL) >= 0; ++q)
-      bc_num_subArrays(ptr, bptr, len, 1);
+      bc_num_subArrays(ptr, bptr, len);
 
     c->num[i] = q;
   }
