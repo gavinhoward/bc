@@ -59,5 +59,5 @@ else
 	echo "halt" | "$bc" -lq "$name" > "$out2"
 fi
 
-	diff "$out1" "$out2"
+diff "$out1" "$out2"
 
