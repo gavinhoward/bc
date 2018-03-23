@@ -60,7 +60,7 @@ BcStatus bc_func_init(BcFunc *func) {
   status = bc_vec_init(&func->labels, sizeof(size_t), NULL);
   if (status) goto label_err;
 
-  func->num_params = 0;
+  func->nparams = 0;
 
   return BC_STATUS_SUCCESS;
 

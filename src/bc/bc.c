@@ -194,7 +194,23 @@ BcStatus bc_process(Bc *bc, const char *text) {
         break;
       }
       else if (st == BC_STATUS_LIMITS) {
-        bc_program_limits(&bc->prog);
+
+        st = BC_STATUS_IO_ERR;
+
+        if (putchar('\n') == EOF) return st;
+
+        if (printf("BC_BASE_MAX     = %ld\n", bc->prog.base_max) < 0 ||
+            printf("BC_DIM_MAX      = %ld\n", bc->prog.dim_max) < 0 ||
+            printf("BC_SCALE_MAX    = %ld\n", bc->prog.scale_max) < 0 ||
+            printf("BC_STRING_MAX   = %ld\n", bc->prog.string_max) < 0 ||
+            printf("Max Exponent    = %ld\n", LONG_MAX) < 0 ||
+            printf("Number of Vars  = %zu\n", SIZE_MAX) < 0)
+        {
+          return st;
+        }
+
+        if (putchar('\n') == EOF) return st;
+
         st = BC_STATUS_SUCCESS;
         continue;
       }

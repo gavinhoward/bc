@@ -1011,7 +1011,7 @@ BcStatus bc_parse_func(BcParse *parse) {
       goto err;
     }
 
-    ++fptr->num_params;
+    ++fptr->nparams;
 
     if ((status = bc_lex_next(&parse->lex, &parse->token))) goto err;
 
@@ -1720,6 +1720,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
   while (!status && parse->ops.len > ops_start) {
 
     ptr = bc_vec_top(&parse->ops);
+    assert(ptr);
     top = *ptr;
 
     assign = top >= BC_LEX_OP_ASSIGN_POWER && top <= BC_LEX_OP_ASSIGN;

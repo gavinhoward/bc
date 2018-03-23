@@ -107,7 +107,7 @@ typedef struct BcFunc {
 
   BcVec labels;
 
-  size_t num_params;
+  size_t nparams;
   BcVec autos;
 
 } BcFunc;

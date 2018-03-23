@@ -109,6 +109,8 @@ regexes = [
 	'^#define BC_MAX\(a, b\) \(\(a\) > \(b\) \? \(a\) : \(b\)\)$',
 	'^#define BC_MIN\(a, b\) \(\(a\) < \(b\) \? \(a\) : \(b\)\)$',
 	'^  \/\/ This is last so I can remove it for toybox.\n  BC_STATUS_INVALID_OPTION,$',
+	'^#define BC_PROGRAM_CHECK_STACK.*$',
+	'^#define BC_PROGRAM_CHECK_RESULTS.*$',
 ]
 
 regexes_all = [
