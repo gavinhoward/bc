@@ -109,7 +109,7 @@ BcStatus bc_signal(Bc *bc) {
 
 BcStatus bc_fread(const char *path, char **buf) {
 
-  BcStatus status;
+  BcStatus st;
   FILE *f;
   size_t size, read;
 
@@ -127,14 +127,14 @@ BcStatus bc_fread(const char *path, char **buf) {
   *buf = malloc(size + 1);
 
   if (!*buf) {
-    status = BC_STATUS_MALLOC_FAIL;
+    st = BC_STATUS_MALLOC_FAIL;
     goto malloc_err;
   }
 
   read = fread(*buf, 1, size, f);
 
   if (read != size) {
-    status = BC_STATUS_IO_ERR;
+    st = BC_STATUS_IO_ERR;
     goto read_err;
   }
 
@@ -152,7 +152,7 @@ malloc_err:
 
   fclose(f);
 
-  return status;
+  return st;
 }
 
 BcStatus bc_process(Bc *bc, const char *text) {
