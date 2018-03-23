@@ -42,6 +42,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   BcVecO *veco;
   size_t idx, ip_idx;
   BcAuto *a;
+  int var;
 
   for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
 
@@ -88,35 +89,43 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
     }
   }
 
-  vec = (flags & BC_PROGRAM_SEARCH_VAR) ? &p->vars : &p->arrays;
-  veco = (flags & BC_PROGRAM_SEARCH_VAR) ? &p->var_map : &p->array_map;
+  var = flags & BC_PROGRAM_SEARCH_VAR;
+  vec = var ? &p->vars : &p->arrays;
+  veco = var ? &p->var_map : &p->array_map;
 
   entry.name = result->data.id.name;
   entry.idx = vec->len;
 
-  status = bc_veco_insert(veco, &entry, &idx);
+  if (p->stack.len > 1) {
+    idx = bc_veco_index(veco, &entry);
+    if (idx == BC_INVALID_IDX) return var + BC_STATUS_EXEC_UNDEFINED_ARRAY;
+  }
+  else {
 
-  if (status != BC_STATUS_VEC_ITEM_EXISTS) {
+    status = bc_veco_insert(veco, &entry, &idx);
 
-    // We use this because it has a union of BcNum and BcVec.
-    BcResult data;
-    size_t len;
+    if (status != BC_STATUS_VEC_ITEM_EXISTS) {
 
-    if (status) return status;
+      // We use this because it has a union of BcNum and BcVec.
+      BcResult data;
+      size_t len;
 
-    len = strlen(entry.name) + 1;
+      if (status) return status;
 
-    if (!(result->data.id.name = malloc(len))) return BC_STATUS_MALLOC_FAIL;
+      len = strlen(entry.name) + 1;
 
-    strcpy(result->data.id.name, entry.name);
+      if (!(result->data.id.name = malloc(len))) return BC_STATUS_MALLOC_FAIL;
 
-    if (flags & BC_PROGRAM_SEARCH_VAR)
-      status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
-    else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
+      strcpy(result->data.id.name, entry.name);
 
-    if (status) return status;
+      if (flags & BC_PROGRAM_SEARCH_VAR)
+        status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
+      else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
 
-    if ((status = bc_vec_push(vec, &data.data))) return status;
+      if (status) return status;
+
+      if ((status = bc_vec_push(vec, &data.data))) return status;
+    }
   }
 
   entry_ptr = bc_veco_item(veco, idx);
