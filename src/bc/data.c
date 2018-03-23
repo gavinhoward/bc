@@ -82,7 +82,6 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
 
   BC_ERR_IDX_POSIX,
   BC_ERR_IDX_POSIX,
@@ -142,7 +141,6 @@ const char *bc_err_descs[] = {
   "array too long; must be [1, BC_DIM_MAX]",
   "bad read() expression",
   "read() call inside of a read() call",
-  "bad constant",
   "variable is wrong type",
 
   "POSIX only allows one character names; the following is bad:",

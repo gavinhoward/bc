@@ -37,11 +37,10 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
                            BcNum **ret, uint8_t flags)
 {
   BcStatus status;
-  BcEntry entry;
+  BcEntry entry, *entry_ptr;
   BcVec *vec;
   BcVecO *veco;
   size_t idx, ip_idx;
-  BcEntry *entry_ptr;
   BcAuto *a;
 
   for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
@@ -60,8 +59,10 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
     assert(func);
 
     for (idx = 0; idx < func->autos.len; ++idx) {
+
       a = bc_vec_item(&func->autos, idx);
       if (!a) return BC_STATUS_EXEC_UNDEFINED_VAR;
+
       if (!strcmp(a->name, result->data.id.name)) {
 
         BcResult *r;
@@ -73,8 +74,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
         r = bc_vec_item(&p->results, ip->len + idx);
 
-        if (!r) return cond ? BC_STATUS_EXEC_UNDEFINED_VAR :
-                              BC_STATUS_EXEC_UNDEFINED_ARRAY;
+        assert(r);
 
         if (cond || flags & BC_PROGRAM_SEARCH_ARRAY_ONLY) *ret = &r->data.num;
         else {
@@ -106,9 +106,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     len = strlen(entry.name) + 1;
 
-    result->data.id.name = malloc(len);
-
-    if (!result->data.id.name) return BC_STATUS_MALLOC_FAIL;
+    if (!(result->data.id.name = malloc(len))) return BC_STATUS_MALLOC_FAIL;
 
     strcpy(result->data.id.name, entry.name);
 
@@ -118,14 +116,12 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     if (status) return status;
 
-    status = bc_vec_push(vec, &data.data);
-
-    if (status) return status;
+    if ((status = bc_vec_push(vec, &data.data))) return status;
   }
 
   entry_ptr = bc_veco_item(veco, idx);
 
-  if (!entry_ptr) return BC_STATUS_VEC_OUT_OF_BOUNDS;
+  assert(entry_ptr);
 
   if (flags & BC_PROGRAM_SEARCH_VAR) {
     *ret = bc_vec_item(vec, entry_ptr->idx);
@@ -133,9 +129,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   }
   else {
 
-    BcVec *aptr;
-
-    aptr = bc_vec_item(vec, entry_ptr->idx);
+    BcVec *aptr = bc_vec_item(vec, entry_ptr->idx);
 
     if (!aptr) return BC_STATUS_EXEC_UNDEFINED_ARRAY;
 
@@ -145,7 +139,6 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
     }
 
     status = bc_array_expand(aptr, result->data.id.idx + 1);
-
     if (status) return status;
 
     *ret = bc_vec_item(aptr, result->data.id.idx);
@@ -156,9 +149,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
 BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num, bool hex) {
 
-  BcStatus status;
-
-  status = BC_STATUS_SUCCESS;
+  BcStatus status = BC_STATUS_SUCCESS;
 
   switch (result->type) {
 
@@ -179,9 +170,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num, bool hex) {
       idx = result->data.id.idx;
 
       s = bc_vec_item(&p->constants, idx);
-
-      if (!s) return BC_STATUS_EXEC_BAD_CONSTANT;
-
+      assert(s);
       len = strlen(*s);
 
       status = bc_num_init(&result->data.num, len);
