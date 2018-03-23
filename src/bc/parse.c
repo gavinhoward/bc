@@ -1748,7 +1748,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
   {
     goto err;
   }
-  else if (nrelops > 1 &&
+  else if (nrelops != 1 &&
            (status = bc_posix_error(BC_STATUS_POSIX_MULTIPLE_REL,
                                     parse->lex.file, parse->lex.line, NULL)))
   {

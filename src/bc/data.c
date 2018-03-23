@@ -152,7 +152,7 @@ const char *bc_err_descs[] = {
   "POSIX requires parentheses around return expressions",
   "POSIX does not allow boolean operators; the following is bad:",
   "POSIX does not allow comparison operators outside if or loops",
-  "POSIX does not allow more than one comparison operator per condition",
+  "POSIX requires exactly one comparison operator per condition",
   "POSIX does not allow an empty init expression in a for loop",
   "POSIX does not allow an empty condition expression in a for loop",
   "POSIX does not allow an empty update expression in a for loop",
