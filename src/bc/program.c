@@ -1640,7 +1640,6 @@ BcStatus bc_program_exec(BcProgram *p) {
         break;
       }
 
-      case BC_INST_JUMP_NOT_ZERO:
       case BC_INST_JUMP_ZERO:
       {
         BcResult *operand;
@@ -1667,12 +1666,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         assert(addr);
 
-        if (inst == BC_INST_JUMP ||
-            (inst == BC_INST_JUMP_ZERO && cond) ||
-            (inst == BC_INST_JUMP_NOT_ZERO && !cond))
-        {
+        if (inst == BC_INST_JUMP || cond)
           ip->idx = *addr;
-        }
 
         break;
       }
@@ -1969,7 +1964,6 @@ BcStatus bc_program_print(BcProgram *p) {
         }
 
         case BC_INST_JUMP:
-        case BC_INST_JUMP_NOT_ZERO:
         case BC_INST_JUMP_ZERO:
         case BC_INST_PUSH_NUM:
         case BC_INST_STR:

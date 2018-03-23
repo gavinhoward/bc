@@ -32,8 +32,7 @@
 #define BC_INST_READ ((uint8_t) 'r')
 
 #define BC_INST_JUMP ((uint8_t) 'J')
-#define BC_INST_JUMP_NOT_ZERO ((uint8_t) 'n')
-#define BC_INST_JUMP_ZERO ((uint8_t) 'z')
+#define BC_INST_JUMP_ZERO ((uint8_t) 'j')
 
 #define BC_INST_PUSH_VAR ((uint8_t) 'V')
 #define BC_INST_PUSH_ARRAY ((uint8_t) 'A')
