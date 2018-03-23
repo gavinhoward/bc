@@ -127,7 +127,10 @@ replacements = [
 	[ 'BC_MAX', 'maxof' ],
 	[ 'BC_MIN', 'minof' ],
 	[ 'BC_INVALID_IDX', '-1' ],
-	[ ' bool ', ' int ' ],
+	[ ' bool', ' int' ],
+	[ '^bool ', 'int ' ],
+	[ ' true', ' 1' ],
+	[ ' false', ' 0' ],
 ]
 
 for reg in regexes:

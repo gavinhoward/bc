@@ -3,7 +3,6 @@ include/vector.h
 include/num.h
 include/lang.h
 include/instructions.h
-include/io.h
 include/lex.h
 include/program.h
 include/parse.h
@@ -13,7 +12,6 @@ src/bc/lib.c
 src/bc/vector.c
 src/bc/num.c
 src/bc/lang.c
-src/bc/io.c
 src/bc/lex.c
 src/bc/parse.c
 src/bc/program.c
