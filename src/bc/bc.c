@@ -108,6 +108,54 @@ BcStatus bc_signal(Bc *bc) {
   return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_fread(const char *path, char **buf) {
+
+  BcStatus status;
+  FILE *f;
+  size_t size, read;
+
+  assert(path && buf);
+
+  f = fopen(path, "r");
+
+  if (!f) return BC_STATUS_EXEC_FILE_ERR;
+
+  fseek(f, 0, SEEK_END);
+  size = ftell(f);
+
+  fseek(f, 0, SEEK_SET);
+
+  *buf = malloc(size + 1);
+
+  if (!*buf) {
+    status = BC_STATUS_MALLOC_FAIL;
+    goto malloc_err;
+  }
+
+  read = fread(*buf, 1, size, f);
+
+  if (read != size) {
+    status = BC_STATUS_IO_ERR;
+    goto read_err;
+  }
+
+  (*buf)[size] = '\0';
+
+  fclose(f);
+
+  return BC_STATUS_SUCCESS;
+
+read_err:
+
+  free(*buf);
+
+malloc_err:
+
+  fclose(f);
+
+  return status;
+}
+
 BcStatus bc_process(Bc *bc, const char *text) {
 
   BcStatus st = bc_lex_text(&bc->parse.lex, text, &bc->parse.token);
@@ -204,7 +252,7 @@ BcStatus bc_file(Bc *bc, const char *file) {
 
   bc->prog.file = file;
 
-  if ((st = bc_io_fread(file, &data))) return st;
+  if ((st = bc_fread(file, &data))) return st;
 
   bc_lex_init(&bc->parse.lex, file);
 
@@ -262,7 +310,7 @@ BcStatus bc_stdin(Bc *bc) {
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
   while (!bcg.sig_other && (!st || st != BC_STATUS_QUIT) &&
-         !(st = bc_io_fgetline(&buf, &bufn, stdin)))
+         getline(&buf, &bufn, stdin) >= 0)
   {
     size_t len, i;
 
