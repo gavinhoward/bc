@@ -112,7 +112,8 @@ regexes = [
 ]
 
 regexes_all = [
-	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$'
+	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$',
+	'^  [ ]*assert\(.*?\);$'
 ]
 
 replacements = [
@@ -126,6 +127,7 @@ replacements = [
 	[ 'BC_MAX', 'maxof' ],
 	[ 'BC_MIN', 'minof' ],
 	[ 'BC_INVALID_IDX', '-1' ],
+	[ ' bool ', ' int ' ],
 ]
 
 for reg in regexes:
