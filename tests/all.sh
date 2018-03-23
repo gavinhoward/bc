@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 script="$0"
 
@@ -10,23 +10,40 @@ else
 	bc="$1"
 fi
 
-set -e
-
 bcdir=$(dirname "${bc}")
 
 out1="$bcdir/log_bc.txt"
 out2="$bcdir/log_test.txt"
 
-while read t; do
+while read -u 10 t; do
 
 	echo "$t"
 	"$testdir/test.sh" "$t" "$bc" "$out1" "$out2"
 
-done < "$testdir/all.txt"
+	ret="$?"
+
+	if [ "$ret" -ne 0 ]; then
+
+		command -v meld >/dev/null 2>&1
+
+		ret2="$?"
+
+		if [ "$ret2" -eq 0 ]; then
+			meld "$out1" "$out2"
+		fi
+
+		read -p "Continue? " reply
+		if [[ $reply =~ ^[Yy]$ ]]; then
+			continue
+		else
+			exit "$ret"
+		fi
+
+	fi
+
+done 10< "$testdir/all.txt"
 
 "$testdir/scripts.sh" "$bc" "$out1" "$out2"
-
-set +e
 
 # TODO: Read tests
 # TODO: Lex errors
