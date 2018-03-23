@@ -32,7 +32,7 @@
 #include <lex.h>
 #include <bc.h>
 
-static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
 
   char c;
 
@@ -47,7 +47,7 @@ static BcStatus bc_lex_whitespace(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
 
   const char *start;
   size_t newlines, len, i, j;
@@ -85,7 +85,7 @@ static BcStatus bc_lex_string(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
 
   uint32_t newlines;
   bool end;
@@ -125,7 +125,7 @@ static BcStatus bc_lex_comment(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
+BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
 
   const char *buffer;
   const char *buf;
@@ -186,7 +186,7 @@ static BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
   const char *buffer;
@@ -244,7 +244,7 @@ static BcStatus bc_lex_name(BcLex *lex, BcLexToken *token) {
   return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
+BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
   BcStatus status;
   char c;
