@@ -877,6 +877,7 @@ BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
   BcAuto *auto_ptr;
   BcResult param, *arg;
 
+  status = BC_STATUS_SUCCESS;
   nparams = bc_program_index(code, idx);
 
   ip.idx = 0;
