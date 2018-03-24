@@ -34,6 +34,15 @@
 #include <status.h>
 #include <bc.h>
 
+void bc_sig(int sig) {
+
+  if (sig == SIGINT) {
+    if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
+      bcg.sig_int = 1;
+  }
+  else bcg.sig_other = 1;
+}
+
 BcStatus bc_error(BcStatus st) {
 
   if (!st || st >= BC_STATUS_POSIX_NAME_LEN) return st == BC_STATUS_QUIT;
@@ -75,15 +84,6 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
   return st * !!s;
-}
-
-void bc_sig(int sig) {
-
-  if (sig == SIGINT) {
-    if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
-      bcg.sig_int = 1;
-  }
-  else bcg.sig_other = 1;
 }
 
 void bc_reset(Bc *bc) {
