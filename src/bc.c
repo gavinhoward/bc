@@ -254,10 +254,27 @@ err:
   return st;
 }
 
+BcStatus bc_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
+
+  char *temp;
+
+  if (total_len > *n) {
+
+    if (!(temp = realloc(*buffer, total_len + 1))) return BC_STATUS_MALLOC_FAIL;
+
+    *buffer = temp;
+    *n = total_len;
+  }
+
+  strcat(*buffer, buf);
+
+  return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_stdin(Bc *bc) {
 
   BcStatus st;
-  char *buf, *buffer, *temp;
+  char *buf, *buffer;
   size_t n, bufn, slen, total_len;
   bool string, comment;
 
@@ -279,8 +296,7 @@ BcStatus bc_stdin(Bc *bc) {
     goto buf_err;
   }
 
-  string = false;
-  comment = false;
+  string = comment = false;
   st = BC_STATUS_SUCCESS;
 
   // The following loop is complicated because the vm tries
@@ -319,39 +335,13 @@ BcStatus bc_stdin(Bc *bc) {
       }
 
       if (string || comment || buf[len - 2] == '\\') {
-
-        if (total_len > n) {
-
-          temp = realloc(buffer, total_len + 1);
-
-          if (!temp) {
-            st = BC_STATUS_MALLOC_FAIL;
-            goto exit_err;
-          }
-
-          buffer = temp;
-          n = slen + len;
-        }
-
-        strcat(buffer, buf);
+        if ((st = bc_concat(&buffer, &n, buf, total_len))) goto exit_err;
         continue;
       }
     }
 
-    if (total_len > n) {
+    if ((st = bc_concat(&buffer, &n, buf, total_len))) goto exit_err;
 
-      temp = realloc(buffer, total_len + 1);
-
-      if (!temp) {
-        st = BC_STATUS_MALLOC_FAIL;
-        goto exit_err;
-      }
-
-      buffer = temp;
-      n = slen + len;
-    }
-
-    strcat(buffer, buf);
     st = bc_process(bc, buffer);
     buffer[0] = '\0';
 
