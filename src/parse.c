@@ -1677,6 +1677,18 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
         break;
       }
 
+      case BC_LEX_KEY_LAST:
+      {
+        status = bc_vec_pushByte(code, BC_INST_PUSH_LAST);
+
+        paren_expr = get_token = true;
+        rparen = false;
+        ++nexprs;
+        prev = BC_EXPR_IBASE;
+
+        break;
+      }
+
       case BC_LEX_KEY_LENGTH:
       case BC_LEX_KEY_SQRT:
       {
