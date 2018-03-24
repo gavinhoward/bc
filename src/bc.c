@@ -163,10 +163,11 @@ BcStatus bc_process(Bc *bc, const char *text) {
     return st;
   }
 
-  do {
+  while (true) {
 
     st = bc_parse_parse(&bc->parse);
 
+    if (st == BC_STATUS_LEX_EOF) break;
     if (st == BC_STATUS_QUIT || bcg.sig_other) return st;
 
     if (st == BC_STATUS_LIMITS) {
@@ -197,8 +198,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
       st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line);
       if (st) return st;
     }
-
-  } while (!bcg.sig_other && !st);
+  }
 
   if (BC_PARSE_CAN_EXEC(&bc->parse)) {
 
