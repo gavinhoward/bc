@@ -224,7 +224,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num, bool hex) {
     default:
     {
       // This is here to prevent compiler warnings in release mode.
-      *num = NULL;
+      *num = &result->data.num;
       assert(false);
       break;
     }
@@ -248,13 +248,13 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 
   assert(r && l);
 
+  *left = l;
+  *right = r;
+
   hex = l->type == BC_RESULT_IBASE || l->type == BC_RESULT_OBASE;
 
   if ((status = bc_program_num(p, l, lval, false))) return status;
   if ((status = bc_program_num(p, r, rval, hex))) return status;
-
-  *left = l;
-  *right = r;
 
   return BC_STATUS_SUCCESS;
 }
@@ -465,7 +465,6 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
   size_t len, i;
   int err;
 
-  err = 0;
   len = strlen(str);
 
   for (i = 0; i < len; ++i,  ++(*nchars)) {
@@ -676,7 +675,7 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
       {
         // This is here to silence a compiler warning in release mode.
         cond = 0;
-        assert(false);
+        assert(cond);
         break;
       }
     }
@@ -769,7 +768,7 @@ BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
     {
       // This is here to silence a compiler warning in release mode.
       status = BC_STATUS_SUCCESS;
-      assert(false);
+      assert(status);
       break;
     }
   }

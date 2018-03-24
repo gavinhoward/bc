@@ -79,6 +79,8 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
 
   assert(vec && data);
 
+  vec->cap += !vec->cap;
+
   if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
   size = vec->size;
@@ -92,6 +94,8 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
   BcStatus status;
 
   assert(vec && vec->size == sizeof(uint8_t));
+
+  vec->cap += !vec->cap;
 
   if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
@@ -107,6 +111,8 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
   size_t size;
 
   assert(vec && data && idx <= vec->len);
+
+  vec->cap += !vec->cap;
 
   if (idx == vec->len) return bc_vec_push(vec, data);
 

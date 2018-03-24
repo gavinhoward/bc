@@ -53,7 +53,7 @@ int bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len, size_t *digits) {
   size_t i, digs;
   BcDigit c;
 
-  for (digs = 0, i = len - 1; i < len; ++digs, --i) {
+  for (c = 0, digs = 0, i = len - 1; i < len; ++digs, --i) {
     if ((c = n1[i] - n2[i])) break;
   }
 
@@ -818,7 +818,6 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   unsigned long v;
 
   len = strlen(val);
-  zero = true;
   bc_num_zero(n);
 
   for (zero = true, i = 0; zero && i < len; ++i)
