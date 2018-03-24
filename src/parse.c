@@ -99,7 +99,7 @@ BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
         status = bc_vec_pushByte(code, bc_parse_insts[top - BC_LEX_OP_NEGATE]);
         if (status) return status;
 
-        if ((status = bc_vec_pop(ops))) return status;
+        bc_vec_pop(ops);
 
         *num_exprs -= top != BC_LEX_OP_BOOL_NOT &&
                       top != BC_LEX_OP_NEGATE ? 1 : 0;
@@ -144,7 +144,7 @@ BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
     status = bc_vec_pushByte(code, bc_parse_insts[top - BC_LEX_OP_NEGATE]);
     if (status) return status;
 
-    if ((status = bc_vec_pop(ops))) return status;
+    bc_vec_pop(ops);
 
     *nexs -= top != BC_LEX_OP_BOOL_NOT &&
              top != BC_LEX_OP_NEGATE ? 1 : 0;
@@ -156,7 +156,7 @@ BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
     top = *ptr;
   }
 
-  if ((status = bc_vec_pop(ops))) return status;
+  bc_vec_pop(ops);
 
   return bc_lex_next(&parse->lex, &parse->token);
 }
@@ -609,6 +609,8 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
   BcStatus status;
   uint8_t *flag_ptr;
 
+  status = BC_STATUS_SUCCESS;
+
   if (parse->flags.len <= 1 || parse->num_braces == 0)
     return BC_STATUS_PARSE_BAD_TOKEN;
 
@@ -635,7 +637,7 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
       if ((status = bc_lex_next(&parse->lex, &parse->token))) return status;
     }
 
-    if ((status = bc_vec_pop(&parse->flags))) return status;
+    bc_vec_pop(&parse->flags);
 
     flag_ptr = BC_PARSE_TOP_FLAG_PTR(parse);
     *flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
@@ -649,7 +651,7 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
     BcFunc *func;
     size_t *label;
 
-    if ((status = bc_vec_pop(&parse->flags))) return status;
+    bc_vec_pop(&parse->flags);
 
     ip = bc_vec_top(&parse->exit_labels);
     assert(ip);
@@ -660,7 +662,7 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     *label = code->len;
 
-    status = bc_vec_pop(&parse->exit_labels);
+    bc_vec_pop(&parse->exit_labels);
   }
   else if (BC_PARSE_FUNC_INNER(parse)) {
 
@@ -668,7 +670,7 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     if ((status = bc_vec_pushByte(code, BC_INST_RETURN_ZERO))) return status;
 
-    status = bc_vec_pop(&parse->flags);
+    bc_vec_pop(&parse->flags);
   }
   else {
 
@@ -695,10 +697,9 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     *label = code->len;
 
-    if ((status = bc_vec_pop(&parse->flags))) return status;
-    if ((status = bc_vec_pop(&parse->exit_labels))) return status;
-
-    status = bc_vec_pop(&parse->cond_labels);
+    bc_vec_pop(&parse->flags);
+    bc_vec_pop(&parse->exit_labels);
+    bc_vec_pop(&parse->cond_labels);
   }
 
   return status;
@@ -716,7 +717,7 @@ BcStatus bc_parse_startBody(BcParse *parse, uint8_t flags) {
   return bc_vec_push(&parse->flags, &flags);
 }
 
-BcStatus bc_parse_noElse(BcParse *parse, BcVec *code) {
+void bc_parse_noElse(BcParse *parse, BcVec *code) {
 
   uint8_t *flag_ptr;
   BcInstPtr *ip;
@@ -736,7 +737,7 @@ BcStatus bc_parse_noElse(BcParse *parse, BcVec *code) {
 
   *label = code->len;
 
-  return bc_vec_pop(&parse->exit_labels);
+  bc_vec_pop(&parse->exit_labels);
 }
 
 BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
@@ -794,7 +795,9 @@ BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
 
   if ((status = bc_vec_pushByte(code, BC_INST_JUMP))) return status;
   if ((status = bc_parse_pushIndex(code, ip.idx))) return status;
-  if ((status = bc_parse_noElse(parse, code))) return status;
+
+  bc_parse_noElse(parse, code);
+
   if ((status = bc_vec_push(&parse->exit_labels, &ip))) return status;
   if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
   if ((status = bc_lex_next(&parse->lex, &parse->token))) return status;
@@ -1294,7 +1297,10 @@ BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       parse->auto_part = false;
 
-      if (BC_PARSE_IF_END(parse)) return bc_parse_noElse(parse, code);
+      if (BC_PARSE_IF_END(parse)) {
+        bc_parse_noElse(parse, code);
+        return BC_STATUS_SUCCESS;
+      }
       else if (BC_PARSE_BODY(parse)) return bc_parse_body(parse, code, false);
 
       break;
@@ -1754,7 +1760,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
     nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEGATE ? 1 : 0;
 
-    if ((status = bc_vec_pop(&parse->ops))) goto err;
+    bc_vec_pop(&parse->ops);
   }
 
   if (nexprs != 1) {

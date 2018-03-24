@@ -136,30 +136,25 @@ void* bc_vec_item_rev(const BcVec *vec, size_t idx) {
   return vec->array + vec->size * (vec->len - idx - 1);
 }
 
-BcStatus bc_vec_pop(BcVec *vec) {
+void bc_vec_pop(BcVec *vec) {
 
   assert(vec);
 
-  if (!vec->len) return BC_STATUS_VEC_OUT_OF_BOUNDS;
+  if (!vec->len) return;
+
   vec->len -= 1;
   if (vec->dtor) vec->dtor(vec->array + (vec->size * vec->len));
-
-  return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_npop(BcVec *vec, size_t n) {
-
-  BcStatus status = BC_STATUS_SUCCESS;
+void bc_vec_npop(BcVec *vec, size_t n) {
 
   assert(vec && n <= vec->len);
 
   if (!vec->dtor) vec->len -= n;
   else {
     size_t len = vec->len - n;
-    while (!status && vec->len > len) status = bc_vec_pop(vec);
+    while (vec->len > len) bc_vec_pop(vec);
   }
-
-  return status;
 }
 
 void bc_vec_free(void *vec) {

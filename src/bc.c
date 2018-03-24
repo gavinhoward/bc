@@ -86,15 +86,15 @@ void bc_sig(int sig) {
   else bcg.sig_other = 1;
 }
 
-BcStatus bc_signal(Bc *bc) {
+void bc_signal(Bc *bc) {
 
-  BcStatus st;
   BcFunc *func;
   BcInstPtr *ip;
 
   bcg.sig_int = 0;
 
-  if ((st = bc_vec_npop(&bc->prog.stack, bc->prog.stack.len - 1))) return st;
+  bc_vec_npop(&bc->prog.stack, bc->prog.stack.len - 1);
+  bc_vec_npop(&bc->prog.results, bc->prog.results.len);
 
   func = bc_vec_item(&bc->prog.funcs, 0);
   assert(func);
@@ -103,8 +103,6 @@ BcStatus bc_signal(Bc *bc) {
 
   ip->idx = func->code.len;
   bc->parse.lex.idx = bc->parse.lex.len;
-
-  return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_fread(const char *path, char **buf) {
@@ -169,89 +167,58 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
     st = bc_parse_parse(&bc->parse);
 
-    if (st == BC_STATUS_QUIT) return st;
+    if (st == BC_STATUS_QUIT || bcg.sig_other) return st;
+
+    if (st == BC_STATUS_LIMITS) {
+
+      st = BC_STATUS_IO_ERR;
+
+      if (putchar('\n') == EOF) return st;
+
+      if (printf("BC_BASE_MAX     = %ld\n", bc->prog.base_max) < 0 ||
+          printf("BC_DIM_MAX      = %ld\n", bc->prog.dim_max) < 0 ||
+          printf("BC_SCALE_MAX    = %ld\n", bc->prog.scale_max) < 0 ||
+          printf("BC_STRING_MAX   = %ld\n", bc->prog.string_max) < 0 ||
+          printf("Max Exponent    = %ld\n", LONG_MAX) < 0 ||
+          printf("Number of Vars  = %zu\n", SIZE_MAX) < 0)
+      {
+        return st;
+      }
+
+      if (putchar('\n') == EOF) return st;
+
+      st = BC_STATUS_SUCCESS;
+      continue;
+    }
+
+    if (st || (bcg.sig_int && !bcg.interactive)) bc_signal(bc);
 
     if (st && st != BC_STATUS_LEX_EOF) {
       st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line);
       if (st) return st;
     }
 
-    if (bcg.sig_other) return st;
-
-    if (bcg.sig_int && (!bcg.interactive || (st = bc_signal(bc)))) {
-      if ((st = bc_error(st))) return st;
-    }
-
-    if (st) {
-
-      if (st != BC_STATUS_LEX_EOF && st != BC_STATUS_QUIT &&
-          st != BC_STATUS_LIMITS)
-      {
-        st = bc_error_file(st, bc->prog.file, bc->parse.lex.line);
-        if (st) return st;
-      }
-      else if (st == BC_STATUS_QUIT) {
-        break;
-      }
-      else if (st == BC_STATUS_LIMITS) {
-
-        st = BC_STATUS_IO_ERR;
-
-        if (putchar('\n') == EOF) return st;
-
-        if (printf("BC_BASE_MAX     = %ld\n", bc->prog.base_max) < 0 ||
-            printf("BC_DIM_MAX      = %ld\n", bc->prog.dim_max) < 0 ||
-            printf("BC_SCALE_MAX    = %ld\n", bc->prog.scale_max) < 0 ||
-            printf("BC_STRING_MAX   = %ld\n", bc->prog.string_max) < 0 ||
-            printf("Max Exponent    = %ld\n", LONG_MAX) < 0 ||
-            printf("Number of Vars  = %zu\n", SIZE_MAX) < 0)
-        {
-          return st;
-        }
-
-        if (putchar('\n') == EOF) return st;
-
-        st = BC_STATUS_SUCCESS;
-        continue;
-      }
-      else st = BC_STATUS_SUCCESS;
-
-      while (!st && bc->parse.token.type != BC_LEX_NEWLINE &&
-             bc->parse.token.type != BC_LEX_SEMICOLON)
-      {
-        st = bc_lex_next(&bc->parse.lex, &bc->parse.token);
-      }
-    }
-
   } while (!bcg.sig_other && !st);
-
-  if (bcg.sig_other ||
-      (st != BC_STATUS_LEX_EOF && st != BC_STATUS_QUIT && (st = bc_error(st))))
-  {
-    return st;
-  }
 
   if (BC_PARSE_CAN_EXEC(&bc->parse)) {
 
     st = bc->exec(&bc->prog);
 
-    if (bcg.sig_other || st == BC_STATUS_QUIT) return st;
+    if (st == BC_STATUS_QUIT || bcg.sig_other) return st;
 
     if (bcg.interactive) {
 
       fflush(stdout);
 
-      if (st && (st = bc_error(st))) return st;
-
       if (bcg.sig_int) {
-        st = bc_signal(bc);
         fprintf(stderr, "%s", bc_program_ready_prompt);
         fflush(stderr);
       }
     }
-    else {
-      if (st && (st = bc_error(st))) return st;
-      if (bcg.sig_int && (st = bc_signal(bc))) st = bc_error(st);
+
+    if (st || bcg.sig_int) {
+      bc_signal(bc);
+      if ((st = bc_error(st))) return st;
     }
   }
 

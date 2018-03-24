@@ -94,7 +94,8 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
 
   assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
-  if ((status = bc_vec_npop(d, d->len))) return status;
+  bc_vec_npop(d, d->len);
+
   if ((status = bc_vec_expand(d, s->cap))) return status;
 
   d->len = s->len;
