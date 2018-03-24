@@ -103,6 +103,7 @@ void bc_reset(Bc *bc) {
 
   ip->idx = func->code.len;
   bc->parse.lex.idx = bc->parse.lex.len;
+  bc->parse.token.type = BC_LEX_EOF;
 }
 
 BcStatus bc_fread(const char *path, char **buf) {
