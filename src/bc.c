@@ -398,7 +398,9 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
     goto err;
   }
 
-  if (!(flags & BC_FLAG_Q) && (printf("%s", bc_header) < 0)) {
+  if ((bcg.interactive && !(flags & BC_FLAG_Q)) &&
+      (printf("%s", bc_header) < 0))
+  {
     status = BC_STATUS_IO_ERR;
     goto err;
   }
