@@ -13,7 +13,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-CFLAGS += -Wall -Wextra -pedantic -I./include/ -std=c99 -funsigned-char -D_POSIX_C_SOURCE=200809L
+CFLAGS += -Wall -Wextra -pedantic -I./include/ -std=c99 -funsigned-char -D_POSIX_C_SOURCE=200809L -flto
 
 LDLIBS += -lm
 
