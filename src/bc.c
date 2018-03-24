@@ -86,7 +86,7 @@ void bc_sig(int sig) {
   else bcg.sig_other = 1;
 }
 
-void bc_signal(Bc *bc) {
+void bc_reset(Bc *bc) {
 
   BcFunc *func;
   BcInstPtr *ip;
@@ -191,7 +191,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
       continue;
     }
 
-    if (st || (bcg.sig_int && !bcg.interactive)) bc_signal(bc);
+    if (st || (bcg.sig_int && !bcg.interactive)) bc_reset(bc);
 
     if (st && st != BC_STATUS_LEX_EOF) {
       st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line);
@@ -217,7 +217,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
     }
 
     if (st || bcg.sig_int) {
-      bc_signal(bc);
+      bc_reset(bc);
       if ((st = bc_error(st))) return st;
     }
   }
