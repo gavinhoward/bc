@@ -40,16 +40,16 @@ define e(x){
 	r=x+1
 	p=x
 	f=v=1
-	for(i=2;v;++i){
+	for(i=2;v!=0;++i){
 		p*=x;
 		f*=i
 		v=p/f
 		r+=v
 	}
-	while(f--)r*=r
+	while((f--)!=0)r*=r
 	scale=s
 	ibase=b
-	if(m)return(1/r)
+	if(m!=0)return(1/r)
 	return(r/1)
 }
 define l(x){
@@ -75,7 +75,7 @@ define l(x){
 	r=a=(x-1)/(x+1)
 	q=a*a
 	v=1
-	for(i=3;v;i+=2){
+	for(i=3;v!=0;i+=2){
 		n*=m
 		v=n/i
 		r+=v
@@ -99,17 +99,17 @@ define s(x){
 	scale=0
 	q=(x/a+2)/4
 	x-=4*q*a
-	if(q%2)x=-x
+	if(q%2!=0)x=-x
 	scale=s+2
 	r=a=x
 	q=-x*x
-	for(i=3;a;i+=2){
+	for(i=3;a!=0;i+=2){
 		a*=q/(i*(i-1))
 		r+=a
 	}
 	scale=s
 	ibase=b
-	if(n)return(-r/1)
+	if(n!=0)return(-r/1)
 	return(r/1)
 }
 define c(x){
@@ -155,7 +155,7 @@ define a(x){
 	r=u=x
 	f=-x*x
 	t=1
-	for(i=3;t;i+=2){
+	for(i=3;t!=0;i+=2){
 		u*=f
 		t=u/i
 		r+=t
@@ -182,12 +182,12 @@ define j(n,x){
 	r=v=1
 	f=-x*x/4
 	scale+=length(a)-scale(a)
-	for(i=1;v;++i){
+	for(i=1;v!=0;++i){
 		v=v*s/i/(n+i)
 		r+=v
 	}
 	scale=s
 	ibase=b
-	if(o)return(-a*r/1)
+	if(o!=0)return(-a*r/1)
 	return(a*r/1)
 }
