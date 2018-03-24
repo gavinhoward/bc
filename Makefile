@@ -13,13 +13,7 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-CFLAGS ?= -Wall -Wextra -pedantic -I./include/ -std=c99 -funsigned-char -D_POSIX_C_SOURCE=200809L
-
-ifeq "$(CC)" "clang"
-	SANITIZERS = -fsanitize=address -fsanitize=undefined
-else
-	SANITIZERS =
-endif
+CFLAGS += -Wall -Wextra -pedantic -I./include/ -std=c99 -funsigned-char -D_POSIX_C_SOURCE=200809L
 
 LDLIBS += -lm
 
@@ -36,7 +30,7 @@ BC_EXEC = bc
 
 PREFIX ?= /usr/local
 
-all: CFLAGS += -g -O0 $(SANITIZERS)
+all: CFLAGS += -g -O0
 all: $(BC_EXEC)
 
 help:
