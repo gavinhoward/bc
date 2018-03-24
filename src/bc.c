@@ -354,6 +354,11 @@ BcStatus bc_stdin(Bc *bc) {
     strcat(buffer, buf);
     st = bc_process(bc, buffer);
     buffer[0] = '\0';
+
+    if (st) {
+      bc_reset(bc);
+      if (!bcg.interactive) return st;
+    }
   }
 
   st = !st || st == BC_STATUS_QUIT || st == BC_STATUS_LEX_EOF ?
