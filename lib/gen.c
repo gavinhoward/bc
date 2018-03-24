@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc >= 4) header_name = argv[3];
-  else header_name = "src/lib/header.c";
+  else header_name = "lib/header.c";
 
   header = fopen(header_name, "r");
 

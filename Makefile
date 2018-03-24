@@ -27,11 +27,9 @@ BC_OBJ = $(shell for i in src/bc/*.c ; do printf "%s\n" $${i%.c}.o ; done)
 
 BC_MAIN_OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done)
 
-GEN_LIB = gen
-
 GEN = gen
 
-BC_LIB = src/lib/lib.bc
+BC_LIB = lib/lib.bc
 
 BC_C_LIB = src/bc/lib.c
 BC_LIB_O = src/bc/lib.o
@@ -73,7 +71,7 @@ reldebug: CLAGS += -O1 -g
 reldebug: clean $(BC_EXEC)
 
 $(GEN):
-	$(CC) $(CFLAGS) -o $(GEN_LIB) src/lib/$(GEN_LIB).c
+	$(CC) $(CFLAGS) -o $(GEN) lib/$(GEN).c
 
 mathlib: $(GEN)
 	./$(GEN) $(BC_LIB) $(BC_C_LIB)
