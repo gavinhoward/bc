@@ -188,7 +188,6 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
       if (putchar('\n') == EOF) return st;
 
-      st = BC_STATUS_SUCCESS;
       continue;
     }
 

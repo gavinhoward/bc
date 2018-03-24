@@ -123,7 +123,10 @@ BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
 
 err:
 
-  if (parse->token.string) free(parse->token.string);
+  if (parse->token.string) {
+    free(parse->token.string);
+    parse->token.string = NULL;
+  }
 
   return status;
 }
@@ -614,10 +617,6 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
   if (parse->flags.len <= 1 || parse->num_braces == 0)
     return BC_STATUS_PARSE_BAD_TOKEN;
 
-  flag_ptr = bc_vec_top(&parse->flags);
-
-  assert(flag_ptr);
-
   if (brace) {
 
     if (parse->token.type == BC_LEX_RIGHT_BRACE) {
@@ -640,6 +639,7 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
     bc_vec_pop(&parse->flags);
 
     flag_ptr = BC_PARSE_TOP_FLAG_PTR(parse);
+    assert(flag_ptr);
     *flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
 
     if (parse->token.type == BC_LEX_KEY_ELSE)
@@ -955,6 +955,8 @@ BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code, BcLexTokenType type) {
     size_t top;
     BcInstPtr *ip;
 
+    if (!parse->exit_labels.len) return BC_STATUS_PARSE_BAD_TOKEN;
+
     top = parse->exit_labels.len - 1;
     ip = bc_vec_item(&parse->exit_labels, top);
 
@@ -963,7 +965,7 @@ BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code, BcLexTokenType type) {
       --top;
     }
 
-    assert(top < parse->exit_labels.len && ip);
+    if (top >= parse->exit_labels.len || !ip) return BC_STATUS_PARSE_BAD_TOKEN;
 
     idx = ip->idx;
   }
@@ -1802,7 +1804,10 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
 err:
 
-  if (parse->token.string) free(parse->token.string);
+  if (parse->token.string) {
+    free(parse->token.string);
+    parse->token.string = NULL;
+  }
 
   return status;
 }
