@@ -643,6 +643,25 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
     if (parse->token.type == BC_LEX_KEY_ELSE)
       status = bc_parse_else(parse, code);
   }
+  else if (BC_PARSE_ELSE(parse)) {
+
+    BcInstPtr *ip;
+    BcFunc *func;
+    size_t *label;
+
+    if ((status = bc_vec_pop(&parse->flags))) return status;
+
+    ip = bc_vec_top(&parse->exit_labels);
+    assert(ip);
+    func = bc_vec_item(&parse->program->funcs, parse->func);
+    assert(func);
+    label = bc_vec_item(&func->labels, ip->idx);
+    assert(label);
+
+    *label = code->len;
+
+    status = bc_vec_pop(&parse->exit_labels);
+  }
   else if (BC_PARSE_FUNC_INNER(parse)) {
 
     parse->func = 0;
