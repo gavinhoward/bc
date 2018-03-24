@@ -23,16 +23,14 @@ endif
 
 LDLIBS += -lm
 
-BC_OBJ = $(shell for i in src/bc/*.c ; do printf "%s\n" $${i%.c}.o ; done)
-
-BC_MAIN_OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done)
+BC_OBJ = $(shell for i in src/*.c ; do printf "%s\n" $${i%.c}.o ; done)
 
 GEN = gen
 
 BC_LIB = lib/lib.bc
 
-BC_C_LIB = src/bc/lib.c
-BC_LIB_O = src/bc/lib.o
+BC_C_LIB = src/lib.c
+BC_LIB_O = src/lib.o
 
 BC_EXEC = bc
 
@@ -79,12 +77,11 @@ mathlib: $(GEN)
 
 $(BC_OBJ): mathlib
 
-$(BC_EXEC): $(BC_OBJ) $(BC_MAIN_OBJ)
-	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_MAIN_OBJ) $(BC_OBJ) $(LDLIBS)
+$(BC_EXEC): $(BC_OBJ)
+	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_OBJ) $(LDLIBS)
 
 clean:
 	$(RM) $(BC_OBJ)
-	$(RM) $(BC_MAIN_OBJ)
 	$(RM) $(BC_EXEC)
 	$(RM) $(GEN)
 	$(RM) $(BC_C_LIB)
