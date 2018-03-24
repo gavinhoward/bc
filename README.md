@@ -7,6 +7,31 @@ This is an implementation of POSIX `bc` that implements
 This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 0-clause License.
 
+# Build
+
+To build, use the following commands:
+
+```
+make release
+make install
+```
+
+To use a non-default compiler, replace the first command with:
+
+```
+CC=<compiler> make release
+```
+
+To install into a non-default (the default is `/usr/local`) prefix, change the
+second command to:
+
+```
+PREFIX=<prefix> make install
+```
+
+To make a minimum size release, use `make minrelease` instead of `make release`.
+To make a debug release, use `make reldebug`.
+
 ## Status
 
 This `bc` is in alpha stage, so it is ready for testing in the wild, but it is
