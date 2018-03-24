@@ -149,7 +149,7 @@ BcStatus bc_lex_number(BcLex *lex, BcLexToken *token, char start) {
     c = buffer[++i];
   }
 
-  len = i + 1;
+  len = i + 1 * (buffer[i - 1] != '.');
 
   token->string = malloc(len - backslashes * 2 + 1);
   if (!token->string) return BC_STATUS_MALLOC_FAIL;
