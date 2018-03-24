@@ -168,8 +168,9 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
     st = bc_parse_parse(&bc->parse);
 
-    if (st == BC_STATUS_LEX_EOF) break;
-    if (st == BC_STATUS_QUIT || bcg.sig_other) return st;
+    if (st == BC_STATUS_LEX_EOF || st == BC_STATUS_LEX_BIN_FILE) break;
+    if (st == BC_STATUS_LEX_BIN_FILE || st == BC_STATUS_QUIT || bcg.sig_other)
+      return st;
 
     if (st == BC_STATUS_LIMITS) {
 
@@ -305,8 +306,8 @@ BcStatus bc_stdin(Bc *bc) {
   // a backslash newline combo as whitespace, per the bc spec.
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
-  while (!bcg.sig_other && (!st || st != BC_STATUS_QUIT) &&
-         getline(&buf, &bufn, stdin) >= 0)
+  while ((!st || (st != BC_STATUS_QUIT && st != BC_STATUS_LEX_BIN_FILE)) &&
+         !bcg.sig_int && getline(&buf, &bufn, stdin) >= 0)
   {
     size_t len, i;
 
@@ -345,10 +346,7 @@ BcStatus bc_stdin(Bc *bc) {
     st = bc_process(bc, buffer);
     buffer[0] = '\0';
 
-    if (st) {
-      bc_reset(bc);
-      if (!bcg.interactive) return st;
-    }
+    if (st) bc_reset(bc);
   }
 
   st = !st || st == BC_STATUS_QUIT || st == BC_STATUS_LEX_EOF ?
