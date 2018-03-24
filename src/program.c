@@ -262,12 +262,10 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 BcStatus bc_program_binaryOpRetire(BcProgram *p, BcResult *result,
                                    BcResultType type)
 {
-  BcStatus status;
-
   result->type = type;
 
-  if ((status = bc_vec_pop(&p->results))) return status;
-  if ((status = bc_vec_pop(&p->results))) return status;
+  bc_vec_pop(&p->results);
+  bc_vec_pop(&p->results);
 
   return bc_vec_push(&p->results, result);
 }
@@ -293,9 +291,8 @@ BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result, BcNum **val) {
 BcStatus bc_program_unaryOpRetire(BcProgram *p, BcResult *result,
                                   BcResultType type)
 {
-  BcStatus status;
   result->type = type;
-  if ((status = bc_vec_pop(&p->results))) return status;
+  bc_vec_pop(&p->results);
   return bc_vec_push(&p->results, result);
 }
 
@@ -370,7 +367,7 @@ BcStatus bc_program_read(BcProgram *p) {
   if ((status = bc_vec_push(&p->stack, &ip))) goto exec_err;
   if ((status = bc_program_exec(p))) goto exec_err;
 
-  status = bc_vec_pop(&p->stack);
+  bc_vec_pop(&p->stack);
 
 exec_err:
 
@@ -989,12 +986,13 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
   }
 
   // We need to pop arguments as well, so this takes that into account.
-  status = bc_vec_npop(&p->results, p->results.len - (ip->len - func->nparams));
-  if (status) goto err;
+  bc_vec_npop(&p->results, p->results.len - (ip->len - func->nparams));
 
   if ((status = bc_vec_push(&p->results, &result))) goto err;
 
-  return bc_vec_pop(&p->stack);
+  bc_vec_pop(&p->stack);
+
+  return status;
 
 err:
 
@@ -1103,7 +1101,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
   if ((status = bc_program_assign(p, inst2))) goto err;
 
   if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP) {
-    if ((status = bc_vec_pop(&p->results))) goto err;
+    bc_vec_pop(&p->results);
     if ((status = bc_vec_push(&p->results, &copy))) goto err;
   }
 
@@ -1349,9 +1347,9 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 
     // We need to reset these, so the function can be repopulated.
     func->nparams = 0;
-    if ((status = bc_vec_npop(&func->autos, func->autos.len))) return status;
-    if ((status = bc_vec_npop(&func->code, func->code.len))) return status;
-    status = bc_vec_npop(&func->labels, func->labels.len);
+    bc_vec_npop(&func->autos, func->autos.len);
+    bc_vec_npop(&func->code, func->code.len);
+    bc_vec_npop(&func->labels, func->labels.len);
   }
   else {
     if ((status = bc_func_init(&f))) return status;
@@ -1413,7 +1411,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if ((status = bc_program_unaryOpPrep(p, &operand, &num))) return status;
         cond = bc_num_cmp(num, &p->zero, NULL) == 0;
-        status = bc_vec_pop(&p->results);
+        bc_vec_pop(&p->results);
       }
       // Fallthrough.
       case BC_INST_JUMP:
@@ -1483,7 +1481,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_POP:
       {
-        status = bc_vec_pop(&p->results);
+        bc_vec_pop(&p->results);
         break;
       }
 
@@ -1517,7 +1515,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
         if ((status = bc_num_copy(&p->last, num))) return status;
 
-        status = bc_vec_pop(&p->results);
+        bc_vec_pop(&p->results);
 
         break;
       }
