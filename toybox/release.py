@@ -59,7 +59,7 @@ for name in files:
 	for i in range(22, len(lines)):
 		content += lines[i]
 
-bc_c = "src/bc/bc.c"
+bc_c = "src/bc.c"
 bc_c_stuff = ""
 
 with open(bc_c) as f:
@@ -133,6 +133,7 @@ replacements = [
 	[ '^bool ', 'int ' ],
 	[ ' true', ' 1' ],
 	[ ' false', ' 0' ],
+	[ 'true', '1' ],
 ]
 
 for reg in regexes:
