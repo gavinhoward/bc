@@ -390,6 +390,7 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
 
   sigemptyset(&sa.sa_mask);
   sa.sa_handler = bc_sig;
+  sa.sa_flags = SA_RESTART;
 
   if (sigaction(SIGINT, &sa, NULL) < 0 || sigaction(SIGPIPE, &sa, NULL) < 0 ||
       sigaction(SIGHUP, &sa, NULL) < 0 || sigaction(SIGTERM, &sa, NULL) < 0)
