@@ -50,6 +50,7 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_LEX,
   BC_ERR_IDX_LEX,
   BC_ERR_IDX_LEX,
+  BC_ERR_IDX_LEX,
 
   BC_ERR_IDX_PARSE,
   BC_ERR_IDX_PARSE,
@@ -103,6 +104,7 @@ const char *bc_err_descs[] = {
   "I/O error",
 
   "bad character",
+  "file is not text",
   "string end could not be found",
   "comment end could not be found",
   "end of file",
