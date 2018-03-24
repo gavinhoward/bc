@@ -253,6 +253,7 @@ BcStatus bc_lex_token(BcLex *lex, BcLexToken *token) {
 
     case '\0':
     {
+      lex->newline = true;
       token->type = BC_LEX_EOF;
       break;
     }
@@ -649,6 +650,7 @@ BcStatus bc_lex_next(BcLex *lex, BcLexToken *token) {
   assert(lex && token);
 
   if (lex->idx == lex->len) {
+    lex->newline = true;
     token->type = BC_LEX_EOF;
     return BC_STATUS_LEX_EOF;
   }
