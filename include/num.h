@@ -46,7 +46,7 @@ typedef struct BcNum {
 #define BC_NUM_MAX_INPUT_BASE (16)
 #define BC_NUM_DEF_SIZE (16)
 
-#define BC_NUM_PRINT_WIDTH (69)
+#define BC_NUM_PRINT_WIDTH (70)
 
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 
