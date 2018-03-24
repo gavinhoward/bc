@@ -1095,8 +1095,8 @@ BcStatus bc_num_copy(BcNum *d, BcNum *s) {
   d->neg = s->neg;
   d->rdx = s->rdx;
 
-  memcpy(d->num, s->num, sizeof(char) * d->len);
-  memset(d->num + d->len, 0, sizeof(char) * (d->cap - d->len));
+  memcpy(d->num, s->num, sizeof(BcDigit) * d->len);
+  memset(d->num + d->len, 0, sizeof(BcDigit) * (d->cap - d->len));
 
   return BC_STATUS_SUCCESS;
 }
