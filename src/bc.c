@@ -45,7 +45,7 @@ void bc_sig(int sig) {
 
 BcStatus bc_error(BcStatus st) {
 
-  if (!st || st >= BC_STATUS_POSIX_NAME_LEN) return st == BC_STATUS_QUIT;
+  if (!st || st >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
   fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[bc_err_type_indices[st]],
           bc_err_descs[st]);
@@ -55,8 +55,7 @@ BcStatus bc_error(BcStatus st) {
 
 BcStatus bc_error_file(BcStatus st, const char *file, size_t line) {
 
-  if (!st || !file || st >= BC_STATUS_POSIX_NAME_LEN)
-    return st == BC_STATUS_QUIT;
+  if (!st || !file || st >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
   fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[st]],
           bc_err_descs[st]);
@@ -84,26 +83,6 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
   return st * !!s;
-}
-
-void bc_reset(Bc *bc) {
-
-  BcFunc *func;
-  BcInstPtr *ip;
-
-  bcg.sig_int = 0;
-
-  bc_vec_npop(&bc->prog.stack, bc->prog.stack.len - 1);
-  bc_vec_npop(&bc->prog.results, bc->prog.results.len);
-
-  func = bc_vec_item(&bc->prog.funcs, 0);
-  assert(func);
-  ip = bc_vec_top(&bc->prog.stack);
-  assert(ip);
-
-  ip->idx = func->code.len;
-  bc->parse.lex.idx = bc->parse.lex.len;
-  bc->parse.lex.token.type = BC_LEX_EOF;
 }
 
 BcStatus bc_fread(const char *path, char **buf) {
@@ -158,19 +137,12 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
   BcStatus st = bc_lex_text(&bc->parse.lex, text);
 
-  if (st && st != BC_STATUS_LEX_EOF &&
-      (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line)))
-  {
+  if (st && (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line)))
     return st;
-  }
 
-  while (true) {
+  while (bc->parse.lex.token.type != BC_LEX_EOF) {
 
     st = bc_parse_parse(&bc->parse);
-
-    if (st == BC_STATUS_LEX_EOF || st == BC_STATUS_LEX_BIN_FILE) break;
-    if (st == BC_STATUS_LEX_BIN_FILE || st == BC_STATUS_QUIT || bcg.sig_other)
-      return st;
 
     if (st == BC_STATUS_LIMITS) {
 
@@ -192,20 +164,16 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
       continue;
     }
-
-    if (st || (bcg.sig_int && !bcg.interactive)) bc_reset(bc);
-
-    if (st && st != BC_STATUS_LEX_EOF) {
-      st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line);
-      if (st) return st;
+    else if (st == BC_STATUS_QUIT || bcg.sig_other ||
+        (st && (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line))))
+    {
+      return st;
     }
   }
 
   if (BC_PARSE_CAN_EXEC(&bc->parse)) {
 
     st = bc->exec(&bc->prog);
-
-    if (st == BC_STATUS_QUIT || bcg.sig_other) return st;
 
     if (bcg.interactive) {
 
@@ -217,10 +185,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
       }
     }
 
-    if (st || bcg.sig_int) {
-      bc_reset(bc);
-      if ((st = bc_error(st))) return st;
-    }
+    if (bcg.sig_int || (st && (st = bc_error(st))))  return st;
   }
 
   return st;
@@ -345,8 +310,6 @@ BcStatus bc_stdin(Bc *bc) {
 
     st = bc_process(bc, buffer);
     buffer[0] = '\0';
-
-    if (st) bc_reset(bc);
   }
 
   st = !st || st == BC_STATUS_QUIT || st == BC_STATUS_LEX_EOF ?

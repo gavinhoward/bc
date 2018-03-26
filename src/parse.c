@@ -1515,6 +1515,17 @@ BcStatus bc_parse_parse(BcParse *parse) {
     }
   }
 
+  if (status || bcg.sig_int) {
+
+    if (parse->func) {
+      bc_program_resetFunc(parse->prog, parse->func);
+      parse->func = 0;
+    }
+
+    parse->lex.idx = parse->lex.len;
+    parse->lex.token.type = BC_LEX_EOF;
+  }
+
   return status;
 }
 
