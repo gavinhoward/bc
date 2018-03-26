@@ -348,10 +348,12 @@ BcStatus bc_program_read(BcProgram *p) {
   bc_lex_init(&parse.lex, "<stdin>");
   if ((status = bc_lex_text(&parse.lex, buffer))) goto exec_err;
 
-  status = bc_parse_expr(&parse, &func->code, BC_PARSE_EXPR_NO_READ);
+  if ((status = bc_parse_expr(&parse, &func->code, BC_PARSE_EXPR_NO_READ))) return status;
 
-  if (status != BC_STATUS_LEX_EOF && parse.lex.token.type != BC_LEX_NEWLINE) {
-    status = status ? status : BC_STATUS_EXEC_BAD_READ_EXPR;
+  if (parse.lex.token.type != BC_LEX_NEWLINE &&
+      parse.lex.token.type != BC_LEX_EOF)
+  {
+    status = BC_STATUS_EXEC_BAD_READ_EXPR;
     goto exec_err;
   }
 
@@ -1247,6 +1249,34 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
   return status;
 }
 
+void bc_program_resetFunc(BcProgram *p, size_t idx) {
+
+  BcFunc *func = bc_vec_item(&p->funcs, idx);
+
+  assert(func);
+
+  func->nparams = 0;
+  bc_vec_npop(&func->code, func->code.len);
+  bc_vec_npop(&func->autos, func->autos.len);
+  bc_vec_npop(&func->labels, func->labels.len);
+}
+
+void bc_program_reset(BcProgram *p) {
+
+  BcFunc *func;
+  BcInstPtr *ip;
+
+  func = bc_vec_item(&p->funcs, 0);
+  assert(func);
+  ip = bc_vec_top(&p->stack);
+  assert(ip);
+
+  ip->idx = func->code.len;
+
+  bc_vec_npop(&p->stack, p->stack.len - 1);
+  bc_vec_npop(&p->results, p->results.len);
+}
+
 BcStatus bc_program_exec(BcProgram *p) {
 
   BcStatus status;
@@ -1266,7 +1296,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   assert(func);
   code = func->code.array;
 
-  while (!bcg.sig_int && ip->idx < func->code.len) {
+  while (!bcg.sig_other && !bcg.sig_int && ip->idx < func->code.len) {
 
     uint8_t inst = code[(ip->idx)++];
 
@@ -1529,6 +1559,8 @@ BcStatus bc_program_exec(BcProgram *p) {
     code = func->code.array;
   }
 
+  if (status || bcg.sig_int) bc_program_reset(p);
+
   return status;
 }
 
@@ -1573,6 +1605,8 @@ BcStatus bc_program_print(BcProgram *p) {
 
     if (putchar('\n') == EOF) status = BC_STATUS_IO_ERR;
   }
+
+  if (status || bcg.sig_int) bc_program_reset(p);
 
   return status;
 }
