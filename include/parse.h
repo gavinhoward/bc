@@ -89,7 +89,7 @@
 // by subtracting the position of the first operator in the
 // lex enum and adding the position of the first in the expr
 // enum. Note: This only works for binary operators.
-#define BC_PARSE_TOKEN_TO_EXPR(type) ((type) - BC_LEX_OP_POWER + BC_EXPR_POWER)
+#define BC_PARSE_TOKEN_TO_INST(type) ((type) - BC_LEX_OP_NEG + BC_INST_NEG)
 
 typedef struct BcOp {
 
@@ -137,6 +137,5 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags);
 
 extern const bool bc_parse_token_exprs[];
 extern const BcOp bc_parse_ops[];
-extern const uint8_t bc_parse_insts[];
 
 #endif // BC_PARSE_H
