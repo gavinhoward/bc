@@ -103,7 +103,7 @@ void bc_reset(Bc *bc) {
 
   ip->idx = func->code.len;
   bc->parse.lex.idx = bc->parse.lex.len;
-  bc->parse.token.type = BC_LEX_EOF;
+  bc->parse.lex.token.type = BC_LEX_EOF;
 }
 
 BcStatus bc_fread(const char *path, char **buf) {
@@ -156,7 +156,7 @@ malloc_err:
 
 BcStatus bc_process(Bc *bc, const char *text) {
 
-  BcStatus st = bc_lex_text(&bc->parse.lex, text, &bc->parse.token);
+  BcStatus st = bc_lex_text(&bc->parse.lex, text);
 
   if (st && st != BC_STATUS_LEX_EOF &&
       (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line)))
@@ -402,8 +402,7 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
   if (flags & BC_FLAG_L) {
 
     bc_lex_init(&bc.parse.lex, bc_lib_name);
-    if ((status = bc_lex_text(&bc.parse.lex, bc_lib, &bc.parse.token)))
-      goto err;
+    if ((status = bc_lex_text(&bc.parse.lex, bc_lib))) goto err;
 
     while (!status) status = bc_parse_parse(&bc.parse);
     if (status != BC_STATUS_LEX_EOF) goto err;

@@ -101,20 +101,18 @@ typedef struct BcOp {
 typedef struct BcParse {
 
   BcLex lex;
-  BcLexToken token;
 
   BcVec flags;
 
   BcVec exit_labels;
-
   BcVec cond_labels;
 
   BcVec ops;
 
-  BcProgram *program;
+  BcProgram *prog;
   size_t func;
 
-  uint32_t num_braces;
+  size_t num_braces;
 
   bool auto_part;
 
