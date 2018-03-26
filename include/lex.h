@@ -141,7 +141,7 @@ typedef struct BcLexKeyword {
 
 } BcLexKeyword;
 
-#define BC_LEX_KW_ENTRY(a, b, c) { .name = a, .len = b, .posix = c }
+#define BC_LEX_KW_ENTRY(a, b, c) { .name = (a), .len = (b), .posix = (c) }
 
 // ** Exclude start. **
 void bc_lex_init(BcLex *lex, const char *file);
