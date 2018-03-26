@@ -117,13 +117,6 @@ typedef enum BcLexTokenType {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_ENUM)
 } BcLexTokenType;
 
-typedef struct BcLexToken {
-
-  BcLexTokenType type;
-  char *string;
-
-} BcLexToken;
-
 typedef struct BcLex {
 
   const char *buffer;
@@ -132,6 +125,11 @@ typedef struct BcLex {
   bool newline;
   const char *file;
   size_t len;
+
+  struct {
+    BcLexTokenType type;
+    char *string;
+  } token;
 
 } BcLex;
 
@@ -148,9 +146,9 @@ typedef struct BcLexKeyword {
 // ** Exclude start. **
 void bc_lex_init(BcLex *lex, const char *file);
 
-BcStatus bc_lex_text(BcLex *lex, const char *text, BcLexToken *token);
+BcStatus bc_lex_text(BcLex *lex, const char *text);
 
-BcStatus bc_lex_next(BcLex *lex, BcLexToken *token);
+BcStatus bc_lex_next(BcLex *lex);
 // ** Exclude end. **
 
 extern const char *bc_lex_token_type_strs[];

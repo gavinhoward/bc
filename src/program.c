@@ -346,11 +346,11 @@ BcStatus bc_program_read(BcProgram *p) {
 
   if ((status = bc_parse_init(&parse, p))) goto io_err;
   bc_lex_init(&parse.lex, "<stdin>");
-  if ((status = bc_lex_text(&parse.lex, buffer, &parse.token))) goto exec_err;
+  if ((status = bc_lex_text(&parse.lex, buffer))) goto exec_err;
 
   status = bc_parse_expr(&parse, &func->code, BC_PARSE_EXPR_NO_READ);
 
-  if (status != BC_STATUS_LEX_EOF && parse.token.type != BC_LEX_NEWLINE) {
+  if (status != BC_STATUS_LEX_EOF && parse.lex.token.type != BC_LEX_NEWLINE) {
     status = status ? status : BC_STATUS_EXEC_BAD_READ_EXPR;
     goto exec_err;
   }
