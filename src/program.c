@@ -30,7 +30,6 @@
 
 #include <program.h>
 #include <parse.h>
-#include <instructions.h>
 #include <bc.h>
 
 BcStatus bc_program_search(BcProgram *p, BcResult *result,
@@ -301,19 +300,15 @@ BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult *operand1, *operand2, result;
   BcNum *num1, *num2;
+  BcNumBinaryFunc op;
 
   status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
   if (status) return status;
 
   if ((status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE))) return status;
 
-  if (inst != BC_INST_OP_POWER) {
-    BcNumBinaryFunc op = bc_program_math_ops[inst - BC_INST_OP_MODULUS];
-    status = op(num1, num2, &result.data.num, p->scale);
-  }
-  else status = bc_num_pow(num1, num2, &result.data.num, p->scale);
-
-  if (status) goto err;
+  op = bc_program_math_ops[inst - BC_INST_POWER];
+  if ((status = op(num1, num2, &result.data.num, p->scale))) goto err;
 
   status = bc_program_binaryOpRetire(p, &result, BC_RESULT_INTERMEDIATE);
   if (status) goto err;
@@ -626,46 +621,46 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 
   if ((status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE))) return status;
 
-  if (inst == BC_INST_OP_BOOL_AND)
+  if (inst == BC_INST_BOOL_AND)
     cond = bc_num_cmp(num1, &p->zero, NULL) && bc_num_cmp(num2, &p->zero, NULL);
-  else if (inst == BC_INST_OP_BOOL_OR)
+  else if (inst == BC_INST_BOOL_OR)
     cond = bc_num_cmp(num1, &p->zero, NULL) || bc_num_cmp(num2, &p->zero, NULL);
   else {
 
     cmp = bc_num_cmp(num1, num2, NULL);
 
     switch (inst) {
-      case BC_INST_OP_REL_EQUAL:
+      case BC_INST_REL_EQ:
       {
         cond = cmp == 0;
         break;
       }
 
-      case BC_INST_OP_REL_LESS_EQ:
+      case BC_INST_REL_LE:
       {
         cond = cmp <= 0;
         break;
       }
 
-      case BC_INST_OP_REL_GREATER_EQ:
+      case BC_INST_REL_GE:
       {
         cond = cmp >= 0;
         break;
       }
 
-      case BC_INST_OP_REL_NOT_EQ:
+      case BC_INST_REL_NE:
       {
         cond = cmp != 0;
         break;
       }
 
-      case BC_INST_OP_REL_LESS:
+      case BC_INST_REL_LT:
       {
         cond = cmp < 0;
         break;
       }
 
-      case BC_INST_OP_REL_GREATER:
+      case BC_INST_REL_GT:
       {
         cond = cmp > 0;
         break;
@@ -696,81 +691,17 @@ err:
   return status;
 }
 
-BcNumBinaryFunc bc_program_assignOp(uint8_t inst) {
-
-  switch (inst) {
-
-    case BC_INST_OP_ASSIGN_POWER:
-    {
-      return bc_num_pow;
-    }
-
-    case BC_INST_OP_ASSIGN_MULTIPLY:
-    {
-      return bc_num_mul;
-    }
-
-    case BC_INST_OP_ASSIGN_DIVIDE:
-    {
-      return bc_num_div;
-    }
-
-    case BC_INST_OP_ASSIGN_MODULUS:
-    {
-      return bc_num_mod;
-    }
-
-    case BC_INST_OP_ASSIGN_PLUS:
-    {
-      return bc_num_add;
-    }
-
-    case BC_INST_OP_ASSIGN_MINUS:
-    {
-      return bc_num_sub;
-    }
-
-    default:
-    {
-      assert(false);
-      return NULL;
-    }
-  }
-}
-
 BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
                                 BcNum *rval, uint8_t inst)
 {
   BcStatus status;
   unsigned long result;
+  BcNumBinaryFunc op;
 
-  switch (inst) {
-
-    case BC_INST_OP_ASSIGN_POWER:
-    case BC_INST_OP_ASSIGN_MULTIPLY:
-    case BC_INST_OP_ASSIGN_DIVIDE:
-    case BC_INST_OP_ASSIGN_MODULUS:
-    case BC_INST_OP_ASSIGN_PLUS:
-    case BC_INST_OP_ASSIGN_MINUS:
-    {
-      BcNumBinaryFunc op = bc_program_assignOp(inst);
-      status = op(scale, rval, scale, p->scale);
-      break;
-    }
-
-    case BC_INST_OP_ASSIGN:
-    {
-      status = bc_num_copy(scale, rval);
-      break;
-    }
-
-    default:
-    {
-      // This is here to silence a compiler warning in release mode.
-      status = BC_STATUS_SUCCESS;
-      assert(status);
-      break;
-    }
+  if (inst == BC_INST_ASSIGN)  status = bc_num_copy(scale, rval);
+  else {
+    op = bc_program_math_ops[inst - BC_INST_ASSIGN_POWER];
+    status = op(scale, rval, scale, p->scale);
   }
 
   if (status) return status;
@@ -789,6 +720,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult *left, *right, result;
   BcNum *lval, *rval;
+  BcNumBinaryFunc op;
 
   status = bc_program_binaryOpPrep(p, &left, &lval, &right, &rval);
   if (status) return status;
@@ -796,36 +728,15 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_INTERMEDIATE)
     return BC_STATUS_PARSE_BAD_ASSIGN;
 
-  if (inst == BC_EXPR_ASSIGN_DIVIDE && !bc_num_cmp(rval, &p->zero, NULL))
+  if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(rval, &p->zero, NULL))
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
   if (left->type != BC_RESULT_SCALE) {
 
-    switch (inst) {
-
-      case BC_INST_OP_ASSIGN_POWER:
-      case BC_INST_OP_ASSIGN_MULTIPLY:
-      case BC_INST_OP_ASSIGN_DIVIDE:
-      case BC_INST_OP_ASSIGN_MODULUS:
-      case BC_INST_OP_ASSIGN_PLUS:
-      case BC_INST_OP_ASSIGN_MINUS:
-      {
-        BcNumBinaryFunc op = bc_program_assignOp(inst);
-        status = op(lval, rval, lval, p->scale);
-        break;
-      }
-
-      case BC_INST_OP_ASSIGN:
-      {
-        status = bc_num_copy(lval, rval);
-        break;
-      }
-
-      default:
-      {
-        assert(false);
-        break;
-      }
+    if (inst == BC_INST_ASSIGN)  status = bc_num_copy(lval, rval);
+    else {
+      op = bc_program_math_ops[inst - BC_INST_ASSIGN_POWER];
+      status = op(lval, rval, lval, p->scale);
     }
 
     if (status) return status;
@@ -1086,10 +997,10 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 
   if ((status = bc_program_unaryOpPrep(p, &ptr, &num))) return status;
 
-  inst2 = inst == BC_INST_INC || inst == BC_INST_INC_DUP ?
-            BC_INST_OP_ASSIGN_PLUS : BC_INST_OP_ASSIGN_MINUS;
+  inst2 = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
+            BC_INST_ASSIGN_PLUS : BC_INST_ASSIGN_MINUS;
 
-  if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP) {
+  if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
     copy.type = BC_RESULT_INTERMEDIATE;
     if ((status = bc_num_init(&copy.data.num, num->len))) return status;
   }
@@ -1099,7 +1010,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
   if ((status = bc_vec_push(&p->results, &result))) goto err;
   if ((status = bc_program_assign(p, inst2))) goto err;
 
-  if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP) {
+  if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
     bc_vec_pop(&p->results);
     if ((status = bc_vec_push(&p->results, &copy))) goto err;
   }
@@ -1108,7 +1019,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 
 err:
 
-  if (inst == BC_INST_INC_DUP || inst == BC_INST_DEC_DUP)
+  if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST)
     bc_num_free(&copy.data.num);
 
   return status;
@@ -1429,7 +1340,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       }
 
       case BC_INST_PUSH_VAR:
-      case BC_INST_PUSH_ARRAY:
+      case BC_INST_PUSH_ARRAY_ELEM:
       {
         status = bc_program_push(p, code, &ip->idx, inst == BC_INST_PUSH_VAR);
         break;
@@ -1484,10 +1395,10 @@ BcStatus bc_program_exec(BcProgram *p) {
         break;
       }
 
-      case BC_INST_INC_DUP:
-      case BC_INST_DEC_DUP:
-      case BC_INST_INC:
-      case BC_INST_DEC:
+      case BC_INST_INC_POST:
+      case BC_INST_DEC_POST:
+      case BC_INST_INC_PRE:
+      case BC_INST_DEC_PRE:
       {
         status = bc_program_incdec(p, inst);
         break;
@@ -1556,29 +1467,29 @@ BcStatus bc_program_exec(BcProgram *p) {
         break;
       }
 
-      case BC_INST_OP_POWER:
-      case BC_INST_OP_MULTIPLY:
-      case BC_INST_OP_DIVIDE:
-      case BC_INST_OP_MODULUS:
-      case BC_INST_OP_PLUS:
-      case BC_INST_OP_MINUS:
+      case BC_INST_POWER:
+      case BC_INST_MULTIPLY:
+      case BC_INST_DIVIDE:
+      case BC_INST_MODULUS:
+      case BC_INST_PLUS:
+      case BC_INST_MINUS:
       {
         status = bc_program_op(p, inst);
         break;
       }
 
-      case BC_INST_OP_REL_EQUAL:
-      case BC_INST_OP_REL_LESS_EQ:
-      case BC_INST_OP_REL_GREATER_EQ:
-      case BC_INST_OP_REL_NOT_EQ:
-      case BC_INST_OP_REL_LESS:
-      case BC_INST_OP_REL_GREATER:
+      case BC_INST_REL_EQ:
+      case BC_INST_REL_LE:
+      case BC_INST_REL_GE:
+      case BC_INST_REL_NE:
+      case BC_INST_REL_LT:
+      case BC_INST_REL_GT:
       {
         status = bc_program_logical(p, inst);
         break;
       }
 
-      case BC_INST_OP_BOOL_NOT:
+      case BC_INST_BOOL_NOT:
       {
         BcResult *ptr;
         BcNum *num;
@@ -1598,26 +1509,26 @@ BcStatus bc_program_exec(BcProgram *p) {
         break;
       }
 
-      case BC_INST_OP_BOOL_OR:
-      case BC_INST_OP_BOOL_AND:
+      case BC_INST_BOOL_OR:
+      case BC_INST_BOOL_AND:
       {
         status = bc_program_logical(p, inst);
         break;
       }
 
-      case BC_INST_OP_NEGATE:
+      case BC_INST_NEG:
       {
         status = bc_program_negate(p);
         break;
       }
 
-      case BC_INST_OP_ASSIGN_POWER:
-      case BC_INST_OP_ASSIGN_MULTIPLY:
-      case BC_INST_OP_ASSIGN_DIVIDE:
-      case BC_INST_OP_ASSIGN_MODULUS:
-      case BC_INST_OP_ASSIGN_PLUS:
-      case BC_INST_OP_ASSIGN_MINUS:
-      case BC_INST_OP_ASSIGN:
+      case BC_INST_ASSIGN_POWER:
+      case BC_INST_ASSIGN_MULTIPLY:
+      case BC_INST_ASSIGN_DIVIDE:
+      case BC_INST_ASSIGN_MODULUS:
+      case BC_INST_ASSIGN_PLUS:
+      case BC_INST_ASSIGN_MINUS:
+      case BC_INST_ASSIGN:
       {
         status = bc_program_assign(p, inst);
         break;
@@ -1672,7 +1583,7 @@ BcStatus bc_program_print(BcProgram *p) {
       switch (inst) {
 
         case BC_INST_PUSH_VAR:
-        case BC_INST_PUSH_ARRAY:
+        case BC_INST_PUSH_ARRAY_ELEM:
         {
           if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
           status = bc_program_printName(code, &ip.idx);

@@ -37,7 +37,7 @@
   TOKEN(BC_LEX_OP_INC)  \
   TOKEN(BC_LEX_OP_DEC)  \
                         \
-  TOKEN(BC_LEX_OP_NEGATE)  \
+  TOKEN(BC_LEX_OP_NEG)  \
                            \
   TOKEN(BC_LEX_OP_POWER)  \
                           \

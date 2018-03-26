@@ -21,7 +21,6 @@
  */
 
 #include <status.h>
-#include <instructions.h>
 #include <lex.h>
 #include <parse.h>
 
@@ -156,6 +155,9 @@ const char *bc_err_descs[] = {
 
 const char *bc_lang_func_main = "(main)";
 const char *bc_lang_func_read = "(read)";
+
+const char *bc_lang_inst_chars =
+  "edED_^*/%+-=;?~<>!|&`{}@[],NVACa.IOLlrqpQsSPR$JjH";
 
 const char *bc_lex_token_type_strs[] = {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
@@ -311,56 +313,16 @@ const BcOp bc_parse_ops[] = {
 
 };
 
-const uint8_t bc_parse_insts[] = {
-
-  BC_INST_OP_NEGATE,
-
-  BC_INST_OP_POWER,
-
-  BC_INST_OP_MULTIPLY,
-  BC_INST_OP_DIVIDE,
-  BC_INST_OP_MODULUS,
-
-  BC_INST_OP_PLUS,
-  BC_INST_OP_MINUS,
-
-  BC_INST_OP_REL_EQUAL,
-  BC_INST_OP_REL_LESS_EQ,
-  BC_INST_OP_REL_GREATER_EQ,
-  BC_INST_OP_REL_NOT_EQ,
-  BC_INST_OP_REL_LESS,
-  BC_INST_OP_REL_GREATER,
-
-  BC_INST_OP_BOOL_NOT,
-
-  BC_INST_OP_BOOL_NOT,
-  BC_INST_OP_BOOL_AND,
-
-  BC_INST_OP_ASSIGN_POWER,
-  BC_INST_OP_ASSIGN_MULTIPLY,
-  BC_INST_OP_ASSIGN_DIVIDE,
-  BC_INST_OP_ASSIGN_MODULUS,
-  BC_INST_OP_ASSIGN_PLUS,
-  BC_INST_OP_ASSIGN_MINUS,
-  BC_INST_OP_ASSIGN,
-
-};
-
 const char *bc_program_byte_fmt = "%02x";
 
 const BcNumBinaryFunc bc_program_math_ops[] = {
 
-  bc_num_mod,
-  NULL, // &
-  NULL, // '
-  NULL, // (
-  NULL, // )
+  bc_num_pow,
   bc_num_mul,
-  bc_num_add,
-  NULL, // ,
-  bc_num_sub,
-  NULL, // .
   bc_num_div,
+  bc_num_mod,
+  bc_num_add,
+  bc_num_sub,
 
 };
 
