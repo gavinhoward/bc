@@ -157,7 +157,7 @@ const char *bc_lang_func_main = "(main)";
 const char *bc_lang_func_read = "(read)";
 
 const char *bc_lang_inst_chars =
-  "edED_^*/%+-=;?~<>!|&`{}@[],NVACa.IOLlrqpQsSPR$JjH";
+  "edED_^*/%+-=;?~<>!|&`{}@[],NVACa.IOLlrqpQsSJjPR$H";
 
 const char *bc_lex_token_type_strs[] = {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)

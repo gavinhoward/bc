@@ -1580,44 +1580,19 @@ BcStatus bc_program_print(BcProgram *p) {
 
       uint8_t inst = code[ip.idx++];
 
-      switch (inst) {
+      if (putchar(bc_program_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
 
-        case BC_INST_PUSH_VAR:
-        case BC_INST_PUSH_ARRAY_ELEM:
-        {
-          if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-          status = bc_program_printName(code, &ip.idx);
-          break;
-        }
-
-        case BC_INST_CALL:
-        {
-          if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-          if ((status = bc_program_printIndex(code, &ip.idx))) return status;
-          status = bc_program_printIndex(code, &ip.idx);
-          break;
-        }
-
-        case BC_INST_JUMP:
-        case BC_INST_JUMP_ZERO:
-        case BC_INST_PUSH_NUM:
-        case BC_INST_STR:
-        case BC_INST_PRINT_STR:
-        {
-          if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-          bc_program_printIndex(code, &ip.idx);
-          break;
-        }
-
-        default:
-        {
-          if (putchar(inst) == EOF) return BC_STATUS_IO_ERR;
-          break;
-        }
+      if (inst == BC_INST_PUSH_VAR || inst == BC_INST_PUSH_ARRAY_ELEM) {
+        if ((status = bc_program_printName(code, &ip.idx))) return status;
+      }
+      else if (inst == BC_INST_PUSH_NUM || inst == BC_INST_CALL ||
+               (inst >= BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
+      {
+        if ((status = bc_program_printIndex(code, &ip.idx))) return status;
+        if (inst == BC_INST_CALL && (status = bc_program_printIndex(code, &ip.idx)))
+          return status;
       }
     }
-
-    if (status) return status;
 
     if (putchar('\n') == EOF) status = BC_STATUS_IO_ERR;
   }
