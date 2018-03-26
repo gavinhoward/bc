@@ -159,10 +159,6 @@ const char *bc_lang_func_read = "(read)";
 const char *bc_lang_inst_chars =
   "edED_^*/%+-=;?~<>!|&`{}@[],NVACa.IOLlrqpQsSJjPR$H";
 
-const char *bc_lex_token_type_strs[] = {
-  BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_STR)
-};
-
 const BcLexKeyword bc_lex_keywords[20] = {
   BC_LEX_KW_ENTRY("auto", 4, true),
   BC_LEX_KW_ENTRY("break", 5, true),
