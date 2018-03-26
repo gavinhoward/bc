@@ -113,9 +113,9 @@
                               \
   TOKEN(BC_LEX_INVALID)       \
 
-typedef enum BcLexTokenType {
+typedef enum BcLexToken {
   BC_LEX_TOKEN_FOREACH(BC_LEX_GEN_ENUM)
-} BcLexTokenType;
+} BcLexToken;
 
 typedef struct BcLex {
 
@@ -127,7 +127,7 @@ typedef struct BcLex {
   size_t len;
 
   struct {
-    BcLexTokenType type;
+    BcLexToken type;
     char *string;
   } token;
 
