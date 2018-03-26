@@ -691,36 +691,14 @@ err:
   return status;
 }
 
-BcStatus bc_program_assignScale(BcProgram *p, BcNum *scale,
-                                BcNum *rval, uint8_t inst)
-{
-  BcStatus status;
-  unsigned long result;
-  BcNumBinaryFunc op;
-
-  if (inst == BC_INST_ASSIGN)  status = bc_num_copy(scale, rval);
-  else {
-    op = bc_program_math_ops[inst - BC_INST_ASSIGN_POWER];
-    status = op(scale, rval, scale, p->scale);
-  }
-
-  if (status) return status;
-
-  if ((status = bc_num_ulong(scale, &result))) return status;
-
-  if (result > (unsigned long) p->scale_max) return BC_STATUS_EXEC_BAD_SCALE;
-
-  p->scale = (size_t) result;
-
-  return status;
-}
-
 BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
   BcResult *left, *right, result;
   BcNum *lval, *rval;
   BcNumBinaryFunc op;
+  unsigned long l, max;
+  size_t *ptr;
 
   status = bc_program_binaryOpPrep(p, &left, &lval, &right, &rval);
   if (status) return status;
@@ -731,34 +709,33 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(rval, &p->zero, NULL))
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
-  if (left->type != BC_RESULT_SCALE) {
-
-    if (inst == BC_INST_ASSIGN)  status = bc_num_copy(lval, rval);
-    else {
-      op = bc_program_math_ops[inst - BC_INST_ASSIGN_POWER];
-      status = op(lval, rval, lval, p->scale);
-    }
-
-    if (status) return status;
-
-    if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
-
-      unsigned long base, max;
-      size_t *ptr;
-
-      ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
-      max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : p->base_max;
-
-      if ((status = bc_num_ulong(lval, &base))) return status;
-
-      if (base < BC_NUM_MIN_BASE || base > max)
-        return left->type - BC_RESULT_IBASE + BC_STATUS_EXEC_BAD_IBASE;
-
-      *ptr = (size_t) base;
-    }
+  if (inst == BC_INST_ASSIGN)  status = bc_num_copy(lval, rval);
+  else {
+    op = bc_program_math_ops[inst - BC_INST_ASSIGN_POWER];
+    status = op(lval, rval, lval, p->scale);
   }
-  else if ((status = bc_program_assignScale(p, lval, rval, inst)))
-    return status;
+
+  if (status) return status;
+
+  if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
+
+    ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
+    max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : p->base_max;
+
+    if ((status = bc_num_ulong(lval, &l))) return status;
+
+    if (l < BC_NUM_MIN_BASE || l > max)
+      return left->type - BC_RESULT_IBASE + BC_STATUS_EXEC_BAD_IBASE;
+
+    *ptr = (size_t) l;
+  }
+  else if (left->type == BC_RESULT_SCALE) {
+
+    if ((status = bc_num_ulong(lval, &l))) return status;
+    if (l > (unsigned long) p->scale_max) return BC_STATUS_EXEC_BAD_SCALE;
+
+    p->scale = (size_t) l;
+  }
 
   if ((status = bc_num_init(&result.data.num, lval->len))) return status;
   if ((status = bc_num_copy(&result.data.num, lval))) goto err;
