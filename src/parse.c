@@ -1538,8 +1538,10 @@ void bc_parse_free(BcParse *parse) {
   bc_vec_free(&parse->cond_labels);
   bc_vec_free(&parse->ops);
 
-  if ((parse->lex.token.type == BC_LEX_STRING || parse->lex.token.type == BC_LEX_NAME ||
-      parse->lex.token.type == BC_LEX_NUMBER) && parse->lex.token.string)
+  if ((parse->lex.token.type == BC_LEX_STRING ||
+       parse->lex.token.type == BC_LEX_NAME ||
+       parse->lex.token.type == BC_LEX_NUMBER) &&
+      parse->lex.token.string)
   {
     free(parse->lex.token.string);
   }
