@@ -1662,25 +1662,16 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       }
 
       case BC_LEX_KEY_IBASE:
-      {
-        status = bc_vec_pushByte(code, BC_INST_PUSH_IBASE);
-
-        paren_expr = get_token = true;
-        rparen = false;
-        ++nexprs;
-        prev = BC_INST_PUSH_IBASE;
-
-        break;
-      }
-
       case BC_LEX_KEY_LAST:
+      case BC_LEX_KEY_OBASE:
       {
-        status = bc_vec_pushByte(code, BC_INST_PUSH_LAST);
+        uint8_t inst = type - BC_LEX_KEY_IBASE + BC_INST_PUSH_IBASE;
+        status = bc_vec_pushByte(code, inst);
 
         paren_expr = get_token = true;
         rparen = false;
         ++nexprs;
-        prev = BC_INST_PUSH_IBASE;
+        prev = BC_INST_PUSH_OBASE;
 
         break;
       }
@@ -1693,18 +1684,6 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
         rparen = get_token = false;
         ++nexprs;
         prev = type == BC_LEX_KEY_LENGTH ? BC_INST_LENGTH : BC_INST_SQRT;
-        break;
-      }
-
-      case BC_LEX_KEY_OBASE:
-      {
-        status = bc_vec_pushByte(code, BC_INST_PUSH_OBASE);
-
-        paren_expr = get_token = true;
-        rparen = false;
-        ++nexprs;
-        prev = BC_INST_PUSH_OBASE;
-
         break;
       }
 
