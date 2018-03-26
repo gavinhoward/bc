@@ -1580,7 +1580,7 @@ BcStatus bc_program_print(BcProgram *p) {
 
       uint8_t inst = code[ip.idx++];
 
-      if (putchar(bc_program_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
+      if (putchar(bc_lang_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
 
       if (inst == BC_INST_PUSH_VAR || inst == BC_INST_PUSH_ARRAY_ELEM) {
         if ((status = bc_program_printName(code, &ip.idx))) return status;
