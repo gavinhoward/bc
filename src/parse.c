@@ -73,10 +73,10 @@ BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
 }
 
 BcStatus bc_parse_operator(BcParse *parse, BcVec *code, BcVec *ops,
-                           BcLexTokenType t, uint32_t *num_exprs, bool next)
+                           BcLexToken t, uint32_t *num_exprs, bool next)
 {
   BcStatus status;
-  BcLexTokenType top, *ptr;
+  BcLexToken top, *ptr;
   uint8_t lp, rp;
   bool rleft;
 
@@ -134,7 +134,7 @@ BcStatus bc_parse_rightParen(BcParse *parse, BcVec *code,
                              BcVec *ops, uint32_t *nexs)
 {
   BcStatus status;
-  BcLexTokenType top, *ptr;
+  BcLexToken top, *ptr;
 
   if (!ops->len) return BC_STATUS_PARSE_BAD_EXPR;
 
@@ -316,7 +316,7 @@ BcStatus bc_parse_read(BcParse *parse, BcVec *code) {
 }
 
 BcStatus bc_parse_builtin(BcParse *parse, BcVec *code,
-                          BcLexTokenType type, uint8_t flags)
+                          BcLexToken type, uint8_t flags)
 {
   BcStatus status;
   uint8_t inst;
@@ -371,7 +371,7 @@ BcStatus bc_parse_incdec(BcParse *parse, BcVec *code, BcInst *prev,
                          uint32_t *nexprs, uint8_t flags)
 {
   BcStatus status;
-  BcLexTokenType type;
+  BcLexToken type;
   BcInst etype;
   uint8_t inst;
 
@@ -461,7 +461,7 @@ BcStatus bc_parse_minus(BcParse *parse, BcVec *exs, BcVec *ops,
                         BcInst *prev, bool rparen, uint32_t *nexprs)
 {
   BcStatus status;
-  BcLexTokenType type;
+  BcLexToken type;
   BcInst etype;
 
   etype = *prev;
@@ -527,7 +527,7 @@ err:
 BcStatus bc_parse_print(BcParse *parse, BcVec *code) {
 
   BcStatus status;
-  BcLexTokenType type;
+  BcLexToken type;
   bool comma;
 
   if ((status = bc_lex_next(&parse->lex))) return status;
@@ -948,7 +948,7 @@ BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
   return bc_parse_startBody(parse, flags);
 }
 
-BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code, BcLexTokenType type) {
+BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code, BcLexToken type) {
 
   BcStatus status;
   size_t idx;
@@ -995,7 +995,7 @@ BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code, BcLexTokenType type) {
 
 BcStatus bc_parse_func(BcParse *parse) {
 
-  BcLexTokenType type;
+  BcLexToken type;
   BcStatus status;
   BcFunc *fptr;
   bool comma, var;
@@ -1091,7 +1091,7 @@ err:
 
 BcStatus bc_parse_auto(BcParse *parse) {
 
-  BcLexTokenType type;
+  BcLexToken type;
   BcStatus status;
   bool comma, var, one;
   char *name;
@@ -1454,7 +1454,7 @@ BcStatus bc_parse_init(BcParse *parse, BcProgram *program) {
 
   if ((status = bc_vec_push(&parse->flags, &flags))) goto push_err;
 
-  status = bc_vec_init(&parse->ops, sizeof(BcLexTokenType), NULL);
+  status = bc_vec_init(&parse->ops, sizeof(BcLexToken), NULL);
   if (status) goto push_err;
 
   parse->prog = program;
@@ -1540,7 +1540,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
   uint32_t nexprs, nparens, ops_start, nrelops;
   bool paren_first, paren_expr, rparen, done, get_token, assign;
   BcInst prev;
-  BcLexTokenType type, top, *ptr;
+  BcLexToken type, top, *ptr;
 
   status = BC_STATUS_SUCCESS;
   prev = BC_INST_PRINT;
