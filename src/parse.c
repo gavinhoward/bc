@@ -1536,6 +1536,13 @@ BcStatus bc_parse_parse(BcParse *parse) {
 
     parse->lex.idx = parse->lex.len;
     parse->lex.token.type = BC_LEX_EOF;
+    parse->auto_part = false;
+    parse->num_braces = 0;
+
+    bc_vec_npop(&parse->flags, parse->flags.len - 1);
+    bc_vec_npop(&parse->exit_labels, parse->exit_labels.len);
+    bc_vec_npop(&parse->cond_labels, parse->cond_labels.len);
+    bc_vec_npop(&parse->ops, parse->ops.len);
 
     status = bc_program_reset(parse->prog, status, sig);
   }
@@ -1579,8 +1586,9 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
 
   type = parse->lex.token.type;
 
-  while (!status && !done && bc_parse_token_exprs[type]) {
-
+  while (bcg.sig_int == bcg.sig_int_catches && !status &&
+         !done && bc_parse_token_exprs[type])
+  {
     switch (type) {
 
       case BC_LEX_OP_INC:
@@ -1756,14 +1764,14 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
       }
     }
 
-    if (status && status != BC_STATUS_LEX_EOF) goto err;
+    if (status) goto err;
 
     if (get_token) status = bc_lex_next(&parse->lex);
 
     type = parse->lex.token.type;
   }
 
-  if (status && status != BC_STATUS_LEX_EOF) goto err;
+  if (status || bcg.sig_int != bcg.sig_int_catches) goto err;
 
   status = BC_STATUS_SUCCESS;
 
