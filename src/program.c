@@ -1268,6 +1268,11 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus status, bool sig) {
 
   if (!status && sig && !bcg.interactive) return BC_STATUS_QUIT;
 
+  if (!status && bcg.interactive) {
+    fprintf(stderr, "%s", bc_program_ready_prompt);
+    fflush(stderr);
+  }
+
   return status;
 }
 
