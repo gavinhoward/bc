@@ -1482,6 +1482,7 @@ exit_label_err:
 BcStatus bc_parse_parse(BcParse *parse) {
 
   BcStatus status;
+  bool sig;
 
   assert(parse);
 
@@ -1515,15 +1516,28 @@ BcStatus bc_parse_parse(BcParse *parse) {
     }
   }
 
-  if (status || bcg.sig_int) {
+  sig = bcg.sig_int != bcg.sig_int_catches;
+
+  if (status || sig) {
 
     if (parse->func) {
-      bc_program_resetFunc(parse->prog, parse->func);
+
+      BcFunc *func = bc_vec_item(&parse->prog->funcs, parse->func);
+
+      assert(func);
+
+      func->nparams = 0;
+      bc_vec_npop(&func->code, func->code.len);
+      bc_vec_npop(&func->autos, func->autos.len);
+      bc_vec_npop(&func->labels, func->labels.len);
+
       parse->func = 0;
     }
 
     parse->lex.idx = parse->lex.len;
     parse->lex.token.type = BC_LEX_EOF;
+
+    status = bc_program_reset(parse->prog, status, sig);
   }
 
   return status;

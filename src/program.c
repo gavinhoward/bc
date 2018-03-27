@@ -1249,22 +1249,13 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
   return status;
 }
 
-void bc_program_resetFunc(BcProgram *p, size_t idx) {
-
-  BcFunc *func = bc_vec_item(&p->funcs, idx);
-
-  assert(func);
-
-  func->nparams = 0;
-  bc_vec_npop(&func->code, func->code.len);
-  bc_vec_npop(&func->autos, func->autos.len);
-  bc_vec_npop(&func->labels, func->labels.len);
-}
-
-void bc_program_reset(BcProgram *p) {
+BcStatus bc_program_reset(BcProgram *p, BcStatus status, bool sig) {
 
   BcFunc *func;
   BcInstPtr *ip;
+
+  bc_vec_npop(&p->stack, p->stack.len - 1);
+  bc_vec_npop(&p->results, p->results.len);
 
   func = bc_vec_item(&p->funcs, 0);
   assert(func);
@@ -1273,8 +1264,11 @@ void bc_program_reset(BcProgram *p) {
 
   ip->idx = func->code.len;
 
-  bc_vec_npop(&p->stack, p->stack.len - 1);
-  bc_vec_npop(&p->results, p->results.len);
+  bcg.sig_int_catches += sig;
+
+  if (!status && sig && !bcg.interactive) return BC_STATUS_QUIT;
+
+  return status;
 }
 
 BcStatus bc_program_exec(BcProgram *p) {
@@ -1285,7 +1279,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   BcResult result;
   BcFunc *func;
   BcInstPtr *ip;
-  bool cond;
+  bool cond, sig;
 
   status = BC_STATUS_SUCCESS;
   cond = false;
@@ -1559,7 +1553,9 @@ BcStatus bc_program_exec(BcProgram *p) {
     code = func->code.array;
   }
 
-  if (status || bcg.sig_int) bc_program_reset(p);
+  sig = bcg.sig_int != bcg.sig_int_catches;
+
+  if (status || sig) status = bc_program_reset(p, status, sig);
 
   return status;
 }
@@ -1571,6 +1567,7 @@ BcStatus bc_program_print(BcProgram *p) {
   uint8_t *code;
   BcInstPtr ip;
   size_t i;
+  bool sig;
 
   status = BC_STATUS_SUCCESS;
 
@@ -1606,7 +1603,9 @@ BcStatus bc_program_print(BcProgram *p) {
     if (putchar('\n') == EOF) status = BC_STATUS_IO_ERR;
   }
 
-  if (status || bcg.sig_int) bc_program_reset(p);
+  sig = bcg.sig_int != bcg.sig_int_catches;
+
+  if (status || sig) status = bc_program_reset(p, status, sig);
 
   return status;
 }

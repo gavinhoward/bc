@@ -38,7 +38,7 @@ void bc_sig(int sig) {
 
   if (sig == SIGINT) {
     if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
-      bcg.sig_int = 1;
+      bcg.sig_int += bcg.sig_int == bcg.sig_int_catches;
   }
   else bcg.sig_other = 1;
 }
@@ -161,8 +161,6 @@ BcStatus bc_process(Bc *bc, const char *text) {
       }
 
       if (putchar('\n') == EOF) return st;
-
-      continue;
     }
     else if (st == BC_STATUS_QUIT || bcg.sig_other ||
         (st && (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line))))
@@ -175,17 +173,9 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
     st = bc->exec(&bc->prog);
 
-    if (bcg.interactive) {
+    if (bcg.interactive) fflush(stdout);
 
-      fflush(stdout);
-
-      if (bcg.sig_int) {
-        fprintf(stderr, "%s", bc_program_ready_prompt);
-        fflush(stderr);
-      }
-    }
-
-    if (bcg.sig_int || (st && (st = bc_error(st))))  return st;
+    if (st && (st = bc_error(st))) return st;
   }
 
   return st;
@@ -312,8 +302,7 @@ BcStatus bc_stdin(Bc *bc) {
     buffer[0] = '\0';
   }
 
-  st = !st || st == BC_STATUS_QUIT || st == BC_STATUS_LEX_EOF ?
-         BC_STATUS_SUCCESS : st;
+  st = !st || st == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : st;
 
 exit_err:
 
