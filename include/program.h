@@ -93,7 +93,7 @@ void bc_program_free(BcProgram *program);
 // ** Exclude end. **
 
 BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
-void bc_program_resetFunc(BcProgram *p, size_t idx);
+BcStatus bc_program_reset(BcProgram *p, BcStatus status, bool sig);
 
 BcStatus bc_program_exec(BcProgram *p);
 

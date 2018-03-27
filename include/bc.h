@@ -66,7 +66,8 @@ typedef struct BcGlobals {
   long std;
   long warn;
 
-  long sig_int;
+  unsigned long sig_int;
+  unsigned long sig_int_catches;
   long sig_other;
 
 } BcGlobals;
