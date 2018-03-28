@@ -354,8 +354,9 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
     bc_lex_init(&bc.parse.lex, bc_lib_name);
     if ((status = bc_lex_text(&bc.parse.lex, bc_lib))) goto err;
 
-    while (!status) status = bc_parse_parse(&bc.parse);
-    if (status != BC_STATUS_LEX_EOF) goto err;
+    while (!status && bc.parse.lex.token.type != BC_LEX_EOF)
+      status = bc_parse_parse(&bc.parse);
+    if (status) goto err;
 
     // Make sure to execute the math library.
     if ((status = bc.exec(&bc.prog))) goto err;
