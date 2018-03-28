@@ -255,6 +255,10 @@ BcStatus bc_stdin(Bc *bc) {
     buffer[0] = '\0';
   }
 
+  // I/O error will always happen when stdin is
+  // closed. It's not a problem in that case.
+  st = st == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : st;
+
 exit_err:
 
   free(buf);
