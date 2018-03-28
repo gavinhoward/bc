@@ -97,10 +97,9 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus status, bool sig);
 
 BcStatus bc_program_exec(BcProgram *p);
 
-extern const char *bc_program_byte_fmt;
+extern const char bc_program_byte_fmt[];
 extern const BcNumBinaryFunc bc_program_math_ops[];
-extern const char *bc_program_stdin_name;
-extern const char *bc_program_ready_prompt;
-extern const char *bc_program_sig_msg;
+extern const char bc_program_stdin_name[];
+extern const char bc_program_ready_prompt[];
 
 #endif // BC_PROGRAM_H

@@ -1084,7 +1084,7 @@ BcStatus bc_program_init(BcProgram *p) {
   s = bc_veco_init(&p->func_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
   if (s) goto func_map_err;
 
-  if (!(main_name = malloc(strlen(bc_lang_func_main) + 1))) {
+  if (!(main_name = malloc(sizeof(bc_lang_func_main)))) {
     s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
@@ -1094,7 +1094,7 @@ BcStatus bc_program_init(BcProgram *p) {
   main_name = NULL;
   if (s || idx != BC_PROGRAM_MAIN) goto read_err;
 
-  if (!(read_name = malloc(strlen(bc_lang_func_read) + 1))) {
+  if (!(read_name = malloc(sizeof(bc_lang_func_read)))) {
     s = BC_STATUS_MALLOC_FAIL;
     goto read_err;
   }

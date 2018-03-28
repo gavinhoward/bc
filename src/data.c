@@ -153,10 +153,12 @@ const char *bc_err_descs[] = {
 
 };
 
-const char *bc_lang_func_main = "(main)";
-const char *bc_lang_func_read = "(read)";
+const char bc_sig_msg[36] = "\n\ninterrupt (type \"quit\" to exit)\n\n";
 
-const char *bc_lang_inst_chars =
+const char bc_lang_func_main[7] = "(main)";
+const char bc_lang_func_read[7] = "(read)";
+
+const char bc_lang_inst_chars[] =
   "edED_^*/%+-=;?~<>!|&`{}@[],NVACa.IOLlrqpQsSJjPR$H";
 
 const BcLexKeyword bc_lex_keywords[20] = {
@@ -309,7 +311,7 @@ const BcOp bc_parse_ops[] = {
 
 };
 
-const char *bc_program_byte_fmt = "%02x";
+const char bc_program_byte_fmt[] = "%02x";
 
 const BcNumBinaryFunc bc_program_math_ops[] = {
 
@@ -322,6 +324,5 @@ const BcNumBinaryFunc bc_program_math_ops[] = {
 
 };
 
-const char *bc_program_stdin_name = "<stdin>";
-const char *bc_program_ready_prompt = "ready for more input\n\n";
-const char *bc_program_sig_msg = "\n\ninterrupt (type \"quit\" to exit)\n\n";
+const char bc_program_stdin_name[] = "<stdin>";
+const char bc_program_ready_prompt[] = "ready for more input\n\n";
