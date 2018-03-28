@@ -1371,9 +1371,7 @@ BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
     {
       if ((status = bc_vec_pushByte(code, BC_INST_HALT))) return status;
       if ((status = bc_lex_next(&parse->lex))) return status;
-
       status = bc_parse_semicolonListEnd(parse, code);
-
       break;
     }
 
