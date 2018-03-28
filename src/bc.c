@@ -37,7 +37,7 @@
 void bc_sig(int sig) {
 
   if (sig == SIGINT) {
-    if (write(2, bc_program_sig_msg, strlen(bc_program_sig_msg)) >= 0)
+    if (write(2, bc_sig_msg, sizeof(bc_sig_msg) - 1) >= 0)
       bcg.sig_int += bcg.sig_int == bcg.sig_int_catches;
   }
   else bcg.sig_other = 1;

@@ -93,4 +93,7 @@ extern const char *bc_err_types[];
 extern const uint8_t bc_err_type_indices[];
 extern const char *bc_err_descs[];
 
+extern const char bc_sig_msg[36];
+extern const ssize_t bc_sig_msg_len;
+
 #endif // BC_H
