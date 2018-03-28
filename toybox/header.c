@@ -16,8 +16,8 @@ config BC
 
     options:
 
-      --interactive  -i  force interactive mode
-      --mathlib      -l  use predefined math routines:
+      -i  --interactive  force interactive mode
+      -l  --mathlib      use predefined math routines:
 
                          s(expr)  =  sine of expr in radians
                          c(expr)  =  cosine of expr in radians
@@ -26,9 +26,9 @@ config BC
                          e(expr)  =  raises e to the power of expr
                          j(n, x)  =  Bessel function of integer order n of x
 
-      --quiet        -q  don't print version and copyright
-      --standard     -s  error if any non-POSIX extensions are used
-      --warn         -w  warn if any non-POSIX extensions are used
+      -q  --quiet        don't print version and copyright
+      -s  --standard     error if any non-POSIX extensions are used
+      -w  --warn         warn if any non-POSIX extensions are used
 
 */
 
