@@ -1291,7 +1291,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   assert(func);
   code = func->code.array;
 
-  while (!bcg.sig_other && ip->idx < func->code.len) {
+  while (!status && !bcg.sig_other && ip->idx < func->code.len) {
 
     uint8_t inst = code[(ip->idx)++];
 
