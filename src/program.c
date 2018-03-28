@@ -1571,7 +1571,7 @@ BcStatus bc_program_print(BcProgram *p) {
 
   status = BC_STATUS_SUCCESS;
 
-  for (i = 0; !status && i < p->funcs.len; ++i) {
+  for (i = 0; !status && !bcg.sig_other && i < p->funcs.len; ++i) {
 
     ip.idx = ip.len = 0;
     ip.func = i;
