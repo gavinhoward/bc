@@ -52,7 +52,7 @@ BcStatus bc_io_getline(char **buf, size_t *n, FILE *f) {
 
       new_size = *n * 2;
 
-      if (new_size > (1 << 24)) return BC_STATUS_MALLOC_FAIL;
+      if (new_size > (1 << 20)) return BC_STATUS_MALLOC_FAIL;
 
       temp = realloc(*buf, new_size + 1);
 
