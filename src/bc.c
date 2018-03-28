@@ -175,7 +175,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
     if (bcg.interactive) fflush(stdout);
 
-    if (st && (st = bc_error(st))) return st;
+    if (st && st != BC_STATUS_QUIT) st = bc_error(st);
   }
 
   return st;
@@ -301,8 +301,6 @@ BcStatus bc_stdin(Bc *bc) {
     st = bc_process(bc, buffer);
     buffer[0] = '\0';
   }
-
-  st = !st || st == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : st;
 
 exit_err:
 
