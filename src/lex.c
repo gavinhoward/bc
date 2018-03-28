@@ -649,10 +649,12 @@ BcStatus bc_lex_next(BcLex *lex) {
 
   assert(lex);
 
+  if (lex->token.type == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
+
   if (lex->idx == lex->len) {
     lex->newline = true;
     lex->token.type = BC_LEX_EOF;
-    return BC_STATUS_LEX_EOF;
+    return BC_STATUS_SUCCESS;
   }
 
   if (lex->newline) {

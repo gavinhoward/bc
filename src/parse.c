@@ -1385,14 +1385,9 @@ BcStatus bc_parse_stmt(BcParse *parse, BcVec *code) {
 
     case BC_LEX_KEY_LIMITS:
     {
-      status = bc_lex_next(&parse->lex);
-      if (status && status != BC_STATUS_LEX_EOF) return status;
-
-      status = bc_parse_semicolonListEnd(parse, code);
-      if (status && status != BC_STATUS_LEX_EOF) return status;
-
+      if ((status = bc_lex_next(&parse->lex))) return status;
+      if ((status = bc_parse_semicolonListEnd(parse, code))) return status;
       status = BC_STATUS_LIMITS;
-
       break;
     }
 
@@ -1819,7 +1814,7 @@ BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags) {
     else status = bc_vec_pushByte(code, BC_INST_POP);
   }
 
-  return type == BC_LEX_EOF ? BC_STATUS_LEX_EOF : status;
+  return status;
 
 err:
 
