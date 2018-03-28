@@ -39,7 +39,7 @@ BcStatus bc_io_getline(char **buf, size_t *n, FILE *f) {
 
   do {
 
-    if (!fgets(*buf, *n, f)) {
+    if (!fgets(buf2, size, f)) {
       if (errno == EINTR) bcg.sig_int_catches = bcg.sig_int;
       else return BC_STATUS_IO_ERR;
     }
