@@ -262,7 +262,7 @@ BcStatus bc_stdin(Bc *bc) {
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
   while ((!st || (st != BC_STATUS_QUIT && st != BC_STATUS_LEX_BIN_FILE)) &&
-         !bcg.sig_int && getline(&buf, &bufn, stdin) >= 0)
+         getline(&buf, &bufn, stdin) >= 0)
   {
     size_t len, i;
 
