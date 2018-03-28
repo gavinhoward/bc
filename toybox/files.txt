@@ -2,7 +2,6 @@ include/status.h
 include/vector.h
 include/num.h
 include/lang.h
-include/instructions.h
 include/lex.h
 include/program.h
 include/parse.h
