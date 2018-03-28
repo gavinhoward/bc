@@ -1293,9 +1293,8 @@ BcStatus bc_program_exec(BcProgram *p) {
   assert(func);
   code = func->code.array;
 
-  while (!bcg.sig_other && bcg.sig_int == bcg.sig_int_catches &&
-         ip->idx < func->code.len)
-  {
+  while (!bcg.sig_other && ip->idx < func->code.len) {
+
     uint8_t inst = code[(ip->idx)++];
 
     switch (inst) {
@@ -1546,7 +1545,9 @@ BcStatus bc_program_exec(BcProgram *p) {
       }
     }
 
-    if (status) return status;
+    sig = bcg.sig_int != bcg.sig_int_catches;
+
+    if (status || sig) status = bc_program_reset(p, status, sig);
 
     // We keep getting these because if the size of the
     // stack changes, pointers may end up being invalid.
@@ -1556,10 +1557,6 @@ BcStatus bc_program_exec(BcProgram *p) {
     assert(func);
     code = func->code.array;
   }
-
-  sig = bcg.sig_int != bcg.sig_int_catches;
-
-  if (status || sig) status = bc_program_reset(p, status, sig);
 
   return status;
 }
@@ -1605,11 +1602,11 @@ BcStatus bc_program_print(BcProgram *p) {
     }
 
     if (putchar('\n') == EOF) status = BC_STATUS_IO_ERR;
+
+    sig = bcg.sig_int != bcg.sig_int_catches;
+
+    if (status || sig) status = bc_program_reset(p, status, sig);
   }
-
-  sig = bcg.sig_int != bcg.sig_int_catches;
-
-  if (status || sig) status = bc_program_reset(p, status, sig);
 
   return status;
 }
