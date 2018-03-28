@@ -187,10 +187,7 @@ void bc_vec_free(void *vec) {
 
   free(s->array);
 
-  s->size = 0;
-  s->array = NULL;
-  s->len = 0;
-  s->cap = 0;
+  memset(s, 0, sizeof(BcVec));
 }
 
 size_t bc_veco_find(const BcVecO* vec, void *data) {
