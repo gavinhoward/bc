@@ -44,12 +44,16 @@ BcStatus bc_io_getline(char **buf, size_t *n, FILE *f) {
       else return BC_STATUS_IO_ERR;
     }
 
-    len = strlen(buf2);
+    if (!(len = strlen(buf2))) return BC_STATUS_IO_ERR;
+
     done = len != size || buf2[len - 1] == '\n';
 
     if (!done) {
 
       new_size = *n * 2;
+
+      if (new_size > (1 << 24)) return BC_STATUS_MALLOC_FAIL;
+
       temp = realloc(*buf, new_size + 1);
 
       if (!temp) return BC_STATUS_IO_ERR;
