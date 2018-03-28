@@ -28,6 +28,7 @@
 #include <limits.h>
 #include <unistd.h>
 
+#include <io.h>
 #include <program.h>
 #include <parse.h>
 #include <bc.h>
@@ -339,10 +340,7 @@ BcStatus bc_program_read(BcProgram *p) {
 
   size = BC_PROGRAM_BUF_SIZE;
 
-  if (getline(&buffer, &size, stdin) < 0) {
-    status = BC_STATUS_IO_ERR;
-    goto io_err;
-  }
+  if ((status = bc_io_getline(&buffer, &size, stdin)))goto io_err;
 
   if ((status = bc_parse_init(&parse, p))) goto io_err;
   bc_lex_init(&parse.lex, "<stdin>");
@@ -1547,7 +1545,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
     sig = bcg.sig_int != bcg.sig_int_catches;
 
-    if (status || sig) status = bc_program_reset(p, status, sig);
+    if ((status && status != BC_STATUS_QUIT) || sig)
+      status = bc_program_reset(p, status, sig);
 
     // We keep getting these because if the size of the
     // stack changes, pointers may end up being invalid.

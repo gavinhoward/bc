@@ -32,6 +32,7 @@
 #include <limits.h>
 
 #include <status.h>
+#include <io.h>
 #include <bc.h>
 
 void bc_sig(int sig) {
@@ -83,54 +84,6 @@ BcStatus bc_posix_error(BcStatus st, const char *file,
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
   return st * !!s;
-}
-
-BcStatus bc_fread(const char *path, char **buf) {
-
-  BcStatus st;
-  FILE *f;
-  size_t size, read;
-
-  assert(path && buf);
-
-  f = fopen(path, "r");
-
-  if (!f) return BC_STATUS_EXEC_FILE_ERR;
-
-  fseek(f, 0, SEEK_END);
-  size = ftell(f);
-
-  fseek(f, 0, SEEK_SET);
-
-  *buf = malloc(size + 1);
-
-  if (!*buf) {
-    st = BC_STATUS_MALLOC_FAIL;
-    goto malloc_err;
-  }
-
-  read = fread(*buf, 1, size, f);
-
-  if (read != size) {
-    st = BC_STATUS_IO_ERR;
-    goto read_err;
-  }
-
-  (*buf)[size] = '\0';
-
-  fclose(f);
-
-  return BC_STATUS_SUCCESS;
-
-read_err:
-
-  free(*buf);
-
-malloc_err:
-
-  fclose(f);
-
-  return st;
 }
 
 BcStatus bc_process(Bc *bc, const char *text) {
@@ -190,7 +143,7 @@ BcStatus bc_file(Bc *bc, const char *file) {
 
   bc->prog.file = file;
 
-  if ((st = bc_fread(file, &data))) return st;
+  if ((st = bc_io_fread(file, &data))) return st;
 
   bc_lex_init(&bc->parse.lex, file);
 
@@ -262,7 +215,7 @@ BcStatus bc_stdin(Bc *bc) {
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
   while ((!st || (st != BC_STATUS_QUIT && st != BC_STATUS_LEX_BIN_FILE)) &&
-         getline(&buf, &bufn, stdin) >= 0)
+         !(st = bc_io_getline(&buf, &bufn, stdin)))
   {
     size_t len, i;
 
@@ -333,7 +286,6 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
 
   sigemptyset(&sa.sa_mask);
   sa.sa_handler = bc_sig;
-  sa.sa_flags = SA_RESTART;
 
   if (sigaction(SIGINT, &sa, NULL) < 0 || sigaction(SIGPIPE, &sa, NULL) < 0 ||
       sigaction(SIGHUP, &sa, NULL) < 0 || sigaction(SIGTERM, &sa, NULL) < 0)

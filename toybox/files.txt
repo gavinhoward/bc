@@ -10,6 +10,7 @@ include/bc.h
 src/data.c
 src/lib.c
 src/vector.c
+src/io.c
 src/num.c
 src/lang.c
 src/lex.c
