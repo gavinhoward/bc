@@ -36,7 +36,6 @@
 #define BC_FLAG_Q (1<<2)
 #define BC_FLAG_L (1<<3)
 #define BC_FLAG_I (1<<4)
-#define BC_FLAG_C (1<<5)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -55,7 +54,6 @@ typedef struct Bc {
 
   BcParse parse;
   BcProgram prog;
-  BcProgramExecFunc exec;
 
 } Bc;
 

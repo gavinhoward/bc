@@ -124,7 +124,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
   if (BC_PARSE_CAN_EXEC(&bc->parse)) {
 
-    st = bc->exec(&bc->prog);
+    st = bc_program_exec(&bc->prog);
 
     if (bcg.interactive) fflush(stdout);
 
@@ -282,8 +282,6 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
   bcg.std = flags & BC_FLAG_S;
   bcg.warn = flags & BC_FLAG_W;
 
-  bc.exec = (flags & BC_FLAG_C) ? bc_program_print : bc_program_exec;
-
   if ((status = bc_program_init(&bc.prog))) return status;
 
   if ((status = bc_parse_init(&bc.parse, &bc.prog))) goto parse_err;
@@ -315,7 +313,7 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
     if (status) goto err;
 
     // Make sure to execute the math library.
-    if ((status = bc.exec(&bc.prog))) goto err;
+    if ((status = bc_program_exec(&bc.prog))) goto err;
   }
 
   for (i = 0; !bcg.sig_other && !status && i < filec; ++i)

@@ -4,19 +4,18 @@
  *
  * See http://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
 
-USE_BC(NEWTOY(bc, "c(code)i(interactive)l(mathlib)q(quiet)s(standard)w(warn)", TOYFLAG_USR|TOYFLAG_BIN|TOYFLAG_LOCALE))
+USE_BC(NEWTOY(bc, "i(interactive)l(mathlib)q(quiet)s(standard)w(warn)", TOYFLAG_USR|TOYFLAG_BIN|TOYFLAG_LOCALE))
 
 config BC
   bool "bc"
   default n
   help
-    usage: bc [-cilqsw] [file ...]
+    usage: bc [-ilqsw] [file ...]
 
     bc is a command-line calculator with a Turing-complete language.
 
     options:
 
-      --code         -c  print generated code (for debugging)
       --interactive  -i  force interactive mode
       --mathlib      -l  use predefined math routines:
 

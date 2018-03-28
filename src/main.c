@@ -32,7 +32,6 @@
 
 const struct option bc_opts[] = {
 
-  { "code", no_argument, NULL, 'c' },
   { "help", no_argument, NULL, 'h' },
   { "interactive", no_argument, NULL, 'i' },
   { "mathlib", no_argument, NULL, 'l' },
@@ -51,7 +50,6 @@ const char *bc_help =
   "\n"
   "bc is a command-line calculator with a Turing-complete language.\n"
   "\n"
-  "  -c  --code         print bytecode instead of executing it\n"
   "  -h  --help         print this usage message and exit\n"
   "  -i  --interactive  force interactive mode\n"
   "  -l  --mathlib      use predefined math routines:\n\n"
@@ -98,12 +96,6 @@ int main(int argc, char *argv[]) {
       {
         // This is the case when a long option is
         // found, so we don't need to do anything.
-        break;
-      }
-
-      case 'c':
-      {
-        flags |= BC_FLAG_C;
         break;
       }
 
