@@ -417,43 +417,6 @@ char* bc_program_name(uint8_t *code, size_t *start) {
   return s;
 }
 
-BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
-
-  uint8_t bytes, byte, i;
-
-  bytes = code[(*start)++];
-  byte = 1;
-
-  if (printf(bc_program_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
-
-  for (i = 0; byte && i < bytes; ++i) {
-    byte = code[(*start)++];
-    if (printf(bc_program_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
-BcStatus bc_program_printName(uint8_t *code, size_t *start) {
-
-  BcStatus status;
-  char byte;
-
-  status = BC_STATUS_SUCCESS;
-  byte = code[(*start)++];
-
-  while (byte && byte != ':') {
-    if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
-    byte = code[(*start)++];
-  }
-
-  assert(byte);
-
-  if (putchar(byte) == EOF) status = BC_STATUS_IO_ERR;
-
-  return status;
-}
-
 BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
   char c, c2;
@@ -1560,6 +1523,73 @@ BcStatus bc_program_exec(BcProgram *p) {
   return status;
 }
 
+void bc_program_free(BcProgram *p) {
+
+  if (!p) return;
+
+  bc_num_free(&p->ibase);
+  bc_num_free(&p->obase);
+
+  bc_vec_free(&p->funcs);
+  bc_veco_free(&p->func_map);
+
+  bc_vec_free(&p->vars);
+  bc_veco_free(&p->var_map);
+
+  bc_vec_free(&p->arrays);
+  bc_veco_free(&p->array_map);
+
+  bc_vec_free(&p->strings);
+  bc_vec_free(&p->constants);
+
+  bc_vec_free(&p->results);
+  bc_vec_free(&p->stack);
+
+  bc_num_free(&p->last);
+  bc_num_free(&p->zero);
+  bc_num_free(&p->one);
+
+  memset(p, 0, sizeof(BcProgram));
+}
+
+#ifndef NDEBUG
+BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
+
+  uint8_t bytes, byte, i;
+
+  bytes = code[(*start)++];
+  byte = 1;
+
+  if (printf(bc_program_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
+
+  for (i = 0; byte && i < bytes; ++i) {
+    byte = code[(*start)++];
+    if (printf(bc_program_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
+  }
+
+  return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_program_printName(uint8_t *code, size_t *start) {
+
+  BcStatus status;
+  char byte;
+
+  status = BC_STATUS_SUCCESS;
+  byte = code[(*start)++];
+
+  while (byte && byte != ':') {
+    if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
+    byte = code[(*start)++];
+  }
+
+  assert(byte);
+
+  if (putchar(byte) == EOF) status = BC_STATUS_IO_ERR;
+
+  return status;
+}
+
 BcStatus bc_program_print(BcProgram *p) {
 
   BcStatus status;
@@ -1609,32 +1639,4 @@ BcStatus bc_program_print(BcProgram *p) {
 
   return status;
 }
-
-void bc_program_free(BcProgram *p) {
-
-  if (!p) return;
-
-  bc_num_free(&p->ibase);
-  bc_num_free(&p->obase);
-
-  bc_vec_free(&p->funcs);
-  bc_veco_free(&p->func_map);
-
-  bc_vec_free(&p->vars);
-  bc_veco_free(&p->var_map);
-
-  bc_vec_free(&p->arrays);
-  bc_veco_free(&p->array_map);
-
-  bc_vec_free(&p->strings);
-  bc_vec_free(&p->constants);
-
-  bc_vec_free(&p->results);
-  bc_vec_free(&p->stack);
-
-  bc_num_free(&p->last);
-  bc_num_free(&p->zero);
-  bc_num_free(&p->one);
-
-  memset(p, 0, sizeof(BcProgram));
-}
+#endif // NDEBUG
