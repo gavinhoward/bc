@@ -679,6 +679,7 @@ BcStatus bc_lex_text(BcLex *lex, const char *text) {
   lex->buffer = text;
   lex->idx = 0;
   lex->len = strlen(text);
+  lex->token.type = BC_LEX_INVALID;
 
   return bc_lex_next(lex);
 }
