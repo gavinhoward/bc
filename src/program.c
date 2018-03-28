@@ -1127,9 +1127,7 @@ BcStatus bc_program_init(BcProgram *p) {
 
   if ((s = bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL))) goto stack_err;
 
-  ip.idx = 0;
-  ip.func = 0;
-  ip.len = 0;
+  memset(&ip, 0, sizeof(BcInstPtr));
 
   if ((s = bc_vec_push(&p->stack, &ip))) goto push_err;
 
