@@ -117,13 +117,13 @@ int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
   return 0;
 }
 
-BcStatus bc_num_truncate(BcNum *n, size_t places) {
+void bc_num_truncate(BcNum *n, size_t places) {
 
   BcDigit *ptr;
 
   assert(places <= n->rdx);
 
-  if (!places) return BC_STATUS_SUCCESS;
+  if (!places) return;
 
   ptr = n->num + places;
   n->len -= places;
@@ -131,8 +131,6 @@ BcStatus bc_num_truncate(BcNum *n, size_t places) {
 
   memmove(n->num, ptr, n->len * sizeof(BcDigit));
   memset(n->num + n->len, 0, sizeof(BcDigit) * (n->cap - n->len));
-
-  return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_extend(BcNum *n, size_t places) {
@@ -1072,13 +1070,8 @@ BcStatus bc_num_expand(BcNum *n, size_t request) {
 }
 
 void bc_num_free(void *num) {
-
   BcNum *n = (BcNum*) num;
-
-  if (n) {
-    if (n->num) free(n->num);
-    memset(n, 0, sizeof(BcNum));
-  }
+  if (n && n->num) free(n->num);
 }
 
 BcStatus bc_num_copy(BcNum *d, BcNum *s) {
