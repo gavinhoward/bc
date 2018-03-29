@@ -627,8 +627,7 @@ BcStatus bc_lex_token(BcLex *lex) {
     default:
     {
       lex->token.type = BC_LEX_INVALID;
-      status = !c || c >= (unsigned char) SCHAR_MIN ?
-                 BC_STATUS_LEX_BIN_FILE : BC_STATUS_LEX_BAD_CHARACTER;
+      status = BC_STATUS_LEX_BAD_CHARACTER;
       break;
     }
   }

@@ -21,6 +21,7 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,41 +31,41 @@
 
 BcStatus bc_io_getline(char **buf, size_t *n, FILE *f) {
 
-  char *buf2, *temp;
-  size_t size, len, new_size;
-  bool done;
+  char *temp;
+  int c;
+  size_t size, i;
 
-  buf2 = *buf;
-  size = *n;
+  for (i = 0, c = 0; c != '\n'; ++i) {
 
-  do {
+    if (i == *n) {
 
-    if (!fgets(buf2, size, f)) {
-      if (errno == EINTR) bcg.sig_int_catches = bcg.sig_int;
-      else return BC_STATUS_IO_ERR;
-    }
+      size = *n * 2;
 
-    if (!(len = strlen(buf2))) return BC_STATUS_IO_ERR;
-
-    done = len != size || buf2[len - 1] == '\n';
-
-    if (!done) {
-
-      new_size = *n * 2;
-
-      if (new_size > (1 << 20)) return BC_STATUS_MALLOC_FAIL;
-
-      temp = realloc(*buf, new_size + 1);
-
-      if (!temp) return BC_STATUS_IO_ERR;
+      if (size > (1 << 20) || !(temp = realloc(*buf, size + 1)))
+        return BC_STATUS_MALLOC_FAIL;
 
       *buf = temp;
-      buf2 = temp + *n * sizeof(char);
-      size = new_size - *n;
-      *n = new_size;
+      *n = size;
     }
 
-  } while (!done);
+    c = fgetc(f);
+
+    if (c == EOF) {
+
+      if (errno == EINTR) {
+        bcg.sig_int_catches = bcg.sig_int;
+        --i;
+        continue;
+      }
+      else return BC_STATUS_IO_ERR;
+    }
+    else if (!c || (iscntrl(c) && !isspace(c)) || c > SCHAR_MAX)
+      return BC_STATUS_BINARY_FILE;
+
+    (*buf)[i] = c;
+  }
+
+  (*buf)[i] = '\0';
 
   return BC_STATUS_SUCCESS;
 }

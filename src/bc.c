@@ -214,7 +214,7 @@ BcStatus bc_stdin(Bc *bc) {
   // a backslash newline combo as whitespace, per the bc spec.
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
-  while ((!st || (st != BC_STATUS_QUIT && st != BC_STATUS_LEX_BIN_FILE)) &&
+  while ((!st || (st != BC_STATUS_QUIT)) &&
          !(st = bc_io_getline(&buf, &bufn, stdin)))
   {
     size_t len, i;
