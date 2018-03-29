@@ -44,8 +44,8 @@ const uint8_t bc_err_type_indices[] = {
   BC_ERR_IDX_BC,
   BC_ERR_IDX_BC,
   BC_ERR_IDX_BC,
+  BC_ERR_IDX_BC,
 
-  BC_ERR_IDX_LEX,
   BC_ERR_IDX_LEX,
   BC_ERR_IDX_LEX,
   BC_ERR_IDX_LEX,
@@ -102,8 +102,9 @@ const char *bc_err_descs[] = {
   "memory allocation error",
   "I/O error",
 
-  "bad character",
   "file is not text",
+
+  "bad character",
   "string end could not be found",
   "comment end could not be found",
   "end of file",
