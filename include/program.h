@@ -42,11 +42,6 @@ typedef struct BcProgram {
   BcNum obase;
   size_t obase_t;
 
-  long base_max;
-  long dim_max;
-  long scale_max;
-  long string_max;
-
   BcVec results;
   BcVec stack;
 
