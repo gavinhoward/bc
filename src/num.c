@@ -778,6 +778,8 @@ BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   const char *ptr;
   bool zero;
 
+  status = BC_STATUS_SUCCESS;
+
   for (i = 0; val[i] == '0'; ++i);
 
   val += i;
@@ -788,6 +790,7 @@ BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 
   if (len) {
     for (i = 0; zero && i < len; ++i) zero = val[i] == '0' || val[i] == '.';
+    if (zero) return status;
     if ((status = bc_num_expand(n, len))) return status;
   }
 
