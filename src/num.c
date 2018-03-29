@@ -1122,7 +1122,7 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
   BcStatus status;
 
   assert(n && base && nchars && base_t >= BC_NUM_MIN_BASE &&
-         base_t <= BC_BASE_MAX_DEF);
+         base_t <= BC_MAX_BASE);
 
   if (*nchars  >= BC_NUM_PRINT_WIDTH) {
     if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;

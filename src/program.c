@@ -524,7 +524,7 @@ BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start, bool var) {
     if ((status = bc_program_unaryOpPrep(p, &operand, &num))) goto err;
     if ((status = bc_num_ulong(num, &temp))) goto err;
 
-    if (temp > (unsigned long) BC_DIM_MAX_DEF) {
+    if (temp > (unsigned long) BC_MAX_DIM) {
       status = BC_STATUS_EXEC_ARRAY_LEN;
       goto err;
     }
@@ -683,7 +683,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
 
     ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
-    max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : BC_BASE_MAX_DEF;
+    max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : BC_MAX_BASE;
 
     if ((status = bc_num_ulong(lval, &l))) return status;
 
@@ -695,7 +695,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   else if (left->type == BC_RESULT_SCALE) {
 
     if ((status = bc_num_ulong(lval, &l))) return status;
-    if (l > (unsigned long) BC_SCALE_MAX_DEF) return BC_STATUS_EXEC_BAD_SCALE;
+    if (l > (unsigned long) BC_MAX_SCALE) return BC_STATUS_EXEC_BAD_SCALE;
 
     p->scale = (size_t) l;
   }
@@ -974,10 +974,10 @@ BcStatus bc_program_init(BcProgram *p) {
 
   assert(p);
 
-  assert(sysconf(_SC_BC_BASE_MAX) <= BC_BASE_MAX_DEF);
-  assert(sysconf(_SC_BC_DIM_MAX) <= BC_DIM_MAX_DEF);
-  assert(sysconf(_SC_BC_SCALE_MAX) <= BC_SCALE_MAX_DEF);
-  assert(sysconf(_SC_BC_STRING_MAX) <= BC_STRING_MAX_DEF);
+  assert(sysconf(_SC_BC_BASE_MAX) <= BC_MAX_BASE);
+  assert(sysconf(_SC_BC_DIM_MAX) <= BC_MAX_DIM);
+  assert(sysconf(_SC_BC_SCALE_MAX) <= BC_MAX_SCALE);
+  assert(sysconf(_SC_BC_STRING_MAX) <= BC_MAX_STRING);
 
   main_name = read_name = NULL;
   p->nchars = 0;
