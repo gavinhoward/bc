@@ -32,21 +32,6 @@
 #include <lex.h>
 #include <bc.h>
 
-BcStatus bc_lex_whitespace(BcLex *lex) {
-
-  char c;
-
-  lex->token.type = BC_LEX_WHITESPACE;
-  c = lex->buffer[lex->idx];
-
-  while ((isspace(c) && c != '\n') || c == '\\') {
-    ++lex->idx;
-    c = lex->buffer[lex->idx];
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
 BcStatus bc_lex_string(BcLex *lex) {
 
   const char *start;
@@ -251,31 +236,25 @@ BcStatus bc_lex_token(BcLex *lex) {
   switch (c) {
 
     case '\0':
+    case '\n':
     {
       lex->newline = true;
-      lex->token.type = BC_LEX_EOF;
+      lex->token.type = BC_LEX_NEWLINE  + (!c) * (BC_LEX_EOF - BC_LEX_NEWLINE);
       break;
     }
 
     case '\t':
-    {
-      status = bc_lex_whitespace(lex);
-      break;
-    }
-
-    case '\n':
-    {
-      lex->newline = true;
-      lex->token.type = BC_LEX_NEWLINE;
-      break;
-    }
-
     case '\v':
     case '\f':
     case '\r':
     case ' ':
+    case '\\':
     {
-      status = bc_lex_whitespace(lex);
+      lex->token.type = BC_LEX_WHITESPACE;
+
+      while ((isspace(c) && c != '\n') || c == '\\')
+        c = lex->buffer[++lex->idx];
+
       break;
     }
 
@@ -360,14 +339,9 @@ BcStatus bc_lex_token(BcLex *lex) {
     }
 
     case '(':
-    {
-      lex->token.type = BC_LEX_LEFT_PAREN;
-      break;
-    }
-
     case ')':
     {
-      lex->token.type = BC_LEX_RIGHT_PAREN;
+      lex->token.type = c - '(' + BC_LEX_LEFT_PAREN;
       break;
     }
 
@@ -528,20 +502,9 @@ BcStatus bc_lex_token(BcLex *lex) {
     }
 
     case '[':
-    {
-      lex->token.type = BC_LEX_LEFT_BRACKET;
-      break;
-    }
-
-    case '\\':
-    {
-      status = bc_lex_whitespace(lex);
-      break;
-    }
-
     case ']':
     {
-      lex->token.type = BC_LEX_RIGHT_BRACKET;
+      lex->token.type = c - '[' + BC_LEX_LEFT_BRACKET;
       break;
     }
 
@@ -590,8 +553,9 @@ BcStatus bc_lex_token(BcLex *lex) {
     }
 
     case '{':
+    case '}':
     {
-      lex->token.type = BC_LEX_LEFT_BRACE;
+      lex->token.type = c - '{' + BC_LEX_LEFT_BRACE;
       break;
     }
 
@@ -615,12 +579,6 @@ BcStatus bc_lex_token(BcLex *lex) {
         status = BC_STATUS_LEX_BAD_CHARACTER;
       }
 
-      break;
-    }
-
-    case '}':
-    {
-      lex->token.type = BC_LEX_RIGHT_BRACE;
       break;
     }
 
