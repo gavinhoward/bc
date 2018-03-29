@@ -122,8 +122,11 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
   status = BC_STATUS_SUCCESS;
 
   while (!status && len > a->len) {
+
     if ((status = bc_num_init(&num, BC_NUM_DEF_SIZE))) return status;
+
     bc_num_zero(&num);
+
     if ((status = bc_vec_push(a, &num))) bc_num_free(&num);
   }
 
