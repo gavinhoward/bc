@@ -98,10 +98,8 @@ const uint8_t bc_err_type_indices[] = {
 const char *bc_err_descs[] = {
 
   NULL,
-
   "memory allocation error",
   "I/O error",
-
   "file is not text",
 
   "bad character",
