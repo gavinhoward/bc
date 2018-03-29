@@ -524,7 +524,7 @@ BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start, bool var) {
     if ((status = bc_program_unaryOpPrep(p, &operand, &num))) goto err;
     if ((status = bc_num_ulong(num, &temp))) goto err;
 
-    if (temp > (unsigned long) p->dim_max) {
+    if (temp > (unsigned long) BC_DIM_MAX_DEF) {
       status = BC_STATUS_EXEC_ARRAY_LEN;
       goto err;
     }
@@ -683,7 +683,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
 
     ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
-    max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : p->base_max;
+    max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : BC_BASE_MAX_DEF;
 
     if ((status = bc_num_ulong(lval, &l))) return status;
 
@@ -695,7 +695,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   else if (left->type == BC_RESULT_SCALE) {
 
     if ((status = bc_num_ulong(lval, &l))) return status;
-    if (l > (unsigned long) p->scale_max) return BC_STATUS_EXEC_BAD_SCALE;
+    if (l > (unsigned long) BC_SCALE_MAX_DEF) return BC_STATUS_EXEC_BAD_SCALE;
 
     p->scale = (size_t) l;
   }
@@ -974,53 +974,13 @@ BcStatus bc_program_init(BcProgram *p) {
 
   assert(p);
 
+  assert(sysconf(_SC_BC_BASE_MAX) <= BC_BASE_MAX_DEF);
+  assert(sysconf(_SC_BC_DIM_MAX) <= BC_DIM_MAX_DEF);
+  assert(sysconf(_SC_BC_SCALE_MAX) <= BC_SCALE_MAX_DEF);
+  assert(sysconf(_SC_BC_STRING_MAX) <= BC_STRING_MAX_DEF);
+
   main_name = read_name = NULL;
   p->nchars = 0;
-
-#ifdef _POSIX_BC_BASE_MAX
-  p->base_max = _POSIX_BC_BASE_MAX;
-#elif defined(_BC_BASE_MAX)
-  p->base_max = _BC_BASE_MAX;
-#else
-  p->base_max = sysconf(_SC_BC_BASE_MAX);
-#endif
-
-  assert(p->base_max <= BC_BASE_MAX_DEF);
-  p->base_max = BC_BASE_MAX_DEF;
-
-#ifdef _POSIX_BC_DIM_MAX
-  p->dim_max = _POSIX_BC_DIM_MAX;
-#elif defined(_BC_DIM_MAX)
-  p->dim_max = _BC_DIM_MAX;
-#else
-  p->dim_max = sysconf(_SC_BC_DIM_MAX);
-#endif
-
-  assert(p->dim_max <= BC_DIM_MAX_DEF);
-  p->dim_max = BC_DIM_MAX_DEF;
-
-#ifdef _POSIX_BC_SCALE_MAX
-  p->scale_max = _POSIX_BC_SCALE_MAX;
-#elif defined(_BC_SCALE_MAX)
-  p->scale_max = _BC_SCALE_MAX;
-#else
-  p->scale_max = sysconf(_SC_BC_SCALE_MAX);
-#endif
-
-  assert(p->scale_max <= BC_SCALE_MAX_DEF);
-  p->scale_max = BC_SCALE_MAX_DEF;
-
-#ifdef _POSIX_BC_STRING_MAX
-  p->string_max = _POSIX_BC_STRING_MAX;
-#elif defined(_BC_STRING_MAX)
-  p->string_max = _BC_STRING_MAX;
-#else
-  p->string_max = sysconf(_SC_BC_STRING_MAX);
-#endif
-
-  assert(p->string_max <= BC_STRING_MAX_DEF);
-  p->string_max = BC_STRING_MAX_DEF;
-
   p->scale = 0;
 
   if ((s = bc_num_init(&p->ibase, BC_NUM_DEF_SIZE))) return s;
