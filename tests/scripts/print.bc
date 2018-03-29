@@ -1,6 +1,5 @@
 #! /usr/bin/bc -q
 
-
 for (b = 2; b <= 101; ++b) {
 
 	if (b == 10) continue
