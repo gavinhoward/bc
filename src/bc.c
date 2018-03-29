@@ -103,10 +103,10 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
       if (putchar('\n') == EOF) return st;
 
-      if (printf("BC_BASE_MAX     = %zu\n", (size_t) BC_BASE_MAX_DEF) < 0 ||
-          printf("BC_DIM_MAX      = %zu\n", (size_t) BC_DIM_MAX_DEF) < 0 ||
-          printf("BC_SCALE_MAX    = %zu\n", (size_t) BC_SCALE_MAX_DEF) < 0 ||
-          printf("BC_STRING_MAX   = %zu\n", (size_t) BC_STRING_MAX_DEF) < 0 ||
+      if (printf("BC_BASE_MAX     = %zu\n", (size_t) BC_MAX_BASE) < 0 ||
+          printf("BC_DIM_MAX      = %zu\n", (size_t) BC_MAX_DIM) < 0 ||
+          printf("BC_SCALE_MAX    = %zu\n", (size_t) BC_MAX_SCALE) < 0 ||
+          printf("BC_STRING_MAX   = %zu\n", (size_t) BC_MAX_STRING) < 0 ||
           printf("Max Exponent    = %ld\n", (long) LONG_MAX) < 0 ||
           printf("Number of Vars  = %zu\n", (size_t) SIZE_MAX) < 0)
       {

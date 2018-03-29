@@ -43,10 +43,10 @@
 
 #define BC_INVALID_IDX ((size_t) -1)
 
-#define BC_BASE_MAX_DEF (999)
-#define BC_DIM_MAX_DEF (INT_MAX)
-#define BC_SCALE_MAX_DEF (LONG_MAX)
-#define BC_STRING_MAX_DEF (INT_MAX)
+#define BC_MAX_BASE (999)
+#define BC_MAX_DIM (INT_MAX)
+#define BC_MAX_SCALE (LONG_MAX)
+#define BC_MAX_STRING (INT_MAX)
 
 #define BC_BUF_SIZE (1024)
 

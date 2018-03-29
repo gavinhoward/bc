@@ -501,7 +501,7 @@ BcStatus bc_parse_string(BcParse *parse, BcVec *code) {
   BcStatus status;
   size_t len;
 
-  if (strlen(parse->lex.token.string) > (unsigned long) BC_STRING_MAX_DEF) {
+  if (strlen(parse->lex.token.string) > (unsigned long) BC_MAX_STRING) {
     status = BC_STATUS_EXEC_STRING_LEN;
     goto err;
   }
