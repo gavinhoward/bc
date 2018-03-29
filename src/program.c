@@ -1025,8 +1025,6 @@ BcStatus bc_program_init(BcProgram *p) {
   read_name = NULL;
   if (s || idx != BC_PROGRAM_READ) goto var_err;
 
-  ;
-
   if ((s = bc_vec_init(&p->vars, sizeof(BcNum), bc_num_free))) goto var_err;
 
   s = bc_veco_init(&p->var_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
