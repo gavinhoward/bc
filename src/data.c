@@ -157,8 +157,10 @@ const char bc_sig_msg[36] = "\n\ninterrupt (type \"quit\" to exit)\n\n";
 const char bc_lang_func_main[7] = "(main)";
 const char bc_lang_func_read[7] = "(read)";
 
+#ifndef NDEBUG
 const char bc_lang_inst_chars[] =
-  "edED_^*/%+-=;?~<>!|&`{}@[],NVACa.IOLlrqpQsSJjPR$H";
+  "edED_^*/%+-=;?~<>!|&`{}@[],NVACaI.LlrOqpQsSJjPR$H";
+#endif // NDEBUG
 
 const BcLexKeyword bc_lex_keywords[20] = {
   BC_LEX_KW_ENTRY("auto", 4, true),
