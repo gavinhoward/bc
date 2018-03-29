@@ -70,8 +70,8 @@ BcGlobals bcg;
 int main(int argc, char *argv[]) {
 
   BcStatus status;
-  unsigned int flags;
-  unsigned int filec;
+  unsigned int flags, filec;
+  int c, opt_idx;
   char** filev;
   bool do_exit;
 
@@ -84,11 +84,9 @@ int main(int argc, char *argv[]) {
   status = BC_STATUS_SUCCESS;
 
   // Getopt needs this.
-  int opt_idx = 0;
+  opt_idx = c = 0;
 
-  int c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
-
-  while (c != -1) {
+  do {
 
     switch (c) {
 
@@ -152,7 +150,8 @@ int main(int argc, char *argv[]) {
     }
 
     c = getopt_long(argc, argv, bc_short_opts, bc_opts, &opt_idx);
-  }
+
+  } while (c != -1);
 
   if (do_exit) return status;
 
