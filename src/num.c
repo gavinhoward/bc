@@ -802,7 +802,7 @@ BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   // Explicitly test for NULL here to produce either a 0 or 1.
   n->rdx = (ptr != NULL) * ((val + len) - (ptr + 1));
 
-  for (i = len - 1; i < len; ++n->len, i -= 1 + (val[i - 1] == '.'))
+  for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.'))
     n->num[n->len] = val[i] - '0';
 
   return BC_STATUS_SUCCESS;
