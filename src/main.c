@@ -43,7 +43,7 @@ const struct option bc_opts[] = {
 
 };
 
-const char *bc_short_opts = "chilqsvw";
+const char *bc_short_opts = "hilqsvw";
 
 const char *bc_help =
   "usage: bc [-hilqsvw] [long-options] [file...]\n"
@@ -148,7 +148,6 @@ int main(int argc, char *argv[]) {
       default:
       {
         return BC_STATUS_INVALID_OPTION;
-        break;
       }
     }
 
