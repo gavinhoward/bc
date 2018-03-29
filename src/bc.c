@@ -165,11 +165,11 @@ err:
 
 BcStatus bc_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
 
-  char *temp;
-
   if (total_len > *n) {
 
-    if (!(temp = realloc(*buffer, total_len + 1))) return BC_STATUS_MALLOC_FAIL;
+    char *temp = realloc(*buffer, total_len + 1);
+
+    if (!temp) return BC_STATUS_MALLOC_FAIL;
 
     *buffer = temp;
     *n = total_len;
@@ -183,24 +183,21 @@ BcStatus bc_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
 BcStatus bc_stdin(Bc *bc) {
 
   BcStatus st;
-  char *buf, *buffer;
-  size_t n, bufn, slen, total_len;
-  bool string, comment;
+  char *buf, *buffer, c;
+  size_t n, bufn, slen, total_len, len, i;
+  bool string, comment, notend;
 
   bc->prog.file = bc_program_stdin_name;
   bc_lex_init(&bc->parse.lex, bc_program_stdin_name);
 
-  n = BC_BUF_SIZE;
-  bufn = BC_BUF_SIZE;
+  n = bufn = BC_BUF_SIZE;
   buffer = malloc(BC_BUF_SIZE + 1);
 
   if (!buffer) return BC_STATUS_MALLOC_FAIL;
 
   buffer[0] = '\0';
 
-  buf = malloc(BC_BUF_SIZE + 1);
-
-  if (!buf) {
+  if (!(buf = malloc(BC_BUF_SIZE + 1))) {
     st = BC_STATUS_MALLOC_FAIL;
     goto buf_err;
   }
@@ -217,7 +214,6 @@ BcStatus bc_stdin(Bc *bc) {
   while ((!st || (st != BC_STATUS_QUIT)) &&
          !(st = bc_io_getline(&buf, &bufn, stdin)))
   {
-    size_t len, i;
 
     len = strlen(buf);
     slen = strlen(buffer);
@@ -227,9 +223,6 @@ BcStatus bc_stdin(Bc *bc) {
     else if (len > 1 || comment) {
 
       for (i = 0; i < len; ++i) {
-
-        char c;
-        bool notend;
 
         notend = len > i + 1;
         c = buf[i];
@@ -278,12 +271,10 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
   size_t i;
 
   bcg.interactive = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
-
   bcg.std = flags & BC_FLAG_S;
   bcg.warn = flags & BC_FLAG_W;
 
   if ((status = bc_program_init(&bc.prog))) return status;
-
   if ((status = bc_parse_init(&bc.parse, &bc.prog))) goto parse_err;
 
   sigemptyset(&sa.sa_mask);
