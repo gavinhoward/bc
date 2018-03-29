@@ -345,7 +345,7 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   c->len = BC_MAX(len, c->rdx);
   c->neg = !a->neg != !b->neg;
 
-  if (scale < c->rdx) status = bc_num_truncate(c, c->rdx - scale);
+  if (scale < c->rdx) bc_num_truncate(c, c->rdx - scale);
   else status = BC_STATUS_SUCCESS;
 
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
@@ -373,7 +373,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     if (b->neg) c->neg = !c->neg;
 
     if (c->rdx < scale) status = bc_num_extend(c, scale - c->rdx);
-    else status = bc_num_truncate(c, c->rdx - scale);
+    else bc_num_truncate(c, c->rdx - scale);
 
     return status;
   }
@@ -437,7 +437,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
 
-  if (c->rdx > scale) status = bc_num_truncate(c, c->rdx - scale);
+  if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
 
   for (i = 0, zero = true; zero && i < c->len; ++i) zero = !c->num[i];
   if (zero) bc_num_zero(c);
@@ -545,7 +545,7 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (neg && (status = bc_num_inv(c, c, scale))) goto err;
 
-  if (c->rdx > scale && (status = bc_num_truncate(c, c->rdx - scale))) goto err;
+  if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
 
   for (zero = true, i = 0; zero && i < c->len; ++i) zero = !c->num[i];
   if (zero) bc_num_zero(c);
@@ -636,7 +636,7 @@ BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
 
   --scale;
 
-  if (b->rdx > scale) status = bc_num_truncate(b, b->rdx - scale);
+  if (b->rdx > scale) bc_num_truncate(b, b->rdx - scale);
   else if (b->rdx < scale) status = bc_num_extend(b, scale - b->rdx);
 
 err:
@@ -980,7 +980,9 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
   if ((status = bc_num_init(&fracp, n->rdx))) goto frac_err;
   if ((status = bc_num_init(&digit, width))) goto digit_err;
   if ((status = bc_num_copy(&intp, n))) goto frac_len_err;
-  if ((status = bc_num_truncate(&intp, intp.rdx))) goto frac_len_err;
+
+  bc_num_truncate(&intp, intp.rdx);
+
   if ((status = bc_num_sub(n, &intp, &fracp, 0))) goto frac_len_err;
 
   while (intp.len) {
