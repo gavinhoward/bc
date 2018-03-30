@@ -28,7 +28,7 @@
 
 #include <status.h>
 
-BcStatus bc_io_getline(char **buf, size_t *n, FILE *f);
+BcStatus bc_io_getline(char **buf, size_t *n);
 BcStatus bc_io_fread(const char *path, char **buf);
 
 #endif // BC_IO_H
