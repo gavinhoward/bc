@@ -176,7 +176,7 @@ BcStatus bc_func_insert(BcFunc *func, char *name, bool var);
 void bc_func_free(void *func);
 
 BcStatus bc_array_init(void *array);
-BcStatus bc_array_copy(BcVec *dest, BcVec *src);
+BcStatus bc_array_copy(BcVec *d, BcVec *s);
 BcStatus bc_array_zero(BcVec *a);
 BcStatus bc_array_expand(BcVec *a, size_t len);
 
