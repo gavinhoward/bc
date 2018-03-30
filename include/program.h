@@ -35,6 +35,8 @@ typedef struct BcProgram {
 
   BcVec ip_stack;
 
+  size_t line_len;
+
   size_t scale;
 
   BcNum ibase;
@@ -81,7 +83,7 @@ typedef unsigned long (*BcProgramBuiltInFunc)(BcNum*);
 typedef void (*BcNumInitFunc)(BcNum*);
 
 // ** Exclude start. **
-BcStatus bc_program_init(BcProgram *p);
+BcStatus bc_program_init(BcProgram *p, size_t line_len);
 void bc_program_free(BcProgram *program);
 #ifndef NDEBUG
 BcStatus bc_program_print(BcProgram *p);

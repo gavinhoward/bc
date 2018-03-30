@@ -878,12 +878,12 @@ mult_err:
   return status;
 }
 
-BcStatus bc_num_printDigits(unsigned long num, size_t width,
-                            bool radix, size_t *nchars)
+BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
+                            size_t *nchars, size_t line_len)
 {
   size_t exp, pow, div;
 
-  if (*nchars == BC_NUM_PRINT_WIDTH - 1) {
+  if (*nchars == line_len - 1) {
     if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
     if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
@@ -898,7 +898,7 @@ BcStatus bc_num_printDigits(unsigned long num, size_t width,
 
   for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
 
-    if (*nchars == BC_NUM_PRINT_WIDTH - 1) {
+    if (*nchars == line_len - 1) {
       if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
       if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
       *nchars = 0;
@@ -913,11 +913,11 @@ BcStatus bc_num_printDigits(unsigned long num, size_t width,
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_printHex(unsigned long num, size_t width,
-                         bool radix, size_t *nchars)
+BcStatus bc_num_printHex(unsigned long num, size_t width, bool radix,
+                         size_t *nchars, size_t line_len)
 {
   width += !!radix;
-  if (*nchars + width  >= BC_NUM_PRINT_WIDTH) {
+  if (*nchars + width  >= line_len) {
     if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
     if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
@@ -931,7 +931,7 @@ BcStatus bc_num_printHex(unsigned long num, size_t width,
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars) {
+BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t line_len) {
 
   BcStatus status;
   size_t i;
@@ -944,12 +944,13 @@ BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars) {
   status = BC_STATUS_SUCCESS;
 
   for (i = n->len - 1; !status && i < n->len; --i)
-    status = bc_num_printHex(n->num[i], 1, i == n->rdx - 1, nchars);
+    status = bc_num_printHex(n->num[i], 1, i == n->rdx - 1, nchars, line_len);
 
   return status;
 }
 
-BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
+BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
+                          size_t *nchars, size_t line_len)
 {
   BcStatus status;
   BcVec stack;
@@ -996,7 +997,8 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
   for (i = 0; i < stack.len; ++i) {
     ptr = bc_vec_item_rev(&stack, i);
     assert(ptr);
-    if ((status = print(*ptr, width, false, nchars))) goto frac_len_err;
+    status = print(*ptr, width, false, nchars, line_len);
+    if (status) goto frac_len_err;
   }
 
   if (!n->rdx) goto frac_len_err;
@@ -1010,7 +1012,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
     if ((status = bc_num_ulong(&fracp, &dig))) goto err;
     if ((status = bc_num_ulong2num(&intp, dig))) goto err;
     if ((status = bc_num_sub(&fracp, &intp, &fracp, 0))) goto err;
-    if ((status = print(dig, width, radix, nchars))) goto err;
+    if ((status = print(dig, width, radix, nchars, line_len))) goto err;
     if ((status = bc_num_mul(&frac_len, base, &frac_len, 0))) goto err;
   }
 
@@ -1112,15 +1114,15 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
   return status;
 }
 
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
-                      bool newline, size_t *nchars)
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
+                      size_t *nchars, size_t line_len)
 {
   BcStatus status;
 
   assert(n && base && nchars && base_t >= BC_NUM_MIN_BASE &&
          base_t <= BC_MAX_BASE);
 
-  if (*nchars  >= BC_NUM_PRINT_WIDTH) {
+  if (*nchars  >= line_len) {
     if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
     if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
     *nchars = 0;
@@ -1131,8 +1133,8 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
     ++(*nchars);
     status = BC_STATUS_SUCCESS;
   }
-  else if (base_t == 10) status = bc_num_printDecimal(n, nchars);
-  else status = bc_num_printBase(n, base, base_t, nchars);
+  else if (base_t == 10) status = bc_num_printDecimal(n, nchars, line_len);
+  else status = bc_num_printBase(n, base, base_t, nchars, line_len);
 
   if (status) return status;
 

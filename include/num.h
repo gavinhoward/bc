@@ -53,7 +53,8 @@ typedef struct BcNum {
 typedef BcStatus (*BcNumUnaryFunc)(BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumBinaryFunc)(BcNum*, BcNum*, BcNum*, size_t);
 
-typedef BcStatus (*BcNumDigitFunc)(unsigned long, size_t, bool, size_t*);
+typedef BcStatus (*BcNumDigitFunc)(unsigned long, size_t,
+                                   bool, size_t*, size_t);
 
 BcStatus bc_num_init(BcNum *n, size_t request);
 
@@ -87,9 +88,8 @@ void bc_num_ten(BcNum *n);
 // ** Exclude start. **
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t);
 
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline, size_t *nchars);
-BcStatus bc_num_fprint(BcNum *n, BcNum *base, size_t base_t,
-                       bool newline, size_t *nchars, FILE *f);
+BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
+                      size_t *nchars, size_t line_len);
 // ** Exclude end. **
 
 extern const char bc_num_hex_digits[];
