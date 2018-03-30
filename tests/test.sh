@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 script="$0"
 
@@ -40,7 +40,7 @@ else
 	out2="$testdir/../log_test.txt"
 fi
 
-if [[ "$t" = "parse" ]] || [[ "$t" = "print" ]] || [[ "$t" = "arctangent" ]]; then
+if [ "$t" = "parse" -o "$t" = "print" -o "$t" = "arctangent" ]; then
 
 	f="$testdir/$t.txt"
 
