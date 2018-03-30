@@ -73,9 +73,9 @@ BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale);
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale);
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale);
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale);
+BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale);
 
 // ** Exclude start. **
-BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale);
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale);
 // ** Exclude end. **
 
