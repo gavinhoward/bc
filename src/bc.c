@@ -262,7 +262,7 @@ buf_err:
   return s;
 }
 
-BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
+BcStatus bc_main(unsigned int flags, BcVec *files) {
 
   BcStatus status;
   Bc bc;
@@ -323,8 +323,11 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
     if ((status = bc_program_exec(&bc.prog))) goto err;
   }
 
-  for (i = 0; !bcg.sig_other && !status && i < filec; ++i)
-    status = bc_file(&bc, filev[i]);
+  for (i = 0; !bcg.sig_other && !status && i < files->len; ++i) {
+    char **ptr = bc_vec_item(files, i);
+    assert(ptr);
+    status = bc_file(&bc, *ptr);
+  }
   if (status || bcg.sig_other) goto err;
 
   status = bc_stdin(&bc);

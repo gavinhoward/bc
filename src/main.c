@@ -20,6 +20,7 @@
  *
  */
 
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,6 +29,7 @@
 
 #include <getopt.h>
 
+#include <vector.h>
 #include <bc.h>
 
 const struct option bc_opts[] = {
@@ -65,26 +67,20 @@ const char *bc_help =
   "  -w  --warn         warn if any non-POSIX extensions are used\n"
   "  -v  --version      print version information and copyright and exit\n\n";
 
+const char *bc_env_args_name = "BC_ENV_ARGS";
+
 BcGlobals bcg;
 
-int main(int argc, char *argv[]) {
+BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
   BcStatus status;
-  unsigned int flags, filec;
-  int c, opt_idx;
-  char** filev;
+  int c, i, opt_idx;
   bool do_exit;
 
-  setlocale(LC_ALL, "");
-
-  memset(&bcg, 0, sizeof(BcGlobals));
-
   do_exit = false;
-  flags = 0;
-  status = BC_STATUS_SUCCESS;
-
-  // Getopt needs this.
   opt_idx = c = 0;
+  status = BC_STATUS_SUCCESS;
+  optind = 1;
 
   do {
 
@@ -106,25 +102,25 @@ int main(int argc, char *argv[]) {
 
       case 'i':
       {
-        flags |= BC_FLAG_I;
+        (*flags) |= BC_FLAG_I;
         break;
       }
 
       case 'l':
       {
-        flags |= BC_FLAG_L;
+        (*flags) |= BC_FLAG_L;
         break;
       }
 
       case 'q':
       {
-        flags |= BC_FLAG_Q;
+        (*flags) |= BC_FLAG_Q;
         break;
       }
 
       case 's':
       {
-        flags |= BC_FLAG_S;
+        (*flags) |= BC_FLAG_S;
         break;
       }
 
@@ -137,7 +133,7 @@ int main(int argc, char *argv[]) {
 
       case 'w':
       {
-        flags |= BC_FLAG_W;
+        (*flags) |= BC_FLAG_W;
         break;
       }
 
@@ -153,14 +149,78 @@ int main(int argc, char *argv[]) {
 
   } while (c != -1);
 
-  if (do_exit) return status;
-
-  flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
+  if (do_exit) exit(status);
 
   if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
-  filec = argc - optind;
-  filev = argv + optind;
+  for (i = optind; !status && i < argc; ++i)
+    status = bc_vec_push(files, argv + i);
 
-  return bc_main(flags, filec, filev);
+  return status;
+}
+
+int main(int argc, char *argv[]) {
+
+  BcStatus status;
+  BcVec files, args;
+  unsigned int flags;
+  char *env_args, *buffer, *buf;
+
+  setlocale(LC_ALL, "");
+
+  memset(&bcg, 0, sizeof(BcGlobals));
+
+  flags = 0;
+  status = BC_STATUS_SUCCESS;
+
+  if ((status = bc_vec_init(&files, sizeof(char*), NULL))) return status;
+
+  if ((env_args = getenv(bc_env_args_name))) {
+
+    if ((status = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
+    if ((status = bc_vec_push(&args, &bc_env_args_name))) goto args_err;
+
+    if (!(buffer = strdup(env_args))) {
+      status = BC_STATUS_MALLOC_FAIL;
+      goto args_err;
+    }
+
+    buf = buffer;
+
+    while (*buf) {
+
+      if (!isspace(*buf)) {
+
+        if ((status = bc_vec_push(&args, &buf))) goto buf_err;
+
+        while (*buf && !isspace(*buf)) ++buf;
+
+        if (*buf) (*(buf++)) = '\0';
+      }
+      else ++buf;
+    }
+
+    status = bc_args(args.len, (char**) args.array, &flags, &files);
+    if(status) goto buf_err;
+  }
+
+  if((status = bc_args(argc, argv, &flags, &files))) goto buf_err;
+
+  flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
+
+  status = bc_main(flags, &files);
+
+buf_err:
+
+  if (env_args) free(buffer);
+
+args_err:
+
+  if (env_args) bc_vec_free(&args);
+
+err:
+
+  bc_vec_free(&files);
+
+  return status;
 }
