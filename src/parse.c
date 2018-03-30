@@ -653,7 +653,7 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     bc_vec_pop(&parse->flags);
 
-    ip = bc_vec_top(&parse->exit_labels);
+    ip = bc_vec_top(&parse->exits);
     assert(ip);
     func = bc_vec_item(&parse->prog->funcs, parse->func);
     assert(func);
@@ -662,7 +662,7 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
 
     *label = code->len;
 
-    bc_vec_pop(&parse->exit_labels);
+    bc_vec_pop(&parse->exits);
   }
   else if (BC_PARSE_FUNC_INNER(parse)) {
 
@@ -678,13 +678,13 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
     BcFunc *func;
     size_t *label;
 
-    ip = bc_vec_top(&parse->exit_labels);
+    ip = bc_vec_top(&parse->exits);
 
     assert(ip);
 
     if ((status = bc_vec_pushByte(code, BC_INST_JUMP))) return status;
 
-    label = bc_vec_top(&parse->cond_labels);
+    label = bc_vec_top(&parse->conds);
 
     assert(label);
 
@@ -698,8 +698,8 @@ BcStatus bc_parse_endBody(BcParse *parse, BcVec *code, bool brace) {
     *label = code->len;
 
     bc_vec_pop(&parse->flags);
-    bc_vec_pop(&parse->exit_labels);
-    bc_vec_pop(&parse->cond_labels);
+    bc_vec_pop(&parse->exits);
+    bc_vec_pop(&parse->conds);
   }
 
   return status;
@@ -728,7 +728,7 @@ void bc_parse_noElse(BcParse *parse, BcVec *code) {
   assert(flag_ptr);
   *flag_ptr = (*flag_ptr & ~(BC_PARSE_FLAG_IF_END));
 
-  ip = bc_vec_top(&parse->exit_labels);
+  ip = bc_vec_top(&parse->exits);
   assert(ip && !ip->func && !ip->len);
   func = bc_vec_item(&parse->prog->funcs, parse->func);
   assert(func && code == &func->code);
@@ -737,7 +737,7 @@ void bc_parse_noElse(BcParse *parse, BcVec *code) {
 
   *label = code->len;
 
-  bc_vec_pop(&parse->exit_labels);
+  bc_vec_pop(&parse->exits);
 }
 
 BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
@@ -771,7 +771,7 @@ BcStatus bc_parse_if(BcParse *parse, BcVec *code) {
   ip.len = 0;
 
   if ((status = bc_parse_pushIndex(code, ip.idx))) return status;
-  if ((status = bc_vec_push(&parse->exit_labels, &ip))) return status;
+  if ((status = bc_vec_push(&parse->exits, &ip))) return status;
   if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
 
   return bc_parse_startBody(parse, BC_PARSE_FLAG_IF);
@@ -798,7 +798,7 @@ BcStatus bc_parse_else(BcParse *parse, BcVec *code) {
 
   bc_parse_noElse(parse, code);
 
-  if ((status = bc_vec_push(&parse->exit_labels, &ip))) return status;
+  if ((status = bc_vec_push(&parse->exits, &ip))) return status;
   if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
   if ((status = bc_lex_next(&parse->lex))) return status;
 
@@ -826,13 +826,13 @@ BcStatus bc_parse_while(BcParse *parse, BcVec *code) {
   ip.idx = func->labels.len;
 
   if ((status = bc_vec_push(&func->labels, &code->len))) return status;
-  if ((status = bc_vec_push(&parse->cond_labels, &ip.idx))) return status;
+  if ((status = bc_vec_push(&parse->conds, &ip.idx))) return status;
 
   ip.idx = func->labels.len;
   ip.func = 1;
   ip.len = 0;
 
-  if ((status = bc_vec_push(&parse->exit_labels, &ip))) return status;
+  if ((status = bc_vec_push(&parse->exits, &ip))) return status;
   if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
 
   status = bc_parse_expr(parse, code, BC_PARSE_EXPR_POSIX_REL);
@@ -907,7 +907,7 @@ BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 
   ip.idx = func->labels.len;
 
-  if ((status = bc_vec_push(&parse->cond_labels, &update_idx))) return status;
+  if ((status = bc_vec_push(&parse->conds, &update_idx))) return status;
   if ((status = bc_vec_push(&func->labels, &code->len))) return status;
 
   if (parse->lex.token.type != BC_LEX_RIGHT_PAREN)
@@ -934,7 +934,7 @@ BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
   ip.func = 1;
   ip.len = 0;
 
-  if ((status = bc_vec_push(&parse->exit_labels, &ip))) return status;
+  if ((status = bc_vec_push(&parse->exits, &ip))) return status;
   if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
   if ((status = bc_lex_next(&parse->lex))) return status;
 
@@ -946,31 +946,27 @@ BcStatus bc_parse_for(BcParse *parse, BcVec *code) {
 BcStatus bc_parse_loopExit(BcParse *parse, BcVec *code, BcLexToken type) {
 
   BcStatus status;
-  size_t idx;
+  size_t idx, top;
+  BcInstPtr *ip;
 
   if (!BC_PARSE_LOOP(parse)) return BC_STATUS_PARSE_BAD_TOKEN;
 
   if (type == BC_LEX_KEY_BREAK) {
 
-    size_t top;
-    BcInstPtr *ip;
+    if (!parse->exits.len) return BC_STATUS_PARSE_BAD_TOKEN;
 
-    if (!parse->exit_labels.len) return BC_STATUS_PARSE_BAD_TOKEN;
+    top = parse->exits.len - 1;
+    ip = bc_vec_item(&parse->exits, top);
 
-    top = parse->exit_labels.len - 1;
-    ip = bc_vec_item(&parse->exit_labels, top);
+    while (top < parse->exits.len && ip && !ip->func)
+      ip = bc_vec_item(&parse->exits, top--);
 
-    while (top < parse->exit_labels.len && ip && !ip->func) {
-      ip = bc_vec_item(&parse->exit_labels, top);
-      --top;
-    }
-
-    if (top >= parse->exit_labels.len || !ip) return BC_STATUS_PARSE_BAD_TOKEN;
+    if (top >= parse->exits.len || !ip) return BC_STATUS_PARSE_BAD_TOKEN;
 
     idx = ip->idx;
   }
   else {
-    size_t *ptr = bc_vec_top(&parse->cond_labels);
+    size_t *ptr = bc_vec_top(&parse->conds);
     assert(ptr);
     idx = *ptr;
   }
@@ -1365,10 +1361,10 @@ BcStatus bc_parse_init(BcParse *parse, BcProgram *program) {
   status = bc_vec_init(&parse->flags, sizeof(uint8_t), NULL);
   if (status) return status;
 
-  status = bc_vec_init(&parse->exit_labels, sizeof(BcInstPtr), NULL);
+  status = bc_vec_init(&parse->exits, sizeof(BcInstPtr), NULL);
   if (status) goto exit_label_err;
 
-  status = bc_vec_init(&parse->cond_labels, sizeof(size_t), NULL);
+  status = bc_vec_init(&parse->conds, sizeof(size_t), NULL);
   if (status) goto cond_label_err;
 
   uint8_t flags = 0;
@@ -1387,11 +1383,11 @@ BcStatus bc_parse_init(BcParse *parse, BcProgram *program) {
 
 push_err:
 
-  bc_vec_free(&parse->cond_labels);
+  bc_vec_free(&parse->conds);
 
 cond_label_err:
 
-  bc_vec_free(&parse->exit_labels);
+  bc_vec_free(&parse->exits);
 
 exit_label_err:
 
@@ -1443,8 +1439,8 @@ BcStatus bc_parse_parse(BcParse *parse) {
     parse->num_braces = 0;
 
     bc_vec_npop(&parse->flags, parse->flags.len - 1);
-    bc_vec_npop(&parse->exit_labels, parse->exit_labels.len);
-    bc_vec_npop(&parse->cond_labels, parse->cond_labels.len);
+    bc_vec_npop(&parse->exits, parse->exits.len);
+    bc_vec_npop(&parse->conds, parse->conds.len);
     bc_vec_npop(&parse->ops, parse->ops.len);
 
     status = bc_program_reset(parse->prog, status, sig);
@@ -1458,8 +1454,8 @@ void bc_parse_free(BcParse *parse) {
   if (!parse) return;
 
   bc_vec_free(&parse->flags);
-  bc_vec_free(&parse->exit_labels);
-  bc_vec_free(&parse->cond_labels);
+  bc_vec_free(&parse->exits);
+  bc_vec_free(&parse->conds);
   bc_vec_free(&parse->ops);
 
   if ((parse->lex.token.type == BC_LEX_STRING ||

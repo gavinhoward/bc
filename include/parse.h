@@ -104,8 +104,8 @@ typedef struct BcParse {
 
   BcVec flags;
 
-  BcVec exit_labels;
-  BcVec cond_labels;
+  BcVec exits;
+  BcVec conds;
 
   BcVec ops;
 
