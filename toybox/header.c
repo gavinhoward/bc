@@ -39,6 +39,7 @@ GLOBALS(
   long interactive;
 
   long sig_int;
+  long sig_int_catches;
   long sig_other;
 )
 

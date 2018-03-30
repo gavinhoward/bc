@@ -323,11 +323,9 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
     if ((status = bc_program_exec(&bc.prog))) goto err;
   }
 
-  for (i = 0; !bcg.sig_other && !status && i < files->len; ++i) {
-    char **ptr = bc_vec_item(files, i);
-    assert(ptr);
-    status = bc_file(&bc, *ptr);
-  }
+  for (i = 0; !bcg.sig_other && !status && i < files->len; ++i)
+    status = bc_file(&bc, *((char**) bc_vec_item(files, i)));
+
   if (status || bcg.sig_other) goto err;
 
   status = bc_stdin(&bc);

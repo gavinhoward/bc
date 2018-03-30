@@ -69,14 +69,14 @@ for i in range(22, len(bc_c_lines)):
 	bc_c_stuff += bc_c_lines[i]
 
 bc_c_replacements = [
-	[ '^BcStatus bc_main\(unsigned int flags, unsigned int filec, char \*filev\[\]\)',
+	[ '^BcStatus bc_main\(unsigned int flags, BcVec \*files\)',
 	  'void bc_main(void)' ],
 	[ '^  BcStatus status;$', '' ],
-	[ '^  bcg.std = flags & BC_FLAG_S;$', '' ],
+	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
 	[ '^  bcg.warn = flags & BC_FLAG_W;$', '' ],
-	[ 'flags ', 'toys.optflags ' ],
-	[ 'filec', 'toys.optc' ],
-	[ 'filev', 'toys.optargs' ],
+	[ '([^_])flags ', r'\1toys.optflags ' ],
+	[ 'files->len', 'toys.optc' ],
+	[ '\*\(\(char\*\*\) bc_vec_item\(files, i\)\)', 'toys.optargs[i]' ],
 	[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
 	[ '^  bc_parse_free\(&bc\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&bc.parse);' ],
 	[ '^  bc_program_free\(&bc\.prog\);\n\n  return status;', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
