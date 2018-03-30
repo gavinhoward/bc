@@ -72,7 +72,7 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
 
 BcStatus bc_io_fread(const char *path, char **buf) {
 
-  BcStatus s;
+  BcStatus st;
   FILE *f;
   size_t size, read;
 
@@ -90,14 +90,14 @@ BcStatus bc_io_fread(const char *path, char **buf) {
   *buf = malloc(size + 1);
 
   if (!*buf) {
-    s = BC_STATUS_MALLOC_FAIL;
+    st = BC_STATUS_MALLOC_FAIL;
     goto malloc_err;
   }
 
   read = fread(*buf, 1, size, f);
 
   if (read != size) {
-    s = BC_STATUS_IO_ERR;
+    st = BC_STATUS_IO_ERR;
     goto read_err;
   }
 
@@ -115,5 +115,5 @@ malloc_err:
 
   fclose(f);
 
-  return s;
+  return st;
 }
