@@ -340,7 +340,7 @@ BcStatus bc_program_read(BcProgram *p) {
 
   size = BC_PROGRAM_BUF_SIZE;
 
-  if ((status = bc_io_getline(&buffer, &size, stdin)))goto io_err;
+  if ((status = bc_io_getline(&buffer, &size)))goto io_err;
 
   if ((status = bc_parse_init(&parse, p))) goto io_err;
   bc_lex_init(&parse.lex, "<stdin>");
