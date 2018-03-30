@@ -98,7 +98,6 @@ typedef enum BcInst {
 
   BC_INST_HALT,
 
-
 } BcInst;
 
 typedef struct BcEntry {
