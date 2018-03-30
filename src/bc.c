@@ -44,64 +44,64 @@ void bc_sig(int sig) {
   else bcg.sig_other = 1;
 }
 
-BcStatus bc_error(BcStatus st) {
+BcStatus bc_error(BcStatus s) {
 
-  if (!st || st >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
+  if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
-  fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[bc_err_type_indices[st]],
-          bc_err_descs[st]);
+  fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[bc_err_type_indices[s]],
+          bc_err_descs[s]);
 
-  return st * !bcg.interactive;
+  return s * !bcg.interactive;
 }
 
-BcStatus bc_error_file(BcStatus st, const char *file, size_t line) {
+BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
 
-  if (!st || !file || st >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
+  if (!s || !file || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
-  fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[st]],
-          bc_err_descs[st]);
+  fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[s]],
+          bc_err_descs[s]);
 
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
-  return st * !bcg.interactive;
+  return s * !bcg.interactive;
 }
 
-BcStatus bc_posix_error(BcStatus st, const char *file,
+BcStatus bc_posix_error(BcStatus s, const char *file,
                         size_t line, const char *msg)
 {
-  int s = bcg.std, w = bcg.warn;
+  int p = bcg.posix, w = bcg.warn;
 
-  if (!(s || w) || st < BC_STATUS_POSIX_NAME_LEN || !file)
+  if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN || !file)
     return BC_STATUS_SUCCESS;
 
-  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[bc_err_type_indices[st]],
-          s ? "error" : "warning", bc_err_descs[st]);
+  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[bc_err_type_indices[s]],
+          p ? "error" : "warning", bc_err_descs[s]);
 
   if (msg) fprintf(stderr, "    %s\n", msg);
 
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
-  return st * !!s;
+  return s * !!p;
 }
 
 BcStatus bc_process(Bc *bc, const char *text) {
 
-  BcStatus st = bc_lex_text(&bc->parse.lex, text);
+  BcStatus s = bc_lex_text(&bc->parse.lex, text);
 
-  if (st && (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line)))
-    return st;
+  if (s && (s = bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line)))
+    return s;
 
   while (bc->parse.lex.token.type != BC_LEX_EOF) {
 
-    st = bc_parse_parse(&bc->parse);
+    s = bc_parse_parse(&bc->parse);
 
-    if (st == BC_STATUS_LIMITS) {
+    if (s == BC_STATUS_LIMITS) {
 
-      st = BC_STATUS_IO_ERR;
+      s = BC_STATUS_IO_ERR;
 
-      if (putchar('\n') == EOF) return st;
+      if (putchar('\n') == EOF) return s;
 
       if (printf("BC_BASE_MAX     = %zu\n", (size_t) BC_MAX_BASE) < 0 ||
           printf("BC_DIM_MAX      = %zu\n", (size_t) BC_MAX_DIM) < 0 ||
@@ -110,57 +110,57 @@ BcStatus bc_process(Bc *bc, const char *text) {
           printf("Max Exponent    = %ld\n", (long) LONG_MAX) < 0 ||
           printf("Number of Vars  = %zu\n", (size_t) SIZE_MAX) < 0)
       {
-        return st;
+        return s;
       }
 
-      if (putchar('\n') == EOF) return st;
+      if (putchar('\n') == EOF) return s;
     }
-    else if (st == BC_STATUS_QUIT || bcg.sig_other ||
-        (st && (st = bc_error_file(st, bc->parse.lex.file, bc->parse.lex.line))))
+    else if (s == BC_STATUS_QUIT || bcg.sig_other ||
+        (s && (s = bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line))))
     {
-      return st;
+      return s;
     }
   }
 
   if (BC_PARSE_CAN_EXEC(&bc->parse)) {
 
-    st = bc_program_exec(&bc->prog);
+    s = bc_program_exec(&bc->prog);
 
     if (bcg.interactive) fflush(stdout);
 
-    if (st && st != BC_STATUS_QUIT) st = bc_error(st);
+    if (s && s != BC_STATUS_QUIT) s = bc_error(s);
   }
 
-  return st;
+  return s;
 }
 
 BcStatus bc_file(Bc *bc, const char *file) {
 
-  BcStatus st;
+  BcStatus s;
   char *data;
   BcFunc *main_func;
   BcInstPtr *ip;
 
   bc->prog.file = file;
 
-  if ((st = bc_io_fread(file, &data))) return st;
+  if ((s = bc_io_fread(file, &data))) return s;
 
   bc_lex_init(&bc->parse.lex, file);
 
-  if ((st = bc_process(bc, data))) goto err;
+  if ((s = bc_process(bc, data))) goto err;
 
   main_func = bc_vec_item(&bc->prog.funcs, BC_PROGRAM_MAIN);
   ip = bc_vec_item(&bc->prog.stack, 0);
 
   assert(main_func && ip);
 
-  if (main_func->code.len > ip->idx) st = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
+  if (main_func->code.len > ip->idx) s = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
 err:
 
   free(data);
 
-  return st;
+  return s;
 }
 
 BcStatus bc_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
@@ -182,7 +182,7 @@ BcStatus bc_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
 
 BcStatus bc_stdin(Bc *bc) {
 
-  BcStatus st;
+  BcStatus s;
   char *buf, *buffer, c;
   size_t n, bufn, slen, total_len, len, i;
   bool string, comment, notend;
@@ -198,12 +198,12 @@ BcStatus bc_stdin(Bc *bc) {
   buffer[0] = '\0';
 
   if (!(buf = malloc(BC_BUF_SIZE + 1))) {
-    st = BC_STATUS_MALLOC_FAIL;
+    s = BC_STATUS_MALLOC_FAIL;
     goto buf_err;
   }
 
   string = comment = false;
-  st = BC_STATUS_SUCCESS;
+  s = BC_STATUS_SUCCESS;
 
   // The following loop is complicated because the vm tries
   // not to send any lines that end with a backslash to the
@@ -211,9 +211,7 @@ BcStatus bc_stdin(Bc *bc) {
   // a backslash newline combo as whitespace, per the bc spec.
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
-  while ((!st || (st != BC_STATUS_QUIT)) &&
-         !(st = bc_io_getline(&buf, &bufn, stdin)))
-  {
+  while ((!s || s != BC_STATUS_QUIT) && !(s = bc_io_getline(&buf, &bufn))) {
 
     len = strlen(buf);
     slen = strlen(buffer);
@@ -237,20 +235,20 @@ BcStatus bc_stdin(Bc *bc) {
       }
 
       if (string || comment || buf[len - 2] == '\\') {
-        if ((st = bc_concat(&buffer, &n, buf, total_len))) goto exit_err;
+        if ((s = bc_concat(&buffer, &n, buf, total_len))) goto exit_err;
         continue;
       }
     }
 
-    if ((st = bc_concat(&buffer, &n, buf, total_len))) goto exit_err;
+    if ((s = bc_concat(&buffer, &n, buf, total_len))) goto exit_err;
 
-    st = bc_process(bc, buffer);
+    s = bc_process(bc, buffer);
     buffer[0] = '\0';
   }
 
   // I/O error will always happen when stdin is
   // closed. It's not a problem in that case.
-  st = st == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : st;
+  s = s == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : s;
 
 exit_err:
 
@@ -260,7 +258,7 @@ buf_err:
 
   free(buffer);
 
-  return st;
+  return s;
 }
 
 BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
@@ -271,7 +269,7 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
   size_t i;
 
   bcg.interactive = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
-  bcg.std = flags & BC_FLAG_S;
+  bcg.posix = flags & BC_FLAG_S;
   bcg.warn = flags & BC_FLAG_W;
 
   if ((status = bc_program_init(&bc.prog))) return status;

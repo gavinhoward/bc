@@ -29,7 +29,7 @@
 #include <io.h>
 #include <bc.h>
 
-BcStatus bc_io_getline(char **buf, size_t *n, FILE *f) {
+BcStatus bc_io_getline(char **buf, size_t *n) {
 
   char *temp;
   int c;
@@ -48,7 +48,7 @@ BcStatus bc_io_getline(char **buf, size_t *n, FILE *f) {
       *n = size;
     }
 
-    c = fgetc(f);
+    c = fgetc(stdin);
 
     if (c == EOF) {
 

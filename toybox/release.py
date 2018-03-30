@@ -120,7 +120,7 @@ regexes_all = [
 ]
 
 replacements = [
-	[ 'bcg.std', '(toys.optflags & FLAG_s)' ],
+	[ 'bcg.posix', '(toys.optflags & FLAG_s)' ],
 	[ 'bcg.warn', '(toys.optflags & FLAG_w)' ],
 	[ 'bcg.', 'TT.' ],
 	[ 'BC_FLAG_Q', 'FLAG_q' ],
