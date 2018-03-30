@@ -38,8 +38,8 @@ config BC
 GLOBALS(
   long interactive;
 
-  long sig_int;
-  long sig_int_catches;
+  unsigned long sig_int;
+  unsigned long sig_int_catches;
   long sig_other;
 )
 
