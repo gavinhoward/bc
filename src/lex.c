@@ -167,7 +167,7 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
 
 BcStatus bc_lex_name(BcLex *lex) {
 
-  BcStatus status;
+  BcStatus s;
   const char *buffer;
   size_t i;
   char c;
@@ -181,11 +181,10 @@ BcStatus bc_lex_name(BcLex *lex) {
       lex->token.type = BC_LEX_KEY_AUTO + i;
 
       if (!bc_lex_keywords[i].posix &&
-          (status = bc_posix_error(BC_STATUS_POSIX_BAD_KEYWORD,
-                                   lex->file, lex->line,
-                                   bc_lex_keywords[i].name)))
+          (s = bc_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, lex->file, lex->line,
+                              bc_lex_keywords[i].name)))
       {
-        return status;
+        return s;
       }
 
       // We need to minus one because the
@@ -204,10 +203,10 @@ BcStatus bc_lex_name(BcLex *lex) {
   while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_')
     c = buffer[++i];
 
-  if (i > 1 && (status = bc_posix_error(BC_STATUS_POSIX_NAME_LEN,
-                                        lex->file, lex->line, buffer)))
+  if (i > 1 && (s = bc_posix_error(BC_STATUS_POSIX_NAME_LEN, lex->file,
+                                   lex->line, buffer)))
   {
-    return status;
+    return s;
   }
 
   lex->token.string = malloc(i + 1);
@@ -225,10 +224,10 @@ BcStatus bc_lex_name(BcLex *lex) {
 
 BcStatus bc_lex_token(BcLex *lex) {
 
-  BcStatus status;
+  BcStatus s;
   char c, c2;
 
-  status = BC_STATUS_SUCCESS;
+  s = BC_STATUS_SUCCESS;
 
   c = lex->buffer[lex->idx++];
 
@@ -270,10 +269,10 @@ BcStatus bc_lex_token(BcLex *lex) {
       }
       else {
 
-        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-                                     lex->file, lex->line, "!")))
+        if ((s = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                lex->file, lex->line, "!")))
         {
-          return status;
+          return s;
         }
 
         lex->token.type = BC_LEX_OP_BOOL_NOT;
@@ -284,16 +283,16 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '"':
     {
-      status = bc_lex_string(lex);
+      s = bc_lex_string(lex);
       break;
     }
 
     case '#':
     {
-      if ((status = bc_posix_error(BC_STATUS_POSIX_SCRIPT_COMMENT,
-                                  lex->file, lex->line, NULL)))
+      if ((s = bc_posix_error(BC_STATUS_POSIX_SCRIPT_COMMENT,
+                              lex->file, lex->line, NULL)))
       {
-        return status;
+        return s;
       }
 
       lex->token.type = BC_LEX_WHITESPACE;
@@ -323,10 +322,10 @@ BcStatus bc_lex_token(BcLex *lex) {
 
       if (c2 == '&') {
 
-        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-                                     lex->file, lex->line, "&&")))
+        if ((s = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                lex->file, lex->line, "&&")))
         {
-          return status;
+          return s;
         }
 
         ++lex->idx;
@@ -334,7 +333,7 @@ BcStatus bc_lex_token(BcLex *lex) {
       }
       else {
         lex->token.type = BC_LEX_INVALID;
-        status = BC_STATUS_LEX_BAD_CHARACTER;
+        s = BC_STATUS_LEX_BAD_CHARACTER;
       }
 
       break;
@@ -405,12 +404,12 @@ BcStatus bc_lex_token(BcLex *lex) {
       c2 = lex->buffer[lex->idx];
 
       if (isdigit(c2)) {
-        status = bc_lex_number(lex, c);
+        s = bc_lex_number(lex, c);
       }
       else {
 
-        status = bc_posix_error(BC_STATUS_POSIX_DOT_LAST,
-                                lex->file, lex->line, NULL);
+        s = bc_posix_error(BC_STATUS_POSIX_DOT_LAST,
+                           lex->file, lex->line, NULL);
 
         lex->token.type = BC_LEX_KEY_LAST;
       }
@@ -426,7 +425,7 @@ BcStatus bc_lex_token(BcLex *lex) {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_DIVIDE;
       }
-      else if (c2 == '*') status = bc_lex_comment(lex);
+      else if (c2 == '*') s = bc_lex_comment(lex);
       else lex->token.type = BC_LEX_OP_DIVIDE;
 
       break;
@@ -443,7 +442,7 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '8':
     case '9':
     {
-      status = bc_lex_number(lex, c);
+      s = bc_lex_number(lex, c);
       break;
     }
 
@@ -499,7 +498,7 @@ BcStatus bc_lex_token(BcLex *lex) {
     case 'E':
     case 'F':
     {
-      status = bc_lex_number(lex, c);
+      s = bc_lex_number(lex, c);
       break;
     }
 
@@ -550,7 +549,7 @@ BcStatus bc_lex_token(BcLex *lex) {
     case 'y':
     case 'z':
     {
-      status = bc_lex_name(lex);
+      s = bc_lex_name(lex);
       break;
     }
 
@@ -567,10 +566,10 @@ BcStatus bc_lex_token(BcLex *lex) {
 
       if (c2 == '|') {
 
-        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-                                     lex->file, lex->line, "||")))
+        if ((s = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                lex->file, lex->line, "||")))
         {
-          return status;
+          return s;
         }
 
         ++lex->idx;
@@ -578,7 +577,7 @@ BcStatus bc_lex_token(BcLex *lex) {
       }
       else {
         lex->token.type = BC_LEX_INVALID;
-        status = BC_STATUS_LEX_BAD_CHARACTER;
+        s = BC_STATUS_LEX_BAD_CHARACTER;
       }
 
       break;
@@ -587,12 +586,12 @@ BcStatus bc_lex_token(BcLex *lex) {
     default:
     {
       lex->token.type = BC_LEX_INVALID;
-      status = BC_STATUS_LEX_BAD_CHARACTER;
+      s = BC_STATUS_LEX_BAD_CHARACTER;
       break;
     }
   }
 
-  return status;
+  return s;
 }
 
 void bc_lex_init(BcLex *lex, const char *file) {
@@ -604,7 +603,7 @@ void bc_lex_init(BcLex *lex, const char *file) {
 
 BcStatus bc_lex_next(BcLex *lex) {
 
-  BcStatus status;
+  BcStatus s;
 
   assert(lex);
 
@@ -625,10 +624,10 @@ BcStatus bc_lex_next(BcLex *lex) {
   // is so the parser doesn't get inundated with whitespace.
   do {
     lex->token.string = NULL;
-    status = bc_lex_token(lex);
-  } while (!status && lex->token.type == BC_LEX_WHITESPACE);
+    s = bc_lex_token(lex);
+  } while (!s && lex->token.type == BC_LEX_WHITESPACE);
 
-  return status;
+  return s;
 }
 
 BcStatus bc_lex_text(BcLex *lex, const char *text) {
