@@ -21,6 +21,7 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -266,13 +267,29 @@ BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]) {
   BcStatus status;
   Bc bc;
   struct sigaction sa;
-  size_t i;
+  size_t i, len;
+  char *len_env;
+  int num;
 
   bcg.interactive = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
   bcg.posix = flags & BC_FLAG_S;
   bcg.warn = flags & BC_FLAG_W;
 
-  if ((status = bc_program_init(&bc.prog))) return status;
+  if ((len_env = getenv("BC_LINE_LENGTH"))) {
+
+    len = strlen(len_env);
+
+    for (num = 1, i = 0; num && i < len; ++i) num = isdigit(len_env[i]);
+
+    if (num) {
+      len = atoi(len_env) - 1;
+      if (len < 2) len = BC_NUM_PRINT_WIDTH;
+    }
+    else len = BC_NUM_PRINT_WIDTH;
+  }
+  else len = BC_NUM_PRINT_WIDTH;
+
+  if ((status = bc_program_init(&bc.prog, len))) return status;
   if ((status = bc_parse_init(&bc.parse, &bc.prog))) goto parse_err;
 
   sigemptyset(&sa.sa_mask);

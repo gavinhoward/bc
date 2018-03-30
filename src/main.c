@@ -155,6 +155,8 @@ int main(int argc, char *argv[]) {
 
   if (do_exit) return status;
 
+  flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
+
   if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
   filec = argc - optind;

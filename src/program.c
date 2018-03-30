@@ -965,7 +965,7 @@ err:
   return status;
 }
 
-BcStatus bc_program_init(BcProgram *p) {
+BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 
   BcStatus s;
   size_t idx;
@@ -980,8 +980,8 @@ BcStatus bc_program_init(BcProgram *p) {
   assert(sysconf(_SC_BC_STRING_MAX) <= BC_MAX_STRING);
 
   main_name = read_name = NULL;
-  p->nchars = 0;
-  p->scale = 0;
+  p->nchars = p->scale = 0;
+  p->line_len = line_len;
 
   if ((s = bc_num_init(&p->ibase, BC_NUM_DEF_SIZE))) return s;
   bc_num_ten(&p->ibase);
@@ -1343,7 +1343,10 @@ BcStatus bc_program_exec(BcProgram *p) {
         if ((status = bc_program_unaryOpPrep(p, &operand, &num))) return status;
 
         newline = inst == BC_INST_PRINT;
-        status = bc_num_print(num, &p->obase, p->obase_t, newline, &p->nchars);
+
+        status = bc_num_print(num, &p->obase, p->obase_t, newline,
+                              &p->nchars, p->line_len);
+
         if (status) return status;
 
         if ((status = bc_num_copy(&p->last, num))) return status;
