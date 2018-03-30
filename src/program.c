@@ -1202,6 +1202,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   BcFunc *func;
   BcInstPtr *ip;
   bool cond, sig;
+  const char **string, *s;
 
   status = BC_STATUS_SUCCESS;
   cond = false;
@@ -1249,8 +1250,7 @@ BcStatus bc_program_exec(BcProgram *p) {
       // Fallthrough.
       case BC_INST_JUMP:
       {
-        size_t idx;
-        size_t *addr;
+        size_t idx, *addr;
 
         idx = bc_program_index(code, &ip->idx);
         addr = bc_vec_item(&func->labels, idx);
@@ -1358,7 +1358,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_STR:
       {
-        const char **string, *s;
         size_t len;
 
         idx = bc_program_index(code, &ip->idx);
@@ -1381,8 +1380,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_PRINT_STR:
       {
-        const char **string;
-
         idx = bc_program_index(code, &ip->idx);
         assert(idx < p->strings.len);
         string = bc_vec_item(&p->strings, idx);
