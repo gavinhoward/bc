@@ -70,7 +70,7 @@ typedef struct BcGlobals {
 
 } BcGlobals;
 
-BcStatus bc_main(unsigned int flags, unsigned int filec, char *filev[]);
+BcStatus bc_main(unsigned int flags, BcVec *files);
 // ** Exclude end. **
 
 BcStatus bc_error(BcStatus st);
