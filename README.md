@@ -32,6 +32,8 @@ PREFIX=<prefix> make install
 To make a minimum size release, use `make minrelease` instead of `make release`.
 To make a debug release, use `make reldebug`.
 
+There is also a `make help` command to list all targets and options.
+
 ## Status
 
 This `bc` is in alpha stage, so it is ready for testing in the wild, but it is
