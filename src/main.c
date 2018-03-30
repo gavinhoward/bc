@@ -171,7 +171,6 @@ int main(int argc, char *argv[]) {
   memset(&bcg, 0, sizeof(BcGlobals));
 
   flags = 0;
-  status = BC_STATUS_SUCCESS;
 
   if ((status = bc_vec_init(&files, sizeof(char*), NULL))) return status;
 
