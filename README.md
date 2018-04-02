@@ -12,25 +12,13 @@ This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 To build, use the following commands:
 
 ```
-make release
+make
 make install
 ```
 
-To use a non-default compiler, replace the first command with:
-
-```
-CC=<compiler> make release
-```
-
-To install into a non-default (the default is `/usr/local`) prefix, change the
-second command to:
-
-```
-PREFIX=<prefix> make install
-```
-
-To make a minimum size release, use `make minrelease` instead of `make release`.
-To make a debug release, use `make reldebug`.
+This `bc` supports `CC`, `CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`,
+and `DESTDIR` `make` variables. Users can also create a file named `config.mak`
+in the root directory to control `make`.
 
 There is also a `make help` command to list all targets and options.
 
