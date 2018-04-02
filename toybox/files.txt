@@ -7,7 +7,7 @@ include/program.h
 include/parse.h
 include/bc.h
 src/data.c
-src/lib.c
+lib/lib.c
 src/vector.c
 src/io.c
 src/num.c

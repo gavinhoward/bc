@@ -40,7 +40,7 @@ toybox_bc = toybox + "/toys/pending/bc.c"
 os.chdir(testdir)
 os.chdir("..")
 
-res = subprocess.run(["make", "mathlib"])
+res = subprocess.run(["make", "lib/lib.c"])
 
 if res.returncode != 0:
 	sys.exit(res.returncode)
