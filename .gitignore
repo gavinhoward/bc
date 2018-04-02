@@ -10,6 +10,7 @@ bc
 log_*.txt
 gen
 lib.c
+config.mak
 
 # Ignore the generated test files
 parse.txt
