@@ -60,12 +60,15 @@ folders in that directory.
 
 Files:
 
+	install.sh      Install script from musl libc.
 	LICENSE.md      A Markdown the BSD 0-clause License.
+	Makefile        The Makefile.
 	NOTICE.md       List of contributors and copyright owners.
+	RELEASE.md      A checklist for making a release.
 
 Folders:
 
-	docs        Contains all of the documentation (currently empty).
-	include     Contains all of the public header files.
+	include     All header files.
 	src         All source code.
-	tests       Tests.
+	tests       All tests.
+	toybox      Files to cut a release into toybox. (Maintainer use only.)
