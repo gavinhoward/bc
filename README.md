@@ -69,6 +69,7 @@ Files:
 Folders:
 
 	include     All header files.
+	lib         The bc math library and code to generate C source for it.
 	src         All source code.
 	tests       All tests.
 	toybox      Files to cut a release into toybox. (Maintainer use only.)
