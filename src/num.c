@@ -1199,13 +1199,13 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
-  BcNumBinaryFunc op = (!!a->neg == !!b->neg) ? bc_num_alg_a : bc_num_alg_s;
+  BcNumBinaryFunc op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
   return bc_num_binary(a, b, result, false, op, a->len + b->len + 1);
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
-  BcNumBinaryFunc op = (!!a->neg == !!b->neg) ? bc_num_alg_s : bc_num_alg_a;
+  BcNumBinaryFunc op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
   return bc_num_binary(a, b, result, true, op, a->len + b->len + 1);
 }
 
