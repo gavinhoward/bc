@@ -24,8 +24,8 @@ There is also a `make help` command to list all targets and options.
 
 ## Status
 
-This `bc` is in alpha stage, so it is ready for testing in the wild, but it is
-not ready to be officially distributed as an official part of any project.
+This `bc` is in beta stage. It has been well-tested and fuzzed, but has not yet
+been proven in the wild.
 
 ## Language
 
