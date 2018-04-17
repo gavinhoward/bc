@@ -7,7 +7,7 @@ This is an implementation of POSIX `bc` that implements
 This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 0-clause License.
 
-# Build
+## Build
 
 To build, use the following commands:
 
