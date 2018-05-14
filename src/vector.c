@@ -78,9 +78,6 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
   size_t size;
 
   assert(vec && data);
-
-  vec->cap += !vec->cap;
-
   if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
   size = vec->size;
@@ -94,8 +91,6 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
   BcStatus status;
 
   assert(vec && vec->size == sizeof(uint8_t));
-
-  vec->cap += !vec->cap;
 
   if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
@@ -112,10 +107,7 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
 
   assert(vec && data && idx <= vec->len);
 
-  vec->cap += !vec->cap;
-
   if (idx == vec->len) return bc_vec_push(vec, data);
-
   if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
 
   size = vec->size;
@@ -143,11 +135,7 @@ void* bc_vec_item_rev(const BcVec *vec, size_t idx) {
 }
 
 void bc_vec_pop(BcVec *vec) {
-
-  assert(vec);
-
-  if (!vec->len) return;
-
+  assert(vec && vec->len);
   vec->len -= 1;
   if (vec->dtor) vec->dtor(vec->array + (vec->size * vec->len));
 }
@@ -165,52 +153,35 @@ void bc_vec_npop(BcVec *vec, size_t n) {
 
 void bc_vec_free(void *vec) {
 
-  BcVec *s;
-  size_t esize, len, i;
-  BcVecFreeFunc sfree;
-  uint8_t *array;
-
-  s = (BcVec*) vec;
+  size_t i;
+  BcVec *s = (BcVec*) vec;
 
   if (!s) return;
 
-  sfree = s->dtor;
-
-  if (sfree) {
-
-    len = s->len;
-    array = s->array;
-    esize = s->size;
-
-    for (i = 0; i < len; ++i) sfree(array + (i * esize));
+  if (s->dtor) {
+    for (i = 0; i < s->len; ++i) s->dtor(s->array + (i * s->size));
   }
 
   free(s->array);
-
   memset(s, 0, sizeof(BcVec));
 }
 
 size_t bc_veco_find(const BcVecO* vec, void *data) {
 
-  BcVecCmpFunc cmp;
-  size_t low, high;
-
-  cmp = vec->cmp;
+  size_t low, high, mid;
 
   low = 0;
   high = vec->vec.len;
 
   while (low < high) {
 
-    size_t mid;
     int result;
     uint8_t *ptr;
 
     mid = (low + high) / 2;
 
     ptr = bc_vec_item(&vec->vec, mid);
-
-    result = cmp(data, ptr);
+    result = vec->cmp(data, ptr);
 
     if (!result) return mid;
 
