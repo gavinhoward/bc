@@ -37,7 +37,6 @@
 #include <bc.h>
 
 void bc_sig(int sig) {
-
   if (sig == SIGINT) {
     if (write(2, bc_sig_msg, sizeof(bc_sig_msg) - 1) >= 0)
       bcg.sig_int += bcg.sig_int == bcg.sig_int_catches;
@@ -96,9 +95,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
   while (bc->parse.lex.token.type != BC_LEX_EOF) {
 
-    s = bc_parse_parse(&bc->parse);
-
-    if (s == BC_STATUS_LIMITS) {
+    if ((s = bc_parse_parse(&bc->parse)) == BC_STATUS_LIMITS) {
 
       s = BC_STATUS_IO_ERR;
 
@@ -124,11 +121,8 @@ BcStatus bc_process(Bc *bc, const char *text) {
   }
 
   if (BC_PARSE_CAN_EXEC(&bc->parse)) {
-
     s = bc_program_exec(&bc->prog);
-
     if (bcg.interactive) fflush(stdout);
-
     if (s && s != BC_STATUS_QUIT) s = bc_error(s);
   }
 
@@ -143,17 +137,13 @@ BcStatus bc_file(Bc *bc, const char *file) {
   BcInstPtr *ip;
 
   bc->prog.file = file;
-
   if ((s = bc_io_fread(file, &data))) return s;
 
   bc_lex_init(&bc->parse.lex, file);
-
   if ((s = bc_process(bc, data))) goto err;
 
   main_func = bc_vec_item(&bc->prog.funcs, BC_PROGRAM_MAIN);
   ip = bc_vec_item(&bc->prog.stack, 0);
-
-  assert(main_func && ip);
 
   if (main_func->code.len > ip->idx) s = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
@@ -192,17 +182,15 @@ BcStatus bc_stdin(Bc *bc) {
   bc_lex_init(&bc->parse.lex, bc_program_stdin_name);
 
   n = bufn = BC_BUF_SIZE;
-  buffer = malloc(BC_BUF_SIZE + 1);
 
-  if (!buffer) return BC_STATUS_MALLOC_FAIL;
-
-  buffer[0] = '\0';
+  if (!(buffer = malloc(BC_BUF_SIZE + 1))) return BC_STATUS_MALLOC_FAIL;
 
   if (!(buf = malloc(BC_BUF_SIZE + 1))) {
     s = BC_STATUS_MALLOC_FAIL;
     goto buf_err;
   }
 
+  buffer[0] = '\0';
   string = comment = false;
   s = BC_STATUS_SUCCESS;
 
@@ -224,9 +212,8 @@ BcStatus bc_stdin(Bc *bc) {
       for (i = 0; i < len; ++i) {
 
         notend = len > i + 1;
-        c = buf[i];
 
-        if (c == '"') string = !string;
+        if ((c = buf[i]) == '"') string = !string;
         else if (c == '/' && notend && !comment && buf[i + 1] == '*') {
           comment = true;
           break;
@@ -252,13 +239,9 @@ BcStatus bc_stdin(Bc *bc) {
   s = s == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : s;
 
 exit_err:
-
   free(buf);
-
 buf_err:
-
   free(buffer);
-
   return s;
 }
 
@@ -281,11 +264,7 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
 
     for (num = 1, i = 0; num && i < len; ++i) num = isdigit(len_env[i]);
 
-    if (num) {
-      len = atoi(len_env) - 1;
-      if (len < 2) len = BC_NUM_PRINT_WIDTH;
-    }
-    else len = BC_NUM_PRINT_WIDTH;
+    if (!num || (len = atoi(len_env) - 1) < 2) len = BC_NUM_PRINT_WIDTH;
   }
   else len = BC_NUM_PRINT_WIDTH;
 
@@ -303,9 +282,7 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
     goto err;
   }
 
-  if ((bcg.interactive && !(flags & BC_FLAG_Q)) &&
-      (printf("%s", bc_header) < 0))
-  {
+  if (bcg.interactive && !(flags & BC_FLAG_Q) && printf("%s", bc_header) < 0) {
     status = BC_STATUS_IO_ERR;
     goto err;
   }
@@ -325,20 +302,14 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
 
   for (i = 0; !bcg.sig_other && !status && i < files->len; ++i)
     status = bc_file(&bc, *((char**) bc_vec_item(files, i)));
-
   if (status || bcg.sig_other) goto err;
 
   status = bc_stdin(&bc);
 
 err:
-
   status = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
-
   bc_parse_free(&bc.parse);
-
 parse_err:
-
   bc_program_free(&bc.prog);
-
   return status;
 }

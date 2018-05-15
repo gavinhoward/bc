@@ -41,11 +41,9 @@ BcStatus bc_lex_string(BcLex *lex) {
   newlines = 0;
   lex->token.type = BC_LEX_STRING;
   i = lex->idx;
-  c = lex->buffer[i];
 
-  while (c != '"' && c != '\0') {
+  for (c = lex->buffer[i]; c != '"' && c != '\0'; c = lex->buffer[++i]) {
     if (c == '\n') ++newlines;
-    c = lex->buffer[++i];
   }
 
   if (c == '\0') {
@@ -54,16 +52,13 @@ BcStatus bc_lex_string(BcLex *lex) {
   }
 
   len = i - lex->idx;
-
-  lex->token.string = malloc(len + 1);
-  if (!lex->token.string) return BC_STATUS_MALLOC_FAIL;
+  if (!(lex->token.string = malloc(len + 1))) return BC_STATUS_MALLOC_FAIL;
 
   start = lex->buffer + lex->idx;
 
   for (j = 0; j < len; ++j) lex->token.string[j] = start[j];
 
   lex->token.string[len] = '\0';
-
   lex->idx = i + 1;
   lex->line += newlines;
 
@@ -81,14 +76,11 @@ BcStatus bc_lex_comment(BcLex *lex) {
   lex->token.type = BC_LEX_WHITESPACE;
   end = false;
 
-  i = ++lex->idx;
   buffer = lex->buffer;
 
-  while (!end) {
+  for (i = ++lex->idx; !end; i += !end) {
 
-    c = buffer[i];
-
-    while (c != '*' && c != '\0') {
+    while ((c = buffer[i]) != '*' && c != '\0') {
       if (c == '\n') ++newlines;
       c = buffer[++i];
     }
@@ -99,7 +91,6 @@ BcStatus bc_lex_comment(BcLex *lex) {
     }
 
     end = buffer[i + 1] == '/';
-    i += end ? 0 : 1;
   }
 
   lex->idx = i + 2;
@@ -139,7 +130,6 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
   if (!lex->token.string) return BC_STATUS_MALLOC_FAIL;
 
   lex->token.string[0] = start;
-
   buf = buffer - 1;
   hits = 0;
 
@@ -181,9 +171,8 @@ BcStatus bc_lex_name(BcLex *lex) {
       lex->token.type = BC_LEX_KEY_AUTO + i;
 
       if (!bc_lex_keywords[i].posix &&
-          (status = bc_posix_error(BC_STATUS_POSIX_BAD_KEYWORD,
-                                   lex->file, lex->line,
-                                   bc_lex_keywords[i].name)))
+          (status = bc_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, lex->file,
+                                   lex->line, bc_lex_keywords[i].name)))
       {
         return status;
       }
@@ -210,8 +199,7 @@ BcStatus bc_lex_name(BcLex *lex) {
     return status;
   }
 
-  lex->token.string = malloc(i + 1);
-  if (!lex->token.string) return BC_STATUS_MALLOC_FAIL;
+  if (!(lex->token.string = malloc(i + 1))) return BC_STATUS_MALLOC_FAIL;
 
   strncpy(lex->token.string, buffer, i);
   lex->token.string[i] = '\0';
@@ -225,15 +213,11 @@ BcStatus bc_lex_name(BcLex *lex) {
 
 BcStatus bc_lex_token(BcLex *lex) {
 
-  BcStatus status;
+  BcStatus status = BC_STATUS_SUCCESS;
   char c, c2;
 
-  status = BC_STATUS_SUCCESS;
-
-  c = lex->buffer[lex->idx++];
-
   // This is the workhorse of the lexer.
-  switch (c) {
+  switch ((c = lex->buffer[lex->idx++])) {
 
     case '\0':
     case '\n':
@@ -251,7 +235,6 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '\\':
     {
       lex->token.type = BC_LEX_WHITESPACE;
-
       c = lex->buffer[lex->idx];
 
       while ((isspace(c) && c != '\n') || c == '\\')
@@ -297,31 +280,24 @@ BcStatus bc_lex_token(BcLex *lex) {
       }
 
       lex->token.type = BC_LEX_WHITESPACE;
-
-      ++lex->idx;
-      while (lex->idx < lex->len && lex->buffer[lex->idx] != '\n') ++lex->idx;
+      while (++lex->idx < lex->len && lex->buffer[lex->idx] != '\n');
 
       break;
     }
 
     case '%':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_MODULUS;
       }
       else lex->token.type = BC_LEX_OP_MODULUS;
-
       break;
     }
 
     case '&':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '&') {
+      if ((c2 = lex->buffer[lex->idx]) == '&') {
 
         if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
                                      lex->file, lex->line, "&&")))
@@ -349,22 +325,17 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '*':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_MULTIPLY;
       }
       else lex->token.type = BC_LEX_OP_MULTIPLY;
-
       break;
     }
 
     case '+':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_PLUS;
       }
@@ -373,7 +344,6 @@ BcStatus bc_lex_token(BcLex *lex) {
         lex->token.type = BC_LEX_OP_INC;
       }
       else lex->token.type = BC_LEX_OP_PLUS;
-
       break;
     }
 
@@ -385,9 +355,7 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '-':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_MINUS;
       }
@@ -396,39 +364,29 @@ BcStatus bc_lex_token(BcLex *lex) {
         lex->token.type = BC_LEX_OP_DEC;
       }
       else lex->token.type = BC_LEX_OP_MINUS;
-
       break;
     }
 
     case '.':
     {
       c2 = lex->buffer[lex->idx];
-
-      if (isdigit(c2)) {
-        status = bc_lex_number(lex, c);
-      }
+      if (isdigit(c2)) status = bc_lex_number(lex, c);
       else {
-
         status = bc_posix_error(BC_STATUS_POSIX_DOT_LAST,
                                 lex->file, lex->line, NULL);
-
         lex->token.type = BC_LEX_KEY_LAST;
       }
-
       break;
     }
 
     case '/':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_DIVIDE;
       }
       else if (c2 == '*') status = bc_lex_comment(lex);
       else lex->token.type = BC_LEX_OP_DIVIDE;
-
       break;
     }
 
@@ -455,40 +413,31 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '<':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_REL_LESS_EQ;
       }
       else lex->token.type = BC_LEX_OP_REL_LESS;
-
       break;
     }
 
     case '=':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_REL_EQUAL;
       }
       else lex->token.type = BC_LEX_OP_ASSIGN;
-
       break;
     }
 
     case '>':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_REL_GREATER_EQ;
       }
       else lex->token.type = BC_LEX_OP_REL_GREATER;
-
       break;
     }
 
@@ -512,14 +461,11 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '^':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '=') {
+      if ((c2 = lex->buffer[lex->idx]) == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_POWER;
       }
       else lex->token.type = BC_LEX_OP_POWER;
-
       break;
     }
 
@@ -563,9 +509,7 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '|':
     {
-      c2 = lex->buffer[lex->idx];
-
-      if (c2 == '|') {
+      if ((c2 = lex->buffer[lex->idx]) == '|') {
 
         if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
                                      lex->file, lex->line, "||")))
@@ -632,13 +576,10 @@ BcStatus bc_lex_next(BcLex *lex) {
 }
 
 BcStatus bc_lex_text(BcLex *lex, const char *text) {
-
   assert(lex && text);
-
   lex->buffer = text;
   lex->idx = 0;
   lex->len = strlen(text);
   lex->token.type = BC_LEX_INVALID;
-
   return bc_lex_next(lex);
 }

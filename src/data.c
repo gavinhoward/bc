@@ -40,63 +40,22 @@ const char *bc_err_types[] = {
 };
 
 const uint8_t bc_err_type_indices[] = {
-
-  BC_ERR_IDX_BC,
-  BC_ERR_IDX_BC,
-  BC_ERR_IDX_BC,
-  BC_ERR_IDX_BC,
-
-  BC_ERR_IDX_LEX,
-  BC_ERR_IDX_LEX,
-  BC_ERR_IDX_LEX,
-  BC_ERR_IDX_LEX,
-
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE,
-
-  BC_ERR_IDX_MATH,
-  BC_ERR_IDX_MATH,
-  BC_ERR_IDX_MATH,
-  BC_ERR_IDX_MATH,
-  BC_ERR_IDX_MATH,
-  BC_ERR_IDX_MATH,
-
+  BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC,
+  BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
+  BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+  BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+  BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
+  BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
+  BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+  BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+  BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
-
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-  BC_ERR_IDX_POSIX,
-
+  BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
+  BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
+  BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 };
 
 const char *bc_err_descs[] = {
-
   NULL,
   "memory allocation error",
   "I/O error",
@@ -149,7 +108,6 @@ const char *bc_err_descs[] = {
   "POSIX does not allow an empty condition expression in a for loop",
   "POSIX does not allow an empty update expression in a for loop",
   "POSIX requires the left brace be on the same line as the function header",
-
 };
 
 const char bc_sig_msg[36] = "\n\ninterrupt (type \"quit\" to exit)\n\n";
@@ -190,139 +148,32 @@ const char bc_num_hex_digits[] = "0123456789ABCDEF";
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.
 const bool bc_parse_token_exprs[] = {
-
-  true,
-  true,
-
-  true,
-
-  true,
-  true,
-  true,
-
-  true,
-  true,
-
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-
-  true,
-
-  true,
-  true,
-
-  true,
-
-  false,
-
-  false,
-
-  true,
-  true,
-
-  false,
-  false,
-
-  false,
-  false,
-
-  false,
-  false,
-
-  false,
-  true,
-  true,
-
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  false,
-  true,
-  false,
-  true,
-  true,
-  true,
-  true,
-  false,
-  false,
-  true,
-  false,
-  true,
-  true,
-  false,
-
-  false,
-
-  false,
+  true, true, true, true, true, true, true, true, true, true, true, true, true,
+  true, true, true, true, true, true, true, true, true, true, true, true,
+  false, false, true, true, false, false, false, false, false, false, false,
+  true, true, false, false, false, false, false, false, false, true, false, true,
+  true, true, true, false, false, true, false, true, true, false, false, false,
 };
 
 // This is an array of data for operators that correspond to token types.
 // The last corresponds to BC_PARSE_OP_NEGATE_IDX since it doesn't have
 // its own token type (it is the same token at the binary minus operator).
 const BcOp bc_parse_ops[] = {
-
-  { 0, false },
-  { 0, false },
-
+  { 0, false }, { 0, false },
   { 1, false },
-
   { 2, false },
-
-  { 3, true },
-  { 3, true },
-  { 3, true },
-
-  { 4, true },
-  { 4, true },
-
-  { 6, true },
-  { 6, true },
-  { 6, true },
-  { 6, true },
-  { 6, true },
-  { 6, true },
-
+  { 3, true }, { 3, true }, { 3, true },
+  { 4, true }, { 4, true },
+  { 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true },
   { 7, false },
-
-  { 8, true },
-  { 8, true },
-
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-  { 5, false },
-
+  { 8, true }, { 8, true },
+  { 5, false }, { 5, false }, { 5, false }, { 5, false }, { 5, false },  { 5, false }, { 5, false },
 };
 
 const char bc_program_byte_fmt[] = "%02x";
 
 const BcNumBinaryFunc bc_program_math_ops[] = {
-
-  bc_num_pow,
-  bc_num_mul,
-  bc_num_div,
-  bc_num_mod,
-  bc_num_add,
-  bc_num_sub,
-
+  bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
 };
 
 const char bc_program_stdin_name[] = "<stdin>";

@@ -120,18 +120,18 @@ typedef struct BcParse {
 
 #define BC_PARSE_EXPR_POSIX_REL (1<<0)
 #define BC_PARSE_EXPR_PRINT (1<<1)
-#define BC_PARSE_EXPR_NO_CALL (1<<2)
-#define BC_PARSE_EXPR_NO_READ (1<<3)
+#define BC_PARSE_EXPR_NOCALL (1<<2)
+#define BC_PARSE_EXPR_NOREAD (1<<3)
 
 // ** Exclude start. **
-BcStatus bc_parse_init(BcParse *parse, BcProgram *program);
+BcStatus bc_parse_init(BcParse *p, BcProgram *program);
 
 BcStatus bc_parse_parse(BcParse *parse);
 
-void bc_parse_free(BcParse *parse);
+void bc_parse_free(BcParse *p);
 // ** Exclude end. **
 
-BcStatus bc_parse_expr(BcParse *parse, BcVec *code, uint8_t flags);
+BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags);
 
 extern const bool bc_parse_token_exprs[];
 extern const BcOp bc_parse_ops[];

@@ -127,7 +127,7 @@ typedef struct BcFunc {
 
 typedef enum BcResultType {
 
-  BC_RESULT_INTERMEDIATE,
+  BC_RESULT_TEMP,
 
   BC_RESULT_CONSTANT,
 
@@ -171,8 +171,8 @@ typedef struct BcInstPtr {
 } BcInstPtr;
 
 // ** Exclude start. **
-BcStatus bc_func_init(BcFunc *func);
-BcStatus bc_func_insert(BcFunc *func, char *name, bool var);
+BcStatus bc_func_init(BcFunc *f);
+BcStatus bc_func_insert(BcFunc *f, char *name, bool var);
 void bc_func_free(void *func);
 
 BcStatus bc_array_init(void *array);

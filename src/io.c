@@ -48,9 +48,7 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
       *n = size;
     }
 
-    c = fgetc(stdin);
-
-    if (c == EOF) {
+    if ((c = fgetc(stdin)) == EOF) {
 
       if (errno == EINTR) {
         bcg.sig_int_catches = bcg.sig_int;
@@ -78,42 +76,30 @@ BcStatus bc_io_fread(const char *path, char **buf) {
 
   assert(path && buf);
 
-  f = fopen(path, "r");
-
-  if (!f) return BC_STATUS_EXEC_FILE_ERR;
+  if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 
   fseek(f, 0, SEEK_END);
   size = ftell(f);
-
   fseek(f, 0, SEEK_SET);
 
-  *buf = malloc(size + 1);
-
-  if (!*buf) {
+  if (!(*buf = malloc(size + 1))) {
     st = BC_STATUS_MALLOC_FAIL;
     goto malloc_err;
   }
 
-  read = fread(*buf, 1, size, f);
-
-  if (read != size) {
+  if ((read = fread(*buf, 1, size, f)) != size) {
     st = BC_STATUS_IO_ERR;
     goto read_err;
   }
 
   (*buf)[size] = '\0';
-
   fclose(f);
 
   return BC_STATUS_SUCCESS;
 
 read_err:
-
   free(*buf);
-
 malloc_err:
-
   fclose(f);
-
   return st;
 }

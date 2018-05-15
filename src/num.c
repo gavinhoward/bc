@@ -34,14 +34,9 @@
 #include <bc.h>
 
 void bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
-
   size_t i, j;
-
   for (i = 0; i < len; ++i) {
-
-    n1[i] -= n2[i];
-
-    for (j = 0; n1[i + j] < 0;) {
+    for (n1[i] -= n2[i], j = 0; n1[i + j] < 0;) {
       n1[i + j++] += 10;
       n1[i + j] -= 1;
     }
@@ -107,7 +102,6 @@ int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
   }
 
   cmp = bc_num_compare(max_num, min_num, b_int + min, digits);
-
   if (cmp) return cmp * (!a_max * -2 + 1) * neg;
 
   for (max_num -= diff, i = diff - 1; i < diff; --i) {
@@ -142,11 +136,9 @@ BcStatus bc_num_extend(BcNum *n, size_t places) {
   if (!places) return BC_STATUS_SUCCESS;
 
   len = n->len + places;
-
   if (n->cap < len && (status = bc_num_expand(n, len))) return status;
 
   ptr = n->num + places;
-
   memmove(ptr, n->num, sizeof(BcDigit) * n->len);
   memset(n->num, 0, sizeof(BcDigit) * places);
 
@@ -182,12 +174,10 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   else if (!b->len) return bc_num_copy(c, a);
 
   c->neg = a->neg;
-
   memset(c->num, 0, c->cap * sizeof(BcDigit));
 
   c->rdx = BC_MAX(a->rdx, b->rdx);
   min_rdx = BC_MIN(a->rdx, b->rdx);
-
   c->len = 0;
 
   if (a->rdx > b->rdx) {
@@ -206,7 +196,6 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   for (ptr_c = c->num, i = 0; i < diff; ++i, ++c->len) ptr_c[i] = ptr[i];
 
   ptr_c += diff;
-
   a_int = a->len - a->rdx;
   b_int = b->len - b->rdx;
 
@@ -282,7 +271,6 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   }
 
   if ((status = bc_num_copy(c, minuend))) return status;
-
   c->neg = neg;
 
   if (c->rdx < subtrahend->rdx) {
@@ -347,11 +335,9 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (scale < c->rdx) bc_num_truncate(c, c->rdx - scale);
 
-  status = BC_STATUS_SUCCESS;
-
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
 
-  return status;
+  return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
@@ -370,7 +356,6 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   else if (BC_NUM_ONE(b)) {
 
     if ((status = bc_num_copy(c, a))) return status;
-
     if (b->neg) c->neg = !c->neg;
 
     if (c->rdx < scale) status = bc_num_extend(c, scale - c->rdx);
@@ -382,9 +367,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if ((status = bc_num_init(&copy, a->len + b->rdx + scale + 1))) return status;
   if ((status = bc_num_copy(&copy, a))) goto err;
 
-  len = b->len;
-
-  if (len > copy.len) {
+  if ((len = b->len) > copy.len) {
     if ((status = bc_num_expand(&copy, len + 2))) goto err;
     if ((status = bc_num_extend(&copy, len - copy.len))) goto err;
   }
@@ -398,20 +381,14 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     goto err;
 
   if (b->rdx == b->len) {
-
-    bool zero = true;
-
-    for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
-
+    bool zero;
+    for (zero = true, i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
     if (i == len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
-
     len -= i - 1;
   }
 
-  if (copy.cap == copy.len) {
-    status = bc_num_expand(&copy, copy.len + 1);
-    if (status) goto err;
-  }
+  if (copy.cap == copy.len && (status = bc_num_expand(&copy, copy.len + 1)))
+    goto err;
 
   // We want an extra zero in front to make things simpler.
   copy.num[copy.len++] = 0;
@@ -435,18 +412,14 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   }
 
   c->neg = !a->neg != !b->neg;
-
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
-
   if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
 
   for (i = 0, zero = true; zero && i < c->len; ++i) zero = !c->num[i];
   if (zero) bc_num_zero(c);
 
 err:
-
   bc_num_free(&copy);
-
   return status;
 }
 
@@ -470,19 +443,13 @@ BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if ((status = bc_num_div(a, b, &c1, scale))) goto err;
 
   c->rdx = BC_MAX(scale + b->rdx, a->rdx);
-
   if ((status = bc_num_mul(&c1, b, &c2, scale))) goto err;
-
   status = bc_num_sub(a, &c2, c, scale);
 
 err:
-
   bc_num_free(&c2);
-
 c2_err:
-
   bc_num_free(&c1);
-
   return status;
 }
 
@@ -552,9 +519,7 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if (zero) bc_num_zero(c);
 
 err:
-
   bc_num_free(&copy);
-
   return status;
 }
 
@@ -641,25 +606,15 @@ BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
   else if (b->rdx < scale) status = bc_num_extend(b, scale - b->rdx);
 
 err:
-
   bc_num_free(&fprime);
-
 fprime_err:
-
   bc_num_free(&f);
-
 f_err:
-
   bc_num_free(&two);
-
 two_err:
-
   bc_num_free(&num2);
-
 num2_err:
-
   bc_num_free(&num1);
-
   return status;
 }
 
@@ -668,11 +623,9 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
 {
   BcStatus status;
   BcNum num2, *ptr_a, *ptr_b;
-  bool init;
+  bool init = false;
 
   assert(a && b && c && op);
-
-  init = false;
 
   if (c == a) {
     memcpy(&num2, c, sizeof(BcNum));
@@ -698,13 +651,10 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
   else status = bc_num_expand(c, req);
 
   if (status) goto err;
-
   status = op(ptr_a, ptr_b, c, scale);
 
 err:
-
   if (c == a || c == b) bc_num_free(&num2);
-
   return status;
 }
 
@@ -727,13 +677,10 @@ BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
   }
 
   if (status) goto err;
-
   status = op(ptr_a, b, scale);
 
 err:
-
   if (b == a) bc_num_free(&a2);
-
   return status;
 }
 
@@ -753,9 +700,7 @@ bool bc_num_strValid(const char *val, size_t base) {
 
   for (i = 0; i < len; ++i) {
 
-    c = val[i];
-
-    if (c == '.') {
+    if ((c = val[i]) == '.') {
 
       if (radix) return false;
 
@@ -775,15 +720,13 @@ BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   BcStatus status;
   size_t len, i;
   const char *ptr;
-  bool zero;
+  bool zero = true;
 
   for (i = 0; val[i] == '0'; ++i);
 
   val += i;
   len = strlen(val);
-
   bc_num_zero(n);
-  zero = true;
 
   if (len) {
     for (i = 0; zero && i < len; ++i) zero = val[i] == '0' || val[i] == '.';
@@ -821,7 +764,6 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   for (zero = true, i = 0; zero && i < len; ++i)
     zero = (val[i] == '.' || val[i] == '0');
-
   if (zero) return BC_STATUS_SUCCESS;
 
   if ((status = bc_num_init(&temp, BC_NUM_DEF_SIZE))) return status;
@@ -837,9 +779,7 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   }
 
   if (i == len && !(c = val[i])) goto int_err;
-
   assert(c == '.');
-
   if ((status = bc_num_init(&result, base->len))) goto int_err;
 
   bc_num_zero(&result);
@@ -864,17 +804,11 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   else bc_num_zero(n);
 
 err:
-
   bc_num_free(&result);
-
 int_err:
-
   bc_num_free(&mult);
-
 mult_err:
-
   bc_num_free(&temp);
-
   return status;
 }
 
@@ -963,10 +897,8 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   neg = n->neg;
   n->neg = false;
 
-  if (neg) {
-    if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
-    ++nchars;
-  }
+  if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
+  nchars += neg;
 
   if (base_t <= BC_NUM_MAX_INPUT_BASE) {
     width = 1;
@@ -984,7 +916,6 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   if ((status = bc_num_copy(&intp, n))) goto frac_len_err;
 
   bc_num_truncate(&intp, intp.rdx);
-
   if ((status = bc_num_sub(n, &intp, &fracp, 0))) goto frac_len_err;
 
   while (intp.len) {
@@ -1001,9 +932,8 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
     if (status) goto frac_len_err;
   }
 
-  if (!n->rdx) goto frac_len_err;
-
-  if ((status = bc_num_init(&frac_len, n->len - n->rdx))) goto frac_len_err;
+  if (!n->rdx || (status = bc_num_init(&frac_len, n->len - n->rdx)))
+    goto frac_len_err;
 
   bc_num_one(&frac_len);
 
@@ -1017,27 +947,16 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   }
 
 err:
-
   n->neg = neg;
-
   bc_num_free(&frac_len);
-
 frac_len_err:
-
   bc_num_free(&digit);
-
 digit_err:
-
   bc_num_free(&fracp);
-
 frac_err:
-
   bc_num_free(&intp);
-
 int_err:
-
   bc_vec_free(&stack);
-
   return status;
 }
 
@@ -1048,7 +967,6 @@ BcStatus bc_num_init(BcNum *n, size_t request) {
   memset(n, 0, sizeof(BcNum));
 
   request = request >= BC_NUM_DEF_SIZE ? request : BC_NUM_DEF_SIZE;
-
   if (!(n->num = malloc(request))) return BC_STATUS_MALLOC_FAIL;
 
   n->cap = request;
@@ -1063,11 +981,9 @@ BcStatus bc_num_expand(BcNum *n, size_t request) {
   assert(n && request);
 
   if (request <= n->cap) return BC_STATUS_SUCCESS;
-
   if (!(temp = realloc(n->num, request))) return BC_STATUS_MALLOC_FAIL;
 
   memset(temp + n->cap, 0, sizeof(char) * (request - n->cap));
-
   n->num = temp;
   n->cap = request;
 
@@ -1086,7 +1002,6 @@ BcStatus bc_num_copy(BcNum *d, BcNum *s) {
   assert(d && s);
 
   if (d == s) return BC_STATUS_SUCCESS;
-
   if ((status = bc_num_expand(d, s->cap))) return status;
 
   d->len = s->len;
@@ -1155,10 +1070,7 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
   if (n->neg) return BC_STATUS_MATH_NEGATIVE;
 
-  *result = 0;
-  pow = 1;
-
-  for (i = n->rdx; i < n->len; ++i) {
+  for (*result = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
 
     prev = *result;
     *result += n->num[i] * pow;
@@ -1235,32 +1147,23 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 }
 
 void bc_num_zero(BcNum *n) {
-
   if (!n) return;
-
   memset(n->num, 0, n->cap * sizeof(char));
-
   n->neg = false;
   n->len = 0;
   n->rdx = 0;
 }
 
 void bc_num_one(BcNum *n) {
-
   if (!n) return;
-
   bc_num_zero(n);
-
   n->len = 1;
   n->num[0] = 1;
 }
 
 void bc_num_ten(BcNum *n) {
-
   if (!n) return;
-
   bc_num_zero(n);
-
   n->len = 2;
   n->num[0] = 0;
   n->num[1] = 1;

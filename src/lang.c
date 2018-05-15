@@ -26,52 +26,42 @@
 
 #include <lang.h>
 
-BcStatus bc_func_insert(BcFunc *func, char *name, bool var) {
+BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
 
   BcAuto a;
   size_t i;
-  BcAuto *ptr;
 
-  assert(func && name);
+  assert(f && name);
 
-  for (i = 0; i < func->autos.len; ++i) {
-    ptr = bc_vec_item(&func->autos, i);
-    assert(ptr);
-    if (!strcmp(name, ptr->name)) return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+  for (i = 0; i < f->autos.len; ++i) {
+    if (!strcmp(name, ((BcAuto*) bc_vec_item(&f->autos, i))->name))
+      return BC_STATUS_PARSE_DUPLICATE_LOCAL;
   }
 
   a.var = var;
   a.name = name;
 
-  return bc_vec_push(&func->autos, &a);
+  return bc_vec_push(&f->autos, &a);
 }
 
-BcStatus bc_func_init(BcFunc *func) {
+BcStatus bc_func_init(BcFunc *f) {
 
   BcStatus status;
 
-  assert(func);
+  assert(f);
 
-  if ((status = bc_vec_init(&func->code, sizeof(uint8_t), NULL))) return status;
+  if ((status = bc_vec_init(&f->code, sizeof(uint8_t), NULL))) return status;
+  if ((status = bc_vec_init(&f->autos, sizeof(BcAuto), bc_auto_free))) goto err;
+  if ((status = bc_vec_init(&f->labels, sizeof(size_t), NULL))) goto label_err;
 
-  status = bc_vec_init(&func->autos, sizeof(BcAuto), bc_auto_free);
-  if (status) goto auto_err;
-
-  status = bc_vec_init(&func->labels, sizeof(size_t), NULL);
-  if (status) goto label_err;
-
-  func->nparams = 0;
+  f->nparams = 0;
 
   return BC_STATUS_SUCCESS;
 
 label_err:
-
-  bc_vec_free(&func->autos);
-
-auto_err:
-
-  bc_vec_free(&func->code);
-
+  bc_vec_free(&f->autos);
+err:
+  bc_vec_free(&f->code);
   return status;
 }
 
@@ -105,8 +95,6 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
     dnum = bc_vec_item(d, i);
     snum = bc_vec_item(s, i);
 
-    if (!dnum || !snum) return BC_STATUS_VEC_OUT_OF_BOUNDS;
-
     if ((status = bc_num_init(dnum, snum->len))) return status;
     if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
   }
@@ -116,17 +104,12 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
 
 BcStatus bc_array_expand(BcVec *a, size_t len) {
 
-  BcStatus status;
+  BcStatus status = BC_STATUS_SUCCESS;
   BcNum num;
 
-  status = BC_STATUS_SUCCESS;
-
   while (!status && len > a->len) {
-
     if ((status = bc_num_init(&num, BC_NUM_DEF_SIZE))) return status;
-
     bc_num_zero(&num);
-
     if ((status = bc_vec_push(a, &num))) bc_num_free(&num);
   }
 
@@ -160,7 +143,7 @@ void bc_result_free(void *result) {
 
   switch (r->type) {
 
-    case BC_RESULT_INTERMEDIATE:
+    case BC_RESULT_TEMP:
     case BC_RESULT_SCALE:
     case BC_RESULT_VAR_AUTO:
     {
