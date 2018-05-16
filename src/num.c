@@ -523,101 +523,6 @@ err:
   return status;
 }
 
-BcStatus bc_num_sqrt_newton(BcNum *a, BcNum *b, size_t scale) {
-
-  BcStatus status;
-  BcNum num1, num2, two, f, fprime, *x0, *x1, *temp;
-  size_t pow, len, digits, resrdx;
-  int cmp;
-
-  if (!a->len) {
-    bc_num_zero(b);
-    return BC_STATUS_SUCCESS;
-  }
-  else if (a->neg) return BC_STATUS_MATH_NEG_SQRT;
-  else if (BC_NUM_ONE(a)) {
-    bc_num_one(b);
-    return bc_num_extend(b, scale);
-  }
-
-  memset(b->num, 0, b->cap * sizeof(BcDigit));
-  len = a->len;
-
-  scale = BC_MAX(scale, a->rdx) + 1;
-
-  if ((status = bc_num_init(&num1, len))) return status;
-  if ((status = bc_num_init(&num2, num1.len))) goto num2_err;
-  if ((status = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
-
-  bc_num_one(&two);
-  two.num[0] = 2;
-
-  len += scale;
-
-  if ((status = bc_num_init(&f, len))) goto f_err;
-  if ((status = bc_num_init(&fprime, len + scale))) goto fprime_err;
-
-  x0 = &num1;
-  x1 = &num2;
-
-  bc_num_one(x0);
-
-  pow = a->len - a->rdx;
-
-  if (pow) {
-
-    if (pow & 1) {
-      x0->num[0] = 2;
-      pow -= 1;
-    }
-    else {
-      x0->num[0] = 6;
-      pow -= 2;
-    }
-
-    if ((status = bc_num_extend(x0, pow))) goto err;
-  }
-
-  cmp = 1;
-  x0->rdx = digits = 0;
-  resrdx = scale + 1;
-  len = (x0->len - x0->rdx) + resrdx;
-
-  while (cmp && digits <= len) {
-
-    if ((status = bc_num_mul(x0, x0, &f, resrdx))) goto err;
-    if ((status = bc_num_sub(&f, a, &f, resrdx))) goto err;
-    if ((status = bc_num_mul(x0, &two, &fprime, resrdx))) goto err;
-    if ((status = bc_num_div(&f, &fprime, &f, resrdx))) goto err;
-    if ((status = bc_num_sub(x0, &f, x1, resrdx))) goto err;
-
-    cmp = bc_num_cmp(x1, x0, &digits);
-
-    temp = x0;
-    x0 = x1;
-    x1 = temp;
-  }
-
-  if ((status = bc_num_copy(b, x0))) goto err;
-
-  --scale;
-
-  if (b->rdx > scale) bc_num_truncate(b, b->rdx - scale);
-  else if (b->rdx < scale) status = bc_num_extend(b, scale - b->rdx);
-
-err:
-  bc_num_free(&fprime);
-fprime_err:
-  bc_num_free(&f);
-f_err:
-  bc_num_free(&two);
-two_err:
-  bc_num_free(&num2);
-num2_err:
-  bc_num_free(&num1);
-  return status;
-}
-
 BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
                        BcNumBinaryFunc op, size_t req)
 {
@@ -655,32 +560,6 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
 
 err:
   if (c == a || c == b) bc_num_free(&num2);
-  return status;
-}
-
-BcStatus bc_num_unary(BcNum *a, BcNum *b, size_t scale,
-                      BcNumUnaryFunc op, size_t req)
-{
-  BcStatus status;
-  BcNum a2, *ptr_a;
-
-  assert(a && b && op);
-
-  if (b == a) {
-    memcpy(&a2, b, sizeof(BcNum));
-    ptr_a = &a2;
-    status = bc_num_init(b, req);
-  }
-  else {
-    ptr_a = a;
-    status = bc_num_expand(b, req);
-  }
-
-  if (status) goto err;
-  status = op(ptr_a, b, scale);
-
-err:
-  if (b == a) bc_num_free(&a2);
   return status;
 }
 
@@ -1142,8 +1021,117 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 }
 
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
-  return bc_num_unary(a, result, scale, bc_num_sqrt_newton,
-                      a->rdx + (a->len - a->rdx) * 2 + 1);
+
+  BcStatus status;
+  BcNum a2, *ptr_a, num1, num2, two, f, fprime, *x0, *x1, *temp;
+  size_t pow, len, digits, resrdx, req;
+  int cmp;
+
+  assert(a && result);
+
+  req = a->rdx + (a->len - a->rdx) * 2 + 1;
+
+  if (result == a) {
+    memcpy(&a2, result, sizeof(BcNum));
+    ptr_a = &a2;
+    status = bc_num_init(result, req);
+  }
+  else {
+    ptr_a = a;
+    status = bc_num_expand(result, req);
+  }
+
+  if (status) goto init_err;
+
+  if (!ptr_a->len) {
+    bc_num_zero(result);
+    return BC_STATUS_SUCCESS;
+  }
+  else if (ptr_a->neg) return BC_STATUS_MATH_NEG_SQRT;
+  else if (BC_NUM_ONE(a)) {
+    bc_num_one(result);
+    return bc_num_extend(result, scale);
+  }
+
+  memset(result->num, 0, result->cap * sizeof(BcDigit));
+  len = ptr_a->len;
+
+  scale = BC_MAX(scale, ptr_a->rdx) + 1;
+
+  if ((status = bc_num_init(&num1, len))) return status;
+  if ((status = bc_num_init(&num2, num1.len))) goto num2_err;
+  if ((status = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
+
+  bc_num_one(&two);
+  two.num[0] = 2;
+
+  len += scale;
+
+  if ((status = bc_num_init(&f, len))) goto f_err;
+  if ((status = bc_num_init(&fprime, len + scale))) goto fprime_err;
+
+  x0 = &num1;
+  x1 = &num2;
+
+  bc_num_one(x0);
+
+  pow = ptr_a->len - ptr_a->rdx;
+
+  if (pow) {
+
+    if (pow & 1) {
+      x0->num[0] = 2;
+      pow -= 1;
+    }
+    else {
+      x0->num[0] = 6;
+      pow -= 2;
+    }
+
+    if ((status = bc_num_extend(x0, pow))) goto err;
+  }
+
+  cmp = 1;
+  x0->rdx = digits = 0;
+  resrdx = scale + 1;
+  len = (x0->len - x0->rdx) + resrdx;
+
+  while (cmp && digits <= len) {
+
+    if ((status = bc_num_mul(x0, x0, &f, resrdx))) goto err;
+    if ((status = bc_num_sub(&f, a, &f, resrdx))) goto err;
+    if ((status = bc_num_mul(x0, &two, &fprime, resrdx))) goto err;
+    if ((status = bc_num_div(&f, &fprime, &f, resrdx))) goto err;
+    if ((status = bc_num_sub(x0, &f, x1, resrdx))) goto err;
+
+    cmp = bc_num_cmp(x1, x0, &digits);
+
+    temp = x0;
+    x0 = x1;
+    x1 = temp;
+  }
+
+  if ((status = bc_num_copy(result, x0))) goto err;
+
+  --scale;
+
+  if (result->rdx > scale) bc_num_truncate(result, result->rdx - scale);
+  else if (result->rdx < scale)
+    status = bc_num_extend(result, scale - result->rdx);
+
+err:
+  bc_num_free(&fprime);
+fprime_err:
+  bc_num_free(&f);
+f_err:
+  bc_num_free(&two);
+two_err:
+  bc_num_free(&num2);
+num2_err:
+  bc_num_free(&num1);
+init_err:
+  if (result == a) bc_num_free(&a2);
+  return status;
 }
 
 void bc_num_zero(BcNum *n) {
