@@ -812,7 +812,7 @@ mult_err:
   return status;
 }
 
-BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
+BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
                             size_t *nchars, size_t line_len)
 {
   size_t exp, pow, div;
@@ -847,7 +847,7 @@ BcStatus bc_num_printDigits(unsigned long num, size_t width, bool radix,
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_printHex(unsigned long num, size_t width, bool radix,
+BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
                          size_t *nchars, size_t line_len)
 {
   width += !!radix;
