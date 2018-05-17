@@ -43,28 +43,19 @@ void bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
   }
 }
 
-int bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len, size_t *digits) {
-
-  size_t i, digs;
+ssize_t bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len) {
+  size_t i;
   BcDigit c;
-
-  for (c = 0, digs = 0, i = len - 1; i < len; ++digs, --i) {
-    if ((c = n1[i] - n2[i])) break;
-  }
-
-  if (digits) *digits = digs;
-
-  return c;
+  for (c = 0, i = len - 1; !(c = n1[i] - n2[i]) && i < len; --i);
+  return (c < 0 ? -1 : 1) * (ssize_t) (i + 1);
 }
 
-int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
+ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 
   size_t i, min, a_int, b_int, diff;
   BcDigit *max_num, *min_num;
   bool a_max;
   int cmp, neg;
-
-  if (digits) *digits = 0;
 
   if (!a) return !b ? 0 : !b->neg * -2 + 1;
   else if (!b) return a->neg * -2 + 1;
@@ -101,7 +92,7 @@ int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits) {
     min_num = a->num;
   }
 
-  cmp = bc_num_compare(max_num, min_num, b_int + min, digits);
+  cmp = bc_num_compare(max_num, min_num, b_int + min);
   if (cmp) return cmp * (!a_max * -2 + 1) * neg;
 
   for (max_num -= diff, i = diff - 1; i < diff; --i) {
@@ -250,7 +241,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   bneg = b->neg;
   a->neg = b->neg = false;
 
-  cmp = bc_num_cmp(a, b, NULL);
+  cmp = bc_num_cmp(a, b);
 
   a->neg = aneg;
   b->neg = bneg;
@@ -404,7 +395,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     ptr = copy.num + i;
 
-    for (q = 0; ptr[len] || bc_num_compare(ptr, bptr, len, NULL) >= 0; ++q)
+    for (q = 0; ptr[len] || bc_num_compare(ptr, bptr, len) >= 0; ++q)
       bc_num_subArrays(ptr, bptr, len);
 
     c->num[i] = q;
@@ -1103,7 +1094,8 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
     if ((status = bc_num_div(&f, &fprime, &f, resrdx))) goto err;
     if ((status = bc_num_sub(x0, &f, x1, resrdx))) goto err;
 
-    cmp = bc_num_cmp(x1, x0, &digits);
+    cmp = bc_num_cmp(x1, x0);
+    digits = x1->len - llabs(cmp);
 
     temp = x0;
     x0 = x1;

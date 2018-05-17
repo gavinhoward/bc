@@ -73,7 +73,7 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale);
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale);
 // ** Exclude end. **
 
-int bc_num_cmp(BcNum *a, BcNum *b, size_t *digits);
+ssize_t bc_num_cmp(BcNum *a, BcNum *b);
 
 void bc_num_zero(BcNum *n);
 void bc_num_one(BcNum *n);

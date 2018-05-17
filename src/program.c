@@ -531,12 +531,12 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
   if ((status = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return status;
 
   if (inst == BC_INST_BOOL_AND)
-    cond = bc_num_cmp(num1, &p->zero, NULL) && bc_num_cmp(num2, &p->zero, NULL);
+    cond = bc_num_cmp(num1, &p->zero) && bc_num_cmp(num2, &p->zero);
   else if (inst == BC_INST_BOOL_OR)
-    cond = bc_num_cmp(num1, &p->zero, NULL) || bc_num_cmp(num2, &p->zero, NULL);
+    cond = bc_num_cmp(num1, &p->zero) || bc_num_cmp(num2, &p->zero);
   else {
 
-    cmp = bc_num_cmp(num1, num2, NULL);
+    cmp = bc_num_cmp(num1, num2);
 
     switch (inst) {
       case BC_INST_REL_EQ:
@@ -611,7 +611,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_TEMP)
     return BC_STATUS_PARSE_BAD_ASSIGN;
 
-  if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero, NULL))
+  if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero))
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
   if (inst == BC_INST_ASSIGN)  status = bc_num_copy(l, r);
@@ -1111,7 +1111,7 @@ BcStatus bc_program_exec(BcProgram *p) {
         BcNum *num;
 
         if ((status = bc_program_unaryOpPrep(p, &operand, &num))) return status;
-        cond = bc_num_cmp(num, &p->zero, NULL) == 0;
+        cond = !bc_num_cmp(num, &p->zero);
         bc_vec_pop(&p->results);
       }
       // Fallthrough.
@@ -1277,7 +1277,7 @@ BcStatus bc_program_exec(BcProgram *p) {
         status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
         if (status) return status;
 
-        if (bc_num_cmp(num, &p->zero, NULL)) bc_num_one(&result.data.num);
+        if (bc_num_cmp(num, &p->zero)) bc_num_one(&result.data.num);
         else bc_num_zero(&result.data.num);
 
         status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP);
