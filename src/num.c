@@ -334,7 +334,6 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   c->neg = !a->neg != !b->neg;
 
   if (scale < c->rdx) bc_num_truncate(c, c->rdx - scale);
-
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
 
   return BC_STATUS_SUCCESS;
