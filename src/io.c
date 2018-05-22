@@ -51,9 +51,14 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
     if ((c = fgetc(stdin)) == EOF) {
 
       if (errno == EINTR) {
+
         bcg.sigc = bcg.sig;
         bcg.signe = 0;
         --i;
+
+        fprintf(stderr, "%s", bc_program_ready_prompt);
+        fflush(stderr);
+
         continue;
       }
       else return BC_STATUS_IO_ERR;
