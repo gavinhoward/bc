@@ -39,7 +39,7 @@
 void bc_sig(int sig) {
   if (sig == SIGINT) {
     if (write(2, bc_sig_msg, sizeof(bc_sig_msg) - 1) >= 0)
-      bcg.sig_int += bcg.sig_int == bcg.sig_int_catches;
+      bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
   }
   else bcg.sig_other = 1;
 }
@@ -200,7 +200,14 @@ BcStatus bc_stdin(Bc *bc) {
   // a backslash newline combo as whitespace, per the bc spec.
   // Thus, the parser will expect more stuff. That is also
   // the case with strings and comments.
-  while ((!s || s != BC_STATUS_QUIT) && !(s = bc_io_getline(&buf, &bufn))) {
+  while ((!s || s != BC_STATUS_QUIT) &&
+         !((s = bc_io_getline(&buf, &bufn)) && s != BC_STATUS_BINARY_FILE))
+  {
+    if (s == BC_STATUS_BINARY_FILE) {
+      putchar('\a');
+      s = BC_STATUS_SUCCESS;
+      continue;
+    }
 
     len = strlen(buf);
     slen = strlen(buffer);

@@ -1038,7 +1038,7 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
   return status;
 }
 
-BcStatus bc_program_reset(BcProgram *p, BcStatus status, bool sig) {
+BcStatus bc_program_reset(BcProgram *p, BcStatus status) {
 
   BcFunc *func;
   BcInstPtr *ip;
@@ -1050,11 +1050,13 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus status, bool sig) {
   ip = bc_vec_top(&p->stack);
   ip->idx = func->code.len;
 
-  bcg.sig_int_catches += sig;
+  if (!status && bcg.signe && !bcg.interactive) return BC_STATUS_QUIT;
 
-  if (!status && sig && !bcg.interactive) return BC_STATUS_QUIT;
+  bcg.sigc += bcg.signe;
+  bcg.signe = bcg.sig != bcg.sigc;
 
-  if (!status && bcg.interactive) {
+  if ((!status || status == BC_STATUS_EXEC_SIGNAL) && bcg.interactive) {
+    status = BC_STATUS_SUCCESS;
     fprintf(stderr, "%s", bc_program_ready_prompt);
     fflush(stderr);
   }
@@ -1070,7 +1072,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   BcResult result;
   BcFunc *func;
   BcInstPtr *ip;
-  bool cond, sig;
+  bool cond;
   const char **string, *s;
 
   status = BC_STATUS_SUCCESS;
@@ -1318,10 +1320,8 @@ BcStatus bc_program_exec(BcProgram *p) {
       }
     }
 
-    sig = bcg.sig_int != bcg.sig_int_catches;
-
-    if ((status && status != BC_STATUS_QUIT) || sig)
-      status = bc_program_reset(p, status, sig);
+    if ((status && status != BC_STATUS_QUIT) || bcg.signe)
+      status = bc_program_reset(p, status);
 
     // We keep getting these because if the size of the
     // stack changes, pointers may end up being invalid.
@@ -1436,8 +1436,8 @@ BcStatus bc_program_print(BcProgram *p) {
 
     if (putchar('\n') == EOF) status = BC_STATUS_IO_ERR;
 
-    sig = bcg.sig_int != bcg.sig_int_catches;
-    if (status || sig) status = bc_program_reset(p, status, sig);
+    sig = bcg.sig != bcg.sigc;
+    if (status || sig) status = bc_program_reset(p, status);
   }
 
   return status;

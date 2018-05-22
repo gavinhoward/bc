@@ -91,7 +91,7 @@ BcStatus bc_program_print(BcProgram *p);
 // ** Exclude end. **
 
 BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
-BcStatus bc_program_reset(BcProgram *p, BcStatus status, bool sig);
+BcStatus bc_program_reset(BcProgram *p, BcStatus status);
 
 BcStatus bc_program_exec(BcProgram *p);
 

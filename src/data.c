@@ -110,7 +110,7 @@ const char *bc_err_descs[] = {
   "POSIX requires the left brace be on the same line as the function header",
 };
 
-const char bc_sig_msg[36] = "\n\ninterrupt (type \"quit\" to exit)\n\n";
+const char bc_sig_msg[36] = "\ninterrupt (type \"quit\" to exit)\n";
 
 const char bc_lang_func_main[7] = "(main)";
 const char bc_lang_func_read[7] = "(read)";
