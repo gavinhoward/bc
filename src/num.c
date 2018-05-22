@@ -402,7 +402,8 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     ptr = copy.num + i;
 
-    for (q = 0; !status && ptr[len] || bc_num_compare(ptr, bptr, len) >= 0; ++q)
+    q = 0;
+    for (; (!status && ptr[len]) || bc_num_compare(ptr, bptr, len) >= 0; ++q)
       status = bc_num_subArrays(ptr, bptr, len);
 
     c->num[i] = q;
