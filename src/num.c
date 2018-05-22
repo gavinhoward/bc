@@ -33,20 +33,21 @@
 #include <vector.h>
 #include <bc.h>
 
-void bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
+BcStatus bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
   size_t i, j;
-  for (i = 0; i < len; ++i) {
-    for (n1[i] -= n2[i], j = 0; n1[i + j] < 0;) {
+  for (i = 0; !bcg.signe && i < len; ++i) {
+    for (n1[i] -= n2[i], j = 0; !bcg.signe && n1[i + j] < 0;) {
       n1[i + j++] += 10;
       n1[i + j] -= 1;
     }
   }
+  return bcg.signe ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 ssize_t bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len) {
   size_t i;
   BcDigit c;
-  for (c = 0, i = len - 1; !(c = n1[i] - n2[i]) && i < len; --i);
+  for (c = 0, i = len - 1; !bcg.signe && !(c = n1[i] - n2[i]) && i < len; --i);
   return (c < 0 ? -1 : 1) * (ssize_t) (i + 1);
 }
 
@@ -95,7 +96,7 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
   cmp = bc_num_compare(max_num, min_num, b_int + min);
   if (cmp) return cmp * (!a_max * -2 + 1) * neg;
 
-  for (max_num -= diff, i = diff - 1; i < diff; --i) {
+  for (max_num -= diff, i = diff - 1; !bcg.signe && i < diff; --i) {
     if (max_num[i]) return neg * (!a_max * -2 + 1);
   }
 
@@ -201,17 +202,19 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     ptr = ptr_b;
   }
 
-  for (carry = 0, i = 0; i < min_rdx + min_int; ++i, ++c->len) {
+  for (carry = 0, i = 0; !bcg.signe && i < min_rdx + min_int; ++i, ++c->len) {
     ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
     carry = ptr_c[i] / 10;
     ptr_c[i] %= 10;
   }
 
-  for (; i < max + min_rdx; ++i, ++c->len) {
+  for (; !bcg.signe && i < max + min_rdx; ++i, ++c->len) {
     ptr_c[i] += ptr[i] + carry;
     carry = ptr_c[i] / 10;
     ptr_c[i] %= 10;
   }
+
+  if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
 
   if (carry) c->num[c->len++] = carry;
 
@@ -270,7 +273,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   }
   else start = c->rdx - subtrahend->rdx;
 
-  bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
+  status = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
 
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
 
@@ -399,16 +402,13 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     ptr = copy.num + i;
 
-    for (q = 0; ptr[len] || bc_num_compare(ptr, bptr, len) >= 0; ++q)
-      bc_num_subArrays(ptr, bptr, len);
+    for (q = 0; !status && ptr[len] || bc_num_compare(ptr, bptr, len) >= 0; ++q)
+      status = bc_num_subArrays(ptr, bptr, len);
 
     c->num[i] = q;
   }
 
-  if (bcg.signe) {
-    status = BC_STATUS_EXEC_SIGNAL;
-    goto err;
-  }
+  if (status) goto err;
 
   c->neg = !a->neg != !b->neg;
   while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
