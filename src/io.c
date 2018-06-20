@@ -35,7 +35,7 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
   int c;
   size_t size, i;
 
-  if (bcg.interactive && puts("> ") == EOF) return BC_STATUS_IO_ERR;
+  if (bcg.interactive && fputs("> ", stdout) == EOF) return BC_STATUS_IO_ERR;
 
   for (i = 0, c = 0; c != '\n'; ++i) {
 
@@ -61,7 +61,8 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
         fprintf(stderr, "%s", bc_program_ready_prompt);
         fflush(stderr);
 
-        if (bcg.interactive && puts("> ") == EOF) return BC_STATUS_IO_ERR;
+        if (bcg.interactive && fputs("> ", stdout) == EOF)
+          return BC_STATUS_IO_ERR;
 
         continue;
       }
