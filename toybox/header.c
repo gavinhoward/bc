@@ -36,7 +36,7 @@ config BC
 #include "toys.h"
 
 GLOBALS(
-  long interactive;
+  long tty;
 
   unsigned long sig;
   unsigned long sigc;
