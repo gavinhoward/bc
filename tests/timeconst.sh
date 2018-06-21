@@ -4,6 +4,9 @@
 # You can find the script at kernel/time/timeconst.bc in any Linux repo.
 # One such repo is: https://github.com/torvalds/linux
 
+# Note: when testing this bc in toybox, make sure the link is in the same
+# directory as the toybox binary, or this script will not work.
+
 script="$0"
 
 testdir=$(dirname "$script")
@@ -53,7 +56,3 @@ for i in $(seq 0 10000); do
 	diff "$out1" "$out2"
 
 done
-
-# For some reason, running this on the bc when it is toybox does not work, so
-# as a workaround, the following command can be run manually:
-# for i in $(seq 0 10000) ; do echo "$i" ; echo "$i" | bc -q ~/Code/bc-git/timeconst.bc > ../../../log_bc.txt ; echo "$i" | ../../../bc -q ~/Code/bc-git/timeconst.bc > ../../../log_test.txt ; diff ../../../log_bc.txt ../../../log_test.txt ; done
