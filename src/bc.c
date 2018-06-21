@@ -51,7 +51,7 @@ BcStatus bc_error(BcStatus s) {
   fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[bc_err_type_indices[s]],
           bc_err_descs[s]);
 
-  return s * !bcg.interactive;
+  return s * !bcg.tty;
 }
 
 BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
@@ -64,7 +64,7 @@ BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
-  return s * !bcg.interactive;
+  return s * !bcg.tty;
 }
 
 BcStatus bc_posix_error(BcStatus s, const char *file,
@@ -122,7 +122,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
   if (BC_PARSE_CAN_EXEC(&bc->parse)) {
     s = bc_program_exec(&bc->prog);
-    if (bcg.interactive) fflush(stdout);
+    if (bcg.tty) fflush(stdout);
     if (s && s != BC_STATUS_QUIT) s = bc_error(s);
   }
 
@@ -261,7 +261,7 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
   char *len_env;
   int num;
 
-  bcg.interactive = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
+  bcg.tty = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
   bcg.posix = flags & BC_FLAG_S;
   bcg.warn = flags & BC_FLAG_W;
 
@@ -289,7 +289,7 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
     goto err;
   }
 
-  if (bcg.interactive && !(flags & BC_FLAG_Q) && printf("%s", bc_header) < 0) {
+  if (bcg.tty && !(flags & BC_FLAG_Q) && printf("%s", bc_header) < 0) {
     status = BC_STATUS_IO_ERR;
     goto err;
   }

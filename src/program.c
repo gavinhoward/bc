@@ -1050,12 +1050,12 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus status) {
   ip = bc_vec_top(&p->stack);
   ip->idx = func->code.len;
 
-  if (!status && bcg.signe && !bcg.interactive) return BC_STATUS_QUIT;
+  if (!status && bcg.signe && !bcg.tty) return BC_STATUS_QUIT;
 
   bcg.sigc += bcg.signe;
   bcg.signe = bcg.sig != bcg.sigc;
 
-  if ((!status || status == BC_STATUS_EXEC_SIGNAL) && bcg.interactive) {
+  if ((!status || status == BC_STATUS_EXEC_SIGNAL) && bcg.tty) {
     status = BC_STATUS_SUCCESS;
     fprintf(stderr, "%s", bc_program_ready_prompt);
     fflush(stderr);

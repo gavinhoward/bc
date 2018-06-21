@@ -60,7 +60,7 @@ typedef struct Bc {
 // ** Exclude start. **
 typedef struct BcGlobals {
 
-  long interactive;
+  long tty;
   long posix;
   long warn;
 
