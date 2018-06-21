@@ -149,9 +149,9 @@ const char bc_num_hex_digits[] = "0123456789ABCDEF";
 // true if the token is valid in an expression, false otherwise.
 const bool bc_parse_token_exprs[] = {
   true, true, true, true, true, true, true, true, true, true, true, true, true,
-  true, true, true, true, true, true, true, true, true, true, true, true,
-  false, false, true, true, false, false, false, false, false, false, false,
-  true, true, false, false, false, false, false, false, false, true, false, true,
+  true, true, true, true, true, true, true, true, true, true, true, true, false,
+  false, true, true, false, false, false, false, false, false, false, true,
+  true, false, false, false, false, false, false, false, true, false, true,
   true, true, true, false, false, true, false, true, true, false, false, false,
 };
 
