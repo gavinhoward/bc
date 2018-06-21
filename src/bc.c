@@ -309,9 +309,8 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
   status = bc_stdin(&bc);
 
 err:
-  status = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
   bc_parse_free(&bc.parse);
 parse_err:
   bc_program_free(&bc.prog);
-  return status;
+  return status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
 }

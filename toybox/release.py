@@ -71,7 +71,6 @@ for i in range(22, len(bc_c_lines)):
 bc_c_replacements = [
 	[ '^BcStatus bc_main\(unsigned int flags, BcVec \*files\)',
 	  'void bc_main(void)' ],
-	[ '^  BcStatus status;$', '' ],
 	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
 	[ '^  bcg.warn = flags & BC_FLAG_W;$', '' ],
 	[ '([^_])flags ', r'\1toys.optflags ' ],
@@ -79,11 +78,11 @@ bc_c_replacements = [
 	[ '\*\(\(char\*\*\) bc_vec_item\(files, i\)\)', 'toys.optargs[i]' ],
 	[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
 	[ '^  bc_parse_free\(&bc\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&bc.parse);' ],
-	[ '^  bc_program_free\(&bc\.prog\);\n\n  return status;', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
+	[ '^  bc_program_free\(&bc\.prog\);\n  return status;', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
+	[ 'if \(\(status = bc_program_init\(&bc\.prog, len\)\)\) return status;',
+	  'if ((toys.exitval = bc_program_init(&bc.prog, len))) return;' ],
 	[ 'return status == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : status;',
-	  '{\n    toys.exitval = toys.exitval == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : toys.exitval\n    return;\n  }' ],
-	[ 'return status;', 'return;' ],
-	[ 'status', 'toys.exitval' ],
+	  'toys.exitval = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;' ],
 ]
 
 for rep in bc_c_replacements:
