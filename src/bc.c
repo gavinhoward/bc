@@ -48,8 +48,7 @@ BcStatus bc_error(BcStatus s) {
 
   if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
-  fprintf(stderr, "\n%s error: %s\n\n", bc_err_types[bc_err_type_indices[s]],
-          bc_err_descs[s]);
+  fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
 
   return s * !bcg.tty;
 }
@@ -58,9 +57,7 @@ BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
 
   if (!s || !file || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
-  fprintf(stderr, "\n%s error: %s\n", bc_err_types[bc_err_type_indices[s]],
-          bc_err_descs[s]);
-
+  fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
@@ -75,11 +72,10 @@ BcStatus bc_posix_error(BcStatus s, const char *file,
   if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN || !file)
     return BC_STATUS_SUCCESS;
 
-  fprintf(stderr, "\n%s %s: %s\n", bc_err_types[bc_err_type_indices[s]],
+  fprintf(stderr, "\n%s %s: %s\n", bc_errs[bc_err_indices[s]],
           p ? "error" : "warning", bc_err_descs[s]);
 
   if (msg) fprintf(stderr, "    %s\n", msg);
-
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
 
@@ -194,12 +190,10 @@ BcStatus bc_stdin(Bc *bc) {
   string = comment = false;
   s = BC_STATUS_SUCCESS;
 
-  // The following loop is complicated because the vm tries
-  // not to send any lines that end with a backslash to the
-  // parser. The reason for that is because the parser treats
-  // a backslash newline combo as whitespace, per the bc spec.
-  // Thus, the parser will expect more stuff. That is also
-  // the case with strings and comments.
+  // The following loop is complex because the vm tries not to send any lines
+  // that end with a backslash to the parser. The reason for that is because the
+  // parser treats a backslash+newline combo as whitespace, per the bc spec. In
+  // that case, and for strings and comments, the parser will expect more stuff.
   while ((!s || s != BC_STATUS_QUIT) &&
          !((s = bc_io_getline(&buf, &bufn)) && s != BC_STATUS_BINARY_FILE))
   {

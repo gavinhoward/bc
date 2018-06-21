@@ -30,7 +30,9 @@ const char *bc_header =
   "Report bugs at: https://github.com/gavinhoward/bc\n\n"
   "This is free software with ABSOLUTELY NO WARRANTY.\n\n";
 
-const char *bc_err_types[] = {
+const char bc_err_fmt[] = "\n%s error: %s\n\n";
+
+const char *bc_errs[] = {
   "bc",
   "Lex",
   "Parse",
@@ -39,7 +41,7 @@ const char *bc_err_types[] = {
   "POSIX",
 };
 
-const uint8_t bc_err_type_indices[] = {
+const uint8_t bc_err_indices[] = {
   BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC,
   BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
   BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
@@ -156,8 +158,6 @@ const bool bc_parse_token_exprs[] = {
 };
 
 // This is an array of data for operators that correspond to token types.
-// The last corresponds to BC_PARSE_OP_NEGATE_IDX since it doesn't have
-// its own token type (it is the same token at the binary minus operator).
 const BcOp bc_parse_ops[] = {
   { 0, false }, { 0, false },
   { 1, false },
