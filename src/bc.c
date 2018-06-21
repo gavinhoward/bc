@@ -266,11 +266,8 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
   bcg.warn = flags & BC_FLAG_W;
 
   if ((len_env = getenv("BC_LINE_LENGTH"))) {
-
     len = strlen(len_env);
-
     for (num = 1, i = 0; num && i < len; ++i) num = isdigit(len_env[i]);
-
     if (!num || (len = atoi(len_env) - 1) < 2) len = BC_NUM_PRINT_WIDTH;
   }
   else len = BC_NUM_PRINT_WIDTH;
