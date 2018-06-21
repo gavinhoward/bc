@@ -301,10 +301,8 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
 
     while (!status && bc.parse.lex.token.type != BC_LEX_EOF)
       status = bc_parse_parse(&bc.parse);
-    if (status) goto err;
 
-    // Make sure to execute the math library.
-    if ((status = bc_program_exec(&bc.prog))) goto err;
+    if (status || (status = bc_program_exec(&bc.prog))) goto err;
   }
 
   for (i = 0; !bcg.sig_other && !status && i < files->len; ++i)
