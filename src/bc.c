@@ -45,16 +45,22 @@ void bc_sig(int sig) {
 }
 
 BcStatus bc_error(BcStatus s) {
+
   if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
+
   fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
+
   return s * !bcg.tty;
 }
 
 BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
+
   if (!s || !file || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
+
   fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
   fprintf(stderr, "    %s", file);
   fprintf(stderr, &":%d\n\n"[3 * !line], line);
+
   return s * !bcg.tty;
 }
 
@@ -138,7 +144,9 @@ BcStatus bc_file(Bc *bc, const char *file) {
   if (main_func->code.len > ip->idx) s = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
 err:
+
   free(data);
+
   return s;
 }
 
@@ -147,6 +155,7 @@ BcStatus bc_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
   if (total_len > *n) {
 
     char *temp = realloc(*buffer, total_len + 1);
+
     if (!temp) return BC_STATUS_MALLOC_FAIL;
 
     *buffer = temp;
