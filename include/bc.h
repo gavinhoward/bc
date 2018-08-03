@@ -88,7 +88,7 @@ extern const char bc_lib[];
 extern const char *bc_lib_name;
 
 extern const char *bc_header;
-extern const char *bc_err_fmt;
+extern const char bc_err_fmt[];
 extern const char *bc_errs[];
 extern const uint8_t bc_err_indices[];
 extern const char *bc_err_descs[];

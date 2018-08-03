@@ -20,6 +20,7 @@
  *
  */
 
+#include <bc.h>
 #include <status.h>
 #include <lex.h>
 #include <parse.h>

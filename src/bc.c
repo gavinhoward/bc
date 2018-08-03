@@ -67,7 +67,7 @@ BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
 BcStatus bc_posix_error(BcStatus s, const char *file,
                         size_t line, const char *msg)
 {
-  int p = bcg.posix, w = bcg.warn;
+  int p = (int) bcg.posix, w = (int) bcg.warn;
 
   if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN || !file)
     return BC_STATUS_SUCCESS;
@@ -252,17 +252,17 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
   Bc bc;
   struct sigaction sa;
   size_t i, len;
-  char *len_env;
+  char *lenv;
   int num;
 
   bcg.tty = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
   bcg.posix = flags & BC_FLAG_S;
   bcg.warn = flags & BC_FLAG_W;
 
-  if ((len_env = getenv("BC_LINE_LENGTH"))) {
-    len = strlen(len_env);
-    for (num = 1, i = 0; num && i < len; ++i) num = isdigit(len_env[i]);
-    if (!num || (len = atoi(len_env) - 1) < 2) len = BC_NUM_PRINT_WIDTH;
+  if ((lenv = getenv("BC_LINE_LENGTH"))) {
+    len = strlen(lenv);
+    for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
+    if (!num || (len = (size_t) atoi(lenv) - 1) < 2) len = BC_NUM_PRINT_WIDTH;
   }
   else len = BC_NUM_PRINT_WIDTH;
 
