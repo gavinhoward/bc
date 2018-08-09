@@ -185,10 +185,9 @@ BcStatus bc_stdin(Bc *bc) {
   // that end with a backslash to the parser. The reason for that is because the
   // parser treats a backslash+newline combo as whitespace, per the bc spec. In
   // that case, and for strings and comments, the parser will expect more stuff.
-  while ((!s || s != BC_STATUS_QUIT) &&
-         !((s = bc_io_getline(&buf, &bufn)) && s != BC_STATUS_BINARY_FILE))
+  while (!s && !((s = bc_io_getline(&buf, &bufn)) && s != BC_STATUS_BIN_FILE))
   {
-    if (s == BC_STATUS_BINARY_FILE) {
+    if (s == BC_STATUS_BIN_FILE) {
       putchar('\a');
       s = BC_STATUS_SUCCESS;
       continue;
@@ -253,7 +252,8 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
   if ((lenv = getenv("BC_LINE_LENGTH"))) {
     len = strlen(lenv);
     for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
-    if (!num || (len = (size_t) atoi(lenv) - 1) < 2) len = BC_NUM_PRINT_WIDTH;
+    if (!num || ((len = (size_t) atoi(lenv) - 1) < 2 && len >= INT32_MAX))
+      len = BC_NUM_PRINT_WIDTH;
   }
   else len = BC_NUM_PRINT_WIDTH;
 

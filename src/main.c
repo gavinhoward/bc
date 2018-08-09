@@ -32,7 +32,7 @@
 #include <vector.h>
 #include <bc.h>
 
-const struct option bc_opts[] = {
+static const struct option bc_opts[] = {
 
   { "help", no_argument, NULL, 'h' },
   { "interactive", no_argument, NULL, 'i' },
@@ -45,9 +45,9 @@ const struct option bc_opts[] = {
 
 };
 
-const char *bc_short_opts = "hilqsvw";
+static const char *bc_short_opts = "hilqsvw";
 
-const char *bc_help =
+static const char *bc_help =
   "usage: bc [-hilqsvw] [long-options] [file...]\n"
   "\n"
   "bc is a command-line calculator with a Turing-complete language.\n"
@@ -67,7 +67,7 @@ const char *bc_help =
   "  -w  --warn         warn if any non-POSIX extensions are used\n"
   "  -v  --version      print version information and copyright and exit\n\n";
 
-const char *bc_env_args_name = "BC_ENV_ARGS";
+static const char *bc_env_args_name = "BC_ENV_ARGS";
 
 BcGlobals bcg;
 
@@ -149,7 +149,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
   } while (c != -1);
 
-  if (do_exit) exit(status);
+  if (do_exit) exit((int) status);
 
   if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
   flags = 0;
   buffer = NULL;
 
-  if ((status = bc_vec_init(&files, sizeof(char*), NULL))) return status;
+  if ((status = bc_vec_init(&files, sizeof(char*), NULL))) return (int) status;
 
   if ((env_args = getenv(bc_env_args_name))) {
 
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
       else ++buf;
     }
 
-    status = bc_args(args.len, (char**) args.array, &flags, &files);
+    status = bc_args((int) args.len, (char**) args.array, &flags, &files);
     if(status) goto buf_err;
   }
 
@@ -222,5 +222,5 @@ err:
 
   bc_vec_free(&files);
 
-  return status;
+  return (int) status;
 }

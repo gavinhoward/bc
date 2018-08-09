@@ -68,9 +68,9 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
       else return BC_STATUS_IO_ERR;
     }
     else if (!c || (iscntrl(c) && !isspace(c)) || c > SCHAR_MAX)
-      return BC_STATUS_BINARY_FILE;
+      return BC_STATUS_BIN_FILE;
 
-    (*buf)[i] = c;
+    (*buf)[i] = (char) c;
   }
 
   (*buf)[i] = '\0';
@@ -84,12 +84,12 @@ BcStatus bc_io_fread(const char *path, char **buf) {
   FILE *f;
   size_t size, read;
 
-  assert(path && buf);
+  assert(path && buf && *buf);
 
   if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 
   fseek(f, 0, SEEK_END);
-  size = ftell(f);
+  size = (size_t) ftell(f);
   fseek(f, 0, SEEK_SET);
 
   if (!(*buf = malloc(size + 1))) {

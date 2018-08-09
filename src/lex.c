@@ -69,7 +69,6 @@ BcStatus bc_lex_comment(BcLex *lex) {
 
   size_t newlines, i;
   const char *buffer;
-  char c;
   bool end;
 
   newlines = 0;
@@ -80,9 +79,10 @@ BcStatus bc_lex_comment(BcLex *lex) {
 
   for (i = ++lex->idx; !end; i += !end) {
 
-    while ((c = buffer[i]) != '*' && c != '\0') {
+    char c;
+
+    for (; (c = buffer[i]) != '*' && c != '\0'; ++i) {
       if (c == '\n') ++newlines;
-      c = buffer[++i];
     }
 
     if (c == '\0' || buffer[i + 1] == '\0') {
@@ -166,9 +166,10 @@ BcStatus bc_lex_name(BcLex *lex) {
 
   for (i = 0; i < sizeof(bc_lex_keywords) / sizeof(bc_lex_keywords[0]); ++i) {
 
-    if (!strncmp(buffer, bc_lex_keywords[i].name, bc_lex_keywords[i].len)) {
+    unsigned long len = (unsigned long) bc_lex_keywords[i].len;
+    if (!strncmp(buffer, bc_lex_keywords[i].name, len)) {
 
-      lex->token.type = BC_LEX_KEY_AUTO + i;
+      lex->token.type = BC_LEX_KEY_AUTO + (BcLexToken) i;
 
       if (!bc_lex_keywords[i].posix &&
           (status = bc_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, lex->file,
@@ -179,7 +180,7 @@ BcStatus bc_lex_name(BcLex *lex) {
 
       // We need to minus one because the
       // index has already been incremented.
-      lex->idx += bc_lex_keywords[i].len - 1;
+      lex->idx += (unsigned long) bc_lex_keywords[i].len - 1;
 
       return BC_STATUS_SUCCESS;
     }
@@ -319,7 +320,7 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '(':
     case ')':
     {
-      lex->token.type = c - '(' + BC_LEX_LEFT_PAREN;
+      lex->token.type = (BcLexToken) (c - '(' + BC_LEX_LEFT_PAREN);
       break;
     }
 
@@ -455,7 +456,7 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '[':
     case ']':
     {
-      lex->token.type = c - '[' + BC_LEX_LEFT_BRACKET;
+      lex->token.type = (BcLexToken) (c - '[' + BC_LEX_LEFT_BRACKET);
       break;
     }
 
@@ -503,7 +504,7 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '{':
     case '}':
     {
-      lex->token.type = c - '{' + BC_LEX_LEFT_BRACE;
+      lex->token.type = (BcLexToken) (c - '{' + BC_LEX_LEFT_BRACE);
       break;
     }
 

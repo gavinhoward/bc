@@ -149,12 +149,12 @@ void bc_vec_npop(BcVec *vec, size_t n) {
 
 void bc_vec_free(void *vec) {
 
-  size_t i;
   BcVec *s = (BcVec*) vec;
 
   if (!s) return;
 
   if (s->dtor) {
+    size_t i;
     for (i = 0; i < s->len; ++i) s->dtor(s->array + (i * s->size));
   }
 

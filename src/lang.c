@@ -80,7 +80,6 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
 
   BcStatus status;
   size_t i;
-  BcNum *dnum, *snum;
 
   assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
@@ -91,6 +90,8 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
   d->len = s->len;
 
   for (i = 0; !status && i < s->len; ++i) {
+
+    BcNum *dnum, *snum;
 
     dnum = bc_vec_item(d, i);
     snum = bc_vec_item(s, i);

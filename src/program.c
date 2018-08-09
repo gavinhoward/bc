@@ -362,9 +362,9 @@ char* bc_program_name(uint8_t *code, size_t *start) {
 
   if (!(s = malloc(len + 1))) return NULL;
 
-  for (byte = code[(*start)++], i = 0; byte && byte != ':'; ++i) {
+  for (byte = (char) code[(*start)++], i = 0; byte && byte != ':'; ++i) {
     s[i] = byte;
-    byte = code[(*start)++];
+    byte = (char) code[(*start)++];
   }
 
   s[i] = '\0';
@@ -374,13 +374,15 @@ char* bc_program_name(uint8_t *code, size_t *start) {
 
 BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
-  char c, c2;
+  char c2;
   size_t len, i;
   int err;
 
   len = strlen(str);
 
   for (i = 0; i < len; ++i,  ++(*nchars)) {
+
+    char c;
 
     if ((c = str[i]) != '\\') err = putchar(c);
     else {
@@ -523,7 +525,7 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
   BcResult *operand1, *operand2, res;
   BcNum *num1, *num2;
   bool cond;
-  int cmp;
+  ssize_t cmp;
 
   status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
   if (status) return status;
@@ -694,7 +696,7 @@ BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
       BcVec *a;
 
-      if (arg->type != BC_RESULT_VAR || arg->type != BC_RESULT_ARRAY)
+      if (arg->type != BC_RESULT_VAR && arg->type != BC_RESULT_ARRAY)
         return BC_STATUS_EXEC_BAD_TYPE;
 
       status = bc_program_search(p, arg, (BcNum**) &a, BC_PROGRAM_SEARCH_ARRAY);
@@ -781,10 +783,10 @@ unsigned long bc_program_scale(BcNum *n) {
 
 unsigned long bc_program_length(BcNum *n) {
 
-  size_t i;
   unsigned long len = n->len;
 
   if (n->rdx == n->len) {
+    size_t i;
     for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
   }
 
@@ -1368,9 +1370,9 @@ BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
 BcStatus bc_program_printName(uint8_t *code, size_t *start) {
 
   BcStatus status = BC_STATUS_SUCCESS;
-  char byte;
+  char byte = (char) code[(*start)++];
 
-  for (byte = code[(*start)++]; byte && byte != ':'; byte = code[(*start)++]) {
+  for (; byte && byte != ':'; byte = (char) code[(*start)++]) {
     if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
   }
 
@@ -1388,11 +1390,12 @@ BcStatus bc_program_print(BcProgram *p) {
   uint8_t *code;
   BcInstPtr ip;
   size_t i;
-  bool sig;
 
   status = BC_STATUS_SUCCESS;
 
   for (i = 0; !status && !bcg.sig_other && i < p->funcs.len; ++i) {
+
+    bool sig;
 
     ip.idx = ip.len = 0;
     ip.func = i;

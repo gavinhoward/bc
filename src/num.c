@@ -56,7 +56,7 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
   size_t i, min, a_int, b_int, diff;
   BcDigit *max_num, *min_num;
   bool a_max;
-  int cmp, neg;
+  ssize_t cmp, neg;
 
   if (!a) return !b ? 0 : !b->neg * -2 + 1;
   else if (!b) return a->neg * -2 + 1;
@@ -76,7 +76,7 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
   b_int = b->len - b->rdx;
   a_int -= b_int;
 
-  if (a_int) return a_int;
+  if (a_int) return (ssize_t) a_int;
 
   a_max = a->rdx > b->rdx;
 
@@ -224,7 +224,7 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   BcStatus status;
-  int cmp;
+  ssize_t cmp;
   BcNum *minuend, *subtrahend;
   size_t start;
   bool aneg, bneg, neg;
@@ -577,7 +577,7 @@ err:
 bool bc_num_strValid(const char *val, size_t base) {
 
   size_t len, i;
-  BcDigit c, b;
+  BcDigit b;
   bool small, radix;
 
   radix = false;
@@ -586,9 +586,11 @@ bool bc_num_strValid(const char *val, size_t base) {
   if (!len) return true;
 
   small = base <= 10;
-  b = small ? base + '0' : base - 9 + 'A';
+  b = (BcDigit) (small ? base + '0' : base - 9 + 'A');
 
   for (i = 0; i < len; ++i) {
+
+    BcDigit c;
 
     if ((c = val[i]) == '.') {
 
@@ -632,7 +634,7 @@ BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
   ptr = strchr(val, '.');
 
   // Explicitly test for NULL here to produce either a 0 or 1.
-  n->rdx = (ptr != NULL) * ((val + len) - (ptr + 1));
+  n->rdx = (size_t) ((ptr != NULL) * ((val + len) - (ptr + 1)));
 
   for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.'))
     n->num[n->len] = val[i] - '0';
@@ -645,7 +647,7 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
   BcStatus status;
   BcNum temp, mult, result;
   size_t i, len, digits;
-  BcDigit c;
+  BcDigit c = '\0';
   bool zero;
   unsigned long v;
 
@@ -661,7 +663,7 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   for (i = 0; i < len && (c = val[i]) != '.'; ++i) {
 
-    v = c <= '9' ? c - '0' : c - 'A' + 10;
+    v = (unsigned long) (c <= '9' ? c - '0' : c - 'A' + 10);
 
     if ((status = bc_num_mul(n, base, &mult, 0))) goto int_err;
     if ((status = bc_num_ulong2num(&temp, v))) goto int_err;
@@ -677,7 +679,7 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   for (i += 1, digits = 0; i < len && (c = val[i]); ++i, ++digits) {
 
-    v = c <= '9' ? c - '0' : c - 'A' + 10;
+    v = (unsigned long) (c <= '9' ? c - '0' : c - 'A' + 10);
 
     if ((status = bc_num_mul(&result, base, &result, 0))) goto err;
     if ((status = bc_num_ulong2num(&temp, v))) goto err;
@@ -705,7 +707,7 @@ mult_err:
 BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
                             size_t *nchars, size_t line_len)
 {
-  size_t exp, pow, div;
+  size_t exp, pow;
 
   if (*nchars == line_len - 1) {
     if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
@@ -721,6 +723,8 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
   for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
   for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
+
+    size_t div;
 
     if (*nchars == line_len - 1) {
       if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
@@ -755,7 +759,7 @@ BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t line_len) {
+BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
 
   BcStatus status;
   size_t i;
@@ -768,7 +772,7 @@ BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t line_len) {
   status = BC_STATUS_SUCCESS;
 
   for (i = n->len - 1; !status && i < n->len; --i)
-    status = bc_num_printHex(n->num[i], 1, i == n->rdx - 1, nchars, line_len);
+    status = bc_num_printHex((size_t) n->num[i], 1, i == n->rdx - 1, nchars, len);
 
   return status;
 }
@@ -954,7 +958,7 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
   size_t i;
-  unsigned long prev, pow;
+  unsigned long pow;
 
   assert(n && result);
 
@@ -962,8 +966,8 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
   for (*result = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
 
-    prev = *result;
-    *result += n->num[i] * pow;
+    unsigned long prev = *result;
+    *result += ((unsigned long) n->num[i]) * pow;
     pow *= 10;
 
     if (*result < prev) return BC_STATUS_MATH_OVERFLOW;
@@ -987,7 +991,7 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
     return BC_STATUS_SUCCESS;
   }
 
-  len = (size_t) ceil(log10(((double) ULONG_MAX) + 1.0f));
+  len = (size_t) ceil(log10(((double) ULONG_MAX) + 1.0));
 
   if ((status = bc_num_expand(n, len))) return status;
 
@@ -1036,7 +1040,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
   BcStatus status;
   BcNum a2, *ptr_a, num1, num2, two, f, fprime, *x0, *x1, *temp;
   size_t pow, len, digits, resrdx, req;
-  int cmp;
+  ssize_t cmp;
 
   assert(a && result);
 
@@ -1116,7 +1120,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
     if ((status = bc_num_sub(x0, &f, x1, resrdx))) goto err;
 
     cmp = bc_num_cmp(x1, x0);
-    digits = x1->len - llabs(cmp);
+    digits = x1->len - (unsigned long long) llabs(cmp);
 
     temp = x0;
     x0 = x1;
