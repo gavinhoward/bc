@@ -380,7 +380,10 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if (b->rdx == b->len) {
     bool zero;
     for (zero = true, i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
-    if (i == len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+    if (i == len) {
+      status = BC_STATUS_MATH_DIVIDE_BY_ZERO;
+      goto err;
+    }
     len -= i - 1;
   }
 
