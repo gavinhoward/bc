@@ -28,8 +28,7 @@
 
 #include <status.h>
 
-// BC_LEX_OP_NEGATE is not used in lexing;
-// it is only for parsing.
+// BC_LEX_OP_NEGATE is not used in lexing; it is only for parsing.
 typedef enum BcLexToken {
 
   BC_LEX_OP_INC,
@@ -38,11 +37,9 @@ typedef enum BcLexToken {
   BC_LEX_OP_NEG,
 
   BC_LEX_OP_POWER,
-
   BC_LEX_OP_MULTIPLY,
   BC_LEX_OP_DIVIDE,
   BC_LEX_OP_MODULUS,
-
   BC_LEX_OP_PLUS,
   BC_LEX_OP_MINUS,
 
@@ -54,7 +51,6 @@ typedef enum BcLexToken {
   BC_LEX_OP_REL_GREATER,
 
   BC_LEX_OP_BOOL_NOT,
-
   BC_LEX_OP_BOOL_OR,
   BC_LEX_OP_BOOL_AND,
 
@@ -107,7 +103,6 @@ typedef enum BcLexToken {
   BC_LEX_KEY_WHILE,
 
   BC_LEX_EOF,
-
   BC_LEX_INVALID,
 
 } BcLexToken;

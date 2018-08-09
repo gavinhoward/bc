@@ -33,18 +33,15 @@ typedef enum BcInst {
 
   BC_INST_INC_PRE,
   BC_INST_DEC_PRE,
-
   BC_INST_INC_POST,
   BC_INST_DEC_POST,
 
   BC_INST_NEG,
 
   BC_INST_POWER,
-
   BC_INST_MULTIPLY,
   BC_INST_DIVIDE,
   BC_INST_MODULUS,
-
   BC_INST_PLUS,
   BC_INST_MINUS,
 
@@ -56,7 +53,6 @@ typedef enum BcInst {
   BC_INST_REL_GT,
 
   BC_INST_BOOL_NOT,
-
   BC_INST_BOOL_OR,
   BC_INST_BOOL_AND,
 
@@ -117,9 +113,7 @@ typedef struct BcAuto {
 typedef struct BcFunc {
 
   BcVec code;
-
   BcVec labels;
-
   size_t nparams;
   BcVec autos;
 
@@ -153,9 +147,7 @@ typedef struct BcResult {
   union {
 
     BcNum num;
-
     BcVec array;
-
     BcEntry id;
 
   } data;
