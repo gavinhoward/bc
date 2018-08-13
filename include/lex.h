@@ -112,9 +112,9 @@ typedef struct BcLex {
   const char *buffer;
   size_t idx;
   size_t line;
-  bool newline;
   const char *file;
   size_t len;
+  bool newline;
 
   struct {
     BcLexToken type;

@@ -35,16 +35,15 @@
 BcStatus bc_lex_string(BcLex *lex) {
 
   const char *start;
-  size_t newlines, len, i, j;
+  size_t newlines, len, i;
   char c;
 
   newlines = 0;
   lex->token.type = BC_LEX_STRING;
   i = lex->idx;
 
-  for (c = lex->buffer[i]; c != '"' && c != '\0'; c = lex->buffer[++i]) {
-    if (c == '\n') ++newlines;
-  }
+  for (c = lex->buffer[i]; c != '"' && c != '\0'; c = lex->buffer[++i])
+    newlines += (c == '\n');
 
   if (c == '\0') {
     lex->idx = i;
@@ -56,7 +55,7 @@ BcStatus bc_lex_string(BcLex *lex) {
 
   start = lex->buffer + lex->idx;
 
-  for (j = 0; j < len; ++j) lex->token.string[j] = start[j];
+  memcpy(lex->token.string, start, len * sizeof(char));
 
   lex->token.string[len] = '\0';
   lex->idx = i + 1;
@@ -81,9 +80,8 @@ BcStatus bc_lex_comment(BcLex *lex) {
 
     char c;
 
-    for (; (c = buffer[i]) != '*' && c != '\0'; ++i) {
-      if (c == '\n') ++newlines;
-    }
+    for (; (c = buffer[i]) != '*' && c != '\0'; ++i)
+      newlines += (c == '\n');
 
     if (c == '\0' || buffer[i + 1] == '\0') {
       lex->idx = i;
