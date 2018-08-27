@@ -1006,33 +1006,34 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
   BcNumBinaryFunc op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
-  return bc_num_binary(a, b, result, false, op, a->len + b->len + 1);
+  size_t r = BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
+  return bc_num_binary(a, b, result, false, op, r);
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
   BcNumBinaryFunc op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
-  return bc_num_binary(a, b, result, true, op, a->len + b->len + 1);
+  size_t r = BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
+  return bc_num_binary(a, b, result, true, op, r);
 }
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_m,
-                       a->len + b->len + scale + 1);
+  size_t r = BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_m, r);
 }
 
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_d,
-                       a->len + b->len + scale + 1);
+  size_t r = BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_d, r);
 }
 
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_mod,
-                       a->len + b->len + scale + 1);
+  size_t r = BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_mod, r);
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_p,
-                       (a->len + 1) * (b->len + 1));
+  return bc_num_binary(a, b, result, scale, bc_num_alg_p, a->len * b->len + 1);
 }
 
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {

@@ -50,6 +50,8 @@ typedef struct BcNum {
 
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 
+#define BC_NUM_INT(n) ((n)->len - (n)->rdx)
+
 typedef BcStatus (*BcNumUnaryFunc)(BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumBinaryFunc)(BcNum*, BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumDigitFunc)(size_t, size_t, bool, size_t*, size_t);
