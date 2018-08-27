@@ -30,8 +30,8 @@
 
 #define BC_VEC_INITIAL_CAP (32)
 
-typedef void (*BcVecFreeFunc)(void*);
-typedef int (*BcVecCmpFunc)(void*, void*);
+typedef void (*BcVecFree)(void*);
+typedef int (*BcVecCmp)(void*, void*);
 
 typedef struct BcVec {
 
@@ -40,12 +40,12 @@ typedef struct BcVec {
   size_t cap;
   size_t size;
 
-  BcVecFreeFunc dtor;
+  BcVecFree dtor;
 
 } BcVec;
 
 // ** Exclude start. **
-BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFreeFunc dtor);
+BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFree dtor);
 BcStatus bc_vec_expand(BcVec *vec, size_t request);
 
 BcStatus bc_vec_push(BcVec *vec, void *data);
@@ -65,13 +65,12 @@ void bc_vec_free(void *vec);
 typedef struct BcVecO {
 
   BcVec vec;
-  BcVecCmpFunc cmp;
+  BcVecCmp cmp;
 
 } BcVecO;
 
 // ** Exclude start. **
-BcStatus bc_veco_init(BcVecO* vec, size_t esize,
-                      BcVecFreeFunc dtor, BcVecCmpFunc cmp);
+BcStatus bc_veco_init(BcVecO* vec, size_t esize, BcVecFree dtor, BcVecCmp cmp);
 
 BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx);
 

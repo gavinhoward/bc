@@ -173,7 +173,7 @@ const BcOp bc_parse_ops[] = {
 
 const char bc_program_byte_fmt[] = "%02x";
 
-const BcNumBinaryFunc bc_program_math_ops[] = {
+const BcNumBinaryOp bc_program_math_ops[] = {
   bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
 };
 

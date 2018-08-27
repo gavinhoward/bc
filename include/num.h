@@ -45,16 +45,13 @@ typedef struct BcNum {
 #define BC_NUM_MIN_BASE (2)
 #define BC_NUM_MAX_INPUT_BASE (16)
 #define BC_NUM_DEF_SIZE (16)
-
 #define BC_NUM_PRINT_WIDTH (69)
 
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
-
 #define BC_NUM_INT(n) ((n)->len - (n)->rdx)
 
-typedef BcStatus (*BcNumUnaryFunc)(BcNum*, BcNum*, size_t);
-typedef BcStatus (*BcNumBinaryFunc)(BcNum*, BcNum*, BcNum*, size_t);
-typedef BcStatus (*BcNumDigitFunc)(size_t, size_t, bool, size_t*, size_t);
+typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
+typedef BcStatus (*BcNumDigitOp)(size_t, size_t, bool, size_t*, size_t);
 
 BcStatus bc_num_init(BcNum *n, size_t request);
 BcStatus bc_num_expand(BcNum *n, size_t request);

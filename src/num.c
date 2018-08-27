@@ -535,7 +535,7 @@ err:
 }
 
 BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c,  size_t scale,
-                       BcNumBinaryFunc op, size_t req)
+                       BcNumBinaryOp op, size_t req)
 {
   BcStatus status;
   BcNum num2, *ptr_a, *ptr_b;
@@ -759,20 +759,20 @@ BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
+BcStatus bc_num_printDecimal(BcNum *n, size_t *nchs, size_t len) {
 
   BcStatus status;
   size_t i;
 
   if (n->neg) {
     if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
-    ++(*nchars);
+    ++(*nchs);
   }
 
   status = BC_STATUS_SUCCESS;
 
   for (i = n->len - 1; !status && i < n->len; --i)
-    status = bc_num_printHex((size_t) n->num[i], 1, i == n->rdx - 1, nchars, len);
+    status = bc_num_printHex((size_t) n->num[i], 1, i == n->rdx - 1, nchs, len);
 
   return status;
 }
@@ -784,7 +784,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   BcVec stack;
   BcNum intp, fracp, digit, frac_len;
   size_t width, i;
-  BcNumDigitFunc print;
+  BcNumDigitOp print;
   unsigned long dig, *ptr;
   bool neg, radix;
 
@@ -1005,14 +1005,14 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
-  BcNumBinaryFunc op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
+  BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
   size_t r = BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
   return bc_num_binary(a, b, result, false, op, r);
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
-  BcNumBinaryFunc op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
+  BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
   size_t r = BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
   return bc_num_binary(a, b, result, true, op, r);
 }

@@ -273,7 +273,7 @@ BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult *operand1, *operand2, res;
   BcNum *num1, *num2;
-  BcNumBinaryFunc op;
+  BcNumBinaryOp op;
 
   status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
   if (status) return status;
@@ -603,7 +603,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult *left, *right, res;
   BcNum *l, *r;
-  BcNumBinaryFunc op;
+  BcNumBinaryOp op;
   unsigned long val, max;
   size_t *ptr;
 

@@ -96,7 +96,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus status);
 BcStatus bc_program_exec(BcProgram *p);
 
 extern const char bc_program_byte_fmt[];
-extern const BcNumBinaryFunc bc_program_math_ops[];
+extern const BcNumBinaryOp bc_program_math_ops[];
 extern const char bc_program_stdin_name[];
 extern const char bc_program_ready_prompt[];
 

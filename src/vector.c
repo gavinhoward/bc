@@ -41,7 +41,7 @@ BcStatus bc_vec_grow(BcVec *vec) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFreeFunc dtor) {
+BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFree dtor) {
 
   assert(vec && esize);
 
@@ -94,7 +94,6 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
   assert(vec && vec->size == sizeof(uint8_t));
 
   if (vec->len == vec->cap && (status = bc_vec_grow(vec))) return status;
-
   vec->array[vec->len++] = data;
 
   return BC_STATUS_SUCCESS;
@@ -165,10 +164,7 @@ void bc_vec_free(void *vec) {
 
 size_t bc_veco_find(const BcVecO* vec, void *data) {
 
-  size_t low, high;
-
-  low = 0;
-  high = vec->vec.len;
+  size_t low = 0, high = vec->vec.len;
 
   while (low < high) {
 
@@ -185,15 +181,13 @@ size_t bc_veco_find(const BcVecO* vec, void *data) {
   return low;
 }
 
-BcStatus bc_veco_init(BcVecO* vec, size_t esize,
-                      BcVecFreeFunc dtor, BcVecCmpFunc cmp)
-{
+BcStatus bc_veco_init(BcVecO *vec, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
   assert(vec && esize && cmp);
   vec->cmp = cmp;
   return bc_vec_init(&vec->vec, esize, dtor);
 }
 
-BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
+BcStatus bc_veco_insert(BcVecO *vec, void *data, size_t *idx) {
 
   BcStatus status;
 
