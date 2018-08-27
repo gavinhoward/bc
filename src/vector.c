@@ -29,13 +29,14 @@
 #include <vector.h>
 #include <bc.h>
 
-BcStatus bc_vec_double(BcVec *vec) {
+BcStatus bc_vec_grow(BcVec *vec) {
 
-  uint8_t *ptr = realloc(vec->array, vec->size * (vec->cap * 2));
+  size_t cap = vec->cap * 2;
+  uint8_t *ptr = realloc(vec->array, vec->size * cap);
   if (!ptr) return BC_STATUS_MALLOC_FAIL;
 
   vec->array = ptr;
-  vec->cap *= 2;
+  vec->cap = cap;
 
   return BC_STATUS_SUCCESS;
 }
@@ -78,7 +79,7 @@ BcStatus bc_vec_push(BcVec *vec, void *data) {
   size_t size;
 
   assert(vec && data);
-  if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
+  if (vec->len == vec->cap && (status = bc_vec_grow(vec))) return status;
 
   size = vec->size;
   memmove(vec->array + (size * vec->len++), data, size);
@@ -92,7 +93,7 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 
   assert(vec && vec->size == sizeof(uint8_t));
 
-  if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
+  if (vec->len == vec->cap && (status = bc_vec_grow(vec))) return status;
 
   vec->array[vec->len++] = data;
 
@@ -107,7 +108,7 @@ BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
   assert(vec && data && idx <= vec->len);
 
   if (idx == vec->len) return bc_vec_push(vec, data);
-  if (vec->len == vec->cap && (status = bc_vec_double(vec))) return status;
+  if (vec->len == vec->cap && (status = bc_vec_grow(vec))) return status;
 
   ptr = vec->array + vec->size * idx;
 
@@ -214,9 +215,8 @@ BcStatus bc_veco_insert(BcVecO* vec, void *data, size_t *idx) {
 }
 
 size_t bc_veco_index(const BcVecO* v, void *data) {
-  size_t i;
   assert(v && data);
-  i = bc_veco_find(v, data);
+  size_t i = bc_veco_find(v, data);
   if (i >= v->vec.len || v->cmp(data, bc_vec_item(&v->vec, i))) return BC_INVALID_IDX;
   return i;
 }
