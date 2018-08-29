@@ -72,8 +72,8 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
   if (!a->len) return (!b->neg * -2 + 1) * !!b->len;
   else if (!b->len) return a->neg * -2 + 1;
 
-  a_int = a->len - a->rdx;
-  b_int = b->len - b->rdx;
+  a_int = BC_NUM_INT(a);
+  b_int = BC_NUM_INT(b);
   a_int -= b_int;
 
   if (a_int) return (ssize_t) a_int;
@@ -188,8 +188,8 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   for (ptr_c = c->num, i = 0; i < diff; ++i, ++c->len) ptr_c[i] = ptr[i];
 
   ptr_c += diff;
-  a_int = a->len - a->rdx;
-  b_int = b->len - b->rdx;
+  a_int = BC_NUM_INT(a);
+  b_int = BC_NUM_INT(b);
 
   if (a_int > b_int) {
     min_int = b_int;
@@ -361,7 +361,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     return status;
   }
 
-  if ((status = bc_num_init(&copy, a->len + b->rdx + scale + 1))) return status;
+  if ((status = bc_num_init(&copy, BC_NUM_MREQ(a, b, scale)))) return status;
   if ((status = bc_num_copy(&copy, a))) goto err;
 
   if ((len = b->len) > copy.len) {
@@ -826,7 +826,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
     if (status) goto frac_len_err;
   }
 
-  if (!n->rdx || (status = bc_num_init(&frac_len, n->len - n->rdx)))
+  if (!n->rdx || (status = bc_num_init(&frac_len, BC_NUM_INT(n))))
     goto frac_len_err;
 
   bc_num_one(&frac_len);
@@ -1006,30 +1006,28 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
   BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
-  size_t r = BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
-  return bc_num_binary(a, b, result, false, op, r);
+  return bc_num_binary(a, b, result, false, op, BC_NUM_AREQ(a, b));
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
   (void) scale;
   BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
-  size_t r = BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
-  return bc_num_binary(a, b, result, true, op, r);
+  return bc_num_binary(a, b, result, true, op, BC_NUM_AREQ(a, b));
 }
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  size_t r = BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx);
-  return bc_num_binary(a, b, result, scale, bc_num_alg_m, r);
+  size_t req = BC_NUM_MREQ(a, b, scale);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_m, req);
 }
 
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  size_t r = BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx);
-  return bc_num_binary(a, b, result, scale, bc_num_alg_d, r);
+  size_t req = BC_NUM_MREQ(a, b, scale);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_d, req);
 }
 
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  size_t r = BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx);
-  return bc_num_binary(a, b, result, scale, bc_num_alg_mod, r);
+  size_t req = BC_NUM_MREQ(a, b, scale);
+  return bc_num_binary(a, b, result, scale, bc_num_alg_mod, req);
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
@@ -1091,7 +1089,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 
   bc_num_one(x0);
 
-  pow = ptr_a->len - ptr_a->rdx;
+  pow = BC_NUM_INT(ptr_a);
 
   if (pow) {
 
@@ -1110,7 +1108,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
   cmp = 1;
   x0->rdx = digits = 0;
   resrdx = scale + 1;
-  len = (x0->len - x0->rdx) + resrdx;
+  len = BC_NUM_INT(x0) + resrdx;
 
   while (!bcg.signe && cmp && digits <= len) {
 
