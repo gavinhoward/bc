@@ -1043,7 +1043,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 
   assert(a && result);
 
-  req = a->rdx + (a->len - a->rdx) * 2 + 1;
+  req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a)+ 1) >> 1) + 1;
 
   if (result == a) {
     memcpy(&a2, result, sizeof(BcNum));
