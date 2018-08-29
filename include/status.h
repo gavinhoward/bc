@@ -96,5 +96,6 @@ typedef enum BcStatus {
 #define BC_ERR_IDX_MATH (3)
 #define BC_ERR_IDX_EXEC (4)
 #define BC_ERR_IDX_POSIX (5)
+#define BC_ERR_IDX_VEC (6)
 
 #endif // BC_STATUS_H

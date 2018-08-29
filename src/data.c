@@ -52,10 +52,12 @@ const uint8_t bc_err_indices[] = {
   BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
   BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-  BC_ERR_IDX_EXEC,
+  BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
   BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
   BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
   BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
+  BC_ERR_IDX_VEC, BC_ERR_IDX_VEC,
+  BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC,
 };
 
 const char *bc_err_descs[] = {
@@ -98,6 +100,7 @@ const char *bc_err_descs[] = {
   "bad read() expression",
   "read() call inside of a read() call",
   "variable is wrong type",
+  "signal caught",
 
   "POSIX only allows one character names; the following is bad:",
   "POSIX does not allow '#' script comments",
@@ -111,6 +114,12 @@ const char *bc_err_descs[] = {
   "POSIX does not allow an empty condition expression in a for loop",
   "POSIX does not allow an empty update expression in a for loop",
   "POSIX requires the left brace be on the same line as the function header",
+
+  "index is out of bounds",
+  "item already exists",
+
+  "quit request not honored",
+  "limits request not honored",
 };
 
 const char bc_sig_msg[34] = "\ninterrupt (type \"quit\" to exit)\n";

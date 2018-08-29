@@ -1057,10 +1057,13 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus status) {
   bcg.sigc += bcg.signe;
   bcg.signe = bcg.sig != bcg.sigc;
 
-  if ((!status || status == BC_STATUS_EXEC_SIGNAL) && bcg.tty) {
-    status = BC_STATUS_SUCCESS;
-    fprintf(stderr, "%s", bc_program_ready_prompt);
-    fflush(stderr);
+  if (!status || status == BC_STATUS_EXEC_SIGNAL) {
+    if (bcg.tty) {
+      fprintf(stderr, "%s", bc_program_ready_prompt);
+      fflush(stderr);
+      status = BC_STATUS_SUCCESS;
+    }
+    else status = BC_STATUS_QUIT;
   }
 
   return status;
