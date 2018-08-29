@@ -1059,12 +1059,16 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 
   if (!ptr_a->len) {
     bc_num_zero(result);
-    return BC_STATUS_SUCCESS;
+    goto init_err;
   }
-  else if (ptr_a->neg) return BC_STATUS_MATH_NEG_SQRT;
+  else if (ptr_a->neg) {
+    status = BC_STATUS_MATH_NEG_SQRT;
+    goto init_err;
+  }
   else if (BC_NUM_ONE(a)) {
     bc_num_one(result);
-    return bc_num_extend(result, scale);
+    status = bc_num_extend(result, scale);
+    goto init_err;
   }
 
   memset(result->num, 0, result->cap * sizeof(BcDigit));
