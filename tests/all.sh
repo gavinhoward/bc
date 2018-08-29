@@ -14,17 +14,16 @@ fi
 
 bcdir=$(dirname "${bc}")
 
-out1="$bcdir/log_bc.txt"
-out2="$bcdir/log_test.txt"
+out="$bcdir/log_test.txt"
 
 while read t; do
 
 	echo "$t"
-	sh "$testdir/test.sh" "$t" "$bc" "$out1" "$out2"
+	sh "$testdir/test.sh" "$t" "$bc" "$out"
 
 done < "$testdir/all.txt"
 
-sh "$testdir/scripts.sh" "$bc" "$out1" "$out2"
+sh "$testdir/scripts.sh" "$bc" "$bcdir/log_bc.txt" "$out"
 
 # TODO: Read tests
 # TODO: Lex errors
