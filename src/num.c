@@ -1003,62 +1003,62 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
+BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
   (void) scale;
   BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
-  return bc_num_binary(a, b, result, false, op, BC_NUM_AREQ(a, b));
+  return bc_num_binary(a, b, res, false, op, BC_NUM_AREQ(a, b));
 }
 
-BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
+BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
   (void) scale;
   BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
-  return bc_num_binary(a, b, result, true, op, BC_NUM_AREQ(a, b));
+  return bc_num_binary(a, b, res, true, op, BC_NUM_AREQ(a, b));
 }
 
-BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
+BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
   size_t req = BC_NUM_MREQ(a, b, scale);
-  return bc_num_binary(a, b, result, scale, bc_num_alg_m, req);
+  return bc_num_binary(a, b, res, scale, bc_num_alg_m, req);
 }
 
-BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
+BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
   size_t req = BC_NUM_MREQ(a, b, scale);
-  return bc_num_binary(a, b, result, scale, bc_num_alg_d, req);
+  return bc_num_binary(a, b, res, scale, bc_num_alg_d, req);
 }
 
-BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
+BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
   size_t req = BC_NUM_MREQ(a, b, scale);
-  return bc_num_binary(a, b, result, scale, bc_num_alg_mod, req);
+  return bc_num_binary(a, b, res, scale, bc_num_alg_mod, req);
 }
 
-BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
-  return bc_num_binary(a, b, result, scale, bc_num_alg_p, a->len * b->len + 1);
+BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
+  return bc_num_binary(a, b, res, scale, bc_num_alg_p, a->len * b->len + 1);
 }
 
-BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
+BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale) {
 
   BcStatus status;
   BcNum a2, *ptr_a, num1, num2, half, f, fprime, *x0, *x1, *temp;
   size_t pow, len, digits, resrdx, req;
   ssize_t cmp;
 
-  assert(a && result);
+  assert(a && res);
 
   req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a)+ 1) >> 1) + 1;
 
-  if (result == a) {
-    memcpy(&a2, result, sizeof(BcNum));
+  if (res == a) {
+    memcpy(&a2, res, sizeof(BcNum));
     ptr_a = &a2;
-    status = bc_num_init(result, req);
+    status = bc_num_init(res, req);
   }
   else {
     ptr_a = a;
-    status = bc_num_expand(result, req);
+    status = bc_num_expand(res, req);
   }
 
   if (status) goto init_err;
 
   if (!ptr_a->len) {
-    bc_num_zero(result);
+    bc_num_zero(res);
     goto init_err;
   }
   else if (ptr_a->neg) {
@@ -1066,12 +1066,12 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
     goto init_err;
   }
   else if (BC_NUM_ONE(a)) {
-    bc_num_one(result);
-    status = bc_num_extend(result, scale);
+    bc_num_one(res);
+    status = bc_num_extend(res, scale);
     goto init_err;
   }
 
-  memset(result->num, 0, result->cap * sizeof(BcDigit));
+  memset(res->num, 0, res->cap * sizeof(BcDigit));
   len = ptr_a->len;
 
   scale = BC_MAX(scale, ptr_a->rdx) + 1;
@@ -1137,11 +1137,10 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
     goto err;
   }
 
-  if ((status = bc_num_copy(result, x0))) goto err;
+  if ((status = bc_num_copy(res, x0))) goto err;
 
-  if (result->rdx > --scale) bc_num_truncate(result, result->rdx - scale);
-  else if (result->rdx < scale)
-    status = bc_num_extend(result, scale - result->rdx);
+  if (res->rdx > --scale) bc_num_truncate(res, res->rdx - scale);
+  else if (res->rdx < scale) status = bc_num_extend(res, scale - res->rdx);
 
 err:
   bc_num_free(&fprime);
@@ -1154,7 +1153,7 @@ two_err:
 num2_err:
   bc_num_free(&num1);
 init_err:
-  if (result == a) bc_num_free(&a2);
+  if (res == a) bc_num_free(&a2);
   return status;
 }
 
