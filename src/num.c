@@ -1037,7 +1037,7 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *result, size_t scale) {
 BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 
   BcStatus status;
-  BcNum a2, *ptr_a, num1, num2, two, f, fprime, *x0, *x1, *temp;
+  BcNum a2, *ptr_a, num1, num2, half, f, fprime, *x0, *x1, *temp;
   size_t pow, len, digits, resrdx, req;
   ssize_t cmp;
 
@@ -1078,10 +1078,11 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 
   if ((status = bc_num_init(&num1, len))) goto init_err;
   if ((status = bc_num_init(&num2, num1.len))) goto num2_err;
-  if ((status = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
+  if ((status = bc_num_init(&half, BC_NUM_DEF_SIZE))) goto two_err;
 
-  bc_num_one(&two);
-  two.num[0] = 2;
+  bc_num_one(&half);
+  half.num[0] = 5;
+  half.rdx = 1;
 
   len += scale;
 
@@ -1107,6 +1108,9 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
     }
 
     if ((status = bc_num_extend(x0, pow))) goto err;
+
+    // Make sure to move the radix back.
+    x0->rdx -= pow;
   }
 
   cmp = 1;
@@ -1116,11 +1120,9 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 
   while (!bcg.signe && cmp && digits <= len) {
 
-    if ((status = bc_num_mul(x0, x0, &f, resrdx))) goto err;
-    if ((status = bc_num_sub(&f, a, &f, resrdx))) goto err;
-    if ((status = bc_num_mul(x0, &two, &fprime, resrdx))) goto err;
-    if ((status = bc_num_div(&f, &fprime, &f, resrdx))) goto err;
-    if ((status = bc_num_sub(x0, &f, x1, resrdx))) goto err;
+    if ((status = bc_num_div(a, x0, &f, resrdx))) goto err;
+    if ((status = bc_num_add(x0, &f, &fprime, resrdx))) goto err;
+    if ((status = bc_num_mul(&fprime, &half, x1, resrdx))) goto err;
 
     cmp = bc_num_cmp(x1, x0);
     digits = x1->len - (unsigned long long) llabs(cmp);
@@ -1146,7 +1148,7 @@ err:
 fprime_err:
   bc_num_free(&f);
 f_err:
-  bc_num_free(&two);
+  bc_num_free(&half);
 two_err:
   bc_num_free(&num2);
 num2_err:
