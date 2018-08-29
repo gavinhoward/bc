@@ -1072,7 +1072,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *result, size_t scale) {
 
   scale = BC_MAX(scale, ptr_a->rdx) + 1;
 
-  if ((status = bc_num_init(&num1, len))) return status;
+  if ((status = bc_num_init(&num1, len))) goto init_err;
   if ((status = bc_num_init(&num2, num1.len))) goto num2_err;
   if ((status = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
 
