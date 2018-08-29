@@ -47,7 +47,7 @@ BcStatus bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
 ssize_t bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len) {
   size_t i;
   BcDigit c;
-  for (c = 0, i = len - 1; !bcg.signe && !(c = n1[i] - n2[i]) && i < len; --i);
+  for (c = 0, i = len - 1; !bcg.signe && i < len && !(c = n1[i] - n2[i]); --i);
   return (c < 0 ? -1 : 1) * (ssize_t) (i + 1);
 }
 
