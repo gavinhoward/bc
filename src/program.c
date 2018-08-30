@@ -616,7 +616,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero))
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
-  if (inst == BC_INST_ASSIGN)  status = bc_num_copy(l, r);
+  if (inst == BC_INST_ASSIGN) status = bc_num_copy(l, r);
   else {
     op = bc_program_math_ops[inst - BC_INST_ASSIGN_POWER];
     status = op(l, r, l, p->scale);
