@@ -848,8 +848,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
   assert(p->prog->funcs.len == p->prog->func_map.vec.len);
 
-  status = bc_program_addFunc(p->prog, name, &p->func);
-  if (status) goto err;
+  if ((status = bc_program_addFunc(p->prog, name, &p->func))) goto err;
 
   assert(p->func);
 

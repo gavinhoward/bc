@@ -1023,7 +1023,6 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
   if (status == BC_STATUS_VEC_ITEM_EXISTS) {
 
     BcFunc *func = bc_vec_item(&p->funcs, entry_ptr->idx);
-
     status = BC_STATUS_SUCCESS;
 
     // We need to reset these, so the function can be repopulated.

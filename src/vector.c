@@ -162,7 +162,7 @@ void bc_vec_free(void *vec) {
   memset(s, 0, sizeof(BcVec));
 }
 
-size_t bc_veco_find(const BcVecO* vec, void *data) {
+size_t bc_veco_find(const BcVecO *vec, void *data) {
 
   size_t low = 0, high = vec->vec.len;
 
@@ -195,14 +195,10 @@ BcStatus bc_veco_insert(BcVecO *vec, void *data, size_t *idx) {
 
   *idx = bc_veco_find(vec, data);
 
-  if (*idx > vec->vec.len) return BC_STATUS_VEC_OUT_OF_BOUNDS;
-  if (*idx != vec->vec.len && !vec->cmp(data, bc_vec_item(&vec->vec, *idx)))
-    return BC_STATUS_VEC_ITEM_EXISTS;
-
-  if (*idx >= vec->vec.len) {
-    *idx = vec->vec.len;
-    status = bc_vec_push(&vec->vec, data);
-  }
+  if (*idx > vec->vec.len) status = BC_STATUS_VEC_OUT_OF_BOUNDS;
+  else if (*idx == vec->vec.len) status = bc_vec_push(&vec->vec, data);
+  else if (!vec->cmp(data, bc_vec_item(&vec->vec, *idx)))
+    status = BC_STATUS_VEC_ITEM_EXISTS;
   else status = bc_vec_pushAt(&vec->vec, data, *idx);
 
   return status;
