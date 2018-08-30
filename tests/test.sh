@@ -5,7 +5,7 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 1 ]; then
-	echo "usage: $0 test [bc test_output]"
+	echo "usage: $0 test [bc [test_output]]"
 	echo "valid tests are:"
 	echo ""
 	cat "$testdir/all.txt"
@@ -28,26 +28,25 @@ else
 fi
 
 if [ "$#" -gt 0 ]; then
-	out1="$1"
+	out="$1"
 	shift
 else
-	out1="$testdir/../log_test.txt"
+	out="$testdir/../log_test.txt"
 fi
 
-if [ "$t" = "parse" -o "$t" = "print" -o "$t" = "arctangent" ]; then
-
-	f="$testdir/$t.txt"
-
-	if [ ! -f "$f" ]; then
-		echo "Generating $t..."
-		"$testdir/scripts/$t.bc" > "$f"
-	fi
-
-	echo "Running $t..."
-
+if [ ! -f "$name" ]; then
+	echo "Generating $t..."
+	"$testdir/scripts/$t.bc" > "$name"
 fi
 
-echo "halt" | "$bc" -lq "$name" > "$out1"
+if [ ! -f "$results" ]; then
+	echo "Generating $t results..."
+	echo "halt" | bc -lq "$name" > "$results"
+fi
 
-diff "$results" "$out1"
+echo "Running $t..."
+
+echo "halt" | "$bc" -lq "$name" > "$out"
+
+diff "$results" "$out"
 
