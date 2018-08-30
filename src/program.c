@@ -1357,15 +1357,21 @@ void bc_program_free(BcProgram *p) {
 BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
 
   uint8_t bytes, byte, i;
+  size_t val = 0;
 
   bytes = code[(*start)++];
 
-  if (printf(bc_program_byte_fmt, bytes) < 0) return BC_STATUS_IO_ERR;
-
   for (byte = 1, i = 0; byte && i < bytes; ++i) {
+
     byte = code[(*start)++];
-    if (printf(bc_program_byte_fmt, byte) < 0) return BC_STATUS_IO_ERR;
+
+    if (byte) {
+      val <<= CHAR_BIT * sizeof(uint8_t);
+      val |= byte;
+    }
   }
+
+  printf(" (%zu) ", val);
 
   return BC_STATUS_SUCCESS;
 }
@@ -1375,13 +1381,15 @@ BcStatus bc_program_printName(uint8_t *code, size_t *start) {
   BcStatus status = BC_STATUS_SUCCESS;
   char byte = (char) code[(*start)++];
 
+  if (printf(" (\"") < 0) status = BC_STATUS_IO_ERR;
+
   for (; byte && byte != ':'; byte = (char) code[(*start)++]) {
     if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
   }
 
   assert(byte);
 
-  if (putchar(byte) == EOF) status = BC_STATUS_IO_ERR;
+  if (printf("\") ") < 0) status = BC_STATUS_IO_ERR;
 
   return status;
 }
@@ -1406,7 +1414,7 @@ BcStatus bc_program_print(BcProgram *p) {
     func = bc_vec_item(&p->funcs, ip.func);
     code = func->code.array;
 
-    if (printf("func[%zu]: ", ip.func) < 0) return BC_STATUS_IO_ERR;
+    if (printf("func[%zu]:\n", ip.func) < 0) return BC_STATUS_IO_ERR;
 
     while (ip.idx < func->code.len) {
 
@@ -1426,7 +1434,7 @@ BcStatus bc_program_print(BcProgram *p) {
       }
     }
 
-    if (putchar('\n') == EOF) status = BC_STATUS_IO_ERR;
+    if (printf("\n\n") < 0) status = BC_STATUS_IO_ERR;
 
     sig = bcg.sig != bcg.sigc;
     if (status || sig) status = bc_program_reset(p, status);
