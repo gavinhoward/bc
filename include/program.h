@@ -33,8 +33,6 @@
 
 typedef struct BcProgram {
 
-  BcVec ip_stack;
-
   size_t line_len;
 
   size_t scale;
