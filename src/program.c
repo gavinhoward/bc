@@ -1356,18 +1356,13 @@ void bc_program_free(BcProgram *p) {
 BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
 
   uint8_t bytes, byte, i;
-  size_t val = 0;
+  unsigned long val = 0;
 
   bytes = code[(*start)++];
 
   for (byte = 1, i = 0; byte && i < bytes; ++i) {
-
     byte = code[(*start)++];
-
-    if (byte) {
-      val <<= CHAR_BIT * sizeof(uint8_t);
-      val |= byte;
-    }
+    if (byte) val |= ((unsigned long) byte) << (CHAR_BIT * sizeof(uint8_t) * i);
   }
 
   printf(" (%zu) ", val);
