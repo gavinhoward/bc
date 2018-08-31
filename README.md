@@ -45,7 +45,7 @@ This `bc` uses [semantic versioning](http://semver.org/).
 Files:
 
 	install.sh      Install script from musl libc.
-	LICENSE.md      A Markdown the BSD 0-clause License.
+	LICENSE.md      A Markdown form of the BSD 0-clause License.
 	Makefile        The Makefile.
 	NOTICE.md       List of contributors and copyright owners.
 	RELEASE.md      A checklist for making a release.
