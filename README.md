@@ -31,17 +31,6 @@ been proven in the wild.
 
 This `bc` is written in pure ISO C99.
 
-## Git Workflow
-
-This `bc` uses the git workflow described in
-[this post](http://endoflineblog.com/oneflow-a-git-branching-model-and-workflow).
-Developers who want to contribute are encouraged to read that post carefully.
-
-For feature branches, it uses `rebase + merge --no-ff` (option 3). It also uses
-a `develop`/`master` split. (Main development is on `develop`, and `master` just
-points to the latest tagged release to make it easy for users to get the latest
-release.)
-
 ## Commit Messages
 
 This `bc` uses the commit message guidelines laid out in
@@ -50,11 +39,6 @@ This `bc` uses the commit message guidelines laid out in
 ## Semantic Versioning
 
 This `bc` uses [semantic versioning](http://semver.org/).
-
-## Contents Listing
-
-Every folder contains a README file which lists the purposes for the files and
-folders in that directory.
 
 ## Contents
 
