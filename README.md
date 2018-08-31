@@ -1,4 +1,4 @@
-# bc
+# `bc`
 
 This is an implementation of POSIX `bc` that implements
 [GNU `bc`](https://www.gnu.org/software/bc/) extensions, as well as the period
