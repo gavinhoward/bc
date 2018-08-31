@@ -71,6 +71,9 @@ $(BC_EXEC): $(BC_OBJ) $(BC_LIB_O)
 test:
 	tests/all.sh
 
+timeconst:
+	tests/timeconst.sh
+
 clean:
 	$(RM) $(BC_OBJ)
 	$(RM) $(BC_EXEC)
