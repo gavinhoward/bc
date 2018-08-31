@@ -11,3 +11,4 @@ parse
 print
 pi
 arctangent
+sine

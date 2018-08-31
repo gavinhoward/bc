@@ -85,7 +85,6 @@ clean:
 	$(RM) $(BC_LIB_O)
 	$(RM) tests/parse.txt tests/parse_results.txt
 	$(RM) tests/print.txt tests/print_results.txt
-	$(RM) tests/arctangent.txt tests/arctangent_results.txt
 	$(RM) log_test.txt log_bc.txt
 
 install: $(BC_EXEC)
