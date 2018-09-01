@@ -33,6 +33,12 @@
 #include <vector.h>
 #include <bc.h>
 
+void bc_num_fixLen(BcNum *n) {
+  while (n->len > 0 && !n->num[n->len - 1]) --n->len;
+  if (n->len == 0) n->rdx = n->neg = 0;
+  else if (n->len < n->rdx) n->len = n->rdx;
+}
+
 BcStatus bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
   size_t i, j;
   for (i = 0; !bcg.signe && i < len; ++i) {
@@ -332,10 +338,7 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   c->neg = !a->neg != !b->neg;
 
   if (scale < c->rdx) bc_num_truncate(c, c->rdx - scale);
-  while (c->len > 0 && !c->num[c->len - 1]) --c->len;
-
-  if (c->len == 0) c->rdx = c->neg = 0;
-  else if (c->len < c->rdx) c->len = c->rdx;
+  bc_num_fixLen(c);
 
   return BC_STATUS_SUCCESS;
 }
@@ -346,7 +349,6 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   BcDigit *ptr, *bptr, q;
   size_t len, end, i;
   BcNum copy;
-  bool zero;
 
   if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
   else if (!a->len) {
@@ -360,6 +362,8 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
     if (c->rdx < scale) status = bc_num_extend(c, scale - c->rdx);
     else bc_num_truncate(c, c->rdx - scale);
+
+    bc_num_fixLen(c);
 
     return status;
   }
@@ -418,11 +422,8 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if (status) goto err;
 
   c->neg = !a->neg != !b->neg;
-  while (c->len > c->rdx && !c->num[c->len - 1]) --c->len;
   if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
-
-  for (i = 0, zero = true; zero && i < c->len; ++i) zero = !c->num[i];
-  if (zero) bc_num_zero(c);
+  bc_num_fixLen(c);
 
 err:
   bc_num_free(&copy);
