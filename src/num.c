@@ -163,7 +163,7 @@ BcStatus bc_num_extend(BcNum *n, size_t places) {
   return BC_STATUS_SUCCESS;
 }
 
-void bc_num_fixLen(BcNum *n) {
+void bc_num_clean(BcNum *n) {
   while (n->len > 0 && !n->num[n->len - 1]) --n->len;
   if (n->len == 0) n->rdx = n->neg = 0;
   else if (n->len < n->rdx) n->len = n->rdx;
@@ -176,7 +176,7 @@ BcStatus bc_num_retireMul(BcNum *n, size_t scale) {
   if (n->rdx < scale) status = bc_num_extend(n, scale - n->rdx);
   else bc_num_truncate(n, n->rdx - scale);
 
-  bc_num_fixLen(n);
+  bc_num_clean(n);
 
   return status;
 }
@@ -317,7 +317,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   status = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
 
-  bc_num_fixLen(c);
+  bc_num_clean(c);
 
   return status;
 }
