@@ -295,12 +295,13 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
     return BC_STATUS_SUCCESS;
   }
   else if (cmp > 0) {
-    neg = sub && a->neg;
+    neg = a->neg;
     minuend = a;
     subtrahend = b;
   }
   else {
-    neg = sub && !b->neg;
+    neg = b->neg;
+    if (sub) neg = !neg;
     minuend = b;
     subtrahend = a;
   }
