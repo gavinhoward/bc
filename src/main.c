@@ -45,10 +45,10 @@ static const struct option bc_opts[] = {
 
 };
 
-static const char *bc_short_opts = "hilqsvw";
+static const char* const bc_short_opts = "hilqsvw";
 
-static const char *bc_help =
-  "usage: bc [-hilqsvw] [long-options] [file...]\n"
+static const char* const bc_help =
+  "usage: %s [options] [file...]\n"
   "\n"
   "bc is a command-line calculator with a Turing-complete language.\n"
   "\n"
@@ -67,7 +67,7 @@ static const char *bc_help =
   "  -w  --warn         warn if any non-POSIX extensions are used\n"
   "  -v  --version      print version information and copyright and exit\n\n";
 
-static const char *bc_env_args_name = "BC_ENV_ARGS";
+static const char* const bc_env_args_name = "BC_ENV_ARGS";
 
 BcGlobals bcg;
 
@@ -95,7 +95,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
       case 'h':
       {
-        if (printf("%s", bc_help) < 0) return BC_STATUS_IO_ERR;
+        if (printf(bc_help, argv[0]) < 0) return BC_STATUS_IO_ERR;
         do_exit = true;
         break;
       }

@@ -73,7 +73,7 @@ BcStatus bc_vec_expand(BcVec *vec, size_t request) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_push(BcVec *vec, void *data) {
+BcStatus bc_vec_push(BcVec *vec, const void *data) {
 
   BcStatus status;
   size_t size;
@@ -99,7 +99,7 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_pushAt(BcVec *vec, void *data, size_t idx) {
+BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx) {
 
   BcStatus status;
   uint8_t *ptr;
