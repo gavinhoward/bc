@@ -380,7 +380,7 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   BcStatus status;
-  BcDigit *ptr, *bptr, q;
+  BcDigit *n, *bptr, q;
   size_t len, end, i;
   BcNum copy;
 
@@ -414,13 +414,18 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     goto err;
 
   if (b->rdx == b->len) {
+
     bool zero;
+
     for (zero = true, i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
+
     if (i == len) {
       status = BC_STATUS_MATH_DIVIDE_BY_ZERO;
       goto err;
     }
+
     len -= i - 1;
+
   }
 
   if (copy.cap == copy.len && (status = bc_num_expand(&copy, copy.len + 1)))
@@ -439,11 +444,10 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   for (i = end - 1; !bcg.signe && i < end; --i) {
 
-    ptr = copy.num + i;
+    n = copy.num + i;
 
-    q = 0;
-    for (; (!status && ptr[len]) || bc_num_compare(ptr, bptr, len) >= 0; ++q)
-      status = bc_num_subArrays(ptr, bptr, len);
+    for (q = 0; (!status && n[len]) || bc_num_compare(n, bptr, len) >= 0; ++q)
+      status = bc_num_subArrays(n, bptr, len);
 
     c->num[i] = q;
   }
