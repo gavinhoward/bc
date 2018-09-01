@@ -1274,8 +1274,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
 
       case BC_LEX_OP_MINUS:
       {
-        status = bc_parse_minus(p, code, &p->ops, &prev,
-                                rparen, &nexprs);
+        status = bc_parse_minus(p, code, &p->ops, &prev, rparen, &nexprs);
         rparen = get_token = false;
         break;
       }
@@ -1310,13 +1309,10 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       case BC_LEX_OP_BOOL_OR:
       case BC_LEX_OP_BOOL_AND:
       {
-        if (type >= BC_LEX_OP_REL_EQUAL && type <= BC_LEX_OP_REL_GREATER)
-          nrelops += 1;
-
+        nrelops += type >= BC_LEX_OP_REL_EQUAL && type <= BC_LEX_OP_REL_GREATER;
         prev = BC_PARSE_TOKEN_TO_INST(type);
         status = bc_parse_operator(p, code, &p->ops, type, &nexprs, true);
         rparen = get_token = false;
-
         break;
       }
 
