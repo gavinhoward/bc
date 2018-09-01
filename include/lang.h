@@ -174,7 +174,7 @@ BcStatus bc_array_expand(BcVec *a, size_t len);
 
 void bc_string_free(void *string);
 
-int bc_entry_cmp(void *entry1, void*entry2);
+int bc_entry_cmp(const void *e1, const void *e2);
 void bc_entry_free(void *entry);
 
 void bc_result_free(void *result);

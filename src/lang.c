@@ -122,8 +122,8 @@ void bc_string_free(void *string) {
   if (s) free(*s);
 }
 
-int bc_entry_cmp(void *entry1, void *entry2) {
-  return strcmp(((BcEntry*) entry1)->name, ((BcEntry*) entry2)->name);
+int bc_entry_cmp(const void *e1, const void *e2) {
+  return strcmp(((const BcEntry*) e1)->name, ((const BcEntry*) e2)->name);
 }
 
 void bc_entry_free(void *entry) {

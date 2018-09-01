@@ -162,7 +162,7 @@ void bc_vec_free(void *vec) {
   memset(s, 0, sizeof(BcVec));
 }
 
-size_t bc_veco_find(const BcVecO *vec, void *data) {
+size_t bc_veco_find(const BcVecO *vec, const void *data) {
 
   size_t low = 0, high = vec->vec.len;
 
@@ -187,7 +187,7 @@ BcStatus bc_veco_init(BcVecO *vec, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
   return bc_vec_init(&vec->vec, esize, dtor);
 }
 
-BcStatus bc_veco_insert(BcVecO *vec, void *data, size_t *idx) {
+BcStatus bc_veco_insert(BcVecO *vec, const void *data, size_t *idx) {
 
   BcStatus status;
 
@@ -204,7 +204,7 @@ BcStatus bc_veco_insert(BcVecO *vec, void *data, size_t *idx) {
   return status;
 }
 
-size_t bc_veco_index(const BcVecO* v, void *data) {
+size_t bc_veco_index(const BcVecO* v, const void *data) {
   assert(v && data);
   size_t i = bc_veco_find(v, data);
   if (i >= v->vec.len || v->cmp(data, bc_vec_item(&v->vec, i))) return BC_INVALID_IDX;
