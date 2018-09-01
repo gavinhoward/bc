@@ -83,9 +83,11 @@ clean:
 	$(RM) $(GEN)
 	$(RM) $(BC_LIB_C)
 	$(RM) $(BC_LIB_O)
+	$(RM) log_test.txt log_bc.txt
+
+clean_tests: clean
 	$(RM) tests/parse.txt tests/parse_results.txt
 	$(RM) tests/print.txt tests/print_results.txt
-	$(RM) log_test.txt log_bc.txt
 
 install: $(BC_EXEC)
 	$(INSTALL) -Dm 755 $(BC_EXEC) $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
@@ -93,4 +95,4 @@ install: $(BC_EXEC)
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
 
-.PHONY: all help clean install uninstall test
+.PHONY: all help clean clean_tests install uninstall test
