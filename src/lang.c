@@ -91,10 +91,7 @@ BcStatus bc_array_copy(BcVec *d, BcVec *s) {
 
   for (i = 0; !status && i < s->len; ++i) {
 
-    BcNum *dnum, *snum;
-
-    dnum = bc_vec_item(d, i);
-    snum = bc_vec_item(s, i);
+    BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
 
     if ((status = bc_num_init(dnum, snum->len))) return status;
     if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
