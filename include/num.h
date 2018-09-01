@@ -65,6 +65,8 @@ void bc_num_free(void *num);
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
 BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
 
+ssize_t bc_num_cmp(BcNum *a, BcNum *b);
+
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *res, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *res, size_t scale);
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *res, size_t scale);
@@ -74,15 +76,11 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *res, size_t scale);
 
 // ** Exclude start. **
 BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale);
-// ** Exclude end. **
-
-ssize_t bc_num_cmp(BcNum *a, BcNum *b);
 
 void bc_num_zero(BcNum *n);
 void bc_num_one(BcNum *n);
 void bc_num_ten(BcNum *n);
 
-// ** Exclude start. **
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t);
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
                       size_t *nchars, size_t line_len);

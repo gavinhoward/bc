@@ -33,6 +33,29 @@
 #include <vector.h>
 #include <bc.h>
 
+void bc_num_zero(BcNum *n) {
+  if (!n) return;
+  memset(n->num, 0, n->cap * sizeof(char));
+  n->neg = false;
+  n->len = 0;
+  n->rdx = 0;
+}
+
+void bc_num_one(BcNum *n) {
+  if (!n) return;
+  bc_num_zero(n);
+  n->len = 1;
+  n->num[0] = 1;
+}
+
+void bc_num_ten(BcNum *n) {
+  if (!n) return;
+  bc_num_zero(n);
+  n->len = 2;
+  n->num[0] = 0;
+  n->num[1] = 1;
+}
+
 void bc_num_fixLen(BcNum *n) {
   while (n->len > 0 && !n->num[n->len - 1]) --n->len;
   if (n->len == 0) n->rdx = n->neg = 0;
@@ -1159,27 +1182,4 @@ num2_err:
 init_err:
   if (res == a) bc_num_free(&a2);
   return status;
-}
-
-void bc_num_zero(BcNum *n) {
-  if (!n) return;
-  memset(n->num, 0, n->cap * sizeof(char));
-  n->neg = false;
-  n->len = 0;
-  n->rdx = 0;
-}
-
-void bc_num_one(BcNum *n) {
-  if (!n) return;
-  bc_num_zero(n);
-  n->len = 1;
-  n->num[0] = 1;
-}
-
-void bc_num_ten(BcNum *n) {
-  if (!n) return;
-  bc_num_zero(n);
-  n->len = 2;
-  n->num[0] = 0;
-  n->num[1] = 1;
 }
