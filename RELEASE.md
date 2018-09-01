@@ -14,7 +14,8 @@ This is the checklist for cutting a release.
 	* debug (with AddressSanitizer and UndefinedBehaviorSanitizer)
 	* release
 	* minrelease
-4.	Run the randmath.sh script an excessive amount.
+4.	Run the randmath.sh script an excessive amount and add failing tests to
+	test suite.
 	* debug
 	* release
 	* minrelease
