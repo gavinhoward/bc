@@ -88,6 +88,7 @@ clean:
 clean_tests: clean
 	$(RM) tests/parse.txt tests/parse_results.txt
 	$(RM) tests/print.txt tests/print_results.txt
+	$(RM) tests/bessel.txt tests/bessel_results.txt
 
 install: $(BC_EXEC)
 	$(INSTALL) -Dm 755 $(BC_EXEC) $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)

@@ -33,7 +33,7 @@ l *= 2
 
 for (i = 0; i < l; ++i) {
 	for (j = 0; j < l; ++j) {
-		print "j(", i, ", ", j, ")\n"
+		print "j(", a[i], ", ", a[j], ")\n"
 	}
 }
 
