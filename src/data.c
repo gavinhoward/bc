@@ -178,7 +178,8 @@ const BcOp bc_parse_ops[] = {
   { 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true },
   { 7, false },
   { 8, true }, { 8, true },
-  { 5, false }, { 5, false }, { 5, false }, { 5, false }, { 5, false },  { 5, false }, { 5, false },
+  { 5, false }, { 5, false }, { 5, false }, { 5, false }, { 5, false },
+  { 5, false }, { 5, false },
 };
 
 const BcNumBinaryOp bc_program_math_ops[] = {

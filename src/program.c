@@ -42,7 +42,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   BcVecO *veco;
   size_t idx, ip_idx;
   BcAuto *a;
-  int var;
+  int var = flags & BC_PROGRAM_SEARCH_VAR;
 
   for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
 
@@ -61,15 +61,12 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
       if (!strcmp(a->name, result->data.id.name)) {
 
         BcResult *r;
-        uint8_t cond;
 
-        cond = flags & BC_PROGRAM_SEARCH_VAR;
-
-        if (!a->var != !cond) return BC_STATUS_EXEC_BAD_TYPE;
+        if (!a->var != !var) return BC_STATUS_EXEC_BAD_TYPE;
 
         r = bc_vec_item(&p->results, ip->len + idx);
 
-        if (cond || flags & BC_PROGRAM_SEARCH_ARRAY) *ret = &r->data.num;
+        if (var || flags & BC_PROGRAM_SEARCH_ARRAY) *ret = &r->data.num;
         else {
           status = bc_array_expand(&r->data.array, result->data.id.idx + 1);
           if (status) return status;
@@ -81,7 +78,6 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
     }
   }
 
-  var = flags & BC_PROGRAM_SEARCH_VAR;
   vec = var ? &p->vars : &p->arrays;
   veco = var ? &p->var_map : &p->array_map;
 
@@ -94,18 +90,14 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
     // We use this because it has a union of BcNum and BcVec.
     BcResult data;
-    size_t len;
+    size_t len = strlen(entry.name) + 1;
 
     if (status) return status;
 
-    len = strlen(entry.name) + 1;
-
     if (!(result->data.id.name = malloc(len))) return BC_STATUS_MALLOC_FAIL;
-
     strcpy(result->data.id.name, entry.name);
 
-    if (flags & BC_PROGRAM_SEARCH_VAR)
-      status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
+    if (var) status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
     else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
 
     if (status) return status;
@@ -132,7 +124,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum** num, bool hex) {
+BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum **num, bool hex) {
 
   BcStatus status = BC_STATUS_SUCCESS;
 
@@ -485,16 +477,11 @@ BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start, bool var) {
     }
 
     result.data.id.idx = (size_t) temp;
-
     status = bc_program_unaryOpRetire(p, &result, BC_RESULT_ARRAY);
   }
 
-  if (status) goto err;
-
-  return status;
-
 err:
-  free(result.data.id.name);
+  if (status) free(result.data.id.name);
   return status;
 }
 
@@ -816,13 +803,11 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
     status = bc_num_ulong2num(&result.data.num, ans);
   }
 
-  if (status || (status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP)))
-    goto err;
-
-  return status;
+  if (status) goto err;
+  status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP);
 
 err:
-  bc_num_free(&result.data.num);
+  if (status) bc_num_free(&result.data.num);
   return status;
 }
 
@@ -1348,8 +1333,6 @@ void bc_program_free(BcProgram *p) {
   bc_num_free(&p->last);
   bc_num_free(&p->zero);
   bc_num_free(&p->one);
-
-  memset(p, 0, sizeof(BcProgram));
 }
 
 #ifndef NDEBUG

@@ -176,9 +176,8 @@ BcStatus bc_lex_name(BcLex *lex) {
         return status;
       }
 
-      // We need to minus one because the
-      // index has already been incremented.
-      lex->idx += (unsigned long) bc_lex_keywords[i].len - 1;
+      // We need to minus one because the index has already been incremented.
+      lex->idx += len - 1;
 
       return BC_STATUS_SUCCESS;
     }
