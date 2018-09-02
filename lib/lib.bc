@@ -183,7 +183,7 @@ define j(n,x){
 	f=-x*x/4
 	scale+=length(a)-scale(a)
 	for(i=1;v!=0;++i){
-		v=v*s/i/(n+i)
+		v*=s/i/(n+i)
 		r+=v
 	}
 	scale=s
