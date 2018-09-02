@@ -117,7 +117,7 @@ define c(x){
 	b=ibase
 	ibase=A
 	s=scale
-	scale+=1
+	scale*=1.2
 	x=s(2*a(1)+x)
 	scale=s
 	ibase=b
