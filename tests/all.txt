@@ -9,6 +9,10 @@ sqrt
 basic
 parse
 print
+e_power
+log
 pi
 arctangent
 sine
+cosine
+bessel
