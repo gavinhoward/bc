@@ -22,13 +22,17 @@ t[18] = -13.23857
 t[19] = -100
 t[20] = -28395823.238957
 
-for (i = 0; i < arraylen(t[]); ++i) {
+l = 21
+
+for (i = 0; i < l; ++i) {
 	a[i * 2] = t[i]
 	a[i * 2 + 1] = -t[i]
 }
 
-for (i = 0; i < arraylen(a[]); ++i) {
-	for (j = 0; j < arraylen(a[]); ++j) {
+l *= 2
+
+for (i = 0; i < l; ++i) {
+	for (j = 0; j < l; ++j) {
 		print "j(", i, ", ", j, ")\n"
 	}
 }
