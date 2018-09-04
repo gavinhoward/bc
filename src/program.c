@@ -724,7 +724,7 @@ unsigned long bc_program_scale(BcNum *n) {
   return (unsigned long) n->rdx;
 }
 
-unsigned long bc_program_length(BcNum *n) {
+unsigned long bc_program_len(BcNum *n) {
 
   unsigned long len = n->len;
 
@@ -748,13 +748,18 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 
   if (inst == BC_INST_SQRT)
     status = bc_num_sqrt(num1, &result.data.num, p->scale);
+  else if (inst == BC_INST_LENGTH && result.type == BC_RESULT_ARRAY) {
+    BcVec *vec = (BcVec*) num1;
+    status = bc_num_ulong2num(&result.data.num, (unsigned long) vec->len);
+  }
   else {
-    BcProgramBuiltIn func = bc_program_builtins[inst - BC_INST_ARRAYLEN];
-    status = bc_num_ulong2num(&result.data.num, func(num1));
+    assert(result.type != BC_RESULT_ARRAY);
+    BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
+                                                  bc_program_scale;
+    status = bc_num_ulong2num(&result.data.num, f(num1));
   }
 
-  if (status) goto err;
-  status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP);
+  if ((status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP))) goto err;
 
 err:
   if (status) bc_num_free(&result.data.num);
