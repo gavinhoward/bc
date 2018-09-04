@@ -118,10 +118,10 @@ typedef struct BcParse {
 
 } BcParse;
 
-#define BC_PARSE_EXPR_POSIX_REL (1<<0)
-#define BC_PARSE_EXPR_PRINT (1<<1)
-#define BC_PARSE_EXPR_NOCALL (1<<2)
-#define BC_PARSE_EXPR_NOREAD (1<<3)
+#define BC_PARSE_POSIX_REL (1<<0)
+#define BC_PARSE_PRINT (1<<1)
+#define BC_PARSE_NOCALL (1<<2)
+#define BC_PARSE_NOREAD (1<<3)
 
 // ** Exclude start. **
 BcStatus bc_parse_init(BcParse *p, BcProgram *program);

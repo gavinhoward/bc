@@ -47,9 +47,8 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
 
     BcFunc *func;
-    BcInstPtr *ip;
+    BcInstPtr *ip = bc_vec_item_rev(&p->stack, ip_idx);
 
-    ip = bc_vec_item_rev(&p->stack, ip_idx);
     if (ip->func == BC_PROGRAM_READ || ip->func == BC_PROGRAM_MAIN) continue;
 
     func = bc_vec_item(&p->funcs, ip->func);
@@ -252,7 +251,6 @@ BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
   if (status) return status;
-
   if ((status = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return status;
 
   op = bc_program_ops[inst - BC_INST_POWER];
@@ -566,7 +564,6 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult *left, *right, res;
   BcNum *l, *r;
-  BcNumBinaryOp op;
   unsigned long val, max;
   size_t *ptr;
 

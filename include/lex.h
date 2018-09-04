@@ -141,7 +141,6 @@ BcStatus bc_lex_text(BcLex *lex, const char *text);
 BcStatus bc_lex_next(BcLex *lex);
 // ** Exclude end. **
 
-extern const char *bc_lex_token_type_strs[];
 extern const BcLexKeyword bc_lex_keywords[20];
 
 #endif // BC_LEX_H

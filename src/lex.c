@@ -54,7 +54,6 @@ BcStatus bc_lex_string(BcLex *lex) {
   if (!(lex->token.string = malloc(len + 1))) return BC_STATUS_MALLOC_FAIL;
 
   start = lex->buffer + lex->idx;
-
   memcpy(lex->token.string, start, len * sizeof(char));
 
   lex->token.string[len] = '\0';

@@ -182,7 +182,7 @@ const BcOp bc_parse_ops[] = {
   { 5, false }, { 5, false },
 };
 
-const BcNumBinaryOp bc_program_math_ops[] = {
+const BcNumBinaryOp bc_program_ops[] = {
   bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
 };
 
