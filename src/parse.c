@@ -209,10 +209,9 @@ BcStatus bc_parse_name(BcParse *p, BcVec *code, BcInst *type, uint8_t flags)
         status = BC_STATUS_PARSE_BAD_TOKEN;
         goto err;
       }
-
-      if ((status = bc_lex_next(&p->lex))) goto err;
     }
 
+    if ((status = bc_lex_next(&p->lex))) goto err;
     if ((status = bc_vec_pushByte(code, (uint8_t) *type))) goto err;
     status = bc_parse_pushName(code, name);
   }
