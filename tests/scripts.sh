@@ -22,15 +22,26 @@ shift
 
 for s in $testdir/scripts/*.bc; do
 
-	echo "Running script: $s"
+	f=$(basename -- "$s")
+	name="${f%.*}"
+
+	echo "Running script: $f"
 
 	rm -rf "$out1"
 	rm -rf "$out2"
 
-	echo "halt" | bc -lq "$s" > "$out1"
+	results="$testdir/$name.txt"
+
+	if [ -f "$results" ]; then
+		res="$results"
+	else
+		echo "halt" | bc -lq "$s" > "$out1"
+		res="$out1"
+	fi
+
 	echo "halt" | "$bc" -lq "$s" > "$out2"
 
-	diff "$out1" "$out2"
+	diff "$res" "$out2"
 
 done
 
