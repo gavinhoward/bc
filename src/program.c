@@ -263,8 +263,8 @@ BcStatus bc_program_read(BcProgram *p) {
   BcStatus status;
   BcParse parse;
   char *buffer;
-  size_t size = BC_PROGRAM_BUF_SIZE;
   BcInstPtr ip;
+  size_t size = BC_PROGRAM_BUF_SIZE;
   BcFunc *func = bc_vec_item(&p->funcs, BC_PROGRAM_READ);
 
   func->code.len = 0;
