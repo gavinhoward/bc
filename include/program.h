@@ -77,8 +77,7 @@ typedef struct BcProgram {
 #define BC_PROGRAM_SEARCH_VAR (1<<0)
 #define BC_PROGRAM_SEARCH_ARRAY (1<<1)
 
-typedef unsigned long (*BcProgramBuiltInFunc)(BcNum*);
-typedef void (*BcNumInitFunc)(BcNum*);
+typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **
 BcStatus bc_program_init(BcProgram *p, size_t line_len);
@@ -93,8 +92,8 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus status);
 
 BcStatus bc_program_exec(BcProgram *p);
 
-extern const char bc_program_byte_fmt[];
-extern const BcNumBinaryOp bc_program_math_ops[];
+extern const BcNumBinaryOp bc_program_ops[];
+extern const BcProgramBuiltIn bc_program_builtins[];
 extern const char bc_program_stdin_name[];
 extern const char bc_program_ready_prompt[];
 
