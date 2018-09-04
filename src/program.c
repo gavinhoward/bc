@@ -263,24 +263,21 @@ BcStatus bc_program_read(BcProgram *p) {
   BcStatus status;
   BcParse parse;
   char *buffer;
-  size_t size;
-  BcFunc *func;
+  size_t size = BC_PROGRAM_BUF_SIZE;
   BcInstPtr ip;
+  BcFunc *func = bc_vec_item(&p->funcs, BC_PROGRAM_READ);
 
-  func = bc_vec_item(&p->funcs, BC_PROGRAM_READ);
   func->code.len = 0;
 
-  if (!(buffer = malloc(BC_PROGRAM_BUF_SIZE + 1))) return BC_STATUS_MALLOC_FAIL;
-
-  size = BC_PROGRAM_BUF_SIZE;
-
+  if (!(buffer = malloc(size + 1))) return BC_STATUS_MALLOC_FAIL;
   if ((status = bc_io_getline(&buffer, &size)))goto io_err;
 
   if ((status = bc_parse_init(&parse, p))) goto io_err;
   bc_lex_init(&parse.lex, "<stdin>");
   if ((status = bc_lex_text(&parse.lex, buffer))) goto exec_err;
 
-  if ((status = bc_parse_expr(&parse, &func->code, BC_PARSE_EXPR_NOREAD))) return status;
+  status = bc_parse_expr(&parse, &func->code, BC_PARSE_NOREAD);
+  if (status) return status;
 
   if (parse.lex.token.type != BC_LEX_NEWLINE &&
       parse.lex.token.type != BC_LEX_EOF)
