@@ -629,6 +629,9 @@ BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
     arg = bc_vec_item_rev(&p->results, nparams - 1);
     param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
 
+    if (!auto_ptr->var != (arg->type == BC_RESULT_ARRAY))
+      return BC_STATUS_EXEC_BAD_TYPE;
+
     if (auto_ptr->var) {
 
       BcNum *n;
