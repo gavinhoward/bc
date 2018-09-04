@@ -114,7 +114,7 @@ regexes = [
 
 regexes_all = [
 	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$',
-	'^#ifndef NDEBUG.*?#endif \/\/ NDEBUG$',
+	'^#ifndef NDEBUG.*?^#endif \/\/ NDEBUG$',
 	'\n  [ ]*assert\(.*?\);$'
 ]
 

@@ -120,7 +120,7 @@ const char *bc_err_descs[] = {
 #ifndef NDEBUG
   "quit request not honored",
   "limits request not honored",
-#endif
+#endif // NDEBUG
 };
 
 const char bc_sig_msg[34] = "\ninterrupt (type \"quit\" to exit)\n";
