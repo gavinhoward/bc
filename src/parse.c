@@ -285,7 +285,8 @@ BcStatus bc_parse_scale(BcParse *p, BcVec *code, BcInst *type, uint8_t flags) {
   *type = BC_INST_SCALE_FUNC;
 
   if ((status = bc_lex_next(&p->lex))) return status;
-  if ((status = bc_parse_expr(p, code, flags))) return status;
+  if ((status = bc_parse_expr(p, code, flags & ~(BC_PARSE_PRINT))))
+    return status;
   if (p->lex.token.type != BC_LEX_RIGHT_PAREN) return BC_STATUS_PARSE_BAD_TOKEN;
   if ((status = bc_vec_pushByte(code, BC_INST_SCALE_FUNC))) return status;
 
