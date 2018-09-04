@@ -196,18 +196,24 @@ BcStatus bc_parse_name(BcParse *p, BcVec *code, BcInst *type, uint8_t flags)
 
   if (p->lex.token.type == BC_LEX_LEFT_BRACKET) {
 
-    *type = BC_INST_PUSH_ARRAY_ELEM;
-
     if ((status = bc_lex_next(&p->lex))) goto err;
-    if ((status = bc_parse_expr(p, code, flags))) goto err;
 
-    if (p->lex.token.type != BC_LEX_RIGHT_BRACKET) {
-      status = BC_STATUS_PARSE_BAD_TOKEN;
-      goto err;
+    if (p->lex.token.type == BC_LEX_RIGHT_BRACKET) *type = BC_INST_PUSH_ARRAY;
+    else {
+
+      *type = BC_INST_PUSH_ARRAY_ELEM;
+
+      if ((status = bc_parse_expr(p, code, flags & ~BC_PARSE_PRINT))) goto err;
+
+      if (p->lex.token.type != BC_LEX_RIGHT_BRACKET) {
+        status = BC_STATUS_PARSE_BAD_TOKEN;
+        goto err;
+      }
+
+      if ((status = bc_lex_next(&p->lex))) goto err;
     }
 
-    if ((status = bc_vec_pushByte(code, BC_INST_PUSH_ARRAY_ELEM))) goto err;
-
+    if ((status = bc_vec_pushByte(code, (uint8_t) *type))) goto err;
     status = bc_parse_pushName(code, name);
   }
   else if (p->lex.token.type == BC_LEX_LEFT_PAREN) {
@@ -248,23 +254,20 @@ BcStatus bc_parse_read(BcParse *p, BcVec *code) {
   return bc_lex_next(&p->lex);
 }
 
-BcStatus bc_parse_builtin(BcParse *p, BcVec *code,
-                          BcLexToken type, uint8_t flags)
+BcStatus bc_parse_builtin(BcParse *p, BcVec *code, BcLexToken type,
+                          uint8_t flags, BcInst *prev)
 {
   BcStatus status;
-  uint8_t inst;
 
   if ((status = bc_lex_next(&p->lex))) return status;
   if (p->lex.token.type != BC_LEX_LEFT_PAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 
   if ((status = bc_lex_next(&p->lex))) return status;
-
-  status = bc_parse_expr(p, code, flags & ~(BC_PARSE_EXPR_PRINT));
-  if (status) return status;
+  if ((status = bc_parse_expr(p, code, flags & ~BC_PARSE_PRINT))) return status;
   if (p->lex.token.type != BC_LEX_RIGHT_PAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 
-  inst = type == BC_LEX_KEY_LENGTH ? BC_INST_LENGTH : BC_INST_SQRT;
-  if ((status = bc_vec_pushByte(code, inst))) return status;
+  *prev = (type == BC_LEX_KEY_LENGTH) ? BC_INST_LENGTH : BC_INST_SQRT;
+  if ((status = bc_vec_pushByte(code, (uint8_t) *prev))) return status;
 
   return bc_lex_next(&p->lex);
 }

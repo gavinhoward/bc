@@ -130,7 +130,7 @@ const char bc_lang_func_read[7] = "(read)";
 
 #ifndef NDEBUG
 const char bc_lang_inst_chars[] =
-  "edED_^*/%+-=;?~<>!|&`{}@[],NVACaI.LlrOqpQsSJjPR$H";
+  "edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$H";
 #endif // NDEBUG
 
 const BcLexKeyword bc_lex_keywords[20] = {

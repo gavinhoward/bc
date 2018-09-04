@@ -34,7 +34,7 @@
 #include <bc.h>
 
 BcStatus bc_program_search(BcProgram *p, BcResult *result,
-                           BcNum **ret, uint8_t flags)
+                           BcNum **ret, bool var)
 {
   BcStatus status;
   BcEntry entry, *entry_ptr;
@@ -42,7 +42,6 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   BcVecO *veco;
   size_t idx, ip_idx;
   BcAuto *a;
-  int var = flags & BC_PROGRAM_SEARCH_VAR;
 
   for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
 
@@ -59,18 +58,10 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
       if (!strcmp(a->name, result->data.id.name)) {
 
-        BcResult *r;
+        BcResult *r = bc_vec_item(&p->results, ip->len + idx);
 
         if (!a->var != !var) return BC_STATUS_EXEC_BAD_TYPE;
-
-        r = bc_vec_item(&p->results, ip->len + idx);
-
-        if (var || flags & BC_PROGRAM_SEARCH_ARRAY) *ret = &r->data.num;
-        else {
-          status = bc_array_expand(&r->data.array, result->data.id.idx + 1);
-          if (status) return status;
-          *ret = bc_vec_item(&r->data.array, result->data.id.idx);
-        }
+        *ret = &r->data.num;
 
         return BC_STATUS_SUCCESS;
       }
@@ -104,21 +95,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   }
 
   entry_ptr = bc_veco_item(veco, idx);
-
-  if (var) *ret = bc_vec_item(vec, entry_ptr->idx);
-  else {
-
-    BcVec *ptr = bc_vec_item(vec, entry_ptr->idx);
-
-    if (flags & BC_PROGRAM_SEARCH_ARRAY) {
-      *ret = (BcNum*) ptr;
-      return BC_STATUS_SUCCESS;
-    }
-
-    if ((status = bc_array_expand(ptr, result->data.id.idx + 1))) return status;
-
-    *ret = bc_vec_item(ptr, result->data.id.idx);
-  }
+  *ret = bc_vec_item(vec, entry_ptr->idx);
 
   return BC_STATUS_SUCCESS;
 }
@@ -156,11 +133,28 @@ BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum **num, bool hex) {
       break;
     }
 
+    case BC_RESULT_ARRAY_ELEM:
+    {
+      BcVec *vec;
+
+      if ((status = bc_program_search(p, result, num, 0))) return status;
+
+      vec = (BcVec*) *num;
+
+      if (vec->len <= result->data.id.idx) {
+        status = bc_array_expand(vec, result->data.id.idx + 1);
+        if (status) return status;
+      }
+
+      *num = bc_vec_item(vec, result->data.id.idx);
+
+      break;
+    }
+
     case BC_RESULT_VAR:
     case BC_RESULT_ARRAY:
     {
-      uint8_t flags = result->type == BC_RESULT_VAR ? BC_PROGRAM_SEARCH_VAR : 0;
-      status = bc_program_search(p, result, num, flags);
+      status = bc_program_search(p, result, num, result->type == BC_RESULT_VAR);
       break;
     }
 
@@ -423,8 +417,9 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start, bool var) {
-
+BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start,
+                         uint8_t inst)
+{
   BcStatus status;
   BcResult result;
 
@@ -432,8 +427,8 @@ BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start, bool var) {
 
   assert(result.data.id.name);
 
-  if (var) {
-    result.type = BC_RESULT_VAR;
+  if (inst == BC_INST_PUSH_VAR || inst == BC_INST_PUSH_ARRAY) {
+    result.type = inst == BC_INST_PUSH_VAR ? BC_RESULT_VAR : BC_RESULT_ARRAY;
     status = bc_vec_push(&p->results, &result);
   }
   else {
@@ -451,7 +446,7 @@ BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start, bool var) {
     }
 
     result.data.id.idx = (size_t) temp;
-    status = bc_program_unaryOpRetire(p, &result, BC_RESULT_ARRAY);
+    status = bc_program_unaryOpRetire(p, &result, BC_RESULT_ARRAY_ELEM);
   }
 
 err:
@@ -1065,8 +1060,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_PUSH_VAR:
       case BC_INST_PUSH_ARRAY_ELEM:
+      case BC_INST_PUSH_ARRAY:
       {
-        status = bc_program_push(p, code, &ip->idx, inst == BC_INST_PUSH_VAR);
+        status = bc_program_push(p, code, &ip->idx, inst);
         break;
       }
 
@@ -1345,7 +1341,9 @@ BcStatus bc_program_print(BcProgram *p) {
 
       if (putchar(bc_lang_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
 
-      if (inst == BC_INST_PUSH_VAR || inst == BC_INST_PUSH_ARRAY_ELEM) {
+      if (inst == BC_INST_PUSH_VAR || inst == BC_INST_PUSH_ARRAY_ELEM ||
+          inst == BC_INST_PUSH_ARRAY)
+      {
         if ((status = bc_program_printName(code, &ip.idx))) return status;
       }
       else if (inst == BC_INST_PUSH_NUM || inst == BC_INST_CALL ||
