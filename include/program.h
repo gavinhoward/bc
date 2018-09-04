@@ -74,9 +74,6 @@ typedef struct BcProgram {
 #define BC_PROGRAM_MAIN (0)
 #define BC_PROGRAM_READ (1)
 
-#define BC_PROGRAM_SEARCH_VAR (1<<0)
-#define BC_PROGRAM_SEARCH_ARRAY (1<<1)
-
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **

@@ -645,12 +645,7 @@ BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
 
       BcVec *a;
 
-      if (arg->type != BC_RESULT_VAR && arg->type != BC_RESULT_ARRAY)
-        return BC_STATUS_EXEC_BAD_TYPE;
-
-      status = bc_program_search(p, arg, (BcNum**) &a, BC_PROGRAM_SEARCH_ARRAY);
-      if (status) return status;
-
+      if ((status = bc_program_search(p, arg, (BcNum**) &a, 0))) return status;
       status = bc_vec_init(&param.data.array, sizeof(BcNum), bc_num_free);
       if (status) return status;
 
@@ -751,7 +746,7 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 
   if (inst == BC_INST_SQRT)
     status = bc_num_sqrt(num1, &result.data.num, p->scale);
-  else if (inst == BC_INST_LENGTH && result.type == BC_RESULT_ARRAY) {
+  else if (inst == BC_INST_LENGTH && operand->type == BC_RESULT_ARRAY) {
     BcVec *vec = (BcVec*) num1;
     status = bc_num_ulong2num(&result.data.num, (unsigned long) vec->len);
   }
