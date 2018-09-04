@@ -5,6 +5,7 @@ set -e
 script="$0"
 
 testdir=$(dirname "${script}")
+scriptdir="$testdir/scripts"
 
 if [ "$#" -lt 3 ]; then
 	echo "usage: $script <bc> <test_output1> <test_output2>"
@@ -20,7 +21,7 @@ shift
 out2="$1"
 shift
 
-for s in $testdir/scripts/*.bc; do
+for s in $scriptdir/*.bc; do
 
 	f=$(basename -- "$s")
 	name="${f%.*}"
@@ -30,9 +31,12 @@ for s in $testdir/scripts/*.bc; do
 	rm -rf "$out1"
 	rm -rf "$out2"
 
-	results="$testdir/$name.txt"
+	orig="$testdir/$name.txt"
+	results="$scriptdir/$name.txt"
 
-	if [ -f "$results" ]; then
+	if [ -f "$orig" ]; then
+		res="$orig"
+	elif [ -f "$results" ]; then
 		res="$results"
 	else
 		echo "halt" | bc -lq "$s" > "$out1"
