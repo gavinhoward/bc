@@ -176,14 +176,14 @@ define j(n,x){
 		if(n%2==1)o=1
 	}
 	a=1
-	for(i=2;i<=n;++i)f*=i
+	for(i=2;i<=n;++i)a*=i
 	scale=1.5*s
-	a=(x^n)/(2^n*a)
+	a=(x^n)/2^n/a
 	r=v=1
 	f=-x*x/4
-	scale+=length(a)-scale(a)
+	scale=scale+length(a)-scale(a)
 	for(i=1;v!=0;++i){
-		v*=s/i/(n+i)
+		v=v*f/i/(n+i)
 		r+=v
 	}
 	scale=s
