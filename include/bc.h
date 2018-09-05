@@ -74,7 +74,6 @@ BcStatus bc_main(unsigned int flags, BcVec *files);
 
 BcStatus bc_error(BcStatus st);
 BcStatus bc_error_file(BcStatus st, const char *file, size_t line);
-
 BcStatus bc_posix_error(BcStatus s, const char *file,
                         size_t line, const char *msg);
 
