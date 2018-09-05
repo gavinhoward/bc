@@ -756,7 +756,8 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
     status = bc_num_ulong2num(&result.data.num, f(num1));
   }
 
-  if ((status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP))) goto err;
+  if (status || (status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP)))
+    goto err;
 
 err:
   if (status) bc_num_free(&result.data.num);
