@@ -1291,7 +1291,7 @@ BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
     if (byte) val |= ((unsigned long) byte) << (CHAR_BIT * sizeof(uint8_t) * i);
   }
 
-  printf(" (%zu) ", val);
+  printf(" (%lu) ", val);
 
   return BC_STATUS_SUCCESS;
 }

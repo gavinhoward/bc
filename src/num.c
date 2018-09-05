@@ -322,7 +322,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
 BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
-  BcStatus status = BC_STATUS_SUCCESS;
+  BcStatus status;
   BcDigit carry;
   size_t i, j, len;
   bool aone = BC_NUM_ONE(a);
@@ -346,6 +346,8 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
       status = bc_num_copy(c, a);
       if (b->neg) c->neg = !c->neg;
     }
+
+    if (status) return status;
 
     return bc_num_retireMul(c, scale);
   }
