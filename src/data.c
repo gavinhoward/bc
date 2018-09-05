@@ -32,6 +32,7 @@ const char bc_header[] =
   "This is free software with ABSOLUTELY NO WARRANTY.\n\n";
 
 const char bc_err_fmt[] = "\n%s error: %s\n\n";
+const char bc_err_line[] = ":%d\n\n";
 
 const char *bc_errs[] = {
   "bc",
