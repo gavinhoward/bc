@@ -35,12 +35,10 @@
 BcStatus bc_lex_string(BcLex *lex) {
 
   const char *start;
-  size_t newlines, len, i;
+  size_t len, newlines = 0, i = lex->idx;
   char c;
 
-  newlines = 0;
   lex->token.type = BC_LEX_STRING;
-  i = lex->idx;
 
   for (c = lex->buffer[i]; c != '"' && c != '\0'; c = lex->buffer[++i])
     newlines += (c == '\n');
@@ -65,15 +63,11 @@ BcStatus bc_lex_string(BcLex *lex) {
 
 BcStatus bc_lex_comment(BcLex *lex) {
 
-  size_t newlines, i;
-  const char *buffer;
-  bool end;
+  size_t i, newlines = 0;
+  const char *buffer = lex->buffer;
+  bool end = false;
 
-  newlines = 0;
   lex->token.type = BC_LEX_WHITESPACE;
-  end = false;
-
-  buffer = lex->buffer;
 
   for (i = ++lex->idx; !end; i += !end) {
 
@@ -98,17 +92,12 @@ BcStatus bc_lex_comment(BcLex *lex) {
 
 BcStatus bc_lex_number(BcLex *lex, char start) {
 
-  const char *buffer, *buf;
-  size_t backslashes, len, hits, i, j;
-  char c;
-  bool point;
+  const char *buf, *buffer = lex->buffer + lex->idx;
+  size_t len, hits, backslashes = 0, i = 0, j;
+  char c = buffer[i];
+  bool point = start == '.';
 
   lex->token.type = BC_LEX_NUMBER;
-  point = start == '.';
-  buffer = lex->buffer + lex->idx;
-  backslashes = 0;
-  i = 0;
-  c = buffer[i];
 
   while (c && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
                (c == '.' && !point) || (c == '\\' && buffer[i + 1] == '\n')))
@@ -155,11 +144,9 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
 BcStatus bc_lex_name(BcLex *lex) {
 
   BcStatus status;
-  const char *buffer;
   size_t i;
   char c;
-
-  buffer = lex->buffer + lex->idx - 1;
+  const char *buffer = lex->buffer + lex->idx - 1;
 
   for (i = 0; i < sizeof(bc_lex_keywords) / sizeof(bc_lex_keywords[0]); ++i) {
 
@@ -201,8 +188,7 @@ BcStatus bc_lex_name(BcLex *lex) {
   strncpy(lex->token.string, buffer, i);
   lex->token.string[i] = '\0';
 
-  // Increment the index. It is minus one
-  // because it has already been incremented.
+  // Increment the index. We minus one because it has already been incremented.
   lex->idx += i - 1;
 
   return BC_STATUS_SUCCESS;

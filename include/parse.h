@@ -31,47 +31,43 @@
 #include <program.h>
 #include <lex.h>
 
-#define BC_PARSE_TOP_FLAG_PTR(parse)  ((uint8_t*) bc_vec_top(&(parse)->flags))
+#define BC_PARSE_POSIX_REL (1<<0)
+#define BC_PARSE_PRINT (1<<1)
+#define BC_PARSE_NOCALL (1<<2)
+#define BC_PARSE_NOREAD (1<<3)
 
+#define BC_PARSE_TOP_FLAG_PTR(parse)  ((uint8_t*) bc_vec_top(&(parse)->flags))
 #define BC_PARSE_TOP_FLAG(parse)  (*(BC_PARSE_TOP_FLAG_PTR(parse)))
 
-#define BC_PARSE_FLAG_FUNC_INNER (0x01)
-
+#define BC_PARSE_FLAG_FUNC_INNER (1<<0)
 #define BC_PARSE_FUNC_INNER(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FUNC_INNER)
 
-#define BC_PARSE_FLAG_FUNC (0x02)
-
+#define BC_PARSE_FLAG_FUNC (1<<1)
 #define BC_PARSE_FUNC(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FUNC)
 
-#define BC_PARSE_FLAG_BODY (0x04)
-
+#define BC_PARSE_FLAG_BODY (1<<2)
 #define BC_PARSE_BODY(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_BODY)
 
-#define BC_PARSE_FLAG_LOOP (0x08)
-
+#define BC_PARSE_FLAG_LOOP (1<<3)
 #define BC_PARSE_LOOP(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP)
 
-#define BC_PARSE_FLAG_LOOP_INNER (0x10)
-
+#define BC_PARSE_FLAG_LOOP_INNER (1<<4)
 #define BC_PARSE_LOOP_INNER(parse) \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP_INNER)
 
-#define BC_PARSE_FLAG_IF (0x20)
-
+#define BC_PARSE_FLAG_IF (1<<5)
 #define BC_PARSE_IF(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF)
 
-#define BC_PARSE_FLAG_ELSE (0x40)
-
+#define BC_PARSE_FLAG_ELSE (1<<6)
 #define BC_PARSE_ELSE(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_ELSE)
 
-#define BC_PARSE_FLAG_IF_END (0x80)
-
+#define BC_PARSE_FLAG_IF_END (1<<7)
 #define BC_PARSE_IF_END(parse)  \
   (BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
 
@@ -113,21 +109,13 @@ typedef struct BcParse {
   size_t func;
 
   size_t num_braces;
-
   bool auto_part;
 
 } BcParse;
 
-#define BC_PARSE_POSIX_REL (1<<0)
-#define BC_PARSE_PRINT (1<<1)
-#define BC_PARSE_NOCALL (1<<2)
-#define BC_PARSE_NOREAD (1<<3)
-
 // ** Exclude start. **
 BcStatus bc_parse_init(BcParse *p, BcProgram *program);
-
 BcStatus bc_parse_parse(BcParse *parse);
-
 void bc_parse_free(BcParse *p);
 // ** Exclude end. **
 

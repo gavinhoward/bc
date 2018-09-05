@@ -71,9 +71,7 @@ typedef struct BcVecO {
 
 // ** Exclude start. **
 BcStatus bc_veco_init(BcVecO* vec, size_t esize, BcVecFree dtor, BcVecCmp cmp);
-
 BcStatus bc_veco_insert(BcVecO* vec, const void *data, size_t *idx);
-
 size_t bc_veco_index(const BcVecO *v, const void *data);
 // ** Exclude end. **
 

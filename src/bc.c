@@ -54,7 +54,7 @@ BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
   if (!s || !file || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
   fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
   fprintf(stderr, "    %s", file);
-  fprintf(stderr, &":%d\n\n"[3 * !line], line);
+  fprintf(stderr, bc_err_line + 3 * !line, line);
   return s * !bcg.tty;
 }
 
@@ -71,7 +71,7 @@ BcStatus bc_posix_error(BcStatus s, const char *file,
 
   if (msg) fprintf(stderr, "    %s\n", msg);
   fprintf(stderr, "    %s", file);
-  fprintf(stderr, &":%d\n\n"[3 * !line], line);
+  fprintf(stderr, bc_err_line + 3 * !line, line);
 
   return s * !!p;
 }

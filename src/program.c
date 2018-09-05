@@ -264,7 +264,7 @@ BcStatus bc_program_read(BcProgram *p) {
   BcParse parse;
   char *buffer;
   BcInstPtr ip;
-  size_t size = BC_PROGRAM_BUF_SIZE;
+  size_t size = BC_BUF_SIZE;
   BcFunc *func = bc_vec_item(&p->funcs, BC_PROGRAM_READ);
 
   func->code.len = 0;
@@ -664,7 +664,6 @@ BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
     else status = bc_vec_init(&param.data.array, sizeof(BcNum), bc_num_free);
 
     if (status) return status;
-
     status = bc_vec_push(&p->results, &param);
   }
 

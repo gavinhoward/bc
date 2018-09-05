@@ -69,8 +69,8 @@ BcStatus bc_num_subArrays(BcDigit *n1, BcDigit *n2, size_t len) {
 
 ssize_t bc_num_compare(BcDigit *n1, BcDigit *n2, size_t len) {
   size_t i;
-  BcDigit c;
-  for (c = 0, i = len - 1; !bcg.signe && i < len && !(c = n1[i] - n2[i]); --i);
+  BcDigit c = 0;
+  for (i = len - 1; !bcg.signe && i < len && !(c = n1[i] - n2[i]); --i);
   return (c < 0 ? -1 : 1) * (ssize_t) (i + 1);
 }
 
@@ -79,12 +79,10 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
   size_t i, min, a_int, b_int, diff;
   BcDigit *max_num, *min_num;
   bool a_max;
-  ssize_t cmp, neg;
+  ssize_t cmp, neg = 1;
 
   if (!a) return !b ? 0 : !b->neg * -2 + 1;
   else if (!b) return a->neg * -2 + 1;
-
-  neg = 1;
 
   if (a->neg) {
     if (b->neg) neg = -1;
@@ -616,12 +614,9 @@ err:
 
 bool bc_num_strValid(const char *val, size_t base) {
 
-  size_t len, i;
   BcDigit b;
-  bool small, radix;
-
-  radix = false;
-  len = strlen(val);
+  bool small, radix = false;
+  size_t i, len = strlen(val);
 
   if (!len) return true;
 
@@ -630,9 +625,9 @@ bool bc_num_strValid(const char *val, size_t base) {
 
   for (i = 0; i < len; ++i) {
 
-    BcDigit c;
+    BcDigit c = val[i];
 
-    if ((c = val[i]) == '.') {
+    if (c == '.') {
 
       if (radix) return false;
 
@@ -686,12 +681,11 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
   BcStatus status;
   BcNum temp, mult, result;
-  size_t i, len, digits;
   BcDigit c = '\0';
   bool zero;
   unsigned long v;
+  size_t i, digits, len = strlen(val);
 
-  len = strlen(val);
   bc_num_zero(n);
 
   for (zero = true, i = 0; zero && i < len; ++i)
@@ -826,9 +820,8 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   size_t width, i;
   BcNumDigitOp print;
   unsigned long dig, *ptr;
-  bool neg, radix;
+  bool radix, neg = n->neg;
 
-  neg = n->neg;
   n->neg = false;
 
   if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;

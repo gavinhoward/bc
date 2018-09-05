@@ -29,8 +29,6 @@
 #include <status.h>
 #include <lang.h>
 
-#define BC_PROGRAM_BUF_SIZE (1024)
-
 typedef struct BcProgram {
 
   size_t line_len;
@@ -60,7 +58,6 @@ typedef struct BcProgram {
   const char *file;
 
   BcNum last;
-
   BcNum zero;
   BcNum one;
 
@@ -86,7 +83,6 @@ BcStatus bc_program_print(BcProgram *p);
 
 BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
 BcStatus bc_program_reset(BcProgram *p, BcStatus status);
-
 BcStatus bc_program_exec(BcProgram *p);
 
 extern const BcNumBinaryOp bc_program_ops[];

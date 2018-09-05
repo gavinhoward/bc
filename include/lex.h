@@ -133,14 +133,12 @@ typedef struct BcLexKeyword {
 
 #define BC_LEX_KW_ENTRY(a, b, c) { .name = a, .len = (b), .posix = (c) }
 
+extern const BcLexKeyword bc_lex_keywords[20];
+
 // ** Exclude start. **
 void bc_lex_init(BcLex *lex, const char *file);
-
 BcStatus bc_lex_text(BcLex *lex, const char *text);
-
 BcStatus bc_lex_next(BcLex *lex);
 // ** Exclude end. **
-
-extern const BcLexKeyword bc_lex_keywords[20];
 
 #endif // BC_LEX_H

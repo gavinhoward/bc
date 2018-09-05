@@ -116,7 +116,7 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
 
 void bc_string_free(void *string) {
   char **s = string;
-  if (s) free(*s);
+  if (s && *s) free(*s);
 }
 
 int bc_entry_cmp(const void *e1, const void *e2) {
@@ -125,7 +125,7 @@ int bc_entry_cmp(const void *e1, const void *e2) {
 
 void bc_entry_free(void *entry) {
   BcEntry *e = entry;
-  if (e) free(e->name);
+  if (e && e->name) free(e->name);
 }
 
 void bc_auto_free(void *auto1) {

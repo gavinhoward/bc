@@ -33,6 +33,7 @@ BcStatus bc_vec_grow(BcVec *vec) {
 
   size_t cap = vec->cap * 2;
   uint8_t *ptr = realloc(vec->array, vec->size * cap);
+
   if (!ptr) return BC_STATUS_MALLOC_FAIL;
 
   vec->array = ptr;

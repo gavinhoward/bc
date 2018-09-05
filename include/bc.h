@@ -38,9 +38,7 @@
 #define BC_FLAG_I (1<<4)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
-
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
-
 #define BC_INVALID_IDX ((size_t) -1)
 
 #define BC_MAX_BASE (999)
