@@ -270,9 +270,8 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   size_t start;
   bool aneg, bneg, neg;
 
-  // Because this function doesn't need to use scale (per the bc spec),
-  // I am hijacking it to tell this function whether it is doing an add
-  // or a subtract.
+  // Because this function doesn't need to use scale (per the bc spec), I am
+  // hijacking it to tell this function whether it's doing an add or a subtract.
 
   if (!a->len) {
     status = bc_num_copy(c, b);
