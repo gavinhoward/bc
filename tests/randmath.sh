@@ -157,7 +157,15 @@ while true; do
 	else
 
 		if [ "$op" -eq 6 ]; then
+
 			number=$(num 0 1 1)
+
+			# GNU bc gets "sqrt(1) wrong, so skip it.
+			if [ "$number" == "1" ]; then
+				t=$(expr "$t" + "1")
+				continue
+			fi
+
 		elif [ "$op" -eq 7 -o "$op" -eq 12 ]; then
 
 			number=$(num 1 1 1 1)
@@ -185,6 +193,15 @@ while true; do
 	echo "Test $t: $line"
 
 	echo "$line; halt" | bc -lq > "$out1"
+
+	content=$(cat "$out1")
+
+	if [ "$content" == "" ]; then
+		echo "    other bc returned an error ($error); continuing..."
+		t=$(expr "$t" + "1")
+		continue
+	fi
+
 	echo "$line; halt" | "$bc" -lq > "$out2"
 
 	error="$?"
