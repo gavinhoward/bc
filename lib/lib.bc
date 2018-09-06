@@ -147,7 +147,7 @@ define a(x){
 		scale+=5
 		a=a(.267)
 	}
-	scale=s+3
+	scale=s+5
 	while(x>.267){
 		m+=1
 		x=(x-.267)/(1+.267*x)
