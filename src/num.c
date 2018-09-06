@@ -199,6 +199,9 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
   size_t i, max, min_rdx, min_int, diff, a_int, b_int;
   BcDigit carry;
 
+  // Because this function doesn't need to use scale (per the bc spec), I am
+  // hijacking it to tell this function whether it's doing an add or a subtract.
+
   if (!a->len) {
     BcStatus status = bc_num_copy(c, b);
     if (sub) c->neg = !c->neg;
