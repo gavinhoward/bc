@@ -29,7 +29,7 @@ define e(x){
 		x=-x
 	}
 	s=scale
-	r=s+7+0.45*x
+	r=6+s+0.45*x
 	scale=scale(x)+1
 	while(x>1){
 		d+=1
@@ -41,15 +41,15 @@ define e(x){
 	p=x
 	f=v=1
 	for(i=2;v!=0;++i){
-		p*=x;
+		p*=x
 		f*=i
 		v=p/f
 		r+=v
 	}
-	while((f--)!=0)r*=r
+	while((d--)!=0)r*=r
 	scale=s
 	ibase=b
-	if(m!=0)return(1/r)
+	if(n!=0)return(1/r)
 	return(r/1)
 }
 define l(x){
