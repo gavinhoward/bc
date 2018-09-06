@@ -208,6 +208,8 @@ for t in $(seq "$ntests"); do
 		echo "    failed; adding \"$line\" to test suite..."
 		echo "$line" >> "$testdir/${files[$op]}.txt"
 		cat "$out1" >> "$testdir/${files[$op]}_results.txt"
+		echo "    exiting..."
+		exit 127
 	fi
 
 done
