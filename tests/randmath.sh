@@ -182,6 +182,7 @@ for t in $(seq "$ntests"); do
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
+		echo "    bc returned an error ($error); exiting..."
 		exit "$error"
 	fi
 
@@ -190,9 +191,9 @@ for t in $(seq "$ntests"); do
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
+		echo "    failed; adding \"$line\" to test suite..."
 		echo "$line" >> "$testdir/${files[$op]}.txt"
 		cat "$out1" >> "$testdir/${files[$op]}_results.txt"
-		exit "$error"
 	fi
 
 done
