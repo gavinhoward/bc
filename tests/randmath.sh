@@ -99,14 +99,6 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -lt 1 ]; then
-	echo "usage: $0 num_tests [bc test_output1 test_output2]"
-	exit 1
-fi
-
-ntests="$1"
-shift
-
 if [ "$#" -gt 0 ]; then
 	bc="$1"
 	shift
@@ -128,7 +120,9 @@ else
 	out2="$testdir/../log_test.txt"
 fi
 
-for t in $(seq "$ntests"); do
+t=0
+
+while true; do
 
 	rm -rf "$out1"
 	rm -rf "$out2"
@@ -211,6 +205,8 @@ for t in $(seq "$ntests"); do
 		echo "    exiting..."
 		exit 127
 	fi
+
+	t=$(expr "$t" + "1")
 
 done
 
