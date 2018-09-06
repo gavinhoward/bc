@@ -742,10 +742,7 @@ mult_err:
   return status;
 }
 
-BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
-                            size_t *nchars, size_t line_len)
-{
-  size_t exp, pow;
+BcStatus bc_num_printNewline(size_t *nchars, size_t line_len) {
 
   if (*nchars == line_len - 1) {
     if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
@@ -753,10 +750,21 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
     *nchars = 0;
   }
 
+  return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
+                            size_t *nchars, size_t line_len)
+{
+  BcStatus status;
+  size_t exp, pow;
+
   if (*nchars || radix) {
     if (putchar(radix ? '.' : ' ') == EOF) return BC_STATUS_IO_ERR;
     ++(*nchars);
   }
+
+  if ((status = bc_num_printNewline(nchars, line_len))) return status;
 
   for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
@@ -764,11 +772,7 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
 
     size_t div;
 
-    if (*nchars == line_len - 1) {
-      if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
-      if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
-      *nchars = 0;
-    }
+    if ((status = bc_num_printNewline(nchars, line_len))) return status;
 
     div = num / pow;
     num -= div * pow;
@@ -782,16 +786,18 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
 BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
                          size_t *nchars, size_t line_len)
 {
-  width += !!radix;
-  if (*nchars + width  >= line_len) {
-    if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
-    if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
-    *nchars = 0;
+  BcStatus status;
+
+  assert(width == 1);
+
+  if (radix) {
+    if ((status = bc_num_printNewline(nchars, line_len))) return status;
+    if (putchar('.') == EOF) return BC_STATUS_IO_ERR;
+    *nchars += 1;
   }
 
-  if (radix && putchar('.') == EOF) return BC_STATUS_IO_ERR;
+  if ((status = bc_num_printNewline(nchars, line_len))) return status;
   if (putchar(bc_num_hex_digits[num]) == EOF) return BC_STATUS_IO_ERR;
-
   *nchars = *nchars + width;
 
   return BC_STATUS_SUCCESS;
