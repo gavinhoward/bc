@@ -902,11 +902,9 @@ BcStatus bc_parse_auto(BcParse *p) {
   while (!status && p->lex.token.type == BC_LEX_NAME) {
 
     name = p->lex.token.string;
-
     if ((status = bc_lex_next(&p->lex))) return status;
 
     one = true;
-
     var = p->lex.token.type != BC_LEX_LEFT_BRACKET;
 
     if (!var) {
@@ -924,7 +922,6 @@ BcStatus bc_parse_auto(BcParse *p) {
     if ((status = bc_func_insert(func, name, var))) goto err;
   }
 
-  if (status) return status;
   if (comma) return BC_STATUS_PARSE_BAD_FUNC;
   if (!one) return BC_STATUS_PARSE_NO_AUTO;
 

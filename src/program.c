@@ -750,7 +750,7 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
     status = bc_num_ulong2num(&result.data.num, (unsigned long) vec->len);
   }
   else {
-    assert(result.type != BC_RESULT_ARRAY);
+    assert(operand->type != BC_RESULT_ARRAY);
     BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
                                                   bc_program_scale;
     status = bc_num_ulong2num(&result.data.num, f(num1));
@@ -787,6 +787,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
   BcStatus status;
   BcResult *ptr, result, copy;
   BcNum *num;
+  uint8_t inst2 = inst;
 
   if ((status = bc_program_unaryOpPrep(p, &ptr, &num))) return status;
 
@@ -802,7 +803,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
   if ((status = bc_vec_push(&p->results, &result))) goto err;
   if ((status = bc_program_assign(p, inst))) goto err;
 
-  if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
+  if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST) {
     bc_vec_pop(&p->results);
     if ((status = bc_vec_push(&p->results, &copy))) goto err;
   }
@@ -811,7 +812,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 
 err:
 
-  if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST)
+  if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST)
     bc_num_free(&copy.data.num);
 
   return status;
@@ -863,8 +864,8 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 
   strcpy(main_name, bc_lang_func_main);
   s = bc_program_addFunc(p, main_name, &idx);
-  main_name = NULL;
   if (s || idx != BC_PROGRAM_MAIN) goto read_err;
+  main_name = NULL;
 
   if (!(read_name = malloc(sizeof(bc_lang_func_read)))) {
     s = BC_STATUS_MALLOC_FAIL;
@@ -873,8 +874,8 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 
   strcpy(read_name, bc_lang_func_read);
   s = bc_program_addFunc(p, read_name, &idx);
-  read_name = NULL;
   if (s || idx != BC_PROGRAM_READ) goto var_err;
+  read_name = NULL;
 
   if ((s = bc_vec_init(&p->vars, sizeof(BcNum), bc_num_free))) goto var_err;
   s = bc_veco_init(&p->var_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
@@ -1292,9 +1293,7 @@ BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
     if (byte) val |= ((unsigned long) byte) << (CHAR_BIT * sizeof(uint8_t) * i);
   }
 
-  printf(" (%lu) ", val);
-
-  return BC_STATUS_SUCCESS;
+  return printf(" (%lu) ", val) < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_program_printName(uint8_t *code, size_t *start) {

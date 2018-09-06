@@ -83,13 +83,20 @@ BcStatus bc_io_fread(const char *path, char **buf) {
   BcStatus st;
   FILE *f;
   size_t size, read;
+  long res;
 
   assert(path && buf && *buf);
 
   if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 
   fseek(f, 0, SEEK_END);
-  size = (size_t) ftell(f);
+
+  if ((res = ftell(f)) < 0) {
+    st = BC_STATUS_IO_ERR;
+    goto malloc_err;
+  }
+
+  size = (size_t) res;
   fseek(f, 0, SEEK_SET);
 
   if (!(*buf = malloc(size + 1))) {

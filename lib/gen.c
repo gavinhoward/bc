@@ -26,7 +26,30 @@
 
 #include <libgen.h>
 
-const char *bc_gen_usage = "usage: gen bc_script output [header]\n";
+static const char *bc_gen_usage = "usage: gen bc_script output\n";
+
+static const char* const bc_license =
+    "/*\n"
+     "* *****************************************************************************\n"
+     "*\n"
+     "* Copyright 2018 Gavin D. Howard\n"
+     "*\n"
+     "* Permission to use, copy, modify, and/or distribute this software for any\n"
+     "* purpose with or without fee is hereby granted.\n"
+     "*\n"
+     "* THE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH\n"
+     "* REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY\n"
+     "* AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,\n"
+     "* INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM\n"
+     "* LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR\n"
+     "* OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR\n"
+     "* PERFORMANCE OF THIS SOFTWARE.\n"
+     "*\n"
+     "* *****************************************************************************\n"
+     "*\n"
+     "* *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n"
+     "*\n"
+     "*/\n";
 
 #define INVALID_PARAMS (1)
 #define MALLOC_FAIL (2)
@@ -41,13 +64,9 @@ int main(int argc, char *argv[]) {
 
   FILE *in;
   FILE *out;
-  FILE *header;
-  char *header_name;
   char *header_buf;
   int c;
   int count;
-  char *buffer;
-  size_t len, read;
   char *buf;
   char *base;
   int err;
@@ -82,49 +101,17 @@ int main(int argc, char *argv[]) {
     goto out_err;
   }
 
-  if (argc >= 4) header_name = argv[3];
-  else header_name = "lib/header.c";
-
-  header = fopen(header_name, "r");
-
-  if (!header) {
-    err = INVALID_HEADER_FILE;
-    goto header_err;
-  }
-
-  fseek(header, 0, SEEK_END);
-  len = ftell(header);
-  fseek(header, 0, SEEK_SET);
-
-  buffer = malloc(len + 1);
-
-  if (!buffer) {
-    err = MALLOC_FAIL;
-    goto buffer_err;
-  }
-
-  read = fread(buffer, 1, len, header);
-
-  if (read != len) {
-    err = IO_ERR;
-    goto header_buf_err;
-  }
-
-  buffer[len] = '\0';
-
-  header_buf = malloc(len + strlen(base) + 1);
+  header_buf = malloc(strlen(bc_license) + strlen(base) + 1);
 
   if (!header_buf) {
     err= MALLOC_FAIL;
     goto header_buf_err;
   }
 
-  if (sprintf(header_buf, buffer, base) < 0) {
+  if (sprintf(header_buf, bc_license, base) < 0) {
     err = IO_ERR;
     goto error;
   }
-
-  count = 0;
 
   if (fputs(header_buf, out) == EOF) {
     err = IO_ERR;
@@ -141,7 +128,7 @@ int main(int argc, char *argv[]) {
     goto error;
   }
 
-  slashes = 0;
+  c = count = slashes = 0;
 
   while (slashes < 2 && (c = fgetc(in)) >= 0) {
     if (slashes == 1 && c == '/' && fgetc(in) == '\n') ++slashes;
@@ -200,14 +187,6 @@ error:
   free(header_buf);
 
 header_buf_err:
-
-  free(buffer);
-
-buffer_err:
-
-  fclose(header);
-
-header_err:
 
   fclose(out);
 

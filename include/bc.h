@@ -43,7 +43,7 @@
 
 #define BC_MAX_BASE (999)
 #define BC_MAX_DIM (INT_MAX)
-#define BC_MAX_SCALE (LONG_MAX)
+#define BC_MAX_SCALE (UINT_MAX)
 #define BC_MAX_STRING (INT_MAX)
 
 #define BC_BUF_SIZE (1024)

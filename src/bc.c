@@ -188,8 +188,7 @@ BcStatus bc_stdin(Bc *bc) {
   while (!s && !((s = bc_io_getline(&buf, &bufn)) && s != BC_STATUS_BIN_FILE))
   {
     if (s == BC_STATUS_BIN_FILE) {
-      putchar('\a');
-      s = BC_STATUS_SUCCESS;
+      s = putchar('\a') == EOF ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
       continue;
     }
 
