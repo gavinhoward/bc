@@ -143,7 +143,7 @@ for t in $(seq "$ntests"); do
 
 		line="$(num 1 1 1) ${ops[$op]}"
 
-		if [ "$op" -eq 3 ]; then
+		if [ "$op" -eq 3 -o "$op" -eq 4 ]; then
 			number=$(num 1 1 0)
 		elif [ "$op" -eq 5 ]; then
 			number=$(num 1 0 1 1)
@@ -157,8 +157,14 @@ for t in $(seq "$ntests"); do
 
 		if [ "$op" -eq 6 ]; then
 			number=$(num 0 1 1)
-		elif [ "$op" -eq 12 ]; then
+		elif [ "$op" -eq 7 -o "$op" -eq 12 ]; then
+
 			number=$(num 1 1 1 1)
+
+			if [ "$op" -eq 12 ]; then
+				number=$(echo "n = $number % 100; scale = 8; n /= 1; n" | bc)
+			fi
+
 		else
 			number=$(num 1 1 1)
 		fi
@@ -170,6 +176,7 @@ for t in $(seq "$ntests"); do
 			line="$line)"
 		else
 			n=$(num 1 1 1)
+			n=$(echo "n = $n % 100; scale = 8; n /= 1; n" | bc)
 			line="$line, $n)"
 		fi
 	fi
@@ -186,7 +193,7 @@ for t in $(seq "$ntests"); do
 		exit "$error"
 	fi
 
-	diff "$out1" "$out2"
+	diff "$out1" "$out2" > /dev/null
 
 	error="$?"
 
