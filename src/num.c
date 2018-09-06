@@ -193,7 +193,7 @@ BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
   return status;
 }
 
-BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
   BcDigit *ptr, *ptr_a, *ptr_b, *ptr_c;
   size_t i, max, min_rdx, min_int, diff, a_int, b_int;
@@ -201,7 +201,7 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
   if (!a->len) {
     BcStatus status = bc_num_copy(c, b);
-    if (scale) c->neg = !c->neg;
+    if (sub) c->neg = !c->neg;
     return status;
   }
   else if (!b->len) return bc_num_copy(c, a);
