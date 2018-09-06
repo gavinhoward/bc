@@ -830,7 +830,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 
   assert(sysconf(_SC_BC_BASE_MAX) <= BC_MAX_BASE);
   assert(sysconf(_SC_BC_DIM_MAX) <= BC_MAX_DIM);
-  assert(sysconf(_SC_BC_SCALE_MAX) <= BC_MAX_SCALE);
+  assert(sysconf(_SC_BC_SCALE_MAX) <= (long) BC_MAX_SCALE);
   assert(sysconf(_SC_BC_STRING_MAX) <= BC_MAX_STRING);
 
   p->nchars = p->scale = 0;
@@ -951,9 +951,10 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
   entry.name = name;
   entry.idx = p->funcs.len;
 
-  if ((status = bc_veco_insert(&p->func_map, &entry, idx))) {
-    free(name);
-    if (status != BC_STATUS_VEC_ITEM_EXISTS) return status;
+  if ((status = bc_veco_insert(&p->func_map, &entry, idx)) &&
+      status != BC_STATUS_VEC_ITEM_EXISTS)
+  {
+    return status;
   }
 
   entry_ptr = bc_veco_item(&p->func_map, *idx);
