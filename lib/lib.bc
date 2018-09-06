@@ -76,8 +76,8 @@ define l(x){
 	q=a*a
 	v=1
 	for(i=3;v!=0;i+=2){
-		n*=m
-		v=n/i
+		a*=q
+		v=a/i
 		r+=v
 	}
 	r*=p
