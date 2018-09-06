@@ -489,7 +489,7 @@ BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if ((status = bc_num_mul(&c1, b, &c2, scale))) goto err;
   if ((status = bc_num_sub(a, &c2, c, scale))) goto err;
 
-  if (tscale > scale) status = bc_num_extend(c, tscale - scale);
+  if (tscale > c->rdx && c->len) status = bc_num_extend(c, tscale - c->rdx);
 
 err:
   bc_num_free(&c2);
