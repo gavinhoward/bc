@@ -144,7 +144,14 @@ for t in $(seq "$ntests"); do
 		line="$(num 1 1 1) ${ops[$op]}"
 
 		if [ "$op" -eq 3 -o "$op" -eq 4 ]; then
+
 			number=$(num 1 1 0)
+
+			scale=$(num 0 0 1 1)
+			scale=$(echo "s = $scale % 25; s /= 1; s" | bc)
+
+			line="scale = $scale; $line"
+
 		elif [ "$op" -eq 5 ]; then
 			number=$(num 1 0 1 1)
 		else
