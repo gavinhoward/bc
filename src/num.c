@@ -199,9 +199,11 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   size_t i, max, min_rdx, min_int, diff, a_int, b_int;
   BcDigit carry;
 
-  (void) scale;
-
-  if (!a->len) return bc_num_copy(c, b);
+  if (!a->len) {
+    BcStatus status = bc_num_copy(c, b);
+    if (scale) c->neg = !c->neg;
+    return status;
+  }
   else if (!b->len) return bc_num_copy(c, a);
 
   c->neg = a->neg;
