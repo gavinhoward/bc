@@ -2,72 +2,98 @@
 
 gen()
 {
-	result=`dd if=/dev/urandom bs=4 count=1 2>/dev/null | od -t u4 | awk 'NR==1 {print $2}'`
+	limit="$1"
+	shift
+
+	result=$(dd if=/dev/urandom bs="$limit" count=1 2>/dev/null | od -t u4 | awk 'NR==1 {print $2}')
 	echo -n "$result"
 }
 
 neg()
 {
-	result=$(gen)
+	result=$(gen 1)
 	result="$((result & 1))"
 	echo -n "$result"
 }
 
 zero()
 {
-	result=$(gen)
-	result="$((result & 15))"
-	echo -n $(expr "$result" = 15)
+	result=$(gen 1)
+	echo -n "$result"
+}
+
+limit()
+{
+	max="$1"
+	shift
+
+	result=$(gen 1)
+	result=$(expr "$result" % "$max")
+	echo -n $(expr "$result" + 1)
 }
 
 num()
 {
-	num=""
+	n=""
 
 	neg=$1
+	shift
 
-	real=$2
+	real=$1
+	shift
 
-	zero=$3
+	zero=$1
+	shift
 
-	if [ "$neg" -ne 0 ]; then
+	if [ "$#" -gt 0 ]; then
+		limit="$1"
+		shift
+	else
+		limit="$(limit 4)"
+	fi
 
-		neg=$(neg)
+	if [ "$zero" -ne 0 ]; then
+		z=$(zero)
+	else
+		z=1
+	fi
+
+	if [ "$z" -eq 0 ]; then
+		n="0"
+	else
 
 		if [ "$neg" -ne 0 ]; then
-			num="-"
+
+			neg=$(neg)
+
+			if [ "$neg" -eq 0 ]; then
+				n="-"
+			fi
 		fi
-	fi
 
-	if [ "$zero" -eq 0 ]; then
+		g=$(gen $limit)
+		n="${n}${g}"
 
-		z=$(zero)
+		if [ "$real" -ne 0 ]; then
 
-		if [ "$z" -ne 0 ]; then
-			num="${num}0"
-		fi
-	else
-		num="$num`gen`"
-	fi
-
-	if [ "$real" -ne 0 ]; then
-
-		if [ "$zero" -eq 0 ]; then
-
-			z=$(zero)
+			z=$(neg)
 
 			if [ "$z" -ne 0 ]; then
-				num="$num."
-				num="$num`gen`"
+
+				limit=$(limit 25)
+				g=$(gen $limit)
+				n="$n.$g"
 			fi
 		fi
 	fi
 
-	echo -n "$num"
+	echo -n "$n"
 }
 
 ops=( '+' '-' '*' '/' '%' '^' )
-files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" )
+files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" "e_power"
+        "log" "arctangent" "sine" "cosine" "bessel" )
+funcs=( "sqrt" "e" "l" "a" "s" "c" "j" )
 
 script="$0"
 
@@ -102,42 +128,56 @@ else
 	out2="$testdir/../log_test.txt"
 fi
 
-t=0
-
-while [ "$t" -lt "$ntests" ]; do
+for t in $(seq "$ntests"); do
 
 	rm -rf "$out1"
 	rm -rf "$out2"
 
 	line=""
 
-	operator=$(gen)
+	operator=$(gen 1)
 
-	op=$(expr "$operator" % 7)
+	op=$(expr "$operator" % 13)
 
-	if [ "$op" -ne 7 ]; then
+	if [ "$op" -lt 6 ]; then
 
-		line=$(num 1 1 1)
-
-		line="$line ${ops[$op]}"
+		line="$(num 1 1 1) ${ops[$op]}"
 
 		if [ "$op" -eq 3 ]; then
-			line="$line `num 1 1 0`"
+			number=$(num 1 1 0)
 		elif [ "$op" -eq 5 ]; then
-			line="$line `num 1 0 1`"
+			number=$(num 1 0 1 1)
 		else
-			line="$line `num 1 1 1`"
+			number=$(num 1 1 1)
 		fi
 
+		line="$line $number"
 
 	else
-		line="sqrt(`num 0 1 1`)"
+
+		if [ "$op" -eq 6 ]; then
+			number=$(num 0 1 1)
+		elif [ "$op" -eq 12 ]; then
+			number=$(num 1 1 1 1)
+		else
+			number=$(num 1 1 1)
+		fi
+
+		func=$(expr "$op" - 6)
+		line="${funcs[$func]}($number"
+
+		if [ "$op" -ne 12 ]; then
+			line="$line)"
+		else
+			n=$(num 1 1 1)
+			line="$line, $n)"
+		fi
 	fi
 
-	echo "$line"
+	echo "Test $t: $line"
 
-	echo "$line" | bc -lq > "$out1"
-	echo "$line" | "$bc" -lq > "$out2"
+	echo "$line; halt" | bc -lq > "$out1"
+	echo "$line; halt" | "$bc" -lq > "$out2"
 
 	error="$?"
 
@@ -150,11 +190,10 @@ while [ "$t" -lt "$ntests" ]; do
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
-		echo "$line" >> "${files[$op]}.txt"
+		echo "$line" >> "$testdir/${files[$op]}.txt"
+		cat "$out1" >> "$testdir/${files[$op]}_results.txt"
 		exit "$error"
 	fi
-
-	t=$(expr "$t" + "1")
 
 done
 
