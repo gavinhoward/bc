@@ -794,6 +794,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
   if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
     copy.type = BC_RESULT_TEMP;
     if ((status = bc_num_init(&copy.data.num, num->len))) return status;
+    if ((status = bc_num_copy(&copy.data.num, num))) goto err;
   }
 
   result.type = BC_RESULT_ONE;
@@ -1116,10 +1117,10 @@ BcStatus bc_program_exec(BcProgram *p) {
         break;
       }
 
-      case BC_INST_INC_POST:
-      case BC_INST_DEC_POST:
       case BC_INST_INC_PRE:
       case BC_INST_DEC_PRE:
+      case BC_INST_INC_POST:
+      case BC_INST_DEC_POST:
       {
         status = bc_program_incdec(p, inst);
         break;
