@@ -229,7 +229,7 @@ while true; do
 				continue
 			fi
 
-			content=$(echo "scale += 1; $line; halt" | "$bc" "$@" -lq > "$out2")
+			content=$(echo "scale += 1; $line; halt" | "$bc" "$@" -lq)
 			content=${content%?}
 			echo "$content" > "$out2"
 
