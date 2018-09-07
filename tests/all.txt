@@ -9,7 +9,7 @@ sqrt
 basic
 parse
 print
-e_power
+exponent
 log
 pi
 arctangent

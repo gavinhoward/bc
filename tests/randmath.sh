@@ -91,7 +91,7 @@ num()
 }
 
 ops=( '+' '-' '*' '/' '%' '^' )
-files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" "e_power"
+files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" "exponent"
         "log" "arctangent" "sine" "cosine" "bessel" )
 funcs=( "sqrt" "e" "l" "a" "s" "c" "j" )
 
