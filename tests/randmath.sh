@@ -106,26 +106,14 @@ else
 	bc="$testdir/../bc"
 fi
 
-if [ "$#" -gt 0 ]; then
-	out1="$1"
-	shift
-else
-	out1="$testdir/../log_bc.txt"
-fi
-
-if [ "$#" -gt 0 ]; then
-	out2="$1"
-	shift
-else
-	out2="$testdir/../log_test.txt"
-fi
+out1="$testdir/../.log_bc.txt"
+out2="$testdir/../.log_test.txt"
 
 t=0
 
 while true; do
 
-	rm -rf "$out1"
-	rm -rf "$out2"
+	rm -rf "$out1" "$out2"
 
 	line=""
 
@@ -200,9 +188,11 @@ while true; do
 		echo "    other bc returned an error ($error); continuing..."
 		t=$(expr "$t" + "1")
 		continue
+	elif [ "$content" == "-0" ]; then
+		echo "0" > "$out1"
 	fi
 
-	echo "$line; halt" | "$bc" -lq > "$out2"
+	echo "$line; halt" | "$bc" "$@" -lq > "$out2"
 
 	error="$?"
 
@@ -224,6 +214,8 @@ while true; do
 	fi
 
 	t=$(expr "$t" + "1")
+
+	rm -rf "$out1" "$out2"
 
 done
 

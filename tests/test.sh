@@ -1,19 +1,19 @@
 #! /bin/sh
 
+set -e
+
 script="$0"
 
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 1 ]; then
-	echo "usage: $0 test [bc [test_output]]"
+	echo "usage: $0 test [bc [bc_args...]]"
 	echo "valid tests are:"
 	echo ""
 	cat "$testdir/all.txt"
 	echo ""
 	exit 1
 fi
-
-set -e
 
 t="$1"
 name="$testdir/$t.txt"
@@ -27,12 +27,7 @@ else
 	bc="$testdir/../bc"
 fi
 
-if [ "$#" -gt 0 ]; then
-	out="$1"
-	shift
-else
-	out="$testdir/../log_test.txt"
-fi
+out="$testdir/../.log_test.txt"
 
 if [ ! -f "$name" ]; then
 	echo "Generating $t..."
@@ -46,7 +41,9 @@ fi
 
 echo "Running $t..."
 
-echo "halt" | "$bc" -lq "$name" > "$out"
+echo "halt" | "$bc" "$@" -lq "$name" > "$out"
 
 diff "$results" "$out"
+
+rm -rf "$out"
 

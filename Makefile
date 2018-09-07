@@ -74,6 +74,9 @@ $(BC_EXEC): $(BC_OBJ) $(BC_LIB_O)
 test:
 	tests/all.sh
 
+valgrind:
+	tests/all.sh valgrind --leak-check=full --show-leak-kinds=all ./bc
+
 timeconst:
 	tests/timeconst.sh
 
@@ -83,7 +86,7 @@ clean:
 	$(RM) $(GEN)
 	$(RM) $(BC_LIB_C)
 	$(RM) $(BC_LIB_O)
-	$(RM) log_test.txt log_bc.txt
+	$(RM) .log_test.txt .log_bc.txt
 
 clean_tests: clean
 	$(RM) tests/parse.txt tests/parse_results.txt

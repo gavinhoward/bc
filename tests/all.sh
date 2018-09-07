@@ -12,17 +12,13 @@ else
 	bc="$1"
 fi
 
-bcdir=$(dirname "${bc}")
-
-out="$bcdir/log_test.txt"
-
 while read t; do
 
-	sh "$testdir/test.sh" "$t" "$bc" "$out"
+	sh "$testdir/test.sh" "$t" "$bc" "$@"
 
 done < "$testdir/all.txt"
 
-sh "$testdir/scripts.sh" "$bc" "$bcdir/log_bc.txt" "$out"
+sh "$testdir/scripts.sh" "$bc" "$@"
 
 # TODO: Read tests
 # TODO: Lex errors

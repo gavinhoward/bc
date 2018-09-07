@@ -7,7 +7,7 @@ bc
 !bc/
 *.o
 *.a
-log_*.txt
+.log_*.txt
 gen
 lib.c
 config.mak

@@ -22,7 +22,12 @@ set -e
 
 bcdir=$(dirname "${bc}")
 
-out1="$bcdir/log_bc.txt"
-out2="$bcdir/log_test.txt"
+out1="$bcdir/.log_bc.txt"
+out2="$bcdir/.log_test.txt"
 
-"$testdir/scripts/script.sh" "$bc" "$out1" "$out2" "$script"
+echo "quit" | bc -lq "$script" > "$out1"
+echo "quit" | "$bc" "$@" -lq "$script" > "$out2"
+
+diff "$out1" "$out2"
+
+rm -rf "$out1" "$out2"

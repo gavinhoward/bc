@@ -15,11 +15,8 @@ fi
 bc="$1"
 shift
 
-out1="$1"
-shift
-
-out2="$1"
-shift
+out1="$bcdir/.log_bc.txt"
+out2="$bcdir/.log_test.txt"
 
 for s in $scriptdir/*.bc; do
 
@@ -27,9 +24,6 @@ for s in $scriptdir/*.bc; do
 	name="${f%.*}"
 
 	echo "Running script: $f"
-
-	rm -rf "$out1"
-	rm -rf "$out2"
 
 	orig="$testdir/$name.txt"
 	results="$scriptdir/$name.txt"
@@ -48,6 +42,8 @@ for s in $scriptdir/*.bc; do
 	diff "$res" "$out2"
 
 done
+
+rm -rf "$out1" "$out2"
 
 # TODO: Read tests
 # TODO: Lex errors
