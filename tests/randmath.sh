@@ -228,6 +228,22 @@ while true; do
 				t=$(expr "$t" + "1")
 				continue
 			fi
+
+			content=$(echo "scale += 1; $line; halt" | "$bc" "$@" -lq > "$out2")
+			content=${content%?}
+			echo "$content" > "$out2"
+
+			# Compare the truncated.
+			diff "$out1" "$out2" > /dev/null
+			error="$?"
+
+			# This bc is off by more than one digit.
+			if [ "$error" -eq 0 ]; then
+				echo "    failed; off by only one digit,\n"
+				echo "    which is good enough; continuing..."
+				t=$(expr "$t" + "1")
+				continue
+			fi
 		fi
 
 		echo "    failed; adding \"$line\" to test suite..."

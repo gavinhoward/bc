@@ -90,7 +90,7 @@ define s(x){
 	b=ibase
 	ibase=A
 	s=scale
-	scale=1.3*s+8
+	scale=1.3*s+6
 	a=a(1)
 	if(x<0){
 		n=1
@@ -100,10 +100,11 @@ define s(x){
 	q=(x/a+2)/4
 	x-=4*q*a
 	if(q%2!=0)x=-x
-	scale=s+4
+	scale=s+5
 	r=a=x
 	q=-x*x
 	for(i=3;a!=0;i+=2){
+		scale+=2
 		a*=q/(i*(i-1))
 		r+=a
 	}
