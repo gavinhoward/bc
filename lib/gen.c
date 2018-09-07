@@ -73,8 +73,6 @@ int main(int argc, char *argv[]) {
 
   base = basename(buf);
 
-  printf("%s\n", argv[1]);
-
   in = fopen(argv[1], "r");
 
   if (!in) {
