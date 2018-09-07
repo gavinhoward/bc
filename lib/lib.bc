@@ -62,7 +62,7 @@ define l(x){
 		return(r)
 	}
 	s=scale
-	scale+=7
+	scale+=6
 	p=2
 	while(x>=2){
 		p*=2
