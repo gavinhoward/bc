@@ -16,15 +16,16 @@
 BC_SRC = $(sort $(wildcard src/*.c))
 BC_OBJ = $(BC_SRC:.c=.o)
 
-GEN = gen
+GEN_DIR = gen
+GEN_EXEC = strgen
 
-BC_LIB = lib/lib.bc
-BC_LIB_C = lib/lib.c
-BC_LIB_O = lib/lib.o
+BC_LIB = $(GEN_DIR)/lib.bc
+BC_LIB_C = $(GEN_DIR)/lib.c
+BC_LIB_O = $(GEN_DIR)/lib.o
 
-BC_HELP = lib/help.txt
-BC_HELP_C = lib/help.c
-BC_HELP_O = lib/help.o
+BC_HELP = $(GEN_DIR)/help.txt
+BC_HELP_C = $(GEN_DIR)/help.c
+BC_HELP_O = $(GEN_DIR)/help.o
 
 BC_EXEC = bc
 
@@ -63,16 +64,16 @@ help:
 	@echo "    LDLIBS    Libraries to link to"
 	@echo "    PREFIX    the prefix to install to"
 	@echo "              if PREFIX is \"/usr\", $(BC_EXEC) will be installed to \"/usr/bin\""
-	@echo "    GEN_EMU   Emulator to run $(GEN) under (leave empty if not necessary)"
+	@echo "    GEN_EMU   Emulator to run $(GEN_EXEC) under (leave empty if not necessary)"
 
-$(GEN):
-	$(HOSTCC) -o $(GEN) lib/$(GEN).c
+$(GEN_EXEC):
+	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN_EXEC).c
 
-$(BC_LIB_C): $(GEN)
-	$(GEN_EMU) ./$(GEN) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name
+$(BC_LIB_C): $(GEN_EXEC)
+	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name
 
-$(BC_HELP_C): $(GEN)
-	$(GEN_EMU) ./$(GEN) $(BC_HELP) $(BC_HELP_C) bc_help
+$(BC_HELP_C): $(GEN_EXEC)
+	$(GEN_EMU) ./$(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help
 
 $(BC_EXEC): $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O)
 	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS)
@@ -89,7 +90,7 @@ timeconst:
 clean:
 	$(RM) $(BC_OBJ)
 	$(RM) $(BC_EXEC)
-	$(RM) $(GEN)
+	$(RM) $(GEN_EXEC)
 	$(RM) $(BC_LIB_C)
 	$(RM) $(BC_LIB_O)
 	$(RM) $(BC_HELP_C)

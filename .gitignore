@@ -8,7 +8,7 @@ bc
 *.o
 *.a
 .log_*.txt
-gen
+strgen
 lib.c
 help.c
 config.mak
