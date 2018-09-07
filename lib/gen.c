@@ -32,6 +32,7 @@
 static const char* const bc_gen_usage = "usage: gen input output name [label]\n";
 
 static const char* const bc_gen_header =
+  "// Copyright 2018 Gavin D. Howard. Under a 0-clause BSD license.\n"
   "// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
 
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
@@ -49,7 +50,7 @@ static const char* const bc_gen_name = "const char %s[] = {\n";
 int main(int argc, char *argv[]) {
 
   FILE *in, *out;
-  char *header_buf, *buf, *base, *label, *name;
+  char *label, *name;
   int c, count, err, slashes;
   bool has_label;
 
@@ -65,20 +66,9 @@ int main(int argc, char *argv[]) {
   has_label = argc > 4;
   label = has_label ? argv[4] : "";
 
-  buf = malloc(strlen(argv[1]) + 1);
-
-  if (!buf) return MALLOC_FAIL;
-
-  strcpy(buf, argv[1]);
-
-  base = basename(buf);
-
   in = fopen(argv[1], "r");
 
-  if (!in) {
-    err = INVALID_INPUT_FILE;
-    goto in_err;
-  }
+  if (!in) return INVALID_INPUT_FILE;
 
   out = fopen(argv[2], "w");
 
@@ -87,24 +77,12 @@ int main(int argc, char *argv[]) {
     goto out_err;
   }
 
-  header_buf = malloc(strlen(bc_gen_header) + strlen(base) + 1);
-
-  if (!header_buf) {
-    err= MALLOC_FAIL;
-    goto header_buf_err;
-  }
-
-  if (sprintf(header_buf, bc_gen_header, base) < 0) {
+  if (fprintf(out, bc_gen_header, argv[1]) < 0) {
     err = IO_ERR;
     goto error;
   }
 
-  if (fputs(header_buf, out) == EOF) {
-    err = IO_ERR;
-    goto error;
-  }
-
-  if (has_label && fprintf(out, bc_gen_label, label, base) < 0) {
+  if (has_label && fprintf(out, bc_gen_label, label, argv[1]) < 0) {
     err = IO_ERR;
     goto error;
   }
@@ -170,19 +148,11 @@ int main(int argc, char *argv[]) {
 
 error:
 
-  free(header_buf);
-
-header_buf_err:
-
   fclose(out);
 
 out_err:
 
   fclose(in);
-
-in_err:
-
-  free(buf);
 
   return err;
 }
