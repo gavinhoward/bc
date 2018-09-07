@@ -833,7 +833,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
   assert(p->prog->funcs.len == p->prog->func_map.vec.len);
 
-  if ((status = bc_program_addFunc(p->prog, name, &p->func))) goto err;
+  if ((status = bc_program_addFunc(p->prog, name, &p->func))) return status;
   assert(p->func);
   fptr = bc_vec_item(&p->prog->funcs, p->func);
 
@@ -843,10 +843,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
   while (!status && p->lex.token.type != BC_LEX_RIGHT_PAREN) {
 
-    if (p->lex.token.type != BC_LEX_NAME) {
-      status = BC_STATUS_PARSE_BAD_FUNC;
-      goto err;
-    }
+    if (p->lex.token.type != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_FUNC;
 
     ++fptr->nparams;
     name = p->lex.token.string;

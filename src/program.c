@@ -865,20 +865,20 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 
   strcpy(main_name, bc_lang_func_main);
   s = bc_program_addFunc(p, main_name, &idx);
-  if (s || idx != BC_PROGRAM_MAIN) goto read_err;
+  if (s || idx != BC_PROGRAM_MAIN) goto name_err;
   main_name = NULL;
 
   if (!(read_name = malloc(sizeof(bc_lang_func_read)))) {
     s = BC_STATUS_MALLOC_FAIL;
-    goto read_err;
+    goto name_err;
   }
 
   strcpy(read_name, bc_lang_func_read);
   s = bc_program_addFunc(p, read_name, &idx);
-  if (s || idx != BC_PROGRAM_READ) goto var_err;
+  if (s || idx != BC_PROGRAM_READ) goto name_err;
   read_name = NULL;
 
-  if ((s = bc_vec_init(&p->vars, sizeof(BcNum), bc_num_free))) goto var_err;
+  if ((s = bc_vec_init(&p->vars, sizeof(BcNum), bc_num_free))) goto name_err;
   s = bc_veco_init(&p->var_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
   if (s) goto var_map_err;
 
@@ -919,10 +919,6 @@ array_err:
   bc_veco_free(&p->var_map);
 var_map_err:
   bc_vec_free(&p->vars);
-var_err:
-  if (read_name) free(read_name);
-read_err:
-  if (main_name) free(main_name);
 name_err:
   bc_veco_free(&p->func_map);
 func_map_err:
@@ -951,10 +947,11 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
   entry.name = name;
   entry.idx = p->funcs.len;
 
-  if ((status = bc_veco_insert(&p->func_map, &entry, idx)) &&
-      status != BC_STATUS_VEC_ITEM_EXISTS)
-  {
-    return status;
+  status = bc_veco_insert(&p->func_map, &entry, idx);
+
+  if (status) {
+    free(name);
+    if (status != BC_STATUS_VEC_ITEM_EXISTS) return status;
   }
 
   entry_ptr = bc_veco_item(&p->func_map, *idx);

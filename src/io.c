@@ -85,7 +85,7 @@ BcStatus bc_io_fread(const char *path, char **buf) {
   size_t size, read;
   long res;
 
-  assert(path && buf && *buf);
+  assert(path && buf);
 
   if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 
