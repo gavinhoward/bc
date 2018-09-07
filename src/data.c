@@ -47,7 +47,7 @@ const uint8_t bc_err_indices[] = {
   BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC,
   BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
   BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-  BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+  BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
   BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
   BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
   BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -80,6 +80,7 @@ const char *bc_err_descs[] = {
     "obase, last, var, or array element",
   "no auto variable found",
   "function parameter or auto var has the same name as another",
+  "block end could not be found",
 
   "negative number",
   "non integer number",

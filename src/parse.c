@@ -1114,7 +1114,7 @@ BcStatus bc_parse_stmt(BcParse *p, BcVec *code) {
 
     case BC_LEX_EOF:
     {
-      status = (p->flags.len > 0) * BC_STATUS_LEX_BAD_CHARACTER;
+      status = (p->flags.len > 0) * BC_STATUS_PARSE_NO_BLOCK_END;
       break;
     }
 
