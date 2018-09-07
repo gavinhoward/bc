@@ -10,15 +10,7 @@
 set -e
 
 script="$0"
-
 testdir=$(dirname "$script")
-
-if [ "$#" -gt 4 ]; then
-	echo "usage: $0 [timeconst.bc bc [bc_args...]]"
-	exit 1
-fi
-
-set -e
 
 if [ "$#" -gt 0 ]; then
 	timeconst="$1"

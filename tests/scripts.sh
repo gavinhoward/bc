@@ -7,16 +7,15 @@ script="$0"
 testdir=$(dirname "${script}")
 scriptdir="$testdir/scripts"
 
-if [ "$#" -lt 3 ]; then
-	echo "usage: $script <bc> <test_output1> <test_output2>"
-	exit 1
+if [ "$#" -gt 0 ]; then
+	bc="$1"
+	shift
+else
+	bc="$testdir/../bc"
 fi
 
-bc="$1"
-shift
-
-out1="$bcdir/.log_bc.txt"
-out2="$bcdir/.log_test.txt"
+out1="$testdir/../.log_bc.txt"
+out2="$testdir/../.log_test.txt"
 
 for s in $scriptdir/*.bc; do
 
@@ -37,7 +36,7 @@ for s in $scriptdir/*.bc; do
 		res="$out1"
 	fi
 
-	echo "halt" | "$bc" -lq "$s" > "$out2"
+	echo "halt" | "$bc" "$@" -lq "$s" > "$out2"
 
 	diff "$res" "$out2"
 
