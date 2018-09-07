@@ -208,6 +208,28 @@ while true; do
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
+
+		# This works around a bug in GNU bc that gets some
+		# transcendental functions slightly wrong.
+		if [ "$op" -ge 7 ]; then
+
+			# Have GNU bc calculate to one more decimal place and truncate by 1.
+			content=$(echo "scale += 10; $line; halt" | bc -lq)
+			content=${content%??????????}
+			echo "$content" > "$out1"
+
+			# Compare the truncated.
+			diff "$out1" "$out2" > /dev/null
+			error="$?"
+
+			# GNU bc got it wrong.
+			if [ "$error" -eq 0 ]; then
+				echo "    failed because of bug in other bc; continuing..."
+				t=$(expr "$t" + "1")
+				continue
+			fi
+		fi
+
 		echo "    failed; adding \"$line\" to test suite..."
 		echo "$line" >> "$testdir/${files[$op]}.txt"
 		cat "$out1" >> "$testdir/${files[$op]}_results.txt"
