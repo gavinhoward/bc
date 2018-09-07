@@ -42,6 +42,8 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
   BcVecO *veco;
   size_t idx, ip_idx;
   BcAuto *a;
+  // We use this because it has a union of BcNum and BcVec.
+  BcResult data;
 
   for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
 
@@ -78,8 +80,6 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
   if (status != BC_STATUS_VEC_ITEM_EXISTS) {
 
-    // We use this because it has a union of BcNum and BcVec.
-    BcResult data;
     size_t len = strlen(entry.name) + 1;
 
     if (status) return status;
@@ -90,14 +90,21 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
     if (var) status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
     else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
 
-    if (status) return status;
-    if ((status = bc_vec_push(vec, &data.data))) return status;
+    if (status) goto num_err;
+    if ((status = bc_vec_push(vec, &data.data))) goto err;
   }
 
   entry_ptr = bc_veco_item(veco, idx);
   *ret = bc_vec_item(vec, entry_ptr->idx);
 
   return BC_STATUS_SUCCESS;
+
+err:
+  if (var) bc_num_free(&data.data.num);
+  else bc_vec_free(&data.data.array);
+num_err:
+  free(result->data.id.name);
+  return status;
 }
 
 BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum **num, bool hex) {
