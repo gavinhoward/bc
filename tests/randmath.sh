@@ -109,11 +109,14 @@ fi
 out1="$testdir/../.log_bc.txt"
 out2="$testdir/../.log_test.txt"
 
+finish() {
+	rm -rf "$out1" "$out2"
+}
+trap finish EXIT
+
 t=0
 
 while true; do
-
-	rm -rf "$out1" "$out2"
 
 	line=""
 
@@ -202,7 +205,6 @@ while true; do
 	fi
 
 	diff "$out1" "$out2" > /dev/null
-
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
@@ -216,4 +218,3 @@ while true; do
 	t=$(expr "$t" + "1")
 
 done
-
