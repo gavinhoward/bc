@@ -215,7 +215,5 @@ while true; do
 
 	t=$(expr "$t" + "1")
 
-	rm -rf "$out1" "$out2"
-
 done
 
