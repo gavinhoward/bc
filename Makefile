@@ -19,9 +19,12 @@ BC_OBJ = $(BC_SRC:.c=.o)
 GEN = gen
 
 BC_LIB = lib/lib.bc
-
 BC_LIB_C = lib/lib.c
 BC_LIB_O = lib/lib.o
+
+BC_HELP = lib/help.txt
+BC_HELP_C = lib/help.c
+BC_HELP_O = lib/help.o
 
 BC_EXEC = bc
 
@@ -66,10 +69,13 @@ $(GEN):
 	$(HOSTCC) -o $(GEN) lib/$(GEN).c
 
 $(BC_LIB_C): $(GEN)
-	$(GEN_EMU) ./$(GEN) $(BC_LIB) $(BC_LIB_C)
+	$(GEN_EMU) ./$(GEN) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name
 
-$(BC_EXEC): $(BC_OBJ) $(BC_LIB_O)
-	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_OBJ) $(BC_LIB_O) $(LDLIBS) $(LDFLAGS)
+$(BC_HELP_C): $(GEN)
+	$(GEN_EMU) ./$(GEN) $(BC_HELP) $(BC_HELP_C) bc_help
+
+$(BC_EXEC): $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O)
+	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS)
 
 test:
 	tests/all.sh
@@ -86,6 +92,8 @@ clean:
 	$(RM) $(GEN)
 	$(RM) $(BC_LIB_C)
 	$(RM) $(BC_LIB_O)
+	$(RM) $(BC_HELP_C)
+	$(RM) $(BC_HELP_O)
 	$(RM) .log_test.txt .log_bc.txt
 
 clean_tests: clean

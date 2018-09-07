@@ -1,0 +1,57 @@
+/*
+ * *****************************************************************************
+ *
+ * Copyright 2018 Gavin D. Howard
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+ * REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ *
+ * *****************************************************************************
+ *
+ * The bc help text.
+ *
+ */
+usage: %s [options] [file...]
+
+bc is a command-line, arbitrary-precision calculator with a Turing-complete
+language. See the GNU bc manual (https://www.gnu.org/software/bc/manual/bc.html)
+and bc spec (http://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
+for details.
+
+This bc has three differences to the GNU bc:
+
+  1) The period (.) can also be used as a shortcut for "last", as in the BSD bc.
+  2) Arrays are copied before being passed as arguments to functions. This
+     behavior is required by the bc spec.
+  3) Arrays can be passed to the builtin "length" function to get the number of
+     elements currently in the array. The following example prints "1":
+
+       a[0] = 0
+       length(a[])
+
+Options:
+
+  -h  --help         print this usage message and exit
+  -i  --interactive  force interactive mode
+  -l  --mathlib      use predefined math routines:
+
+                       s(expr)  =  sine of expr in radians
+                       c(expr)  =  cosine of expr in radians
+                       a(expr)  =  arctangent of expr, returning radians
+                       l(expr)  =  natural log of expr
+                       e(expr)  =  raises e to the power of expr
+                       j(n, x)  =  Bessel function of integer order n of x
+
+  -q  --quiet        don't print version and copyright
+  -s  --standard     error if any non-POSIX extensions are used
+  -w  --warn         warn if any non-POSIX extensions are used
+  -v  --version      print version information and copyright and exit
+

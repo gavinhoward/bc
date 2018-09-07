@@ -46,28 +46,9 @@ static const struct option bc_opts[] = {
 };
 
 static const char* const bc_short_opts = "hilqsvw";
-
-static const char* const bc_help =
-  "usage: %s [options] [file...]\n"
-  "\n"
-  "bc is a command-line calculator with a Turing-complete language.\n"
-  "\n"
-  "  -h  --help         print this usage message and exit\n"
-  "  -i  --interactive  force interactive mode\n"
-  "  -l  --mathlib      use predefined math routines:\n\n"
-  "                       s(expr)  =  sine of expr in radians\n"
-  "                       c(expr)  =  cosine of expr in radians\n"
-  "                       a(expr)  =  arctangent of expr, returning radians\n"
-  "                       l(expr)  =  natural log of expr\n"
-  "                       e(expr)  =  raises e to the power of expr\n"
-  "                       j(n, x)  =  Bessel function of integer order n of x\n"
-  "\n"
-  "  -q  --quiet        don't print version and copyright\n"
-  "  -s  --standard     error if any non-POSIX extensions are used\n"
-  "  -w  --warn         warn if any non-POSIX extensions are used\n"
-  "  -v  --version      print version information and copyright and exit\n\n";
-
 static const char* const bc_env_args_name = "BC_ENV_ARGS";
+
+extern const char bc_help[];
 
 BcGlobals bcg;
 
