@@ -229,8 +229,8 @@ while true; do
 				continue
 			fi
 
-			content=$(echo "scale += 1; $line; halt" | "$bc" "$@" -lq)
-			content=${content%?}
+			content=$(echo "scale += 5; $line; halt" | "$bc" "$@" -lq)
+			content=${content%?????}
 			echo "$content" > "$out2"
 
 			# Compare the truncated.
