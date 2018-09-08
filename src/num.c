@@ -424,7 +424,6 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
   if (b->rdx == b->len) {
 
     bool zero;
-
     for (zero = true, i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
 
     if (i == len && zero) {
@@ -433,7 +432,6 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
     }
 
     len -= i - 1;
-
   }
 
   if (copy.cap == copy.len && (status = bc_num_expand(&copy, copy.len + 1)))
