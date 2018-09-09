@@ -99,6 +99,12 @@ num()
 	echo -n "$n"
 }
 
+append_test() {
+	echo "$line" >> "$math"
+	cat "$out1" >> "$results"
+	echo "$op" >> "$opfile"
+}
+
 ops=( '+' '-' '*' '/' '%' '^' )
 files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" "exponent"
         "log" "arctangent" "sine" "cosine" "bessel" )
@@ -217,8 +223,10 @@ while [ "x$keypress" = "x" ]; do
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
-		echo "    bc returned an error ($error); exiting..."
-		exit "$error"
+		echo "    bc returned an error ($error); adding \"$line\" to checklist..."
+		append_test
+		keypress=$(cat -v)
+		continue
 	fi
 
 	diff "$out1" "$out2" > /dev/null
@@ -248,9 +256,7 @@ while [ "x$keypress" = "x" ]; do
 		fi
 
 		echo "    failed; adding \"$line\" to checklist..."
-		echo "$line" >> "$math"
-		cat "$out1" >> "$results"
-		echo "$op" >> "$opfile"
+		append_test
 	fi
 
 	keypress=$(cat -v)
