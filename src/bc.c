@@ -80,8 +80,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
   BcStatus s = bc_lex_text(&bc->parse.lex, text);
 
-  if (s && (s = bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line)))
-    return s;
+  if (s) return bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line);
 
   while (bc->parse.lex.token.type != BC_LEX_EOF) {
 
@@ -227,6 +226,9 @@ BcStatus bc_stdin(Bc *bc) {
   // I/O error will always happen when stdin is
   // closed. It's not a problem in that case.
   s = s == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : s;
+
+  if (string) s = BC_STATUS_LEX_NO_STRING_END;
+  else if (comment) s = BC_STATUS_LEX_NO_COMMENT_END;
 
 exit_err:
   free(buf);
