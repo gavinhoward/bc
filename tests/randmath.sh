@@ -168,7 +168,7 @@ while [ "x$keypress" = "x" ]; do
 
 			number=$(num 0 1 1)
 
-			# GNU bc gets "sqrt(1) wrong, so skip it.
+			# GNU bc gets "sqrt(1)" wrong, so skip it.
 			if [ "$number" == "1" ]; then
 				keypress=$(cat -v)
 				continue
