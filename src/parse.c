@@ -153,7 +153,7 @@ BcStatus bc_parse_call(BcParse *p, BcVec *code, char *name, uint8_t flags) {
 
   entry.name = name;
 
-  if ((status = bc_parse_params(p, code, flags))) goto err;
+   if ((status = bc_parse_params(p, code, flags))) goto err;
 
   if (p->lex.token.type != BC_LEX_RIGHT_PAREN) {
     status = BC_STATUS_PARSE_BAD_TOKEN;
@@ -1427,7 +1427,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
     bc_vec_pop(&p->ops);
   }
 
-  if (nexprs != 1) {
+  if (prev == BC_INST_BOOL_NOT || nexprs != 1) {
     status = BC_STATUS_PARSE_BAD_EXPR;
     goto err;
   }
