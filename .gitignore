@@ -8,6 +8,9 @@ bc
 *.o
 *.a
 .log_*.txt
+.math.txt
+.results.txt
+.ops.txt
 strgen
 lib.c
 help.c

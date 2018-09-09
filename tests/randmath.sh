@@ -1,5 +1,14 @@
 #! /bin/bash
 
+# This script uses a technique to use a keypress to get
+# out of an infinite loop. The technique was found here:
+# https://stackoverflow.com/questions/5297638/bash-how-to-end-infinite-loop-with-any-key-pressed
+
+finish() {
+	rm -rf "$out1" "$out2" "$math" "$results" "$opfile"
+}
+trap finish EXIT
+
 gen()
 {
 	limit="$1"
@@ -96,7 +105,6 @@ files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" "exponent"
 funcs=( "sqrt" "e" "l" "a" "s" "c" "j" )
 
 script="$0"
-
 testdir=$(dirname "$script")
 
 if [ "$#" -gt 0 ]; then
@@ -109,19 +117,28 @@ fi
 out1="$testdir/../.log_bc.txt"
 out2="$testdir/../.log_test.txt"
 
-finish() {
-	rm -rf "$out1" "$out2"
-}
-trap finish EXIT
+# Files to output failed tests to.
+math="$testdir/../.math.txt"
+results="$testdir/../.results.txt"
+opfile="$testdir/../.ops.txt"
 
-t=0
+rm -rf "$math" "$results" "$opfile"
 
-while true; do
+# Set it so we can exit the loop on keypress.
+if [ -t 0 ]; then
+	stty -echo -icanon -icrnl time 0 min 0
+fi
+
+it=0
+keypress=''
+
+while [ "x$keypress" = "x" ]; do
+
+	t="$it"
+	it=$(expr "$it" + "1")
 
 	line=""
-
 	operator=$(gen 1)
-
 	op=$(expr "$operator" % 13)
 
 	if [ "$op" -lt 6 ]; then
@@ -153,7 +170,7 @@ while true; do
 
 			# GNU bc gets "sqrt(1) wrong, so skip it.
 			if [ "$number" == "1" ]; then
-				t=$(expr "$t" + "1")
+				keypress=$(cat -v)
 				continue
 			fi
 
@@ -189,7 +206,7 @@ while true; do
 
 	if [ "$content" == "" ]; then
 		echo "    other bc returned an error ($error); continuing..."
-		t=$(expr "$t" + "1")
+		keypress=$(cat -v)
 		continue
 	elif [ "$content" == "-0" ]; then
 		echo "0" > "$out1"
@@ -215,8 +232,8 @@ while true; do
 
 			# Have GNU bc calculate to one more decimal place and truncate by 1.
 			content=$(echo "scale += 10; $line; halt" | bc -lq)
-			content=${content%??????????}
-			echo "$content" > "$out1"
+			content2=${content%??????????}
+			echo "$content2" > "$out1"
 
 			# Compare the truncated.
 			diff "$out1" "$out2" > /dev/null
@@ -225,34 +242,52 @@ while true; do
 			# GNU bc got it wrong.
 			if [ "$error" -eq 0 ]; then
 				echo "    failed because of bug in other bc; continuing..."
-				t=$(expr "$t" + "1")
-				continue
-			fi
-
-			content=$(echo "scale += 5; $line; halt" | "$bc" "$@" -lq)
-			content=${content%?????}
-			echo "$content" > "$out2"
-
-			# Compare the truncated.
-			diff "$out1" "$out2" > /dev/null
-			error="$?"
-
-			# This bc is off by more than one digit.
-			if [ "$error" -eq 0 ]; then
-				echo "    failed; off by only one digit,\n"
-				echo "    which is good enough; continuing..."
-				t=$(expr "$t" + "1")
+				keypress=$(cat -v)
 				continue
 			fi
 		fi
 
-		echo "    failed; adding \"$line\" to test suite..."
-		echo "$line" >> "$testdir/${files[$op]}.txt"
-		cat "$out1" >> "$testdir/${files[$op]}_results.txt"
-		echo "    exiting..."
-		exit 127
+		echo "    failed; adding \"$line\" to checklist..."
+		echo "$line" >> "$math"
+		cat "$out1" >> "$results"
+		echo "$op" >> "$opfile"
 	fi
 
-	t=$(expr "$t" + "1")
+	keypress=$(cat -v)
+
+done
+
+# Reset the input.
+if [ -t 0 ]; then
+	stty sane
+fi
+
+if [ ! -f "$math" ]; then
+	echo -e "\nNo items in checklist."
+	echo "Exiting..."
+	exit 0
+fi
+
+echo -e "\nGoing through the checklist...\n"
+
+paste "$math" "$results" "$opfile" | while read line result curop; do
+
+	echo -e "\n$line"
+
+	echo "$line; halt" | bc -lq > "$out1"
+	echo "$line; halt" | "$bc" "$@" -lq > "$out2"
+
+	diff "$out1" "$out2"
+
+	echo -en "\nAdd test to test suite? [y/N] "
+	read answer </dev/tty
+
+	if [ "$answer" != "${answer#[Yy]}" ] ;then
+		echo Yes
+		echo "$line" >> "$testdir/${files[$curop]}.txt"
+		cat "$result" >> "$testdir/${files[$curop]}_results.txt"
+	else
+		echo No
+	fi
 
 done
