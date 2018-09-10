@@ -1,0 +1,25 @@
+aa = 0
+# This is a comment.
+while (q==0) { ++q; continue; }
+last
+read()
+print "i: ", i
+halt
+return 0
+limits
+.
+a(a[])
+define x(e)
+if (q) { x=3; }
+if (q!=0) { x=3; } else { x=4; }
+x<=0
+while (q!=0 && x==0) { ++q; }
+while (q!=0 || x==0) { ++q; }
+while (!q) { ++q; }
+for (; x<0; ++x) { y += 1; }
+for (x=0;; ++x) { y += 1; }
+for (x=0; x<0;) { y += 1; }
+for (x=0;;) { y += 1; }
+for (; x<0;) { y += 1; }
+for (;; ++x) { y += 1; }
+for (;;) { y += 1; }
