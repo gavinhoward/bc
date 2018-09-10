@@ -19,6 +19,7 @@ while read t; do
 done < "$testdir/all.txt"
 
 sh "$testdir/scripts.sh" "$bc" "$@"
+sh "$testdir/errors.sh" "$bc" "$@"
 
 # TODO: Read tests
 # TODO: Lex errors

@@ -13,9 +13,11 @@ else
 	bc="$1"
 fi
 
+echo "Running errors..."
+
 while read -r line; do
 
-	echo "Test: $line"
+	echo "    Test: $line"
 
 	echo "$line" | "$bc" "$@" -l 2>/dev/null
 	error="$?"
