@@ -45,13 +45,13 @@ void bc_sig(int sig) {
 }
 
 BcStatus bc_error(BcStatus s) {
-  if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
+  if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return s;
   fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
   return s * !bcg.tty;
 }
 
 BcStatus bc_error_file(BcStatus s, const char *file, size_t line) {
-  if (!s || !file || s >= BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
+  if (!s || !file || s >= BC_STATUS_POSIX_NAME_LEN) return s;
   fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
   fprintf(stderr, "    %s", file);
   fprintf(stderr, bc_err_line + 3 * !line, line);
