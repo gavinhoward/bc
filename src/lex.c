@@ -123,9 +123,8 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
 
     c = buf[j];
 
-    // If we have hit a backslash, skip it.
-    // We don't have to check for a newline
-    // because it's guaranteed.
+    // If we have hit a backslash, skip it. We don't have
+    // to check for a newline because it's guaranteed.
     if (hits < backslashes && c == '\\') {
       ++hits;
       ++j;
