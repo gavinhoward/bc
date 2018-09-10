@@ -26,18 +26,17 @@ for testfile in "$errors" "$posix_errors"; do
 
 	base=$(basename "$testfile")
 	base="${base%.*}"
-	echo "\nRunning $base..."
+	echo "Running $base..."
 
 	while read -r line; do
 
-		echo "    Test: $line"
-
-		echo "$line" | "$bc" "$@" "$options" 2>/dev/null
+		echo "$line" | "$bc" "$@" "$options" > /dev/null 2>&1
 		error="$?"
 
 		if [ "$error" -eq 0 ]; then
-			echo "\nbc returned no error"
-			echo "exiting..."
+			echo "\nbc returned no error on test:\n"
+			echo "    $line"
+			echo "\nexiting..."
 			exit 127
 		fi
 
