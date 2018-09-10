@@ -30,7 +30,7 @@ for testfile in "$errors" "$posix_errors"; do
 
 	while read -r line; do
 
-		echo "$line" | "$bc" "$@" "$options" > /dev/null 2>&1
+		echo "$line" | "$bc" "$@" "$options" > /dev/null
 		error="$?"
 
 		if [ "$error" -eq 0 ]; then
