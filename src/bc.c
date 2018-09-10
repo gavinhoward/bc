@@ -227,10 +227,10 @@ BcStatus bc_stdin(Bc *bc) {
   // closed. It's not a problem in that case.
   s = s == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : s;
 
-  if (string) s = BC_STATUS_LEX_NO_STRING_END;
-  else if (comment) s = BC_STATUS_LEX_NO_COMMENT_END;
-
-  if (s) s = bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line);
+  if (string) s = bc_error_file(BC_STATUS_LEX_NO_STRING_END,
+                                bc->parse.lex.file, bc->parse.lex.line);
+  else if (comment) s = bc_error_file(BC_STATUS_LEX_NO_COMMENT_END,
+                                      bc->parse.lex.file, bc->parse.lex.line);
 
 exit_err:
   free(buf);
