@@ -945,8 +945,15 @@ BcStatus bc_parse_body(BcParse *p, BcVec *code, bool brace) {
   *flag_ptr &= ~(BC_PARSE_FLAG_BODY);
 
   if (*flag_ptr & BC_PARSE_FLAG_FUNC_INNER) {
+
     if (!brace) return BC_STATUS_PARSE_BAD_TOKEN;
     p->auto_part = true;
+
+    if (p->lex.token.type == BC_LEX_KEY_AUTO) {
+      if ((status = bc_parse_auto(p))) return status;
+      p->auto_part = true;
+    }
+
     status = bc_lex_next(&p->lex);
   }
   else {
