@@ -44,6 +44,13 @@ void bc_sig(int sig) {
   else bcg.sig_other = 1;
 }
 
+BcStatus bc_strcpy(char **d, const char *s) {
+  assert(d && s);
+  if (!(*d = malloc(strlen(s) + 1))) return BC_STATUS_MALLOC_FAIL;
+  strcpy(*d, s);
+  return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_error(BcStatus s) {
   if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return s;
   fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
@@ -130,7 +137,7 @@ BcStatus bc_file(Bc *bc, const char *file) {
   bc->prog.file = file;
   if ((s = bc_io_fread(file, &data))) return s;
 
-  bc_lex_init(&bc->parse.lex, file);
+  bc_lex_file(&bc->parse.lex, file);
   if ((s = bc_process(bc, data))) goto err;
 
   main_func = bc_vec_item(&bc->prog.funcs, BC_PROGRAM_MAIN);
@@ -167,16 +174,13 @@ BcStatus bc_stdin(Bc *bc) {
   bool string, comment, notend;
 
   bc->prog.file = bc_program_stdin_name;
-  bc_lex_init(&bc->parse.lex, bc_program_stdin_name);
+  bc_lex_file(&bc->parse.lex, bc_program_stdin_name);
 
   n = bufn = BC_BUF_SIZE;
+  s = BC_STATUS_MALLOC_FAIL;
 
-  if (!(buffer = malloc(BC_BUF_SIZE + 1))) return BC_STATUS_MALLOC_FAIL;
-
-  if (!(buf = malloc(BC_BUF_SIZE + 1))) {
-    s = BC_STATUS_MALLOC_FAIL;
-    goto buf_err;
-  }
+  if (!(buffer = malloc(BC_BUF_SIZE + 1))) return s;
+  if (!(buf = malloc(BC_BUF_SIZE + 1))) goto buf_err;
 
   buffer[0] = '\0';
   string = comment = false;
@@ -283,7 +287,7 @@ BcStatus bc_main(unsigned int flags, BcVec *files) {
 
   if (flags & BC_FLAG_L) {
 
-    bc_lex_init(&bc.parse.lex, bc_lib_name);
+    bc_lex_file(&bc.parse.lex, bc_lib_name);
     if ((status = bc_lex_text(&bc.parse.lex, bc_lib))) goto err;
 
     while (!status && bc.parse.lex.token.type != BC_LEX_EOF)

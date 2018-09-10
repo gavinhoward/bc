@@ -119,6 +119,7 @@ typedef struct BcLex {
   struct {
     BcLexToken type;
     char *string;
+    size_t len;
   } token;
 
 } BcLex;
@@ -136,7 +137,9 @@ typedef struct BcLexKeyword {
 extern const BcLexKeyword bc_lex_keywords[20];
 
 // ** Exclude start. **
-void bc_lex_init(BcLex *lex, const char *file);
+BcStatus bc_lex_init(BcLex *lex);
+void bc_lex_free(BcLex *lex);
+void bc_lex_file(BcLex *lex, const char *file);
 BcStatus bc_lex_text(BcLex *lex, const char *text);
 BcStatus bc_lex_next(BcLex *lex);
 // ** Exclude end. **

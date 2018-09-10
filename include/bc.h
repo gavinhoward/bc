@@ -74,6 +74,8 @@ typedef struct BcGlobals {
 BcStatus bc_main(unsigned int flags, BcVec *files);
 // ** Exclude end. **
 
+BcStatus bc_strcpy(char **d, const char *s);
+
 BcStatus bc_error(BcStatus st);
 BcStatus bc_error_file(BcStatus st, const char *file, size_t line);
 BcStatus bc_posix_error(BcStatus s, const char *file,

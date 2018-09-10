@@ -32,8 +32,27 @@
 #include <lex.h>
 #include <bc.h>
 
+BcStatus bc_lex_expand(BcLex *lex, size_t req) {
+
+  assert(lex && req);
+
+  if (lex->token.len < req) {
+
+    char *temp;
+
+    if (!(temp = realloc(lex->token.string, req + 1)))
+      return BC_STATUS_MALLOC_FAIL;
+
+    lex->token.string = temp;
+    lex->token.len = req;
+  }
+
+  return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_lex_string(BcLex *lex) {
 
+  BcStatus status;
   const char *start;
   size_t len, newlines = 0, i = lex->idx;
   char c;
@@ -49,7 +68,9 @@ BcStatus bc_lex_string(BcLex *lex) {
   }
 
   len = i - lex->idx;
-  if (!(lex->token.string = malloc(len + 1))) return BC_STATUS_MALLOC_FAIL;
+
+  if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
+  if ((status = bc_lex_expand(lex, len))) return status;
 
   start = lex->buffer + lex->idx;
   memcpy(lex->token.string, start, len * sizeof(char));
@@ -92,6 +113,7 @@ BcStatus bc_lex_comment(BcLex *lex) {
 
 BcStatus bc_lex_number(BcLex *lex, char start) {
 
+  BcStatus status;
   const char *buf, *buffer = lex->buffer + lex->idx;
   size_t len, hits, backslashes = 0, i = 0, j;
   char c = buffer[i];
@@ -112,8 +134,8 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
 
   len = i + 1 * (*(buffer + i - 1) != '.');
 
-  lex->token.string = malloc(len - backslashes * 2 + 1);
-  if (!lex->token.string) return BC_STATUS_MALLOC_FAIL;
+  if (len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
+  if ((status = bc_lex_expand(lex, len - backslashes * 2))) return status;
 
   lex->token.string[0] = start;
   buf = buffer - 1;
@@ -182,7 +204,8 @@ BcStatus bc_lex_name(BcLex *lex) {
     return status;
   }
 
-  if (!(lex->token.string = malloc(i + 1))) return BC_STATUS_MALLOC_FAIL;
+  if (i > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
+  if ((status = bc_lex_expand(lex, i))) return status;
 
   strncpy(lex->token.string, buffer, i);
   lex->token.string[i] = '\0';
@@ -521,7 +544,17 @@ BcStatus bc_lex_token(BcLex *lex) {
   return status;
 }
 
-void bc_lex_init(BcLex *lex, const char *file) {
+BcStatus bc_lex_init(BcLex *lex) {
+  lex->token.len = 0;
+  lex->token.string = NULL;
+  return bc_lex_expand(lex, BC_BUF_SIZE - 1);
+}
+
+void bc_lex_free(BcLex *lex) {
+  free(lex->token.string);
+}
+
+void bc_lex_file(BcLex *lex, const char *file) {
   assert(lex && file);
   lex->line = 1;
   lex->newline = false;
@@ -550,7 +583,6 @@ BcStatus bc_lex_next(BcLex *lex) {
   // Loop until failure or we don't have whitespace. This
   // is so the parser doesn't get inundated with whitespace.
   do {
-    lex->token.string = NULL;
     status = bc_lex_token(lex);
   } while (!status && lex->token.type == BC_LEX_WHITESPACE);
 

@@ -280,7 +280,7 @@ BcStatus bc_program_read(BcProgram *p) {
   if ((status = bc_io_getline(&buffer, &size)))goto io_err;
 
   if ((status = bc_parse_init(&parse, p))) goto io_err;
-  bc_lex_init(&parse.lex, "<stdin>");
+  bc_lex_file(&parse.lex, "<stdin>");
   if ((status = bc_lex_text(&parse.lex, buffer))) goto exec_err;
 
   status = bc_parse_expr(&parse, &func->code, BC_PARSE_NOREAD);
