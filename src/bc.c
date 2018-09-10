@@ -94,7 +94,9 @@ BcStatus bc_process(Bc *bc, const char *text) {
           printf("BC_DIM_MAX      = %zu\n", (size_t) BC_MAX_DIM) < 0 ||
           printf("BC_SCALE_MAX    = %zu\n", (size_t) BC_MAX_SCALE) < 0 ||
           printf("BC_STRING_MAX   = %zu\n", (size_t) BC_MAX_STRING) < 0 ||
-          printf("Max Exponent    = %ld\n", (long) LONG_MAX) < 0 ||
+          printf("BC_NAME_MAX     = %zu\n", (size_t) BC_MAX_NAME) < 0 ||
+          printf("BC_NUM_MAX      = %zu\n", (size_t) BC_MAX_NUM) < 0 ||
+          printf("Max Exponent    = %ld\n", (long) INT_MAX) < 0 ||
           printf("Number of Vars  = %zu\n", (size_t) SIZE_MAX) < 0)
       {
         return s;
