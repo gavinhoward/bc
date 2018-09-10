@@ -20,11 +20,3 @@ done < "$testdir/all.txt"
 
 sh "$testdir/scripts.sh" "$bc" "$@"
 sh "$testdir/errors.sh" "$bc" "$@"
-
-# TODO: Read tests
-# TODO: Lex errors
-# TODO: Parse errors
-# TODO: VM errors
-# TODO: Math errors
-# TODO: POSIX warnings
-# TODO: POSIX errors
