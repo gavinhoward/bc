@@ -1328,7 +1328,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
         size_t idx = p->prog->constants.len;
 
         if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
-        if ((status = bc_vec_push(&p->prog->constants, &name)) goto err;
+        if ((status = bc_vec_push(&p->prog->constants, &name))) goto err;
 
         if ((status = bc_vec_pushByte(code, BC_INST_PUSH_NUM))) return status;
         if ((status = bc_parse_pushIndex(code, idx))) return status;
