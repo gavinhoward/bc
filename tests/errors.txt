@@ -25,6 +25,7 @@ a 4
 a g
 define r(e,) {}
 p(,e)
+p(e,)
 break
 continue
 auto a,u
