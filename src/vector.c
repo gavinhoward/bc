@@ -152,7 +152,7 @@ void bc_vec_free(void *vec) {
 
   BcVec *s = (BcVec*) vec;
 
-  if (!s) return;
+  assert(s && s->array);
 
   if (s->dtor) {
     size_t i;
@@ -160,7 +160,6 @@ void bc_vec_free(void *vec) {
   }
 
   free(s->array);
-  memset(s, 0, sizeof(BcVec));
 }
 
 size_t bc_veco_find(const BcVecO *vec, const void *data) {

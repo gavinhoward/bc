@@ -1263,7 +1263,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 void bc_program_free(BcProgram *p) {
 
-  if (!p) return;
+  assert(p);
 
   bc_num_free(&p->ibase);
   bc_num_free(&p->obase);

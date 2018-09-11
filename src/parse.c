@@ -1206,14 +1206,11 @@ BcStatus bc_parse_parse(BcParse *p) {
 }
 
 void bc_parse_free(BcParse *p) {
-
-  if (!p) return;
-
+  assert(p);
   bc_vec_free(&p->flags);
   bc_vec_free(&p->exits);
   bc_vec_free(&p->conds);
   bc_vec_free(&p->ops);
-
   bc_lex_free(&p->lex);
 }
 

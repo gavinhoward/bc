@@ -66,11 +66,8 @@ err:
 }
 
 void bc_func_free(void *func) {
-
   BcFunc *f = (BcFunc*) func;
-
-  if (!f) return;
-
+  assert(f);
   bc_vec_free(&f->code);
   bc_vec_free(&f->autos);
   bc_vec_free(&f->labels);
@@ -116,7 +113,8 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
 
 void bc_string_free(void *string) {
   char **s = string;
-  if (s && *s) free(*s);
+  assert(s && *s);
+  free(*s);
 }
 
 int bc_entry_cmp(const void *e1, const void *e2) {
@@ -125,19 +123,21 @@ int bc_entry_cmp(const void *e1, const void *e2) {
 
 void bc_entry_free(void *entry) {
   BcEntry *e = entry;
-  if (e && e->name) free(e->name);
+  assert(e && e->name);
+  free(e->name);
 }
 
 void bc_auto_free(void *auto1) {
   BcAuto *a = (BcAuto*) auto1;
-  if (a && a->name) free(a->name);
+  assert(a && a->name);
+  free(a->name);
 }
 
 void bc_result_free(void *result) {
 
   BcResult *r = (BcResult*) result;
 
-  if (!r) return;
+  assert(r);
 
   switch (r->type) {
 
@@ -159,7 +159,8 @@ void bc_result_free(void *result) {
     case BC_RESULT_ARRAY:
     case BC_RESULT_ARRAY_ELEM:
     {
-      if (r->data.id.name) free(r->data.id.name);
+      assert(r->data.id.name);
+      free(r->data.id.name);
       break;
     }
 

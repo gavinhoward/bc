@@ -545,12 +545,14 @@ BcStatus bc_lex_token(BcLex *lex) {
 }
 
 BcStatus bc_lex_init(BcLex *lex) {
+  assert(lex);
   lex->token.len = 0;
   lex->token.string = NULL;
   return bc_lex_expand(lex, BC_BUF_SIZE - 1);
 }
 
 void bc_lex_free(BcLex *lex) {
+  assert(lex);
   free(lex->token.string);
 }
 
