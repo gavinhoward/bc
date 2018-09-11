@@ -6,7 +6,7 @@ divide
 modulus
 power
 sqrt
-basic
+vars
 parse
 print
 exponent
