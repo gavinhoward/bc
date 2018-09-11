@@ -10,6 +10,7 @@ if [ "$#" -lt 1 ]; then
 	bc="$testdir/../bc"
 else
 	bc="$1"
+	shift
 fi
 
 while read t; do
