@@ -41,6 +41,13 @@ for testfile in "$errors" "$posix_errors"; do
 			exit 127
 		fi
 
+		if [ "$error" -gt 127 ]; then
+			echo "\nbc crashed on test:\n"
+			echo "    $line"
+			echo "\nexiting..."
+			exit "$error"
+		fi
+
 	done < "$testfile"
 
 done
