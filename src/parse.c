@@ -1212,11 +1212,12 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
   BcInst prev = BC_INST_PRINT;
   BcLexToken top, type = p->lex.token.type;
   uint32_t nexprs, nparens, nrelops, ops_start = (uint32_t) p->ops.len;
-  bool paren_first, paren_expr, rparen, done, get_token, assign;
+  bool paren_first, paren_expr, rparen, done, get_token, assign, bin_last;
 
   paren_first = p->lex.token.type == BC_LEX_LEFT_PAREN;
   nexprs = nparens = nrelops = 0;
   paren_expr = rparen = done = get_token = assign = false;
+  bin_last = true;
 
   while (!bcg.signe && !status && !done && bc_parse_token_exprs[type]) {
 
@@ -1226,7 +1227,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       case BC_LEX_OP_DEC:
       {
         status = bc_parse_incdec(p, code, &prev, &nexprs, flags);
-        rparen = get_token = false;
+        rparen = get_token = bin_last = false;
         break;
       }
 
@@ -1234,6 +1235,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       {
         status = bc_parse_minus(p, code, &p->ops, &prev, rparen, &nexprs);
         rparen = get_token = false;
+        bin_last = prev == BC_INST_MINUS;
         break;
       }
 
@@ -1267,17 +1269,22 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       case BC_LEX_OP_BOOL_OR:
       case BC_LEX_OP_BOOL_AND:
       {
+        if ((type == BC_LEX_OP_BOOL_NOT) != bin_last)
+          return BC_STATUS_PARSE_BAD_EXPR;
+
         nrelops += type >= BC_LEX_OP_REL_EQUAL && type <= BC_LEX_OP_REL_GREATER;
         prev = BC_PARSE_TOKEN_TO_INST(type);
         status = bc_parse_operator(p, code, &p->ops, type, &nexprs, true);
         rparen = get_token = false;
+        bin_last = type != BC_LEX_OP_BOOL_NOT;
+
         break;
       }
 
       case BC_LEX_LEFT_PAREN:
       {
         ++nparens;
-        paren_expr = rparen = false;
+        paren_expr = rparen = bin_last = false;
         get_token = true;
         status = bc_vec_push(&p->ops, &type);
         break;
@@ -1295,7 +1302,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
 
         --nparens;
         paren_expr = rparen = true;
-        get_token = false;
+        get_token = bin_last = false;
 
         status = bc_parse_rightParen(p, code, &p->ops, &nexprs);
 
@@ -1305,7 +1312,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       case BC_LEX_NAME:
       {
         paren_expr = true;
-        rparen = get_token = false;
+        rparen = get_token = bin_last = false;
         status = bc_parse_name(p, code, &prev, flags & ~BC_PARSE_NOCALL);
         ++nexprs;
         break;
@@ -1326,7 +1333,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
         if ((status = bc_parse_pushIndex(code, idx))) return status;
 
         paren_expr = get_token = true;
-        rparen = false;
+        rparen = bin_last = false;
         ++nexprs;
         prev = BC_INST_PUSH_NUM;
 
@@ -1341,7 +1348,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
         status = bc_vec_pushByte(code, (uint8_t) prev);
 
         paren_expr = get_token = true;
-        rparen = false;
+        rparen = bin_last = false;
         ++nexprs;
 
         break;
@@ -1352,7 +1359,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       {
         status = bc_parse_builtin(p, code, type, flags, &prev);
         paren_expr = true;
-        rparen = get_token = false;
+        rparen = get_token = bin_last = false;
         ++nexprs;
         break;
       }
@@ -1363,7 +1370,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
         else status = bc_parse_read(p, code);
 
         paren_expr = true;
-        rparen = get_token = false;
+        rparen = get_token = bin_last = false;
         ++nexprs;
         prev = BC_INST_READ;
 
@@ -1374,7 +1381,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       {
         status = bc_parse_scale(p, code, &prev, flags);
         paren_expr = true;
-        rparen = get_token = false;
+        rparen = get_token = bin_last = false;
         ++nexprs;
         prev = BC_INST_PUSH_SCALE;
         break;
