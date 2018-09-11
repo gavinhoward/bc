@@ -1303,7 +1303,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
           get_token = false;
           break;
         }
-        else if (!paren_expr) status = BC_STATUS_PARSE_BAD_EXPR;
+        else if (!paren_expr) return BC_STATUS_PARSE_BAD_EXPR;
 
         --nparens;
         paren_expr = rparen = true;
