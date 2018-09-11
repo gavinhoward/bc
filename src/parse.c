@@ -400,18 +400,15 @@ BcStatus bc_parse_minus(BcParse *p, BcVec *exs, BcVec *ops, BcInst *prev,
   return status;
 }
 
-BcStatus bc_parse_string(BcParse *p, BcVec *code) {
+BcStatus bc_parse_string(BcParse *p, BcVec *code, uint8_t inst) {
 
   BcStatus status;
-  size_t len;
   char *str;
 
-  len = p->prog->strings.len;
-
   if ((status = bc_strcpy(&str, p->lex.token.string))) return status;
+  if ((status = bc_vec_pushByte(code, inst))) goto err;
+  if ((status = bc_parse_pushIndex(code, p->prog->strings.len))) goto err;
   if ((status = bc_vec_push(&p->prog->strings, &str))) goto err;
-  if ((status = bc_vec_pushByte(code, BC_INST_STR))) return status;
-  if ((status = bc_parse_pushIndex(code, len))) return status;
 
   return bc_lex_next(&p->lex);
 
@@ -436,19 +433,7 @@ BcStatus bc_parse_print(BcParse *p, BcVec *code) {
   while (!status && type != BC_LEX_SEMICOLON && type != BC_LEX_NEWLINE) {
 
     if (type == BC_LEX_STRING) {
-
-      char *name;
-      size_t len = p->prog->strings.len;
-
-      if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
-
-      if ((status = bc_vec_push(&p->prog->strings, &name))) {
-        free(name);
-        return status;
-      }
-
-      if ((status = bc_vec_pushByte(code, BC_INST_PRINT_STR))) return status;
-      status = bc_parse_pushIndex(code, len);
+      status = bc_parse_string(p, code, BC_INST_PRINT_STR);
     }
     else {
       if ((status = bc_parse_expr(p, code, 0))) return status;
@@ -825,7 +810,7 @@ BcStatus bc_parse_func(BcParse *p) {
   assert(p->prog->funcs.len == p->prog->func_map.vec.len);
 
   if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
-  if ((status = bc_program_addFunc(p->prog, name, &p->func))) goto err;
+  if ((status = bc_program_addFunc(p->prog, name, &p->func))) return status;
   assert(p->func);
   fptr = bc_vec_item(&p->prog->funcs, p->func);
 
@@ -1049,7 +1034,7 @@ BcStatus bc_parse_stmt(BcParse *p, BcVec *code) {
 
     case BC_LEX_STRING:
     {
-      status = bc_parse_string(p, code);
+      status = bc_parse_string(p, code, BC_INST_STR);
       break;
     }
 
