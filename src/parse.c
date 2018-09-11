@@ -832,8 +832,12 @@ BcStatus bc_parse_func(BcParse *p) {
     if (!var) {
 
       if ((status = bc_lex_next(&p->lex))) goto err;
-      if (p->lex.token.type != BC_LEX_RIGHT_BRACKET)
-        return BC_STATUS_PARSE_BAD_FUNC;
+
+      if (p->lex.token.type != BC_LEX_RIGHT_BRACKET) {
+        status = BC_STATUS_PARSE_BAD_FUNC;
+        goto err;
+      }
+
       if ((status = bc_lex_next(&p->lex))) goto err;
     }
 
@@ -877,7 +881,7 @@ BcStatus bc_parse_auto(BcParse *p) {
   while (!status && p->lex.token.type == BC_LEX_NAME) {
 
     if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
-    if ((status = bc_lex_next(&p->lex))) return status;
+    if ((status = bc_lex_next(&p->lex))) goto err;
 
     one = true;
     var = p->lex.token.type != BC_LEX_LEFT_BRACKET;
@@ -885,8 +889,11 @@ BcStatus bc_parse_auto(BcParse *p) {
     if (!var) {
 
       if ((status = bc_lex_next(&p->lex))) goto err;
-      if (p->lex.token.type != BC_LEX_RIGHT_BRACKET)
-        return BC_STATUS_PARSE_BAD_FUNC;
+
+      if (p->lex.token.type != BC_LEX_RIGHT_BRACKET) {
+        status = BC_STATUS_PARSE_BAD_FUNC;
+        goto err;
+      }
 
       if ((status = bc_lex_next(&p->lex))) goto err;
     }
