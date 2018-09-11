@@ -193,8 +193,8 @@ BcStatus bc_stdin(Bc *bc) {
   while (!s && !((s = bc_io_getline(&buf, &bufn)) && s != BC_STATUS_BIN_FILE))
   {
     if (s == BC_STATUS_BIN_FILE) {
-      s = putchar('\a') == EOF ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
-      continue;
+      s = bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line);
+      break;
     }
 
     len = strlen(buf);
