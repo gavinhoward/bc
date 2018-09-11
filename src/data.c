@@ -180,8 +180,8 @@ const BcOp bc_parse_ops[] = {
   { 3, true }, { 3, true }, { 3, true },
   { 4, true }, { 4, true },
   { 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true },
-  { 7, false },
-  { 8, true }, { 8, true },
+  { 1, false },
+  { 7, true }, { 7, true },
   { 5, false }, { 5, false }, { 5, false }, { 5, false }, { 5, false },
   { 5, false }, { 5, false },
 };

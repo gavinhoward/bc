@@ -26,7 +26,7 @@ language. See the GNU bc manual (https://www.gnu.org/software/bc/manual/bc.html)
 and bc spec (http://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 for details.
 
-This bc has three differences to the GNU bc:
+This bc has four differences to the GNU bc:
 
   1) The period (.) can also be used as a shortcut for "last", as in the BSD bc.
   2) Arrays are copied before being passed as arguments to functions. This
@@ -36,6 +36,11 @@ This bc has three differences to the GNU bc:
 
        a[0] = 0
        length(a[])
+
+  4) The precedence of the boolean "not" operator (!) is equal to that of the
+     unary minus (-), or negation, operator. This still allows POSIX-compliant
+     scripts to work while somewhat preserving expected behavior (versus C) and
+     making parsing easier.
 
 Options:
 

@@ -1208,7 +1208,7 @@ BcStatus bc_program_exec(BcProgram *p) {
         status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
         if (status) return status;
 
-        if (bc_num_cmp(num, &p->zero)) bc_num_one(&result.data.num);
+        if (!bc_num_cmp(num, &p->zero)) bc_num_one(&result.data.num);
         else bc_num_zero(&result.data.num);
 
         status = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP);

@@ -84,14 +84,14 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
   if (!a) return !b ? 0 : !b->neg * -2 + 1;
   else if (!b) return a->neg * -2 + 1;
 
+  if (!a->len) return (!b->neg * -2 + 1) * !!b->len;
+  else if (!b->len) return a->neg * -2 + 1;
+
   if (a->neg) {
     if (b->neg) neg = -1;
     else return -1;
   }
   else if (b->neg) return 1;
-
-  if (!a->len) return (!b->neg * -2 + 1) * !!b->len;
-  else if (!b->len) return a->neg * -2 + 1;
 
   a_int = BC_NUM_INT(a);
   b_int = BC_NUM_INT(b);
