@@ -441,7 +441,6 @@ BcStatus bc_parse_print(BcParse *p, BcVec *code) {
     }
 
     if (status) return status;
-    if ((status = bc_lex_next(&p->lex))) return status;
 
     comma = p->lex.token.type == BC_LEX_COMMA;
     if (comma) status = bc_lex_next(&p->lex);
