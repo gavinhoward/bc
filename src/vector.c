@@ -83,7 +83,7 @@ BcStatus bc_vec_push(BcVec *vec, size_t n, const void *data) {
 
   assert(vec && n && data);
 
-  if (vec->len == vec->cap && (status = bc_vec_grow(vec, n))) return status;
+  if (vec->len + n > vec->cap && (status = bc_vec_grow(vec, n))) return status;
 
   memmove(vec->array + (vec->size * vec->len), data, vec->size * n);
   vec->len += n;
