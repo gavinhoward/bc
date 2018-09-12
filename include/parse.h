@@ -35,6 +35,7 @@
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
 #define BC_PARSE_NOREAD (1<<3)
+#define BC_PARSE_ARRAY (1<<4)
 
 #define BC_PARSE_TOP_FLAG_PTR(parse)  ((uint8_t*) bc_vec_top(&(parse)->flags))
 #define BC_PARSE_TOP_FLAG(parse)  (*(BC_PARSE_TOP_FLAG_PTR(parse)))
