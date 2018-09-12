@@ -82,6 +82,9 @@
                                  BC_PARSE_FLAG_ELSE |        \
                                  BC_PARSE_FLAG_IF_END)))
 
+#define BC_PARSE_LEAF(p, paren)  \
+  ((paren) || ((p) >= BC_INST_PUSH_NUM || (p) <= BC_INST_SQRT))
+
 // We can calculate the conversion between tokens and exprs
 // by subtracting the position of the first operator in the
 // lex enum and adding the position of the first in the expr

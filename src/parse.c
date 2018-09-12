@@ -1323,10 +1323,13 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
 
       case BC_LEX_NAME:
       {
+        if (!BC_PARSE_LEAF(prev, paren_expr)) return BC_STATUS_PARSE_BAD_EXPR;
+
         paren_expr = true;
         rparen = get_token = bin_last = false;
         status = bc_parse_name(p, code, &prev, flags & ~BC_PARSE_NOCALL);
         ++nexprs;
+
         break;
       }
 
@@ -1334,6 +1337,8 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       {
         char *num;
         size_t idx = p->prog->constants.len;
+
+        if (!BC_PARSE_LEAF(prev, paren_expr)) return BC_STATUS_PARSE_BAD_EXPR;
 
         if ((status = bc_strcpy(&num, p->lex.token.string))) return status;
         if ((status = bc_vec_push(&p->prog->constants, &num))) {
@@ -1356,6 +1361,8 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       case BC_LEX_KEY_LAST:
       case BC_LEX_KEY_OBASE:
       {
+        if (!BC_PARSE_LEAF(prev, paren_expr)) return BC_STATUS_PARSE_BAD_EXPR;
+
         prev = (uint8_t) (type - BC_LEX_KEY_IBASE + BC_INST_PUSH_IBASE);
         status = bc_vec_pushByte(code, (uint8_t) prev);
 
@@ -1369,16 +1376,20 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       case BC_LEX_KEY_LENGTH:
       case BC_LEX_KEY_SQRT:
       {
+        if (!BC_PARSE_LEAF(prev, paren_expr)) return BC_STATUS_PARSE_BAD_EXPR;
+
         status = bc_parse_builtin(p, code, type, flags, &prev);
         paren_expr = true;
         rparen = get_token = bin_last = false;
         ++nexprs;
+
         break;
       }
 
       case BC_LEX_KEY_READ:
       {
-        if (flags & BC_PARSE_NOREAD) status = BC_STATUS_EXEC_NESTED_READ;
+        if (!BC_PARSE_LEAF(prev, paren_expr)) return BC_STATUS_PARSE_BAD_EXPR;
+        else if (flags & BC_PARSE_NOREAD) status = BC_STATUS_EXEC_NESTED_READ;
         else status = bc_parse_read(p, code);
 
         paren_expr = true;
@@ -1391,11 +1402,14 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
 
       case BC_LEX_KEY_SCALE:
       {
+        if (!BC_PARSE_LEAF(prev, paren_expr)) return BC_STATUS_PARSE_BAD_EXPR;
+
         status = bc_parse_scale(p, code, &prev, flags);
         paren_expr = true;
         rparen = get_token = bin_last = false;
         ++nexprs;
         prev = BC_INST_PUSH_SCALE;
+
         break;
       }
 
