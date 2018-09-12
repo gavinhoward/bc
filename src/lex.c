@@ -129,6 +129,7 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
       backslashes += 1;
     }
 
+    point = point || c == '.';
     c = buffer[++i];
   }
 
