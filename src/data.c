@@ -172,6 +172,8 @@ const bool bc_parse_token_exprs[] = {
   true, true, true, false, false, true, false, true, true, false, false, false,
 };
 
+// These are to identify what tokens can
+// come after expressions in certain cases.
 const BcNext bc_parse_next_expr =
     BC_PARSE_NEXT(3, BC_LEX_NEWLINE, BC_LEX_SEMICOLON, BC_LEX_RIGHT_BRACE);
 const BcNext bc_parse_next_param =
