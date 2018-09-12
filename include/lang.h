@@ -141,7 +141,6 @@ typedef enum BcResultType {
 
   BC_RESULT_OBASE,
 
-
 } BcResultType;
 
 typedef struct BcResult {
