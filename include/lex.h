@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include <status.h>
+#include <vector.h>
 
 // BC_LEX_OP_NEGATE is not used in lexing; it is only for parsing.
 typedef enum BcLexToken {
@@ -118,8 +119,7 @@ typedef struct BcLex {
 
   struct {
     BcLexToken type;
-    char *string;
-    size_t len;
+    BcVec data;
   } token;
 
 } BcLex;

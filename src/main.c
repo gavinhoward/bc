@@ -135,7 +135,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
   if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
   for (i = optind; !status && i < argc; ++i)
-    status = bc_vec_push(files, argv + i);
+    status = bc_vec_push(files, 1, argv + i);
 
   return status;
 }
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
   if ((env_args = getenv(bc_env_args_name))) {
 
     if ((status = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
-    if ((status = bc_vec_push(&args, &bc_env_args_name))) goto args_err;
+    if ((status = bc_vec_push(&args, 1, &bc_env_args_name))) goto args_err;
 
     if (!(buffer = strdup(env_args))) {
       status = BC_STATUS_MALLOC_FAIL;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 
       if (!isspace(*buf)) {
 
-        if ((status = bc_vec_push(&args, &buf))) goto buf_err;
+        if ((status = bc_vec_push(&args, 1, &buf))) goto buf_err;
 
         while (*buf && !isspace(*buf)) ++buf;
 

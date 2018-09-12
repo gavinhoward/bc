@@ -86,7 +86,7 @@ BcStatus bc_parse_operator(BcParse *p, BcVec *code, BcVec *ops, BcLexToken t,
     *num_exprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEG;
   }
 
-  if ((status = bc_vec_push(ops, &t))) return status;
+  if ((status = bc_vec_push(ops, 1, &t))) return status;
   if (next) status = bc_lex_next(&p->lex);
 
   return status;
@@ -183,7 +183,7 @@ BcStatus bc_parse_name(BcParse *p, BcVec *code, BcInst *type, uint8_t flags)
   BcStatus status;
   char *name;
 
-  if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
+  if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
   if ((status = bc_lex_next(&p->lex))) goto err;
 
   if (p->lex.token.type == BC_LEX_LEFT_BRACKET) {
@@ -405,7 +405,7 @@ BcStatus bc_parse_minus(BcParse *p, BcVec *exs, BcVec *ops, BcInst *prev,
   else
     // We can just push onto the op stack because this is the largest
     // precedence operator that gets pushed. Inc/dec does not.
-    status = bc_vec_push(ops, &type);
+    status = bc_vec_push(ops, 1, &type);
 
   return status;
 }
@@ -415,10 +415,10 @@ BcStatus bc_parse_string(BcParse *p, BcVec *code, uint8_t inst) {
   BcStatus status;
   char *str;
 
-  if ((status = bc_strcpy(&str, p->lex.token.string))) return status;
+  if ((status = bc_vec_string(&p->lex.token.data, &str))) return status;
   if ((status = bc_vec_pushByte(code, inst))) goto err;
   if ((status = bc_parse_pushIndex(code, p->prog->strings.len))) goto err;
-  if ((status = bc_vec_push(&p->prog->strings, &str))) goto err;
+  if ((status = bc_vec_push(&p->prog->strings, 1, &str))) goto err;
 
   return bc_lex_next(&p->lex);
 
@@ -577,7 +577,7 @@ BcStatus bc_parse_startBody(BcParse *p, uint8_t flags) {
   uint8_t *flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
   flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
   flags |= BC_PARSE_FLAG_BODY;
-  return bc_vec_push(&p->flags, &flags);
+  return bc_vec_push(&p->flags, 1, &flags);
 }
 
 void bc_parse_noElse(BcParse *p, BcVec *code) {
@@ -623,8 +623,8 @@ BcStatus bc_parse_if(BcParse *p, BcVec *code) {
   ip.len = 0;
 
   if ((status = bc_parse_pushIndex(code, ip.idx))) return status;
-  if ((status = bc_vec_push(&p->exits, &ip))) return status;
-  if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
+  if ((status = bc_vec_push(&p->exits, 1, &ip))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &ip.idx))) return status;
 
   return bc_parse_startBody(p, BC_PARSE_FLAG_IF);
 }
@@ -648,8 +648,8 @@ BcStatus bc_parse_else(BcParse *p, BcVec *code) {
 
   bc_parse_noElse(p, code);
 
-  if ((status = bc_vec_push(&p->exits, &ip))) return status;
-  if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
+  if ((status = bc_vec_push(&p->exits, 1, &ip))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &ip.idx))) return status;
   if ((status = bc_lex_next(&p->lex))) return status;
 
   return bc_parse_startBody(p, BC_PARSE_FLAG_ELSE);
@@ -668,15 +668,15 @@ BcStatus bc_parse_while(BcParse *p, BcVec *code) {
   func = bc_vec_item(&p->prog->funcs, p->func);
   ip.idx = func->labels.len;
 
-  if ((status = bc_vec_push(&func->labels, &code->len))) return status;
-  if ((status = bc_vec_push(&p->conds, &ip.idx))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &code->len))) return status;
+  if ((status = bc_vec_push(&p->conds, 1, &ip.idx))) return status;
 
   ip.idx = func->labels.len;
   ip.func = 1;
   ip.len = 0;
 
-  if ((status = bc_vec_push(&p->exits, &ip))) return status;
-  if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
+  if ((status = bc_vec_push(&p->exits, 1, &ip))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &ip.idx))) return status;
 
   if ((status = bc_parse_expr(p, code, BC_PARSE_POSIX_REL))) return status;
   if (p->lex.token.type != BC_LEX_RIGHT_PAREN) return BC_STATUS_PARSE_BAD_TOKEN;
@@ -716,7 +716,7 @@ BcStatus bc_parse_for(BcParse *p, BcVec *code) {
   body_idx = update_idx + 1;
   exit_idx = body_idx + 1;
 
-  if ((status = bc_vec_push(&func->labels, &code->len))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &code->len))) return status;
 
   if (p->lex.token.type != BC_LEX_SEMICOLON)
     status = bc_parse_expr(p, code, BC_PARSE_POSIX_REL);
@@ -734,8 +734,8 @@ BcStatus bc_parse_for(BcParse *p, BcVec *code) {
 
   ip.idx = func->labels.len;
 
-  if ((status = bc_vec_push(&p->conds, &update_idx))) return status;
-  if ((status = bc_vec_push(&func->labels, &code->len))) return status;
+  if ((status = bc_vec_push(&p->conds, 1, &update_idx))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &code->len))) return status;
 
   if (p->lex.token.type != BC_LEX_RIGHT_PAREN)
     status = bc_parse_expr(p, code, 0);
@@ -753,14 +753,14 @@ BcStatus bc_parse_for(BcParse *p, BcVec *code) {
   if (p->lex.token.type != BC_LEX_RIGHT_PAREN) return BC_STATUS_PARSE_BAD_TOKEN;
   if ((status = bc_vec_pushByte(code, BC_INST_JUMP))) return status;
   if ((status = bc_parse_pushIndex(code, cond_idx))) return status;
-  if ((status = bc_vec_push(&func->labels, &code->len))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &code->len))) return status;
 
   ip.idx = exit_idx;
   ip.func = 1;
   ip.len = 0;
 
-  if ((status = bc_vec_push(&p->exits, &ip))) return status;
-  if ((status = bc_vec_push(&func->labels, &ip.idx))) return status;
+  if ((status = bc_vec_push(&p->exits, 1, &ip))) return status;
+  if ((status = bc_vec_push(&func->labels, 1, &ip.idx))) return status;
   if ((status = bc_lex_next(&p->lex))) return status;
 
   return bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
@@ -818,7 +818,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
   assert(p->prog->funcs.len == p->prog->func_map.vec.len);
 
-  if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
+  if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
   if ((status = bc_program_addFunc(p->prog, name, &p->func))) return status;
   assert(p->func);
   fptr = bc_vec_item(&p->prog->funcs, p->func);
@@ -833,7 +833,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
     ++fptr->nparams;
 
-    if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
+    if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
     if ((status = bc_lex_next(&p->lex))) goto err;
 
     var = p->lex.token.type != BC_LEX_LEFT_BRACKET;
@@ -889,7 +889,7 @@ BcStatus bc_parse_auto(BcParse *p) {
 
   while (!status && p->lex.token.type == BC_LEX_NAME) {
 
-    if ((status = bc_strcpy(&name, p->lex.token.string))) return status;
+    if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
     if ((status = bc_lex_next(&p->lex))) goto err;
 
     one = true;
@@ -1140,7 +1140,7 @@ BcStatus bc_parse_init(BcParse *p, BcProgram *program) {
   if ((status = bc_vec_init(&p->flags, sizeof(uint8_t), NULL))) goto flags_err;
   if ((status = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto exit_err;
   if ((status = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto cond_err;
-  if ((status = bc_vec_push(&p->flags, &flags))) goto push_err;
+  if ((status = bc_vec_push(&p->flags, 1, &flags))) goto push_err;
   if ((status = bc_vec_init(&p->ops, sizeof(BcLexToken), NULL))) goto push_err;
 
   p->prog = program;
@@ -1298,7 +1298,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
         ++nparens;
         paren_expr = rparen = bin_last = false;
         get_token = true;
-        status = bc_vec_push(&p->ops, &type);
+        status = bc_vec_push(&p->ops, 1, &type);
         break;
       }
 
@@ -1340,8 +1340,8 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
 
         if (!BC_PARSE_LEAF(prev, paren_expr)) return BC_STATUS_PARSE_BAD_EXPR;
 
-        if ((status = bc_strcpy(&num, p->lex.token.string))) return status;
-        if ((status = bc_vec_push(&p->prog->constants, &num))) {
+        if ((status = bc_vec_string(&p->lex.token.data, &num))) return status;
+        if ((status = bc_vec_push(&p->prog->constants, 1, &num))) {
           free(num);
           return status;
         }

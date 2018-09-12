@@ -32,26 +32,10 @@
 #include <lex.h>
 #include <bc.h>
 
-BcStatus bc_lex_expand(BcLex *lex, size_t req) {
-
-  assert(lex && req);
-
-  if (lex->token.len < req) {
-
-    char *temp = realloc(lex->token.string, req + 1);
-    if (!temp) return BC_STATUS_MALLOC_FAIL;
-
-    lex->token.string = temp;
-    lex->token.len = req;
-  }
-
-  return BC_STATUS_SUCCESS;
-}
-
 BcStatus bc_lex_string(BcLex *lex) {
 
   BcStatus status;
-  const char *start;
+  const char *buf;
   size_t len, newlines = 0, i = lex->idx;
   char c;
 
@@ -66,14 +50,11 @@ BcStatus bc_lex_string(BcLex *lex) {
   }
 
   len = i - lex->idx;
-
   if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
-  if ((status = bc_lex_expand(lex, len))) return status;
 
-  start = lex->buffer + lex->idx;
-  memcpy(lex->token.string, start, len * sizeof(char));
+  buf = lex->buffer + lex->idx;
+  if ((status = bc_vec_setToString(&lex->token.data, len, buf))) return status;
 
-  lex->token.string[len] = '\0';
   lex->idx = i + 1;
   lex->line += newlines;
 
@@ -132,11 +113,13 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
   }
 
   len = i + 1 * (*(buffer + i - 1) != '.');
-
   if (len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
-  if ((status = bc_lex_expand(lex, len - backslashes * 2))) return status;
 
-  lex->token.string[0] = start;
+  bc_vec_npop(&lex->token.data, lex->token.data.len);
+  if ((status = bc_vec_expand(&lex->token.data, len - backslashes * 2 + 1)))
+    return status;
+  if ((status = bc_vec_push(&lex->token.data, 1, &start))) return status;
+
   buf = buffer - 1;
   hits = 0;
 
@@ -152,10 +135,10 @@ BcStatus bc_lex_number(BcLex *lex, char start) {
       continue;
     }
 
-    lex->token.string[j - (hits * 2)] = c;
+    if ((status = bc_vec_push(&lex->token.data, 1, &c))) return status;
   }
 
-  lex->token.string[j - (hits * 2)] = '\0';
+  if ((status = bc_vec_pushByte(&lex->token.data, '\0'))) return status;
   lex->idx += i;
 
   return BC_STATUS_SUCCESS;
@@ -204,10 +187,7 @@ BcStatus bc_lex_name(BcLex *lex) {
   }
 
   if (i > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
-  if ((status = bc_lex_expand(lex, i))) return status;
-
-  strncpy(lex->token.string, buffer, i);
-  lex->token.string[i] = '\0';
+  if ((status = bc_vec_setToString(&lex->token.data, i, buffer))) return status;
 
   // Increment the index. We minus one because it has already been incremented.
   lex->idx += i - 1;
@@ -545,14 +525,12 @@ BcStatus bc_lex_token(BcLex *lex) {
 
 BcStatus bc_lex_init(BcLex *lex) {
   assert(lex);
-  lex->token.len = 0;
-  lex->token.string = NULL;
-  return bc_lex_expand(lex, BC_BUF_SIZE - 1);
+  return bc_vec_init(&lex->token.data, sizeof(uint8_t), NULL);
 }
 
 void bc_lex_free(BcLex *lex) {
   assert(lex);
-  free(lex->token.string);
+  bc_vec_free(&lex->token.data);
 }
 
 void bc_lex_file(BcLex *lex, const char *file) {

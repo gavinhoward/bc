@@ -41,7 +41,7 @@ BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
   a.var = var;
   a.name = name;
 
-  return bc_vec_push(&f->autos, &a);
+  return bc_vec_push(&f->autos, 1, &a);
 }
 
 BcStatus bc_func_init(BcFunc *f) {
@@ -105,7 +105,7 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
   while (!status && len > a->len) {
     if ((status = bc_num_init(&num, BC_NUM_DEF_SIZE))) return status;
     bc_num_zero(&num);
-    if ((status = bc_vec_push(a, &num))) bc_num_free(&num);
+    if ((status = bc_vec_push(a, 1, &num))) bc_num_free(&num);
   }
 
   return status;

@@ -860,7 +860,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   while (intp.len) {
     if ((status = bc_num_mod(&intp, base, &digit, 0))) goto frac_len_err;
     if ((status = bc_num_ulong(&digit, &dig))) goto frac_len_err;
-    if ((status = bc_vec_push(&stack, &dig))) goto frac_len_err;
+    if ((status = bc_vec_push(&stack, 1, &dig))) goto frac_len_err;
     if ((status = bc_num_div(&intp, base, &intp, 0))) goto frac_len_err;
   }
 

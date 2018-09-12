@@ -44,13 +44,6 @@ void bc_sig(int sig) {
   else bcg.sig_other = 1;
 }
 
-BcStatus bc_strcpy(char **d, const char *s) {
-  assert(d && s);
-  if (!(*d = malloc(strlen(s) + 1))) return BC_STATUS_MALLOC_FAIL;
-  strcpy(*d, s);
-  return BC_STATUS_SUCCESS;
-}
-
 BcStatus bc_error(BcStatus s) {
   if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return s;
   fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
