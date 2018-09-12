@@ -67,8 +67,7 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
       }
       else return BC_STATUS_IO_ERR;
     }
-    else if (!c || !(c >= ' ' || isspace(c)) || c >= '~')
-      return BC_STATUS_BIN_FILE;
+    else if (c < ' ' && !isspace(c) && c > '~') return BC_STATUS_BIN_FILE;
 
     (*buf)[i] = (char) c;
   }
