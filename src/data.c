@@ -172,6 +172,16 @@ const bool bc_parse_token_exprs[] = {
   true, true, true, false, false, true, false, true, true, false, false, false,
 };
 
+const BcNext bc_parse_next_expr =
+    BC_PARSE_NEXT(3, BC_LEX_NEWLINE, BC_LEX_SEMICOLON, BC_LEX_RIGHT_BRACE);
+const BcNext bc_parse_next_param =
+  BC_PARSE_NEXT(2, BC_LEX_RIGHT_PAREN, BC_LEX_COMMA);
+const BcNext bc_parse_next_print =
+    BC_PARSE_NEXT(3, BC_LEX_COMMA, BC_LEX_NEWLINE, BC_LEX_SEMICOLON);
+const BcNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RIGHT_PAREN);
+const BcNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RIGHT_BRACKET);
+const BcNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SEMICOLON);
+
 // This is an array of data for operators that correspond to token types.
 const BcOp bc_parse_ops[] = {
   { 0, false }, { 0, false },

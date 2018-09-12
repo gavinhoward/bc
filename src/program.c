@@ -283,7 +283,8 @@ BcStatus bc_program_read(BcProgram *p) {
   bc_lex_file(&parse.lex, "<stdin>");
   if ((status = bc_lex_text(&parse.lex, buffer))) goto exec_err;
 
-  status = bc_parse_expr(&parse, &func->code, BC_PARSE_NOREAD);
+  status = bc_parse_expr(&parse, &func->code, BC_PARSE_NOREAD,
+                         bc_parse_next_cond);
   if (status) return status;
 
   if (parse.lex.token.type != BC_LEX_NEWLINE &&

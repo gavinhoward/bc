@@ -98,6 +98,16 @@ typedef struct BcOp {
 
 } BcOp;
 
+typedef struct BcNext {
+
+  uint32_t len;
+  BcLexToken tokens[3];
+
+} BcNext;
+
+#define BC_PARSE_NEXT_TOKENS(...) .tokens = { __VA_ARGS__ }
+#define BC_PARSE_NEXT(a, ...) { .len = (a), BC_PARSE_NEXT_TOKENS(__VA_ARGS__) }
+
 typedef struct BcParse {
 
   BcLex lex;
@@ -123,9 +133,15 @@ BcStatus bc_parse_parse(BcParse *parse);
 void bc_parse_free(BcParse *p);
 // ** Exclude end. **
 
-BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags);
+BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcNext next);
 
 extern const bool bc_parse_token_exprs[];
+extern const BcNext bc_parse_next_expr;
+extern const BcNext bc_parse_next_param;
+extern const BcNext bc_parse_next_print;
+extern const BcNext bc_parse_next_cond;
+extern const BcNext bc_parse_next_elem;
+extern const BcNext bc_parse_next_for;
 extern const BcOp bc_parse_ops[];
 
 #endif // BC_PARSE_H
