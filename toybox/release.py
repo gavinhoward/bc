@@ -52,11 +52,16 @@ with open(testdir + "/files.txt") as f:
 
 for name in files:
 
+	if name == "gen/lib.c":
+		header_end = 2
+	else:
+		header_end = 22
+
 	with open(name) as f:
 		lines = f.readlines()
 
 	# Skip the header lines.
-	for i in range(22, len(lines)):
+	for i in range(header_end, len(lines)):
 		content += lines[i]
 
 bc_c = "src/bc.c"

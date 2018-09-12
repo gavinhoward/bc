@@ -77,6 +77,21 @@ BcStatus bc_vec_expand(BcVec *vec, size_t request) {
   return BC_STATUS_SUCCESS;
 }
 
+void bc_vec_pop(BcVec *vec) {
+  assert(vec && vec->len);
+  vec->len -= 1;
+  if (vec->dtor) vec->dtor(vec->array + (vec->size * vec->len));
+}
+
+void bc_vec_npop(BcVec *vec, size_t n) {
+  assert(vec && n <= vec->len);
+  if (!vec->dtor) vec->len -= n;
+  else {
+    size_t len = vec->len - n;
+    while (vec->len > len) bc_vec_pop(vec);
+  }
+}
+
 BcStatus bc_vec_push(BcVec *vec, size_t n, const void *data) {
 
   BcStatus status;
@@ -145,21 +160,6 @@ BcStatus bc_vec_string(const BcVec *vec, char **d) {
   if (!(*d = malloc(vec->len))) return BC_STATUS_MALLOC_FAIL;
   strcpy(*d, (char*) vec->array);
   return BC_STATUS_SUCCESS;
-}
-
-void bc_vec_pop(BcVec *vec) {
-  assert(vec && vec->len);
-  vec->len -= 1;
-  if (vec->dtor) vec->dtor(vec->array + (vec->size * vec->len));
-}
-
-void bc_vec_npop(BcVec *vec, size_t n) {
-  assert(vec && n <= vec->len);
-  if (!vec->dtor) vec->len -= n;
-  else {
-    size_t len = vec->len - n;
-    while (vec->len > len) bc_vec_pop(vec);
-  }
 }
 
 void bc_vec_free(void *vec) {
