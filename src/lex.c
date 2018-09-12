@@ -38,10 +38,8 @@ BcStatus bc_lex_expand(BcLex *lex, size_t req) {
 
   if (lex->token.len < req) {
 
-    char *temp;
-
-    if (!(temp = realloc(lex->token.string, req + 1)))
-      return BC_STATUS_MALLOC_FAIL;
+    char *temp = realloc(lex->token.string, req + 1);
+    if (!temp) return BC_STATUS_MALLOC_FAIL;
 
     lex->token.string = temp;
     lex->token.len = req;

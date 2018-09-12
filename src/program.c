@@ -1073,9 +1073,11 @@ BcStatus bc_program_exec(BcProgram *p) {
         break;
       }
 
+      case BC_INST_PUSH_IBASE:
       case BC_INST_PUSH_LAST:
+      case BC_INST_PUSH_OBASE:
       {
-        result.type = BC_RESULT_LAST;
+        result.type = inst - BC_INST_PUSH_IBASE + BC_RESULT_IBASE;
         status = bc_vec_push(&p->results, &result);
         break;
       }
@@ -1083,20 +1085,6 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_PUSH_SCALE:
       {
         status = bc_program_pushScale(p);
-        break;
-      }
-
-      case BC_INST_PUSH_IBASE:
-      {
-        result.type = BC_RESULT_IBASE;
-        status = bc_vec_push(&p->results, &result);
-        break;
-      }
-
-      case BC_INST_PUSH_OBASE:
-      {
-        result.type = BC_RESULT_OBASE;
-        status = bc_vec_push(&p->results, &result);
         break;
       }
 

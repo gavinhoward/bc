@@ -124,8 +124,6 @@ typedef enum BcResultType {
 
   BC_RESULT_TEMP,
 
-  BC_RESULT_CONSTANT,
-
   BC_RESULT_ARRAY_AUTO,
   BC_RESULT_VAR_AUTO,
 
@@ -133,12 +131,16 @@ typedef enum BcResultType {
   BC_RESULT_ARRAY_ELEM,
   BC_RESULT_ARRAY,
 
+  BC_RESULT_IBASE,
   BC_RESULT_SCALE,
   BC_RESULT_LAST,
-  BC_RESULT_IBASE,
+
+  // These are between to calculate ibase, obase, and last from instructions.
+  BC_RESULT_CONSTANT,
+  BC_RESULT_ONE,
+
   BC_RESULT_OBASE,
 
-  BC_RESULT_ONE,
 
 } BcResultType;
 

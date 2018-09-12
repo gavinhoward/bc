@@ -28,7 +28,7 @@
 
 #include <status.h>
 
-#define BC_VEC_INITIAL_CAP (32)
+#define BC_VEC_INITIAL_CAP (1<<5)
 
 typedef void (*BcVecFree)(void*);
 typedef int (*BcVecCmp)(const void*, const void*);
