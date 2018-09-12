@@ -1268,8 +1268,11 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags) {
       case BC_LEX_OP_BOOL_OR:
       case BC_LEX_OP_BOOL_AND:
       {
-        if ((type == BC_LEX_OP_BOOL_NOT) != bin_last)
+        if (((type == BC_LEX_OP_BOOL_NOT) != bin_last) ||
+            (type != BC_LEX_OP_BOOL_NOT && prev == BC_INST_BOOL_NOT))
+        {
           return BC_STATUS_PARSE_BAD_EXPR;
+        }
 
         nrelops += type >= BC_LEX_OP_REL_EQUAL && type <= BC_LEX_OP_REL_GREATER;
         prev = BC_PARSE_TOKEN_TO_INST(type);
