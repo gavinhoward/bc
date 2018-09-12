@@ -46,6 +46,9 @@ l(
 g[si+= j []a[s]>=]
 j[s
 !>5d
+a(1..)
+1..
+1..0
 break
 continue
 auto a,u
