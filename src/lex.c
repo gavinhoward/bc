@@ -216,14 +216,9 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '\f':
     case '\r':
     case ' ':
-    case '\\':
     {
       lex->token.type = BC_LEX_WHITESPACE;
-      c = lex->buffer[lex->idx];
-
-      while ((isspace(c) && c != '\n') || c == '\\')
-        c = lex->buffer[++lex->idx];
-
+      for (; (c = lex->buffer[lex->idx]) != '\n' && isspace(c); ++lex->idx);
       break;
     }
 
@@ -440,6 +435,16 @@ BcStatus bc_lex_token(BcLex *lex) {
     case ']':
     {
       lex->token.type = (BcLexToken) (c - '[' + BC_LEX_LEFT_BRACKET);
+      break;
+    }
+
+    case '\\':
+    {
+      if (lex->buffer[lex->idx] == '\n') {
+        lex->token.type = BC_LEX_WHITESPACE;
+        ++lex->idx;
+      }
+      else status = BC_STATUS_LEX_BAD_CHARACTER;
       break;
     }
 
