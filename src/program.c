@@ -836,10 +836,10 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 
   assert(p);
 
-  assert(sysconf(_SC_BC_BASE_MAX) <= BC_MAX_BASE);
-  assert(sysconf(_SC_BC_DIM_MAX) <= BC_MAX_DIM);
-  assert(sysconf(_SC_BC_SCALE_MAX) <= (long) BC_MAX_SCALE);
-  assert(sysconf(_SC_BC_STRING_MAX) <= BC_MAX_STRING);
+  assert((unsigned long) sysconf(_SC_BC_BASE_MAX) <= BC_MAX_BASE);
+  assert((unsigned long) sysconf(_SC_BC_DIM_MAX) <= BC_MAX_DIM);
+  assert((unsigned long) sysconf(_SC_BC_SCALE_MAX) <= BC_MAX_SCALE);
+  assert((unsigned long) sysconf(_SC_BC_STRING_MAX) <= BC_MAX_STRING);
 
   p->nchars = p->scale = 0;
   p->line_len = line_len;
