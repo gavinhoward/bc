@@ -41,8 +41,7 @@ BcStatus bc_lex_string(BcLex *lex) {
 
   lex->token.type = BC_LEX_STRING;
 
-  for (c = lex->buffer[i]; c != '"' && c != '\0'; c = lex->buffer[++i])
-    newlines += (c == '\n');
+  for (; (c = lex->buffer[i]) != '"' && c != '\0'; ++i) newlines += (c == '\n');
 
   if (c == '\0') {
     lex->idx = i;
@@ -450,7 +449,7 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '^':
     {
-      if ((c2 = lex->buffer[lex->idx]) == '=') {
+      if (lex->buffer[lex->idx] == '=') {
         ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_POWER;
       }
