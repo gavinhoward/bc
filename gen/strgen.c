@@ -29,8 +29,6 @@
 
 #include <libgen.h>
 
-static const char* const bc_gen_usage = "usage: gen input output name [label]\n";
-
 static const char* const bc_gen_header =
   "// Copyright 2018 Gavin D. Howard. Under a 0-clause BSD license.\n"
   "// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
@@ -57,7 +55,7 @@ int main(int argc, char *argv[]) {
   err = 0;
 
   if (argc < 4) {
-    printf(bc_gen_usage);
+    printf("usage: gen input output name [label]\n");
     return INVALID_PARAMS;
   }
 
