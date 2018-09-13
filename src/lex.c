@@ -450,8 +450,8 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '^':
     {
       if (lex->buffer[lex->idx] == '=') {
-        ++lex->idx;
         lex->token.type = BC_LEX_OP_ASSIGN_POWER;
+        ++lex->idx;
       }
       else lex->token.type = BC_LEX_OP_POWER;
       break;
