@@ -82,8 +82,9 @@
                                  BC_PARSE_FLAG_ELSE |        \
                                  BC_PARSE_FLAG_IF_END)))
 
-#define BC_PARSE_LEAF(p, paren) \
-  ((paren) || ((p) >= BC_INST_PUSH_NUM || (p) <= BC_INST_SQRT))
+#define BC_PARSE_LEAF(p, rparen) \
+  (((p) >= BC_INST_PUSH_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
+  (p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)
 
 // We can calculate the conversion between tokens and exprs
 // by subtracting the position of the first operator in the
