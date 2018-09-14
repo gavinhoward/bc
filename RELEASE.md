@@ -14,19 +14,23 @@ This is the checklist for cutting a release.
 	* debug (with AddressSanitizer and UndefinedBehaviorSanitizer)
 	* release
 	* minrelease
-4.	Run the randmath.sh script an excessive amount and add failing tests to
+4.	Run timeconst.sh.
+	* debug
+	* release
+	* minrelease
+5.	Run the randmath.sh script an excessive amount and add failing tests to
 	test suite.
 	* debug
 	* release
 	* minrelease
-5.	Run valgrind on the test suite.
+6.	Run valgrind on the test suite.
 	* debug
-6.	Have other testers try to break it.
-7.	Fuzz with AFL
+7.	Have other testers try to break it.
+8.	Fuzz with AFL
 	* release
-8.	Fix AFL crashes as much as possible.
-9.	Repeat steps 1-5 again.
-10.	Run the release script.
-11.	Upload the custom tarball to GitHub.
-12.	Add sha's to release notes.
-13.	Edit release notes for the changelog.
+9.	Fix AFL crashes as much as possible.
+10.	Repeat steps 1-9 again and repeat until nothing is found.
+11.	Run the release script.
+12.	Upload the custom tarball to GitHub.
+13.	Add sha's to release notes.
+14.	Edit release notes for the changelog.
