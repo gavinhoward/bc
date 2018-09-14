@@ -90,14 +90,14 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
       if (putchar('\n') == EOF) return s;
 
-      if (printf("BC_BASE_MAX     = %zu\n", BC_MAX_BASE) < 0 ||
-          printf("BC_DIM_MAX      = %zu\n", BC_MAX_DIM) < 0 ||
-          printf("BC_SCALE_MAX    = %zu\n", BC_MAX_SCALE) < 0 ||
-          printf("BC_STRING_MAX   = %zu\n", BC_MAX_STRING) < 0 ||
-          printf("BC_NAME_MAX     = %zu\n", BC_MAX_NAME) < 0 ||
-          printf("BC_NUM_MAX      = %zu\n", BC_MAX_NUM) < 0 ||
-          printf("Max Exponent    = %zu\n", BC_MAX_EXP) < 0 ||
-          printf("Number of Vars  = %zu\n", SIZE_MAX) < 0)
+      if (printf("BC_BASE_MAX     = %lu\n", BC_MAX_BASE) < 0 ||
+          printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM) < 0 ||
+          printf("BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE) < 0 ||
+          printf("BC_STRING_MAX   = %lu\n", BC_MAX_STRING) < 0 ||
+          printf("BC_NAME_MAX     = %lu\n", BC_MAX_NAME) < 0 ||
+          printf("BC_NUM_MAX      = %lu\n", BC_MAX_NUM) < 0 ||
+          printf("Max Exponent    = %lu\n", BC_MAX_EXP) < 0 ||
+          printf("Number of Vars  = %lu\n", BC_MAX_VARS) < 0)
       {
         return s;
       }
