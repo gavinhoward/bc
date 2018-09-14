@@ -143,6 +143,7 @@ extern const BcNext bc_parse_next_print;
 extern const BcNext bc_parse_next_cond;
 extern const BcNext bc_parse_next_elem;
 extern const BcNext bc_parse_next_for;
+extern const BcNext bc_parse_next_read;
 extern const BcOp bc_parse_ops[];
 
 #endif // BC_PARSE_H
