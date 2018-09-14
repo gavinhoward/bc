@@ -183,8 +183,7 @@ const BcNext bc_parse_next_print =
 const BcNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RIGHT_PAREN);
 const BcNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RIGHT_BRACKET);
 const BcNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SEMICOLON);
-const BcNext bc_parse_next_read =
-    BC_PARSE_NEXT(2, BC_LEX_NEWLINE, BC_LEX_SEMICOLON);
+const BcNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NEWLINE);
 
 // This is an array of data for operators that correspond to token types.
 const BcOp bc_parse_ops[] = {
