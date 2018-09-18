@@ -185,7 +185,7 @@ BcStatus bc_lex_name(BcLex *lex) {
     return status;
   }
 
-  if (i > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
+  if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
   if ((status = bc_vec_setToString(&lex->token.data, i, buffer))) return status;
 
   // Increment the index. We minus one because it has already been incremented.
