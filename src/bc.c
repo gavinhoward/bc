@@ -128,7 +128,7 @@ BcStatus bc_file(Bc *bc, const char *file) {
   BcInstPtr *ip;
 
   bc->prog.file = file;
-  if ((s = bc_io_fread(file, &data))) return s;
+  if ((s = bc_io_fread(file, &data))) return bc_error_file(s, file, 1);
 
   bc_lex_file(&bc->parse.lex, file);
   if ((s = bc_process(bc, data))) goto err;
