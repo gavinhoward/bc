@@ -183,12 +183,7 @@ BcStatus bc_stdin(Bc *bc) {
   // that end with a backslash to the parser. The reason for that is because the
   // parser treats a backslash+newline combo as whitespace, per the bc spec. In
   // that case, and for strings and comments, the parser will expect more stuff.
-  while (!s && !((s = bc_io_getline(&buf, &bufn)) && s != BC_STATUS_BIN_FILE))
-  {
-    if (s == BC_STATUS_BIN_FILE) {
-      s = bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line);
-      break;
-    }
+  while (!s && !(s = bc_io_getline(&buf, &bufn))) {
 
     len = strlen(buf);
     slen = strlen(buffer);
@@ -221,6 +216,9 @@ BcStatus bc_stdin(Bc *bc) {
     s = bc_process(bc, buffer);
     buffer[0] = '\0';
   }
+
+  if (s == BC_STATUS_BIN_FILE)
+    s = bc_error_file(s, bc->parse.lex.file, bc->parse.lex.line);
 
   // I/O error will always happen when stdin is
   // closed. It's not a problem in that case.
