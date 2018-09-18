@@ -37,10 +37,16 @@ for d in $resultsdir/*; do
 			error="$?"
 
 			if [ "$error" -gt 127 ]; then
+
 				echo "\nbc crashed on test:\n"
 				echo "    $line"
+
+				echo "\nCopying to \"$testdir/../../test.txt\""
+				cp "$f" "$testdir/../../test.txt"
+
 				echo "\nexiting..."
 				exit "$error"
+
 			fi
 
 		done < "$f"
