@@ -212,6 +212,15 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
   *right = bc_vec_item_rev(&p->results, 0);
   *left = bc_vec_item_rev(&p->results, 1);
 
+  if ((*left)->type == BC_RESULT_ARRAY ||
+      (*left)->type == BC_RESULT_ARRAY_AUTO ||
+      (*right)->type == BC_RESULT_ARRAY ||
+      (*right)->type == BC_RESULT_ARRAY_AUTO)
+  {
+    return BC_STATUS_EXEC_BAD_TYPE;
+  }
+
+
   hex = (*left)->type == BC_RESULT_IBASE || (*left)->type == BC_RESULT_OBASE;
 
   if ((status = bc_program_num(p, *left, lval, false))) return status;
@@ -230,8 +239,17 @@ BcStatus bc_program_binaryOpRetire(BcProgram *p, BcResult *result,
 }
 
 BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result, BcNum **val) {
+
   assert(p && result && val && BC_PROGRAM_CHECK_RESULTS(p, 1));
+
   *result = bc_vec_item_rev(&p->results, 0);
+
+  if ((*result)->type == BC_RESULT_ARRAY ||
+      (*result)->type == BC_RESULT_ARRAY_AUTO)
+  {
+    return BC_STATUS_EXEC_BAD_TYPE;
+  }
+
   return bc_program_num(p, *result, val, false);
 }
 
