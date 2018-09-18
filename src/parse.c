@@ -1316,6 +1316,8 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcNext next) {
 
       case BC_LEX_RIGHT_PAREN:
       {
+        if (bin_last) return BC_STATUS_PARSE_BAD_EXPR;
+
         if (nparens == 0) {
           status = BC_STATUS_SUCCESS;
           done = true;
