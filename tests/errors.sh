@@ -14,12 +14,7 @@ else
 	shift
 fi
 
-if [ "$#" -lt 1 ]; then
-	out="$testdir/../.log_test.txt"
-else
-	out="$1"
-	shift
-fi
+out="$testdir/../.log_test.txt"
 
 errors="$testdir/errors.txt"
 posix_errors="$testdir/posix_errors.txt"
