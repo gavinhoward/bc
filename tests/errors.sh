@@ -14,6 +14,13 @@ else
 	shift
 fi
 
+if [ "$#" -lt 1 ]; then
+	out="$testdir/../.log_test.txt"
+else
+	out="$1"
+	shift
+fi
+
 errors="$testdir/errors.txt"
 posix_errors="$testdir/posix_errors.txt"
 
@@ -31,7 +38,9 @@ for testfile in "$errors" "$posix_errors"; do
 
 	while read -r line; do
 
-		echo "$line" | "$bc" "$@" "$options" > /dev/null
+		rm -f "$out"
+
+		echo "$line" | "$bc" "$@" "$options" 2> "$out" > /dev/null
 		error="$?"
 
 		if [ "$error" -eq 0 ]; then
@@ -46,6 +55,13 @@ for testfile in "$errors" "$posix_errors"; do
 			echo "    $line"
 			echo "\nexiting..."
 			exit "$error"
+		fi
+
+		if [ ! -s "$out" ]; then
+			echo "\nbc produced no error message on test:\n"
+			echo "    $line"
+			echo "\nexiting..."
+			exit 100
 		fi
 
 	done < "$testfile"
