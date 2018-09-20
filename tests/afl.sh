@@ -51,6 +51,24 @@ for d in $resultsdir/*; do
 
 		done < "$f"
 
+		echo "    Running whole file..."
+
+		"$bc" "$@" -l "$f" > /dev/null 2>&1
+		error="$?"
+
+		if [ "$error" -gt 127 ]; then
+
+			echo "\nbc crashed on file:\n"
+			echo "    $f"
+
+			echo "\nCopying to \"$testdir/../../test.txt\""
+			cp "$f" "$testdir/../../test.txt"
+
+			echo "\nexiting..."
+			exit "$error"
+
+		fi
+
 	done
 
 done
