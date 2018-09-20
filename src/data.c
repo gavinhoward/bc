@@ -65,7 +65,7 @@ const char *bc_err_descs[] = {
   NULL,
   "memory allocation error",
   "I/O error",
-  "file is not text",
+  "file is not text:",
 
   "bad character",
   "string end could not be found",
@@ -89,10 +89,10 @@ const char *bc_err_descs[] = {
   "negative square root",
   "bad number string",
 
-  "could not open file",
+  "could not open file:",
   "mismatched parameters",
   "undefined function",
-  "file is not executable",
+  "file is not executable:",
   "could not install signal handler",
   "bad scale; must be [0, BC_SCALE_MAX]",
   "bad ibase; must be [2, 16]",
