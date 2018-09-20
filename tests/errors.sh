@@ -19,6 +19,8 @@ out="$testdir/../.log_test.txt"
 errors="$testdir/errors.txt"
 posix_errors="$testdir/posix_errors.txt"
 
+bcbase=$(basename "$bc")
+
 for testfile in "$errors" "$posix_errors"; do
 
 	if [ "$testfile" = "$posix_errors" ]; then
@@ -57,6 +59,12 @@ for testfile in "$errors" "$posix_errors"; do
 			echo "    $line"
 			echo "\nexiting..."
 			exit 100
+		fi
+
+		# Display the error messages if not directly running bc.
+		# This allows the script to print valgrind output.
+		if [ "$bcbase" != "bc" ]; then
+			cat "$out"
 		fi
 
 	done < "$testfile"
