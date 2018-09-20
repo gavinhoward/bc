@@ -238,14 +238,15 @@ BcStatus bc_program_binaryOpRetire(BcProgram *p, BcResult *result,
   return bc_vec_push(&p->results, 1, result);
 }
 
-BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result, BcNum **val) {
-
+BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **result,
+                                BcNum **val, bool array_allowed)
+{
   assert(p && result && val && BC_PROGRAM_CHECK_RESULTS(p, 1));
 
   *result = bc_vec_item_rev(&p->results, 0);
 
-  if ((*result)->type == BC_RESULT_ARRAY ||
-      (*result)->type == BC_RESULT_ARRAY_AUTO)
+  if (((*result)->type == BC_RESULT_ARRAY_AUTO ||
+      (*result)->type == BC_RESULT_ARRAY) && !array_allowed)
   {
     return BC_STATUS_EXEC_BAD_TYPE;
   }
@@ -460,7 +461,7 @@ BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start,
     BcNum *num;
     unsigned long temp;
 
-    if ((status = bc_program_unaryOpPrep(p, &operand, &num))) goto err;
+    if ((status = bc_program_unaryOpPrep(p, &operand, &num, false))) goto err;
     if ((status = bc_num_ulong(num, &temp))) goto err;
 
     if (temp > (unsigned long) BC_MAX_DIM) {
@@ -483,7 +484,7 @@ BcStatus bc_program_negate(BcProgram *p) {
   BcResult result, *ptr;
   BcNum *num;
 
-  if ((status = bc_program_unaryOpPrep(p, &ptr, &num))) return status;
+  if ((status = bc_program_unaryOpPrep(p, &ptr, &num, false))) return status;
   if ((status = bc_num_init(&result.data.num, num->len))) return status;
   if ((status = bc_num_copy(&result.data.num, num))) goto err;
 
@@ -766,7 +767,8 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
   BcNum *num1;
   BcResult result;
 
-  if ((status = bc_program_unaryOpPrep(p, &operand, &num1))) return status;
+  status = bc_program_unaryOpPrep(p, &operand, &num1, inst == BC_INST_LENGTH);
+  if (status) return status;
   if ((status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE))) return status;
 
   if (inst == BC_INST_SQRT)
@@ -815,7 +817,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
   BcNum *num;
   uint8_t inst2 = inst;
 
-  if ((status = bc_program_unaryOpPrep(p, &ptr, &num))) return status;
+  if ((status = bc_program_unaryOpPrep(p, &ptr, &num, false))) return status;
 
   if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
     copy.type = BC_RESULT_TEMP;
@@ -1071,7 +1073,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_JUMP_ZERO:
       {
-        if ((status = bc_program_unaryOpPrep(p, &ptr, &num))) return status;
+        if ((status = bc_program_unaryOpPrep(p, &ptr, &num, false)))
+          return status;
         cond = !bc_num_cmp(num, &p->zero);
         bc_vec_pop(&p->results);
       }
@@ -1147,7 +1150,8 @@ BcStatus bc_program_exec(BcProgram *p) {
       case BC_INST_PRINT:
       case BC_INST_PRINT_EXPR:
       {
-        if ((status = bc_program_unaryOpPrep(p, &ptr, &num))) return status;
+        if ((status = bc_program_unaryOpPrep(p, &ptr, &num, false)))
+          return status;
 
         status = bc_num_print(num, &p->obase, p->obase_t, inst == BC_INST_PRINT,
                               &p->nchars, p->line_len);
@@ -1211,7 +1215,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
       case BC_INST_BOOL_NOT:
       {
-        if ((status = bc_program_unaryOpPrep(p, &ptr, &num))) return status;
+        if ((status = bc_program_unaryOpPrep(p, &ptr, &num, false)))
+          return status;
         status = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
         if (status) return status;
 
