@@ -54,7 +54,7 @@ BcStatus bc_error(BcStatus s, const char *file, size_t line) {
   fprintf(stderr, "    %s", file);
   fprintf(stderr, bc_err_line + 3 * !line, line);
 
-  return s * (!bcg.tty && strcmp(bc_program_stdin_name, file));
+  return s * !bcg.tty;
 }
 
 BcStatus bc_posix_error(BcStatus s, const char *file,
@@ -75,7 +75,7 @@ BcStatus bc_posix_error(BcStatus s, const char *file,
     fprintf(stderr, bc_err_line + 3 * !line, line);
   }
 
-  return s * (!!p && strcmp(bc_program_stdin_name, file));
+  return s * (!bcg.tty && !!p);
 }
 
 BcStatus bc_process(Bc *bc, const char *text) {
