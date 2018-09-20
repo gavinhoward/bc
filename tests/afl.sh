@@ -53,7 +53,7 @@ for d in $resultsdir/*; do
 
 		echo "    Running whole file..."
 
-		"$bc" "$@" -l "$f" > /dev/null 2>&1
+		echo "halt" | "$bc" "$@" -l "$f" > /dev/null 2>&1
 		error="$?"
 
 		if [ "$error" -gt 127 ]; then
