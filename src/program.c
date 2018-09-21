@@ -226,7 +226,15 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
   if ((status = bc_program_num(p, *left, lval, false))) return status;
   if ((status = bc_program_num(p, *right, rval, hex))) return status;
 
-  return BC_STATUS_SUCCESS;
+  // We run this again under these conditions in case any vector has been
+  // reallocated out from under the BcNums or arrays we had.
+  if (((*left)->type == (*right)->type) &&
+      ((*left)->type == BC_RESULT_VAR || (*left)->type == BC_RESULT_ARRAY_ELEM))
+  {
+    status = bc_program_num(p, *left, lval, false);
+  }
+
+  return status;
 }
 
 BcStatus bc_program_binaryOpRetire(BcProgram *p, BcResult *result,
