@@ -1012,11 +1012,11 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
   for (*result = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
 
-    unsigned long prev = *result;
+    unsigned long prev = *result, powprev = pow;
     *result += ((unsigned long) n->num[i]) * pow;
     pow *= 10;
 
-    if (*result < prev) return BC_STATUS_MATH_OVERFLOW;
+    if (*result < prev || pow < powprev) return BC_STATUS_MATH_OVERFLOW;
   }
 
   return BC_STATUS_SUCCESS;
