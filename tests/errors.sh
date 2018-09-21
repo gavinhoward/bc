@@ -2,6 +2,48 @@
 
 # WARNING: Test files cannot have empty lines!
 
+checktest()
+{
+	local error="$1"
+	shift
+
+	local name="$1"
+	shift
+
+	local out="$1"
+	shift
+
+	local bcbase="$1"
+	shift
+
+	if [ "$error" -eq 0 ]; then
+		echo "\nbc returned no error on test:\n"
+		echo "    $name"
+		echo "\nexiting..."
+		exit 127
+	fi
+
+	if [ "$error" -gt 127 ]; then
+		echo "\nbc crashed on test:\n"
+		echo "    $name"
+		echo "\nexiting..."
+		exit "$error"
+	fi
+
+	if [ ! -s "$out" ]; then
+		echo "\nbc produced no error message on test:\n"
+		echo "    $name"
+		echo "\nexiting..."
+		exit "$error"
+	fi
+
+	# Display the error messages if not directly running bc.
+	# This allows the script to print valgrind output.
+	if [ "$bcbase" != "bc" ]; then
+		cat "$out"
+	fi
+}
+
 script="$0"
 
 testdir=$(dirname "$script")
@@ -38,34 +80,8 @@ for testfile in "$errors" "$posix_errors"; do
 		rm -f "$out"
 
 		echo "$line" | "$bc" "$@" "$options" 2> "$out" > /dev/null
-		error="$?"
 
-		if [ "$error" -eq 0 ]; then
-			echo "\nbc returned no error on test:\n"
-			echo "    $line"
-			echo "\nexiting..."
-			exit 127
-		fi
-
-		if [ "$error" -gt 127 ]; then
-			echo "\nbc crashed on test:\n"
-			echo "    $line"
-			echo "\nexiting..."
-			exit "$error"
-		fi
-
-		if [ ! -s "$out" ]; then
-			echo "\nbc produced no error message on test:\n"
-			echo "    $line"
-			echo "\nexiting..."
-			exit 100
-		fi
-
-		# Display the error messages if not directly running bc.
-		# This allows the script to print valgrind output.
-		if [ "$bcbase" != "bc" ]; then
-			cat "$out"
-		fi
+		checktest "$?" "$line" "$out" "$bcbase"
 
 	done < "$testfile"
 
