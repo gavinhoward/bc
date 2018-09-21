@@ -206,16 +206,18 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 {
   BcStatus status;
   bool hex;
+  BcResultType lt, rt;
 
   assert(p && left && lval && right && rval && BC_PROGRAM_CHECK_RESULTS(p, 2));
 
   *right = bc_vec_item_rev(&p->results, 0);
   *left = bc_vec_item_rev(&p->results, 1);
 
-  if ((*left)->type == BC_RESULT_ARRAY ||
-      (*left)->type == BC_RESULT_ARRAY_AUTO ||
-      (*right)->type == BC_RESULT_ARRAY ||
-      (*right)->type == BC_RESULT_ARRAY_AUTO)
+  lt = (*left)->type;
+  rt = (*right)->type;
+
+  if (lt == BC_RESULT_ARRAY || lt == BC_RESULT_ARRAY_AUTO ||
+      rt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY_AUTO)
   {
     return BC_STATUS_EXEC_BAD_TYPE;
   }
@@ -228,11 +230,8 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 
   // We run this again under these conditions in case any vector has been
   // reallocated out from under the BcNums or arrays we had.
-  if (((*left)->type == (*right)->type) &&
-      ((*left)->type == BC_RESULT_VAR || (*left)->type == BC_RESULT_ARRAY_ELEM))
-  {
+  if (lt == rt && (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM))
     status = bc_program_num(p, *left, lval, false);
-  }
 
   return status;
 }
