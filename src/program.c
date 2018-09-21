@@ -215,15 +215,13 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 
   lt = (*left)->type;
   rt = (*right)->type;
+  hex = assign && (lt == BC_RESULT_IBASE || rt == BC_RESULT_OBASE);
 
   if (lt == BC_RESULT_ARRAY || lt == BC_RESULT_ARRAY_AUTO ||
       rt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY_AUTO)
   {
     return BC_STATUS_EXEC_BAD_TYPE;
   }
-
-  hex = assign && ((*left)->type == BC_RESULT_IBASE ||
-                   (*right)->type == BC_RESULT_OBASE);
 
   if ((status = bc_program_num(p, *left, lval, false))) return status;
   if ((status = bc_program_num(p, *right, rval, hex))) return status;
