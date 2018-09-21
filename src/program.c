@@ -215,7 +215,7 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 
   lt = (*left)->type;
   rt = (*right)->type;
-  hex = assign && (lt == BC_RESULT_IBASE || rt == BC_RESULT_OBASE);
+  hex = assign && (lt == BC_RESULT_IBASE || lt == BC_RESULT_OBASE);
 
   if (lt == BC_RESULT_ARRAY || lt == BC_RESULT_ARRAY_AUTO ||
       rt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY_AUTO)
