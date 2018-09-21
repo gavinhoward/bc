@@ -202,7 +202,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum **num, bool hex) {
 }
 
 BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
-                                 BcResult **right, BcNum **rval)
+                                 BcResult **right, BcNum **rval, bool assign)
 {
   BcStatus status;
   bool hex;
@@ -220,8 +220,8 @@ BcStatus bc_program_binaryOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
     return BC_STATUS_EXEC_BAD_TYPE;
   }
 
-
-  hex = (*left)->type == BC_RESULT_IBASE || (*left)->type == BC_RESULT_OBASE;
+  hex = assign && ((*left)->type == BC_RESULT_IBASE ||
+                   (*right)->type == BC_RESULT_OBASE);
 
   if ((status = bc_program_num(p, *left, lval, false))) return status;
   if ((status = bc_program_num(p, *right, rval, hex))) return status;
@@ -265,11 +265,11 @@ BcStatus bc_program_unaryOpRetire(BcProgram *p, BcResult *result,
 BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
-  BcResult *operand1, *operand2, res;
+  BcResult *opd1, *opd2, res;
   BcNum *num1, *num2;
   BcNumBinaryOp op;
 
-  status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
+  status = bc_program_binaryOpPrep(p, &opd1, &num1, &opd2, &num2, false);
   if (status) return status;
   if ((status = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return status;
 
@@ -502,12 +502,12 @@ err:
 BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 
   BcStatus status;
-  BcResult *operand1, *operand2, res;
+  BcResult *opd1, *opd2, res;
   BcNum *num1, *num2;
   bool cond;
   ssize_t cmp;
 
-  status = bc_program_binaryOpPrep(p, &operand1, &num1, &operand2, &num2);
+  status = bc_program_binaryOpPrep(p, &opd1, &num1, &opd2, &num2, false);
   if (status) return status;
 
   if ((status = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return status;
@@ -585,8 +585,9 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   BcNum *l, *r;
   unsigned long val, max;
   size_t *ptr;
+  bool assign = inst == BC_INST_ASSIGN;
 
-  status = bc_program_binaryOpPrep(p, &left, &l, &right, &r);
+  status = bc_program_binaryOpPrep(p, &left, &l, &right, &r, assign);
   if (status) return status;
 
   if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_TEMP)
@@ -595,7 +596,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero))
     return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
-  if (inst == BC_INST_ASSIGN) status = bc_num_copy(l, r);
+  if (assign) status = bc_num_copy(l, r);
   else status = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
 
   if (status) return status;
