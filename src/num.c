@@ -839,7 +839,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
   nchars += neg;
 
-  if (base_t <= BC_NUM_MAX_INPUT_BASE) {
+  if (base_t <= BC_NUM_MAX_IBASE) {
     width = 1;
     print = bc_num_printHex;
   }
@@ -959,7 +959,7 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
   BcStatus status;
 
   assert(n && val && base && base_t >= BC_NUM_MIN_BASE &&
-         base_t <= BC_NUM_MAX_INPUT_BASE);
+         base_t <= BC_NUM_MAX_IBASE);
 
   if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_BAD_STRING;
 
@@ -975,7 +975,7 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
   BcStatus status;
 
   assert(n && base && nchars && base_t >= BC_NUM_MIN_BASE &&
-         base_t <= BC_MAX_BASE);
+         base_t <= BC_MAX_OBASE);
 
   if (*nchars  >= line_len) {
     if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;

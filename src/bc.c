@@ -92,7 +92,7 @@ BcStatus bc_process(Bc *bc, const char *text) {
 
       if (putchar('\n') == EOF) return s;
 
-      if (printf("BC_BASE_MAX     = %lu\n", BC_MAX_BASE) < 0 ||
+      if (printf("BC_BASE_MAX     = %lu\n", BC_MAX_OBASE) < 0 ||
           printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM) < 0 ||
           printf("BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE) < 0 ||
           printf("BC_STRING_MAX   = %lu\n", BC_MAX_STRING) < 0 ||

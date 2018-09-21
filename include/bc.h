@@ -41,7 +41,7 @@
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define BC_INVALID_IDX ((size_t) -1)
 
-#define BC_MAX_BASE ((unsigned long) 999)
+#define BC_MAX_OBASE ((unsigned long) 999)
 #define BC_MAX_DIM ((unsigned long) INT_MAX)
 #define BC_MAX_SCALE ((unsigned long) UINT_MAX)
 #define BC_MAX_STRING ((unsigned long) UINT_MAX - 1)

@@ -127,7 +127,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *result, BcNum **num, bool hex) {
 
       if ((status = bc_num_init(&result->data.num, len))) return status;
 
-      base = hex && len == 1 ? BC_NUM_MAX_INPUT_BASE : p->ibase_t;
+      base = hex && len == 1 ? BC_NUM_MAX_IBASE : p->ibase_t;
 
       if ((status = bc_num_parse(&result->data.num, *s, &p->ibase, base))) {
         bc_num_free(&result->data.num);
@@ -584,7 +584,6 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
   BcResult *left, *right, res;
   BcNum *l, *r;
   unsigned long val, max;
-  size_t *ptr;
   bool assign = inst == BC_INST_ASSIGN;
 
   status = bc_program_binaryOpPrep(p, &left, &l, &right, &r, assign);
@@ -603,8 +602,8 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
   if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
 
-    ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
-    max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_INPUT_BASE : BC_MAX_BASE;
+    size_t * ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
+    max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
 
     if ((status = bc_num_ulong(l, &val))) return status;
 
