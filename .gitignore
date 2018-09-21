@@ -8,6 +8,7 @@ bc
 *.o
 *.a
 .log_*.txt
+.test.txt
 .math.txt
 .results.txt
 .ops.txt
@@ -15,6 +16,7 @@ strgen
 lib.c
 help.c
 config.mak
+timeconst.bc
 
 # Ignore the generated test files
 parse.txt

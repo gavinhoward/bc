@@ -97,6 +97,7 @@ clean:
 	$(RM) $(BC_HELP_O)
 	$(RM) .log_test.txt .log_bc.txt
 	$(RM) .math.txt .results.txt .ops.txt
+	$(RM) .test.txt
 
 clean_tests: clean
 	$(RM) tests/parse.txt tests/parse_results.txt

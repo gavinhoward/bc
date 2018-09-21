@@ -18,6 +18,8 @@ else
 	shift
 fi
 
+out="$testdir/../.test.txt"
+
 for d in $resultsdir/*; do
 
 	echo "$d"
@@ -41,8 +43,8 @@ for d in $resultsdir/*; do
 				echo "\nbc crashed on test:\n"
 				echo "    $line"
 
-				echo "\nCopying to \"$testdir/../../test.txt\""
-				cp "$f" "$testdir/../../test.txt"
+				echo "\nCopying to \"$out\""
+				cp "$f" "$out"
 
 				echo "\nexiting..."
 				exit "$error"
@@ -61,8 +63,8 @@ for d in $resultsdir/*; do
 			echo "\nbc crashed on file:\n"
 			echo "    $f"
 
-			echo "\nCopying to \"$testdir/../../test.txt\""
-			cp "$f" "$testdir/../../test.txt"
+			echo "\nCopying to \"$out\""
+			cp "$f" "$out"
 
 			echo "\nexiting..."
 			exit "$error"

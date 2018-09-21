@@ -16,7 +16,7 @@ if [ "$#" -gt 0 ]; then
 	timeconst="$1"
 	shift
 else
-	timeconst="$testdir/../../timeconst.bc"
+	timeconst="$testdir/scripts/timeconst.bc"
 fi
 
 if [ "$#" -gt 0 ]; then
