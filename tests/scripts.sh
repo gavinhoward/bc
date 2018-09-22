@@ -22,6 +22,10 @@ for s in $scriptdir/*.bc; do
 	f=$(basename -- "$s")
 	name="${f%.*}"
 
+	if [ "$f" = "timeconst.bc" ]; then
+		continue
+	fi
+
 	echo "Running script: $f"
 
 	orig="$testdir/$name.txt"

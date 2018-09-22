@@ -21,3 +21,9 @@ done < "$testdir/all.txt"
 
 sh "$testdir/scripts.sh" "$bc" "$@"
 sh "$testdir/errors.sh" "$bc" "$@"
+
+timeconst="$testdir/scripts/timeconst.bc"
+
+if [ -f "$timeconst" ]; then
+	sh "$testdir/timeconst.sh" "$timeconst" "$bc" "$@"
+fi

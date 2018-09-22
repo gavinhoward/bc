@@ -7,8 +7,6 @@
 # Note: when testing this bc in toybox, make sure the link is in the same
 # directory as the toybox binary, or this script will not work.
 
-set -e
-
 script="$0"
 testdir=$(dirname "$script")
 
@@ -29,14 +27,23 @@ fi
 out1="$testdir/../.log_bc.txt"
 out2="$testdir/../.log_test.txt"
 
+base=$(basename "$timeconst")
+
+echo "Running $base..."
+
 for i in $(seq 0 10000); do
 
-	echo "$i"
-
-	(echo $i | bc -q "$timeconst") > "$out1"
-	(echo $i | "$bc" "$@" -q "$timeconst") > "$out2"
+	(echo "$i" | bc -q "$timeconst") > "$out1"
+	(echo "$i" | "$bc" "$@" -q "$timeconst") > "$out2"
 
 	diff "$out1" "$out2"
+
+	error="$?"
+
+	if [ "$error" -ne 0 ]; then
+		echo "Failed on input: $i"
+		exit "$error"
+	fi
 
 done
 
