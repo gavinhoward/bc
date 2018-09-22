@@ -185,7 +185,7 @@ BcStatus bc_stdin(Bc *bc) {
   // that end with a backslash to the parser. The reason for that is because the
   // parser treats a backslash+newline combo as whitespace, per the bc spec. In
   // that case, and for strings and comments, the parser will expect more stuff.
-  while (!s && !(s = bc_io_getline(&buf, &bufn))) {
+  while (!s && !(s = bc_io_getline(&buf, &bufn, ">>> "))) {
 
     len = strlen(buf);
     slen = strlen(buffer);

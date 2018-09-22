@@ -301,7 +301,7 @@ BcStatus bc_program_read(BcProgram *p) {
   func->code.len = 0;
 
   if (!(buffer = malloc(size + 1))) return BC_STATUS_MALLOC_FAIL;
-  if ((status = bc_io_getline(&buffer, &size)))goto io_err;
+  if ((status = bc_io_getline(&buffer, &size, "read() > ")))goto io_err;
 
   if ((status = bc_parse_init(&parse, p))) goto io_err;
   bc_lex_file(&parse.lex, bc_program_stdin_name);
