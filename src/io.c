@@ -43,7 +43,7 @@ BcStatus bc_io_getline(char **buf, size_t *n) {
 
       size = *n * 2;
 
-      if (size > (1 << 20) || !(temp = realloc(*buf, size + 1)))
+      if (size > BC_MAX_LINE || !(temp = realloc(*buf, size + 1)))
         return BC_STATUS_MALLOC_FAIL;
 
       *buf = temp;

@@ -51,6 +51,7 @@
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
 #define BC_BUF_SIZE (1024)
+#define BC_MAX_LINE (1<<20)
 
 typedef struct Bc {
 
