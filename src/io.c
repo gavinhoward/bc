@@ -27,7 +27,7 @@
 #include <string.h>
 
 #include <io.h>
-#include <bc.h>
+#include <vm.h>
 
 BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
 

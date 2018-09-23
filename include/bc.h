@@ -23,77 +23,12 @@
 #ifndef BC_H
 #define BC_H
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <limits.h>
-
 #include <status.h>
-#include <parse.h>
-#include <program.h>
-
-#define BC_FLAG_W (1<<0)
-#define BC_FLAG_S (1<<1)
-#define BC_FLAG_Q (1<<2)
-#define BC_FLAG_L (1<<3)
-#define BC_FLAG_I (1<<4)
-
-#define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
-#define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
-#define BC_INVALID_IDX ((size_t) -1)
-
-#define BC_MAX_OBASE ((unsigned long) 999)
-#define BC_MAX_DIM ((unsigned long) INT_MAX)
-#define BC_MAX_SCALE ((unsigned long) UINT_MAX)
-#define BC_MAX_STRING ((unsigned long) UINT_MAX - 1)
-#define BC_MAX_NAME BC_MAX_STRING
-#define BC_MAX_NUM BC_MAX_STRING
-#define BC_MAX_EXP ((unsigned long) LONG_MAX)
-#define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
-
-#define BC_BUF_SIZE (1024)
-#define BC_MAX_LINE (1<<20)
-
-typedef struct Bc {
-
-  BcParse parse;
-  BcProgram prog;
-
-} Bc;
 
 // ** Exclude start. **
-typedef struct BcGlobals {
-
-  long tty;
-  long posix;
-  long warn;
-
-  unsigned long sig;
-  unsigned long sigc;
-  unsigned long signe;
-  long sig_other;
-
-} BcGlobals;
-
-BcStatus bc_main(unsigned int flags, BcVec *files);
+BcStatus bc_main(int argc, char *argv[]);
 // ** Exclude end. **
 
-BcStatus bc_posix_error(BcStatus s, const char *file,
-                        size_t line, const char *msg);
-
-extern BcGlobals bcg;
-
-extern const char bc_lib[];
-extern const char *bc_lib_name;
-
-extern const char bc_header[];
-
-extern const char bc_err_fmt[];
-extern const char bc_err_line[];
-extern const char *bc_errs[];
-extern const uint8_t bc_err_indices[];
-extern const char *bc_err_descs[];
-
-extern const char bc_sig_msg[34];
-extern const ssize_t bc_sig_msg_len;
+extern const char bc_help[];
 
 #endif // BC_H

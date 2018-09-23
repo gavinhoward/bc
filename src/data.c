@@ -25,7 +25,7 @@
 #include <lex.h>
 #include <parse.h>
 
-const char bc_header[] =
+const char bc_vm_header[] =
   "bc 1.0\n"
   "bc copyright (c) 2018 Gavin D. Howard and contributors\n"
   "Report bugs at: https://github.com/gavinhoward/bc\n\n"
@@ -35,7 +35,7 @@ const char bc_err_fmt[] = "\n%s error: %s\n\n";
 const char bc_err_line[] = ":%d\n\n";
 
 const char *bc_errs[] = {
-  "bc",
+  "VM",
   "Lex",
   "Parse",
   "Math",
@@ -44,7 +44,7 @@ const char *bc_errs[] = {
 };
 
 const uint8_t bc_err_indices[] = {
-  BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC,
+  BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
   BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
   BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
   BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
@@ -58,7 +58,7 @@ const uint8_t bc_err_indices[] = {
   BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
   BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
   BC_ERR_IDX_VEC, BC_ERR_IDX_VEC,
-  BC_ERR_IDX_BC, BC_ERR_IDX_BC, BC_ERR_IDX_BC,
+  BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 };
 
 const char *bc_err_descs[] = {

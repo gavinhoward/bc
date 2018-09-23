@@ -31,7 +31,7 @@
 #include <status.h>
 #include <num.h>
 #include <vector.h>
-#include <bc.h>
+#include <vm.h>
 
 void bc_num_zero(BcNum *n) {
   if (!n) return;

@@ -30,7 +30,7 @@
 #include <lang.h>
 #include <lex.h>
 #include <parse.h>
-#include <bc.h>
+#include <vm.h>
 
 BcStatus bc_parse_else(BcParse *p, BcVec *code);
 BcStatus bc_parse_stmt(BcParse *p, BcVec *code);
@@ -483,8 +483,8 @@ BcStatus bc_parse_return(BcParse *p, BcVec *code) {
   if (p->lex.token.type != BC_LEX_NEWLINE &&
       p->lex.token.type != BC_LEX_SEMICOLON &&
       p->lex.token.type != BC_LEX_LEFT_PAREN &&
-      (status = bc_posix_error(BC_STATUS_POSIX_RETURN_PARENS,
-                               p->lex.file, p->lex.line, NULL)))
+      (status = bc_vm_posix_error(BC_STATUS_POSIX_RETURN_PARENS,
+                                  p->lex.file, p->lex.line, NULL)))
   {
      return status;
   }
@@ -711,8 +711,8 @@ BcStatus bc_parse_for(BcParse *p, BcVec *code) {
   if (p->lex.token.type != BC_LEX_SEMICOLON)
     status = bc_parse_expr(p, code, 0, bc_parse_next_for);
   else
-    status = bc_posix_error(BC_STATUS_POSIX_NO_FOR_INIT,
-                            p->lex.file, p->lex.line, NULL);
+    status = bc_vm_posix_error(BC_STATUS_POSIX_NO_FOR_INIT,
+                               p->lex.file, p->lex.line, NULL);
 
   if (status) return status;
   if (p->lex.token.type != BC_LEX_SEMICOLON) return BC_STATUS_PARSE_BAD_TOKEN;
@@ -729,8 +729,8 @@ BcStatus bc_parse_for(BcParse *p, BcVec *code) {
 
   if (p->lex.token.type != BC_LEX_SEMICOLON)
     status = bc_parse_expr(p, code, BC_PARSE_POSIX_REL, bc_parse_next_for);
-  else status = bc_posix_error(BC_STATUS_POSIX_NO_FOR_COND,
-                               p->lex.file, p->lex.line, NULL);
+  else status = bc_vm_posix_error(BC_STATUS_POSIX_NO_FOR_COND,
+                                  p->lex.file, p->lex.line, NULL);
 
   if (status) return status;
   if (p->lex.token.type != BC_LEX_SEMICOLON) return BC_STATUS_PARSE_BAD_TOKEN;
@@ -749,8 +749,8 @@ BcStatus bc_parse_for(BcParse *p, BcVec *code) {
   if (p->lex.token.type != BC_LEX_RIGHT_PAREN)
     status = bc_parse_expr(p, code, 0, bc_parse_next_cond);
   else
-    status = bc_posix_error(BC_STATUS_POSIX_NO_FOR_UPDATE,
-                            p->lex.file, p->lex.line, NULL);
+    status = bc_vm_posix_error(BC_STATUS_POSIX_NO_FOR_UPDATE,
+                               p->lex.file, p->lex.line, NULL);
 
   if (status) return status;
 
@@ -873,8 +873,8 @@ BcStatus bc_parse_func(BcParse *p) {
   if ((status = bc_lex_next(&p->lex))) return status;
 
   if (p->lex.token.type != BC_LEX_LEFT_BRACE)
-    return bc_posix_error(BC_STATUS_POSIX_HEADER_BRACE,
-                          p->lex.file, p->lex.line, NULL);
+    return bc_vm_posix_error(BC_STATUS_POSIX_HEADER_BRACE,
+                             p->lex.file, p->lex.line, NULL);
 
   return status;
 
@@ -1466,14 +1466,14 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcNext next) {
   if (status) return status;
 
   if (!(flags & BC_PARSE_POSIX_REL) && nrelops &&
-      (status = bc_posix_error(BC_STATUS_POSIX_REL_OUTSIDE,
-                               p->lex.file, p->lex.line, NULL)))
+      (status = bc_vm_posix_error(BC_STATUS_POSIX_REL_OUTSIDE,
+                                  p->lex.file, p->lex.line, NULL)))
   {
     return status;
   }
   else if ((flags & BC_PARSE_POSIX_REL) && nrelops != 1 &&
-           (status = bc_posix_error(BC_STATUS_POSIX_MULTIPLE_REL,
-                                    p->lex.file, p->lex.line, NULL)))
+           (status = bc_vm_posix_error(BC_STATUS_POSIX_MULTIPLE_REL,
+                                       p->lex.file, p->lex.line, NULL)))
   {
     return status;
   }

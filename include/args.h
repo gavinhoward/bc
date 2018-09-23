@@ -16,28 +16,18 @@
  *
  * *****************************************************************************
  *
- * The entry point for bc.
+ * Definitions for processing command-line arguments.
  *
  */
 
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
+#ifndef BC_ARGS_H
+#define BC_ARGS_H
 
-#include <locale.h>
+#include <getopt.h>
 
 #include <status.h>
-#include <vm.h>
-#include <bc.h>
-#include <dc.h>
+#include <vector.h>
 
-BcGlobals bcg;
+BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files);
 
-int main(int argc, char *argv[]) {
-
-  setlocale(LC_ALL, "");
-  memset(&bcg, 0, sizeof(BcGlobals));
-
-  return (int) bc_main(argc, argv);
-}
+#endif // BC_ARGS_H

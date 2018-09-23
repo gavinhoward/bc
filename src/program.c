@@ -31,7 +31,7 @@
 #include <io.h>
 #include <program.h>
 #include <parse.h>
-#include <bc.h>
+#include <vm.h>
 
 BcStatus bc_program_search(BcProgram *p, BcResult *result,
                            BcNum **ret, bool var)

@@ -30,7 +30,7 @@
 
 #include <status.h>
 #include <lex.h>
-#include <bc.h>
+#include <vm.h>
 
 BcStatus bc_lex_string(BcLex *lex) {
 
@@ -158,8 +158,8 @@ BcStatus bc_lex_name(BcLex *lex) {
       lex->token.type = BC_LEX_KEY_AUTO + (BcLexToken) i;
 
       if (!bc_lex_keywords[i].posix &&
-          (status = bc_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, lex->file,
-                                   lex->line, bc_lex_keywords[i].name)))
+          (status = bc_vm_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, lex->file,
+                                      lex->line, bc_lex_keywords[i].name)))
       {
         return status;
       }
@@ -179,8 +179,8 @@ BcStatus bc_lex_name(BcLex *lex) {
   while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_')
     c = buffer[++i];
 
-  if (i > 1 && (status = bc_posix_error(BC_STATUS_POSIX_NAME_LEN,
-                                        lex->file, lex->line, buffer)))
+  if (i > 1 && (status = bc_vm_posix_error(BC_STATUS_POSIX_NAME_LEN,
+                                           lex->file, lex->line, buffer)))
   {
     return status;
   }
@@ -231,8 +231,8 @@ BcStatus bc_lex_token(BcLex *lex) {
       }
       else {
 
-        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-                                     lex->file, lex->line, "!")))
+        if ((status = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                        lex->file, lex->line, "!")))
         {
           return status;
         }
@@ -251,8 +251,8 @@ BcStatus bc_lex_token(BcLex *lex) {
 
     case '#':
     {
-      if ((status = bc_posix_error(BC_STATUS_POSIX_SCRIPT_COMMENT,
-                                  lex->file, lex->line, NULL)))
+      if ((status = bc_vm_posix_error(BC_STATUS_POSIX_SCRIPT_COMMENT,
+                                      lex->file, lex->line, NULL)))
       {
         return status;
       }
@@ -277,8 +277,8 @@ BcStatus bc_lex_token(BcLex *lex) {
     {
       if ((c2 = lex->buffer[lex->idx]) == '&') {
 
-        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-                                     lex->file, lex->line, "&&")))
+        if ((status = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                        lex->file, lex->line, "&&")))
         {
           return status;
         }
@@ -350,8 +350,8 @@ BcStatus bc_lex_token(BcLex *lex) {
       c2 = lex->buffer[lex->idx];
       if (isdigit(c2)) status = bc_lex_number(lex, c);
       else {
-        status = bc_posix_error(BC_STATUS_POSIX_DOT_LAST,
-                                lex->file, lex->line, NULL);
+        status = bc_vm_posix_error(BC_STATUS_POSIX_DOT_LAST,
+                                   lex->file, lex->line, NULL);
         lex->token.type = BC_LEX_KEY_LAST;
       }
       break;
@@ -499,8 +499,8 @@ BcStatus bc_lex_token(BcLex *lex) {
     {
       if ((c2 = lex->buffer[lex->idx]) == '|') {
 
-        if ((status = bc_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-                                     lex->file, lex->line, "||")))
+        if ((status = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+                                        lex->file, lex->line, "||")))
         {
           return status;
         }
