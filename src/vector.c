@@ -31,7 +31,7 @@
 
 BcStatus bc_vec_grow(BcVec *vec, size_t n) {
 
-  uint8_t *ptr;
+  char *ptr;
   size_t cap = vec->cap * 2;
 
   while (cap < vec->len + n) cap *= 2;
@@ -62,7 +62,7 @@ BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFree dtor) {
 
 BcStatus bc_vec_expand(BcVec *vec, size_t request) {
 
-  uint8_t *ptr;
+  char *ptr;
 
   assert(vec);
 
@@ -115,7 +115,7 @@ BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx) {
 
   BcStatus status;
-  uint8_t *ptr;
+  char *ptr;
 
   assert(vec && data && idx <= vec->len);
 
@@ -153,13 +153,6 @@ void* bc_vec_item(const BcVec *vec, size_t idx) {
 void* bc_vec_item_rev(const BcVec *vec, size_t idx) {
   assert(vec && vec->len && idx < vec->len);
   return vec->array + vec->size * (vec->len - idx - 1);
-}
-
-BcStatus bc_vec_string(const BcVec *vec, char **d) {
-  assert(vec && vec->len && !vec->array[vec->len - 1] && d);
-  if (!(*d = malloc(vec->len))) return BC_STATUS_MALLOC_FAIL;
-  strcpy(*d, (char*) vec->array);
-  return BC_STATUS_SUCCESS;
 }
 
 void bc_vec_free(void *vec) {

@@ -184,7 +184,7 @@ BcStatus bc_parse_name(BcParse *p, BcVec *code, BcInst *type, uint8_t flags)
   BcStatus status;
   char *name;
 
-  if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
+  if (!(name = strdup(p->lex.token.data.array))) return BC_STATUS_MALLOC_FAIL;
   if ((status = bc_lex_next(&p->lex))) goto err;
 
   if (p->lex.token.type == BC_LEX_LEFT_BRACKET) {
@@ -422,7 +422,7 @@ BcStatus bc_parse_string(BcParse *p, BcVec *code, uint8_t inst) {
   BcStatus status;
   char *str;
 
-  if ((status = bc_vec_string(&p->lex.token.data, &str))) return status;
+  if (!(str = strdup(p->lex.token.data.array))) return BC_STATUS_MALLOC_FAIL;
   if ((status = bc_vec_pushByte(code, inst))) goto err;
   if ((status = bc_parse_pushIndex(code, p->prog->strings.len))) goto err;
   if ((status = bc_vec_push(&p->prog->strings, 1, &str))) goto err;
@@ -827,7 +827,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
   assert(p->prog->funcs.len == p->prog->func_map.vec.len);
 
-  if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
+  if (!(name = strdup(p->lex.token.data.array))) return BC_STATUS_MALLOC_FAIL;
   if ((status = bc_program_addFunc(p->prog, name, &p->func))) return status;
   assert(p->func);
   fptr = bc_vec_item(&p->prog->funcs, p->func);
@@ -842,7 +842,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
     ++fptr->nparams;
 
-    if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
+    if (!(name = strdup(p->lex.token.data.array))) return BC_STATUS_MALLOC_FAIL;
     if ((status = bc_lex_next(&p->lex))) goto err;
 
     var = p->lex.token.type != BC_LEX_LEFT_BRACKET;
@@ -898,7 +898,7 @@ BcStatus bc_parse_auto(BcParse *p) {
 
   while (!status && p->lex.token.type == BC_LEX_NAME) {
 
-    if ((status = bc_vec_string(&p->lex.token.data, &name))) return status;
+    if (!(name = strdup(p->lex.token.data.array))) return BC_STATUS_MALLOC_FAIL;
     if ((status = bc_lex_next(&p->lex))) goto err;
 
     one = true;
@@ -1355,7 +1355,9 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcNext next) {
 
         if (BC_PARSE_LEAF(prev, rparen)) return BC_STATUS_PARSE_BAD_EXPR;
 
-        if ((status = bc_vec_string(&p->lex.token.data, &num))) return status;
+        if (!(num = strdup(p->lex.token.data.array)))
+          return BC_STATUS_MALLOC_FAIL;
+
         if ((status = bc_vec_push(&p->prog->constants, 1, &num))) {
           free(num);
           return status;

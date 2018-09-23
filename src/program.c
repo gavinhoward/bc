@@ -334,7 +334,7 @@ io_err:
   return status;
 }
 
-size_t bc_program_index(uint8_t *code, size_t *start) {
+size_t bc_program_index(char *code, size_t *start) {
 
   uint8_t bytes = code[(*start)++], i = 0;
   size_t res = 0;
@@ -344,7 +344,7 @@ size_t bc_program_index(uint8_t *code, size_t *start) {
   return res;
 }
 
-char* bc_program_name(uint8_t *code, size_t *start) {
+char* bc_program_name(char *code, size_t *start) {
 
   size_t len, i;
   char byte, *s, *string = (char*) (code + *start), *ptr = strchr(string, ':');
@@ -446,7 +446,7 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_program_push(BcProgram *p, uint8_t *code, size_t *start,
+BcStatus bc_program_push(BcProgram *p, char *code, size_t *start,
                          uint8_t inst)
 {
   BcStatus status;
@@ -639,7 +639,7 @@ err:
   return status;
 }
 
-BcStatus bc_program_call(BcProgram *p, uint8_t *code, size_t *idx) {
+BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
   BcStatus status = BC_STATUS_SUCCESS;
   BcInstPtr ip;
@@ -1051,7 +1051,7 @@ BcStatus bc_program_exec(BcProgram *p) {
   bool cond = false;
   BcInstPtr *ip = bc_vec_top(&p->stack);
   BcFunc *func = bc_vec_item(&p->funcs, ip->func);
-  uint8_t *code = func->code.array;
+  char *code = func->code.array;
 
   while (!status && !bcg.sig_other && ip->idx < func->code.len) {
 

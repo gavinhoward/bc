@@ -36,7 +36,7 @@ typedef int (*BcVecCmp)(const void*, const void*);
 
 typedef struct BcVec {
 
-  uint8_t *array;
+  char *array;
   size_t len;
   size_t cap;
   size_t size;
@@ -60,7 +60,6 @@ BcStatus bc_vec_setToString(BcVec *vec, size_t len, const char *str);
 void* bc_vec_top(const BcVec *vec);
 void* bc_vec_item(const BcVec *vec, size_t idx);
 void* bc_vec_item_rev(const BcVec *vec, size_t idx);
-BcStatus bc_vec_string(const BcVec *vec, char **d);
 
 void bc_vec_free(void *vec);
 // ** Exclude end. **
