@@ -78,7 +78,7 @@ BcStatus bc_vm_set_sig();
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 BcStatus bc_vm_posix_error(BcStatus s, const char *file,
-                        size_t line, const char *msg);
+                           size_t line, const char *msg);
 
 BcStatus bc_vm_file(BcVm *bc, const char *file);
 BcStatus bc_vm_stdin(BcVm *bc);
