@@ -160,11 +160,11 @@ BcStatus bc_parse_call(BcParse *p, BcVec *code, char *name, uint8_t flags) {
 
   idx = bc_veco_index(&p->prog->func_map, &entry);
 
-  if (idx == BC_INVALID_IDX) {
+  if (idx == BC_VEC_INVALID_IDX) {
     if ((status = bc_program_addFunc(p->prog, name, &idx))) return status;
     name = NULL;
     idx = bc_veco_index(&p->prog->func_map, &entry);
-    assert(idx != BC_INVALID_IDX);
+    assert(idx != BC_VEC_INVALID_IDX);
   }
   else free(name);
 

@@ -28,6 +28,7 @@
 
 #include <status.h>
 
+#define BC_VEC_INVALID_IDX ((size_t) -1)
 #define BC_VEC_INITIAL_CAP (1<<5)
 
 typedef void (*BcVecFree)(void*);
