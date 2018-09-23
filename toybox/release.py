@@ -74,7 +74,7 @@ for i in range(22, len(bc_c_lines)):
 	bc_c_stuff += bc_c_lines[i]
 
 bc_c_replacements = [
-	[ '^BcStatus bc_main\(unsigned int flags, BcVec \*files\)',
+	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*files\)',
 	  'void bc_main(void)' ],
 	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
 	[ '^  bcg.warn = flags & BC_FLAG_W;$', '' ],
