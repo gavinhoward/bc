@@ -62,6 +62,7 @@ const uint8_t bc_err_indices[] = {
 };
 
 const char *bc_err_descs[] = {
+
   NULL,
   "memory allocation error",
   "I/O error",
@@ -125,6 +126,7 @@ const char *bc_err_descs[] = {
   "quit request not honored",
   "limits request not honored",
 #endif // NDEBUG
+
 };
 
 const char bc_sig_msg[34] = "\ninterrupt (type \"quit\" to exit)\n";
