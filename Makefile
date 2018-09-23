@@ -88,21 +88,21 @@ timeconst:
 	tests/timeconst.sh
 
 clean:
-	$(RM) $(BC_OBJ)
-	$(RM) $(BC_EXEC)
-	$(RM) $(GEN_EXEC)
-	$(RM) $(BC_LIB_C)
-	$(RM) $(BC_LIB_O)
-	$(RM) $(BC_HELP_C)
-	$(RM) $(BC_HELP_O)
-	$(RM) .log_test.txt .log_bc.txt
-	$(RM) .math.txt .results.txt .ops.txt
-	$(RM) .test.txt
+	$(RM) -f $(BC_OBJ)
+	$(RM) -f $(BC_EXEC)
+	$(RM) -f $(GEN_EXEC)
+	$(RM) -f $(BC_LIB_C)
+	$(RM) -f $(BC_LIB_O)
+	$(RM) -f $(BC_HELP_C)
+	$(RM) -f $(BC_HELP_O)
+	$(RM) -f .log_test.txt .log_bc.txt
+	$(RM) -f .math.txt .results.txt .ops.txt
+	$(RM) -f .test.txt
 
 clean_tests: clean
-	$(RM) tests/parse.txt tests/parse_results.txt
-	$(RM) tests/print.txt tests/print_results.txt
-	$(RM) tests/bessel.txt tests/bessel_results.txt
+	$(RM) -f tests/parse.txt tests/parse_results.txt
+	$(RM) -f tests/print.txt tests/print_results.txt
+	$(RM) -f tests/bessel.txt tests/bessel_results.txt
 
 install: $(BC_EXEC)
 	$(INSTALL) -Dm 755 $(BC_EXEC) $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
