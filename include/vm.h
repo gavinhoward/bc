@@ -83,6 +83,8 @@ BcStatus bc_vm_posix_error(BcStatus s, const char *file,
 BcStatus bc_vm_file(BcVm *bc, const char *file);
 BcStatus bc_vm_stdin(BcVm *bc);
 
+BcStatus bc_vm_exec(unsigned int flags, BcVec *files);
+
 extern BcGlobals bcg;
 
 extern const char bc_vm_header[];

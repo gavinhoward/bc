@@ -30,4 +30,6 @@
 
 BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files);
 
+extern const char* const bc_args_env_name;
+
 #endif // BC_ARGS_H

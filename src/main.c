@@ -30,7 +30,6 @@
 #include <status.h>
 #include <vm.h>
 #include <bc.h>
-#include <dc.h>
 
 BcGlobals bcg;
 
