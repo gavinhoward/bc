@@ -214,6 +214,7 @@ BcStatus bc_veco_insert(BcVecO *vec, const void *data, size_t *idx) {
 size_t bc_veco_index(const BcVecO* v, const void *data) {
   assert(v && data);
   size_t i = bc_veco_find(v, data);
+  if (i >= v->vec.len) return BC_VEC_INVALID_IDX;
   void* data2 = bc_vec_item(&v->vec, i);
-  return i >= v->vec.len || v->cmp(data, data2) ? BC_VEC_INVALID_IDX : i;
+  return v->cmp(data, data2) ? BC_VEC_INVALID_IDX : i;
 }
