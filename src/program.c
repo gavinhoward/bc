@@ -609,7 +609,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
     size_t * ptr = left->type == BC_RESULT_IBASE ? &p->ibase_t : &p->obase_t;
 
-    if ((status = bc_num_ulong(l, &val))) return status;
+    if ((status = bc_num_ulong(r, &val))) return status;
 
     max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
 
