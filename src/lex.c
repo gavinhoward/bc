@@ -92,39 +92,43 @@ BcStatus bc_lex_comment(BcLex *lex) {
 BcStatus bc_lex_number(BcLex *lex, char start) {
 
   BcStatus status;
-  const char *buf, *buffer = lex->buffer + lex->idx;
+  const char *buffer = lex->buffer + lex->idx;
   size_t len, hits, backslashes = 0, i = 0, j;
   char c = buffer[i];
-  bool point = start == '.';
+  bool last_point, point = start == '.';
 
+  last_point = point;
   lex->token.type = BC_LEX_NUMBER;
 
   while (c && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
                (c == '.' && !point) || (c == '\\' && buffer[i + 1] == '\n')))
   {
-    if (c == '\\') {
+    if (c != '\\') {
+      last_point = c == '.';
+      point = point || last_point;
+    }
+    else {
       ++i;
       backslashes += 1;
     }
 
-    point = point || c == '.';
     c = buffer[++i];
   }
 
-  len = i + 1 * (*(buffer + i - 1) != '.');
+  len = i + 1 * !last_point - backslashes * 2;
   if (len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
 
   bc_vec_npop(&lex->token.data, lex->token.data.len);
-  if ((status = bc_vec_expand(&lex->token.data, len - backslashes * 2 + 1)))
+  if ((status = bc_vec_expand(&lex->token.data, len + 1)))
     return status;
   if ((status = bc_vec_push(&lex->token.data, 1, &start))) return status;
 
-  buf = buffer - 1;
+  buffer -= 1;
   hits = 0;
 
-  for (j = 1; j < len; ++j) {
+  for (j = 1; j < len + hits * 2; ++j) {
 
-    c = buf[j];
+    c = buffer[j];
 
     // If we have hit a backslash, skip it. We don't have
     // to check for a newline because it's guaranteed.
