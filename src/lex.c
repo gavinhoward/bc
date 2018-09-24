@@ -382,6 +382,12 @@ BcStatus bc_lex_token(BcLex *lex) {
     case '7':
     case '8':
     case '9':
+    case 'A':
+    case 'B':
+    case 'C':
+    case 'D':
+    case 'E':
+    case 'F':
     {
       status = bc_lex_number(lex, c);
       break;
@@ -420,17 +426,6 @@ BcStatus bc_lex_token(BcLex *lex) {
         lex->token.type = BC_LEX_OP_REL_GREATER_EQ;
       }
       else lex->token.type = BC_LEX_OP_REL_GREATER;
-      break;
-    }
-
-    case 'A':
-    case 'B':
-    case 'C':
-    case 'D':
-    case 'E':
-    case 'F':
-    {
-      status = bc_lex_number(lex, c);
       break;
     }
 
