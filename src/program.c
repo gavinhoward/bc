@@ -80,12 +80,10 @@ BcStatus bc_program_search(BcProgram *p, BcResult *result,
 
   if (status != BC_STATUS_VEC_ITEM_EXISTS) {
 
-    size_t len = strlen(entry.name) + 1;
-
     if (status) return status;
 
-    if (!(result->data.id.name = malloc(len))) return BC_STATUS_MALLOC_FAIL;
-    strcpy(result->data.id.name, entry.name);
+    if (!(result->data.id.name = strdup(entry.name)))
+      return BC_STATUS_MALLOC_FAIL;
 
     if (var) status = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
     else status = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
@@ -893,22 +891,20 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
   s = bc_veco_init(&p->func_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
   if (s) goto func_map_err;
 
-  if (!(main_name = malloc(sizeof(bc_lang_func_main)))) {
+  if (!(main_name = strdup(bc_lang_func_main))) {
     s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
 
-  strcpy(main_name, bc_lang_func_main);
   s = bc_program_addFunc(p, main_name, &idx);
   if (s || idx != BC_PROGRAM_MAIN) goto name_err;
   main_name = NULL;
 
-  if (!(read_name = malloc(sizeof(bc_lang_func_read)))) {
+  if (!(read_name = strdup(bc_lang_func_read))) {
     s = BC_STATUS_MALLOC_FAIL;
     goto name_err;
   }
 
-  strcpy(read_name, bc_lang_func_read);
   s = bc_program_addFunc(p, read_name, &idx);
   if (s || idx != BC_PROGRAM_READ) goto name_err;
   read_name = NULL;

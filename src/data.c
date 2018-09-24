@@ -131,8 +131,8 @@ const char *bc_err_descs[] = {
 
 const char bc_sig_msg[34] = "\ninterrupt (type \"quit\" to exit)\n";
 
-const char bc_lang_func_main[7] = "(main)";
-const char bc_lang_func_read[7] = "(read)";
+const char bc_lang_func_main[] = "(main)";
+const char bc_lang_func_read[] = "(read)";
 
 #ifndef NDEBUG
 const char bc_lang_inst_chars[] =
