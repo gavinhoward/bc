@@ -834,10 +834,10 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   unsigned long dig, *ptr;
   bool radix, neg = n->neg;
 
-  n->neg = false;
-
   if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
   nchars += neg;
+
+  n->neg = false;
 
   if (base_t <= BC_NUM_MAX_IBASE) {
     width = 1;
@@ -848,7 +848,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
     print = bc_num_printDigits;
   }
 
-  if ((status = bc_vec_init(&stack, sizeof(long), NULL))) return status;
+  if ((status = bc_vec_init(&stack, sizeof(long), NULL))) goto stack_err;
   if ((status = bc_num_init(&intp, n->len))) goto int_err;
   if ((status = bc_num_init(&fracp, n->rdx))) goto frac_err;
   if ((status = bc_num_init(&digit, width))) goto digit_err;
@@ -886,7 +886,6 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   }
 
 err:
-  n->neg = neg;
   bc_num_free(&frac_len);
 frac_len_err:
   bc_num_free(&digit);
@@ -896,6 +895,8 @@ frac_err:
   bc_num_free(&intp);
 int_err:
   bc_vec_free(&stack);
+stack_err:
+  n->neg = neg;
   return status;
 }
 
