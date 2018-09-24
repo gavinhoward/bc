@@ -17,3 +17,4 @@ arctangent
 sine
 cosine
 bessel
+misc
