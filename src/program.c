@@ -1308,9 +1308,9 @@ void bc_program_free(BcProgram *p) {
 }
 
 #ifndef NDEBUG
-BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
+BcStatus bc_program_printIndex(char *code, size_t *start) {
 
-  uint8_t byte, i, bytes = code[(*start)++];
+  char byte, i, bytes = code[(*start)++];
   unsigned long val = 0;
 
   for (byte = 1, i = 0; byte && i < bytes; ++i) {
@@ -1321,7 +1321,7 @@ BcStatus bc_program_printIndex(uint8_t *code, size_t *start) {
   return printf(" (%lu) ", val) < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_program_printName(uint8_t *code, size_t *start) {
+BcStatus bc_program_printName(char *code, size_t *start) {
 
   BcStatus status = BC_STATUS_SUCCESS;
   char byte = (char) code[(*start)++];
@@ -1343,7 +1343,7 @@ BcStatus bc_program_print(BcProgram *p) {
 
   BcStatus status = BC_STATUS_SUCCESS;
   BcFunc *func;
-  uint8_t *code;
+  char *code;
   BcInstPtr ip;
   size_t i;
 
