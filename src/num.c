@@ -852,29 +852,27 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   if ((status = bc_num_init(&intp, n->len))) goto int_err;
   if ((status = bc_num_init(&fracp, n->rdx))) goto frac_err;
   if ((status = bc_num_init(&digit, width))) goto digit_err;
-  if ((status = bc_num_copy(&intp, n))) goto frac_len_err;
+  if ((status = bc_num_init(&frac_len, BC_NUM_INT(n)))) goto frac_len_err;
+  if ((status = bc_num_copy(&intp, n))) goto err;
+  bc_num_one(&frac_len);
 
   bc_num_truncate(&intp, intp.rdx);
-  if ((status = bc_num_sub(n, &intp, &fracp, 0))) goto frac_len_err;
+  if ((status = bc_num_sub(n, &intp, &fracp, 0))) goto err;
 
   while (intp.len) {
-    if ((status = bc_num_mod(&intp, base, &digit, 0))) goto frac_len_err;
-    if ((status = bc_num_ulong(&digit, &dig))) goto frac_len_err;
-    if ((status = bc_vec_push(&stack, 1, &dig))) goto frac_len_err;
-    if ((status = bc_num_div(&intp, base, &intp, 0))) goto frac_len_err;
+    if ((status = bc_num_mod(&intp, base, &digit, 0))) goto err;
+    if ((status = bc_num_ulong(&digit, &dig))) goto err;
+    if ((status = bc_vec_push(&stack, 1, &dig))) goto err;
+    if ((status = bc_num_div(&intp, base, &intp, 0))) goto err;
   }
 
   for (i = 0; i < stack.len; ++i) {
     ptr = bc_vec_item_rev(&stack, i);
     assert(ptr);
-    status = print(*ptr, width, false, nchars, line_len);
-    if (status) goto frac_len_err;
+    if ((status = print(*ptr, width, false, nchars, line_len))) goto err;
   }
 
-  if (!n->rdx || (status = bc_num_init(&frac_len, BC_NUM_INT(n))))
-    goto frac_len_err;
-
-  bc_num_one(&frac_len);
+  if (!n->rdx) goto err;
 
   for (radix = true; frac_len.len <= n->rdx; radix = false) {
     if ((status = bc_num_mul(&fracp, base, &fracp, n->rdx))) goto err;
