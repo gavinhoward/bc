@@ -108,6 +108,6 @@ install: $(BC_EXEC)
 	$(INSTALL) -Dm 755 $(BC_EXEC) $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
 
 uninstall:
-	rm -rf $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
+	$(RM) -f $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
 
 .PHONY: all help clean clean_tests install uninstall test
