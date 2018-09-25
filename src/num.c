@@ -761,10 +761,10 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
   BcStatus status;
   size_t exp, pow;
 
-  if (*nchars || radix) {
-    if (putchar(radix ? '.' : ' ') == EOF) return BC_STATUS_IO_ERR;
-    ++(*nchars);
-  }
+  if ((status = bc_num_printNewline(nchars, line_len))) return status;
+
+  if (putchar(radix ? '.' : ' ') == EOF) return BC_STATUS_IO_ERR;
+  ++(*nchars);
 
   if ((status = bc_num_printNewline(nchars, line_len))) return status;
 
