@@ -95,14 +95,14 @@ clean:
 	$(RM) -f $(BC_LIB_O)
 	$(RM) -f $(BC_HELP_C)
 	$(RM) -f $(BC_HELP_O)
-	$(RM) -f .log_test.txt .log_bc.txt
-	$(RM) -f .math.txt .results.txt .ops.txt
-	$(RM) -f .test.txt
 
 clean_tests: clean
 	$(RM) -f tests/parse.txt tests/parse_results.txt
 	$(RM) -f tests/print.txt tests/print_results.txt
 	$(RM) -f tests/bessel.txt tests/bessel_results.txt
+	$(RM) -f .log_test.txt .log_bc.txt
+	$(RM) -f .math.txt .results.txt .ops.txt
+	$(RM) -f .test.txt
 
 install: $(BC_EXEC)
 	$(INSTALL) -Dm 755 $(BC_EXEC) $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
