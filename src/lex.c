@@ -52,7 +52,7 @@ BcStatus bc_lex_string(BcLex *lex) {
   if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
 
   buf = lex->buffer + lex->idx;
-  if ((status = bc_vec_setToString(&lex->token.data, len, buf))) return status;
+  if ((status = bc_vec_string(&lex->token.data, len, buf))) return status;
 
   lex->idx = i + 1;
   lex->line += newlines;
@@ -190,7 +190,7 @@ BcStatus bc_lex_name(BcLex *lex) {
   }
 
   if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
-  if ((status = bc_vec_setToString(&lex->token.data, i, buffer))) return status;
+  if ((status = bc_vec_string(&lex->token.data, i, buffer))) return status;
 
   // Increment the index. We minus one because it has already been incremented.
   lex->idx += i - 1;

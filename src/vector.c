@@ -130,7 +130,7 @@ BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx) {
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_setToString(BcVec *vec, size_t len, const char *str) {
+BcStatus bc_vec_string(BcVec *vec, size_t len, const char *str) {
 
   BcStatus status;
 
