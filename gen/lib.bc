@@ -19,6 +19,7 @@
  * The bc math library.
  *
  */
+
 scale=20
 define e(x){
 	auto b,s,n,r,d,i,p,f,v

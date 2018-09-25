@@ -102,7 +102,11 @@ int main(int argc, char *argv[]) {
     goto error;
   }
 
-  while ((c = fgetc(in)) >= 0) {
+  c = fgetc(in);
+
+  if (c == '\n') c = fgetc(in);
+
+  while (c >= 0) {
 
     int val;
 
@@ -131,6 +135,8 @@ int main(int argc, char *argv[]) {
         goto error;
       }
     }
+
+    c = fgetc(in);
   }
 
   if (!count) {
