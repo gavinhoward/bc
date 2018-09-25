@@ -73,7 +73,7 @@ void bc_func_free(void *func) {
   bc_vec_free(&f->labels);
 }
 
-BcStatus bc_array_copy(BcVec *d, BcVec *s) {
+BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
 
   BcStatus status;
   size_t i;
