@@ -262,7 +262,8 @@ BcStatus bc_lex_token(BcLex *lex) {
       }
 
       lex->token.type = BC_LEX_WHITESPACE;
-      while (++lex->idx < lex->len && lex->buffer[lex->idx] != '\n');
+      while (lex->idx < lex->len && lex->buffer[lex->idx++] != '\n');
+      --lex->idx;
 
       break;
     }
