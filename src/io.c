@@ -35,7 +35,8 @@ BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
   int c;
   size_t size, i;
 
-  if (bcg.tty && fputs(prompt, stdout) == EOF) return BC_STATUS_IO_ERR;
+  if (bcg.tty && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
+    return BC_STATUS_IO_ERR;
 
   for (i = 0, c = 0; c != '\n'; ++i) {
 
@@ -58,10 +59,11 @@ BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
         bcg.signe = 0;
         --i;
 
-        fprintf(stderr, "%s", bc_program_ready_prompt);
-        fflush(stderr);
-
-        if (bcg.tty && fputs(prompt, stdout) == EOF) return BC_STATUS_IO_ERR;
+        if (bcg.tty && (fputs(bc_program_ready_prompt, stderr) == EOF ||
+                        fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
+        {
+          return BC_STATUS_IO_ERR;
+        }
 
         continue;
       }

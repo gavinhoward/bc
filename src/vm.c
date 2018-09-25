@@ -261,9 +261,9 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
   BcVm vm;
   size_t i, len;
   char *lenv;
-  int num;
+  int num, tty_out = isatty(1);
 
-  bcg.tty = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
+  bcg.tty = (flags & BC_FLAG_I) || isatty(0) || tty_out;
   bcg.posix = flags & BC_FLAG_S;
   bcg.warn = flags & BC_FLAG_W;
 
@@ -280,7 +280,9 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
   if ((status = bc_program_init(&vm.prog, len))) return status;
   if ((status = bc_parse_init(&vm.parse, &vm.prog))) goto parse_err;
 
-  if (bcg.tty && !(flags & BC_FLAG_Q) && printf("%s", bc_vm_header) < 0) {
+  if (bcg.tty && tty_out && !(flags & BC_FLAG_Q) &&
+      printf("%s", bc_vm_header) < 0)
+  {
     status = BC_STATUS_IO_ERR;
     goto err;
   }
