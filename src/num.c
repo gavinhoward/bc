@@ -833,7 +833,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
   bool radix, neg = n->neg;
 
   if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
-  nchars += neg;
+  (*nchars) += neg;
 
   n->neg = false;
 
