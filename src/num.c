@@ -805,20 +805,18 @@ BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
   return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_printDecimal(BcNum *n, size_t *nchs, size_t len) {
+BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
 
   BcStatus status;
   size_t i;
 
-  if (n->neg) {
-    if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
-    ++(*nchs);
-  }
+  if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
+  (*nchars) += n->neg;
 
   status = BC_STATUS_SUCCESS;
 
   for (i = n->len - 1; !status && i < n->len; --i)
-    status = bc_num_printHex((size_t) n->num[i], 1, i == n->rdx - 1, nchs, len);
+    status = bc_num_printHex((size_t) n->num[i], 1, i == n->rdx - 1, nchars, len);
 
   return status;
 }
