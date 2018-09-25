@@ -40,62 +40,62 @@
 
 BcStatus bc_main(int argc, char *argv[]) {
 
-  BcStatus status;
-  BcVec files, args;
-  unsigned int flags;
-  char *env_args, *buffer, *buf;
+	BcStatus s;
+	BcVec files, args;
+	unsigned int flags;
+	char *env_args, *buffer, *buf;
 
-  flags = 0;
-  buffer = NULL;
+	flags = 0;
+	buffer = NULL;
 
-  if ((status = bc_vec_init(&files, sizeof(char*), NULL))) return (int) status;
+	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return (int) s;
 
-  if ((env_args = getenv(bc_args_env_name))) {
+	if ((env_args = getenv(bc_args_env_name))) {
 
-    if ((status = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
-    if ((status = bc_vec_push(&args, 1, &bc_args_env_name))) goto args_err;
+		if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
+		if ((s = bc_vec_push(&args, 1, &bc_args_env_name))) goto args_err;
 
-    if (!(buffer = strdup(env_args))) {
-      status = BC_STATUS_MALLOC_FAIL;
-      goto args_err;
-    }
+		if (!(buffer = strdup(env_args))) {
+			s = BC_STATUS_MALLOC_FAIL;
+			goto args_err;
+		}
 
-    buf = buffer;
+		buf = buffer;
 
-    while (*buf) {
+		while (*buf) {
 
-      if (!isspace(*buf)) {
+			if (!isspace(*buf)) {
 
-        if ((status = bc_vec_push(&args, 1, &buf))) goto buf_err;
+				if ((s = bc_vec_push(&args, 1, &buf))) goto buf_err;
 
-        while (*buf && !isspace(*buf)) ++buf;
+				while (*buf && !isspace(*buf)) ++buf;
 
-        if (*buf) (*(buf++)) = '\0';
-      }
-      else ++buf;
-    }
+				if (*buf) (*(buf++)) = '\0';
+			}
+			else ++buf;
+		}
 
-    status = bc_args((int) args.len, (char**) args.array, &flags, &files);
-    if(status) goto buf_err;
-  }
+		s = bc_args((int) args.len, (char**) args.array, &flags, &files);
+		if(s) goto buf_err;
+	}
 
-  if((status = bc_args(argc, argv, &flags, &files))) goto buf_err;
+	if((s = bc_args(argc, argv, &flags, &files))) goto buf_err;
 
-  flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
+	flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 
-  status = bc_vm_exec(flags, &files);
+	s = bc_vm_exec(flags, &files);
 
 buf_err:
 
-  if (env_args) free(buffer);
+	if (env_args) free(buffer);
 
 args_err:
 
-  if (env_args) bc_vec_free(&args);
+	if (env_args) bc_vec_free(&args);
 
 err:
 
-  bc_vec_free(&files);
+	bc_vec_free(&files);
 
-  return (int) status;
+	return (int) s;
 }
