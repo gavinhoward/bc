@@ -1224,8 +1224,8 @@ void bc_parse_free(BcParse *p) {
   bc_lex_free(&p->lex);
 }
 
-BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcNext next) {
-
+BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
+{
   BcStatus status = BC_STATUS_SUCCESS;
   BcInst prev = BC_INST_PRINT;
   BcLexToken top, type = p->lex.token.type;
