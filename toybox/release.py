@@ -134,7 +134,7 @@ replacements = [
 	[ 'BC_FLAG_C', 'FLAG_c' ],
 	[ 'BC_MAX\(', 'maxof(' ],
 	[ 'BC_MIN\(', 'minof(' ],
-	[ 'BC_INVALID_IDX', '-1' ],
+	[ 'BC_INVALID_IDX', '((size_t) -1)' ],
 	[ ' bool', ' int' ],
 	[ '^bool ', 'int ' ],
 	[ ' true', ' 1' ],
