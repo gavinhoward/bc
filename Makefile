@@ -23,9 +23,9 @@ BC_LIB = $(GEN_DIR)/lib.bc
 BC_LIB_C = $(GEN_DIR)/lib.c
 BC_LIB_O = $(GEN_DIR)/lib.o
 
-BC_HELP = $(GEN_DIR)/help.txt
-BC_HELP_C = $(GEN_DIR)/help.c
-BC_HELP_O = $(GEN_DIR)/help.o
+BC_HELP = $(GEN_DIR)/bc_help.txt
+BC_HELP_C = $(GEN_DIR)/bc_help.c
+BC_HELP_O = $(GEN_DIR)/bc_help.o
 
 BC_EXEC = bc
 

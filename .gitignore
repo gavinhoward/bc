@@ -14,7 +14,7 @@ bc
 .ops.txt
 strgen
 lib.c
-help.c
+bc_help.c
 config.mak
 timeconst.bc
 
