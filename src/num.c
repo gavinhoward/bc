@@ -810,7 +810,7 @@ BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
   BcStatus status;
   size_t i, rdx = n->rdx - 1;
 
-  if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
+  if (n->neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
   (*nchars) += n->neg;
 
   status = BC_STATUS_SUCCESS;
