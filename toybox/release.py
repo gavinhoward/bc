@@ -81,7 +81,6 @@ vm_c_replacements = [
 	[ '([^_])flags ', r'\1toys.optflags ' ],
 	[ 'files->len', 'toys.optc' ],
 	[ '\*\(\(char\*\*\) bc_vec_item\(files, i\)\)', 'toys.optargs[i]' ],
-	#[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
 	[ '^  bc_parse_free\(&bc\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&bc.parse);' ],
 	[ '^  bc_program_free\(&bc\.prog\);', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
 	[ 'if \(\(status = bc_vm_set_sig\(\)\)\) return status;',
