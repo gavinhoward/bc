@@ -808,7 +808,7 @@ BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
 BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
 
   BcStatus status;
-  size_t i;
+  size_t i, rdx = n->rdx - 1;
 
   if (putchar('-') == EOF) return BC_STATUS_IO_ERR;
   (*nchars) += n->neg;
@@ -816,7 +816,7 @@ BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
   status = BC_STATUS_SUCCESS;
 
   for (i = n->len - 1; !status && i < n->len; --i)
-    status = bc_num_printHex((size_t) n->num[i], 1, i == n->rdx - 1, nchars, len);
+    status = bc_num_printHex((size_t) n->num[i], 1, i == rdx, nchars, len);
 
   return status;
 }
