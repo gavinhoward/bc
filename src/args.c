@@ -79,25 +79,25 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
       case 'i':
       {
-        (*flags) |= BC_VM_FLAG_I;
+        (*flags) |= BC_FLAG_I;
         break;
       }
 
       case 'l':
       {
-        (*flags) |= BC_VM_FLAG_L;
+        (*flags) |= BC_FLAG_L;
         break;
       }
 
       case 'q':
       {
-        (*flags) |= BC_VM_FLAG_Q;
+        (*flags) |= BC_FLAG_Q;
         break;
       }
 
       case 's':
       {
-        (*flags) |= BC_VM_FLAG_S;
+        (*flags) |= BC_FLAG_S;
         break;
       }
 
@@ -110,7 +110,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
       case 'w':
       {
-        (*flags) |= BC_VM_FLAG_W;
+        (*flags) |= BC_FLAG_W;
         break;
       }
 

@@ -81,7 +81,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 
   if((status = bc_args(argc, argv, &flags, &files))) goto buf_err;
 
-  flags |= BC_VM_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
+  flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 
   status = bc_vm_exec(flags, &files);
 

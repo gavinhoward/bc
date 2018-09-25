@@ -5,7 +5,7 @@ include/lang.h
 include/lex.h
 include/program.h
 include/parse.h
-include/bc.h
+include/vm.h
 src/data.c
 gen/lib.c
 src/vector.c

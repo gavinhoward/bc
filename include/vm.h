@@ -31,11 +31,11 @@
 #include <parse.h>
 #include <program.h>
 
-#define BC_VM_FLAG_W (1<<0)
-#define BC_VM_FLAG_S (1<<1)
-#define BC_VM_FLAG_Q (1<<2)
-#define BC_VM_FLAG_L (1<<3)
-#define BC_VM_FLAG_I (1<<4)
+#define BC_FLAG_W (1<<0)
+#define BC_FLAG_S (1<<1)
+#define BC_FLAG_Q (1<<2)
+#define BC_FLAG_L (1<<3)
+#define BC_FLAG_I (1<<4)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))

@@ -64,16 +64,16 @@ for name in files:
 	for i in range(header_end, len(lines)):
 		content += lines[i]
 
-bc_c = "src/bc.c"
-bc_c_stuff = ""
+vm_c = "src/vm.c"
+vm_c_stuff = ""
 
-with open(bc_c) as f:
-	bc_c_lines = f.readlines()
+with open(vm_c) as f:
+	vm_c_lines = f.readlines()
 
-for i in range(22, len(bc_c_lines)):
-	bc_c_stuff += bc_c_lines[i]
+for i in range(22, len(vm_c_lines)):
+	vm_c_stuff += vm_c_lines[i]
 
-bc_c_replacements = [
+vm_c_replacements = [
 	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*files\)',
 	  'void bc_main(void)' ],
 	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
@@ -81,20 +81,22 @@ bc_c_replacements = [
 	[ '([^_])flags ', r'\1toys.optflags ' ],
 	[ 'files->len', 'toys.optc' ],
 	[ '\*\(\(char\*\*\) bc_vec_item\(files, i\)\)', 'toys.optargs[i]' ],
-	[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
+	#[ 'return BC_STATUS_IO_ERR;$', 'return;' ],
 	[ '^  bc_parse_free\(&bc\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&bc.parse);' ],
 	[ '^  bc_program_free\(&bc\.prog\);', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
-	[ 'if \(\(status = bc_program_init\(&bc\.prog, len\)\)\) return status;',
-	  'if ((toys.exitval = bc_program_init(&bc.prog, len))) return;' ],
+	[ 'if \(\(status = bc_vm_set_sig\(\)\)\) return status;',
+	  'if ((toys.exitval = bc_vm_set_sig())) return;' ],
+	[ 'if \(\(status = bc_program_init\(&vm\.prog, len\)\)\) return status;',
+	  'if ((toys.exitval = bc_program_init(&vm.prog, len))) return;' ],
 	[ 'return status == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : status;',
 	  'toys.exitval = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;' ],
 ]
 
-for rep in bc_c_replacements:
+for rep in vm_c_replacements:
 	r = re.compile(rep[0], re.M | re.DOTALL)
-	bc_c_stuff = r.sub(rep[1], bc_c_stuff)
+	vm_c_stuff = r.sub(rep[1], vm_c_stuff)
 
-content += bc_c_stuff
+content += vm_c_stuff
 
 regexes = [
 	'^#include .*$',
@@ -131,8 +133,8 @@ replacements = [
 	[ 'BC_FLAG_L', 'FLAG_l' ],
 	[ 'BC_FLAG_I', 'FLAG_i' ],
 	[ 'BC_FLAG_C', 'FLAG_c' ],
-	[ 'BC_MAX', 'maxof' ],
-	[ 'BC_MIN', 'minof' ],
+	[ 'BC_MAX\(', 'maxof(' ],
+	[ 'BC_MIN\(', 'minof(' ],
 	[ 'BC_INVALID_IDX', '-1' ],
 	[ ' bool', ' int' ],
 	[ '^bool ', 'int ' ],

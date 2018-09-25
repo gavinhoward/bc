@@ -263,9 +263,9 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
   char *lenv;
   int num;
 
-  bcg.tty = (flags & BC_VM_FLAG_I) || (isatty(0) && isatty(1));
-  bcg.posix = flags & BC_VM_FLAG_S;
-  bcg.warn = flags & BC_VM_FLAG_W;
+  bcg.tty = (flags & BC_FLAG_I) || (isatty(0) && isatty(1));
+  bcg.posix = flags & BC_FLAG_S;
+  bcg.warn = flags & BC_FLAG_W;
 
   if ((lenv = getenv("BC_LINE_LENGTH"))) {
     len = strlen(lenv);
@@ -280,12 +280,12 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
   if ((status = bc_program_init(&vm.prog, len))) return status;
   if ((status = bc_parse_init(&vm.parse, &vm.prog))) goto parse_err;
 
-  if (bcg.tty && !(flags & BC_VM_FLAG_Q) && printf("%s", bc_vm_header) < 0) {
+  if (bcg.tty && !(flags & BC_FLAG_Q) && printf("%s", bc_vm_header) < 0) {
     status = BC_STATUS_IO_ERR;
     goto err;
   }
 
-  if (flags & BC_VM_FLAG_L) {
+  if (flags & BC_FLAG_L) {
 
     bc_lex_file(&vm.parse.lex, bc_lib_name);
     if ((status = bc_lex_text(&vm.parse.lex, bc_lib))) goto err;
