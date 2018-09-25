@@ -19,6 +19,7 @@
  * The bc help text.
  *
  */
+
 usage: %s [options] [file...]
 
 bc is a command-line, arbitrary-precision calculator with a Turing-complete
