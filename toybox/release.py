@@ -74,6 +74,8 @@ for i in range(22, len(vm_c_lines)):
 	vm_c_stuff += vm_c_lines[i]
 
 vm_c_replacements = [
+	[ '\t', '  ' ],
+	[ '\n  [ ]*assert\(.*?\);$', '' ],
 	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*files\)',
 	  'void bc_main(void)' ],
 	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
@@ -81,14 +83,14 @@ vm_c_replacements = [
 	[ '([^_])flags ', r'\1toys.optflags ' ],
 	[ 'files->len', 'toys.optc' ],
 	[ '\*\(\(char\*\*\) bc_vec_item\(files, i\)\)', 'toys.optargs[i]' ],
-	[ '^  bc_parse_free\(&bc\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&bc.parse);' ],
-	[ '^  bc_program_free\(&bc\.prog\);', '  if (CFG_TOYBOX_FREE) bc_program_free(&bc.prog);' ],
-	[ 'if \(\(status = bc_vm_set_sig\(\)\)\) return status;',
+	[ '^  bc_parse_free\(&vm\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&vm.parse);' ],
+	[ '^  bc_program_free\(&vm\.prog\);', '  if (CFG_TOYBOX_FREE) bc_program_free(&vm.prog);' ],
+	[ 'if \(\(s = bc_vm_set_sig\(\)\)\) return s;',
 	  'if ((toys.exitval = bc_vm_set_sig())) return;' ],
-	[ 'if \(\(status = bc_program_init\(&vm\.prog, len\)\)\) return status;',
+	[ 'if \(\(s = bc_program_init\(&vm\.prog, len\)\)\) return s;',
 	  'if ((toys.exitval = bc_program_init(&vm.prog, len))) return;' ],
-	[ 'return status == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : status;',
-	  'toys.exitval = status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;' ],
+	[ 'return s == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : s;',
+	  'toys.exitval = s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;' ],
 ]
 
 for rep in vm_c_replacements:
@@ -121,10 +123,11 @@ regexes = [
 regexes_all = [
 	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$',
 	'^#ifndef NDEBUG.*?^#endif \/\/ NDEBUG$',
-	'\n  [ ]*assert\(.*?\);$'
+	'\n\t[\t]*assert\(.*?\);$'
 ]
 
 replacements = [
+	[ '\t', '  ' ],
 	[ 'bcg.posix', '(toys.optflags & FLAG_s)' ],
 	[ 'bcg.warn', '(toys.optflags & FLAG_w)' ],
 	[ 'bcg.', 'TT.' ],
