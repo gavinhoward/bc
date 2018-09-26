@@ -280,7 +280,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
   if ((status = bc_program_init(&vm.prog, len))) return status;
   if ((status = bc_parse_init(&vm.parse, &vm.prog))) goto parse_err;
 
-  if (bcg.tty && tty_out && !(flags & BC_FLAG_Q) && puts(bc_vm_header) == EOF) {
+  if (bcg.tty && tty_out && !(flags & BC_FLAG_Q) && puts(bc_header) == EOF) {
     status = BC_STATUS_IO_ERR;
     goto err;
   }

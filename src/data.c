@@ -25,7 +25,7 @@
 #include <lex.h>
 #include <parse.h>
 
-const char bc_vm_header[] =
+const char bc_header[] =
 	"bc 1.0\n"
 	"bc copyright (c) 2018 Gavin D. Howard and contributors\n"
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"

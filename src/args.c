@@ -103,7 +103,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
 			case 'v':
 			{
-				if (printf("%s", bc_vm_header) < 0) return BC_STATUS_IO_ERR;
+				if (printf("%s", bc_header) < 0) return BC_STATUS_IO_ERR;
 				do_exit = true;
 				break;
 			}
