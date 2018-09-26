@@ -41,23 +41,6 @@ void bc_vm_sig(int sig) {
 	else bcg.sig_other = 1;
 }
 
-BcStatus bc_vm_set_sig() {
-
-	struct sigaction sa;
-
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = bc_vm_sig;
-	sa.sa_flags = 0;
-
-	if (sigaction(SIGINT, &sa, NULL) < 0 || sigaction(SIGPIPE, &sa, NULL) < 0 ||
-	    sigaction(SIGHUP, &sa, NULL) < 0 || sigaction(SIGTERM, &sa, NULL) < 0)
-	{
-		return BC_STATUS_EXEC_SIGACTION_FAIL;
-	}
-
-	return BC_STATUS_SUCCESS;
-}
-
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	assert(file);
@@ -259,6 +242,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
 	BcVm vm;
 	size_t i, len;
 	char *lenv;
+	struct sigaction sa;
 	int num, ttyout = isatty(1);
 
 	bcg.tty = (flags & BC_FLAG_I) || isatty(0) || ttyout;
@@ -273,7 +257,15 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
 	}
 	else len = BC_NUM_PRINT_WIDTH;
 
-	if ((s = bc_vm_set_sig())) return s;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = bc_vm_sig;
+	sa.sa_flags = 0;
+
+	if (sigaction(SIGINT, &sa, NULL) < 0 || sigaction(SIGPIPE, &sa, NULL) < 0 ||
+	    sigaction(SIGHUP, &sa, NULL) < 0 || sigaction(SIGTERM, &sa, NULL) < 0)
+	{
+		return BC_STATUS_EXEC_SIGACTION_FAIL;
+	}
 
 	if ((s = bc_program_init(&vm.prog, len))) return s;
 	if ((s = bc_parse_init(&vm.parse, &vm.prog))) goto parse_err;
