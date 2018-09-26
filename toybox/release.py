@@ -115,7 +115,7 @@ regexes = [
 	'^#define BC_INVALID_IDX \(\(size_t\) -1\)$',
 	'^#define BC_MAX\(a, b\) \(\(a\) > \(b\) \? \(a\) : \(b\)\)$',
 	'^#define BC_MIN\(a, b\) \(\(a\) < \(b\) \? \(a\) : \(b\)\)$',
-	'^  \/\/ This is last so I can remove it for toybox.\n  BC_STATUS_INVALID_OPTION,$',
+	'^\t\/\/ This is last so I can remove it for toybox.\n\tBC_STATUS_INVALID_OPTION,$',
 	'^#define BC_PROGRAM_CHECK_STACK.*$',
 	'^#define BC_PROGRAM_CHECK_RESULTS.*$',
 ]
