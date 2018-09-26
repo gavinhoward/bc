@@ -35,8 +35,8 @@ BcGlobals bcg;
 
 int main(int argc, char *argv[]) {
 
-  setlocale(LC_ALL, "");
-  memset(&bcg, 0, sizeof(BcGlobals));
+	setlocale(LC_ALL, "");
+	memset(&bcg, 0, sizeof(BcGlobals));
 
-  return (int) bc_main(argc, argv);
+	return (int) bc_main(argc, argv);
 }

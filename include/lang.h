@@ -31,137 +31,137 @@
 
 typedef enum BcInst {
 
-  BC_INST_INC_PRE,
-  BC_INST_DEC_PRE,
-  BC_INST_INC_POST,
-  BC_INST_DEC_POST,
+	BC_INST_INC_PRE,
+	BC_INST_DEC_PRE,
+	BC_INST_INC_POST,
+	BC_INST_DEC_POST,
 
-  BC_INST_NEG,
+	BC_INST_NEG,
 
-  BC_INST_POWER,
-  BC_INST_MULTIPLY,
-  BC_INST_DIVIDE,
-  BC_INST_MODULUS,
-  BC_INST_PLUS,
-  BC_INST_MINUS,
+	BC_INST_POWER,
+	BC_INST_MULTIPLY,
+	BC_INST_DIVIDE,
+	BC_INST_MODULUS,
+	BC_INST_PLUS,
+	BC_INST_MINUS,
 
-  BC_INST_REL_EQ,
-  BC_INST_REL_LE,
-  BC_INST_REL_GE,
-  BC_INST_REL_NE,
-  BC_INST_REL_LT,
-  BC_INST_REL_GT,
+	BC_INST_REL_EQ,
+	BC_INST_REL_LE,
+	BC_INST_REL_GE,
+	BC_INST_REL_NE,
+	BC_INST_REL_LT,
+	BC_INST_REL_GT,
 
-  BC_INST_BOOL_NOT,
-  BC_INST_BOOL_OR,
-  BC_INST_BOOL_AND,
+	BC_INST_BOOL_NOT,
+	BC_INST_BOOL_OR,
+	BC_INST_BOOL_AND,
 
-  BC_INST_ASSIGN_POWER,
-  BC_INST_ASSIGN_MULTIPLY,
-  BC_INST_ASSIGN_DIVIDE,
-  BC_INST_ASSIGN_MODULUS,
-  BC_INST_ASSIGN_PLUS,
-  BC_INST_ASSIGN_MINUS,
-  BC_INST_ASSIGN,
+	BC_INST_ASSIGN_POWER,
+	BC_INST_ASSIGN_MULTIPLY,
+	BC_INST_ASSIGN_DIVIDE,
+	BC_INST_ASSIGN_MODULUS,
+	BC_INST_ASSIGN_PLUS,
+	BC_INST_ASSIGN_MINUS,
+	BC_INST_ASSIGN,
 
-  BC_INST_PUSH_NUM,
-  BC_INST_PUSH_VAR,
-  BC_INST_PUSH_ARRAY_ELEM,
-  BC_INST_PUSH_ARRAY,
+	BC_INST_NUM,
+	BC_INST_VAR,
+	BC_INST_ARRAY_ELEM,
+	BC_INST_ARRAY,
 
-  BC_INST_CALL,
+	BC_INST_CALL,
 
-  BC_INST_SCALE_FUNC,
-  BC_INST_PUSH_IBASE,
-  BC_INST_PUSH_SCALE,
-  BC_INST_PUSH_LAST,
-  BC_INST_LENGTH,
-  BC_INST_READ,
-  BC_INST_PUSH_OBASE,
-  BC_INST_SQRT,
+	BC_INST_SCALE_FUNC,
+	BC_INST_IBASE,
+	BC_INST_SCALE,
+	BC_INST_LAST,
+	BC_INST_LENGTH,
+	BC_INST_READ,
+	BC_INST_OBASE,
+	BC_INST_SQRT,
 
-  BC_INST_PRINT,
-  BC_INST_PRINT_EXPR,
-  BC_INST_STR,
-  BC_INST_PRINT_STR,
+	BC_INST_PRINT,
+	BC_INST_PRINT_EXPR,
+	BC_INST_STR,
+	BC_INST_PRINT_STR,
 
-  BC_INST_JUMP,
-  BC_INST_JUMP_ZERO,
+	BC_INST_JUMP,
+	BC_INST_JUMP_ZERO,
 
-  BC_INST_POP,
+	BC_INST_POP,
 
-  BC_INST_RETURN,
-  BC_INST_RETURN_ZERO,
+	BC_INST_RETURN,
+	BC_INST_RETURN_ZERO,
 
-  BC_INST_HALT,
+	BC_INST_HALT,
 
 } BcInst;
 
 typedef struct BcEntry {
 
-  char *name;
-  size_t idx;
+	char *name;
+	size_t idx;
 
 } BcEntry;
 
 typedef struct BcAuto {
 
-  char *name;
-  bool var;
+	char *name;
+	bool var;
 
 } BcAuto;
 
 typedef struct BcFunc {
 
-  BcVec code;
-  BcVec labels;
-  size_t nparams;
-  BcVec autos;
+	BcVec code;
+	BcVec labels;
+	size_t nparams;
+	BcVec autos;
 
 } BcFunc;
 
 typedef enum BcResultType {
 
-  BC_RESULT_TEMP,
+	BC_RESULT_TEMP,
 
-  BC_RESULT_ARRAY_AUTO,
-  BC_RESULT_VAR_AUTO,
+	BC_RESULT_ARRAY_AUTO,
+	BC_RESULT_VAR_AUTO,
 
-  BC_RESULT_VAR,
-  BC_RESULT_ARRAY_ELEM,
-  BC_RESULT_ARRAY,
+	BC_RESULT_VAR,
+	BC_RESULT_ARRAY_ELEM,
+	BC_RESULT_ARRAY,
 
-  BC_RESULT_IBASE,
-  BC_RESULT_SCALE,
-  BC_RESULT_LAST,
+	BC_RESULT_IBASE,
+	BC_RESULT_SCALE,
+	BC_RESULT_LAST,
 
-  // These are between to calculate ibase, obase, and last from instructions.
-  BC_RESULT_CONSTANT,
-  BC_RESULT_ONE,
+	// These are between to calculate ibase, obase, and last from instructions.
+	BC_RESULT_CONSTANT,
+	BC_RESULT_ONE,
 
-  BC_RESULT_OBASE,
+	BC_RESULT_OBASE,
 
 } BcResultType;
 
 typedef struct BcResult {
 
-  BcResultType type;
+	BcResultType type;
 
-  union {
+	union {
 
-    BcNum num;
-    BcVec array;
-    BcEntry id;
+		BcNum num;
+		BcVec array;
+		BcEntry id;
 
-  } data;
+	} data;
 
 } BcResult;
 
 typedef struct BcInstPtr {
 
-  size_t func;
-  size_t idx;
-  size_t len;
+	size_t func;
+	size_t idx;
+	size_t len;
 
 } BcInstPtr;
 

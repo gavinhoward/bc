@@ -28,146 +28,146 @@
 
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
 
-  BcAuto a;
-  size_t i;
+	BcAuto a;
+	size_t i;
 
-  assert(f && name);
+	assert(f && name);
 
-  for (i = 0; i < f->autos.len; ++i) {
-    if (!strcmp(name, ((BcAuto*) bc_vec_item(&f->autos, i))->name))
-      return BC_STATUS_PARSE_DUPLICATE_LOCAL;
-  }
+	for (i = 0; i < f->autos.len; ++i) {
+		if (!strcmp(name, ((BcAuto*) bc_vec_item(&f->autos, i))->name))
+			return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+	}
 
-  a.var = var;
-  a.name = name;
+	a.var = var;
+	a.name = name;
 
-  return bc_vec_push(&f->autos, 1, &a);
+	return bc_vec_push(&f->autos, 1, &a);
 }
 
 BcStatus bc_func_init(BcFunc *f) {
 
-  BcStatus status;
+	BcStatus s;
 
-  assert(f);
+	assert(f);
 
-  if ((status = bc_vec_init(&f->code, sizeof(uint8_t), NULL))) return status;
-  if ((status = bc_vec_init(&f->autos, sizeof(BcAuto), bc_auto_free))) goto err;
-  if ((status = bc_vec_init(&f->labels, sizeof(size_t), NULL))) goto label_err;
+	if ((s = bc_vec_init(&f->code, sizeof(char), NULL))) return s;
+	if ((s = bc_vec_init(&f->autos, sizeof(BcAuto), bc_auto_free))) goto err;
+	if ((s = bc_vec_init(&f->labels, sizeof(size_t), NULL))) goto label_err;
 
-  f->nparams = 0;
+	f->nparams = 0;
 
-  return BC_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 
 label_err:
-  bc_vec_free(&f->autos);
+	bc_vec_free(&f->autos);
 err:
-  bc_vec_free(&f->code);
-  return status;
+	bc_vec_free(&f->code);
+	return s;
 }
 
 void bc_func_free(void *func) {
-  BcFunc *f = (BcFunc*) func;
-  assert(f);
-  bc_vec_free(&f->code);
-  bc_vec_free(&f->autos);
-  bc_vec_free(&f->labels);
+	BcFunc *f = (BcFunc*) func;
+	assert(f);
+	bc_vec_free(&f->code);
+	bc_vec_free(&f->autos);
+	bc_vec_free(&f->labels);
 }
 
 BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
 
-  BcStatus status;
-  size_t i;
+	BcStatus status;
+	size_t i;
 
-  assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
+	assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
-  bc_vec_npop(d, d->len);
+	bc_vec_npop(d, d->len);
 
-  if ((status = bc_vec_expand(d, s->cap))) return status;
+	if ((status = bc_vec_expand(d, s->cap))) return status;
 
-  d->len = s->len;
+	d->len = s->len;
 
-  for (i = 0; !status && i < s->len; ++i) {
+	for (i = 0; !status && i < s->len; ++i) {
 
-    BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
+		BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
 
-    if ((status = bc_num_init(dnum, snum->len))) return status;
-    if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
-  }
+		if ((status = bc_num_init(dnum, snum->len))) return status;
+		if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
+	}
 
-  return status;
+	return status;
 }
 
 BcStatus bc_array_expand(BcVec *a, size_t len) {
 
-  BcStatus status = BC_STATUS_SUCCESS;
-  BcNum num;
+	BcStatus s = BC_STATUS_SUCCESS;
+	BcNum num;
 
-  while (!status && len > a->len) {
-    if ((status = bc_num_init(&num, BC_NUM_DEF_SIZE))) return status;
-    bc_num_zero(&num);
-    if ((status = bc_vec_push(a, 1, &num))) bc_num_free(&num);
-  }
+	while (!s && len > a->len) {
+		if ((s = bc_num_init(&num, BC_NUM_DEF_SIZE))) return s;
+		bc_num_zero(&num);
+		if ((s = bc_vec_push(a, 1, &num))) bc_num_free(&num);
+	}
 
-  return status;
+	return s;
 }
 
 void bc_string_free(void *string) {
-  char **s = string;
-  assert(s && *s);
-  free(*s);
+	char **s = string;
+	assert(s && *s);
+	free(*s);
 }
 
 int bc_entry_cmp(const void *e1, const void *e2) {
-  return strcmp(((const BcEntry*) e1)->name, ((const BcEntry*) e2)->name);
+	return strcmp(((const BcEntry*) e1)->name, ((const BcEntry*) e2)->name);
 }
 
 void bc_entry_free(void *entry) {
-  BcEntry *e = entry;
-  assert(e && e->name);
-  free(e->name);
+	BcEntry *e = entry;
+	assert(e && e->name);
+	free(e->name);
 }
 
 void bc_auto_free(void *auto1) {
-  BcAuto *a = (BcAuto*) auto1;
-  assert(a && a->name);
-  free(a->name);
+	BcAuto *a = (BcAuto*) auto1;
+	assert(a && a->name);
+	free(a->name);
 }
 
 void bc_result_free(void *result) {
 
-  BcResult *r = (BcResult*) result;
+	BcResult *r = (BcResult*) result;
 
-  assert(r);
+	assert(r);
 
-  switch (r->type) {
+	switch (r->type) {
 
-    case BC_RESULT_TEMP:
-    case BC_RESULT_SCALE:
-    case BC_RESULT_VAR_AUTO:
-    {
-      bc_num_free(&r->data.num);
-      break;
-    }
+		case BC_RESULT_TEMP:
+		case BC_RESULT_SCALE:
+		case BC_RESULT_VAR_AUTO:
+		{
+			bc_num_free(&r->data.num);
+			break;
+		}
 
-    case BC_RESULT_ARRAY_AUTO:
-    {
-      bc_vec_free(&r->data.array);
-      break;
-    }
+		case BC_RESULT_ARRAY_AUTO:
+		{
+			bc_vec_free(&r->data.array);
+			break;
+		}
 
-    case BC_RESULT_VAR:
-    case BC_RESULT_ARRAY:
-    case BC_RESULT_ARRAY_ELEM:
-    {
-      assert(r->data.id.name);
-      free(r->data.id.name);
-      break;
-    }
+		case BC_RESULT_VAR:
+		case BC_RESULT_ARRAY:
+		case BC_RESULT_ARRAY_ELEM:
+		{
+			assert(r->data.id.name);
+			free(r->data.id.name);
+			break;
+		}
 
-    default:
-    {
-      // Do nothing.
-      break;
-    }
-  }
+		default:
+		{
+			// Do nothing.
+			break;
+		}
+	}
 }

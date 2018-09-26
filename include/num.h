@@ -50,9 +50,9 @@ typedef struct BcNum {
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 #define BC_NUM_INT(n) ((n)->len - (n)->rdx)
 #define BC_NUM_AREQ(a, b) \
-  (BC_MAX((a)->rdx, (b)->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1)
+	(BC_MAX((a)->rdx, (b)->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1)
 #define BC_NUM_MREQ(a, b, scale) \
-  (BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX((scale), (a)->rdx + (b)->rdx) + 1)
+	(BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX((scale), (a)->rdx + (b)->rdx) + 1)
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumDigitOp)(size_t, size_t, bool, size_t*, size_t);

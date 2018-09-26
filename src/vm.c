@@ -99,7 +99,7 @@ BcStatus bc_vm_process(BcVm *bc, const char *text) {
 
   if ((s = bc_vm_error(s, bc->parse.lex.file, bc->parse.lex.line))) return s;
 
-  while (bc->parse.lex.token.type != BC_LEX_EOF) {
+  while (bc->parse.lex.t.t != BC_LEX_EOF) {
 
     if ((s = bc_parse_parse(&bc->parse)) == BC_STATUS_LIMITS) {
 
@@ -152,7 +152,7 @@ BcStatus bc_vm_file(BcVm *bc, const char *file) {
   bc_lex_file(&bc->parse.lex, file);
   if ((s = bc_vm_process(bc, data))) goto err;
 
-  main_func = bc_vec_item(&bc->prog.funcs, BC_PROGRAM_MAIN);
+  main_func = bc_vec_item(&bc->prog.fns, BC_PROG_MAIN);
   ip = bc_vec_item(&bc->prog.stack, 0);
 
   if (main_func->code.len < ip->idx) s = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
@@ -167,7 +167,7 @@ BcStatus bc_vm_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
   if (total_len > *n) {
 
     char *temp = realloc(*buffer, total_len + 1);
-    if (!temp) return BC_STATUS_MALLOC_FAIL;
+    if (!temp) return BC_STATUS_ALLOC_ERR;
 
     *buffer = temp;
     *n = total_len;
@@ -189,7 +189,7 @@ BcStatus bc_vm_stdin(BcVm *bc) {
   bc_lex_file(&bc->parse.lex, bc_program_stdin_name);
 
   n = bufn = BC_BUF_SIZE;
-  s = BC_STATUS_MALLOC_FAIL;
+  s = BC_STATUS_ALLOC_ERR;
 
   if (!(buffer = malloc(BC_BUF_SIZE + 1))) return s;
   if (!(buf = malloc(BC_BUF_SIZE + 1))) goto buf_err;
@@ -257,7 +257,7 @@ buf_err:
 
 BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
 
-  BcStatus status;
+  BcStatus s;
   BcVm vm;
   size_t i, len;
   char *lenv;
@@ -275,36 +275,36 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
   }
   else len = BC_NUM_PRINT_WIDTH;
 
-  if ((status = bc_vm_set_sig())) return status;
+  if ((s = bc_vm_set_sig())) return s;
 
-  if ((status = bc_program_init(&vm.prog, len))) return status;
-  if ((status = bc_parse_init(&vm.parse, &vm.prog))) goto parse_err;
+  if ((s = bc_program_init(&vm.prog, len))) return s;
+  if ((s = bc_parse_init(&vm.parse, &vm.prog))) goto parse_err;
 
   if (bcg.tty && tty_out && !(flags & BC_FLAG_Q) && puts(bc_header) == EOF) {
-    status = BC_STATUS_IO_ERR;
+    s = BC_STATUS_IO_ERR;
     goto err;
   }
 
   if (flags & BC_FLAG_L) {
 
     bc_lex_file(&vm.parse.lex, bc_lib_name);
-    if ((status = bc_lex_text(&vm.parse.lex, bc_lib))) goto err;
+    if ((s = bc_lex_text(&vm.parse.lex, bc_lib))) goto err;
 
-    while (!status && vm.parse.lex.token.type != BC_LEX_EOF)
-      status = bc_parse_parse(&vm.parse);
+    while (!s && vm.parse.lex.t.t != BC_LEX_EOF)
+      s = bc_parse_parse(&vm.parse);
 
-    if (status || (status = bc_program_exec(&vm.prog))) goto err;
+    if (s || (s = bc_program_exec(&vm.prog))) goto err;
   }
 
-  for (i = 0; !bcg.sig_other && !status && i < files->len; ++i)
-    status = bc_vm_file(&vm, *((char**) bc_vec_item(files, i)));
-  if (status || bcg.sig_other) goto err;
+  for (i = 0; !bcg.sig_other && !s && i < files->len; ++i)
+    s = bc_vm_file(&vm, *((char**) bc_vec_item(files, i)));
+  if (s || bcg.sig_other) goto err;
 
-  status = bc_vm_stdin(&vm);
+  s = bc_vm_stdin(&vm);
 
 err:
   bc_parse_free(&vm.parse);
 parse_err:
   bc_program_free(&vm.prog);
-  return status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : status;
+  return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 }

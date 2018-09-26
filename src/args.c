@@ -50,13 +50,11 @@ const char* const bc_args_env_name = "BC_ENV_ARGS";
 
 BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
-	BcStatus status;
+	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i, opt_idx;
-	bool do_exit;
+	bool do_exit = false;
 
-	do_exit = false;
 	opt_idx = c = 0;
-	status = BC_STATUS_SUCCESS;
 	optind = 1;
 
 	do {
@@ -126,12 +124,12 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
 	} while (c != -1);
 
-	if (do_exit) exit((int) status);
+	if (do_exit) exit((int) s);
 
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
-	for (i = optind; !status && i < argc; ++i)
-		status = bc_vec_push(files, 1, argv + i);
+	for (i = optind; !s && i < argc; ++i)
+		s = bc_vec_push(files, 1, argv + i);
 
-	return status;
+	return s;
 }

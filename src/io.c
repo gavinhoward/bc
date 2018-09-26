@@ -31,93 +31,93 @@
 
 BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
 
-  char *temp;
-  int c;
-  size_t size, i;
+	char *temp;
+	int c;
+	size_t size, i;
 
-  if (bcg.tty && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
-    return BC_STATUS_IO_ERR;
+	if (bcg.tty && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
+		return BC_STATUS_IO_ERR;
 
-  for (i = 0, c = 0; c != '\n'; ++i) {
+	for (i = 0, c = 0; c != '\n'; ++i) {
 
-    if (i == *n) {
+		if (i == *n) {
 
-      size = *n * 2;
+			size = *n * 2;
 
-      if (size > BC_MAX_LINE || !(temp = realloc(*buf, size + 1)))
-        return BC_STATUS_MALLOC_FAIL;
+			if (size > BC_MAX_LINE || !(temp = realloc(*buf, size + 1)))
+				return BC_STATUS_ALLOC_ERR;
 
-      *buf = temp;
-      *n = size;
-    }
+			*buf = temp;
+			*n = size;
+		}
 
-    if ((c = fgetc(stdin)) == EOF) {
+		if ((c = fgetc(stdin)) == EOF) {
 
-      if (errno == EINTR) {
+			if (errno == EINTR) {
 
-        bcg.sigc = bcg.sig;
-        bcg.signe = 0;
-        --i;
+				bcg.sigc = bcg.sig;
+				bcg.signe = 0;
+				--i;
 
-        if (bcg.tty && (fputs(bc_program_ready_prompt, stderr) == EOF ||
-                        fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
-        {
-          return BC_STATUS_IO_ERR;
-        }
+				if (bcg.tty && (fputs(bc_program_ready_msg, stderr) == EOF ||
+				                fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
+				{
+					return BC_STATUS_IO_ERR;
+				}
 
-        continue;
-      }
-      else return BC_STATUS_IO_ERR;
-    }
-    else if ((c < ' ' && !isspace(c)) || c > '~') return BC_STATUS_BIN_FILE;
+				continue;
+			}
+			else return BC_STATUS_IO_ERR;
+		}
+		else if ((c < ' ' && !isspace(c)) || c > '~') return BC_STATUS_BIN_FILE;
 
-    (*buf)[i] = (char) c;
-  }
+		(*buf)[i] = (char) c;
+	}
 
-  (*buf)[i] = '\0';
+	(*buf)[i] = '\0';
 
-  return BC_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_io_fread(const char *path, char **buf) {
 
-  BcStatus st;
-  FILE *f;
-  size_t size, read;
-  long res;
+	BcStatus s;
+	FILE *f;
+	size_t size, read;
+	long res;
 
-  assert(path && buf);
+	assert(path && buf);
 
-  if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
+	if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 
-  fseek(f, 0, SEEK_END);
+	fseek(f, 0, SEEK_END);
 
-  if ((res = ftell(f)) < 0) {
-    st = BC_STATUS_IO_ERR;
-    goto malloc_err;
-  }
+	if ((res = ftell(f)) < 0) {
+		s = BC_STATUS_IO_ERR;
+		goto malloc_err;
+	}
 
-  size = (size_t) res;
-  fseek(f, 0, SEEK_SET);
+	size = (size_t) res;
+	fseek(f, 0, SEEK_SET);
 
-  if (!(*buf = malloc(size + 1))) {
-    st = BC_STATUS_MALLOC_FAIL;
-    goto malloc_err;
-  }
+	if (!(*buf = malloc(size + 1))) {
+		s = BC_STATUS_ALLOC_ERR;
+		goto malloc_err;
+	}
 
-  if ((read = fread(*buf, 1, size, f)) != size) {
-    st = BC_STATUS_IO_ERR;
-    goto read_err;
-  }
+	if ((read = fread(*buf, 1, size, f)) != size) {
+		s = BC_STATUS_IO_ERR;
+		goto read_err;
+	}
 
-  (*buf)[size] = '\0';
-  fclose(f);
+	(*buf)[size] = '\0';
+	fclose(f);
 
-  return BC_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 
 read_err:
-  free(*buf);
+	free(*buf);
 malloc_err:
-  fclose(f);
-  return st;
+	fclose(f);
+	return s;
 }

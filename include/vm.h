@@ -54,22 +54,22 @@
 
 typedef struct BcVm {
 
-  BcParse parse;
-  BcProgram prog;
+	BcParse parse;
+	BcProgram prog;
 
 } BcVm;
 
 // ** Exclude start. **
 typedef struct BcGlobals {
 
-  unsigned long sig;
-  unsigned long sigc;
-  unsigned long signe;
-  long sig_other;
+	unsigned long sig;
+	unsigned long sigc;
+	unsigned long signe;
+	long sig_other;
 
-  long tty;
-  long posix;
-  long warn;
+	long tty;
+	long posix;
+	long warn;
 
 } BcGlobals;
 // ** Exclude end. **

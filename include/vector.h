@@ -36,12 +36,12 @@ typedef int (*BcVecCmp)(const void*, const void*);
 
 typedef struct BcVec {
 
-  char *array;
-  size_t len;
-  size_t cap;
-  size_t size;
+	char *vec;
+	size_t len;
+	size_t cap;
+	size_t size;
 
-  BcVecFree dtor;
+	BcVecFree dtor;
 
 } BcVec;
 
@@ -66,8 +66,8 @@ void bc_vec_free(void *vec);
 
 typedef struct BcVecO {
 
-  BcVec vec;
-  BcVecCmp cmp;
+	BcVec vec;
+	BcVecCmp cmp;
 
 } BcVecO;
 

@@ -56,7 +56,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 		if ((s = bc_vec_push(&args, 1, &bc_args_env_name))) goto args_err;
 
 		if (!(buffer = strdup(env_args))) {
-			s = BC_STATUS_MALLOC_FAIL;
+			s = BC_STATUS_ALLOC_ERR;
 			goto args_err;
 		}
 
@@ -75,7 +75,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 			else ++buf;
 		}
 
-		s = bc_args((int) args.len, (char**) args.array, &flags, &files);
+		s = bc_args((int) args.len, (char**) args.vec, &flags, &files);
 		if(s) goto buf_err;
 	}
 

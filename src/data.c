@@ -139,7 +139,7 @@ const char bc_lang_inst_chars[] =
 	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$H";
 #endif // NDEBUG
 
-const BcLexKeyword bc_lex_keywords[20] = {
+const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
 	BC_LEX_KW_ENTRY("continue", 8, false),
@@ -177,15 +177,15 @@ const bool bc_parse_token_exprs[] = {
 // These are to identify what tokens can
 // come after expressions in certain cases.
 const BcParseNext bc_parse_next_expr =
-	BC_PARSE_NEXT(3, BC_LEX_NEWLINE, BC_LEX_SEMICOLON, BC_LEX_RIGHT_BRACE);
+	BC_PARSE_NEXT(3, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_RBRACE);
 const BcParseNext bc_parse_next_param =
-	BC_PARSE_NEXT(2, BC_LEX_RIGHT_PAREN, BC_LEX_COMMA);
+	BC_PARSE_NEXT(2, BC_LEX_RPAREN, BC_LEX_COMMA);
 const BcParseNext bc_parse_next_print =
-	BC_PARSE_NEXT(3, BC_LEX_COMMA, BC_LEX_NEWLINE, BC_LEX_SEMICOLON);
-const BcParseNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RIGHT_PAREN);
-const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RIGHT_BRACKET);
-const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SEMICOLON);
-const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NEWLINE);
+	BC_PARSE_NEXT(3, BC_LEX_COMMA, BC_LEX_NLINE, BC_LEX_SCOLON);
+const BcParseNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RPAREN);
+const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RBRACKET);
+const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
+const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
 
 // This is an array of data for operators that correspond to token types.
 const BcOp bc_parse_ops[] = {
@@ -206,4 +206,4 @@ const BcNumBinaryOp bc_program_ops[] = {
 };
 
 const char bc_program_stdin_name[] = "<stdin>";
-const char bc_program_ready_prompt[] = "ready for more input\n";
+const char bc_program_ready_msg[] = "ready for more input\n";

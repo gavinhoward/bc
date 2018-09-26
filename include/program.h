@@ -31,45 +31,45 @@
 
 typedef struct BcProgram {
 
-  size_t line_len;
+	size_t line_len;
 
-  size_t scale;
+	size_t scale;
 
-  BcNum ibase;
-  size_t ibase_t;
-  BcNum obase;
-  size_t obase_t;
+	BcNum ib;
+	size_t ib_t;
+	BcNum ob;
+	size_t ob_t;
 
-  BcVec results;
-  BcVec stack;
+	BcVec results;
+	BcVec stack;
 
-  BcVec funcs;
-  BcVecO func_map;
+	BcVec fns;
+	BcVecO fn_map;
 
-  BcVec vars;
-  BcVecO var_map;
+	BcVec vars;
+	BcVecO var_map;
 
-  BcVec arrays;
-  BcVecO array_map;
+	BcVec arrs;
+	BcVecO arr_map;
 
-  BcVec strings;
-  BcVec constants;
+	BcVec strs;
+	BcVec consts;
 
-  const char *file;
+	const char *file;
 
-  BcNum last;
-  BcNum zero;
-  BcNum one;
+	BcNum last;
+	BcNum zero;
+	BcNum one;
 
-  size_t nchars;
+	size_t nchars;
 
 } BcProgram;
 
-#define BC_PROGRAM_CHECK_STACK(p) ((p)->stack.len > 1)
-#define BC_PROGRAM_CHECK_RESULTS(p, l) ((p)->results.len >= (l))
+#define BC_PROG_CHECK_STACK(p) ((p)->stack.len > 1)
+#define BC_PROG_CHECK_RESULTS(p, l) ((p)->results.len >= (l))
 
-#define BC_PROGRAM_MAIN (0)
-#define BC_PROGRAM_READ (1)
+#define BC_PROG_MAIN (0)
+#define BC_PROG_READ (1)
 
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
@@ -82,11 +82,11 @@ BcStatus bc_program_print(BcProgram *p);
 // ** Exclude end. **
 
 BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
-BcStatus bc_program_reset(BcProgram *p, BcStatus status);
+BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 
 extern const BcNumBinaryOp bc_program_ops[];
 extern const char bc_program_stdin_name[];
-extern const char bc_program_ready_prompt[];
+extern const char bc_program_ready_msg[];
 
 #endif // BC_PROGRAM_H
