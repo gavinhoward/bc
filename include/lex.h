@@ -24,7 +24,7 @@
 #define BC_LEX_H
 
 #include <stdbool.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #include <status.h>
 #include <vector.h>

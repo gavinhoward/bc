@@ -24,9 +24,8 @@
 #define BC_NUM_H
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #include <status.h>
 

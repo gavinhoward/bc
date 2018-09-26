@@ -23,8 +23,6 @@
 #ifndef BC_ARGS_H
 #define BC_ARGS_H
 
-#include <getopt.h>
-
 #include <status.h>
 #include <vector.h>
 

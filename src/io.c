@@ -23,10 +23,11 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include <io.h>
+#include <program.h>
 #include <vm.h>
 
 BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
@@ -60,7 +61,8 @@ BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
 				--i;
 
 				if (bcg.tty && (fputs(bc_program_ready_msg, stderr) == EOF ||
-				                fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
+				                fputs(prompt, stderr) == EOF ||
+				                fflush(stderr) == EOF))
 				{
 					return BC_STATUS_IO_ERR;
 				}

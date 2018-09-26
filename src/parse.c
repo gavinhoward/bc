@@ -22,12 +22,9 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
-#include <lang.h>
 #include <lex.h>
 #include <parse.h>
 #include <vm.h>

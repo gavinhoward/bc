@@ -28,7 +28,6 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
-#include <limits.h>
 
 #include <status.h>
 #include <vm.h>

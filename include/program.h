@@ -23,11 +23,11 @@
 #ifndef BC_PROGRAM_H
 #define BC_PROGRAM_H
 
-#include <stdbool.h>
-#include <stdint.h>
+#include <stddef.h>
 
 #include <status.h>
 #include <lang.h>
+#include <num.h>
 
 typedef struct BcProgram {
 

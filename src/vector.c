@@ -21,13 +21,11 @@
  */
 
 #include <assert.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <status.h>
 #include <vector.h>
-#include <bc.h>
 
 BcStatus bc_vec_grow(BcVec *vec, size_t n) {
 

@@ -20,14 +20,10 @@
  *
  */
 
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <locale.h>
 
-#include <status.h>
 #include <vm.h>
 #include <bc.h>
 

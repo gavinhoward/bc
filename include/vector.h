@@ -23,7 +23,7 @@
 #ifndef BC_VECTOR_H
 #define BC_VECTOR_H
 
-#include <stdlib.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include <status.h>

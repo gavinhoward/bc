@@ -23,8 +23,7 @@
 #ifndef BC_VM_H
 #define BC_VM_H
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <limits.h>
 
 #include <status.h>

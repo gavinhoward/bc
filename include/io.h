@@ -24,7 +24,6 @@
 #define BC_IO_H
 
 #include <stdlib.h>
-#include <stdio.h>
 
 #include <status.h>
 
