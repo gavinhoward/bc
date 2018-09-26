@@ -49,7 +49,7 @@ for d in $resultsdir/*; do
 
 		while read line; do
 
-			echo "$line" | "$bc" "$@" -l > /dev/null 2>&1
+			echo "$line" | "$bc" "$@" -lq > /dev/null 2>&1
 			error="$?"
 
 			if [ "$error" -gt 127 ]; then
@@ -69,7 +69,7 @@ for d in $resultsdir/*; do
 
 		echo "    Running whole file..."
 
-		echo "halt" | "$bc" "$@" -l "$f" > /dev/null 2>&1
+		echo "halt" | "$bc" "$@" -lq "$f" > /dev/null 2>&1
 		error="$?"
 
 		if [ "$error" -gt 127 ]; then
