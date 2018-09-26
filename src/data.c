@@ -27,7 +27,7 @@
 
 const char bc_header[] =
 	"bc 1.0\n"
-	"bc copyright (c) 2018 Gavin D. Howard and contributors\n"
+	"Copyright (c) 2018 Gavin D. Howard and contributors\n"
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n\n";
 
