@@ -126,7 +126,6 @@ typedef struct BcLex {
 		BcVec v;
 	} t;
 
-
 	// ** Exclude start. **
 	BcLexNext next;
 	// ** Exclude end. **
