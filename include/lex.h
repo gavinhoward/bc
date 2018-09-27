@@ -108,6 +108,10 @@ typedef enum BcLexToken {
 
 } BcLexToken;
 
+struct BcLex;
+
+typedef BcStatus (*BcLexNext)(struct BcLex*);
+
 typedef struct BcLex {
 
 	const char *buffer;
@@ -121,6 +125,8 @@ typedef struct BcLex {
 		BcLexToken t;
 		BcVec v;
 	} t;
+
+	BcLexNext next;
 
 } BcLex;
 
@@ -136,12 +142,22 @@ typedef struct BcLexKeyword {
 
 extern const BcLexKeyword bc_lex_kws[20];
 
+// Common code.
+
 // ** Exclude start. **
-BcStatus bc_lex_init(BcLex *l);
+BcStatus bc_lex_init(BcLex *l, BcLexNext next);
 void bc_lex_free(BcLex *l);
 void bc_lex_file(BcLex *l, const char *file);
 BcStatus bc_lex_text(BcLex *l, const char *text);
-BcStatus bc_lex_next(BcLex *l);
+
+BcStatus bc_lex_comment(BcLex *l);
+void bc_lex_lineComment(BcLex *l);
+BcStatus bc_lex_number(BcLex *l, char start);
+BcStatus bc_lex_name(BcLex *l);
 // ** Exclude end. **
+
+// bc lex code.
+
+BcStatus bc_lex_next(BcLex *l);
 
 #endif // BC_LEX_H

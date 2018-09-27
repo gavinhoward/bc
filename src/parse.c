@@ -1147,7 +1147,7 @@ BcStatus bc_parse_init(BcParse *p, BcProgram *program) {
 
 	assert(p && program);
 
-	if ((s = bc_lex_init(&p->lex))) return s;
+	if ((s = bc_lex_init(&p->lex, bc_lex_next))) return s;
 	if ((s = bc_vec_init(&p->flags, sizeof(uint8_t), NULL))) goto flags_err;
 	if ((s = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto exit_err;
 	if ((s = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto cond_err;
