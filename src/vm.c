@@ -74,15 +74,15 @@ BcStatus bc_vm_posix_error(BcStatus s, const char *file,
 	return s * (!bcg.tty && !!p);
 }
 
-BcStatus bc_vm_process(BcVm *bc, const char *text) {
+BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
-	BcStatus s = bc_lex_text(&bc->parse.lex, text);
+	BcStatus s = bc_lex_text(&vm->parse.lex, text);
 
-	if ((s = bc_vm_error(s, bc->parse.lex.file, bc->parse.lex.line))) return s;
+	if ((s = bc_vm_error(s, vm->parse.lex.file, vm->parse.lex.line))) return s;
 
-	while (bc->parse.lex.t.t != BC_LEX_EOF) {
+	while (vm->parse.lex.t.t != BC_LEX_EOF) {
 
-		if ((s = bc_parse_parse(&bc->parse)) == BC_STATUS_LIMITS) {
+		if ((s = bc_parse_parse(&vm->parse)) == BC_STATUS_LIMITS) {
 
 			s = BC_STATUS_IO_ERR;
 
@@ -105,16 +105,16 @@ BcStatus bc_vm_process(BcVm *bc, const char *text) {
 			s = BC_STATUS_SUCCESS;
 		}
 		else if (s == BC_STATUS_QUIT || bcg.sig_other ||
-		         (s = bc_vm_error(s, bc->parse.lex.file, bc->parse.lex.line)))
+		         (s = bc_vm_error(s, vm->parse.lex.file, vm->parse.lex.line)))
 		{
 			return s;
 		}
 	}
 
-	if (BC_PARSE_CAN_EXEC(&bc->parse)) {
+	if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 		s = bc_program_exec(&bc->prog);
 		if (bcg.tty) fflush(stdout);
-		if (s && s != BC_STATUS_QUIT) s = bc_vm_error(s, bc->parse.lex.file, 0);
+		if (s && s != BC_STATUS_QUIT) s = bc_vm_error(s, vm->parse.lex.file, 0);
 	}
 
 	return s;
