@@ -34,14 +34,12 @@
 BcStatus bc_main(int argc, char *argv[]) {
 
 	BcStatus s;
-	BcVec files, args;
-	unsigned int flags;
-	char *env_args, *buffer, *buf;
+	BcVec files, exprs, args;
+	unsigned int flags = 0;
+	char *env_args, *buffer = NULL, *buf;
 
-	flags = 0;
-	buffer = NULL;
-
-	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return (int) s;
+	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
+	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
 
 	if ((env_args = getenv(bc_args_env_name))) {
 
@@ -68,27 +66,24 @@ BcStatus bc_main(int argc, char *argv[]) {
 			else ++buf;
 		}
 
-		s = bc_args((int) args.len, (char**) args.vec, bc_help, &flags, &files);
+		s = bc_args((int) args.len, (char**) args.vec,
+		            bc_help, &flags, &exprs, &files);
 		if(s) goto buf_err;
 	}
 
-	if((s = bc_args(argc, argv, bc_help, &flags, &files))) goto buf_err;
+	if((s = bc_args(argc, argv, bc_help, &flags, &exprs, &files))) goto buf_err;
 
 	flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 
-	s = bc_vm_exec(flags, &files);
+	s = bc_vm_exec(flags, &exprs, &files);
 
 buf_err:
-
 	if (env_args) free(buffer);
-
 args_err:
-
 	if (env_args) bc_vec_free(&args);
-
 err:
-
+	bc_vec_free(&exprs);
+exprs_err:
 	bc_vec_free(&files);
-
-	return (int) s;
+	return s;
 }

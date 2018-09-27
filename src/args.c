@@ -29,12 +29,14 @@
 
 #include <status.h>
 #include <vector.h>
+#include <io.h>
 #include <vm.h>
-#include <bc.h>
 #include <args.h>
 
-const struct option bc_args_opts[] = {
+static const struct option bc_args_lopt[] = {
 
+	{ "expression", required_argument, NULL, 'e' },
+	{ "file", required_argument, NULL, 'f' },
 	{ "help", no_argument, NULL, 'h' },
 	{ "interactive", no_argument, NULL, 'i' },
 	{ "mathlib", no_argument, NULL, 'l' },
@@ -42,31 +44,69 @@ const struct option bc_args_opts[] = {
 	{ "standard", no_argument, NULL, 's' },
 	{ "version", no_argument, NULL, 'v' },
 	{ "warn", no_argument, NULL, 'w' },
+	{ "extended-register", no_argument, NULL, 'x' },
 	{ 0, 0, 0, 0 },
 
 };
 
-const char* const bc_args_short_opts = "hilqsvw";
+static const char* const bc_args_opt = "e:f:hilqsvwx";
 const char* const bc_args_env_name = "BC_ENV_ARGS";
 
+static BcStatus bc_args_exprs(BcVec *exprs, const char *str) {
+
+	BcStatus s;
+
+	if ((s = bc_vec_concat(exprs, str))) return s;
+
+	return bc_vec_concat(exprs, "\n");
+}
+
+static BcStatus bc_args_file(BcVec *exprs, const char *file) {
+
+	BcStatus s;
+	char *buf;
+
+	if ((s = bc_io_fread(file, &buf))) return s;
+
+	s = bc_args_exprs(exprs, buf);
+
+	free(buf);
+
+	return s;
+}
+
 BcStatus bc_args(int argc, char *argv[], const char* const help,
-                 unsigned int *flags, BcVec *files) {
+                 unsigned int *flags, BcVec *exprs, BcVec *files) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	int c, i, opt_idx;
-	bool do_exit = false;
+	int c, i, idx;
+	bool do_exit = false, bc = !strcmp(bcg.name, bc_name);
 
-	opt_idx = c = 0;
-	optind = 1;
+	idx = c = optind = 0;
 
-	do {
-
+	while ((c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &idx)) != -1)
+	{
 		switch (c) {
 
 			case 0:
 			{
-				// This is the case when a long option is
-				// found, so we don't need to do anything.
+				// This is the case when a long option is found.
+				if (bc_args_lopt[idx].val == 'e')
+					s = bc_args_exprs(exprs, optarg);
+				else if (bc_args_lopt[idx].val == 'f')
+					s = bc_args_file(exprs, optarg);
+				break;
+			}
+
+			case 'e':
+			{
+				if ((s = bc_args_exprs(exprs, optarg))) return s;
+				break;
+			}
+
+			case 'f':
+			{
+				if ((s = bc_args_file(exprs, optarg))) return s;
 				break;
 			}
 
@@ -79,38 +119,50 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 
 			case 'i':
 			{
+				if (!bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
+				if (!bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
+				if (!bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
+				if (!bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_S;
 				break;
 			}
 
 			case 'v':
 			{
-				if (printf("%s", bc_header) < 0) return BC_STATUS_IO_ERR;
+				if (puts(bc_header) < 0) return BC_STATUS_IO_ERR;
 				do_exit = true;
 				break;
 			}
 
 			case 'w':
 			{
+				if (!bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_W;
+				break;
+			}
+
+			case 'x':
+			{
+				if (bc) return BC_STATUS_INVALID_OPTION;
+				(*flags) |= BC_FLAG_X;
 				break;
 			}
 
@@ -121,12 +173,11 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 				return BC_STATUS_INVALID_OPTION;
 			}
 		}
-
-		c = getopt_long(argc, argv, bc_args_short_opts, bc_args_opts, &opt_idx);
-
-	} while (c != -1);
+	}
 
 	if (do_exit) exit((int) s);
+
+	if (exprs->len > 1) (*flags) |= BC_FLAG_Q;
 
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 

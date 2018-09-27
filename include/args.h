@@ -26,8 +26,8 @@
 #include <status.h>
 #include <vector.h>
 
-BcStatus bc_args(int argc, char *argv[], const char* const help,
-                 unsigned int *flags, BcVec *files);
+BcStatus bc_args(int argc, char *argv[],  const char* const help,
+                 unsigned int *flags, BcVec* exprs, BcVec *files);
 
 extern const char* const bc_args_env_name;
 

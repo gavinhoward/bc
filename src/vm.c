@@ -236,7 +236,7 @@ buf_err:
 	return s;
 }
 
-BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
+BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files) {
 
 	BcStatus s;
 	BcVm vm;
@@ -249,7 +249,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
 	bcg.posix = flags & BC_FLAG_S;
 	bcg.warn = flags & BC_FLAG_W;
 
-	if ((lenv = getenv("BC_LINE_LENGTH"))) {
+	if (!strcmp(bcg.name, bc_name) && (lenv = getenv("BC_LINE_LENGTH"))) {
 		len = strlen(lenv);
 		for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
 		if (!num || ((len = (size_t) atoi(lenv) - 1) < 2 && len >= INT32_MAX))
@@ -286,11 +286,13 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files) {
 		if (s || (s = bc_program_exec(&vm.prog))) goto err;
 	}
 
+	if (exprs->len > 1 && (s = bc_vm_process(&vm, exprs->vec))) goto err;
+
 	for (i = 0; !bcg.sig_other && !s && i < files->len; ++i)
 		s = bc_vm_file(&vm, *((char**) bc_vec_item(files, i)));
 	if (s || bcg.sig_other) goto err;
 
-	s = bc_vm_stdin(&vm);
+	if (exprs->len <= 1) s = bc_vm_stdin(&vm);
 
 err:
 	bc_parse_free(&vm.parse);

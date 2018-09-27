@@ -35,25 +35,25 @@ BcGlobals bcg;
 
 int main(int argc, char *argv[]) {
 
+	BcStatus result;
+	char *name;
+
 	setlocale(LC_ALL, "");
 	memset(&bcg, 0, sizeof(BcGlobals));
 
-#if !defined(DC_CONFIG)
-	return (int) bc_main(argc, argv);
-#elif !defined(BC_CONFIG)
-	return (int) dc_main(argc, argv);
-#else
-	BcStatus result;
-	char* name, *base;
-
 	if (!(name = strdup(argv[0]))) return (int) BC_STATUS_ALLOC_ERR;
-	base = basename(name);
+	bcg.name = basename(name);
 
-	if (!strcmp(base, dc_name)) result = dc_main(argc, argv);
+#if !defined(DC_CONFIG)
+	result = bc_main(argc, argv);
+#elif !defined(BC_CONFIG)
+	result = dc_main(argc, argv);
+#else
+	if (!strcmp(bcg.name, dc_name)) result = dc_main(argc, argv);
 	else result = bc_main(argc, argv);
+#endif
 
 	free(name);
 
 	return (int) result;
-#endif
 }

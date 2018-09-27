@@ -34,61 +34,19 @@
 BcStatus dc_main(int argc, char *argv[]) {
 
 	BcStatus s;
-	BcVec files, args;
-	unsigned int flags;
-	char *env_args, *buffer, *buf;
+	BcVec files, exprs;
+	unsigned int flags = BC_FLAG_Q;
 
-	flags = 0;
-	buffer = NULL;
+	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
+	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
 
-	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return (int) s;
+	if((s = bc_args(argc, argv, dc_help, &flags, &exprs, &files))) goto err;
 
-	if ((env_args = getenv(bc_args_env_name))) {
-
-		if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
-		if ((s = bc_vec_push(&args, 1, &bc_args_env_name))) goto args_err;
-
-		if (!(buffer = strdup(env_args))) {
-			s = BC_STATUS_ALLOC_ERR;
-			goto args_err;
-		}
-
-		buf = buffer;
-
-		while (*buf) {
-
-			if (!isspace(*buf)) {
-
-				if ((s = bc_vec_push(&args, 1, &buf))) goto buf_err;
-
-				while (*buf && !isspace(*buf)) ++buf;
-
-				if (*buf) (*(buf++)) = '\0';
-			}
-			else ++buf;
-		}
-
-		s = bc_args((int) args.len, (char**) args.vec, dc_help, &flags, &files);
-		if(s) goto buf_err;
-	}
-
-	if((s = bc_args(argc, argv, dc_help, &flags, &files))) goto buf_err;
-
-	flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
-
-	s = bc_vm_exec(flags, &files);
-
-buf_err:
-
-	if (env_args) free(buffer);
-
-args_err:
-
-	if (env_args) bc_vec_free(&args);
+	s = bc_vm_exec(flags, &exprs, &files);
 
 err:
-
+	bc_vec_free(&exprs);
+exprs_err:
 	bc_vec_free(&files);
-
-	return (int) s;
+	return s;
 }
