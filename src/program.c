@@ -284,7 +284,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	func->code.len = 0;
 
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_io_getline(&buf, "read() > "))) goto io_err;
+	if ((s = bc_io_getline(&buf, "read> "))) goto io_err;
 
 	if ((s = bc_parse_init(&parse, p))) goto io_err;
 	bc_lex_file(&parse.lex, bc_program_stdin_name);
