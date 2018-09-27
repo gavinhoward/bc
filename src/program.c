@@ -599,8 +599,8 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 		max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
 
 		if (val < BC_NUM_MIN_BASE || val > max)
-		  return left->type == BC_RESULT_IBASE ? BC_STATUS_EXEC_BAD_IBASE :
-		                                         BC_STATUS_EXEC_BAD_OBASE;
+			return left->type == BC_RESULT_IBASE ? BC_STATUS_EXEC_BAD_IBASE :
+			                                       BC_STATUS_EXEC_BAD_OBASE;
 
 		*ptr = (size_t) val;
 	}
