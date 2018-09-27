@@ -627,7 +627,7 @@ err:
 
 BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
-	BcStatus sd = BC_STATUS_SUCCESS;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcInstPtr ip;
 	size_t i, nparams = bc_program_index(code, idx);
 	BcFunc *func;
@@ -656,44 +656,43 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
 			BcNum *n;
 
-			if ((sd = bc_program_num(p, arg, &n, false))) return sd;
-			if ((sd = bc_num_init(&param.data.num, n->len))) return sd;
+			if ((s = bc_program_num(p, arg, &n, false))) return s;
+			if ((s = bc_num_init(&param.data.num, n->len))) return s;
 
-			sd = bc_num_copy(&param.data.num, n);
+			s = bc_num_copy(&param.data.num, n);
 		}
 		else {
 
 			BcVec *a;
 
-			if ((sd = bc_program_search(p, arg, (BcNum**) &a, 0))) return sd;
-			sd = bc_vec_init(&param.data.array, sizeof(BcNum), bc_num_free);
-			if (sd) return sd;
+			if ((s = bc_program_search(p, arg, &a, 0))) return s;
+			if ((s = bc_array_init(&param.data.array))) return s;
 
-			sd = bc_array_copy(&param.data.array, a);
+			s = bc_array_copy(&param.data.array, a);
 		}
 
-		if (sd || (sd = bc_vec_push(&p->results, 1, &param))) goto err;
+		if (s || (s = bc_vec_push(&p->results, 1, &param))) goto err;
 	}
 
-	for (; !sd && i < func->autos.len; ++i) {
+	for (; !s && i < func->autos.len; ++i) {
 
 		auto_ptr = bc_vec_item_rev(&func->autos, i);
 		param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
 
-		if (auto_ptr->var) sd = bc_num_init(&param.data.num, BC_NUM_DEF_SIZE);
-		else sd = bc_vec_init(&param.data.array, sizeof(BcNum), bc_num_free);
+		if (auto_ptr->var) s = bc_num_init(&param.data.num, BC_NUM_DEF_SIZE);
+		else s = bc_array_init(&param.data.array);
 
-		if (sd) return sd;
-		sd = bc_vec_push(&p->results, 1, &param);
+		if (s) return s;
+		s = bc_vec_push(&p->results, 1, &param);
 	}
 
-	if (sd) goto err;
+	if (s) goto err;
 
 	return bc_vec_push(&p->stack, 1, &ip);
 
 err:
 	bc_result_free(&param);
-	return sd;
+	return s;
 }
 
 BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
