@@ -51,7 +51,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	fprintf(stderr, "    %s", file);
 	fprintf(stderr, bc_err_line + 3 * !line, line);
 
-	return s * !bcg.tty;
+	return s * (!bcg.tty || !!strcmp(file, bc_program_stdin_name));
 }
 
 BcStatus bc_vm_posix_error(BcStatus s, const char *file,
