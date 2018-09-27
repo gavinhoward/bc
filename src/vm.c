@@ -143,78 +143,59 @@ err:
 	return s;
 }
 
-BcStatus bc_vm_concat(char **buffer, size_t *n, char *buf, size_t total_len) {
-
-	if (total_len > *n) {
-
-		char *temp = realloc(*buffer, total_len + 1);
-		if (!temp) return BC_STATUS_ALLOC_ERR;
-
-		*buffer = temp;
-		*n = total_len;
-	}
-
-	strcat(*buffer, buf);
-
-	return BC_STATUS_SUCCESS;
-}
-
 BcStatus bc_vm_stdin(BcVm *bc) {
 
 	BcStatus s;
-	char *buf, *buffer, c;
-	size_t n, bufn, slen, total_len, len, i;
+	BcVec buf, buffer;
+	char c;
+	size_t len, i;
 	bool string, comment, notend;
 
 	bc->prog.file = bc_program_stdin_name;
 	bc_lex_file(&bc->parse.lex, bc_program_stdin_name);
 
-	n = bufn = BC_BUF_SIZE;
-	s = BC_STATUS_ALLOC_ERR;
+	if ((s = bc_vec_init(&buffer, sizeof(char), NULL))) return s;
+	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) goto buf_err;
+	if ((s = bc_vec_pushByte(&buffer, '\0'))) goto err;
 
-	if (!(buffer = malloc(BC_BUF_SIZE + 1))) return s;
-	if (!(buf = malloc(BC_BUF_SIZE + 1))) goto buf_err;
-
-	buffer[0] = '\0';
 	string = comment = false;
-	s = BC_STATUS_SUCCESS;
 
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	while (!s && !(s = bc_io_getline(&buf, &bufn, ">>> "))) {
+	while (!s && !(s = bc_io_getline(&buf, ">>> "))) {
 
-		len = strlen(buf);
-		slen = strlen(buffer);
-		total_len = slen + len;
+		char *str = buf.vec;
 
-		if (len == 1 && buf[0] == '"') string = !string;
+		len = buf.len - 1;
+
+		if (len == 1 && buf.vec[0] == '"') string = !string;
 		else if (len > 1 || comment) {
 
 			for (i = 0; i < len; ++i) {
 
 				notend = len > i + 1;
 
-				if ((c = buf[i]) == '"') string = !string;
-				else if (c == '/' && notend && !comment && buf[i + 1] == '*') {
+				if ((c = str[i]) == '"') string = !string;
+				else if (c == '/' && notend && !comment && str[i + 1] == '*') {
 					comment = true;
 					break;
 				}
-				else if (c == '*' && notend && comment && buf[i + 1] == '/')
+				else if (c == '*' && notend && comment && str[i + 1] == '/')
 					comment = false;
 			}
 
-			if (string || comment || buf[len - 2] == '\\') {
-				if ((s = bc_vm_concat(&buffer, &n, buf, total_len))) goto err;
+			if (string || comment || str[len - 2] == '\\') {
+				if ((s = bc_vec_concat(&buffer, buf.vec))) goto err;
 				continue;
 			}
 		}
 
-		if ((s = bc_vm_concat(&buffer, &n, buf, total_len))) goto err;
+		if ((s = bc_vec_concat(&buffer, buf.vec))) goto err;
+		if ((s = bc_vm_process(bc, buffer.vec))) goto err;
 
-		s = bc_vm_process(bc, buffer);
-		buffer[0] = '\0';
+		bc_vec_npop(&buffer, buffer.len);
 	}
 
 	if (s == BC_STATUS_BIN_FILE)
@@ -230,9 +211,9 @@ BcStatus bc_vm_stdin(BcVm *bc) {
 	                                  bc->parse.lex.file, bc->parse.lex.line);
 
 err:
-	free(buf);
+	bc_vec_free(&buf);
 buf_err:
-	free(buffer);
+	bc_vec_free(&buffer);
 	return s;
 }
 

@@ -56,6 +56,7 @@ BcStatus bc_vec_push(BcVec *vec, size_t n, const void *data);
 BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data);
 BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx);
 BcStatus bc_vec_string(BcVec *vec, size_t len, const char *str);
+BcStatus bc_vec_concat(BcVec *vec, const char *str);
 
 void* bc_vec_top(const BcVec *vec);
 void* bc_vec_item(const BcVec *vec, size_t idx);

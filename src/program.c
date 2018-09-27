@@ -281,19 +281,18 @@ BcStatus bc_program_read(BcProgram *p) {
 
 	BcStatus s;
 	BcParse parse;
-	char *buffer;
+	BcVec buf;
 	BcInstPtr ip;
-	size_t size = BC_BUF_SIZE;
 	BcFunc *func = bc_vec_item(&p->fns, BC_PROG_READ);
 
 	func->code.len = 0;
 
-	if (!(buffer = malloc(size + 1))) return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_io_getline(&buffer, &size, "read() > "))) goto io_err;
+	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) return BC_STATUS_ALLOC_ERR;
+	if ((s = bc_io_getline(&buf, "read() > "))) goto io_err;
 
 	if ((s = bc_parse_init(&parse, p))) goto io_err;
 	bc_lex_file(&parse.lex, bc_program_stdin_name);
-	if ((s = bc_lex_text(&parse.lex, buffer))) goto exec_err;
+	if ((s = bc_lex_text(&parse.lex, buf.vec))) goto exec_err;
 
 	s = bc_parse_expr(&parse, &func->code, BC_PARSE_NOREAD, bc_parse_next_read);
 	if (s) return s;
@@ -315,7 +314,7 @@ BcStatus bc_program_read(BcProgram *p) {
 exec_err:
 	bc_parse_free(&parse);
 io_err:
-	free(buffer);
+	bc_vec_free(&buf);
 	return s;
 }
 

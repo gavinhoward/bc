@@ -130,10 +130,33 @@ BcStatus bc_vec_string(BcVec *vec, size_t len, const char *str) {
 
 	BcStatus s;
 
+	assert(vec && vec->size == sizeof(char));
+	assert(!vec->len || !vec->vec[vec->len - 1]);
+
 	bc_vec_npop(vec, vec->len);
 	if ((s = bc_vec_push(vec, len, str))) return s;
 
 	return bc_vec_pushByte(vec, '\0');
+}
+
+BcStatus bc_vec_concat(BcVec *vec, const char *str) {
+
+	BcStatus s;
+	size_t len;
+
+	assert(vec && vec->size == sizeof(char));
+	assert(!vec->len || !vec->vec[vec->len - 1]);
+
+	if (!vec->len && (s = bc_vec_pushByte(vec, '\0'))) return s;
+
+	len = vec->len + strlen(str);
+
+	if ((s = bc_vec_grow(vec, len))) return s;
+	strcat(vec->vec, str);
+
+	vec->len = len;
+
+	return s;
 }
 
 void* bc_vec_top(const BcVec *vec) {

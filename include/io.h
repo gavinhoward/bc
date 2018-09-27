@@ -26,8 +26,9 @@
 #include <stdlib.h>
 
 #include <status.h>
+#include <vector.h>
 
-BcStatus bc_io_getline(char **buf, size_t *n, const char *prompt);
+BcStatus bc_io_getline(BcVec* vec, const char *prompt);
 BcStatus bc_io_fread(const char *path, char **buf);
 
 #endif // BC_IO_H

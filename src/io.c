@@ -30,27 +30,20 @@
 #include <program.h>
 #include <vm.h>
 
-BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
+BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 
-	char *temp;
-	int c;
-	size_t size, i;
+	BcStatus s;
+	int c = 0;
+	char byte;
 
 	if (bcg.tty && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
 		return BC_STATUS_IO_ERR;
 
-	for (i = 0, c = 0; c != '\n'; ++i) {
+	assert(vec && vec->size == sizeof(char));
 
-		if (i == *n) {
+	bc_vec_npop(vec, vec->len);
 
-			size = *n * 2;
-
-			if (size > BC_MAX_LINE || !(temp = realloc(*buf, size + 1)))
-				return BC_STATUS_ALLOC_ERR;
-
-			*buf = temp;
-			*n = size;
-		}
+	while (c != '\n') {
 
 		if ((c = fgetc(stdin)) == EOF) {
 
@@ -58,7 +51,6 @@ BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
 
 				bcg.sigc = bcg.sig;
 				bcg.signe = 0;
-				--i;
 
 				if (bcg.tty && (fputs(bc_program_ready_msg, stderr) == EOF ||
 				                fputs(prompt, stderr) == EOF ||
@@ -73,12 +65,11 @@ BcStatus bc_io_getline(char **buf, size_t *n, const char* prompt) {
 		}
 		else if ((c < ' ' && !isspace(c)) || c > '~') return BC_STATUS_BIN_FILE;
 
-		(*buf)[i] = (char) c;
+		byte = (char) c;
+		if ((s = bc_vec_push(vec, 1, &byte))) return s;
 	}
 
-	(*buf)[i] = '\0';
-
-	return BC_STATUS_SUCCESS;
+	return bc_vec_pushByte(vec, '\0');
 }
 
 BcStatus bc_io_fread(const char *path, char **buf) {
