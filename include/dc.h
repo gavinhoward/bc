@@ -20,15 +20,15 @@
  *
  */
 
-#ifndef BC_BC_H
-#define BC_BC_H
+#ifndef BC_DC_H
+#define BC_DC_H
 
 #include <status.h>
 
 // ** Exclude start. **
-BcStatus bc_main(int argc, char *argv[]);
+BcStatus dc_main(int argc, char *argv[]);
 // ** Exclude end. **
 
-extern const char bc_help[];
+extern const char dc_help[];
 
-#endif // BC_BC_H
+#endif // BC_DC_H

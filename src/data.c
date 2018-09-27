@@ -23,6 +23,9 @@
 #include <lex.h>
 #include <parse.h>
 
+const char bc_name[] = "bc";
+const char dc_name[] = "dc";
+
 const char bc_header[] =
 	"bc 1.0\n"
 	"Copyright (c) 2018 Gavin D. Howard and contributors\n"

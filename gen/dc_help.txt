@@ -1,4 +1,4 @@
-﻿/*
+/*
  * *****************************************************************************
  *
  * Copyright 2018 Gavin D. Howard
@@ -16,19 +16,13 @@
  *
  * *****************************************************************************
  *
- * Definitions for bc.
+ * The dc help text.
  *
  */
 
-#ifndef BC_BC_H
-#define BC_BC_H
+usage: %s [options] [file...]
 
-#include <status.h>
+dc is a command-line, reverse Polish notation arbitrary-precision calculator.
+See the GNU dc manual (https://www.gnu.org/software/bc/manual/dc-1.05/) for
+details.
 
-// ** Exclude start. **
-BcStatus bc_main(int argc, char *argv[]);
-// ** Exclude end. **
-
-extern const char bc_help[];
-
-#endif // BC_BC_H

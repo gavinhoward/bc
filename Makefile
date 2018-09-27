@@ -13,8 +13,14 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-BC_SRC = $(sort $(wildcard src/*.c))
+SRC = $(sort $(wildcard src/*.c))
+OBJ = $(SRC:.c=.o)
+
+BC_SRC = $(sort $(wildcard src/bc/*.c))
 BC_OBJ = $(BC_SRC:.c=.o)
+
+DC_SRC = $(sort $(wildcard src/dc/*.c))
+DC_OBJ = $(DC_SRC:.c=.o)
 
 GEN_DIR = gen
 GEN_EXEC = strgen
@@ -27,7 +33,12 @@ BC_HELP = $(GEN_DIR)/bc_help.txt
 BC_HELP_C = $(GEN_DIR)/bc_help.c
 BC_HELP_O = $(GEN_DIR)/bc_help.o
 
+DC_HELP = $(GEN_DIR)/dc_help.txt
+DC_HELP_C = $(GEN_DIR)/dc_help.c
+DC_HELP_O = $(GEN_DIR)/dc_help.o
+
 BC_EXEC = bc
+DC_EXEC = dc
 
 PREFIX ?= /usr/local
 
@@ -42,7 +53,34 @@ LDLIBS += -lm
 
 HOSTCC ?= $(CC)
 
-all: $(BC_EXEC)
+all: CPPFLAGS += -DDC_CONFIG -DBC_CONFIG
+all: clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) \
+		$(LDLIBS) $(LDFLAGS) -o $(BC_EXEC)
+	ln -s ./$(BC_EXEC) $(DC_EXEC)
+
+$(GEN_EXEC):
+	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN_EXEC).c
+
+$(BC_LIB_C): $(GEN_EXEC)
+	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name
+
+$(BC_HELP_C): $(GEN_EXEC)
+	$(GEN_EMU) ./$(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help
+
+$(DC_HELP_C): $(GEN_EXEC)
+	$(GEN_EMU) ./$(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help
+
+$(DC_EXEC): CPPFLAGS += -DDC_CONFIG
+$(DC_EXEC): clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(DC_HELP_O) $(LDLIBS) $(LDFLAGS) -o $(DC_EXEC)
+
+$(BC_EXEC): CPPFLAGS += -DBC_CONFIG
+$(BC_EXEC): clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS) -o $(BC_EXEC)
+
+main: clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O)
+	$(CC) $(CFLAGS) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS)
 
 help:
 	@echo "available targets:"
@@ -66,18 +104,6 @@ help:
 	@echo "              if PREFIX is \"/usr\", $(BC_EXEC) will be installed to \"/usr/bin\""
 	@echo "    GEN_EMU   Emulator to run $(GEN_EXEC) under (leave empty if not necessary)"
 
-$(GEN_EXEC):
-	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN_EXEC).c
-
-$(BC_LIB_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name
-
-$(BC_HELP_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help
-
-$(BC_EXEC): $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O)
-	$(CC) $(CFLAGS) -o $(BC_EXEC) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS)
-
 test:
 	tests/all.sh
 
@@ -88,8 +114,11 @@ timeconst:
 	tests/timeconst.sh
 
 clean:
+	$(RM) -f $(OBJ)
 	$(RM) -f $(BC_OBJ)
+	$(RM) -f $(DC_OBJ)
 	$(RM) -f $(BC_EXEC)
+	$(RM) -f $(DC_EXEC)
 	$(RM) -f $(GEN_EXEC)
 	$(RM) -f $(BC_LIB_C)
 	$(RM) -f $(BC_LIB_O)
@@ -104,10 +133,11 @@ clean_tests: clean
 	$(RM) -f .math.txt .results.txt .ops.txt
 	$(RM) -f .test.txt
 
-install: $(BC_EXEC)
-	$(INSTALL) -Dm 755 $(BC_EXEC) $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
+install:
+	$(INSTALL) $(DESTDIR)$(PREFIX)/bin $(BC_EXEC) $(DC_EXEC)
 
 uninstall:
 	$(RM) -f $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
+	$(RM) -f $(DESTDIR)$(PREFIX)/bin/$(DC_EXEC)
 
 .PHONY: all help clean clean_tests install uninstall test

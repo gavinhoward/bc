@@ -86,6 +86,9 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *files);
 
 extern BcGlobals bcg;
 
+extern const char bc_name[];
+extern const char dc_name[];
+
 extern const char bc_header[];
 
 extern const char bc_lib[];

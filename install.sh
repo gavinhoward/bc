@@ -1,67 +1,47 @@
-#!/bin/sh
+#! /bin/sh
 #
-# Written by Rich Felker, originally as part of musl libc.
-# Multi-licensed under MIT, 0BSD, and CC0.
+# Copyright 2018 Gavin D. Howard
 #
-# This is an actually-safe install command which installs the new
-# file atomically in the new location, rather than overwriting
-# existing files.
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
 #
 
 usage() {
-printf "usage: %s [-D] [-l] [-m mode] src dest\n" "$0" 1>&2
-exit 1
+	printf "usage: %s install_dir executable [symlinks...]\n" "$0" 1>&2
+	exit 1
 }
 
-mkdirp=
-symlink=
-mode=755
+script=$(realpath "$0")
+scriptdir=$(dirname "$script")
 
-while getopts Dlm: name ; do
-case "$name" in
-D) mkdirp=yes ;;
-l) symlink=yes ;;
-m) mode=$OPTARG ;;
-?) usage ;;
-esac
+INSTALL="$scriptdir/safe-install.sh"
+
+test "$#" -gt 1 || usage
+
+installdir="$1"
+shift
+
+exe="$1"
+shift
+
+"$INSTALL" -Dm 755 "$exe" "$installdir/$exe"
+
+while [ $# -gt 0 ]; do
+
+	link="$1"
+	shift
+
+	base=$(basename "$link")
+
+	rm -f "$installdir/$link"
+	ln -s "$installdir/$exe" "$installdir/$link"
+
 done
-shift $(($OPTIND - 1))
-
-test "$#" -eq 2 || usage
-src=$1
-dst=$2
-tmp="$dst.tmp.$$"
-
-case "$dst" in
-*/) printf "%s: %s ends in /\n", "$0" "$dst" 1>&2 ; exit 1 ;;
-esac
-
-set -C
-set -e
-
-if test "$mkdirp" ; then
-umask 022
-case "$2" in
-*/*) mkdir -p "${dst%/*}" ;;
-esac
-fi
-
-trap 'rm -f "$tmp"' EXIT INT QUIT TERM HUP
-
-umask 077
-
-if test "$symlink" ; then
-ln -s "$1" "$tmp"
-else
-cat < "$1" > "$tmp"
-chmod "$mode" "$tmp"
-fi
-
-mv -f "$tmp" "$2"
-test -d "$2" && {
-rm -f "$2/$tmp"
-printf "%s: %s is a directory\n" "$0" "$dst" 1>&2
-exit 1
-}
-
-exit 0

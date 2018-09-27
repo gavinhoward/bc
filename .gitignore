@@ -5,6 +5,8 @@
 *.creator.user
 bc
 !bc/
+dc
+!dc/
 *.o
 *.a
 .log_*.txt
@@ -15,6 +17,7 @@ bc
 strgen
 lib.c
 bc_help.c
+dc_help.c
 config.mak
 timeconst.bc
 

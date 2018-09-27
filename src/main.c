@@ -20,12 +20,19 @@
  *
  */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include <locale.h>
+#include <libgen.h>
 
+#include <status.h>
 #include <vm.h>
 #include <bc.h>
+
+#if !defined(BC_CONFIG) && !defined(DC_CONFIG)
+#error Must define BC_CONFIG, DC_CONFIG, or both
+#endif
 
 BcGlobals bcg;
 
@@ -34,5 +41,22 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_ALL, "");
 	memset(&bcg, 0, sizeof(BcGlobals));
 
+#if !defined(DC_CONFIG)
 	return (int) bc_main(argc, argv);
+#elif !defined(BC_CONFIG)
+	return (int) dc_main(argc, argv);
+#else
+	BcStatus result;
+	char* name, *base;
+
+	if (!(name = strdup(argv[0]))) return (int) BC_STATUS_ALLOC_ERR;
+	base = basename(name);
+
+	if (!strcmp(base, dc_name)) result = dc_main(argc, argv);
+	else result = bc_main(argc, argv);
+
+	free(name);
+
+	return (int) result;
+#endif
 }

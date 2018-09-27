@@ -16,7 +16,7 @@
  *
  * *****************************************************************************
  *
- * Code common to all of bc.
+ * The main procedure of dc.
  *
  */
 
@@ -31,7 +31,7 @@
 #include <vm.h>
 #include <args.h>
 
-BcStatus bc_main(int argc, char *argv[]) {
+BcStatus dc_main(int argc, char *argv[]) {
 
 	BcStatus s;
 	BcVec files, args;
