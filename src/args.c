@@ -49,7 +49,8 @@ const struct option bc_args_opts[] = {
 const char* const bc_args_short_opts = "hilqsvw";
 const char* const bc_args_env_name = "BC_ENV_ARGS";
 
-BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
+BcStatus bc_args(int argc, char *argv[], const char* const help,
+                 unsigned int *flags, BcVec *files) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i, opt_idx;
@@ -71,7 +72,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags, BcVec *files) {
 
 			case 'h':
 			{
-				if (printf(bc_help, argv[0]) < 0) return BC_STATUS_IO_ERR;
+				if (printf(help, argv[0]) < 0) return BC_STATUS_IO_ERR;
 				do_exit = true;
 				break;
 			}

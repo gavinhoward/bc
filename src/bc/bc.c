@@ -68,11 +68,11 @@ BcStatus bc_main(int argc, char *argv[]) {
 			else ++buf;
 		}
 
-		s = bc_args((int) args.len, (char**) args.vec, &flags, &files);
+		s = bc_args((int) args.len, (char**) args.vec, bc_help, &flags, &files);
 		if(s) goto buf_err;
 	}
 
-	if((s = bc_args(argc, argv, &flags, &files))) goto buf_err;
+	if((s = bc_args(argc, argv, bc_help, &flags, &files))) goto buf_err;
 
 	flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 
