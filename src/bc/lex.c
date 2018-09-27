@@ -26,6 +26,14 @@
 #include <lex.h>
 #include <vm.h>
 
+void bc_lex_assign(BcLex *l, BcLexToken with, BcLexToken without) {
+	if (l->buffer[l->idx] == '=') {
+		++l->idx;
+		l->t.t = with;
+	}
+	else l->t.t = without;
+}
+
 BcStatus bc_lex_comment(BcLex *l) {
 
 	size_t i, nls = 0;
@@ -83,21 +91,13 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '!':
 		{
-			c2 = l->buffer[l->idx];
+			bc_lex_assign(l, BC_LEX_OP_REL_NE, BC_LEX_OP_BOOL_NOT);
 
-			if (c2 == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_REL_NE;
-			}
-			else {
-
-				if ((s = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-				                           l->file, l->line, "!")))
-				{
-					return s;
-				}
-
-				l->t.t = BC_LEX_OP_BOOL_NOT;
+			if (l->t.t == BC_LEX_OP_BOOL_NOT &&
+			    (s = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
+			                           l->file, l->line, "!")))
+			{
+				return s;
 			}
 
 			break;
@@ -124,11 +124,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '%':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_ASSIGN_MODULUS;
-			}
-			else l->t.t = BC_LEX_OP_MODULUS;
+			bc_lex_assign(l, BC_LEX_OP_ASSIGN_MODULUS, BC_LEX_OP_MODULUS);
 			break;
 		}
 
@@ -162,25 +158,17 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '*':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_ASSIGN_MULTIPLY;
-			}
-			else l->t.t = BC_LEX_OP_MULTIPLY;
+			bc_lex_assign(l, BC_LEX_OP_ASSIGN_MULTIPLY, BC_LEX_OP_MULTIPLY);
 			break;
 		}
 
 		case '+':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_ASSIGN_PLUS;
-			}
-			else if (c2 == '+') {
+			if ((c2 = l->buffer[l->idx]) == '+') {
 				++l->idx;
 				l->t.t = BC_LEX_OP_INC;
 			}
-			else l->t.t = BC_LEX_OP_PLUS;
+			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_PLUS, BC_LEX_OP_PLUS);
 			break;
 		}
 
@@ -192,15 +180,11 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '-':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_ASSIGN_MINUS;
-			}
-			else if (c2 == '-') {
+			if ((c2 = l->buffer[l->idx]) == '-') {
 				++l->idx;
 				l->t.t = BC_LEX_OP_DEC;
 			}
-			else l->t.t = BC_LEX_OP_MINUS;
+			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_MINUS, BC_LEX_OP_MINUS);
 			break;
 		}
 
@@ -218,12 +202,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '/':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_ASSIGN_DIVIDE;
-			}
-			else if (c2 == '*') s = bc_lex_comment(l);
-			else l->t.t = BC_LEX_OP_DIVIDE;
+			if ((c2 = l->buffer[l->idx]) =='*') s = bc_lex_comment(l);
+			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_DIVIDE, BC_LEX_OP_DIVIDE);
 			break;
 		}
 
@@ -256,31 +236,19 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '<':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_REL_LE;
-			}
-			else l->t.t = BC_LEX_OP_REL_LT;
+			bc_lex_assign(l, BC_LEX_OP_REL_LE, BC_LEX_OP_REL_LT);
 			break;
 		}
 
 		case '=':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_REL_EQ;
-			}
-			else l->t.t = BC_LEX_OP_ASSIGN;
+			bc_lex_assign(l, BC_LEX_OP_REL_EQ, BC_LEX_OP_ASSIGN);
 			break;
 		}
 
 		case '>':
 		{
-			if ((c2 = l->buffer[l->idx]) == '=') {
-				++l->idx;
-				l->t.t = BC_LEX_OP_REL_GE;
-			}
-			else l->t.t = BC_LEX_OP_REL_GT;
+			bc_lex_assign(l, BC_LEX_OP_REL_GE, BC_LEX_OP_REL_GT);
 			break;
 		}
 
@@ -303,11 +271,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '^':
 		{
-			if (l->buffer[l->idx] == '=') {
-				l->t.t = BC_LEX_OP_ASSIGN_POWER;
-				++l->idx;
-			}
-			else l->t.t = BC_LEX_OP_POWER;
+			bc_lex_assign(l, BC_LEX_OP_ASSIGN_POWER, BC_LEX_OP_POWER);
 			break;
 		}
 
