@@ -32,8 +32,6 @@ src=$1
 dst=$2
 tmp="$dst.tmp.$$"
 
-[ -f "$src" ] || exit 0
-
 case "$dst" in
 */) printf "%s: %s ends in /\n", "$0" "$dst" 1>&2 ; exit 1 ;;
 esac

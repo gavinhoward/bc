@@ -32,6 +32,11 @@ shift
 exe="$1"
 shift
 
+while [ ! -f "$exe" ]; do
+	exe="$1"
+	shift
+done
+
 "$INSTALL" -Dm 755 "$exe" "$installdir/$exe"
 
 while [ $# -gt 0 ]; do

@@ -133,7 +133,7 @@ clean_tests: clean
 	$(RM) -f .math.txt .results.txt .ops.txt
 	$(RM) -f .test.txt
 
-install:
+install: uninstall
 	$(INSTALL) $(DESTDIR)$(PREFIX)/bin $(BC_EXEC) $(DC_EXEC)
 
 uninstall:
