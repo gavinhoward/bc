@@ -73,6 +73,13 @@ void bc_func_free(void *func) {
 	bc_vec_free(&f->labels);
 }
 
+BcStatus bc_array_init(BcVec *a) {
+	BcStatus s;
+	if ((s = bc_vec_init(a, sizeof(BcNum), bc_num_free))) return s;
+	if ((s = bc_array_expand(a, 1))) bc_vec_free(a);
+	return s;
+}
+
 BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
 
 	BcStatus status;
@@ -101,6 +108,8 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum num;
+
+	assert(a && a->size == sizeof(BcNum) && a->dtor == bc_num_free);
 
 	while (!s && len > a->len) {
 		if ((s = bc_num_init(&num, BC_NUM_DEF_SIZE))) return s;
@@ -151,7 +160,7 @@ void bc_result_free(void *result) {
 
 		case BC_RESULT_ARRAY_AUTO:
 		{
-			bc_vec_free(&r->data.array);
+			bc_array_free(&r->data.array);
 			break;
 		}
 

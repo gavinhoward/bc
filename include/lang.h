@@ -170,9 +170,8 @@ BcStatus bc_func_init(BcFunc *f);
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var);
 void bc_func_free(void *func);
 
-BcStatus bc_array_init(void *array);
+BcStatus bc_array_init(BcVec *a);
 BcStatus bc_array_copy(BcVec *d, const BcVec *s);
-BcStatus bc_array_zero(BcVec *a);
 BcStatus bc_array_expand(BcVec *a, size_t len);
 
 void bc_string_free(void *string);
@@ -184,6 +183,8 @@ void bc_result_free(void *result);
 // ** Exclude end. **
 
 void bc_auto_free(void *auto1);
+
+#define bc_array_free bc_vec_free
 
 extern const char bc_lang_inst_chars[];
 extern const char bc_lang_func_main[];

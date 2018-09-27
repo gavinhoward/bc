@@ -31,7 +31,7 @@
 #include <parse.h>
 #include <vm.h>
 
-BcStatus bc_program_search(BcProgram *p, BcResult *r, BcNum **ret, bool var) {
+BcStatus bc_program_search(BcProgram *p, BcResult *r, BcVec **ret, bool var) {
 
 	BcStatus s;
 	BcEntry entry, *entry_ptr;
@@ -60,7 +60,7 @@ BcStatus bc_program_search(BcProgram *p, BcResult *r, BcNum **ret, bool var) {
 				BcResult *r = bc_vec_item(&p->results, ip->len + idx);
 
 				if (!a->var != !var) return BC_STATUS_EXEC_BAD_TYPE;
-				*ret = &r->data.num;
+				*ret = &r->data.array;
 
 				return BC_STATUS_SUCCESS;
 			}
@@ -80,22 +80,18 @@ BcStatus bc_program_search(BcProgram *p, BcResult *r, BcNum **ret, bool var) {
 		if (s) return s;
 
 		if (!(r->data.id.name = strdup(entry.name))) return BC_STATUS_ALLOC_ERR;
-
-		if (var) s = bc_num_init(&data.data.num, BC_NUM_DEF_SIZE);
-		else s = bc_vec_init(&data.data.array, sizeof(BcNum), bc_num_free);
-
-		if (s) goto num_err;
+		if ((s = bc_array_init(&data.data.array))) goto num_err;
 		if ((s = bc_vec_push(vec, 1, &data.data))) goto err;
 	}
 
 	entry_ptr = bc_veco_item(veco, idx);
 	*ret = bc_vec_item(vec, entry_ptr->idx);
+	if (var) *ret = bc_vec_item_rev(*ret, 0);
 
 	return BC_STATUS_SUCCESS;
 
 err:
-	if (var) bc_num_free(&data.data.num);
-	else bc_vec_free(&data.data.array);
+	bc_array_free(&data.data.array);
 num_err:
 	free(r->data.id.name);
 	return s;
@@ -137,28 +133,25 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 			break;
 		}
 
-		case BC_RESULT_ARRAY_ELEM:
-		{
-			BcVec *vec;
-
-			if ((s = bc_program_search(p, r, num, 0))) return s;
-
-			vec = (BcVec*) *num;
-
-			if (vec->len <= r->data.id.idx) {
-				s = bc_array_expand(vec, r->data.id.idx + 1);
-				if (s) return s;
-			}
-
-			*num = bc_vec_item(vec, r->data.id.idx);
-
-			break;
-		}
-
 		case BC_RESULT_VAR:
 		case BC_RESULT_ARRAY:
+		case BC_RESULT_ARRAY_ELEM:
 		{
-			s = bc_program_search(p, r, num, r->type == BC_RESULT_VAR);
+			BcVec *v;
+
+			s = bc_program_search(p, r, &v, r->type == BC_RESULT_VAR);
+			if (s) return s;
+
+			if (r->type == BC_RESULT_ARRAY_ELEM) {
+
+				if (v->len <= r->data.id.idx) {
+					if ((s = bc_array_expand(v, r->data.id.idx + 1))) return s;
+				}
+
+				*num = bc_vec_item(v, r->data.id.idx);
+			}
+			else *num = (BcNum*) v;
+
 			break;
 		}
 
