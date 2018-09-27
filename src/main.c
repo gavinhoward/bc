@@ -29,10 +29,7 @@
 #include <status.h>
 #include <vm.h>
 #include <bc.h>
-
-#if !defined(BC_CONFIG) && !defined(DC_CONFIG)
-#error Must define BC_CONFIG, DC_CONFIG, or both
-#endif
+#include <dc.h>
 
 BcGlobals bcg;
 
