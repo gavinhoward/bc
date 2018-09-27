@@ -28,7 +28,6 @@
 
 #include <status.h>
 #include <vector.h>
-#include <program.h>
 #include <lex.h>
 
 #define BC_PARSE_POSIX_REL (1<<0)
@@ -109,7 +108,18 @@ typedef struct BcParseNext {
 #define BC_PARSE_NEXT_TOKENS(...) .tokens = { __VA_ARGS__ }
 #define BC_PARSE_NEXT(a, ...) { .len = (a), BC_PARSE_NEXT_TOKENS(__VA_ARGS__) }
 
+struct BcParse;
+struct BcProgram;
+
+typedef BcStatus (*BcParseInit)(struct BcParse*, struct BcProgram*);
+typedef BcStatus (*BcParseParse)(struct BcParse*);
+typedef BcStatus (*BcParseExpr)(struct BcParse*, BcVec*, uint8_t, BcParseNext);
+
 typedef struct BcParse {
+
+	// ** Exclude start. **
+	BcParseParse parse;
+	// ** Exclude end. **
 
 	BcLex lex;
 
@@ -120,7 +130,7 @@ typedef struct BcParse {
 
 	BcVec ops;
 
-	BcProgram *prog;
+	struct BcProgram *prog;
 	size_t func;
 
 	size_t nbraces;
@@ -129,12 +139,27 @@ typedef struct BcParse {
 } BcParse;
 
 // ** Exclude start. **
-BcStatus bc_parse_init(BcParse *p, BcProgram *program);
-BcStatus bc_parse_parse(BcParse *parse);
+
+// Common code.
+
+BcStatus bc_parse_create(BcParse *p, struct BcProgram *prog, BcParseParse parse, BcLexNext next);
 void bc_parse_free(BcParse *p);
+BcStatus bc_parse_reset(BcParse *p, BcStatus s);
+BcStatus bc_parse_pushName(BcVec *code, char *name);
+BcStatus bc_parse_pushIndex(BcVec *code, size_t idx);
+
+// bc parse code.
+
+BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog);
+BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
+
+// dc parse code.
+
+BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog);
+BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
+
 // ** Exclude end. **
 
-BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
 
 extern const bool bc_parse_token_exprs[];
 extern const BcParseNext bc_parse_next_expr;

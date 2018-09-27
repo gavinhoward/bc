@@ -22,6 +22,7 @@
 
 #include <lex.h>
 #include <parse.h>
+#include <num.h>
 
 const char bc_name[] = "bc";
 const char dc_name[] = "dc";

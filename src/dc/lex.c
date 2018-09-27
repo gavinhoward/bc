@@ -16,37 +16,13 @@
  *
  * *****************************************************************************
  *
- * The main procedure of dc.
+ * The lexer for dc.
  *
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <status.h>
-#include <vector.h>
-#include <dc.h>
-#include <vm.h>
-#include <args.h>
+#include <lex.h>
 
-BcStatus dc_main(int argc, char *argv[]) {
-
-	BcStatus s;
-	BcVec files, exprs;
-	unsigned int flags = BC_FLAG_Q;
-
-	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
-	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
-
-	if((s = bc_args(argc, argv, dc_help, &flags, &exprs, &files))) goto err;
-
-	s = bc_vm_exec(flags, &exprs, &files, dc_parse_init, dc_parse_expr);
-
-err:
-	bc_vec_free(&exprs);
-exprs_err:
-	bc_vec_free(&files);
-	return s;
+BcStatus dc_lex_next(BcLex *l) {
+	return BC_STATUS_SUCCESS;
 }

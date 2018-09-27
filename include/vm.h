@@ -83,7 +83,8 @@ BcStatus bc_vm_posix_error(BcStatus s, const char *file,
 BcStatus bc_vm_file(BcVm *bc, const char *file);
 BcStatus bc_vm_stdin(BcVm *bc);
 
-BcStatus bc_vm_exec(unsigned int flags, BcVec* exprs, BcVec *files);
+BcStatus bc_vm_exec(unsigned int flags, BcVec* exprs, BcVec *files,
+                    BcParseInit parse_init, BcParseExpr parse_expr);
 
 extern BcGlobals bcg;
 

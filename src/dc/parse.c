@@ -16,37 +16,37 @@
  *
  * *****************************************************************************
  *
- * The main procedure of dc.
+ * The parser for dc.
  *
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <assert.h>
 
 #include <status.h>
-#include <vector.h>
-#include <dc.h>
+#include <parse.h>
+#include <program.h>
 #include <vm.h>
-#include <args.h>
 
-BcStatus dc_main(int argc, char *argv[]) {
+BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
+{
+	// TODO: Fill this out.
+	return BC_STATUS_SUCCESS;
+}
 
+BcStatus dc_parse_parse(BcParse *p) {
+
+	// TODO: Fill this out.
 	BcStatus s;
-	BcVec files, exprs;
-	unsigned int flags = BC_FLAG_Q;
 
-	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
-	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
+	assert(p);
 
-	if((s = bc_args(argc, argv, dc_help, &flags, &exprs, &files))) goto err;
+	if (p->lex.t.t == BC_LEX_EOF) s = BC_STATUS_LEX_EOF;
 
-	s = bc_vm_exec(flags, &exprs, &files, dc_parse_init, dc_parse_expr);
+	if (s || bcg.signe) s = bc_parse_reset(p, s);
 
-err:
-	bc_vec_free(&exprs);
-exprs_err:
-	bc_vec_free(&files);
 	return s;
+}
+
+BcStatus dc_parse_init(BcParse *p, BcProgram *prog) {
+	return bc_parse_create(p, prog, dc_parse_parse, dc_lex_next);
 }

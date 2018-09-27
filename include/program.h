@@ -26,6 +26,7 @@
 #include <stddef.h>
 
 #include <status.h>
+#include <parse.h>
 #include <lang.h>
 #include <num.h>
 
@@ -65,6 +66,11 @@ typedef struct BcProgram {
 
 	size_t nchars;
 
+	// ** Exclude start. **
+	BcParseInit parse_init;
+	BcParseExpr parse_expr;
+	// ** Exclude end. **
+
 } BcProgram;
 
 #define BC_PROG_CHECK_STACK(p) ((p)->stack.len > 1)
@@ -76,7 +82,8 @@ typedef struct BcProgram {
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **
-BcStatus bc_program_init(BcProgram *p, size_t line_len);
+BcStatus bc_program_init(BcProgram *p, size_t line_len,
+                         BcParseInit parse_init, BcParseExpr parse_expr);
 void bc_program_free(BcProgram *program);
 #ifndef NDEBUG
 BcStatus bc_program_print(BcProgram *p);

@@ -153,7 +153,7 @@ void bc_lex_free(BcLex *l);
 void bc_lex_file(BcLex *l, const char *file);
 BcStatus bc_lex_text(BcLex *l, const char *text);
 
-BcStatus bc_lex_comment(BcLex *l);
+BcStatus bc_lex_string(BcLex *l, char end);
 void bc_lex_lineComment(BcLex *l);
 BcStatus bc_lex_number(BcLex *l, char start);
 BcStatus bc_lex_name(BcLex *l);
@@ -161,6 +161,10 @@ BcStatus bc_lex_name(BcLex *l);
 // bc lex code.
 
 BcStatus bc_lex_next(BcLex *l);
+
+// dc lex code.
+
+BcStatus dc_lex_next(BcLex *l);
 
 // ** Exclude end. **
 

@@ -26,29 +26,29 @@
 #include <lex.h>
 #include <vm.h>
 
-BcStatus bc_lex_string(BcLex *l) {
+BcStatus bc_lex_comment(BcLex *l) {
 
-	BcStatus s;
-	const char *buf;
-	size_t len, nls = 0, i = l->idx;
-	char c;
+	size_t i, nls = 0;
+	const char *buf = l->buffer;
+	bool end = false;
 
-	l->t.t = BC_LEX_STRING;
+	l->t.t = BC_LEX_WHITESPACE;
 
-	for (; (c = l->buffer[i]) != '"' && c != '\0'; ++i) nls += (c == '\n');
+	for (i = ++l->idx; !end; i += !end) {
 
-	if (c == '\0') {
-		l->idx = i;
-		return BC_STATUS_LEX_NO_STRING_END;
+		char c;
+
+		for (; (c = buf[i]) != '*' && c != '\0'; ++i) nls += (c == '\n');
+
+		if (c == '\0' || buf[i + 1] == '\0') {
+			l->idx = i;
+			return BC_STATUS_LEX_NO_COMMENT_END;
+		}
+
+		end = buf[i + 1] == '/';
 	}
 
-	len = i - l->idx;
-	if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
-
-	buf = l->buffer + l->idx;
-	if ((s = bc_vec_string(&l->t.v, len, buf))) return s;
-
-	l->idx = i + 1;
+	l->idx = i + 2;
 	l->line += nls;
 
 	return BC_STATUS_SUCCESS;
@@ -105,7 +105,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '"':
 		{
-			s = bc_lex_string(l);
+			s = bc_lex_string(l, '"');
 			break;
 		}
 

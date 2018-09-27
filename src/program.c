@@ -27,8 +27,8 @@
 #include <unistd.h>
 
 #include <io.h>
-#include <program.h>
 #include <parse.h>
+#include <program.h>
 #include <vm.h>
 
 BcStatus bc_program_search(BcProgram *p, BcResult *r, BcVec **ret, bool var) {
@@ -286,11 +286,11 @@ BcStatus bc_program_read(BcProgram *p) {
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) return BC_STATUS_ALLOC_ERR;
 	if ((s = bc_io_getline(&buf, "read> "))) goto io_err;
 
-	if ((s = bc_parse_init(&parse, p))) goto io_err;
+	if ((s = p->parse_init(&parse, p))) goto io_err;
 	bc_lex_file(&parse.lex, bc_program_stdin_name);
 	if ((s = bc_lex_text(&parse.lex, buf.vec))) goto exec_err;
 
-	s = bc_parse_expr(&parse, &func->code, BC_PARSE_NOREAD, bc_parse_next_read);
+	s = p->parse_expr(&parse, &func->code, BC_PARSE_NOREAD, bc_parse_next_read);
 	if (s) return s;
 
 	if (parse.lex.t.t != BC_LEX_NLINE && parse.lex.t.t != BC_LEX_EOF) {
@@ -832,8 +832,9 @@ err:
 	return s;
 }
 
-BcStatus bc_program_init(BcProgram *p, size_t line_len) {
-
+BcStatus bc_program_init(BcProgram *p, size_t line_len,
+                         BcParseInit parse_init, BcParseExpr parse_expr)
+{
 	BcStatus s;
 	size_t idx;
 	char *main_name = NULL, *read_name = NULL;
@@ -848,6 +849,8 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 
 	p->nchars = p->scale = 0;
 	p->line_len = line_len;
+	p->parse_init = parse_init;
+	p->parse_expr = parse_expr;
 
 	if ((s = bc_num_init(&p->ib, BC_NUM_DEF_SIZE))) return s;
 	bc_num_ten(&p->ib);
