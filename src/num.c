@@ -577,7 +577,7 @@ err:
 BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
                        BcNumBinaryOp op, size_t req)
 {
-	BcStatus status;
+	BcStatus s;
 	BcNum num2, *ptr_a, *ptr_b;
 	bool init = false;
 
@@ -603,15 +603,15 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	}
 	else ptr_b = b;
 
-	if (init) status = bc_num_init(c, req);
-	else status = bc_num_expand(c, req);
+	if (init) s = bc_num_init(c, req);
+	else s = bc_num_expand(c, req);
 
-	if (status) goto err;
-	status = op(ptr_a, ptr_b, c, scale);
+	if (s) goto err;
+	s = op(ptr_a, ptr_b, c, scale);
 
 err:
 	if (c == a || c == b) bc_num_free(&num2);
-	return status;
+	return s;
 }
 
 bool bc_num_strValid(const char *val, size_t base) {

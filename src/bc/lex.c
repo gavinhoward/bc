@@ -383,7 +383,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 BcStatus bc_lex_next(BcLex *l) {
 
-	BcStatus status;
+	BcStatus s;
 
 	assert(l);
 
@@ -403,8 +403,8 @@ BcStatus bc_lex_next(BcLex *l) {
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
 	do {
-		status = bc_lex_token(l);
-	} while (!status && l->t.t == BC_LEX_WHITESPACE);
+		s = bc_lex_token(l);
+	} while (!s && l->t.t == BC_LEX_WHITESPACE);
 
-	return status;
+	return s;
 }
