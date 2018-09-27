@@ -30,7 +30,7 @@ const char bc_header[] =
 	"bc 1.0\n"
 	"Copyright (c) 2018 Gavin D. Howard and contributors\n"
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
-	"This is free software with ABSOLUTELY NO WARRANTY.\n\n";
+	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
 const char bc_err_fmt[] = "\n%s error: %s\n\n";
 const char bc_err_line[] = ":%d\n\n";
