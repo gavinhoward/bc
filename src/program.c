@@ -117,13 +117,16 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 		case BC_RESULT_CONSTANT:
 		{
 			char **str = bc_vec_item(&p->consts, r->data.id.idx);
-			size_t base, len = strlen(*str);
+			size_t base_t, len = strlen(*str);
+			BcNum *base;
 
 			if ((s = bc_num_init(&r->data.num, len))) return s;
 
-			base = hex && len == 1 ? BC_NUM_MAX_IBASE : p->ib_t;
+			hex = hex && len == 1;
+			base = hex ? &p->hexb : &p->ib;
+			base_t = hex ? BC_NUM_MAX_IBASE : p->ib_t;
 
-			if ((s = bc_num_parse(&r->data.num, *str, &p->ib, base))) {
+			if ((s = bc_num_parse(&r->data.num, *str, base, base_t))) {
 				bc_num_free(&r->data.num);
 				return s;
 			}
@@ -861,6 +864,10 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len) {
 	bc_num_ten(&p->ob);
 	p->ob_t = 10;
 
+	if ((s = bc_num_init(&p->hexb, BC_NUM_DEF_SIZE))) goto hexb_err;
+	bc_num_ten(&p->hexb);
+	p->hexb.num[0] = 6;
+
 	if ((s = bc_num_init(&p->last, BC_NUM_DEF_SIZE))) goto last_err;
 	bc_num_zero(&p->last);
 
@@ -945,6 +952,8 @@ one_err:
 zero_err:
 	bc_num_free(&p->last);
 last_err:
+	bc_num_free(&p->hexb);
+hexb_err:
 	bc_num_free(&p->ob);
 obase_err:
 	bc_num_free(&p->ib);
@@ -1266,6 +1275,7 @@ void bc_program_free(BcProgram *p) {
 
 	bc_num_free(&p->ib);
 	bc_num_free(&p->ob);
+	bc_num_free(&p->hexb);
 
 	bc_vec_free(&p->fns);
 	bc_veco_free(&p->fn_map);

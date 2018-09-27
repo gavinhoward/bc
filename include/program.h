@@ -40,6 +40,8 @@ typedef struct BcProgram {
 	BcNum ob;
 	size_t ob_t;
 
+	BcNum hexb;
+
 	BcVec results;
 	BcVec stack;
 
