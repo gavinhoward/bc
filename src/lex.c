@@ -93,8 +93,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	if (len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
 
 	bc_vec_npop(&l->t.v, l->t.v.len);
-	if ((s = bc_vec_expand(&l->t.v, len + 1)))
-		return s;
+	if ((s = bc_vec_expand(&l->t.v, len + 1))) return s;
 	if ((s = bc_vec_push(&l->t.v, 1, &start))) return s;
 
 	buf -= 1;
