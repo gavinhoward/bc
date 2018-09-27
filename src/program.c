@@ -512,6 +512,7 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 		cmp = bc_num_cmp(n1, n2);
 
 		switch (inst) {
+
 			case BC_INST_REL_EQ:
 			{
 				cond = cmp == 0;
