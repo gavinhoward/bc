@@ -103,13 +103,7 @@ done
 
 for testfile in $testdir/errors/*.txt; do
 
-	echo "Running file \"$testfile\" through cat..."
-
-	cat "$testfile" | "$bc" "$@" -l 2> "$out" > /dev/null
-
-	checktest "$?" "$testfile" "$out" "$bcbase"
-
-	echo "Running file \"$testfile\" as a file..."
+	echo "Running error file \"$testfile\"..."
 
 	echo "halt" | "$bc" "$@" -l "$testfile" 2> "$out" > /dev/null
 
