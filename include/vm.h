@@ -53,9 +53,6 @@
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
-#define BC_BUF_SIZE (1024)
-#define BC_MAX_LINE (1<<20)
-
 typedef struct BcVm {
 
 	BcParse parse;
@@ -78,8 +75,6 @@ typedef struct BcGlobals {
 
 } BcGlobals;
 // ** Exclude end. **
-
-BcStatus bc_vm_set_sig();
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 BcStatus bc_vm_posix_error(BcStatus s, const char *file,
