@@ -52,8 +52,12 @@ BcStatus dc_lex_string(BcLex *l) {
 				++nls;
 			}
 		}
-		else if (depth) {
-			if ((s = bc_vec_push(&l->t.v, 1, &c))) return s;
+		else {
+			if (depth && (s = bc_vec_push(&l->t.v, 1, &c))) return s;
+			if (c == '\\') {
+				depth -= (l->buffer[i + 1] == '[');
+				depth += (l->buffer[i + 1] == ']');
+			}
 		}
 	}
 
