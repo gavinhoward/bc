@@ -250,10 +250,10 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 	return bc_program_num(p, *r, n, false);
 }
 
-BcStatus bc_program_retire(BcProgram *p, BcResult *res, BcResultType t) {
-	res->type = t;
+BcStatus bc_program_retire(BcProgram *p, BcResult *r, BcResultType t) {
+	r->type = t;
 	bc_vec_pop(&p->results);
-	return bc_vec_push(&p->results, 1, res);
+	return bc_vec_push(&p->results, 1, r);
 }
 
 BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
