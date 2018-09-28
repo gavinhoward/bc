@@ -37,10 +37,12 @@ BcStatus dc_parse_parse(BcParse *p) {
 
 	// TODO: Fill this out.
 	BcStatus s;
+	BcFunc *func = bc_vec_item(&p->prog->fns, p->func);
 
 	assert(p);
 
 	if (p->lex.t.t == BC_LEX_EOF) s = BC_STATUS_LEX_EOF;
+	else s = dc_parse_expr(p, &func->code, 0, bc_parse_next_read);
 
 	if (s || bcg.signe) s = bc_parse_reset(p, s);
 
