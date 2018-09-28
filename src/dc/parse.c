@@ -37,7 +37,7 @@ BcStatus dc_parse_push(BcParse *p, BcVec *code, size_t n, BcInst inst) {
 BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 {
 	BcStatus s;
-	BcLexToken t = p->lex.t.t;
+	BcLexType t = p->lex.t.t;
 	BcInst prev;
 
 	(void) flags;

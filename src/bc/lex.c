@@ -53,7 +53,7 @@ BcStatus bc_lex_string(BcLex *l) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_lex_assign(BcLex *l, BcLexToken with, BcLexToken without) {
+void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 	if (l->buffer[l->idx] == '=') {
 		++l->idx;
 		l->t.t = with;
@@ -101,7 +101,7 @@ BcStatus bc_lex_name(BcLex *l) {
 		unsigned long len = (unsigned long) bc_lex_kws[i].len;
 		if (!strncmp(buf, bc_lex_kws[i].name, len)) {
 
-			l->t.t = BC_LEX_KEY_AUTO + (BcLexToken) i;
+			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
 			if (!bc_lex_kws[i].posix &&
 			    (s = bc_vm_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, l->file,
@@ -229,7 +229,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '(':
 		case ')':
 		{
-			l->t.t = (BcLexToken) (c - '(' + BC_LEX_LPAREN);
+			l->t.t = (BcLexType) (c - '(' + BC_LEX_LPAREN);
 			break;
 		}
 
@@ -331,7 +331,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '[':
 		case ']':
 		{
-			l->t.t = (BcLexToken) (c - '[' + BC_LEX_LBRACKET);
+			l->t.t = (BcLexType) (c - '[' + BC_LEX_LBRACKET);
 			break;
 		}
 
@@ -385,7 +385,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '{':
 		case '}':
 		{
-			l->t.t = (BcLexToken) (c - '{' + BC_LEX_LBRACE);
+			l->t.t = (BcLexType) (c - '{' + BC_LEX_LBRACE);
 			break;
 		}
 

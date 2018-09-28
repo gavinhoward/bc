@@ -30,7 +30,7 @@
 #include <vector.h>
 
 // BC_LEX_OP_NEGATE is not used in lexing; it is only for parsing.
-typedef enum BcLexToken {
+typedef enum BcLexType {
 
 	BC_LEX_OP_INC,
 	BC_LEX_OP_DEC,
@@ -135,7 +135,7 @@ typedef enum BcLexToken {
 	BC_LEX_SCALE_FACTOR,
 #endif // DC_CONFIG
 
-} BcLexToken;
+} BcLexType;
 
 struct BcLex;
 
@@ -151,8 +151,8 @@ typedef struct BcLex {
 	bool newline;
 
 	struct {
-		BcLexToken t;
-		BcLexToken last;
+		BcLexType t;
+		BcLexType last;
 		BcVec v;
 	} t;
 
@@ -176,7 +176,7 @@ extern const BcLexKeyword bc_lex_kws[20];
 
 // ** Exclude start. **
 
-extern const BcLexToken dc_lex_tokens[];
+extern const BcLexType dc_lex_tokens[];
 
 // Common code.
 

@@ -123,7 +123,7 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog,
 	if ((s = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto exit_err;
 	if ((s = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto cond_err;
 	if ((s = bc_vec_push(&p->flags, 1, &flags))) goto push_err;
-	if ((s = bc_vec_init(&p->ops, sizeof(BcLexToken), NULL))) goto push_err;
+	if ((s = bc_vec_init(&p->ops, sizeof(BcLexType), NULL))) goto push_err;
 
 	p->parse = parse;
 	p->prog = prog;
