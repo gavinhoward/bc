@@ -410,8 +410,8 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
 				default:
 				{
-					// Do nothing.
-					err = 0;
+					// Just print the character.
+					err = putchar(c);
 					break;
 				}
 			}
