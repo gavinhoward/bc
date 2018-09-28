@@ -30,7 +30,38 @@
 BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 {
 	// TODO: Fill this out.
-	return BC_STATUS_SUCCESS;
+
+	BcStatus s;
+	BcLexToken t = p->lex.t.t;
+	uint32_t nexprs = 0;
+	BcInst prev;
+
+	(void) flags;
+	(void) next;
+
+	switch (t) {
+
+		case BC_LEX_NUMBER:
+		{
+			if ((s = bc_parse_number(p, code, &prev, &nexprs))) return s;
+			s = bc_lex_next(&p->lex);
+			break;
+		}
+
+		case BC_LEX_KEY_QUIT:
+		{
+			s = BC_STATUS_QUIT;
+			break;
+		}
+
+		default:
+		{
+			s = BC_STATUS_PARSE_BAD_TOKEN;
+			break;
+		}
+	}
+
+	return s;
 }
 
 BcStatus dc_parse_parse(BcParse *p) {

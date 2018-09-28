@@ -89,19 +89,19 @@ BcStatus dc_lex_token(BcLex *l) {
 	switch (c) {
 
 		case '\0':
-		case '\n':
 		{
-			l->newline = true;
-			l->t.t = !c ? BC_LEX_EOF : BC_LEX_NLINE;
+			l->t.t = BC_LEX_EOF;
 			break;
 		}
 
+		case '\n':
 		case '\t':
 		case '\v':
 		case '\f':
 		case '\r':
 		case ' ':
 		{
+			l->newline = c == '\n';
 			bc_lex_whitespace(l);
 			break;
 		}
