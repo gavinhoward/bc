@@ -1128,32 +1128,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 		s = bc_parse_stmt(p, &func->code);
 	}
 
-	if (s || bcg.signe) {
-
-		if (p->func) {
-
-			BcFunc *func = bc_vec_item(&p->prog->fns, p->func);
-
-			func->nparams = 0;
-			bc_vec_npop(&func->code, func->code.len);
-			bc_vec_npop(&func->autos, func->autos.len);
-			bc_vec_npop(&func->labels, func->labels.len);
-
-			p->func = 0;
-		}
-
-		p->lex.idx = p->lex.len;
-		p->lex.t.t = BC_LEX_EOF;
-		p->auto_part = false;
-		p->nbraces = 0;
-
-		bc_vec_npop(&p->flags, p->flags.len - 1);
-		bc_vec_npop(&p->exits, p->exits.len);
-		bc_vec_npop(&p->conds, p->conds.len);
-		bc_vec_npop(&p->ops, p->ops.len);
-
-		s = bc_program_reset(p->prog, s);
-	}
+	if (s || bcg.signe) s = bc_parse_reset(p, s);
 
 	return s;
 }
