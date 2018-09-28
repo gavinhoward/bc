@@ -231,7 +231,7 @@ BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r, BcResultType t) {
 	return bc_vec_push(&p->results, 1, r);
 }
 
-BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
+BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 {
 	assert(p && r && n && BC_PROG_CHECK_RESULTS(p, 1));
 
@@ -246,7 +246,7 @@ BcStatus bc_program_unaryOpPrep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 	return bc_program_num(p, *r, n, false);
 }
 
-BcStatus bc_program_unaryOpRetire(BcProgram *p, BcResult *res, BcResultType t) {
+BcStatus bc_program_retire(BcProgram *p, BcResult *res, BcResultType t) {
 	res->type = t;
 	bc_vec_pop(&p->results);
 	return bc_vec_push(&p->results, 1, res);
@@ -444,7 +444,7 @@ BcStatus bc_program_push(BcProgram *p, char *code, size_t *bgn, uint8_t inst) {
 		BcNum *num;
 		unsigned long temp;
 
-		if ((s = bc_program_unaryOpPrep(p, &operand, &num, false))) goto err;
+		if ((s = bc_program_prep(p, &operand, &num, false))) goto err;
 		if ((s = bc_num_ulong(num, &temp))) goto err;
 
 		if (temp > (unsigned long) BC_MAX_DIM) {
@@ -453,7 +453,7 @@ BcStatus bc_program_push(BcProgram *p, char *code, size_t *bgn, uint8_t inst) {
 		}
 
 		res.data.id.idx = (size_t) temp;
-		s = bc_program_unaryOpRetire(p, &res, BC_RESULT_ARRAY_ELEM);
+		s = bc_program_retire(p, &res, BC_RESULT_ARRAY_ELEM);
 	}
 
 err:
@@ -467,13 +467,13 @@ BcStatus bc_program_negate(BcProgram *p) {
 	BcResult res, *ptr;
 	BcNum *num;
 
-	if ((s = bc_program_unaryOpPrep(p, &ptr, &num, false))) return s;
+	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
 	if ((s = bc_num_init(&res.data.num, num->len))) return s;
 	if ((s = bc_num_copy(&res.data.num, num))) goto err;
 
 	res.data.num.neg = !res.data.num.neg;
 
-	if ((s = bc_program_unaryOpRetire(p, &res, BC_RESULT_TEMP))) goto err;
+	if ((s = bc_program_retire(p, &res, BC_RESULT_TEMP))) goto err;
 
 	return s;
 
@@ -751,8 +751,7 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 	BcNum *num;
 	BcResult result;
 
-	s = bc_program_unaryOpPrep(p, &opnd, &num, inst == BC_INST_LENGTH);
-	if (s) return s;
+	if ((s = bc_program_prep(p, &opnd, &num, inst == BC_INST_LENGTH))) return s;
 	if ((s = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE))) return s;
 
 	if (inst == BC_INST_SQRT)
@@ -768,8 +767,7 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 		s = bc_num_ulong2num(&result.data.num, f(num));
 	}
 
-	if (s || (s = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP)))
-		goto err;
+	if (s || (s = bc_program_retire(p, &result, BC_RESULT_TEMP))) goto err;
 
 err:
 	if (s) bc_num_free(&result.data.num);
@@ -801,7 +799,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 	BcNum *num;
 	uint8_t inst2 = inst;
 
-	if ((s = bc_program_unaryOpPrep(p, &ptr, &num, false))) return s;
+	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
 
 	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
 		copy.type = BC_RESULT_TEMP;
@@ -1030,7 +1028,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	const char **string, *str;
 	size_t idx, len, *addr;
-	BcResult result;
+	BcResult res;
 	BcResult *ptr;
 	BcNum *num;
 	bool cond = false;
@@ -1065,8 +1063,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_JUMP_ZERO:
 			{
-				if ((s = bc_program_unaryOpPrep(p, &ptr, &num, false)))
-					return s;
+				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
 				cond = !bc_num_cmp(num, &p->zero);
 				bc_vec_pop(&p->results);
 			}
@@ -1091,8 +1088,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_LAST:
 			case BC_INST_OBASE:
 			{
-				result.type = inst - BC_INST_IBASE + BC_RESULT_IBASE;
-				s = bc_vec_push(&p->results, 1, &result);
+				res.type = inst - BC_INST_IBASE + BC_RESULT_IBASE;
+				s = bc_vec_push(&p->results, 1, &res);
 				break;
 			}
 
@@ -1112,9 +1109,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_NUM:
 			{
-				result.type = BC_RESULT_CONSTANT;
-				result.data.id.idx = bc_program_index(code, &ip->idx);
-				s = bc_vec_push(&p->results, 1, &result);
+				res.type = BC_RESULT_CONSTANT;
+				res.data.id.idx = bc_program_index(code, &ip->idx);
+				s = bc_vec_push(&p->results, 1, &res);
 				break;
 			}
 
@@ -1142,8 +1139,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_PRINT:
 			case BC_INST_PRINT_EXPR:
 			{
-				if ((s = bc_program_unaryOpPrep(p, &ptr, &num, false)))
-					return s;
+				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
 
 				s = bc_num_print(num, &p->ob, p->ob_t, inst == BC_INST_PRINT,
 				                 &p->nchars, p->line_len);
@@ -1205,16 +1201,14 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_BOOL_NOT:
 			{
-				if ((s = bc_program_unaryOpPrep(p, &ptr, &num, false)))
-					return s;
-				s = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE);
-				if (s) return s;
+				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
+				if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 
-				if (!bc_num_cmp(num, &p->zero)) bc_num_one(&result.data.num);
-				else bc_num_zero(&result.data.num);
+				if (!bc_num_cmp(num, &p->zero)) bc_num_one(&res.data.num);
+				else bc_num_zero(&res.data.num);
 
-				s = bc_program_unaryOpRetire(p, &result, BC_RESULT_TEMP);
-				if (s) bc_num_free(&result.data.num);
+				s = bc_program_retire(p, &res, BC_RESULT_TEMP);
+				if (s) bc_num_free(&res.data.num);
 
 				break;
 			}
