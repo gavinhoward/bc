@@ -875,7 +875,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	s = bc_veco_init(&p->fn_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 	if (s) goto func_map_err;
 
-	if (!(main_name = strdup(bc_lang_func_main))) {
+	if (!(main_name = strdup(bc_func_main))) {
 		s = BC_STATUS_ALLOC_ERR;
 		goto name_err;
 	}
@@ -884,7 +884,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	if (s || idx != BC_PROG_MAIN) goto name_err;
 	main_name = NULL;
 
-	if (!(read_name = strdup(bc_lang_func_read))) {
+	if (!(read_name = strdup(bc_func_read))) {
 		s = BC_STATUS_ALLOC_ERR;
 		goto name_err;
 	}
@@ -1340,7 +1340,7 @@ BcStatus bc_program_print(BcProgram *p) {
 
 			uint8_t inst = code[ip.idx++];
 
-			if (putchar(bc_lang_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
+			if (putchar(bc_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
 
 			if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
 			    inst == BC_INST_ARRAY)

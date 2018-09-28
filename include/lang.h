@@ -186,8 +186,8 @@ void bc_auto_free(void *auto1);
 
 #define bc_array_free bc_vec_free
 
-extern const char bc_lang_inst_chars[];
-extern const char bc_lang_func_main[];
-extern const char bc_lang_func_read[];
+extern const char bc_inst_chars[];
+extern const char bc_func_main[];
+extern const char bc_func_read[];
 
 #endif // BC_DATA_H
