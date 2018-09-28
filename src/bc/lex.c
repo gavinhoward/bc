@@ -42,9 +42,7 @@ BcStatus bc_lex_string(BcLex *l) {
 		return BC_STATUS_LEX_NO_STRING_END;
 	}
 
-	len = i - l->idx;
-	if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
-
+	if ((len = i - l->idx) > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
 	if ((s = bc_vec_string(&l->t.v, len, l->buffer + l->idx))) return s;
 
 	l->idx = i + 1;

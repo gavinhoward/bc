@@ -29,7 +29,7 @@
 BcStatus dc_lex_string(BcLex *l) {
 
 	BcStatus s;
-	size_t len, depth = 1, nls = 0, idx, i = l->idx;
+	size_t depth = 1, nls = 0, idx, i = l->idx;
 	char c;
 
 	l->t.t = BC_LEX_STRING;
@@ -66,10 +66,8 @@ BcStatus dc_lex_string(BcLex *l) {
 		return BC_STATUS_LEX_NO_STRING_END;
 	}
 
-	len = i - idx;
-	if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
-
 	if ((s = bc_vec_pushByte(&l->t.v, '\0'))) return s;
+	if (i - idx > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
 
 	l->idx = i + 1;
 	l->line += nls;
