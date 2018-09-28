@@ -419,7 +419,8 @@ BcStatus bc_parse_print(BcParse *p, BcVec *code) {
 		else {
 			if ((s = bc_parse_expr(p, code, 0, bc_parse_next_print)))
 				return s;
-			s = bc_vec_pushByte(code, BC_INST_PRINT_EXPR);
+			if ((s = bc_vec_pushByte(code, BC_INST_PRINT_EXPR))) return s;
+			s = bc_vec_pushByte(code, BC_INST_POP);
 		}
 
 		if (s) return s;
@@ -1384,7 +1385,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 
 	if (flags & BC_PARSE_PRINT) {
 		if (paren_first || !assign) s = bc_vec_pushByte(code, BC_INST_PRINT);
-		else s = bc_vec_pushByte(code, BC_INST_POP);
+		s = bc_vec_pushByte(code, BC_INST_POP);
 	}
 
 	return s;

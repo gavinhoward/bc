@@ -1150,8 +1150,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				if (s) return s;
 				if ((s = bc_num_copy(&p->last, num))) return s;
 
-				bc_vec_pop(&p->results);
-
 				break;
 			}
 
