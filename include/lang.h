@@ -95,6 +95,10 @@ typedef enum BcInst {
 
 	BC_INST_HALT,
 
+#ifdef DC_CONFIG
+	BC_INST_INVALID = -1,
+#endif // DC_CONFIG
+
 } BcInst;
 
 typedef struct BcEntry {
@@ -187,6 +191,7 @@ void bc_auto_free(void *auto1);
 #define bc_array_free bc_vec_free
 
 extern const char bc_inst_chars[];
+extern const uint8_t bc_inst_operands[];
 extern const char bc_func_main[];
 extern const char bc_func_read[];
 

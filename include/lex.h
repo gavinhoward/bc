@@ -28,6 +28,7 @@
 
 #include <status.h>
 #include <vector.h>
+#include <lang.h>
 
 // BC_LEX_OP_NEGATE is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
@@ -177,6 +178,7 @@ extern const BcLexKeyword bc_lex_kws[20];
 // ** Exclude start. **
 
 extern const BcLexType dc_lex_tokens[];
+extern const BcInst dc_parse_insts[];
 
 // Common code.
 
