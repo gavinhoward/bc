@@ -165,7 +165,7 @@ BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 
 #define BC_PARSE_STREND ((char) '#')
 
-extern const bool bc_parse_token_exprs[];
+extern const bool bc_parse_exprs[];
 extern const BcParseNext bc_parse_next_expr;
 extern const BcParseNext bc_parse_next_param;
 extern const BcParseNext bc_parse_next_print;

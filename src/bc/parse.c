@@ -1139,8 +1139,8 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 	paren_expr = rprn = done = get_token = assign = false;
 	bin_last = true;
 
-	while (!bcg.signe && !s && !done && bc_parse_token_exprs[t]) {
-
+	for (; !bcg.signe && !s && !done && bc_parse_exprs[t]; t = p->lex.t.t)
+	{
 		switch (t) {
 
 			case BC_LEX_OP_INC:
@@ -1327,7 +1327,6 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 		}
 
 		if (!s && get_token) s = bc_lex_next(&p->lex);
-		t = p->lex.t.t;
 	}
 
 	if (s) return s;

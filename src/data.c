@@ -170,7 +170,7 @@ const BcLexKeyword bc_lex_kws[20] = {
 
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.
-const bool bc_parse_token_exprs[] = {
+const bool bc_parse_exprs[] = {
 	true, true, true, true, true, true, true, true, true, true, true, true, true,
 	true, true, true, true, true, true, true, true, true, true, true, true, false,
 	false, true, true, false, false, false, false, false, false, false, true,
