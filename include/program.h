@@ -32,7 +32,7 @@
 
 typedef struct BcProgram {
 
-	size_t line_len;
+	size_t len;
 
 	size_t scale;
 

@@ -843,7 +843,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	assert((unsigned long) sysconf(_SC_BC_STRING_MAX) <= BC_MAX_STRING);
 
 	p->nchars = p->scale = 0;
-	p->line_len = line_len;
+	p->len = line_len;
 	p->parse_init = parse_init;
 	p->parse_expr = parse_expr;
 
@@ -1135,14 +1135,17 @@ BcStatus bc_program_exec(BcProgram *p) {
 			}
 
 			case BC_INST_PRINT:
-			case BC_INST_PRINT_EXPR:
+			case BC_INST_PRINT_POP:
 			{
+				bool nl = inst == BC_INST_PRINT;
+
 				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
 
-				s = bc_num_print(num, &p->ob, p->ob_t, inst == BC_INST_PRINT,
-				                 &p->nchars, p->line_len);
+				s = bc_num_print(num, &p->ob, p->ob_t, nl, &p->nchars, p->len);
 				if (s) return s;
 				if ((s = bc_num_copy(&p->last, num))) return s;
+
+				if (!nl) bc_vec_pop(&p->results);
 
 				break;
 			}
