@@ -1135,7 +1135,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 
 // ** Exclude start. **
 BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {
-	return bc_parse_create(p, prog, bc_parse_parse, bc_lex_next);
+	return bc_parse_create(p, prog, bc_parse_parse, bc_lex_token);
 }
 // ** Exclude end. **
 

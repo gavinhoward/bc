@@ -26,6 +26,32 @@
 #include <lex.h>
 #include <vm.h>
 
+BcStatus bc_lex_string(BcLex *l) {
+
+	BcStatus s;
+	size_t len, nls = 0, i = l->idx;
+	char c;
+
+	l->t.t = BC_LEX_STRING;
+
+	for (; (c = l->buffer[i]) && c != '"'; ++i) nls += (c == '\n');
+
+	if (c == '\0') {
+		l->idx = i;
+		return BC_STATUS_LEX_NO_STRING_END;
+	}
+
+	len = i - l->idx;
+	if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
+
+	if ((s = bc_vec_string(&l->t.v, len, l->buffer + l->idx))) return s;
+
+	l->idx = i + 1;
+	l->line += nls;
+
+	return BC_STATUS_SUCCESS;
+}
+
 void bc_lex_assign(BcLex *l, BcLexToken with, BcLexToken without) {
 	if (l->buffer[l->idx] == '=') {
 		++l->idx;
@@ -62,6 +88,57 @@ BcStatus bc_lex_comment(BcLex *l) {
 	return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_lex_name(BcLex *l) {
+
+	BcStatus s;
+	size_t i;
+	char c;
+	const char *buf = l->buffer + l->idx - 1;
+
+	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
+
+		unsigned long len = (unsigned long) bc_lex_kws[i].len;
+		if (!strncmp(buf, bc_lex_kws[i].name, len)) {
+
+			l->t.t = BC_LEX_KEY_AUTO + (BcLexToken) i;
+
+			if (!bc_lex_kws[i].posix &&
+			    (s = bc_vm_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, l->file,
+			                           l->line, bc_lex_kws[i].name)))
+			{
+				return s;
+			}
+
+			// We minus 1 because the index has already been incremented.
+			l->idx += len - 1;
+
+			return BC_STATUS_SUCCESS;
+		}
+	}
+
+	l->t.t = BC_LEX_NAME;
+
+	i = 0;
+	c = buf[i];
+
+	while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_')
+			c = buf[++i];
+
+	if (i > 1 && (s = bc_vm_posix_error(BC_STATUS_POSIX_NAME_LEN,
+	                                    l->file, l->line, buf)))
+	{
+		return s;
+	}
+
+	if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
+	if ((s = bc_vec_string(&l->t.v, i, buf))) return s;
+
+	// Increment the index. We minus 1 because it has already been incremented.
+	l->idx += i - 1;
+
+	return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_lex_token(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -84,8 +161,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '\r':
 		case ' ':
 		{
-			l->t.t = BC_LEX_WHITESPACE;
-			for (; (c = l->buffer[l->idx]) != '\n' && isspace(c); ++l->idx);
+			bc_lex_whitespace(l);
 			break;
 		}
 
@@ -105,7 +181,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '"':
 		{
-			s = bc_lex_string(l, '"');
+			s = bc_lex_string(l);
 			break;
 		}
 
@@ -341,34 +417,6 @@ BcStatus bc_lex_token(BcLex *l) {
 			break;
 		}
 	}
-
-	return s;
-}
-
-BcStatus bc_lex_next(BcLex *l) {
-
-	BcStatus s;
-
-	assert(l);
-
-	if (l->t.t == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
-
-	if (l->idx == l->len) {
-		l->newline = true;
-		l->t.t = BC_LEX_EOF;
-		return BC_STATUS_SUCCESS;
-	}
-
-	if (l->newline) {
-		++l->line;
-		l->newline = false;
-	}
-
-	// Loop until failure or we don't have whitespace. This
-	// is so the parser doesn't get inundated with whitespace.
-	do {
-		s = bc_lex_token(l);
-	} while (!s && l->t.t == BC_LEX_WHITESPACE);
 
 	return s;
 }

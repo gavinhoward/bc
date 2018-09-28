@@ -48,5 +48,5 @@ BcStatus dc_parse_parse(BcParse *p) {
 }
 
 BcStatus dc_parse_init(BcParse *p, BcProgram *prog) {
-	return bc_parse_create(p, prog, dc_parse_parse, dc_lex_next);
+	return bc_parse_create(p, prog, dc_parse_parse, dc_lex_token);
 }
