@@ -29,6 +29,7 @@
 #include <status.h>
 #include <vector.h>
 #include <lex.h>
+#include <lang.h>
 
 #define BC_PARSE_POSIX_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
@@ -142,11 +143,13 @@ typedef struct BcParse {
 
 // Common code.
 
-BcStatus bc_parse_create(BcParse *p, struct BcProgram *prog, BcParseParse parse, BcLexNext next);
+BcStatus bc_parse_create(BcParse *p, struct BcProgram *prog,
+                         BcParseParse parse, BcLexNext next);
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 BcStatus bc_parse_pushName(BcVec *code, char *name);
 BcStatus bc_parse_pushIndex(BcVec *code, size_t idx);
+BcStatus bc_parse_number(BcParse *p, BcVec* code, BcInst *prev, uint32_t *nexs);
 
 // bc parse code.
 

@@ -1267,25 +1267,11 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 
 			case BC_LEX_NUMBER:
 			{
-				char *num;
-				size_t idx = p->prog->consts.len;
-
 				if (BC_PARSE_LEAF(prev, rprn)) return BC_STATUS_PARSE_BAD_EXP;
 
-				if (!(num = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
-
-				if ((s = bc_vec_push(&p->prog->consts, 1, &num))) {
-					free(num);
-					return s;
-				}
-
-				if ((s = bc_vec_pushByte(code, BC_INST_NUM))) return s;
-				if ((s = bc_parse_pushIndex(code, idx))) return s;
-
+				s = bc_parse_number(p, code, &prev, &nexprs);
 				paren_expr = get_token = true;
 				rprn = bin_last = false;
-				++nexprs;
-				prev = BC_INST_NUM;
 
 				break;
 			}

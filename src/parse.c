@@ -61,6 +61,28 @@ BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
 	return s;
 }
 
+BcStatus bc_parse_number(BcParse *p, BcVec *code, BcInst *prev, uint32_t *nexs)
+{
+	BcStatus s;
+	char *num;
+	size_t idx = p->prog->consts.len;
+
+	if (!(num = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
+
+	if ((s = bc_vec_push(&p->prog->consts, 1, &num))) {
+		free(num);
+		return s;
+	}
+
+	if ((s = bc_vec_pushByte(code, BC_INST_NUM))) return s;
+	if ((s = bc_parse_pushIndex(code, idx))) return s;
+
+	++(*nexs);
+	(*prev) = BC_INST_NUM;
+
+	return s;
+}
+
 BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
 	if (p->func) {
