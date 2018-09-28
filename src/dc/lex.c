@@ -78,12 +78,8 @@ BcStatus dc_lex_token(BcLex *l) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	char c = l->buffer[l->idx++], c2;
 
-	if (c >= '%' && (c < '0' || c > '9') && (c < 'A' || c > 'F') &&
-	    c != '.' && c != '[')
-	{
-		l->t.t = dc_lex_tokens[(uint32_t) (c - '%')];
-		return (l->t.t == BC_LEX_INVALID) * BC_STATUS_LEX_BAD_CHAR;
-	}
+	if (c >= '%' && (l->t.t = dc_lex_tokens[(c - '%')]) != BC_LEX_INVALID)
+		return s;
 
 	// This is the workhorse of the lexer.
 	switch (c) {
