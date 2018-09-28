@@ -8,6 +8,7 @@ power
 sqrt
 vars
 boolean
+strings
 parse
 print
 exponent

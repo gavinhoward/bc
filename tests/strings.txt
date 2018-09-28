@@ -1,0 +1,10 @@
+"string"
+"another string"
+"yet
+another
+string"
+"noescapes\n"
+"newline
+"
+print "string"
+print "newline\n"
