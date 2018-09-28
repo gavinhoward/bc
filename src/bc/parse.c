@@ -93,14 +93,10 @@ BcStatus bc_parse_params(BcParse *p, BcVec *code, uint8_t flags) {
 	for (nparams = 0; p->lex.t.t != BC_LEX_RPAREN; ++nparams) {
 
 		flags = (flags & ~BC_PARSE_PRINT) | BC_PARSE_ARRAY;
-		s = bc_parse_expr(p, code, flags, bc_parse_next_param);
-		if (s) return s;
+		if ((s = bc_parse_expr(p, code, flags, bc_parse_next_param))) return s;
 
-		if (p->lex.t.t == BC_LEX_COMMA) {
-			comma = true;
-			if ((s = bc_lex_next(&p->lex))) return s;
-		}
-		else comma = false;
+		comma = p->lex.t.t == BC_LEX_COMMA;
+		if (comma && (s = bc_lex_next(&p->lex))) return s;
 	}
 
 	if (comma) return BC_STATUS_PARSE_BAD_TOKEN;
