@@ -266,8 +266,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '.':
 		{
-			c2 = l->buffer[l->idx];
-			if (isdigit(c2)) s = bc_lex_number(l, c);
+			if (isdigit(l->buffer[l->idx])) s = bc_lex_number(l, c);
 			else {
 				s = bc_vm_posix_error(BC_STATUS_POSIX_DOT_LAST,
 				                      l->file, l->line, NULL);
