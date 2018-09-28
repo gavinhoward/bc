@@ -86,7 +86,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
                          BcParseInit parse_init, BcParseExpr parse_expr);
 void bc_program_free(BcProgram *program);
 #ifndef NDEBUG
-BcStatus bc_program_print(BcProgram *p);
+BcStatus bc_program_code(BcProgram *p);
 #endif // NDEBUG
 // ** Exclude end. **
 

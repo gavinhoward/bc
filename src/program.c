@@ -208,6 +208,7 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 	hex = assign && (lt == BC_RESULT_IBASE || lt == BC_RESULT_OBASE);
 
 	if (lt == BC_RESULT_ARRAY || lt == BC_RESULT_ARRAY_AUTO ||
+	    lt == BC_RESULT_STRING || rt == BC_RESULT_STRING ||
 	    rt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY_AUTO)
 	{
 		return BC_STATUS_EXEC_BAD_TYPE;
@@ -233,12 +234,15 @@ BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r, BcResultType t) {
 
 BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 {
+	BcResultType t;
+
 	assert(p && r && n && BC_PROG_CHECK_RESULTS(p, 1));
 
 	*r = bc_vec_item_rev(&p->results, 0);
+	t = (*r)->type;
 
-	if (((*r)->type == BC_RESULT_ARRAY_AUTO ||
-	    (*r)->type == BC_RESULT_ARRAY) && !arr)
+	if (((t == BC_RESULT_ARRAY_AUTO || t == BC_RESULT_ARRAY) && !arr) ||
+	    t == BC_RESULT_STRING)
 	{
 		return BC_STATUS_EXEC_BAD_TYPE;
 	}
@@ -423,6 +427,53 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 	return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_program_print(BcProgram *p, uint8_t inst) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	BcResult *r;
+	size_t idx, len;
+	char *str;
+
+	assert(p && BC_PROG_CHECK_RESULTS(p, 1));
+
+	r = bc_vec_top(&p->results);
+
+	if (r->type == BC_RESULT_STRING) {
+
+		idx = r->data.id.idx;
+		assert(idx < p->strs.len);
+
+		str = *((char**) bc_vec_item(&p->strs, idx));
+
+		if (inst == BC_INST_PRINT_STR) {
+			for (idx = 0, len = strlen(str); idx < len; ++idx) {
+				char c = str[idx];
+				if (putchar(c) == EOF) return BC_STATUS_IO_ERR;
+				if (c == '\n') p->nchars = SIZE_MAX;
+				++p->nchars;
+			}
+		}
+		else s = bc_program_printString(str, &p->nchars);
+	}
+	else {
+
+		BcNum *num;
+		bool nl = inst == BC_INST_PRINT;
+
+		assert(inst != BC_INST_PRINT_STR);
+
+		if ((s = bc_program_prep(p, &r, &num, false))) return s;
+
+		s = bc_num_print(num, &p->ob, p->ob_t, nl, &p->nchars, p->len);
+		if (s) return s;
+		if ((s = bc_num_copy(&p->last, num))) return s;
+
+		if (!nl) bc_vec_pop(&p->results);
+	}
+
+	return s;
+}
+
 BcStatus bc_program_push(BcProgram *p, char *code, size_t *bgn, uint8_t inst) {
 
 	BcStatus s;
@@ -570,8 +621,11 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
 	if ((s = bc_program_binOpPrep(p, &left, &l, &right, &r, assign))) return s;
 
-	if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_TEMP)
+	if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_TEMP ||
+	    left->type == BC_RESULT_STRING)
+	{
 		return BC_STATUS_PARSE_BAD_ASSIGN;
+	}
 
 	if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero))
 		return BC_STATUS_MATH_DIVIDE_BY_ZERO;
@@ -639,8 +693,11 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		arg = bc_vec_item_rev(&p->results, nparams - 1);
 		param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
 
-		if (!auto_ptr->var != (arg->type == BC_RESULT_ARRAY))
+		if (!auto_ptr->var != (arg->type == BC_RESULT_ARRAY) ||
+		    arg->type == BC_RESULT_STRING)
+		{
 			return BC_STATUS_EXEC_BAD_TYPE;
+		}
 
 		if (auto_ptr->var) {
 
@@ -1024,8 +1081,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 BcStatus bc_program_exec(BcProgram *p) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	const char **string, *str;
-	size_t idx, len, *addr;
+	size_t idx, *addr;
 	BcResult res;
 	BcResult *ptr;
 	BcNum *num;
@@ -1136,45 +1192,17 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_PRINT:
 			case BC_INST_PRINT_POP:
+			case BC_INST_PRINT_STR:
 			{
-				bool nl = inst == BC_INST_PRINT;
-
-				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
-
-				s = bc_num_print(num, &p->ob, p->ob_t, nl, &p->nchars, p->len);
-				if (s) return s;
-				if ((s = bc_num_copy(&p->last, num))) return s;
-
-				if (!nl) bc_vec_pop(&p->results);
-
+				s = bc_program_print(p, inst);
 				break;
 			}
 
 			case BC_INST_STR:
 			{
-				idx = bc_program_index(code, &ip->idx);
-				assert(idx < p->strs.len);
-				string = bc_vec_item(&p->strs, idx);
-
-				str = *string;
-				len = strlen(str);
-
-				for (idx = 0; idx < len; ++idx) {
-					char c = str[idx];
-					if (putchar(c) == EOF) return BC_STATUS_IO_ERR;
-					if (c == '\n') p->nchars = SIZE_MAX;
-					++p->nchars;
-				}
-
-				break;
-			}
-
-			case BC_INST_PRINT_STR:
-			{
-				idx = bc_program_index(code, &ip->idx);
-				assert(idx < p->strs.len);
-				string = bc_vec_item(&p->strs, idx);
-				s = bc_program_printString(*string, &p->nchars);
+				res.type = BC_RESULT_STRING;
+				res.data.id.idx = bc_program_index(code, &ip->idx);
+				s = bc_vec_push(&p->results, 1, &res);
 				break;
 			}
 
@@ -1317,7 +1345,7 @@ BcStatus bc_program_printName(char *code, size_t *start) {
 	return s;
 }
 
-BcStatus bc_program_print(BcProgram *p) {
+BcStatus bc_program_code(BcProgram *p) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcFunc *f;
