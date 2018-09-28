@@ -45,9 +45,7 @@ BcStatus bc_parse_operator(BcParse *p, BcVec *code, BcVec *ops, BcLexToken t,
 	       ((lp = bc_parse_ops[top].prec) < rp || (lp == rp && rleft)))
 	{
 		if ((s = bc_vec_pushByte(code, BC_PARSE_TOKEN_TO_INST(top)))) return s;
-
 		bc_vec_pop(ops);
-
 		*num_exprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEG;
 	}
 
