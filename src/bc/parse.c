@@ -44,8 +44,7 @@ BcStatus bc_parse_operator(BcParse *p, BcVec *code, BcVec *ops, BcLexToken t,
 	       (top = *((BcLexToken*) bc_vec_top(ops))) != BC_LEX_LPAREN &&
 	       ((lp = bc_parse_ops[top].prec) < rp || (lp == rp && rleft)))
 	{
-		s = bc_vec_pushByte(code, (char) BC_PARSE_TOKEN_TO_INST(top));
-		if (s) return s;
+		if ((s = bc_vec_pushByte(code, BC_PARSE_TOKEN_TO_INST(top)))) return s;
 
 		bc_vec_pop(ops);
 
@@ -1335,9 +1334,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 			}
 		}
 
-		if (s) return s;
-		if (get_token) s = bc_lex_next(&p->lex);
-
+		if (!s && get_token) s = bc_lex_next(&p->lex);
 		t = p->lex.t.t;
 	}
 
