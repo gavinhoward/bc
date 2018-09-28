@@ -20,9 +20,152 @@
  *
  */
 
+#include <ctype.h>
+
 #include <status.h>
 #include <lex.h>
+#include <vm.h>
 
-BcStatus dc_lex_next(BcLex *l) {
+BcStatus dc_lex_string(BcLex *l) {
+
+	BcStatus s;
+	size_t len, depth = 1, nls = 0, idx, i = l->idx;
+	char c;
+
+	l->t.t = BC_LEX_STRING;
+
+	bc_vec_npop(&l->t.v, l->t.v.len);
+
+	for (idx = i; (c = l->buffer[i]) && depth; ++i) {
+
+		depth += (c == '[');
+		depth -= (c == ']');
+		nls += (c == '\n');
+
+		if (c == '#') {
+
+			bc_lex_lineComment(l);
+
+			// We increment by 1 to skip the newline.
+			if (l->buffer[l->idx]) {
+				i = l->idx + 1;
+				++nls;
+			}
+		}
+		else if (depth) {
+			if ((s = bc_vec_push(&l->t.v, 1, &c))) return s;
+		}
+	}
+
+	if (c == '\0') {
+		l->idx = i;
+		return BC_STATUS_LEX_NO_STRING_END;
+	}
+
+	len = i - idx;
+	if (len > (unsigned long) BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
+
+	if ((s = bc_vec_pushByte(&l->t.v, '\0'))) return s;
+
+	l->idx = i + 1;
+	l->line += nls;
+
 	return BC_STATUS_SUCCESS;
+}
+
+BcStatus dc_lex_token(BcLex *l) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	char c = l->buffer[l->idx++], c2;
+
+	if (c >= '%' && (c < '0' || c > '9') && (c < 'A' || c > 'F') &&
+	    c != '.' && c != '[')
+	{
+		l->t.t = dc_lex_tokens[(uint32_t) (c - '%')];
+		return (l->t.t == BC_LEX_INVALID) * BC_STATUS_LEX_BAD_CHAR;
+	}
+
+	// This is the workhorse of the lexer.
+	switch (c) {
+
+		case '\0':
+		case '\n':
+		{
+			l->newline = true;
+			l->t.t = !c ? BC_LEX_EOF : BC_LEX_NLINE;
+			break;
+		}
+
+		case '\t':
+		case '\v':
+		case '\f':
+		case '\r':
+		case ' ':
+		{
+			bc_lex_whitespace(l);
+			break;
+		}
+
+		case '!':
+		{
+			c2 = l->buffer[l->idx];
+
+			if (c2 == '=') l->t.t = BC_LEX_OP_REL_NE;
+			else if (c2 == '<') l->t.t = BC_LEX_OP_REL_GE;
+			else if (c2 == '>') l->t.t = BC_LEX_OP_REL_LE;
+			else return BC_STATUS_LEX_BAD_CHAR;
+
+			++l->idx;
+			break;
+		}
+
+		case '#':
+		{
+			bc_lex_lineComment(l);
+			break;
+		}
+
+		case '.':
+		{
+			if (isdigit(l->buffer[l->idx])) s = bc_lex_number(l, c);
+			else s = BC_STATUS_LEX_BAD_CHAR;
+			break;
+		}
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+		{
+			s = bc_lex_number(l, c);
+			break;
+		}
+
+		case '[':
+		{
+			s = dc_lex_string(l);
+			break;
+		}
+
+		default:
+		{
+			l->t.t = BC_LEX_INVALID;
+			s = BC_STATUS_LEX_BAD_CHAR;
+			break;
+		}
+	}
+
+	return s;
 }

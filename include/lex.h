@@ -106,6 +106,35 @@ typedef enum BcLexToken {
 	BC_LEX_EOF,
 	BC_LEX_INVALID,
 
+#ifdef DC_CONFIG
+	BC_LEX_OP_MODEXP,
+	BC_LEX_OP_DIVMOD,
+
+	BC_LEX_REL_EQ_ZERO,
+
+	BC_LEX_COLON,
+	BC_LEX_ASCIIFY,
+	BC_LEX_EXECUTE,
+	BC_LEX_PRINT_STACK,
+	BC_LEX_CLEAR_STACK,
+	BC_LEX_STACK_LEVEL,
+	BC_LEX_DUPLICATE,
+	BC_LEX_SWAP,
+	BC_LEX_POP,
+
+	BC_LEX_LOAD,
+	BC_LEX_LOAD_VAR,
+	BC_LEX_STORE,
+	BC_LEX_STORE_VAR,
+	BC_LEX_STORE_IBASE,
+	BC_LEX_STORE_OBASE,
+	BC_LEX_STORE_SCALE,
+	BC_LEX_PRINT_NEWLINE,
+	BC_LEX_PRINT_STREAM,
+	BC_LEX_NQUIT,
+	BC_LEX_SCALE_FACTOR,
+#endif // DC_CONFIG
+
 } BcLexToken;
 
 struct BcLex;
@@ -145,6 +174,8 @@ typedef struct BcLexKeyword {
 extern const BcLexKeyword bc_lex_kws[20];
 
 // ** Exclude start. **
+
+extern const BcLexToken dc_lex_tokens[];
 
 // Common code.
 
