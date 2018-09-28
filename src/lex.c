@@ -139,16 +139,12 @@ BcStatus bc_lex_next(BcLex *l) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	if (l->newline) {
-		++l->line;
-		l->newline = false;
-	}
+	l->line += l->newline;
+	l->newline = false;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
-	do {
-		s = l->next(l);
-	} while (!s && l->t.t == BC_LEX_WHITESPACE);
+	while (!(s = l->next(l)) && l->t.t == BC_LEX_WHITESPACE);
 
 	return s;
 }
