@@ -159,6 +159,14 @@ BcStatus dc_lex_token(BcLex *l) {
 			break;
 		}
 
+		case '\\':
+		{
+			if ((c2 = l->buffer[l->idx]) == '[') l->t.t = BC_LEX_ESC_LBRACKET;
+			else if (c2 == ']') l->t.t = BC_LEX_ESC_RBRACKET;
+			else s = BC_STATUS_LEX_BAD_CHAR;
+			break;
+		}
+
 		default:
 		{
 			l->t.t = BC_LEX_INVALID;

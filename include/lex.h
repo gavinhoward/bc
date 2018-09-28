@@ -134,6 +134,9 @@ typedef enum BcLexType {
 	BC_LEX_PRINT_STREAM,
 	BC_LEX_NQUIT,
 	BC_LEX_SCALE_FACTOR,
+
+	BC_LEX_ESC_LBRACKET,
+	BC_LEX_ESC_RBRACKET,
 #endif // DC_CONFIG
 
 } BcLexType;
