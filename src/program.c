@@ -1327,20 +1327,58 @@ BcStatus bc_program_printIndex(char *code, size_t *bgn) {
 	return printf(" (%lu) ", val) < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_program_printName(char *code, size_t *start) {
+BcStatus bc_program_printName(char *code, size_t *bgn) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
-	char byte = (char) code[(*start)++];
+	char byte = (char) code[(*bgn)++];
 
-	if (printf(" (\"") < 0) s = BC_STATUS_IO_ERR;
+	if (printf(" (") < 0) return BC_STATUS_IO_ERR;
 
-	for (; byte && byte != BC_PARSE_STREND; byte = (char) code[(*start)++]) {
+	for (; byte && byte != BC_PARSE_STREND; byte = (char) code[(*bgn)++]) {
 		if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
 	}
 
 	assert(byte);
 
-	if (printf("\") ") < 0) s = BC_STATUS_IO_ERR;
+	if (printf(") ") < 0) return BC_STATUS_IO_ERR;
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
+
+	size_t idx = bc_program_index(code, bgn);
+	char *s;
+
+	assert(idx < p->strs.len);
+
+	s = *((char**) bc_vec_item(&p->strs, idx));
+
+	if (printf(" (\"%s\") ", s) < 0) return BC_STATUS_IO_ERR;
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn)
+{
+	BcStatus s;
+	uint8_t inst = code[(*bgn)++];
+
+	if (putchar(bc_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
+
+	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
+	    inst == BC_INST_ARRAY)
+	{
+		s = bc_program_printName(code, bgn);
+	}
+	else if (inst == BC_INST_STR) {
+		s = bc_program_printStr(p, code, bgn);
+	}
+	else if (inst == BC_INST_NUM || inst == BC_INST_CALL ||
+	         (inst > BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
+	{
+		if ((s = bc_program_printIndex(code, bgn))) return s;
+		if (inst == BC_INST_CALL) s = bc_program_printIndex(code, bgn);
+	}
 
 	return s;
 }
@@ -1365,25 +1403,7 @@ BcStatus bc_program_code(BcProgram *p) {
 
 		if (printf("func[%zu]:\n", ip.func) < 0) return BC_STATUS_IO_ERR;
 
-		while (ip.idx < f->code.len) {
-
-			uint8_t inst = code[ip.idx++];
-
-			if (putchar(bc_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
-
-			if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
-			    inst == BC_INST_ARRAY)
-			{
-				if ((s = bc_program_printName(code, &ip.idx))) return s;
-			}
-			else if (inst == BC_INST_NUM || inst == BC_INST_CALL ||
-			         (inst >= BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
-			{
-				if ((s = bc_program_printIndex(code, &ip.idx))) return s;
-				if (inst == BC_INST_CALL && (s = bc_program_printIndex(code, &ip.idx)))
-					return s;
-			}
-		}
+		while (ip.idx < f->code.len) s = bc_program_printInst(p, code, &ip.idx);
 
 		if (printf("\n\n") < 0) s = BC_STATUS_IO_ERR;
 
