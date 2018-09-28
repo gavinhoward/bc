@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <string.h>
 
 #include <lex.h>
 #include <vm.h>
