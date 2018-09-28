@@ -149,7 +149,7 @@ void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 BcStatus bc_parse_pushName(BcVec *code, char *name);
 BcStatus bc_parse_pushIndex(BcVec *code, size_t idx);
-BcStatus bc_parse_number(BcParse *p, BcVec* code, BcInst *prev, uint32_t *nexs);
+BcStatus bc_parse_number(BcParse *p, BcVec* code, BcInst *prev, size_t* nexs);
 
 // bc parse code.
 

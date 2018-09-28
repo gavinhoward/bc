@@ -33,7 +33,7 @@ BcStatus bc_parse_else(BcParse *p, BcVec *code);
 BcStatus bc_parse_stmt(BcParse *p, BcVec *code);
 
 BcStatus bc_parse_operator(BcParse *p, BcVec *code, BcVec *ops, BcLexToken t,
-                           uint32_t *num_exprs, bool next)
+                           size_t *nexprs, bool next)
 {
 	BcStatus s;
 	BcLexToken top;
@@ -46,7 +46,7 @@ BcStatus bc_parse_operator(BcParse *p, BcVec *code, BcVec *ops, BcLexToken t,
 	{
 		if ((s = bc_vec_pushByte(code, BC_PARSE_TOKEN_TO_INST(top)))) return s;
 		bc_vec_pop(ops);
-		*num_exprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEG;
+		*nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEG;
 	}
 
 	if ((s = bc_vec_push(ops, 1, &t))) return s;
@@ -55,8 +55,7 @@ BcStatus bc_parse_operator(BcParse *p, BcVec *code, BcVec *ops, BcLexToken t,
 	return s;
 }
 
-BcStatus bc_parse_rightParen(BcParse *p, BcVec *code,
-                             BcVec *ops, uint32_t *nexs)
+BcStatus bc_parse_rightParen(BcParse *p, BcVec *code, BcVec *ops, size_t *nexs)
 {
 	BcStatus s;
 	BcLexToken top;
@@ -259,7 +258,7 @@ BcStatus bc_parse_scale(BcParse *p, BcVec *code, BcInst *type, uint8_t flags) {
 }
 
 BcStatus bc_parse_incdec(BcParse *p, BcVec *code, BcInst *prev,
-                         uint32_t *nexprs, uint8_t flags)
+                         size_t *nexprs, uint8_t flags)
 {
 	BcStatus s;
 	BcLexToken type;
@@ -339,7 +338,7 @@ BcStatus bc_parse_incdec(BcParse *p, BcVec *code, BcInst *prev,
 }
 
 BcStatus bc_parse_minus(BcParse *p, BcVec *exs, BcVec *ops, BcInst *prev,
-                        bool rparen, uint32_t *nexprs)
+                        bool rparen, size_t *nexprs)
 {
 	BcStatus s;
 	BcLexToken type;
@@ -1131,11 +1130,12 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst prev = BC_INST_PRINT;
 	BcLexToken top, t = p->lex.t.t;
-	uint32_t i, nexprs, nparens, nrelops, ops_start = (uint32_t) p->ops.len;
+	size_t nexprs = 0;
+	uint32_t i, nparens, nrelops, ops_start = (uint32_t) p->ops.len;
 	bool paren_first, paren_expr, rprn, done, get_token, assign, bin_last;
 
 	paren_first = p->lex.t.t == BC_LEX_LPAREN;
-	nexprs = nparens = nrelops = 0;
+	nparens = nrelops = 0;
 	paren_expr = rprn = done = get_token = assign = false;
 	bin_last = true;
 

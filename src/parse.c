@@ -61,8 +61,8 @@ BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
 	return s;
 }
 
-BcStatus bc_parse_number(BcParse *p, BcVec *code, BcInst *prev, uint32_t *nexs)
-{
+BcStatus bc_parse_number(BcParse *p, BcVec *code, BcInst *prev, size_t *nexs) {
+
 	BcStatus s;
 	char *num;
 	size_t idx = p->prog->consts.len;
