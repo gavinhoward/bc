@@ -42,7 +42,7 @@ BcStatus bc_parse_pushName(BcVec *code, char *name) {
 
 	free(name);
 
-	return s || bc_vec_pushByte(code, (char) ':');
+	return s || bc_vec_pushByte(code, BC_PARSE_STREND);
 }
 
 BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {

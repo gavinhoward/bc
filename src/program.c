@@ -327,17 +327,16 @@ size_t bc_program_index(char *code, size_t *bgn) {
 char* bc_program_name(char *code, size_t *bgn) {
 
 	size_t len, i;
-	char byte, *s, *string = (char*) (code + *bgn), *ptr = strchr(string, ':');
+	char byte, *s, *string = (char*) (code + *bgn), *ptr;
 
+	ptr = strchr(string, BC_PARSE_STREND);
 	if (ptr) len = ((unsigned long) ptr) - ((unsigned long) string);
 	else len = strlen(string);
 
 	if (!(s = malloc(len + 1))) return NULL;
 
-	for (byte = (char) code[(*bgn)++], i = 0; byte && byte != ':'; ++i) {
+	for (i = 0; (byte = (char) code[(*bgn)++]) && byte != BC_PARSE_STREND; ++i)
 		s[i] = byte;
-		byte = (char) code[(*bgn)++];
-	}
 
 	s[i] = '\0';
 
@@ -1314,7 +1313,7 @@ BcStatus bc_program_printName(char *code, size_t *start) {
 
 	if (printf(" (\"") < 0) s = BC_STATUS_IO_ERR;
 
-	for (; byte && byte != ':'; byte = (char) code[(*start)++]) {
+	for (; byte && byte != BC_PARSE_STREND; byte = (char) code[(*start)++]) {
 		if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
 	}
 
