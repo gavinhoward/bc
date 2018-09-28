@@ -32,6 +32,9 @@
 // BC_LEX_OP_NEGATE is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
 
+	BC_LEX_EOF,
+	BC_LEX_INVALID,
+
 	BC_LEX_OP_INC,
 	BC_LEX_OP_DEC,
 
@@ -102,9 +105,6 @@ typedef enum BcLexType {
 	BC_LEX_KEY_SCALE,
 	BC_LEX_KEY_SQRT,
 	BC_LEX_KEY_WHILE,
-
-	BC_LEX_EOF,
-	BC_LEX_INVALID,
 
 #ifdef DC_CONFIG
 	BC_LEX_OP_MODEXP,
