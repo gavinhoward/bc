@@ -410,8 +410,7 @@ BcStatus bc_parse_print(BcParse *p, BcVec *code) {
 		}
 		else {
 			if ((s = bc_parse_expr(p, code, 0, bc_parse_next_print))) return s;
-			if ((s = bc_vec_pushByte(code, BC_INST_PRINT_POP))) return s;
-			s = bc_vec_pushByte(code, BC_INST_POP);
+			s = bc_vec_pushByte(code, BC_INST_PRINT_POP);
 		}
 
 		if (s) return s;
