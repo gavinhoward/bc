@@ -152,6 +152,7 @@ typedef struct BcLex {
 
 	struct {
 		BcLexToken t;
+		BcLexToken last;
 		BcVec v;
 	} t;
 

@@ -121,7 +121,7 @@ BcStatus bc_lex_text(BcLex *l, const char *text) {
 	l->buffer = text;
 	l->idx = 0;
 	l->len = strlen(text);
-	l->t.t = BC_LEX_INVALID;
+	l->t.t = l->t.last = BC_LEX_INVALID;
 	return bc_lex_next(l);
 }
 
@@ -131,7 +131,7 @@ BcStatus bc_lex_next(BcLex *l) {
 
 	assert(l);
 
-	if (l->t.t == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
+	if ((l->t.last = l->t.t) == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
 
 	if (l->idx == l->len) {
 		l->newline = true;

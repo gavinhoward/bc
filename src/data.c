@@ -79,6 +79,7 @@ const char *bc_err_descs[] = {
 
 	"bad token",
 	"bad expression",
+	"empty expression",
 	"bad print statement",
 	"bad function definition",
 	"bad assignment: left side must be scale, ibase, "
