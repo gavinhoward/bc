@@ -1360,7 +1360,7 @@ BcStatus bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 
 BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn)
 {
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	uint8_t inst = code[(*bgn)++];
 
 	if (putchar(bc_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
@@ -1379,6 +1379,8 @@ BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn)
 		if ((s = bc_program_printIndex(code, bgn))) return s;
 		if (inst == BC_INST_CALL) s = bc_program_printIndex(code, bgn);
 	}
+
+	if (!s && fflush(stdout) < 0) s = BC_STATUS_IO_ERR;
 
 	return s;
 }

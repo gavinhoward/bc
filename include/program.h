@@ -87,6 +87,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 void bc_program_free(BcProgram *program);
 #ifndef NDEBUG
 BcStatus bc_program_code(BcProgram *p);
+BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
 #endif // NDEBUG
 // ** Exclude end. **
 
