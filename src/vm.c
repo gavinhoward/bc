@@ -227,7 +227,8 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 	struct sigaction sa;
 	int num, ttyout = isatty(1);
 
-	bcg.tty = (flags & BC_FLAG_I) || isatty(0) || ttyout;
+	bcg.ttyin = isatty(0);
+	bcg.tty = (flags & BC_FLAG_I) || bcg.ttyin || ttyout;
 	bcg.posix = flags & BC_FLAG_S;
 	bcg.warn = flags & BC_FLAG_W;
 

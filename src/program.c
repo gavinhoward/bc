@@ -1012,7 +1012,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 
 	if (!s || s == BC_STATUS_EXEC_SIGNAL) {
 
-		if (bcg.tty) {
+		if (bcg.ttyin) {
 			if (fputs(bc_program_ready_msg, stderr) < 0 || fflush(stderr) < 0)
 				s = BC_STATUS_IO_ERR;
 			else s = BC_STATUS_SUCCESS;

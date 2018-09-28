@@ -69,6 +69,7 @@ typedef struct BcGlobals {
 	long sig_other;
 
 	long tty;
+	long ttyin;
 	long posix;
 	long warn;
 	const char *name;

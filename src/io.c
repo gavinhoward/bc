@@ -36,7 +36,7 @@ BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 	int c = 0;
 	char byte;
 
-	if (bcg.tty && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
+	if (bcg.ttyin && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
 		return BC_STATUS_IO_ERR;
 
 	assert(vec && vec->size == sizeof(char));
@@ -52,9 +52,9 @@ BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 				bcg.sigc = bcg.sig;
 				bcg.signe = 0;
 
-				if (bcg.tty && (fputs(bc_program_ready_msg, stderr) == EOF ||
-				                fputs(prompt, stderr) == EOF ||
-				                fflush(stderr) == EOF))
+				if (bcg.ttyin && (fputs(bc_program_ready_msg, stderr) == EOF ||
+				                  fputs(prompt, stderr) == EOF ||
+				                  fflush(stderr) == EOF))
 				{
 					return BC_STATUS_IO_ERR;
 				}
