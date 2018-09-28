@@ -138,9 +138,11 @@ typedef enum BcLexType {
 
 } BcLexType;
 
+// ** Exclude start. **
 struct BcLex;
 
 typedef BcStatus (*BcLexNext)(struct BcLex*);
+// ** Exclude end. **
 
 typedef struct BcLex {
 
