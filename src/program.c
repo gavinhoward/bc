@@ -695,12 +695,12 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 
 	assert(BC_PROG_CHECK_STACK(p));
-	assert(BC_PROG_CHECK_RESULTS(p, ip->len + inst == BC_INST_RETURN));
+	assert(BC_PROG_CHECK_RESULTS(p, ip->len + inst == BC_INST_RET));
 
 	f = bc_vec_item(&p->fns, ip->func);
 	res.type = BC_RESULT_TEMP;
 
-	if (inst == BC_INST_RETURN) {
+	if (inst == BC_INST_RET) {
 
 		BcNum *num;
 		BcResult *operand = bc_vec_top(&p->results);
@@ -1048,8 +1048,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_RETURN:
-			case BC_INST_RETURN_ZERO:
+			case BC_INST_RET:
+			case BC_INST_RET0:
 			{
 				s = bc_program_return(p, inst);
 				break;

@@ -443,7 +443,7 @@ BcStatus bc_parse_return(BcParse *p, BcVec *code) {
 	paren = t == BC_LEX_LPAREN;
 
 	if (t == BC_LEX_NLINE || t == BC_LEX_SCOLON) {
-		s = bc_vec_pushByte(code, BC_INST_RETURN_ZERO);
+		s = bc_vec_pushByte(code, BC_INST_RET0);
 	}
 	else {
 
@@ -452,11 +452,11 @@ BcStatus bc_parse_return(BcParse *p, BcVec *code) {
 
 		if (paren)
 		{
-			if (!s) s = bc_vec_pushByte(code, BC_INST_RETURN);
+			if (!s) s = bc_vec_pushByte(code, BC_INST_RET);
 			else if (s == BC_STATUS_PARSE_EMPTY_EXP)
-				s = bc_vec_pushByte(code, BC_INST_RETURN_ZERO);
+				s = bc_vec_pushByte(code, BC_INST_RET0);
 		}
-		else s = bc_vec_pushByte(code, BC_INST_RETURN);
+		else s = bc_vec_pushByte(code, BC_INST_RET);
 	}
 
 	if (!s &&t != BC_LEX_NLINE && t != BC_LEX_SCOLON && !paren &&
@@ -520,7 +520,7 @@ BcStatus bc_parse_endBody(BcParse *p, BcVec *code, bool brace) {
 	}
 	else if (BC_PARSE_FUNC_INNER(p)) {
 		p->func = 0;
-		if ((s = bc_vec_pushByte(code, BC_INST_RETURN_ZERO))) return s;
+		if ((s = bc_vec_pushByte(code, BC_INST_RET0))) return s;
 		bc_vec_pop(&p->flags);
 	}
 	else {

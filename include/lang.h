@@ -90,8 +90,8 @@ typedef enum BcInst {
 
 	BC_INST_POP,
 
-	BC_INST_RETURN,
-	BC_INST_RETURN_ZERO,
+	BC_INST_RET,
+	BC_INST_RET0,
 
 	BC_INST_HALT,
 
