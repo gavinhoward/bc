@@ -24,8 +24,10 @@
 #include <parse.h>
 #include <num.h>
 
+// ** Exclude start. **
 const char bc_name[] = "bc";
 const char dc_name[] = "dc";
+// ** Exclude end. **
 
 const char bc_header[] =
 	"bc 1.0\n"
@@ -141,6 +143,7 @@ const char bc_lang_inst_chars[] =
 	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$H";
 #endif // NDEBUG
 
+#ifdef BC_CONFIG
 const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
@@ -164,8 +167,6 @@ const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("while", 5, true),
 };
 
-const char bc_num_hex_digits[] = "0123456789ABCDEF";
-
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.
 const bool bc_parse_token_exprs[] = {
@@ -175,19 +176,6 @@ const bool bc_parse_token_exprs[] = {
 	true, false, false, false, false, false, false, false, true, false, true,
 	true, true, true, false, false, true, false, true, true, false, false, false,
 };
-
-// These are to identify what tokens can
-// come after expressions in certain cases.
-const BcParseNext bc_parse_next_expr =
-	BC_PARSE_NEXT(3, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_RBRACE);
-const BcParseNext bc_parse_next_param =
-	BC_PARSE_NEXT(2, BC_LEX_RPAREN, BC_LEX_COMMA);
-const BcParseNext bc_parse_next_print =
-	BC_PARSE_NEXT(3, BC_LEX_COMMA, BC_LEX_NLINE, BC_LEX_SCOLON);
-const BcParseNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RPAREN);
-const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RBRACKET);
-const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
-const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
 
 // This is an array of data for operators that correspond to token types.
 const BcOp bc_parse_ops[] = {
@@ -202,6 +190,23 @@ const BcOp bc_parse_ops[] = {
 	{ 5, false }, { 5, false }, { 5, false }, { 5, false }, { 5, false },
 	{ 5, false }, { 5, false },
 };
+
+// These identify what tokens can come after expressions in certain cases.
+const BcParseNext bc_parse_next_expr =
+	BC_PARSE_NEXT(3, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_RBRACE);
+const BcParseNext bc_parse_next_param =
+	BC_PARSE_NEXT(2, BC_LEX_RPAREN, BC_LEX_COMMA);
+const BcParseNext bc_parse_next_print =
+	BC_PARSE_NEXT(3, BC_LEX_COMMA, BC_LEX_NLINE, BC_LEX_SCOLON);
+const BcParseNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RPAREN);
+const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RBRACKET);
+const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
+#endif // BC_CONFIG
+
+// This one is needed for dc too.
+const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
+
+const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
