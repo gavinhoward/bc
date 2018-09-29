@@ -410,13 +410,10 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		if ((s = bc_num_extend(&cp, len - cp.len))) goto err;
 	}
 
-	if (b->rdx > cp.rdx && (s = bc_num_extend(&cp, b->rdx - cp.rdx)))
-		goto err;
-
+	if (b->rdx > cp.rdx && (s = bc_num_extend(&cp, b->rdx - cp.rdx))) goto err;
 	cp.rdx -= b->rdx;
+	if (scale > cp.rdx && (s = bc_num_extend(&cp, scale - cp.rdx))) goto err;
 
-	if (scale > cp.rdx && (s = bc_num_extend(&cp, scale - cp.rdx)))
-		goto err;
 
 	if (b->rdx == b->len) {
 
