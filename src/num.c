@@ -1039,35 +1039,35 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
+BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	(void) scale;
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
-	return bc_num_binary(a, b, res, false, op, BC_NUM_AREQ(a, b));
+	return bc_num_binary(a, b, c, false, op, BC_NUM_AREQ(a, b));
 }
 
-BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
+BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	(void) scale;
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
-	return bc_num_binary(a, b, res, true, op, BC_NUM_AREQ(a, b));
+	return bc_num_binary(a, b, c, true, op, BC_NUM_AREQ(a, b));
 }
 
-BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
+BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	size_t req = BC_NUM_MREQ(a, b, scale);
-	return bc_num_binary(a, b, res, scale, bc_num_alg_m, req);
+	return bc_num_binary(a, b, c, scale, bc_num_alg_m, req);
 }
 
-BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
+BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	size_t req = BC_NUM_MREQ(a, b, scale);
-	return bc_num_binary(a, b, res, scale, bc_num_alg_d, req);
+	return bc_num_binary(a, b, c, scale, bc_num_alg_d, req);
 }
 
-BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
+BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	size_t req = BC_NUM_MREQ(a, b, scale);
-	return bc_num_binary(a, b, res, scale, bc_num_alg_mod, req);
+	return bc_num_binary(a, b, c, scale, bc_num_alg_mod, req);
 }
 
-BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *res, size_t scale) {
-	return bc_num_binary(a, b, res, scale, bc_num_alg_p, a->len * b->len + 1);
+BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+	return bc_num_binary(a, b, c, scale, bc_num_alg_p, a->len * b->len + 1);
 }
 
 BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale) {
