@@ -73,39 +73,32 @@ BcStatus bc_vec_expand(BcVec *vec, size_t request) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_vec_pop(BcVec *vec) {
-	assert(vec && vec->len);
-	vec->len -= 1;
-	if (vec->dtor) vec->dtor(vec->vec + (vec->size * vec->len));
-}
-
 void bc_vec_npop(BcVec *vec, size_t n) {
 	assert(vec && n <= vec->len);
 	if (!vec->dtor) vec->len -= n;
 	else {
 		size_t len = vec->len - n;
-		while (vec->len > len) bc_vec_pop(vec);
+		while (vec->len > len) vec->dtor(vec->vec + (vec->size * --vec->len));
 	}
 }
 
-BcStatus bc_vec_push(BcVec *vec, size_t n, const void *data) {
+BcStatus bc_vec_push(BcVec *vec, const void *data) {
 
 	BcStatus s;
 
 	assert(vec && data);
 
-	if (!n) return BC_STATUS_SUCCESS;
-	if (vec->len + n > vec->cap && (s = bc_vec_grow(vec, n))) return s;
+	if (vec->len + 1 > vec->cap && (s = bc_vec_grow(vec, 1))) return s;
 
-	memmove(vec->vec + (vec->size * vec->len), data, vec->size * n);
-	vec->len += n;
+	memmove(vec->vec + (vec->size * vec->len), data, vec->size);
+	vec->len += 1;
 
 	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
 	assert(vec && vec->size == sizeof(uint8_t));
-	return bc_vec_push(vec, 1, &data);
+	return bc_vec_push(vec, &data);
 }
 
 BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx) {
@@ -115,7 +108,7 @@ BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx) {
 
 	assert(vec && data && idx <= vec->len);
 
-	if (idx == vec->len) return bc_vec_push(vec, 1, data);
+	if (idx == vec->len) return bc_vec_push(vec, data);
 	if (vec->len == vec->cap && (s = bc_vec_grow(vec, 1))) return s;
 
 	ptr = vec->vec + vec->size * idx;
@@ -134,7 +127,10 @@ BcStatus bc_vec_string(BcVec *vec, size_t len, const char *str) {
 	assert(!vec->len || !vec->vec[vec->len - 1]);
 
 	bc_vec_npop(vec, vec->len);
-	if ((s = bc_vec_push(vec, len, str))) return s;
+	if ((s = bc_vec_expand(vec, len + 1))) return s;
+	memcpy(vec->vec, str, len);
+
+	vec->len = len;
 
 	return bc_vec_pushByte(vec, '\0');
 }
@@ -157,11 +153,6 @@ BcStatus bc_vec_concat(BcVec *vec, const char *str) {
 	vec->len = len;
 
 	return s;
-}
-
-void* bc_vec_top(const BcVec *vec) {
-	assert(vec && vec->len);
-	return vec->vec + vec->size * (vec->len - 1);
 }
 
 void* bc_vec_item(const BcVec *vec, size_t idx) {
@@ -222,7 +213,7 @@ BcStatus bc_veco_insert(BcVecO *vec, const void *data, size_t *idx) {
 	*idx = bc_veco_find(vec, data);
 
 	if (*idx > vec->vec.len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
-	else if (*idx == vec->vec.len) s = bc_vec_push(&vec->vec, 1, data);
+	else if (*idx == vec->vec.len) s = bc_vec_push(&vec->vec, data);
 	else if (!vec->cmp(data, bc_vec_item(&vec->vec, *idx)))
 		s = BC_STATUS_VEC_ITEM_EXISTS;
 	else s = bc_vec_pushAt(&vec->vec, data, *idx);

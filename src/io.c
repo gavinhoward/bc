@@ -66,7 +66,7 @@ BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 		else if ((c < ' ' && !isspace(c)) || c > '~') return BC_STATUS_BIN_FILE;
 
 		byte = (char) c;
-		if ((s = bc_vec_push(vec, 1, &byte))) return s;
+		if ((s = bc_vec_push(vec, &byte))) return s;
 	}
 
 	return bc_vec_pushByte(vec, '\0');

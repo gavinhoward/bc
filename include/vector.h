@@ -49,21 +49,22 @@ typedef struct BcVec {
 BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFree dtor);
 BcStatus bc_vec_expand(BcVec *vec, size_t request);
 
-void bc_vec_pop(BcVec *vec);
 void bc_vec_npop(BcVec *vec, size_t n);
 
-BcStatus bc_vec_push(BcVec *vec, size_t n, const void *data);
+BcStatus bc_vec_push(BcVec *vec, const void *data);
 BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data);
 BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx);
 BcStatus bc_vec_string(BcVec *vec, size_t len, const char *str);
 BcStatus bc_vec_concat(BcVec *vec, const char *str);
 
-void* bc_vec_top(const BcVec *vec);
 void* bc_vec_item(const BcVec *vec, size_t idx);
 void* bc_vec_item_rev(const BcVec *vec, size_t idx);
 
 void bc_vec_free(void *vec);
 // ** Exclude end. **
+
+#define bc_vec_pop(v) (bc_vec_npop((v), 1))
+#define bc_vec_top(v) (bc_vec_item_rev((v), 0))
 
 typedef struct BcVecO {
 

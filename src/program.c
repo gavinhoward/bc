@@ -81,12 +81,12 @@ BcStatus bc_program_search(BcProgram *p, BcResult *r, BcVec **ret, bool var) {
 
 		if (!(r->data.id.name = strdup(entry.name))) return BC_STATUS_ALLOC_ERR;
 		if ((s = bc_array_init(&data.data.array))) goto num_err;
-		if ((s = bc_vec_push(vec, 1, &data.data))) goto err;
+		if ((s = bc_vec_push(vec, &data.data))) goto err;
 	}
 
 	entry_ptr = bc_veco_item(veco, idx);
 	*ret = bc_vec_item(vec, entry_ptr->idx);
-	if (var) *ret = bc_vec_item_rev(*ret, 0);
+	if (var) *ret = bc_vec_top(*ret);
 
 	return BC_STATUS_SUCCESS;
 
@@ -229,7 +229,7 @@ BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r) {
 	r->type = BC_RESULT_TEMP;
 	bc_vec_pop(&p->results);
 	bc_vec_pop(&p->results);
-	return bc_vec_push(&p->results, 1, r);
+	return bc_vec_push(&p->results, r);
 }
 
 BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
@@ -238,7 +238,7 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 
 	assert(p && r && n && BC_PROG_CHECK_RESULTS(p, 1));
 
-	*r = bc_vec_item_rev(&p->results, 0);
+	*r = bc_vec_top(&p->results);
 	t = (*r)->type;
 
 	if (((t == BC_RESULT_ARRAY_AUTO || t == BC_RESULT_ARRAY) && !arr) ||
@@ -253,7 +253,7 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 BcStatus bc_program_retire(BcProgram *p, BcResult *r, BcResultType t) {
 	r->type = t;
 	bc_vec_pop(&p->results);
-	return bc_vec_push(&p->results, 1, r);
+	return bc_vec_push(&p->results, r);
 }
 
 BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
@@ -306,7 +306,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	ip.idx = 0;
 	ip.len = p->results.len;
 
-	if ((s = bc_vec_push(&p->stack, 1, &ip))) goto exec_err;
+	if ((s = bc_vec_push(&p->stack, &ip))) goto exec_err;
 	if ((s = bc_program_exec(p))) goto exec_err;
 
 	bc_vec_pop(&p->stack);
@@ -485,7 +485,7 @@ BcStatus bc_program_push(BcProgram *p, char *code, size_t *bgn, uint8_t inst) {
 
 	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY) {
 		res.type = inst == BC_INST_VAR ? BC_RESULT_VAR : BC_RESULT_ARRAY;
-		s = bc_vec_push(&p->results, 1, &res);
+		s = bc_vec_push(&p->results, &res);
 	}
 	else {
 
@@ -718,7 +718,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 			s = bc_array_copy(&param.data.array, a);
 		}
 
-		if (s || (s = bc_vec_push(&p->results, 1, &param))) goto err;
+		if (s || (s = bc_vec_push(&p->results, &param))) goto err;
 	}
 
 	for (; !s && i < func->autos.len; ++i) {
@@ -730,12 +730,12 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		else s = bc_array_init(&param.data.array);
 
 		if (s) return s;
-		s = bc_vec_push(&p->results, 1, &param);
+		s = bc_vec_push(&p->results, &param);
 	}
 
 	if (s) goto err;
 
-	return bc_vec_push(&p->stack, 1, &ip);
+	return bc_vec_push(&p->stack, &ip);
 
 err:
 	bc_result_free(&param);
@@ -773,7 +773,7 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 	// We need to pop arguments as well, so this takes that into account.
 	bc_vec_npop(&p->results, p->results.len - (ip->len - f->nparams));
 
-	if ((s = bc_vec_push(&p->results, 1, &res))) goto err;
+	if ((s = bc_vec_push(&p->results, &res))) goto err;
 	bc_vec_pop(&p->stack);
 
 	return s;
@@ -839,7 +839,7 @@ BcStatus bc_program_stackLen(BcProgram *p) {
 
 	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 	if ((s = bc_num_ulong2num(&res.data.num, len))) goto err;
-	if ((s = bc_vec_push(&p->results, 1, &res))) goto err;
+	if ((s = bc_vec_push(&p->results, &res))) goto err;
 
 	return s;
 
@@ -878,7 +878,7 @@ BcStatus bc_program_pushScale(BcProgram *p) {
 
 	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 	s = bc_num_ulong2num(&res.data.num, (unsigned long) p->scale);
-	if (s || (s = bc_vec_push(&p->results, 1, &res))) goto err;
+	if (s || (s = bc_vec_push(&p->results, &res))) goto err;
 
 	return s;
 
@@ -906,12 +906,12 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 	inst = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
 	           BC_INST_ASSIGN_PLUS : BC_INST_ASSIGN_MINUS;
 
-	if ((s = bc_vec_push(&p->results, 1, &res))) goto err;
+	if ((s = bc_vec_push(&p->results, &res))) goto err;
 	if ((s = bc_program_assign(p, inst))) goto err;
 
 	if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST) {
 		bc_vec_pop(&p->results);
-		if ((s = bc_vec_push(&p->results, 1, &copy))) goto err;
+		if ((s = bc_vec_push(&p->results, &copy))) goto err;
 	}
 
 	return s;
@@ -1009,7 +1009,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 
 	memset(&ip, 0, sizeof(BcInstPtr));
 
-	if ((s = bc_vec_push(&p->stack, 1, &ip))) goto push_err;
+	if ((s = bc_vec_push(&p->stack, &ip))) goto push_err;
 
 	return s;
 
@@ -1082,7 +1082,7 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 	}
 	else {
 		if ((s = bc_func_init(&f))) return s;
-		if ((s = bc_vec_push(&p->fns, 1, &f))) bc_func_free(&f);
+		if ((s = bc_vec_push(&p->fns, &f))) bc_func_free(&f);
 	}
 
 	return s;
@@ -1183,7 +1183,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_OBASE:
 			{
 				res.type = inst - BC_INST_IBASE + BC_RESULT_IBASE;
-				s = bc_vec_push(&p->results, 1, &res);
+				s = bc_vec_push(&p->results, &res);
 				break;
 			}
 
@@ -1205,7 +1205,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				res.type = BC_RESULT_CONSTANT;
 				res.data.id.idx = bc_program_index(code, &ip->idx);
-				s = bc_vec_push(&p->results, 1, &res);
+				s = bc_vec_push(&p->results, &res);
 				break;
 			}
 
@@ -1242,7 +1242,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				res.type = BC_RESULT_STRING;
 				res.data.id.idx = bc_program_index(code, &ip->idx);
-				s = bc_vec_push(&p->results, 1, &res);
+				s = bc_vec_push(&p->results, &res);
 				break;
 			}
 
@@ -1358,7 +1358,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				ptr = bc_vec_item_rev(&p->results, 1);
 				if ((s = bc_result_copy(&res, ptr))) break;
-				s = bc_vec_push(&p->results, 1, &res);
+				s = bc_vec_push(&p->results, &res);
 				break;
 			}
 
@@ -1368,7 +1368,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 				assert(BC_PROG_CHECK_RESULTS(p, 2));
 
-				ptr = bc_vec_item_rev(&p->results, 0);
+				ptr = bc_vec_top(&p->results);
 				memcpy(&res, ptr, sizeof(BcResult));
 				memcpy(ptr, ptr2, sizeof(BcResult));
 				memcpy(ptr2, &res, sizeof(BcResult));

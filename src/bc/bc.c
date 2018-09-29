@@ -44,7 +44,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 	if ((env_args = getenv(bc_args_env_name))) {
 
 		if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
-		if ((s = bc_vec_push(&args, 1, &bc_args_env_name))) goto args_err;
+		if ((s = bc_vec_push(&args, &bc_args_env_name))) goto args_err;
 
 		if (!(buffer = strdup(env_args))) {
 			s = BC_STATUS_ALLOC_ERR;
@@ -57,7 +57,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 
 			if (!isspace(*buf)) {
 
-				if ((s = bc_vec_push(&args, 1, &buf))) goto buf_err;
+				if ((s = bc_vec_push(&args, &buf))) goto buf_err;
 
 				while (*buf && !isspace(*buf)) ++buf;
 

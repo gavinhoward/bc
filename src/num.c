@@ -853,7 +853,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
 	while (intp.len) {
 		if ((s = bc_num_mod(&intp, base, &digit, 0))) goto err;
 		if ((s = bc_num_ulong(&digit, &dig))) goto err;
-		if ((s = bc_vec_push(&stack, 1, &dig))) goto err;
+		if ((s = bc_vec_push(&stack, &dig))) goto err;
 		if ((s = bc_num_div(&intp, base, &intp, 0))) goto err;
 	}
 

@@ -52,7 +52,7 @@ BcStatus dc_parse_string(BcParse *p, BcVec *code) {
 	if (!(str = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
 	if ((s = bc_vec_pushByte(code, BC_INST_STR))) goto err;
 	if ((s = bc_parse_pushIndex(code, len))) goto err;
-	if ((s = bc_vec_push(&p->prog->strs, 1, &str))) goto err;
+	if ((s = bc_vec_push(&p->prog->strs, &str))) goto err;
 
 	if ((s = bc_program_addFunc(p->prog, buf, &idx))) return s;
 
@@ -71,7 +71,7 @@ BcStatus dc_parse_mem(BcParse *p, BcVec *code, uint8_t inst,
 	BcStatus s;
 	char *str;
 
-	if ((s = bc_vec_push(code, 1, &inst))) return s;
+	if ((s = bc_vec_push(code, &inst))) return s;
 
 	if (name) {
 		if ((s = bc_lex_next(&p->lex))) return s;

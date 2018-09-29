@@ -181,8 +181,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
-	for (i = optind; !s && i < argc; ++i)
-		s = bc_vec_push(files, 1, argv + i);
+	for (i = optind; !s && i < argc; ++i) s = bc_vec_push(files, argv + i);
 
 	return s;
 }

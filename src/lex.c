@@ -72,7 +72,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 	bc_vec_npop(&l->t.v, l->t.v.len);
 	if ((s = bc_vec_expand(&l->t.v, len + 1))) return s;
-	if ((s = bc_vec_push(&l->t.v, 1, &start))) return s;
+	if ((s = bc_vec_push(&l->t.v, &start))) return s;
 
 	buf -= 1;
 	hits = 0;
@@ -89,7 +89,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 			continue;
 		}
 
-		if ((s = bc_vec_push(&l->t.v, 1, &c))) return s;
+		if ((s = bc_vec_push(&l->t.v, &c))) return s;
 	}
 
 	if ((s = bc_vec_pushByte(&l->t.v, '\0'))) return s;
