@@ -380,7 +380,7 @@ BcStatus bc_parse_string(BcParse *p, BcVec *code, char inst) {
 	if ((s = bc_vec_pushByte(code, BC_INST_STR))) goto err;
 	if ((s = bc_parse_pushIndex(code, p->prog->strs.len))) goto err;
 	if ((s = bc_vec_push(&p->prog->strs, 1, &str))) goto err;
-	if ((s = bc_vec_pushByte(code, inst))) return s;
+	if ((s = bc_vec_push(code, 1, &inst))) return s;
 	if ((s = bc_vec_pushByte(code, BC_INST_POP))) return s;
 
 	return bc_lex_next(&p->lex);

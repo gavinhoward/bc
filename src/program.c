@@ -225,8 +225,8 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 	return s;
 }
 
-BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r, BcResultType t) {
-	r->type = t;
+BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r) {
+	r->type = BC_RESULT_TEMP;
 	bc_vec_pop(&p->results);
 	bc_vec_pop(&p->results);
 	return bc_vec_push(&p->results, 1, r);
@@ -268,7 +268,7 @@ BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
 	op = bc_program_ops[inst - BC_INST_POWER];
 	if ((s = op(n1, n2, &res.data.num, p->scale))) goto err;
-	if ((s = bc_program_binOpRetire(p, &res, BC_RESULT_TEMP))) goto err;
+	if ((s = bc_program_binOpRetire(p, &res))) goto err;
 
 	return s;
 
@@ -602,7 +602,7 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 
 	(cond ? bc_num_one : bc_num_zero)(&res.data.num);
 
-	if ((s = bc_program_binOpRetire(p, &res, BC_RESULT_TEMP))) goto err;
+	if ((s = bc_program_binOpRetire(p, &res))) goto err;
 
 	return s;
 
@@ -660,7 +660,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 	if ((s = bc_num_init(&res.data.num, l->len))) return s;
 	if ((s = bc_num_copy(&res.data.num, l))) goto err;
 
-	if ((s = bc_program_binOpRetire(p, &res, BC_RESULT_TEMP))) goto err;
+	if ((s = bc_program_binOpRetire(p, &res))) goto err;
 
 	return s;
 
