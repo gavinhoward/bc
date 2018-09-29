@@ -54,6 +54,9 @@ const uint8_t bc_err_indices[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
+#ifdef DC_CONFIG
+	BC_ERR_IDX_MATH,
+#endif // DC_CONFIG
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -94,6 +97,9 @@ const char *bc_err_descs[] = {
 	"divide by zero",
 	"negative square root",
 	"bad number string",
+#ifdef DC_CONFIG
+	"modulus overflowed base",
+#endif // DC_CONFIG
 
 	"could not open file:",
 	"mismatched parameters",

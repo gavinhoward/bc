@@ -581,20 +581,18 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	assert(a && b && c && op);
 
 	if (c == a) {
-		memcpy(&num2, c, sizeof(BcNum));
 		ptr_a = &num2;
+		memcpy(ptr_a, c, sizeof(BcNum));
 		init = true;
 	}
 	else ptr_a = a;
 
 	if (c == b) {
 
-		if (c == a) {
-			ptr_b = ptr_a;
-		}
-		else {
-			memcpy(&num2, c, sizeof(BcNum));
-			ptr_b = &num2;
+		ptr_b = &num2;
+
+		if (c != a) {
+			memcpy(ptr_b, c, sizeof(BcNum));
 			init = true;
 		}
 	}
@@ -603,11 +601,11 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	if (init) s = bc_num_init(c, req);
 	else s = bc_num_expand(c, req);
 
-	if (s) goto err;
+	if (s) return s;
 	s = op(ptr_a, ptr_b, c, scale);
 
 err:
-	if (c == a || c == b) bc_num_free(&num2);
+	if (init) bc_num_free(&num2);
 	return s;
 }
 
@@ -1192,3 +1190,119 @@ init_err:
 	if (res == a) bc_num_free(&a2);
 	return s;
 }
+
+#ifdef DC_CONFIG
+BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
+
+	BcStatus s;
+	BcNum num2, *ptr_a, *ptr_b, *ptr_c, base, exp, two, zero, temp;
+	bool init = false;
+
+	assert(a && b && c && d);
+
+	scale = 0;
+
+	if (d == a) {
+		memcpy(&num2, d, sizeof(BcNum));
+		ptr_a = &num2;
+		init = true;
+	}
+	else ptr_a = a;
+
+	if (d == b) {
+
+		ptr_b = &num2;
+
+		if (d != a) {
+			memcpy(ptr_b, d, sizeof(BcNum));
+			init = true;
+		}
+	}
+	else ptr_b = b;
+
+	if (d == c) {
+
+		ptr_c = &num2;
+
+		if (d != a && d != b) {
+			memcpy(ptr_c, d, sizeof(BcNum));
+			init = true;
+		}
+	}
+	else ptr_c = c;
+
+	if (init) s = bc_num_init(d, ptr_c->len);
+	else s = bc_num_expand(d, ptr_c->len);
+
+	if (s) return s;
+
+	if (!ptr_c->len) {
+		s = BC_STATUS_MATH_DIVIDE_BY_ZERO;
+		goto base_err;
+	}
+
+	if (ptr_b->rdx || ptr_c->rdx || ptr_a->rdx) {
+		s = BC_STATUS_MATH_NON_INTEGER;
+		goto base_err;
+	}
+
+	if (ptr_b->neg) {
+		s = BC_STATUS_MATH_NEGATIVE;
+		goto base_err;
+	}
+
+	if (!ptr_c->len) {
+		bc_num_zero(d);
+		goto base_err;
+	}
+
+	if ((s = bc_num_init(&base, ptr_c->len))) goto base_err;
+	if ((s = bc_num_init(&exp, ptr_b->len))) goto exp_err;
+	if ((s = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
+	if ((s = bc_num_init(&zero, BC_NUM_DEF_SIZE))) goto zero_err;
+	if ((s = bc_num_init(&temp, ptr_b->len))) goto temp_err;
+
+	bc_num_one(&two);
+
+	if ((s = bc_num_sub(ptr_c, &two, &exp, scale))) goto err;
+	if ((s = bc_num_mul(&exp, &exp, &base, scale))) goto err;
+	if (bc_num_cmp(&exp, ptr_a) > 0) {
+		s = BC_STATUS_MATH_BASE_OVERFLOW;
+		goto err;
+	}
+
+	two.num[0] = 2;
+	bc_num_one(d);
+
+	if ((s = bc_num_mod(ptr_a, ptr_c, &base, scale))) goto err;
+	if ((s = bc_num_copy(&exp, ptr_b))) goto err;
+
+	while (!exp.neg) {
+
+		if ((s = bc_num_mod(&exp, &two, &temp, scale))) goto err;
+
+		if (BC_NUM_ONE(&temp)) {
+			if ((s = bc_num_mul(d, &base, &temp, scale))) goto err;
+			if ((s = bc_num_mod(&temp, ptr_c, d, scale))) goto err;
+		}
+
+		if ((s = bc_num_div(&exp, &two, &exp, scale))) goto err;
+		if ((s = bc_num_mul(&base, &base, &temp, scale))) goto err;
+		if ((s = bc_num_mod(&temp, ptr_c, &base, scale))) goto err;
+	}
+
+err:
+	bc_num_free(&temp);
+temp_err:
+	bc_num_free(&zero);
+zero_err:
+	bc_num_free(&two);
+two_err:
+	bc_num_free(&exp);
+exp_err:
+	bc_num_free(&base);
+base_err:
+	if (init) bc_num_free(&num2);
+	return s;
+}
+#endif // BC_CONFIG

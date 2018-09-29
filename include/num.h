@@ -76,6 +76,10 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 // ** Exclude start. **
 BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale);
 
+#ifdef DC_CONFIG
+BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
+#endif // BC_CONFIG
+
 void bc_num_zero(BcNum *n);
 void bc_num_one(BcNum *n);
 void bc_num_ten(BcNum *n);

@@ -829,6 +829,33 @@ err:
 }
 
 #ifdef DC_CONFIG
+BcStatus bc_program_modexp(BcProgram *p) {
+
+	BcStatus s;
+	BcResult *opd1, *opd2, *opd3, res;
+	BcNum *n1, *n2, *n3;
+
+	if (!(BC_PROG_CHECK_RESULTS(p, 3))) return BC_STATUS_EXEC_SMALL_STACK;
+
+	if ((s = bc_program_binOpPrep(p, &opd2, &n2, &opd3, &n3, false))) return s;
+
+	opd1 = bc_vec_item_rev(&p->results, 2);
+	if ((s = bc_program_num(p, opd1, &n1, false))) return s;
+
+	if ((s = bc_num_init(&res.data.num, n3->len))) return s;
+
+	if ((s = bc_num_modexp(n1, n2, n3, &res.data.num, p->scale))) goto err;
+	bc_vec_pop(&p->results);
+
+	if ((s = bc_program_binOpRetire(p, &res))) goto err;
+
+	return s;
+
+err:
+	bc_num_free(&res.data.num);
+	return s;
+}
+
 BcStatus bc_program_stackLen(BcProgram *p) {
 
 	BcStatus s;
@@ -1310,7 +1337,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 #ifdef DC_CONFIG
 			case BC_INST_MODEXP:
 			{
-				// TODO
+				s = bc_program_modexp(p);
 				break;
 			}
 
