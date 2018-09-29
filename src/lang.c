@@ -142,6 +142,49 @@ void bc_auto_free(void *auto1) {
 	free(a->name);
 }
 
+BcStatus bc_result_copy(BcResult *d, BcResult *s) {
+
+	BcStatus status;
+
+	assert(d && s);
+
+	switch (s->type) {
+
+		case BC_RESULT_TEMP:
+		case BC_RESULT_SCALE:
+		case BC_RESULT_VAR_AUTO:
+		{
+			status = bc_num_copy(&d->data.num, &s->data.num);
+			break;
+		}
+
+		case BC_RESULT_ARRAY_AUTO:
+		{
+			status = bc_array_copy(&d->data.array, &s->data.array);
+			break;
+		}
+
+		case BC_RESULT_VAR:
+		case BC_RESULT_ARRAY:
+		case BC_RESULT_ARRAY_ELEM:
+		{
+			assert(s->data.id.name);
+			if (!(d->data.id.name = strdup(s->data.id.name)))
+				status = BC_STATUS_ALLOC_ERR;
+			else status = BC_STATUS_SUCCESS;
+			break;
+		}
+
+		default:
+		{
+			// Do nothing.
+			break;
+		}
+	}
+
+	return status;
+}
+
 void bc_result_free(void *result) {
 
 	BcResult *r = (BcResult*) result;

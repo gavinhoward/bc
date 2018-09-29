@@ -43,11 +43,20 @@ BcStatus dc_parse_string(BcParse *p, BcVec *code) {
 
 	BcStatus s;
 	char *str;
+	char buf[DC_PARSE_BUF_SIZE + 1];
+	size_t idx, len = p->prog->strs.len;
+
+	if (sprintf(buf, "%*zu", DC_PARSE_BUF_SIZE, len) < 0)
+		return BC_STATUS_IO_ERR;
 
 	if (!(str = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
 	if ((s = bc_vec_pushByte(code, BC_INST_STR))) goto err;
-	if ((s = bc_parse_pushIndex(code, p->prog->strs.len))) goto err;
+	if ((s = bc_parse_pushIndex(code, len))) goto err;
 	if ((s = bc_vec_push(&p->prog->strs, 1, &str))) goto err;
+
+	if ((s = bc_program_addFunc(p->prog, buf, &idx))) return s;
+
+	assert(idx == len + 2);
 
 	return s;
 
@@ -56,50 +65,127 @@ err:
 	return s;
 }
 
+BcStatus dc_parse_mem(BcParse *p, BcVec *code, uint8_t inst,
+                      bool name, bool store, bool push_pop)
+{
+	BcStatus s;
+	char *str;
+
+	if ((s = bc_vec_push(code, 1, &inst))) return s;
+
+	if (name) {
+		if ((s = bc_lex_next(&p->lex))) return s;
+		if (p->lex.t.t != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_TOKEN;
+		if (!(str = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
+		if ((s = bc_parse_pushName(code, str))) goto err;
+	}
+
+	if (store) {
+
+		if ((s = bc_vec_pushByte(code, BC_INST_SWAP))) return s;
+
+		if (push_pop) {
+			if ((s = bc_vec_pushByte(code, BC_INST_PUSH_VAR))) return s;
+		}
+		else {
+			if ((s = bc_vec_pushByte(code, BC_INST_ASSIGN))) return s;
+			s = bc_vec_pushByte(code, BC_INST_POP);
+		}
+	}
+	else if (push_pop) s = bc_vec_pushByte(code, BC_INST_POP_VAR);
+
+	return s;
+
+err:
+	free(str);
+	return s;
+}
+
+BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	BcInst prev;
+	char *name;
+
+	switch (t) {
+
+		case BC_LEX_SCOLON:
+		{
+			// TODO
+			break;
+		}
+
+		case BC_LEX_STRING:
+		{
+			s = dc_parse_string(p, code);
+			break;
+		}
+
+		case BC_LEX_NUMBER:
+		{
+			s = bc_parse_number(p, code, &prev, &p->nbraces);
+			break;
+		}
+
+		case BC_LEX_COLON:
+		{
+			// TODO
+			break;
+		}
+
+		case BC_LEX_LOAD:
+		case BC_LEX_LOAD_POP:
+		case BC_LEX_STORE:
+		case BC_LEX_STORE_PUSH:
+		{
+			bool store = t == BC_LEX_STORE || t == BC_LEX_STORE_PUSH;
+			bool push_pop = t == BC_LEX_LOAD_POP || t == BC_LEX_STORE_PUSH;
+			s = dc_parse_mem(p, code, BC_INST_VAR, true, store, push_pop);
+			break;
+		}
+
+		case BC_LEX_STORE_IBASE:
+		{
+			s = dc_parse_mem(p, code, BC_INST_IBASE, false, true, false);
+			break;
+		}
+
+		case BC_LEX_STORE_SCALE:
+		{
+			s = dc_parse_mem(p, code, BC_INST_SCALE, false, true, false);
+			break;
+		}
+
+		case BC_LEX_STORE_OBASE:
+		{
+			s = dc_parse_mem(p, code, BC_INST_OBASE, false, true, false);
+			break;
+		}
+
+		default:
+		{
+			s = BC_STATUS_PARSE_BAD_TOKEN;
+			break;
+		}
+	}
+
+	return s;
+}
+
 BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 {
 	BcStatus s;
-	BcLexType t = p->lex.t.t;
-	BcInst prev;
 	BcInst inst;
+	BcLexType t;
 
 	(void) flags;
 	(void) next;
 
-	for (; t != BC_LEX_EOF; t = p->lex.t.t) {
+	while ((t = p->lex.t.t) != BC_LEX_EOF) {
 
-		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID) {
+		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID)
 			s = dc_parse_push(p, code, inst);
-		}
-		else {
-
-			switch (t) {
-
-				case BC_LEX_SCOLON:
-				{
-					// TODO
-					break;
-				}
-
-				case BC_LEX_STRING:
-				{
-					s = dc_parse_string(p, code);
-					break;
-				}
-
-				case BC_LEX_NUMBER:
-				{
-					s = bc_parse_number(p, code, &prev, &p->nbraces);
-					break;
-				}
-
-				default:
-				{
-					s = BC_STATUS_PARSE_BAD_TOKEN;
-					break;
-				}
-			}
-		}
+		else s = dc_parse_token(p, code, t);
 
 		if (!s) s = bc_lex_next(&p->lex);
 	}

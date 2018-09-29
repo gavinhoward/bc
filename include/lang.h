@@ -108,6 +108,12 @@ typedef enum BcInst {
 	BC_INST_DUPLICATE,
 	BC_INST_SWAP,
 
+	BC_INST_PUSH_VAR,
+	BC_INST_POP_VAR,
+
+	BC_INST_QUIT,
+	BC_INST_NQUIT,
+
 	BC_INST_INVALID = -1,
 #endif // DC_CONFIG
 
@@ -197,6 +203,7 @@ void bc_string_free(void *string);
 int bc_entry_cmp(const void *e1, const void *e2);
 void bc_entry_free(void *entry);
 
+BcStatus bc_result_copy(BcResult *d, BcResult *s);
 void bc_result_free(void *result);
 // ** Exclude end. **
 

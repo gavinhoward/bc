@@ -162,6 +162,8 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog);
 BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
 
+#define DC_PARSE_BUF_SIZE ((int) (sizeof(uint32_t) * CHAR_BIT))
+
 // ** Exclude end. **
 
 #define BC_PARSE_STREND ((char) '#')

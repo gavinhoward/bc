@@ -427,16 +427,16 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_program_print(BcProgram *p, uint8_t inst) {
+BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
-	size_t idx, len;
+	size_t len, i;
 	char *str;
 
-	assert(p && BC_PROG_CHECK_RESULTS(p, 1));
+	assert(p && BC_PROG_CHECK_RESULTS(p, idx + 1));
 
-	r = bc_vec_top(&p->results);
+	r = bc_vec_item_rev(&p->results, idx);
 
 	if (r->type == BC_RESULT_STRING) {
 
@@ -446,8 +446,8 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst) {
 		str = *((char**) bc_vec_item(&p->strs, idx));
 
 		if (inst == BC_INST_PRINT_STR) {
-			for (idx = 0, len = strlen(str); idx < len; ++idx) {
-				char c = str[idx];
+			for (i = 0, len = strlen(str); i < len; ++i) {
+				char c = str[i];
 				if (putchar(c) == EOF) return BC_STATUS_IO_ERR;
 				if (c == '\n') p->nchars = SIZE_MAX;
 				++p->nchars;
@@ -804,30 +804,70 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 	BcStatus s;
 	BcResult *opnd;
 	BcNum *num;
-	BcResult result;
+	BcResult res;
 
 	if ((s = bc_program_prep(p, &opnd, &num, inst == BC_INST_LENGTH))) return s;
-	if ((s = bc_num_init(&result.data.num, BC_NUM_DEF_SIZE))) return s;
+	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 
-	if (inst == BC_INST_SQRT)
-		s = bc_num_sqrt(num, &result.data.num, p->scale);
+	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.data.num, p->scale);
 	else if (inst == BC_INST_LENGTH && opnd->type == BC_RESULT_ARRAY) {
 		BcVec *vec = (BcVec*) num;
-		s = bc_num_ulong2num(&result.data.num, (unsigned long) vec->len);
+		s = bc_num_ulong2num(&res.data.num, (unsigned long) vec->len);
 	}
 	else {
 		assert(opnd->type != BC_RESULT_ARRAY);
 		BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
 		                                              bc_program_scale;
-		s = bc_num_ulong2num(&result.data.num, f(num));
+		s = bc_num_ulong2num(&res.data.num, f(num));
 	}
 
-	if (s || (s = bc_program_retire(p, &result, BC_RESULT_TEMP))) goto err;
+	if (s || (s = bc_program_retire(p, &res, BC_RESULT_TEMP))) goto err;
 
 err:
-	if (s) bc_num_free(&result.data.num);
+	if (s) bc_num_free(&res.data.num);
 	return s;
 }
+
+#ifdef DC_CONFIG
+BcStatus bc_program_stackLen(BcProgram *p) {
+
+	BcStatus s;
+	BcResult res;
+	size_t len = p->results.len;
+
+	res.type = BC_RESULT_TEMP;
+
+	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
+	if ((s = bc_num_ulong2num(&res.data.num, len))) goto err;
+	if ((s = bc_vec_push(&p->results, 1, &res))) goto err;
+
+	return s;
+
+err:
+	bc_num_free(&res.data.num);
+	return s;
+}
+
+BcStatus bc_program_nquit(BcProgram *p) {
+
+	BcStatus s;
+	BcResult *opnd;
+	BcNum *num;
+	unsigned long val;
+
+	if ((s = bc_program_prep(p, &opnd, &num, false))) return s;
+	if ((s = bc_num_ulong(num, &val))) return s;
+
+	bc_vec_pop(&p->results);
+
+	if (p->stack.len < val) return BC_STATUS_EXEC_SMALL_STACK;
+	else if (p->stack.len == val) return BC_STATUS_QUIT;
+
+	bc_vec_npop(&p->stack, val);
+
+	return s;
+}
+#endif // DC_CONFIG
 
 BcStatus bc_program_pushScale(BcProgram *p) {
 
@@ -1194,7 +1234,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_PRINT_POP:
 			case BC_INST_PRINT_STR:
 			{
-				s = bc_program_print(p, inst);
+				s = bc_program_print(p, inst, 0);
 				break;
 			}
 
@@ -1266,6 +1306,101 @@ BcStatus bc_program_exec(BcProgram *p) {
 				s = bc_program_assign(p, inst);
 				break;
 			}
+
+#ifdef DC_CONFIG
+			case BC_INST_MODEXP:
+			{
+				// TODO
+				break;
+			}
+
+			case BC_INST_DIVMOD:
+			{
+				// TODO
+				break;
+			}
+
+			case BC_INST_ASCIIFY:
+			{
+				// TODO
+				break;
+			}
+
+			case BC_INST_PRINT_STACK:
+			{
+				for (idx = 0; !s && idx < p->results.len; ++idx) {
+
+					if ((s = bc_program_print(p, BC_INST_PRINT, idx))) break;
+
+					ptr = bc_vec_item_rev(&p->results, idx);
+					assert(ptr);
+
+					if (ptr->type == BC_RESULT_STRING && putchar('\n') == EOF)
+						s = BC_STATUS_IO_ERR;
+				}
+
+				break;
+			}
+
+			case BC_INST_CLEAR_STACK:
+			{
+				bc_vec_npop(&p->results, p->results.len);
+				break;
+			}
+
+			case BC_INST_STACK_LEN:
+			{
+				s = bc_program_stackLen(p);
+				break;
+			}
+
+			case BC_INST_DUPLICATE:
+			{
+				ptr = bc_vec_item_rev(&p->results, 1);
+				if ((s = bc_result_copy(&res, ptr))) break;
+				s = bc_vec_push(&p->results, 1, &res);
+				break;
+			}
+
+			case BC_INST_SWAP:
+			{
+				BcResult *ptr2 = bc_vec_item_rev(&p->results, 1);
+
+				assert(BC_PROG_CHECK_RESULTS(p, 2));
+
+				ptr = bc_vec_item_rev(&p->results, 0);
+				memcpy(&res, ptr, sizeof(BcResult));
+				memcpy(ptr, ptr2, sizeof(BcResult));
+				memcpy(ptr2, &res, sizeof(BcResult));
+
+				break;
+			}
+
+			case BC_INST_PUSH_VAR:
+			{
+				// TODO
+				break;
+			}
+
+			case BC_INST_POP_VAR:
+			{
+				// TODO
+				break;
+			}
+
+			case BC_INST_QUIT:
+			{
+				if (p->stack.len <= 2) s = BC_STATUS_QUIT;
+				else bc_vec_npop(&p->stack, 2);
+				break;
+			}
+
+			case BC_INST_NQUIT:
+			{
+				s = bc_program_nquit(p);
+				break;
+			}
+#endif // DC_CONFIG
 
 			default:
 			{
