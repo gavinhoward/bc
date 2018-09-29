@@ -96,6 +96,18 @@ typedef enum BcInst {
 	BC_INST_HALT,
 
 #ifdef DC_CONFIG
+	BC_INST_MODEXP,
+	BC_INST_DIVMOD,
+
+	BC_INST_ASCIIFY,
+	BC_INST_EXECUTE,
+
+	BC_INST_PRINT_STACK,
+	BC_INST_CLEAR_STACK,
+	BC_INST_STACK_LEN,
+	BC_INST_DUPLICATE,
+	BC_INST_SWAP,
+
 	BC_INST_INVALID = -1,
 #endif // DC_CONFIG
 
@@ -192,8 +204,15 @@ void bc_auto_free(void *auto1);
 
 #define bc_array_free bc_vec_free
 
+#ifndef NDEBUG
 extern const char bc_inst_chars[];
-extern const uint8_t bc_inst_operands[];
+#endif // NDEBUG
+
+#ifdef DC_CONFIG
+extern const uint8_t bc_inst_noperands[];
+extern const uint8_t bc_inst_nresults[];
+#endif // DC_CONFIG
+
 extern const char bc_func_main[];
 extern const char bc_func_read[];
 

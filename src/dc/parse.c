@@ -21,6 +21,8 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <status.h>
 #include <parse.h>
@@ -29,8 +31,28 @@
 
 BcStatus dc_parse_push(BcParse *p, BcVec *code, BcInst inst) {
 	BcStatus s;
-	if (p->nbraces >= bc_inst_operands[inst]) s = bc_vec_pushByte(code, inst);
+	if (p->nbraces >= bc_inst_noperands[inst]) {
+		p->nbraces -= bc_inst_noperands[inst] - bc_inst_nresults[inst];
+		s = bc_vec_pushByte(code, inst);
+	}
 	else s = BC_STATUS_PARSE_BAD_EXP;
+	return s;
+}
+
+BcStatus dc_parse_string(BcParse *p, BcVec *code) {
+
+	BcStatus s;
+	char *str;
+
+	if (!(str = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
+	if ((s = bc_vec_pushByte(code, BC_INST_STR))) goto err;
+	if ((s = bc_parse_pushIndex(code, p->prog->strs.len))) goto err;
+	if ((s = bc_vec_push(&p->prog->strs, 1, &str))) goto err;
+
+	return s;
+
+err:
+	free(str);
 	return s;
 }
 
@@ -52,6 +74,18 @@ BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 		else {
 
 			switch (t) {
+
+				case BC_LEX_SCOLON:
+				{
+					// TODO
+					break;
+				}
+
+				case BC_LEX_STRING:
+				{
+					s = dc_parse_string(p, code);
+					break;
+				}
 
 				case BC_LEX_NUMBER:
 				{
