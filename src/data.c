@@ -127,6 +127,7 @@ const char *bc_err_descs[] = {
 
 	"index is out of bounds",
 	"item already exists",
+
 #ifndef NDEBUG
 	"quit request not honored",
 	"limits request not honored",
