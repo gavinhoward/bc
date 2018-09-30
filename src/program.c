@@ -1381,12 +1381,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_ASCIIFY:
-			{
-				// TODO
-				break;
-			}
-
 			case BC_INST_PRINT_STACK:
 			{
 				for (idx = 0; !s && idx < p->results.len; ++idx) {
