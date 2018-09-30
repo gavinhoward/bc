@@ -981,6 +981,58 @@ err:
 	free(r.data.id.name);
 	return s;
 }
+
+BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn) {
+
+	BcStatus s;
+	BcResult *r;
+	char *str;
+	BcFunc *f;
+	BcParse prs;
+	BcInstPtr ip;
+	size_t fidx;
+	bool do_parse;
+
+	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
+
+	r = bc_vec_top(&p->results);
+	fidx = r->data.id.idx + 2;
+
+	if (r->type != BC_RESULT_STRING) return BC_STATUS_SUCCESS;
+
+	assert(p->strs.len > r->data.id.idx && p->fns.len > fidx);
+
+	str = bc_vec_item(&p->strs, r->data.id.idx);
+	f = bc_vec_item(&p->fns, fidx);
+	do_parse = !f->code.len;
+
+	if (do_parse) {
+
+		if ((s = p->parse_init(&prs, p))) return s;
+		if ((s = bc_lex_text(&prs.lex, str))) goto err;
+
+		if ((s = p->parse_expr(&prs, &f->code, 0, bc_parse_next_for))) goto err;
+
+		if (prs.lex.t.t != BC_LEX_EOF) {
+			s = BC_STATUS_PARSE_BAD_EXP;
+			goto err;
+		}
+
+		if ((s = bc_vec_pushByte(&f->code, BC_INST_RET0))) goto err;
+		bc_parse_free(&prs);
+	}
+
+	ip.idx = 0;
+	ip.len = p->results.len;
+	ip.func = fidx;
+
+	return bc_vec_push(&p->stack, &ip);
+
+err:
+	bc_parse_free(&prs);
+	bc_vec_npop(&f->code, f->code.len);
+	return s;
+}
 #endif // DC_CONFIG
 
 BcStatus bc_program_pushScale(BcProgram *p) {
@@ -1431,6 +1483,12 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_DIVMOD:
 			{
 				s = bc_program_divmod(p);
+				break;
+			}
+
+			case BC_INST_EXECUTE:
+			{
+				s = bc_program_executeStr(p, code, &ip->idx);
 				break;
 			}
 
