@@ -198,7 +198,9 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 	bool hex;
 	BcResultType lt, rt;
 
-	assert(p && left && lval && right && rval && BC_PROG_CHECK_RESULTS(p, 2));
+	assert(p && left && lval && right && rval);
+
+	if (!BC_PROG_CHECK_RESULTS(p, 2)) return BC_STATUS_EXEC_SMALL_STACK;
 
 	*right = bc_vec_item_rev(&p->results, 0);
 	*left = bc_vec_item_rev(&p->results, 1);
@@ -236,7 +238,9 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 {
 	BcResultType t;
 
-	assert(p && r && n && BC_PROG_CHECK_RESULTS(p, 1));
+	assert(p && r && n);
+
+	if (!BC_PROG_CHECK_RESULTS(p, 1)) return BC_STATUS_EXEC_SMALL_STACK;
 
 	*r = bc_vec_top(&p->results);
 	t = (*r)->type;
@@ -434,7 +438,9 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 	size_t len, i;
 	char *str;
 
-	assert(p && BC_PROG_CHECK_RESULTS(p, idx + 1));
+	assert(p);
+
+	if (!BC_PROG_CHECK_RESULTS(p, idx + 1)) return BC_STATUS_EXEC_SMALL_STACK;
 
 	r = bc_vec_item_rev(&p->results, idx);
 
@@ -750,7 +756,9 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 
 	assert(BC_PROG_CHECK_STACK(p));
-	assert(BC_PROG_CHECK_RESULTS(p, ip->len + inst == BC_INST_RET));
+
+	if (!BC_PROG_CHECK_RESULTS(p, ip->len + inst == BC_INST_RET))
+		return BC_STATUS_EXEC_SMALL_STACK;
 
 	f = bc_vec_item(&p->fns, ip->func);
 	res.type = BC_RESULT_TEMP;
@@ -835,7 +843,7 @@ BcStatus bc_program_modexp(BcProgram *p) {
 	BcResult *opd1, *opd2, *opd3, res;
 	BcNum *n1, *n2, *n3;
 
-	if (!(BC_PROG_CHECK_RESULTS(p, 3))) return BC_STATUS_EXEC_SMALL_STACK;
+	if (!BC_PROG_CHECK_RESULTS(p, 3)) return BC_STATUS_EXEC_SMALL_STACK;
 
 	if ((s = bc_program_binOpPrep(p, &opd2, &n2, &opd3, &n3, false))) return s;
 
@@ -1419,7 +1427,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				BcResult *ptr2;
 
-				assert(BC_PROG_CHECK_RESULTS(p, 2));
+				if (!BC_PROG_CHECK_RESULTS(p, 2))
+					return BC_STATUS_EXEC_SMALL_STACK;
 
 				ptr = bc_vec_item_rev(&p->results, 0);
 				ptr2 = bc_vec_item_rev(&p->results, 1);
