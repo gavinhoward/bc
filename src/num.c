@@ -604,7 +604,6 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	if (s) return s;
 	s = op(ptr_a, ptr_b, c, scale);
 
-err:
 	if (init) bc_num_free(&num2);
 	return s;
 }
