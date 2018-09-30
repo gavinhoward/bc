@@ -961,7 +961,7 @@ BcStatus bc_program_popVar(BcProgram *p, char *code, size_t *bgn) {
 		return BC_STATUS_ALLOC_ERR;
 
 	if ((s = bc_program_search(p, &r, &v, true))) goto err;
-	if (BC_PROG_CHECK_STACK(v, 2)) {
+	if (!BC_PROG_CHECK_STACK(v, 2)) {
 		s = BC_STATUS_EXEC_SMALL_STACK;
 		goto err;
 	}
