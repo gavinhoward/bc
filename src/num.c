@@ -1277,7 +1277,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	if ((s = bc_num_mod(ptr_a, ptr_c, &base, scale))) goto err;
 	if ((s = bc_num_copy(&exp, ptr_b))) goto err;
 
-	while (!exp.neg) {
+	while (exp.len) {
 
 		if ((s = bc_num_mod(&exp, &two, &temp, scale))) goto err;
 
