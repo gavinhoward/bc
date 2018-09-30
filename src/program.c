@@ -1417,11 +1417,12 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_SWAP:
 			{
-				BcResult *ptr2 = bc_vec_item_rev(&p->results, 1);
+				BcResult *ptr2;
 
 				assert(BC_PROG_CHECK_RESULTS(p, 2));
 
-				ptr = bc_vec_top(&p->results);
+				ptr = bc_vec_item_rev(&p->results, 0);
+				ptr2 = bc_vec_item_rev(&p->results, 1);
 				memcpy(&res, ptr, sizeof(BcResult));
 				memcpy(ptr, ptr2, sizeof(BcResult));
 				memcpy(ptr2, &res, sizeof(BcResult));
