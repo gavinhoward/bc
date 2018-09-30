@@ -894,6 +894,32 @@ BcStatus bc_program_nquit(BcProgram *p) {
 
 	return s;
 }
+
+BcStatus bc_program_divmod(BcProgram *p) {
+
+	BcStatus s;
+	BcResult *opd1, *opd2, res, res2;
+	BcNum *n1, *n2;
+
+	if ((s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false))) return s;
+	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
+	if ((s = bc_num_init(&res2.data.num, n2->len))) goto res2_err;
+
+	if ((s = bc_num_div(n1, n2, &res2.data.num, p->scale))) goto err;
+	if ((s = bc_num_mod(n1, n2, &res.data.num, p->scale))) goto err;
+
+	if ((s = bc_program_binOpRetire(p, &res2))) goto err;
+	res.type = BC_RESULT_TEMP;
+	if ((s = bc_vec_push(&p->results, &res))) goto res2_err;
+
+	return s;
+
+err:
+	bc_num_free(&res2.data.num);
+res2_err:
+	bc_num_free(&res.data.num);
+	return s;
+}
 #endif // DC_CONFIG
 
 BcStatus bc_program_pushScale(BcProgram *p) {
@@ -1343,7 +1369,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_DIVMOD:
 			{
-				// TODO
+				s = bc_program_divmod(p);
 				break;
 			}
 
