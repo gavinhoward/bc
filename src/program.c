@@ -81,12 +81,11 @@ BcStatus bc_program_search(BcProgram *p, BcResult *r, BcVec **ret, bool var) {
 
 		if (!(r->data.id.name = strdup(entry.name))) return BC_STATUS_ALLOC_ERR;
 		if ((s = bc_array_init(&data.data.array))) goto num_err;
-		if ((s = bc_vec_push(vec, &data.data))) goto err;
+		if ((s = bc_vec_push(vec, &data.data.array))) goto err;
 	}
 
 	entry_ptr = bc_veco_item(veco, idx);
 	*ret = bc_vec_item(vec, entry_ptr->idx);
-	if (var) *ret = bc_vec_top(*ret);
 
 	return BC_STATUS_SUCCESS;
 
@@ -150,6 +149,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 
 				*num = bc_vec_item(v, r->data.id.idx);
 			}
+			else if (r->type == BC_RESULT_VAR) *num = bc_vec_top(v);
 			else *num = (BcNum*) v;
 
 			break;
@@ -696,6 +696,9 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
 	for (i = 0; i < nparams; ++i) {
 
+		BcVec *a;
+		BcNum *n;
+
 		auto_ptr = bc_vec_item(&func->autos, i);
 		arg = bc_vec_item_rev(&p->results, nparams - 1);
 		param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
@@ -706,41 +709,28 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 			return BC_STATUS_EXEC_BAD_TYPE;
 		}
 
+		if ((s = bc_array_init(&param.data.array))) return s;
+
 		if (auto_ptr->var) {
-
-			BcNum *n;
-
 			if ((s = bc_program_num(p, arg, &n, false))) return s;
-			if ((s = bc_num_init(&param.data.num, n->len))) return s;
-
-			s = bc_num_copy(&param.data.num, n);
+			if ((s = bc_num_copy(bc_vec_top(&param.data.array), n))) goto err;
 		}
 		else {
-
-			BcVec *a;
-
-			if ((s = bc_program_search(p, arg, &a, 0))) return s;
-			if ((s = bc_array_init(&param.data.array))) return s;
-
-			s = bc_array_copy(&param.data.array, a);
+			if ((s = bc_program_search(p, arg, &a, auto_ptr->var))) return s;
+			if ((s = bc_array_copy(&param.data.array, a))) goto err;
 		}
 
-		if (s || (s = bc_vec_push(&p->results, &param))) goto err;
+		if ((s = bc_vec_push(&p->results, &param))) goto err;
 	}
 
-	for (; !s && i < func->autos.len; ++i) {
+	for (; i < func->autos.len; ++i) {
 
 		auto_ptr = bc_vec_item_rev(&func->autos, i);
 		param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
 
-		if (auto_ptr->var) s = bc_num_init(&param.data.num, BC_NUM_DEF_SIZE);
-		else s = bc_array_init(&param.data.array);
-
-		if (s) return s;
-		s = bc_vec_push(&p->results, &param);
+		if ((s = bc_array_init(&param.data.array))) return s;
+		if ((s = bc_vec_push(&p->results, &param))) goto err;
 	}
-
-	if (s) goto err;
 
 	return bc_vec_push(&p->stack, &ip);
 

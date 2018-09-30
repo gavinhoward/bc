@@ -152,12 +152,12 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
-		case BC_RESULT_VAR_AUTO:
 		{
 			status = bc_num_copy(&d->data.num, &s->data.num);
 			break;
 		}
 
+		case BC_RESULT_VAR_AUTO:
 		case BC_RESULT_ARRAY_AUTO:
 		{
 			status = bc_array_copy(&d->data.array, &s->data.array);
@@ -195,12 +195,12 @@ void bc_result_free(void *result) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
-		case BC_RESULT_VAR_AUTO:
 		{
 			bc_num_free(&r->data.num);
 			break;
 		}
 
+		case BC_RESULT_VAR_AUTO:
 		case BC_RESULT_ARRAY_AUTO:
 		{
 			bc_array_free(&r->data.array);
