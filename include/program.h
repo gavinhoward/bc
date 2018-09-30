@@ -73,8 +73,7 @@ typedef struct BcProgram {
 
 } BcProgram;
 
-#define BC_PROG_CHECK_STACK(p) ((p)->stack.len > 1)
-#define BC_PROG_CHECK_RESULTS(p, l) ((p)->results.len >= (l))
+#define BC_PROG_CHECK_STACK(s, n) ((s)->len >= (n))
 
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)
