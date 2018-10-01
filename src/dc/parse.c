@@ -121,9 +121,12 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t) {
 			break;
 		}
 
+		case BC_LEX_NEG:
 		case BC_LEX_NUMBER:
 		{
+			if (t == BC_LEX_NEG && (s = bc_lex_next(&p->lex))) return s;
 			s = bc_parse_number(p, code, &prev, &p->nbraces);
+			if (t == BC_LEX_NEG && !s) s = bc_vec_pushByte(code, BC_INST_NEG);
 			break;
 		}
 

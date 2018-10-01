@@ -45,7 +45,7 @@ BcStatus bc_parse_operator(BcParse *p, BcVec *code, BcVec *ops, BcLexType type,
 	{
 		if ((s = bc_vec_pushByte(code, BC_PARSE_TOKEN_TO_INST(t)))) return s;
 		bc_vec_pop(ops);
-		*nexprs -= t != BC_LEX_OP_BOOL_NOT && t != BC_LEX_OP_NEG;
+		*nexprs -= t != BC_LEX_OP_BOOL_NOT && t != BC_LEX_NEG;
 	}
 
 	if ((s = bc_vec_push(ops, &type))) return s;
@@ -66,7 +66,7 @@ BcStatus bc_parse_rightParen(BcParse *p, BcVec *code, BcVec *ops, size_t *nexs)
 		if ((s = bc_vec_pushByte(code, BC_PARSE_TOKEN_TO_INST(top)))) return s;
 
 		bc_vec_pop(ops);
-		*nexs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEG;
+		*nexs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
 
 		if (!ops->len) return BC_STATUS_PARSE_BAD_EXP;
 	}
@@ -358,7 +358,7 @@ BcStatus bc_parse_minus(BcParse *p, BcVec *exs, BcVec *ops, BcInst *prev,
 
 	type = rparen || etype == BC_INST_INC_POST || etype == BC_INST_DEC_POST ||
 	       (etype >= BC_INST_NUM && etype <= BC_INST_SQRT) ?
-	                 BC_LEX_OP_MINUS : BC_LEX_OP_NEG;
+	                 BC_LEX_OP_MINUS : BC_LEX_NEG;
 	*prev = BC_PARSE_TOKEN_TO_INST(type);
 
 	if (type == BC_LEX_OP_MINUS)
@@ -1338,7 +1338,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 
 		if ((s = bc_vec_pushByte(code, BC_PARSE_TOKEN_TO_INST(top)))) return s;
 
-		nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_OP_NEG;
+		nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
 		bc_vec_pop(&p->ops);
 	}
 
