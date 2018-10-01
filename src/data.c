@@ -120,9 +120,7 @@ const char *bc_err_descs[] = {
 	"read() call inside of a read() call",
 	"variable is wrong type",
 	"signal caught",
-#ifdef DC_CONFIG
 	"stack has too few elements",
-#endif // DC_CONFIG
 
 	"POSIX only allows one character names; the following is bad:",
 	"POSIX does not allow '#' script comments",

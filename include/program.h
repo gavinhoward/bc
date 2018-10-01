@@ -78,6 +78,10 @@ typedef struct BcProgram {
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)
 
+#ifdef DC_CONFIG
+#	define BC_PROG_STR_VAR(n) (!(n)->num && !n->cap)
+#endif // DC_CONFIG exclude
+
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **

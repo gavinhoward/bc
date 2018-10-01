@@ -918,8 +918,8 @@ BcStatus bc_num_expand(BcNum *n, size_t request) {
 
 void bc_num_free(void *num) {
 	BcNum *n = (BcNum*) num;
-	assert(n && n->num);
-	free(n->num);
+	assert(n);
+	if (n->num) free(n->num);
 }
 
 BcStatus bc_num_copy(BcNum *d, BcNum *s) {
