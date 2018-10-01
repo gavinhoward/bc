@@ -43,18 +43,17 @@ BcStatus dc_parse_string(BcParse *p, BcVec *code) {
 
 	BcStatus s;
 	char *str;
-	char buf[DC_PARSE_BUF_SIZE + 1];
+	char b[DC_PARSE_BUF_SIZE + 1];
 	size_t idx, len = p->prog->strs.len;
 
-	if (sprintf(buf, "%*zu", DC_PARSE_BUF_SIZE, len) < 0)
-		return BC_STATUS_IO_ERR;
+	if (sprintf(b, "%*zu", DC_PARSE_BUF_SIZE, len) < 0) return BC_STATUS_IO_ERR;
 
 	if (!(str = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
 	if ((s = bc_vec_pushByte(code, BC_INST_STR))) goto err;
 	if ((s = bc_parse_pushIndex(code, len))) goto err;
 	if ((s = bc_vec_push(&p->prog->strs, &str))) goto err;
 
-	if ((s = bc_program_addFunc(p->prog, buf, &idx))) return s;
+	if ((s = bc_program_addFunc(p->prog, b, &idx))) return s;
 
 	assert(idx == len + 2);
 
