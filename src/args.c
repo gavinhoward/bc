@@ -117,6 +117,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 				break;
 			}
 
+#ifdef BC_CONFIG
 			case 'i':
 			{
 				if (!bc) return BC_STATUS_INVALID_OPTION;
@@ -145,6 +146,15 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 				break;
 			}
 
+			case 'w':
+			{
+				if (!bc) return BC_STATUS_INVALID_OPTION;
+				(*flags) |= BC_FLAG_W;
+				break;
+			}
+#endif // BC_CONFIG
+
+			case 'V':
 			case 'v':
 			{
 				if (puts(bc_header) < 0) return BC_STATUS_IO_ERR;
@@ -152,19 +162,14 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 				break;
 			}
 
-			case 'w':
-			{
-				if (!bc) return BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_W;
-				break;
-			}
-
+#ifdef DC_CONFIG
 			case 'x':
 			{
 				if (bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_X;
 				break;
 			}
+#endif // DC_CONFIG
 
 			// Getopt printed an error message, but we should exit.
 			case '?':

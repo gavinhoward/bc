@@ -626,11 +626,15 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 	if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_TEMP)
 		return BC_STATUS_PARSE_BAD_ASSIGN;
 
+#ifdef BC_CONFIG
 	if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero))
 		return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
 	if (assign) s = bc_num_copy(l, r);
 	else s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
+#else // BC_CONFIG
+	s = bc_num_copy(l, r);
+#endif // BC_CONFIG
 
 	if (s) return s;
 
@@ -753,6 +757,44 @@ err:
 	return s;
 }
 
+#ifdef BC_CONFIG
+BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
+
+	BcStatus s;
+	BcResult *ptr, res, copy;
+	BcNum *num;
+	uint8_t inst2 = inst;
+
+	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
+
+	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
+		copy.type = BC_RESULT_TEMP;
+		if ((s = bc_num_init(&copy.data.num, num->len))) return s;
+		if ((s = bc_num_copy(&copy.data.num, num))) goto err;
+	}
+
+	res.type = BC_RESULT_ONE;
+	inst = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
+	           BC_INST_ASSIGN_PLUS : BC_INST_ASSIGN_MINUS;
+
+	if ((s = bc_vec_push(&p->results, &res))) goto err;
+	if ((s = bc_program_assign(p, inst))) goto err;
+
+	if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST) {
+		bc_vec_pop(&p->results);
+		if ((s = bc_vec_push(&p->results, &copy))) goto err;
+	}
+
+	return s;
+
+err:
+
+	if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST)
+		bc_num_free(&copy.data.num);
+
+	return s;
+}
+
 BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -815,6 +857,7 @@ err:
 	bc_result_free(&param);
 	return s;
 }
+#endif // BC_CONFIG
 
 BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 
@@ -886,10 +929,12 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.data.num, p->scale);
+#ifdef BC_CONFIG
 	else if (inst == BC_INST_LENGTH && opnd->type == BC_RESULT_ARRAY) {
 		BcVec *vec = (BcVec*) num;
 		s = bc_num_ulong2num(&res.data.num, (unsigned long) vec->len);
 	}
+#endif // BC_CONFIG
 	else {
 		assert(opnd->type != BC_RESULT_ARRAY);
 		BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
@@ -1116,43 +1161,6 @@ err:
 	return s;
 }
 
-BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
-
-	BcStatus s;
-	BcResult *ptr, res, copy;
-	BcNum *num;
-	uint8_t inst2 = inst;
-
-	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
-
-	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
-		copy.type = BC_RESULT_TEMP;
-		if ((s = bc_num_init(&copy.data.num, num->len))) return s;
-		if ((s = bc_num_copy(&copy.data.num, num))) goto err;
-	}
-
-	res.type = BC_RESULT_ONE;
-	inst = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
-	           BC_INST_ASSIGN_PLUS : BC_INST_ASSIGN_MINUS;
-
-	if ((s = bc_vec_push(&p->results, &res))) goto err;
-	if ((s = bc_program_assign(p, inst))) goto err;
-
-	if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST) {
-		bc_vec_pop(&p->results);
-		if ((s = bc_vec_push(&p->results, &copy))) goto err;
-	}
-
-	return s;
-
-err:
-
-	if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST)
-		bc_num_free(&copy.data.num);
-
-	return s;
-}
-
 BcStatus bc_program_init(BcProgram *p, size_t line_len,
                          BcParseInit parse_init, BcParseExpr parse_expr)
 {
@@ -1350,14 +1358,16 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 BcStatus bc_program_exec(BcProgram *p) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	size_t idx, *addr;
+	size_t idx;
 	BcResult res;
 	BcResult *ptr;
 	BcNum *num;
-	bool cond = false;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 	BcFunc *func = bc_vec_item(&p->fns, ip->func);
 	char *code = func->code.vec;
+#ifdef BC_CONFIG
+	bool cond = false;
+#endif // BC_CONFIG
 
 	while (!s && !bcg.sig_other && ip->idx < func->code.len) {
 
@@ -1365,25 +1375,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 		switch (inst) {
 
-			case BC_INST_CALL:
-			{
-				s = bc_program_call(p, code, &ip->idx);
-				break;
-			}
-
-			case BC_INST_RET:
-			case BC_INST_RET0:
-			{
-				s = bc_program_return(p, inst);
-				break;
-			}
-
-			case BC_INST_READ:
-			{
-				s = bc_program_read(p);
-				break;
-			}
-
+#ifdef BC_CONFIG
 			case BC_INST_JUMP_ZERO:
 			{
 				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
@@ -1393,9 +1385,45 @@ BcStatus bc_program_exec(BcProgram *p) {
 			// Fallthrough.
 			case BC_INST_JUMP:
 			{
+				size_t *addr;
 				idx = bc_program_index(code, &ip->idx);
 				addr = bc_vec_item(&func->labels, idx);
 				if (inst == BC_INST_JUMP || cond) ip->idx = *addr;
+				break;
+			}
+
+			case BC_INST_CALL:
+			{
+				s = bc_program_call(p, code, &ip->idx);
+				break;
+			}
+
+			case BC_INST_INC_PRE:
+			case BC_INST_DEC_PRE:
+			case BC_INST_INC_POST:
+			case BC_INST_DEC_POST:
+			{
+				s = bc_program_incdec(p, inst);
+				break;
+			}
+
+			case BC_INST_HALT:
+			{
+				s = BC_STATUS_QUIT;
+				break;
+			}
+
+			case BC_INST_RET:
+#endif // BC_CONFIG
+			case BC_INST_RET0:
+			{
+				s = bc_program_return(p, inst);
+				break;
+			}
+
+			case BC_INST_READ:
+			{
+				s = bc_program_read(p);
 				break;
 			}
 
@@ -1449,21 +1477,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_INC_PRE:
-			case BC_INST_DEC_PRE:
-			case BC_INST_INC_POST:
-			case BC_INST_DEC_POST:
-			{
-				s = bc_program_incdec(p, inst);
-				break;
-			}
-
-			case BC_INST_HALT:
-			{
-				s = BC_STATUS_QUIT;
-				break;
-			}
-
 			case BC_INST_PRINT:
 			case BC_INST_PRINT_POP:
 			case BC_INST_PRINT_STR:
@@ -1491,6 +1504,11 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+
+#ifdef BC_CONFIG
+			case BC_INST_BOOL_OR:
+			case BC_INST_BOOL_AND:
+#endif // BC_CONFIG
 			case BC_INST_REL_EQ:
 			case BC_INST_REL_LE:
 			case BC_INST_REL_GE:
@@ -1516,25 +1534,20 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_BOOL_OR:
-			case BC_INST_BOOL_AND:
-			{
-				s = bc_program_logical(p, inst);
-				break;
-			}
-
 			case BC_INST_NEG:
 			{
 				s = bc_program_negate(p);
 				break;
 			}
 
+#ifdef BC_CONFIG
 			case BC_INST_ASSIGN_POWER:
 			case BC_INST_ASSIGN_MULTIPLY:
 			case BC_INST_ASSIGN_DIVIDE:
 			case BC_INST_ASSIGN_MODULUS:
 			case BC_INST_ASSIGN_PLUS:
 			case BC_INST_ASSIGN_MINUS:
+#endif // BC_CONFIG
 			case BC_INST_ASSIGN:
 			{
 				s = bc_program_assign(p, inst);
