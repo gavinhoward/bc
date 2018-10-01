@@ -186,8 +186,8 @@ BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 
 	while ((t = p->lex.t.t) != BC_LEX_EOF) {
 
-		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID)
-			s = dc_parse_push(p, code, inst);
+		inst = dc_parse_insts[t];
+		if (inst != BC_INST_INVALID) s = dc_parse_push(p, code, inst);
 		else s = dc_parse_token(p, code, t);
 
 		if (!s) s = bc_lex_next(&p->lex);
