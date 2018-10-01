@@ -30,7 +30,7 @@
 #include <vector.h>
 #include <lang.h>
 
-// BC_LEX_OP_NEGATE is not used in lexing; it is only for parsing.
+// BC_LEX_NEG is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
 
 	BC_LEX_EOF,
@@ -39,7 +39,7 @@ typedef enum BcLexType {
 	BC_LEX_OP_INC,
 	BC_LEX_OP_DEC,
 
-	BC_LEX_OP_NEG,
+	BC_LEX_NEG,
 
 	BC_LEX_OP_POWER,
 	BC_LEX_OP_MULTIPLY,
