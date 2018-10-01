@@ -68,7 +68,7 @@ typedef struct BcProgram {
 
 	// ** Exclude start. **
 	BcParseInit parse_init;
-	BcParseExpr parse_expr;
+	BcParseExpr parse_exp;
 	// ** Exclude end. **
 
 } BcProgram;
