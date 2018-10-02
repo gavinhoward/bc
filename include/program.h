@@ -80,7 +80,7 @@ typedef struct BcProgram {
 
 #ifdef DC_CONFIG
 #	define BC_PROG_STR_VAR(n) (!(n)->num && !n->cap)
-#endif // DC_CONFIG exclude
+#endif // DC_CONFIG
 
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 

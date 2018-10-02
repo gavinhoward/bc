@@ -193,7 +193,11 @@ BcStatus bc_lex_number(BcLex *l, char start);
 
 // bc lex code.
 
+// ** Exclude end. **
+
 BcStatus bc_lex_token(BcLex *l);
+
+// ** Exclude start. **
 
 // dc lex code.
 

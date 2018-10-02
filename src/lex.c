@@ -116,15 +116,6 @@ void bc_lex_file(BcLex *l, const char *file) {
 	l->file = file;
 }
 
-BcStatus bc_lex_text(BcLex *l, const char *text) {
-	assert(l && text);
-	l->buffer = text;
-	l->idx = 0;
-	l->len = strlen(text);
-	l->t.t = l->t.last = BC_LEX_INVALID;
-	return bc_lex_next(l);
-}
-
 BcStatus bc_lex_next(BcLex *l) {
 
 	BcStatus s;
@@ -147,4 +138,13 @@ BcStatus bc_lex_next(BcLex *l) {
 	while (!(s = l->next(l)) && l->t.t == BC_LEX_WHITESPACE);
 
 	return s;
+}
+
+BcStatus bc_lex_text(BcLex *l, const char *text) {
+	assert(l && text);
+	l->buffer = text;
+	l->idx = 0;
+	l->len = strlen(text);
+	l->t.t = l->t.last = BC_LEX_INVALID;
+	return bc_lex_next(l);
 }

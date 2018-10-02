@@ -60,7 +60,7 @@ BcStatus bc_program_search(BcProgram *p, char *name, BcVec **ret, bool var) {
 	return BC_STATUS_SUCCESS;
 
 err:
-	bc_array_free(&data.array);
+	bc_vec_free(&data.array);
 	return s;
 }
 
@@ -602,7 +602,7 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 
 err:
 	if (var) bc_num_free(&r.data.num);
-	else bc_array_free(&r.data.array);
+	else bc_vec_free(&r.data.array);
 	return s;
 }
 
@@ -686,13 +686,13 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 
 	BcStatus s;
 	BcResult r;
-#ifdef DC_CONFIG
+	char *name;
+#ifdef DC_CONFIG // Exclude
 	BcNum *num;
 	BcVec *v;
-	char *name;
 #else // DC_CONFIG
 	(void) pop;
-#endif // DC_CONFIG exclude
+#endif // DC_CONFIG Exclude
 
 	if (!(name = bc_program_name(code, bgn))) return BC_STATUS_ALLOC_ERR;
 	r.t = BC_RESULT_VAR;
@@ -734,8 +734,8 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 #ifdef DC_CONFIG
 copy_err:
 	if (s && pop) bc_num_free(&r.data.num);
-#endif // DC_CONFIG
 err:
+#endif // DC_CONFIG
 	if (name && s) free(name);
 	return s;
 }
@@ -863,7 +863,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
 err:
 	if (a->var) bc_num_free(&param.num);
-	else bc_array_free(&param.array);
+	else bc_vec_free(&param.array);
 	return s;
 }
 #endif // BC_CONFIG

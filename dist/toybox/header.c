@@ -37,6 +37,7 @@ config BC
 
 GLOBALS(
   long tty;
+  long ttyin;
 
   unsigned long sig;
   unsigned long sigc;

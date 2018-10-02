@@ -1115,12 +1115,6 @@ BcStatus bc_parse_parse(BcParse *p) {
 	return s;
 }
 
-// ** Exclude start. **
-BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {
-	return bc_parse_create(p, prog, bc_parse_parse, bc_lex_token);
-}
-// ** Exclude end. **
-
 BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -1367,4 +1361,8 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 	}
 
 	return s;
+}
+
+BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {
+	return bc_parse_create(p, prog, bc_parse_parse, bc_lex_token);
 }

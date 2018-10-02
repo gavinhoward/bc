@@ -38,7 +38,7 @@ toybox = sys.argv[1].rstrip(os.sep)
 toybox_bc = toybox + "/toys/pending/bc.c"
 
 os.chdir(testdir)
-os.chdir("..")
+os.chdir("../..")
 
 res = subprocess.run(["make", "gen/lib.c"])
 
@@ -76,8 +76,9 @@ for i in range(22, len(vm_c_lines)):
 vm_c_replacements = [
 	[ '\t', '  ' ],
 	[ '\n  [ ]*assert\(.*?\);$', '' ],
-	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*files\)',
-	  'void bc_main(void)' ],
+	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*exprs, BcVec \*files,' +
+	  '\n[ ]*BcParseInit parse_init, BcParseExpr parse_expr\)\n\{',
+	  'void bc_main(void) {\n' ],
 	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
 	[ '^  bcg.warn = flags & BC_FLAG_W;$', '' ],
 	[ '([^_])flags ', r'\1toys.optflags ' ],
@@ -85,12 +86,17 @@ vm_c_replacements = [
 	[ '\*\(\(char\*\*\) bc_vec_item\(files, i\)\)', 'toys.optargs[i]' ],
 	[ '^  bc_parse_free\(&vm\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&vm.parse);' ],
 	[ '^  bc_program_free\(&vm\.prog\);', '  if (CFG_TOYBOX_FREE) bc_program_free(&vm.prog);' ],
-	[ 'if \(\(s = bc_vm_set_sig\(\)\)\) return s;',
-	  'if ((toys.exitval = bc_vm_set_sig())) return;' ],
-	[ 'if \(\(s = bc_program_init\(&vm\.prog, len\)\)\) return s;',
+	[ 'if \(\(s = bc_program_init\(&vm\.prog, len, parse_init, parse_expr\)\)\) return s;',
 	  'if ((toys.exitval = bc_program_init(&vm.prog, len))) return;' ],
 	[ 'return s == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : s;',
 	  'toys.exitval = s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;' ],
+	[ 'vm->parse\.parse\(&vm', 'bc_parse_parse(&vm' ],
+	[ 'vm\.parse\.parse\(&vm', 'bc_parse_parse(&vm' ],
+	[ '^    return BC_STATUS_EXEC_SIGACTION_FAIL;$',
+	  '    toys.exitval = BC_STATUS_EXEC_SIGACTION_FAIL;\n    return;' ],
+	[ '\(\(s = parse_init\(&vm\.parse, &vm\.prog\)\)\)', '((s = bc_parse_init(&vm.parse, &vm.prog)))' ],
+	[ '^[ ]*if \(exprs->len > 1 && \(s = bc_vm_process\(&vm, exprs->vec\)\)\) goto err;$', '' ],
+	[ 'if \(exprs->len <= 1\) s = bc_vm_stdin\(&vm\);$', 's = bc_vm_stdin(&vm);' ],
 ]
 
 for rep in vm_c_replacements:
@@ -106,24 +112,38 @@ regexes = [
 	'^#endif \/\/ BC.*_H$',
 	'^extern.*$',
 	'^static ',
-	'^#define BC_FLAG_W \(1<<0\)$',
-	'^#define BC_FLAG_S \(1<<1\)$',
-	'^#define BC_FLAG_Q \(1<<2\)$',
-	'^#define BC_FLAG_L \(1<<3\)$',
-	'^#define BC_FLAG_I \(1<<4\)$',
-	'^#define BC_FLAG_C \(1<<5\)$',
+	'^#define BC_FLAG_X \(1<<0\)$',
+	'^#define BC_FLAG_W \(1<<1\)$',
+	'^#define BC_FLAG_S \(1<<2\)$',
+	'^#define BC_FLAG_Q \(1<<3\)$',
+	'^#define BC_FLAG_L \(1<<4\)$',
+	'^#define BC_FLAG_I \(1<<5\)$',
+	'^#define BC_FLAG_C \(1<<6\)$',
 	'^#define BC_INVALID_IDX \(\(size_t\) -1\)$',
 	'^#define BC_MAX\(a, b\) \(\(a\) > \(b\) \? \(a\) : \(b\)\)$',
 	'^#define BC_MIN\(a, b\) \(\(a\) < \(b\) \? \(a\) : \(b\)\)$',
-	'^\t\/\/ This is last so I can remove it for toybox.\n\tBC_STATUS_INVALID_OPTION,$',
-	'^#define BC_PROGRAM_CHECK_STACK.*$',
-	'^#define BC_PROGRAM_CHECK_RESULTS.*$',
+	'\n\n// This one is needed for dc too.$'
 ]
 
 regexes_all = [
-	'^// \*\* Exclude start. \*\*$.*?^// \*\* Exclude end. \*\*$',
+	'\n#ifdef DC_CONFIG // Exclude.*?#endif // DC_CONFIG Exclude$',
+	'\n#ifdef DC_CONFIG.*?#else // DC_CONFIG$',
+	'\n#ifdef DC_CONFIG.*?#endif // DC_CONFIG$',
+	'\n#endif // DC_CONFIG$',
+	'\n#ifdef BC_CONFIG$',
+	'\n#else // BC_CONFIG.*?#endif // BC_CONFIG$',
+	'\n#endif // BC_CONFIG$',
 	'^#ifndef NDEBUG.*?^#endif \/\/ NDEBUG$',
-	'\n\t[\t]*assert\(.*?\);$'
+	'\n\t[\t]*assert\(.*?\);$',
+	'\#if !defined\(BC_CONFIG\).*?\#endif',
+	'\n[\t]*// \*\* Exclude start\. \*\*.*?^[\t]*// \*\* Exclude end\. \*\*$',
+	'^\tBC_STATUS_INVALID_OPTION,$',
+	'^\tl->next = next;$',
+	'^BcStatus bc_parse_init\(BcParse \*p, BcProgram \*prog\) \{.*?\}',
+	'^[\t]*p->parse = parse;$',
+	'^[\t]*p->parse_init = parse_init;$',
+	'^[\t]*p->parse_exp = parse_expr;$',
+	'!strcmp\(bcg\.name, bc_name\) && '
 ]
 
 replacements = [
@@ -143,6 +163,18 @@ replacements = [
 	[ ' true', ' 1' ],
 	[ ' false', ' 0' ],
 	[ 'true', '1' ],
+	[ 'BcStatus bc_lex_init\(BcLex \*l, BcLexNext next\)', 'BcStatus bc_lex_init(BcLex *l)' ],
+	[ 'l->next\(l\)', 'bc_lex_token(l)' ],
+	[ '^BcStatus bc_parse_create\(BcParse \*p, BcProgram \*prog,\n[ ]*BcParseParse parse, BcLexNext next\)\n\{',
+	  'BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {' ],
+	[ 'BcStatus bc_program_init\(BcProgram \*p, size_t line_len,\n' +
+	  '[ ]*BcParseInit parse_init, BcParseExpr parse_expr\)\n\{',
+	  'BcStatus bc_program_init(BcProgram *p, size_t line_len) {\n' ],
+	[ 'if \(\(s = bc_lex_init\(&p->lex, next\)\)\) return s;', 'if ((s = bc_lex_init(&p->lex))) return s;' ],
+	[ 'p->parse_init\(', 'bc_parse_init(' ],
+	[ 'p->parse_exp\(', 'bc_parse_expr(' ],
+	[ '^BcStatus bc_program_pushVar\(BcProgram \*p, char \*code, size_t \*bgn, bool pop\)',
+	  'BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn)' ],
 ]
 
 for reg in regexes:

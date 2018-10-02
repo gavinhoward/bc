@@ -1304,4 +1304,4 @@ base_err:
 	if (init) bc_num_free(&num2);
 	return s;
 }
-#endif // BC_CONFIG
+#endif // DC_CONFIG

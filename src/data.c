@@ -36,7 +36,7 @@ const char bc_header[] =
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
 const char bc_err_fmt[] = "\n%s error: %s\n\n";
-const char bc_err_line[] = ":%d\n\n";
+const char bc_err_line[] = ":%zu\n\n";
 
 const char *bc_errs[] = {
 	"VM",
@@ -198,7 +198,7 @@ const bool bc_parse_exprs[] = {
 	true, true, true, true, true, true, true, true, true, true, true, true,
 	true, true, true, false, false, true, true, false, false, false, false,
 	false, false, false, true, true, false, false, false, false, false, false,
-	false, true, false, true,true, true, true, false, false, true, false, true,
+	false, true, false, true, true, true, true, false, false, true, false, true,
 	true, false,
 };
 

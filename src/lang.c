@@ -26,6 +26,12 @@
 
 #include <lang.h>
 
+void bc_auto_free(void *auto1) {
+	BcAuto *a = (BcAuto*) auto1;
+	assert(a && a->name);
+	free(a->name);
+}
+
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
 
 	BcAuto a;
@@ -80,7 +86,7 @@ BcStatus bc_array_init(BcVec *a, bool nums) {
 	if (nums) {
 		if ((s = bc_vec_init(a, sizeof(BcNum), bc_num_free))) return s;
 	}
-	else if ((s = bc_vec_init(a, sizeof(BcVec), bc_array_free))) return s;
+	else if ((s = bc_vec_init(a, sizeof(BcVec), bc_vec_free))) return s;
 
 	if ((s = bc_array_expand(a, 1))) goto err;
 
@@ -131,10 +137,10 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
 		}
 	}
 	else {
-		assert(a->size == sizeof(BcVec) && a->dtor == bc_array_free);
+		assert(a->size == sizeof(BcVec) && a->dtor == bc_vec_free);
 		while (!s && len > a->len) {
 			if ((s = bc_array_init(&v, true))) return s;
-			if ((s = bc_vec_push(a, &v))) bc_array_free(&v);
+			if ((s = bc_vec_push(a, &v))) bc_vec_free(&v);
 		}
 	}
 
@@ -155,12 +161,6 @@ void bc_entry_free(void *entry) {
 	BcEntry *e = entry;
 	assert(e && e->name);
 	free(e->name);
-}
-
-void bc_auto_free(void *auto1) {
-	BcAuto *a = (BcAuto*) auto1;
-	assert(a && a->name);
-	free(a->name);
 }
 
 BcStatus bc_result_copy(BcResult *d, BcResult *s) {

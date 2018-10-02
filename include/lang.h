@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef BC_DATA_H
-#define BC_DATA_H
+#ifndef BC_LANG_H
+#define BC_LANG_H
 
 #include <stdbool.h>
 
@@ -193,8 +193,11 @@ void bc_func_free(void *func);
 
 BcStatus bc_array_init(BcVec *a, bool nums);
 BcStatus bc_array_copy(BcVec *d, const BcVec *s);
+// ** Exclude end. **
+
 BcStatus bc_array_expand(BcVec *a, size_t len);
 
+// ** Exclude start. **
 void bc_string_free(void *string);
 
 int bc_entry_cmp(const void *e1, const void *e2);
@@ -203,10 +206,6 @@ void bc_entry_free(void *entry);
 BcStatus bc_result_copy(BcResult *d, BcResult *s);
 void bc_result_free(void *result);
 // ** Exclude end. **
-
-void bc_auto_free(void *auto1);
-
-#define bc_array_free bc_vec_free
 
 #ifndef NDEBUG
 extern const char bc_inst_chars[];
@@ -220,4 +219,4 @@ extern const uint8_t bc_inst_nresults[];
 extern const char bc_func_main[];
 extern const char bc_func_read[];
 
-#endif // BC_DATA_H
+#endif // BC_LANG_H

@@ -86,10 +86,9 @@
 	(((p) >= BC_INST_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
 	(p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)
 
-// We can calculate the conversion between tokens and exprs
-// by subtracting the position of the first operator in the
-// lex enum and adding the position of the first in the expr
-// enum. Note: This only works for binary operators.
+// We can calculate the conversion between tokens and exprs by subtracting the
+// position of the first operator in the lex enum and adding the position of the
+// first in the expr enum. Note: This only works for binary operators.
 #define BC_PARSE_TOKEN_TO_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
 typedef struct BcOp {
@@ -109,12 +108,17 @@ typedef struct BcParseNext {
 #define BC_PARSE_NEXT_TOKENS(...) .tokens = { __VA_ARGS__ }
 #define BC_PARSE_NEXT(a, ...) { .len = (a), BC_PARSE_NEXT_TOKENS(__VA_ARGS__) }
 
+// ** Exclude start. **
 struct BcParse;
+// ** Exclude end. **
+
 struct BcProgram;
 
+// ** Exclude start. **
 typedef BcStatus (*BcParseInit)(struct BcParse*, struct BcProgram*);
 typedef BcStatus (*BcParseParse)(struct BcParse*);
 typedef BcStatus (*BcParseExpr)(struct BcParse*, BcVec*, uint8_t, BcParseNext);
+// ** Exclude end. **
 
 typedef struct BcParse {
 
@@ -154,7 +158,12 @@ BcStatus bc_parse_number(BcParse *p, BcVec* code, BcInst *prev, size_t* nexs);
 // bc parse code.
 
 BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog);
+
+// ** Exclude end. **
+
 BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
+
+// ** Exclude start. **
 
 // dc parse code.
 

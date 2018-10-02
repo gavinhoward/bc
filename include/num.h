@@ -72,13 +72,13 @@ BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale);
 
 // ** Exclude start. **
-BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale);
 
 #ifdef DC_CONFIG
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
-#endif // BC_CONFIG
+#endif // DC_CONFIG
 
 void bc_num_zero(BcNum *n);
 void bc_num_one(BcNum *n);

@@ -93,7 +93,6 @@ typedef enum BcStatus {
 	BC_STATUS_QUIT,
 	BC_STATUS_LIMITS,
 
-	// This is last so I can remove it for toybox.
 	BC_STATUS_INVALID_OPTION,
 
 } BcStatus;
