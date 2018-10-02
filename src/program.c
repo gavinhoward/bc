@@ -1625,13 +1625,13 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_PUSH_VAR:
+			case BC_INST_COPY_TO_VAR:
 			{
 				s = bc_program_copyToVar(p, code, &ip->idx);
 				break;
 			}
 
-			case BC_INST_POP_VAR:
+			case BC_INST_PUSH_VAR:
 			{
 				s = bc_program_pushVar(p, code, &ip->idx, true);
 				break;

@@ -84,14 +84,14 @@ BcStatus dc_parse_mem(BcParse *p, BcVec *code, uint8_t inst,
 		if ((s = bc_vec_pushByte(code, BC_INST_SWAP))) return s;
 
 		if (push_pop) {
-			if ((s = bc_vec_pushByte(code, BC_INST_PUSH_VAR))) return s;
+			if ((s = bc_vec_pushByte(code, BC_INST_COPY_TO_VAR))) return s;
 		}
 		else {
 			if ((s = bc_vec_pushByte(code, BC_INST_ASSIGN))) return s;
 			s = bc_vec_pushByte(code, BC_INST_POP);
 		}
 	}
-	else if (push_pop) s = bc_vec_pushByte(code, BC_INST_POP_VAR);
+	else if (push_pop) s = bc_vec_pushByte(code, BC_INST_PUSH_VAR);
 
 	return s;
 
