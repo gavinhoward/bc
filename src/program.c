@@ -1726,8 +1726,8 @@ BcStatus bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn)
-{
+BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
+
 	BcStatus s = BC_STATUS_SUCCESS;
 	uint8_t inst = code[(*bgn)++];
 
@@ -1741,7 +1741,12 @@ BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn)
 	else if (inst == BC_INST_STR) {
 		s = bc_program_printStr(p, code, bgn);
 	}
-	else if (inst == BC_INST_NUM || inst == BC_INST_CALL ||
+	else if (inst == BC_INST_NUM) {
+		size_t idx = bc_program_index(code, bgn);
+		char **str = bc_vec_item(&p->consts, idx);
+		if (printf("(%s)", *str) < 0) s = BC_STATUS_IO_ERR;
+	}
+	else if (inst == BC_INST_CALL ||
 	         (inst > BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
 	{
 		if ((s = bc_program_printIndex(code, bgn))) return s;
