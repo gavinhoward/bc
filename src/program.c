@@ -209,9 +209,8 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 	rt = (*right)->type;
 	hex = assign && (lt == BC_RESULT_IBASE || lt == BC_RESULT_OBASE);
 
-	if (lt == BC_RESULT_ARRAY || lt == BC_RESULT_ARRAY_AUTO ||
-	    lt == BC_RESULT_STRING || rt == BC_RESULT_STRING ||
-	    rt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY_AUTO)
+	if (lt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY ||
+	    lt == BC_RESULT_STR || rt == BC_RESULT_STR)
 	{
 		return BC_STATUS_EXEC_BAD_TYPE;
 	}
@@ -245,11 +244,8 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 	*r = bc_vec_top(&p->results);
 	t = (*r)->type;
 
-	if (((t == BC_RESULT_ARRAY_AUTO || t == BC_RESULT_ARRAY) && !arr) ||
-	    t == BC_RESULT_STRING)
-	{
+	if ((t == BC_RESULT_ARRAY && !arr) || t == BC_RESULT_STR)
 		return BC_STATUS_EXEC_BAD_TYPE;
-	}
 
 	return bc_program_num(p, *r, n, false);
 }
