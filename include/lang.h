@@ -149,7 +149,7 @@ typedef enum BcResultType {
 	BC_RESULT_ARRAY_ELEM,
 	BC_RESULT_ARRAY,
 
-	BC_RESULT_STRING,
+	BC_RESULT_STR,
 
 	BC_RESULT_IBASE,
 	BC_RESULT_SCALE,
@@ -163,17 +163,18 @@ typedef enum BcResultType {
 
 } BcResultType;
 
+typedef union BcResultData {
+
+	BcNum num;
+	BcVec array;
+	BcEntry id;
+
+} BcResultData;
+
 typedef struct BcResult {
 
-	BcResultType type;
-
-	union {
-
-		BcNum num;
-		BcVec array;
-		BcEntry id;
-
-	} data;
+	BcResultType t;
+	BcResultData data;
 
 } BcResult;
 
@@ -190,7 +191,7 @@ BcStatus bc_func_init(BcFunc *f);
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var);
 void bc_func_free(void *func);
 
-BcStatus bc_array_init(BcVec *a);
+BcStatus bc_array_init(BcVec *a, bool nums);
 BcStatus bc_array_copy(BcVec *d, const BcVec *s);
 BcStatus bc_array_expand(BcVec *a, size_t len);
 

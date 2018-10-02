@@ -73,10 +73,21 @@ void bc_func_free(void *func) {
 	bc_vec_free(&f->labels);
 }
 
-BcStatus bc_array_init(BcVec *a) {
+BcStatus bc_array_init(BcVec *a, bool nums) {
+
 	BcStatus s;
-	if ((s = bc_vec_init(a, sizeof(BcNum), bc_num_free))) return s;
-	if ((s = bc_array_expand(a, 1))) bc_vec_free(a);
+
+	if (nums) {
+		if ((s = bc_vec_init(a, sizeof(BcNum), bc_num_free))) return s;
+	}
+	else if ((s = bc_vec_init(a, sizeof(BcVec), bc_array_free))) return s;
+
+	if ((s = bc_array_expand(a, 1))) goto err;
+
+	return s;
+
+err:
+	bc_vec_free(a);
 	return s;
 }
 
@@ -107,14 +118,24 @@ BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
 BcStatus bc_array_expand(BcVec *a, size_t len) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcNum num;
+	BcNum n;
+	BcVec v;
 
-	assert(a && a->size == sizeof(BcNum) && a->dtor == bc_num_free);
+	assert(a);
 
-	while (!s && len > a->len) {
-		if ((s = bc_num_init(&num, BC_NUM_DEF_SIZE))) return s;
-		bc_num_zero(&num);
-		if ((s = bc_vec_push(a, &num))) bc_num_free(&num);
+	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
+		while (!s && len > a->len) {
+			if ((s = bc_num_init(&n, BC_NUM_DEF_SIZE))) return s;
+			bc_num_zero(&n);
+			if ((s = bc_vec_push(a, &n))) bc_num_free(&n);
+		}
+	}
+	else {
+		assert(a->size == sizeof(BcVec) && a->dtor == bc_array_free);
+		while (!s && len > a->len) {
+			if ((s = bc_array_init(&v, true))) return s;
+			if ((s = bc_vec_push(a, &v))) bc_array_free(&v);
+		}
 	}
 
 	return s;
@@ -148,7 +169,7 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 
 	assert(d && s);
 
-	switch (s->type) {
+	switch (s->t) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
@@ -184,7 +205,7 @@ void bc_result_free(void *result) {
 
 	assert(r);
 
-	switch (r->type) {
+	switch (r->t) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:

@@ -31,68 +31,36 @@
 #include <program.h>
 #include <vm.h>
 
-BcStatus bc_program_search(BcProgram *p, BcResult *r, BcVec **ret, bool var) {
+BcStatus bc_program_search(BcProgram *p, char *name, BcVec **ret, bool var) {
 
 	BcStatus s;
-	BcEntry entry, *entry_ptr;
-	BcVec *vec;
-	BcVecO *veco;
-	size_t idx, ip_idx;
-	BcAuto *a;
-	// We use this because it has a union of BcNum and BcVec.
-	BcResult data;
+	BcEntry e, *ptr;
+	BcVec *v;
+	BcVecO *vo;
+	size_t i;
+	BcResultData data;
+	bool new;
 
-	for (ip_idx = 0; ip_idx < p->stack.len - 1; ++ip_idx) {
+	v = var ? &p->vars : &p->arrs;
+	vo = var ? &p->var_map : &p->arr_map;
 
-		BcFunc *func;
-		BcInstPtr *ip = bc_vec_item_rev(&p->stack, ip_idx);
+	e.name = name;
+	e.idx = v->len;
 
-		if (ip->func == BC_PROG_READ || ip->func == BC_PROG_MAIN) continue;
-
-		func = bc_vec_item(&p->fns, ip->func);
-
-		for (idx = 0; idx < func->autos.len; ++idx) {
-
-			a = bc_vec_item(&func->autos, idx);
-
-			if (!strcmp(a->name, r->data.id.name)) {
-
-				BcResult *r = bc_vec_item(&p->results, ip->len + idx);
-
-				if (!a->var != !var) return BC_STATUS_EXEC_BAD_TYPE;
-				*ret = &r->data.array;
-
-				return BC_STATUS_SUCCESS;
-			}
-		}
-	}
-
-	vec = var ? &p->vars : &p->arrs;
-	veco = var ? &p->var_map : &p->arr_map;
-
-	entry.name = r->data.id.name;
-	entry.idx = vec->len;
-
-	s = bc_veco_insert(veco, &entry, &idx);
-
-	if (s != BC_STATUS_VEC_ITEM_EXISTS) {
-
+	if ((new = (s = bc_veco_insert(vo, &e, &i)) != BC_STATUS_VEC_ITEM_EXISTS)) {
 		if (s) return s;
-
-		if (!(r->data.id.name = strdup(entry.name))) return BC_STATUS_ALLOC_ERR;
-		if ((s = bc_array_init(&data.data.array))) goto num_err;
-		if ((s = bc_vec_push(vec, &data.data.array))) goto err;
+		if ((s = bc_array_init(&data.array, var))) return s;
+		if ((s = bc_vec_push(v, &data.array))) goto err;
 	}
 
-	entry_ptr = bc_veco_item(veco, idx);
-	*ret = bc_vec_item(vec, entry_ptr->idx);
+	ptr = bc_veco_item(vo, i);
+	if (new && !(ptr->name = strdup(e.name))) return BC_STATUS_ALLOC_ERR;
+	*ret = bc_vec_item(v, ptr->idx);
 
 	return BC_STATUS_SUCCESS;
 
 err:
-	bc_array_free(&data.data.array);
-num_err:
-	free(r->data.id.name);
+	bc_array_free(&data.array);
 	return s;
 }
 
@@ -100,7 +68,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	switch (r->type) {
+	switch (r->t) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
@@ -127,7 +95,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 			}
 
 			*num = &r->data.num;
-			r->type = BC_RESULT_TEMP;
+			r->t = BC_RESULT_TEMP;
 
 			break;
 		}
@@ -138,19 +106,22 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 		{
 			BcVec *v;
 
-			s = bc_program_search(p, r, &v, r->type == BC_RESULT_VAR);
+			s = bc_program_search(p, r->data.id.name, &v, r->t == BC_RESULT_VAR);
 			if (s) return s;
 
-			if (r->type == BC_RESULT_ARRAY_ELEM) {
+			if (r->t == BC_RESULT_ARRAY_ELEM) {
 
-				if (v->len <= r->data.id.idx) {
+				if ((v = bc_vec_top(v))->len <= r->data.id.idx) {
 					if ((s = bc_array_expand(v, r->data.id.idx + 1))) return s;
 				}
 
 				*num = bc_vec_item(v, r->data.id.idx);
 			}
-			else if (r->type == BC_RESULT_VAR) *num = bc_vec_top(v);
-			else *num = (BcNum*) v;
+			else if (r->t == BC_RESULT_ARRAY) {
+				v = bc_vec_top(v);
+				*num = (BcNum*) v;
+			}
+			else *num = bc_vec_top(v);
 
 			break;
 		}
@@ -205,8 +176,8 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 	*right = bc_vec_item_rev(&p->results, 0);
 	*left = bc_vec_item_rev(&p->results, 1);
 
-	lt = (*left)->type;
-	rt = (*right)->type;
+	lt = (*left)->t;
+	rt = (*right)->t;
 	hex = assign && (lt == BC_RESULT_IBASE || lt == BC_RESULT_OBASE);
 
 	if (lt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY ||
@@ -227,7 +198,7 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 }
 
 BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r) {
-	r->type = BC_RESULT_TEMP;
+	r->t = BC_RESULT_TEMP;
 	bc_vec_pop(&p->results);
 	bc_vec_pop(&p->results);
 	return bc_vec_push(&p->results, r);
@@ -242,7 +213,7 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
 
 	*r = bc_vec_top(&p->results);
-	t = (*r)->type;
+	t = (*r)->t;
 
 	if ((t == BC_RESULT_ARRAY && !arr) || t == BC_RESULT_STR)
 		return BC_STATUS_EXEC_BAD_TYPE;
@@ -251,7 +222,7 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 }
 
 BcStatus bc_program_retire(BcProgram *p, BcResult *r, BcResultType t) {
-	r->type = t;
+	r->t = t;
 	bc_vec_pop(&p->results);
 	return bc_vec_push(&p->results, r);
 }
@@ -441,7 +412,7 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 
 	r = bc_vec_item_rev(&p->results, idx);
 
-	if (r->type == BC_RESULT_STRING) {
+	if (r->t == BC_RESULT_STR) {
 
 		idx = r->data.id.idx;
 		assert(idx < p->strs.len);
@@ -579,18 +550,63 @@ err:
 }
 
 #ifdef DC_CONFIG
-BcStatus bc_program_assignStr(BcResult *r, BcVec *var, bool push)
+BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *var, bool push)
 {
 	BcNum n2;
 
 	memset(&n2, 0, sizeof(BcNum));
 	n2.rdx = r->data.id.idx;
 
-	if (push) bc_vec_pop(var);
+	if (push) bc_vec_pop(&p->results);
 
 	return bc_vec_push(var, &n2);
 }
 #endif // DC_CONFIG
+
+BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
+
+	BcStatus s;
+	BcResult *ptr, r;
+	BcVec *v;
+	BcNum *n;
+
+	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
+
+	ptr = bc_vec_top(&p->results);
+	if ((ptr->t == BC_RESULT_ARRAY) != !var) return BC_STATUS_EXEC_BAD_TYPE;
+
+	if ((s = bc_program_search(p, name, &v, var))) return s;
+
+#ifdef DC_CONFIG
+	if (ptr->t == BC_RESULT_STR && !var) return BC_STATUS_EXEC_BAD_TYPE;
+	if (ptr->t == BC_RESULT_STR) return bc_program_assignStr(p, ptr, v, true);
+#endif // DC_CONFIG
+
+	if ((s = bc_program_num(p, ptr, &n, false))) return s;
+
+	// Do this once more to make sure that pointers were not invalidated.
+	if ((s = bc_program_search(p, name, &v, var))) return s;
+
+	if (var) {
+		if ((s = bc_num_init(&r.data.num, BC_NUM_DEF_SIZE))) return s;
+		s = bc_num_copy(&r.data.num, n);
+	}
+	else {
+		if ((s = bc_array_init(&r.data.array, true))) return s;
+		s = bc_array_copy(&r.data.array, (BcVec*) n);
+	}
+
+	if (s || (s = bc_vec_push(v, &r.data))) goto err;
+
+	bc_vec_pop(&p->results);
+
+	return s;
+
+err:
+	if (var) bc_num_free(&r.data.num);
+	else bc_array_free(&r.data.array);
+	return s;
+}
 
 BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
@@ -603,23 +619,23 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 	if ((s = bc_program_binOpPrep(p, &left, &l, &right, &r, assign))) return s;
 
 #ifdef DC_CONFIG
-	assert(left->type != BC_RESULT_STRING);
+	assert(left->t != BC_RESULT_STR);
 
-	if (right->type == BC_RESULT_STRING) {
+	if (right->t == BC_RESULT_STR) {
 
 		BcVec *v;
 
-		assert(inst == BC_INST_ASSIGN && left->type == BC_RESULT_VAR);
+		assert(assign && left->t == BC_RESULT_VAR);
 
-		if ((s = bc_program_search(p, right, &v, true))) return s;
-		if ((s = bc_program_assignStr(right, v, false))) return s;
+		if ((s = bc_program_search(p, right->data.id.name, &v, true))) return s;
+		if ((s = bc_program_assignStr(p, right, v, false))) return s;
 		bc_vec_pop(&p->results);
 
 		return s;
 	}
 #endif // DC_CONFIG
 
-	if (left->type == BC_RESULT_CONSTANT || left->type == BC_RESULT_TEMP)
+	if (left->t == BC_RESULT_CONSTANT || left->t == BC_RESULT_TEMP)
 		return BC_STATUS_PARSE_BAD_ASSIGN;
 
 #ifdef BC_CONFIG
@@ -628,19 +644,20 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
 	if (assign) s = bc_num_copy(l, r);
 	else s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
-#else // BC_CONFIG
-	s = bc_num_copy(l, r);
-#endif // BC_CONFIG
 
 	if (s) return s;
+#else // BC_CONFIG
+	assert(assign);
+	if ((s = bc_num_copy(l, r))) return s;
+#endif // BC_CONFIG
 
-	if (left->type == BC_RESULT_IBASE || left->type == BC_RESULT_OBASE) {
+	if (left->t == BC_RESULT_IBASE || left->t == BC_RESULT_OBASE) {
 
-		size_t * ptr = left->type == BC_RESULT_IBASE ? &p->ib_t : &p->ob_t;
+		size_t *ptr = left->t == BC_RESULT_IBASE ? &p->ib_t : &p->ob_t;
 
 		if ((s = bc_num_ulong(r, &val))) return s;
 
-		max = left->type == BC_RESULT_IBASE ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
+		max = left->t == BC_RESULT_IBASE ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
 
 		if (val < BC_NUM_MIN_BASE || val > max)
 			return left->type == BC_RESULT_IBASE ? BC_STATUS_EXEC_BAD_IBASE :
@@ -648,7 +665,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
 		*ptr = (size_t) val;
 	}
-	else if (left->type == BC_RESULT_SCALE) {
+	else if (left->t == BC_RESULT_SCALE) {
 
 		if ((s = bc_num_ulong(l, &val))) return s;
 		if (val > (unsigned long) BC_MAX_SCALE) return BC_STATUS_EXEC_BAD_SCALE;
@@ -658,7 +675,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
 	if ((s = bc_num_init(&res.data.num, l->len))) return s;
 	if ((s = bc_num_copy(&res.data.num, l))) goto err;
-
+	res.t = BC_RESULT_TEMP;
 	if ((s = bc_program_binOpRetire(p, &res))) goto err;
 
 	return s;
@@ -675,45 +692,54 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 #ifdef DC_CONFIG
 	BcNum *num;
 	BcVec *v;
+	char *name;
 #else // DC_CONFIG
 	(void) pop;
 #endif // DC_CONFIG exclude
 
-	if (!(r.data.id.name = bc_program_name(code, bgn)))
-		return BC_STATUS_ALLOC_ERR;
-
-	r.type = BC_RESULT_VAR;
+	if (!(name = bc_program_name(code, bgn))) return BC_STATUS_ALLOC_ERR;
+	r.t = BC_RESULT_VAR;
+	r.data.id.name = name;
 
 #ifdef DC_CONFIG
-	if ((s = bc_program_search(p, &r, &v, true))) goto err;
+	if ((s = bc_program_search(p, name, &v, true))) goto err;
+	assert(BC_PROG_CHECK_STACK(v, 1));
 	num = bc_vec_top(v);
 
-	if (BC_PROG_STR_VAR(num)) {
-		r.type = BC_RESULT_STRING;
-		r.data.id.idx = num->rdx;
-	}
-	else if (pop) {
+	if (BC_PROG_STR_VAR(num) || pop) {
 
-		r.type = BC_RESULT_TEMP;
+		if (pop) {
 
-		if (!BC_PROG_CHECK_STACK(v, 2)) {
-			s = BC_STATUS_EXEC_SMALL_STACK;
-			goto err;
+			r.t = BC_RESULT_TEMP;
+
+			if (!BC_PROG_CHECK_STACK(v, 2)) {
+				s = BC_STATUS_EXEC_SMALL_STACK;
+				goto err;
+			}
+
+			if ((s = bc_num_init(&r.data.num, BC_NUM_DEF_SIZE))) goto err;
+			if ((s = bc_num_copy(&r.data.num, num))) goto copy_err;
+
+			bc_vec_pop(v);
+		}
+		else {
+			r.t = BC_RESULT_STR;
+			r.data.id.idx = num->rdx;
 		}
 
-		memcpy(&r.data.num, num, sizeof(BcNum));
-		memset(num, 0, sizeof(BcNum));
-
-		bc_vec_pop(v);
+		free(name);
+		name = NULL;
 	}
 #endif // DC_CONFIG
 
-	if ((s = bc_vec_push(&p->results, &r))) goto err;
+	s = bc_vec_push(&p->results, &r);
 
-	return s;
-
+#ifdef DC_CONFIG
+copy_err:
+	if (s && pop) bc_num_free(&r.data.num);
+#endif // DC_CONFIG
 err:
-	free(r.data.id.name);
+	if (name && s) free(name);
 	return s;
 }
 
@@ -728,7 +754,7 @@ BcStatus bc_program_pushArray(BcProgram *p, char *code,
 		return BC_STATUS_ALLOC_ERR;
 
 	if (inst == BC_INST_ARRAY) {
-		r.type = BC_RESULT_ARRAY;
+		r.t = BC_RESULT_ARRAY;
 		s = bc_vec_push(&p->results, &r);
 	}
 	else {
@@ -764,12 +790,12 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
 
 	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
-		copy.type = BC_RESULT_TEMP;
+		copy.t = BC_RESULT_TEMP;
 		if ((s = bc_num_init(&copy.data.num, num->len))) return s;
 		if ((s = bc_num_copy(&copy.data.num, num))) goto err;
 	}
 
-	res.type = BC_RESULT_ONE;
+	res.t = BC_RESULT_ONE;
 	inst = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
 	           BC_INST_ASSIGN_PLUS : BC_INST_ASSIGN_MINUS;
 
@@ -797,60 +823,52 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 	BcInstPtr ip;
 	size_t i, nparams = bc_program_index(code, idx);
 	BcFunc *func;
-	BcAuto *auto_ptr;
-	BcResult param, *arg;
+	BcVec *v;
+	BcAuto *a;
+	BcResultData param;
+	BcResult *arg;
 
 	ip.idx = 0;
-	ip.len = p->results.len;
 	ip.func = bc_program_index(code, idx);
-
 	func = bc_vec_item(&p->fns, ip.func);
 
 	if (!func->code.len) return BC_STATUS_EXEC_UNDEFINED_FUNC;
 	if (nparams != func->nparams) return BC_STATUS_EXEC_MISMATCHED_PARAMS;
+	ip.len = p->results.len - nparams;
+
+	assert(BC_PROG_CHECK_STACK(&p->results, nparams));
 
 	for (i = 0; i < nparams; ++i) {
 
-		BcVec *a;
-		BcNum *n;
+		a = bc_vec_item(&func->autos, nparams - 1 - i);
+		arg = bc_vec_top(&p->results);
 
-		auto_ptr = bc_vec_item(&func->autos, i);
-		arg = bc_vec_item_rev(&p->results, nparams - 1);
-		param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
-
-		if (!auto_ptr->var != (arg->type == BC_RESULT_ARRAY) ||
-		    arg->type == BC_RESULT_STRING)
-		{
+		if (!a->var != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
 			return BC_STATUS_EXEC_BAD_TYPE;
-		}
 
-		if ((s = bc_array_init(&param.data.array))) return s;
-
-		if (auto_ptr->var) {
-			if ((s = bc_program_num(p, arg, &n, false))) return s;
-			if ((s = bc_num_copy(bc_vec_top(&param.data.array), n))) goto err;
-		}
-		else {
-			if ((s = bc_program_search(p, arg, &a, auto_ptr->var))) return s;
-			if ((s = bc_array_copy(&param.data.array, a))) goto err;
-		}
-
-		if ((s = bc_vec_push(&p->results, &param))) goto err;
+		if ((s = bc_program_copyToVar(p, a->name, a->var))) return s;
 	}
 
 	for (; i < func->autos.len; ++i) {
 
-		auto_ptr = bc_vec_item_rev(&func->autos, i);
-		param.type = auto_ptr->var + BC_RESULT_ARRAY_AUTO;
+		a = bc_vec_item(&func->autos, i);
+		if ((s = bc_program_search(p, a->name, &v, a->var))) return s;
 
-		if ((s = bc_array_init(&param.data.array))) return s;
-		if ((s = bc_vec_push(&p->results, &param))) goto err;
+		if (a->var) {
+			if ((s = bc_num_init(&param.num, BC_NUM_DEF_SIZE))) return s;
+			if ((s = bc_vec_push(v, &param.num))) goto err;
+		}
+		else {
+			if ((s = bc_array_init(&param.array, true))) return s;
+			if ((s = bc_vec_push(v, &param.array))) goto err;
+		}
 	}
 
 	return bc_vec_push(&p->stack, &ip);
 
 err:
-	bc_result_free(&param);
+	if (a->var) bc_num_free(&param.num);
+	else bc_array_free(&param.array);
 	return s;
 }
 #endif // BC_CONFIG
@@ -860,6 +878,7 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 	BcStatus s;
 	BcResult res;
 	BcFunc *f;
+	size_t i;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 
 	assert(BC_PROG_CHECK_STACK(&p->stack, 2));
@@ -868,7 +887,7 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 		return BC_STATUS_EXEC_SMALL_STACK;
 
 	f = bc_vec_item(&p->fns, ip->func);
-	res.type = BC_RESULT_TEMP;
+	res.t = BC_RESULT_TEMP;
 
 	if (inst == BC_INST_RET) {
 
@@ -886,8 +905,17 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 	}
 
 	// We need to pop arguments as well, so this takes that into account.
-	bc_vec_npop(&p->results, p->results.len - (ip->len - f->nparams));
+	for (i = 0; i < f->autos.len; ++i) {
 
+		BcVec *v;
+		BcAuto *a = bc_vec_item(&f->autos, i);
+
+		if ((s = bc_program_search(p, a->name, &v, a->var))) goto err;
+
+		bc_vec_pop(v);
+	}
+
+	bc_vec_npop(&p->results, p->results.len - ip->len);
 	if ((s = bc_vec_push(&p->results, &res))) goto err;
 	bc_vec_pop(&p->stack);
 
@@ -926,13 +954,13 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.data.num, p->scale);
 #ifdef BC_CONFIG
-	else if (inst == BC_INST_LENGTH && opnd->type == BC_RESULT_ARRAY) {
+	else if (inst == BC_INST_LENGTH && opnd->t == BC_RESULT_ARRAY) {
 		BcVec *vec = (BcVec*) num;
 		s = bc_num_ulong2num(&res.data.num, (unsigned long) vec->len);
 	}
 #endif // BC_CONFIG
 	else {
-		assert(opnd->type != BC_RESULT_ARRAY);
+		assert(opnd->t != BC_RESULT_ARRAY);
 		BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
 		                                              bc_program_scale;
 		s = bc_num_ulong2num(&res.data.num, f(num));
@@ -989,7 +1017,7 @@ BcStatus bc_program_stackLen(BcProgram *p) {
 	BcResult res;
 	size_t len = p->results.len;
 
-	res.type = BC_RESULT_TEMP;
+	res.t = BC_RESULT_TEMP;
 
 	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 	if ((s = bc_num_ulong2num(&res.data.num, len))) goto err;
@@ -1036,7 +1064,7 @@ BcStatus bc_program_divmod(BcProgram *p) {
 	if ((s = bc_num_mod(n1, n2, &res.data.num, p->scale))) goto err;
 
 	if ((s = bc_program_binOpRetire(p, &res2))) goto err;
-	res.type = BC_RESULT_TEMP;
+	res.t = BC_RESULT_TEMP;
 	if ((s = bc_vec_push(&p->results, &res))) goto res2_err;
 
 	return s;
@@ -1045,44 +1073,6 @@ err:
 	bc_num_free(&res2.data.num);
 res2_err:
 	bc_num_free(&res.data.num);
-	return s;
-}
-
-BcStatus bc_program_copyToVar(BcProgram *p, char *code, size_t *bgn) {
-
-	BcStatus s;
-	BcResult *ptr, r;
-	BcVec *v;
-	BcNum *n;
-
-	if (!BC_PROG_CHECK_STACK(&p->results, 1))
-		return BC_STATUS_EXEC_SMALL_STACK;
-
-	if (!(r.data.id.name = bc_program_name(code, bgn)))
-		return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_program_search(p, &r, &v, true))) goto err;
-
-	ptr = bc_vec_top(&p->results);
-
-#ifdef DC_CONFIG
-	if (ptr->type == BC_RESULT_STRING) {
-		if ((s = bc_program_assignStr(ptr, v, true))) goto err;
-		return s;
-	}
-#endif // DC_CONFIG
-
-	if ((s = bc_program_num(p, ptr, &n, false))) goto err;
-
-	// We set this to prevent bc_result_free() from freeing the BcNum.
-	ptr->type = BC_RESULT_CONSTANT;
-
-	if ((s = bc_vec_push(v, n))) goto err;
-	bc_vec_pop(&p->results);
-
-	return s;
-
-err:
-	free(r.data.id.name);
 	return s;
 }
 
@@ -1102,7 +1092,7 @@ BcStatus bc_program_executeStr(BcProgram *p) {
 	r = bc_vec_top(&p->results);
 	fidx = r->data.id.idx + 2;
 
-	if (r->type != BC_RESULT_STRING) return BC_STATUS_SUCCESS;
+	if (r->t != BC_RESULT_STR) return BC_STATUS_SUCCESS;
 
 	assert(p->strs.len > r->data.id.idx && p->fns.len > fidx);
 
@@ -1144,7 +1134,7 @@ BcStatus bc_program_pushScale(BcProgram *p) {
 	BcStatus s;
 	BcResult res;
 
-	res.type = BC_RESULT_SCALE;
+	res.t = BC_RESULT_SCALE;
 
 	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 	s = bc_num_ulong2num(&res.data.num, (unsigned long) p->scale);
@@ -1221,7 +1211,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	if (s || idx != BC_PROG_READ) goto name_err;
 	read_name = NULL;
 
-	if ((s = bc_vec_init(&p->vars, sizeof(BcNum), bc_num_free))) goto name_err;
+	if ((s = bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free))) goto name_err;
 	s = bc_veco_init(&p->var_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
 	if (s) goto var_map_err;
 
@@ -1440,7 +1430,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_LAST:
 			case BC_INST_OBASE:
 			{
-				res.type = inst - BC_INST_IBASE + BC_RESULT_IBASE;
+				res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
 				s = bc_vec_push(&p->results, &res);
 				break;
 			}
@@ -1461,7 +1451,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_NUM:
 			{
-				res.type = BC_RESULT_CONSTANT;
+				res.t = BC_RESULT_CONSTANT;
 				res.data.id.idx = bc_program_index(code, &ip->idx);
 				s = bc_vec_push(&p->results, &res);
 				break;
@@ -1483,7 +1473,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_STR:
 			{
-				res.type = BC_RESULT_STRING;
+				res.t = BC_RESULT_STR;
 				res.data.id.idx = bc_program_index(code, &ip->idx);
 				s = bc_vec_push(&p->results, &res);
 				break;
@@ -1578,7 +1568,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 					ptr = bc_vec_item_rev(&p->results, idx);
 					assert(ptr);
 
-					if (ptr->type == BC_RESULT_STRING && putchar('\n') == EOF)
+					if (ptr->t == BC_RESULT_STR && putchar('\n') == EOF)
 						s = BC_STATUS_IO_ERR;
 				}
 
@@ -1623,7 +1613,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_COPY_TO_VAR:
 			{
-				s = bc_program_copyToVar(p, code, &ip->idx);
+				char *name;
+				if (!(name = bc_program_name(code, &ip->idx))) return s;
+				s = bc_program_copyToVar(p, name, true);
+				if (s) free(name);
 				break;
 			}
 
