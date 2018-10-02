@@ -477,9 +477,7 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 	bool cond;
 	ssize_t cmp;
 
-	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false);
-	if (s) return s;
-
+	if ((s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false))) return s;
 	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 
 	if (inst == BC_INST_BOOL_AND)
@@ -660,8 +658,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 		max = left->t == BC_RESULT_IBASE ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
 
 		if (val < BC_NUM_MIN_BASE || val > max)
-			return left->type == BC_RESULT_IBASE ? BC_STATUS_EXEC_BAD_IBASE :
-			                                       BC_STATUS_EXEC_BAD_OBASE;
+			return left->t - BC_RESULT_IBASE + BC_STATUS_EXEC_BAD_IBASE;
 
 		*ptr = (size_t) val;
 	}
@@ -810,10 +807,8 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 	return s;
 
 err:
-
 	if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST)
 		bc_num_free(&copy.data.num);
-
 	return s;
 }
 
@@ -899,8 +894,7 @@ BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 		if ((s = bc_num_copy(&res.data.num, num))) goto err;
 	}
 	else {
-		s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE);
-		if (s) return s;
+		if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 		bc_num_zero(&res.data.num);
 	}
 
@@ -968,8 +962,10 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 
 	if (s || (s = bc_program_retire(p, &res, BC_RESULT_TEMP))) goto err;
 
+	return s;
+
 err:
-	if (s) bc_num_free(&res.data.num);
+	bc_num_free(&res.data.num);
 	return s;
 }
 
@@ -1489,7 +1485,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				s = bc_program_op(p, inst);
 				break;
 			}
-
 
 #ifdef BC_CONFIG
 			case BC_INST_BOOL_OR:
