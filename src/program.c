@@ -984,11 +984,11 @@ BcStatus bc_program_modexp(BcProgram *p) {
 	if ((s = bc_program_num(p, opd1, &n1, false))) return s;
 
 	// Make sure that the values have their pointers updated, if necessary.
-	if (opd1->type == BC_RESULT_VAR || opd1->type == BC_RESULT_ARRAY_ELEM) {
-		if (opd1->type == opd2->type) {
+	if (opd1->t == BC_RESULT_VAR || opd1->t == BC_RESULT_ARRAY_ELEM) {
+		if (opd1->t == opd2->t) {
 			if ((s = bc_program_num(p, opd2, &n2, false))) return s;
 		}
-		if (opd1->type == opd3->type) {
+		if (opd1->t == opd3->t) {
 			if ((s = bc_program_num(p, opd3, &n3, false))) return s;
 		}
 	}
