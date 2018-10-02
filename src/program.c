@@ -1411,7 +1411,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_VAR:
 			{
-				bc_program_pushVar(p, code, &ip->idx, false);
+				s = bc_program_pushVar(p, code, &ip->idx, false);
 				break;
 			}
 
