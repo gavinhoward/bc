@@ -166,16 +166,8 @@ void* bc_vec_item_rev(const BcVec *vec, size_t idx) {
 }
 
 void bc_vec_free(void *vec) {
-
 	BcVec *v = (BcVec*) vec;
-
-	assert(v && v->vec);
-
-	if (v->dtor) {
-		size_t i;
-		for (i = 0; i < v->len; ++i) v->dtor(v->vec + (i * v->size));
-	}
-
+	bc_vec_npop(v, v->len);
 	free(v->vec);
 }
 
