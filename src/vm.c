@@ -120,21 +120,21 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 	return s;
 }
 
-BcStatus bc_vm_file(BcVm *bc, const char *file) {
+BcStatus bc_vm_file(BcVm *vm, const char *file) {
 
 	BcStatus s;
 	char *data;
 	BcFunc *main_func;
 	BcInstPtr *ip;
 
-	bc->prog.file = file;
+	vm->prog.file = file;
 	if ((s = bc_io_fread(file, &data))) return bc_vm_error(s, file, 0);
 
-	bc_lex_file(&bc->parse.lex, file);
-	if ((s = bc_vm_process(bc, data))) goto err;
+	bc_lex_file(&vm->parse.lex, file);
+	if ((s = bc_vm_process(vm, data))) goto err;
 
-	main_func = bc_vec_item(&bc->prog.fns, BC_PROG_MAIN);
-	ip = bc_vec_item(&bc->prog.stack, 0);
+	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
+	ip = bc_vec_item(&vm->prog.stack, 0);
 
 	if (main_func->code.len < ip->idx) s = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
@@ -143,7 +143,7 @@ err:
 	return s;
 }
 
-BcStatus bc_vm_stdin(BcVm *bc) {
+BcStatus bc_vm_stdin(BcVm *vm) {
 
 	BcStatus s;
 	BcVec buf, buffer;
@@ -151,8 +151,8 @@ BcStatus bc_vm_stdin(BcVm *bc) {
 	size_t len, i;
 	bool string, comment, notend;
 
-	bc->prog.file = bc_program_stdin_name;
-	bc_lex_file(&bc->parse.lex, bc_program_stdin_name);
+	vm->prog.file = bc_program_stdin_name;
+	bc_lex_file(&vm->parse.lex, bc_program_stdin_name);
 
 	if ((s = bc_vec_init(&buffer, sizeof(char), NULL))) return s;
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) goto buf_err;
@@ -193,22 +193,22 @@ BcStatus bc_vm_stdin(BcVm *bc) {
 		}
 
 		if ((s = bc_vec_concat(&buffer, buf.vec))) goto err;
-		if ((s = bc_vm_process(bc, buffer.vec))) goto err;
+		if ((s = bc_vm_process(vm, buffer.vec))) goto err;
 
 		bc_vec_npop(&buffer, buffer.len);
 	}
 
 	if (s == BC_STATUS_BIN_FILE)
-		s = bc_vm_error(s, bc->parse.lex.file, bc->parse.lex.line);
+		s = bc_vm_error(s, vm->parse.lex.file, vm->parse.lex.line);
 
 	// I/O error will always happen when stdin is
 	// closed. It's not a problem in that case.
 	s = s == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : s;
 
 	if (string) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
-	                            bc->parse.lex.file, bc->parse.lex.line);
+	                            vm->parse.lex.file, vm->parse.lex.line);
 	else if (comment) s = bc_vm_error(BC_STATUS_LEX_NO_COMMENT_END,
-	                                  bc->parse.lex.file, bc->parse.lex.line);
+	                                  vm->parse.lex.file, vm->parse.lex.line);
 
 err:
 	bc_vec_free(&buf);
