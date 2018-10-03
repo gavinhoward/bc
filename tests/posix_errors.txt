@@ -10,7 +10,6 @@ define x(e) { return 4*(e+e); }
 define x(e) { return (e+e)*4; }
 limits
 .
-a(a[])
 define x(e)
 if (q) { x=3; }
 if (q!=0) { x=3; } else { x=4; }
