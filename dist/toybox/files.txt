@@ -4,6 +4,7 @@ include/num.h
 include/lang.h
 include/lex.h
 include/parse.h
+include/bc.h
 include/program.h
 include/vm.h
 src/data.c
