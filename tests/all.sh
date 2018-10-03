@@ -40,4 +40,7 @@ timeconst="$testdir/scripts/timeconst.bc"
 
 if [ -f "$timeconst" ]; then
 	sh "$testdir/timeconst.sh" "$timeconst" "$bc" "$@"
+else
+	echo "Warning: timeconst.bc does not exist..."
+	echo "Skipping..."
 fi
