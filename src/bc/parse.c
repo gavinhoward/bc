@@ -900,7 +900,7 @@ err:
 
 BcStatus bc_parse_body(BcParse *p, BcVec *code, bool brace) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	uint8_t *flag_ptr = bc_vec_top(&p->flags);
 
 	assert(p->flags.len >= 2);
@@ -917,7 +917,7 @@ BcStatus bc_parse_body(BcParse *p, BcVec *code, bool brace) {
 			p->auto_part = true;
 		}
 
-		s = bc_lex_next(&p->lex);
+		if (s || p->lex.t.t == BC_LEX_NLINE) s = bc_lex_next(&p->lex);
 	}
 	else {
 		assert(*flag_ptr);
