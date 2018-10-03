@@ -445,8 +445,14 @@ BcStatus bc_parse_return(BcParse *p, BcVec *code) {
 	}
 	else {
 
+		if ((s = bc_parse_expr(p, code, 0, bc_parse_next_expr))) return s;
 		paren = paren && p->lex.t.last == BC_LEX_RPAREN;
-		s = bc_parse_expr(p, code, 0, bc_parse_next_expr);
+
+		if (!paren && (s = bc_vm_posix_error(BC_STATUS_POSIX_RETURN_PARENS,
+		                                     p->lex.file, p->lex.line, NULL)))
+		{
+			return s;
+		}
 
 		if (paren)
 		{
@@ -454,14 +460,9 @@ BcStatus bc_parse_return(BcParse *p, BcVec *code) {
 			else if (s == BC_STATUS_PARSE_EMPTY_EXP)
 				s = bc_vec_pushByte(code, BC_INST_RET0);
 		}
-		else s = bc_vec_pushByte(code, BC_INST_RET);
-	}
+		else if (!s) s = bc_vec_pushByte(code, BC_INST_RET);
 
-	if (!s &&t != BC_LEX_NLINE && t != BC_LEX_SCOLON && !paren &&
-	    (s = bc_vm_posix_error(BC_STATUS_POSIX_RETURN_PARENS,
-	                           p->lex.file, p->lex.line, NULL)))
-	{
-		return s;
+		if (s) return s;
 	}
 
 	return s;
