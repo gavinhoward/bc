@@ -20,8 +20,8 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -lt 1 ]; then
-	echo "usage: $0 test [bc [bc_args...]]"
+if [ "$#" -lt 2 ]; then
+	echo "usage: $0 dir test [bc [bc_args...]]"
 	echo "valid tests are:"
 	echo ""
 	cat "$testdir/all.txt"
@@ -29,33 +29,43 @@ if [ "$#" -lt 1 ]; then
 	exit 1
 fi
 
+d="$1"
+shift
+
 t="$1"
-name="$testdir/$t.txt"
-results="$testdir/${t}_results.txt"
+name="$testdir/$d/$t.txt"
+results="$testdir/$d/${t}_results.txt"
 shift
 
 if [ "$#" -gt 0 ]; then
-	bc="$1"
+	exe="$1"
 	shift
 else
-	bc="$testdir/../bc"
+	exe="$testdir/../$d"
 fi
 
 out="$testdir/../.log_test.txt"
 
+if [ "$d" = "bc" ]; then
+	options="-lq"
+	halt="halt"
+else
+	halt="q"
+fi
+
 if [ ! -f "$name" ]; then
-	echo "Generating $t..."
-	"$testdir/scripts/$t.bc" > "$name"
+	echo "Generating $d $t..."
+	"$testdir/$d/scripts/$t.$d" > "$name"
 fi
 
 if [ ! -f "$results" ]; then
-	echo "Generating $t results..."
-	echo "halt" | bc -lq "$name" > "$results"
+	echo "Generating $d $t results..."
+	echo "halt" | $d $options "$name" > "$results"
 fi
 
-echo "Running $t..."
+echo "Running $d $t..."
 
-echo "halt" | "$bc" "$@" -lq "$name" > "$out"
+echo "$halt" | "$exe" "$@" $options "$name" > "$out"
 
 diff "$results" "$out"
 

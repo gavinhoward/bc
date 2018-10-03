@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # Copyright 2018 Gavin D. Howard
 #
@@ -20,27 +20,35 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -lt 1 ]; then
-	bc="$testdir/../bc"
-else
-	bc="$1"
+if [ "$#" -ge 1 ]; then
+	testdirs="$1"
 	shift
 fi
 
-while read t; do
-
-	sh "$testdir/test.sh" "$t" "$bc" "$@"
-
-done < "$testdir/all.txt"
-
-sh "$testdir/scripts.sh" "$bc" "$@"
-sh "$testdir/errors.sh" "$bc" "$@"
-
-timeconst="$testdir/scripts/timeconst.bc"
-
-if [ -f "$timeconst" ]; then
-	sh "$testdir/timeconst.sh" "$timeconst" "$bc" "$@"
-else
-	echo "Warning: timeconst.bc does not exist..."
-	echo "Skipping..."
+if [ -z "$testdirs" ]; then
+	mapfile -t testdirs < "$testdir/all.txt"
 fi
+
+for d in "$testdirs"; do
+
+	if [ "$#" -lt 1 ]; then
+		exe="$testdir/../$d"
+	else
+		exe="$1"
+	fi
+
+	echo -e "\nRunning $d tests...\n"
+
+	while read t; do
+		sh "$testdir/test.sh" "$d" "$t" "$exe" "$@"
+	done < "$testdir/$d/all.txt"
+
+	sh "$testdir/scripts.sh" "$d" "$exe" "$@"
+	sh "$testdir/errors.sh" "$d" "$exe" "$@"
+
+	if [ "$d" = "bc" ]; then
+		timeconst="$testdir/$d/scripts/timeconst.bc"
+		sh "$testdir/$d/timeconst.sh" "$timeconst" "$exe" "$@"
+	fi
+
+done

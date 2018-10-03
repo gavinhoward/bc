@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # Copyright 2018 Gavin D. Howard
 #
@@ -27,59 +27,64 @@ checktest()
 	local out="$1"
 	shift
 
-	local bcbase="$1"
+	local exebase="$1"
 	shift
 
 	if [ "$error" -eq 0 ]; then
-		echo "\nbc returned no error on test:\n"
+		echo "\n$d returned no error on test:\n"
 		echo "    $name"
 		echo "\nexiting..."
 		exit 127
 	fi
 
 	if [ "$error" -gt 127 ]; then
-		echo "\nbc crashed on test:\n"
+		echo "\n$d crashed on test:\n"
 		echo "    $name"
 		echo "\nexiting..."
 		exit "$error"
 	fi
 
 	if [ ! -s "$out" ]; then
-		echo "\nbc produced no error message on test:\n"
+		echo "\n$d produced no error message on test:\n"
 		echo "    $name"
 		echo "\nexiting..."
 		exit "$error"
 	fi
 
-	# Display the error messages if not directly running bc.
+	# Display the error messages if not directly running exe.
 	# This allows the script to print valgrind output.
-	if [ "$bcbase" != "bc" ]; then
+	if [ "$exebase" != "bc" -a "$exebase" != "dc" ]; then
 		cat "$out"
 	fi
 }
 
 script="$0"
-
 testdir=$(dirname "$script")
-testfile="$testdir/errors.txt"
+
+if [ "$#" -eq 0 ]; then
+	echo "usage: $script dir [exec args...]"
+	exit 1
+else
+	d="$1"
+	shift
+fi
 
 if [ "$#" -lt 1 ]; then
-	bc="$testdir/../bc"
+	exe="$testdir/../$d"
 else
-	bc="$1"
+	exe="$1"
 	shift
 fi
 
 out="$testdir/../.log_test.txt"
 
-errors="$testdir/errors.txt"
-posix_errors="$testdir/posix_errors.txt"
+exebase=$(basename "$exe")
 
-bcbase=$(basename "$bc")
+posix="posix_errors"
 
-for testfile in "$errors" "$posix_errors"; do
+for testfile in $testdir/$d/*errors.txt; do
 
-	if [ "$testfile" = "$posix_errors" ]; then
+	if [ -z "${testfile##*$posix*}" ]; then
 		options="-ls"
 	else
 		options="-l"
@@ -93,20 +98,20 @@ for testfile in "$errors" "$posix_errors"; do
 
 		rm -f "$out"
 
-		echo "$line" | "$bc" "$@" "$options" 2> "$out" > /dev/null
+		echo "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
 
-		checktest "$?" "$line" "$out" "$bcbase"
+		checktest "$?" "$line" "$out" "$exebase"
 
 	done < "$testfile"
 
 done
 
-for testfile in $testdir/errors/*.txt; do
+for testfile in $testdir/$d/errors/*.txt; do
 
 	echo "Running error file \"$testfile\"..."
 
-	echo "halt" | "$bc" "$@" -l "$testfile" 2> "$out" > /dev/null
+	echo "halt" | "$exe" "$@" -l "$testfile" 2> "$out" > /dev/null
 
-	checktest "$?" "$testfile" "$out" "$bcbase"
+	checktest "$?" "$testfile" "$out" "$exebase"
 
 done

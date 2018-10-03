@@ -19,19 +19,32 @@ set -e
 script="$0"
 
 testdir=$(dirname "${script}")
-scriptdir="$testdir/scripts"
+
+if [ "$#" -eq 0 ]; then
+	echo "usage: $script dir [exec args...]"
+	exit 1
+else
+	d="$1"
+	shift
+fi
 
 if [ "$#" -gt 0 ]; then
-	bc="$1"
+	exe="$1"
 	shift
 else
-	bc="$testdir/../bc"
+	exe="$testdir/../$d"
 fi
 
 out1="$testdir/../.log_bc.txt"
 out2="$testdir/../.log_test.txt"
 
-for s in $scriptdir/*.bc; do
+if [ "$d" = "bc" ]; then
+	options="-lq"
+fi
+
+scriptdir="$testdir/$d/scripts"
+
+for s in $scriptdir/*.$d; do
 
 	f=$(basename -- "$s")
 	name="${f%.*}"
@@ -40,7 +53,7 @@ for s in $scriptdir/*.bc; do
 		continue
 	fi
 
-	echo "Running script: $f"
+	echo "Running $d script: $f"
 
 	orig="$testdir/$name.txt"
 	results="$scriptdir/$name.txt"
@@ -50,11 +63,11 @@ for s in $scriptdir/*.bc; do
 	elif [ -f "$results" ]; then
 		res="$results"
 	else
-		echo "halt" | bc -lq "$s" > "$out1"
+		echo "halt" | $d $options "$s" > "$out1"
 		res="$out1"
 	fi
 
-	echo "halt" | "$bc" "$@" -lq "$s" > "$out2"
+	echo "halt" | "$exe" "$@" $options "$s" > "$out2"
 
 	diff "$res" "$out2"
 

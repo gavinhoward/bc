@@ -107,6 +107,12 @@ help:
 test:
 	tests/all.sh
 
+test_bc:
+	tests/all.sh bc
+
+test_dc:
+	tests/all.sh dc
+
 valgrind:
 	tests/all.sh valgrind --leak-check=full --show-leak-kinds=all ./bc
 
@@ -126,9 +132,9 @@ clean:
 	$(RM) -f $(BC_HELP_O)
 
 clean_tests: clean
-	$(RM) -f tests/parse.txt tests/parse_results.txt
-	$(RM) -f tests/print.txt tests/print_results.txt
-	$(RM) -f tests/bessel.txt tests/bessel_results.txt
+	$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
+	$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
+	$(RM) -f tests/bc/bessel.txt tests/bc/bessel_results.txt
 	$(RM) -f .log_test.txt .log_bc.txt
 	$(RM) -f .math.txt .results.txt .ops.txt
 	$(RM) -f .test.txt

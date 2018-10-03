@@ -43,6 +43,12 @@ out2="$testdir/../.log_test.txt"
 
 base=$(basename "$timeconst")
 
+if [ ! -f "$timeconst" ]; then
+	echo "Warning: $timeconst does not exist"
+	echo "Skipping..."
+	exit 0
+fi
+
 echo "Running $base..."
 
 for i in $(seq 0 10000); do
