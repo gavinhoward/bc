@@ -143,4 +143,4 @@ uninstall:
 	$(RM) -f $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
 	$(RM) -f $(DESTDIR)$(PREFIX)/bin/$(DC_EXEC)
 
-.PHONY: all help clean clean_tests install uninstall test
+.PHONY: help clean clean_tests install uninstall test
