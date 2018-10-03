@@ -66,13 +66,13 @@ $(GEN_EXEC):
 	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN_EXEC).c
 
 $(BC_LIB_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name
+	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED)
 
 $(BC_HELP_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help
+	$(GEN_EMU) ./$(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help "" $(BC_ENABLED)
 
 $(DC_HELP_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help
+	$(GEN_EMU) ./$(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help "" $(DC_ENABLED)
 
 $(DC_EXEC): CPPFLAGS += -D$(DC_ENABLED)
 $(DC_EXEC): clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)

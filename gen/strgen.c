@@ -34,6 +34,8 @@ static const char* const bc_gen_header =
   "// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
 
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
+static const char* const bc_gen_ifdef = "#ifdef %s\n";
+static const char* const bc_gen_endif = "#endif // %s\n";
 static const char* const bc_gen_name = "const char %s[] = {\n";
 
 #define INVALID_PARAMS (1)
@@ -48,21 +50,24 @@ static const char* const bc_gen_name = "const char %s[] = {\n";
 int main(int argc, char *argv[]) {
 
   FILE *in, *out;
-  char *label, *name;
+  char *label, *define, *name;
   int c, count, err, slashes;
-  bool has_label;
+  bool has_label, has_define;
 
   err = 0;
 
   if (argc < 4) {
-    printf("usage: gen input output name [label]\n");
+    printf("usage: gen input output name [label [define]]\n");
     return INVALID_PARAMS;
   }
 
   name = argv[3];
 
-  has_label = argc > 4;
+  has_label = argc > 4 && strcmp("", argv[4]);
   label = has_label ? argv[4] : "";
+
+  has_define = argc > 5 && strcmp("", argv[5]);
+  define = has_define ? argv[5] : "";
 
   in = fopen(argv[1], "r");
 
@@ -76,6 +81,11 @@ int main(int argc, char *argv[]) {
   }
 
   if (fprintf(out, bc_gen_header, argv[1]) < 0) {
+    err = IO_ERR;
+    goto error;
+  }
+
+  if (has_define && fprintf(out, bc_gen_ifdef, define) < 0) {
     err = IO_ERR;
     goto error;
   }
@@ -145,10 +155,13 @@ int main(int argc, char *argv[]) {
       goto error;
     }
   }
+
   if (fprintf(out, "0\n};\n") < 0) {
     err = IO_ERR;
     goto error;
   }
+
+  if (has_define && fprintf(out, bc_gen_endif, define) < 0) err = IO_ERR;
 
 error:
 
