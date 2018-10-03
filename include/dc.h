@@ -27,6 +27,8 @@
 #include <lex.h>
 #include <parse.h>
 
+#ifdef DC_ENABLED
+
 #define DC_PARSE_BUF_SIZE ((int) (sizeof(uint32_t) * CHAR_BIT))
 
 // ** Exclude start. **
@@ -42,5 +44,7 @@ extern const BcInst dc_parse_insts[];
 
 BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog);
 BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
+
+#endif // DC_ENABLED
 
 #endif // BC_DC_H

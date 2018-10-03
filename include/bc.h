@@ -29,6 +29,8 @@
 #include <lex.h>
 #include <parse.h>
 
+#ifdef BC_ENABLED
+
 // ** Exclude start. **
 BcStatus bc_main(int argc, char *argv[]);
 
@@ -63,5 +65,7 @@ BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog);
 // ** Exclude end. **
 
 BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
+
+#endif // BC_ENABLED
 
 #endif // BC_BC_H
