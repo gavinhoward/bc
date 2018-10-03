@@ -80,7 +80,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i, idx;
-	bool do_exit = false, bc = !strcmp(bcg.name, bc_name);
+	bool do_exit = false;
 
 	idx = c = optind = 0;
 
@@ -120,35 +120,35 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 #ifdef BC_ENABLED
 			case 'i':
 			{
-				if (!bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
-				if (!bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
-				if (!bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
-				if (!bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
-				if (!bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_W;
 				break;
 			}
@@ -165,7 +165,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 #ifdef DC_ENABLED
 			case 'x':
 			{
-				if (bc) return BC_STATUS_INVALID_OPTION;
+				if (bcg.bc) return BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_X;
 				break;
 			}

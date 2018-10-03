@@ -81,6 +81,7 @@ typedef struct BcGlobals {
 
 	const char *name;
 	const char *sig_msg;
+	bool bc;
 
 } BcGlobals;
 // ** Exclude end. **

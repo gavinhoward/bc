@@ -38,6 +38,9 @@ BcStatus bc_main(int argc, char *argv[]) {
 	unsigned int flags = 0;
 	char *env_args, *buffer = NULL, *buf;
 
+	bcg.sig_msg = bc_sig_msg;
+	bcg.bc = true;
+
 	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
 	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
 

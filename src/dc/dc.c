@@ -37,6 +37,9 @@ BcStatus dc_main(int argc, char *argv[]) {
 	BcVec files, exprs;
 	unsigned int flags = BC_FLAG_Q;
 
+	bcg.sig_msg = dc_sig_msg;
+	bcg.bc = false;
+
 	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
 	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
 

@@ -45,20 +45,12 @@ int main(int argc, char *argv[]) {
 	bcg.name = basename(name);
 
 #if !defined(DC_ENABLED)
-	bcg.sig_msg = bc_sig_msg;
 	result = bc_main(argc, argv);
 #elif !defined(BC_ENABLED)
-	bcg.sig_msg = dc_sig_msg;
 	result = dc_main(argc, argv);
 #else
-	if (!strcmp(bcg.name, dc_name)) {
-		bcg.sig_msg = dc_sig_msg;
-		result = dc_main(argc, argv);
-	}
-	else {
-		bcg.sig_msg = bc_sig_msg;
-		result = bc_main(argc, argv);
-	}
+	if (!strcmp(bcg.name, dc_name)) result = dc_main(argc, argv);
+	else result = bc_main(argc, argv);
 #endif
 
 	free(name);
