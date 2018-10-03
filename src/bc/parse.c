@@ -914,7 +914,7 @@ BcStatus bc_parse_body(BcParse *p, BcVec *code, bool brace) {
 
 		if (p->lex.t.t == BC_LEX_KEY_AUTO) {
 			if ((s = bc_parse_auto(p))) return s;
-			p->auto_part = true;
+			p->auto_part = false;
 		}
 
 		if (s || p->lex.t.t == BC_LEX_NLINE) s = bc_lex_next(&p->lex);
