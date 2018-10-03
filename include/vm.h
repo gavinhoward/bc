@@ -36,7 +36,8 @@
 
 // ** Exclude start. **
 #define VERSION_STR(V) #V
-#define BC_VERSION VERSION_STR(VERSION)
+#define VERSION_STR2(V) VERSION_STR(V)
+#define BC_VERSION VERSION_STR2(VERSION)
 // ** Exclude end. **
 
 #define BC_FLAG_X (1<<0)
