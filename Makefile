@@ -22,6 +22,9 @@ BC_OBJ = $(BC_SRC:.c=.o)
 DC_SRC = $(sort $(wildcard src/dc/*.c))
 DC_OBJ = $(DC_SRC:.c=.o)
 
+BC_ENABLED = BC_ENABLED
+DC_ENABLED = DC_ENABLED
+
 GEN_DIR = gen
 GEN_EXEC = strgen
 
@@ -53,7 +56,7 @@ LDLIBS += -lm
 
 HOSTCC ?= $(CC)
 
-all: CPPFLAGS += -DDC_CONFIG -DBC_CONFIG
+all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
 all: clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) \
 		$(LDLIBS) $(LDFLAGS) -o $(BC_EXEC)
@@ -71,11 +74,11 @@ $(BC_HELP_C): $(GEN_EXEC)
 $(DC_HELP_C): $(GEN_EXEC)
 	$(GEN_EMU) ./$(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help
 
-$(DC_EXEC): CPPFLAGS += -DDC_CONFIG
+$(DC_EXEC): CPPFLAGS += -D$(DC_ENABLED)
 $(DC_EXEC): clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(DC_HELP_O) $(LDLIBS) $(LDFLAGS) -o $(DC_EXEC)
 
-$(BC_EXEC): CPPFLAGS += -DBC_CONFIG
+$(BC_EXEC): CPPFLAGS += -D$(BC_ENABLED)
 $(BC_EXEC): clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS) -o $(BC_EXEC)
 

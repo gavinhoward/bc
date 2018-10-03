@@ -44,9 +44,9 @@ int main(int argc, char *argv[]) {
 	if (!(name = strdup(argv[0]))) return (int) BC_STATUS_ALLOC_ERR;
 	bcg.name = basename(name);
 
-#if !defined(DC_CONFIG)
+#if !defined(DC_ENABLED)
 	result = bc_main(argc, argv);
-#elif !defined(BC_CONFIG)
+#elif !defined(BC_ENABLED)
 	result = dc_main(argc, argv);
 #else
 	if (!strcmp(bcg.name, dc_name)) result = dc_main(argc, argv);

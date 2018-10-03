@@ -95,7 +95,7 @@ typedef enum BcInst {
 
 	BC_INST_HALT,
 
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 	BC_INST_MODEXP,
 	BC_INST_DIVMOD,
 
@@ -114,7 +114,7 @@ typedef enum BcInst {
 	BC_INST_NQUIT,
 
 	BC_INST_INVALID = -1,
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 
 } BcInst;
 
@@ -211,10 +211,10 @@ void bc_result_free(void *result);
 extern const char bc_inst_chars[];
 #endif // NDEBUG
 
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 extern const uint8_t bc_inst_noperands[];
 extern const uint8_t bc_inst_nresults[];
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 
 extern const char bc_func_main[];
 extern const char bc_func_read[];

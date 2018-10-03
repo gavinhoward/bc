@@ -107,7 +107,7 @@ typedef enum BcLexType {
 	BC_LEX_KEY_SQRT,
 	BC_LEX_KEY_WHILE,
 
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 	BC_LEX_OP_MODEXP,
 	BC_LEX_OP_DIVMOD,
 
@@ -131,7 +131,7 @@ typedef enum BcLexType {
 	BC_LEX_PRINT_STREAM,
 	BC_LEX_NQUIT,
 	BC_LEX_SCALE_FACTOR,
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 
 } BcLexType;
 

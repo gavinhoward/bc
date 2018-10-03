@@ -1190,7 +1190,7 @@ init_err:
 	return s;
 }
 
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	BcStatus s;
@@ -1304,4 +1304,4 @@ base_err:
 	if (init) bc_num_free(&num2);
 	return s;
 }
-#endif // DC_CONFIG
+#endif // DC_ENABLED

@@ -30,8 +30,8 @@
 #include <parse.h>
 #include <program.h>
 
-#if !defined(BC_CONFIG) && !defined(DC_CONFIG)
-#error Must define BC_CONFIG, DC_CONFIG, or both
+#if !defined(BC_ENABLED) && !defined(DC_ENABLED)
+#error Must define BC_ENABLED, DC_ENABLED, or both
 #endif
 
 #define BC_FLAG_X (1<<0)

@@ -78,9 +78,9 @@ typedef struct BcProgram {
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)
 
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 #	define BC_PROG_STR_VAR(n) (!(n)->num && !n->cap)
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 

@@ -258,7 +258,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 		goto err;
 	}
 
-#ifdef BC_CONFIG
+#ifdef BC_ENABLED
 	if (flags & BC_FLAG_L) {
 
 		bc_lex_file(&vm.parse.lex, bc_lib_name);
@@ -269,7 +269,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 
 		if (s || (s = bc_program_exec(&vm.prog))) goto err;
 	}
-#endif // BC_CONFIG
+#endif // BC_ENABLED
 
 	if (exprs->len > 1 && (s = bc_vm_process(&vm, exprs->vec))) goto err;
 

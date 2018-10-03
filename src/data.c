@@ -54,9 +54,9 @@ const uint8_t bc_err_indices[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 	BC_ERR_IDX_MATH,
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -98,9 +98,9 @@ const char *bc_err_descs[] = {
 	"divide by zero",
 	"negative square root",
 	"bad number string",
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 	"modulus overflowed base",
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 
 	"could not open file:",
 	"mismatched parameters",
@@ -153,7 +153,7 @@ const char bc_inst_chars[] =
 	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$HovxzcZdfghkK";
 #endif // NDEBUG
 
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 const uint8_t bc_inst_noperands[] = {
 	1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2,
 	2, 2, 2, 2, 2, 2, 2, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1,
@@ -165,9 +165,9 @@ const uint8_t bc_inst_nresults[] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 2, 0, 0, 0, 1, 2, 2, 0, 1, 0, 0,
 };
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 
-#ifdef BC_CONFIG
+#ifdef BC_ENABLED
 const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
@@ -226,12 +226,12 @@ const BcParseNext bc_parse_next_print =
 const BcParseNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RPAREN);
 const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RBRACKET);
 const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
-#endif // BC_CONFIG
+#endif // BC_ENABLED
 
 // This one is needed for dc too.
 const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
 
-#ifdef DC_CONFIG
+#ifdef DC_ENABLED
 const BcLexType dc_lex_tokens[] = {
 	BC_LEX_OP_MODULUS, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_OP_REL_GT,
 	BC_LEX_INVALID, BC_LEX_OP_MULTIPLY, BC_LEX_OP_PLUS, BC_LEX_INVALID,
@@ -286,7 +286,7 @@ const BcInst dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_PRINT,
 	BC_INST_INVALID, BC_INST_NQUIT, BC_INST_SCALE_FUNC,
 };
-#endif // DC_CONFIG
+#endif // DC_ENABLED
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
