@@ -1,3 +1,11 @@
 decimal
 add
 subtract
+multiply
+divide
+modulus
+power
+sqrt
+boolean
+vars
+misc
