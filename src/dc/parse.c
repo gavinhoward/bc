@@ -176,14 +176,14 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t) {
 
 BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 {
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst inst;
 	BcLexType t;
 
 	(void) flags;
 	(void) next;
 
-	while ((t = p->lex.t.t) != BC_LEX_EOF) {
+	while (!s && (t = p->lex.t.t) != BC_LEX_EOF) {
 
 		inst = dc_parse_insts[t];
 		if (inst != BC_INST_INVALID) s = dc_parse_push(p, code, inst);
