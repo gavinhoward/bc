@@ -40,7 +40,21 @@ toybox_bc = toybox + "/toys/pending/bc.c"
 os.chdir(testdir)
 os.chdir("../..")
 
-res = subprocess.run(["make", "gen/lib.c"])
+res = subprocess.run(["make", "version"], stdout=subprocess.PIPE)
+
+if res.returncode != 0:
+	sys.exit(res.returncode)
+
+version = res.stdout.decode("utf-8")
+
+res = subprocess.run(["make", "libcname"], stdout=subprocess.PIPE)
+
+if res.returncode != 0:
+	sys.exit(res.returncode)
+
+libcname = res.stdout.decode("utf-8")
+
+res = subprocess.run(["make", libcname])
 
 if res.returncode != 0:
 	sys.exit(res.returncode)
@@ -97,6 +111,14 @@ vm_c_replacements = [
 	[ '\(\(s = parse_init\(&vm\.parse, &vm\.prog\)\)\)', '((s = bc_parse_init(&vm.parse, &vm.prog)))' ],
 	[ '^[ ]*if \(exprs->len > 1 && \(s = bc_vm_process\(&vm, exprs->vec\)\)\) goto err;$', '' ],
 	[ 'if \(exprs->len <= 1\) s = bc_vm_stdin\(&vm\);$', 's = bc_vm_stdin(&vm);' ],
+	[ '\n[ ]*const char\* msg = !strcmp\(bcg\.name, dc_name\) \? dc_sig_msg \: bc_sig_msg;$', ''],
+	[ 'size_t len = strlen\(msg\);', 'size_t len = strlen(bc_sig_msg);' ],
+	[ 'write\(2, msg, len\) == \(ssize_t\) len', 'write(2, bc_sig_msg, len) == (ssize_t) len' ],
+	[ '\(!strcmp\(bcg.name, dc_name\) && \(lenv = getenv\(\"DC_LINE_LENGTH\"\)\)\) \|\|', '' ],
+	[ '\n[ ]*\(!strcmp\(bcg.name, bc_name\) && \(lenv = getenv\(\"BC_LINE_LENGTH\"\)\)\)\)\n[ ]*\{',
+	  '(lenv = getenv("BC_LINE_LENGTH"))) {' ],
+	[ '\n[ ]*if \(help && printf\(help, bcg\.name\) < 0\) return BC_STATUS_IO_ERR;$', '' ],
+	[ 's = bc_vm_header\(NULL\)', 's = bc_vm_header()' ],
 ]
 
 for rep in vm_c_replacements:
@@ -150,7 +172,8 @@ replacements = [
 	[ '\t', '  ' ],
 	[ 'bcg.posix', '(toys.optflags & FLAG_s)' ],
 	[ 'bcg.warn', '(toys.optflags & FLAG_w)' ],
-	[ 'bcg.', 'TT.' ],
+	[ 'bcg\.', 'TT.' ],
+	[ 'TT\.name', 'toys.which->name' ],
 	[ 'BC_FLAG_Q', 'FLAG_q' ],
 	[ 'BC_FLAG_L', 'FLAG_l' ],
 	[ 'BC_FLAG_I', 'FLAG_i' ],
@@ -175,6 +198,8 @@ replacements = [
 	[ 'p->parse_exp\(', 'bc_parse_expr(' ],
 	[ '^BcStatus bc_program_pushVar\(BcProgram \*p, char \*code, size_t \*bgn, bool pop\)',
 	  'BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn)' ],
+	[ 'BC_VERSION', '"' + version + '"' ],
+	[ 'BcStatus bc_vm_header\(const char\* const help\)', 'BcStatus bc_vm_header()' ],
 ]
 
 for reg in regexes:
