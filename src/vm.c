@@ -241,7 +241,9 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 	bcg.posix = flags & BC_FLAG_S;
 	bcg.warn = flags & BC_FLAG_W;
 
-	if (!strcmp(bcg.name, bc_name) && (lenv = getenv("BC_LINE_LENGTH"))) {
+	if ((!strcmp(bcg.name, dc_name) && (lenv = getenv("DC_LINE_LENGTH"))) ||
+	    (!strcmp(bcg.name, bc_name) && (lenv = getenv("BC_LINE_LENGTH"))))
+	{
 		len = strlen(lenv);
 		for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
 		if (!num || ((len = (size_t) atoi(lenv) - 1) < 2 && len >= INT32_MAX))
