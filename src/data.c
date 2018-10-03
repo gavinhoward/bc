@@ -22,6 +22,7 @@
 
 #include <lex.h>
 #include <parse.h>
+#include <bc.h>
 #include <num.h>
 
 #ifdef BC_ENABLED

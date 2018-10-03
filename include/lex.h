@@ -137,7 +137,6 @@ typedef enum BcLexType {
 
 // ** Exclude start. **
 struct BcLex;
-
 typedef BcStatus (*BcLexNext)(struct BcLex*);
 // ** Exclude end. **
 
@@ -162,24 +161,7 @@ typedef struct BcLex {
 
 } BcLex;
 
-typedef struct BcLexKeyword {
-
-	const char name[9];
-	const char len;
-	const bool posix;
-
-} BcLexKeyword;
-
-#define BC_LEX_KW_ENTRY(a, b, c) { .name = a, .len = (b), .posix = (c) }
-
-extern const BcLexKeyword bc_lex_kws[20];
-
 // ** Exclude start. **
-
-extern const BcLexType dc_lex_tokens[];
-extern const BcInst dc_parse_insts[];
-
-// Common code.
 
 BcStatus bc_lex_init(BcLex *l, BcLexNext next);
 void bc_lex_free(BcLex *l);
@@ -190,18 +172,6 @@ BcStatus bc_lex_next(BcLex *l);
 void bc_lex_lineComment(BcLex *l);
 void bc_lex_whitespace(BcLex *l);
 BcStatus bc_lex_number(BcLex *l, char start);
-
-// bc lex code.
-
-// ** Exclude end. **
-
-BcStatus bc_lex_token(BcLex *l);
-
-// ** Exclude start. **
-
-// dc lex code.
-
-BcStatus dc_lex_token(BcLex *l);
 
 // ** Exclude end. **
 

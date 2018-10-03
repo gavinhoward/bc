@@ -24,11 +24,23 @@
 #define BC_DC_H
 
 #include <status.h>
+#include <lex.h>
+#include <parse.h>
+
+#define DC_PARSE_BUF_SIZE ((int) (sizeof(uint32_t) * CHAR_BIT))
 
 // ** Exclude start. **
 BcStatus dc_main(int argc, char *argv[]);
-// ** Exclude end. **
 
 extern const char dc_help[];
+// ** Exclude end. **
+
+BcStatus dc_lex_token(BcLex *l);
+
+extern const BcLexType dc_lex_tokens[];
+extern const BcInst dc_parse_insts[];
+
+BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog);
+BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
 
 #endif // BC_DC_H

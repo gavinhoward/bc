@@ -23,12 +23,90 @@
 #ifndef BC_BC_H
 #define BC_BC_H
 
+#include <stdbool.h>
+
 #include <status.h>
+#include <lex.h>
+#include <parse.h>
 
 // ** Exclude start. **
 BcStatus bc_main(int argc, char *argv[]);
-// ** Exclude end. **
 
 extern const char bc_help[];
+// ** Exclude end. **
+
+typedef struct BcLexKeyword {
+
+	const char name[9];
+	const char len;
+	const bool posix;
+
+} BcLexKeyword;
+
+#define BC_LEX_KW_ENTRY(a, b, c) { .name = a, .len = (b), .posix = (c) }
+
+extern const BcLexKeyword bc_lex_kws[20];
+
+BcStatus bc_lex_token(BcLex *l);
+
+#define BC_PARSE_TOP_FLAG_PTR(parse) ((uint8_t*) bc_vec_top(&(parse)->flags))
+#define BC_PARSE_TOP_FLAG(parse) (*(BC_PARSE_TOP_FLAG_PTR(parse)))
+
+#define BC_PARSE_FLAG_FUNC_INNER (1<<0)
+#define BC_PARSE_FUNC_INNER(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FUNC_INNER)
+
+#define BC_PARSE_FLAG_FUNC (1<<1)
+#define BC_PARSE_FUNC(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FUNC)
+
+#define BC_PARSE_FLAG_BODY (1<<2)
+#define BC_PARSE_BODY(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_BODY)
+
+#define BC_PARSE_FLAG_LOOP (1<<3)
+#define BC_PARSE_LOOP(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP)
+
+#define BC_PARSE_FLAG_LOOP_INNER (1<<4)
+#define BC_PARSE_LOOP_INNER(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP_INNER)
+
+#define BC_PARSE_FLAG_IF (1<<5)
+#define BC_PARSE_IF(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF)
+
+#define BC_PARSE_FLAG_ELSE (1<<6)
+#define BC_PARSE_ELSE(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_ELSE)
+
+#define BC_PARSE_FLAG_IF_END (1<<7)
+#define BC_PARSE_IF_END(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
+
+#define BC_PARSE_CAN_EXEC(parse) \
+	(!(BC_PARSE_TOP_FLAG(parse) & (BC_PARSE_FLAG_FUNC_INNER |  \
+	                               BC_PARSE_FLAG_FUNC |        \
+	                               BC_PARSE_FLAG_BODY |        \
+	                               BC_PARSE_FLAG_LOOP |        \
+	                               BC_PARSE_FLAG_LOOP_INNER |  \
+	                               BC_PARSE_FLAG_IF |          \
+	                               BC_PARSE_FLAG_ELSE |        \
+	                               BC_PARSE_FLAG_IF_END)))
+
+#define BC_PARSE_LEAF(p, rparen) \
+	(((p) >= BC_INST_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
+	(p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)
+
+// We can calculate the conversion between tokens and exprs by subtracting the
+// position of the first operator in the lex enum and adding the position of the
+// first in the expr enum. Note: This only works for binary operators.
+#define BC_PARSE_TOKEN_TO_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
+
+// ** Exclude start. **
+BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog);
+// ** Exclude end. **
+
+BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
 
 #endif // BC_BC_H

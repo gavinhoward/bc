@@ -31,6 +31,8 @@
 #include <lex.h>
 #include <lang.h>
 
+#define BC_PARSE_STREND ((char) '#')
+
 #define BC_PARSE_POSIX_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
@@ -81,15 +83,6 @@
 	                               BC_PARSE_FLAG_IF |          \
 	                               BC_PARSE_FLAG_ELSE |        \
 	                               BC_PARSE_FLAG_IF_END)))
-
-#define BC_PARSE_LEAF(p, rparen) \
-	(((p) >= BC_INST_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
-	(p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)
-
-// We can calculate the conversion between tokens and exprs by subtracting the
-// position of the first operator in the lex enum and adding the position of the
-// first in the expr enum. Note: This only works for binary operators.
-#define BC_PARSE_TOKEN_TO_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
 typedef struct BcOp {
 
@@ -145,8 +138,6 @@ typedef struct BcParse {
 
 // ** Exclude start. **
 
-// Common code.
-
 BcStatus bc_parse_create(BcParse *p, struct BcProgram *prog,
                          BcParseParse parse, BcLexNext next);
 void bc_parse_free(BcParse *p);
@@ -155,35 +146,19 @@ BcStatus bc_parse_pushName(BcVec *code, char *name);
 BcStatus bc_parse_pushIndex(BcVec *code, size_t idx);
 BcStatus bc_parse_number(BcParse *p, BcVec* code, BcInst *prev, size_t* nexs);
 
-// bc parse code.
-
-BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog);
-
-// ** Exclude end. **
-
-BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
-
-// ** Exclude start. **
-
-// dc parse code.
-
-BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog);
-BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
-
-#define DC_PARSE_BUF_SIZE ((int) (sizeof(uint32_t) * CHAR_BIT))
-
-// ** Exclude end. **
-
-#define BC_PARSE_STREND ((char) '#')
-
+#ifdef BC_ENABLED
 extern const bool bc_parse_exprs[];
+extern const BcOp bc_parse_ops[];
 extern const BcParseNext bc_parse_next_expr;
 extern const BcParseNext bc_parse_next_param;
 extern const BcParseNext bc_parse_next_print;
 extern const BcParseNext bc_parse_next_cond;
 extern const BcParseNext bc_parse_next_elem;
 extern const BcParseNext bc_parse_next_for;
+#endif // BC_ENABLED
+
+// ** Exclude end. **
+
 extern const BcParseNext bc_parse_next_read;
-extern const BcOp bc_parse_ops[];
 
 #endif // BC_PARSE_H

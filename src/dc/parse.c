@@ -26,6 +26,7 @@
 
 #include <status.h>
 #include <parse.h>
+#include <dc.h>
 #include <program.h>
 #include <vm.h>
 

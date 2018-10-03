@@ -27,6 +27,7 @@
 
 #include <lex.h>
 #include <parse.h>
+#include <bc.h>
 #include <vm.h>
 
 BcStatus bc_parse_else(BcParse *p, BcVec *code);

@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include <lex.h>
+#include <bc.h>
 #include <vm.h>
 
 BcStatus bc_lex_string(BcLex *l) {
