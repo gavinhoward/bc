@@ -112,7 +112,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 
 			case 'h':
 			{
-				if (printf(help, argv[0]) < 0) return BC_STATUS_IO_ERR;
+				s = bc_vm_header(help);
 				do_exit = true;
 				break;
 			}
@@ -157,7 +157,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 			case 'V':
 			case 'v':
 			{
-				if (puts(bc_header) < 0) return BC_STATUS_IO_ERR;
+				s = bc_vm_header(NULL);
 				do_exit = true;
 				break;
 			}

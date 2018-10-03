@@ -25,6 +25,8 @@ DC_OBJ = $(DC_SRC:.c=.o)
 BC_ENABLED = BC_ENABLED
 DC_ENABLED = DC_ENABLED
 
+VERSION = 1.0
+
 GEN_DIR = gen
 GEN_EXEC = strgen
 
@@ -50,7 +52,7 @@ INSTALL = ./install.sh
 -include config.mak
 
 CFLAGS += -Wall -Wextra -pedantic -std=c99 -funsigned-char
-CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L
+CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION)
 
 LDLIBS += -lm
 
@@ -118,6 +120,12 @@ valgrind:
 
 timeconst:
 	tests/timeconst.sh
+
+version:
+	@echo -n "$(VERSION)"
+
+libcname:
+	@echo -n "$(BC_LIB_C)"
 
 clean:
 	$(RM) -f $(OBJ)

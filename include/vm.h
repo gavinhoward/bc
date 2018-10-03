@@ -34,6 +34,11 @@
 #error Must define BC_ENABLED, DC_ENABLED, or both
 #endif
 
+// ** Exclude start. **
+#define VERSION_STR(V) #V
+#define BC_VERSION VERSION_STR(VERSION)
+// ** Exclude end. **
+
 #define BC_FLAG_X (1<<0)
 #define BC_FLAG_W (1<<1)
 #define BC_FLAG_S (1<<2)
@@ -77,6 +82,8 @@ typedef struct BcGlobals {
 } BcGlobals;
 // ** Exclude end. **
 
+BcStatus bc_vm_header(const char* const help);
+
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 BcStatus bc_vm_posix_error(BcStatus s, const char *file,
                            size_t line, const char *msg);
@@ -89,12 +96,20 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
                     BcParseInit parse_init, BcParseExpr parse_expr);
 // ** Exclude end. **
 
-extern BcGlobals bcg;
-
+#ifdef BC_ENABLED
+// ** Exclude start. **
 extern const char bc_name[];
-extern const char dc_name[];
+// ** Exclude end. **
+extern const char bc_sig_msg[];
+#endif // BC_ENABLED
 
-extern const char bc_header[];
+// ** Exclude start. **
+#ifdef DC_ENABLED
+extern const char dc_name[];
+extern const char dc_sig_msg[];
+#endif // DC_ENABLED
+
+extern const char bc_copyright[];
 
 extern const char bc_lib[];
 extern const char *bc_lib_name;
@@ -104,8 +119,8 @@ extern const char bc_err_line[];
 extern const char *bc_errs[];
 extern const uint8_t bc_err_indices[];
 extern const char *bc_err_descs[];
+// ** Exclude end. **
 
-extern const char bc_sig_msg[34];
-extern const ssize_t bc_sig_msg_len;
+extern BcGlobals bcg;
 
 #endif // BC_VM_H

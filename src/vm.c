@@ -35,10 +35,19 @@
 
 void bc_vm_sig(int sig) {
 	if (sig == SIGINT) {
-		if (write(2, bc_sig_msg, sizeof(bc_sig_msg) - 1) >= 0)
+		const char* msg = !strcmp(bcg.name, dc_name) ? dc_sig_msg : bc_sig_msg;
+		size_t len = strlen(msg);
+		if (write(2, msg, len) == (ssize_t) len)
 			bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
 	}
 	else bcg.sig_other = 1;
+}
+
+BcStatus bc_vm_header(const char* const help) {
+	if (printf("%s %s\n", bcg.name, BC_VERSION) < 0) return BC_STATUS_IO_ERR;
+	if (puts(bc_copyright) == EOF) return BC_STATUS_IO_ERR;
+	if (help && printf(help, bcg.name) < 0) return BC_STATUS_IO_ERR;
+	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
@@ -253,10 +262,8 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 	if ((s = bc_program_init(&vm.prog, len, parse_init, parse_expr))) return s;
 	if ((s = parse_init(&vm.parse, &vm.prog))) goto parse_err;
 
-	if (bcg.tty && ttyout && !(flags & BC_FLAG_Q) && puts(bc_header) == EOF) {
-		s = BC_STATUS_IO_ERR;
+	if (bcg.tty && ttyout && !(flags & BC_FLAG_Q) && (s = bc_vm_header(NULL)))
 		goto err;
-	}
 
 #ifdef BC_ENABLED
 	if (flags & BC_FLAG_L) {

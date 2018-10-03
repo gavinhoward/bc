@@ -24,13 +24,19 @@
 #include <parse.h>
 #include <num.h>
 
+#ifdef BC_ENABLED
 // ** Exclude start. **
 const char bc_name[] = "bc";
-const char dc_name[] = "dc";
 // ** Exclude end. **
+const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
+#endif // BC_ENABLED
 
-const char bc_header[] =
-	"bc 1.0\n"
+#ifdef DC_ENABLED
+const char dc_name[] = "dc";
+const char dc_sig_msg[] = "\ninturrupt (type \"q\" to exit)\n";
+#endif // DC_ENABLED
+
+const char bc_copyright[] =
 	"Copyright (c) 2018 Gavin D. Howard and contributors\n"
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
@@ -142,8 +148,6 @@ const char *bc_err_descs[] = {
 #endif // NDEBUG
 
 };
-
-const char bc_sig_msg[34] = "\ninterrupt (type \"quit\" to exit)\n";
 
 const char bc_func_main[] = "(main)";
 const char bc_func_read[] = "(read)";
