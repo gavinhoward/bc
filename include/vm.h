@@ -78,7 +78,9 @@ typedef struct BcGlobals {
 	long ttyin;
 	long posix;
 	long warn;
+
 	const char *name;
+	const char *sig_msg;
 
 } BcGlobals;
 // ** Exclude end. **

@@ -35,9 +35,8 @@
 
 void bc_vm_sig(int sig) {
 	if (sig == SIGINT) {
-		const char* msg = !strcmp(bcg.name, dc_name) ? dc_sig_msg : bc_sig_msg;
-		size_t len = strlen(msg);
-		if (write(2, msg, len) == (ssize_t) len)
+		size_t len = strlen(bcg.sig_msg);
+		if (write(2, bcg.sig_msg, len) == (ssize_t) len)
 			bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
 	}
 	else bcg.sig_other = 1;
