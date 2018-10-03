@@ -71,6 +71,8 @@ continue
 auto a,u
 define i(e) { auto p,; return(p); }
 define i(e) { auto e; return(e); }
+define i(e) { auto q; auto n; return(e); }
+define i(e) { auto q; e+=q; auto n; return(e); }
 define i(e, e) { auto p; return(p*e); }
 define i(e, g, e) { auto p; return(p*e*g); }
 define x(e) { define q(f) { return (0); } return q(e); }
