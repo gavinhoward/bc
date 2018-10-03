@@ -82,9 +82,6 @@ $(BC_EXEC): CPPFLAGS += -D$(BC_ENABLED)
 $(BC_EXEC): clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS) -o $(BC_EXEC)
 
-main: clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O)
-	$(CC) $(CFLAGS) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS)
-
 help:
 	@echo "available targets:"
 	@echo ""
