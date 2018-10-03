@@ -112,7 +112,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 
 			case 'h':
 			{
-				s = bc_vm_header(help);
+				if ((s = bc_vm_header(help))) return s;
 				do_exit = true;
 				break;
 			}
@@ -157,7 +157,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 			case 'V':
 			case 'v':
 			{
-				s = bc_vm_header(NULL);
+				if ((s = bc_vm_header(NULL))) return s;
 				do_exit = true;
 				break;
 			}
