@@ -471,12 +471,13 @@ BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	if (scale) scale = tscale;
-	len = BC_NUM_MREQ(a, b, scale);
+	len = BC_NUM_MREQ(a, b, tscale);
 
 	if ((s = bc_num_init(&c1, len))) return s;
 	if ((s = bc_num_init(&c2, len))) goto c2_err;
 	if ((s = bc_num_div(a, b, &c1, scale))) goto err;
+
+	if (scale) scale = tscale;
 
 	if ((s = bc_num_mul(&c1, b, &c2, scale))) goto err;
 	if ((s = bc_num_sub(a, &c2, c, scale))) goto err;
