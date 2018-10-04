@@ -21,34 +21,29 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -ge 1 ]; then
-	testdirs="$1"
+	d="$1"
 	shift
+else
+	echo "usage: dir [exec args...]"
+	exit 1
 fi
 
-if [ -z "$testdirs" ]; then
-	mapfile -t testdirs < "$testdir/all.txt"
+if [ "$#" -lt 1 ]; then
+	exe="$testdir/../$d"
+else
+	exe="$1"
 fi
 
-for d in "$testdirs"; do
+echo -e "\nRunning $d tests...\n"
 
-	if [ "$#" -lt 1 ]; then
-		exe="$testdir/../$d"
-	else
-		exe="$1"
-	fi
+while read t; do
+	sh "$testdir/test.sh" "$d" "$t" "$exe" "$@"
+done < "$testdir/$d/all.txt"
 
-	echo -e "\nRunning $d tests...\n"
+sh "$testdir/scripts.sh" "$d" "$exe" "$@"
+sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
-	while read t; do
-		sh "$testdir/test.sh" "$d" "$t" "$exe" "$@"
-	done < "$testdir/$d/all.txt"
-
-	sh "$testdir/scripts.sh" "$d" "$exe" "$@"
-	sh "$testdir/errors.sh" "$d" "$exe" "$@"
-
-	if [ "$d" = "bc" ]; then
-		timeconst="$testdir/$d/scripts/timeconst.bc"
-		sh "$testdir/$d/timeconst.sh" "$timeconst" "$exe" "$@"
-	fi
-
-done
+if [ "$d" = "bc" ]; then
+	timeconst="$testdir/$d/scripts/timeconst.bc"
+	sh "$testdir/$d/timeconst.sh" "$timeconst" "$exe" "$@"
+fi

@@ -68,3 +68,5 @@ for i in $(seq 0 10000); do
 done
 
 rm -rf "$out1" "$out2"
+
+echo ""

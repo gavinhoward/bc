@@ -106,8 +106,7 @@ help:
 	@echo "              if PREFIX is \"/usr\", $(BC_EXEC) will be installed to \"/usr/bin\""
 	@echo "    GEN_EMU   Emulator to run $(GEN_EXEC) under (leave empty if not necessary)"
 
-test:
-	tests/all.sh
+test: test_bc test_dc
 
 test_bc:
 	tests/all.sh bc
