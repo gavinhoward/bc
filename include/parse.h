@@ -155,10 +155,9 @@ extern const BcParseNext bc_parse_next_print;
 extern const BcParseNext bc_parse_next_cond;
 extern const BcParseNext bc_parse_next_elem;
 extern const BcParseNext bc_parse_next_for;
+extern const BcParseNext bc_parse_next_read;
 #endif // BC_ENABLED
 
 // ** Exclude end. **
-
-extern const BcParseNext bc_parse_next_read;
 
 #endif // BC_PARSE_H

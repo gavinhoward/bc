@@ -223,10 +223,8 @@ const BcParseNext bc_parse_next_print =
 const BcParseNext bc_parse_next_cond = BC_PARSE_NEXT(1, BC_LEX_RPAREN);
 const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RBRACKET);
 const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
-#endif // BC_ENABLED
-
-// This one is needed for dc too.
 const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
+#endif // BC_ENABLED
 
 #ifdef DC_ENABLED
 const uint8_t dc_inst_noperands[] = {

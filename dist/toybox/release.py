@@ -91,7 +91,7 @@ vm_c_replacements = [
 	[ '\t', '  ' ],
 	[ '\n  [ ]*assert\(.*?\);$', '' ],
 	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*exprs, BcVec \*files,' +
-	  '\n[ ]*BcParseInit parse_init, BcParseExpr parse_expr\)\n\{',
+	  '\n[ ]*BcParseInit parse_init, BcParseRead parse_read\)\n\{',
 	  'void bc_main(void) {\n' ],
 	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
 	[ '^  bcg.warn = flags & BC_FLAG_W;$', '' ],
@@ -100,7 +100,7 @@ vm_c_replacements = [
 	[ '\*\(\(char\*\*\) bc_vec_item\(files, i\)\)', 'toys.optargs[i]' ],
 	[ '^  bc_parse_free\(&vm\.parse\);', '  if (CFG_TOYBOX_FREE) bc_parse_free(&vm.parse);' ],
 	[ '^  bc_program_free\(&vm\.prog\);', '  if (CFG_TOYBOX_FREE) bc_program_free(&vm.prog);' ],
-	[ 'if \(\(s = bc_program_init\(&vm\.prog, len, parse_init, parse_expr\)\)\) return s;',
+	[ 'if \(\(s = bc_program_init\(&vm\.prog, len, parse_init, parse_read\)\)\) return s;',
 	  'if ((toys.exitval = bc_program_init(&vm.prog, len))) return;' ],
 	[ 'return s == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : s;',
 	  'toys.exitval = s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;' ],
@@ -143,7 +143,6 @@ regexes = [
 	'^#define BC_INVALID_IDX \(\(size_t\) -1\)$',
 	'^#define BC_MAX\(a, b\) \(\(a\) > \(b\) \? \(a\) : \(b\)\)$',
 	'^#define BC_MIN\(a, b\) \(\(a\) < \(b\) \? \(a\) : \(b\)\)$',
-	'\n\n// This one is needed for dc too.$'
 ]
 
 regexes_all = [
@@ -159,11 +158,12 @@ regexes_all = [
 	'\#if !defined\(BC_ENABLED\).*?\#endif\n',
 	'\n[\t]*// \*\* Exclude start\. \*\*.*?^[\t]*// \*\* Exclude end\. \*\*$',
 	'^\tBC_STATUS_INVALID_OPTION,$',
+	'^[\t]*p->parse = parse;$',
+	'^[\t]*p->parse_init = init;$',
+	'^[\t]*p->parse_read = read;$',
 	'^\tl->next = next;$',
 	'^BcStatus bc_parse_init\(BcParse \*p, BcProgram \*prog\) \{.*?\}',
-	'^[\t]*p->parse = parse;$',
-	'^[\t]*p->parse_init = parse_init;$',
-	'^[\t]*p->parse_exp = parse_expr;$',
+	'^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}'
 	'!strcmp\(bcg\.name, bc_name\) && '
 ]
 
@@ -188,13 +188,13 @@ replacements = [
 	[ 'BcStatus bc_lex_init\(BcLex \*l, BcLexNext next\)', 'BcStatus bc_lex_init(BcLex *l)' ],
 	[ 'l->next\(l\)', 'bc_lex_token(l)' ],
 	[ '^BcStatus bc_parse_create\(BcParse \*p, BcProgram \*prog,\n[ ]*BcParseParse parse, BcLexNext next\)\n\{',
-	  'BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {' ],
+	  'BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {\n' ],
 	[ 'BcStatus bc_program_init\(BcProgram \*p, size_t line_len,\n' +
-	  '[ ]*BcParseInit parse_init, BcParseExpr parse_expr\)\n\{',
+	  '[ ]*BcParseInit init, BcParseRead read\)\n\{',
 	  'BcStatus bc_program_init(BcProgram *p, size_t line_len) {\n' ],
 	[ 'if \(\(s = bc_lex_init\(&p->l, next\)\)\) return s;', 'if ((s = bc_lex_init(&p->l))) return s;' ],
 	[ 'p->parse_init\(', 'bc_parse_init(' ],
-	[ 'p->parse_exp\(', 'bc_parse_expr(' ],
+	[ 'p->parse_read\(&parse, &f->code\)', 'bc_parse_expr(&parse, &f->code, BC_PARSE_NOREAD, bc_parse_next_read)' ],
 	[ '^BcStatus bc_program_pushVar\(BcProgram \*p, char \*code, size_t \*bgn, bool pop\)',
 	  'BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn)' ],
 	[ 'BC_VERSION', '"' + version + '"' ],
