@@ -966,6 +966,32 @@ err:
 }
 
 #ifdef DC_ENABLED
+BcStatus bc_program_divmod(BcProgram *p) {
+
+	BcStatus s;
+	BcResult *opd1, *opd2, res, res2;
+	BcNum *n1, *n2;
+
+	if ((s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false))) return s;
+	if ((s = bc_num_init(&res.data.n, BC_NUM_DEF_SIZE))) return s;
+	if ((s = bc_num_init(&res2.data.n, n2->len))) goto res2_err;
+
+	if ((s = bc_num_div(n1, n2, &res2.data.n, p->scale))) goto err;
+	if ((s = bc_num_rem(n1, n2, &res.data.n, p->scale))) goto err;
+
+	if ((s = bc_program_binOpRetire(p, &res2))) goto err;
+	res.t = BC_RESULT_TEMP;
+	if ((s = bc_vec_push(&p->results, &res))) goto res2_err;
+
+	return s;
+
+err:
+	bc_num_free(&res2.data.n);
+res2_err:
+	bc_num_free(&res.data.n);
+	return s;
+}
+
 BcStatus bc_program_modexp(BcProgram *p) {
 
 	BcStatus s;
@@ -1038,32 +1064,6 @@ BcStatus bc_program_nquit(BcProgram *p) {
 
 	bc_vec_npop(&p->stack, val);
 
-	return s;
-}
-
-BcStatus bc_program_divmod(BcProgram *p) {
-
-	BcStatus s;
-	BcResult *opd1, *opd2, res, res2;
-	BcNum *n1, *n2;
-
-	if ((s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false))) return s;
-	if ((s = bc_num_init(&res.data.n, BC_NUM_DEF_SIZE))) return s;
-	if ((s = bc_num_init(&res2.data.n, n2->len))) goto res2_err;
-
-	if ((s = bc_num_div(n1, n2, &res2.data.n, p->scale))) goto err;
-	if ((s = bc_num_mod(n1, n2, &res.data.n, p->scale))) goto err;
-
-	if ((s = bc_program_binOpRetire(p, &res2))) goto err;
-	res.t = BC_RESULT_TEMP;
-	if ((s = bc_vec_push(&p->results, &res))) goto res2_err;
-
-	return s;
-
-err:
-	bc_num_free(&res2.data.n);
-res2_err:
-	bc_num_free(&res.data.n);
 	return s;
 }
 
