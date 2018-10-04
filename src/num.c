@@ -462,7 +462,7 @@ BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	BcStatus s;
 	BcNum c1, c2;
-	size_t len, tscale = BC_MAX(scale + b->rdx, a->rdx);
+	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
 
 	if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
@@ -471,18 +471,16 @@ BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	len = BC_NUM_MREQ(a, b, tscale);
-
 	if ((s = bc_num_init(&c1, len))) return s;
 	if ((s = bc_num_init(&c2, len))) goto c2_err;
 	if ((s = bc_num_div(a, b, &c1, scale))) goto err;
 
-	if (scale) scale = tscale;
+	if (scale) scale = ts;
 
 	if ((s = bc_num_mul(&c1, b, &c2, scale))) goto err;
 	if ((s = bc_num_sub(a, &c2, c, scale))) goto err;
 
-	if (tscale > c->rdx && c->len) s = bc_num_extend(c, tscale - c->rdx);
+	if (ts > c->rdx && c->len) s = bc_num_extend(c, ts - c->rdx);
 
 err:
 	bc_num_free(&c2);
