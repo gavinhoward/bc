@@ -98,7 +98,7 @@ err:
 	return s;
 }
 
-BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t) {
+BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst prev;
@@ -130,6 +130,13 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t) {
 		case BC_LEX_COLON:
 		{
 			// TODO
+			break;
+		}
+
+		case BC_LEX_KEY_READ:
+		{
+			if (flags & BC_PARSE_NOREAD) s = BC_STATUS_EXEC_REC_READ;
+			else s = bc_vec_pushByte(code, BC_INST_READ);
 			break;
 		}
 
@@ -178,13 +185,13 @@ BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 	BcInst inst;
 	BcLexType t;
 
-	(void) flags, (void) next;
+	(void) next;
 
 	while (!s && (t = p->l.t.t) != BC_LEX_EOF) {
 
 		inst = dc_parse_insts[t];
 		if (inst != BC_INST_INVALID) s = dc_parse_push(p, code, inst);
-		else s = dc_parse_token(p, code, t);
+		else s = dc_parse_token(p, code, t, flags);
 
 		if (!s) s = bc_lex_next(&p->l);
 	}
