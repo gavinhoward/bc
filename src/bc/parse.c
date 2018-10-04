@@ -198,7 +198,7 @@ err:
 	return s;
 }
 
-BcStatus bc_parse_read(BcParse *p, BcVec *code) {
+BcStatus bc_parse_readCall(BcParse *p, BcVec *code) {
 
 	BcStatus s;
 
@@ -1275,7 +1275,7 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 			{
 				if (BC_PARSE_LEAF(prev, rprn)) return BC_STATUS_PARSE_BAD_EXP;
 				else if (flags & BC_PARSE_NOREAD) s = BC_STATUS_EXEC_REC_READ;
-				else s = bc_parse_read(p, code);
+				else s = bc_parse_readCall(p, code);
 
 				paren_expr = true;
 				rprn = get_token = bin_last = false;
@@ -1354,4 +1354,9 @@ BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 
 BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {
 	return bc_parse_create(p, prog, bc_parse_parse, bc_lex_token);
+}
+
+BcStatus bc_parse_read(BcParse *p, BcVec *code) {
+	assert(p && code);
+	return bc_parse_expr(p, code, BC_PARSE_NOREAD, bc_parse_next_read);
 }

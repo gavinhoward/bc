@@ -226,7 +226,7 @@ buf_err:
 }
 
 BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
-                    BcParseInit parse_init, BcParseExpr parse_expr)
+                    BcParseInit parse_init, BcParseRead parse_expr)
 {
 	BcStatus s;
 	BcVm vm;

@@ -46,7 +46,7 @@ extern const BcLexType dc_lex_tokens[];
 extern const BcInst dc_parse_insts[];
 
 BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog);
-BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
+BcStatus dc_parse_read(BcParse *p, BcVec *code);
 
 #endif // DC_ENABLED
 
