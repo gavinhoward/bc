@@ -253,9 +253,9 @@ BcStatus bc_program_read(BcProgram *p) {
 	BcParse parse;
 	BcVec buf;
 	BcInstPtr ip;
-	BcFunc *func = bc_vec_item(&p->fns, BC_PROG_READ);
+	BcFunc *f = bc_vec_item(&p->fns, BC_PROG_READ);
 
-	func->code.len = 0;
+	f->code.len = 0;
 
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) return BC_STATUS_ALLOC_ERR;
 	if ((s = bc_io_getline(&buf, "read> "))) goto io_err;
@@ -264,7 +264,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	bc_lex_file(&parse.l, bc_program_stdin_name);
 	if ((s = bc_lex_text(&parse.l, buf.v))) goto exec_err;
 
-	if ((s = p->parse_read(&parse, &func->code))) return s;
+	if ((s = p->parse_read(&parse, &f->code))) return s;
 
 	if (parse.l.t.t != BC_LEX_NLINE && parse.l.t.t != BC_LEX_EOF) {
 		s = BC_STATUS_EXEC_BAD_READ_EXPR;
