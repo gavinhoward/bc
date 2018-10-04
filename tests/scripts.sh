@@ -40,6 +40,10 @@ out2="$testdir/../.log_test.txt"
 
 if [ "$d" = "bc" ]; then
 	options="-lq"
+	halt="halt"
+else
+	options="-x"
+	halt="q"
 fi
 
 scriptdir="$testdir/$d/scripts"
@@ -63,11 +67,11 @@ for s in $scriptdir/*.$d; do
 	elif [ -f "$results" ]; then
 		res="$results"
 	else
-		echo "halt" | $d $options "$s" > "$out1"
+		echo "$halt" | $d $options "$s" > "$out1"
 		res="$out1"
 	fi
 
-	echo "halt" | "$exe" "$@" $options "$s" > "$out2"
+	echo "$halt" | "$exe" "$@" $options "$s" > "$out2"
 
 	diff "$res" "$out2"
 

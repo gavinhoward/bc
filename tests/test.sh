@@ -50,6 +50,7 @@ if [ "$d" = "bc" ]; then
 	options="-lq"
 	halt="halt"
 else
+	options="-x"
 	halt="q"
 fi
 
