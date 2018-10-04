@@ -68,7 +68,7 @@ BcStatus dc_parse_string(BcParse *p, BcVec *code) {
 	if ((s = bc_program_addFunc(p->prog, b, &idx))) return s;
 	if ((s = bc_lex_next(&p->l))) return s;
 
-	assert(idx == len + 2);
+	assert(idx == len + BC_PROG_REQ_FUNCS);
 
 	return s;
 
