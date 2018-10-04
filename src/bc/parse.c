@@ -415,10 +415,7 @@ BcStatus bc_parse_print(BcParse *p, BcVec *code) {
 		}
 
 		if (s) return s;
-
-		comma = p->l.t.t == BC_LEX_COMMA;
-		if (comma) s = bc_lex_next(&p->l);
-
+		if ((comma = p->l.t.t == BC_LEX_COMMA)) s = bc_lex_next(&p->l);
 		type = p->l.t.t;
 	}
 

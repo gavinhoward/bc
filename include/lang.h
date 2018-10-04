@@ -165,7 +165,7 @@ typedef enum BcResultType {
 
 typedef union BcResultData {
 
-	BcNum num;
+	BcNum n;
 	BcVec array;
 	BcEntry id;
 

@@ -100,7 +100,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
 	p->l.idx = p->l.len;
 	p->l.t.t = BC_LEX_EOF;
-	p->auto_part = p->nbraces = 0;
+	p->auto_part = (p->nbraces = 0);
 
 	bc_vec_npop(&p->flags, p->flags.len - 1);
 	bc_vec_npop(&p->exits, p->exits.len);
@@ -127,7 +127,7 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog,
 
 	p->parse = parse;
 	p->prog = prog;
-	p->auto_part = p->func = p->nbraces = 0;
+	p->auto_part = (p->func = p->nbraces = 0);
 
 	return s;
 

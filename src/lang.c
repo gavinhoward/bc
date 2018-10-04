@@ -170,7 +170,7 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
 		{
-			status = bc_num_copy(&d->data.num, &s->data.num);
+			status = bc_num_copy(&d->data.n, &s->data.n);
 			break;
 		}
 
@@ -206,7 +206,7 @@ void bc_result_free(void *result) {
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
 		{
-			bc_num_free(&r->data.num);
+			bc_num_free(&r->data.n);
 			break;
 		}
 
