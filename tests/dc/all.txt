@@ -4,6 +4,7 @@ subtract
 multiply
 divide
 modulus
+divmod
 power
 sqrt
 boolean
