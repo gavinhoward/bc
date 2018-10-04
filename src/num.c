@@ -458,7 +458,7 @@ err:
 	return s;
 }
 
-BcStatus bc_num_alg_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	BcStatus s;
 	BcNum c1, c2;
@@ -838,7 +838,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
 	if ((s = bc_num_sub(n, &intp, &fracp, 0))) goto err;
 
 	while (intp.len) {
-		if ((s = bc_num_mod(&intp, base, &digit, 0))) goto err;
+		if ((s = bc_num_rem(&intp, base, &digit, 0))) goto err;
 		if ((s = bc_num_ulong(&digit, &dig))) goto err;
 		if ((s = bc_vec_push(&stack, &dig))) goto err;
 		if ((s = bc_num_div(&intp, base, &intp, 0))) goto err;
@@ -1044,9 +1044,9 @@ BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	return bc_num_binary(a, b, c, scale, bc_num_alg_d, req);
 }
 
-BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	size_t req = BC_NUM_MREQ(a, b, scale);
-	return bc_num_binary(a, b, c, scale, bc_num_alg_mod, req);
+	return bc_num_binary(a, b, c, scale, bc_num_alg_rem, req);
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
@@ -1253,21 +1253,21 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	two.num[0] = 2;
 	bc_num_one(d);
 
-	if ((s = bc_num_mod(ptr_a, ptr_c, &base, scale))) goto err;
+	if ((s = bc_num_rem(ptr_a, ptr_c, &base, scale))) goto err;
 	if ((s = bc_num_copy(&exp, ptr_b))) goto err;
 
 	while (exp.len) {
 
-		if ((s = bc_num_mod(&exp, &two, &temp, scale))) goto err;
+		if ((s = bc_num_rem(&exp, &two, &temp, scale))) goto err;
 
 		if (BC_NUM_ONE(&temp)) {
 			if ((s = bc_num_mul(d, &base, &temp, scale))) goto err;
-			if ((s = bc_num_mod(&temp, ptr_c, d, scale))) goto err;
+			if ((s = bc_num_rem(&temp, ptr_c, d, scale))) goto err;
 		}
 
 		if ((s = bc_num_div(&exp, &two, &exp, scale))) goto err;
 		if ((s = bc_num_mul(&base, &base, &temp, scale))) goto err;
-		if ((s = bc_num_mod(&temp, ptr_c, &base, scale))) goto err;
+		if ((s = bc_num_rem(&temp, ptr_c, &base, scale))) goto err;
 	}
 
 err:

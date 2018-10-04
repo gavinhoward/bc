@@ -294,7 +294,7 @@ const BcInst dc_parse_insts[] = {
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
 const BcNumBinaryOp bc_program_ops[] = {
-	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
+	bc_num_pow, bc_num_mul, bc_num_div, bc_num_rem, bc_num_add, bc_num_sub,
 };
 
 const char bc_program_stdin_name[] = "<stdin>";
