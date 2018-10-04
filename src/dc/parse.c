@@ -30,12 +30,26 @@
 #include <program.h>
 #include <vm.h>
 
-BcStatus dc_parse_push(BcParse *p, BcVec *code, BcInst inst) {
+BcStatus dc_parse_inst(BcParse *p, BcVec *code, BcInst inst) {
 	if (p->nbraces >= dc_inst_noperands[inst]) {
 		p->nbraces -= dc_inst_noperands[inst] - dc_inst_nresults[inst];
 		return bc_vec_pushByte(code, inst);
 	}
 	return BC_STATUS_PARSE_BAD_EXP;
+}
+
+BcStatus dc_parse_register(BcParse *p, BcVec *code) {
+
+	BcStatus s;
+	char *name;
+
+	if ((s = bc_lex_next(&p->l))) return s;
+	if (p->l.t.t != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_TOKEN;
+	if (!(name = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
+	s = bc_parse_pushName(code, name);
+
+	free(name);
+	return s;
 }
 
 BcStatus dc_parse_string(BcParse *p, BcVec *code) {
@@ -48,10 +62,11 @@ BcStatus dc_parse_string(BcParse *p, BcVec *code) {
 	if (sprintf(b, "%*zu", DC_PARSE_BUF_SIZE, len) < 0) return BC_STATUS_IO_ERR;
 
 	if (!(str = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_vec_pushByte(code, BC_INST_STR))) goto err;
+	if ((s = dc_parse_inst(p, code, BC_INST_STR))) goto err;
 	if ((s = bc_parse_pushIndex(code, len))) goto err;
 	if ((s = bc_vec_push(&p->prog->strs, &str))) goto err;
 	if ((s = bc_program_addFunc(p->prog, b, &idx))) return s;
+	if ((s = bc_lex_next(&p->l))) return s;
 
 	assert(idx == len + 2);
 
@@ -62,39 +77,62 @@ err:
 	return s;
 }
 
+BcStatus dc_parse_arrayElem(BcParse *p, BcVec *code, bool store) {
+
+	BcStatus s;
+
+	if ((s = dc_parse_inst(p, code, BC_INST_ARRAY_ELEM))) return s;
+	if ((s = dc_parse_register(p, code))) return s;
+
+	if (store) {
+		if ((s = dc_parse_inst(p, code, BC_INST_SWAP))) return s;
+		if ((s = dc_parse_inst(p, code, BC_INST_ASSIGN))) return s;
+	}
+
+	return bc_lex_next(&p->l);
+}
+
 BcStatus dc_parse_mem(BcParse *p, BcVec *code, uint8_t inst,
-                      bool name, bool store, bool push_pop)
+                      bool name, bool store, bool push)
 {
 	BcStatus s;
-	char *str;
 
-	if ((s = bc_vec_push(code, &inst))) return s;
-
-	if (name) {
-		if ((s = bc_lex_next(&p->l))) return s;
-		if (p->l.t.t != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_TOKEN;
-		if (!(str = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
-		if ((s = bc_parse_pushName(code, str))) goto err;
-	}
+	if ((s = dc_parse_inst(p, code, inst))) return s;
+	if (name && (s = dc_parse_register(p, code))) return s;
 
 	if (store) {
 
-		if ((s = bc_vec_pushByte(code, BC_INST_SWAP))) return s;
+		if ((s = dc_parse_inst(p, code, BC_INST_SWAP))) return s;
 
-		if (push_pop) {
-			if ((s = bc_vec_pushByte(code, BC_INST_COPY_TO_VAR))) return s;
+		if (push) {
+			if ((s = dc_parse_inst(p, code, BC_INST_COPY_TO_VAR))) return s;
 		}
 		else {
-			if ((s = bc_vec_pushByte(code, BC_INST_ASSIGN))) return s;
-			s = bc_vec_pushByte(code, BC_INST_POP);
+			if ((s = dc_parse_inst(p, code, BC_INST_ASSIGN))) return s;
+			if ((s = dc_parse_inst(p, code, BC_INST_POP))) return s;
 		}
 	}
-	else if (push_pop) s = bc_vec_pushByte(code, BC_INST_PUSH_VAR);
+	else if (push && (s = dc_parse_inst(p, code, BC_INST_PUSH_VAR))) return s;
 
-	return s;
+	return bc_lex_next(&p->l);
+}
 
-err:
-	free(str);
+BcStatus dc_parse_cond(BcParse *p, BcVec *code, uint8_t inst) {
+
+	BcStatus s;
+
+	if ((s = dc_parse_inst(p, code, inst))) return s;
+	if ((s = dc_parse_inst(p, code, BC_INST_EXEC_COND))) return s;
+	if ((s = dc_parse_register(p, code))) return s;
+	if ((s = bc_lex_next(&p->l))) return s;
+
+	if (p->l.t.t == BC_LEX_ELSE) {
+		if ((s = bc_lex_next(&p->l))) return s;
+		if ((s = dc_parse_register(p, code))) return s;
+		s = bc_lex_next(&p->l);
+	}
+	else s = bc_vec_pushByte(code, ':');
+
 	return s;
 }
 
@@ -106,9 +144,21 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 
 	switch (t) {
 
-		case BC_LEX_SCOLON:
+		case BC_LEX_OP_REL_EQ:
+		case BC_LEX_OP_REL_LE:
+		case BC_LEX_OP_REL_GE:
+		case BC_LEX_OP_REL_NE:
+		case BC_LEX_OP_REL_LT:
+		case BC_LEX_OP_REL_GT:
 		{
-			// TODO
+			s = dc_parse_cond(p, code, t - BC_LEX_OP_REL_EQ + BC_INST_REL_EQ);
+			break;
+		}
+
+		case BC_LEX_SCOLON:
+		case BC_LEX_COLON:
+		{
+			s = dc_parse_arrayElem(p, code, t == BC_LEX_COLON);
 			break;
 		}
 
@@ -123,20 +173,14 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 		{
 			if (t == BC_LEX_NEG && (s = bc_lex_next(&p->l))) return s;
 			s = bc_parse_number(p, code, &prev, &p->nbraces);
-			if (t == BC_LEX_NEG && !s) s = bc_vec_pushByte(code, BC_INST_NEG);
-			break;
-		}
-
-		case BC_LEX_COLON:
-		{
-			// TODO
+			if (t == BC_LEX_NEG && !s) s = dc_parse_inst(p, code, BC_INST_NEG);
 			break;
 		}
 
 		case BC_LEX_KEY_READ:
 		{
 			if (flags & BC_PARSE_NOREAD) s = BC_STATUS_EXEC_REC_READ;
-			else s = bc_vec_pushByte(code, BC_INST_READ);
+			else dc_parse_inst(p, code, BC_INST_READ);
 			break;
 		}
 
@@ -189,11 +233,11 @@ BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next)
 
 	while (!s && (t = p->l.t.t) != BC_LEX_EOF) {
 
-		inst = dc_parse_insts[t];
-		if (inst != BC_INST_INVALID) s = dc_parse_push(p, code, inst);
+		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID) {
+			if ((s = dc_parse_inst(p, code, inst))) return s;
+			s = bc_lex_next(&p->l);
+		}
 		else s = dc_parse_token(p, code, t, flags);
-
-		if (!s) s = bc_lex_next(&p->l);
 	}
 
 	return s;
