@@ -226,7 +226,7 @@ buf_err:
 }
 
 BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
-                    BcParseInit parse_init, BcParseRead parse_expr)
+                    BcParseInit parse_init, BcParseRead parse_read)
 {
 	BcStatus s;
 	BcVm vm;
@@ -265,7 +265,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 		return BC_STATUS_EXEC_SIGACTION_FAIL;
 	}
 
-	if ((s = bc_program_init(&vm.prog, len, parse_init, parse_expr))) return s;
+	if ((s = bc_program_init(&vm.prog, len, parse_init, parse_read))) return s;
 	if ((s = parse_init(&vm.parse, &vm.prog))) goto parse_err;
 
 	if (bcg.tty && ttyout && !(flags & BC_FLAG_Q) && (s = bc_vm_header(NULL)))

@@ -1138,7 +1138,7 @@ err:
 }
 
 BcStatus bc_program_init(BcProgram *p, size_t line_len,
-                         BcParseInit parse_init, BcParseRead parse_expr)
+                         BcParseInit init, BcParseRead read)
 {
 	BcStatus s;
 	size_t idx;
@@ -1154,8 +1154,8 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 
 	p->nchars = p->scale = 0;
 	p->len = line_len;
-	p->parse_init = parse_init;
-	p->parse_read = parse_expr;
+	p->parse_init = init;
+	p->parse_read = read;
 
 	if ((s = bc_num_init(&p->ib, BC_NUM_DEF_SIZE))) return s;
 	bc_num_ten(&p->ib);
