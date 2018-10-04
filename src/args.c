@@ -53,11 +53,8 @@ static const char* const bc_args_opt = "e:f:hilqsvwx";
 const char* const bc_args_env_name = "BC_ENV_ARGS";
 
 static BcStatus bc_args_exprs(BcVec *exprs, const char *str) {
-
 	BcStatus s;
-
 	if ((s = bc_vec_concat(exprs, str))) return s;
-
 	return bc_vec_concat(exprs, "\n");
 }
 
@@ -67,7 +64,6 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	char *buf;
 
 	if ((s = bc_io_fread(file, &buf))) return s;
-
 	s = bc_args_exprs(exprs, buf);
 
 	free(buf);
@@ -181,9 +177,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 	}
 
 	if (do_exit) exit((int) s);
-
 	if (exprs->len > 1) (*flags) |= BC_FLAG_Q;
-
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
 	for (i = optind; !s && i < argc; ++i) s = bc_vec_push(files, argv + i);

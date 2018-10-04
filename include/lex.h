@@ -145,7 +145,7 @@ typedef struct BcLex {
 	const char *buffer;
 	size_t idx;
 	size_t line;
-	const char *file;
+	const char *f;
 	size_t len;
 	bool newline;
 

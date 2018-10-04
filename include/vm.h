@@ -89,7 +89,7 @@ typedef struct BcGlobals {
 BcStatus bc_vm_header(const char* const help);
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
-BcStatus bc_vm_posix_error(BcStatus s, const char *file,
+BcStatus bc_vm_posixError(BcStatus s, const char *file,
                            size_t line, const char *msg);
 
 // ** Exclude start. **

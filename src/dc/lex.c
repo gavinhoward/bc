@@ -34,7 +34,6 @@ BcStatus dc_lex_string(BcLex *l) {
 	char c;
 
 	l->t.t = BC_LEX_STRING;
-
 	bc_vec_npop(&l->t.v, l->t.v.len);
 
 	for (idx = i; (c = l->buffer[i]) && depth; ++i) {

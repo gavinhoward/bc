@@ -62,7 +62,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	return s * (!bcg.tty || !!strcmp(file, bc_program_stdin_name));
 }
 
-BcStatus bc_vm_posix_error(BcStatus s, const char *file,
+BcStatus bc_vm_posixError(BcStatus s, const char *file,
                            size_t line, const char *msg)
 {
 	int p = (int) bcg.posix, w = (int) bcg.warn;
@@ -84,11 +84,11 @@ BcStatus bc_vm_posix_error(BcStatus s, const char *file,
 
 BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
-	BcStatus s = bc_lex_text(&vm->parse.lex, text);
+	BcStatus s = bc_lex_text(&vm->parse.l, text);
 
-	if ((s = bc_vm_error(s, vm->parse.lex.file, vm->parse.lex.line))) return s;
+	if ((s = bc_vm_error(s, vm->parse.l.f, vm->parse.l.line))) return s;
 
-	while (vm->parse.lex.t.t != BC_LEX_EOF) {
+	while (vm->parse.l.t.t != BC_LEX_EOF) {
 
 		if ((s = vm->parse.parse(&vm->parse)) == BC_STATUS_LIMITS) {
 
@@ -113,7 +113,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 			s = BC_STATUS_SUCCESS;
 		}
 		else if (s == BC_STATUS_QUIT || bcg.sig_other ||
-		         (s = bc_vm_error(s, vm->parse.lex.file, vm->parse.lex.line)))
+		         (s = bc_vm_error(s, vm->parse.l.f, vm->parse.l.line)))
 		{
 			return s;
 		}
@@ -122,7 +122,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 	if (BC_PARSE_CAN_EXEC(&vm->parse)) {
 		s = bc_program_exec(&vm->prog);
 		if (bcg.tty) fflush(stdout);
-		if (s && s != BC_STATUS_QUIT) s = bc_vm_error(s, vm->parse.lex.file, 0);
+		if (s && s != BC_STATUS_QUIT) s = bc_vm_error(s, vm->parse.l.f, 0);
 	}
 
 	return s;
@@ -138,7 +138,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	vm->prog.file = file;
 	if ((s = bc_io_fread(file, &data))) return bc_vm_error(s, file, 0);
 
-	bc_lex_file(&vm->parse.lex, file);
+	bc_lex_file(&vm->parse.l, file);
 	if ((s = bc_vm_process(vm, data))) goto err;
 
 	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
@@ -157,16 +157,14 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	BcVec buf, buffer;
 	char c;
 	size_t len, i;
-	bool string, comment, notend;
+	bool string = false, comment = false, notend;
 
 	vm->prog.file = bc_program_stdin_name;
-	bc_lex_file(&vm->parse.lex, bc_program_stdin_name);
+	bc_lex_file(&vm->parse.l, bc_program_stdin_name);
 
 	if ((s = bc_vec_init(&buffer, sizeof(char), NULL))) return s;
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) goto buf_err;
 	if ((s = bc_vec_pushByte(&buffer, '\0'))) goto err;
-
-	string = comment = false;
 
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
@@ -174,11 +172,11 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	// case, and for strings and comments, the parser will expect more stuff.
 	while (!s && !(s = bc_io_getline(&buf, ">>> "))) {
 
-		char *str = buf.vec;
+		char *str = buf.v;
 
 		len = buf.len - 1;
 
-		if (len == 1 && buf.vec[0] == '"') string = !string;
+		if (len == 1 && buf.v[0] == '"') string = !string;
 		else if (len > 1 || comment) {
 
 			for (i = 0; i < len; ++i) {
@@ -195,28 +193,28 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 			}
 
 			if (string || comment || str[len - 2] == '\\') {
-				if ((s = bc_vec_concat(&buffer, buf.vec))) goto err;
+				if ((s = bc_vec_concat(&buffer, buf.v))) goto err;
 				continue;
 			}
 		}
 
-		if ((s = bc_vec_concat(&buffer, buf.vec))) goto err;
-		if ((s = bc_vm_process(vm, buffer.vec))) goto err;
+		if ((s = bc_vec_concat(&buffer, buf.v))) goto err;
+		if ((s = bc_vm_process(vm, buffer.v))) goto err;
 
 		bc_vec_npop(&buffer, buffer.len);
 	}
 
 	if (s == BC_STATUS_BIN_FILE)
-		s = bc_vm_error(s, vm->parse.lex.file, vm->parse.lex.line);
+		s = bc_vm_error(s, vm->parse.l.f, vm->parse.l.line);
 
 	// I/O error will always happen when stdin is
 	// closed. It's not a problem in that case.
 	s = s == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : s;
 
 	if (string) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
-	                            vm->parse.lex.file, vm->parse.lex.line);
+	                            vm->parse.l.f, vm->parse.l.line);
 	else if (comment) s = bc_vm_error(BC_STATUS_LEX_NO_COMMENT_END,
-	                                  vm->parse.lex.file, vm->parse.lex.line);
+	                                  vm->parse.l.f, vm->parse.l.line);
 
 err:
 	bc_vec_free(&buf);
@@ -269,17 +267,17 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 #ifdef BC_ENABLED
 	if (flags & BC_FLAG_L) {
 
-		bc_lex_file(&vm.parse.lex, bc_lib_name);
-		if ((s = bc_lex_text(&vm.parse.lex, bc_lib))) goto err;
+		bc_lex_file(&vm.parse.l, bc_lib_name);
+		if ((s = bc_lex_text(&vm.parse.l, bc_lib))) goto err;
 
-		while (!s && vm.parse.lex.t.t != BC_LEX_EOF)
+		while (!s && vm.parse.l.t.t != BC_LEX_EOF)
 			s = vm.parse.parse(&vm.parse);
 
 		if (s || (s = bc_program_exec(&vm.prog))) goto err;
 	}
 #endif // BC_ENABLED
 
-	if (exprs->len > 1 && (s = bc_vm_process(&vm, exprs->vec))) goto err;
+	if (exprs->len > 1 && (s = bc_vm_process(&vm, exprs->v))) goto err;
 
 	for (i = 0; !bcg.sig_other && !s && i < files->len; ++i)
 		s = bc_vm_file(&vm, *((char**) bc_vec_item(files, i)));

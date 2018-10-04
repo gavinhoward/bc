@@ -158,20 +158,6 @@ const char bc_inst_chars[] =
 	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$HovxzcZdfghkK";
 #endif // NDEBUG
 
-#ifdef DC_ENABLED
-const uint8_t bc_inst_noperands[] = {
-	1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1,
-	1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 3, 2, 1, 0, 0, 0, 1, 2, 0, 1, 0, 1,
-};
-
-const uint8_t bc_inst_nresults[] = {
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 2, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0,
-};
-#endif // DC_ENABLED
-
 #ifdef BC_ENABLED
 const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
@@ -237,6 +223,18 @@ const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
 const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
 
 #ifdef DC_ENABLED
+const uint8_t dc_inst_noperands[] = {
+	1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1,
+	1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 3, 2, 1, 0, 0, 0, 1, 2, 0, 1, 0, 1,
+};
+
+const uint8_t dc_inst_nresults[] = {
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 2, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0,
+};
+
 const BcLexType dc_lex_tokens[] = {
 	BC_LEX_OP_MODULUS, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_OP_REL_GT,
 	BC_LEX_INVALID, BC_LEX_OP_MULTIPLY, BC_LEX_OP_PLUS, BC_LEX_INVALID,

@@ -33,8 +33,7 @@
 BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 
 	BcStatus s;
-	int c = 0;
-	char byte;
+	signed char c = 0;
 
 	if (bcg.ttyin && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
 		return BC_STATUS_IO_ERR;
@@ -65,8 +64,7 @@ BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 		}
 		else if ((c < ' ' && !isspace(c)) || c > '~') return BC_STATUS_BIN_FILE;
 
-		byte = (char) c;
-		if ((s = bc_vec_push(vec, &byte))) return s;
+		if ((s = bc_vec_push(vec, &c))) return s;
 	}
 
 	return bc_vec_pushByte(vec, '\0');
@@ -82,7 +80,6 @@ BcStatus bc_io_fread(const char *path, char **buf) {
 	assert(path && buf);
 
 	if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
-
 	fseek(f, 0, SEEK_END);
 
 	if ((res = ftell(f)) < 0) {

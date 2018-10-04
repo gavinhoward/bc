@@ -27,159 +27,156 @@
 #include <status.h>
 #include <vector.h>
 
-BcStatus bc_vec_grow(BcVec *vec, size_t n) {
+BcStatus bc_vec_grow(BcVec *v, size_t n) {
 
 	char *ptr;
-	size_t cap = vec->cap * 2;
+	size_t cap = v->cap * 2;
 
-	while (cap < vec->len + n) cap *= 2;
-	if (!(ptr = realloc(vec->vec, vec->size * cap))) return BC_STATUS_ALLOC_ERR;
+	while (cap < v->len + n) cap *= 2;
+	if (!(ptr = realloc(v->v, v->size * cap))) return BC_STATUS_ALLOC_ERR;
 
-	vec->vec = ptr;
-	vec->cap = cap;
-
-	return BC_STATUS_SUCCESS;
-}
-
-BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFree dtor) {
-
-	assert(vec && esize);
-
-	vec->size = esize;
-	vec->cap = BC_VEC_INITIAL_CAP;
-	vec->len = 0;
-	vec->dtor = dtor;
-
-	vec->vec = malloc(esize * BC_VEC_INITIAL_CAP);
-	if (!vec->vec) return BC_STATUS_ALLOC_ERR;
+	v->v = ptr;
+	v->cap = cap;
 
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_expand(BcVec *vec, size_t request) {
+BcStatus bc_vec_init(BcVec *v, size_t esize, BcVecFree dtor) {
+
+	assert(v && esize);
+
+	v->size = esize;
+	v->cap = BC_VEC_START_CAP;
+	v->len = 0;
+	v->dtor = dtor;
+
+	if (!(v->v = malloc(esize * BC_VEC_START_CAP))) return BC_STATUS_ALLOC_ERR;
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_vec_expand(BcVec *v, size_t req) {
 
 	char *ptr;
 
-	assert(vec);
+	assert(v);
 
-	if (vec->cap >= request) return BC_STATUS_SUCCESS;
+	if (v->cap >= req) return BC_STATUS_SUCCESS;
+	if (!(ptr = realloc(v->v, v->size * req))) return BC_STATUS_ALLOC_ERR;
 
-	ptr = realloc(vec->vec, vec->size * request);
-	if (!ptr) return BC_STATUS_ALLOC_ERR;
-
-	vec->vec = ptr;
-	vec->cap = request;
+	v->v = ptr;
+	v->cap = req;
 
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_vec_npop(BcVec *vec, size_t n) {
-	assert(vec && n <= vec->len);
-	if (!vec->dtor) vec->len -= n;
+void bc_vec_npop(BcVec *v, size_t n) {
+	assert(v && n <= v->len);
+	if (!v->dtor) v->len -= n;
 	else {
-		size_t len = vec->len - n;
-		while (vec->len > len) vec->dtor(vec->vec + (vec->size * --vec->len));
+		size_t len = v->len - n;
+		while (v->len > len) v->dtor(v->v + (v->size * --v->len));
 	}
 }
 
-BcStatus bc_vec_push(BcVec *vec, const void *data) {
+BcStatus bc_vec_push(BcVec *v, const void *data) {
 
 	BcStatus s;
 
-	assert(vec && data);
+	assert(v && data);
 
-	if (vec->len + 1 > vec->cap && (s = bc_vec_grow(vec, 1))) return s;
+	if (v->len + 1 > v->cap && (s = bc_vec_grow(v, 1))) return s;
 
-	memmove(vec->vec + (vec->size * vec->len), data, vec->size);
-	vec->len += 1;
+	memmove(v->v + (v->size * v->len), data, v->size);
+	v->len += 1;
 
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data) {
-	assert(vec && vec->size == sizeof(uint8_t));
-	return bc_vec_push(vec, &data);
+BcStatus bc_vec_pushByte(BcVec *v, uint8_t data) {
+	assert(v && v->size == sizeof(uint8_t));
+	return bc_vec_push(v, &data);
 }
 
-BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx) {
+BcStatus bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
 
 	BcStatus s;
 	char *ptr;
 
-	assert(vec && data && idx <= vec->len);
+	assert(v && data && idx <= v->len);
 
-	if (idx == vec->len) return bc_vec_push(vec, data);
-	if (vec->len == vec->cap && (s = bc_vec_grow(vec, 1))) return s;
+	if (idx == v->len) return bc_vec_push(v, data);
+	if (v->len == v->cap && (s = bc_vec_grow(v, 1))) return s;
 
-	ptr = vec->vec + vec->size * idx;
+	ptr = v->v + v->size * idx;
 
-	memmove(ptr + vec->size, ptr, vec->size * (vec->len++ - idx));
-	memmove(ptr, data, vec->size);
+	memmove(ptr + v->size, ptr, v->size * (v->len++ - idx));
+	memmove(ptr, data, v->size);
 
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_string(BcVec *vec, size_t len, const char *str) {
+BcStatus bc_vec_string(BcVec *v, size_t len, const char *str) {
 
 	BcStatus s;
 
-	assert(vec && vec->size == sizeof(char));
-	assert(!vec->len || !vec->vec[vec->len - 1]);
+	assert(v && v->size == sizeof(char));
+	assert(!v->len || !v->v[v->len - 1]);
 
-	bc_vec_npop(vec, vec->len);
-	if ((s = bc_vec_expand(vec, len + 1))) return s;
-	memcpy(vec->vec, str, len);
+	bc_vec_npop(v, v->len);
+	if ((s = bc_vec_expand(v, len + 1))) return s;
+	memcpy(v->v, str, len);
 
-	vec->len = len;
+	v->len = len;
 
-	return bc_vec_pushByte(vec, '\0');
+	return bc_vec_pushByte(v, '\0');
 }
 
-BcStatus bc_vec_concat(BcVec *vec, const char *str) {
+BcStatus bc_vec_concat(BcVec *v, const char *str) {
 
 	BcStatus s;
 	size_t len;
 
-	assert(vec && vec->size == sizeof(char));
-	assert(!vec->len || !vec->vec[vec->len - 1]);
+	assert(v && v->size == sizeof(char));
+	assert(!v->len || !v->v[v->len - 1]);
 
-	if (!vec->len && (s = bc_vec_pushByte(vec, '\0'))) return s;
+	if (!v->len && (s = bc_vec_pushByte(v, '\0'))) return s;
 
-	len = vec->len + strlen(str);
+	len = v->len + strlen(str);
 
-	if ((s = bc_vec_grow(vec, len))) return s;
-	strcat(vec->vec, str);
+	if ((s = bc_vec_grow(v, len))) return s;
+	strcat(v->v, str);
 
-	vec->len = len;
+	v->len = len;
 
 	return s;
 }
 
-void* bc_vec_item(const BcVec *vec, size_t idx) {
-	assert(vec && vec->len && idx < vec->len);
-	return vec->vec + vec->size * idx;
+void* bc_vec_item(const BcVec *v, size_t idx) {
+	assert(v && v->len && idx < v->len);
+	return v->v + v->size * idx;
 }
 
-void* bc_vec_item_rev(const BcVec *vec, size_t idx) {
-	assert(vec && vec->len && idx < vec->len);
-	return vec->vec + vec->size * (vec->len - idx - 1);
+void* bc_vec_item_rev(const BcVec *v, size_t idx) {
+	assert(v && v->len && idx < v->len);
+	return v->v + v->size * (v->len - idx - 1);
 }
 
 void bc_vec_free(void *vec) {
 	BcVec *v = (BcVec*) vec;
 	bc_vec_npop(v, v->len);
-	free(v->vec);
+	free(v->v);
 }
 
-size_t bc_veco_find(const BcVecO *vec, const void *data) {
+size_t bc_veco_find(const BcVecO *v, const void *data) {
 
-	size_t low = 0, high = vec->vec.len;
+	size_t low = 0, high = v->vec.len;
 
 	while (low < high) {
 
 		size_t mid = (low + high) / 2;
-		uint8_t *ptr = bc_vec_item(&vec->vec, mid);
-		int result = vec->cmp(data, ptr);
+		uint8_t *ptr = bc_vec_item(&v->vec, mid);
+		int result = v->cmp(data, ptr);
 
 		if (!result) return mid;
 
@@ -190,25 +187,25 @@ size_t bc_veco_find(const BcVecO *vec, const void *data) {
 	return low;
 }
 
-BcStatus bc_veco_init(BcVecO *vec, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
-	assert(vec && esize && cmp);
-	vec->cmp = cmp;
-	return bc_vec_init(&vec->vec, esize, dtor);
+BcStatus bc_veco_init(BcVecO *v, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
+	assert(v && esize && cmp);
+	v->cmp = cmp;
+	return bc_vec_init(&v->vec, esize, dtor);
 }
 
-BcStatus bc_veco_insert(BcVecO *vec, const void *data, size_t *idx) {
+BcStatus bc_veco_insert(BcVecO *v, const void *data, size_t *idx) {
 
 	BcStatus s;
 
-	assert(vec && data && idx);
+	assert(v && data && idx);
 
-	*idx = bc_veco_find(vec, data);
+	*idx = bc_veco_find(v, data);
 
-	if (*idx > vec->vec.len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
-	else if (*idx == vec->vec.len) s = bc_vec_push(&vec->vec, data);
-	else if (!vec->cmp(data, bc_vec_item(&vec->vec, *idx)))
+	if (*idx > v->vec.len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
+	else if (*idx == v->vec.len) s = bc_vec_push(&v->vec, data);
+	else if (!v->cmp(data, bc_vec_item(&v->vec, *idx)))
 		s = BC_STATUS_VEC_ITEM_EXISTS;
-	else s = bc_vec_pushAt(&vec->vec, data, *idx);
+	else s = bc_vec_pushAt(&v->vec, data, *idx);
 
 	return s;
 }

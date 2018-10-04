@@ -29,14 +29,14 @@
 #include <status.h>
 
 #define BC_VEC_INVALID_IDX ((size_t) -1)
-#define BC_VEC_INITIAL_CAP (1<<5)
+#define BC_VEC_START_CAP (1<<5)
 
 typedef void (*BcVecFree)(void*);
 typedef int (*BcVecCmp)(const void*, const void*);
 
 typedef struct BcVec {
 
-	char *vec;
+	char *v;
 	size_t len;
 	size_t cap;
 	size_t size;
@@ -46,19 +46,19 @@ typedef struct BcVec {
 } BcVec;
 
 // ** Exclude start. **
-BcStatus bc_vec_init(BcVec *vec, size_t esize, BcVecFree dtor);
-BcStatus bc_vec_expand(BcVec *vec, size_t request);
+BcStatus bc_vec_init(BcVec *v, size_t esize, BcVecFree dtor);
+BcStatus bc_vec_expand(BcVec *v, size_t req);
 
-void bc_vec_npop(BcVec *vec, size_t n);
+void bc_vec_npop(BcVec *v, size_t n);
 
-BcStatus bc_vec_push(BcVec *vec, const void *data);
-BcStatus bc_vec_pushByte(BcVec *vec, uint8_t data);
-BcStatus bc_vec_pushAt(BcVec *vec, const void *data, size_t idx);
-BcStatus bc_vec_string(BcVec *vec, size_t len, const char *str);
-BcStatus bc_vec_concat(BcVec *vec, const char *str);
+BcStatus bc_vec_push(BcVec *v, const void *data);
+BcStatus bc_vec_pushByte(BcVec *v, uint8_t data);
+BcStatus bc_vec_pushAt(BcVec *v, const void *data, size_t idx);
+BcStatus bc_vec_string(BcVec *v, size_t len, const char *str);
+BcStatus bc_vec_concat(BcVec *v, const char *str);
 
-void* bc_vec_item(const BcVec *vec, size_t idx);
-void* bc_vec_item_rev(const BcVec *vec, size_t idx);
+void* bc_vec_item(const BcVec *v, size_t idx);
+void* bc_vec_item_rev(const BcVec *v, size_t idx);
 
 void bc_vec_free(void *vec);
 // ** Exclude end. **
@@ -74,8 +74,8 @@ typedef struct BcVecO {
 } BcVecO;
 
 // ** Exclude start. **
-BcStatus bc_veco_init(BcVecO* vec, size_t esize, BcVecFree dtor, BcVecCmp cmp);
-BcStatus bc_veco_insert(BcVecO* vec, const void *data, size_t *idx);
+BcStatus bc_veco_init(BcVecO* v, size_t esize, BcVecFree dtor, BcVecCmp cmp);
+BcStatus bc_veco_insert(BcVecO* v, const void *data, size_t *idx);
 size_t bc_veco_index(const BcVecO *v, const void *data);
 // ** Exclude end. **
 

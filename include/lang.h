@@ -212,8 +212,8 @@ extern const char bc_inst_chars[];
 #endif // NDEBUG
 
 #ifdef DC_ENABLED
-extern const uint8_t bc_inst_noperands[];
-extern const uint8_t bc_inst_nresults[];
+extern const uint8_t dc_inst_noperands[];
+extern const uint8_t dc_inst_nresults[];
 #endif // DC_ENABLED
 
 extern const char bc_func_main[];

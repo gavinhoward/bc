@@ -39,10 +39,11 @@ BcStatus bc_parse_pushName(BcVec *code, char *name) {
 	size_t i, len = strlen(name);
 
 	for (i = 0; !s && i < len; ++i) s = bc_vec_pushByte(code, (char) name[i]);
+	if (s) return s;
 
 	free(name);
 
-	return s || bc_vec_pushByte(code, BC_PARSE_STREND);
+	return bc_vec_pushByte(code, BC_PARSE_STREND);
 }
 
 BcStatus bc_parse_pushIndex(BcVec *code, size_t idx) {
@@ -67,7 +68,7 @@ BcStatus bc_parse_number(BcParse *p, BcVec *code, BcInst *prev, size_t *nexs) {
 	char *num;
 	size_t idx = p->prog->consts.len;
 
-	if (!(num = strdup(p->lex.t.v.vec))) return BC_STATUS_ALLOC_ERR;
+	if (!(num = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
 
 	if ((s = bc_vec_push(&p->prog->consts, &num))) {
 		free(num);
@@ -97,10 +98,9 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 		p->func = 0;
 	}
 
-	p->lex.idx = p->lex.len;
-	p->lex.t.t = BC_LEX_EOF;
-	p->auto_part = false;
-	p->nbraces = 0;
+	p->l.idx = p->l.len;
+	p->l.t.t = BC_LEX_EOF;
+	p->auto_part = p->nbraces = 0;
 
 	bc_vec_npop(&p->flags, p->flags.len - 1);
 	bc_vec_npop(&p->exits, p->exits.len);
@@ -118,7 +118,7 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog,
 
 	assert(p && prog);
 
-	if ((s = bc_lex_init(&p->lex, next))) return s;
+	if ((s = bc_lex_init(&p->l, next))) return s;
 	if ((s = bc_vec_init(&p->flags, sizeof(uint8_t), NULL))) goto flags_err;
 	if ((s = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto exit_err;
 	if ((s = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto cond_err;
@@ -127,8 +127,7 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog,
 
 	p->parse = parse;
 	p->prog = prog;
-	p->func = p->nbraces = 0;
-	p->auto_part = false;
+	p->auto_part = p->func = p->nbraces = 0;
 
 	return s;
 
@@ -139,7 +138,7 @@ cond_err:
 exit_err:
 	bc_vec_free(&p->flags);
 flags_err:
-	bc_lex_free(&p->lex);
+	bc_lex_free(&p->l);
 	return s;
 }
 
@@ -149,5 +148,5 @@ void bc_parse_free(BcParse *p) {
 	bc_vec_free(&p->exits);
 	bc_vec_free(&p->conds);
 	bc_vec_free(&p->ops);
-	bc_lex_free(&p->lex);
+	bc_lex_free(&p->l);
 }

@@ -152,9 +152,8 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 
 		default:
 		{
-			// This is here to prevent compiler warnings in release mode.
-			*num = &r->data.num;
 			assert(false);
+			(void) r;
 			break;
 		}
 	}
@@ -262,13 +261,13 @@ BcStatus bc_program_read(BcProgram *p) {
 	if ((s = bc_io_getline(&buf, "read> "))) goto io_err;
 
 	if ((s = p->parse_init(&parse, p))) goto io_err;
-	bc_lex_file(&parse.lex, bc_program_stdin_name);
-	if ((s = bc_lex_text(&parse.lex, buf.vec))) goto exec_err;
+	bc_lex_file(&parse.l, bc_program_stdin_name);
+	if ((s = bc_lex_text(&parse.l, buf.v))) goto exec_err;
 
 	s = p->parse_exp(&parse, &func->code, BC_PARSE_NOREAD, bc_parse_next_read);
 	if (s) return s;
 
-	if (parse.lex.t.t != BC_LEX_NLINE && parse.lex.t.t != BC_LEX_EOF) {
+	if (parse.l.t.t != BC_LEX_NLINE && parse.l.t.t != BC_LEX_EOF) {
 		s = BC_STATUS_EXEC_BAD_READ_EXPR;
 		goto exec_err;
 	}
@@ -525,14 +524,13 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 				cond = cmp > 0;
 				break;
 			}
-
+#ifndef NDEBUG
 			default:
 			{
-				// This is here to silence a compiler warning in release mode.
-				cond = 0;
-				assert(cond);
+				assert(false);
 				break;
 			}
+#endif // NDEBUG
 		}
 	}
 
@@ -947,12 +945,10 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 	if ((s = bc_num_init(&res.data.num, BC_NUM_DEF_SIZE))) return s;
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.data.num, p->scale);
-#ifdef BC_ENABLED
 	else if (inst == BC_INST_LENGTH && opnd->t == BC_RESULT_ARRAY) {
 		BcVec *vec = (BcVec*) num;
 		s = bc_num_ulong2num(&res.data.num, (unsigned long) vec->len);
 	}
-#endif // BC_ENABLED
 	else {
 		assert(opnd->t != BC_RESULT_ARRAY);
 		BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
@@ -977,7 +973,6 @@ BcStatus bc_program_modexp(BcProgram *p) {
 	BcNum *n1, *n2, *n3;
 
 	if (!BC_PROG_CHECK_STACK(&p->results, 3)) return BC_STATUS_EXEC_SMALL_STACK;
-
 	if ((s = bc_program_binOpPrep(p, &opd2, &n2, &opd3, &n3, false))) return s;
 
 	opd1 = bc_vec_item_rev(&p->results, 2);
@@ -1099,11 +1094,11 @@ BcStatus bc_program_executeStr(BcProgram *p) {
 	if (do_parse) {
 
 		if ((s = p->parse_init(&prs, p))) return s;
-		if ((s = bc_lex_text(&prs.lex, str))) goto err;
+		if ((s = bc_lex_text(&prs.l, str))) goto err;
 
 		if ((s = p->parse_exp(&prs, &f->code, 0, bc_parse_next_read))) goto err;
 
-		if (prs.lex.t.t != BC_LEX_EOF) {
+		if (prs.l.t.t != BC_LEX_EOF) {
 			s = BC_STATUS_PARSE_BAD_EXP;
 			goto err;
 		}
@@ -1278,9 +1273,7 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 	entry.name = name;
 	entry.idx = p->fns.len;
 
-	s = bc_veco_insert(&p->fn_map, &entry, idx);
-
-	if (s) {
+	if ((s = bc_veco_insert(&p->fn_map, &entry, idx))) {
 		free(name);
 		if (s != BC_STATUS_VEC_ITEM_EXISTS) return s;
 	}
@@ -1325,7 +1318,6 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 	bcg.signe = bcg.sig != bcg.sigc;
 
 	if (!s || s == BC_STATUS_EXEC_SIGNAL) {
-
 		if (bcg.ttyin) {
 			if (fputs(bc_program_ready_msg, stderr) < 0 || fflush(stderr) < 0)
 				s = BC_STATUS_IO_ERR;
@@ -1346,7 +1338,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcNum *num;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 	BcFunc *func = bc_vec_item(&p->fns, ip->func);
-	char *code = func->code.vec;
+	char *code = func->code.v;
 #ifdef BC_ENABLED
 	bool cond = false;
 #endif // BC_ENABLED
@@ -1635,11 +1627,13 @@ BcStatus bc_program_exec(BcProgram *p) {
 			}
 #endif // DC_ENABLED
 
+#ifndef NDEBUG
 			default:
 			{
 				assert(false);
 				break;
 			}
+#endif // NDEBUG
 		}
 
 		if ((s && s != BC_STATUS_QUIT) || bcg.signe) s = bc_program_reset(p, s);
@@ -1647,7 +1641,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 		// We need to update bc if the stack changes, pointers may be invalid.
 		ip = bc_vec_top(&p->stack);
 		func = bc_vec_item(&p->fns, ip->func);
-		code = func->code.vec;
+		code = func->code.v;
 	}
 
 	return s;
@@ -1774,7 +1768,7 @@ BcStatus bc_program_code(BcProgram *p) {
 		ip.func = i;
 
 		f = bc_vec_item(&p->fns, ip.func);
-		code = f->code.vec;
+		code = f->code.v;
 
 		if (printf("func[%zu]:\n", ip.func) < 0) return BC_STATUS_IO_ERR;
 

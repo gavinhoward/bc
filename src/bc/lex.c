@@ -65,12 +65,11 @@ BcStatus bc_lex_comment(BcLex *l) {
 	size_t i, nls = 0;
 	const char *buf = l->buffer;
 	bool end = false;
+	char c;
 
 	l->t.t = BC_LEX_WHITESPACE;
 
 	for (i = ++l->idx; !end; i += !end) {
-
-		char c;
 
 		for (; (c = buf[i]) != '*' && c != '\0'; ++i) nls += (c == '\n');
 
@@ -103,29 +102,27 @@ BcStatus bc_lex_name(BcLex *l) {
 			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
 			if (!bc_lex_kws[i].posix &&
-			    (s = bc_vm_posix_error(BC_STATUS_POSIX_BAD_KEYWORD, l->file,
-			                           l->line, bc_lex_kws[i].name)))
+			    (s = bc_vm_posixError(BC_STATUS_POSIX_BAD_KW, l->f,
+			                          l->line, bc_lex_kws[i].name)))
 			{
 				return s;
 			}
 
 			// We minus 1 because the index has already been incremented.
 			l->idx += len - 1;
-
 			return BC_STATUS_SUCCESS;
 		}
 	}
 
 	l->t.t = BC_LEX_NAME;
-
 	i = 0;
 	c = buf[i];
 
-	while ((c >= 'a' && c<= 'z') || (c >= '0' && c <= '9') || c == '_')
-			c = buf[++i];
+	while ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_')
+		c = buf[++i];
 
-	if (i > 1 && (s = bc_vm_posix_error(BC_STATUS_POSIX_NAME_LEN,
-	                                    l->file, l->line, buf)))
+	if (i > 1 && (s = bc_vm_posixError(BC_STATUS_POSIX_NAME_LEN,
+	                                   l->f, l->line, buf)))
 	{
 		return s;
 	}
@@ -170,8 +167,8 @@ BcStatus bc_lex_token(BcLex *l) {
 			bc_lex_assign(l, BC_LEX_OP_REL_NE, BC_LEX_OP_BOOL_NOT);
 
 			if (l->t.t == BC_LEX_OP_BOOL_NOT &&
-			    (s = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-			                           l->file, l->line, "!")))
+			    (s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
+			                          l->f, l->line, "!")))
 			{
 				return s;
 			}
@@ -187,8 +184,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '#':
 		{
-			if ((s = bc_vm_posix_error(BC_STATUS_POSIX_SCRIPT_COMMENT,
-			                           l->file, l->line, NULL)))
+			if ((s = bc_vm_posixError(BC_STATUS_POSIX_COMMENT,
+			                          l->f, l->line, NULL)))
 			{
 				return s;
 			}
@@ -208,8 +205,8 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			if ((c2 = l->buffer[l->idx]) == '&') {
 
-				if ((s = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-				                           l->file, l->line, "&&")))
+				if ((s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
+				                          l->f, l->line, "&&")))
 				{
 					return s;
 				}
@@ -268,9 +265,8 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			if (isdigit(l->buffer[l->idx])) s = bc_lex_number(l, c);
 			else {
-				s = bc_vm_posix_error(BC_STATUS_POSIX_DOT_LAST,
-				                      l->file, l->line, NULL);
 				l->t.t = BC_LEX_KEY_LAST;
+				s = bc_vm_posixError(BC_STATUS_POSIX_DOT, l->f, l->line, NULL);
 			}
 			break;
 		}
@@ -392,8 +388,8 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			if ((c2 = l->buffer[l->idx]) == '|') {
 
-				if ((s = bc_vm_posix_error(BC_STATUS_POSIX_BOOL_OPS,
-				                           l->file, l->line, "||")))
+				if ((s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
+				                          l->f, l->line, "||")))
 				{
 					return s;
 				}

@@ -119,7 +119,7 @@ typedef struct BcParse {
 	BcParseParse parse;
 	// ** Exclude end. **
 
-	BcLex lex;
+	BcLex l;
 
 	BcVec flags;
 

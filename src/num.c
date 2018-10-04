@@ -395,10 +395,8 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 	else if (BC_NUM_ONE(b)) {
-
 		if ((s = bc_num_copy(c, a))) return s;
 		if (b->neg) c->neg = !c->neg;
-
 		return bc_num_retireMul(c, scale);
 	}
 
@@ -413,7 +411,6 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	if (b->rdx > cp.rdx && (s = bc_num_extend(&cp, b->rdx - cp.rdx))) goto err;
 	cp.rdx -= b->rdx;
 	if (scale > cp.rdx && (s = bc_num_extend(&cp, scale - cp.rdx))) goto err;
-
 
 	if (b->rdx == b->len) {
 
@@ -441,7 +438,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	c->len = cp.len;
 	bptr = b->num;
 
-	for (i = end - 1; !bcg.signe && i < end; --i) {
+	for (i = end - 1; !bcg.signe  && !s && i < end; --i) {
 
 		n = cp.num + i;
 
@@ -541,9 +538,7 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		goto err;
 	}
 
-	resrdx = powrdx;
-
-	for (pow >>= 1; !bcg.signe && pow != 0; pow >>= 1) {
+	for (resrdx = powrdx, pow >>= 1; !bcg.signe && pow != 0; pow >>= 1) {
 
 		powrdx <<= 1;
 
@@ -735,13 +730,11 @@ mult_err:
 }
 
 BcStatus bc_num_printNewline(size_t *nchars, size_t line_len) {
-
 	if (*nchars == line_len - 1) {
 		if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
 		if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
 		*nchars = 0;
 	}
-
 	return BC_STATUS_SUCCESS;
 }
 
@@ -749,7 +742,7 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
                             size_t *nchars, size_t line_len)
 {
 	BcStatus s;
-	size_t exp, pow;
+	size_t exp, pow, div;
 
 	if ((s = bc_num_printNewline(nchars, line_len))) return s;
 
@@ -761,8 +754,6 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
 	for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
 	for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
-
-		size_t div;
 
 		if ((s = bc_num_printNewline(nchars, line_len))) return s;
 
@@ -797,13 +788,11 @@ BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
 
 BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i, rdx = n->rdx - 1;
 
 	if (n->neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
 	(*nchars) += n->neg;
-
-	s = BC_STATUS_SUCCESS;
 
 	for (i = n->len - 1; !s && i < n->len; --i)
 		s = bc_num_printHex((size_t) n->num[i], 1, i == rdx, nchars, len);
@@ -890,9 +879,8 @@ BcStatus bc_num_init(BcNum *n, size_t request) {
 
 	assert(n);
 
-	memset(n, 0, sizeof(BcNum));
-
 	request = request >= BC_NUM_DEF_SIZE ? request : BC_NUM_DEF_SIZE;
+	memset(n, 0, sizeof(BcNum));
 	if (!(n->num = malloc(request))) return BC_STATUS_ALLOC_ERR;
 
 	n->cap = request;
@@ -959,7 +947,7 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
                       size_t *nchars, size_t line_len)
 {
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && base && nchars);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_MAX_OBASE);
@@ -973,7 +961,6 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
 	if (!n->len) {
 		if (putchar('0') == EOF) return BC_STATUS_IO_ERR;
 		++(*nchars);
-		s = BC_STATUS_SUCCESS;
 	}
 	else if (base_t == 10) s = bc_num_printDecimal(n, nchars, line_len);
 	else s = bc_num_printBase(n, base, base_t, nchars, line_len);
@@ -1028,10 +1015,8 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 	if ((s = bc_num_expand(n, len))) return s;
 
-	for (ptr = n->num, i = 0; val; ++i, ++n->len) {
+	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10)
 		ptr[i] = (char) (val % 10);
-		val /= 10;
-	}
 
 	return BC_STATUS_SUCCESS;
 }
@@ -1127,18 +1112,12 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale) {
 
 	bc_num_one(x0);
 
-	pow = BC_NUM_INT(ptr_a);
+	if ((pow = BC_NUM_INT(ptr_a))) {
 
-	if (pow) {
+		if (pow & 1) x0->num[0] = 2;
+		else x0->num[0] = 6;
 
-		if (pow & 1) {
-			x0->num[0] = 2;
-			pow -= 1;
-		}
-		else {
-			x0->num[0] = 6;
-			pow -= 2;
-		}
+		pow -= 2 - (pow & 1);
 
 		if ((s = bc_num_extend(x0, pow))) goto err;
 

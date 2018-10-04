@@ -105,15 +105,11 @@ BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
 	assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
 	bc_vec_npop(d, d->len);
-
 	if ((status = bc_vec_expand(d, s->cap))) return status;
-
 	d->len = s->len;
 
 	for (i = 0; !status && i < s->len; ++i) {
-
 		BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
-
 		if ((status = bc_num_init(dnum, snum->len))) return status;
 		if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
 	}
