@@ -35,7 +35,7 @@ if [ "$#" -gt 0 ]; then
 	bc="$1"
 	shift
 else
-	bc="$testdir/../bc"
+	bc="$testdir/../../bc"
 fi
 
 out1="$testdir/../.log_bc.txt"
@@ -68,5 +68,3 @@ for i in $(seq 0 10000); do
 done
 
 rm -rf "$out1" "$out2"
-
-echo ""

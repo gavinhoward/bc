@@ -106,6 +106,8 @@ help:
 	@echo "              if PREFIX is \"/usr\", $(BC_EXEC) will be installed to \"/usr/bin\""
 	@echo "    GEN_EMU   Emulator to run $(GEN_EXEC) under (leave empty if not necessary)"
 
+test_all: test timeconst
+
 test: test_bc test_dc
 
 test_bc:
@@ -114,11 +116,21 @@ test_bc:
 test_dc:
 	tests/all.sh dc
 
-valgrind:
-	tests/all.sh valgrind --leak-check=full --show-leak-kinds=all ./bc
-
 timeconst:
-	tests/timeconst.sh
+	tests/bc/timeconst.sh
+
+valgrind_all: valgrind valgrind_timeconst
+
+valgrind: valgrind_bc valgrind_dc
+
+valgrind_bc:
+	tests/all.sh bc valgrind --leak-check=full --show-leak-kinds=all ./bc
+
+valgrind_dc:
+	tests/all.sh dc valgrind --leak-check=full --show-leak-kinds=all ./dc
+
+valgrind_timeconst:
+	tests/bc/timeconst.sh valgrind --leak-check=full --show-leak-kinds=all ./bc
 
 version:
 	@echo -n "$(VERSION)"

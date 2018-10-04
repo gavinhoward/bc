@@ -115,3 +115,5 @@ for testfile in $testdir/$d/errors/*.txt; do
 	checktest "$?" "$testfile" "$out" "$exebase"
 
 done
+
+echo ""

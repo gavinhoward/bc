@@ -42,8 +42,3 @@ done < "$testdir/$d/all.txt"
 
 sh "$testdir/scripts.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
-
-if [ "$d" = "bc" ]; then
-	timeconst="$testdir/$d/scripts/timeconst.bc"
-	sh "$testdir/$d/timeconst.sh" "$timeconst" "$exe" "$@"
-fi
