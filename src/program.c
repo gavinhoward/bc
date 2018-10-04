@@ -1068,7 +1068,7 @@ BcStatus bc_program_nquit(BcProgram *p) {
 
 BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 {
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
 	char *str;
 	BcFunc *f;
