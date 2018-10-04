@@ -1218,18 +1218,13 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 		goto base_err;
 	}
 
-	if (ptr_b->rdx || ptr_c->rdx || ptr_a->rdx) {
+	if (ptr_a->rdx || ptr_b->rdx || ptr_c->rdx) {
 		s = BC_STATUS_MATH_NON_INTEGER;
 		goto base_err;
 	}
 
 	if (ptr_b->neg) {
 		s = BC_STATUS_MATH_NEGATIVE;
-		goto base_err;
-	}
-
-	if (!ptr_c->len) {
-		bc_num_zero(d);
 		goto base_err;
 	}
 
