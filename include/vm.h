@@ -76,8 +76,13 @@ typedef struct BcGlobals {
 
 	long tty;
 	long ttyin;
+#ifdef BC_ENABLED
 	long posix;
 	long warn;
+#endif // BC_ENABLED
+#ifdef DC_ENABLED
+	long exreg;
+#endif // DC_ENABLED
 
 	const char *name;
 	const char *sig_msg;

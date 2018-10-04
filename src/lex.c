@@ -95,6 +95,29 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_lex_name(BcLex *l) {
+
+	BcStatus s;
+	size_t i;
+	char c;
+	const char *buf = l->buffer + l->idx - 1;
+
+	l->t.t = BC_LEX_NAME;
+	i = 0;
+	c = buf[i];
+
+	while ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_')
+		c = buf[++i];
+
+	if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
+	if ((s = bc_vec_string(&l->t.v, i, buf))) return s;
+
+	// Increment the index. We minus 1 because it has already been incremented.
+	l->idx += i - 1;
+
+	return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_lex_init(BcLex *l, BcLexNext next) {
 	assert(l);
 	l->next = next;

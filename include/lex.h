@@ -108,10 +108,12 @@ typedef enum BcLexType {
 	BC_LEX_KEY_WHILE,
 
 #ifdef DC_ENABLED
+	BC_LEX_EQ_NO_REG,
 	BC_LEX_OP_MODEXP,
 	BC_LEX_OP_DIVMOD,
 
 	BC_LEX_COLON,
+	BC_LEX_ELSE,
 	BC_LEX_EXECUTE,
 	BC_LEX_PRINT_STACK,
 	BC_LEX_CLEAR_STACK,
@@ -171,6 +173,7 @@ BcStatus bc_lex_next(BcLex *l);
 void bc_lex_lineComment(BcLex *l);
 void bc_lex_whitespace(BcLex *l);
 BcStatus bc_lex_number(BcLex *l, char start);
+BcStatus bc_lex_name(BcLex *l);
 
 // ** Exclude end. **
 

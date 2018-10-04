@@ -39,6 +39,9 @@ extern const char dc_help[];
 
 BcStatus dc_lex_token(BcLex *l);
 
+extern const BcLexType dc_lex_regs[];
+extern const size_t dc_lex_regs_len;
+
 extern const BcLexType dc_lex_tokens[];
 extern const BcInst dc_parse_insts[];
 

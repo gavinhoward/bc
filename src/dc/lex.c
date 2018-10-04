@@ -27,6 +27,23 @@
 #include <dc.h>
 #include <vm.h>
 
+BcStatus dc_lex_register(BcLex *l) {
+
+	BcStatus s;
+
+	if (l->t.t == BC_LEX_WHITESPACE) {
+		if (!bcg.exreg) s = BC_STATUS_LEX_EXTENDED_REG;
+		else s = bc_lex_name(l);
+	}
+	else {
+		bc_vec_npop(&l->t.v, l->t.v.len);
+		if ((s = bc_vec_pushByte(&l->t.v, l->buffer[l->idx - 1]))) return s;
+		s = bc_vec_pushByte(&l->t.v, '\0');
+	}
+
+	return s;
+}
+
 BcStatus dc_lex_string(BcLex *l) {
 
 	BcStatus s;
@@ -79,6 +96,11 @@ BcStatus dc_lex_token(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	char c = l->buffer[l->idx++], c2;
+	size_t i;
+
+	for (i = 0; i < dc_lex_regs_len; ++i) {
+		if (l->t.last == dc_lex_regs[i]) return dc_lex_register(l);
+	}
 
 	if (c >= '%' && (l->t.t = dc_lex_tokens[(c - '%')]) != BC_LEX_INVALID)
 		return s;

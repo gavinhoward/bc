@@ -28,6 +28,40 @@
 #include <bc.h>
 #include <vm.h>
 
+BcStatus bc_lex_identifier(BcLex *l) {
+
+	BcStatus s;
+	size_t i;
+	const char *buf = l->buffer + l->idx - 1;
+
+	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
+
+		unsigned long len = (unsigned long) bc_lex_kws[i].len;
+		if (!strncmp(buf, bc_lex_kws[i].name, len)) {
+
+			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;
+
+			if (!bc_lex_kws[i].posix &&
+			    (s = bc_vm_posixError(BC_STATUS_POSIX_BAD_KW, l->f,
+			                          l->line, bc_lex_kws[i].name)))
+			{
+				return s;
+			}
+
+			// We minus 1 because the index has already been incremented.
+			l->idx += len - 1;
+			return BC_STATUS_SUCCESS;
+		}
+	}
+
+	if ((s = bc_lex_name(l))) return s;
+
+	if (l->t.v.len - 1 > 1)
+		s = bc_vm_posixError(BC_STATUS_POSIX_NAME_LEN, l->f, l->line, buf);
+
+	return s;
+}
+
 BcStatus bc_lex_string(BcLex *l) {
 
 	BcStatus s;
@@ -83,55 +117,6 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 	l->idx = i + 2;
 	l->line += nls;
-
-	return BC_STATUS_SUCCESS;
-}
-
-BcStatus bc_lex_name(BcLex *l) {
-
-	BcStatus s;
-	size_t i;
-	char c;
-	const char *buf = l->buffer + l->idx - 1;
-
-	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
-
-		unsigned long len = (unsigned long) bc_lex_kws[i].len;
-		if (!strncmp(buf, bc_lex_kws[i].name, len)) {
-
-			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;
-
-			if (!bc_lex_kws[i].posix &&
-			    (s = bc_vm_posixError(BC_STATUS_POSIX_BAD_KW, l->f,
-			                          l->line, bc_lex_kws[i].name)))
-			{
-				return s;
-			}
-
-			// We minus 1 because the index has already been incremented.
-			l->idx += len - 1;
-			return BC_STATUS_SUCCESS;
-		}
-	}
-
-	l->t.t = BC_LEX_NAME;
-	i = 0;
-	c = buf[i];
-
-	while ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_')
-		c = buf[++i];
-
-	if (i > 1 && (s = bc_vm_posixError(BC_STATUS_POSIX_NAME_LEN,
-	                                   l->f, l->line, buf)))
-	{
-		return s;
-	}
-
-	if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
-	if ((s = bc_vec_string(&l->t.v, i, buf))) return s;
-
-	// Increment the index. We minus 1 because it has already been incremented.
-	l->idx += i - 1;
 
 	return BC_STATUS_SUCCESS;
 }

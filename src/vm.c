@@ -62,6 +62,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	return s * (!bcg.tty || !!strcmp(file, bc_program_stdin_name));
 }
 
+#ifdef BC_ENABLED
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
                            size_t line, const char *msg)
 {
@@ -81,6 +82,7 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 
 	return s * (!bcg.tty && !!p);
 }
+#endif // BC_ENABLED
 
 BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
@@ -235,8 +237,13 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 
 	bcg.ttyin = isatty(0);
 	bcg.tty = (flags & BC_FLAG_I) || bcg.ttyin || ttyout;
+#ifdef BC_ENABLED
 	bcg.posix = flags & BC_FLAG_S;
 	bcg.warn = flags & BC_FLAG_W;
+#endif // BC_ENABLED
+#ifdef DC_ENABLED
+	bcg.exreg = flags & BC_FLAG_X;
+#endif // DC_ENABLED
 
 	if ((!bcg.bc && (lenv = getenv("DC_LINE_LENGTH"))) ||
 	    (bcg.bc && (lenv = getenv("BC_LINE_LENGTH"))))
