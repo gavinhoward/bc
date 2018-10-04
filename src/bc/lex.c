@@ -358,7 +358,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case 'y':
 		case 'z':
 		{
-			s = bc_lex_name(l);
+			s = bc_lex_identifier(l);
 			break;
 		}
 
