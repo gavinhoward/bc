@@ -129,11 +129,11 @@ BcStatus dc_parse_cond(BcParse *p, BcVec *code, uint8_t inst) {
 	if (p->l.t.t == BC_LEX_ELSE) {
 		if ((s = bc_lex_next(&p->l))) return s;
 		if ((s = dc_parse_register(p, code))) return s;
-		s = bc_lex_next(&p->l);
+		if ((s = bc_lex_next(&p->l))) return s;
 	}
-	else s = bc_vec_pushByte(code, ':');
+	else if ((s = bc_vec_pushByte(code, BC_PARSE_STREND))) return s;
 
-	return s;
+	return dc_parse_inst(p, code, BC_INST_POP);
 }
 
 BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
@@ -232,10 +232,13 @@ BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags)
 
 		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID) {
 			if ((s = dc_parse_inst(p, code, inst))) return s;
-			s = bc_lex_next(&p->l);
+			if ((s = bc_lex_next(&p->l))) return s;
 		}
-		else s = dc_parse_token(p, code, t, flags);
+		else if ((s = dc_parse_token(p, code, t, flags))) return s;
 	}
+
+	if (p->l.t.t == BC_LEX_EOF && (flags & BC_PARSE_NOREAD))
+		s = dc_parse_inst(p, code, BC_INST_RET0);
 
 	return s;
 }
