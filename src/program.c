@@ -1088,7 +1088,6 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 		char *name = bc_program_name(code, bgn);
 
 		if (!(exec = r->data.n.len)) {
-
 			if ((exec = code[*bgn] != BC_PARSE_STREND)) {
 				free(name);
 				name = bc_program_name(code, bgn);
