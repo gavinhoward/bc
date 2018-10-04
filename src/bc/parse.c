@@ -432,7 +432,6 @@ BcStatus bc_parse_return(BcParse *p, BcVec *code) {
 	bool paren;
 
 	if (!BC_PARSE_FUNC(p)) return BC_STATUS_PARSE_BAD_TOKEN;
-
 	if ((s = bc_lex_next(&p->l))) return s;
 
 	t = p->l.t.t;
