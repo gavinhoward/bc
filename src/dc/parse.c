@@ -229,7 +229,6 @@ BcStatus dc_parse_expr(BcParse *p, BcVec *code, uint8_t flags)
 	BcLexType t;
 
 	while (!s && (t = p->l.t.t) != BC_LEX_EOF) {
-
 		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID) {
 			if ((s = dc_parse_inst(p, code, inst))) return s;
 			if ((s = bc_lex_next(&p->l))) return s;
