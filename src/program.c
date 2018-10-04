@@ -1066,31 +1066,57 @@ BcStatus bc_program_nquit(BcProgram *p) {
 	return s;
 }
 
-BcStatus bc_program_executeStr(BcProgram *p) {
-
+BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
+{
 	BcStatus s;
 	BcResult *r;
 	char *str;
 	BcFunc *f;
 	BcParse prs;
 	BcInstPtr ip;
-	size_t fidx;
-	bool do_parse;
+	size_t fidx, sidx;
+	bool exec;
 
 	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
 
 	r = bc_vec_top(&p->results);
-	fidx = r->data.id.idx + 2;
 
-	if (r->t != BC_RESULT_STR) return BC_STATUS_SUCCESS;
+	if (cond) {
 
-	assert(p->strs.len > r->data.id.idx && p->fns.len > fidx);
+		BcVec *v;
+		BcNum *n;
+		char *name = bc_program_name(code, bgn);
 
-	str = bc_vec_item(&p->strs, r->data.id.idx);
+		if (!(exec = r->data.n.len)) {
+
+			if ((exec = code[*bgn] != BC_PARSE_STREND)) {
+				free(name);
+				name = bc_program_name(code, bgn);
+			}
+		}
+
+		if (exec) s = bc_program_search(p, name, &v, true);
+		free(name);
+
+		n = bc_vec_top(v);
+
+		if (s || !exec) return s;
+		if (!BC_PROG_STR_VAR(n)) return BC_STATUS_EXEC_BAD_TYPE;
+
+		sidx = n->rdx;
+	}
+	else {
+		if (r->t != BC_RESULT_STR) return BC_STATUS_SUCCESS;
+		sidx = r->data.id.idx;
+	}
+
+	fidx = sidx + BC_PROG_REQ_FUNCS;
+	assert(p->strs.len > sidx && p->fns.len > fidx);
+
+	str = bc_vec_item(&p->strs, sidx);
 	f = bc_vec_item(&p->fns, fidx);
-	do_parse = !f->code.len;
 
-	if (do_parse) {
+	if (!f->code.len) {
 
 		if ((s = p->parse_init(&prs, p))) return s;
 		if ((s = bc_lex_text(&prs.l, str))) goto err;
@@ -1338,9 +1364,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 	BcFunc *func = bc_vec_item(&p->fns, ip->func);
 	char *code = func->code.v;
-#ifdef BC_ENABLED
 	bool cond = false;
-#endif // BC_ENABLED
 
 	while (!s && !bcg.sig_other && ip->idx < func->code.len) {
 
@@ -1540,8 +1564,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 			}
 
 			case BC_INST_EXECUTE:
+			case BC_INST_EXEC_COND:
 			{
-				s = bc_program_executeStr(p);
+				cond = inst == BC_INST_EXEC_COND;
+				s = bc_program_executeStr(p, code, &ip->idx, cond);
 				break;
 			}
 
