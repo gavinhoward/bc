@@ -1172,7 +1172,7 @@ init_err:
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	BcStatus s;
-	BcNum num2, *ptr_a, *ptr_b, *ptr_c, base, exp, two, zero, temp;
+	BcNum num2, *ptr_a, *ptr_b, *ptr_c, base, exp, two, temp;
 	bool init = false;
 
 	assert(a && b && c && d);
@@ -1231,18 +1231,9 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	if ((s = bc_num_init(&base, ptr_c->len))) goto base_err;
 	if ((s = bc_num_init(&exp, ptr_b->len))) goto exp_err;
 	if ((s = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
-	if ((s = bc_num_init(&zero, BC_NUM_DEF_SIZE))) goto zero_err;
 	if ((s = bc_num_init(&temp, ptr_b->len))) goto temp_err;
 
 	bc_num_one(&two);
-
-	if ((s = bc_num_sub(ptr_c, &two, &exp, scale))) goto err;
-	if ((s = bc_num_mul(&exp, &exp, &base, scale))) goto err;
-	if (bc_num_cmp(&exp, ptr_a) > 0) {
-		s = BC_STATUS_MATH_BASE_OVERFLOW;
-		goto err;
-	}
-
 	two.num[0] = 2;
 	bc_num_one(d);
 
@@ -1266,8 +1257,6 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 err:
 	bc_num_free(&temp);
 temp_err:
-	bc_num_free(&zero);
-zero_err:
 	bc_num_free(&two);
 two_err:
 	bc_num_free(&exp);
