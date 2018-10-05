@@ -70,6 +70,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 
 	switch (r->t) {
 
+		case BC_RESULT_STR:
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
 		{
@@ -149,13 +150,14 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 			*num = &p->one;
 			break;
 		}
-
+#ifndef NDEBUG
 		default:
 		{
 			assert(false);
 			(void) r;
 			break;
 		}
+#endif // NDEBUG
 	}
 
 	return s;
