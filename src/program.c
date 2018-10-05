@@ -49,8 +49,8 @@ BcStatus bc_program_search(BcProgram *p, char *name, BcVec **ret, bool var) {
 
 	if ((new = (s = bc_veco_insert(vo, &e, &i)) != BC_STATUS_VEC_ITEM_EXISTS)) {
 		if (s) return s;
-		if ((s = bc_array_init(&data.array, var))) return s;
-		if ((s = bc_vec_push(v, &data.array))) goto err;
+		if ((s = bc_array_init(&data.v, var))) return s;
+		if ((s = bc_vec_push(v, &data.v))) goto err;
 	}
 
 	ptr = bc_veco_item(vo, i);
@@ -60,7 +60,7 @@ BcStatus bc_program_search(BcProgram *p, char *name, BcVec **ret, bool var) {
 	return BC_STATUS_SUCCESS;
 
 err:
-	bc_vec_free(&data.array);
+	bc_vec_free(&data.v);
 	return s;
 }
 
@@ -593,8 +593,8 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 		s = bc_num_copy(&r.data.n, n);
 	}
 	else {
-		if ((s = bc_array_init(&r.data.array, true))) return s;
-		s = bc_array_copy(&r.data.array, (BcVec*) n);
+		if ((s = bc_array_init(&r.data.v, true))) return s;
+		s = bc_array_copy(&r.data.v, (BcVec*) n);
 	}
 
 	if (s || (s = bc_vec_push(v, &r.data))) goto err;
@@ -605,7 +605,7 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 
 err:
 	if (var) bc_num_free(&r.data.n);
-	else bc_vec_free(&r.data.array);
+	else bc_vec_free(&r.data.v);
 	return s;
 }
 
@@ -857,8 +857,8 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 			if ((s = bc_vec_push(v, &param.n))) goto err;
 		}
 		else {
-			if ((s = bc_array_init(&param.array, true))) return s;
-			if ((s = bc_vec_push(v, &param.array))) goto err;
+			if ((s = bc_array_init(&param.v, true))) return s;
+			if ((s = bc_vec_push(v, &param.v))) goto err;
 		}
 	}
 
@@ -866,7 +866,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
 err:
 	if (a->var) bc_num_free(&param.n);
-	else bc_vec_free(&param.array);
+	else bc_vec_free(&param.v);
 	return s;
 }
 #endif // BC_ENABLED
