@@ -190,7 +190,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 				notend = len > i + 1;
 				c = str[i];
 
-				if (i - 1 < len && str[i - 1] != '\\') {
+				if (i - 1 > len || str[i - 1] != '\\') {
 					if (c == vm->strend) string -= 1;
 					else if (c == vm->strbgn) string += 1;
 				}
