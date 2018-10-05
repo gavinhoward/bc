@@ -159,8 +159,8 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	BcStatus s;
 	BcVec buf, buffer;
 	char c;
-	size_t len, i;
-	bool string = false, comment = false, notend;
+	size_t len, i, string = 0;
+	bool comment = false, notend;
 
 	vm->prog.file = bc_program_stdin_name;
 	bc_lex_file(&vm->parse.l, bc_program_stdin_name);
@@ -179,14 +179,21 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 		len = buf.len - 1;
 
-		if (len == 1 && buf.v[0] == '"') string = !string;
+		if (len == 1) {
+			if (string && buf.v[0] == vm->strend) string -= 1;
+			else if (buf.v[0] == vm->strbgn) string += 1;
+		}
 		else if (len > 1 || comment) {
 
 			for (i = 0; i < len; ++i) {
 
 				notend = len > i + 1;
+				c = str[i];
 
-				if ((c = str[i]) == '"') string = !string;
+				if (i - 1 < len && str[i - 1] != '\\') {
+					if (c == vm->strend) string -= 1;
+					else if (c == vm->strbgn) string += 1;
+				}
 				else if (c == '/' && notend && !comment && str[i + 1] == '*') {
 					comment = true;
 					break;
@@ -226,8 +233,8 @@ buf_err:
 	return s;
 }
 
-BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
-                    BcParseInit parse_init, BcParseRead parse_read)
+BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files, char strbgn,
+                    char strend, BcParseInit parse_init, BcParseRead parse_read)
 {
 	BcStatus s;
 	BcVm vm;
@@ -265,6 +272,9 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files,
 	{
 		return BC_STATUS_EXEC_SIGACTION_FAIL;
 	}
+
+	vm.strbgn = strbgn;
+	vm.strend = strend;
 
 	if ((s = bc_program_init(&vm.prog, len, parse_init, parse_read))) return s;
 	if ((s = parse_init(&vm.parse, &vm.prog))) goto parse_err;
