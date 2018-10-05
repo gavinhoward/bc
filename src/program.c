@@ -703,12 +703,15 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 
 #ifdef DC_ENABLED
 	if ((s = bc_program_search(p, name, &v, true))) goto err;
-	assert(BC_PROG_CHECK_STACK(v, 1));
+	assert(BC_PROG_CHECK_STACK(v, 1 + pop));
 	num = bc_vec_top(v);
 
-	if (BC_PROG_STR_VAR(num) || pop) {
+	if (pop) {
 
-		if (pop) {
+		free(name);
+		name = NULL;
+
+		if ((pop = !BC_PROG_STR_VAR(num))) {
 
 			r.t = BC_RESULT_TEMP;
 
@@ -719,16 +722,13 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 
 			if ((s = bc_num_init(&r.data.n, BC_NUM_DEF_SIZE))) goto err;
 			if ((s = bc_num_copy(&r.data.n, num))) goto copy_err;
-
-			bc_vec_pop(v);
 		}
 		else {
 			r.t = BC_RESULT_STR;
 			r.data.id.idx = num->rdx;
 		}
 
-		free(name);
-		name = NULL;
+		bc_vec_pop(v);
 	}
 #endif // DC_ENABLED
 
@@ -739,7 +739,7 @@ copy_err:
 	if (s && pop) bc_num_free(&r.data.n);
 err:
 #endif // DC_ENABLED
-	if (name && s) free(name);
+	if (s && name) free(name);
 	return s;
 }
 
@@ -1081,6 +1081,7 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 	BcParse prs;
 	BcInstPtr ip;
 	size_t fidx, sidx;
+	BcNum *n;
 	bool exec;
 
 	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
@@ -1090,7 +1091,6 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 	if (cond) {
 
 		BcVec *v;
-		BcNum *n;
 		char *name, *then_name = bc_program_name(code, bgn), *else_name = NULL;
 
 		if (code[*bgn] == BC_PARSE_STREND) (*bgn) += 1;
@@ -1113,8 +1113,16 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 		sidx = n->rdx;
 	}
 	else {
-		if (r->t != BC_RESULT_STR) return BC_STATUS_SUCCESS;
-		sidx = r->data.id.idx;
+
+		if (r->t != BC_RESULT_STR && r->t != BC_RESULT_VAR)
+			return BC_STATUS_SUCCESS;
+
+		if (r->t == BC_RESULT_STR) sidx = r->data.id.idx;
+		else {
+			if ((s = bc_program_num(p, r, &n, false))) return s;
+			if (!BC_PROG_STR_VAR(n)) return BC_STATUS_SUCCESS;
+			sidx = n->rdx;
+		}
 	}
 
 	fidx = sidx + BC_PROG_REQ_FUNCS;
