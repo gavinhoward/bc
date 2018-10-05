@@ -1621,7 +1621,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 				char *name;
 				if (!(name = bc_program_name(code, &ip->idx))) return s;
 				s = bc_program_copyToVar(p, name, true);
-				if (s) free(name);
+				free(name);
 				break;
 			}
 
