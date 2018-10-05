@@ -1622,7 +1622,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_COPY_TO_VAR:
+			case BC_INST_PUSH_TO_VAR:
 			{
 				char *name;
 				if (!(name = bc_program_name(code, &ip->idx))) return s;
