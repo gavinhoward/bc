@@ -90,8 +90,8 @@ for i in range(22, len(vm_c_lines)):
 vm_c_replacements = [
 	[ '\t', '  ' ],
 	[ '\n  [ ]*assert\(.*?\);$', '' ],
-	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*exprs, BcVec \*files,' +
-	  '\n[ ]*BcParseInit parse_init, BcParseRead parse_read\)\n\{',
+	[ '^BcStatus bc_vm_exec\(unsigned int flags, BcVec \*exprs, BcVec \*files, char strbgn,' +
+	  '\n[ ]*char strend, BcParseInit parse_init, BcParseRead parse_read\)\n\{',
 	  'void bc_main(void) {\n' ],
 	[ '^  bcg.posix = flags & BC_FLAG_S;$', '' ],
 	[ '^  bcg.warn = flags & BC_FLAG_W;$', '' ],
@@ -118,6 +118,10 @@ vm_c_replacements = [
 	  '(lenv = getenv("BC_LINE_LENGTH"))) {' ],
 	[ '\n[ ]*if \(help && printf\(help, bcg\.name\) < 0\) return BC_STATUS_IO_ERR;$', '' ],
 	[ 's = bc_vm_header\(NULL\)', 's = bc_vm_header()' ],
+	[ '^[ ]*vm\.strbgn = strbgn;$', '' ],
+	[ '^[ ]*vm\.strend = strend;$', '' ],
+	[ 'vm->strbgn', '\'"\'' ],
+	[ 'vm->strend', '\'"\'' ],
 ]
 
 for rep in vm_c_replacements:
@@ -188,7 +192,8 @@ replacements = [
 	[ 'true', '1' ],
 	[ 'BcStatus bc_lex_init\(BcLex \*l, BcLexNext next\)', 'BcStatus bc_lex_init(BcLex *l)' ],
 	[ 'l->next\(l\)', 'bc_lex_token(l)' ],
-	[ '^BcStatus bc_parse_create\(BcParse \*p, BcProgram \*prog,\n[ ]*BcParseParse parse, BcLexNext next\)\n\{',
+	[ '^BcStatus bc_parse_create\(BcParse \*p, BcProgram \*prog,\n' +
+	  '[ ]*BcParseParse parse, BcLexNext next\)\n\{',
 	  'BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {\n' ],
 	[ 'BcStatus bc_program_init\(BcProgram \*p, size_t line_len,\n' +
 	  '[ ]*BcParseInit init, BcParseRead read\)\n\{',
