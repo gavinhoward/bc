@@ -105,7 +105,6 @@ BcStatus dc_parse_cond(BcParse *p, BcVec *code, uint8_t inst) {
 	if ((s = bc_lex_next(&p->l))) return s;
 
 	if (p->l.t.t == BC_LEX_ELSE) {
-		if ((s = bc_lex_next(&p->l))) return s;
 		if ((s = dc_parse_register(p, code))) return s;
 		if ((s = bc_lex_next(&p->l))) return s;
 	}

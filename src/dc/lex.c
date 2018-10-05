@@ -122,8 +122,8 @@ BcStatus dc_lex_token(BcLex *l) {
 			c2 = l->buffer[l->idx];
 
 			if (c2 == '=') l->t.t = BC_LEX_OP_REL_NE;
-			else if (c2 == '<') l->t.t = BC_LEX_OP_REL_GE;
-			else if (c2 == '>') l->t.t = BC_LEX_OP_REL_LE;
+			else if (c2 == '<') l->t.t = BC_LEX_OP_REL_LE;
+			else if (c2 == '>') l->t.t = BC_LEX_OP_REL_GE;
 			else return BC_STATUS_LEX_BAD_CHAR;
 
 			++l->idx;
