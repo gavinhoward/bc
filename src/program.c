@@ -1575,17 +1575,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_PRINT_STACK:
 			{
-				for (idx = 0; !s && idx < p->results.len; ++idx) {
-
-					if ((s = bc_program_print(p, BC_INST_PRINT, idx))) break;
-
-					ptr = bc_vec_item_rev(&p->results, idx);
-					assert(ptr);
-
-					if (ptr->t == BC_RESULT_STR && putchar('\n') == EOF)
-						s = BC_STATUS_IO_ERR;
-				}
-
+				for (idx = 0; !s && idx < p->results.len; ++idx)
+					s = bc_program_print(p, BC_INST_PRINT, idx);
 				break;
 			}
 
