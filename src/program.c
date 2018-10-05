@@ -631,9 +631,8 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 		assert(assign && left->t == BC_RESULT_VAR);
 
 		if ((s = bc_program_search(p, left->data.id.name, &v, true))) return s;
-		if ((s = bc_program_assignStr(p, right, v, false))) return s;
 
-		return s;
+		return bc_program_assignStr(p, right, v, false);
 	}
 #endif // DC_ENABLED
 
@@ -1252,9 +1251,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	if (s) goto expr_err;
 
 	if ((s = bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL))) goto stack_err;
-
 	memset(&ip, 0, sizeof(BcInstPtr));
-
 	if ((s = bc_vec_push(&p->stack, &ip))) goto push_err;
 
 	return s;
