@@ -59,22 +59,10 @@ BcStatus dc_lex_string(BcLex *l) {
 		depth -= (c == ']');
 		nls += (c == '\n');
 
-		if (c == '#') {
-
-			bc_lex_lineComment(l);
-
-			// We increment by 1 to skip the newline.
-			if (l->buffer[l->idx]) {
-				i = l->idx + 1;
-				++nls;
-			}
-		}
-		else {
-			if (depth && (s = bc_vec_push(&l->t.v, &c))) return s;
-			if (c == '\\') {
-				depth -= (l->buffer[i + 1] == '[');
-				depth += (l->buffer[i + 1] == ']');
-			}
+		if (depth && (s = bc_vec_push(&l->t.v, &c))) return s;
+		if (c == '\\') {
+			depth -= (l->buffer[i + 1] == '[');
+			depth += (l->buffer[i + 1] == ']');
 		}
 	}
 
