@@ -560,6 +560,8 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *var, bool push)
 
 	if (push) bc_vec_pop(&p->results);
 
+	bc_vec_pop(var);
+
 	return bc_vec_push(var, &n2);
 }
 #endif // DC_ENABLED
@@ -628,9 +630,8 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
 		assert(assign && left->t == BC_RESULT_VAR);
 
-		if ((s = bc_program_search(p, right->data.id.name, &v, true))) return s;
+		if ((s = bc_program_search(p, left->data.id.name, &v, true))) return s;
 		if ((s = bc_program_assignStr(p, right, v, false))) return s;
-		bc_vec_pop(&p->results);
 
 		return s;
 	}
@@ -1076,7 +1077,7 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
-	char *str;
+	char **str;
 	BcFunc *f;
 	BcParse prs;
 	BcInstPtr ip;
@@ -1091,19 +1092,21 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 
 		BcVec *v;
 		BcNum *n;
-		char *name = bc_program_name(code, bgn);
+		char *name, *then_name = bc_program_name(code, bgn), *else_name = NULL;
 
-		if (!(exec = r->data.n.len)) {
-			if ((exec = code[*bgn] != BC_PARSE_STREND)) {
-				free(name);
-				name = bc_program_name(code, bgn);
-			}
+		if (code[*bgn] == BC_PARSE_STREND) (*bgn) += 1;
+		else else_name = bc_program_name(code, bgn);
+
+		if ((exec = r->data.n.len)) name = then_name;
+		else if ((exec = (else_name != NULL))) name = else_name;
+
+		if (exec) {
+			s = bc_program_search(p, name, &v, true);
+			n = bc_vec_top(v);
 		}
 
-		if (exec) s = bc_program_search(p, name, &v, true);
-		free(name);
-
-		n = bc_vec_top(v);
+		free(then_name);
+		if (else_name) free(else_name);
 
 		if (s || !exec) return s;
 		if (!BC_PROG_STR_VAR(n)) return BC_STATUS_EXEC_BAD_TYPE;
@@ -1124,7 +1127,7 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 	if (!f->code.len) {
 
 		if ((s = p->parse_init(&prs, p))) return s;
-		if ((s = bc_lex_text(&prs.l, str))) goto err;
+		if ((s = bc_lex_text(&prs.l, *str))) goto err;
 
 		if ((s = p->parse_read(&prs, &f->code))) goto err;
 
@@ -1133,7 +1136,6 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 			goto err;
 		}
 
-		if ((s = bc_vec_pushByte(&f->code, BC_INST_RET0))) goto err;
 		bc_parse_free(&prs);
 	}
 
