@@ -149,10 +149,16 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 		case BC_LEX_NEG:
 		case BC_LEX_NUMBER:
 		{
-			if (t == BC_LEX_NEG && (s = bc_lex_next(&p->l))) return s;
+			if (t == BC_LEX_NEG) {
+				if ((s = bc_lex_next(&p->l))) return s;
+				if (p->l.t.t != BC_LEX_NUMBER) return BC_STATUS_PARSE_BAD_TOKEN;
+			}
+
 			s = bc_parse_number(p, code, &prev, &p->nbraces);
+
 			if (t == BC_LEX_NEG && !s) s = dc_parse_inst(p, code, BC_INST_NEG);
 			get_token = true;
+
 			break;
 		}
 
