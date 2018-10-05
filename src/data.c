@@ -111,9 +111,6 @@ const char *bc_err_descs[] = {
 	"divide by zero",
 	"negative square root",
 	"bad number string",
-#ifdef DC_ENABLED
-	"modulus overflowed base",
-#endif // DC_ENABLED
 
 	"could not open file:",
 	"mismatched parameters",
