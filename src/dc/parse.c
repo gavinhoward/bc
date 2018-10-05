@@ -140,6 +140,7 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst prev;
+	bool get_token = false;
 
 	switch (t) {
 
@@ -173,13 +174,15 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 			if (t == BC_LEX_NEG && (s = bc_lex_next(&p->l))) return s;
 			s = bc_parse_number(p, code, &prev, &p->nbraces);
 			if (t == BC_LEX_NEG && !s) s = dc_parse_inst(p, code, BC_INST_NEG);
+			get_token = true;
 			break;
 		}
 
 		case BC_LEX_KEY_READ:
 		{
 			if (flags & BC_PARSE_NOREAD) s = BC_STATUS_EXEC_REC_READ;
-			else dc_parse_inst(p, code, BC_INST_READ);
+			else s = dc_parse_inst(p, code, BC_INST_READ);
+			get_token = true;
 			break;
 		}
 
@@ -191,6 +194,7 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 			bool store = t == BC_LEX_STORE || t == BC_LEX_STORE_PUSH;
 			bool push_pop = t == BC_LEX_LOAD_POP || t == BC_LEX_STORE_PUSH;
 			s = dc_parse_mem(p, code, BC_INST_VAR, true, store, push_pop);
+			get_token = true;
 			break;
 		}
 
@@ -215,9 +219,12 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 		default:
 		{
 			s = BC_STATUS_PARSE_BAD_TOKEN;
+			get_token = true;
 			break;
 		}
 	}
+
+	if (!s && get_token) s = bc_lex_next(&p->l);
 
 	return s;
 }
