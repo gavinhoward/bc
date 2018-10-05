@@ -29,7 +29,7 @@
 
 #ifdef DC_ENABLED
 
-#define DC_PARSE_BUF_SIZE ((int) (sizeof(uint32_t) * CHAR_BIT))
+#define DC_PARSE_BUF_LEN ((int) (sizeof(uint32_t) * CHAR_BIT))
 
 // ** Exclude start. **
 BcStatus dc_main(int argc, char *argv[]);

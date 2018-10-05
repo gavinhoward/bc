@@ -31,7 +31,9 @@ BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s;
 
-	if (l->t.t == BC_LEX_WHITESPACE) {
+	if (isspace(l->buffer[l->idx - 1])) {
+		bc_lex_whitespace(l);
+		++l->idx;
 		if (!bcg.exreg) s = BC_STATUS_LEX_EXTENDED_REG;
 		else s = bc_lex_name(l);
 	}
@@ -39,6 +41,7 @@ BcStatus dc_lex_register(BcLex *l) {
 		bc_vec_npop(&l->t.v, l->t.v.len);
 		if ((s = bc_vec_pushByte(&l->t.v, l->buffer[l->idx - 1]))) return s;
 		s = bc_vec_pushByte(&l->t.v, '\0');
+		l->t.t = BC_LEX_NAME;
 	}
 
 	return s;
@@ -74,7 +77,7 @@ BcStatus dc_lex_string(BcLex *l) {
 	if ((s = bc_vec_pushByte(&l->t.v, '\0'))) return s;
 	if (i - idx > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
 
-	l->idx = i + 1;
+	l->idx = i;
 	l->line += nls;
 
 	return BC_STATUS_SUCCESS;
