@@ -113,9 +113,9 @@ num()
 	echo -n "$n"
 }
 
-ops=( '+' '-' '*' '/' '%' '^' )
-files=( "add" "subtract" "multiply" "divide" "modulus" "power" "sqrt" "exponent"
-        "log" "arctangent" "sine" "cosine" "bessel" )
+ops=( '+' '-' '*' '/' '%' '^' '|' )
+files=( "add" "subtract" "multiply" "divide" "modulus" "power" "modexp" "sqrt"
+        "exponent" "log" "arctangent" "sine" "cosine" "bessel" )
 funcs=( "sqrt" "e" "l" "a" "s" "c" "j" )
 
 script="$0"
@@ -146,14 +146,20 @@ fi
 it=0
 keypress=''
 
+exedir=$(dirname "$bc")
+
 while [ "x$keypress" = "x" ]; do
+
+	exe="bc"
+	halt="halt"
+	options="-lq"
 
 	t="$it"
 	it=$(expr "$it" + "1")
 
 	line=""
 	operator=$(gen 1)
-	op=$(expr "$operator" % 13)
+	op=$(expr "$operator" % 14)
 
 	if [ "$op" -lt 6 ]; then
 
@@ -164,7 +170,7 @@ while [ "x$keypress" = "x" ]; do
 			number=$(num 1 1 0)
 
 			scale=$(num 0 0 1 1)
-			scale=$(echo "s = $scale % 25; s /= 1; s" | bc)
+			scale=$(echo "s = $scale % 25; s /= 1; s" | "$exe")
 
 			line="scale = $scale; $line"
 
@@ -176,9 +182,22 @@ while [ "x$keypress" = "x" ]; do
 
 		line="$line $number"
 
+	elif [ "$op" -eq 6 ]; then
+
+		number=$(num 0 0 1)
+		line="$number"
+		number=$(num 0 0 1)
+		line="$line $number"
+		number=$(num 0 0 0 1)
+		line="$line $number|pR"
+
+		exe="dc"
+		halt="q"
+		options=""
+
 	else
 
-		if [ "$op" -eq 6 ]; then
+		if [ "$op" -eq 7 ]; then
 
 			number=$(num 0 1 1)
 
@@ -188,50 +207,52 @@ while [ "x$keypress" = "x" ]; do
 				continue
 			fi
 
-		elif [ "$op" -eq 7 -o "$op" -eq 12 ]; then
+		elif [ "$op" -eq 8 -o "$op" -eq 13 ]; then
 
 			number=$(num 1 1 1 1)
 
-			if [ "$op" -eq 12 ]; then
-				number=$(echo "n = $number % 100; scale = 8; n /= 1; n" | bc)
+			if [ "$op" -eq 13 ]; then
+				number=$(echo "n = $number % 100; scale = 8; n /= 1; n" | "$exe")
 			fi
 
 		else
-			number=$(num 1 1 1)
+			number=$(num 1 1 1 1)
 		fi
 
-		func=$(expr "$op" - 6)
+		func=$(expr "$op" - 7)
 		line="${funcs[$func]}($number"
 
-		if [ "$op" -ne 12 ]; then
+		if [ "$op" -ne 13 ]; then
 			line="$line)"
 		else
-			n=$(num 1 1 1)
-			n=$(echo "n = $n % 100; scale = 8; n /= 1; n" | bc)
+			n=$(num 1 1 1 1)
+			n=$(echo "n = $n % 100; scale = 8; n /= 1; n" | "$exe")
 			line="$line, $n)"
 		fi
 	fi
 
+	bcexe="$exedir/$exe"
+
 	echo "Test $t: $line"
 
-	echo "$line; halt" | bc -lq > "$out1"
+	echo -e "$line\n$halt" | "$exe" "$options" > "$out1"
 
 	content=$(cat "$out1")
 
 	if [ "$content" == "" ]; then
-		echo "    other bc returned an error ($error); continuing..."
+		echo "    other $exe returned an error ($error); continuing..."
 		keypress=$(cat -v)
 		continue
 	elif [ "$content" == "-0" ]; then
 		echo "0" > "$out1"
 	fi
 
-	echo "$line; halt" | "$bc" "$@" -lq > "$out2"
+	echo -e "$line\n$halt" | "$bcexe" "$@" "$options" > "$out2"
 
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
-		echo "    bc returned an error ($error); adding \"$line\" to checklist..."
+		echo "    $exe returned an error ($error); adding \"$line\" to checklist..."
 		echo "$line" >> "$math"
 		cat "$out1" >> "$results"
 		echo "$op" >> "$opfile"
@@ -246,10 +267,10 @@ while [ "x$keypress" = "x" ]; do
 
 		# This works around a bug in GNU bc that gets some
 		# transcendental functions slightly wrong.
-		if [ "$op" -ge 7 ]; then
+		if [ "$op" -ge 8 ]; then
 
 			# Have GNU bc calculate to one more decimal place and truncate by 1.
-			content=$(echo "scale += 10; $line; halt" | bc -lq)
+			content=$(echo "scale += 10; $line; $halt" | "$exe" "$options")
 			content2=${content%??????????}
 			echo "$content2" > "$out1"
 
@@ -259,7 +280,7 @@ while [ "x$keypress" = "x" ]; do
 
 			# GNU bc got it wrong.
 			if [ "$error" -eq 0 ]; then
-				echo "    failed because of bug in other bc; continuing..."
+				echo "    failed because of bug in other $exe; continuing..."
 				keypress=$(cat -v)
 				continue
 			fi
@@ -288,12 +309,24 @@ fi
 
 echo -e "\nGoing through the checklist...\n"
 
+mod="|"
+
 paste "$math" "$results" "$opfile" | while read line result curop; do
 
 	echo -e "\n$line"
 
-	echo "$line; halt" | bc -lq > "$out1"
-	echo "$line; halt" | "$bc" "$@" -lq > "$out2"
+	if [  -z "${line##*$mod*}" ]; then
+		exe="bc"
+		halt="halt"
+	else
+		exe="dc"
+		halt="q"
+	fi
+
+	bcexe="$exedir/$exe"
+
+	echo -e "$line\n$halt" | "$exe" "$options" > "$out1"
+	echo -e "$line\n$halt" | "$bcexe" "$@" "$options" > "$out2"
 
 	diff "$out1" "$out2"
 
@@ -302,8 +335,8 @@ paste "$math" "$results" "$opfile" | while read line result curop; do
 
 	if [ "$answer" != "${answer#[Yy]}" ] ;then
 		echo Yes
-		echo "$line" >> "$testdir/${files[$curop]}.txt"
-		cat "$result" >> "$testdir/${files[$curop]}_results.txt"
+		echo "$line" >> "$testdir/$exe/${files[$curop]}.txt"
+		cat "$result" >> "$testdir/$exe/${files[$curop]}_results.txt"
 	else
 		echo No
 	fi
