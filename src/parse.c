@@ -39,7 +39,7 @@ BcStatus bc_parse_pushName(BcVec *code, char *name) {
 	size_t i, len = strlen(name);
 
 	for (i = 0; !s && i < len; ++i) s = bc_vec_pushByte(code, (char) name[i]);
-	if (s || (bc_vec_pushByte(code, BC_PARSE_STREND))) return s;
+	if (s || (s = bc_vec_pushByte(code, BC_PARSE_STREND))) return s;
 
 	free(name);
 

@@ -437,8 +437,7 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 		if ((s = bc_program_prep(p, &r, &num, false))) return s;
 
 		s = bc_num_print(num, &p->ob, p->ob_t, nl, &p->nchars, p->len);
-		if (s) return s;
-		if ((s = bc_num_copy(&p->last, num))) return s;
+		if (s || (s = bc_num_copy(&p->last, num))) return s;
 
 		if (!nl) bc_vec_pop(&p->results);
 	}
