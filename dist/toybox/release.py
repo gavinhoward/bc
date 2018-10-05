@@ -148,7 +148,8 @@ regexes = [
 regexes_all = [
 	'\n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude\n',
 	'\n#ifdef DC_ENABLED.*?#else // DC_ENABLED\n',
-	'\n#ifn?def DC_ENABLED.*?#endif // DC_ENABLED\n',
+	'\n#ifdef DC_ENABLED.*?#endif // DC_ENABLED\n',
+	'\n#ifndef DC_ENABLED\n',
 	'\n#endif // DC_ENABLED\n',
 	'\n#ifdef BC_ENABLED\n',
 	'\n#else // BC_ENABLED.*?#endif // BC_ENABLED\n',
