@@ -179,11 +179,12 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 	rt = (*right)->t;
 	hex = assign && (lt == BC_RESULT_IBASE || lt == BC_RESULT_OBASE);
 
-	if (lt == BC_RESULT_ARRAY || rt == BC_RESULT_ARRAY ||
-	    lt == BC_RESULT_STR || rt == BC_RESULT_STR)
-	{
+#ifndef DC_ENABLED
+	assert(rt != BC_RESULT_STR);
+#endif // DC_ENABLED
+
+	if (lt == BC_RESULT_ARRAY || lt == BC_RESULT_STR || rt == BC_RESULT_ARRAY)
 		return BC_STATUS_EXEC_BAD_TYPE;
-	}
 
 	if ((s = bc_program_num(p, *left, lval, false))) return s;
 	if ((s = bc_program_num(p, *right, rval, hex))) return s;
