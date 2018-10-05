@@ -61,7 +61,7 @@ fi
 
 if [ ! -f "$results" ]; then
 	echo "Generating $d $t results..."
-	echo "halt" | $d $options "$name" > "$results"
+	echo "halt" | $d "$name" > "$results"
 fi
 
 echo "Running $d $t..."
