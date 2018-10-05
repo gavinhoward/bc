@@ -425,7 +425,11 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 				++p->nchars;
 			}
 		}
-		else s = bc_program_printString(str, &p->nchars);
+		else {
+			if ((s = bc_program_printString(str, &p->nchars))) return s;
+			if (inst == BC_INST_PRINT && putchar('\n') == EOF)
+				s = BC_STATUS_IO_ERR;
+		}
 	}
 	else {
 
@@ -434,7 +438,7 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 
 		assert(inst != BC_INST_PRINT_STR);
 
-		if ((s = bc_program_prep(p, &r, &num, false))) return s;
+		if ((s = bc_program_num(p, r, &num, false))) return s;
 
 		s = bc_num_print(num, &p->ob, p->ob_t, nl, &p->nchars, p->len);
 		if (s || (s = bc_num_copy(&p->last, num))) return s;
