@@ -82,12 +82,20 @@ exebase=$(basename "$exe")
 
 posix="posix_errors"
 
+if [ "$d" = "bc" ]; then
+	opts="-l"
+	halt="halt"
+else
+	opts="-x"
+	halt="q"
+fi
+
 for testfile in $testdir/$d/*errors.txt; do
 
 	if [ -z "${testfile##*$posix*}" ]; then
 		options="-ls"
 	else
-		options="-l"
+		options="$opts"
 	fi
 
 	base=$(basename "$testfile")
@@ -100,7 +108,9 @@ for testfile in $testdir/$d/*errors.txt; do
 
 		echo "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
 
-		checktest "$?" "$line" "$out" "$exebase"
+		err="$?"
+
+		checktest "$err" "$line" "$out" "$exebase"
 
 	done < "$testfile"
 
@@ -110,7 +120,7 @@ for testfile in $testdir/$d/errors/*.txt; do
 
 	echo "Running error file \"$testfile\"..."
 
-	echo "halt" | "$exe" "$@" -l "$testfile" 2> "$out" > /dev/null
+	echo "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
 
 	checktest "$?" "$testfile" "$out" "$exebase"
 
