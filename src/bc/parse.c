@@ -329,8 +329,7 @@ BcStatus bc_parse_incdec(BcParse *p, BcVec *code, BcInst *prev,
 			}
 		}
 
-		if (s) return s;
-		s = bc_vec_pushByte(code, inst);
+		if (!s) s = bc_vec_pushByte(code, inst);
 	}
 
 	return s;

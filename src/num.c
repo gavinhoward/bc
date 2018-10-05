@@ -340,15 +340,13 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	else if (aone || BC_NUM_ONE(b)) {
 
 		if (aone) {
-			s = bc_num_copy(c, b);
+			if ((s = bc_num_copy(c, b))) return s;
 			if (a->neg) c->neg = !c->neg;
 		}
 		else {
-			s = bc_num_copy(c, a);
+			if ((s = bc_num_copy(c, a))) return s;
 			if (b->neg) c->neg = !c->neg;
 		}
-
-		if (s) return s;
 
 		return bc_num_retireMul(c, scale);
 	}
@@ -595,8 +593,7 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	if (init) s = bc_num_init(c, req);
 	else s = bc_num_expand(c, req);
 
-	if (s) return s;
-	s = op(ptr_a, ptr_b, c, scale);
+	if (!s) s = op(ptr_a, ptr_b, c, scale);
 
 	if (init) bc_num_free(&num2);
 	return s;
