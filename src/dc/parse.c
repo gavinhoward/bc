@@ -141,7 +141,7 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 			break;
 		}
 
-		case BC_LEX_STRING:
+		case BC_LEX_STR:
 		{
 			s = dc_parse_string(p, code);
 			break;

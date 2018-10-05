@@ -68,7 +68,7 @@ BcStatus bc_lex_string(BcLex *l) {
 	size_t len, nls = 0, i = l->idx;
 	char c;
 
-	l->t.t = BC_LEX_STRING;
+	l->t.t = BC_LEX_STR;
 
 	for (; (c = l->buffer[i]) && c != '"'; ++i) nls += (c == '\n');
 

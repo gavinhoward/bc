@@ -402,6 +402,7 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 	BcResult *r;
 	size_t len, i;
 	char *str;
+	bool pop = inst != BC_INST_PRINT;
 
 	assert(p);
 
@@ -434,17 +435,16 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 	else {
 
 		BcNum *num;
-		bool nl = inst == BC_INST_PRINT;
 
 		assert(inst != BC_INST_PRINT_STR);
 
 		if ((s = bc_program_num(p, r, &num, false))) return s;
 
-		s = bc_num_print(num, &p->ob, p->ob_t, nl, &p->nchars, p->len);
+		s = bc_num_print(num, &p->ob, p->ob_t, !pop, &p->nchars, p->len);
 		if (s || (s = bc_num_copy(&p->last, num))) return s;
-
-		if (!nl) bc_vec_pop(&p->results);
 	}
+
+	if (!s && pop) bc_vec_pop(&p->results);
 
 	return s;
 }

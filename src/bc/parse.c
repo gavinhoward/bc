@@ -382,7 +382,6 @@ BcStatus bc_parse_string(BcParse *p, BcVec *code, char inst) {
 	if ((s = bc_parse_pushIndex(code, p->prog->strs.len))) goto err;
 	if ((s = bc_vec_push(&p->prog->strs, &str))) goto err;
 	if ((s = bc_vec_push(code, &inst))) return s;
-	if ((s = bc_vec_pushByte(code, BC_INST_POP))) return s;
 
 	return bc_lex_next(&p->l);
 
@@ -406,9 +405,7 @@ BcStatus bc_parse_print(BcParse *p, BcVec *code) {
 
 	while (!s && type != BC_LEX_SCOLON && type != BC_LEX_NLINE) {
 
-		if (type == BC_LEX_STRING) {
-			s = bc_parse_string(p, code, BC_INST_PRINT);
-		}
+		if (type == BC_LEX_STR) s = bc_parse_string(p, code, BC_INST_PRINT_POP);
 		else {
 			if ((s = bc_parse_expr(p, code, 0, bc_parse_next_print))) return s;
 			s = bc_vec_pushByte(code, BC_INST_PRINT_POP);
@@ -1002,7 +999,7 @@ BcStatus bc_parse_stmt(BcParse *p, BcVec *code) {
 			break;
 		}
 
-		case BC_LEX_STRING:
+		case BC_LEX_STR:
 		{
 			s = bc_parse_string(p, code, BC_INST_PRINT_STR);
 			break;

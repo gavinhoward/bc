@@ -82,7 +82,7 @@ typedef enum BcLexType {
 	BC_LEX_SCOLON,
 	BC_LEX_RBRACE,
 
-	BC_LEX_STRING,
+	BC_LEX_STR,
 	BC_LEX_NAME,
 	BC_LEX_NUMBER,
 

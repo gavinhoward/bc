@@ -53,7 +53,7 @@ BcStatus dc_lex_string(BcLex *l) {
 	size_t depth = 1, nls = 0, idx, i = l->idx;
 	char c;
 
-	l->t.t = BC_LEX_STRING;
+	l->t.t = BC_LEX_STR;
 	bc_vec_npop(&l->t.v, l->t.v.len);
 
 	for (idx = i; (c = l->buffer[i]) && depth; ++i) {
