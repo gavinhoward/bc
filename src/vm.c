@@ -146,7 +146,8 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
 	ip = bc_vec_item(&vm->prog.stack, 0);
 
-	if (main_func->code.len < ip->idx) s = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
+	if (main_func->code.len < ip->idx)
+		s = bc_vm_error(BC_STATUS_EXEC_FILE_NOT_EXECUTABLE, file, 0);
 
 err:
 	free(data);
