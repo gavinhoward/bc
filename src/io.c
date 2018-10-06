@@ -62,7 +62,7 @@ BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 			}
 			else return BC_STATUS_IO_ERR;
 		}
-		else if ((c < ' ' && !isspace(c)) || c > '~') return BC_STATUS_BIN_FILE;
+		else if (BC_IO_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
 
 		if ((s = bc_vec_push(vec, &c))) return s;
 	}

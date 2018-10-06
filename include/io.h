@@ -31,4 +31,6 @@
 BcStatus bc_io_getline(BcVec* vec, const char *prompt);
 BcStatus bc_io_fread(const char *path, char **buf);
 
+#define BC_IO_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
+
 #endif // BC_IO_H

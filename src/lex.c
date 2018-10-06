@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include <status.h>
+#include <io.h>
 #include <lex.h>
 #include <vm.h>
 
@@ -150,6 +151,8 @@ BcStatus bc_lex_next(BcLex *l) {
 		l->t.t = BC_LEX_EOF;
 		return BC_STATUS_SUCCESS;
 	}
+
+	if (BC_IO_BIN_CHAR(l->buffer[l->idx])) return BC_STATUS_BIN_FILE;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
