@@ -1052,8 +1052,8 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 
 	BcStatus s;
 	BcNum a2, *ptr_a, num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, digits, resrdx, req;
-	ssize_t cmp = 1;
+	size_t pow, len, digits, digits1, resrdx, req, times = 0;
+	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
 
 	assert(a && b);
 
@@ -1121,9 +1121,9 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 		x0->rdx -= pow;
 	}
 
-	x0->rdx = digits = 0;
-	resrdx = scale + 1;
-	len = BC_NUM_INT(x0) + resrdx++;
+	x0->rdx = digits = digits1 = 0;
+	resrdx = scale + 2;
+	len = BC_NUM_INT(x0) + resrdx - 1;
 
 	while (!bcg.signe && cmp && digits <= len) {
 
@@ -1133,6 +1133,13 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 
 		cmp = bc_num_cmp(x1, x0);
 		digits = x1->len - (unsigned long long) llabs(cmp);
+
+		// Break if we're going nowhere.
+		if ((times += (cmp == cmp2 && digits == digits1)) > 2 * len) break;
+
+		cmp2 = cmp1;
+		cmp1 = cmp;
+		digits1 = digits;
 
 		temp = x0;
 		x0 = x1;
