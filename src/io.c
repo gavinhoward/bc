@@ -103,6 +103,13 @@ BcStatus bc_io_fread(const char *path, char **buf) {
 	(*buf)[size] = '\0';
 	fclose(f);
 
+	for (read = 0; read < size; ++read) {
+		if (BC_IO_BIN_CHAR((*buf)[read])) {
+			s = BC_STATUS_BIN_FILE;
+			goto read_err;
+		}
+	}
+
 	return BC_STATUS_SUCCESS;
 
 read_err:
