@@ -567,7 +567,7 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *var, bool push)
 	BcResult res;
 
 	memset(&n2, 0, sizeof(BcNum));
-	n2.rdx = res.t = r->data.id.idx;
+	n2.rdx = res.data.id.idx = r->data.id.idx;
 	res.t = BC_RESULT_STR;
 
 	if (!push) bc_vec_pop(var);
