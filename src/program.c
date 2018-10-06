@@ -276,7 +276,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	bc_lex_file(&parse.l, bc_program_stdin_name);
 	if ((s = bc_lex_text(&parse.l, buf.v))) goto exec_err;
 
-	if ((s = p->parse_read(&parse, &f->code))) return s;
+	if ((s = p->parse_expr(&parse, &f->code, BC_PARSE_NOREAD))) return s;
 
 	if (parse.l.t.t != BC_LEX_NLINE && parse.l.t.t != BC_LEX_EOF) {
 		s = BC_STATUS_EXEC_BAD_READ_EXPR;
@@ -1155,7 +1155,7 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 		if ((s = p->parse_init(&prs, p))) goto exit;
 		if ((s = bc_lex_text(&prs.l, *str))) goto err;
 
-		if ((s = p->parse_read(&prs, &f->code))) goto err;
+		if ((s = p->parse_expr(&prs, &f->code, BC_PARSE_NOCALL))) goto err;
 
 		if (prs.l.t.t != BC_LEX_EOF) {
 			s = BC_STATUS_PARSE_BAD_EXP;
@@ -1201,7 +1201,7 @@ err:
 }
 
 BcStatus bc_program_init(BcProgram *p, size_t line_len,
-                         BcParseInit init, BcParseRead read)
+                         BcParseInit init, BcParseExpr expr)
 {
 	BcStatus s;
 	size_t idx;
@@ -1218,7 +1218,7 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	p->nchars = p->scale = 0;
 	p->len = line_len;
 	p->parse_init = init;
-	p->parse_read = read;
+	p->parse_expr = expr;
 
 	if ((s = bc_num_init(&p->ib, BC_NUM_DEF_SIZE))) return s;
 	bc_num_ten(&p->ib);

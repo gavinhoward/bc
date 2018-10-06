@@ -110,7 +110,7 @@ struct BcProgram;
 // ** Exclude start. **
 typedef BcStatus (*BcParseInit)(struct BcParse*, struct BcProgram*);
 typedef BcStatus (*BcParseParse)(struct BcParse*);
-typedef BcStatus (*BcParseRead)(struct BcParse*, BcVec*);
+typedef BcStatus (*BcParseExpr)(struct BcParse*, BcVec*, uint8_t);
 // ** Exclude end. **
 
 typedef struct BcParse {

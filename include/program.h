@@ -68,7 +68,7 @@ typedef struct BcProgram {
 
 	// ** Exclude start. **
 	BcParseInit parse_init;
-	BcParseRead parse_read;
+	BcParseExpr parse_expr;
 	// ** Exclude end. **
 
 } BcProgram;
@@ -88,7 +88,7 @@ typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **
 BcStatus bc_program_init(BcProgram *p, size_t line_len,
-                         BcParseInit init, BcParseRead read);
+                         BcParseInit init, BcParseExpr expr);
 void bc_program_free(BcProgram *program);
 #ifndef NDEBUG
 BcStatus bc_program_code(BcProgram *p);

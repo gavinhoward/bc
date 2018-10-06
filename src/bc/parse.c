@@ -1352,7 +1352,7 @@ BcStatus bc_parse_init(BcParse *p, BcProgram *prog) {
 	return bc_parse_create(p, prog, bc_parse_parse, bc_lex_token);
 }
 
-BcStatus bc_parse_read(BcParse *p, BcVec *code) {
+BcStatus bc_parse_expression(BcParse *p, BcVec *code, uint8_t flags) {
 	assert(p && code);
-	return bc_parse_expr(p, code, BC_PARSE_NOREAD, bc_parse_next_read);
+	return bc_parse_expr(p, code, flags, bc_parse_next_read);
 }

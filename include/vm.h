@@ -107,7 +107,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file);
 BcStatus bc_vm_stdin(BcVm *vm);
 
 BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files, char strbgn,
-                    char strend, BcParseInit parse_init, BcParseRead parse_read);
+                    char strend, BcParseInit parse_init, BcParseExpr parse_exp);
 // ** Exclude end. **
 
 #ifdef BC_ENABLED

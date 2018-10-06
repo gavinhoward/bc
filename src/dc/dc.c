@@ -46,7 +46,7 @@ BcStatus dc_main(int argc, char *argv[]) {
 	if((s = bc_args(argc, argv, dc_help, &flags, &exprs, &files))) goto err;
 
 	s = bc_vm_exec(flags, &exprs, &files, '[', ']',
-	               dc_parse_init, dc_parse_read);
+	               dc_parse_init, dc_parse_expr);
 
 err:
 	bc_vec_free(&exprs);

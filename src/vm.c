@@ -234,7 +234,7 @@ buf_err:
 }
 
 BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files, char strbgn,
-                    char strend, BcParseInit parse_init, BcParseRead parse_read)
+                    char strend, BcParseInit parse_init, BcParseExpr parse_exp)
 {
 	BcStatus s;
 	BcVm vm;
@@ -276,7 +276,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files, char strbgn,
 	vm.strbgn = strbgn;
 	vm.strend = strend;
 
-	if ((s = bc_program_init(&vm.prog, len, parse_init, parse_read))) return s;
+	if ((s = bc_program_init(&vm.prog, len, parse_init, parse_exp))) return s;
 	if ((s = parse_init(&vm.parse, &vm.prog))) goto parse_err;
 
 	if (bcg.tty && ttyout && !(flags & BC_FLAG_Q) && (s = bc_vm_header(NULL)))

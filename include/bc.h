@@ -62,7 +62,7 @@ BcStatus bc_lex_token(BcLex *l);
 
 // ** Exclude start. **
 BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog);
-BcStatus bc_parse_read(BcParse *p, BcVec *code);
+BcStatus bc_parse_expression(BcParse *p, BcVec *code, uint8_t flags);
 // ** Exclude end. **
 
 BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);

@@ -75,7 +75,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 	flags |= BC_FLAG_S * ((env_args = getenv("POSIXLY_CORRECT")) != NULL);
 
 	s = bc_vm_exec(flags, &exprs, &files, '"', '"',
-	               bc_parse_init, bc_parse_read);
+	               bc_parse_init, bc_parse_expression);
 
 buf_err:
 	if (env) free(buffer);
