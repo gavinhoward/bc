@@ -1134,8 +1134,11 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 		cmp = bc_num_cmp(x1, x0);
 		digits = x1->len - (unsigned long long) llabs(cmp);
 
-		// Break if we're going nowhere.
-		if ((times += (cmp == cmp2 && digits == digits1)) > 2 * len) break;
+		if (cmp == cmp2 && digits == digits1) times += 1;
+		else times = 0;
+
+		resrdx += times > 4;
+		len += times > 4;
 
 		cmp2 = cmp1;
 		cmp1 = cmp;
