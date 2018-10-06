@@ -1124,7 +1124,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 	cmp = 1;
 	x0->rdx = digits = 0;
 	resrdx = scale + 1;
-	len = BC_NUM_INT(x0) + resrdx;
+	len = BC_NUM_INT(x0) + resrdx++;
 
 	while (!bcg.signe && cmp && digits <= len) {
 
