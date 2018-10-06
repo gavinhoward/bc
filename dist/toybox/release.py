@@ -150,14 +150,14 @@ regexes = [
 ]
 
 regexes_all = [
-	'\n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude\n',
-	'\n#ifdef DC_ENABLED.*?#else // DC_ENABLED\n',
-	'\n#ifdef DC_ENABLED.*?#endif // DC_ENABLED\n',
-	'\n#ifndef DC_ENABLED\n',
-	'\n#endif // DC_ENABLED\n',
+	'\n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude',
+	'\n#ifdef DC_ENABLED.*?#else // DC_ENABLED',
+	'\n#ifdef DC_ENABLED.*?#endif // DC_ENABLED',
+	'\n#ifndef DC_ENABLED',
+	'\n#endif // DC_ENABLED',
 	'\n#ifdef BC_ENABLED\n',
-	'\n#else // BC_ENABLED.*?#endif // BC_ENABLED\n',
-	'\n#endif // BC_ENABLED\n',
+	'\n#else // BC_ENABLED.*?#endif // BC_ENABLED',
+	'\n#endif // BC_ENABLED',
 	'^#ifndef NDEBUG.*?^#endif \/\/ NDEBUG\n',
 	'\n\t[\t]*assert\(.*?\);$',
 	'\#if !defined\(BC_ENABLED\).*?\#endif\n',
