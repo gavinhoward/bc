@@ -37,6 +37,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 	BcVec files, exprs, args;
 	unsigned int flags = 0;
 	char *env_args, *buffer = NULL, *buf;
+	bool env;
 
 	bcg.sig_msg = bc_sig_msg;
 	bcg.bc = true;
@@ -44,7 +45,7 @@ BcStatus bc_main(int argc, char *argv[]) {
 	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
 	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
 
-	if ((env_args = getenv(bc_args_env_name))) {
+	if ((env = (env_args = getenv(bc_args_env_name)))) {
 
 		if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
 		if ((s = bc_vec_push(&args, &bc_args_env_name))) goto args_err;
@@ -77,9 +78,9 @@ BcStatus bc_main(int argc, char *argv[]) {
 	               bc_parse_init, bc_parse_read);
 
 buf_err:
-	if (env_args) free(buffer);
+	if (env) free(buffer);
 args_err:
-	if (env_args) bc_vec_free(&args);
+	if (env) bc_vec_free(&args);
 err:
 	bc_vec_free(&exprs);
 exprs_err:
