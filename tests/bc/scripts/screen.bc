@@ -1,3 +1,5 @@
+#! /usr/bin/bc -q
+
 define a(i, j) {
 	scale = 0
 	if(i % 2 == 0) return i;
