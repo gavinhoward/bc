@@ -19,10 +19,20 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 1 ]; then
-	bc="$testdir/../bc"
+	exe="$testdir/../bc"
 else
-	bc="$1"
+	exe="$1"
 	shift
+fi
+
+exebase=$(basename "$exe")
+
+if [ "$exebase" = "bc" ]; then
+	halt="halt"
+	options="-lq"
+else
+	halt="q"
+	options="-x"
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -49,12 +59,12 @@ for d in $resultsdir/*; do
 
 		while read line; do
 
-			echo "$line" | "$bc" "$@" -lq > /dev/null 2>&1
+			echo "$line" | "$exe" "$@" "$options" > /dev/null 2>&1
 			error="$?"
 
 			if [ "$error" -gt 127 ]; then
 
-				echo "\nbc crashed on test:\n"
+				echo "\n$exebase crashed on test:\n"
 				echo "    $line"
 
 				echo "\nCopying to \"$out\""
@@ -69,12 +79,12 @@ for d in $resultsdir/*; do
 
 		echo "    Running whole file..."
 
-		echo "halt" | "$bc" "$@" -lq "$f" > /dev/null 2>&1
+		echo "$halt" | "$exe" "$@" "$options" "$f" > /dev/null 2>&1
 		error="$?"
 
 		if [ "$error" -gt 127 ]; then
 
-			echo "\nbc crashed on file:\n"
+			echo "\n$exebase crashed on file:\n"
 			echo "    $f"
 
 			echo "\nCopying to \"$out\""
