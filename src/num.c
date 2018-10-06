@@ -1053,7 +1053,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 	BcStatus s;
 	BcNum a2, *ptr_a, num1, num2, half, f, fprime, *x0, *x1, *temp;
 	size_t pow, len, digits, resrdx, req;
-	ssize_t cmp;
+	ssize_t cmp = 1;
 
 	assert(a && b);
 
@@ -1121,7 +1121,6 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 		x0->rdx -= pow;
 	}
 
-	cmp = 1;
 	x0->rdx = digits = 0;
 	resrdx = scale + 1;
 	len = BC_NUM_INT(x0) + resrdx++;
