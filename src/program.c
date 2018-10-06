@@ -965,10 +965,12 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 	if ((s = bc_num_init(&res.data.n, BC_NUM_DEF_SIZE))) return s;
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.data.n, p->scale);
+#ifdef BC_ENABLED
 	else if (inst == BC_INST_LENGTH && opnd->t == BC_RESULT_ARRAY) {
 		BcVec *vec = (BcVec*) num;
 		s = bc_num_ulong2num(&res.data.n, (unsigned long) vec->len);
 	}
+#endif // BC_ENABLED
 	else {
 		assert(opnd->t != BC_RESULT_ARRAY);
 		BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
