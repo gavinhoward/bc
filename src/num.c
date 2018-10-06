@@ -1048,31 +1048,31 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	return bc_num_binary(a, b, c, scale, bc_num_alg_p, a->len * b->len + 1);
 }
 
-BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale) {
+BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 
 	BcStatus s;
 	BcNum a2, *ptr_a, num1, num2, half, f, fprime, *x0, *x1, *temp;
 	size_t pow, len, digits, resrdx, req;
 	ssize_t cmp;
 
-	assert(a && res);
+	assert(a && b);
 
 	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a)+ 1) >> 1) + 1;
 
-	if (res == a) {
-		memcpy(&a2, res, sizeof(BcNum));
+	if (b == a) {
+		memcpy(&a2, b, sizeof(BcNum));
 		ptr_a = &a2;
-		s = bc_num_init(res, req);
+		s = bc_num_init(b, req);
 	}
 	else {
 		ptr_a = a;
-		s = bc_num_expand(res, req);
+		s = bc_num_expand(b, req);
 	}
 
 	if (s) goto init_err;
 
 	if (!ptr_a->len) {
-		bc_num_zero(res);
+		bc_num_zero(b);
 		goto init_err;
 	}
 	else if (ptr_a->neg) {
@@ -1080,12 +1080,12 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale) {
 		goto init_err;
 	}
 	else if (BC_NUM_ONE(a)) {
-		bc_num_one(res);
-		s = bc_num_extend(res, scale);
+		bc_num_one(b);
+		s = bc_num_extend(b, scale);
 		goto init_err;
 	}
 
-	memset(res->num, 0, res->cap * sizeof(BcDigit));
+	memset(b->num, 0, b->cap * sizeof(BcDigit));
 	len = ptr_a->len;
 
 	scale = BC_MAX(scale, ptr_a->rdx) + 1;
@@ -1145,10 +1145,10 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *res, size_t scale) {
 		goto err;
 	}
 
-	if ((s = bc_num_copy(res, x0))) goto err;
+	if ((s = bc_num_copy(b, x0))) goto err;
 
-	if (res->rdx > --scale) bc_num_truncate(res, res->rdx - scale);
-	else if (res->rdx < scale) s = bc_num_extend(res, scale - res->rdx);
+	if (b->rdx > --scale) bc_num_truncate(b, b->rdx - scale);
+	else if (b->rdx < scale) s = bc_num_extend(b, scale - b->rdx);
 
 err:
 	bc_num_free(&fprime);
@@ -1161,7 +1161,7 @@ two_err:
 num2_err:
 	bc_num_free(&num1);
 init_err:
-	if (res == a) bc_num_free(&a2);
+	if (b == a) bc_num_free(&a2);
 	return s;
 }
 
