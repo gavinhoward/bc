@@ -73,15 +73,16 @@ typedef struct BcProgram {
 
 } BcProgram;
 
-#define BC_PROG_CHECK_STACK(s, n) ((s)->len >= (n))
+#define BC_PROG_CHECK_STACK(s, n) ((s)->len >= ((size_t) n))
 
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)
 
 #ifdef DC_ENABLED
-#	define BC_PROG_REQ_FUNCS (2)
-#	define BC_PROG_STR_VAR(n) (!(n)->num && !n->cap)
+#define BC_PROG_REQ_FUNCS (2)
 #endif // DC_ENABLED
+
+#define BC_PROG_STR_VAR(n) (!(n)->num && !(n)->cap)
 
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 

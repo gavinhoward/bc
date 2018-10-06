@@ -159,18 +159,20 @@ void bc_entry_free(void *entry) {
 	free(e->name);
 }
 
+#ifdef DC_ENABLED
 BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 
-	BcStatus status = BC_STATUS_SUCCESS;
+	BcStatus st = BC_STATUS_SUCCESS;
 
 	assert(d && s);
 
-	switch (s->t) {
+	switch ((d->t = s->t)) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
 		{
-			status = bc_num_copy(&d->data.n, &s->data.n);
+			if ((st = bc_num_init(&d->data.n, s->data.n.len))) return st;
+			st = bc_num_copy(&d->data.n, &s->data.n);
 			break;
 		}
 
@@ -180,8 +182,8 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		{
 			assert(s->data.id.name);
 			if (!(d->data.id.name = strdup(s->data.id.name)))
-				status = BC_STATUS_ALLOC_ERR;
-			else status = BC_STATUS_SUCCESS;
+				st = BC_STATUS_ALLOC_ERR;
+			else st = BC_STATUS_SUCCESS;
 			break;
 		}
 
@@ -192,8 +194,9 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		}
 	}
 
-	return status;
+	return st;
 }
+#endif // DC_ENABLED
 
 void bc_result_free(void *result) {
 

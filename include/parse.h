@@ -31,7 +31,7 @@
 #include <lex.h>
 #include <lang.h>
 
-#define BC_PARSE_STREND ((char) '#')
+#define BC_PARSE_STREND ((char) 255)
 
 #define BC_PARSE_POSIX_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
