@@ -753,7 +753,7 @@ copy_err:
 	if (s && pop) bc_num_free(&r.data.n);
 err:
 #endif // DC_ENABLED
-	if (s && name) free(name);
+	if (s) free(name);
 	return s;
 }
 
@@ -1122,7 +1122,7 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 		}
 
 		free(then_name);
-		if (else_name) free(else_name);
+		free(else_name);
 
 		if (s || !exec) goto exit;
 		if (!BC_PROG_STR_VAR(n)) {

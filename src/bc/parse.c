@@ -132,7 +132,7 @@ BcStatus bc_parse_call(BcParse *p, BcVec *code, char *name, uint8_t flags) {
 	return bc_lex_next(&p->l);
 
 err:
-	if (name) free(name);
+	free(name);
 	return s;
 }
 
