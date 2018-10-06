@@ -101,7 +101,6 @@ BcStatus bc_io_fread(const char *path, char **buf) {
 	}
 
 	(*buf)[size] = '\0';
-	fclose(f);
 
 	for (read = 0; read < size; ++read) {
 		if (BC_IO_BIN_CHAR((*buf)[read])) {
@@ -109,6 +108,8 @@ BcStatus bc_io_fread(const char *path, char **buf) {
 			goto read_err;
 		}
 	}
+
+	fclose(f);
 
 	return BC_STATUS_SUCCESS;
 
