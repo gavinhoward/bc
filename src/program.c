@@ -559,7 +559,7 @@ err:
 }
 
 #ifdef DC_ENABLED
-BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *var, bool push)
+BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push)
 {
 	BcStatus s;
 	BcNum n2;
@@ -569,14 +569,16 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *var, bool push)
 	n2.rdx = res.data.id.idx = r->data.id.idx;
 	res.t = BC_RESULT_STR;
 
-	if (!push) bc_vec_pop(var);
+	if (!push) {
+		bc_vec_pop(v);
+		bc_vec_pop(&p->results);
+	}
 
-	bc_vec_pop(&p->results);
 	bc_vec_pop(&p->results);
 
 	if ((s = bc_vec_push(&p->results, &res))) return s;
 
-	return bc_vec_push(var, &n2);
+	return bc_vec_push(v, &n2);
 }
 #endif // DC_ENABLED
 
@@ -642,7 +644,9 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
 		BcVec *v;
 
-		assert(assign && left->t == BC_RESULT_VAR);
+		assert(assign);
+
+		if (left->t != BC_RESULT_VAR) return BC_STATUS_EXEC_BAD_TYPE;
 
 		if ((s = bc_program_search(p, left->data.id.name, &v, true))) return s;
 
