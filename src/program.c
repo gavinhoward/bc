@@ -1696,7 +1696,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 		if ((s && s != BC_STATUS_QUIT) || bcg.signe) s = bc_program_reset(p, s);
 
-		// We need to update bc if the stack changes, pointers may be invalid.
+		// If the stack has changed, pointers may be invalid.
 		ip = bc_vec_top(&p->stack);
 		func = bc_vec_item(&p->fns, ip->func);
 		code = func->code.v;
