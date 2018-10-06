@@ -425,10 +425,9 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 
 	if (r->t == BC_RESULT_STR) {
 
-		idx = r->data.id.idx;
-		assert(idx < p->strs.len);
+		assert(r->data.id.idx < p->strs.len);
 
-		str = *((char**) bc_vec_item(&p->strs, idx));
+		str = *((char**) bc_vec_item(&p->strs, r->data.id.idx));
 
 		if (inst == BC_INST_PRINT_STR) {
 			for (i = 0, len = strlen(str); i < len; ++i) {
