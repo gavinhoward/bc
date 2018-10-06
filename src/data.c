@@ -34,7 +34,7 @@ const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
 
 #ifdef DC_ENABLED
 const char dc_name[] = "dc";
-const char dc_sig_msg[] = "\ninturrupt (type \"q\" to exit)\n";
+const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 #endif // DC_ENABLED
 
 const char bc_copyright[] =
