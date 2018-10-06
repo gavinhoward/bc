@@ -1101,7 +1101,7 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 	BcNum *n;
 	bool exec;
 
-	if (!BC_PROG_CHECK_STACK(&p->results, 1 + cond))
+	if (!BC_PROG_CHECK_STACK(&p->results, cond))
 		return BC_STATUS_EXEC_SMALL_STACK;
 
 	r = bc_vec_top(&p->results);
