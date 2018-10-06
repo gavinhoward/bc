@@ -231,7 +231,7 @@ const uint8_t dc_inst_noperands[] = {
 	0, 0, 1, 0, 0,
 	1, 0, 0, 0, 1, 0, 0, 1,
 	1, 1, 0, 1, 0, 1, 1, 1, 0, 0,
-	3, 2, 1, 1, 0, 0, 0, 0, 1, 2, 0, 1, 0, 1,
+	3, 2, 1, 1, 0, 0, 0, 0, 1, 2, 0, 0, 1, 0, 1,
 };
 
 const uint8_t dc_inst_nresults[] = {
@@ -241,7 +241,7 @@ const uint8_t dc_inst_nresults[] = {
 	1, 1, 1, 1, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 0, 1, 0, 0, 1, 0, 1, 1, 0,
-	1, 2, 0, 1, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0,
+	1, 2, 0, 1, 0, 0, 0, 1, 2, 2, 1, 1, 0, 0, 0,
 };
 
 const BcLexType dc_lex_regs[] = {
@@ -303,8 +303,8 @@ const BcInst dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP, BC_INST_POP,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
-	BC_INST_INVALID, BC_INST_INVALID, BC_INST_PRINT, BC_INST_NQUIT,
-	BC_INST_SCALE_FUNC,
+	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_PRINT,
+	BC_INST_NQUIT, BC_INST_SCALE_FUNC,
 };
 #endif // DC_ENABLED
 

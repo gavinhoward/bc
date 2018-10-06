@@ -700,8 +700,9 @@ err:
 	return s;
 }
 
-BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
-
+BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
+                            bool pop, bool copy)
+{
 	BcStatus s;
 	BcResult r;
 	char *name;
@@ -718,10 +719,9 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 
 #ifdef DC_ENABLED
 	if ((s = bc_program_search(p, name, &v, true))) goto err;
-	assert(BC_PROG_CHECK_STACK(v, 1 + pop));
 	num = bc_vec_top(v);
 
-	if (pop) {
+	if (pop || copy) {
 
 		free(name);
 		name = NULL;
@@ -730,7 +730,7 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 
 			r.t = BC_RESULT_TEMP;
 
-			if (!BC_PROG_CHECK_STACK(v, 2)) {
+			if (!BC_PROG_CHECK_STACK(v, 2 - copy)) {
 				s = BC_STATUS_EXEC_SMALL_STACK;
 				goto err;
 			}
@@ -743,7 +743,7 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn, bool pop) {
 			r.data.id.idx = num->rdx;
 		}
 
-		bc_vec_pop(v);
+		if (!copy) bc_vec_pop(v);
 	}
 #endif // DC_ENABLED
 
@@ -1474,7 +1474,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_VAR:
 			{
-				s = bc_program_pushVar(p, code, &ip->idx, false);
+				s = bc_program_pushVar(p, code, &ip->idx, false, false);
 				break;
 			}
 
@@ -1663,9 +1663,11 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_LOAD:
 			case BC_INST_PUSH_VAR:
 			{
-				s = bc_program_pushVar(p, code, &ip->idx, true);
+				bool copy = inst == BC_INST_LOAD;
+				s = bc_program_pushVar(p, code, &ip->idx, true, copy);
 				break;
 			}
 

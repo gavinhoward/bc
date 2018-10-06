@@ -182,7 +182,7 @@ BcStatus dc_parse_token(BcParse *p, BcVec *code, BcLexType t, uint8_t flags) {
 		case BC_LEX_LOAD:
 		case BC_LEX_LOAD_POP:
 		{
-			uint8_t i = t == BC_LEX_LOAD_POP ? BC_INST_PUSH_VAR : BC_INST_VAR;
+			uint8_t i = t == BC_LEX_LOAD_POP ? BC_INST_PUSH_VAR : BC_INST_LOAD;
 			s = dc_parse_mem(p, code, i, true, false);
 			break;
 		}
