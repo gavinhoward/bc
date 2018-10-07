@@ -187,15 +187,14 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 			break;
 		}
 
+		case BC_RESULT_IBASE:
+		case BC_RESULT_OBASE:
+		case BC_RESULT_CONSTANT:
+		case BC_RESULT_LAST:
+		case BC_RESULT_ONE:
 		case BC_RESULT_STR:
 		{
 			memcpy(&d->data.n, &s->data.n, sizeof(BcNum));
-			break;
-		}
-
-		default:
-		{
-			// Do nothing.
 			break;
 		}
 	}

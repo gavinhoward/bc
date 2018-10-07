@@ -1635,6 +1635,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_DUPLICATE:
 			{
+				if (!BC_PROG_CHECK_STACK(&p->results, 1))
+					return BC_STATUS_EXEC_SMALL_STACK;
 				ptr = bc_vec_top(&p->results);
 				if ((s = bc_result_copy(&res, ptr))) return s;
 				s = bc_vec_push(&p->results, &res);
