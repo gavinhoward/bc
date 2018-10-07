@@ -187,6 +187,12 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 			break;
 		}
 
+		case BC_RESULT_STR:
+		{
+			memcpy(&d->data.n, &s->data.n, sizeof(BcNum));
+			break;
+		}
+
 		default:
 		{
 			// Do nothing.
