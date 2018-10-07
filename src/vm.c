@@ -278,7 +278,7 @@ BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files, char strbgn,
 	vm.strend = strend;
 
 	if ((s = bc_program_init(&vm.prog, len, parse_init, parse_exp))) return s;
-	if ((s = parse_init(&vm.parse, &vm.prog))) goto parse_err;
+	if ((s = parse_init(&vm.parse, &vm.prog, BC_PROG_MAIN))) goto parse_err;
 
 	if (bcg.tty && ttyout && !(flags & BC_FLAG_Q) && (s = bc_vm_header(NULL)))
 		goto err;

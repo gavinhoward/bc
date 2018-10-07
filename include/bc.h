@@ -58,14 +58,14 @@ BcStatus bc_lex_token(BcLex *l);
 // We can calculate the conversion between tokens and exprs by subtracting the
 // position of the first operator in the lex enum and adding the position of the
 // first in the expr enum. Note: This only works for binary operators.
-#define BC_PARSE_TOKEN_TO_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
+#define BC_PARSE_TOKEN_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
 // ** Exclude start. **
-BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog);
-BcStatus bc_parse_expression(BcParse *p, BcVec *code, uint8_t flags);
+BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
+BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
 // ** Exclude end. **
 
-BcStatus bc_parse_expr(BcParse *p, BcVec *code, uint8_t flags, BcParseNext next);
+BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next);
 
 #endif // BC_ENABLED
 

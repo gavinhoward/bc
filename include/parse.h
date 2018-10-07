@@ -108,9 +108,9 @@ struct BcParse;
 struct BcProgram;
 
 // ** Exclude start. **
-typedef BcStatus (*BcParseInit)(struct BcParse*, struct BcProgram*);
+typedef BcStatus (*BcParseInit)(struct BcParse*, struct BcProgram*, size_t);
 typedef BcStatus (*BcParseParse)(struct BcParse*);
-typedef BcStatus (*BcParseExpr)(struct BcParse*, BcVec*, uint8_t);
+typedef BcStatus (*BcParseExpr)(struct BcParse*, uint8_t);
 // ** Exclude end. **
 
 typedef struct BcParse {
@@ -129,6 +129,7 @@ typedef struct BcParse {
 	BcVec ops;
 
 	struct BcProgram *prog;
+	BcVec *code;
 	size_t func;
 
 	size_t nbraces;
@@ -138,13 +139,13 @@ typedef struct BcParse {
 
 // ** Exclude start. **
 
-BcStatus bc_parse_create(BcParse *p, struct BcProgram *prog,
+BcStatus bc_parse_create(BcParse *p, struct BcProgram *prog, size_t func,
                          BcParseParse parse, BcLexNext next);
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
-BcStatus bc_parse_pushName(BcVec *code, char *name);
-BcStatus bc_parse_pushIndex(BcVec *code, size_t idx);
-BcStatus bc_parse_number(BcParse *p, BcVec* code, BcInst *prev, size_t* nexs);
+BcStatus bc_parse_pushName(BcParse* p, char *name);
+BcStatus bc_parse_pushIndex(BcParse* p, size_t idx);
+BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t* nexs);
 
 #ifdef BC_ENABLED
 extern const bool bc_parse_exprs[];
@@ -152,7 +153,7 @@ extern const BcOp bc_parse_ops[];
 extern const BcParseNext bc_parse_next_expr;
 extern const BcParseNext bc_parse_next_param;
 extern const BcParseNext bc_parse_next_print;
-extern const BcParseNext bc_parse_next_cond;
+extern const BcParseNext bc_parse_next_rel;
 extern const BcParseNext bc_parse_next_elem;
 extern const BcParseNext bc_parse_next_for;
 extern const BcParseNext bc_parse_next_read;
