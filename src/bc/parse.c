@@ -522,15 +522,11 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 	}
 	else {
 
-		BcInstPtr *ip;
 		BcFunc *func;
-		size_t *label;
+		BcInstPtr *ip = bc_vec_top(&p->exits);
+		size_t *label = bc_vec_top(&p->conds);
 
 		if ((s = bc_vec_pushByte(p->code, BC_INST_JUMP))) return s;
-
-		ip = bc_vec_top(&p->exits);
-		label = bc_vec_top(&p->conds);
-
 		if ((s = bc_parse_pushIndex(p, *label))) return s;
 
 		func = bc_vec_item(&p->prog->fns, p->func);
