@@ -33,24 +33,17 @@
 
 BcStatus dc_main(int argc, char *argv[]) {
 
-	BcStatus s;
-	BcVec files, exprs;
-	unsigned int flags = BC_FLAG_Q;
+	BcVmExe exec;
 
-	bcg.sig_msg = dc_sig_msg;
 	bcg.bc = false;
+	bcg.name = dc_name;
+	bcg.help = dc_help;
+	bcg.sig_msg = dc_sig_msg;
 
-	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
-	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
+	exec.init = dc_parse_init;
+	exec.exp = dc_parse_expr;
+	exec.strbgn = '[';
+	exec.strend = ']';
 
-	if((s = bc_args(argc, argv, dc_help, &flags, &exprs, &files))) goto err;
-
-	s = bc_vm_exec(flags, &exprs, &files, '[', ']',
-	               dc_parse_init, dc_parse_expr);
-
-err:
-	bc_vec_free(&exprs);
-exprs_err:
-	bc_vec_free(&files);
-	return s;
+	return bc_vm_run(argc, argv, exec);
 }

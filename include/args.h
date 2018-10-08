@@ -24,10 +24,9 @@
 #define BC_ARGS_H
 
 #include <status.h>
-#include <vector.h>
+#include <vm.h>
 
-BcStatus bc_args(int argc, char *argv[],  const char* const help,
-                 unsigned int *flags, BcVec* exprs, BcVec *files);
+BcStatus bc_args(int argc, char *argv[], BcVm* vm);
 
 extern const char* const bc_args_env_name;
 

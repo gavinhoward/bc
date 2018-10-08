@@ -71,8 +71,7 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	return s;
 }
 
-BcStatus bc_args(int argc, char *argv[], const char* const help,
-                 unsigned int *flags, BcVec *exprs, BcVec *files) {
+BcStatus bc_args(int argc, char *argv[], BcVm *vm) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i, idx;
@@ -88,27 +87,27 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 			{
 				// This is the case when a long option is found.
 				if (bc_args_lopt[idx].val == 'e')
-					s = bc_args_exprs(exprs, optarg);
+					s = bc_args_exprs(&vm->exprs, optarg);
 				else if (bc_args_lopt[idx].val == 'f')
-					s = bc_args_file(exprs, optarg);
+					s = bc_args_file(&vm->exprs, optarg);
 				break;
 			}
 
 			case 'e':
 			{
-				if ((s = bc_args_exprs(exprs, optarg))) return s;
+				if ((s = bc_args_exprs(&vm->exprs, optarg))) return s;
 				break;
 			}
 
 			case 'f':
 			{
-				if ((s = bc_args_file(exprs, optarg))) return s;
+				if ((s = bc_args_file(&vm->exprs, optarg))) return s;
 				break;
 			}
 
 			case 'h':
 			{
-				if ((s = bc_vm_header(help))) return s;
+				if ((s = bc_vm_info(bcg.help))) return s;
 				do_exit = true;
 				break;
 			}
@@ -117,35 +116,35 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 			case 'i':
 			{
 				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_I;
+				vm->flags |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
 				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_L;
+				vm->flags |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
 				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_Q;
+				vm->flags |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
 				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_S;
+				vm->flags |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
 				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_W;
+				vm->flags |= BC_FLAG_W;
 				break;
 			}
 #endif // BC_ENABLED
@@ -153,7 +152,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 			case 'V':
 			case 'v':
 			{
-				if ((s = bc_vm_header(NULL))) return s;
+				if ((s = bc_vm_info(NULL))) return s;
 				do_exit = true;
 				break;
 			}
@@ -162,7 +161,7 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 			case 'x':
 			{
 				if (bcg.bc) return BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_X;
+				vm->flags |= BC_FLAG_X;
 				break;
 			}
 #endif // DC_ENABLED
@@ -177,10 +176,10 @@ BcStatus bc_args(int argc, char *argv[], const char* const help,
 	}
 
 	if (do_exit) exit((int) s);
-	if (exprs->len > 1) (*flags) |= BC_FLAG_Q;
+	if (vm->exprs.len > 1) vm->flags |= BC_FLAG_Q;
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
-	for (i = optind; !s && i < argc; ++i) s = bc_vec_push(files, argv + i);
+	for (i = optind; !s && i < argc; ++i) s = bc_vec_push(&vm->files, argv + i);
 
 	return s;
 }

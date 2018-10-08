@@ -59,14 +59,31 @@
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
-typedef struct BcVm {
+// ** Exclude start. **
+typedef struct BcVmExe {
 
-	BcParse parse;
-	BcProgram prog;
+	BcParseInit init;
+	BcParseExpr exp;
 
-	// ** Exclude start. **
 	char strbgn;
 	char strend;
+
+} BcVmExe;
+// ** Exclude end. **
+
+typedef struct BcVm {
+
+	BcParse prs;
+	BcProgram prog;
+
+	unsigned int flags;
+
+	BcVec files;
+
+	// ** Exclude start. **
+	BcVec exprs;
+
+	BcVmExe exe;
 	// ** Exclude end. **
 
 } BcVm;
@@ -91,23 +108,23 @@ typedef struct BcGlobals {
 
 	const char *name;
 	const char *sig_msg;
+	const char *help;
 	bool bc;
 
 } BcGlobals;
 // ** Exclude end. **
 
-BcStatus bc_vm_header(const char* const help);
+BcStatus bc_vm_info(const char* const help);
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
-                           size_t line, const char *msg);
+                          size_t line, const char *msg);
 
 // ** Exclude start. **
 BcStatus bc_vm_file(BcVm *vm, const char *file);
 BcStatus bc_vm_stdin(BcVm *vm);
 
-BcStatus bc_vm_exec(unsigned int flags, BcVec *exprs, BcVec *files, char strbgn,
-                    char strend, BcParseInit parse_init, BcParseExpr parse_exp);
+BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe);
 // ** Exclude end. **
 
 #ifdef BC_ENABLED

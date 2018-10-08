@@ -20,70 +20,22 @@
  *
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include <status.h>
-#include <vector.h>
 #include <bc.h>
 #include <vm.h>
-#include <args.h>
 
 BcStatus bc_main(int argc, char *argv[]) {
 
-	BcStatus s;
-	BcVec files, exprs, args;
-	unsigned int flags = 0;
-	char *env_args, *buffer = NULL, *buf;
-	bool env;
+	BcVmExe exec;
 
-	bcg.sig_msg = bc_sig_msg;
 	bcg.bc = true;
+	bcg.name = bc_name;
+	bcg.help = bc_help;
+	bcg.sig_msg = bc_sig_msg;
 
-	if ((s = bc_vec_init(&files, sizeof(char*), NULL))) return s;
-	if ((s = bc_vec_init(&exprs, sizeof(char), NULL))) goto exprs_err;
+	exec.init = bc_parse_init;
+	exec.exp = bc_parse_expression;
+	exec.strbgn = exec.strend = '"';
 
-	if ((env = (env_args = getenv(bc_args_env_name)))) {
-
-		if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
-		if ((s = bc_vec_push(&args, &bc_args_env_name))) goto args_err;
-
-		if (!(buffer = strdup(env_args))) {
-			s = BC_STATUS_ALLOC_ERR;
-			goto args_err;
-		}
-
-		buf = buffer;
-
-		while (*buf) {
-			if (!isspace(*buf)) {
-				if ((s = bc_vec_push(&args, &buf))) goto buf_err;
-				while (*buf && !isspace(*buf)) ++buf;
-				if (*buf) (*(buf++)) = '\0';
-			}
-			else ++buf;
-		}
-
-		s = bc_args((int) args.len, (char**) args.v,
-		            bc_help, &flags, &exprs, &files);
-		if(s) goto buf_err;
-	}
-
-	if((s = bc_args(argc, argv, bc_help, &flags, &exprs, &files))) goto buf_err;
-	flags |= BC_FLAG_S * ((env_args = getenv("POSIXLY_CORRECT")) != NULL);
-
-	s = bc_vm_exec(flags, &exprs, &files, '"', '"',
-	               bc_parse_init, bc_parse_expression);
-
-buf_err:
-	if (env) free(buffer);
-args_err:
-	if (env) bc_vec_free(&args);
-err:
-	bc_vec_free(&exprs);
-exprs_err:
-	bc_vec_free(&files);
-	return s;
+	return bc_vm_run(argc, argv, exec);
 }
