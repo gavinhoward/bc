@@ -154,7 +154,6 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 		default:
 		{
 			assert(false);
-			(void) r;
 			break;
 		}
 #endif // NDEBUG
@@ -445,7 +444,7 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 	}
 	else {
 
-		BcNum *num;
+		BcNum *num = NULL;
 
 		assert(inst != BC_INST_PRINT_STR);
 
@@ -464,7 +463,7 @@ BcStatus bc_program_negate(BcProgram *p) {
 
 	BcStatus s;
 	BcResult res, *ptr;
-	BcNum *num;
+	BcNum *num = NULL;
 
 	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
 	if ((s = bc_num_init(&res.data.n, num->len))) return s;
@@ -486,7 +485,7 @@ BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
 	BcNum *n1, *n2;
-	bool cond;
+	bool cond = 0;
 	ssize_t cmp;
 
 	if ((s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false))) return s;
@@ -803,7 +802,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 
 	BcStatus s;
 	BcResult *ptr, res, copy;
-	BcNum *num;
+	BcNum *num = NULL;
 	uint8_t inst2 = inst;
 
 	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
@@ -1077,7 +1076,7 @@ BcStatus bc_program_nquit(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *opnd;
-	BcNum *num;
+	BcNum *num = NULL;
 	unsigned long val;
 
 	if ((s = bc_program_prep(p, &opnd, &num, false))) return s;
