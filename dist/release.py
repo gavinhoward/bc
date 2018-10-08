@@ -46,16 +46,22 @@ def print_projects(scriptdir):
 			if not entry.name.startswith('.') and entry.is_dir():
 				print("    {}".format(entry.name))
 
+def usage():
+	print("usage: {} project repo\n".format(script))
+	print("    valid projects are:\n")
+	print_projects(scriptdir)
+	sys.exit(1)
+
+if __name__ != "__main__":
+	usage()
+
 cwd = os.path.realpath(os.getcwd())
 
 script = os.path.realpath(sys.argv[0])
 scriptdir = os.path.dirname(script)
 
 if len(sys.argv) < 3:
-	print("usage: {} project repo\n".format(script))
-	print("    valid projects are:\n")
-	print_projects(scriptdir)
-	sys.exit(1)
+	usage()
 
 project = sys.argv[1].rstrip(os.sep)
 repo = sys.argv[2].rstrip(os.sep)
