@@ -908,12 +908,12 @@ void bc_num_free(void *num) {
 
 BcStatus bc_num_copy(BcNum *d, BcNum *s) {
 
-	BcStatus st;
+	BcStatus status;
 
 	assert(d && s);
 
 	if (d == s) return BC_STATUS_SUCCESS;
-	if ((st = bc_num_expand(d, s->cap))) return st;
+	if ((status = bc_num_expand(d, s->cap))) return status;
 
 	d->len = s->len;
 	d->neg = s->neg;
@@ -922,7 +922,7 @@ BcStatus bc_num_copy(BcNum *d, BcNum *s) {
 	memcpy(d->num, s->num, sizeof(BcDigit) * d->len);
 	memset(d->num + d->len, 0, sizeof(BcDigit) * (d->cap - d->len));
 
-	return st;
+	return status;
 }
 
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {

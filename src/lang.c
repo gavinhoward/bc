@@ -99,22 +99,22 @@ err:
 
 BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
 
-	BcStatus st;
+	BcStatus status;
 	size_t i;
 
 	assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
 	bc_vec_npop(d, d->len);
-	if ((st = bc_vec_expand(d, s->cap))) return st;
+	if ((status = bc_vec_expand(d, s->cap))) return status;
 	d->len = s->len;
 
-	for (i = 0; !st && i < s->len; ++i) {
+	for (i = 0; !status && i < s->len; ++i) {
 		BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
-		if ((st = bc_num_init(dnum, snum->len))) return st;
-		if ((st = bc_num_copy(dnum, snum))) bc_num_free(dnum);
+		if ((status = bc_num_init(dnum, snum->len))) return status;
+		if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
 	}
 
-	return st;
+	return status;
 }
 
 BcStatus bc_array_expand(BcVec *a, size_t len) {
@@ -162,7 +162,7 @@ void bc_entry_free(void *entry) {
 #ifdef DC_ENABLED
 BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 
-	BcStatus st = BC_STATUS_SUCCESS;
+	BcStatus status = BC_STATUS_SUCCESS;
 
 	assert(d && s);
 
@@ -171,8 +171,8 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
 		{
-			if ((st = bc_num_init(&d->data.n, s->data.n.len))) return st;
-			st = bc_num_copy(&d->data.n, &s->data.n);
+			if ((status = bc_num_init(&d->d.n, s->d.n.len))) return status;
+			status = bc_num_copy(&d->d.n, &s->d.n);
 			break;
 		}
 
@@ -180,10 +180,10 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		case BC_RESULT_ARRAY:
 		case BC_RESULT_ARRAY_ELEM:
 		{
-			assert(s->data.id.name);
-			if (!(d->data.id.name = strdup(s->data.id.name)))
-				st = BC_STATUS_ALLOC_ERR;
-			else st = BC_STATUS_SUCCESS;
+			assert(s->d.id.name);
+			if (!(d->d.id.name = strdup(s->d.id.name)))
+				status = BC_STATUS_ALLOC_ERR;
+			else status = BC_STATUS_SUCCESS;
 			break;
 		}
 
@@ -194,12 +194,12 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		case BC_RESULT_ONE:
 		case BC_RESULT_STR:
 		{
-			memcpy(&d->data.n, &s->data.n, sizeof(BcNum));
+			memcpy(&d->d.n, &s->d.n, sizeof(BcNum));
 			break;
 		}
 	}
 
-	return st;
+	return status;
 }
 #endif // DC_ENABLED
 
@@ -214,7 +214,7 @@ void bc_result_free(void *result) {
 		case BC_RESULT_TEMP:
 		case BC_RESULT_SCALE:
 		{
-			bc_num_free(&r->data.n);
+			bc_num_free(&r->d.n);
 			break;
 		}
 
@@ -222,8 +222,8 @@ void bc_result_free(void *result) {
 		case BC_RESULT_ARRAY:
 		case BC_RESULT_ARRAY_ELEM:
 		{
-			assert(r->data.id.name);
-			free(r->data.id.name);
+			assert(r->d.id.name);
+			free(r->d.id.name);
 			break;
 		}
 
