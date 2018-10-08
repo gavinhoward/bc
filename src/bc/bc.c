@@ -24,6 +24,7 @@
 #include <bc.h>
 #include <vm.h>
 
+#ifdef BC_ENABLED
 BcStatus bc_main(int argc, char *argv[]) {
 
 	BcVmExe exec;
@@ -39,3 +40,4 @@ BcStatus bc_main(int argc, char *argv[]) {
 
 	return bc_vm_run(argc, argv, exec, "BC_LINE_LENGTH");
 }
+#endif // BC_ENABLED

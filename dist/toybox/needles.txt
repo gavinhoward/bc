@@ -1,0 +1,47 @@
+^BcStatus bc_vm_run\(int argc, char \*argv\[\], BcVmExe exe, const char \*env_len\)
+^  return st;$
+if \(\(s = bc_program_init\(&vm->prog, len, exe\.init, exe\.exp\)\)\) goto prog_err;$
+if \(\(s = exe\.init\(&vm->prs, &vm->prog, BC_PROG_MAIN\)\)\) goto parse_err;$
+if \(\(st = bc_vm_init\(&vm, exe, env_len\)\)\) return st;$
+vm\.flags
+vm->flags
+vm->files\.len
+\*\(\(char\*\*\) bc_vec_item\(&vm->files, i\)\)
+^bc_vm_free\(&vm\);
+vm->prs\.parse\(&vm
+vm\.prs\.parse\(&vm
+\(\(s = parse_init\(&vm\.prs, &vm\.prog\)\)\)
+if \(vm->exprs.\len <= 1\) s = bc_vm_stdin\(vm\);$
+size_t len = strlen\(bcg\.sig_msg\);
+write\(2, bcg.sig_msg, len\) == \(ssize_t\) len
+st = bc_vm_info\(NULL\)
+vm->exe\.strbgn
+vm->exe\.strend
+BcStatus bc_vm_init\(BcVm \*vm, BcVmExe exe, const char \*env_len\)
+\(env_len\)
+\* bcg.bc \* \(
+bcg.posix
+bcg.warn
+bcg\.
+TT\.name
+BC_FLAG_S
+BC_FLAG_Q
+BC_FLAG_L
+BC_FLAG_I
+BC_MAX\(
+BC_MIN\(
+BC_INVALID_IDX
+[ ]bool
+^bool
+ true
+ false
+true
+BcStatus bc_lex_init\(BcLex \*l, BcLexNext next\)
+l->next\(l\)
+^BcStatus bc_parse_create\(BcParse \*p, BcProgram \*prog, size_t func,\n[ ]*BcParseParse parse, BcLexNext next\)\n\{
+BcStatus bc_program_init\(BcProgram \*p, size_t line_len,\n[ ]*BcParseInit init, BcParseExpr expr\)\n\{
+if \(\(s = bc_lex_init\(&p->l, next\)\)\) return s;
+p->parse_init\(
+p->parse_expr\(&parse, BC_PARSE_NOREAD\)
+BcStatus bc_program_pushVar\(BcProgram \*p, char \*code, size_t \*bgn, bool pop\)
+BcStatus bc_vm_info\(const char\* const help\)

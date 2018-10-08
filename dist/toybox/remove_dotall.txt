@@ -1,0 +1,34 @@
+^[ ]*vm->flags = 0;$
+^[ ]*if \(\(s = bc_vec_init\(&vm->files, sizeof\(char\*\), NULL\)\)\) return s;$
+^[ ]*if \(\(s = bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\)\)\) goto exprs_err;$
+^[ ]*if \(\(st = bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\)\)\) goto err;$
+\nprog_err:\n[ ]*bc_vec_free\(&vm->exprs\);$
+\nexprs_err:\n[ ]*bc_vec_free\(&vm->files\);$
+^err:\n[ ]*bc_parse_free\(&vm->prs\);$
+\n[ ]*bc_vec_free\(&vm->exprs\);$
+\n[ ]*bc_vec_free\(&vm->files\);$
+^[ ]*if \(\(st = bc_args\(argc, argv, &vm\)\)\) goto err;$
+^[ ]*bcg\.posix = vm\.flags & BC_FLAG_S;$
+^[ ]*bcg\.warn = vm\.flags & BC_FLAG_W;$
+^[ ]*if \(vm->exprs\.len > 1 && \(s = bc_vm_process\(vm, vm->exprs\.v\)\)\) return s;$
+\n[ ]*if \(help && printf\(help, bcg\.name\) < 0\) return BC_STATUS_IO_ERR;$
+^[ ]*vm->exe = exe;$
+^[ ]*if \(bcg.bc && \(s = bc_args_env\(&vm->flags, &vm->exprs, &vm->files\)\)\)\n[ ]*goto err;$
+\n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
+\n#ifdef DC_ENABLED.*?#else // DC_ENABLED
+\n#ifdef DC_ENABLED.*?#endif // DC_ENABLED
+\n#endif // DC_ENABLED
+\n#ifdef BC_ENABLED
+\n#else // BC_ENABLED.*?#endif // BC_ENABLED
+\n#endif // BC_ENABLED
+\n#ifndef NDEBUG.*?#endif // NDEBUG
+\n[ ]*assert\(.*?\);$
+\#if !defined\(BC_ENABLED\).*?\#endif\n
+^[ ]*// \*\* Exclude start\. \*\*.*?^[ ]*// \*\* Exclude end\. \*\*$
+^\tBC_STATUS_INVALID_OPTION,$
+^[ ]*p->parse = parse;$
+^[ ]*p->parse_init = init;$
+^[ ]*p->parse_expr = expr;$
+^[ ]*l->next = next;$
+^BcStatus bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
+^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}

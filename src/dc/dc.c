@@ -31,6 +31,7 @@
 #include <vm.h>
 #include <args.h>
 
+#ifdef DC_ENABLED
 BcStatus dc_main(int argc, char *argv[]) {
 
 	BcVmExe exec;
@@ -47,3 +48,4 @@ BcStatus dc_main(int argc, char *argv[]) {
 
 	return bc_vm_run(argc, argv, exec, "DC_LINE_LENGTH");
 }
+#endif // DC_ENABLED
