@@ -114,7 +114,6 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
                          BcParseParse parse, BcLexNext next)
 {
 	BcStatus s;
-	uint8_t flags = 0;
 
 	assert(p && prog);
 
@@ -122,14 +121,14 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
 	if ((s = bc_vec_init(&p->flags, sizeof(uint8_t), NULL))) goto flags_err;
 	if ((s = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto exit_err;
 	if ((s = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto cond_err;
-	if ((s = bc_vec_push(&p->flags, &flags))) goto push_err;
+	if ((s = bc_vec_pushByte(&p->flags, 0))) goto push_err;
 	if ((s = bc_vec_init(&p->ops, sizeof(BcLexType), NULL))) goto push_err;
 
 	p->parse = parse;
 	p->prog = prog;
 	p->func = func;
 	p->code = &(((BcFunc*) bc_vec_item(&prog->fns, func))->code);
-	p->auto_part = (p->func = p->nbraces = 0);
+	p->auto_part = (p->nbraces = 0);
 
 	return s;
 

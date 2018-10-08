@@ -37,5 +37,5 @@ BcStatus bc_main(int argc, char *argv[]) {
 	exec.exp = bc_parse_expression;
 	exec.strbgn = exec.strend = '"';
 
-	return bc_vm_run(argc, argv, exec);
+	return bc_vm_run(argc, argv, exec, "BC_LINE_LENGTH");
 }

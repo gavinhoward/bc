@@ -50,6 +50,22 @@ BcStatus bc_vm_info(const char* const help) {
 	return BC_STATUS_SUCCESS;
 }
 
+size_t bc_vm_envLen(const char *var) {
+
+	char *lenv;
+	size_t i, len = BC_NUM_PRINT_WIDTH;
+	int num;
+
+	if ((lenv = getenv(var))) {
+		len = strlen(lenv);
+		for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
+		if (!num || ((len = (size_t) atoi(lenv) - 1) < 2 && len >= INT32_MAX))
+			len = BC_NUM_PRINT_WIDTH;
+	}
+
+	return len;
+}
+
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	assert(file);
@@ -98,19 +114,14 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 			s = BC_STATUS_IO_ERR;
 
 			if (putchar('\n') == EOF) return s;
-
-			if (printf("BC_BASE_MAX     = %lu\n", BC_MAX_OBASE) < 0 ||
-			    printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM) < 0 ||
-			    printf("BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE) < 0 ||
-			    printf("BC_STRING_MAX   = %lu\n", BC_MAX_STRING) < 0 ||
-			    printf("BC_NAME_MAX     = %lu\n", BC_MAX_NAME) < 0 ||
-			    printf("BC_NUM_MAX      = %lu\n", BC_MAX_NUM) < 0 ||
-			    printf("Max Exponent    = %lu\n", BC_MAX_EXP) < 0 ||
-			    printf("Number of Vars  = %lu\n", BC_MAX_VARS) < 0)
-			{
-				return s;
-			}
-
+			if (printf("BC_BASE_MAX     = %lu\n", BC_MAX_OBASE) < 0) return s;
+			if (printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM) < 0) return s;
+			if (printf("BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE) < 0) return s;
+			if (printf("BC_STRING_MAX   = %lu\n", BC_MAX_STRING) < 0) return s;
+			if (printf("BC_NAME_MAX     = %lu\n", BC_MAX_NAME) < 0) return s;
+			if (printf("BC_NUM_MAX      = %lu\n", BC_MAX_NUM) < 0) return s;
+			if (printf("Max Exponent    = %lu\n", BC_MAX_EXP) < 0) return s;
+			if (printf("Number of Vars  = %lu\n", BC_MAX_VARS) < 0) return s;
 			if (putchar('\n') == EOF) return s;
 
 			s = BC_STATUS_SUCCESS;
@@ -263,14 +274,11 @@ BcStatus bc_vm_exec(BcVm *vm) {
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 }
 
-BcStatus bc_vm_init(BcVm *vm, BcVmExe exe) {
+BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 	BcStatus s;
-	BcVec args;
-	char *lenv, *env_args = NULL, *buffer = NULL, *buf;
-	int num;
 	struct sigaction sa;
-	size_t len, i;
+	size_t len = bc_vm_envLen(env_len);
 
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = bc_vm_sig;
@@ -285,16 +293,6 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe) {
 	vm->exe = exe;
 	vm->flags = 0;
 
-	if ((!bcg.bc && (lenv = getenv("DC_LINE_LENGTH"))) ||
-	    (bcg.bc && (lenv = getenv("BC_LINE_LENGTH"))))
-	{
-		len = strlen(lenv);
-		for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
-		if (!num || ((len = (size_t) atoi(lenv) - 1) < 2 && len >= INT32_MAX))
-			len = BC_NUM_PRINT_WIDTH;
-	}
-	else len = BC_NUM_PRINT_WIDTH;
-
 	if ((s = bc_vec_init(&vm->files, sizeof(char*), NULL))) return s;
 	if ((s = bc_vec_init(&vm->exprs, sizeof(char), NULL))) goto exprs_err;
 
@@ -302,38 +300,14 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe) {
 	if ((s = exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto parse_err;
 
 #ifdef BC_ENABLED
-	if (bcg.bc && (env_args = getenv(bc_args_env_name))) {
-
-		if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto args_err;
-		if ((s = bc_vec_push(&args, &bc_args_env_name))) goto push_err;
-
-		if (!(buffer = strdup(env_args))) {
-			s = BC_STATUS_ALLOC_ERR;
-			goto push_err;
-		}
-
-		buf = buffer;
-
-		while (*buf) {
-			if (!isspace(*buf)) {
-				if ((s = bc_vec_push(&args, &buf))) goto err;
-				while (*buf && !isspace(*buf)) ++buf;
-				if (*buf) (*(buf++)) = '\0';
-			}
-			else ++buf;
-		}
-
-		if ((s = bc_args((int) args.len, (char**) args.v, vm))) goto err;
-	}
-
-	vm->flags |= bcg.bc * BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
+	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
+	if (bcg.bc && (s = bc_args_env(&vm->flags, &vm->exprs, &vm->files)))
+		goto err;
 #endif // BC_ENABLED
 
+	return s;
+
 err:
-	if (env_args) free(buffer);
-push_err:
-	if (env_args) bc_vec_free(&args);
-args_err:
 	bc_parse_free(&vm->prs);
 parse_err:
 	bc_program_free(&vm->prog);
@@ -351,14 +325,14 @@ void bc_vm_free(BcVm *vm) {
 	bc_parse_free(&vm->prs);
 }
 
-BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe) {
+BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 
 	BcStatus st;
 	BcVm vm;
 	int ttyout = isatty(1);
 
-	if ((st = bc_vm_init(&vm, exe))) return st;
-	if((st = bc_args(argc, argv, &vm))) goto err;
+	if ((st = bc_vm_init(&vm, exe, env_len))) return st;
+	if ((st = bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files))) goto err;
 
 	bcg.ttyin = isatty(0);
 	bcg.tty = (vm.flags & BC_FLAG_I) || bcg.ttyin || ttyout;

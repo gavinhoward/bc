@@ -45,5 +45,5 @@ BcStatus dc_main(int argc, char *argv[]) {
 	exec.strbgn = '[';
 	exec.strend = ']';
 
-	return bc_vm_run(argc, argv, exec);
+	return bc_vm_run(argc, argv, exec, "DC_LINE_LENGTH");
 }

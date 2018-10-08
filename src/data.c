@@ -42,6 +42,8 @@ const char bc_copyright[] =
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
+const char* const bc_args_env_name = "BC_ENV_ARGS";
+
 const char bc_err_fmt[] = "\n%s error: %s\n";
 const char bc_err_line[] = ":%zu\n\n";
 

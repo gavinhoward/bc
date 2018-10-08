@@ -76,11 +76,10 @@ typedef struct BcVm {
 	BcParse prs;
 	BcProgram prog;
 
+	// ** Exclude start. **
 	unsigned int flags;
 
 	BcVec files;
-
-	// ** Exclude start. **
 	BcVec exprs;
 
 	BcVmExe exe;
@@ -124,7 +123,7 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 BcStatus bc_vm_file(BcVm *vm, const char *file);
 BcStatus bc_vm_stdin(BcVm *vm);
 
-BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe);
+BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char* env_len);
 // ** Exclude end. **
 
 #ifdef BC_ENABLED
