@@ -177,7 +177,7 @@ typedef union BcResultData {
 typedef struct BcResult {
 
 	BcResultType t;
-	BcResultData data;
+	BcResultData d;
 
 } BcResult;
 
