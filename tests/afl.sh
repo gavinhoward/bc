@@ -14,6 +14,40 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
+checkcrash() {
+
+	local exebase="$1"
+	shift
+
+	local out="$1"
+	shift
+
+	local error="$1"
+	shift
+
+	local f="$1"
+	shift
+
+	local type="$1"
+	shift
+
+	local test="$1"
+	shift
+
+	if [ "$error" -gt 127 ]; then
+
+		echo "\n$exebase crashed on $type:\n"
+		echo "    $f"
+
+		echo "\nCopying to \"$out\""
+		cp "$f" "$out"
+
+		echo "\nexiting..."
+		exit "$error"
+
+	fi
+}
+
 script="$0"
 
 testdir=$(dirname "$script")
@@ -62,38 +96,30 @@ for d in $resultsdir/*; do
 			echo "$line" | "$exe" "$@" "$options" > /dev/null 2>&1
 			error="$?"
 
-			if [ "$error" -gt 127 ]; then
-
-				echo "\n$exebase crashed on test:\n"
-				echo "    $line"
-
-				echo "\nCopying to \"$out\""
-				cp "$f" "$out"
-
-				echo "\nexiting..."
-				exit "$error"
-
-			fi
+			checkcrash "$exebase" "$out" "$error" "$f" "test" "$line"
 
 		done < "$f"
+
+		echo "    Running file through cat..."
+
+		cat "$f" | "$exe" "$@" "$options" > /dev/null 2>&1
+		error="$?"
+
+		checkcrash "$exebase" "$out" "$error" "$f" "running $f through cat" "$f"
+
+		echo "    Running file through carrot input..."
+
+		"$exe" "$@" "$options" < "$f" > /dev/null 2>&1
+		error="$?"
+
+		checkcrash "$exebase" "$out" "$error" "$f" "running $f through carrot input" "$f"
 
 		echo "    Running whole file..."
 
 		echo "$halt" | "$exe" "$@" "$options" "$f" > /dev/null 2>&1
 		error="$?"
 
-		if [ "$error" -gt 127 ]; then
-
-			echo "\n$exebase crashed on file:\n"
-			echo "    $f"
-
-			echo "\nCopying to \"$out\""
-			cp "$f" "$out"
-
-			echo "\nexiting..."
-			exit "$error"
-
-		fi
+		checkcrash "$exebase" "$out" "$error" "$f" "file" "$f"
 
 	done
 
