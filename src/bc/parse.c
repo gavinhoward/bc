@@ -515,9 +515,9 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		bc_vec_pop(&p->exits);
 	}
 	else if (BC_PARSE_FUNC_INNER(p)) {
-		p->func = 0;
-		p->code = &(((BcFunc*) bc_vec_item(&p->prog->fns, p->func))->code);
 		if ((s = bc_vec_pushByte(p->code, BC_INST_RET0))) return s;
+		p->func = BC_PROG_MAIN;
+		p->code = &(((BcFunc*) bc_vec_item(&p->prog->fns, p->func))->code);
 		bc_vec_pop(&p->flags);
 	}
 	else {
