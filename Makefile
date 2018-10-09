@@ -54,14 +54,11 @@ INSTALL = ./install.sh
 CFLAGS += -Wall -Wextra -pedantic -std=c99 -funsigned-char
 CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION)
 
-LDLIBS += -lm
-
 HOSTCC ?= $(CC)
 
 all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
 all: clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) \
-		$(LDLIBS) $(LDFLAGS) -o $(BC_EXEC)
+	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) -o $(BC_EXEC)
 	ln -s ./$(BC_EXEC) $(DC_EXEC)
 
 $(GEN_EXEC):
@@ -78,11 +75,11 @@ $(DC_HELP_C): $(GEN_EXEC)
 
 $(DC_EXEC): CPPFLAGS += -D$(DC_ENABLED)
 $(DC_EXEC): clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(DC_HELP_O) $(LDLIBS) $(LDFLAGS) -o $(DC_EXEC)
+	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(DC_HELP_O) -o $(DC_EXEC)
 
 $(BC_EXEC): CPPFLAGS += -D$(BC_ENABLED)
 $(BC_EXEC): clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(LDLIBS) $(LDFLAGS) -o $(BC_EXEC)
+	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) -o $(BC_EXEC)
 
 help:
 	@echo "available targets:"
@@ -107,7 +104,6 @@ help:
 	@echo "    HOSTCC    Host C compiler"
 	@echo "    CFLAGS    C compiler flags"
 	@echo "    CPPFLAGS  C preprocessor flags"
-	@echo "    LDLIBS    Libraries to link to"
 	@echo "    PREFIX    the prefix to install to"
 	@echo "              if PREFIX is \"/usr\", $(BC_EXEC) will be installed to \"/usr/bin\""
 	@echo "    GEN_EMU   Emulator to run $(GEN_EXEC) under (leave empty if not necessary)"

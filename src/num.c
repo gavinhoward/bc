@@ -21,7 +21,6 @@
  */
 
 #include <assert.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -817,7 +816,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
 		print = bc_num_printHex;
 	}
 	else {
-		width = (size_t) floor(log10((double) (base_t - 1)) + 1.0);
+		for (i = base_t - 1, width = 0; i != 0; i /= 10, ++width);
 		print = bc_num_printDigits;
 	}
 
@@ -995,8 +994,9 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 	BcStatus s;
-	size_t len, i;
+	size_t len;
 	BcDigit *ptr;
+	unsigned long i;
 
 	assert(n);
 
@@ -1007,12 +1007,9 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	len = (size_t) ceil(log10(((double) ULONG_MAX) + 1.0));
-
+	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len)
 	if ((s = bc_num_expand(n, len))) return s;
-
-	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10)
-		ptr[i] = (char) (val % 10);
+	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10) ptr[i] = val % 10;
 
 	return BC_STATUS_SUCCESS;
 }
