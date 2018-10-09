@@ -722,14 +722,14 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 		free(name);
 		name = NULL;
 
+		if (!BC_PROG_CHECK_STACK(v, 2 - copy)) {
+			s = BC_STATUS_EXEC_SMALL_STACK;
+			goto err;
+		}
+
 		if ((pop = !BC_PROG_STR_VAR(num))) {
 
 			r.t = BC_RESULT_TEMP;
-
-			if (!BC_PROG_CHECK_STACK(v, 2 - copy)) {
-				s = BC_STATUS_EXEC_SMALL_STACK;
-				goto err;
-			}
 
 			if ((s = bc_num_init(&r.d.n, BC_NUM_DEF_SIZE))) goto err;
 			if ((s = bc_num_copy(&r.d.n, num))) goto copy_err;
