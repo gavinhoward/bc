@@ -149,7 +149,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 BcStatus bc_parse_pushName(BcParse* p, char *name);
 BcStatus bc_parse_pushIndex(BcParse* p, size_t idx);
 BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t* nexs);
-void bc_parse_file(BcParse *p, const char *file);
+BcStatus bc_parse_text(BcParse *p, const char *text);
 
 #ifdef BC_ENABLED
 extern const bool bc_parse_exprs[];
