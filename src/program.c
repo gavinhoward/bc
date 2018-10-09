@@ -1117,7 +1117,16 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	}
 
 	if ((s = bc_program_addFunc(p, str2, &idx))) goto err;
-	if ((s = bc_vec_push(&p->strs, &str))) goto err;
+
+	if (idx != len + BC_PROG_REQ_FUNCS) {
+
+		for (idx = 0; idx < p->strs.len; ++idx) {
+			if (!strcmp(*((char**) bc_vec_item(&p->strs, idx)), str)) len = idx;
+		}
+
+		free(str);
+	}
+	else if ((s = bc_vec_push(&p->strs, &str))) goto err;
 
 	res.t = BC_RESULT_STR;
 	res.d.id.idx = len;
