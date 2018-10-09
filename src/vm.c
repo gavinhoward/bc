@@ -334,18 +334,16 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	if ((s = bc_vec_init(&vm->files, sizeof(char*), NULL))) return s;
 	if ((s = bc_vec_init(&vm->exprs, sizeof(char), NULL))) goto exprs_err;
 
+#ifdef BC_ENABLED
+	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
+	if (bcg.bc && (s = bc_vm_envArgs(vm))) goto prog_err;
+#endif // BC_ENABLED
+
 	if ((s = bc_program_init(&vm->prog, len, exe.init, exe.exp))) goto prog_err;
 	if ((s = exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto parse_err;
 
-#ifdef BC_ENABLED
-	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
-	if (bcg.bc && (s = bc_vm_envArgs(vm))) goto err;
-#endif // BC_ENABLED
-
 	return s;
 
-err:
-	bc_parse_free(&vm->prs);
 parse_err:
 	bc_program_free(&vm->prog);
 prog_err:
@@ -387,9 +385,7 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 
 	st = bc_vm_exec(&vm);
 
-#ifdef BC_ENABLED
 err:
 	bc_vm_free(&vm);
-#endif // BC_ENABLED
 	return st;
 }

@@ -704,7 +704,7 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 	BcNum *num;
 	BcVec *v;
 #else // DC_ENABLED
-	(void) pop;
+	(void) pop, (void) copy;
 #endif // DC_ENABLED Exclude
 
 	if (!(name = bc_program_name(code, bgn))) return BC_STATUS_ALLOC_ERR;
