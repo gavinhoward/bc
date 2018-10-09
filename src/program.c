@@ -325,17 +325,21 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
 	size_t i, len = strlen(str);
 
+#ifdef DC_ENABLED
+	if (!len) {
+		return putchar('\0') == EOF ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
+	}
+#endif // DC_ENABLED
+
 	for (i = 0; i < len; ++i, ++(*nchars)) {
 
 		int err, c;
 
-		if ((c = str[i]) != '\\') err = putchar(c);
+		if ((c = str[i]) != '\\' || i == len - 1) err = putchar(c);
 		else {
 
-			assert(i + 1 < len);
-			c = str[++i];
 
-			switch (c) {
+			switch (str[++i]) {
 
 				case 'a':
 				{
@@ -1065,10 +1069,11 @@ err:
 BcStatus bc_program_asciify(BcProgram *p) {
 
 	BcStatus s;
-	BcResult *r;
+	BcResult *r, res;
 	BcNum *num, n;
 	char *str, *str2, c;
 	size_t len = p->strs.len, idx;
+	unsigned long val;
 
 	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
 
@@ -1082,8 +1087,9 @@ BcStatus bc_program_asciify(BcProgram *p) {
 		bc_num_truncate(&n, n.rdx);
 
 		if ((s = bc_num_rem(&n, &p->streamb, &n, 0))) goto num_err;
+		if ((s = bc_num_ulong(&n, &val))) goto num_err;
 
-		c = n.num[0];
+		c = (char) val;
 
 		bc_num_free(&n);
 	}
@@ -1095,20 +1101,24 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	}
 
 	if (!(str = malloc(2))) return BC_STATUS_ALLOC_ERR;
+
+	str[0] = c;
+	str[1] = '\0';
+
 	if (!(str2 = strdup(str))) {
 		s = BC_STATUS_ALLOC_ERR;
 		goto err;
 	}
 
-	str[0] = c;
-	str[1] = '\0';
-
 	if ((s = bc_program_addFunc(p, str2, &idx))) goto str2_err;
 	if ((s = bc_vec_push(&p->strs, &str))) goto err;
 
-	assert(idx == len + BC_PROG_REQ_FUNCS);
+	res.t = BC_RESULT_STR;
+	res.d.id.idx = len;
 
-	return s;
+	bc_vec_pop(&p->results);
+
+	return bc_vec_push(&p->results, &res);
 
 num_err:
 	bc_num_free(&n);
@@ -1133,14 +1143,13 @@ BcStatus bc_program_printStream(BcProgram *p) {
 	r = bc_vec_top(&p->results);
 	if ((s = bc_program_num(p, r, &num, false))) return s;
 
-	if (r->t != BC_RESULT_STR && !BC_PROG_STR_VAR(num)) {
+	if (r->t != BC_RESULT_STR && !BC_PROG_STR_VAR(num))
 		s = bc_num_printStream(num, &p->streamb, &p->nchars, p->len);
-	}
 	else {
 		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
 		assert(idx < p->strs.len);
 		str = *((char**) bc_vec_item(&p->strs, idx));
-		if (puts(str) == EOF) s = BC_STATUS_IO_ERR;
+		if (printf("%s", str) < 0) s = BC_STATUS_IO_ERR;
 	}
 
 	return s;

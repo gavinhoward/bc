@@ -306,7 +306,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 		s = bc_vm_file(vm, *((char**) bc_vec_item(&vm->files, i)));
 	if ((s && s != BC_STATUS_QUIT) || bcg.sig_other) return s;
 
-	if (vm->exprs.len <= 1) s = bc_vm_stdin(vm);
+	if ((bcg.bc || !vm->files.len) && vm->exprs.len <= 1) s = bc_vm_stdin(vm);
 
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 }

@@ -737,11 +737,9 @@ BcStatus bc_num_printNewline(size_t *nchars, size_t line_len) {
 BcStatus bc_num_printChar(size_t num, size_t width, bool radix,
                           size_t *nchars, size_t line_len)
 {
-	BcStatus s;
-	(void) radix;
+	(void) radix, (void) line_len;
 
-	if ((s = bc_num_printNewline(nchars, line_len))) return s;
-	if (putchar((char) num) == EOF) return BC_STATUS_IO_ERR;
+	if (putc((char) num, stdout) == EOF) return BC_STATUS_IO_ERR;
 	*nchars = *nchars + width;
 
 	return BC_STATUS_SUCCESS;
@@ -828,6 +826,11 @@ BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width, size_t *nchars,
 
 	bc_num_truncate(&intp, intp.rdx);
 	if ((s = bc_num_sub(n, &intp, &fracp, 0))) goto err;
+
+	if (!n->len) {
+		s = print(0, width, false, nchars, line_len);
+		goto err;
+	}
 
 	while (intp.len) {
 		if ((s = bc_num_rem(&intp, base, &digit, 0))) goto err;
