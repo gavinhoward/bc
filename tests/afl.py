@@ -37,7 +37,7 @@ def run_test(exe, exebase, tout, indata, out, file, type, test):
 		p = subprocess.run(exe, timeout=tout, input=indata, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		check_crash(exebase, out, p.returncode, file, type, test)
 	except subprocess.TimeoutExpired:
-		print("\n    {} timed out. Continuing...\n")
+		print("\n    {} timed out. Continuing...\n".format(exebase))
 
 def get_children(dir, get_files):
 	dirs = []
@@ -55,7 +55,7 @@ if __name__ != "__main__":
 script = sys.argv[0]
 testdir = os.path.dirname(script)
 
-tout = 3
+tout = 5
 
 if len(sys.argv) < 2:
 	usage()
