@@ -67,10 +67,10 @@ BcStatus dc_parse_string(BcParse *p) {
 	if ((s = bc_program_addFunc(p->prog, name, &idx))) return s;
 	if ((s = bc_lex_next(&p->l))) return s;
 
+	assert(idx == len + BC_PROG_REQ_FUNCS);
+
 	// Update possibly invalidated pointer.
 	p->code = BC_PARSE_CODE(p);
-
-	assert(idx == len + BC_PROG_REQ_FUNCS);
 
 	return s;
 
