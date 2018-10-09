@@ -733,6 +733,21 @@ BcStatus bc_num_printNewline(size_t *nchars, size_t line_len) {
 	return BC_STATUS_SUCCESS;
 }
 
+#ifdef DC_ENABLED
+BcStatus bc_num_printChar(size_t num, size_t width, bool radix,
+                          size_t *nchars, size_t line_len)
+{
+	BcStatus s;
+	(void) radix;
+
+	if ((s = bc_num_printNewline(nchars, line_len))) return s;
+	if (putchar((char) num) == EOF) return BC_STATUS_IO_ERR;
+	*nchars = *nchars + width;
+
+	return BC_STATUS_SUCCESS;
+}
+#endif // DC_ENABLED
+
 BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
                             size_t *nchars, size_t line_len)
 {
@@ -793,32 +808,17 @@ BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
 	return s;
 }
 
-BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
-                          size_t *nchars, size_t line_len)
+BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width, size_t *nchars,
+                         size_t line_len, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
 	BcNum intp, fracp, digit, frac_len;
-	size_t width, i;
-	BcNumDigitOp print;
 	unsigned long dig, *ptr;
-	bool radix, neg = n->neg;
+	size_t i;
+	bool radix;
 
-	if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
-	(*nchars) += neg;
-
-	n->neg = false;
-
-	if (base_t <= BC_NUM_MAX_IBASE) {
-		width = 1;
-		print = bc_num_printHex;
-	}
-	else {
-		for (i = base_t - 1, width = 0; i != 0; i /= 10, ++width);
-		print = bc_num_printDigits;
-	}
-
-	if ((s = bc_vec_init(&stack, sizeof(long), NULL))) goto stack_err;
+	if ((s = bc_vec_init(&stack, sizeof(long), NULL))) return s;
 	if ((s = bc_num_init(&intp, n->len))) goto int_err;
 	if ((s = bc_num_init(&fracp, n->rdx))) goto frac_err;
 	if ((s = bc_num_init(&digit, width))) goto digit_err;
@@ -863,10 +863,42 @@ frac_err:
 	bc_num_free(&intp);
 int_err:
 	bc_vec_free(&stack);
-stack_err:
-	n->neg = neg;
 	return s;
 }
+
+BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
+                          size_t *nchars, size_t line_len)
+{
+	BcStatus s;
+	size_t width, i;
+	BcNumDigitOp print;
+	bool neg = n->neg;
+
+	if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
+	(*nchars) += neg;
+
+	n->neg = false;
+
+	if (base_t <= BC_NUM_MAX_IBASE) {
+		width = 1;
+		print = bc_num_printHex;
+	}
+	else {
+		for (i = base_t - 1, width = 0; i != 0; i /= 10, ++width);
+		print = bc_num_printDigits;
+	}
+
+	s = bc_num_printNum(n, base, width, nchars, line_len, print);
+	n->neg = neg;
+
+	return s;
+}
+
+#ifdef DC_ENABLED
+BcStatus bc_num_printStream(BcNum *n, BcNum *base, size_t *nchars, size_t len) {
+	return bc_num_printNum(n, base, 1, nchars, len, bc_num_printChar);
+}
+#endif // DC_ENABLED
 
 BcStatus bc_num_init(BcNum *n, size_t request) {
 

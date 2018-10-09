@@ -43,6 +43,10 @@ typedef struct BcProgram {
 
 	BcNum hexb;
 
+#ifdef DC_ENABLED
+	BcNum streamb;
+#endif // DC_ENABLED
+
 	BcVec results;
 	BcVec stack;
 

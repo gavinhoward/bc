@@ -407,6 +407,7 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 	BcResult *r;
 	size_t len, i;
 	char *str;
+	BcNum *num = NULL;
 	bool pop = inst != BC_INST_PRINT;
 
 	assert(p);
@@ -415,12 +416,15 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 		return BC_STATUS_EXEC_SMALL_STACK;
 
 	r = bc_vec_item_rev(&p->results, idx);
+	if ((s = bc_program_num(p, r, &num, false))) return s;
 
-	if (r->t == BC_RESULT_STR) {
+	if (r->t == BC_RESULT_STR || BC_PROG_STR_VAR(num)) {
 
-		assert(r->d.id.idx < p->strs.len);
+		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
 
-		str = *((char**) bc_vec_item(&p->strs, r->d.id.idx));
+		assert(idx < p->strs.len);
+
+		str = *((char**) bc_vec_item(&p->strs, idx));
 
 		if (inst == BC_INST_PRINT_STR) {
 			for (i = 0, len = strlen(str); i < len; ++i) {
@@ -437,13 +441,7 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 		}
 	}
 	else {
-
-		BcNum *num = NULL;
-
 		assert(inst != BC_INST_PRINT_STR);
-
-		if ((s = bc_program_num(p, r, &num, false))) return s;
-
 		s = bc_num_print(num, &p->ob, p->ob_t, !pop, &p->nchars, p->len);
 		if (!s && !BC_PROG_STR_VAR(num)) s = bc_num_copy(&p->last, num);
 	}
@@ -1064,6 +1062,90 @@ err:
 	return s;
 }
 
+BcStatus bc_program_asciify(BcProgram *p) {
+
+	BcStatus s;
+	BcResult *r;
+	BcNum *num, n;
+	char *str, *str2, c;
+	size_t len = p->strs.len, idx;
+
+	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
+
+	r = bc_vec_top(&p->results);
+	if ((s = bc_program_num(p, r, &num, false))) return s;
+
+	if (r->t != BC_RESULT_STR && !BC_PROG_STR_VAR(num)) {
+
+		if ((s = bc_num_init(&n, BC_NUM_DEF_SIZE))) return s;
+		if ((s = bc_num_copy(&n, num))) goto num_err;
+		bc_num_truncate(&n, n.rdx);
+
+		if ((s = bc_num_rem(&n, &p->streamb, &n, 0))) goto num_err;
+
+		c = n.num[0];
+
+		bc_num_free(&n);
+	}
+	else {
+		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
+		assert(idx < p->strs.len);
+		str2 = *((char**) bc_vec_item(&p->strs, idx));
+		c = str2[0];
+	}
+
+	if (!(str = malloc(2))) return BC_STATUS_ALLOC_ERR;
+	if (!(str2 = strdup(str))) {
+		s = BC_STATUS_ALLOC_ERR;
+		goto err;
+	}
+
+	str[0] = c;
+	str[1] = '\0';
+
+	if ((s = bc_program_addFunc(p, str2, &idx))) goto str2_err;
+	if ((s = bc_vec_push(&p->strs, &str))) goto err;
+
+	assert(idx == len + BC_PROG_REQ_FUNCS);
+
+	return s;
+
+num_err:
+	bc_num_free(&n);
+	return s;
+str2_err:
+	free(str2);
+err:
+	free(str);
+	return s;
+}
+
+BcStatus bc_program_printStream(BcProgram *p) {
+
+	BcStatus s;
+	BcResult *r;
+	BcNum *num;
+	size_t idx;
+	char *str;
+
+	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
+
+	r = bc_vec_top(&p->results);
+	if ((s = bc_program_num(p, r, &num, false))) return s;
+
+	if (r->t != BC_RESULT_STR && !BC_PROG_STR_VAR(num)) {
+		s = bc_num_printStream(num, &p->streamb, &p->nchars, p->len);
+	}
+	else {
+		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
+		assert(idx < p->strs.len);
+		str = *((char**) bc_vec_item(&p->strs, idx));
+		if (puts(str) == EOF) s = BC_STATUS_IO_ERR;
+	}
+
+	return s;
+}
+
 BcStatus bc_program_nquit(BcProgram *p) {
 
 	BcStatus s;
@@ -1227,6 +1309,11 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	bc_num_ten(&p->hexb);
 	p->hexb.num[0] = 6;
 
+#ifdef DC_ENABLED
+	if ((s = bc_num_init(&p->streamb, BC_NUM_DEF_SIZE))) goto streamb_err;
+	if ((s = bc_num_ulong2num(&p->streamb, UCHAR_MAX + 1))) goto last_err;
+#endif // DC_ENABLED
+
 	if ((s = bc_num_init(&p->last, BC_NUM_DEF_SIZE))) goto last_err;
 	bc_num_zero(&p->last);
 
@@ -1309,6 +1396,10 @@ one_err:
 zero_err:
 	bc_num_free(&p->last);
 last_err:
+#ifdef DC_ENABLED
+	bc_num_free(&p->streamb);
+streamb_err:
+#endif // DC_ENABLED
 	bc_num_free(&p->hexb);
 hexb_err:
 	bc_num_free(&p->ob);
@@ -1651,12 +1742,15 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_PUSH_TO_VAR:
+			case BC_INST_ASCIIFY:
 			{
-				char *name;
-				if (!(name = bc_program_name(code, &ip->idx))) return s;
-				s = bc_program_copyToVar(p, name, true);
-				free(name);
+				s = bc_program_asciify(p);
+				break;
+			}
+
+			case BC_INST_PRINT_STREAM:
+			{
+				s = bc_program_printStream(p);
 				break;
 			}
 
@@ -1665,6 +1759,15 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				bool copy = inst == BC_INST_LOAD;
 				s = bc_program_pushVar(p, code, &ip->idx, true, copy);
+				break;
+			}
+
+			case BC_INST_PUSH_TO_VAR:
+			{
+				char *name;
+				if (!(name = bc_program_name(code, &ip->idx))) return s;
+				s = bc_program_copyToVar(p, name, true);
+				free(name);
 				break;
 			}
 
@@ -1709,6 +1812,10 @@ void bc_program_free(BcProgram *p) {
 	bc_num_free(&p->ib);
 	bc_num_free(&p->ob);
 	bc_num_free(&p->hexb);
+
+#ifdef DC_ENABLED
+	bc_num_free(&p->streamb);
+#endif // DC_ENABLED
 
 	bc_vec_free(&p->fns);
 	bc_veco_free(&p->fn_map);

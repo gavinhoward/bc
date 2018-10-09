@@ -64,6 +64,8 @@ void bc_num_free(void *num);
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
 BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
 
+void bc_num_truncate(BcNum *n, size_t places);
+
 ssize_t bc_num_cmp(BcNum *a, BcNum *b);
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
@@ -87,6 +89,8 @@ void bc_num_ten(BcNum *n);
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t);
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
                       size_t *nchars, size_t line_len);
+BcStatus bc_num_printStream(BcNum *n, BcNum *base, size_t *nchars, size_t len);
+
 // ** Exclude end. **
 
 extern const char bc_num_hex_digits[];
