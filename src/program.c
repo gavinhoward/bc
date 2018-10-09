@@ -274,7 +274,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	bc_lex_file(&parse.l, bc_program_stdin_name);
 	if ((s = bc_parse_text(&parse, buf.v))) goto exec_err;
 
-	if ((s = p->parse_expr(&parse, BC_PARSE_NOREAD))) return s;
+	if ((s = p->parse_expr(&parse, BC_PARSE_NOREAD))) goto exec_err;
 
 	if (parse.l.t.t != BC_LEX_NLINE && parse.l.t.t != BC_LEX_EOF) {
 		s = BC_STATUS_EXEC_BAD_READ_EXPR;
@@ -285,10 +285,8 @@ BcStatus bc_program_read(BcProgram *p) {
 	ip.idx = 0;
 	ip.len = p->results.len;
 
+	if ((s = bc_vec_pushByte(&f->code, BC_INST_POP_EXEC))) goto exec_err;
 	if ((s = bc_vec_push(&p->stack, &ip))) goto exec_err;
-	if ((s = bc_program_exec(p))) goto exec_err;
-
-	bc_vec_pop(&p->stack);
 
 exec_err:
 	bc_parse_free(&parse);
@@ -1631,6 +1629,13 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_POP_EXEC:
+			{
+				assert(BC_PROG_CHECK_STACK(&p->stack, 2));
+				bc_vec_pop(&p->stack);
+				break;
+			}
+
 			case BC_INST_PRINT:
 			case BC_INST_PRINT_POP:
 			case BC_INST_PRINT_STR:
@@ -1710,13 +1715,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				cond = inst == BC_INST_EXEC_COND;
 				s = bc_program_executeStr(p, code, &ip->idx, cond);
-				break;
-			}
-
-			case BC_INST_POP_EXEC:
-			{
-				assert(BC_PROG_CHECK_STACK(&p->stack, 2));
-				bc_vec_pop(&p->stack);
 				break;
 			}
 

@@ -92,6 +92,7 @@ typedef enum BcInst {
 
 	BC_INST_RET,
 	BC_INST_RET0,
+	BC_INST_POP_EXEC,
 
 	BC_INST_HALT,
 
@@ -101,7 +102,6 @@ typedef enum BcInst {
 
 	BC_INST_EXECUTE,
 	BC_INST_EXEC_COND,
-	BC_INST_POP_EXEC,
 
 	BC_INST_ASCIIFY,
 	BC_INST_PRINT_STREAM,
