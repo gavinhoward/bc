@@ -50,6 +50,43 @@ BcStatus bc_vm_info(const char* const help) {
 	return BC_STATUS_SUCCESS;
 }
 
+BcStatus bc_vm_envArgs(BcVm *vm) {
+
+	BcStatus s;
+	BcVec args;
+	char *env_args = NULL, *buffer = NULL, *buf;
+
+	if (!(env_args = getenv(bc_args_env_name))) return BC_STATUS_SUCCESS;
+	if (!(buf = (vm->env_args = strdup(env_args)))) return BC_STATUS_ALLOC_ERR;
+
+	if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto args_err;
+	if ((s = bc_vec_push(&args, &bc_args_env_name))) goto err;
+
+	while (*buf) {
+		if (!isspace(*buf)) {
+			if ((s = bc_vec_push(&args, &buf))) goto err;
+			while (*buf && !isspace(*buf)) ++buf;
+			if (*buf) (*(buf++)) = '\0';
+		}
+		else ++buf;
+	}
+
+	s = bc_args((int) args.len, (char**) args.v,
+	            &vm->flags, &vm->exprs, &vm->files);
+	if (s) goto err;
+
+	bc_vec_free(&args);
+
+	return s;
+
+err:
+	bc_vec_free(&args);
+args_err:
+	free(buffer);
+	vm->env_args = NULL;
+	return s;
+}
+
 size_t bc_vm_envLen(const char *var) {
 
 	char *lenv;
@@ -267,7 +304,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 
 	for (i = 0; !bcg.sig_other && !s && i < vm->files.len; ++i)
 		s = bc_vm_file(vm, *((char**) bc_vec_item(&vm->files, i)));
-	if (s || bcg.sig_other) return s;
+	if ((s && s != BC_STATUS_QUIT) || bcg.sig_other) return s;
 
 	if (vm->exprs.len <= 1) s = bc_vm_stdin(vm);
 
@@ -292,6 +329,7 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 	vm->exe = exe;
 	vm->flags = 0;
+	vm->env_args = NULL;
 
 	if ((s = bc_vec_init(&vm->files, sizeof(char*), NULL))) return s;
 	if ((s = bc_vec_init(&vm->exprs, sizeof(char), NULL))) goto exprs_err;
@@ -301,8 +339,7 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 #ifdef BC_ENABLED
 	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
-	if (bcg.bc && (s = bc_args_env(&vm->flags, &vm->exprs, &vm->files)))
-		goto err;
+	if (bcg.bc && (s = bc_vm_envArgs(vm))) goto err;
 #endif // BC_ENABLED
 
 	return s;
@@ -323,6 +360,7 @@ void bc_vm_free(BcVm *vm) {
 	bc_vec_free(&vm->exprs);
 	bc_program_free(&vm->prog);
 	bc_parse_free(&vm->prs);
+	free(vm->env_args);
 }
 
 BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {

@@ -26,7 +26,6 @@
 #include <status.h>
 #include <vm.h>
 
-BcStatus bc_args_env(unsigned int *flags, BcVec *exprs, BcVec *files);
 BcStatus bc_args(int argc, char *argv[], unsigned int* flags,
                  BcVec* exprs, BcVec* files);
 

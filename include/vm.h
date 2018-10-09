@@ -82,6 +82,8 @@ typedef struct BcVm {
 	BcVec files;
 	BcVec exprs;
 
+	char *env_args;
+
 	BcVmExe exe;
 	// ** Exclude end. **
 

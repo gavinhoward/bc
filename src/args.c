@@ -71,40 +71,6 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	return s;
 }
 
-BcStatus bc_args_env(unsigned int *flags, BcVec *exprs, BcVec *files) {
-
-	BcStatus s;
-	BcVec args;
-	char *env_args = NULL, *buffer = NULL, *buf;
-
-	if (!(env_args = getenv(bc_args_env_name))) return BC_STATUS_SUCCESS;
-
-	if ((s = bc_vec_init(&args, sizeof(char*), NULL))) return s;
-	if ((s = bc_vec_push(&args, &bc_args_env_name))) goto push_err;
-
-	if (!(buf = (buffer = strdup(env_args)))) {
-		s = BC_STATUS_ALLOC_ERR;
-		goto push_err;
-	}
-
-	while (*buf) {
-		if (!isspace(*buf)) {
-			if ((s = bc_vec_push(&args, &buf))) goto err;
-			while (*buf && !isspace(*buf)) ++buf;
-			if (*buf) (*(buf++)) = '\0';
-		}
-		else ++buf;
-	}
-
-	s = bc_args((int) args.len, (char**) args.v, flags, exprs, files);
-
-err:
-	free(buffer);
-push_err:
-	bc_vec_free(&args);
-	return s;
-}
-
 BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
                  BcVec *exprs, BcVec *files)
 {
