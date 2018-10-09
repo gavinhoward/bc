@@ -719,13 +719,13 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 
 	if (pop || copy) {
 
-		free(name);
-		name = NULL;
-
 		if (!BC_PROG_CHECK_STACK(v, 2 - copy)) {
 			s = BC_STATUS_EXEC_SMALL_STACK;
 			goto err;
 		}
+
+		free(name);
+		name = NULL;
 
 		if ((pop = !BC_PROG_STR_VAR(num))) {
 
