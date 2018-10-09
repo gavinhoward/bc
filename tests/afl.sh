@@ -108,26 +108,20 @@ for d in $resultsdir/*; do
 
 		done < "$f"
 
-		echo "    Running file through cat..."
-
-		cat "$f" | "$exe" "$@" "$options" > /dev/null 2>&1
-		error="$?"
-
-		checkcrash "$exebase" "$out" "$error" "$f" "running $f through cat" "$f"
-
-		echo "    Running file through carrot input..."
-
-		"$exe" "$@" "$options" < "$f" > /dev/null 2>&1
-		error="$?"
-
-		checkcrash "$exebase" "$out" "$error" "$f" "running $f through carrot input" "$f"
-
 		echo "    Running whole file..."
 
 		echo "$halt" | "$exe" "$@" "$options" "$f" > /dev/null 2>&1
 		error="$?"
 
 		checkcrash "$exebase" "$out" "$error" "$f" "file" "$f"
+
+		echo "    Running file through cat..."
+
+		# Allow stdout to show so I can tell if it's in an infinite loop.
+		cat "$f" | "$exe" "$@" "$options" 2> /dev/null
+		error="$?"
+
+		checkcrash "$exebase" "$out" "$error" "$f" "running $f through cat" "$f"
 
 	done
 
