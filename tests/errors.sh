@@ -31,23 +31,32 @@ checktest()
 	shift
 
 	if [ "$error" -eq 0 ]; then
-		echo -e "\n$d returned no error on test:\n"
-		echo -e "    $name"
-		echo -e "\nexiting..."
+		echo ""
+		echo "$d returned no error on test:"
+		echo ""
+		echo "    $name"
+		echo ""
+		echo "exiting..."
 		exit 127
 	fi
 
 	if [ "$error" -gt 127 ]; then
-		echo -e "\n$d crashed on test:\n"
-		echo -e "    $name"
-		echo -e "\nexiting..."
+		echo ""
+		echo "$d crashed on test:"
+		echo ""
+		echo "    $name"
+		echo ""
+		echo "exiting..."
 		exit "$error"
 	fi
 
 	if [ ! -s "$out" ]; then
-		echo -e "\n$d produced no error message on test:\n"
-		echo -e "    $name"
-		echo -e "\nexiting..."
+		echo ""
+		echo "$d produced no error message on test:"
+		echo ""
+		echo "    $name"
+		echo ""
+		echo "exiting..."
 		exit "$error"
 	fi
 
