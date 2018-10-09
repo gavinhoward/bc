@@ -229,9 +229,6 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	if (flags & BC_PARSE_NOCALL) p->nbraces = p->prog->results.len;
 
 	while (!s && (t = p->l.t.t) != BC_LEX_EOF) {
-		if(p->l.idx > 720) {
-			//printf("here\n");
-		}
 		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID) {
 			if ((s = dc_parse_inst(p, inst))) return s;
 			if ((s = bc_lex_next(&p->l))) return s;
