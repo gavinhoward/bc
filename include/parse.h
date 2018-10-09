@@ -33,6 +33,9 @@
 
 #define BC_PARSE_STREND ((char) 255)
 
+#define BC_PARSE_CODE(p) \
+	(&(((BcFunc*) bc_vec_item(&(p)->prog->fns, (p)->func))->code))
+
 #define BC_PARSE_POSIX_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
@@ -146,6 +149,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 BcStatus bc_parse_pushName(BcParse* p, char *name);
 BcStatus bc_parse_pushIndex(BcParse* p, size_t idx);
 BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t* nexs);
+void bc_parse_file(BcParse *p, const char *file);
 
 #ifdef BC_ENABLED
 extern const bool bc_parse_exprs[];

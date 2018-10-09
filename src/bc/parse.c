@@ -122,7 +122,7 @@ BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 		if ((s = bc_program_addFunc(p->prog, name, &idx))) return s;
 
 		// Update possibly invalidated pointer.
-		p->code = &(((BcFunc*) bc_vec_item(&p->prog->fns, p->func))->code);
+		p->code = BC_PARSE_CODE(p);
 
 		name = NULL;
 		idx = bc_veco_index(&p->prog->fn_map, &entry);
@@ -517,7 +517,7 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 	else if (BC_PARSE_FUNC_INNER(p)) {
 		if ((s = bc_vec_pushByte(p->code, BC_INST_RET0))) return s;
 		p->func = BC_PROG_MAIN;
-		p->code = &(((BcFunc*) bc_vec_item(&p->prog->fns, p->func))->code);
+		p->code = BC_PARSE_CODE(p);
 		bc_vec_pop(&p->flags);
 	}
 	else {

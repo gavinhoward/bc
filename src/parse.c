@@ -84,9 +84,15 @@ BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 	return s;
 }
 
+void bc_parse_file(BcParse *p, const char *file) {
+	bc_lex_file(&p->l, file);
+	p->func = BC_PROG_MAIN;
+	p->code = BC_PARSE_CODE(p);
+}
+
 BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
-	if (p->func) {
+	if (p->func != BC_PROG_MAIN) {
 
 		BcFunc *func = bc_vec_item(&p->prog->fns, p->func);
 
@@ -95,7 +101,8 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 		bc_vec_npop(&func->autos, func->autos.len);
 		bc_vec_npop(&func->labels, func->labels.len);
 
-		p->func = 0;
+		p->func = BC_PROG_MAIN;
+		p->code = BC_PARSE_CODE(p);
 	}
 
 	p->l.idx = p->l.len;

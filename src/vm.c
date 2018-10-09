@@ -190,7 +190,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	vm->prog.file = file;
 	if ((s = bc_io_fread(file, &data))) return bc_vm_error(s, file, 0);
 
-	bc_lex_file(&vm->prs.l, file);
+	bc_parse_file(&vm->prs, file);
 	if ((s = bc_vm_process(vm, data))) goto err;
 
 	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
@@ -213,7 +213,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	bool comment = false, notend;
 
 	vm->prog.file = bc_program_stdin_name;
-	bc_lex_file(&vm->prs.l, bc_program_stdin_name);
+	bc_parse_file(&vm->prs, bc_program_stdin_name);
 
 	if ((s = bc_vec_init(&buffer, sizeof(char), NULL))) return s;
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) goto buf_err;
@@ -291,7 +291,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 #ifdef BC_ENABLED
 	if (vm->flags & BC_FLAG_L) {
 
-		bc_lex_file(&vm->prs.l, bc_lib_name);
+		bc_parse_file(&vm->prs, bc_lib_name);
 		if ((s = bc_lex_text(&vm->prs.l, bc_lib))) return s;
 
 		while (!s && vm->prs.l.t.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
