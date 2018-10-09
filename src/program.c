@@ -1613,7 +1613,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_POP:
 			{
-				bc_vec_pop(&p->results);
+				if (!BC_PROG_CHECK_STACK(&p->results, 2))
+					s = BC_STATUS_EXEC_SMALL_STACK;
+				else bc_vec_pop(&p->results);
 				break;
 			}
 
