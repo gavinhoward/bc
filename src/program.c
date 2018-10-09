@@ -1116,7 +1116,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 		goto err;
 	}
 
-	if ((s = bc_program_addFunc(p, str2, &idx))) goto str2_err;
+	if ((s = bc_program_addFunc(p, str2, &idx))) goto err;
 	if ((s = bc_vec_push(&p->strs, &str))) goto err;
 
 	res.t = BC_RESULT_STR;
@@ -1129,8 +1129,6 @@ BcStatus bc_program_asciify(BcProgram *p) {
 num_err:
 	bc_num_free(&n);
 	return s;
-str2_err:
-	free(str2);
 err:
 	free(str);
 	return s;
