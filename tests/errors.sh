@@ -127,7 +127,7 @@ done
 
 for testfile in $testdir/$d/errors/*.txt; do
 
-	echo "Running error file \"$testfile\"..."
+	echo "Running error file $testfile..."
 
 	echo "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
 
