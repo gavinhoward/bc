@@ -43,8 +43,9 @@ def get_children(dir, get_files):
 	dirs = []
 	with os.scandir(dir) as it:
 		for entry in it:
-			if not entry.name.startswith('.') and ((entry.is_dir() and not get_files) or \
-			                                       (entry.is_file() and get_files)):
+			if not entry.name.startswith('.') and  \
+			   ((entry.is_dir() and not get_files) or \
+			    (entry.is_file() and get_files)):
 				dirs.append(entry.name)
 	dirs.sort()
 	return dirs
