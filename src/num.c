@@ -740,12 +740,10 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
 	size_t exp, pow, div;
 
 	if ((s = bc_num_printNewline(nchars, line_len))) return s;
-
 	if (putchar(radix ? '.' : ' ') == EOF) return BC_STATUS_IO_ERR;
 	++(*nchars);
 
 	if ((s = bc_num_printNewline(nchars, line_len))) return s;
-
 	for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
 	for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
