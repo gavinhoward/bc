@@ -177,7 +177,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 	}
 
 	if (do_exit) exit((int) s);
-	if (exprs->len > 1) (*flags) |= BC_FLAG_Q;
+	if (exprs->len > 1 || !bcg.bc) (*flags) |= BC_FLAG_Q;
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
 	for (i = optind; !s && i < argc; ++i) s = bc_vec_push(files, argv + i);
