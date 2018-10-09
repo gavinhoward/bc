@@ -898,7 +898,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
 }
 
 #ifdef DC_ENABLED
-BcStatus bc_num_printStream(BcNum *n, BcNum *base, size_t *nchars, size_t len) {
+BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars, size_t len) {
 	return bc_num_printNum(n, base, 1, nchars, len, bc_num_printChar);
 }
 #endif // DC_ENABLED
@@ -916,18 +916,20 @@ BcStatus bc_num_init(BcNum *n, size_t request) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_expand(BcNum *n, size_t request) {
+BcStatus bc_num_expand(BcNum *n, size_t req) {
 
 	BcDigit *temp;
 
-	assert(n && request);
+	assert(n);
 
-	if (request <= n->cap) return BC_STATUS_SUCCESS;
-	if (!(temp = realloc(n->num, request))) return BC_STATUS_ALLOC_ERR;
+	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 
-	memset(temp + n->cap, 0, sizeof(char) * (request - n->cap));
+	if (req <= n->cap) return BC_STATUS_SUCCESS;
+	if (!(temp = realloc(n->num, req))) return BC_STATUS_ALLOC_ERR;
+
+	memset(temp + n->cap, 0, sizeof(char) * (req - n->cap));
 	n->num = temp;
-	n->cap = request;
+	n->cap = req;
 
 	return BC_STATUS_SUCCESS;
 }

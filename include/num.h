@@ -59,7 +59,7 @@ typedef BcStatus (*BcNumDigitOp)(size_t, size_t, bool, size_t*, size_t);
 // ** Exclude start. **
 
 BcStatus bc_num_init(BcNum *n, size_t request);
-BcStatus bc_num_expand(BcNum *n, size_t request);
+BcStatus bc_num_expand(BcNum *n, size_t req);
 BcStatus bc_num_copy(BcNum *d, BcNum *s);
 void bc_num_free(void *num);
 
@@ -93,7 +93,7 @@ void bc_num_ten(BcNum *n);
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t);
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
                       size_t *nchars, size_t line_len);
-BcStatus bc_num_printStream(BcNum *n, BcNum *base, size_t *nchars, size_t len);
+BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars, size_t len);
 
 // ** Exclude end. **
 

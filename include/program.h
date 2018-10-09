@@ -44,7 +44,7 @@ typedef struct BcProgram {
 	BcNum hexb;
 
 #ifdef DC_ENABLED
-	BcNum streamb;
+	BcNum strmb;
 #endif // DC_ENABLED
 
 	BcVec results;
@@ -86,7 +86,9 @@ typedef struct BcProgram {
 #define BC_PROG_REQ_FUNCS (2)
 #endif // DC_ENABLED
 
-#define BC_PROG_STR_VAR(n) (!(n)->num && !(n)->cap)
+#define BC_PROG_STR(n) (!(n)->num && !(n)->cap)
+#define BC_PROG_NUM(r, n) \
+	((r)->t != BC_RESULT_ARRAY && (r)->t != BC_RESULT_STR && !BC_PROG_STR(n))
 
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
