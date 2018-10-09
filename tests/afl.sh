@@ -53,7 +53,15 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 1 ]; then
-	exe="$testdir/../bc"
+	echo "usage: $script dir [exe results_dir]"
+	exit 1
+else
+	exedir="$1"
+	shift
+fi
+
+if [ "$#" -lt 1 ]; then
+	exe="$testdir/../$exedir"
 else
 	exe="$1"
 	shift
