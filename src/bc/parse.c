@@ -1341,7 +1341,11 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 	}
 
 	if (flags & BC_PARSE_PRINT) {
-		if (paren_first || !assign) s = bc_vec_pushByte(p->code, BC_INST_PRINT);
+
+		if (paren_first || !assign) {
+			if ((s = bc_vec_pushByte(p->code, BC_INST_PRINT))) return s;
+		}
+
 		s = bc_vec_pushByte(p->code, BC_INST_POP);
 	}
 

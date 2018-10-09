@@ -54,7 +54,7 @@ BcStatus bc_vm_envArgs(BcVm *vm) {
 
 	BcStatus s;
 	BcVec args;
-	char *env_args = NULL, *buffer = NULL, *buf;
+	char *env_args = NULL, *buf;
 
 	if (!(env_args = getenv(bc_args_env_name))) return BC_STATUS_SUCCESS;
 	if (!(buf = (vm->env_args = strdup(env_args)))) return BC_STATUS_ALLOC_ERR;
@@ -82,7 +82,7 @@ BcStatus bc_vm_envArgs(BcVm *vm) {
 err:
 	bc_vec_free(&args);
 args_err:
-	free(buffer);
+	free(vm->env_args);
 	vm->env_args = NULL;
 	return s;
 }
@@ -269,7 +269,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 	// I/O error will always happen when stdin is
 	// closed. It's not a problem in that case.
-	s = s == BC_STATUS_IO_ERR ? BC_STATUS_SUCCESS : s;
+	s = s == BC_STATUS_IO_ERR || s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 
 	if (string) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
 	                            vm->prs.l.f, vm->prs.l.line);
@@ -285,7 +285,7 @@ buf_err:
 
 BcStatus bc_vm_exec(BcVm *vm) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 
 #ifdef BC_ENABLED

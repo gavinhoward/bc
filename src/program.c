@@ -183,8 +183,9 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
 	if ((s = bc_program_num(p, *right, rval, hex))) return s;
 
 #ifdef DC_ENABLED
-	assert(rt != BC_RESULT_STR);
 	assert(lt != BC_RESULT_VAR || !BC_PROG_STR_VAR(*lval) || assign);
+#else // DC_ENABLED
+	assert(rt != BC_RESULT_STR);
 #endif // DC_ENABLED
 
 	// We run this again under these conditions in case any vector has been
@@ -562,7 +563,8 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push)
 	res.t = BC_RESULT_STR;
 
 	if (!push) {
-		if (!BC_PROG_CHECK_STACK(v, 2)) return BC_STATUS_EXEC_SMALL_STACK;
+		if (!BC_PROG_CHECK_STACK(&p->results, 2))
+			return BC_STATUS_EXEC_SMALL_STACK;
 		bc_vec_pop(v);
 		bc_vec_pop(&p->results);
 	}
