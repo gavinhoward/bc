@@ -158,46 +158,41 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 	return s;
 }
 
-BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **left, BcNum **lval,
-                              BcResult **right, BcNum **rval, bool assign)
+BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **l, BcNum **ln,
+                              BcResult **r, BcNum **rn, bool assign)
 {
 	BcStatus s;
 	bool hex;
 	BcResultType lt, rt;
 
-	assert(p && left && lval && right && rval);
+	assert(p && l && ln && r && rn);
 
 	if (!BC_PROG_CHECK_STACK(&p->results, 2)) return BC_STATUS_EXEC_SMALL_STACK;
 
-	*right = bc_vec_item_rev(&p->results, 0);
-	*left = bc_vec_item_rev(&p->results, 1);
+	*r = bc_vec_item_rev(&p->results, 0);
+	*l = bc_vec_item_rev(&p->results, 1);
 
-	lt = (*left)->t;
-	rt = (*right)->t;
+	lt = (*l)->t;
+	rt = (*r)->t;
 	hex = assign && (lt == BC_RESULT_IBASE || lt == BC_RESULT_OBASE);
 
-	if ((s = bc_program_num(p, *left, lval, false))) return s;
-	if ((s = bc_program_num(p, *right, rval, hex))) return s;
-
-	if (!BC_PROG_NUM((*left), (*lval)) &&
-	    (!assign || (*left)->t != BC_RESULT_VAR))
-	{
-		return BC_STATUS_EXEC_BAD_TYPE;
-	}
-
-	if (!assign && !BC_PROG_NUM((*right), (*lval)))
-		return BC_STATUS_EXEC_BAD_TYPE;
-
-#ifdef DC_ENABLED
-	assert(lt != BC_RESULT_VAR || !BC_PROG_STR(*lval) || assign);
-#else // DC_ENABLED
-	assert(rt != BC_RESULT_STR);
-#endif // DC_ENABLED
+	if ((s = bc_program_num(p, *l, ln, false))) return s;
+	if ((s = bc_program_num(p, *r, rn, hex))) return s;
 
 	// We run this again under these conditions in case any vector has been
 	// reallocated out from under the BcNums or arrays we had.
 	if (lt == rt && (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM))
-		s = bc_program_num(p, *left, lval, false);
+		s = bc_program_num(p, *l, ln, false);
+
+	if (!BC_PROG_NUM((*l), (*ln)) && (!assign || (*l)->t != BC_RESULT_VAR))
+		return BC_STATUS_EXEC_BAD_TYPE;
+	if (!assign && !BC_PROG_NUM((*r), (*ln))) return BC_STATUS_EXEC_BAD_TYPE;
+
+#ifdef DC_ENABLED
+	assert(lt != BC_RESULT_VAR || !BC_PROG_STR(*ln) || assign);
+#else // DC_ENABLED
+	assert(rt != BC_RESULT_STR);
+#endif // DC_ENABLED
 
 	return s;
 }
