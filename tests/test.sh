@@ -21,7 +21,7 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 2 ]; then
-	echo "usage: $0 dir test [bc [bc_args...]]"
+	echo "usage: $0 dir test [exe [args...]]"
 	echo "valid tests are:"
 	echo ""
 	cat "$testdir/all.txt"
