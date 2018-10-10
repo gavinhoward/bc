@@ -35,3 +35,4 @@
 ^BcStatus bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
 ^[ ]*vm->env_args = NULL;$
 \n[ ]*free\(vm->env_args\);$
+^[ ]*bcg\.exreg = vm\.flags & BC_FLAG_X;$
