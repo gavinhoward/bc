@@ -209,8 +209,8 @@ BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r) {
 	return bc_vec_push(&p->results, r);
 }
 
-BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
-{
+BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n) {
+
 	BcStatus s;
 
 	assert(p && r && n);
@@ -225,7 +225,7 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, bool arr)
 	assert((*r)->t != BC_RESULT_VAR || !BC_PROG_STR(*n));
 #endif // DC_ENABLED
 
-	if (!arr && !BC_PROG_NUM((*r), (*n))) return BC_STATUS_EXEC_BAD_TYPE;
+	if (!BC_PROG_NUM((*r), (*n))) return BC_STATUS_EXEC_BAD_TYPE;
 
 	return s;
 }
@@ -469,7 +469,7 @@ BcStatus bc_program_negate(BcProgram *p) {
 	BcResult res, *ptr;
 	BcNum *num = NULL;
 
-	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
+	if ((s = bc_program_prep(p, &ptr, &num))) return s;
 	if ((s = bc_num_init(&res.d.n, num->len))) return s;
 	if ((s = bc_num_copy(&res.d.n, num))) goto err;
 
@@ -782,7 +782,7 @@ BcStatus bc_program_pushArray(BcProgram *p, char *code,
 		BcResult *operand;
 		unsigned long temp;
 
-		if ((s = bc_program_prep(p, &operand, &num, false))) goto err;
+		if ((s = bc_program_prep(p, &operand, &num))) goto err;
 		if ((s = bc_num_ulong(num, &temp))) goto err;
 
 		if (temp > (unsigned long) BC_MAX_DIM) {
@@ -807,7 +807,7 @@ BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
 	BcNum *num = NULL;
 	uint8_t inst2 = inst;
 
-	if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
+	if ((s = bc_program_prep(p, &ptr, &num))) return s;
 
 	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
 		copy.t = BC_RESULT_TEMP;
@@ -965,21 +965,40 @@ BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
 	BcResult *opnd;
 	BcNum *num = NULL;
 	BcResult res;
+	bool len = inst == BC_INST_LENGTH;
 
-	if ((s = bc_program_prep(p, &opnd, &num, inst == BC_INST_LENGTH))) return s;
+	if (!BC_PROG_CHECK_STACK(&p->results, 1)) return BC_STATUS_EXEC_SMALL_STACK;
+	opnd = bc_vec_top(&p->results);
+	if ((s = bc_program_num(p, opnd, &num, false))) return s;
+
+#ifdef DC_ENABLED
+	if (!BC_PROG_NUM(opnd, num) && !len) return BC_STATUS_EXEC_BAD_TYPE;
+#endif // DC_ENABLED
+
 	if ((s = bc_num_init(&res.d.n, BC_NUM_DEF_SIZE))) return s;
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.d.n, p->scale);
 #ifdef BC_ENABLED
-	else if (inst == BC_INST_LENGTH && opnd->t == BC_RESULT_ARRAY) {
+	else if (len && opnd->t == BC_RESULT_ARRAY) {
 		BcVec *vec = (BcVec*) num;
 		s = bc_num_ulong2num(&res.d.n, (unsigned long) vec->len);
 	}
 #endif // BC_ENABLED
+#ifdef DC_ENABLED
+	else if (len && !BC_PROG_NUM(opnd, num)) {
+
+		char **str;
+		size_t idx = opnd->t == BC_RESULT_STR ? opnd->d.id.idx : num->rdx;
+
+		assert(idx < p->strs.len);
+
+		str = bc_vec_item(&p->strs, idx);
+		s = bc_num_ulong2num(&res.d.n, strlen(*str));
+	}
+#endif // DC_ENABLED
 	else {
 		assert(opnd->t != BC_RESULT_ARRAY);
-		BcProgramBuiltIn f = inst == BC_INST_LENGTH ? bc_program_len :
-		                                              bc_program_scale;
+		BcProgramBuiltIn f = len ? bc_program_len : bc_program_scale;
 		s = bc_num_ulong2num(&res.d.n, f(num));
 	}
 
@@ -1177,7 +1196,7 @@ BcStatus bc_program_nquit(BcProgram *p) {
 	BcNum *num = NULL;
 	unsigned long val;
 
-	if ((s = bc_program_prep(p, &opnd, &num, false))) return s;
+	if ((s = bc_program_prep(p, &opnd, &num))) return s;
 	if ((s = bc_num_ulong(num, &val))) return s;
 
 	bc_vec_pop(&p->results);
@@ -1519,7 +1538,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 #ifdef BC_ENABLED
 			case BC_INST_JUMP_ZERO:
 			{
-				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
+				if ((s = bc_program_prep(p, &ptr, &num))) return s;
 				cond = !bc_num_cmp(num, &p->zero);
 				bc_vec_pop(&p->results);
 			}
@@ -1669,7 +1688,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_BOOL_NOT:
 			{
-				if ((s = bc_program_prep(p, &ptr, &num, false))) return s;
+				if ((s = bc_program_prep(p, &ptr, &num))) return s;
 				if ((s = bc_num_init(&res.d.n, BC_NUM_DEF_SIZE))) return s;
 
 				if (!bc_num_cmp(num, &p->zero)) bc_num_one(&res.d.n);
