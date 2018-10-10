@@ -1255,7 +1255,6 @@ BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
 
 		if ((s = p->parse_init(&prs, p, fidx))) goto exit;
 		if ((s = bc_parse_text(&prs, *str))) goto err;
-
 		if ((s = p->parse_expr(&prs, BC_PARSE_NOCALL))) goto err;
 
 		if (prs.l.t.t != BC_LEX_EOF) {

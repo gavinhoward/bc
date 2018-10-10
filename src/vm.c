@@ -264,8 +264,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		bc_vec_npop(&buffer, buffer.len);
 	}
 
-	if (s == BC_STATUS_BIN_FILE)
-		s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line);
+	if (s == BC_STATUS_BIN_FILE) s = bc_vm_error(s, vm->prs.l.f, 0);
 
 	// I/O error will always happen when stdin is
 	// closed. It's not a problem in that case.

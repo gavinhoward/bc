@@ -236,7 +236,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 		else if ((s = dc_parse_token(p, t, flags))) return s;
 	}
 
-	if (p->l.t.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
+	if (!s && p->l.t.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
 		s = dc_parse_inst(p, BC_INST_POP_EXEC);
 
 	return s;
