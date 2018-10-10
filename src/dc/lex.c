@@ -93,8 +93,11 @@ BcStatus dc_lex_token(BcLex *l) {
 		if (l->t.last == dc_lex_regs[i]) return dc_lex_register(l);
 	}
 
-	if (c >= '%' && (l->t.t = dc_lex_tokens[(c - '%')]) != BC_LEX_INVALID)
+	if (c >= '%' && c <= '~' &&
+	    (l->t.t = dc_lex_tokens[(c - '%')]) != BC_LEX_INVALID)
+	{
 		return s;
+	}
 
 	// This is the workhorse of the lexer.
 	switch (c) {
