@@ -347,7 +347,7 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 		if ((c = str[i]) != '\\' || i == len - 1) err = putchar(c);
 		else {
 
-			switch (str[++i]) {
+			switch ((c = str[++i])) {
 
 				case 'a':
 				{
@@ -400,7 +400,9 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 
 				default:
 				{
-					// Just print the character.
+					// Just print the backslash and following character.
+					if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
+					++(*nchars);
 					err = putchar(c);
 					break;
 				}

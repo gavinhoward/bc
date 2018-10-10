@@ -50,23 +50,19 @@ BcStatus dc_lex_register(BcLex *l) {
 BcStatus dc_lex_string(BcLex *l) {
 
 	BcStatus s;
-	size_t depth = 1, nls = 0, idx, i = l->idx;
+	size_t depth = 1, nls = 0, i = l->idx;
 	char c;
 
 	l->t.t = BC_LEX_STR;
 	bc_vec_npop(&l->t.v, l->t.v.len);
 
-	for (idx = i; (c = l->buffer[i]) && depth; ++i) {
+	for (; (c = l->buffer[i]) && depth; ++i) {
 
-		depth += (c == '[');
-		depth -= (c == ']');
+		depth += (c == '[' && (i == l->idx || l->buffer[i - 1] != '\\'));
+		depth -= (c == ']' && (i == l->idx || l->buffer[i - 1] != '\\'));
 		nls += (c == '\n');
 
 		if (depth && (s = bc_vec_push(&l->t.v, &c))) return s;
-		if (c == '\\') {
-			depth -= (l->buffer[i + 1] == '[');
-			depth += (l->buffer[i + 1] == ']');
-		}
 	}
 
 	if (c == '\0') {
@@ -75,7 +71,7 @@ BcStatus dc_lex_string(BcLex *l) {
 	}
 
 	if ((s = bc_vec_pushByte(&l->t.v, '\0'))) return s;
-	if (i - idx > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
+	if (i - l->idx > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
 
 	l->idx = i;
 	l->line += nls;
