@@ -272,7 +272,6 @@ for i in range(0, len(tests)):
 	expected = p.stdout.decode()
 
 	bcexe = exedir + "/" + exe
-
 	args = [ bcexe, options ]
 
 	p = subprocess.run(args, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
