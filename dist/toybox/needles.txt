@@ -3,15 +3,15 @@
 if \(\(s = bc_program_init\(&vm->prog, len, exe\.init, exe\.exp\)\)\) goto prog_err;$
 if \(\(s = exe\.init\(&vm->prs, &vm->prog, BC_PROG_MAIN\)\)\) goto parse_err;$
 if \(\(st = bc_vm_init\(&vm, exe, env_len\)\)\) return st;$
+if \(\(bcg\.bc \|\| !vm->files\.len\) && vm->exprs.\len <= 1\) s = bc_vm_stdin\(vm\);$
 vm\.flags
 vm->flags
 vm->files\.len
 \*\(\(char\*\*\) bc_vec_item\(&vm->files, i\)\)
-^bc_vm_free\(&vm\);
+bc_vm_free\(&vm\);
 vm->prs\.parse\(&vm
 vm\.prs\.parse\(&vm
 \(\(s = parse_init\(&vm\.prs, &vm\.prog\)\)\)
-if \(vm->exprs.\len <= 1\) s = bc_vm_stdin\(vm\);$
 size_t len = strlen\(bcg\.sig_msg\);
 write\(2, bcg.sig_msg, len\) == \(ssize_t\) len
 st = bc_vm_info\(NULL\)
@@ -20,10 +20,6 @@ vm->exe\.strend
 BcStatus bc_vm_init\(BcVm \*vm, BcVmExe exe, const char \*env_len\)
 \(env_len\)
 \* bcg.bc \* \(
-bcg.posix
-bcg.warn
-bcg\.
-TT\.name
 BC_FLAG_S
 BC_FLAG_Q
 BC_FLAG_L
@@ -45,3 +41,7 @@ p->parse_init\(
 p->parse_expr\(&parse, BC_PARSE_NOREAD\)
 BcStatus bc_program_pushVar\(BcProgram \*p, char \*code, size_t \*bgn, bool pop\)
 BcStatus bc_vm_info\(const char\* const help\)
+bcg.posix
+bcg.warn
+bcg\.
+TT\.name

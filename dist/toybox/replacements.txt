@@ -3,6 +3,7 @@ exit:\n  toys.exitval = (int) st;
 if ((s = bc_program_init(&vm->prog, len))) return s;
 if ((s = bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto parse_err;
 if ((st = bc_vm_init(&vm))) goto exit;
+s = bc_vm_stdin(vm);
 toys.optflags
 toys.optflags
 toys.optc
@@ -11,7 +12,6 @@ if (CFG_TOYBOX_FREE) bc_vm_free(&vm);
 bc_parse_parse(&vm
 bc_parse_parse(&vm
 ((s = bc_parse_init(&vm.prs, &vm.prog)))
-s = bc_vm_stdin(vm);
 size_t len = strlen(bc_sig_msg);
 write(2, bc_sig_msg, len) == (ssize_t) len
 st = bc_vm_info()
@@ -20,10 +20,6 @@ st = bc_vm_info()
 BcStatus bc_vm_init(BcVm *vm)
 ("BC_LINE_LENGTH")
 * (
-(toys.optflags & FLAG_s)
-(toys.optflags & FLAG_w)
-TT.
-toys.which->name
 FLAG_s
 FLAG_q
 FLAG_l
@@ -45,3 +41,7 @@ bc_parse_init(
 bc_parse_expr(&parse, BC_PARSE_NOREAD, bc_parse_next_read)
 BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn)
 BcStatus bc_vm_info()
+(toys.optflags & FLAG_s)
+(toys.optflags & FLAG_w)
+TT.
+toys.which->name
