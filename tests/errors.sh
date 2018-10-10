@@ -16,6 +16,25 @@
 
 # WARNING: Test files cannot have empty lines!
 
+checkcrash() {
+
+	local error="$1"
+	shift
+
+	local name="$1"
+	shift
+
+	if [ "$error" -gt 127 ]; then
+		echo ""
+		echo "$d crashed on test:"
+		echo ""
+		echo "    $name"
+		echo ""
+		echo "exiting..."
+		exit "$error"
+	fi
+}
+
 checktest()
 {
 	local error="$1"
@@ -30,6 +49,8 @@ checktest()
 	local exebase="$1"
 	shift
 
+	checkcrash "$error" "$name"
+
 	if [ "$error" -eq 0 ]; then
 		echo ""
 		echo "$d returned no error on test:"
@@ -38,16 +59,6 @@ checktest()
 		echo ""
 		echo "exiting..."
 		exit 127
-	fi
-
-	if [ "$error" -gt 127 ]; then
-		echo ""
-		echo "$d crashed on test:"
-		echo ""
-		echo "    $name"
-		echo ""
-		echo "exiting..."
-		exit "$error"
 	fi
 
 	if [ ! -s "$out" ]; then
@@ -130,7 +141,15 @@ for testfile in $testdir/$d/errors/*.txt; do
 	echo "Running error file $testfile..."
 
 	echo "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
+	err="$?"
 
-	checktest "$?" "$testfile" "$out" "$exebase"
+	checktest "$err" "$testfile" "$out" "$exebase"
+
+	echo "Running error file $testfile through cat..."
+
+	cat "$testfile" | "$exe" "$@" $opts 2> "$out" > /dev/null
+	err="$?"
+
+	checkcrash "$err" "$testfile"
 
 done
