@@ -56,7 +56,7 @@ if __name__ != "__main__":
 script = sys.argv[0]
 testdir = os.path.dirname(script)
 
-tout = 5
+tout = 3
 
 if len(sys.argv) < 2:
 	usage()
