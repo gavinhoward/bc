@@ -11,3 +11,4 @@ modexp
 boolean
 vars
 misc
+strings
