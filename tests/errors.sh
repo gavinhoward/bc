@@ -127,7 +127,6 @@ for testfile in $testdir/$d/*errors.txt; do
 		rm -f "$out"
 
 		echo "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
-
 		err="$?"
 
 		checktest "$err" "$line" "$out" "$exebase"
