@@ -586,8 +586,7 @@ BcStatus bc_parse_if(BcParse *p) {
 	func = bc_vec_item(&p->prog->fns, p->func);
 
 	ip.idx = func->labels.len;
-	ip.func = 0;
-	ip.len = 0;
+	ip.func = ip.len = 0;
 
 	if ((s = bc_parse_pushIndex(p, ip.idx))) return s;
 	if ((s = bc_vec_push(&p->exits, &ip))) return s;
@@ -607,8 +606,7 @@ BcStatus bc_parse_else(BcParse *p) {
 	func = bc_vec_item(&p->prog->fns, p->func);
 
 	ip.idx = func->labels.len;
-	ip.func = 0;
-	ip.len = 0;
+	ip.func = ip.len = 0;
 
 	if ((s = bc_vec_pushByte(p->code, BC_INST_JUMP))) return s;
 	if ((s = bc_parse_pushIndex(p, ip.idx))) return s;
