@@ -27,10 +27,7 @@ def silentremove(filename):
 			raise
 
 def finish():
-	silentremove(out1)
-	silentremove(out1)
 	silentremove(math)
-	silentremove(results)
 	silentremove(opfile)
 
 def gen(limit=4):
@@ -72,13 +69,10 @@ def num(neg, real, z, limit=4):
 	return g
 
 
-def add(test, expected, op):
+def add(test, op):
 
 	with open(math, "a") as f:
 		f.write(test + "\n")
-
-	with open(results, "a") as f:
-		f.write(expected + "\n")
 
 	with open(opfile, "a") as f:
 		f.write(str(op) + "\n")
@@ -91,7 +85,7 @@ def compare(exe, options, p, test, halt, expected, op, do_add=True):
 
 		if do_add:
 			print("    adding {} to checklist...".format(test))
-			add(test, expected, op)
+			add(test, op)
 
 		return
 
@@ -119,7 +113,7 @@ def compare(exe, options, p, test, halt, expected, op, do_add=True):
 
 		if do_add:
 			print("   adding to checklist...")
-			add(test, expected, op)
+			add(test, op)
 
 
 def gen_test(op):
@@ -174,17 +168,17 @@ def run_test(t):
 	bcexe = exedir + "/" + exe
 	indata = test + "\n" + halt
 
-	args = [ exe, options ]
-
 	print("Test {}: {}".format(t, test))
+
+	args = [ exe, options ]
 
 	p = subprocess.run(args, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	if p.returncode != 0 or p.stdout.decode() == "":
+	output1 = p.stdout.decode()
+
+	if p.returncode != 0 or output1 == "":
 		print("    other {} returned an error ({}); continuing...".format(exe, p.returncode))
 		return
-
-	output1 = p.stdout.decode()
 
 	args = [ bcexe, options ]
 
@@ -199,10 +193,7 @@ script = sys.argv[0]
 testdir = os.path.dirname(script)
 
 exedir = testdir + "/.."
-out1 = exedir + "/.log_bc.txt"
-out2 = exedir + "/.log_test.txt"
 math = exedir + "/.math.txt"
-results = exedir + "/.results.txt"
 opfile = exedir + "/.ops.txt"
 
 ops = [ '+', '-', '*', '/', '%', '^', '|' ]
@@ -244,13 +235,10 @@ print("\nGoing through the checklist...\n")
 with open(math, "r") as f:
 	tests = f.readlines()
 
-with open(results, "r") as f:
-	expecteds = f.readlines()
-
 with open(opfile, "r") as f:
 	ops = f.readlines()
 
-if len(tests) != len(expecteds) and len(tests) != len(ops):
+if len(tests) != len(ops):
 	print("Corrupted checklist!")
 	print("Exiting...")
 	sys.exit(1)
@@ -262,7 +250,11 @@ for i in range(0, len(tests)):
 
 	print("\n{}".format(tests[i]))
 
-	if int(ops[i]) != modexp:
+	op = int(ops[i])
+
+	print("op: {}".format(op))
+
+	if op != modexp:
 		exe = "bc"
 		halt = "halt"
 		options = "-lq"
@@ -271,14 +263,21 @@ for i in range(0, len(tests)):
 		halt = "q"
 		options = ""
 
-	bcexe = exedir + "/" + exe
-
-	args = [ bcexe, options ]
 	indata = tests[i] + "\n" + halt
+
+	args = [ exe, options ]
 
 	p = subprocess.run(args, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	compare(exe, options, p, tests[i], halt, expecteds[i], ops[i], False)
+	expected = p.stdout.decode()
+
+	bcexe = exedir + "/" + exe
+
+	args = [ bcexe, options ]
+
+	p = subprocess.run(args, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+	compare(exe, options, p, tests[i], halt, expected, op, False)
 
 	answer = input("\nAdd test to test suite? [y/N]: ")
 
@@ -286,13 +285,13 @@ for i in range(0, len(tests)):
 		print("Yes")
 		continue
 
-		name = testdir + "/" + exe + "/" + files[ops[i]]
+		name = testdir + "/" + exe + "/" + files[op]
 
 		with open(name + ".txt", "a") as f:
 			f.write(tests[i])
 
 		with open(name + "_results.txt", "a") as f:
-			f.write(expecteds[i])
+			f.write(expected)
 
 	else:
 		print("No")
