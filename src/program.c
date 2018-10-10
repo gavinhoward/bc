@@ -286,6 +286,9 @@ BcStatus bc_program_read(BcProgram *p) {
 	ip.idx = 0;
 	ip.len = p->results.len;
 
+	// Update this pointer, just in case.
+	f = bc_vec_item(&p->fns, BC_PROG_READ);
+
 	if ((s = bc_vec_pushByte(&f->code, BC_INST_POP_EXEC))) goto exec_err;
 	if ((s = bc_vec_push(&p->stack, &ip))) goto exec_err;
 
