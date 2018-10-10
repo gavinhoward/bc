@@ -22,7 +22,7 @@ testdir=$(dirname "$script")
 
 if [ "$#" -lt 2 ]; then
 	echo "usage: $0 dir test [exe [args...]]"
-	echo "valid tests are:"
+	echo "valid dirs are:"
 	echo ""
 	cat "$testdir/all.txt"
 	echo ""
