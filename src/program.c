@@ -263,9 +263,15 @@ BcStatus bc_program_read(BcProgram *p) {
 	BcParse parse;
 	BcVec buf;
 	BcInstPtr ip;
+	size_t i;
 	BcFunc *f = bc_vec_item(&p->fns, BC_PROG_READ);
 
-	f->code.len = 0;
+	for (i = 0; i < p->stack.len; ++i) {
+		if (((BcInstPtr*) bc_vec_item(&p->stack, i))->func == BC_PROG_READ)
+			return BC_STATUS_EXEC_REC_READ;
+	}
+
+	bc_vec_npop(&f->code, f->code.len);
 
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) return BC_STATUS_ALLOC_ERR;
 	if ((s = bc_io_getline(&buf, "read> "))) goto io_err;
