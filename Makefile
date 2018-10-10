@@ -142,10 +142,10 @@ valgrind_timeconst:
 	tests/bc/timeconst.sh valgrind --leak-check=full --show-leak-kinds=all ./bc
 
 version:
-	@echo -n "$(VERSION)"
+	@echo "$(VERSION)"
 
 libcname:
-	@echo -n "$(BC_LIB_C)"
+	@echo "$(BC_LIB_C)"
 
 clean:
 	$(RM) -f $(OBJ)

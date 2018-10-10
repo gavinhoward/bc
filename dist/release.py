@@ -85,7 +85,7 @@ res = subprocess.run(["make", "libcname"], stdout=subprocess.PIPE)
 if res.returncode != 0:
 	sys.exit(res.returncode)
 
-libcname = res.stdout.decode("utf-8")
+libcname = res.stdout.decode("utf-8")[:-1]
 
 res = subprocess.run(["make", libcname])
 
@@ -121,7 +121,7 @@ if project == "toybox":
 	if res.returncode != 0:
 		sys.exit(res.returncode)
 
-	version = res.stdout.decode("utf-8")
+	version = res.stdout.decode("utf-8")[:-1]
 
 	r = re.compile('BC_VERSION', re.M)
 	content = r.sub('"' + version + '"', content)
