@@ -31,7 +31,7 @@
 #include <lex.h>
 #include <lang.h>
 
-#define BC_PARSE_STREND ((char) 255)
+#define BC_PARSE_STREND ((char) UCHAR_MAX)
 
 #define BC_PARSE_CODE(p) \
 	(&(((BcFunc*) bc_vec_item(&(p)->prog->fns, (p)->func))->code))
