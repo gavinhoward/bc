@@ -240,7 +240,7 @@ BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
-	BcNum *n1, *n2;
+	BcNum *n1, *n2 = NULL;
 	BcNumBinaryOp op;
 
 	if ((s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false))) return s;
@@ -637,7 +637,7 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 
 	BcStatus s;
 	BcResult *left, *right, res;
-	BcNum *l, *r;
+	BcNum *l = NULL, *r = NULL;
 	unsigned long val, max;
 	bool assign = inst == BC_INST_ASSIGN;
 
@@ -1080,7 +1080,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r, res;
-	BcNum *num, n;
+	BcNum *num = NULL, n;
 	char *str, *str2, c;
 	size_t len = p->strs.len, idx;
 	unsigned long val;
@@ -1151,7 +1151,7 @@ BcStatus bc_program_printStream(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r;
-	BcNum *n;
+	BcNum *n = NULL;
 	size_t idx;
 	char *str;
 
