@@ -347,7 +347,6 @@ BcStatus bc_program_printString(const char *str, size_t *nchars) {
 		if ((c = str[i]) != '\\' || i == len - 1) err = putchar(c);
 		else {
 
-
 			switch (str[++i]) {
 
 				case 'a':
