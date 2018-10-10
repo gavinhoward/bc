@@ -1953,7 +1953,7 @@ BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
 		if (inst == BC_INST_CALL) s = bc_program_printIndex(code, bgn);
 	}
 
-	if (!s && fflush(stdout) < 0) s = BC_STATUS_IO_ERR;
+	if (!s && fflush(stdout) == EOF) s = BC_STATUS_IO_ERR;
 
 	return s;
 }

@@ -172,7 +172,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
 	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
 		s = bc_program_exec(&vm->prog);
-		if (bcg.tty) fflush(stdout);
+		if (!s && bcg.tty && fflush(stdout) == EOF) s = BC_STATUS_IO_ERR;
 		if (s && s != BC_STATUS_QUIT)
 			s = bc_vm_error(bc_program_reset(&vm->prog, s), vm->prs.l.f, 0);
 	}
