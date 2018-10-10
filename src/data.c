@@ -160,7 +160,7 @@ const char bc_func_read[] = "(read)";
 
 #ifndef NDEBUG
 const char bc_inst_chars[] =
-	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$HovxzcZdfghkK";
+	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$bHovxzatfcZdghkKuU";
 #endif // NDEBUG
 
 #ifdef BC_ENABLED
