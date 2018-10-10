@@ -53,7 +53,10 @@ const char *bc_errs[] = {
 	"Parse",
 	"Math",
 	"Runtime",
+	"Vector",
+#ifdef BC_ENABLED
 	"POSIX",
+#endif // BC_ENABLED
 };
 
 const uint8_t bc_err_indices[] = {
@@ -74,10 +77,12 @@ const uint8_t bc_err_indices[] = {
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
-	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
-	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_VEC, BC_ERR_IDX_VEC,
+#ifdef BC_ENABLED
+	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
+	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
+	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
+#endif // BC_ENABLED
 	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 };
 
@@ -132,6 +137,10 @@ const char *bc_err_descs[] = {
 	"signal caught",
 	"stack has too few elements",
 
+	"index is out of bounds",
+	"item already exists",
+
+#ifdef BC_ENABLED
 	"POSIX only allows one character names; the following is bad:",
 	"POSIX does not allow '#' script comments",
 	"POSIX does not allow the following keyword:",
@@ -144,9 +153,7 @@ const char *bc_err_descs[] = {
 	"POSIX does not allow an empty condition expression in a for loop",
 	"POSIX does not allow an empty update expression in a for loop",
 	"POSIX requires the left brace be on the same line as the function header",
-
-	"index is out of bounds",
-	"item already exists",
+#endif // BC_ENABLED
 
 #ifndef NDEBUG
 	"quit request not honored",

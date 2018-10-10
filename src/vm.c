@@ -107,7 +107,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	assert(file);
 
-	if (!s || s >= BC_STATUS_POSIX_NAME_LEN) return s;
+	if (!s || s > BC_STATUS_VEC_ITEM_EXISTS) return s;
 
 	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
 	fprintf(stderr, "    %s", file);
