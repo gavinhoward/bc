@@ -245,14 +245,9 @@ if len(tests) != len(ops):
 
 for i in range(0, len(tests)):
 
-	#print("Test: {}\nExpected: {}\nOp: {}".format(tests[i], expecteds[i], ops[i]))
-	#continue
-
 	print("\n{}".format(tests[i]))
 
 	op = int(ops[i])
-
-	print("op: {}".format(op))
 
 	if op != modexp:
 		exe = "bc"
