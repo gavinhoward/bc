@@ -34,9 +34,9 @@ def read_file(file):
 		r = re.compile('\\n', re.M)
 		array[i] = r.sub('\n', array[i])
 
-		for i in range(0, len(array)):
-			r = re.compile('\\t', re.M)
-			array[i] = r.sub('\t', array[i])
+	for i in range(0, len(array)):
+		r = re.compile('\\t', re.M)
+		array[i] = r.sub('\t', array[i])
 
 	return array
 
