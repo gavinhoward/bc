@@ -108,7 +108,7 @@ def compare(exe, options, p, test, halt, expected, op, do_add=True):
 				print("    continuing...")
 				return
 
-		print("   failed \"{}\"".format(test))
+		print("   failed {}".format(test))
 		print("    expected:")
 		print("        {}".format(expected))
 		print("    actual:")
