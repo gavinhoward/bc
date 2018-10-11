@@ -594,6 +594,8 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	if (!s) s = op(ptr_a, ptr_b, c, scale);
 
+	assert(!c->neg || c->len);
+
 	if (init) bc_num_free(&num2);
 	return s;
 }
@@ -1202,6 +1204,7 @@ num2_err:
 	bc_num_free(&num1);
 init_err:
 	if (b == a) bc_num_free(&a2);
+	assert(!b->neg || b->len);
 	return s;
 }
 
@@ -1301,6 +1304,7 @@ exp_err:
 	bc_num_free(&base);
 base_err:
 	if (init) bc_num_free(&num2);
+	assert(!d->neg || d->len);
 	return s;
 }
 #endif // DC_ENABLED
