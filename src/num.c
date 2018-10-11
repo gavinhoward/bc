@@ -1157,7 +1157,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 	resrdx = scale + 2;
 	len = BC_NUM_INT(x0) + resrdx - 1;
 
-	while (!bcg.signe && cmp && digits <= len) {
+	while (!bcg.signe && (cmp || digits < len)) {
 
 		if ((s = bc_num_div(a, x0, &f, resrdx))) goto err;
 		if ((s = bc_num_add(x0, &f, &fprime, resrdx))) goto err;
@@ -1170,7 +1170,6 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 		else times = 0;
 
 		resrdx += times > 4;
-		len += times > 4;
 
 		cmp2 = cmp1;
 		cmp1 = cmp;
