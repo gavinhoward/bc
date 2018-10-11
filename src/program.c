@@ -473,7 +473,7 @@ BcStatus bc_program_negate(BcProgram *p) {
 	if ((s = bc_num_init(&res.d.n, num->len))) return s;
 	if ((s = bc_num_copy(&res.d.n, num))) goto err;
 
-	res.d.n.neg = !res.d.n.neg;
+	if (res.d.n.len) res.d.n.neg = !res.d.n.neg;
 
 	if ((s = bc_program_retire(p, &res, BC_RESULT_TEMP))) goto err;
 
