@@ -29,11 +29,11 @@
 
 #include <status.h>
 
-typedef signed char BcDigit;
+typedef signed char BcDig;
 
 typedef struct BcNum {
 
-  BcDigit *num;
+  BcDig *restrict num;
   size_t rdx;
   size_t len;
   size_t cap;
