@@ -68,7 +68,7 @@ const uint8_t bc_err_indices[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
-	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
+	BC_ERR_IDX_MATH,
 #ifdef DC_ENABLED
 	BC_ERR_IDX_MATH,
 #endif // DC_ENABLED
@@ -116,7 +116,6 @@ const char *bc_err_descs[] = {
 	"non integer number",
 	"overflow",
 	"divide by zero",
-	"negative square root",
 	"bad number string",
 
 	"could not open file:",

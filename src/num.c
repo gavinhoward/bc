@@ -1108,7 +1108,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 		goto init_err;
 	}
 	else if (ptr_a->neg) {
-		s = BC_STATUS_MATH_NEG_SQRT;
+		s = BC_STATUS_MATH_NEGATIVE;
 		goto init_err;
 	}
 	else if (BC_NUM_ONE(a)) {
