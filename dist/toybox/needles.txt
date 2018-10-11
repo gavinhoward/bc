@@ -8,7 +8,7 @@ vm\.flags
 vm->flags
 vm->files\.len
 \*\(\(char\*\*\) bc_vec_item\(&vm->files, i\)\)
-bc_vm_free\(&vm\);
+^err:\n  bc_vm_free\(&vm\);$
 vm->prs\.parse\(&vm
 vm\.prs\.parse\(&vm
 \(\(s = parse_init\(&vm\.prs, &vm\.prog\)\)\)

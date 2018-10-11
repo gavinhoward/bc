@@ -8,7 +8,7 @@ toys.optflags
 toys.optflags
 toys.optc
 toys.optargs[i]
-if (CFG_TOYBOX_FREE) bc_vm_free(&vm);
+  if (CFG_TOYBOX_FREE) bc_vm_free(&vm);\n
 bc_parse_parse(&vm
 bc_parse_parse(&vm
 ((s = bc_parse_init(&vm.prs, &vm.prog)))
