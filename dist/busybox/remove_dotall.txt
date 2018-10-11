@@ -1,0 +1,3 @@
+\n#ifndef NDEBUG.*?#endif // NDEBUG
+\n[\t]*assert\(.*?\);$
+^[ ]*// \*\* Busybox exclude start\. \*\*.*?^[ ]*// \*\* Busybox exclude end\. \*\*$
