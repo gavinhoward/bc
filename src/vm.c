@@ -364,21 +364,17 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 
 	BcStatus st;
 	BcVm vm;
-	int ttyout = isatty(1);
 
 	if ((st = bc_vm_init(&vm, exe, env_len))) return st;
 	if ((st = bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files))) goto err;
 
-	bcg.ttyin = isatty(0);
-	bcg.tty = (vm.flags & BC_FLAG_I) || bcg.ttyin || ttyout;
+	bcg.tty = (bcg.ttyin = isatty(0)) || (vm.flags & BC_FLAG_I) || isatty(1);
 	bcg.posix = vm.flags & BC_FLAG_S;
 	bcg.warn = vm.flags & BC_FLAG_W;
 	bcg.exreg = vm.flags & BC_FLAG_X;
 
-	if (bcg.tty && ttyout && !(vm.flags & BC_FLAG_Q) && (st = bc_vm_info(NULL)))
-		goto err;
-
-	st = bc_vm_exec(&vm);
+	if (bcg.ttyin && !(vm.flags & BC_FLAG_Q)) st = bc_vm_info(NULL);
+	if (!st) st = bc_vm_exec(&vm);
 
 err:
 	bc_vm_free(&vm);
