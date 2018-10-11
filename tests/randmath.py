@@ -39,7 +39,7 @@ def negative():
 def zero():
 	return random.randint(0, 2 ** (8) - 1) == 0
 
-def num(neg, real, z, limit=4):
+def num(op, neg, real, z, limit=4):
 
 	if z:
 		z = zero()
@@ -64,7 +64,10 @@ def num(neg, real, z, limit=4):
 		g = g + "." + str(n)
 
 	if neg and g != "0":
-		g = "-" + g
+		if op != modexp:
+			g = "-" + g
+		else:
+			g = "_" + g
 
 	return g
 
@@ -118,30 +121,30 @@ def compare(exe, options, p, test, halt, expected, op, do_add=True):
 
 def gen_test(op):
 
-	scale = num(False, False, True, 5 / 8)
+	scale = num(op, False, False, True, 5 / 8)
 
 	if op < div:
-		s = fmts[op].format(scale, num(True, True, True), num(True, True, True))
+		s = fmts[op].format(scale, num(op, True, True, True), num(op, True, True, True))
 	elif op == div or op == mod:
-		s = fmts[op].format(scale, num(True, True, True), num(True, True, False))
+		s = fmts[op].format(scale, num(op, True, True, True), num(op, True, True, False))
 	elif op == power:
-		s = fmts[op].format(scale, num(True, True, True, 7 / 8), num(True, False, True, 6 / 8))
+		s = fmts[op].format(scale, num(op, True, True, True, 7 / 8), num(op, True, False, True, 6 / 8))
 	elif op == modexp:
-		s = fmts[op].format(scale, num(True, False, True), num(True, False, True),
-		                    num(True, False, False))
+		s = fmts[op].format(scale, num(op, True, False, True), num(op, True, False, True),
+		                    num(op, True, False, False))
 	elif op == sqrt:
 		s = "1"
 		while s == "1":
-			s = num(False, True, True, 1)
+			s = num(op, False, True, True, 1)
 		s = fmts[op].format(scale, s)
 	else:
 
 		if op == exponent:
-			first = num(True, True, True, 6 / 8)
+			first = num(op, True, True, True, 6 / 8)
 		elif op == bessel:
-			first = num(False, True, True, 6 / 8)
+			first = num(op, False, True, True, 6 / 8)
 		else:
-			first = num(True, True, True)
+			first = num(op, True, True, True)
 
 		if op != bessel:
 			s = fmts[op].format(scale, first)
