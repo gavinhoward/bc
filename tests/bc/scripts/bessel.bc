@@ -34,8 +34,9 @@ for (i = 0; i < l; ++i) {
 	}
 }
 
-# This is a specific test that bc could not pass at one time.
+# These are specific tests that bc could not pass at one time.
 print "j(3, 0.75)\n"
+print "scale = 0; j(40, 0.75)\n"
 
 "halt"
 
