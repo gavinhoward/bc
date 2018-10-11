@@ -47,6 +47,6 @@ while [ $# -gt 0 ]; do
 	base=$(basename "$link")
 
 	rm -f "$installdir/$base"
-	ln -s "$installdir/$exe" "$installdir/$base"
+	ln -s "./$exe" "$installdir/$base"
 
 done
