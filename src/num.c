@@ -200,7 +200,7 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
 	if (!a->len) {
 		BcStatus s = bc_num_copy(c, b);
-		if (sub) c->neg = !c->neg;
+		if (sub && c->len) c->neg = !c->neg;
 		return s;
 	}
 	else if (!b->len) return bc_num_copy(c, a);
@@ -274,7 +274,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *c, size_t sub) {
 
 	if (!a->len) {
 		s = bc_num_copy(c, b);
-		if (sub) c->neg = !b->neg;
+		if (sub && c->len) c->neg = !c->neg;
 		return s;
 	}
 	else if (!b->len) return bc_num_copy(c, a);
