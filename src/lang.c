@@ -169,7 +169,9 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 	switch ((d->t = s->t)) {
 
 		case BC_RESULT_TEMP:
+		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
+		case BC_RESULT_OBASE:
 		{
 			if ((status = bc_num_init(&d->d.n, s->d.n.len))) return status;
 			status = bc_num_copy(&d->d.n, &s->d.n);
@@ -187,8 +189,6 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 			break;
 		}
 
-		case BC_RESULT_IBASE:
-		case BC_RESULT_OBASE:
 		case BC_RESULT_CONSTANT:
 		case BC_RESULT_LAST:
 		case BC_RESULT_ONE:
@@ -212,7 +212,9 @@ void bc_result_free(void *result) {
 	switch (r->t) {
 
 		case BC_RESULT_TEMP:
+		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
+		case BC_RESULT_OBASE:
 		{
 			bc_num_free(&r->d.n);
 			break;

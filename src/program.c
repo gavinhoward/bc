@@ -72,7 +72,9 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 
 		case BC_RESULT_STR:
 		case BC_RESULT_TEMP:
+		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
+		case BC_RESULT_OBASE:
 		{
 			*num = &r->d.n;
 			break;
@@ -126,18 +128,6 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 		case BC_RESULT_LAST:
 		{
 			*num = &p->last;
-			break;
-		}
-
-		case BC_RESULT_IBASE:
-		{
-			*num = &p->ib;
-			break;
-		}
-
-		case BC_RESULT_OBASE:
-		{
-			*num = &p->ob;
 			break;
 		}
 
@@ -638,9 +628,12 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 	BcResult *left, *right, res;
 	BcNum *l = NULL, *r = NULL;
 	unsigned long val, max;
-	bool assign = inst == BC_INST_ASSIGN;
+	bool assign = inst == BC_INST_ASSIGN, ib, sc;
 
 	if ((s = bc_program_binOpPrep(p, &left, &l, &right, &r, assign))) return s;
+
+	ib = left->t == BC_RESULT_IBASE;
+	sc = left->t == BC_RESULT_SCALE;
 
 #ifdef DC_ENABLED
 	assert(left->t != BC_RESULT_STR);
@@ -674,25 +667,27 @@ BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
 	if ((s = bc_num_copy(l, r))) return s;
 #endif // BC_ENABLED
 
-	if (left->t == BC_RESULT_IBASE || left->t == BC_RESULT_OBASE) {
+	if (ib || sc || left->t == BC_RESULT_OBASE) {
 
-		size_t *ptr = left->t == BC_RESULT_IBASE ? &p->ib_t : &p->ob_t;
-
-		if ((s = bc_num_ulong(r, &val))) return s;
-
-		max = left->t == BC_RESULT_IBASE ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
-
-		if (val < BC_NUM_MIN_BASE || val > max)
-			return left->t - BC_RESULT_IBASE + BC_STATUS_EXEC_BAD_IBASE;
-
-		*ptr = (size_t) val;
-	}
-	else if (left->t == BC_RESULT_SCALE) {
+		size_t *ptr;
 
 		if ((s = bc_num_ulong(l, &val))) return s;
-		if (val > (unsigned long) BC_MAX_SCALE) return BC_STATUS_EXEC_BAD_SCALE;
+		s = left->t - BC_RESULT_IBASE + BC_STATUS_EXEC_BAD_IBASE;
 
-		p->scale = (size_t) val;
+		if (sc) {
+			max = BC_MAX_SCALE;
+			ptr = &p->scale;
+		}
+		else {
+			if (val < BC_NUM_MIN_BASE) return s;
+			max = ib ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
+			ptr = ib ? &p->ib_t : &p->ob_t;
+		}
+
+		if (val > max) return s;
+		else if (!sc && (s = bc_num_copy(ib ? &p->ib : &p->ob, l))) return s;
+
+		*ptr = (size_t) val;
 	}
 
 	if ((s = bc_num_init(&res.d.n, l->len))) return s;
@@ -1301,15 +1296,22 @@ exit:
 }
 #endif // DC_ENABLED
 
-BcStatus bc_program_pushScale(BcProgram *p) {
+BcStatus bc_program_pushGlobal(BcProgram *p, uint8_t inst) {
 
 	BcStatus s;
 	BcResult res;
+	unsigned long val;
 
-	res.t = BC_RESULT_SCALE;
+	assert(inst == BC_INST_IBASE || inst == BC_INST_SCALE ||
+	       inst == BC_INST_OBASE);
+
+	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
+	if (inst == BC_INST_IBASE) val = (unsigned long) p->ib_t;
+	else if (inst == BC_INST_SCALE) val = (unsigned long) p->scale;
+	else val = (unsigned long) p->ob_t;
 
 	if ((s = bc_num_init(&res.d.n, BC_NUM_DEF_SIZE))) return s;
-	if ((s = bc_num_ulong2num(&res.d.n, (unsigned long) p->scale))) goto err;
+	if ((s = bc_num_ulong2num(&res.d.n, val))) goto err;
 	if ((s = bc_vec_push(&p->results, &res))) goto err;
 
 	return s;
@@ -1613,18 +1615,18 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_IBASE:
 			case BC_INST_LAST:
-			case BC_INST_OBASE:
 			{
-				res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
+				res.t = BC_RESULT_LAST;
 				s = bc_vec_push(&p->results, &res);
 				break;
 			}
 
+			case BC_INST_IBASE:
 			case BC_INST_SCALE:
+			case BC_INST_OBASE:
 			{
-				s = bc_program_pushScale(p);
+				s = bc_program_pushGlobal(p, inst);
 				break;
 			}
 
