@@ -96,6 +96,56 @@ typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 BcStatus bc_program_init(BcProgram *p, size_t line_len,
                          BcParseInit init, BcParseExpr expr);
 void bc_program_free(BcProgram *program);
+
+BcStatus bc_program_search(BcProgram *p, char *name, BcVec **ret, bool var);
+BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex);
+BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **l, BcNum **ln,
+                              BcResult **r, BcNum **rn, bool assign);
+BcStatus bc_program_binOpRetire(BcProgram *p, BcResult *r);
+BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n);
+BcStatus bc_program_retire(BcProgram *p, BcResult *r, BcResultType t);
+BcStatus bc_program_op(BcProgram *p, uint8_t inst);
+BcStatus bc_program_read(BcProgram *p);
+size_t bc_program_index(char *code, size_t *bgn);
+char* bc_program_name(char *code, size_t *bgn);
+BcStatus bc_program_printString(const char *str, size_t *nchars);
+BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx);
+BcStatus bc_program_negate(BcProgram *p);
+BcStatus bc_program_logical(BcProgram *p, uint8_t inst);
+
+#ifdef DC_ENABLED
+BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push);
+#endif // DC_ENABLED
+
+BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var);
+BcStatus bc_program_assign(BcProgram *p, uint8_t inst);
+BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
+                            bool pop, bool copy);
+BcStatus bc_program_pushArray(BcProgram *p, char *code,
+                              size_t *bgn, uint8_t inst);
+
+#ifdef BC_ENABLED
+BcStatus bc_program_incdec(BcProgram *p, uint8_t inst);
+BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx);
+BcStatus bc_program_return(BcProgram *p, uint8_t inst);
+#endif // BC_ENABLED
+
+unsigned long bc_program_scale(BcNum *n);
+unsigned long bc_program_len(BcNum *n);
+BcStatus bc_program_builtin(BcProgram *p, uint8_t inst);
+
+#ifdef DC_ENABLED
+BcStatus bc_program_divmod(BcProgram *p);
+BcStatus bc_program_modexp(BcProgram *p);
+BcStatus bc_program_stackLen(BcProgram *p);
+BcStatus bc_program_asciify(BcProgram *p);
+BcStatus bc_program_printStream(BcProgram *p);
+BcStatus bc_program_nquit(BcProgram *p);
+BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond);
+#endif // DC_ENABLED
+
+BcStatus bc_program_pushGlobal(BcProgram *p, uint8_t inst);
+
 #ifndef NDEBUG
 BcStatus bc_program_code(BcProgram *p);
 BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn);

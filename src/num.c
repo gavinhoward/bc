@@ -1053,14 +1053,14 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 }
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	(void) scale;
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_a : bc_num_alg_s;
+	(void) scale;
 	return bc_num_binary(a, b, c, false, op, BC_NUM_AREQ(a, b));
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	(void) scale;
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_alg_s : bc_num_alg_a;
+	(void) scale;
 	return bc_num_binary(a, b, c, true, op, BC_NUM_AREQ(a, b));
 }
 

@@ -206,6 +206,8 @@ BcStatus bc_array_expand(BcVec *a, size_t len);
 // ** Exclude start. **
 void bc_string_free(void *string);
 
+void bc_auto_free(void *auto1);
+
 int bc_entry_cmp(const void *e1, const void *e2);
 void bc_entry_free(void *entry);
 

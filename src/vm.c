@@ -369,9 +369,14 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	if ((st = bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files))) goto err;
 
 	bcg.tty = (bcg.ttyin = isatty(0)) || (vm.flags & BC_FLAG_I) || isatty(1);
+
+#ifdef BC_ENABLED
 	bcg.posix = vm.flags & BC_FLAG_S;
 	bcg.warn = vm.flags & BC_FLAG_W;
+#endif // BC_ENABLED
+#ifdef DC_ENABLED
 	bcg.exreg = vm.flags & BC_FLAG_X;
+#endif // DC_ENABLED
 
 	if (bcg.ttyin && !(vm.flags & BC_FLAG_Q)) st = bc_vm_info(NULL);
 	if (!st) st = bc_vm_exec(&vm);

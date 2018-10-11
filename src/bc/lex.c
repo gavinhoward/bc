@@ -28,6 +28,7 @@
 #include <bc.h>
 #include <vm.h>
 
+#ifdef BC_ENABLED
 BcStatus bc_lex_identifier(BcLex *l) {
 
 	BcStatus s;
@@ -400,3 +401,4 @@ BcStatus bc_lex_token(BcLex *l) {
 
 	return s;
 }
+#endif // BC_ENABLED

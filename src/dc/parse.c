@@ -30,6 +30,7 @@
 #include <program.h>
 #include <vm.h>
 
+#ifdef DC_ENABLED
 BcStatus dc_parse_inst(BcParse *p, BcInst inst) {
 	if (p->nbraces >= dc_inst_noperands[inst]) {
 		p->nbraces -= dc_inst_noperands[inst] - dc_inst_nresults[inst];
@@ -260,3 +261,4 @@ BcStatus dc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 	assert(p && prog);
 	return bc_parse_create(p, prog, func, dc_parse_parse, dc_lex_token);
 }
+#endif // DC_ENABLED

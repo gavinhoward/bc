@@ -109,21 +109,35 @@ typedef struct BcGlobals {
 
 	const char *name;
 	const char *sig_msg;
+	// Busybox exclude start.
 	const char *help;
+	// Busybox exclude end.
 	bool bc;
 
 } BcGlobals;
 // ** Exclude end. **
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
+#ifdef BC_ENABLED
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
                           size_t line, const char *msg);
+#endif // BC_ENABLED
 
 // ** Exclude start. **
+void bc_vm_sig(int sig);
+
 BcStatus bc_vm_info(const char* const help);
+BcStatus bc_vm_envArgs(BcVm *vm);
+size_t bc_vm_envLen(const char *var);
+
+BcStatus bc_vm_process(BcVm *vm, const char *text);
 
 BcStatus bc_vm_file(BcVm *vm, const char *file);
 BcStatus bc_vm_stdin(BcVm *vm);
+BcStatus bc_vm_exec(BcVm *vm);
+
+BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len);
+void bc_vm_free(BcVm *vm);
 
 BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char* env_len);
 // ** Exclude end. **

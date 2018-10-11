@@ -427,10 +427,8 @@ BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 	}
 	else {
 
-		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
-
+		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
 		assert(idx < p->strs.len);
-
 		str = *((char**) bc_vec_item(&p->strs, idx));
 
 		if (inst == BC_INST_PRINT_STR) {
@@ -552,8 +550,8 @@ err:
 }
 
 #ifdef DC_ENABLED
-BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push)
-{
+BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
+
 	BcStatus s;
 	BcNum n2;
 	BcResult res;
@@ -1204,8 +1202,8 @@ BcStatus bc_program_nquit(BcProgram *p) {
 	return s;
 }
 
-BcStatus bc_program_executeStr(BcProgram *p, char *code, size_t *bgn, bool cond)
-{
+BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
+
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
 	char **str;
@@ -1739,7 +1737,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_EXEC_COND:
 			{
 				cond = inst == BC_INST_EXEC_COND;
-				s = bc_program_executeStr(p, code, &ip->idx, cond);
+				s = bc_program_execStr(p, code, &ip->idx, cond);
 				break;
 			}
 

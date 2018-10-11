@@ -46,6 +46,8 @@ typedef struct BcVec {
 } BcVec;
 
 // ** Exclude start. **
+BcStatus bc_vec_grow(BcVec *v, size_t n);
+
 BcStatus bc_vec_init(BcVec *v, size_t esize, BcVecFree dtor);
 BcStatus bc_vec_expand(BcVec *v, size_t req);
 
@@ -75,6 +77,7 @@ typedef struct BcVecO {
 
 // ** Exclude start. **
 BcStatus bc_veco_init(BcVecO* v, size_t esize, BcVecFree dtor, BcVecCmp cmp);
+size_t bc_veco_find(const BcVecO *v, const void *data);
 BcStatus bc_veco_insert(BcVecO* v, const void *data, size_t *idx);
 size_t bc_veco_index(const BcVecO *v, const void *data);
 // ** Exclude end. **

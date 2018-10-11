@@ -168,6 +168,12 @@ void bc_vec_free(void *vec) {
 	free(v->v);
 }
 
+BcStatus bc_veco_init(BcVecO *v, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
+	assert(v && esize && cmp);
+	v->cmp = cmp;
+	return bc_vec_init(&v->vec, esize, dtor);
+}
+
 size_t bc_veco_find(const BcVecO *v, const void *data) {
 
 	size_t low = 0, high = v->vec.len;
@@ -185,12 +191,6 @@ size_t bc_veco_find(const BcVecO *v, const void *data) {
 	}
 
 	return low;
-}
-
-BcStatus bc_veco_init(BcVecO *v, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
-	assert(v && esize && cmp);
-	v->cmp = cmp;
-	return bc_vec_init(&v->vec, esize, dtor);
 }
 
 BcStatus bc_veco_insert(BcVecO *v, const void *data, size_t *idx) {

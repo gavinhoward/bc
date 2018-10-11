@@ -30,9 +30,7 @@
 #include <bc.h>
 #include <vm.h>
 
-BcStatus bc_parse_else(BcParse *p);
-BcStatus bc_parse_stmt(BcParse *p);
-
+#ifdef BC_ENABLED
 BcStatus bc_parse_operator(BcParse *p, BcVec *ops, BcLexType type,
                            size_t *nexprs, bool next)
 {
@@ -1358,3 +1356,4 @@ BcStatus bc_parse_expression(BcParse *p, uint8_t flags) {
 	assert(p);
 	return bc_parse_expr(p, flags, bc_parse_next_read);
 }
+#endif // BC_ENABLED

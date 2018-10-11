@@ -27,6 +27,7 @@
 #include <dc.h>
 #include <vm.h>
 
+#ifdef DC_ENABLED
 BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s;
@@ -179,3 +180,4 @@ BcStatus dc_lex_token(BcLex *l) {
 
 	return s;
 }
+#endif // DC_ENABLED
