@@ -41,7 +41,7 @@ if [ "$#" -gt 0 ]; then
 	exe="$1"
 	shift
 else
-	exe="$testdir/../$d"
+	exe="$testdir/../bin/$d"
 fi
 
 out="$testdir/../.log_test.txt"

@@ -35,7 +35,7 @@ if [ "$#" -gt 0 ]; then
 	bc="$1"
 	shift
 else
-	bc="$testdir/../../bc"
+	bc="$testdir/../../bin/bc"
 fi
 
 out1="$testdir/../.log_bc.txt"

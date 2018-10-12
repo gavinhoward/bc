@@ -27,7 +27,7 @@ script="$1"
 shift
 
 if [ "$#" -lt 1 ]; then
-	bc="$testdir/../bc"
+	bc="$testdir/../bin/bc"
 else
 	bc="$1"
 fi

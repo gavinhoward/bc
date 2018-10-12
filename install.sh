@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf "usage: %s install_dir executable [symlinks...]\n" "$0" 1>&2
+	printf "usage: %s install_dir bin_dir\n" "$0" 1>&2
 	exit 1
 }
 
@@ -29,24 +29,21 @@ test "$#" -gt 1 || usage
 installdir="$1"
 shift
 
-exe="$1"
+bindir="$1"
 shift
 
-while [ ! -f "$exe" ]; do
-	exe="$1"
-	shift
-done
+cd "$bindir"
 
-"$INSTALL" -Dm 755 "$exe" "$installdir/$exe"
+for exe in ./*; do
 
-while [ $# -gt 0 ]; do
+	base=$(basename "$exe")
 
-	link="$1"
-	shift
-
-	base=$(basename "$link")
-
-	rm -f "$installdir/$base"
-	ln -s "./$exe" "$installdir/$base"
+	if [ -L "$exe" ]; then
+		L=$(ls -dl "$exe")
+		link=$(echo ${L#*-> })
+		"$INSTALL" -Dlm 755 "$link" "$installdir/$base"
+	else
+		"$INSTALL" -Dm 755 "$exe" "$installdir/$base"
+	fi
 
 done

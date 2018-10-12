@@ -28,7 +28,9 @@ DC_ENABLED = DC_ENABLED
 VERSION = 1.0
 
 GEN_DIR = gen
-GEN_EXEC = strgen
+GEN = strgen
+GEN_EXEC = $(GEN_DIR)/$(GEN)
+GEN_C = $(GEN_DIR)/$(GEN).c
 
 BC_LIB = $(GEN_DIR)/lib.bc
 BC_LIB_C = $(GEN_DIR)/lib.c
@@ -42,8 +44,12 @@ DC_HELP = $(GEN_DIR)/dc_help.txt
 DC_HELP_C = $(GEN_DIR)/dc_help.c
 DC_HELP_O = $(GEN_DIR)/dc_help.o
 
-BC_EXEC = bc
-DC_EXEC = dc
+BIN = bin
+
+BC = bc
+DC = dc
+BC_EXEC = $(BIN)/$(BC)
+DC_EXEC = $(BIN)/$(DC)
 
 PREFIX ?= /usr/local
 
@@ -57,29 +63,32 @@ CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION)
 HOSTCC ?= $(CC)
 
 all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
-all: clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
+all: make_bin clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) -o $(BC_EXEC)
-	ln -s ./$(BC_EXEC) $(DC_EXEC)
+	ln -s ./$(BC) $(DC_EXEC)
 
 $(GEN_EXEC):
-	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN_EXEC).c
+	$(HOSTCC) -o $(GEN_EXEC) $(GEN_C)
 
 $(BC_LIB_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED)
+	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED)
 
 $(BC_HELP_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help "" $(BC_ENABLED)
+	$(GEN_EMU) $(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help "" $(BC_ENABLED)
 
 $(DC_HELP_C): $(GEN_EXEC)
-	$(GEN_EMU) ./$(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help "" $(DC_ENABLED)
+	$(GEN_EMU) $(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help "" $(DC_ENABLED)
 
-$(DC_EXEC): CPPFLAGS += -D$(DC_ENABLED)
-$(DC_EXEC): clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)
+$(DC): CPPFLAGS += -D$(DC_ENABLED)
+$(DC): make_bin clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(DC_HELP_O) -o $(DC_EXEC)
 
-$(BC_EXEC): CPPFLAGS += -D$(BC_ENABLED)
-$(BC_EXEC): clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
+$(BC): CPPFLAGS += -D$(BC_ENABLED)
+$(BC): make_bin clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) -o $(BC_EXEC)
+
+make_bin:
+	mkdir -p $(BIN)
 
 help:
 	@echo "all targets use config.mak, if there is one"
@@ -167,11 +176,11 @@ clean_tests: clean
 	$(RM) -f .math.txt .results.txt .ops.txt
 	$(RM) -f .test.txt
 
-install: uninstall
-	$(INSTALL) $(DESTDIR)$(PREFIX)/bin $(BC_EXEC) $(DC_EXEC)
+install:
+	$(INSTALL) $(DESTDIR)$(PREFIX)/$(BIN) $(BIN)
 
 uninstall:
-	$(RM) -f $(DESTDIR)$(PREFIX)/bin/$(BC_EXEC)
-	$(RM) -f $(DESTDIR)$(PREFIX)/bin/$(DC_EXEC)
+	$(RM) -f $(DESTDIR)$(PREFIX)/$(BC_EXEC)
+	$(RM) -f $(DESTDIR)$(PREFIX)/$(DC_EXEC)
 
 .PHONY: help clean clean_tests install uninstall test

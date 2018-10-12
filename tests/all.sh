@@ -29,7 +29,7 @@ else
 fi
 
 if [ "$#" -lt 1 ]; then
-	exe="$testdir/../$d"
+	exe="$testdir/../bin/$d"
 else
 	exe="$1"
 fi

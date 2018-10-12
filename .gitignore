@@ -3,10 +3,8 @@
 *.files
 *.includes
 *.creator.user
-bc
-!bc/
-dc
-!dc/
+bin/bc
+bin/dc
 *.o
 *.a
 .log_*.txt
@@ -14,7 +12,7 @@ dc
 .math.txt
 .results.txt
 .ops.txt
-strgen
+gen/strgen
 lib.c
 bc_help.c
 dc_help.c

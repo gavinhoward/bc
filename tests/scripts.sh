@@ -32,7 +32,7 @@ if [ "$#" -gt 0 ]; then
 	exe="$1"
 	shift
 else
-	exe="$testdir/../$d"
+	exe="$testdir/../bin/$d"
 fi
 
 out1="$testdir/../.log_bc.txt"
