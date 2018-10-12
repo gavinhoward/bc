@@ -28,7 +28,8 @@ DC_ENABLED = DC_ENABLED
 VERSION = 1.0
 
 GEN_DIR = gen
-GEN_EXEC = strgen$(EXE)
+GEN = strgen
+GEN_EXEC = $(GEN)$(EXE)
 
 BC_LIB = $(GEN_DIR)/lib.bc
 BC_LIB_C = $(GEN_DIR)/lib.c
@@ -62,7 +63,7 @@ all: clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
 	ln -s ./$(BC_EXEC) $(DC_EXEC)
 
 $(GEN_EXEC):
-	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN_EXEC).c
+	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN).c
 
 $(BC_LIB_C): $(GEN_EXEC)
 	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED)
