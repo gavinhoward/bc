@@ -19,17 +19,6 @@ import random
 import sys
 import subprocess
 
-def silentremove(filename):
-	try:
-		os.remove(filename)
-	except OSError as e:
-		if e.errno != errno.ENOENT:
-			raise
-
-def finish():
-	silentremove(math)
-	silentremove(opfile)
-
 def gen(limit=4):
 	return random.randint(0, 2 ** (8 * limit))
 
@@ -77,11 +66,8 @@ def num(op, neg, real, z, limit=4):
 
 def add(test, op):
 
-	with open(math, "a") as f:
-		f.write(test + "\n")
-
-	with open(opfile, "a") as f:
-		f.write(str(op) + "\n")
+	tests.append(test)
+	gen_ops.append(op)
 
 def compare(exe, options, p, test, halt, expected, op, do_add=True):
 
@@ -199,8 +185,6 @@ script = sys.argv[0]
 testdir = os.path.dirname(script)
 
 exedir = testdir + "/.."
-math = exedir + "/.math.txt"
-opfile = exedir + "/.ops.txt"
 
 ops = [ '+', '-', '*', '/', '%', '^', '|' ]
 files = [ "add", "subtract", "multiply", "divide", "modulus", "power", "modexp",
@@ -221,7 +205,8 @@ sqrt = 7
 exponent = 8
 bessel = 13
 
-finish()
+gen_ops = []
+tests = []
 
 try:
 	i = 0
@@ -238,13 +223,7 @@ if not os.path.exists(math):
 
 print("\nGoing through the checklist...\n")
 
-with open(math, "r") as f:
-	tests = f.readlines()
-
-with open(opfile, "r") as f:
-	ops = f.readlines()
-
-if len(tests) != len(ops):
+if len(tests) != len(gen_ops):
 	print("Corrupted checklist!")
 	print("Exiting...")
 	sys.exit(1)
@@ -253,7 +232,7 @@ for i in range(0, len(tests)):
 
 	print("\n{}".format(tests[i]))
 
-	op = int(ops[i])
+	op = int(gen_ops[i])
 
 	if op != modexp:
 		exe = "bc"
@@ -296,5 +275,4 @@ for i in range(0, len(tests)):
 	else:
 		print("No")
 
-
-finish()
+print("Done!")
