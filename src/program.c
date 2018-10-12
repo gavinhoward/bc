@@ -24,7 +24,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <io.h>
+#include <read.h>
 #include <parse.h>
 #include <program.h>
 #include <vm.h>
@@ -257,7 +257,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	bc_vec_npop(&f->code, f->code.len);
 
 	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_io_getline(&buf, "read> "))) goto io_err;
+	if ((s = bc_read_line(&buf, "read> "))) goto io_err;
 
 	if ((s = p->parse_init(&parse, p, BC_PROG_READ))) goto io_err;
 	bc_lex_file(&parse.l, bc_program_stdin_name);

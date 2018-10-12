@@ -26,11 +26,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <io.h>
+#include <read.h>
 #include <program.h>
 #include <vm.h>
 
-BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
+BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 	BcStatus s;
 	signed char c = 0;
@@ -70,7 +70,7 @@ BcStatus bc_io_getline(BcVec *vec, const char* prompt) {
 	return bc_vec_pushByte(vec, '\0');
 }
 
-BcStatus bc_io_fread(const char *path, char **buf) {
+BcStatus bc_read_file(const char *path, char **buf) {
 
 	BcStatus s;
 	FILE *f;

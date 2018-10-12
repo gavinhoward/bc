@@ -28,8 +28,8 @@
 #include <status.h>
 #include <vector.h>
 
-BcStatus bc_io_getline(BcVec* vec, const char *prompt);
-BcStatus bc_io_fread(const char *path, char **buf);
+BcStatus bc_read_line(BcVec* vec, const char *prompt);
+BcStatus bc_read_file(const char *path, char **buf);
 
 #define BC_IO_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
 

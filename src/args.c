@@ -30,7 +30,7 @@
 
 #include <status.h>
 #include <vector.h>
-#include <io.h>
+#include <read.h>
 #include <vm.h>
 #include <args.h>
 
@@ -63,7 +63,7 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	BcStatus s;
 	char *buf;
 
-	if ((s = bc_io_fread(file, &buf))) return s;
+	if ((s = bc_read_file(file, &buf))) return s;
 	s = bc_args_exprs(exprs, buf);
 
 	free(buf);

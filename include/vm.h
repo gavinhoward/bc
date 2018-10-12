@@ -26,6 +26,11 @@
 #include <stddef.h>
 #include <limits.h>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif // _WIN32
+
 #include <status.h>
 #include <parse.h>
 #include <program.h>
@@ -124,7 +129,11 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 #endif // BC_ENABLED
 
 // ** Exclude start. **
+#ifndef _WIN32
 void bc_vm_sig(int sig);
+#else // _WIN32
+BOOL WINAPI bc_vm_sig(DWORD sig)
+#endif // _WIN32
 
 BcStatus bc_vm_info(const char* const help);
 BcStatus bc_vm_envArgs(BcVm *vm);
