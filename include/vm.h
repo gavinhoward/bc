@@ -132,7 +132,8 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 #ifndef _WIN32
 void bc_vm_sig(int sig);
 #else // _WIN32
-BOOL WINAPI bc_vm_sig(DWORD sig)
+BOOL WINAPI bc_vm_sig(DWORD sig);
+#define isatty _isatty
 #endif // _WIN32
 
 BcStatus bc_vm_info(const char* const help);
