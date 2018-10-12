@@ -303,7 +303,7 @@ char* bc_program_name(char *code, size_t *bgn) {
 	char byte, *s, *string = (char*) (code + *bgn), *ptr;
 
 	ptr = strchr(string, BC_PARSE_STREND);
-	if (ptr) len = ((unsigned long) ptr) - ((unsigned long) string);
+	if (ptr) len = ((unsigned long long) ptr) - ((unsigned long long) string);
 	else len = strlen(string);
 
 	if (!(s = malloc(len + 1))) return NULL;
