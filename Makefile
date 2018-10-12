@@ -28,7 +28,7 @@ DC_ENABLED = DC_ENABLED
 VERSION = 1.0
 
 GEN_DIR = gen
-GEN_EXEC = strgen
+GEN_EXEC = strgen$(EXE)
 
 BC_LIB = $(GEN_DIR)/lib.bc
 BC_LIB_C = $(GEN_DIR)/lib.c
@@ -42,8 +42,8 @@ DC_HELP = $(GEN_DIR)/dc_help.txt
 DC_HELP_C = $(GEN_DIR)/dc_help.c
 DC_HELP_O = $(GEN_DIR)/dc_help.o
 
-BC_EXEC = bc
-DC_EXEC = dc
+BC_EXEC = bc$(EXE)
+DC_EXEC = dc$(EXE)
 
 PREFIX ?= /usr/local
 
