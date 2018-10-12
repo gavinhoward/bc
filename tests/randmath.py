@@ -261,7 +261,7 @@ for i in range(0, len(tests)):
 
 	compare(exe, options, p, tests[i], halt, expected, op, False)
 
-	answer = input("\nAdd test to test suite? [y/N]: ")
+	answer = input("\nAdd test ({}/{}) to test suite? [y/N]: ".format(i + 1, len(tests)))
 
 	if 'Y' in answer or 'y' in answer:
 		print("Yes")
