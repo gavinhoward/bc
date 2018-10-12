@@ -28,8 +28,7 @@ DC_ENABLED = DC_ENABLED
 VERSION = 1.0
 
 GEN_DIR = gen
-GEN = strgen
-GEN_EXEC = $(GEN)$(EXE)
+GEN_EXEC = strgen
 
 BC_LIB = $(GEN_DIR)/lib.bc
 BC_LIB_C = $(GEN_DIR)/lib.c
@@ -43,8 +42,8 @@ DC_HELP = $(GEN_DIR)/dc_help.txt
 DC_HELP_C = $(GEN_DIR)/dc_help.c
 DC_HELP_O = $(GEN_DIR)/dc_help.o
 
-BC_EXEC = bc$(EXE)
-DC_EXEC = dc$(EXE)
+BC_EXEC = bc
+DC_EXEC = dc
 
 PREFIX ?= /usr/local
 
@@ -63,7 +62,7 @@ all: clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
 	ln -s ./$(BC_EXEC) $(DC_EXEC)
 
 $(GEN_EXEC):
-	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN).c
+	$(HOSTCC) -o $(GEN_EXEC) $(GEN_DIR)/$(GEN_EXEC).c
 
 $(BC_LIB_C): $(GEN_EXEC)
 	$(GEN_EMU) ./$(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED)
