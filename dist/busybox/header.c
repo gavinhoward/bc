@@ -31,26 +31,25 @@
 //config:
 //config:	Options:
 //config:
-//config:	  -e  --expression=expr
-//config:	                     run "expr" and quit. If multiple expressions or files
-//config:	                     (see below) are given, they are all run.
-//config:	  -f file  --file=file
-//config:	                     run the bc code in "file" and exit. See above as well.
-//config:	  -h  --help         print this usage message and exit
-//config:	  -i  --interactive  force interactive mode
-//config:	  -l  --mathlib      use predefined math routines:
+//config:	  -e expr  --expression=expr
+//config:	                         run "expr" and quit. If multiple expressions or files
+//config:	                         (see below) are given, they are all run.
+//config:	  -f  file  --file=file  run the bc code in "file" and exit. See above as well.
+//config:	  -h  --help             print this usage message and exit
+//config:	  -i  --interactive      force interactive mode
+//config:	  -l  --mathlib          use predefined math routines:
 //config:
-//config:	                         s(expr)  =  sine of expr in radians
-//config:	                         c(expr)  =  cosine of expr in radians
-//config:	                         a(expr)  =  arctangent of expr, returning radians
-//config:	                         l(expr)  =  natural log of expr
-//config:	                         e(expr)  =  raises e to the power of expr
-//config:	                         j(n, x)  =  Bessel function of integer order n of x
+//config:	                           s(expr)  =  sine of expr in radians
+//config:	                           c(expr)  =  cosine of expr in radians
+//config:	                           a(expr)  =  arctangent of expr, returning radians
+//config:	                           l(expr)  =  natural log of expr
+//config:	                           e(expr)  =  raises e to the power of expr
+//config:	                           j(n, x)  =  Bessel function of integer order n of x
 //config:
-//config:	  -q  --quiet        don't print version and copyright
-//config:	  -s  --standard     error if any non-POSIX extensions are used
-//config:	  -w  --warn         warn if any non-POSIX extensions are used
-//config:	  -v  --version      print version information and copyright and exit
+//config:	  -q  --quiet            don't print version and copyright
+//config:	  -s  --standard         error if any non-POSIX extensions are used
+//config:	  -w  --warn             warn if any non-POSIX extensions are used
+//config:	  -v  --version          print version information and copyright and exit
 //config:
 //config:config DC
 //config:	bool "dc (36.64 kb; 56.35 kb when combined with bc)"
@@ -87,13 +86,12 @@
 //config:
 //config:	Options:
 //config:
-//config:	  -e  --expression=expr
-//config:	                     run "expr" and quit. If multiple expressions or files
-//config:	                     (see below) are given, they are all run.
-//config:	  -f file  --file=file
-//config:	                     run the bc code in "file" and exit. See above as well.
-//config:	  -h  --help         print this usage message and exit
-//config:	  -V  --version      print version information and copyright and exit
+//config:	  -e expr  --expression=expr
+//config:	                         run "expr" and quit. If multiple expressions or files
+//config:	                         (see below) are given, they are all run.
+//config:	  -f  file  --file=file  run the bc code in "file" and exit. See above as well.
+//config:	  -h  --help             print this usage message and exit
+//config:	  -V  --version          print version information and copyright and exit
 
 //applet:IF_BC(APPLET(bc, BB_DIR_USR_BIN, BB_SUID_DROP))
 //applet:IF_DC(APPLET(dc, BB_DIR_USR_BIN, BB_SUID_DROP))

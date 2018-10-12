@@ -22,7 +22,41 @@
 
 usage: %s [options] [file...]
 
-dc is a command-line, reverse Polish notation arbitrary-precision calculator.
-See the GNU dc manual (https://www.gnu.org/software/bc/manual/dc-1.05/) for
-details.
+dc is a reverse-polish notation command-line calculator which supports unlimited
+precision arithmetic. See the FreeBSD man page
+(https://www.unix.com/man-page/FreeBSD/1/dc/) and GNU dc manual
+(https://www.gnu.org/software/bc/manual/dc-1.05/html_mono/dc.html) for details.
+
+This dc has a few differences from the two above:
+
+  1) When printing a byte stream (command "P"), this bc follows what the FreeBSD
+     dc does.
+  2) This dc implements the GNU extensions for divmod ("~") and modular
+     exponentiation ("|").
+  3) This dc implements all FreeBSD extensions, except for "J" and "M".
+  4) Like the FreeBSD dc, this dc supports extended registers. However, it is
+     implemented differently. When it encounters whitespace where a register
+     should be, it skips the whitespace. If the character following is not
+     a lowercase letter, an error is issued. Otherwise, the register name is
+     parsed by the following regex:
+
+       [a-z][a-z0-9_]*
+
+     This generally means that register names will be surrounded by parentheses.
+
+     Examples:
+
+       l idx s temp L index S temp2 < do_thing
+
+     Also note that, like the FreeBSD dc, extended registers are not allowed
+     unless the "-x" option is given.
+
+Options:
+
+  -e expr  --expression=expr
+                         run "expr" and quit. If multiple expressions or files
+                         (see below) are given, they are all run.
+  -f  file  --file=file  run the bc code in "file" and exit. See above as well.
+  -h  --help             print this usage message and exit
+  -V  --version          print version information and copyright and exit
 
