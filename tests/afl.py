@@ -119,7 +119,7 @@ for d in dirs:
 
 		print("    Running whole file...")
 
-		run_test(exe, exebase, tout, halt.encode(), out, file, "file", file)
+		run_test(exe + [ file ], exebase, tout, halt.encode(), out, file, "file", file)
 
 		print("    Running file through stdin...")
 
