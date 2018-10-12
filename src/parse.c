@@ -90,6 +90,11 @@ BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 	return s;
 }
 
+BcStatus bc_parse_text(BcParse *p, const char *text) {
+	p->func = bc_vec_item(&p->prog->fns, p->fidx);
+	return bc_lex_text(&p->l, text);
+}
+
 BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
 	if (p->fidx != BC_PROG_MAIN) {

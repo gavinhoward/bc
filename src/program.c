@@ -263,7 +263,7 @@ BcStatus bc_program_read(BcProgram *p) {
 
 	if ((s = p->parse_init(&parse, p, BC_PROG_READ))) goto io_err;
 	bc_lex_file(&parse.l, bc_program_stdin_name);
-	if ((s = bc_lex_text(&parse.l, buf.v))) goto exec_err;
+	if ((s = bc_parse_text(&parse, buf.v))) goto exec_err;
 
 	if ((s = p->parse_expr(&parse, BC_PARSE_NOREAD))) goto exec_err;
 
@@ -1268,7 +1268,7 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 	if (!f->code.len) {
 
 		if ((s = p->parse_init(&prs, p, fidx))) goto exit;
-		if ((s = bc_lex_text(&prs.l, *str))) goto err;
+		if ((s = bc_parse_text(&prs, *str))) goto err;
 		if ((s = p->parse_expr(&prs, BC_PARSE_NOCALL))) goto err;
 
 		if (prs.l.t.t != BC_LEX_EOF) {

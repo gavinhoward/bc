@@ -140,7 +140,7 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 
 BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
-	BcStatus s = bc_lex_text(&vm->prs.l, text);
+	BcStatus s = bc_parse_text(&vm->prs, text);
 
 	if ((s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line))) return s;
 
@@ -291,7 +291,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 	if (vm->flags & BC_FLAG_L) {
 
 		bc_lex_file(&vm->prs.l, bc_lib_name);
-		if ((s = bc_lex_text(&vm->prs.l, bc_lib))) return s;
+		if ((s = bc_parse_text(&vm->prs, bc_lib))) return s;
 
 		while (!s && vm->prs.l.t.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
 
