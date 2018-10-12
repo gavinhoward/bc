@@ -54,6 +54,7 @@ DC_EXEC = $(BIN)/$(DC)
 PREFIX ?= /usr/local
 
 INSTALL = ./install.sh
+LINK = ./link.sh
 
 -include config.mak
 
@@ -65,7 +66,7 @@ HOSTCC ?= $(CC)
 all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
 all: make_bin clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) -o $(BC_EXEC)
-	ln -s ./$(BC) $(DC_EXEC)
+	$(LINK) $(BIN) $(DC)
 
 $(GEN_EXEC):
 	$(HOSTCC) -o $(GEN_EXEC) $(GEN_C)
