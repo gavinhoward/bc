@@ -33,13 +33,19 @@
 #include <parse.h>
 #include <program.h>
 
+BcStatus bc_parse_addFunc(BcParse *p, char *name, size_t *idx) {
+	BcStatus s = bc_program_addFunc(p->prog, name, idx);
+	p->func = bc_vec_item(&p->prog->fns, p->fidx);
+	return s;
+}
+
 BcStatus bc_parse_pushName(BcParse *p, char *name) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i = 0, len = strlen(name);
 
-	for (; !s && i < len; ++i) s = bc_vec_pushByte(p->code, (char) name[i]);
-	if (s || (s = bc_vec_pushByte(p->code, BC_PARSE_STREND))) return s;
+	for (; !s && i < len; ++i) s = bc_parse_push(p, (char) name[i]);
+	if (s || (s = bc_parse_push(p, BC_PARSE_STREND))) return s;
 
 	free(name);
 
@@ -56,8 +62,8 @@ BcStatus bc_parse_pushIndex(BcParse *p, size_t idx) {
 		idx = (idx & ((unsigned long) ~(UINT8_MAX))) >> sizeof(char) * CHAR_BIT;
 	}
 
-	if ((s = bc_vec_pushByte(p->code, amt))) return s;
-	for (i = 0; !s && i < amt; ++i) s = bc_vec_pushByte(p->code, nums[i]);
+	if ((s = bc_parse_push(p, amt))) return s;
+	for (i = 0; !s && i < amt; ++i) s = bc_parse_push(p, nums[i]);
 
 	return s;
 }
@@ -75,7 +81,7 @@ BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 		return s;
 	}
 
-	if ((s = bc_vec_pushByte(p->code, BC_INST_NUM))) return s;
+	if ((s = bc_parse_push(p, BC_INST_NUM))) return s;
 	if ((s = bc_parse_pushIndex(p, idx))) return s;
 
 	++(*nexs);
@@ -84,24 +90,16 @@ BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 	return s;
 }
 
-BcStatus bc_parse_text(BcParse *p, const char *text) {
-	p->code = BC_PARSE_CODE(p);
-	return bc_lex_text(&p->l, text);
-}
-
 BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
-	if (p->func != BC_PROG_MAIN) {
+	if (p->fidx != BC_PROG_MAIN) {
 
-		BcFunc *func = bc_vec_item(&p->prog->fns, p->func);
+		p->func->nparams = 0;
+		bc_vec_npop(&p->func->code, p->func->code.len);
+		bc_vec_npop(&p->func->autos, p->func->autos.len);
+		bc_vec_npop(&p->func->labels, p->func->labels.len);
 
-		func->nparams = 0;
-		bc_vec_npop(&func->code, func->code.len);
-		bc_vec_npop(&func->autos, func->autos.len);
-		bc_vec_npop(&func->labels, func->labels.len);
-
-		p->func = BC_PROG_MAIN;
-		p->code = BC_PARSE_CODE(p);
+		bc_parse_updateFunc(p, BC_PROG_MAIN);
 	}
 
 	p->l.idx = p->l.len;
@@ -132,9 +130,8 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
 
 	p->parse = parse;
 	p->prog = prog;
-	p->func = func;
-	p->code = BC_PARSE_CODE(p);
 	p->auto_part = (p->nbraces = 0);
+	bc_parse_updateFunc(p, func);
 
 	return s;
 

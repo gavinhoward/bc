@@ -34,7 +34,7 @@
 BcStatus dc_parse_inst(BcParse *p, BcInst inst) {
 	if (p->nbraces >= dc_inst_noperands[inst]) {
 		p->nbraces -= dc_inst_noperands[inst] - dc_inst_nresults[inst];
-		return bc_vec_pushByte(p->code, inst);
+		return bc_parse_push(p, inst);
 	}
 	return BC_STATUS_PARSE_BAD_EXP;
 }
@@ -65,13 +65,10 @@ BcStatus dc_parse_string(BcParse *p) {
 	if ((s = dc_parse_inst(p, BC_INST_STR))) goto err;
 	if ((s = bc_parse_pushIndex(p, len))) goto err;
 	if ((s = bc_vec_push(&p->prog->strs, &str))) goto err;
-	if ((s = bc_program_addFunc(p->prog, name, &idx))) return s;
+	if ((s = bc_parse_addFunc(p, name, &idx))) return s;
 	if ((s = bc_lex_next(&p->l))) return s;
 
 	assert(idx == len + BC_PROG_REQ_FUNCS);
-
-	// Update possibly invalidated pointer.
-	p->code = BC_PARSE_CODE(p);
 
 	return s;
 
@@ -111,7 +108,7 @@ BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
 		if ((s = dc_parse_register(p))) return s;
 		s = bc_lex_next(&p->l);
 	}
-	else s = bc_vec_pushByte(p->code, BC_PARSE_STREND);
+	else s = bc_parse_push(p, BC_PARSE_STREND);
 
 	return s;
 }
