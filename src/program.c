@@ -24,8 +24,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <unistd.h>
-
 #include <io.h>
 #include <parse.h>
 #include <program.h>
@@ -1331,11 +1329,6 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	BcInstPtr ip;
 
 	assert(p);
-
-	assert((unsigned long) sysconf(_SC_BC_BASE_MAX) <= BC_MAX_OBASE);
-	assert((unsigned long) sysconf(_SC_BC_DIM_MAX) <= BC_MAX_DIM);
-	assert((unsigned long) sysconf(_SC_BC_SCALE_MAX) <= BC_MAX_SCALE);
-	assert((unsigned long) sysconf(_SC_BC_STRING_MAX) <= BC_MAX_STRING);
 
 	p->nchars = p->scale = 0;
 	p->len = line_len;
