@@ -128,3 +128,5 @@ for d in dirs:
 
 		run_test(exe, exebase, tout, content, out, file, "running {} through stdin".format(file), file)
 
+print("Done")
+
