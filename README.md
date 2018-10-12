@@ -48,17 +48,17 @@ This `bc` uses [semantic versioning](http://semver.org/).
 
 Files:
 
-	install.sh      Install script from musl libc.
-	LICENSE.md      A Markdown form of the BSD 0-clause License.
-	Makefile        The Makefile.
-	NOTICE.md       List of contributors and copyright owners.
-	RELEASE.md      A checklist for making a release.
-	TODO.md         A TODO list.
+	install.sh       Install script.
+	LICENSE.md       A Markdown form of the BSD 0-clause License.
+	Makefile         The Makefile.
+	NOTICE.md        List of contributors and copyright owners.
+	RELEASE.md       A checklist for making a release.
+	safe-install.sh  Safe install script from musl libc.
 
 Folders:
 
-	include     All header files.
-	lib         The bc math library and code to generate C source for it.
-	src         All source code.
-	tests       All tests.
-	toybox      Files to cut a release into toybox. (Maintainer use only.)
+	include  All header files.
+	gen      The bc math library, help texts and code to generate C source.
+	src      All source code.
+	tests    All tests.
+	dist     Files to cut a release for toybox/busybox. (Maintainer use only.)
