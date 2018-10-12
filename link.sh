@@ -34,14 +34,13 @@ for exe in ./*; do
 	if [ ! -L "$exe" ]; then
 
 		base=$(basename "$exe")
+		ext="${base##*.}"
 
-		if [ "${base##*.}" != "$base" ]; then
-			base=${base%.*}
-			name=${$exe/$base/$link}
+		if [ "$ext" != "$base" ]; then
+			name="$link.$ext"
 		else
 			name="$link"
 		fi
-
 
 		ln -s "$exe" "./$name"
 
