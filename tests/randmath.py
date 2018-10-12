@@ -219,7 +219,7 @@ try:
 except KeyboardInterrupt:
 	pass
 
-if not os.path.exists(math):
+if len(tests) == 0:
 	print("\nNo items in checklist.")
 	print("Exiting")
 	sys.exit(0)
