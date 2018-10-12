@@ -4,6 +4,10 @@ This is an implementation of POSIX `bc` that implements
 [GNU `bc`](https://www.gnu.org/software/bc/) extensions, as well as the period
 (`.`) extension for the BSD bc.
 
+This `bc` also includes an implementation of `dc` in the same binary, which
+includes all FreeBSD and GNU extensions. However, it does not have the `!`
+command; the author does not want to deal with the security implications.
+
 This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 0-clause License.
 
@@ -12,7 +16,7 @@ This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 To build, use the following commands:
 
 ```
-make
+make [bc|dc]
 make install
 ```
 
