@@ -55,13 +55,16 @@ def num(op, neg, real, z, limit=4):
 	g = gen(limit)
 
 	if real and negative():
-		n = gen(25)
+		n = str(gen(25))
+		length = gen(1)
+		if len(n) < length:
+			n = ("0" * (length - len(n))) + n
 	else:
-		n = 0
+		n = "0"
 
 	g = str(g)
-	if n != 0:
-		g = g + "." + str(n)
+	if n != "0":
+		g = g + "." + n
 
 	if neg and g != "0":
 		if op != modexp:
