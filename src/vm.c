@@ -113,7 +113,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	fprintf(stderr, "    %s", file);
 	fprintf(stderr, bc_err_line + 4 * !line, line);
 
-	return s * (!bcg.tty || !!strcmp(file, bc_program_stdin_name));
+	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name));
 }
 
 #ifdef BC_ENABLED
@@ -134,7 +134,7 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 		fprintf(stderr, bc_err_line + 4 * !line, line);
 	}
 
-	return s * (!bcg.tty && !!p);
+	return s * (!bcg.ttyin && !!p);
 }
 #endif // BC_ENABLED
 
