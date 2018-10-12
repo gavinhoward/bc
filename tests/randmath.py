@@ -157,6 +157,9 @@ def run_test(t):
 
 	test = gen_test(op)
 
+	if "c(0)" in test or "scale = 4; j(4" in test:
+		return
+
 	bcexe = exedir + "/" + exe
 	indata = test + "\n" + halt
 
