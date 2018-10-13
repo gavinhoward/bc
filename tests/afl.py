@@ -66,7 +66,7 @@ exedir = sys.argv[1]
 if len(sys.argv) >= 3:
 	exe = sys.argv[2]
 else:
-	exe = testdir + "/../" + exedir
+	exe = testdir + "/../bin/" + exedir
 
 exebase = os.path.basename(exe)
 

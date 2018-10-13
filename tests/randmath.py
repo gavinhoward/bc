@@ -187,7 +187,7 @@ if __name__ != "__main__":
 script = sys.argv[0]
 testdir = os.path.dirname(script)
 
-exedir = testdir + "/.."
+exedir = testdir + "/../bin"
 
 ops = [ '+', '-', '*', '/', '%', '^', '|' ]
 files = [ "add", "subtract", "multiply", "divide", "modulus", "power", "modexp",
