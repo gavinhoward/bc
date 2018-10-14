@@ -45,7 +45,7 @@ def num(op, neg, real, z, limit=4):
 
 	if real and negative():
 		n = str(gen(25))
-		length = gen(1)
+		length = gen(7 / 8)
 		if len(n) < length:
 			n = ("0" * (length - len(n))) + n
 	else:
