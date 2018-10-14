@@ -1,5 +1,3 @@
 BC_ENABLED
 DC_ENABLED
 extern BcGlobals bcg;
-^\tBcNumBinaryOp op = \(!a->neg == !b->neg\) \? bc_num_alg_a : bc_num_alg_s;$
-^\tBcNumBinaryOp op = \(!a->neg == !b->neg\) \? bc_num_alg_s : bc_num_alg_a;$
