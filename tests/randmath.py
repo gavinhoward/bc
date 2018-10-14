@@ -76,7 +76,7 @@ def compare(exe, options, p, test, halt, expected, op, do_add=True):
 		print("    {} returned an error ({})".format(exe, p.returncode))
 
 		if do_add:
-			print("    adding {} to checklist...".format(test))
+			print("    adding to checklist...")
 			add(test, op)
 
 		return
@@ -97,15 +97,15 @@ def compare(exe, options, p, test, halt, expected, op, do_add=True):
 				print("    continuing...")
 				return
 
-		print("   failed {}".format(test))
-		print("    expected:")
-		print("        {}".format(expected))
-		print("    actual:")
-		print("        {}".format(actual))
-
 		if do_add:
-			print("   adding to checklist...")
+			print("   failed; adding to checklist...")
 			add(test, op)
+		else:
+			print("   failed {}".format(test))
+			print("    expected:")
+			print("        {}".format(expected))
+			print("    actual:")
+			print("        {}".format(actual))
 
 
 def gen_test(op):
