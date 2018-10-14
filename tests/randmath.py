@@ -181,6 +181,8 @@ def run_test(t):
 
 	if output1 == "-0\n":
 		output1 = "0\n"
+	elif output1 == "-0":
+		output1 = "0"
 
 	args = [ bcexe, options ]
 
