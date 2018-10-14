@@ -175,6 +175,13 @@ def run_test(t):
 		print("    other {} returned an error ({}); continuing...".format(exe, p.returncode))
 		return
 
+	if output1 == "\n":
+		print("   other {} has a bug; continuing...".format(exe))
+		return
+
+	if output1 == "-0\n":
+		output1 = "0\n"
+
 	args = [ bcexe, options ]
 
 	p = subprocess.run(args, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
