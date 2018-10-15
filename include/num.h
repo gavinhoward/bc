@@ -73,7 +73,7 @@ void bc_num_truncate(BcNum *n, size_t places);
 BcStatus bc_num_extend(BcNum *n, size_t places);
 
 void bc_num_clean(BcNum *n);
-BcStatus bc_num_retireMul(BcNum *n, size_t scale);
+BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2);
 
 BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale);
 

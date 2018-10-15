@@ -123,24 +123,20 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 
 void bc_num_truncate(BcNum *n, size_t places) {
 
-	BcDig *ptr;
-
 	assert(places <= n->rdx);
 
 	if (!places) return;
 
-	ptr = n->num + places;
 	n->len -= places;
 	n->rdx -= places;
 
-	memmove(n->num, ptr, n->len * sizeof(BcDig));
+	memmove(n->num, n->num + places, n->len * sizeof(BcDig));
 	memset(n->num + n->len, 0, sizeof(BcDig) * (n->cap - n->len));
 }
 
 BcStatus bc_num_extend(BcNum *n, size_t places) {
 
 	BcStatus s;
-	BcDig *ptr;
 	size_t len;
 
 	if (!places) return BC_STATUS_SUCCESS;
@@ -148,8 +144,7 @@ BcStatus bc_num_extend(BcNum *n, size_t places) {
 	len = n->len + places;
 	if (n->cap < len && (s = bc_num_expand(n, len))) return s;
 
-	ptr = n->num + places;
-	memmove(ptr, n->num, sizeof(BcDig) * n->len);
+	memmove(n->num + places, n->num, sizeof(BcDig) * n->len);
 	memset(n->num, 0, sizeof(BcDig) * places);
 
 	n->len += places;
@@ -164,7 +159,7 @@ void bc_num_clean(BcNum *n) {
 	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
-BcStatus bc_num_retireMul(BcNum *n, size_t scale) {
+BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
@@ -172,22 +167,21 @@ BcStatus bc_num_retireMul(BcNum *n, size_t scale) {
 	else bc_num_truncate(n, n->rdx - scale);
 
 	bc_num_clean(n);
+	n->neg = !neg1 != !neg2;
 
 	return s;
 }
 
 BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 
-	BcStatus s;
 	BcNum one;
+	BcDig num[2];
 
-	if ((s = bc_num_init(&one, BC_NUM_DEF_SIZE))) return s;
-
+	one.cap = 2;
+	one.num = num;
 	bc_num_one(&one);
-	s = bc_num_div(&one, a, b, scale);
-	bc_num_free(&one);
 
-	return s;
+	return bc_num_div(&one, a, b, scale);
 }
 
 BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
@@ -338,17 +332,8 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 	else if (aone || BC_NUM_ONE(b)) {
-
-		if (aone) {
-			if ((s = bc_num_copy(c, b))) return s;
-			if (a->neg) c->neg = !c->neg;
-		}
-		else {
-			if ((s = bc_num_copy(c, a))) return s;
-			if (b->neg) c->neg = !c->neg;
-		}
-
-		return bc_num_retireMul(c, scale);
+		if ((s = bc_num_copy(c, aone ? b : a))) return s;
+		return bc_num_retireMul(c, scale, a->neg, b->neg);
 	}
 
 	memset(c->num, 0, sizeof(BcDig) * c->cap);
@@ -375,9 +360,8 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
 
 	c->len = BC_MAX(len, c->rdx);
-	c->neg = !a->neg != !b->neg;
 
-	return bc_num_retireMul(c, scale);
+	return bc_num_retireMul(c, scale, a->neg, b->neg);
 }
 
 BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
@@ -394,8 +378,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 	else if (BC_NUM_ONE(b)) {
 		if ((s = bc_num_copy(c, a))) return s;
-		if (b->neg) c->neg = !c->neg;
-		return bc_num_retireMul(c, scale);
+		return bc_num_retireMul(c, scale, a->neg, b->neg);
 	}
 
 	if ((s = bc_num_init(&cp, BC_NUM_MREQ(a, b, scale)))) return s;
@@ -446,10 +429,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		c->num[i] = q;
 	}
 
-	if (s) goto err;
-
-	c->neg = !a->neg != !b->neg;
-	s = bc_num_retireMul(c, scale);
+	if (!s) s = bc_num_retireMul(c, scale, a->neg, b->neg);
 
 err:
 	bc_num_free(&cp);
