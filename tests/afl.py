@@ -117,11 +117,11 @@ for d in dirs:
 		for l in lines:
 			run_test(exe, exebase, tout, l, out, file, "test", l)
 
-		print("    Running whole file...")
+		print("        Running whole file...")
 
 		run_test(exe + [ file ], exebase, tout, halt.encode(), out, file, "file", file)
 
-		print("    Running file through stdin...")
+		print("        Running file through stdin...")
 
 		with open(file, "rb") as f:
 			content = f.read()
