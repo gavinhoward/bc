@@ -58,8 +58,8 @@ Files:
 
 Folders:
 
-	include  All header files.
+	dist     Files to cut a release for toybox/busybox. (Maintainer use only.)
 	gen      The bc math library, help texts and code to generate C source.
+	include  All header files.
 	src      All source code.
 	tests    All tests.
-	dist     Files to cut a release for toybox/busybox. (Maintainer use only.)
