@@ -188,7 +188,7 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
 	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
-	BcDig carry;
+	int carry, in;
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
@@ -238,20 +238,23 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 
 	for (carry = 0, i = 0; !bcg.signe && i < min_rdx + min_int; ++i, ++c->len) {
-		ptr_c[i] = ptr_a[i] + ptr_b[i] + carry;
-		carry = ptr_c[i] / 10;
-		ptr_c[i] %= 10;
+		in = ((int) ptr_a[i]) + ((int) ptr_b[i]) + carry;
+		carry = in / 10;
+		in %= 10;
+		ptr_c[i] = (BcDig) in;
 	}
 
 	for (; !bcg.signe && i < max + min_rdx; ++i, ++c->len) {
+		in = ((int) ptr_c[i]) + ((int) ptr[i]) + carry;
 		ptr_c[i] += ptr[i] + carry;
-		carry = ptr_c[i] / 10;
-		ptr_c[i] %= 10;
+		carry = in / 10;
+		in %= 10;
+		ptr_c[i] = (BcDig) in;
 	}
 
 	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
 
-	if (carry) c->num[c->len++] = carry;
+	if (carry) c->num[c->len++] = (BcDig) carry;
 
 	return BC_STATUS_SUCCESS;
 }
@@ -318,7 +321,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s;
-	BcDig carry;
+	int carry;
 	size_t i, j, len;
 	bool aone = BC_NUM_ONE(a);
 
@@ -342,15 +345,17 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	for (i = 0; !bcg.signe && i < b->len; ++i) {
 
 		for (j = 0; !bcg.signe && j < a->len; ++j) {
-			c->num[i + j] += a->num[j] * b->num[i] + carry;
-			carry = c->num[i + j] / 10;
-			c->num[i + j] %= 10;
+			int in = c->num[i + j];
+			in += ((int) a->num[j]) * ((int) b->num[i]) + carry;
+			carry = in / 10;
+			in %= 10;
+			c->num[i + j] = (BcDig) in;
 		}
 
 		if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
 
 		if (carry) {
-			c->num[i + j] += carry;
+			c->num[i + j] += (BcDig) carry;
 			carry = 0;
 			len = BC_MAX(len, i + j + 1);
 		}
