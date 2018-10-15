@@ -6,7 +6,8 @@ This is an implementation of POSIX `bc` that implements
 
 This `bc` also includes an implementation of `dc` in the same binary, which
 includes all FreeBSD and GNU extensions. However, it does not have the `!`
-command; the author does not want to deal with the security implications.
+command; the author does not want to deal with the security implications, and it
+is unnecessary in this day of full-featured shells.
 
 This `bc` is Free and Open Source Software (FOSS). It is licensed under the BSD
 0-clause License.
