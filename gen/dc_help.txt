@@ -53,10 +53,9 @@ This dc has a few differences from the two above:
 
 Options:
 
-  -e expr  --expression=expr
-                         run "expr" and quit. If multiple expressions or files
-                         (see below) are given, they are all run.
-  -f  file  --file=file  run the bc code in "file" and exit. See above as well.
-  -h  --help             print this usage message and exit
-  -V  --version          print version information and copyright and exit
-
+  -e expr  --expression=expr  run "expr" and quit. If multiple expressions or
+                              files (see below) are given, they are all run.
+  -f  file  --file=file       run the bc code in "file" and exit. See above.
+  -h  --help                  print this usage message and exit.
+  -V  --version               print version and copyright and exit.
+  -x  --extended-register     enable extended register mode.

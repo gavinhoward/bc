@@ -86,12 +86,12 @@
 //config:
 //config:	Options:
 //config:
-//config:	  -e expr  --expression=expr
-//config:	                         run "expr" and quit. If multiple expressions or files
-//config:	                         (see below) are given, they are all run.
-//config:	  -f  file  --file=file  run the bc code in "file" and exit. See above as well.
-//config:	  -h  --help             print this usage message and exit
-//config:	  -V  --version          print version information and copyright and exit
+//config:	  -e expr  --expression=expr  run "expr" and quit. If multiple expressions or
+//config:	                              files (see below) are given, they are all run.
+//config:	  -f  file  --file=file       run the bc code in "file" and exit. See above.
+//config:	  -h  --help                  print this usage message and exit.
+//config:	  -V  --version               print version and copyright and exit.
+//config:	  -x  --extended-register     enable extended register mode.
 
 //applet:IF_BC(APPLET(bc, BB_DIR_USR_BIN, BB_SUID_DROP))
 //applet:IF_DC(APPLET(dc, BB_DIR_USR_BIN, BB_SUID_DROP))
