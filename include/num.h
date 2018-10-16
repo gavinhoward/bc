@@ -46,6 +46,12 @@ typedef struct BcNum {
 #define BC_NUM_DEF_SIZE (16)
 #define BC_NUM_PRINT_WIDTH (69)
 
+#ifndef BC_NUM_KARATSUBA_LEN
+#define BC_NUM_KARATSUBA_LEN (2)
+#elif BC_NUM_KARATSUBA_LEN < 2
+#error BC_NUM_KARATSUBA_LEN must be at least 2
+#endif // BC_NUM_KARATSUBA_LEN
+
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 #define BC_NUM_INT(n) ((n)->len - (n)->rdx)
 #define BC_NUM_AREQ(a, b) \
@@ -74,6 +80,8 @@ BcStatus bc_num_extend(BcNum *n, size_t places);
 
 void bc_num_clean(BcNum *n);
 BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2);
+BcStatus bc_num_splitAt(BcNum *restrict n, size_t idx, BcNum *restrict a,
+                        ssize_t *apow, BcNum *restrict b, ssize_t *bpow);
 
 BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale);
 

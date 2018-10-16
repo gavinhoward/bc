@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <limits.h>
+
 #include <status.h>
 #include <num.h>
 #include <vm.h>
@@ -123,7 +125,7 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 
 void bc_num_truncate(BcNum *n, size_t places) {
 
-	assert(places <= n->rdx);
+	assert(places <= n->rdx && places <= n->len);
 
 	if (!places) return;
 
@@ -166,8 +168,62 @@ BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
 	if (n->rdx < scale) s = bc_num_extend(n, scale - n->rdx);
 	else bc_num_truncate(n, n->rdx - scale);
 
-	bc_num_clean(n);
 	n->neg = !neg1 != !neg2;
+	bc_num_clean(n);
+
+	return s;
+}
+
+BcStatus bc_num_splitAt(BcNum *restrict n, size_t idx, BcNum *restrict a,
+                        ssize_t *apow, BcNum *restrict b, ssize_t *bpow)
+{
+	BcStatus s = BC_STATUS_SUCCESS;
+
+	if (idx < n->len) {
+
+		if (idx >= n->rdx) {
+			(*apow) = -((ssize_t) n->rdx);
+			(*bpow) = idx - n->rdx;
+		}
+		else {
+			(*apow) = -((ssize_t) n->rdx);
+			(*bpow) = n->rdx - idx;
+		}
+
+		b->len = n->len - idx;
+		a->len = idx;
+
+		memcpy(b->num, n->num + idx, b->len * sizeof(BcDig));
+		memcpy(a->num, n->num, idx * sizeof(BcDig));
+
+		a->rdx = b->rdx = 0;
+	}
+	else {
+		bc_num_zero(b);
+		s = bc_num_copy(a, n);
+		(*apow) = (*bpow) = a->rdx = 0;
+	}
+
+	bc_num_clean(a);
+	bc_num_clean(b);
+
+	return s;
+}
+
+BcStatus bc_num_shift(BcNum *n, size_t places) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+
+	if (!places) return BC_STATUS_SUCCESS;
+	if (places + n->len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
+
+	if (n->rdx >= places) n->rdx -= places;
+	else {
+		s = bc_num_extend(n, places - n->rdx);
+		n->rdx = 0;
+	}
+
+	bc_num_clean(n);
 
 	return s;
 }
@@ -318,19 +374,16 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	return s;
 }
 
-BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+BcStatus bc_num_alg_k(BcNum *a, size_t alen, BcNum *b, size_t blen, BcNum *restrict c, size_t scale) {
 
 	BcStatus s;
 	int carry;
-	size_t i, j, len;
+	size_t i, j, len, max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2;
+	ssize_t l1rdx, h1rdx, l2rdx, h2rdx;
+	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	bool aone = BC_NUM_ONE(a);
 
-	c->rdx = a->rdx + b->rdx;
-	scale = BC_MAX(scale, a->rdx);
-	scale = BC_MAX(scale, b->rdx);
-	scale = BC_MIN(scale, c->rdx);
-
-	if (!a->len || !b->len) {
+	if (!alen || !blen) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
 	}
@@ -339,34 +392,153 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return bc_num_retireMul(c, scale, a->neg, b->neg);
 	}
 
-	memset(c->num, 0, sizeof(BcDig) * c->cap);
-	c->len = carry = len = 0;
+	if (alen + blen < BC_NUM_KARATSUBA_LEN ||
+	    alen < BC_NUM_KARATSUBA_LEN || blen < BC_NUM_KARATSUBA_LEN)
+	{
+		memset(c->num, 0, sizeof(BcDig) * c->cap);
+		c->len = carry = len = 0;
 
-	for (i = 0; !bcg.signe && i < b->len; ++i) {
+		for (i = 0; !bcg.signe && i < b->len; ++i) {
+			for (j = 0; !bcg.signe && j < a->len; ++j) {
+				int in = c->num[i + j];
+				in += ((int) a->num[j]) * ((int) b->num[i]) + carry;
+				carry = in / 10;
+				in %= 10;
+				c->num[i + j] = (BcDig) in;
+			}
 
-		for (j = 0; !bcg.signe && j < a->len; ++j) {
-			int in = c->num[i + j];
-			in += ((int) a->num[j]) * ((int) b->num[i]) + carry;
-			carry = in / 10;
-			in %= 10;
-			c->num[i + j] = (BcDig) in;
+			if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
+
+			if (carry) {
+				c->num[i + j] += (BcDig) carry;
+				carry = 0;
+				len = BC_MAX(len, i + j + 1);
+			}
+			else len = BC_MAX(len, i + j);
 		}
 
-		if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
-
-		if (carry) {
-			c->num[i + j] += (BcDig) carry;
-			carry = 0;
-			len = BC_MAX(len, i + j + 1);
-		}
-		else len = BC_MAX(len, i + j);
+		c->len = len;
+		c->rdx = a->rdx + b->rdx;
+		return bc_num_retireMul(c, scale, a->neg, b->neg);
 	}
 
-	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
+	if ((s = bc_num_init(&l1, max))) return s;
+	if ((s = bc_num_init(&h1, max))) goto high1_err;
+	if ((s = bc_num_init(&l2, max))) goto low2_err;
+	if ((s = bc_num_init(&h2, max))) goto high2_err;
+	if ((s = bc_num_init(&m1, max))) goto mix1_err;
+	if ((s = bc_num_init(&m2, max))) goto mix2_err;
+	if ((s = bc_num_init(&z0, max))) goto z0_err;
+	if ((s = bc_num_init(&z1, max))) goto z1_err;
+	if ((s = bc_num_init(&z2, max))) goto z2_err;
+	if ((s = bc_num_init(&temp, max + max))) goto temp_err;
 
-	c->len = BC_MAX(len, c->rdx);
+	if ((s = bc_num_splitAt(a, max2, &l1, &l1rdx, &h1, &h1rdx))) goto err;
+	if ((s = bc_num_splitAt(b, max2, &l2, &l2rdx, &h2, &h2rdx))) goto err;
 
-	return bc_num_retireMul(c, scale, a->neg, b->neg);
+	size_t l1len = l1.len, l2len = l2.len, h1len = h1.len, h2len = h2.len;
+
+	size_t nchars = 0;
+
+//	bc_num_print(&l1, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&h1, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&l2, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&h2, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+
+	if ((s = bc_num_add(&h1, &l1, &m1, scale))) goto err;
+	if ((s = bc_num_add(&h2, &l2, &m2, scale))) goto err;
+
+//	bc_num_print(&m1, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&m2, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+
+	if ((s = bc_num_alg_k(&h1, h1len, &h2, h2len, &z0, scale))) goto err;
+	if ((s = bc_num_alg_k(&m1, m1.len, &m2, m2.len, &z1, scale))) goto err;
+	if ((s = bc_num_alg_k(&l1, l1len, &l2, l2len, &z2, scale))) goto err;
+
+//	bc_num_print(&z0, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&z1, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&z2, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+
+	if ((s = bc_num_sub(&z1, &z0, &temp, scale))) goto err;
+	if ((s = bc_num_sub(&temp, &z2, &z1, scale))) goto err;
+
+//	bc_num_print(&z0, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&z1, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&z2, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+
+	if ((s = bc_num_shift(&z0, max2 * 2))) goto err;
+	if ((s = bc_num_shift(&z1, max2))) goto err;
+//	bc_num_print(&z0, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+//	bc_num_print(&z1, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+	if ((s = bc_num_add(&z0, &z1, &temp, scale))) goto err;
+	if ((s = bc_num_add(&temp, &z2, c, scale))) goto err;
+
+	c->rdx = a->rdx + b->rdx;
+	s = bc_num_retireMul(c, scale, a->neg, b->neg);
+
+//	bc_num_print(c, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
+
+err:
+	bc_num_free(&temp);
+temp_err:
+	bc_num_free(&z2);
+z2_err:
+	bc_num_free(&z1);
+z1_err:
+	bc_num_free(&z0);
+z0_err:
+	bc_num_free(&m2);
+mix2_err:
+	bc_num_free(&m1);
+mix1_err:
+	bc_num_free(&h2);
+high2_err:
+	bc_num_free(&l2);
+low2_err:
+	bc_num_free(&h1);
+high1_err:
+	bc_num_free(&l1);
+	return s;
+}
+
+BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+
+	BcStatus s;
+	BcNum cpa, cpb;
+	size_t maxrdx = BC_MAX(a->rdx, b->rdx), max;
+
+	scale = BC_MAX(scale, a->rdx);
+	scale = BC_MAX(scale, b->rdx);
+	scale = BC_MIN(a->rdx + b->rdx, scale);
+	maxrdx = BC_MAX(maxrdx, scale);
+
+	if ((s = bc_num_init(&cpa, a->len))) return s;
+	if ((s = bc_num_init(&cpb, b->len))) goto b_err;
+
+	if ((s = bc_num_copy(&cpa, a))) goto err;
+	if ((s = bc_num_copy(&cpb, b))) goto err;
+
+	if ((s = bc_num_shift(&cpa, maxrdx))) goto err;
+	if ((s = bc_num_shift(&cpb, maxrdx))) goto err;
+
+	if ((s = bc_num_alg_k(&cpa, a->len, &cpb, b->len, c, 0))) goto err;
+
+	max = maxrdx + a->rdx + b->rdx;
+	if ((s = bc_num_expand(c, c->len + max))) goto err;
+
+	if (c->len < max) {
+		memset(c->num + c->len, 0, (c->cap - c->len) * sizeof(BcDig));
+		c->len += max;
+	}
+
+	c->rdx += max;
+	s = bc_num_retireMul(c, scale, a->neg, b->neg);
+
+err:
+	bc_num_free(&cpb);
+b_err:
+	bc_num_free(&cpa);
+	return s;
 }
 
 BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
