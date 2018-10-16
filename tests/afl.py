@@ -43,18 +43,18 @@ def get_children(dir, get_files):
 	dirs = []
 	with os.scandir(dir) as it:
 		for entry in it:
-			if not entry.name.startswith('.') and  \
+			if not entry.name.startswith('.') and     \
 			   ((entry.is_dir() and not get_files) or \
 			    (entry.is_file() and get_files)):
 				dirs.append(entry.name)
 	dirs.sort()
 	return dirs
 
-if __name__ != "__main__":
-	usage()
-
 script = sys.argv[0]
 testdir = os.path.dirname(script)
+
+if __name__ != "__main__":
+	usage()
 
 tout = 3
 
