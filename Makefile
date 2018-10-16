@@ -55,6 +55,7 @@ PREFIX ?= /usr/local
 
 INSTALL = ./install.sh
 LINK = ./link.sh
+KARATSUBA = ./karatsuba.py
 
 -include config.mak
 
@@ -63,7 +64,9 @@ CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION)
 
 HOSTCC ?= $(CC)
 
-all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
+BC_NUM_KARATSUBA_LEN ?= 2
+
+all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED) -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
 all: make_bin clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) -o $(BC_EXEC)
 	$(LINK) $(BIN) $(DC)
@@ -80,11 +83,11 @@ $(BC_HELP_C): $(GEN_EXEC)
 $(DC_HELP_C): $(GEN_EXEC)
 	$(GEN_EMU) $(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help "" $(DC_ENABLED)
 
-$(DC): CPPFLAGS += -D$(DC_ENABLED)
+$(DC): CPPFLAGS += -D$(DC_ENABLED) -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
 $(DC): make_bin clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(DC_HELP_O) -o $(DC_EXEC)
 
-$(BC): CPPFLAGS += -D$(BC_ENABLED)
+$(BC): CPPFLAGS += -D$(BC_ENABLED) -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
 $(BC): make_bin clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) -o $(BC_EXEC)
 
