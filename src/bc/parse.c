@@ -464,7 +464,8 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	if (p->flags.len <= 1 || p->nbraces == 0) return BC_STATUS_PARSE_BAD_TOKEN;
+	if (p->flags.len <= 1 || (brace && p->nbraces == 0))
+		return BC_STATUS_PARSE_BAD_TOKEN;
 
 	if (brace) {
 
@@ -684,11 +685,6 @@ BcStatus bc_parse_for(BcParse *p) {
 		s = bc_vm_posixError(BC_STATUS_POSIX_FOR_END, p->l.f, p->l.line, NULL);
 
 	if (s) return s;
-
-	if (p->l.t.t != BC_LEX_RPAREN) {
-		s = bc_parse_expr(p, BC_PARSE_POSIX_REL, bc_parse_next_rel);
-		if (s) return s;
-	}
 
 	if (p->l.t.t != BC_LEX_RPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 	if ((s = bc_parse_push(p, BC_INST_JUMP))) return s;
