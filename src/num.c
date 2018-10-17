@@ -387,20 +387,19 @@ BcStatus bc_num_alg_k(BcNum *a, size_t alen, BcNum *b, size_t blen, BcNum *restr
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (aone || BC_NUM_ONE(b)) {
-		if ((s = bc_num_copy(c, aone ? b : a))) return s;
-		return bc_num_retireMul(c, scale, a->neg, b->neg);
-	}
+	else if (aone || BC_NUM_ONE(b)) return bc_num_copy(c, aone ? b : a);
 
 	if (alen + blen < BC_NUM_KARATSUBA_LEN ||
 	    alen < BC_NUM_KARATSUBA_LEN || blen < BC_NUM_KARATSUBA_LEN)
 	{
+		if ((s = bc_num_expand(c, a->len + b->len + 1))) return s;
+
 		memset(c->num, 0, sizeof(BcDig) * c->cap);
 		c->len = carry = len = 0;
 
 		for (i = 0; !bcg.signe && i < b->len; ++i) {
 			for (j = 0; !bcg.signe && j < a->len; ++j) {
-				int in = c->num[i + j];
+				int in = (int) c->num[i + j];
 				in += ((int) a->num[j]) * ((int) b->num[i]) + carry;
 				carry = in / 10;
 				in %= 10;
@@ -418,8 +417,8 @@ BcStatus bc_num_alg_k(BcNum *a, size_t alen, BcNum *b, size_t blen, BcNum *restr
 		}
 
 		c->len = len;
-		c->rdx = a->rdx + b->rdx;
-		return bc_num_retireMul(c, scale, a->neg, b->neg);
+
+		return BC_STATUS_SUCCESS;
 	}
 
 	if ((s = bc_num_init(&l1, max))) return s;
@@ -471,10 +470,7 @@ BcStatus bc_num_alg_k(BcNum *a, size_t alen, BcNum *b, size_t blen, BcNum *restr
 //	bc_num_print(&z0, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
 //	bc_num_print(&z1, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
 	if ((s = bc_num_add(&z0, &z1, &temp, scale))) goto err;
-	if ((s = bc_num_add(&temp, &z2, c, scale))) goto err;
-
-	c->rdx = a->rdx + b->rdx;
-	s = bc_num_retireMul(c, scale, a->neg, b->neg);
+	s = bc_num_add(&temp, &z2, c, scale);
 
 //	bc_num_print(c, &l1, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
 
@@ -507,6 +503,8 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BcNum cpa, cpb;
 	size_t maxrdx = BC_MAX(a->rdx, b->rdx), max;
 
+	size_t nchars = 0;
+
 	scale = BC_MAX(scale, a->rdx);
 	scale = BC_MAX(scale, b->rdx);
 	scale = BC_MIN(a->rdx + b->rdx, scale);
@@ -518,12 +516,14 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if ((s = bc_num_copy(&cpa, a))) goto err;
 	if ((s = bc_num_copy(&cpb, b))) goto err;
 
+	cpa.neg = cpb.neg = false;
+
 	if ((s = bc_num_shift(&cpa, maxrdx))) goto err;
 	if ((s = bc_num_shift(&cpb, maxrdx))) goto err;
 
 	if ((s = bc_num_alg_k(&cpa, a->len, &cpb, b->len, c, 0))) goto err;
 
-	max = maxrdx + a->rdx + b->rdx;
+	max = maxrdx + scale;
 	if ((s = bc_num_expand(c, c->len + max))) goto err;
 
 	if (c->len < max) {
@@ -531,8 +531,10 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		c->len += max;
 	}
 
-	c->rdx += max;
+	c->rdx = max;
+//	bc_num_print(c, a, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
 	s = bc_num_retireMul(c, scale, a->neg, b->neg);
+//	bc_num_print(c, a, 10, true, &nchars, BC_NUM_PRINT_WIDTH);
 
 err:
 	bc_num_free(&cpb);
