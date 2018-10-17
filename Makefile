@@ -146,13 +146,13 @@ valgrind_all: valgrind valgrind_timeconst
 valgrind: valgrind_bc valgrind_dc
 
 valgrind_bc:
-	tests/all.sh bc valgrind --leak-check=full --show-leak-kinds=all ./bc
+	tests/all.sh bc valgrind --leak-check=full --show-leak-kinds=all $(BC_EXEC)
 
 valgrind_dc:
-	tests/all.sh dc valgrind --leak-check=full --show-leak-kinds=all ./dc
+	tests/all.sh dc valgrind --leak-check=full --show-leak-kinds=all $(DC_EXEC)
 
 valgrind_timeconst:
-	tests/bc/timeconst.sh valgrind --leak-check=full --show-leak-kinds=all ./bc
+	tests/bc/timeconst.sh valgrind --leak-check=full --show-leak-kinds=all $(BC_EXEC)
 
 karatsuba:
 	$(KARATSUBA)
