@@ -249,9 +249,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 		char *str = buf.v;
 
-		len = buf.len - 1;
-
-		if (len == 1) {
+		if ((len = buf.len - 1) == 1) {
 			if (string && buf.v[0] == vm->exe.strend) string -= 1;
 			else if (buf.v[0] == vm->exe.strbgn) string += 1;
 		}

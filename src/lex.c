@@ -98,13 +98,11 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 BcStatus bc_lex_name(BcLex *l) {
 
 	BcStatus s;
-	size_t i;
-	char c;
+	size_t i = 0;
 	const char *buf = l->buffer + l->idx - 1;
+	char c = buf[i];
 
 	l->t.t = BC_LEX_NAME;
-	i = 0;
-	c = buf[i];
 
 	while ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_')
 		c = buf[++i];

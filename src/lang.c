@@ -83,10 +83,10 @@ BcStatus bc_array_init(BcVec *a, bool nums) {
 
 	BcStatus s;
 
-	if (nums) {
-		if ((s = bc_vec_init(a, sizeof(BcNum), bc_num_free))) return s;
-	}
-	else if ((s = bc_vec_init(a, sizeof(BcVec), bc_vec_free))) return s;
+	if (nums) s = bc_vec_init(a, sizeof(BcNum), bc_num_free);
+	else s = bc_vec_init(a, sizeof(BcVec), bc_vec_free);
+
+	if (s) return s;
 
 	if ((s = bc_array_expand(a, 1))) goto err;
 
@@ -120,23 +120,22 @@ BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
 BcStatus bc_array_expand(BcVec *a, size_t len) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcNum n;
-	BcVec v;
+	BcResultData data;
 
 	assert(a);
 
 	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
 		while (!s && len > a->len) {
-			if ((s = bc_num_init(&n, BC_NUM_DEF_SIZE))) return s;
-			bc_num_zero(&n);
-			if ((s = bc_vec_push(a, &n))) bc_num_free(&n);
+			if ((s = bc_num_init(&data.n, BC_NUM_DEF_SIZE))) return s;
+			bc_num_zero(&data.n);
+			if ((s = bc_vec_push(a, &data.n))) bc_num_free(&data.n);
 		}
 	}
 	else {
 		assert(a->size == sizeof(BcVec) && a->dtor == bc_vec_free);
 		while (!s && len > a->len) {
-			if ((s = bc_array_init(&v, true))) return s;
-			if ((s = bc_vec_push(a, &v))) bc_vec_free(&v);
+			if ((s = bc_array_init(&data.v, true))) return s;
+			if ((s = bc_vec_push(a, &data.v))) bc_vec_free(&data.v);
 		}
 	}
 

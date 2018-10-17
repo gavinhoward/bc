@@ -77,7 +77,7 @@ typedef struct BcProgram {
 
 } BcProgram;
 
-#define BC_PROG_CHECK_STACK(s, n) ((s)->len >= ((size_t) n))
+#define BC_PROG_STACK(s, n) ((s)->len >= ((size_t) n))
 
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)

@@ -139,11 +139,9 @@ void bc_num_truncate(BcNum *n, size_t places) {
 BcStatus bc_num_extend(BcNum *n, size_t places) {
 
 	BcStatus s;
-	size_t len;
+	size_t len = n->len + places;
 
 	if (!places) return BC_STATUS_SUCCESS;
-
-	len = n->len + places;
 	if (n->cap < len && (s = bc_num_expand(n, len))) return s;
 
 	memmove(n->num + places, n->num, sizeof(BcDig) * n->len);
@@ -183,11 +181,10 @@ BcStatus bc_num_splitAt(BcNum *restrict n, size_t idx, BcNum *restrict a,
 
 		b->len = n->len - idx;
 		a->len = idx;
+		a->rdx = b->rdx = 0;
 
 		memcpy(b->num, n->num + idx, b->len * sizeof(BcDig));
 		memcpy(a->num, n->num, idx * sizeof(BcDig));
-
-		a->rdx = b->rdx = 0;
 	}
 	else {
 		bc_num_zero(b);
@@ -397,12 +394,9 @@ BcStatus bc_num_alg_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 
 			if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
 
-			if (carry) {
-				c->num[i + j] += (BcDig) carry;
-				carry = 0;
-				len = BC_MAX(len, i + j + 1);
-			}
-			else len = BC_MAX(len, i + j);
+			c->num[i + j] += (BcDig) carry;
+			len = BC_MAX(len, i + j + !!carry);
+			carry = 0;
 		}
 
 		c->len = len;
@@ -466,7 +460,7 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s;
 	BcNum cpa, cpb;
-	size_t maxrdx = BC_MAX(a->rdx, b->rdx), max;
+	size_t maxrdx = BC_MAX(a->rdx, b->rdx);
 
 	scale = BC_MAX(scale, a->rdx);
 	scale = BC_MAX(scale, b->rdx);
@@ -478,21 +472,19 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if ((s = bc_num_copy(&cpa, a))) goto err;
 	if ((s = bc_num_copy(&cpb, b))) goto err;
-
 	cpa.neg = cpb.neg = false;
-
 	if ((s = bc_num_shift(&cpa, maxrdx))) goto err;
 	if ((s = bc_num_shift(&cpb, maxrdx))) goto err;
 
 	if ((s = bc_num_alg_k(&cpa, &cpb, c))) goto err;
 
-	if ((s = bc_num_expand(c, c->len + (max = maxrdx + scale)))) goto err;
-	if (c->len < max) {
+	if ((s = bc_num_expand(c, c->len + (maxrdx += scale)))) goto err;
+	if (c->len < maxrdx) {
 		memset(c->num + c->len, 0, (c->cap - c->len) * sizeof(BcDig));
-		c->len += max;
+		c->len += maxrdx;
 	}
 
-	c->rdx = max;
+	c->rdx = maxrdx;
 	s = bc_num_retireMul(c, scale, a->neg, b->neg);
 
 err:
@@ -654,11 +646,7 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 
 	for (resrdx = powrdx, pow >>= 1; !bcg.signe && pow != 0; pow >>= 1) {
-
-		powrdx <<= 1;
-
-		if ((s = bc_num_mul(&copy, &copy, &copy, powrdx))) goto err;
-
+		if ((s = bc_num_mul(&copy, &copy, &copy, (powrdx <<= 1)))) goto err;
 		if (pow & 1) {
 			resrdx += powrdx;
 			if ((s = bc_num_mul(c, &copy, c, resrdx))) goto err;
@@ -881,12 +869,9 @@ BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
 	for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
 	for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
-
 		if ((s = bc_num_printNewline(nchars, line_len))) return s;
-
 		div = num / pow;
 		num -= div * pow;
-
 		if (putchar(((char) div) + '0') == EOF) return BC_STATUS_IO_ERR;
 	}
 
@@ -1138,6 +1123,7 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 	for (*result = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
 
 		unsigned long prev = *result, powprev = pow;
+
 		*result += ((unsigned long) n->num[i]) * pow;
 		pow *= 10;
 
