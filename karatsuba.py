@@ -28,12 +28,19 @@ def usage():
 script = sys.argv[0]
 testdir = os.path.dirname(script)
 
+print("\nWARNING: This script is for distro and package maintainers.")
+print("It is for finding the optimal Karatsuba number.")
+print("It takes forever to run.")
+print("You have been warned.\n")
+
 if __name__ != "__main__":
 	usage()
 
 mx = 200
 mx2 = mx // 2
 mn = 2
+
+var = "BC_NUM_KARATSUBA_LEN"
 
 num = "9" * mx
 
@@ -58,7 +65,7 @@ tests = [ "multiply", "modulus", "power", "sqrt" ]
 
 for i in range(mn, mx2 + 1):
 
-	makecmd = [ "make", "BC_NUM_KARATSUBA_LEN={}".format(i) ]
+	makecmd = [ "make", "{}={}".format(var, i) ]
 	p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	if p.returncode != 0:
@@ -107,4 +114,8 @@ r_crit = crit[crit.imag==0].real
 tan = c.deriv(2)(r_crit)
 x_min = r_crit[tan>0]
 
-print("\nOptimal Karatsuba Num (for this machine): {}".format(int(round(x_min[0]))))
+opt = int(round(x_min[0]))
+
+print("\nOptimal Karatsuba Num (for this machine): {}".format(opt))
+print("Run the following:\n")
+print("{}={} make".format(var, opt))
