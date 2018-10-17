@@ -83,6 +83,7 @@ BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2);
 BcStatus bc_num_splitAt(BcNum *restrict n, size_t idx, BcNum *restrict a,
                         BcNum *restrict b);
 
+BcStatus bc_num_shift(BcNum *n, size_t places);
 BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale);
 
 BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub);
