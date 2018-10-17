@@ -154,6 +154,9 @@ valgrind_dc:
 valgrind_timeconst:
 	tests/bc/timeconst.sh valgrind --leak-check=full --show-leak-kinds=all ./bc
 
+karatsuba:
+	$(KARATSUBA)
+
 version:
 	@echo "$(VERSION)"
 
