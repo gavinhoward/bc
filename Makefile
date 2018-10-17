@@ -64,7 +64,7 @@ CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION)
 
 HOSTCC ?= $(CC)
 
-BC_NUM_KARATSUBA_LEN ?= 2
+BC_NUM_KARATSUBA_LEN ?= 64
 
 all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED) -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
 all: make_bin clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
@@ -156,6 +156,9 @@ valgrind_timeconst:
 
 karatsuba:
 	$(KARATSUBA)
+
+karatsuba_test:
+	$(KARATSUBA) 100 $(BC_EXEC)
 
 version:
 	@echo "$(VERSION)"

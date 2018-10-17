@@ -50,7 +50,7 @@ if [ "$d" = "bc" ]; then
 	options="-lq"
 	halt="halt"
 else
-	options="-x"
+	options=""
 	halt="q"
 fi
 
@@ -61,7 +61,11 @@ fi
 
 if [ ! -f "$results" ]; then
 	echo "Generating $d $t results..."
-	echo "halt" | $d "$name" > "$results"
+	echo "$halt" | $d $options "$name" > "$results"
+fi
+
+if [ "$d" = "dc" ]; then
+	options="-x"
 fi
 
 echo "Running $d $t..."

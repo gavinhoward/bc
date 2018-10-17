@@ -32,6 +32,7 @@ if [ "$#" -lt 1 ]; then
 	exe="$testdir/../bin/$d"
 else
 	exe="$1"
+	shift
 fi
 
 echo -e "\nRunning $d tests...\n"
