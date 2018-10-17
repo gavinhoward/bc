@@ -60,7 +60,7 @@
 #define BC_MAX_SCALE ((unsigned long) UINT_MAX)
 #define BC_MAX_STRING ((unsigned long) UINT_MAX - 1)
 #define BC_MAX_NAME BC_MAX_STRING
-#define BC_MAX_NUM ((unsigned long) SSIZE_MAX)
+#define BC_MAX_NUM BC_MAX_STRING
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
