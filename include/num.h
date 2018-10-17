@@ -81,12 +81,13 @@ BcStatus bc_num_extend(BcNum *n, size_t places);
 void bc_num_clean(BcNum *n);
 BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2);
 BcStatus bc_num_splitAt(BcNum *restrict n, size_t idx, BcNum *restrict a,
-                        ssize_t *apow, BcNum *restrict b, ssize_t *bpow);
+                        BcNum *restrict b);
 
 BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale);
 
 BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub);
 BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub);
+BcStatus bc_num_alg_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c);
 BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
