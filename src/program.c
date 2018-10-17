@@ -1818,7 +1818,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 #endif // DC_ENABLED
-
 #ifndef NDEBUG
 			default:
 			{
