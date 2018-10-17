@@ -50,6 +50,8 @@ This `bc` uses [semantic versioning](http://semver.org/).
 Files:
 
 	install.sh       Install script.
+	karatsuba.py     Script for distro and package maintainers to find the
+	                 optimal Karatsuba number.
 	LICENSE.md       A Markdown form of the BSD 0-clause License.
 	Makefile         The Makefile.
 	NOTICE.md        List of contributors and copyright owners.
