@@ -568,11 +568,11 @@ BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if ((s = bc_num_init(&c1, len))) return s;
 	if ((s = bc_num_init(&c2, len))) goto c2_err;
-	if ((s = bc_num_div(a, b, &c1, scale))) goto err;
+	if ((s = bc_num_alg_d(a, b, &c1, scale))) goto err;
 
 	if (scale) scale = ts;
 
-	if ((s = bc_num_mul(&c1, b, &c2, scale))) goto err;
+	if ((s = bc_num_alg_m(&c1, b, &c2, scale))) goto err;
 	if ((s = bc_num_sub(a, &c2, c, scale))) goto err;
 
 	if (ts > c->rdx && c->len) s = bc_num_extend(c, ts - c->rdx);
@@ -775,7 +775,7 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 		v = (unsigned long) (c <= '9' ? c - '0' : c - 'A' + 10);
 
-		if ((s = bc_num_mul(n, base, &mult, 0))) goto int_err;
+		if ((s = bc_num_alg_m(n, base, &mult, 0))) goto int_err;
 		if ((s = bc_num_ulong2num(&temp, v))) goto int_err;
 		if ((s = bc_num_add(&mult, &temp, n, 0))) goto int_err;
 	}
@@ -920,7 +920,7 @@ BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width, size_t *nchars,
 	}
 
 	while (intp.len) {
-		if ((s = bc_num_rem(&intp, base, &digit, 0))) goto err;
+		if ((s = bc_num_alg_rem(&intp, base, &digit, 0))) goto err;
 		if ((s = bc_num_ulong(&digit, &dig))) goto err;
 		if ((s = bc_vec_push(&stack, &dig))) goto err;
 		if ((s = bc_num_div(&intp, base, &intp, 0))) goto err;
@@ -1241,9 +1241,9 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 
 	while (!bcg.signe && (cmp || digits < len)) {
 
-		if ((s = bc_num_div(a, x0, &f, resrdx))) goto err;
+		if ((s = bc_num_alg_d(a, x0, &f, resrdx))) goto err;
 		if ((s = bc_num_add(x0, &f, &fprime, resrdx))) goto err;
-		if ((s = bc_num_mul(&fprime, &half, x1, resrdx))) goto err;
+		if ((s = bc_num_alg_m(&fprime, &half, x1, resrdx))) goto err;
 
 		cmp = bc_num_cmp(x1, x0);
 		digits = x1->len - (unsigned long long) llabs(cmp);
@@ -1357,21 +1357,21 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	two.num[0] = 2;
 	bc_num_one(d);
 
-	if ((s = bc_num_rem(ptr_a, ptr_c, &base, scale))) goto err;
+	if ((s = bc_num_alg_rem(ptr_a, ptr_c, &base, scale))) goto err;
 	if ((s = bc_num_copy(&exp, ptr_b))) goto err;
 
 	while (exp.len) {
 
-		if ((s = bc_num_rem(&exp, &two, &temp, scale))) goto err;
+		if ((s = bc_num_alg_rem(&exp, &two, &temp, scale))) goto err;
 
 		if (BC_NUM_ONE(&temp)) {
-			if ((s = bc_num_mul(d, &base, &temp, scale))) goto err;
-			if ((s = bc_num_rem(&temp, ptr_c, d, scale))) goto err;
+			if ((s = bc_num_alg_m(d, &base, &temp, scale))) goto err;
+			if ((s = bc_num_alg_rem(&temp, ptr_c, d, scale))) goto err;
 		}
 
 		if ((s = bc_num_div(&exp, &two, &exp, scale))) goto err;
-		if ((s = bc_num_mul(&base, &base, &temp, scale))) goto err;
-		if ((s = bc_num_rem(&temp, ptr_c, &base, scale))) goto err;
+		if ((s = bc_num_alg_m(&base, &base, &temp, scale))) goto err;
+		if ((s = bc_num_alg_rem(&temp, ptr_c, &base, scale))) goto err;
 	}
 
 err:
