@@ -45,5 +45,3 @@ bcg.posix
 bcg.warn
 bcg\.
 TT\.name
-\*restrict n
-\*restrict c
