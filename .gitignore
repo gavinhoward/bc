@@ -26,3 +26,5 @@ print.txt
 print_results.txt
 bessel.txt
 bessel_results.txt
+perf.data
+perf.data.old
