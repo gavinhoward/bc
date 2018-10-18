@@ -52,6 +52,7 @@ Files:
 	install.sh       Install script.
 	karatsuba.py     Script for distro and package maintainers to find the optimal Karatsuba number.
 	LICENSE.md       A Markdown form of the BSD 0-clause License.
+	link.sh          A script to link dc to bc.
 	Makefile         The Makefile.
 	NOTICE.md        List of contributors and copyright owners.
 	RELEASE.md       A checklist for making a release.
