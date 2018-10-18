@@ -52,6 +52,7 @@ typedef struct BcNum {
 #error BC_NUM_KARATSUBA_LEN must be at least 2
 #endif // BC_NUM_KARATSUBA_LEN
 
+#define BC_NUM_NEG(n, neg) ((((ssize_t) (n)) ^ -((ssize_t) (neg))) + (neg))
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 #define BC_NUM_INT(n) ((n)->len - (n)->rdx)
 #define BC_NUM_AREQ(a, b) \

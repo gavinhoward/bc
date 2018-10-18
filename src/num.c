@@ -69,38 +69,33 @@ ssize_t bc_num_compare(BcDig *restrict n1, BcDig *restrict n2, size_t len) {
 	size_t i;
 	int c = 0;
 	for (i = len - 1; !bcg.signe && i < len && !(c = n1[i] - n2[i]); --i);
-	return (c < 0 ? -1 : 1) * (ssize_t) (i + 1);
+	return BC_NUM_NEG(i + 1, c < 0);
 }
 
 ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 
 	size_t i, min, a_int, b_int, diff;
 	BcDig *max_num, *min_num;
-	bool a_max;
-	ssize_t cmp, neg = 1;
+	bool a_max, neg = false;
+	ssize_t cmp;
+
+	assert(a && b);
 
 	if (a == b) return 0;
-	else if (!a) return !b ? 0 : !b->neg * -2 + 1;
-	else if (!b) return a->neg * -2 + 1;
-
-	if (!a->len) return (!b->neg * -2 + 1) * !!b->len;
-	else if (!b->len) return a->neg * -2 + 1;
-
-	if (a->neg) {
-		if (b->neg) neg = -1;
+	else if (!a->len) return BC_NUM_NEG(!!b->len, !b->neg);
+	else if (!b->len) return BC_NUM_NEG(1, a->neg);
+	else if (a->neg) {
+		if (b->neg) neg = true;
 		else return -1;
 	}
 	else if (b->neg) return 1;
 
 	a_int = BC_NUM_INT(a);
 	b_int = BC_NUM_INT(b);
-	a_int -= b_int;
 
-	if (a_int) return (ssize_t) a_int;
+	if ((a_int -= b_int)) return (ssize_t) a_int;
 
-	a_max = a->rdx > b->rdx;
-
-	if (a_max) {
+	if ((a_max = a->rdx > b->rdx)) {
 		min = b->rdx;
 		diff = a->rdx - b->rdx;
 		max_num = a->num + diff;
@@ -114,10 +109,10 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 	}
 
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
-	if (cmp) return cmp * (!a_max * -2 + 1) * neg;
+	if (cmp) return BC_NUM_NEG(cmp, !a_max != neg);
 
 	for (max_num -= diff, i = diff - 1; !bcg.signe && i < diff; --i) {
-		if (max_num[i]) return neg * (!a_max * -2 + 1);
+		if (max_num[i]) return BC_NUM_NEG(1, !a_max != neg);
 	}
 
 	return 0;
