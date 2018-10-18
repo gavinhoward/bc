@@ -272,16 +272,13 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	for (carry = 0, i = 0; !bcg.signe && i < min_rdx + min_int; ++i, ++c->len) {
 		in = ((int) ptr_a[i]) + ((int) ptr_b[i]) + carry;
 		carry = in / 10;
-		in %= 10;
-		ptr_c[i] = (BcDig) in;
+		ptr_c[i] = (BcDig) (in % 10);
 	}
 
 	for (; !bcg.signe && i < max + min_rdx; ++i, ++c->len) {
-		in = ((int) ptr_c[i]) + ((int) ptr[i]) + carry;
-		ptr_c[i] += ptr[i] + carry;
+		in = ((int) ptr[i]) + carry;
 		carry = in / 10;
-		in %= 10;
-		ptr_c[i] = (BcDig) in;
+		ptr_c[i] = (BcDig) (in % 10);
 	}
 
 	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
@@ -378,8 +375,7 @@ BcStatus bc_num_alg_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 				int in = (int) c->num[i + j];
 				in += ((int) a->num[j]) * ((int) b->num[i]) + carry;
 				carry = in / 10;
-				in %= 10;
-				c->num[i + j] = (BcDig) in;
+				c->num[i + j] = (BcDig) (in % 10);
 			}
 
 			if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
@@ -669,10 +665,9 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	assert(a && b && c && op);
 
-	if (c == a) {
+	if ((init = (c == a))) {
 		ptr_a = &num2;
 		memcpy(ptr_a, c, sizeof(BcNum));
-		init = true;
 	}
 	else ptr_a = a;
 
@@ -764,14 +759,13 @@ BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 	BcStatus s;
 	BcNum temp, mult, result;
 	BcDig c = '\0';
-	bool zero;
+	bool zero = true;
 	unsigned long v;
 	size_t i, digits, len = strlen(val);
 
 	bc_num_zero(n);
 
-	for (zero = true, i = 0; zero && i < len; ++i)
-		zero = (val[i] == '.' || val[i] == '0');
+	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
 	if (zero) return BC_STATUS_SUCCESS;
 
 	if ((s = bc_num_init(&temp, BC_NUM_DEF_SIZE))) return s;
@@ -835,7 +829,7 @@ BcStatus bc_num_printChar(size_t num, size_t width, bool radix,
 {
 	(void) radix, (void) line_len;
 
-	if (putc((char) num, stdout) == EOF) return BC_STATUS_IO_ERR;
+	if (putchar((char) num) == EOF) return BC_STATUS_IO_ERR;
 	*nchars = *nchars + width;
 
 	return BC_STATUS_SUCCESS;
@@ -1305,7 +1299,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	scale = 0;
 
-	if (d == a) {
+	if ((init = (d == a))) {
 		memcpy(&num2, d, sizeof(BcNum));
 		ptr_a = &num2;
 		init = true;
