@@ -1514,7 +1514,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t idx;
-	BcResult res;
+	BcResult r;
 	BcResult *ptr;
 	BcNum *num;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
@@ -1608,8 +1608,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_LAST:
 			{
-				res.t = BC_RESULT_LAST;
-				s = bc_vec_push(&p->results, &res);
+				r.t = BC_RESULT_LAST;
+				s = bc_vec_push(&p->results, &r);
 				break;
 			}
 
@@ -1631,9 +1631,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_NUM:
 			{
-				res.t = BC_RESULT_CONSTANT;
-				res.d.id.idx = bc_program_index(code, &ip->idx);
-				s = bc_vec_push(&p->results, &res);
+				r.t = BC_RESULT_CONSTANT;
+				r.d.id.idx = bc_program_index(code, &ip->idx);
+				s = bc_vec_push(&p->results, &r);
 				break;
 			}
 
@@ -1661,9 +1661,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_STR:
 			{
-				res.t = BC_RESULT_STR;
-				res.d.id.idx = bc_program_index(code, &ip->idx);
-				s = bc_vec_push(&p->results, &res);
+				r.t = BC_RESULT_STR;
+				r.d.id.idx = bc_program_index(code, &ip->idx);
+				s = bc_vec_push(&p->results, &r);
 				break;
 			}
 
@@ -1681,13 +1681,12 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_BOOL_NOT:
 			{
 				if ((s = bc_program_prep(p, &ptr, &num))) return s;
-				if ((s = bc_num_init(&res.d.n, BC_NUM_DEF_SIZE))) return s;
+				if ((s = bc_num_init(&r.d.n, BC_NUM_DEF_SIZE))) return s;
 
-				if (!bc_num_cmp(num, &p->zero)) bc_num_one(&res.d.n);
-				else bc_num_zero(&res.d.n);
+				(!bc_num_cmp(num, &p->zero) ? bc_num_one : bc_num_zero)(&r.d.n);
 
-				s = bc_program_retire(p, &res, BC_RESULT_TEMP);
-				if (s) bc_num_free(&res.d.n);
+				s = bc_program_retire(p, &r, BC_RESULT_TEMP);
+				if (s) bc_num_free(&r.d.n);
 
 				break;
 			}
@@ -1756,8 +1755,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				if (!BC_PROG_STACK(&p->results, 1)) return BC_STATUS_EXEC_STACK;
 				ptr = bc_vec_top(&p->results);
-				if ((s = bc_result_copy(&res, ptr))) return s;
-				s = bc_vec_push(&p->results, &res);
+				if ((s = bc_result_copy(&r, ptr))) return s;
+				s = bc_vec_push(&p->results, &r);
 				break;
 			}
 
@@ -1769,9 +1768,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 				ptr = bc_vec_item_rev(&p->results, 0);
 				ptr2 = bc_vec_item_rev(&p->results, 1);
-				memcpy(&res, ptr, sizeof(BcResult));
+				memcpy(&r, ptr, sizeof(BcResult));
 				memcpy(ptr, ptr2, sizeof(BcResult));
-				memcpy(ptr2, &res, sizeof(BcResult));
+				memcpy(ptr2, &r, sizeof(BcResult));
 
 				break;
 			}
