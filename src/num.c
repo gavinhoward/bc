@@ -32,22 +32,19 @@
 #include <vm.h>
 
 void bc_num_zero(BcNum *n) {
-	if (!n) return;
-	memset(n->num, 0, n->cap * sizeof(char));
-	n->neg = false;
-	n->len = 0;
-	n->rdx = 0;
+	assert(n);
+	n->neg = (n->rdx = n->len = 0);
 }
 
 void bc_num_one(BcNum *n) {
-	if (!n) return;
+	assert(n);
 	bc_num_zero(n);
 	n->len = 1;
 	n->num[0] = 1;
 }
 
 void bc_num_ten(BcNum *n) {
-	if (!n) return;
+	assert(n);
 	bc_num_zero(n);
 	n->len = 2;
 	n->num[0] = 0;
@@ -128,7 +125,6 @@ void bc_num_truncate(BcNum *n, size_t places) {
 	n->rdx -= places;
 
 	memmove(n->num, n->num + places, n->len * sizeof(BcDig));
-	memset(n->num + n->len, 0, sizeof(BcDig) * (n->cap - n->len));
 }
 
 BcStatus bc_num_extend(BcNum *n, size_t places) {
@@ -239,8 +235,6 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	else if (!b->len) return bc_num_copy(c, a);
 
 	c->neg = a->neg;
-	memset(c->num, 0, c->cap * sizeof(BcDig));
-
 	c->rdx = BC_MAX(a->rdx, b->rdx);
 	min_rdx = BC_MIN(a->rdx, b->rdx);
 	c->len = 0;
@@ -541,6 +535,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if ((s = bc_num_expand(c, cp.len))) goto err;
 
 	bc_num_zero(c);
+	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
 	c->rdx = cp.rdx;
 	c->len = cp.len;
 	bptr = b->num;
@@ -751,11 +746,7 @@ BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 		if ((s = bc_num_expand(n, len))) return s;
 	}
 
-	if (zero) {
-		memset(n->num, 0, sizeof(BcDig) * n->cap);
-		n->neg = false;
-		return BC_STATUS_SUCCESS;
-	}
+	if (zero) return BC_STATUS_SUCCESS;
 
 	ptr = strchr(val, '.');
 
@@ -1029,7 +1020,6 @@ BcStatus bc_num_expand(BcNum *n, size_t req) {
 	if (req <= n->cap) return BC_STATUS_SUCCESS;
 	if (!(temp = realloc(n->num, req))) return BC_STATUS_ALLOC_ERR;
 
-	memset(temp + n->cap, 0, sizeof(char) * (req - n->cap));
 	n->num = temp;
 	n->cap = req;
 
@@ -1056,7 +1046,6 @@ BcStatus bc_num_copy(BcNum *d, BcNum *s) {
 	d->rdx = s->rdx;
 
 	memcpy(d->num, s->num, sizeof(BcDig) * d->len);
-	memset(d->num + d->len, 0, sizeof(BcDig) * (d->cap - d->len));
 
 	return status;
 }
@@ -1140,10 +1129,7 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 	bc_num_zero(n);
 
-	if (!val) {
-		memset(n->num, 0, sizeof(char) * n->cap);
-		return BC_STATUS_SUCCESS;
-	}
+	if (!val) return BC_STATUS_SUCCESS;
 
 	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len)
 	if ((s = bc_num_expand(n, len))) return s;
@@ -1220,7 +1206,6 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 		goto init_err;
 	}
 
-	memset(b->num, 0, b->cap * sizeof(BcDig));
 	len = ptr_a->len;
 
 	scale = BC_MAX(scale, ptr_a->rdx) + 1;
