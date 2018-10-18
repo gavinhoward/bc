@@ -106,10 +106,10 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 	}
 
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
-	if (cmp) return BC_NUM_NEG(cmp, !a_max != neg);
+	if (cmp) return BC_NUM_NEG(cmp, (!a_max) != neg);
 
 	for (max_num -= diff, i = diff - 1; !bcg.signe && i < diff; --i) {
-		if (max_num[i]) return BC_NUM_NEG(1, !a_max != neg);
+		if (max_num[i]) return BC_NUM_NEG(1, (!a_max) != neg);
 	}
 
 	return 0;
