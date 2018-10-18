@@ -67,7 +67,7 @@ BcStatus bc_num_subArrays(BcDig *restrict n1, BcDig *restrict n2, size_t len) {
 
 ssize_t bc_num_compare(BcDig *restrict n1, BcDig *restrict n2, size_t len) {
 	size_t i;
-	BcDig c = 0;
+	int c = 0;
 	for (i = len - 1; !bcg.signe && i < len && !(c = n1[i] - n2[i]); --i);
 	return (c < 0 ? -1 : 1) * (ssize_t) (i + 1);
 }
@@ -384,6 +384,7 @@ BcStatus bc_num_alg_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 		c->len = carry = len = 0;
 
 		for (i = 0; !bcg.signe && i < b->len; ++i) {
+
 			for (j = 0; !bcg.signe && j < a->len; ++j) {
 				int in = (int) c->num[i + j];
 				in += ((int) a->num[j]) * ((int) b->num[i]) + carry;
@@ -401,7 +402,7 @@ BcStatus bc_num_alg_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 
 		c->len = len;
 
-		return BC_STATUS_SUCCESS;
+		return bcg.signe ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
 	}
 
 	if ((s = bc_num_init(&l1, max))) return s;
