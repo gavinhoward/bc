@@ -50,8 +50,7 @@ This `bc` uses [semantic versioning](http://semver.org/).
 Files:
 
 	install.sh       Install script.
-	karatsuba.py     Script for distro and package maintainers to find the
-	                 optimal Karatsuba number.
+	karatsuba.py     Script for distro and package maintainers to find the optimal Karatsuba number.
 	LICENSE.md       A Markdown form of the BSD 0-clause License.
 	Makefile         The Makefile.
 	NOTICE.md        List of contributors and copyright owners.
@@ -61,7 +60,7 @@ Files:
 Folders:
 
 	dist     Files to cut a release for toybox/busybox. (Maintainer use only.)
-	gen      The bc math library, help texts and code to generate C source.
+	gen      The bc math library, help texts, and code to generate C source.
 	include  All header files.
 	src      All source code.
 	tests    All tests.
