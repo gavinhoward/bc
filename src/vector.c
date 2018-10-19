@@ -144,12 +144,12 @@ BcStatus bc_vec_concat(BcVec *v, const char *str) {
 
 	len = v->len + strlen(str);
 
-	if ((s = bc_vec_grow(v, len))) return s;
+	if (v->cap < len && (s = bc_vec_grow(v, len))) return s;
 	strcat(v->v, str);
 
 	v->len = len;
 
-	return s;
+	return BC_STATUS_SUCCESS;
 }
 
 void* bc_vec_item(const BcVec *v, size_t idx) {
