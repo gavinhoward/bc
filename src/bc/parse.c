@@ -719,10 +719,10 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 		top = p->exits.len - 1;
 		ip = bc_vec_item(&p->exits, top);
 
-		while (top < p->exits.len && ip && !ip->func)
+		while (ip && !ip->func && top < p->exits.len)
 			ip = bc_vec_item(&p->exits, top--);
 
-		if (top >= p->exits.len || !ip) return BC_STATUS_PARSE_BAD_TOKEN;
+		if (top >= p->exits.len && !ip->func) return BC_STATUS_PARSE_BAD_TOKEN;
 
 		idx = ip->idx;
 	}

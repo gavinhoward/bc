@@ -26,6 +26,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <read.h>
 #include <program.h>
 #include <vm.h>
@@ -76,8 +80,12 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	FILE *f;
 	size_t size, read;
 	long res;
+	struct stat path_stat;
 
 	assert(path && buf);
+
+	stat(path, &path_stat);
+	if (!S_ISREG(path_stat.st_mode)) return BC_STATUS_INVALID_FILE;
 
 	if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 	fseek(f, 0, SEEK_END);

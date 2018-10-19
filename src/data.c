@@ -60,7 +60,7 @@ const char *bc_errs[] = {
 };
 
 const uint8_t bc_err_indices[] = {
-	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
+	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 	BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
 #ifdef DC_ENABLED
 	BC_ERR_IDX_LEX,
@@ -92,6 +92,7 @@ const char *bc_err_descs[] = {
 	"memory allocation error",
 	"I/O error",
 	"file is not text:",
+	"path is not a regular file:",
 
 	"bad character",
 	"string end could not be found",
