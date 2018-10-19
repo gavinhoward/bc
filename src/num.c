@@ -255,10 +255,8 @@ BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	for (ptr_c = c->num, i = 0; i < diff; ++i, ++c->len) ptr_c[i] = ptr[i];
 
 	ptr_c += diff;
-	a_int = BC_NUM_INT(a);
-	b_int = BC_NUM_INT(b);
 
-	if (a_int > b_int) {
+	if ((a_int = BC_NUM_INT(a)) > (b_int = BC_NUM_INT(b))) {
 		min_int = b_int;
 		max = a_int;
 		ptr = ptr_a;
