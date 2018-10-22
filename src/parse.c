@@ -99,6 +99,7 @@ BcStatus bc_parse_text(BcParse *p, const char *text) {
 	if (!strcmp(text, "") && !BC_PARSE_CAN_EXEC(p)) {
 		p->l.t.t = BC_LEX_INVALID;
 		if ((s = p->parse(p))) return s;
+		if (!BC_PARSE_CAN_EXEC(p)) return BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 	}
 
 	return bc_lex_text(&p->l, text);
