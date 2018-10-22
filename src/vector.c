@@ -144,7 +144,7 @@ BcStatus bc_vec_concat(BcVec *v, const char *str) {
 
 	len = v->len + strlen(str);
 
-	if (v->cap < len && (s = bc_vec_grow(v, len - v->cap))) return s;
+	if (v->cap < len && (s = bc_vec_grow(v, len - v->len))) return s;
 	strcat(v->v, str);
 
 	v->len = len;
