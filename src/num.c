@@ -1060,16 +1060,12 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
                       size_t *nchars, size_t line_len)
 {
-	BcStatus s = BC_STATUS_SUCCESS;
+	BcStatus s;
 
 	assert(n && base && nchars);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_MAX_OBASE);
 
-	if (*nchars >= line_len) {
-		if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
-		if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
-		*nchars = 0;
-	}
+	if ((s = bc_num_printNewline(nchars, line_len))) return s;
 
 	if (!n->len) {
 		if (putchar('0') == EOF) return BC_STATUS_IO_ERR;
@@ -1286,12 +1282,42 @@ init_err:
 	return s;
 }
 
+BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
+
+	BcStatus s;
+	BcNum num2, *ptr_a;
+	bool init;
+	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
+
+	assert(c != d && a != b && a != d && b != d && b != c);
+
+	if ((init = (c == a))) {
+		memcpy(&num2, c, sizeof(BcNum));
+		ptr_a = &num2;
+	}
+	else ptr_a = a;
+
+	if (init) s = bc_num_init(c, len);
+	else s = bc_num_expand(d, ptr_a->len);
+
+	if (s) return s;
+
+	s = bc_num_alg_r(a, b, c, d, scale, ts);
+
+	assert(!c->neg || c->len);
+	assert(!d->neg || d->len);
+
+	if (init) bc_num_free(&num2);
+
+	return s;
+}
+
 #ifdef DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	BcStatus s;
 	BcNum num2, *ptr_a, *ptr_b, *ptr_c, base, exp, two, temp;
-	bool init = false;
+	bool init;
 
 	assert(a && b && c && d);
 
@@ -1300,7 +1326,6 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	if ((init = (d == a))) {
 		memcpy(&num2, d, sizeof(BcNum));
 		ptr_a = &num2;
-		init = true;
 	}
 	else ptr_a = a;
 
