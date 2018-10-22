@@ -31,21 +31,25 @@
 #include <num.h>
 #include <vm.h>
 
-void bc_num_zero(BcNum *n) {
+static void bc_num_setToZero(BcNum *n, size_t scale) {
 	assert(n);
-	n->neg = (n->rdx = n->len = 0);
+	n->neg = (n->len = 0);
+	n->rdx = scale;
+}
+
+void bc_num_zero(BcNum *n) {
+	bc_num_setToZero(n, 0);
 }
 
 void bc_num_one(BcNum *n) {
-	assert(n);
-	bc_num_zero(n);
+	bc_num_setToZero(n, 0);
 	n->len = 1;
 	n->num[0] = 1;
 }
 
 void bc_num_ten(BcNum *n) {
 	assert(n);
-	bc_num_zero(n);
+	bc_num_setToZero(n, 0);
 	n->len = 2;
 	n->num[0] = 0;
 	n->num[1] = 1;
@@ -314,7 +318,7 @@ BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	b->neg = bneg;
 
 	if (!cmp) {
-		bc_num_zero(c);
+		bc_num_setToZero(c, BC_MAX(a->rdx, b->rdx));
 		return BC_STATUS_SUCCESS;
 	}
 	else if (cmp > 0) {
@@ -487,7 +491,7 @@ BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 	else if (!a->len) {
-		bc_num_zero(c);
+		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
 	else if (BC_NUM_ONE(b)) {
@@ -561,7 +565,7 @@ BcStatus bc_num_alg_r(BcNum *a, BcNum *b, BcNum *restrict c, BcNum *restrict d,
 	if (!b->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
 	if (!a->len) {
-		bc_num_zero(d);
+		bc_num_setToZero(d, ts);
 		return BC_STATUS_SUCCESS;
 	}
 
@@ -611,10 +615,10 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if (!b->len) {
 		bc_num_one(c);
-		return BC_STATUS_SUCCESS;
+		return bc_num_extend(c, a->rdx);
 	}
 	else if (!a->len) {
-		bc_num_zero(c);
+		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
 	else if (BC_NUM_ONE(b)) {
@@ -664,7 +668,7 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
 
 	for (zero = true, i = 0; zero && i < c->len; ++i) zero = !c->num[i];
-	if (zero) bc_num_zero(c);
+	if (zero) bc_num_setToZero(c, scale);
 
 err:
 	bc_num_free(&copy);
@@ -1197,7 +1201,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 	if (s) goto init_err;
 
 	if (!ptr_a->len) {
-		bc_num_zero(b);
+		bc_num_setToZero(b, scale);
 		goto init_err;
 	}
 	else if (ptr_a->neg) {
