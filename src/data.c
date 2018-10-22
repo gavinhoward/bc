@@ -92,7 +92,7 @@ const char *bc_err_descs[] = {
 	"memory allocation error",
 	"I/O error",
 	"file is not text:",
-	"path is not a regular file:",
+	"path is a directory:",
 
 	"bad character",
 	"string end could not be found",

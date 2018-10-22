@@ -85,7 +85,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	assert(path && buf);
 
 	stat(path, &path_stat);
-	if (!S_ISREG(path_stat.st_mode)) return BC_STATUS_INVALID_FILE;
+	if (S_ISDIR(path_stat.st_mode)) return BC_STATUS_PATH_IS_DIR;
 
 	if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 	fseek(f, 0, SEEK_END);
