@@ -261,10 +261,14 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 				c = str[i];
 
 				if (i - 1 > len || str[i - 1] != '\\') {
-					if (c == vm->exe.strend) string -= 1;
+					if (vm->exe.strbgn == vm->exe.strend) {
+						if (c == vm->exe.strbgn) string = !string;
+					}
+					else if (c == vm->exe.strend) string -= 1;
 					else if (c == vm->exe.strbgn) string += 1;
 				}
-				else if (c == '/' && notend && !comment && str[i + 1] == '*') {
+
+				if (c == '/' && notend && !comment && str[i + 1] == '*') {
 					comment = true;
 					break;
 				}
