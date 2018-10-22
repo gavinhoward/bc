@@ -1010,8 +1010,7 @@ BcStatus bc_program_divmod(BcProgram *p) {
 	if ((s = bc_num_init(&res.d.n, BC_NUM_DEF_SIZE))) return s;
 	if ((s = bc_num_init(&res2.d.n, n2->len))) goto res2_err;
 
-	if ((s = bc_num_div(n1, n2, &res2.d.n, p->scale))) goto err;
-	if ((s = bc_num_rem(n1, n2, &res.d.n, p->scale))) goto err;
+	if ((s = bc_num_divmod(n1, n2, &res2.d.n, &res.d.n, p->scale))) goto err;
 
 	if ((s = bc_program_binOpRetire(p, &res2))) goto err;
 	res.t = BC_RESULT_TEMP;

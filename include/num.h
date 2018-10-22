@@ -94,6 +94,7 @@ BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
+BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
 BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
                        BcNumBinaryOp op, size_t req);
