@@ -1004,7 +1004,7 @@ BcStatus bc_program_divmod(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res, res2;
-	BcNum *n1, *n2;
+	BcNum *n1, *n2 = NULL;
 
 	if ((s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false))) return s;
 	if ((s = bc_num_init(&res.d.n, BC_NUM_DEF_SIZE))) return s;
