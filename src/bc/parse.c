@@ -713,12 +713,12 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 
 		if (i >= p->exits.len && !ip->func) return BC_STATUS_PARSE_BAD_TOKEN;
 
-		idx = ip->idx;
+		i = ip->idx;
 	}
-	else idx = *((size_t*) bc_vec_top(&p->conds));
+	else i = *((size_t*) bc_vec_top(&p->conds));
 
 	if ((s = bc_parse_push(p, BC_INST_JUMP))) return s;
-	if ((s = bc_parse_pushIndex(p, idx))) return s;
+	if ((s = bc_parse_pushIndex(p, i))) return s;
 	if ((s = bc_lex_next(&p->l))) return s;
 
 	if (p->l.t.t != BC_LEX_SCOLON && p->l.t.t != BC_LEX_NLINE)
