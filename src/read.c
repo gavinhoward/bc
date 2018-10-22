@@ -109,12 +109,10 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	}
 
 	(*buf)[size] = '\0';
+	s = BC_STATUS_BIN_FILE;
 
 	for (read = 0; read < size; ++read) {
-		if (BC_IO_BIN_CHAR((*buf)[read])) {
-			s = BC_STATUS_BIN_FILE;
-			goto read_err;
-		}
+		if (BC_IO_BIN_CHAR((*buf)[read])) goto read_err;
 	}
 
 	fclose(f);
