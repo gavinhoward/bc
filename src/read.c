@@ -26,8 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include <read.h>
@@ -37,6 +36,7 @@
 BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 	BcStatus s;
+	int i;
 	signed char c = 0;
 
 	if (bcg.ttyin && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
@@ -48,7 +48,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 	while (c != '\n') {
 
-		if ((c = fgetc(stdin)) == EOF) {
+		if ((i = fgetc(stdin)) == EOF) {
 
 			if (errno == EINTR) {
 
@@ -66,7 +66,10 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 			}
 			else return BC_STATUS_IO_ERR;
 		}
-		else if (BC_IO_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
+		else {
+			c = (char) i;
+			if (BC_IO_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
+		}
 
 		if ((s = bc_vec_push(vec, &c))) return s;
 	}
@@ -78,16 +81,22 @@ BcStatus bc_read_file(const char *path, char **buf) {
 
 	BcStatus s;
 	FILE *f;
+	int fd;
 	size_t size, read;
 	long res;
-	struct stat path_stat;
 
 	assert(path && buf);
 
-	stat(path, &path_stat);
-	if (S_ISDIR(path_stat.st_mode)) return BC_STATUS_PATH_IS_DIR;
+	if ((fd = open(path, O_RDWR)) == -1) {
+		if (errno == EISDIR) return BC_STATUS_PATH_IS_DIR;
+		else return BC_STATUS_EXEC_FILE_ERR;
+	}
 
-	if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
+	if (!(f = fdopen(fd, "r"))) {
+		close(fd);
+		return BC_STATUS_IO_ERR;
+	}
+
 	fseek(f, 0, SEEK_END);
 
 	if ((res = ftell(f)) < 0) {
