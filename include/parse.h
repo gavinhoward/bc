@@ -37,7 +37,7 @@
 #define bc_parse_updateFunc(p, f) \
 	((p)->func = bc_vec_item(&(p)->prog->fns, ((p)->fidx = (f))))
 
-#define BC_PARSE_POSIX_REL (1<<0)
+#define BC_PARSE_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
 #define BC_PARSE_NOREAD (1<<3)

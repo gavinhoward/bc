@@ -326,6 +326,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 	if ((s && s != BC_STATUS_QUIT) || bcg.sig_other) return s;
 
 	if ((bcg.bc || !vm->files.len) && vm->exprs.len <= 1) s = bc_vm_stdin(vm);
+	if (!s && !BC_PARSE_CAN_EXEC(&vm->prs)) s = bc_vm_process(vm, "");
 
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 }

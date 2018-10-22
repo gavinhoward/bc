@@ -91,7 +91,16 @@ BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 }
 
 BcStatus bc_parse_text(BcParse *p, const char *text) {
+
+	BcStatus s;
+
 	p->func = bc_vec_item(&p->prog->fns, p->fidx);
+
+	if (!strcmp(text, "") && !BC_PARSE_CAN_EXEC(p)) {
+		p->l.t.t = BC_LEX_INVALID;
+		if ((s = p->parse(p))) return s;
+	}
+
 	return bc_lex_text(&p->l, text);
 }
 

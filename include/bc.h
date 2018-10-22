@@ -71,7 +71,7 @@ BcStatus bc_lex_token(BcLex *l);
 BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
 BcStatus bc_parse_operator(BcParse *p, BcVec *ops, BcLexType type,
-                           size_t *nexprs, bool next);
+                           size_t start, size_t *nexprs, bool next);
 BcStatus bc_parse_rightParen(BcParse *p, BcVec *ops, size_t *nexs);
 BcStatus bc_parse_params(BcParse *p, uint8_t flags);
 BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags);
@@ -80,10 +80,10 @@ BcStatus bc_parse_read(BcParse *p);
 BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
                           uint8_t flags, BcInst *prev);
 BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags);
-BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
+BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
                          size_t *nexprs, uint8_t flags);
 BcStatus bc_parse_minus(BcParse *p, BcVec *ops, BcInst *prev,
-                        bool rparen, size_t *nexprs);
+                        size_t start, bool rparen, size_t *nexprs);
 BcStatus bc_parse_string(BcParse *p, char inst);
 BcStatus bc_parse_print(BcParse *p);
 BcStatus bc_parse_return(BcParse *p);
