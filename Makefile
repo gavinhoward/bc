@@ -59,7 +59,7 @@ KARATSUBA = ./karatsuba.py
 
 -include config.mak
 
-BC_NUM_KARATSUBA_LEN ?= 64
+BC_NUM_KARATSUBA_LEN ?= 32
 
 CFLAGS += -Wall -Wextra -pedantic -std=c99 -funsigned-char
 CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION)
