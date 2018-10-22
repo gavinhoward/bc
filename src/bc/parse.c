@@ -695,24 +695,23 @@ BcStatus bc_parse_for(BcParse *p) {
 BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 
 	BcStatus s;
-	size_t idx;
+	size_t i;
 	BcInstPtr *ip;
 
 	if (!BC_PARSE_LOOP(p)) return BC_STATUS_PARSE_BAD_TOKEN;
 
 	if (type == BC_LEX_KEY_BREAK) {
 
-		size_t top;
-
 		if (!p->exits.len) return BC_STATUS_PARSE_BAD_TOKEN;
 
-		top = p->exits.len - 1;
-		ip = bc_vec_item(&p->exits, top);
+		i = p->exits.len - 1;
+		ip = bc_vec_item(&p->exits, i);
 
-		while (ip && !ip->func && top < p->exits.len)
-			ip = bc_vec_item(&p->exits, top--);
+		while (!ip->func && i < p->exits.len) ip = bc_vec_item(&p->exits, i--);
 
-		if (top >= p->exits.len && !ip->func) return BC_STATUS_PARSE_BAD_TOKEN;
+		assert(ip);
+
+		if (i >= p->exits.len && !ip->func) return BC_STATUS_PARSE_BAD_TOKEN;
 
 		idx = ip->idx;
 	}
