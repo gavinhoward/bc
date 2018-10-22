@@ -146,7 +146,7 @@ BcStatus bc_num_extend(BcNum *n, size_t places) {
 
 void bc_num_clean(BcNum *n) {
 	while (n->len > 0 && !n->num[n->len - 1]) --n->len;
-	if (n->len == 0) n->rdx = n->neg = 0;
+	if (!n->len) n->neg = false;
 	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
@@ -157,8 +157,8 @@ BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
 	if (n->rdx < scale) s = bc_num_extend(n, scale - n->rdx);
 	else bc_num_truncate(n, n->rdx - scale);
 
-	n->neg = !neg1 != !neg2;
 	bc_num_clean(n);
+	if (n->len) n->neg = !neg1 != !neg2;
 
 	return s;
 }
