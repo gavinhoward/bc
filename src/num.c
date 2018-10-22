@@ -615,7 +615,7 @@ BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if (!b->len) {
 		bc_num_one(c);
-		return bc_num_extend(c, a->rdx);
+		return BC_STATUS_SUCCESS;
 	}
 	else if (!a->len) {
 		bc_num_setToZero(c, scale);
