@@ -99,8 +99,9 @@ BcStatus bc_parse_func(BcParse *p);
 BcStatus bc_parse_auto(BcParse *p);
 BcStatus bc_parse_body(BcParse *p, bool brace);
 BcStatus bc_parse_stmt(BcParse *p);
-BcStatus bc_parse_parse(BcParse *p);
 // ** Exclude end. **
+
+BcStatus bc_parse_parse(BcParse *p);
 
 BcStatus bc_parse_else(BcParse *p);
 BcStatus bc_parse_stmt(BcParse *p);

@@ -45,3 +45,4 @@ BcStatus bc_vm_info()
 (toys.optflags & FLAG_w)
 TT.
 toys.which->name
+s = bc_parse_parse(p)
