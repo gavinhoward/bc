@@ -42,7 +42,9 @@ This is the checklist for cutting a release.
 11.	Fix AFL crashes as much as possible.
 12.	Repeat steps 1-11 again and repeat until nothing is found.
 13.	Run "make clean_tests".
-14.	Run the release script.
-15.	Upload the custom tarball to GitHub.
-16.	Add sha's to release notes.
-17.	Edit release notes for the changelog.
+14.	Run toybox release and submit.
+15.	Run busybox release and submit.
+16.	Run the release script.
+17.	Upload the custom tarball to GitHub.
+18.	Add sha's to release notes.
+19.	Edit release notes for the changelog.
