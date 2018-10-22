@@ -427,7 +427,9 @@ BcStatus bc_parse_return(BcParse *p) {
 	}
 	else {
 
-		if ((s = bc_parse_expr(p, 0, bc_parse_next_expr))) return s;
+		s = bc_parse_expr(p, 0, bc_parse_next_expr);
+		if (s && s != BC_STATUS_PARSE_EMPTY_EXP) return s;
+
 		paren = paren && p->l.t.last == BC_LEX_RPAREN;
 
 		if (!paren && (s = bc_vm_posixError(BC_STATUS_POSIX_RET_PARENS,
