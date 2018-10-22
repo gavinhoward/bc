@@ -1028,26 +1028,22 @@ res2_err:
 BcStatus bc_program_modexp(BcProgram *p) {
 
 	BcStatus s;
-	BcResult *opd1, *opd2, *opd3, res;
+	BcResult *r1, *r2, *r3, res;
 	BcNum *n1, *n2, *n3;
 
 	if (!BC_PROG_STACK(&p->results, 3)) return BC_STATUS_EXEC_STACK;
-	if ((s = bc_program_binOpPrep(p, &opd2, &n2, &opd3, &n3, false))) return s;
+	if ((s = bc_program_binOpPrep(p, &r2, &n2, &r3, &n3, false))) return s;
 
-	opd1 = bc_vec_item_rev(&p->results, 2);
-	if ((s = bc_program_num(p, opd1, &n1, false))) return s;
+	r1 = bc_vec_item_rev(&p->results, 2);
+	if ((s = bc_program_num(p, r1, &n1, false))) return s;
+	if (!BC_PROG_NUM(r1, n1)) return BC_STATUS_EXEC_BAD_TYPE;
 
 	// Make sure that the values have their pointers updated, if necessary.
-	if (opd1->t == BC_RESULT_VAR || opd1->t == BC_RESULT_ARRAY_ELEM) {
-		if (opd1->t == opd2->t) {
-			if ((s = bc_program_num(p, opd2, &n2, false))) return s;
-		}
-		if (opd1->t == opd3->t) {
-			if ((s = bc_program_num(p, opd3, &n3, false))) return s;
-		}
+	if (r1->t == BC_RESULT_VAR || r1->t == BC_RESULT_ARRAY_ELEM) {
+		if (r1->t == r2->t && (s = bc_program_num(p, r2, &n2, false))) return s;
+		if (r1->t == r3->t && (s = bc_program_num(p, r3, &n3, false))) return s;
 	}
 
-	if (!BC_PROG_NUM(opd1, n1)) return BC_STATUS_EXEC_BAD_TYPE;
 	if ((s = bc_num_init(&res.d.n, n3->len))) return s;
 	if ((s = bc_num_modexp(n1, n2, n3, &res.d.n, p->scale))) goto err;
 
