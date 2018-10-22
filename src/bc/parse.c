@@ -1286,7 +1286,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 	{
 		return s;
 	}
-	else if ((flags & BC_PARSE_REL) && nrelops != 1 &&
+	else if ((flags & BC_PARSE_REL) && nrelops > 1 &&
 	         (s = bc_vm_posixError(BC_STATUS_POSIX_MULTIPLE_REL,
 	                                p->l.f, p->l.line, NULL)))
 	{
