@@ -100,14 +100,11 @@ BcStatus bc_read_file(const char *path, char **buf) {
 
 	if (!(f = fdopen(fd, "r"))) goto stat_err;
 
-	fseek(f, 0, SEEK_END);
-
+	if (fseek(f, 0, SEEK_END) == -1) goto malloc_err;
 	if ((res = ftell(f)) < 0) goto malloc_err;
+	if (fseek(f, 0, SEEK_SET) == -1) goto malloc_err;
 
-	size = (size_t) res;
-	fseek(f, 0, SEEK_SET);
-
-	if (!(*buf = malloc(size + 1))) {
+	if (!(*buf = malloc((size = (size_t) res) + 1))) {
 		s = BC_STATUS_ALLOC_ERR;
 		goto malloc_err;
 	}
