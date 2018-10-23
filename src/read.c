@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <read.h>
@@ -79,30 +80,29 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 BcStatus bc_read_file(const char *path, char **buf) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_IO_ERR;
 	FILE *f;
 	int fd;
 	size_t size, read;
 	long res;
+	struct stat pstat;
 
 	assert(path && buf);
 
-	if ((fd = open(path, O_RDWR)) == -1) {
-		if (errno == EISDIR) return BC_STATUS_PATH_IS_DIR;
-		else return BC_STATUS_EXEC_FILE_ERR;
+	if ((fd = open(path, O_RDONLY)) == -1) return BC_STATUS_EXEC_FILE_ERR;
+
+	if (fstat(fd, &pstat) == -1) goto stat_err;
+
+	if (S_ISDIR(pstat.st_mode)) {
+		s = BC_STATUS_PATH_IS_DIR;
+		goto stat_err;
 	}
 
-	if (!(f = fdopen(fd, "r"))) {
-		close(fd);
-		return BC_STATUS_IO_ERR;
-	}
+	if (!(f = fdopen(fd, "r"))) goto stat_err;
 
 	fseek(f, 0, SEEK_END);
 
-	if ((res = ftell(f)) < 0) {
-		s = BC_STATUS_IO_ERR;
-		goto malloc_err;
-	}
+	if ((res = ftell(f)) < 0) goto malloc_err;
 
 	size = (size_t) res;
 	fseek(f, 0, SEEK_SET);
@@ -112,10 +112,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 		goto malloc_err;
 	}
 
-	if ((read = fread(*buf, 1, size, f)) != size) {
-		s = BC_STATUS_IO_ERR;
-		goto read_err;
-	}
+	if ((read = fread(*buf, 1, size, f)) != size) goto read_err;
 
 	(*buf)[size] = '\0';
 	s = BC_STATUS_BIN_FILE;
@@ -132,5 +129,8 @@ read_err:
 	free(*buf);
 malloc_err:
 	fclose(f);
+	return s;
+stat_err:
+	close(fd);
 	return s;
 }
