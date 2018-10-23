@@ -99,7 +99,7 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 
 	if ((a_int -= b_int)) return (ssize_t) a_int;
 
-	if ((a_max = a->rdx > b->rdx)) {
+	if ((a_max = (a->rdx > b->rdx))) {
 		min = b->rdx;
 		diff = a->rdx - b->rdx;
 		max_num = a->num + diff;
@@ -201,7 +201,7 @@ static BcStatus bc_num_shift(BcNum *n, size_t places) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	if (!places) return BC_STATUS_SUCCESS;
+	if (!places || !n->len) return BC_STATUS_SUCCESS;
 	if (places + n->len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
 
 	if (n->rdx >= places) n->rdx -= places;
