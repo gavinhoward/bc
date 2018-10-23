@@ -198,7 +198,7 @@ BcStatus bc_array_expand(BcVec *a, size_t len);
 
 // ** Exclude start. **
 void bc_string_free(void *string);
-void bc_id_free(void *entry);
+void bc_id_free(void *id);
 BcStatus bc_result_copy(BcResult *d, BcResult *src);
 void bc_result_free(void *result);
 // ** Exclude end. **
