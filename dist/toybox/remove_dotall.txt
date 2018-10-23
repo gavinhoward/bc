@@ -34,7 +34,7 @@
 ^[ ]*l->next = next;$
 ^BcStatus bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
 ^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}
-^BcStatus bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
+^static BcStatus bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
 ^[ ]*vm->env_args = NULL;$
 \n[ ]*free\(vm->env_args\);$
 ^[ ]*bcg\.exreg = vm\.flags & BC_FLAG_X;$
