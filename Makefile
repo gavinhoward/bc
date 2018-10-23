@@ -73,7 +73,7 @@ all: make_bin clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(
 	$(LINK) $(BIN) $(DC)
 
 $(GEN_EXEC):
-	$(HOSTCC) -o $(GEN_EXEC) $(GEN_C)
+	$(HOSTCC) $(CFLAGS) -o $(GEN_EXEC) $(GEN_C)
 
 $(BC_LIB_C): $(GEN_EXEC)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED)
