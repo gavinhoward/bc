@@ -148,12 +148,12 @@ void bc_string_free(void *string) {
 	free(*s);
 }
 
-int bc_entry_cmp(const void *e1, const void *e2) {
-	return strcmp(((const BcEntry*) e1)->name, ((const BcEntry*) e2)->name);
+int bc_id_cmp(const void *e1, const void *e2) {
+	return strcmp(((const BcId*) e1)->name, ((const BcId*) e2)->name);
 }
 
-void bc_entry_free(void *entry) {
-	BcEntry *e = entry;
+void bc_id_free(void *entry) {
+	BcId *e = entry;
 	assert(e && e->name);
 	free(e->name);
 }

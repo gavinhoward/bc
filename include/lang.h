@@ -124,12 +124,12 @@ typedef enum BcInst {
 
 } BcInst;
 
-typedef struct BcEntry {
+typedef struct BcId {
 
 	char *name;
 	size_t idx;
 
-} BcEntry;
+} BcId;
 
 typedef struct BcAuto {
 
@@ -173,7 +173,7 @@ typedef union BcResultData {
 
 	BcNum n;
 	BcVec v;
-	BcEntry id;
+	BcId id;
 
 } BcResultData;
 
@@ -208,12 +208,13 @@ void bc_string_free(void *string);
 
 void bc_auto_free(void *auto1);
 
-int bc_entry_cmp(const void *e1, const void *e2);
-void bc_entry_free(void *entry);
+void bc_id_free(void *entry);
 
 BcStatus bc_result_copy(BcResult *d, BcResult *s);
 void bc_result_free(void *result);
 // ** Exclude end. **
+
+int bc_id_cmp(const void *e1, const void *e2);
 
 #ifndef NDEBUG
 extern const char bc_inst_chars[];

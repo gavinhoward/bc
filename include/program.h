@@ -51,13 +51,13 @@ typedef struct BcProgram {
 	BcVec stack;
 
 	BcVec fns;
-	BcVecO fn_map;
+	BcVec fn_map;
 
 	BcVec vars;
-	BcVecO var_map;
+	BcVec var_map;
 
 	BcVec arrs;
-	BcVecO arr_map;
+	BcVec arr_map;
 
 	BcVec strs;
 	BcVec consts;

@@ -43,8 +43,8 @@ BcStatus dc_main(int argc, char *argv[]) {
 
 	exec.init = dc_parse_init;
 	exec.exp = dc_parse_expr;
-	exec.strbgn = '[';
-	exec.strend = ']';
+	exec.sbgn = '[';
+	exec.send = ']';
 
 	return bc_vm_run(argc, argv, exec, "DC_LINE_LENGTH");
 }

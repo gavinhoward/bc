@@ -129,6 +129,15 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 	return bc_program_reset(p->prog, s);
 }
 
+void bc_parse_free(BcParse *p) {
+	assert(p);
+	bc_vec_free(&p->flags);
+	bc_vec_free(&p->exits);
+	bc_vec_free(&p->conds);
+	bc_vec_free(&p->ops);
+	bc_lex_free(&p->l);
+}
+
 BcStatus bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
                          BcParseParse parse, BcLexNext next)
 {
@@ -136,12 +145,14 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
 
 	assert(p && prog);
 
+	memset(p, 0, sizeof(BcParse));
+
 	if ((s = bc_lex_init(&p->l, next))) return s;
-	if ((s = bc_vec_init(&p->flags, sizeof(uint8_t), NULL))) goto flags_err;
-	if ((s = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto exit_err;
-	if ((s = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto cond_err;
-	if ((s = bc_vec_pushByte(&p->flags, 0))) goto push_err;
-	if ((s = bc_vec_init(&p->ops, sizeof(BcLexType), NULL))) goto push_err;
+	if ((s = bc_vec_init(&p->flags, sizeof(uint8_t), NULL))) goto err;
+	if ((s = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto err;
+	if ((s = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto err;
+	if ((s = bc_vec_pushByte(&p->flags, 0))) goto err;
+	if ((s = bc_vec_init(&p->ops, sizeof(BcLexType), NULL))) goto err;
 
 	p->parse = parse;
 	p->prog = prog;
@@ -150,22 +161,7 @@ BcStatus bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
 
 	return s;
 
-push_err:
-	bc_vec_free(&p->conds);
-cond_err:
-	bc_vec_free(&p->exits);
-exit_err:
-	bc_vec_free(&p->flags);
-flags_err:
-	bc_lex_free(&p->l);
+err:
+	bc_parse_free(p);
 	return s;
-}
-
-void bc_parse_free(BcParse *p) {
-	assert(p);
-	bc_vec_free(&p->flags);
-	bc_vec_free(&p->exits);
-	bc_vec_free(&p->conds);
-	bc_vec_free(&p->ops);
-	bc_lex_free(&p->l);
 }

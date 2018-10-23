@@ -32,26 +32,26 @@
 static BcStatus bc_program_search(BcProgram *p, char *id, BcVec **ret, bool var)
 {
 	BcStatus s;
-	BcEntry e, *ptr;
+	BcId e, *ptr;
 	BcVec *v;
-	BcVecO *vo;
+	BcVec *map;
 	size_t i;
 	BcResultData data;
 	bool new;
 
 	v = var ? &p->vars : &p->arrs;
-	vo = var ? &p->var_map : &p->arr_map;
+	map = var ? &p->var_map : &p->arr_map;
 
 	e.name = id;
 	e.idx = v->len;
 
-	if ((new = (s = bc_veco_insert(vo, &e, &i)) != BC_STATUS_VEC_ITEM_EXISTS)) {
+	if ((new = (s = bc_map_insert(map, &e, &i)) != BC_STATUS_VEC_ITEM_EXISTS)) {
 		if (s) return s;
 		if ((s = bc_array_init(&data.v, var))) return s;
 		if ((s = bc_vec_push(v, &data.v))) goto err;
 	}
 
-	ptr = bc_veco_item(vo, i);
+	ptr = bc_map_item(map, i);
 	if (new && !(ptr->name = strdup(e.name))) return BC_STATUS_ALLOC_ERR;
 	*ret = bc_vec_item(v, ptr->idx);
 
@@ -1314,15 +1314,41 @@ err:
 	return s;
 }
 
+void bc_program_free(BcProgram *p) {
+	assert(p);
+	bc_num_free(&p->ib);
+	bc_num_free(&p->ob);
+	bc_num_free(&p->hexb);
+#ifdef DC_ENABLED
+	bc_num_free(&p->strmb);
+#endif // DC_ENABLED
+	bc_vec_free(&p->fns);
+	bc_vec_free(&p->fn_map);
+	bc_vec_free(&p->vars);
+	bc_vec_free(&p->var_map);
+	bc_vec_free(&p->arrs);
+	bc_vec_free(&p->arr_map);
+	bc_vec_free(&p->strs);
+	bc_vec_free(&p->consts);
+	bc_vec_free(&p->results);
+	bc_vec_free(&p->stack);
+	bc_num_free(&p->last);
+	bc_num_free(&p->zero);
+	bc_num_free(&p->one);
+}
+
 BcStatus bc_program_init(BcProgram *p, size_t line_len,
                          BcParseInit init, BcParseExpr expr)
 {
 	BcStatus s;
 	size_t idx;
-	char *main_name = NULL, *read_name = NULL;
+	char *main_name, *read_name;
 	BcInstPtr ip;
 
 	assert(p);
+
+	memset(p, 0, sizeof(BcProgram));
+	memset(&ip, 0, sizeof(BcInstPtr));
 
 	p->nchars = p->scale = 0;
 	p->len = line_len;
@@ -1333,117 +1359,71 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	bc_num_ten(&p->ib);
 	p->ib_t = 10;
 
-	if ((s = bc_num_init(&p->ob, BC_NUM_DEF_SIZE))) goto obase_err;
+	if ((s = bc_num_init(&p->ob, BC_NUM_DEF_SIZE))) goto err;
 	bc_num_ten(&p->ob);
 	p->ob_t = 10;
 
-	if ((s = bc_num_init(&p->hexb, BC_NUM_DEF_SIZE))) goto hexb_err;
+	if ((s = bc_num_init(&p->hexb, BC_NUM_DEF_SIZE))) goto err;
 	bc_num_ten(&p->hexb);
 	p->hexb.num[0] = 6;
 
 #ifdef DC_ENABLED
-	if ((s = bc_num_init(&p->strmb, BC_NUM_DEF_SIZE))) goto streamb_err;
-	if ((s = bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1))) goto last_err;
+	if ((s = bc_num_init(&p->strmb, BC_NUM_DEF_SIZE))) goto err;
+	if ((s = bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1))) goto err;
 #endif // DC_ENABLED
 
-	if ((s = bc_num_init(&p->last, BC_NUM_DEF_SIZE))) goto last_err;
+	if ((s = bc_num_init(&p->last, BC_NUM_DEF_SIZE))) goto err;
 	bc_num_zero(&p->last);
 
-	if ((s = bc_num_init(&p->zero, BC_NUM_DEF_SIZE))) goto zero_err;
+	if ((s = bc_num_init(&p->zero, BC_NUM_DEF_SIZE))) goto err;
 	bc_num_zero(&p->zero);
 
-	if ((s = bc_num_init(&p->one, BC_NUM_DEF_SIZE))) goto one_err;
+	if ((s = bc_num_init(&p->one, BC_NUM_DEF_SIZE))) goto err;
 	bc_num_one(&p->one);
 
-	if ((s = bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free))) goto fn_err;
-
-	s = bc_veco_init(&p->fn_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
-	if (s) goto func_map_err;
+	if ((s = bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free))) goto err;
+	if ((s = bc_map_init(&p->fn_map))) goto err;
 
 	if (!(main_name = strdup(bc_func_main))) {
 		s = BC_STATUS_ALLOC_ERR;
-		goto name_err;
+		goto err;
 	}
 
-	s = bc_program_addFunc(p, main_name, &idx);
-	if (s || idx != BC_PROG_MAIN) goto name_err;
-	main_name = NULL;
+	if ((s = bc_program_addFunc(p, main_name, &idx))) goto err;
+	assert(idx == BC_PROG_MAIN);
 
 	if (!(read_name = strdup(bc_func_read))) {
 		s = BC_STATUS_ALLOC_ERR;
-		goto name_err;
+		goto err;
 	}
 
-	s = bc_program_addFunc(p, read_name, &idx);
-	if (s || idx != BC_PROG_READ) goto name_err;
-	read_name = NULL;
+	if ((s = bc_program_addFunc(p, read_name, &idx))) goto err;
+	assert(idx == BC_PROG_READ);
 
-	if ((s = bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free))) goto name_err;
-	s = bc_veco_init(&p->var_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
-	if (s) goto var_map_err;
+	if ((s = bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free))) goto err;
+	if ((s = bc_map_init(&p->var_map))) goto err;
 
-	if ((s = bc_vec_init(&p->arrs, sizeof(BcVec), bc_vec_free))) goto arr_err;
-	s = bc_veco_init(&p->arr_map, sizeof(BcEntry), bc_entry_free, bc_entry_cmp);
-	if (s) goto array_map_err;
+	if ((s = bc_vec_init(&p->arrs, sizeof(BcVec), bc_vec_free))) goto err;
+	if ((s = bc_map_init(&p->arr_map))) goto err;
 
-	s = bc_vec_init(&p->strs, sizeof(char*), bc_string_free);
-	if (s) goto string_err;
-
-	s = bc_vec_init(&p->consts, sizeof(char*), bc_string_free);
-	if (s) goto const_err;
-
-	s = bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
-	if (s) goto expr_err;
-
-	if ((s = bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL))) goto stack_err;
-	memset(&ip, 0, sizeof(BcInstPtr));
-	if ((s = bc_vec_push(&p->stack, &ip))) goto push_err;
+	if ((s = bc_vec_init(&p->strs, sizeof(char*), bc_string_free))) goto err;
+	if ((s = bc_vec_init(&p->consts, sizeof(char*), bc_string_free))) goto err;
+	if ((s = bc_vec_init(&p->results, sizeof(BcResult), bc_result_free)))
+		goto err;
+	if ((s = bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL))) goto err;
+	if ((s = bc_vec_push(&p->stack, &ip))) goto err;
 
 	return s;
 
-push_err:
-	bc_vec_free(&p->stack);
-stack_err:
-	bc_vec_free(&p->results);
-expr_err:
-	bc_vec_free(&p->consts);
-const_err:
-	bc_vec_free(&p->strs);
-string_err:
-	bc_veco_free(&p->arr_map);
-array_map_err:
-	bc_vec_free(&p->arrs);
-arr_err:
-	bc_veco_free(&p->var_map);
-var_map_err:
-	bc_vec_free(&p->vars);
-name_err:
-	bc_veco_free(&p->fn_map);
-func_map_err:
-	bc_vec_free(&p->fns);
-fn_err:
-	bc_num_free(&p->one);
-one_err:
-	bc_num_free(&p->zero);
-zero_err:
-	bc_num_free(&p->last);
-last_err:
-#ifdef DC_ENABLED
-	bc_num_free(&p->strmb);
-streamb_err:
-#endif // DC_ENABLED
-	bc_num_free(&p->hexb);
-hexb_err:
-	bc_num_free(&p->ob);
-obase_err:
-	bc_num_free(&p->ib);
+err:
+	bc_program_free(p);
 	return s;
 }
 
 BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 
 	BcStatus s;
-	BcEntry entry, *entry_ptr;
+	BcId entry, *entry_ptr;
 	BcFunc f;
 
 	assert(p && name && idx);
@@ -1451,12 +1431,12 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 	entry.name = name;
 	entry.idx = p->fns.len;
 
-	if ((s = bc_veco_insert(&p->fn_map, &entry, idx))) {
+	if ((s = bc_map_insert(&p->fn_map, &entry, idx))) {
 		free(name);
 		if (s != BC_STATUS_VEC_ITEM_EXISTS) return s;
 	}
 
-	entry_ptr = bc_veco_item(&p->fn_map, *idx);
+	entry_ptr = bc_map_item(&p->fn_map, *idx);
 	*idx = entry_ptr->idx;
 
 	if (s == BC_STATUS_VEC_ITEM_EXISTS) {
@@ -1832,38 +1812,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 	}
 
 	return s;
-}
-
-void bc_program_free(BcProgram *p) {
-
-	assert(p);
-
-	bc_num_free(&p->ib);
-	bc_num_free(&p->ob);
-	bc_num_free(&p->hexb);
-
-#ifdef DC_ENABLED
-	bc_num_free(&p->strmb);
-#endif // DC_ENABLED
-
-	bc_vec_free(&p->fns);
-	bc_veco_free(&p->fn_map);
-
-	bc_vec_free(&p->vars);
-	bc_veco_free(&p->var_map);
-
-	bc_vec_free(&p->arrs);
-	bc_veco_free(&p->arr_map);
-
-	bc_vec_free(&p->strs);
-	bc_vec_free(&p->consts);
-
-	bc_vec_free(&p->results);
-	bc_vec_free(&p->stack);
-
-	bc_num_free(&p->last);
-	bc_num_free(&p->zero);
-	bc_num_free(&p->one);
 }
 
 #ifndef NDEBUG

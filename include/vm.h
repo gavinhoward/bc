@@ -65,8 +65,8 @@ typedef struct BcVmExe {
 	BcParseInit init;
 	BcParseExpr exp;
 
-	char strbgn;
-	char strend;
+	char sbgn;
+	char send;
 
 } BcVmExe;
 // ** Exclude end. **

@@ -115,7 +115,7 @@ static BcStatus bc_vm_envArgs(BcVm *vm) {
 	if (!(env_args = getenv(bc_args_env_name))) return BC_STATUS_SUCCESS;
 	if (!(buf = (vm->env_args = strdup(env_args)))) return BC_STATUS_ALLOC_ERR;
 
-	if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto args_err;
+	if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
 	if ((s = bc_vec_push(&args, &bc_args_env_name))) goto err;
 
 	while (*buf) {
@@ -129,17 +129,9 @@ static BcStatus bc_vm_envArgs(BcVm *vm) {
 
 	s = bc_args((int) args.len, (char**) args.v,
 	            &vm->flags, &vm->exprs, &vm->files);
-	if (s) goto err;
-
-	bc_vec_free(&args);
-
-	return s;
 
 err:
 	bc_vec_free(&args);
-args_err:
-	free(vm->env_args);
-	vm->env_args = NULL;
 	return s;
 }
 #endif // BC_ENABLED
@@ -231,7 +223,7 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	BcStatus s;
 	BcVec buf, buffer;
 	char c;
-	size_t len, i, string = 0;
+	size_t len, i, str = 0;
 	bool comment = false, notend;
 
 	vm->prog.file = bc_program_stdin_name;
@@ -247,36 +239,34 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	// case, and for strings and comments, the parser will expect more stuff.
 	while (!s && !(s = bc_read_line(&buf, ">>> "))) {
 
-		char *str = buf.v;
+		char *string = buf.v;
 
 		if ((len = buf.len - 1) == 1) {
-			if (string && buf.v[0] == vm->exe.strend) string -= 1;
-			else if (buf.v[0] == vm->exe.strbgn) string += 1;
+			if (str && buf.v[0] == vm->exe.send) str -= 1;
+			else if (buf.v[0] == vm->exe.sbgn) str += 1;
 		}
 		else if (len > 1 || comment) {
 
 			for (i = 0; i < len; ++i) {
 
 				notend = len > i + 1;
-				c = str[i];
+				c = string[i];
 
-				if (i - 1 > len || str[i - 1] != '\\') {
-					if (vm->exe.strbgn == vm->exe.strend) {
-						if (c == vm->exe.strbgn) string = !string;
-					}
-					else if (c == vm->exe.strend) string -= 1;
-					else if (c == vm->exe.strbgn) string += 1;
+				if (i - 1 > len || string[i - 1] != '\\') {
+					if (vm->exe.sbgn == vm->exe.send) str ^= c == vm->exe.sbgn;
+					else if (c == vm->exe.send) str -= 1;
+					else if (c == vm->exe.sbgn) str += 1;
 				}
 
-				if (c == '/' && notend && !comment && str[i + 1] == '*') {
+				if (c == '/' && notend && !comment && string[i + 1] == '*') {
 					comment = true;
 					break;
 				}
-				else if (c == '*' && notend && comment && str[i + 1] == '/')
+				else if (c == '*' && notend && comment && string[i + 1] == '/')
 					comment = false;
 			}
 
-			if (string || comment || str[len - 2] == '\\') {
+			if (str || comment || string[len - 2] == '\\') {
 				if ((s = bc_vec_concat(&buffer, buf.v))) goto err;
 				continue;
 			}
@@ -294,7 +284,7 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	// closed. It's not a problem in that case.
 	s = s == BC_STATUS_IO_ERR || s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 
-	if (string) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
+	if (str) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
 	                            vm->prs.l.f, vm->prs.l.line);
 	else if (comment) s = bc_vm_error(BC_STATUS_LEX_NO_COMMENT_END,
 	                                  vm->prs.l.f, vm->prs.l.line);
@@ -335,6 +325,14 @@ static BcStatus bc_vm_exec(BcVm *vm) {
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 }
 
+static void bc_vm_free(BcVm *vm) {
+	bc_vec_free(&vm->files);
+	bc_vec_free(&vm->exprs);
+	bc_program_free(&vm->prog);
+	bc_parse_free(&vm->prs);
+	free(vm->env_args);
+}
+
 static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 	BcStatus s;
@@ -356,38 +354,28 @@ static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 		return BC_STATUS_EXEC_SIGACTION_FAIL;
 #endif // _WIN32
 
+	memset(vm, 0, sizeof(BcVm));
+
 	vm->exe = exe;
 	vm->flags = 0;
 	vm->env_args = NULL;
 
 	if ((s = bc_vec_init(&vm->files, sizeof(char*), NULL))) return s;
-	if ((s = bc_vec_init(&vm->exprs, sizeof(char), NULL))) goto exprs_err;
+	if ((s = bc_vec_init(&vm->exprs, sizeof(char), NULL))) goto err;
 
 #ifdef BC_ENABLED
 	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
-	if (bcg.bc && (s = bc_vm_envArgs(vm))) goto prog_err;
+	if (bcg.bc && (s = bc_vm_envArgs(vm))) goto err;
 #endif // BC_ENABLED
 
-	if ((s = bc_program_init(&vm->prog, len, exe.init, exe.exp))) goto prog_err;
-	if ((s = exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto parse_err;
+	if ((s = bc_program_init(&vm->prog, len, exe.init, exe.exp))) goto err;
+	if ((s = exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto err;
 
 	return s;
 
-parse_err:
-	bc_program_free(&vm->prog);
-prog_err:
-	bc_vec_free(&vm->exprs);
-exprs_err:
-	bc_vec_free(&vm->files);
+err:
+	bc_vm_free(vm);
 	return s;
-}
-
-static void bc_vm_free(BcVm *vm) {
-	bc_vec_free(&vm->files);
-	bc_vec_free(&vm->exprs);
-	bc_program_free(&vm->prog);
-	bc_parse_free(&vm->prs);
-	free(vm->env_args);
 }
 
 BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {

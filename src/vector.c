@@ -26,6 +26,7 @@
 
 #include <status.h>
 #include <vector.h>
+#include <lang.h>
 
 static BcStatus bc_vec_grow(BcVec *v, size_t n) {
 
@@ -168,51 +169,41 @@ void bc_vec_free(void *vec) {
 	free(v->v);
 }
 
-BcStatus bc_veco_init(BcVecO *v, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
-	assert(v && esize && cmp);
-	v->cmp = cmp;
-	return bc_vec_init(&v->vec, esize, dtor);
-}
+static size_t bc_veco_find(const BcVec *v, const void *ptr) {
 
-static size_t bc_veco_find(const BcVecO *v, const void *data) {
-
-	size_t low = 0, high = v->vec.len;
+	size_t low = 0, high = v->len;
 
 	while (low < high) {
 
 		size_t mid = (low + high) / 2;
-		uint8_t *ptr = bc_vec_item(&v->vec, mid);
-		int result = v->cmp(data, ptr);
+		uint8_t *item = bc_vec_item(v, mid);
+		int result = bc_id_cmp(ptr, item);
 
 		if (!result) return mid;
-
-		if (result < 0) high = mid;
+		else if (result < 0) high = mid;
 		else low = mid + 1;
 	}
 
 	return low;
 }
 
-BcStatus bc_veco_insert(BcVecO *v, const void *data, size_t *idx) {
+BcStatus bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
 
 	BcStatus s;
 
-	assert(v && data && idx);
+	assert(v && ptr && i);
 
-	*idx = bc_veco_find(v, data);
-
-	if (*idx > v->vec.len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
-	else if (*idx == v->vec.len) s = bc_vec_push(&v->vec, data);
-	else if (!v->cmp(data, bc_vec_item(&v->vec, *idx)))
-		s = BC_STATUS_VEC_ITEM_EXISTS;
-	else s = bc_vec_pushAt(&v->vec, data, *idx);
+	if ((*i = bc_veco_find(v, ptr)) > v->len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
+	else if (*i == v->len) s = bc_vec_push(v, ptr);
+	else if (!bc_id_cmp(ptr, bc_vec_item(v, *i))) s = BC_STATUS_VEC_ITEM_EXISTS;
+	else s = bc_vec_pushAt(v, ptr, *i);
 
 	return s;
 }
 
-size_t bc_veco_index(const BcVecO* v, const void *data) {
-	assert(v && data);
-	size_t i = bc_veco_find(v, data);
-	if (i >= v->vec.len) return BC_VEC_INVALID_IDX;
-	return v->cmp(data, bc_vec_item(&v->vec, i)) ? BC_VEC_INVALID_IDX : i;
+size_t bc_map_index(const BcVec* v, const void *ptr) {
+	assert(v && ptr);
+	size_t i = bc_veco_find(v, ptr);
+	if (i >= v->len) return BC_VEC_INVALID_IDX;
+	return bc_id_cmp(ptr, bc_vec_item(v, i)) ? BC_VEC_INVALID_IDX : i;
 }

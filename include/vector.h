@@ -66,20 +66,12 @@ void bc_vec_free(void *vec);
 #define bc_vec_pop(v) (bc_vec_npop((v), 1))
 #define bc_vec_top(v) (bc_vec_item_rev((v), 0))
 
-typedef struct BcVecO {
-
-	BcVec vec;
-	BcVecCmp cmp;
-
-} BcVecO;
-
 // ** Exclude start. **
-BcStatus bc_veco_init(BcVecO* v, size_t esize, BcVecFree dtor, BcVecCmp cmp);
-BcStatus bc_veco_insert(BcVecO* v, const void *data, size_t *idx);
-size_t bc_veco_index(const BcVecO *v, const void *data);
+BcStatus bc_map_insert(BcVec* v, const void *data, size_t *i);
+size_t bc_map_index(const BcVec *v, const void *ptr);
 // ** Exclude end. **
 
-#define bc_veco_item(v, idx) (bc_vec_item(&(v)->vec, (idx)))
-#define bc_veco_free(v) (bc_vec_free(&(v)->vec))
+#define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), bc_id_free))
+#define bc_map_item(v, idx) (bc_vec_item((v), (idx)))
 
 #endif // BC_VECTOR_H
