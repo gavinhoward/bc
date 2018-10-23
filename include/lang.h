@@ -131,13 +131,6 @@ typedef struct BcId {
 
 } BcId;
 
-typedef struct BcAuto {
-
-	char *name;
-	bool var;
-
-} BcAuto;
-
 typedef struct BcFunc {
 
 	BcVec code;
@@ -205,12 +198,8 @@ BcStatus bc_array_expand(BcVec *a, size_t len);
 
 // ** Exclude start. **
 void bc_string_free(void *string);
-
-void bc_auto_free(void *auto1);
-
 void bc_id_free(void *entry);
-
-BcStatus bc_result_copy(BcResult *d, BcResult *s);
+BcStatus bc_result_copy(BcResult *d, BcResult *src);
 void bc_result_free(void *result);
 // ** Exclude end. **
 

@@ -112,8 +112,8 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 		min_num = a->num;
 	}
 
-	cmp = bc_num_compare(max_num, min_num, b_int + min);
-	if (cmp) return BC_NUM_NEG(cmp, (!a_max) != neg);
+	if ((cmp = bc_num_compare(max_num, min_num, b_int + min)))
+		return BC_NUM_NEG(cmp, (!a_max) != neg);
 
 	for (max_num -= diff, i = diff - 1; !bcg.signe && i < diff; --i) {
 		if (max_num[i]) return BC_NUM_NEG(1, (!a_max) != neg);
@@ -766,12 +766,12 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 		if ((s = bc_num_expand(n, len))) return s;
 	}
 
-	if (zero) return BC_STATUS_SUCCESS;
-
 	ptr = strchr(val, '.');
 
 	// Explicitly test for NULL here to produce either a 0 or 1.
 	n->rdx = (size_t) ((ptr != NULL) * ((val + len) - (ptr + 1)));
+
+	if (zero) return BC_STATUS_SUCCESS;
 
 	for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.'))
 		n->num[n->len] = val[i] - '0';
@@ -853,10 +853,8 @@ static BcStatus bc_num_printChar(size_t num, size_t width, bool radix,
                                  size_t *nchars, size_t line_len)
 {
 	(void) radix, (void) line_len;
-
 	if (putchar((char) num) == EOF) return BC_STATUS_IO_ERR;
 	*nchars = *nchars + width;
-
 	return BC_STATUS_SUCCESS;
 }
 #endif // DC_ENABLED
@@ -928,6 +926,8 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 	size_t i;
 	bool radix;
 
+	if (!n->len) return print(0, width, false, nchars, len);
+
 	if ((s = bc_vec_init(&stack, sizeof(long), NULL))) return s;
 	if ((s = bc_num_init(&intp, n->len))) goto int_err;
 	if ((s = bc_num_init(&fracp, n->rdx))) goto frac_err;
@@ -938,11 +938,6 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 
 	bc_num_truncate(&intp, intp.rdx);
 	if ((s = bc_num_sub(n, &intp, &fracp, 0))) goto err;
-
-	if (!n->len) {
-		s = print(0, width, false, nchars, len);
-		goto err;
-	}
 
 	while (intp.len) {
 		if ((s = bc_num_divmod(&intp, base, &intp, &digit, 0))) goto err;

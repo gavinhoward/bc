@@ -26,25 +26,28 @@
 
 #include <lang.h>
 
-void bc_auto_free(void *auto1) {
-	BcAuto *a = (BcAuto*) auto1;
-	assert(a && a->name);
-	free(a->name);
+int bc_id_cmp(const void *e1, const void *e2) {
+	return strcmp(((const BcId*) e1)->name, ((const BcId*) e2)->name);
+}
+
+void bc_id_free(void *id) {
+	assert(id && ((BcId*) id)->name);
+	free(((BcId*) id)->name);
 }
 
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
 
-	BcAuto a;
+	BcId a;
 	size_t i;
 
 	assert(f && name);
 
 	for (i = 0; i < f->autos.len; ++i) {
-		if (!strcmp(name, ((BcAuto*) bc_vec_item(&f->autos, i))->name))
+		if (!strcmp(name, ((BcId*) bc_vec_item(&f->autos, i))->name))
 			return BC_STATUS_PARSE_DUPLICATE_LOCAL;
 	}
 
-	a.var = var;
+	a.idx = var;
 	a.name = name;
 
 	return bc_vec_push(&f->autos, &a);
@@ -57,7 +60,7 @@ BcStatus bc_func_init(BcFunc *f) {
 	assert(f);
 
 	if ((s = bc_vec_init(&f->code, sizeof(char), NULL))) return s;
-	if ((s = bc_vec_init(&f->autos, sizeof(BcAuto), bc_auto_free))) goto err;
+	if ((s = bc_vec_init(&f->autos, sizeof(BcId), bc_id_free))) goto err;
 	if ((s = bc_vec_init(&f->labels, sizeof(size_t), NULL))) goto label_err;
 
 	f->nparams = 0;
@@ -127,7 +130,6 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
 	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
 		while (!s && len > a->len) {
 			if ((s = bc_num_init(&data.n, BC_NUM_DEF_SIZE))) return s;
-			bc_num_zero(&data.n);
 			if ((s = bc_vec_push(a, &data.n))) bc_num_free(&data.n);
 		}
 	}
@@ -143,37 +145,26 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
 }
 
 void bc_string_free(void *string) {
-	char **s = string;
-	assert(s && *s);
-	free(*s);
-}
-
-int bc_id_cmp(const void *e1, const void *e2) {
-	return strcmp(((const BcId*) e1)->name, ((const BcId*) e2)->name);
-}
-
-void bc_id_free(void *entry) {
-	BcId *e = entry;
-	assert(e && e->name);
-	free(e->name);
+	assert(string && *((char**) string));
+	free(*((char**) string));
 }
 
 #ifdef DC_ENABLED
-BcStatus bc_result_copy(BcResult *d, BcResult *s) {
+BcStatus bc_result_copy(BcResult *d, BcResult *src) {
 
-	BcStatus status = BC_STATUS_SUCCESS;
+	BcStatus s = BC_STATUS_SUCCESS;
 
-	assert(d && s);
+	assert(d && src);
 
-	switch ((d->t = s->t)) {
+	switch ((d->t = src->t)) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
 		{
-			if ((status = bc_num_init(&d->d.n, s->d.n.len))) return status;
-			status = bc_num_copy(&d->d.n, &s->d.n);
+			if ((s = bc_num_init(&d->d.n, src->d.n.len))) return s;
+			s = bc_num_copy(&d->d.n, &src->d.n);
 			break;
 		}
 
@@ -181,10 +172,9 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		case BC_RESULT_ARRAY:
 		case BC_RESULT_ARRAY_ELEM:
 		{
-			assert(s->d.id.name);
-			if (!(d->d.id.name = strdup(s->d.id.name)))
-				status = BC_STATUS_ALLOC_ERR;
-			else status = BC_STATUS_SUCCESS;
+			assert(src->d.id.name);
+			if ((d->d.id.name = strdup(src->d.id.name))) s = BC_STATUS_SUCCESS;
+			else s = BC_STATUS_ALLOC_ERR;
 			break;
 		}
 
@@ -193,12 +183,12 @@ BcStatus bc_result_copy(BcResult *d, BcResult *s) {
 		case BC_RESULT_ONE:
 		case BC_RESULT_STR:
 		{
-			memcpy(&d->d.n, &s->d.n, sizeof(BcNum));
+			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));
 			break;
 		}
 	}
 
-	return status;
+	return s;
 }
 #endif // DC_ENABLED
 

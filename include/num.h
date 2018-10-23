@@ -74,7 +74,6 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
 // ** Exclude start. **
 
 void bc_num_truncate(BcNum *n, size_t places);
-
 ssize_t bc_num_cmp(BcNum *a, BcNum *b);
 
 // ** Exclude end. **

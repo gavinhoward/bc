@@ -831,7 +831,7 @@ static BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 	size_t i, nparams = bc_program_index(code, idx);
 	BcFunc *func;
 	BcVec *v;
-	BcAuto *a;
+	BcId *a;
 	BcResultData param;
 	BcResult *arg;
 
@@ -850,18 +850,18 @@ static BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		a = bc_vec_item(&func->autos, nparams - 1 - i);
 		arg = bc_vec_top(&p->results);
 
-		if (!a->var != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
+		if (!a->idx != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
 			return BC_STATUS_EXEC_BAD_TYPE;
 
-		if ((s = bc_program_copyToVar(p, a->name, a->var))) return s;
+		if ((s = bc_program_copyToVar(p, a->name, a->idx))) return s;
 	}
 
 	for (; i < func->autos.len; ++i) {
 
 		a = bc_vec_item(&func->autos, i);
-		if ((s = bc_program_search(p, a->name, &v, a->var))) return s;
+		if ((s = bc_program_search(p, a->name, &v, a->idx))) return s;
 
-		if (a->var) {
+		if (a->idx) {
 			if ((s = bc_num_init(&param.n, BC_NUM_DEF_SIZE))) return s;
 			if ((s = bc_vec_push(v, &param.n))) goto err;
 		}
@@ -874,7 +874,7 @@ static BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 	return bc_vec_push(&p->stack, &ip);
 
 err:
-	if (a->var) bc_num_free(&param.n);
+	if (a->idx) bc_num_free(&param.n);
 	else bc_vec_free(&param.v);
 	return s;
 }
@@ -913,9 +913,9 @@ static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
 	for (i = 0; i < f->autos.len; ++i) {
 
 		BcVec *v;
-		BcAuto *a = bc_vec_item(&f->autos, i);
+		BcId *a = bc_vec_item(&f->autos, i);
 
-		if ((s = bc_program_search(p, a->name, &v, a->var))) goto err;
+		if ((s = bc_program_search(p, a->name, &v, a->idx))) goto err;
 
 		bc_vec_pop(v);
 	}
@@ -1384,19 +1384,11 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 	if ((s = bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free))) goto err;
 	if ((s = bc_map_init(&p->fn_map))) goto err;
 
-	if (!(main_name = strdup(bc_func_main))) {
-		s = BC_STATUS_ALLOC_ERR;
-		goto err;
-	}
-
+	if (!(main_name = strdup(bc_func_main))) goto alloc_err;
 	if ((s = bc_program_addFunc(p, main_name, &idx))) goto err;
 	assert(idx == BC_PROG_MAIN);
 
-	if (!(read_name = strdup(bc_func_read))) {
-		s = BC_STATUS_ALLOC_ERR;
-		goto err;
-	}
-
+	if (!(read_name = strdup(bc_func_read))) goto alloc_err;
 	if ((s = bc_program_addFunc(p, read_name, &idx))) goto err;
 	assert(idx == BC_PROG_READ);
 
@@ -1415,6 +1407,8 @@ BcStatus bc_program_init(BcProgram *p, size_t line_len,
 
 	return s;
 
+alloc_err:
+	s = BC_STATUS_ALLOC_ERR;
 err:
 	bc_program_free(p);
 	return s;

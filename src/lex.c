@@ -104,8 +104,7 @@ BcStatus bc_lex_name(BcLex *l) {
 
 	l->t.t = BC_LEX_NAME;
 
-	while ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_')
-		c = buf[++i];
+	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
 
 	if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
 	if ((s = bc_vec_string(&l->t.v, i, buf))) return s;
@@ -143,11 +142,9 @@ BcStatus bc_lex_next(BcLex *l) {
 	if ((l->t.last = l->t.t) == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
 
 	l->line += l->newline;
+	l->t.t = BC_LEX_EOF;
 
-	if ((l->newline = (l->idx == l->len))) {
-		l->t.t = BC_LEX_EOF;
-		return BC_STATUS_SUCCESS;
-	}
+	if ((l->newline = (l->idx == l->len))) return BC_STATUS_SUCCESS;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
