@@ -68,28 +68,28 @@ CPPFLAGS += -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
 HOSTCC ?= $(CC)
 
 all: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
-all: make_bin clean $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
+all: make_bin clean_exe $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) -o $(BC_EXEC)
 	$(LINK) $(BIN) $(DC)
 
 $(GEN_EXEC):
 	$(HOSTCC) $(CFLAGS) -o $(GEN_EXEC) $(GEN_C)
 
-$(BC_LIB_C): $(GEN_EXEC)
+$(BC_LIB_C): $(GEN_EXEC) $(BC_LIB)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED)
 
-$(BC_HELP_C): $(GEN_EXEC)
+$(BC_HELP_C): $(GEN_EXEC) $(BC_HELP)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help "" $(BC_ENABLED)
 
-$(DC_HELP_C): $(GEN_EXEC)
+$(DC_HELP_C): $(GEN_EXEC) $(DC_HELP)
 	$(GEN_EMU) $(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help "" $(DC_ENABLED)
 
 $(DC): CPPFLAGS += -D$(DC_ENABLED)
-$(DC): make_bin clean $(DC_OBJ) $(DC_HELP_O) $(OBJ)
+$(DC): make_bin clean_exe $(DC_OBJ) $(DC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(DC_HELP_O) -o $(DC_EXEC)
 
 $(BC): CPPFLAGS += -D$(BC_ENABLED)
-$(BC): make_bin clean $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
+$(BC): make_bin clean_exe $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) -o $(BC_EXEC)
 
 make_bin:
@@ -167,12 +167,14 @@ version:
 libcname:
 	@echo "$(BC_LIB_C)"
 
-clean:
+clean_exe:
 	$(RM) -f $(OBJ)
 	$(RM) -f $(BC_OBJ)
 	$(RM) -f $(DC_OBJ)
 	$(RM) -f $(BC_EXEC)
 	$(RM) -f $(DC_EXEC)
+
+clean: clean_exe
 	$(RM) -f $(GEN_EXEC)
 	$(RM) -f $(BC_LIB_C)
 	$(RM) -f $(BC_LIB_O)
