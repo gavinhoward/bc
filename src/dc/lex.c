@@ -112,7 +112,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '\r':
 		case ' ':
 		{
-			l->newline = c == '\n';
+			l->newline = (c == '\n');
 			bc_lex_whitespace(l);
 			break;
 		}
