@@ -57,6 +57,8 @@ INSTALL = ./install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
 
+VALGRIND_ARGS = --error-exitcode=1 --leak-check=full --show-leak-kinds=all
+
 -include config.mak
 
 BC_NUM_KARATSUBA_LEN ?= 32
@@ -136,6 +138,8 @@ test: test_bc test_dc
 test_bc:
 	tests/all.sh bc
 
+test_bc_all: test_bc timeconst
+
 test_dc:
 	tests/all.sh dc
 
@@ -147,13 +151,15 @@ valgrind_all: valgrind valgrind_timeconst
 valgrind: valgrind_bc valgrind_dc
 
 valgrind_bc:
-	tests/all.sh bc valgrind --leak-check=full --show-leak-kinds=all $(BC_EXEC)
+	tests/all.sh bc valgrind $(VALGRIND_ARGS) $(BC_EXEC)
+
+valgrind_bc_all: valgrind_bc valgrind_timeconst
 
 valgrind_dc:
-	tests/all.sh dc valgrind --leak-check=full --show-leak-kinds=all $(DC_EXEC)
+	tests/all.sh dc valgrind $(VALGRIND_ARGS) $(DC_EXEC)
 
 valgrind_timeconst:
-	tests/bc/timeconst.sh valgrind --leak-check=full --show-leak-kinds=all $(BC_EXEC)
+	tests/bc/timeconst.sh valgrind $(VALGRIND_ARGS) $(BC_EXEC)
 
 karatsuba:
 	$(KARATSUBA)
