@@ -26,7 +26,7 @@ This is the checklist for cutting a release.
 	* debug
 	* release
 	* minrelease
-7.	Run the randmath.sh script an excessive amount and add failing tests to
+7.	Run the randmath.py script an excessive amount and add failing tests to
 	test suite.
 	* debug
 	* release
