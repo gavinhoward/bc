@@ -73,49 +73,7 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
 
 // ** Exclude start. **
 
-BcStatus bc_num_subArrays(BcDig *restrict n1, BcDig *restrict n2, size_t len);
-ssize_t bc_num_compare(BcDig *restrict n1, BcDig *restrict n2, size_t len);
-
 void bc_num_truncate(BcNum *n, size_t places);
-BcStatus bc_num_extend(BcNum *n, size_t places);
-
-void bc_num_clean(BcNum *n);
-BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2);
-BcStatus bc_num_splitAt(BcNum *restrict n, size_t idx, BcNum *restrict a,
-                        BcNum *restrict b);
-
-BcStatus bc_num_shift(BcNum *n, size_t places);
-BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale);
-
-BcStatus bc_num_alg_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub);
-BcStatus bc_num_alg_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub);
-BcStatus bc_num_alg_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c);
-BcStatus bc_num_alg_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
-BcStatus bc_num_alg_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
-BcStatus bc_num_alg_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
-BcStatus bc_num_alg_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
-
-BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
-                       BcNumBinaryOp op, size_t req);
-
-bool bc_num_strValid(const char *val, size_t base);
-BcStatus bc_num_parseDecimal(BcNum *n, const char *val);
-BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base);
-#ifdef DC_ENABLED
-BcStatus bc_num_printChar(size_t num, size_t width, bool radix,
-                          size_t *nchars, size_t line_len);
-#endif // DC_ENABLED
-BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
-                            size_t *nchars, size_t line_len);
-BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
-                         size_t *nchars, size_t line_len);
-BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len);
-BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width, size_t *nchars,
-                         size_t line_len, BcNumDigitOp print);
-BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
-                          size_t *nchars, size_t line_len);
-
-BcStatus bc_num_printNewline(size_t *nchars, size_t line_len);
 
 ssize_t bc_num_cmp(BcNum *a, BcNum *b);
 
@@ -125,7 +83,7 @@ BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale);
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);

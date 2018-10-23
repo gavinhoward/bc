@@ -27,7 +27,7 @@
 #include <status.h>
 #include <vector.h>
 
-BcStatus bc_vec_grow(BcVec *v, size_t n) {
+static BcStatus bc_vec_grow(BcVec *v, size_t n) {
 
 	char *ptr;
 	size_t cap = v->cap * 2;
@@ -98,7 +98,7 @@ BcStatus bc_vec_pushByte(BcVec *v, uint8_t data) {
 	return bc_vec_push(v, &data);
 }
 
-BcStatus bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
+static BcStatus bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
 
 	BcStatus s;
 	char *ptr;
@@ -174,7 +174,7 @@ BcStatus bc_veco_init(BcVecO *v, size_t esize, BcVecFree dtor, BcVecCmp cmp) {
 	return bc_vec_init(&v->vec, esize, dtor);
 }
 
-size_t bc_veco_find(const BcVecO *v, const void *data) {
+static size_t bc_veco_find(const BcVecO *v, const void *data) {
 
 	size_t low = 0, high = v->vec.len;
 

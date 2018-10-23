@@ -26,11 +26,6 @@
 #include <stddef.h>
 #include <limits.h>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif // _WIN32
-
 #include <status.h>
 #include <parse.h>
 #include <program.h>
@@ -129,27 +124,8 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 #endif // BC_ENABLED
 
 // ** Exclude start. **
-#ifndef _WIN32
-void bc_vm_sig(int sig);
-#else // _WIN32
-BOOL WINAPI bc_vm_sig(DWORD sig);
-#define isatty _isatty
-#endif // _WIN32
-
 BcStatus bc_vm_info(const char* const help);
-BcStatus bc_vm_envArgs(BcVm *vm);
-size_t bc_vm_envLen(const char *var);
-
-BcStatus bc_vm_process(BcVm *vm, const char *text);
-
-BcStatus bc_vm_file(BcVm *vm, const char *file);
-BcStatus bc_vm_stdin(BcVm *vm);
-BcStatus bc_vm_exec(BcVm *vm);
-
-BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len);
-void bc_vm_free(BcVm *vm);
-
-BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char* env_len);
+BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len);
 // ** Exclude end. **
 
 #ifdef BC_ENABLED
