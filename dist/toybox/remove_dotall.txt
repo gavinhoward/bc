@@ -1,6 +1,6 @@
 ^[ ]*vm->flags = 0;$
 ^[ ]*if \(\(s = bc_vec_init\(&vm->files, sizeof\(char\*\), NULL\)\)\) return s;$
-^[ ]*if \(\(s = bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\)\)\) goto exprs_err;$
+^[ ]*if \(\(s = bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\)\)\) goto err;$
 ^[ ]*if \(\(st = bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\)\)\) goto err;$
 \nprog_err:\n[ ]*bc_vec_free\(&vm->exprs\);$
 \nexprs_err:\n[ ]*bc_vec_free\(&vm->files\);$
@@ -13,7 +13,7 @@
 ^[ ]*if \(vm->exprs\.len > 1 && \(s = bc_vm_process\(vm, vm->exprs\.v\)\)\) return s;$
 \n[ ]*if \(help && printf\(help, bcg\.name\) < 0\) return BC_STATUS_IO_ERR;$
 ^[ ]*vm->exe = exe;$
-^[ ]*if \(bcg.bc && \(s = bc_vm_envArgs\(vm\)\)\) goto prog_err;$
+^[ ]*if \(bcg.bc && \(s = bc_vm_envArgs\(vm\)\)\) goto err;$
 \n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
 \n#ifdef DC_ENABLED.*?#endif // DC_ENABLED
 \n#ifdef DC_ENABLED.*?#else // DC_ENABLED

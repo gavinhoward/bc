@@ -1,7 +1,7 @@
 ^BcStatus bc_vm_run\(int argc, char \*argv\[\], BcVmExe exe, const char \*env_len\)
 ^  return st;$
-if \(\(s = bc_program_init\(&vm->prog, len, exe\.init, exe\.exp\)\)\) goto prog_err;$
-if \(\(s = exe\.init\(&vm->prs, &vm->prog, BC_PROG_MAIN\)\)\) goto parse_err;$
+if \(\(s = bc_program_init\(&vm->prog, len, exe\.init, exe\.exp\)\)\) goto err;$
+if \(\(s = exe\.init\(&vm->prs, &vm->prog, BC_PROG_MAIN\)\)\) goto err;$
 if \(\(st = bc_vm_init\(&vm, exe, env_len\)\)\) return st;$
 if \(\(bcg\.bc \|\| !vm->files\.len\) && vm->exprs.\len <= 1\) s = bc_vm_stdin\(vm\);$
 vm\.flags
@@ -15,8 +15,9 @@ vm\.prs\.parse\(&vm
 size_t len = strlen\(bcg\.sig_msg\);
 write\(2, bcg.sig_msg, len\) == \(ssize_t\) len
 st = bc_vm_info\(NULL\)
-vm->exe\.strbgn
-vm->exe\.strend
+if \(i - 1 > len \|\| string\[i - 1\].*?str \+= 1;\n[ ]*\}$
+vm->exe\.sbgn
+vm->exe\.send
 BcStatus bc_vm_init\(BcVm \*vm, BcVmExe exe, const char \*env_len\)
 \(env_len\)
 \* bcg.bc \* \(

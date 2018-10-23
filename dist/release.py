@@ -146,7 +146,7 @@ if len(needles) != len(replacements):
 	sys.exit(1)
 
 for i in range(0, len(needles)):
-	r = re.compile(needles[i], re.M)
+	r = re.compile(needles[i], re.M | re.DOTALL)
 	content = r.sub(replacements[i], content)
 
 # Make sure to cleanup newlines

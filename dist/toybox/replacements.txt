@@ -1,7 +1,7 @@
 void bc_main(void)
 exit:\n  toys.exitval = (int) st;
 if ((s = bc_program_init(&vm->prog, len))) return s;
-if ((s = bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto parse_err;
+if ((s = bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto err;
 if ((st = bc_vm_init(&vm))) goto exit;
 s = bc_vm_stdin(vm);
 toys.optflags
@@ -15,6 +15,7 @@ bc_parse_parse(&vm
 size_t len = strlen(bc_sig_msg);
 write(2, bc_sig_msg, len) == (ssize_t) len
 st = bc_vm_info()
+if ((i - 1 > len || string[i - 1] != '\\\\') && c == '"') str = !str;
 '"'
 '"'
 BcStatus bc_vm_init(BcVm *vm)
