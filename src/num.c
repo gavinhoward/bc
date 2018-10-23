@@ -121,14 +121,16 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 
 void bc_num_truncate(BcNum *n, size_t places) {
 
-	assert(places <= n->rdx && places <= n->len);
+	assert(places <= n->rdx && (!n->len || places <= n->len));
 
 	if (!places) return;
 
-	n->len -= places;
 	n->rdx -= places;
 
-	memmove(n->num, n->num + places, n->len * sizeof(BcDig));
+	if (n->len) {
+		n->len -= places;
+		memmove(n->num, n->num + places, n->len * sizeof(BcDig));
+	}
 }
 
 BcStatus bc_num_extend(BcNum *n, size_t places) {
