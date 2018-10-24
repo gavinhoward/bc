@@ -159,11 +159,12 @@ toybox() {
 	d=$(pwd)
 
 	cd "$toybox_repo"
-	make
+	build "$release" "$CC" all make
 
 	cd "$d"
 
-	runtest tests/all.sh bc "$toybox_bc" bc
+	runtest "$release" "$CC" all tests/all.sh bc "$toybox_bc" bc
+	runtest "$release" "$CC" all tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$toybox_bc" bc
 }
 
 busybox() {
@@ -177,12 +178,13 @@ busybox() {
 	d=$(pwd)
 
 	cd "$busybox_repo"
-	make
+	build "$release" "$CC" all make
 
 	cd "$d"
 
-	runtest tests/all.sh bc "$busybox_bc" bc
-	runtest tests/all.sh dc "$busybox_bc" dc
+	runtest "$release" "$CC" all tests/all.sh bc "$busybox_bc" bc
+	runtest "$release" "$CC" all tests/all.sh dc "$busybox_bc" dc
+	runtest "$release" "$CC" all tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$busybox_bc" bc
 }
 
 debug() {
