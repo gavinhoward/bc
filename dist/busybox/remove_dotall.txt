@@ -1,5 +1,3 @@
 \n#ifndef NDEBUG.*?#endif // NDEBUG
-\n#ifndef _WIN32
-\n#else // _WIN32.*?#endif // _WIN32
 \n[\t]*assert\(.*?\);$
 ^[ ]*// \*\* Busybox exclude start\. \*\*.*?^[ ]*// \*\* Busybox exclude end\. \*\*$

@@ -22,8 +22,6 @@
 \n#else // BC_ENABLED.*?#endif // BC_ENABLED
 \n#endif // BC_ENABLED
 \n#ifndef NDEBUG.*?#endif // NDEBUG
-\n#ifndef _WIN32
-\n#else // _WIN32.*?#endif // _WIN32
 \n[ ]*assert\(.*?\);$
 \#if !defined\(BC_ENABLED\).*?\#endif\n
 ^[ ]*// \*\* Exclude start\. \*\*.*?^[ ]*// \*\* Exclude end\. \*\*$

@@ -26,26 +26,14 @@
 #include <string.h>
 
 #include <signal.h>
-
-#ifndef _WIN32
-
 #include <sys/types.h>
 #include <unistd.h>
-
-#else // _WIN32
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <io.h>
-
-#endif // _WIN32
 
 #include <status.h>
 #include <args.h>
 #include <vm.h>
 #include <read.h>
 
-#ifndef _WIN32
 static void bc_vm_sig(int sig) {
 	if (sig == SIGINT) {
 		size_t len = strlen(bcg.sig_msg);
@@ -54,16 +42,6 @@ static void bc_vm_sig(int sig) {
 	}
 	else bcg.sig_other = 1;
 }
-#else // _WIN32
-static BOOL WINAPI bc_vm_sig(DWORD sig) {
-	if (sig == CTRL_C_EVENT) {
-		if (fputs(bcg.sig_msg, stderr) != EOF)
-			bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
-	}
-	else bcg.sig_other = 1;
-	return TRUE;
-}
-#endif // _WIN32
 
 BcStatus bc_vm_info(const char* const help) {
 	if (printf("%s %s\n", bcg.name, BC_VERSION) < 0) return BC_STATUS_IO_ERR;
@@ -337,7 +315,6 @@ static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 	BcStatus s;
 	size_t len = bc_vm_envLen(env_len);
-#ifndef _WIN32
 	struct sigaction sa;
 
 	sigemptyset(&sa.sa_mask);
@@ -349,10 +326,6 @@ static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	{
 		return BC_STATUS_EXEC_SIGACTION_FAIL;
 	}
-#else // _WIN32
-	if (!SetConsoleCtrlHandler(bc_vm_sig, TRUE))
-		return BC_STATUS_EXEC_SIGACTION_FAIL;
-#endif // _WIN32
 
 	memset(vm, 0, sizeof(BcVm));
 
