@@ -400,6 +400,8 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	if (!st) st = bc_vm_exec(&vm);
 
 err:
+#ifndef NDEBUG
 	bc_vm_free(&vm);
+#endif // NDEBUG
 	return st;
 }
