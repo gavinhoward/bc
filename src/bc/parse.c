@@ -432,8 +432,8 @@ BcStatus bc_parse_return(BcParse *p) {
 
 		paren = paren && p->l.t.last == BC_LEX_RPAREN;
 
-		if (!paren && (s = bc_vm_posixError(BC_STATUS_POSIX_RET_PARENS,
-		                                    p->l.f, p->l.line, NULL)))
+		if (!paren && (s || (s = bc_vm_posixError(BC_STATUS_POSIX_RET_PARENS,
+		                                          p->l.f, p->l.line, NULL))))
 		{
 			return s;
 		}
