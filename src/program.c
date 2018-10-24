@@ -850,7 +850,7 @@ static BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		a = bc_vec_item(&func->autos, nparams - 1 - i);
 		arg = bc_vec_top(&p->results);
 
-		if (!a->idx != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
+		if ((!a->idx) != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
 			return BC_STATUS_EXEC_BAD_TYPE;
 
 		if ((s = bc_program_copyToVar(p, a->name, a->idx))) return s;
