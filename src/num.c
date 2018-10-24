@@ -908,7 +908,8 @@ static BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i, rdx = n->rdx - 1;
 
-	if (n->neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
+	if (!n->len) return bc_num_printHex(0, 1, false, nchars, len);
+	else if (n->neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
 	(*nchars) += n->neg;
 
 	for (i = n->len - 1; !s && i < n->len; --i)
@@ -1089,11 +1090,7 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
 
 	if ((s = bc_num_printNewline(nchars, line_len))) return s;
 
-	if (!n->len) {
-		if (putchar('0') == EOF) return BC_STATUS_IO_ERR;
-		++(*nchars);
-	}
-	else if (base_t == 10) s = bc_num_printDecimal(n, nchars, line_len);
+	if (base_t == 10) s = bc_num_printDecimal(n, nchars, line_len);
 	else s = bc_num_printBase(n, base, base_t, nchars, line_len);
 
 	if (s) return s;
