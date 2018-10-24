@@ -257,6 +257,8 @@ build "$release" "$CC" all make
 karatsuba
 vg
 
+make CC="afl-gcc" CFLAGS="$release"
+
 echo ""
 echo "Run $scriptdir/tests/randmath.py and the fuzzer."
 echo "Then run the GitHub release script as follows:"
