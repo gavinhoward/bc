@@ -49,7 +49,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 	while (c != '\n') {
 
-		if ((i = fgetc(stdin)) == EOF) {
+		if ((c = fgetc(stdin)) == EOF) {
 
 			if (errno == EINTR) {
 
@@ -68,7 +68,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 			else return BC_STATUS_IO_ERR;
 		}
 		else {
-			c = (char) i;
+			//c = (char) i;
 			if (BC_IO_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
 		}
 
