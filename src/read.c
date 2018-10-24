@@ -66,6 +66,8 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 			continue;
 		}
 
+		if (i > UCHAR_MAX) return BC_STATUS_LEX_BAD_CHAR;
+
 		c = (char) i;
 		if (BC_IO_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
 		if ((s = bc_vec_push(vec, &c))) return s;
