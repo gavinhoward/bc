@@ -56,7 +56,7 @@ build() {
 	fi
 }
 
-runtest() {
+makebuild() {
 
 	CFLAGS="$1"
 	shift
@@ -68,17 +68,16 @@ runtest() {
 	shift
 
 	build "$CFLAGS" "$CC" "$target" make
+}
 
-	if [ $# -ge 1 ]; then
+runtest() {
 
-		tst="$1"
-		shift
+	tst="$1"
+	shift
 
-		header "Running test \"$tst $*\" with CFLAGS=\"$CFLAGS\""
+	header "Running test \"$tst $*\" with CFLAGS=\"$CFLAGS\""
 
-		"$tst" "$@"
-
-	fi
+	"$tst" "$@"
 }
 
 runtests() {
@@ -91,15 +90,18 @@ runtests() {
 
 	header "Running tests with CFLAGS=\"$CFLAGS\""
 
-	runtest "$CFLAGS" "$CC" all make test_all
+	makebuild "$CFLAGS" "$CC" all make
+	runtest test_all
 
 	make clean
 
-	runtest "$CFLAGS" "$CC" bc make test_bc_all
+	makebuild "$CFLAGS" "$CC" bc make
+	runtest test_bc_all
 
 	make clean
 
-	runtest "$CFLAGS" "$CC" dc make test_dc
+	makebuild "$CFLAGS" "$CC" dc make
+	runtest test_dc
 
 	make clean
 }
@@ -135,56 +137,64 @@ vg() {
 
 	header "Running valgrind"
 
-	runtest "$release" "$CC" all make valgrind_all
+	makebuild "$release" "$CC" all make
+	runtest valgrind_all
 
 	make clean
 
-	runtest "$release" "$CC" bc make valgrind_bc_all
+	makebuild "$release" "$CC" bc make
+	runtest valgrind_bc_all
 
 	make clean
 
-	runtest "$release" "$CC" dc make valgrind_dc
+	makebuild "$release" "$CC" dc make
+	runtest valgrind_dc
 
 	make clean
+}
+
+build_dist() {
+
+	project="$1"
+	shift
+
+	bc="$1"
+	shift
+
+	repo="$1"
+	shift
+
+	header "Building and testing $project"
+
+	dist/release.py "$project" "$repo"
+
+	d=$(pwd)
+
+	cd "$repo"
+	make
+
+	cd "$d"
 }
 
 toybox() {
 
-	header "Building and testing toybox"
-
 	toybox_bc="$toybox_repo/generated/unstripped/toybox"
 
-	dist/release.py toybox "$toybox_repo"
+	build_dist toybox "$toybox_bc" "$toybox_repo"
 
-	d=$(pwd)
-
-	cd "$toybox_repo"
-	build "$release" "$CC" all make
-
-	cd "$d"
-
-	runtest "$release" "$CC" all tests/all.sh bc "$toybox_bc" bc
-	runtest "$release" "$CC" all tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$toybox_bc" bc
+	runtest tests/all.sh bc "$toybox_bc" bc
+	runtest tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$toybox_bc" bc
 }
 
 busybox() {
 
-	header "Building and testing busybox"
-
 	busybox_bc="$busybox_repo/busybox"
 
-	dist/release.py busybox "$busybox_repo"
+	build_dist busybox "$busybox_bc" "$busybox_repo"
 
-	d=$(pwd)
-
-	cd "$busybox_repo"
-	build "$release" "$CC" all make
-
-	cd "$d"
-
-	runtest "$release" "$CC" all tests/all.sh bc "$busybox_bc" bc
-	runtest "$release" "$CC" all tests/all.sh dc "$busybox_bc" dc
-	runtest "$release" "$CC" all tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$busybox_bc" bc
+	runtest tests/all.sh bc "$busybox_bc" bc
+	runtest tests/all.sh dc "$busybox_bc" dc
+	runtest tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$busybox_bc" bc
 }
 
 debug() {
