@@ -462,11 +462,8 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 	if (brace) {
 
 		if (p->l.t.t == BC_LEX_RBRACE) {
-
 			if (!p->nbraces) return BC_STATUS_PARSE_BAD_TOKEN;
-
 			--p->nbraces;
-
 			if ((s = bc_lex_next(&p->l))) return s;
 		}
 		else return BC_STATUS_PARSE_BAD_TOKEN;
@@ -710,9 +707,7 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 		ip = bc_vec_item(&p->exits, i);
 
 		while (!ip->func && i < p->exits.len) ip = bc_vec_item(&p->exits, i--);
-
 		assert(ip);
-
 		if (i >= p->exits.len && !ip->func) return BC_STATUS_PARSE_BAD_TOKEN;
 
 		i = ip->idx;

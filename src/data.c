@@ -235,26 +235,6 @@ const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
 #endif // BC_ENABLED
 
 #ifdef DC_ENABLED
-const uint8_t dc_inst_noperands[] = {
-	1, 1, 1, 1, 1,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	0, 0, 1, 0, 0,
-	1, 0, 0, 0, 1, 0, 0, 1,
-	1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0,
-	3, 2, 1, 1, 1, 1, 0, 0, 0, 1, 2, 0, 0, 1, 0, 1,
-};
-
-const uint8_t dc_inst_nresults[] = {
-	1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 0,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0,
-	1, 2, 0, 1, 1, 0, 0, 0, 1, 2, 2, 1, 1, 0, 0, 0,
-};
-
 const BcLexType dc_lex_regs[] = {
 	BC_LEX_OP_REL_EQ, BC_LEX_OP_REL_LE, BC_LEX_OP_REL_GE, BC_LEX_OP_REL_NE,
 	BC_LEX_OP_REL_LT, BC_LEX_OP_REL_GT, BC_LEX_SCOLON, BC_LEX_COLON,

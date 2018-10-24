@@ -51,7 +51,6 @@ extern const BcLexType dc_lex_tokens[];
 extern const BcInst dc_parse_insts[];
 
 // ** Exclude start. **
-BcStatus dc_parse_inst(BcParse *p, BcInst inst);
 BcStatus dc_parse_register(BcParse *p);
 BcStatus dc_parse_string(BcParse *p);
 BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store);

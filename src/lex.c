@@ -52,7 +52,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	last_pt = pt;
 	l->t.t = BC_LEX_NUMBER;
 
-	while (c && ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') ||
+	while (c && (isdigit(c) || (c >= 'A' && c <= 'F') ||
 	             (c == '.' && !pt) || (c == '\\' && buf[i + 1] == '\n')))
 	{
 		if (c != '\\') {

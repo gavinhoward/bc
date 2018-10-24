@@ -38,6 +38,7 @@ BcStatus bc_lex_identifier(BcLex *l) {
 	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
 
 		unsigned long len = (unsigned long) bc_lex_kws[i].len;
+
 		if (!strncmp(buf, bc_lex_kws[i].name, len)) {
 
 			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;

@@ -606,6 +606,7 @@ static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 	s = bc_num_r(a, b, &c1, c, scale, ts);
 
 	bc_num_free(&c1);
+
 	return s;
 }
 
