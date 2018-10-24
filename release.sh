@@ -72,12 +72,9 @@ makebuild() {
 
 runtest() {
 
-	tst="$1"
-	shift
+	header "Running test \"$*\" with CFLAGS=\"$CFLAGS\""
 
-	header "Running test \"$tst $*\" with CFLAGS=\"$CFLAGS\""
-
-	"$tst" "$@"
+	"$@"
 }
 
 runtests() {
@@ -90,18 +87,18 @@ runtests() {
 
 	header "Running tests with CFLAGS=\"$CFLAGS\""
 
-	makebuild "$CFLAGS" "$CC" all make
-	runtest test_all
+	makebuild "$CFLAGS" "$CC" all
+	runtest make test_all
 
 	make clean
 
-	makebuild "$CFLAGS" "$CC" bc make
-	runtest test_bc_all
+	makebuild "$CFLAGS" "$CC" bc
+	runtest make test_bc_all
 
 	make clean
 
-	makebuild "$CFLAGS" "$CC" dc make
-	runtest test_dc
+	makebuild "$CFLAGS" "$CC" dc
+	runtest make test_dc
 
 	make clean
 }
@@ -137,18 +134,18 @@ vg() {
 
 	header "Running valgrind"
 
-	makebuild "$release" "$CC" all make
-	runtest valgrind_all
+	makebuild "$release" "$CC" all
+	runtest make valgrind_all
 
 	make clean
 
-	makebuild "$release" "$CC" bc make
-	runtest valgrind_bc_all
+	makebuild "$release" "$CC" bc
+	runtest make valgrind_bc_all
 
 	make clean
 
-	makebuild "$release" "$CC" dc make
-	runtest valgrind_dc
+	makebuild "$release" "$CC" dc
+	runtest make valgrind_dc
 
 	make clean
 }
