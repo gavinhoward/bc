@@ -51,21 +51,19 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 		if ((i = fgetc(stdin)) == EOF) {
 
-			if (errno == EINTR) {
+			if (errno != EINTR) return BC_STATUS_IO_ERR;
 
-				bcg.sigc = bcg.sig;
-				bcg.signe = 0;
+			bcg.sigc = bcg.sig;
+			bcg.signe = 0;
 
-				if (bcg.ttyin && (fputs(bc_program_ready_msg, stderr) == EOF ||
-				                  fputs(prompt, stderr) == EOF ||
-				                  fflush(stderr) == EOF))
-				{
-					return BC_STATUS_IO_ERR;
-				}
-
-				continue;
+			if (bcg.ttyin && (fputs(bc_program_ready_msg, stderr) == EOF ||
+			                  fputs(prompt, stderr) == EOF ||
+			                  fflush(stderr) == EOF))
+			{
+				return BC_STATUS_IO_ERR;
 			}
-			else return BC_STATUS_IO_ERR;
+
+			continue;
 		}
 
 		c = (char) i;
