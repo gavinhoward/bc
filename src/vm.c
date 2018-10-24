@@ -263,7 +263,7 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	s = s == BC_STATUS_IO_ERR || s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 
 	if (str) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
-	                            vm->prs.l.f, vm->prs.l.line);
+	                         vm->prs.l.f, vm->prs.l.line);
 	else if (comment) s = bc_vm_error(BC_STATUS_LEX_NO_COMMENT_END,
 	                                  vm->prs.l.f, vm->prs.l.line);
 
