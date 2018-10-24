@@ -95,7 +95,7 @@ where brute force multiplication is faster than Karatsuba. There is a script
 (`$ROOT/karatsuba.py`) that will find the break even point on a particular
 platform.
 
-***WARNING: The Karatsuba script requires Python 3 and Numpy.***
+***WARNING: The Karatsuba script requires Python 3.***
 
 ##### Division
 

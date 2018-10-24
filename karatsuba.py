@@ -18,7 +18,6 @@ import os
 import sys
 import subprocess
 import time
-import numpy as np
 
 def usage():
 	print("usage: {} [test_num exe]".format(script))
@@ -106,15 +105,7 @@ for i in range(mn, mx2 + 1):
 	times.append(end - start)
 	print(", Time: {}".format(times[i - mn]))
 
-# Code found at: https://stackoverflow.com/questions/29634217/get-minimum-points-of-numpy-poly1d-curve#29635450
-poly = np.polyfit(np.array(nums), np.array(times), 2)
-c = np.poly1d(poly)
-crit = c.deriv().r
-r_crit = crit[crit.imag==0].real
-tan = c.deriv(2)(r_crit)
-x_min = r_crit[tan>0]
-
-opt = int(round(x_min[0]))
+opt = nums[times.index(min(times))]
 
 print("\nOptimal Karatsuba Num (for this machine): {}".format(opt))
 print("Run the following:\n")
