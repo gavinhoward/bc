@@ -28,3 +28,5 @@ bessel.txt
 bessel_results.txt
 perf.data
 perf.data.old
+*.gcda
+*.gcno

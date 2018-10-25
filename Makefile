@@ -167,6 +167,11 @@ karatsuba:
 karatsuba_test:
 	$(KARATSUBA) 100 $(BC_EXEC)
 
+coverage: CC = gcc
+coverage: CFLAGS = -fprofile-arcs -ftest-coverage -O0 -g
+coverage: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
+coverage: all test_all
+
 version:
 	@echo "$(VERSION)"
 
