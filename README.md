@@ -52,11 +52,9 @@ The community is free to contribute patches for POSIX Makefile builds. This `bc`
 is also compatible with MinGW toolchains.
 
 It is also possible to download pre-compiled binaries for a wide list of
-platforms, including Linux- and Windows-based systems:
-
-    https://xstatic.musl.cc/bc/
-
-This link always points to the latest release of `bc`.
+platforms, including Linux- and Windows-based systems, from
+[xstatic](https://xstatic.musl.cc/bc/). This link always points to the latest
+release of `bc`.
 
 ### Performance
 
