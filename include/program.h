@@ -107,8 +107,11 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 
+// ** Exclude start. **
 extern const BcNumBinaryOp bc_program_ops[];
+extern const char bc_program_exprs_name[];
 extern const char bc_program_stdin_name[];
 extern const char bc_program_ready_msg[];
+// ** Exclude end. **
 
 #endif // BC_PROGRAM_H

@@ -313,13 +313,16 @@ static BcStatus bc_vm_exec(BcVm *vm) {
 	}
 #endif // BC_ENABLED
 
-	if (vm->exprs.len > 1 && (s = bc_vm_process(vm, vm->exprs.v))) return s;
+	if (vm->exprs.len) {
+		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
+		if ((s = bc_vm_process(vm, vm->exprs.v))) return s;
+	}
 
 	for (i = 0; !bcg.sig_other && !s && i < vm->files.len; ++i)
 		s = bc_vm_file(vm, *((char**) bc_vec_item(&vm->files, i)));
 	if ((s && s != BC_STATUS_QUIT) || bcg.sig_other) return s;
 
-	if ((bcg.bc || !vm->files.len) && vm->exprs.len <= 1) s = bc_vm_stdin(vm);
+	if ((bcg.bc || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin(vm);
 	if (!s && !BC_PARSE_CAN_EXEC(&vm->prs)) s = bc_vm_process(vm, "");
 
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;

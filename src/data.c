@@ -305,5 +305,8 @@ const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
 };
 
+// ** Exclude start. **
+const char bc_program_exprs_name[] = "<exprs>";
+// ** Exclude end. **
 const char bc_program_stdin_name[] = "<stdin>";
 const char bc_program_ready_msg[] = "ready for more input\n";
