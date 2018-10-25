@@ -65,6 +65,12 @@ fi
 
 echo "$halt" | "$exe"
 
+base=$(basename "$exe")
+
+if [ "$base" != "bc" -a "$base" != "dc" ]; then
+	exit 0
+fi
+
 echo -e "\nRunning arg tests...\n"
 
 f="$testdir/$d/add.txt"
