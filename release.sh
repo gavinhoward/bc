@@ -72,7 +72,7 @@ makebuild() {
 
 runtest() {
 
-	header "Running test \"$*\" with CFLAGS=\"$CFLAGS\""
+	header "Running test \"$*\""
 
 	"$@"
 }
