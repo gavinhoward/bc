@@ -45,9 +45,9 @@ int main(int argc, char *argv[]) {
 	bcg.name = basename(name);
 
 #if !defined(DC_ENABLED)
-	result = bc_main(argc, argv);
+	s = bc_main(argc, argv);
 #elif !defined(BC_ENABLED)
-	result = dc_main(argc, argv);
+	s = dc_main(argc, argv);
 #else
 	if (!strncmp(bcg.name, dc_name, strlen(dc_name))) s = dc_main(argc, argv);
 	else s = bc_main(argc, argv);
