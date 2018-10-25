@@ -122,6 +122,7 @@ obase += 99999999999999999999999999999999999999999999999999999999999999999999999
 ibase *= 9999999999999999999999999999999999999999999999999999999999999.9
 obase += 9999999999999999999999999999999
 ibase *= 99999999999999999999999999999.9
+i /= 0
 4^2903482.29304823
 a[] + a
 a - a[]
@@ -133,6 +134,54 @@ c(a[])
 j(a[], a)
 j(a, a[])
 j(a[], a[])
+c(;
+c(0;
+c[0;
+++c(0)
+--c(1)
+++scale(34.4)
 print "3", a[], "3"
 print a[]
 print a[], "e"
+print;
+}
+while (x != 0) { break 4; }
+while (x != 0) { continue 4; }
+define t(a[) { return a[0]; }
+define u() { auto a[; return a[0]; }
+define v() { auto a, 4; return a; }
+define w() { auto a 4; return a; }
+define r() { auto a[], 4; return a[0]; }
+define s() { auto a[ 4; return a[0]; }
+3 / 0.00000000000000
+ibase = 2; 2
+ibase = 2; 0.2
+ibase = 3; 4
+ibase = 3; 0.5
+ibase = 4; 5
+ibase = 4; 0.6
+ibase = 5; 6
+ibase = 5; 0.7
+ibase = 6; 7
+ibase = 6; 0.8
+ibase = 7; 8
+ibase = 7; 0.9
+ibase = 8; 9
+ibase = 8; 0.A
+ibase = 9; A
+ibase = 9; 0.B
+ibase = A; B
+ibase = A; 0.C
+ibase = B; C
+ibase = B; 0.D
+ibase = C; D
+ibase = C; 0.E
+ibase = D; E
+ibase = D; 0.F
+ibase = E; F
+ibase = E; 0.F
+ibase = F; F
+ibase = F; 0.F
+ibase = 16; G
+ibase = 16; 0.G
+read()

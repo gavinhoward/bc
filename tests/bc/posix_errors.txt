@@ -2,7 +2,6 @@ aa = 0
 # This is a comment.
 while (q==0) { ++q; continue; }
 last
-read()
 print "i: ", i
 halt
 define x(e) { return 0; }
@@ -10,7 +9,6 @@ define x(e) { return 4*(e+e); }
 define x(e) { return (e+e)*4; }
 limits
 .
-define x(e)
 if (q!=0) { x=3; } else { x=4; }
 x<=0
 while (q!=0 && x==0) { ++q; }

@@ -1,6 +1,12 @@
 define x(x) {
 	return(x)
 }
+define y() {
+	return;
+}
+define z() {
+	return ();
+}
 scale = 0
 x=2
 x[0]=3
@@ -47,3 +53,22 @@ x[0]=3
 (x /= 100)
 (x ^= 10)
 (x = sqrt(x))
+2 + \
+3
+++ibase
+--ibase
+++obase
+--obase
+++last
+--last
+last
+last = 100
+last
+. = 150
+.
+++scale
+--scale
+y()
+z()
+2 + /*
+*/3

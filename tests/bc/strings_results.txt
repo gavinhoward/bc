@@ -2,3 +2,4 @@ stringanother stringyet
 another
 stringnoescapes\nnewline
 stringnewline
+\\

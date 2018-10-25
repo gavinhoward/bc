@@ -113,6 +113,19 @@ fi
 for testfile in $testdir/$d/*errors.txt; do
 
 	if [ -z "${testfile##*$posix*}" ]; then
+
+		line="last"
+		echo "$line" | "$exe" "$@" "-lw"  2> "$out" > /dev/null
+		err="$?"
+
+		if [ "$err" -ne 0 ]; then
+			echo "$d returned an error ($err) on POSIX warning tests"
+			echo "exiting..."
+			exit 1
+		fi
+
+		checktest "1" "$line" "$out" "$exebase"
+
 		options="-ls"
 	else
 		options="$opts"

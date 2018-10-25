@@ -8,3 +8,5 @@ string"
 "
 print "string"
 print "newline\n"
+
+print "\\\e\n"

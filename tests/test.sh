@@ -48,9 +48,11 @@ out="$testdir/../.log_test.txt"
 
 if [ "$d" = "bc" ]; then
 	options="-lq"
+	var="BC_LINE_LENGTH"
 	halt="halt"
 else
 	options=""
+	var="DC_LINE_LENGTH"
 	halt="q"
 fi
 
@@ -67,6 +69,8 @@ fi
 if [ "$d" = "dc" ]; then
 	options="-x"
 fi
+
+export $var=string
 
 echo "Running $d $t..."
 

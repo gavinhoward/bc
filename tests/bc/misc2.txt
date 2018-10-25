@@ -26,3 +26,20 @@ if ( z() >= x() ) {13}
 if ( x() != z() ) {14}
 if ( x() < z() ) {15}
 if ( z() > x() ) {16}
+
+x = -10
+while (x <= 0) {
+	x
+	if (x == -5) break;
+	x += 1
+}
+
+define u() {
+	auto a[];
+	return a[0]
+}
+
+u()
+
+if (x == -4) x
+else x - 4
