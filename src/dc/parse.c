@@ -188,13 +188,12 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			break;
 		}
 
-#ifndef NDEBUG
 		default:
 		{
-			assert(false);
+			s = BC_STATUS_PARSE_BAD_TOKEN;
+			get_token = true;
 			break;
 		}
-#endif // NDEBUG
 	}
 
 	if (!s && get_token) s = bc_lex_next(&p->l);
