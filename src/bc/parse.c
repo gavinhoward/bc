@@ -164,11 +164,6 @@ BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 
 			flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
 			if ((s = bc_parse_expr(p, flags, bc_parse_next_elem))) goto err;
-
-			if (p->l.t.t != BC_LEX_RBRACKET) {
-				s = BC_STATUS_PARSE_BAD_TOKEN;
-				goto err;
-			}
 		}
 
 		if ((s = bc_lex_next(&p->l))) goto err;
@@ -422,31 +417,25 @@ BcStatus bc_parse_return(BcParse *p) {
 	t = p->l.t.t;
 	paren = t == BC_LEX_LPAREN;
 
-	if (t == BC_LEX_NLINE || t == BC_LEX_SCOLON) {
+	if (t == BC_LEX_NLINE || t == BC_LEX_SCOLON)
 		s = bc_parse_push(p, BC_INST_RET0);
-	}
 	else {
 
 		s = bc_parse_expr(p, 0, bc_parse_next_expr);
 		if (s && s != BC_STATUS_PARSE_EMPTY_EXP) return s;
+		else if (s == BC_STATUS_PARSE_EMPTY_EXP) {
+			if ((s = bc_parse_push(p, BC_INST_RET0))) return s;
+			if ((s = bc_lex_next(&p->l))) return s;
+		}
 
-		paren = paren && p->l.t.last == BC_LEX_RPAREN;
-
-		if (!paren && (s || (s = bc_vm_posixError(BC_STATUS_POSIX_RET_PARENS,
-		                                          p->l.f, p->l.line, NULL))))
+		if ((!paren || p->l.t.last != BC_LEX_RPAREN) &&
+		    (s = bc_vm_posixError(BC_STATUS_POSIX_RET_PARENS,
+		                          p->l.f, p->l.line, NULL)))
 		{
 			return s;
 		}
 
-		if (paren)
-		{
-			if (!s) s = bc_parse_push(p, BC_INST_RET);
-			else if (s == BC_STATUS_PARSE_EMPTY_EXP)
-				s = bc_parse_push(p, BC_INST_RET0);
-		}
-		else if (!s) s = bc_parse_push(p, BC_INST_RET);
-
-		if (s) return s;
+		s = bc_parse_push(p, BC_INST_RET);
 	}
 
 	return s;
@@ -1015,12 +1004,6 @@ BcStatus bc_parse_stmt(BcParse *p) {
 			break;
 		}
 
-		case BC_LEX_EOF:
-		{
-			s = (p->flags.len > 0) * BC_STATUS_PARSE_NO_BLOCK_END;
-			break;
-		}
-
 		default:
 		{
 			s = BC_STATUS_PARSE_BAD_TOKEN;
@@ -1037,7 +1020,8 @@ BcStatus bc_parse_parse(BcParse *p) {
 
 	assert(p);
 
-	if (p->l.t.t == BC_LEX_EOF) s = BC_STATUS_LEX_EOF;
+	if (p->l.t.t == BC_LEX_EOF)
+		s = p->flags.len > 0 ? BC_STATUS_PARSE_NO_BLOCK_END : BC_STATUS_LEX_EOF;
 	else if (p->l.t.t == BC_LEX_KEY_DEFINE) {
 		if (!BC_PARSE_CAN_EXEC(p)) return BC_STATUS_PARSE_BAD_TOKEN;
 		s = bc_parse_func(p);

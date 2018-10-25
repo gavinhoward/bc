@@ -90,7 +90,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 // ** Exclude start. **
 
 #ifdef DC_ENABLED
-BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
+BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 #endif // DC_ENABLED
 
 void bc_num_zero(BcNum *n);

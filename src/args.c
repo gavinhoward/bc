@@ -50,7 +50,7 @@ static const struct option bc_args_lopt[] = {
 
 };
 
-static const char* const bc_args_opt = "e:f:hilqsvwx";
+static const char* const bc_args_opt = "e:f:hilqsvVwx";
 
 static BcStatus bc_args_exprs(BcVec *exprs, const char *str) {
 	BcStatus s;
@@ -87,10 +87,6 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 			case 0:
 			{
 				// This is the case when a long option is found.
-				if (bc_args_lopt[idx].val == 'e')
-					s = bc_args_exprs(exprs, optarg);
-				else if (bc_args_lopt[idx].val == 'f')
-					s = bc_args_file(exprs, optarg);
 				break;
 			}
 

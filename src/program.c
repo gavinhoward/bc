@@ -300,13 +300,12 @@ static size_t bc_program_index(char *code, size_t *bgn) {
 
 static char* bc_program_name(char *code, size_t *bgn) {
 
-	size_t len, i;
-	char byte, *s, *string = (char*) (code + *bgn), *ptr;
+	size_t i;
+	char byte, *s, *str = code + *bgn, *ptr = strchr(str, BC_PARSE_STREND);
 
-	if ((ptr = strchr(string, BC_PARSE_STREND))) len = ptr - string;
-	else len = strlen(string);
+	assert(ptr);
 
-	if (!(s = malloc(len + 1))) return NULL;
+	if (!(s = malloc(ptr - str + 1))) return NULL;
 
 	for (i = 0; (byte = (char) code[(*bgn)++]) && byte != BC_PARSE_STREND; ++i)
 		s[i] = byte;
@@ -347,6 +346,7 @@ static BcStatus bc_program_printString(const char *str, size_t *nchars) {
 					break;
 				}
 
+				case '\\':
 				case 'e':
 				{
 					err = putchar('\\');
@@ -1047,7 +1047,7 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 	}
 
 	if ((s = bc_num_init(&res.d.n, n3->len))) return s;
-	if ((s = bc_num_modexp(n1, n2, n3, &res.d.n, p->scale))) goto err;
+	if ((s = bc_num_modexp(n1, n2, n3, &res.d.n))) goto err;
 
 	bc_vec_pop(&p->results);
 

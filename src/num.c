@@ -522,10 +522,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		bool zero = true;
 		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
 
-		if (i == len && zero) {
-			s = BC_STATUS_MATH_DIVIDE_BY_ZERO;
-			goto err;
-		}
+		assert(i != len || !zero);
 
 		len -= i - 1;
 	}
@@ -728,7 +725,7 @@ static bool bc_num_strValid(const char *val, size_t base) {
 	if (!len) return true;
 
 	small = base <= 10;
-	b = (BcDig) (small ? base + '0' : base - 9 + 'A');
+	b = (BcDig) (small ? base + '0' : base - 10 + 'A');
 
 	for (i = 0; i < len; ++i) {
 
@@ -1179,34 +1176,24 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	return bc_num_binary(a, b, c, scale, bc_num_p, a->len * b->len + 1);
 }
 
-BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
+BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s;
-	BcNum a2, *ptr_a, num1, num2, half, f, fprime, *x0, *x1, *temp;
+	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
 	size_t pow, len, digits, digits1, resrdx, req, times = 0;
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
 
-	assert(a && b);
+	assert(a && b && a != b);
 
 	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a)+ 1) >> 1) + 1;
 
-	if (b == a) {
-		memcpy(&a2, b, sizeof(BcNum));
-		ptr_a = &a2;
-		s = bc_num_init(b, req);
-	}
-	else {
-		ptr_a = a;
-		s = bc_num_expand(b, req);
-	}
+	if ((s = bc_num_expand(b, req))) goto init_err;
 
-	if (s) goto init_err;
-
-	if (!ptr_a->len) {
+	if (!a->len) {
 		bc_num_setToZero(b, scale);
 		goto init_err;
 	}
-	else if (ptr_a->neg) {
+	else if (a->neg) {
 		s = BC_STATUS_MATH_NEGATIVE;
 		goto init_err;
 	}
@@ -1216,9 +1203,9 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 		goto init_err;
 	}
 
-	len = ptr_a->len;
+	len = a->len;
 
-	scale = BC_MAX(scale, ptr_a->rdx) + 1;
+	scale = BC_MAX(scale, a->rdx) + 1;
 
 	if ((s = bc_num_init(&num1, len))) goto init_err;
 	if ((s = bc_num_init(&num2, num1.len))) goto num2_err;
@@ -1238,7 +1225,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 
 	bc_num_one(x0);
 
-	if ((pow = BC_NUM_INT(ptr_a))) {
+	if ((pow = BC_NUM_INT(a))) {
 
 		if (pow & 1) x0->num[0] = 2;
 		else x0->num[0] = 6;
@@ -1286,7 +1273,6 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale) {
 	if ((s = bc_num_copy(b, x0))) goto err;
 
 	if (b->rdx > --scale) bc_num_truncate(b, b->rdx - scale);
-	else if (b->rdx < scale) s = bc_num_extend(b, scale - b->rdx);
 
 err:
 	bc_num_free(&fprime);
@@ -1299,7 +1285,6 @@ two_err:
 num2_err:
 	bc_num_free(&num1);
 init_err:
-	if (b == a) bc_num_free(&a2);
 	assert(!b->neg || b->len);
 	return s;
 }
@@ -1335,87 +1320,42 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 }
 
 #ifdef DC_ENABLED
-BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
+BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	BcStatus s;
-	BcNum num2, *ptr_a, *ptr_b, *ptr_c, base, exp, two, temp;
-	bool init;
+	BcNum base, exp, two, temp;
 
-	assert(a && b && c && d);
+	assert(a && b && c && d && a != d && b != d && c != d);
 
-	scale = 0;
+	if ((s = bc_num_expand(d, c->len))) return s;
 
-	if ((init = (d == a))) {
-		memcpy(&num2, d, sizeof(BcNum));
-		ptr_a = &num2;
-	}
-	else ptr_a = a;
+	if (!c->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+	if (a->rdx || b->rdx || c->rdx) return BC_STATUS_MATH_NON_INTEGER;
+	if (b->neg) return BC_STATUS_MATH_NEGATIVE;
 
-	if (d == b) {
-
-		ptr_b = &num2;
-
-		if (d != a) {
-			memcpy(ptr_b, d, sizeof(BcNum));
-			init = true;
-		}
-	}
-	else ptr_b = b;
-
-	if (d == c) {
-
-		ptr_c = &num2;
-
-		if (d != a && d != b) {
-			memcpy(ptr_c, d, sizeof(BcNum));
-			init = true;
-		}
-	}
-	else ptr_c = c;
-
-	if (init) s = bc_num_init(d, ptr_c->len);
-	else s = bc_num_expand(d, ptr_c->len);
-
-	if (s) return s;
-
-	if (!ptr_c->len) {
-		s = BC_STATUS_MATH_DIVIDE_BY_ZERO;
-		goto base_err;
-	}
-
-	if (ptr_a->rdx || ptr_b->rdx || ptr_c->rdx) {
-		s = BC_STATUS_MATH_NON_INTEGER;
-		goto base_err;
-	}
-
-	if (ptr_b->neg) {
-		s = BC_STATUS_MATH_NEGATIVE;
-		goto base_err;
-	}
-
-	if ((s = bc_num_init(&base, ptr_c->len))) goto base_err;
-	if ((s = bc_num_init(&exp, ptr_b->len))) goto exp_err;
+	if ((s = bc_num_init(&base, c->len))) return s;
+	if ((s = bc_num_init(&exp, b->len))) goto exp_err;
 	if ((s = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
-	if ((s = bc_num_init(&temp, ptr_b->len))) goto temp_err;
+	if ((s = bc_num_init(&temp, b->len))) goto temp_err;
 
 	bc_num_one(&two);
 	two.num[0] = 2;
 	bc_num_one(d);
 
-	if ((s = bc_num_rem(ptr_a, ptr_c, &base, scale))) goto err;
-	if ((s = bc_num_copy(&exp, ptr_b))) goto err;
+	if ((s = bc_num_rem(a, c, &base, 0))) goto err;
+	if ((s = bc_num_copy(&exp, b))) goto err;
 
 	while (exp.len) {
 
-		if ((s = bc_num_divmod(&exp, &two, &exp, &temp, scale))) goto err;
+		if ((s = bc_num_divmod(&exp, &two, &exp, &temp, 0))) goto err;
 
 		if (BC_NUM_ONE(&temp)) {
-			if ((s = bc_num_m(d, &base, &temp, scale))) goto err;
-			if ((s = bc_num_rem(&temp, ptr_c, d, scale))) goto err;
+			if ((s = bc_num_m(d, &base, &temp, 0))) goto err;
+			if ((s = bc_num_rem(&temp, c, d, 0))) goto err;
 		}
 
-		if ((s = bc_num_m(&base, &base, &temp, scale))) goto err;
-		if ((s = bc_num_rem(&temp, ptr_c, &base, scale))) goto err;
+		if ((s = bc_num_m(&base, &base, &temp, 0))) goto err;
+		if ((s = bc_num_rem(&temp, c, &base, 0))) goto err;
 	}
 
 err:
@@ -1426,8 +1366,6 @@ two_err:
 	bc_num_free(&exp);
 exp_err:
 	bc_num_free(&base);
-base_err:
-	if (init) bc_num_free(&num2);
 	assert(!d->neg || d->len);
 	return s;
 }
