@@ -117,7 +117,6 @@ typedef struct BcGlobals {
 } BcGlobals;
 // ** Exclude end. **
 
-BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 #ifdef BC_ENABLED
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
                           size_t line, const char *msg);

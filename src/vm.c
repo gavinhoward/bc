@@ -72,7 +72,7 @@ BcStatus bc_vm_info(const char* const help) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
+static BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	assert(file);
 
