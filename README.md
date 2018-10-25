@@ -43,10 +43,10 @@ Executing `make help` lists all `make` targets and options.
 
 This `bc` is robust.
 
-It is well-tested, fuzzed, and fully standards-compliant (though not yet
-certified) with POSIX `bc`. It can be used as a drop-in replacement for any
-existing `bc`. To build `bc` from source, an environment which accepts GNU
-Makefiles is required.
+It is well-tested, fuzzed, and fully standards-compliant (though not certified)
+with POSIX `bc`. It can be used as a drop-in replacement for any existing `bc`,
+except for pass-by-reference array values. To build `bc` from source, an
+environment which accepts GNU Makefiles is required.
 
 The community is free to contribute patches for POSIX Makefile builds. This `bc`
 is also compatible with MinGW toolchains.
