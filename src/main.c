@@ -37,6 +37,9 @@ int main(int argc, char *argv[]) {
 
 	BcStatus result;
 	char *name;
+#ifdef DC_ENABLED
+	size_t len = strlen(dc_name);
+#endif // DC_ENABLED
 
 	setlocale(LC_ALL, "");
 	memset(&bcg, 0, sizeof(BcGlobals));
@@ -49,7 +52,11 @@ int main(int argc, char *argv[]) {
 #elif !defined(BC_ENABLED)
 	result = dc_main(argc, argv);
 #else
-	if (!strcmp(bcg.name, dc_name)) result = dc_main(argc, argv);
+	if (!strncmp(bcg.name, dc_name, len) &&
+	    (strlen(bcg.name) == len || bcg.name[len] == '.'))
+	{
+		result = dc_main(argc, argv);
+	}
 	else result = bc_main(argc, argv);
 #endif
 
