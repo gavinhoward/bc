@@ -3,7 +3,7 @@
 if \(\(s = bc_program_init\(&vm->prog, len, exe\.init, exe\.exp\)\)\) goto err;$
 if \(\(s = exe\.init\(&vm->prs, &vm->prog, BC_PROG_MAIN\)\)\) goto err;$
 if \(\(st = bc_vm_init\(&vm, exe, env_len\)\)\) return st;$
-if \(\(bcg\.bc \|\| !vm->files\.len\) && vm->exprs.\len <= 1\) s = bc_vm_stdin\(vm\);$
+if \(\(bcg\.bc \|\| !vm->files\.len\) && !vm->exprs.\len\) s = bc_vm_stdin\(vm\);$
 vm\.flags
 vm->flags
 vm->files\.len

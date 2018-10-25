@@ -10,7 +10,7 @@
 ^[ ]*if \(\(st = bc_args\(argc, argv, &vm\)\)\) goto err;$
 ^[ ]*bcg\.posix = vm\.flags & BC_FLAG_S;$
 ^[ ]*bcg\.warn = vm\.flags & BC_FLAG_W;$
-^[ ]*if \(vm->exprs\.len > 1 && \(s = bc_vm_process\(vm, vm->exprs\.v\)\)\) return s;$
+^[ ]*if \(vm->exprs\.len\).*?\}$
 \n[ ]*if \(help && printf\(help, bcg\.name\) < 0\) return BC_STATUS_IO_ERR;$
 ^[ ]*vm->exe = exe;$
 ^[ ]*if \(bcg.bc && \(s = bc_vm_envArgs\(vm\)\)\) goto err;$
