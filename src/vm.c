@@ -78,9 +78,11 @@ static BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	if (!s || s > BC_STATUS_VEC_ITEM_EXISTS) return s;
 
-	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_indices[s]], bc_err_descs[s]);
-	fprintf(stderr, "    %s", file);
-	fprintf(stderr, bc_err_line + 4 * !line, line);
+	if (fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]) < 0)
+		return BC_STATUS_IO_ERR;
+	if (fprintf(stderr, "    %s", file) < 0) return BC_STATUS_IO_ERR;
+	if (fprintf(stderr, bc_err_line + 4 * !line, line) < 0)
+		return BC_STATUS_IO_ERR;
 
 	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name));
 }
@@ -90,18 +92,20 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
                            size_t line, const char *msg)
 {
 	int p = (int) bcg.posix, w = (int) bcg.warn;
+	const char* const fmt = p ? bc_err_fmt : bc_warn_fmt;
+
+	assert(file);
 
 	if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
-	fprintf(stderr, "\n%s %s: %s\n", bc_errs[bc_err_indices[s]],
-	        p ? "error" : "warning", bc_err_descs[s]);
+	if (fprintf(stderr, fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]) < 0)
+		return BC_STATUS_IO_ERR;
 
-	if (msg) fprintf(stderr, "    %s\n", msg);
+	if (msg && fprintf(stderr, "    %s\n", msg) < 0) return BC_STATUS_IO_ERR;
 
-	if (file) {
-		fprintf(stderr, "    %s", file);
-		fprintf(stderr, bc_err_line + 4 * !line, line);
-	}
+	if (fprintf(stderr, "    %s", file) < 0) return BC_STATUS_IO_ERR;
+	if (fprintf(stderr, bc_err_line + 4 * !line, line) < 0)
+		return BC_STATUS_IO_ERR;
 
 	return s * (!bcg.ttyin && !!p);
 }

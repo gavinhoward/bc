@@ -47,6 +47,7 @@ const char* const bc_args_env_name = "BC_ENV_ARGS";
 // ** Exclude end. **
 
 const char bc_err_fmt[] = "\n%s error: %s\n";
+const char bc_warn_fmt[] = "\n%s warning: %s\n";
 const char bc_err_line[] = ":%zu\n\n";
 
 const char *bc_errs[] = {
@@ -61,7 +62,7 @@ const char *bc_errs[] = {
 #endif // BC_ENABLED
 };
 
-const uint8_t bc_err_indices[] = {
+const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 	BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
 #ifdef DC_ENABLED
@@ -88,7 +89,7 @@ const uint8_t bc_err_indices[] = {
 	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 };
 
-const char *bc_err_descs[] = {
+const char *bc_err_msgs[] = {
 
 	NULL,
 	"memory allocation error",

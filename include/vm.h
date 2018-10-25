@@ -146,10 +146,11 @@ extern const char bc_lib[];
 extern const char *bc_lib_name;
 
 extern const char bc_err_fmt[];
+extern const char bc_warn_fmt[];
 extern const char bc_err_line[];
 extern const char *bc_errs[];
-extern const uint8_t bc_err_indices[];
-extern const char *bc_err_descs[];
+extern const uint8_t bc_err_ids[];
+extern const char *bc_err_msgs[];
 // ** Exclude end. **
 
 extern BcGlobals bcg;
