@@ -15,12 +15,18 @@
 
 SRC = $(sort $(wildcard src/*.c))
 OBJ = $(SRC:.c=.o)
+GCDA = $(SRC:.c=.gcda)
+GCNO = $(SRC:.c=.gcno)
 
 BC_SRC = $(sort $(wildcard src/bc/*.c))
 BC_OBJ = $(BC_SRC:.c=.o)
+BC_GCDA = $(BC_SRC:.c=.gcda)
+BC_GCNO = $(BC_SRC:.c=.gcno)
 
 DC_SRC = $(sort $(wildcard src/dc/*.c))
 DC_OBJ = $(DC_SRC:.c=.o)
+DC_GCDA = $(DC_SRC:.c=.gcda)
+DC_GCNO = $(DC_SRC:.c=.gcno)
 
 BC_ENABLED = BC_ENABLED
 DC_ENABLED = DC_ENABLED
@@ -169,8 +175,11 @@ karatsuba_test:
 
 coverage: CC = gcc
 coverage: CFLAGS = -fprofile-arcs -ftest-coverage -O0 -g
-coverage: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED)
+coverage: CPPFLAGS += -D$(DC_ENABLED) -D$(BC_ENABLED) -DNDEBUG
 coverage: all test_all
+	gcov -pabcdf $(GCDA) $(BC_GCDA) $(DC_GCDA)
+	$(RM) -f $(GEN)*.gc*
+	gcovr --html-details --output index.html
 
 version:
 	@echo "$(VERSION)"
@@ -184,6 +193,11 @@ clean_exe:
 	$(RM) -f $(DC_OBJ)
 	$(RM) -f $(BC_EXEC)
 	$(RM) -f $(DC_EXEC)
+	$(RM) -f $(GCDA) $(GCNO)
+	$(RM) -f $(BC_GCDA) $(BC_GCNO)
+	$(RM) -f $(DC_GCDA) $(DC_GCNO)
+	$(RM) -f *.gcov
+	$(RM) -f *.html
 
 clean: clean_exe
 	$(RM) -f $(GEN_EXEC)

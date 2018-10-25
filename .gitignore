@@ -30,3 +30,5 @@ perf.data
 perf.data.old
 *.gcda
 *.gcno
+*.gcov
+*.html
