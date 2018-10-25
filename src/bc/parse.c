@@ -1278,13 +1278,13 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 
 	if (!(flags & BC_PARSE_REL) && nrelops &&
 	    (s = bc_vm_posixError(BC_STATUS_POSIX_REL_POS,
-	                           p->l.f, p->l.line, NULL)))
+	                          p->l.f, p->l.line, NULL)))
 	{
 		return s;
 	}
 	else if ((flags & BC_PARSE_REL) && nrelops > 1 &&
 	         (s = bc_vm_posixError(BC_STATUS_POSIX_MULTIPLE_REL,
-	                                p->l.f, p->l.line, NULL)))
+	                               p->l.f, p->l.line, NULL)))
 	{
 		return s;
 	}
