@@ -80,23 +80,20 @@ BcStatus bc_read_file(const char *path, char **buf) {
 
 	BcStatus s = BC_STATUS_IO_ERR;
 	FILE *f;
-	int fd;
 	size_t size, read;
 	long res;
 	struct stat pstat;
 
 	assert(path && buf);
 
-	if ((fd = open(path, O_RDONLY)) == -1) return BC_STATUS_EXEC_FILE_ERR;
+	if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
 
-	if (fstat(fd, &pstat) == -1) goto stat_err;
+	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {
 		s = BC_STATUS_PATH_IS_DIR;
-		goto stat_err;
+		goto malloc_err;
 	}
-
-	if (!(f = fdopen(fd, "r"))) goto stat_err;
 
 	if (fseek(f, 0, SEEK_END) == -1) goto malloc_err;
 	if ((res = ftell(f)) < 0) goto malloc_err;
@@ -124,8 +121,5 @@ read_err:
 	free(*buf);
 malloc_err:
 	fclose(f);
-	return s;
-stat_err:
-	close(fd);
 	return s;
 }
