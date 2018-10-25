@@ -59,7 +59,7 @@ BcStatus bc_parse_pushIndex(BcParse *p, size_t idx) {
 
 	for (amt = 0; idx; ++amt) {
 		nums[amt] = (char) idx;
-		idx = (idx & ((unsigned long) ~(UINT8_MAX))) >> sizeof(char) * CHAR_BIT;
+		idx = (idx & ((unsigned long) ~(UCHAR_MAX))) >> sizeof(char) * CHAR_BIT;
 	}
 
 	if ((s = bc_parse_push(p, amt))) return s;

@@ -292,7 +292,8 @@ static size_t bc_program_index(char *code, size_t *bgn) {
 	uint8_t amt = code[(*bgn)++], i = 0;
 	size_t res = 0;
 
-	for (; i < amt; ++i) res |= (((size_t) code[(*bgn)++]) << (i * CHAR_BIT));
+	for (; i < amt; ++i, ++(*bgn))
+		res |= (((size_t) ((int) code[*bgn]) & UCHAR_MAX) << (i * CHAR_BIT));
 
 	return res;
 }
