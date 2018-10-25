@@ -37,6 +37,19 @@ It is expected that `CC` produces code for the target system.
 Users can also create a file named `config.mak` in the top-level directory to
 control `make`. This is not normally necessary.
 
+I ***highly*** encourage package and distro maintainers to compile as follows:
+
+```
+CPPFLAGS="-DNEBUG" CFLAGS="-O3" make
+```
+
+The optimizations speed up `bc` by orders of magnitude. In addition, for SSE4
+architectures, the following can add a bit more speed:
+
+```
+CPPFLAGS="-DNEBUG" CFLAGS="-O3 -mtune=native -msse4" make
+```
+
 Executing `make help` lists all `make` targets and options.
 
 ## Status
