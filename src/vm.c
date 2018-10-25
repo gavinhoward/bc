@@ -100,9 +100,7 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 
 	if (fprintf(stderr, fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]) < 0)
 		return BC_STATUS_IO_ERR;
-
 	if (msg && fprintf(stderr, "    %s\n", msg) < 0) return BC_STATUS_IO_ERR;
-
 	if (fprintf(stderr, "    %s", file) < 0) return BC_STATUS_IO_ERR;
 	if (fprintf(stderr, bc_err_line + 4 * !line, line) < 0)
 		return BC_STATUS_IO_ERR;
