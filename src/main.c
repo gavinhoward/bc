@@ -35,7 +35,7 @@ BcGlobals bcg;
 
 int main(int argc, char *argv[]) {
 
-	BcStatus result;
+	BcStatus s;
 	char *name;
 
 	setlocale(LC_ALL, "");
@@ -49,17 +49,11 @@ int main(int argc, char *argv[]) {
 #elif !defined(BC_ENABLED)
 	result = dc_main(argc, argv);
 #else
-	size_t len = strlen(dc_name);
-
-	if (!strncmp(bcg.name, dc_name, len) &&
-	    (strlen(bcg.name) == len || bcg.name[len] == '.'))
-	{
-		result = dc_main(argc, argv);
-	}
-	else result = bc_main(argc, argv);
+	if (!strncmp(bcg.name, dc_name, strlen(dc_name))) s = dc_main(argc, argv);
+	else s = bc_main(argc, argv);
 #endif
 
 	free(name);
 
-	return (int) result;
+	return (int) s;
 }
