@@ -172,8 +172,8 @@ static BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
 	return s;
 }
 
-static BcStatus bc_num_splitAt(BcNum *restrict n, size_t idx, BcNum *restrict a,
-                               BcNum *restrict b)
+static BcStatus bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
+                             BcNum *restrict b)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 
@@ -409,8 +409,8 @@ static BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b,
 	if ((s = bc_num_init(&z2, max))) goto z2_err;
 	if ((s = bc_num_init(&temp, max + max))) goto temp_err;
 
-	if ((s = bc_num_splitAt(a, max2, &l1, &h1))) goto err;
-	if ((s = bc_num_splitAt(b, max2, &l2, &h2))) goto err;
+	if ((s = bc_num_split(a, max2, &l1, &h1))) goto err;
+	if ((s = bc_num_split(b, max2, &l2, &h2))) goto err;
 
 	if ((s = bc_num_add(&h1, &l1, &m1, 0))) goto err;
 	if ((s = bc_num_add(&h2, &l2, &m2, 0))) goto err;
