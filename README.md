@@ -57,9 +57,12 @@ Executing `make help` lists all `make` targets and options.
 This `bc` is robust.
 
 It is well-tested, fuzzed, and fully standards-compliant (though not certified)
-with POSIX `bc`. It can be used as a drop-in replacement for any existing `bc`,
-except for pass-by-reference array values. To build `bc` from source, an
-environment which accepts GNU Makefiles is required.
+with POSIX `bc`. The math has been tested with 30+ million random problems, so
+it is as correct as I can make it.
+
+This `bc` can be used as a drop-in replacement for any existing `bc`, except for
+pass-by-reference array values. To build `bc` from source, an environment which
+accepts GNU Makefiles is required.
 
 The community is free to contribute patches for POSIX Makefile builds. This `bc`
 is also compatible with MinGW toolchains.
@@ -96,15 +99,15 @@ This `bc` uses two algorithms:
 
 Karatsuba is used for "large" numbers. ("Large" numbers are defined as any
 number with `BC_NUM_KARATSUBA_LEN` digits or larger. `BC_NUM_KARATSUBA_LEN` has
-a sane default, but may be configured by the user). Karatsuba as implemented in
-this `bc` is superlinear but subpolynomial (bound by `O(n^log_2(3))`).
+a sane default, but may be configured by the user). Karatsuba, as implemented in
+this `bc`, is superlinear but subpolynomial (bound by `O(n^log_2(3))`).
 
-Brute force multiplication is polynomial (`O(n^2)`), but since Karatsuba
-requires both more intermediate values (which translate to memory allocations)
-and a few more additions, there is a "break even" point in the number of digits
-where brute force multiplication is faster than Karatsuba. There is a script
-(`$ROOT/karatsuba.py`) that will find the break even point on a particular
-platform.
+Brute force multiplication is used below `BC_NUM_KARATSUBA_LEN` digits. It is
+polynomial (`O(n^2)`), but since Karatsuba requires both more intermediate
+values (which translate to memory allocations) and a few more additions, there
+is a "break even" point in the number of digits where brute force multiplication
+is faster than Karatsuba. There is a script (`$ROOT/karatsuba.py`) that will
+find the break even point on a particular machine.
 
 ***WARNING: The Karatsuba script requires Python 3.***
 
@@ -125,9 +128,10 @@ Subtraction was used instead of multiplication for two reasons:
 
 1.	Division and subtraction can share code (one of the goals of this `bc` is
 	small code).
-2.	It minimizes code complexity.
+2.	It minimizes algorithmic complexity.
 
-Multiplication would suffer from a worse worst-case complexity.
+Using multiplication would make division have the even worse algorithmic
+complexity of `O(n^(2*log_2(3)))` (best case) and `O(n^3)` (worst case).
 
 ##### Power
 
@@ -161,6 +165,15 @@ cos(x) = sin(x + pi/2)
 
 to calculate `cos(x)`. It has a complexity of `O(n^3)`.
 
+**Note**: this series has a tendency to *occasionally* produce an error of 1
+[ULP](https://en.wikipedia.org/wiki/Unit_in_the_last_place). (It is an
+unfortunate side effect of the algorithm, and there isn't any way around it;
+[this article](https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT) explains
+why calculating sine and cosine, and the other transcendental functions below,
+within less than 1 ULP is nearly impossible and unnecessary.) Therefore, I
+recommend that users do their calculations with the precision (`scale`) set to
+at least 1 greater than is needed.
+
 ##### Exponentiation (Power of `e`)
 
 This `bc` uses the series
@@ -176,6 +189,10 @@ e^x = (e^(x/2))^2
 ```
 
 to reduce `x`. It has a complexity of `O(n^3)`.
+
+**Note**: this series can also produce errors of 1 ULP, so I recommend users do
+their calculations with the precision (`scale`) set to at least 1 greater than
+is needed.
 
 ##### Natural Log
 
@@ -194,6 +211,10 @@ ln(x^2) = 2 * ln(x)
 
 to sufficiently reduce `x`. It has a complexity of `O(n^3)`.
 
+**Note**: this series can also produce errors of 1 ULP, so I recommend users do
+their calculations with the precision (`scale`) set to at least 1 greater than
+is needed.
+
 ##### Arctangent
 
 This `bc` uses the series
@@ -205,17 +226,21 @@ x - x^3/3 + x^5/5 - x^7/7 + ...
 to calculate `atan(x)` for small `x` and the relation
 
 ```
-atan(x) = atan(c) + atan((x - c)/(1 + x*c))
+atan(x) = atan(c) + atan((x - c)/(1 + x * c))
 ```
 
 to reduce `x` to small enough. It has a complexity of `O(n^3)`.
+
+**Note**: this series can also produce errors of 1 ULP, so I recommend users do
+their calculations with the precision (`scale`) set to at least 1 greater than
+is needed.
 
 ##### Bessel
 
 This `bc` uses the series
 
 ```
-x^n/(2^n*n!) * (1 - x^2*2*1!*(n + 1)) + x^4/(2^4*2!*(n + 1)*(n + 2)) - ...
+x^n/(2^n * n!) * (1 - x^2 * 2 * 1! * (n + 1)) + x^4/(2^4 * 2! * (n + 1) * (n + 2)) - ...
 ```
 
 to calculate the bessel function (integer order only).
@@ -223,10 +248,14 @@ to calculate the bessel function (integer order only).
 It also uses the relation
 
 ```
-j(-n,x) = (-1)^n*j(n,x)
+j(-n,x) = (-1)^n * j(n,x)
 ```
 
 to calculate the bessel when `x < 0`, It has a complexity of `O(n^3)`.
+
+**Note**: this series can also produce errors of 1 ULP, so I recommend users do
+their calculations with the precision (`scale`) set to at least 1 greater than
+is needed.
 
 ##### Modular Exponentiation (`dc` Only)
 
