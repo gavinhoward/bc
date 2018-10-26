@@ -47,7 +47,7 @@ The optimizations speed up `bc` by orders of magnitude. In addition, for SSE4
 architectures, the following can add a bit more speed:
 
 ```
-CPPFLAGS="-DNEBUG" CFLAGS="-O3 -mtune=native -msse4" make
+CPPFLAGS="-DNEBUG" CFLAGS="-O3 -march=native -msse4" make
 ```
 
 Executing `make help` lists all `make` targets and options.
