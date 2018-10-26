@@ -244,10 +244,10 @@ make clean_tests
 
 version=$(make version)
 
-debug "$CC"
-release "$CC"
-reldebug "$CC"
-minsize "$CC"
+debug "clang"
+release "clang"
+reldebug "clang"
+minsize "clang"
 
 debug "gcc"
 release "gcc"
