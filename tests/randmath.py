@@ -273,8 +273,8 @@ for i in range(0, len(tests)):
 	answer = input("\nAdd test ({}/{}) to test suite? [y/N]: ".format(i + 1, len(tests)))
 
 	if 'Y' in answer or 'y' in answer:
+
 		print("Yes")
-		continue
 
 		name = testdir + "/" + exe + "/" + files[op]
 
