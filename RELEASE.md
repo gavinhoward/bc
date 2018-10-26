@@ -3,7 +3,7 @@
 This is the checklist for cutting a release.
 
 1.	Comment out everything in config.mak
-2.	Update Busybox sizes.
+2.	Update Busybox sizes and turn both applets on.
 3.	Run and pass the release.sh script.
 4.	Run Coverity Scan and eliminate warnings, if possible (both only).
 	* debug

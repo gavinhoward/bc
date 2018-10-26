@@ -7,8 +7,8 @@ This is an implementation of POSIX `bc` that implements
 This `bc` also includes an implementation of `dc` in the same binary, accessible
 via a symbolic link, which implements all FreeBSD and GNU extensions. If a
 single `dc` binary is desired, `bc` can be copied and renamed to `dc`. The `!`
-command is omitted; the author believes this is poses security concerns and
-further that such functionality is unnecessary.
+command is omitted; I believe this is poses security concerns and that such
+functionality is unnecessary.
 
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 0-clause License. Full license text may be found in the `LICENSE.md` file.
