@@ -165,7 +165,7 @@ valgrind_dc:
 	tests/all.sh dc valgrind $(VALGRIND_ARGS) $(DC_EXEC)
 
 valgrind_timeconst:
-	tests/bc/timeconst.sh valgrind $(VALGRIND_ARGS) $(BC_EXEC)
+	echo "100" | valgrind $(VALGRIND_ARGS) $(BC_EXEC) tests/bc/scripts/timeconst.bc
 
 karatsuba:
 	$(KARATSUBA)
