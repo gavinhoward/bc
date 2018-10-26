@@ -205,6 +205,8 @@ clean: clean_exe
 	$(RM) -f $(BC_LIB_O)
 	$(RM) -f $(BC_HELP_C)
 	$(RM) -f $(BC_HELP_O)
+	$(RM) -f $(DC_HELP_C)
+	$(RM) -f $(DC_HELP_O)
 
 clean_tests: clean
 	$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
