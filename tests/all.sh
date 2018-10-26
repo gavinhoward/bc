@@ -40,7 +40,7 @@ if [ "$d" = "bc" ]; then
 	halt="quit"
 
 	echo -e "\nRunning $d limits tests...\n"
-	echo "limits" | "$exe"
+	echo "limits" | "$exe" "$@"
 
 else
 	halt="q"
@@ -63,7 +63,7 @@ else
 	halt="q"
 fi
 
-echo "$halt" | "$exe"
+echo "$halt" | "$exe" "$@"
 
 base=$(basename "$exe")
 
@@ -82,21 +82,21 @@ out2="$testdir/../.log_test.txt"
 
 echo -e "$results\n$results\n$results\n$results" > "$out1"
 
-"$exe" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" > "$out2"
+"$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" > "$out2"
 
 diff "$out1" "$out2"
 err="$?"
 
 if [ "$d" = "bc" ]; then
-	echo "$halt" | "$exe" -i
+	echo "$halt" | "$exe" "$@" -i
 fi
-echo "$halt" | "$exe" -h > /dev/null
-echo "$halt" | "$exe" -v > /dev/null
-echo "$halt" | "$exe" -V > /dev/null
+echo "$halt" | "$exe" "$@" -h > /dev/null
+echo "$halt" | "$exe" "$@" -v > /dev/null
+echo "$halt" | "$exe" "$@" -V > /dev/null
 
 set +e
 
-"$exe" -u -e "$exprs"
+"$exe" "$@" -u -e "$exprs"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
@@ -107,7 +107,7 @@ fi
 
 echo -e "\nRunning directory test...\n"
 
-"$exe" "$testdir"
+"$exe" "$@" "$testdir"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
@@ -120,7 +120,7 @@ echo -e "\nRunning binary file test...\n"
 
 bin=$(which cat)
 
-"$exe" "$bin"
+"$exe" "$@" "$bin"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
@@ -131,7 +131,7 @@ fi
 
 echo -e "\nRunning binary stdin test...\n"
 
-cat "$bin" | "$exe"
+cat "$bin" | "$exe" "$@"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
