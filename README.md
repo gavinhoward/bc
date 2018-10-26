@@ -22,6 +22,9 @@ make [bc|dc]
 make install
 ```
 
+**Note**: The targets `all`, `bc`, and `dc` are exclusionary; only one can be
+used at a time.
+
 This `bc` supports `CC`, `CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`,
 and `DESTDIR` `make` variables. Note that to cross-compile this `bc`, an
 appropriate compiler must be present in order to bootstrap core file(s), if the
