@@ -33,8 +33,7 @@ static BcStatus bc_program_search(BcProgram *p, char *id, BcVec **ret, bool var)
 {
 	BcStatus s;
 	BcId e, *ptr;
-	BcVec *v;
-	BcVec *map;
+	BcVec *v, *map;
 	size_t i;
 	BcResultData data;
 	bool new;
@@ -46,9 +45,11 @@ static BcStatus bc_program_search(BcProgram *p, char *id, BcVec **ret, bool var)
 	e.idx = v->len;
 
 	if ((new = (s = bc_map_insert(map, &e, &i)) != BC_STATUS_VEC_ITEM_EXISTS)) {
-		if (s) return s;
-		if ((s = bc_array_init(&data.v, var))) return s;
-		if ((s = bc_vec_push(v, &data.v))) goto err;
+		if (s || (s = bc_array_init(&data.v, var))) return s;
+		if ((s = bc_vec_push(v, &data.v))) {
+			bc_vec_free(&data.v);
+			return s;
+		}
 	}
 
 	ptr = bc_map_item(map, i);
@@ -56,10 +57,6 @@ static BcStatus bc_program_search(BcProgram *p, char *id, BcVec **ret, bool var)
 	*ret = bc_vec_item(v, ptr->idx);
 
 	return BC_STATUS_SUCCESS;
-
-err:
-	bc_vec_free(&data.v);
-	return s;
 }
 
 static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex)
