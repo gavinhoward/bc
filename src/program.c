@@ -317,9 +317,7 @@ static BcStatus bc_program_printString(const char *str, size_t *nchars) {
 	size_t i, len = strlen(str);
 
 #ifdef DC_ENABLED
-	if (!len) {
-		return putchar('\0') == EOF ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
-	}
+	if (!len) return putchar('\0') < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
 #endif // DC_ENABLED
 
 	for (i = 0; i < len; ++i, ++(*nchars)) {
