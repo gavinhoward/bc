@@ -18,7 +18,7 @@ This is the checklist for cutting a release.
 7.	Fuzz with AFL
 	* release
 8.	Fix AFL crashes as much as possible.
-9.	Repeat steps 1-6 again and repeat until nothing is found.
+9.	Repeat steps 1-8 again and repeat until nothing is found.
 10.	Run "make clean_tests".
 11.	Run the release script.
 12.	Upload the custom tarball to GitHub.
