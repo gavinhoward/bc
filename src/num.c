@@ -798,7 +798,7 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 		v = (unsigned long) (c <= '9' ? c - '0' : c - 'A' + 10);
 
-		if ((s = bc_num_m(n, base, &mult, 0))) goto int_err;
+		if ((s = bc_num_mul(n, base, &mult, 0))) goto int_err;
 		if ((s = bc_num_ulong2num(&temp, v))) goto int_err;
 		if ((s = bc_num_add(&mult, &temp, n, 0))) goto int_err;
 	}
@@ -1240,9 +1240,9 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 
 	while (!bcg.signe && (cmp || digits < len)) {
 
-		if ((s = bc_num_d(a, x0, &f, resrdx))) goto err;
+		if ((s = bc_num_div(a, x0, &f, resrdx))) goto err;
 		if ((s = bc_num_add(x0, &f, &fprime, resrdx))) goto err;
-		if ((s = bc_num_m(&fprime, &half, x1, resrdx))) goto err;
+		if ((s = bc_num_mul(&fprime, &half, x1, resrdx))) goto err;
 
 		cmp = bc_num_cmp(x1, x0);
 		digits = x1->len - (unsigned long long) llabs(cmp);
@@ -1346,11 +1346,11 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 		if ((s = bc_num_divmod(&exp, &two, &exp, &temp, 0))) goto err;
 
 		if (BC_NUM_ONE(&temp)) {
-			if ((s = bc_num_m(d, &base, &temp, 0))) goto err;
+			if ((s = bc_num_mul(d, &base, &temp, 0))) goto err;
 			if ((s = bc_num_rem(&temp, c, d, 0))) goto err;
 		}
 
-		if ((s = bc_num_m(&base, &base, &temp, 0))) goto err;
+		if ((s = bc_num_mul(&base, &base, &temp, 0))) goto err;
 		if ((s = bc_num_rem(&temp, c, &base, 0))) goto err;
 	}
 
