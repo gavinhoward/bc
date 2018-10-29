@@ -1297,13 +1297,12 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	if ((init = (c == a))) {
 		memcpy(&num2, c, sizeof(BcNum));
 		ptr_a = &num2;
+		if ((s = bc_num_init(c, len))) return s;
 	}
-	else ptr_a = a;
-
-	if (init) s = bc_num_init(c, len);
-	else s = bc_num_expand(d, ptr_a->len);
-
-	if (s) return s;
+	else {
+		ptr_a = a;
+		if ((s = bc_num_expand(c, len))) return s;
+	}
 
 	s = bc_num_r(ptr_a, b, c, d, scale, ts);
 
