@@ -1203,9 +1203,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 		goto init_err;
 	}
 
-	len = a->len;
-
-	scale = BC_MAX(scale, a->rdx) + 1;
+	len = a->len + (scale = BC_MAX(scale, a->rdx) + 1);
 
 	if ((s = bc_num_init(&num1, len))) goto init_err;
 	if ((s = bc_num_init(&num2, len))) goto num2_err;
@@ -1215,10 +1213,8 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 	half.num[0] = 5;
 	half.rdx = 1;
 
-	len += scale;
-
 	if ((s = bc_num_init(&f, len))) goto f_err;
-	if ((s = bc_num_init(&fprime, len + scale))) goto fprime_err;
+	if ((s = bc_num_init(&fprime, len))) goto fprime_err;
 
 	x0 = &num1;
 	x1 = &num2;
