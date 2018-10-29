@@ -1185,7 +1185,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 
 	assert(a && b && a != b);
 
-	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a)+ 1) >> 1) + 1;
+	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a) + 1) >> 1) + 1;
 
 	if ((s = bc_num_expand(b, req))) goto init_err;
 
