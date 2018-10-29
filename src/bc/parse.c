@@ -1017,7 +1017,7 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 	return s;
 }
 
-static BcStatus bc_parse_parse(BcParse *p) {
+BcStatus bc_parse_parse(BcParse *p) {
 
 	BcStatus s;
 

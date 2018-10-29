@@ -65,6 +65,7 @@ BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
 // ** Exclude end. **
 
+BcStatus bc_parse_parse(BcParse *p);
 BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next);
 
 extern const bool bc_parse_exprs[];
