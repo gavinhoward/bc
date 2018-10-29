@@ -43,14 +43,14 @@ control `make`. This is not normally necessary.
 I ***highly*** encourage package and distro maintainers to compile as follows:
 
 ```
-CPPFLAGS="-DNEBUG" CFLAGS="-O3" make
+CPPFLAGS="-DNEBUG" CFLAGS="-O3" LDFLAGS="-s" make
 ```
 
 The optimizations speed up `bc` by orders of magnitude. In addition, for SSE4
 architectures, the following can add a bit more speed:
 
 ```
-CPPFLAGS="-DNEBUG" CFLAGS="-O3 -march=native -msse4" make
+CPPFLAGS="-DNEBUG" CFLAGS="-O3 -march=native -msse4" LDFLAGS="-s" make
 ```
 
 Executing `make help` lists all `make` targets and options.
