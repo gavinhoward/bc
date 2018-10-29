@@ -52,7 +52,7 @@ static BcStatus bc_program_search(BcProgram *p, char *id, BcVec **ret, bool var)
 		}
 	}
 
-	ptr = bc_map_item(map, i);
+	ptr = bc_vec_item(map, i);
 	if (new && !(ptr->name = strdup(e.name))) return BC_STATUS_ALLOC_ERR;
 	*ret = bc_vec_item(v, ptr->idx);
 
@@ -1426,7 +1426,7 @@ BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 		if (s != BC_STATUS_VEC_ITEM_EXISTS) return s;
 	}
 
-	entry_ptr = bc_map_item(&p->fn_map, *idx);
+	entry_ptr = bc_vec_item(&p->fn_map, *idx);
 	*idx = entry_ptr->idx;
 
 	if (s == BC_STATUS_VEC_ITEM_EXISTS) {

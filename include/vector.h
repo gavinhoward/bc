@@ -72,6 +72,5 @@ size_t bc_map_index(const BcVec *v, const void *ptr);
 // ** Exclude end. **
 
 #define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), bc_id_free))
-#define bc_map_item(v, idx) (bc_vec_item((v), (idx)))
 
 #endif // BC_VECTOR_H

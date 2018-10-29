@@ -129,7 +129,7 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	}
 	else free(name);
 
-	entry_ptr = bc_map_item(&p->prog->fn_map, idx);
+	entry_ptr = bc_vec_item(&p->prog->fn_map, idx);
 	assert(entry_ptr);
 	if ((s = bc_parse_pushIndex(p, entry_ptr->idx))) return s;
 
