@@ -27,7 +27,7 @@ BC_FLAG_L
 BC_FLAG_I
 BC_MAX\(
 BC_MIN\(
-BC_INVALID_IDX
+BC_VEC_INVALID_IDX
 [ ]bool
 ^bool
  true

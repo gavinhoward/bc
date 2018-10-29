@@ -40,3 +40,5 @@
 ^[ ]*bcg\.exreg = vm\.flags & BC_FLAG_X;$
 ^#ifndef BC_NUM_KARATSUBA_LEN$
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
+\n// \*\* Busybox exclude start\. \*\*
+\n// \*\* Busybox exclude end\. \*\*

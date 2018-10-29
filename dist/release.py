@@ -116,16 +116,6 @@ if project == "toybox":
 	r = re.compile('\t', re.M)
 	content = r.sub('  ', content)
 
-	res = subprocess.run(["make", "version"], stdout=subprocess.PIPE)
-
-	if res.returncode != 0:
-		sys.exit(res.returncode)
-
-	version = res.stdout.decode("utf-8")[:-1]
-
-	r = re.compile('BC_VERSION', re.M)
-	content = r.sub('"' + version + '"', content)
-
 removals = read_file(projectdir + "/remove_dotall.txt")
 
 for reg in removals:
@@ -137,6 +127,16 @@ removals = read_file(projectdir + "/remove.txt")
 for reg in removals:
 	r = re.compile(reg, re.M)
 	content = r.sub('', content)
+
+res = subprocess.run(["make", "version"], stdout=subprocess.PIPE)
+
+if res.returncode != 0:
+	sys.exit(res.returncode)
+
+version = res.stdout.decode("utf-8")[:-1]
+
+r = re.compile('BC_VERSION', re.M)
+content = r.sub('"' + version + '"', content)
 
 needles = read_file(projectdir + "/needles.txt")
 replacements = read_file(projectdir + "/replacements.txt")

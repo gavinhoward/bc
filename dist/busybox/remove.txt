@@ -3,7 +3,7 @@
 ^#define BC.*_H$
 ^#endif \/\/ BC.*_H$
 ^extern (?!BcGlobals bcg|\\.).*$
-^[\t]*// \*\* Exclude start\. \*\*$
-^[\t]*// \*\* Exclude end\. \*\*$
+\n[\t]*// \*\* Exclude start\. \*\*$
+\n[\t]*// \*\* Exclude end\. \*\*$
 \n[\t]*bcg.help = bc_help;$
 \n[\t]*bcg.help = dc_help;$
