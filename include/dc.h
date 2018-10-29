@@ -39,25 +39,11 @@ extern const char dc_help[];
 
 BcStatus dc_lex_token(BcLex *l);
 
-// ** Exclude start. **
-BcStatus dc_lex_register(BcLex *l);
-BcStatus dc_lex_string(BcLex *l);
-// ** Exclude end. **
-
 extern const BcLexType dc_lex_regs[];
 extern const size_t dc_lex_regs_len;
 
 extern const BcLexType dc_lex_tokens[];
 extern const BcInst dc_parse_insts[];
-
-// ** Exclude start. **
-BcStatus dc_parse_register(BcParse *p);
-BcStatus dc_parse_string(BcParse *p);
-BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store);
-BcStatus dc_parse_cond(BcParse *p, uint8_t inst);
-BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags);
-BcStatus dc_parse_parse(BcParse *p);
-// ** Exclude end. **
 
 BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus dc_parse_expr(BcParse *p, uint8_t flags);

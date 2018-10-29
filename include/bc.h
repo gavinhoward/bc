@@ -49,13 +49,6 @@ typedef struct BcLexKeyword {
 
 extern const BcLexKeyword bc_lex_kws[20];
 
-// ** Exclude start. **
-BcStatus bc_lex_identifier(BcLex *l);
-BcStatus bc_lex_string(BcLex *l);
-void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without);
-BcStatus bc_lex_comment(BcLex *l);
-// ** Exclude end. **
-
 BcStatus bc_lex_token(BcLex *l);
 
 #define BC_PARSE_LEAF(p, rparen) \
@@ -70,41 +63,7 @@ BcStatus bc_lex_token(BcLex *l);
 // ** Exclude start. **
 BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
-BcStatus bc_parse_operator(BcParse *p, BcVec *ops, BcLexType type,
-                           size_t start, size_t *nexprs, bool next);
-BcStatus bc_parse_rightParen(BcParse *p, BcVec *ops, size_t *nexs);
-BcStatus bc_parse_params(BcParse *p, uint8_t flags);
-BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags);
-BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags);
-BcStatus bc_parse_read(BcParse *p);
-BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
-                          uint8_t flags, BcInst *prev);
-BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags);
-BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
-                         size_t *nexprs, uint8_t flags);
-BcStatus bc_parse_minus(BcParse *p, BcVec *ops, BcInst *prev,
-                        size_t start, bool rparen, size_t *nexprs);
-BcStatus bc_parse_string(BcParse *p, char inst);
-BcStatus bc_parse_print(BcParse *p);
-BcStatus bc_parse_return(BcParse *p);
-BcStatus bc_parse_endBody(BcParse *p, bool brace);
-BcStatus bc_parse_startBody(BcParse *p, uint8_t flags);
-void bc_parse_noElse(BcParse *p);
-BcStatus bc_parse_if(BcParse *p);
-BcStatus bc_parse_else(BcParse *p);
-BcStatus bc_parse_while(BcParse *p);
-BcStatus bc_parse_for(BcParse *p);
-BcStatus bc_parse_loopExit(BcParse *p, BcLexType type);
-BcStatus bc_parse_func(BcParse *p);
-BcStatus bc_parse_auto(BcParse *p);
-BcStatus bc_parse_body(BcParse *p, bool brace);
-BcStatus bc_parse_stmt(BcParse *p);
 // ** Exclude end. **
-
-BcStatus bc_parse_parse(BcParse *p);
-
-BcStatus bc_parse_else(BcParse *p);
-BcStatus bc_parse_stmt(BcParse *p);
 
 BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next);
 
