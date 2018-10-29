@@ -31,7 +31,7 @@ DC_GCNO = $(DC_SRC:.c=.gcno)
 BC_ENABLED = BC_ENABLED
 DC_ENABLED = DC_ENABLED
 
-VERSION = 1.0
+VERSION = 1.0.1
 
 GEN_DIR = gen
 GEN = strgen
