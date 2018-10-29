@@ -2,6 +2,6 @@
 \n#ifndef _WIN32
 \n#else // _WIN32.*?#endif // _WIN32
 \n[\t]*assert\(.*?\);$
-^[ ]*// \*\* Busybox exclude start\. \*\*.*?^[ ]*// \*\* Busybox exclude end\. \*\*$
+^[\t]*// \*\* Busybox exclude start\. \*\*.*?^[\t]*// \*\* Busybox exclude end\. \*\*$
 ^#if !defined\(BC_ENABLED\) && !defined\(DC_ENABLED\).*?#endif$
 ^#define VERSION_STR\(V\) #V.*?#define BC_VERSION VERSION_STR2\(VERSION\)$

@@ -109,9 +109,7 @@ typedef struct BcGlobals {
 
 	const char *name;
 	const char *sig_msg;
-	// Busybox exclude start.
 	const char *help;
-	// Busybox exclude end.
 	bool bc;
 
 } BcGlobals;
