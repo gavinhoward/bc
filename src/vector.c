@@ -169,7 +169,7 @@ void bc_vec_free(void *vec) {
 	free(v->v);
 }
 
-static size_t bc_veco_find(const BcVec *v, const void *ptr) {
+static size_t bc_map_find(const BcVec *v, const void *ptr) {
 
 	size_t low = 0, high = v->len;
 
@@ -193,7 +193,7 @@ BcStatus bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
 
 	assert(v && ptr && i);
 
-	if ((*i = bc_veco_find(v, ptr)) > v->len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
+	if ((*i = bc_map_find(v, ptr)) > v->len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
 	else if (*i == v->len) s = bc_vec_push(v, ptr);
 	else if (!bc_id_cmp(ptr, bc_vec_item(v, *i))) s = BC_STATUS_VEC_ITEM_EXISTS;
 	else s = bc_vec_pushAt(v, ptr, *i);
@@ -203,7 +203,7 @@ BcStatus bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
 
 size_t bc_map_index(const BcVec* v, const void *ptr) {
 	assert(v && ptr);
-	size_t i = bc_veco_find(v, ptr);
+	size_t i = bc_map_find(v, ptr);
 	if (i >= v->len) return BC_VEC_INVALID_IDX;
 	return bc_id_cmp(ptr, bc_vec_item(v, i)) ? BC_VEC_INVALID_IDX : i;
 }

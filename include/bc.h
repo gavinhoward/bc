@@ -67,6 +67,16 @@ BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
 
 BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next);
 
+extern const bool bc_parse_exprs[];
+extern const BcOp bc_parse_ops[];
+extern const BcParseNext bc_parse_next_expr;
+extern const BcParseNext bc_parse_next_param;
+extern const BcParseNext bc_parse_next_print;
+extern const BcParseNext bc_parse_next_rel;
+extern const BcParseNext bc_parse_next_elem;
+extern const BcParseNext bc_parse_next_for;
+extern const BcParseNext bc_parse_next_read;
+
 #endif // BC_ENABLED
 
 #endif // BC_BC_H

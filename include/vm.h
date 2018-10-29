@@ -127,6 +127,8 @@ BcStatus bc_vm_info(const char* const help);
 BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len);
 // ** Exclude end. **
 
+// ** Busybox exclude start. **
+
 #ifdef BC_ENABLED
 // ** Exclude start. **
 extern const char bc_name[];
@@ -152,6 +154,8 @@ extern const char *bc_errs[];
 extern const uint8_t bc_err_ids[];
 extern const char *bc_err_msgs[];
 // ** Exclude end. **
+
+// ** Busybox exclude end. **
 
 extern BcGlobals bcg;
 
