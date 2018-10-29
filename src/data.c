@@ -224,15 +224,16 @@ const BcOp bc_parse_ops[] = {
 
 // These identify what tokens can come after expressions in certain cases.
 const BcParseNext bc_parse_next_expr =
-	BC_PARSE_NEXT(3, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_RBRACE);
+	BC_PARSE_NEXT(4, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_RBRACE, BC_LEX_EOF);
 const BcParseNext bc_parse_next_param =
 	BC_PARSE_NEXT(2, BC_LEX_RPAREN, BC_LEX_COMMA);
 const BcParseNext bc_parse_next_print =
-	BC_PARSE_NEXT(3, BC_LEX_COMMA, BC_LEX_NLINE, BC_LEX_SCOLON);
+	BC_PARSE_NEXT(4, BC_LEX_COMMA, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_EOF);
 const BcParseNext bc_parse_next_rel = BC_PARSE_NEXT(1, BC_LEX_RPAREN);
 const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RBRACKET);
 const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
-const BcParseNext bc_parse_next_read = BC_PARSE_NEXT(1, BC_LEX_NLINE);
+const BcParseNext bc_parse_next_read =
+	BC_PARSE_NEXT(2, BC_LEX_NLINE, BC_LEX_EOF);
 #endif // BC_ENABLED
 
 #ifdef DC_ENABLED

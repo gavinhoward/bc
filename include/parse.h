@@ -98,7 +98,7 @@ typedef struct BcOp {
 typedef struct BcParseNext {
 
 	uint32_t len;
-	BcLexType tokens[3];
+	BcLexType tokens[4];
 
 } BcParseNext;
 
