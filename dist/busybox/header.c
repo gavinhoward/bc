@@ -5,7 +5,7 @@
  * Automatically generated from https://github.com/gavinhoward/bc
  */
 //config:config BC
-//config:	bool "bc (46.77 kb; 55.93 kb when combined with dc)"
+//config:	bool "bc (46.11 kb; 55.21 kb when combined with dc)"
 //config:	default n
 //config:	help
 //config:	bc is a command-line, arbitrary-precision calculator with a Turing-complete
@@ -52,7 +52,7 @@
 //config:	  -v  --version          print version information and copyright and exit
 //config:
 //config:config DC
-//config:	bool "dc (35.90 kb; 55.93 kb when combined with bc)"
+//config:	bool "dc (35.82 kb; 55.21 kb when combined with bc)"
 //config:	default n
 //config:	help
 //config:	dc is a reverse-polish notation command-line calculator which supports unlimited
