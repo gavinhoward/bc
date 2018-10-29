@@ -1180,7 +1180,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, digits, digits1, resrdx, req, times = 0;
+	size_t pow, len, digs, digs1, resrdx, req, times = 0;
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
 
 	assert(a && b && a != b);
@@ -1234,27 +1234,26 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 		x0->rdx -= pow;
 	}
 
-	x0->rdx = digits = digits1 = 0;
+	x0->rdx = digs = digs1 = 0;
 	resrdx = scale + 2;
 	len = BC_NUM_INT(x0) + resrdx - 1;
 
-	while (!bcg.signe && (cmp || digits < len)) {
+	while (!bcg.signe && (cmp || digs < len)) {
 
 		if ((s = bc_num_div(a, x0, &f, resrdx))) goto err;
 		if ((s = bc_num_add(x0, &f, &fprime, resrdx))) goto err;
 		if ((s = bc_num_mul(&fprime, &half, x1, resrdx))) goto err;
 
-		cmp = bc_num_cmp(x1, x0);
-		digits = x1->len - (unsigned long long) llabs(cmp);
+		digs = x1->len - (unsigned long long) llabs((cmp = bc_num_cmp(x1, x0)));
 
-		if (cmp == cmp2 && digits == digits1) times += 1;
+		if (cmp == cmp2 && digs == digs1) times += 1;
 		else times = 0;
 
 		resrdx += times > 4;
 
 		cmp2 = cmp1;
 		cmp1 = cmp;
-		digits1 = digits;
+		digs1 = digs;
 
 		temp = x0;
 		x0 = x1;
@@ -1267,7 +1266,6 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 	}
 
 	if ((s = bc_num_copy(b, x0))) goto err;
-
 	if (b->rdx > --scale) bc_num_truncate(b, b->rdx - scale);
 
 err:
