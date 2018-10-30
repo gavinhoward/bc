@@ -61,7 +61,7 @@ BcStatus bc_lex_token(BcLex *l);
 #define BC_PARSE_TOKEN_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
 // ** Exclude start. **
-BcStatus bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
+void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
 // ** Exclude end. **
 

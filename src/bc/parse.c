@@ -37,7 +37,7 @@ static BcStatus bc_parse_stmt(BcParse *p);
 static BcStatus bc_parse_operator(BcParse *p, BcVec *ops, BcLexType type,
                                   size_t start, size_t *nexprs, bool next)
 {
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcLexType t;
 	uint8_t l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
 	bool left = bc_parse_ops[type - BC_LEX_OP_INC].left;
@@ -46,12 +46,12 @@ static BcStatus bc_parse_operator(BcParse *p, BcVec *ops, BcLexType type,
 	       (t = *((BcLexType*) bc_vec_top(ops))) != BC_LEX_LPAREN &&
 	       ((l = bc_parse_ops[t - BC_LEX_OP_INC].prec) < r || (l == r && left)))
 	{
-		if ((s = bc_parse_push(p, BC_PARSE_TOKEN_INST(t)))) return s;
+		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
 		bc_vec_pop(ops);
 		*nexprs -= t != BC_LEX_OP_BOOL_NOT && t != BC_LEX_NEG;
 	}
 
-	if ((s = bc_vec_push(ops, &type))) return s;
+	bc_vec_push(ops, &type);
 	if (next) s = bc_lex_next(&p->l);
 
 	return s;
@@ -59,14 +59,13 @@ static BcStatus bc_parse_operator(BcParse *p, BcVec *ops, BcLexType type,
 
 static BcStatus bc_parse_rightParen(BcParse *p, BcVec *ops, size_t *nexs) {
 
-	BcStatus s;
 	BcLexType top;
 
 	if (!ops->len) return BC_STATUS_PARSE_BAD_EXP;
 
 	while ((top = *((BcLexType*) bc_vec_top(ops))) != BC_LEX_LPAREN) {
 
-		if ((s = bc_parse_push(p, BC_PARSE_TOKEN_INST(top)))) return s;
+		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
 
 		bc_vec_pop(ops);
 		*nexs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
@@ -97,9 +96,10 @@ static BcStatus bc_parse_params(BcParse *p, uint8_t flags) {
 	}
 
 	if (comma) return BC_STATUS_PARSE_BAD_TOKEN;
-	if ((s = bc_parse_push(p, BC_INST_CALL))) return s;
+	bc_parse_push(p, BC_INST_CALL);
+	bc_parse_pushIndex(p, nparams);
 
-	return bc_parse_pushIndex(p, nparams);
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
@@ -121,7 +121,7 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	if (idx == BC_VEC_INVALID_IDX) {
 
-		if ((s = bc_parse_addFunc(p, name, &idx))) return s;
+		bc_parse_addFunc(p, name, &idx);
 
 		name = NULL;
 		idx = bc_map_index(&p->prog->fn_map, &entry);
@@ -131,7 +131,7 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	entry_ptr = bc_vec_item(&p->prog->fn_map, idx);
 	assert(entry_ptr);
-	if ((s = bc_parse_pushIndex(p, entry_ptr->idx))) return s;
+	bc_parse_pushIndex(p, entry_ptr->idx);
 
 	return bc_lex_next(&p->l);
 
@@ -145,7 +145,7 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 	BcStatus s;
 	char *name;
 
-	if (!(name = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
+	name = bc_vm_strdup(p->l.t.v.v);
 	if ((s = bc_lex_next(&p->l))) goto err;
 
 	if (p->l.t.t == BC_LEX_LBRACKET) {
@@ -170,8 +170,8 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 		}
 
 		if ((s = bc_lex_next(&p->l))) goto err;
-		if ((s = bc_parse_push(p, (char) *type))) goto err;
-		s = bc_parse_pushName(p, name);
+		bc_parse_push(p, *type);
+		bc_parse_pushName(p, name);
 	}
 	else if (p->l.t.t == BC_LEX_LPAREN) {
 
@@ -185,8 +185,8 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 	}
 	else {
 		*type = BC_INST_VAR;
-		if ((s = bc_parse_push(p, BC_INST_VAR))) goto err;
-		s = bc_parse_pushName(p, name);
+		 bc_parse_push(p, BC_INST_VAR);
+		bc_parse_pushName(p, name);
 	}
 
 	return s;
@@ -206,7 +206,7 @@ static BcStatus bc_parse_read(BcParse *p) {
 	if ((s = bc_lex_next(&p->l))) return s;
 	if (p->l.t.t != BC_LEX_RPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 
-	if ((s = bc_parse_push(p, BC_INST_READ))) return s;
+	bc_parse_push(p, BC_INST_READ);
 
 	return bc_lex_next(&p->l);
 }
@@ -227,7 +227,7 @@ static BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
 	if (p->l.t.t != BC_LEX_RPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 
 	*prev = (type == BC_LEX_KEY_LENGTH) ? BC_INST_LENGTH : BC_INST_SQRT;
-	if ((s = bc_parse_push(p, (char) *prev))) return s;
+	bc_parse_push(p, *prev);
 
 	return bc_lex_next(&p->l);
 }
@@ -240,7 +240,8 @@ static BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags) {
 
 	if (p->l.t.t != BC_LEX_LPAREN) {
 		*type = BC_INST_SCALE;
-		return bc_parse_push(p, BC_INST_SCALE);
+		bc_parse_push(p, BC_INST_SCALE);
+		return BC_STATUS_SUCCESS;
 	}
 
 	*type = BC_INST_SCALE_FUNC;
@@ -249,7 +250,7 @@ static BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags) {
 	if ((s = bc_lex_next(&p->l))) return s;
 	if ((s = bc_parse_expr(p, flags, bc_parse_next_rel))) return s;
 	if (p->l.t.t != BC_LEX_RPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
-	if ((s = bc_parse_push(p, BC_INST_SCALE_FUNC))) return s;
+	bc_parse_push(p, BC_INST_SCALE_FUNC);
 
 	return bc_lex_next(&p->l);
 }
@@ -267,7 +268,7 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 	    etype == BC_INST_IBASE || etype == BC_INST_OBASE)
 	{
 		*prev = inst = BC_INST_INC_POST + (p->l.t.t != BC_LEX_OP_INC);
-		if ((s = bc_parse_push(p, inst))) return s;
+		bc_parse_push(p, inst);
 		s = bc_lex_next(&p->l);
 	}
 	else {
@@ -291,22 +292,10 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 			}
 
 			case BC_LEX_KEY_IBASE:
-			{
-				if ((s = bc_parse_push(p, BC_INST_IBASE))) return s;
-				s = bc_lex_next(&p->l);
-				break;
-			}
-
 			case BC_LEX_KEY_LAST:
-			{
-				if ((s = bc_parse_push(p, BC_INST_LAST))) return s;
-				s = bc_lex_next(&p->l);
-				break;
-			}
-
 			case BC_LEX_KEY_OBASE:
 			{
-				if ((s = bc_parse_push(p, BC_INST_OBASE))) return s;
+				bc_parse_push(p, type - BC_LEX_KEY_IBASE + BC_INST_IBASE);
 				s = bc_lex_next(&p->l);
 				break;
 			}
@@ -317,7 +306,7 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 				if (p->l.t.t == BC_LEX_LPAREN)
 					return BC_STATUS_PARSE_BAD_TOKEN;
 
-				s = bc_parse_push(p, BC_INST_SCALE);
+				bc_parse_push(p, BC_INST_SCALE);
 
 				break;
 			}
@@ -328,7 +317,7 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 			}
 		}
 
-		if (!s) s = bc_parse_push(p, inst);
+		if (!s) bc_parse_push(p, inst);
 	}
 
 	return s;
@@ -348,32 +337,25 @@ static BcStatus bc_parse_minus(BcParse *p, BcVec *ops, BcInst *prev,
 	                 BC_LEX_OP_MINUS : BC_LEX_NEG;
 	*prev = BC_PARSE_TOKEN_INST(type);
 
-	if (type == BC_LEX_OP_MINUS)
-		s = bc_parse_operator(p, ops, type, start, nexprs, false);
-	else
-		// We can just push onto the op stack because this is the largest
-		// precedence operator that gets pushed. Inc/dec does not.
-		s = bc_vec_push(ops, &type);
+	// We can just push onto the op stack because this is the largest
+	// precedence operator that gets pushed. Inc/dec does not.
+	if (type != BC_LEX_OP_MINUS) bc_vec_push(ops, &type);
+	else s = bc_parse_operator(p, ops, type, start, nexprs, false);
 
 	return s;
 }
 
 static BcStatus bc_parse_string(BcParse *p, char inst) {
 
-	BcStatus s;
 	char *str;
 
-	if (!(str = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_parse_push(p, BC_INST_STR))) goto err;
-	if ((s = bc_parse_pushIndex(p, p->prog->strs.len))) goto err;
-	if ((s = bc_vec_push(&p->prog->strs, &str))) goto err;
-	if ((s = bc_parse_push(p, inst))) return s;
+	str = bc_vm_strdup(p->l.t.v.v);
+	bc_parse_push(p, BC_INST_STR);
+	bc_parse_pushIndex(p, p->prog->strs.len);
+	bc_vec_push(&p->prog->strs, &str);
+	bc_parse_push(p, inst);
 
 	return bc_lex_next(&p->l);
-
-err:
-	free(str);
-	return s;
 }
 
 static BcStatus bc_parse_print(BcParse *p) {
@@ -394,7 +376,7 @@ static BcStatus bc_parse_print(BcParse *p) {
 		if (type == BC_LEX_STR) s = bc_parse_string(p, BC_INST_PRINT_POP);
 		else {
 			if ((s = bc_parse_expr(p, 0, bc_parse_next_print))) return s;
-			s = bc_parse_push(p, BC_INST_PRINT_POP);
+			bc_parse_push(p, BC_INST_PRINT_POP);
 		}
 
 		if (s) return s;
@@ -420,14 +402,13 @@ static BcStatus bc_parse_return(BcParse *p) {
 	t = p->l.t.t;
 	paren = t == BC_LEX_LPAREN;
 
-	if (t == BC_LEX_NLINE || t == BC_LEX_SCOLON)
-		s = bc_parse_push(p, BC_INST_RET0);
+	if (t == BC_LEX_NLINE || t == BC_LEX_SCOLON) bc_parse_push(p, BC_INST_RET0);
 	else {
 
 		s = bc_parse_expr(p, 0, bc_parse_next_expr);
 		if (s && s != BC_STATUS_PARSE_EMPTY_EXP) return s;
 		else if (s == BC_STATUS_PARSE_EMPTY_EXP) {
-			if ((s = bc_parse_push(p, BC_INST_RET0))) return s;
+			bc_parse_push(p, BC_INST_RET0);
 			if ((s = bc_lex_next(&p->l))) return s;
 		}
 
@@ -438,7 +419,7 @@ static BcStatus bc_parse_return(BcParse *p) {
 			return s;
 		}
 
-		s = bc_parse_push(p, BC_INST_RET);
+		bc_parse_push(p, BC_INST_RET);
 	}
 
 	return s;
@@ -490,7 +471,7 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		bc_vec_pop(&p->exits);
 	}
 	else if (BC_PARSE_FUNC_INNER(p)) {
-		if ((s = bc_parse_push(p, BC_INST_RET0))) return s;
+		bc_parse_push(p, BC_INST_RET0);
 		bc_parse_updateFunc(p, BC_PROG_MAIN);
 		bc_vec_pop(&p->flags);
 	}
@@ -499,8 +480,8 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		BcInstPtr *ip = bc_vec_top(&p->exits);
 		size_t *label = bc_vec_top(&p->conds);
 
-		if ((s = bc_parse_push(p, BC_INST_JUMP))) return s;
-		if ((s = bc_parse_pushIndex(p, *label))) return s;
+		bc_parse_push(p, BC_INST_JUMP);
+		bc_parse_pushIndex(p, *label);
 
 		label = bc_vec_item(&p->func->labels, ip->idx);
 		*label = p->func->code.len;
@@ -513,11 +494,11 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 	return s;
 }
 
-static BcStatus bc_parse_startBody(BcParse *p, uint8_t flags) {
+static void bc_parse_startBody(BcParse *p, uint8_t flags) {
 	uint8_t *flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
 	flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
 	flags |= BC_PARSE_FLAG_BODY;
-	return bc_vec_push(&p->flags, &flags);
+	bc_vec_push(&p->flags, &flags);
 }
 
 static void bc_parse_noElse(BcParse *p) {
@@ -550,16 +531,17 @@ static BcStatus bc_parse_if(BcParse *p) {
 	if (p->l.t.t != BC_LEX_RPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 
 	if ((s = bc_lex_next(&p->l))) return s;
-	if ((s = bc_parse_push(p, BC_INST_JUMP_ZERO))) return s;
+	bc_parse_push(p, BC_INST_JUMP_ZERO);
 
 	ip.idx = p->func->labels.len;
 	ip.func = ip.len = 0;
 
-	if ((s = bc_parse_pushIndex(p, ip.idx))) return s;
-	if ((s = bc_vec_push(&p->exits, &ip))) return s;
-	if ((s = bc_vec_push(&p->func->labels, &ip.idx))) return s;
+	bc_parse_pushIndex(p, ip.idx);
+	bc_vec_push(&p->exits, &ip);
+	bc_vec_push(&p->func->labels, &ip.idx);
+	bc_parse_startBody(p, BC_PARSE_FLAG_IF);
 
-	return bc_parse_startBody(p, BC_PARSE_FLAG_IF);
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_parse_else(BcParse *p) {
@@ -572,16 +554,17 @@ static BcStatus bc_parse_else(BcParse *p) {
 	ip.idx = p->func->labels.len;
 	ip.func = ip.len = 0;
 
-	if ((s = bc_parse_push(p, BC_INST_JUMP))) return s;
-	if ((s = bc_parse_pushIndex(p, ip.idx))) return s;
+	bc_parse_push(p, BC_INST_JUMP);
+	bc_parse_pushIndex(p, ip.idx);
 
 	bc_parse_noElse(p);
 
-	if ((s = bc_vec_push(&p->exits, &ip))) return s;
-	if ((s = bc_vec_push(&p->func->labels, &ip.idx))) return s;
+	bc_vec_push(&p->exits, &ip);
+	bc_vec_push(&p->func->labels, &ip.idx);
 	if ((s = bc_lex_next(&p->l))) return s;
+	bc_parse_startBody(p, BC_PARSE_FLAG_ELSE);
 
-	return bc_parse_startBody(p, BC_PARSE_FLAG_ELSE);
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_parse_while(BcParse *p) {
@@ -595,24 +578,25 @@ static BcStatus bc_parse_while(BcParse *p) {
 
 	ip.idx = p->func->labels.len;
 
-	if ((s = bc_vec_push(&p->func->labels, &p->func->code.len))) return s;
-	if ((s = bc_vec_push(&p->conds, &ip.idx))) return s;
+	bc_vec_push(&p->func->labels, &p->func->code.len);
+	bc_vec_push(&p->conds, &ip.idx);
 
 	ip.idx = p->func->labels.len;
 	ip.func = 1;
 	ip.len = 0;
 
-	if ((s = bc_vec_push(&p->exits, &ip))) return s;
-	if ((s = bc_vec_push(&p->func->labels, &ip.idx))) return s;
+	bc_vec_push(&p->exits, &ip);
+	bc_vec_push(&p->func->labels, &ip.idx);
 
 	if ((s = bc_parse_expr(p, BC_PARSE_REL, bc_parse_next_rel))) return s;
 	if (p->l.t.t != BC_LEX_RPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 
 	if ((s = bc_lex_next(&p->l))) return s;
-	if ((s = bc_parse_push(p, BC_INST_JUMP_ZERO))) return s;
-	if ((s = bc_parse_pushIndex(p, ip.idx))) return s;
+	bc_parse_push(p, BC_INST_JUMP_ZERO);
+	bc_parse_pushIndex(p, ip.idx);
+	bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
 
-	return bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_parse_for(BcParse *p) {
@@ -625,10 +609,9 @@ static BcStatus bc_parse_for(BcParse *p) {
 	if (p->l.t.t != BC_LEX_LPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
 	if ((s = bc_lex_next(&p->l))) return s;
 
-	if (p->l.t.t != BC_LEX_SCOLON)
-		s = bc_parse_expr(p, 0, bc_parse_next_for);
+	if (p->l.t.t != BC_LEX_SCOLON) s = bc_parse_expr(p, 0, bc_parse_next_for);
 	else
-		s = bc_vm_posixError(BC_STATUS_POSIX_FOR_INIT, p->l.f, p->l.line, NULL);
+		s = bc_vm_posixError(BC_STATUS_POSIX_FOR1, p->l.f, p->l.line, NULL);
 
 	if (s) return s;
 	if (p->l.t.t != BC_LEX_SCOLON) return BC_STATUS_PARSE_BAD_TOKEN;
@@ -639,48 +622,46 @@ static BcStatus bc_parse_for(BcParse *p) {
 	body_idx = update_idx + 1;
 	exit_idx = body_idx + 1;
 
-	if ((s = bc_vec_push(&p->func->labels, &p->func->code.len))) return s;
+	bc_vec_push(&p->func->labels, &p->func->code.len);
 
 	if (p->l.t.t != BC_LEX_SCOLON)
 		s = bc_parse_expr(p, BC_PARSE_REL, bc_parse_next_for);
-	else
-		s = bc_vm_posixError(BC_STATUS_POSIX_FOR_COND, p->l.f, p->l.line, NULL);
+	else s = bc_vm_posixError(BC_STATUS_POSIX_FOR2, p->l.f, p->l.line, NULL);
 
 	if (s) return s;
 	if (p->l.t.t != BC_LEX_SCOLON) return BC_STATUS_PARSE_BAD_TOKEN;
 
 	if ((s = bc_lex_next(&p->l))) return s;
-	if ((s = bc_parse_push(p, BC_INST_JUMP_ZERO))) return s;
-	if ((s = bc_parse_pushIndex(p, exit_idx))) return s;
-	if ((s = bc_parse_push(p, BC_INST_JUMP))) return s;
-	if ((s = bc_parse_pushIndex(p, body_idx))) return s;
+	bc_parse_push(p, BC_INST_JUMP_ZERO);
+	bc_parse_pushIndex(p, exit_idx);
+	bc_parse_push(p, BC_INST_JUMP);
+	bc_parse_pushIndex(p, body_idx);
 
 	ip.idx = p->func->labels.len;
 
-	if ((s = bc_vec_push(&p->conds, &update_idx))) return s;
-	if ((s = bc_vec_push(&p->func->labels, &p->func->code.len))) return s;
+	bc_vec_push(&p->conds, &update_idx);
+	bc_vec_push(&p->func->labels, &p->func->code.len);
 
-	if (p->l.t.t != BC_LEX_RPAREN)
-		s = bc_parse_expr(p, 0, bc_parse_next_rel);
-	else
-		s = bc_vm_posixError(BC_STATUS_POSIX_FOR_END, p->l.f, p->l.line, NULL);
+	if (p->l.t.t != BC_LEX_RPAREN) s = bc_parse_expr(p, 0, bc_parse_next_rel);
+	else s = bc_vm_posixError(BC_STATUS_POSIX_FOR3, p->l.f, p->l.line, NULL);
 
 	if (s) return s;
 
 	if (p->l.t.t != BC_LEX_RPAREN) return BC_STATUS_PARSE_BAD_TOKEN;
-	if ((s = bc_parse_push(p, BC_INST_JUMP))) return s;
-	if ((s = bc_parse_pushIndex(p, cond_idx))) return s;
-	if ((s = bc_vec_push(&p->func->labels, &p->func->code.len))) return s;
+	bc_parse_push(p, BC_INST_JUMP);
+	bc_parse_pushIndex(p, cond_idx);
+	bc_vec_push(&p->func->labels, &p->func->code.len);
 
 	ip.idx = exit_idx;
 	ip.func = 1;
 	ip.len = 0;
 
-	if ((s = bc_vec_push(&p->exits, &ip))) return s;
-	if ((s = bc_vec_push(&p->func->labels, &ip.idx))) return s;
-	if ((s = bc_lex_next(&p->l))) return s;
+	bc_vec_push(&p->exits, &ip);
+	bc_vec_push(&p->func->labels, &ip.idx);
+	bc_lex_next(&p->l);
+	bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
 
-	return bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
@@ -706,8 +687,8 @@ static BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 	}
 	else i = *((size_t*) bc_vec_top(&p->conds));
 
-	if ((s = bc_parse_push(p, BC_INST_JUMP))) return s;
-	if ((s = bc_parse_pushIndex(p, i))) return s;
+	bc_parse_push(p, BC_INST_JUMP);
+	bc_parse_pushIndex(p, i);
 	if ((s = bc_lex_next(&p->l))) return s;
 
 	if (p->l.t.t != BC_LEX_SCOLON && p->l.t.t != BC_LEX_NLINE)
@@ -728,8 +709,8 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 	assert(p->prog->fns.len == p->prog->fn_map.len);
 
-	if (!(name = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_parse_addFunc(p, name, &p->fidx))) return s;
+	name = bc_vm_strdup(p->l.t.v.v);
+	bc_parse_addFunc(p, name, &p->fidx);
 	assert(p->fidx);
 
 	if ((s = bc_lex_next(&p->l))) return s;
@@ -742,7 +723,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 		++p->func->nparams;
 
-		if (!(name = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
+		name = bc_vm_strdup(p->l.t.v.v);
 		if ((s = bc_lex_next(&p->l))) goto err;
 
 		var = p->l.t.t != BC_LEX_LBRACKET;
@@ -769,7 +750,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 	flags = BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FUNC_INNER | BC_PARSE_FLAG_BODY;
 
-	if ((s = bc_parse_startBody(p, flags))) return s;
+	bc_parse_startBody(p, flags);
 	if ((s = bc_lex_next(&p->l))) return s;
 
 	if (p->l.t.t != BC_LEX_LBRACE)
@@ -796,7 +777,7 @@ static BcStatus bc_parse_auto(BcParse *p) {
 
 	while (!s && p->l.t.t == BC_LEX_NAME) {
 
-		if (!(name = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
+		name = bc_vm_strdup(p->l.t.v.v);
 		if ((s = bc_lex_next(&p->l))) goto err;
 
 		if (!(var = p->l.t.t != BC_LEX_LBRACKET)) {
@@ -963,7 +944,7 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 
 		case BC_LEX_KEY_HALT:
 		{
-			if ((s = bc_parse_push(p, BC_INST_HALT))) return s;
+			bc_parse_push(p, BC_INST_HALT);
 			s = bc_lex_next(&p->l);
 			break;
 		}
@@ -1031,7 +1012,8 @@ BcStatus bc_parse_parse(BcParse *p) {
 	}
 	else s = bc_parse_stmt(p);
 
-	if (s || bcg.signe) s = bc_parse_reset(p, s);
+	if ((s && s != BC_STATUS_QUIT && s != BC_STATUS_LIMITS) || bcg.signe)
+		s = bc_parse_reset(p, s);
 
 	return s;
 }
@@ -1124,7 +1106,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 				++nparens;
 				paren_expr = rprn = bin_last = false;
 				get_token = true;
-				s = bc_vec_push(&p->ops, &t);
+				bc_vec_push(&p->ops, &t);
 
 				break;
 			}
@@ -1167,7 +1149,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 			{
 				if (BC_PARSE_LEAF(prev, rprn)) return BC_STATUS_PARSE_BAD_EXP;
 
-				s = bc_parse_number(p, &prev, &nexprs);
+				bc_parse_number(p, &prev, &nexprs);
 				paren_expr = get_token = true;
 				rprn = bin_last = false;
 
@@ -1181,7 +1163,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_PARSE_LEAF(prev, rprn)) return BC_STATUS_PARSE_BAD_EXP;
 
 				prev = (char) (t - BC_LEX_KEY_IBASE + BC_INST_IBASE);
-				s = bc_parse_push(p, (char) prev);
+				bc_parse_push(p, (char) prev);
 
 				paren_expr = get_token = true;
 				rprn = bin_last = false;
@@ -1251,7 +1233,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 		if (top == BC_LEX_LPAREN || top == BC_LEX_RPAREN)
 			return BC_STATUS_PARSE_BAD_EXP;
 
-		if ((s = bc_parse_push(p, BC_PARSE_TOKEN_INST(top)))) return s;
+		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
 
 		nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
 		bc_vec_pop(&p->ops);
@@ -1277,16 +1259,15 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 	}
 
 	if (flags & BC_PARSE_PRINT) {
-		if ((paren_first || !assign) && (s = bc_parse_push(p, BC_INST_PRINT)))
-			return s;
-		s = bc_parse_push(p, BC_INST_POP);
+		if (paren_first || !assign) bc_parse_push(p, BC_INST_PRINT);
+		bc_parse_push(p, BC_INST_POP);
 	}
 
 	return s;
 }
 
-BcStatus bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
-	return bc_parse_create(p, prog, func, bc_parse_parse, bc_lex_token);
+void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
+	bc_parse_create(p, prog, func, bc_parse_parse, bc_lex_token);
 }
 
 BcStatus bc_parse_expression(BcParse *p, uint8_t flags) {

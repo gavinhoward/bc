@@ -32,29 +32,25 @@
 #include <lex.h>
 #include <parse.h>
 #include <program.h>
+#include <vm.h>
 
-BcStatus bc_parse_addFunc(BcParse *p, char *name, size_t *idx) {
-	BcStatus s = bc_program_addFunc(p->prog, name, idx);
+void bc_parse_addFunc(BcParse *p, char *name, size_t *idx) {
+	bc_program_addFunc(p->prog, name, idx);
 	p->func = bc_vec_item(&p->prog->fns, p->fidx);
-	return s;
 }
 
-BcStatus bc_parse_pushName(BcParse *p, char *name) {
+void bc_parse_pushName(BcParse *p, char *name) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i = 0, len = strlen(name);
 
-	for (; !s && i < len; ++i) s = bc_parse_push(p, (char) name[i]);
-	if (s || (s = bc_parse_push(p, BC_PARSE_STREND))) return s;
+	for (; i < len; ++i) bc_parse_push(p, name[i]);
+	bc_parse_push(p, BC_PARSE_STREND);
 
 	free(name);
-
-	return s;
 }
 
-BcStatus bc_parse_pushIndex(BcParse *p, size_t idx) {
+void bc_parse_pushIndex(BcParse *p, size_t idx) {
 
-	BcStatus s;
 	unsigned char amt, i, nums[sizeof(size_t)];
 
 	for (amt = 0; idx; ++amt) {
@@ -62,32 +58,22 @@ BcStatus bc_parse_pushIndex(BcParse *p, size_t idx) {
 		idx = (idx & ((unsigned long) ~(UCHAR_MAX))) >> sizeof(char) * CHAR_BIT;
 	}
 
-	if ((s = bc_parse_push(p, amt))) return s;
-	for (i = 0; !s && i < amt; ++i) s = bc_parse_push(p, nums[i]);
-
-	return s;
+	bc_parse_push(p, amt);
+	for (i = 0; i < amt; ++i) bc_parse_push(p, nums[i]);
 }
 
-BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
+void bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 
-	BcStatus s;
-	char *num;
+	char *num = bc_vm_strdup(p->l.t.v.v);
 	size_t idx = p->prog->consts.len;
 
-	if (!(num = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
+	bc_vec_push(&p->prog->consts, &num);
 
-	if ((s = bc_vec_push(&p->prog->consts, &num))) {
-		free(num);
-		return s;
-	}
-
-	if ((s = bc_parse_push(p, BC_INST_NUM))) return s;
-	if ((s = bc_parse_pushIndex(p, idx))) return s;
+	bc_parse_push(p, BC_INST_NUM);
+	bc_parse_pushIndex(p, idx);
 
 	++(*nexs);
 	(*prev) = BC_INST_NUM;
-
-	return s;
 }
 
 BcStatus bc_parse_text(BcParse *p, const char *text) {
@@ -138,30 +124,22 @@ void bc_parse_free(BcParse *p) {
 	bc_lex_free(&p->l);
 }
 
-BcStatus bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
-                         BcParseParse parse, BcLexNext next)
+void bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
+                     BcParseParse parse, BcLexNext next)
 {
-	BcStatus s;
-
 	assert(p && prog);
 
 	memset(p, 0, sizeof(BcParse));
 
-	if ((s = bc_lex_init(&p->l, next))) return s;
-	if ((s = bc_vec_init(&p->flags, sizeof(uint8_t), NULL))) goto err;
-	if ((s = bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL))) goto err;
-	if ((s = bc_vec_init(&p->conds, sizeof(size_t), NULL))) goto err;
-	if ((s = bc_vec_pushByte(&p->flags, 0))) goto err;
-	if ((s = bc_vec_init(&p->ops, sizeof(BcLexType), NULL))) goto err;
+	bc_lex_init(&p->l, next);
+	bc_vec_init(&p->flags, sizeof(uint8_t), NULL);
+	bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
+	bc_vec_init(&p->conds, sizeof(size_t), NULL);
+	bc_vec_pushByte(&p->flags, 0);
+	bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
 
 	p->parse = parse;
 	p->prog = prog;
 	p->auto_part = (p->nbraces = 0);
 	bc_parse_updateFunc(p, func);
-
-	return s;
-
-err:
-	bc_parse_free(p);
-	return s;
 }

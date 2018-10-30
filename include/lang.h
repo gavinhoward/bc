@@ -186,20 +186,20 @@ typedef struct BcInstPtr {
 } BcInstPtr;
 
 // ** Exclude start. **
-BcStatus bc_func_init(BcFunc *f);
+void bc_func_init(BcFunc *f);
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var);
 void bc_func_free(void *func);
 
-BcStatus bc_array_init(BcVec *a, bool nums);
-BcStatus bc_array_copy(BcVec *d, const BcVec *s);
+void bc_array_init(BcVec *a, bool nums);
+void bc_array_copy(BcVec *d, const BcVec *s);
 // ** Exclude end. **
 
-BcStatus bc_array_expand(BcVec *a, size_t len);
+void bc_array_expand(BcVec *a, size_t len);
 
 // ** Exclude start. **
 void bc_string_free(void *string);
 void bc_id_free(void *id);
-BcStatus bc_result_copy(BcResult *d, BcResult *src);
+void bc_result_copy(BcResult *d, BcResult *src);
 void bc_result_free(void *result);
 // ** Exclude end. **
 

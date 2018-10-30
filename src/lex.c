@@ -43,7 +43,6 @@ void bc_lex_whitespace(BcLex *l) {
 
 BcStatus bc_lex_number(BcLex *l, char start) {
 
-	BcStatus s;
 	const char *buf = l->buffer + l->idx;
 	size_t len, hits = 0, bslashes = 0, i = 0, j;
 	char c = buf[i];
@@ -71,8 +70,8 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	if (len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
 
 	bc_vec_npop(&l->t.v, l->t.v.len);
-	if ((s = bc_vec_expand(&l->t.v, len + 1))) return s;
-	if ((s = bc_vec_push(&l->t.v, &start))) return s;
+	bc_vec_expand(&l->t.v, len + 1);
+	bc_vec_push(&l->t.v, &start);
 
 	for (buf -= 1, j = 1; j < len + hits * 2; ++j) {
 
@@ -86,10 +85,10 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 			continue;
 		}
 
-		if ((s = bc_vec_push(&l->t.v, &c))) return s;
+		bc_vec_push(&l->t.v, &c);
 	}
 
-	if ((s = bc_vec_pushByte(&l->t.v, '\0'))) return s;
+	bc_vec_pushByte(&l->t.v, '\0');
 	l->idx += i;
 
 	return BC_STATUS_SUCCESS;
@@ -97,7 +96,6 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 BcStatus bc_lex_name(BcLex *l) {
 
-	BcStatus s;
 	size_t i = 0;
 	const char *buf = l->buffer + l->idx - 1;
 	char c = buf[i];
@@ -107,7 +105,7 @@ BcStatus bc_lex_name(BcLex *l) {
 	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
 
 	if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
-	if ((s = bc_vec_string(&l->t.v, i, buf))) return s;
+	bc_vec_string(&l->t.v, i, buf);
 
 	// Increment the index. We minus 1 because it has already been incremented.
 	l->idx += i - 1;
@@ -115,10 +113,10 @@ BcStatus bc_lex_name(BcLex *l) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_init(BcLex *l, BcLexNext next) {
+void bc_lex_init(BcLex *l, BcLexNext next) {
 	assert(l);
 	l->next = next;
-	return bc_vec_init(&l->t.v, sizeof(uint8_t), NULL);
+	bc_vec_init(&l->t.v, sizeof(char), NULL);
 }
 
 void bc_lex_free(BcLex *l) {

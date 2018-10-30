@@ -93,8 +93,8 @@ typedef struct BcProgram {
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **
-BcStatus bc_program_init(BcProgram *p, size_t line_len,
-                         BcParseInit init, BcParseExpr expr);
+void bc_program_init(BcProgram *p, size_t line_len,
+                     BcParseInit init, BcParseExpr expr);
 void bc_program_free(BcProgram *program);
 
 #ifndef NDEBUG
@@ -103,7 +103,7 @@ BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
 #endif // NDEBUG
 // ** Exclude end. **
 
-BcStatus bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
+void bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 

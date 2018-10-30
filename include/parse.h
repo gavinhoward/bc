@@ -33,7 +33,7 @@
 
 #define BC_PARSE_STREND ((char) UCHAR_MAX)
 
-#define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uint8_t) (i)))
+#define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (char) (i)))
 #define bc_parse_updateFunc(p, f) \
 	((p)->func = bc_vec_item(&(p)->prog->fns, ((p)->fidx = (f))))
 
@@ -112,7 +112,7 @@ struct BcParse;
 struct BcProgram;
 
 // ** Exclude start. **
-typedef BcStatus (*BcParseInit)(struct BcParse*, struct BcProgram*, size_t);
+typedef void (*BcParseInit)(struct BcParse*, struct BcProgram*, size_t);
 typedef BcStatus (*BcParseParse)(struct BcParse*);
 typedef BcStatus (*BcParseExpr)(struct BcParse*, uint8_t);
 // ** Exclude end. **
@@ -143,15 +143,15 @@ typedef struct BcParse {
 
 // ** Exclude start. **
 
-BcStatus bc_parse_create(BcParse *p, struct BcProgram *prog, size_t func,
-                         BcParseParse parse, BcLexNext next);
+void bc_parse_create(BcParse *p, struct BcProgram *prog, size_t func,
+                     BcParseParse parse, BcLexNext next);
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 
-BcStatus bc_parse_addFunc(BcParse *p, char *name, size_t *idx);
-BcStatus bc_parse_pushName(BcParse* p, char *name);
-BcStatus bc_parse_pushIndex(BcParse* p, size_t idx);
-BcStatus bc_parse_number(BcParse *p, BcInst *prev, size_t* nexs);
+void bc_parse_addFunc(BcParse *p, char *name, size_t *idx);
+void bc_parse_pushName(BcParse* p, char *name);
+void bc_parse_pushIndex(BcParse* p, size_t idx);
+void bc_parse_number(BcParse *p, BcInst *prev, size_t* nexs);
 BcStatus bc_parse_text(BcParse *p, const char *text);
 
 // ** Exclude end. **

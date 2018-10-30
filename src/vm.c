@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -47,12 +48,11 @@
 
 #ifndef _WIN32
 static void bc_vm_sig(int sig) {
-	if (sig == SIGINT) {
-		size_t len = strlen(bcg.sig_msg);
-		if (write(2, bcg.sig_msg, len) == (ssize_t) len)
-			bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
-	}
-	else bcg.sig_other = 1;
+	int err = errno;
+	size_t len = strlen(bcg.sig_msg);
+	if (sig == SIGINT && write(2, bcg.sig_msg, len) == (ssize_t) len)
+		bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
+	errno = err;
 }
 #else // _WIN32
 static BOOL WINAPI bc_vm_sig(DWORD sig) {
@@ -60,7 +60,6 @@ static BOOL WINAPI bc_vm_sig(DWORD sig) {
 		if (fputs(bcg.sig_msg, stderr) != EOF)
 			bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
 	}
-	else bcg.sig_other = 1;
 	return TRUE;
 }
 #endif // _WIN32
@@ -80,8 +79,8 @@ static BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	if (fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]) < 0)
 		return BC_STATUS_IO_ERR;
-	if (fprintf(stderr, "    %s", file) < 0) return BC_STATUS_IO_ERR;
-	if (fprintf(stderr, bc_err_line + 4 * !line, line) < 0)
+	if (file && fprintf(stderr, "    %s", file) < 0) return BC_STATUS_IO_ERR;
+	if (file && fprintf(stderr, bc_err_line + 4 * !line, line) < 0)
 		return BC_STATUS_IO_ERR;
 
 	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name));
@@ -93,8 +92,6 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 {
 	int p = (int) bcg.posix, w = (int) bcg.warn;
 	const char* const fmt = p ? bc_err_fmt : bc_warn_fmt;
-
-	assert(file);
 
 	if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
@@ -115,14 +112,14 @@ static BcStatus bc_vm_envArgs(BcVm *vm) {
 	char *env_args = NULL, *buf;
 
 	if (!(env_args = getenv(bc_args_env_name))) return BC_STATUS_SUCCESS;
-	if (!(buf = (vm->env_args = strdup(env_args)))) return BC_STATUS_ALLOC_ERR;
+	buf = (vm->env_args = bc_vm_strdup(env_args));
 
-	if ((s = bc_vec_init(&args, sizeof(char*), NULL))) goto err;
-	if ((s = bc_vec_push(&args, &bc_args_env_name))) goto err;
+	bc_vec_init(&args, sizeof(char*), NULL);
+	bc_vec_push(&args, &bc_args_env_name);
 
 	while (*buf) {
 		if (!isspace(*buf)) {
-			if ((s = bc_vec_push(&args, &buf))) goto err;
+			bc_vec_push(&args, &buf);
 			while (*buf && !isspace(*buf)) ++buf;
 			if (*buf) (*(buf++)) = '\0';
 		}
@@ -132,8 +129,8 @@ static BcStatus bc_vm_envArgs(BcVm *vm) {
 	s = bc_args((int) args.len, (char**) args.v,
 	            &vm->flags, &vm->exprs, &vm->files);
 
-err:
 	bc_vec_free(&args);
+
 	return s;
 }
 #endif // BC_ENABLED
@@ -152,6 +149,29 @@ static size_t bc_vm_envLen(const char *var) {
 	}
 
 	return len;
+}
+
+static void bc_vm_allocError() {
+	bc_vm_error(BC_STATUS_ALLOC_ERR, NULL, 0);
+	exit(BC_STATUS_ALLOC_ERR);
+}
+
+void* bc_vm_malloc(size_t n) {
+	void* ptr = malloc(n);
+	if (!ptr) bc_vm_allocError();
+	return ptr;
+}
+
+void* bc_vm_realloc(void *ptr, size_t n) {
+	void* temp = realloc(ptr, n);
+	if (!temp) bc_vm_allocError();
+	return temp;
+}
+
+char* bc_vm_strdup(const char *str) {
+	char *s = strdup(str);
+	if (!s) bc_vm_allocError();
+	return s;
 }
 
 static BcStatus bc_vm_process(BcVm *vm, const char *text) {
@@ -179,7 +199,7 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
 			s = BC_STATUS_SUCCESS;
 		}
-		else if (s == BC_STATUS_QUIT || bcg.sig_other ||
+		else if (s == BC_STATUS_QUIT ||
 		         (s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line)))
 		{
 			return s;
@@ -222,7 +242,7 @@ err:
 
 static BcStatus bc_vm_stdin(BcVm *vm) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
 	char c;
 	size_t len, i, str = 0;
@@ -231,9 +251,9 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	vm->prog.file = bc_program_stdin_name;
 	bc_lex_file(&vm->prs.l, bc_program_stdin_name);
 
-	if ((s = bc_vec_init(&buffer, sizeof(char), NULL))) return s;
-	if ((s = bc_vec_init(&buf, sizeof(char), NULL))) goto buf_err;
-	if ((s = bc_vec_pushByte(&buffer, '\0'))) goto err;
+	bc_vec_init(&buffer, sizeof(char), NULL);
+	bc_vec_init(&buf, sizeof(char), NULL);
+	bc_vec_pushByte(&buffer, '\0');
 
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
@@ -269,12 +289,12 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 			}
 
 			if (str || comment || string[len - 2] == '\\') {
-				if ((s = bc_vec_concat(&buffer, buf.v))) goto err;
+				bc_vec_concat(&buffer, buf.v);
 				continue;
 			}
 		}
 
-		if ((s = bc_vec_concat(&buffer, buf.v))) goto err;
+		bc_vec_concat(&buffer, buf.v);
 		if ((s = bc_vm_process(vm, buffer.v))) goto err;
 
 		bc_vec_npop(&buffer, buffer.len);
@@ -293,7 +313,6 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 
 err:
 	bc_vec_free(&buf);
-buf_err:
 	bc_vec_free(&buffer);
 	return s;
 }
@@ -320,13 +339,12 @@ static BcStatus bc_vm_exec(BcVm *vm) {
 		if ((s = bc_vm_process(vm, vm->exprs.v))) return s;
 	}
 
-	for (i = 0; !bcg.sig_other && !s && i < vm->files.len; ++i)
+	for (i = 0; !s && i < vm->files.len; ++i)
 		s = bc_vm_file(vm, *((char**) bc_vec_item(&vm->files, i)));
-	if ((s && s != BC_STATUS_QUIT) || bcg.sig_other) return s;
+	if (s && s != BC_STATUS_QUIT) return s;
 
 	if ((bcg.bc || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin(vm);
-	if (!s && !bcg.sig_other && !BC_PARSE_CAN_EXEC(&vm->prs))
-		s = bc_vm_process(vm, "");
+	if (!s && !BC_PARSE_CAN_EXEC(&vm->prs)) s = bc_vm_process(vm, "");
 
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 }
@@ -341,7 +359,7 @@ static void bc_vm_free(BcVm *vm) {
 
 static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len = bc_vm_envLen(env_len);
 #ifndef _WIN32
 	struct sigaction sa;
@@ -350,11 +368,7 @@ static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	sa.sa_handler = bc_vm_sig;
 	sa.sa_flags = 0;
 
-	if (sigaction(SIGINT, &sa, NULL) < 0 || sigaction(SIGPIPE, &sa, NULL) < 0 ||
-	    sigaction(SIGHUP, &sa, NULL) < 0 || sigaction(SIGTERM, &sa, NULL) < 0)
-	{
-		return BC_STATUS_EXEC_SIGACTION_FAIL;
-	}
+	if (sigaction(SIGINT, &sa, NULL) < 0) return BC_STATUS_EXEC_SIGACTION_FAIL;
 #else // _WIN32
 	if (!SetConsoleCtrlHandler(bc_vm_sig, TRUE))
 		return BC_STATUS_EXEC_SIGACTION_FAIL;
@@ -366,21 +380,17 @@ static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	vm->flags = 0;
 	vm->env_args = NULL;
 
-	if ((s = bc_vec_init(&vm->files, sizeof(char*), NULL))) return s;
-	if ((s = bc_vec_init(&vm->exprs, sizeof(char), NULL))) goto err;
+	bc_vec_init(&vm->files, sizeof(char*), NULL);
+	bc_vec_init(&vm->exprs, sizeof(char), NULL);
 
 #ifdef BC_ENABLED
 	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
-	if (bcg.bc && (s = bc_vm_envArgs(vm))) goto err;
+	if (bcg.bc && (s = bc_vm_envArgs(vm))) return s;
 #endif // BC_ENABLED
 
-	if ((s = bc_program_init(&vm->prog, len, exe.init, exe.exp))) goto err;
-	if ((s = exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto err;
+	bc_program_init(&vm->prog, len, exe.init, exe.exp);
+	exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN);
 
-	return s;
-
-err:
-	bc_vm_free(vm);
 	return s;
 }
 
@@ -389,8 +399,8 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	BcStatus st;
 	BcVm vm;
 
-	if ((st = bc_vm_init(&vm, exe, env_len))) return st;
-	if ((st = bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files))) goto err;
+	if ((st = bc_vm_init(&vm, exe, env_len))) goto exit;
+	if ((st = bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files))) goto exit;
 
 	bcg.tty = (bcg.ttyin = isatty(0)) || (vm.flags & BC_FLAG_I) || isatty(1);
 
@@ -405,7 +415,7 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	if (bcg.ttyin && !(vm.flags & BC_FLAG_Q)) st = bc_vm_info(NULL);
 	if (!st) st = bc_vm_exec(&vm);
 
-err:
+exit:
 	bc_vm_free(&vm);
 	return st;
 }

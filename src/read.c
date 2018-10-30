@@ -36,7 +36,6 @@
 
 BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
-	BcStatus s;
 	int i;
 	signed char c = 0;
 
@@ -70,10 +69,12 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 		c = (char) i;
 		if (BC_IO_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
-		if ((s = bc_vec_push(vec, &c))) return s;
+		bc_vec_push(vec, &c);
 	}
 
-	return bc_vec_pushByte(vec, '\0');
+	bc_vec_pushByte(vec, '\0');
+
+	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_read_file(const char *path, char **buf) {
@@ -99,10 +100,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	if ((res = ftell(f)) < 0) goto malloc_err;
 	if (fseek(f, 0, SEEK_SET) == -1) goto malloc_err;
 
-	if (!(*buf = malloc((size = (size_t) res) + 1))) {
-		s = BC_STATUS_ALLOC_ERR;
-		goto malloc_err;
-	}
+	*buf = bc_vm_malloc((size = (size_t) res) + 1);
 
 	if ((read = fread(*buf, 1, size, f)) != size) goto read_err;
 

@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include <lang.h>
+#include <vm.h>
 
 int bc_id_cmp(const void *e1, const void *e2) {
 	return strcmp(((const BcId*) e1)->name, ((const BcId*) e2)->name);
@@ -50,28 +51,17 @@ BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
 	a.idx = var;
 	a.name = name;
 
-	return bc_vec_push(&f->autos, &a);
-}
-
-BcStatus bc_func_init(BcFunc *f) {
-
-	BcStatus s;
-
-	assert(f);
-
-	if ((s = bc_vec_init(&f->code, sizeof(char), NULL))) return s;
-	if ((s = bc_vec_init(&f->autos, sizeof(BcId), bc_id_free))) goto err;
-	if ((s = bc_vec_init(&f->labels, sizeof(size_t), NULL))) goto label_err;
-
-	f->nparams = 0;
+	bc_vec_push(&f->autos, &a);
 
 	return BC_STATUS_SUCCESS;
+}
 
-label_err:
-	bc_vec_free(&f->autos);
-err:
-	bc_vec_free(&f->code);
-	return s;
+void bc_func_init(BcFunc *f) {
+	assert(f);
+	bc_vec_init(&f->code, sizeof(char), NULL);
+	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
+	bc_vec_init(&f->labels, sizeof(size_t), NULL);
+	f->nparams = 0;
 }
 
 void bc_func_free(void *func) {
@@ -82,45 +72,32 @@ void bc_func_free(void *func) {
 	bc_vec_free(&f->labels);
 }
 
-BcStatus bc_array_init(BcVec *a, bool nums) {
+void bc_array_init(BcVec *a, bool nums) {
 
-	BcStatus s;
+	if (nums) bc_vec_init(a, sizeof(BcNum), bc_num_free);
+	else bc_vec_init(a, sizeof(BcVec), bc_vec_free);
 
-	if (nums) s = bc_vec_init(a, sizeof(BcNum), bc_num_free);
-	else s = bc_vec_init(a, sizeof(BcVec), bc_vec_free);
-
-	if (s) return s;
-
-	if ((s = bc_array_expand(a, 1))) goto err;
-
-	return s;
-
-err:
-	bc_vec_free(a);
-	return s;
+	bc_array_expand(a, 1);
 }
 
-BcStatus bc_array_copy(BcVec *d, const BcVec *s) {
+void bc_array_copy(BcVec *d, const BcVec *s) {
 
-	BcStatus status;
 	size_t i;
 
 	assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
 
 	bc_vec_npop(d, d->len);
-	if ((status = bc_vec_expand(d, s->cap))) return status;
+	bc_vec_expand(d, s->cap);
 	d->len = s->len;
 
-	for (i = 0; !status && i < s->len; ++i) {
+	for (i = 0; i < s->len; ++i) {
 		BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
-		if ((status = bc_num_init(dnum, snum->len))) return status;
-		if ((status = bc_num_copy(dnum, snum))) bc_num_free(dnum);
+		bc_num_init(dnum, snum->len);
+		bc_num_copy(dnum, snum);
 	}
-
-	return status;
 }
 
-BcStatus bc_array_expand(BcVec *a, size_t len) {
+void bc_array_expand(BcVec *a, size_t len) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResultData data;
@@ -129,19 +106,17 @@ BcStatus bc_array_expand(BcVec *a, size_t len) {
 
 	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
 		while (!s && len > a->len) {
-			if ((s = bc_num_init(&data.n, BC_NUM_DEF_SIZE))) return s;
-			if ((s = bc_vec_push(a, &data.n))) bc_num_free(&data.n);
+			bc_num_init(&data.n, BC_NUM_DEF_SIZE);
+			bc_vec_push(a, &data.n);
 		}
 	}
 	else {
 		assert(a->size == sizeof(BcVec) && a->dtor == bc_vec_free);
 		while (!s && len > a->len) {
-			if ((s = bc_array_init(&data.v, true))) return s;
-			if ((s = bc_vec_push(a, &data.v))) bc_vec_free(&data.v);
+			bc_array_init(&data.v, true);
+			bc_vec_push(a, &data.v);
 		}
 	}
-
-	return s;
 }
 
 void bc_string_free(void *string) {
@@ -150,9 +125,7 @@ void bc_string_free(void *string) {
 }
 
 #ifdef DC_ENABLED
-BcStatus bc_result_copy(BcResult *d, BcResult *src) {
-
-	BcStatus s = BC_STATUS_SUCCESS;
+void bc_result_copy(BcResult *d, BcResult *src) {
 
 	assert(d && src);
 
@@ -163,8 +136,8 @@ BcStatus bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
 		{
-			if ((s = bc_num_init(&d->d.n, src->d.n.len))) return s;
-			s = bc_num_copy(&d->d.n, &src->d.n);
+			bc_num_init(&d->d.n, src->d.n.len);
+			bc_num_copy(&d->d.n, &src->d.n);
 			break;
 		}
 
@@ -173,8 +146,7 @@ BcStatus bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_ARRAY_ELEM:
 		{
 			assert(src->d.id.name);
-			if ((d->d.id.name = strdup(src->d.id.name))) s = BC_STATUS_SUCCESS;
-			else s = BC_STATUS_ALLOC_ERR;
+			d->d.id.name = bc_vm_strdup(src->d.id.name);
 			break;
 		}
 
@@ -187,8 +159,6 @@ BcStatus bc_result_copy(BcResult *d, BcResult *src) {
 			break;
 		}
 	}
-
-	return s;
 }
 #endif // DC_ENABLED
 

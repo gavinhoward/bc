@@ -27,48 +27,30 @@
 #include <status.h>
 #include <vector.h>
 #include <lang.h>
+#include <vm.h>
 
-static BcStatus bc_vec_grow(BcVec *v, size_t n) {
-
-	char *ptr;
+static void bc_vec_grow(BcVec *v, size_t n) {
 	size_t cap = v->cap * 2;
-
 	while (cap < v->len + n) cap *= 2;
-	if (!(ptr = realloc(v->v, v->size * cap))) return BC_STATUS_ALLOC_ERR;
-
-	v->v = ptr;
+	v->v = bc_vm_realloc(v->v, v->size * cap);
 	v->cap = cap;
-
-	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_init(BcVec *v, size_t esize, BcVecFree dtor) {
-
+void bc_vec_init(BcVec *v, size_t esize, BcVecFree dtor) {
 	assert(v && esize);
-
 	v->size = esize;
 	v->cap = BC_VEC_START_CAP;
 	v->len = 0;
 	v->dtor = dtor;
-
-	if (!(v->v = malloc(esize * BC_VEC_START_CAP))) return BC_STATUS_ALLOC_ERR;
-
-	return BC_STATUS_SUCCESS;
+	v->v = bc_vm_malloc(esize * BC_VEC_START_CAP);
 }
 
-BcStatus bc_vec_expand(BcVec *v, size_t req) {
-
-	char *ptr;
-
+void bc_vec_expand(BcVec *v, size_t req) {
 	assert(v);
-
-	if (v->cap >= req) return BC_STATUS_SUCCESS;
-	if (!(ptr = realloc(v->v, v->size * req))) return BC_STATUS_ALLOC_ERR;
-
-	v->v = ptr;
-	v->cap = req;
-
-	return BC_STATUS_SUCCESS;
+	if (v->cap < req) {
+		v->v = bc_vm_realloc(v->v, v->size * req);
+		v->cap = req;
+	}
 }
 
 void bc_vec_npop(BcVec *v, size_t n) {
@@ -80,77 +62,64 @@ void bc_vec_npop(BcVec *v, size_t n) {
 	}
 }
 
-BcStatus bc_vec_push(BcVec *v, const void *data) {
-
-	BcStatus s;
-
+void bc_vec_push(BcVec *v, const void *data) {
 	assert(v && data);
-
-	if (v->len + 1 > v->cap && (s = bc_vec_grow(v, 1))) return s;
-
+	if (v->len + 1 > v->cap) bc_vec_grow(v, 1);
 	memmove(v->v + (v->size * v->len), data, v->size);
 	v->len += 1;
-
-	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vec_pushByte(BcVec *v, uint8_t data) {
+void bc_vec_pushByte(BcVec *v, uint8_t data) {
 	assert(v && v->size == sizeof(uint8_t));
-	return bc_vec_push(v, &data);
+	bc_vec_push(v, &data);
 }
 
-static BcStatus bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
-
-	BcStatus s;
-	char *ptr;
+static void bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
 
 	assert(v && data && idx <= v->len);
 
-	if (idx == v->len) return bc_vec_push(v, data);
-	if (v->len == v->cap && (s = bc_vec_grow(v, 1))) return s;
+	if (idx == v->len) bc_vec_push(v, data);
+	else {
 
-	ptr = v->v + v->size * idx;
+		char *ptr;
 
-	memmove(ptr + v->size, ptr, v->size * (v->len++ - idx));
-	memmove(ptr, data, v->size);
+		if (v->len == v->cap) bc_vec_grow(v, 1);
 
-	return BC_STATUS_SUCCESS;
+		ptr = v->v + v->size * idx;
+
+		memmove(ptr + v->size, ptr, v->size * (v->len++ - idx));
+		memmove(ptr, data, v->size);
+	}
 }
 
-BcStatus bc_vec_string(BcVec *v, size_t len, const char *str) {
-
-	BcStatus s;
+void bc_vec_string(BcVec *v, size_t len, const char *str) {
 
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
 
 	bc_vec_npop(v, v->len);
-	if ((s = bc_vec_expand(v, len + 1))) return s;
+	bc_vec_expand(v, len + 1);
 	memcpy(v->v, str, len);
-
 	v->len = len;
 
-	return bc_vec_pushByte(v, '\0');
+	bc_vec_pushByte(v, '\0');
 }
 
-BcStatus bc_vec_concat(BcVec *v, const char *str) {
+void bc_vec_concat(BcVec *v, const char *str) {
 
-	BcStatus s;
 	size_t len;
 
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
 
-	if (!v->len && (s = bc_vec_pushByte(v, '\0'))) return s;
+	if (!v->len) bc_vec_pushByte(v, '\0');
 
 	len = v->len + strlen(str);
 
-	if (v->cap < len && (s = bc_vec_grow(v, len - v->len))) return s;
+	if (v->cap < len) bc_vec_grow(v, len - v->len);
 	strcat(v->v, str);
 
 	v->len = len;
-
-	return BC_STATUS_SUCCESS;
 }
 
 void* bc_vec_item(const BcVec *v, size_t idx) {
@@ -189,14 +158,17 @@ static size_t bc_map_find(const BcVec *v, const void *ptr) {
 
 BcStatus bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(v && ptr && i);
 
-	if ((*i = bc_map_find(v, ptr)) > v->len) s = BC_STATUS_VEC_OUT_OF_BOUNDS;
-	else if (*i == v->len) s = bc_vec_push(v, ptr);
+	*i = bc_map_find(v, ptr);
+
+	assert(*i <= v->len);
+
+	if (*i == v->len) bc_vec_push(v, ptr);
 	else if (!bc_id_cmp(ptr, bc_vec_item(v, *i))) s = BC_STATUS_VEC_ITEM_EXISTS;
-	else s = bc_vec_pushAt(v, ptr, *i);
+	else bc_vec_pushAt(v, ptr, *i);
 
 	return s;
 }

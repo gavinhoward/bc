@@ -63,9 +63,9 @@ typedef struct BcNum {
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef BcStatus (*BcNumDigitOp)(size_t, size_t, bool, size_t*, size_t);
 
-BcStatus bc_num_init(BcNum *n, size_t request);
-BcStatus bc_num_expand(BcNum *n, size_t req);
-BcStatus bc_num_copy(BcNum *d, BcNum *s);
+void bc_num_init(BcNum *n, size_t request);
+void bc_num_expand(BcNum *n, size_t req);
+void bc_num_copy(BcNum *d, BcNum *s);
 void bc_num_free(void *num);
 
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result);

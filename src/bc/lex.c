@@ -66,7 +66,6 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 static BcStatus bc_lex_string(BcLex *l) {
 
-	BcStatus s;
 	size_t len, nls = 0, i = l->idx;
 	char c;
 
@@ -80,7 +79,7 @@ static BcStatus bc_lex_string(BcLex *l) {
 	}
 
 	if ((len = i - l->idx) > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
-	if ((s = bc_vec_string(&l->t.v, len, l->buffer + l->idx))) return s;
+	bc_vec_string(&l->t.v, len, l->buffer + l->idx);
 
 	l->idx = i + 1;
 	l->line += nls;

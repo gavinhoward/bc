@@ -38,50 +38,42 @@ static BcStatus dc_parse_register(BcParse *p) {
 
 	if ((s = bc_lex_next(&p->l))) return s;
 	if (p->l.t.t != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_TOKEN;
-	if (!(name = strdup(p->l.t.v.v))) return BC_STATUS_ALLOC_ERR;
-	if ((s = bc_parse_pushName(p, name))) free(name);
+	name = bc_vm_strdup(p->l.t.v.v);
+	bc_parse_pushName(p, name);
 
 	return s;
 }
 
 static BcStatus dc_parse_string(BcParse *p) {
 
-	BcStatus s = BC_STATUS_ALLOC_ERR;
 	char *str, *name, b[DC_PARSE_BUF_LEN + 1];
 	size_t idx, len = p->prog->strs.len;
 
 	if (sprintf(b, "%0*zu", DC_PARSE_BUF_LEN, len) < 0) return BC_STATUS_IO_ERR;
-	if (!(name = strdup(b))) return s;
+	name = bc_vm_strdup(b);
 
-	if (!(str = strdup(p->l.t.v.v))) goto str_err;
-	if ((s = bc_parse_push(p, BC_INST_STR))) goto err;
-	if ((s = bc_parse_pushIndex(p, len))) goto err;
-	if ((s = bc_vec_push(&p->prog->strs, &str))) goto err;
-	if ((s = bc_parse_addFunc(p, name, &idx))) return s;
-	if ((s = bc_lex_next(&p->l))) return s;
+	str = bc_vm_strdup(p->l.t.v.v);
+	bc_parse_push(p, BC_INST_STR);
+	bc_parse_pushIndex(p, len);
+	bc_vec_push(&p->prog->strs, &str);
+	bc_parse_addFunc(p, name, &idx);
 
 	assert(idx == len + BC_PROG_REQ_FUNCS);
 
-	return s;
-
-err:
-	free(str);
-str_err:
-	free(name);
-	return s;
+	return bc_lex_next(&p->l);
 }
 
 static BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store) {
 
 	BcStatus s;
 
-	if ((s = bc_parse_push(p, inst))) return s;
+	bc_parse_push(p, inst);
 	if (name && (s = dc_parse_register(p))) return s;
 
 	if (store) {
-		if ((s = bc_parse_push(p, BC_INST_SWAP))) return s;
-		if ((s = bc_parse_push(p, BC_INST_ASSIGN))) return s;
-		if ((s = bc_parse_push(p, BC_INST_POP))) return s;
+		bc_parse_push(p, BC_INST_SWAP);
+		bc_parse_push(p, BC_INST_ASSIGN);
+		bc_parse_push(p, BC_INST_POP);
 	}
 
 	return bc_lex_next(&p->l);
@@ -91,8 +83,8 @@ static BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
 
 	BcStatus s;
 
-	if ((s = bc_parse_push(p, inst))) return s;
-	if ((s = bc_parse_push(p, BC_INST_EXEC_COND))) return s;
+	bc_parse_push(p, inst);
+	bc_parse_push(p, BC_INST_EXEC_COND);
 	if ((s = dc_parse_register(p))) return s;
 	if ((s = bc_lex_next(&p->l))) return s;
 
@@ -100,7 +92,7 @@ static BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
 		if ((s = dc_parse_register(p))) return s;
 		s = bc_lex_next(&p->l);
 	}
-	else s = bc_parse_push(p, BC_PARSE_STREND);
+	else bc_parse_push(p, BC_PARSE_STREND);
 
 	return s;
 }
@@ -146,9 +138,9 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 				if (p->l.t.t != BC_LEX_NUMBER) return BC_STATUS_PARSE_BAD_TOKEN;
 			}
 
-			s = bc_parse_number(p, &prev, &p->nbraces);
+			bc_parse_number(p, &prev, &p->nbraces);
 
-			if (t == BC_LEX_NEG && !s) s = bc_parse_push(p, BC_INST_NEG);
+			if (t == BC_LEX_NEG) bc_parse_push(p, BC_INST_NEG);
 			get_token = true;
 
 			break;
@@ -157,7 +149,7 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_KEY_READ:
 		{
 			if (flags & BC_PARSE_NOREAD) s = BC_STATUS_EXEC_REC_READ;
-			else s = bc_parse_push(p, BC_INST_READ);
+			else bc_parse_push(p, BC_INST_READ);
 			get_token = true;
 			break;
 		}
@@ -211,14 +203,14 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 
 	while (!s && (t = p->l.t.t) != BC_LEX_EOF) {
 		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID) {
-			if ((s = bc_parse_push(p, inst))) return s;
+			bc_parse_push(p, inst);
 			if ((s = bc_lex_next(&p->l))) return s;
 		}
 		else if ((s = dc_parse_token(p, t, flags))) return s;
 	}
 
 	if (!s && p->l.t.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
-		s = bc_parse_push(p, BC_INST_POP_EXEC);
+		bc_parse_push(p, BC_INST_POP_EXEC);
 
 	return s;
 }
@@ -237,8 +229,8 @@ static BcStatus dc_parse_parse(BcParse *p) {
 	return s;
 }
 
-BcStatus dc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
+void dc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 	assert(p && prog);
-	return bc_parse_create(p, prog, func, dc_parse_parse, dc_lex_token);
+	bc_parse_create(p, prog, func, dc_parse_parse, dc_lex_token);
 }
 #endif // DC_ENABLED

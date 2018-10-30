@@ -52,10 +52,9 @@ static const struct option bc_args_lopt[] = {
 
 static const char* const bc_args_opt = "e:f:hilqsvVwx";
 
-static BcStatus bc_args_exprs(BcVec *exprs, const char *str) {
-	BcStatus s;
-	if ((s = bc_vec_concat(exprs, str))) return s;
-	return bc_vec_concat(exprs, "\n");
+static void bc_args_exprs(BcVec *exprs, const char *str) {
+	bc_vec_concat(exprs, str);
+	bc_vec_concat(exprs, "\n");
 }
 
 static BcStatus bc_args_file(BcVec *exprs, const char *file) {
@@ -64,7 +63,7 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	char *buf;
 
 	if ((s = bc_read_file(file, &buf))) return s;
-	s = bc_args_exprs(exprs, buf);
+	bc_args_exprs(exprs, buf);
 
 	free(buf);
 
@@ -92,7 +91,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 
 			case 'e':
 			{
-				if ((s = bc_args_exprs(exprs, optarg))) return s;
+				bc_args_exprs(exprs, optarg);
 				break;
 			}
 
@@ -176,7 +175,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 	if (exprs->len > 1 || !bcg.bc) (*flags) |= BC_FLAG_Q;
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
-	for (i = optind; !s && i < argc; ++i) s = bc_vec_push(files, argv + i);
+	for (i = optind; i < argc; ++i) bc_vec_push(files, argv + i);
 
 	return s;
 }

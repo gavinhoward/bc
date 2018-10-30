@@ -45,7 +45,7 @@ extern const size_t dc_lex_regs_len;
 extern const BcLexType dc_lex_tokens[];
 extern const BcInst dc_parse_insts[];
 
-BcStatus dc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
+void dc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus dc_parse_expr(BcParse *p, uint8_t flags);
 
 #endif // DC_ENABLED

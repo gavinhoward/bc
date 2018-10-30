@@ -166,7 +166,7 @@ typedef struct BcLex {
 
 // ** Exclude start. **
 
-BcStatus bc_lex_init(BcLex *l, BcLexNext next);
+void bc_lex_init(BcLex *l, BcLexNext next);
 void bc_lex_free(BcLex *l);
 void bc_lex_file(BcLex *l, const char *file);
 BcStatus bc_lex_text(BcLex *l, const char *text);

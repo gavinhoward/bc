@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_ALL, "");
 	memset(&bcg, 0, sizeof(BcGlobals));
 
-	if (!(name = strdup(argv[0]))) return (int) BC_STATUS_ALLOC_ERR;
+	name = bc_vm_strdup(argv[0]);
 	bcg.name = basename(name);
 
 #if !defined(DC_ENABLED)

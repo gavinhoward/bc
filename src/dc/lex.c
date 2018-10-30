@@ -30,7 +30,7 @@
 #ifdef DC_ENABLED
 static BcStatus dc_lex_register(BcLex *l) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 
 	if (isspace(l->buffer[l->idx - 1])) {
 		bc_lex_whitespace(l);
@@ -40,8 +40,8 @@ static BcStatus dc_lex_register(BcLex *l) {
 	}
 	else {
 		bc_vec_npop(&l->t.v, l->t.v.len);
-		if ((s = bc_vec_pushByte(&l->t.v, l->buffer[l->idx - 1]))) return s;
-		s = bc_vec_pushByte(&l->t.v, '\0');
+		bc_vec_pushByte(&l->t.v, l->buffer[l->idx - 1]);
+		bc_vec_pushByte(&l->t.v, '\0');
 		l->t.t = BC_LEX_NAME;
 	}
 
@@ -50,7 +50,6 @@ static BcStatus dc_lex_register(BcLex *l) {
 
 static BcStatus dc_lex_string(BcLex *l) {
 
-	BcStatus s;
 	size_t depth = 1, nls = 0, i = l->idx;
 	char c;
 
@@ -63,7 +62,7 @@ static BcStatus dc_lex_string(BcLex *l) {
 		depth -= (c == ']' && (i == l->idx || l->buffer[i - 1] != '\\'));
 		nls += (c == '\n');
 
-		if (depth && (s = bc_vec_push(&l->t.v, &c))) return s;
+		if (depth) bc_vec_push(&l->t.v, &c);
 	}
 
 	if (c == '\0') {
@@ -71,7 +70,7 @@ static BcStatus dc_lex_string(BcLex *l) {
 		return BC_STATUS_LEX_NO_STRING_END;
 	}
 
-	if ((s = bc_vec_pushByte(&l->t.v, '\0'))) return s;
+	bc_vec_pushByte(&l->t.v, '\0');
 	if (i - l->idx > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
 
 	l->idx = i;

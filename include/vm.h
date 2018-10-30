@@ -95,7 +95,6 @@ typedef struct BcGlobals {
 	unsigned long sig;
 	unsigned long sigc;
 	unsigned long signe;
-	long sig_other;
 
 	long tty;
 	long ttyin;
@@ -121,6 +120,10 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 #endif // BC_ENABLED
 
 // ** Exclude start. **
+void* bc_vm_malloc(size_t n);
+void* bc_vm_realloc(void *ptr, size_t n);
+char* bc_vm_strdup(const char *str);
+
 BcStatus bc_vm_info(const char* const help);
 BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len);
 // ** Exclude end. **

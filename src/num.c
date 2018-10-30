@@ -136,21 +136,20 @@ void bc_num_truncate(BcNum *n, size_t places) {
 	}
 }
 
-static BcStatus bc_num_extend(BcNum *n, size_t places) {
+static void bc_num_extend(BcNum *n, size_t places) {
 
-	BcStatus s;
 	size_t len = n->len + places;
 
-	if (!places) return BC_STATUS_SUCCESS;
-	if (n->cap < len && (s = bc_num_expand(n, len))) return s;
+	if (places) {
 
-	memmove(n->num + places, n->num, sizeof(BcDig) * n->len);
-	memset(n->num, 0, sizeof(BcDig) * places);
+		if (n->cap < len) bc_num_expand(n, len);
 
-	n->len += places;
-	n->rdx += places;
+		memmove(n->num + places, n->num, sizeof(BcDig) * n->len);
+		memset(n->num, 0, sizeof(BcDig) * places);
 
-	return BC_STATUS_SUCCESS;
+		n->len += places;
+		n->rdx += places;
+	}
 }
 
 static void bc_num_clean(BcNum *n) {
@@ -159,24 +158,18 @@ static void bc_num_clean(BcNum *n) {
 	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
-static BcStatus bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
+static void bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
-
-	if (n->rdx < scale) s = bc_num_extend(n, scale - n->rdx);
+	if (n->rdx < scale) bc_num_extend(n, scale - n->rdx);
 	else bc_num_truncate(n, n->rdx - scale);
 
 	bc_num_clean(n);
 	if (n->len) n->neg = !neg1 != !neg2;
-
-	return s;
 }
 
-static BcStatus bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
-                             BcNum *restrict b)
+static void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
+                         BcNum *restrict b)
 {
-	BcStatus s = BC_STATUS_SUCCESS;
-
 	if (idx < n->len) {
 
 		b->len = n->len - idx;
@@ -188,31 +181,27 @@ static BcStatus bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
 	}
 	else {
 		bc_num_zero(b);
-		s = bc_num_copy(a, n);
+		bc_num_copy(a, n);
 	}
 
 	bc_num_clean(a);
 	bc_num_clean(b);
-
-	return s;
 }
 
 static BcStatus bc_num_shift(BcNum *n, size_t places) {
-
-	BcStatus s = BC_STATUS_SUCCESS;
 
 	if (!places || !n->len) return BC_STATUS_SUCCESS;
 	if (places + n->len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
 
 	if (n->rdx >= places) n->rdx -= places;
 	else {
-		s = bc_num_extend(n, places - n->rdx);
+		bc_num_extend(n, places - n->rdx);
 		n->rdx = 0;
 	}
 
 	bc_num_clean(n);
 
-	return s;
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
@@ -237,11 +226,14 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	// I am hijacking it to say whether it's doing an add or a subtract.
 
 	if (!a->len) {
-		BcStatus s = bc_num_copy(c, b);
+		bc_num_copy(c, b);
 		if (sub && c->len) c->neg = !c->neg;
-		return s;
+		return BC_STATUS_SUCCESS;
 	}
-	else if (!b->len) return bc_num_copy(c, a);
+	else if (!b->len) {
+		bc_num_copy(c, a);
+		return BC_STATUS_SUCCESS;
+	}
 
 	c->neg = a->neg;
 	c->rdx = BC_MAX(a->rdx, b->rdx);
@@ -307,11 +299,14 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	// I am hijacking it to say whether it's doing an add or a subtract.
 
 	if (!a->len) {
-		s = bc_num_copy(c, b);
+		bc_num_copy(c, b);
 		if (sub && c->len) c->neg = !c->neg;
-		return s;
+		return BC_STATUS_SUCCESS;
 	}
-	else if (!b->len) return bc_num_copy(c, a);
+	else if (!b->len) {
+		bc_num_copy(c, a);
+		return BC_STATUS_SUCCESS;
+	}
 
 	aneg = a->neg;
 	bneg = b->neg;
@@ -338,11 +333,11 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		subtrahend = a;
 	}
 
-	if ((s = bc_num_copy(c, minuend))) return s;
+	bc_num_copy(c, minuend);
 	c->neg = neg;
 
 	if (c->rdx < subtrahend->rdx) {
-		if ((s = bc_num_extend(c, subtrahend->rdx - c->rdx))) return s;
+		bc_num_extend(c, subtrahend->rdx - c->rdx);
 		start = 0;
 	}
 	else start = c->rdx - subtrahend->rdx;
@@ -367,12 +362,15 @@ static BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b,
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (aone || BC_NUM_ONE(b)) return bc_num_copy(c, aone ? b : a);
+	else if (aone || BC_NUM_ONE(b)) {
+		bc_num_copy(c, aone ? b : a);
+		return BC_STATUS_SUCCESS;
+	}
 
 	if (a->len + b->len < BC_NUM_KARATSUBA_LEN ||
 	    a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
 	{
-		if ((s = bc_num_expand(c, a->len + b->len + 1))) return s;
+		bc_num_expand(c, a->len + b->len + 1);
 
 		memset(c->num, 0, sizeof(BcDig) * c->cap);
 		c->len = carry = len = 0;
@@ -398,19 +396,19 @@ static BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b,
 		return bcg.signe ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
 	}
 
-	if ((s = bc_num_init(&l1, max))) return s;
-	if ((s = bc_num_init(&h1, max))) goto high1_err;
-	if ((s = bc_num_init(&l2, max))) goto low2_err;
-	if ((s = bc_num_init(&h2, max))) goto high2_err;
-	if ((s = bc_num_init(&m1, max))) goto mix1_err;
-	if ((s = bc_num_init(&m2, max))) goto mix2_err;
-	if ((s = bc_num_init(&z0, max))) goto z0_err;
-	if ((s = bc_num_init(&z1, max))) goto z1_err;
-	if ((s = bc_num_init(&z2, max))) goto z2_err;
-	if ((s = bc_num_init(&temp, max + max))) goto temp_err;
+	bc_num_init(&l1, max);
+	bc_num_init(&h1, max);
+	bc_num_init(&l2, max);
+	bc_num_init(&h2, max);
+	bc_num_init(&m1, max);
+	bc_num_init(&m2, max);
+	bc_num_init(&z0, max);
+	bc_num_init(&z1, max);
+	bc_num_init(&z2, max);
+	bc_num_init(&temp, max + max);
 
-	if ((s = bc_num_split(a, max2, &l1, &h1))) goto err;
-	if ((s = bc_num_split(b, max2, &l2, &h2))) goto err;
+	bc_num_split(a, max2, &l1, &h1);
+	bc_num_split(b, max2, &l2, &h2);
 
 	if ((s = bc_num_add(&h1, &l1, &m1, 0))) goto err;
 	if ((s = bc_num_add(&h2, &l2, &m2, 0))) goto err;
@@ -429,23 +427,14 @@ static BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b,
 
 err:
 	bc_num_free(&temp);
-temp_err:
 	bc_num_free(&z2);
-z2_err:
 	bc_num_free(&z1);
-z1_err:
 	bc_num_free(&z0);
-z0_err:
 	bc_num_free(&m2);
-mix2_err:
 	bc_num_free(&m1);
-mix1_err:
 	bc_num_free(&h2);
-high2_err:
 	bc_num_free(&l2);
-low2_err:
 	bc_num_free(&h1);
-high1_err:
 	bc_num_free(&l1);
 	return s;
 }
@@ -461,36 +450,36 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	scale = BC_MIN(a->rdx + b->rdx, scale);
 	maxrdx = BC_MAX(maxrdx, scale);
 
-	if ((s = bc_num_init(&cpa, a->len))) return s;
-	if ((s = bc_num_init(&cpb, b->len))) goto b_err;
+	bc_num_init(&cpa, a->len);
+	bc_num_init(&cpb, b->len);
 
-	if ((s = bc_num_copy(&cpa, a))) goto err;
-	if ((s = bc_num_copy(&cpb, b))) goto err;
+	bc_num_copy(&cpa, a);
+	bc_num_copy(&cpb, b);
 	cpa.neg = cpb.neg = false;
 	if ((s = bc_num_shift(&cpa, maxrdx))) goto err;
 	if ((s = bc_num_shift(&cpb, maxrdx))) goto err;
 
 	if ((s = bc_num_k(&cpa, &cpb, c))) goto err;
 
-	if ((s = bc_num_expand(c, c->len + (maxrdx += scale)))) goto err;
+	bc_num_expand(c, c->len + (maxrdx += scale));
+
 	if (c->len < maxrdx) {
 		memset(c->num + c->len, 0, (c->cap - c->len) * sizeof(BcDig));
 		c->len += maxrdx;
 	}
 
 	c->rdx = maxrdx;
-	s = bc_num_retireMul(c, scale, a->neg, b->neg);
+	bc_num_retireMul(c, scale, a->neg, b->neg);
 
 err:
 	bc_num_free(&cpb);
-b_err:
 	bc_num_free(&cpa);
 	return s;
 }
 
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcDig *n, *bptr, q;
 	size_t len, end, i;
 	BcNum cp;
@@ -501,21 +490,22 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 	else if (BC_NUM_ONE(b)) {
-		if ((s = bc_num_copy(c, a))) return s;
-		return bc_num_retireMul(c, scale, a->neg, b->neg);
+		bc_num_copy(c, a);
+		bc_num_retireMul(c, scale, a->neg, b->neg);
+		return BC_STATUS_SUCCESS;
 	}
 
-	if ((s = bc_num_init(&cp, BC_NUM_MREQ(a, b, scale)))) return s;
-	if ((s = bc_num_copy(&cp, a))) goto err;
+	bc_num_init(&cp, BC_NUM_MREQ(a, b, scale));
+	bc_num_copy(&cp, a);
 
 	if ((len = b->len) > cp.len) {
-		if ((s = bc_num_expand(&cp, len + 2))) goto err;
-		if ((s = bc_num_extend(&cp, len - cp.len))) goto err;
+		bc_num_expand(&cp, len + 2);
+		bc_num_extend(&cp, len - cp.len);
 	}
 
-	if (b->rdx > cp.rdx && (s = bc_num_extend(&cp, b->rdx - cp.rdx))) goto err;
+	if (b->rdx > cp.rdx) bc_num_extend(&cp, b->rdx - cp.rdx);
 	cp.rdx -= b->rdx;
-	if (scale > cp.rdx && (s = bc_num_extend(&cp, scale - cp.rdx))) goto err;
+	if (scale > cp.rdx) bc_num_extend(&cp, scale - cp.rdx);
 
 	if (b->rdx == b->len) {
 
@@ -527,13 +517,13 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		len -= i - 1;
 	}
 
-	if (cp.cap == cp.len && (s = bc_num_expand(&cp, cp.len + 1))) goto err;
+	if (cp.cap == cp.len) bc_num_expand(&cp, cp.len + 1);
 
 	// We want an extra zero in front to make things simpler.
 	cp.num[cp.len++] = 0;
 	end = cp.len - len;
 
-	if ((s = bc_num_expand(c, cp.len))) goto err;
+	bc_num_expand(c, cp.len);
 
 	bc_num_zero(c);
 	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
@@ -551,10 +541,9 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		c->num[i] = q;
 	}
 
-	if (!s) s = bc_num_retireMul(c, scale, a->neg, b->neg);
-
-err:
+	if (!s) bc_num_retireMul(c, scale, a->neg, b->neg);
 	bc_num_free(&cp);
+
 	return s;
 }
 
@@ -572,19 +561,19 @@ static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 		return BC_STATUS_SUCCESS;
 	}
 
-	if ((s = bc_num_init(&temp, d->cap))) return s;
+	bc_num_init(&temp, d->cap);
 
-	if ((s = bc_num_d(a, b, c, scale))) goto err;
+	bc_num_d(a, b, c, scale);
 
 	if (scale) scale = ts;
 
 	if ((s = bc_num_m(c, b, &temp, scale))) goto err;
 	if ((s = bc_num_sub(a, &temp, d, scale))) goto err;
 
-	if (ts > d->rdx && d->len && (s = bc_num_extend(d, ts - d->rdx))) goto err;
+	if (ts > d->rdx && d->len) bc_num_extend(d, ts - d->rdx);
 
 	neg = d->neg;
-	s = bc_num_retireMul(d, ts, a->neg, b->neg);
+	bc_num_retireMul(d, ts, a->neg, b->neg);
 	d->neg = neg;
 
 err:
@@ -598,7 +587,7 @@ static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 	BcNum c1;
 	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
 
-	if ((s = bc_num_init(&c1, len))) return s;
+	bc_num_init(&c1, len);
 
 	s = bc_num_r(a, b, &c1, c, scale, ts);
 
@@ -609,7 +598,7 @@ static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 
 static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum copy;
 	unsigned long pow;
 	size_t i, powrdx, resrdx;
@@ -627,7 +616,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 	else if (BC_NUM_ONE(b)) {
 
-		if (!b->neg) s = bc_num_copy(c, a);
+		if (!b->neg) bc_num_copy(c, a);
 		else s = bc_num_inv(a, c, scale);
 
 		return s;
@@ -637,8 +626,8 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	b->neg = false;
 
 	if ((s = bc_num_ulong(b, &pow))) return s;
-	if ((s = bc_num_init(&copy, a->len))) return s;
-	if ((s = bc_num_copy(&copy, a))) goto err;
+	bc_num_init(&copy, a->len);
+	bc_num_copy(&copy, a);
 
 	if (!neg) scale = BC_MIN(a->rdx * pow, BC_MAX(scale, a->rdx));
 
@@ -649,11 +638,12 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if ((s = bc_num_mul(&copy, &copy, &copy, powrdx))) goto err;
 	}
 
-	if ((s = bc_num_copy(c, &copy))) goto err;
 	if (bcg.signe) {
 		s = BC_STATUS_EXEC_SIGNAL;
 		goto err;
 	}
+
+	bc_num_copy(c, &copy);
 
 	for (resrdx = powrdx, pow >>= 1; !bcg.signe && pow != 0; pow >>= 1) {
 		if ((s = bc_num_mul(&copy, &copy, &copy, (powrdx <<= 1)))) goto err;
@@ -705,14 +695,15 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	}
 	else ptr_b = b;
 
-	if (init) s = bc_num_init(c, req);
-	else s = bc_num_expand(c, req);
+	if (init) bc_num_init(c, req);
+	else bc_num_expand(c, req);
 
-	if (!s) s = op(ptr_a, ptr_b, c, scale);
+	s = op(ptr_a, ptr_b, c, scale);
 
 	assert(!c->neg || c->len);
 
 	if (init) bc_num_free(&num2);
+
 	return s;
 }
 
@@ -746,9 +737,8 @@ static bool bc_num_strValid(const char *val, size_t base) {
 	return true;
 }
 
-static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
+static void bc_num_parseDecimal(BcNum *n, const char *val) {
 
-	BcStatus s;
 	size_t len, i;
 	const char *ptr;
 	bool zero = true;
@@ -761,7 +751,7 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 
 	if (len) {
 		for (i = 0; zero && i < len; ++i) zero = val[i] == '0' || val[i] == '.';
-		if ((s = bc_num_expand(n, len))) return s;
+		bc_num_expand(n, len);
 	}
 
 	ptr = strchr(val, '.');
@@ -769,15 +759,13 @@ static BcStatus bc_num_parseDecimal(BcNum *n, const char *val) {
 	// Explicitly test for NULL here to produce either a 0 or 1.
 	n->rdx = (size_t) ((ptr != NULL) * ((val + len) - (ptr + 1)));
 
-	if (zero) return BC_STATUS_SUCCESS;
-
-	for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.'))
-		n->num[n->len] = val[i] - '0';
-
-	return BC_STATUS_SUCCESS;
+	if (!zero) {
+		for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.'))
+			n->num[n->len] = val[i] - '0';
+	}
 }
 
-static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
+static void bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 	BcStatus s;
 	BcNum temp, mult, result;
@@ -789,10 +777,10 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 	bc_num_zero(n);
 
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
-	if (zero) return BC_STATUS_SUCCESS;
+	if (zero) return;
 
-	if ((s = bc_num_init(&temp, BC_NUM_DEF_SIZE))) return s;
-	if ((s = bc_num_init(&mult, BC_NUM_DEF_SIZE))) goto mult_err;
+	bc_num_init(&temp, BC_NUM_DEF_SIZE);
+	bc_num_init(&mult, BC_NUM_DEF_SIZE);
 
 	for (i = 0; i < len && (c = val[i]) != '.'; ++i) {
 
@@ -805,7 +793,7 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 	if (i == len && !(c = val[i])) goto int_err;
 	assert(c == '.');
-	if ((s = bc_num_init(&result, base->len))) goto int_err;
+	bc_num_init(&result, base->len);
 
 	bc_num_zero(&result);
 	bc_num_one(&mult);
@@ -824,7 +812,7 @@ static BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 	if ((s = bc_num_add(n, &result, n, digits))) goto err;
 
 	if (n->len) {
-		if (n->rdx < digits && n->len) s = bc_num_extend(n, digits - n->rdx);
+		if (n->rdx < digits && n->len) bc_num_extend(n, digits - n->rdx);
 	}
 	else bc_num_zero(n);
 
@@ -832,9 +820,7 @@ err:
 	bc_num_free(&result);
 int_err:
 	bc_num_free(&mult);
-mult_err:
 	bc_num_free(&temp);
-	return s;
 }
 
 static BcStatus bc_num_printNewline(size_t *nchars, size_t line_len) {
@@ -926,12 +912,12 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 
 	if (!n->len) return print(0, width, false, nchars, len);
 
-	if ((s = bc_vec_init(&stack, sizeof(long), NULL))) return s;
-	if ((s = bc_num_init(&intp, n->len))) goto int_err;
-	if ((s = bc_num_init(&fracp, n->rdx))) goto frac_err;
-	if ((s = bc_num_init(&digit, width))) goto digit_err;
-	if ((s = bc_num_init(&frac_len, BC_NUM_INT(n)))) goto frac_len_err;
-	if ((s = bc_num_copy(&intp, n))) goto err;
+	bc_vec_init(&stack, sizeof(long), NULL);
+	bc_num_init(&intp, n->len);
+	bc_num_init(&fracp, n->rdx);
+	bc_num_init(&digit, width);
+	bc_num_init(&frac_len, BC_NUM_INT(n));
+	bc_num_copy(&intp, n);
 	bc_num_one(&frac_len);
 
 	bc_num_truncate(&intp, intp.rdx);
@@ -940,7 +926,7 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 	while (intp.len) {
 		if ((s = bc_num_divmod(&intp, base, &intp, &digit, 0))) goto err;
 		if ((s = bc_num_ulong(&digit, &dig))) goto err;
-		if ((s = bc_vec_push(&stack, &dig))) goto err;
+		bc_vec_push(&stack, &dig);
 	}
 
 	for (i = 0; i < stack.len; ++i) {
@@ -962,13 +948,9 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 
 err:
 	bc_num_free(&frac_len);
-frac_len_err:
 	bc_num_free(&digit);
-digit_err:
 	bc_num_free(&fracp);
-frac_err:
 	bc_num_free(&intp);
-int_err:
 	bc_vec_free(&stack);
 	return s;
 }
@@ -1007,73 +989,54 @@ BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars, size_t len) {
 }
 #endif // DC_ENABLED
 
-BcStatus bc_num_init(BcNum *n, size_t request) {
-
+void bc_num_init(BcNum *n, size_t request) {
 	assert(n);
-
 	request = request >= BC_NUM_DEF_SIZE ? request : BC_NUM_DEF_SIZE;
 	memset(n, 0, sizeof(BcNum));
-	if (!(n->num = malloc(request))) return BC_STATUS_ALLOC_ERR;
-
+	n->num = bc_vm_malloc(request);
 	n->cap = request;
-
-	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_expand(BcNum *n, size_t req) {
-
-	BcDig *temp;
-
+void bc_num_expand(BcNum *n, size_t req) {
 	assert(n);
-
-	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-
-	if (req <= n->cap) return BC_STATUS_SUCCESS;
-	if (!(temp = realloc(n->num, req))) return BC_STATUS_ALLOC_ERR;
-
-	n->num = temp;
-	n->cap = req;
-
-	return BC_STATUS_SUCCESS;
+	if ((req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE) > n->cap) {
+		n->num = bc_vm_realloc(n->num, req);
+		n->cap = req;
+	}
 }
 
 void bc_num_free(void *num) {
-	BcNum *n = (BcNum*) num;
-	assert(n);
-	free(n->num);
+	assert(num);
+	free(((BcNum*) num)->num);
 }
 
-BcStatus bc_num_copy(BcNum *d, BcNum *s) {
-
-	BcStatus status;
+void bc_num_copy(BcNum *d, BcNum *s) {
 
 	assert(d && s);
 
-	if (d == s) return BC_STATUS_SUCCESS;
-	if ((status = bc_num_expand(d, s->cap))) return status;
+	if (d != s) {
 
-	d->len = s->len;
-	d->neg = s->neg;
-	d->rdx = s->rdx;
+		bc_num_expand(d, s->cap);
 
-	memcpy(d->num, s->num, sizeof(BcDig) * d->len);
+		d->len = s->len;
+		d->neg = s->neg;
+		d->rdx = s->rdx;
 
-	return status;
+		memcpy(d->num, s->num, sizeof(BcDig) * d->len);
+	}
 }
 
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
-
-	BcStatus s;
 
 	assert(n && val && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_NUM_MAX_IBASE);
 
 	if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_BAD_STRING;
 
-	if (base_t == 10) s = bc_num_parseDecimal(n, val);
-	else s = bc_num_parseBase(n, val, base);
+	if (base_t == 10) bc_num_parseDecimal(n, val);
+	else bc_num_parseBase(n, val, base);
 
-	return s;
+	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
@@ -1127,7 +1090,6 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
 BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
-	BcStatus s;
 	size_t len;
 	BcDig *ptr;
 	unsigned long i;
@@ -1139,7 +1101,7 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 	if (!val) return BC_STATUS_SUCCESS;
 
 	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len)
-	if ((s = bc_num_expand(n, len))) return s;
+	bc_num_expand(n, len);
 	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10) ptr[i] = val % 10;
 
 	return BC_STATUS_SUCCESS;
@@ -1187,34 +1149,31 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 
 	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a) + 1) >> 1) + 1;
 
-	if ((s = bc_num_expand(b, req))) goto init_err;
+	bc_num_expand(b, req);
 
 	if (!a->len) {
 		bc_num_setToZero(b, scale);
-		goto init_err;
+		return BC_STATUS_SUCCESS;
 	}
-	else if (a->neg) {
-		s = BC_STATUS_MATH_NEGATIVE;
-		goto init_err;
-	}
+	else if (a->neg) return BC_STATUS_MATH_NEGATIVE;
 	else if (BC_NUM_ONE(a)) {
 		bc_num_one(b);
-		s = bc_num_extend(b, scale);
-		goto init_err;
+		bc_num_extend(b, scale);
+		return BC_STATUS_SUCCESS;
 	}
 
 	len = a->len + (scale = BC_MAX(scale, a->rdx) + 1);
 
-	if ((s = bc_num_init(&num1, len))) goto init_err;
-	if ((s = bc_num_init(&num2, len))) goto num2_err;
-	if ((s = bc_num_init(&half, BC_NUM_DEF_SIZE))) goto two_err;
+	bc_num_init(&num1, len);
+	bc_num_init(&num2, len);
+	bc_num_init(&half, BC_NUM_DEF_SIZE);
 
 	bc_num_one(&half);
 	half.num[0] = 5;
 	half.rdx = 1;
 
-	if ((s = bc_num_init(&f, len))) goto f_err;
-	if ((s = bc_num_init(&fprime, len))) goto fprime_err;
+	bc_num_init(&f, len);
+	bc_num_init(&fprime, len);
 
 	x0 = &num1;
 	x1 = &num2;
@@ -1228,7 +1187,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 
 		pow -= 2 - (pow & 1);
 
-		if ((s = bc_num_extend(x0, pow))) goto err;
+		bc_num_extend(x0, pow);
 
 		// Make sure to move the radix back.
 		x0->rdx -= pow;
@@ -1265,20 +1224,15 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 		goto err;
 	}
 
-	if ((s = bc_num_copy(b, x0))) goto err;
+	bc_num_copy(b, x0);
 	if (b->rdx > --scale) bc_num_truncate(b, b->rdx - scale);
 
 err:
 	bc_num_free(&fprime);
-fprime_err:
 	bc_num_free(&f);
-f_err:
 	bc_num_free(&half);
-two_err:
 	bc_num_free(&num2);
-num2_err:
 	bc_num_free(&num1);
-init_err:
 	assert(!b->neg || b->len);
 	return s;
 }
@@ -1295,11 +1249,11 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	if ((init = (c == a))) {
 		memcpy(&num2, c, sizeof(BcNum));
 		ptr_a = &num2;
-		if ((s = bc_num_init(c, len))) return s;
+		bc_num_init(c, len);
 	}
 	else {
 		ptr_a = a;
-		if ((s = bc_num_expand(c, len))) return s;
+		bc_num_expand(c, len);
 	}
 
 	s = bc_num_r(ptr_a, b, c, d, scale, ts);
@@ -1320,23 +1274,22 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	assert(a && b && c && d && a != d && b != d && c != d);
 
-	if ((s = bc_num_expand(d, c->len))) return s;
-
 	if (!c->len) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 	if (a->rdx || b->rdx || c->rdx) return BC_STATUS_MATH_NON_INTEGER;
 	if (b->neg) return BC_STATUS_MATH_NEGATIVE;
 
-	if ((s = bc_num_init(&base, c->len))) return s;
-	if ((s = bc_num_init(&exp, b->len))) goto exp_err;
-	if ((s = bc_num_init(&two, BC_NUM_DEF_SIZE))) goto two_err;
-	if ((s = bc_num_init(&temp, b->len))) goto temp_err;
+	bc_num_expand(d, c->len);
+	bc_num_init(&base, c->len);
+	bc_num_init(&exp, b->len);
+	bc_num_init(&two, BC_NUM_DEF_SIZE);
+	bc_num_init(&temp, b->len);
 
 	bc_num_one(&two);
 	two.num[0] = 2;
 	bc_num_one(d);
 
 	if ((s = bc_num_rem(a, c, &base, 0))) goto err;
-	if ((s = bc_num_copy(&exp, b))) goto err;
+	bc_num_copy(&exp, b);
 
 	while (exp.len) {
 
@@ -1353,11 +1306,8 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 err:
 	bc_num_free(&temp);
-temp_err:
 	bc_num_free(&two);
-two_err:
 	bc_num_free(&exp);
-exp_err:
 	bc_num_free(&base);
 	assert(!d->neg || d->len);
 	return s;
