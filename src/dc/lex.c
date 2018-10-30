@@ -32,7 +32,7 @@ static BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	if (isspace(l->buffer[l->idx - 1])) {
+	if (isspace(l->buf[l->idx - 1])) {
 		bc_lex_whitespace(l);
 		++l->idx;
 		if (!bcg.exreg) s = BC_STATUS_LEX_EXTENDED_REG;
@@ -40,7 +40,7 @@ static BcStatus dc_lex_register(BcLex *l) {
 	}
 	else {
 		bc_vec_npop(&l->t.v, l->t.v.len);
-		bc_vec_pushByte(&l->t.v, l->buffer[l->idx - 1]);
+		bc_vec_pushByte(&l->t.v, l->buf[l->idx - 1]);
 		bc_vec_pushByte(&l->t.v, '\0');
 		l->t.t = BC_LEX_NAME;
 	}
@@ -56,10 +56,10 @@ static BcStatus dc_lex_string(BcLex *l) {
 	l->t.t = BC_LEX_STR;
 	bc_vec_npop(&l->t.v, l->t.v.len);
 
-	for (; (c = l->buffer[i]) && depth; ++i) {
+	for (; (c = l->buf[i]) && depth; ++i) {
 
-		depth += (c == '[' && (i == l->idx || l->buffer[i - 1] != '\\'));
-		depth -= (c == ']' && (i == l->idx || l->buffer[i - 1] != '\\'));
+		depth += (c == '[' && (i == l->idx || l->buf[i - 1] != '\\'));
+		depth -= (c == ']' && (i == l->idx || l->buf[i - 1] != '\\'));
 		nls += (c == '\n');
 
 		if (depth) bc_vec_push(&l->t.v, &c);
@@ -82,7 +82,7 @@ static BcStatus dc_lex_string(BcLex *l) {
 BcStatus dc_lex_token(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	char c = l->buffer[l->idx++], c2;
+	char c = l->buf[l->idx++], c2;
 	size_t i;
 
 	for (i = 0; i < dc_lex_regs_len; ++i) {
@@ -118,7 +118,7 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		case '!':
 		{
-			c2 = l->buffer[l->idx];
+			c2 = l->buf[l->idx];
 
 			if (c2 == '=') l->t.t = BC_LEX_OP_REL_NE;
 			else if (c2 == '<') l->t.t = BC_LEX_OP_REL_LE;
@@ -137,7 +137,7 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		case '.':
 		{
-			if (isdigit(l->buffer[l->idx])) s = bc_lex_number(l, c);
+			if (isdigit(l->buf[l->idx])) s = bc_lex_number(l, c);
 			else s = BC_STATUS_LEX_BAD_CHAR;
 			break;
 		}

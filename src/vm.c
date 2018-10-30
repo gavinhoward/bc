@@ -52,15 +52,18 @@
 static void bc_vm_sig(int sig) {
 	int err = errno;
 	size_t len = strlen(bcg.sig_msg);
-	if (sig == SIGINT && write(2, bcg.sig_msg, len) == (ssize_t) len)
-		bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
+	if (sig == SIGINT && write(2, bcg.sig_msg, len) == (ssize_t) len) {
+		bcg.signe = bcg.sig == bcg.sigc;
+		bcg.sig += bcg.signe;
+	}
 	errno = err;
 }
 #else // _WIN32
 static BOOL WINAPI bc_vm_sig(DWORD sig) {
 	if (sig == CTRL_C_EVENT) {
 		bc_vm_puts(bcg.sig_msg, stderr);
-		bcg.sig += (bcg.signe = bcg.sig == bcg.sigc);
+		bcg.signe = bcg.sig == bcg.sigc;
+		bcg.sig += bcg.signe;
 	}
 	return TRUE;
 }
@@ -110,9 +113,9 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 static void bc_vm_envArgs(BcVm *vm) {
 
 	BcVec v;
-	char *env_args = NULL, *buf;
+	char *env_args = env_args = getenv(bc_args_env_name), *buf;
 
-	if (!(env_args = getenv(bc_args_env_name))) return;
+	if (!env_args) return;
 	buf = (vm->env_args = bc_vm_strdup(env_args));
 
 	bc_vec_init(&v, sizeof(char*), NULL);
@@ -135,16 +138,20 @@ static void bc_vm_envArgs(BcVm *vm) {
 
 static size_t bc_vm_envLen(const char *var) {
 
-	char *lenv;
+	char *lenv = getenv(var);
 	size_t i, len = BC_NUM_PRINT_WIDTH;
 	int num;
 
-	if ((lenv = getenv(var))) {
-		len = strlen(lenv);
-		for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
-		if (!num || (len = (size_t) atoi(lenv) - 1) < 2 || len >= INT32_MAX)
-			len = BC_NUM_PRINT_WIDTH;
+	if (!lenv) return len;
+
+	len = strlen(lenv);
+
+	for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
+	if (num) {
+		len = (size_t) atoi(lenv) - 1;
+		if (len < 2 || len >= INT32_MAX) len = BC_NUM_PRINT_WIDTH;
 	}
+	else len = BC_NUM_PRINT_WIDTH;
 
 	return len;
 }
@@ -204,7 +211,9 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
 	while (vm->prs.l.t.t != BC_LEX_EOF) {
 
-		if ((s = vm->prs.parse(&vm->prs)) == BC_STATUS_LIMITS) {
+		s = vm->prs.parse(&vm->prs);
+
+		if (s == BC_STATUS_LIMITS) {
 
 			bc_vm_putchar('\n');
 			bc_vm_printf(stdout, "BC_BASE_MAX     = %lu\n", BC_MAX_OBASE);

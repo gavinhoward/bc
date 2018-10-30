@@ -70,10 +70,11 @@ void bc_args(int argc, char *argv[], unsigned int *flags,
 	int c, i, idx;
 	bool do_exit = false;
 
-	idx = c = optind = 0;
+	idx = optind = 0;
+	c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &idx);
 
-	while ((c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &idx)) != -1)
-	{
+	while (c != -1) {
+
 		switch (c) {
 
 			case 0:
@@ -165,6 +166,7 @@ void bc_args(int argc, char *argv[], unsigned int *flags,
 		}
 
 		if (s) bc_vm_exit(s);
+		c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &idx);
 	}
 
 	if (do_exit) exit((int) s);

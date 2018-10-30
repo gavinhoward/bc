@@ -31,19 +31,19 @@
 
 void bc_lex_lineComment(BcLex *l) {
 	l->t.t = BC_LEX_WHITESPACE;
-	while (l->idx < l->len && l->buffer[l->idx++] != '\n');
+	while (l->idx < l->len && l->buf[l->idx++] != '\n');
 	--l->idx;
 }
 
 void bc_lex_whitespace(BcLex *l) {
 	char c;
 	l->t.t = BC_LEX_WHITESPACE;
-	for (; (c = l->buffer[l->idx]) != '\n' && isspace(c); ++l->idx);
+	for (; (c = l->buf[l->idx]) != '\n' && isspace(c); ++l->idx);
 }
 
 BcStatus bc_lex_number(BcLex *l, char start) {
 
-	const char *buf = l->buffer + l->idx;
+	const char *buf = l->buf + l->idx;
 	size_t len, hits = 0, bslashes = 0, i = 0, j;
 	char c = buf[i];
 	bool last_pt, pt = start == '.';
@@ -97,7 +97,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 BcStatus bc_lex_name(BcLex *l) {
 
 	size_t i = 0;
-	const char *buf = l->buffer + l->idx - 1;
+	const char *buf = l->buf + l->idx - 1;
 	char c = buf[i];
 
 	l->t.t = BC_LEX_NAME;
@@ -137,13 +137,15 @@ BcStatus bc_lex_next(BcLex *l) {
 
 	assert(l);
 
-	if ((l->t.last = l->t.t) == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
+	l->t.last = l->t.t;
+	if (l->t.last == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
 
 	l->line += l->newline;
 	l->t.t = BC_LEX_EOF;
 
-	if ((l->newline = (l->idx == l->len))) return BC_STATUS_SUCCESS;
-	if (BC_LEX_BIN_CHAR(l->buffer[l->idx])) return BC_STATUS_BIN_FILE;
+	l->newline = (l->idx == l->len);
+	if (l->newline) return BC_STATUS_SUCCESS;
+	if (BC_LEX_BIN_CHAR(l->buf[l->idx])) return BC_STATUS_BIN_FILE;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
@@ -154,7 +156,7 @@ BcStatus bc_lex_next(BcLex *l) {
 
 BcStatus bc_lex_text(BcLex *l, const char *text) {
 	assert(l && text);
-	l->buffer = text;
+	l->buf = text;
 	l->idx = 0;
 	l->len = strlen(text);
 	l->t.t = l->t.last = BC_LEX_INVALID;

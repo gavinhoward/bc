@@ -143,7 +143,7 @@ typedef BcStatus (*BcLexNext)(struct BcLex*);
 // ** Exclude end. **
 
 typedef struct BcLex {
-	const char *buffer;
+	const char *buf;
 	size_t idx;
 	size_t line;
 	const char *f;

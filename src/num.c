@@ -86,9 +86,9 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 	assert(a && b);
 
 	if (a == b) return 0;
-	else if (!a->len) return BC_NUM_NEG(!!b->len, !b->neg);
-	else if (!b->len) return BC_NUM_NEG(1, a->neg);
-	else if (a->neg) {
+	if (!a->len) return BC_NUM_NEG(!!b->len, !b->neg);
+	if (!b->len) return BC_NUM_NEG(1, a->neg);
+	if (a->neg) {
 		if (b->neg) neg = true;
 		else return -1;
 	}
@@ -96,10 +96,12 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 
 	a_int = BC_NUM_INT(a);
 	b_int = BC_NUM_INT(b);
+	a_int -= b_int;
+	a_max = (a->rdx > b->rdx);
 
-	if ((a_int -= b_int)) return (ssize_t) a_int;
+	if (a_int) return (ssize_t) a_int;
 
-	if ((a_max = (a->rdx > b->rdx))) {
+	if (a_max) {
 		min = b->rdx;
 		diff = a->rdx - b->rdx;
 		max_num = a->num + diff;
@@ -112,8 +114,8 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 		min_num = a->num;
 	}
 
-	if ((cmp = bc_num_compare(max_num, min_num, b_int + min)))
-		return BC_NUM_NEG(cmp, (!a_max) != neg);
+	cmp = bc_num_compare(max_num, min_num, b_int + min);
+	if (cmp) return BC_NUM_NEG(cmp, (!a_max) != neg);
 
 	for (max_num -= diff, i = diff - 1; !bcg.signe && i < diff; --i) {
 		if (max_num[i]) return BC_NUM_NEG(1, (!a_max) != neg);
@@ -256,8 +258,10 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	for (ptr_c = c->num, i = 0; i < diff; ++i, ++c->len) ptr_c[i] = ptr[i];
 
 	ptr_c += diff;
+	a_int = BC_NUM_INT(a);
+	b_int = BC_NUM_INT(b);
 
-	if ((a_int = BC_NUM_INT(a)) > (b_int = BC_NUM_INT(b))) {
+	if (a_int > b_int) {
 		min_int = b_int;
 		max = a_int;
 		ptr = ptr_a;
@@ -497,8 +501,9 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_init(&cp, BC_NUM_MREQ(a, b, scale));
 	bc_num_copy(&cp, a);
+	len = b->len;
 
-	if ((len = b->len) > cp.len) {
+	if (len > cp.len) {
 		bc_num_expand(&cp, len + 2);
 		bc_num_extend(&cp, len - cp.len);
 	}
@@ -562,7 +567,6 @@ static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	}
 
 	bc_num_init(&temp, d->cap);
-
 	bc_num_d(a, b, c, scale);
 
 	if (scale) scale = ts;
@@ -588,9 +592,7 @@ static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
 
 	bc_num_init(&c1, len);
-
 	s = bc_num_r(a, b, &c1, c, scale, ts);
-
 	bc_num_free(&c1);
 
 	return s;
@@ -678,9 +680,10 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	assert(a && b && c && op);
 
-	if ((init = (c == a))) {
+	if (c == a) {
 		ptr_a = &num2;
 		memcpy(ptr_a, c, sizeof(BcNum));
+		init = true;
 	}
 	else ptr_a = a;
 
@@ -1151,7 +1154,8 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	len = a->len + (scale = BC_MAX(scale, a->rdx) + 1);
+	scale = BC_MAX(scale, a->rdx) + 1;
+	len = a->len + scale;
 
 	bc_num_init(&num1, len);
 	bc_num_init(&num2, len);
@@ -1230,15 +1234,16 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	BcStatus s;
 	BcNum num2, *ptr_a;
-	bool init;
+	bool init = false;
 	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
 
 	assert(c != d && a != b && a != d && b != d && b != c);
 
-	if ((init = (c == a))) {
+	if (c == a) {
 		memcpy(&num2, c, sizeof(BcNum));
 		ptr_a = &num2;
 		bc_num_init(c, len);
+		init = true;
 	}
 	else {
 		ptr_a = a;

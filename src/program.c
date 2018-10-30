@@ -694,7 +694,7 @@ static BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 		free(name);
 		name = NULL;
 
-		if ((pop = !BC_PROG_STR(num))) {
+		if (!BC_PROG_STR(num)) {
 
 			r.t = BC_RESULT_TEMP;
 

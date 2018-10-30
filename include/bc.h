@@ -49,6 +49,7 @@ extern const BcLexKeyword bc_lex_kws[20];
 
 BcStatus bc_lex_token(BcLex *l);
 
+#define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
 #define BC_PARSE_LEAF(p, rparen) \
 	(((p) >= BC_INST_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
 	(p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)

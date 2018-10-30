@@ -42,10 +42,13 @@ static BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
 	uint8_t l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
 	bool left = bc_parse_ops[type - BC_LEX_OP_INC].left;
 
-	while (p->ops.len > start &&
-	       (t = *((BcLexType*) bc_vec_top(&p->ops))) != BC_LEX_LPAREN &&
-	       ((l = bc_parse_ops[t - BC_LEX_OP_INC].prec) < r || (l == r && left)))
-	{
+	while (p->ops.len > start) {
+
+		t = BC_PARSE_TOP_OP(p);
+		l = bc_parse_ops[t - BC_LEX_OP_INC].prec;
+
+		if (t == BC_LEX_LPAREN || (l >= r && (l != r || !left))) break;
+
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
 		bc_vec_pop(&p->ops);
 		*nexprs -= t != BC_LEX_OP_BOOL_NOT && t != BC_LEX_NEG;
@@ -57,20 +60,22 @@ static BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
 	return s;
 }
 
-static BcStatus bc_parse_rightParen(BcParse *p, size_t *nexs) {
+static BcStatus bc_parse_rightParen(BcParse *p, size_t ops_bgn, size_t *nexs) {
 
 	BcLexType top;
 
-	if (!p->ops.len) return BC_STATUS_PARSE_BAD_EXP;
+	if (p->ops.len <= ops_bgn) return BC_STATUS_PARSE_BAD_EXP;
+	top = BC_PARSE_TOP_OP(p);
 
-	while ((top = *((BcLexType*) bc_vec_top(&p->ops))) != BC_LEX_LPAREN) {
+	while (top != BC_LEX_LPAREN) {
 
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
 
 		bc_vec_pop(&p->ops);
 		*nexs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
 
-		if (!p->ops.len) return BC_STATUS_PARSE_BAD_EXP;
+		if (p->ops.len <= ops_bgn) return BC_STATUS_PARSE_BAD_EXP;
+		top = BC_PARSE_TOP_OP(p);
 	}
 
 	bc_vec_pop(&p->ops);
@@ -609,8 +614,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 	if ((s = bc_lex_next(&p->l))) return s;
 
 	if (p->l.t.t != BC_LEX_SCOLON) s = bc_parse_expr(p, 0, bc_parse_next_for);
-	else
-		s = bc_vm_posixError(BC_STATUS_POSIX_FOR1, p->l.f, p->l.line, NULL);
+	else s = bc_vm_posixError(BC_STATUS_POSIX_FOR1, p->l.f, p->l.line, NULL);
 
 	if (s) return s;
 	if (p->l.t.t != BC_LEX_SCOLON) return BC_STATUS_PARSE_BAD_TOKEN;
@@ -1127,7 +1131,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 				paren_expr = rprn = true;
 				get_token = bin_last = false;
 
-				s = bc_parse_rightParen(p, &nexprs);
+				s = bc_parse_rightParen(p, ops_start, &nexprs);
 
 				break;
 			}
@@ -1226,7 +1230,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 
 	while (p->ops.len > ops_start) {
 
-		top = *((BcLexType*) bc_vec_top(&p->ops));
+		top = BC_PARSE_TOP_OP(p);
 		assign = top >= BC_LEX_OP_ASSIGN_POWER && top <= BC_LEX_OP_ASSIGN;
 
 		if (top == BC_LEX_LPAREN || top == BC_LEX_RPAREN)

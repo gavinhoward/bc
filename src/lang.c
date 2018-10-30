@@ -73,10 +73,8 @@ void bc_func_free(void *func) {
 }
 
 void bc_array_init(BcVec *a, bool nums) {
-
 	if (nums) bc_vec_init(a, sizeof(BcNum), bc_num_free);
 	else bc_vec_init(a, sizeof(BcVec), bc_vec_free);
-
 	bc_array_expand(a, 1);
 }
 
