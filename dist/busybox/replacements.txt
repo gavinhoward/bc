@@ -1,5 +1,5 @@
-CONFIG_BC
-CONFIG_DC
+ENABLED_BC
+ENABLED_DC
 BcGlobals bcg;
 xmalloc
 xrealloc
