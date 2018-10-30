@@ -61,18 +61,15 @@
 
 // ** Exclude start. **
 typedef struct BcVmExe {
-
 	BcParseInit init;
 	BcParseExpr exp;
 
 	char sbgn;
 	char send;
-
 } BcVmExe;
 // ** Exclude end. **
 
 typedef struct BcVm {
-
 	BcParse prs;
 	BcProgram prog;
 
@@ -86,12 +83,10 @@ typedef struct BcVm {
 
 	BcVmExe exe;
 	// ** Exclude end. **
-
 } BcVm;
 
 // ** Exclude start. **
 typedef struct BcGlobals {
-
 	unsigned long sig;
 	unsigned long sigc;
 	unsigned long signe;
@@ -110,7 +105,6 @@ typedef struct BcGlobals {
 	const char *sig_msg;
 	const char *help;
 	bool bc;
-
 } BcGlobals;
 // ** Exclude end. **
 
@@ -119,12 +113,18 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
                           size_t line, const char *msg);
 #endif // BC_ENABLED
 
+void bc_vm_exit(BcStatus s);
+void bc_vm_printf(FILE *restrict f, const char *fmt, ...);
+void bc_vm_puts(const char *str, FILE *restrict f);
+void bc_vm_putchar(int c);
+void bc_vm_fflush(FILE *restrict f);
+
 // ** Exclude start. **
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
-BcStatus bc_vm_info(const char* const help);
+void bc_vm_info(const char* const help);
 BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len);
 // ** Exclude end. **
 

@@ -34,7 +34,7 @@ This dc has a few differences from the two above:
   2) This dc implements the GNU extensions for divmod ("~") and modular
      exponentiation ("|").
   3) This dc implements all FreeBSD extensions, except for "J" and "M".
-  4) Like the FreeBSD dc, this dc supports extended registers. However, it is
+  4) Like the FreeBSD dc, this dc supports extended registers. However, they are
      implemented differently. When it encounters whitespace where a register
      should be, it skips the whitespace. If the character following is not
      a lowercase letter, an error is issued. Otherwise, the register name is
@@ -42,7 +42,7 @@ This dc has a few differences from the two above:
 
        [a-z][a-z0-9_]*
 
-     This generally means that register names will be surrounded by parentheses.
+     This generally means that register names will be surrounded by whitespace.
 
      Examples:
 

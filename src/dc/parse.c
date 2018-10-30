@@ -49,7 +49,7 @@ static BcStatus dc_parse_string(BcParse *p) {
 	char *str, *name, b[DC_PARSE_BUF_LEN + 1];
 	size_t idx, len = p->prog->strs.len;
 
-	if (sprintf(b, "%0*zu", DC_PARSE_BUF_LEN, len) < 0) return BC_STATUS_IO_ERR;
+	sprintf(b, "%0*zu", DC_PARSE_BUF_LEN, len);
 	name = bc_vm_strdup(b);
 
 	str = bc_vm_strdup(p->l.t.v.v);

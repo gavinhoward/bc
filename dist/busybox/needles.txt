@@ -4,3 +4,16 @@ extern BcGlobals bcg;
 bc_vm_malloc
 bc_vm_realloc
 bc_vm_strdup
+BC_ENABLE_SIGNALS
+^void\* bc_
+^void bc_
+^BcStatus bc_
+^void dc_
+^BcStatus dc_
+^int bc_
+^ssize_t bc_
+^size_t bc_
+static BcStatus bc_main
+static BcStatus dc_main
+bc_read_file\(file\);$
+bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\);

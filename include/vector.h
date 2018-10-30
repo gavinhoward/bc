@@ -35,14 +35,11 @@ typedef void (*BcVecFree)(void*);
 typedef int (*BcVecCmp)(const void*, const void*);
 
 typedef struct BcVec {
-
 	char *v;
 	size_t len;
 	size_t cap;
 	size_t size;
-
 	BcVecFree dtor;
-
 } BcVec;
 
 // ** Exclude start. **

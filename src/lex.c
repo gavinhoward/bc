@@ -143,6 +143,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	l->t.t = BC_LEX_EOF;
 
 	if ((l->newline = (l->idx == l->len))) return BC_STATUS_SUCCESS;
+	if (BC_LEX_BIN_CHAR(l->buffer[l->idx])) return BC_STATUS_BIN_FILE;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.

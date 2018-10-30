@@ -1,6 +1,19 @@
-ENABLED_BC
-ENABLED_DC
+ENABLE_BC
+ENABLE_DC
 BcGlobals bcg;
 xmalloc
 xrealloc
 xstrdup
+ENABLE_FEATURE_BC_SIGNALS
+static void* bc_
+static void bc_
+static BcStatus bc_
+static void dc_
+static BcStatus dc_
+static int bc_
+static ssize_t bc_
+static size_t bc_
+BcStatus bc_main
+BcStatus dc_main
+xmalloc_open_read_close(file, NULL);
+vm.flags = getopt32(argv, "xwsqli");\n\t(void) argc;

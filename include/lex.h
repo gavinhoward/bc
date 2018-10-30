@@ -30,9 +30,10 @@
 #include <vector.h>
 #include <lang.h>
 
+#define BC_LEX_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
+
 // BC_LEX_NEG is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
-
 	BC_LEX_EOF,
 	BC_LEX_INVALID,
 
@@ -106,7 +107,6 @@ typedef enum BcLexType {
 	BC_LEX_KEY_SCALE,
 	BC_LEX_KEY_SQRT,
 	BC_LEX_KEY_WHILE,
-
 #ifdef DC_ENABLED
 	BC_LEX_EQ_NO_REG,
 	BC_LEX_OP_MODEXP,
@@ -135,7 +135,6 @@ typedef enum BcLexType {
 	BC_LEX_NQUIT,
 	BC_LEX_SCALE_FACTOR,
 #endif // DC_ENABLED
-
 } BcLexType;
 
 // ** Exclude start. **
@@ -144,7 +143,6 @@ typedef BcStatus (*BcLexNext)(struct BcLex*);
 // ** Exclude end. **
 
 typedef struct BcLex {
-
 	const char *buffer;
 	size_t idx;
 	size_t line;
@@ -161,7 +159,6 @@ typedef struct BcLex {
 	// ** Exclude start. **
 	BcLexNext next;
 	// ** Exclude end. **
-
 } BcLex;
 
 // ** Exclude start. **

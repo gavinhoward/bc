@@ -305,88 +305,87 @@ static char* bc_program_name(char *code, size_t *bgn) {
 	return s;
 }
 
-static BcStatus bc_program_printString(const char *str, size_t *nchars) {
+static void bc_program_printString(const char *str, size_t *nchars) {
 
 	size_t i, len = strlen(str);
 
 #ifdef DC_ENABLED
-	if (!len) return putchar('\0') < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
+	if (!len) {
+		bc_vm_putchar('\0');
+		return;
+	}
 #endif // DC_ENABLED
 
 	for (i = 0; i < len; ++i, ++(*nchars)) {
 
-		int err, c;
+		int c;
 
-		if ((c = str[i]) != '\\' || i == len - 1) err = putchar(c);
+		if ((c = str[i]) != '\\' || i == len - 1) bc_vm_putchar(c);
 		else {
 
 			switch ((c = str[++i])) {
 
 				case 'a':
 				{
-					err = putchar('\a');
+					bc_vm_putchar('\a');
 					break;
 				}
 
 				case 'b':
 				{
-					err = putchar('\b');
+					bc_vm_putchar('\b');
 					break;
 				}
 
 				case '\\':
 				case 'e':
 				{
-					err = putchar('\\');
+					bc_vm_putchar('\\');
 					break;
 				}
 
 				case 'f':
 				{
-					err = putchar('\f');
+					bc_vm_putchar('\f');
 					break;
 				}
 
 				case 'n':
 				{
-					err = putchar('\n');
+					bc_vm_putchar('\n');
 					*nchars = SIZE_MAX;
 					break;
 				}
 
 				case 'r':
 				{
-					err = putchar('\r');
+					bc_vm_putchar('\r');
 					break;
 				}
 
 				case 'q':
 				{
-					err = putchar('"');
+					bc_vm_putchar('"');
 					break;
 				}
 
 				case 't':
 				{
-					err = putchar('\t');
+					bc_vm_putchar('\t');
 					break;
 				}
 
 				default:
 				{
 					// Just print the backslash and following character.
-					if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
+					bc_vm_putchar('\\');
 					++(*nchars);
-					err = putchar(c);
+					bc_vm_putchar(c);
 					break;
 				}
 			}
 		}
-
-		if (err == EOF) return BC_STATUS_IO_ERR;
 	}
-
-	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
@@ -419,15 +418,14 @@ static BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
 		if (inst == BC_INST_PRINT_STR) {
 			for (i = 0, len = strlen(str); i < len; ++i) {
 				char c = str[i];
-				if (putchar(c) == EOF) return BC_STATUS_IO_ERR;
+				bc_vm_putchar(c);
 				if (c == '\n') p->nchars = SIZE_MAX;
 				++p->nchars;
 			}
 		}
 		else {
-			if ((s = bc_program_printString(str, &p->nchars))) return s;
-			if (inst == BC_INST_PRINT && putchar('\n') == EOF)
-				s = BC_STATUS_IO_ERR;
+			bc_program_printString(str, &p->nchars);
+			if (inst == BC_INST_PRINT) bc_vm_putchar('\n');
 		}
 	}
 
@@ -1115,7 +1113,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		assert(idx < p->strs.len);
 		str = *((char**) bc_vec_item(&p->strs, idx));
-		if (printf("%s", str) < 0) s = BC_STATUS_IO_ERR;
+		bc_vm_printf(stdout, "%s", str);
 	}
 
 	return s;
@@ -1397,9 +1395,9 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 
 	if (!s || s == BC_STATUS_EXEC_SIGNAL) {
 		if (bcg.ttyin) {
-			if (fputs(bc_program_ready_msg, stderr) < 0 || fflush(stderr) < 0)
-				s = BC_STATUS_IO_ERR;
-			else s = BC_STATUS_SUCCESS;
+			bc_vm_puts(bc_program_ready_msg, stderr);
+			bc_vm_fflush(stderr);
+			s = BC_STATUS_SUCCESS;
 		}
 		else s = BC_STATUS_QUIT;
 	}
@@ -1733,7 +1731,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 }
 
 #ifndef NDEBUG
-static BcStatus bc_program_printIndex(char *code, size_t *bgn) {
+static void bc_program_printIndex(char *code, size_t *bgn) {
 
 	char byte, i, bytes = code[(*bgn)++];
 	unsigned long val = 0;
@@ -1743,27 +1741,24 @@ static BcStatus bc_program_printIndex(char *code, size_t *bgn) {
 		if (byte) val |= ((unsigned long) byte) << (CHAR_BIT * i);
 	}
 
-	return printf(" (%lu) ", val) < 0 ? BC_STATUS_IO_ERR : BC_STATUS_SUCCESS;
+	bc_vm_printf(stdout, " (%lu) ", val);
 }
 
-static BcStatus bc_program_printName(char *code, size_t *bgn) {
+static void bc_program_printName(char *code, size_t *bgn) {
 
 	char byte = (char) code[(*bgn)++];
 
-	if (printf(" (") < 0) return BC_STATUS_IO_ERR;
+	bc_vm_printf(stdout, " (");
 
-	for (; byte && byte != BC_PARSE_STREND; byte = (char) code[(*bgn)++]) {
-		if (putchar(byte) == EOF) return BC_STATUS_IO_ERR;
-	}
+	for (; byte && byte != BC_PARSE_STREND; byte = (char) code[(*bgn)++])
+		bc_vm_putchar(byte);
 
 	assert(byte);
 
-	if (printf(") ") < 0) return BC_STATUS_IO_ERR;
-
-	return BC_STATUS_SUCCESS;
+	bc_vm_printf(stdout, ") ");
 }
 
-static BcStatus bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
+static void bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 
 	size_t idx = bc_program_index(code, bgn);
 	char *s;
@@ -1772,54 +1767,42 @@ static BcStatus bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 
 	s = *((char**) bc_vec_item(&p->strs, idx));
 
-	if (printf(" (\"%s\") ", s) < 0) return BC_STATUS_IO_ERR;
-
-	return BC_STATUS_SUCCESS;
+	bc_vm_printf(stdout, " (\"%s\") ", s);
 }
 
-BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
+void bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	uint8_t inst = code[(*bgn)++];
 
-	if (putchar(bc_inst_chars[inst]) == EOF) return BC_STATUS_IO_ERR;
+	bc_vm_putchar(bc_inst_chars[inst]);
 
 	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
 	    inst == BC_INST_ARRAY)
 	{
-		s = bc_program_printName(code, bgn);
+		bc_program_printName(code, bgn);
 	}
-	else if (inst == BC_INST_STR) {
-		s = bc_program_printStr(p, code, bgn);
-	}
+	else if (inst == BC_INST_STR) bc_program_printStr(p, code, bgn);
 	else if (inst == BC_INST_NUM) {
 		size_t idx = bc_program_index(code, bgn);
 		char **str = bc_vec_item(&p->consts, idx);
-		if (printf("(%s)", *str) < 0) s = BC_STATUS_IO_ERR;
+		bc_vm_printf(stdout, "(%s)", *str);
 	}
 	else if (inst == BC_INST_CALL ||
 	         (inst > BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
 	{
-		if ((s = bc_program_printIndex(code, bgn))) return s;
-		if (inst == BC_INST_CALL) s = bc_program_printIndex(code, bgn);
+		bc_program_printIndex(code, bgn);
+		if (inst == BC_INST_CALL) bc_program_printIndex(code, bgn);
 	}
-
-	if (!s && fflush(stdout) == EOF) s = BC_STATUS_IO_ERR;
-
-	return s;
 }
 
-BcStatus bc_program_code(BcProgram *p) {
+void bc_program_code(BcProgram *p) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	BcFunc *f;
 	char *code;
 	BcInstPtr ip;
 	size_t i;
 
-	for (i = 0; !s && i < p->fns.len; ++i) {
-
-		bool sig;
+	for (i = 0; i < p->fns.len; ++i) {
 
 		ip.idx = ip.len = 0;
 		ip.func = i;
@@ -1827,16 +1810,11 @@ BcStatus bc_program_code(BcProgram *p) {
 		f = bc_vec_item(&p->fns, ip.func);
 		code = f->code.v;
 
-		if (printf("func[%zu]:\n", ip.func) < 0) return BC_STATUS_IO_ERR;
+		bc_vm_printf(stdout, "func[%zu]:\n", ip.func);
 
-		while (ip.idx < f->code.len) s = bc_program_printInst(p, code, &ip.idx);
+		while (ip.idx < f->code.len) bc_program_printInst(p, code, &ip.idx);
 
-		if (printf("\n\n") < 0) s = BC_STATUS_IO_ERR;
-
-		sig = bcg.sig != bcg.sigc;
-		if (s || sig) s = bc_program_reset(p, s);
+		bc_vm_printf(stdout, "\n\n");
 	}
-
-	return s;
 }
 #endif // NDEBUG

@@ -32,13 +32,11 @@
 typedef signed char BcDig;
 
 typedef struct BcNum {
-
-  BcDig *restrict num;
-  size_t rdx;
-  size_t len;
-  size_t cap;
-  bool neg;
-
+	BcDig *restrict num;
+	size_t rdx;
+	size_t len;
+	size_t cap;
+	bool neg;
 } BcNum;
 
 #define BC_NUM_MIN_BASE ((unsigned long) 2)
@@ -61,7 +59,7 @@ typedef struct BcNum {
 	(BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX((scale), (a)->rdx + (b)->rdx) + 1)
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
-typedef BcStatus (*BcNumDigitOp)(size_t, size_t, bool, size_t*, size_t);
+typedef void (*BcNumDigitOp)(size_t, size_t, bool, size_t*, size_t);
 
 void bc_num_init(BcNum *n, size_t request);
 void bc_num_expand(BcNum *n, size_t req);

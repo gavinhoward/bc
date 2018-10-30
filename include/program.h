@@ -31,7 +31,6 @@
 #include <num.h>
 
 typedef struct BcProgram {
-
 	size_t len;
 
 	size_t scale;
@@ -74,7 +73,6 @@ typedef struct BcProgram {
 	BcParseInit parse_init;
 	BcParseExpr parse_expr;
 	// ** Exclude end. **
-
 } BcProgram;
 
 #define BC_PROG_STACK(s, n) ((s)->len >= ((size_t) n))
@@ -98,8 +96,8 @@ void bc_program_init(BcProgram *p, size_t line_len,
 void bc_program_free(BcProgram *program);
 
 #ifndef NDEBUG
-BcStatus bc_program_code(BcProgram *p);
-BcStatus bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
+void bc_program_code(BcProgram *p);
+void bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
 #endif // NDEBUG
 // ** Exclude end. **
 

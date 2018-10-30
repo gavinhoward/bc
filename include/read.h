@@ -29,8 +29,6 @@
 #include <vector.h>
 
 BcStatus bc_read_line(BcVec* vec, const char *prompt);
-BcStatus bc_read_file(const char *path, char **buf);
-
-#define BC_IO_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
+char* bc_read_file(const char *path);
 
 #endif // BC_IO_H

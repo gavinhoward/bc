@@ -153,6 +153,12 @@ for i in range(0, len(needles)):
 r = re.compile('\\n', re.M)
 content = r.sub('\n', content)
 
+if project == "busybox":
+	res = subprocess.run(["clang-format", "-style=file"], input=content.encode(), stdout=subprocess.PIPE)
+	if res.returncode != 0:
+		print("Error running clang-format({})\nExiting...".format(res.returncode))
+	content = res.stdout.decode()
+
 with open(projectdir + "/header.c") as f:
 	content = f.read() + content
 

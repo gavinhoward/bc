@@ -823,81 +823,69 @@ int_err:
 	bc_num_free(&temp);
 }
 
-static BcStatus bc_num_printNewline(size_t *nchars, size_t line_len) {
+static void bc_num_printNewline(size_t *nchars, size_t line_len) {
 	if (*nchars == line_len - 1) {
-		if (putchar('\\') == EOF) return BC_STATUS_IO_ERR;
-		if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
+		bc_vm_putchar('\\');
+		bc_vm_putchar('\n');
 		*nchars = 0;
 	}
-	return BC_STATUS_SUCCESS;
 }
 
 #ifdef DC_ENABLED
-static BcStatus bc_num_printChar(size_t num, size_t width, bool radix,
+static void bc_num_printChar(size_t num, size_t width, bool radix,
                                  size_t *nchars, size_t line_len)
 {
 	(void) radix, (void) line_len;
-	if (putchar((char) num) == EOF) return BC_STATUS_IO_ERR;
+	bc_vm_putchar((char) num);
 	*nchars = *nchars + width;
-	return BC_STATUS_SUCCESS;
 }
 #endif // DC_ENABLED
 
-static BcStatus bc_num_printDigits(size_t num, size_t width, bool radix,
+static void bc_num_printDigits(size_t num, size_t width, bool radix,
                                    size_t *nchars, size_t line_len)
 {
-	BcStatus s;
 	size_t exp, pow, div;
 
-	if ((s = bc_num_printNewline(nchars, line_len))) return s;
-	if (putchar(radix ? '.' : ' ') == EOF) return BC_STATUS_IO_ERR;
+	bc_num_printNewline(nchars, line_len);
+	bc_vm_putchar(radix ? '.' : ' ');
 	++(*nchars);
 
-	if ((s = bc_num_printNewline(nchars, line_len))) return s;
+	bc_num_printNewline(nchars, line_len);
 	for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
 	for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
-		if ((s = bc_num_printNewline(nchars, line_len))) return s;
+		bc_num_printNewline(nchars, line_len);
 		div = num / pow;
 		num -= div * pow;
-		if (putchar(((char) div) + '0') == EOF) return BC_STATUS_IO_ERR;
+		bc_vm_putchar(((char) div) + '0');
 	}
-
-	return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printHex(size_t num, size_t width, bool radix,
+static void bc_num_printHex(size_t num, size_t width, bool radix,
                                 size_t *nchars, size_t line_len)
 {
-	BcStatus s;
-
 	assert(width == 1);
 
 	if (radix) {
-		if ((s = bc_num_printNewline(nchars, line_len))) return s;
-		if (putchar('.') == EOF) return BC_STATUS_IO_ERR;
+		bc_num_printNewline(nchars, line_len);
+		bc_vm_putchar('.');
 		*nchars += 1;
 	}
 
-	if ((s = bc_num_printNewline(nchars, line_len))) return s;
-	if (putchar(bc_num_hex_digits[num]) == EOF) return BC_STATUS_IO_ERR;
+	bc_num_printNewline(nchars, line_len);
+	bc_vm_putchar(bc_num_hex_digits[num]);
 	*nchars = *nchars + width;
-
-	return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
+static void bc_num_printDecimal(BcNum *n, size_t *nchars, size_t len) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i, rdx = n->rdx - 1;
 
-	if (n->neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
+	if (n->neg) bc_vm_putchar('-');
 	(*nchars) += n->neg;
 
-	for (i = n->len - 1; !s && i < n->len; --i)
-		s = bc_num_printHex((size_t) n->num[i], 1, i == rdx, nchars, len);
-
-	return s;
+	for (i = n->len - 1; i < n->len; --i)
+		bc_num_printHex((size_t) n->num[i], 1, i == rdx, nchars, len);
 }
 
 static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
@@ -910,7 +898,10 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 	size_t i;
 	bool radix;
 
-	if (!n->len) return print(0, width, false, nchars, len);
+	if (!n->len) {
+		print(0, width, false, nchars, len);
+		return BC_STATUS_SUCCESS;
+	}
 
 	bc_vec_init(&stack, sizeof(long), NULL);
 	bc_num_init(&intp, n->len);
@@ -932,7 +923,7 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 	for (i = 0; i < stack.len; ++i) {
 		ptr = bc_vec_item_rev(&stack, i);
 		assert(ptr);
-		if ((s = print(*ptr, width, false, nchars, len))) goto err;
+		print(*ptr, width, false, nchars, len);
 	}
 
 	if (!n->rdx) goto err;
@@ -942,7 +933,7 @@ static BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 		if ((s = bc_num_ulong(&fracp, &dig))) goto err;
 		if ((s = bc_num_ulong2num(&intp, dig))) goto err;
 		if ((s = bc_num_sub(&fracp, &intp, &fracp, 0))) goto err;
-		if ((s = print(dig, width, radix, nchars, len))) goto err;
+		print(dig, width, radix, nchars, len);
 		if ((s = bc_num_mul(&frac_len, base, &frac_len, 0))) goto err;
 	}
 
@@ -963,7 +954,7 @@ static BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
 	BcNumDigitOp print;
 	bool neg = n->neg;
 
-	if (neg && putchar('-') == EOF) return BC_STATUS_IO_ERR;
+	if (neg) bc_vm_putchar('-');
 	(*nchars) += neg;
 
 	n->neg = false;
@@ -1042,24 +1033,22 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
                       size_t *nchars, size_t line_len)
 {
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && base && nchars);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_MAX_OBASE);
 
-	if ((s = bc_num_printNewline(nchars, line_len))) return s;
+	bc_num_printNewline(nchars, line_len);
 
 	if (!n->len) {
-		if (putchar('0') == EOF) return BC_STATUS_IO_ERR;
+		bc_vm_putchar('0');
 		++(*nchars);
 	}
-	else if (base_t == 10) s = bc_num_printDecimal(n, nchars, line_len);
+	else if (base_t == 10) bc_num_printDecimal(n, nchars, line_len);
 	else s = bc_num_printBase(n, base, base_t, nchars, line_len);
 
-	if (s) return s;
-
 	if (newline) {
-		if (putchar('\n') == EOF) return BC_STATUS_IO_ERR;
+		bc_vm_putchar('\n');
 		*nchars = 0;
 	}
 

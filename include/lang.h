@@ -125,23 +125,18 @@ typedef enum BcInst {
 } BcInst;
 
 typedef struct BcId {
-
 	char *name;
 	size_t idx;
-
 } BcId;
 
 typedef struct BcFunc {
-
 	BcVec code;
 	BcVec labels;
 	size_t nparams;
 	BcVec autos;
-
 } BcFunc;
 
 typedef enum BcResultType {
-
 	BC_RESULT_TEMP,
 
 	BC_RESULT_VAR,
@@ -159,30 +154,23 @@ typedef enum BcResultType {
 	BC_RESULT_ONE,
 
 	BC_RESULT_OBASE,
-
 } BcResultType;
 
 typedef union BcResultData {
-
 	BcNum n;
 	BcVec v;
 	BcId id;
-
 } BcResultData;
 
 typedef struct BcResult {
-
 	BcResultType t;
 	BcResultData d;
-
 } BcResult;
 
 typedef struct BcInstPtr {
-
 	size_t func;
 	size_t idx;
 	size_t len;
-
 } BcInstPtr;
 
 // ** Exclude start. **

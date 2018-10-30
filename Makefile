@@ -58,6 +58,7 @@ BC_EXEC = $(BIN)/$(BC)
 DC_EXEC = $(BIN)/$(DC)
 
 PREFIX ?= /usr/local
+BC_ENABLE_SIGNALS ?= 1
 
 INSTALL = ./install.sh
 LINK = ./link.sh
@@ -70,7 +71,7 @@ VALGRIND_ARGS = --error-exitcode=1 --leak-check=full --show-leak-kinds=all
 BC_NUM_KARATSUBA_LEN ?= 32
 
 CFLAGS += -Wall -Wextra -pedantic -std=c99 -funsigned-char
-CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION)
+CPPFLAGS += -I./include/ -D_POSIX_C_SOURCE=200809L -DVERSION=$(VERSION) -DBC_ENABLE_SIGNALS=$(BC_ENABLE_SIGNALS)
 CPPFLAGS += -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
 
 HOSTCC ?= $(CC)

@@ -89,17 +89,13 @@
 	                               BC_PARSE_FLAG_IF_END)))
 
 typedef struct BcOp {
-
 	uint8_t prec;
 	bool left;
-
 } BcOp;
 
 typedef struct BcParseNext {
-
 	uint32_t len;
 	BcLexType tokens[4];
-
 } BcParseNext;
 
 #define BC_PARSE_NEXT_TOKENS(...) .tokens = { __VA_ARGS__ }
@@ -118,7 +114,6 @@ typedef BcStatus (*BcParseExpr)(struct BcParse*, uint8_t);
 // ** Exclude end. **
 
 typedef struct BcParse {
-
 	// ** Exclude start. **
 	BcParseParse parse;
 	// ** Exclude end. **
@@ -138,7 +133,6 @@ typedef struct BcParse {
 
 	size_t nbraces;
 	bool auto_part;
-
 } BcParse;
 
 // ** Exclude start. **

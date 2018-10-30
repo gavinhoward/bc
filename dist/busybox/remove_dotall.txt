@@ -9,3 +9,9 @@
 ^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
 ^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$
+^#ifndef BC_NUM_KARATSUBA_LEN$
+^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
+\n\nstatic void bc_vm_envArgs\(BcVm \*vm\).*?\n\}
+\n[\t]*if \(bcg.bc\) bc_vm_envArgs\(vm\);
+^char\* bc_read_file\(const char \*path\);$
+^char\* bc_read_file\(const char \*path\).*?\n\}

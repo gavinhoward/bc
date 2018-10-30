@@ -38,11 +38,9 @@ extern const char bc_help[];
 // ** Exclude end. **
 
 typedef struct BcLexKeyword {
-
 	const char name[9];
 	const char len;
 	const bool posix;
-
 } BcLexKeyword;
 
 #define BC_LEX_KW_ENTRY(a, b, c) { .name = a, .len = (b), .posix = (c) }

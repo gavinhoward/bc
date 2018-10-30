@@ -24,7 +24,6 @@
 #define BC_STATUS_H
 
 typedef enum BcStatus {
-
 	BC_STATUS_SUCCESS,
 
 	BC_STATUS_ALLOC_ERR,
@@ -96,7 +95,6 @@ typedef enum BcStatus {
 	BC_STATUS_LIMITS,
 
 	BC_STATUS_INVALID_OPTION,
-
 } BcStatus;
 
 #define BC_ERR_IDX_VM (0)

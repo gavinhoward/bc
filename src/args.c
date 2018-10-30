@@ -57,21 +57,14 @@ static void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, "\n");
 }
 
-static BcStatus bc_args_file(BcVec *exprs, const char *file) {
-
-	BcStatus s;
-	char *buf;
-
-	if ((s = bc_read_file(file, &buf))) return s;
+static void bc_args_file(BcVec *exprs, const char *file) {
+	char *buf = bc_read_file(file);
 	bc_args_exprs(exprs, buf);
-
 	free(buf);
-
-	return s;
 }
 
-BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
-                 BcVec *exprs, BcVec *files)
+void bc_args(int argc, char *argv[], unsigned int *flags,
+             BcVec *exprs, BcVec *files)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i, idx;
@@ -97,13 +90,13 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 
 			case 'f':
 			{
-				if ((s = bc_args_file(exprs, optarg))) return s;
+				bc_args_file(exprs, optarg);
 				break;
 			}
 
 			case 'h':
 			{
-				if ((s = bc_vm_info(bcg.help))) return s;
+				bc_vm_info(bcg.help);
 				do_exit = true;
 				break;
 			}
@@ -111,35 +104,35 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 #ifdef BC_ENABLED
 			case 'i':
 			{
-				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) s = BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
-				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) s = BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
-				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) s = BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
-				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) s = BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
-				if (!bcg.bc) return BC_STATUS_INVALID_OPTION;
+				if (!bcg.bc) s = BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_W;
 				break;
 			}
@@ -148,7 +141,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 			case 'V':
 			case 'v':
 			{
-				if ((s = bc_vm_info(NULL))) return s;
+				bc_vm_info(NULL);
 				do_exit = true;
 				break;
 			}
@@ -156,7 +149,7 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 #ifdef DC_ENABLED
 			case 'x':
 			{
-				if (bcg.bc) return BC_STATUS_INVALID_OPTION;
+				if (bcg.bc) s = BC_STATUS_INVALID_OPTION;
 				(*flags) |= BC_FLAG_X;
 				break;
 			}
@@ -166,9 +159,12 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 			case '?':
 			default:
 			{
-				return BC_STATUS_INVALID_OPTION;
+				exit(BC_STATUS_INVALID_OPTION);
+				break;
 			}
 		}
+
+		if (s) bc_vm_exit(s);
 	}
 
 	if (do_exit) exit((int) s);
@@ -176,6 +172,4 @@ BcStatus bc_args(int argc, char *argv[], unsigned int *flags,
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
 	for (i = optind; i < argc; ++i) bc_vec_push(files, argv + i);
-
-	return s;
 }

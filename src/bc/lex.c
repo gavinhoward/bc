@@ -71,7 +71,8 @@ static BcStatus bc_lex_string(BcLex *l) {
 
 	l->t.t = BC_LEX_STR;
 
-	for (; (c = l->buffer[i]) && c != '"'; ++i) nls += (c == '\n');
+	for (c = l->buffer[i]; c && c != '"'; c = l->buffer[i], ++i)
+		nls += (c == '\n');
 
 	if (c == '\0') {
 		l->idx = i;
@@ -106,7 +107,8 @@ static BcStatus bc_lex_comment(BcLex *l) {
 
 	for (i = ++l->idx; !end; i += !end) {
 
-		for (; (c = buf[i]) != '*' && c != '\0'; ++i) nls += (c == '\n');
+		for (c = buf[i]; c != '*' && c != '\0'; c = buf[i], ++i)
+			nls += (c == '\n');
 
 		if (c == '\0' || buf[i + 1] == '\0') {
 			l->idx = i;
@@ -125,10 +127,10 @@ static BcStatus bc_lex_comment(BcLex *l) {
 BcStatus bc_lex_token(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	char c, c2;
+	char c = l->buffer[l->idx++], c2;
 
 	// This is the workhorse of the lexer.
-	switch ((c = l->buffer[l->idx++])) {
+	switch (c) {
 
 		case '\0':
 		case '\n':
@@ -189,7 +191,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '&':
 		{
-			if ((c2 = l->buffer[l->idx]) == '&') {
+			c2 = l->buffer[l->idx];
+			if (c2 == '&') {
 
 				if ((s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
 				                          l->f, l->line, "&&")))
@@ -223,7 +226,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '+':
 		{
-			if ((c2 = l->buffer[l->idx]) == '+') {
+			c2 = l->buffer[l->idx];
+			if (c2 == '+') {
 				++l->idx;
 				l->t.t = BC_LEX_OP_INC;
 			}
@@ -239,7 +243,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '-':
 		{
-			if ((c2 = l->buffer[l->idx]) == '-') {
+			c2 = l->buffer[l->idx];
+			if (c2 == '-') {
 				++l->idx;
 				l->t.t = BC_LEX_OP_DEC;
 			}
@@ -259,7 +264,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '/':
 		{
-			if ((c2 = l->buffer[l->idx]) =='*') s = bc_lex_comment(l);
+			c2 = l->buffer[l->idx];
+			if (c2 =='*') s = bc_lex_comment(l);
 			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_DIVIDE, BC_LEX_OP_DIVIDE);
 			break;
 		}
@@ -372,7 +378,9 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '|':
 		{
-			if ((c2 = l->buffer[l->idx]) == '|') {
+			c2 = l->buffer[l->idx];
+
+			if (c2 == '|') {
 
 				if ((s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
 				                          l->f, l->line, "||")))

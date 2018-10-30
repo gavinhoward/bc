@@ -39,8 +39,10 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	int i;
 	signed char c = 0;
 
-	if (bcg.ttyin && (fputs(prompt, stderr) == EOF || fflush(stderr) == EOF))
-		return BC_STATUS_IO_ERR;
+	if (bcg.ttyin && !bcg.posix) {
+		bc_vm_puts(prompt, stderr);
+		bc_vm_fflush(stderr);
+	}
 
 	assert(vec && vec->size == sizeof(char));
 
@@ -52,15 +54,16 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 			if (errno != EINTR) return BC_STATUS_IO_ERR;
 
+#if BC_ENABLE_SIGNALS
 			bcg.sigc = bcg.sig;
 			bcg.signe = 0;
 
-			if (bcg.ttyin && (fputs(bc_program_ready_msg, stderr) == EOF ||
-			                  fputs(prompt, stderr) == EOF ||
-			                  fflush(stderr) == EOF))
-			{
-				return BC_STATUS_IO_ERR;
+			if (bcg.ttyin) {
+				bc_vm_puts(bc_program_ready_msg, stderr);
+				if (!bcg.posix) bc_vm_puts(prompt, stderr);
+				bc_vm_fflush(stderr);
 			}
+#endif // BC_ENABLE_SIGNALS
 
 			continue;
 		}
@@ -68,7 +71,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 		if (i > UCHAR_MAX) return BC_STATUS_LEX_BAD_CHAR;
 
 		c = (char) i;
-		if (BC_IO_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
+		if (BC_LEX_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
 		bc_vec_push(vec, &c);
 	}
 
@@ -77,18 +80,18 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_read_file(const char *path, char **buf) {
+char* bc_read_file(const char *path) {
 
 	BcStatus s = BC_STATUS_IO_ERR;
 	FILE *f;
 	size_t size, read;
 	long res;
+	char *buf;
 	struct stat pstat;
 
-	assert(path && buf);
+	assert(path);
 
-	if (!(f = fopen(path, "r"))) return BC_STATUS_EXEC_FILE_ERR;
-
+	if (!(f = fopen(path, "r"))) bc_vm_exit(BC_STATUS_EXEC_FILE_ERR);
 	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {
@@ -100,24 +103,19 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	if ((res = ftell(f)) < 0) goto malloc_err;
 	if (fseek(f, 0, SEEK_SET) == -1) goto malloc_err;
 
-	*buf = bc_vm_malloc((size = (size_t) res) + 1);
+	buf = bc_vm_malloc((size = (size_t) res) + 1);
 
-	if ((read = fread(*buf, 1, size, f)) != size) goto read_err;
+	if ((read = fread(buf, 1, size, f)) != size) goto read_err;
 
-	(*buf)[size] = '\0';
-	s = BC_STATUS_BIN_FILE;
-
-	for (read = 0; read < size; ++read) {
-		if (BC_IO_BIN_CHAR((*buf)[read])) goto read_err;
-	}
-
+	(buf)[size] = '\0';
 	fclose(f);
 
-	return BC_STATUS_SUCCESS;
+	return buf;
 
 read_err:
-	free(*buf);
+	free(buf);
 malloc_err:
 	fclose(f);
-	return s;
+	bc_vm_exit(s);
+	return NULL;
 }
