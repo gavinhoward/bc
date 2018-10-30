@@ -1,3 +1,6 @@
 BC_ENABLED
 DC_ENABLED
 extern BcGlobals bcg;
+bc_vm_malloc
+bc_vm_realloc
+bc_vm_strdup

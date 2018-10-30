@@ -1,3 +1,6 @@
 CONFIG_BC
 CONFIG_DC
 BcGlobals bcg;
+xmalloc
+xrealloc
+xstrdup

@@ -5,3 +5,7 @@
 ^[\t]*// \*\* Busybox exclude start\. \*\*.*?^[\t]*// \*\* Busybox exclude end\. \*\*$
 ^#if !defined\(BC_ENABLED\) && !defined\(DC_ENABLED\).*?#endif$
 ^#define VERSION_STR\(V\) #V.*?#define BC_VERSION VERSION_STR2\(VERSION\)$
+^static void bc_vm_allocError\(\) \{.*?\n\}$
+^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
+^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
+^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$
