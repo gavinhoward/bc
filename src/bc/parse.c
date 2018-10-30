@@ -42,13 +42,10 @@ static BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
 	uint8_t l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
 	bool left = bc_parse_ops[type - BC_LEX_OP_INC].left;
 
-	while (p->ops.len > start) {
-
-		t = BC_PARSE_TOP_OP(p);
-		l = bc_parse_ops[t - BC_LEX_OP_INC].prec;
-
-		if (t == BC_LEX_LPAREN || (l >= r && (l != r || !left))) break;
-
+	while (p->ops.len > start &&
+	       (t = BC_PARSE_TOP_OP(p)) != BC_LEX_LPAREN &&
+	       ((l = bc_parse_ops[t - BC_LEX_OP_INC].prec) < r || (l == r && left)))
+	{
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
 		bc_vec_pop(&p->ops);
 		*nexprs -= t != BC_LEX_OP_BOOL_NOT && t != BC_LEX_NEG;

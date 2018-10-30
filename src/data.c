@@ -42,9 +42,11 @@ const char bc_copyright[] =
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
+// ** Busybox exclude start. **
 // ** Exclude start. **
 const char* const bc_args_env_name = "BC_ENV_ARGS";
 // ** Exclude end. **
+// ** Busybox exclude end. **
 
 const char bc_err_fmt[] = "\n%s error: %s\n";
 const char bc_warn_fmt[] = "\n%s warning: %s\n";

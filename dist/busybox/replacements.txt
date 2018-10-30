@@ -17,3 +17,4 @@ BcStatus bc_main
 BcStatus dc_main
 xmalloc_open_read_close(file, NULL);
 vm.flags = getopt32(argv, "xwsqli");\n\t(void) argc;
+static const
