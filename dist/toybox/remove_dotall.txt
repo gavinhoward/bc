@@ -1,19 +1,18 @@
 ^[ ]*vm->flags = 0;$
-^[ ]*if \(\(s = bc_vec_init\(&vm->files, sizeof\(char\*\), NULL\)\)\) return s;$
-^[ ]*if \(\(s = bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\)\)\) goto err;$
+^[ ]*bc_vec_init\(&vm->files, sizeof\(char\*\), NULL\);$
+^[ ]*bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\);$
 ^[ ]*if \(\(st = bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\)\)\) goto err;$
 \nprog_err:\n[ ]*bc_vec_free\(&vm->exprs\);$
 \nexprs_err:\n[ ]*bc_vec_free\(&vm->files\);$
-^err:\n[ ]*bc_parse_free\(&vm->prs\);$
 \n[ ]*bc_vec_free\(&vm->exprs\);$
 \n[ ]*bc_vec_free\(&vm->files\);$
-^[ ]*if \(\(st = bc_args\(argc, argv, &vm\)\)\) goto err;$
+^[ ]*if \(\(st = bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\)\)\) goto exit;$
 ^[ ]*bcg\.posix = vm\.flags & BC_FLAG_S;$
 ^[ ]*bcg\.warn = vm\.flags & BC_FLAG_W;$
 ^[ ]*if \(vm->exprs\.len\).*?\}$
 \n[ ]*if \(help && printf\(help, bcg\.name\) < 0\) return BC_STATUS_IO_ERR;$
 ^[ ]*vm->exe = exe;$
-^[ ]*if \(bcg.bc && \(s = bc_vm_envArgs\(vm\)\)\) goto err;$
+^[ ]*if \(bcg.bc && \(s = bc_vm_envArgs\(vm\)\)\) return s;$
 \n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
 \n#ifdef DC_ENABLED.*?#endif // DC_ENABLED
 \n#ifdef DC_ENABLED.*?#else // DC_ENABLED
@@ -32,7 +31,7 @@
 ^[ ]*p->parse_init = init;$
 ^[ ]*p->parse_expr = expr;$
 ^[ ]*l->next = next;$
-^BcStatus bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
+^void bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
 ^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}
 ^static BcStatus bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
 ^[ ]*vm->env_args = NULL;$
@@ -42,3 +41,7 @@
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
 \n// \*\* Busybox exclude start\. \*\*
 \n// \*\* Busybox exclude end\. \*\*
+^static void bc_vm_allocError\(\) \{.*?\n\}$
+^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
+^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
+^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$

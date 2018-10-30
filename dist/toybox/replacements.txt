@@ -1,14 +1,14 @@
 void bc_main(void)
-exit:\n  toys.exitval = (int) st;
-if ((s = bc_program_init(&vm->prog, len))) return s;
-if ((s = bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN))) goto err;
+toys.exitval = (int) st;
+bc_program_init(&vm->prog, len);
+bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);
 if ((st = bc_vm_init(&vm))) goto exit;
 s = bc_vm_stdin(vm);
 toys.optflags
 toys.optflags
 toys.optc
 toys.optargs[i]
-  if (CFG_TOYBOX_FREE) bc_vm_free(&vm);\n
+exit:\n  if (CFG_TOYBOX_FREE) bc_vm_free(&vm);
 bc_parse_parse(&vm
 bc_parse_parse(&vm
 ((s = bc_parse_init(&vm.prs, &vm.prog)))
@@ -33,11 +33,11 @@ int
  1
  0
 1
-BcStatus bc_lex_init(BcLex *l)
+void bc_lex_init(BcLex *l)
 bc_lex_token(l)
-BcStatus bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {\n
-BcStatus bc_program_init(BcProgram *p, size_t line_len) {\n
-if ((s = bc_lex_init(&p->l))) return s;
+void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {\n
+void bc_program_init(BcProgram *p, size_t line_len) {\n
+bc_lex_init(&p->l);
 bc_parse_init(
 bc_parse_expr(&parse, BC_PARSE_NOREAD, bc_parse_next_read)
 BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn)
@@ -47,3 +47,6 @@ BcStatus bc_vm_info()
 TT.
 toys.which->name
 s = bc_parse_parse(p)
+xmalloc
+xrealloc
+xstrdup
