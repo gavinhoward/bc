@@ -2,7 +2,9 @@
 /*
  * Licensed under GPLv2 or later, see file LICENSE in this source tree.
  * Copyright (c) 2018 Gavin D. Howard and contributors.
- * Automatically generated from https://github.com/gavinhoward/bc
+ *
+ * ** Automatically generated from https://github.com/gavinhoward/bc **
+ * **        Do not edit unless you know what you are doing.         **
  */
 //config:config BC
 //config:	bool "bc (45.41 kb; 49.59 kb when combined with dc)"
