@@ -717,7 +717,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 	if (p->l.t.t != BC_LEX_LPAREN) return BC_STATUS_PARSE_BAD_FUNC;
 	if ((s = bc_lex_next(&p->l))) return s;
 
-	while (!s && p->l.t.t != BC_LEX_RPAREN) {
+	while (p->l.t.t != BC_LEX_RPAREN) {
 
 		if (p->l.t.t != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_FUNC;
 
@@ -775,7 +775,7 @@ static BcStatus bc_parse_auto(BcParse *p) {
 	p->auto_part = comma = false;
 	one = p->l.t.t == BC_LEX_NAME;
 
-	while (!s && p->l.t.t == BC_LEX_NAME) {
+	while (p->l.t.t == BC_LEX_NAME) {
 
 		name = bc_vm_strdup(p->l.t.v.v);
 		if ((s = bc_lex_next(&p->l))) goto err;
@@ -1225,7 +1225,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 	if (s) return s;
 	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
 
-	while (!s && p->ops.len > ops_start) {
+	while (p->ops.len > ops_start) {
 
 		top = *((BcLexType*) bc_vec_top(&p->ops));
 		assign = top >= BC_LEX_OP_ASSIGN_POWER && top <= BC_LEX_OP_ASSIGN;
