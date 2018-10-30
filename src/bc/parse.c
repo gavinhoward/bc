@@ -34,46 +34,46 @@
 static BcStatus bc_parse_else(BcParse *p);
 static BcStatus bc_parse_stmt(BcParse *p);
 
-static BcStatus bc_parse_operator(BcParse *p, BcVec *ops, BcLexType type,
-                                  size_t start, size_t *nexprs, bool next)
+static BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
+                                  size_t *nexprs, bool next)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcLexType t;
 	uint8_t l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
 	bool left = bc_parse_ops[type - BC_LEX_OP_INC].left;
 
-	while (ops->len > start &&
-	       (t = *((BcLexType*) bc_vec_top(ops))) != BC_LEX_LPAREN &&
+	while (p->ops.len > start &&
+	       (t = *((BcLexType*) bc_vec_top(&p->ops))) != BC_LEX_LPAREN &&
 	       ((l = bc_parse_ops[t - BC_LEX_OP_INC].prec) < r || (l == r && left)))
 	{
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
-		bc_vec_pop(ops);
+		bc_vec_pop(&p->ops);
 		*nexprs -= t != BC_LEX_OP_BOOL_NOT && t != BC_LEX_NEG;
 	}
 
-	bc_vec_push(ops, &type);
+	bc_vec_push(&p->ops, &type);
 	if (next) s = bc_lex_next(&p->l);
 
 	return s;
 }
 
-static BcStatus bc_parse_rightParen(BcParse *p, BcVec *ops, size_t *nexs) {
+static BcStatus bc_parse_rightParen(BcParse *p, size_t *nexs) {
 
 	BcLexType top;
 
-	if (!ops->len) return BC_STATUS_PARSE_BAD_EXP;
+	if (!p->ops.len) return BC_STATUS_PARSE_BAD_EXP;
 
-	while ((top = *((BcLexType*) bc_vec_top(ops))) != BC_LEX_LPAREN) {
+	while ((top = *((BcLexType*) bc_vec_top(&p->ops))) != BC_LEX_LPAREN) {
 
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
 
-		bc_vec_pop(ops);
+		bc_vec_pop(&p->ops);
 		*nexs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
 
-		if (!ops->len) return BC_STATUS_PARSE_BAD_EXP;
+		if (!p->ops.len) return BC_STATUS_PARSE_BAD_EXP;
 	}
 
-	bc_vec_pop(ops);
+	bc_vec_pop(&p->ops);
 
 	return bc_lex_next(&p->l);
 }
@@ -323,8 +323,8 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 	return s;
 }
 
-static BcStatus bc_parse_minus(BcParse *p, BcVec *ops, BcInst *prev,
-                               size_t start, bool rparen, size_t *nexprs)
+static BcStatus bc_parse_minus(BcParse *p, BcInst *prev, size_t start,
+                               bool rparen, size_t *nexprs)
 {
 	BcStatus s;
 	BcLexType type;
@@ -339,17 +339,16 @@ static BcStatus bc_parse_minus(BcParse *p, BcVec *ops, BcInst *prev,
 
 	// We can just push onto the op stack because this is the largest
 	// precedence operator that gets pushed. Inc/dec does not.
-	if (type != BC_LEX_OP_MINUS) bc_vec_push(ops, &type);
-	else s = bc_parse_operator(p, ops, type, start, nexprs, false);
+	if (type != BC_LEX_OP_MINUS) bc_vec_push(&p->ops, &type);
+	else s = bc_parse_operator(p, type, start, nexprs, false);
 
 	return s;
 }
 
 static BcStatus bc_parse_string(BcParse *p, char inst) {
 
-	char *str;
+	char *str = bc_vm_strdup(p->l.t.v.v);
 
-	str = bc_vm_strdup(p->l.t.v.v);
 	bc_parse_push(p, BC_INST_STR);
 	bc_parse_pushIndex(p, p->prog->strs.len);
 	bc_vec_push(&p->prog->strs, &str);
@@ -1046,7 +1045,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_OP_MINUS:
 			{
-				s = bc_parse_minus(p, &p->ops, &prev, ops_start, rprn, &nexprs);
+				s = bc_parse_minus(p, &prev, ops_start, rprn, &nexprs);
 				rprn = get_token = false;
 				bin_last = prev == BC_INST_MINUS;
 				break;
@@ -1092,7 +1091,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 
 				nrelops += t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT;
 				prev = BC_PARSE_TOKEN_INST(t);
-				s = bc_parse_operator(p, &p->ops, t, ops_start, &nexprs, true);
+				s = bc_parse_operator(p, t, ops_start, &nexprs, true);
 				rprn = get_token = false;
 				bin_last = t != BC_LEX_OP_BOOL_NOT;
 
@@ -1128,7 +1127,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 				paren_expr = rprn = true;
 				get_token = bin_last = false;
 
-				s = bc_parse_rightParen(p, &p->ops, &nexprs);
+				s = bc_parse_rightParen(p, &nexprs);
 
 				break;
 			}
