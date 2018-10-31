@@ -79,7 +79,7 @@ const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_VEC, BC_ERR_IDX_VEC,
 #ifdef BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -126,7 +126,6 @@ const char *bc_err_msgs[] = {
 	"mismatched parameters",
 	"undefined function",
 	"file is not executable:",
-	"could not install signal handler",
 	"number too long: must be [1, BC_NUM_MAX]",
 	"name too long: must be [1, BC_NAME_MAX]",
 	"string too long: must be [1, BC_STRING_MAX]",

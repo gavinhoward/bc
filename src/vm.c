@@ -404,11 +404,9 @@ static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = bc_vm_sig;
 	sa.sa_flags = 0;
-
-	if (sigaction(SIGINT, &sa, NULL) < 0) return BC_STATUS_EXEC_SIGACTION_FAIL;
+	sigaction(SIGINT, &sa, NULL);
 #else // _WIN32
-	if (!SetConsoleCtrlHandler(bc_vm_sig, TRUE))
-		return BC_STATUS_EXEC_SIGACTION_FAIL;
+	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
