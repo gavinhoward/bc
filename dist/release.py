@@ -153,10 +153,16 @@ r = re.compile('\\n', re.M)
 content = r.sub('\n', content)
 
 if project == "busybox":
+
 	res = subprocess.run(["clang-format", "-style=file"], input=content.encode(), stdout=subprocess.PIPE)
+
 	if res.returncode != 0:
 		print("Error running clang-format ({})\nExiting...".format(res.returncode))
+
 	content = res.stdout.decode()
+
+	content = re.sub('\n[\t]*// clang-format off', '', content)
+	content = re.sub('\n[\t]*// clang-format on', '', content)
 
 with open(projectdir + "/header.c") as f:
 	content = f.read() + content

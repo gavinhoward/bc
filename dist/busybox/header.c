@@ -37,21 +37,25 @@
 //config:
 //config:	Options:
 //config:
-//config:	  -h  print this usage message and exit.
-//config:	  -i  force interactive mode.
-//config:	  -l  use predefined math routines:
+//config:	  -i  --interactive  force interactive mode
+//config:	  -l  --mathlib      use predefined math routines:
 //config:
-//config:	        s(expr)  =  sine of expr in radians
-//config:	        c(expr)  =  cosine of expr in radians
-//config:	        a(expr)  =  arctangent of expr, in radians
-//config:	        l(expr)  =  natural log of expr
-//config:	        e(expr)  =  raises e to the power of expr
-//config:	        j(n, x)  =  Bessel function of integer order n of x
+//config:	                       s(expr)  =  sine of expr in radians
+//config:	                       c(expr)  =  cosine of expr in radians
+//config:	                       a(expr)  =  arctangent of expr, returning
+//config:	                                   radians
+//config:	                       l(expr)  =  natural log of expr
+//config:	                       e(expr)  =  raises e to the power of expr
+//config:	                       j(n, x)  =  Bessel function of integer order
+//config:	                                   n of x
 //config:
-//config:	  -q  don't print version and copyright
-//config:	  -s  error if any non-POSIX extensions are used
-//config:	  -w  warn if any non-POSIX extensions are used
-//config:	  -v  print version and copyright and exit
+//config:	  -q  --quiet        don't print version and copyright.
+//config:	  -s  --standard     error if any non-POSIX extensions are used.
+//config:	  -w  --warn         warn if any non-POSIX extensions are used.
+//config:	  -v  --version      print version and copyright and exit.
+//config:
+//config:	Long options are only available if FEATURE_BC_LONG_OPTIONS is
+//config:	enabled.
 //config:
 //config:config DC
 //config:	bool "dc (37.92 kb; 49.59 kb when combined with bc)"
@@ -92,15 +96,23 @@
 //config:
 //config:	Options:
 //config:
-//config:	  -h  print this usage message and exit.
-//config:	  -V  print version and copyright and exit.
-//config:	  -x  enable extended register mode.
+//config:	  -v  --version            print version and copyright and exit.
+//config:	  -x  --extended-register  enable extended register mode.
+//config:
+//config:	Long options are only available if FEATURE_BC_LONG_OPTIONS is
+//config:	enabled.
 //config:
 //config:config FEATURE_BC_SIGNALS
-//config:	bool "Enable bc signal handling"
+//config:	bool "Enable bc/dc signal handling"
 //config:	default n
 //config:	help
-//config:	Enable signal handling for bc.
+//config:	Enable signal handling for bc and dc.
+//config:
+//config:config FEATURE_BC_LONG_OPTIONS
+//config:	bool "Enable bc/dc long options"
+//config:	default n
+//config:	help
+//config:	Enable long options for bc and dc.
 
 //applet:IF_BC(APPLET(bc, BB_DIR_USR_BIN, BB_SUID_DROP))
 //applet:IF_DC(APPLET(dc, BB_DIR_USR_BIN, BB_SUID_DROP))

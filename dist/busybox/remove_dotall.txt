@@ -16,8 +16,6 @@
 \n[\t]*if \(exs->len > 1 \|\| !bcg.bc\) \(\*flags\) \|= BC_FLAG_Q;$
 ^static void bc_args_exprs\(BcVec \*exprs, const char \*str\).*?\n\}
 ^static void bc_args_file\(BcVec \*exprs, const char \*file\).*?\n\}
-^static const struct option bc_args_lopt\[\] = \{.*?\n\};$
-^static const char\* const bc_args_opt = "e:f:hilqsvVwx";$
 ^\tif \(vm->exprs\.len\) \{.*?\n\t\}$
 ^[\t]*bc_vec_free\(&vm->exprs\);$
 ^[\t]*bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\);$
