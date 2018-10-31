@@ -83,11 +83,8 @@ static BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	if (!s || s > BC_STATUS_VEC_ITEM_EXISTS) return s;
 
 	bc_vm_printf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
-
-	if (file) {
-		bc_vm_printf(stderr, "    %s", file);
-		bc_vm_printf(stderr, bc_err_line + 4 * !line, line);
-	}
+	bc_vm_printf(stderr, "    %s", file);
+	bc_vm_printf(stderr, bc_err_line + 4 * !line, line);
 
 	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name) ||
 	            s == BC_STATUS_BIN_FILE);
