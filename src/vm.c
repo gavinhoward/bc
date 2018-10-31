@@ -430,7 +430,8 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	if ((st = bc_vm_init(&vm, exe, env_len))) goto exit;
 	bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files);
 
-	bcg.tty = (bcg.ttyin = isatty(0)) || (vm.flags & BC_FLAG_I) || isatty(1);
+	bcg.ttyin = isatty(0);
+	bcg.tty = bcg.ttyin || (vm.flags & BC_FLAG_I) || isatty(1);
 
 #ifdef BC_ENABLED
 	bcg.posix = vm.flags & BC_FLAG_S;
