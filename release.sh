@@ -257,7 +257,7 @@ minsize "gcc"
 scan_build
 
 toybox
-#busybox
+busybox
 
 build "$release" "$CC" all make
 
