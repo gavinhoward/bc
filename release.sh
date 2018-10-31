@@ -168,6 +168,7 @@ build_dist() {
 	d=$(pwd)
 
 	cd "$repo"
+	make clean
 	make
 
 	cd "$d"
@@ -259,7 +260,7 @@ scan_build
 toybox
 busybox
 
-build "$release" "$CC" all make
+build "$release" "clang" all make
 
 karatsuba
 vg
