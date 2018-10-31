@@ -40,6 +40,18 @@ It is expected that `CC` produces code for the target system.
 Users can also create a file named `config.mak` in the top-level directory to
 control `make`. This is not normally necessary.
 
+Users can also disable signal handling by compiling as follows:
+
+```
+BC_ENABLE_SIGNALS=0 make
+```
+
+Signal handling is on by default.
+
+Executing `make help` lists all `make` targets and options.
+
+### Optimization
+
 I ***highly*** encourage package and distro maintainers to compile as follows:
 
 ```
@@ -52,8 +64,6 @@ architectures, the following can add a bit more speed:
 ```
 CPPFLAGS="-DNEBUG" CFLAGS="-O3 -march=native -msse4" LDFLAGS="-s" make
 ```
-
-Executing `make help` lists all `make` targets and options.
 
 ## Status
 
