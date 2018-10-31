@@ -112,7 +112,6 @@ for name in files:
 		content += lines[i]
 
 if project == "toybox":
-
 	r = re.compile('\t', re.M)
 	content = r.sub('  ', content)
 
