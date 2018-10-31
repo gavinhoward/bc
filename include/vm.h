@@ -42,10 +42,11 @@
 
 #define BC_FLAG_X (1<<0)
 #define BC_FLAG_W (1<<1)
-#define BC_FLAG_S (1<<2)
-#define BC_FLAG_Q (1<<3)
-#define BC_FLAG_L (1<<4)
-#define BC_FLAG_I (1<<5)
+#define BC_FLAG_V (1<<2)
+#define BC_FLAG_S (1<<3)
+#define BC_FLAG_Q (1<<4)
+#define BC_FLAG_L (1<<5)
+#define BC_FLAG_I (1<<6)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))

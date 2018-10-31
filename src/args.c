@@ -140,7 +140,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 			case 'V':
 			case 'v':
 			{
-				bc_vm_info(NULL);
+				(*flags) |= BC_FLAG_V;
 				do_exit = true;
 				break;
 			}
@@ -166,6 +166,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 		if (s) bc_vm_exit(s);
 	}
 
+	if ((*flags) & BC_FLAG_V) bc_vm_info(NULL);
 	if (do_exit) exit((int) s);
 	if (exs->len > 1 || !bcg.bc) (*flags) |= BC_FLAG_Q;
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
