@@ -45,3 +45,4 @@
 ^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
 ^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$
+ != 0

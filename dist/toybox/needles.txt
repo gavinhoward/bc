@@ -2,7 +2,7 @@
 return st;$
 bc_program_init\(&vm->prog, len, exe\.init, exe\.exp\);$
 exe\.init\(&vm->prs, &vm->prog, BC_PROG_MAIN\);$
-if \(\(st = bc_vm_init\(&vm, exe, env_len\)\)\) goto exit;$
+st = bc_vm_init\(&vm, exe, env_len\);$
 if \(\(bcg\.bc \|\| !vm->files\.len\) && !vm->exprs.\len\) s = bc_vm_stdin\(vm\);$
 vm\.flags
 vm->flags

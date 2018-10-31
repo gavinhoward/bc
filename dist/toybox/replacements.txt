@@ -2,7 +2,7 @@ void bc_main(void)
 toys.exitval = (int) st;
 bc_program_init(&vm->prog, len);
 bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);
-if ((st = bc_vm_init(&vm))) goto exit;
+st = bc_vm_init(&vm);
 s = bc_vm_stdin(vm);
 toys.optflags
 toys.optflags
