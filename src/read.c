@@ -50,7 +50,9 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 	while (c != '\n') {
 
-		if ((i = fgetc(stdin)) == EOF) {
+		i = fgetc(stdin);
+
+		if (i == EOF) {
 
 			if (errno != EINTR) return BC_STATUS_IO_ERR;
 
@@ -91,7 +93,8 @@ char* bc_read_file(const char *path) {
 
 	assert(path);
 
-	if (!(f = fopen(path, "r"))) bc_vm_exit(BC_STATUS_EXEC_FILE_ERR);
+	f = fopen(path, "r");
+	if (!f) bc_vm_exit(BC_STATUS_EXEC_FILE_ERR);
 	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {
@@ -100,12 +103,15 @@ char* bc_read_file(const char *path) {
 	}
 
 	if (fseek(f, 0, SEEK_END) == -1) goto malloc_err;
-	if ((res = ftell(f)) < 0) goto malloc_err;
+	res = ftell(f);
+	if (res < 0) goto malloc_err;
 	if (fseek(f, 0, SEEK_SET) == -1) goto malloc_err;
 
-	buf = bc_vm_malloc((size = (size_t) res) + 1);
+	size = (size_t) res;
+	buf = bc_vm_malloc(size + 1);
 
-	if ((read = fread(buf, 1, size, f)) != size) goto read_err;
+	read = fread(buf, 1, size, f);
+	if (read != size) goto read_err;
 
 	(buf)[size] = '\0';
 	fclose(f);

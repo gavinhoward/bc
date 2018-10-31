@@ -84,7 +84,8 @@ BcStatus bc_parse_text(BcParse *p, const char *text) {
 
 	if (!strcmp(text, "") && !BC_PARSE_CAN_EXEC(p)) {
 		p->l.t.t = BC_LEX_INVALID;
-		if ((s = p->parse(p))) return s;
+		s = p->parse(p);
+		if (s) return s;
 		if (!BC_PARSE_CAN_EXEC(p)) return BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 	}
 
@@ -103,7 +104,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 		bc_parse_updateFunc(p, BC_PROG_MAIN);
 	}
 
-	p->l.idx = p->l.len;
+	p->l.i = p->l.len;
 	p->l.t.t = BC_LEX_EOF;
 	p->auto_part = (p->nbraces = 0);
 

@@ -33,30 +33,30 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 	BcStatus s;
 	size_t i;
-	const char *buf = l->buf + l->idx - 1;
+	const char *buf = l->buf + l->i - 1;
 
 	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
 
 		unsigned long len = (unsigned long) bc_lex_kws[i].len;
 
-		if (!strncmp(buf, bc_lex_kws[i].name, len)) {
+		if (strncmp(buf, bc_lex_kws[i].name, len) == 0) {
 
 			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
-			if (!bc_lex_kws[i].posix &&
-			    (s = bc_vm_posixError(BC_STATUS_POSIX_BAD_KW, l->f,
-			                          l->line, bc_lex_kws[i].name)))
-			{
-				return s;
+			if (!bc_lex_kws[i].posix) {
+				s = bc_vm_posixError(BC_STATUS_POSIX_BAD_KW, l->f,
+				                     l->line, bc_lex_kws[i].name);
+				if (s) return s;
 			}
 
 			// We minus 1 because the index has already been incremented.
-			l->idx += len - 1;
+			l->i += len - 1;
 			return BC_STATUS_SUCCESS;
 		}
 	}
 
-	if ((s = bc_lex_name(l))) return s;
+	s = bc_lex_name(l);
+	if (s) return s;
 
 	if (l->t.v.len - 1 > 1)
 		s = bc_vm_posixError(BC_STATUS_POSIX_NAME_LEN, l->f, l->line, buf);
@@ -66,30 +66,31 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 static BcStatus bc_lex_string(BcLex *l) {
 
-	size_t len, nls = 0, i = l->idx;
+	size_t len, nls = 0, i = l->i;
 	char c;
 
 	l->t.t = BC_LEX_STR;
 
-	for (c = l->buf[i]; c && c != '"'; c = l->buf[++i]) nls += (c == '\n');
+	for (c = l->buf[i]; c != 0 && c != '"'; c = l->buf[++i]) nls += (c == '\n');
 
 	if (c == '\0') {
-		l->idx = i;
+		l->i = i;
 		return BC_STATUS_LEX_NO_STRING_END;
 	}
 
-	if ((len = i - l->idx) > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
-	bc_vec_string(&l->t.v, len, l->buf + l->idx);
+	len = i - l->i;
+	if (len > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
+	bc_vec_string(&l->t.v, len, l->buf + l->i);
 
-	l->idx = i + 1;
+	l->i = i + 1;
 	l->line += nls;
 
 	return BC_STATUS_SUCCESS;
 }
 
 static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
-	if (l->buf[l->idx] == '=') {
-		++l->idx;
+	if (l->buf[l->i] == '=') {
+		++l->i;
 		l->t.t = with;
 	}
 	else l->t.t = without;
@@ -104,19 +105,19 @@ static BcStatus bc_lex_comment(BcLex *l) {
 
 	l->t.t = BC_LEX_WHITESPACE;
 
-	for (i = ++l->idx; !end; i += !end) {
+	for (i = ++l->i; !end; i += !end) {
 
 		for (c = buf[i]; c != '*' && c != 0; c = buf[++i]) nls += (c == '\n');
 
 		if (c == 0 || buf[i + 1] == '\0') {
-			l->idx = i;
+			l->i = i;
 			return BC_STATUS_LEX_NO_COMMENT_END;
 		}
 
 		end = buf[i + 1] == '/';
 	}
 
-	l->idx = i + 2;
+	l->i = i + 2;
 	l->line += nls;
 
 	return BC_STATUS_SUCCESS;
@@ -125,7 +126,7 @@ static BcStatus bc_lex_comment(BcLex *l) {
 BcStatus bc_lex_token(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	char c = l->buf[l->idx++], c2;
+	char c = l->buf[l->i++], c2;
 
 	// This is the workhorse of the lexer.
 	switch (c) {
@@ -152,11 +153,9 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			bc_lex_assign(l, BC_LEX_OP_REL_NE, BC_LEX_OP_BOOL_NOT);
 
-			if (l->t.t == BC_LEX_OP_BOOL_NOT &&
-			    (s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
-			                          l->f, l->line, "!")))
-			{
-				return s;
+			if (l->t.t == BC_LEX_OP_BOOL_NOT) {
+				s = bc_vm_posixError(BC_STATUS_POSIX_BOOL, l->f, l->line, "!");
+				if (s) return s;
 			}
 
 			break;
@@ -170,11 +169,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '#':
 		{
-			if ((s = bc_vm_posixError(BC_STATUS_POSIX_COMMENT,
-			                          l->f, l->line, NULL)))
-			{
-				return s;
-			}
+			s = bc_vm_posixError(BC_STATUS_POSIX_COMMENT, l->f, l->line, NULL);
+			if (s) return s;
 
 			bc_lex_lineComment(l);
 
@@ -189,16 +185,13 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '&':
 		{
-			c2 = l->buf[l->idx];
+			c2 = l->buf[l->i];
 			if (c2 == '&') {
 
-				if ((s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
-				                          l->f, l->line, "&&")))
-				{
-					return s;
-				}
+				s = bc_vm_posixError(BC_STATUS_POSIX_BOOL, l->f, l->line, "&&");
+				if (s) return s;
 
-				++l->idx;
+				++l->i;
 				l->t.t = BC_LEX_OP_BOOL_AND;
 			}
 			else {
@@ -224,9 +217,9 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '+':
 		{
-			c2 = l->buf[l->idx];
+			c2 = l->buf[l->i];
 			if (c2 == '+') {
-				++l->idx;
+				++l->i;
 				l->t.t = BC_LEX_OP_INC;
 			}
 			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_PLUS, BC_LEX_OP_PLUS);
@@ -241,9 +234,9 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '-':
 		{
-			c2 = l->buf[l->idx];
+			c2 = l->buf[l->i];
 			if (c2 == '-') {
-				++l->idx;
+				++l->i;
 				l->t.t = BC_LEX_OP_DEC;
 			}
 			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_MINUS, BC_LEX_OP_MINUS);
@@ -252,7 +245,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '.':
 		{
-			if (isdigit(l->buf[l->idx])) s = bc_lex_number(l, c);
+			if (isdigit(l->buf[l->i])) s = bc_lex_number(l, c);
 			else {
 				l->t.t = BC_LEX_KEY_LAST;
 				s = bc_vm_posixError(BC_STATUS_POSIX_DOT, l->f, l->line, NULL);
@@ -262,7 +255,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '/':
 		{
-			c2 = l->buf[l->idx];
+			c2 = l->buf[l->i];
 			if (c2 =='*') s = bc_lex_comment(l);
 			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_DIVIDE, BC_LEX_OP_DIVIDE);
 			break;
@@ -322,9 +315,9 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '\\':
 		{
-			if (l->buf[l->idx] == '\n') {
+			if (l->buf[l->i] == '\n') {
 				l->t.t = BC_LEX_WHITESPACE;
-				++l->idx;
+				++l->i;
 			}
 			else s = BC_STATUS_LEX_BAD_CHAR;
 			break;
@@ -376,17 +369,14 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '|':
 		{
-			c2 = l->buf[l->idx];
+			c2 = l->buf[l->i];
 
 			if (c2 == '|') {
 
-				if ((s = bc_vm_posixError(BC_STATUS_POSIX_BOOL_OPS,
-				                          l->f, l->line, "||")))
-				{
-					return s;
-				}
+				s = bc_vm_posixError(BC_STATUS_POSIX_BOOL, l->f, l->line, "||");
+				if (s) return s;
 
-				++l->idx;
+				++l->i;
 				l->t.t = BC_LEX_OP_BOOL_OR;
 			}
 			else {

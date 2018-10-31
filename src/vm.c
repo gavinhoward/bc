@@ -92,7 +92,7 @@ static BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 #ifdef BC_ENABLED
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
-                           size_t line, const char *msg)
+                          size_t line, const char *msg)
 {
 	int p = (int) bcg.posix, w = (int) bcg.warn;
 	const char* const fmt = p ? bc_err_fmt : bc_warn_fmt;
@@ -120,11 +120,11 @@ static void bc_vm_envArgs(BcVm *vm) {
 	bc_vec_init(&v, sizeof(char*), NULL);
 	bc_vec_push(&v, &bc_args_env_name);
 
-	while (*buf) {
+	while (*buf != 0) {
 		if (!isspace(*buf)) {
 			bc_vec_push(&v, &buf);
-			while (*buf && !isspace(*buf)) ++buf;
-			if (*buf) (*(buf++)) = '\0';
+			while (*buf != 0 && !isspace(*buf)) ++buf;
+			if (*buf != 0) (*(buf++)) = '\0';
 		}
 		else ++buf;
 	}
@@ -206,7 +206,8 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
 	BcStatus s = bc_parse_text(&vm->prs, text);
 
-	if ((s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line))) return s;
+	s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line);
+	if (s) return s;
 
 	while (vm->prs.l.t.t != BC_LEX_EOF) {
 
@@ -227,10 +228,10 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
 			s = BC_STATUS_SUCCESS;
 		}
-		else if (s == BC_STATUS_QUIT ||
-		         (s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line)))
-		{
-			return s;
+		else {
+			if (s == BC_STATUS_QUIT) return s;
+			s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line);
+			if (s) return s;
 		}
 	}
 
@@ -253,9 +254,10 @@ static BcStatus bc_vm_file(BcVm *vm, const char *file) {
 
 	vm->prog.file = file;
 	data = bc_read_file(file);
-
 	bc_lex_file(&vm->prs.l, file);
-	if ((s = bc_vm_process(vm, data))) goto err;
+
+	s = bc_vm_process(vm, data);
+	if (s) goto err;
 
 	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
 	ip = bc_vec_item(&vm->prog.stack, 0);
@@ -287,11 +289,13 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	while (!s && !(s = bc_read_line(&buf, ">>> "))) {
+	for (s = bc_read_line(&buf, ">>> "); !s; s = bc_read_line(&buf, ">>> ")) {
 
 		char *string = buf.v;
 
-		if ((len = buf.len - 1) == 1) {
+		len = buf.len - 1;
+
+		if (len == 1) {
 			if (str && buf.v[0] == vm->exe.send) str -= 1;
 			else if (buf.v[0] == vm->exe.sbgn) str += 1;
 		}
@@ -323,7 +327,8 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 		}
 
 		bc_vec_concat(&buffer, buf.v);
-		if ((s = bc_vm_process(vm, buffer.v))) goto err;
+		s = bc_vm_process(vm, buffer.v);
+		if (s) goto err;
 
 		bc_vec_npop(&buffer, buffer.len);
 	}
@@ -354,17 +359,20 @@ static BcStatus bc_vm_exec(BcVm *vm) {
 	if (vm->flags & BC_FLAG_L) {
 
 		bc_lex_file(&vm->prs.l, bc_lib_name);
-		if ((s = bc_parse_text(&vm->prs, bc_lib))) return s;
+		s = bc_parse_text(&vm->prs, bc_lib);
 
 		while (!s && vm->prs.l.t.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
 
-		if (s || (s = bc_program_exec(&vm->prog))) return s;
+		if (s) return s;
+		s = bc_program_exec(&vm->prog);
+		if (s) return s;
 	}
 #endif // BC_ENABLED
 
 	if (vm->exprs.len) {
 		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
-		if ((s = bc_vm_process(vm, vm->exprs.v))) return s;
+		s = bc_vm_process(vm, vm->exprs.v);
+		if (s) return s;
 	}
 
 	for (i = 0; !s && i < vm->files.len; ++i)
@@ -429,7 +437,8 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	BcStatus st;
 	BcVm vm;
 
-	if ((st = bc_vm_init(&vm, exe, env_len))) goto exit;
+	st = bc_vm_init(&vm, exe, env_len);
+	if (st) goto exit;
 	bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files);
 
 	bcg.ttyin = isatty(0);

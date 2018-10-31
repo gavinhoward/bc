@@ -112,7 +112,7 @@ void bc_vec_concat(BcVec *v, const char *str) {
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
 
-	if (!v->len) bc_vec_pushByte(v, '\0');
+	if (v->len == 0) bc_vec_pushByte(v, '\0');
 
 	len = v->len + strlen(str);
 
@@ -148,7 +148,7 @@ static size_t bc_map_find(const BcVec *v, const void *ptr) {
 		uint8_t *item = bc_vec_item(v, mid);
 		int result = bc_id_cmp(ptr, item);
 
-		if (!result) return mid;
+		if (result == 0) return mid;
 		else if (result < 0) high = mid;
 		else low = mid + 1;
 	}

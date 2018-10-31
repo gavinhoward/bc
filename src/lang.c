@@ -126,7 +126,9 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 
 	assert(d && src);
 
-	switch ((d->t = src->t)) {
+	d->t = src->t;
+
+	switch (d->t) {
 
 		case BC_RESULT_TEMP:
 		case BC_RESULT_IBASE:

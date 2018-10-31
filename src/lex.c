@@ -31,19 +31,19 @@
 
 void bc_lex_lineComment(BcLex *l) {
 	l->t.t = BC_LEX_WHITESPACE;
-	while (l->idx < l->len && l->buf[l->idx++] != '\n');
-	--l->idx;
+	while (l->i < l->len && l->buf[l->i++] != '\n');
+	--l->i;
 }
 
 void bc_lex_whitespace(BcLex *l) {
 	char c;
 	l->t.t = BC_LEX_WHITESPACE;
-	for (; (c = l->buf[l->idx]) != '\n' && isspace(c); ++l->idx);
+	for (c = l->buf[l->i]; c != '\n' && isspace(c); c = l->buf[++l->i]);
 }
 
 BcStatus bc_lex_number(BcLex *l, char start) {
 
-	const char *buf = l->buf + l->idx;
+	const char *buf = l->buf + l->i;
 	size_t len, hits = 0, bslashes = 0, i = 0, j;
 	char c = buf[i];
 	bool last_pt, pt = start == '.';
@@ -51,7 +51,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	last_pt = pt;
 	l->t.t = BC_LEX_NUMBER;
 
-	while (c && (isdigit(c) || (c >= 'A' && c <= 'F') ||
+	while (c != 0 && (isdigit(c) || (c >= 'A' && c <= 'F') ||
 	             (c == '.' && !pt) || (c == '\\' && buf[i + 1] == '\n')))
 	{
 		if (c != '\\') {
@@ -89,7 +89,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	}
 
 	bc_vec_pushByte(&l->t.v, '\0');
-	l->idx += i;
+	l->i += i;
 
 	return BC_STATUS_SUCCESS;
 }
@@ -97,7 +97,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 BcStatus bc_lex_name(BcLex *l) {
 
 	size_t i = 0;
-	const char *buf = l->buf + l->idx - 1;
+	const char *buf = l->buf + l->i - 1;
 	char c = buf[i];
 
 	l->t.t = BC_LEX_NAME;
@@ -108,7 +108,7 @@ BcStatus bc_lex_name(BcLex *l) {
 	bc_vec_string(&l->t.v, i, buf);
 
 	// Increment the index. We minus 1 because it has already been incremented.
-	l->idx += i - 1;
+	l->i += i - 1;
 
 	return BC_STATUS_SUCCESS;
 }
@@ -143,13 +143,15 @@ BcStatus bc_lex_next(BcLex *l) {
 	l->line += l->newline;
 	l->t.t = BC_LEX_EOF;
 
-	l->newline = (l->idx == l->len);
+	l->newline = (l->i == l->len);
 	if (l->newline) return BC_STATUS_SUCCESS;
-	if (BC_LEX_BIN_CHAR(l->buf[l->idx])) return BC_STATUS_BIN_FILE;
+	if (BC_LEX_BIN_CHAR(l->buf[l->i])) return BC_STATUS_BIN_FILE;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
-	while (!(s = l->next(l)) && l->t.t == BC_LEX_WHITESPACE);
+	do {
+		s = l->next(l);
+	} while (!s && l->t.t == BC_LEX_WHITESPACE);
 
 	return s;
 }
@@ -157,7 +159,7 @@ BcStatus bc_lex_next(BcLex *l) {
 BcStatus bc_lex_text(BcLex *l, const char *text) {
 	assert(l && text);
 	l->buf = text;
-	l->idx = 0;
+	l->i = 0;
 	l->len = strlen(text);
 	l->t.t = l->t.last = BC_LEX_INVALID;
 	return bc_lex_next(l);

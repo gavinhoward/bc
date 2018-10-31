@@ -32,15 +32,15 @@ static BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	if (isspace(l->buf[l->idx - 1])) {
+	if (isspace(l->buf[l->i - 1])) {
 		bc_lex_whitespace(l);
-		++l->idx;
+		++l->i;
 		if (!bcg.exreg) s = BC_STATUS_LEX_EXTENDED_REG;
 		else s = bc_lex_name(l);
 	}
 	else {
 		bc_vec_npop(&l->t.v, l->t.v.len);
-		bc_vec_pushByte(&l->t.v, l->buf[l->idx - 1]);
+		bc_vec_pushByte(&l->t.v, l->buf[l->i - 1]);
 		bc_vec_pushByte(&l->t.v, '\0');
 		l->t.t = BC_LEX_NAME;
 	}
@@ -50,30 +50,30 @@ static BcStatus dc_lex_register(BcLex *l) {
 
 static BcStatus dc_lex_string(BcLex *l) {
 
-	size_t depth = 1, nls = 0, i = l->idx;
+	size_t depth = 1, nls = 0, i = l->i;
 	char c;
 
 	l->t.t = BC_LEX_STR;
 	bc_vec_npop(&l->t.v, l->t.v.len);
 
-	for (; (c = l->buf[i]) && depth; ++i) {
+	for (c = l->buf[i]; c != 0 && depth; c = l->buf[++i]) {
 
-		depth += (c == '[' && (i == l->idx || l->buf[i - 1] != '\\'));
-		depth -= (c == ']' && (i == l->idx || l->buf[i - 1] != '\\'));
+		depth += (c == '[' && (i == l->i || l->buf[i - 1] != '\\'));
+		depth -= (c == ']' && (i == l->i || l->buf[i - 1] != '\\'));
 		nls += (c == '\n');
 
 		if (depth) bc_vec_push(&l->t.v, &c);
 	}
 
 	if (c == '\0') {
-		l->idx = i;
+		l->i = i;
 		return BC_STATUS_LEX_NO_STRING_END;
 	}
 
 	bc_vec_pushByte(&l->t.v, '\0');
-	if (i - l->idx > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
+	if (i - l->i > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
 
-	l->idx = i;
+	l->i = i;
 	l->line += nls;
 
 	return BC_STATUS_SUCCESS;
@@ -82,7 +82,7 @@ static BcStatus dc_lex_string(BcLex *l) {
 BcStatus dc_lex_token(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	char c = l->buf[l->idx++], c2;
+	char c = l->buf[l->i++], c2;
 	size_t i;
 
 	for (i = 0; i < dc_lex_regs_len; ++i) {
@@ -118,14 +118,14 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		case '!':
 		{
-			c2 = l->buf[l->idx];
+			c2 = l->buf[l->i];
 
 			if (c2 == '=') l->t.t = BC_LEX_OP_REL_NE;
 			else if (c2 == '<') l->t.t = BC_LEX_OP_REL_LE;
 			else if (c2 == '>') l->t.t = BC_LEX_OP_REL_GE;
 			else return BC_STATUS_LEX_BAD_CHAR;
 
-			++l->idx;
+			++l->i;
 			break;
 		}
 
@@ -137,7 +137,7 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		case '.':
 		{
-			if (isdigit(l->buf[l->idx])) s = bc_lex_number(l, c);
+			if (isdigit(l->buf[l->i])) s = bc_lex_number(l, c);
 			else s = BC_STATUS_LEX_BAD_CHAR;
 			break;
 		}

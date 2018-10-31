@@ -36,8 +36,10 @@ static BcStatus dc_parse_register(BcParse *p) {
 	BcStatus s;
 	char *name;
 
-	if ((s = bc_lex_next(&p->l))) return s;
+	s = bc_lex_next(&p->l);
+	if (s) return s;
 	if (p->l.t.t != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_TOKEN;
+
 	name = bc_vm_strdup(p->l.t.v.v);
 	bc_parse_pushName(p, name);
 
@@ -68,7 +70,10 @@ static BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store) {
 	BcStatus s;
 
 	bc_parse_push(p, inst);
-	if (name && (s = dc_parse_register(p))) return s;
+	if (name) {
+		s = dc_parse_register(p);
+		if (s) return s;
+	}
 
 	if (store) {
 		bc_parse_push(p, BC_INST_SWAP);
@@ -85,11 +90,16 @@ static BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
 
 	bc_parse_push(p, inst);
 	bc_parse_push(p, BC_INST_EXEC_COND);
-	if ((s = dc_parse_register(p))) return s;
-	if ((s = bc_lex_next(&p->l))) return s;
+
+	s = dc_parse_register(p);
+	if (s) return s;
+
+	s = bc_lex_next(&p->l);
+	if (s) return s;
 
 	if (p->l.t.t == BC_LEX_ELSE) {
-		if ((s = dc_parse_register(p))) return s;
+		s = dc_parse_register(p);
+		if (s) return s;
 		s = bc_lex_next(&p->l);
 	}
 	else bc_parse_push(p, BC_PARSE_STREND);
@@ -134,7 +144,8 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_NUMBER:
 		{
 			if (t == BC_LEX_NEG) {
-				if ((s = bc_lex_next(&p->l))) return s;
+				s = bc_lex_next(&p->l);
+				if (s) return s;
 				if (p->l.t.t != BC_LEX_NUMBER) return BC_STATUS_PARSE_BAD_TOKEN;
 			}
 
@@ -201,12 +212,15 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 
 	if (flags & BC_PARSE_NOCALL) p->nbraces = p->prog->results.len;
 
-	while (!s && (t = p->l.t.t) != BC_LEX_EOF) {
-		if ((inst = dc_parse_insts[t]) != BC_INST_INVALID) {
+	for (t = p->l.t.t; !s && t != BC_LEX_EOF; t = p->l.t.t) {
+
+		inst = dc_parse_insts[t];
+
+		if (inst != BC_INST_INVALID) {
 			bc_parse_push(p, inst);
-			if ((s = bc_lex_next(&p->l))) return s;
+			s = bc_lex_next(&p->l);
 		}
-		else if ((s = dc_parse_token(p, t, flags))) return s;
+		else s = dc_parse_token(p, t, flags);
 	}
 
 	if (!s && p->l.t.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))

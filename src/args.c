@@ -169,7 +169,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 	if ((*flags) & BC_FLAG_V) bc_vm_info(NULL);
 	if (do_exit) exit((int) s);
 	if (exs->len > 1 || !bcg.bc) (*flags) |= BC_FLAG_Q;
-	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
+	if (argv[optind] && !strcmp(argv[optind], "--")) ++optind;
 
 	for (i = optind; i < argc; ++i) bc_vec_push(files, argv + i);
 }
