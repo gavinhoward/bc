@@ -74,10 +74,13 @@ typedef struct BcVm {
 	BcProgram prog;
 
 	// ** Exclude start. **
-	unsigned int flags;
+	uint32_t flags;
 
 	BcVec files;
+
+	// ** Busybox exclude start. **
 	BcVec exprs;
+	// ** Busybox exclude end. **
 
 	char *env_args;
 

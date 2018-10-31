@@ -1,6 +1,7 @@
 include/status.h
 include/vector.h
 include/read.h
+include/args.h
 include/num.h
 include/lang.h
 include/lex.h
@@ -13,6 +14,7 @@ src/data.c
 gen/lib.c
 src/vector.c
 src/read.c
+src/args.c
 src/num.c
 src/lang.c
 src/lex.c

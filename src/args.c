@@ -63,17 +63,15 @@ static void bc_args_file(BcVec *exprs, const char *file) {
 	free(buf);
 }
 
-void bc_args(int argc, char *argv[], unsigned int *flags,
-             BcVec *exprs, BcVec *files)
+void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
-	int c, i, idx;
+	int c, i;
 	bool do_exit = false;
 
-	idx = optind = 0;
-	c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &idx);
+	i = optind = 0;
 
-	while (c != -1) {
+	while ((c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &i)) != -1) {
 
 		switch (c) {
 
@@ -85,13 +83,13 @@ void bc_args(int argc, char *argv[], unsigned int *flags,
 
 			case 'e':
 			{
-				bc_args_exprs(exprs, optarg);
+				bc_args_exprs(exs, optarg);
 				break;
 			}
 
 			case 'f':
 			{
-				bc_args_file(exprs, optarg);
+				bc_args_file(exs, optarg);
 				break;
 			}
 
@@ -166,11 +164,10 @@ void bc_args(int argc, char *argv[], unsigned int *flags,
 		}
 
 		if (s) bc_vm_exit(s);
-		c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &idx);
 	}
 
 	if (do_exit) exit((int) s);
-	if (exprs->len > 1 || !bcg.bc) (*flags) |= BC_FLAG_Q;
+	if (exs->len > 1 || !bcg.bc) (*flags) |= BC_FLAG_Q;
 	if (argv[optind] && strcmp(argv[optind], "--") == 0) ++optind;
 
 	for (i = optind; i < argc; ++i) bc_vec_push(files, argv + i);
