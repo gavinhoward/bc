@@ -113,7 +113,9 @@ static void bc_vm_envArgs(BcVm *vm) {
 	char *env_args = env_args = getenv(bc_args_env_name), *buf;
 
 	if (!env_args) return;
-	buf = (vm->env_args = bc_vm_strdup(env_args));
+
+	vm->env_args = bc_vm_strdup(env_args);
+	buf = vm->env_args;
 
 	bc_vec_init(&v, sizeof(char*), NULL);
 	bc_vec_push(&v, &bc_args_env_name);
