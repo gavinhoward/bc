@@ -11,11 +11,14 @@
 ^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$
 ^#ifndef BC_NUM_KARATSUBA_LEN$
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
-^char\* bc_read_file\(const char \*path\);$
-^char\* bc_read_file\(const char \*path\).*?\n\}
 \n[\t]*if \(exs->len > 1 \|\| !bcg.bc\) \(\*flags\) \|= BC_FLAG_Q;$
 ^static void bc_args_exprs\(BcVec \*exprs, const char \*str\).*?\n\}
 ^static void bc_args_file\(BcVec \*exprs, const char \*file\).*?\n\}
 ^\tif \(vm->exprs\.len\) \{.*?\n\t\}$
-^[\t]*bc_vec_free\(&vm->exprs\);$
+\n[\t]*bc_vec_free\(&vm->exprs\);$
 ^[\t]*bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\);$
+\n[\t]*long res;$
+\n[\t]*FILE \*f;$
+\n[\t]*struct stat pstat;$
+\nmalloc_err\:\n[\t]*fclose\(f\);$
+^[\t]*fclose\(f\);$

@@ -30,8 +30,6 @@
 #include <vector.h>
 #include <lang.h>
 
-#define BC_LEX_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
-
 // BC_LEX_NEG is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
 	BC_LEX_EOF,

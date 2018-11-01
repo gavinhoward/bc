@@ -54,26 +54,27 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 		if (i == EOF) {
 
-			if (errno != EINTR) return BC_STATUS_IO_ERR;
-
 #if BC_ENABLE_SIGNALS
-			bcg.sigc = bcg.sig;
-			bcg.signe = 0;
+			if (errno == EINTR) {
 
-			if (bcg.ttyin) {
-				bc_vm_puts(bc_program_ready_msg, stderr);
-				if (!bcg.posix) bc_vm_puts(prompt, stderr);
-				bc_vm_fflush(stderr);
+				bcg.sigc = bcg.sig;
+				bcg.signe = 0;
+
+				if (bcg.ttyin) {
+					bc_vm_puts(bc_program_ready_msg, stderr);
+					if (!bcg.posix) bc_vm_puts(prompt, stderr);
+					bc_vm_fflush(stderr);
+				}
+
+				continue;
 			}
 #endif // BC_ENABLE_SIGNALS
 
-			continue;
+			return BC_STATUS_IO_ERR;
 		}
 
-		if (i > UCHAR_MAX) return BC_STATUS_LEX_BAD_CHAR;
-
-		c = (char) i;
-		if (BC_LEX_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
+		c = (signed char) i;
+		if (i > UCHAR_MAX || BC_READ_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
 		bc_vec_push(vec, &c);
 	}
 
@@ -82,13 +83,12 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	return BC_STATUS_SUCCESS;
 }
 
-char* bc_read_file(const char *path) {
+void bc_read_file(const char *path, char **buf) {
 
 	BcStatus s = BC_STATUS_IO_ERR;
 	FILE *f;
 	size_t size, read;
 	long res;
-	char *buf;
 	struct stat pstat;
 
 	assert(path);
@@ -108,20 +108,25 @@ char* bc_read_file(const char *path) {
 	if (fseek(f, 0, SEEK_SET) == -1) goto malloc_err;
 
 	size = (size_t) res;
-	buf = bc_vm_malloc(size + 1);
+	*buf = bc_vm_malloc(size + 1);
 
-	read = fread(buf, 1, size, f);
+	read = fread(*buf, 1, size, f);
 	if (read != size) goto read_err;
 
-	(buf)[size] = '\0';
+	(*buf)[size] = '\0';
+	s = BC_STATUS_BIN_FILE;
+
+	for (read = 0; read < size; ++read) {
+		if (BC_READ_BIN_CHAR((*buf)[read])) goto read_err;
+	}
+
 	fclose(f);
 
-	return buf;
+	return;
 
 read_err:
-	free(buf);
+	free(*buf);
 malloc_err:
 	fclose(f);
 	bc_vm_exit(s);
-	return NULL;
 }

@@ -58,7 +58,8 @@ static void bc_args_exprs(BcVec *exprs, const char *str) {
 }
 
 static void bc_args_file(BcVec *exprs, const char *file) {
-	char *buf = bc_read_file(file);
+	char *buf;
+	bc_read_file(file, &buf);
 	bc_args_exprs(exprs, buf);
 	free(buf);
 }

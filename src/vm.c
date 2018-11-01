@@ -253,7 +253,7 @@ static BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	BcInstPtr *ip;
 
 	vm->prog.file = file;
-	data = bc_read_file(file);
+	bc_read_file(file, &data);
 	bc_lex_file(&vm->prs.l, file);
 
 	s = bc_vm_process(vm, data);

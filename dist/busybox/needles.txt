@@ -16,7 +16,6 @@ BC_ENABLE_SIGNALS
 ^size_t bc_
 static BcStatus bc_main
 static BcStatus dc_main
-bc_read_file\(file\);$
 ^\twhile \(\(c = getopt_long\(argc, argv, bc_args_opt, bc_args_lopt, &i\)\) != -1\).*?\n\t\}
 ^const
 ^\tint c, i;
@@ -25,3 +24,6 @@ bc_args\(\(int\) v.len, \(char\*\*\) v.v, &vm->flags, &vm->exprs, &vm->files\);$
 if \(\(bcg\.bc \|\| !vm->files\.len\) && !vm->exprs\.len\)
 ^static const struct option bc_args_lopt\[\] = \{.*?\n\};$
 ^static const char\* const bc_args_opt = "e:f:hilqsvVwx";$
+BcStatus s = BC_STATUS_IO_ERR;
+f = fopen\(path, "r"\);.*?s = BC_STATUS_BIN_FILE;$
+size_t size, read;$
