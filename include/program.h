@@ -96,8 +96,10 @@ void bc_program_init(BcProgram *p, size_t line_len,
 void bc_program_free(BcProgram *program);
 
 #ifndef NDEBUG
+#if defined(BC_ENABLED) && defined(DC_ENABLED)
 void bc_program_code(BcProgram *p);
 void bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
+#endif // BC_ENABLED && DC_ENABLED
 #endif // NDEBUG
 // ** Exclude end. **
 

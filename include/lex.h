@@ -67,7 +67,6 @@ typedef enum BcLexType {
 	BC_LEX_OP_ASSIGN,
 
 	BC_LEX_NLINE,
-
 	BC_LEX_WHITESPACE,
 
 	BC_LEX_LPAREN,

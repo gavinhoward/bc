@@ -1781,6 +1781,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 }
 
 #ifndef NDEBUG
+#if defined(BC_ENABLED) && defined(DC_ENABLED)
 static void bc_program_printIndex(char *code, size_t *bgn) {
 
 	char byte, i, bytes = code[(*bgn)++];
@@ -1861,10 +1862,9 @@ void bc_program_code(BcProgram *p) {
 		code = f->code.v;
 
 		bc_vm_printf(stdout, "func[%zu]:\n", ip.func);
-
 		while (ip.idx < f->code.len) bc_program_printInst(p, code, &ip.idx);
-
 		bc_vm_printf(stdout, "\n\n");
 	}
 }
+#endif // BC_ENABLED && DC_ENABLED
 #endif // NDEBUG
