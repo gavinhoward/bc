@@ -83,7 +83,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_read_file(const char *path, char **buf) {
+BcStatus bc_read_file(const char *path, char **buf) {
 
 	BcStatus s = BC_STATUS_IO_ERR;
 	FILE *f;
@@ -122,11 +122,11 @@ void bc_read_file(const char *path, char **buf) {
 
 	fclose(f);
 
-	return;
+	return BC_STATUS_SUCCESS;
 
 read_err:
 	free(*buf);
 malloc_err:
 	fclose(f);
-	bc_vm_exit(s);
+	return s;
 }

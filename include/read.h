@@ -33,7 +33,7 @@
 // ** Exclude start. **
 // ** Busybox exclude start. **
 BcStatus bc_read_line(BcVec* vec, const char *prompt);
-void bc_read_file(const char *path, char **buf);
+BcStatus bc_read_file(const char *path, char **buf);
 // ** Busybox exclude end. **
 // ** Exclude end. **
 

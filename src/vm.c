@@ -86,8 +86,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	bc_vm_printf(stderr, "    %s", file);
 	bc_vm_printf(stderr, bc_err_line + 4 * !line, line);
 
-	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name) ||
-	            s == BC_STATUS_BIN_FILE);
+	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name));
 }
 
 #ifdef BC_ENABLED
@@ -107,12 +106,13 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 	return s * (!bcg.ttyin && !!p);
 }
 
-void bc_vm_envArgs(BcVm *vm) {
+BcStatus bc_vm_envArgs(BcVm *vm) {
 
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec v;
 	char *env_args = env_args = getenv(bc_args_env_name), *buf;
 
-	if (!env_args) return;
+	if (!env_args) return s;
 
 	vm->env_args = bc_vm_strdup(env_args);
 	buf = vm->env_args;
@@ -129,9 +129,11 @@ void bc_vm_envArgs(BcVm *vm) {
 		else ++buf;
 	}
 
-	bc_args((int) v.len, (char**) v.v, &vm->flags, &vm->exprs, &vm->files);
+	s = bc_args((int) v.len, (char**) v.v, &vm->flags, &vm->exprs, &vm->files);
 
 	bc_vec_free(&v);
+
+	return s;
 }
 #endif // BC_ENABLED
 
@@ -253,9 +255,10 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	BcInstPtr *ip;
 
 	vm->prog.file = file;
-	bc_read_file(file, &data);
-	bc_lex_file(&vm->prs.l, file);
+	s = bc_read_file(file, &data);
+	if (s) return s;
 
+	bc_lex_file(&vm->prs.l, file);
 	s = bc_vm_process(vm, data);
 	if (s) goto err;
 
@@ -421,7 +424,7 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 #ifdef BC_ENABLED
 	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
-	if (bcg.bc) bc_vm_envArgs(vm);
+	if (bcg.bc) s = bc_vm_envArgs(vm);
 #endif // BC_ENABLED
 
 	bc_program_init(&vm->prog, len, exe.init, exe.exp);
@@ -437,7 +440,8 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 
 	st = bc_vm_init(&vm, exe, env_len);
 	if (st) goto exit;
-	bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files);
+	st = bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files);
+	if (st) goto exit;
 
 	bcg.ttyin = isatty(0);
 	bcg.tty = bcg.ttyin || (vm.flags & BC_FLAG_I) || isatty(1);
