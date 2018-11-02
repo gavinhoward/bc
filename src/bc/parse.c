@@ -132,11 +132,10 @@ BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	idx = bc_map_index(&p->prog->fn_map, &entry);
 
 	if (idx == BC_VEC_INVALID_IDX) {
-
+		name = bc_vm_strdup(entry.name);
 		bc_parse_addFunc(p, name, &idx);
-
-		name = NULL;
 		idx = bc_map_index(&p->prog->fn_map, &entry);
+		free(entry.name);
 		assert(idx != BC_VEC_INVALID_IDX);
 	}
 	else free(name);

@@ -110,7 +110,7 @@ BcStatus bc_vm_envArgs(BcVm *vm) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec v;
-	char *env_args = env_args = getenv(bc_args_env_name), *buf;
+	char *env_args = getenv(bc_args_env_name), *buf;
 
 	if (!env_args) return s;
 
@@ -256,7 +256,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 
 	vm->prog.file = file;
 	s = bc_read_file(file, &data);
-	if (s) return s;
+	if (s) goto read_err;
 
 	bc_lex_file(&vm->prs.l, file);
 	s = bc_vm_process(vm, data);
@@ -266,10 +266,12 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	ip = bc_vec_item(&vm->prog.stack, 0);
 
 	if (main_func->code.len < ip->idx)
-		s = bc_vm_error(BC_STATUS_EXEC_FILE_NOT_EXECUTABLE, file, 0);
+		s = BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
 
 err:
 	free(data);
+read_err:
+	s = bc_vm_error(s, file, 0);
 	return s;
 }
 
