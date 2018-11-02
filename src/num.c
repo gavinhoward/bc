@@ -361,6 +361,7 @@ static BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b,
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	bool aone = BC_NUM_ONE(a);
 
+	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
 	if (a->len == 0 || b->len == 0) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
