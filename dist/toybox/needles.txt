@@ -14,7 +14,7 @@ vm\.prs\.parse\(&vm
 \(\(s = parse_init\(&vm\.prs, &vm\.prog\)\)\)
 size_t len = strlen\(bcg\.sig_msg\);
 write\(2, bcg.sig_msg, len\) == \(ssize_t\) len
-st = bc_vm_info\(NULL\)
+bc_vm_info\(NULL\)
 if \(i - 1 > len \|\| string\[i - 1\].*?str \+= 1;\n[ ]*\}$
 vm->exe\.sbgn
 vm->exe\.send

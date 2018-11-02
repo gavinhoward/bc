@@ -5,7 +5,7 @@ bc_vm_malloc
 bc_vm_realloc
 bc_vm_strdup
 BC_ENABLE_SIGNALS
-^void bc_args\(int argc, char \*argv\[\], uint32_t \*flags, BcVec \*exs, BcVec \*files\)
+^BcStatus bc_args\(int argc, char \*argv\[\], uint32_t \*flags,\n[ ]*BcVec \*exs, BcVec \*files\)
 ^void\* bc_
 ^void bc_
 ^BcStatus bc_

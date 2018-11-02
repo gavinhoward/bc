@@ -15,7 +15,7 @@
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
 \n[\t]*if \(exs->len > 1 \|\| !bcg.bc\) \(\*flags\) \|= BC_FLAG_Q;$
 ^void bc_args_exprs\(BcVec \*exprs, const char \*str\).*?\n\}
-^void bc_args_file\(BcVec \*exprs, const char \*file\).*?\n\}
+^BcStatus bc_args_file\(BcVec \*exprs, const char \*file\).*?\n\}
 ^\tif \(vm->exprs\.len\) \{.*?\n\t\}$
 \n[\t]*bc_vec_free\(&vm->exprs\);$
 ^[\t]*bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\);$

@@ -5,13 +5,13 @@
 \nexprs_err:\n[ ]*bc_vec_free\(&vm->files\);$
 \n[ ]*bc_vec_free\(&vm->exprs\);$
 \n[ ]*bc_vec_free\(&vm->files\);$
-^[ ]*bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\);$
+^[ ]*st = bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\);\n[ ]*if \(st\) goto exit;$
 ^[ ]*bcg\.posix = vm\.flags & BC_FLAG_S;$
 ^[ ]*bcg\.warn = vm\.flags & BC_FLAG_W;$
 ^[ ]*if \(vm->exprs\.len\).*?\}$
 \n[ ]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$$
 ^[ ]*vm->exe = exe;$
-\n[ ]*if \(bcg.bc\) bc_vm_envArgs\(vm\);$
+\n[ ]*if \(bcg.bc\) s = bc_vm_envArgs\(vm\);$
 \n#if BC_ENABLE_SIGNALS$
 \n#endif // BC_ENABLE_SIGNALS$
 \n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
@@ -34,7 +34,7 @@
 ^[ ]*l->next = next;$
 ^void bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
 ^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}
-^void bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
+^BcStatus bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
 ^[ ]*vm->env_args = NULL;$
 \n[ ]*free\(vm->env_args\);$
 ^[ ]*bcg\.exreg = vm\.flags & BC_FLAG_X;$

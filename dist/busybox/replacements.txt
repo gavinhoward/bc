@@ -5,7 +5,7 @@ xmalloc
 xrealloc
 xstrdup
 ENABLE_FEATURE_BC_SIGNALS
-void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *files)
+BcStatus bc_args(int argc, char *argv[], uint32_t *flags, BcVec *files)
 static void* bc_
 static void bc_
 static BcStatus bc_

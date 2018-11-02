@@ -7,7 +7,7 @@
  * **        Do not edit unless you know what you are doing.         **
  */
 //config:config BC
-//config:	bool "bc (45.70 kb; 49.81 kb when combined with dc)"
+//config:	bool "bc (45.74 kb; 49.85 kb when combined with dc)"
 //config:	default n
 //config:	help
 //config:	bc is a command-line, arbitrary-precision calculator with a
@@ -58,7 +58,7 @@
 //config:	enabled.
 //config:
 //config:config DC
-//config:	bool "dc (38.27 kb; 49.81 kb when combined with bc)"
+//config:	bool "dc (38.29 kb; 49.85 kb when combined with bc)"
 //config:	default n
 //config:	help
 //config:	dc is a reverse-polish notation command-line calculator which

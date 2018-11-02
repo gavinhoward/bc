@@ -14,7 +14,7 @@ bc_parse_parse(&vm
 ((s = bc_parse_init(&vm.prs, &vm.prog)))
 size_t len = strlen(bc_sig_msg);
 write(2, bc_sig_msg, len) == (ssize_t) len
-st = bc_vm_info()
+bc_vm_info()
 if ((i - 1 > len || string[i - 1] != '\\\\') && c == '"') str = !str;
 '"'
 '"'
