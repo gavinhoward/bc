@@ -39,7 +39,9 @@ BcStatus dc_main(int argc, char *argv[]) {
 	bcg.bc = false;
 	bcg.name = dc_name;
 	bcg.help = dc_help;
+#if BC_ENABLE_SIGNALS
 	bcg.sig_msg = dc_sig_msg;
+#endif // BC_ENABLE_SIGNALS
 
 	exec.init = dc_parse_init;
 	exec.exp = dc_parse_expr;

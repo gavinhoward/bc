@@ -32,7 +32,9 @@ BcStatus bc_main(int argc, char *argv[]) {
 	bcg.bc = true;
 	bcg.name = bc_name;
 	bcg.help = bc_help;
+#if BC_ENABLE_SIGNALS
 	bcg.sig_msg = bc_sig_msg;
+#endif // BC_ENABLE_SIGNALS
 
 	exec.init = bc_parse_init;
 	exec.exp = bc_parse_expression;

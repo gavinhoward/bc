@@ -102,7 +102,9 @@ typedef struct BcGlobals {
 	long exreg;
 
 	const char *name;
+#if BC_ENABLE_SIGNALS
 	const char *sig_msg;
+#endif // BC_ENABLE_SIGNALS
 	const char *help;
 	bool bc;
 } BcGlobals;

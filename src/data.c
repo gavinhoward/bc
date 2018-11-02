@@ -29,12 +29,16 @@
 // ** Exclude start. **
 const char bc_name[] = "bc";
 // ** Exclude end. **
+#if BC_ENABLE_SIGNALS
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
+#endif // BC_ENABLE_SIGNALS
 #endif // BC_ENABLED
 
 #ifdef DC_ENABLED
 const char dc_name[] = "dc";
+#if BC_ENABLE_SIGNALS
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
+#endif // BC_ENABLE_SIGNALS
 #endif // DC_ENABLED
 
 const char bc_copyright[] =
