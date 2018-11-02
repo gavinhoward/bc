@@ -27,10 +27,12 @@
 
 #include <status.h>
 #include <vector.h>
+#include <vm.h>
 
 #define BC_READ_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
 
 BcStatus bc_read_line(BcVec* vec, const char *prompt);
+BcStatus bc_read_input(BcVm *vm, const char *prompt);
 void bc_read_file(const char *path, char **buf);
 
 #endif // BC_IO_H

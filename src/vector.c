@@ -29,7 +29,7 @@
 #include <lang.h>
 #include <vm.h>
 
-static void bc_vec_grow(BcVec *v, size_t n) {
+void bc_vec_grow(BcVec *v, size_t n) {
 	size_t cap = v->cap * 2;
 	while (cap < v->len + n) cap *= 2;
 	v->v = bc_vm_realloc(v->v, v->size * cap);
@@ -74,7 +74,7 @@ void bc_vec_pushByte(BcVec *v, uint8_t data) {
 	bc_vec_push(v, &data);
 }
 
-static void bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
+void bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
 
 	assert(v && data && idx <= v->len);
 

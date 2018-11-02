@@ -34,14 +34,14 @@
 #include <program.h>
 #include <vm.h>
 
-BcStatus bc_read_line(BcVec *vec, const char* prompt) {
+BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 	int i;
 	signed char c = 0;
 
 	if (bcg.ttyin && !bcg.posix) {
-		bc_vm_puts(prompt, stderr);
-		bc_vm_fflush(stderr);
+		bc_vm_puts(prompt, stdout);
+		bc_vm_fflush(stdout);
 	}
 
 	assert(vec && vec->size == sizeof(char));
@@ -62,8 +62,9 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 				if (bcg.ttyin) {
 					bc_vm_puts(bc_program_ready_msg, stderr);
-					if (!bcg.posix) bc_vm_puts(prompt, stderr);
 					bc_vm_fflush(stderr);
+					if (!bcg.posix) bc_vm_puts(prompt, stdout);
+					bc_vm_fflush(stdout);
 				}
 
 				continue;
@@ -81,6 +82,15 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	bc_vec_pushByte(vec, '\0');
 
 	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_read_input(BcVm *vm, const char *prompt) {
+#if BC_ENABLE_HISTORY
+	if (bcg.ttyin) return bc_history_line(&vm->hist, &vm->line, prompt);
+	else return bc_read_line(&vm->line, prompt);
+#else
+	return bc_read_line(&vm->line, prompt);
+#endif
 }
 
 void bc_read_file(const char *path, char **buf) {

@@ -29,6 +29,7 @@
 #include <status.h>
 #include <parse.h>
 #include <program.h>
+#include <history.h>
 
 #if !defined(BC_ENABLED) && !defined(DC_ENABLED)
 #error Must define BC_ENABLED, DC_ENABLED, or both
@@ -60,6 +61,8 @@
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
+#define BC_VM_LINE_LEN (4096)
+
 // ** Exclude start. **
 typedef struct BcVmExe {
 	BcParseInit init;
@@ -73,6 +76,7 @@ typedef struct BcVmExe {
 typedef struct BcVm {
 	BcParse prs;
 	BcProgram prog;
+	BcVec line;
 
 	// ** Exclude start. **
 	uint32_t flags;
@@ -84,8 +88,11 @@ typedef struct BcVm {
 	// ** Busybox exclude end. **
 
 	char *env_args;
-
 	BcVmExe exe;
+
+#if BC_ENABLE_HISTORY
+	BcHistory hist;
+#endif // BC_ENABLE_HISTORY
 	// ** Exclude end. **
 } BcVm;
 
@@ -120,6 +127,7 @@ void bc_vm_putchar(int c);
 void bc_vm_fflush(FILE *restrict f);
 
 // ** Exclude start. **
+void bc_vm_sig(int sig);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
