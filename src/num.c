@@ -33,7 +33,8 @@
 
 static void bc_num_setToZero(BcNum *n, size_t scale) {
 	assert(n);
-	n->neg = (n->len = 0);
+	n->len = 0;
+	n->neg = false;
 	n->rdx = scale;
 }
 
