@@ -64,9 +64,6 @@ const char *bc_errs[] = {
 
 const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
-#if BC_ENABLE_HISTORY
-	BC_ERR_IDX_VM,
-#endif // BC_ENABLE_HISTORY
 	BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
 #ifdef DC_ENABLED
 	BC_ERR_IDX_LEX,
@@ -99,9 +96,6 @@ const char *bc_err_msgs[] = {
 	"I/O error",
 	"file is not text:",
 	"path is a directory:",
-#if BC_ENABLE_HISTORY
-	"terminal error",
-#endif // BC_ENABLE_HISTORY
 
 	"bad character",
 	"string end could not be found",
@@ -169,10 +163,6 @@ const char *bc_err_msgs[] = {
 #endif // NDEBUG
 
 };
-
-#if BC_ENABLE_HISTORY
-const char *bc_history_unsupportedTerms[] = { "dumb", "cons25", "emacs", NULL };
-#endif // BC_ENABLE_HISTORY
 
 const char bc_func_main[] = "(main)";
 const char bc_func_read[] = "(read)";

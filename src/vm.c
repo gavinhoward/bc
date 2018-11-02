@@ -49,7 +49,7 @@
 
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
-void bc_vm_sig(int sig) {
+static void bc_vm_sig(int sig) {
 	int err = errno;
 	size_t len = strlen(bcg.sig_msg);
 	if (sig == SIGINT && write(2, bcg.sig_msg, len) == (ssize_t) len) {
@@ -273,7 +273,7 @@ err:
 static BcStatus bc_vm_stdin(BcVm *vm) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcVec buffer;
+	BcVec buf, buffer;
 	char c;
 	size_t len, i, str = 0;
 	bool comment = false, notend;
@@ -282,50 +282,51 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	bc_lex_file(&vm->prs.l, bc_program_stdin_name);
 
 	bc_vec_init(&buffer, sizeof(char), NULL);
+	bc_vec_init(&buf, sizeof(char), NULL);
 	bc_vec_pushByte(&buffer, '\0');
 
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	for (s = bc_read_input(vm, ">>> "); !s; s = bc_read_input(vm, ">>> ")) {
+	for (s = bc_read_line(&buf, ">>> "); !s; s = bc_read_line(&buf, ">>> ")) {
 
-		char *line = vm->line.v;
+		char *string = buf.v;
 
-		len = vm->line.len - 1;
+		len = buf.len - 1;
 
 		if (len == 1) {
-			if (str && line[0] == vm->exe.send) str -= 1;
-			else if (line[0] == vm->exe.sbgn) str += 1;
+			if (str && buf.v[0] == vm->exe.send) str -= 1;
+			else if (buf.v[0] == vm->exe.sbgn) str += 1;
 		}
 		else if (len > 1 || comment) {
 
 			for (i = 0; i < len; ++i) {
 
 				notend = len > i + 1;
-				c = line[i];
+				c = string[i];
 
-				if (i - 1 > len || line[i - 1] != '\\') {
+				if (i - 1 > len || string[i - 1] != '\\') {
 					if (vm->exe.sbgn == vm->exe.send) str ^= c == vm->exe.sbgn;
 					else if (c == vm->exe.send) str -= 1;
 					else if (c == vm->exe.sbgn) str += 1;
 				}
 
-				if (c == '/' && notend && !comment && line[i + 1] == '*') {
+				if (c == '/' && notend && !comment && string[i + 1] == '*') {
 					comment = true;
 					break;
 				}
-				else if (c == '*' && notend && comment && line[i + 1] == '/')
+				else if (c == '*' && notend && comment && string[i + 1] == '/')
 					comment = false;
 			}
 
-			if (str || comment || line[len - 2] == '\\') {
-				bc_vec_concat(&buffer, line);
+			if (str || comment || string[len - 2] == '\\') {
+				bc_vec_concat(&buffer, buf.v);
 				continue;
 			}
 		}
 
-		bc_vec_concat(&buffer, line);
+		bc_vec_concat(&buffer, buf.v);
 		s = bc_vm_process(vm, buffer.v);
 		if (s) goto err;
 
@@ -341,9 +342,10 @@ static BcStatus bc_vm_stdin(BcVm *vm) {
 	if (str) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
 	                         vm->prs.l.f, vm->prs.l.line);
 	else if (comment) s = bc_vm_error(BC_STATUS_LEX_NO_COMMENT_END,
-	                               vm->prs.l.f, vm->prs.l.line);
+	                                  vm->prs.l.f, vm->prs.l.line);
 
 err:
+	bc_vec_free(&buf);
 	bc_vec_free(&buffer);
 	return s;
 }
@@ -384,7 +386,6 @@ static BcStatus bc_vm_exec(BcVm *vm) {
 }
 
 static void bc_vm_free(BcVm *vm) {
-	bc_vec_free(&vm->line);
 	bc_vec_free(&vm->files);
 	bc_vec_free(&vm->exprs);
 	bc_program_free(&vm->prog);
@@ -415,13 +416,8 @@ static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	vm->flags = 0;
 	vm->env_args = NULL;
 
-	bc_vec_init(&vm->line, sizeof(char), NULL);
-	bc_vec_expand(&vm->line, BC_VM_LINE_LEN);
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
 	bc_vec_init(&vm->exprs, sizeof(char), NULL);
-#if BC_ENABLE_HISTORY
-	bc_history_init(&vm->hist);
-#endif // BC_ENABLE_HISTORY
 
 #ifdef BC_ENABLED
 	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
