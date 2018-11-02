@@ -31,7 +31,7 @@
 #include <vm.h>
 
 #ifdef DC_ENABLED
-static BcStatus dc_parse_register(BcParse *p) {
+BcStatus dc_parse_register(BcParse *p) {
 
 	BcStatus s;
 	char *name;
@@ -46,7 +46,7 @@ static BcStatus dc_parse_register(BcParse *p) {
 	return s;
 }
 
-static BcStatus dc_parse_string(BcParse *p) {
+BcStatus dc_parse_string(BcParse *p) {
 
 	char *str, *name, b[DC_PARSE_BUF_LEN + 1];
 	size_t idx, len = p->prog->strs.len;
@@ -65,7 +65,7 @@ static BcStatus dc_parse_string(BcParse *p) {
 	return bc_lex_next(&p->l);
 }
 
-static BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store) {
+BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store) {
 
 	BcStatus s;
 
@@ -84,7 +84,7 @@ static BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store) {
 	return bc_lex_next(&p->l);
 }
 
-static BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
+BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
 
 	BcStatus s;
 
@@ -107,7 +107,7 @@ static BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
 	return s;
 }
 
-static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
+BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst prev;
@@ -229,7 +229,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	return s;
 }
 
-static BcStatus dc_parse_parse(BcParse *p) {
+BcStatus dc_parse_parse(BcParse *p) {
 
 	BcStatus s;
 

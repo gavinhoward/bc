@@ -5,15 +5,17 @@
 ^[\t]*// \*\* Busybox exclude start\. \*\*.*?^[\t]*// \*\* Busybox exclude end\. \*\*$
 ^#if !defined\(BC_ENABLED\) && !defined\(DC_ENABLED\).*?#endif$
 ^#define VERSION_STR\(V\) #V.*?#define BC_VERSION VERSION_STR2\(VERSION\)$
-^static void bc_vm_allocError\(\) \{.*?\n\}$
 ^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
 ^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$
+^void\* bc_vm_malloc\(size_t n\);$
+^void\* bc_vm_realloc\(void \*ptr, size_t n\);$
+^char\* bc_vm_strdup\(const char \*str\);$
 ^#ifndef BC_NUM_KARATSUBA_LEN$
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
 \n[\t]*if \(exs->len > 1 \|\| !bcg.bc\) \(\*flags\) \|= BC_FLAG_Q;$
-^static void bc_args_exprs\(BcVec \*exprs, const char \*str\).*?\n\}
-^static void bc_args_file\(BcVec \*exprs, const char \*file\).*?\n\}
+^void bc_args_exprs\(BcVec \*exprs, const char \*str\).*?\n\}
+^void bc_args_file\(BcVec \*exprs, const char \*file\).*?\n\}
 ^\tif \(vm->exprs\.len\) \{.*?\n\t\}$
 \n[\t]*bc_vec_free\(&vm->exprs\);$
 ^[\t]*bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\);$
@@ -22,3 +24,4 @@
 \n[\t]*struct stat pstat;$
 \nmalloc_err\:\n[\t]*fclose\(f\);$
 ^[\t]*fclose\(f\);$
+\n\n[ ]*BC_STATUS_INVALID_OPTION,$

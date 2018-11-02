@@ -114,6 +114,7 @@ typedef BcStatus (*BcParseExpr)(struct BcParse*, uint8_t);
 // ** Exclude end. **
 
 typedef struct BcParse {
+
 	// ** Exclude start. **
 	BcParseParse parse;
 	// ** Exclude end. **
@@ -133,9 +134,11 @@ typedef struct BcParse {
 
 	size_t nbraces;
 	bool auto_part;
+
 } BcParse;
 
 // ** Exclude start. **
+// ** Busybox exclude start. **
 
 void bc_parse_create(BcParse *p, struct BcProgram *prog, size_t func,
                      BcParseParse parse, BcLexNext next);
@@ -148,6 +151,7 @@ void bc_parse_pushIndex(BcParse* p, size_t idx);
 void bc_parse_number(BcParse *p, BcInst *prev, size_t* nexs);
 BcStatus bc_parse_text(BcParse *p, const char *text);
 
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 #endif // BC_PARSE_H

@@ -43,7 +43,7 @@ typedef struct BcVec {
 } BcVec;
 
 // ** Exclude start. **
-
+// ** Busybox exclude start. **
 void bc_vec_init(BcVec *v, size_t esize, BcVecFree dtor);
 void bc_vec_expand(BcVec *v, size_t req);
 
@@ -58,15 +58,14 @@ void* bc_vec_item(const BcVec *v, size_t idx);
 void* bc_vec_item_rev(const BcVec *v, size_t idx);
 
 void bc_vec_free(void *vec);
+
+BcStatus bc_map_insert(BcVec* v, const void *data, size_t *i);
+size_t bc_map_index(const BcVec *v, const void *ptr);
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 #define bc_vec_pop(v) (bc_vec_npop((v), 1))
 #define bc_vec_top(v) (bc_vec_item_rev((v), 0))
-
-// ** Exclude start. **
-BcStatus bc_map_insert(BcVec* v, const void *data, size_t *i);
-size_t bc_map_index(const BcVec *v, const void *ptr);
-// ** Exclude end. **
 
 #define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), bc_id_free))
 

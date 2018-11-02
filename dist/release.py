@@ -99,8 +99,10 @@ with open(projectdir + "/files.txt") as f:
 
 for name in files:
 
-	if name == "gen/lib.c":
+	if name == libcname:
 		header_end = 2
+		if project == "busybox":
+			content += "\n// clang-format off\n"
 	else:
 		header_end = 22
 
@@ -110,6 +112,9 @@ for name in files:
 	# Skip the header lines.
 	for i in range(header_end, len(lines)):
 		content += lines[i]
+
+	if name == libcname and project == "busybox":
+		content += "\n// clang-format on\n"
 
 if project == "toybox":
 	r = re.compile('\t', re.M)
@@ -154,7 +159,8 @@ content = r.sub('\n', content)
 
 if project == "busybox":
 
-	res = subprocess.run(["clang-format", "-style=file"], input=content.encode(), stdout=subprocess.PIPE)
+	cmd = ["clang-format", "-style=file"]
+	res = subprocess.run(cmd, input=content.encode(), stdout=subprocess.PIPE)
 
 	if res.returncode != 0:
 		print("Error running clang-format ({})\nExiting...".format(res.returncode))
@@ -163,6 +169,16 @@ if project == "busybox":
 
 	content = re.sub('\n[\t]*// clang-format off', '', content)
 	content = re.sub('\n[\t]*// clang-format on', '', content)
+
+	content = re.sub('\n\{\n\n', '\n{\n', content)
+	content = re.sub('[\n]+[\t]*;', ';', content)
+	r = re.compile('^([\t]*)case (.*?) \{', re.M)
+	content = r.sub('\\1case \\2\n\\1{', content)
+	r = re.compile('^([\t]*)default(.*?) \{', re.M)
+	content = r.sub('\\1default\\2\n\\1{', content)
+	r = re.compile('^([\t]+)([ ]+)(.*?) \{', re.M)
+	content = r.sub('\\1\\2\\3\n\\1{', content)
+	content = re.sub('#else  //', '#else //', content)
 
 with open(projectdir + "/header.c") as f:
 	content = f.read() + content

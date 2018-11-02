@@ -30,7 +30,11 @@
 
 #define BC_READ_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
 
+// ** Exclude start. **
+// ** Busybox exclude start. **
 BcStatus bc_read_line(BcVec* vec, const char *prompt);
 void bc_read_file(const char *path, char **buf);
+// ** Busybox exclude end. **
+// ** Exclude end. **
 
 #endif // BC_IO_H

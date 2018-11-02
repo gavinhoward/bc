@@ -28,7 +28,7 @@
 #include <vm.h>
 
 #ifdef DC_ENABLED
-static BcStatus dc_lex_register(BcLex *l) {
+BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
@@ -48,7 +48,7 @@ static BcStatus dc_lex_register(BcLex *l) {
 	return s;
 }
 
-static BcStatus dc_lex_string(BcLex *l) {
+BcStatus dc_lex_string(BcLex *l) {
 
 	size_t depth = 1, nls = 0, i = l->i;
 	char c;

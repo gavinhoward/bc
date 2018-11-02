@@ -14,6 +14,9 @@ BC_ENABLE_SIGNALS
 ^int bc_
 ^ssize_t bc_
 ^size_t bc_
+^bool bc_
+^unsigned long bc_
+^char\* bc_
 static BcStatus bc_main
 static BcStatus dc_main
 ^\twhile \(\(c = getopt_long\(argc, argv, bc_args_opt, bc_args_lopt, &i\)\) != -1\).*?\n\t\}

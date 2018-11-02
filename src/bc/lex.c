@@ -29,7 +29,7 @@
 #include <vm.h>
 
 #ifdef BC_ENABLED
-static BcStatus bc_lex_identifier(BcLex *l) {
+BcStatus bc_lex_identifier(BcLex *l) {
 
 	BcStatus s;
 	size_t i;
@@ -64,7 +64,7 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 	return s;
 }
 
-static BcStatus bc_lex_string(BcLex *l) {
+BcStatus bc_lex_string(BcLex *l) {
 
 	size_t len, nls = 0, i = l->i;
 	char c;
@@ -88,7 +88,7 @@ static BcStatus bc_lex_string(BcLex *l) {
 	return BC_STATUS_SUCCESS;
 }
 
-static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
+void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 	if (l->buf[l->i] == '=') {
 		++l->i;
 		l->t.t = with;
@@ -96,7 +96,7 @@ static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 	else l->t.t = without;
 }
 
-static BcStatus bc_lex_comment(BcLex *l) {
+BcStatus bc_lex_comment(BcLex *l) {
 
 	size_t i, nls = 0;
 	const char *buf = l->buf;

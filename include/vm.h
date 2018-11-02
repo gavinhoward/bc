@@ -64,19 +64,18 @@
 typedef struct BcVmExe {
 	BcParseInit init;
 	BcParseExpr exp;
-
 	char sbgn;
 	char send;
 } BcVmExe;
 // ** Exclude end. **
 
 typedef struct BcVm {
+
 	BcParse prs;
 	BcProgram prog;
 
 	// ** Exclude start. **
 	uint32_t flags;
-
 	BcVec files;
 
 	// ** Busybox exclude start. **
@@ -84,13 +83,14 @@ typedef struct BcVm {
 	// ** Busybox exclude end. **
 
 	char *env_args;
-
 	BcVmExe exe;
 	// ** Exclude end. **
+
 } BcVm;
 
 // ** Exclude start. **
 typedef struct BcGlobals {
+
 	unsigned long sig;
 	unsigned long sigc;
 	unsigned long signe;
@@ -107,6 +107,7 @@ typedef struct BcGlobals {
 #endif // BC_ENABLE_SIGNALS
 	const char *help;
 	bool bc;
+
 } BcGlobals;
 // ** Exclude end. **
 

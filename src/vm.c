@@ -49,7 +49,7 @@
 
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
-static void bc_vm_sig(int sig) {
+void bc_vm_sig(int sig) {
 	int err = errno;
 	size_t len = strlen(bcg.sig_msg);
 	if (sig == SIGINT && write(2, bcg.sig_msg, len) == (ssize_t) len) {
@@ -59,7 +59,7 @@ static void bc_vm_sig(int sig) {
 	errno = err;
 }
 #else // _WIN32
-static BOOL WINAPI bc_vm_sig(DWORD sig) {
+BOOL WINAPI bc_vm_sig(DWORD sig) {
 	if (sig == CTRL_C_EVENT) {
 		bc_vm_puts(bcg.sig_msg, stderr);
 		bcg.signe = bcg.sig == bcg.sigc;
@@ -76,7 +76,7 @@ void bc_vm_info(const char* const help) {
 	if (help) bc_vm_printf(stdout, help, bcg.name);
 }
 
-static BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
+BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	assert(file);
 
@@ -107,7 +107,7 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 	return s * (!bcg.ttyin && !!p);
 }
 
-static void bc_vm_envArgs(BcVm *vm) {
+void bc_vm_envArgs(BcVm *vm) {
 
 	BcVec v;
 	char *env_args = env_args = getenv(bc_args_env_name), *buf;
@@ -135,7 +135,7 @@ static void bc_vm_envArgs(BcVm *vm) {
 }
 #endif // BC_ENABLED
 
-static size_t bc_vm_envLen(const char *var) {
+size_t bc_vm_envLen(const char *var) {
 
 	char *lenv = getenv(var);
 	size_t i, len = BC_NUM_PRINT_WIDTH;
@@ -202,7 +202,7 @@ void bc_vm_fflush(FILE *restrict f) {
 	if (fflush(f) == EOF) bc_vm_exit(BC_STATUS_IO_ERR);
 }
 
-static BcStatus bc_vm_process(BcVm *vm, const char *text) {
+BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
 	BcStatus s = bc_parse_text(&vm->prs, text);
 
@@ -245,7 +245,7 @@ static BcStatus bc_vm_process(BcVm *vm, const char *text) {
 	return s;
 }
 
-static BcStatus bc_vm_file(BcVm *vm, const char *file) {
+BcStatus bc_vm_file(BcVm *vm, const char *file) {
 
 	BcStatus s;
 	char *data;
@@ -270,7 +270,7 @@ err:
 	return s;
 }
 
-static BcStatus bc_vm_stdin(BcVm *vm) {
+BcStatus bc_vm_stdin(BcVm *vm) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
@@ -350,7 +350,7 @@ err:
 	return s;
 }
 
-static BcStatus bc_vm_exec(BcVm *vm) {
+BcStatus bc_vm_exec(BcVm *vm) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
@@ -385,7 +385,7 @@ static BcStatus bc_vm_exec(BcVm *vm) {
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 }
 
-static void bc_vm_free(BcVm *vm) {
+void bc_vm_free(BcVm *vm) {
 	bc_vec_free(&vm->files);
 	bc_vec_free(&vm->exprs);
 	bc_program_free(&vm->prog);
@@ -393,7 +393,7 @@ static void bc_vm_free(BcVm *vm) {
 	free(vm->env_args);
 }
 
-static BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
+BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len = bc_vm_envLen(env_len);

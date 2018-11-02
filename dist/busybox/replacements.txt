@@ -1,6 +1,6 @@
 ENABLE_BC
 ENABLE_DC
-BcGlobals bcg;
+static BcGlobals bcg;
 xmalloc
 xrealloc
 xstrdup
@@ -14,6 +14,9 @@ static BcStatus dc_
 static int bc_
 static ssize_t bc_
 static size_t bc_
+static bool bc_
+static unsigned long bc_
+static char* bc_
 BcStatus bc_main
 BcStatus dc_main
 // clang-format off\n#if ENABLE_FEATURE_BC_LONG_OPTIONS\n\t*flags = getopt32long(argv, bc_args_opt, bc_args_lopt);\n#else // ENABLE_FEATURE_BC_LONG_OPTIONS\n\t*flags = getopt32(argv, bc_args_opt);\n#endif // ENABLE_FEATURE_BC_LONG_OPTIONS\n// clang-format on

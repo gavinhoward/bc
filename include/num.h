@@ -69,13 +69,6 @@ void bc_num_free(void *num);
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
 BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
 
-// ** Exclude start. **
-
-void bc_num_truncate(BcNum *n, size_t places);
-ssize_t bc_num_cmp(BcNum *a, BcNum *b);
-
-// ** Exclude end. **
-
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale);
@@ -86,6 +79,10 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale);
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
 // ** Exclude start. **
+// ** Busybox exclude start. **
+
+void bc_num_truncate(BcNum *n, size_t places);
+ssize_t bc_num_cmp(BcNum *a, BcNum *b);
 
 #ifdef DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
@@ -100,6 +97,7 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t, bool newline,
                       size_t *nchars, size_t line_len);
 BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars, size_t len);
 
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 extern const char bc_num_hex_digits[];

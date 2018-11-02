@@ -32,6 +32,7 @@
 
 // BC_LEX_NEG is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
+
 	BC_LEX_EOF,
 	BC_LEX_INVALID,
 
@@ -104,6 +105,7 @@ typedef enum BcLexType {
 	BC_LEX_KEY_SCALE,
 	BC_LEX_KEY_SQRT,
 	BC_LEX_KEY_WHILE,
+
 #ifdef DC_ENABLED
 	BC_LEX_EQ_NO_REG,
 	BC_LEX_OP_MODEXP,
@@ -132,6 +134,7 @@ typedef enum BcLexType {
 	BC_LEX_NQUIT,
 	BC_LEX_SCALE_FACTOR,
 #endif // DC_ENABLED
+
 } BcLexType;
 
 // ** Exclude start. **
@@ -140,6 +143,7 @@ typedef BcStatus (*BcLexNext)(struct BcLex*);
 // ** Exclude end. **
 
 typedef struct BcLex {
+
 	const char *buf;
 	size_t i;
 	size_t line;
@@ -156,9 +160,11 @@ typedef struct BcLex {
 	// ** Exclude start. **
 	BcLexNext next;
 	// ** Exclude end. **
+
 } BcLex;
 
 // ** Exclude start. **
+// ** Busybox exclude start. **
 
 void bc_lex_init(BcLex *l, BcLexNext next);
 void bc_lex_free(BcLex *l);
@@ -171,6 +177,7 @@ void bc_lex_whitespace(BcLex *l);
 BcStatus bc_lex_number(BcLex *l, char start);
 BcStatus bc_lex_name(BcLex *l);
 
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 #endif // BC_LEX_H

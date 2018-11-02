@@ -34,7 +34,9 @@
 // ** Exclude start. **
 BcStatus dc_main(int argc, char *argv[]);
 
+// ** Busybox exclude start. **
 extern const char dc_help[];
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 BcStatus dc_lex_token(BcLex *l);

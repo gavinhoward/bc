@@ -30,6 +30,7 @@
 #include <num.h>
 
 typedef enum BcInst {
+
 #ifdef BC_ENABLED
 	BC_INST_INC_PRE,
 	BC_INST_DEC_PRE,
@@ -126,6 +127,7 @@ typedef enum BcInst {
 
 	BC_INST_INVALID = -1,
 #endif // DC_ENABLED
+
 } BcInst;
 
 typedef struct BcId {
@@ -141,6 +143,7 @@ typedef struct BcFunc {
 } BcFunc;
 
 typedef enum BcResultType {
+
 	BC_RESULT_TEMP,
 
 	BC_RESULT_VAR,
@@ -158,6 +161,7 @@ typedef enum BcResultType {
 	BC_RESULT_ONE,
 
 	BC_RESULT_OBASE,
+
 } BcResultType;
 
 typedef union BcResultData {
@@ -178,23 +182,22 @@ typedef struct BcInstPtr {
 } BcInstPtr;
 
 // ** Exclude start. **
+// ** Busybox exclude start. **
 void bc_func_init(BcFunc *f);
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var);
 void bc_func_free(void *func);
 
 void bc_array_init(BcVec *a, bool nums);
 void bc_array_copy(BcVec *d, const BcVec *s);
-// ** Exclude end. **
 
-void bc_array_expand(BcVec *a, size_t len);
-
-// ** Exclude start. **
 void bc_string_free(void *string);
 void bc_id_free(void *id);
 void bc_result_copy(BcResult *d, BcResult *src);
 void bc_result_free(void *result);
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
+void bc_array_expand(BcVec *a, size_t len);
 int bc_id_cmp(const void *e1, const void *e2);
 
 #ifndef NDEBUG

@@ -9,7 +9,7 @@
 ^[ ]*bcg\.posix = vm\.flags & BC_FLAG_S;$
 ^[ ]*bcg\.warn = vm\.flags & BC_FLAG_W;$
 ^[ ]*if \(vm->exprs\.len\).*?\}$
-\n[ ]*if \(help && printf\(help, bcg\.name\) < 0\) return BC_STATUS_IO_ERR;$
+\n[ ]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$$
 ^[ ]*vm->exe = exe;$
 \n[ ]*if \(bcg.bc\) bc_vm_envArgs\(vm\);$
 \n#if BC_ENABLE_SIGNALS$
@@ -34,7 +34,7 @@
 ^[ ]*l->next = next;$
 ^void bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
 ^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}
-^static void bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
+^void bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
 ^[ ]*vm->env_args = NULL;$
 \n[ ]*free\(vm->env_args\);$
 ^[ ]*bcg\.exreg = vm\.flags & BC_FLAG_X;$
@@ -42,8 +42,13 @@
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
 \n// \*\* Busybox exclude start\. \*\*
 \n// \*\* Busybox exclude end\. \*\*
-^static void bc_vm_allocError\(\) \{.*?\n\}$
+^void bc_vm_allocError\(\) \{.*?\n\}$
 ^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
 ^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$
+^void\* bc_vm_malloc\(size_t n\);$
+^void\* bc_vm_realloc\(void \*ptr, size_t n\);$
+^char\* bc_vm_strdup\(const char \*str\);$
  != 0
+\n\n[ ]*BC_STATUS_INVALID_OPTION,$
+^BcStatus bc_parse_expression\(BcParse \*p, uint8_t flags\).*?\n\}$

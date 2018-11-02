@@ -52,12 +52,12 @@ static const struct option bc_args_lopt[] = {
 
 static const char* const bc_args_opt = "e:f:hilqsvVwx";
 
-static void bc_args_exprs(BcVec *exprs, const char *str) {
+void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, str);
 	bc_vec_concat(exprs, "\n");
 }
 
-static void bc_args_file(BcVec *exprs, const char *file) {
+void bc_args_file(BcVec *exprs, const char *file) {
 	char *buf;
 	bc_read_file(file, &buf);
 	bc_args_exprs(exprs, buf);

@@ -34,7 +34,9 @@
 // ** Exclude start. **
 BcStatus bc_main(int argc, char *argv[]);
 
+// ** Busybox exclude start. **
 extern const char bc_help[];
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 typedef struct BcLexKeyword {
@@ -60,8 +62,10 @@ BcStatus bc_lex_token(BcLex *l);
 #define BC_PARSE_TOKEN_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
 // ** Exclude start. **
+// ** Busybox exclude start. **
 void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 BcStatus bc_parse_parse(BcParse *p);

@@ -25,6 +25,8 @@
 #include <bc.h>
 #include <num.h>
 
+// clang-format off
+
 #ifdef BC_ENABLED
 // ** Exclude start. **
 const char bc_name[] = "bc";
@@ -318,3 +320,5 @@ const char bc_program_exprs_name[] = "<exprs>";
 
 const char bc_program_stdin_name[] = "<stdin>";
 const char bc_program_ready_msg[] = "ready for more input\n";
+
+// clang-format on

@@ -31,8 +31,8 @@
 #include <num.h>
 
 typedef struct BcProgram {
-	size_t len;
 
+	size_t len;
 	size_t scale;
 
 	BcNum ib;
@@ -73,6 +73,7 @@ typedef struct BcProgram {
 	BcParseInit parse_init;
 	BcParseExpr parse_expr;
 	// ** Exclude end. **
+
 } BcProgram;
 
 #define BC_PROG_STACK(s, n) ((s)->len >= ((size_t) n))
@@ -91,6 +92,7 @@ typedef struct BcProgram {
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **
+// ** Busybox exclude start. **
 void bc_program_init(BcProgram *p, size_t line_len,
                      BcParseInit init, BcParseExpr expr);
 void bc_program_free(BcProgram *program);
@@ -101,6 +103,7 @@ void bc_program_code(BcProgram *p);
 void bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
 #endif // BC_ENABLED && DC_ENABLED
 #endif // NDEBUG
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 void bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
@@ -108,10 +111,12 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 
 // ** Exclude start. **
+// ** Busybox exclude start. **
 extern const BcNumBinaryOp bc_program_ops[];
 extern const char bc_program_exprs_name[];
 extern const char bc_program_stdin_name[];
 extern const char bc_program_ready_msg[];
+// ** Busybox exclude end. **
 // ** Exclude end. **
 
 #endif // BC_PROGRAM_H
