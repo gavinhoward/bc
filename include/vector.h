@@ -50,7 +50,7 @@ void bc_vec_expand(BcVec *v, size_t req);
 void bc_vec_npop(BcVec *v, size_t n);
 
 void bc_vec_push(BcVec *v, const void *data);
-void bc_vec_pushByte(BcVec *v, uint8_t data);
+void bc_vec_pushByte(BcVec *v, char data);
 void bc_vec_string(BcVec *v, size_t len, const char *str);
 void bc_vec_concat(BcVec *v, const char *str);
 

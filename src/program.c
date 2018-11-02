@@ -214,7 +214,7 @@ static void bc_program_retire(BcProgram *p, BcResult *r, BcResultType t) {
 	bc_vec_push(&p->results, r);
 }
 
-static BcStatus bc_program_op(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_op(BcProgram *p, char inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
@@ -287,7 +287,7 @@ io_err:
 
 static size_t bc_program_index(char *code, size_t *bgn) {
 
-	uint8_t amt = code[(*bgn)++], i = 0;
+	char amt = code[(*bgn)++], i = 0;
 	size_t res = 0;
 
 	for (; i < amt; ++i, ++(*bgn))
@@ -399,7 +399,7 @@ static void bc_program_printString(const char *str, size_t *nchars) {
 	}
 }
 
-static BcStatus bc_program_print(BcProgram *p, uint8_t inst, size_t idx) {
+static BcStatus bc_program_print(BcProgram *p, char inst, size_t idx) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
@@ -464,7 +464,7 @@ static BcStatus bc_program_negate(BcProgram *p) {
 	return s;
 }
 
-static BcStatus bc_program_logical(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_logical(BcProgram *p, char inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
@@ -603,7 +603,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 	return s;
 }
 
-static BcStatus bc_program_assign(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_assign(BcProgram *p, char inst) {
 
 	BcStatus s;
 	BcResult *left, *right, res;
@@ -733,7 +733,7 @@ static BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 }
 
 static BcStatus bc_program_pushArray(BcProgram *p, char *code,
-                                     size_t *bgn, uint8_t inst)
+                                     size_t *bgn, char inst)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r;
@@ -770,12 +770,12 @@ err:
 }
 
 #ifdef BC_ENABLED
-static BcStatus bc_program_incdec(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_incdec(BcProgram *p, char inst) {
 
 	BcStatus s;
 	BcResult *ptr, res, copy;
 	BcNum *num = NULL;
-	uint8_t inst2 = inst;
+	char inst2 = inst;
 
 	s = bc_program_prep(p, &ptr, &num);
 	if (s) return s;
@@ -854,7 +854,7 @@ static BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 	return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_program_return(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_return(BcProgram *p, char inst) {
 
 	BcStatus s;
 	BcResult res;
@@ -918,7 +918,7 @@ static unsigned long bc_program_len(BcNum *n) {
 	return len;
 }
 
-static BcStatus bc_program_builtin(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_builtin(BcProgram *p, char inst) {
 
 	BcStatus s;
 	BcResult *opnd;
@@ -1281,7 +1281,7 @@ exit:
 }
 #endif // DC_ENABLED
 
-static BcStatus bc_program_pushGlobal(BcProgram *p, uint8_t inst) {
+static BcStatus bc_program_pushGlobal(BcProgram *p, char inst) {
 
 	BcStatus s;
 	BcResult res;
@@ -1468,7 +1468,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 	while (!s && ip->idx < func->code.len) {
 
-		uint8_t inst = code[(ip->idx)++];
+		char inst = code[(ip->idx)++];
 
 		switch (inst) {
 
@@ -1822,9 +1822,9 @@ static void bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 
 void bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
 
-	uint8_t inst = code[(*bgn)++];
+	char inst = code[(*bgn)++];
 
-	bc_vm_putchar(bc_inst_chars[inst]);
+	bc_vm_putchar(bc_inst_chars[(uint32_t) inst]);
 
 	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
 	    inst == BC_INST_ARRAY)

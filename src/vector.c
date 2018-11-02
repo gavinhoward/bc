@@ -69,8 +69,8 @@ void bc_vec_push(BcVec *v, const void *data) {
 	v->len += 1;
 }
 
-void bc_vec_pushByte(BcVec *v, uint8_t data) {
-	assert(v && v->size == sizeof(uint8_t));
+void bc_vec_pushByte(BcVec *v, char data) {
+	assert(v && v->size == sizeof(char));
 	bc_vec_push(v, &data);
 }
 
@@ -145,8 +145,8 @@ static size_t bc_map_find(const BcVec *v, const void *ptr) {
 	while (low < high) {
 
 		size_t mid = (low + high) / 2;
-		uint8_t *item = bc_vec_item(v, mid);
-		int result = bc_id_cmp(ptr, item);
+		BcId *id = bc_vec_item(v, mid);
+		int result = bc_id_cmp(ptr, id);
 
 		if (result == 0) return mid;
 		else if (result < 0) high = mid;

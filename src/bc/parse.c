@@ -39,7 +39,7 @@ static BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcLexType t;
-	uint8_t l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
+	char l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
 	bool left = bc_parse_ops[type - BC_LEX_OP_INC].left;
 
 	while (p->ops.len > start) {

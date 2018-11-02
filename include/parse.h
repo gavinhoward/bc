@@ -89,7 +89,7 @@
 	                               BC_PARSE_FLAG_IF_END)))
 
 typedef struct BcOp {
-	uint8_t prec;
+	char prec;
 	bool left;
 } BcOp;
 
