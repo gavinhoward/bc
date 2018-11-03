@@ -256,7 +256,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 
 	vm->prog.file = file;
 	s = bc_read_file(file, &data);
-	if (s) goto read_err;
+	if (s) return bc_vm_error(s, file, 0);
 
 	bc_lex_file(&vm->prs.l, file);
 	s = bc_vm_process(vm, data);
@@ -270,8 +270,6 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 
 err:
 	free(data);
-read_err:
-	s = bc_vm_error(s, file, 0);
 	return s;
 }
 
