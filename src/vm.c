@@ -74,6 +74,7 @@ void bc_vm_info(const char* const help) {
 	bc_vm_printf(stdout, "%s %s\n", bcg.name, BC_VERSION);
 	bc_vm_puts(bc_copyright, stdout);
 	if (help) bc_vm_printf(stdout, help, bcg.name);
+	bc_vm_fflush(stdout);
 }
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
