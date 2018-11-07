@@ -94,7 +94,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	assert(path);
 
 	f = fopen(path, "r");
-	if (!f) bc_vm_exit(BC_STATUS_EXEC_FILE_ERR);
+	if (!f) return BC_STATUS_EXEC_FILE_ERR;
 	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {
