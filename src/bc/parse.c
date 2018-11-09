@@ -200,7 +200,7 @@ BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 	}
 	else {
 		*type = BC_INST_VAR;
-		 bc_parse_push(p, BC_INST_VAR);
+		bc_parse_push(p, BC_INST_VAR);
 		bc_parse_pushName(p, name);
 	}
 
