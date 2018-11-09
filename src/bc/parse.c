@@ -353,14 +353,11 @@ BcStatus bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
 {
 	BcStatus s;
 	BcLexType type;
-	BcInst etype = *prev;
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
-	type = rparen || etype == BC_INST_INC_POST || etype == BC_INST_DEC_POST ||
-	       (etype >= BC_INST_NUM && etype <= BC_INST_SQRT) ?
-	                 BC_LEX_OP_MINUS : BC_LEX_NEG;
+	type = BC_PARSE_LEAF(*prev, rparen) ? BC_LEX_OP_MINUS : BC_LEX_NEG;
 	*prev = BC_PARSE_TOKEN_INST(type);
 
 	// We can just push onto the op stack because this is the largest
