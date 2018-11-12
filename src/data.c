@@ -29,7 +29,11 @@
 
 #ifdef BC_ENABLED
 // ** Exclude start. **
+#ifndef _WIN32
 const char bc_name[] = "bc";
+#else // _WIN32
+const char bc_name[] = "bc.exe";
+#endif // _WIN32
 // ** Exclude end. **
 #if BC_ENABLE_SIGNALS
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
@@ -37,7 +41,11 @@ const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
 #endif // BC_ENABLED
 
 #ifdef DC_ENABLED
+#ifndef _WIN32
 const char dc_name[] = "dc";
+#else // _WIN32
+const char dc_name[] = "dc.exe";
+#endif // _WIN32
 #if BC_ENABLE_SIGNALS
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS

@@ -32,7 +32,7 @@
 #define DC_PARSE_BUF_LEN ((int) (sizeof(uint32_t) * CHAR_BIT))
 
 // ** Exclude start. **
-BcStatus dc_main(int argc, char *argv[]);
+int dc_main(int argc, char *argv[]);
 
 // ** Busybox exclude start. **
 extern const char dc_help[];

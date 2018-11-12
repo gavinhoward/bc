@@ -25,7 +25,7 @@
 
 typedef enum BcStatus {
 
-	BC_STATUS_SUCCESS,
+	BC_STATUS_SUCCESS = 0,
 
 	BC_STATUS_ALLOC_ERR,
 	BC_STATUS_IO_ERR,

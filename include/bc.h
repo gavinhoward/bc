@@ -32,7 +32,7 @@
 #ifdef BC_ENABLED
 
 // ** Exclude start. **
-BcStatus bc_main(int argc, char *argv[]);
+int bc_main(int argc, char *argv[]);
 
 // ** Busybox exclude start. **
 extern const char bc_help[];
