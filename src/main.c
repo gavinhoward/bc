@@ -39,10 +39,9 @@ int main(int argc, char *argv[]) {
 	char *name;
 
 	setlocale(LC_ALL, "");
-	memset(&bcg, 0, sizeof(BcGlobals));
 
 	name = strrchr(argv[0], '/');
-	name = !name ? argv[0] : name;
+	name = !name ? argv[0] : name + 1;
 
 #if !defined(DC_ENABLED)
 	s = bc_main(argc, argv);

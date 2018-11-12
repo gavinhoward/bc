@@ -417,8 +417,6 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	memset(vm, 0, sizeof(BcVm));
 
 	vm->exe = exe;
-	vm->flags = 0;
-	vm->env_args = NULL;
 
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
 	bc_vec_init(&vm->exprs, sizeof(char), NULL);

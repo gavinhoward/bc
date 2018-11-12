@@ -93,7 +93,6 @@ const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_VEC, BC_ERR_IDX_VEC,
 #ifdef BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -170,6 +169,10 @@ const char *bc_err_msgs[] = {
 	"POSIX does not allow an empty update expression in a for loop",
 	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
+
+	// ** Exclude start. **
+	"Bad command-line option",
+	// ** Exclude end. **
 
 #ifndef NDEBUG
 	"quit request not honored",
