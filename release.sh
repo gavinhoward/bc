@@ -205,6 +205,7 @@ debug() {
 	if [ "$CC" = "clang" ]; then
 		runtests "$debug -fsanitize=address" "$CC" "$@"
 		runtests "$debug -fsanitize=undefined" "$CC" "$@"
+		runtests "$debug -fsanitize=memory" "$CC" "$@"
 	fi
 }
 
