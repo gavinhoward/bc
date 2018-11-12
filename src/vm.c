@@ -401,21 +401,8 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len = bc_vm_envLen(env_len);
-#if BC_ENABLE_SIGNALS
-#ifndef _WIN32
-	struct sigaction sa;
-
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = bc_vm_sig;
-	sa.sa_flags = 0;
-	sigaction(SIGINT, &sa, NULL);
-#else // _WIN32
-	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
-#endif // _WIN32
-#endif // BC_ENABLE_SIGNALS
 
 	memset(vm, 0, sizeof(BcVm));
-
 	vm->exe = exe;
 
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
@@ -436,6 +423,18 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 
 	BcStatus st;
 	BcVm vm;
+#if BC_ENABLE_SIGNALS
+#ifndef _WIN32
+	struct sigaction sa;
+
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = bc_vm_sig;
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
+#else // _WIN32
+	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
+#endif // _WIN32
+#endif // BC_ENABLE_SIGNALS
 
 	st = bc_vm_init(&vm, exe, env_len);
 	if (st) goto exit;
