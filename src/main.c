@@ -36,18 +36,18 @@ BcGlobals bcg;
 int main(int argc, char *argv[]) {
 
 	int s;
-	char *name;
 
 	setlocale(LC_ALL, "");
-
-	name = strrchr(argv[0], '/');
-	name = !name ? argv[0] : name + 1;
 
 #if !defined(DC_ENABLED)
 	s = bc_main(argc, argv);
 #elif !defined(BC_ENABLED)
 	s = dc_main(argc, argv);
 #else
+	char *name = strrchr(argv[0], '/');
+
+	name = !name ? argv[0] : name + 1;
+
 	if (!strcmp(name, dc_name)) s = dc_main(argc, argv);
 	else s = bc_main(argc, argv);
 #endif
