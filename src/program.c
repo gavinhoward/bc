@@ -1435,7 +1435,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 	ip = bc_vec_top(&p->stack);
 	ip->idx = f->code.len;
 
-	if (!s && bcg.signe && !bcg.tty) return BC_STATUS_QUIT;
+	if (!s && bcg.signe && !bcg.i) return BC_STATUS_QUIT;
 
 	bcg.sigc += bcg.signe;
 	bcg.signe = bcg.sig != bcg.sigc;

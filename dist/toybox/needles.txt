@@ -42,8 +42,8 @@ p->parse_init\(
 p->parse_expr\(&parse, BC_PARSE_NOREAD\)
 BcStatus bc_program_pushVar\(BcProgram \*p, char \*code, size_t \*bgn, bool pop\)
 void bc_vm_info\(const char\* const help\)
-bcg.posix
-bcg.warn
+bcg.s([^a-z]{1})
+bcg.w
 bcg\.
 TT\.name
 s = p->parse\(p\)

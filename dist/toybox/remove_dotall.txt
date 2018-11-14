@@ -6,8 +6,8 @@
 \n[ ]*bc_vec_free\(&vm->exprs\);$
 \n[ ]*bc_vec_free\(&vm->files\);$
 ^[ ]*st = bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\);\n[ ]*if \(st\) goto exit;$
-^[ ]*bcg\.posix = vm\.flags & BC_FLAG_S;$
-^[ ]*bcg\.warn = vm\.flags & BC_FLAG_W;$
+^[ ]*bcg\.s = vm\.flags & BC_FLAG_S;$
+^[ ]*bcg\.w = vm\.flags & BC_FLAG_W;$
 ^[ ]*if \(vm->exprs\.len\).*?\}$
 \n[ ]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$$
 ^[ ]*vm->exe = exe;$

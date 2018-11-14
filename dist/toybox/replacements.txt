@@ -42,7 +42,7 @@ bc_parse_init(
 bc_parse_expr(&parse, BC_PARSE_NOREAD, bc_parse_next_read)
 BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn)
 void bc_vm_info(void)
-(toys.optflags & FLAG_s)
+(toys.optflags & FLAG_s)\1
 (toys.optflags & FLAG_w)
 TT.
 toys.which->name

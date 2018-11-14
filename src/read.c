@@ -39,7 +39,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	int i;
 	signed char c = 0;
 
-	if (bcg.ttyin && !bcg.posix) {
+	if (bcg.ttyin && !bcg.s) {
 		bc_vm_puts(prompt, stderr);
 		bc_vm_fflush(stderr);
 	}
@@ -62,7 +62,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 				if (bcg.ttyin) {
 					bc_vm_puts(bc_program_ready_msg, stderr);
-					if (!bcg.posix) bc_vm_puts(prompt, stderr);
+					if (!bcg.s) bc_vm_puts(prompt, stderr);
 					bc_vm_fflush(stderr);
 				}
 

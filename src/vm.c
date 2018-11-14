@@ -94,7 +94,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
                           size_t line, const char *msg)
 {
-	int p = (int) bcg.posix, w = (int) bcg.warn;
+	int p = (int) bcg.s, w = (int) bcg.w;
 	const char* const fmt = p ? bc_err_fmt : bc_warn_fmt;
 
 	if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
@@ -240,7 +240,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 
 	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
 		s = bc_program_exec(&vm->prog);
-		if (!s && bcg.tty) bc_vm_fflush(stdout);
+		if (!s && bcg.i) bc_vm_fflush(stdout);
 		if (s && s != BC_STATUS_QUIT)
 			s = bc_vm_error(bc_program_reset(&vm->prog, s), vm->prs.l.f, 0);
 	}
@@ -442,14 +442,14 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	if (st) goto exit;
 
 	bcg.ttyin = isatty(0);
-	bcg.tty = bcg.ttyin || (vm.flags & BC_FLAG_I) || isatty(1);
+	bcg.i = bcg.ttyin || (vm.flags & BC_FLAG_I) || isatty(1);
 
 #ifdef BC_ENABLED
-	bcg.posix = vm.flags & BC_FLAG_S;
-	bcg.warn = vm.flags & BC_FLAG_W;
+	bcg.s = vm.flags & BC_FLAG_S;
+	bcg.w = vm.flags & BC_FLAG_W;
 #endif // BC_ENABLED
 #ifdef DC_ENABLED
-	bcg.exreg = vm.flags & BC_FLAG_X;
+	bcg.x = vm.flags & BC_FLAG_X;
 #endif // DC_ENABLED
 
 	if (bcg.ttyin && !(vm.flags & BC_FLAG_Q)) bc_vm_info(NULL);

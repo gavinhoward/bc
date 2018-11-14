@@ -95,11 +95,11 @@ typedef struct BcGlobals {
 	unsigned long sigc;
 	unsigned long signe;
 
-	long tty;
+	long i;
 	long ttyin;
-	long posix;
-	long warn;
-	long exreg;
+	long s;
+	long w;
+	long x;
 
 	const char *name;
 #if BC_ENABLE_SIGNALS
