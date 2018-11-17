@@ -56,7 +56,7 @@ void bc_num_ten(BcNum *n) {
 	n->num[1] = 1;
 }
 
-BcStatus bc_num_subArrays(BcDig *restrict a, BcDig *restrict b,size_t len) {
+BcStatus bc_num_subArrays(BcDig *restrict a, BcDig *restrict b, size_t len) {
 	size_t i, j;
 	for (i = 0; !bcg.signe && i < len; ++i) {
 		for (a[i] -= b[i], j = 0; !bcg.signe && a[i + j] < 0;) {
@@ -167,9 +167,8 @@ void bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
 	if (n->len != 0) n->neg = !neg1 != !neg2;
 }
 
-void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
-                  BcNum *restrict b)
-{
+void bc_num_split(BcNum *n, size_t idx, BcNum *a, BcNum *b) {
+
 	if (idx < n->len) {
 
 		b->len = n->len - idx;

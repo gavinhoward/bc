@@ -50,3 +50,5 @@ s = bc_parse_parse(p)
 xmalloc
 xrealloc
 xstrdup
+*\1
+\1

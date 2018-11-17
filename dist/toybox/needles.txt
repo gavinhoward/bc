@@ -50,3 +50,5 @@ s = p->parse\(p\)
 bc_vm_malloc
 bc_vm_realloc
 bc_vm_strdup
+\*restrict ([a-z]{1})
+const ([a-zA-Z]{1})
