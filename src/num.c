@@ -167,8 +167,9 @@ void bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
 	if (n->len != 0) n->neg = !neg1 != !neg2;
 }
 
-void bc_num_split(BcNum *n, size_t idx, BcNum *a, BcNum *b) {
-
+void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
+                  BcNum *restrict b)
+{
 	if (idx < n->len) {
 
 		b->len = n->len - idx;

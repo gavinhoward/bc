@@ -52,3 +52,6 @@ xrealloc
 xstrdup
 *\1
 \1
+BcStatus bc_vm_posixError(BcStatus s, char *file, size_t line, char *msg)
+void bc_num_split(BcNum *n, size_t idx, BcNum *a, BcNum *b) {\n
+BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale,\n                  size_t ts)
