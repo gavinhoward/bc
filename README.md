@@ -55,14 +55,14 @@ Executing `make help` lists all `make` targets and options.
 I ***highly*** encourage package and distro maintainers to compile as follows:
 
 ```
-CPPFLAGS="-DNEBUG" CFLAGS="-O3" LDFLAGS="-s" make
+CPPFLAGS="-DNEBUG" CFLAGS="-flto -O3" LDFLAGS="-s" make
 ```
 
 The optimizations speed up `bc` by orders of magnitude. In addition, for SSE4
 architectures, the following can add a bit more speed:
 
 ```
-CPPFLAGS="-DNEBUG" CFLAGS="-O3 -march=native -msse4" LDFLAGS="-s" make
+CPPFLAGS="-DNEBUG" CFLAGS="-flto -O3 -march=native -msse4" LDFLAGS="-s" make
 ```
 
 ## Status
