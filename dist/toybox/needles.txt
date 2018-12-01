@@ -55,3 +55,7 @@ const ([a-zA-Z]{1})
 BcStatus bc_vm_posixError\(BcStatus s, char \*file,\n[ ]*size_t line, char \*msg\)
 void bc_num_split\(BcNum \*n, size_t idx, BcNum \*a,\n[ ]*BcNum \*b\)\n\{
 BcStatus bc_num_r\(BcNum \*a, BcNum \*b, BcNum \*c,\n[ ]*BcNum \*d, size_t scale, size_t ts\)
+void bc_vm_exit\(BcStatus s\)
+bc_vm_exit\(BC_STATUS_IO_ERR\)
+exit\(\(int\) s\);
+([ ]*)fprintf\(stderr, bc_err_fmt, bc_errs\[bc_err_ids\[s\]\], bc_err_msgs\[s\]\);

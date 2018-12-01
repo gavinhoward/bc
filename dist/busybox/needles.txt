@@ -30,3 +30,10 @@ if \(\(bcg\.bc \|\| !vm->files\.len\) && !vm->exprs\.len\)
 BcStatus s = BC_STATUS_IO_ERR;
 f = fopen\(path, "r"\);.*?s = BC_STATUS_BIN_FILE;$
 size_t size, read;$
+bc_vm_info\(NULL\)
+void bc_vm_info\(const char\* const help\)
+void bc_vm_exit\(BcStatus s\)
+bc_vm_exit\(BC_STATUS_IO_ERR\)
+exit\(\(int\) s\);
+([\t]*)fprintf\(stderr, bc_err_fmt, bc_errs\[bc_err_ids\[s\]\], bc_err_msgs\[s\]\);
+bc_vm_printf\(stdout, "%s %s\\n", .*?\);

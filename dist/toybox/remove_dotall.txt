@@ -9,7 +9,7 @@
 ^[ ]*bcg\.s = vm\.flags & BC_FLAG_S;$
 ^[ ]*bcg\.w = vm\.flags & BC_FLAG_W;$
 ^[ ]*if \(vm->exprs\.len\).*?\}$
-\n[ ]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$$
+\n[ ]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$
 ^[ ]*vm->exe = exe;$
 \n[ ]*if \(bcg.bc\) s = bc_vm_envArgs\(vm\);$
 \n#if BC_ENABLE_SIGNALS$

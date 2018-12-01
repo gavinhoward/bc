@@ -30,3 +30,10 @@ static const char bc_args_opt[] ALIGN1 = "xwvsqli";
 BcStatus s = BC_STATUS_BIN_FILE;
 *buf = xmalloc_open_read_close(path, &size);
 size_t size = ((size_t) -1), read;
+bc_vm_info()
+void bc_vm_info(void)
+void bc_vm_exit(void)
+bc_vm_exit()
+exit((int) BC_STATUS_IO_ERR);
+\1fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[BC_STATUS_IO_ERR]],\n\1        bc_err_msgs[BC_STATUS_IO_ERR]);
+printf("%s "BB_VER"\\n", applet_name);

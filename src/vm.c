@@ -159,7 +159,7 @@ size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_exit(BcStatus s) {
-	bc_vm_printf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
+	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
 	exit((int) s);
 }
 

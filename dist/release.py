@@ -23,6 +23,8 @@ import os
 import subprocess
 import regex as re
 
+BC_VERSION = "BC_VERSION"
+
 def read_file(file):
 
 	array = []
@@ -137,10 +139,10 @@ res = subprocess.run(["make", "version"], stdout=subprocess.PIPE)
 if res.returncode != 0:
 	sys.exit(res.returncode)
 
-version = res.stdout.decode("utf-8")[:-1]
+version = '"' + res.stdout.decode("utf-8")[:-1] + '"'
 
-r = re.compile('BC_VERSION', re.M)
-content = r.sub('"' + version + '"', content)
+r = re.compile(BC_VERSION, re.M)
+content = r.sub(version, content)
 
 needles = read_file(projectdir + "/needles.txt")
 replacements = read_file(projectdir + "/replacements.txt")

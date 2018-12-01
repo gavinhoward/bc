@@ -25,3 +25,4 @@
 \nmalloc_err\:\n[\t]*fclose\(f\);$
 ^[\t]*fclose\(f\);$
 \n\n[ ]*BC_STATUS_INVALID_OPTION,$
+\n[\t]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$

@@ -55,3 +55,7 @@ xstrdup
 BcStatus bc_vm_posixError(BcStatus s, char *file, size_t line, char *msg)
 void bc_num_split(BcNum *n, size_t idx, BcNum *a, BcNum *b) {\n
 BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale,\n                  size_t ts)
+void bc_vm_exit(void)
+bc_vm_exit()
+exit((int) BC_STATUS_IO_ERR);
+\1fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[BC_STATUS_IO_ERR]],\n\1        bc_err_msgs[BC_STATUS_IO_ERR]);
