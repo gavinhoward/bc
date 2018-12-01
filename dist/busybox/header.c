@@ -58,7 +58,7 @@
 //config:	enabled.
 //config:
 //config:config DC
-//config:	bool "dc (38.33 kb; 49.88 kb when combined with bc)"
+//config:	bool "dc (38.32 kb; 49.88 kb when combined with bc)"
 //config:	default n
 //config:	help
 //config:	dc is a reverse-polish notation command-line calculator which
