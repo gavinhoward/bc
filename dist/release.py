@@ -160,7 +160,7 @@ if project == "busybox":
 	removals = read_file(projectdir + "/remove_after.txt")
 
 	for rem in removals:
-		r = re.compile(reg, re.M)
+		r = re.compile(rem, re.M)
 		content = r.sub('', content)
 
 	cmd = ["clang-format", "-style=file"]
