@@ -32,7 +32,6 @@
 #define BC_VEC_START_CAP (1<<5)
 
 typedef void (*BcVecFree)(void*);
-typedef int (*BcVecCmp)(const void*, const void*);
 
 typedef struct BcVec {
 	char *v;
