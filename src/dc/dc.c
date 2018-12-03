@@ -34,7 +34,6 @@
 #if DC_ENABLED
 int dc_main(int argc, char *argv[]) {
 
-	bcg.bc = false;
 	bcg.name = dc_name;
 	bcg.help = dc_help;
 #if BC_ENABLE_SIGNALS

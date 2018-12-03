@@ -60,6 +60,8 @@
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
+#define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || bcg.name[0] == 'b'))
+
 typedef struct BcVm {
 
 	BcParse prs;
@@ -96,7 +98,6 @@ typedef struct BcGlobals {
 	const char *sig_msg;
 #endif // BC_ENABLE_SIGNALS
 	const char *help;
-	bool bc;
 
 	BcParseInit init;
 	BcParseExpr exp;

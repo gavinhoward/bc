@@ -27,7 +27,6 @@
 #if BC_ENABLED
 int bc_main(int argc, char *argv[]) {
 
-	bcg.bc = true;
 	bcg.name = bc_name;
 	bcg.help = bc_help;
 #if BC_ENABLE_SIGNALS

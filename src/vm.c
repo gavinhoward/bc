@@ -379,7 +379,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 		s = bc_vm_file(vm, *((char**) bc_vec_item(&vm->files, i)));
 	if (s && s != BC_STATUS_QUIT) return s;
 
-	if ((bcg.bc || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin(vm);
+	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin(vm);
 	if (!s && !BC_PARSE_CAN_EXEC(&vm->prs)) s = bc_vm_process(vm, "");
 
 	return s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
@@ -403,8 +403,10 @@ void bc_vm_init(BcVm *vm, const char *env_len) {
 	bc_vec_init(&vm->exprs, sizeof(char), NULL);
 
 #if BC_ENABLED
-	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
-	if (bcg.bc) bc_vm_envArgs(vm);
+	if (BC_IS_BC) {
+		vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
+		bc_vm_envArgs(vm);
+	}
 #endif // BC_ENABLED
 
 	bc_program_init(&vm->prog, len, bcg.init, bcg.exp);
