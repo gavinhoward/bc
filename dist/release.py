@@ -155,11 +155,13 @@ for i in range(0, len(needles)):
 	r = re.compile(needles[i], re.M | re.DOTALL)
 	content = r.sub(replacements[i], content)
 
-# Make sure to cleanup newlines
-r = re.compile('\\n', re.M)
-content = r.sub('\n', content)
-
 if project == "busybox":
+
+	removals = read_file(projectdir + "/remove_after.txt")
+
+	for rem in removals:
+		r = re.compile(reg, re.M)
+		content = r.sub('', content)
 
 	cmd = ["clang-format", "-style=file"]
 	res = subprocess.run(cmd, input=content.encode(), stdout=subprocess.PIPE)

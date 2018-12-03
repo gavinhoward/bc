@@ -403,7 +403,7 @@ void bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
 	bc_vec_init(&vm->exprs, sizeof(char), NULL);
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
 	if (bcg.bc) bc_vm_envArgs(vm);
 #endif // BC_ENABLED
