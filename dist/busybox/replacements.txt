@@ -25,7 +25,7 @@ static const
 bc_args(argc, argv, &vm.flags, &vm.files);
 bc_args((int) v.len, (char**) v.v, &vm->flags, &vm->files);
 if (bcg.bc || !vm->files.len)
-// clang-format off\n#if ENABLE_FEATURE_BC_LONG_OPTIONS\nstatic const char bc_args_lopt[] ALIGN1 = \n\t"extended-register\\0"No_argument"x"\n\t"warn\\0"No_argument"w"\n\t"version\\0"No_argument"v"\n\t"standard\\0"No_argument"s"\n\t"quiet\\0"No_argument"q"\n\t"mathlib\\0"No_argument"l"\n\t"interactive\\0"No_argument"i";\n#endif // ENABLE_FEATURE_BC_LONG_OPTIONS\n// clang-format on
+// clang-format off\n#if ENABLE_FEATURE_BC_LONG_OPTIONS\nstatic const char bc_args_lopt[] ALIGN1 =\n\t"extended-register\\0"No_argument"x"\n\t"warn\\0"No_argument"w"\n\t"version\\0"No_argument"v"\n\t"standard\\0"No_argument"s"\n\t"quiet\\0"No_argument"q"\n\t"mathlib\\0"No_argument"l"\n\t"interactive\\0"No_argument"i";\n#endif // ENABLE_FEATURE_BC_LONG_OPTIONS\n// clang-format on
 static const char bc_args_opt[] ALIGN1 = "xwvsqli";
 BcStatus s = BC_STATUS_BIN_FILE;
 *buf = xmalloc_open_read_close(path, &size);
