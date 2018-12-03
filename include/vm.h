@@ -60,15 +60,6 @@
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
-// ** Exclude start. **
-typedef struct BcVmExe {
-	BcParseInit init;
-	BcParseExpr exp;
-	char sbgn;
-	char send;
-} BcVmExe;
-// ** Exclude end. **
-
 typedef struct BcVm {
 
 	BcParse prs;
@@ -83,7 +74,6 @@ typedef struct BcVm {
 	// ** Busybox exclude end. **
 
 	char *env_args;
-	BcVmExe exe;
 	// ** Exclude end. **
 
 } BcVm;
@@ -108,6 +98,11 @@ typedef struct BcGlobals {
 	const char *help;
 	bool bc;
 
+	BcParseInit init;
+	BcParseExpr exp;
+	char sbgn;
+	char send;
+
 } BcGlobals;
 // ** Exclude end. **
 
@@ -128,7 +123,7 @@ void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
 void bc_vm_info(const char* const help);
-BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len);
+BcStatus bc_vm_run(int argc, char *argv[], const char *env_len);
 // ** Exclude end. **
 
 // ** Busybox exclude start. **

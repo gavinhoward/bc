@@ -27,8 +27,6 @@
 #if BC_ENABLED
 int bc_main(int argc, char *argv[]) {
 
-	BcVmExe exec;
-
 	bcg.bc = true;
 	bcg.name = bc_name;
 	bcg.help = bc_help;
@@ -36,10 +34,10 @@ int bc_main(int argc, char *argv[]) {
 	bcg.sig_msg = bc_sig_msg;
 #endif // BC_ENABLE_SIGNALS
 
-	exec.init = bc_parse_init;
-	exec.exp = bc_parse_expression;
-	exec.sbgn = exec.send = '"';
+	bcg.init = bc_parse_init;
+	bcg.exp = bc_parse_expression;
+	bcg.sbgn = bcg.send = '"';
 
-	return (int) bc_vm_run(argc, argv, exec, "BC_LINE_LENGTH");
+	return (int) bc_vm_run(argc, argv, "BC_LINE_LENGTH");
 }
 #endif // BC_ENABLED

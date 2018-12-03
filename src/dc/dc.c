@@ -34,8 +34,6 @@
 #if DC_ENABLED
 int dc_main(int argc, char *argv[]) {
 
-	BcVmExe exec;
-
 	bcg.bc = false;
 	bcg.name = dc_name;
 	bcg.help = dc_help;
@@ -43,11 +41,11 @@ int dc_main(int argc, char *argv[]) {
 	bcg.sig_msg = dc_sig_msg;
 #endif // BC_ENABLE_SIGNALS
 
-	exec.init = dc_parse_init;
-	exec.exp = dc_parse_expr;
-	exec.sbgn = '[';
-	exec.send = ']';
+	bcg.init = dc_parse_init;
+	bcg.exp = dc_parse_expr;
+	bcg.sbgn = '[';
+	bcg.send = ']';
 
-	return (int) bc_vm_run(argc, argv, exec, "DC_LINE_LENGTH");
+	return (int) bc_vm_run(argc, argv, "DC_LINE_LENGTH");
 }
 #endif // DC_ENABLED

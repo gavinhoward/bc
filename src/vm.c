@@ -296,8 +296,8 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		len = buf.len - 1;
 
 		if (len == 1) {
-			if (str && buf.v[0] == vm->exe.send) str -= 1;
-			else if (buf.v[0] == vm->exe.sbgn) str += 1;
+			if (str && buf.v[0] == bcg.send) str -= 1;
+			else if (buf.v[0] == bcg.sbgn) str += 1;
 		}
 		else if (len > 1 || comment) {
 
@@ -307,9 +307,9 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 				c = string[i];
 
 				if (i - 1 > len || string[i - 1] != '\\') {
-					if (vm->exe.sbgn == vm->exe.send) str ^= c == vm->exe.sbgn;
-					else if (c == vm->exe.send) str -= 1;
-					else if (c == vm->exe.sbgn) str += 1;
+					if (bcg.sbgn == bcg.send) str ^= c == bcg.sbgn;
+					else if (c == bcg.send) str -= 1;
+					else if (c == bcg.sbgn) str += 1;
 				}
 
 				if (c == '/' && notend && !comment && string[i + 1] == '*') {
@@ -393,12 +393,11 @@ void bc_vm_free(BcVm *vm) {
 	free(vm->env_args);
 }
 
-void bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
+void bc_vm_init(BcVm *vm, const char *env_len) {
 
 	size_t len = bc_vm_envLen(env_len);
 
 	memset(vm, 0, sizeof(BcVm));
-	vm->exe = exe;
 
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
 	bc_vec_init(&vm->exprs, sizeof(char), NULL);
@@ -408,11 +407,11 @@ void bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 	if (bcg.bc) bc_vm_envArgs(vm);
 #endif // BC_ENABLED
 
-	bc_program_init(&vm->prog, len, exe.init, exe.exp);
-	exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN);
+	bc_program_init(&vm->prog, len, bcg.init, bcg.exp);
+	bcg.init(&vm->prs, &vm->prog, BC_PROG_MAIN);
 }
 
-BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
+BcStatus bc_vm_run(int argc, char *argv[], const char *env_len) {
 
 	BcStatus st;
 	BcVm vm;
@@ -429,7 +428,7 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
-	bc_vm_init(&vm, exe, env_len);
+	bc_vm_init(&vm, env_len);
 	bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files);
 
 	bcg.ttyin = isatty(0);
