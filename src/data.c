@@ -317,7 +317,9 @@ const BcInst dc_parse_insts[] = {
 };
 #endif // DC_ENABLED
 
+// ** Busybox exclude start. **
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
+// ** Busybox exclude end. **
 
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
