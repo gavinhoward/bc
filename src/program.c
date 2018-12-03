@@ -29,7 +29,7 @@
 #include <program.h>
 #include <vm.h>
 
-void bc_program_search(BcProgram *p, char *id, BcVec **ret, bool var) {
+BcVec* bc_program_search(BcProgram *p, char *id, bool var) {
 
 	BcStatus s;
 	BcId e, *ptr;
@@ -53,7 +53,8 @@ void bc_program_search(BcProgram *p, char *id, BcVec **ret, bool var) {
 
 	ptr = bc_vec_item(map, i);
 	if (new) ptr->name = bc_vm_strdup(e.name);
-	*ret = bc_vec_item(v, ptr->idx);
+
+	return bc_vec_item(v, ptr->idx);
 }
 
 BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
@@ -102,7 +103,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 		{
 			BcVec *v;
 
-			bc_program_search(p, r->d.id.name, &v, r->t == BC_RESULT_VAR);
+			v = bc_program_search(p, r->d.id.name, r->t == BC_RESULT_VAR);
 
 			if (r->t == BC_RESULT_ARRAY_ELEM) {
 				v = bc_vec_top(v);
@@ -574,7 +575,7 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 
 	ptr = bc_vec_top(&p->results);
 	if ((ptr->t == BC_RESULT_ARRAY) != !var) return BC_STATUS_EXEC_BAD_TYPE;
-	bc_program_search(p, name, &v, var);
+	v = bc_program_search(p, name, var);
 
 #if DC_ENABLED
 	if (ptr->t == BC_RESULT_STR && !var) return BC_STATUS_EXEC_BAD_TYPE;
@@ -585,7 +586,7 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 	if (s) return s;
 
 	// Do this once more to make sure that pointers were not invalidated.
-	bc_program_search(p, name, &v, var);
+	v = bc_program_search(p, name, var);
 
 	if (var) {
 		bc_num_init(&r.d.n, BC_NUM_DEF_SIZE);
@@ -626,7 +627,7 @@ BcStatus bc_program_assign(BcProgram *p, char inst) {
 		assert(assign);
 
 		if (left->t != BC_RESULT_VAR) return BC_STATUS_EXEC_BAD_TYPE;
-		bc_program_search(p, left->d.id.name, &v, true);
+		v = bc_program_search(p, left->d.id.name, true);
 
 		return bc_program_assignStr(p, right, v, false);
 	}
@@ -697,7 +698,7 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 	r.d.id.name = name;
 
 #if DC_ENABLED
-	bc_program_search(p, name, &v, true);
+	v = bc_program_search(p, name, true);
 	num = bc_vec_top(v);
 
 	if (pop || copy) {
@@ -835,7 +836,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 	for (; i < func->autos.len; ++i) {
 
 		a = bc_vec_item(&func->autos, i);
-		bc_program_search(p, a->name, &v, a->idx);
+		v = bc_program_search(p, a->name, a->idx);
 
 		if (a->idx) {
 			bc_num_init(&param.n, BC_NUM_DEF_SIZE);
@@ -889,7 +890,7 @@ BcStatus bc_program_return(BcProgram *p, char inst) {
 		BcVec *v;
 		BcId *a = bc_vec_item(&f->autos, i);
 
-		bc_program_search(p, a->name, &v, a->idx);
+		v = bc_program_search(p, a->name, a->idx);
 		bc_vec_pop(v);
 	}
 
@@ -1211,7 +1212,7 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 		}
 
 		if (exec) {
-			bc_program_search(p, name, &v, true);
+			v = bc_program_search(p, name, true);
 			n = bc_vec_top(v);
 		}
 
