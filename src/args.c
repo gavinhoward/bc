@@ -57,22 +57,21 @@ void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, "\n");
 }
 
-BcStatus bc_args_file(BcVec *exprs, const char *file) {
+void bc_args_file(BcVec *exprs, const char *file) {
 
 	BcStatus s;
 	char *buf;
 
 	s = bc_read_file(file, &buf);
-	if (s) return s;
 
-	bc_args_exprs(exprs, buf);
-	free(buf);
-
-	return s;
+	if (s) bc_vm_error(s, file, 0);
+	else {
+		bc_args_exprs(exprs, buf);
+		free(buf);
+	}
 }
 
-BcStatus bc_args(int argc, char *argv[], uint32_t *flags,
-                 BcVec *exs, BcVec *files)
+void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i;
@@ -98,7 +97,7 @@ BcStatus bc_args(int argc, char *argv[], uint32_t *flags,
 
 			case 'f':
 			{
-				s = bc_args_file(exs, optarg);
+				bc_args_file(exs, optarg);
 				break;
 			}
 
@@ -181,6 +180,4 @@ BcStatus bc_args(int argc, char *argv[], uint32_t *flags,
 	if (argv[optind] && !strcmp(argv[optind], "--")) ++optind;
 
 	for (i = optind; i < argc; ++i) bc_vec_push(files, argv + i);
-
-	return s;
 }

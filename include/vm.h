@@ -133,6 +133,10 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len);
 
 // ** Busybox exclude start. **
 
+// ** Exclude start. **
+BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
+// ** Exclude end. **
+
 #ifdef BC_ENABLED
 // ** Exclude start. **
 extern const char bc_name[];

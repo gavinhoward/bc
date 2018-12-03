@@ -106,13 +106,12 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 	return s * (!bcg.ttyin && !!p);
 }
 
-BcStatus bc_vm_envArgs(BcVm *vm) {
+void bc_vm_envArgs(BcVm *vm) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec v;
 	char *env_args = getenv(bc_args_env_name), *buf;
 
-	if (!env_args) return s;
+	if (!env_args) return;
 
 	vm->env_args = bc_vm_strdup(env_args);
 	buf = vm->env_args;
@@ -129,11 +128,9 @@ BcStatus bc_vm_envArgs(BcVm *vm) {
 		else ++buf;
 	}
 
-	s = bc_args((int) v.len, (char**) v.v, &vm->flags, &vm->exprs, &vm->files);
+	bc_args((int) v.len, (char**) v.v, &vm->flags, &vm->exprs, &vm->files);
 
 	bc_vec_free(&v);
-
-	return s;
 }
 #endif // BC_ENABLED
 
@@ -396,9 +393,8 @@ void bc_vm_free(BcVm *vm) {
 	free(vm->env_args);
 }
 
-BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
+void bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len = bc_vm_envLen(env_len);
 
 	memset(vm, 0, sizeof(BcVm));
@@ -409,13 +405,11 @@ BcStatus bc_vm_init(BcVm *vm, BcVmExe exe, const char *env_len) {
 
 #ifdef BC_ENABLED
 	vm->flags |= BC_FLAG_S * bcg.bc * (getenv("POSIXLY_CORRECT") != NULL);
-	if (bcg.bc) s = bc_vm_envArgs(vm);
+	if (bcg.bc) bc_vm_envArgs(vm);
 #endif // BC_ENABLED
 
 	bc_program_init(&vm->prog, len, exe.init, exe.exp);
 	exe.init(&vm->prs, &vm->prog, BC_PROG_MAIN);
-
-	return s;
 }
 
 BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
@@ -435,10 +429,8 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
-	st = bc_vm_init(&vm, exe, env_len);
-	if (st) goto exit;
-	st = bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files);
-	if (st) goto exit;
+	bc_vm_init(&vm, exe, env_len);
+	bc_args(argc, argv, &vm.flags, &vm.exprs, &vm.files);
 
 	bcg.ttyin = isatty(0);
 	bcg.i = bcg.ttyin || (vm.flags & BC_FLAG_I) || isatty(1);
@@ -454,7 +446,6 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	if (bcg.ttyin && !(vm.flags & BC_FLAG_Q)) bc_vm_info(NULL);
 	st = bc_vm_exec(&vm);
 
-exit:
 	bc_vm_free(&vm);
 	return st;
 }
