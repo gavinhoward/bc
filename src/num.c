@@ -807,8 +807,7 @@ void bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 		s = bc_num_mul(n, base, &mult, 0);
 		if (s) goto int_err;
-		s = bc_num_ulong2num(&temp, v);
-		if (s) goto int_err;
+		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&mult, &temp, n, 0);
 		if (s) goto int_err;
 	}
@@ -832,8 +831,7 @@ void bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 		s = bc_num_mul(&result, base, &result, 0);
 		if (s) goto err;
-		s = bc_num_ulong2num(&temp, v);
-		if (s) goto err;
+		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&result, &temp, &result, 0);
 		if (s) goto err;
 		s = bc_num_mul(&mult, base, &mult, 0);
@@ -970,8 +968,7 @@ BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width, size_t *nchars,
 		if (s) goto err;
 		s = bc_num_ulong(&fracp, &dig);
 		if (s) goto err;
-		s = bc_num_ulong2num(&intp, dig);
-		if (s) goto err;
+		bc_num_ulong2num(&intp, dig);
 		s = bc_num_sub(&fracp, &intp, &fracp, 0);
 		if (s) goto err;
 		print(dig, width, radix, nchars, len);
@@ -1117,7 +1114,7 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
+void bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 	size_t len;
 	BcDig *ptr;
@@ -1127,13 +1124,11 @@ BcStatus bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 	bc_num_zero(n);
 
-	if (val == 0) return BC_STATUS_SUCCESS;
+	if (val == 0) return;
 
 	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len)
 	bc_num_expand(n, len);
 	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10) ptr[i] = val % 10;
-
-	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {

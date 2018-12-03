@@ -940,7 +940,7 @@ BcStatus bc_program_builtin(BcProgram *p, char inst) {
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.d.n, p->scale);
 #if BC_ENABLED
 	else if (len != 0 && opnd->t == BC_RESULT_ARRAY) {
-		s = bc_num_ulong2num(&res.d.n, (unsigned long) ((BcVec*) num)->len);
+		bc_num_ulong2num(&res.d.n, (unsigned long) ((BcVec*) num)->len);
 	}
 #endif // BC_ENABLED
 #if DC_ENABLED
@@ -952,23 +952,17 @@ BcStatus bc_program_builtin(BcProgram *p, char inst) {
 		assert(idx < p->strs.len);
 
 		str = bc_vec_item(&p->strs, idx);
-		s = bc_num_ulong2num(&res.d.n, strlen(*str));
-		if (s) goto err;
+		bc_num_ulong2num(&res.d.n, strlen(*str));
 	}
 #endif // DC_ENABLED
 	else {
 		BcProgramBuiltIn f = len ? bc_program_len : bc_program_scale;
 		assert(opnd->t != BC_RESULT_ARRAY);
-		s = bc_num_ulong2num(&res.d.n, f(num));
-		if (s) goto err;
+		bc_num_ulong2num(&res.d.n, f(num));
 	}
 
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
 
-	return s;
-
-err:
-	bc_num_free(&res.d.n);
 	return s;
 }
 
@@ -1043,24 +1037,16 @@ err:
 	return s;
 }
 
-BcStatus bc_program_stackLen(BcProgram *p) {
+void bc_program_stackLen(BcProgram *p) {
 
-	BcStatus s;
 	BcResult res;
 	size_t len = p->results.len;
 
 	res.t = BC_RESULT_TEMP;
 
 	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
-	s = bc_num_ulong2num(&res.d.n, len);
-	if (s) goto err;
+	bc_num_ulong2num(&res.d.n, len);
 	bc_vec_push(&p->results, &res);
-
-	return s;
-
-err:
-	bc_num_free(&res.d.n);
-	return s;
 }
 
 BcStatus bc_program_asciify(BcProgram *p) {
@@ -1279,9 +1265,8 @@ exit:
 }
 #endif // DC_ENABLED
 
-BcStatus bc_program_pushGlobal(BcProgram *p, char inst) {
+void bc_program_pushGlobal(BcProgram *p, char inst) {
 
-	BcStatus s;
 	BcResult res;
 	unsigned long val;
 
@@ -1294,15 +1279,8 @@ BcStatus bc_program_pushGlobal(BcProgram *p, char inst) {
 	else val = (unsigned long) p->ob_t;
 
 	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
-	s = bc_num_ulong2num(&res.d.n, val);
-	if (s) goto err;
+	bc_num_ulong2num(&res.d.n, val);
 	bc_vec_push(&p->results, &res);
-
-	return s;
-
-err:
-	bc_num_free(&res.d.n);
-	return s;
 }
 
 void bc_program_free(BcProgram *p) {
@@ -1560,7 +1538,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_SCALE:
 			case BC_INST_OBASE:
 			{
-				s = bc_program_pushGlobal(p, inst);
+				bc_program_pushGlobal(p, inst);
 				break;
 			}
 
@@ -1688,7 +1666,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_STACK_LEN:
 			{
-				s = bc_program_stackLen(p);
+				bc_program_stackLen(p);
 				break;
 			}
 

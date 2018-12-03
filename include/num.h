@@ -67,7 +67,7 @@ void bc_num_copy(BcNum *d, BcNum *s);
 void bc_num_free(void *num);
 
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
-BcStatus bc_num_ulong2num(BcNum *n, unsigned long val);
+void bc_num_ulong2num(BcNum *n, unsigned long val);
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);
