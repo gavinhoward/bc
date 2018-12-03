@@ -124,14 +124,14 @@ if project == "toybox":
 
 removals = read_file(projectdir + "/remove_dotall.txt")
 
-for reg in removals:
-	r = re.compile(reg, re.M | re.DOTALL)
+for rem in removals:
+	r = re.compile(rem, re.M | re.DOTALL)
 	content = r.sub('', content)
 
 removals = read_file(projectdir + "/remove.txt")
 
-for reg in removals:
-	r = re.compile(reg, re.M)
+for rem in removals:
+	r = re.compile(rem, re.M)
 	content = r.sub('', content)
 
 res = subprocess.run(["make", "version"], stdout=subprocess.PIPE)
