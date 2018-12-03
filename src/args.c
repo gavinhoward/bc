@@ -57,18 +57,18 @@ void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, "\n");
 }
 
-void bc_args_file(BcVec *exprs, const char *file) {
+BcStatus bc_args_file(BcVec *exprs, const char *file) {
 
 	BcStatus s;
 	char *buf;
 
 	s = bc_read_file(file, &buf);
+	if (s) return s;
 
-	if (s) bc_vm_error(s, file, 0);
-	else {
-		bc_args_exprs(exprs, buf);
-		free(buf);
-	}
+	bc_args_exprs(exprs, buf);
+	free(buf);
+
+	return s;
 }
 
 void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
@@ -97,7 +97,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 
 			case 'f':
 			{
-				bc_args_file(exs, optarg);
+				s = bc_args_file(exs, optarg);
 				break;
 			}
 
