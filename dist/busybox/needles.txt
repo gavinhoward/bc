@@ -38,3 +38,4 @@ exit\(\(int\) s\);
 ([\t]*)fprintf\(stderr, bc_err_fmt, bc_errs\[bc_err_ids\[s\]\], bc_err_msgs\[s\]\);
 bc_vm_printf\(stdout, "%s %s\\n", .*?\);
 ([\t]*)return s == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : s;
+bc_num_hex_digits

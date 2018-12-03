@@ -38,3 +38,4 @@ exit((int) BC_STATUS_IO_ERR);
 \1fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[BC_STATUS_IO_ERR]],\n\1        bc_err_msgs[BC_STATUS_IO_ERR]);
 printf("%s "BB_VER"\\n", applet_name);
 \1if (s == BC_STATUS_QUIT)\n\1\ts = BC_STATUS_SUCCESS;\n\n\1return s;
+bb_hexdigits_upcase

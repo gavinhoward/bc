@@ -28,3 +28,4 @@
 ^[\t]*fclose\(f\);$
 \n\n[ ]*BC_STATUS_INVALID_OPTION,$
 \n[\t]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$
+^static const char bc_num_hex_digits[] = "0123456789ABCDEF";$
