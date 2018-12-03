@@ -29,7 +29,7 @@
 #include <lex.h>
 #include <parse.h>
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 
 // ** Exclude start. **
 int bc_main(int argc, char *argv[]);

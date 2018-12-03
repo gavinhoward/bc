@@ -171,7 +171,7 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **l, BcNum **ln,
 		return BC_STATUS_EXEC_BAD_TYPE;
 	if (!assign && !BC_PROG_NUM((*r), (*ln))) return BC_STATUS_EXEC_BAD_TYPE;
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	assert(lt != BC_RESULT_VAR || !BC_PROG_STR(*ln) || assign);
 #else // DC_ENABLED
 	assert(rt != BC_RESULT_STR);
@@ -199,7 +199,7 @@ BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n) {
 	s = bc_program_num(p, *r, n, false);
 	if (s) return s;
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	assert((*r)->t != BC_RESULT_VAR || !BC_PROG_STR(*n));
 #endif // DC_ENABLED
 
@@ -318,7 +318,7 @@ void bc_program_printString(const char *str, size_t *nchars) {
 
 	size_t i, len = strlen(str);
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	if (len == 0) {
 		bc_vm_putchar('\0');
 		return;
@@ -538,7 +538,7 @@ BcStatus bc_program_logical(BcProgram *p, char inst) {
 	return s;
 }
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
 
 	BcNum n2;
@@ -576,7 +576,7 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 	if ((ptr->t == BC_RESULT_ARRAY) != !var) return BC_STATUS_EXEC_BAD_TYPE;
 	bc_program_search(p, name, &v, var);
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	if (ptr->t == BC_RESULT_STR && !var) return BC_STATUS_EXEC_BAD_TYPE;
 	if (ptr->t == BC_RESULT_STR) return bc_program_assignStr(p, ptr, v, true);
 #endif // DC_ENABLED
@@ -616,7 +616,7 @@ BcStatus bc_program_assign(BcProgram *p, char inst) {
 	ib = left->t == BC_RESULT_IBASE;
 	sc = left->t == BC_RESULT_SCALE;
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	assert(left->t != BC_RESULT_STR);
 
 	if (right->t == BC_RESULT_STR) {
@@ -635,7 +635,7 @@ BcStatus bc_program_assign(BcProgram *p, char inst) {
 	if (left->t == BC_RESULT_CONSTANT || left->t == BC_RESULT_TEMP)
 		return BC_STATUS_PARSE_BAD_ASSIGN;
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero))
 		return BC_STATUS_MATH_DIVIDE_BY_ZERO;
 
@@ -686,7 +686,7 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r;
 	char *name = bc_program_name(code, bgn);
-#ifdef DC_ENABLED // Exclude
+#if DC_ENABLED // Exclude
 	BcNum *num;
 	BcVec *v;
 #else // DC_ENABLED
@@ -696,7 +696,7 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 	r.t = BC_RESULT_VAR;
 	r.d.id.name = name;
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	bc_program_search(p, name, &v, true);
 	num = bc_vec_top(v);
 
@@ -767,7 +767,7 @@ err:
 	return s;
 }
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 BcStatus bc_program_incdec(BcProgram *p, char inst) {
 
 	BcStatus s;
@@ -930,19 +930,19 @@ BcStatus bc_program_builtin(BcProgram *p, char inst) {
 	s = bc_program_num(p, opnd, &num, false);
 	if (s) return s;
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	if (!BC_PROG_NUM(opnd, num) && !len) return BC_STATUS_EXEC_BAD_TYPE;
 #endif // DC_ENABLED
 
 	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.d.n, p->scale);
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	else if (len != 0 && opnd->t == BC_RESULT_ARRAY) {
 		s = bc_num_ulong2num(&res.d.n, (unsigned long) ((BcVec*) num)->len);
 	}
 #endif // BC_ENABLED
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	else if (len != 0 && !BC_PROG_NUM(opnd, num)) {
 
 		char **str;
@@ -971,7 +971,7 @@ err:
 	return s;
 }
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 BcStatus bc_program_divmod(BcProgram *p) {
 
 	BcStatus s;
@@ -1309,7 +1309,7 @@ void bc_program_free(BcProgram *p) {
 	bc_num_free(&p->ib);
 	bc_num_free(&p->ob);
 	bc_num_free(&p->hexb);
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	bc_num_free(&p->strmb);
 #endif // DC_ENABLED
 	bc_vec_free(&p->fns);
@@ -1355,7 +1355,7 @@ void bc_program_init(BcProgram *p, size_t line_len,
 	bc_num_ten(&p->hexb);
 	p->hexb.num[0] = 6;
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	bc_num_init(&p->strmb, BC_NUM_DEF_SIZE);
 	bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1);
 #endif // DC_ENABLED
@@ -1469,7 +1469,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 		switch (inst) {
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 			case BC_INST_JUMP_ZERO:
 			{
 				s = bc_program_prep(p, &ptr, &num);
@@ -1638,7 +1638,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 			case BC_INST_ASSIGN_POWER:
 			case BC_INST_ASSIGN_MULTIPLY:
 			case BC_INST_ASSIGN_DIVIDE:
@@ -1651,7 +1651,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 				s = bc_program_assign(p, inst);
 				break;
 			}
-#ifdef DC_ENABLED
+#if DC_ENABLED
 			case BC_INST_MODEXP:
 			{
 				s = bc_program_modexp(p);

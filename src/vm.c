@@ -89,7 +89,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name));
 }
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
                           size_t line, const char *msg)
 {
@@ -355,7 +355,7 @@ BcStatus bc_vm_exec(BcVm *vm) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	if (vm->flags & BC_FLAG_L) {
 
 		bc_lex_file(&vm->prs.l, bc_lib_name);
@@ -435,11 +435,11 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len) {
 	bcg.ttyin = isatty(0);
 	bcg.i = bcg.ttyin || (vm.flags & BC_FLAG_I) || isatty(1);
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	bcg.s = vm.flags & BC_FLAG_S;
 	bcg.w = vm.flags & BC_FLAG_W;
 #endif // BC_ENABLED
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	bcg.x = vm.flags & BC_FLAG_X;
 #endif // DC_ENABLED
 

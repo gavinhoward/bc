@@ -108,7 +108,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 				break;
 			}
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 			case 'i':
 			{
 				if (!bcg.bc) s = BC_STATUS_INVALID_OPTION;
@@ -153,7 +153,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 				break;
 			}
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 			case 'x':
 			{
 				if (bcg.bc) s = BC_STATUS_INVALID_OPTION;

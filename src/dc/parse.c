@@ -30,7 +30,7 @@
 #include <program.h>
 #include <vm.h>
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 BcStatus dc_parse_register(BcParse *p) {
 
 	BcStatus s;

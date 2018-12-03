@@ -121,7 +121,7 @@ void bc_string_free(void *string) {
 	free(*((char**) string));
 }
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 void bc_result_copy(BcResult *d, BcResult *src) {
 
 	assert(d && src);

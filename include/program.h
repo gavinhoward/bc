@@ -42,7 +42,7 @@ typedef struct BcProgram {
 
 	BcNum hexb;
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	BcNum strmb;
 #endif // DC_ENABLED
 
@@ -81,7 +81,7 @@ typedef struct BcProgram {
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 #define BC_PROG_REQ_FUNCS (2)
 #endif // DC_ENABLED
 
@@ -98,7 +98,7 @@ void bc_program_init(BcProgram *p, size_t line_len,
 void bc_program_free(BcProgram *program);
 
 #ifndef NDEBUG
-#if defined(BC_ENABLED) && defined(DC_ENABLED)
+#if BC_ENABLED && DC_ENABLED
 void bc_program_code(BcProgram *p);
 void bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
 #endif // BC_ENABLED && DC_ENABLED

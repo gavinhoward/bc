@@ -31,7 +31,7 @@
 
 typedef enum BcInst {
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	BC_INST_INC_PRE,
 	BC_INST_DEC_PRE,
 	BC_INST_INC_POST,
@@ -58,7 +58,7 @@ typedef enum BcInst {
 	BC_INST_BOOL_OR,
 	BC_INST_BOOL_AND,
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	BC_INST_ASSIGN_POWER,
 	BC_INST_ASSIGN_MULTIPLY,
 	BC_INST_ASSIGN_DIVIDE,
@@ -87,7 +87,7 @@ typedef enum BcInst {
 	BC_INST_STR,
 	BC_INST_PRINT_STR,
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	BC_INST_JUMP,
 	BC_INST_JUMP_ZERO,
 
@@ -102,7 +102,7 @@ typedef enum BcInst {
 	BC_INST_POP,
 	BC_INST_POP_EXEC,
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	BC_INST_MODEXP,
 	BC_INST_DIVMOD,
 

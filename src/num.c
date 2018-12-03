@@ -865,7 +865,7 @@ void bc_num_printNewline(size_t *nchars, size_t line_len) {
 	}
 }
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 void bc_num_printChar(size_t num, size_t width, bool radix,
                       size_t *nchars, size_t line_len)
 {
@@ -1016,7 +1016,7 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t,
 	return s;
 }
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars, size_t len) {
 	return bc_num_printNum(n, base, 1, nchars, len, bc_num_printChar);
 }
@@ -1302,7 +1302,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	return s;
 }
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	BcStatus s;

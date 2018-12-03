@@ -27,7 +27,7 @@
 #include <dc.h>
 #include <vm.h>
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;

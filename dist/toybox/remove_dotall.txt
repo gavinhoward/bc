@@ -14,11 +14,11 @@
 \n[ ]*if \(bcg.bc\) s = bc_vm_envArgs\(vm\);$
 \n#if BC_ENABLE_SIGNALS$
 \n#endif // BC_ENABLE_SIGNALS$
-\n#ifdef DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
-\n#ifdef DC_ENABLED.*?#endif // DC_ENABLED
-\n#ifdef DC_ENABLED.*?#else // DC_ENABLED
+\n#if DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
+\n#if DC_ENABLED.*?#endif // DC_ENABLED
+\n#if DC_ENABLED.*?#else // DC_ENABLED
 \n#endif // DC_ENABLED
-\n#ifdef BC_ENABLED
+\n#if BC_ENABLED
 \n#else // BC_ENABLED.*?#endif // BC_ENABLED
 \n#endif // BC_ENABLED
 \n#ifndef NDEBUG.*?#endif // NDEBUG

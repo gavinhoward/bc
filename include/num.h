@@ -84,7 +84,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 void bc_num_truncate(BcNum *n, size_t places);
 ssize_t bc_num_cmp(BcNum *a, BcNum *b);
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 #endif // DC_ENABLED
 

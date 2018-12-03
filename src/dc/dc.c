@@ -31,7 +31,7 @@
 #include <vm.h>
 #include <args.h>
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 int dc_main(int argc, char *argv[]) {
 
 	BcVmExe exec;

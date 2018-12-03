@@ -30,7 +30,7 @@
 #include <bc.h>
 #include <vm.h>
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 BcStatus bc_parse_else(BcParse *p);
 BcStatus bc_parse_stmt(BcParse *p);
 

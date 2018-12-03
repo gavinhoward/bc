@@ -24,7 +24,7 @@
 #include <bc.h>
 #include <vm.h>
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 int bc_main(int argc, char *argv[]) {
 
 	BcVmExe exec;

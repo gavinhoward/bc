@@ -28,7 +28,7 @@
 #include <bc.h>
 #include <vm.h>
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 BcStatus bc_lex_identifier(BcLex *l) {
 
 	BcStatus s;

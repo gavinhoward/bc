@@ -27,7 +27,7 @@
 #include <lex.h>
 #include <parse.h>
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 
 #define DC_PARSE_BUF_LEN ((int) (sizeof(uint32_t) * CHAR_BIT))
 

@@ -27,7 +27,7 @@
 
 // clang-format off
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 // ** Exclude start. **
 #ifndef _WIN32
 const char bc_name[] = "bc";
@@ -40,7 +40,7 @@ const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
 #endif // BC_ENABLED
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 #ifndef _WIN32
 const char dc_name[] = "dc";
 #else // _WIN32
@@ -71,7 +71,7 @@ const char *bc_errs[] = {
 	"Math",
 	"Runtime",
 	"Vector",
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	"POSIX",
 #endif // BC_ENABLED
 };
@@ -79,14 +79,14 @@ const char *bc_errs[] = {
 const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 	BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	BC_ERR_IDX_LEX,
 #endif // DC_ENABLED
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 	BC_ERR_IDX_MATH,
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	BC_ERR_IDX_MATH,
 #endif // DC_ENABLED
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -94,7 +94,7 @@ const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_VEC, BC_ERR_IDX_VEC,
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -114,7 +114,7 @@ const char *bc_err_msgs[] = {
 	"string end could not be found",
 	"comment end could not be found",
 	"end of file",
-#ifdef DC_ENABLED
+#if DC_ENABLED
 	"extended register",
 #endif // DC_ENABLED
 
@@ -155,7 +155,7 @@ const char *bc_err_msgs[] = {
 	"index is out of bounds",
 	"item already exists",
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 	"POSIX only allows one character names; the following is bad:",
 	"POSIX does not allow '#' script comments",
 	"POSIX does not allow the following keyword:",
@@ -189,7 +189,7 @@ const char bc_inst_chars[] =
 	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$bHovxzatfcZdghkKuU";
 #endif // NDEBUG
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
@@ -252,7 +252,7 @@ const BcParseNext bc_parse_next_read =
 	BC_PARSE_NEXT(2, BC_LEX_NLINE, BC_LEX_EOF);
 #endif // BC_ENABLED
 
-#ifdef DC_ENABLED
+#if DC_ENABLED
 const BcLexType dc_lex_regs[] = {
 	BC_LEX_OP_REL_EQ, BC_LEX_OP_REL_LE, BC_LEX_OP_REL_GE, BC_LEX_OP_REL_NE,
 	BC_LEX_OP_REL_LT, BC_LEX_OP_REL_GT, BC_LEX_SCOLON, BC_LEX_COLON,

@@ -30,7 +30,7 @@
 #include <parse.h>
 #include <program.h>
 
-#if !defined(BC_ENABLED) && !defined(DC_ENABLED)
+#if !BC_ENABLED && !DC_ENABLED
 #error Must define BC_ENABLED, DC_ENABLED, or both
 #endif
 
@@ -111,7 +111,7 @@ typedef struct BcGlobals {
 } BcGlobals;
 // ** Exclude end. **
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
                           size_t line, const char *msg);
 #endif // BC_ENABLED
@@ -137,7 +137,7 @@ BcStatus bc_vm_run(int argc, char *argv[], BcVmExe exe, const char *env_len);
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 // ** Exclude end. **
 
-#ifdef BC_ENABLED
+#if BC_ENABLED
 // ** Exclude start. **
 extern const char bc_name[];
 // ** Exclude end. **
@@ -145,7 +145,7 @@ extern const char bc_sig_msg[];
 #endif // BC_ENABLED
 
 // ** Exclude start. **
-#ifdef DC_ENABLED
+#if DC_ENABLED
 extern const char dc_name[];
 extern const char dc_sig_msg[];
 #endif // DC_ENABLED
