@@ -66,12 +66,13 @@ BcStatus bc_lex_identifier(BcLex *l) {
 
 BcStatus bc_lex_string(BcLex *l) {
 
-	size_t len, nls = 0, i = l->i;
+	size_t len, nlines = 0, i = l->i;
+	const char *buf = l->buf;
 	char c;
 
 	l->t.t = BC_LEX_STR;
 
-	for (c = l->buf[i]; c != 0 && c != '"'; c = l->buf[++i]) nls += (c == '\n');
+	for (c = buf[i]; c != 0 && c != '"'; c = buf[++i]) nlines += c == '\n';
 
 	if (c == '\0') {
 		l->i = i;
@@ -83,7 +84,7 @@ BcStatus bc_lex_string(BcLex *l) {
 	bc_vec_string(&l->t.v, len, l->buf + l->i);
 
 	l->i = i + 1;
-	l->line += nls;
+	l->line += nlines;
 
 	return BC_STATUS_SUCCESS;
 }
@@ -98,7 +99,7 @@ void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 
 BcStatus bc_lex_comment(BcLex *l) {
 
-	size_t i, nls = 0;
+	size_t i, nlines = 0;
 	const char *buf = l->buf;
 	bool end = false;
 	char c;
@@ -107,7 +108,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 	for (i = ++l->i; !end; i += !end) {
 
-		for (c = buf[i]; c != '*' && c != 0; c = buf[++i]) nls += (c == '\n');
+		for (c = buf[i]; c != '*' && c != 0; c = buf[++i]) nlines += c == '\n';
 
 		if (c == 0 || buf[i + 1] == '\0') {
 			l->i = i;
@@ -118,7 +119,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 	}
 
 	l->i = i + 2;
-	l->line += nls;
+	l->line += nlines;
 
 	return BC_STATUS_SUCCESS;
 }
