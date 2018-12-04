@@ -128,7 +128,11 @@ void bc_vm_envArgs(BcVm *vm) {
 		else ++buf;
 	}
 
-	bc_args((int) v.len, (char**) v.v, &vm->flags, &vm->exprs, &vm->files);
+	// Make sure to push a NULL pointer at the end.
+	buf = NULL;
+	bc_vec_push(&v, &buf);
+
+	bc_args((int) v.len - 1, (char**) v.v, &vm->flags, &vm->exprs, &vm->files);
 
 	bc_vec_free(&v);
 }
