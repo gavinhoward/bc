@@ -95,11 +95,12 @@ typedef struct BcGlobals {
 
 	// ** Busybox exclude start. **
 	const char *name;
+	const char *help;
 	// ** Busybox exclude end. **
+
 #if BC_ENABLE_SIGNALS
 	const char *sig_msg;
 #endif // BC_ENABLE_SIGNALS
-	const char *help;
 
 	BcParseInit init;
 	BcParseExpr exp;
