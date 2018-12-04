@@ -238,7 +238,7 @@ BcStatus dc_parse_parse(BcParse *p) {
 	if (p->l.t.t == BC_LEX_EOF) s = BC_STATUS_LEX_EOF;
 	else s = dc_parse_expr(p, 0);
 
-	if (s || bcg.signe) s = bc_parse_reset(p, s);
+	if (s || BC_SIGINT) s = bc_parse_reset(p, s);
 
 	return s;
 }

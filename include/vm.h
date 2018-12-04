@@ -62,6 +62,12 @@
 
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || bcg.name[0] == 'b'))
 
+#if BC_ENABLE_SIGNALS
+#define BC_SIGINT (bcg.sig)
+#else // BC_ENABLE_SIGNALS
+#define BC_SIGINT (0)
+#endif // BC_ENABLE_SIGNALS
+
 typedef struct BcVm {
 
 	BcParse prs;
@@ -83,10 +89,6 @@ typedef struct BcVm {
 // ** Exclude start. **
 typedef struct BcGlobals {
 
-	unsigned long sig;
-	unsigned long sigc;
-	unsigned long signe;
-
 	long i;
 	long ttyin;
 	long s;
@@ -99,6 +101,7 @@ typedef struct BcGlobals {
 	// ** Busybox exclude end. **
 
 #if BC_ENABLE_SIGNALS
+	unsigned long sig;
 	const char *sig_msg;
 #endif // BC_ENABLE_SIGNALS
 

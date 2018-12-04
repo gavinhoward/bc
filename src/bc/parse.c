@@ -1078,7 +1078,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 	}
 	else s = bc_parse_stmt(p);
 
-	if ((s && s != BC_STATUS_QUIT && s != BC_STATUS_LIMITS) || bcg.signe)
+	if ((s && s != BC_STATUS_QUIT && s != BC_STATUS_LIMITS) || BC_SIGINT)
 		s = bc_parse_reset(p, s);
 
 	return s;
@@ -1098,7 +1098,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 	paren_expr = rprn = done = get_token = assign = false;
 	bin_last = true;
 
-	for (; !bcg.signe && !s && !done && bc_parse_exprs[t]; t = p->l.t.t) {
+	for (; !BC_SIGINT && !s && !done && bc_parse_exprs[t]; t = p->l.t.t) {
 
 		switch (t) {
 
@@ -1289,7 +1289,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 	}
 
 	if (s) return s;
-	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
+	if (BC_SIGINT) return BC_STATUS_EXEC_SIGNAL;
 
 	while (p->ops.len > ops_bgn) {
 

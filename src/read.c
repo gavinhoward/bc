@@ -57,8 +57,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 #if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
 
-				bcg.sigc = bcg.sig;
-				bcg.signe = 0;
+				bcg.sig = 0;
 
 				if (bcg.ttyin) {
 					bc_vm_puts(bc_program_ready_msg, stderr);

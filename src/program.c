@@ -1410,10 +1410,9 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 	ip = bc_vec_top(&p->stack);
 	ip->idx = f->code.len;
 
-	if (!s && bcg.signe && !bcg.i) return BC_STATUS_QUIT;
+	if (!s && BC_SIGINT && !bcg.i) return BC_STATUS_QUIT;
 
-	bcg.sigc += bcg.signe;
-	bcg.signe = bcg.sig != bcg.sigc;
+	bcg.sig = 0;
 
 	if (!s || s == BC_STATUS_EXEC_SIGNAL) {
 		if (bcg.ttyin) {
@@ -1740,7 +1739,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 #endif // NDEBUG
 		}
 
-		if ((s && s != BC_STATUS_QUIT) || bcg.signe) s = bc_program_reset(p, s);
+		if ((s && s != BC_STATUS_QUIT) || BC_SIGINT) s = bc_program_reset(p, s);
 
 		// If the stack has changed, pointers may be invalid.
 		ip = bc_vec_top(&p->stack);

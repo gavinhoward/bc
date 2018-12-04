@@ -58,19 +58,19 @@ void bc_num_ten(BcNum *n) {
 
 BcStatus bc_num_subArrays(BcDig *restrict a, BcDig *restrict b, size_t len) {
 	size_t i, j;
-	for (i = 0; !bcg.signe && i < len; ++i) {
-		for (a[i] -= b[i], j = 0; !bcg.signe && a[i + j] < 0;) {
+	for (i = 0; !BC_SIGINT && i < len; ++i) {
+		for (a[i] -= b[i], j = 0; !BC_SIGINT && a[i + j] < 0;) {
 			a[i + j++] += 10;
 			a[i + j] -= 1;
 		}
 	}
-	return bcg.signe ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGINT ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 ssize_t bc_num_compare(BcDig *restrict a, BcDig *restrict b, size_t len) {
 	size_t i;
 	int c = 0;
-	for (i = len - 1; !bcg.signe && i < len && !(c = a[i] - b[i]); --i);
+	for (i = len - 1; !BC_SIGINT && i < len && !(c = a[i] - b[i]); --i);
 	return BC_NUM_NEG(i + 1, c < 0);
 }
 
@@ -115,7 +115,7 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
 	if (cmp != 0) return BC_NUM_NEG(cmp, (!a_max) != neg);
 
-	for (max_num -= diff, i = diff - 1; !bcg.signe && i < diff; --i) {
+	for (max_num -= diff, i = diff - 1; !BC_SIGINT && i < diff; --i) {
 		if (max_num[i]) return BC_NUM_NEG(1, (!a_max) != neg);
 	}
 
@@ -270,13 +270,13 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		ptr = ptr_b;
 	}
 
-	for (carry = 0, i = 0; !bcg.signe && i < min_rdx + min_int; ++i, ++c->len) {
+	for (carry = 0, i = 0; !BC_SIGINT && i < min_rdx + min_int; ++i, ++c->len) {
 		in = ((int) ptr_a[i]) + ((int) ptr_b[i]) + carry;
 		carry = in / 10;
 		ptr_c[i] = (BcDig) (in % 10);
 	}
 
-	for (; !bcg.signe && i < max + min_rdx; ++i, ++c->len) {
+	for (; !BC_SIGINT && i < max + min_rdx; ++i, ++c->len) {
 		in = ((int) ptr[i]) + carry;
 		carry = in / 10;
 		ptr_c[i] = (BcDig) (in % 10);
@@ -284,7 +284,7 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	if (carry != 0) c->num[c->len++] = (BcDig) carry;
 
-	return bcg.signe ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGINT ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
@@ -357,7 +357,7 @@ BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	bool aone = BC_NUM_ONE(a);
 
-	if (bcg.signe) return BC_STATUS_EXEC_SIGNAL;
+	if (BC_SIGINT) return BC_STATUS_EXEC_SIGNAL;
 	if (a->len == 0 || b->len == 0) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
@@ -375,9 +375,9 @@ BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 		memset(c->num, 0, sizeof(BcDig) * c->cap);
 		c->len = carry = len = 0;
 
-		for (i = 0; !bcg.signe && i < b->len; ++i) {
+		for (i = 0; !BC_SIGINT && i < b->len; ++i) {
 
-			for (j = 0; !bcg.signe && j < a->len; ++j) {
+			for (j = 0; !BC_SIGINT && j < a->len; ++j) {
 				int in = (int) c->num[i + j];
 				in += ((int) a->num[j]) * ((int) b->num[i]) + carry;
 				carry = in / 10;
@@ -391,7 +391,7 @@ BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 
 		c->len = len;
 
-		return bcg.signe ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
+		return BC_SIGINT ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
 	}
 
 	bc_num_init(&l1, max);
@@ -541,7 +541,7 @@ BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	c->len = cp.len;
 	p = b->num;
 
-	for (i = end - 1; !bcg.signe && !s && i < end; --i) {
+	for (i = end - 1; !BC_SIGINT && !s && i < end; --i) {
 		n = cp.num + i;
 		for (q = 0; (!s && n[len] != 0) || bc_num_compare(n, p, len) >= 0; ++q)
 			s = bc_num_subArrays(n, p, len);
@@ -639,20 +639,20 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	b->neg = neg;
 
-	for (powrdx = a->rdx; !bcg.signe && !(pow & 1); pow >>= 1) {
+	for (powrdx = a->rdx; !BC_SIGINT && !(pow & 1); pow >>= 1) {
 		powrdx <<= 1;
 		s = bc_num_mul(&copy, &copy, &copy, powrdx);
 		if (s) goto err;
 	}
 
-	if (bcg.signe) {
+	if (BC_SIGINT) {
 		s = BC_STATUS_EXEC_SIGNAL;
 		goto err;
 	}
 
 	bc_num_copy(c, &copy);
 
-	for (resrdx = powrdx, pow >>= 1; !bcg.signe && pow != 0; pow >>= 1) {
+	for (resrdx = powrdx, pow >>= 1; !BC_SIGINT && pow != 0; pow >>= 1) {
 
 		powrdx <<= 1;
 		s = bc_num_mul(&copy, &copy, &copy, powrdx);
@@ -670,7 +670,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if (s) goto err;
 	}
 
-	if (bcg.signe) {
+	if (BC_SIGINT) {
 		s = BC_STATUS_EXEC_SIGNAL;
 		goto err;
 	}
@@ -1223,7 +1223,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 	resrdx = scale + 2;
 	len = BC_NUM_INT(x0) + resrdx - 1;
 
-	while (!bcg.signe && (cmp != 0 || digs < len)) {
+	while (!BC_SIGINT && (cmp != 0 || digs < len)) {
 
 		s = bc_num_div(a, x0, &f, resrdx);
 		if (s) goto err;
@@ -1249,7 +1249,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 		x1 = temp;
 	}
 
-	if (bcg.signe) {
+	if (BC_SIGINT) {
 		s = BC_STATUS_EXEC_SIGNAL;
 		goto err;
 	}

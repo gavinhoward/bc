@@ -53,8 +53,7 @@ void bc_vm_sig(int sig) {
 	int err = errno;
 	size_t len = strlen(bcg.sig_msg);
 	if (sig == SIGINT && write(2, bcg.sig_msg, len) == (ssize_t) len) {
-		bcg.signe = bcg.sig == bcg.sigc;
-		bcg.sig += bcg.signe;
+		bcg.sig = sig;
 	}
 	errno = err;
 }
@@ -62,8 +61,7 @@ void bc_vm_sig(int sig) {
 BOOL WINAPI bc_vm_sig(DWORD sig) {
 	if (sig == CTRL_C_EVENT) {
 		bc_vm_puts(bcg.sig_msg, stderr);
-		bcg.signe = bcg.sig == bcg.sigc;
-		bcg.sig += bcg.signe;
+		bcg.sig = sig;
 	}
 	return TRUE;
 }
