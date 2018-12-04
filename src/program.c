@@ -1752,7 +1752,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 }
 
 #ifndef NDEBUG
-#if defined(BC_ENABLED) && defined(DC_ENABLED)
+#if BC_ENABLED && DC_ENABLED
 void bc_program_printIndex(char *code, size_t *bgn) {
 
 	char byte, i, bytes = code[(*bgn)++];

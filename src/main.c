@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
 
 	setlocale(LC_ALL, "");
 
-#if !defined(DC_ENABLED)
+#if !DC_ENABLED
 	s = bc_main(argc, argv);
-#elif !defined(BC_ENABLED)
+#elif !BC_ENABLED
 	s = dc_main(argc, argv);
 #else
 	char *name = strrchr(argv[0], '/');
