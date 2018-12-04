@@ -112,8 +112,8 @@ This `bc` uses two algorithms:
 
 Karatsuba is used for "large" numbers. ("Large" numbers are defined as any
 number with `BC_NUM_KARATSUBA_LEN` digits or larger. `BC_NUM_KARATSUBA_LEN` has
-a sane default, but may be configured by the user). Karatsuba, as implemented in
-this `bc`, is superlinear but subpolynomial (bound by `O(n^log_2(3))`).
+a sane default, but may be configured by the user.) Karatsuba, as implemented in
+this `bc`, is superlinear but subpolynomial (bounded by `O(n^log_2(3))`).
 
 Brute force multiplication is used below `BC_NUM_KARATSUBA_LEN` digits. It is
 polynomial (`O(n^2)`), but since Karatsuba requires both more intermediate
