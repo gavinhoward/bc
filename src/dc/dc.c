@@ -32,12 +32,11 @@
 #include <args.h>
 
 #if DC_ENABLED
-int dc_main(int argc, char *argv[]) {
+int dc_main(int argc, char **argv) {
 
-	bcg.name = dc_name;
 	bcg.help = dc_help;
 #if BC_ENABLE_SIGNALS
-	bcg.sig_msg = dc_sig_msg;
+	bcg.sig_msg = "\ninterrupt (type \"q\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
 
 	bcg.init = dc_parse_init;

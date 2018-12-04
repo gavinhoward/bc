@@ -39,3 +39,13 @@ exit\(\(int\) s\);
 bc_vm_printf\(stdout, "%s %s\\n", .*?\);
 ([\t]*)return s == BC_STATUS_QUIT \? BC_STATUS_SUCCESS : s;
 bc_num_hex_digits
+([\t]*)for \(exp = 0, pow = 1; exp < width - 1; \+\+exp, pow \*= 10\);
+bcg\.name
+bc_vm_putchar
+BC_STATUS_IO_ERR
+bc_vm_fflush
+bc_vm_printf\(
+bc_vm_puts
+BC_IS_BC
+^(int bc_main\(int argc, char \*\*argv\))
+^(int dc_main\(int argc, char \*\*argv\))

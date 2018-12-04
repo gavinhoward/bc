@@ -876,7 +876,7 @@ void bc_num_printChar(size_t num, size_t width, bool radix,
 void bc_num_printDigits(size_t num, size_t width, bool radix,
                         size_t *nchars, size_t line_len)
 {
-	size_t exp, pow, div;
+	size_t exp, pow;
 
 	bc_num_printNewline(nchars, line_len);
 	bc_vm_putchar(radix ? '.' : ' ');
@@ -886,10 +886,11 @@ void bc_num_printDigits(size_t num, size_t width, bool radix,
 	for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
 
 	for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
+		size_t dig;
 		bc_num_printNewline(nchars, line_len);
-		div = num / pow;
-		num -= div * pow;
-		bc_vm_putchar(((char) div) + '0');
+		dig = num / pow;
+		num -= dig * pow;
+		bc_vm_putchar(((char) dig) + '0');
 	}
 }
 

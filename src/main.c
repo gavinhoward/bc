@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 #else
 	char *name = strrchr(argv[0], '/');
 
-	name = !name ? argv[0] : name + 1;
+	bcg.name = !name ? argv[0] : name + 1;
 
 	if (!strcmp(name, dc_name)) s = dc_main(argc, argv);
 	else s = bc_main(argc, argv);

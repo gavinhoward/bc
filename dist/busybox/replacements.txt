@@ -39,3 +39,13 @@ exit((int) BC_STATUS_IO_ERR);
 printf("%s "BB_VER"\\n", applet_name);
 \1if (s == BC_STATUS_QUIT)\n\1\ts = BC_STATUS_SUCCESS;\n\n\1return s;
 bb_hexdigits_upcase
+\1for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10)\n\1\tcontinue;
+applet_name
+bb_putchar
+BC_STATUS_INPUT_EOF
+fflush
+printf(
+fputs
+IS_BC
+\1 MAIN_EXTERNALLY_VISIBLE;\n\1
+\1 MAIN_EXTERNALLY_VISIBLE;\n\1

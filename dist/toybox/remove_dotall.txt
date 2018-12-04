@@ -21,6 +21,8 @@
 \n#if BC_ENABLED
 \n#else // BC_ENABLED.*?#endif // BC_ENABLED
 \n#endif // BC_ENABLED
+\n#if DC_ENABLED\n#endif // DC_ENABLED$
+\n#if BC_ENABLED\n#endif // BC_ENABLED$
 \n#ifndef NDEBUG.*?#endif // NDEBUG
 \n#ifndef _WIN32
 \n#else // _WIN32.*?#endif // _WIN32

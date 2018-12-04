@@ -25,12 +25,11 @@
 #include <vm.h>
 
 #if BC_ENABLED
-int bc_main(int argc, char *argv[]) {
+int bc_main(int argc, char **argv) {
 
-	bcg.name = bc_name;
 	bcg.help = bc_help;
 #if BC_ENABLE_SIGNALS
-	bcg.sig_msg = bc_sig_msg;
+	bcg.sig_msg = "\ninterrupt (type \"quit\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
 
 	bcg.init = bc_parse_init;

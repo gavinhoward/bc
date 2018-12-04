@@ -32,9 +32,9 @@
 #if BC_ENABLED
 
 // ** Exclude start. **
-int bc_main(int argc, char *argv[]);
-
 // ** Busybox exclude start. **
+int bc_main(int argc, char **argv);
+
 extern const char bc_help[];
 // ** Busybox exclude end. **
 // ** Exclude end. **

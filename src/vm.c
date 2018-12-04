@@ -71,9 +71,9 @@ BOOL WINAPI bc_vm_sig(DWORD sig) {
 #endif // BC_ENABLE_SIGNALS
 
 void bc_vm_info(const char* const help) {
-	bc_vm_printf(stdout, "%s %s\n", bcg.name, BC_VERSION);
+	bc_vm_printf("%s %s\n", bcg.name, BC_VERSION);
 	bc_vm_puts(bc_copyright, stdout);
-	if (help) bc_vm_printf(stdout, help, bcg.name);
+	if (help) bc_vm_printf(help, bcg.name);
 }
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
@@ -82,9 +82,9 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	if (!s || s > BC_STATUS_VEC_ITEM_EXISTS) return s;
 
-	bc_vm_printf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
-	bc_vm_printf(stderr, "    %s", file);
-	bc_vm_printf(stderr, bc_err_line + 4 * !line, line);
+	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
+	fprintf(stderr, "    %s", file);
+	fprintf(stderr, bc_err_line + 4 * !line, line);
 
 	return s * (!bcg.ttyin || !!strcmp(file, bc_program_stdin_name));
 }
@@ -98,10 +98,10 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 
 	if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
-	bc_vm_printf(stderr, fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
-	if (msg) bc_vm_printf(stderr, "    %s\n", msg);
-	bc_vm_printf(stderr, "    %s", file);
-	bc_vm_printf(stderr, bc_err_line + 4 * !line, line);
+	fprintf(stderr, fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
+	if (msg) fprintf(stderr, "    %s\n", msg);
+	fprintf(stderr, "    %s", file);
+	fprintf(stderr, bc_err_line + 4 * !line, line);
 
 	return s * (!bcg.ttyin && !!p);
 }
@@ -155,7 +155,7 @@ size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_exit(BcStatus s) {
-	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
+	bc_vm_error(s, NULL, 0);
 	exit((int) s);
 }
 
@@ -177,13 +177,13 @@ char* bc_vm_strdup(const char *str) {
 	return s;
 }
 
-void bc_vm_printf(FILE *restrict f, const char *fmt, ...) {
+void bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
 	bool bad;
 
 	va_start(args, fmt);
-	bad = vfprintf(f, fmt, args) < 0;
+	bad = vprintf(fmt, args) < 0;
 	va_end(args);
 
 	if (bad) bc_vm_exit(BC_STATUS_IO_ERR);
@@ -215,14 +215,14 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 		if (s == BC_STATUS_LIMITS) {
 
 			bc_vm_putchar('\n');
-			bc_vm_printf(stdout, "BC_BASE_MAX     = %lu\n", BC_MAX_OBASE);
-			bc_vm_printf(stdout, "BC_DIM_MAX      = %lu\n", BC_MAX_DIM);
-			bc_vm_printf(stdout, "BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE);
-			bc_vm_printf(stdout, "BC_STRING_MAX   = %lu\n", BC_MAX_STRING);
-			bc_vm_printf(stdout, "BC_NAME_MAX     = %lu\n", BC_MAX_NAME);
-			bc_vm_printf(stdout, "BC_NUM_MAX      = %lu\n", BC_MAX_NUM);
-			bc_vm_printf(stdout, "Max Exponent    = %lu\n", BC_MAX_EXP);
-			bc_vm_printf(stdout, "Number of Vars  = %lu\n", BC_MAX_VARS);
+			bc_vm_printf("BC_BASE_MAX     = %lu\n", BC_MAX_OBASE);
+			bc_vm_printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM);
+			bc_vm_printf("BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE);
+			bc_vm_printf("BC_STRING_MAX   = %lu\n", BC_MAX_STRING);
+			bc_vm_printf("BC_NAME_MAX     = %lu\n", BC_MAX_NAME);
+			bc_vm_printf("BC_NUM_MAX      = %lu\n", BC_MAX_NUM);
+			bc_vm_printf("Max Exponent    = %lu\n", BC_MAX_EXP);
+			bc_vm_printf("Number of Vars  = %lu\n", BC_MAX_VARS);
 			bc_vm_putchar('\n');
 
 			s = BC_STATUS_SUCCESS;

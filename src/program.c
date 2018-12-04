@@ -1137,7 +1137,7 @@ BcStatus bc_program_printStream(BcProgram *p) {
 		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		assert(idx < p->strs.len);
 		str = *((char**) bc_vec_item(&p->strs, idx));
-		bc_vm_printf(stdout, "%s", str);
+		bc_vm_printf("%s", str);
 	}
 
 	return s;
@@ -1767,21 +1767,21 @@ void bc_program_printIndex(char *code, size_t *bgn) {
 		if (byte != 0) val |= ((unsigned long) byte) << (CHAR_BIT * i);
 	}
 
-	bc_vm_printf(stdout, " (%lu) ", val);
+	bc_vm_printf(" (%lu) ", val);
 }
 
 void bc_program_printName(char *code, size_t *bgn) {
 
 	char byte = code[(*bgn)++];
 
-	bc_vm_printf(stdout, " (");
+	bc_vm_printf(" (");
 
 	for (; byte != 0 && byte != BC_PARSE_STREND; byte = code[(*bgn)++])
 		bc_vm_putchar(byte);
 
 	assert(byte);
 
-	bc_vm_printf(stdout, ") ");
+	bc_vm_printf(") ");
 }
 
 void bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
@@ -1793,7 +1793,7 @@ void bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 
 	s = *((char**) bc_vec_item(&p->strs, idx));
 
-	bc_vm_printf(stdout, " (\"%s\") ", s);
+	bc_vm_printf(" (\"%s\") ", s);
 }
 
 void bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
@@ -1811,7 +1811,7 @@ void bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
 	else if (inst == BC_INST_NUM) {
 		size_t idx = bc_program_index(code, bgn);
 		char **str = bc_vec_item(&p->consts, idx);
-		bc_vm_printf(stdout, "(%s)", *str);
+		bc_vm_printf("(%s)", *str);
 	}
 	else if (inst == BC_INST_CALL ||
 	         (inst > BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
@@ -1836,9 +1836,9 @@ void bc_program_code(BcProgram *p) {
 		f = bc_vec_item(&p->fns, ip.func);
 		code = f->code.v;
 
-		bc_vm_printf(stdout, "func[%zu]:\n", ip.func);
+		bc_vm_printf("func[%zu]:\n", ip.func);
 		while (ip.idx < f->code.len) bc_program_printInst(p, code, &ip.idx);
-		bc_vm_printf(stdout, "\n\n");
+		bc_vm_printf("\n\n");
 	}
 }
 #endif // BC_ENABLED && DC_ENABLED

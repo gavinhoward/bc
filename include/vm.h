@@ -93,7 +93,9 @@ typedef struct BcGlobals {
 	long w;
 	long x;
 
+	// ** Busybox exclude start. **
 	const char *name;
+	// ** Busybox exclude end. **
 #if BC_ENABLE_SIGNALS
 	const char *sig_msg;
 #endif // BC_ENABLE_SIGNALS
@@ -112,8 +114,15 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
                           size_t line, const char *msg);
 #endif // BC_ENABLED
 
+// ** Exclude start. **
+void bc_vm_info(const char* const help);
+BcStatus bc_vm_run(int argc, char *argv[], const char *env_len);
+// ** Exclude end. **
+
+// ** Busybox exclude start. **
+
 void bc_vm_exit(BcStatus s);
-void bc_vm_printf(FILE *restrict f, const char *fmt, ...);
+void bc_vm_printf(const char *fmt, ...);
 void bc_vm_puts(const char *str, FILE *restrict f);
 void bc_vm_putchar(int c);
 void bc_vm_fflush(FILE *restrict f);
@@ -123,13 +132,6 @@ void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
-void bc_vm_info(const char* const help);
-BcStatus bc_vm_run(int argc, char *argv[], const char *env_len);
-// ** Exclude end. **
-
-// ** Busybox exclude start. **
-
-// ** Exclude start. **
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 // ** Exclude end. **
 
