@@ -1071,7 +1071,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 	assert(p);
 
 	if (p->l.t.t == BC_LEX_EOF)
-		s = p->flags.len > 0 ? BC_STATUS_PARSE_NO_BLOCK_END : BC_STATUS_LEX_EOF;
+		s = p->flags.len > 0 ? BC_STATUS_PARSE_NO_BLOCK_END : BC_STATUS_PARSE_EOF;
 	else if (p->l.t.t == BC_LEX_KEY_DEFINE) {
 		if (!BC_PARSE_CAN_EXEC(p)) return BC_STATUS_PARSE_BAD_TOKEN;
 		s = bc_parse_func(p);

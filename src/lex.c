@@ -138,7 +138,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	assert(l);
 
 	l->t.last = l->t.t;
-	if (l->t.last == BC_LEX_EOF) return BC_STATUS_LEX_EOF;
+	if (l->t.last == BC_LEX_EOF) return BC_STATUS_PARSE_EOF;
 
 	l->line += l->newline;
 	l->t.t = BC_LEX_EOF;

@@ -76,7 +76,7 @@ BcStatus bc_lex_string(BcLex *l) {
 
 	if (c == '\0') {
 		l->i = i;
-		return BC_STATUS_LEX_NO_STRING_END;
+		return BC_STATUS_PARSE_NO_STRING_END;
 	}
 
 	len = i - l->i;
@@ -112,7 +112,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 		if (c == 0 || buf[i + 1] == '\0') {
 			l->i = i;
-			return BC_STATUS_LEX_NO_COMMENT_END;
+			return BC_STATUS_PARSE_NO_COMMENT_END;
 		}
 
 		end = buf[i + 1] == '/';
@@ -197,7 +197,7 @@ BcStatus bc_lex_token(BcLex *l) {
 			}
 			else {
 				l->t.t = BC_LEX_INVALID;
-				s = BC_STATUS_LEX_BAD_CHAR;
+				s = BC_STATUS_PARSE_BAD_CHAR;
 			}
 
 			break;
@@ -320,7 +320,7 @@ BcStatus bc_lex_token(BcLex *l) {
 				l->t.t = BC_LEX_WHITESPACE;
 				++l->i;
 			}
-			else s = BC_STATUS_LEX_BAD_CHAR;
+			else s = BC_STATUS_PARSE_BAD_CHAR;
 			break;
 		}
 
@@ -382,7 +382,7 @@ BcStatus bc_lex_token(BcLex *l) {
 			}
 			else {
 				l->t.t = BC_LEX_INVALID;
-				s = BC_STATUS_LEX_BAD_CHAR;
+				s = BC_STATUS_PARSE_BAD_CHAR;
 			}
 
 			break;
@@ -391,7 +391,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		default:
 		{
 			l->t.t = BC_LEX_INVALID;
-			s = BC_STATUS_LEX_BAD_CHAR;
+			s = BC_STATUS_PARSE_BAD_CHAR;
 			break;
 		}
 	}

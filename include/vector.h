@@ -23,6 +23,7 @@
 #ifndef BC_VECTOR_H
 #define BC_VECTOR_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -58,7 +59,7 @@ void* bc_vec_item_rev(const BcVec *v, size_t idx);
 
 void bc_vec_free(void *vec);
 
-BcStatus bc_map_insert(BcVec* v, const void *data, size_t *i);
+bool bc_map_insert(BcVec* v, const void *data, size_t *i);
 size_t bc_map_index(const BcVec *v, const void *ptr);
 // ** Busybox exclude end. **
 // ** Exclude end. **

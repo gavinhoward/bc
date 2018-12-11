@@ -64,11 +64,9 @@ const char bc_err_line[] = ":%zu\n\n";
 
 const char *bc_errs[] = {
 	"VM",
-	"Lex",
 	"Parse",
 	"Math",
 	"Runtime",
-	"Vector",
 #if BC_ENABLED
 	"POSIX",
 #endif // BC_ENABLED
@@ -76,12 +74,12 @@ const char *bc_errs[] = {
 
 const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
-	BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX, BC_ERR_IDX_LEX,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #if DC_ENABLED
-	BC_ERR_IDX_LEX,
+	BC_ERR_IDX_PARSE,
 #endif // DC_ENABLED
-	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 	BC_ERR_IDX_MATH,
 #if DC_ENABLED
@@ -91,7 +89,6 @@ const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_VEC, BC_ERR_IDX_VEC,
 #if BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -149,9 +146,6 @@ const char *bc_err_msgs[] = {
 	"bad obase; must be [2, BC_BASE_MAX]",
 	"signal caught and not handled",
 	"stack has too few elements",
-
-	"index is out of bounds",
-	"item already exists",
 
 #if BC_ENABLED
 	"POSIX only allows one character names; the following is bad:",
