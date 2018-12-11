@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 
 	vm->name = !name ? argv[0] : name + 1;
 
-	if (!strcmp(name, dc_name)) s = dc_main(argc, argv);
+	if (!strcmp(vm->name, dc_name)) s = dc_main(argc, argv);
 	else s = bc_main(argc, argv);
 #endif
 
