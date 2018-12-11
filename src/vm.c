@@ -81,13 +81,10 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 	if (!s || s > BC_STATUS_EXEC_STACK) return s;
 
 	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
+	fprintf(stderr, "    %s", file);
+	fprintf(stderr, bc_err_line + 4 * !line, line);
 
-	if (file) {
-		fprintf(stderr, "    %s", file);
-		fprintf(stderr, bc_err_line + 4 * !line, line);
-	}
-
-	return s * (!vm->ttyin || (file && !!strcmp(file, bc_program_stdin_name)));
+	return s * (!vm->ttyin || !!strcmp(file, bc_program_stdin_name));
 }
 
 #if BC_ENABLED
@@ -97,15 +94,14 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 	int p = (int) BC_S, w = (int) BC_W;
 	const char* const fmt = p ? bc_err_fmt : bc_warn_fmt;
 
+	assert(file);
+
 	if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
 	fprintf(stderr, fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
 	if (msg) fprintf(stderr, "    %s\n", msg);
-
-	if (file) {
-		fprintf(stderr, "    %s", file);
-		fprintf(stderr, bc_err_line + 4 * !line, line);
-	}
+	fprintf(stderr, "    %s", file);
+	fprintf(stderr, bc_err_line + 4 * !line, line);
 
 	return s * (!vm->ttyin && !!p);
 }
@@ -163,7 +159,7 @@ size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_exit(BcStatus s) {
-	bc_vm_error(s, NULL, 0);
+	bc_vm_error(s, "exiting...", 0);
 	bc_vm_shutdown();
 	exit((int) s);
 }
