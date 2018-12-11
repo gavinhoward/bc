@@ -184,6 +184,8 @@ if project == "busybox":
 	content = r.sub('\\1\\2\\3\n\\1{', content)
 	content = re.sub('#else  //', '#else //', content)
 
+	content += "\n\n#endif // not DC_SMALL\n"
+
 with open(projectdir + "/header.c") as f:
 	content = f.read() + content
 

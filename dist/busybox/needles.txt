@@ -49,3 +49,4 @@ bc_vm_puts
 BC_IS_BC
 ^(int bc_main\(int argc, char \*\*argv\))
 ^(int dc_main\(int argc, char \*\*argv\))
+strcat\(v->v, str\);

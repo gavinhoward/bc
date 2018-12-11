@@ -49,3 +49,4 @@ fputs
 IS_BC
 \1 MAIN_EXTERNALLY_VISIBLE;\n\1
 \1 MAIN_EXTERNALLY_VISIBLE;\n\1
+strcpy(v->v + v->len - 1, str);

@@ -7,8 +7,8 @@
  * **        Do not edit unless you know what you are doing.         **
  */
 //config:config BC
-//config:	bool "bc (45.77 kb; 49.88 kb when combined with dc)"
-//config:	default n
+//config:	bool "bc (45 kb; 49 kb when combined with dc)"
+//config:	default y
 //config:	help
 //config:	bc is a command-line, arbitrary-precision calculator with a
 //config:	Turing-complete language. See the GNU bc manual
@@ -58,8 +58,8 @@
 //config:	enabled.
 //config:
 //config:config DC
-//config:	bool "dc (38.32 kb; 49.88 kb when combined with bc)"
-//config:	default n
+//config:	bool "dc (38 kb; 49 kb when combined with bc)"
+//config:	default y
 //config:	help
 //config:	dc is a reverse-polish notation command-line calculator which
 //config:	supports unlimited precision arithmetic. See the FreeBSD man page
@@ -94,23 +94,30 @@
 //config:	     Also note that, like the FreeBSD dc, extended registers are not
 //config:	     allowed unless the "-x" option is given.
 //config:
-//config:	Options:
+//config:config FEATURE_DC_SMALL
+//config:	bool "Minimal dc implementation (4.2 kb), not using bc code base"
+//config:	depends on DC && !BC
+//config:	default y
 //config:
-//config:	  -v  --version            print version and copyright and exit.
-//config:	  -x  --extended-register  enable extended register mode.
-//config:
-//config:	Long options are only available if FEATURE_BC_LONG_OPTIONS is
-//config:	enabled.
+//config:config FEATURE_DC_LIBM
+//config:	bool "Enable power and exp functions (requires libm)"
+//config:	default y
+//config:	depends on FEATURE_DC_SMALL
+//config:	help
+//config:	Enable power and exp functions.
+//config:	NOTE: This will require libm to be present for linking.
 //config:
 //config:config FEATURE_BC_SIGNALS
 //config:	bool "Enable bc/dc signal handling"
-//config:	default n
+//config:	default y
+//config:	depends on (BC || DC) && !FEATURE_DC_SMALL
 //config:	help
 //config:	Enable signal handling for bc and dc.
 //config:
 //config:config FEATURE_BC_LONG_OPTIONS
 //config:	bool "Enable bc/dc long options"
-//config:	default n
+//config:	default y
+//config:	depends on (BC || DC) && !FEATURE_DC_SMALL
 //config:	help
 //config:	Enable long options for bc and dc.
 
@@ -122,17 +129,19 @@
 
 //See www.gnu.org/software/bc/manual/bc.html
 //usage:#define bc_trivial_usage
-//usage:       "[-sqli] FILE..."
+//usage:       "[-sqliw] FILE..."
 //usage:
 //usage:#define bc_full_usage "\n"
 //usage:     "\nArbitrary precision calculator"
 //usage:     "\n"
 //usage:     "\n	-i	Interactive"
+//usage:     "\n	-q	Quiet"
 //usage:     "\n	-l	Load standard math library"
 //usage:     "\n	-s	Be POSIX compatible"
-//usage:     "\n	-q	Quiet"
 //usage:     "\n	-w	Warn if extensions are used"
-//usage:     "\n	-v	Version"
+///////:     "\n	-v	Version"
+//usage:     "\n"
+//usage:     "\n$BC_LINE_LENGTH changes output width"
 //usage:
 //usage:#define bc_example_usage
 //usage:       "3 + 4.129\n"
@@ -146,29 +155,34 @@
 //usage:       "obase = A\n"
 //usage:
 //usage:#define dc_trivial_usage
-//usage:       "EXPRESSION..."
+//usage:       "[-eSCRIPT]... [-fFILE]... [FILE]..."
 //usage:
-//usage:#define dc_full_usage "\n\n"
-//usage:       "Tiny RPN calculator. Operations:\n"
-//usage:       "+, add, -, sub, *, mul, /, div, %, mod, ^, exp, ~, divmod, |, "
-//usage:       "modular exponentiation,\n"
-//usage:       "p - print top of the stack (without popping),\n"
-//usage:       "f - print entire stack,\n"
-//usage:       "k - pop the value and set the precision.\n"
-//usage:       "i - pop the value and set input radix.\n"
-//usage:       "o - pop the value and set output radix.\n"
-//usage:       "Examples: 'dc 2 2 add p' -> 4, 'dc 8 8 mul 2 2 + / p' -> 16"
+//usage:#define dc_full_usage "\n"
+//usage:     "\nTiny RPN calculator. Operations:"
+//usage:     "\n+, -, *, /, %, ^, exp, ~, divmod, |, "
+//usage:       "modular exponentiation,"
+//usage:     "\np - print top of the stack (without popping)"
+//usage:     "\nf - print entire stack"
+//usage:     "\nk - pop the value and set the precision"
+//usage:     "\ni - pop the value and set input radix"
+//usage:     "\no - pop the value and set output radix"
+//usage:     "\nExamples: dc -e'2 2 + p' -> 4, dc -e'8 8 * 2 2 + / p' -> 16"
 //usage:
 //usage:#define dc_example_usage
-//usage:       "$ dc 2 2 + p\n"
+//usage:       "$ dc -e'2 2 + p'\n"
 //usage:       "4\n"
-//usage:       "$ dc 8 8 \\* 2 2 + / p\n"
+//usage:       "$ dc -e'8 8 \\* 2 2 + / p'\n"
 //usage:       "16\n"
-//usage:       "$ dc 0 1 and p\n"
+//usage:       "$ dc -e'0 1 & p'\n"
 //usage:       "0\n"
-//usage:       "$ dc 0 1 or p\n"
+//usage:       "$ dc -e'0 1 | p'\n"
 //usage:       "1\n"
-//usage:       "$ echo 72 9 div 8 mul p | dc\n"
+//usage:       "$ echo '72 9 / 8 * p' | dc\n"
 //usage:       "64\n"
 
 #include "libbb.h"
+#include "common_bufsiz.h"
+
+#if ENABLE_FEATURE_DC_SMALL
+# include "dc.c"
+#else
