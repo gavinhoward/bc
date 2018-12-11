@@ -1378,6 +1378,8 @@ void bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 
 		BcFunc *func = bc_vec_item(&p->fns, entry_ptr->idx);
 
+		free(name);
+
 		// We need to reset these, so the function can be repopulated.
 		func->nparams = 0;
 		bc_vec_npop(&func->autos, func->autos.len);
@@ -1385,7 +1387,6 @@ void bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 		bc_vec_npop(&func->labels, func->labels.len);
 	}
 	else {
-		free(name);
 		bc_func_init(&f);
 		bc_vec_push(&p->fns, &f);
 	}
