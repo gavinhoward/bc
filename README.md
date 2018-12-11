@@ -13,6 +13,18 @@ functionality is unnecessary.
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 0-clause License. Full license text may be found in the `LICENSE.md` file.
 
+## Other Projects
+
+Other projects based on this bc are:
+
+* [busybox `bc`](https://git.busybox.net/busybox/tree/miscutils/bc.c). The
+  busybox maintainers have made their own changes, so any bugs in the busybox
+  `bc` should be reported to them.
+
+* [toybox `bc`](https://github.com/landley/toybox/blob/master/toys/pending/bc.c)
+  The maintainer has also made his own changes, so bugs in the toybox `bc`
+  should be reported there.
+
 ## Build
 
 To build, use the following commands:
