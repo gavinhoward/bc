@@ -78,13 +78,16 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	assert(file);
 
-	if (!s || s > BC_STATUS_VEC_ITEM_EXISTS) return s;
+	if (!s || s > BC_STATUS_EXEC_STACK) return s;
 
 	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
-	fprintf(stderr, "    %s", file);
-	fprintf(stderr, bc_err_line + 4 * !line, line);
 
-	return s * (!vm->ttyin || !!strcmp(file, bc_program_stdin_name));
+	if (file) {
+		fprintf(stderr, "    %s", file);
+		fprintf(stderr, bc_err_line + 4 * !line, line);
+	}
+
+	return s * (!vm->ttyin || (file && !!strcmp(file, bc_program_stdin_name)));
 }
 
 #if BC_ENABLED
@@ -98,8 +101,11 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 
 	fprintf(stderr, fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
 	if (msg) fprintf(stderr, "    %s\n", msg);
-	fprintf(stderr, "    %s", file);
-	fprintf(stderr, bc_err_line + 4 * !line, line);
+
+	if (file) {
+		fprintf(stderr, "    %s", file);
+		fprintf(stderr, bc_err_line + 4 * !line, line);
+	}
 
 	return s * (!vm->ttyin && !!p);
 }
