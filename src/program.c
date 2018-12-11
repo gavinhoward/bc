@@ -31,7 +31,6 @@
 
 BcVec* bc_program_search(BcProgram *p, char *id, bool var) {
 
-	BcStatus s;
 	BcId e, *ptr;
 	BcVec *v, *map;
 	size_t i;
@@ -43,8 +42,7 @@ BcVec* bc_program_search(BcProgram *p, char *id, bool var) {
 
 	e.name = id;
 	e.idx = v->len;
-	s = bc_map_insert(map, &e, &i);
-	new = s != BC_STATUS_VEC_ITEM_EXISTS;
+	new = bc_map_insert(map, &e, &i);
 
 	if (new) {
 		bc_array_init(&data.v, var);
@@ -1363,22 +1361,20 @@ void bc_program_init(BcProgram *p) {
 
 void bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 
-	BcStatus s;
 	BcId entry, *entry_ptr;
 	BcFunc f;
+	bool new;
 
 	assert(p && name && idx);
 
 	entry.name = name;
 	entry.idx = p->fns.len;
 
-	s = bc_map_insert(&p->fn_map, &entry, idx);
-	if (s) free(name);
-
+	new = bc_map_insert(&p->fn_map, &entry, idx);
 	entry_ptr = bc_vec_item(&p->fn_map, *idx);
 	*idx = entry_ptr->idx;
 
-	if (s == BC_STATUS_VEC_ITEM_EXISTS) {
+	if (!new) {
 
 		BcFunc *func = bc_vec_item(&p->fns, entry_ptr->idx);
 
@@ -1389,6 +1385,7 @@ void bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 		bc_vec_npop(&func->labels, func->labels.len);
 	}
 	else {
+		free(name);
 		bc_func_init(&f);
 		bc_vec_push(&p->fns, &f);
 	}

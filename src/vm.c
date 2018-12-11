@@ -339,9 +339,9 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	// closed. It's not a problem in that case.
 	s = s == BC_STATUS_IO_ERR || s == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : s;
 
-	if (str) s = bc_vm_error(BC_STATUS_LEX_NO_STRING_END,
+	if (str) s = bc_vm_error(BC_STATUS_PARSE_NO_STRING_END,
 	                         vm->prs.l.f, vm->prs.l.line);
-	else if (comment) s = bc_vm_error(BC_STATUS_LEX_NO_COMMENT_END,
+	else if (comment) s = bc_vm_error(BC_STATUS_PARSE_NO_COMMENT_END,
 	                                  vm->prs.l.f, vm->prs.l.line);
 
 err:

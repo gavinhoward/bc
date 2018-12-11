@@ -156,9 +156,7 @@ size_t bc_map_find(const BcVec *v, const void *ptr) {
 	return low;
 }
 
-BcStatus bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
-
-	BcStatus s = BC_STATUS_SUCCESS;
+bool bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
 
 	assert(v && ptr && i);
 
@@ -167,10 +165,10 @@ BcStatus bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
 	assert(*i <= v->len);
 
 	if (*i == v->len) bc_vec_push(v, ptr);
-	else if (!bc_id_cmp(ptr, bc_vec_item(v, *i))) s = BC_STATUS_VEC_ITEM_EXISTS;
+	else if (!bc_id_cmp(ptr, bc_vec_item(v, *i))) return false;
 	else bc_vec_pushAt(v, ptr, *i);
 
-	return s;
+	return true;
 }
 
 size_t bc_map_index(const BcVec* v, const void *ptr) {
