@@ -822,7 +822,6 @@ void bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 	assert(c == '.');
 	bc_num_init(&result, base->len);
-	bc_num_zero(&result);
 	bc_num_one(&mult);
 
 	for (i += 1, digits = 0; i < len; ++i, ++digits) {
@@ -1022,9 +1021,10 @@ BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars) {
 void bc_num_init(BcNum *n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	memset(n, 0, sizeof(BcNum));
 	n->num = bc_vm_malloc(req);
 	n->cap = req;
+	n->rdx = n->len = 0;
+	n->neg = false;
 }
 
 void bc_num_expand(BcNum *n, size_t req) {

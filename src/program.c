@@ -530,7 +530,7 @@ BcStatus bc_program_logical(BcProgram *p, char inst) {
 		}
 	}
 
-	(cond ? bc_num_one : bc_num_zero)(&res.d.n);
+	if (cond) bc_num_one(&res.d.n);
 
 	bc_program_binOpRetire(p, &res);
 
@@ -873,10 +873,7 @@ BcStatus bc_program_return(BcProgram *p, char inst) {
 		bc_num_init(&res.d.n, num->len);
 		bc_num_copy(&res.d.n, num);
 	}
-	else {
-		bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
-		bc_num_zero(&res.d.n);
-	}
+	else bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	// We need to pop arguments as well, so this takes that into account.
 	for (i = 0; i < f->autos.len; ++i) {
@@ -1330,11 +1327,7 @@ void bc_program_init(BcProgram *p) {
 #endif // DC_ENABLED
 
 	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
-	bc_num_zero(&p->last);
-
 	bc_num_init(&p->zero, BC_NUM_DEF_SIZE);
-	bc_num_zero(&p->zero);
-
 	bc_num_init(&p->one, BC_NUM_DEF_SIZE);
 	bc_num_one(&p->one);
 
@@ -1594,7 +1587,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 				if (s) return s;
 
 				bc_num_init(&r.d.n, BC_NUM_DEF_SIZE);
-				(!bc_num_cmp(num, &p->zero) ? bc_num_one : bc_num_zero)(&r.d.n);
+				if (!bc_num_cmp(num, &p->zero)) bc_num_one(&r.d.n);
 				bc_program_retire(p, &r, BC_RESULT_TEMP);
 
 				break;
