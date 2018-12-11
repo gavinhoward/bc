@@ -27,15 +27,15 @@
 #if BC_ENABLED
 int bc_main(int argc, char **argv) {
 
-	bcg.help = bc_help;
+	vm->help = bc_help;
 #if BC_ENABLE_SIGNALS
-	bcg.sig_msg = "\ninterrupt (type \"quit\" to exit)\n";
+	vm->sig_msg = "\ninterrupt (type \"quit\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
 
-	bcg.init = bc_parse_init;
-	bcg.exp = bc_parse_expression;
-	bcg.sbgn = bcg.send = '"';
+	vm->parse_init = bc_parse_init;
+	vm->parse_expr = bc_parse_expression;
+	vm->sbgn = vm->send = '"';
 
-	return (int) bc_vm_run(argc, argv, "BC_LINE_LENGTH");
+	return (int) bc_vm_boot(argc, argv, "BC_LINE_LENGTH");
 }
 #endif // BC_ENABLED

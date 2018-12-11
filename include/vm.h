@@ -40,7 +40,7 @@
 #define BC_VERSION VERSION_STR2(VERSION)
 // ** Exclude end. **
 
-#define BC_FLAG_X (1<<0)
+#define DC_FLAG_X (1<<0)
 #define BC_FLAG_W (1<<1)
 #define BC_FLAG_V (1<<2)
 #define BC_FLAG_S (1<<3)
@@ -60,18 +60,26 @@
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
-#define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || bcg.name[0] == 'b'))
+#define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm->name[0] == 'b'))
 
 #if BC_ENABLE_SIGNALS
-#define BC_SIGINT (bcg.sig)
+#define BC_SIGINT (vm->sig)
 #else // BC_ENABLE_SIGNALS
 #define BC_SIGINT (0)
 #endif // BC_ENABLE_SIGNALS
+
+#define BC_S (BC_ENABLED && (vm->flags & BC_FLAG_S))
+#define BC_W (BC_ENABLED && (vm->flags & BC_FLAG_W))
+#define BC_L (BC_ENABLED && (vm->flags & BC_FLAG_L))
+#define BC_I (BC_ENABLED && (vm->flags & BC_FLAG_I))
+#define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
 
 typedef struct BcVm {
 
 	BcParse prs;
 	BcProgram prog;
+
+	size_t line_len;
 
 	// ** Exclude start. **
 	uint32_t flags;
@@ -82,18 +90,8 @@ typedef struct BcVm {
 	// ** Busybox exclude end. **
 
 	char *env_args;
-	// ** Exclude end. **
 
-} BcVm;
-
-// ** Exclude start. **
-typedef struct BcGlobals {
-
-	long i;
 	long ttyin;
-	long s;
-	long w;
-	long x;
 
 	// ** Busybox exclude start. **
 	const char *name;
@@ -105,13 +103,13 @@ typedef struct BcGlobals {
 	const char *sig_msg;
 #endif // BC_ENABLE_SIGNALS
 
-	BcParseInit init;
-	BcParseExpr exp;
+	BcParseInit parse_init;
+	BcParseExpr parse_expr;
 	char sbgn;
 	char send;
+	// ** Exclude end. **
 
-} BcGlobals;
-// ** Exclude end. **
+} BcVm;
 
 #if BC_ENABLED
 BcStatus bc_vm_posixError(BcStatus s, const char *file,
@@ -120,7 +118,8 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 
 // ** Exclude start. **
 void bc_vm_info(const char* const help);
-BcStatus bc_vm_run(int argc, char *argv[], const char *env_len);
+BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len);
+void bc_vm_shutdown();
 // ** Exclude end. **
 
 // ** Busybox exclude start. **
@@ -167,6 +166,6 @@ extern const char *bc_err_msgs[];
 
 // ** Busybox exclude end. **
 
-extern BcGlobals bcg;
+extern BcVm *vm;
 
 #endif // BC_VM_H

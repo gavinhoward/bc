@@ -39,7 +39,7 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	int i;
 	signed char c = 0;
 
-	if (bcg.ttyin && !bcg.s) {
+	if (vm->ttyin && !BC_S) {
 		bc_vm_puts(prompt, stderr);
 		bc_vm_fflush(stderr);
 	}
@@ -57,11 +57,11 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 #if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
 
-				bcg.sig = 0;
+				vm->sig = 0;
 
-				if (bcg.ttyin) {
+				if (vm->ttyin) {
 					bc_vm_puts(bc_program_ready_msg, stderr);
-					if (!bcg.s) bc_vm_puts(prompt, stderr);
+					if (!BC_S) bc_vm_puts(prompt, stderr);
 					bc_vm_fflush(stderr);
 				}
 

@@ -27,7 +27,7 @@
 #include <vm.h>
 
 // ** Busybox exclude start. **
-void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files);
+void bc_args(int argc, char *argv[]);
 
 extern const char* const bc_args_env_name;
 // ** Busybox exclude end. **

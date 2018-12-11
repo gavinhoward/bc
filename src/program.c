@@ -256,12 +256,12 @@ BcStatus bc_program_read(BcProgram *p) {
 	s = bc_read_line(&buf, "read> ");
 	if (s) goto io_err;
 
-	p->parse_init(&parse, p, BC_PROG_READ);
+	vm->parse_init(&parse, p, BC_PROG_READ);
 	bc_lex_file(&parse.l, bc_program_stdin_name);
 
 	s = bc_parse_text(&parse, buf.v);
 	if (s) goto exec_err;
-	s = p->parse_expr(&parse, BC_PARSE_NOREAD);
+	s = vm->parse_expr(&parse, BC_PARSE_NOREAD);
 	if (s) goto exec_err;
 
 	if (parse.l.t.t != BC_LEX_NLINE && parse.l.t.t != BC_LEX_EOF) {
@@ -419,7 +419,7 @@ BcStatus bc_program_print(BcProgram *p, char inst, size_t idx) {
 
 	if (BC_PROG_NUM(r, num)) {
 		assert(inst != BC_INST_PRINT_STR);
-		s = bc_num_print(num, &p->ob, p->ob_t, !pop, &p->nchars, p->len);
+		s = bc_num_print(num, &p->ob, p->ob_t, !pop, &p->nchars);
 		if (!s) bc_num_copy(&p->last, num);
 	}
 	else {
@@ -1128,7 +1128,7 @@ BcStatus bc_program_printStream(BcProgram *p) {
 	s = bc_program_num(p, r, &n, false);
 	if (s) return s;
 
-	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb, &p->nchars, p->len);
+	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb, &p->nchars);
 	else {
 		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		assert(idx < p->strs.len);
@@ -1228,10 +1228,10 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 
 	if (f->code.len == 0) {
 
-		p->parse_init(&prs, p, fidx);
+		vm->parse_init(&prs, p, fidx);
 		s = bc_parse_text(&prs, *str);
 		if (s) goto err;
-		s = p->parse_expr(&prs, BC_PARSE_NOCALL);
+		s = vm->parse_expr(&prs, BC_PARSE_NOCALL);
 		if (s) goto err;
 
 		if (prs.l.t.t != BC_LEX_EOF) {
@@ -1302,9 +1302,8 @@ void bc_program_free(BcProgram *p) {
 	bc_num_free(&p->one);
 }
 
-void bc_program_init(BcProgram *p, size_t line_len,
-                     BcParseInit init, BcParseExpr expr)
-{
+void bc_program_init(BcProgram *p) {
+
 	size_t idx;
 	BcInstPtr ip;
 
@@ -1314,9 +1313,6 @@ void bc_program_init(BcProgram *p, size_t line_len,
 	memset(&ip, 0, sizeof(BcInstPtr));
 
 	p->nchars = p->scale = 0;
-	p->len = line_len;
-	p->parse_init = init;
-	p->parse_expr = expr;
 
 	bc_num_init(&p->ib, BC_NUM_DEF_SIZE);
 	bc_num_ten(&p->ib);
@@ -1410,12 +1406,12 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 	ip = bc_vec_top(&p->stack);
 	ip->idx = f->code.len;
 
-	if (!s && BC_SIGINT && !bcg.i) return BC_STATUS_QUIT;
+	if (!s && BC_SIGINT && BC_I) return BC_STATUS_QUIT;
 
-	bcg.sig = 0;
+	vm->sig = 0;
 
 	if (!s || s == BC_STATUS_EXEC_SIGNAL) {
-		if (bcg.ttyin) {
+		if (vm->ttyin) {
 			bc_vm_puts(bc_program_ready_msg, stderr);
 			bc_vm_fflush(stderr);
 			s = BC_STATUS_SUCCESS;

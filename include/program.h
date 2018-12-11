@@ -32,7 +32,6 @@
 
 typedef struct BcProgram {
 
-	size_t len;
 	size_t scale;
 
 	BcNum ib;
@@ -69,11 +68,6 @@ typedef struct BcProgram {
 
 	size_t nchars;
 
-	// ** Exclude start. **
-	BcParseInit parse_init;
-	BcParseExpr parse_expr;
-	// ** Exclude end. **
-
 } BcProgram;
 
 #define BC_PROG_STACK(s, n) ((s)->len >= ((size_t) (n)))
@@ -97,8 +91,7 @@ typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
-void bc_program_init(BcProgram *p, size_t line_len,
-                     BcParseInit init, BcParseExpr expr);
+void bc_program_init(BcProgram *p);
 void bc_program_free(BcProgram *program);
 
 #ifndef NDEBUG

@@ -35,7 +35,7 @@ BcStatus dc_lex_register(BcLex *l) {
 	if (isspace(l->buf[l->i - 1])) {
 		bc_lex_whitespace(l);
 		++l->i;
-		if (!bcg.x) s = BC_STATUS_LEX_EXTENDED_REG;
+		if (!DC_X) s = BC_STATUS_LEX_EXTENDED_REG;
 		else s = bc_lex_name(l);
 	}
 	else {

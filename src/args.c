@@ -71,8 +71,8 @@ BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	return s;
 }
 
-void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
-{
+void bc_args(int argc, char *argv[]) {
+
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i;
 	bool do_exit = false;
@@ -91,19 +91,19 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 
 			case 'e':
 			{
-				bc_args_exprs(exs, optarg);
+				bc_args_exprs(&vm->exprs, optarg);
 				break;
 			}
 
 			case 'f':
 			{
-				s = bc_args_file(exs, optarg);
+				s = bc_args_file(&vm->exprs, optarg);
 				break;
 			}
 
 			case 'h':
 			{
-				bc_vm_info(bcg.help);
+				bc_vm_info(vm->help);
 				do_exit = true;
 				break;
 			}
@@ -112,35 +112,35 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 			case 'i':
 			{
 				if (!BC_IS_BC) s = BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_I;
+				vm->flags |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
 				if (!BC_IS_BC) s = BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_L;
+				vm->flags |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
 				if (!BC_IS_BC) s = BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_Q;
+				vm->flags |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
 				if (!BC_IS_BC) s = BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_S;
+				vm->flags |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
 				if (!BC_IS_BC) s = BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_W;
+				vm->flags |= BC_FLAG_W;
 				break;
 			}
 #endif // BC_ENABLED
@@ -148,7 +148,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 			case 'V':
 			case 'v':
 			{
-				(*flags) |= BC_FLAG_V;
+				vm->flags |= BC_FLAG_V;
 				do_exit = true;
 				break;
 			}
@@ -157,7 +157,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 			case 'x':
 			{
 				if (BC_IS_BC) s = BC_STATUS_INVALID_OPTION;
-				(*flags) |= BC_FLAG_X;
+				vm->flags |= DC_FLAG_X;
 				break;
 			}
 #endif // DC_ENABLED
@@ -166,7 +166,7 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 			case '?':
 			default:
 			{
-				exit(BC_STATUS_INVALID_OPTION);
+				bc_vm_exit(BC_STATUS_INVALID_OPTION);
 				break;
 			}
 		}
@@ -174,10 +174,10 @@ void bc_args(int argc, char *argv[], uint32_t *flags, BcVec *exs, BcVec *files)
 		if (s) bc_vm_exit(s);
 	}
 
-	if ((*flags) & BC_FLAG_V) bc_vm_info(NULL);
+	if (vm->flags & BC_FLAG_V) bc_vm_info(NULL);
 	if (do_exit) exit((int) s);
-	if (exs->len > 1 || !BC_IS_BC) (*flags) |= BC_FLAG_Q;
+	if (vm->exprs.len > 1 || !BC_IS_BC) vm->flags |= BC_FLAG_Q;
 	if (argv[optind] && !strcmp(argv[optind], "--")) ++optind;
 
-	for (i = optind; i < argc; ++i) bc_vec_push(files, argv + i);
+	for (i = optind; i < argc; ++i) bc_vec_push(&vm->files, argv + i);
 }

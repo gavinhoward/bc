@@ -34,16 +34,16 @@
 #if DC_ENABLED
 int dc_main(int argc, char **argv) {
 
-	bcg.help = dc_help;
+	vm->help = dc_help;
 #if BC_ENABLE_SIGNALS
-	bcg.sig_msg = "\ninterrupt (type \"q\" to exit)\n";
+	vm->sig_msg = "\ninterrupt (type \"q\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
 
-	bcg.init = dc_parse_init;
-	bcg.exp = dc_parse_expr;
-	bcg.sbgn = '[';
-	bcg.send = ']';
+	vm->parse_init = dc_parse_init;
+	vm->parse_expr = dc_parse_expr;
+	vm->sbgn = '[';
+	vm->send = ']';
 
-	return (int) bc_vm_run(argc, argv, "DC_LINE_LENGTH");
+	return (int) bc_vm_boot(argc, argv, "DC_LINE_LENGTH");
 }
 #endif // DC_ENABLED
