@@ -66,11 +66,31 @@
 #define BC_HISTORY_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 #if BC_ENABLE_HISTORY
 
 #define BC_HISTORY_DEF_COLS (80)
 #define BC_HISTORY_DEF_MAX_LEN (128)
+#define BC_HISTORY_MAX_LINE (4096)
+
+#ifndef NDEBUG
+#define lndebug(...)                                               \
+	do {                                                           \
+		if (bc_history_debug_fp == NULL) {                         \
+			bc_history_debug_fp = fopen("/tmp/lndebug.txt","a");   \
+			fprintf(bc_history_debug_fp,                           \
+			       "[%zu %zu %zu] p: %d, rows: %d, "               \
+			       "rpos: %d, max: %zu, oldmax: %d\n",             \
+			       l->len, l->pos, l->oldcolpos, plen, rows, rpos, \
+			       l->maxrows, old_rows);                          \
+		}                                                          \
+		fprintf(bc_history_debug_fp, ", " __VA_ARGS__);            \
+		fflush(bc_history_debug_fp);                               \
+	} while (0)
+#else // NDEBUG
+#define lndebug(fmt, ...)
+#endif // NDEBUG
 
 typedef enum BcHistoryAction {
 	BC_ACTION_NULL = 0,
@@ -94,22 +114,38 @@ typedef enum BcHistoryAction {
 	BC_ACTION_BACKSPACE =  127
 } BcHistoryAction;
 
+/* The linenoiseState structure represents the state during line editing.
+ * We pass this state to functions implementing specific editing
+ * functionalities. */
+struct linenoiseState {
+    int ifd;            /* Terminal stdin file descriptor. */
+    int ofd;            /* Terminal stdout file descriptor. */
+    char *buf;          /* Edited line buffer. */
+    size_t buflen;      /* Edited line buffer size. */
+    const char *prompt; /* Prompt to display. */
+    size_t plen;        /* Prompt length. */
+    size_t pos;         /* Current cursor position. */
+    size_t oldcolpos;   /* Previous refresh cursor column position. */
+    size_t len;         /* Current edited line length. */
+    size_t cols;        /* Number of columns in terminal. */
+    int history_index;  /* The history index we are currently editing. */
+};
+
 char *linenoise(const char *prompt);
 int linenoiseHistoryAdd(const char *line);
 int linenoiseHistorySetMaxLen(int len);
 int linenoiseHistoryGetMaxLen(void);
 int linenoiseHistoryCopy(char** dest, int destlen);
 void linenoiseClearScreen(void);
-void linenoisePrintKeyCodes(void);
 
-typedef size_t (*linenoisePrevCharLen)(const char*, size_t, size_t, size_t*);
-typedef size_t (*linenoiseNextCharLen)(const char*, size_t, size_t, size_t*);
-typedef size_t (*linenoiseReadCode)(int, char*, size_t, BcHistoryAction*);
+#ifndef NDEBUG
+#endif // NDEBUG
 
-void linenoiseSetEncodingFunctions(
-    linenoisePrevCharLen prevCharLenFunc,
-    linenoiseNextCharLen nextCharLenFunc,
-    linenoiseReadCode readCodeFunc);
+extern const char *bc_history_bad_terms[];
+#ifndef NDEBUG
+extern FILE *bc_history_debug_fp;
+void linenoisePrintKeyCodes();
+#endif // NDEBUG
 
 #endif // BC_ENABLE_HISTORY
 

@@ -173,6 +173,13 @@ const char *bc_err_msgs[] = {
 
 };
 
+#if BC_ENABLE_HISTORY
+const char *bc_history_bad_terms[] = { "dumb", "cons25", "emacs", NULL };
+#ifndef NDEBUG
+FILE *bc_history_debug_fp = NULL;
+#endif // NDEBUG
+#endif // BC_ENABLE_HISTORY
+
 const char bc_func_main[] = "(main)";
 const char bc_func_read[] = "(read)";
 

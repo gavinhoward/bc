@@ -144,10 +144,6 @@
 
 #if BC_ENABLE_HISTORY
 
-#define LINENOISE_MAX_LINE 4096
-#define UNUSED(x) (void)(x)
-static const char *unsupported_term[] = {"dumb","cons25","emacs",NULL};
-
 static struct termios orig_termios; /* In order to restore at exit.*/
 static int rawmode = 0; /* For atexit() function to check if restore is needed*/
 static int atexit_registered = 0; /* Register atexit just 1 time. */
@@ -169,7 +165,6 @@ struct linenoiseState {
     size_t oldcolpos;   /* Previous refresh cursor column position. */
     size_t len;         /* Current edited line length. */
     size_t cols;        /* Number of columns in terminal. */
-    size_t maxrows;     /* Maximum num of rows used so far (multiline mode) */
     int history_index;  /* The history index we are currently editing. */
 };
 
@@ -177,37 +172,18 @@ static void linenoiseAtExit(void);
 int linenoiseHistoryAdd(const char *line);
 static void refreshLine(struct linenoiseState *l);
 
-/* Debugging macro. */
-#if 0
-FILE *lndebug_fp = NULL;
-#define lndebug(...) \
-    do { \
-        if (lndebug_fp == NULL) { \
-            lndebug_fp = fopen("/tmp/lndebug.txt","a"); \
-            fprintf(lndebug_fp, \
-            "[%d %d %d] p: %d, rows: %d, rpos: %d, max: %d, oldmax: %d\n", \
-            (int)l->len,(int)l->pos,(int)l->oldcolpos,plen,rows,rpos, \
-            (int)l->maxrows,old_rows); \
-        } \
-        fprintf(lndebug_fp, ", " __VA_ARGS__); \
-        fflush(lndebug_fp); \
-    } while (0)
-#else
-#define lndebug(fmt, ...)
-#endif
-
 /* ========================== Encoding functions ============================= */
 
 /* Get byte length and column length of the previous character */
 static size_t defaultPrevCharLen(const char *buf, size_t buf_len, size_t pos, size_t *col_len) {
-    UNUSED(buf); UNUSED(buf_len); UNUSED(pos);
+    (void)(buf); (void)(buf_len); (void)(pos);
     if (col_len != NULL) *col_len = 1;
     return 1;
 }
 
 /* Get byte length and column length of the next character */
 static size_t defaultNextCharLen(const char *buf, size_t buf_len, size_t pos, size_t *col_len) {
-    UNUSED(buf); UNUSED(buf_len); UNUSED(pos);
+    (void)(buf); (void)(buf_len); (void)(pos);
     if (col_len != NULL) *col_len = 1;
     return 1;
 }
@@ -220,27 +196,13 @@ static size_t defaultReadCode(int fd, char *buf, size_t buf_len, BcHistoryAction
     return nread;
 }
 
-/* Set default encoding functions */
-static linenoisePrevCharLen prevCharLen = defaultPrevCharLen;
-static linenoiseNextCharLen nextCharLen = defaultNextCharLen;
-static linenoiseReadCode readCode = defaultReadCode;
-
-/* Set used defined encoding functions */
-void linenoiseSetEncodingFunctions(linenoisePrevCharLen prevCharLenFunc,
-    linenoiseNextCharLen nextCharLenFunc,
-    linenoiseReadCode readCodeFunc) {
-    prevCharLen = prevCharLenFunc;
-    nextCharLen = nextCharLenFunc;
-    readCode = readCodeFunc;
-}
-
 /* Get column length from begining of buffer to current byte position */
 static size_t columnPos(const char *buf, size_t buf_len, size_t pos) {
     size_t ret = 0;
     size_t off = 0;
     while (off < pos) {
         size_t col_len;
-        size_t len = nextCharLen(buf,buf_len,off,&col_len);
+        size_t len = defaultNextCharLen(buf,buf_len,off,&col_len);
         off += len;
         ret += col_len;
     }
@@ -256,8 +218,8 @@ static int isUnsupportedTerm(void) {
     int j;
 
     if (term == NULL) return 0;
-    for (j = 0; unsupported_term[j]; j++)
-        if (!strcasecmp(term,unsupported_term[j])) return 1;
+    for (j = 0; bc_history_bad_terms[j]; j++)
+        if (!strcasecmp(term, bc_history_bad_terms[j])) return 1;
     return 0;
 }
 
@@ -446,7 +408,7 @@ static int isAnsiEscape(const char *buf, size_t buf_len, size_t* len) {
 /* Get column length of prompt text
  */
 static size_t promptTextColumnLen(const char *prompt, size_t plen) {
-    char buf[LINENOISE_MAX_LINE];
+    char buf[BC_HISTORY_MAX_LINE];
     size_t buf_len = 0;
     size_t off = 0;
     while (off < plen) {
@@ -474,13 +436,13 @@ static void refreshSingleLine(struct linenoiseState *l) {
     struct abuf ab;
 
     while((pcollen+columnPos(buf,len,pos)) >= l->cols) {
-        int chlen = nextCharLen(buf,len,0,NULL);
+        int chlen = defaultNextCharLen(buf,len,0,NULL);
         buf += chlen;
         len -= chlen;
         pos -= chlen;
     }
     while (pcollen+columnPos(buf,len,len) > l->cols) {
-        len -= prevCharLen(buf,len,len,NULL);
+        len -= defaultPrevCharLen(buf,len,len,NULL);
     }
 
     abInit(&ab);
@@ -539,7 +501,7 @@ int linenoiseEditInsert(struct linenoiseState *l, const char *cbuf, int clen) {
 /* Move cursor on the left. */
 void linenoiseEditMoveLeft(struct linenoiseState *l) {
     if (l->pos > 0) {
-        l->pos -= prevCharLen(l->buf,l->len,l->pos,NULL);
+        l->pos -= defaultPrevCharLen(l->buf,l->len,l->pos,NULL);
         refreshLine(l);
     }
 }
@@ -547,7 +509,7 @@ void linenoiseEditMoveLeft(struct linenoiseState *l) {
 /* Move cursor on the right. */
 void linenoiseEditMoveRight(struct linenoiseState *l) {
     if (l->pos != l->len) {
-        l->pos += nextCharLen(l->buf,l->len,l->pos,NULL);
+        l->pos += defaultNextCharLen(l->buf,l->len,l->pos,NULL);
         refreshLine(l);
     }
 }
@@ -617,7 +579,7 @@ void linenoiseEditHistoryNext(struct linenoiseState *l, int dir) {
  * position. Basically this is what happens with the "Delete" keyboard key. */
 void linenoiseEditDelete(struct linenoiseState *l) {
     if (l->len > 0 && l->pos < l->len) {
-        int chlen = nextCharLen(l->buf,l->len,l->pos,NULL);
+        int chlen = defaultNextCharLen(l->buf,l->len,l->pos,NULL);
         memmove(l->buf+l->pos,l->buf+l->pos+chlen,l->len-l->pos-chlen);
         l->len-=chlen;
         l->buf[l->len] = '\0';
@@ -628,7 +590,7 @@ void linenoiseEditDelete(struct linenoiseState *l) {
 /* Backspace implementation. */
 void linenoiseEditBackspace(struct linenoiseState *l) {
     if (l->pos > 0 && l->len > 0) {
-        int chlen = prevCharLen(l->buf,l->len,l->pos,NULL);
+        int chlen = defaultPrevCharLen(l->buf,l->len,l->pos,NULL);
         memmove(l->buf+l->pos-chlen,l->buf+l->pos,l->len-l->pos);
         l->pos-=chlen;
         l->len-=chlen;
@@ -686,7 +648,6 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
     l.oldcolpos = l.pos = 0;
     l.len = 0;
     l.cols = getColumns(stdin_fd, stdout_fd);
-    l.maxrows = 0;
     l.history_index = 0;
 
     /* Buffer starts empty. */
@@ -709,7 +670,7 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
 //	do {
 //          nread = read(l.ifd,&c,1);
 //        } while((nread == -1) && (errno == EINTR));
-        nread = readCode(l.ifd,cbuf,sizeof(cbuf),&c);
+        nread = defaultReadCode(l.ifd,cbuf,sizeof(cbuf),&c);
         if (nread <= 0) return l.len;
 
         switch(c) {
@@ -740,8 +701,8 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
               int pcl, ncl;
               char auxb[5];
 
- 	      pcl = prevCharLen(l.buf,l.len,l.pos,NULL);
-	      ncl = nextCharLen(l.buf,l.len,l.pos,NULL);
+ 	      pcl = defaultPrevCharLen(l.buf,l.len,l.pos,NULL);
+	      ncl = defaultNextCharLen(l.buf,l.len,l.pos,NULL);
 //            printf("[%d %d %d]\n", pcl, l.pos, ncl);
 	      // to perform a swap we need
               // * nonzero char length to the left
@@ -881,7 +842,8 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
 /* This special mode is used by linenoise in order to print scan codes
  * on screen for debugging / development purposes. It is implemented
  * by the linenoise_example program using the --keycodes option. */
-void linenoisePrintKeyCodes(void) {
+#ifndef NDEBUG
+void linenoisePrintKeyCodes() {
     char quit[4];
 
     printf("Linenoise key codes debugging mode.\n"
@@ -905,6 +867,7 @@ void linenoisePrintKeyCodes(void) {
     }
     disableRawMode(STDIN_FILENO);
 }
+#endif // NDEBUG
 
 /* This function calls the line editing function linenoiseEdit() using
  * the STDIN file descriptor set in raw mode. */
@@ -969,7 +932,7 @@ static char *linenoiseNoTTY(void) {
  * editing function or uses dummy fgets() so that you will be able to type
  * something even in the most desperate of the conditions. */
 char *linenoise(const char *prompt) {
-    char buf[LINENOISE_MAX_LINE];
+    char buf[BC_HISTORY_MAX_LINE];
     FILE *stream;
     int count;
 
@@ -983,7 +946,7 @@ char *linenoise(const char *prompt) {
 
         fprintf(stream, "%s",prompt);
         fflush(stream);
-        if (fgets(buf,LINENOISE_MAX_LINE,stdin) == NULL) return NULL;
+        if (fgets(buf,BC_HISTORY_MAX_LINE,stdin) == NULL) return NULL;
         len = strlen(buf);
         while(len && (buf[len-1] == '\n' || buf[len-1] == '\r')) {
             len--;
@@ -991,7 +954,7 @@ char *linenoise(const char *prompt) {
         }
         return strdup(buf);
     } else {
-        count = linenoiseRaw(buf,stream,LINENOISE_MAX_LINE,prompt);
+        count = linenoiseRaw(buf,stream,BC_HISTORY_MAX_LINE,prompt);
         if (count == -1) return NULL;
         return strdup(buf);
     }
