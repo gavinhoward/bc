@@ -24,6 +24,9 @@
  * You can find the original source code at:
  *   http://github.com/antirez/linenoise
  *
+ * You can find the fork that this code is based on at:
+ *   https://github.com/rain-1/linenoise-mob
+ *
  * ------------------------------------------------------------------------
  *
  * This code is also under the following license:
@@ -138,10 +141,11 @@ int linenoiseHistoryGetMaxLen(void);
 int linenoiseHistoryCopy(char** dest, int destlen);
 void linenoiseClearScreen(void);
 
-#ifndef NDEBUG
-#endif // NDEBUG
-
 extern const char *bc_history_bad_terms[];
+extern const unsigned long bc_history_wchars[][2];
+extern const size_t bc_history_wchars_len;
+extern const unsigned long bc_history_combo_chars[];
+extern const size_t bc_history_combo_chars_len;
 #ifndef NDEBUG
 extern FILE *bc_history_debug_fp;
 void linenoisePrintKeyCodes();

@@ -24,6 +24,9 @@
  * You can find the original source code at:
  *   http://github.com/antirez/linenoise
  *
+ * You can find the fork that this code is based on at:
+ *   https://github.com/rain-1/linenoise-mob
+ *
  * ------------------------------------------------------------------------
  *
  * This code is also under the following license:
@@ -140,6 +143,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#include <vector.h>
 #include <history.h>
 
 #if BC_ENABLE_HISTORY
@@ -151,50 +155,157 @@ static int history_max_len = BC_HISTORY_DEF_MAX_LEN;
 static int history_len = 0;
 static char **history = NULL;
 
-/* The linenoiseState structure represents the state during line editing.
- * We pass this state to functions implementing specific editing
- * functionalities. */
-struct linenoiseState {
-    int ifd;            /* Terminal stdin file descriptor. */
-    int ofd;            /* Terminal stdout file descriptor. */
-    char *buf;          /* Edited line buffer. */
-    size_t buflen;      /* Edited line buffer size. */
-    const char *prompt; /* Prompt to display. */
-    size_t plen;        /* Prompt length. */
-    size_t pos;         /* Current cursor position. */
-    size_t oldcolpos;   /* Previous refresh cursor column position. */
-    size_t len;         /* Current edited line length. */
-    size_t cols;        /* Number of columns in terminal. */
-    int history_index;  /* The history index we are currently editing. */
-};
-
 static void linenoiseAtExit(void);
 int linenoiseHistoryAdd(const char *line);
 static void refreshLine(struct linenoiseState *l);
 
-/* ========================== Encoding functions ============================= */
+/* Check if the code is a wide character
+ */
+static int isWideChar(unsigned long cp) {
+    size_t i;
+    for (i = 0; i < bc_history_wchars_len; i++) {
+        /* ranges are listed in ascending order.  Therefore, once the
+         * whole range is higher than the codepoint we're testing, the
+         * codepoint won't be found in any remaining range => bail early. */
+        if(bc_history_wchars[i][0] > cp) return 0;
 
-/* Get byte length and column length of the previous character */
-static size_t defaultPrevCharLen(const char *buf, size_t buf_len, size_t pos, size_t *col_len) {
-    (void)(buf); (void)(buf_len); (void)(pos);
-    if (col_len != NULL) *col_len = 1;
+        /* test this range */
+        if (bc_history_wchars[i][0] <= cp && cp <= bc_history_wchars[i][1]) return 1;
+    }
+    return 0;
+}
+
+/* Check if the code is a combining character
+ */
+static int isCombiningChar(unsigned long cp) {
+    size_t i;
+    for (i = 0; i < bc_history_combo_chars_len; i++) {
+        /* combining chars are listed in ascending order, so once we pass
+         * the codepoint of interest, we know it's not a combining char. */
+        if(bc_history_combo_chars[i] > cp) return 0;
+        if (bc_history_combo_chars[i] == cp) return 1;
+    }
+    return 0;
+}
+
+/* Get length of previous UTF8 character
+ */
+static size_t prevUtf8CharLen(const char* buf, int pos) {
+    int end = pos--;
+    while (pos >= 0 && ((unsigned char)buf[pos] & 0xC0) == 0x80)
+        pos--;
+    return end - pos;
+}
+
+/* Convert UTF8 to Unicode code point
+ */
+static size_t utf8BytesToCodePoint(const char* buf, size_t len, int* cp) {
+    if (len) {
+        unsigned char byte = buf[0];
+        if ((byte & 0x80) == 0) {
+            *cp = byte;
+            return 1;
+        } else if ((byte & 0xE0) == 0xC0) {
+            if (len >= 2) {
+                *cp = (((unsigned long)(buf[0] & 0x1F)) << 6) |
+                       ((unsigned long)(buf[1] & 0x3F));
+                return 2;
+            }
+        } else if ((byte & 0xF0) == 0xE0) {
+            if (len >= 3) {
+                *cp = (((unsigned long)(buf[0] & 0x0F)) << 12) |
+                      (((unsigned long)(buf[1] & 0x3F)) << 6) |
+                       ((unsigned long)(buf[2] & 0x3F));
+                return 3;
+            }
+        } else if ((byte & 0xF8) == 0xF0) {
+            if (len >= 4) {
+                *cp = (((unsigned long)(buf[0] & 0x07)) << 18) |
+                      (((unsigned long)(buf[1] & 0x3F)) << 12) |
+                      (((unsigned long)(buf[2] & 0x3F)) << 6) |
+                       ((unsigned long)(buf[3] & 0x3F));
+                return 4;
+            }
+        }
+        else {
+            *cp = 0xFFFD;
+            return 1;
+        }
+    }
+    *cp = 0;
     return 1;
 }
 
-/* Get byte length and column length of the next character */
-static size_t defaultNextCharLen(const char *buf, size_t buf_len, size_t pos, size_t *col_len) {
-    (void)(buf); (void)(buf_len); (void)(pos);
-    if (col_len != NULL) *col_len = 1;
-    return 1;
+/* Get length of next grapheme
+ */
+size_t linenoiseUtf8NextCharLen(const char* buf, size_t buf_len, size_t pos, size_t *col_len) {
+    size_t beg = pos;
+    int cp;
+    size_t len = utf8BytesToCodePoint(buf + pos, buf_len - pos, &cp);
+    if (isCombiningChar(cp)) {
+        /* NOTREACHED */
+        return 0;
+    }
+    if (col_len != NULL) *col_len = isWideChar(cp) ? 2 : 1;
+    pos += len;
+    while (pos < buf_len) {
+        int cp;
+        len = utf8BytesToCodePoint(buf + pos, buf_len - pos, &cp);
+        if (!isCombiningChar(cp)) return pos - beg;
+        pos += len;
+    }
+    return pos - beg;
 }
 
-/* Read bytes of the next character */
-static size_t defaultReadCode(int fd, char *buf, size_t buf_len, BcHistoryAction *c) {
+/* Get length of previous grapheme
+ */
+size_t linenoiseUtf8PrevCharLen(const char* buf, size_t buf_len, size_t pos, size_t *col_len) {
+    (void) (buf_len);
+    size_t end = pos;
+    while (pos > 0) {
+        size_t len = prevUtf8CharLen(buf, pos);
+        pos -= len;
+        int cp;
+        utf8BytesToCodePoint(buf + pos, len, &cp);
+        if (!isCombiningChar(cp)) {
+            if (col_len != NULL) *col_len = isWideChar(cp) ? 2 : 1;
+            return end - pos;
+        }
+    }
+    /* NOTREACHED */
+    return 0;
+}
+
+/* Read a Unicode from file.
+ */
+size_t linenoiseUtf8ReadCode(int fd, char* buf, size_t buf_len, int* cp) {
     if (buf_len < 1) return -1;
-    int nread = read(fd,&buf[0],1);
-    if (nread == 1) *c = (BcHistoryAction) buf[0];
-    return nread;
+    size_t nread = read(fd,&buf[0],1);
+    if (nread <= 0) return nread;
+
+    unsigned char byte = buf[0];
+    if ((byte & 0x80) == 0) {
+        ;
+    } else if ((byte & 0xE0) == 0xC0) {
+        if (buf_len < 2) return -1;
+        nread = read(fd,&buf[1],1);
+        if (nread <= 0) return nread;
+    } else if ((byte & 0xF0) == 0xE0) {
+        if (buf_len < 3) return -1;
+        nread = read(fd,&buf[1],2);
+        if (nread <= 0) return nread;
+    } else if ((byte & 0xF8) == 0xF0) {
+        if (buf_len < 3) return -1;
+        nread = read(fd,&buf[1],3);
+        if (nread <= 0) return nread;
+    } else {
+        return -1;
+    }
+
+    return utf8BytesToCodePoint(buf, buf_len, cp);
 }
+
+/* ========================== Encoding functions ============================= */
 
 /* Get column length from begining of buffer to current byte position */
 static size_t columnPos(const char *buf, size_t buf_len, size_t pos) {
@@ -202,7 +313,7 @@ static size_t columnPos(const char *buf, size_t buf_len, size_t pos) {
     size_t off = 0;
     while (off < pos) {
         size_t col_len;
-        size_t len = defaultNextCharLen(buf,buf_len,off,&col_len);
+        size_t len = linenoiseUtf8NextCharLen(buf,buf_len,off,&col_len);
         off += len;
         ret += col_len;
     }
@@ -360,32 +471,6 @@ void linenoiseClearScreen(void) {
 
 /* =========================== Line editing ================================= */
 
-/* We define a very simple "append buffer" structure, that is an heap
- * allocated string where we can append to. This is useful in order to
- * write all the escape sequences in a buffer and flush them to the standard
- * output in a single call, to avoid flickering effects. */
-struct abuf {
-    char *b;
-    unsigned int len;
-};
-
-static void abInit(struct abuf *ab) {
-    ab->b = NULL;
-    ab->len = 0;
-}
-
-static void abAppend(struct abuf *ab, const char *s, unsigned int len) {
-    char *new = realloc(ab->b,ab->len+len);
-
-    if (new == NULL) return;
-    memcpy(new+ab->len,s,len);
-    ab->b = new;
-    ab->len += len;
-}
-
-static void abFree(struct abuf *ab) {
-    free(ab->b);
-}
 
 /* Check if text is an ANSI escape sequence
  */
@@ -433,34 +518,34 @@ static void refreshSingleLine(struct linenoiseState *l) {
     char *buf = l->buf;
     size_t len = l->len;
     size_t pos = l->pos;
-    struct abuf ab;
+    BcVec vec;
 
     while((pcollen+columnPos(buf,len,pos)) >= l->cols) {
-        int chlen = defaultNextCharLen(buf,len,0,NULL);
+        int chlen = linenoiseUtf8NextCharLen(buf,len,0,NULL);
         buf += chlen;
         len -= chlen;
         pos -= chlen;
     }
     while (pcollen+columnPos(buf,len,len) > l->cols) {
-        len -= defaultPrevCharLen(buf,len,len,NULL);
+        len -= linenoiseUtf8PrevCharLen(buf,len,len,NULL);
     }
 
-    abInit(&ab);
+    bc_vec_init(&vec, sizeof(char), NULL);
     /* Cursor to left edge */
     snprintf(seq,64,"\r");
-    abAppend(&ab,seq,strlen(seq));
+	bc_vec_string(&vec, strlen(seq), seq);
     /* Write the prompt and the current buffer content */
-    abAppend(&ab,l->prompt,strlen(l->prompt));
-    abAppend(&ab,buf,len);
+	bc_vec_concat(&vec, l->prompt);
+	bc_vec_concat(&vec, buf);
     /* Erase to right */
     snprintf(seq,64,"\x1b[0K");
-    abAppend(&ab,seq,strlen(seq));
+	bc_vec_concat(&vec, seq);
     /* Move cursor to original position. */
 //    snprintf(seq,64,"\r\x1b[%dC", (int)(pos+strlenPerceived(l->prompt)));
     snprintf(seq,64,"\r\x1b[%dC", (int)(columnPos(buf,len,pos)+pcollen));
-    abAppend(&ab,seq,strlen(seq));
-    if (write(fd,ab.b,ab.len) == -1) {} /* Can't recover from write error. */
-    abFree(&ab);
+	bc_vec_concat(&vec, seq);
+    if (write(fd, vec.v, vec.len - 1) == -1) {} /* Can't recover from write error. */
+    bc_vec_free(&vec);
 }
 
 /* Calls the two low level functions refreshSingleLine() or
@@ -501,7 +586,7 @@ int linenoiseEditInsert(struct linenoiseState *l, const char *cbuf, int clen) {
 /* Move cursor on the left. */
 void linenoiseEditMoveLeft(struct linenoiseState *l) {
     if (l->pos > 0) {
-        l->pos -= defaultPrevCharLen(l->buf,l->len,l->pos,NULL);
+        l->pos -= linenoiseUtf8PrevCharLen(l->buf,l->len,l->pos,NULL);
         refreshLine(l);
     }
 }
@@ -509,7 +594,7 @@ void linenoiseEditMoveLeft(struct linenoiseState *l) {
 /* Move cursor on the right. */
 void linenoiseEditMoveRight(struct linenoiseState *l) {
     if (l->pos != l->len) {
-        l->pos += defaultNextCharLen(l->buf,l->len,l->pos,NULL);
+        l->pos += linenoiseUtf8NextCharLen(l->buf,l->len,l->pos,NULL);
         refreshLine(l);
     }
 }
@@ -579,7 +664,7 @@ void linenoiseEditHistoryNext(struct linenoiseState *l, int dir) {
  * position. Basically this is what happens with the "Delete" keyboard key. */
 void linenoiseEditDelete(struct linenoiseState *l) {
     if (l->len > 0 && l->pos < l->len) {
-        int chlen = defaultNextCharLen(l->buf,l->len,l->pos,NULL);
+        int chlen = linenoiseUtf8NextCharLen(l->buf,l->len,l->pos,NULL);
         memmove(l->buf+l->pos,l->buf+l->pos+chlen,l->len-l->pos-chlen);
         l->len-=chlen;
         l->buf[l->len] = '\0';
@@ -590,7 +675,7 @@ void linenoiseEditDelete(struct linenoiseState *l) {
 /* Backspace implementation. */
 void linenoiseEditBackspace(struct linenoiseState *l) {
     if (l->pos > 0 && l->len > 0) {
-        int chlen = defaultPrevCharLen(l->buf,l->len,l->pos,NULL);
+        int chlen = linenoiseUtf8PrevCharLen(l->buf,l->len,l->pos,NULL);
         memmove(l->buf+l->pos-chlen,l->buf+l->pos,l->len-l->pos);
         l->pos-=chlen;
         l->len-=chlen;
@@ -660,7 +745,7 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
 
     if (write(l.ofd,prompt,l.plen) == -1) return -1;
     while(1) {
-        BcHistoryAction c;
+        int c;
         char cbuf[32]; // large enough for any encoding?
         int nread;
         char seq[3];
@@ -670,7 +755,7 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
 //	do {
 //          nread = read(l.ifd,&c,1);
 //        } while((nread == -1) && (errno == EINTR));
-        nread = defaultReadCode(l.ifd,cbuf,sizeof(cbuf),&c);
+        nread = linenoiseUtf8ReadCode(l.ifd,cbuf,sizeof(cbuf), &c);
         if (nread <= 0) return l.len;
 
         switch(c) {
@@ -701,8 +786,8 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
               int pcl, ncl;
               char auxb[5];
 
- 	      pcl = defaultPrevCharLen(l.buf,l.len,l.pos,NULL);
-	      ncl = defaultNextCharLen(l.buf,l.len,l.pos,NULL);
+ 	      pcl = linenoiseUtf8PrevCharLen(l.buf,l.len,l.pos,NULL);
+	      ncl = linenoiseUtf8NextCharLen(l.buf,l.len,l.pos,NULL);
 //            printf("[%d %d %d]\n", pcl, l.pos, ncl);
 	      // to perform a swap we need
               // * nonzero char length to the left
