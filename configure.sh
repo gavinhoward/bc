@@ -15,7 +15,19 @@
 #
 
 usage() {
-	echo "usage: $0 [-b|-d|-c] [-chStn] [-m|-r] [-k KARATSUBA_LEN]"
+
+	if [ $# -gt 0 ]; then
+
+		val=1
+
+		echo "$1"
+		echo ""
+
+	else
+		val=0
+	fi
+
+	echo "usage: $0 [-b|-d|-c] [-ghHS] [-m|-r|-N] [-k KARATSUBA_LEN]"
 	echo ""
 	echo "    -b"
 	echo "        Build bc only. It is an error if \"-d\" is specified too."
@@ -25,24 +37,27 @@ usage() {
 	echo "        or if \"-n\" is not specified."
 	echo "    -d"
 	echo "        Build dc only. It is an error if \"-b\" is specified too."
+	echo "    -g"
+	echo "        Build in debug mode."
 	echo "    -h"
 	echo "        Print this help message and exit."
-	echo "    -k"
+	echo "    -H"
+	echo "        Disable history (currently not implemented)."
+	echo "    -k KARATSUBA_LEN"
 	echo "        Set the karatsuba length to KARATSUBA_LEN (default is 32)."
 	echo "        It is an error if KARATSUBA_LEN is not a number or is less than 2."
 	echo "    -m"
-	echo "        Enable minimum-size release flags. It is an error if \"-r\" is"
-	echo "        specified too."
-	echo "    -n"
-	echo "        Build in debug mode."
+	echo "        Enable minimum-size release flags (-Os -DNDEBUG -s)."
+	echo "        It is an error if \"-r\" or \"-g\" are specified too."
+	echo "    -N"
+	echo "        Disable default CFLAGS. It is an error to specify this option"
+	echo "        with any of \"-g\", \"-m\", or \"-r\"."
 	echo "    -r"
 	echo "        Enable default release flags (-O3 -DNDEBUG -s). On by default."
 	echo "        If given with \"-n\", a debuggable release will be built."
 	echo "        It is an error if \"-m\" is specified too."
 	echo "    -S"
 	echo "        Disable signal handling. On by default."
-	echo "    -t"
-	echo "        Enable history (currently not implemented)."
 	echo ""
 	echo "In addition, the following environment variables are used:"
 	echo ""
@@ -56,7 +71,7 @@ usage() {
 	echo "    DESTDIR   For package creation."
 	echo "    GEN_EMU   Emulator to run string generator code under"
 	echo "              (leave empty if not necessary)."
-	exit "$1"
+	exit "$val"
 }
 
 err_exit() {
@@ -159,41 +174,52 @@ min_size=0
 debug=0
 release=0
 signals=1
-hist=0
+hist=1
+none=0
 
-while getopts "bcdhk:mnrSt" opt; do
+while getopts "bcdghHk:mNrS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
 		c) coverage=1 ;;
 		d) dc_only=1 ;;
-		h) usage 0 ;;
+		g) debug=1 ;;
+		h) usage ;;
+		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
 		m) min_size=1 ;;
-		n) debug=1 ;;
+		N) none=1 ;;
 		r) release=1 ;;
 		S) signals=0 ;;
 		t) hist=1 ;;
-		?) usage 1 ;;
+		?) usage "Invalid option" ;;
 	esac
 
 done
 
 if [ "$bc_only" -eq 1 -a "$dc_only" -eq 1 ]; then
-	usage 1
+	usage "Can only specify one of -b or -d"
 fi
 
 case $karatsuba_len in
-	(*[!0-9]*|'') usage 1 ;;
+	(*[!0-9]*|'') usage "KARATSUBA_LEN is not a number" ;;
 	(*) ;;
 esac
 
 if [ "$karatsuba_len" -lt 2 ]; then
-	usage 1
+	usage "KARATSUBA_LEN is less than 2"
 fi
 
 if [ "$release" -eq 1 -a "$min_size" -eq 1 ]; then
-	usage 1
+	usage "Can only specify one of -r or -m"
+fi
+
+if [ "$none" -eq 1 ]; then
+
+	if [ "$release" -eq 1 -o "$min_size" -eq 1 -o "$debug" -eq 1 ]; then
+		usage "Cannot specify -N with -r, -m, or -g"
+	fi
+
 fi
 
 set -e
@@ -278,7 +304,7 @@ else
 	LDFLAGS="$LDFLAGS -s"
 fi
 
-if [ "$release" -eq 1 ]; then
+if [ "$release" -eq 1 -o "$none" -eq 0 ]; then
 	CFLAGS="$CFLAGS -O3"
 fi
 
@@ -289,7 +315,7 @@ fi
 if [ "$coverage" -eq 1 ]; then
 
 	if [ "$bc_only" -eq 1 -o "$dc_only" -eq 1 ]; then
-		usage 1
+		usage "Can only specify -c without -b or -d"
 	fi
 
 	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
@@ -310,7 +336,7 @@ gcc="gcc"
 clang="clang"
 
 if [ "${CC#*$gcc}" = "$CC" -a "${CC#*$clang}" = "$CC" ]; then
-	usage 1
+	usage "Only gcc and clang are supported"
 fi
 
 if [ "$HOSTCC" = "" ]; then
@@ -318,7 +344,7 @@ if [ "$HOSTCC" = "" ]; then
 fi
 
 if [ "${HOSTCC#*$gcc}" = "$CC" -a "${HOSTCC#*$clang}" = "$CC" ]; then
-	usage 1
+	usage "Only gcc and clang are supported"
 fi
 
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
