@@ -697,10 +697,10 @@ BcStatus bc_parse_for(BcParse *p) {
 
 	bc_vec_push(&p->exits, &ip);
 	bc_vec_push(&p->func->labels, &ip.idx);
-	bc_lex_next(&p->l);
-	bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
+	s = bc_lex_next(&p->l);
+	if (!s) bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
 
-	return BC_STATUS_SUCCESS;
+	return s;
 }
 
 BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
