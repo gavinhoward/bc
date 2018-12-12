@@ -62,29 +62,12 @@
  *
  */
 
-#ifndef __LINENOISE_H
-#define __LINENOISE_H
+#ifndef BC_HISTORY_H
+#define BC_HISTORY_H
 
 #include <stddef.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stddef.h>
-typedef struct linenoiseCompletions {
-  size_t len;
-  char **cvec;
-} linenoiseCompletions;
-
-typedef void(linenoiseCompletionCallback)(const char *, linenoiseCompletions *);
-typedef char*(linenoiseHintsCallback)(const char *, int *color, int *bold);
-typedef void(linenoiseFreeHintsCallback)(void *);
-void linenoiseSetCompletionCallback(linenoiseCompletionCallback *);
-void linenoiseSetHintsCallback(linenoiseHintsCallback *);
-void linenoiseSetFreeHintsCallback(linenoiseFreeHintsCallback *);
-void linenoiseAddCompletion(linenoiseCompletions *, const char *);
-void linenoiseAddHistoryCompletions(const char*, linenoiseCompletions *);
+#if BC_ENABLE_HISTORY
 
 char *linenoise(const char *prompt);
 void linenoiseFree(void *ptr);
@@ -107,8 +90,6 @@ void linenoiseSetEncodingFunctions(
     linenoiseNextCharLen *nextCharLenFunc,
     linenoiseReadCode *readCodeFunc);
 
-#ifdef __cplusplus
-}
-#endif
+#endif // BC_ENABLE_HISTORY
 
-#endif /* __LINENOISE_H */
+#endif // BC_HISTORY_H

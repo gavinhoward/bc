@@ -139,19 +139,18 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include "linenoise.h"
+
+#include <history.h>
+
+#if BC_ENABLE_HISTORY
 
 #define LINENOISE_DEFAULT_HISTORY_MAX_LEN 100
 #define LINENOISE_MAX_LINE 4096
 #define UNUSED(x) (void)(x)
 static const char *unsupported_term[] = {"dumb","cons25","emacs",NULL};
-static linenoiseCompletionCallback *completionCallback = NULL;
-static linenoiseHintsCallback *hintsCallback = NULL;
-static linenoiseFreeHintsCallback *freeHintsCallback = NULL;
 
 static struct termios orig_termios; /* In order to restore at exit.*/
 static int rawmode = 0; /* For atexit() function to check if restore is needed*/
-static int mlmode = 0;  /* Multi line mode. Default is single line. */
 static int atexit_registered = 0; /* Register atexit just 1 time. */
 static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
 static int history_len = 0;
@@ -303,11 +302,6 @@ static size_t columnPosForMultiLine(const char *buf, size_t buf_len, size_t pos,
 
 /* ======================= Low level terminal handling ====================== */
 
-/* Set if to use or not the multi line mode. */
-void linenoiseSetMultiLine(int ml) {
-    mlmode = ml;
-}
-
 /* Return true if the terminal name is in the list of terminals we know are
  * not able to understand basic escape sequences. */
 static int isUnsupportedTerm(void) {
@@ -454,138 +448,6 @@ void linenoiseClearScreen(void) {
     }
 }
 
-/* Beep, used for completion when there is nothing to complete or when all
- * the choices were already shown. */
-static void linenoiseBeep(void) {
-    fprintf(stderr, "\x7");
-    fflush(stderr);
-}
-
-/* ============================== Completion ================================ */
-
-/* Free a list of completion option populated by linenoiseAddCompletion(). */
-static void freeCompletions(linenoiseCompletions *lc) {
-    size_t i;
-    for (i = 0; i < lc->len; i++)
-        free(lc->cvec[i]);
-    if (lc->cvec != NULL)
-        free(lc->cvec);
-}
-
-/* This is an helper function for linenoiseEdit() and is called when the
- * user types the <tab> key in order to complete the string currently in the
- * input.
- *
- * The state of the editing is encapsulated into the pointed linenoiseState
- * structure as described in the structure definition. */
-static int completeLine(struct linenoiseState *ls, char *cbuf, size_t cbuf_len, int *c) {
-    linenoiseCompletions lc = { 0, NULL };
-    int nread = 0, nwritten;
-    *c = 0;
-
-    completionCallback(ls->buf,&lc);
-    if (lc.len == 0) {
-        linenoiseBeep();
-    } else {
-        size_t stop = 0, i = 0;
-
-        while(!stop) {
-            /* Show completion or original buffer */
-            if (i < lc.len) {
-                struct linenoiseState saved = *ls;
-
-                ls->len = ls->pos = strlen(lc.cvec[i]);
-                ls->buf = lc.cvec[i];
-                refreshLine(ls);
-                ls->len = saved.len;
-                ls->pos = saved.pos;
-                ls->buf = saved.buf;
-            } else {
-                refreshLine(ls);
-            }
-
-            nread = readCode(ls->ifd,cbuf,cbuf_len,c);
-            if (nread <= 0) {
-                freeCompletions(&lc);
-                *c = -1;
-                return nread;
-            }
-
-            switch(*c) {
-                case TAB: /* tab */
-                    i = (i+1) % (lc.len+1);
-                    if (i == lc.len) linenoiseBeep();
-                    break;
-                case ESC: /* escape */
-                    /* Re-show original buffer */
-                    if (i < lc.len) refreshLine(ls);
-                    stop = 1;
-                    break;
-                default:
-                    /* Update buffer and return */
-                    if (i < lc.len) {
-                        nwritten = snprintf(ls->buf,ls->buflen,"%s",lc.cvec[i]);
-                        ls->len = ls->pos = nwritten;
-                    }
-                    stop = 1;
-                    break;
-            }
-        }
-    }
-
-    freeCompletions(&lc);
-    return nread;
-}
-
-/* Register a callback function to be called for tab-completion. */
-void linenoiseSetCompletionCallback(linenoiseCompletionCallback *fn) {
-    completionCallback = fn;
-}
-
-/* Register a hits function to be called to show hits to the user at the
- * right of the prompt. */
-void linenoiseSetHintsCallback(linenoiseHintsCallback *fn) {
-    hintsCallback = fn;
-}
-
-/* Register a function to free the hints returned by the hints callback
- * registered with linenoiseSetHintsCallback(). */
-void linenoiseSetFreeHintsCallback(linenoiseFreeHintsCallback *fn) {
-    freeHintsCallback = fn;
-}
-
-/* This function is used by the callback function registered by the user
- * in order to add completion options given the input string when the
- * user typed <tab>. See the example.c source code for a very easy to
- * understand example. */
-void linenoiseAddCompletion(linenoiseCompletions *lc, const char *str) {
-    size_t len = strlen(str);
-    char *copy, **cvec;
-
-    copy = malloc(len+1);
-    if (copy == NULL) return;
-    memcpy(copy,str,len+1);
-    cvec = realloc(lc->cvec,sizeof(char*)*(lc->len+1));
-    if (cvec == NULL) {
-        free(copy);
-        return;
-    }
-    lc->cvec = cvec;
-    lc->cvec[lc->len++] = copy;
-}
-
-/* Adds matching history entries as tab completions */
-void linenoiseAddHistoryCompletions(const char* buf, linenoiseCompletions *lc) {
-    int i;
-    size_t n;
-    if (history == NULL)
-        return;
-    n = strlen(buf);
-    for (i = 0; i < history_len; ++i)
-        if (strncasecmp(history[i], buf, n) == 0)
-            linenoiseAddCompletion(lc, history[i]);
-}
-
 
 /* =========================== Line editing ================================= */
 
@@ -614,33 +476,6 @@ static void abAppend(struct abuf *ab, const char *s, unsigned int len) {
 
 static void abFree(struct abuf *ab) {
     free(ab->b);
-}
-
-/* Helper of refreshSingleLine() and refreshMultiLine() to show hints
- * to the right of the prompt. */
-void refreshShowHints(struct abuf *ab, struct linenoiseState *l, int pcollen) {
-    char seq[64];
-    size_t collen = pcollen+columnPos(l->buf,l->len,l->len);
-    if (hintsCallback && collen < l->cols) {
-        int color = -1, bold = 0;
-        char *hint = hintsCallback(l->buf,&color,&bold);
-        if (hint) {
-            int hintlen = strlen(hint);
-            int hintmaxlen = l->cols-collen;
-            if (hintlen > hintmaxlen) hintlen = hintmaxlen;
-            if (bold == 1 && color == -1) color = 37;
-            if (color != -1 || bold != 0)
-                snprintf(seq,64,"\033[%d;%d;49m",bold,color);
-            else
-                seq[0] = '\0';
-            abAppend(ab,seq,strlen(seq));
-            abAppend(ab,hint,hintlen);
-            if (color != -1 || bold != 0)
-                abAppend(ab,"\033[0m",4);
-            /* Call the function to free the hint returned. */
-            if (freeHintsCallback) freeHintsCallback(hint);
-        }
-    }
 }
 
 /* Check if text is an ANSI escape sequence
@@ -708,8 +543,6 @@ static void refreshSingleLine(struct linenoiseState *l) {
     /* Write the prompt and the current buffer content */
     abAppend(&ab,l->prompt,strlen(l->prompt));
     abAppend(&ab,buf,len);
-    /* Show hits if any. */
-    refreshShowHints(&ab,l,pcollen);
     /* Erase to right */
     snprintf(seq,64,"\x1b[0K");
     abAppend(&ab,seq,strlen(seq));
@@ -766,9 +599,6 @@ static void refreshMultiLine(struct linenoiseState *l) {
     abAppend(&ab,l->prompt,strlen(l->prompt));
     abAppend(&ab,l->buf,l->len);
 
-    /* Show hits if any. */
-    refreshShowHints(&ab,l,pcollen);
-
     /* Get column length to cursor position */
     colpos2 = columnPosForMultiLine(l->buf,l->len,l->pos,l->cols,pcollen);
 
@@ -816,10 +646,7 @@ static void refreshMultiLine(struct linenoiseState *l) {
 /* Calls the two low level functions refreshSingleLine() or
  * refreshMultiLine() according to the selected mode. */
 static void refreshLine(struct linenoiseState *l) {
-    if (mlmode)
-        refreshMultiLine(l);
-    else
-        refreshSingleLine(l);
+    refreshSingleLine(l);
 }
 
 /* Insert the character 'c' at cursor current position.
@@ -832,7 +659,7 @@ int linenoiseEditInsert(struct linenoiseState *l, const char *cbuf, int clen) {
             l->pos+=clen;
             l->len+=clen;;
             l->buf[l->len] = '\0';
-            if ((!mlmode && promptTextColumnLen(l->prompt,l->plen)+columnPos(l->buf,l->len,l->len) < l->cols && !hintsCallback)) {
+            if ((!promptTextColumnLen(l->prompt,l->plen)+columnPos(l->buf,l->len,l->len) < l->cols)) {
                 /* Avoid a full update of the line in the
                  * trivial case. */
                 if (write(l->ofd,cbuf,clen) == -1) return -1;
@@ -1027,32 +854,11 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
         nread = readCode(l.ifd,cbuf,sizeof(cbuf),&c);
         if (nread <= 0) return l.len;
 
-
-        /* Only autocomplete when the callback is set. It returns < 0 when
-         * there was an error reading from fd. Otherwise it will return the
-         * character that should be handled next. */
-        if (c == TAB && completionCallback != NULL) {
-            nread = completeLine(&l,cbuf,sizeof(cbuf),&c);
-            /* Return on errors */
-            if (c < 0) return l.len;
-            /* Read next character when 0 */
-            if (c == 0) continue;
-        }
-
         switch(c) {
         case LINE_FEED:/* line feed */
         case ENTER:    /* enter */
             history_len--;
             free(history[history_len]);
-            if (mlmode) linenoiseEditMoveEnd(&l);
-            if (hintsCallback) {
-                /* Force a refresh without hints to leave the previous
-                 * line as the user typed it after a newline. */
-                linenoiseHintsCallback *hc = hintsCallback;
-                hintsCallback = NULL;
-                refreshLine(&l);
-                hintsCallback = hc;
-            }
             return (int)l.len;
         case CTRL_C:     /* ctrl-c */
             errno = EAGAIN;
@@ -1437,46 +1243,6 @@ int linenoiseHistoryGetMaxLen(void) {
     return history_max_len;
 }
 
-/* Save the history in the specified file. On success 0 is returned
- * otherwise -1 is returned. */
-int linenoiseHistorySave(const char *filename) {
-    mode_t old_umask = umask(S_IXUSR|S_IRWXG|S_IRWXO);
-    FILE *fp;
-    int j;
-
-    fp = fopen(filename,"w");
-    umask(old_umask);
-    if (fp == NULL) return -1;
-    (void)chmod(filename,S_IRUSR|S_IWUSR);
-    for (j = 0; j < history_len; j++)
-        fprintf(fp,"%s\n",history[j]);
-    fclose(fp);
-    return 0;
-}
-
-/* Load the history from the specified file. If the file does not exist
- * -1 is returned and no operation is performed.
- *
- * If the file exists and the operation succeeded 0 is returned, otherwise
- * on error -1 is returned. */
-int linenoiseHistoryLoad(const char *filename) {
-    FILE *fp = fopen(filename,"r");
-    char buf[LINENOISE_MAX_LINE];
-
-    if (fp == NULL) return -1;
-
-    while (fgets(buf,LINENOISE_MAX_LINE,fp) != NULL) {
-        char *p;
-
-        p = strchr(buf,'\r');
-        if (!p) p = strchr(buf,'\n');
-        if (p) *p = '\0';
-        linenoiseHistoryAdd(buf);
-    }
-    fclose(fp);
-    return 0;
-}
-
 /* Copy the history into the specified array.
  * it must already be allocated to have at least destlen spaces.
  * The size of the history is returned. */
@@ -1488,3 +1254,4 @@ int linenoiseHistoryCopy(char** dest, int destlen) {
 
     return history_len;
 }
+#endif // BC_ENABLE_HISTORY
