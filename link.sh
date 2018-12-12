@@ -42,7 +42,7 @@ for exe in ./*; do
 			name="$link"
 		fi
 
-		ln -s "$exe" "./$name"
+		ln -fs "$exe" "./$name"
 
 		exit 0
 	fi

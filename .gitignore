@@ -18,6 +18,7 @@ bc_help.c
 dc_help.c
 config.mak
 timeconst.bc
+Makefile
 
 # Ignore the generated test files
 parse.txt
