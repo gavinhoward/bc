@@ -144,7 +144,6 @@
 
 #if BC_ENABLE_HISTORY
 
-#define LINENOISE_DEFAULT_HISTORY_MAX_LEN 100
 #define LINENOISE_MAX_LINE 4096
 #define UNUSED(x) (void)(x)
 static const char *unsupported_term[] = {"dumb","cons25","emacs",NULL};
@@ -152,7 +151,7 @@ static const char *unsupported_term[] = {"dumb","cons25","emacs",NULL};
 static struct termios orig_termios; /* In order to restore at exit.*/
 static int rawmode = 0; /* For atexit() function to check if restore is needed*/
 static int atexit_registered = 0; /* Register atexit just 1 time. */
-static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
+static int history_max_len = BC_HISTORY_DEF_MAX_LEN;
 static int history_len = 0;
 static char **history = NULL;
 
@@ -249,34 +248,6 @@ static size_t columnPos(const char *buf, size_t buf_len, size_t pos) {
     return ret;
 }
 
-/* Get column length from begining of buffer to current byte position for multiline mode*/
-static size_t columnPosForMultiLine(const char *buf, size_t buf_len, size_t pos, size_t cols, size_t ini_pos) {
-    size_t ret = 0;
-    size_t colwid = ini_pos;
-
-    size_t off = 0;
-    while (off < buf_len) {
-        size_t col_len;
-        size_t len = nextCharLen(buf,buf_len,off,&col_len);
-
-        int dif = (int)(colwid + col_len) - (int)cols;
-        if (dif > 0) {
-            ret += dif;
-            colwid = col_len;
-        } else if (dif == 0) {
-            colwid = 0;
-        } else {
-            colwid += col_len;
-        }
-
-        if (off >= pos) break;
-        off += len;
-        ret += col_len;
-    }
-
-    return ret;
-}
-
 /* ======================= Low level terminal handling ====================== */
 
 /* Return true if the terminal name is in the list of terminals we know are
@@ -351,7 +322,7 @@ static int getCursorPosition(int ifd, int ofd) {
     buf[i] = '\0';
 
     /* Parse it. */
-    if (buf[0] != ESC || buf[1] != '[') return -1;
+    if (buf[0] != BC_ACTION_ESC || buf[1] != '[') return -1;
     if (sscanf(buf+2,"%d;%d",&rows,&cols) != 2) return -1;
     return cols;
 }
@@ -743,19 +714,19 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
         if (nread <= 0) return l.len;
 
         switch(c) {
-        case LINE_FEED:/* line feed */
-        case ENTER:    /* enter */
+        case BC_ACTION_LINE_FEED:/* line feed */
+        case BC_ACTION_ENTER:    /* enter */
             history_len--;
             free(history[history_len]);
             return (int)l.len;
-        case CTRL_C:     /* ctrl-c */
+        case BC_ACTION_CTRL_C:     /* ctrl-c */
             errno = EAGAIN;
             return -1;
-        case BACKSPACE:   /* backspace */
+        case BC_ACTION_BACKSPACE:   /* backspace */
         case 8:     /* ctrl-h */
             linenoiseEditBackspace(&l);
             break;
-        case CTRL_D:     /* ctrl-d, remove char at right of cursor, or if the
+        case BC_ACTION_CTRL_D:     /* ctrl-d, remove char at right of cursor, or if the
                             line is empty, act as end-of-file. */
             if (l.len > 0) {
                 linenoiseEditDelete(&l);
@@ -765,7 +736,7 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
                 return -1;
             }
             break;
-        case CTRL_T:    /* ctrl-t, swaps current character with previous. */
+        case BC_ACTION_CTRL_T:    /* ctrl-t, swaps current character with previous. */
             {
               int pcl, ncl;
               char auxb[5];
@@ -791,19 +762,19 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
               }
             }
             break;
-        case CTRL_B:     /* ctrl-b */
+        case BC_ACTION_CTRL_B:     /* ctrl-b */
             linenoiseEditMoveLeft(&l);
             break;
-        case CTRL_F:     /* ctrl-f */
+        case BC_ACTION_CTRL_F:     /* ctrl-f */
             linenoiseEditMoveRight(&l);
             break;
-        case CTRL_P:    /* ctrl-p */
+        case BC_ACTION_CTRL_P:    /* ctrl-p */
             linenoiseEditHistoryNext(&l, LINENOISE_HISTORY_PREV);
             break;
-        case CTRL_N:    /* ctrl-n */
+        case BC_ACTION_CTRL_N:    /* ctrl-n */
             linenoiseEditHistoryNext(&l, LINENOISE_HISTORY_NEXT);
             break;
-        case ESC:    /* escape sequence */
+        case BC_ACTION_ESC:    /* escape sequence */
             if (read(l.ifd,seq,1) == -1) break;
             /* ESC ? sequences */
             if (seq[0] != '[' && seq[0] != '0') {
@@ -880,27 +851,27 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
         default:
             if (linenoiseEditInsert(&l,cbuf,nread)) return -1;
             break;
-        case CTRL_U: /* Ctrl+u, delete the whole line. */
+        case BC_ACTION_CTRL_U: /* Ctrl+u, delete the whole line. */
             buf[0] = '\0';
             l.pos = l.len = 0;
             refreshLine(&l);
             break;
-        case CTRL_K: /* Ctrl+k, delete from current to end of line. */
+        case BC_ACTION_CTRL_K: /* Ctrl+k, delete from current to end of line. */
             buf[l.pos] = '\0';
             l.len = l.pos;
             refreshLine(&l);
             break;
-        case CTRL_A: /* Ctrl+a, go to the start of the line */
+        case BC_ACTION_CTRL_A: /* Ctrl+a, go to the start of the line */
             linenoiseEditMoveHome(&l);
             break;
-        case CTRL_E: /* ctrl+e, go to the end of the line */
+        case BC_ACTION_CTRL_E: /* ctrl+e, go to the end of the line */
             linenoiseEditMoveEnd(&l);
             break;
-        case CTRL_L: /* ctrl+l, clear screen */
+        case BC_ACTION_CTRL_L: /* ctrl+l, clear screen */
             linenoiseClearScreen();
             refreshLine(&l);
             break;
-        case CTRL_W: /* ctrl+w, delete previous word */
+        case BC_ACTION_CTRL_W: /* ctrl+w, delete previous word */
             linenoiseEditDeletePrevWord(&l);
             break;
         }
