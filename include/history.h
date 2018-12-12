@@ -70,26 +70,25 @@
 #if BC_ENABLE_HISTORY
 
 typedef enum BcHistoryAction {
-	KEY_NULL = 0,
-	CTRL_A = 1,
-	CTRL_B = 2,
-	CTRL_C = 3,
-	CTRL_D = 4,
-	CTRL_E = 5,
-	CTRL_F = 6,
-	CTRL_H = 8,
-	TAB = 9,
-	LINE_FEED = 10,
-	CTRL_K = 11,
-	CTRL_L = 12,
-	ENTER = 13,
-	CTRL_N = 14,
-	CTRL_P = 16,
-	CTRL_T = 20,
-	CTRL_U = 21,
-	CTRL_W = 23,
-	ESC = 27,
-	BACKSPACE =  127
+	BC_ACTION_NULL = 0,
+	BC_ACTION_CTRL_A = 1,
+	BC_ACTION_CTRL_B = 2,
+	BC_ACTION_CTRL_C = 3,
+	BC_ACTION_CTRL_D = 4,
+	BC_ACTION_CTRL_E = 5,
+	BC_ACTION_CTRL_F = 6,
+	BC_ACTION_CTRL_H = 8,
+	BC_ACTION_LINE_FEED = 10,
+	BC_ACTION_CTRL_K = 11,
+	BC_ACTION_CTRL_L = 12,
+	BC_ACTION_ENTER = 13,
+	BC_ACTION_CTRL_N = 14,
+	BC_ACTION_CTRL_P = 16,
+	BC_ACTION_CTRL_T = 20,
+	BC_ACTION_CTRL_U = 21,
+	BC_ACTION_CTRL_W = 23,
+	BC_ACTION_ESC = 27,
+	BC_ACTION_BACKSPACE =  127
 } BcHistoryAction;
 
 char *linenoise(const char *prompt);
