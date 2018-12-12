@@ -25,28 +25,42 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include <read.h>
+#include <history.h>
 #include <program.h>
 #include <vm.h>
 
 BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
+#if BC_ENABLE_HISTORY
+
+	char *buf = linenoise(prompt);
+
+	linenoiseHistoryAdd(buf);
+
+	bc_vec_string(vec, strlen(buf), buf);
+
+	free(buf);
+
+#else
+
 	int i;
 	signed char c = 0;
+
+	assert(vec && vec->size == sizeof(char));
+
+	bc_vec_npop(vec, vec->len);
 
 	if (vm->ttyin && !BC_S) {
 		bc_vm_puts(prompt, stderr);
 		bc_vm_fflush(stderr);
 	}
-
-	assert(vec && vec->size == sizeof(char));
-
-	bc_vec_npop(vec, vec->len);
 
 	while (c != '\n') {
 
@@ -78,6 +92,8 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 	}
 
 	bc_vec_pushByte(vec, '\0');
+
+#endif // BC_ENABLE_HISTORY
 
 	return BC_STATUS_SUCCESS;
 }
