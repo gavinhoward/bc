@@ -27,23 +27,45 @@ Other projects based on this bc are:
 
 ## Build
 
-To build, use the following commands:
+In order to use POSIX-compatible Makefiles, this `bc` uses a POSIX shell script
+as a configure step.
+
+To build both the `bc` and `dc`, use the following commands:
 
 ```
-make [bc|dc]
+./configure.sh
+make
 make install
 ```
 
-**Note**: The targets `all`, `bc`, and `dc` are exclusionary; only one can be
-used at a time.
-
-This `bc` supports `CC`, `CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`,
-and `DESTDIR` `make` variables. Note that to cross-compile this `bc`, an
-appropriate compiler must be present in order to bootstrap core file(s), if the
-architectures are not compatible (i.e., unlike i686 on x86_64). The approach is:
+To build just the `bc`, use the following commands:
 
 ```
-HOSTCC="/path/to/native/compiler" make [bc|dc]
+./configure.sh -b
+make
+make install
+```
+
+To build just the `dc`, use the following commands:
+
+```
+./configure.sh -d
+make
+make install
+```
+
+This `bc` supports `CC`, `CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`,
+and `DESTDIR` `make` variables in the configure script. Any values of those
+variables given to the configure command will be put into the generated
+Makefile.
+
+Note that to cross-compile this `bc`, an appropriate compiler must be present in
+order to bootstrap core file(s), if the architectures are not compatible (i.e.,
+unlike i686 on x86_64). The approach is:
+
+```
+HOSTCC="/path/to/native/compiler" ./configure.sh
+make
 make install
 ```
 
@@ -55,26 +77,54 @@ control `make`. This is not normally necessary.
 Users can also disable signal handling by compiling as follows:
 
 ```
-BC_ENABLE_SIGNALS=0 make
+./configure.sh -S
+make
+make install
 ```
 
-Signal handling is on by default.
+The same can be done for history as follows:
 
-Executing `make help` lists all `make` targets and options.
+```
+./configure.sh -H
+make
+make install
+```
+
+Signal handling and history are on by default.
+
+Executing `./configure.sh -h` lists all options and useful environment
+variables, and executing `make help` displays available `make` targets.
 
 ### Optimization
 
-I ***highly*** encourage package and distro maintainers to compile as follows:
+The configure script turns on optimizations by default. I ***highly*** encourage
+package and distro maintainers to compile with the default options, since the
+optimizations speed up `bc` by orders of magnitude.
+
+However, this can be disabled by compiling as follows:
 
 ```
-CPPFLAGS="-DNEBUG" CFLAGS="-O3" LDFLAGS="-s" make
+./configure.sh -N
+make
+make install
 ```
 
-The optimizations speed up `bc` by orders of magnitude. In addition, for SSE4
-architectures, the following can add a bit more speed:
+As usual, the configure script will accept `CFLAGS` on the command line.
+
+Debug builds can be enabled with:
 
 ```
-CPPFLAGS="-DNEBUG" CFLAGS="-O3 -march=native -msse4" LDFLAGS="-s" make
+./configure.sh -g
+make
+make install
+```
+
+For SSE4 architectures, the following can add a bit more speed:
+
+```
+CFLAGS="-march=native -msse4" ./configure.sh
+make
+make install
 ```
 
 ## Status
@@ -86,11 +136,8 @@ with POSIX `bc`. The math has been tested with 30+ million random problems, so
 it is as correct as I can make it.
 
 This `bc` can be used as a drop-in replacement for any existing `bc`, except for
-pass-by-reference array values. To build `bc` from source, an environment which
-accepts GNU Makefiles is required.
-
-The community is free to contribute patches for POSIX Makefile builds. This `bc`
-is also compatible with MinGW toolchains.
+pass-by-reference array values. This `bc` is also compatible with MinGW
+toolchains.
 
 It is also possible to download pre-compiled binaries for a wide list of
 platforms, including Linux- and Windows-based systems, from
