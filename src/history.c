@@ -174,29 +174,6 @@ struct linenoiseState {
     int history_index;  /* The history index we are currently editing. */
 };
 
-enum KEY_ACTION{
-	KEY_NULL = 0,	    /* NULL */
-	CTRL_A = 1,         /* Ctrl+a */
-	CTRL_B = 2,         /* Ctrl-b */
-	CTRL_C = 3,         /* Ctrl-c */
-	CTRL_D = 4,         /* Ctrl-d */
-	CTRL_E = 5,         /* Ctrl-e */
-	CTRL_F = 6,         /* Ctrl-f */
-	CTRL_H = 8,         /* Ctrl-h */
-	TAB = 9,            /* Tab */
-	LINE_FEED = 10,     /* Line Feed */
-	CTRL_K = 11,        /* Ctrl+k */
-	CTRL_L = 12,        /* Ctrl+l */
-	ENTER = 13,         /* Enter */
-	CTRL_N = 14,        /* Ctrl-n */
-	CTRL_P = 16,        /* Ctrl-p */
-	CTRL_T = 20,        /* Ctrl-t */
-	CTRL_U = 21,        /* Ctrl+u */
-	CTRL_W = 23,        /* Ctrl+w */
-	ESC = 27,           /* Escape */
-	BACKSPACE =  127    /* Backspace */
-};
-
 static void linenoiseAtExit(void);
 int linenoiseHistoryAdd(const char *line);
 static void refreshLine(struct linenoiseState *l);
@@ -237,10 +214,10 @@ static size_t defaultNextCharLen(const char *buf, size_t buf_len, size_t pos, si
 }
 
 /* Read bytes of the next character */
-static size_t defaultReadCode(int fd, char *buf, size_t buf_len, int* c) {
+static size_t defaultReadCode(int fd, char *buf, size_t buf_len, BcHistoryAction *c) {
     if (buf_len < 1) return -1;
     int nread = read(fd,&buf[0],1);
-    if (nread == 1) *c = buf[0];
+    if (nread == 1) *c = (BcHistoryAction) buf[0];
     return nread;
 }
 
@@ -554,95 +531,6 @@ static void refreshSingleLine(struct linenoiseState *l) {
     abFree(&ab);
 }
 
-/* Multi line low level line refresh.
- *
- * Rewrite the currently edited line accordingly to the buffer content,
- * cursor position, and number of columns of the terminal. */
-static void refreshMultiLine(struct linenoiseState *l) {
-    char seq[64];
-    size_t pcollen = promptTextColumnLen(l->prompt,strlen(l->prompt));
-    int colpos = columnPosForMultiLine(l->buf, l->len, l->len, l->cols, pcollen);
-    int colpos2; /* cursor column position. */
-    int rows = (pcollen+colpos+l->cols-1)/l->cols; /* rows used by current buf. */
-    int rpos = (pcollen+l->oldcolpos+l->cols)/l->cols; /* cursor relative row. */
-    int rpos2; /* rpos after refresh. */
-    int col; /* column position, zero-based. */
-    int old_rows = l->maxrows;
-    int fd = l->ofd, j;
-    struct abuf ab;
-
-    /* Update maxrows if needed. */
-    if (rows > (int)l->maxrows) l->maxrows = rows;
-
-    /* First step: clear all the lines used before. To do so start by
-     * going to the last row. */
-    abInit(&ab);
-    if (old_rows-rpos > 0) {
-        lndebug("go down %d", old_rows-rpos);
-        snprintf(seq,64,"\x1b[%dB", old_rows-rpos);
-        abAppend(&ab,seq,strlen(seq));
-    }
-
-    /* Now for every row clear it, go up. */
-    for (j = 0; j < old_rows-1; j++) {
-        lndebug("clear+up", NULL);
-        snprintf(seq,64,"\r\x1b[0K\x1b[1A");
-        abAppend(&ab,seq,strlen(seq));
-    }
-
-    /* Clean the top line. */
-    lndebug("clear", NULL);
-    snprintf(seq,64,"\r\x1b[0K");
-    abAppend(&ab,seq,strlen(seq));
-
-    /* Write the prompt and the current buffer content */
-    abAppend(&ab,l->prompt,strlen(l->prompt));
-    abAppend(&ab,l->buf,l->len);
-
-    /* Get column length to cursor position */
-    colpos2 = columnPosForMultiLine(l->buf,l->len,l->pos,l->cols,pcollen);
-
-    /* If we are at the very end of the screen with our prompt, we need to
-     * emit a newline and move the prompt to the first column. */
-    if (l->pos &&
-        l->pos == l->len &&
-        (colpos2+pcollen) % l->cols == 0)
-    {
-        lndebug("<newline>", NULL);
-        abAppend(&ab,"\n",1);
-        snprintf(seq,64,"\r");
-        abAppend(&ab,seq,strlen(seq));
-        rows++;
-        if (rows > (int)l->maxrows) l->maxrows = rows;
-    }
-
-    /* Move cursor to right position. */
-    rpos2 = (pcollen+colpos2+l->cols)/l->cols; /* current cursor relative row. */
-    lndebug("rpos2 %d", rpos2);
-
-    /* Go up till we reach the expected positon. */
-    if (rows-rpos2 > 0) {
-        lndebug("go-up %d", rows-rpos2);
-        snprintf(seq,64,"\x1b[%dA", rows-rpos2);
-        abAppend(&ab,seq,strlen(seq));
-    }
-
-    /* Set column. */
-    col = (pcollen + colpos2) % l->cols;
-    lndebug("set col %d", 1+col);
-    if (col)
-        snprintf(seq,64,"\r\x1b[%dC", col);
-    else
-        snprintf(seq,64,"\r");
-    abAppend(&ab,seq,strlen(seq));
-
-    lndebug("\n", NULL);
-    l->oldcolpos = colpos2;
-
-    if (write(fd,ab.b,ab.len) == -1) {} /* Can't recover from write error. */
-    abFree(&ab);
-}
-
 /* Calls the two low level functions refreshSingleLine() or
  * refreshMultiLine() according to the selected mode. */
 static void refreshLine(struct linenoiseState *l) {
@@ -841,7 +729,7 @@ static int linenoiseEdit(int stdin_fd, int stdout_fd, char *buf, size_t buflen, 
 
     if (write(l.ofd,prompt,l.plen) == -1) return -1;
     while(1) {
-        signed int c;
+        BcHistoryAction c;
         char cbuf[32]; // large enough for any encoding?
         int nread;
         char seq[3];
@@ -1137,14 +1025,6 @@ char *linenoise(const char *prompt) {
         if (count == -1) return NULL;
         return strdup(buf);
     }
-}
-
-/* This is just a wrapper the user may want to call in order to make sure
- * the linenoise returned buffer is freed with the same allocator it was
- * created with. Useful when the main program is using an alternative
- * allocator. */
-void linenoiseFree(void *ptr) {
-    free(ptr);
 }
 
 /* ================================ History ================================= */

@@ -69,21 +69,40 @@
 
 #if BC_ENABLE_HISTORY
 
+typedef enum BcHistoryAction {
+	KEY_NULL = 0,
+	CTRL_A = 1,
+	CTRL_B = 2,
+	CTRL_C = 3,
+	CTRL_D = 4,
+	CTRL_E = 5,
+	CTRL_F = 6,
+	CTRL_H = 8,
+	TAB = 9,
+	LINE_FEED = 10,
+	CTRL_K = 11,
+	CTRL_L = 12,
+	ENTER = 13,
+	CTRL_N = 14,
+	CTRL_P = 16,
+	CTRL_T = 20,
+	CTRL_U = 21,
+	CTRL_W = 23,
+	ESC = 27,
+	BACKSPACE =  127
+} BcHistoryAction;
+
 char *linenoise(const char *prompt);
-void linenoiseFree(void *ptr);
 int linenoiseHistoryAdd(const char *line);
 int linenoiseHistorySetMaxLen(int len);
 int linenoiseHistoryGetMaxLen(void);
-int linenoiseHistorySave(const char *filename);
-int linenoiseHistoryLoad(const char *filename);
 int linenoiseHistoryCopy(char** dest, int destlen);
 void linenoiseClearScreen(void);
-void linenoiseSetMultiLine(int ml);
 void linenoisePrintKeyCodes(void);
 
-typedef size_t (linenoisePrevCharLen)(const char *buf, size_t buf_len, size_t pos, size_t *col_len);
-typedef size_t (linenoiseNextCharLen)(const char *buf, size_t buf_len, size_t pos, size_t *col_len);
-typedef size_t (linenoiseReadCode)(int fd, char *buf, size_t buf_len, int* c);
+typedef size_t (linenoisePrevCharLen)(const char*, size_t, size_t, size_t*);
+typedef size_t (linenoiseNextCharLen)(const char*, size_t, size_t, size_t*);
+typedef size_t (linenoiseReadCode)(int, char*, size_t, BcHistoryAction*);
 
 void linenoiseSetEncodingFunctions(
     linenoisePrevCharLen *prevCharLenFunc,
