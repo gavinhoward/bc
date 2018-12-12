@@ -221,15 +221,14 @@ static size_t defaultReadCode(int fd, char *buf, size_t buf_len, BcHistoryAction
 }
 
 /* Set default encoding functions */
-static linenoisePrevCharLen *prevCharLen = defaultPrevCharLen;
-static linenoiseNextCharLen *nextCharLen = defaultNextCharLen;
-static linenoiseReadCode *readCode = defaultReadCode;
+static linenoisePrevCharLen prevCharLen = defaultPrevCharLen;
+static linenoiseNextCharLen nextCharLen = defaultNextCharLen;
+static linenoiseReadCode readCode = defaultReadCode;
 
 /* Set used defined encoding functions */
-void linenoiseSetEncodingFunctions(
-    linenoisePrevCharLen *prevCharLenFunc,
-    linenoiseNextCharLen *nextCharLenFunc,
-    linenoiseReadCode *readCodeFunc) {
+void linenoiseSetEncodingFunctions(linenoisePrevCharLen prevCharLenFunc,
+    linenoiseNextCharLen nextCharLenFunc,
+    linenoiseReadCode readCodeFunc) {
     prevCharLen = prevCharLenFunc;
     nextCharLen = nextCharLenFunc;
     readCode = readCodeFunc;
