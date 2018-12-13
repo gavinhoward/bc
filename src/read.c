@@ -47,7 +47,7 @@ bool bc_read_binary(const char *buf, size_t size) {
 	return false;
 }
 
-BcStatus bc_read_chars(BcVec *vec, const char* prompt) {
+BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	int i;
 	signed char c = 0;
