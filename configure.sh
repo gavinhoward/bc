@@ -308,7 +308,9 @@ else
 fi
 
 if [ "$release" -eq 1 -o "$none" -eq 0 ]; then
-	CFLAGS="$CFLAGS -O3"
+	if [ "$debug" -ne 1 ]; then
+		CFLAGS="$CFLAGS -O3"
+	fi
 fi
 
 if [ "$min_size" -eq 1 ]; then
