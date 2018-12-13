@@ -425,7 +425,7 @@ static int bc_history_enableRaw(BcHistory *h, int fd) {
 	raw.c_cc[VTIME] = 0;
 
 	// Put terminal in raw mode after flushing.
-	if (tcsetattr(fd,TCSAFLUSH,&raw) < 0) goto fatal;
+	if (tcsetattr(fd, TCSAFLUSH, &raw) < 0) goto fatal;
 	h->rawmode = true;
 
 	return 0;
