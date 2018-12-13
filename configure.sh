@@ -245,11 +245,19 @@ main_exec="BC_EXEC"
 bc_test="tests/all.sh bc"
 dc_test="tests/all.sh dc"
 
-vg_bc_test="tests/all.sh bc valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-vg_dc_test="tests/all.sh dc valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
-
 timeconst="tests/bc/timeconst.sh"
-timeconst_vg="echo \"100\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
+
+# In order to have cleanup at exit, we need to be in
+# debug mode, so don't run valgrind without that.
+if [ "$debug" -ne 0 ]; then
+	vg_bc_test="tests/all.sh bc valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="tests/all.sh dc valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	timeconst_vg="echo \"100\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
+else
+	vg_bc_test="@echo \"Cannot run valgrind without debug flags\""
+	vg_dc_test="@echo \"Cannot run valgrind without debug flags\""
+	timeconst_vg="@echo \"Cannot run valgrind without debug flags\""
+fi
 
 karatsuba="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
 karatsuba_test="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
