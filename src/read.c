@@ -96,18 +96,26 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
+	BcStatus s;
+
 #if BC_ENABLE_HISTORY
 
-	char *buf = bc_history_line(&vm->history, prompt);
+	if (vm->ttyin && !vm->history.badTerm) {
 
-	bc_history_add(&vm->history, buf);
-	bc_vec_string(vec, strlen(buf), buf);
-	free(buf);
+		char *buf = bc_history_line(&vm->history, prompt);
+
+		bc_history_add(&vm->history, buf);
+		bc_vec_string(vec, strlen(buf), buf);
+		free(buf);
+	}
+	else {
+		s = bc_read_chars(vec, prompt);
+		if (s) return s;
+	}
 
 #else // BC_ENABLE_HISTORY
 
-	BcStatus s = bc_read_chars(vec, prompt);
-
+	s = bc_read_chars(vec, prompt);
 	if (s) return s;
 
 #endif // BC_ENABLE_HISTORY

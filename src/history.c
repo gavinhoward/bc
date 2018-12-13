@@ -146,6 +146,7 @@
 
 #include <vector.h>
 #include <history.h>
+#include <read.h>
 #include <vm.h>
 
 #if BC_ENABLE_HISTORY
@@ -1246,75 +1247,20 @@ void bc_history_printKeyCodes(BcHistory *h) {
  * This function calls the line editing function bc_history_edit()
  * using the STDIN file descriptor set in raw mode.
  */
-static int bc_history_raw(BcHistory *h, char *buf, FILE *out,
-                          size_t buflen, const char *prompt)
+static int bc_history_raw(BcHistory *h, char *buf,
+                          FILE *out, const char *prompt)
 {
 	int outfd, count;
-
-	if (buflen == 0) {
-		errno = EINVAL;
-		return -1;
-	}
 
 	if ((outfd = fileno(out)) == -1) return -1;
 
 	if (bc_history_enableRaw(h, STDIN_FILENO) == -1) return -1;
 
-	count = bc_history_edit(h, STDIN_FILENO, outfd, buf, buflen, prompt);
+	count = bc_history_edit(h, STDIN_FILENO, outfd, buf, prompt);
 	bc_history_disableRaw(h, STDIN_FILENO);
 	fprintf(out, "\n");
 
 	return count;
-}
-
-/**
- * This function is called when bc_history_line() is called with the standard
- * input file descriptor not attached to a TTY. So for example when bc is
- * called in pipe or with a file redirected to its standard input. In this
- * case, we want to be able to return the line regardless of its length (by
- * default we are limited to 4k).
- */
-static char* bc_history_notty() {
-
-	char *line = NULL;
-	size_t len = 0, maxlen = 0;
-
-	while(true) {
-
-		int c;
-
-		if (len == maxlen) {
-
-			char *oldval = line;
-
-			if (maxlen == 0) maxlen = 16;
-			maxlen *= 2;
-			line = realloc(line, maxlen);
-
-			if (line == NULL) {
-				if (oldval) free(oldval);
-				return NULL;
-			}
-		}
-
-		c = fgetc(stdin);
-
-		if (c == EOF || c == '\n') {
-
-			if (c == EOF && len == 0) {
-				free(line);
-				return NULL;
-			}
-			else {
-				line[len] = '\0';
-				return line;
-			}
-		}
-		else {
-			line[len] = c;
-			len++;
-		}
-	}
 }
 
 /**
@@ -1326,40 +1272,16 @@ static char* bc_history_notty() {
  */
 char* bc_history_line(BcHistory *h, const char *prompt) {
 
-	char buf[BC_HISTORY_MAX_LINE];
+	char buf[BC_HISTORY_MAX_LINE + 1];
 	FILE *stream;
 	int count;
 
 	stream = isatty(STDOUT_FILENO) ? stdout : stderr;
 
-	if (!vm->ttyin) {
-		// Not a tty: read from file / pipe. In this mode we don't want any
-		// limit to the line size, so we call a function to handle that.
-		return bc_history_notty();
-	}
-	else if (bc_history_isBadTerm()) {
+	count = bc_history_raw(h, buf, stream, prompt);
+	if (count == -1) return NULL;
 
-		size_t len;
-
-		fprintf(stream, "%s", prompt);
-		fflush(stream);
-
-		if (fgets(buf, BC_HISTORY_MAX_LINE, stdin) == NULL) return NULL;
-
-		len = strlen(buf);
-
-		while(len && (buf[len-1] == '\n' || buf[len-1] == '\r')) {
-			len--;
-			buf[len] = '\0';
-		}
-
-		return strdup(buf);
-	}
-	else {
-		count = bc_history_raw(h, buf, stream, BC_HISTORY_MAX_LINE, prompt);
-		if (count == -1) return NULL;
-		return strdup(buf);
-	}
+	return strdup(buf);
 }
 
 /* ================================ History ================================= */
@@ -1399,6 +1321,7 @@ bool bc_history_add(BcHistory *h, const char *line) {
 
 void bc_history_init(BcHistory *h) {
 	h->rawmode = false;
+	h->badTerm = bc_history_isBadTerm();
 	h->history_len = 0;
 	h->history = calloc(BC_HISTORY_MAX_LEN, sizeof(char*));
 }

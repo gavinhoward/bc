@@ -171,6 +171,9 @@ typedef struct BcHistory {
 	/// Whether we are in rawmode.
 	bool rawmode;
 
+	/// Whether the terminal is bad.
+	bool badTerm;
+
 	/// The number of entries in the history.
 	int history_len;
 
