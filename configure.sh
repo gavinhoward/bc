@@ -240,6 +240,7 @@ contents=$(gen_file_lists "$contents" "$scriptdir/src/bc" "BC_")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/dc" "DC_")
 
 link="@echo \"No link\""
+main_exec="BC_EXEC"
 
 bc_test="tests/all.sh bc"
 dc_test="tests/all.sh dc"
@@ -270,6 +271,8 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	bc=0
 	dc=1
+
+	main_exec="DC_EXEC"
 
 	bc_test="@echo \"No bc tests to run\""
 	vg_bc_test="@echo \"No bc tests to run\""
@@ -363,6 +366,8 @@ contents=$(replace "$contents" "LDFLAGS" "$LDFLAGS")
 contents=$(replace "$contents" "CC" "$CC")
 contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
+
+contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
 contents=$(replace "$contents" "DC_TEST" "$dc_test")
