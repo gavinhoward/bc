@@ -308,7 +308,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 				bool notend = len > i + 1;
 				char c = string[i];
 
-				if (i - 1 > len || string[i - 1] != '\\') {
+				if (!comment && (i - 1 > len || string[i - 1] != '\\')) {
 					if (vm->sbgn == vm->send) str ^= c == vm->sbgn;
 					else if (c == vm->send) str -= 1;
 					else if (c == vm->sbgn) str += 1;
@@ -316,10 +316,12 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 				if (c == '/' && notend && !comment && string[i + 1] == '*') {
 					comment = true;
-					break;
+					++i;
 				}
-				else if (c == '*' && notend && comment && string[i + 1] == '/')
+				else if (c == '*' && notend && comment && string[i + 1] == '/') {
 					comment = false;
+					++i;
+				}
 			}
 
 			if (str || comment || string[len - 2] == '\\') {
