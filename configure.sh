@@ -248,16 +248,11 @@ dc_test="tests/all.sh dc"
 vg_bc_test="tests/all.sh bc valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
 vg_dc_test="tests/all.sh dc valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 
-timeconst_target="timeconst"
-timeconst="$timeconst_target:\n\ttests/bc/timeconst.sh"
+timeconst="tests/bc/timeconst.sh"
+timeconst_vg="echo \"100\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
 
-timeconst_vg_target="valgrind_timeconst"
-timeconst_vg="$timeconst_vg_target:\n"
-timeconst_vg="$timeconst_vg\techo \"0\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc\n"
-timeconst_vg="$timeconst_vg\techo \"100\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
-
-karatsuba=""
-karatsuba_test=""
+karatsuba="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
+karatsuba_test="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
 
 if [ "$bc_only" -eq 1 ]; then
 
@@ -277,11 +272,8 @@ elif [ "$dc_only" -eq 1 ]; then
 	bc_test="@echo \"No bc tests to run\""
 	vg_bc_test="@echo \"No bc tests to run\""
 
-	timeconst_target=""
-	timeconst=""
-
-	timeconst_vg_target=""
-	timeconst_vg=""
+	timeconst="@echo \"timeconst cannot be run because bc is not built\""
+	timeconst_vg="@echo \"timeconst cannot be run because bc is not built\""
 
 else
 
@@ -290,8 +282,8 @@ else
 
 	link="\$(LINK) \$(BIN) \$(DC)"
 
-	karatsuba="karatsuba:\n\t\$(KARATSUBA)"
-	karatsuba_test="karatsuba_test:\n\t\$(KARATSUBA) 100 \$(BC_EXEC)"
+	karatsuba="\$(KARATSUBA)"
+	karatsuba_test="\$(KARATSUBA) 100 \$(BC_EXEC)"
 
 fi
 

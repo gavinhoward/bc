@@ -131,7 +131,7 @@ help:
 	@echo "    valgrind_all   runs the test suite, and the Linux timeconst.bc test,"
 	@echo "                   if bc has been built, through valgrind"
 
-test_all: test %%TIMECONST_TARGET%%
+test_all: test timeconst
 
 test: test_bc test_dc
 
@@ -141,21 +141,30 @@ test_bc:
 test_dc:
 	%%DC_TEST%%
 
-%%TIMECONST%%
+timeconst:
+	%%TIMECONST%%
 
-valgrind_all: valgrind %%TIMECONST_VG_TARGET%%
+valgrind_all: valgrind valgrind_timeconst
 
-valgrind:
+valgrind: valgrind_bc valgrind_dc
+
+valgrind_bc:
 	%%VG_BC_TEST%%
+
+valgrind_dc:
 	%%VG_DC_TEST%%
 
-%%TIMECONST_VG%%
+valgrind_timeconst:
+	%%TIMECONST_VG%%
 
-%%KARATSUBA%%
+karatsuba:
+	%%KARATSUBA%%
 
-%%KARATSUBA_TEST%%
+karatsuba_test:
+	%%KARATSUBA_TEST%%
 
-%%COVERAGE%%
+coverage:%%COVERAGE_PREREQS%%
+	%%COVERAGE%%
 
 version:
 	@echo "$(VERSION)"
