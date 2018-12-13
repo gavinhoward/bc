@@ -44,14 +44,14 @@ out="$testdir/../.log_test.txt"
 if [ "$d" = "bc" ]; then
 	options="-lq"
 else
-	options=""
+	options="-x"
 fi
 
 echo "Running $d stdin tests..."
 
 while read t; do
 	echo "$t" | "$exe" "$@" "$options" > "$out"
-	diff "$testdir/$d/stdin_results.txt" "$out2"
+	diff "$testdir/$d/stdin_results.txt" "$out"
 done < "$testdir/$d/stdin.txt"
 
 rm -rf "$out1"
