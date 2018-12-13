@@ -103,6 +103,7 @@
 #endif // NDEBUG
 
 typedef enum BcHistoryAction {
+
 	BC_ACTION_NULL = 0,
 	BC_ACTION_CTRL_A = 1,
 	BC_ACTION_CTRL_B = 2,
@@ -122,35 +123,68 @@ typedef enum BcHistoryAction {
 	BC_ACTION_CTRL_W = 23,
 	BC_ACTION_ESC = 27,
 	BC_ACTION_BACKSPACE =  127
+
 } BcHistoryAction;
 
-/* The linenoiseState structure represents the state during line editing.
- * We pass this state to functions implementing specific editing
- * functionalities. */
+/**
+ * This represents the state during line editing. We pass this state
+ * to functions implementing specific editing functionalities.
+ */
 typedef struct BcHistory {
-    int ifd;            /* Terminal stdin file descriptor. */
-    int ofd;            /* Terminal stdout file descriptor. */
-    char *buf;          /* Edited line buffer. */
-    size_t buflen;      /* Edited line buffer size. */
-    const char *prompt; /* Prompt to display. */
-    size_t plen;        /* Prompt length. */
-    size_t pos;         /* Current cursor position. */
-    size_t oldcolpos;   /* Previous refresh cursor column position. */
-    size_t len;         /* Current edited line length. */
-    size_t cols;        /* Number of columns in terminal. */
-    int history_index;  /* The history index we are currently editing. */
+
+	/// Terminal stdin file descriptor.
+	int ifd;
+
+	/// Terminal stdout file descriptor.
+	int ofd;
+
+	/// Edited line buffer.
+	char *buf;
+
+	/// Edited line buffer size.
+	size_t buflen;
+
+	/// Prompt to display.
+	const char *prompt;
+
+	/// Prompt length.
+	size_t plen;
+
+	/// Current cursor position.
+	size_t pos;
+
+	/// Previous refresh cursor column position.
+	size_t oldcolpos;
+
+	/// Current edited line length.
+	size_t len;
+
+	/// Number of columns in terminal.
+	size_t cols;
+
+	/// The history index we are currently editing.
+	int history_index;
+
+	/// The original terminal state.
 	struct termios orig_termios;
+
+	/// Whether we are in rawmode.
 	bool rawmode;
+
+	/// The number of entries in the history.
 	int history_len;
+
+	/// The history.
 	char **history;
+
 } BcHistory;
 
-char *bc_history_line(BcHistory *l, const char *prompt);
-bool bc_history_add(BcHistory *l, const char *line);
-void linenoiseClearScreen(void);
+char* bc_history_line(BcHistory *h, const char *prompt);
+bool bc_history_add(BcHistory *h, const char *line);
+void bc_history_clearScreen(void);
 
-void bc_history_init(BcHistory *l);
-void bc_history_free(BcHistory *l);
+void bc_history_init(BcHistory *h);
+void bc_history_free(BcHistory *h);
 
 extern const char *bc_history_bad_terms[];
 extern const unsigned long bc_history_wchars[][2];
