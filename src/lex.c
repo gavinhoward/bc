@@ -35,6 +35,33 @@ void bc_lex_lineComment(BcLex *l) {
 	--l->i;
 }
 
+BcStatus bc_lex_comment(BcLex *l) {
+
+	size_t i, nlines = 0;
+	const char *buf = l->buf;
+	bool end = false;
+	char c;
+
+	l->t.t = BC_LEX_WHITESPACE;
+
+	for (i = ++l->i; !end; i += !end) {
+
+		for (c = buf[i]; c != '*' && c != 0; c = buf[++i]) nlines += c == '\n';
+
+		if (c == 0 || buf[i + 1] == '\0') {
+			l->i = i;
+			return BC_STATUS_PARSE_NO_COMMENT_END;
+		}
+
+		end = buf[i + 1] == '/';
+	}
+
+	l->i = i + 2;
+	l->line += nlines;
+
+	return BC_STATUS_SUCCESS;
+}
+
 void bc_lex_whitespace(BcLex *l) {
 	char c;
 	l->t.t = BC_LEX_WHITESPACE;

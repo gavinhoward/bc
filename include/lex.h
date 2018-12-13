@@ -173,6 +173,7 @@ BcStatus bc_lex_text(BcLex *l, const char *text);
 BcStatus bc_lex_next(BcLex *l);
 
 void bc_lex_lineComment(BcLex *l);
+BcStatus bc_lex_comment(BcLex *l);
 void bc_lex_whitespace(BcLex *l);
 BcStatus bc_lex_number(BcLex *l, char start);
 BcStatus bc_lex_name(BcLex *l);
