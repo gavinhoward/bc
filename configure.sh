@@ -27,14 +27,14 @@ usage() {
 		val=0
 	fi
 
-	echo "usage: $0 [-b|-d|-c] [-ghHS] [-m|-r|-N] [-k KARATSUBA_LEN]"
+	echo "usage: $0 [-b|-d|-c] [-hHS] [-g|-m|-r|-N|] [-k KARATSUBA_LEN]"
 	echo ""
 	echo "    -b"
 	echo "        Build bc only. It is an error if \"-d\" is specified too."
 	echo "    -c"
 	echo "        Generate test coverage code. Requires gcov and regcovr."
-	echo "        It is an error if only either \"-b\" or \"-d\" is specified"
-	echo "        or if \"-n\" is not specified."
+	echo "        It is an error if either \"-b\" or \"-d\" is specified."
+	echo "        Implies \"-N\"."
 	echo "    -d"
 	echo "        Build dc only. It is an error if \"-b\" is specified too."
 	echo "    -g"
@@ -54,7 +54,7 @@ usage() {
 	echo "        with any of \"-g\", \"-m\", or \"-r\"."
 	echo "    -r"
 	echo "        Enable default release flags (-O3 -DNDEBUG -s). On by default."
-	echo "        If given with \"-n\", a debuggable release will be built."
+	echo "        If given with \"-g\", a debuggable release will be built."
 	echo "        It is an error if \"-m\" is specified too."
 	echo "    -S"
 	echo "        Disable signal handling. On by default."
@@ -181,7 +181,7 @@ while getopts "bcdghHk:mNrS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
-		c) coverage=1 ;;
+		c) coverage=1 ; none=1 ;;
 		d) dc_only=1 ;;
 		g) debug=1 ;;
 		h) usage ;;
@@ -217,7 +217,7 @@ fi
 if [ "$none" -eq 1 ]; then
 
 	if [ "$release" -eq 1 -o "$min_size" -eq 1 -o "$debug" -eq 1 ]; then
-		usage "Cannot specify -N with -r, -m, or -g"
+		usage "Cannot specify -N (or -c) with -r, -m, or -g"
 	fi
 
 fi
@@ -323,13 +323,18 @@ if [ "$coverage" -eq 1 ]; then
 		usage "Can only specify -c without -b or -d"
 	fi
 
-	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage -g -O0"
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
 
-	COVERAGE="coverage: all test_all\n"
-	COVERAGE="$COVERAGE\tgcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)\n"
-	COVERAGE="$COVERAGE\t\$(RM) -f \$(GEN)*.gc*\n"
-	COVERAGE="$COVERAGE\tregcovr --html-details --output index.html"
+	COVERAGE="gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
+	COVERAGE="$COVERAGE;\$(RM) -f \$(GEN)*.gc*"
+	COVERAGE="$COVERAGE;regcovr --html-details --output index.html"
+	COVERAGE_PREREQS="all test_all"
+
+else
+
+	COVERAGE="@echo \"Coverage not generated\""
+	COVERAGE_PREREQS=""
 
 fi
 
@@ -368,6 +373,7 @@ contents=$(replace "$contents" "LDFLAGS" "$LDFLAGS")
 contents=$(replace "$contents" "CC" "$CC")
 contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
+contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
 
 contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
 
