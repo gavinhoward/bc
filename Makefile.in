@@ -130,8 +130,12 @@ help:
 
 test_all: test %%TIMECONST_TARGET%%
 
-test:
+test: test_bc test_dc
+
+test_bc:
 	%%BC_TEST%%
+
+test_dc:
 	%%DC_TEST%%
 
 %%TIMECONST%%
