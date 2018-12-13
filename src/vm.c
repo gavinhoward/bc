@@ -324,13 +324,11 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 				}
 			}
 
-			if (str || comment || string[len - 2] == '\\') {
-				bc_vec_concat(&buffer, buf.v);
-				continue;
-			}
+			bc_vec_concat(&buffer, buf.v);
+
+			if (str || comment || string[len - 2] == '\\') continue;
 		}
 
-		bc_vec_concat(&buffer, buf.v);
 		s = bc_vm_process(vm, buffer.v);
 		if (s) goto err;
 
