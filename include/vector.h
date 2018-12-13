@@ -54,6 +54,11 @@ void bc_vec_pushByte(BcVec *v, char data);
 void bc_vec_string(BcVec *v, size_t len, const char *str);
 void bc_vec_concat(BcVec *v, const char *str);
 
+#if BC_ENABLE_HISTORY
+void bc_vec_popAt(BcVec *v, size_t idx);
+void bc_vec_replaceAt(BcVec *v, size_t idx, const void *data);
+#endif // BC_ENABLE_HISTORY
+
 void* bc_vec_item(const BcVec *v, size_t idx);
 void* bc_vec_item_rev(const BcVec *v, size_t idx);
 

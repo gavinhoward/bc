@@ -741,30 +741,31 @@ void bc_history_edit_end(BcHistory *h) {
  */
 void bc_history_edit_next(BcHistory *h, int dir) {
 
-	if (h->history_len > 1) {
+	if (h->history.len > 1) {
 
-		size_t idx = h->history_len - 1 - h->history_index;
+		size_t idx = h->history.len - 1 - h->idx;
+		char* dup = strdup(h->buf);
 
 		// Update the current history entry before
 		// overwriting it with the next one.
-		free(h->history[idx]);
-		h->history[idx] = strdup(h->buf);
+		bc_vec_replaceAt(&h->history, idx, &dup);
 
 		// Show the new entry.
-		h->history_index += (dir == BC_HISTORY_PREV) ? 1 : -1;
+		h->idx += (dir == BC_HISTORY_PREV) ? 1 : -1;
 
-		if (h->history_index < 0) {
-			h->history_index = 0;
+		if (h->idx == SIZE_MAX) {
+			h->idx = 0;
 			return;
 		}
-		else if (h->history_index >= h->history_len) {
-			h->history_index = h->history_len - 1;
+		else if (h->idx >= h->history.len) {
+			h->idx = h->history.len - 1;
 			return;
 		}
 
-		idx = h->history_len - 1 - h->history_index;
+		// Recalculate.
+		idx = h->history.len - 1 - h->idx;
 
-		strncpy(h->buf, h->history[idx], BC_HISTORY_MAX_LINE);
+		strncpy(h->buf, *((char**) bc_vec_item(&h->history, idx)), BC_HISTORY_MAX_LINE);
 
 		h->buf[BC_HISTORY_MAX_LINE - 1] = '\0';
 		h->len = h->pos = strlen(h->buf);
@@ -997,8 +998,8 @@ static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
 	h->plen = strlen(prompt);
 	h->oldcolpos = h->pos = 0;
 	h->len = 0;
-	h->cols = bc_history_columns(h->ifd, h->ofd);
-	h->history_index = 0;
+	h->cols = bc_history_columns(h);
+	h->idx = 0;
 
 	// Buffer starts empty.
 	h->buf[0] = '\0';
@@ -1028,8 +1029,7 @@ static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
 			case BC_ACTION_LINE_FEED:
 			case BC_ACTION_ENTER:
 			{
-				--h->history_len;
-				free(h->history[h->history_len]);
+				bc_vec_pop(&h->history);
 				return BC_STATUS_SUCCESS;
 			}
 
@@ -1054,8 +1054,7 @@ static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
 					bc_history_edit_delete(h);
 				}
 				else {
-					h->history_len--;
-					free(h->history[h->history_len]);
+					bc_vec_pop(&h->history);
 					return BC_STATUS_IO_ERR;
 				}
 
@@ -1273,21 +1272,16 @@ bool bc_history_add(BcHistory *h, const char *line) {
 	char *linecopy;
 
 	// Don't add duplicated lines.
-	if (h->history_len && !strcmp(h->history[h->history_len - 1], line))
+	if (h->history.len && !strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line))
 		return false;
 
 	// Add an heap allocated copy of the line in the history.
 	// If we reached the max length, remove the older line.
 	linecopy = bc_vm_strdup(line);
 
-	if (h->history_len == BC_HISTORY_MAX_LEN) {
-		free(h->history[0]);
-		memmove(h->history, h->history + 1, sizeof(char*) * (BC_HISTORY_MAX_LEN - 1));
-		h->history_len--;
-	}
+	if (h->history.len == BC_HISTORY_MAX_LEN) bc_vec_popAt(&h->history, 0);
 
-	h->history[h->history_len] = linecopy;
-	++h->history_len;
+	bc_vec_push(&h->history, &linecopy);
 
 	return true;
 }
@@ -1297,19 +1291,13 @@ void bc_history_init(BcHistory *h) {
 	h->ifd = STDIN_FILENO;
 	h->ofd = STDERR_FILENO;
 	h->badTerm = bc_history_isBadTerm();
-	h->history_len = 0;
-	h->history = calloc(BC_HISTORY_MAX_LEN, sizeof(char*));
+	bc_vec_init(&h->history, sizeof(char*), bc_string_free);
 }
 
 void bc_history_free(BcHistory *h) {
-
-	int i;
-
 	bc_history_disableRaw(h);
-
-	for (i = 0; i < h->history_len; ++i)
-		free(h->history[i]);
-
-	free(h->history);
+#ifndef NDEBUG
+	bc_vec_free(&h->history);
+#endif // NDEBUG
 }
 #endif // BC_ENABLE_HISTORY

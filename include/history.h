@@ -76,6 +76,7 @@
 #include <unistd.h>
 
 #include <status.h>
+#include <vector.h>
 
 #if BC_ENABLE_HISTORY
 
@@ -162,7 +163,7 @@ typedef struct BcHistory {
 	size_t cols;
 
 	/// The history index we are currently editing.
-	int history_index;
+	size_t idx;
 
 	/// The original terminal state.
 	struct termios orig_termios;
@@ -173,11 +174,8 @@ typedef struct BcHistory {
 	/// Whether the terminal is bad.
 	bool badTerm;
 
-	/// The number of entries in the history.
-	int history_len;
-
 	/// The history.
-	char **history;
+	BcVec history;
 
 } BcHistory;
 

@@ -122,6 +122,31 @@ void bc_vec_concat(BcVec *v, const char *str) {
 	v->len = len;
 }
 
+#if BC_ENABLE_HISTORY
+void bc_vec_popAt(BcVec *v, size_t idx) {
+
+	char* ptr, *data;
+
+	ptr = bc_vec_item(v, idx);
+	data = bc_vec_item(v, idx + 1);
+
+	if (v->dtor) v->dtor(ptr);
+
+	--v->len;
+
+	memmove(ptr, data, v->len * v->size);
+}
+
+void bc_vec_replaceAt(BcVec *v, size_t idx, const void *data) {
+
+	char *ptr = bc_vec_item(v, idx);
+
+	if (v->dtor) v->dtor(ptr);
+
+	memcpy(ptr, data, v->size);
+}
+#endif // BC_ENABLE_HISTORY
+
 void* bc_vec_item(const BcVec *v, size_t idx) {
 	assert(v && v->len && idx < v->len);
 	return v->v + v->size * idx;
