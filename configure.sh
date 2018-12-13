@@ -154,12 +154,12 @@ gen_file_lists() {
 	contents=$(replace "$contents" "$needle" "$replacement")
 
 	needle="${typ}GCDA"
-	replacement=$(replace_exts "$replacement" "c" "gcda")
+	replacement=$(replace_exts "$replacement" "o" "gcda")
 
 	contents=$(replace "$contents" "$needle" "$replacement")
 
 	needle="${typ}GCNO"
-	replacement=$(replace_exts "$replacement" "c" "gcno")
+	replacement=$(replace_exts "$replacement" "gcda" "gcno")
 
 	contents=$(replace "$contents" "$needle" "$replacement")
 
