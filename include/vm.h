@@ -105,8 +105,6 @@ typedef struct BcVm {
 
 	BcParseInit parse_init;
 	BcParseExpr parse_expr;
-	char sbgn;
-	char send;
 	// ** Exclude end. **
 
 } BcVm;
