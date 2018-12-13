@@ -79,7 +79,7 @@
 
 #define BC_HISTORY_DEF_COLS (80)
 #define BC_HISTORY_MAX_LEN (128)
-#define BC_HISTORY_MAX_LINE (4096)
+#define BC_HISTORY_MAX_LINE (4095)
 
 #define BC_HISTORY_NEXT (0)
 #define BC_HISTORY_PREV (1)
@@ -140,9 +140,6 @@ typedef struct BcHistory {
 
 	/// Edited line buffer.
 	char *buf;
-
-	/// Edited line buffer size.
-	size_t buflen;
 
 	/// Prompt to display.
 	const char *prompt;

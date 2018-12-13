@@ -559,7 +559,7 @@ static int bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len) {
  */
 static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 
-	char buf[BC_HISTORY_MAX_LINE];
+	char buf[BC_HISTORY_MAX_LINE + 1];
 	size_t buf_len = 0, off = 0;
 
 	while (off < plen) {
@@ -636,7 +636,7 @@ static void bc_history_refresh(BcHistory *h) {
  */
 int bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
 
-	if (h->len+clen <= h->buflen) {
+	if (h->len+clen <= BC_HISTORY_MAX_LINE) {
 
 		if (h->len == h->pos) {
 
@@ -775,9 +775,9 @@ void bc_history_edit_next(BcHistory *h, int dir) {
 
 		idx = h->history_len - 1 - h->history_index;
 
-		strncpy(h->buf, h->history[idx], h->buflen);
+		strncpy(h->buf, h->history[idx], BC_HISTORY_MAX_LINE);
 
-		h->buf[h->buflen - 1] = '\0';
+		h->buf[BC_HISTORY_MAX_LINE - 1] = '\0';
 		h->len = h->pos = strlen(h->buf);
 
 		bc_history_refresh(h);
@@ -998,14 +998,13 @@ static void bc_history_escape(BcHistory *h) {
  *
  * The function returns the length of the current buffer.
  */
-static int bc_history_edit(BcHistory *h, int ifd, int ofd, char *buf,
-                           size_t buflen, const char *prompt)
+static int bc_history_edit(BcHistory *h, int ifd, int ofd,
+                           char *buf, const char *prompt)
 {
 	// Populate the history state.
 	h->ifd = ifd;
 	h->ofd = ofd;
 	h->buf = buf;
-	h->buflen = buflen;
 	h->prompt = prompt;
 	h->plen = strlen(prompt);
 	h->oldcolpos = h->pos = 0;
@@ -1015,9 +1014,6 @@ static int bc_history_edit(BcHistory *h, int ifd, int ofd, char *buf,
 
 	// Buffer starts empty.
 	h->buf[0] = '\0';
-
-	// Make sure there is always space for the nulterm.
-	h->buflen--;
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
