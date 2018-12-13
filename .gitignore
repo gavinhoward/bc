@@ -33,3 +33,4 @@ perf.data.old
 *.gcno
 *.gcov
 *.html
+*.profraw

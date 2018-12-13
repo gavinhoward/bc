@@ -190,6 +190,8 @@ clean:
 	$(RM) -f $(DC_GCDA) $(DC_GCNO)
 	$(RM) -f *.gcov
 	$(RM) -f *.html
+	$(RM) -f *.gcda *.gcno
+	$(RM) -f *.profraw
 	$(RM) -f $(GEN_EXEC)
 	$(RM) -f $(BC_LIB_C)
 	$(RM) -f $(BC_LIB_O)
