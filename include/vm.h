@@ -105,7 +105,7 @@ typedef struct BcVm {
 #endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_HISTORY
-	struct linenoiseState history;
+	BcHistory history;
 #endif // BC_ENABLE_HISTORY
 
 	BcParseInit parse_init;

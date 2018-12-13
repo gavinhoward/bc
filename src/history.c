@@ -149,7 +149,7 @@
 
 #if BC_ENABLE_HISTORY
 
-static void refreshLine(struct linenoiseState *l);
+static void refreshLine(BcHistory *l);
 
 /* Check if the code is a wide character
  */
@@ -327,7 +327,7 @@ static int isUnsupportedTerm(void) {
 }
 
 /* Raw mode: 1960 magic ***. */
-static int enableRawMode(struct linenoiseState *l, int fd) {
+static int enableRawMode(BcHistory *l, int fd) {
 
 	struct termios raw;
 
@@ -358,7 +358,7 @@ fatal:
     return -1;
 }
 
-static void disableRawMode(struct linenoiseState *l, int fd) {
+static void disableRawMode(BcHistory *l, int fd) {
     /* Don't even check the return value as it's too late. */
     if (l->rawmode && tcsetattr(fd, TCSAFLUSH, &l->orig_termios) != -1)
         l->rawmode = false;
@@ -501,7 +501,7 @@ static size_t promptTextColumnLen(const char *prompt, size_t plen) {
  *
  * Rewrite the currently edited line accordingly to the buffer content,
  * cursor position, and number of columns of the terminal. */
-static void refreshSingleLine(struct linenoiseState *l) {
+static void refreshSingleLine(BcHistory *l) {
     char seq[64];
     size_t pcollen = promptTextColumnLen(l->prompt,strlen(l->prompt));
     int fd = l->ofd;
@@ -540,14 +540,14 @@ static void refreshSingleLine(struct linenoiseState *l) {
 
 /* Calls the two low level functions refreshSingleLine() or
  * refreshMultiLine() according to the selected mode. */
-static void refreshLine(struct linenoiseState *l) {
+static void refreshLine(BcHistory *l) {
     refreshSingleLine(l);
 }
 
 /* Insert the character 'c' at cursor current position.
  *
  * On error writing to the terminal -1 is returned, otherwise 0. */
-int linenoiseEditInsert(struct linenoiseState *l, const char *cbuf, int clen) {
+int linenoiseEditInsert(BcHistory *l, const char *cbuf, int clen) {
     if (l->len+clen <= l->buflen) {
         if (l->len == l->pos) {
             memcpy(&l->buf[l->pos],cbuf,clen);
@@ -574,7 +574,7 @@ int linenoiseEditInsert(struct linenoiseState *l, const char *cbuf, int clen) {
 }
 
 /* Move cursor on the left. */
-void linenoiseEditMoveLeft(struct linenoiseState *l) {
+void linenoiseEditMoveLeft(BcHistory *l) {
     if (l->pos > 0) {
         l->pos -= linenoiseUtf8PrevCharLen(l->buf,l->len,l->pos,NULL);
         refreshLine(l);
@@ -582,7 +582,7 @@ void linenoiseEditMoveLeft(struct linenoiseState *l) {
 }
 
 /* Move cursor on the right. */
-void linenoiseEditMoveRight(struct linenoiseState *l) {
+void linenoiseEditMoveRight(BcHistory *l) {
     if (l->pos != l->len) {
         l->pos += linenoiseUtf8NextCharLen(l->buf,l->len,l->pos,NULL);
         refreshLine(l);
@@ -590,7 +590,7 @@ void linenoiseEditMoveRight(struct linenoiseState *l) {
 }
 
 /* Move cursor to the end of the current word. */
-void linenoiseEditMoveWordEnd(struct linenoiseState *l) {
+void linenoiseEditMoveWordEnd(BcHistory *l) {
     if (l->len == 0 || l->pos >= l->len) return;
     if (l->buf[l->pos] == ' ')
         while (l->pos < l->len && l->buf[l->pos] == ' ') ++l->pos;
@@ -599,7 +599,7 @@ void linenoiseEditMoveWordEnd(struct linenoiseState *l) {
 }
 
 /* Move cursor to the start of the current word. */
-void linenoiseEditMoveWordStart(struct linenoiseState *l) {
+void linenoiseEditMoveWordStart(BcHistory *l) {
     if (l->len == 0) return;
     if (l->buf[l->pos-1] == ' ') --l->pos;
     if (l->buf[l->pos] == ' ')
@@ -609,7 +609,7 @@ void linenoiseEditMoveWordStart(struct linenoiseState *l) {
 }
 
 /* Move cursor to the start of the line. */
-void linenoiseEditMoveHome(struct linenoiseState *l) {
+void linenoiseEditMoveHome(BcHistory *l) {
     if (l->pos != 0) {
         l->pos = 0;
         refreshLine(l);
@@ -617,7 +617,7 @@ void linenoiseEditMoveHome(struct linenoiseState *l) {
 }
 
 /* Move cursor to the end of the line. */
-void linenoiseEditMoveEnd(struct linenoiseState *l) {
+void linenoiseEditMoveEnd(BcHistory *l) {
     if (l->pos != l->len) {
         l->pos = l->len;
         refreshLine(l);
@@ -628,7 +628,7 @@ void linenoiseEditMoveEnd(struct linenoiseState *l) {
  * entry as specified by 'dir'. */
 #define LINENOISE_HISTORY_NEXT 0
 #define LINENOISE_HISTORY_PREV 1
-void linenoiseEditHistoryNext(struct linenoiseState *l, int dir) {
+void linenoiseEditHistoryNext(BcHistory *l, int dir) {
     if (l->history_len > 1) {
         /* Update the current history entry before to
          * overwrite it with the next one. */
@@ -652,7 +652,7 @@ void linenoiseEditHistoryNext(struct linenoiseState *l, int dir) {
 
 /* Delete the character at the right of the cursor without altering the cursor
  * position. Basically this is what happens with the "Delete" keyboard key. */
-void linenoiseEditDelete(struct linenoiseState *l) {
+void linenoiseEditDelete(BcHistory *l) {
     if (l->len > 0 && l->pos < l->len) {
         int chlen = linenoiseUtf8NextCharLen(l->buf,l->len,l->pos,NULL);
         memmove(l->buf+l->pos,l->buf+l->pos+chlen,l->len-l->pos-chlen);
@@ -663,7 +663,7 @@ void linenoiseEditDelete(struct linenoiseState *l) {
 }
 
 /* Backspace implementation. */
-void linenoiseEditBackspace(struct linenoiseState *l) {
+void linenoiseEditBackspace(BcHistory *l) {
     if (l->pos > 0 && l->len > 0) {
         int chlen = linenoiseUtf8PrevCharLen(l->buf,l->len,l->pos,NULL);
         memmove(l->buf+l->pos-chlen,l->buf+l->pos,l->len-l->pos);
@@ -676,7 +676,7 @@ void linenoiseEditBackspace(struct linenoiseState *l) {
 
 /* Delete the previous word, maintaining the cursor at the start of the
  * current word. */
-void linenoiseEditDeletePrevWord(struct linenoiseState *l) {
+void linenoiseEditDeletePrevWord(BcHistory *l) {
     size_t old_pos = l->pos;
     size_t diff;
 
@@ -691,7 +691,7 @@ void linenoiseEditDeletePrevWord(struct linenoiseState *l) {
 }
 
 /* Delete the next word, maintaining the cursor at the same position */
-void linenoiseEditDeleteNextWord(struct linenoiseState *l) {
+void linenoiseEditDeleteNextWord(BcHistory *l) {
     size_t next_word_end = l->pos;
     while (next_word_end < l->len && l->buf[next_word_end] == ' ') ++next_word_end;
     while (next_word_end < l->len && l->buf[next_word_end] != ' ') ++next_word_end;
@@ -708,7 +708,7 @@ void linenoiseEditDeleteNextWord(struct linenoiseState *l) {
  * when ctrl+d is typed.
  *
  * The function returns the length of the current buffer. */
-static int linenoiseEdit(struct linenoiseState *l, int stdin_fd, int stdout_fd, char *buf, size_t buflen, const char *prompt)
+static int linenoiseEdit(BcHistory *l, int stdin_fd, int stdout_fd, char *buf, size_t buflen, const char *prompt)
 {
     /* Populate the linenoise state that we pass to functions implementing
      * specific editing functionalities. */
@@ -916,7 +916,7 @@ static int linenoiseEdit(struct linenoiseState *l, int stdin_fd, int stdout_fd, 
  * on screen for debugging / development purposes. It is implemented
  * by the linenoise_example program using the --keycodes option. */
 #ifndef NDEBUG
-void linenoisePrintKeyCodes(struct linenoiseState *l) {
+void linenoisePrintKeyCodes(BcHistory *l) {
     char quit[4];
 
     printf("Linenoise key codes debugging mode.\n"
@@ -944,7 +944,7 @@ void linenoisePrintKeyCodes(struct linenoiseState *l) {
 
 /* This function calls the line editing function linenoiseEdit() using
  * the STDIN file descriptor set in raw mode. */
-static int linenoiseRaw(struct linenoiseState *l, char *buf, FILE *out, size_t buflen, const char *prompt) {
+static int linenoiseRaw(BcHistory *l, char *buf, FILE *out, size_t buflen, const char *prompt) {
     int outfd, count;
 
     if (buflen == 0) {
@@ -1004,7 +1004,7 @@ static char *linenoiseNoTTY(void) {
  * for a blacklist of stupid terminals, and later either calls the line
  * editing function or uses dummy fgets() so that you will be able to type
  * something even in the most desperate of the conditions. */
-char *linenoise(struct linenoiseState *l, const char *prompt) {
+char *linenoise(BcHistory *l, const char *prompt) {
     char buf[BC_HISTORY_MAX_LINE];
     FILE *stream;
     int count;
@@ -1042,7 +1042,7 @@ char *linenoise(struct linenoiseState *l, const char *prompt) {
  * histories, but will work well for a few hundred of entries.
  *
  * Using a circular buffer is smarter, but a bit more complex to handle. */
-int linenoiseHistoryAdd(struct linenoiseState *l, const char *line) {
+int linenoiseHistoryAdd(BcHistory *l, const char *line) {
     char *linecopy;
 
     /* Don't add duplicated lines. */
@@ -1062,13 +1062,13 @@ int linenoiseHistoryAdd(struct linenoiseState *l, const char *line) {
     return 1;
 }
 
-void bc_history_init(struct linenoiseState *l) {
+void bc_history_init(BcHistory *l) {
 	l->rawmode = false;
 	l->history_len = 0;
 	l->history = calloc(BC_HISTORY_MAX_LEN, sizeof(char*));
 }
 
-void bc_history_free(struct linenoiseState *l) {
+void bc_history_free(BcHistory *l) {
 
 	int i;
 

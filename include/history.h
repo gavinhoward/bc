@@ -124,7 +124,7 @@ typedef enum BcHistoryAction {
 /* The linenoiseState structure represents the state during line editing.
  * We pass this state to functions implementing specific editing
  * functionalities. */
-struct linenoiseState {
+typedef struct BcHistory {
     int ifd;            /* Terminal stdin file descriptor. */
     int ofd;            /* Terminal stdout file descriptor. */
     char *buf;          /* Edited line buffer. */
@@ -140,14 +140,14 @@ struct linenoiseState {
 	bool rawmode;
 	int history_len;
 	char **history;
-};
+} BcHistory;
 
-char *linenoise(struct linenoiseState* l, const char *prompt);
-int linenoiseHistoryAdd(struct linenoiseState *l, const char *line);
+char *linenoise(BcHistory *l, const char *prompt);
+int linenoiseHistoryAdd(BcHistory *l, const char *line);
 void linenoiseClearScreen(void);
 
-void bc_history_init(struct linenoiseState *l);
-void bc_history_free(struct linenoiseState *l);
+void bc_history_init(BcHistory *l);
+void bc_history_free(BcHistory *l);
 
 extern const char *bc_history_bad_terms[];
 extern const unsigned long bc_history_wchars[][2];
@@ -156,7 +156,7 @@ extern const unsigned long bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
 #ifndef NDEBUG
 extern FILE *bc_history_debug_fp;
-void linenoisePrintKeyCodes(struct linenoiseState* l);
+void linenoisePrintKeyCodes(BcHistory* l);
 #endif // NDEBUG
 
 #endif // BC_ENABLE_HISTORY
