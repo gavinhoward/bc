@@ -35,6 +35,10 @@
 #error Must define BC_ENABLED, DC_ENABLED, or both
 #endif
 
+#if BC_ENABLE_HISTORY && defined(_WIN32)
+#error History is not supported on Windows.
+#endif
+
 // ** Exclude start. **
 #define VERSION_STR(V) #V
 #define VERSION_STR2(V) VERSION_STR(V)
