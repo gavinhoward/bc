@@ -36,19 +36,18 @@
 #include <program.h>
 #include <vm.h>
 
-BcStatus bc_read_line(BcVec *vec, const char* prompt) {
+bool bc_read_binary(const char *buf, size_t size) {
 
-#if BC_ENABLE_HISTORY
+	size_t i;
 
-	char *buf = linenoise(prompt);
+	for (i = 0; i < size; ++i) {
+		if (BC_READ_BIN_CHAR(buf[i])) return true;
+	}
 
-	linenoiseHistoryAdd(buf);
+	return false;
+}
 
-	bc_vec_string(vec, strlen(buf), buf);
-
-	free(buf);
-
-#else
+BcStatus bc_read_chars(BcVec *vec, const char* prompt) {
 
 	int i;
 	signed char c = 0;
@@ -87,13 +86,35 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 		}
 
 		c = (signed char) i;
-		if (i > UCHAR_MAX || BC_READ_BIN_CHAR(c)) return BC_STATUS_BIN_FILE;
 		bc_vec_push(vec, &c);
 	}
 
 	bc_vec_pushByte(vec, '\0');
 
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_read_line(BcVec *vec, const char* prompt) {
+
+#if BC_ENABLE_HISTORY
+
+	char *buf = linenoise(prompt);
+
+	linenoiseHistoryAdd(buf);
+
+	bc_vec_string(vec, strlen(buf), buf);
+
+	free(buf);
+
+#else
+
+	BcStatus s = bc_read_chars(vec, prompt);
+
+	if (s) return s;
+
 #endif // BC_ENABLE_HISTORY
+
+	if (bc_read_binary(vec->v, vec->len - 1)) return BC_STATUS_BIN_FILE;
 
 	return BC_STATUS_SUCCESS;
 }
@@ -129,10 +150,10 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	if (read != size) goto read_err;
 
 	(*buf)[size] = '\0';
-	s = BC_STATUS_BIN_FILE;
 
-	for (read = 0; read < size; ++read) {
-		if (BC_READ_BIN_CHAR((*buf)[read])) goto read_err;
+	if (bc_read_binary(*buf, size)) {
+		s = BC_STATUS_IO_ERR;
+		goto read_err;
 	}
 
 	fclose(f);
