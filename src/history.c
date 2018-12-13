@@ -401,6 +401,8 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 	struct termios raw;
 
+	if (h->rawMode) return BC_STATUS_SUCCESS;
+
 	if (!isatty(STDIN_FILENO)) return BC_STATUS_IO_ERR;
 	if (tcgetattr(h->ifd, &h->orig_termios) == -1) return BC_STATUS_IO_ERR;
 
