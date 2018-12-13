@@ -206,7 +206,8 @@ static size_t bc_history_prevCharLen(const char *buf, int pos) {
 /**
  * Convert UTF-8 to Unicode code point.
  */
-static size_t bc_history_bytesToCodePoint(const char *buf, size_t len, int *cp)
+static size_t bc_history_bytesToCodePoint(const char *buf, size_t len,
+                                          unsigned int *cp)
 {
 	if (len) {
 
@@ -260,7 +261,7 @@ static size_t bc_history_bytesToCodePoint(const char *buf, size_t len, int *cp)
 size_t bc_history_nextLen(const char *buf, size_t buf_len,
                           size_t pos, size_t *col_len)
 {
-	int cp;
+	unsigned int cp;
 	size_t beg = pos;
 	size_t len = bc_history_bytesToCodePoint(buf + pos, buf_len - pos, &cp);
 
@@ -274,8 +275,6 @@ size_t bc_history_nextLen(const char *buf, size_t buf_len,
 	pos += len;
 
 	while (pos < buf_len) {
-
-		int cp;
 
 		len = bc_history_bytesToCodePoint(buf + pos, buf_len - pos, &cp);
 
@@ -296,7 +295,7 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 
 	while (pos > 0) {
 
-		int cp;
+		unsigned int cp;
 		size_t len = bc_history_prevCharLen(buf, pos);
 
 		pos -= len;
@@ -315,8 +314,8 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 /**
  * Read a Unicode code point from a file.
  */
-size_t bc_history_readCode(int fd, char *buf, size_t buf_len, int *cp) {
-
+size_t bc_history_readCode(int fd, char *buf, size_t buf_len, unsigned int *cp)
+{
 	size_t nread;
 
 	if (buf_len < 1) return -1;
@@ -398,12 +397,12 @@ static bool bc_history_isBadTerm() {
 /**
  * Raw mode: 1960's black magic.
  */
-static int bc_history_enableRaw(BcHistory *h, int fd) {
+static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 	struct termios raw;
 
-	if (!isatty(STDIN_FILENO)) goto fatal;
-	if (tcgetattr(fd, &h->orig_termios) == -1) goto fatal;
+	if (!isatty(STDIN_FILENO)) return BC_STATUS_IO_ERR;
+	if (tcgetattr(h->ifd, &h->orig_termios) == -1) return BC_STATUS_IO_ERR;
 
 	// Modify the original mode.
 	raw = h->orig_termios;
@@ -425,21 +424,17 @@ static int bc_history_enableRaw(BcHistory *h, int fd) {
 	raw.c_cc[VTIME] = 0;
 
 	// Put terminal in raw mode after flushing.
-	if (tcsetattr(fd, TCSAFLUSH, &raw) < 0) goto fatal;
-	h->rawmode = true;
+	if (tcsetattr(h->ifd, TCSAFLUSH, &raw) < 0) return BC_STATUS_IO_ERR;
+	h->rawMode = true;
 
-	return 0;
-
-fatal:
-	errno = ENOTTY;
-	return -1;
+	return BC_STATUS_SUCCESS;
 }
 
-static void bc_history_disableRaw(BcHistory *h, int fd) {
+static void bc_history_disableRaw(BcHistory *h) {
 
 	// Don't even check the return value as it's too late.
-	if (h->rawmode && tcsetattr(fd, TCSAFLUSH, &h->orig_termios) != -1)
-		h->rawmode = false;
+	if (h->rawMode && tcsetattr(h->ifd, TCSAFLUSH, &h->orig_termios) != -1)
+		h->rawMode = false;
 }
 
 /**
@@ -474,7 +469,7 @@ static int bc_history_cursorPos(int ifd, int ofd) {
  * Try to get the number of columns in the current terminal, or assume 80
  * if it fails.
  */
-static int getColumns(int ifd, int ofd) {
+static int bc_history_columns(int ifd, int ofd) {
 
 	struct winsize ws;
 
@@ -582,7 +577,7 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 static void bc_history_refresh(BcHistory *h) {
 
 	char seq[64];
-	int colpos, fd = h->ofd;
+	int colpos;
 	char *buf = h->buf;
 	size_t len = h->len, pos = h->pos, pcollen;
 	BcVec vec;
@@ -620,17 +615,15 @@ static void bc_history_refresh(BcHistory *h) {
 	snprintf(seq, 64, "\r\x1b[%dC", colpos);
 	bc_vec_concat(&vec, seq);
 
-	if (write(fd, vec.v, vec.len - 1) == -1) bc_vm_exit(BC_STATUS_IO_ERR);
+	if (write(h->ofd, vec.v, vec.len - 1) == -1) bc_vm_exit(BC_STATUS_IO_ERR);
 
 	bc_vec_free(&vec);
 }
 
 /**
  * Insert the character 'c' at cursor current position.
- *
- * On error writing to the terminal -1 is returned, otherwise 0.
  */
-int bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
+BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
 
 	if (h->len + clen <= BC_HISTORY_MAX_LINE) {
 
@@ -649,7 +642,7 @@ int bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
 
 			if (colpos < h->cols) {
 				// Avoid a full update of the line in the trivial case.
-				if (write(h->ofd, cbuf, clen) == -1) return -1;
+				if (write(h->ofd, cbuf, clen) == -1) return BC_STATUS_IO_ERR;
 			}
 			else bc_history_refresh(h);
 		}
@@ -666,7 +659,7 @@ int bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
 		}
 	}
 
-	return 0;
+	return BC_STATUS_SUCCESS;
 }
 
 /**
@@ -994,18 +987,17 @@ static void bc_history_escape(BcHistory *h) {
  *
  * The function returns the length of the current buffer.
  */
-static int bc_history_edit(BcHistory *h, int ifd, int ofd,
-                           char *buf, const char *prompt)
-{
+static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
+
+	BcStatus s;
+
 	// Populate the history state.
-	h->ifd = ifd;
-	h->ofd = ofd;
 	h->buf = buf;
 	h->prompt = prompt;
 	h->plen = strlen(prompt);
 	h->oldcolpos = h->pos = 0;
 	h->len = 0;
-	h->cols = getColumns(ifd, ofd);
+	h->cols = bc_history_columns(h->ifd, h->ofd);
 	h->history_index = 0;
 
 	// Buffer starts empty.
@@ -1015,36 +1007,36 @@ static int bc_history_edit(BcHistory *h, int ifd, int ofd,
 	// initially is just an empty string.
 	bc_history_add(h, "");
 
-	if (write(h->ofd, prompt, h->plen) == -1) return -1;
+	if (write(h->ofd, prompt, h->plen) == -1) return BC_STATUS_SUCCESS;
 
-	while(1) {
+	while (true) {
 
-		int c;
+		unsigned int c;
 		char cbuf[32]; // large enough for any encoding?
 		int nread;
 
-	/* Continue reading if interrupted by a signal */
+	// Continue reading if interrupted by a signal.
 // TODO
 //	do {
 //		  nread = read(l.ifd,&c,1);
 //		} while((nread == -1) && (errno == EINTR));
 		nread = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c);
-		if (nread <= 0) return h->len;
+		if (nread <= 0) return BC_STATUS_IO_ERR;
 
 		switch(c) {
 
 			case BC_ACTION_LINE_FEED:
 			case BC_ACTION_ENTER:
 			{
-				h->history_len--;
+				--h->history_len;
 				free(h->history[h->history_len]);
-				return (int)h->len;
+				return BC_STATUS_SUCCESS;
 			}
 
 			case BC_ACTION_CTRL_C:
 			{
 				errno = EAGAIN;
-				return -1;
+				return BC_STATUS_SUCCESS;
 			}
 
 			case BC_ACTION_BACKSPACE:
@@ -1064,7 +1056,7 @@ static int bc_history_edit(BcHistory *h, int ifd, int ofd,
 				else {
 					h->history_len--;
 					free(h->history[h->history_len]);
-					return -1;
+					return BC_STATUS_IO_ERR;
 				}
 
 				break;
@@ -1179,13 +1171,14 @@ static int bc_history_edit(BcHistory *h, int ifd, int ofd,
 
 			default:
 			{
-				if (bc_history_edit_insert(h, cbuf, nread)) return -1;
+				s = bc_history_edit_insert(h, cbuf, nread);
+				if (s) return s;
 				break;
 			}
 		}
 	}
 
-	return h->len;
+	return BC_STATUS_SUCCESS;
 }
 
 /**
@@ -1193,14 +1186,17 @@ static int bc_history_edit(BcHistory *h, int ifd, int ofd,
  * on screen for debugging / development purposes.
  */
 #ifndef NDEBUG
-void bc_history_printKeyCodes(BcHistory *h) {
+BcStatus bc_history_printKeyCodes(BcHistory *h) {
 
+	BcStatus s;
 	char quit[4];
 
-	printf("Linenoise key codes debugging mode.\n"
-			"Press keys to see scan codes. Type 'quit' at any time to exit.\n");
+	bc_vm_printf("Linenoise key codes debugging mode.\n"
+	             "Press keys to see scan codes. "
+	             "Type 'quit' at any time to exit.\n");
 
-	if (bc_history_enableRaw(h, STDIN_FILENO) == -1) return;
+	s = bc_history_enableRaw(h);
+	if (s) return s;
 	memset(quit, ' ', 4);
 
 	while(true) {
@@ -1226,7 +1222,9 @@ void bc_history_printKeyCodes(BcHistory *h) {
 		fflush(stdout);
 	}
 
-	bc_history_disableRaw(h, STDIN_FILENO);
+	bc_history_disableRaw(h);
+
+	return s;
 }
 #endif // NDEBUG
 
@@ -1234,34 +1232,29 @@ void bc_history_printKeyCodes(BcHistory *h) {
  * This function calls the line editing function bc_history_edit()
  * using the STDIN file descriptor set in raw mode.
  */
-static int bc_history_raw(BcHistory *h, char *buf,
-                          FILE *out, const char *prompt)
-{
-	int outfd, count;
+static BcStatus bc_history_raw(BcHistory *h, char *buf, const char *prompt) {
 
-	if ((outfd = fileno(out)) == -1) return -1;
+	BcStatus s;
 
-	if (bc_history_enableRaw(h, STDIN_FILENO) == -1) return -1;
+	s = bc_history_enableRaw(h);
+	if (s) return s;
 
-	count = bc_history_edit(h, STDIN_FILENO, outfd, buf, prompt);
-	bc_history_disableRaw(h, STDIN_FILENO);
-	fprintf(out, "\n");
+	s = bc_history_edit(h, buf, prompt);
+	bc_history_disableRaw(h);
+	bc_vm_puts("\n", stderr);
 
-	return count;
+	return s;
 }
 
 char* bc_history_line(BcHistory *h, const char *prompt) {
 
+	BcStatus s;
 	char buf[BC_HISTORY_MAX_LINE + 1];
-	FILE *stream;
-	int count;
 
-	stream = isatty(STDOUT_FILENO) ? stdout : stderr;
+	s = bc_history_raw(h, buf, prompt);
+	if (s) bc_vm_exit(s);
 
-	count = bc_history_raw(h, buf, stream, prompt);
-	if (count == -1) return NULL;
-
-	return strdup(buf);
+	return bc_vm_strdup(buf);
 }
 
 /* ================================ History ================================= */
@@ -1300,7 +1293,9 @@ bool bc_history_add(BcHistory *h, const char *line) {
 }
 
 void bc_history_init(BcHistory *h) {
-	h->rawmode = false;
+	h->rawMode = false;
+	h->ifd = STDIN_FILENO;
+	h->ofd = STDERR_FILENO;
 	h->badTerm = bc_history_isBadTerm();
 	h->history_len = 0;
 	h->history = calloc(BC_HISTORY_MAX_LEN, sizeof(char*));
@@ -1310,7 +1305,7 @@ void bc_history_free(BcHistory *h) {
 
 	int i;
 
-	bc_history_disableRaw(h, STDIN_FILENO);
+	bc_history_disableRaw(h);
 
 	for (i = 0; i < h->history_len; ++i)
 		free(h->history[i]);

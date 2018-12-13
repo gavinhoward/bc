@@ -99,7 +99,6 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	BcStatus s;
 
 #if BC_ENABLE_HISTORY
-
 	if (vm->ttyin && !vm->history.badTerm) {
 
 		char *buf = bc_history_line(&vm->history, prompt);
@@ -112,12 +111,9 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 		s = bc_read_chars(vec, prompt);
 		if (s) return s;
 	}
-
 #else // BC_ENABLE_HISTORY
-
 	s = bc_read_chars(vec, prompt);
 	if (s) return s;
-
 #endif // BC_ENABLE_HISTORY
 
 	if (bc_read_binary(vec->v, vec->len - 1)) return BC_STATUS_BIN_FILE;

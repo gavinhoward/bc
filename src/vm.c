@@ -431,8 +431,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 	bc_args(argc, argv);
 
-	vm->ttyin = isatty(0);
-	vm->flags |= vm->ttyin || isatty(1) ? BC_FLAG_I : 0;
+	vm->ttyin = isatty(STDIN_FILENO);
+	vm->flags |= vm->ttyin || isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
 
 	if (vm->ttyin && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 	st = bc_vm_exec();

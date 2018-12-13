@@ -75,6 +75,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <status.h>
+
 #if BC_ENABLE_HISTORY
 
 #define BC_HISTORY_DEF_COLS (80)
@@ -166,7 +168,7 @@ typedef struct BcHistory {
 	struct termios orig_termios;
 
 	/// Whether we are in rawmode.
-	bool rawmode;
+	bool rawMode;
 
 	/// Whether the terminal is bad.
 	bool badTerm;
@@ -193,7 +195,7 @@ extern const unsigned long bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
 #ifndef NDEBUG
 extern FILE *bc_history_debug_fp;
-void bc_history_printKeyCodes(BcHistory* l);
+BcStatus bc_history_printKeyCodes(BcHistory* l);
 #endif // NDEBUG
 
 #endif // BC_ENABLE_HISTORY
