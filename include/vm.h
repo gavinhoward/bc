@@ -29,6 +29,7 @@
 #include <status.h>
 #include <parse.h>
 #include <program.h>
+#include <history.h>
 
 #if !BC_ENABLED && !DC_ENABLED
 #error Must define BC_ENABLED, DC_ENABLED, or both
@@ -102,6 +103,10 @@ typedef struct BcVm {
 	unsigned long sig;
 	const char *sig_msg;
 #endif // BC_ENABLE_SIGNALS
+
+#if BC_ENABLE_HISTORY
+	struct linenoiseState history;
+#endif // BC_ENABLE_HISTORY
 
 	BcParseInit parse_init;
 	BcParseExpr parse_expr;

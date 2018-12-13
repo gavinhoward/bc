@@ -68,13 +68,17 @@
 #ifndef BC_HISTORY_H
 #define BC_HISTORY_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+
+#include <termios.h>
+#include <unistd.h>
 
 #if BC_ENABLE_HISTORY
 
 #define BC_HISTORY_DEF_COLS (80)
-#define BC_HISTORY_DEF_MAX_LEN (128)
+#define BC_HISTORY_MAX_LEN (128)
 #define BC_HISTORY_MAX_LINE (4096)
 
 #ifndef NDEBUG
@@ -132,14 +136,18 @@ struct linenoiseState {
     size_t len;         /* Current edited line length. */
     size_t cols;        /* Number of columns in terminal. */
     int history_index;  /* The history index we are currently editing. */
+	struct termios orig_termios;
+	bool rawmode;
+	int history_len;
+	char **history;
 };
 
-char *linenoise(const char *prompt);
-int linenoiseHistoryAdd(const char *line);
-int linenoiseHistorySetMaxLen(int len);
-int linenoiseHistoryGetMaxLen(void);
-int linenoiseHistoryCopy(char** dest, int destlen);
+char *linenoise(struct linenoiseState* l, const char *prompt);
+int linenoiseHistoryAdd(struct linenoiseState *l, const char *line);
 void linenoiseClearScreen(void);
+
+void bc_history_init(struct linenoiseState *l);
+void bc_history_free(struct linenoiseState *l);
 
 extern const char *bc_history_bad_terms[];
 extern const unsigned long bc_history_wchars[][2];
@@ -148,7 +156,7 @@ extern const unsigned long bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
 #ifndef NDEBUG
 extern FILE *bc_history_debug_fp;
-void linenoisePrintKeyCodes();
+void linenoisePrintKeyCodes(struct linenoiseState* l);
 #endif // NDEBUG
 
 #endif // BC_ENABLE_HISTORY

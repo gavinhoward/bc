@@ -98,12 +98,10 @@ BcStatus bc_read_line(BcVec *vec, const char* prompt) {
 
 #if BC_ENABLE_HISTORY
 
-	char *buf = linenoise(prompt);
+	char *buf = linenoise(&vm->history, prompt);
 
-	linenoiseHistoryAdd(buf);
-
+	linenoiseHistoryAdd(&vm->history, buf);
 	bc_vec_string(vec, strlen(buf), buf);
-
 	free(buf);
 
 #else

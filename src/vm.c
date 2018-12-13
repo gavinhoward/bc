@@ -388,6 +388,10 @@ BcStatus bc_vm_exec() {
 }
 
 void bc_vm_shutdown() {
+#if BC_ENABLE_HISTORY
+	// This must always run to ensure that the terminal is back to normal.
+	bc_history_free(&vm->history);
+#endif // BC_ENABLE_HISTORY
 #ifndef NDEBUG
 	bc_vec_free(&vm->files);
 	bc_vec_free(&vm->exprs);
@@ -421,6 +425,10 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 	bc_program_init(&vm->prog);
 	vm->parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);
+
+#if BC_ENABLE_HISTORY
+	bc_history_init(&vm->history);
+#endif // BC_ENABLE_HISTORY
 
 #if BC_ENABLED
 	if (BC_IS_BC) {
