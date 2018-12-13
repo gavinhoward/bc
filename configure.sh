@@ -239,7 +239,7 @@ contents=$(gen_file_lists "$contents" "$scriptdir/src" "")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/bc" "BC_")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/dc" "DC_")
 
-link="@echo \"No link\""
+link="@echo \"No link necessary\""
 main_exec="BC_EXEC"
 
 bc_test="tests/all.sh bc"
