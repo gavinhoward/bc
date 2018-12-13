@@ -52,6 +52,8 @@ while read t; do
 	sh "$testdir/test.sh" "$d" "$t" "$exe" "$@"
 done < "$testdir/$d/all.txt"
 
+sh "$testdir/stdin.sh" "$d" "$exe" "$@"
+
 sh "$testdir/scripts.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 

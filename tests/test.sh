@@ -79,4 +79,3 @@ echo "$halt" | "$exe" "$@" $options "$name" > "$out"
 diff "$results" "$out"
 
 rm -rf "$out"
-
