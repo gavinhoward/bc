@@ -41,8 +41,6 @@ int dc_main(int argc, char **argv) {
 
 	vm->parse_init = dc_parse_init;
 	vm->parse_expr = dc_parse_expr;
-	vm->sbgn = '[';
-	vm->send = ']';
 
 	return (int) bc_vm_boot(argc, argv, "DC_LINE_LENGTH");
 }

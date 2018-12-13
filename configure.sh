@@ -27,14 +27,14 @@ usage() {
 		val=0
 	fi
 
-	echo "usage: $0 [-b|-d|-c] [-ghHS] [-m|-r|-N] [-k KARATSUBA_LEN]"
+	echo "usage: $0 [-b|-d|-c] [-hHS] [-g|-m|-r|-N|] [-k KARATSUBA_LEN]"
 	echo ""
 	echo "    -b"
 	echo "        Build bc only. It is an error if \"-d\" is specified too."
 	echo "    -c"
 	echo "        Generate test coverage code. Requires gcov and regcovr."
-	echo "        It is an error if only either \"-b\" or \"-d\" is specified"
-	echo "        or if \"-n\" is not specified."
+	echo "        It is an error if either \"-b\" or \"-d\" is specified."
+	echo "        Implies \"-N\"."
 	echo "    -d"
 	echo "        Build dc only. It is an error if \"-b\" is specified too."
 	echo "    -g"
@@ -54,7 +54,7 @@ usage() {
 	echo "        with any of \"-g\", \"-m\", or \"-r\"."
 	echo "    -r"
 	echo "        Enable default release flags (-O3 -DNDEBUG -s). On by default."
-	echo "        If given with \"-n\", a debuggable release will be built."
+	echo "        If given with \"-g\", a debuggable release will be built."
 	echo "        It is an error if \"-m\" is specified too."
 	echo "    -S"
 	echo "        Disable signal handling. On by default."
@@ -154,12 +154,12 @@ gen_file_lists() {
 	contents=$(replace "$contents" "$needle" "$replacement")
 
 	needle="${typ}GCDA"
-	replacement=$(replace_exts "$replacement" "c" "gcda")
+	replacement=$(replace_exts "$replacement" "o" "gcda")
 
 	contents=$(replace "$contents" "$needle" "$replacement")
 
 	needle="${typ}GCNO"
-	replacement=$(replace_exts "$replacement" "c" "gcno")
+	replacement=$(replace_exts "$replacement" "gcda" "gcno")
 
 	contents=$(replace "$contents" "$needle" "$replacement")
 
@@ -181,7 +181,7 @@ while getopts "bcdghHk:mNrS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
-		c) coverage=1 ;;
+		c) coverage=1 ; none=1 ;;
 		d) dc_only=1 ;;
 		g) debug=1 ;;
 		h) usage ;;
@@ -217,7 +217,7 @@ fi
 if [ "$none" -eq 1 ]; then
 
 	if [ "$release" -eq 1 -o "$min_size" -eq 1 -o "$debug" -eq 1 ]; then
-		usage "Cannot specify -N with -r, -m, or -g"
+		usage "Cannot specify -N (or -c) with -r, -m, or -g"
 	fi
 
 fi
@@ -239,7 +239,8 @@ contents=$(gen_file_lists "$contents" "$scriptdir/src" "")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/bc" "BC_")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/dc" "DC_")
 
-link="@echo \"No link\""
+link="@echo \"No link necessary\""
+main_exec="BC_EXEC"
 
 bc_test="tests/all.sh bc"
 dc_test="tests/all.sh dc"
@@ -247,21 +248,18 @@ dc_test="tests/all.sh dc"
 vg_bc_test="tests/all.sh bc valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
 vg_dc_test="tests/all.sh dc valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 
-timeconst_target="timeconst"
-timeconst="$timeconst_target:\n\ttests/bc/timeconst.sh"
+timeconst="tests/bc/timeconst.sh"
+timeconst_vg="echo \"100\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
 
-timeconst_vg_target="valgrind_timeconst"
-timeconst_vg="$timeconst_vg_target:\n"
-timeconst_vg="$timeconst_vg\techo \"0\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc\n"
-timeconst_vg="$timeconst_vg\techo \"100\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
-
-karatsuba=""
-karatsuba_test=""
+karatsuba="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
+karatsuba_test="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
 
 if [ "$bc_only" -eq 1 ]; then
 
 	bc=1
 	dc=0
+
+	executables="bc"
 
 	dc_test="@echo \"No dc tests to run\""
 	vg_dc_test="@echo \"No dc tests to run\""
@@ -271,24 +269,27 @@ elif [ "$dc_only" -eq 1 ]; then
 	bc=0
 	dc=1
 
+	executables="dc"
+
+	main_exec="DC_EXEC"
+
 	bc_test="@echo \"No bc tests to run\""
 	vg_bc_test="@echo \"No bc tests to run\""
 
-	timeconst_target=""
-	timeconst=""
-
-	timeconst_vg_target=""
-	timeconst_vg=""
+	timeconst="@echo \"timeconst cannot be run because bc is not built\""
+	timeconst_vg="@echo \"timeconst cannot be run because bc is not built\""
 
 else
 
 	bc=1
 	dc=1
 
+	executables="bc and dc"
+
 	link="\$(LINK) \$(BIN) \$(DC)"
 
-	karatsuba="karatsuba:\n\t\$(KARATSUBA)"
-	karatsuba_test="karatsuba_test:\n\t\$(KARATSUBA) 100 \$(BC_EXEC)"
+	karatsuba="\$(KARATSUBA)"
+	karatsuba_test="\$(KARATSUBA) 100 \$(BC_EXEC)"
 
 fi
 
@@ -305,7 +306,9 @@ else
 fi
 
 if [ "$release" -eq 1 -o "$none" -eq 0 ]; then
-	CFLAGS="$CFLAGS -O3"
+	if [ "$debug" -ne 1 ]; then
+		CFLAGS="$CFLAGS -O3"
+	fi
 fi
 
 if [ "$min_size" -eq 1 ]; then
@@ -318,13 +321,18 @@ if [ "$coverage" -eq 1 ]; then
 		usage "Can only specify -c without -b or -d"
 	fi
 
-	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage -g -O0"
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
 
-	COVERAGE="coverage: all test_all\n"
-	COVERAGE="$COVERAGE\tgcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)\n"
-	COVERAGE="$COVERAGE\t\$(RM) -f \$(GEN)*.gc*\n"
-	COVERAGE="$COVERAGE\tregcovr --html-details --output index.html"
+	COVERAGE="gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
+	COVERAGE="$COVERAGE;\$(RM) -f \$(GEN)*.gc*"
+	COVERAGE="$COVERAGE;regcovr --html-details --output index.html"
+	COVERAGE_PREREQS="all test_all"
+
+else
+
+	COVERAGE="@echo \"Coverage not generated\""
+	COVERAGE_PREREQS=""
 
 fi
 
@@ -363,6 +371,10 @@ contents=$(replace "$contents" "LDFLAGS" "$LDFLAGS")
 contents=$(replace "$contents" "CC" "$CC")
 contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
+contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
+
+contents=$(replace "$contents" "EXECUTABLES" "$executables")
+contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
 contents=$(replace "$contents" "DC_TEST" "$dc_test")

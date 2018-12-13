@@ -142,6 +142,14 @@ BcStatus dc_lex_token(BcLex *l) {
 			break;
 		}
 
+		case '/':
+		{
+			if (l->buf[l->i] == '*') s = bc_lex_comment(l);
+			else l->t.t = BC_LEX_OP_DIVIDE;
+
+			break;
+		}
+
 		case '0':
 		case '1':
 		case '2':

@@ -92,7 +92,7 @@ CC = %%CC%%
 HOSTCC = %%HOSTCC%%
 
 all: make_bin $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) -o $(BC_EXEC)
+	$(CC) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) -o $(%%MAIN_EXEC%%)
 	%%LINK%%
 
 $(GEN_EXEC):
@@ -115,40 +115,63 @@ help:
 	@echo ""
 	@echo "available targets:"
 	@echo ""
-	@echo "    all (default)  build the selected executable(s)"
-	@echo "    clean          remove all build files"
-	@echo "    clean_tests    remove all build files as well as generated tests"
-	@echo "    install        install to $(PREFIX)/bin"
-	@echo "    uninstall      uninstall from $(PREFIX)/bin"
-	@echo "    test           runs the test suite"
-	@echo "    test_all       runs the test suite as well as the Linux timeconst.bc test,"
-	@echo "                   if bc has been built"
-	@echo "    timeconst      runs the test on the Linux timeconst.bc script"
-	@echo "    valgrind       runs the test suite through valgrind"
-	@echo "    valgrind_all   runs the test suite, and the Linux timeconst.bc test,"
-	@echo "                   if bc has been built, through valgrind"
+	@echo "    all (default)   builds %%EXECUTABLES%%"
+	@echo "    clean           removes all build files"
+	@echo "    clean_tests     removes all build files as well as generated tests"
+	@echo "    install         installs to $(DESTDIR)$(PREFIX)/bin"
+	@echo "    karatsuba       runs the karatsuba script (requires Python 3)"
+	@echo "    karatsuba_test  runs the karatsuba script while running tests"
+	@echo "                    (requires Python 3)"
+	@echo "    uninstall       uninstalls from $(DESTDIR)$(PREFIX)/bin"
+	@echo "    test            runs the test suite"
+	@echo "    test_all        runs the test suite as well as the Linux timeconst.bc test,"
+	@echo "                    if bc has been built"
+	@echo "    test_bc         runs the bc test suite only, if bc has been built"
+	@echo "    test_dc         runs the dc test suite only, if dc has been built"
+	@echo "    timeconst       runs the test on the Linux timeconst.bc script,"
+	@echo "                    if bc has been built"
+	@echo "    valgrind        runs the test suite through valgrind"
+	@echo "    valgrind_all    runs the test suite, and the Linux timeconst.bc test,"
+	@echo "                    if bc has been built, through valgrind"
+	@echo "    valgrind_bc     runs the bc test suite only, if bc has been built,"
+	@echo "                    through valgrind"
+	@echo "    valgrind_dc     runs the dc test suite only, if dc has been built,"
+	@echo "                    through valgrind"
 
-test_all: test %%TIMECONST_TARGET%%
+test_all: test timeconst
 
-test:
+test: test_bc test_dc
+
+test_bc:
 	%%BC_TEST%%
+
+test_dc:
 	%%DC_TEST%%
 
-%%TIMECONST%%
+timeconst:
+	%%TIMECONST%%
 
-valgrind_all: valgrind %%TIMECONST_VG_TARGET%%
+valgrind_all: valgrind valgrind_timeconst
 
-valgrind:
+valgrind: valgrind_bc valgrind_dc
+
+valgrind_bc:
 	%%VG_BC_TEST%%
+
+valgrind_dc:
 	%%VG_DC_TEST%%
 
-%%TIMECONST_VG%%
+valgrind_timeconst:
+	%%TIMECONST_VG%%
 
-%%KARATSUBA%%
+karatsuba:
+	%%KARATSUBA%%
 
-%%KARATSUBA_TEST%%
+karatsuba_test:
+	%%KARATSUBA_TEST%%
 
-%%COVERAGE%%
+coverage:%%COVERAGE_PREREQS%%
+	%%COVERAGE%%
 
 version:
 	@echo "$(VERSION)"
@@ -167,6 +190,8 @@ clean:
 	$(RM) -f $(DC_GCDA) $(DC_GCNO)
 	$(RM) -f *.gcov
 	$(RM) -f *.html
+	$(RM) -f *.gcda *.gcno
+	$(RM) -f *.profraw
 	$(RM) -f $(GEN_EXEC)
 	$(RM) -f $(BC_LIB_C)
 	$(RM) -f $(BC_LIB_O)

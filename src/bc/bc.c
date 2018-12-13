@@ -34,7 +34,6 @@ int bc_main(int argc, char **argv) {
 
 	vm->parse_init = bc_parse_init;
 	vm->parse_expr = bc_parse_expression;
-	vm->sbgn = vm->send = '"';
 
 	return (int) bc_vm_boot(argc, argv, "BC_LINE_LENGTH");
 }

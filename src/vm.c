@@ -277,7 +277,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
-	size_t len, i, str = 0;
+	size_t str = 0;
 	bool comment = false;
 
 	vm->prog.file = bc_program_stdin_name;
@@ -294,41 +294,33 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	while ((s = bc_read_line(&buf, ">>> ")) == BC_STATUS_SUCCESS) {
 
 		char *string = buf.v;
+		size_t i, len = buf.len - 1;
 
-		len = buf.len - 1;
+		for (i = 0; i < len; ++i) {
 
-		if (len == 1) {
-			if (str && buf.v[0] == vm->send) str -= 1;
-			else if (buf.v[0] == vm->sbgn) str += 1;
-		}
-		else if (len > 1 || comment) {
+			bool notend = len > i + 1;
+			char c = string[i];
 
-			for (i = 0; i < len; ++i) {
-
-				bool notend = len > i + 1;
-				char c = string[i];
-
-				if (i - 1 > len || string[i - 1] != '\\') {
-					if (vm->sbgn == vm->send) str ^= c == vm->sbgn;
-					else if (c == vm->send) str -= 1;
-					else if (c == vm->sbgn) str += 1;
-				}
-
-				if (c == '/' && notend && !comment && string[i + 1] == '*') {
-					comment = true;
-					break;
-				}
-				else if (c == '*' && notend && comment && string[i + 1] == '/')
-					comment = false;
+			if (!comment && (i - 1 > len || string[i - 1] != '\\')) {
+				if (BC_IS_BC) str ^= c == '"';
+				else if (c == ']') str -= 1;
+				else if (c == '[') str += 1;
 			}
 
-			if (str || comment || string[len - 2] == '\\') {
-				bc_vec_concat(&buffer, buf.v);
-				continue;
+			if (c == '/' && notend && !comment && string[i + 1] == '*') {
+				comment = true;
+				++i;
+			}
+			else if (c == '*' && notend && comment && string[i + 1] == '/') {
+				comment = false;
+				++i;
 			}
 		}
 
 		bc_vec_concat(&buffer, buf.v);
+
+		if (str || comment || string[len - 2] == '\\') continue;
+
 		s = bc_vm_process(vm, buffer.v);
 		if (s) goto err;
 

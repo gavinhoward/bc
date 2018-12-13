@@ -20,8 +20,8 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -lt 2 ]; then
-	echo "usage: $0 dir test [exe [args...]]"
+if [ "$#" -lt 1 ]; then
+	echo "usage: $0 dir [exe [args...]]"
 	echo "valid dirs are:"
 	echo ""
 	cat "$testdir/all.txt"
@@ -30,11 +30,6 @@ if [ "$#" -lt 2 ]; then
 fi
 
 d="$1"
-shift
-
-t="$1"
-name="$testdir/$d/$t.txt"
-results="$testdir/$d/${t}_results.txt"
 shift
 
 if [ "$#" -gt 0 ]; then
@@ -48,34 +43,15 @@ out="$testdir/../.log_test.txt"
 
 if [ "$d" = "bc" ]; then
 	options="-lq"
-	var="BC_LINE_LENGTH"
-	halt="halt"
 else
-	options=""
-	var="DC_LINE_LENGTH"
-	halt="q"
-fi
-
-if [ ! -f "$name" ]; then
-	echo "Generating $d $t..."
-	"$testdir/$d/scripts/$t.$d" > "$name"
-fi
-
-if [ ! -f "$results" ]; then
-	echo "Generating $d $t results..."
-	echo "$halt" | $d $options "$name" > "$results"
-fi
-
-if [ "$d" = "dc" ]; then
 	options="-x"
 fi
 
-export $var=string
+echo "Running $d stdin tests..."
 
-echo "Running $d $t..."
+while read t; do
+	echo "$t" | "$exe" "$@" "$options" > "$out"
+	diff "$testdir/$d/stdin_results.txt" "$out"
+done < "$testdir/$d/stdin.txt"
 
-echo "$halt" | "$exe" "$@" $options "$name" > "$out"
-
-diff "$results" "$out"
-
-rm -rf "$out"
+rm -rf "$out1"
