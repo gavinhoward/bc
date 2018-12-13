@@ -442,18 +442,18 @@ static void bc_history_disableRaw(BcHistory *h) {
  * and return it. On error -1 is returned, on success the position of the
  * cursor.
  */
-static int bc_history_cursorPos(int ifd, int ofd) {
+static int bc_history_cursorPos(BcHistory *h) {
 
 	char buf[32];
 	int cols, rows;
 	unsigned int i;
 
 	// Report cursor location.
-	if (write(ofd, "\x1b[6n", 4) != 4) return -1;
+	if (write(h->ofd, "\x1b[6n", 4) != 4) return -1;
 
 	// Read the response: ESC [ rows ; cols R.
 	for (i = 0; i < sizeof(buf) - 1; ++i) {
-		if (read(ifd, buf + i, 1) != 1 || buf[i] == 'R') break;
+		if (read(h->ifd, buf + i, 1) != 1 || buf[i] == 'R') break;
 	}
 
 	buf[i] = '\0';
@@ -469,7 +469,7 @@ static int bc_history_cursorPos(int ifd, int ofd) {
  * Try to get the number of columns in the current terminal, or assume 80
  * if it fails.
  */
-static int bc_history_columns(int ifd, int ofd) {
+static int bc_history_columns(BcHistory *h) {
 
 	struct winsize ws;
 
@@ -479,12 +479,12 @@ static int bc_history_columns(int ifd, int ofd) {
 		int start, cols;
 
 		// Get the initial position so we can restore it later.
-		start = bc_history_cursorPos(ifd, ofd);
+		start = bc_history_cursorPos(h);
 		if (start == -1) goto failed;
 
 		// Go to right margin and get position.
-		if (write(ofd,"\x1b[999C",6) != 6) goto failed;
-		cols = bc_history_cursorPos(ifd, ofd);
+		if (write(h->ofd,"\x1b[999C",6) != 6) goto failed;
+		cols = bc_history_cursorPos(h);
 		if (cols == -1) goto failed;
 
 		// Restore position.
@@ -494,7 +494,7 @@ static int bc_history_columns(int ifd, int ofd) {
 
 			snprintf(seq, 32, "\x1b[%dD", cols - start);
 
-			if (write(ofd, seq, strlen(seq)) == -1)
+			if (write(h->ofd, seq, strlen(seq)) == -1)
 				bc_vm_exit(BC_STATUS_IO_ERR);
 		}
 
