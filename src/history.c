@@ -158,7 +158,7 @@ static bool bc_history_wchar(unsigned long cp) {
 
 	size_t i;
 
-	for (i = 0; i < bc_history_wchars_len; i++) {
+	for (i = 0; i < bc_history_wchars_len; ++i) {
 
 		// Ranges are listed in ascending order.  Therefore, once the
 		// whole range is higher than the codepoint we're testing, the
@@ -180,7 +180,7 @@ static bool bc_history_comboChar(unsigned long cp) {
 
 	size_t i;
 
-	for (i = 0; i < bc_history_combo_chars_len; i++) {
+	for (i = 0; i < bc_history_combo_chars_len; ++i) {
 
 		// Combining chars are listed in ascending order, so once we pass
 		// the codepoint of interest, we know it's not a combining char.
@@ -290,12 +290,9 @@ size_t bc_history_nextLen(const char *buf, size_t buf_len,
 /**
  * Get length of previous grapheme.
  */
-size_t bc_history_prevLen(const char* buf, size_t buf_len,
-                          size_t pos, size_t *col_len)
+size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 {
 	size_t end = pos;
-
-	(void) (buf_len);
 
 	while (pos > 0) {
 
@@ -391,7 +388,7 @@ static bool bc_history_isBadTerm() {
 
 	if (term == NULL) return false;
 
-	for (i = 0; bc_history_bad_terms[i]; i++) {
+	for (i = 0; bc_history_bad_terms[i]; ++i) {
 		if (!strcasecmp(term, bc_history_bad_terms[i])) return true;
 	}
 
@@ -520,9 +517,8 @@ failed:
  */
 void bc_history_clearScreen(void) {
 
-	int fd;
+	int fd = isatty(STDOUT_FILENO) ? STDOUT_FILENO : STDERR_FILENO;
 
-	fd = isatty(STDOUT_FILENO) ? STDOUT_FILENO : STDERR_FILENO;
 	if (write(fd, "\x1b[H\x1b[2J", 7) <= 0) bc_vm_exit(BC_STATUS_IO_ERR);
 }
 
@@ -603,7 +599,7 @@ static void bc_history_refresh(BcHistory *h) {
 	}
 
 	while (pcollen + bc_history_colPos(buf, len, len) > h->cols)
-		len -= bc_history_prevLen(buf, len, len, NULL);
+		len -= bc_history_prevLen(buf, len, NULL);
 
 	bc_vec_init(&vec, sizeof(char), NULL);
 
@@ -636,7 +632,7 @@ static void bc_history_refresh(BcHistory *h) {
  */
 int bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
 
-	if (h->len+clen <= BC_HISTORY_MAX_LINE) {
+	if (h->len + clen <= BC_HISTORY_MAX_LINE) {
 
 		if (h->len == h->pos) {
 
@@ -678,7 +674,7 @@ int bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
  */
 void bc_history_edit_left(BcHistory *h) {
 	if (h->pos > 0) {
-		h->pos -= bc_history_prevLen(h->buf, h->len, h->pos, NULL);
+		h->pos -= bc_history_prevLen(h->buf, h->pos, NULL);
 		bc_history_refresh(h);
 	}
 }
@@ -807,7 +803,7 @@ void bc_history_edit_backspace(BcHistory *h) {
 
 	if (h->pos > 0 && h->len > 0) {
 
-		int chlen = bc_history_prevLen(h->buf, h->len, h->pos, NULL);
+		int chlen = bc_history_prevLen(h->buf, h->pos, NULL);
 
 		memmove(h->buf + h->pos - chlen, h->buf + h->pos, h->len - h->pos);
 
@@ -847,7 +843,7 @@ void bc_history_deleteNextWord(BcHistory *h) {
 	while (next_word_end < h->len && h->buf[next_word_end] == ' ') ++next_word_end;
 	while (next_word_end < h->len && h->buf[next_word_end] != ' ') ++next_word_end;
 
-	memmove(h->buf+h->pos, h->buf+next_word_end, h->len-next_word_end);
+	memmove(h->buf + h->pos, h->buf + next_word_end, h->len - next_word_end);
 
 	h->len -= next_word_end - h->pos;
 
@@ -1080,7 +1076,7 @@ static int bc_history_edit(BcHistory *h, int ifd, int ofd,
 				int pcl, ncl;
 				char auxb[5];
 
-				pcl = bc_history_prevLen(h->buf, h->len, h->pos, NULL);
+				pcl = bc_history_prevLen(h->buf, h->pos, NULL);
 				ncl = bc_history_nextLen(h->buf, h->len, h->pos, NULL);
 
 				// To perform a swap we need:
@@ -1088,11 +1084,6 @@ static int bc_history_edit(BcHistory *h, int ifd, int ofd,
 				// * not at the end of the line
 				if(pcl != 0 && h->pos != h->len && pcl < 5 && ncl < 5) {
 
-					// The actual transpose works like this
-					//		   ,--- l.pos
-					//		  v
-					// xxx [AAA] [BB] xxx
-					// xxx [BB] [AAA] xxx
 					memcpy(auxb, h->buf + h->pos - pcl, pcl);
 					memcpy(h->buf + h->pos - pcl, h->buf + h->pos, ncl);
 					memcpy(h->buf + h->pos - pcl + ncl, auxb, pcl);
@@ -1259,13 +1250,6 @@ static int bc_history_raw(BcHistory *h, char *buf,
 	return count;
 }
 
-/**
- * The high-level function that is the main API of bc history. This function
- * checks if the terminal has basic capabilities, just checking for a blacklist
- * of stupid terminals, and later either calls the line editing function or uses
- * dummy fgets() so that you will be able to type something even in the most
- * desperate of the conditions.
- */
 char* bc_history_line(BcHistory *h, const char *prompt) {
 
 	char buf[BC_HISTORY_MAX_LINE + 1];
@@ -1310,7 +1294,7 @@ bool bc_history_add(BcHistory *h, const char *line) {
 	}
 
 	h->history[h->history_len] = linecopy;
-	h->history_len++;
+	++h->history_len;
 
 	return true;
 }
@@ -1328,7 +1312,7 @@ void bc_history_free(BcHistory *h) {
 
 	bc_history_disableRaw(h, STDIN_FILENO);
 
-	for (i = 0; i < h->history_len; i++)
+	for (i = 0; i < h->history_len; ++i)
 		free(h->history[i]);
 
 	free(h->history);
