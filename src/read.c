@@ -94,7 +94,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_read_line(BcVec *vec, const char* prompt) {
+BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 #if BC_ENABLE_HISTORY
 
