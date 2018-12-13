@@ -98,9 +98,9 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 #if BC_ENABLE_HISTORY
 
-	char *buf = linenoise(&vm->history, prompt);
+	char *buf = bc_history_line(&vm->history, prompt);
 
-	linenoiseHistoryAdd(&vm->history, buf);
+	bc_history_add(&vm->history, buf);
 	bc_vec_string(vec, strlen(buf), buf);
 	free(buf);
 

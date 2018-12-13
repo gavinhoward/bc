@@ -81,6 +81,9 @@
 #define BC_HISTORY_MAX_LEN (128)
 #define BC_HISTORY_MAX_LINE (4096)
 
+#define BC_HISTORY_NEXT (0)
+#define BC_HISTORY_PREV (1)
+
 #ifndef NDEBUG
 #define lndebug(...)                                               \
 	do {                                                           \
@@ -142,8 +145,8 @@ typedef struct BcHistory {
 	char **history;
 } BcHistory;
 
-char *linenoise(BcHistory *l, const char *prompt);
-int linenoiseHistoryAdd(BcHistory *l, const char *line);
+char *bc_history_line(BcHistory *l, const char *prompt);
+bool bc_history_add(BcHistory *l, const char *line);
 void linenoiseClearScreen(void);
 
 void bc_history_init(BcHistory *l);
@@ -156,7 +159,7 @@ extern const unsigned long bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
 #ifndef NDEBUG
 extern FILE *bc_history_debug_fp;
-void linenoisePrintKeyCodes(BcHistory* l);
+void bc_history_printKeyCodes(BcHistory* l);
 #endif // NDEBUG
 
 #endif // BC_ENABLE_HISTORY

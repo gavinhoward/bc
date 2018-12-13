@@ -139,6 +139,7 @@ void bc_vm_fflush(FILE *restrict f);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
+void bc_vm_exit(BcStatus s);
 
 BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
 // ** Exclude end. **
