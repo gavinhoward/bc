@@ -259,6 +259,8 @@ if [ "$bc_only" -eq 1 ]; then
 	bc=1
 	dc=0
 
+	executables="bc"
+
 	dc_test="@echo \"No dc tests to run\""
 	vg_dc_test="@echo \"No dc tests to run\""
 
@@ -266,6 +268,8 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	bc=0
 	dc=1
+
+	executables="dc"
 
 	main_exec="DC_EXEC"
 
@@ -279,6 +283,8 @@ else
 
 	bc=1
 	dc=1
+
+	executables="bc and dc"
 
 	link="\$(LINK) \$(BIN) \$(DC)"
 
@@ -367,6 +373,7 @@ contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
 contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
 
+contents=$(replace "$contents" "EXECUTABLES" "$executables")
 contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
