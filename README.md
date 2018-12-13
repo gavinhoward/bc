@@ -136,8 +136,8 @@ with POSIX `bc`. The math has been tested with 30+ million random problems, so
 it is as correct as I can make it.
 
 This `bc` can be used as a drop-in replacement for any existing `bc`, except for
-pass-by-reference array values. This `bc` is also compatible with MinGW
-toolchains.
+pass-by-reference array values, which are incompatible with POSIX. This `bc` is
+also compatible with MinGW toolchains.
 
 It is also possible to download pre-compiled binaries for a wide list of
 platforms, including Linux- and Windows-based systems, from
