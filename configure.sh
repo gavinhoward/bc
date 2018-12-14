@@ -351,16 +351,12 @@ fi
 gcc="gcc"
 clang="clang"
 
-if [ "${CC#*$gcc}" = "$CC" -a "${CC#*$clang}" = "$CC" ]; then
-	usage "CC is not gcc or clang; only gcc and clang are supported"
+if [ "$CC" = "" ]; then
+	CC="c99"
 fi
 
 if [ "$HOSTCC" = "" ]; then
 	HOSTCC="$CC"
-fi
-
-if [ "${HOSTCC#*$gcc}" = "$CC" -a "${HOSTCC#*$clang}" = "$CC" ]; then
-	usage "Only gcc and clang are supported"
 fi
 
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
@@ -406,3 +402,27 @@ echo "$contents" > "$scriptdir/Makefile"
 cd "$scriptdir"
 
 make clean > /dev/null
+
+echo "Testing C compilers..."
+
+libname=$(make libcname)
+
+set +e
+
+make "$libname" > /dev/null 2>&1
+
+err="$?"
+
+if [ "$err" -ne 0 ]; then
+	usage "\nHOSTCC ($HOSTCC) is not compatible with gcc/clang options"
+fi
+
+make > /dev/null 2>&1
+
+err="$?"
+
+if [ "$err" -ne 0 ]; then
+	usage "\nCC ($HOSTCC) is not compatible with gcc/clang options"
+fi
+
+set -e
