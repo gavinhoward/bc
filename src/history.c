@@ -352,8 +352,6 @@ size_t bc_history_readCode(int fd, char *buf, size_t buf_len, unsigned int *cp)
 	return bc_history_bytesToCodePoint(buf, buf_len, cp);
 }
 
-/* ========================== Encoding functions ============================= */
-
 /**
  * Get column length from begining of buffer to current byte position.
  */
@@ -373,8 +371,6 @@ static size_t bc_history_colPos(const char *buf, size_t buf_len, size_t pos) {
 
 	return ret;
 }
-
-/* ======================= Low level terminal handling ====================== */
 
 /**
  * Return true if the terminal name is in the list of terminals we know are
@@ -482,12 +478,12 @@ static int bc_history_columns(BcHistory *h) {
 
 		// Get the initial position so we can restore it later.
 		start = bc_history_cursorPos(h);
-		if (start == -1) goto failed;
+		if (start == -1) return BC_HISTORY_DEF_COLS;
 
 		// Go to right margin and get position.
-		if (write(h->ofd,"\x1b[999C",6) != 6) goto failed;
+		if (write(h->ofd,"\x1b[999C",6) != 6) return BC_HISTORY_DEF_COLS;
 		cols = bc_history_cursorPos(h);
-		if (cols == -1) goto failed;
+		if (cols == -1) return BC_HISTORY_DEF_COLS;
 
 		// Restore position.
 		if (cols > start) {
@@ -504,14 +500,7 @@ static int bc_history_columns(BcHistory *h) {
 	}
 
 	return ws.ws_col;
-
-failed:
-	return BC_HISTORY_DEF_COLS;
 }
-
-
-/* =========================== Line editing ================================= */
-
 
 /**
  * Check if text is an ANSI escape sequence.
@@ -561,8 +550,6 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 }
 
 /**
- * Single line low level line refresh.
- *
  * Rewrites the currently edited line accordingly to the buffer content,
  * cursor position, and number of columns of the terminal.
  */
@@ -838,7 +825,7 @@ void bc_history_deleteNextWord(BcHistory *h) {
 }
 
 /**
- * This function handles escape sequences.
+ * Handle escape sequences.
  */
 static void bc_history_escape(BcHistory *h) {
 
@@ -975,11 +962,6 @@ static void bc_history_escape(BcHistory *h) {
  * This function is the core of the line editing capability of bc history.
  * It expects 'fd' to be already in "raw mode" so that every key pressed
  * will be returned ASAP to read().
- *
- * The resulting string is put into 'buf' when the user type enter, or
- * when ctrl+d is typed.
- *
- * The function returns the length of the current buffer.
  */
 static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
@@ -1172,53 +1154,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 }
 
 /**
- * This special mode is used by bc history in order to print scan codes
- * on screen for debugging / development purposes.
- */
-#ifndef NDEBUG
-BcStatus bc_history_printKeyCodes(BcHistory *h) {
-
-	BcStatus s;
-	char quit[4];
-
-	bc_vm_printf("Linenoise key codes debugging mode.\n"
-	             "Press keys to see scan codes. "
-	             "Type 'quit' at any time to exit.\n");
-
-	s = bc_history_enableRaw(h);
-	if (s) return s;
-	memset(quit, ' ', 4);
-
-	while(true) {
-
-		char c;
-		int nread;
-
-		nread = read(STDIN_FILENO,&c,1);
-		if (nread <= 0) continue;
-
-		// Shift string to left.
-		memmove(quit, quit + 1, sizeof(quit) - 1);
-
-		// Insert current char on the right.
-		quit[sizeof(quit) - 1] = c;
-		if (memcmp(quit, "quit", sizeof(quit)) == 0) break;
-
-		printf("'%c' %02x (%d) (type quit to exit)\n",
-			isprint((int) c) ? c : '?', (int) c, (int) c);
-
-		// Go left edge manually, we are in raw mode.
-		printf("\r");
-		fflush(stdout);
-	}
-
-	bc_history_disableRaw(h);
-
-	return s;
-}
-#endif // NDEBUG
-
-/**
  * This function calls the line editing function bc_history_edit()
  * using the STDIN file descriptor set in raw mode.
  */
@@ -1259,17 +1194,6 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	return s;
 }
 
-/* ================================ History ================================= */
-
-/**
- * This is the API call to add a new entry in the bc history. It uses a
- * fixed array of char pointers that are shifted (memmoved) when the
- * history max length is reached in order to remove the older entry and
- * make room for the new one, so it is not exactly suitable for huge
- * histories, but will work well for a few hundred of entries.
- *
- * Using a circular buffer is smarter, but a bit more complex to handle.
- */
 void bc_history_add(BcHistory *h, const char *line) {
 
 	// Don't add duplicated lines.
@@ -1301,4 +1225,52 @@ void bc_history_free(BcHistory *h) {
 	bc_vec_free(&h->history);
 #endif // NDEBUG
 }
+
+/**
+ * This special mode is used by bc history in order to print scan codes
+ * on screen for debugging / development purposes.
+ */
+#ifndef NDEBUG
+BcStatus bc_history_printKeyCodes(BcHistory *h) {
+
+	BcStatus s;
+	char quit[4];
+
+	bc_vm_printf("Linenoise key codes debugging mode.\n"
+	             "Press keys to see scan codes. "
+	             "Type 'quit' at any time to exit.\n");
+
+	s = bc_history_enableRaw(h);
+	if (s) return s;
+	memset(quit, ' ', 4);
+
+	while(true) {
+
+		char c;
+		int nread;
+
+		nread = read(STDIN_FILENO,&c,1);
+		if (nread <= 0) continue;
+
+		// Shift string to left.
+		memmove(quit, quit + 1, sizeof(quit) - 1);
+
+		// Insert current char on the right.
+		quit[sizeof(quit) - 1] = c;
+		if (memcmp(quit, "quit", sizeof(quit)) == 0) break;
+
+		printf("'%c' %02x (%d) (type quit to exit)\n",
+		       isprint((int) c) ? c : '?', (int) c, (int) c);
+
+		// Go left edge manually, we are in raw mode.
+		bc_vm_putchar('\r');
+		fflush(stdout);
+	}
+
+	bc_history_disableRaw(h);
+
+	return s;
+}
+#endif // NDEBUG
+
 #endif // BC_ENABLE_HISTORY
