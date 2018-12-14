@@ -40,6 +40,11 @@
 #define BC_VERSION VERSION_STR2(VERSION)
 // ** Exclude end. **
 
+// Windows has deprecated isatty().
+#ifdef _WIN32
+#define isatty _isatty
+#endif // _WIN32
+
 #define DC_FLAG_X (1<<0)
 #define BC_FLAG_W (1<<1)
 #define BC_FLAG_V (1<<2)
