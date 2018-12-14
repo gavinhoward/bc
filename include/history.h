@@ -84,6 +84,8 @@
 #define BC_HISTORY_MAX_LEN (128)
 #define BC_HISTORY_MAX_LINE (4095)
 
+#define BC_HISTORY_BUF_LEN(h) ((h)->buf.len - 1)
+
 #define BC_HISTORY_NEXT (0)
 #define BC_HISTORY_PREV (1)
 

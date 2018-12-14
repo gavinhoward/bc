@@ -580,8 +580,8 @@ static void bc_history_refresh(BcHistory *h) {
 
 	char seq[64];
 	int colpos;
-	char *buf = h->buf;
-	size_t len = h->len, pos = h->pos, pcollen;
+	char* buf = h->buf.v;
+	size_t len = BC_HISTORY_BUF_LEN(h), pos = h->pos, pcollen;
 	BcVec vec;
 
 	pcollen = bc_history_promptColLen(h->prompt, strlen(h->prompt));
@@ -625,40 +625,39 @@ static void bc_history_refresh(BcHistory *h) {
 /**
  * Insert the character 'c' at cursor current position.
  */
-BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
+BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 
-	if (h->buf.len - 1 + clen <= BC_HISTORY_MAX_LINE) {
+	bc_vec_expand(&h->buf, h->buf.len + clen);
 
-		if (h->buf.len - 1 == h->pos) {
+	if (h->pos == BC_HISTORY_BUF_LEN(h)) {
 
-			size_t colpos;
+		size_t colpos;
 
-			memcpy(&h->buf[h->pos], cbuf, clen);
+		memcpy(bc_vec_item(&h->buf, h->pos), cbuf, clen);
 
-			h->pos += clen;
-			h->len += clen;
-			h->buf[h->len] = '\0';
+		h->pos += clen;
+		h->buf.len += clen;
+		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
 
-			colpos = !bc_history_promptColLen(h->prompt, h->plen);
-			colpos += bc_history_colPos(h->buf, h->len, h->len);
+		colpos = !bc_history_promptColLen(h->prompt, h->plen);
+		colpos += bc_history_colPos(h->buf.v, BC_HISTORY_BUF_LEN(h), BC_HISTORY_BUF_LEN(h));
 
-			if (colpos < h->cols) {
-				// Avoid a full update of the line in the trivial case.
-				if (write(h->ofd, cbuf, clen) == -1) return BC_STATUS_IO_ERR;
-			}
-			else bc_history_refresh(h);
+		if (colpos < h->cols) {
+			// Avoid a full update of the line in the trivial case.
+			if (write(h->ofd, cbuf, clen) == -1) return BC_STATUS_IO_ERR;
 		}
-		else {
+		else bc_history_refresh(h);
+	}
+	else {
 
-			memmove(h->buf + h->pos + clen, h->buf + h->pos, h->len - h->pos);
-			memcpy(h->buf + h->pos, cbuf, clen);
+		memmove(h->buf.v + h->pos + clen, h->buf.v + h->pos, BC_HISTORY_BUF_LEN(h) - h->pos);
+		memcpy(h->buf.v + h->pos, cbuf, clen);
 
-			h->pos += clen;
-			h->len += clen;
-			h->buf[h->len] = '\0';
+		h->pos += clen;
+		h->buf.len += clen;
+		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
 
-			bc_history_refresh(h);
-		}
+		bc_history_refresh(h);
 	}
 
 	return BC_STATUS_SUCCESS;
@@ -669,7 +668,7 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
  */
 void bc_history_edit_left(BcHistory *h) {
 	if (h->pos > 0) {
-		h->pos -= bc_history_prevLen(h->buf, h->pos, NULL);
+		h->pos -= bc_history_prevLen(h->buf.v, h->pos, NULL);
 		bc_history_refresh(h);
 	}
 }
@@ -678,8 +677,8 @@ void bc_history_edit_left(BcHistory *h) {
  * Move cursor on the right.
 */
 void bc_history_edit_right(BcHistory *h) {
-	if (h->pos != h->len) {
-		h->pos += bc_history_nextLen(h->buf, h->len, h->pos, NULL);
+	if (h->pos != BC_HISTORY_BUF_LEN(h)) {
+		h->pos += bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
 		bc_history_refresh(h);
 	}
 }
@@ -689,13 +688,13 @@ void bc_history_edit_right(BcHistory *h) {
  */
 void bc_history_edit_wordEnd(BcHistory *h) {
 
-	if (h->len == 0 || h->pos >= h->len) return;
+	if (BC_HISTORY_BUF_LEN(h) == 0 || h->pos >= BC_HISTORY_BUF_LEN(h)) return;
 
-	if (h->buf[h->pos] == ' ') {
-		while (h->pos < h->len && h->buf[h->pos] == ' ') ++h->pos;
+	if (h->buf.v[h->pos] == ' ') {
+		while (h->pos < BC_HISTORY_BUF_LEN(h) && h->buf.v[h->pos] == ' ') ++h->pos;
 	}
 
-	while (h->pos < h->len && h->buf[h->pos] != ' ') ++h->pos;
+	while (h->pos < BC_HISTORY_BUF_LEN(h) && h->buf.v[h->pos] != ' ') ++h->pos;
 
 	bc_history_refresh(h);
 }
@@ -705,14 +704,14 @@ void bc_history_edit_wordEnd(BcHistory *h) {
  */
 void bc_history_edit_wordStart(BcHistory *h) {
 
-	if (h->len == 0) return;
-	if (h->buf[h->pos-1] == ' ') --h->pos;
+	if (BC_HISTORY_BUF_LEN(h) == 0) return;
+	if (h->pos != 0 && h->buf.v[h->pos - 1] == ' ') --h->pos;
 
-	if (h->buf[h->pos] == ' ') {
-		while (h->pos > 0 && h->buf[h->pos] == ' ') --h->pos;
+	if (h->buf.v[h->pos] == ' ') {
+		while (h->pos < h->buf.len && h->buf.v[h->pos] == ' ') --h->pos;
 	}
 
-	while (h->pos > 0 && h->buf[h->pos-1] != ' ') --h->pos;
+	while (h->pos < h->buf.len && h->buf.v[h->pos - 1] != ' ') --h->pos;
 
 	bc_history_refresh(h);
 }
@@ -731,8 +730,8 @@ void bc_history_edit_home(BcHistory *h) {
  * Move cursor to the end of the line.
  */
 void bc_history_edit_end(BcHistory *h) {
-	if (h->pos != h->len) {
-		h->pos = h->len;
+	if (h->pos != BC_HISTORY_BUF_LEN(h)) {
+		h->pos = BC_HISTORY_BUF_LEN(h);
 		bc_history_refresh(h);
 	}
 }
@@ -746,7 +745,7 @@ void bc_history_edit_next(BcHistory *h, int dir) {
 	if (h->history.len > 1) {
 
 		size_t idx = h->history.len - 1 - h->idx;
-		char* dup = strdup(h->buf);
+		char* dup = bc_vm_strdup(h->buf.v);
 
 		// Update the current history entry before
 		// overwriting it with the next one.
@@ -767,10 +766,10 @@ void bc_history_edit_next(BcHistory *h, int dir) {
 		// Recalculate.
 		idx = h->history.len - 1 - h->idx;
 
-		strncpy(h->buf, *((char**) bc_vec_item(&h->history, idx)), BC_HISTORY_MAX_LINE);
+		char* str = *((char**) bc_vec_item(&h->history, idx));
+		bc_vec_string(&h->buf, strlen(str), str);
 
-		h->buf[BC_HISTORY_MAX_LINE - 1] = '\0';
-		h->len = h->pos = strlen(h->buf);
+		h->pos = BC_HISTORY_BUF_LEN(h);
 
 		bc_history_refresh(h);
 	}
@@ -782,14 +781,14 @@ void bc_history_edit_next(BcHistory *h, int dir) {
  */
 void bc_history_edit_delete(BcHistory *h) {
 
-	if (h->len > 0 && h->pos < h->len) {
+	if (BC_HISTORY_BUF_LEN(h) > 0 && h->pos < BC_HISTORY_BUF_LEN(h)) {
 
-		int chlen = bc_history_nextLen(h->buf, h->len, h->pos, NULL);
+		size_t chlen = bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
 
-		memmove(h->buf + h->pos, h->buf + h->pos + chlen, h->len - h->pos - chlen);
+		memmove(h->buf.v + h->pos, h->buf.v + h->pos + chlen, BC_HISTORY_BUF_LEN(h) - h->pos - chlen);
 
-		h->len -= chlen;
-		h->buf[h->len] = '\0';
+		h->buf.len -= chlen;
+		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
 
 		bc_history_refresh(h);
 	}
@@ -797,15 +796,15 @@ void bc_history_edit_delete(BcHistory *h) {
 
 void bc_history_edit_backspace(BcHistory *h) {
 
-	if (h->pos > 0 && h->len > 0) {
+	if (h->pos > 0 && BC_HISTORY_BUF_LEN(h) > 0) {
 
-		int chlen = bc_history_prevLen(h->buf, h->pos, NULL);
+		int chlen = bc_history_prevLen(h->buf.v, h->pos, NULL);
 
-		memmove(h->buf + h->pos - chlen, h->buf + h->pos, h->len - h->pos);
+		memmove(h->buf.v + h->pos - chlen, h->buf.v + h->pos, BC_HISTORY_BUF_LEN(h) - h->pos);
 
 		h->pos -= chlen;
-		h->len -= chlen;
-		h->buf[h->len] = '\0';
+		h->buf.len -= chlen;
+		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
 
 		bc_history_refresh(h);
 	}
@@ -819,12 +818,12 @@ void bc_history_edit_deletePrevWord(BcHistory *h) {
 
 	size_t diff, old_pos = h->pos;
 
-	while (h->pos > 0 && h->buf[h->pos - 1] == ' ') --h->pos;
-	while (h->pos > 0 && h->buf[h->pos - 1] != ' ') --h->pos;
+	while (h->pos > 0 && h->buf.v[h->pos - 1] == ' ') --h->pos;
+	while (h->pos > 0 && h->buf.v[h->pos - 1] != ' ') --h->pos;
 
 	diff = old_pos - h->pos;
-	memmove(h->buf + h->pos, h->buf + old_pos, h->len - old_pos + 1);
-	h->len -= diff;
+	memmove(h->buf.v + h->pos, h->buf.v + old_pos, BC_HISTORY_BUF_LEN(h) - old_pos + 1);
+	h->buf.len -= diff;
 
 	bc_history_refresh(h);
 }
@@ -834,14 +833,16 @@ void bc_history_edit_deletePrevWord(BcHistory *h) {
  */
 void bc_history_deleteNextWord(BcHistory *h) {
 
-	size_t next_word_end = h->pos;
+	size_t next_end = h->pos;
 
-	while (next_word_end < h->len && h->buf[next_word_end] == ' ') ++next_word_end;
-	while (next_word_end < h->len && h->buf[next_word_end] != ' ') ++next_word_end;
+	while (next_end < BC_HISTORY_BUF_LEN(h) && h->buf.v[next_end] == ' ')
+		++next_end;
+	while (next_end < BC_HISTORY_BUF_LEN(h) && h->buf.v[next_end] != ' ')
+		++next_end;
 
-	memmove(h->buf + h->pos, h->buf + next_word_end, h->len - next_word_end);
+	memmove(h->buf.v + h->pos, h->buf.v + next_end, BC_HISTORY_BUF_LEN(h) - next_end);
 
-	h->len -= next_word_end - h->pos;
+	h->buf.len -= next_end - h->pos;
 
 	bc_history_refresh(h);
 }
@@ -990,21 +991,19 @@ static void bc_history_escape(BcHistory *h) {
  *
  * The function returns the length of the current buffer.
  */
-static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
+static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	BcStatus s;
 
 	// Populate the history state.
-	h->buf = buf;
 	h->prompt = prompt;
 	h->plen = strlen(prompt);
 	h->oldcolpos = h->pos = 0;
-	h->len = 0;
 	h->cols = bc_history_columns(h);
 	h->idx = 0;
 
 	// Buffer starts empty.
-	h->buf[0] = '\0';
+	bc_vec_string(&h->buf, 0, "");
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
@@ -1052,7 +1051,7 @@ static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
 			// line is empty, act as end-of-file.
 			case BC_ACTION_CTRL_D:
 			{
-				if (h->len > 0) {
+				if (BC_HISTORY_BUF_LEN(h) > 0) {
 					bc_history_edit_delete(h);
 				}
 				else {
@@ -1069,17 +1068,17 @@ static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
 				int pcl, ncl;
 				char auxb[5];
 
-				pcl = bc_history_prevLen(h->buf, h->pos, NULL);
-				ncl = bc_history_nextLen(h->buf, h->len, h->pos, NULL);
+				pcl = bc_history_prevLen(h->buf.v, h->pos, NULL);
+				ncl = bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
 
 				// To perform a swap we need:
 				// * nonzero char length to the left
 				// * not at the end of the line
-				if(pcl != 0 && h->pos != h->len && pcl < 5 && ncl < 5) {
+				if(pcl != 0 && h->pos != BC_HISTORY_BUF_LEN(h) && pcl < 5 && ncl < 5) {
 
-					memcpy(auxb, h->buf + h->pos - pcl, pcl);
-					memcpy(h->buf + h->pos - pcl, h->buf + h->pos, ncl);
-					memcpy(h->buf + h->pos - pcl + ncl, auxb, pcl);
+					memcpy(auxb, h->buf.v + h->pos - pcl, pcl);
+					memcpy(h->buf.v + h->pos - pcl, h->buf.v + h->pos, ncl);
+					memcpy(h->buf.v + h->pos - pcl + ncl, auxb, pcl);
 
 					h->pos += -pcl + ncl;
 
@@ -1122,8 +1121,8 @@ static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
 			// Delete the whole line.
 			case BC_ACTION_CTRL_U:
 			{
-				buf[0] = '\0';
-				h->pos = h->len = 0;
+				bc_vec_string(&h->buf, 0, "");
+				h->pos = 0;
 
 				bc_history_refresh(h);
 
@@ -1133,8 +1132,8 @@ static BcStatus bc_history_edit(BcHistory *h, char *buf, const char *prompt) {
 			// Delete from current to end of line.
 			case BC_ACTION_CTRL_K:
 			{
-				buf[h->pos] = '\0';
-				h->len = h->pos;
+				bc_vec_npop(&h->buf, h->buf.len - h->pos);
+				bc_vec_pushByte(&h->buf, '\0');
 
 				bc_history_refresh(h);
 
@@ -1233,14 +1232,14 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
  * This function calls the line editing function bc_history_edit()
  * using the STDIN file descriptor set in raw mode.
  */
-static BcStatus bc_history_raw(BcHistory *h, char *buf, const char *prompt) {
+static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 
 	BcStatus s;
 
 	s = bc_history_enableRaw(h);
 	if (s) return s;
 
-	s = bc_history_edit(h, buf, prompt);
+	s = bc_history_edit(h, prompt);
 	bc_history_disableRaw(h);
 	bc_vm_puts("\n", stderr);
 
@@ -1250,12 +1249,11 @@ static BcStatus bc_history_raw(BcHistory *h, char *buf, const char *prompt) {
 char* bc_history_line(BcHistory *h, const char *prompt) {
 
 	BcStatus s;
-	char buf[BC_HISTORY_MAX_LINE + 1];
 
-	s = bc_history_raw(h, buf, prompt);
+	s = bc_history_raw(h, prompt);
 	if (s) bc_vm_exit(s);
 
-	return bc_vm_strdup(buf);
+	return bc_vm_strdup(h->buf.v);
 }
 
 /* ================================ History ================================= */
