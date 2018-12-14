@@ -1313,11 +1313,10 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next) {
 		bc_vec_pop(&p->ops);
 	}
 
-	s = BC_STATUS_PARSE_BAD_EXP;
-	if (prev == BC_INST_BOOL_NOT || nexprs != 1) return s;
+	if (prev == BC_INST_BOOL_NOT || nexprs != 1) return BC_STATUS_PARSE_BAD_EXP;
 
-	for (i = 0; s && i < next.len; ++i) s *= t != next.tokens[i];
-	if (s) return s;
+	for (i = 0; i < next.len && t != next.tokens[i]; ++i);
+	if (i == next.len && t != BC_LEX_KEY_ELSE) return BC_STATUS_PARSE_BAD_EXP;
 
 	if (!(flags & BC_PARSE_REL) && nrelops) {
 		s = bc_vm_posixError(BC_STATUS_POSIX_REL_POS, p->l.f, p->l.line, NULL);

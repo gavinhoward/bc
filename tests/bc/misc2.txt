@@ -1,31 +1,31 @@
 define x() {
-"x"
-return ( 1 )
+	"x"
+	return (1)
 }
 define y() {
-"y"
-return (2)
+	"y"
+	return (2)
 }
 define z() {
-"z"
-return (3)
+	"z"
+	return (3)
 }
 
-if ( x() == y() ) {1}
+if (x() == y()) { 1 }
 1
-if ( x() <= y() ) {2}
-if ( y() >= x() ) {3}
-if ( x() != y() ) {4}
-if ( x() < y() ) {5}
-if ( y() > x() ) {6}
+if (x() <= y()) { 2 }
+if (y() >= x()) { 3 }
+if (x() != y()) { 4 }
+if (x() < y()) { 5 }
+if (y() > x()) { 6 }
 
-if ( x() == z() ) {11}
+if (x() == z()) { 11 }
 11
-if ( x() <= z() ) {12}
-if ( z() >= x() ) {13}
-if ( x() != z() ) {14}
-if ( x() < z() ) {15}
-if ( z() > x() ) {16}
+if (x() <= z()) { 12 }
+if (z() >= x()) { 13 }
+if (x() != z()) { 14 }
+if (x() < z()) { 15 }
+if (z() > x()) { 16 }
 
 x = -10
 while (x <= 0) {
@@ -43,3 +43,8 @@ u()
 
 if (x == -4) x
 else x - 4
+
+x = 1
+
+if (x == 1) 1 else 2
+if (x == 0) 1 else 2

@@ -87,19 +87,16 @@ define l(x){
 	return(r/1)
 }
 define s(x){
-	auto b,s,r,n,a,q,i
+	auto b,s,r,a,q,i
+	if(x<0)return(-s(-x))
 	b=ibase
 	ibase=A
 	s=scale
 	scale=1.1*s+2
 	a=a(1)
-	if(x<0){
-		n=1
-		x=-x
-	}
 	scale=0
 	q=(x/a+2)/4
-	x=x-4*q*a
+	x-=4*q*a
 	if(q%2)x=-x
 	scale=s+2
 	r=a=x
@@ -110,7 +107,6 @@ define s(x){
 	}
 	scale=s
 	ibase=b
-	if(n)return(-r/1)
 	return(r/1)
 }
 define c(x){
@@ -168,7 +164,7 @@ define j(n,x){
 	n/=1
 	if(n<0){
 		n=-n
-		if(n%2==1)o=1
+		o=n%2
 	}
 	a=1
 	for(i=2;i<=n;++i)a*=i
@@ -176,7 +172,7 @@ define j(n,x){
 	a=(x^n)/2^n/a
 	r=v=1
 	f=-x*x/4
-	scale=scale+length(a)-scale(a)
+	scale+=length(a)-scale(a)
 	for(i=1;v;++i){
 		v=v*f/i/(n+i)
 		r+=v
