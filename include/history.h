@@ -142,7 +142,7 @@ typedef struct BcHistory {
 	int ofd;
 
 	/// Edited line buffer.
-	char *buf;
+	BcVec buf;
 
 	/// Prompt to display.
 	const char *prompt;
@@ -155,9 +155,6 @@ typedef struct BcHistory {
 
 	/// Previous refresh cursor column position.
 	size_t oldcolpos;
-
-	/// Current edited line length.
-	size_t len;
 
 	/// Number of columns in terminal.
 	size_t cols;

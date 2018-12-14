@@ -627,9 +627,9 @@ static void bc_history_refresh(BcHistory *h) {
  */
 BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, int clen) {
 
-	if (h->len + clen <= BC_HISTORY_MAX_LINE) {
+	if (h->buf.len - 1 + clen <= BC_HISTORY_MAX_LINE) {
 
-		if (h->len == h->pos) {
+		if (h->buf.len - 1 == h->pos) {
 
 			size_t colpos;
 
@@ -1289,16 +1289,22 @@ bool bc_history_add(BcHistory *h, const char *line) {
 }
 
 void bc_history_init(BcHistory *h) {
+
 	h->rawMode = false;
 	h->ifd = STDIN_FILENO;
 	h->ofd = STDERR_FILENO;
 	h->badTerm = bc_history_isBadTerm();
+
+	bc_vec_init(&h->buf, sizeof(char), NULL);
 	bc_vec_init(&h->history, sizeof(char*), bc_string_free);
 }
 
 void bc_history_free(BcHistory *h) {
+
 	bc_history_disableRaw(h);
+
 #ifndef NDEBUG
+	bc_vec_free(&h->buf);
 	bc_vec_free(&h->history);
 #endif // NDEBUG
 }
