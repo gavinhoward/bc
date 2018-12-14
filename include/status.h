@@ -90,7 +90,6 @@ typedef enum BcStatus {
 	BC_STATUS_INVALID_OPTION,
 
 	BC_STATUS_QUIT,
-	BC_STATUS_LIMITS,
 
 } BcStatus;
 
