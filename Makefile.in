@@ -99,7 +99,7 @@ $(GEN_EXEC):
 	$(HOSTCC) $(CFLAGS) -o $(GEN_EXEC) $(GEN_C)
 
 $(BC_LIB_C): $(GEN_EXEC) $(BC_LIB)
-	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED_NAME)
+	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED_NAME) 1
 
 $(BC_HELP_C): $(GEN_EXEC) $(BC_HELP)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help "" $(BC_ENABLED_NAME)

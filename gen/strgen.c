@@ -52,12 +52,12 @@ int main(int argc, char *argv[]) {
   FILE *in, *out;
   char *label, *define, *name;
   int c, count, err, slashes;
-  bool has_label, has_define;
+  bool has_label, has_define, remove_tabs;
 
   err = 0;
 
   if (argc < 4) {
-    printf("usage: gen input output name [label [define]]\n");
+    printf("usage: gen input output name [label [define [remove_tabs]]]\n");
     return INVALID_PARAMS;
   }
 
@@ -68,6 +68,8 @@ int main(int argc, char *argv[]) {
 
   has_define = argc > 5 && strcmp("", argv[5]);
   define = has_define ? argv[5] : "";
+
+  remove_tabs = argc > 6;
 
   in = fopen(argv[1], "r");
 
@@ -120,29 +122,32 @@ int main(int argc, char *argv[]) {
 
     int val;
 
-    if (!count) {
-      if (fprintf(out, "  ") < 0) {
+    if (!remove_tabs || c != '\t') {
+
+      if (!count) {
+        if (fprintf(out, "  ") < 0) {
+          err = IO_ERR;
+          goto error;
+        }
+      }
+
+      val = fprintf(out, "%d,", c);
+
+      if (val < 0) {
         err = IO_ERR;
         goto error;
       }
-    }
 
-    val = fprintf(out, "%d,", c);
+      count += val;
 
-    if (val < 0) {
-      err = IO_ERR;
-      goto error;
-    }
+      if (count > MAX_WIDTH) {
 
-    count += val;
+        count = 0;
 
-    if (count > MAX_WIDTH) {
-
-      count = 0;
-
-      if (fputc('\n', out) == EOF) {
-        err = IO_ERR;
-        goto error;
+        if (fputc('\n', out) == EOF) {
+          err = IO_ERR;
+          goto error;
+        }
       }
     }
 
