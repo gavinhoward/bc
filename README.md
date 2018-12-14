@@ -30,6 +30,13 @@ Other projects based on this bc are:
 In order to use POSIX-compatible Makefiles, this `bc` uses a POSIX shell script
 as a configure step.
 
+To get all of the options, including any useful environment variables, use the
+following command:
+
+```
+./configure.sh -h
+```
+
 To build both the `bc` and `dc`, use the following commands:
 
 ```
