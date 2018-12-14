@@ -103,9 +103,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 		char *buf = bc_history_line(&vm->history, prompt);
 
-		bc_history_add(&vm->history, buf);
 		bc_vec_string(vec, strlen(buf), buf);
-		free(buf);
 	}
 	else {
 		s = bc_read_chars(vec, prompt);

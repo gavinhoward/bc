@@ -997,7 +997,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
-	bc_history_add(h, "");
+	bc_history_add(h, strdup(""));
 
 	if (write(h->ofd, prompt, h->plen) == -1) return BC_STATUS_SUCCESS;
 
@@ -1239,11 +1239,15 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 char* bc_history_line(BcHistory *h, const char *prompt) {
 
 	BcStatus s;
+	char* line;
 
 	s = bc_history_raw(h, prompt);
 	if (s) bc_vm_exit(s);
 
-	return bc_vm_strdup(h->buf.v);
+	line = bc_vm_strdup(h->buf.v);
+	bc_history_add(h, line);
+
+	return line;
 }
 
 /* ================================ History ================================= */
@@ -1259,19 +1263,13 @@ char* bc_history_line(BcHistory *h, const char *prompt) {
  */
 void bc_history_add(BcHistory *h, const char *line) {
 
-	char *linecopy;
-
 	// Don't add duplicated lines.
 	if (h->history.len && !strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line))
 		return;
 
-	// Add an heap allocated copy of the line in the history.
-	// If we reached the max length, remove the older line.
-	linecopy = bc_vm_strdup(line);
-
 	if (h->history.len == BC_HISTORY_MAX_LEN) bc_vec_popAt(&h->history, 0);
 
-	bc_vec_push(&h->history, &linecopy);
+	bc_vec_push(&h->history, &line);
 }
 
 void bc_history_init(BcHistory *h) {
