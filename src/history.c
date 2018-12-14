@@ -609,6 +609,7 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 	if (h->pos == BC_HISTORY_BUF_LEN(h)) {
 
 		size_t colpos;
+		size_t len;
 
 		memcpy(bc_vec_item(&h->buf, h->pos), cbuf, clen);
 
@@ -616,8 +617,9 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 		h->buf.len += clen;
 		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
 
+		len = BC_HISTORY_BUF_LEN(h);
 		colpos = !bc_history_promptColLen(h->prompt, h->plen);
-		colpos += bc_history_colPos(h->buf.v, BC_HISTORY_BUF_LEN(h), BC_HISTORY_BUF_LEN(h));
+		colpos += bc_history_colPos(h->buf.v, len, len);
 
 		if (colpos < h->cols) {
 			// Avoid a full update of the line in the trivial case.
@@ -627,7 +629,9 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 	}
 	else {
 
-		memmove(h->buf.v + h->pos + clen, h->buf.v + h->pos, BC_HISTORY_BUF_LEN(h) - h->pos);
+		size_t amt = BC_HISTORY_BUF_LEN(h) - h->pos;
+
+		memmove(h->buf.v + h->pos + clen, h->buf.v + h->pos, amt);
 		memcpy(h->buf.v + h->pos, cbuf, clen);
 
 		h->pos += clen;
@@ -644,20 +648,22 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
  * Move cursor to the left.
  */
 void bc_history_edit_left(BcHistory *h) {
-	if (h->pos > 0) {
-		h->pos -= bc_history_prevLen(h->buf.v, h->pos, NULL);
-		bc_history_refresh(h);
-	}
+
+	if (h->pos <= 0) return;
+
+	h->pos -= bc_history_prevLen(h->buf.v, h->pos, NULL);
+	bc_history_refresh(h);
 }
 
 /**
  * Move cursor on the right.
 */
 void bc_history_edit_right(BcHistory *h) {
-	if (h->pos != BC_HISTORY_BUF_LEN(h)) {
-		h->pos += bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
-		bc_history_refresh(h);
-	}
+
+	if (h->pos == BC_HISTORY_BUF_LEN(h)) return;
+
+	h->pos += bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
+	bc_history_refresh(h);
 }
 
 /**
@@ -665,13 +671,15 @@ void bc_history_edit_right(BcHistory *h) {
  */
 void bc_history_edit_wordEnd(BcHistory *h) {
 
-	if (BC_HISTORY_BUF_LEN(h) == 0 || h->pos >= BC_HISTORY_BUF_LEN(h)) return;
+	size_t len = BC_HISTORY_BUF_LEN(h);
+
+	if (len == 0 || h->pos >= len) return;
 
 	if (h->buf.v[h->pos] == ' ') {
-		while (h->pos < BC_HISTORY_BUF_LEN(h) && h->buf.v[h->pos] == ' ') ++h->pos;
+		while (h->pos < len && h->buf.v[h->pos] == ' ') ++h->pos;
 	}
 
-	while (h->pos < BC_HISTORY_BUF_LEN(h) && h->buf.v[h->pos] != ' ') ++h->pos;
+	while (h->pos < len && h->buf.v[h->pos] != ' ') ++h->pos;
 
 	bc_history_refresh(h);
 }
@@ -681,14 +689,17 @@ void bc_history_edit_wordEnd(BcHistory *h) {
  */
 void bc_history_edit_wordStart(BcHistory *h) {
 
-	if (BC_HISTORY_BUF_LEN(h) == 0) return;
+	size_t len = BC_HISTORY_BUF_LEN(h);
+
+	if (len == 0) return;
+
 	if (h->pos != 0 && h->buf.v[h->pos - 1] == ' ') --h->pos;
 
 	if (h->buf.v[h->pos] == ' ') {
-		while (h->pos < h->buf.len && h->buf.v[h->pos] == ' ') --h->pos;
+		while (h->pos < len && h->buf.v[h->pos] == ' ') --h->pos;
 	}
 
-	while (h->pos < h->buf.len && h->buf.v[h->pos - 1] != ' ') --h->pos;
+	while (h->pos < len && h->buf.v[h->pos - 1] != ' ') --h->pos;
 
 	bc_history_refresh(h);
 }
@@ -697,20 +708,22 @@ void bc_history_edit_wordStart(BcHistory *h) {
  * Move cursor to the start of the line.
  */
 void bc_history_edit_home(BcHistory *h) {
-	if (h->pos != 0) {
-		h->pos = 0;
-		bc_history_refresh(h);
-	}
+
+	if (h->pos == 0) return;
+
+	h->pos = 0;
+	bc_history_refresh(h);
 }
 
 /**
  * Move cursor to the end of the line.
  */
 void bc_history_edit_end(BcHistory *h) {
-	if (h->pos != BC_HISTORY_BUF_LEN(h)) {
-		h->pos = BC_HISTORY_BUF_LEN(h);
-		bc_history_refresh(h);
-	}
+
+	if (h->pos == BC_HISTORY_BUF_LEN(h)) return;
+
+	h->pos = BC_HISTORY_BUF_LEN(h);
+	bc_history_refresh(h);
 }
 
 /**
@@ -719,37 +732,36 @@ void bc_history_edit_end(BcHistory *h) {
  */
 void bc_history_edit_next(BcHistory *h, int dir) {
 
-	if (h->history.len > 1) {
+	if (h->history.len <= 1) return;
 
-		size_t idx = h->history.len - 1 - h->idx;
-		char* dup = bc_vm_strdup(h->buf.v);
+	size_t idx = h->history.len - 1 - h->idx;
+	char* dup = bc_vm_strdup(h->buf.v);
 
-		// Update the current history entry before
-		// overwriting it with the next one.
-		bc_vec_replaceAt(&h->history, idx, &dup);
+	// Update the current history entry before
+	// overwriting it with the next one.
+	bc_vec_replaceAt(&h->history, idx, &dup);
 
-		// Show the new entry.
-		h->idx += (dir == BC_HISTORY_PREV) ? 1 : -1;
+	// Show the new entry.
+	h->idx += (dir == BC_HISTORY_PREV) ? 1 : -1;
 
-		if (h->idx == SIZE_MAX) {
-			h->idx = 0;
-			return;
-		}
-		else if (h->idx >= h->history.len) {
-			h->idx = h->history.len - 1;
-			return;
-		}
-
-		// Recalculate.
-		idx = h->history.len - 1 - h->idx;
-
-		char* str = *((char**) bc_vec_item(&h->history, idx));
-		bc_vec_string(&h->buf, strlen(str), str);
-
-		h->pos = BC_HISTORY_BUF_LEN(h);
-
-		bc_history_refresh(h);
+	if (h->idx == SIZE_MAX) {
+		h->idx = 0;
+		return;
 	}
+	else if (h->idx >= h->history.len) {
+		h->idx = h->history.len - 1;
+		return;
+	}
+
+	// Recalculate.
+	idx = h->history.len - 1 - h->idx;
+
+	char* str = *((char**) bc_vec_item(&h->history, idx));
+	bc_vec_string(&h->buf, strlen(str), str);
+
+	h->pos = BC_HISTORY_BUF_LEN(h);
+
+	bc_history_refresh(h);
 }
 
 /**
@@ -758,33 +770,35 @@ void bc_history_edit_next(BcHistory *h, int dir) {
  */
 void bc_history_edit_delete(BcHistory *h) {
 
-	if (BC_HISTORY_BUF_LEN(h) > 0 && h->pos < BC_HISTORY_BUF_LEN(h)) {
+	size_t chlen, len = BC_HISTORY_BUF_LEN(h);
 
-		size_t chlen = bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
+	if (len == 0 || h->pos >= len) return;
 
-		memmove(h->buf.v + h->pos, h->buf.v + h->pos + chlen, BC_HISTORY_BUF_LEN(h) - h->pos - chlen);
+	chlen = bc_history_nextLen(h->buf.v, len, h->pos, NULL);
 
-		h->buf.len -= chlen;
-		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
+	memmove(h->buf.v + h->pos, h->buf.v + h->pos + chlen, len - h->pos - chlen);
 
-		bc_history_refresh(h);
-	}
+	h->buf.len -= chlen;
+	h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
+
+	bc_history_refresh(h);
 }
 
 void bc_history_edit_backspace(BcHistory *h) {
 
-	if (h->pos > 0 && BC_HISTORY_BUF_LEN(h) > 0) {
+	size_t chlen, len = BC_HISTORY_BUF_LEN(h);
 
-		int chlen = bc_history_prevLen(h->buf.v, h->pos, NULL);
+	if (h->pos == 0 || len == 0) return;
 
-		memmove(h->buf.v + h->pos - chlen, h->buf.v + h->pos, BC_HISTORY_BUF_LEN(h) - h->pos);
+	chlen = bc_history_prevLen(h->buf.v, h->pos, NULL);
 
-		h->pos -= chlen;
-		h->buf.len -= chlen;
-		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
+	memmove(h->buf.v + h->pos - chlen, h->buf.v + h->pos, len - h->pos);
 
-		bc_history_refresh(h);
-	}
+	h->pos -= chlen;
+	h->buf.len -= chlen;
+	h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
+
+	bc_history_refresh(h);
 }
 
 /**
@@ -810,18 +824,39 @@ void bc_history_edit_deletePrevWord(BcHistory *h) {
  */
 void bc_history_deleteNextWord(BcHistory *h) {
 
-	size_t next_end = h->pos;
+	size_t next_end = h->pos, len = BC_HISTORY_BUF_LEN(h);
 
-	while (next_end < BC_HISTORY_BUF_LEN(h) && h->buf.v[next_end] == ' ')
-		++next_end;
-	while (next_end < BC_HISTORY_BUF_LEN(h) && h->buf.v[next_end] != ' ')
-		++next_end;
+	while (next_end < len && h->buf.v[next_end] == ' ') ++next_end;
+	while (next_end < len && h->buf.v[next_end] != ' ') ++next_end;
 
-	memmove(h->buf.v + h->pos, h->buf.v + next_end, BC_HISTORY_BUF_LEN(h) - next_end);
+	memmove(h->buf.v + h->pos, h->buf.v + next_end, len - next_end);
 
 	h->buf.len -= next_end - h->pos;
 
 	bc_history_refresh(h);
+}
+
+void bc_history_swap(BcHistory *h) {
+
+	size_t pcl, ncl;
+	char auxb[5];
+
+	pcl = bc_history_prevLen(h->buf.v, h->pos, NULL);
+	ncl = bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
+
+	// To perform a swap we need:
+	// * nonzero char length to the left
+	// * not at the end of the line
+	if (pcl != 0 && h->pos != BC_HISTORY_BUF_LEN(h) && pcl < 5 && ncl < 5) {
+
+		memcpy(auxb, h->buf.v + h->pos - pcl, pcl);
+		memcpy(h->buf.v + h->pos - pcl, h->buf.v + h->pos, ncl);
+		memcpy(h->buf.v + h->pos - pcl + ncl, auxb, pcl);
+
+		h->pos += -pcl + ncl;
+
+		bc_history_refresh(h);
+	}
 }
 
 /**
@@ -1037,26 +1072,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Swaps current character with previous.
 			case BC_ACTION_CTRL_T:
 			{
-				int pcl, ncl;
-				char auxb[5];
-
-				pcl = bc_history_prevLen(h->buf.v, h->pos, NULL);
-				ncl = bc_history_nextLen(h->buf.v, BC_HISTORY_BUF_LEN(h), h->pos, NULL);
-
-				// To perform a swap we need:
-				// * nonzero char length to the left
-				// * not at the end of the line
-				if(pcl != 0 && h->pos != BC_HISTORY_BUF_LEN(h) && pcl < 5 && ncl < 5) {
-
-					memcpy(auxb, h->buf.v + h->pos - pcl, pcl);
-					memcpy(h->buf.v + h->pos - pcl, h->buf.v + h->pos, ncl);
-					memcpy(h->buf.v + h->pos - pcl + ncl, auxb, pcl);
-
-					h->pos += -pcl + ncl;
-
-					bc_history_refresh(h);
-				}
-
+				bc_history_swap(h);
 				break;
 			}
 
@@ -1129,7 +1145,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Clear screen.
 			case BC_ACTION_CTRL_L:
 			{
-				if (write(h->ofd, "\x1b[H\x1b[2J", 7) <= 0) s  =BC_STATUS_IO_ERR;
+				if (write(h->ofd, "\x1b[H\x1b[2J", 7) <= 0)
+					s = BC_STATUS_IO_ERR;
 				bc_history_refresh(h);
 				break;
 			}
@@ -1196,9 +1213,10 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 void bc_history_add(BcHistory *h, const char *line) {
 
+	char* str = *((char**) bc_vec_item_rev(&h->history, 0));
+
 	// Don't add duplicated lines.
-	if (h->history.len && !strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line))
-		return;
+	if (h->history.len && !strcmp(str, line)) return;
 
 	if (h->history.len == BC_HISTORY_MAX_LEN) bc_vec_popAt(&h->history, 0);
 
