@@ -491,13 +491,15 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		BcInstPtr *ip;
 		size_t *label;
 
-		bc_vec_pop(&p->flags);
+		do {
+			bc_vec_pop(&p->flags);
 
-		ip = bc_vec_top(&p->exits);
-		label = bc_vec_item(&p->func->labels, ip->idx);
-		*label = p->func->code.len;
+			ip = bc_vec_top(&p->exits);
+			label = bc_vec_item(&p->func->labels, ip->idx);
+			*label = p->func->code.len;
 
-		bc_vec_pop(&p->exits);
+			bc_vec_pop(&p->exits);
+		} while (BC_PARSE_ELSE(p));
 	}
 	else if (BC_PARSE_FUNC_INNER(p)) {
 		bc_parse_push(p, BC_INST_RET0);
@@ -896,7 +898,7 @@ BcStatus bc_parse_body(BcParse *p, bool brace) {
 	else {
 		assert(*flag_ptr);
 		s = bc_parse_stmt(p);
-		if (!s && !brace) s = bc_parse_endBody(p, false);
+		if (!s && !brace && !BC_PARSE_BODY(p)) s = bc_parse_endBody(p, false);
 	}
 
 	return s;
