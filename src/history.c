@@ -1236,18 +1236,27 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 	return s;
 }
 
-char* bc_history_line(BcHistory *h, const char *prompt) {
+BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 	BcStatus s;
 	char* line;
 
-	s = bc_history_raw(h, prompt);
-	if (s) bc_vm_exit(s);
+	if (vm->ttyin && !vm->history.badTerm) {
+
+		s = bc_history_raw(h, prompt);
+		if (s) return s;
+
+		bc_vec_string(vec, BC_HISTORY_BUF_LEN(h), h->buf.v);
+	}
+	else {
+		s = bc_read_chars(vec, prompt);
+		if (s) return s;
+	}
 
 	line = bc_vm_strdup(h->buf.v);
 	bc_history_add(h, line);
 
-	return line;
+	return s;
 }
 
 /* ================================ History ================================= */

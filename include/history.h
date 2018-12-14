@@ -178,7 +178,7 @@ typedef struct BcHistory {
 
 } BcHistory;
 
-char* bc_history_line(BcHistory *h, const char *prompt);
+BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt);
 void bc_history_add(BcHistory *h, const char *line);
 
 void bc_history_init(BcHistory *h);
