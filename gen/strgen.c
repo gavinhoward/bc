@@ -169,12 +169,8 @@ int main(int argc, char *argv[]) {
 	if (has_define && fprintf(out, bc_gen_endif, define) < 0) err = IO_ERR;
 
 error:
-
 	fclose(out);
-
 out_err:
-
 	fclose(in);
-
 	return err;
 }
