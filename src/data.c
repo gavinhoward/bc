@@ -108,11 +108,6 @@ const char *bc_err_msgs[] = {
 	"bad character",
 	"string end could not be found",
 	"comment end could not be found",
-	"end of file",
-#if DC_ENABLED
-	"extended register",
-#endif // DC_ENABLED
-
 	"bad token",
 	"bad expression",
 	"empty expression",
@@ -123,6 +118,10 @@ const char *bc_err_msgs[] = {
 	"no auto variable found",
 	"function parameter or auto var has the same name as another",
 	"block end could not be found",
+	"end of file",
+#if DC_ENABLED
+	"extended register",
+#endif // DC_ENABLED
 
 	"negative number",
 	"non integer number",
