@@ -1257,13 +1257,13 @@ char* bc_history_line(BcHistory *h, const char *prompt) {
  *
  * Using a circular buffer is smarter, but a bit more complex to handle.
  */
-bool bc_history_add(BcHistory *h, const char *line) {
+void bc_history_add(BcHistory *h, const char *line) {
 
 	char *linecopy;
 
 	// Don't add duplicated lines.
 	if (h->history.len && !strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line))
-		return false;
+		return;
 
 	// Add an heap allocated copy of the line in the history.
 	// If we reached the max length, remove the older line.
@@ -1272,8 +1272,6 @@ bool bc_history_add(BcHistory *h, const char *line) {
 	if (h->history.len == BC_HISTORY_MAX_LEN) bc_vec_popAt(&h->history, 0);
 
 	bc_vec_push(&h->history, &linecopy);
-
-	return true;
 }
 
 void bc_history_init(BcHistory *h) {
