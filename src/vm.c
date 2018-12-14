@@ -80,7 +80,7 @@ BcStatus bc_vm_error(BcStatus s, const char *file, size_t line) {
 
 	if (!s || s > BC_STATUS_EXEC_STACK) return s;
 
-	fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
+	fprintf(stderr, bc_err_fmt, bc_errs[(size_t) bc_err_ids[s]], bc_err_msgs[s]);
 	fprintf(stderr, "    %s", file);
 	fprintf(stderr, bc_err_line + 4 * !line, line);
 
@@ -98,7 +98,7 @@ BcStatus bc_vm_posixError(BcStatus s, const char *file,
 
 	if (!(p || w) || s < BC_STATUS_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
 
-	fprintf(stderr, fmt, bc_errs[bc_err_ids[s]], bc_err_msgs[s]);
+	fprintf(stderr, fmt, bc_errs[(size_t) bc_err_ids[s]], bc_err_msgs[s]);
 	if (msg) fprintf(stderr, "    %s\n", msg);
 	fprintf(stderr, "    %s", file);
 	fprintf(stderr, bc_err_line + 4 * !line, line);
