@@ -424,5 +424,3 @@ err="$?"
 if [ "$err" -ne 0 ]; then
 	usage "\nCC ($HOSTCC) is not compatible with gcc/clang options"
 fi
-
-set -e
