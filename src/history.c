@@ -1213,10 +1213,11 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 void bc_history_add(BcHistory *h, const char *line) {
 
-	char* str = *((char**) bc_vec_item_rev(&h->history, 0));
-
 	// Don't add duplicated lines.
-	if (h->history.len && !strcmp(str, line)) return;
+	if (h->history.len) {
+		char* str = *((char**) bc_vec_item_rev(&h->history, 0));
+		if (!strcmp(str, line)) return;
+	}
 
 	if (h->history.len == BC_HISTORY_MAX_LEN) bc_vec_popAt(&h->history, 0);
 
