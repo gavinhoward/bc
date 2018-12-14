@@ -195,23 +195,19 @@ static bool bc_history_comboChar(unsigned long cp) {
  * Get length of previous UTF8 character.
  */
 static size_t bc_history_prevCharLen(const char *buf, int pos) {
-
 	int end = pos;
-
-	for (pos -= 1; pos >= 0 && ((unsigned char)buf[pos] & 0xC0) == 0x80; --pos);
-
+	for (pos -= 1; pos >= 0 && (buf[pos] & 0xC0) == 0x80; --pos);
 	return end - pos;
 }
 
 /**
  * Convert UTF-8 to Unicode code point.
  */
-static size_t bc_history_bytesToCodePoint(const char *buf, size_t len,
-                                          unsigned int *cp)
+static size_t bc_history_codePoint(const char *s, size_t len, unsigned int *cp)
 {
 	if (len) {
 
-		unsigned char byte = buf[0];
+		unsigned char byte = s[0];
 
 		if ((byte & 0x80) == 0) {
 			*cp = byte;
@@ -220,27 +216,27 @@ static size_t bc_history_bytesToCodePoint(const char *buf, size_t len,
 		else if ((byte & 0xE0) == 0xC0) {
 
 			if (len >= 2) {
-				*cp = (((unsigned long)(buf[0] & 0x1F)) << 6) |
-					   ((unsigned long)(buf[1] & 0x3F));
+				*cp = (((unsigned long) (s[0] & 0x1F)) << 6) |
+					   ((unsigned long) (s[1] & 0x3F));
 				return 2;
 			}
 		}
 		else if ((byte & 0xF0) == 0xE0) {
 
 			if (len >= 3) {
-				*cp = (((unsigned long)(buf[0] & 0x0F)) << 12) |
-					  (((unsigned long)(buf[1] & 0x3F)) << 6) |
-					   ((unsigned long)(buf[2] & 0x3F));
+				*cp = (((unsigned long) (s[0] & 0x0F)) << 12) |
+					  (((unsigned long) (s[1] & 0x3F)) << 6) |
+					   ((unsigned long) (s[2] & 0x3F));
 				return 3;
 			}
 		}
 		else if ((byte & 0xF8) == 0xF0) {
 
 			if (len >= 4) {
-				*cp = (((unsigned long)(buf[0] & 0x07)) << 18) |
-					  (((unsigned long)(buf[1] & 0x3F)) << 12) |
-					  (((unsigned long)(buf[2] & 0x3F)) << 6) |
-					   ((unsigned long)(buf[3] & 0x3F));
+				*cp = (((unsigned long) (s[0] & 0x07)) << 18) |
+					  (((unsigned long) (s[1] & 0x3F)) << 12) |
+					  (((unsigned long) (s[2] & 0x3F)) << 6) |
+					   ((unsigned long) (s[3] & 0x3F));
 				return 4;
 			}
 		}
@@ -263,7 +259,7 @@ size_t bc_history_nextLen(const char *buf, size_t buf_len,
 {
 	unsigned int cp;
 	size_t beg = pos;
-	size_t len = bc_history_bytesToCodePoint(buf + pos, buf_len - pos, &cp);
+	size_t len = bc_history_codePoint(buf + pos, buf_len - pos, &cp);
 
 	if (bc_history_comboChar(cp)) {
 		// Currently unreachable?
@@ -276,7 +272,7 @@ size_t bc_history_nextLen(const char *buf, size_t buf_len,
 
 	while (pos < buf_len) {
 
-		len = bc_history_bytesToCodePoint(buf + pos, buf_len - pos, &cp);
+		len = bc_history_codePoint(buf + pos, buf_len - pos, &cp);
 
 		if (!bc_history_comboChar(cp)) return pos - beg;
 
@@ -299,7 +295,7 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 		size_t len = bc_history_prevCharLen(buf, pos);
 
 		pos -= len;
-		bc_history_bytesToCodePoint(buf + pos, len, &cp);
+		bc_history_codePoint(buf + pos, len, &cp);
 
 		if (!bc_history_comboChar(cp)) {
 			if (col_len != NULL) *col_len = bc_history_wchar(cp) ? 2 : 1;
@@ -349,7 +345,7 @@ size_t bc_history_readCode(int fd, char *buf, size_t buf_len, unsigned int *cp)
 		}
 	}
 
-	return bc_history_bytesToCodePoint(buf, buf_len, cp);
+	return bc_history_codePoint(buf, buf_len, cp);
 }
 
 /**
