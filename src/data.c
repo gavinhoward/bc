@@ -94,7 +94,7 @@ const uint8_t bc_err_ids[] = {
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 #endif // BC_ENABLED
-	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
+	BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 };
 
 const char *bc_err_msgs[] = {
@@ -168,7 +168,6 @@ const char *bc_err_msgs[] = {
 
 #ifndef NDEBUG
 	"quit request not honored",
-	"limits request not honored",
 #endif // NDEBUG
 
 };

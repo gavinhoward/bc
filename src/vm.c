@@ -214,27 +214,9 @@ BcStatus bc_vm_process(BcVm *vm, const char *text) {
 	if (s) return s;
 
 	while (vm->prs.l.t.t != BC_LEX_EOF) {
-
 		s = vm->prs.parse(&vm->prs);
-
-		if (s == BC_STATUS_LIMITS) {
-
-			bc_vm_printf("BC_BASE_MAX     = %lu\n", BC_MAX_OBASE);
-			bc_vm_printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM);
-			bc_vm_printf("BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE);
-			bc_vm_printf("BC_STRING_MAX   = %lu\n", BC_MAX_STRING);
-			bc_vm_printf("BC_NAME_MAX     = %lu\n", BC_MAX_NAME);
-			bc_vm_printf("BC_NUM_MAX      = %lu\n", BC_MAX_NUM);
-			bc_vm_printf("MAX Exponent    = %lu\n", BC_MAX_EXP);
-			bc_vm_printf("Number of vars  = %lu\n", BC_MAX_VARS);
-
-			s = BC_STATUS_SUCCESS;
-		}
-		else {
-			if (s == BC_STATUS_QUIT) return s;
-			s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line);
-			if (s) return s;
-		}
+		s = bc_vm_error(s, vm->prs.l.f, vm->prs.l.line);
+		if (s) return s;
 	}
 
 	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
