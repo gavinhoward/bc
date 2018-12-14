@@ -45,6 +45,11 @@
 #define BC_VERSION VERSION_STR2(VERSION)
 // ** Exclude end. **
 
+// Windows has deprecated isatty().
+#ifdef _WIN32
+#define isatty _isatty
+#endif // _WIN32
+
 #define DC_FLAG_X (1<<0)
 #define BC_FLAG_W (1<<1)
 #define BC_FLAG_V (1<<2)
@@ -168,7 +173,7 @@ extern const char bc_err_fmt[];
 extern const char bc_warn_fmt[];
 extern const char bc_err_line[];
 extern const char *bc_errs[];
-extern const uint8_t bc_err_ids[];
+extern const char bc_err_ids[];
 extern const char *bc_err_msgs[];
 // ** Exclude end. **
 
