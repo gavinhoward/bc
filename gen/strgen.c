@@ -30,8 +30,8 @@
 #include <libgen.h>
 
 static const char* const bc_gen_header =
-  "// Copyright 2018 Gavin D. Howard. Under a 0-clause BSD license.\n"
-  "// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
+	"// Copyright 2018 Gavin D. Howard. Under a 0-clause BSD license.\n"
+	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
 
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
 static const char* const bc_gen_ifdef = "#ifdef %s\n";
@@ -49,127 +49,132 @@ static const char* const bc_gen_name = "const char %s[] = {\n";
 
 int main(int argc, char *argv[]) {
 
-  FILE *in, *out;
-  char *label, *define, *name;
-  int c, count, err, slashes;
-  bool has_label, has_define;
+	FILE *in, *out;
+	char *label, *define, *name;
+	int c, count, err, slashes;
+	bool has_label, has_define, remove_tabs;
 
-  err = 0;
+	err = 0;
 
-  if (argc < 4) {
-    printf("usage: gen input output name [label [define]]\n");
-    return INVALID_PARAMS;
-  }
+	if (argc < 4) {
+		printf("usage: gen input output name [label [define [remove_tabs]]]\n");
+		return INVALID_PARAMS;
+	}
 
-  name = argv[3];
+	name = argv[3];
 
-  has_label = argc > 4 && strcmp("", argv[4]);
-  label = has_label ? argv[4] : "";
+	has_label = argc > 4 && strcmp("", argv[4]);
+	label = has_label ? argv[4] : "";
 
-  has_define = argc > 5 && strcmp("", argv[5]);
-  define = has_define ? argv[5] : "";
+	has_define = argc > 5 && strcmp("", argv[5]);
+	define = has_define ? argv[5] : "";
 
-  in = fopen(argv[1], "r");
+	remove_tabs = argc > 6;
 
-  if (!in) return INVALID_INPUT_FILE;
+	in = fopen(argv[1], "r");
 
-  out = fopen(argv[2], "w");
+	if (!in) return INVALID_INPUT_FILE;
 
-  if (!out) {
-    err = INVALID_OUTPUT_FILE;
-    goto out_err;
-  }
+	out = fopen(argv[2], "w");
 
-  if (fprintf(out, bc_gen_header, argv[1]) < 0) {
-    err = IO_ERR;
-    goto error;
-  }
+	if (!out) {
+		err = INVALID_OUTPUT_FILE;
+		goto out_err;
+	}
 
-  if (has_define && fprintf(out, bc_gen_ifdef, define) < 0) {
-    err = IO_ERR;
-    goto error;
-  }
+	if (fprintf(out, bc_gen_header, argv[1]) < 0) {
+		err = IO_ERR;
+		goto error;
+	}
 
-  if (has_label && fprintf(out, bc_gen_label, label, argv[1]) < 0) {
-    err = IO_ERR;
-    goto error;
-  }
+	if (has_define && fprintf(out, bc_gen_ifdef, define) < 0) {
+		err = IO_ERR;
+		goto error;
+	}
 
-  if (fprintf(out, bc_gen_name, name) < 0) {
-    err = IO_ERR;
-    goto error;
-  }
+	if (has_label && fprintf(out, bc_gen_label, label, argv[1]) < 0) {
+		err = IO_ERR;
+		goto error;
+	}
 
-  c = count = slashes = 0;
+	if (fprintf(out, bc_gen_name, name) < 0) {
+		err = IO_ERR;
+		goto error;
+	}
 
-  while (slashes < 2 && (c = fgetc(in)) >= 0) {
-    if (slashes == 1 && c == '/' && fgetc(in) == '\n') ++slashes;
-    if (!slashes && c == '/' && fgetc(in) == '*') ++slashes;
-  }
+	c = count = slashes = 0;
 
-  if (c < 0) {
-    err = INVALID_INPUT_FILE;
-    goto error;
-  }
+	while (slashes < 2 && (c = fgetc(in)) >= 0) {
+		if (slashes == 1 && c == '/' && fgetc(in) == '\n') ++slashes;
+		if (!slashes && c == '/' && fgetc(in) == '*') ++slashes;
+	}
 
-  c = fgetc(in);
+	if (c < 0) {
+		err = INVALID_INPUT_FILE;
+		goto error;
+	}
 
-  if (c == '\n') c = fgetc(in);
+	c = fgetc(in);
 
-  while (c >= 0) {
+	if (c == '\n') c = fgetc(in);
 
-    int val;
+	while (c >= 0) {
 
-    if (!count) {
-      if (fprintf(out, "  ") < 0) {
-        err = IO_ERR;
-        goto error;
-      }
-    }
+		int val;
 
-    val = fprintf(out, "%d,", c);
+		if (!remove_tabs || c != '\t') {
 
-    if (val < 0) {
-      err = IO_ERR;
-      goto error;
-    }
+			if (!count) {
+				if (fputc('\t', out) == EOF) {
+					err = IO_ERR;
+					goto error;
+				}
+			}
 
-    count += val;
+			val = fprintf(out, "%d,", c);
 
-    if (count > MAX_WIDTH) {
+			if (val < 0) {
+				err = IO_ERR;
+				goto error;
+			}
 
-      count = 0;
+			count += val;
 
-      if (fputc('\n', out) == EOF) {
-        err = IO_ERR;
-        goto error;
-      }
-    }
+			if (count > MAX_WIDTH) {
 
-    c = fgetc(in);
-  }
+				count = 0;
 
-  if (!count) {
-    if (fputc(' ', out) == EOF || fputc(' ', out) == EOF) {
-      err = IO_ERR;
-      goto error;
-    }
-  }
+				if (fputc('\n', out) == EOF) {
+					err = IO_ERR;
+					goto error;
+				}
+			}
+		}
 
-  if (fprintf(out, "0\n};\n") < 0) {
-    err = IO_ERR;
-    goto error;
-  }
+		c = fgetc(in);
+	}
 
-  if (has_define && fprintf(out, bc_gen_endif, define) < 0) err = IO_ERR;
+	if (!count) {
+		if (fputc(' ', out) == EOF || fputc(' ', out) == EOF) {
+			err = IO_ERR;
+			goto error;
+		}
+	}
+
+	if (fprintf(out, "0\n};\n") < 0) {
+		err = IO_ERR;
+		goto error;
+	}
+
+	if (has_define && fprintf(out, bc_gen_endif, define) < 0) err = IO_ERR;
 
 error:
 
-  fclose(out);
+	fclose(out);
 
 out_err:
 
-  fclose(in);
+	fclose(in);
 
-  return err;
+	return err;
 }
