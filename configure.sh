@@ -27,7 +27,7 @@ usage() {
 		val=0
 	fi
 
-	echo "usage: $0 [-b|-d|-c] [-hHS] [-g|-m|-r|-N|] [-k KARATSUBA_LEN]"
+	echo "usage: $0 [-b|-d|-c] [-hHS] [-g(-m|-r)|-N] [-k KARATSUBA_LEN]"
 	echo ""
 	echo "    -b"
 	echo "        Build bc only. It is an error if \"-d\" is specified too."
@@ -352,7 +352,7 @@ gcc="gcc"
 clang="clang"
 
 if [ "${CC#*$gcc}" = "$CC" -a "${CC#*$clang}" = "$CC" ]; then
-	usage "Only gcc and clang are supported"
+	usage "CC is not gcc or clang; only gcc and clang are supported"
 fi
 
 if [ "$HOSTCC" = "" ]; then
