@@ -180,7 +180,6 @@ typedef struct BcHistory {
 
 char* bc_history_line(BcHistory *h, const char *prompt);
 bool bc_history_add(BcHistory *h, const char *line);
-void bc_history_clearScreen(void);
 
 void bc_history_init(BcHistory *h);
 void bc_history_free(BcHistory *h);

@@ -509,16 +509,6 @@ failed:
 	return BC_HISTORY_DEF_COLS;
 }
 
-/**
- * Clear the screen. Used to handle ctrl+l.
- */
-void bc_history_clearScreen(void) {
-
-	int fd = isatty(STDOUT_FILENO) ? STDOUT_FILENO : STDERR_FILENO;
-
-	if (write(fd, "\x1b[H\x1b[2J", 7) <= 0) bc_vm_exit(BC_STATUS_IO_ERR);
-}
-
 
 /* =========================== Line editing ================================= */
 
@@ -1157,7 +1147,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Clear screen.
 			case BC_ACTION_CTRL_L:
 			{
-				bc_history_clearScreen();
+				if (write(h->ofd, "\x1b[H\x1b[2J", 7) <= 0) s  =BC_STATUS_IO_ERR;
 				bc_history_refresh(h);
 				break;
 			}
