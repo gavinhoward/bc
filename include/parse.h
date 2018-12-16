@@ -78,15 +78,7 @@
 #define BC_PARSE_IF_END(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
 
-#define BC_PARSE_CAN_EXEC(parse) \
-	(!(BC_PARSE_TOP_FLAG(parse) & (BC_PARSE_FLAG_FUNC_INNER |  \
-	                               BC_PARSE_FLAG_FUNC |        \
-	                               BC_PARSE_FLAG_BODY |        \
-	                               BC_PARSE_FLAG_LOOP |        \
-	                               BC_PARSE_FLAG_LOOP_INNER |  \
-	                               BC_PARSE_FLAG_IF |          \
-	                               BC_PARSE_FLAG_ELSE |        \
-	                               BC_PARSE_FLAG_IF_END)))
+#define BC_PARSE_CAN_EXEC(parse) (BC_PARSE_TOP_FLAG(parse) == 0)
 
 typedef struct BcOp {
 	char prec;
