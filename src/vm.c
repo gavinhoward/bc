@@ -342,9 +342,6 @@ BcStatus bc_vm_exec() {
 		while (!s && vm->prs.l.t.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
 
 		if (s) return s;
-		// TODO: Don't execute here. It's not necessary.
-		s = bc_program_exec(&vm->prog);
-		if (s) return s;
 	}
 #endif // BC_ENABLED
 
