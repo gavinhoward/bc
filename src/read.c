@@ -144,7 +144,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	(*buf)[size] = '\0';
 
 	if (bc_read_binary(*buf, size)) {
-		e = BC_ERROR_VM_IO_ERR;
+		e = BC_ERROR_VM_BIN_FILE;
 		goto read_err;
 	}
 
