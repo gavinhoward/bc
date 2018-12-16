@@ -246,11 +246,10 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	BcFunc *main_func;
 	BcInstPtr *ip;
 
-	vm->prog.file = file;
+	bc_lex_file(&vm->prs.l, file);
 	s = bc_read_file(file, &data);
 	if (s) return s;
 
-	bc_lex_file(&vm->prs.l, file);
 	s = bc_vm_process(vm, data, false);
 	if (s) goto err;
 
@@ -272,7 +271,6 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	size_t str = 0;
 	bool comment = false;
 
-	vm->prog.file = bc_program_stdin_name;
 	bc_lex_file(&vm->prs.l, bc_program_stdin_name);
 
 	bc_vec_init(&buffer, sizeof(char), NULL);

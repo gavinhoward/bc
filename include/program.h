@@ -60,8 +60,6 @@ typedef struct BcProgram {
 	BcVec strs;
 	BcVec consts;
 
-	const char *file;
-
 	BcNum last;
 	BcNum zero;
 	BcNum one;

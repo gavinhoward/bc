@@ -252,6 +252,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	}
 
 	file = vm->file;
+	bc_lex_file(&parse.l, bc_program_stdin_name);
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_init(&buf, sizeof(char), NULL);
 
@@ -262,7 +263,6 @@ BcStatus bc_program_read(BcProgram *p) {
 	}
 
 	vm->parse_init(&parse, p, BC_PROG_READ);
-	bc_lex_file(&parse.l, bc_program_stdin_name);
 
 	s = bc_parse_text(&parse, buf.v);
 	if (s) goto exec_err;
