@@ -258,7 +258,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
 	ip = bc_vec_item(&vm->prog.stack, 0);
 
-	if (main_func->code.len < ip->idx)
+	if (!BC_PARSE_CAN_EXEC(&vm->prs) || main_func->code.len < ip->idx)
 		s = bc_vm_err(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE);
 
 err:
