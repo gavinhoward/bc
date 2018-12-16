@@ -242,7 +242,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	BcVec buf;
 	BcInstPtr ip;
 	size_t i;
-	const char* file = vm->file;
+	const char* file;
 	BcFunc *f = bc_vec_item(&p->fns, BC_PROG_READ);
 
 	for (i = 0; i < p->stack.len; ++i) {
@@ -251,6 +251,7 @@ BcStatus bc_program_read(BcProgram *p) {
 			return bc_vm_err(BC_ERROR_EXEC_REC_READ);
 	}
 
+	file = vm->file;
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_init(&buf, sizeof(char), NULL);
 
