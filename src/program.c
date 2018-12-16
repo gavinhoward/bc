@@ -648,10 +648,6 @@ BcStatus bc_program_assign(BcProgram *p, char inst) {
 		return bc_vm_err(BC_ERROR_PARSE_ASSIGN);
 
 #if BC_ENABLED
-	// TODO: Remove this?
-	if (inst == BC_INST_ASSIGN_DIVIDE && !bc_num_cmp(r, &p->zero))
-		return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
-
 	if (assign) bc_num_copy(l, r);
 	else s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
 
