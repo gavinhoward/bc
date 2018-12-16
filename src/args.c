@@ -167,7 +167,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case '?':
 			default:
 			{
-				// We don't set invalid, so we won't print a message.
+				// We don't set err, so we won't print a message.
 				s = BC_STATUS_ERROR;
 				break;
 			}
