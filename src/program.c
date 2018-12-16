@@ -256,7 +256,10 @@ BcStatus bc_program_read(BcProgram *p) {
 	bc_vec_init(&buf, sizeof(char), NULL);
 
 	s = bc_read_line(&buf, "read> ");
-	if (s) goto io_err;
+	if (s) {
+		if (s == BC_STATUS_EOF) s = bc_vm_err(BC_ERROR_EXEC_BAD_READ_EXPR);
+		goto io_err;
+	}
 
 	vm->parse_init(&parse, p, BC_PROG_READ);
 	bc_lex_file(&parse.l, bc_program_stdin_name);
