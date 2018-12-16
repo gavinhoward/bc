@@ -81,9 +81,11 @@ void bc_vm_printError(BcError e, const char* const fmt,
 	vfprintf(stderr, bc_err_msgs[e], args);
 
 	if (vm->file) {
-		fprintf(stderr, "    %s", vm->file);
-		fprintf(stderr, bc_err_line + 4 * !line, line);
+		fprintf(stderr, "\n    %s", vm->file);
+		if (line) fprintf(stderr, bc_err_line, line);
 	}
+
+	fputs("\n\n", stderr);
 }
 
 BcStatus bc_vm_error(BcError e, size_t line, ...) {

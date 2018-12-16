@@ -60,7 +60,7 @@ const char* const bc_args_env_name = "BC_ENV_ARGS";
 
 const char* const bc_err_fmt = "\n%s error: ";
 const char* const bc_warn_fmt = "\n%s warning: ";
-const char* const bc_err_line = ":%zu\n\n";
+const char* const bc_err_line = ":%zu";
 
 const char *bc_errs[] = {
 	"VM",
