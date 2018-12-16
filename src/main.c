@@ -39,8 +39,8 @@ int main(int argc, char *argv[]) {
 
 	setlocale(LC_ALL, "");
 
-	vm = malloc(sizeof(BcVm));
-	if (!vm) return (int) BC_STATUS_ALLOC_ERR;
+	vm = calloc(1, sizeof(BcVm));
+	if (!vm) return (int) BC_ERROR_VM_ALLOC_ERR;
 
 #if !DC_ENABLED
 	s = bc_main(argc, argv);
