@@ -43,8 +43,8 @@ static const struct option bc_args_lopt[] = {
 	{ "mathlib", no_argument, NULL, 'l' },
 	{ "quiet", no_argument, NULL, 'q' },
 	{ "standard", no_argument, NULL, 's' },
-	{ "version", no_argument, NULL, 'v' },
 	{ "warn", no_argument, NULL, 'w' },
+	{ "version", no_argument, NULL, 'v' },
 	{ "extended-register", no_argument, NULL, 'x' },
 	{ 0, 0, 0, 0 },
 
@@ -75,7 +75,8 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i;
-	bool do_exit = false, invalid = false;
+	char err = 0;
+	bool do_exit = false;
 
 	i = optind = 0;
 
@@ -111,35 +112,35 @@ BcStatus bc_args(int argc, char *argv[]) {
 #if BC_ENABLED
 			case 'i':
 			{
-				invalid = !BC_IS_BC;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
-				invalid = !BC_IS_BC;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
-				invalid = !BC_IS_BC;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
-				invalid = !BC_IS_BC;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
-				invalid = !BC_IS_BC;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_W;
 				break;
 			}
@@ -156,7 +157,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 #if DC_ENABLED
 			case 'x':
 			{
-				invalid = BC_IS_BC;
+				if (BC_IS_BC) err = c;
 				vm->flags |= DC_FLAG_X;
 				break;
 			}
@@ -166,12 +167,21 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case '?':
 			default:
 			{
-				invalid = true;
+				// We don't set invalid, so we won't print a message.
+				s = BC_STATUS_ERROR;
 				break;
 			}
 		}
 
-		if (invalid && !s) s = bc_vm_err(BC_ERROR_VM_INVALID_OPTION);
+		if (err && !s) {
+
+			for (i = 0; bc_args_lopt[i].name; ++i) {
+				if (bc_args_lopt[i].val == (int) err) break;
+			}
+
+			s = bc_vm_error(BC_ERROR_VM_OPTION, 0, err, bc_args_lopt[i].name);
+		}
+
 		if (s) return s;
 	}
 

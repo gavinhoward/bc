@@ -103,7 +103,7 @@ const char* const bc_err_msgs[] = {
 	"file is not text:",
 	"path is a directory:",
 	// ** Exclude start. **
-	"Bad command-line option",
+	"Bad command-line option: '%c' (\"%s\")",
 	// ** Exclude end. **
 
 	"bad character",

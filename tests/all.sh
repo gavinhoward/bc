@@ -61,8 +61,12 @@ echo -e "\nRunning quit test...\n"
 
 if [ "$d" = "bc" ]; then
 	halt="quit"
+	opt="x"
+	lopt="extended-register"
 else
 	halt="q"
+	opt="l"
+	lopt="mathlib"
 fi
 
 echo "$halt" | "$exe" "$@"
@@ -92,17 +96,27 @@ err="$?"
 if [ "$d" = "bc" ]; then
 	echo "$halt" | "$exe" "$@" -i
 fi
+
 echo "$halt" | "$exe" "$@" -h > /dev/null
 echo "$halt" | "$exe" "$@" -v > /dev/null
 echo "$halt" | "$exe" "$@" -V > /dev/null
 
 set +e
 
-"$exe" "$@" -u -e "$exprs"
+"$exe" "$@" "-$opt" -e "$exprs"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
-	echo "$d did not return an error ($err) on invalid argument test"
+	echo "$d did not return an error ($err) on invalid option argument test"
+	echo "exiting..."
+	exit 1
+fi
+
+"$exe" "$@" "--$lopt" -e "$exprs"
+err="$?"
+
+if [ "$err" -eq 0 ]; then
+	echo "$d did not return an error ($err) on invalid long option argument test"
 	echo "exiting..."
 	exit 1
 fi
