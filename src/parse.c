@@ -77,19 +77,7 @@ void bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 }
 
 BcStatus bc_parse_text(BcParse *p, const char *text) {
-
-	BcStatus s;
-
 	p->func = bc_vec_item(&p->prog->fns, p->fidx);
-
-	if (!strcmp(text, "") && !BC_PARSE_CAN_EXEC(p)) {
-		p->l.t.t = BC_LEX_INVALID;
-		s = p->parse(p);
-		if (s) return s;
-		if (!BC_PARSE_CAN_EXEC(p))
-			return bc_vm_error(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE, p->l.line);
-	}
-
 	return bc_lex_text(&p->l, text);
 }
 
