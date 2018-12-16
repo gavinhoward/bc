@@ -1114,17 +1114,16 @@ BcStatus bc_parse_parse(BcParse *p) {
 
 	assert(p);
 
-	if (p->l.t.t == BC_LEX_EOF) {
-		BcError e = p->flags.len > 0 ? BC_ERROR_PARSE_NO_BLOCK_END :
-		                               BC_ERROR_PARSE_EOF;
-		s = bc_vm_error(e, p->l.line);
-	}
+	if (p->l.t.t == BC_LEX_EOF) s = bc_vm_error(BC_ERROR_PARSE_EOF, p->l.line);
 	else if (p->l.t.t == BC_LEX_KEY_DEFINE) {
 		if (!BC_PARSE_CAN_EXEC(p))
 			return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 		s = bc_parse_func(p);
 	}
 	else s = bc_parse_stmt(p);
+
+	if (!s && p->l.t.t == BC_LEX_EOF && p->flags.len > 1)
+		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, p->l.line);
 
 	if ((s && s != BC_STATUS_QUIT) || BC_SIGINT) s = bc_parse_reset(p, s);
 
