@@ -38,7 +38,8 @@ BcStatus dc_parse_register(BcParse *p) {
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
-	if (p->l.t.t != BC_LEX_NAME) return BC_STATUS_PARSE_BAD_TOKEN;
+	if (p->l.t.t != BC_LEX_NAME)
+		return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 
 	name = bc_vm_strdup(p->l.t.v.v);
 	bc_parse_pushName(p, name);
@@ -146,7 +147,8 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			if (t == BC_LEX_NEG) {
 				s = bc_lex_next(&p->l);
 				if (s) return s;
-				if (p->l.t.t != BC_LEX_NUMBER) return BC_STATUS_PARSE_BAD_TOKEN;
+				if (p->l.t.t != BC_LEX_NUMBER)
+					return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 			}
 
 			bc_parse_number(p, &prev, &p->nbraces);
@@ -159,7 +161,8 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 		case BC_LEX_KEY_READ:
 		{
-			if (flags & BC_PARSE_NOREAD) s = BC_STATUS_EXEC_REC_READ;
+			if (flags & BC_PARSE_NOREAD)
+				s = bc_vm_error(BC_ERROR_EXEC_REC_READ, p->l.line);
 			else bc_parse_push(p, BC_INST_READ);
 			get_token = true;
 			break;
@@ -193,7 +196,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 		default:
 		{
-			s = BC_STATUS_PARSE_BAD_TOKEN;
+			s = bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 			get_token = true;
 			break;
 		}
@@ -235,7 +238,7 @@ BcStatus dc_parse_parse(BcParse *p) {
 
 	assert(p);
 
-	if (p->l.t.t == BC_LEX_EOF) s = BC_STATUS_PARSE_EOF;
+	if (p->l.t.t == BC_LEX_EOF) s = bc_vm_error(BC_ERROR_PARSE_EOF, p->l.line);
 	else s = dc_parse_expr(p, 0);
 
 	if (s || BC_SIGINT) s = bc_parse_reset(p, s);

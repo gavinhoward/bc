@@ -395,8 +395,9 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 	if (h->rawMode) return BC_STATUS_SUCCESS;
 
-	if (!isatty(STDIN_FILENO)) return BC_STATUS_IO_ERR;
-	if (tcgetattr(h->ifd, &h->orig_termios) == -1) return BC_STATUS_IO_ERR;
+	if (!isatty(STDIN_FILENO)) return bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (tcgetattr(h->ifd, &h->orig_termios) == -1)
+		return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 	// Modify the original mode.
 	raw = h->orig_termios;
@@ -418,7 +419,9 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 	raw.c_cc[VTIME] = 0;
 
 	// Put terminal in raw mode after flushing.
-	if (tcsetattr(h->ifd, TCSAFLUSH, &raw) < 0) return BC_STATUS_IO_ERR;
+	if (tcsetattr(h->ifd, TCSAFLUSH, &raw) < 0)
+		return bc_vm_err(BC_ERROR_VM_IO_ERR);
+
 	h->rawMode = true;
 
 	return BC_STATUS_SUCCESS;
@@ -489,7 +492,7 @@ static int bc_history_columns(BcHistory *h) {
 			snprintf(seq, 32, "\x1b[%dD", cols - start);
 
 			if (write(h->ofd, seq, strlen(seq)) == -1)
-				bc_vm_exit(BC_STATUS_IO_ERR);
+				bc_vm_exit(BC_ERROR_VM_IO_ERR);
 		}
 
 		return cols;
@@ -590,7 +593,7 @@ static void bc_history_refresh(BcHistory *h) {
 	snprintf(seq, 64, "\r\x1b[%dC", colpos);
 	bc_vec_concat(&vec, seq);
 
-	if (write(h->ofd, vec.v, vec.len - 1) == -1) bc_vm_exit(BC_STATUS_IO_ERR);
+	if (write(h->ofd, vec.v, vec.len - 1) == -1) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 
 	bc_vec_free(&vec);
 }
@@ -619,7 +622,8 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 
 		if (colpos < h->cols) {
 			// Avoid a full update of the line in the trivial case.
-			if (write(h->ofd, cbuf, clen) == -1) return BC_STATUS_IO_ERR;
+			if (write(h->ofd, cbuf, clen) == -1)
+				return bc_vm_err(BC_ERROR_VM_IO_ERR);
 		}
 		else bc_history_refresh(h);
 	}
@@ -996,7 +1000,7 @@ static void bc_history_escape(BcHistory *h) {
  */
 static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 
 	// Populate the history state.
 	h->prompt = prompt;
@@ -1014,7 +1018,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	if (write(h->ofd, prompt, h->plen) == -1) return BC_STATUS_SUCCESS;
 
-	while (true) {
+	while (!s) {
 
 		unsigned int c;
 		char cbuf[32]; // large enough for any encoding?
@@ -1026,7 +1030,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 //		  nread = read(l.ifd,&c,1);
 //		} while((nread == -1) && (errno == EINTR));
 		nread = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c);
-		if (nread <= 0) return BC_STATUS_IO_ERR;
+		if (nread <= 0) return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 		switch(c) {
 
@@ -1059,7 +1063,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				}
 				else {
 					bc_vec_pop(&h->history);
-					return BC_STATUS_IO_ERR;
+					return bc_vm_err(BC_ERROR_VM_IO_ERR);
 				}
 
 				break;
@@ -1142,7 +1146,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			case BC_ACTION_CTRL_L:
 			{
 				if (write(h->ofd, "\x1b[H\x1b[2J", 7) <= 0)
-					s = BC_STATUS_IO_ERR;
+					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 				bc_history_refresh(h);
 				break;
 			}
@@ -1157,13 +1161,12 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			default:
 			{
 				s = bc_history_edit_insert(h, cbuf, nread);
-				if (s) return s;
 				break;
 			}
 		}
 	}
 
-	return BC_STATUS_SUCCESS;
+	return s;
 }
 
 /**

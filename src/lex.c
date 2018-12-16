@@ -50,7 +50,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 		if (c == 0 || buf[i + 1] == '\0') {
 			l->i = i;
-			return BC_STATUS_PARSE_NO_COMMENT_END;
+			return bc_vm_error(BC_ERROR_PARSE_BAD_COMMENT, l->line);
 		}
 
 		end = buf[i + 1] == '/';
@@ -94,7 +94,8 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	}
 
 	len = i + 1 * !last_pt - bslashes * 2;
-	if (len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
+
+	if (len > BC_MAX_NUM) return bc_vm_error(BC_ERROR_EXEC_NUM_LEN, l->line);
 
 	bc_vec_npop(&l->t.v, l->t.v.len);
 	bc_vec_expand(&l->t.v, len + 1);
@@ -131,7 +132,8 @@ BcStatus bc_lex_name(BcLex *l) {
 
 	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
 
-	if (i > BC_MAX_STRING) return BC_STATUS_EXEC_NAME_LEN;
+	if (i > BC_MAX_STRING) return bc_vm_error(BC_ERROR_EXEC_NAME_LEN, l->line);
+
 	bc_vec_string(&l->t.v, i, buf);
 
 	// Increment the index. We minus 1 because it has already been incremented.
@@ -155,7 +157,7 @@ void bc_lex_file(BcLex *l, const char *file) {
 	assert(l && file);
 	l->line = 1;
 	l->newline = false;
-	l->f = file;
+	vm->file = file;
 }
 
 BcStatus bc_lex_next(BcLex *l) {
@@ -165,7 +167,8 @@ BcStatus bc_lex_next(BcLex *l) {
 	assert(l);
 
 	l->t.last = l->t.t;
-	if (l->t.last == BC_LEX_EOF) return BC_STATUS_PARSE_EOF;
+
+	if (l->t.last == BC_LEX_EOF) return bc_vm_error(BC_ERROR_PARSE_EOF, l->line);
 
 	l->line += l->newline;
 	l->t.t = BC_LEX_EOF;

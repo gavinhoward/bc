@@ -184,7 +184,7 @@ typedef struct BcInstPtr {
 // ** Exclude start. **
 // ** Busybox exclude start. **
 void bc_func_init(BcFunc *f);
-BcStatus bc_func_insert(BcFunc *f, char *name, bool var);
+BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line);
 void bc_func_free(void *func);
 
 void bc_array_init(BcVec *a, bool nums);

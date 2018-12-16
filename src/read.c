@@ -82,7 +82,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 			}
 #endif // BC_ENABLE_SIGNALS
 
-			return BC_STATUS_IO_ERR;
+			return BC_STATUS_EOF;
 		}
 
 		c = (signed char) i;
@@ -105,14 +105,15 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 #endif // BC_ENABLE_HISTORY
 
 	if (s) return s;
-	if (bc_read_binary(vec->v, vec->len - 1)) return BC_STATUS_BIN_FILE;
+	if (bc_read_binary(vec->v, vec->len - 1))
+		return bc_vm_err(BC_ERROR_VM_BIN_FILE);
 
 	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_read_file(const char *path, char **buf) {
 
-	BcStatus s = BC_STATUS_IO_ERR;
+	BcError e = BC_ERROR_VM_IO_ERR;
 	FILE *f;
 	size_t size, read;
 	long res;
@@ -121,11 +122,11 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	assert(path);
 
 	f = fopen(path, "r");
-	if (!f) return BC_STATUS_EXEC_FILE_ERR;
+	if (!f) return bc_vm_err(BC_ERROR_EXEC_FILE_ERR);
 	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {
-		s = BC_STATUS_PATH_IS_DIR;
+		e = BC_ERROR_VM_PATH_IS_DIR;
 		goto malloc_err;
 	}
 
@@ -143,7 +144,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	(*buf)[size] = '\0';
 
 	if (bc_read_binary(*buf, size)) {
-		s = BC_STATUS_IO_ERR;
+		e = BC_ERROR_VM_IO_ERR;
 		goto read_err;
 	}
 
@@ -155,5 +156,5 @@ read_err:
 	free(*buf);
 malloc_err:
 	fclose(f);
-	return s;
+	return bc_vm_err(e);
 }

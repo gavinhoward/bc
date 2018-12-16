@@ -191,7 +191,7 @@ void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
 BcStatus bc_num_shift(BcNum *n, size_t places) {
 
 	if (places == 0 || n->len == 0) return BC_STATUS_SUCCESS;
-	if (places + n->len > BC_MAX_NUM) return BC_STATUS_EXEC_NUM_LEN;
+	if (places + n->len > BC_MAX_NUM) return bc_vm_err(BC_ERROR_EXEC_NUM_LEN);
 
 	if (n->rdx >= places) n->rdx -= places;
 	else {
@@ -500,7 +500,7 @@ BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BcNum cp;
 	bool zero = true;
 
-	if (b->len == 0) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+	if (b->len == 0) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	else if (a->len == 0) {
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
@@ -564,7 +564,7 @@ BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	BcNum temp;
 	bool neg;
 
-	if (b->len == 0) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
+	if (b->len == 0) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 
 	if (a->len == 0) {
 		bc_num_setToZero(d, ts);
@@ -613,7 +613,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	size_t i, powrdx, resrdx;
 	bool neg, zero;
 
-	if (b->rdx) return BC_STATUS_MATH_NON_INTEGER;
+	if (b->rdx) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 
 	if (b->len == 0) {
 		bc_num_one(c);
@@ -784,7 +784,7 @@ void bc_num_parseDecimal(BcNum *n, const char *val) {
 	}
 }
 
-void bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
+BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 
 	BcStatus s;
 	BcNum temp, mult, result;
@@ -796,7 +796,7 @@ void bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
 	bc_num_zero(n);
 
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
-	if (zero) return;
+	if (zero) return BC_STATUS_SUCCESS;
 
 	bc_num_init(&temp, BC_NUM_DEF_SIZE);
 	bc_num_init(&mult, BC_NUM_DEF_SIZE);
@@ -855,6 +855,7 @@ err:
 int_err:
 	bc_num_free(&mult);
 	bc_num_free(&temp);
+	return s;
 }
 
 void bc_num_printNewline(size_t *nchars) {
@@ -1056,15 +1057,17 @@ void bc_num_copy(BcNum *d, BcNum *s) {
 
 BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 
+	BcStatus s = BC_STATUS_SUCCESS;
+
 	assert(n && val && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_NUM_MAX_IBASE);
 
-	if (!bc_num_strValid(val, base_t)) return BC_STATUS_MATH_BAD_STRING;
+	if (!bc_num_strValid(val, base_t)) return bc_vm_err(BC_ERROR_MATH_STRING);
 
 	if (base_t == 10) bc_num_parseDecimal(n, val);
-	else bc_num_parseBase(n, val, base);
+	else s = bc_num_parseBase(n, val, base);
 
-	return BC_STATUS_SUCCESS;
+	return s;
 }
 
 BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
@@ -1099,7 +1102,7 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
 	assert(n && result);
 
-	if (n->neg) return BC_STATUS_MATH_NEGATIVE;
+	if (n->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	for (res = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
 
@@ -1108,7 +1111,8 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 		res += ((unsigned long) n->num[i]) * pow;
 		pow *= 10;
 
-		if (res < prev || pow < powprev) return BC_STATUS_MATH_OVERFLOW;
+		if (res < prev || pow < powprev)
+			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	}
 
 	*result = res;
@@ -1180,7 +1184,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 		bc_num_setToZero(b, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (a->neg) return BC_STATUS_MATH_NEGATIVE;
+	else if (a->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 	else if (BC_NUM_ONE(a)) {
 		bc_num_one(b);
 		bc_num_extend(b, scale);
@@ -1307,9 +1311,10 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	assert(a && b && c && d && a != d && b != d && c != d);
 
-	if (c->len == 0) return BC_STATUS_MATH_DIVIDE_BY_ZERO;
-	if (a->rdx || b->rdx || c->rdx) return BC_STATUS_MATH_NON_INTEGER;
-	if (b->neg) return BC_STATUS_MATH_NEGATIVE;
+	if (c->len == 0) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (b->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (a->rdx || b->rdx || c->rdx)
+		return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 
 	bc_num_expand(d, c->len);
 	bc_num_init(&base, c->len);

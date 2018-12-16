@@ -64,12 +64,16 @@ BcStatus bc_lex_token(BcLex *l);
 // ** Exclude start. **
 // ** Busybox exclude start. **
 void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
-BcStatus bc_parse_expression(BcParse *p, uint8_t flags);
+BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
 // ** Busybox exclude end. **
 // ** Exclude end. **
 
 BcStatus bc_parse_parse(BcParse *p);
-BcStatus bc_parse_expr(BcParse *p, uint8_t flags, BcParseNext next);
+
+BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next);
+BcStatus bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
+BcStatus bc_parse_else(BcParse *p);
+BcStatus bc_parse_stmt(BcParse *p);
 
 extern const bool bc_parse_exprs[];
 extern const BcOp bc_parse_ops[];

@@ -36,7 +36,7 @@ void bc_id_free(void *id) {
 	free(((BcId*) id)->name);
 }
 
-BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
+BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line) {
 
 	BcId a;
 	size_t i;
@@ -45,7 +45,7 @@ BcStatus bc_func_insert(BcFunc *f, char *name, bool var) {
 
 	for (i = 0; i < f->autos.len; ++i) {
 		if (!strcmp(name, ((BcId*) bc_vec_item(&f->autos, i))->name))
-			return BC_STATUS_PARSE_DUPLICATE_LOCAL;
+			return bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name);
 	}
 
 	a.idx = var;

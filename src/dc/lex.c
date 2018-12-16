@@ -35,7 +35,7 @@ BcStatus dc_lex_register(BcLex *l) {
 	if (isspace(l->buf[l->i - 1])) {
 		bc_lex_whitespace(l);
 		++l->i;
-		if (!DC_X) s = BC_STATUS_PARSE_EXTENDED_REG;
+		if (!DC_X) s = bc_vm_error(BC_ERROR_PARSE_EXTENDED_REG, l->line);
 		else s = bc_lex_name(l);
 	}
 	else {
@@ -67,11 +67,12 @@ BcStatus dc_lex_string(BcLex *l) {
 
 	if (c == '\0') {
 		l->i = i;
-		return BC_STATUS_PARSE_NO_STRING_END;
+		return bc_vm_error(BC_ERROR_PARSE_BAD_STRING, l->line);
 	}
 
 	bc_vec_pushByte(&l->t.v, '\0');
-	if (i - l->i > BC_MAX_STRING) return BC_STATUS_EXEC_STRING_LEN;
+	if (i - l->i > BC_MAX_STRING)
+		return bc_vm_error(BC_ERROR_EXEC_STRING_LEN, l->line);
 
 	l->i = i;
 	l->line += nls;
@@ -123,7 +124,7 @@ BcStatus dc_lex_token(BcLex *l) {
 			if (c2 == '=') l->t.t = BC_LEX_OP_REL_NE;
 			else if (c2 == '<') l->t.t = BC_LEX_OP_REL_LE;
 			else if (c2 == '>') l->t.t = BC_LEX_OP_REL_GE;
-			else return BC_STATUS_PARSE_BAD_CHAR;
+			else return bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
 
 			++l->i;
 			break;
@@ -138,7 +139,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '.':
 		{
 			if (isdigit(l->buf[l->i])) s = bc_lex_number(l, c);
-			else s = BC_STATUS_PARSE_BAD_CHAR;
+			else s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
 			break;
 		}
 
@@ -180,7 +181,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		default:
 		{
 			l->t.t = BC_LEX_INVALID;
-			s = BC_STATUS_PARSE_BAD_CHAR;
+			s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
 			break;
 		}
 	}

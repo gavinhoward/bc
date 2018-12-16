@@ -86,7 +86,8 @@ BcStatus bc_parse_text(BcParse *p, const char *text) {
 		p->l.t.t = BC_LEX_INVALID;
 		s = p->parse(p);
 		if (s) return s;
-		if (!BC_PARSE_CAN_EXEC(p)) return BC_STATUS_EXEC_FILE_NOT_EXECUTABLE;
+		if (!BC_PARSE_CAN_EXEC(p))
+			return bc_vm_error(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE, p->l.line);
 	}
 
 	return bc_lex_text(&p->l, text);

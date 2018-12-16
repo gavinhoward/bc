@@ -84,10 +84,14 @@
 #define BC_I (BC_ENABLED && (vm->flags & BC_FLAG_I))
 #define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
 
+#define bc_vm_err(e) (bc_vm_error((e), 0))
+
 typedef struct BcVm {
 
 	BcParse prs;
 	BcProgram prog;
+
+	const char* file;
 
 	size_t line_len;
 
@@ -124,8 +128,7 @@ typedef struct BcVm {
 } BcVm;
 
 #if BC_ENABLED
-BcStatus bc_vm_posixError(BcStatus s, const char *file,
-                          size_t line, const char *msg);
+BcStatus bc_vm_posixError(BcError e, size_t line, ...);
 #endif // BC_ENABLED
 
 // ** Exclude start. **
@@ -136,7 +139,7 @@ void bc_vm_shutdown();
 
 // ** Busybox exclude start. **
 
-void bc_vm_exit(BcStatus s);
+void bc_vm_exit(BcError e);
 void bc_vm_printf(const char *fmt, ...);
 void bc_vm_puts(const char *str, FILE *restrict f);
 void bc_vm_putchar(int c);
@@ -146,9 +149,9 @@ void bc_vm_fflush(FILE *restrict f);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
-void bc_vm_exit(BcStatus s);
+void bc_vm_exit(BcError e);
 
-BcStatus bc_vm_error(BcStatus s, const char *file, size_t line);
+BcStatus bc_vm_error(BcError e, size_t line, ...);
 // ** Exclude end. **
 
 #if BC_ENABLED
@@ -169,9 +172,9 @@ extern const char bc_copyright[];
 extern const char bc_lib[];
 extern const char *bc_lib_name;
 
-extern const char bc_err_fmt[];
-extern const char bc_warn_fmt[];
-extern const char bc_err_line[];
+extern const char* const bc_err_fmt;
+extern const char* const bc_warn_fmt;
+extern const char* const bc_err_line;
 extern const char *bc_errs[];
 extern const char bc_err_ids[];
 extern const char *bc_err_msgs[];

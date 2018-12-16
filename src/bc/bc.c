@@ -33,7 +33,7 @@ int bc_main(int argc, char **argv) {
 #endif // BC_ENABLE_SIGNALS
 
 	vm->parse_init = bc_parse_init;
-	vm->parse_expr = bc_parse_expression;
+	vm->parse_expr = bc_parse_expr;
 
 	return (int) bc_vm_boot(argc, argv, "BC_LINE_LENGTH");
 }

@@ -58,9 +58,9 @@ const char bc_copyright[] =
 const char* const bc_args_env_name = "BC_ENV_ARGS";
 // ** Exclude end. **
 
-const char bc_err_fmt[] = "\n%s error: %s\n";
-const char bc_warn_fmt[] = "\n%s warning: %s\n";
-const char bc_err_line[] = ":%zu\n\n";
+const char* const bc_err_fmt = "\n%s error: ";
+const char* const bc_warn_fmt = "\n%s warning: ";
+const char* const bc_err_line = ":%zu\n\n";
 
 const char *bc_errs[] = {
 	"VM",
@@ -88,22 +88,23 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 #if BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 #endif // BC_ENABLED
-	BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 };
 
-const char *bc_err_msgs[] = {
+const char* const bc_err_msgs[] = {
 
-	NULL,
 	"memory allocation error",
 	"I/O error",
 	"file is not text:",
 	"path is a directory:",
+	// ** Exclude start. **
+	"Bad command-line option",
+	// ** Exclude end. **
 
 	"bad character",
 	"string end could not be found",
@@ -116,7 +117,7 @@ const char *bc_err_msgs[] = {
 	"bad assignment: left side must be scale, ibase, "
 		"obase, last, var, or array element",
 	"no auto variable found",
-	"function parameter or auto var has the same name as another",
+	"function parameter or auto \"%s\" already exists",
 	"block end could not be found",
 	"end of file",
 #if DC_ENABLED
@@ -130,7 +131,7 @@ const char *bc_err_msgs[] = {
 	"bad number string",
 
 	"could not open file:",
-	"mismatched parameters",
+	"mismatched parameters; need %zu, have %zu",
 	"undefined function",
 	"file is not executable:",
 	"number too long: must be [1, BC_NUM_MAX]",
@@ -143,31 +144,22 @@ const char *bc_err_msgs[] = {
 	"read() call inside of a read() call",
 	"variable is wrong type",
 	"bad obase; must be [2, BC_BASE_MAX]",
-	"signal caught and not handled",
 	"stack has too few elements",
 
 #if BC_ENABLED
-	"POSIX only allows one character names; the following is bad:",
+	"POSIX does not allow names longer than 1 character, like \"%s\"",
 	"POSIX does not allow '#' script comments",
-	"POSIX does not allow the following keyword:",
+	"POSIX does not allow \"%s\" as a keyword",
 	"POSIX does not allow a period ('.') as a shortcut for the last result",
 	"POSIX requires parentheses around return expressions",
-	"POSIX does not allow boolean operators; the following is bad:",
+	"POSIX does not allow the \"%s\" operators",
 	"POSIX does not allow comparison operators outside if or loops",
-	"POSIX requires exactly one comparison operator per condition",
+	"POSIX requires zero or one comparison operator per condition",
 	"POSIX does not allow an empty init expression in a for loop",
 	"POSIX does not allow an empty condition expression in a for loop",
 	"POSIX does not allow an empty update expression in a for loop",
 	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
-
-	// ** Exclude start. **
-	"Bad command-line option",
-	// ** Exclude end. **
-
-#ifndef NDEBUG
-	"quit request not honored",
-#endif // NDEBUG
 
 };
 
