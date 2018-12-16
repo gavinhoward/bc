@@ -483,23 +483,7 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		else return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 	}
 
-	if (BC_PARSE_IF(p)) {
-
-		uint8_t *flag_ptr;
-
-		while (p->l.t.t == BC_LEX_NLINE) {
-			s = bc_lex_next(&p->l);
-			if (s) return s;
-		}
-
-		bc_vec_pop(&p->flags);
-
-		flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
-		*flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
-
-		if (p->l.t.t == BC_LEX_KEY_ELSE) s = bc_parse_else(p);
-	}
-	else if (BC_PARSE_ELSE(p)) {
+	if (BC_PARSE_ELSE(p)) {
 
 		BcInstPtr *ip;
 		size_t *label;
@@ -519,7 +503,7 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		bc_parse_updateFunc(p, BC_PROG_MAIN);
 		bc_vec_pop(&p->flags);
 	}
-	else {
+	else if (!BC_PARSE_IF(p)) {
 
 		BcInstPtr *ip = bc_vec_top(&p->exits);
 		size_t *label = bc_vec_top(&p->conds);
@@ -533,6 +517,24 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		bc_vec_pop(&p->flags);
 		bc_vec_pop(&p->exits);
 		bc_vec_pop(&p->conds);
+	}
+
+	// This needs to be last to parse nested if's properly.
+	if (BC_PARSE_IF(p)) {
+
+		uint8_t *flag_ptr;
+
+		while (p->l.t.t == BC_LEX_NLINE) {
+			s = bc_lex_next(&p->l);
+			if (s) return s;
+		}
+
+		bc_vec_pop(&p->flags);
+
+		flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
+		*flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
+
+		if (p->l.t.t == BC_LEX_KEY_ELSE) s = bc_parse_else(p);
 	}
 
 	return s;
