@@ -464,7 +464,7 @@ BcStatus bc_parse_return(BcParse *p) {
 BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	bool has_brace;
+	bool has_brace, new_else = false;
 
 	if (p->flags.len <= 1)
 		return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
@@ -477,11 +477,11 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		else return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 	}
 
+	has_brace = (BC_PARSE_BRACE(p) != 0);
+
 	do {
 
 		size_t len = p->flags.len;
-
-		has_brace = BC_PARSE_BRACE(p) != 0;
 
 		if (has_brace && !brace)
 			return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
@@ -491,15 +491,13 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			BcInstPtr *ip;
 			size_t *label;
 
-			do {
-				bc_vec_pop(&p->flags);
+			bc_vec_pop(&p->flags);
 
-				ip = bc_vec_top(&p->exits);
-				label = bc_vec_item(&p->func->labels, ip->idx);
-				*label = p->func->code.len;
+			ip = bc_vec_top(&p->exits);
+			label = bc_vec_item(&p->func->labels, ip->idx);
+			*label = p->func->code.len;
 
-				bc_vec_pop(&p->exits);
-			} while (BC_PARSE_ELSE(p));
+			bc_vec_pop(&p->exits);
 		}
 		else if (BC_PARSE_FUNC_INNER(p)) {
 			bc_parse_push(p, BC_INST_RET0);
@@ -533,10 +531,12 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			bc_vec_pop(&p->flags);
 			*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_IF_END;
 
-			if (p->l.t.t == BC_LEX_KEY_ELSE) s = bc_parse_else(p);
+			new_else = (p->l.t.t == BC_LEX_KEY_ELSE);
+			if (new_else) s = bc_parse_else(p);
 		}
 
-	} while (brace && !has_brace);
+	} while (p->flags.len > 1 && !has_brace && !new_else &&
+	         !(has_brace = (BC_PARSE_BRACE(p) != 0)));
 
 	return s;
 }
@@ -773,9 +773,25 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 	if (s) return s;
 
 	if (p->l.t.t != BC_LEX_SCOLON && p->l.t.t != BC_LEX_NLINE)
-		return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
+	{
+		bool good = false;
 
-	return bc_lex_next(&p->l);
+		if (p->l.t.t == BC_LEX_RBRACE) {
+			for (i = 0; !good && i < p->flags.len; ++i) {
+				uint16_t *fptr = bc_vec_item_rev(&p->flags, i);
+				good = ((*fptr) & BC_PARSE_FLAG_BRACE) != 0;
+			}
+		}
+		else if (!BC_PARSE_BRACE(p)) {
+			good = p->l.t.t == BC_LEX_KEY_IF || p->l.t.t == BC_LEX_KEY_ELSE ||
+			       p->l.t.t == BC_LEX_KEY_FOR || p->l.t.t == BC_LEX_KEY_WHILE;
+		}
+
+		if (!good) return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
+	}
+	else s = bc_lex_next(&p->l);
+
+	return s;
 }
 
 BcStatus bc_parse_func(BcParse *p) {
