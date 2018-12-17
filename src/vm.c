@@ -255,6 +255,9 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	s = bc_vm_process(vm, data, false);
 	if (s) goto err;
 
+	if (vm->prs.flags.len > 1)
+		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
+
 	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
 	ip = bc_vec_item(&vm->prog.stack, 0);
 
@@ -321,6 +324,8 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 	if (comment) s = bc_vm_error(BC_ERROR_PARSE_BAD_COMMENT, vm->prs.l.line);
 	else if (str) s = bc_vm_error(BC_ERROR_PARSE_BAD_STRING, vm->prs.l.line);
+	else if (vm->prs.flags.len > 1)
+		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
 
 err:
 	bc_vec_free(&buf);
