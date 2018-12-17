@@ -688,7 +688,16 @@ BcStatus bc_parse_for(BcParse *p) {
 
 	if (p->l.t.t != BC_LEX_SCOLON)
 		s = bc_parse_expr_status(p, BC_PARSE_REL, bc_parse_next_for);
-	else s = bc_vm_posixError(BC_ERROR_POSIX_FOR2, p->l.line);
+	else {
+
+		// Set this for the next call to bc_parse_number.
+		// This is safe to set because the current token is a semicolon,
+		// which has no string requirement.
+		bc_vec_string(&p->l.t.v, sizeof(bc_parse_const1) - 1, bc_parse_const1);
+		bc_parse_number(p, NULL, NULL);
+
+		s = bc_vm_posixError(BC_ERROR_POSIX_FOR2, p->l.line);
+	}
 
 	if (s) return s;
 	if (p->l.t.t != BC_LEX_SCOLON)

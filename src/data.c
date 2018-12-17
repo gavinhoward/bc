@@ -533,6 +533,8 @@ const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("while", 5, true),
 };
 
+const char* const bc_parse_const1 = "1";
+
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.
 const bool bc_parse_exprs[] = {

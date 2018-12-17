@@ -73,7 +73,7 @@ void bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
 	bc_parse_pushIndex(p, idx);
 
 	if (nexs) ++(*nexs);
-	(*prev) = BC_INST_NUM;
+	if (prev) (*prev) = BC_INST_NUM;
 }
 
 BcStatus bc_parse_text(BcParse *p, const char *text) {
