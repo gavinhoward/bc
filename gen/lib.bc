@@ -30,7 +30,7 @@ define e(x){
 		x=-x
 	}
 	s=scale
-	r=6+s+0.44*x
+	r=6+s+.44*x
 	scale=scale(x)+1
 	while(x>1){
 		d+=1
@@ -69,7 +69,7 @@ define l(x){
 		p*=2
 		x=sqrt(x)
 	}
-	while(x<=0.5){
+	while(x<=.5){
 		p*=2
 		x=sqrt(x)
 	}
