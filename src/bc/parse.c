@@ -927,9 +927,14 @@ BcStatus bc_parse_body(BcParse *p, bool brace) {
 	if (*flag_ptr & BC_PARSE_FLAG_FUNC_INNER) {
 
 		if (!brace) return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
+
 		p->auto_part = p->l.t.t != BC_LEX_KEY_AUTO;
 
 		if (!p->auto_part) {
+
+			// Make sure this is true to not get a parse error.
+			p->auto_part = true;
+
 			s = bc_parse_auto(p);
 			if (s) return s;
 		}
