@@ -81,4 +81,5 @@ if(x == 1) {
 }
 99
 
+for (;;) { 123 ; break; }
 for (i = 0;; ++i) { i ; if (i == 2) break; }
