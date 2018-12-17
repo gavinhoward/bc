@@ -29,6 +29,8 @@
 
 #if DC_ENABLED
 
+// I use 32 as the length because I don't want
+// to have to calculate log base 2 of n.
 #define DC_PARSE_BUF_LEN ((int) (sizeof(uint32_t) * CHAR_BIT))
 
 // ** Exclude start. **
