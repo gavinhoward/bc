@@ -43,38 +43,42 @@
 #define BC_PARSE_NOREAD (1<<3)
 #define BC_PARSE_ARRAY (1<<4)
 
-#define BC_PARSE_TOP_FLAG_PTR(parse) ((uint8_t*) bc_vec_top(&(parse)->flags))
+#define BC_PARSE_TOP_FLAG_PTR(parse) ((uint16_t*) bc_vec_top(&(parse)->flags))
 #define BC_PARSE_TOP_FLAG(parse) (*(BC_PARSE_TOP_FLAG_PTR(parse)))
 
-#define BC_PARSE_FLAG_FUNC_INNER (1<<0)
+#define BC_PARSE_FLAG_BRACE (1<<0)
+#define BC_PARSE_BRACE(parse) \
+	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_BRACE)
+
+#define BC_PARSE_FLAG_FUNC_INNER (1<<1)
 #define BC_PARSE_FUNC_INNER(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FUNC_INNER)
 
-#define BC_PARSE_FLAG_FUNC (1<<1)
+#define BC_PARSE_FLAG_FUNC (1<<2)
 #define BC_PARSE_FUNC(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_FUNC)
 
-#define BC_PARSE_FLAG_BODY (1<<2)
+#define BC_PARSE_FLAG_BODY (1<<3)
 #define BC_PARSE_BODY(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_BODY)
 
-#define BC_PARSE_FLAG_LOOP (1<<3)
+#define BC_PARSE_FLAG_LOOP (1<<4)
 #define BC_PARSE_LOOP(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP)
 
-#define BC_PARSE_FLAG_LOOP_INNER (1<<4)
+#define BC_PARSE_FLAG_LOOP_INNER (1<<5)
 #define BC_PARSE_LOOP_INNER(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_LOOP_INNER)
 
-#define BC_PARSE_FLAG_IF (1<<5)
+#define BC_PARSE_FLAG_IF (1<<6)
 #define BC_PARSE_IF(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF)
 
-#define BC_PARSE_FLAG_ELSE (1<<6)
+#define BC_PARSE_FLAG_ELSE (1<<7)
 #define BC_PARSE_ELSE(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_ELSE)
 
-#define BC_PARSE_FLAG_IF_END (1<<7)
+#define BC_PARSE_FLAG_IF_END (1<<8)
 #define BC_PARSE_IF_END(parse) \
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
 
@@ -124,7 +128,6 @@ typedef struct BcParse {
 	BcFunc *func;
 	size_t fidx;
 
-	size_t nbraces;
 	bool auto_part;
 
 } BcParse;

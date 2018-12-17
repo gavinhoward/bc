@@ -66,7 +66,7 @@ BcStatus dc_parse_string(BcParse *p) {
 	return bc_lex_next(&p->l);
 }
 
-BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store) {
+BcStatus dc_parse_mem(BcParse *p, char inst, bool name, bool store) {
 
 	BcStatus s;
 
@@ -85,7 +85,7 @@ BcStatus dc_parse_mem(BcParse *p, uint8_t inst, bool name, bool store) {
 	return bc_lex_next(&p->l);
 }
 
-BcStatus dc_parse_cond(BcParse *p, uint8_t inst) {
+BcStatus dc_parse_cond(BcParse *p, char inst) {
 
 	BcStatus s;
 
@@ -112,7 +112,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst prev;
-	uint8_t inst;
+	char inst;
 	bool assign, get_token = false;
 
 	switch (t) {
@@ -151,7 +151,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 					return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 			}
 
-			bc_parse_number(p, &prev, &p->nbraces);
+			bc_parse_number(p, &prev, NULL);
 
 			if (t == BC_LEX_NEG) bc_parse_push(p, BC_INST_NEG);
 			get_token = true;
@@ -212,8 +212,6 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst inst;
 	BcLexType t;
-
-	if (flags & BC_PARSE_NOCALL) p->nbraces = p->prog->results.len;
 
 	for (t = p->l.t.t; !s && t != BC_LEX_EOF; t = p->l.t.t) {
 
