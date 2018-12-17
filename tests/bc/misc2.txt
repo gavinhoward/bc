@@ -58,3 +58,21 @@ if (x == 1) if (x == 0) 1 else 2 else 3
 if (x != 1) if (x == 0) 1 else 2 else 3
 
 if (x == 1) while (x > 0) { x ; x -= 1 } else 0
+if (x == 0) while (x > 0) { x ; x -= 1 } else 0
+
+if(1) {
+	11
+	while(1) {
+		21
+		while(1) {
+			31
+			break
+			32
+		}
+		22
+		break
+		23
+	}
+	12
+}
+99
