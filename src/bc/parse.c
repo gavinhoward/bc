@@ -525,17 +525,13 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		// This needs to be last to parse nested if's properly.
 		if (BC_PARSE_IF(p) && (len == p->flags.len || !BC_PARSE_BRACE(p))) {
 
-			uint16_t *flag_ptr;
-
 			while (p->l.t.t == BC_LEX_NLINE) {
 				s = bc_lex_next(&p->l);
 				if (s) return s;
 			}
 
 			bc_vec_pop(&p->flags);
-
-			flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
-			*flag_ptr = (*flag_ptr | BC_PARSE_FLAG_IF_END);
+			*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_IF_END;
 
 			if (p->l.t.t == BC_LEX_KEY_ELSE) s = bc_parse_else(p);
 		}
@@ -546,8 +542,7 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 }
 
 void bc_parse_startBody(BcParse *p, uint16_t flags) {
-	uint16_t *flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
-	flags |= (*flag_ptr & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
+	flags |= (BC_PARSE_TOP_FLAG(p) & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
 	flags |= BC_PARSE_FLAG_BODY;
 	bc_vec_push(&p->flags, &flags);
 }
