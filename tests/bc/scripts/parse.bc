@@ -5,7 +5,7 @@ for (b = 2; b <= 16; ++b) {
 	obase = 10
 	print "ibase = A; ibase = ", b, "\n"
 	obase = b
-	for (i = 0; i <= 65536; ++i) {
+	for (i = 0; i <= 4096; ++i) {
 		i
 		print "0.", i, "\n"
 		print "1.", i, "\n"
