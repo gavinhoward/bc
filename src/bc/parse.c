@@ -376,16 +376,10 @@ BcStatus bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
 	return s;
 }
 
-BcStatus bc_parse_string(BcParse *p, char inst) {
-
-	char *str = bc_vm_strdup(p->l.t.v.v);
-
-	bc_parse_push(p, BC_INST_STR);
-	bc_parse_pushIndex(p, p->prog->strs.len);
-	bc_vec_push(&p->prog->strs, &str);
+BcStatus bc_parse_str(BcParse *p, char inst) {
+	BcStatus s = bc_parse_string(p);
 	bc_parse_push(p, inst);
-
-	return bc_lex_next(&p->l);
+	return s;
 }
 
 BcStatus bc_parse_print(BcParse *p) {
@@ -404,7 +398,7 @@ BcStatus bc_parse_print(BcParse *p) {
 
 	while (!s && type != BC_LEX_SCOLON && type != BC_LEX_NLINE) {
 
-		if (type == BC_LEX_STR) s = bc_parse_string(p, BC_INST_PRINT_POP);
+		if (type == BC_LEX_STR) s = bc_parse_str(p, BC_INST_PRINT_POP);
 		else {
 			s = bc_parse_expr_status(p, 0, bc_parse_next_print);
 			if (s) return s;
@@ -694,7 +688,7 @@ BcStatus bc_parse_for(BcParse *p) {
 		// This is safe to set because the current token is a semicolon,
 		// which has no string requirement.
 		bc_vec_string(&p->l.t.v, sizeof(bc_parse_const1) - 1, bc_parse_const1);
-		bc_parse_number(p, NULL, NULL);
+		bc_parse_number(p);
 
 		s = bc_vm_posixError(BC_ERROR_POSIX_FOR2, p->l.line);
 	}
@@ -1055,7 +1049,7 @@ BcStatus bc_parse_stmt(BcParse *p) {
 
 		case BC_LEX_STR:
 		{
-			s = bc_parse_string(p, BC_INST_PRINT_STR);
+			s = bc_parse_str(p, BC_INST_PRINT_STR);
 			break;
 		}
 
@@ -1293,7 +1287,9 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_PARSE_LEAF(prev, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
-				bc_parse_number(p, &prev, &nexprs);
+				bc_parse_number(p);
+				nexprs += 1;
+				prev = BC_INST_NUM;
 				paren_expr = get_token = true;
 				rprn = bin_last = false;
 

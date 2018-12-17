@@ -58,7 +58,10 @@ typedef struct BcProgram {
 	BcVec arr_map;
 
 	BcVec strs;
+	BcVec str_map;
+
 	BcVec consts;
+	BcVec const_map;
 
 	BcNum last;
 	BcNum zero;

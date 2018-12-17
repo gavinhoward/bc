@@ -49,21 +49,14 @@ BcStatus dc_parse_register(BcParse *p) {
 
 BcStatus dc_parse_string(BcParse *p) {
 
-	char *str, *name, b[DC_PARSE_BUF_LEN + 1];
+	char b[DC_PARSE_BUF_LEN + 1];
 	size_t idx, len = p->prog->strs.len;
 
 	sprintf(b, "%0*zu", DC_PARSE_BUF_LEN, len);
-	name = bc_vm_strdup(b);
-
-	str = bc_vm_strdup(p->l.t.v.v);
-	bc_parse_push(p, BC_INST_STR);
-	bc_parse_pushIndex(p, len);
-	bc_vec_push(&p->prog->strs, &str);
-	bc_parse_addFunc(p, name, &idx);
-
+	bc_parse_addFunc(p, bc_vm_strdup(b), &idx);
 	assert(idx == len + BC_PROG_REQ_FUNCS);
 
-	return bc_lex_next(&p->l);
+	return bc_parse_string(p);
 }
 
 BcStatus dc_parse_mem(BcParse *p, char inst, bool name, bool store) {
@@ -151,7 +144,8 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 					return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
 			}
 
-			bc_parse_number(p, &prev, NULL);
+			bc_parse_number(p);
+			prev = BC_INST_NUM;
 
 			if (t == BC_LEX_NEG) bc_parse_push(p, BC_INST_NEG);
 			get_token = true;

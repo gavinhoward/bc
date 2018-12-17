@@ -143,7 +143,8 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 void bc_parse_addFunc(BcParse *p, char *name, size_t *idx);
 void bc_parse_pushName(BcParse* p, char *name);
 void bc_parse_pushIndex(BcParse* p, size_t idx);
-void bc_parse_number(BcParse *p, BcInst *prev, size_t* nexs);
+void bc_parse_number(BcParse *p);
+BcStatus bc_parse_string(BcParse *p);
 BcStatus bc_parse_text(BcParse *p, const char *text);
 
 // ** Busybox exclude end. **

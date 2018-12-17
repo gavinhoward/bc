@@ -62,18 +62,39 @@ void bc_parse_pushIndex(BcParse *p, size_t idx) {
 	for (i = 0; i < amt; ++i) bc_parse_push(p, nums[i]);
 }
 
-void bc_parse_number(BcParse *p, BcInst *prev, size_t *nexs) {
+void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, char inst) {
 
-	char *num = bc_vm_strdup(p->l.t.v.v);
-	size_t idx = p->prog->consts.len;
+	BcId id, *id_ptr;
+	size_t idx;
+	bool new;
 
-	bc_vec_push(&p->prog->consts, &num);
+	id.idx = vec->len;
+	id.name = p->l.t.v.v;
 
-	bc_parse_push(p, BC_INST_NUM);
+	new = bc_map_insert(map, &id, &idx);
+	id_ptr = bc_vec_item(map, idx);
+
+	if (new) {
+
+		// Update the entry name because the lex buffer will change.
+		id_ptr->name = bc_vm_strdup(p->l.t.v.v);
+
+		bc_vec_push(vec, &id_ptr->name);
+		idx = id.idx;
+	}
+	else idx = id_ptr->idx;
+
+	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);
+}
 
-	if (nexs) ++(*nexs);
-	if (prev) (*prev) = BC_INST_NUM;
+void bc_parse_number(BcParse *p) {
+	bc_parse_addId(p, &p->prog->const_map, &p->prog->consts, BC_INST_NUM);
+}
+
+BcStatus bc_parse_string(BcParse *p) {
+	bc_parse_addId(p, &p->prog->str_map, &p->prog->strs, BC_INST_STR);
+	return bc_lex_next(&p->l);
 }
 
 BcStatus bc_parse_text(BcParse *p, const char *text) {

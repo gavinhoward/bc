@@ -1300,7 +1300,9 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->arrs);
 	bc_vec_free(&p->arr_map);
 	bc_vec_free(&p->strs);
+	bc_vec_free(&p->str_map);
 	bc_vec_free(&p->consts);
+	bc_vec_free(&p->const_map);
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
 	bc_num_free(&p->last);
@@ -1357,7 +1359,11 @@ void bc_program_init(BcProgram *p) {
 	bc_map_init(&p->arr_map);
 
 	bc_vec_init(&p->strs, sizeof(char*), bc_string_free);
+	bc_map_init(&p->str_map);
+
 	bc_vec_init(&p->consts, sizeof(char*), bc_string_free);
+	bc_map_init(&p->const_map);
+
 	bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
 	bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
 	bc_vec_push(&p->stack, &ip);
