@@ -479,6 +479,8 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 	do {
 
+		size_t len = p->flags.len;
+
 		has_brace = BC_PARSE_BRACE(p) != 0;
 
 		if (has_brace && !brace)
@@ -521,7 +523,7 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		}
 
 		// This needs to be last to parse nested if's properly.
-		if (BC_PARSE_IF(p)) {
+		if (BC_PARSE_IF(p) && (len == p->flags.len || !BC_PARSE_BRACE(p))) {
 
 			uint16_t *flag_ptr;
 
