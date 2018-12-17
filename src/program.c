@@ -1358,9 +1358,10 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->arrs, sizeof(BcVec), bc_vec_free);
 	bc_map_init(&p->arr_map);
 
+	// The destructor is NULL for the vectors because the vectors
+	// and maps share the strings, and the map frees them.
 	bc_vec_init(&p->strs, sizeof(char*), NULL);
 	bc_map_init(&p->str_map);
-
 	bc_vec_init(&p->consts, sizeof(char*), NULL);
 	bc_map_init(&p->const_map);
 
