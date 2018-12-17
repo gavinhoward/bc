@@ -1,3 +1,4 @@
+define w() { auto z; return 1; }
 define x() {
 	"x"
 	return (1)
@@ -10,6 +11,8 @@ define z() {
 	"z"
 	return (3)
 }
+
+w()
 
 if (x() == y()) { 1 }
 1
@@ -77,3 +80,5 @@ if(x == 1) {
 	12
 }
 99
+
+for (i = 0;; ++i) { i ; if (i == 2) break; }
