@@ -1358,10 +1358,10 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->arrs, sizeof(BcVec), bc_vec_free);
 	bc_map_init(&p->arr_map);
 
-	bc_vec_init(&p->strs, sizeof(char*), bc_string_free);
+	bc_vec_init(&p->strs, sizeof(char*), NULL);
 	bc_map_init(&p->str_map);
 
-	bc_vec_init(&p->consts, sizeof(char*), bc_string_free);
+	bc_vec_init(&p->consts, sizeof(char*), NULL);
 	bc_map_init(&p->const_map);
 
 	bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
