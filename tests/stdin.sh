@@ -47,11 +47,14 @@ else
 	options="-x"
 fi
 
+rm -f "$out"
+
 echo "Running $d stdin tests..."
 
 while read t; do
-	echo "$t" | "$exe" "$@" "$options" > "$out"
-	diff "$testdir/$d/stdin_results.txt" "$out"
+	printf "$t" | "$exe" "$@" "$options" >> "$out"
 done < "$testdir/$d/stdin.txt"
+
+diff "$testdir/$d/stdin_results.txt" "$out"
 
 rm -rf "$out1"
