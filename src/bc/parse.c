@@ -377,9 +377,9 @@ BcStatus bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
 }
 
 BcStatus bc_parse_str(BcParse *p, char inst) {
-	BcStatus s = bc_parse_string(p);
+	bc_parse_string(p);
 	bc_parse_push(p, inst);
-	return s;
+	return bc_lex_next(&p->l);
 }
 
 BcStatus bc_parse_print(BcParse *p) {

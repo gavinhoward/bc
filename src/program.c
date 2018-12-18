@@ -1056,7 +1056,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	BcStatus s;
 	BcResult *r, res;
 	BcNum *num = NULL, n;
-	char *str, *str2, c;
+	char str[2], *str2, c;
 	size_t len = p->strs.len, idx;
 	unsigned long val;
 
@@ -1088,25 +1088,12 @@ BcStatus bc_program_asciify(BcProgram *p) {
 		c = str2[0];
 	}
 
-	str = bc_vm_malloc(2);
 	str[0] = c;
 	str[1] = '\0';
 
 	str2 = bc_vm_strdup(str);
 	bc_program_addFunc(p, str2, &idx);
-
-	if (idx != len + BC_PROG_REQ_FUNCS) {
-
-		for (idx = 0; idx < p->strs.len; ++idx) {
-			if (!strcmp(*((char**) bc_vec_item(&p->strs, idx)), str)) {
-				len = idx;
-				break;
-			}
-		}
-
-		free(str);
-	}
-	else bc_vec_push(&p->strs, &str);
+	len = bc_program_addId(str, &p->str_map, &p->strs);
 
 	res.t = BC_RESULT_STR;
 	res.d.id.idx = len;
@@ -1368,6 +1355,31 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
 	bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
 	bc_vec_push(&p->stack, &ip);
+}
+
+size_t bc_program_addId(char* data, BcVec *map, BcVec *vec) {
+
+	BcId id, *id_ptr;
+	size_t idx;
+	bool new;
+
+	id.idx = vec->len;
+	id.name = data;
+
+	new = bc_map_insert(map, &id, &idx);
+	id_ptr = bc_vec_item(map, idx);
+
+	if (new) {
+
+		// Update the entry name because the lex buffer will change.
+		id_ptr->name = bc_vm_strdup(data);
+
+		bc_vec_push(vec, &id_ptr->name);
+		idx = id.idx;
+	}
+	else idx = id_ptr->idx;
+
+	return idx;
 }
 
 void bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {

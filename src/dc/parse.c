@@ -56,7 +56,9 @@ BcStatus dc_parse_string(BcParse *p) {
 	bc_parse_addFunc(p, bc_vm_strdup(b), &idx);
 	assert(idx == len + BC_PROG_REQ_FUNCS);
 
-	return bc_parse_string(p);
+	bc_parse_string(p);
+
+	return bc_lex_next(&p->l);
 }
 
 BcStatus dc_parse_mem(BcParse *p, char inst, bool name, bool store) {
