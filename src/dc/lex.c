@@ -65,7 +65,7 @@ BcStatus dc_lex_string(BcLex *l) {
 		if (depth) bc_vec_push(&l->t.v, &c);
 	}
 
-	if (c == '\0') {
+	if (c == '\0' && depth) {
 		l->i = i;
 		return bc_vm_error(BC_ERROR_PARSE_BAD_STRING, l->line);
 	}
