@@ -274,7 +274,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
 	size_t str = 0;
-	bool comment = false;
+	bool comment = false, done = false;
 
 	bc_lex_file(&vm->prs.l, bc_program_stdin_name);
 
@@ -286,10 +286,16 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	while ((s = bc_read_line(&buf, ">>> ")) == BC_STATUS_SUCCESS) {
+	while (!done) {
 
-		char *string = buf.v;
-		size_t i, len = buf.len - 1;
+		char *string;
+		size_t i, len;
+
+		s = bc_read_line(&buf, ">>> ");
+		done = (s == BC_STATUS_EOF);
+
+		string = buf.v;
+		len = buf.len - 1;
 
 		for (i = 0; i < len; ++i) {
 

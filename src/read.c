@@ -82,6 +82,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 			}
 #endif // BC_ENABLE_SIGNALS
 
+			bc_vec_pushByte(vec, '\0');
 			return BC_STATUS_EOF;
 		}
 
