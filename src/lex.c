@@ -32,7 +32,6 @@
 void bc_lex_lineComment(BcLex *l) {
 	l->t.t = BC_LEX_WHITESPACE;
 	while (l->i < l->len && l->buf[l->i++] != '\n');
-	--l->i;
 }
 
 BcStatus bc_lex_comment(BcLex *l) {
