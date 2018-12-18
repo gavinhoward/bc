@@ -220,7 +220,7 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
 	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
-	int carry, in;
+	unsigned int carry, in;
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
@@ -271,13 +271,13 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 
 	for (carry = 0, i = 0; !BC_SIGINT && i < min_rdx + min_int; ++i, ++c->len) {
-		in = ((int) ptr_a[i]) + ((int) ptr_b[i]) + carry;
+		in = ((unsigned int) ptr_a[i]) + ((unsigned int) ptr_b[i]) + carry;
 		carry = in / 10;
 		ptr_c[i] = (BcDig) (in % 10);
 	}
 
 	for (; !BC_SIGINT && i < max + min_rdx; ++i, ++c->len) {
-		in = ((int) ptr[i]) + carry;
+		in = ((unsigned int) ptr[i]) + carry;
 		carry = in / 10;
 		ptr_c[i] = (BcDig) (in % 10);
 	}
@@ -370,7 +370,7 @@ BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 	    a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
 	{
 		size_t i, j, len;
-		unsigned carry;
+		unsigned int carry;
 
 		bc_num_expand(c, a->len + b->len + 1);
 
@@ -382,8 +382,9 @@ BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 			carry = 0;
 
 			for (j = 0; !BC_SIGINT && j < a->len; ++j) {
-				unsigned in = c->num[i + j];
-				in += ((unsigned) a->num[j]) * ((unsigned) b->num[i]) + carry;
+				unsigned int in = c->num[i + j];
+				in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
+				in += carry;
 				carry = in / 10;
 				c->num[i + j] = (BcDig) (in % 10);
 			}
