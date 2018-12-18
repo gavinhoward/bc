@@ -273,7 +273,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
-	size_t str = 0;
+	size_t string = 0;
 	bool comment = false, done = false;
 
 	bc_lex_file(&vm->prs.l, bc_program_stdin_name);
@@ -288,31 +288,31 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	// case, and for strings and comments, the parser will expect more stuff.
 	while (!done) {
 
-		char *string;
+		char *str;
 		size_t i, len;
 
 		s = bc_read_line(&buf, ">>> ");
 		done = (s == BC_STATUS_EOF);
 
-		string = buf.v;
+		str = buf.v;
 		len = buf.len - 1;
 
 		for (i = 0; i < len; ++i) {
 
 			bool notend = len > i + 1;
-			char c = string[i];
+			char c = str[i];
 
-			if (!comment && (i - 1 > len || string[i - 1] != '\\')) {
-				if (BC_IS_BC) str ^= c == '"';
-				else if (c == ']') str -= 1;
-				else if (c == '[') str += 1;
+			if (!comment && (i - 1 > len || str[i - 1] != '\\')) {
+				if (BC_IS_BC) string ^= c == '"';
+				else if (c == ']') string -= 1;
+				else if (c == '[') string += 1;
 			}
 
-			if (c == '/' && notend && !comment && string[i + 1] == '*') {
+			if (c == '/' && notend && !comment && str[i + 1] == '*') {
 				comment = true;
 				++i;
 			}
-			else if (c == '*' && notend && comment && string[i + 1] == '/') {
+			else if (c == '*' && notend && comment && str[i + 1] == '/') {
 				comment = false;
 				++i;
 			}
@@ -320,7 +320,8 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 		bc_vec_concat(&buffer, buf.v);
 
-		if (str || comment || string[len - 2] == '\\') continue;
+		if (string || comment) continue;
+		if (len >= 2 && str[len - 2] == '\\' && str[len - 1] == '\n') continue;
 
 		s = bc_vm_process(vm, buffer.v, true);
 		if (s) goto err;
@@ -329,7 +330,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	}
 
 	if (comment) s = bc_vm_error(BC_ERROR_PARSE_BAD_COMMENT, vm->prs.l.line);
-	else if (str) s = bc_vm_error(BC_ERROR_PARSE_BAD_STRING, vm->prs.l.line);
+	else if (string) s = bc_vm_error(BC_ERROR_PARSE_BAD_STRING, vm->prs.l.line);
 	else if (vm->prs.flags.len > 1)
 		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
 
