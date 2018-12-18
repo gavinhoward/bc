@@ -58,8 +58,11 @@ BcStatus dc_lex_string(BcLex *l) {
 
 	for (c = l->buf[i]; c != 0 && depth; c = l->buf[++i]) {
 
-		depth += (c == '[' && (i == l->i || l->buf[i - 1] != '\\'));
-		depth -= (c == ']' && (i == l->i || l->buf[i - 1] != '\\'));
+		if (i == l->i || l->buf[i - 1] != '\\') {
+			depth += (c == '[');
+			depth -= (c == ']');
+		}
+
 		nls += (c == '\n');
 
 		if (depth) bc_vec_push(&l->t.v, &c);
