@@ -1388,7 +1388,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 		return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
 	for (i = 0; i < next.len && t != next.tokens[i]; ++i);
-	if (i == next.len && t != BC_LEX_KEY_ELSE)
+	if (i == next.len && t != BC_LEX_KEY_ELSE && t != BC_LEX_EOF)
 		return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
 	if (!(flags & BC_PARSE_REL) && nrelops) {
