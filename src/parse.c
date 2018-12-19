@@ -34,6 +34,11 @@
 #include <program.h>
 #include <vm.h>
 
+void bc_parse_updateFunc(BcParse *p, size_t fidx) {
+	p->fidx = fidx;
+	p->func = bc_vec_item(&p->prog->fns, fidx);
+}
+
 size_t bc_parse_addFunc(BcParse *p, char *name) {
 
 	size_t idx = bc_program_addFunc(p->prog, name);

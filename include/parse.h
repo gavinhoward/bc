@@ -33,10 +33,6 @@
 
 #define BC_PARSE_STREND ((char) UCHAR_MAX)
 
-#define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (char) (i)))
-#define bc_parse_updateFunc(p, f) \
-	((p)->func = bc_vec_item(&(p)->prog->fns, ((p)->fidx = (f))))
-
 #define BC_PARSE_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
@@ -83,6 +79,8 @@
 	(BC_PARSE_TOP_FLAG(parse) & BC_PARSE_FLAG_IF_END)
 
 #define BC_PARSE_CAN_EXEC(parse) (BC_PARSE_TOP_FLAG(parse) == 0)
+
+#define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (char) (i)))
 
 #define bc_parse_number(p) \
 	(bc_parse_addId((p), &(p)->prog->const_map, &(p)->prog->consts, BC_INST_NUM))
@@ -147,6 +145,7 @@ void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 
 void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, char inst);
+void bc_parse_updateFunc(BcParse *p, size_t fidx);
 size_t bc_parse_addFunc(BcParse *p, char *name);
 void bc_parse_pushName(BcParse* p, char *name);
 void bc_parse_pushIndex(BcParse* p, size_t idx);
