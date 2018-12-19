@@ -66,6 +66,7 @@ DESTDIR = %%DESTDIR%%
 BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
 
+RM = rm
 INSTALL = ./install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
