@@ -613,8 +613,8 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 		memcpy(bc_vec_item(&h->buf, h->pos), cbuf, clen);
 
 		h->pos += clen;
-		h->buf.len += clen;
-		h->buf.v[BC_HISTORY_BUF_LEN(h)] = '\0';
+		h->buf.len += clen - 1;
+		bc_vec_pushByte(&h->buf, '\0');
 
 		len = BC_HISTORY_BUF_LEN(h);
 		colpos = !bc_history_promptColLen(h->prompt, h->plen);
@@ -1010,7 +1010,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	h->idx = 0;
 
 	// Buffer starts empty.
-	bc_vec_string(&h->buf, 0, "");
+	bc_vec_npop(&h->buf, h->buf.len);
+	bc_vec_pushByte(&h->buf, '\0');
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
@@ -1204,18 +1205,21 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		if (s) return s;
 	}
 
-	line = bc_vm_strdup(h->buf.v);
+	line = bc_vm_strdup(vec->v);
 	bc_history_add(h, line);
 
 	return s;
 }
 
-void bc_history_add(BcHistory *h, const char *line) {
+void bc_history_add(BcHistory *h, char *line) {
 
 	// Don't add duplicated lines.
 	if (h->history.len) {
 		char* str = *((char**) bc_vec_item_rev(&h->history, 0));
-		if (!strcmp(str, line)) return;
+		if (!strcmp(str, line)) {
+			free(line);
+			return;
+		}
 	}
 
 	if (h->history.len == BC_HISTORY_MAX_LEN) bc_vec_popAt(&h->history, 0);
