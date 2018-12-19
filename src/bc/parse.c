@@ -385,20 +385,19 @@ BcStatus bc_parse_str(BcParse *p, char inst) {
 BcStatus bc_parse_print(BcParse *p) {
 
 	BcStatus s;
-	BcLexType type;
+	BcLexType t;
 	bool comma = false;
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
-	type = p->l.t.t;
+	t = p->l.t.t;
 
-	if (type == BC_LEX_SCOLON || type == BC_LEX_NLINE)
+	if (BC_PARSE_VALID_END_TOKEN(t))
 		return bc_vm_error(BC_ERROR_PARSE_BAD_PRINT, p->l.line);
 
-	while (!s && type != BC_LEX_SCOLON && type != BC_LEX_NLINE) {
-
-		if (type == BC_LEX_STR) s = bc_parse_str(p, BC_INST_PRINT_POP);
+	do {
+		if (t == BC_LEX_STR) s = bc_parse_str(p, BC_INST_PRINT_POP);
 		else {
 			s = bc_parse_expr_status(p, 0, bc_parse_next_print);
 			if (s) return s;
@@ -409,13 +408,14 @@ BcStatus bc_parse_print(BcParse *p) {
 
 		comma = p->l.t.t == BC_LEX_COMMA;
 		if (comma) s = bc_lex_next(&p->l);
-		type = p->l.t.t;
-	}
+		t = p->l.t.t;
+	} while (!s && !BC_PARSE_VALID_END_TOKEN(t));
 
 	if (s) return s;
 	if (comma) return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
+	if (t != BC_LEX_RBRACE) s = bc_lex_next(&p->l);
 
-	return bc_lex_next(&p->l);
+	return s;
 }
 
 BcStatus bc_parse_return(BcParse *p) {
@@ -433,7 +433,7 @@ BcStatus bc_parse_return(BcParse *p) {
 	t = p->l.t.t;
 	paren = t == BC_LEX_LPAREN;
 
-	if (t == BC_LEX_NLINE || t == BC_LEX_SCOLON) bc_parse_push(p, BC_INST_RET0);
+	if (BC_PARSE_VALID_END_TOKEN(t)) bc_parse_push(p, BC_INST_RET0);
 	else {
 
 		s = bc_parse_expr_error(p, 0, bc_parse_next_expr);
@@ -474,7 +474,6 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 	has_brace = (BC_PARSE_BRACE(p) != 0);
 
 	do {
-
 		size_t len = p->flags.len;
 
 		if (has_brace && !brace)
@@ -766,6 +765,7 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
+	// I need to check for right brace specifically.
 	if (p->l.t.t != BC_LEX_SCOLON && p->l.t.t != BC_LEX_NLINE)
 	{
 		bool good = false;
@@ -917,10 +917,11 @@ BcStatus bc_parse_auto(BcParse *p) {
 	if (comma) return bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
 	if (!one) return bc_vm_error(BC_ERROR_PARSE_NO_AUTO, p->l.line);
 
-	if (p->l.t.t != BC_LEX_NLINE && p->l.t.t != BC_LEX_SCOLON)
+	if (!BC_PARSE_VALID_END_TOKEN(p->l.t.t))
 		return bc_vm_error(BC_ERROR_PARSE_BAD_TOKEN, p->l.line);
+	else if (p->l.t.t == BC_LEX_RBRACE) s = bc_lex_next(&p->l);
 
-	return bc_lex_next(&p->l);
+	return s;
 
 err:
 	free(name);

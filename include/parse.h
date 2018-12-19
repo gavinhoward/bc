@@ -80,6 +80,9 @@
 
 #define BC_PARSE_CAN_EXEC(parse) (BC_PARSE_TOP_FLAG(parse) == 0)
 
+#define BC_PARSE_VALID_END_TOKEN(t) \
+	((t) == BC_LEX_SCOLON || (t) == BC_LEX_NLINE || (t) == BC_LEX_RBRACE)
+
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (char) (i)))
 
 #define bc_parse_number(p) \
