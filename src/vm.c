@@ -255,13 +255,12 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	s = bc_vm_process(vm, data, false);
 	if (s) goto err;
 
-	if (vm->prs.flags.len > 1)
-		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
-
 	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
 	ip = bc_vec_item(&vm->prog.stack, 0);
 
-	if (!BC_PARSE_CAN_EXEC(&vm->prs) || main_func->code.len < ip->idx)
+	if (vm->prs.flags.len > 1)
+		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
+	else if (!BC_PARSE_CAN_EXEC(&vm->prs) || main_func->code.len < ip->idx)
 		s = bc_vm_err(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE);
 
 err:
