@@ -411,7 +411,8 @@ make "$libname" > /dev/null
 err="$?"
 
 if [ "$err" -ne 0 ]; then
-	usage "\\nHOSTCC ($HOSTCC) is not compatible with gcc/clang options"
+	printf '\n'
+	usage "HOSTCC ($HOSTCC) is not compatible with gcc/clang options"
 fi
 
 make > /dev/null
@@ -419,5 +420,6 @@ make > /dev/null
 err="$?"
 
 if [ "$err" -ne 0 ]; then
-	usage "\\nCC ($CC) is not compatible with gcc/clang options"
+	printf '\n'
+	usage "CC ($CC) is not compatible with gcc/clang options"
 fi
