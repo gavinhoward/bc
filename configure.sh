@@ -26,18 +26,20 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-b|-d|-c] [-hHS] [-g(-m|-r)|-N] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-b|-d|-c] [-ghHS] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" is specified too.\n'
 	printf '    -c\n'
 	printf '        Generate test coverage code. Requires gcov and regcovr.\n'
 	printf '        It is an error if either "-b" or "-d" is specified.\n'
-	printf '        Implies "-N".\n'
+	printf '        Requires a compiler that use gcc-compatible coverage options\n'
 	printf '    -d\n'
 	printf '        Build dc only. It is an error if "-b" is specified too.\n'
 	printf '    -g\n'
-	printf '        Build in debug mode.\n'
+	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
+	printf '        other CFLAGS, also adds the "-O0" flag. If this flag is *not*\n'
+	printf '        given, "-DNDEBUG" is added to CPPFLAGS.\n'
 	printf '    -h\n'
 	printf '        Print this help message and exit.\n'
 	printf '    -H\n'
@@ -45,15 +47,6 @@ usage() {
 	printf '    -k KARATSUBA_LEN\n'
 	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 32).\n'
 	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 2.\n'
-	printf '    -m\n'
-	printf '        Enable minimum-size release flags (-Os -DNDEBUG -s).\n'
-	printf '        It is an error if \"-r\" or \"-g\" are specified too.\n'
-	printf '    -N\n'
-	printf '        Disable default CFLAGS. It is an error to specify this option\n'
-	printf '        with any of \"-g\", \"-m\", or \"-r\".\n'
-	printf '    -r\n'
-	printf '        Enable default release flags (-O3 -DNDEBUG -s). On by default.\n'
-	printf '        If given with \"-g\", a debuggable release will be built.\n'
 	printf '        It is an error if \"-m\" is specified too.\n'
 	printf '    -S\n'
 	printf '        Disable signal handling. On by default.\n'
@@ -169,9 +162,7 @@ bc_only=0
 dc_only=0
 coverage=0
 karatsuba_len=32
-min_size=0
 debug=0
-release=0
 signals=1
 hist=1
 none=0
@@ -186,11 +177,7 @@ while getopts "bcdghHk:mNrS" opt; do
 		h) usage ;;
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
-		m) min_size=1 ;;
-		N) none=1 ;;
-		r) release=1 ;;
 		S) signals=0 ;;
-		t) hist=1 ;;
 		?) usage "Invalid option" ;;
 	esac
 
@@ -207,18 +194,6 @@ esac
 
 if [ "$karatsuba_len" -lt 2 ]; then
 	usage "KARATSUBA_LEN is less than 2"
-fi
-
-if [ "$release" -eq 1 -a "$min_size" -eq 1 ]; then
-	usage "Can only specify one of -r or -m"
-fi
-
-if [ "$none" -eq 1 ]; then
-
-	if [ "$release" -eq 1 -o "$min_size" -eq 1 -o "$debug" -eq 1 ]; then
-		usage "Cannot specify -N (or -c) with -r, -m, or -g"
-	fi
-
 fi
 
 set -e
@@ -302,24 +277,13 @@ fi
 
 if [ "$debug" -eq 1 ]; then
 
-	CFLAGS="$CFLAGS -g -fno-omit-frame-pointer"
-
-	if [ "$release" -ne 1 -a "$min_size" -ne 1 ]; then
-		CFLAGS="$CFLAGS -O0"
+	if [ "$CFLAGS" = "" ]; then
+		CFLAGS="-O0"
 	fi
+
+	CFLAGS="$CFLAGS -g"
 else
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
-	LDFLAGS="$LDFLAGS -s"
-fi
-
-if [ "$release" -eq 1 -o "$none" -eq 0 ]; then
-	if [ "$debug" -ne 1 ]; then
-		CFLAGS="$CFLAGS -O3"
-	fi
-fi
-
-if [ "$min_size" -eq 1 ]; then
-	CFLAGS="$CFLAGS -Os"
 fi
 
 if [ "$coverage" -eq 1 ]; then
@@ -406,7 +370,7 @@ libname=$(make libcname)
 
 set +e
 
-make "$libname" > /dev/null
+make "$libname" > /dev/null 2>&1
 
 err="$?"
 
@@ -415,7 +379,7 @@ if [ "$err" -ne 0 ]; then
 	usage "HOSTCC ($HOSTCC) is not compatible with gcc/clang options"
 fi
 
-make > /dev/null
+make > /dev/null 2>&1
 
 err="$?"
 
