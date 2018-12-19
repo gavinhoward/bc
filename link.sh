@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf "usage: %s bin_dir link\n" "$0" 1>&2
+	printf "usage: %s bin_dir link [strip]\n" "$0" 1>&2
 	exit 1
 }
 
@@ -26,6 +26,12 @@ shift
 
 link="$1"
 shift
+
+if [ "$#" -gt 0 ]; then
+	str=1
+else
+	str=0
+fi
 
 cd "$bindir"
 
@@ -42,9 +48,11 @@ for exe in ./*; do
 			name="$link"
 		fi
 
-		ln -fs "$exe" "./$name"
+		if [ "$str" -eq 1 ]; then
+			strip "$exe"
+		fi
 
-		exit 0
+		ln -fs "$exe" "./$name"
 	fi
 
 done

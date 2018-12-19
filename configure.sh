@@ -285,6 +285,7 @@ if [ "$debug" -eq 1 ]; then
 	CFLAGS="$CFLAGS -g"
 else
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
+	link="$link 1"
 fi
 
 if [ "$coverage" -eq 1 ]; then
