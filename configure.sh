@@ -20,68 +20,67 @@ usage() {
 
 		val=1
 
-		echo "$1"
-		echo ""
+		printf "%s\n\n" "$1"
 
 	else
 		val=0
 	fi
 
-	echo "usage: $0 [-b|-d|-c] [-hHS] [-g(-m|-r)|-N] [-k KARATSUBA_LEN]"
-	echo ""
-	echo "    -b"
-	echo "        Build bc only. It is an error if \"-d\" is specified too."
-	echo "    -c"
-	echo "        Generate test coverage code. Requires gcov and regcovr."
-	echo "        It is an error if either \"-b\" or \"-d\" is specified."
-	echo "        Implies \"-N\"."
-	echo "    -d"
-	echo "        Build dc only. It is an error if \"-b\" is specified too."
-	echo "    -g"
-	echo "        Build in debug mode."
-	echo "    -h"
-	echo "        Print this help message and exit."
-	echo "    -H"
-	echo "        Disable history (currently not implemented)."
-	echo "    -k KARATSUBA_LEN"
-	echo "        Set the karatsuba length to KARATSUBA_LEN (default is 32)."
-	echo "        It is an error if KARATSUBA_LEN is not a number or is less than 2."
-	echo "    -m"
-	echo "        Enable minimum-size release flags (-Os -DNDEBUG -s)."
-	echo "        It is an error if \"-r\" or \"-g\" are specified too."
-	echo "    -N"
-	echo "        Disable default CFLAGS. It is an error to specify this option"
-	echo "        with any of \"-g\", \"-m\", or \"-r\"."
-	echo "    -r"
-	echo "        Enable default release flags (-O3 -DNDEBUG -s). On by default."
-	echo "        If given with \"-g\", a debuggable release will be built."
-	echo "        It is an error if \"-m\" is specified too."
-	echo "    -S"
-	echo "        Disable signal handling. On by default."
-	echo ""
-	echo "In addition, the following environment variables are used:"
-	echo ""
-	echo "    CC        C compiler. Must be either gcc or clang."
-	echo "    HOSTCC    Host C compiler."
-	echo "    CFLAGS    C compiler flags. You can use this for extra optimization flags."
-	echo "    CPPFLAGS  C preprocessor flags."
-	echo "    LDFLAGS   Linker flags."
-	echo "    PREFIX    the prefix to install to. Default is /usr/local."
-	echo "              If PREFIX is \"/usr\", install path will be \"/usr/bin\"."
-	echo "    DESTDIR   For package creation."
-	echo "    GEN_EMU   Emulator to run string generator code under"
-	echo "              (leave empty if not necessary)."
+	printf 'usage: %s [-b|-d|-c] [-hHS] [-g(-m|-r)|-N] [-k KARATSUBA_LEN]\n' "$0"
+	printf '\n'
+	printf '    -b\n'
+	printf '        Build bc only. It is an error if "-d" is specified too.\n'
+	printf '    -c\n'
+	printf '        Generate test coverage code. Requires gcov and regcovr.\n'
+	printf '        It is an error if either "-b" or "-d" is specified.\n'
+	printf '        Implies "-N".\n'
+	printf '    -d\n'
+	printf '        Build dc only. It is an error if "-b" is specified too.\n'
+	printf '    -g\n'
+	printf '        Build in debug mode.\n'
+	printf '    -h\n'
+	printf '        Print this help message and exit.\n'
+	printf '    -H\n'
+	printf '        Disable history (currently not implemented).\n'
+	printf '    -k KARATSUBA_LEN\n'
+	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 32).\n'
+	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 2.\n'
+	printf '    -m\n'
+	printf '        Enable minimum-size release flags (-Os -DNDEBUG -s).\n'
+	printf '        It is an error if \"-r\" or \"-g\" are specified too.\n'
+	printf '    -N\n'
+	printf '        Disable default CFLAGS. It is an error to specify this option\n'
+	printf '        with any of \"-g\", \"-m\", or \"-r\".\n'
+	printf '    -r\n'
+	printf '        Enable default release flags (-O3 -DNDEBUG -s). On by default.\n'
+	printf '        If given with \"-g\", a debuggable release will be built.\n'
+	printf '        It is an error if \"-m\" is specified too.\n'
+	printf '    -S\n'
+	printf '        Disable signal handling. On by default.\n'
+	printf '\n'
+	printf 'In addition, the following environment variables are used:\n'
+	printf '\n'
+	printf '    CC        C compiler. Must be compatible with gcc or clang options.\n'
+	printf '    HOSTCC    Host C compiler.\n'
+	printf '    CFLAGS    C compiler flags. You can use this for extra optimization flags.\n'
+	printf '    CPPFLAGS  C preprocessor flags.\n'
+	printf '    LDFLAGS   Linker flags.\n'
+	printf '    PREFIX    the prefix to install to. Default is /usr/local.\n'
+	printf '              If PREFIX is \"/usr\", install path will be \"/usr/bin\".\n'
+	printf '    DESTDIR   For package creation.\n'
+	printf '    GEN_EMU   Emulator to run string generator code under\n'
+	printf '              (leave empty if not necessary).\n'
 	exit "$val"
 }
 
 err_exit() {
 
 	if [ "$#" -ne 1 ]; then
-		echo "Invalid number of args to err_exit"
+		printf 'Invalid number of args to err_exit\n'
 		exit 1
 	fi
 
-	echo "$1"
+	printf '%s\n' "$1"
 	exit 1
 }
 
@@ -95,9 +94,9 @@ replace_ext() {
 	ext1="$2"
 	ext2="$3"
 
-	result=$(echo "$file" | sed -e "s@\.$ext1@\.$ext2@")
+	result=$(printf "$file" | sed -e "s@\.$ext1@\.$ext2@")
 
-	echo "$result"
+	printf '%s\n' "$result"
 }
 
 replace_exts() {
@@ -115,7 +114,7 @@ replace_exts() {
 		result="$result $new_name"
 	done
 
-	echo "$result"
+	printf '%s\n' "$result"
 }
 
 replace() {
@@ -130,7 +129,7 @@ replace() {
 
 	result=$(printf '%s' "$str" | sed -e "s!%%$needle%%!$replacement!g")
 
-	echo "$result"
+	printf '%s\n' "$result"
 }
 
 gen_file_lists() {
@@ -163,7 +162,7 @@ gen_file_lists() {
 
 	contents=$(replace "$contents" "$needle" "$replacement")
 
-	echo "$contents"
+	printf '%s\n' "$contents"
 }
 
 bc_only=0
@@ -231,7 +230,7 @@ scriptdir=$(dirname "$script")
 contents=$(cat "$scriptdir/Makefile.in")
 
 needle="WARNING"
-replacement="# *** WARNING: Autogenerated from Makefile.in. DO NOT MODIFY ***\n#"
+replacement='# *** WARNING: Autogenerated from Makefile.in. DO NOT MODIFY ***\n#'
 
 contents=$(replace "$contents" "$needle" "$replacement")
 
@@ -239,7 +238,7 @@ contents=$(gen_file_lists "$contents" "$scriptdir/src" "")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/bc" "BC_")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/dc" "DC_")
 
-link="@echo \"No link necessary\""
+link='@printf "No link necessary\\\\n"'
 main_exec="BC_EXEC"
 
 bc_test="tests/all.sh bc"
@@ -252,15 +251,15 @@ timeconst="tests/bc/timeconst.sh"
 if [ "$debug" -ne 0 ]; then
 	vg_bc_test="tests/all.sh bc valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
 	vg_dc_test="tests/all.sh dc valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
-	timeconst_vg="echo \"100\" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
+	timeconst_vg='printf "100\\\\n" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc'
 else
-	vg_bc_test="@echo \"Cannot run valgrind without debug flags\""
-	vg_dc_test="@echo \"Cannot run valgrind without debug flags\""
-	timeconst_vg="@echo \"Cannot run valgrind without debug flags\""
+	vg_bc_test='@printf "Cannot run valgrind without debug flags\\\\n"'
+	vg_dc_test='@printf "Cannot run valgrind without debug flags\\\\n"'
+	timeconst_vg='@printf "Cannot run valgrind without debug flags\\\\n"'
 fi
 
-karatsuba="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
-karatsuba_test="@echo \"karatsuba cannot be run because one of bc or dc is not built\""
+karatsuba='@printf "karatsuba cannot be run because one of bc or dc is not built\\\\n"'
+karatsuba_test='@printf "karatsuba cannot be run because one of bc or dc is not built\\\\n"'
 
 if [ "$bc_only" -eq 1 ]; then
 
@@ -269,8 +268,8 @@ if [ "$bc_only" -eq 1 ]; then
 
 	executables="bc"
 
-	dc_test="@echo \"No dc tests to run\""
-	vg_dc_test="@echo \"No dc tests to run\""
+	dc_test='@printf "No dc tests to run\\\\n"'
+	vg_dc_test='@printf "No dc tests to run\\\\n"'
 
 elif [ "$dc_only" -eq 1 ]; then
 
@@ -281,11 +280,11 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	main_exec="DC_EXEC"
 
-	bc_test="@echo \"No bc tests to run\""
-	vg_bc_test="@echo \"No bc tests to run\""
+	bc_test='@printf "No bc tests to run\\\\n"'
+	vg_bc_test='@printf "No bc tests to run\\\\n"'
 
-	timeconst="@echo \"timeconst cannot be run because bc is not built\""
-	timeconst_vg="@echo \"timeconst cannot be run because bc is not built\""
+	timeconst='@printf "timeconst cannot be run because bc is not built\\\\n"'
+	timeconst_vg='@printf "timeconst cannot be run because bc is not built\\\\n"'
 
 else
 
@@ -339,7 +338,7 @@ if [ "$coverage" -eq 1 ]; then
 
 else
 
-	COVERAGE="@echo \"Coverage not generated\""
+	COVERAGE='@printf "Coverage not generated\\\\n"'
 	COVERAGE_PREREQS=""
 
 fi
@@ -395,21 +394,19 @@ contents=$(replace "$contents" "TIMECONST_VG" "$timeconst_vg")
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
 
-contents=$(printf '%s' "$contents" | sed -e "s!\n\n!\n!g")
-
-echo "$contents" > "$scriptdir/Makefile"
+printf '%s\n' "$contents" > "$scriptdir/Makefile"
 
 cd "$scriptdir"
 
 make clean > /dev/null
 
-echo "Testing C compilers..."
+printf 'Testing C compilers...\n'
 
 libname=$(make libcname)
 
 set +e
 
-make "$libname" > /dev/null 2>&1
+make "$libname" > /dev/null
 
 err="$?"
 
@@ -417,10 +414,10 @@ if [ "$err" -ne 0 ]; then
 	usage "\nHOSTCC ($HOSTCC) is not compatible with gcc/clang options"
 fi
 
-make > /dev/null 2>&1
+make > /dev/null
 
 err="$?"
 
 if [ "$err" -ne 0 ]; then
-	usage "\nCC ($HOSTCC) is not compatible with gcc/clang options"
+	usage "\nCC ($CC) is not compatible with gcc/clang options"
 fi

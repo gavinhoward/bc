@@ -87,7 +87,7 @@ res = subprocess.run(["make", "libcname"], stdout=subprocess.PIPE)
 if res.returncode != 0:
 	sys.exit(res.returncode)
 
-libcname = res.stdout.decode("utf-8")[:-1]
+libcname = res.stdout.decode("utf-8")
 
 res = subprocess.run(["make", libcname])
 
@@ -139,7 +139,7 @@ res = subprocess.run(["make", "version"], stdout=subprocess.PIPE)
 if res.returncode != 0:
 	sys.exit(res.returncode)
 
-version = '"' + res.stdout.decode("utf-8")[:-1] + '"'
+version = '"' + res.stdout.decode("utf-8") + '"'
 
 r = re.compile(BC_VERSION, re.M)
 content = r.sub(version, content)

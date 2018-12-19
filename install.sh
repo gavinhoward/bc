@@ -40,7 +40,7 @@ for exe in ./*; do
 
 	if [ -L "$exe" ]; then
 		L=$(ls -dl "$exe")
-		link=$(echo ${L#*-> })
+		link=$(printf ${L#*-> })
 		"$INSTALL" -Dlm 755 "$link" "$installdir/$base"
 	else
 		"$INSTALL" -Dm 755 "$exe" "$installdir/$base"

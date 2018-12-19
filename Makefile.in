@@ -72,8 +72,6 @@ KARATSUBA = ./karatsuba.py
 
 VALGRIND_ARGS = --error-exitcode=1 --leak-check=full --show-leak-kinds=all
 
--include config.mak
-
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
 CFLAGS1 = %%CFLAGS%%
@@ -111,32 +109,32 @@ make_bin:
 	mkdir -p $(BIN)
 
 help:
-	@echo "all targets use config.mak, if there is one"
-	@echo ""
-	@echo "available targets:"
-	@echo ""
-	@echo "    all (default)   builds %%EXECUTABLES%%"
-	@echo "    clean           removes all build files"
-	@echo "    clean_tests     removes all build files as well as generated tests"
-	@echo "    install         installs to $(DESTDIR)$(PREFIX)/bin"
-	@echo "    karatsuba       runs the karatsuba script (requires Python 3)"
-	@echo "    karatsuba_test  runs the karatsuba script while running tests"
-	@echo "                    (requires Python 3)"
-	@echo "    uninstall       uninstalls from $(DESTDIR)$(PREFIX)/bin"
-	@echo "    test            runs the test suite"
-	@echo "    test_all        runs the test suite as well as the Linux timeconst.bc test,"
-	@echo "                    if bc has been built"
-	@echo "    test_bc         runs the bc test suite only, if bc has been built"
-	@echo "    test_dc         runs the dc test suite only, if dc has been built"
-	@echo "    timeconst       runs the test on the Linux timeconst.bc script,"
-	@echo "                    if bc has been built"
-	@echo "    valgrind        runs the test suite through valgrind"
-	@echo "    valgrind_all    runs the test suite, and the Linux timeconst.bc test,"
-	@echo "                    if bc has been built, through valgrind"
-	@echo "    valgrind_bc     runs the bc test suite only, if bc has been built,"
-	@echo "                    through valgrind"
-	@echo "    valgrind_dc     runs the dc test suite only, if dc has been built,"
-	@echo "                    through valgrind"
+	@printf 'all targets use config.mak, if there is one\n'
+	@printf '\n'
+	@printf 'available targets:\n'
+	@printf '\n'
+	@printf '    all (default)   builds %%EXECUTABLES%%\n'
+	@printf '    clean           removes all build files\n'
+	@printf '    clean_tests     removes all build files as well as generated tests\n'
+	@printf '    install         installs to %s%s/bin\n' "$(DESTDIR)" "$(PREFIX)"
+	@printf '    karatsuba       runs the karatsuba script (requires Python 3)\n'
+	@printf '    karatsuba_test  runs the karatsuba script while running tests\n'
+	@printf '                    (requires Python 3)\n'
+	@printf '    uninstall       uninstalls from %s%s/bin\n' "$(DESTDIR)" "$(PREFIX)"
+	@printf '    test            runs the test suite\n'
+	@printf '    test_all        runs the test suite as well as the Linux timeconst.bc test,\n'
+	@printf '                    if it exists and bc has been built\n'
+	@printf '    test_bc         runs the bc test suite, if bc has been built\n'
+	@printf '    test_dc         runs the dc test suite, if dc has been built\n'
+	@printf '    timeconst       runs the test on the Linux timeconst.bc script,\n'
+	@printf '                    if it exists and bc has been built\n'
+	@printf '    valgrind        runs the test suite through valgrind\n'
+	@printf '    valgrind_all    runs the test suite, and the Linux timeconst.bc test,\n'
+	@printf '                    if it exists and bc has been built, through valgrind\n'
+	@printf '    valgrind_bc     runs the bc test suite, if bc has been built,\n'
+	@printf '                    through valgrind\n'
+	@printf '    valgrind_dc     runs the dc test suite, if dc has been built,\n'
+	@printf '                    through valgrind\n'
 
 test_all: test timeconst
 
@@ -174,10 +172,10 @@ coverage:%%COVERAGE_PREREQS%%
 	%%COVERAGE%%
 
 version:
-	@echo "$(VERSION)"
+	@printf "$(VERSION)"
 
 libcname:
-	@echo "$(BC_LIB_C)"
+	@printf "$(BC_LIB_C)"
 
 clean:
 	$(RM) -f $(OBJ)
