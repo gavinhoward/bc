@@ -685,9 +685,9 @@ BcStatus bc_parse_for(BcParse *p) {
 	else {
 
 		// Set this for the next call to bc_parse_number.
-		// This is safe to set because the current token is a semicolon,
-		// which has no string requirement.
-		bc_vec_string(&p->l.t.v, sizeof(bc_parse_const1) - 1, bc_parse_const1);
+		// This is safe to set because the current token
+		// is a semicolon, which has no string requirement.
+		bc_vec_string(&p->l.t.v, strlen(bc_parse_const1), bc_parse_const1);
 		bc_parse_number(p);
 
 		s = bc_vm_posixError(BC_ERROR_POSIX_FOR2, p->l.line);
