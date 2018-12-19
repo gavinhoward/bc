@@ -79,6 +79,7 @@ void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, char inst) {
 }
 
 BcStatus bc_parse_text(BcParse *p, const char *text) {
+	// Make sure the pointer isn't invalidated.
 	p->func = bc_vec_item(&p->prog->fns, p->fidx);
 	return bc_lex_text(&p->l, text);
 }

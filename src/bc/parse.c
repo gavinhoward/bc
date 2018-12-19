@@ -794,6 +794,7 @@ BcStatus bc_parse_func(BcParse *p) {
 	bool var, comma = false;
 	uint16_t flags;
 	char *name;
+	size_t idx;
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
@@ -803,9 +804,9 @@ BcStatus bc_parse_func(BcParse *p) {
 	assert(p->prog->fns.len == p->prog->fn_map.len);
 
 	name = bc_vm_strdup(p->l.t.v.v);
-	p->fidx = bc_program_addFunc(p->prog, name);
-	assert(p->fidx);
-	p->func = bc_vec_item(&p->prog->fns, p->fidx);
+	idx = bc_program_addFunc(p->prog, name);
+	assert(idx);
+	bc_parse_updateFunc(p, idx);
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
