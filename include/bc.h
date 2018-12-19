@@ -41,7 +41,7 @@ extern const char bc_help[];
 
 typedef struct BcLexKeyword {
 	const char name[9];
-	const char len;
+	const uchar len;
 	const bool posix;
 } BcLexKeyword;
 
@@ -57,9 +57,9 @@ BcStatus bc_lex_token(BcLex *l);
 	(p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)
 
 // We can calculate the conversion between tokens and exprs by subtracting the
-// position of the first operator in the lex enum and adding the position of the
-// first in the expr enum. Note: This only works for binary operators.
-#define BC_PARSE_TOKEN_INST(t) ((char) ((t) - BC_LEX_NEG + BC_INST_NEG))
+// position of the first operator in the lex enum and adding the position of
+// the first in the expr enum. Note: This only works for binary operators.
+#define BC_PARSE_TOKEN_INST(t) ((uchar) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
 // ** Exclude start. **
 // ** Busybox exclude start. **

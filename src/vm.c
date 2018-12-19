@@ -277,8 +277,8 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 
 	bc_lex_file(&vm->prs.l, bc_program_stdin_name);
 
-	bc_vec_init(&buffer, sizeof(char), NULL);
-	bc_vec_init(&buf, sizeof(char), NULL);
+	bc_vec_init(&buffer, sizeof(uchar), NULL);
+	bc_vec_init(&buf, sizeof(uchar), NULL);
 	bc_vec_pushByte(&buffer, '\0');
 
 	// This loop is complex because the vm tries not to send any lines that end
@@ -299,7 +299,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		for (i = 0; i < len; ++i) {
 
 			bool notend = len > i + 1;
-			char c = str[i];
+			uchar c = str[i];
 
 			if (!comment && (i - 1 > len || str[i - 1] != '\\')) {
 				if (BC_IS_BC) string ^= c == '"';
@@ -406,7 +406,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	vm->line_len = bc_vm_envLen(env_len);
 
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
-	bc_vec_init(&vm->exprs, sizeof(char), NULL);
+	bc_vec_init(&vm->exprs, sizeof(uchar), NULL);
 
 	bc_program_init(&vm->prog);
 	vm->parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);

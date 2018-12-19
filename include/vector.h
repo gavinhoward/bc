@@ -32,6 +32,9 @@
 #define BC_VEC_INVALID_IDX ((size_t) -1)
 #define BC_VEC_START_CAP (1<<5)
 
+// All chars must be unsigned, unless explicitly labeled as "signed".
+typedef unsigned char uchar;
+
 typedef void (*BcVecFree)(void*);
 
 typedef struct BcVec {
@@ -50,8 +53,8 @@ void bc_vec_expand(BcVec *v, size_t req);
 void bc_vec_npop(BcVec *v, size_t n);
 
 void bc_vec_push(BcVec *v, const void *data);
-void bc_vec_pushByte(BcVec *v, char data);
-void bc_vec_string(BcVec *v, size_t len, const char *str);
+void bc_vec_pushByte(BcVec *v, uchar data);
+void bc_vec_string(BcVec *v, size_t len, const char* str);
 void bc_vec_concat(BcVec *v, const char *str);
 
 #if BC_ENABLE_HISTORY

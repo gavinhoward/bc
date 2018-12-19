@@ -36,7 +36,7 @@ BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcLexType t;
-	char l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
+	uchar l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
 	bool left = bc_parse_ops[type - BC_LEX_OP_INC].left;
 
 	while (p->ops.len > start) {
@@ -292,7 +292,7 @@ BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 {
 	BcStatus s;
 	BcLexType type;
-	char inst;
+	uchar inst;
 	BcInst etype = *prev;
 
 	if (etype == BC_INST_VAR || etype == BC_INST_ARRAY_ELEM ||
@@ -1306,8 +1306,8 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_PARSE_LEAF(prev, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
-				prev = (char) (t - BC_LEX_KEY_IBASE + BC_INST_IBASE);
-				bc_parse_push(p, (char) prev);
+				prev = (uchar) (t - BC_LEX_KEY_IBASE + BC_INST_IBASE);
+				bc_parse_push(p, (uchar) prev);
 
 				paren_expr = get_token = true;
 				rprn = bin_last = false;

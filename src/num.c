@@ -871,7 +871,7 @@ void bc_num_printNewline(size_t *nchars) {
 void bc_num_printChar(size_t num, size_t width, bool radix, size_t *nchars)
 {
 	(void) radix;
-	bc_vm_putchar((char) num);
+	bc_vm_putchar((uchar) num);
 	*nchars = *nchars + width;
 }
 #endif // DC_ENABLED
@@ -892,7 +892,7 @@ void bc_num_printDigits(size_t num, size_t width, bool radix, size_t *nchars) {
 		bc_num_printNewline(nchars);
 		dig = num / pow;
 		num -= dig * pow;
-		bc_vm_putchar(((char) dig) + '0');
+		bc_vm_putchar(((uchar) dig) + '0');
 	}
 }
 

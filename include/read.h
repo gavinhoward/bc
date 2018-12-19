@@ -28,7 +28,7 @@
 #include <status.h>
 #include <vector.h>
 
-#define BC_READ_BIN_CHAR(c) ((((c) < ' ' && !isspace((c))) || (c) > '~'))
+#define BC_READ_BIN_CHAR(c) (((c) < ' ' && !isspace((c))) || ((uchar) c) > '~')
 
 // ** Exclude start. **
 // ** Busybox exclude start. **

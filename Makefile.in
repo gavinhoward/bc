@@ -76,7 +76,7 @@ VALGRIND_ARGS = --error-exitcode=1 --leak-check=full --show-leak-kinds=all
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
 CFLAGS1 = %%CFLAGS%%
-CFLAGS = $(CFLAGS1) -Wall -Wextra -pedantic -std=c99 -funsigned-char
+CFLAGS = $(CFLAGS1)
 
 CPPFLAGS1 = %%CPPFLAGS%%
 CPPFLAGS2 = $(CPPFLAGS1) -D$(BC_ENABLED_NAME)=$(BC_ENABLED) -D$(DC_ENABLED_NAME)=$(DC_ENABLED)

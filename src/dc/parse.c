@@ -61,7 +61,7 @@ BcStatus dc_parse_string(BcParse *p) {
 	return bc_lex_next(&p->l);
 }
 
-BcStatus dc_parse_mem(BcParse *p, char inst, bool name, bool store) {
+BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
 
 	BcStatus s;
 
@@ -80,7 +80,7 @@ BcStatus dc_parse_mem(BcParse *p, char inst, bool name, bool store) {
 	return bc_lex_next(&p->l);
 }
 
-BcStatus dc_parse_cond(BcParse *p, char inst) {
+BcStatus dc_parse_cond(BcParse *p, uchar inst) {
 
 	BcStatus s;
 
@@ -107,7 +107,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst prev;
-	char inst;
+	uchar inst;
 	bool assign, get_token = false;
 
 	switch (t) {

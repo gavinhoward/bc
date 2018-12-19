@@ -31,7 +31,7 @@
 #include <lex.h>
 #include <lang.h>
 
-#define BC_PARSE_STREND ((char) UCHAR_MAX)
+#define BC_PARSE_STREND ((uchar) UCHAR_MAX)
 
 #define BC_PARSE_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
@@ -83,7 +83,7 @@
 #define BC_PARSE_VALID_END_TOKEN(t) \
 	((t) == BC_LEX_SCOLON || (t) == BC_LEX_NLINE || (t) == BC_LEX_RBRACE)
 
-#define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (char) (i)))
+#define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
 
 #define bc_parse_number(p) \
 	(bc_parse_addId((p), &(p)->prog->const_map, &(p)->prog->consts, BC_INST_NUM))
@@ -92,7 +92,7 @@
 	(bc_parse_addId((p), &(p)->prog->str_map, &(p)->prog->strs, BC_INST_STR))
 
 typedef struct BcOp {
-	char prec;
+	uchar prec;
 	bool left;
 } BcOp;
 
@@ -147,7 +147,7 @@ void bc_parse_create(BcParse *p, struct BcProgram *prog, size_t func,
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 
-void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, char inst);
+void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, uchar inst);
 void bc_parse_updateFunc(BcParse *p, size_t fidx);
 size_t bc_parse_addFunc(BcParse *p, char *name);
 void bc_parse_pushName(BcParse* p, char *name);

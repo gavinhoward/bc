@@ -63,6 +63,7 @@ usage() {
 	printf '    DESTDIR   For package creation.\n'
 	printf '    GEN_EMU   Emulator to run string generator code under\n'
 	printf '              (leave empty if not necessary).\n'
+
 	exit "$val"
 }
 
@@ -310,9 +311,6 @@ fi
 if [ "$PREFIX" = "" ]; then
 	PREFIX="/usr/local"
 fi
-
-gcc="gcc"
-clang="clang"
 
 if [ "$CC" = "" ]; then
 	CC="c99"

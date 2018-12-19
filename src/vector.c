@@ -69,8 +69,8 @@ void bc_vec_push(BcVec *v, const void *data) {
 	v->len += 1;
 }
 
-void bc_vec_pushByte(BcVec *v, char data) {
-	assert(v && v->size == sizeof(char));
+void bc_vec_pushByte(BcVec *v, uchar data) {
+	assert(v && v->size == sizeof(uchar));
 	bc_vec_push(v, &data);
 }
 

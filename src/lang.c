@@ -58,7 +58,7 @@ BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line) {
 
 void bc_func_init(BcFunc *f) {
 	assert(f);
-	bc_vec_init(&f->code, sizeof(char), NULL);
+	bc_vec_init(&f->code, sizeof(uchar), NULL);
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
 	f->nparams = 0;

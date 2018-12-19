@@ -61,18 +61,19 @@ void bc_parse_pushName(BcParse *p, char *name) {
 
 void bc_parse_pushIndex(BcParse *p, size_t idx) {
 
-	unsigned char amt, i, nums[sizeof(size_t)];
+	uchar amt, i, nums[sizeof(size_t)];
 
 	for (amt = 0; idx; ++amt) {
-		nums[amt] = (char) idx;
-		idx = (idx & ((unsigned long) ~(UCHAR_MAX))) >> sizeof(char) * CHAR_BIT;
+		nums[amt] = (uchar) idx;
+		idx &= ((unsigned long) ~(UCHAR_MAX));
+		idx >>= sizeof(char) * CHAR_BIT;
 	}
 
 	bc_parse_push(p, amt);
 	for (i = 0; i < amt; ++i) bc_parse_push(p, nums[i]);
 }
 
-void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, char inst) {
+void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, uchar inst) {
 	size_t idx = bc_program_addId(p->l.t.v.v, map, vec);
 	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);
