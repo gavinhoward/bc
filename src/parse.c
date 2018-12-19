@@ -34,9 +34,14 @@
 #include <program.h>
 #include <vm.h>
 
-void bc_parse_addFunc(BcParse *p, char *name, size_t *idx) {
-	bc_program_addFunc(p->prog, name, idx);
+size_t bc_parse_addFunc(BcParse *p, char *name) {
+
+	size_t idx = bc_program_addFunc(p->prog, name);
+
+	// Make sure that this pointer was not invalidated.
 	p->func = bc_vec_item(&p->prog->fns, p->fidx);
+
+	return idx;
 }
 
 void bc_parse_pushName(BcParse *p, char *name) {

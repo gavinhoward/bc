@@ -105,7 +105,7 @@ void bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
 // ** Exclude end. **
 
 size_t bc_program_addId(char* data, BcVec* map, BcVec* vec);
-void bc_program_addFunc(BcProgram *p, char *name, size_t *idx);
+size_t bc_program_addFunc(BcProgram *p, char *name);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 

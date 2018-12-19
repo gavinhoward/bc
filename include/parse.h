@@ -147,7 +147,7 @@ void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 
 void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, char inst);
-void bc_parse_addFunc(BcParse *p, char *name, size_t *idx);
+size_t bc_parse_addFunc(BcParse *p, char *name);
 void bc_parse_pushName(BcParse* p, char *name);
 void bc_parse_pushIndex(BcParse* p, size_t idx);
 BcStatus bc_parse_text(BcParse *p, const char *text);

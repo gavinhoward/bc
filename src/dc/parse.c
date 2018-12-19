@@ -53,7 +53,7 @@ BcStatus dc_parse_string(BcParse *p) {
 	size_t idx, len = p->prog->strs.len;
 
 	sprintf(b, "%0*zu", DC_PARSE_BUF_LEN, len);
-	bc_parse_addFunc(p, bc_vm_strdup(b), &idx);
+	idx = bc_parse_addFunc(p, bc_vm_strdup(b));
 	assert(idx == len + BC_PROG_REQ_FUNCS);
 
 	bc_parse_string(p);

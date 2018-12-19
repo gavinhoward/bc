@@ -1091,8 +1091,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	str[0] = c;
 	str[1] = '\0';
 
-	str2 = bc_vm_strdup(str);
-	bc_program_addFunc(p, str2, &idx);
+	bc_program_addFunc(p, bc_vm_strdup(str));
 	len = bc_program_addId(str, &p->str_map, &p->strs);
 
 	res.t = BC_RESULT_STR;
@@ -1334,9 +1333,9 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
 	bc_map_init(&p->fn_map);
 
-	bc_program_addFunc(p, bc_vm_strdup(bc_func_main), &idx);
+	idx = bc_program_addFunc(p, bc_vm_strdup(bc_func_main));
 	assert(idx == BC_PROG_MAIN);
-	bc_program_addFunc(p, bc_vm_strdup(bc_func_read), &idx);
+	idx = bc_program_addFunc(p, bc_vm_strdup(bc_func_read));
 	assert(idx == BC_PROG_READ);
 
 	bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free);
@@ -1382,20 +1381,21 @@ size_t bc_program_addId(char* data, BcVec *map, BcVec *vec) {
 	return idx;
 }
 
-void bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
+size_t bc_program_addFunc(BcProgram *p, char *name) {
 
 	BcId entry, *entry_ptr;
 	BcFunc f;
 	bool new;
+	size_t idx;
 
-	assert(p && name && idx);
+	assert(p && name);
 
 	entry.name = name;
 	entry.idx = p->fns.len;
 
-	new = bc_map_insert(&p->fn_map, &entry, idx);
-	entry_ptr = bc_vec_item(&p->fn_map, *idx);
-	*idx = entry_ptr->idx;
+	new = bc_map_insert(&p->fn_map, &entry, &idx);
+	entry_ptr = bc_vec_item(&p->fn_map, idx);
+	idx = entry_ptr->idx;
 
 	if (!new) {
 
@@ -1413,6 +1413,8 @@ void bc_program_addFunc(BcProgram *p, char *name, size_t *idx) {
 		bc_func_init(&f);
 		bc_vec_push(&p->fns, &f);
 	}
+
+	return idx;
 }
 
 BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
