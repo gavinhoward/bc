@@ -20,23 +20,21 @@
  *
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <assert.h>
 #include <string.h>
 
 #include <status.h>
-#include <vector.h>
 #include <dc.h>
 #include <vm.h>
-#include <args.h>
 
 #if DC_ENABLED
 int dc_main(int argc, char **argv) {
 
 	vm->help = dc_help;
 #if BC_ENABLE_SIGNALS
-	vm->sig_msg = "\ninterrupt (type \"q\" to exit)\n";
+	vm->sig_msg = dc_sig_msg;
+	vm->sig_len = dc_sig_len;
+	assert(strlen(vm->sig_msg) == vm->sig_len);
 #endif // BC_ENABLE_SIGNALS
 
 	vm->parse_init = dc_parse_init;

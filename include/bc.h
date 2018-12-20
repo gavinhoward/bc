@@ -75,6 +75,11 @@ BcStatus bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
 BcStatus bc_parse_else(BcParse *p);
 BcStatus bc_parse_stmt(BcParse *p);
 
+#if BC_ENABLE_SIGNALS
+extern const char bc_sig_msg[];
+extern const size_t bc_sig_len;
+#endif // BC_ENABLE_SIGNALS
+
 extern const char* const bc_parse_const1;
 extern const bool bc_parse_exprs[];
 extern const BcOp bc_parse_ops[];

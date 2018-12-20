@@ -115,6 +115,7 @@ typedef struct BcVm {
 #if BC_ENABLE_SIGNALS
 	unsigned long sig;
 	const char *sig_msg;
+	size_t sig_len;
 #endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_HISTORY

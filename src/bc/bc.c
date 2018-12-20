@@ -20,6 +20,9 @@
  *
  */
 
+#include <assert.h>
+#include <string.h>
+
 #include <status.h>
 #include <bc.h>
 #include <vm.h>
@@ -29,7 +32,9 @@ int bc_main(int argc, char **argv) {
 
 	vm->help = bc_help;
 #if BC_ENABLE_SIGNALS
-	vm->sig_msg = "\ninterrupt (type \"quit\" to exit)\n";
+	vm->sig_msg = bc_sig_msg;
+	vm->sig_len = bc_sig_len;
+	assert(strlen(vm->sig_msg) == vm->sig_len);
 #endif // BC_ENABLE_SIGNALS
 
 	vm->parse_init = bc_parse_init;

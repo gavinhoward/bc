@@ -115,6 +115,7 @@ extern const BcNumBinaryOp bc_program_ops[];
 extern const char bc_program_exprs_name[];
 extern const char bc_program_stdin_name[];
 extern const char bc_program_ready_msg[];
+extern const size_t bc_program_ready_len;
 // ** Busybox exclude end. **
 // ** Exclude end. **
 

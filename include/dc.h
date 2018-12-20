@@ -43,6 +43,11 @@ extern const char dc_help[];
 
 BcStatus dc_lex_token(BcLex *l);
 
+#if BC_ENABLE_SIGNALS
+extern const char dc_sig_msg[];
+extern const size_t dc_sig_len;
+#endif // BC_ENABLE_SIGNALS
+
 extern const BcLexType dc_lex_regs[];
 extern const size_t dc_lex_regs_len;
 
