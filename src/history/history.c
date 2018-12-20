@@ -1054,7 +1054,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		nread = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c);
 		if (nread <= 0) return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
-		switch(c) {
+		switch (c) {
 
 			case BC_ACTION_LINE_FEED:
 			case BC_ACTION_ENTER:
