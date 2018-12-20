@@ -92,3 +92,9 @@ for(i=1; i<=3; i++) { i; if(i==2) continue; print i,i,"\n" }
 
 print 1,2,3
 print "\n"
+
+ifz = 1
+ifz
+++ifz
+ifz++
+ifz

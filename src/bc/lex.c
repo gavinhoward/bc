@@ -39,8 +39,9 @@ BcStatus bc_lex_identifier(BcLex *l) {
 
 		unsigned long len = (unsigned long) bc_lex_kws[i].len;
 
-		if (strncmp(buf, bc_lex_kws[i].name, len) == 0) {
-
+		if (strncmp(buf, bc_lex_kws[i].name, len) == 0 &&
+		    !isalnum(buf[len]) && buf[len] != '_')
+		{
 			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
 			if (!bc_lex_kws[i].posix) {
