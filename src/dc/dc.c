@@ -20,7 +20,6 @@
  *
  */
 
-#include <assert.h>
 #include <string.h>
 
 #include <status.h>
@@ -33,8 +32,7 @@ int dc_main(int argc, char **argv) {
 	vm->help = dc_help;
 #if BC_ENABLE_SIGNALS
 	vm->sig_msg = dc_sig_msg;
-	vm->sig_len = dc_sig_len;
-	assert(strlen(vm->sig_msg) == vm->sig_len);
+	vm->sig_len = strlen(vm->sig_msg);
 #endif // BC_ENABLE_SIGNALS
 
 	vm->parse_init = dc_parse_init;

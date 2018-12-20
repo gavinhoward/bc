@@ -77,7 +77,6 @@ BcStatus bc_parse_stmt(BcParse *p);
 
 #if BC_ENABLE_SIGNALS
 extern const char bc_sig_msg[];
-extern const size_t bc_sig_len;
 #endif // BC_ENABLE_SIGNALS
 
 extern const char* const bc_parse_const1;

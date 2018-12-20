@@ -37,7 +37,6 @@ const char bc_name[] = "bc.exe";
 #endif // _WIN32
 #if BC_ENABLE_SIGNALS
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
-const size_t bc_sig_len = sizeof(bc_sig_len) - 1;
 #endif // BC_ENABLE_SIGNALS
 // ** Exclude end. **
 // ** Busybox exclude end. **
@@ -52,7 +51,6 @@ const char dc_name[] = "dc.exe";
 #endif // _WIN32
 #if BC_ENABLE_SIGNALS
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
-const size_t dc_sig_len = sizeof(dc_sig_len) - 1;
 #endif // BC_ENABLE_SIGNALS
 // ** Busybox exclude end. **
 #endif // DC_ENABLED
@@ -663,6 +661,5 @@ const char bc_program_exprs_name[] = "<exprs>";
 
 const char bc_program_stdin_name[] = "<stdin>";
 const char bc_program_ready_msg[] = "ready for more input\n";
-const size_t bc_program_ready_len = sizeof(bc_program_ready_msg) - 1;
 
 // clang-format on
