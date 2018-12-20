@@ -363,7 +363,6 @@ BcStatus bc_vm_exec() {
 	if (s && s != BC_STATUS_QUIT) return s;
 
 	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin(vm);
-	if (!s && !BC_PARSE_CAN_EXEC(&vm->prs)) s = bc_vm_process(vm, "", true);
 
 	return s;
 }
