@@ -42,6 +42,8 @@ GEN = strgen
 GEN_EXEC = $(GEN_DIR)/$(GEN)
 GEN_C = $(GEN_DIR)/$(GEN).c
 
+GEN_EMU = %%GEN_EMU%%
+
 BC_LIB = $(GEN_DIR)/lib.bc
 BC_LIB_C = $(GEN_DIR)/lib.c
 BC_LIB_O = $(GEN_DIR)/lib.o

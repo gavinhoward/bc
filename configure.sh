@@ -357,6 +357,8 @@ contents=$(replace "$contents" "TIMECONST_VG" "$timeconst_vg")
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
 
+contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
+
 printf '%s\n' "$contents" > "$scriptdir/Makefile"
 
 cd "$scriptdir"
