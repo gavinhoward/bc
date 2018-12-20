@@ -33,12 +33,6 @@
 
 #define BC_PARSE_STREND ((uchar) UCHAR_MAX)
 
-#define BC_PARSE_OP(p, l) \
-	(((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
-
-#define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))
-#define BC_PARSE_OP_PREC(op) ((op) & ~BC_LEX_CHAR_MSB(1))
-
 #define BC_PARSE_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
