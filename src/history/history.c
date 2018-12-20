@@ -310,13 +310,14 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 /**
  * Read a Unicode code point from a file.
  */
-ssize_t bc_history_readCode(int fd, char *buf, size_t buf_len, unsigned int *cp)
+BcStatus bc_history_readCode(int fd, char *buf, size_t buflen,
+                             unsigned int *cp, size_t* n)
 {
 	ssize_t nread;
 
-	if (buf_len < 1) return -1;
+	if (buflen < 1) return BC_STATUS_EOF;
 	nread = read(fd, buf, 1);
-	if (nread <= 0) return nread;
+	if (nread <= 0) return BC_STATUS_EOF;
 
 	unsigned char byte = buf[0];
 
@@ -324,28 +325,30 @@ ssize_t bc_history_readCode(int fd, char *buf, size_t buf_len, unsigned int *cp)
 
 		if ((byte & 0xE0) == 0xC0) {
 
-			if (buf_len < 2) return -1;
+			if (buflen < 2) return BC_STATUS_EOF;
 			nread = read(fd, buf + 1, 1);
-			if (nread <= 0) return nread;
+			if (nread <= 0) return BC_STATUS_EOF;
 		}
 		else if ((byte & 0xF0) == 0xE0) {
 
-			if (buf_len < 3) return -1;
+			if (buflen < 3) return BC_STATUS_EOF;
 			nread = read(fd, buf + 1, 2);
-			if (nread <= 0) return nread;
+			if (nread <= 0) return BC_STATUS_EOF;
 		}
 		else if ((byte & 0xF8) == 0xF0) {
 
-			if (buf_len < 3) return -1;
+			if (buflen < 3) return BC_STATUS_EOF;
 			nread = read(fd, buf + 1, 3);
-			if (nread <= 0) return nread;
+			if (nread <= 0) return BC_STATUS_EOF;
 		}
-		else {
-			return -1;
-		}
+		else return BC_STATUS_EOF;
 	}
 
-	return (ssize_t) bc_history_codePoint(buf, buf_len, cp);
+	*n = bc_history_codePoint(buf, buflen, cp);
+
+	if ((ssize_t) *n < 0) return BC_STATUS_EOF;
+
+	return BC_STATUS_SUCCESS;
 }
 
 /**
@@ -1044,10 +1047,10 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		// Large enough for any encoding?
 		char cbuf[32];
 		unsigned int c;
-		ssize_t nread;
+		size_t nread;
 
-		nread = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c);
-		if (nread <= 0) return bc_vm_err(BC_ERROR_VM_IO_ERR);
+		s = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c, &nread);
+		if (s) return s;
 
 		switch (c) {
 
