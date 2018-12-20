@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 #
 # Copyright 2018 Gavin D. Howard
 #
@@ -24,7 +24,7 @@ if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	echo "usage: dir [exec args...]"
+	printf 'usage: %s dir [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -39,14 +39,14 @@ if [ "$d" = "bc" ]; then
 
 	halt="quit"
 
-	echo -e "\nRunning $d limits tests...\n"
-	echo "limits" | "$exe" "$@"
+	printf '\nRunning %s limits tests...\n\n' "$d"
+	printf 'limits\n' | "$exe" "$@"
 
 else
 	halt="q"
 fi
 
-echo -e "\nRunning $d tests...\n"
+printf '\nRunning %s tests...\n\n' "$d"
 
 while read t; do
 	sh "$testdir/test.sh" "$d" "$t" "$exe" "$@"
@@ -57,7 +57,7 @@ sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 sh "$testdir/scripts.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
-echo -e "\nRunning quit test...\n"
+printf '\nRunning quit test...\n\n'
 
 if [ "$d" = "bc" ]; then
 	halt="quit"
@@ -69,7 +69,7 @@ else
 	lopt="mathlib"
 fi
 
-echo "$halt" | "$exe" "$@"
+printf '%s\n' "$halt" | "$exe" "$@"
 
 base=$(basename "$exe")
 
@@ -77,7 +77,7 @@ if [ "$base" != "bc" -a "$base" != "dc" ]; then
 	exit 0
 fi
 
-echo -e "\nRunning arg tests...\n"
+printf '\nRunning arg tests...\n\n'
 
 f="$testdir/$d/add.txt"
 exprs=$(cat "$f")
@@ -86,7 +86,7 @@ results=$(cat "$testdir/$d/add_results.txt")
 out1="$testdir/../.log_bc.txt"
 out2="$testdir/../.log_test.txt"
 
-echo -e "$results\n$results\n$results\n$results" > "$out1"
+printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 
 "$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" > "$out2"
 
@@ -94,12 +94,12 @@ diff "$out1" "$out2"
 err="$?"
 
 if [ "$d" = "bc" ]; then
-	echo "$halt" | "$exe" "$@" -i
+	printf '%s\n' "$halt" | "$exe" "$@" -i
 fi
 
-echo "$halt" | "$exe" "$@" -h > /dev/null
-echo "$halt" | "$exe" "$@" -v > /dev/null
-echo "$halt" | "$exe" "$@" -V > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" -h > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" -v > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
 
 set +e
 
@@ -107,8 +107,8 @@ set +e
 err="$?"
 
 if [ "$err" -eq 0 ]; then
-	echo "$d did not return an error ($err) on invalid option argument test"
-	echo "exiting..."
+	printf '%s did not return an error (%d) on invalid option argument test\n' "$d" "$err"
+	printf 'exiting...\n'
 	exit 1
 fi
 
@@ -116,42 +116,42 @@ fi
 err="$?"
 
 if [ "$err" -eq 0 ]; then
-	echo "$d did not return an error ($err) on invalid long option argument test"
-	echo "exiting..."
+	printf '%s did not return an error (%d) on invalid long option argument test\n' "$d" "$err"
+	printf 'exiting...\n'
 	exit 1
 fi
 
-echo -e "\nRunning directory test...\n"
+printf '\nRunning directory test...\n\n'
 
 "$exe" "$@" "$testdir"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
-	echo "$d did not return an error ($err) on directory test"
-	echo "exiting..."
+	printf '%s did not return an error (%d) on directory test\n' "$d" "$err"
+	printf 'exiting...\n'
 	exit 1
 fi
 
-echo -e "\nRunning binary file test...\n"
+printf '\nRunning binary file test...\n\n'
 
-bin=$(which cat)
+bin="/bin/sh"
 
 "$exe" "$@" "$bin"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
-	echo "$d did not return an error ($err) on binary file test"
-	echo "exiting..."
+	printf '%s did not return an error (%d) on binary file test\n' "$d" "$err"
+	printf 'exiting...\n'
 	exit 1
 fi
 
-echo -e "\nRunning binary stdin test...\n"
+printf '\nRunning binary stdin test...\n\n'
 
 cat "$bin" | "$exe" "$@"
 err="$?"
 
 if [ "$err" -eq 0 ]; then
-	echo "$d did not return an error ($err) on binary stdin test"
-	echo "exiting..."
+	printf '%s did not return an error (%d) on binary stdin test\n' "$d" "$err"
+	printf 'exiting...\n'
 	exit 1
 fi

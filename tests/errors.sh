@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 #
 # Copyright 2018 Gavin D. Howard
 #
@@ -25,12 +25,12 @@ checkcrash() {
 	shift
 
 	if [ "$error" -gt 127 ]; then
-		echo ""
-		echo "$d crashed on test:"
-		echo ""
-		echo "    $name"
-		echo ""
-		echo "exiting..."
+		printf '\n'
+		printf '%s crashed on test:\n' "$d"
+		printf '\n'
+		printf '    %s\n' "$name"
+		printf '\n'
+		printf 'exiting...\n'
 		exit "$error"
 	fi
 }
@@ -52,22 +52,22 @@ checktest()
 	checkcrash "$error" "$name"
 
 	if [ "$error" -eq 0 ]; then
-		echo ""
-		echo "$d returned no error on test:"
-		echo ""
-		echo "    $name"
-		echo ""
-		echo "exiting..."
+		printf '\n'
+		printf '%s returned no error on test:\n' "$d"
+		printf '\n'
+		printf '    %s\n' "$name"
+		printf '\n'
+		printf 'exiting...\n'
 		exit 127
 	fi
 
 	if [ ! -s "$out" ]; then
-		echo ""
-		echo "$d produced no error message on test:"
-		echo ""
-		echo "    $name"
-		echo ""
-		echo "exiting..."
+		printf '\n'
+		printf '%s produced no error message on test:\n' "$d"
+		printf '\n'
+		printf '    %s\n' "$name"
+		printf '\n'
+		printf 'exiting...\n'
 		exit "$error"
 	fi
 
@@ -82,7 +82,7 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -eq 0 ]; then
-	echo "usage: $script dir [exec args...]"
+	printf 'usage: %s dir [exec args...]\n' "$script"
 	exit 1
 else
 	d="$1"
@@ -115,12 +115,12 @@ for testfile in $testdir/$d/*errors.txt; do
 	if [ -z "${testfile##*$posix*}" ]; then
 
 		line="last"
-		echo "$line" | "$exe" "$@" "-lw"  2> "$out" > /dev/null
+		printf '%s\n' "$line" | "$exe" "$@" "-lw"  2> "$out" > /dev/null
 		err="$?"
 
 		if [ "$err" -ne 0 ]; then
-			echo "$d returned an error ($err) on POSIX warning tests"
-			echo "exiting..."
+			printf '%s returned an error (%d) on POSIX warning tests\n' "$d" "$err"
+			printf 'exiting...\n'
 			exit 1
 		fi
 
@@ -133,13 +133,13 @@ for testfile in $testdir/$d/*errors.txt; do
 
 	base=$(basename "$testfile")
 	base="${base%.*}"
-	echo "Running $base..."
+	printf 'Running %s...\n' "$base"
 
 	while read -r line; do
 
 		rm -f "$out"
 
-		echo "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
+		printf '%s\n' "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
 		err="$?"
 
 		checktest "$err" "$line" "$out" "$exebase"
@@ -150,14 +150,14 @@ done
 
 for testfile in $testdir/$d/errors/*.txt; do
 
-	echo "Running error file $testfile..."
+	printf 'Running error file %s...\n' "$testfile"
 
-	echo "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
+	printf '%s\n' "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
 	err="$?"
 
 	checktest "$err" "$testfile" "$out" "$exebase"
 
-	echo "Running error file $testfile through cat..."
+	printf 'Running error file %s through cat...\n' "$testfile"
 
 	cat "$testfile" | "$exe" "$@" $opts 2> "$out" > /dev/null
 	err="$?"
