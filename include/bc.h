@@ -45,12 +45,23 @@ typedef struct BcLexKeyword {
 	const char name[9];
 } BcLexKeyword;
 
+#define BC_LEX_CHAR_MSB(bit) ((bit) << (CHAR_BIT - 1))
+
+#define BC_LEX_KW_POSIX(kw) ((kw).data & (BC_LEX_CHAR_MSB(1)))
+#define BC_LEX_KW_LEN(kw) ((kw).data & ~(BC_LEX_CHAR_MSB(1)))
+
 #define BC_LEX_KW_ENTRY(a, b, c) \
 	{ .data = (b) & ~(BC_LEX_CHAR_MSB(1)) | BC_LEX_CHAR_MSB(c),.name = a }
 
 extern const BcLexKeyword bc_lex_kws[20];
 
 BcStatus bc_lex_token(BcLex *l);
+
+#define BC_PARSE_OP(p, l) \
+	(((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
+
+#define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))
+#define BC_PARSE_OP_PREC(op) ((op) & ~BC_LEX_CHAR_MSB(1))
 
 #define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
 #define BC_PARSE_LEAF(p, rparen) \
