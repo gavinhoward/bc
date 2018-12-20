@@ -252,10 +252,16 @@ fi
 karatsuba='@printf "karatsuba cannot be run because one of bc or dc is not built\\\\n"'
 karatsuba_test='@printf "karatsuba cannot be run because one of bc or dc is not built\\\\n"'
 
+bc_lib="\$(GEN_DIR)/lib.o"
+bc_help_o="\$(GEN_DIR)/bc_help.o"
+dc_help_o="\$(GEN_DIR)/dc_help.o"
+
 if [ "$bc_only" -eq 1 ]; then
 
 	bc=1
 	dc=0
+
+	dc_help_o=""
 
 	executables="bc"
 
@@ -266,6 +272,9 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	bc=0
 	dc=1
+
+	bc_lib=""
+	bc_help_o=""
 
 	executables="dc"
 
