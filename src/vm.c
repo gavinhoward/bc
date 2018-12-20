@@ -285,16 +285,12 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	while (!done) {
+	while (!done && (!(s = bc_read_line(&buf, ">>> ")) || buf.len > 1)) {
 
-		char *str;
-		size_t i, len;
+		char *str = buf.v;
+		size_t i, len = buf.len - 1;
 
-		s = bc_read_line(&buf, ">>> ");
 		done = (s == BC_STATUS_EOF);
-
-		str = buf.v;
-		len = buf.len - 1;
 
 		for (i = 0; i < len; ++i) {
 
