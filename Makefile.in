@@ -69,6 +69,8 @@ BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
 
 RM = rm
+MKDIR = mkdir
+
 INSTALL = ./install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
@@ -106,7 +108,7 @@ $(DC_HELP_C): $(GEN_EXEC) $(DC_HELP)
 	$(GEN_EMU) $(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help "" $(DC_ENABLED_NAME)
 
 make_bin:
-	mkdir -p $(BIN)
+	$(MKDIR) -p $(BIN)
 
 help:
 	@printf 'all targets use config.mak, if there is one\n'
