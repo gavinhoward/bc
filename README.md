@@ -66,9 +66,10 @@ and `DESTDIR` `make` variables in the configure script. Any values of those
 variables given to the configure command will be put into the generated
 Makefile.
 
-Note that to cross-compile this `bc`, an appropriate compiler must be present in
-order to bootstrap core file(s), if the architectures are not compatible (i.e.,
-unlike i686 on x86_64). The approach is:
+Note that to cross-compile this `bc`, an appropriate compiler must be present
+and assigned to the environment variable `HOSTCC`. This is in order to bootstrap
+core file(s), if the architectures are not compatible (i.e., unlike i686 on
+x86_64). Thus, the approach is:
 
 ```
 HOSTCC="/path/to/native/compiler" ./configure.sh
@@ -104,32 +105,32 @@ variables, and executing `make help` displays available `make` targets.
 
 ### Optimization
 
-The configure script turns on optimizations by default. I ***highly*** encourage
-package and distro maintainers to compile with the default options, since the
-optimizations speed up `bc` by orders of magnitude.
-
-However, this can be disabled by compiling as follows:
+The configure script will accept an optimization level to pass to the compiler.
+Because `bc` is orders of magnitude faster with optimization, I ***highly***
+recommend package and distro maintainers pass the highest optimization level
+available in `CC` to the configure script, as follows:
 
 ```
-./configure.sh -N
+./configure.sh -O3
 make
 make install
 ```
 
 As usual, the configure script will accept `CFLAGS` on the command line.
 
-Debug builds can be enabled with:
-
-```
-./configure.sh -g
-make
-make install
-```
-
 For SSE4 architectures, the following can add a bit more speed:
 
 ```
 CFLAGS="-march=native -msse4" ./configure.sh
+make
+make install
+```
+
+Debug builds, which disable optimization if no optimization level is given and
+if no extra CFLAGS are given, can be enabled with:
+
+```
+./configure.sh -g
 make
 make install
 ```
