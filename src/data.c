@@ -555,17 +555,19 @@ const bool bc_parse_exprs[] = {
 };
 
 // This is an array of data for operators that correspond to token types.
-const BcOp bc_parse_ops[] = {
-	{ 0, false }, { 0, false },
-	{ 1, false },
-	{ 2, false },
-	{ 3, true }, { 3, true }, { 3, true },
-	{ 4, true }, { 4, true },
-	{ 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true }, { 6, true },
-	{ 1, false },
-	{ 7, true }, { 7, true },
-	{ 5, false }, { 5, false }, { 5, false }, { 5, false }, { 5, false },
-	{ 5, false }, { 5, false },
+const uchar bc_parse_ops[] = {
+	BC_PARSE_OP(0, false), BC_PARSE_OP(0, false),
+	BC_PARSE_OP(1, false),
+	BC_PARSE_OP(2, false),
+	BC_PARSE_OP(3, true), BC_PARSE_OP(3, true), BC_PARSE_OP(3, true),
+	BC_PARSE_OP(4, true), BC_PARSE_OP(4, true),
+	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
+	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
+	BC_PARSE_OP(1, false),
+	BC_PARSE_OP(7, true), BC_PARSE_OP(7, true),
+	BC_PARSE_OP(5, false), BC_PARSE_OP(5, false), BC_PARSE_OP(5, false),
+	BC_PARSE_OP(5, false), BC_PARSE_OP(5, false), BC_PARSE_OP(5, false),
+	BC_PARSE_OP(5, false),
 };
 
 // These identify what tokens can come after expressions in certain cases.

@@ -33,6 +33,12 @@
 
 #define BC_PARSE_STREND ((uchar) UCHAR_MAX)
 
+#define BC_PARSE_OP(p, l) \
+	(((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
+
+#define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))
+#define BC_PARSE_OP_PREC(op) ((op) & ~BC_LEX_CHAR_MSB(1))
+
 #define BC_PARSE_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
@@ -91,18 +97,14 @@
 #define bc_parse_string(p) \
 	(bc_parse_addId((p), &(p)->prog->str_map, &(p)->prog->strs, BC_INST_STR))
 
-typedef struct BcOp {
-	uchar prec;
-	bool left;
-} BcOp;
-
 typedef struct BcParseNext {
-	uint32_t len;
-	BcLexType tokens[4];
+	uchar len;
+	uchar tokens[4];
 } BcParseNext;
 
 #define BC_PARSE_NEXT_TOKENS(...) .tokens = { __VA_ARGS__ }
-#define BC_PARSE_NEXT(a, ...) { .len = (a), BC_PARSE_NEXT_TOKENS(__VA_ARGS__) }
+#define BC_PARSE_NEXT(a, ...) \
+	{ .len = (uchar) (a), BC_PARSE_NEXT_TOKENS(__VA_ARGS__) }
 
 // ** Exclude start. **
 struct BcParse;

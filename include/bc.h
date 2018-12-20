@@ -23,6 +23,7 @@
 #ifndef BC_BC_H
 #define BC_BC_H
 
+#include <limits.h>
 #include <stdbool.h>
 
 #include <status.h>
@@ -40,12 +41,12 @@ extern const char bc_help[];
 // ** Exclude end. **
 
 typedef struct BcLexKeyword {
+	uchar data;
 	const char name[9];
-	const uchar len;
-	const bool posix;
 } BcLexKeyword;
 
-#define BC_LEX_KW_ENTRY(a, b, c) { .name = a, .len = (b), .posix = (c) }
+#define BC_LEX_KW_ENTRY(a, b, c) \
+	{ .data = (b) & ~(BC_LEX_CHAR_MSB(1)) | BC_LEX_CHAR_MSB(c),.name = a }
 
 extern const BcLexKeyword bc_lex_kws[20];
 
@@ -81,7 +82,7 @@ extern const char bc_sig_msg[];
 
 extern const char* const bc_parse_const1;
 extern const bool bc_parse_exprs[];
-extern const BcOp bc_parse_ops[];
+extern const uchar bc_parse_ops[];
 extern const BcParseNext bc_parse_next_expr;
 extern const BcParseNext bc_parse_next_param;
 extern const BcParseNext bc_parse_next_print;

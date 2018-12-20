@@ -37,14 +37,14 @@ BcStatus bc_lex_identifier(BcLex *l) {
 
 	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
 
-		unsigned long len = (unsigned long) bc_lex_kws[i].len;
+		unsigned long len = (unsigned long) BC_LEX_KW_LEN(bc_lex_kws[i]);
 
 		if (strncmp(buf, bc_lex_kws[i].name, len) == 0 &&
 		    !isalnum(buf[len]) && buf[len] != '_')
 		{
 			l->t.t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
-			if (!bc_lex_kws[i].posix) {
+			if (!BC_LEX_KW_POSIX(bc_lex_kws[i])) {
 				s = bc_vm_posixError(BC_ERROR_POSIX_BAD_KW, l->line,
 				                     bc_lex_kws[i].name);
 				if (s) return s;

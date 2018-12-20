@@ -39,6 +39,11 @@
 #error History is not supported on Windows.
 #endif
 
+// CHAR_BIT must be at least 4.
+#if CHAR_BIT < 4
+#error CHAR_BIT must be at least 4.
+#endif
+
 // ** Exclude start. **
 #define VERSION_STR(V) #V
 #define VERSION_STR2(V) VERSION_STR(V)

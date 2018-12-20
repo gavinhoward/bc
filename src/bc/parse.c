@@ -46,15 +46,15 @@ BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcLexType t;
-	uchar l, r = bc_parse_ops[type - BC_LEX_OP_INC].prec;
-	bool left = bc_parse_ops[type - BC_LEX_OP_INC].left;
+	uchar l, r = BC_PARSE_OP_PREC(bc_parse_ops[type - BC_LEX_OP_INC]);
+	uchar left = BC_PARSE_OP_LEFT(bc_parse_ops[type - BC_LEX_OP_INC]);
 
 	while (p->ops.len > start) {
 
 		t = BC_PARSE_TOP_OP(p);
 		if (t == BC_LEX_LPAREN) break;
 
-		l = bc_parse_ops[t - BC_LEX_OP_INC].prec;
+		l = BC_PARSE_OP_PREC(bc_parse_ops[t - BC_LEX_OP_INC]);
 		if (l >= r && (l != r || !left)) break;
 
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
