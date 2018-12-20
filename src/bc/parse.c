@@ -31,6 +31,16 @@
 #include <vm.h>
 
 #if BC_ENABLED
+size_t bc_parse_addFunc(BcParse *p, char *name) {
+
+	size_t idx = bc_program_insertFunc(p->prog, name);
+
+	// Make sure that this pointer was not invalidated.
+	p->func = bc_vec_item(&p->prog->fns, p->fidx);
+
+	return idx;
+}
+
 BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
                            size_t *nexprs, bool next)
 {
@@ -804,7 +814,7 @@ BcStatus bc_parse_func(BcParse *p) {
 	assert(p->prog->fns.len == p->prog->fn_map.len);
 
 	name = bc_vm_strdup(p->l.t.v.v);
-	idx = bc_program_addFunc(p->prog, name);
+	idx = bc_program_insertFunc(p->prog, name);
 	assert(idx);
 	bc_parse_updateFunc(p, idx);
 

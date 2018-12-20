@@ -1066,6 +1066,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	char str[2], *str2, c;
 	size_t len = p->strs.len, idx;
 	unsigned long val;
+	BcFunc f;
 
 	if (!BC_PROG_STACK(&p->results, 1)) return bc_vm_err(BC_ERROR_EXEC_STACK);
 	r = bc_vec_top(&p->results);
@@ -1098,8 +1099,8 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	str[0] = c;
 	str[1] = '\0';
 
-	bc_program_addFunc(p, bc_vm_strdup(str));
-	len = bc_program_addId(str, &p->str_map, &p->strs);
+	bc_program_addFunc(p, &f);
+	len = bc_program_insertId(str, &p->str_map, &p->strs);
 
 	res.t = BC_RESULT_STR;
 	res.d.id.idx = len;
@@ -1287,7 +1288,9 @@ void bc_program_free(BcProgram *p) {
 	bc_num_free(&p->strmb);
 #endif // DC_ENABLED
 	bc_vec_free(&p->fns);
+#if BC_ENABLED
 	bc_vec_free(&p->fn_map);
+#endif // BC_ENABLED
 	bc_vec_free(&p->vars);
 	bc_vec_free(&p->var_map);
 	bc_vec_free(&p->arrs);
@@ -1309,6 +1312,9 @@ void bc_program_init(BcProgram *p) {
 
 	size_t idx;
 	BcInstPtr ip;
+#if !BC_ENABLED
+	BcFunc f;
+#endif // BC_ENABLED
 
 	assert(p);
 
@@ -1342,12 +1348,17 @@ void bc_program_init(BcProgram *p) {
 #endif // BC_ENABLED
 
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
+#if BC_ENABLED
 	bc_map_init(&p->fn_map);
 
-	idx = bc_program_addFunc(p, bc_vm_strdup(bc_func_main));
+	idx = bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
 	assert(idx == BC_PROG_MAIN);
-	idx = bc_program_addFunc(p, bc_vm_strdup(bc_func_read));
+	idx = bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
 	assert(idx == BC_PROG_READ);
+#else
+	bc_program_addFunc(p, &f);
+	bc_program_addFunc(p, &f);
+#endif // BC_ENABLED
 
 	bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free);
 	bc_map_init(&p->var_map);
@@ -1367,7 +1378,7 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_push(&p->stack, &ip);
 }
 
-size_t bc_program_addId(char* data, BcVec *map, BcVec *vec) {
+size_t bc_program_insertId(char* data, BcVec *map, BcVec *vec) {
 
 	BcId id, *id_ptr;
 	size_t idx;
@@ -1392,7 +1403,13 @@ size_t bc_program_addId(char* data, BcVec *map, BcVec *vec) {
 	return idx;
 }
 
-size_t bc_program_addFunc(BcProgram *p, char *name) {
+void bc_program_addFunc(BcProgram *p, BcFunc *f) {
+	bc_func_init(f);
+	bc_vec_push(&p->fns, f);
+}
+
+#if BC_ENABLED
+size_t bc_program_insertFunc(BcProgram *p, char *name) {
 
 	BcId entry, *entry_ptr;
 	BcFunc f;
@@ -1416,19 +1433,15 @@ size_t bc_program_addFunc(BcProgram *p, char *name) {
 
 		// We need to reset these, so the function can be repopulated.
 		bc_vec_npop(&func->code, func->code.len);
-#if BC_ENABLED
 		bc_vec_npop(&func->autos, func->autos.len);
 		bc_vec_npop(&func->labels, func->labels.len);
 		func->nparams = 0;
-#endif // BC_ENABLED
 	}
-	else {
-		bc_func_init(&f);
-		bc_vec_push(&p->fns, &f);
-	}
+	else bc_program_addFunc(p, &f);
 
 	return idx;
 }
+#endif // BC_ENABLED
 
 BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 

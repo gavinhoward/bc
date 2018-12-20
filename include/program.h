@@ -50,7 +50,9 @@ typedef struct BcProgram {
 	BcVec stack;
 
 	BcVec fns;
+#if BC_ENABLED
 	BcVec fn_map;
+#endif // BC_ENABLED
 
 	BcVec vars;
 	BcVec var_map;
@@ -105,8 +107,9 @@ void bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
 // ** Busybox exclude end. **
 // ** Exclude end. **
 
-size_t bc_program_addId(char* data, BcVec* map, BcVec* vec);
-size_t bc_program_addFunc(BcProgram *p, char *name);
+size_t bc_program_insertId(char* data, BcVec* map, BcVec* vec);
+void bc_program_addFunc(BcProgram *p, BcFunc *f);
+size_t bc_program_insertFunc(BcProgram *p, char *name);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 

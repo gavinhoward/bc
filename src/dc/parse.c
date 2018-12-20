@@ -49,13 +49,9 @@ BcStatus dc_parse_register(BcParse *p) {
 
 BcStatus dc_parse_string(BcParse *p) {
 
-	char b[DC_PARSE_BUF_LEN + 1];
-	size_t idx, len = p->prog->strs.len;
+	BcFunc f;
 
-	sprintf(b, "%0*zu", DC_PARSE_BUF_LEN, len);
-	idx = bc_parse_addFunc(p, bc_vm_strdup(b));
-	assert(idx == len + BC_PROG_REQ_FUNCS);
-
+	bc_program_addFunc(p->prog, &f);
 	bc_parse_string(p);
 
 	return bc_lex_next(&p->l);

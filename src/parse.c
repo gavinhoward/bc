@@ -39,16 +39,6 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 	p->func = bc_vec_item(&p->prog->fns, fidx);
 }
 
-size_t bc_parse_addFunc(BcParse *p, char *name) {
-
-	size_t idx = bc_program_addFunc(p->prog, name);
-
-	// Make sure that this pointer was not invalidated.
-	p->func = bc_vec_item(&p->prog->fns, p->fidx);
-
-	return idx;
-}
-
 void bc_parse_pushName(BcParse *p, char *name) {
 
 	size_t i = 0, len = strlen(name);
@@ -74,7 +64,8 @@ void bc_parse_pushIndex(BcParse *p, size_t idx) {
 }
 
 void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, uchar inst) {
-	size_t idx = bc_program_addId(p->l.t.v.v, map, vec);
+	size_t idx = bc_program_insertId(p->l.t.v.v, map, vec);
+	bc_parse_updateFunc(p, p->fidx);
 	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);
 }
