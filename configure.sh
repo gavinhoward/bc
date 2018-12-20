@@ -190,10 +190,9 @@ debug=0
 signals=1
 hist=1
 none=0
-gotopt=0
-opt=0
+optimization=""
 
-while getopts "bcdghHk:mNOrS" opt; do
+while getopts "bcdghHk:mNO:rS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -203,7 +202,7 @@ while getopts "bcdghHk:mNOrS" opt; do
 		h) usage ;;
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
-		O) gotopt=1 ; opt="$OPTARG" ;;
+		O) optimization="$OPTARG" ;;
 		S) signals=0 ;;
 		?) usage "Invalid option" ;;
 	esac
@@ -302,7 +301,7 @@ fi
 
 if [ "$debug" -eq 1 ]; then
 
-	if [ "$CFLAGS" = "" -a "$gotopt" -eq 0 ]; then
+	if [ "$CFLAGS" = "" -a "$optimization" = "" ]; then
 		CFLAGS="-O0"
 	fi
 
@@ -312,8 +311,9 @@ else
 	link="$link 1"
 fi
 
-if [ "$gotopt" -eq 1 ]; then
-	CFLAGS="$CFLAGS -O$opt"
+if [ "$optimization" != "" ]; then
+	printf 'Optimization level: %s\n' "$optimization"
+	CFLAGS="$CFLAGS -O$optimization"
 fi
 
 if [ "$coverage" -eq 1 ]; then
