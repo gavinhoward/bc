@@ -113,6 +113,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 			break;
 		}
 
+#if BC_ENABLED
 		case BC_RESULT_LAST:
 		{
 			*num = &p->last;
@@ -124,6 +125,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 			*num = &p->one;
 			break;
 		}
+#endif // BC_ENABLED
 #ifndef NDEBUG
 		default:
 		{
@@ -430,7 +432,9 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	if (BC_PROG_NUM(r, num)) {
 		assert(inst != BC_INST_PRINT_STR);
 		s = bc_num_print(num, &p->ob, p->ob_t, !pop, &p->nchars);
+#if BC_ENABLED
 		if (!s) bc_num_copy(&p->last, num);
+#endif // BC_ENABLED
 	}
 	else {
 
@@ -1294,9 +1298,11 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->const_map);
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
-	bc_num_free(&p->last);
 	bc_num_free(&p->zero);
+#if BC_ENABLED
 	bc_num_free(&p->one);
+	bc_num_free(&p->last);
+#endif // BC_ENABLED
 }
 
 void bc_program_init(BcProgram *p) {
@@ -1328,10 +1334,12 @@ void bc_program_init(BcProgram *p) {
 	bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1);
 #endif // DC_ENABLED
 
-	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 	bc_num_init(&p->zero, BC_NUM_DEF_SIZE);
+#if BC_ENABLED
 	bc_num_init(&p->one, BC_NUM_DEF_SIZE);
 	bc_num_one(&p->one);
+	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
+#endif // BC_ENABLED
 
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
 	bc_map_init(&p->fn_map);
@@ -1407,10 +1415,12 @@ size_t bc_program_addFunc(BcProgram *p, char *name) {
 		free(name);
 
 		// We need to reset these, so the function can be repopulated.
-		func->nparams = 0;
-		bc_vec_npop(&func->autos, func->autos.len);
 		bc_vec_npop(&func->code, func->code.len);
+#if BC_ENABLED
+		bc_vec_npop(&func->autos, func->autos.len);
 		bc_vec_npop(&func->labels, func->labels.len);
+		func->nparams = 0;
+#endif // BC_ENABLED
 	}
 	else {
 		bc_func_init(&f);
@@ -1511,6 +1521,13 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_LAST:
+			{
+				r.t = BC_RESULT_LAST;
+				bc_vec_push(&p->results, &r);
+				break;
+			}
+
 			case BC_INST_BOOL_OR:
 			case BC_INST_BOOL_AND:
 #endif // BC_ENABLED
@@ -1541,13 +1558,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_ARRAY:
 			{
 				s = bc_program_pushArray(p, code, &ip->idx, inst);
-				break;
-			}
-
-			case BC_INST_LAST:
-			{
-				r.t = BC_RESULT_LAST;
-				bc_vec_push(&p->results, &r);
 				break;
 			}
 
