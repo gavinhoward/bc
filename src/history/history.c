@@ -1028,7 +1028,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	h->cols = bc_history_columns(h);
 
 	// Check for error from bc_history_columns.
-	if (h->cols) return bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (h->cols == SIZE_MAX) return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 	// Buffer starts empty.
 	bc_vec_empty(&h->buf);
