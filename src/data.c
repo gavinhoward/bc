@@ -545,13 +545,15 @@ const char* const bc_parse_const1 = "1";
 
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.
-const bool bc_parse_exprs[] = {
-	false, false, true, true, true, true, true, true, true, true, true, true,
-	true, true, true, true, true, true, true, true, true, true, true, true,
-	true, true, true, false, false, true, true, false, false, false, false,
-	false, false, false, true, true, false, false, false, false, false, false,
-	false, true, false, true, true, true, true, false, false, true, false, true,
-	true, false,
+const uint8_t bc_parse_exprs[] = {
+	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, true),
+	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, false, false, true),
+	BC_PARSE_EXPR_ENTRY(false, true, true, false, 0, 0, 0, 0)
 };
 
 // This is an array of data for operators that correspond to token types.

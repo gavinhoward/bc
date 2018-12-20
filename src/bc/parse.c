@@ -1178,7 +1178,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 	paren_expr = rprn = done = get_token = assign = false;
 	bin_last = true;
 
-	for (; !BC_SIGINT && !s && !done && bc_parse_exprs[t]; t = p->l.t.t) {
+	for (; !BC_SIGINT && !s && !done && BC_PARSE_EXPR(t); t = p->l.t.t) {
 
 		switch (t) {
 

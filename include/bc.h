@@ -63,6 +63,13 @@ BcStatus bc_lex_token(BcLex *l);
 #define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))
 #define BC_PARSE_OP_PREC(op) ((op) & ~BC_LEX_CHAR_MSB(1))
 
+#define BC_PARSE_EXPR_ENTRY(e1, e2, e3, e4, e5, e6, e7, e8)  \
+	(((e1) << 7) | ((e2) << 6) | ((e3) << 5) | ((e4) << 4) | \
+	 ((e5) << 3) | ((e6) << 2) | ((e7) << 1) | ((e8) << 0))
+
+#define BC_PARSE_EXPR(i) \
+	(bc_parse_exprs[(((i) & ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
+
 #define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
 #define BC_PARSE_LEAF(p, rparen) \
 	(((p) >= BC_INST_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
@@ -92,7 +99,7 @@ extern const char bc_sig_msg[];
 #endif // BC_ENABLE_SIGNALS
 
 extern const char* const bc_parse_const1;
-extern const bool bc_parse_exprs[];
+extern const uint8_t bc_parse_exprs[];
 extern const uchar bc_parse_ops[];
 extern const BcParseNext bc_parse_next_expr;
 extern const BcParseNext bc_parse_next_param;
