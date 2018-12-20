@@ -1010,8 +1010,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	h->idx = 0;
 
 	// Buffer starts empty.
-	bc_vec_npop(&h->buf, h->buf.len);
-	bc_vec_pushByte(&h->buf, '\0');
+	bc_vec_empty(&h->buf);
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
@@ -1272,7 +1271,7 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 		char c;
 		int nread;
 
-		nread = read(STDIN_FILENO,&c,1);
+		nread = read(STDIN_FILENO, &c, 1);
 		if (nread <= 0) continue;
 
 		// Shift string to left.
@@ -1287,7 +1286,7 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 
 		// Go left edge manually, we are in raw mode.
 		bc_vm_putchar('\r');
-		fflush(stdout);
+		bc_vm_fflush(stdout);
 	}
 
 	bc_history_disableRaw(h);
