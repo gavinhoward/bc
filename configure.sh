@@ -303,7 +303,7 @@ fi
 if [ "$debug" -eq 1 ]; then
 
 	if [ "$CFLAGS" = "" -a "$gotopt" -eq 0 ]; then
-		CFLAGS="-O 0"
+		CFLAGS="-O0"
 	fi
 
 	CFLAGS="$CFLAGS -g"
@@ -313,7 +313,7 @@ else
 fi
 
 if [ "$gotopt" -eq 1 ]; then
-	CFLAGS="$CFLAGS -O $opt"
+	CFLAGS="$CFLAGS -O$opt"
 fi
 
 if [ "$coverage" -eq 1 ]; then
