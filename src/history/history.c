@@ -310,14 +310,13 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 /**
  * Read a Unicode code point from a file.
  */
-BcStatus bc_history_readCode(int fd, char *buf, size_t buflen,
-                             unsigned int *cp, size_t* n)
+ssize_t bc_history_readCode(int fd, char *buf, size_t buf_len, unsigned int *cp)
 {
 	ssize_t nread;
 
-	if (buflen < 1) return BC_STATUS_EOF;
+	if (buf_len < 1) return -1;
 	nread = read(fd, buf, 1);
-	if (nread <= 0) return BC_STATUS_EOF;
+	if (nread <= 0) return nread;
 
 	unsigned char byte = buf[0];
 
@@ -325,30 +324,28 @@ BcStatus bc_history_readCode(int fd, char *buf, size_t buflen,
 
 		if ((byte & 0xE0) == 0xC0) {
 
-			if (buflen < 2) return BC_STATUS_EOF;
+			if (buf_len < 2) return -1;
 			nread = read(fd, buf + 1, 1);
-			if (nread <= 0) return BC_STATUS_EOF;
+			if (nread <= 0) return nread;
 		}
 		else if ((byte & 0xF0) == 0xE0) {
 
-			if (buflen < 3) return BC_STATUS_EOF;
+			if (buf_len < 3) return -1;
 			nread = read(fd, buf + 1, 2);
-			if (nread <= 0) return BC_STATUS_EOF;
+			if (nread <= 0) return nread;
 		}
 		else if ((byte & 0xF8) == 0xF0) {
 
-			if (buflen < 3) return BC_STATUS_EOF;
+			if (buf_len < 3) return -1;
 			nread = read(fd, buf + 1, 3);
-			if (nread <= 0) return BC_STATUS_EOF;
+			if (nread <= 0) return nread;
 		}
-		else return BC_STATUS_EOF;
+		else {
+			return -1;
+		}
 	}
 
-	*n = bc_history_codePoint(buf, buflen, cp);
-
-	if ((ssize_t) *n < 0) return BC_STATUS_EOF;
-
-	return BC_STATUS_SUCCESS;
+	return (ssize_t) bc_history_codePoint(buf, buf_len, cp);
 }
 
 /**
@@ -1047,10 +1044,10 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		// Large enough for any encoding?
 		char cbuf[32];
 		unsigned int c;
-		size_t nread;
+		ssize_t nread;
 
-		s = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c, &nread);
-		if (s) return s;
+		nread = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c);
+		if (nread <= 0) return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 		switch (c) {
 
