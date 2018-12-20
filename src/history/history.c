@@ -131,6 +131,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -310,42 +311,48 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 /**
  * Read a Unicode code point from a file.
  */
-ssize_t bc_history_readCode(int fd, char *buf, size_t buf_len, unsigned int *cp)
+BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
+                             unsigned int *cp, size_t *nread)
 {
-	ssize_t nread;
+	BcStatus s = BC_STATUS_EOF;
 
-	if (buf_len < 1) return -1;
-	nread = read(fd, buf, 1);
-	if (nread <= 0) return nread;
+	assert(buf_len >= 1);
+
+	*nread = read(fd, buf, 1);
+	if (*nread <= 0) goto err;
 
 	unsigned char byte = buf[0];
 
 	if ((byte & 0x80) != 0) {
 
 		if ((byte & 0xE0) == 0xC0) {
-
-			if (buf_len < 2) return -1;
-			nread = read(fd, buf + 1, 1);
-			if (nread <= 0) return nread;
+			assert(buf_len >= 2);
+			*nread = read(fd, buf + 1, 1);
+			if (*nread <= 0) goto err;
 		}
 		else if ((byte & 0xF0) == 0xE0) {
-
-			if (buf_len < 3) return -1;
-			nread = read(fd, buf + 1, 2);
-			if (nread <= 0) return nread;
+			assert(buf_len >= 3);
+			*nread = read(fd, buf + 1, 2);
+			if (*nread <= 0) goto err;
 		}
 		else if ((byte & 0xF8) == 0xF0) {
-
-			if (buf_len < 3) return -1;
-			nread = read(fd, buf + 1, 3);
-			if (nread <= 0) return nread;
+			assert(buf_len >= 3);
+			*nread = read(fd, buf + 1, 3);
+			if (*nread <= 0) goto err;
 		}
 		else {
-			return -1;
+			*nread = -1;
+			goto err;
 		}
 	}
 
-	return (ssize_t) bc_history_codePoint(buf, buf_len, cp);
+	*nread = bc_history_codePoint(buf, buf_len, cp);
+
+	return BC_STATUS_SUCCESS;
+
+err:
+	if (*nread < 0) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+	return s;
 }
 
 /**
@@ -1044,11 +1051,10 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		// Large enough for any encoding?
 		char cbuf[32];
 		unsigned int c;
-		ssize_t nread;
+		size_t nread;
 
-		nread = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c);
-		if (nread < 0) return bc_vm_err(BC_ERROR_VM_IO_ERR);
-		else if (nread == 0) return BC_STATUS_EOF;
+		s = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c, &nread);
+		if (s) return s;
 
 		switch (c) {
 
