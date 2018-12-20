@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-b|-d|-c] [-ghHS] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-b|-d|-c] [-ghHS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" is specified too.\n'
@@ -38,8 +38,8 @@ usage() {
 	printf '        Build dc only. It is an error if "-b" is specified too.\n'
 	printf '    -g\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
-	printf '        other CFLAGS, also adds the "-O0" flag. If this flag is *not*\n'
-	printf '        given, "-DNDEBUG" is added to CPPFLAGS.\n'
+	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
+	printf '        flag. If this flag is *not* given, "-DNDEBUG" is added to CPPFLAGS.\n'
 	printf '    -h\n'
 	printf '        Print this help message and exit.\n'
 	printf '    -H\n'
@@ -48,6 +48,10 @@ usage() {
 	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 32).\n'
 	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 2.\n'
 	printf '        It is an error if \"-m\" is specified too.\n'
+	printf '    -O OPT_LEVEL\n'
+	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
+	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
+	printf '        This is passed through to the compiler, so it must be supported.\n'
 	printf '    -S\n'
 	printf '        Disable signal handling. On by default.\n'
 	printf '\n'
@@ -167,6 +171,8 @@ debug=0
 signals=1
 hist=1
 none=0
+gotopt=0
+opt=0
 
 while getopts "bcdghHk:mNrS" opt; do
 
@@ -178,6 +184,7 @@ while getopts "bcdghHk:mNrS" opt; do
 		h) usage ;;
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
+		O) gotopt=1 ; opt="$OPTARG" ;;
 		S) signals=0 ;;
 		?) usage "Invalid option" ;;
 	esac
@@ -278,14 +285,18 @@ fi
 
 if [ "$debug" -eq 1 ]; then
 
-	if [ "$CFLAGS" = "" ]; then
-		CFLAGS="-O0"
+	if [ "$CFLAGS" = "" -a "$gotopt" -eq 0 ]; then
+		CFLAGS="-O 0"
 	fi
 
 	CFLAGS="$CFLAGS -g"
 else
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
 	link="$link 1"
+fi
+
+if [ "$gotopt" -eq 1 ]; then
+	CFLAGS="$CFLAGS -O $opt"
 fi
 
 if [ "$coverage" -eq 1 ]; then
