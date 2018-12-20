@@ -1046,11 +1046,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		unsigned int c;
 		ssize_t nread;
 
-	// Continue reading if interrupted by a signal.
-// TODO
-//	do {
-//		  nread = read(l.ifd,&c,1);
-//		} while((nread == -1) && (errno == EINTR));
 		nread = bc_history_readCode(h->ifd, cbuf, sizeof(cbuf), &c);
 		if (nread <= 0) return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
