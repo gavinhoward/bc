@@ -193,7 +193,7 @@ none=0
 gotopt=0
 opt=0
 
-while getopts "bcdghHk:mNrS" opt; do
+while getopts "bcdghHk:mNOrS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
