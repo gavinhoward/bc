@@ -122,6 +122,12 @@ void bc_vec_concat(BcVec *v, const char *str) {
 	v->len = len;
 }
 
+void bc_vec_empty(BcVec* v) {
+	assert(v && v->size == sizeof(char));
+	bc_vec_npop(v, v->len);
+	bc_vec_pushByte(v, '\0');
+}
+
 #if BC_ENABLE_HISTORY
 void bc_vec_popAt(BcVec *v, size_t idx) {
 

@@ -325,7 +325,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		s = bc_vm_process(vm, buffer.v, true);
 		if (s) goto err;
 
-		bc_vec_npop(&buffer, buffer.len);
+		bc_vec_empty(&buffer);
 	}
 
 	if (comment) s = bc_vm_error(BC_ERROR_PARSE_BAD_COMMENT, vm->prs.l.line);
