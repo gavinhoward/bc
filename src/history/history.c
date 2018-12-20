@@ -521,6 +521,7 @@ static int bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len) {
 			}
 		}
 	}
+
 	return 0;
 }
 
@@ -544,7 +545,7 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 		buf[buf_len++] = prompt[off++];
 	}
 
-	return bc_history_colPos(buf,buf_len,buf_len);
+	return bc_history_colPos(buf, buf_len, buf_len);
 }
 
 /**
@@ -576,7 +577,7 @@ static void bc_history_refresh(BcHistory *h) {
 	bc_vec_init(&vec, sizeof(char), NULL);
 
 	// Cursor to left edge.
-	snprintf(seq,64,"\r");
+	snprintf(seq, 64, "\r");
 	bc_vec_string(&vec, strlen(seq), seq);
 
 	// Write the prompt and the current buffer content.
@@ -584,7 +585,7 @@ static void bc_history_refresh(BcHistory *h) {
 	bc_vec_concat(&vec, buf);
 
 	// Erase to right.
-	snprintf(seq,64,"\x1b[0K");
+	snprintf(seq, 64, "\x1b[0K");
 	bc_vec_concat(&vec, seq);
 
 	// Move cursor to original position.
@@ -1020,8 +1021,9 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	while (!s) {
 
+		// Large enough for any encoding?
+		char cbuf[32];
 		unsigned int c;
-		char cbuf[32]; // large enough for any encoding?
 		int nread;
 
 	// Continue reading if interrupted by a signal.
