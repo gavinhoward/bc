@@ -428,7 +428,6 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 }
 
 static void bc_history_disableRaw(BcHistory *h) {
-
 	// Don't even check the return value as it's too late.
 	if (h->rawMode && tcsetattr(h->ifd, TCSAFLUSH, &h->orig_termios) != -1)
 		h->rawMode = false;
