@@ -52,9 +52,8 @@
 void bc_vm_sig(int sig) {
 	int err = errno;
 	size_t len = strlen(vm->sig_msg);
-	if (sig == SIGINT && write(2, vm->sig_msg, len) == (ssize_t) len) {
+	if (sig == SIGINT && write(2, vm->sig_msg, len) == (ssize_t) len)
 		vm->sig = sig;
-	}
 	errno = err;
 }
 #else // _WIN32
