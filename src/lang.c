@@ -36,6 +36,7 @@ void bc_id_free(void *id) {
 	free(((BcId*) id)->name);
 }
 
+#if BC_ENABLED
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line) {
 
 	BcId a;
@@ -55,21 +56,26 @@ BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line) {
 
 	return BC_STATUS_SUCCESS;
 }
+#endif // BC_ENABLED
 
 void bc_func_init(BcFunc *f) {
 	assert(f);
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
+#if BC_ENABLED
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
 	f->nparams = 0;
+#endif // BC_ENABLED
 }
 
 void bc_func_free(void *func) {
 	BcFunc *f = (BcFunc*) func;
 	assert(f);
 	bc_vec_free(&f->code);
+#if BC_ENABLED
 	bc_vec_free(&f->autos);
 	bc_vec_free(&f->labels);
+#endif // BC_ENABLED
 }
 
 void bc_array_init(BcVec *a, bool nums) {
@@ -151,9 +157,11 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			break;
 		}
 
-		case BC_RESULT_CONSTANT:
+#if BC_ENABLED
 		case BC_RESULT_LAST:
 		case BC_RESULT_ONE:
+#endif // BC_ENABLED
+		case BC_RESULT_CONSTANT:
 		case BC_RESULT_STR:
 		{
 			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));

@@ -89,10 +89,12 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
 	if (p->fidx != BC_PROG_MAIN) {
 
-		p->func->nparams = 0;
 		bc_vec_npop(&p->func->code, p->func->code.len);
+#if BC_ENABLED
 		bc_vec_npop(&p->func->autos, p->func->autos.len);
 		bc_vec_npop(&p->func->labels, p->func->labels.len);
+		p->func->nparams = 0;
+#endif // BC_ENABLED
 
 		bc_parse_updateFunc(p, BC_PROG_MAIN);
 	}

@@ -32,6 +32,7 @@
 
 typedef struct BcProgram {
 
+	size_t nchars;
 	size_t scale;
 
 	BcNum ib;
@@ -63,11 +64,11 @@ typedef struct BcProgram {
 	BcVec consts;
 	BcVec const_map;
 
-	BcNum last;
 	BcNum zero;
+#if BC_ENABLED
 	BcNum one;
-
-	size_t nchars;
+	BcNum last;
+#endif // BC_ENABLED
 
 } BcProgram;
 
