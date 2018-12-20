@@ -1065,8 +1065,24 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			case BC_ACTION_CTRL_C:
 			{
-				errno = EAGAIN;
-				return BC_STATUS_SUCCESS;
+				size_t rlen, len;
+
+				rlen = strlen(bc_program_ready_msg);
+				len = strlen(bc_history_ctrlc);
+
+				bc_vec_empty(&h->buf);
+				h->pos = 0;
+
+				if (write(h->ofd, bc_history_ctrlc, len) != len ||
+				    write(h->ofd, vm->sig_msg, vm->sig_len) != vm->sig_len ||
+				    write(h->ofd, bc_program_ready_msg, rlen) != rlen)
+				{
+					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+				}
+
+				if (!s) s = bc_history_refresh(h);
+
+				continue;
 			}
 
 			case BC_ACTION_BACKSPACE:

@@ -392,7 +392,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = bc_vm_sig;
-	sa.sa_flags = SA_RESTART;
+	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
 #else // _WIN32
 	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
