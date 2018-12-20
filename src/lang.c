@@ -116,10 +116,12 @@ void bc_array_expand(BcVec *a, size_t len) {
 	}
 }
 
+#if BC_ENABLE_HISTORY
 void bc_string_free(void *string) {
 	assert(string && *((char**) string));
 	free(*((char**) string));
 }
+#endif // BC_ENABLE_HISTORY
 
 #if DC_ENABLED
 void bc_result_copy(BcResult *d, BcResult *src) {
