@@ -1099,24 +1099,23 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
 BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
 	size_t i;
-	unsigned long pow, res;
+	unsigned long pow, r;
 
 	assert(n && result);
 
 	if (n->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
-	for (res = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
+	for (r = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
 
-		unsigned long prev = res, powprev = pow;
+		unsigned long prev = r, powprev = pow;
 
-		res += ((unsigned long) n->num[i]) * pow;
+		r += ((unsigned long) n->num[i]) * pow;
 		pow *= 10;
 
-		if (res < prev || pow < powprev)
-			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+		if (r < prev || pow < powprev) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	}
 
-	*result = res;
+	*result = r;
 
 	return BC_STATUS_SUCCESS;
 }
