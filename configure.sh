@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-b|-d|-c] [-ghHS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-b|-d|-c] [-ghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" is specified too.\n'
@@ -52,6 +52,9 @@ usage() {
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
 	printf '        This is passed through to the compiler, so it must be supported.\n'
+	printf '    -R\n'
+	printf '        Disable the array references feature. This is an undocumented\n'
+	printf '        feature of the GNU bc, and it is an extension to POSIX.\n'
 	printf '    -S\n'
 	printf '        Disable signal handling. On by default.\n'
 	printf '\n'
@@ -189,10 +192,10 @@ karatsuba_len=32
 debug=0
 signals=1
 hist=1
-none=0
+refs=1
 optimization=""
 
-while getopts "bcdghHk:mNO:rS" opt; do
+while getopts "bcdghHk:O:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -203,6 +206,7 @@ while getopts "bcdghHk:mNO:rS" opt; do
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
 		O) optimization="$OPTARG" ;;
+		R) refs=0 ;;
 		S) signals=0 ;;
 		?) usage "Invalid option" ;;
 	esac
@@ -367,6 +371,7 @@ contents=$(replace "$contents" "LINK" "$link")
 
 contents=$(replace "$contents" "SIGNALS" "$signals")
 contents=$(replace "$contents" "HISTORY" "$hist")
+contents=$(replace "$contents" "REFERENCES" "$refs")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "PREFIX" "$PREFIX")
