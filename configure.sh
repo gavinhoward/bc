@@ -53,8 +53,10 @@ usage() {
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
 	printf '        This is passed through to the compiler, so it must be supported.\n'
 	printf '    -R\n'
-	printf '        Disable the array references feature. This is an undocumented\n'
-	printf '        feature of the GNU bc, and it is an extension to POSIX.\n'
+	printf '        Disable the array references extension. This feature is an\n'
+	printf '        undocumented feature of the GNU bc, but this bc supports it.\n'
+	printf '        Additionally, since this feature is only available to bc,\n'
+	printf '        specifying "-d" implies this option.\n'
 	printf '    -S\n'
 	printf '        Disable signal handling. On by default.\n'
 	printf '\n'
@@ -278,6 +280,7 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	bc_lib=""
 	bc_help_o=""
+	refs=0
 
 	executables="dc"
 
