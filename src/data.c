@@ -87,6 +87,9 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE,
+#if BC_ENABLE_REFERENCES
+	BC_ERR_IDX_PARSE,
+#endif // BC_ENABLE_REFERENCES
 #if DC_ENABLED
 	BC_ERR_IDX_PARSE,
 #endif // DC_ENABLED
@@ -128,6 +131,9 @@ const char* const bc_err_msgs[] = {
 	"function parameter or auto \"%s\" already exists",
 	"block end could not be found",
 	"end of file",
+#if BC_ENABLE_REFERENCES
+	"vars cannot be references",
+#endif // BC_ENABLE_REFERENCES
 #if DC_ENABLED
 	"extended register",
 #endif // DC_ENABLED

@@ -195,10 +195,18 @@ typedef struct BcInstPtr {
 	size_t len;
 } BcInstPtr;
 
+typedef enum BcType {
+	BC_TYPE_VAR,
+	BC_TYPE_ARRAY,
+#if BC_ENABLE_REFERENCES
+	BC_TYPE_REF,
+#endif // BC_ENABLE_REFERENCES
+} BcType;
+
 // ** Exclude start. **
 // ** Busybox exclude start. **
 void bc_func_init(BcFunc *f);
-BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line);
+BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line);
 void bc_func_reset(BcFunc *f);
 void bc_func_free(void *func);
 

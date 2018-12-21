@@ -805,7 +805,7 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 BcStatus bc_parse_func(BcParse *p) {
 
 	BcStatus s;
-	bool var, comma = false;
+	bool comma = false;
 	uint16_t flags;
 	char *name;
 	size_t idx;
@@ -831,11 +831,14 @@ BcStatus bc_parse_func(BcParse *p) {
 
 	while (p->l.t.t != BC_LEX_RPAREN) {
 
-#if BC_ENABLE_REFERENCES
-		bool ref = p->l.t.t == BC_LEX_OP_MULTIPLY;
+		BcType t = BC_TYPE_VAR;
 
-		if (ref) {
+#if BC_ENABLE_REFERENCES
+		if (p->l.t.t == BC_LEX_OP_MULTIPLY) {
+			t = BC_TYPE_REF;
 			s = bc_lex_next(&p->l);
+			if (s) return s;
+			s = bc_vm_posixError(BC_ERROR_POSIX_REF, p->l.line);
 			if (s) return s;
 		}
 #endif // BC_ENABLE_REFERENCES
@@ -849,9 +852,9 @@ BcStatus bc_parse_func(BcParse *p) {
 		s = bc_lex_next(&p->l);
 		if (s) goto err;
 
-		var = p->l.t.t != BC_LEX_LBRACKET;
+		if (p->l.t.t == BC_LEX_LBRACKET) {
 
-		if (!var) {
+			if (t == BC_TYPE_VAR) t = BC_TYPE_ARRAY;
 
 			s = bc_lex_next(&p->l);
 			if (s) goto err;
@@ -864,6 +867,12 @@ BcStatus bc_parse_func(BcParse *p) {
 			s = bc_lex_next(&p->l);
 			if (s) goto err;
 		}
+#if BC_ENABLE_REFERENCES
+		else if (t == BC_TYPE_REF) {
+			s = bc_vm_error(BC_ERROR_PARSE_REF_VAR, p->l.line);
+			goto err;
+		}
+#endif // BC_ENABLE_REFERENCES
 
 		comma = p->l.t.t == BC_LEX_COMMA;
 		if (comma) {
@@ -871,7 +880,7 @@ BcStatus bc_parse_func(BcParse *p) {
 			if (s) goto err;
 		}
 
-		s = bc_func_insert(p->func, name, var, p->l.line);
+		s = bc_func_insert(p->func, name, t, p->l.line);
 		if (s) goto err;
 	}
 

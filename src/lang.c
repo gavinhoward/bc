@@ -37,7 +37,7 @@ void bc_id_free(void *id) {
 }
 
 #if BC_ENABLED
-BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line) {
+BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line) {
 
 	BcId a;
 	size_t i;
@@ -49,7 +49,7 @@ BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line) {
 			return bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name);
 	}
 
-	a.idx = var;
+	a.idx = type;
 	a.name = name;
 
 	bc_vec_push(&f->autos, &a);
