@@ -96,6 +96,7 @@ typedef enum BcError {
 	BC_ERROR_POSIX_FOR2,
 	BC_ERROR_POSIX_FOR3,
 	BC_ERROR_POSIX_BRACE,
+	BC_ERROR_POSIX_REF,
 #endif // BC_ENABLED
 
 } BcError;

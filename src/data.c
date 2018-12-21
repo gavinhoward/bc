@@ -100,6 +100,7 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
+	BC_ERR_IDX_POSIX,
 #endif // BC_ENABLED
 };
 
@@ -166,6 +167,7 @@ const char* const bc_err_msgs[] = {
 	"POSIX does not allow an empty condition expression in a for loop",
 	"POSIX does not allow an empty update expression in a for loop",
 	"POSIX requires the left brace be on the same line as the function header",
+	"POSIX does not allow array references as function parameters",
 #endif // BC_ENABLED
 
 };
