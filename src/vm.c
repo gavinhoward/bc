@@ -257,7 +257,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 	}
 
 err:
-	if (s) s = bc_program_reset(&vm->prog, s);
+	if (s || BC_SIGINT) s = bc_program_reset(&vm->prog, s);
 	return s == BC_STATUS_QUIT || !BC_I || !is_stdin ? s : BC_STATUS_SUCCESS;
 }
 
@@ -305,8 +305,9 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	while (!done && (!(s = bc_read_line(&buf, ">>> ")) || buf.len > 1)) {
-
+	while (!done && (!(s = bc_read_line(&buf, ">>> ")) || buf.len > 1) &&
+	       !BC_SIGINT && s != BC_STATUS_EXEC_SIGNAL)
+	{
 		char *str = buf.v;
 		size_t i, len = buf.len - 1;
 
@@ -344,8 +345,11 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		bc_vec_empty(&buffer);
 	}
 
-	if (comment) s = bc_vm_error(BC_ERROR_PARSE_BAD_COMMENT, vm->prs.l.line);
-	else if (string) s = bc_vm_error(BC_ERROR_PARSE_BAD_STRING, vm->prs.l.line);
+
+	if (s) goto err;
+	if (BC_SIGINT) s = BC_STATUS_EXEC_SIGNAL;
+	else if (comment) s = bc_vm_error(BC_ERROR_PARSE_COMMENT, vm->prs.l.line);
+	else if (string) s = bc_vm_error(BC_ERROR_PARSE_STRING, vm->prs.l.line);
 	else if (vm->prs.flags.len > 1)
 		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
 

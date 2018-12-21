@@ -77,7 +77,7 @@ BcStatus bc_lex_string(BcLex *l) {
 
 	if (c == '\0') {
 		l->i = i;
-		return bc_vm_error(BC_ERROR_PARSE_BAD_STRING, l->line);
+		return bc_vm_error(BC_ERROR_PARSE_STRING, l->line);
 	}
 
 	len = i - l->i;

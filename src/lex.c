@@ -49,7 +49,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 		if (c == 0 || buf[i + 1] == '\0') {
 			l->i = i;
-			return bc_vm_error(BC_ERROR_PARSE_BAD_COMMENT, l->line);
+			return bc_vm_error(BC_ERROR_PARSE_COMMENT, l->line);
 		}
 
 		end = buf[i + 1] == '/';

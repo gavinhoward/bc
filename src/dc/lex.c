@@ -70,7 +70,7 @@ BcStatus dc_lex_string(BcLex *l) {
 
 	if (c == '\0' && depth) {
 		l->i = i;
-		return bc_vm_error(BC_ERROR_PARSE_BAD_STRING, l->line);
+		return bc_vm_error(BC_ERROR_PARSE_STRING, l->line);
 	}
 
 	bc_vec_pushByte(&l->t.v, '\0');
