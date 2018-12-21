@@ -75,7 +75,6 @@ BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
 
 RM = rm
-RMDIR = rmdir
 MKDIR = mkdir
 
 INSTALL = ./install.sh
@@ -192,7 +191,7 @@ clean:
 	$(RM) -f $(DC_OBJ)
 	$(RM) -f $(BC_EXEC)
 	$(RM) -f $(DC_EXEC)
-	$(RMDIR) $(BIN)
+	$(RM) -fr $(BIN)
 	$(RM) -f $(GCDA) $(GCNO)
 	$(RM) -f $(BC_GCDA) $(BC_GCNO)
 	$(RM) -f $(DC_GCDA) $(DC_GCNO)
