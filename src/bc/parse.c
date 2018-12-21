@@ -831,6 +831,15 @@ BcStatus bc_parse_func(BcParse *p) {
 
 	while (p->l.t.t != BC_LEX_RPAREN) {
 
+#if BC_ENABLE_REFERENCES
+		bool ref = p->l.t.t == BC_LEX_OP_MULTIPLY;
+
+		if (ref) {
+			s = bc_lex_next(&p->l);
+			if (s) return s;
+		}
+#endif // BC_ENABLE_REFERENCES
+
 		if (p->l.t.t != BC_LEX_NAME)
 			return bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
 
