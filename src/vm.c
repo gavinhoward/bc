@@ -231,8 +231,29 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 	}
 
 	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
+
 		s = bc_program_exec(&vm->prog);
-		if (!s && BC_I) bc_vm_fflush(stdout);
+
+		if (BC_I) bc_vm_fflush(stdout);
+
+		if (!s) {
+
+			// If this condition is true, we can get rid of strings
+			// and constants. This is an idea from busybox.
+			if (vm->prog.stack.len == 1 && vm->prog.results.len == 0 &&
+				vm->prs.flags.len == 1)
+			{
+				BcVec *fns = &vm->prog.fns;
+				BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
+
+				fprintf(stderr, "here: %zu, %zu, %zu\n", f->code.cap, f->strs.cap, f->consts.cap);
+
+				bc_vec_npop(&f->strs, f->strs.len);
+				bc_vec_npop(&f->consts, f->consts.len);
+
+				if (!BC_IS_BC) bc_vec_npop(fns, fns->len - BC_PROG_REQ_FUNCS);
+			}
+		}
 	}
 
 err:

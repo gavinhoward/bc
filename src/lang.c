@@ -61,9 +61,23 @@ BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line) {
 void bc_func_init(BcFunc *f) {
 	assert(f);
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
+	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
+	bc_vec_init(&f->consts, sizeof(char*), bc_string_free);
 #if BC_ENABLED
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
+	f->nparams = 0;
+#endif // BC_ENABLED
+}
+
+void bc_func_reset(BcFunc *f) {
+	assert(f);
+	bc_vec_npop(&f->code, f->code.len);
+	bc_vec_npop(&f->strs, f->strs.len);
+	bc_vec_npop(&f->consts, f->consts.len);
+#if BC_ENABLED
+	bc_vec_npop(&f->autos, f->autos.len);
+	bc_vec_npop(&f->labels, f->labels.len);
 	f->nparams = 0;
 #endif // BC_ENABLED
 }
@@ -72,6 +86,8 @@ void bc_func_free(void *func) {
 	BcFunc *f = (BcFunc*) func;
 	assert(f);
 	bc_vec_free(&f->code);
+	bc_vec_free(&f->strs);
+	bc_vec_free(&f->consts);
 #if BC_ENABLED
 	bc_vec_free(&f->autos);
 	bc_vec_free(&f->labels);
@@ -122,12 +138,10 @@ void bc_array_expand(BcVec *a, size_t len) {
 	}
 }
 
-#if BC_ENABLE_HISTORY
 void bc_string_free(void *string) {
 	assert(string && *((char**) string));
 	free(*((char**) string));
 }
-#endif // BC_ENABLE_HISTORY
 
 #if DC_ENABLED
 void bc_result_copy(BcResult *d, BcResult *src) {

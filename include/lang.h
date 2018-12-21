@@ -138,12 +138,17 @@ typedef struct BcId {
 } BcId;
 
 typedef struct BcFunc {
+
 	BcVec code;
 #if BC_ENABLED
 	BcVec labels;
 	BcVec autos;
 	size_t nparams;
 #endif // BC_ENABLED
+
+	BcVec strs;
+	BcVec consts;
+
 } BcFunc;
 
 typedef enum BcResultType {
@@ -194,6 +199,7 @@ typedef struct BcInstPtr {
 // ** Busybox exclude start. **
 void bc_func_init(BcFunc *f);
 BcStatus bc_func_insert(BcFunc *f, char *name, bool var, size_t line);
+void bc_func_reset(BcFunc *f);
 void bc_func_free(void *func);
 
 void bc_array_init(BcVec *a, bool nums);

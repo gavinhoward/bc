@@ -29,6 +29,24 @@
 #include <program.h>
 #include <vm.h>
 
+char* bc_program_str(BcProgram *p, size_t idx, bool str) {
+
+	BcFunc *f;
+	BcVec *v;
+	size_t i;
+
+	if (BC_IS_BC) {
+		BcInstPtr *ip = bc_vec_item_rev(&p->stack, 0);
+		i = ip->func;
+	}
+	else i = BC_PROG_MAIN;
+
+	f = bc_vec_item(&p->fns, i);
+	v = str ? &f->strs : &f->consts;
+
+	return *((char**) bc_vec_item(v, idx));
+}
+
 BcVec* bc_program_search(BcProgram *p, char *id, bool var) {
 
 	BcId e, *ptr;
@@ -73,8 +91,8 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 
 		case BC_RESULT_CONSTANT:
 		{
-			char **str = bc_vec_item(&p->consts, r->d.id.idx);
-			size_t base_t, len = strlen(*str);
+			char *str = bc_program_str(p, r->d.id.idx, false);
+			size_t base_t, len = strlen(str);
 			BcNum *base;
 
 			bc_num_init(&r->d.n, len);
@@ -82,7 +100,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 			hex = hex && len == 1;
 			base = hex ? &p->hexb : &p->ib;
 			base_t = hex ? BC_NUM_MAX_IBASE : p->ib_t;
-			s = bc_num_parse(&r->d.n, *str, base, base_t);
+			s = bc_num_parse(&r->d.n, str, base, base_t);
 
 			if (s) {
 				bc_num_free(&r->d.n);
@@ -417,7 +435,7 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	BcResult *r;
 	size_t len, i;
 	char *str;
-	BcNum *num = NULL;
+	BcNum *n = NULL;
 	bool pop = inst != BC_INST_PRINT;
 
 	assert(p);
@@ -426,21 +444,20 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		return bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	r = bc_vec_item_rev(&p->results, idx);
-	s = bc_program_num(p, r, &num, false);
+	s = bc_program_num(p, r, &n, false);
 	if (s) return s;
 
-	if (BC_PROG_NUM(r, num)) {
+	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
-		s = bc_num_print(num, &p->ob, p->ob_t, !pop, &p->nchars);
+		s = bc_num_print(n, &p->ob, p->ob_t, !pop, &p->nchars);
 #if BC_ENABLED
-		if (!s) bc_num_copy(&p->last, num);
+		if (!s) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
 	}
 	else {
 
-		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
-		assert(idx < p->strs.len);
-		str = *((char**) bc_vec_item(&p->strs, idx));
+		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
+		str = bc_program_str(p, idx, true);
 
 		if (inst == BC_INST_PRINT_STR) {
 			for (i = 0, len = strlen(str); i < len; ++i) {
@@ -955,13 +972,11 @@ BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 #if DC_ENABLED
 	else if (len != 0 && !BC_PROG_NUM(opnd, num)) {
 
-		char **str;
+		char *str;
 		size_t idx = opnd->t == BC_RESULT_STR ? opnd->d.id.idx : num->rdx;
 
-		assert(idx < p->strs.len);
-
-		str = bc_vec_item(&p->strs, idx);
-		bc_num_ulong2num(&res.d.n, strlen(*str));
+		str = bc_program_str(p, idx, true);
+		bc_num_ulong2num(&res.d.n, strlen(str));
 	}
 #endif // DC_ENABLED
 	else {
@@ -1062,37 +1077,41 @@ BcStatus bc_program_asciify(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r, res;
-	BcNum *num = NULL, n;
+	BcNum *n = NULL, num;
 	char str[2], *str2, c;
-	size_t len = p->strs.len, idx;
+	size_t len, idx;
 	unsigned long val;
-	BcFunc f;
+	BcFunc f, *func;
 
 	if (!BC_PROG_STACK(&p->results, 1)) return bc_vm_err(BC_ERROR_EXEC_STACK);
 	r = bc_vec_top(&p->results);
 
-	s = bc_program_num(p, r, &num, false);
+	s = bc_program_num(p, r, &n, false);
 	if (s) return s;
 
-	if (BC_PROG_NUM(r, num)) {
+	func = bc_vec_item(&p->fns, BC_PROG_MAIN);
+	len = func->strs.len;
 
-		bc_num_init(&n, BC_NUM_DEF_SIZE);
-		bc_num_copy(&n, num);
-		bc_num_truncate(&n, n.rdx);
+	assert(len + BC_PROG_REQ_FUNCS == p->fns.len);
 
-		s = bc_num_mod(&n, &p->strmb, &n, 0);
+	if (BC_PROG_NUM(r, n)) {
+
+		bc_num_init(&num, BC_NUM_DEF_SIZE);
+		bc_num_copy(&num, n);
+		bc_num_truncate(&num, num.rdx);
+
+		s = bc_num_mod(&num, &p->strmb, &num, 0);
 		if (s) goto num_err;
-		s = bc_num_ulong(&n, &val);
+		s = bc_num_ulong(&num, &val);
 		if (s) goto num_err;
 
 		c = (char) val;
 
-		bc_num_free(&n);
+		bc_num_free(&num);
 	}
 	else {
-		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : num->rdx;
-		assert(idx < p->strs.len);
-		str2 = *((char**) bc_vec_item(&p->strs, idx));
+		size_t idx = r->t == BC_RESULT_STR ? r->d.id.idx : n->rdx;
+		str2 = *((char**) bc_vec_item(&func->strs, idx));
 		c = str2[0];
 	}
 
@@ -1100,7 +1119,11 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	str[1] = '\0';
 
 	bc_program_addFunc(p, &f);
-	len = bc_program_insertId(str, &p->str_map, &p->strs);
+	str2 = bc_vm_strdup(str);
+
+	// Make sure the pointer is updated.
+	func = bc_vec_item(&p->fns, BC_PROG_MAIN);
+	bc_vec_push(&func->strs, &str2);
 
 	res.t = BC_RESULT_STR;
 	res.d.id.idx = len;
@@ -1110,7 +1133,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	return BC_STATUS_SUCCESS;
 
 num_err:
-	bc_num_free(&n);
+	bc_num_free(&num);
 	return s;
 }
 
@@ -1119,7 +1142,6 @@ BcStatus bc_program_printStream(BcProgram *p) {
 	BcStatus s;
 	BcResult *r;
 	BcNum *n = NULL;
-	size_t idx;
 	char *str;
 
 	if (!BC_PROG_STACK(&p->results, 1)) return bc_vm_err(BC_ERROR_EXEC_STACK);
@@ -1130,9 +1152,8 @@ BcStatus bc_program_printStream(BcProgram *p) {
 
 	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb, &p->nchars);
 	else {
-		idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
-		assert(idx < p->strs.len);
-		str = *((char**) bc_vec_item(&p->strs, idx));
+		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
+		str = bc_program_str(p, idx, true);
 		bc_vm_printf("%s", str);
 	}
 
@@ -1165,10 +1186,10 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
-	char **str;
+	char *str;
 	BcFunc *f;
 	BcParse prs;
-	BcInstPtr ip;
+	BcInstPtr ip, *ip_ptr;
 	size_t fidx, sidx;
 	BcNum *n;
 	bool exec;
@@ -1220,16 +1241,15 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 		else goto exit;
 	}
 
+	ip_ptr = bc_vec_item_rev(&p->stack, 0);
 	fidx = sidx + BC_PROG_REQ_FUNCS;
-	assert(p->strs.len > sidx && p->fns.len > fidx);
-
-	str = bc_vec_item(&p->strs, sidx);
+	str = bc_program_str(p, sidx, true);
 	f = bc_vec_item(&p->fns, fidx);
 
 	if (f->code.len == 0) {
 
 		vm->parse_init(&prs, p, fidx);
-		s = bc_parse_text(&prs, *str);
+		s = bc_parse_text(&prs, str);
 		if (s) goto err;
 		s = vm->parse_expr(&prs, BC_PARSE_NOCALL);
 		if (s) goto err;
@@ -1295,10 +1315,6 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->var_map);
 	bc_vec_free(&p->arrs);
 	bc_vec_free(&p->arr_map);
-	bc_vec_free(&p->strs);
-	bc_vec_free(&p->str_map);
-	bc_vec_free(&p->consts);
-	bc_vec_free(&p->const_map);
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
 	bc_num_free(&p->zero);
@@ -1368,39 +1384,10 @@ void bc_program_init(BcProgram *p) {
 
 	// The destructor is NULL for the vectors because the vectors
 	// and maps share the strings, and the map frees them.
-	bc_vec_init(&p->strs, sizeof(char*), NULL);
-	bc_map_init(&p->str_map);
-	bc_vec_init(&p->consts, sizeof(char*), NULL);
-	bc_map_init(&p->const_map);
 
 	bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
 	bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
 	bc_vec_push(&p->stack, &ip);
-}
-
-size_t bc_program_insertId(char* data, BcVec *map, BcVec *vec) {
-
-	BcId id, *id_ptr;
-	size_t idx;
-	bool new;
-
-	id.idx = vec->len;
-	id.name = data;
-
-	new = bc_map_insert(map, &id, &idx);
-	id_ptr = bc_vec_item(map, idx);
-
-	if (new) {
-
-		// Update the entry name because the lex buffer will change.
-		id_ptr->name = bc_vm_strdup(data);
-
-		bc_vec_push(vec, &id_ptr->name);
-		idx = id.idx;
-	}
-	else idx = id_ptr->idx;
-
-	return idx;
 }
 
 void bc_program_addFunc(BcProgram *p, BcFunc *f) {
@@ -1426,16 +1413,9 @@ size_t bc_program_insertFunc(BcProgram *p, char *name) {
 	idx = entry_ptr->idx;
 
 	if (!new) {
-
 		BcFunc *func = bc_vec_item(&p->fns, entry_ptr->idx);
-
+		bc_func_reset(func);
 		free(name);
-
-		// We need to reset these, so the function can be repopulated.
-		bc_vec_npop(&func->code, func->code.len);
-		bc_vec_npop(&func->autos, func->autos.len);
-		bc_vec_npop(&func->labels, func->labels.len);
-		func->nparams = 0;
 	}
 	else bc_program_addFunc(p, &f);
 
@@ -1832,9 +1812,7 @@ void bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 	size_t idx = bc_program_index(code, bgn);
 	char *s;
 
-	assert(idx < p->strs.len);
-
-	s = *((char**) bc_vec_item(&p->strs, idx));
+	s = bc_program_str(p, idx, true);
 
 	bc_vm_printf(" (\"%s\") ", s);
 }
@@ -1853,7 +1831,7 @@ void bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
 	else if (inst == BC_INST_STR) bc_program_printStr(p, code, bgn);
 	else if (inst == BC_INST_NUM) {
 		size_t idx = bc_program_index(code, bgn);
-		char **str = bc_vec_item(&p->consts, idx);
+		char *str = bc_program_str(p, idx, false);
 		bc_vm_printf("(%s)", *str);
 	}
 	else if (inst == BC_INST_CALL ||

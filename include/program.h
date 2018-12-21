@@ -60,12 +60,6 @@ typedef struct BcProgram {
 	BcVec arrs;
 	BcVec arr_map;
 
-	BcVec strs;
-	BcVec str_map;
-
-	BcVec consts;
-	BcVec const_map;
-
 	BcNum zero;
 #if BC_ENABLED
 	BcNum one;

@@ -63,8 +63,14 @@ void bc_parse_pushIndex(BcParse *p, size_t idx) {
 	for (i = 0; i < amt; ++i) bc_parse_push(p, nums[i]);
 }
 
-void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, uchar inst) {
-	size_t idx = bc_program_insertId(p->l.t.v.v, map, vec);
+void bc_parse_addId(BcParse *p, uchar inst) {
+
+	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
+	BcVec *v = inst == BC_INST_NUM ? &f->consts : &f->strs;
+	size_t idx = v->len;
+	char *str = bc_vm_strdup(p->l.t.v.v);
+
+	bc_vec_push(v, &str);
 	bc_parse_updateFunc(p, p->fidx);
 	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);
@@ -79,14 +85,7 @@ BcStatus bc_parse_text(BcParse *p, const char *text) {
 BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
 	if (p->fidx != BC_PROG_MAIN) {
-
-		bc_vec_npop(&p->func->code, p->func->code.len);
-#if BC_ENABLED
-		bc_vec_npop(&p->func->autos, p->func->autos.len);
-		bc_vec_npop(&p->func->labels, p->func->labels.len);
-		p->func->nparams = 0;
-#endif // BC_ENABLED
-
+		bc_func_reset(p->func);
 		bc_parse_updateFunc(p, BC_PROG_MAIN);
 	}
 

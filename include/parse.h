@@ -86,10 +86,10 @@
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
 
 #define bc_parse_number(p) \
-	(bc_parse_addId((p), &(p)->prog->const_map, &(p)->prog->consts, BC_INST_NUM))
+	(bc_parse_addId((p), BC_INST_NUM))
 
 #define bc_parse_string(p) \
-	(bc_parse_addId((p), &(p)->prog->str_map, &(p)->prog->strs, BC_INST_STR))
+	(bc_parse_addId((p), BC_INST_STR))
 
 typedef struct BcParseNext {
 	uchar len;
@@ -143,7 +143,7 @@ void bc_parse_create(BcParse *p, struct BcProgram *prog, size_t func,
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 
-void bc_parse_addId(BcParse *p, BcVec *map, BcVec *vec, uchar inst);
+void bc_parse_addId(BcParse *p, uchar inst);
 void bc_parse_updateFunc(BcParse *p, size_t fidx);
 size_t bc_parse_addFunc(BcParse *p, char *name);
 void bc_parse_pushName(BcParse* p, char *name);
