@@ -343,6 +343,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		bc_vec_empty(&buffer);
 	}
 
+	if (s && s != BC_STATUS_EOF) goto err;
 	if (BC_SIGINT && !s) s = BC_STATUS_EXEC_SIGNAL;
 	else if (comment) s = bc_vm_error(BC_ERROR_PARSE_COMMENT, vm->prs.l.line);
 	else if (string) s = bc_vm_error(BC_ERROR_PARSE_STRING, vm->prs.l.line);
