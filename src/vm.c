@@ -246,8 +246,6 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 				BcVec *fns = &vm->prog.fns;
 				BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
 
-				fprintf(stderr, "here: %zu, %zu, %zu\n", f->code.cap, f->strs.cap, f->consts.cap);
-
 				bc_vec_npop(&f->strs, f->strs.len);
 				bc_vec_npop(&f->consts, f->consts.len);
 
