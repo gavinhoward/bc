@@ -94,9 +94,11 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 	p->auto_part = false;
 
 	bc_vec_npop(&p->flags, p->flags.len - 1);
+#if BC_ENABLED
 	bc_vec_npop(&p->exits, p->exits.len);
 	bc_vec_npop(&p->conds, p->conds.len);
 	bc_vec_npop(&p->ops, p->ops.len);
+#endif // BC_ENABLED
 
 	return bc_program_reset(p->prog, s);
 }
@@ -104,9 +106,11 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 void bc_parse_free(BcParse *p) {
 	assert(p);
 	bc_vec_free(&p->flags);
+#if BC_ENABLED
 	bc_vec_free(&p->exits);
 	bc_vec_free(&p->conds);
 	bc_vec_free(&p->ops);
+#endif // BC_ENABLED
 	bc_lex_free(&p->l);
 }
 
@@ -122,9 +126,11 @@ void bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
 	bc_lex_init(&p->l, next);
 	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
 	bc_vec_push(&p->flags, &flag);
+#if BC_ENABLED
 	bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
 	bc_vec_init(&p->conds, sizeof(size_t), NULL);
 	bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
+#endif // BC_ENABLED
 
 	p->parse = parse;
 	p->prog = prog;

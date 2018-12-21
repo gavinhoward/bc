@@ -122,10 +122,11 @@ typedef struct BcParse {
 
 	BcVec flags;
 
+#if BC_ENABLED
 	BcVec exits;
 	BcVec conds;
-
 	BcVec ops;
+#endif // BC_ENABLED
 
 	struct BcProgram *prog;
 	BcFunc *func;
