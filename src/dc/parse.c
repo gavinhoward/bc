@@ -102,7 +102,6 @@ BcStatus dc_parse_cond(BcParse *p, uchar inst) {
 BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcInst prev;
 	uchar inst;
 	bool assign, get_token = false;
 
@@ -143,7 +142,6 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			}
 
 			bc_parse_number(p);
-			prev = BC_INST_NUM;
 
 			if (t == BC_LEX_NEG) bc_parse_push(p, BC_INST_NEG);
 			get_token = true;

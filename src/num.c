@@ -1103,6 +1103,9 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
 	assert(n && result);
 
+	// Make sure this is initialized.
+	*result = 0;
+
 	if (n->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	for (r = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
