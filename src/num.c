@@ -1020,13 +1020,18 @@ BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars) {
 }
 #endif // DC_ENABLED
 
+void bc_num_setup(BcNum *n, BcDig *num, size_t cap) {
+	assert(n);
+	n->num = num;
+	n->cap = cap;
+	n->rdx = n->len = 0;
+	n->neg = false;
+}
+
 void bc_num_init(BcNum *n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	n->num = bc_vm_malloc(req);
-	n->cap = req;
-	n->rdx = n->len = 0;
-	n->neg = false;
+	bc_num_setup(n, bc_vm_malloc(req), req);
 }
 
 void bc_num_expand(BcNum *n, size_t req) {
@@ -1103,6 +1108,9 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 
 	assert(n && result);
 
+	// Make sure this is initialized.
+	*result = 0;
+
 	if (n->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	for (r = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
@@ -1132,7 +1140,7 @@ void bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 	if (val == 0) return;
 
-	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len)
+	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len);
 	bc_num_expand(n, len);
 	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10) ptr[i] = val % 10;
 }

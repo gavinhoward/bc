@@ -23,6 +23,7 @@
 #ifndef BC_NUM_H
 #define BC_NUM_H
 
+#include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -50,6 +51,10 @@ typedef struct BcNum {
 #error BC_NUM_KARATSUBA_LEN must be at least 2
 #endif // BC_NUM_KARATSUBA_LEN
 
+// A crude, but always big enough, calculation of
+// the size required for ibase and obase BcNum's.
+#define BC_NUM_LONG_LOG10 ((CHAR_BIT * sizeof(unsigned long) + 1) / 2 + 1)
+
 #define BC_NUM_NEG(n, neg) ((((ssize_t) (n)) ^ -((ssize_t) (neg))) + (neg))
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 #define BC_NUM_INT(n) ((n)->len - (n)->rdx)
@@ -62,6 +67,7 @@ typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool, size_t*);
 
 void bc_num_init(BcNum *n, size_t req);
+void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
 void bc_num_expand(BcNum *n, size_t req);
 void bc_num_copy(BcNum *d, BcNum *s);
 void bc_num_free(void *num);

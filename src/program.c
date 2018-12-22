@@ -238,7 +238,7 @@ BcStatus bc_program_op(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
-	BcNum *n1, *n2 = NULL;
+	BcNum *n1 = NULL, *n2 = NULL;
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false);
 	if (s) return s;
@@ -500,7 +500,7 @@ BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
-	BcNum *n1, *n2;
+	BcNum *n1 = NULL, *n2 = NULL;
 	bool cond = 0;
 	ssize_t cmp;
 
@@ -764,7 +764,7 @@ BcStatus bc_program_pushArray(BcProgram *p, char *code, size_t *bgn, uchar inst)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r;
-	BcNum *num;
+	BcNum *num = NULL;
 
 	r.d.id.name = bc_program_name(code, bgn);
 
@@ -1077,9 +1077,9 @@ BcStatus bc_program_asciify(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r, res;
-	BcNum *n = NULL, num;
+	BcNum *n, num;
 	char str[2], *str2, c;
-	size_t len, idx;
+	size_t len;
 	unsigned long val;
 	BcFunc f, *func;
 
@@ -1189,7 +1189,7 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 	char *str;
 	BcFunc *f;
 	BcParse prs;
-	BcInstPtr ip, *ip_ptr;
+	BcInstPtr ip;
 	size_t fidx, sidx;
 	BcNum *n;
 	bool exec;
@@ -1241,7 +1241,6 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 		else goto exit;
 	}
 
-	ip_ptr = bc_vec_item_rev(&p->stack, 0);
 	fidx = sidx + BC_PROG_REQ_FUNCS;
 	str = bc_program_str(p, sidx, true);
 	f = bc_vec_item(&p->fns, fidx);
@@ -1299,14 +1298,9 @@ void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 	bc_vec_push(&p->results, &res);
 }
 
+#ifndef NDEBUG
 void bc_program_free(BcProgram *p) {
 	assert(p);
-	bc_num_free(&p->ib);
-	bc_num_free(&p->ob);
-	bc_num_free(&p->hexb);
-#if DC_ENABLED
-	bc_num_free(&p->strmb);
-#endif // DC_ENABLED
 	bc_vec_free(&p->fns);
 #if BC_ENABLED
 	bc_vec_free(&p->fn_map);
@@ -1317,16 +1311,14 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->arr_map);
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
-	bc_num_free(&p->zero);
 #if BC_ENABLED
-	bc_num_free(&p->one);
 	bc_num_free(&p->last);
 #endif // BC_ENABLED
 }
+#endif // NDEBUG
 
 void bc_program_init(BcProgram *p) {
 
-	size_t idx;
 	BcInstPtr ip;
 #if !BC_ENABLED
 	BcFunc f;
@@ -1339,26 +1331,26 @@ void bc_program_init(BcProgram *p) {
 
 	p->nchars = p->scale = 0;
 
-	bc_num_init(&p->ib, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->ib, p->ib_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ib);
 	p->ib_t = 10;
 
-	bc_num_init(&p->ob, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->ob, p->ob_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ob);
 	p->ob_t = 10;
 
-	bc_num_init(&p->hexb, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->hexb, p->hexb_num, BC_PROG_HEX_CAP);
 	bc_num_ten(&p->hexb);
 	p->hexb.num[0] = 6;
 
 #if DC_ENABLED
-	bc_num_init(&p->strmb, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_LONG_LOG10);
 	bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1);
 #endif // DC_ENABLED
 
-	bc_num_init(&p->zero, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->zero, p->zero_num, BC_PROG_ZERO_CAP);
 #if BC_ENABLED
-	bc_num_init(&p->one, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->one, p->one_num, BC_PROG_ZERO_CAP);
 	bc_num_one(&p->one);
 	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
@@ -1366,11 +1358,8 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
 #if BC_ENABLED
 	bc_map_init(&p->fn_map);
-
-	idx = bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
-	assert(idx == BC_PROG_MAIN);
-	idx = bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
-	assert(idx == BC_PROG_READ);
+	bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
+	bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
 #else
 	bc_program_addFunc(p, &f);
 	bc_program_addFunc(p, &f);
@@ -1456,7 +1445,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t idx;
 	BcResult r, *ptr;
-	BcNum *num;
+	BcNum *num = NULL;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 	BcFunc *func = bc_vec_item(&p->fns, ip->func);
 	char *code = func->code.v;
