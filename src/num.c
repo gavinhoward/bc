@@ -1020,13 +1020,18 @@ BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars) {
 }
 #endif // DC_ENABLED
 
+void bc_num_setup(BcNum *n, BcDig *num, size_t cap) {
+	assert(n);
+	n->num = num;
+	n->cap = cap;
+	n->rdx = n->len = 0;
+	n->neg = false;
+}
+
 void bc_num_init(BcNum *n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	n->num = bc_vm_malloc(req);
-	n->cap = req;
-	n->rdx = n->len = 0;
-	n->neg = false;
+	bc_num_setup(n, bc_vm_malloc(req), req);
 }
 
 void bc_num_expand(BcNum *n, size_t req) {

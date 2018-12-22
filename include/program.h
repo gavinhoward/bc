@@ -30,6 +30,9 @@
 #include <lang.h>
 #include <num.h>
 
+#define BC_PROG_ZERO_CAP (1)
+#define BC_PROG_HEX_CAP (2)
+
 typedef struct BcProgram {
 
 	size_t nchars;
@@ -64,6 +67,19 @@ typedef struct BcProgram {
 #if BC_ENABLED
 	BcNum one;
 	BcNum last;
+#endif // BC_ENABLED
+
+	BcDig ib_num[BC_NUM_LONG_LOG10];
+	BcDig ob_num[BC_NUM_LONG_LOG10];
+	BcDig hexb_num[BC_PROG_HEX_CAP];
+#if DC_ENABLED
+	// This uses BC_NUM_LONG_LOG10 because it is used in bc_num_ulong2num(),
+	// which attempts to realloc, unless it is big enough. This is big enough.
+	BcDig strmb_num[BC_NUM_LONG_LOG10];
+#endif // DC_ENABLED
+	BcDig zero_num[BC_PROG_ZERO_CAP];
+#if BC_ENABLED
+	BcDig one_num[BC_PROG_ZERO_CAP];
 #endif // BC_ENABLED
 
 } BcProgram;

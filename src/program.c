@@ -1300,12 +1300,6 @@ void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 
 void bc_program_free(BcProgram *p) {
 	assert(p);
-	bc_num_free(&p->ib);
-	bc_num_free(&p->ob);
-	bc_num_free(&p->hexb);
-#if DC_ENABLED
-	bc_num_free(&p->strmb);
-#endif // DC_ENABLED
 	bc_vec_free(&p->fns);
 #if BC_ENABLED
 	bc_vec_free(&p->fn_map);
@@ -1316,9 +1310,7 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->arr_map);
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
-	bc_num_free(&p->zero);
 #if BC_ENABLED
-	bc_num_free(&p->one);
 	bc_num_free(&p->last);
 #endif // BC_ENABLED
 }
@@ -1337,26 +1329,26 @@ void bc_program_init(BcProgram *p) {
 
 	p->nchars = p->scale = 0;
 
-	bc_num_init(&p->ib, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->ib, p->ib_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ib);
 	p->ib_t = 10;
 
-	bc_num_init(&p->ob, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->ob, p->ob_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ob);
 	p->ob_t = 10;
 
-	bc_num_init(&p->hexb, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->hexb, p->hexb_num, BC_PROG_HEX_CAP);
 	bc_num_ten(&p->hexb);
 	p->hexb.num[0] = 6;
 
 #if DC_ENABLED
-	bc_num_init(&p->strmb, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_LONG_LOG10);
 	bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1);
 #endif // DC_ENABLED
 
-	bc_num_init(&p->zero, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->zero, p->zero_num, BC_PROG_ZERO_CAP);
 #if BC_ENABLED
-	bc_num_init(&p->one, BC_NUM_DEF_SIZE);
+	bc_num_setup(&p->one, p->one_num, BC_PROG_ZERO_CAP);
 	bc_num_one(&p->one);
 	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
