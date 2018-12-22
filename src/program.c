@@ -1298,6 +1298,7 @@ void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 	bc_vec_push(&p->results, &res);
 }
 
+#ifndef NDEBUG
 void bc_program_free(BcProgram *p) {
 	assert(p);
 	bc_vec_free(&p->fns);
@@ -1314,6 +1315,7 @@ void bc_program_free(BcProgram *p) {
 	bc_num_free(&p->last);
 #endif // BC_ENABLED
 }
+#endif // NDEBUG
 
 void bc_program_init(BcProgram *p) {
 
