@@ -238,7 +238,7 @@ BcStatus bc_program_op(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
-	BcNum *n1, *n2 = NULL;
+	BcNum *n1 = NULL, *n2 = NULL;
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, false);
 	if (s) return s;
@@ -500,7 +500,7 @@ BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
-	BcNum *n1, *n2;
+	BcNum *n1 = NULL, *n2 = NULL;
 	bool cond = 0;
 	ssize_t cmp;
 
@@ -764,7 +764,7 @@ BcStatus bc_program_pushArray(BcProgram *p, char *code, size_t *bgn, uchar inst)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r;
-	BcNum *num;
+	BcNum *num = NULL;
 
 	r.d.id.name = bc_program_name(code, bgn);
 
@@ -1077,9 +1077,9 @@ BcStatus bc_program_asciify(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r, res;
-	BcNum *n = NULL, num;
+	BcNum *n, num;
 	char str[2], *str2, c;
-	size_t len, idx;
+	size_t len;
 	unsigned long val;
 	BcFunc f, *func;
 
@@ -1189,7 +1189,7 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 	char *str;
 	BcFunc *f;
 	BcParse prs;
-	BcInstPtr ip, *ip_ptr;
+	BcInstPtr ip;
 	size_t fidx, sidx;
 	BcNum *n;
 	bool exec;
@@ -1241,7 +1241,6 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 		else goto exit;
 	}
 
-	ip_ptr = bc_vec_item_rev(&p->stack, 0);
 	fidx = sidx + BC_PROG_REQ_FUNCS;
 	str = bc_program_str(p, sidx, true);
 	f = bc_vec_item(&p->fns, fidx);
@@ -1326,7 +1325,6 @@ void bc_program_free(BcProgram *p) {
 
 void bc_program_init(BcProgram *p) {
 
-	size_t idx;
 	BcInstPtr ip;
 #if !BC_ENABLED
 	BcFunc f;
@@ -1366,11 +1364,8 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
 #if BC_ENABLED
 	bc_map_init(&p->fn_map);
-
-	idx = bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
-	assert(idx == BC_PROG_MAIN);
-	idx = bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
-	assert(idx == BC_PROG_READ);
+	bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
+	bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
 #else
 	bc_program_addFunc(p, &f);
 	bc_program_addFunc(p, &f);
@@ -1456,7 +1451,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t idx;
 	BcResult r, *ptr;
-	BcNum *num;
+	BcNum *num = NULL;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 	BcFunc *func = bc_vec_item(&p->fns, ip->func);
 	char *code = func->code.v;
