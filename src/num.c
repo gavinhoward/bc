@@ -64,7 +64,7 @@ BcStatus bc_num_subArrays(BcDig *restrict a, BcDig *restrict b, size_t len) {
 			a[i + j] -= 1;
 		}
 	}
-	return BC_SIGINT ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 ssize_t bc_num_compare(BcDig *restrict a, BcDig *restrict b, size_t len) {
@@ -284,7 +284,7 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	if (carry != 0) c->num[c->len++] = (BcDig) carry;
 
-	return BC_SIGINT ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
@@ -356,7 +356,7 @@ BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	bool aone = BC_NUM_ONE(a);
 
-	if (BC_SIGINT) return BC_STATUS_EXEC_SIGNAL;
+	if (BC_SIGINT) return BC_STATUS_SIGNAL;
 	if (a->len == 0 || b->len == 0) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
@@ -395,7 +395,7 @@ BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
 
 		c->len = len;
 
-		return BC_SIGINT ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
+		return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 	}
 
 	bc_num_init(&l1, max);
@@ -650,7 +650,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 
 	if (BC_SIGINT) {
-		s = BC_STATUS_EXEC_SIGNAL;
+		s = BC_STATUS_SIGNAL;
 		goto err;
 	}
 
@@ -675,7 +675,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 
 	if (BC_SIGINT) {
-		s = BC_STATUS_EXEC_SIGNAL;
+		s = BC_STATUS_SIGNAL;
 		goto err;
 	}
 
@@ -1263,7 +1263,7 @@ BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 	}
 
 	if (BC_SIGINT) {
-		s = BC_STATUS_EXEC_SIGNAL;
+		s = BC_STATUS_SIGNAL;
 		goto err;
 	}
 

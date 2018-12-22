@@ -304,7 +304,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
 	while (!done && (!(s = bc_read_line(&buf, ">>> ")) || buf.len > 1) &&
-	       !BC_SIGINT && s != BC_STATUS_EXEC_SIGNAL)
+	       !BC_SIGINT && s != BC_STATUS_SIGNAL)
 	{
 		char *str = buf.v;
 		size_t i, len = buf.len - 1;
@@ -344,11 +344,13 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	}
 
 	if (s && s != BC_STATUS_EOF) goto err;
-	if (BC_SIGINT && !s) s = BC_STATUS_EXEC_SIGNAL;
-	else if (comment) s = bc_vm_error(BC_ERROR_PARSE_COMMENT, vm->prs.l.line);
-	else if (string) s = bc_vm_error(BC_ERROR_PARSE_STRING, vm->prs.l.line);
-	else if (vm->prs.flags.len > 1)
-		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
+	else if (BC_SIGINT && !s) s = BC_STATUS_SIGNAL;
+	else if (s != BC_STATUS_ERROR) {
+		if (comment) s = bc_vm_error(BC_ERROR_PARSE_COMMENT, vm->prs.l.line);
+		else if (string) s = bc_vm_error(BC_ERROR_PARSE_STRING, vm->prs.l.line);
+		else if (vm->prs.flags.len > 1)
+			s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
+	}
 
 err:
 	bc_vec_free(&buf);

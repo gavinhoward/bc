@@ -1401,7 +1401,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 	}
 
 	if (s) return s;
-	if (BC_SIGINT) return BC_STATUS_EXEC_SIGNAL;
+	if (BC_SIGINT) return BC_STATUS_SIGNAL;
 
 	while (p->ops.len > ops_bgn) {
 

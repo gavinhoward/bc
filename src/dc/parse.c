@@ -215,7 +215,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	}
 
 	if (!s) {
-		if (BC_SIGINT) s = BC_STATUS_EXEC_SIGNAL;
+		if (BC_SIGINT) s = BC_STATUS_SIGNAL;
 		else if (p->l.t.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
 			bc_parse_push(p, BC_INST_POP_EXEC);
 	}
