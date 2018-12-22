@@ -77,7 +77,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 					if (!BC_S) bc_vm_puts(prompt, stderr);
 					bc_vm_fflush(stderr);
 				}
-				else return BC_STATUS_EXEC_SIGNAL;
+				else return BC_STATUS_SIGNAL;
 
 				continue;
 			}
@@ -93,7 +93,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_pushByte(vec, '\0');
 
-	return BC_SIGINT ? BC_STATUS_EXEC_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_read_line(BcVec *vec, const char *prompt) {
