@@ -191,12 +191,14 @@ clean:
 	$(RM) -f $(OBJ)
 	$(RM) -f $(BC_OBJ)
 	$(RM) -f $(DC_OBJ)
+	$(RM) -f $(HISTORY_OBJ)
 	$(RM) -f $(BC_EXEC)
 	$(RM) -f $(DC_EXEC)
 	$(RM) -fr $(BIN)
 	$(RM) -f $(GCDA) $(GCNO)
 	$(RM) -f $(BC_GCDA) $(BC_GCNO)
 	$(RM) -f $(DC_GCDA) $(DC_GCNO)
+	$(RM) -f $(HISTORY_GCDA) $(HISTORY_GCNO)
 	$(RM) -f *.gcov
 	$(RM) -f *.html
 	$(RM) -f *.gcda *.gcno
