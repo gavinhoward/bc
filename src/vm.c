@@ -218,6 +218,48 @@ void bc_vm_fflush(FILE *restrict f) {
 	if (fflush(f) == EOF) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 }
 
+void bc_vm_garbageCollect() {
+
+	BcProgram *prog = &vm->prog;
+	BcVec *fns = &prog->fns;
+	BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
+	BcInstPtr *ip = bc_vec_item(&prog->stack, 0);
+	bool good = BC_IS_BC;
+
+	if (!good) {
+
+		size_t i;
+
+		for (i = 0; i < vm->prog.vars.len; ++i) {
+			BcVec *arr = bc_vec_item(&vm->prog.vars, i);
+			if (arr->len != 1) break;
+		}
+
+		if (i == vm->prog.vars.len) {
+
+			for (i = 0; i < vm->prog.arrs.len; ++i) {
+				BcVec *arr = bc_vec_item(&vm->prog.arrs, i);
+				if (arr->len != 1) break;
+			}
+
+			good = i == vm->prog.arrs.len;
+		}
+	}
+
+	// If this condition is true, we can get rid of strings,
+	// constants, and code. This is an idea from busybox.
+	if (good && prog->stack.len == 1 && prog->results.len == 0 &&
+	    vm->prs.flags.len == 1 && ip->idx == f->code.len)
+	{
+		bc_vec_npop(&f->strs, f->strs.len);
+		bc_vec_npop(&f->consts, f->consts.len);
+		bc_vec_npop(&f->code, f->code.len);
+		ip->idx = 0;
+
+		if (!BC_IS_BC) bc_vec_npop(fns, fns->len - BC_PROG_REQ_FUNCS);
+	}
+}
+
 BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 
 	BcStatus s;
@@ -231,27 +273,9 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 	}
 
 	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
-
 		s = bc_program_exec(&vm->prog);
-
 		if (BC_I) bc_vm_fflush(stdout);
-
-		if (!s) {
-
-			// If this condition is true, we can get rid of strings
-			// and constants. This is an idea from busybox.
-			if (vm->prog.stack.len == 1 && vm->prog.results.len == 0 &&
-				vm->prs.flags.len == 1)
-			{
-				BcVec *fns = &vm->prog.fns;
-				BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
-
-				bc_vec_npop(&f->strs, f->strs.len);
-				bc_vec_npop(&f->consts, f->consts.len);
-
-				if (!BC_IS_BC) bc_vec_npop(fns, fns->len - BC_PROG_REQ_FUNCS);
-			}
-		}
+		if (!s) bc_vm_garbageCollect();
 	}
 
 err:
