@@ -51,6 +51,8 @@ typedef struct BcNum {
 #error BC_NUM_KARATSUBA_LEN must be at least 2
 #endif // BC_NUM_KARATSUBA_LEN
 
+// A crude, but always big enough, calculation of
+// the size required for ibase and obase BcNum's.
 #define BC_NUM_LONG_LOG10 ((CHAR_BIT * sizeof(unsigned long) + 1) / 2 + 1)
 
 #define BC_NUM_NEG(n, neg) ((((ssize_t) (n)) ^ -((ssize_t) (neg))) + (neg))
