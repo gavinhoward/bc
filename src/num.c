@@ -614,7 +614,11 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	size_t i, powrdx, resrdx;
 	bool neg, zero;
 
-	if (b->rdx) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	if (b->rdx) {
+		bool zero = true;
+		for (i = 0; zero && i < b->rdx; ++i) zero = (b->num[i] == 0);
+		if (!zero) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	}
 
 	if (b->len == 0) {
 		bc_num_one(c);
@@ -632,16 +636,14 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	neg = b->neg;
 	b->neg = false;
-
 	s = bc_num_ulong(b, &pow);
+	b->neg = neg;
 	if (s) return s;
 
 	bc_num_init(&copy, a->len);
 	bc_num_copy(&copy, a);
 
 	if (!neg) scale = BC_MIN(a->rdx * pow, BC_MAX(scale, a->rdx));
-
-	b->neg = neg;
 
 	for (powrdx = a->rdx; !BC_SIGINT && !(pow & 1); pow >>= 1) {
 		powrdx <<= 1;
