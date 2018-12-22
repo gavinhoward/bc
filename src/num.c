@@ -1140,7 +1140,7 @@ void bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 	if (val == 0) return;
 
-	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len)
+	for (len = 1, i = ULONG_MAX; i != 0; i /= 10, ++len);
 	bc_num_expand(n, len);
 	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10) ptr[i] = val % 10;
 }
