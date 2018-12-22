@@ -146,6 +146,7 @@ print "3", a[], "3"
 print a[]
 print a[], "e"
 print;
+print 1,2 print 45
 }
 while (x != 0) { break 4; }
 while (x != 0) { continue 4; }
