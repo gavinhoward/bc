@@ -353,6 +353,26 @@ if [ "$HOSTCC" = "" ]; then
 	HOSTCC="$CC"
 fi
 
+if [ "$hist" -eq 1 ]; then
+
+	set +e
+
+	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
+
+	"$CC" $CFLAGS $flags -c "src/history/history.c" > /dev/null 2>&1
+
+	err="$?"
+
+	# If this errors, it is probably because of building on Windows,
+	# and history is not supported on Windows, so disable it.
+	if [ "$err" -ne 0 ]; then
+		hist=0
+	fi
+
+	set -e
+
+fi
+
 contents=$(cat "$scriptdir/Makefile.in")
 
 needle="WARNING"
