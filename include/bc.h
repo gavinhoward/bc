@@ -57,11 +57,10 @@ extern const BcLexKeyword bc_lex_kws[20];
 
 BcStatus bc_lex_token(BcLex *l);
 
-#define BC_PARSE_OP(p, l) \
-	(((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
+#define BC_PARSE_OP(p, l) (((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
 
 #define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))
-#define BC_PARSE_OP_PREC(op) ((op) & ~BC_LEX_CHAR_MSB(1))
+#define BC_PARSE_OP_PREC(op) ((op) & ~(BC_LEX_CHAR_MSB(1)))
 
 #define BC_PARSE_EXPR_ENTRY(e1, e2, e3, e4, e5, e6, e7, e8)  \
 	(((e1) << 7) | ((e2) << 6) | ((e3) << 5) | ((e4) << 4) | \
@@ -71,9 +70,7 @@ BcStatus bc_lex_token(BcLex *l);
 	(bc_parse_exprs[(((i) & ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
 
 #define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
-#define BC_PARSE_LEAF(p, rparen) \
-	(((p) >= BC_INST_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
-	(p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)
+#define BC_PARSE_LEAF(p, rparen) ((rparen) || bc_parse_inst_isLeaf(p))
 
 // We can calculate the conversion between tokens and exprs by subtracting the
 // position of the first operator in the lex enum and adding the position of

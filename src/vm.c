@@ -267,7 +267,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 	s = bc_parse_text(&vm->prs, text);
 	if (s) goto err;
 
-	while (vm->prs.l.t.t != BC_LEX_EOF) {
+	while (vm->prs.l.t != BC_LEX_EOF) {
 		s = vm->prs.parse(&vm->prs);
 		if (s) goto err;
 	}
@@ -393,7 +393,7 @@ BcStatus bc_vm_exec() {
 		bc_lex_file(&vm->prs.l, bc_lib_name);
 		s = bc_parse_text(&vm->prs, bc_lib);
 
-		while (!s && vm->prs.l.t.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
+		while (!s && vm->prs.l.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
 
 		if (s) return s;
 	}
