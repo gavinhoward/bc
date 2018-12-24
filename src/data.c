@@ -87,9 +87,6 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE,
-#if DC_ENABLED
-	BC_ERR_IDX_PARSE,
-#endif // DC_ENABLED
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 	BC_ERR_IDX_MATH,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -127,9 +124,6 @@ const char* const bc_err_msgs[] = {
 	"function parameter or auto \"%s\" already exists",
 	"block end could not be found",
 	"end of file",
-#if DC_ENABLED
-	"extended register",
-#endif // DC_ENABLED
 
 	"negative number",
 	"non integer number",
