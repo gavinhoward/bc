@@ -20,13 +20,14 @@
  *
  */
 
+#if DC_ENABLED
+
 #include <string.h>
 
 #include <status.h>
 #include <dc.h>
 #include <vm.h>
 
-#if DC_ENABLED
 int dc_main(int argc, char **argv) {
 
 	vm->help = dc_help;

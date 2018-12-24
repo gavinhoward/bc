@@ -20,13 +20,14 @@
  *
  */
 
+#if BC_ENABLED
+
 #include <string.h>
 
 #include <status.h>
 #include <bc.h>
 #include <vm.h>
 
-#if BC_ENABLED
 int bc_main(int argc, char **argv) {
 
 	vm->help = bc_help;

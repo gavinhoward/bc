@@ -20,6 +20,8 @@
  *
  */
 
+#if BC_ENABLED
+
 #include <assert.h>
 #include <ctype.h>
 #include <string.h>
@@ -28,7 +30,6 @@
 #include <bc.h>
 #include <vm.h>
 
-#if BC_ENABLED
 BcStatus bc_lex_identifier(BcLex *l) {
 
 	BcStatus s;

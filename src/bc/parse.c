@@ -20,6 +20,8 @@
  *
  */
 
+#if BC_ENABLED
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -30,7 +32,6 @@
 #include <bc.h>
 #include <vm.h>
 
-#if BC_ENABLED
 size_t bc_parse_addFunc(BcParse *p, char *name) {
 
 	size_t idx = bc_program_insertFunc(p->prog, name);

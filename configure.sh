@@ -409,27 +409,3 @@ printf '%s\n' "$contents" > "$scriptdir/Makefile"
 cd "$scriptdir"
 
 make clean > /dev/null
-
-printf 'Testing C compilers...\n'
-
-libname=$(make libcname)
-
-set +e
-
-make "$libname" > /dev/null 2>&1
-
-err="$?"
-
-if [ "$err" -ne 0 ]; then
-	printf '\n'
-	usage "HOSTCC ($HOSTCC) is not compatible with gcc/clang options"
-fi
-
-make > /dev/null 2>&1
-
-err="$?"
-
-if [ "$err" -ne 0 ]; then
-	printf '\n'
-	usage "CC ($CC) is not compatible with gcc/clang options"
-fi

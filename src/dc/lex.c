@@ -20,6 +20,8 @@
  *
  */
 
+#if DC_ENABLED
+
 #include <ctype.h>
 
 #include <status.h>
@@ -27,7 +29,6 @@
 #include <dc.h>
 #include <vm.h>
 
-#if DC_ENABLED
 BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;

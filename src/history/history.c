@@ -131,6 +131,8 @@
  *
  */
 
+#if BC_ENABLE_HISTORY
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -149,8 +151,6 @@
 #include <history.h>
 #include <read.h>
 #include <vm.h>
-
-#if BC_ENABLE_HISTORY
 
 /**
  * Check if the code is a wide character.

@@ -20,6 +20,8 @@
  *
  */
 
+#if DC_ENABLED
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +32,6 @@
 #include <program.h>
 #include <vm.h>
 
-#if DC_ENABLED
 BcStatus dc_parse_register(BcParse *p) {
 
 	BcStatus s;
