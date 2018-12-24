@@ -368,7 +368,7 @@ if [ "$hist" -eq 1 ]; then
 	# If this errors, it is probably because of building on Windows,
 	# and history is not supported on Windows, so disable it.
 	if [ "$err" -ne 0 ]; then
-		printf 'History did not work. It seems you may be compiling for Windows.\n'
+		printf 'History does not work.\n'
 		printf 'Disabling history...\n'
 		hist=0
 	fi
