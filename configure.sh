@@ -26,16 +26,20 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-b|-d|-c] [-ghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-ghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
-	printf '        Build bc only. It is an error if "-d" is specified too.\n'
+	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
+	printf '    -B\n'
+	printf '        Disable bc. It is an error if "-b" or "-D" are specified too.\n'
 	printf '    -c\n'
 	printf '        Generate test coverage code. Requires gcov and regcovr.\n'
 	printf '        It is an error if either "-b" or "-d" is specified.\n'
 	printf '        Requires a compiler that use gcc-compatible coverage options\n'
 	printf '    -d\n'
 	printf '        Build dc only. It is an error if "-b" is specified too.\n'
+	printf '    -D\n'
+	printf '        Disable dc. It is an error if "-d" or "-B" are specified too.\n'
 	printf '    -g\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
@@ -195,12 +199,14 @@ hist=1
 refs=1
 optimization=""
 
-while getopts "bcdghHk:O:RS" opt; do
+while getopts "bBcdDghHk:O:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
+		B) dc_only=1 ;;
 		c) coverage=1 ; none=1 ;;
 		d) dc_only=1 ;;
+		D) bc_only=1 ;;
 		g) debug=1 ;;
 		h) usage ;;
 		H) hist=0 ;;
@@ -214,7 +220,7 @@ while getopts "bcdghHk:O:RS" opt; do
 done
 
 if [ "$bc_only" -eq 1 -a "$dc_only" -eq 1 ]; then
-	usage "Can only specify one of -b or -d"
+	usage "Can only specify one of -b(-D) or -d(-B)"
 fi
 
 case $karatsuba_len in
