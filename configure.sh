@@ -371,6 +371,8 @@ if [ "$hist" -eq 1 ]; then
 		printf 'History does not work.\n'
 		printf 'Disabling history...\n'
 		hist=0
+	else
+		printf 'History works.\n'
 	fi
 
 	set -e
