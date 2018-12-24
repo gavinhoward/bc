@@ -30,7 +30,7 @@
 #include <vm.h>
 
 void bc_lex_lineComment(BcLex *l) {
-	l->t.t = BC_LEX_WHITESPACE;
+	l->t = BC_LEX_WHITESPACE;
 	while (l->i < l->len && l->buf[l->i++] != '\n');
 }
 
@@ -41,7 +41,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 	bool end = false;
 	char c;
 
-	l->t.t = BC_LEX_WHITESPACE;
+	l->t = BC_LEX_WHITESPACE;
 
 	for (i = ++l->i; !end; i += !end) {
 
@@ -63,7 +63,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 void bc_lex_whitespace(BcLex *l) {
 	char c;
-	l->t.t = BC_LEX_WHITESPACE;
+	l->t = BC_LEX_WHITESPACE;
 	for (c = l->buf[l->i]; c != '\n' && isspace(c); c = l->buf[++l->i]);
 }
 
@@ -75,7 +75,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	bool last_pt, pt = start == '.';
 
 	last_pt = pt;
-	l->t.t = BC_LEX_NUMBER;
+	l->t = BC_LEX_NUMBER;
 
 	while (c != 0 && (isdigit(c) || (c >= 'A' && c <= 'F') ||
 	             (c == '.' && !pt) || (c == '\\' && buf[i + 1] == '\n')))
@@ -96,9 +96,9 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 	if (len > BC_MAX_NUM) return bc_vm_error(BC_ERROR_EXEC_NUM_LEN, l->line);
 
-	bc_vec_npop(&l->t.v, l->t.v.len);
-	bc_vec_expand(&l->t.v, len + 1);
-	bc_vec_push(&l->t.v, &start);
+	bc_vec_npop(&l->str, l->str.len);
+	bc_vec_expand(&l->str, len + 1);
+	bc_vec_push(&l->str, &start);
 
 	for (buf -= 1, j = 1; j < len + hits * 2; ++j) {
 
@@ -112,10 +112,10 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 			continue;
 		}
 
-		bc_vec_push(&l->t.v, &c);
+		bc_vec_push(&l->str, &c);
 	}
 
-	bc_vec_pushByte(&l->t.v, '\0');
+	bc_vec_pushByte(&l->str, '\0');
 	l->i += i;
 
 	return BC_STATUS_SUCCESS;
@@ -127,13 +127,13 @@ BcStatus bc_lex_name(BcLex *l) {
 	const char *buf = l->buf + l->i - 1;
 	char c = buf[i];
 
-	l->t.t = BC_LEX_NAME;
+	l->t = BC_LEX_NAME;
 
 	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
 
 	if (i > BC_MAX_STRING) return bc_vm_error(BC_ERROR_EXEC_NAME_LEN, l->line);
 
-	bc_vec_string(&l->t.v, i, buf);
+	bc_vec_string(&l->str, i, buf);
 
 	// Increment the index. We minus 1 because it has already been incremented.
 	l->i += i - 1;
@@ -144,12 +144,12 @@ BcStatus bc_lex_name(BcLex *l) {
 void bc_lex_init(BcLex *l, BcLexNext next) {
 	assert(l);
 	l->next = next;
-	bc_vec_init(&l->t.v, sizeof(char), NULL);
+	bc_vec_init(&l->str, sizeof(char), NULL);
 }
 
 void bc_lex_free(BcLex *l) {
 	assert(l);
-	bc_vec_free(&l->t.v);
+	bc_vec_free(&l->str);
 }
 
 void bc_lex_file(BcLex *l, const char *file) {
@@ -165,12 +165,12 @@ BcStatus bc_lex_next(BcLex *l) {
 
 	assert(l);
 
-	l->t.last = l->t.t;
+	l->last = l->t;
 
-	if (l->t.last == BC_LEX_EOF) return bc_vm_error(BC_ERROR_PARSE_EOF, l->line);
+	if (l->last == BC_LEX_EOF) return bc_vm_error(BC_ERROR_PARSE_EOF, l->line);
 
 	l->line += l->newline;
-	l->t.t = BC_LEX_EOF;
+	l->t = BC_LEX_EOF;
 
 	l->newline = (l->i == l->len);
 	if (l->newline) return BC_STATUS_SUCCESS;
@@ -179,7 +179,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	// is so the parser doesn't get inundated with whitespace.
 	do {
 		s = l->next(l);
-	} while (!s && l->t.t == BC_LEX_WHITESPACE);
+	} while (!s && l->t == BC_LEX_WHITESPACE);
 
 	return s;
 }
@@ -189,6 +189,6 @@ BcStatus bc_lex_text(BcLex *l, const char *text) {
 	l->buf = text;
 	l->i = 0;
 	l->len = strlen(text);
-	l->t.t = l->t.last = BC_LEX_INVALID;
+	l->t = l->last = BC_LEX_INVALID;
 	return bc_lex_next(l);
 }

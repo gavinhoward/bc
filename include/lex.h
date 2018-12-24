@@ -150,11 +150,9 @@ typedef struct BcLex {
 	size_t len;
 	bool newline;
 
-	struct {
-		BcLexType t;
-		BcLexType last;
-		BcVec v;
-	} t;
+	BcLexType t;
+	BcLexType last;
+	BcVec str;
 
 	// ** Exclude start. **
 	BcLexNext next;

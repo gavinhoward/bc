@@ -66,7 +66,7 @@ void bc_parse_addId(BcParse *p, uchar inst) {
 	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
 	BcVec *v = inst == BC_INST_NUM ? &f->consts : &f->strs;
 	size_t idx = v->len;
-	char *str = bc_vm_strdup(p->l.t.v.v);
+	char *str = bc_vm_strdup(p->l.str.v);
 
 	bc_vec_push(v, &str);
 	bc_parse_updateFunc(p, p->fidx);
@@ -88,7 +88,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 	}
 
 	p->l.i = p->l.len;
-	p->l.t.t = BC_LEX_EOF;
+	p->l.t = BC_LEX_EOF;
 	p->auto_part = false;
 
 	bc_vec_npop(&p->flags, p->flags.len - 1);

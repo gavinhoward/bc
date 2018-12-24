@@ -39,10 +39,10 @@ BcStatus dc_lex_register(BcLex *l) {
 		s = bc_lex_name(l);
 	}
 	else {
-		bc_vec_npop(&l->t.v, l->t.v.len);
-		bc_vec_pushByte(&l->t.v, l->buf[l->i - 1]);
-		bc_vec_pushByte(&l->t.v, '\0');
-		l->t.t = BC_LEX_NAME;
+		bc_vec_npop(&l->str, l->str.len);
+		bc_vec_pushByte(&l->str, l->buf[l->i - 1]);
+		bc_vec_pushByte(&l->str, '\0');
+		l->t = BC_LEX_NAME;
 	}
 
 	return s;
@@ -53,8 +53,8 @@ BcStatus dc_lex_string(BcLex *l) {
 	size_t depth = 1, nls = 0, i = l->i;
 	char c;
 
-	l->t.t = BC_LEX_STR;
-	bc_vec_npop(&l->t.v, l->t.v.len);
+	l->t = BC_LEX_STR;
+	bc_vec_npop(&l->str, l->str.len);
 
 	for (c = l->buf[i]; c != 0 && depth; c = l->buf[++i]) {
 
@@ -65,7 +65,7 @@ BcStatus dc_lex_string(BcLex *l) {
 
 		nls += (c == '\n');
 
-		if (depth) bc_vec_push(&l->t.v, &c);
+		if (depth) bc_vec_push(&l->str, &c);
 	}
 
 	if (c == '\0' && depth) {
@@ -73,7 +73,7 @@ BcStatus dc_lex_string(BcLex *l) {
 		return bc_vm_error(BC_ERROR_PARSE_STRING, l->line);
 	}
 
-	bc_vec_pushByte(&l->t.v, '\0');
+	bc_vec_pushByte(&l->str, '\0');
 	if (i - l->i > BC_MAX_STRING)
 		return bc_vm_error(BC_ERROR_EXEC_STRING_LEN, l->line);
 
@@ -90,11 +90,11 @@ BcStatus dc_lex_token(BcLex *l) {
 	size_t i;
 
 	for (i = 0; i < dc_lex_regs_len; ++i) {
-		if (l->t.last == dc_lex_regs[i]) return dc_lex_register(l);
+		if (l->last == dc_lex_regs[i]) return dc_lex_register(l);
 	}
 
 	if (c >= '%' && c <= '~' &&
-	    (l->t.t = dc_lex_tokens[(c - '%')]) != BC_LEX_INVALID)
+	    (l->t = dc_lex_tokens[(c - '%')]) != BC_LEX_INVALID)
 	{
 		return s;
 	}
@@ -104,7 +104,7 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		case '\0':
 		{
-			l->t.t = BC_LEX_EOF;
+			l->t = BC_LEX_EOF;
 			break;
 		}
 
@@ -124,9 +124,9 @@ BcStatus dc_lex_token(BcLex *l) {
 		{
 			c2 = l->buf[l->i];
 
-			if (c2 == '=') l->t.t = BC_LEX_OP_REL_NE;
-			else if (c2 == '<') l->t.t = BC_LEX_OP_REL_LE;
-			else if (c2 == '>') l->t.t = BC_LEX_OP_REL_GE;
+			if (c2 == '=') l->t = BC_LEX_OP_REL_NE;
+			else if (c2 == '<') l->t = BC_LEX_OP_REL_LE;
+			else if (c2 == '>') l->t = BC_LEX_OP_REL_GE;
 			else return bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
 
 			++l->i;
@@ -149,7 +149,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '/':
 		{
 			if (l->buf[l->i] == '*') s = bc_lex_comment(l);
-			else l->t.t = BC_LEX_OP_DIVIDE;
+			else l->t = BC_LEX_OP_DIVIDE;
 
 			break;
 		}
@@ -183,7 +183,7 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		default:
 		{
-			l->t.t = BC_LEX_INVALID;
+			l->t = BC_LEX_INVALID;
 			s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
 			break;
 		}
