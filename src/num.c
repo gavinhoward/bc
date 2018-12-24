@@ -939,7 +939,7 @@ BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
 		return BC_STATUS_SUCCESS;
 	}
 
-	bc_vec_init(&stack, sizeof(long), NULL);
+	bc_vec_init(&stack, sizeof(unsigned long), NULL);
 	bc_num_init(&intp, n->len);
 	bc_num_init(&fracp, n->rdx);
 	bc_num_init(&digit, width);
@@ -1318,6 +1318,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	BcStatus s;
 	BcNum base, exp, two, temp;
+	BcDig two_digs[2];
 
 	assert(a && b && c && d && a != d && b != d && c != d);
 
@@ -1329,7 +1330,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	bc_num_expand(d, c->len);
 	bc_num_init(&base, c->len);
 	bc_num_init(&exp, b->len);
-	bc_num_init(&two, BC_NUM_DEF_SIZE);
+	bc_num_setup(&two, two_digs, 2);
 	bc_num_init(&temp, b->len);
 
 	bc_num_one(&two);
@@ -1360,7 +1361,6 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 err:
 	bc_num_free(&temp);
-	bc_num_free(&two);
 	bc_num_free(&exp);
 	bc_num_free(&base);
 	assert(!d->neg || d->len);
