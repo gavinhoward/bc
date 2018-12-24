@@ -4,7 +4,9 @@
 *.includes
 *.creator.user
 bin/bc
+bin/bc.exe
 bin/dc
+bin/dc.exe
 *.o
 *.a
 .log_*.txt
