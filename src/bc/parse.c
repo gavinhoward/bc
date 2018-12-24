@@ -32,6 +32,11 @@
 #include <bc.h>
 #include <vm.h>
 
+bool bc_parse_inst_isLeaf(BcLexType type) {
+	return (type >= BC_INST_NUM && type <= BC_INST_SQRT) ||
+	        type == BC_INST_INC_POST || type == BC_INST_DEC_POST;
+}
+
 size_t bc_parse_addFunc(BcParse *p, char *name) {
 
 	size_t idx = bc_program_insertFunc(p->prog, name);

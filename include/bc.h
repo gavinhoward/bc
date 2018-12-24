@@ -71,9 +71,7 @@ BcStatus bc_lex_token(BcLex *l);
 	(bc_parse_exprs[(((i) & ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
 
 #define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
-#define BC_PARSE_LEAF(p, rparen) \
-	(((p) >= BC_INST_NUM && (p) <= BC_INST_SQRT) || (rparen) || \
-	(p) == BC_INST_INC_POST || (p) == BC_INST_DEC_POST)
+#define BC_PARSE_LEAF(p, rparen) ((rparen) || bc_parse_inst_isLeaf(p))
 
 // We can calculate the conversion between tokens and exprs by subtracting the
 // position of the first operator in the lex enum and adding the position of
