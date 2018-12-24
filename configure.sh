@@ -357,7 +357,9 @@ if [ "$hist" -eq 1 ]; then
 
 	set +e
 
-	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
+	printf 'Testing history...\n'
+
+	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals -I./include/"
 
 	"$CC" $CFLAGS $flags -c "src/history/history.c" > /dev/null 2>&1
 
@@ -366,6 +368,8 @@ if [ "$hist" -eq 1 ]; then
 	# If this errors, it is probably because of building on Windows,
 	# and history is not supported on Windows, so disable it.
 	if [ "$err" -ne 0 ]; then
+		printf 'History did not work. It seems you may be compiling for Windows.\n'
+		printf 'Disabling history...\n'
 		hist=0
 	fi
 
