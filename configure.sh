@@ -316,7 +316,6 @@ else
 fi
 
 if [ "$optimization" != "" ]; then
-	printf 'Optimization level: %s\n' "$optimization"
 	CFLAGS="$CFLAGS -O$optimization"
 fi
 
