@@ -70,7 +70,7 @@
 
 #if BC_ENABLE_HISTORY
 
-#if BC_ENABLE_HISTORY && defined(_WIN32)
+#ifdef _WIN32
 #error History is not supported on Windows.
 #endif
 
