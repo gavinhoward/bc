@@ -1043,7 +1043,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
-	bc_history_add(h, strdup(""));
+	bc_history_add(h, bc_vm_strdup(""));
 
 	if (write(h->ofd, prompt, h->plen) == -1) return BC_STATUS_SUCCESS;
 
