@@ -26,16 +26,20 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-b|-d|-c] [-ghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-ghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
-	printf '        Build bc only. It is an error if "-d" is specified too.\n'
+	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
+	printf '    -B\n'
+	printf '        Disable bc. It is an error if "-b" or "-D" are specified too.\n'
 	printf '    -c\n'
 	printf '        Generate test coverage code. Requires gcov and regcovr.\n'
 	printf '        It is an error if either "-b" or "-d" is specified.\n'
 	printf '        Requires a compiler that use gcc-compatible coverage options\n'
 	printf '    -d\n'
 	printf '        Build dc only. It is an error if "-b" is specified too.\n'
+	printf '    -D\n'
+	printf '        Disable dc. It is an error if "-d" or "-B" are specified too.\n'
 	printf '    -g\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
@@ -197,12 +201,14 @@ hist=1
 refs=1
 optimization=""
 
-while getopts "bcdghHk:O:RS" opt; do
+while getopts "bBcdDghHk:O:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
-		c) coverage=1 ; none=1 ;;
+		B) dc_only=1 ;;
+		c) coverage=1 ;;
 		d) dc_only=1 ;;
+		D) bc_only=1 ;;
 		g) debug=1 ;;
 		h) usage ;;
 		H) hist=0 ;;
@@ -216,7 +222,7 @@ while getopts "bcdghHk:O:RS" opt; do
 done
 
 if [ "$bc_only" -eq 1 -a "$dc_only" -eq 1 ]; then
-	usage "Can only specify one of -b or -d"
+	usage "Can only specify one of -b(-D) or -d(-B)"
 fi
 
 case $karatsuba_len in
@@ -319,7 +325,6 @@ else
 fi
 
 if [ "$optimization" != "" ]; then
-	printf 'Optimization level: %s\n' "$optimization"
 	CFLAGS="$CFLAGS -O$optimization"
 fi
 
@@ -354,6 +359,32 @@ fi
 
 if [ "$HOSTCC" = "" ]; then
 	HOSTCC="$CC"
+fi
+
+if [ "$hist" -eq 1 ]; then
+
+	set +e
+
+	printf 'Testing history...\n'
+
+	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals -I./include/"
+
+	"$CC" $CFLAGS $flags -c "src/history/history.c" > /dev/null 2>&1
+
+	err="$?"
+
+	# If this errors, it is probably because of building on Windows,
+	# and history is not supported on Windows, so disable it.
+	if [ "$err" -ne 0 ]; then
+		printf 'History does not work.\n'
+		printf 'Disabling history...\n'
+		hist=0
+	else
+		printf 'History works.\n'
+	fi
+
+	set -e
+
 fi
 
 contents=$(cat "$scriptdir/Makefile.in")
@@ -412,27 +443,3 @@ printf '%s\n' "$contents" > "$scriptdir/Makefile"
 cd "$scriptdir"
 
 make clean > /dev/null
-
-printf 'Testing C compilers...\n'
-
-libname=$(make libcname)
-
-set +e
-
-make "$libname" > /dev/null 2>&1
-
-err="$?"
-
-if [ "$err" -ne 0 ]; then
-	printf '\n'
-	usage "HOSTCC ($HOSTCC) is not compatible with gcc/clang options"
-fi
-
-make > /dev/null 2>&1
-
-err="$?"
-
-if [ "$err" -ne 0 ]; then
-	printf '\n'
-	usage "CC ($CC) is not compatible with gcc/clang options"
-fi

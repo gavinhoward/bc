@@ -20,6 +20,8 @@
  *
  */
 
+#if DC_ENABLED
+
 #include <ctype.h>
 
 #include <status.h>
@@ -27,16 +29,14 @@
 #include <dc.h>
 #include <vm.h>
 
-#if DC_ENABLED
 BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	if (isspace(l->buf[l->i - 1])) {
+	if (DC_X && isspace(l->buf[l->i - 1])) {
 		bc_lex_whitespace(l);
 		++l->i;
-		if (!DC_X) s = bc_vm_error(BC_ERROR_PARSE_EXTENDED_REG, l->line);
-		else s = bc_lex_name(l);
+		s = bc_lex_name(l);
 	}
 	else {
 		bc_vec_npop(&l->t.v, l->t.v.len);

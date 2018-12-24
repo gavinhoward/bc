@@ -45,8 +45,6 @@ void bc_parse_pushName(BcParse *p, char *name) {
 
 	for (; i < len; ++i) bc_parse_push(p, name[i]);
 	bc_parse_push(p, BC_PARSE_STREND);
-
-	free(name);
 }
 
 void bc_parse_pushIndex(BcParse *p, size_t idx) {

@@ -68,6 +68,12 @@
 #ifndef BC_HISTORY_H
 #define BC_HISTORY_H
 
+#if BC_ENABLE_HISTORY
+
+#ifdef _WIN32
+#error History is not supported on Windows.
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -77,8 +83,6 @@
 
 #include <status.h>
 #include <vector.h>
-
-#if BC_ENABLE_HISTORY
 
 #define BC_HISTORY_DEF_COLS (80)
 #define BC_HISTORY_MAX_LEN (128)

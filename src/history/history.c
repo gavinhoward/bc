@@ -131,6 +131,8 @@
  *
  */
 
+#if BC_ENABLE_HISTORY
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -149,8 +151,6 @@
 #include <history.h>
 #include <read.h>
 #include <vm.h>
-
-#if BC_ENABLE_HISTORY
 
 /**
  * Check if the code is a wide character.
@@ -1043,7 +1043,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
-	bc_history_add(h, strdup(""));
+	bc_history_add(h, bc_vm_strdup(""));
 
 	if (write(h->ofd, prompt, h->plen) == -1) return BC_STATUS_SUCCESS;
 
@@ -1068,24 +1068,24 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			case BC_ACTION_CTRL_C:
 			{
-				size_t rlen, len;
+				size_t rlen, len, slen;
 
 				rlen = strlen(bc_program_ready_msg);
 				len = strlen(bc_history_ctrlc);
+				slen = vm->sig_len;
 
 				bc_vec_empty(&h->buf);
 				h->pos = 0;
 
-				if (write(h->ofd, bc_history_ctrlc, len) != len ||
-				    write(h->ofd, vm->sig_msg, vm->sig_len) != vm->sig_len ||
-				    write(h->ofd, bc_program_ready_msg, rlen) != rlen)
+				if (write(h->ofd, bc_history_ctrlc, len) != (ssize_t) len ||
+				    write(h->ofd, vm->sig_msg, slen) != (ssize_t) slen ||
+				    write(h->ofd, bc_program_ready_msg, rlen) != (ssize_t) rlen)
 				{
 					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 				}
+				else s = bc_history_refresh(h);
 
-				if (!s) s = bc_history_refresh(h);
-
-				continue;
+				break;
 			}
 
 			case BC_ACTION_BACKSPACE:

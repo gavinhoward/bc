@@ -20,6 +20,8 @@
  *
  */
 
+#if DC_ENABLED
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +32,6 @@
 #include <program.h>
 #include <vm.h>
 
-#if DC_ENABLED
 BcStatus dc_parse_register(BcParse *p) {
 
 	BcStatus s;
@@ -41,8 +42,7 @@ BcStatus dc_parse_register(BcParse *p) {
 	if (p->l.t.t != BC_LEX_NAME)
 		return bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
 
-	name = bc_vm_strdup(p->l.t.v.v);
-	bc_parse_pushName(p, name);
+	bc_parse_pushName(p, p->l.t.v.v);
 
 	return s;
 }

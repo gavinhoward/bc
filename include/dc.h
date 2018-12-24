@@ -23,11 +23,11 @@
 #ifndef BC_DC_H
 #define BC_DC_H
 
+#if DC_ENABLED
+
 #include <status.h>
 #include <lex.h>
 #include <parse.h>
-
-#if DC_ENABLED
 
 // I use 32 as the length because I don't want
 // to have to calculate log base 2 of n.

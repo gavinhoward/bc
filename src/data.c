@@ -90,9 +90,6 @@ const char bc_err_ids[] = {
 #if BC_ENABLE_REFERENCES
 	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLE_REFERENCES
-#if DC_ENABLED
-	BC_ERR_IDX_PARSE,
-#endif // DC_ENABLED
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 	BC_ERR_IDX_MATH,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -134,9 +131,6 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLE_REFERENCES
 	"vars cannot be references",
 #endif // BC_ENABLE_REFERENCES
-#if DC_ENABLED
-	"extended register",
-#endif // DC_ENABLED
 
 	"negative number",
 	"non integer number",

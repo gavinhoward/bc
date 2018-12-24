@@ -23,14 +23,14 @@
 #ifndef BC_BC_H
 #define BC_BC_H
 
+#if BC_ENABLED
+
 #include <limits.h>
 #include <stdbool.h>
 
 #include <status.h>
 #include <lex.h>
 #include <parse.h>
-
-#if BC_ENABLED
 
 // ** Exclude start. **
 // ** Busybox exclude start. **

@@ -20,6 +20,8 @@
  *
  */
 
+#if BC_ENABLED
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -30,7 +32,6 @@
 #include <bc.h>
 #include <vm.h>
 
-#if BC_ENABLED
 size_t bc_parse_addFunc(BcParse *p, char *name) {
 
 	size_t idx = bc_program_insertFunc(p->prog, name);
@@ -207,15 +208,15 @@ BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 		}
 
 		*type = BC_INST_CALL;
-		s = bc_parse_call(p, name, flags);
+
+		// Return early because bc_parse_call() frees the name.
+		return bc_parse_call(p, name, flags);
 	}
 	else {
 		*type = BC_INST_VAR;
 		bc_parse_push(p, BC_INST_VAR);
 		bc_parse_pushName(p, name);
 	}
-
-	return s;
 
 err:
 	free(name);
