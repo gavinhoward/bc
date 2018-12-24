@@ -1085,7 +1085,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				}
 				else s = bc_history_refresh(h);
 
-				continue;
+				break;
 			}
 
 			case BC_ACTION_BACKSPACE:
