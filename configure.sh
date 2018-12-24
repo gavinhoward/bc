@@ -204,7 +204,7 @@ while getopts "bBcdDghHk:O:RS" opt; do
 	case "$opt" in
 		b) bc_only=1 ;;
 		B) dc_only=1 ;;
-		c) coverage=1 ; none=1 ;;
+		c) coverage=1 ;;
 		d) dc_only=1 ;;
 		D) bc_only=1 ;;
 		g) debug=1 ;;
