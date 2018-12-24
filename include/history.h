@@ -70,6 +70,10 @@
 
 #if BC_ENABLE_HISTORY
 
+#if BC_ENABLE_HISTORY && defined(_WIN32)
+#error History is not supported on Windows.
+#endif
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>

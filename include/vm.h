@@ -35,10 +35,6 @@
 #error Must define BC_ENABLED, DC_ENABLED, or both
 #endif
 
-#if BC_ENABLE_HISTORY && defined(_WIN32)
-#error History is not supported on Windows.
-#endif
-
 // CHAR_BIT must be at least 4.
 #if CHAR_BIT < 4
 #error CHAR_BIT must be at least 4.
