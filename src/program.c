@@ -852,10 +852,14 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
 	for (i = 0; i < nparams; ++i) {
 
+		bool arr;
+
 		a = bc_vec_item(&f->autos, nparams - 1 - i);
 		arg = bc_vec_top(&p->results);
 
-		if ((!a->idx) != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
+		arr = (a->idx == BC_TYPE_ARRAY || a->idx == BC_TYPE_REF);
+
+		if (arr == (arg->t != BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
 			return bc_vm_err(BC_ERROR_EXEC_TYPE);
 
 		s = bc_program_copyToVar(p, a->name, a->idx);
