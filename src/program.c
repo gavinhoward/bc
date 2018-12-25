@@ -841,7 +841,7 @@ BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *ptr, res, copy;
 	BcNum *num = NULL;
-	char inst2 = inst;
+	uchar inst2;
 
 	s = bc_program_prep(p, &ptr, &num);
 	if (s) return s;
@@ -853,13 +853,13 @@ BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	}
 
 	res.t = BC_RESULT_ONE;
-	inst = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
+	inst2 = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
 	           BC_INST_ASSIGN_PLUS : BC_INST_ASSIGN_MINUS;
 
 	bc_vec_push(&p->results, &res);
-	bc_program_assign(p, inst);
+	bc_program_assign(p, inst2);
 
-	if (inst2 == BC_INST_INC_POST || inst2 == BC_INST_DEC_POST) {
+	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
 		bc_vec_pop(&p->results);
 		bc_vec_push(&p->results, &copy);
 	}
