@@ -116,15 +116,16 @@ make
 make install
 ```
 
-As usual, the configure script will accept `CFLAGS` on the command line.
-
-For SSE4 architectures, the following can add a bit more speed:
+As usual, the configure script will also accept additional `CFLAGS` on the
+command line, so for SSE4 architectures, the following can add a bit more speed:
 
 ```
-CFLAGS="-march=native -msse4" ./configure.sh
+CFLAGS="-march=native -msse4" ./configure.sh -O3
 make
 make install
 ```
+
+Release builds are automatically stripped in the link stage.
 
 Debug builds, which disable optimization if no optimization level is given and
 if no extra CFLAGS are given, can be enabled with:
