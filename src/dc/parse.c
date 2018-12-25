@@ -35,7 +35,6 @@
 BcStatus dc_parse_register(BcParse *p) {
 
 	BcStatus s;
-	char *name;
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
