@@ -187,7 +187,7 @@ BcStatus bc_program_binOpPrep(BcProgram *p, BcResult **l, BcNum **ln,
 		if (s) return s;
 	}
 
-	if (!BC_PROG_NUM((*l), (*ln)) && (!assign || (*l)->t != BC_RESULT_VAR))
+	if (!BC_PROG_NUM((*l), (*ln)) && (!assign || lt != BC_RESULT_VAR))
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	if (!assign && !BC_PROG_NUM((*r), (*ln)))
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
