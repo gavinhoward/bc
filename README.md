@@ -116,18 +116,19 @@ make
 make install
 ```
 
-As usual, the configure script will accept `CFLAGS` on the command line.
-
-For SSE4 architectures, the following can add a bit more speed:
+As usual, the configure script will also accept additional `CFLAGS` on the
+command line, so for SSE4 architectures, the following can add a bit more speed:
 
 ```
-CFLAGS="-march=native -msse4" ./configure.sh
+CFLAGS="-march=native -msse4" ./configure.sh -O3
 make
 make install
 ```
 
-Debug builds, which disable optimization if no optimization level is given and
-if no extra CFLAGS are given, can be enabled with:
+Release builds are automatically stripped in the link stage.
+
+Debug builds (which also disable optimization if no optimization level is given
+and if no extra CFLAGS are given) can be enabled with:
 
 ```
 ./configure.sh -g
@@ -206,8 +207,8 @@ unnecessary work by aligning digits prior to performing subtraction.
 
 Subtraction was used instead of multiplication for two reasons:
 
-1.	Division and subtraction can share code (one of the goals of this `bc` is
-	small code).
+1.	Division and subtraction can share code (one of the less important goals of
+	this `bc` is small code).
 2.	It minimizes algorithmic complexity.
 
 Using multiplication would make division have the even worse algorithmic
