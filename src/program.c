@@ -118,8 +118,9 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 		case BC_RESULT_ARRAY_ELEM:
 		{
 			BcVec *v;
+			BcType type = (r->t == BC_RESULT_VAR) ? BC_TYPE_VAR : BC_TYPE_ARRAY;
 
-			v = bc_program_search(p, r->d.id.name, r->t == BC_RESULT_VAR);
+			v = bc_program_search(p, r->d.id.name, type);
 
 			if (r->t == BC_RESULT_ARRAY_ELEM) {
 				v = bc_vec_top(v);
@@ -702,7 +703,7 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		assert(assign);
 
 		if (left->t != BC_RESULT_VAR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
-		v = bc_program_search(p, left->d.id.name, true);
+		v = bc_program_search(p, left->d.id.name, BC_TYPE_VAR);
 
 		return bc_program_assignStr(p, right, v, false);
 	}
@@ -765,7 +766,7 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 
 #if DC_ENABLED
 	{
-		BcVec *v = bc_program_search(p, name, true);
+		BcVec *v = bc_program_search(p, name, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
 
 		if (pop || copy) {
@@ -912,7 +913,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 	for (; i < f->autos.len; ++i) {
 
 		a = bc_vec_item(&f->autos, i);
-		v = bc_program_search(p, a->name, a->idx);
+		v = bc_program_search(p, a->name, (BcType) a->idx);
 
 		if (a->idx) {
 			bc_num_init(&param.n, BC_NUM_DEF_SIZE);
@@ -963,7 +964,7 @@ BcStatus bc_program_return(BcProgram *p, uchar inst) {
 		BcVec *v;
 		BcId *a = bc_vec_item(&f->autos, i);
 
-		v = bc_program_search(p, a->name, a->idx);
+		v = bc_program_search(p, a->name, (BcType) a->idx);
 		bc_vec_pop(v);
 	}
 
@@ -1262,7 +1263,7 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 		}
 
 		if (exec) {
-			v = bc_program_search(p, name, true);
+			v = bc_program_search(p, name, BC_TYPE_VAR);
 			n = bc_vec_top(v);
 		}
 
