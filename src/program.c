@@ -919,7 +919,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		}
 		else {
 #if BC_ENABLE_REFERENCES
-			assert(a->idx != BC_TYPE_REF);
+			assert(a->idx == BC_TYPE_ARRAY);
 #endif // BC_ENABLE_REFERENCES
 			bc_array_init(&param.v, true);
 			bc_vec_push(v, &param.v);
