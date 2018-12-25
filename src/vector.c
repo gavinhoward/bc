@@ -187,7 +187,7 @@ size_t bc_map_find(const BcVec *v, const void *ptr) {
 	return low;
 }
 
-bool bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
+bool bc_map_insert(BcVec *v, const BcId *ptr, size_t *i) {
 
 	assert(v && ptr && i);
 
@@ -202,7 +202,7 @@ bool bc_map_insert(BcVec *v, const void *ptr, size_t *i) {
 	return true;
 }
 
-size_t bc_map_index(const BcVec* v, const void *ptr) {
+size_t bc_map_index(const BcVec* v, const BcId *ptr) {
 	assert(v && ptr);
 	size_t i = bc_map_find(v, ptr);
 	if (i >= v->len) return BC_VEC_INVALID_IDX;
