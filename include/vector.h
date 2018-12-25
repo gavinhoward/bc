@@ -37,6 +37,9 @@ typedef unsigned char uchar;
 
 typedef void (*BcVecFree)(void*);
 
+// Forward declaration.
+typedef struct BcId BcId;
+
 typedef struct BcVec {
 	char *v;
 	size_t len;
@@ -69,8 +72,8 @@ void* bc_vec_item_rev(const BcVec *v, size_t idx);
 
 void bc_vec_free(void *vec);
 
-bool bc_map_insert(BcVec* v, const void *data, size_t *i);
-size_t bc_map_index(const BcVec *v, const void *ptr);
+bool bc_map_insert(BcVec *v, const BcId *ptr, size_t *i);
+size_t bc_map_index(const BcVec *v, const BcId* ptr);
 // ** Busybox exclude end. **
 // ** Exclude end. **
 

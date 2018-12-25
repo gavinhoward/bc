@@ -133,10 +133,10 @@ BcStatus bc_parse_params(BcParse *p, uint8_t flags) {
 BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	BcStatus s;
-	BcId entry, *entry_ptr;
+	BcId id, *id_ptr;
 	size_t idx;
 
-	entry.name = name;
+	id.name = name;
 
 	s = bc_parse_params(p, flags);
 	if (s) goto err;
@@ -146,20 +146,20 @@ BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 		goto err;
 	}
 
-	idx = bc_map_index(&p->prog->fn_map, &entry);
+	idx = bc_map_index(&p->prog->fn_map, &id);
 
 	if (idx == BC_VEC_INVALID_IDX) {
 		bc_parse_addFunc(p, name);
-		idx = bc_map_index(&p->prog->fn_map, &entry);
+		idx = bc_map_index(&p->prog->fn_map, &id);
 		assert(idx != BC_VEC_INVALID_IDX);
 	}
 	else free(name);
 
 	assert(idx != BC_VEC_INVALID_IDX);
 
-	entry_ptr = bc_vec_item(&p->prog->fn_map, idx);
-	assert(entry_ptr);
-	bc_parse_pushIndex(p, entry_ptr->idx);
+	id_ptr = bc_vec_item(&p->prog->fn_map, idx);
+	assert(id_ptr);
+	bc_parse_pushIndex(p, id_ptr->idx);
 
 	return bc_lex_next(&p->l);
 
