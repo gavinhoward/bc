@@ -74,6 +74,22 @@ void bc_vec_pushByte(BcVec *v, uchar data) {
 	bc_vec_push(v, &data);
 }
 
+void bc_vec_pushIndex(BcVec *v, size_t idx) {
+
+	uchar amt, i, nums[sizeof(size_t)];
+
+	assert(v->size == sizeof(uchar));
+
+	for (amt = 0; idx; ++amt) {
+		nums[amt] = (uchar) idx;
+		idx &= ((unsigned long) ~(UCHAR_MAX));
+		idx >>= sizeof(char) * CHAR_BIT;
+	}
+
+	bc_vec_push(v, &amt);
+	for (i = 0; i < amt; ++i) bc_vec_push(v, nums + i);
+}
+
 void bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {
 
 	assert(v && data && idx <= v->len);

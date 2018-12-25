@@ -47,13 +47,13 @@ char* bc_program_str(BcProgram *p, size_t idx, bool str) {
 	return *((char**) bc_vec_item(v, idx));
 }
 
-BcVec* bc_program_search(BcProgram *p, char *id, bool var) {
+BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
 
 	BcId e, *ptr;
 	BcVec *v, *map;
 	size_t i;
 	BcResultData data;
-	bool new;
+	bool new, var = (type == BC_TYPE_VAR);
 
 	v = var ? &p->vars : &p->arrs;
 	map = var ? &p->var_map : &p->arr_map;
@@ -596,7 +596,7 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
 }
 #endif // DC_ENABLED
 
-BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
+BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType type) {
 
 	BcStatus s;
 	BcResult *ptr, r;
@@ -606,13 +606,13 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 	if (!BC_PROG_STACK(&p->results, 1)) return bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	ptr = bc_vec_top(&p->results);
-	if ((ptr->t == BC_RESULT_ARRAY) != !var)
+	if ((ptr->t == BC_RESULT_ARRAY) == (type == BC_TYPE_VAR))
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
-	v = bc_program_search(p, name, var);
+	v = bc_program_search(p, name, type);
 
 #if DC_ENABLED
 	if (ptr->t == BC_RESULT_STR) {
-		if (!var) return bc_vm_err(BC_ERROR_EXEC_TYPE);
+		if (type != BC_TYPE_VAR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 		return bc_program_assignStr(p, ptr, v, true);
 	}
 #endif // DC_ENABLED
@@ -621,15 +621,55 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, bool var) {
 	if (s) return s;
 
 	// Do this once more to make sure that pointers were not invalidated.
-	v = bc_program_search(p, name, var);
+	v = bc_program_search(p, name, type);
 
-	if (var) {
+	if (type == BC_TYPE_VAR) {
 		bc_num_init(&r.d.n, BC_NUM_DEF_SIZE);
 		bc_num_copy(&r.d.n, n);
 	}
 	else {
+
+		BcVec *vec = (BcVec*) n;
+
+#if BC_ENABLE_REFERENCES
+		if (vec->size == sizeof(BcVec) && type != BC_TYPE_ARRAY) {
+
+			size_t vidx, idx;
+			BcId id;
+
+			id.name = ptr->d.id.name;
+
+			vidx = bc_map_index(&p->arrs, &id);
+			assert(vidx != BC_VEC_INVALID_IDX);
+			vec = bc_vec_item(&p->arrs, vidx);
+			idx = vec->len - 1;
+
+			bc_vec_init(&r.d.v, sizeof(uchar), NULL);
+
+			bc_vec_pushIndex(&r.d.v, vidx);
+			bc_vec_pushIndex(&r.d.v, idx);
+
+			// We need to return early.
+			bc_vec_push(v, &r.d);
+			bc_vec_pop(&p->results);
+
+			return s;
+		}
+		else if (vec->size == sizeof(uchar) && type != BC_TYPE_REF) {
+
+			size_t vidx, idx, i = 0;
+
+			vidx = bc_program_index(vec->v, &i);
+			idx = bc_program_index(vec->v, &i);
+
+			vec = bc_vec_item(&p->arrs, vidx);
+			vec = bc_vec_item(vec, idx);
+			assert(vec->size != sizeof(uchar));
+		}
+#endif // BC_ENABLE_REFERENCES
+
 		bc_array_init(&r.d.v, true);
-		bc_array_copy(&r.d.v, (BcVec*) n);
+		bc_array_copy(&r.d.v, vec);
 	}
 
 	bc_vec_push(v, &r.d);
@@ -857,9 +897,12 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		a = bc_vec_item(&f->autos, nparams - 1 - i);
 		arg = bc_vec_top(&p->results);
 
-		arr = (a->idx == BC_TYPE_ARRAY || a->idx == BC_TYPE_REF);
+		arr = (a->idx == BC_TYPE_ARRAY);
+#if BC_ENABLE_REFERENCES
+		arr = arr || (a->idx == BC_TYPE_REF);
+#endif // BC_ENABLE_REFERENCES
 
-		if (arr == (arg->t != BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
+		if (arr != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
 			return bc_vm_err(BC_ERROR_EXEC_TYPE);
 
 		s = bc_program_copyToVar(p, a->name, a->idx);
