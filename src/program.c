@@ -1867,7 +1867,7 @@ void bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
 	else if (inst == BC_INST_NUM) {
 		size_t idx = bc_program_index(code, bgn);
 		char *str = bc_program_str(p, idx, false);
-		bc_vm_printf("(%s)", *str);
+		bc_vm_printf("(%s)", str);
 	}
 	else if (inst == BC_INST_CALL ||
 	         (inst > BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
