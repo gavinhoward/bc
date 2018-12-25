@@ -74,7 +74,7 @@
 #define BC_PARSE_VALID_END_TOKEN(t)                                            \
 	((t) == BC_LEX_SCOLON || (t) == BC_LEX_KEY_ELSE || (t) == BC_LEX_RBRACE || \
 	 (t) == BC_LEX_KEY_IF || (t) == BC_LEX_NLINE || (t) == BC_LEX_KEY_FOR ||   \
-	 (t) == BC_LEX_KEY_WHILE)
+	 (t) == BC_LEX_KEY_WHILE || (t) == BC_LEX_EOF)
 
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
 
