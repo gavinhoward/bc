@@ -127,8 +127,8 @@ make install
 
 Release builds are automatically stripped in the link stage.
 
-Debug builds, which disable optimization if no optimization level is given and
-if no extra CFLAGS are given, can be enabled with:
+Debug builds (which also disable optimization if no optimization level is given
+and if no extra CFLAGS are given) can be enabled with:
 
 ```
 ./configure.sh -g
