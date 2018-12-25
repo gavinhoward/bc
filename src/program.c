@@ -905,7 +905,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		if (arr != (arg->t == BC_RESULT_ARRAY) || arg->t == BC_RESULT_STR)
 			return bc_vm_err(BC_ERROR_EXEC_TYPE);
 
-		s = bc_program_copyToVar(p, a->name, a->idx);
+		s = bc_program_copyToVar(p, a->name, (BcType) a->idx);
 		if (s) return s;
 	}
 
