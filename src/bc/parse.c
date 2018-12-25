@@ -913,7 +913,7 @@ err:
 BcStatus bc_parse_auto(BcParse *p) {
 
 	BcStatus s;
-	bool comma, var, one;
+	bool comma, one;
 	char *name;
 
 	if (!p->auto_part) return bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
@@ -925,12 +925,15 @@ BcStatus bc_parse_auto(BcParse *p) {
 
 	while (p->l.t == BC_LEX_NAME) {
 
+		BcType t;
+
 		name = bc_vm_strdup(p->l.str.v);
 		s = bc_lex_next(&p->l);
 		if (s) goto err;
 
-		var = p->l.t != BC_LEX_LBRACKET;
-		if (!var) {
+		if (p->l.t == BC_LEX_LBRACKET) {
+
+			t = BC_TYPE_ARRAY;
 
 			s = bc_lex_next(&p->l);
 			if (s) goto err;
@@ -943,6 +946,7 @@ BcStatus bc_parse_auto(BcParse *p) {
 			s = bc_lex_next(&p->l);
 			if (s) goto err;
 		}
+		else t = BC_TYPE_VAR;
 
 		comma = p->l.t == BC_LEX_COMMA;
 		if (comma) {
@@ -950,7 +954,7 @@ BcStatus bc_parse_auto(BcParse *p) {
 			if (s) goto err;
 		}
 
-		s = bc_func_insert(p->func, name, var, p->l.line);
+		s = bc_func_insert(p->func, name, t, p->l.line);
 		if (s) goto err;
 	}
 

@@ -913,11 +913,14 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 		a = bc_vec_item(&f->autos, i);
 		v = bc_program_search(p, a->name, (BcType) a->idx);
 
-		if (a->idx) {
+		if (a->idx == BC_TYPE_VAR) {
 			bc_num_init(&param.n, BC_NUM_DEF_SIZE);
 			bc_vec_push(v, &param.n);
 		}
 		else {
+#if BC_ENABLE_REFERENCES
+			assert(a->idx != BC_TYPE_REF);
+#endif // BC_ENABLE_REFERENCES
 			bc_array_init(&param.v, true);
 			bc_vec_push(v, &param.v);
 		}
