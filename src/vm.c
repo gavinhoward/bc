@@ -330,7 +330,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	while (!done && (!(s = bc_read_line(&buf, ">>> ")) || buf.len > 1) &&
 	       !BC_SIGINT && s != BC_STATUS_SIGNAL)
 	{
-		char *str = buf.v;
+		char c2, *str = buf.v;
 		size_t i, len = buf.len - 1;
 
 		done = (s == BC_STATUS_EOF);
@@ -346,11 +346,13 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 				else if (c == '[') string += 1;
 			}
 
-			if (c == '/' && notend && !comment && str[i + 1] == '*') {
+			c2 = str[i + 1];
+
+			if (!string && c == '/' && notend && !comment && c2 == '*') {
 				comment = true;
 				++i;
 			}
-			else if (c == '*' && notend && comment && str[i + 1] == '/') {
+			else if (!string && c == '*' && notend && comment && c2 == '/') {
 				comment = false;
 				++i;
 			}
