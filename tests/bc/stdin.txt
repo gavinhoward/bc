@@ -1,2 +1,6 @@
 #stuff
 1 /* c */ + 2
+"String /* with partial comment"
+"String /* with full comment */"
+1 /* Comment with partial "string */ + 2
+2 /* Comment with full "string" */ + 3
