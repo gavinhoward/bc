@@ -771,13 +771,11 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 
 		if (pop || copy) {
 
-			if (!BC_PROG_STACK(v, 2 - copy)) {
-				free(name);
-				return bc_vm_err(BC_ERROR_EXEC_STACK);
-			}
-
 			free(name);
 			name = NULL;
+
+			if (!BC_PROG_STACK(v, 2 - copy))
+				return bc_vm_err(BC_ERROR_EXEC_STACK);
 
 			if (!BC_PROG_STR(num)) {
 
