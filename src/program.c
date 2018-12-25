@@ -1777,7 +1777,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_PUSH_TO_VAR:
 			{
 				char *name = bc_program_name(code, &ip->idx);
-				s = bc_program_copyToVar(p, name, true);
+				s = bc_program_copyToVar(p, name, BC_TYPE_VAR);
 				free(name);
 				break;
 			}
