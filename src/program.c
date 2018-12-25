@@ -603,17 +603,17 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType type) {
 	BcResult *ptr, r;
 	BcVec *v;
 	BcNum *n;
+	bool var = (type == BC_TYPE_VAR);
 
 	if (!BC_PROG_STACK(&p->results, 1)) return bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	ptr = bc_vec_top(&p->results);
-	if ((ptr->t == BC_RESULT_ARRAY) == (type == BC_TYPE_VAR))
-		return bc_vm_err(BC_ERROR_EXEC_TYPE);
+	if ((ptr->t == BC_RESULT_ARRAY) == var) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	v = bc_program_search(p, name, type);
 
 #if DC_ENABLED
 	if (ptr->t == BC_RESULT_STR) {
-		if (type != BC_TYPE_VAR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
+		if (!var) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 		return bc_program_assignStr(p, ptr, v, true);
 	}
 #endif // DC_ENABLED
@@ -624,7 +624,7 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType type) {
 	// Do this once more to make sure that pointers were not invalidated.
 	v = bc_program_search(p, name, type);
 
-	if (type == BC_TYPE_VAR) {
+	if (var) {
 		bc_num_init(&r.d.n, BC_NUM_DEF_SIZE);
 		bc_num_copy(&r.d.n, n);
 	}
