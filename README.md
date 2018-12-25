@@ -207,8 +207,8 @@ unnecessary work by aligning digits prior to performing subtraction.
 
 Subtraction was used instead of multiplication for two reasons:
 
-1.	Division and subtraction can share code (one of the goals of this `bc` is
-	small code).
+1.	Division and subtraction can share code (one of the less important goals of
+	this `bc` is small code).
 2.	It minimizes algorithmic complexity.
 
 Using multiplication would make division have the even worse algorithmic
