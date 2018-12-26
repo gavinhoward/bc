@@ -47,6 +47,38 @@ char* bc_program_str(BcProgram *p, size_t idx, bool str) {
 	return *((char**) bc_vec_item(v, idx));
 }
 
+size_t bc_program_index(char *code, size_t *bgn) {
+
+	uchar amt = (uchar) code[(*bgn)++], i = 0;
+	size_t res = 0;
+
+	for (; i < amt; ++i, ++(*bgn)) {
+		size_t temp = ((size_t) ((int) (uchar) code[*bgn]) & UCHAR_MAX);
+		res |= (temp << (i * CHAR_BIT));
+	}
+
+	return res;
+}
+
+char* bc_program_name(char *code, size_t *bgn) {
+
+	size_t i;
+	uchar c;
+	char *s, *str = code + *bgn, *ptr = strchr(str, BC_PARSE_STREND);
+
+	assert(ptr);
+
+	s = bc_vm_malloc(ptr - str + 1);
+	c = code[(*bgn)++];
+
+	for (i = 0; c != 0 && c != BC_PARSE_STREND; c = code[(*bgn)++], ++i)
+		s[i] = c;
+
+	s[i] = '\0';
+
+	return s;
+}
+
 BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
 
 	BcId e, *ptr;
@@ -123,9 +155,28 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 			v = bc_program_search(p, r->d.id.name, type);
 
 			if (r->t == BC_RESULT_ARRAY_ELEM) {
+
+				size_t idx = r->d.id.idx;
+
 				v = bc_vec_top(v);
-				if (v->len <= r->d.id.idx) bc_array_expand(v, r->d.id.idx + 1);
-				*num = bc_vec_item(v, r->d.id.idx);
+
+#if BC_ENABLE_REFERENCES
+				if (v->size == sizeof(uchar)) {
+
+					size_t vidx, nidx, i = 0;
+
+					vidx = bc_program_index(v->v, &i);
+					nidx = bc_program_index(v->v, &i);
+
+					v = bc_vec_item(&p->arrs, vidx);
+					v = bc_vec_item(v, nidx);
+				}
+#endif // BC_ENABLE_REFERENCES
+
+				assert(v->size == sizeof(BcNum));
+
+				if (v->len <= idx) bc_array_expand(v, idx + 1);
+				*num = bc_vec_item(v, idx);
 			}
 			else *num = bc_vec_top(v);
 
@@ -310,38 +361,6 @@ exec_err:
 io_err:
 	bc_vec_free(&buf);
 	vm->file = file;
-	return s;
-}
-
-size_t bc_program_index(char *code, size_t *bgn) {
-
-	uchar amt = (uchar) code[(*bgn)++], i = 0;
-	size_t res = 0;
-
-	for (; i < amt; ++i, ++(*bgn)) {
-		size_t temp = ((size_t) ((int) (uchar) code[*bgn]) & UCHAR_MAX);
-		res |= (temp << (i * CHAR_BIT));
-	}
-
-	return res;
-}
-
-char* bc_program_name(char *code, size_t *bgn) {
-
-	size_t i;
-	uchar c;
-	char *s, *str = code + *bgn, *ptr = strchr(str, BC_PARSE_STREND);
-
-	assert(ptr);
-
-	s = bc_vm_malloc(ptr - str + 1);
-	c = code[(*bgn)++];
-
-	for (i = 0; c != 0 && c != BC_PARSE_STREND; c = code[(*bgn)++], ++i)
-		s[i] = c;
-
-	s[i] = '\0';
-
 	return s;
 }
 
