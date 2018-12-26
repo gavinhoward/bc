@@ -639,10 +639,11 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType type) {
 			BcId id;
 
 			id.name = ptr->d.id.name;
+			vec = bc_program_search(p, ptr->d.id.name, BC_TYPE_REF);
 
-			vidx = bc_map_index(&p->arrs, &id);
+			vidx = bc_map_index(&p->arr_map, &id);
 			assert(vidx != BC_VEC_INVALID_IDX);
-			vec = bc_vec_item(&p->arrs, vidx);
+			vidx = ((BcId*) bc_vec_item(&p->arr_map, vidx))->idx;
 			idx = vec->len - 1;
 
 			bc_vec_init(&r.d.v, sizeof(uchar), NULL);
