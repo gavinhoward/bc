@@ -1,0 +1,36 @@
+define printarray(a[], len) {
+
+	auto i
+
+	for (i = 0; i < len; ++i) {
+		a[i]
+	}
+}
+
+define a2(a[], len) {
+
+	auto i
+
+	for (i = 0; i < len; ++i) {
+		a[i] = a[i] * a[i]
+	}
+
+	printarray(a[], len)
+}
+
+define a1(*a[], len) {
+
+	auto i
+
+	for (i = 0; i < len; ++i) {
+		a[i] = i
+	}
+
+	a2(a[], len)
+
+	printarray(a[], len)
+}
+
+a1(a[], 16)
+
+printarray(a[], len)
