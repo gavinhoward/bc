@@ -91,7 +91,7 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 
 	va_list args;
 
-	if (!e || e > BC_ERROR_EXEC_STACK) return BC_STATUS_SUCCESS;
+	if (e > BC_ERROR_EXEC_STACK) return BC_STATUS_SUCCESS;
 
 	va_start(args, line);
 	bc_vm_printError(e, bc_err_fmt, line, args);
