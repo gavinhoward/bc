@@ -40,10 +40,7 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 }
 
 void bc_parse_pushName(BcParse *p, char *name) {
-
-	size_t i = 0, len = strlen(name);
-
-	for (; i < len; ++i) bc_parse_push(p, name[i]);
+	bc_vec_npush(&p->func->code, strlen(name), name);
 	bc_parse_push(p, BC_PARSE_STREND);
 }
 

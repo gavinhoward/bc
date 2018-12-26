@@ -63,10 +63,14 @@ void bc_vec_npop(BcVec *v, size_t n) {
 }
 
 void bc_vec_push(BcVec *v, const void *data) {
+	bc_vec_npush(v, 1, data);
+}
+
+void bc_vec_npush(BcVec *v, size_t n, const void *data) {
 	assert(v && data);
-	if (v->len + 1 > v->cap) bc_vec_grow(v, 1);
-	memmove(v->v + (v->size * v->len), data, v->size);
-	v->len += 1;
+	if (v->len + n > v->cap) bc_vec_grow(v, n);
+	memmove(v->v + (v->size * v->len), data, v->size * n);
+	v->len += n;
 }
 
 void bc_vec_pushByte(BcVec *v, uchar data) {
@@ -76,7 +80,7 @@ void bc_vec_pushByte(BcVec *v, uchar data) {
 
 void bc_vec_pushIndex(BcVec *v, size_t idx) {
 
-	uchar amt, i, nums[sizeof(size_t)];
+	uchar amt, nums[sizeof(size_t)];
 
 	assert(v->size == sizeof(uchar));
 
@@ -87,7 +91,7 @@ void bc_vec_pushIndex(BcVec *v, size_t idx) {
 	}
 
 	bc_vec_push(v, &amt);
-	for (i = 0; i < amt; ++i) bc_vec_push(v, nums + i);
+	bc_vec_npush(v, amt, nums);
 }
 
 void bc_vec_pushAt(BcVec *v, const void *data, size_t idx) {

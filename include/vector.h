@@ -56,6 +56,7 @@ void bc_vec_expand(BcVec *v, size_t req);
 void bc_vec_npop(BcVec *v, size_t n);
 
 void bc_vec_push(BcVec *v, const void *data);
+void bc_vec_npush(BcVec *v, size_t n, const void *data);
 void bc_vec_pushByte(BcVec *v, uchar data);
 void bc_vec_pushIndex(BcVec *v, size_t idx);
 void bc_vec_string(BcVec *v, size_t len, const char* str);
