@@ -31,6 +31,8 @@ define a1(*a[], len) {
 	printarray(a[], len)
 }
 
-a1(a[], 16)
+len = 16
+
+a1(a[], len)
 
 printarray(a[], len)
