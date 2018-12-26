@@ -690,7 +690,8 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType t) {
 				bc_vec_pushIndex(&r.d.v, vidx);
 				bc_vec_pushIndex(&r.d.v, idx);
 			}
-			else bc_array_copy(&r.d.v, v);
+			// If we get here, we are copying a ref to a ref.
+			else bc_vec_npush(&r.d.v, v->len * sizeof(uchar), v->v);
 
 			// We need to return early.
 			bc_vec_push(vec, &r.d);
