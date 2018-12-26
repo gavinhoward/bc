@@ -85,7 +85,7 @@ BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 	BcVec *v;
 	size_t vidx, nidx, i = 0;
 
-	assert(v->size == sizeof(uchar));
+	assert(vec->size == sizeof(uchar));
 
 	vidx = bc_program_index(vec->v, &i);
 	nidx = bc_program_index(vec->v, &i);
