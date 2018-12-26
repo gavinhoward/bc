@@ -679,6 +679,9 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType t) {
 				id.name = ptr->d.id.name;
 				v = bc_program_search(p, ptr->d.id.name, BC_TYPE_REF);
 
+				// Make sure the pointer was not invalidated.
+				vec = bc_program_search(p, name, t);
+
 				vidx = bc_map_index(&p->arr_map, &id);
 				assert(vidx != BC_VEC_INVALID_IDX);
 				vidx = ((BcId*) bc_vec_item(&p->arr_map, vidx))->idx;
