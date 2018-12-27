@@ -244,17 +244,17 @@ scriptdir=$(dirname "$script")
 link='@printf "No link necessary\\\\n"'
 main_exec="BC_EXEC"
 
-bc_test="tests/all.sh bc"
-dc_test="tests/all.sh dc"
+bc_test="@tests/all.sh bc"
+dc_test="@tests/all.sh dc"
 
-timeconst="tests/bc/timeconst.sh"
+timeconst="@tests/bc/timeconst.sh"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="tests/all.sh bc valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="tests/all.sh dc valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
-	timeconst_vg='printf "100\\\\n" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc'
+	vg_bc_test="@tests/all.sh bc valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	timeconst_vg='@printf "100\\\\n" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc'
 else
 	vg_bc_test='@printf "Cannot run valgrind without debug flags\\\\n"'
 	vg_dc_test='@printf "Cannot run valgrind without debug flags\\\\n"'
@@ -308,8 +308,8 @@ else
 
 	link="\$(LINK) \$(BIN) \$(DC)"
 
-	karatsuba="\$(KARATSUBA)"
-	karatsuba_test="\$(KARATSUBA) 100 \$(BC_EXEC)"
+	karatsuba="@\$(KARATSUBA)"
+	karatsuba_test="@\$(KARATSUBA) 100 \$(BC_EXEC)"
 
 fi
 
