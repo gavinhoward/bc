@@ -47,10 +47,8 @@ size_t bc_parse_addFunc(BcParse *p, char *name) {
 	return idx;
 }
 
-BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
-                           size_t *nexprs, bool next)
+void bc_parse_operator(BcParse *p, BcLexType type, size_t start, size_t *nexprs)
 {
-	BcStatus s = BC_STATUS_SUCCESS;
 	BcLexType t;
 	uchar l, r = BC_PARSE_OP_PREC(bc_parse_ops[type - BC_LEX_OP_INC]);
 	uchar left = BC_PARSE_OP_LEFT(bc_parse_ops[type - BC_LEX_OP_INC]);
@@ -69,9 +67,6 @@ BcStatus bc_parse_operator(BcParse *p, BcLexType type, size_t start,
 	}
 
 	bc_vec_push(&p->ops, &type);
-	if (next) s = bc_lex_next(&p->l);
-
-	return s;
 }
 
 BcStatus bc_parse_rightParen(BcParse *p, size_t ops_bgn, size_t *nexs) {
@@ -391,7 +386,7 @@ BcStatus bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
 	// We can just push onto the op stack because this is the largest
 	// precedence operator that gets pushed. Inc/dec does not.
 	if (type != BC_LEX_OP_MINUS) bc_vec_push(&p->ops, &type);
-	else s = bc_parse_operator(p, type, ops_bgn, nexprs, false);
+	else bc_parse_operator(p, type, ops_bgn, nexprs);
 
 	return s;
 }
@@ -1275,8 +1270,9 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 				nrelops += t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT;
 				prev = BC_PARSE_TOKEN_INST(t);
-				s = bc_parse_operator(p, t, ops_bgn, &nexprs, true);
-				rprn = get_token = incdec = false;
+				bc_parse_operator(p, t, ops_bgn, &nexprs);
+				rprn = incdec = false;
+				get_token = true;
 				bin_last = t != BC_LEX_OP_BOOL_NOT;
 
 				break;
