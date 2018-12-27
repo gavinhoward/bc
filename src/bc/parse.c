@@ -32,7 +32,7 @@
 #include <bc.h>
 #include <vm.h>
 
-bool bc_parse_inst_isLeaf(BcLexType type) {
+bool bc_parse_inst_isLeaf(BcInst type) {
 	return (type >= BC_INST_NUM && type <= BC_INST_SQRT) ||
 	        type == BC_INST_INC_POST || type == BC_INST_DEC_POST;
 }
