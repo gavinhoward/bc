@@ -563,16 +563,20 @@ const uint8_t bc_parse_exprs[] = {
 const uchar bc_parse_ops[] = {
 	BC_PARSE_OP(0, false), BC_PARSE_OP(0, false),
 	BC_PARSE_OP(1, false),
+#if BC_ENABLE_EXTRA_MATH
 	BC_PARSE_OP(2, false),
-	BC_PARSE_OP(3, true), BC_PARSE_OP(3, true), BC_PARSE_OP(3, true),
-	BC_PARSE_OP(4, true), BC_PARSE_OP(4, true),
-	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
-	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
+	BC_PARSE_OP(3, false),
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_PARSE_OP(4, false),
+	BC_PARSE_OP(5, true), BC_PARSE_OP(5, true), BC_PARSE_OP(5, true),
+	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
+	BC_PARSE_OP(8, true), BC_PARSE_OP(8, true), BC_PARSE_OP(8, true),
+	BC_PARSE_OP(8, true), BC_PARSE_OP(8, true), BC_PARSE_OP(8, true),
 	BC_PARSE_OP(1, false),
-	BC_PARSE_OP(7, true), BC_PARSE_OP(7, true),
-	BC_PARSE_OP(5, false), BC_PARSE_OP(5, false), BC_PARSE_OP(5, false),
-	BC_PARSE_OP(5, false), BC_PARSE_OP(5, false), BC_PARSE_OP(5, false),
-	BC_PARSE_OP(5, false),
+	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
+	BC_PARSE_OP(7, false), BC_PARSE_OP(7, false), BC_PARSE_OP(7, false),
+	BC_PARSE_OP(7, false), BC_PARSE_OP(7, false), BC_PARSE_OP(7, false),
+	BC_PARSE_OP(7, false),
 };
 
 // These identify what tokens can come after expressions in certain cases.

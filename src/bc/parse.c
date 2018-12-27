@@ -1226,6 +1226,14 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				break;
 			}
 
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_OP_TRUNC:
+			{
+
+				break;
+			}
+#endif // BC_ENABLE_EXTRA_MATH
+
 			case BC_LEX_OP_MINUS:
 			{
 				s = bc_parse_minus(p, &prev, ops_bgn, rprn, &nexprs);
