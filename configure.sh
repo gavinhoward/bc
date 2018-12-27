@@ -338,7 +338,7 @@ if [ "$coverage" -eq 1 ]; then
 	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage -g -O0"
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
 
-	COVERAGE="gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
+	COVERAGE="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
 	COVERAGE="$COVERAGE;\$(RM) -f \$(GEN)*.gc*"
 	COVERAGE="$COVERAGE;regcovr --html-details --output index.html"
 	COVERAGE_PREREQS=" test_all"
