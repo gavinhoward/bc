@@ -32,9 +32,12 @@
 #include <bc.h>
 #include <vm.h>
 
-bool bc_parse_inst_isLeaf(BcInst type) {
-	return (type >= BC_INST_NUM && type <= BC_INST_SQRT) ||
-	        type == BC_INST_INC_POST || type == BC_INST_DEC_POST;
+bool bc_parse_inst_isLeaf(BcInst t) {
+	return (t >= BC_INST_NUM && t <= BC_INST_SQRT) ||
+#if BC_ENABLE_EXTRA_MATH
+	        t == BC_INST_TRUNC ||
+#endif // BC_ENABLE_EXTRA_MATH
+	        t == BC_INST_INC_POST || t == BC_INST_DEC_POST;
 }
 
 size_t bc_parse_addFunc(BcParse *p, char *name) {
