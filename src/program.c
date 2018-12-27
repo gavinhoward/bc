@@ -509,7 +509,17 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	return s;
 }
 
-BcStatus bc_program_negate(BcProgram *p) {
+void bc_program_negate(BcProgram* p, BcResult *r, BcNum *n) {
+	(void) p;
+	bc_num_copy(&r->d.n, n);
+	if (r->d.n.len) r->d.n.neg = !r->d.n.neg;
+}
+
+void bc_program_not(BcProgram* p, BcResult *r, BcNum *n) {
+	if (!bc_num_cmp(n, &p->zero)) bc_num_one(&r->d.n);
+}
+
+BcStatus bc_program_unary(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult res, *ptr;
@@ -519,9 +529,7 @@ BcStatus bc_program_negate(BcProgram *p) {
 	if (s) return s;
 
 	bc_num_init(&res.d.n, num->len);
-	bc_num_copy(&res.d.n, num);
-	if (res.d.n.len) res.d.n.neg = !res.d.n.neg;
-
+	bc_program_unarys[inst - BC_INST_NEG](p, &res, num);
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
 
 	return s;
@@ -1684,21 +1692,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_NEG:
 			case BC_INST_BOOL_NOT:
 			{
-				s = bc_program_prep(p, &ptr, &num);
-				if (s) return s;
-
-				bc_num_init(&r.d.n, BC_NUM_DEF_SIZE);
-				if (!bc_num_cmp(num, &p->zero)) bc_num_one(&r.d.n);
-				bc_program_retire(p, &r, BC_RESULT_TEMP);
-
-				break;
-			}
-
-			case BC_INST_NEG:
-			{
-				s = bc_program_negate(p);
+				s = bc_program_unary(p, inst);
 				break;
 			}
 

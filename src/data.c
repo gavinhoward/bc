@@ -24,6 +24,7 @@
 #include <parse.h>
 #include <bc.h>
 #include <num.h>
+#include <program.h>
 
 // clang-format off
 
@@ -562,13 +563,12 @@ const uint8_t bc_parse_exprs[] = {
 // This is an array of data for operators that correspond to token types.
 const uchar bc_parse_ops[] = {
 	BC_PARSE_OP(0, false), BC_PARSE_OP(0, false),
-	BC_PARSE_OP(1, false),
+	BC_PARSE_OP(1, false), BC_PARSE_OP(1, false),
 	BC_PARSE_OP(2, false),
 	BC_PARSE_OP(3, true), BC_PARSE_OP(3, true), BC_PARSE_OP(3, true),
 	BC_PARSE_OP(4, true), BC_PARSE_OP(4, true),
 	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
 	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
-	BC_PARSE_OP(1, false),
 	BC_PARSE_OP(7, true), BC_PARSE_OP(7, true),
 	BC_PARSE_OP(5, false), BC_PARSE_OP(5, false), BC_PARSE_OP(5, false),
 	BC_PARSE_OP(5, false), BC_PARSE_OP(5, false), BC_PARSE_OP(5, false),
@@ -632,12 +632,12 @@ const uint8_t dc_parse_insts[] = {
 #if BC_ENABLED
 	BC_INST_INVALID, BC_INST_INVALID,
 #endif // BC_ENABLED
-	BC_INST_INVALID,
+	BC_INST_INVALID, BC_INST_BOOL_NOT,
 	BC_INST_POWER, BC_INST_MULTIPLY, BC_INST_DIVIDE, BC_INST_MODULUS,
 	BC_INST_PLUS, BC_INST_MINUS,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_INVALID, BC_INST_INVALID,
-	BC_INST_BOOL_NOT, BC_INST_INVALID, BC_INST_INVALID,
+	BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLED
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_INVALID, BC_INST_INVALID,
@@ -669,6 +669,10 @@ const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
+};
+
+const BcProgramUnary bc_program_unarys[] = {
+	bc_program_negate, bc_program_not,
 };
 
 // ** Exclude start. **

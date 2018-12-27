@@ -42,6 +42,7 @@ typedef enum BcLexType {
 #endif // BC_ENABLED
 
 	BC_LEX_NEG,
+	BC_LEX_OP_BOOL_NOT,
 
 	BC_LEX_OP_POWER,
 	BC_LEX_OP_MULTIPLY,
@@ -57,7 +58,6 @@ typedef enum BcLexType {
 	BC_LEX_OP_REL_LT,
 	BC_LEX_OP_REL_GT,
 
-	BC_LEX_OP_BOOL_NOT,
 	BC_LEX_OP_BOOL_OR,
 	BC_LEX_OP_BOOL_AND,
 

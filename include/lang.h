@@ -39,6 +39,7 @@ typedef enum BcInst {
 #endif // BC_ENABLED
 
 	BC_INST_NEG,
+	BC_INST_BOOL_NOT,
 
 	BC_INST_POWER,
 	BC_INST_MULTIPLY,
@@ -54,7 +55,6 @@ typedef enum BcInst {
 	BC_INST_REL_LT,
 	BC_INST_REL_GT,
 
-	BC_INST_BOOL_NOT,
 	BC_INST_BOOL_OR,
 	BC_INST_BOOL_AND,
 
