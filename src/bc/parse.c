@@ -76,9 +76,7 @@ BcStatus bc_parse_rightParen(BcParse *p, size_t ops_bgn, size_t *nexs) {
 	if (p->ops.len <= ops_bgn)
 		return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
-	top = BC_PARSE_TOP_OP(p);
-
-	while (top != BC_LEX_LPAREN) {
+	while ((top = BC_PARSE_TOP_OP(p)) != BC_LEX_LPAREN) {
 
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
 
@@ -87,8 +85,6 @@ BcStatus bc_parse_rightParen(BcParse *p, size_t ops_bgn, size_t *nexs) {
 
 		if (p->ops.len <= ops_bgn)
 			return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
-
-		top = BC_PARSE_TOP_OP(p);
 	}
 
 	bc_vec_pop(&p->ops);
