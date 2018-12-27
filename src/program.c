@@ -324,7 +324,6 @@ BcStatus bc_program_read(BcProgram *p) {
 	BcParse parse;
 	BcVec buf;
 	BcInstPtr ip;
-	BcInst inst;
 	size_t i;
 	const char* file;
 	BcFunc *f = bc_vec_item(&p->fns, BC_PROG_READ);
@@ -365,14 +364,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	// Update this pointer, just in case.
 	f = bc_vec_item(&p->fns, BC_PROG_READ);
 
-#if BC_ENABLED && DC_ENABLED
-	inst = BC_IS_BC ? BC_INST_RET : BC_INST_POP_EXEC;
-#elif BC_ENABLED
-	inst = BC_INST_RET;
-#else
-	inst = BC_INST_POP_EXEC;
-#endif // BC_ENABLED && DC_ENABLED
-	bc_vec_pushByte(&f->code, inst);
+	bc_vec_pushByte(&f->code, vm->read_ret);
 	bc_vec_push(&p->stack, &ip);
 
 exec_err:

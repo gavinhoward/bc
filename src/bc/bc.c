@@ -30,6 +30,7 @@
 
 int bc_main(int argc, char **argv) {
 
+	vm->read_ret = BC_INST_RET;
 	vm->help = bc_help;
 #if BC_ENABLE_SIGNALS
 	vm->sig_msg = bc_sig_msg;
