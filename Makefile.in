@@ -186,36 +186,36 @@ libcname:
 	@printf "$(BC_LIB_C)"
 
 clean:
-	$(RM) -f $(OBJ)
-	$(RM) -f $(BC_OBJ)
-	$(RM) -f $(DC_OBJ)
-	$(RM) -f $(HISTORY_OBJ)
-	$(RM) -f $(BC_EXEC)
-	$(RM) -f $(DC_EXEC)
-	$(RM) -fr $(BIN)
-	$(RM) -f $(GCDA) $(GCNO)
-	$(RM) -f $(BC_GCDA) $(BC_GCNO)
-	$(RM) -f $(DC_GCDA) $(DC_GCNO)
-	$(RM) -f $(HISTORY_GCDA) $(HISTORY_GCNO)
-	$(RM) -f *.gcov
-	$(RM) -f *.html
-	$(RM) -f *.gcda *.gcno
-	$(RM) -f *.profraw
-	$(RM) -f $(GEN_EXEC)
-	$(RM) -f $(BC_LIB_C)
-	$(RM) -f $(BC_LIB_O)
-	$(RM) -f $(BC_HELP_C)
-	$(RM) -f $(BC_HELP_O)
-	$(RM) -f $(DC_HELP_C)
-	$(RM) -f $(DC_HELP_O)
+	@$(RM) -f $(OBJ)
+	@$(RM) -f $(BC_OBJ)
+	@$(RM) -f $(DC_OBJ)
+	@$(RM) -f $(HISTORY_OBJ)
+	@$(RM) -f $(BC_EXEC)
+	@$(RM) -f $(DC_EXEC)
+	@$(RM) -fr $(BIN)
+	@$(RM) -f $(GCDA) $(GCNO)
+	@$(RM) -f $(BC_GCDA) $(BC_GCNO)
+	@$(RM) -f $(DC_GCDA) $(DC_GCNO)
+	@$(RM) -f $(HISTORY_GCDA) $(HISTORY_GCNO)
+	@$(RM) -f *.gcov
+	@$(RM) -f *.html
+	@$(RM) -f *.gcda *.gcno
+	@$(RM) -f *.profraw
+	@$(RM) -f $(GEN_EXEC)
+	@$(RM) -f $(BC_LIB_C)
+	@$(RM) -f $(BC_LIB_O)
+	@$(RM) -f $(BC_HELP_C)
+	@$(RM) -f $(BC_HELP_O)
+	@$(RM) -f $(DC_HELP_C)
+	@$(RM) -f $(DC_HELP_O)
 
 clean_tests: clean
-	$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
-	$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
-	$(RM) -f tests/bc/bessel.txt tests/bc/bessel_results.txt
-	$(RM) -f .log_test.txt .log_bc.txt
-	$(RM) -f .math.txt .results.txt .ops.txt
-	$(RM) -f .test.txt
+	@$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
+	@$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
+	@$(RM) -f tests/bc/bessel.txt tests/bc/bessel_results.txt
+	@$(RM) -f .log_test.txt .log_bc.txt
+	@$(RM) -f .math.txt .results.txt .ops.txt
+	@$(RM) -f .test.txt
 
 install:
 	$(INSTALL) $(DESTDIR)$(PREFIX)/$(BIN) $(BIN)
