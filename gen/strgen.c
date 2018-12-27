@@ -30,11 +30,12 @@
 #include <libgen.h>
 
 static const char* const bc_gen_header =
-	"// Copyright 2018 Gavin D. Howard. Under a 0-clause BSD license.\n"
+	"// Copyright (c) 2018 Gavin D. Howard.\n"
+	"// Licensed under the 0-clause BSD license.\n"
 	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
 
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
-static const char* const bc_gen_ifdef = "#ifdef %s\n";
+static const char* const bc_gen_ifdef = "#if %s\n";
 static const char* const bc_gen_endif = "#endif // %s\n";
 static const char* const bc_gen_name = "const char %s[] = {\n";
 
