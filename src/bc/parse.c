@@ -310,6 +310,10 @@ BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 	BcLexType type;
 	uchar inst;
 	BcInst etype = *prev;
+	BcLexType last = p->l.last;
+
+	if (last == BC_LEX_OP_INC || last == BC_LEX_OP_DEC || last == BC_LEX_RPAREN)
+		return s = bc_vm_error(BC_ERROR_PARSE_ASSIGN, p->l.line);
 
 	if (etype == BC_INST_VAR || etype == BC_INST_ARRAY_ELEM ||
 	    etype == BC_INST_SCALE || etype == BC_INST_LAST ||
@@ -1201,11 +1205,11 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 	BcLexType top, t = p->l.t;
 	size_t nexprs = 0, ops_bgn = p->ops.len;
 	uint32_t i, nparens, nrelops;
-	bool paren_first, paren_expr, rprn, done, get_token, assign, bin_last;
+	bool paren_first, pexpr, rprn, done, get_token, assign, bin_last, incdec;
 
 	paren_first = p->l.t == BC_LEX_LPAREN;
 	nparens = nrelops = 0;
-	paren_expr = rprn = done = get_token = assign = false;
+	pexpr = rprn = done = get_token = assign = incdec = false;
 	bin_last = true;
 
 	for (; !BC_SIGINT && !s && !done && BC_PARSE_EXPR(t); t = p->l.t) {
@@ -1215,8 +1219,10 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_INC:
 			case BC_LEX_OP_DEC:
 			{
-				s = bc_parse_incdec(p, &prev, &paren_expr, &nexprs, flags);
+				if (incdec) return bc_vm_error(BC_ERROR_PARSE_ASSIGN, p->l.line);
+				s = bc_parse_incdec(p, &prev, &pexpr, &nexprs, flags);
 				rprn = get_token = bin_last = false;
+				incdec = true;
 				break;
 			}
 
@@ -1224,7 +1230,8 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			{
 				s = bc_parse_minus(p, &prev, ops_bgn, rprn, &nexprs);
 				rprn = get_token = false;
-				bin_last = prev == BC_INST_MINUS;
+				bin_last = (prev == BC_INST_MINUS);
+				if (bin_last) incdec = false;
 				break;
 			}
 
@@ -1269,7 +1276,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				nrelops += t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT;
 				prev = BC_PARSE_TOKEN_INST(t);
 				s = bc_parse_operator(p, t, ops_bgn, &nexprs, true);
-				rprn = get_token = false;
+				rprn = get_token = incdec = false;
 				bin_last = t != BC_LEX_OP_BOOL_NOT;
 
 				break;
@@ -1281,7 +1288,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
 				++nparens;
-				paren_expr = rprn = bin_last = false;
+				pexpr = rprn = bin_last = incdec = false;
 				get_token = true;
 				bc_vec_push(&p->ops, &t);
 
@@ -1301,11 +1308,11 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				}
 				// This needs to be a status. The error
 				// is handled in bc_parse_expr_status().
-				else if (!paren_expr) return BC_STATUS_EMPTY_EXPR;
+				else if (!pexpr) return BC_STATUS_EMPTY_EXPR;
 
 				--nparens;
-				paren_expr = rprn = true;
-				get_token = bin_last = false;
+				pexpr = rprn = true;
+				get_token = bin_last = incdec = false;
 
 				s = bc_parse_rightParen(p, ops_bgn, &nexprs);
 
@@ -1317,7 +1324,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_PARSE_LEAF(prev, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
-				paren_expr = true;
+				pexpr = true;
 				rprn = get_token = bin_last = false;
 				s = bc_parse_name(p, &prev, flags & ~BC_PARSE_NOCALL);
 				++nexprs;
@@ -1333,7 +1340,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				bc_parse_number(p);
 				nexprs += 1;
 				prev = BC_INST_NUM;
-				paren_expr = get_token = true;
+				pexpr = get_token = true;
 				rprn = bin_last = false;
 
 				break;
@@ -1349,7 +1356,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				prev = (uchar) (t - BC_LEX_KEY_IBASE + BC_INST_IBASE);
 				bc_parse_push(p, (uchar) prev);
 
-				paren_expr = get_token = true;
+				pexpr = get_token = true;
 				rprn = bin_last = false;
 				++nexprs;
 
@@ -1363,8 +1370,8 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
 				s = bc_parse_builtin(p, t, flags, &prev);
-				paren_expr = true;
-				rprn = get_token = bin_last = false;
+				pexpr = true;
+				rprn = get_token = bin_last = incdec = false;
 				++nexprs;
 
 				break;
@@ -1378,8 +1385,8 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					s = bc_vm_error(BC_ERROR_EXEC_REC_READ, p->l.line);
 				else s = bc_parse_read(p);
 
-				paren_expr = true;
-				rprn = get_token = bin_last = false;
+				pexpr = true;
+				rprn = get_token = bin_last = incdec = false;
 				++nexprs;
 				prev = BC_INST_READ;
 
@@ -1392,10 +1399,9 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
 				s = bc_parse_scale(p, &prev, flags);
-				paren_expr = true;
+				pexpr = true;
 				rprn = get_token = bin_last = false;
 				++nexprs;
-				prev = BC_INST_SCALE;
 
 				break;
 			}
