@@ -305,10 +305,7 @@ BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 	if (last == BC_LEX_OP_INC || last == BC_LEX_OP_DEC || last == BC_LEX_RPAREN)
 		return s = bc_vm_error(BC_ERROR_PARSE_ASSIGN, p->l.line);
 
-	if (etype == BC_INST_VAR || etype == BC_INST_ARRAY_ELEM ||
-	    etype == BC_INST_SCALE || etype == BC_INST_LAST ||
-	    etype == BC_INST_IBASE || etype == BC_INST_OBASE)
-	{
+	if (BC_PARSE_INST_VAR(etype)) {
 		*prev = inst = BC_INST_INC_POST + (p->l.t != BC_LEX_OP_INC);
 		bc_parse_push(p, inst);
 		s = bc_lex_next(&p->l);
@@ -1232,10 +1229,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_ASSIGN_MINUS:
 			case BC_LEX_OP_ASSIGN:
 			{
-				if (prev != BC_INST_VAR && prev != BC_INST_ARRAY_ELEM &&
-				    prev != BC_INST_SCALE && prev != BC_INST_IBASE &&
-				    prev != BC_INST_OBASE && prev != BC_INST_LAST)
-				{
+				if (!BC_PARSE_INST_VAR(prev)) {
 					s = bc_vm_error(BC_ERROR_PARSE_ASSIGN, p->l.line);
 					break;
 				}
