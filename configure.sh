@@ -341,7 +341,7 @@ if [ "$coverage" -eq 1 ]; then
 	COVERAGE="gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
 	COVERAGE="$COVERAGE;\$(RM) -f \$(GEN)*.gc*"
 	COVERAGE="$COVERAGE;regcovr --html-details --output index.html"
-	COVERAGE_PREREQS="all test_all"
+	COVERAGE_PREREQS=" test_all"
 
 else
 
