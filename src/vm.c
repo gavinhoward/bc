@@ -384,6 +384,20 @@ err:
 	return s;
 }
 
+#if BC_ENABLED
+BcStatus bc_vm_load(const char *name, const char *text) {
+
+	BcStatus s;
+
+	bc_lex_file(&vm->prs.l, name);
+	s = bc_parse_text(&vm->prs, text);
+
+	while (!s && vm->prs.l.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
+
+	return s;
+}
+#endif // BC_ENABLED
+
 BcStatus bc_vm_exec() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -392,12 +406,15 @@ BcStatus bc_vm_exec() {
 #if BC_ENABLED
 	if (vm->flags & BC_FLAG_L) {
 
-		bc_lex_file(&vm->prs.l, bc_lib_name);
-		s = bc_parse_text(&vm->prs, bc_lib);
-
-		while (!s && vm->prs.l.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
-
+		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (s) return s;
+
+#if BC_ENABLE_EXTRA_MATH
+		if (!BC_S && !BC_W) {
+			s = bc_vm_load(bc_lib2_name, bc_lib2);
+			if (s) return s;
+		}
+#endif // BC_ENABLE_EXTRA_MATH
 	}
 #endif // BC_ENABLED
 
