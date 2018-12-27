@@ -432,7 +432,7 @@ BcStatus bc_parse_print(BcParse *p) {
 	t = p->l.t;
 
 	if (BC_PARSE_VALID_END_TOKEN(t))
-		return bc_vm_error(BC_ERROR_PARSE_BAD_PRINT, p->l.line);
+		return bc_vm_error(BC_ERROR_PARSE_PRINT, p->l.line);
 
 	do {
 		if (t == BC_LEX_STR) s = bc_parse_str(p, BC_INST_PRINT_POP);
@@ -814,8 +814,7 @@ BcStatus bc_parse_func(BcParse *p) {
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
-	if (p->l.t != BC_LEX_NAME)
-		return bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
+	if (p->l.t != BC_LEX_NAME) return bc_vm_error(BC_ERROR_PARSE_FUNC, p->l.line);
 
 	assert(p->prog->fns.len == p->prog->fn_map.len);
 
@@ -827,7 +826,7 @@ BcStatus bc_parse_func(BcParse *p) {
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 	if (p->l.t != BC_LEX_LPAREN)
-		return bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
+		return bc_vm_error(BC_ERROR_PARSE_FUNC, p->l.line);
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
@@ -846,7 +845,7 @@ BcStatus bc_parse_func(BcParse *p) {
 #endif // BC_ENABLE_REFERENCES
 
 		if (p->l.t != BC_LEX_NAME)
-			return bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
+			return bc_vm_error(BC_ERROR_PARSE_FUNC, p->l.line);
 
 		++p->func->nparams;
 
@@ -862,7 +861,7 @@ BcStatus bc_parse_func(BcParse *p) {
 			if (s) goto err;
 
 			if (p->l.t != BC_LEX_RBRACKET) {
-				s = bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
+				s = bc_vm_error(BC_ERROR_PARSE_FUNC, p->l.line);
 				goto err;
 			}
 
@@ -886,7 +885,7 @@ BcStatus bc_parse_func(BcParse *p) {
 		if (s) goto err;
 	}
 
-	if (comma) return bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
+	if (comma) return bc_vm_error(BC_ERROR_PARSE_FUNC, p->l.line);
 
 	flags = BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FUNC_INNER | BC_PARSE_FLAG_BODY;
 	bc_parse_startBody(p, flags);
@@ -933,7 +932,7 @@ BcStatus bc_parse_auto(BcParse *p) {
 			if (s) goto err;
 
 			if (p->l.t != BC_LEX_RBRACKET) {
-				s = bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
+				s = bc_vm_error(BC_ERROR_PARSE_FUNC, p->l.line);
 				goto err;
 			}
 
@@ -952,7 +951,7 @@ BcStatus bc_parse_auto(BcParse *p) {
 		if (s) goto err;
 	}
 
-	if (comma) return bc_vm_error(BC_ERROR_PARSE_BAD_FUNC, p->l.line);
+	if (comma) return bc_vm_error(BC_ERROR_PARSE_FUNC, p->l.line);
 	if (!one) return bc_vm_error(BC_ERROR_PARSE_NO_AUTO, p->l.line);
 
 	return bc_parse_delimiter(p);

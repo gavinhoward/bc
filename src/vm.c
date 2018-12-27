@@ -301,7 +301,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	ip = bc_vec_item(&vm->prog.stack, 0);
 
 	if (vm->prs.flags.len > 1)
-		s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
+		s = bc_vm_error(BC_ERROR_PARSE_BLOCK, vm->prs.l.line);
 	else if (!BC_PARSE_CAN_EXEC(&vm->prs) || main_func->code.len < ip->idx)
 		s = bc_vm_err(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE);
 
@@ -375,7 +375,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		if (comment) s = bc_vm_error(BC_ERROR_PARSE_COMMENT, vm->prs.l.line);
 		else if (string) s = bc_vm_error(BC_ERROR_PARSE_STRING, vm->prs.l.line);
 		else if (vm->prs.flags.len > 1)
-			s = bc_vm_error(BC_ERROR_PARSE_NO_BLOCK_END, vm->prs.l.line);
+			s = bc_vm_error(BC_ERROR_PARSE_BLOCK, vm->prs.l.line);
 	}
 
 err:
