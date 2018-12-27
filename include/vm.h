@@ -94,10 +94,18 @@ typedef struct BcVm {
 
 	const char* file;
 
-	size_t line_len;
+	uint32_t line_len;
 
 	// ** Exclude start. **
-	uint32_t flags;
+	uint8_t flags;
+	uint8_t ttyin;
+
+#if BC_ENABLE_SIGNALS
+	uint8_t sig;
+	uint8_t sig_len;
+	const char *sig_msg;
+#endif // BC_ENABLE_SIGNALS
+
 	BcVec files;
 
 	// ** Busybox exclude start. **
@@ -106,18 +114,10 @@ typedef struct BcVm {
 
 	char *env_args;
 
-	long ttyin;
-
 	// ** Busybox exclude start. **
 	const char *name;
 	const char *help;
 	// ** Busybox exclude end. **
-
-#if BC_ENABLE_SIGNALS
-	unsigned long sig;
-	const char *sig_msg;
-	size_t sig_len;
-#endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_HISTORY
 	BcHistory history;
