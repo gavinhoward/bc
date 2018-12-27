@@ -128,7 +128,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {
-		e = BC_ERROR_VM_PATH_IS_DIR;
+		e = BC_ERROR_VM_PATH_DIR;
 		goto malloc_err;
 	}
 

@@ -1336,7 +1336,7 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 		if (s) goto err;
 
 		if (prs.l.t != BC_LEX_EOF) {
-			s = bc_vm_err(BC_ERROR_PARSE_BAD_EXP);
+			s = bc_vm_err(BC_ERROR_PARSE_EXPR);
 			goto err;
 		}
 

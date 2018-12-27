@@ -175,6 +175,8 @@ void bc_lex_whitespace(BcLex *l);
 BcStatus bc_lex_number(BcLex *l, char start);
 BcStatus bc_lex_name(BcLex *l);
 
+BcStatus bc_lex_invalidChar(BcLex *l, char c);
+
 // ** Busybox exclude end. **
 // ** Exclude end. **
 

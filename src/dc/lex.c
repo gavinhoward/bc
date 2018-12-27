@@ -127,7 +127,7 @@ BcStatus dc_lex_token(BcLex *l) {
 			if (c2 == '=') l->t = BC_LEX_OP_REL_NE;
 			else if (c2 == '<') l->t = BC_LEX_OP_REL_LE;
 			else if (c2 == '>') l->t = BC_LEX_OP_REL_GE;
-			else return bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
+			else return bc_lex_invalidChar(l, c);
 
 			++l->i;
 			break;
@@ -142,7 +142,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '.':
 		{
 			if (isdigit(l->buf[l->i])) s = bc_lex_number(l, c);
-			else s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
+			else s = bc_lex_invalidChar(l, c);
 			break;
 		}
 
@@ -183,8 +183,7 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		default:
 		{
-			l->t = BC_LEX_INVALID;
-			s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
+			s = bc_lex_invalidChar(l, c);
 			break;
 		}
 	}

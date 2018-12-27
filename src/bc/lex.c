@@ -173,10 +173,7 @@ BcStatus bc_lex_token(BcLex *l) {
 				++l->i;
 				l->t = BC_LEX_OP_BOOL_AND;
 			}
-			else {
-				l->t = BC_LEX_INVALID;
-				s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
-			}
+			else s = bc_lex_invalidChar(l, c);
 
 			break;
 		}
@@ -298,7 +295,7 @@ BcStatus bc_lex_token(BcLex *l) {
 				l->t = BC_LEX_WHITESPACE;
 				++l->i;
 			}
-			else s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
+			else s = bc_lex_invalidChar(l, c);
 			break;
 		}
 
@@ -358,18 +355,14 @@ BcStatus bc_lex_token(BcLex *l) {
 				++l->i;
 				l->t = BC_LEX_OP_BOOL_OR;
 			}
-			else {
-				l->t = BC_LEX_INVALID;
-				s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
-			}
+			else s = bc_lex_invalidChar(l, c);
 
 			break;
 		}
 
 		default:
 		{
-			l->t = BC_LEX_INVALID;
-			s = bc_vm_error(BC_ERROR_PARSE_BAD_CHAR, l->line);
+			s = bc_lex_invalidChar(l, c);
 			break;
 		}
 	}
