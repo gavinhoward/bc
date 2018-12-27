@@ -1679,6 +1679,11 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_MODULUS:
 			case BC_INST_PLUS:
 			case BC_INST_MINUS:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_INST_PLACES:
+			case BC_INST_LSHIFT:
+			case BC_INST_RSHIFT:
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				s = bc_program_op(p, inst);
 				break;
@@ -1709,6 +1714,11 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_ASSIGN_MODULUS:
 			case BC_INST_ASSIGN_PLUS:
 			case BC_INST_ASSIGN_MINUS:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_INST_ASSIGN_PLACES:
+			case BC_INST_ASSIGN_LSHIFT:
+			case BC_INST_ASSIGN_RSHIFT:
+#endif // BC_ENABLE_EXTRA_MATH
 #endif // BC_ENABLED
 			case BC_INST_ASSIGN:
 			{

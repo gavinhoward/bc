@@ -552,31 +552,44 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+#if BC_ENABLE_EXTRA_MATH
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
+	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, true, false),
+	BC_PARSE_EXPR_ENTRY(false, true, false, 0, 0, 0, 0, 0),
+#else // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(false, false, true, false, 0, 0, 0, 0)
+#endif // BC_ENABLE_EXTRA_MATH
 };
 
 // This is an array of data for operators that correspond to token types.
 const uchar bc_parse_ops[] = {
 	BC_PARSE_OP(0, false), BC_PARSE_OP(0, false),
 	BC_PARSE_OP(1, false),
-#if BC_ENABLE_EXTRA_MATH
-	BC_PARSE_OP(2, false),
-	BC_PARSE_OP(3, false),
-#endif // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_OP(4, false),
 	BC_PARSE_OP(5, true), BC_PARSE_OP(5, true), BC_PARSE_OP(5, true),
 	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
-	BC_PARSE_OP(8, true), BC_PARSE_OP(8, true), BC_PARSE_OP(8, true),
-	BC_PARSE_OP(8, true), BC_PARSE_OP(8, true), BC_PARSE_OP(8, true),
+#if BC_ENABLE_EXTRA_MATH
+	BC_PARSE_OP(2, false),
+	BC_PARSE_OP(3, false),
+	BC_PARSE_OP(7, true), BC_PARSE_OP(7, true),
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
+	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
 	BC_PARSE_OP(1, false),
-	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
-	BC_PARSE_OP(7, false), BC_PARSE_OP(7, false), BC_PARSE_OP(7, false),
-	BC_PARSE_OP(7, false), BC_PARSE_OP(7, false), BC_PARSE_OP(7, false),
-	BC_PARSE_OP(7, false),
+	BC_PARSE_OP(10, true), BC_PARSE_OP(10, true),
+	BC_PARSE_OP(8, false), BC_PARSE_OP(8, false), BC_PARSE_OP(8, false),
+	BC_PARSE_OP(8, false), BC_PARSE_OP(8, false), BC_PARSE_OP(8, false),
+#if BC_ENABLE_EXTRA_MATH
+	BC_PARSE_OP(8, false), BC_PARSE_OP(8, false), BC_PARSE_OP(8, false),
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_PARSE_OP(8, false),
 };
 
 // These identify what tokens can come after expressions in certain cases.
@@ -673,6 +686,9 @@ const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
+#if BC_LEX_OP_ASSIGN_RSHIFT
+	bc_num_places, bc_num_lshift, bc_num_rshift,
+#endif // BC_LEX_OP_ASSIGN_RSHIFT
 };
 
 // ** Exclude start. **

@@ -1178,6 +1178,20 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	return bc_num_binary(a, b, c, scale, bc_num_p, a->len * b->len + 1);
 }
 
+#if BC_ENABLE_EXTRA_MATH
+BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+	return bc_num_binary(a, b, c, scale, NULL, a->len);
+}
+
+BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+	return bc_num_binary(a, b, c, scale, NULL, a->len);
+}
+
+BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+	return bc_num_binary(a, b, c, scale, NULL, a->len);
+}
+#endif // BC_ENABLE_EXTRA_MATH
+
 BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s;

@@ -81,6 +81,11 @@ BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+#if BC_ENABLE_EXTRA_MATH
+BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+#endif // BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale);
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 

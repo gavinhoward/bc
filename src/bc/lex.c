@@ -176,7 +176,19 @@ BcStatus bc_lex_token(BcLex *l) {
 
 			break;
 		}
+#if BC_ENABLE_EXTRA_MATH
+		case '$':
+		{
+			l->t = BC_LEX_OP_TRUNC;
+			break;
+		}
 
+		case '@':
+		{
+			bc_lex_assign(l, BC_LEX_OP_ASSIGN_PLACES, BC_LEX_OP_PLACES);
+			break;
+		}
+#endif // BC_ENABLE_EXTRA_MATH
 		case '(':
 		case ')':
 		{
@@ -265,6 +277,15 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '<':
 		{
+#if BC_ENABLE_EXTRA_MATH
+			c2 = l->buf[l->i];
+
+			if (c2 == '<') {
+				l->i += 1;
+				bc_lex_assign(l, BC_LEX_OP_ASSIGN_LSHIFT, BC_LEX_OP_LSHIFT);
+				break;
+			}
+#endif // BC_ENABLE_EXTRA_MATH
 			bc_lex_assign(l, BC_LEX_OP_REL_LE, BC_LEX_OP_REL_LT);
 			break;
 		}
@@ -277,6 +298,15 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '>':
 		{
+#if BC_ENABLE_EXTRA_MATH
+			c2 = l->buf[l->i];
+
+			if (c2 == '>') {
+				l->i += 1;
+				bc_lex_assign(l, BC_LEX_OP_ASSIGN_RSHIFT, BC_LEX_OP_RSHIFT);
+				break;
+			}
+#endif // BC_ENABLE_EXTRA_MATH
 			bc_lex_assign(l, BC_LEX_OP_REL_GE, BC_LEX_OP_REL_GT);
 			break;
 		}
