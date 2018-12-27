@@ -44,24 +44,24 @@ out2="$testdir/../.log_test.txt"
 base=$(basename "$timeconst")
 
 if [ ! -f "$timeconst" ]; then
-	echo "Warning: $timeconst does not exist"
-	echo "Skipping..."
+	printf 'Warning: %s does not exist\n' "$timeconst"
+	printf 'Skipping...\n'
 	exit 0
 fi
 
-echo "Running $base..."
+printf 'Running %s...\n' "$base"
 
-for i in $(seq 0 10000); do
+for i in $(seq 0 1000); do
 
-	(echo "$i" | bc -q "$timeconst") > "$out1"
-	(echo "$i" | "$bc" "$@" -q "$timeconst") > "$out2"
+	printf '%s\n' "$i" | bc -q "$timeconst" > "$out1"
+	printf '%s\n' "$i" | "$bc" "$@" -q "$timeconst" > "$out2"
 
 	diff "$out1" "$out2"
 
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
-		echo "Failed on input: $i"
+		printf 'Failed on input: %s\n' "$i"
 		exit "$error"
 	fi
 

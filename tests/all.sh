@@ -36,7 +36,7 @@ else
 fi
 
 stars="***********************************************************************"
-printf '\n%s\n' "$stars"
+printf '%s\n' "$stars"
 
 if [ "$d" = "bc" ]; then
 
@@ -159,4 +159,4 @@ if [ "$err" -eq 0 ]; then
 	exit 1
 fi
 
-printf '\n%s\n\n' "$stars"
+printf '\n%s\n' "$stars"

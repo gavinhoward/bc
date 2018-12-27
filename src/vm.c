@@ -255,8 +255,9 @@ void bc_vm_garbageCollect() {
 		bc_vec_npop(&f->consts, f->consts.len);
 		bc_vec_npop(&f->code, f->code.len);
 		ip->idx = 0;
-
+#if DC_ENABLED
 		if (!BC_IS_BC) bc_vec_npop(fns, fns->len - BC_PROG_REQ_FUNCS);
+#endif // DC_ENABLED
 	}
 }
 
