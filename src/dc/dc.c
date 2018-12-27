@@ -30,6 +30,7 @@
 
 int dc_main(int argc, char **argv) {
 
+	vm->read_ret = BC_INST_POP_EXEC;
 	vm->help = dc_help;
 #if BC_ENABLE_SIGNALS
 	vm->sig_msg = dc_sig_msg;

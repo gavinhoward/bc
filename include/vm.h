@@ -94,11 +94,13 @@ typedef struct BcVm {
 
 	const char* file;
 
-	uint32_t line_len;
+	uint16_t line_len;
 
 	// ** Exclude start. **
 	uint8_t flags;
 	uint8_t ttyin;
+
+	uchar read_ret;
 
 #if BC_ENABLE_SIGNALS
 	uint8_t sig;
