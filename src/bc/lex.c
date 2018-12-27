@@ -38,16 +38,15 @@ BcStatus bc_lex_identifier(BcLex *l) {
 
 	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
 
-		unsigned long len = (unsigned long) BC_LEX_KW_LEN(bc_lex_kws[i]);
+		const BcLexKeyword *kw = bc_lex_kws + i;
+		size_t len = BC_LEX_KW_LEN(kw);
 
-		if (strncmp(buf, bc_lex_kws[i].name, len) == 0 &&
-		    !isalnum(buf[len]) && buf[len] != '_')
+		if (!strncmp(buf, kw->name, len) && !isalnum(buf[len]) && buf[len] != '_')
 		{
 			l->t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
-			if (!BC_LEX_KW_POSIX(bc_lex_kws[i])) {
-				s = bc_vm_posixError(BC_ERROR_POSIX_BAD_KW, l->line,
-				                     bc_lex_kws[i].name);
+			if (!BC_LEX_KW_POSIX(kw)) {
+				s = bc_vm_posixError(BC_ERROR_POSIX_KW, l->line, kw->name);
 				if (s) return s;
 			}
 
