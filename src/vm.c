@@ -218,7 +218,7 @@ void bc_vm_fflush(FILE *restrict f) {
 	if (fflush(f) == EOF) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 }
 
-void bc_vm_garbageCollect() {
+void bc_vm_clean() {
 
 	BcProgram *prog = &vm->prog;
 	BcVec *fns = &prog->fns;
@@ -276,7 +276,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
 		s = bc_program_exec(&vm->prog);
 		if (BC_I) bc_vm_fflush(stdout);
-		if (!s) bc_vm_garbageCollect();
+		if (!s) bc_vm_clean();
 	}
 
 err:
