@@ -531,6 +531,7 @@ const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("limits", 6, false),
 	BC_LEX_KW_ENTRY("return", 6, true),
 	BC_LEX_KW_ENTRY("while", 5, true),
+	BC_LEX_KW_ENTRY("halt", 4, false),
 	BC_LEX_KW_ENTRY("last", 4, false),
 	BC_LEX_KW_ENTRY("ibase", 5, true),
 	BC_LEX_KW_ENTRY("obase", 5, true),
@@ -541,7 +542,6 @@ const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("quit", 4, true),
 	BC_LEX_KW_ENTRY("read", 4, false),
 	BC_LEX_KW_ENTRY("else", 4, false),
-	BC_LEX_KW_ENTRY("halt", 4, false),
 };
 
 const char* const bc_parse_const1 = "1";
@@ -555,8 +555,8 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
-	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, true, false),
-	BC_PARSE_EXPR_ENTRY(false, true, false, false, 0, 0, 0, 0)
+	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
+	BC_PARSE_EXPR_ENTRY(false, false, true, false, 0, 0, 0, 0)
 };
 
 // This is an array of data for operators that correspond to token types.
@@ -654,10 +654,10 @@ const uint8_t dc_parse_insts[] = {
 #if BC_ENABLED
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
-	BC_INST_INVALID, BC_INST_INVALID,
+	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 #endif // BC_ENABLED
 	BC_INST_IBASE, BC_INST_OBASE, BC_INST_SCALE, BC_INST_LENGTH, BC_INST_SQRT,
-	BC_INST_PRINT, BC_INST_QUIT, BC_INST_READ, BC_INST_INVALID, BC_INST_INVALID,
+	BC_INST_PRINT, BC_INST_QUIT, BC_INST_READ, BC_INST_INVALID,
 	BC_INST_REL_EQ, BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_INVALID,
 	BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP, BC_INST_POP,
