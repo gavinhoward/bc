@@ -119,8 +119,6 @@ make_bin:
 	$(MKDIR) -p $(BIN)
 
 help:
-	@printf 'all targets use config.mak, if there is one\n'
-	@printf '\n'
 	@printf 'available targets:\n'
 	@printf '\n'
 	@printf '    all (default)   builds %%EXECUTABLES%%\n'
