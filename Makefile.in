@@ -186,6 +186,7 @@ libcname:
 	@printf "$(BC_LIB_C)"
 
 clean:
+	@printf 'Cleaning files...\n'
 	@$(RM) -f $(OBJ)
 	@$(RM) -f $(BC_OBJ)
 	@$(RM) -f $(DC_OBJ)
@@ -210,6 +211,7 @@ clean:
 	@$(RM) -f $(DC_HELP_O)
 
 clean_tests: clean
+	@printf 'Cleaning test files...\n'
 	@$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
 	@$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
 	@$(RM) -f tests/bc/bessel.txt tests/bc/bessel_results.txt
