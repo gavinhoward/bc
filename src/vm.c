@@ -346,15 +346,18 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 				else if (c == '[') string += 1;
 			}
 
-			c2 = str[i + 1];
+			if (!string && notend) {
 
-			if (!string && c == '/' && notend && !comment && c2 == '*') {
-				comment = true;
-				++i;
-			}
-			else if (!string && c == '*' && notend && comment && c2 == '/') {
-				comment = false;
-				++i;
+				c2 = str[i + 1];
+
+				if (c == '/' && !comment && c2 == '*') {
+					comment = true;
+					++i;
+				}
+				else if (c == '*' && comment && c2 == '/') {
+					comment = false;
+					++i;
+				}
 			}
 		}
 
