@@ -54,6 +54,10 @@ BC_LIB = $(GEN_DIR)/lib.bc
 BC_LIB_C = $(GEN_DIR)/lib.c
 BC_LIB_O = $(GEN_DIR)/lib.o
 
+BC_LIB2 = $(GEN_DIR)/lib2.bc
+BC_LIB2_C = $(GEN_DIR)/lib2.c
+BC_LIB2_O = $(GEN_DIR)/lib2.o
+
 BC_HELP = $(GEN_DIR)/bc_help.txt
 BC_HELP_C = $(GEN_DIR)/bc_help.c
 BC_HELP_O = $(GEN_DIR)/bc_help.o
@@ -74,6 +78,8 @@ DESTDIR = %%DESTDIR%%
 BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
 BC_ENABLE_REFERENCES = %%REFERENCES%%
+BC_ENABLE_EXTRA_MATH_NAME = BC_ENABLE_EXTRA_MATH
+BC_ENABLE_EXTRA_MATH = %%EXTRA_MATH%%
 
 RM = rm
 MKDIR = mkdir
@@ -98,7 +104,7 @@ LDFLAGS = %%LDFLAGS%%
 CC = %%CC%%
 HOSTCC = %%HOSTCC%%
 
-all: make_bin $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_OBJ) $(DC_OBJ) $(HISTORY_OBJ) $(OBJ)
+all: make_bin $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_LIB2_O) $(BC_OBJ) $(DC_OBJ) $(HISTORY_OBJ) $(OBJ)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(HISTORY_OBJ) \
 	$(BC_LIB_O) $(BC_HELP_O) $(DC_HELP_O) $(LDFLAGS) -o $(%%MAIN_EXEC%%)
 	%%LINK%%
@@ -108,6 +114,10 @@ $(GEN_EXEC):
 
 $(BC_LIB_C): $(GEN_EXEC) $(BC_LIB)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED_NAME) 1
+
+$(BC_LIB2_C): $(GEN_EXEC) $(BC_LIB2)
+	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB2) $(BC_LIB2_C) bc_lib2 bc_lib2_name \
+	"$(BC_ENABLED_NAME) && $(BC_ENABLE_EXTRA_MATH_NAME)" 1
 
 $(BC_HELP_C): $(GEN_EXEC) $(BC_HELP)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help "" $(BC_ENABLED_NAME)
@@ -204,12 +214,10 @@ clean:
 	$(RM) -f *.gcda *.gcno
 	$(RM) -f *.profraw
 	$(RM) -f $(GEN_EXEC)
-	$(RM) -f $(BC_LIB_C)
-	$(RM) -f $(BC_LIB_O)
-	$(RM) -f $(BC_HELP_C)
-	$(RM) -f $(BC_HELP_O)
-	$(RM) -f $(DC_HELP_C)
-	$(RM) -f $(DC_HELP_O)
+	$(RM) -f $(BC_LIB_C) $(BC_LIB2_C)
+	$(RM) -f $(BC_LIB_O) $(BC_LIB2_O)
+	$(RM) -f $(BC_HELP_C) $(DC_HELP_C)
+	$(RM) -f $(BC_HELP_O) $(DC_HELP_O)
 
 clean_tests: clean
 	$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt

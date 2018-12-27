@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-bD|-dB|-c] [-ghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-EghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -40,6 +40,9 @@ usage() {
 	printf '        Build dc only. It is an error if "-b" is specified too.\n'
 	printf '    -D\n'
 	printf '        Disable dc. It is an error if "-d" or "-B" are specified too.\n'
+	printf '    -E\n'
+	printf '        Disable extra math. This includes: "$" operator (truncate to integer),\n'
+	printf '        "@" operator (set number of decimal places), and r(x, p) (rounding function).\n'
 	printf '    -g\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
@@ -200,9 +203,10 @@ debug=0
 signals=1
 hist=1
 refs=1
+extra_math=1
 optimization=""
 
-while getopts "bBcdDghHk:O:RS" opt; do
+while getopts "bBcdDEghHk:O:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -210,6 +214,7 @@ while getopts "bBcdDghHk:O:RS" opt; do
 		c) coverage=1 ;;
 		d) dc_only=1 ;;
 		D) bc_only=1 ;;
+		E) extra_math=0 ;;
 		g) debug=1 ;;
 		h) usage ;;
 		H) hist=0 ;;
@@ -390,6 +395,12 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
+if [ "$extra_math" -eq 1 ]; then
+	BC_LIB2_O="\$(GEN_DIR)/lib2.o"
+else
+	BC_LIB2_O=""
+fi
+
 contents=$(cat "$scriptdir/Makefile.in")
 
 needle="WARNING"
@@ -409,6 +420,8 @@ contents=$(replace "$contents" "LINK" "$link")
 contents=$(replace "$contents" "SIGNALS" "$signals")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "REFERENCES" "$refs")
+contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
+contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "PREFIX" "$PREFIX")
