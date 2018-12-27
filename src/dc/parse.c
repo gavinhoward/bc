@@ -88,7 +88,7 @@ BcStatus dc_parse_cond(BcParse *p, uchar inst) {
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
-	if (p->l.t == BC_LEX_ELSE) {
+	if (p->l.t == BC_LEX_KEY_ELSE) {
 		s = dc_parse_register(p);
 		if (s) return s;
 		s = bc_lex_next(&p->l);
@@ -175,8 +175,8 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		}
 
 		case BC_LEX_STORE_IBASE:
-		case BC_LEX_STORE_SCALE:
 		case BC_LEX_STORE_OBASE:
+		case BC_LEX_STORE_SCALE:
 		{
 			inst = t - BC_LEX_STORE_IBASE + BC_INST_IBASE;
 			s = dc_parse_mem(p, inst, false, true);
@@ -202,7 +202,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	BcInst inst;
 	BcLexType t;
 
-	for (t = p->l.t; !BC_SIGINT && !s && t != BC_LEX_EOF; t = p->l.t) {
+	while (!BC_SIGINT && !s && (t = p->l.t) != BC_LEX_EOF) {
 
 		inst = dc_parse_insts[t];
 

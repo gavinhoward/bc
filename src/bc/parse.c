@@ -258,7 +258,7 @@ BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
 	if (p->l.t != BC_LEX_RPAREN)
 		return bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
 
-	*prev = (type == BC_LEX_KEY_LENGTH) ? BC_INST_LENGTH : BC_INST_SQRT;
+	*prev = type - BC_LEX_KEY_LENGTH + BC_INST_LENGTH;
 	bc_parse_push(p, *prev);
 
 	return bc_lex_next(&p->l);
@@ -331,11 +331,11 @@ BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 				break;
 			}
 
-			case BC_LEX_KEY_IBASE:
 			case BC_LEX_KEY_LAST:
+			case BC_LEX_KEY_IBASE:
 			case BC_LEX_KEY_OBASE:
 			{
-				bc_parse_push(p, type - BC_LEX_KEY_IBASE + BC_INST_IBASE);
+				bc_parse_push(p, type - BC_LEX_KEY_LAST + BC_INST_LAST);
 				s = bc_lex_next(&p->l);
 				break;
 			}
@@ -1337,7 +1337,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_PARSE_LEAF(prev, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
-				prev = (uchar) (t - BC_LEX_KEY_IBASE + BC_INST_IBASE);
+				prev = (uchar) (t - BC_LEX_KEY_LAST + BC_INST_LAST);
 				bc_parse_push(p, (uchar) prev);
 
 				pexpr = get_token = true;

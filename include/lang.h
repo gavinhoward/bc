@@ -74,15 +74,15 @@ typedef enum BcInst {
 	BC_INST_ARRAY,
 
 	BC_INST_SCALE_FUNC,
-	BC_INST_IBASE,
-	BC_INST_SCALE,
 #if BC_ENABLED
 	BC_INST_LAST,
 #endif // BC_ENABLED
-	BC_INST_LENGTH,
-	BC_INST_READ,
+	BC_INST_IBASE,
 	BC_INST_OBASE,
+	BC_INST_SCALE,
+	BC_INST_LENGTH,
 	BC_INST_SQRT,
+	BC_INST_READ,
 
 	BC_INST_PRINT,
 	BC_INST_PRINT_POP,
@@ -127,7 +127,7 @@ typedef enum BcInst {
 	BC_INST_QUIT,
 	BC_INST_NQUIT,
 
-	BC_INST_INVALID = -1,
+	BC_INST_INVALID = UCHAR_MAX,
 #endif // DC_ENABLED
 
 } BcInst;
@@ -159,22 +159,16 @@ typedef enum BcResultType {
 
 	BC_RESULT_STR,
 
-	BC_RESULT_IBASE,
-	BC_RESULT_SCALE,
-#if BC_ENABLED
-	BC_RESULT_LAST,
-#endif // BC_ENABLED
-
-	// These are between to calculate ibase, scale,
-	// obase, and last from instructions.
 	BC_RESULT_CONSTANT,
 	BC_RESULT_TEMP,
 
-	BC_RESULT_OBASE,
-
 #if BC_ENABLED
 	BC_RESULT_ONE,
+	BC_RESULT_LAST,
 #endif // BC_ENABLED
+	BC_RESULT_IBASE,
+	BC_RESULT_OBASE,
+	BC_RESULT_SCALE,
 
 } BcResultType;
 
