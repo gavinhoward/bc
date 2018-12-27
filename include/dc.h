@@ -47,11 +47,11 @@ BcStatus dc_lex_token(BcLex *l);
 extern const char dc_sig_msg[];
 #endif // BC_ENABLE_SIGNALS
 
-extern const BcLexType dc_lex_regs[];
+extern const uint8_t dc_lex_regs[];
 extern const size_t dc_lex_regs_len;
 
-extern const BcLexType dc_lex_tokens[];
-extern const BcInst dc_parse_insts[];
+extern const uint8_t dc_lex_tokens[];
+extern const uint8_t dc_parse_insts[];
 
 void dc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus dc_parse_expr(BcParse *p, uint8_t flags);
