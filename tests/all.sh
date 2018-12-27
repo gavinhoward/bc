@@ -39,12 +39,7 @@ stars="***********************************************************************"
 printf '%s\n' "$stars"
 
 if [ "$d" = "bc" ]; then
-
 	halt="quit"
-
-	printf '\nRunning %s limits tests...\n' "$d"
-	printf 'limits\n' | "$exe" "$@" > /dev/null 2>&1
-
 else
 	halt="q"
 fi
@@ -80,7 +75,7 @@ if [ "$base" != "bc" -a "$base" != "dc" ]; then
 	exit 0
 fi
 
-printf '\nRunning arg tests...\n'
+printf 'Running arg tests...\n'
 
 f="$testdir/$d/add.txt"
 exprs=$(cat "$f")
@@ -124,7 +119,7 @@ if [ "$err" -eq 0 ]; then
 	exit 1
 fi
 
-printf '\nRunning directory test...\n'
+printf 'Running directory test...\n'
 
 "$exe" "$@" "$testdir" > /dev/null 2>&1
 err="$?"
@@ -135,7 +130,7 @@ if [ "$err" -eq 0 ]; then
 	exit 1
 fi
 
-printf '\nRunning binary file test...\n'
+printf 'Running binary file test...\n'
 
 bin="/bin/sh"
 
@@ -148,7 +143,7 @@ if [ "$err" -eq 0 ]; then
 	exit 1
 fi
 
-printf '\nRunning binary stdin test...\n'
+printf 'Running binary stdin test...\n'
 
 cat "$bin" | "$exe" "$@" > /dev/null 2>&1
 err="$?"
@@ -157,6 +152,19 @@ if [ "$err" -eq 0 ]; then
 	printf '%s did not return an error (%d) on binary stdin test\n' "$d" "$err"
 	printf 'exiting...\n'
 	exit 1
+fi
+
+if [ "$d" = "bc" ]; then
+
+	printf 'Running limits tests...\n'
+	printf 'limits\n' | "$exe" "$@" > "$out2" /dev/null 2>&1
+
+	if [ ! -s "$out2" ]; then
+		printf '%s did not produce output on the limits test\n' "$d"
+		printf 'exiting...\n'
+		exit 1
+	fi
+
 fi
 
 printf '\n%s\n' "$stars"
