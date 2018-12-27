@@ -1221,7 +1221,10 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 #if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_OP_TRUNC:
 			{
-
+				// I can just add the instruction because
+				// negative will already be taken care of.
+				bc_parse_push(p, BC_INST_TRUNC);
+				rprn = get_token = bin_last = false;
 				break;
 			}
 #endif // BC_ENABLE_EXTRA_MATH
@@ -1241,6 +1244,11 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_ASSIGN_MODULUS:
 			case BC_LEX_OP_ASSIGN_PLUS:
 			case BC_LEX_OP_ASSIGN_MINUS:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_OP_ASSIGN_PLACES:
+			case BC_LEX_OP_ASSIGN_LSHIFT:
+			case BC_LEX_OP_ASSIGN_RSHIFT:
+#endif // BC_ENABLE_EXTRA_MATH
 			case BC_LEX_OP_ASSIGN:
 			{
 				if (prev != BC_INST_VAR && prev != BC_INST_ARRAY_ELEM &&
@@ -1257,6 +1265,11 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_DIVIDE:
 			case BC_LEX_OP_MODULUS:
 			case BC_LEX_OP_PLUS:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_OP_PLACES:
+			case BC_LEX_OP_LSHIFT:
+			case BC_LEX_OP_RSHIFT:
+#endif // BC_ENABLE_EXTRA_MATH
 			case BC_LEX_OP_REL_EQ:
 			case BC_LEX_OP_REL_LE:
 			case BC_LEX_OP_REL_GE:
