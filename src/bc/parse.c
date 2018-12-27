@@ -84,6 +84,7 @@ BcStatus bc_parse_rightParen(BcParse *p, size_t ops_bgn, size_t *nexs) {
 	if (p->ops.len <= ops_bgn)
 		return bc_vm_error(BC_ERROR_PARSE_BAD_EXP, p->l.line);
 
+	// TODO: Style fix?
 	top = BC_PARSE_TOP_OP(p);
 
 	while (top != BC_LEX_LPAREN) {
