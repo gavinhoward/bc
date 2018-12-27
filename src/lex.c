@@ -29,6 +29,11 @@
 #include <lex.h>
 #include <vm.h>
 
+BcStatus bc_lex_invalidChar(BcLex *l, char c) {
+	l->t = BC_LEX_INVALID;
+	return bc_vm_error(BC_ERROR_PARSE_CHAR, l->line, c);
+}
+
 void bc_lex_lineComment(BcLex *l) {
 	l->t = BC_LEX_WHITESPACE;
 	while (l->i < l->len && l->buf[l->i++] != '\n');

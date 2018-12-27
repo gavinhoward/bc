@@ -114,7 +114,7 @@ const char* const bc_err_msgs[] = {
 	"Bad command-line option: '%c' (\"%s\")",
 	// ** Exclude end. **
 
-	"bad character",
+	"bad character (%c)",
 	"string end could not be found",
 	"comment end could not be found",
 	"bad token",

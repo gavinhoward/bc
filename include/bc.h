@@ -47,8 +47,8 @@ typedef struct BcLexKeyword {
 
 #define BC_LEX_CHAR_MSB(bit) ((bit) << (CHAR_BIT - 1))
 
-#define BC_LEX_KW_POSIX(kw) ((kw).data & (BC_LEX_CHAR_MSB(1)))
-#define BC_LEX_KW_LEN(kw) ((kw).data & ~(BC_LEX_CHAR_MSB(1)))
+#define BC_LEX_KW_POSIX(kw) ((kw)->data & (BC_LEX_CHAR_MSB(1)))
+#define BC_LEX_KW_LEN(kw) ((size_t) ((kw)->data & ~(BC_LEX_CHAR_MSB(1))))
 
 #define BC_LEX_KW_ENTRY(a, b, c) \
 	{ .data = ((b) & ~(BC_LEX_CHAR_MSB(1))) | BC_LEX_CHAR_MSB(c),.name = a }

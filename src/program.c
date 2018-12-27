@@ -341,7 +341,7 @@ BcStatus bc_program_read(BcProgram *p) {
 
 	s = bc_read_line(&buf, "read> ");
 	if (s) {
-		if (s == BC_STATUS_EOF) s = bc_vm_err(BC_ERROR_EXEC_BAD_READ_EXPR);
+		if (s == BC_STATUS_EOF) s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 		goto io_err;
 	}
 
@@ -353,7 +353,7 @@ BcStatus bc_program_read(BcProgram *p) {
 	if (s) goto exec_err;
 
 	if (parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF) {
-		s = bc_vm_err(BC_ERROR_EXEC_BAD_READ_EXPR);
+		s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 		goto exec_err;
 	}
 
@@ -761,7 +761,7 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 		s = bc_num_ulong(l, &val);
 		if (s) return s;
-		s = left->t - BC_RESULT_IBASE + BC_ERROR_EXEC_BAD_IBASE;
+		s = left->t - BC_RESULT_IBASE + BC_ERROR_EXEC_IBASE;
 
 		if (sc) {
 			max = BC_MAX_SCALE;
@@ -917,7 +917,7 @@ BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
 
 	if (f->code.len == 0) return bc_vm_err(BC_ERROR_EXEC_UNDEFINED_FUNC);
 	if (nparams != f->nparams)
-		return bc_vm_error(BC_ERROR_EXEC_BAD_PARAMS, 0, f->nparams, nparams);
+		return bc_vm_error(BC_ERROR_EXEC_PARAMS, 0, f->nparams, nparams);
 	ip.len = p->results.len - nparams;
 
 	assert(BC_PROG_STACK(&p->results, nparams));
@@ -1336,7 +1336,7 @@ BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
 		if (s) goto err;
 
 		if (prs.l.t != BC_LEX_EOF) {
-			s = bc_vm_err(BC_ERROR_PARSE_BAD_EXP);
+			s = bc_vm_err(BC_ERROR_PARSE_EXPR);
 			goto err;
 		}
 
