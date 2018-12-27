@@ -16,6 +16,29 @@
 
 # WARNING: Test files cannot have empty lines!
 
+die() {
+
+	local d="$1"
+	shift
+
+	local msg="$1"
+	shift
+
+	local name="$1"
+	shift
+
+	local err="$1"
+	shift
+
+	printf '\n'
+	printf '%s %s on test:\n' "$d" "$msg"
+	printf '\n'
+	printf '    %s\n' "$name"
+	printf '\n'
+	printf 'exiting...\n'
+	exit "$err"
+}
+
 checkcrash() {
 
 	local error="$1"
@@ -25,13 +48,7 @@ checkcrash() {
 	shift
 
 	if [ "$error" -gt 127 ]; then
-		printf '\n'
-		printf '%s crashed on test:\n' "$d"
-		printf '\n'
-		printf '    %s\n' "$name"
-		printf '\n'
-		printf 'exiting...\n'
-		exit "$error"
+		die "$d" "crashed" "$name" "$error"
 	fi
 }
 
@@ -52,23 +69,11 @@ checktest()
 	checkcrash "$error" "$name"
 
 	if [ "$error" -eq 0 ]; then
-		printf '\n'
-		printf '%s returned no error on test:\n' "$d"
-		printf '\n'
-		printf '    %s\n' "$name"
-		printf '\n'
-		printf 'exiting...\n'
-		exit 127
+		die "$d" "returned no error" "$name" 127
 	fi
 
 	if [ ! -s "$out" ]; then
-		printf '\n'
-		printf '%s produced no error message on test:\n' "$d"
-		printf '\n'
-		printf '    %s\n' "$name"
-		printf '\n'
-		printf 'exiting...\n'
-		exit "$error"
+		die "$d" "produced no error message" "$name" "$error"
 	fi
 
 	# Display the error messages if not directly running exe.
@@ -119,9 +124,7 @@ for testfile in $testdir/$d/*errors.txt; do
 		err="$?"
 
 		if [ "$err" -ne 0 ]; then
-			printf '%s returned an error (%d) on POSIX warning tests\n' "$d" "$err"
-			printf 'exiting...\n'
-			exit 1
+			die "$d" "returned an error ($err)" "POSIX warning" 1
 		fi
 
 		checktest "1" "$line" "$out" "$exebase"
