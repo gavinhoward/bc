@@ -148,35 +148,35 @@ test_all: test timeconst
 
 test: test_bc test_dc
 
-test_bc: all
+test_bc:
 	%%BC_TEST%%
 
-test_dc: all
+test_dc:
 	%%DC_TEST%%
 
-timeconst: all
+timeconst:
 	%%TIMECONST%%
 
 valgrind_all: valgrind valgrind_timeconst
 
 valgrind: valgrind_bc valgrind_dc
 
-valgrind_bc: all
+valgrind_bc:
 	%%VG_BC_TEST%%
 
-valgrind_dc: all
+valgrind_dc:
 	%%VG_DC_TEST%%
 
-valgrind_timeconst: all
+valgrind_timeconst:
 	%%TIMECONST_VG%%
 
-karatsuba: all
+karatsuba:
 	%%KARATSUBA%%
 
-karatsuba_test: all
+karatsuba_test:
 	%%KARATSUBA_TEST%%
 
-coverage: all %%COVERAGE_PREREQS%%
+coverage:%%COVERAGE_PREREQS%%
 	%%COVERAGE%%
 
 version:
