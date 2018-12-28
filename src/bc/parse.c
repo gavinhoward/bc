@@ -191,10 +191,16 @@ BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 			flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
 			s = bc_parse_expr_status(p, flags, bc_parse_next_elem);
 			if (s) goto err;
+
+			if (p->l.t != BC_LEX_RBRACKET) {
+				s = bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
+				goto err;
+			}
 		}
 
 		s = bc_lex_next(&p->l);
 		if (s) goto err;
+
 		bc_parse_push(p, *type);
 		bc_parse_pushName(p, name);
 	}
