@@ -12,7 +12,7 @@ define x(a[]) {
 	auto a
 
 	for (a = 0; a < l; ++a) {
-		a[i] = -a
+		a[a] = -a
 	}
 
 	z(a[])
