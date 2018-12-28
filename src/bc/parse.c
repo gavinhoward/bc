@@ -1164,6 +1164,9 @@ BcStatus bc_parse_stmt(BcParse *p) {
 		}
 	}
 
+	// Make sure semicolons are eaten.
+	while (!s && p->l.t == BC_LEX_SCOLON) s = bc_lex_next(&p->l);
+
 	return s;
 }
 
