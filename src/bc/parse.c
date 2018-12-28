@@ -563,7 +563,7 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			if (new_else) s = bc_parse_else(p);
 		}
 
-	} while (p->flags.len > 1 && !new_else &&
+	} while (p->flags.len > 1 && !new_else && !BC_PARSE_IF_END(p) &&
 	         !(has_brace = (BC_PARSE_BRACE(p) != 0)));
 
 	return s;
