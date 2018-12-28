@@ -196,7 +196,7 @@ libcname:
 	@printf '%s' "$(BC_LIB_C)"
 
 extra_math:
-	@printf "$(BC_ENABLE_EXTRA_MATH)"
+	@printf '%s' "$(BC_ENABLE_EXTRA_MATH)"
 
 clean:
 	@printf 'Cleaning files...\n'
