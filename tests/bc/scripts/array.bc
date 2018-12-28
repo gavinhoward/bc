@@ -8,8 +8,11 @@ define z(a[]) {
 
 define x(a[]) {
 
-	for (i = 0; i < l; ++i) {
-		a[i] = -i
+	# Test for separate vars and arrays.
+	auto a
+
+	for (a = 0; a < l; ++a) {
+		a[i] = -a
 	}
 
 	z(a[])
