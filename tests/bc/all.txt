@@ -9,6 +9,7 @@ sqrt
 trunc
 places
 shift
+lib2
 vars
 boolean
 strings
