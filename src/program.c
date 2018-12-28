@@ -519,6 +519,14 @@ void bc_program_not(BcProgram* p, BcResult *r, BcNum *n) {
 	if (!bc_num_cmp(n, &p->zero)) bc_num_one(&r->d.n);
 }
 
+#if BC_ENABLE_EXTRA_MATH
+void bc_program_trunc(BcProgram *p, BcResult *r, BcNum *n) {
+	BC_UNUSED(p);
+	bc_num_copy(&r->d.n, n);
+	bc_num_truncate(&r->d.n, n->rdx);
+}
+#endif // BC_ENABLE_EXTRA_MATH
+
 BcStatus bc_program_unary(BcProgram *p, uchar inst) {
 
 	BcStatus s;
@@ -1698,6 +1706,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_NEG:
 			case BC_INST_BOOL_NOT:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_INST_TRUNC:
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				s = bc_program_unary(p, inst);
 				break;

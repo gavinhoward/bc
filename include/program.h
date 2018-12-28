@@ -129,6 +129,9 @@ unsigned long bc_program_len(BcNum *n);
 
 void bc_program_negate(BcProgram *p, BcResult *r, BcNum *n);
 void bc_program_not(BcProgram *p, BcResult *r, BcNum *n);
+#if BC_ENABLE_EXTRA_MATH
+void bc_program_trunc(BcProgram *p, BcResult *r, BcNum *n);
+#endif // BC_ENABLE_EXTRA_MATH
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
