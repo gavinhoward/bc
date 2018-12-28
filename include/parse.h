@@ -77,12 +77,8 @@
 	 (t) == BC_LEX_KEY_WHILE || (t) == BC_LEX_EOF)
 
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
-
-#define bc_parse_number(p) \
-	(bc_parse_addId((p), BC_INST_NUM))
-
-#define bc_parse_string(p) \
-	(bc_parse_addId((p), BC_INST_STR))
+#define bc_parse_number(p)(bc_parse_addId((p), BC_INST_NUM))
+#define bc_parse_string(p)(bc_parse_addId((p), BC_INST_STR))
 
 typedef struct BcParseNext {
 	uchar len;
