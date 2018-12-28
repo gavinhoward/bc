@@ -163,6 +163,13 @@ BcStatus bc_vm_error(BcError e, size_t line, ...);
 extern const char bc_name[];
 // ** Exclude end. **
 extern const char bc_sig_msg[];
+
+extern const char bc_lib[];
+extern const char *bc_lib_name;
+#if BC_ENABLE_EXTRA_MATH
+extern const char bc_lib2[];
+extern const char *bc_lib2_name;
+#endif // BC_ENABLE_EXTRA_MATH
 #endif // BC_ENABLED
 
 // ** Exclude start. **
@@ -172,9 +179,6 @@ extern const char dc_sig_msg[];
 #endif // DC_ENABLED
 
 extern const char bc_copyright[];
-
-extern const char bc_lib[];
-extern const char *bc_lib_name;
 
 extern const char* const bc_err_fmt;
 extern const char* const bc_warn_fmt;
