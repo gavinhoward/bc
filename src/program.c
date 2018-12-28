@@ -1055,12 +1055,12 @@ BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.d.n, p->scale);
 #if BC_ENABLED
-	else if (len != 0 && opnd->t == BC_RESULT_ARRAY) {
+	else if (len && opnd->t == BC_RESULT_ARRAY) {
 		bc_num_ulong2num(&res.d.n, (unsigned long) ((BcVec*) num)->len);
 	}
 #endif // BC_ENABLED
 #if DC_ENABLED
-	else if (len != 0 && !BC_PROG_NUM(opnd, num)) {
+	else if (len && !BC_PROG_NUM(opnd, num)) {
 
 		char *str;
 		size_t idx = opnd->t == BC_RESULT_STR ? opnd->d.id.idx : num->rdx;
@@ -1070,9 +1070,8 @@ BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	}
 #endif // DC_ENABLED
 	else {
-		BcProgramBuiltIn f = len ? bc_program_len : bc_program_scale;
 		assert(opnd->t != BC_RESULT_ARRAY);
-		bc_num_ulong2num(&res.d.n, f(num));
+		bc_num_ulong2num(&res.d.n, bc_program_builtins[!len](num));
 	}
 
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
