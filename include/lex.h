@@ -168,7 +168,6 @@ typedef struct BcLex {
 	size_t i;
 	size_t line;
 	size_t len;
-	bool newline;
 
 #ifndef NDEBUG
 	BcLexType t;

@@ -112,7 +112,6 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '\0':
 		case '\n':
 		{
-			l->newline = true;
 			l->t = !c ? BC_LEX_EOF : BC_LEX_NLINE;
 			break;
 		}

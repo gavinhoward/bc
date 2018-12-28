@@ -160,7 +160,6 @@ void bc_lex_free(BcLex *l) {
 void bc_lex_file(BcLex *l, const char *file) {
 	assert(l && file);
 	l->line = 1;
-	l->newline = false;
 	vm->file = file;
 }
 
@@ -171,14 +170,13 @@ BcStatus bc_lex_next(BcLex *l) {
 	assert(l);
 
 	l->last = l->t;
+	l->line += l->last == BC_LEX_NLINE;
 
 	if (l->last == BC_LEX_EOF) return bc_vm_error(BC_ERROR_PARSE_EOF, l->line);
 
-	l->line += l->newline;
 	l->t = BC_LEX_EOF;
 
-	l->newline = (l->i == l->len);
-	if (l->newline) return BC_STATUS_SUCCESS;
+	if (l->i == l->len) return BC_STATUS_SUCCESS;
 
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.

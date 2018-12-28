@@ -204,6 +204,11 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 
 	while (!BC_SIGINT && !s && (t = p->l.t) != BC_LEX_EOF) {
 
+		if (t == BC_LEX_NLINE) {
+			s = bc_lex_next(&p->l);
+			continue;
+		}
+
 		inst = dc_parse_insts[t];
 
 		if (inst != BC_INST_INVALID) {

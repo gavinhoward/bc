@@ -109,13 +109,17 @@ BcStatus dc_lex_token(BcLex *l) {
 		}
 
 		case '\n':
+		{
+			l->t = BC_LEX_NLINE;
+			break;
+		}
+
 		case '\t':
 		case '\v':
 		case '\f':
 		case '\r':
 		case ' ':
 		{
-			l->newline = (c == '\n');
 			bc_lex_whitespace(l);
 			break;
 		}
