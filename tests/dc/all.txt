@@ -9,6 +9,9 @@ power
 sqrt
 modexp
 boolean
+trunc
+places
+shift
 vars
 misc
 strings
