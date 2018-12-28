@@ -7,6 +7,8 @@ modulus
 power
 sqrt
 trunc
+places
+shift
 vars
 boolean
 strings
