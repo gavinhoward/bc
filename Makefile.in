@@ -180,10 +180,10 @@ coverage:%%COVERAGE_PREREQS%%
 	%%COVERAGE%%
 
 version:
-	@printf "$(VERSION)"
+	@printf '%s' "$(VERSION)"
 
 libcname:
-	@printf "$(BC_LIB_C)"
+	@printf '%s' "$(BC_LIB_C)"
 
 clean:
 	@printf 'Cleaning files...\n'
