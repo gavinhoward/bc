@@ -21,16 +21,22 @@
  */
 
 define r(x,p){
-	auto i,t
+	auto i,t,s,n
 	if(x==0)return(x)
 	if(scale(p))p=p$
 	if(p<0)p=-p
+	n=(x<0)
+	if(n)x=-x
 	t=x@p
-	if(p>=scale(x))return(t)
+	if(p>=scale(x)){
+		if(n)t=-t
+		return(t)
+	}
 	i=ibase
 	ibase=A
 	if((x-t)>=(.5>>p))t+=1>>p
 	ibase=i
+	if(n)t=-t
 	return (t)
 }
 
