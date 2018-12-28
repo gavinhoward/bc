@@ -1218,10 +1218,13 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 #if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_OP_TRUNC:
 			{
+				if (!BC_PARSE_LEAF(prev, rprn) || bin_last)
+					return bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
 				// I can just add the instruction because
 				// negative will already be taken care of.
 				bc_parse_push(p, BC_INST_TRUNC);
-				rprn = get_token = bin_last = false;
+				rprn = false;
+				get_token = true;
 				break;
 			}
 #endif // BC_ENABLE_EXTRA_MATH
