@@ -558,7 +558,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
-	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, true, false),
+	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, false, true),
 	BC_PARSE_EXPR_ENTRY(false, true, false, 0, 0, 0, 0, 0),
 #else // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
