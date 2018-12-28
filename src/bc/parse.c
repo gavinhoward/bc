@@ -1281,7 +1281,8 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_BOOL_OR:
 			case BC_LEX_OP_BOOL_AND:
 			{
-				if (((t == BC_LEX_OP_BOOL_NOT) != bin_last) ||
+				if (((t == BC_LEX_OP_BOOL_NOT) != bin_last &&
+				     p->l.last != BC_LEX_OP_BOOL_NOT) ||
 				    (t != BC_LEX_OP_BOOL_NOT && prev == BC_INST_BOOL_NOT))
 				{
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
