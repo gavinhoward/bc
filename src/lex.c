@@ -36,7 +36,7 @@ BcStatus bc_lex_invalidChar(BcLex *l, char c) {
 
 void bc_lex_lineComment(BcLex *l) {
 	l->t = BC_LEX_WHITESPACE;
-	while (l->i < l->len && l->buf[l->i++] != '\n');
+	while (l->i < l->len && l->buf[l->i] != '\n') ++l->i;
 }
 
 BcStatus bc_lex_comment(BcLex *l) {
