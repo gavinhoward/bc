@@ -510,7 +510,7 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 }
 
 void bc_program_negate(BcProgram* p, BcResult *r, BcNum *n) {
-	(void) p;
+	BC_UNUSED(p);
 	bc_num_copy(&r->d.n, n);
 	if (r->d.n.len) r->d.n.neg = !r->d.n.neg;
 }

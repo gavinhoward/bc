@@ -109,4 +109,6 @@ typedef enum BcError {
 #define BC_ERR_IDX_POSIX (4)
 #endif // BC_ENABLED
 
+#define BC_UNUSED(e) ((void) (e))
+
 #endif // BC_STATUS_H

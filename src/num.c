@@ -872,7 +872,7 @@ void bc_num_printNewline(size_t *nchars) {
 #if DC_ENABLED
 void bc_num_printChar(size_t num, size_t width, bool radix, size_t *nchars)
 {
-	(void) radix;
+	BC_UNUSED(radix);
 	bc_vm_putchar((uchar) num);
 	*nchars = *nchars + width;
 }
@@ -1149,13 +1149,13 @@ void bc_num_ulong2num(BcNum *n, unsigned long val) {
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_a : bc_num_s;
-	(void) scale;
+	BC_UNUSED(scale);
 	return bc_num_binary(a, b, c, false, op, BC_NUM_AREQ(a, b));
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_s : bc_num_a;
-	(void) scale;
+	BC_UNUSED(scale);
 	return bc_num_binary(a, b, c, true, op, BC_NUM_AREQ(a, b));
 }
 
