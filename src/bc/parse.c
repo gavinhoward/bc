@@ -1127,7 +1127,6 @@ BcStatus bc_parse_stmt(BcParse *p) {
 			bc_vm_printf("Number of vars  = %lu\n", BC_MAX_VARS);
 
 			s = bc_lex_next(&p->l);
-			if (s) return s;
 
 			break;
 		}
