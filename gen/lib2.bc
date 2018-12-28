@@ -21,6 +21,16 @@
  */
 
 define r(x,p){
-	return (r)
+	auto i,t
+	if(x==0)return(x)
+	if(scale(p))p=p$
+	if(p<0)p=-p
+	t=x@p
+	if(p>=scale(x))return(t)
+	i=ibase
+	ibase=A
+	if((x-t)>=(.5>>p))t+=1>>p
+	ibase=i
+	return (t)
 }
 
