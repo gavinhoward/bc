@@ -216,6 +216,13 @@ BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 	return bc_num_div(&one, a, b, scale);
 }
 
+BcStatus bc_num_intop(BcNum *a, BcNum *b, BcNum *restrict c, unsigned long *val)
+{
+	if (b->rdx) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	bc_num_copy(c, a);
+	return bc_num_ulong(b, val);
+}
+
 BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
@@ -614,11 +621,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	size_t i, powrdx, resrdx;
 	bool neg, zero;
 
-	if (b->rdx) {
-		bool zero = true;
-		for (i = 0; zero && i < b->rdx; ++i) zero = (b->num[i] == 0);
-		if (!zero) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
-	}
+	if (b->rdx) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 
 	if (b->len == 0) {
 		bc_num_one(c);
@@ -689,6 +692,65 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 err:
 	bc_num_free(&copy);
+	return s;
+}
+
+BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	unsigned long val;
+
+	BC_UNUSED(scale);
+
+	s = bc_num_intop(a, b, c, &val);
+	if (s) return s;
+
+	if (val < a->rdx) bc_num_truncate(c, a->rdx - val);
+	else if (val > a->rdx) bc_num_extend(c, val - a->rdx);
+
+	return s;
+}
+
+BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	unsigned long val;
+
+	BC_UNUSED(scale);
+
+	s = bc_num_intop(a, b, c, &val);
+	if (s) return s;
+
+	bc_num_shift(c, val);
+
+	return s;
+}
+
+BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	unsigned long val;
+	size_t len;
+
+	BC_UNUSED(scale);
+
+	s = bc_num_intop(a, b, c, &val);
+	if (s) return s;
+
+	len = c->rdx + val;
+
+	if (len > c->len) {
+
+		if (len > c->cap) bc_num_expand(c, len);
+
+		memset(c->num + c->len, 0, len - c->len);
+		c->len = len;
+	}
+
+	c->rdx += val;
+
+	assert(c->rdx <= c->len && c->len <= c->cap);
+
 	return s;
 }
 
@@ -1180,15 +1242,15 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 #if BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, NULL, a->len);
+	return bc_num_binary(a, b, c, scale, bc_num_place, a->len);
 }
 
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, NULL, a->len);
+	return bc_num_binary(a, b, c, scale, bc_num_left, a->len);
 }
 
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, NULL, a->len);
+	return bc_num_binary(a, b, c, scale, bc_num_right, a->len);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
