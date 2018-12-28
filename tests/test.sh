@@ -46,24 +46,6 @@ fi
 
 out="$testdir/../.log_test.txt"
 
-if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" ]; then
-
-	curdir=$(pwd)
-
-	cd "$testdir/.."
-
-	extra=$(make extra_math)
-
-	printf '%s\n' "$extra"
-
-	cd "$curdir"
-
-	if [ "$extra" -ne 1 ]; then
-		printf 'Skipping extra math test: %s\n' "$t"
-		exit 0
-	fi
-fi
-
 if [ "$d" = "bc" ]; then
 	options="-lq"
 	var="BC_LINE_LENGTH"
