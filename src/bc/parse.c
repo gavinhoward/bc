@@ -1036,7 +1036,9 @@ BcStatus bc_parse_stmt(BcParse *p) {
 
 			if (BC_PARSE_IF_END(p)) {
 				bc_parse_noElse(p);
-				return BC_STATUS_SUCCESS;
+				if (p->flags.len > 1 && !BC_PARSE_BRACE(p))
+					s = bc_parse_endBody(p,false);
+				return s;
 			}
 			else if (BC_PARSE_BODY(p)) return bc_parse_body(p, false);
 
