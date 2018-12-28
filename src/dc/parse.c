@@ -182,14 +182,13 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			s = dc_parse_mem(p, inst, false, true);
 			break;
 		}
-#ifndef NDEBUG
+
 		default:
 		{
 			s = bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
 			get_token = true;
 			break;
 		}
-#endif // NDEBUG
 	}
 
 	if (!s && get_token) s = bc_lex_next(&p->l);
