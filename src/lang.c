@@ -45,7 +45,8 @@ BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line) {
 	assert(f && name);
 
 	for (i = 0; i < f->autos.len; ++i) {
-		if (!strcmp(name, ((BcId*) bc_vec_item(&f->autos, i))->name))
+		BcId *id = bc_vec_item(&f->autos, i);
+		if (!strcmp(name, id->name) && type == (BcType) id->idx)
 			return bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name);
 	}
 
