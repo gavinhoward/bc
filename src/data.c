@@ -24,6 +24,7 @@
 #include <parse.h>
 #include <bc.h>
 #include <num.h>
+#include <program.h>
 
 // clang-format off
 
@@ -537,8 +538,8 @@ const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("obase", 5, true),
 	BC_LEX_KW_ENTRY("scale", 5, true),
 	BC_LEX_KW_ENTRY("length", 6, true),
-	BC_LEX_KW_ENTRY("sqrt", 4, true),
 	BC_LEX_KW_ENTRY("print", 5, false),
+	BC_LEX_KW_ENTRY("sqrt", 4, true),
 	BC_LEX_KW_ENTRY("quit", 4, true),
 	BC_LEX_KW_ENTRY("read", 4, false),
 	BC_LEX_KW_ENTRY("else", 4, false),
@@ -563,15 +564,15 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
-	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
-	BC_PARSE_EXPR_ENTRY(false, false, true, false, 0, 0, 0, 0)
+	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
+	BC_PARSE_EXPR_ENTRY(true, false, true, false, 0, 0, 0, 0)
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
 // This is an array of data for operators that correspond to token types.
 const uchar bc_parse_ops[] = {
 	BC_PARSE_OP(0, false), BC_PARSE_OP(0, false),
-	BC_PARSE_OP(1, false),
+	BC_PARSE_OP(1, false), BC_PARSE_OP(1, false),
 	BC_PARSE_OP(4, false),
 	BC_PARSE_OP(5, true), BC_PARSE_OP(5, true), BC_PARSE_OP(5, true),
 	BC_PARSE_OP(6, true), BC_PARSE_OP(6, true),
@@ -582,7 +583,6 @@ const uchar bc_parse_ops[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
 	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
-	BC_PARSE_OP(1, false),
 	BC_PARSE_OP(10, true), BC_PARSE_OP(10, true),
 	BC_PARSE_OP(8, false), BC_PARSE_OP(8, false), BC_PARSE_OP(8, false),
 	BC_PARSE_OP(8, false), BC_PARSE_OP(8, false), BC_PARSE_OP(8, false),
@@ -649,12 +649,12 @@ const uint8_t dc_parse_insts[] = {
 #if BC_ENABLED
 	BC_INST_INVALID, BC_INST_INVALID,
 #endif // BC_ENABLED
-	BC_INST_INVALID,
+	BC_INST_INVALID, BC_INST_BOOL_NOT,
 	BC_INST_POWER, BC_INST_MULTIPLY, BC_INST_DIVIDE, BC_INST_MODULUS,
 	BC_INST_PLUS, BC_INST_MINUS,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_INVALID, BC_INST_INVALID,
-	BC_INST_BOOL_NOT, BC_INST_INVALID, BC_INST_INVALID,
+	BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLED
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_INVALID, BC_INST_INVALID,
@@ -669,8 +669,8 @@ const uint8_t dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 #endif // BC_ENABLED
-	BC_INST_IBASE, BC_INST_OBASE, BC_INST_SCALE, BC_INST_LENGTH, BC_INST_SQRT,
-	BC_INST_PRINT, BC_INST_QUIT, BC_INST_READ, BC_INST_INVALID,
+	BC_INST_IBASE, BC_INST_OBASE, BC_INST_SCALE, BC_INST_LENGTH, BC_INST_PRINT,
+	BC_INST_SQRT, BC_INST_QUIT, BC_INST_READ, BC_INST_INVALID,
 	BC_INST_REL_EQ, BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_INVALID,
 	BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP, BC_INST_POP,
@@ -689,6 +689,14 @@ const BcNumBinaryOp bc_program_ops[] = {
 #if BC_LEX_OP_ASSIGN_RSHIFT
 	bc_num_places, bc_num_lshift, bc_num_rshift,
 #endif // BC_LEX_OP_ASSIGN_RSHIFT
+};
+
+const BcProgramBuiltIn bc_program_builtins[] = {
+	bc_program_len, bc_program_scale,
+};
+
+const BcProgramUnary bc_program_unarys[] = {
+	bc_program_negate, bc_program_not,
 };
 
 // ** Exclude start. **

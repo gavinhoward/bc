@@ -102,6 +102,7 @@ typedef struct BcProgram {
 	((r)->t != BC_RESULT_ARRAY && (r)->t != BC_RESULT_STR && !BC_PROG_STR(n))
 
 typedef unsigned long (*BcProgramBuiltIn)(BcNum*);
+typedef void (*BcProgramUnary)(BcProgram*, BcResult*, BcNum*);
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
@@ -123,9 +124,17 @@ size_t bc_program_insertFunc(BcProgram *p, char *name);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 
+unsigned long bc_program_scale(BcNum *n);
+unsigned long bc_program_len(BcNum *n);
+
+void bc_program_negate(BcProgram *p, BcResult *r, BcNum *n);
+void bc_program_not(BcProgram *p, BcResult *r, BcNum *n);
+
 // ** Exclude start. **
 // ** Busybox exclude start. **
 extern const BcNumBinaryOp bc_program_ops[];
+extern const BcProgramBuiltIn bc_program_builtins[];
+extern const BcProgramUnary bc_program_unarys[];
 extern const char bc_program_exprs_name[];
 extern const char bc_program_stdin_name[];
 extern const char bc_program_ready_msg[];
