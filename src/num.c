@@ -216,12 +216,13 @@ BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 	return bc_num_div(&one, a, b, scale);
 }
 
-BcStatus bc_num_intop(BcNum *a, BcNum *b, BcNum *restrict c, unsigned long *val)
-{
+#if BC_ENABLE_EXTRA_MATH
+BcStatus bc_num_intop(BcNum *a, BcNum *b, BcNum *restrict c, unsigned long *v) {
 	if (b->rdx) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 	bc_num_copy(c, a);
-	return bc_num_ulong(b, val);
+	return bc_num_ulong(b, v);
 }
+#endif // BC_ENABLE_EXTRA_MATH
 
 BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
@@ -695,6 +696,7 @@ err:
 	return s;
 }
 
+#if BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -753,6 +755,7 @@ BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	return s;
 }
+#endif // BC_ENABLE_EXTRA_MATH
 
 BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
                        BcNumBinaryOp op, size_t req)
