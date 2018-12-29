@@ -98,6 +98,7 @@ define x([]) { return q(e); }
 define x(e,[]) { return q(e); }
 define x(a[]) { return a[]; }
 define x(*a) { return a; }
+define x(a) return a;
 while e!=0 { i+=1 }
 for i=0;i<2;++i { c+=i; }
 for (i=0;i<2,++i) { c+=i; }
