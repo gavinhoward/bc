@@ -27,12 +27,12 @@
 #include <lang.h>
 #include <vm.h>
 
-int bc_id_cmp(const void *e1, const void *e2) {
-	return strcmp(((const BcId*) e1)->name, ((const BcId*) e2)->name);
+int bc_id_cmp(const BcId *e1, const BcId *e2) {
+	return strcmp(e1->name, e2->name);
 }
 
 void bc_id_free(void *id) {
-	assert(id && ((BcId*) id)->name);
+	assert(id);
 	free(((BcId*) id)->name);
 }
 
