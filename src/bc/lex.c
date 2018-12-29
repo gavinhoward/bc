@@ -263,6 +263,30 @@ BcStatus bc_lex_token(BcLex *l) {
 		case 'D':
 		case 'E':
 		case 'F':
+		// Apparently, GNU bc (and maybe others allows any uppercase letter as a
+		// number. When single digits, they act like the ones above. When multi-
+		// digit, any letter above the input base is automatically set to the
+		// biggest digit in the input base.
+		case 'G':
+		case 'H':
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		case 'Q':
+		case 'R':
+		case 'S':
+		case 'T':
+		case 'U':
+		case 'V':
+		case 'W':
+		case 'X':
+		case 'Y':
+		case 'Z':
 		{
 			s = bc_lex_number(l, c);
 			break;

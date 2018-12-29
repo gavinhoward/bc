@@ -145,15 +145,11 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool hex) {
 		case BC_RESULT_CONSTANT:
 		{
 			char *str = bc_program_str(p, r->d.id.idx, false);
-			size_t base_t, len = strlen(str);
-			BcNum *base;
+			size_t len = strlen(str);
 
 			bc_num_init(&r->d.n, len);
 
-			hex = hex && len == 1;
-			base = hex ? &p->hexb : &p->ib;
-			base_t = hex ? BC_NUM_MAX_IBASE : p->ib_t;
-			s = bc_num_parse(&r->d.n, str, base, base_t);
+			s = bc_num_parse(&r->d.n, str, &p->hexb, p->ib_t, hex && len == 1);
 
 			if (s) {
 				bc_num_free(&r->d.n);

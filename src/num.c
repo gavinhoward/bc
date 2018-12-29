@@ -21,6 +21,7 @@
  */
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -799,16 +800,12 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	return s;
 }
 
-bool bc_num_strValid(const char *val, size_t base) {
+bool bc_num_strValid(const char *val) {
 
-	BcDig b;
-	bool small, radix = false;
+	bool radix = false;
 	size_t i, len = strlen(val);
 
 	if (!len) return true;
-
-	small = base <= 10;
-	b = (BcDig) (small ? base + '0' : base - 10 + 'A');
 
 	for (i = 0; i < len; ++i) {
 
@@ -822,11 +819,21 @@ bool bc_num_strValid(const char *val, size_t base) {
 			continue;
 		}
 
-		if (c < '0' || (small && c >= b) || (c > '9' && (c < 'A' || c >= b)))
-			return false;
+		if (!(isdigit(c) || isupper(c))) return false;
 	}
 
 	return true;
+}
+
+unsigned long bc_num_parseChar(char c, size_t base_t) {
+
+	if (isupper(c)) {
+		c = BC_NUM_NUM_LETTER(c);
+		c = ((size_t) c) >= base_t ? base_t - 1 : c;
+	}
+	else c -= '0';
+
+	return (unsigned long) (uchar) c;
 }
 
 void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
@@ -852,13 +859,16 @@ void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	n->rdx = (size_t) ((ptr != NULL) * ((val + len) - (ptr + 1)));
 
 	if (!zero) {
-		for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.'))
-			n->num[n->len] = val[i] - '0';
+		for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.')) {
+			char c = val[i];
+			if (isupper(c)) c = '9';
+			n->num[n->len] = c - '0';
+		}
 	}
 }
 
 BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
-                          BcNum *restrict base)
+                          BcNum *restrict base, size_t base_t)
 {
 	BcStatus s;
 	BcNum temp, mult, result;
@@ -875,12 +885,9 @@ BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	bc_num_init(&temp, BC_NUM_DEF_SIZE);
 	bc_num_init(&mult, BC_NUM_DEF_SIZE);
 
-	for (i = 0; i < len; ++i) {
+	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
 
-		c = val[i];
-		if (c == '.') break;
-
-		v = (unsigned long) (c <= '9' ? c - '0' : c - 'A' + 10);
+		v = bc_num_parseChar(c, base_t);
 
 		s = bc_num_mul(n, base, &mult, 0);
 		if (s) goto int_err;
@@ -898,12 +905,9 @@ BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	bc_num_init(&result, base->len);
 	bc_num_one(&mult);
 
-	for (i += 1, digits = 0; i < len; ++i, ++digits) {
+	for (i += 1, digits = 0; i < len && (c = val[i]); ++i, ++digits) {
 
-		c = val[i];
-		if (c == 0) break;
-
-		v = (unsigned long) (c <= '9' ? c - '0' : c - 'A' + 10);
+		v = bc_num_parseChar(c, base_t);
 
 		s = bc_num_mul(&result, base, &result, 0);
 		if (s) goto err;
@@ -1138,17 +1142,18 @@ void bc_num_copy(BcNum *d, const BcNum *s) {
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      BcNum *restrict base, size_t base_t)
+                      BcNum *restrict base, size_t base_t, bool letter)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && val && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_NUM_MAX_IBASE);
 
-	if (!bc_num_strValid(val, base_t)) return bc_vm_err(BC_ERROR_MATH_STRING);
+	if (!bc_num_strValid(val)) return bc_vm_err(BC_ERROR_MATH_STRING);
 
-	if (base_t == 10) bc_num_parseDecimal(n, val);
-	else s = bc_num_parseBase(n, val, base);
+	if (letter) bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
+	else if (base_t == 10) bc_num_parseDecimal(n, val);
+	else s = bc_num_parseBase(n, val, base, base_t);
 
 	return s;
 }

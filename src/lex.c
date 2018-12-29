@@ -82,8 +82,8 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	last_pt = pt;
 	l->t = BC_LEX_NUMBER;
 
-	while (c != 0 && (isdigit(c) || (c >= 'A' && c <= 'F') ||
-	             (c == '.' && !pt) || (c == '\\' && buf[i + 1] == '\n')))
+	while (c != 0 && (isdigit(c) || isupper(c) || (c == '.' && !pt) ||
+	                  (c == '\\' && buf[i + 1] == '\n')))
 	{
 		if (c != '\\') {
 			last_pt = c == '.';

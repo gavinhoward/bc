@@ -42,6 +42,8 @@ typedef struct BcNum {
 
 #define BC_NUM_MIN_BASE ((unsigned long) 2)
 #define BC_NUM_MAX_IBASE ((unsigned long) 16)
+// This is the max base allowed by bc_num_parseChar().
+#define BC_NUM_MAX_LBASE ('Z' + 10 + 1)
 #define BC_NUM_DEF_SIZE (16)
 #define BC_NUM_PRINT_WIDTH (69)
 
@@ -62,6 +64,8 @@ typedef struct BcNum {
 	(BC_MAX((a)->rdx, (b)->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1)
 #define BC_NUM_MREQ(a, b, scale) \
 	(BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX((scale), (a)->rdx + (b)->rdx) + 1)
+
+#define BC_NUM_NUM_LETTER(c) ((c) - 'A' + 10)
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool, size_t*);
@@ -104,7 +108,7 @@ void bc_num_one(BcNum *restrict n);
 void bc_num_ten(BcNum *restrict n);
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      BcNum *restrict base, size_t base_t);
+                      BcNum *restrict base, size_t base_t, bool hex);
 BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base, size_t base_t,
                       bool newline, size_t *restrict nchars);
 #if DC_ENABLED
