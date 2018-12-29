@@ -302,8 +302,7 @@ BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags) {
 	return bc_lex_next(&p->l);
 }
 
-BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
-                         size_t *nexprs, uint8_t flags)
+BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, size_t *nexs, uint8_t flags)
 {
 	BcStatus s;
 	BcLexType type;
@@ -322,7 +321,6 @@ BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 	else {
 
 		*prev = inst = BC_INST_INC_PRE + (p->l.t != BC_LEX_OP_INC);
-		*paren_expr = true;
 
 		s = bc_lex_next(&p->l);
 		if (s) return s;
@@ -330,7 +328,7 @@ BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 
 		// Because we parse the next part of the expression
 		// right here, we need to increment this.
-		*nexprs = *nexprs + 1;
+		*nexs = *nexs + 1;
 
 		switch (type) {
 
@@ -1204,11 +1202,11 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 	BcLexType top, t = p->l.t;
 	size_t nexprs = 0, ops_bgn = p->ops.len;
 	uint32_t i, nparens, nrelops;
-	bool pfirst, pexpr, rprn, done, get_token, assign, bin_last, incdec;
+	bool pfirst, rprn, done, get_token, assign, bin_last, incdec;
 
 	pfirst = p->l.t == BC_LEX_LPAREN;
 	nparens = nrelops = 0;
-	pexpr = rprn = done = get_token = assign = incdec = false;
+	rprn = done = get_token = assign = incdec = false;
 	bin_last = true;
 
 	// We want to eat newlines if newlines are not a valid ending token.
@@ -1223,7 +1221,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_DEC:
 			{
 				if (incdec) return bc_vm_error(BC_ERROR_PARSE_ASSIGN, p->l.line);
-				s = bc_parse_incdec(p, &prev, &pexpr, &nexprs, flags);
+				s = bc_parse_incdec(p, &prev, &nexprs, flags);
 				rprn = get_token = bin_last = false;
 				incdec = true;
 				break;
@@ -1314,7 +1312,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				++nparens;
-				pexpr = rprn = bin_last = incdec = false;
+				rprn = incdec = false;
 				get_token = true;
 				bc_vec_push(&p->ops, &t);
 
@@ -1323,6 +1321,10 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_RPAREN:
 			{
+				// This needs to be a status. The error
+				// is handled in bc_parse_expr_status().
+				if (p->l.last == BC_LEX_LPAREN) return BC_STATUS_EMPTY_EXPR;
+
 				if (bin_last || prev == BC_INST_BOOL_NOT)
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
@@ -1332,12 +1334,9 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					get_token = false;
 					break;
 				}
-				// This needs to be a status. The error
-				// is handled in bc_parse_expr_status().
-				else if (!pexpr) return BC_STATUS_EMPTY_EXPR;
 
 				--nparens;
-				pexpr = rprn = true;
+				rprn = true;
 				get_token = bin_last = incdec = false;
 
 				s = bc_parse_rightParen(p, ops_bgn, &nexprs);
@@ -1350,7 +1349,6 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
-				pexpr = true;
 				get_token = bin_last = false;
 				s = bc_parse_name(p, &prev, flags & ~BC_PARSE_NOCALL);
 				rprn = (prev == BC_INST_CALL);
@@ -1367,7 +1365,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				bc_parse_number(p);
 				nexprs += 1;
 				prev = BC_INST_NUM;
-				pexpr = get_token = true;
+				get_token = true;
 				rprn = bin_last = false;
 
 				break;
@@ -1383,7 +1381,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				prev = (uchar) (t - BC_LEX_KEY_LAST + BC_INST_LAST);
 				bc_parse_push(p, (uchar) prev);
 
-				pexpr = get_token = true;
+				get_token = true;
 				rprn = bin_last = false;
 				++nexprs;
 
@@ -1397,7 +1395,6 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				s = bc_parse_builtin(p, t, flags, &prev);
-				pexpr = true;
 				rprn = get_token = bin_last = incdec = false;
 				++nexprs;
 
@@ -1412,7 +1409,6 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					s = bc_vm_error(BC_ERROR_EXEC_REC_READ, p->l.line);
 				else s = bc_parse_read(p);
 
-				pexpr = true;
 				rprn = get_token = bin_last = incdec = false;
 				++nexprs;
 				prev = BC_INST_READ;
@@ -1426,7 +1422,6 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				s = bc_parse_scale(p, &prev, flags);
-				pexpr = true;
 				rprn = get_token = bin_last = false;
 				++nexprs;
 
