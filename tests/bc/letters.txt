@@ -40,7 +40,7 @@ ibase=B
 AA
 AB
 ZZ
-ibase=Z
+ibase=G
 AA
 AB
 B0
@@ -48,6 +48,6 @@ Y0
 Y1
 YY
 YZ
-ZX
-ZY
-ZZ
+ZE
+ZF
+ZG
