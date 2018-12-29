@@ -1351,8 +1351,9 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				pexpr = true;
-				rprn = get_token = bin_last = false;
+				get_token = bin_last = false;
 				s = bc_parse_name(p, &prev, flags & ~BC_PARSE_NOCALL);
+				rprn = (prev == BC_INST_CALL);
 				++nexprs;
 
 				break;
