@@ -70,7 +70,8 @@ BcStatus bc_lex_token(BcLex *l);
 	(bc_parse_exprs[(((i) & ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
 
 #define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
-#define BC_PARSE_LEAF(p, rparen) ((rparen) || bc_parse_inst_isLeaf(p))
+#define BC_PARSE_LEAF(prev, bin_last, rparen) \
+	(!(bin_last) && ((rparen) || bc_parse_inst_isLeaf(prev)))
 #define BC_PARSE_INST_VAR(t) \
 	((t) == BC_INST_VAR || (t) == BC_INST_ARRAY_ELEM || (t) == BC_INST_LAST || \
 	 (t) == BC_INST_SCALE || (t) == BC_INST_IBASE || (t) == BC_INST_OBASE)

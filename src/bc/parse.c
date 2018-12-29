@@ -373,7 +373,7 @@ BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *paren_expr,
 }
 
 BcStatus bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
-                        bool rparen, size_t *nexprs)
+                        bool rparen, bool bin_last, size_t *nexprs)
 {
 	BcStatus s;
 	BcLexType type;
@@ -381,7 +381,7 @@ BcStatus bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
-	type = BC_PARSE_LEAF(*prev, rparen) ? BC_LEX_OP_MINUS : BC_LEX_NEG;
+	type = BC_PARSE_LEAF(*prev, bin_last, rparen) ? BC_LEX_OP_MINUS : BC_LEX_NEG;
 	*prev = BC_PARSE_TOKEN_INST(type);
 
 	// We can just push onto the op stack because this is the largest
@@ -1232,7 +1232,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 #if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_OP_TRUNC:
 			{
-				if (!BC_PARSE_LEAF(prev, rprn) || bin_last)
+				if (!BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
 				// I can just add the instruction because
 				// negative will already be taken care of.
@@ -1245,7 +1245,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_OP_MINUS:
 			{
-				s = bc_parse_minus(p, &prev, ops_bgn, rprn, &nexprs);
+				s = bc_parse_minus(p, &prev, ops_bgn, rprn, bin_last, &nexprs);
 				rprn = get_token = false;
 				bin_last = (prev == BC_INST_MINUS);
 				if (bin_last) incdec = false;
@@ -1291,12 +1291,12 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_BOOL_OR:
 			case BC_LEX_OP_BOOL_AND:
 			{
-				if (((t == BC_LEX_OP_BOOL_NOT) != bin_last &&
-				     p->l.last != BC_LEX_OP_BOOL_NOT) ||
-				    (t != BC_LEX_OP_BOOL_NOT && prev == BC_INST_BOOL_NOT))
-				{
-					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
+				if (t == BC_LEX_OP_BOOL_NOT) {
+					if (!bin_last && p->l.last != BC_LEX_OP_BOOL_NOT)
+						return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 				}
+				else if (prev == BC_INST_BOOL_NOT)
+					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				nrelops += t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT;
 				prev = BC_PARSE_TOKEN_INST(t);
@@ -1310,7 +1310,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_LPAREN:
 			{
-				if (BC_PARSE_LEAF(prev, rprn))
+				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				++nparens;
@@ -1347,7 +1347,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_NAME:
 			{
-				if (BC_PARSE_LEAF(prev, rprn))
+				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				pexpr = true;
@@ -1361,7 +1361,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_NUMBER:
 			{
-				if (BC_PARSE_LEAF(prev, rprn))
+				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				bc_parse_number(p);
@@ -1377,7 +1377,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_KEY_LAST:
 			case BC_LEX_KEY_OBASE:
 			{
-				if (BC_PARSE_LEAF(prev, rprn))
+				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				prev = (uchar) (t - BC_LEX_KEY_LAST + BC_INST_LAST);
@@ -1393,7 +1393,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_KEY_LENGTH:
 			case BC_LEX_KEY_SQRT:
 			{
-				if (BC_PARSE_LEAF(prev, rprn))
+				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				s = bc_parse_builtin(p, t, flags, &prev);
@@ -1406,7 +1406,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_KEY_READ:
 			{
-				if (BC_PARSE_LEAF(prev, rprn))
+				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 				else if (flags & BC_PARSE_NOREAD)
 					s = bc_vm_error(BC_ERROR_EXEC_REC_READ, p->l.line);
@@ -1422,7 +1422,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_KEY_SCALE:
 			{
-				if (BC_PARSE_LEAF(prev, rprn))
+				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_vm_error(BC_ERROR_PARSE_EXPR, p->l.line);
 
 				s = bc_parse_scale(p, &prev, flags);
