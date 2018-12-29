@@ -47,7 +47,7 @@ char* bc_program_str(BcProgram *p, size_t idx, bool str) {
 	return *((char**) bc_vec_item(v, idx));
 }
 
-size_t bc_program_index(char *code, size_t *bgn) {
+size_t bc_program_index(const char *restrict code, size_t *restrict bgn) {
 
 	uchar amt = (uchar) code[(*bgn)++], i = 0;
 	size_t res = 0;
@@ -60,11 +60,12 @@ size_t bc_program_index(char *code, size_t *bgn) {
 	return res;
 }
 
-char* bc_program_name(char *code, size_t *bgn) {
+char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 
 	size_t i;
 	uchar c;
-	char *s, *str = code + *bgn, *ptr = strchr(str, BC_PARSE_STREND);
+	char *s;
+	const char *str = code + *bgn, *ptr = strchr(str, BC_PARSE_STREND);
 
 	assert(ptr);
 
@@ -375,7 +376,7 @@ io_err:
 	return s;
 }
 
-void bc_program_printString(const char *str, size_t *nchars) {
+void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 
 	size_t i, len = strlen(str);
 
@@ -509,13 +510,13 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	return s;
 }
 
-void bc_program_negate(BcProgram* p, BcResult *r, BcNum *n) {
+void bc_program_negate(BcProgram *p, BcResult *r, BcNum *n) {
 	BC_UNUSED(p);
 	bc_num_copy(&r->d.n, n);
 	if (r->d.n.len) r->d.n.neg = !r->d.n.neg;
 }
 
-void bc_program_not(BcProgram* p, BcResult *r, BcNum *n) {
+void bc_program_not(BcProgram *p, BcResult *r, BcNum *n) {
 	if (!bc_num_cmp(n, &p->zero)) bc_num_one(&r->d.n);
 }
 
@@ -803,8 +804,8 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	return s;
 }
 
-BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
-                            bool pop, bool copy)
+BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
+                            size_t *restrict bgn, bool pop, bool copy)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r;
@@ -848,7 +849,8 @@ BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn,
 	return s;
 }
 
-BcStatus bc_program_pushArray(BcProgram *p, char *code, size_t *bgn, uchar inst)
+BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
+                              size_t *restrict bgn, uchar inst)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r;
@@ -916,8 +918,9 @@ BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	return s;
 }
 
-BcStatus bc_program_call(BcProgram *p, char *code, size_t *idx) {
-
+BcStatus bc_program_call(BcProgram *p, const char *restrict code,
+                         size_t *restrict idx)
+{
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInstPtr ip;
 	size_t i, nparams = bc_program_index(code, idx);
@@ -1026,11 +1029,11 @@ BcStatus bc_program_return(BcProgram *p, uchar inst) {
 }
 #endif // BC_ENABLED
 
-unsigned long bc_program_scale(BcNum *n) {
+unsigned long bc_program_scale(const BcNum *restrict n) {
 	return (unsigned long) n->rdx;
 }
 
-unsigned long bc_program_len(BcNum *n) {
+unsigned long bc_program_len(const BcNum *restrict n) {
 
 	unsigned long len = n->len;
 	size_t i;
@@ -1279,8 +1282,9 @@ BcStatus bc_program_nquit(BcProgram *p) {
 	return s;
 }
 
-BcStatus bc_program_execStr(BcProgram *p, char *code, size_t *bgn, bool cond) {
-
+BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
+                            size_t *restrict bgn, bool cond)
+{
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
 	char *str;
@@ -1868,7 +1872,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 #ifndef NDEBUG
 #if BC_ENABLED && DC_ENABLED
-void bc_program_printIndex(char *code, size_t *bgn) {
+void bc_program_printIndex(const char *restrict code, size_t *restrict bgn) {
 
 	uchar byte, i, bytes = code[(*bgn)++];
 	unsigned long val = 0;
@@ -1881,7 +1885,7 @@ void bc_program_printIndex(char *code, size_t *bgn) {
 	bc_vm_printf(" (%lu) ", val);
 }
 
-void bc_program_printName(char *code, size_t *bgn) {
+void bc_program_printName(const char *restrict code, size_t *restrict bgn) {
 
 	uchar byte = (uchar) code[(*bgn)++];
 
@@ -1895,8 +1899,9 @@ void bc_program_printName(char *code, size_t *bgn) {
 	bc_vm_printf(") ");
 }
 
-void bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
-
+void bc_program_printStr(BcProgram *p, const char *restrict code,
+                         size_t *restrict bgn)
+{
 	size_t idx = bc_program_index(code, bgn);
 	char *s;
 
@@ -1905,8 +1910,9 @@ void bc_program_printStr(BcProgram *p, char *code, size_t *bgn) {
 	bc_vm_printf(" (\"%s\") ", s);
 }
 
-void bc_program_printInst(BcProgram *p, char *code, size_t *bgn) {
-
+void bc_program_printInst(BcProgram *p, const char *restrict code,
+                          size_t *restrict bgn)
+{
 	uchar inst = (uchar) code[(*bgn)++];
 
 	bc_vm_putchar(bc_inst_chars[(uint32_t) inst]);

@@ -69,10 +69,10 @@ typedef void (*BcNumDigitOp)(size_t, size_t, bool, size_t*);
 void bc_num_init(BcNum *n, size_t req);
 void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
 void bc_num_expand(BcNum *n, size_t req);
-void bc_num_copy(BcNum *d, BcNum *s);
+void bc_num_copy(BcNum *d, const BcNum *s);
 void bc_num_free(void *num);
 
-BcStatus bc_num_ulong(BcNum *n, unsigned long *result);
+BcStatus bc_num_ulong(const BcNum *n, unsigned long *result);
 void bc_num_ulong2num(BcNum *n, unsigned long val);
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
@@ -86,27 +86,31 @@ BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
-BcStatus bc_num_sqrt(BcNum *a, BcNum *b, size_t scale);
+BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale);
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
 
-void bc_num_truncate(BcNum *n, size_t places);
-ssize_t bc_num_cmp(BcNum *a, BcNum *b);
+void bc_num_truncate(BcNum *restrict n, size_t places);
+ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
 
 #if DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 #endif // DC_ENABLED
 
-void bc_num_zero(BcNum *n);
-void bc_num_one(BcNum *n);
-void bc_num_ten(BcNum *n);
+void bc_num_zero(BcNum *restrict n);
+void bc_num_one(BcNum *restrict n);
+void bc_num_ten(BcNum *restrict n);
 
-BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t);
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
-                      bool newline, size_t *nchars);
-BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars);
+BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
+                      BcNum *restrict base, size_t base_t);
+BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base, size_t base_t,
+                      bool newline, size_t *restrict nchars);
+#if DC_ENABLED
+BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base,
+                       size_t *restrict nchars);
+#endif // DC_ENABLED
 
 // ** Busybox exclude end. **
 // ** Exclude end. **

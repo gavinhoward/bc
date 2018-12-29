@@ -107,25 +107,25 @@ typedef void (*BcProgramUnary)(BcProgram*, BcResult*, BcNum*);
 // ** Exclude start. **
 // ** Busybox exclude start. **
 void bc_program_init(BcProgram *p);
-void bc_program_free(BcProgram *program);
+void bc_program_free(BcProgram *p);
 
 #ifndef NDEBUG
 #if BC_ENABLED && DC_ENABLED
 void bc_program_code(BcProgram *p);
-void bc_program_printInst(BcProgram *p, char *code, size_t *bgn);
+void bc_program_printInst(BcProgram *p, const char *code,
+                          size_t *restrict bgn);
 #endif // BC_ENABLED && DC_ENABLED
 #endif // NDEBUG
 // ** Busybox exclude end. **
 // ** Exclude end. **
 
-size_t bc_program_insertId(char* data, BcVec* map, BcVec* vec);
 void bc_program_addFunc(BcProgram *p, BcFunc *f);
 size_t bc_program_insertFunc(BcProgram *p, char *name);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 
-unsigned long bc_program_scale(BcNum *n);
-unsigned long bc_program_len(BcNum *n);
+unsigned long bc_program_scale(const BcNum *restrict n);
+unsigned long bc_program_len(const BcNum *restrict n);
 
 void bc_program_negate(BcProgram *p, BcResult *r, BcNum *n);
 void bc_program_not(BcProgram *p, BcResult *r, BcNum *n);

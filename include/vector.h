@@ -50,31 +50,32 @@ typedef struct BcVec {
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
-void bc_vec_init(BcVec *v, size_t esize, BcVecFree dtor);
-void bc_vec_expand(BcVec *v, size_t req);
+void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor);
+void bc_vec_expand(BcVec *restrict v, size_t req);
 
-void bc_vec_npop(BcVec *v, size_t n);
+void bc_vec_npop(BcVec *restrict v, size_t n);
 
-void bc_vec_push(BcVec *v, const void *data);
-void bc_vec_npush(BcVec *v, size_t n, const void *data);
-void bc_vec_pushByte(BcVec *v, uchar data);
-void bc_vec_pushIndex(BcVec *v, size_t idx);
-void bc_vec_string(BcVec *v, size_t len, const char* str);
-void bc_vec_concat(BcVec *v, const char *str);
-void bc_vec_empty(BcVec* v);
+void bc_vec_push(BcVec *restrict v, const void *data);
+void bc_vec_npush(BcVec *restrict v, size_t n, const void *data);
+void bc_vec_pushByte(BcVec *restrict v, uchar data);
+void bc_vec_pushIndex(BcVec *restrict v, size_t idx);
+void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str);
+void bc_vec_concat(BcVec *restrict v, const char *restrict str);
+void bc_vec_empty(BcVec *restrict v);
 
 #if BC_ENABLE_HISTORY
-void bc_vec_popAt(BcVec *v, size_t idx);
-void bc_vec_replaceAt(BcVec *v, size_t idx, const void *data);
+void bc_vec_popAt(BcVec *restrict v, size_t idx);
+void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data);
 #endif // BC_ENABLE_HISTORY
 
-void* bc_vec_item(const BcVec *v, size_t idx);
-void* bc_vec_item_rev(const BcVec *v, size_t idx);
+void* bc_vec_item(const BcVec *restrict v, size_t idx);
+void* bc_vec_item_rev(const BcVec *restrict v, size_t idx);
 
 void bc_vec_free(void *vec);
 
-bool bc_map_insert(BcVec *v, const struct BcId *ptr, size_t *i);
-size_t bc_map_index(const BcVec *v, const struct BcId *ptr);
+bool bc_map_insert(BcVec *restrict v, const struct BcId *restrict ptr,
+                   size_t *restrict i);
+size_t bc_map_index(const BcVec *restrict v, const struct BcId *restrict ptr);
 // ** Busybox exclude end. **
 // ** Exclude end. **
 

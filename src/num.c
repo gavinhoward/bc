@@ -31,24 +31,24 @@
 #include <num.h>
 #include <vm.h>
 
-void bc_num_setToZero(BcNum *n, size_t scale) {
+void bc_num_setToZero(BcNum *restrict n, size_t scale) {
 	assert(n);
 	n->len = 0;
 	n->neg = false;
 	n->rdx = scale;
 }
 
-void bc_num_zero(BcNum *n) {
+void bc_num_zero(BcNum *restrict n) {
 	bc_num_setToZero(n, 0);
 }
 
-void bc_num_one(BcNum *n) {
+void bc_num_one(BcNum *restrict n) {
 	bc_num_setToZero(n, 0);
 	n->len = 1;
 	n->num[0] = 1;
 }
 
-void bc_num_ten(BcNum *n) {
+void bc_num_ten(BcNum *restrict n) {
 	assert(n);
 	bc_num_setToZero(n, 0);
 	n->len = 2;
@@ -56,7 +56,8 @@ void bc_num_ten(BcNum *n) {
 	n->num[1] = 1;
 }
 
-BcStatus bc_num_subArrays(BcDig *restrict a, BcDig *restrict b, size_t len) {
+BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, size_t len)
+{
 	size_t i, j;
 	for (i = 0; !BC_SIGINT && i < len; ++i) {
 		for (a[i] -= b[i], j = 0; !BC_SIGINT && a[i + j] < 0;) {
@@ -67,14 +68,16 @@ BcStatus bc_num_subArrays(BcDig *restrict a, BcDig *restrict b, size_t len) {
 	return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
-ssize_t bc_num_compare(BcDig *restrict a, BcDig *restrict b, size_t len) {
+ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
+                       size_t len)
+{
 	size_t i;
 	int c = 0;
 	for (i = len - 1; !BC_SIGINT && i < len && !(c = a[i] - b[i]); --i);
 	return BC_NUM_NEG(i + 1, c < 0);
 }
 
-ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
+ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 	size_t i, min, a_int, b_int, diff;
 	BcDig *max_num, *min_num;
@@ -122,7 +125,7 @@ ssize_t bc_num_cmp(BcNum *a, BcNum *b) {
 	return 0;
 }
 
-void bc_num_truncate(BcNum *n, size_t places) {
+void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	assert(places <= n->rdx && (n->len == 0 || places <= n->len));
 
@@ -136,7 +139,7 @@ void bc_num_truncate(BcNum *n, size_t places) {
 	}
 }
 
-void bc_num_extend(BcNum *n, size_t places) {
+void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	size_t len = n->len + places;
 
@@ -152,13 +155,13 @@ void bc_num_extend(BcNum *n, size_t places) {
 	}
 }
 
-void bc_num_clean(BcNum *n) {
+void bc_num_clean(BcNum *restrict n) {
 	while (n->len > 0 && n->num[n->len - 1] == 0) --n->len;
 	if (n->len == 0) n->neg = false;
 	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
-void bc_num_retireMul(BcNum *n, size_t scale, bool neg1, bool neg2) {
+void bc_num_retireMul(BcNum *restrict n, size_t scale, bool neg1, bool neg2) {
 
 	if (n->rdx < scale) bc_num_extend(n, scale - n->rdx);
 	else bc_num_truncate(n, n->rdx - scale);
@@ -188,7 +191,7 @@ void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
 	bc_num_clean(b);
 }
 
-BcStatus bc_num_shift(BcNum *n, size_t places) {
+BcStatus bc_num_shift(BcNum *restrict n, size_t places) {
 
 	if (places == 0 || n->len == 0) return BC_STATUS_SUCCESS;
 	if (places + n->len > BC_MAX_NUM) return bc_vm_err(BC_ERROR_EXEC_NUM_LEN);
@@ -217,7 +220,9 @@ BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 }
 
 #if BC_ENABLE_EXTRA_MATH
-BcStatus bc_num_intop(BcNum *a, BcNum *b, BcNum *restrict c, unsigned long *v) {
+BcStatus bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
+                      unsigned long *v)
+{
 	if (b->rdx) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 	bc_num_copy(c, a);
 	return bc_num_ulong(b, v);
@@ -357,7 +362,7 @@ BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	return s;
 }
 
-BcStatus bc_num_k(BcNum *restrict a, BcNum *restrict b, BcNum *restrict c) {
+BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 
 	BcStatus s;
 	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2;
@@ -824,7 +829,7 @@ bool bc_num_strValid(const char *val, size_t base) {
 	return true;
 }
 
-void bc_num_parseDecimal(BcNum *n, const char *val) {
+void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	size_t len, i;
 	const char *ptr;
@@ -852,8 +857,9 @@ void bc_num_parseDecimal(BcNum *n, const char *val) {
 	}
 }
 
-BcStatus bc_num_parseBase(BcNum *n, const char *val, BcNum *base) {
-
+BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
+                          BcNum *restrict base)
+{
 	BcStatus s;
 	BcNum temp, mult, result;
 	BcDig c = '\0';
@@ -926,7 +932,7 @@ int_err:
 	return s;
 }
 
-void bc_num_printNewline(size_t *nchars) {
+void bc_num_printNewline(size_t *restrict nchars) {
 	if (*nchars == vm->line_len - 1) {
 		bc_vm_putchar('\\');
 		bc_vm_putchar('\n');
@@ -935,50 +941,50 @@ void bc_num_printNewline(size_t *nchars) {
 }
 
 #if DC_ENABLED
-void bc_num_printChar(size_t num, size_t width, bool radix, size_t *nchars)
+void bc_num_printChar(size_t n, size_t len, bool rdx, size_t *restrict nchars)
 {
-	BC_UNUSED(radix);
-	bc_vm_putchar((uchar) num);
-	*nchars = *nchars + width;
+	BC_UNUSED(rdx);
+	bc_vm_putchar((uchar) n);
+	*nchars = *nchars + len;
 }
 #endif // DC_ENABLED
 
-void bc_num_printDigits(size_t num, size_t width, bool radix, size_t *nchars) {
-
+void bc_num_printDigits(size_t n, size_t len, bool rdx, size_t *restrict nchars)
+{
 	size_t exp, pow;
 
 	bc_num_printNewline(nchars);
-	bc_vm_putchar(radix ? '.' : ' ');
+	bc_vm_putchar(rdx ? '.' : ' ');
 	++(*nchars);
 
 	bc_num_printNewline(nchars);
-	for (exp = 0, pow = 1; exp < width - 1; ++exp, pow *= 10);
+	for (exp = 0, pow = 1; exp < len - 1; ++exp, pow *= 10);
 
-	for (exp = 0; exp < width; pow /= 10, ++(*nchars), ++exp) {
+	for (exp = 0; exp < len; pow /= 10, ++(*nchars), ++exp) {
 		size_t dig;
 		bc_num_printNewline(nchars);
-		dig = num / pow;
-		num -= dig * pow;
+		dig = n / pow;
+		n -= dig * pow;
 		bc_vm_putchar(((uchar) dig) + '0');
 	}
 }
 
-void bc_num_printHex(size_t num, size_t width, bool radix, size_t *nchars) {
+void bc_num_printHex(size_t n, size_t len, bool rdx, size_t *restrict nchars) {
 
-	assert(width == 1);
+	assert(len == 1);
 
-	if (radix) {
+	if (rdx) {
 		bc_num_printNewline(nchars);
 		bc_vm_putchar('.');
 		*nchars += 1;
 	}
 
 	bc_num_printNewline(nchars);
-	bc_vm_putchar(bc_num_hex_digits[num]);
-	*nchars = *nchars + width;
+	bc_vm_putchar(bc_num_hex_digits[n]);
+	*nchars = *nchars + len;
 }
 
-void bc_num_printDecimal(BcNum *n, size_t *nchars) {
+void bc_num_printDecimal(const BcNum *restrict n, size_t *restrict nchars) {
 
 	size_t i, rdx = n->rdx - 1;
 
@@ -989,8 +995,8 @@ void bc_num_printDecimal(BcNum *n, size_t *nchars) {
 		bc_num_printHex((size_t) n->num[i], 1, i == rdx, nchars);
 }
 
-BcStatus bc_num_printNum(BcNum *n, BcNum *base, size_t width,
-                         size_t *nchars, BcNumDigitOp print)
+BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base, size_t width,
+                         size_t *restrict nchars, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
@@ -1054,7 +1060,8 @@ err:
 	return s;
 }
 
-BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
+BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
+                          size_t base_t, size_t *restrict nchars)
 {
 	BcStatus s;
 	size_t width, i;
@@ -1082,12 +1089,14 @@ BcStatus bc_num_printBase(BcNum *n, BcNum *base, size_t base_t, size_t *nchars)
 }
 
 #if DC_ENABLED
-BcStatus bc_num_stream(BcNum *n, BcNum *base, size_t *nchars) {
+BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base,
+                       size_t *restrict nchars)
+{
 	return bc_num_printNum(n, base, 1, nchars, bc_num_printChar);
 }
 #endif // DC_ENABLED
 
-void bc_num_setup(BcNum *n, BcDig *num, size_t cap) {
+void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 	assert(n);
 	n->num = num;
 	n->cap = cap;
@@ -1095,13 +1104,13 @@ void bc_num_setup(BcNum *n, BcDig *num, size_t cap) {
 	n->neg = false;
 }
 
-void bc_num_init(BcNum *n, size_t req) {
+void bc_num_init(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	bc_num_setup(n, bc_vm_malloc(req), req);
 }
 
-void bc_num_expand(BcNum *n, size_t req) {
+void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	if (req > n->cap) {
@@ -1115,7 +1124,7 @@ void bc_num_free(void *num) {
 	free(((BcNum*) num)->num);
 }
 
-void bc_num_copy(BcNum *d, BcNum *s) {
+void bc_num_copy(BcNum *d, const BcNum *s) {
 
 	assert(d && s);
 
@@ -1128,8 +1137,9 @@ void bc_num_copy(BcNum *d, BcNum *s) {
 	}
 }
 
-BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
-
+BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
+                      BcNum *restrict base, size_t base_t)
+{
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && val && base);
@@ -1143,8 +1153,8 @@ BcStatus bc_num_parse(BcNum *n, const char *val, BcNum *base, size_t base_t) {
 	return s;
 }
 
-BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
-                      bool newline, size_t *nchars)
+BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base, size_t base_t,
+                      bool newline, size_t *restrict nchars)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 
@@ -1168,15 +1178,12 @@ BcStatus bc_num_print(BcNum *n, BcNum *base, size_t base_t,
 	return s;
 }
 
-BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
+BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 	size_t i;
 	unsigned long pow, r;
 
 	assert(n && result);
-
-	// Make sure this is initialized.
-	*result = 0;
 
 	if (n->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
@@ -1195,7 +1202,7 @@ BcStatus bc_num_ulong(BcNum *n, unsigned long *result) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_num_ulong2num(BcNum *n, unsigned long val) {
+void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 
 	size_t len;
 	BcDig *ptr;
@@ -1257,7 +1264,7 @@ BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcStatus bc_num_sqrt(BcNum *a, BcNum *restrict b, size_t scale) {
+BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
