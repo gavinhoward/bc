@@ -769,22 +769,23 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	if (ib || sc || left->t == BC_RESULT_OBASE) {
 
 		size_t *ptr;
+		BcError e;
 
 		s = bc_num_ulong(l, &val);
 		if (s) return s;
-		s = left->t - BC_RESULT_IBASE + BC_ERROR_EXEC_IBASE;
+		e = left->t - BC_RESULT_IBASE + BC_ERROR_EXEC_IBASE;
 
 		if (sc) {
 			max = BC_MAX_SCALE;
 			ptr = &p->scale;
 		}
 		else {
-			if (val < BC_NUM_MIN_BASE) return s;
+			if (val < BC_NUM_MIN_BASE) return bc_vm_err(e);
 			max = ib ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
 			ptr = ib ? &p->ib_t : &p->ob_t;
 		}
 
-		if (val > max) return s;
+		if (val > max) return bc_vm_err(e);
 		if (!sc) bc_num_copy(ib ? &p->ib : &p->ob, l);
 
 		*ptr = (size_t) val;
