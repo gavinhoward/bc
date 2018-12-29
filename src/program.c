@@ -149,7 +149,7 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 			bc_num_init(&r->d.n, len);
 
-			s = bc_num_parse(&r->d.n, str, &p->hexb, p->ib_t);
+			s = bc_num_parse(&r->d.n, str, &p->ib, p->ib_t, len == 1);
 
 			if (s) {
 				bc_num_free(&r->d.n);

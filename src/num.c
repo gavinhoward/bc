@@ -1142,7 +1142,7 @@ void bc_num_copy(BcNum *d, const BcNum *s) {
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      BcNum *restrict base, size_t base_t)
+                      BcNum *restrict base, size_t base_t, bool letter)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 
@@ -1151,8 +1151,7 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
 
 	if (!bc_num_strValid(val)) return bc_vm_err(BC_ERROR_MATH_STRING);
 
-	if (strlen(val) == 1)
-		bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
+	if (letter) bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
 	else if (base_t == 10) bc_num_parseDecimal(n, val);
 	else s = bc_num_parseBase(n, val, base, base_t);
 
