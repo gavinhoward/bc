@@ -20,11 +20,15 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -ge 1 ]; then
+if [ "$#" -ge 3 ]; then
 	d="$1"
 	shift
+	extra="$1"
+	shift
+	refs="$1"
+	shift
 else
-	printf 'usage: %s dir [exec args...]\n' "$script"
+	printf 'usage: %s dir run_extended_tests run_reference_tests [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -47,12 +51,21 @@ fi
 printf '\nRunning %s tests...\n\n' "$d"
 
 while read t; do
+
+	if [ "$extra" -eq 0  ]; then
+		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" ]; then
+			printf 'Skipping %s %s\n' "$d" "$t"
+			continue
+		fi
+	fi
+
 	sh "$testdir/test.sh" "$d" "$t" "$exe" "$@"
+
 done < "$testdir/$d/all.txt"
 
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
-sh "$testdir/scripts.sh" "$d" "$exe" "$@"
+sh "$testdir/scripts.sh" "$d" "$refs" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
 printf '\nRunning quit test...\n'

@@ -21,10 +21,12 @@ script="$0"
 testdir=$(dirname "${script}")
 
 if [ "$#" -eq 0 ]; then
-	echo "usage: $script dir [exec args...]"
+	echo "usage: $script dir run_references_tests [exec args...]"
 	exit 1
 else
 	d="$1"
+	shift
+	refs="$1"
 	shift
 fi
 
@@ -55,6 +57,13 @@ for s in $scriptdir/*.$d; do
 
 	if [ "$f" = "timeconst.bc" ]; then
 		continue
+	fi
+
+	if [ "$refs" -eq 0 ]; then
+		if [ "$f" = "references.bc" ]; then
+			printf 'Skipping %s script: %s\n' "$d" "$f"
+			continue
+		fi
 	fi
 
 	echo "Running $d script: $f"
