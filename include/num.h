@@ -108,7 +108,7 @@ void bc_num_one(BcNum *restrict n);
 void bc_num_ten(BcNum *restrict n);
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      BcNum *restrict base, size_t base_t, bool hex);
+                      BcNum *restrict base, size_t base_t);
 BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base, size_t base_t,
                       bool newline, size_t *restrict nchars);
 #if DC_ENABLED
