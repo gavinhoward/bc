@@ -169,13 +169,8 @@ typedef struct BcLex {
 	size_t line;
 	size_t len;
 
-#ifndef NDEBUG
 	BcLexType t;
 	BcLexType last;
-#else // NDEBUG
-	uint8_t t;
-	uint8_t last;
-#endif // NDEBUG
 	BcVec str;
 
 	// ** Exclude start. **
