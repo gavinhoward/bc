@@ -1275,6 +1275,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
 	size_t pow, len, digs, digs1, resrdx, req, times = 0;
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
+	BcDig half_digs[2];
 
 	assert(a && b && a != b);
 
@@ -1297,7 +1298,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	bc_num_init(&num1, len);
 	bc_num_init(&num2, len);
-	bc_num_init(&half, BC_NUM_DEF_SIZE);
+	bc_num_setup(&half, half_digs, sizeof(half_digs) / sizeof(BcDig));
 
 	bc_num_one(&half);
 	half.num[0] = 5;
@@ -1367,7 +1368,6 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 err:
 	bc_num_free(&fprime);
 	bc_num_free(&f);
-	bc_num_free(&half);
 	bc_num_free(&num2);
 	bc_num_free(&num1);
 	assert(!b->neg || b->len);
