@@ -1421,7 +1421,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	bc_num_expand(d, c->len);
 	bc_num_init(&base, c->len);
 	bc_num_init(&exp, b->len);
-	bc_num_setup(&two, two_digs, 2);
+	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
 	bc_num_init(&temp, b->len);
 
 	bc_num_one(&two);
