@@ -126,7 +126,6 @@ read(3)
 scale = 18446744073709552000
 ibase = 18446744073709552000
 obase = 18446744073709552000
-ibase=16;2389472ASTNA
 scale = -1
 sqrt(-1)
 1/0
@@ -186,34 +185,5 @@ define w() { auto a 4; return a; }
 define r() { auto a[], 4; return a[0]; }
 define s() { auto a[ 4; return a[0]; }
 3 / 0.00000000000000
-ibase = 2; 2
-ibase = 2; 0.2
-ibase = 3; 4
-ibase = 3; 0.5
-ibase = 4; 5
-ibase = 4; 0.6
-ibase = 5; 6
-ibase = 5; 0.7
-ibase = 6; 7
-ibase = 6; 0.8
-ibase = 7; 8
-ibase = 7; 0.9
-ibase = 8; 9
-ibase = 8; 0.A
-ibase = 9; A
-ibase = 9; 0.B
-ibase = A; B
-ibase = A; 0.C
-ibase = B; C
-ibase = B; 0.D
-ibase = C; D
-ibase = C; 0.E
-ibase = D; E
-ibase = D; 0.F
-ibase = E; F
-ibase = E; 0.F
-ibase = F; F
-ibase = F; 0.F
-ibase = 16; G
-ibase = 16; 0.G
+ibase = Z
 read()
