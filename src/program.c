@@ -1435,10 +1435,6 @@ void bc_program_init(BcProgram *p) {
 	bc_num_ten(&p->ob);
 	p->ob_t = 10;
 
-	bc_num_setup(&p->hexb, p->hexb_num, BC_PROG_HEX_CAP);
-	bc_num_ten(&p->hexb);
-	p->hexb.num[0] = 6;
-
 #if DC_ENABLED
 	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_LONG_LOG10);
 	bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1);
