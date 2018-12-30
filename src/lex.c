@@ -76,14 +76,15 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 	const char *buf = l->buf + l->i;
 	size_t len, hits = 0, bslashes = 0, i = 0, j;
-	char c = buf[i];
+	char last_valid, c = buf[i];
 	bool last_pt, pt = start == '.';
 
 	last_pt = pt;
 	l->t = BC_LEX_NUMBER;
+	last_valid = BC_IS_BC ? 'Z' : 'F';
 
-	while (c != 0 && (isdigit(c) || isupper(c) || (c == '.' && !pt) ||
-	                  (c == '\\' && buf[i + 1] == '\n')))
+	while (c != 0 && (isdigit(c) || (c >= 'A' && c <= last_valid) ||
+	                  (c == '.' && !pt) || (c == '\\' && buf[i + 1] == '\n')))
 	{
 		if (c != '\\') {
 			last_pt = c == '.';
