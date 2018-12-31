@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-bD|-dB|-c] [-EghHRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-EghHRSV] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -42,7 +42,9 @@ usage() {
 	printf '        Disable dc. It is an error if "-d" or "-B" are specified too.\n'
 	printf '    -E\n'
 	printf '        Disable extra math. This includes: "$" operator (truncate to integer),\n'
-	printf '        "@" operator (set number of decimal places), and r(x, p) (rounding function).\n'
+	printf '        "@" operator (set number of decimal places), and r(x, p) (rounding\n'
+	printf '        function). Additionally, this option disables the extra printing\n'
+	printf '        functions in the math library.\n'
 	printf '    -g\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
@@ -64,9 +66,14 @@ usage() {
 	printf '        Disable the array references extension. This feature is an\n'
 	printf '        undocumented feature of the GNU bc, but this bc supports it.\n'
 	printf '        Additionally, since this feature is only available to bc,\n'
-	printf '        specifying "-d" implies this option.\n'
+	printf '        specifying "-d" ("-B") implies this option.\n'
 	printf '    -S\n'
 	printf '        Disable signal handling. On by default.\n'
+	printf '    -V\n'
+	printf '        Disable void functions. This also disables the extra printing\n'
+	printf '        functions in the math library, currently only bytes() and\n'
+	printf '        output(). Additionally, since this feature is only available\n'
+	printf '        to bc, specifying "-d" ("-B") implies this option.\n'
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
@@ -204,9 +211,10 @@ signals=1
 hist=1
 refs=1
 extra_math=1
+voidfns=1
 optimization=""
 
-while getopts "bBcdDEghHk:O:RS" opt; do
+while getopts "bBcdDEghHk:O:RSV" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -222,6 +230,7 @@ while getopts "bBcdDEghHk:O:RS" opt; do
 		O) optimization="$OPTARG" ;;
 		R) refs=0 ;;
 		S) signals=0 ;;
+		V) voidfns=0 ;;
 		?) usage "Invalid option" ;;
 	esac
 
@@ -292,7 +301,12 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	bc_lib=""
 	bc_help_o=""
+
+	printf 'dc only; disabling references...\n'
 	refs=0
+
+	printf 'dc only; disabling void functions...\n'
+	voidfns=0
 
 	executables="dc"
 
@@ -325,6 +339,7 @@ if [ "$debug" -eq 1 ]; then
 	fi
 
 	CFLAGS="$CFLAGS -g"
+
 else
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
 	link="$link 1"
@@ -349,10 +364,8 @@ if [ "$coverage" -eq 1 ]; then
 	COVERAGE_PREREQS=" test_all"
 
 else
-
 	COVERAGE='@printf "Coverage not generated\\\\n"'
 	COVERAGE_PREREQS=""
-
 fi
 
 if [ "$PREFIX" = "" ]; then
@@ -396,9 +409,18 @@ if [ "$hist" -eq 1 ]; then
 fi
 
 if [ "$extra_math" -eq 1 ]; then
+
 	BC_LIB2_O="\$(GEN_DIR)/lib2.o"
+
+	if [ "$voidfns" -eq 1 ]; then
+		BC_LIB3_O="\$(GEN_DIR)/lib3.o"
+	else
+		BC_LIB3_O=""
+	fi
+
 else
 	BC_LIB2_O=""
+	BC_LIB3_O=""
 fi
 
 contents=$(cat "$scriptdir/Makefile.in")
@@ -422,6 +444,8 @@ contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "REFERENCES" "$refs")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
+contents=$(replace "$contents" "VOIDFNS" "$voidfns")
+contents=$(replace "$contents" "BC_LIB3_O" "$BC_LIB3_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "PREFIX" "$PREFIX")
