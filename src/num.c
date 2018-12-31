@@ -872,7 +872,7 @@ BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 {
 	BcStatus s;
 	BcNum temp, mult, result;
-	BcDig c = '\0';
+	BcDig c;
 	bool zero = true;
 	unsigned long v;
 	size_t i, digits, len = strlen(val);
