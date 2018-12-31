@@ -1077,7 +1077,7 @@ BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 
 	n->neg = false;
 
-	if (base_t <= BC_NUM_MAX_IBASE) {
+	if (base_t <= vm->max_ibase) {
 		width = 1;
 		print = bc_num_printHex;
 	}
@@ -1147,7 +1147,7 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && val && base);
-	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_NUM_MAX_IBASE);
+	assert(base_t >= BC_NUM_MIN_BASE && base_t <= vm->max_ibase);
 
 	if (!bc_num_strValid(val)) return bc_vm_err(BC_ERROR_MATH_STRING);
 

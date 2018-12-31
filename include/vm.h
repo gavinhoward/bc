@@ -101,8 +101,8 @@ typedef struct BcVm {
 
 	// ** Exclude start. **
 	uint8_t flags;
-
 	uchar read_ret;
+	uchar max_ibase;
 
 #if BC_ENABLE_SIGNALS
 	uint8_t sig;

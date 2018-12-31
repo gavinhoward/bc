@@ -41,7 +41,8 @@ typedef struct BcNum {
 } BcNum;
 
 #define BC_NUM_MIN_BASE ((unsigned long) 2)
-#define BC_NUM_MAX_IBASE ((unsigned long) 16)
+#define BC_NUM_MAX_POSIX_IBASE ((unsigned long) 16)
+#define BC_NUM_MAX_IBASE ((unsigned long) 36)
 // This is the max base allowed by bc_num_parseChar().
 #define BC_NUM_MAX_LBASE ('Z' + 10 + 1)
 #define BC_NUM_DEF_SIZE (16)

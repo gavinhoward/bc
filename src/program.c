@@ -781,7 +781,7 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		}
 		else {
 			if (val < BC_NUM_MIN_BASE) return bc_vm_err(e);
-			max = ib ? BC_NUM_MAX_IBASE : BC_MAX_OBASE;
+			max = ib ? vm->max_ibase : BC_MAX_OBASE;
 			ptr = ib ? &p->ib_t : &p->ob_t;
 		}
 
