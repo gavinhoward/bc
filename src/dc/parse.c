@@ -50,7 +50,7 @@ BcStatus dc_parse_string(BcParse *p) {
 
 	BcFunc f;
 
-	bc_program_addFunc(p->prog, &f);
+	bc_program_addFunc(p->prog, &f, bc_func_main);
 	bc_parse_string(p);
 
 	return bc_lex_next(&p->l);

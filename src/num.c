@@ -195,7 +195,8 @@ void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
 BcStatus bc_num_shift(BcNum *restrict n, size_t places) {
 
 	if (places == 0 || n->len == 0) return BC_STATUS_SUCCESS;
-	if (places + n->len > BC_MAX_NUM) return bc_vm_err(BC_ERROR_EXEC_NUM_LEN);
+	if (places + n->len > BC_MAX_NUM)
+		return bc_vm_verr(BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
 
 	if (n->rdx >= places) n->rdx -= places;
 	else {
@@ -749,6 +750,7 @@ BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if (len > c->len) {
 
+		if (len > BC_MAX_NUM) return bc_vm_verr(BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
 		if (len > c->cap) bc_num_expand(c, len);
 
 		memset(c->num + c->len, 0, len - c->len);

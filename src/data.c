@@ -109,8 +109,8 @@ const char* const bc_err_msgs[] = {
 
 	"memory allocation error",
 	"I/O error",
-	"file is not text:",
-	"path is a directory:",
+	"file is not text: %s",
+	"path is a directory: %s",
 	// ** Exclude start. **
 	"Bad command-line option: '%c' (\"%s\")",
 	// ** Exclude end. **
@@ -130,7 +130,7 @@ const char* const bc_err_msgs[] = {
 	"block end could not be found",
 	"end of file",
 #if BC_ENABLE_REFERENCES
-	"vars cannot be references",
+	"var cannot be reference: %s",
 #endif // BC_ENABLE_REFERENCES
 
 	"negative number",
@@ -139,14 +139,14 @@ const char* const bc_err_msgs[] = {
 	"divide by zero",
 	"bad number string",
 
-	"could not open file:",
+	"could not open file: %s",
 	"mismatched parameters; need %zu, have %zu",
-	"undefined function",
-	"file is not executable:",
-	"number too long: must be [1, BC_NUM_MAX]",
-	"name too long: must be [1, BC_NAME_MAX]",
-	"string too long: must be [1, BC_STRING_MAX]",
-	"array too long; must be [1, BC_DIM_MAX]",
+	"undefined function: %s()",
+	"file is not executable: %s",
+	"number too long: must be [1, %lu]",
+	"name too long: must be [1, %lu]",
+	"string too long: must be [1, %lu]",
+	"array too long; must be [1, %lu]",
 	"bad ibase; must be [%lu, %lu]",
 	"bad obase; must be [%lu, %lu]",
 	"bad scale; must be [%lu, %lu]",

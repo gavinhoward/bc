@@ -75,7 +75,7 @@ BcStatus dc_lex_string(BcLex *l) {
 
 	bc_vec_pushByte(&l->str, '\0');
 	if (i - l->i > BC_MAX_STRING)
-		return bc_vm_error(BC_ERROR_EXEC_STRING_LEN, l->line);
+		return bc_vm_error(BC_ERROR_EXEC_STRING_LEN, l->line, BC_MAX_STRING);
 
 	l->i = i;
 	l->line += nls;

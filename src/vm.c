@@ -79,9 +79,18 @@ void bc_vm_printError(BcError e, const char* const fmt,
 	fprintf(stderr, fmt, bc_errs[(size_t) bc_err_ids[e]]);
 	vfprintf(stderr, bc_err_msgs[e], args);
 
-	if (vm->file) {
+	assert(vm->file);
+
+	// This is the condition for parsing vs runtime.
+	// If line is not 0, it is parsing.
+	if (line != 0) {
 		fprintf(stderr, "\n    %s", vm->file);
-		if (line) fprintf(stderr, bc_err_line, line);
+		fprintf(stderr, bc_err_line, line);
+	}
+	else {
+		BcInstPtr *ip = bc_vec_item_rev(&vm->prog.stack, 0);
+		BcFunc *f = bc_vec_item(&vm->prog.fns, ip->func);
+		fprintf(stderr, "\n    Function: %s", f->name);
 	}
 
 	fputs("\n\n", stderr);
@@ -304,7 +313,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	if (vm->prs.flags.len > 1)
 		s = bc_vm_error(BC_ERROR_PARSE_BLOCK, vm->prs.l.line);
 	else if (!BC_PARSE_CAN_EXEC(&vm->prs) || main_func->code.len < ip->idx)
-		s = bc_vm_err(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE);
+		s = bc_vm_verr(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE, vm->file);
 
 err:
 	free(data);

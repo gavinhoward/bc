@@ -874,7 +874,7 @@ BcStatus bc_parse_func(BcParse *p) {
 		}
 #if BC_ENABLE_REFERENCES
 		else if (t == BC_TYPE_REF) {
-			s = bc_vm_error(BC_ERROR_PARSE_REF_VAR, p->l.line);
+			s = bc_vm_error(BC_ERROR_PARSE_REF_VAR, p->l.line, name);
 			goto err;
 		}
 #endif // BC_ENABLE_REFERENCES

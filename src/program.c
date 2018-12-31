@@ -786,7 +786,7 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 			ptr = ib ? &p->ib_t : &p->ob_t;
 		}
 
-		if (val > max || val < min) return bc_vm_error(e, 0, min, max);
+		if (val > max || val < min) return bc_vm_verr(e, min, max);
 		if (!sc) bc_num_copy(ib ? &p->ib : &p->ob, l);
 
 		*ptr = (size_t) val;
@@ -869,7 +869,7 @@ BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
 		if (s) goto err;
 
 		if (temp > BC_MAX_DIM) {
-			s = bc_vm_err(BC_ERROR_EXEC_ARRAY_LEN);
+			s = bc_vm_verr(BC_ERROR_EXEC_ARRAY_LEN, BC_MAX_DIM);
 			goto err;
 		}
 
@@ -930,9 +930,9 @@ BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 	ip.func = bc_program_index(code, idx);
 	f = bc_vec_item(&p->fns, ip.func);
 
-	if (f->code.len == 0) return bc_vm_err(BC_ERROR_EXEC_UNDEFINED_FUNC);
+	if (f->code.len == 0) return bc_vm_verr(BC_ERROR_EXEC_UNDEF_FUNC, f->name);
 	if (nparams != f->nparams)
-		return bc_vm_error(BC_ERROR_EXEC_PARAMS, 0, f->nparams, nparams);
+		return bc_vm_verr(BC_ERROR_EXEC_PARAMS, f->nparams, nparams);
 	ip.len = p->results.len - nparams;
 
 	assert(BC_PROG_STACK(&p->results, nparams));
@@ -1214,7 +1214,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 	str[0] = c;
 	str[1] = '\0';
 
-	bc_program_addFunc(p, &f);
+	bc_program_addFunc(p, &f, bc_func_main);
 	str2 = bc_vm_strdup(str);
 
 	// Make sure the pointer is updated.
@@ -1472,8 +1472,8 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_push(&p->stack, &ip);
 }
 
-void bc_program_addFunc(BcProgram *p, BcFunc *f) {
-	bc_func_init(f);
+void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
+	bc_func_init(f, name);
 	bc_vec_push(&p->fns, f);
 }
 
@@ -1499,7 +1499,7 @@ size_t bc_program_insertFunc(BcProgram *p, char *name) {
 		bc_func_reset(func);
 		free(name);
 	}
-	else bc_program_addFunc(p, &f);
+	else bc_program_addFunc(p, &f, name);
 
 	return idx;
 }

@@ -89,6 +89,7 @@
 #define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
 
 #define bc_vm_err(e) (bc_vm_error((e), 0))
+#define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
 
 typedef struct BcVm {
 
@@ -145,7 +146,6 @@ void bc_vm_shutdown();
 
 // ** Busybox exclude start. **
 
-void bc_vm_exit(BcError e);
 void bc_vm_printf(const char *fmt, ...);
 void bc_vm_puts(const char *str, FILE *restrict f);
 void bc_vm_putchar(int c);
@@ -155,7 +155,6 @@ void bc_vm_fflush(FILE *restrict f);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
-void bc_vm_exit(BcError e);
 
 BcStatus bc_vm_error(BcError e, size_t line, ...);
 // ** Exclude end. **

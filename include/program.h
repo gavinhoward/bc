@@ -115,7 +115,7 @@ void bc_program_printInst(BcProgram *p, const char *code,
 // ** Busybox exclude end. **
 // ** Exclude end. **
 
-void bc_program_addFunc(BcProgram *p, BcFunc *f);
+void bc_program_addFunc(BcProgram *p, BcFunc *f, const char* name);
 size_t bc_program_insertFunc(BcProgram *p, char *name);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);

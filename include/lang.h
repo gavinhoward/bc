@@ -164,6 +164,8 @@ typedef struct BcFunc {
 	BcVec strs;
 	BcVec consts;
 
+	const char *name;
+
 } BcFunc;
 
 typedef enum BcResultType {
@@ -214,7 +216,7 @@ typedef enum BcType {
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
-void bc_func_init(BcFunc *f);
+void bc_func_init(BcFunc *f, const char* name);
 BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line);
 void bc_func_reset(BcFunc *f);
 void bc_func_free(void *func);

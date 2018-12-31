@@ -100,7 +100,8 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 	len = i + 1 * !last_pt - bslashes * 2;
 
-	if (len > BC_MAX_NUM) return bc_vm_error(BC_ERROR_EXEC_NUM_LEN, l->line);
+	if (len > BC_MAX_NUM)
+		return bc_vm_error(BC_ERROR_EXEC_NUM_LEN, l->line, BC_MAX_NUM);
 
 	bc_vec_npop(&l->str, l->str.len);
 	bc_vec_expand(&l->str, len + 1);
@@ -137,7 +138,8 @@ BcStatus bc_lex_name(BcLex *l) {
 
 	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
 
-	if (i > BC_MAX_STRING) return bc_vm_error(BC_ERROR_EXEC_NAME_LEN, l->line);
+	if (i > BC_MAX_NAME)
+		return bc_vm_error(BC_ERROR_EXEC_NAME_LEN, l->line, BC_MAX_NAME);
 
 	bc_vec_string(&l->str, i, buf);
 

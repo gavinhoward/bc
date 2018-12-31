@@ -83,7 +83,7 @@ BcStatus bc_lex_string(BcLex *l) {
 	len = i - l->i;
 
 	if (len > BC_MAX_STRING)
-		return bc_vm_error(BC_ERROR_EXEC_STRING_LEN, l->line);
+		return bc_vm_error(BC_ERROR_EXEC_STRING_LEN, l->line, BC_MAX_STRING);
 
 	bc_vec_string(&l->str, len, l->buf + l->i);
 

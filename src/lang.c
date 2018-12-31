@@ -59,8 +59,8 @@ BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line) {
 }
 #endif // BC_ENABLED
 
-void bc_func_init(BcFunc *f) {
-	assert(f);
+void bc_func_init(BcFunc *f, const char *name) {
+	assert(f && name);
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
 	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
 	bc_vec_init(&f->consts, sizeof(char*), bc_string_free);
@@ -68,6 +68,7 @@ void bc_func_init(BcFunc *f) {
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
 	f->nparams = 0;
+	f->name = name;
 #endif // BC_ENABLED
 }
 
