@@ -147,12 +147,12 @@ const char* const bc_err_msgs[] = {
 	"name too long: must be [1, BC_NAME_MAX]",
 	"string too long: must be [1, BC_STRING_MAX]",
 	"array too long; must be [1, BC_DIM_MAX]",
-	"bad ibase; must be [2, 16]",
-	"bad scale; must be [0, BC_SCALE_MAX]",
+	"bad ibase; must be [2, %lu]",
+	"bad obase; must be [2, %lu]",
+	"bad scale; must be [0, %lu]",
 	"bad read() expression",
 	"read() call inside of a read() call",
 	"variable is wrong type",
-	"bad obase; must be [2, BC_BASE_MAX]",
 	"stack has too few elements",
 
 #if BC_ENABLED

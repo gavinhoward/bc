@@ -780,12 +780,12 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 			ptr = &p->scale;
 		}
 		else {
-			if (val < BC_NUM_MIN_BASE) return bc_vm_err(e);
 			max = ib ? vm->max_ibase : BC_MAX_OBASE;
 			ptr = ib ? &p->ib_t : &p->ob_t;
 		}
 
-		if (val > max) return bc_vm_err(e);
+		if (val > max || (!sc && val < BC_NUM_MIN_BASE))
+			return bc_vm_error(e, 0, max);
 		if (!sc) bc_num_copy(ib ? &p->ib : &p->ob, l);
 
 		*ptr = (size_t) val;
