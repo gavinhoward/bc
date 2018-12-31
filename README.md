@@ -79,9 +79,6 @@ make install
 
 It is expected that `CC` produces code for the target system.
 
-Users can also create a file named `config.mak` in the top-level directory to
-control `make`. This is not normally necessary.
-
 Users can also disable signal handling by compiling as follows:
 
 ```
@@ -128,7 +125,7 @@ make install
 Release builds are automatically stripped in the link stage.
 
 Debug builds (which also disable optimization if no optimization level is given
-and if no extra CFLAGS are given) can be enabled with:
+and if no extra `CFLAGS` are given) can be enabled with:
 
 ```
 ./configure.sh -g
