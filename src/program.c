@@ -728,7 +728,6 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *left, *right, res;
 	BcNum *l = NULL, *r = NULL;
-	unsigned long val, max;
 	bool assign = inst == BC_INST_ASSIGN, ib, sc;
 
 	s = bc_program_binOpPrep(p, &left, &l, &right, &r, assign);
@@ -769,6 +768,7 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	if (ib || sc || left->t == BC_RESULT_OBASE) {
 
 		size_t *ptr;
+		unsigned long val, max, min;
 		BcError e;
 
 		s = bc_num_ulong(l, &val);
@@ -777,15 +777,16 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 		if (sc) {
 			max = BC_MAX_SCALE;
+			min = 0;
 			ptr = &p->scale;
 		}
 		else {
 			max = ib ? vm->max_ibase : BC_MAX_OBASE;
+			min = BC_NUM_MIN_BASE;
 			ptr = ib ? &p->ib_t : &p->ob_t;
 		}
 
-		if (val > max || (!sc && val < BC_NUM_MIN_BASE))
-			return bc_vm_error(e, 0, max);
+		if (val > max || val < min) return bc_vm_error(e, 0, min, max);
 		if (!sc) bc_num_copy(ib ? &p->ib : &p->ob, l);
 
 		*ptr = (size_t) val;
