@@ -1521,7 +1521,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 	vm->sig = 0;
 
 	if (!s || s == BC_STATUS_SIGNAL) {
-		if (vm->ttyin) {
+		if (BC_TTYIN) {
 			bc_vm_puts(bc_program_ready_msg, stderr);
 			bc_vm_fflush(stderr);
 			s = BC_STATUS_SUCCESS;

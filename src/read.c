@@ -56,7 +56,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_npop(vec, vec->len);
 
-	if (vm->ttyin && !BC_S) {
+	if (BC_TTYIN && !BC_S) {
 		bc_vm_puts(prompt, stderr);
 		bc_vm_fflush(stderr);
 	}
@@ -72,7 +72,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				vm->sig = 0;
 
-				if (vm->ttyin) {
+				if (BC_TTYIN) {
 					bc_vm_puts(bc_program_ready_msg, stderr);
 					if (!BC_S) bc_vm_puts(prompt, stderr);
 					bc_vm_fflush(stderr);

@@ -491,8 +491,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	s = bc_args(argc, argv);
 	if (s) goto exit;
 
-	vm->ttyin = isatty(STDIN_FILENO);
-	vm->flags |= vm->ttyin && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
+	vm->flags |= isatty(STDIN_FILENO) ? BC_FLAG_TTYIN : 0;
+	vm->flags |= BC_TTYIN && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
 
 	if (BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 

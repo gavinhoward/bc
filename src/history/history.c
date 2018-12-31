@@ -400,7 +400,7 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 	struct termios raw;
 
-	assert(vm->ttyin);
+	assert(BC_TTYIN);
 
 	if (h->rawMode) return BC_STATUS_SUCCESS;
 
@@ -1231,7 +1231,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	BcStatus s;
 	char* line;
 
-	if (vm->ttyin && !vm->history.badTerm) {
+	if (BC_TTYIN && !vm->history.badTerm) {
 
 		s = bc_history_raw(h, prompt);
 		if (s) return s;

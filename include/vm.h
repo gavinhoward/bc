@@ -58,6 +58,7 @@
 #define BC_FLAG_Q (1<<4)
 #define BC_FLAG_L (1<<5)
 #define BC_FLAG_I (1<<6)
+#define BC_FLAG_TTYIN (1<<7)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -85,6 +86,8 @@
 #define BC_I (BC_ENABLED && (vm->flags & BC_FLAG_I))
 #define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
 
+#define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
+
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 
 typedef struct BcVm {
@@ -98,7 +101,6 @@ typedef struct BcVm {
 
 	// ** Exclude start. **
 	uint8_t flags;
-	uint8_t ttyin;
 
 	uchar read_ret;
 
