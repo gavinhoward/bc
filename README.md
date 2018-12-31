@@ -122,7 +122,10 @@ make
 make install
 ```
 
-Release builds are automatically stripped in the link stage.
+Building with link-time optimization can further increase the performance.
+
+Manual stripping is not necessary; release builds are automatically stripped in
+the link stage.
 
 Debug builds (which also disable optimization if no optimization level is given
 and if no extra `CFLAGS` are given) can be enabled with:
