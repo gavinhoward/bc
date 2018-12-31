@@ -52,8 +52,9 @@ This dc has a few differences from the two above:
 
        l idx s temp L index S temp2 < do_thing
 
-     Also note that, like the FreeBSD dc, extended registers are not allowed
-     unless the "-x" option is given.
+     Also note that, unlike the FreeBSD dc, extended registers are not even
+     parsed unless the "-x" option is given. Instead, the space after a command
+     that requires a register name is taken as the register name.
 
 Options:
 
