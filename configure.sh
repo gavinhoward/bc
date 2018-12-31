@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-bD|-dB|-c] [-EghHSR] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-EghHRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
