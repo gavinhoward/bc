@@ -46,7 +46,7 @@ BcStatus bc_lex_identifier(BcLex *l) {
 			l->t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
 			if (!BC_LEX_KW_POSIX(kw)) {
-				s = bc_vm_posixError(BC_ERROR_POSIX_KW, l->line, kw->name);
+				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_KW, kw->name);
 				if (s) return s;
 			}
 
@@ -59,8 +59,7 @@ BcStatus bc_lex_identifier(BcLex *l) {
 	s = bc_lex_name(l);
 	if (s) return s;
 
-	if (l->str.len - 1 > 1)
-		s = bc_vm_posixError(BC_ERROR_POSIX_NAME_LEN, l->line, buf);
+	if (l->str.len - 1 > 1) s = bc_lex_vposixErr(l, BC_ERROR_POSIX_NAME_LEN, buf);
 
 	return s;
 }
@@ -131,7 +130,7 @@ BcStatus bc_lex_token(BcLex *l) {
 			bc_lex_assign(l, BC_LEX_OP_REL_NE, BC_LEX_OP_BOOL_NOT);
 
 			if (l->t == BC_LEX_OP_BOOL_NOT) {
-				s = bc_vm_posixError(BC_ERROR_POSIX_BOOL, l->line, "!");
+				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "!");
 				if (s) return s;
 			}
 
@@ -146,7 +145,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '#':
 		{
-			s = bc_vm_posixError(BC_ERROR_POSIX_COMMENT, l->line);
+			s = bc_lex_posixErr(l, BC_ERROR_POSIX_COMMENT);
 			if (s) return s;
 
 			bc_lex_lineComment(l);
@@ -165,7 +164,7 @@ BcStatus bc_lex_token(BcLex *l) {
 			c2 = l->buf[l->i];
 			if (c2 == '&') {
 
-				s = bc_vm_posixError(BC_ERROR_POSIX_BOOL, l->line, "&&");
+				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "&&");
 				if (s) return s;
 
 				++l->i;
@@ -234,7 +233,7 @@ BcStatus bc_lex_token(BcLex *l) {
 			if (isdigit(l->buf[l->i])) s = bc_lex_number(l, c);
 			else {
 				l->t = BC_LEX_KEY_LAST;
-				s = bc_vm_posixError(BC_ERROR_POSIX_DOT, l->line);
+				s = bc_lex_posixErr(l, BC_ERROR_POSIX_DOT);
 			}
 			break;
 		}
@@ -401,7 +400,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 			if (c2 == '|') {
 
-				s = bc_vm_posixError(BC_ERROR_POSIX_BOOL, l->line, "||");
+				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "||");
 				if (s) return s;
 
 				++l->i;
