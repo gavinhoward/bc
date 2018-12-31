@@ -23,8 +23,12 @@
 usage: %s [options] [file...]
 
 bc is a command-line, arbitrary-precision calculator with a Turing-complete
-language. See the GNU bc manual (https://www.gnu.org/software/bc/manual/bc.html)
-and bc spec (http://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
+language. For details, see this bc's full manual
+(https://github.com/gavinhoward/bc/blob/master/manuals/bc.md).
+
+This bc is compatible with both the GNU bc and the POSIX bc spec. See the GNU bc
+manual (https://www.gnu.org/software/bc/manual/bc.html) and bc spec
+(http://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 for details.
 
 This bc has four differences to the GNU bc:

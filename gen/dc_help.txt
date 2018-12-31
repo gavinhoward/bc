@@ -23,9 +23,13 @@
 usage: %s [options] [file...]
 
 dc is a reverse-polish notation command-line calculator which supports unlimited
-precision arithmetic. See the FreeBSD man page
-(https://www.unix.com/man-page/FreeBSD/1/dc/) and GNU dc manual
-(https://www.gnu.org/software/bc/manual/dc-1.05/html_mono/dc.html) for details.
+precision arithmetic. For details, see this dc's full manual
+(https://github.com/gavinhoward/bc/blob/master/manuals/dc.md).
+
+This dc is (mostly) compatible with the FreeBSD dc and the GNU dc. See the
+FreeBSD man page (https://www.unix.com/man-page/FreeBSD/1/dc/) and the GNU dc
+manual (https://www.gnu.org/software/bc/manual/dc-1.05/html_mono/dc.html) for
+details.
 
 This dc has a few differences from the two above:
 
