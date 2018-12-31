@@ -49,22 +49,46 @@ This bc has four differences to the GNU bc:
 
 Options:
 
-  -e expr  --expression=expr
-                         run "expr" and quit. If multiple expressions or files
-                         (see below) are given, they are all run.
-  -f  file  --file=file  run the bc code in "file" and exit. See above as well.
-  -h  --help             print this usage message and exit
-  -i  --interactive      force interactive mode
-  -l  --mathlib          use predefined math routines:
+  -e  expr  --expression=expr
 
-                           s(expr)  =  sine of expr in radians
-                           c(expr)  =  cosine of expr in radians
-                           a(expr)  =  arctangent of expr, returning radians
-                           l(expr)  =  natural log of expr
-                           e(expr)  =  raises e to the power of expr
-                           j(n, x)  =  Bessel function of integer order n of x
+      Run "expr" and quit. If multiple expressions or files (see below) are
+      given, they are all run before executing from stdin.
 
-  -q  --quiet            don't print version and copyright
-  -s  --standard         error if any non-POSIX extensions are used
-  -w  --warn             warn if any non-POSIX extensions are used
-  -v  --version          print version information and copyright and exit
+  -f  file  --file=file
+
+      Run the bc code in "file" and exit. See above as well.
+
+  -h  --help
+
+      Print this usage message and exit.
+
+  -i  --interactive
+
+      Force interactive mode.
+
+  -l  --mathlib
+
+      Use predefined math routines:
+
+          s(expr)  =  sine of expr in radians
+          c(expr)  =  cosine of expr in radians
+          a(expr)  =  arctangent of expr, returning radians
+          l(expr)  =  natural log of expr
+          e(expr)  =  raises e to the power of expr
+          j(n, x)  =  Bessel function of integer order n of x
+
+  -q  --quiet
+
+      Don't print version and copyright.
+
+  -s  --standard
+
+      Error if any non-POSIX extensions are used.
+
+  -w  --warn
+
+      Warn if any non-POSIX extensions are used.
+
+  -v  --version
+
+      Print version information and copyright and exit.
