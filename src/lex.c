@@ -31,7 +31,7 @@
 
 BcStatus bc_lex_invalidChar(BcLex *l, char c) {
 	l->t = BC_LEX_INVALID;
-	return bc_vm_error(BC_ERROR_PARSE_CHAR, l->line, c);
+	return bc_lex_verr(l, BC_ERROR_PARSE_CHAR, c);
 }
 
 void bc_lex_lineComment(BcLex *l) {
@@ -54,7 +54,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 		if (c == 0 || buf[i + 1] == '\0') {
 			l->i = i;
-			return bc_vm_error(BC_ERROR_PARSE_COMMENT, l->line);
+			return bc_lex_err(l, BC_ERROR_PARSE_COMMENT);
 		}
 
 		end = buf[i + 1] == '/';
@@ -101,7 +101,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	len = i + 1 * !last_pt - bslashes * 2;
 
 	if (len > BC_MAX_NUM)
-		return bc_vm_error(BC_ERROR_EXEC_NUM_LEN, l->line, BC_MAX_NUM);
+		return bc_lex_verr(l, BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
 
 	bc_vec_npop(&l->str, l->str.len);
 	bc_vec_expand(&l->str, len + 1);
@@ -139,7 +139,7 @@ BcStatus bc_lex_name(BcLex *l) {
 	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
 
 	if (i > BC_MAX_NAME)
-		return bc_vm_error(BC_ERROR_EXEC_NAME_LEN, l->line, BC_MAX_NAME);
+		return bc_lex_verr(l, BC_ERROR_EXEC_NAME_LEN, BC_MAX_NAME);
 
 	bc_vec_string(&l->str, i, buf);
 
@@ -175,7 +175,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	l->last = l->t;
 	l->line += l->last == BC_LEX_NLINE;
 
-	if (l->last == BC_LEX_EOF) return bc_vm_error(BC_ERROR_PARSE_EOF, l->line);
+	if (l->last == BC_LEX_EOF) return bc_lex_err(l, BC_ERROR_PARSE_EOF);
 
 	l->t = BC_LEX_EOF;
 

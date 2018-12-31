@@ -30,6 +30,9 @@
 #include <vector.h>
 #include <lang.h>
 
+#define bc_lex_err(l, e) (bc_vm_error((e), (l)->line))
+#define bc_lex_verr(l, e, ...) (bc_vm_error((e), (l)->line, __VA_ARGS__))
+
 // BC_LEX_NEG is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
 

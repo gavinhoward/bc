@@ -179,7 +179,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 				if (bc_args_lopt[i].val == (int) err) break;
 			}
 
-			s = bc_vm_error(BC_ERROR_VM_OPTION, 0, err, bc_args_lopt[i].name);
+			s = bc_vm_verr(BC_ERROR_VM_OPTION, err, bc_args_lopt[i].name);
 		}
 
 		if (s) return s;

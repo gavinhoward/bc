@@ -70,12 +70,12 @@ BcStatus dc_lex_string(BcLex *l) {
 
 	if (c == '\0' && depth) {
 		l->i = i;
-		return bc_vm_error(BC_ERROR_PARSE_STRING, l->line);
+		return bc_lex_err(l, BC_ERROR_PARSE_STRING);
 	}
 
 	bc_vec_pushByte(&l->str, '\0');
 	if (i - l->i > BC_MAX_STRING)
-		return bc_vm_error(BC_ERROR_EXEC_STRING_LEN, l->line, BC_MAX_STRING);
+		return bc_lex_verr(l, BC_ERROR_EXEC_STRING_LEN, BC_MAX_STRING);
 
 	l->i = i;
 	l->line += nls;

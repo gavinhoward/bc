@@ -80,6 +80,9 @@
 #define bc_parse_number(p)(bc_parse_addId((p), BC_INST_NUM))
 #define bc_parse_string(p)(bc_parse_addId((p), BC_INST_STR))
 
+#define bc_parse_err(p, e) (bc_vm_error((e), (p)->l.line))
+#define bc_parse_verr(p, e, ...) (bc_vm_error((e), (p)->l.line, __VA_ARGS__))
+
 typedef struct BcParseNext {
 	uchar len;
 	uchar tokens[4];

@@ -38,8 +38,7 @@ BcStatus dc_parse_register(BcParse *p) {
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
-	if (p->l.t != BC_LEX_NAME)
-		return bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
+	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	bc_parse_pushName(p, p->l.str.v);
 
@@ -137,7 +136,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 				s = bc_lex_next(&p->l);
 				if (s) return s;
 				if (p->l.t != BC_LEX_NUMBER)
-					return bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
+					return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 			}
 
 			bc_parse_number(p);
@@ -151,7 +150,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_KEY_READ:
 		{
 			if (flags & BC_PARSE_NOREAD)
-				s = bc_vm_error(BC_ERROR_EXEC_REC_READ, p->l.line);
+				s = bc_parse_err(p, BC_ERROR_EXEC_REC_READ);
 			else bc_parse_push(p, BC_INST_READ);
 			get_token = true;
 			break;
@@ -185,7 +184,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 		default:
 		{
-			s = bc_vm_error(BC_ERROR_PARSE_TOKEN, p->l.line);
+			s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 			get_token = true;
 			break;
 		}
@@ -233,7 +232,7 @@ BcStatus dc_parse_parse(BcParse *p) {
 
 	assert(p);
 
-	if (p->l.t == BC_LEX_EOF) s = bc_vm_error(BC_ERROR_PARSE_EOF, p->l.line);
+	if (p->l.t == BC_LEX_EOF) s = bc_parse_err(p, BC_ERROR_PARSE_EOF);
 	else s = dc_parse_expr(p, 0);
 
 	if (s || BC_SIGINT) s = bc_parse_reset(p, s);
