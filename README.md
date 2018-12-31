@@ -4,11 +4,17 @@ This is an implementation of POSIX `bc` that implements
 [GNU `bc`](https://www.gnu.org/software/bc/) extensions, as well as the period
 (`.`) extension for the BSD flavor of `bc`.
 
+For more information, see this `bc`'s
+[full manual](https://github.com/gavinhoward/bc/blob/master/manuals/bc.md).
+
 This `bc` also includes an implementation of `dc` in the same binary, accessible
 via a symbolic link, which implements all FreeBSD and GNU extensions. If a
 single `dc` binary is desired, `bc` can be copied and renamed to `dc`. The `!`
 command is omitted; I believe this is poses security concerns and that such
 functionality is unnecessary.
+
+For more information, see the `dc`'s
+[full manual](https://github.com/gavinhoward/bc/blob/master/manuals/dc.md).
 
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 0-clause License. Full license text may be found in the `LICENSE.md` file.
