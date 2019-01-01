@@ -444,7 +444,7 @@ contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "REFERENCES" "$refs")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
-contents=$(replace "$contents" "VOIDFNS" "$voidfns")
+contents=$(replace "$contents" "VOID_FNS" "$voidfns")
 contents=$(replace "$contents" "BC_LIB3_O" "$BC_LIB3_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
