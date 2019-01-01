@@ -40,11 +40,14 @@ define r(x,p){
 	return (t)
 }
 define ubytes(x){
-	auto p,b,i
+	auto p,b,i,s
 	b=ibase
 	ibase=A
+	s=scale
+	scale=100
 	p=(l(x)/l(2)+1)$
 	for(i=1;i*8<p;i*=2){}
+	scale=s
 	ibase=b
 	return(i)
 }
