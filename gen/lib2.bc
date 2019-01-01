@@ -21,7 +21,7 @@
  */
 
 define r(x,p){
-	auto i,t,s,n
+	auto i,t,n
 	if(x==0)return(x)
 	if(scale(p))p=p$
 	if(p<0)p=-p
@@ -38,4 +38,25 @@ define r(x,p){
 	ibase=i
 	if(n)t=-t
 	return (t)
+}
+define ubytes(x){
+	auto p,b,i
+	b=ibase
+	ibase=A
+	p=(l(x)/l(2)+1)$
+	for(i=1;i*8<p;i*=2){}
+	ibase=b
+	return(i)
+}
+define sbytes(x){
+	auto p,b,n,z
+	z=x<0
+	if(z)x=-x
+	n=ubytes(x)
+	b=ibase
+	ibase=A
+	p=2^(n*8-1)
+	if(x>p||(!z&&x==p))n*=2
+	ibase=b
+	return(n)
 }

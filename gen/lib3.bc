@@ -28,17 +28,53 @@ define void output(x,b){
 	obase=b2
 }
 define void hex(x){
-	output(x, G)
+	output(x,G)
 }
 define void binary(x){
-	output(x, 2)
+	output(x,2)
 }
-define void hex_bytes(x){
-
+define void output_uint(x,n){
+	auto i,ib,b,s
+	ib=ibase
+	ibase=A
+	s=scale
+	scale=0
+	for(i=n-1;i>=0;--i){
+		b=x/(2^(i*8)
+		b%=2^((n-i-1)*8)
+		print b
+		if(i)print " "
+		else print "\n"
+	}
+	scale=s
+	ibase=ib
 }
-define void binary_bytes(x){
-
+define void hex_uint(x,n){
+	auto o
+	o=obase
+	obase=G
+	output_uint(x,n)
+	obase=o
 }
-define void bytes(x){
-
+define void binary_uint(x,n){
+	auto o
+	o=obase
+	obase=2
+	output_uint(x,n)
+	obase=o
+}
+define void int(x){
+	auto n,z
+	z=x<0
+	if(z)x=-x
+	n=sbytes(x)
+	if(z)x=2^(n*8)-x
+	binary_uint(x,n)
+	hex_uint(x,n)
+}
+define void uint(x){
+	auto n
+	n=ubytes(x)
+	binary_uint(x,n)
+	hex_uint(x,n)
 }
