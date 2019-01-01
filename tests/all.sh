@@ -20,15 +20,17 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -ge 3 ]; then
+if [ "$#" -ge 4 ]; then
 	d="$1"
 	shift
 	extra="$1"
 	shift
 	refs="$1"
 	shift
+	voids="$1"
+	shift
 else
-	printf 'usage: %s dir run_extended_tests run_reference_tests [exec args...]\n' "$script"
+	printf 'usage: %s dir run_extended_tests run_reference_tests run_void_tests [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -65,7 +67,7 @@ done < "$testdir/$d/all.txt"
 
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
-sh "$testdir/scripts.sh" "$d" "$refs" "$exe" "$@"
+sh "$testdir/scripts.sh" "$d" "$refs" "$voids" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
 printf '\nRunning quit test...\n'
