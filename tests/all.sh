@@ -55,7 +55,14 @@ printf '\nRunning %s tests...\n\n' "$d"
 while read t; do
 
 	if [ "$extra" -eq 0  ]; then
-		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" ]; then
+		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" -o "$t" = "lib3" ]; then
+			printf 'Skipping %s %s\n' "$d" "$t"
+			continue
+		fi
+	fi
+
+	if [ "$voids" -eq 0 ]; then
+		if [ "$t" = "lib3" -o "$t" = "void" ]; then
 			printf 'Skipping %s %s\n' "$d" "$t"
 			continue
 		fi
@@ -67,7 +74,7 @@ done < "$testdir/$d/all.txt"
 
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
-sh "$testdir/scripts.sh" "$d" "$refs" "$voids" "$exe" "$@"
+sh "$testdir/scripts.sh" "$d" "$refs" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
 printf '\nRunning quit test...\n'

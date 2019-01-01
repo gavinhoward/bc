@@ -10,6 +10,7 @@ trunc
 places
 shift
 lib2
+lib3
 vars
 boolean
 strings
