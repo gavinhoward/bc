@@ -21,11 +21,11 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 2 ]; then
-	echo "usage: $0 dir test [exe [args...]]"
-	echo "valid dirs are:"
-	echo ""
+	printf 'usage: %s dir test [exe [args...]]\n' "$0"
+	printf 'valid dirs are:\n'
+	printf '\n'
 	cat "$testdir/all.txt"
-	echo ""
+	printf '\n'
 	exit 1
 fi
 
@@ -57,13 +57,13 @@ else
 fi
 
 if [ ! -f "$name" ]; then
-	echo "Generating $d $t..."
+	printf 'Generating %s %s...\n' "$d" "$t"
 	"$testdir/$d/scripts/$t.$d" > "$name"
 fi
 
 if [ ! -f "$results" ]; then
-	echo "Generating $d $t results..."
-	echo "$halt" | "$d" $options "$name" > "$results"
+	printf 'Generating %s %s results...\n' "$d" "$t"
+	printf '%s\n' "$halt" | "$d" $options "$name" > "$results"
 fi
 
 if [ "$d" = "dc" ]; then
@@ -72,9 +72,9 @@ fi
 
 export $var=string
 
-echo "Running $d $t..."
+printf 'Running %s %s...\n' "$d" "$t"
 
-echo "$halt" | "$exe" "$@" $options "$name" > "$out"
+printf '%s\n' "$halt" | "$exe" "$@" $options "$name" > "$out"
 
 diff "$results" "$out"
 
