@@ -24,7 +24,7 @@ define void output(x,b){
 	auto b2
 	b2=obase
 	obase=b
-	print x, "\n"
+	x
 	obase=b2
 }
 define void hex(x){
