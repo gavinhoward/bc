@@ -63,7 +63,7 @@ fi
 
 if [ ! -f "$results" ]; then
 	echo "Generating $d $t results..."
-	echo "$halt" | $d $options "$name" > "$results"
+	echo "$halt" | "$d" $options "$name" > "$results"
 fi
 
 if [ "$d" = "dc" ]; then
