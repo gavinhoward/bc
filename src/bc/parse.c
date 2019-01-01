@@ -533,7 +533,11 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			bc_vec_pop(&p->exits);
 		}
 		else if (BC_PARSE_FUNC_INNER(p)) {
-			bc_parse_push(p, BC_INST_RET0);
+			BcInst inst = BC_INST_RET0;
+#if BC_ENABLE_VOID_FNS
+			if (p->func->voidfn) inst = BC_INST_RET_VOID;
+#endif // BC_ENABLE_VOID_FNS
+			bc_parse_push(p, inst);
 			bc_parse_updateFunc(p, BC_PROG_MAIN);
 			bc_vec_pop(&p->flags);
 		}
