@@ -42,9 +42,9 @@ define void output_byte(x,i,n){
 	x=x$
 	b=x/(2^(i*8))
 	b%=2^((n-i)*8)
-	y=log(256,obase)
-	if(b)p=log(b,obase)
-	else p=0
+	y=(log(255,obase)+1)$
+	if(b>1)p=(log(b-1,obase)+1)$
+	else p=b
 	for(i=y-p;i>0;--i) print 0
 	if(b)print b
 	scale=s
