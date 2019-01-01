@@ -1079,7 +1079,7 @@ BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 
 	n->neg = false;
 
-	if (base_t <= vm->max_ibase) {
+	if (base_t <= BC_NUM_MAX_POSIX_IBASE) {
 		width = 1;
 		print = bc_num_printHex;
 	}
