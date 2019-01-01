@@ -298,16 +298,18 @@ BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	lt = (*l)->t;
 	rt = (*r)->t;
 
-	assert(lt != BC_RESULT_CONSTANT && lt != BC_RESULT_TEMP);
+	assert(lt != BC_RESULT_CONSTANT && lt != BC_RESULT_TEMP &&
+	       lt != BC_RESULT_ARRAY && lt != BC_RESULT_ONE);
+
+#if BC_ENABLE_VOID_FNS
+	assert(lt != BC_RESULT_VOID);
+#endif // BC_ENABLE_VOID_FNS
 
 #if DC_ENABLED
 	good = ((rt == BC_RESULT_STR || BC_PROG_STR(*rn)) && lt == BC_RESULT_VAR);
 #else
 	assert(rt != BC_RESULT_STR);
 #endif // DC_ENABLED
-
-	s = bc_program_type_num(*l, *ln);
-	if (s) return s;
 
 	if (!good) s = bc_program_type_num(*r, *rn);
 
