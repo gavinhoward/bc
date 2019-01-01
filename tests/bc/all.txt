@@ -9,8 +9,6 @@ sqrt
 trunc
 places
 shift
-lib2
-lib3
 vars
 boolean
 strings
@@ -28,3 +26,6 @@ arrays
 misc
 misc1
 misc2
+lib2
+lib3
+void
