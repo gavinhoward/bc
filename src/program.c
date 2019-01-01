@@ -30,17 +30,11 @@
 #include <vm.h>
 
 BcStatus bc_program_type_num(BcResult *r, BcNum *n) {
-#if BC_ENABLE_VOID_FNS
-	if (r->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
-#endif // BC_ENABLE_VOID_FNS
 	if (!BC_PROG_NUM(r, n)) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_program_type_match(BcResult *r, BcType t) {
-#if BC_ENABLE_VOID_FNS
-	if (r->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
-#endif // BC_ENABLE_VOID_FNS
 #if DC_ENABLED
 	if (r->t == BC_RESULT_STR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 #endif // DC_ENABLED
@@ -222,6 +216,13 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			*num = &p->one;
 			break;
 		}
+#if BC_ENABLE_VOID_FNS
+		case BC_RESULT_VOID:
+		{
+			s = bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+			break;
+		}
+#endif // BC_ENABLE_VOID_FNS
 #endif // BC_ENABLED
 #ifndef NDEBUG
 		default:
@@ -667,13 +668,16 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
 	BcNum n2;
 	BcResult res;
 
+#if BC_ENABLE_VOID_FNS
+	if (r->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+#endif // BC_ENABLE_VOID_FNS
+
 	memset(&n2, 0, sizeof(BcNum));
 	n2.rdx = res.d.id.idx = r->d.id.idx;
 	res.t = BC_RESULT_STR;
 
 	if (!push) {
-		if (!BC_PROG_STACK(&p->results, 2))
-			return bc_vm_err(BC_ERROR_EXEC_STACK);
+		if (!BC_PROG_STACK(&p->results, 2)) return bc_vm_err(BC_ERROR_EXEC_STACK);
 		bc_vec_pop(v);
 		bc_vec_pop(&p->results);
 	}
@@ -983,9 +987,6 @@ BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 
 		a = bc_vec_item(&f->autos, nparams - 1 - i);
 		arg = bc_vec_top(&p->results);
-
-		s = bc_program_type_match(arg, (BcType) a->idx);
-		if (s) return s;
 
 		s = bc_program_copyToVar(p, a->name, (BcType) a->idx);
 		if (s) return s;
@@ -1333,6 +1334,10 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	if (!BC_PROG_STACK(&p->results, 1)) return bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	r = bc_vec_top(&p->results);
+
+#if BC_ENABLE_VOID_FNS
+	if (r->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+#endif // BC_ENABLE_VOID_FNS
 
 	if (cond) {
 
