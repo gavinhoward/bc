@@ -1,0 +1,8 @@
+define void stuff(x) {
+	print "x: ", x, "\n"
+}
+
+stuff(0)
+stuff(1)
+stuff(2.2839)
+stuff(-9.9289389)
