@@ -65,15 +65,16 @@ define void binary_uint(x,n){
 }
 define void int(x){
 	auto n,z
-	z=x<0
-	if(z)x=-x
+	z=(x<0)
+	x=x$
 	n=sbytes(x)
-	if(z)x=2^(n*8)-x
+	if(z)x=2^(n*8)-(-x)
 	binary_uint(x,n)
 	hex_uint(x,n)
 }
 define void uint(x){
 	auto n
+	x=x$
 	n=ubytes(x)
 	binary_uint(x,n)
 	hex_uint(x,n)
