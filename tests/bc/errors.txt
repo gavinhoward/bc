@@ -184,6 +184,7 @@ define v() { auto a, 4; return a; }
 define w() { auto a 4; return a; }
 define r() { auto a[], 4; return a[0]; }
 define s() { auto a[ 4; return a[0]; }
+define void y() { return (1); }
 3 / 0.00000000000000
 ibase = 100
 read()
