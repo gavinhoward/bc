@@ -39,13 +39,37 @@ define r(x,p){
 	if(n)t=-t
 	return (t)
 }
+define l2(x){
+	auto p,b,s
+	b=ibase
+	ibase=A
+	s=scale
+	if(scale(x)>scale)scale=scale(x)
+	scale*=2
+	p=l(x)/l(2)
+	scale=s
+	ibase=b
+	return(p)
+}
+define l10(x){
+	auto p,b,s
+	b=ibase
+	ibase=A
+	s=scale
+	if(scale(x)>scale)scale=scale(x)
+	scale*=2
+	p=l(x)/l(10)
+	scale=s
+	ibase=b
+	return(p)
+}
 define ubytes(x){
 	auto p,b,i,s
 	b=ibase
 	ibase=A
 	s=scale
 	scale=100
-	p=(l(x)/l(2)+1)$
+	p=(l2(x)+1)$
 	for(i=1;i*8<p;i*=2){}
 	scale=s
 	ibase=b
