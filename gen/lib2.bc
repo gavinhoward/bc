@@ -64,21 +64,21 @@ define l10(x){
 	return(p)
 }
 define ubytes(x){
-	auto p,b,i,s
+	auto p,b,i
 	b=ibase
 	ibase=A
-	s=scale
-	scale=100
+	if(x<0)x=-x
+	x=x$
 	p=(l2(x)+1)$
 	for(i=1;i*8<p;i*=2){}
-	scale=s
 	ibase=b
 	return(i)
 }
 define sbytes(x){
 	auto p,b,n,z
-	z=x<0
+	z=(x<0)
 	if(z)x=-x
+	x=x$
 	n=ubytes(x)
 	b=ibase
 	ibase=A
