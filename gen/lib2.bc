@@ -44,7 +44,7 @@ define log(x,b){
 	i=ibase
 	ibase=A
 	s=scale
-	if(scale==0)scale=20
+	if(scale<20)scale=20
 	if(scale(x)>scale)scale=scale(x)
 	scale*=2
 	p=l(x)/l(b)
