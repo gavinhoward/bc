@@ -183,6 +183,14 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));
 			break;
 		}
+
+#if BC_ENABLE_VOID_FNS
+		case BC_RESULT_VOID:
+		{
+			// Do nothing.
+			break;
+		}
+#endif // BC_ENABLE_VOID_FNS
 	}
 }
 #endif // DC_ENABLED

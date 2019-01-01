@@ -301,7 +301,7 @@ BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	assert(lt != BC_RESULT_CONSTANT && lt != BC_RESULT_TEMP);
 
 #if DC_ENABLED
-	good = ((rt == BC_RESULT_STR || BC_PROG_STR(*rn)) && lt != BC_RESULT_VAR);
+	good = ((rt == BC_RESULT_STR || BC_PROG_STR(*rn)) && lt == BC_RESULT_VAR);
 #else
 	assert(rt != BC_RESULT_STR);
 #endif // DC_ENABLED
