@@ -298,8 +298,11 @@ BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	lt = (*l)->t;
 	rt = (*r)->t;
 
-	assert(lt != BC_RESULT_CONSTANT && lt != BC_RESULT_TEMP &&
-	       lt != BC_RESULT_ARRAY && lt != BC_RESULT_ONE);
+	if (lt != BC_RESULT_CONSTANT && lt != BC_RESULT_TEMP &&
+	    lt != BC_RESULT_ARRAY && lt != BC_RESULT_ONE)
+	{
+		return bc_vm_err(BC_ERROR_EXEC_TYPE);
+	}
 
 #if BC_ENABLE_VOID_FNS
 	assert(lt != BC_RESULT_VOID);
