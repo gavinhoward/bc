@@ -427,6 +427,10 @@ BcStatus bc_vm_exec() {
 		if (!BC_S && !BC_W) {
 			s = bc_vm_load(bc_lib2_name, bc_lib2);
 			if (s) return s;
+#if BC_ENABLE_VOID_FNS
+			s = bc_vm_load(bc_lib3_name, bc_lib3);
+			if (s) return s;
+#endif // BC_ENABLE_VOID_FNS
 		}
 #endif // BC_ENABLE_EXTRA_MATH
 	}
