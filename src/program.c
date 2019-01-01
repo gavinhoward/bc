@@ -528,7 +528,10 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	r = bc_vec_item_rev(&p->results, idx);
 
 #if BC_ENABLE_VOID_FNS
-	if (r->t == BC_RESULT_VOID) return s;
+	if (r->t == BC_RESULT_VOID) {
+		if (pop) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+		return s;
+	}
 #endif // BC_ENABLE_VOID_FNS
 
 	s = bc_program_num(p, r, &n);
