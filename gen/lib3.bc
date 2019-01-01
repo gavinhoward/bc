@@ -40,7 +40,7 @@ define void output_uint(x,n){
 	s=scale
 	scale=0
 	for(i=n-1;i>=0;--i){
-		b=x/(2^(i*8)
+		b=x/(2^(i*8))
 		b%=2^((n-i-1)*8)
 		print b
 		if(i)print " "
