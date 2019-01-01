@@ -57,7 +57,8 @@ typedef struct BcLexKeyword {
 #define bc_lex_vposixErr(l, e, ...) \
 	(bc_vm_posixError((e), (l)->line, __VA_ARGS__))
 
-extern const BcLexKeyword bc_lex_kws[20];
+extern const BcLexKeyword bc_lex_kws[];
+extern const size_t bc_lex_kws_len;
 
 BcStatus bc_lex_token(BcLex *l);
 

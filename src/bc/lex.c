@@ -36,7 +36,7 @@ BcStatus bc_lex_identifier(BcLex *l) {
 	size_t i;
 	const char *buf = l->buf + l->i - 1;
 
-	for (i = 0; i < sizeof(bc_lex_kws) / sizeof(bc_lex_kws[0]); ++i) {
+	for (i = 0; i < bc_lex_kws_len; ++i) {
 
 		const BcLexKeyword *kw = bc_lex_kws + i;
 		size_t len = BC_LEX_KW_LEN(kw);

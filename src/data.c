@@ -132,6 +132,9 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLE_REFERENCES
 	"var cannot be reference: %s",
 #endif // BC_ENABLE_REFERENCES
+#if BC_ENABLE_VOID_FNS
+	"cannot return a value from void function: %s()",
+#endif // BC_ENABLE_VOID_FNS
 
 	"negative number",
 	"non integer number",
@@ -154,6 +157,9 @@ const char* const bc_err_msgs[] = {
 	"read() call inside of a read() call",
 	"variable is wrong type",
 	"stack has too few elements",
+#if BC_ENABLE_VOID_FNS
+	"cannot use a void value in an expression",
+#endif // BC_ENABLE_VOID_FNS
 
 #if BC_ENABLED
 	"POSIX does not allow names longer than 1 character, like \"%s\"",
@@ -522,7 +528,7 @@ const char bc_inst_chars[] =
 #endif // NDEBUG
 
 #if BC_ENABLED
-const BcLexKeyword bc_lex_kws[20] = {
+const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
 	BC_LEX_KW_ENTRY("continue", 8, false),
@@ -533,6 +539,9 @@ const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("return", 6, true),
 	BC_LEX_KW_ENTRY("while", 5, true),
 	BC_LEX_KW_ENTRY("halt", 4, false),
+#if BC_ENABLE_VOID_FNS
+	BC_LEX_KW_ENTRY("void", 4, false),
+#endif // BC_ENABLE_VOID_FNS
 	BC_LEX_KW_ENTRY("last", 4, false),
 	BC_LEX_KW_ENTRY("ibase", 5, true),
 	BC_LEX_KW_ENTRY("obase", 5, true),
@@ -544,6 +553,8 @@ const BcLexKeyword bc_lex_kws[20] = {
 	BC_LEX_KW_ENTRY("read", 4, false),
 	BC_LEX_KW_ENTRY("else", 4, false),
 };
+
+const size_t bc_lex_kws_len = sizeof(bc_lex_kws) / sizeof(BcLexKeyword);
 
 const char* const bc_parse_const1 = "1";
 

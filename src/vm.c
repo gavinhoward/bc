@@ -100,7 +100,7 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 
 	va_list args;
 
-	if (e > BC_ERROR_EXEC_STACK) return BC_STATUS_SUCCESS;
+	assert(e < BC_ERROR_POSIX_START);
 
 	va_start(args, line);
 	bc_vm_printError(e, bc_err_fmt, line, args);
@@ -115,7 +115,9 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...)
 	va_list args;
 	int p = (int) BC_S, w = (int) BC_W;
 
-	if (!(p || w) || e < BC_ERROR_POSIX_NAME_LEN) return BC_STATUS_SUCCESS;
+	assert(e >= BC_ERROR_POSIX_START);
+
+	if (!(p || w)) return BC_STATUS_SUCCESS;
 
 	va_start(args, line);
 	bc_vm_printError(e, p ? bc_err_fmt : bc_warn_fmt, line, args);

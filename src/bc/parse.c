@@ -457,8 +457,13 @@ BcStatus bc_parse_return(BcParse *p) {
 	BcStatus s;
 	BcLexType t;
 	bool paren;
+	uchar inst = BC_INST_RET0;
 
 	if (!BC_PARSE_FUNC(p)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+
+#if BC_ENABLE_VOID_FNS
+	if (p->func->voidfn) inst = BC_INST_RET_VOID;
+#endif // BC_ENABLE_VOID_FNS
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
@@ -466,13 +471,13 @@ BcStatus bc_parse_return(BcParse *p) {
 	t = p->l.t;
 	paren = t == BC_LEX_LPAREN;
 
-	if (BC_PARSE_VALID_END_TOKEN(t)) bc_parse_push(p, BC_INST_RET0);
+	if (BC_PARSE_VALID_END_TOKEN(t)) bc_parse_push(p, inst);
 	else {
 
 		s = bc_parse_expr_error(p, 0, bc_parse_next_expr);
 		if (s && s != BC_STATUS_EMPTY_EXPR) return s;
 		else if (s == BC_STATUS_EMPTY_EXPR) {
-			bc_parse_push(p, BC_INST_RET0);
+			bc_parse_push(p, inst);
 			s = bc_lex_next(&p->l);
 			if (s) return s;
 		}
@@ -481,6 +486,10 @@ BcStatus bc_parse_return(BcParse *p) {
 			s = bc_parse_posixErr(p, BC_ERROR_POSIX_RET);
 			if (s) return s;
 		}
+#if BC_ENABLE_VOID_FNS
+		else if (p->func->voidfn)
+			return bc_parse_verr(p, BC_ERROR_PARSE_RET_VOID, p->func->name);
+#endif // BC_ENABLE_VOID_FNS
 
 		bc_parse_push(p, BC_INST_RET);
 	}
@@ -796,12 +805,24 @@ BcStatus bc_parse_func(BcParse *p) {
 
 	BcStatus s;
 	bool comma = false;
+#if BC_ENABLE_VOID_FNS
+	bool voidfn;
+#endif // BC_ENABLE_VOID_FNS
 	uint16_t flags;
 	char *name;
 	size_t idx;
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
+
+#if BC_ENABLE_VOID_FNS
+	voidfn = (p->l.t == BC_LEX_KEY_VOID);
+	if (voidfn) {
+		s = bc_lex_next(&p->l);
+		if (s) return s;
+	}
+#endif // BC_ENABLE_VOID_FNS
+
 	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 
 	assert(p->prog->fns.len == p->prog->fn_map.len);
@@ -810,6 +831,9 @@ BcStatus bc_parse_func(BcParse *p) {
 	idx = bc_program_insertFunc(p->prog, name);
 	assert(idx);
 	bc_parse_updateFunc(p, idx);
+#if BC_ENABLE_VOID_FNS
+	p->func->voidfn = voidfn;
+#endif // BC_ENABLE_VOID_FNS
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
