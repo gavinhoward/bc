@@ -69,7 +69,7 @@
 #define BC_PARSE_FLAG_IF_END (1<<8)
 #define BC_PARSE_IF_END(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_IF_END)
 
-#define BC_PARSE_CAN_EXEC(p) ((p)->flags.len == 1 || BC_PARSE_TOP_FLAG(p) == 0)
+#define BC_PARSE_CAN_EXEC(p) ((p)->flags.len == 1 && BC_PARSE_TOP_FLAG(p) == 0)
 
 #define BC_PARSE_VALID_END_TOKEN(t)                                            \
 	((t) == BC_LEX_SCOLON || (t) == BC_LEX_KEY_ELSE || (t) == BC_LEX_RBRACE || \
