@@ -99,6 +99,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
 void bc_num_truncate(BcNum *restrict n, size_t places);
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
+ssize_t bc_num_cmpZero(const BcNum *restrict a);
 
 #if DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);

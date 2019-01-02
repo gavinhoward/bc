@@ -30,7 +30,7 @@
 #include <lang.h>
 #include <num.h>
 
-#define BC_PROG_ZERO_CAP (1)
+#define BC_PROG_ONE_CAP (1)
 
 typedef struct BcProgram {
 
@@ -60,7 +60,6 @@ typedef struct BcProgram {
 	BcVec arrs;
 	BcVec arr_map;
 
-	BcNum zero;
 #if BC_ENABLED
 	BcNum one;
 	BcNum last;
@@ -73,9 +72,8 @@ typedef struct BcProgram {
 	// which attempts to realloc, unless it is big enough. This is big enough.
 	BcDig strmb_num[BC_NUM_LONG_LOG10];
 #endif // DC_ENABLED
-	BcDig zero_num[BC_PROG_ZERO_CAP];
 #if BC_ENABLED
-	BcDig one_num[BC_PROG_ZERO_CAP];
+	BcDig one_num[BC_PROG_ONE_CAP];
 #endif // BC_ENABLED
 
 } BcProgram;
@@ -98,7 +96,7 @@ typedef struct BcProgram {
 	((r)->t != BC_RESULT_ARRAY && (r)->t != BC_RESULT_STR && !BC_PROG_STR(n))
 
 typedef unsigned long (*BcProgramBuiltIn)(const BcNum*);
-typedef void (*BcProgramUnary)(BcProgram*, BcResult*, BcNum*);
+typedef void (*BcProgramUnary)(BcResult*, BcNum*);
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
@@ -123,10 +121,10 @@ BcStatus bc_program_exec(BcProgram *p);
 unsigned long bc_program_scale(const BcNum *restrict n);
 unsigned long bc_program_len(const BcNum *restrict n);
 
-void bc_program_negate(BcProgram *p, BcResult *r, BcNum *n);
-void bc_program_not(BcProgram *p, BcResult *r, BcNum *n);
+void bc_program_negate(BcResult *r, BcNum *n);
+void bc_program_not(BcResult *r, BcNum *n);
 #if BC_ENABLE_EXTRA_MATH
-void bc_program_trunc(BcProgram *p, BcResult *r, BcNum *n);
+void bc_program_trunc(BcResult *r, BcNum *n);
 #endif // BC_ENABLE_EXTRA_MATH
 
 // ** Exclude start. **

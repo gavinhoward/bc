@@ -569,19 +569,17 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	return s;
 }
 
-void bc_program_negate(BcProgram *p, BcResult *r, BcNum *n) {
-	BC_UNUSED(p);
+void bc_program_negate(BcResult *r, BcNum *n) {
 	bc_num_copy(&r->d.n, n);
 	if (r->d.n.len) r->d.n.neg = !r->d.n.neg;
 }
 
-void bc_program_not(BcProgram *p, BcResult *r, BcNum *n) {
-	if (!bc_num_cmp(n, &p->zero)) bc_num_one(&r->d.n);
+void bc_program_not(BcResult *r, BcNum *n) {
+	if (!bc_num_cmpZero(n)) bc_num_one(&r->d.n);
 }
 
 #if BC_ENABLE_EXTRA_MATH
-void bc_program_trunc(BcProgram *p, BcResult *r, BcNum *n) {
-	BC_UNUSED(p);
+void bc_program_trunc(BcResult *r, BcNum *n) {
 	bc_num_copy(&r->d.n, n);
 	bc_num_truncate(&r->d.n, n->rdx);
 }
@@ -597,7 +595,7 @@ BcStatus bc_program_unary(BcProgram *p, uchar inst) {
 	if (s) return s;
 
 	bc_num_init(&res.d.n, num->len);
-	bc_program_unarys[inst - BC_INST_NEG](p, &res, num);
+	bc_program_unarys[inst - BC_INST_NEG](&res, num);
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
 
 	return s;
@@ -616,9 +614,9 @@ BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	if (inst == BC_INST_BOOL_AND)
-		cond = bc_num_cmp(n1, &p->zero) && bc_num_cmp(n2, &p->zero);
+		cond = bc_num_cmpZero(n1) && bc_num_cmpZero(n2);
 	else if (inst == BC_INST_BOOL_OR)
-		cond = bc_num_cmp(n1, &p->zero) || bc_num_cmp(n2, &p->zero);
+		cond = bc_num_cmpZero(n1) || bc_num_cmpZero(n2);
 	else {
 
 		cmp = bc_num_cmp(n1, n2);
@@ -1497,9 +1495,8 @@ void bc_program_init(BcProgram *p) {
 	bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1);
 #endif // DC_ENABLED
 
-	bc_num_setup(&p->zero, p->zero_num, BC_PROG_ZERO_CAP);
 #if BC_ENABLED
-	bc_num_setup(&p->one, p->one_num, BC_PROG_ZERO_CAP);
+	bc_num_setup(&p->one, p->one_num, BC_PROG_ONE_CAP);
 	bc_num_one(&p->one);
 	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
@@ -1608,7 +1605,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				s = bc_program_prep(p, &ptr, &num);
 				if (s) return s;
-				cond = !bc_num_cmp(num, &p->zero);
+				cond = !bc_num_cmpZero(num);
 				bc_vec_pop(&p->results);
 			}
 			// Fallthrough.
