@@ -92,7 +92,6 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLE_REFERENCES
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
-	BC_ERR_IDX_MATH,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -140,7 +139,6 @@ const char* const bc_err_msgs[] = {
 	"non integer number",
 	"overflow",
 	"divide by zero",
-	"bad number string",
 
 	"could not open file: %s",
 	"mismatched parameters; need %zu, have %zu",

@@ -802,6 +802,7 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	return s;
 }
 
+#ifndef NDEBUG
 bool bc_num_strValid(const char *val) {
 
 	bool radix = false;
@@ -826,6 +827,7 @@ bool bc_num_strValid(const char *val) {
 
 	return true;
 }
+#endif // NDEBUG
 
 unsigned long bc_num_parseChar(char c, size_t base_t) {
 
@@ -1150,8 +1152,7 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
 
 	assert(n && val && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= vm->max_ibase);
-
-	if (!bc_num_strValid(val)) return bc_vm_err(BC_ERROR_MATH_STRING);
+	assert(bc_num_strValid(val));
 
 	if (letter) bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
 	else if (base_t == 10) bc_num_parseDecimal(n, val);
