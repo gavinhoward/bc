@@ -40,7 +40,7 @@ define r(x,p){
 	return (t)
 }
 define log(x,b){
-	auto p,i,s,l
+	auto p,i,s
 	i=ibase
 	ibase=A
 	s=scale

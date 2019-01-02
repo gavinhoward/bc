@@ -34,16 +34,17 @@ define void binary(x){
 	output(x,2)
 }
 define void output_byte(x,i,n){
-	auto ib,p,y,o,b
+	auto ib,p,y,b
 	ib=ibase
 	ibase=A
 	s=scale
 	scale=0
+	if(x<0)x=-x
 	x=x$
 	b=x/(2^(i*8))
 	b%=2^((n-i)*8)
-	y=(log(255,obase)+1)$
-	if(b>1)p=(log(b-1,obase)+1)$
+	y=log(256,obase)$
+	if(b>1)p=log(b,obase)$+1
 	else p=b
 	for(i=y-p;i>0;--i) print 0
 	if(b)print b
