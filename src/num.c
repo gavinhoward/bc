@@ -583,6 +583,7 @@ BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	if (b->len == 0) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 
 	if (a->len == 0) {
+		bc_num_setToZero(c, ts);
 		bc_num_setToZero(d, ts);
 		return BC_STATUS_SUCCESS;
 	}
