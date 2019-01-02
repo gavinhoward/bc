@@ -70,7 +70,7 @@ typedef struct BcNum {
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + 10)
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
-typedef void (*BcNumDigitOp)(size_t, size_t, bool, size_t*);
+typedef void (*BcNumDigitOp)(size_t, size_t, bool);
 
 void bc_num_init(BcNum *n, size_t req);
 void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
@@ -111,11 +111,10 @@ void bc_num_ten(BcNum *restrict n);
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
                       BcNum *restrict base, size_t base_t, bool letter);
-BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base, size_t base_t,
-                      bool newline, size_t *restrict nchars);
+BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
+                      size_t base_t, bool newline);
 #if DC_ENABLED
-BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base,
-                       size_t *restrict nchars);
+BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED
 
 // ** Busybox exclude end. **

@@ -34,7 +34,6 @@
 
 typedef struct BcProgram {
 
-	size_t nchars;
 	size_t scale;
 
 	BcNum ib;

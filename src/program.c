@@ -427,14 +427,14 @@ io_err:
 	return s;
 }
 
-void bc_program_printChars(BcProgram *p, const char *str) {
+void bc_program_printChars(const char *str) {
 	const char *nl;
-	p->nchars += bc_vm_printf("%s", str);
+	vm->nchars += bc_vm_printf("%s", str);
 	nl = strrchr(str, '\n');
-	if (nl) p->nchars = strlen(nl + 1);
+	if (nl) vm->nchars = strlen(nl + 1);
 }
 
-void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
+void bc_program_printString(const char *restrict str) {
 
 	size_t i, len = strlen(str);
 
@@ -445,7 +445,7 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 	}
 #endif // DC_ENABLED
 
-	for (i = 0; i < len; ++i, ++(*nchars)) {
+	for (i = 0; i < len; ++i, ++vm->nchars) {
 
 		int c = str[i];
 
@@ -457,14 +457,14 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 			ptr = strchr(bc_program_esc_chars, c);
 
 			if (ptr) {
-				if (c == 'n') (*nchars) = SIZE_MAX;
+				if (c == 'n') vm->nchars = SIZE_MAX;
 				c = bc_program_esc_seqs[(size_t) (ptr - bc_program_esc_chars)];
 			}
 			else {
 				// Just print the backslash. The following
 				// character will be printed later.
 				bc_vm_putchar('\\');
-				++(*nchars);
+				++vm->nchars;
 			}
 		}
 
@@ -499,7 +499,7 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
-		s = bc_num_print(n, &p->ob, p->ob_t, !pop, &p->nchars);
+		s = bc_num_print(n, &p->ob, p->ob_t, !pop);
 #if BC_ENABLED
 		if (!s) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
@@ -509,12 +509,12 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		str = bc_program_str(p, idx, true);
 
-		if (inst == BC_INST_PRINT_STR) bc_program_printChars(p, str);
+		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
 		else {
-			bc_program_printString(str, &p->nchars);
+			bc_program_printString(str);
 			if (inst == BC_INST_PRINT) {
 				bc_vm_putchar('\n');
-				p->nchars = 0;
+				vm->nchars = 0;
 			}
 		}
 	}
@@ -1256,10 +1256,10 @@ BcStatus bc_program_printStream(BcProgram *p) {
 	s = bc_program_operand(p, &r, &n, 0, true);
 	if (s) return s;
 
-	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb, &p->nchars);
+	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
-		bc_program_printChars(p, bc_program_str(p, idx, true));
+		bc_program_printChars(bc_program_str(p, idx, true));
 	}
 
 	return s;
@@ -1432,8 +1432,6 @@ void bc_program_init(BcProgram *p) {
 
 	memset(p, 0, sizeof(BcProgram));
 	memset(&ip, 0, sizeof(BcInstPtr));
-
-	p->nchars = p->scale = 0;
 
 	bc_num_setup(&p->ib, p->ib_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ib);

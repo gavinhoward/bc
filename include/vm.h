@@ -96,6 +96,8 @@ typedef struct BcVm {
 	BcParse prs;
 	BcProgram prog;
 
+	size_t nchars;
+
 	const char* file;
 
 	uint16_t line_len;
