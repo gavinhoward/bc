@@ -262,6 +262,10 @@ BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 
 	lt = (*l)->t;
 
+#if BC_ENABLE_VOID_FNS
+	assert(lt != BC_RESULT_VOID && (*r)->t != BC_RESULT_VOID);
+#endif // BC_ENABLE_VOID_FNS
+
 	// We run this again under these conditions in case any vector has been
 	// reallocated out from under the BcNums or arrays we had.
 	if (lt == (*r)->t && (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM))
@@ -299,15 +303,12 @@ BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	lt = (*l)->t;
 	rt = (*r)->t;
 
-	if (lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||
-	    lt == BC_RESULT_ARRAY || lt == BC_RESULT_ONE)
-	{
+	if (lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||lt == BC_RESULT_ARRAY)
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
-	}
 
-#if BC_ENABLE_VOID_FNS
-	assert(lt != BC_RESULT_VOID);
-#endif // BC_ENABLE_VOID_FNS
+#if BC_ENABLED
+	if (BC_IS_BC && lt == BC_RESULT_ONE) return bc_vm_err(BC_ERROR_EXEC_TYPE);
+#endif // BC_ENABLED
 
 #if DC_ENABLED
 	good = ((rt == BC_RESULT_STR || BC_PROG_STR(*rn)) && lt == BC_RESULT_VAR);
@@ -748,7 +749,7 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *left, *right, res;
 	BcNum *l = NULL, *r = NULL;
-	bool assign = inst == BC_INST_ASSIGN, ib, sc;
+	bool ib, sc;
 
 	s = bc_program_assignPrep(p, &left, &l, &right, &r);
 	if (s) return s;
@@ -761,19 +762,16 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 	if (right->t == BC_RESULT_STR) {
 		BcVec *v = bc_program_search(p, left->d.id.name, BC_TYPE_VAR);
-		assert(assign);
 		return bc_program_assignStr(p, right, v, false);
 	}
 #endif // DC_ENABLED
 
+	if (!BC_IS_BC || inst == BC_INST_ASSIGN) bc_num_copy(l, r);
 #if BC_ENABLED
-	if (assign) bc_num_copy(l, r);
-	else s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
-
-	if (s) return s;
-#else // BC_ENABLED
-	assert(assign);
-	bc_num_copy(l, r);
+	else {
+		s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
+		if (s) return s;
+	}
 #endif // BC_ENABLED
 
 	if (ib || sc || left->t == BC_RESULT_OBASE) {
@@ -1358,7 +1356,7 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 		if (s) goto err;
 
 		if (prs.l.t != BC_LEX_EOF) {
-			s = bc_vm_err(BC_ERROR_PARSE_EXPR);
+			s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 			goto err;
 		}
 
@@ -1458,8 +1456,8 @@ void bc_program_init(BcProgram *p) {
 	bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
 	bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
 #else
-	bc_program_addFunc(p, &f);
-	bc_program_addFunc(p, &f);
+	bc_program_addFunc(p, &f, bc_func_main);
+	bc_program_addFunc(p, &f, bc_func_read);
 #endif // BC_ENABLED
 
 	bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free);
@@ -1539,7 +1537,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t idx;
 	BcResult r, *ptr;
-	BcNum *num = NULL;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 	BcFunc *func = bc_vec_item(&p->fns, ip->func);
 	char *code = func->code.v;
@@ -1552,6 +1549,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 		switch (inst) {
 
 #if BC_ENABLED
+			BcNum *num = NULL;
+
 			case BC_INST_JUMP_ZERO:
 			{
 				s = bc_program_prep(p, &ptr, &num);

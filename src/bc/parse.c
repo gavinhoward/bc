@@ -579,8 +579,13 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 }
 
 void bc_parse_startBody(BcParse *p, uint16_t flags) {
+
+	// The flags must not be zero.
+	assert(flags);
+
 	flags |= (BC_PARSE_TOP_FLAG(p) & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
 	flags |= BC_PARSE_FLAG_BODY;
+
 	bc_vec_push(&p->flags, &flags);
 }
 
@@ -1192,7 +1197,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 
 	if (p->l.t == BC_LEX_EOF) s = bc_parse_err(p, BC_ERROR_PARSE_EOF);
 	else if (p->l.t == BC_LEX_KEY_DEFINE) {
-		if (!BC_PARSE_CAN_EXEC(p)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+		if (BC_PARSE_NO_EXEC(p)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 		s = bc_parse_func(p);
 	}
 	else s = bc_parse_stmt(p);

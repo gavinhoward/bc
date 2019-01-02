@@ -68,8 +68,8 @@ void bc_func_init(BcFunc *f, const char *name) {
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
 	f->nparams = 0;
-	f->name = name;
 #endif // BC_ENABLED
+	f->name = name;
 }
 
 void bc_func_reset(BcFunc *f) {

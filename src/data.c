@@ -114,6 +114,7 @@ const char* const bc_err_msgs[] = {
 	"Bad command-line option: '%c' (\"%s\")",
 	// ** Exclude end. **
 
+	"end of file",
 	"bad character (%c)",
 	"string end could not be found",
 	"comment end could not be found",
@@ -127,7 +128,6 @@ const char* const bc_err_msgs[] = {
 	"no auto variable found",
 	"function parameter or auto \"%s\" already exists",
 	"block end could not be found",
-	"end of file",
 #if BC_ENABLE_REFERENCES
 	"var cannot be reference: %s",
 #endif // BC_ENABLE_REFERENCES

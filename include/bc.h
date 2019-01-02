@@ -62,6 +62,43 @@ extern const size_t bc_lex_kws_len;
 
 BcStatus bc_lex_token(BcLex *l);
 
+#define BC_PARSE_TOP_FLAG_PTR(p) ((uint16_t*) bc_vec_top(&(p)->flags))
+#define BC_PARSE_TOP_FLAG(p) (*(BC_PARSE_TOP_FLAG_PTR(p)))
+
+#define BC_PARSE_FLAG_BRACE (1<<0)
+#define BC_PARSE_BRACE(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_BRACE)
+
+#define BC_PARSE_FLAG_FUNC_INNER (1<<1)
+#define BC_PARSE_FUNC_INNER(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_FUNC_INNER)
+
+#define BC_PARSE_FLAG_FUNC (1<<2)
+#define BC_PARSE_FUNC(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_FUNC)
+
+#define BC_PARSE_FLAG_BODY (1<<3)
+#define BC_PARSE_BODY(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_BODY)
+
+#define BC_PARSE_FLAG_LOOP (1<<4)
+#define BC_PARSE_LOOP(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_LOOP)
+
+#define BC_PARSE_FLAG_LOOP_INNER (1<<5)
+#define BC_PARSE_LOOP_INNER(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_LOOP_INNER)
+
+#define BC_PARSE_FLAG_IF (1<<6)
+#define BC_PARSE_IF(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_IF)
+
+#define BC_PARSE_FLAG_ELSE (1<<7)
+#define BC_PARSE_ELSE(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_ELSE)
+
+#define BC_PARSE_FLAG_IF_END (1<<8)
+#define BC_PARSE_IF_END(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_IF_END)
+
+#define BC_PARSE_NO_EXEC(p) ((p)->flags.len != 1 || BC_PARSE_TOP_FLAG(p) != 0)
+
+#define BC_PARSE_VALID_END_TOKEN(t)                                            \
+	((t) == BC_LEX_SCOLON || (t) == BC_LEX_KEY_ELSE || (t) == BC_LEX_RBRACE || \
+	 (t) == BC_LEX_KEY_IF || (t) == BC_LEX_NLINE || (t) == BC_LEX_KEY_FOR ||   \
+	 (t) == BC_LEX_KEY_WHILE || (t) == BC_LEX_EOF)
+
 #define BC_PARSE_OP(p, l) (((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
 
 #define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))

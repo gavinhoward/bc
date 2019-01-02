@@ -78,8 +78,8 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 	p->l.t = BC_LEX_EOF;
 	p->auto_part = false;
 
-	bc_vec_npop(&p->flags, p->flags.len - 1);
 #if BC_ENABLED
+	bc_vec_npop(&p->flags, p->flags.len - 1);
 	bc_vec_npop(&p->exits, p->exits.len);
 	bc_vec_npop(&p->conds, p->conds.len);
 	bc_vec_npop(&p->ops, p->ops.len);
@@ -90,8 +90,8 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 
 void bc_parse_free(BcParse *p) {
 	assert(p);
-	bc_vec_free(&p->flags);
 #if BC_ENABLED
+	bc_vec_free(&p->flags);
 	bc_vec_free(&p->exits);
 	bc_vec_free(&p->conds);
 	bc_vec_free(&p->ops);
@@ -102,16 +102,17 @@ void bc_parse_free(BcParse *p) {
 void bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
                      BcParseParse parse, BcLexNext next)
 {
-	uint16_t flag = 0;
-
 	assert(p && prog);
 
 	memset(p, 0, sizeof(BcParse));
 
 	bc_lex_init(&p->l, next);
-	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
-	bc_vec_push(&p->flags, &flag);
 #if BC_ENABLED
+	{
+		uint16_t flag = 0;
+		bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
+		bc_vec_push(&p->flags, &flag);
+	}
 	bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
 	bc_vec_init(&p->conds, sizeof(size_t), NULL);
 	bc_vec_init(&p->ops, sizeof(BcLexType), NULL);

@@ -46,6 +46,7 @@
 #include <args.h>
 #include <vm.h>
 #include <read.h>
+#include <bc.h>
 
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
@@ -239,6 +240,10 @@ void bc_vm_clean() {
 	BcInstPtr *ip = bc_vec_item(&prog->stack, 0);
 	bool good = BC_IS_BC;
 
+#if BC_ENABLED
+	good = !good || !BC_PARSE_NO_EXEC(&vm->prs);
+#endif // BC_ENABLED
+
 #if DC_ENABLED
 	if (!good) {
 
@@ -264,7 +269,7 @@ void bc_vm_clean() {
 	// If this condition is true, we can get rid of strings,
 	// constants, and code. This is an idea from busybox.
 	if (good && prog->stack.len == 1 && prog->results.len == 0 &&
-	    vm->prs.flags.len == 1 && ip->idx == f->code.len)
+	    ip->idx == f->code.len)
 	{
 		bc_vec_npop(&f->strs, f->strs.len);
 		bc_vec_npop(&f->consts, f->consts.len);
@@ -288,10 +293,12 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 		if (s) goto err;
 	}
 
-	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
-		s = bc_program_exec(&vm->prog);
-		if (BC_I) bc_vm_fflush(stdout);
-	}
+#if BC_ENABLED
+	if (BC_PARSE_NO_EXEC(&vm->prs)) goto err;
+#endif // BC_ENABLED
+
+	s = bc_program_exec(&vm->prog);
+	if (BC_I) bc_vm_fflush(stdout);
 
 err:
 	if (s || BC_SIGINT) s = bc_program_reset(&vm->prog, s);
@@ -312,13 +319,8 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	if (s) goto err;
 
 #if BC_ENABLED
-	{
-		BcFunc *main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
-		BcInstPtr *ip = bc_vec_item(&vm->prog.stack, 0);
-
-		if (!BC_PARSE_CAN_EXEC(&vm->prs))
-			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
-	}
+	if (BC_PARSE_NO_EXEC(&vm->prs))
+		s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 
 err:
@@ -394,7 +396,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		if (comment) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);
 		else if (string) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_STRING);
 #if BC_ENABLED
-		else if (!BC_PARSE_CAN_EXEC(&vm->prs))
+		else if (BC_PARSE_NO_EXEC(&vm->prs))
 			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 	}
