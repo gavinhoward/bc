@@ -461,7 +461,8 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 				c = bc_program_esc_seqs[(size_t) (ptr - bc_program_esc_chars)];
 			}
 			else {
-				// Just print the backslash and following character.
+				// Just print the backslash. The following
+				// character will be printed later.
 				bc_vm_putchar('\\');
 				++(*nchars);
 			}
