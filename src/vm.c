@@ -393,8 +393,10 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 	else if (s != BC_STATUS_ERROR) {
 		if (comment) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);
 		else if (string) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_STRING);
-		else if (vm->prs.flags.len > 1)
+#if BC_ENABLED
+		else if (!BC_PARSE_CAN_EXEC(&vm->prs))
 			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
+#endif // BC_ENABLED
 	}
 
 err:
