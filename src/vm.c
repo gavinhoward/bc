@@ -239,6 +239,7 @@ void bc_vm_clean() {
 	BcInstPtr *ip = bc_vec_item(&prog->stack, 0);
 	bool good = BC_IS_BC;
 
+#if DC_ENABLED
 	if (!good) {
 
 		size_t i;
@@ -258,6 +259,7 @@ void bc_vm_clean() {
 			good = i == vm->prog.arrs.len;
 		}
 	}
+#endif // DC_ENABLED
 
 	// If this condition is true, we can get rid of strings,
 	// constants, and code. This is an idea from busybox.
@@ -289,11 +291,11 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 	if (BC_PARSE_CAN_EXEC(&vm->prs)) {
 		s = bc_program_exec(&vm->prog);
 		if (BC_I) bc_vm_fflush(stdout);
-		if (!s) bc_vm_clean();
 	}
 
 err:
 	if (s || BC_SIGINT) s = bc_program_reset(&vm->prog, s);
+	bc_vm_clean();
 	return s == BC_STATUS_QUIT || !BC_I || !is_stdin ? s : BC_STATUS_SUCCESS;
 }
 
