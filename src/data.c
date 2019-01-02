@@ -86,16 +86,23 @@ const char bc_err_ids[] = {
 	// ** Exclude end. **
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+#if BC_ENABLED
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #if BC_ENABLE_REFERENCES
 	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLE_REFERENCES
+#if BC_ENABLE_VOID_FNS
+	BC_ERR_IDX_PARSE,
+#endif // BC_ENABLE_VOID_FNS
+#endif // BC_ENABLED
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
+#if BC_ENABLE_EXTRA_MATH
+	BC_ERR_IDX_MATH,
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 #if BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -119,6 +126,10 @@ const char* const bc_err_msgs[] = {
 	"string end could not be found",
 	"comment end could not be found",
 	"bad token",
+	"name too long: must be [1, %lu]",
+	"string too long: must be [1, %lu]",
+	"array too long; must be [1, %lu]",
+#if BC_ENABLED
 	"bad expression",
 	"empty expression",
 	"bad print statement",
@@ -134,19 +145,20 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLE_VOID_FNS
 	"cannot return a value from void function: %s()",
 #endif // BC_ENABLE_VOID_FNS
+#endif // BC_ENABLED
 
 	"negative number",
 	"non integer number",
-	"overflow",
+	"overflow; %s",
 	"divide by zero",
+#if BC_ENABLE_EXTRA_MATH
+	"underflow; shifted right too far",
+#endif // BC_ENABLE_EXTRA_MATH
 
 	"could not open file: %s",
 	"mismatched parameters; need %zu, have %zu",
 	"undefined function: %s()",
 	"number too long: must be [1, %lu]",
-	"name too long: must be [1, %lu]",
-	"string too long: must be [1, %lu]",
-	"array too long; must be [1, %lu]",
 	"bad ibase; must be [%lu, %lu]",
 	"bad obase; must be [%lu, %lu]",
 	"bad scale; must be [%lu, %lu]",
