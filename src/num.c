@@ -939,7 +939,7 @@ int_err:
 }
 
 void bc_num_printNewline(size_t *restrict nchars) {
-	if (*nchars == vm->line_len - 1) {
+	if (*nchars >= vm->line_len - 1) {
 		bc_vm_putchar('\\');
 		bc_vm_putchar('\n');
 		*nchars = 0;
@@ -1170,10 +1170,7 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base, size_t base_t,
 
 	bc_num_printNewline(nchars);
 
-	if (n->len == 0) {
-		bc_vm_putchar('0');
-		++(*nchars);
-	}
+	if (n->len == 0) bc_num_printHex(0, 1, false, nchars);
 	else if (base_t == 10) bc_num_printDecimal(n, nchars);
 	else s = bc_num_printBase(n, base, base_t, nchars);
 
