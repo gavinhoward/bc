@@ -562,7 +562,7 @@ BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	for (i = end - 1; !BC_SIGINT && !s && i < end; --i) {
 		n = cp.num + i;
-		for (q = 0; (!s && n[len] != 0) || bc_num_compare(n, p, len) >= 0; ++q)
+		for (q = 0; !s && (n[len] != 0 || bc_num_compare(n, p, len) >= 0); ++q)
 			s = bc_num_subArrays(n, p, len);
 		c->num[i] = q;
 	}
