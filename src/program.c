@@ -29,6 +29,14 @@
 #include <program.h>
 #include <vm.h>
 
+static BcStatus bc_program_checkStack(BcVec *v, size_t n) {
+#if DC_ENABLED
+	if (!BC_IS_BC && !BC_PROG_STACK(v, n)) return bc_vm_err(BC_ERROR_EXEC_STACK);
+#endif // DC_ENABLED
+	assert(BC_PROG_STACK(v, n));
+	return BC_STATUS_SUCCESS;
+}
+
 BcStatus bc_program_type_num(BcResult *r, BcNum *n) {
 	if (!BC_PROG_NUM(r, n)) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	return BC_STATUS_SUCCESS;
@@ -239,8 +247,9 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num, bool last) {
 BcStatus bc_program_operand(BcProgram *p, BcResult **r, BcNum **n,
                             size_t idx, bool last)
 {
-	if (!BC_PROG_STACK(&p->results, idx + 1))
-		return bc_vm_err(BC_ERROR_EXEC_STACK);
+	BcStatus s = bc_program_checkStack(&p->results, idx + 1);
+
+	if (s) return s;
 
 	*r = bc_vec_item_rev(&p->results, idx);
 
@@ -475,7 +484,7 @@ void bc_program_printString(const char *restrict str) {
 
 BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
+	BcStatus s;
 	BcResult *r;
 	char *str;
 	BcNum *n = NULL;
@@ -483,8 +492,8 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	assert(p);
 
-	if (!BC_PROG_STACK(&p->results, idx + 1))
-		return bc_vm_err(BC_ERROR_EXEC_STACK);
+	s = bc_program_checkStack(&p->results, idx + 1);
+	if (s) return s;
 
 	r = bc_vec_item_rev(&p->results, idx);
 
@@ -646,7 +655,8 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
 	res.t = BC_RESULT_STR;
 
 	if (!push) {
-		if (!BC_PROG_STACK(&p->results, 2)) return bc_vm_err(BC_ERROR_EXEC_STACK);
+		BcStatus s = bc_program_checkStack(&p->results, 2);
+		if (s) return s;
 		bc_vec_pop(v);
 		bc_vec_pop(&p->results);
 	}
@@ -829,8 +839,8 @@ BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
 			free(name);
 			name = NULL;
 
-			if (!BC_PROG_STACK(v, 2 - copy))
-				return bc_vm_err(BC_ERROR_EXEC_STACK);
+			s = bc_program_checkStack(v, 2 - copy);
+			if (s) return s;
 
 			if (!BC_PROG_STR(num)) {
 
@@ -1001,8 +1011,8 @@ BcStatus bc_program_return(BcProgram *p, uchar inst) {
 
 	assert(BC_PROG_STACK(&p->stack, 2));
 
-	if (!BC_PROG_STACK(&p->results, ip->len + (inst == BC_INST_RET)))
-		return bc_vm_err(BC_ERROR_EXEC_STACK);
+	s = bc_program_checkStack(&p->results, ip->len + (inst == BC_INST_RET));
+	if (s) return s;
 
 	f = bc_vec_item(&p->fns, ip->func);
 	res.t = BC_RESULT_TEMP;
@@ -1277,7 +1287,8 @@ BcStatus bc_program_nquit(BcProgram *p) {
 
 	bc_vec_pop(&p->results);
 
-	if (p->stack.len < val) return bc_vm_err(BC_ERROR_EXEC_STACK);
+	s = bc_program_checkStack(&p->stack, val);
+	if (s) return s;
 	else if (p->stack.len == val) return BC_STATUS_QUIT;
 
 	bc_vec_npop(&p->stack, val);
@@ -1665,9 +1676,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_POP:
 			{
-				if (!BC_PROG_STACK(&p->results, 1))
-					s = bc_vm_err(BC_ERROR_EXEC_STACK);
-				else bc_vec_pop(&p->results);
+				s = bc_program_checkStack(&p->results, 1);
+				if (!s) bc_vec_pop(&p->results);
 				break;
 			}
 
@@ -1780,8 +1790,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_DUPLICATE:
 			{
-				if (!BC_PROG_STACK(&p->results, 1))
-					return bc_vm_err(BC_ERROR_EXEC_STACK);
+				s = bc_program_checkStack(&p->results, 1);
+				if (s) break;
 				ptr = bc_vec_top(&p->results);
 				bc_result_copy(&r, ptr);
 				bc_vec_push(&p->results, &r);
@@ -1792,8 +1802,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				BcResult *ptr2;
 
-				if (!BC_PROG_STACK(&p->results, 2))
-					return bc_vm_err(BC_ERROR_EXEC_STACK);
+				s = bc_program_checkStack(&p->results, 2);
+				if (s) break;
 
 				ptr = bc_vec_item_rev(&p->results, 0);
 				ptr2 = bc_vec_item_rev(&p->results, 1);

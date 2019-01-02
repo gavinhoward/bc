@@ -102,7 +102,15 @@ const char bc_err_ids[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+#if DC_ENABLED
+	BC_ERR_IDX_EXEC,
+#endif // DC_ENABLED
+#if BC_ENABLED
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+#if BC_ENABLE_VOID_FNS
+	BC_ERR_IDX_EXEC,
+#endif // BC_ENABLE_VOID_FNS
+#endif // BC_ENABLED
 #if BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -156,8 +164,6 @@ const char* const bc_err_msgs[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 
 	"could not open file: %s",
-	"mismatched parameters; need %zu, have %zu",
-	"undefined function: %s()",
 	"number too long: must be [1, %lu]",
 	"bad ibase; must be [%lu, %lu]",
 	"bad obase; must be [%lu, %lu]",
@@ -165,10 +171,16 @@ const char* const bc_err_msgs[] = {
 	"bad read() expression",
 	"read() call inside of a read() call",
 	"variable is wrong type",
+#if DC_ENABLED
 	"stack has too few elements",
+#endif // DC_ENABLED
+#if BC_ENABLED
+	"mismatched parameters; need %zu, have %zu",
+	"undefined function: %s()",
 #if BC_ENABLE_VOID_FNS
 	"cannot use a void value in an expression",
 #endif // BC_ENABLE_VOID_FNS
+#endif // BC_ENABLED
 
 #if BC_ENABLED
 	"POSIX does not allow names longer than 1 character, like \"%s\"",
