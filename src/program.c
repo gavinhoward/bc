@@ -451,51 +451,51 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 
 				case 'a':
 				{
-					bc_vm_putchar('\a');
+					c = '\a';
 					break;
 				}
 
 				case 'b':
 				{
-					bc_vm_putchar('\b');
+					c = '\b';
 					break;
 				}
 
 				case '\\':
 				case 'e':
 				{
-					bc_vm_putchar('\\');
+					c = '\\';
 					break;
 				}
 
 				case 'f':
 				{
-					bc_vm_putchar('\f');
+					c = '\f';
 					break;
 				}
 
 				case 'n':
 				{
-					bc_vm_putchar('\n');
+					c = '\n';
 					*nchars = SIZE_MAX;
 					break;
 				}
 
 				case 'r':
 				{
-					bc_vm_putchar('\r');
+					c = '\r';
 					break;
 				}
 
 				case 'q':
 				{
-					bc_vm_putchar('"');
+					c = '"';
 					break;
 				}
 
 				case 't':
 				{
-					bc_vm_putchar('\t');
+					c = '\t';
 					break;
 				}
 
@@ -504,10 +504,11 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 					// Just print the backslash and following character.
 					bc_vm_putchar('\\');
 					++(*nchars);
-					bc_vm_putchar(c);
 					break;
 				}
 			}
+
+			bc_vm_putchar(c);
 		}
 	}
 }
