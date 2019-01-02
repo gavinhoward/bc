@@ -1433,9 +1433,6 @@ void bc_program_free(BcProgram *p) {
 void bc_program_init(BcProgram *p) {
 
 	BcInstPtr ip;
-#if !BC_ENABLED
-	BcFunc f;
-#endif // BC_ENABLED
 
 	assert(p);
 
@@ -1467,8 +1464,11 @@ void bc_program_init(BcProgram *p) {
 	bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
 	bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
 #else
-	bc_program_addFunc(p, &f, bc_func_main);
-	bc_program_addFunc(p, &f, bc_func_read);
+	{
+		BcFunc f;
+		bc_program_addFunc(p, &f, bc_func_main);
+		bc_program_addFunc(p, &f, bc_func_read);
+	}
 #endif // BC_ENABLED
 
 	bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free);
