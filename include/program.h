@@ -135,6 +135,8 @@ extern const BcProgramUnary bc_program_unarys[];
 extern const char bc_program_exprs_name[];
 extern const char bc_program_stdin_name[];
 extern const char bc_program_ready_msg[];
+extern const char bc_program_esc_chars[];
+extern const char bc_program_esc_seqs[];
 // ** Busybox exclude end. **
 // ** Exclude end. **
 

@@ -451,16 +451,14 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 
 		if (c == '\\' && i != len - 1) {
 
-			static const char *esc = "ab\\efnrt";
-			static const char *esc_chars = "\a\b\\\\\f\n\r\t";
-			const char *needle;
+			const char *ptr;
 
 			c = str[++i];
-			needle = strchr(esc, c);
+			ptr = strchr(bc_program_esc_chars, c);
 
-			if (needle) {
+			if (ptr) {
 				if (c == 'n') (*nchars) = SIZE_MAX;
-				c = esc_chars[(unsigned long) (needle - esc)];
+				c = bc_program_esc_seqs[(size_t) (ptr - bc_program_esc_chars)];
 			}
 			else {
 				// Just print the backslash and following character.
