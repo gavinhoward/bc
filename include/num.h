@@ -61,6 +61,7 @@ typedef struct BcNum {
 #define BC_NUM_NEG(n, neg) ((((ssize_t) (n)) ^ -((ssize_t) (neg))) + (neg))
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 #define BC_NUM_INT(n) ((n)->len - (n)->rdx)
+#define BC_NUM_CMP_ZERO(a) (BC_NUM_NEG(!!(a)->len, (a)->neg))
 #define BC_NUM_AREQ(a, b) \
 	(BC_MAX((a)->rdx, (b)->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1)
 #define BC_NUM_MREQ(a, b, scale) \
@@ -99,7 +100,6 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
 void bc_num_truncate(BcNum *restrict n, size_t places);
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
-ssize_t bc_num_cmpZero(const BcNum *restrict a);
 
 #if DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
