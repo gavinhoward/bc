@@ -439,7 +439,7 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 	size_t i, len = strlen(str);
 
 #if DC_ENABLED
-	if (len == 0) {
+	if (len == 0 && !BC_IS_BC) {
 		bc_vm_putchar('\0');
 		return;
 	}
