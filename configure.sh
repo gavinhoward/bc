@@ -279,15 +279,15 @@ karatsuba='@printf "karatsuba cannot be run because one of bc or dc is not built
 karatsuba_test='@printf "karatsuba cannot be run because one of bc or dc is not built\\\\n"'
 
 bc_lib="\$(GEN_DIR)/lib.o"
-bc_help_o="\$(GEN_DIR)/bc_help.o"
-dc_help_o="\$(GEN_DIR)/dc_help.o"
+bc_help="\$(GEN_DIR)/bc_help.o"
+dc_help="\$(GEN_DIR)/dc_help.o"
 
 if [ "$bc_only" -eq 1 ]; then
 
 	bc=1
 	dc=0
 
-	dc_help_o=""
+	dc_help=""
 
 	executables="bc"
 
@@ -300,7 +300,7 @@ elif [ "$dc_only" -eq 1 ]; then
 	dc=1
 
 	bc_lib=""
-	bc_help_o=""
+	bc_help=""
 
 	printf 'dc only; disabling references...\n'
 	refs=0
@@ -408,7 +408,7 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
-if [ "$extra_math" -eq 1 ]; then
+if [ "$extra_math" -eq 1 -a "$bc" -ne 0 ]; then
 
 	BC_LIB2_O="\$(GEN_DIR)/lib2.o"
 
@@ -443,6 +443,9 @@ contents=$(replace "$contents" "SIGNALS" "$signals")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "REFERENCES" "$refs")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
+contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
+contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
+contents=$(replace "$contents" "DC_HELP_O" "$dc_help")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "VOID_FNS" "$voidfns")
 contents=$(replace "$contents" "BC_LIB3_O" "$BC_LIB3_O")
