@@ -427,6 +427,13 @@ io_err:
 	return s;
 }
 
+void bc_program_printChars(BcProgram *p, const char *str) {
+	const char *nl;
+	p->nchars += bc_vm_printf("%s", str);
+	nl = strrchr(str, '\n');
+	if (nl) p->nchars = strlen(nl + 1);
+}
+
 void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 
 	size_t i, len = strlen(str);
@@ -442,74 +449,27 @@ void bc_program_printString(const char *restrict str, size_t *restrict nchars) {
 
 		int c = str[i];
 
-		if (c != '\\' || i == len - 1) bc_vm_putchar(c);
-		else {
+		if (c == '\\' && i != len - 1) {
+
+			static const char *esc = "ab\\efnrt";
+			static const char *esc_chars = "\a\b\\\\\f\n\r\t";
+			const char *needle;
 
 			c = str[++i];
+			needle = strchr(esc, c);
 
-			switch (c) {
-
-				case 'a':
-				{
-					c = '\a';
-					break;
-				}
-
-				case 'b':
-				{
-					c = '\b';
-					break;
-				}
-
-				case '\\':
-				case 'e':
-				{
-					c = '\\';
-					break;
-				}
-
-				case 'f':
-				{
-					c = '\f';
-					break;
-				}
-
-				case 'n':
-				{
-					c = '\n';
-					*nchars = SIZE_MAX;
-					break;
-				}
-
-				case 'r':
-				{
-					c = '\r';
-					break;
-				}
-
-				case 'q':
-				{
-					c = '"';
-					break;
-				}
-
-				case 't':
-				{
-					c = '\t';
-					break;
-				}
-
-				default:
-				{
-					// Just print the backslash and following character.
-					bc_vm_putchar('\\');
-					++(*nchars);
-					break;
-				}
+			if (needle) {
+				if (c == 'n') (*nchars) = SIZE_MAX;
+				c = esc_chars[(unsigned long) (needle - esc)];
 			}
-
-			bc_vm_putchar(c);
+			else {
+				// Just print the backslash and following character.
+				bc_vm_putchar('\\');
+				++(*nchars);
+			}
 		}
+
+		bc_vm_putchar(c);
 	}
 }
 
@@ -517,7 +477,6 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
-	size_t len, i;
 	char *str;
 	BcNum *n = NULL;
 	bool pop = inst != BC_INST_PRINT;
@@ -551,17 +510,13 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		str = bc_program_str(p, idx, true);
 
-		if (inst == BC_INST_PRINT_STR) {
-			for (i = 0, len = strlen(str); i < len; ++i) {
-				char c = str[i];
-				bc_vm_putchar(c);
-				if (c == '\n') p->nchars = SIZE_MAX;
-				++p->nchars;
-			}
-		}
+		if (inst == BC_INST_PRINT_STR) bc_program_printChars(p, str);
 		else {
 			bc_program_printString(str, &p->nchars);
-			if (inst == BC_INST_PRINT) bc_vm_putchar('\n');
+			if (inst == BC_INST_PRINT) {
+				bc_vm_putchar('\n');
+				p->nchars = 0;
+			}
 		}
 	}
 
@@ -1298,7 +1253,6 @@ BcStatus bc_program_printStream(BcProgram *p) {
 	BcStatus s;
 	BcResult *r;
 	BcNum *n = NULL;
-	char *str;
 
 	s = bc_program_operand(p, &r, &n, 0, true);
 	if (s) return s;
@@ -1306,8 +1260,7 @@ BcStatus bc_program_printStream(BcProgram *p) {
 	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb, &p->nchars);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
-		str = bc_program_str(p, idx, true);
-		bc_vm_printf("%s", str);
+		bc_program_printChars(p, bc_program_str(p, idx, true));
 	}
 
 	return s;

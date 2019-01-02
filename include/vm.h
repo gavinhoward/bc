@@ -146,7 +146,7 @@ void bc_vm_shutdown();
 
 // ** Busybox exclude start. **
 
-void bc_vm_printf(const char *fmt, ...);
+size_t bc_vm_printf(const char *fmt, ...);
 void bc_vm_puts(const char *str, FILE *restrict f);
 void bc_vm_putchar(int c);
 void bc_vm_fflush(FILE *restrict f);

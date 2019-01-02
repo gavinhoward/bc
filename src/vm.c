@@ -205,16 +205,18 @@ char* bc_vm_strdup(const char *str) {
 	return s;
 }
 
-void bc_vm_printf(const char *fmt, ...) {
+size_t bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
-	bool bad;
+	int ret;
 
 	va_start(args, fmt);
-	bad = vprintf(fmt, args) < 0;
+	ret = vprintf(fmt, args);
 	va_end(args);
 
-	if (bad) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (ret < 0) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+
+	return (size_t) ret;
 }
 
 void bc_vm_puts(const char *str, FILE *restrict f) {
