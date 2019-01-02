@@ -301,8 +301,6 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 
 	BcStatus s;
 	char *data;
-	BcFunc *main_func;
-	BcInstPtr *ip;
 
 	bc_lex_file(&vm->prs.l, file);
 	s = bc_read_file(file, &data);
@@ -311,12 +309,15 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	s = bc_vm_process(vm, data, false);
 	if (s) goto err;
 
-	main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
-	ip = bc_vec_item(&vm->prog.stack, 0);
+#if BC_ENABLED
+	{
+		BcFunc *main_func = bc_vec_item(&vm->prog.fns, BC_PROG_MAIN);
+		BcInstPtr *ip = bc_vec_item(&vm->prog.stack, 0);
 
-	if (vm->prs.flags.len > 1) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
-	else if (!BC_PARSE_CAN_EXEC(&vm->prs) || main_func->code.len < ip->idx)
-		s = bc_vm_verr(BC_ERROR_EXEC_FILE_NOT_EXECUTABLE, vm->file);
+		if (!BC_PARSE_CAN_EXEC(&vm->prs))
+			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
+	}
+#endif // BC_ENABLED
 
 err:
 	free(data);

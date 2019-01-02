@@ -95,7 +95,7 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 #if BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -143,7 +143,6 @@ const char* const bc_err_msgs[] = {
 	"could not open file: %s",
 	"mismatched parameters; need %zu, have %zu",
 	"undefined function: %s()",
-	"file is not executable: %s",
 	"number too long: must be [1, %lu]",
 	"name too long: must be [1, %lu]",
 	"string too long: must be [1, %lu]",
