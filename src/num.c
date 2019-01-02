@@ -78,7 +78,7 @@ ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 	return BC_NUM_NEG(i + 1, c < 0);
 }
 
-ssize_t bc_num_cmpZero(const BcNum *a) {
+ssize_t bc_num_cmpZero(const BcNum *restrict a) {
 	return (a->len) ? BC_NUM_NEG(1, a->neg) : 0;
 }
 
