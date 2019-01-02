@@ -1522,7 +1522,6 @@ void bc_program_init(BcProgram *p) {
 
 	// The destructor is NULL for the vectors because the vectors
 	// and maps share the strings, and the map frees them.
-
 	bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
 	bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
 	bc_vec_push(&p->stack, &ip);
