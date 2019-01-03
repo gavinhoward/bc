@@ -534,7 +534,7 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 void bc_program_negate(BcResult *r, BcNum *n) {
 	bc_num_copy(&r->d.n, n);
-	if (r->d.n.len) r->d.n.neg = !r->d.n.neg;
+	if (BC_NUM_NONZERO(&r->d.n)) r->d.n.neg = !r->d.n.neg;
 }
 
 void bc_program_not(BcResult *r, BcNum *n) {

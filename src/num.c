@@ -94,8 +94,8 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	assert(a && b);
 
 	if (a == b) return 0;
-	if (!a->len) return BC_NUM_NEG(!!b->len, !b->neg);
-	if (!b->len) return BC_NUM_CMP_ZERO(a);
+	if (BC_NUM_ZERO(a)) return BC_NUM_NEG(!!b->len, !b->neg);
+	if (BC_NUM_ZERO(b)) return BC_NUM_CMP_ZERO(a);
 	if (a->neg) {
 		if (b->neg) neg = true;
 		else return -1;
@@ -134,13 +134,13 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 void bc_num_truncate(BcNum *restrict n, size_t places) {
 
-	assert(places <= n->rdx && (!n->len || places <= n->len));
+	assert(places <= n->rdx && (BC_NUM_ZERO(n) || places <= n->len));
 
 	if (!places) return;
 
 	n->rdx -= places;
 
-	if (n->len) {
+	if (BC_NUM_NONZERO(n)) {
 		n->len -= places;
 		memmove(n->num, n->num + places, n->len * sizeof(BcDig));
 	}
@@ -162,8 +162,8 @@ void bc_num_extend(BcNum *restrict n, size_t places) {
 }
 
 void bc_num_clean(BcNum *restrict n) {
-	while (n->len && !n->num[n->len - 1]) --n->len;
-	if (!n->len) n->neg = false;
+	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) --n->len;
+	if (BC_NUM_ZERO(n)) n->neg = false;
 	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
@@ -173,7 +173,7 @@ void bc_num_retireMul(BcNum *restrict n, size_t scale, bool neg1, bool neg2) {
 	else bc_num_truncate(n, n->rdx - scale);
 
 	bc_num_clean(n);
-	if (n->len) n->neg = !neg1 != !neg2;
+	if (BC_NUM_NONZERO(n)) n->neg = (!neg1 != !neg2);
 }
 
 void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
@@ -199,7 +199,7 @@ void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
 
 BcStatus bc_num_shift(BcNum *restrict n, size_t places) {
 
-	if (!places || !n->len) return BC_STATUS_SUCCESS;
+	if (!places || BC_NUM_ZERO(n)) return BC_STATUS_SUCCESS;
 	if (places + n->len > BC_MAX_NUM)
 		return bc_vm_verr(BC_ERROR_MATH_OVERFLOW, "shifted left too far");
 
@@ -245,12 +245,12 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
 
-	if (!a->len) {
+	if (BC_NUM_ZERO(a)) {
 		bc_num_copy(c, b);
-		if (sub && c->len) c->neg = !c->neg;
+		if (sub && BC_NUM_NONZERO(c)) c->neg = !c->neg;
 		return BC_STATUS_SUCCESS;
 	}
-	else if (!b->len) {
+	if (BC_NUM_ZERO(b)) {
 		bc_num_copy(c, a);
 		return BC_STATUS_SUCCESS;
 	}
@@ -318,12 +318,12 @@ BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
 
-	if (!a->len) {
+	if (BC_NUM_ZERO(a)) {
 		bc_num_copy(c, b);
-		if (sub && c->len) c->neg = !c->neg;
+		if (sub && BC_NUM_NONZERO(c)) c->neg = !c->neg;
 		return BC_STATUS_SUCCESS;
 	}
-	else if (!b->len) {
+	if (BC_NUM_ZERO(b)) {
 		bc_num_copy(c, a);
 		return BC_STATUS_SUCCESS;
 	}
@@ -341,7 +341,8 @@ BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		bc_num_setToZero(c, BC_MAX(a->rdx, b->rdx));
 		return BC_STATUS_SUCCESS;
 	}
-	else if (cmp > 0) {
+
+	if (cmp > 0) {
 		neg = a->neg;
 		minuend = a;
 		subtrahend = b;
@@ -376,12 +377,13 @@ BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	bool aone = BC_NUM_ONE(a);
 
+	// This is here because the function is recursive.
 	if (BC_SIGINT) return BC_STATUS_SIGNAL;
-	if (!a->len || !b->len) {
+	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (aone || BC_NUM_ONE(b)) {
+	if (aone || BC_NUM_ONE(b)) {
 		bc_num_copy(c, aone ? b : a);
 		return BC_STATUS_SUCCESS;
 	}
@@ -521,12 +523,12 @@ BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BcNum cp;
 	bool zero = true;
 
-	if (!b->len) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
-	else if (!a->len) {
+	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (BC_NUM_ONE(b)) {
+	if (BC_NUM_ONE(b)) {
 		bc_num_copy(c, a);
 		bc_num_retireMul(c, scale, a->neg, b->neg);
 		return BC_STATUS_SUCCESS;
@@ -585,9 +587,8 @@ BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	BcNum temp;
 	bool neg;
 
-	if (!b->len) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
-
-	if (!a->len) {
+	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(c, ts);
 		bc_num_setToZero(d, ts);
 		return BC_STATUS_SUCCESS;
@@ -603,7 +604,7 @@ BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	s = bc_num_sub(a, &temp, d, scale);
 	if (s) goto err;
 
-	if (ts > d->rdx && d->len) bc_num_extend(d, ts - d->rdx);
+	if (ts > d->rdx && BC_NUM_NONZERO(d)) bc_num_extend(d, ts - d->rdx);
 
 	neg = d->neg;
 	bc_num_retireMul(d, ts, a->neg, b->neg);
@@ -637,15 +638,15 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if (b->rdx) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 
-	if (!b->len) {
+	if (BC_NUM_ZERO(b)) {
 		bc_num_one(c);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (!a->len) {
+	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (BC_NUM_ONE(b)) {
+	if (BC_NUM_ONE(b)) {
 		if (!b->neg) bc_num_copy(c, a);
 		else s = bc_num_inv(a, c, scale);
 		return s;
@@ -802,7 +803,7 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	s = op(ptr_a, ptr_b, c, scale);
 
-	assert(!c->neg || c->len);
+	assert(!c->neg || BC_NUM_NONZERO(c));
 
 	if (init) bc_num_free(&num2);
 
@@ -878,9 +879,8 @@ void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	}
 }
 
-BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
-                          BcNum *restrict base, size_t base_t)
-{
+BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val, BcNum *restrict base, size_t base_t) {
+
 	BcStatus s;
 	BcNum temp, mult, result;
 	BcDig c;
@@ -931,7 +931,7 @@ BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	s = bc_num_add(n, &result, n, digits);
 	if (s) goto err;
 
-	if (n->len) {
+	if (BC_NUM_NONZERO(n)) {
 		if (n->rdx < digits) bc_num_extend(n, digits - n->rdx);
 	}
 	else bc_num_zero(n);
@@ -1007,8 +1007,7 @@ void bc_num_printDecimal(const BcNum *restrict n) {
 		bc_num_printHex((size_t) n->num[i], 1, i == rdx);
 }
 
-BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
-                         size_t width, BcNumDigitOp print)
+BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base, size_t len, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
@@ -1017,15 +1016,15 @@ BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	size_t i;
 	bool radix;
 
-	if (!n->len) {
-		print(0, width, false);
+	if (BC_NUM_ZERO(n)) {
+		print(0, len, false);
 		return BC_STATUS_SUCCESS;
 	}
 
 	bc_vec_init(&stack, sizeof(unsigned long), NULL);
 	bc_num_init(&intp, n->len);
 	bc_num_init(&fracp, n->rdx);
-	bc_num_init(&digit, width);
+	bc_num_init(&digit, len);
 	bc_num_init(&frac_len, BC_NUM_INT(n));
 	bc_num_copy(&intp, n);
 	bc_num_one(&frac_len);
@@ -1034,7 +1033,7 @@ BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	s = bc_num_sub(n, &intp, &fracp, 0);
 	if (s) goto err;
 
-	while (intp.len) {
+	while (BC_NUM_NONZERO(&intp)) {
 		s = bc_num_divmod(&intp, base, &intp, &digit, 0);
 		if (s) goto err;
 		s = bc_num_ulong(&digit, &dig);
@@ -1045,7 +1044,7 @@ BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	for (i = 0; i < stack.len; ++i) {
 		ptr = bc_vec_item_rev(&stack, i);
 		assert(ptr);
-		print(*ptr, width, false);
+		print(*ptr, len, false);
 	}
 
 	if (!n->rdx) goto err;
@@ -1058,7 +1057,7 @@ BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 		bc_num_ulong2num(&intp, dig);
 		s = bc_num_sub(&fracp, &intp, &fracp, 0);
 		if (s) goto err;
-		print(dig, width, radix);
+		print(dig, len, radix);
 		s = bc_num_mul(&frac_len, base, &frac_len, 0);
 		if (s) goto err;
 	}
@@ -1169,11 +1168,11 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 
 	bc_num_printNewline();
 
-	if (!n->len) bc_num_printHex(0, 1, false);
+	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
 	else if (base_t == 10) bc_num_printDecimal(n);
 	else s = bc_num_printBase(n, base, base_t);
 
-	if (newline) {
+	if (!s && newline) {
 		bc_vm_putchar('\n');
 		vm->nchars = 0;
 	}
@@ -1281,12 +1280,12 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a) + 1) >> 1) + 1;
 	bc_num_expand(b, req);
 
-	if (!a->len) {
+	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(b, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	else if (a->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
-	else if (BC_NUM_ONE(a)) {
+	if (a->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_NUM_ONE(a)) {
 		bc_num_one(b);
 		bc_num_extend(b, scale);
 		return BC_STATUS_SUCCESS;
@@ -1369,7 +1368,7 @@ err:
 	bc_num_free(&f);
 	bc_num_free(&num2);
 	bc_num_free(&num1);
-	assert(!b->neg || b->len);
+	assert(!b->neg || BC_NUM_NONZERO(b));
 	return s;
 }
 
@@ -1395,8 +1394,8 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	s = bc_num_r(ptr_a, b, c, d, scale, ts);
 
-	assert(!c->neg || c->len);
-	assert(!d->neg || d->len);
+	assert(!c->neg || BC_NUM_NONZERO(c));
+	assert(!d->neg || BC_NUM_NONZERO(d));
 
 	if (init) bc_num_free(&num2);
 
@@ -1412,7 +1411,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	assert(a && b && c && d && a != d && b != d && c != d);
 
-	if (!c->len) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(c)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (b->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 	if (a->rdx || b->rdx || c->rdx)
 		return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
@@ -1431,7 +1430,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	if (s) goto err;
 	bc_num_copy(&exp, b);
 
-	while (exp.len) {
+	while (BC_NUM_NONZERO(&exp)) {
 
 		s = bc_num_divmod(&exp, &two, &exp, &temp, 0);
 		if (s) goto err;
