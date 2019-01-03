@@ -28,33 +28,14 @@
 
 // clang-format off
 
+#if BC_ENABLE_SIGNALS
 #if BC_ENABLED
-// ** Busybox exclude start. **
-// ** Exclude start. **
-#ifndef _WIN32
-const char bc_name[] = "bc";
-#else // _WIN32
-const char bc_name[] = "bc.exe";
-#endif // _WIN32
-// ** Exclude end. **
-// ** Busybox exclude end. **
-#if BC_ENABLE_SIGNALS
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
-#endif // BC_ENABLE_SIGNALS
 #endif // BC_ENABLED
-
 #if DC_ENABLED
-// ** Busybox exclude start. **
-#ifndef _WIN32
-const char dc_name[] = "dc";
-#else // _WIN32
-const char dc_name[] = "dc.exe";
-#endif // _WIN32
-// ** Busybox exclude end. **
-#if BC_ENABLE_SIGNALS
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
-#endif // BC_ENABLE_SIGNALS
 #endif // DC_ENABLED
+#endif // BC_ENABLE_SIGNALS
 
 const char bc_copyright[] =
 	"Copyright (c) 2018 Gavin D. Howard and contributors\n"

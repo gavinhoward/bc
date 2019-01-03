@@ -36,23 +36,23 @@ BcVm *vm;
 int main(int argc, char *argv[]) {
 
 	int s;
+	char *name;
 
 	setlocale(LC_ALL, "");
 
 	vm = calloc(1, sizeof(BcVm));
 	if (!vm) return (int) BC_ERROR_VM_ALLOC_ERR;
 
+	name = strrchr(argv[0], '/');
+	vm->name = !name ? argv[0] : name + 1;
+
 #if !DC_ENABLED
 	s = bc_main(argc, argv);
 #elif !BC_ENABLED
 	s = dc_main(argc, argv);
 #else
-	char *name = strrchr(argv[0], '/');
-
-	vm->name = !name ? argv[0] : name + 1;
-
-	if (!strcmp(vm->name, dc_name)) s = dc_main(argc, argv);
-	else s = bc_main(argc, argv);
+	if (BC_IS_BC) s = bc_main(argc, argv);
+	else s = dc_main(argc, argv);
 #endif
 
 	return s;

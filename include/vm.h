@@ -79,7 +79,7 @@
 #define BC_MAX_EXP ((unsigned long) LONG_MAX)
 #define BC_MAX_VARS ((unsigned long) SIZE_MAX - 1)
 
-#define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm->name[0] == 'b'))
+#define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm->name[0] != 'd'))
 
 #if BC_ENABLE_SIGNALS
 #define BC_SIGINT (vm->sig)
@@ -162,11 +162,6 @@ char* bc_vm_strdup(const char *str);
 BcStatus bc_vm_error(BcError e, size_t line, ...);
 
 #if BC_ENABLED
-// ** Exclude start. **
-extern const char bc_name[];
-// ** Exclude end. **
-extern const char bc_sig_msg[];
-
 extern const char bc_lib[];
 extern const char *bc_lib_name;
 #if BC_ENABLE_EXTRA_MATH
@@ -180,11 +175,6 @@ extern const char *bc_lib3_name;
 #endif // BC_ENABLED
 
 // ** Exclude start. **
-#if DC_ENABLED
-extern const char dc_name[];
-extern const char dc_sig_msg[];
-#endif // DC_ENABLED
-
 extern const char bc_copyright[];
 
 extern const char* const bc_err_fmt;
