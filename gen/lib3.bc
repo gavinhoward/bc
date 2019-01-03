@@ -34,13 +34,12 @@ define void binary(x){
 	output(x,2)
 }
 define void output_byte(x,i){
-	auto ib,p,y,b
-	ib=ibase
+	auto j,p,y,b
+	j=ibase
 	ibase=A
 	s=scale
 	scale=0
-	if(x<0)x=-x
-	x=x$
+	x=abs(x)$
 	b=x/(2^(i*8))
 	b%=2^8
 	y=log(256,obase)$
@@ -49,18 +48,18 @@ define void output_byte(x,i){
 	for(i=y-p;i>0;--i) print 0
 	if(b)print b
 	scale=s
-	ibase=ib
+	ibase=j
 }
 define void output_uint(x,n){
-	auto i,ib
-	ib=ibase
-	ibase=A
+	auto i,b
+	b=ibase
+	base=A
 	for(i=n-1;i>=0;--i){
 		output_byte(x,i)
 		if(i)print " "
 		else print "\n"
 	}
-	ibase=ib
+	ibase=b
 }
 define void hex_uint(x,n){
 	auto o
@@ -78,7 +77,7 @@ define void binary_uint(x,n){
 }
 define void uint(x){
 	auto n
-	x=x$
+	x=abs(x)$
 	n=ubytes(x)
 	binary_uint(x,n)
 	hex_uint(x,n)
