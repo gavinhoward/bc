@@ -837,7 +837,7 @@ unsigned long bc_num_parseChar(char c, size_t base_t) {
 
 	if (isupper(c)) {
 		c = BC_NUM_NUM_LETTER(c);
-		c = ((size_t) c) >= base_t ? base_t - 1 : c;
+		c = ((size_t) c) >= base_t ? (char) base_t - 1 : c;
 	}
 	else c -= '0';
 
@@ -938,7 +938,7 @@ int_err:
 }
 
 void bc_num_printNewline() {
-	if (vm->nchars >= vm->line_len - 1) {
+	if (vm->nchars >= (size_t) (vm->line_len - 1)) {
 		bc_vm_putchar('\\');
 		bc_vm_putchar('\n');
 		vm->nchars = 0;

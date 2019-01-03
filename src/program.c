@@ -46,7 +46,7 @@ BcStatus bc_program_type_match(BcResult *r, BcType t) {
 #if DC_ENABLED
 	if (r->t == BC_RESULT_STR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 #endif // DC_ENABLED
-	if (r->t != BC_RESULT_ARRAY != (!t)) return bc_vm_err(BC_ERROR_EXEC_TYPE);
+	if ((r->t != BC_RESULT_ARRAY) != (!t)) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	return BC_STATUS_SUCCESS;
 }
 
@@ -1572,7 +1572,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 		switch (inst) {
 
 #if BC_ENABLED
-			BcNum *num = NULL;
+			BcNum *num;
 
 			case BC_INST_JUMP_ZERO:
 			{
