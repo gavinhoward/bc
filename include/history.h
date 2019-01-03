@@ -90,8 +90,8 @@
 
 #define BC_HISTORY_BUF_LEN(h) ((h)->buf.len - 1)
 
-#define BC_HISTORY_NEXT (0)
-#define BC_HISTORY_PREV (1)
+#define BC_HISTORY_NEXT (false)
+#define BC_HISTORY_PREV (true)
 
 #ifndef NDEBUG
 #define lndebug(...)                                               \

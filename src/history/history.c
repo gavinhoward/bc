@@ -195,8 +195,8 @@ static bool bc_history_comboChar(unsigned long cp) {
 /**
  * Get length of previous UTF8 character.
  */
-static size_t bc_history_prevCharLen(const char *buf, int pos) {
-	int end = pos;
+static size_t bc_history_prevCharLen(const char *buf, size_t pos) {
+	size_t end = pos;
 	for (pos -= 1; pos >= 0 && (buf[pos] & 0xC0) == 0x80; --pos);
 	return end - pos;
 }
@@ -381,7 +381,7 @@ static size_t bc_history_colPos(const char *buf, size_t buf_len, size_t pos) {
  */
 static bool bc_history_isBadTerm() {
 
-	int i;
+	size_t i;
 	char *term = getenv("TERM");
 
 	if (term == NULL) return false;
@@ -449,8 +449,7 @@ static void bc_history_disableRaw(BcHistory *h) {
 static size_t bc_history_cursorPos(BcHistory *h) {
 
 	char buf[64];
-	size_t cols, rows;
-	unsigned int i;
+	size_t cols, rows, i;
 
 	// Report cursor location.
 	if (write(h->ofd, "\x1b[6n", 4) != 4) return SIZE_MAX;
@@ -512,8 +511,8 @@ static size_t bc_history_columns(BcHistory *h) {
 /**
  * Check if text is an ANSI escape sequence.
  */
-static int bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len) {
-
+static bool bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len)
+{
 	if (buf_len > 2 && !memcmp("\033[", buf, 2)) {
 
 		size_t off = 2;
@@ -526,12 +525,12 @@ static int bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len) {
 			    c == 'S' || c == 'T' || c == 'f' || c == 'm')
 			{
 				*len = off;
-				return 1;
+				return true;
 			}
 		}
 	}
 
-	return 0;
+	return false;
 }
 
 /**
@@ -564,16 +563,15 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 static BcStatus bc_history_refresh(BcHistory *h) {
 
 	char seq[64];
-	int colpos;
 	char* buf = h->buf.v;
-	size_t len = BC_HISTORY_BUF_LEN(h), pos = h->pos, pcollen;
+	size_t colpos, len = BC_HISTORY_BUF_LEN(h), pos = h->pos, pcollen;
 	BcVec vec;
 
 	pcollen = bc_history_promptColLen(h->prompt, h->plen);
 
 	while(pcollen + bc_history_colPos(buf, len, pos) >= h->cols) {
 
-		int chlen = bc_history_nextLen(buf, len, 0, NULL);
+		size_t chlen = bc_history_nextLen(buf, len, 0, NULL);
 
 		buf += chlen;
 		len -= chlen;
@@ -598,8 +596,8 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	bc_vec_concat(&vec, seq);
 
 	// Move cursor to original position.
-	colpos = (int) (bc_history_colPos(buf, len, pos) + pcollen);
-	snprintf(seq, 64, "\r\x1b[%dC", colpos);
+	colpos = bc_history_colPos(buf, len, pos) + pcollen;
+	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
 	bc_vec_concat(&vec, seq);
 
 	if (write(h->ofd, vec.v, vec.len - 1) == -1)
@@ -748,7 +746,7 @@ BcStatus bc_history_edit_end(BcHistory *h) {
  * Substitute the currently edited line with the next or previous history
  * entry as specified by 'dir' (direction).
  */
-BcStatus bc_history_edit_next(BcHistory *h, int dir) {
+BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 
 	if (h->history.len <= 1) return BC_STATUS_SUCCESS;
 
@@ -1320,7 +1318,7 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 		if (!memcmp(quit, "quit", sizeof(quit))) break;
 
 		printf("'%c' %02x (%d) (type quit to exit)\n",
-		       isprint((int) c) ? c : '?', (int) c, (int) c);
+		       isprint(c) ? c : '?', (int) c, (int) c);
 
 		// Go left edge manually, we are in raw mode.
 		bc_vm_putchar('\r');
