@@ -12,6 +12,10 @@ define z() {
 	return (3)
 }
 
+define v() { return }
+
+v()
+
 w()
 
 if (x() == y()) { 1 }
