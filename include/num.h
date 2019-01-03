@@ -107,7 +107,6 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 #endif // DC_ENABLED
 
-void bc_num_zero(BcNum *restrict n);
 void bc_num_one(BcNum *restrict n);
 void bc_num_ten(BcNum *restrict n);
 

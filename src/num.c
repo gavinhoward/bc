@@ -176,9 +176,8 @@ void bc_num_retireMul(BcNum *restrict n, size_t scale, bool neg1, bool neg2) {
 	if (BC_NUM_NONZERO(n)) n->neg = (!neg1 != !neg2);
 }
 
-void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
-                  BcNum *restrict b)
-{
+void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a, BcNum *restrict b) {
+
 	if (idx < n->len) {
 
 		b->len = n->len - idx;
@@ -187,14 +186,12 @@ void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a,
 
 		memcpy(b->num, n->num + idx, b->len * sizeof(BcDig));
 		memcpy(a->num, n->num, idx * sizeof(BcDig));
+
+		bc_num_clean(b);
 	}
-	else {
-		bc_num_zero(b);
-		bc_num_copy(a, n);
-	}
+	else bc_num_copy(a, n);
 
 	bc_num_clean(a);
-	bc_num_clean(b);
 }
 
 BcStatus bc_num_shift(BcNum *restrict n, size_t places) {
@@ -561,7 +558,6 @@ BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_expand(c, cp.len);
 
-	bc_num_zero(c);
 	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
 	c->rdx = cp.rdx;
 	c->len = cp.len;
@@ -858,7 +854,6 @@ void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	val += i;
 	len = strlen(val);
-	bc_num_zero(n);
 
 	if (len) {
 		for (i = 0; zero && i < len; ++i) zero = (val[i] == '0') || val[i] == '.';
@@ -887,8 +882,6 @@ BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val, BcNum *re
 	bool zero = true;
 	unsigned long v;
 	size_t i, digits, len = strlen(val);
-
-	bc_num_zero(n);
 
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
 	if (zero) return BC_STATUS_SUCCESS;
