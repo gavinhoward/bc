@@ -1072,7 +1072,7 @@ err:
 	return s;
 }
 
-BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base, size_t b_t) {
+BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base, size_t base_t) {
 
 	BcStatus s;
 	size_t width;
@@ -1084,12 +1084,12 @@ BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base, size_t b_t) {
 
 	n->neg = false;
 
-	if (b_t <= BC_NUM_MAX_POSIX_IBASE) {
+	if (base_t <= BC_NUM_MAX_POSIX_IBASE) {
 		width = 1;
 		print = bc_num_printHex;
 	}
 	else {
-		width = bc_num_log10(b_t - 1) - 1;
+		width = bc_num_log10(base_t - 1) - 1;
 		print = bc_num_printDigits;
 	}
 
