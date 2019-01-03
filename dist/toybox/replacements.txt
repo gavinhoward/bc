@@ -60,7 +60,6 @@ BC_VM->
 \1
 \1
 \1;
-BcStatus bc_read_line(BcVec *vec, char *prompt) {\1\2BcStatus s = bc_read_chars(vec, prompt);
 \1
 \1
 \1\2\n\3\4
@@ -72,6 +71,8 @@ NULL);\n  toys.optflags
 0
 1
 char *\1
+\1
+\n
 \1
 \n
 putchar

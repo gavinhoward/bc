@@ -60,7 +60,6 @@ vm->
 BC_ENABLED && \((.*?)\)
 BC_IS_BC && \((.*?)\)
 BC_IS_BC \? (.*?) : .*?;$
-BcStatus bc_read_line\(BcVec \*vec, char \*prompt\) \{([\n]*)([ ]*)BcStatus s;$
 BC_IS_BC && ([a-z])
 [!]+BC_IS_BC \|\| ([a-z])
 ^[ ]*if \(BC_IS_BC\) \{\n([ ]*)  (.*?;)\n([ ]*)  (.*?;)\n[ ]*\}\n[ ]*else .*?;
@@ -74,6 +73,8 @@ STDOUT_FILENO
 char\* ([a-z])
 \n#if BC_ENABLE_EXTRA_MATH // Remove.*?#else // BC_ENABLE_EXTRA_MATH(.*?)\n#endif // BC_ENABLE_EXTRA_MATH Remove
 \n#if BC_ENABLE_EXTRA_MATH.*?#endif // BC_ENABLE_EXTRA_MATH\n
+\n#if BC_ENABLE_HISTORY // Remove.*?#else // BC_ENABLE_HISTORY(.*?)\n#endif // BC_ENABLE_HISTORY Remove\n
+\n#if BC_ENABLE_HISTORY.*?#endif // BC_ENABLE_HISTORY\n
 bc_vm_putchar
 bc_vm_printf
 bc_vm_puts

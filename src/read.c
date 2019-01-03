@@ -100,11 +100,15 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 	BcStatus s;
 
-#if BC_ENABLE_HISTORY
+	// We are about to output to stderr, so flush stdout to
+	// make sure that we don't get the outputs mixed up.
+	bc_vm_fflush(stdout);
+
+#if BC_ENABLE_HISTORY // Remove
 	s = bc_history_line(&vm->history, vec, prompt);
 #else // BC_ENABLE_HISTORY
 	s = bc_read_chars(vec, prompt);
-#endif // BC_ENABLE_HISTORY
+#endif // BC_ENABLE_HISTORY Remove
 
 	if (s) return s;
 	if (bc_read_binary(vec->v, vec->len - 1))

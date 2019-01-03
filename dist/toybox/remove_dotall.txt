@@ -29,7 +29,6 @@
 \n#ifndef NDEBUG.*?#endif // NDEBUG
 \n#if BC_ENABLE_VOID_FNS.*?#endif // BC_ENABLE_VOID_FNS
 \n#if BC_ENABLE_REFERENCES.*?#endif // BC_ENABLE_REFERENCES
-\n#if BC_ENABLE_HISTORY.*?#endif // BC_ENABLE_HISTORY
 \n#ifndef _WIN32
 \n#else // _WIN32.*?#endif // _WIN32
 \n// Windows has deprecated isatty\(\)\.\n#ifdef _WIN32.*?#endif // _WIN32
