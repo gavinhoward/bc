@@ -218,21 +218,21 @@ size_t bc_vm_printf(const char *fmt, ...) {
 	ret = vprintf(fmt, args);
 	va_end(args);
 
-	if (ret < 0) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (ret < 0 || ferror(stdout)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 
 	return (size_t) ret;
 }
 
 void bc_vm_puts(const char *str, FILE *restrict f) {
-	if (fputs(str, f) == EOF) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (fputs(str, f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 }
 
 void bc_vm_putchar(int c) {
-	if (putchar(c) == EOF) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (putchar(c) == EOF || ferror(stdout)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 }
 
 void bc_vm_fflush(FILE *restrict f) {
-	if (fflush(f) == EOF) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (fflush(f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 }
 
 void bc_vm_clean() {
