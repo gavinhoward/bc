@@ -110,8 +110,6 @@ const char bc_err_ids[] = {
 #if BC_ENABLE_VOID_FNS
 	BC_ERR_IDX_EXEC,
 #endif // BC_ENABLE_VOID_FNS
-#endif // BC_ENABLED
-#if BC_ENABLED
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -180,9 +178,7 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLE_VOID_FNS
 	"cannot use a void value in an expression",
 #endif // BC_ENABLE_VOID_FNS
-#endif // BC_ENABLED
 
-#if BC_ENABLED
 	"POSIX does not allow names longer than 1 character, like \"%s\"",
 	"POSIX does not allow '#' script comments",
 	"POSIX does not allow \"%s\" as a keyword",
