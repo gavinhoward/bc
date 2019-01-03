@@ -121,6 +121,14 @@ for name in files:
 if project == "toybox":
 	r = re.compile('\t', re.M)
 	content = r.sub('  ', content)
+	r = re.compile('#ifndef NDEBUG\n  bc_vec_free', re.M)
+	content = r.sub('bc_vec_free', content)
+	r = re.compile('free\(vm\);\n#endif // NDEBUG\n', re.M)
+	content = r.sub('free(BC_VM);\n', content)
+	r = re.compile('#ifndef NDEBUG\nvoid bc_program_free', re.M)
+	content = r.sub('void bc_program_free', content)
+	r = re.compile('bc_num_free\(&p->last\);\n#endif // BC_ENABLED\n\}\n#endif // NDEBUG$', re.M)
+	content = r.sub('bc_num_free(&p->last);\n#endif // BC_ENABLED\n}', content)
 
 removals = read_file(projectdir + "/remove_dotall.txt")
 

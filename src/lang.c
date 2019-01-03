@@ -36,6 +36,11 @@ void bc_id_free(void *id) {
 	free(((BcId*) id)->name);
 }
 
+void bc_string_free(void *string) {
+	assert(string && *((char**) string));
+	free(*((char**) string));
+}
+
 #if BC_ENABLED
 BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line) {
 
@@ -138,11 +143,6 @@ void bc_array_expand(BcVec *a, size_t len) {
 			bc_vec_push(a, &data.v);
 		}
 	}
-}
-
-void bc_string_free(void *string) {
-	assert(string && *((char**) string));
-	free(*((char**) string));
 }
 
 #if DC_ENABLED

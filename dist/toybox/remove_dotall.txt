@@ -1,17 +1,20 @@
 ^[ ]*vm->flags = 0;$
 ^[ ]*bc_vec_init\(&vm->files, sizeof\(char\*\), NULL\);$
-^[ ]*bc_vec_init\(&vm->exprs, sizeof\(char\), NULL\);$
+^[ ]*bc_vec_init\(&vm->exprs, sizeof\(uchar\), NULL\);$
 \nprog_err:\n[ ]*bc_vec_free\(&vm->exprs\);$
 \nexprs_err:\n[ ]*bc_vec_free\(&vm->files\);$
 \n[ ]*bc_vec_free\(&vm->exprs\);$
 \n[ ]*bc_vec_free\(&vm->files\);$
-^[ ]*st = bc_args\(argc, argv, &vm\.flags, &vm\.exprs, &vm\.files\);\n[ ]*if \(st\) goto exit;$
+^[ ]*s = bc_args\(argc, argv\);\n[ ]*if \(s\) goto exit;$
 ^[ ]*bcg\.s = vm\.flags & BC_FLAG_S;$
 ^[ ]*bcg\.w = vm\.flags & BC_FLAG_W;$
 ^[ ]*if \(vm->exprs\.len\).*?\}$
-\n[ ]*if \(help\) bc_vm_printf\(stdout, help, bcg\.name\);$
+\n[ ]*if \(help\) bc_vm_printf\(help, vm->name\);$
 ^[ ]*vm->exe = exe;$
-\n[ ]*if \(bcg.bc\) s = bc_vm_envArgs\(vm\);$
+\n[ ]*s = bc_vm_envArgs\(\);\n[ ]*if \(s\) goto exit;\n[ ]*\}
+\n#if !BC_ENABLED && !DC_ENABLED.*?#endif
+\n// CHAR_BIT must be at least 5\.\n#if CHAR_BIT < 5.*?#endif
+\n#else // BC_ENABLE_SIGNALS.*?#endif // BC_ENABLE_SIGNALS
 \n#if BC_ENABLE_SIGNALS$
 \n#endif // BC_ENABLE_SIGNALS$
 \n#if DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
@@ -24,22 +27,22 @@
 \n#if DC_ENABLED\n#endif // DC_ENABLED$
 \n#if BC_ENABLED\n#endif // BC_ENABLED$
 \n#ifndef NDEBUG.*?#endif // NDEBUG
+\n#if BC_ENABLE_EXTRA_MATH.*?#endif // BC_ENABLE_EXTRA_MATH
+\n#if BC_ENABLE_VOID_FNS.*?#endif // BC_ENABLE_VOID_FNS
+\n#if BC_ENABLE_REFERENCES.*?#endif // BC_ENABLE_REFERENCES
+\n#if BC_ENABLE_HISTORY.*?#endif // BC_ENABLE_HISTORY
 \n#ifndef _WIN32
 \n#else // _WIN32.*?#endif // _WIN32
+\n// Windows has deprecated isatty\(\)\.\n#ifdef _WIN32.*?#endif // _WIN32
 \n[ ]*assert\(.*?\);$
 \#if !defined\(BC_ENABLED\).*?\#endif\n
 ^[ ]*// \*\* Exclude start\. \*\*.*?^[ ]*// \*\* Exclude end\. \*\*$
 ^\tBC_STATUS_INVALID_OPTION,$
-^[ ]*p->parse = parse;$
-^[ ]*p->parse_init = init;$
-^[ ]*p->parse_expr = expr;$
-^[ ]*l->next = next;$
 ^void bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
 ^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}
-^BcStatus bc_vm_envArgs\(BcVm \*vm\) \{.*?\n\}
+^BcStatus bc_vm_envArgs\(\) \{.*?\n\}
 ^[ ]*vm->env_args = NULL;$
 \n[ ]*free\(vm->env_args\);$
-^[ ]*bcg\.exreg = vm\.flags & BC_FLAG_X;$
 ^#ifndef BC_NUM_KARATSUBA_LEN$
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
 \n// \*\* Busybox exclude start\. \*\*
@@ -54,3 +57,8 @@
  != 0
 \n\n[ ]*BC_STATUS_INVALID_OPTION,$
 ^BcStatus bc_parse_expression\(BcParse \*p, uint8_t flags\).*?\n\}$
+#define BC_IS_BC .*?$
+#define DC_X \(.*?\)\)
+\n[ ]*else if \(c == '\]'\) string -= 1;
+\n[ ]*else if \(c == '\['\) string \+= 1;\n[ ]*\}
+ if \(\(BC_IS_BC \|\| !vm->files\.len\) && !vm->exprs\.len\)

@@ -36,12 +36,9 @@ config BC
 #include "toys.h"
 
 GLOBALS(
-  long i;
-
-  long ttyin;
-  unsigned long sig;
-  unsigned long sigc;
-  unsigned long signe;
-  long sig_other;
+  // This actually needs to be a BcVm*, but the toybox build
+  // system complains if I make it so. Instead, we'll just cast.
+  char *vm;
 )
 
+#define BC_VM ((BcVm*) TT.vm)

@@ -149,9 +149,8 @@ BcStatus bc_lex_name(BcLex *l) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_lex_init(BcLex *l, BcLexNext next) {
+void bc_lex_init(BcLex *l) {
 	assert(l);
-	l->next = next;
 	bc_vec_init(&l->str, sizeof(char), NULL);
 }
 
@@ -184,7 +183,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	// Loop until failure or we don't have whitespace. This
 	// is so the parser doesn't get inundated with whitespace.
 	do {
-		s = l->next(l);
+		s = vm->next(l);
 	} while (!s && l->t == BC_LEX_WHITESPACE);
 
 	return s;

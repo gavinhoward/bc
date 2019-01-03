@@ -99,26 +99,20 @@ void bc_parse_free(BcParse *p) {
 	bc_lex_free(&p->l);
 }
 
-void bc_parse_create(BcParse *p, BcProgram *prog, size_t func,
-                     BcParseParse parse, BcLexNext next)
+void bc_parse_init(BcParse *p, BcProgram *prog, size_t func)
 {
 	assert(p && prog);
-
-	memset(p, 0, sizeof(BcParse));
-
-	bc_lex_init(&p->l, next);
 #if BC_ENABLED
-	{
-		uint16_t flag = 0;
-		bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
-		bc_vec_push(&p->flags, &flag);
-	}
+	uint16_t flag = 0;
+	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
+	bc_vec_push(&p->flags, &flag);
 	bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
 	bc_vec_init(&p->conds, sizeof(size_t), NULL);
 	bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
 #endif // BC_ENABLED
 
-	p->parse = parse;
+	bc_lex_init(&p->l);
+
 	p->prog = prog;
 	p->auto_part = false;
 	bc_parse_updateFunc(p, func);

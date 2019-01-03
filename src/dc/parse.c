@@ -239,9 +239,4 @@ BcStatus dc_parse_parse(BcParse *p) {
 
 	return s;
 }
-
-void dc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
-	assert(p && prog);
-	bc_parse_create(p, prog, func, dc_parse_parse, dc_lex_token);
-}
 #endif // DC_ENABLED

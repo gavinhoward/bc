@@ -127,7 +127,6 @@ BcStatus bc_lex_token(BcLex *l);
 
 // ** Exclude start. **
 // ** Busybox exclude start. **
-void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
 // ** Busybox exclude end. **
 // ** Exclude end. **

@@ -62,15 +62,15 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 	}
 }
 
-void bc_vec_push(BcVec *restrict v, const void *data) {
-	bc_vec_npush(v, 1, data);
-}
-
 void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
 	assert(v && data);
 	if (v->len + n > v->cap) bc_vec_grow(v, n);
 	memcpy(v->v + (v->size * v->len), data, v->size * n);
 	v->len += n;
+}
+
+void bc_vec_push(BcVec *restrict v, const void *data) {
+	bc_vec_npush(v, 1, data);
 }
 
 void bc_vec_pushByte(BcVec *restrict v, uchar data) {
@@ -204,9 +204,8 @@ size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 	return low;
 }
 
-bool bc_map_insert(BcVec *restrict v, const BcId *restrict ptr,
-                   size_t *restrict i)
-{
+bool bc_map_insert(BcVec *restrict v, const BcId *restrict ptr, size_t *restrict i) {
+
 	assert(v && ptr && i);
 
 	*i = bc_map_find(v, ptr);

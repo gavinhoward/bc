@@ -3,7 +3,7 @@
 ^#define BC.*_H$
 ^#endif \/\/ BC.*_H$
 ^extern.*$
-^#define BC_FLAG_X \(1<<0\)$
+^#define DC_FLAG_X \(1<<0\)$
 ^#define BC_FLAG_W \(1<<1\)$
 ^#define BC_FLAG_V \(1<<2\)$
 ^#define BC_FLAG_S \(1<<3\)$

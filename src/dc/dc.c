@@ -37,8 +37,9 @@ int dc_main(int argc, char **argv) {
 	vm->sig_len = strlen(vm->sig_msg);
 #endif // BC_ENABLE_SIGNALS
 
-	vm->parse_init = dc_parse_init;
-	vm->parse_expr = dc_parse_expr;
+	vm->next = dc_lex_token;
+	vm->parse = dc_parse_parse;
+	vm->expr = dc_parse_expr;
 
 	return (int) bc_vm_boot(argc, argv, "DC_LINE_LENGTH");
 }

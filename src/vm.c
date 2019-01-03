@@ -127,7 +127,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...)
 	return (!!p) ? BC_STATUS_ERROR : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vm_envArgs(BcVm *vm) {
+BcStatus bc_vm_envArgs() {
 
 	BcStatus s;
 	BcVec v;
@@ -180,6 +180,21 @@ size_t bc_vm_envLen(const char *var) {
 	else len = BC_NUM_PRINT_WIDTH;
 
 	return len;
+}
+
+void bc_vm_shutdown() {
+#if BC_ENABLE_HISTORY
+	// This must always run to ensure that the terminal is back to normal.
+	bc_history_free(&vm->history);
+#endif // BC_ENABLE_HISTORY
+#ifndef NDEBUG
+	bc_vec_free(&vm->files);
+	bc_vec_free(&vm->exprs);
+	bc_program_free(&vm->prog);
+	bc_parse_free(&vm->prs);
+	free(vm->env_args);
+	free(vm);
+#endif // NDEBUG
 }
 
 void bc_vm_exit(BcError e) {
@@ -281,7 +296,7 @@ void bc_vm_clean() {
 	}
 }
 
-BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
+BcStatus bc_vm_process(const char *text, bool is_stdin) {
 
 	BcStatus s;
 
@@ -289,7 +304,7 @@ BcStatus bc_vm_process(BcVm *vm, const char *text, bool is_stdin) {
 	if (s) goto err;
 
 	while (vm->prs.l.t != BC_LEX_EOF) {
-		s = vm->prs.parse(&vm->prs);
+		s = vm->parse(&vm->prs);
 		if (s) goto err;
 	}
 
@@ -306,7 +321,7 @@ err:
 	return s == BC_STATUS_QUIT || !BC_I || !is_stdin ? s : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vm_file(BcVm *vm, const char *file) {
+BcStatus bc_vm_file(const char *file) {
 
 	BcStatus s;
 	char *data;
@@ -315,7 +330,7 @@ BcStatus bc_vm_file(BcVm *vm, const char *file) {
 	s = bc_read_file(file, &data);
 	if (s) return s;
 
-	s = bc_vm_process(vm, data, false);
+	s = bc_vm_process(data, false);
 	if (s) goto err;
 
 #if BC_ENABLED
@@ -328,7 +343,7 @@ err:
 	return s;
 }
 
-BcStatus bc_vm_stdin(BcVm *vm) {
+BcStatus bc_vm_stdin() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
@@ -384,7 +399,7 @@ BcStatus bc_vm_stdin(BcVm *vm) {
 		if (string || comment) continue;
 		if (len >= 2 && str[len - 2] == '\\' && str[len - 1] == '\n') continue;
 
-		s = bc_vm_process(vm, buffer.v, true);
+		s = bc_vm_process(buffer.v, true);
 		if (s) goto err;
 
 		bc_vec_empty(&buffer);
@@ -415,7 +430,7 @@ BcStatus bc_vm_load(const char *name, const char *text) {
 	bc_lex_file(&vm->prs.l, name);
 	s = bc_parse_text(&vm->prs, text);
 
-	while (!s && vm->prs.l.t != BC_LEX_EOF) s = vm->prs.parse(&vm->prs);
+	while (!s && vm->prs.l.t != BC_LEX_EOF) s = vm->parse(&vm->prs);
 
 	return s;
 }
@@ -447,32 +462,17 @@ BcStatus bc_vm_exec() {
 
 	if (vm->exprs.len) {
 		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
-		s = bc_vm_process(vm, vm->exprs.v, false);
+		s = bc_vm_process(vm->exprs.v, false);
 		if (s) return s;
 	}
 
 	for (i = 0; !s && i < vm->files.len; ++i)
-		s = bc_vm_file(vm, *((char**) bc_vec_item(&vm->files, i)));
+		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 	if (s && s != BC_STATUS_QUIT) return s;
 
-	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin(vm);
+	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
 
 	return s;
-}
-
-void bc_vm_shutdown() {
-#if BC_ENABLE_HISTORY
-	// This must always run to ensure that the terminal is back to normal.
-	bc_history_free(&vm->history);
-#endif // BC_ENABLE_HISTORY
-#ifndef NDEBUG
-	bc_vec_free(&vm->files);
-	bc_vec_free(&vm->exprs);
-	bc_program_free(&vm->prog);
-	bc_parse_free(&vm->prs);
-	free(vm->env_args);
-	free(vm);
-#endif // NDEBUG
 }
 
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
@@ -497,7 +497,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	bc_vec_init(&vm->exprs, sizeof(uchar), NULL);
 
 	bc_program_init(&vm->prog);
-	vm->parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);
+	bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);
 
 #if BC_ENABLE_HISTORY
 	bc_history_init(&vm->history);
@@ -506,7 +506,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 #if BC_ENABLED
 	if (BC_IS_BC) {
 		vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
-		s = bc_vm_envArgs(vm);
+		s = bc_vm_envArgs();
 		if (s) goto exit;
 	}
 #endif // BC_ENABLED
@@ -523,8 +523,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 	s = bc_vm_exec();
 
-	bc_vm_shutdown();
-
 exit:
+	bc_vm_shutdown();
 	return s != BC_STATUS_ERROR ? BC_STATUS_SUCCESS : s;
 }

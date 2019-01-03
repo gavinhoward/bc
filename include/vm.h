@@ -59,6 +59,13 @@
 #define BC_FLAG_L (1<<5)
 #define BC_FLAG_I (1<<6)
 #define BC_FLAG_TTYIN (1<<7)
+#define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
+
+#define BC_S (BC_ENABLED && (vm->flags & BC_FLAG_S))
+#define BC_W (BC_ENABLED && (vm->flags & BC_FLAG_W))
+#define BC_L (BC_ENABLED && (vm->flags & BC_FLAG_L))
+#define BC_I (BC_ENABLED && (vm->flags & BC_FLAG_I))
+#define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -80,14 +87,6 @@
 #define BC_SIGINT (0)
 #endif // BC_ENABLE_SIGNALS
 
-#define BC_S (BC_ENABLED && (vm->flags & BC_FLAG_S))
-#define BC_W (BC_ENABLED && (vm->flags & BC_FLAG_W))
-#define BC_L (BC_ENABLED && (vm->flags & BC_FLAG_L))
-#define BC_I (BC_ENABLED && (vm->flags & BC_FLAG_I))
-#define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
-
-#define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
-
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
 
@@ -100,18 +99,19 @@ typedef struct BcVm {
 
 	const char* file;
 
+#if BC_ENABLE_SIGNALS
+	const char *sig_msg;
+	uint8_t sig;
+	uint8_t sig_len;
+#endif // BC_ENABLE_SIGNALS
+
 	uint16_t line_len;
+
+	uchar max_ibase;
 
 	// ** Exclude start. **
 	uint8_t flags;
 	uchar read_ret;
-	uchar max_ibase;
-
-#if BC_ENABLE_SIGNALS
-	uint8_t sig;
-	uint8_t sig_len;
-	const char *sig_msg;
-#endif // BC_ENABLE_SIGNALS
 
 	BcVec files;
 
@@ -130,8 +130,9 @@ typedef struct BcVm {
 	BcHistory history;
 #endif // BC_ENABLE_HISTORY
 
-	BcParseInit parse_init;
-	BcParseExpr parse_expr;
+	BcLexNext next;
+	BcParseParse parse;
+	BcParseExpr expr;
 	// ** Exclude end. **
 
 } BcVm;
@@ -157,9 +158,9 @@ void bc_vm_fflush(FILE *restrict f);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
+// ** Exclude end. **
 
 BcStatus bc_vm_error(BcError e, size_t line, ...);
-// ** Exclude end. **
 
 #if BC_ENABLED
 // ** Exclude start. **

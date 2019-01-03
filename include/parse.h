@@ -62,16 +62,11 @@ struct BcParse;
 struct BcProgram;
 
 // ** Exclude start. **
-typedef void (*BcParseInit)(struct BcParse*, struct BcProgram*, size_t);
 typedef BcStatus (*BcParseParse)(struct BcParse*);
 typedef BcStatus (*BcParseExpr)(struct BcParse*, uint8_t);
 // ** Exclude end. **
 
 typedef struct BcParse {
-
-	// ** Exclude start. **
-	BcParseParse parse;
-	// ** Exclude end. **
 
 	BcLex l;
 
@@ -93,8 +88,7 @@ typedef struct BcParse {
 // ** Exclude start. **
 // ** Busybox exclude start. **
 
-void bc_parse_create(BcParse *p, struct BcProgram *prog, size_t func,
-                     BcParseParse parse, BcLexNext next);
+void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 

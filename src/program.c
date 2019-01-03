@@ -407,11 +407,11 @@ BcStatus bc_program_read(BcProgram *p) {
 		goto io_err;
 	}
 
-	vm->parse_init(&parse, p, BC_PROG_READ);
+	bc_parse_init(&parse, p, BC_PROG_READ);
 
 	s = bc_parse_text(&parse, buf.v);
 	if (s) goto exec_err;
-	s = vm->parse_expr(&parse, BC_PARSE_NOREAD);
+	s = vm->expr(&parse, BC_PARSE_NOREAD);
 	if (s) goto exec_err;
 
 	if (parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF) {
@@ -1360,10 +1360,10 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 
 	if (f->code.len == 0) {
 
-		vm->parse_init(&prs, p, fidx);
+		bc_parse_init(&prs, p, fidx);
 		s = bc_parse_text(&prs, str);
 		if (s) goto err;
-		s = vm->parse_expr(&prs, BC_PARSE_NOCALL);
+		s = vm->expr(&prs, BC_PARSE_NOCALL);
 		if (s) goto err;
 
 		if (prs.l.t != BC_LEX_EOF) {
@@ -1463,7 +1463,7 @@ void bc_program_init(BcProgram *p) {
 	bc_map_init(&p->fn_map);
 	bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
 	bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
-#else
+#else // BC_ENABLED
 	{
 		BcFunc f;
 		bc_program_addFunc(p, &f, bc_func_main);
