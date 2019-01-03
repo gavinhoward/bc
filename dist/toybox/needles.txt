@@ -10,8 +10,8 @@ vm->files\.len
 \*\(\(char\*\*\) bc_vec_item\(&vm->files, i\)\)
 ^exit:\n  bc_vm_shutdown\(\);\n  return (s != BC_STATUS_ERROR \? BC_STATUS_SUCCESS : s);
 vm->parse\(&vm
-size_t len = strlen\(bcg\.sig_msg\);
-write\(2, bcg.sig_msg, len\) == \(ssize_t\) len
+size_t len = strlen\(vm->sig_msg\);
+write\(STDERR_FILENO, vm->sig_msg, len\) == \(ssize_t\) len
 bc_vm_info\(NULL\)
 if \(i - 1 > len \|\| string\[i - 1\].*?str \+= 1;\n[ ]*\}$
 vm->exe\.sbgn

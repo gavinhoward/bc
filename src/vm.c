@@ -54,14 +54,14 @@ void bc_vm_sig(int sig) {
 	int err = errno;
 	size_t len = strlen(vm->sig_msg);
 	if (sig == SIGINT && write(STDERR_FILENO, vm->sig_msg, len) == (ssize_t) len)
-		vm->sig = sig;
+		vm->sig = (uchar) sig;
 	errno = err;
 }
 #else // _WIN32
 BOOL WINAPI bc_vm_sig(DWORD sig) {
 	if (sig == CTRL_C_EVENT) {
 		bc_vm_puts(vm->sig_msg, stderr);
-		vm->sig = sig;
+		vm->sig = (uchar) sig;
 	}
 	return TRUE;
 }

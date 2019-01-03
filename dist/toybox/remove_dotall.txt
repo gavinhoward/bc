@@ -13,7 +13,7 @@
 ^[ ]*vm->exe = exe;$
 \n[ ]*s = bc_vm_envArgs\(\);\n[ ]*if \(s\) goto exit;\n[ ]*\}
 \n#if !BC_ENABLED && !DC_ENABLED.*?#endif
-\n// CHAR_BIT must be at least 5\.\n#if CHAR_BIT < 5.*?#endif
+\n// CHAR_BIT must be at least 6\.\n#if CHAR_BIT < 6.*?#endif
 \n#else // BC_ENABLE_SIGNALS.*?#endif // BC_ENABLE_SIGNALS
 \n#if BC_ENABLE_SIGNALS$
 \n#endif // BC_ENABLE_SIGNALS$

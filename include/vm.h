@@ -35,9 +35,9 @@
 #error Must define BC_ENABLED, DC_ENABLED, or both
 #endif
 
-// CHAR_BIT must be at least 5.
-#if CHAR_BIT < 5
-#error CHAR_BIT must be at least 5.
+// CHAR_BIT must be at least 6.
+#if CHAR_BIT < 6
+#error CHAR_BIT must be at least 6.
 #endif
 
 // ** Exclude start. **
@@ -100,9 +100,11 @@ typedef struct BcVm {
 	const char* file;
 
 #if BC_ENABLE_SIGNALS
+	// ** Exclude start. **
 	const char *sig_msg;
-	uint8_t sig;
-	uint8_t sig_len;
+	uchar sig_len;
+	// ** Exclude end. **
+	uchar sig;
 #endif // BC_ENABLE_SIGNALS
 
 	uint16_t line_len;

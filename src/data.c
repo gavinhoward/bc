@@ -36,11 +36,11 @@ const char bc_name[] = "bc";
 #else // _WIN32
 const char bc_name[] = "bc.exe";
 #endif // _WIN32
+// ** Exclude end. **
+// ** Busybox exclude end. **
 #if BC_ENABLE_SIGNALS
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
-// ** Exclude end. **
-// ** Busybox exclude end. **
 #endif // BC_ENABLED
 
 #if DC_ENABLED
@@ -50,10 +50,10 @@ const char dc_name[] = "dc";
 #else // _WIN32
 const char dc_name[] = "dc.exe";
 #endif // _WIN32
+// ** Busybox exclude end. **
 #if BC_ENABLE_SIGNALS
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
-// ** Busybox exclude end. **
 #endif // DC_ENABLED
 
 const char bc_copyright[] =
