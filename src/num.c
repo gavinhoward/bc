@@ -1134,16 +1134,13 @@ void bc_num_free(void *num) {
 }
 
 void bc_num_copy(BcNum *d, const BcNum *s) {
-
 	assert(d && s);
-
-	if (d != s) {
-		bc_num_expand(d, s->cap);
-		d->len = s->len;
-		d->neg = s->neg;
-		d->rdx = s->rdx;
-		memcpy(d->num, s->num, sizeof(BcDig) * d->len);
-	}
+	if (d == s) return;
+	bc_num_expand(d, s->cap);
+	d->len = s->len;
+	d->neg = s->neg;
+	d->rdx = s->rdx;
+	memcpy(d->num, s->num, sizeof(BcDig) * d->len);
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
