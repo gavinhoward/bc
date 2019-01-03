@@ -754,7 +754,7 @@ const char bc_program_exprs_name[] = "<exprs>";
 
 const char bc_program_stdin_name[] = "<stdin>";
 const char bc_program_ready_msg[] = "ready for more input\n";
-const char bc_program_esc_chars[] = "ab\\efnrt";
-const char bc_program_esc_seqs[] = "\a\b\\\\\f\n\r\t";
+const char bc_program_esc_chars[] = "ab\\efnqrt";
+const char bc_program_esc_seqs[] = "\a\b\\\\\f\n\"\r\t";
 
 // clang-format on
