@@ -20,24 +20,60 @@
  *
  */
 
+define abs(x){
+	if(x<0)x=-x
+	return x
+}
 define r(x,p){
 	auto i,t,n
-	if(x==0)return(x)
-	if(scale(p))p=p$
-	if(p<0)p=-p
+	if(x==0)return x
+	p=abs(p)$
 	n=(x<0)
 	if(n)x=-x
 	t=x@p
 	if(p>=scale(x)){
 		if(n)t=-t
-		return(t)
+		return t
 	}
 	i=ibase
 	ibase=A
 	if((x-t)>=(.5>>p))t+=1>>p
 	ibase=i
 	if(n)t=-t
-	return (t)
+	return t
+}
+define f(n){
+	auto r
+	n=abs(n)$
+	for(r=1;n>1;--n)r*=n
+	return r
+}
+define perm(n,k){
+	auto f,g,s
+	if(k>n)return 0
+	n=abs(n)$
+	k=abs(k)$
+	f=f(n)
+	g=f(n-k)
+	s=scale
+	scale=0
+	f/=g
+	scale=s
+	return f
+}
+define comb(n,r){
+	auto s,f,g,h
+	if(r>n)return 0
+	n=abs(n)$
+	r=abs(r)$
+	s=scale
+	scale=0
+	f=f(n)
+	h=f(r)
+	g=f(n-r)
+	f/=h*g
+	scale=s
+	return f
 }
 define log(x,b){
 	auto p,i,s
@@ -50,24 +86,23 @@ define log(x,b){
 	p=l(x)/l(b)
 	scale=s
 	ibase=i
-	return(p)
+	return p
 }
 define l2(x){
-	return(log(x,2))
+	return log(x,2)
 }
 define l10(x){
-	return(log(x,10))
+	return log(x,10)
 }
 define ubytes(x){
 	auto p,b,i
 	b=ibase
 	ibase=A
-	if(x<0)x=-x
-	x=x$
+	x=abs(x)$
 	p=(l2(x)+1)$
 	for(i=1;i*8<p;i*=2){}
 	ibase=b
-	return(i)
+	return i
 }
 define sbytes(x){
 	auto p,b,n,z
@@ -80,5 +115,15 @@ define sbytes(x){
 	p=2^(n*8-1)
 	if(x>p||(!z&&x==p))n*=2
 	ibase=b
-	return(n)
+	return n
+}
+define pi(s){
+	auto t,v
+	if(s==0)return 3
+	s=abs(s)$
+	t=scale
+	scale=s+1
+	v=4*a(1)
+	scale=t
+	return v@s
 }
