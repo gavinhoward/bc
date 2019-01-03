@@ -78,3 +78,7 @@ bc_vm_putchar
 bc_vm_printf
 bc_vm_puts
 bc_vm_fflush
+BC_NUM_NONZERO\(&(.*?)\)
+BC_NUM_NONZERO\((.*?)\)
+BC_NUM_ZERO\(&(.*?)\)
+BC_NUM_ZERO\((.*?)\)

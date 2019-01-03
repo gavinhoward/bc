@@ -73,3 +73,5 @@
 ^// clang-format off$
 ^// clang-format on$
 ^// \*\*\* .*? \*\*\*$
+^#define BC_NUM_NONZERO\(n\) \(\(n\)->len\)$
+^#define BC_NUM_ZERO\(n\) \(!BC_NUM_NONZERO\(n\)\)$
