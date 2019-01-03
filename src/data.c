@@ -585,7 +585,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH // Remove
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
@@ -598,7 +598,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
 	BC_PARSE_EXPR_ENTRY(true, false, true, false, false, 0, 0, 0)
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH Remove
 };
 
 // This is an array of data for operators that correspond to token types.
@@ -651,11 +651,11 @@ const uint8_t dc_lex_regs[] = {
 const size_t dc_lex_regs_len = sizeof(dc_lex_regs) / sizeof(uint8_t);
 
 const uint8_t dc_lex_tokens[] = {
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH // Remove
 	BC_LEX_OP_TRUNC,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH Remove
 	BC_LEX_OP_MODULUS, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_LPAREN,
 	BC_LEX_INVALID, BC_LEX_OP_MULTIPLY, BC_LEX_OP_PLUS, BC_LEX_INVALID,
 	BC_LEX_OP_MINUS, BC_LEX_INVALID, BC_LEX_INVALID,
@@ -664,18 +664,18 @@ const uint8_t dc_lex_tokens[] = {
 	BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_COLON, BC_LEX_SCOLON, BC_LEX_OP_REL_GT, BC_LEX_OP_REL_EQ,
 	BC_LEX_OP_REL_LT, BC_LEX_KEY_READ,
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH // Remove
 	BC_LEX_OP_PLACES,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH Remove
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_EQ_NO_REG,
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH // Remove
 	BC_LEX_OP_LSHIFT,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH Remove
 	BC_LEX_KEY_IBASE, BC_LEX_INVALID, BC_LEX_KEY_SCALE, BC_LEX_LOAD_POP,
 	BC_LEX_INVALID, BC_LEX_OP_BOOL_NOT, BC_LEX_KEY_OBASE, BC_LEX_PRINT_STREAM,
 	BC_LEX_NQUIT, BC_LEX_POP, BC_LEX_STORE_PUSH, BC_LEX_INVALID, BC_LEX_INVALID,
@@ -684,11 +684,11 @@ const uint8_t dc_lex_tokens[] = {
 	BC_LEX_OP_POWER, BC_LEX_NEG, BC_LEX_INVALID,
 	BC_LEX_ASCIIFY, BC_LEX_INVALID, BC_LEX_CLEAR_STACK, BC_LEX_DUPLICATE,
 	BC_LEX_KEY_ELSE, BC_LEX_PRINT_STACK, BC_LEX_INVALID,
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH // Remove
 	BC_LEX_OP_RSHIFT,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH Remove
 	BC_LEX_STORE_IBASE, BC_LEX_INVALID, BC_LEX_STORE_SCALE, BC_LEX_LOAD,
 	BC_LEX_INVALID, BC_LEX_PRINT_POP, BC_LEX_STORE_OBASE, BC_LEX_KEY_PRINT,
 	BC_LEX_KEY_QUIT, BC_LEX_SWAP, BC_LEX_OP_ASSIGN, BC_LEX_INVALID,

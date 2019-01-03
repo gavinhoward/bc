@@ -407,7 +407,7 @@ BcStatus bc_parse_delimiter(BcParse *p) {
 		if (p->l.t == BC_LEX_RBRACE) {
 			for (i = 0; !good && i < p->flags.len; ++i) {
 				uint16_t *fptr = bc_vec_item_rev(&p->flags, i);
-				good = ((*fptr) & BC_PARSE_FLAG_BRACE) != 0;
+				good = (((*fptr) & BC_PARSE_FLAG_BRACE) != 0);
 			}
 		}
 		else good = !BC_PARSE_BRACE(p);
@@ -579,13 +579,9 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 }
 
 void bc_parse_startBody(BcParse *p, uint16_t flags) {
-
-	// The flags must not be zero.
 	assert(flags);
-
 	flags |= (BC_PARSE_TOP_FLAG(p) & (BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_LOOP));
 	flags |= BC_PARSE_FLAG_BODY;
-
 	bc_vec_push(&p->flags, &flags);
 }
 
@@ -787,7 +783,7 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 
 	if (type == BC_LEX_KEY_BREAK) {
 
-		if (p->exits.len == 0) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+		if (!p->exits.len) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 		i = p->exits.len - 1;
 		ip = bc_vec_item(&p->exits, i);
@@ -1340,7 +1336,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (bin_last || prev == BC_INST_BOOL_NOT)
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
-				if (nparens == 0) {
+				if (!nparens) {
 					s = BC_STATUS_SUCCESS;
 					done = true;
 					get_token = false;

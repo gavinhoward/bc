@@ -72,7 +72,7 @@ BcStatus bc_lex_string(BcLex *l) {
 
 	l->t = BC_LEX_STR;
 
-	for (c = buf[i]; c != 0 && c != '"'; c = buf[++i]) nlines += c == '\n';
+	for (; (c = buf[i]) && c != '"'; ++i) nlines += c == '\n';
 
 	if (c == '\0') {
 		l->i = i;
@@ -265,7 +265,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		// Apparently, GNU bc (and maybe others allows any uppercase letter as a
 		// number. When single digits, they act like the ones above. When multi-
 		// digit, any letter above the input base is automatically set to the
-		// biggest digit in the input base.
+		// biggest allowable digit in the input base.
 		case 'G':
 		case 'H':
 		case 'I':

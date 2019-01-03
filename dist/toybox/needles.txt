@@ -3,8 +3,8 @@ return st;$
 bc_program_init\(&vm->prog, len, exe\.init, exe\.exp\);$
 exe\.init\(&vm->prs, &vm->prog, BC_PROG_MAIN\);$
 st = bc_vm_init\(&vm, exe, env_len\);$
-if \(\(BC_IS_BC \|\| !vm->files\.len\) && !vm->exprs.\len\) s = bc_vm_stdin\(\);$
-if \(BC_IS_BC\) \{\n([ ]*)  vm->flags
+if \(\(BC_IS_BC \|\| !vm->files\.len\) && !vm->exprs.\len\) s = bc_vm_stdin\(\);[\n]*[ ]*return s;
+^([ ]*)if \(BC_IS_BC\) \{\n[ ]*vm->flags
 vm->flags
 vm->files\.len
 \*\(\(char\*\*\) bc_vec_item\(&vm->files, i\)\)
@@ -53,9 +53,6 @@ const ([a-zA-Z]{1})
 BcStatus bc_vm_posixError\(BcStatus s, char \*file,\n[ ]*size_t line, char \*msg\)
 void bc_num_split\(BcNum \*n, size_t idx, BcNum \*a,\n[ ]*BcNum \*b\)\n\{
 BcStatus bc_num_r\(BcNum \*a, BcNum \*b, BcNum \*c,\n[ ]*BcNum \*d, size_t scale, size_t ts\)
-void bc_vm_exit\(BcError e\)
-BcStatus s = bc_vm_err\(e\);
-bc_vm_exit\(BC_ERROR_VM_IO_ERR\)
 ([ ]*)fprintf\(stderr, bc_err_fmt, bc_errs\[bc_err_ids\[s\]\], bc_err_msgs\[s\]\);
 vm->read_ret
 vm->name
@@ -71,3 +68,13 @@ BC_IS_BC;
 int good = BC_IS_BC;[\n]*[ ]*good = !good \|\| !BC_PARSE_NO_EXEC\(&vm->prs\);
 \{\n[ ]*if \(BC_IS_BC\) ([a-z])
 ^([ ]*)(BC_VM->line_len = bc_vm_envLen\("BC_LINE_LENGTH"\);)$
+NULL\);[\n]*  toys\.optflags
+STDIN_FILENO
+STDOUT_FILENO
+char\* ([a-z])
+\n#if BC_ENABLE_EXTRA_MATH // Remove.*?#else // BC_ENABLE_EXTRA_MATH(.*?)\n#endif // BC_ENABLE_EXTRA_MATH Remove
+\n#if BC_ENABLE_EXTRA_MATH.*?#endif // BC_ENABLE_EXTRA_MATH\n
+bc_vm_putchar
+bc_vm_printf
+bc_vm_puts
+bc_vm_fflush

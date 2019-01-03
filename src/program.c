@@ -91,10 +91,8 @@ char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 	assert(ptr);
 
 	s = bc_vm_malloc(ptr - str + 1);
-	c = code[(*bgn)++];
 
-	for (i = 0; c != 0 && c != BC_PARSE_STREND; c = code[(*bgn)++], ++i)
-		s[i] = c;
+	for (i = 0; (c = code[(*bgn)++]) && c != BC_PARSE_STREND; ++i) s[i] = c;
 
 	s[i] = '\0';
 
@@ -449,7 +447,7 @@ void bc_program_printString(const char *restrict str) {
 	size_t i, len = strlen(str);
 
 #if DC_ENABLED
-	if (len == 0 && !BC_IS_BC) {
+	if (!len && !BC_IS_BC) {
 		bc_vm_putchar('\0');
 		return;
 	}
@@ -949,7 +947,7 @@ BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 	ip.func = bc_program_index(code, idx);
 	f = bc_vec_item(&p->fns, ip.func);
 
-	if (f->code.len == 0) return bc_vm_verr(BC_ERROR_EXEC_UNDEF_FUNC, f->name);
+	if (!f->code.len) return bc_vm_verr(BC_ERROR_EXEC_UNDEF_FUNC, f->name);
 	if (nparams != f->nparams)
 		return bc_vm_verr(BC_ERROR_EXEC_PARAMS, f->nparams, nparams);
 	ip.len = p->results.len - nparams;
@@ -969,8 +967,8 @@ BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 		if (arg->t == BC_RESULT_VAR || arg->t == BC_RESULT_ARRAY) {
 			for (j = 0; j < i && last; ++j) {
 				BcId *id = bc_vec_item(&f->autos, nparams - 1 - j);
-				last = strcmp(arg->d.id.name, id->name) != 0 ||
-				       (!id->idx) != (arg->t == BC_RESULT_VAR);
+				last = (strcmp(arg->d.id.name, id->name) != 0 ||
+				       (!id->idx) != (arg->t == BC_RESULT_VAR));
 			}
 		}
 
@@ -1061,7 +1059,7 @@ unsigned long bc_program_len(const BcNum *restrict n) {
 	size_t i;
 
 	if (n->rdx != n->len) return len;
-	for (i = n->len - 1; i < n->len && n->num[i] == 0; --len, --i);
+	for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
 
 	return len;
 }
@@ -1320,7 +1318,7 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 		if (((uchar) code[*bgn]) == BC_PARSE_STREND) (*bgn) += 1;
 		else else_name = bc_program_name(code, bgn);
 
-		exec = r->d.n.len != 0;
+		exec = (r->d.n.len != 0);
 
 		if (exec) name = then_name;
 		else if (else_name != NULL) {
@@ -1358,7 +1356,7 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	str = bc_program_str(p, sidx, true);
 	f = bc_vec_item(&p->fns, fidx);
 
-	if (f->code.len == 0) {
+	if (!f->code.len) {
 
 		bc_parse_init(&prs, p, fidx);
 		s = bc_parse_text(&prs, str);
@@ -1882,9 +1880,9 @@ void bc_program_printIndex(const char *restrict code, size_t *restrict bgn) {
 	uchar byte, i, bytes = code[(*bgn)++];
 	unsigned long val = 0;
 
-	for (byte = 1, i = 0; byte != 0 && i < bytes; ++i) {
+	for (byte = 1, i = 0; byte && i < bytes; ++i) {
 		byte = code[(*bgn)++];
-		if (byte != 0) val |= ((unsigned long) byte) << (CHAR_BIT * i);
+		if (byte) val |= ((unsigned long) byte) << (CHAR_BIT * i);
 	}
 
 	bc_vm_printf(" (%lu) ", val);
@@ -1892,11 +1890,11 @@ void bc_program_printIndex(const char *restrict code, size_t *restrict bgn) {
 
 void bc_program_printName(const char *restrict code, size_t *restrict bgn) {
 
-	uchar byte = (uchar) code[(*bgn)++];
+	uchar byte;
 
 	bc_vm_printf(" (");
 
-	for (; byte != 0 && byte != BC_PARSE_STREND; byte = (uchar) code[(*bgn)++])
+	while ((byte = (uchar) code[(*bgn)++]) && byte != BC_PARSE_STREND)
 		bc_vm_putchar(byte);
 
 	assert(byte);

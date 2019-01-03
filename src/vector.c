@@ -86,8 +86,8 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 
 	for (amt = 0; idx; ++amt) {
 		nums[amt] = (uchar) idx;
-		idx &= ((unsigned long) ~(UCHAR_MAX));
-		idx >>= sizeof(char) * CHAR_BIT;
+		idx &= ((size_t) ~(UCHAR_MAX));
+		idx >>= sizeof(uchar) * CHAR_BIT;
 	}
 
 	bc_vec_push(v, &amt);
@@ -132,7 +132,7 @@ void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
 
-	if (v->len == 0) bc_vec_pushByte(v, '\0');
+	if (!v->len) bc_vec_pushByte(v, '\0');
 
 	len = v->len + strlen(str);
 
@@ -158,9 +158,7 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx) {
 
 	if (v->dtor) v->dtor(ptr);
 
-	--v->len;
-
-	memmove(ptr, data, v->len * v->size);
+	memmove(ptr, data, --v->len * v->size);
 }
 
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
@@ -196,7 +194,7 @@ size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 		BcId *id = bc_vec_item(v, mid);
 		int result = bc_id_cmp(ptr, id);
 
-		if (result == 0) return mid;
+		if (!result) return mid;
 		else if (result < 0) high = mid;
 		else low = mid + 1;
 	}

@@ -108,7 +108,6 @@ typedef struct BcVm {
 #endif // BC_ENABLE_SIGNALS
 
 	uint16_t line_len;
-
 	uchar max_ibase;
 
 	// ** Exclude start. **
@@ -119,14 +118,12 @@ typedef struct BcVm {
 
 	// ** Busybox exclude start. **
 	BcVec exprs;
-	// ** Busybox exclude end. **
 
-	char *env_args;
-
-	// ** Busybox exclude start. **
 	const char *name;
 	const char *help;
 	// ** Busybox exclude end. **
+
+	char *env_args;
 
 #if BC_ENABLE_HISTORY
 	BcHistory history;

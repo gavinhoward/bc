@@ -27,7 +27,6 @@
 \n#if DC_ENABLED\n#endif // DC_ENABLED$
 \n#if BC_ENABLED\n#endif // BC_ENABLED$
 \n#ifndef NDEBUG.*?#endif // NDEBUG
-\n#if BC_ENABLE_EXTRA_MATH.*?#endif // BC_ENABLE_EXTRA_MATH
 \n#if BC_ENABLE_VOID_FNS.*?#endif // BC_ENABLE_VOID_FNS
 \n#if BC_ENABLE_REFERENCES.*?#endif // BC_ENABLE_REFERENCES
 \n#if BC_ENABLE_HISTORY.*?#endif // BC_ENABLE_HISTORY
@@ -36,7 +35,7 @@
 \n// Windows has deprecated isatty\(\)\.\n#ifdef _WIN32.*?#endif // _WIN32
 \n[ ]*assert\(.*?\);$
 \#if !defined\(BC_ENABLED\).*?\#endif\n
-^[ ]*// \*\* Exclude start\. \*\*.*?^[ ]*// \*\* Exclude end\. \*\*$
+\n[ ]*// \*\* Exclude start\. \*\*.*?^[ ]*// \*\* Exclude end\. \*\*$
 ^\tBC_STATUS_INVALID_OPTION,$
 ^void bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
 ^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}
@@ -50,10 +49,20 @@
 ^void bc_vm_allocError\(\) \{.*?\n\}$
 ^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
-^char\* bc_vm_strdup\(const char \*str\) \{.*?\}$
+^char\* bc_vm_strdup\(const char \*str\) \{.*?\n\}$
+^void bc_vm_exit\(BcError e\) \{.*?\n\}$
+^size_t bc_vm_printf\(const char \*fmt, \.\.\.\) \{.*?\n\}$
+^void bc_vm_puts\(const char \*str, FILE \*restrict f\) \{.*?\n\}$
+^void bc_vm_putchar\(int c\) \{.*?\n\}$
+^void bc_vm_fflush\(FILE \*restrict f\) \{.*?\n\}$
 ^void\* bc_vm_malloc\(size_t n\);$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\);$
 ^char\* bc_vm_strdup\(const char \*str\);$
+^void bc_vm_exit\(BcError e\);$
+^size_t bc_vm_printf\(const char \*fmt, \.\.\.\);$
+^void bc_vm_puts\(const char \*str, FILE \*restrict f\);$
+^void bc_vm_putchar\(int c\);$
+^void bc_vm_fflush\(FILE \*restrict f\);$
  != 0
 \n\n[ ]*BC_STATUS_INVALID_OPTION,$
 ^BcStatus bc_parse_expression\(BcParse \*p, uint8_t flags\).*?\n\}$
@@ -61,4 +70,6 @@
 #define DC_X \(.*?\)\)
 \n[ ]*else if \(c == '\]'\) string -= 1;
 \n[ ]*else if \(c == '\['\) string \+= 1;\n[ ]*\}
- if \(\(BC_IS_BC \|\| !vm->files\.len\) && !vm->exprs\.len\)
+^// clang-format off$
+^// clang-format on$
+^// \*\*\* .*? \*\*\*$

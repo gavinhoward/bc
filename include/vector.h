@@ -32,7 +32,6 @@
 #define BC_VEC_INVALID_IDX ((size_t) -1)
 #define BC_VEC_START_CAP (1<<5)
 
-// All chars must be unsigned, unless explicitly labeled as "signed".
 typedef unsigned char uchar;
 
 typedef void (*BcVecFree)(void*);

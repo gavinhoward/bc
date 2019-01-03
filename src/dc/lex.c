@@ -56,7 +56,7 @@ BcStatus dc_lex_string(BcLex *l) {
 	l->t = BC_LEX_STR;
 	bc_vec_npop(&l->str, l->str.len);
 
-	for (c = l->buf[i]; c != 0 && depth; c = l->buf[++i]) {
+	for (; (c = l->buf[i]) && depth; ++i) {
 
 		if (i == l->i || l->buf[i - 1] != '\\') {
 			depth += (c == '[');

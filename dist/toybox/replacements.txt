@@ -3,7 +3,7 @@ toys.exitval = (int) st;
 bc_program_init(&vm->prog, len);
 bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);
 st = bc_vm_init(&vm);
-s = bc_vm_stdin(vm);
+return bc_vm_stdin();
 \1vm->flags
 toys.optflags
 toys.optc
@@ -53,9 +53,6 @@ xstrdup
 BcStatus bc_vm_posixError(BcStatus s, char *file, size_t line, char *msg)
 void bc_num_split(BcNum *n, size_t idx, BcNum *a, BcNum *b) {\n
 BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale,\n                  size_t ts)
-void bc_vm_exit(void)
-BcStatus s = bc_vm_err(BC_ERROR_VM_IO_ERR);
-bc_vm_exit()
 \1fprintf(stderr, bc_err_fmt, bc_errs[bc_err_ids[BC_STATUS_IO_ERR]],\n\1        bc_err_msgs[BC_STATUS_IO_ERR]);
 BC_INST_RET
 toys.which->name
@@ -70,4 +67,14 @@ BcStatus bc_read_line(BcVec *vec, char *prompt) {\1\2BcStatus s = bc_read_chars(
 1;
 int good = !BC_PARSE_NO_EXEC\(&vm->prs\);
 \1
-TT.vm = calloc(1, sizeof(BcVm));\n\1\2
+\1TT.vm = xzalloc(sizeof(BcVm));\n\1\2
+NULL);\n  toys.optflags
+0
+1
+char *\1
+\1
+\n
+putchar
+printf
+fputs
+fflush

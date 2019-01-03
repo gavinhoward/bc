@@ -126,21 +126,21 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 
 void bc_array_expand(BcVec *a, size_t len) {
 
-	BcResultData data;
-
 	assert(a);
 
 	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
+		BcNum n;
 		while (len > a->len) {
-			bc_num_init(&data.n, BC_NUM_DEF_SIZE);
-			bc_vec_push(a, &data.n);
+			bc_num_init(&n, BC_NUM_DEF_SIZE);
+			bc_vec_push(a, &n);
 		}
 	}
 	else {
+		BcVec v;
 		assert(a->size == sizeof(BcVec) && a->dtor == bc_vec_free);
 		while (len > a->len) {
-			bc_array_init(&data.v, true);
-			bc_vec_push(a, &data.v);
+			bc_array_init(&v, true);
+			bc_vec_push(a, &v);
 		}
 	}
 }
@@ -183,7 +183,6 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));
 			break;
 		}
-
 #if BC_ENABLE_VOID_FNS
 		case BC_RESULT_VOID:
 		{

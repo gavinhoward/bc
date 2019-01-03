@@ -477,7 +477,7 @@ static size_t bc_history_columns(BcHistory *h) {
 
 	struct winsize ws;
 
-	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
+	if (ioctl(h->ofd, TIOCGWINSZ, &ws) == -1 || !ws.ws_col) {
 
 		// Calling ioctl() failed. Try to query the terminal itself.
 		size_t start, cols;
@@ -689,7 +689,7 @@ BcStatus bc_history_edit_wordEnd(BcHistory *h) {
 
 	size_t len = BC_HISTORY_BUF_LEN(h);
 
-	if (len == 0 || h->pos >= len) return BC_STATUS_SUCCESS;
+	if (!len || h->pos >= len) return BC_STATUS_SUCCESS;
 
 	if (h->buf.v[h->pos] == ' ') {
 		while (h->pos < len && h->buf.v[h->pos] == ' ') ++h->pos;
@@ -707,9 +707,9 @@ BcStatus bc_history_edit_wordStart(BcHistory *h) {
 
 	size_t len = BC_HISTORY_BUF_LEN(h);
 
-	if (len == 0) return BC_STATUS_SUCCESS;
+	if (!len) return BC_STATUS_SUCCESS;
 
-	if (h->pos != 0 && h->buf.v[h->pos - 1] == ' ') --h->pos;
+	if (h->pos && h->buf.v[h->pos - 1] == ' ') --h->pos;
 
 	if (h->buf.v[h->pos] == ' ') {
 		while (h->pos < len && h->buf.v[h->pos] == ' ') --h->pos;
@@ -725,7 +725,7 @@ BcStatus bc_history_edit_wordStart(BcHistory *h) {
  */
 BcStatus bc_history_edit_home(BcHistory *h) {
 
-	if (h->pos == 0) return BC_STATUS_SUCCESS;
+	if (!h->pos) return BC_STATUS_SUCCESS;
 
 	h->pos = 0;
 
@@ -790,7 +790,7 @@ BcStatus bc_history_edit_delete(BcHistory *h) {
 
 	size_t chlen, len = BC_HISTORY_BUF_LEN(h);
 
-	if (len == 0 || h->pos >= len) return BC_STATUS_SUCCESS;
+	if (!len || h->pos >= len) return BC_STATUS_SUCCESS;
 
 	chlen = bc_history_nextLen(h->buf.v, len, h->pos, NULL);
 
@@ -806,7 +806,7 @@ BcStatus bc_history_edit_backspace(BcHistory *h) {
 
 	size_t chlen, len = BC_HISTORY_BUF_LEN(h);
 
-	if (h->pos == 0 || len == 0) return BC_STATUS_SUCCESS;
+	if (!h->pos || !len) return BC_STATUS_SUCCESS;
 
 	chlen = bc_history_prevLen(h->buf.v, h->pos, NULL);
 
@@ -867,7 +867,7 @@ BcStatus bc_history_swap(BcHistory *h) {
 	// To perform a swap we need:
 	// * nonzero char length to the left
 	// * not at the end of the line
-	if (pcl != 0 && h->pos != BC_HISTORY_BUF_LEN(h) && pcl < 5 && ncl < 5) {
+	if (pcl && h->pos != BC_HISTORY_BUF_LEN(h) && pcl < 5 && ncl < 5) {
 
 		memcpy(auxb, h->buf.v + h->pos - pcl, pcl);
 		memcpy(h->buf.v + h->pos - pcl, h->buf.v + h->pos, ncl);
@@ -1317,7 +1317,7 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 
 		// Insert current char on the right.
 		quit[sizeof(quit) - 1] = c;
-		if (memcmp(quit, "quit", sizeof(quit)) == 0) break;
+		if (!memcmp(quit, "quit", sizeof(quit))) break;
 
 		printf("'%c' %02x (%d) (type quit to exit)\n",
 		       isprint((int) c) ? c : '?', (int) c, (int) c);

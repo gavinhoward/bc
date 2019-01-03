@@ -74,9 +74,11 @@ void bc_vm_info(const char* const help) {
 	if (help) bc_vm_printf(help, vm->name);
 }
 
-void bc_vm_printError(BcError e, const char* const fmt,
-                      size_t line, va_list args)
-{
+void bc_vm_printError(BcError e, const char* const fmt, size_t line, va_list args) {
+
+	// Make sure all of stdout is written first.
+	fflush(stdout);
+
 	fprintf(stderr, fmt, bc_errs[(size_t) bc_err_ids[e]]);
 	vfprintf(stderr, bc_err_msgs[e], args);
 
@@ -84,7 +86,7 @@ void bc_vm_printError(BcError e, const char* const fmt,
 
 	// This is the condition for parsing vs runtime.
 	// If line is not 0, it is parsing.
-	if (line != 0) {
+	if (line) {
 		fprintf(stderr, "\n    %s", vm->file);
 		fprintf(stderr, bc_err_line, line);
 	}
@@ -95,6 +97,7 @@ void bc_vm_printError(BcError e, const char* const fmt,
 	}
 
 	fputs("\n\n", stderr);
+	fflush(stderr);
 }
 
 BcStatus bc_vm_error(BcError e, size_t line, ...) {
@@ -111,8 +114,8 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 }
 
 #if BC_ENABLED
-BcStatus bc_vm_posixError(BcError e, size_t line, ...)
-{
+BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
+
 	va_list args;
 	int p = (int) BC_S, w = (int) BC_W;
 
@@ -141,11 +144,11 @@ BcStatus bc_vm_envArgs() {
 	bc_vec_init(&v, sizeof(char*), NULL);
 	bc_vec_push(&v, &bc_args_env_name);
 
-	while (*buf != 0) {
+	while (*buf) {
 		if (!isspace(*buf)) {
 			bc_vec_push(&v, &buf);
-			while (*buf != 0 && !isspace(*buf)) ++buf;
-			if (*buf != 0) (*(buf++)) = '\0';
+			while (*buf && !isspace(*buf)) ++buf;
+			if (*buf) (*(buf++)) = '\0';
 		}
 		else ++buf;
 	}
@@ -180,21 +183,6 @@ size_t bc_vm_envLen(const char *var) {
 	else len = BC_NUM_PRINT_WIDTH;
 
 	return len;
-}
-
-void bc_vm_shutdown() {
-#if BC_ENABLE_HISTORY
-	// This must always run to ensure that the terminal is back to normal.
-	bc_history_free(&vm->history);
-#endif // BC_ENABLE_HISTORY
-#ifndef NDEBUG
-	bc_vec_free(&vm->files);
-	bc_vec_free(&vm->exprs);
-	bc_program_free(&vm->prog);
-	bc_parse_free(&vm->prs);
-	free(vm->env_args);
-	free(vm);
-#endif // NDEBUG
 }
 
 void bc_vm_exit(BcError e) {
@@ -283,7 +271,7 @@ void bc_vm_clean() {
 
 	// If this condition is true, we can get rid of strings,
 	// constants, and code. This is an idea from busybox.
-	if (good && prog->stack.len == 1 && prog->results.len == 0 &&
+	if (good && prog->stack.len == 1 && !prog->results.len &&
 	    ip->idx == f->code.len)
 	{
 		bc_vec_npop(&f->strs, f->strs.len);
@@ -443,10 +431,8 @@ BcStatus bc_vm_exec() {
 
 #if BC_ENABLED
 	if (vm->flags & BC_FLAG_L) {
-
 		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (s) return s;
-
 #if BC_ENABLE_EXTRA_MATH
 		if (!BC_S && !BC_W) {
 			s = bc_vm_load(bc_lib2_name, bc_lib2);
@@ -466,13 +452,27 @@ BcStatus bc_vm_exec() {
 		if (s) return s;
 	}
 
-	for (i = 0; !s && i < vm->files.len; ++i)
-		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
+	for (i = 0; !s && i < vm->files.len; ++i) s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 	if (s && s != BC_STATUS_QUIT) return s;
 
 	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
 
 	return s;
+}
+
+void bc_vm_shutdown() {
+#if BC_ENABLE_HISTORY
+	// This must always run to ensure that the terminal is back to normal.
+	bc_history_free(&vm->history);
+#endif // BC_ENABLE_HISTORY
+#ifndef NDEBUG
+	bc_vec_free(&vm->files);
+	bc_vec_free(&vm->exprs);
+	bc_program_free(&vm->prog);
+	bc_parse_free(&vm->prs);
+	free(vm->env_args);
+	free(vm);
+#endif // NDEBUG
 }
 
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {

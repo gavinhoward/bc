@@ -50,9 +50,9 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 	for (i = ++l->i; !end; i += !end) {
 
-		for (c = buf[i]; c != '*' && c != 0; c = buf[++i]) nlines += c == '\n';
+		for (; (c = buf[i]) && c != '*'; ++i) nlines += (c == '\n');
 
-		if (c == 0 || buf[i + 1] == '\0') {
+		if (!c || buf[i + 1] == '\0') {
 			l->i = i;
 			return bc_lex_err(l, BC_ERROR_PARSE_COMMENT);
 		}
@@ -76,15 +76,15 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 	const char *buf = l->buf + l->i;
 	size_t len, hits = 0, bslashes = 0, i = 0, j;
-	char last_valid, c = buf[i];
+	char last_valid, c;
 	bool last_pt, pt = start == '.';
 
 	last_pt = pt;
 	l->t = BC_LEX_NUMBER;
 	last_valid = BC_IS_BC ? 'Z' : 'F';
 
-	while (c != 0 && (isdigit(c) || (c >= 'A' && c <= last_valid) ||
-	                  (c == '.' && !pt) || (c == '\\' && buf[i + 1] == '\n')))
+	for (; (c = buf[i]) && ((c >= 'A' && c <= last_valid) || (c == '.' && !pt) ||
+	                        isdigit(c) || (c == '\\' && buf[i + 1] == '\n')); ++i)
 	{
 		if (c != '\\') {
 			last_pt = c == '.';
@@ -94,8 +94,6 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 			++i;
 			bslashes += 1;
 		}
-
-		c = buf[++i];
 	}
 
 	len = i + 1 * !last_pt - bslashes * 2;
