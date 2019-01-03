@@ -183,7 +183,7 @@ const char *bc_history_bad_terms[] = { "dumb", "cons25", "emacs", NULL };
 const char bc_history_ctrlc[] = "^C";
 
 // These are listed in ascending order for efficiency.
-const unsigned long bc_history_wchars[][2] = {
+const uint32_t bc_history_wchars[][2] = {
 	{ 0x1100, 0x115F },
 	{ 0x231A, 0x231B },
 	{ 0x2329, 0x232A },
@@ -294,7 +294,7 @@ const size_t bc_history_wchars_len =
 	sizeof(bc_history_wchars) / sizeof(bc_history_wchars[0]);
 
 // These are listed in ascending order for efficiency.
-const unsigned long bc_history_combo_chars[] = {
+const uint32_t bc_history_combo_chars[] = {
 	0x0300,0x0301,0x0302,0x0303,0x0304,0x0305,0x0306,0x0307,
 	0x0308,0x0309,0x030A,0x030B,0x030C,0x030D,0x030E,0x030F,
 	0x0310,0x0311,0x0312,0x0313,0x0314,0x0315,0x0316,0x0317,
