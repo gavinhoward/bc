@@ -56,8 +56,8 @@ It is expected that `CC` produces code for the target system. See
 
 ## Build Environment Variables
 
-This `bc` supports `CC`, `CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`,
-`DESTDIR`, and `HOSTCC` environment variables in the configure script. Any
+This `bc` supports `CC`, `HOSTCC`, `CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`,
+`PREFIX`, and `DESTDIR` environment variables in the configure script. Any
 values of those variables given to the configure command will be put into the
 generated Makefile.
 
