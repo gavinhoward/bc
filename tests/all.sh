@@ -20,17 +20,15 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -ge 4 ]; then
+if [ "$#" -ge 3 ]; then
 	d="$1"
 	shift
 	extra="$1"
 	shift
 	refs="$1"
 	shift
-	voids="$1"
-	shift
 else
-	printf 'usage: %s dir run_extended_tests run_reference_tests run_void_tests [exec args...]\n' "$script"
+	printf 'usage: %s dir run_extended_tests run_reference_tests [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -55,14 +53,7 @@ printf '\nRunning %s tests...\n\n' "$d"
 while read t; do
 
 	if [ "$extra" -eq 0  ]; then
-		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" -o "$t" = "lib3" ]; then
-			printf 'Skipping %s %s\n' "$d" "$t"
-			continue
-		fi
-	fi
-
-	if [ "$voids" -eq 0 ]; then
-		if [ "$t" = "lib3" -o "$t" = "void" ]; then
+		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" ]; then
 			printf 'Skipping %s %s\n' "$d" "$t"
 			continue
 		fi

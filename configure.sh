@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-bD|-dB|-c] [-EghHRSV] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-EghHRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -69,11 +69,6 @@ usage() {
 	printf '        specifying "-d" ("-B") implies this option.\n'
 	printf '    -S\n'
 	printf '        Disable signal handling. On by default.\n'
-	printf '    -V\n'
-	printf '        Disable void functions. This also disables the extra printing\n'
-	printf '        functions in the math library, currently only bytes() and\n'
-	printf '        output(). Additionally, since this feature is only available\n'
-	printf '        to bc, specifying "-d" ("-B") implies this option.\n'
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
@@ -211,10 +206,9 @@ signals=1
 hist=1
 refs=1
 extra_math=1
-voidfns=1
 optimization=""
 
-while getopts "bBcdDEghHk:O:RSV" opt; do
+while getopts "bBcdDEghHk:O:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -230,7 +224,6 @@ while getopts "bBcdDEghHk:O:RSV" opt; do
 		O) optimization="$OPTARG" ;;
 		R) refs=0 ;;
 		S) signals=0 ;;
-		V) voidfns=0 ;;
 		?) usage "Invalid option" ;;
 	esac
 
@@ -258,16 +251,16 @@ scriptdir=$(dirname "$script")
 link='@printf "No link necessary\\\\n"'
 main_exec="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math $refs $voidfns"
-dc_test="@tests/all.sh dc $extra_math $refs $voidfns"
+bc_test="@tests/all.sh bc $extra_math $refs"
+dc_test="@tests/all.sh dc $extra_math $refs"
 
 timeconst="@tests/bc/timeconst.sh"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math $refs $voidfns valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math $refs $voidfns valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	vg_bc_test="@tests/all.sh bc $extra_math $refs valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc $extra_math $refs valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 	timeconst_vg='@printf "100\\\\n" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc'
 else
 	vg_bc_test='@printf "Cannot run valgrind without debug flags\\\\n"'
@@ -304,9 +297,6 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	printf 'dc only; disabling references...\n'
 	refs=0
-
-	printf 'dc only; disabling void functions...\n'
-	voidfns=0
 
 	executables="dc"
 
@@ -409,18 +399,9 @@ if [ "$hist" -eq 1 ]; then
 fi
 
 if [ "$extra_math" -eq 1 -a "$bc" -ne 0 ]; then
-
 	BC_LIB2_O="\$(GEN_DIR)/lib2.o"
-
-	if [ "$voidfns" -eq 1 ]; then
-		BC_LIB3_O="\$(GEN_DIR)/lib3.o"
-	else
-		BC_LIB3_O=""
-	fi
-
 else
 	BC_LIB2_O=""
-	BC_LIB3_O=""
 fi
 
 contents=$(cat "$scriptdir/Makefile.in")
@@ -447,8 +428,6 @@ contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
-contents=$(replace "$contents" "VOID_FNS" "$voidfns")
-contents=$(replace "$contents" "BC_LIB3_O" "$BC_LIB3_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "PREFIX" "$PREFIX")

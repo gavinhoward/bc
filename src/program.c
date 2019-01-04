@@ -222,13 +222,13 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			*num = &p->one;
 			break;
 		}
-#if BC_ENABLE_VOID_FNS
+
 		case BC_RESULT_VOID:
 		{
 			s = bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
 			break;
 		}
-#endif // BC_ENABLE_VOID_FNS
+
 #endif // BC_ENABLED
 #ifndef NDEBUG
 		default:
@@ -268,9 +268,7 @@ BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 
 	lt = (*l)->t;
 
-#if BC_ENABLE_VOID_FNS
 	assert(lt != BC_RESULT_VOID && (*r)->t != BC_RESULT_VOID);
-#endif // BC_ENABLE_VOID_FNS
 
 	// We run this again under these conditions in case any vector has been
 	// reallocated out from under the BcNums or arrays we had.
@@ -494,12 +492,10 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	r = bc_vec_item_rev(&p->results, idx);
 
-#if BC_ENABLE_VOID_FNS
 	if (r->t == BC_RESULT_VOID) {
 		if (pop) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
 		return s;
 	}
-#endif // BC_ENABLE_VOID_FNS
 
 	s = bc_program_num(p, r, &n);
 	if (s) return s;
@@ -643,9 +639,7 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
 	BcNum n2;
 	BcResult res;
 
-#if BC_ENABLE_VOID_FNS
 	if (r->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
-#endif // BC_ENABLE_VOID_FNS
 
 	memset(&n2, 0, sizeof(BcNum));
 	n2.rdx = res.d.id.idx = r->d.id.idx;
@@ -1040,9 +1034,7 @@ BcStatus bc_program_return(BcProgram *p, uchar inst) {
 		bc_num_init(&res.d.n, num->len);
 		bc_num_copy(&res.d.n, num);
 	}
-#if BC_ENABLE_VOID_FNS
 	else if (inst == BC_INST_RET_VOID) res.t = BC_RESULT_VOID;
-#endif // BC_ENABLE_VOID_FNS
 	else bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	// We need to pop arguments as well, so this takes that into account.
@@ -1612,11 +1604,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-#if BC_ENABLE_VOID_FNS
-			case BC_INST_RET_VOID:
-#endif // BC_ENABLE_VOID_FNS
 			case BC_INST_RET:
 			case BC_INST_RET0:
+			case BC_INST_RET_VOID:
 			{
 				s = bc_program_return(p, inst);
 				break;

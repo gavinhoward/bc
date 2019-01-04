@@ -461,9 +461,7 @@ BcStatus bc_parse_return(BcParse *p) {
 
 	if (!BC_PARSE_FUNC(p)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-#if BC_ENABLE_VOID_FNS
 	if (p->func->voidfn) inst = BC_INST_RET_VOID;
-#endif // BC_ENABLE_VOID_FNS
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
@@ -486,10 +484,8 @@ BcStatus bc_parse_return(BcParse *p) {
 			s = bc_parse_posixErr(p, BC_ERROR_POSIX_RET);
 			if (s) return s;
 		}
-#if BC_ENABLE_VOID_FNS
 		else if (p->func->voidfn)
 			return bc_parse_verr(p, BC_ERROR_PARSE_RET_VOID, p->func->name);
-#endif // BC_ENABLE_VOID_FNS
 
 		bc_parse_push(p, BC_INST_RET);
 	}
@@ -533,10 +529,7 @@ BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			bc_vec_pop(&p->exits);
 		}
 		else if (BC_PARSE_FUNC_INNER(p)) {
-			BcInst inst = BC_INST_RET0;
-#if BC_ENABLE_VOID_FNS
-			if (p->func->voidfn) inst = BC_INST_RET_VOID;
-#endif // BC_ENABLE_VOID_FNS
+			BcInst inst = (p->func->voidfn ? BC_INST_RET_VOID : BC_INST_RET0);
 			bc_parse_push(p, inst);
 			bc_parse_updateFunc(p, BC_PROG_MAIN);
 			bc_vec_pop(&p->flags);
@@ -809,10 +802,7 @@ BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 BcStatus bc_parse_func(BcParse *p) {
 
 	BcStatus s;
-	bool comma = false;
-#if BC_ENABLE_VOID_FNS
-	bool voidfn;
-#endif // BC_ENABLE_VOID_FNS
+	bool comma = false, voidfn;
 	uint16_t flags;
 	char *name;
 	size_t idx;
@@ -820,15 +810,22 @@ BcStatus bc_parse_func(BcParse *p) {
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
-#if BC_ENABLE_VOID_FNS
-	voidfn = (p->l.t == BC_LEX_KEY_VOID);
+	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
+
+	voidfn = (!BC_S && !BC_W && p->l.t == BC_LEX_NAME &&
+	          !strcmp(p->l.str.v, "void"));
+
+	s = bc_lex_next(&p->l);
+	if (s) return s;
+
+	voidfn = (voidfn && p->l.t == BC_LEX_NAME);
+
 	if (voidfn) {
 		s = bc_lex_next(&p->l);
 		if (s) return s;
 	}
-#endif // BC_ENABLE_VOID_FNS
 
-	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
+	if (p->l.t != BC_LEX_LPAREN) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 
 	assert(p->prog->fns.len == p->prog->fn_map.len);
 
@@ -836,13 +833,8 @@ BcStatus bc_parse_func(BcParse *p) {
 	idx = bc_program_insertFunc(p->prog, name);
 	assert(idx);
 	bc_parse_updateFunc(p, idx);
-#if BC_ENABLE_VOID_FNS
 	p->func->voidfn = voidfn;
-#endif // BC_ENABLE_VOID_FNS
 
-	s = bc_lex_next(&p->l);
-	if (s) return s;
-	if (p->l.t != BC_LEX_LPAREN) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 

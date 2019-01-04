@@ -167,10 +167,6 @@ extern const char *bc_lib_name;
 #if BC_ENABLE_EXTRA_MATH
 extern const char bc_lib2[];
 extern const char *bc_lib2_name;
-#if BC_ENABLE_VOID_FNS
-extern const char bc_lib3[];
-extern const char *bc_lib3_name;
-#endif // BC_ENABLE_VOID_FNS
 #endif // BC_ENABLE_EXTRA_MATH
 #endif // BC_ENABLED
 

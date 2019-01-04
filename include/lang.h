@@ -112,9 +112,7 @@ typedef enum BcInst {
 
 	BC_INST_RET,
 	BC_INST_RET0,
-#if BC_ENABLE_VOID_FNS
 	BC_INST_RET_VOID,
-#endif // BC_ENABLE_VOID_FNS
 
 	BC_INST_HALT,
 #endif // BC_ENABLED
@@ -168,10 +166,7 @@ typedef struct BcFunc {
 	BcVec consts;
 
 	const char *name;
-
-#if BC_ENABLE_VOID_FNS
 	bool voidfn;
-#endif // BC_ENABLE_VOID_FNS
 
 } BcFunc;
 
@@ -187,9 +182,7 @@ typedef enum BcResultType {
 	BC_RESULT_TEMP,
 
 #if BC_ENABLED
-#if BC_ENABLE_VOID_FNS
 	BC_RESULT_VOID,
-#endif // BC_ENABLE_VOID_FNS
 	BC_RESULT_ONE,
 	BC_RESULT_LAST,
 #endif // BC_ENABLED

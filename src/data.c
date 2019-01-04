@@ -70,12 +70,10 @@ const char bc_err_ids[] = {
 #if BC_ENABLED
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE,
 #if BC_ENABLE_REFERENCES
 	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLE_REFERENCES
-#if BC_ENABLE_VOID_FNS
-	BC_ERR_IDX_PARSE,
-#endif // BC_ENABLE_VOID_FNS
 #endif // BC_ENABLED
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 #if BC_ENABLE_EXTRA_MATH
@@ -87,10 +85,7 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_EXEC,
 #endif // DC_ENABLED
 #if BC_ENABLED
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-#if BC_ENABLE_VOID_FNS
-	BC_ERR_IDX_EXEC,
-#endif // BC_ENABLE_VOID_FNS
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
 	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
@@ -126,12 +121,10 @@ const char* const bc_err_msgs[] = {
 	"no auto variable found",
 	"function parameter or auto \"%s\" already exists",
 	"block end could not be found",
+	"cannot return a value from void function: %s()",
 #if BC_ENABLE_REFERENCES
 	"var cannot be reference: %s",
 #endif // BC_ENABLE_REFERENCES
-#if BC_ENABLE_VOID_FNS
-	"cannot return a value from void function: %s()",
-#endif // BC_ENABLE_VOID_FNS
 #endif // BC_ENABLED
 
 	"negative number",
@@ -156,9 +149,7 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLED
 	"mismatched parameters; need %zu, have %zu",
 	"undefined function: %s()",
-#if BC_ENABLE_VOID_FNS
 	"cannot use a void value in an expression",
-#endif // BC_ENABLE_VOID_FNS
 
 	"POSIX does not allow names longer than 1 character, like \"%s\"",
 	"POSIX does not allow '#' script comments",
@@ -547,9 +538,6 @@ const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("quit", 4, true),
 	BC_LEX_KW_ENTRY("read", 4, false),
 	BC_LEX_KW_ENTRY("else", 4, false),
-#if BC_ENABLE_VOID_FNS
-	BC_LEX_KW_ENTRY("void", 4, false),
-#endif // BC_ENABLE_VOID_FNS
 };
 
 const size_t bc_lex_kws_len = sizeof(bc_lex_kws) / sizeof(BcLexKeyword);
@@ -568,13 +556,13 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
 	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, false, true),
-	BC_PARSE_EXPR_ENTRY(false, true, false, false, 0, 0, 0, 0),
+	BC_PARSE_EXPR_ENTRY(false, true, false, 0, 0, 0, 0, 0),
 #else // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
-	BC_PARSE_EXPR_ENTRY(true, false, true, false, false, 0, 0, 0)
+	BC_PARSE_EXPR_ENTRY(true, false, true, false, 0, 0, 0, 0)
 #endif // BC_ENABLE_EXTRA_MATH Remove
 };
 
@@ -712,9 +700,6 @@ const uint8_t dc_parse_insts[] = {
 #endif // BC_ENABLED
 	BC_INST_IBASE, BC_INST_OBASE, BC_INST_SCALE, BC_INST_LENGTH, BC_INST_PRINT,
 	BC_INST_SQRT, BC_INST_QUIT, BC_INST_READ, BC_INST_INVALID,
-#if BC_ENABLE_VOID_FNS
-	BC_INST_INVALID,
-#endif // BC_ENABLE_VOID_FNS
 	BC_INST_REL_EQ, BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_INVALID,
 	BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP, BC_INST_POP,
