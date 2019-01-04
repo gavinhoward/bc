@@ -159,6 +159,8 @@ Those two commands are equivalent.
 ***Warning***: It is an error to use those options if `dc` has also been
 disabled (see above).
 
+<a name="build-signal-handling"/>
+
 ### Signal Handling
 
 To disable signal handling, use the `-S` flag in the configure step:
@@ -166,6 +168,8 @@ To disable signal handling, use the `-S` flag in the configure step:
 ```
 ./configure.sh -S
 ```
+
+<a name="build-history"/>
 
 ### History
 
@@ -179,6 +183,8 @@ To disable signal handling, use the `-H` flag in the configure step:
 completely portable. If the `bc` does not work on your platform, your first step
 should be to retry with history disabled.
 
+<a name="build-array-references"/>
+
 ### Array References
 
 Array references are an extension to the [standard][1] first implemented by the
@@ -188,6 +194,8 @@ step:
 ```
 ./configure.sh -R
 ```
+
+<a name="build-extra-math"/>
 
 ### Extra Math
 
