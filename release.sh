@@ -15,7 +15,7 @@
 #
 
 usage() {
-	echo "usage: $script toybox_repo busybox_repo"
+	echo "usage: $script toybox_repo"
 	exit 1
 }
 
@@ -38,15 +38,16 @@ build() {
 	CC="$1"
 	shift
 
-	target="$1"
+	configure_flags="$1"
 	shift
 
 	exe="$1"
 	shift
 
-	header "Building $target with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
+	header "Running \"./configure.sh $configure_flags\" with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
 
-	CFLAGS="$CFLAGS" CC="$CC" "$exe" "$@" "$target" 2> "$scriptdir/.test.txt"
+	CFLAGS="$CFLAGS" CC="$CC" ./configure.sh $configure_flags > /dev/null
+	"$exe" "$@" 2> "$scriptdir/.test.txt"
 
 	if [ -s "$scriptdir/.test.txt" ]; then
 		echo "$CC generated warning(s):"
@@ -56,7 +57,14 @@ build() {
 	fi
 }
 
-makebuild() {
+runtest() {
+
+	header "Running tests"
+
+	make test_all
+}
+
+runconfigtests() {
 
 	CFLAGS="$1"
 	shift
@@ -64,17 +72,73 @@ makebuild() {
 	CC="$1"
 	shift
 
-	target="$1"
+	configure_flags="$1"
 	shift
 
-	build "$CFLAGS" "$CC" "$target" make
+	run_tests="$1"
+	shift
+
+	exe="$1"
+	shift
+
+	if [ "$run_tests" -ne 0 ]; then
+		header "Running tests with configure flags \"$configure_flags\", CFLAGS=\"$CFLAGS\" and CC=\"$CC\""
+	else
+		header "Building with configure flags \"$configure_flags\", CFLAGS=\"$CFLAGS\" and CC=\"$CC\""
+	fi
+
+	build "$CFLAGS" "$CC" "$configure_flags" "$exe" "$@"
+	if [ "$run_tests" -ne 0 ]; then
+		runtest
+	fi
+
+	make clean
+
+	build "$CFLAGS" "$CC" "$configure_flags -b" "$exe" "$@"
+	if [ "$run_tests" -ne 0 ]; then
+		runtest
+	fi
+
+	make clean
+
+	build "$CFLAGS" "$CC" "$configure_flags -b" "$exe" "$@"
+	if [ "$run_tests" -ne 0 ]; then
+		runtest
+	fi
+
+	make clean
 }
 
-runtest() {
+runtestseries() {
 
-	header "Running test \"$*\""
+	CFLAGS="$1"
+	shift
 
-	"$@"
+	CC="$1"
+	shift
+
+	run_tests="$1"
+	shift
+
+	exe="$1"
+	shift
+
+	runconfigtests "$CFLAGS" "$CC" "" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-E" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-H" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-R" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-S" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-EH" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-ER" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-ES" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-HR" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-HS" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-RS" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-EHR" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-EHS" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-ERS" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-HRS" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "-EHRS" "$run_tests" "$exe" "$@"
 }
 
 runtests() {
@@ -85,43 +149,17 @@ runtests() {
 	CC="$1"
 	shift
 
-	header "Running tests with CFLAGS=\"$CFLAGS\""
-
-	makebuild "$CFLAGS" "$CC" all
-	runtest make test_all
-
-	make clean
-
-	makebuild "$CFLAGS" "$CC" bc
-	runtest make test_bc_all
-
-	make clean
-
-	makebuild "$CFLAGS" "$CC" dc
-	runtest make test_dc
-
-	make clean
+	runtestseries "$CFLAGS" "$CC" 1 make
 }
 
 scan_build() {
 
 	header "Running scan-build"
 
-	build "$debug" "$CC" all scan-build make
-	build "$debug" "$CC" bc scan-build make
-	build "$debug" "$CC" dc scan-build make
-
-	build "$release" "$CC" all scan-build make
-	build "$release" "$CC" bc scan-build make
-	build "$release" "$CC" dc scan-build make
-
-	build "$reldebug" "$CC" all scan-build make
-	build "$reldebug" "$CC" bc scan-build make
-	build "$reldebug" "$CC" dc scan-build make
-
-	build "$minsize" "$CC" all scan-build make
-	build "$minsize" "$CC" bc scan-build make
-	build "$minsize" "$CC" dc scan-build make
+	runtestseries "$debug" "$CC" 0 scan-build make
+	runtestseries "$release" "$CC" 0 scan-build make
+	runtestseries "$reldebug" "$CC" 0 scan-build make
+	runtestseries "$minsize" "$CC" 0 scan-build make
 }
 
 karatsuba() {
@@ -184,17 +222,6 @@ toybox() {
 	runtest tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$toybox_bc" bc
 }
 
-busybox() {
-
-	busybox_bc="$busybox_repo/busybox"
-
-	build_dist busybox "$busybox_bc" "$busybox_repo"
-
-	runtest tests/all.sh bc "$busybox_bc" bc
-	runtest tests/all.sh dc "$busybox_bc" dc
-	runtest tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$busybox_bc" bc
-}
-
 debug() {
 
 	CC="$1"
@@ -203,9 +230,9 @@ debug() {
 	runtests "$debug" "$CC"
 
 	if [ "$CC" = "clang" ]; then
-		runtests "$debug -fsanitize=address" "$CC" "$@"
-		runtests "$debug -fsanitize=undefined" "$CC" "$@"
-		runtests "$debug -fsanitize=memory" "$CC" "$@"
+		runtests "$debug -fsanitize=address" "$CC"
+		runtests "$debug -fsanitize=undefined" "$CC"
+		runtests "$debug -fsanitize=memory" "$CC"
 	fi
 }
 
@@ -231,14 +258,14 @@ set -e
 script="$0"
 scriptdir=$(dirname "$script")
 
-if [ $# -lt 2 ]; then
+if [ $# -lt 1 ]; then
 	usage
 fi
 
 toybox_repo="$1"
 shift
-busybox_repo="$1"
-shift
+#busybox_repo="$1"
+#shift
 
 cd "$scriptdir"
 
@@ -259,14 +286,13 @@ minsize "gcc"
 scan_build
 
 toybox
-busybox
 
-build "$release" "clang" all make
+build "$release" "clang" "" make
 
 karatsuba
 vg
 
-make CC="afl-gcc" CFLAGS="$release"
+build "$release" "afl-gcc" "" make
 
 echo ""
 echo "Run $scriptdir/tests/randmath.py and the fuzzer."
