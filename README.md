@@ -43,6 +43,12 @@ following command:
 ./configure.sh -h
 ```
 
+To learn the available `make` targets run the following command:
+
+```
+make help
+```
+
 To build both the `bc` and `dc`, use the following commands:
 
 ```
@@ -101,10 +107,37 @@ make
 make install
 ```
 
-Signal handling and history are on by default.
+The same also be done for array references as follows:
 
-Executing `./configure.sh -h` lists all options and useful environment
-variables, and executing `make help` displays available `make` targets.
+```
+./configure.sh -R
+make
+make install
+```
+
+This `bc` has 7 extra operators: `$` (truncation to integer), `@` (set precision
+for a number), `<<` (shift number left; shifts radix right), `>>` (shift number
+right; shifts radix left), and assignment versions of the last three (`@=`,
+`<<=`, and `>>=`), though not for `$` since it is a unary operator. The
+assignment versions are not available in `dc`, but the others are, as the
+operators `$`, `@`, `H`, and `h`, respectively.
+
+Extra operators can be disabled as follows:
+
+```
+./configure.sh -E
+make
+make install
+```
+
+This `bc` also has a larger library that is only enabled if extra operators are.
+More information about the functions can be found in the
+[full manual](https://github.com/gavinhoward/bc/blob/master/manuals/bc.md).
+
+Signal handling, history, references, and extra operators are on by default.
+
+Of course, any and all of the above options may be mixed, though array
+references are turned off if only `dc` is built.
 
 ### Optimization
 
@@ -130,8 +163,8 @@ make install
 
 Building with link-time optimization can further increase the performance.
 
-Manual stripping is not necessary; release builds are automatically stripped in
-the link stage.
+Manual stripping is not necessary; non-debug builds are automatically stripped
+in the link stage.
 
 Debug builds (which also disable optimization if no optimization level is given
 and if no extra `CFLAGS` are given) can be enabled with:
@@ -150,9 +183,9 @@ It is well-tested, fuzzed, and fully standards-compliant (though not certified)
 with POSIX `bc`. The math has been tested with 30+ million random problems, so
 it is as correct as I can make it.
 
-This `bc` can be used as a drop-in replacement for any existing `bc`, except for
-pass-by-reference array values, which are incompatible with POSIX. This `bc` is
-also compatible with MinGW toolchains.
+This `bc` can be used as a drop-in replacement for any existing `bc`. This `bc`
+is also compatible with MinGW toolchains, though history is not supported on
+Windows.
 
 It is also possible to download pre-compiled binaries for a wide list of
 platforms, including Linux- and Windows-based systems, from
@@ -354,7 +387,7 @@ In practice, it is extremely fast.
 
 ## Language
 
-This `bc` is written in pure ISO C99.
+This `bc` is written in pure ISO C99, using POSIX 2008 API's.
 
 ## Commit Messages
 
