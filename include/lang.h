@@ -166,7 +166,9 @@ typedef struct BcFunc {
 	BcVec consts;
 
 	const char *name;
+#if BC_ENABLED
 	bool voidfn;
+#endif // BC_ENABLED
 
 } BcFunc;
 

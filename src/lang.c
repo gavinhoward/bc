@@ -73,9 +73,9 @@ void bc_func_init(BcFunc *f, const char *name) {
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
 	f->nparams = 0;
+	f->voidfn = false;
 #endif // BC_ENABLED
 	f->name = name;
-	f->voidfn = false;
 }
 
 void bc_func_reset(BcFunc *f) {
@@ -87,6 +87,7 @@ void bc_func_reset(BcFunc *f) {
 	bc_vec_npop(&f->autos, f->autos.len);
 	bc_vec_npop(&f->labels, f->labels.len);
 	f->nparams = 0;
+	f->voidfn = false;
 #endif // BC_ENABLED
 }
 
@@ -175,6 +176,12 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		}
 
 #if BC_ENABLED
+		case BC_RESULT_VOID:
+		{
+			// Do nothing.
+			break;
+		}
+
 		case BC_RESULT_LAST:
 		case BC_RESULT_ONE:
 #endif // BC_ENABLED
@@ -182,12 +189,6 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_STR:
 		{
 			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));
-			break;
-		}
-
-		case BC_RESULT_VOID:
-		{
-			// Do nothing.
 			break;
 		}
 	}

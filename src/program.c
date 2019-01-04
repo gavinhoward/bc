@@ -492,10 +492,12 @@ BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	r = bc_vec_item_rev(&p->results, idx);
 
+#if BC_ENABLED
 	if (r->t == BC_RESULT_VOID) {
 		if (pop) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
 		return s;
 	}
+#endif // BC_ENABLED
 
 	s = bc_program_num(p, r, &n);
 	if (s) return s;
@@ -638,8 +640,6 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
 
 	BcNum n2;
 	BcResult res;
-
-	if (r->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
 
 	memset(&n2, 0, sizeof(BcNum));
 	n2.rdx = res.d.id.idx = r->d.id.idx;
