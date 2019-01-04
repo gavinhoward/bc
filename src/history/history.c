@@ -1017,6 +1017,24 @@ static BcStatus bc_history_escape(BcHistory *h) {
 	return s;
 }
 
+static BcStatus bc_history_reset(BcHistory *h) {
+
+	h->oldcolpos = h->pos = h->idx = 0;
+	h->cols = bc_history_columns();
+
+	// Check for error from bc_history_columns.
+	if (h->cols == SIZE_MAX) return bc_vm_err(BC_ERROR_VM_IO_ERR);
+
+	// The latest history entry is always our current buffer, that
+	// initially is just an empty string.
+	bc_history_add(h, bc_vm_strdup(""));
+
+	// Buffer starts empty.
+	bc_vec_empty(&h->buf);
+
+	return BC_STATUS_SUCCESS;
+}
+
 /**
  * This function is the core of the line editing capability of bc history.
  * It expects 'fd' to be already in "raw mode" so that every key pressed
@@ -1024,25 +1042,15 @@ static BcStatus bc_history_escape(BcHistory *h) {
  */
 static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
+	BcStatus s = bc_history_reset(h);
 
-	// Populate the history state.
+	if (s) return s;
+
 	h->prompt = prompt;
 	h->plen = strlen(prompt);
-	h->oldcolpos = h->pos = h->idx = 0;
-	h->cols = bc_history_columns();
 
-	// Check for error from bc_history_columns.
-	if (h->cols == SIZE_MAX) return bc_vm_err(BC_ERROR_VM_IO_ERR);
-
-	// Buffer starts empty.
-	bc_vec_empty(&h->buf);
-
-	// The latest history entry is always our current buffer, that
-	// initially is just an empty string.
-	bc_history_add(h, bc_vm_strdup(""));
-
-	if (write(STDERR_FILENO, prompt, h->plen) == -1) return BC_STATUS_SUCCESS;
+	if (write(STDERR_FILENO, prompt, h->plen) == -1)
+		return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 	while (!s) {
 
@@ -1071,9 +1079,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				len = strlen(bc_history_ctrlc);
 				slen = vm->sig_len;
 
-				bc_history_add(h, bc_vm_strdup(""));
-				h->idx = h->pos = 0;
-				bc_vec_empty(&h->buf);
+				s = bc_history_reset(h);
+				if (s) break;
 
 				if (write(STDERR_FILENO, bc_history_ctrlc, len) != (ssize_t) len ||
 				    write(STDERR_FILENO, vm->sig_msg, slen) != (ssize_t) slen ||
