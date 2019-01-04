@@ -121,6 +121,7 @@ Folders:
 	dist     Files to cut toybox/busybox releases (maintainer use only).
 	gen      The `bc` math library, help texts, and code to generate C source.
 	include  All header files.
+	manuals  Manuals for both programs.
 	src      All source code.
 	tests    All tests.
 
