@@ -19,9 +19,11 @@ This is the checklist for cutting a release.
 	* release
 8.	Fix AFL crashes as much as possible.
 9.	Repeat steps 3-8 again and repeat until nothing is found.
+10.	Change the version (remove "-dev") and commit.
 10.	Run "make clean_tests".
 11.	Run the release script.
 12.	Upload the custom tarball to GitHub.
 13.	Add sha's to release notes.
 14.	Edit release notes for the changelog.
 15.	Run toybox release and submit.
+16.	Increment to the next version.
