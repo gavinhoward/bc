@@ -1273,9 +1273,7 @@ void bc_history_init(BcHistory *h) {
 }
 
 void bc_history_free(BcHistory *h) {
-
 	bc_history_disableRaw(h);
-
 #ifndef NDEBUG
 	bc_vec_free(&h->buf);
 	bc_vec_free(&h->history);
