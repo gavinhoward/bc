@@ -17,6 +17,9 @@ POSIX. (The current standard is [here][1].) The language provides unlimited
 precision decimal arithmetic and is somewhat C-like, but there are differences.
 Such differences will be noted in this document.
 
+After parsing and handling options, this `bc` reads any files given on the
+command line and executes them before reading from `stdin`.
+
 With all build options enabled (except for extra math), this `bc` is a drop-in
 replacement for ***any*** `bc`, including (and especially) the [GNU `bc`][2].
 
@@ -50,8 +53,9 @@ soon as execution is done for the current input.
 
 ##### `-l` `--mathlib`
 
-Loads the included math library before running any code, including any
-expressions or files specified on the command line.
+Sets `scale` (see the Scale section) to `20` and loads the included math library
+before running any code, including any expressions or files specified on the
+command line.
 
 In addition, `scale` (see the Scale section) is set to `20`.
 
