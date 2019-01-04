@@ -141,6 +141,8 @@
 #include <strings.h>
 #include <ctype.h>
 
+#include <signal.h>
+
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -1070,18 +1072,21 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			case BC_ACTION_CTRL_C:
 			{
+#if BC_ENABLE_SIGNALS
 				size_t rlen, slen;
-
-				rlen = strlen(bc_program_ready_msg);
-				slen = vm->sig_len;
+#endif // BC_ENABLE_SIGNALS
 
 				bc_vec_concat(&h->buf, bc_history_ctrlc);
 
 				s = bc_history_refresh(h);
+#if BC_ENABLE_SIGNALS
 				if (s) break;
 
 				s = bc_history_reset(h);
 				if (s) break;
+
+				rlen = strlen(bc_program_ready_msg);
+				slen = vm->sig_len;
 
 				if (write(STDERR_FILENO, vm->sig_msg, slen) != (ssize_t) slen ||
 				    write(STDERR_FILENO, bc_program_ready_msg, rlen) != (ssize_t) rlen)
@@ -1089,7 +1094,13 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 				}
 				else s = bc_history_refresh(h);
+#else // BC_ENABLE_SIGNALS
+				write(STDERR_FILENO, "\n", 1);
 
+				// Make sure the terminal is back to normal before exiting.
+				bc_vm_shutdown();
+				exit((((uchar) 1) << (CHAR_BIT - 1)) + SIGINT);
+#endif // BC_ENABLE_SIGNALS
 				break;
 			}
 
