@@ -18,7 +18,7 @@ precision decimal arithmetic and is somewhat C-like, but there are differences.
 Such differences will be noted in this document.
 
 With all build options enabled (except for extra math), this `bc` is a drop-in
-replacement for ***any*** `bc`, including (and especially) [GNU `bc`][2].
+replacement for ***any*** `bc`, including (and especially) the [GNU `bc`][2].
 
 ### Options:
 
@@ -263,7 +263,7 @@ arrow keys.
 ## Standards
 
 The bc utility is compliant with the IEEE Std 1003.1-2017 (“POSIX.1-2017”)
-specification. The flags [-efhiqsvVw], all long options, and the extensions
+specification. The flags `-efhiqsvVw`, all long options, and the extensions
 noted above, are extensions to that specification.
 
 ## Authors
