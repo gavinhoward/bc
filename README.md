@@ -21,6 +21,9 @@ This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 
 This `bc` should build unmodified on any POSIX-compliant system.
 
+For more complex build requirements than the ones below, see the
+[build manual](./manuals/build.md).
+
 After building, `make install` will install the `bc` in `/usr/local`.
 
 ### Default
@@ -41,8 +44,6 @@ For debug builds, use the following commands in the root directory:
 ./configure.sh -g
 make
 ```
-
-For more complex build requirements, see the [build manual](./manuals/build.md).
 
 ## Status
 
