@@ -22,7 +22,8 @@ following command:
 ./configure.sh -h
 ```
 
-To learn the available `make` targets run the following command:
+To learn the available `make` targets run the following command after running
+the `configure.sh` script:
 
 ```
 make help
