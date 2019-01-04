@@ -144,6 +144,9 @@ typedef struct BcHistory {
 	/// Edited line buffer.
 	BcVec buf;
 
+	/// The history.
+	BcVec history;
+
 	/// Prompt to display.
 	const char *prompt;
 
@@ -170,9 +173,6 @@ typedef struct BcHistory {
 
 	/// Whether the terminal is bad.
 	bool badTerm;
-
-	/// The history.
-	BcVec history;
 
 } BcHistory;
 
