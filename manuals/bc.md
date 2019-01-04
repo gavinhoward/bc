@@ -23,7 +23,7 @@ command line and executes them before reading from `stdin`.
 With all build options enabled (except for extra math), this `bc` is a drop-in
 replacement for ***any*** `bc`, including (and especially) the [GNU `bc`][2].
 
-### Options:
+### Options
 
 ##### `-e` *expr* `--expression=`*expr*
 
@@ -266,7 +266,7 @@ arrow keys.
 
 ## Standards
 
-The bc utility is compliant with the IEEE Std 1003.1-2017 (“POSIX.1-2017”)
+The `bc` utility is compliant with the IEEE Std 1003.1-2017 (“POSIX.1-2017”)
 specification. The flags `-efhiqsvVw`, all long options, and the extensions
 noted above, are extensions to that specification.
 
