@@ -66,13 +66,13 @@ size_t bc_num_log10(size_t i) {
 BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, size_t len)
 {
 	size_t i, j;
-	for (i = 0; !BC_SIGINT && i < len; ++i) {
-		for (a[i] -= b[i], j = 0; !BC_SIGINT && a[i + j] < 0;) {
+	for (i = 0; !BC_SIGNAL && i < len; ++i) {
+		for (a[i] -= b[i], j = 0; !BC_SIGNAL && a[i + j] < 0;) {
 			a[i + j++] += 10;
 			a[i + j] -= 1;
 		}
 	}
-	return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
@@ -80,7 +80,7 @@ ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 {
 	size_t i;
 	int c = 0;
-	for (i = len - 1; !BC_SIGINT && i < len && !(c = a[i] - b[i]); --i);
+	for (i = len - 1; !BC_SIGNAL && i < len && !(c = a[i] - b[i]); --i);
 	return BC_NUM_NEG(i + 1, c < 0);
 }
 
@@ -125,7 +125,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
 	if (cmp) return BC_NUM_NEG(cmp, (!a_max) != neg);
 
-	for (max_num -= diff, i = diff - 1; !BC_SIGINT && i < diff; --i) {
+	for (max_num -= diff, i = diff - 1; !BC_SIGNAL && i < diff; --i) {
 		if (max_num[i]) return BC_NUM_NEG(1, (!a_max) != neg);
 	}
 
@@ -287,13 +287,13 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		ptr = ptr_b;
 	}
 
-	for (carry = 0, i = 0; !BC_SIGINT && i < min_rdx + min_int; ++i, ++c->len) {
+	for (carry = 0, i = 0; !BC_SIGNAL && i < min_rdx + min_int; ++i, ++c->len) {
 		in = ((unsigned int) ptr_a[i]) + ((unsigned int) ptr_b[i]) + carry;
 		carry = in / 10;
 		ptr_c[i] = (BcDig) (in % 10);
 	}
 
-	for (; !BC_SIGINT && i < max + min_rdx; ++i, ++c->len) {
+	for (; !BC_SIGNAL && i < max + min_rdx; ++i, ++c->len) {
 		in = ((unsigned int) ptr[i]) + carry;
 		carry = in / 10;
 		ptr_c[i] = (BcDig) (in % 10);
@@ -301,7 +301,7 @@ BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	if (carry) c->num[c->len++] = (BcDig) carry;
 
-	return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
@@ -375,7 +375,7 @@ BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	bool aone = BC_NUM_ONE(a);
 
 	// This is here because the function is recursive.
-	if (BC_SIGINT) return BC_STATUS_SIGNAL;
+	if (BC_SIGNAL) return BC_STATUS_SIGNAL;
 	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
@@ -396,11 +396,11 @@ BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 		memset(c->num, 0, sizeof(BcDig) * c->cap);
 		c->len = len = 0;
 
-		for (i = 0; !BC_SIGINT && i < b->len; ++i) {
+		for (i = 0; !BC_SIGNAL && i < b->len; ++i) {
 
 			carry = 0;
 
-			for (j = 0; !BC_SIGINT && j < a->len; ++j) {
+			for (j = 0; !BC_SIGNAL && j < a->len; ++j) {
 				unsigned int in = c->num[i + j];
 				in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
 				in += carry;
@@ -414,7 +414,7 @@ BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 
 		c->len = len;
 
-		return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+		return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 	}
 
 	bc_num_init(&l1, max);
@@ -563,7 +563,7 @@ BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	c->len = cp.len;
 	p = b->num;
 
-	for (i = end - 1; !BC_SIGINT && !s && i < end; --i) {
+	for (i = end - 1; !BC_SIGNAL && !s && i < end; --i) {
 		n = cp.num + i;
 		for (q = 0; !s && (n[len] || bc_num_compare(n, p, len) >= 0); ++q)
 			s = bc_num_subArrays(n, p, len);
@@ -659,13 +659,13 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if (!neg) scale = BC_MIN(a->rdx * pow, BC_MAX(scale, a->rdx));
 
-	for (powrdx = a->rdx; !BC_SIGINT && !(pow & 1); pow >>= 1) {
+	for (powrdx = a->rdx; !BC_SIGNAL && !(pow & 1); pow >>= 1) {
 		powrdx <<= 1;
 		s = bc_num_mul(&copy, &copy, &copy, powrdx);
 		if (s) goto err;
 	}
 
-	if (BC_SIGINT) {
+	if (BC_SIGNAL) {
 		s = BC_STATUS_SIGNAL;
 		goto err;
 	}
@@ -673,7 +673,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_copy(c, &copy);
 	resrdx = powrdx;
 
-	while (!BC_SIGINT && (pow = (pow & ~(1)) >> 1)) {
+	while (!BC_SIGNAL && (pow = (pow & ~(1)) >> 1)) {
 
 		powrdx = (powrdx & ~(((size_t) 1) << (CHAR_BIT * sizeof(size_t) - 1))) << 1;
 		s = bc_num_mul(&copy, &copy, &copy, powrdx);
@@ -691,7 +691,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if (s) goto err;
 	}
 
-	if (BC_SIGINT) {
+	if (BC_SIGNAL) {
 		s = BC_STATUS_SIGNAL;
 		goto err;
 	}
@@ -1321,7 +1321,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	resrdx = scale + 2;
 	len = BC_NUM_INT(x0) + resrdx - 1;
 
-	while (!BC_SIGINT && (cmp || digs < len)) {
+	while (!BC_SIGNAL && (cmp || digs < len)) {
 
 		s = bc_num_div(a, x0, &f, resrdx);
 		if (s) goto err;
@@ -1347,7 +1347,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		x1 = temp;
 	}
 
-	if (BC_SIGINT) {
+	if (BC_SIGNAL) {
 		s = BC_STATUS_SIGNAL;
 		goto err;
 	}

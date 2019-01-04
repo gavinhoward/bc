@@ -1190,7 +1190,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 	}
 	else s = bc_parse_stmt(p);
 
-	if ((s && s != BC_STATUS_QUIT) || BC_SIGINT) s = bc_parse_reset(p, s);
+	if ((s && s != BC_STATUS_QUIT) || BC_SIGNAL) s = bc_parse_reset(p, s);
 
 	return s;
 }
@@ -1213,7 +1213,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 	// This is for spacing in things like for loop headers.
 	while (!s && (t = p->l.t) == BC_LEX_NLINE) s = bc_lex_next(&p->l);
 
-	for (; !BC_SIGINT && !s && !done && BC_PARSE_EXPR(t); t = p->l.t) {
+	for (; !BC_SIGNAL && !s && !done && BC_PARSE_EXPR(t); t = p->l.t) {
 
 		switch (t) {
 
@@ -1439,7 +1439,7 @@ BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next) {
 	}
 
 	if (s) return s;
-	if (BC_SIGINT) return BC_STATUS_SIGNAL;
+	if (BC_SIGNAL) return BC_STATUS_SIGNAL;
 
 	while (p->ops.len > ops_bgn) {
 

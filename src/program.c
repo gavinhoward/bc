@@ -24,6 +24,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <signal.h>
+
 #include <read.h>
 #include <parse.h>
 #include <program.h>
@@ -1531,9 +1533,8 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 	ip = bc_vec_top(&p->stack);
 	ip->idx = f->code.len;
 
-	if (!s && BC_SIGINT && BC_I) return BC_STATUS_QUIT;
-
 #if BC_ENABLE_SIGNALS
+	if (BC_SIGTERM || (!s && BC_SIGINT && BC_I)) return BC_STATUS_QUIT;
 	vm->sig = 0;
 #endif // BC_ENABLE_SIGNALS
 
@@ -1868,7 +1869,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 #endif // NDEBUG
 		}
 
-		if ((s && s != BC_STATUS_QUIT) || BC_SIGINT) s = bc_program_reset(p, s);
+		if ((s && s != BC_STATUS_QUIT) || BC_SIGNAL) s = bc_program_reset(p, s);
 
 		// If the stack has changed, pointers may be invalid.
 		ip = bc_vec_top(&p->stack);

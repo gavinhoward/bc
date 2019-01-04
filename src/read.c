@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <signal.h>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -61,7 +63,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 		bc_vm_fflush(stderr);
 	}
 
-	while (!BC_SIGINT && c != '\n') {
+	while (!BC_SIGNAL && c != '\n') {
 
 		i = fgetc(stdin);
 
@@ -69,6 +71,8 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 #if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
+
+				if (BC_SIGTERM) return BC_STATUS_SIGNAL;
 
 				vm->sig = 0;
 
@@ -93,7 +97,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_pushByte(vec, '\0');
 
-	return BC_SIGINT ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_read_line(BcVec *vec, const char *prompt) {

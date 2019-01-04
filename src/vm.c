@@ -52,9 +52,8 @@
 #ifndef _WIN32
 void bc_vm_sig(int sig) {
 	int err = errno;
-	size_t len = strlen(vm->sig_msg);
-	if (sig == SIGINT && write(STDERR_FILENO, vm->sig_msg, len) == (ssize_t) len)
-		vm->sig = (uchar) sig;
+	if (sig == SIGINT) write(STDERR_FILENO, vm->sig_msg, vm->sig_len);
+	vm->sig = (uchar) sig;
 	errno = err;
 }
 #else // _WIN32
@@ -304,7 +303,7 @@ BcStatus bc_vm_process(const char *text, bool is_stdin) {
 	if (BC_I) bc_vm_fflush(stdout);
 
 err:
-	if (s || BC_SIGINT) s = bc_program_reset(&vm->prog, s);
+	if (s || BC_SIGNAL) s = bc_program_reset(&vm->prog, s);
 	bc_vm_clean();
 	return s == BC_STATUS_QUIT || !BC_I || !is_stdin ? s : BC_STATUS_SUCCESS;
 }
@@ -349,7 +348,7 @@ BcStatus bc_vm_stdin() {
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
 	while (!done && (!(s = bc_read_line(&buf, ">>> ")) || buf.len > 1) &&
-	       !BC_SIGINT && s != BC_STATUS_SIGNAL)
+	       !BC_SIGNAL && s != BC_STATUS_SIGNAL)
 	{
 		char c2, *str = buf.v;
 		size_t i, len = buf.len - 1;
@@ -394,7 +393,7 @@ BcStatus bc_vm_stdin() {
 	}
 
 	if (s && s != BC_STATUS_EOF) goto err;
-	else if (BC_SIGINT && !s) s = BC_STATUS_SIGNAL;
+	else if (BC_SIGNAL && !s) s = BC_STATUS_SIGNAL;
 	else if (s != BC_STATUS_ERROR) {
 		if (comment) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);
 		else if (string) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_STRING);
@@ -482,6 +481,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	sa.sa_handler = bc_vm_sig;
 	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
 #else // _WIN32
 	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
 #endif // _WIN32

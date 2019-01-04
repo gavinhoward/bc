@@ -82,9 +82,11 @@
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm->name[0] != 'd'))
 
 #if BC_ENABLE_SIGNALS
-#define BC_SIGINT (vm->sig)
+#define BC_SIGNAL (vm->sig)
+#define BC_SIGINT (vm->sig == SIGINT)
+#define BC_SIGTERM (vm->sig == SIGTERM || vm->sig == SIGQUIT)
 #else // BC_ENABLE_SIGNALS
-#define BC_SIGINT (0)
+#define BC_SIGNAL (0)
 #endif // BC_ENABLE_SIGNALS
 
 #define bc_vm_err(e) (bc_vm_error((e), 0))
