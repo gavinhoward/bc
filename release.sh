@@ -21,7 +21,8 @@ usage() {
 
 header() {
 
-	msg="$1"
+	local msg="$1"
+	shift
 
 	echo ""
 	echo "******"
@@ -32,16 +33,16 @@ header() {
 
 build() {
 
-	CFLAGS="$1"
+	local CFLAGS="$1"
 	shift
 
-	CC="$1"
+	local CC="$1"
 	shift
 
-	configure_flags="$1"
+	local configure_flags="$1"
 	shift
 
-	exe="$1"
+	local exe="$1"
 	shift
 
 	header "Running \"./configure.sh $configure_flags\" with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
@@ -66,25 +67,25 @@ runtest() {
 
 runconfigtests() {
 
-	CFLAGS="$1"
+	local CFLAGS="$1"
 	shift
 
-	CC="$1"
+	local CC="$1"
 	shift
 
-	configure_flags="$1"
+	local configure_flags="$1"
 	shift
 
-	run_tests="$1"
+	local run_tests="$1"
 	shift
 
-	exe="$1"
+	local exe="$1"
 	shift
 
 	if [ "$run_tests" -ne 0 ]; then
-		header "Running tests with configure flags \"$configure_flags\", CFLAGS=\"$CFLAGS\" and CC=\"$CC\""
+		header "Running tests with configure flags \"$configure_flags\", CC=\"$CC\", and CFLAGS=\"$CFLAGS\""
 	else
-		header "Building with configure flags \"$configure_flags\", CFLAGS=\"$CFLAGS\" and CC=\"$CC\""
+		header "Building with configure flags \"$configure_flags\", CC=\"$CC\", and CFLAGS=\"$CFLAGS\""
 	fi
 
 	build "$CFLAGS" "$CC" "$configure_flags" "$exe" "$@"
@@ -101,7 +102,7 @@ runconfigtests() {
 
 	make clean
 
-	build "$CFLAGS" "$CC" "$configure_flags -b" "$exe" "$@"
+	build "$CFLAGS" "$CC" "$configure_flags -d" "$exe" "$@"
 	if [ "$run_tests" -ne 0 ]; then
 		runtest
 	fi
@@ -111,16 +112,16 @@ runconfigtests() {
 
 runtestseries() {
 
-	CFLAGS="$1"
+	local CFLAGS="$1"
 	shift
 
-	CC="$1"
+	local CC="$1"
 	shift
 
-	run_tests="$1"
+	local run_tests="$1"
 	shift
 
-	exe="$1"
+	local exe="$1"
 	shift
 
 	runconfigtests "$CFLAGS" "$CC" "" "$run_tests" "$exe" "$@"
@@ -143,10 +144,10 @@ runtestseries() {
 
 runtests() {
 
-	CFLAGS="$1"
+	local CFLAGS="$1"
 	shift
 
-	CC="$1"
+	local CC="$1"
 	shift
 
 	runtestseries "$CFLAGS" "$CC" 1 make
@@ -190,13 +191,13 @@ vg() {
 
 build_dist() {
 
-	project="$1"
+	local project="$1"
 	shift
 
-	bc="$1"
+	local bc="$1"
 	shift
 
-	repo="$1"
+	local repo="$1"
 	shift
 
 	header "Building and testing $project"
@@ -224,7 +225,7 @@ toybox() {
 
 debug() {
 
-	CC="$1"
+	local CC="$1"
 	shift
 
 	runtests "$debug" "$CC"
@@ -264,8 +265,6 @@ fi
 
 toybox_repo="$1"
 shift
-#busybox_repo="$1"
-#shift
 
 cd "$scriptdir"
 
