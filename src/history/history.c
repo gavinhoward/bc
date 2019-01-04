@@ -608,6 +608,38 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	return BC_STATUS_SUCCESS;
 }
 
+void bc_history_replaceEntry(BcHistory *h, size_t idx) {
+
+	char* dup;
+
+	if (h->history.len <= 1) return;
+
+	dup = bc_vm_strdup(h->buf.v);
+
+	// Update the current history entry before
+	// overwriting it with the next one.
+	bc_vec_replaceAt(&h->history, h->history.len - 1 - h->idx, &dup);
+
+	// Show the new entry.
+	h->idx = idx;
+
+	if (h->idx == SIZE_MAX) {
+		h->idx = 0;
+		return;
+	}
+	else if (h->idx >= h->history.len) {
+		h->idx = h->history.len - 1;
+		return;
+	}
+
+	char* str = *((char**) bc_vec_item(&h->history, h->history.len - 1 - h->idx));
+	bc_vec_string(&h->buf, strlen(str), str);
+
+	h->pos = BC_HISTORY_BUF_LEN(h);
+
+	return;
+}
+
 /**
  * Insert the character 'c' at cursor current position.
  */
@@ -747,36 +779,7 @@ BcStatus bc_history_edit_end(BcHistory *h) {
  * entry as specified by 'dir' (direction).
  */
 BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
-
-	if (h->history.len <= 1) return BC_STATUS_SUCCESS;
-
-	size_t idx = h->history.len - 1 - h->idx;
-	char* dup = bc_vm_strdup(h->buf.v);
-
-	// Update the current history entry before
-	// overwriting it with the next one.
-	bc_vec_replaceAt(&h->history, idx, &dup);
-
-	// Show the new entry.
-	h->idx += (dir == BC_HISTORY_PREV) ? 1 : -1;
-
-	if (h->idx == SIZE_MAX) {
-		h->idx = 0;
-		return BC_STATUS_SUCCESS;
-	}
-	else if (h->idx >= h->history.len) {
-		h->idx = h->history.len - 1;
-		return BC_STATUS_SUCCESS;
-	}
-
-	// Recalculate.
-	idx = h->history.len - 1 - h->idx;
-
-	char* str = *((char**) bc_vec_item(&h->history, idx));
-	bc_vec_string(&h->buf, strlen(str), str);
-
-	h->pos = BC_HISTORY_BUF_LEN(h);
-
+	bc_history_replaceEntry(h, h->idx + (dir == BC_HISTORY_PREV ? 1 : -1));
 	return bc_history_refresh(h);
 }
 
@@ -1072,6 +1075,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				len = strlen(bc_history_ctrlc);
 				slen = vm->sig_len;
 
+				bc_history_replaceEntry(h, 0);
 				bc_vec_empty(&h->buf);
 				h->pos = 0;
 
