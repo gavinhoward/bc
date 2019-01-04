@@ -141,12 +141,6 @@ typedef enum BcHistoryAction {
  */
 typedef struct BcHistory {
 
-	/// Terminal stdin file descriptor.
-	int ifd;
-
-	/// Terminal stdout file descriptor.
-	int ofd;
-
 	/// Edited line buffer.
 	BcVec buf;
 
