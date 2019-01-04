@@ -45,6 +45,13 @@ For debug builds, use the following commands in the root directory:
 make
 ```
 
+### Pre-built Binaries
+
+It is possible to download pre-compiled binaries for a wide list of platforms,
+including Linux- and Windows-based systems, from
+[xstatic](https://xstatic.musl.cc/bc/). This link always points to the latest
+release of `bc`.
+
 ## Status
 
 This `bc` is robust.
@@ -56,11 +63,6 @@ it is as correct as I can make it.
 This `bc` can be used as a drop-in replacement for any existing `bc`. This `bc`
 is also compatible with MinGW toolchains, though history is not supported on
 Windows.
-
-It is also possible to download pre-compiled binaries for a wide list of
-platforms, including Linux- and Windows-based systems, from
-[xstatic](https://xstatic.musl.cc/bc/). This link always points to the latest
-release of `bc`.
 
 ### Performance
 
