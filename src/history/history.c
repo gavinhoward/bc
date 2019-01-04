@@ -1073,17 +1073,20 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			case BC_ACTION_CTRL_C:
 			{
-				size_t rlen, len, slen;
+				size_t rlen, slen;
 
 				rlen = strlen(bc_program_ready_msg);
-				len = strlen(bc_history_ctrlc);
 				slen = vm->sig_len;
+
+				bc_vec_concat(&h->buf, bc_history_ctrlc);
+
+				s = bc_history_refresh(h);
+				if (s) break;
 
 				s = bc_history_reset(h);
 				if (s) break;
 
-				if (write(STDERR_FILENO, bc_history_ctrlc, len) != (ssize_t) len ||
-				    write(STDERR_FILENO, vm->sig_msg, slen) != (ssize_t) slen ||
+				if (write(STDERR_FILENO, vm->sig_msg, slen) != (ssize_t) slen ||
 				    write(STDERR_FILENO, bc_program_ready_msg, rlen) != (ssize_t) rlen)
 				{
 					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
