@@ -84,6 +84,11 @@ typedef struct BcProgram {
 
 #if DC_ENABLED
 #define BC_PROG_REQ_FUNCS (2)
+#if !BC_ENABLED
+// For dc only, last is always true.
+#define bc_program_copyToVar(p, name, t, last) \
+	bc_program_copyToVar(p, name, t)
+#endif // !BC_ENABLED
 #else
 // For bc, 'pop' and 'copy' are always false.
 #define bc_program_pushVar(p, code, bgn, pop, copy) \

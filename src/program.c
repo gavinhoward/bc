@@ -663,17 +663,14 @@ BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
 
 BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType t, bool last) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *ptr, r;
 	BcVec *vec;
 	BcNum *n;
 	bool var = (t == BC_TYPE_VAR);
 
-	if (last) {
-		s = bc_program_operand(p, &ptr, &n, 0);
-		if (s) return s;
-	}
-	else {
+#if BC_ENABLED
+	if (!last) {
 
 		ptr = bc_vec_top(&p->results);
 
@@ -681,11 +678,14 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType t, bool last) {
 			BcVec *v = bc_program_search(p, ptr->d.id.name, t);
 			n = bc_vec_item_rev(v, 1);
 		}
-		else {
-			s = bc_program_num(p, ptr, &n);
-			if (s) return s;
-		}
+		else s = bc_program_num(p, ptr, &n);
 	}
+	else s = bc_program_operand(p, &ptr, &n, 0);
+#else // BC_ENABLED
+	s = bc_program_operand(p, &ptr, &n, 0);
+#endif // BC_ENABLED
+
+	if (s) return s;
 
 	s = bc_program_type_match(ptr, t);
 	if (s) return s;
