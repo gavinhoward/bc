@@ -565,7 +565,6 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	char seq[64];
 	char* buf = h->buf.v;
 	size_t colpos, len = BC_HISTORY_BUF_LEN(h), pos = h->pos, pcollen;
-	BcVec vec;
 
 	pcollen = bc_history_promptColLen(h->prompt, h->plen);
 
@@ -581,29 +580,27 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	while (pcollen + bc_history_colPos(buf, len, len) > h->cols)
 		len -= bc_history_prevLen(buf, len, NULL);
 
-	bc_vec_init(&vec, sizeof(char), NULL);
+	bc_vec_npop(&h->refresh, h->refresh.len);
 
 	// Cursor to left edge.
 	snprintf(seq, 64, "\r");
-	bc_vec_string(&vec, strlen(seq), seq);
+	bc_vec_string(&h->refresh, strlen(seq), seq);
 
 	// Write the prompt and the current buffer content.
-	bc_vec_concat(&vec, h->prompt);
-	bc_vec_concat(&vec, buf);
+	bc_vec_concat(&h->refresh, h->prompt);
+	bc_vec_concat(&h->refresh, buf);
 
 	// Erase to right.
 	snprintf(seq, 64, "\x1b[0K");
-	bc_vec_concat(&vec, seq);
+	bc_vec_concat(&h->refresh, seq);
 
 	// Move cursor to original position.
 	colpos = bc_history_colPos(buf, len, pos) + pcollen;
 	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
-	bc_vec_concat(&vec, seq);
+	bc_vec_concat(&h->refresh, seq);
 
-	if (write(STDERR_FILENO, vec.v, vec.len - 1) == -1)
+	if (write(STDERR_FILENO, h->refresh.v, h->refresh.len - 1) == -1)
 		return bc_vm_err(BC_ERROR_VM_IO_ERR);
-
-	bc_vec_free(&vec);
 
 	return BC_STATUS_SUCCESS;
 }
@@ -1280,6 +1277,7 @@ void bc_history_init(BcHistory *h) {
 
 	bc_vec_init(&h->buf, sizeof(char), NULL);
 	bc_vec_init(&h->history, sizeof(char*), bc_string_free);
+	bc_vec_init(&h->refresh, sizeof(char), NULL);
 }
 
 void bc_history_free(BcHistory *h) {
@@ -1287,6 +1285,7 @@ void bc_history_free(BcHistory *h) {
 #ifndef NDEBUG
 	bc_vec_free(&h->buf);
 	bc_vec_free(&h->history);
+	bc_vec_free(&h->refresh);
 #endif // NDEBUG
 }
 
