@@ -15,7 +15,7 @@
 #
 
 usage() {
-	echo "usage: $script toybox_repo"
+	echo "usage: $script toybox_repo [run_tests] [test_toybox] [run_scan_build]"
 	exit 1
 }
 
@@ -150,7 +150,10 @@ runtests() {
 	local CC="$1"
 	shift
 
-	runtestseries "$CFLAGS" "$CC" 1 make
+	local run_tests="$1"
+	shift
+
+	runtestseries "$CFLAGS" "$CC" "$run_tests" make
 }
 
 scan_build() {
@@ -228,25 +231,49 @@ debug() {
 	local CC="$1"
 	shift
 
-	runtests "$debug" "$CC"
+	local run_tests="$1"
+	shift
+
+	runtests "$debug" "$CC" "$run_tests"
 
 	if [ "$CC" = "clang" ]; then
-		runtests "$debug -fsanitize=address" "$CC"
-		runtests "$debug -fsanitize=undefined" "$CC"
-		runtests "$debug -fsanitize=memory" "$CC"
+		runtests "$debug -fsanitize=address" "$CC" "$run_tests"
+		runtests "$debug -fsanitize=undefined" "$CC" "$run_tests"
+		runtests "$debug -fsanitize=memory" "$CC" "$run_tests"
 	fi
 }
 
 release() {
-	runtests "$release" "$@"
+
+	local CC="$1"
+	shift
+
+	local run_tests="$1"
+	shift
+
+	runtests "$release" "$CC" "$run_tests"
 }
 
 reldebug() {
-	runtests "$reldebug" "$@"
+
+	local CC="$1"
+	shift
+
+	local run_tests="$1"
+	shift
+
+	runtests "$reldebug" "$CC" "$run_tests"
 }
 
 minsize() {
-	runtests "$minsize" "$@"
+
+	local CC="$1"
+	shift
+
+	local run_tests="$1"
+	shift
+
+	runtests "$minsize" "$CC" "$run_tests"
 }
 
 cflags="-Wall -Wextra -pedantic -std=c99"
@@ -261,12 +288,33 @@ set -e
 script="$0"
 scriptdir=$(dirname "$script")
 
-if [ $# -lt 1 ]; then
+if [ "$#" -lt 1 ]; then
 	usage
 fi
 
 toybox_repo="$1"
 shift
+
+if [ "$#" -gt 0 ]; then
+	run_tests="$1"
+	shift
+else
+	run_tests=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	test_toybox="$1"
+	shift
+else
+	test_toybox=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	run_scan_build="$1"
+	shift
+else
+	run_scan_build=1
+fi
 
 cd "$scriptdir"
 
@@ -274,24 +322,30 @@ make clean_tests
 
 version=$(make version)
 
-debug "clang"
-release "clang"
-reldebug "clang"
-minsize "clang"
+debug "clang" "$run_tests"
+release "clang" "$run_tests"
+reldebug "clang" "$run_tests"
+minsize "clang" "$run_tests"
 
-debug "gcc"
-release "gcc"
-reldebug "gcc"
-minsize "gcc"
+debug "gcc" "$run_tests"
+release "gcc" "$run_tests"
+reldebug "gcc" "$run_tests"
+minsize "gcc" "$run_tests"
 
-scan_build
+if [ "$run_scan_build" -ne 0 ]; then
+	scan_build
+fi
 
-toybox
+if [ "$test_toybox" -ne 0 ]; then
+	toybox
+fi
 
 build "$release" "clang" "" make
 
-karatsuba
-vg
+if [ "$run_tests" -ne 0 ]; then
+	karatsuba
+	vg
+fi
 
 build "$release" "afl-gcc" "" make
 
