@@ -249,10 +249,12 @@ minsize() {
 	runtests "$minsize" "$@"
 }
 
-debug="-g -O0 -fno-omit-frame-pointer"
-release="-DNDEBUG -O3"
-reldebug="-O3 -g -fno-omit-frame-pointer"
-minsize="-DNDEBUG -Os"
+cflags="-Wall -Wextra -pedantic -std=c99"
+
+debug="$cflags -g -O0 -fno-omit-frame-pointer"
+release="$cflags -DNDEBUG -O3"
+reldebug="$cflags -O3 -g -fno-omit-frame-pointer"
+minsize="$cflags -DNDEBUG -Os"
 
 set -e
 
