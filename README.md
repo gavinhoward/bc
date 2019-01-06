@@ -112,8 +112,8 @@ Files:
 	link.sh          A script to link dc to bc.
 	Makefile.in      The Makefile template.
 	NOTICE.md        List of contributors and copyright owners.
-	RELEASE.md       A checklist for making a release.
-	release.sh       A script to run during the release process.
+	RELEASE.md       A checklist for making a release (maintainer use only).
+	release.sh       A script to run during the release process (maintainer use only).
 	safe-install.sh  Safe install script from musl libc.
 
 Folders:
