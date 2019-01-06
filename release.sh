@@ -31,6 +31,22 @@ header() {
 	printf '\n'
 }
 
+configure() {
+
+	local CFLAGS="$1"
+	shift
+
+	local CC="$1"
+	shift
+
+	local configure_flags="$1"
+	shift
+
+	header "Running \"./configure.sh $configure_flags\" with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
+	CFLAGS="$CFLAGS" CC="$CC" ./configure.sh $configure_flags > /dev/null
+
+}
+
 build() {
 
 	local CFLAGS="$1"
@@ -45,9 +61,10 @@ build() {
 	local exe="$1"
 	shift
 
-	header "Running \"./configure.sh $configure_flags\" with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
+	configure "$CFLAGS" "$CC" "$configure_flags"
 
-	CFLAGS="$CFLAGS" CC="$CC" ./configure.sh $configure_flags > /dev/null
+	header "Building with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
+
 	"$exe" "$@" 2> "$scriptdir/.test.txt"
 
 	if [ -s "$scriptdir/.test.txt" ]; then
@@ -310,6 +327,8 @@ else
 fi
 
 cd "$scriptdir"
+
+configure "$debug" "clang" ""
 
 make clean_tests
 
