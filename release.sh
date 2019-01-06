@@ -292,7 +292,7 @@ if [ "$#" -gt 0 ]; then
 	toybox_repo="$1"
 	shift
 else
-	toybox_repo""
+	toybox_repo=""
 fi
 
 if [ "$#" -gt 0 ]; then
