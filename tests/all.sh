@@ -20,16 +20,33 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-if [ "$#" -ge 3 ]; then
+if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
+else
+	printf 'usage: %s dir [run_extended_tests] [run_reference_tests] [generate_tests] [exec args...]\n' "$script"
+	exit 1
+fi
+
+if [ "$#" -lt 1 ]; then
+	extra=1
+else
 	extra="$1"
 	shift
+fi
+
+if [ "$#" -lt 1 ]; then
+	refs=1
+else
 	refs="$1"
 	shift
+fi
+
+if [ "$#" -lt 1 ]; then
+	generate_tests=1
 else
-	printf 'usage: %s dir run_extended_tests run_reference_tests [exec args...]\n' "$script"
-	exit 1
+	generate_tests="$1"
+	shift
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -59,7 +76,7 @@ while read t; do
 		fi
 	fi
 
-	sh "$testdir/test.sh" "$d" "$t" "$exe" "$@"
+	sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$exe" "$@"
 
 done < "$testdir/$d/all.txt"
 

@@ -21,7 +21,7 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 2 ]; then
-	printf 'usage: %s dir test [exe [args...]]\n' "$0"
+	printf 'usage: %s dir test [generate_tests] [exe [args...]]\n' "$0"
 	printf 'valid dirs are:\n'
 	printf '\n'
 	cat "$testdir/all.txt"
@@ -36,6 +36,13 @@ t="$1"
 name="$testdir/$d/$t.txt"
 results="$testdir/$d/${t}_results.txt"
 shift
+
+if [ "$#" -gt 0 ]; then
+	generate_tests="$1"
+	shift
+else
+	generate_tests=1
+fi
 
 if [ "$#" -gt 0 ]; then
 	exe="$1"
@@ -57,6 +64,13 @@ else
 fi
 
 if [ ! -f "$name" ]; then
+
+	if [ "$generate_tests" -eq 0 ]; then
+		printf 'Cannot generate %s %s test\n' "$d" "$t"
+		printf 'Skipping %s %s test\n' "$d" "$t"
+		exit 0
+	fi
+
 	printf 'Generating %s %s...\n' "$d" "$t"
 	"$testdir/$d/scripts/$t.$d" > "$name"
 fi
