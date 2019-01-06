@@ -93,6 +93,9 @@ typedef struct BcProgram {
 // For bc, 'pop' and 'copy' are always false.
 #define bc_program_pushVar(p, code, bgn, pop, copy) \
 	bc_program_pushVar(p, code, bgn)
+#ifdef NDEBUG
+#define BC_PROG_NO_STACK_CHECK
+#endif // NDEBUG
 #endif // DC_ENABLED
 
 #define BC_PROG_STR(n) (!(n)->num && !(n)->cap)
