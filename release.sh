@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 #
 # Copyright 2018 Gavin D. Howard
 #
@@ -15,7 +15,7 @@
 #
 
 usage() {
-	echo "usage: $script toybox_repo [run_tests] [test_toybox] [run_scan_build]"
+	printf 'usage: %s toybox_repo [run_tests] [test_toybox] [run_scan_build]\n' "$script"
 	exit 1
 }
 
@@ -24,11 +24,11 @@ header() {
 	local msg="$1"
 	shift
 
-	echo ""
-	echo "******"
-	echo "$msg..."
-	echo "******"
-	echo ""
+	printf '\n'
+	printf '******\n'
+	printf '%s...\n' "$msg"
+	printf '******\n'
+	printf '\n'
 }
 
 build() {
@@ -51,8 +51,8 @@ build() {
 	"$exe" "$@" 2> "$scriptdir/.test.txt"
 
 	if [ -s "$scriptdir/.test.txt" ]; then
-		echo "$CC generated warning(s):"
-		echo ""
+		printf '%s generated warning(s):\n' "$CC"
+		printf '\n'
 		cat "$scriptdir/.test.txt"
 		exit 1
 	fi
@@ -349,9 +349,9 @@ fi
 
 build "$release" "afl-gcc" "" make
 
-echo ""
-echo "Run $scriptdir/tests/randmath.py and the fuzzer."
-echo "Then run the GitHub release script as follows:"
-echo ""
-echo "    <github_release> $version <msg> dist/ .clang-format release.sh RELEASE.md \\"
-echo "    tests/afl.py tests/bc/scripts/timeconst.bc"
+printf '\n'
+printf 'Run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
+printf 'Then run the GitHub release script as follows:\n'
+printf '\n'
+printf '    <github_release> %s <msg> dist/ .clang-format release.sh RELEASE.md \\\n' "$version"
+printf '    tests/afl.py tests/bc/scripts/timeconst.bc\n'
