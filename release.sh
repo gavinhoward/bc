@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf 'usage: %s [toybox_repo] [run_tests] [run_scan_build]\n' "$script"
+	printf 'usage: %s [toybox_repo] [run_tests] [test_with_gcc] [run_scan_build]\n' "$script"
 	exit 1
 }
 
@@ -320,6 +320,13 @@ else
 fi
 
 if [ "$#" -gt 0 ]; then
+	test_with_gcc="$1"
+	shift
+else
+	test_with_gcc=1
+fi
+
+if [ "$#" -gt 0 ]; then
 	run_scan_build="$1"
 	shift
 else
@@ -339,10 +346,12 @@ release "clang" "$run_tests"
 reldebug "clang" "$run_tests"
 minsize "clang" "$run_tests"
 
-debug "gcc" "$run_tests"
-release "gcc" "$run_tests"
-reldebug "gcc" "$run_tests"
-minsize "gcc" "$run_tests"
+if [ "$test_with_gcc" -ne 1 ]; then
+	debug "gcc" "$run_tests"
+	release "gcc" "$run_tests"
+	reldebug "gcc" "$run_tests"
+	minsize "gcc" "$run_tests"
+fi
 
 if [ "$run_scan_build" -ne 0 ]; then
 	scan_build
