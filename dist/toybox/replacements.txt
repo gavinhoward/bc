@@ -11,7 +11,7 @@ toys.optargs[i]
   if (CFG_TOYBOX_FREE) bc_vm_shutdown();\n  toys.exitval = (int) (\1);
 bc_parse_parse(&vm
 size_t len = strlen(bc_sig_msg);
-write(2, bc_sig_msg, len) == (ssize_t) len
+write(2, bc_sig_msg, strlen(bc_sig_msg))
 bc_vm_info()
 if ((i - 1 > len || string[i - 1] != '\\\\') && c == '"') str = !str;
 '"'
@@ -27,6 +27,8 @@ FLAG_i
 maxof(
 minof(
 ((size_t) -1)
+BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn) {\n
+s = bc_program_pushVar(p, code, &ip->idx);
  int
 int
  1

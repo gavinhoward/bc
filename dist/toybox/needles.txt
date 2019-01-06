@@ -11,7 +11,7 @@ vm->files\.len
 ^exit:\n  bc_vm_shutdown\(\);\n  return (s != BC_STATUS_ERROR \? BC_STATUS_SUCCESS : s);
 vm->parse\(&vm
 size_t len = strlen\(vm->sig_msg\);
-write\(STDERR_FILENO, vm->sig_msg, len\) == \(ssize_t\) len
+write\(STDERR_FILENO, vm->sig_msg, vm->sig_len\)
 bc_vm_info\(NULL\)
 if \(i - 1 > len \|\| string\[i - 1\].*?str \+= 1;\n[ ]*\}$
 vm->exe\.sbgn
@@ -27,6 +27,8 @@ BC_FLAG_I
 BC_MAX\(
 BC_MIN\(
 BC_VEC_INVALID_IDX
+BcStatus bc_program_pushVar\(BcProgram \*p, const char \*restrict code,\n[ ]*size_t \*restrict bgn, bool pop, bool copy\)\n\{
+s = bc_program_pushVar\(p, code, &ip->idx, false, false\);
 [ ]bool
 ^bool
  true
@@ -48,7 +50,7 @@ s = p->parse\(p\)
 bc_vm_malloc
 bc_vm_realloc
 bc_vm_strdup
-\*restrict ([a-z]{1})
+\*restrict ([a-z])
 const ([a-zA-Z]{1})
 BcStatus bc_vm_posixError\(BcStatus s, char \*file,\n[ ]*size_t line, char \*msg\)
 void bc_num_split\(BcNum \*n, size_t idx, BcNum \*a,\n[ ]*BcNum \*b\)\n\{

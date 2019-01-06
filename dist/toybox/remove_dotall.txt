@@ -17,6 +17,7 @@
 \n#else // BC_ENABLE_SIGNALS.*?#endif // BC_ENABLE_SIGNALS
 \n#if BC_ENABLE_SIGNALS$
 \n#endif // BC_ENABLE_SIGNALS$
+\n#ifndef BC_PROG_NO_STACK_CHECK.*?#endif // BC_PROG_NO_STACK_CHECK$
 \n#if DC_ENABLED // Exclude.*?#endif // DC_ENABLED Exclude
 \n#if DC_ENABLED.*?#endif // DC_ENABLED
 \n#if DC_ENABLED.*?#else // DC_ENABLED
@@ -45,7 +46,7 @@
 ^#elif BC_NUM_KARATSUBA_LEN < 2.*?#endif // BC_NUM_KARATSUBA_LEN$
 \n// \*\* Busybox exclude start\. \*\*
 \n// \*\* Busybox exclude end\. \*\*
-^void bc_vm_allocError\(\) \{.*?\n\}$
+^static BcStatus bc_program_checkStack\(BcVec \*v, size_t n\) \{.*?\n\}$
 ^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
 ^char\* bc_vm_strdup\(const char \*str\) \{.*?\n\}$
