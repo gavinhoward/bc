@@ -261,15 +261,15 @@ timeconst="@tests/bc/timeconst.sh"
 if [ "$debug" -ne 0 ]; then
 	vg_bc_test="@tests/all.sh bc $extra_math $refs valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
 	vg_dc_test="@tests/all.sh dc $extra_math $refs valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
-	timeconst_vg='@printf "100\\\\n" | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc'
+	timeconst_vg="@printf '100\\\\n' | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
 else
-	vg_bc_test='@printf "Cannot run valgrind without debug flags\\\\n"'
-	vg_dc_test='@printf "Cannot run valgrind without debug flags\\\\n"'
-	timeconst_vg='@printf "Cannot run valgrind without debug flags\\\\n"'
+	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
+	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
+	timeconst_vg="@printf 'Cannot run valgrind without debug flags\\\\n'"
 fi
 
-karatsuba='@printf "karatsuba cannot be run because one of bc or dc is not built\\\\n"'
-karatsuba_test='@printf "karatsuba cannot be run because one of bc or dc is not built\\\\n"'
+karatsuba="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
+karatsuba_test="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
 
 bc_lib="\$(GEN_DIR)/lib.o"
 bc_help="\$(GEN_DIR)/bc_help.o"
@@ -284,8 +284,8 @@ if [ "$bc_only" -eq 1 ]; then
 
 	executables="bc"
 
-	dc_test='@printf "No dc tests to run\\\\n"'
-	vg_dc_test='@printf "No dc tests to run\\\\n"'
+	dc_test="@printf 'No dc tests to run\\\\n'"
+	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
 elif [ "$dc_only" -eq 1 ]; then
 
@@ -302,11 +302,11 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	main_exec="DC_EXEC"
 
-	bc_test='@printf "No bc tests to run\\\\n"'
-	vg_bc_test='@printf "No bc tests to run\\\\n"'
+	bc_test="@printf 'No bc tests to run\\\\n'"
+	vg_bc_test="@printf 'No bc tests to run\\\\n'"
 
-	timeconst='@printf "timeconst cannot be run because bc is not built\\\\n"'
-	timeconst_vg='@printf "timeconst cannot be run because bc is not built\\\\n"'
+	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
+	timeconst_vg="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
 else
 
@@ -356,7 +356,7 @@ if [ "$coverage" -eq 1 ]; then
 	COVERAGE_PREREQS=" test_all"
 
 else
-	COVERAGE='@printf "Coverage not generated\\\\n"'
+	COVERAGE="@printf 'Coverage not generated\\\\n'"
 	COVERAGE_PREREQS=""
 fi
 
