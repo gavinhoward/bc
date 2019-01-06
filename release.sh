@@ -253,7 +253,7 @@ debug() {
 
 	runtests "$debug" "$CC" "$run_tests"
 
-	if [ "$CC" = "clang" ]; then
+	if [ "$CC" = "clang" -a "$run_tests" -ne 0 ]; then
 		runtests "$debug -fsanitize=address" "$CC" "$run_tests"
 		runtests "$debug -fsanitize=undefined" "$CC" "$run_tests"
 		runtests "$debug -fsanitize=memory" "$CC" "$run_tests"
