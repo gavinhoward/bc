@@ -305,13 +305,12 @@ BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 {
 	BcStatus s;
 	bool good = false;
-	BcResultType lt, rt;
+	BcResultType lt;
 
 	s = bc_program_binPrep(p, l, ln, r, rn);
 	if (s) return s;
 
 	lt = (*l)->t;
-	rt = (*r)->t;
 
 	if (lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||lt == BC_RESULT_ARRAY)
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
@@ -321,9 +320,9 @@ BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 #endif // BC_ENABLED
 
 #if DC_ENABLED
-	good = ((rt == BC_RESULT_STR || BC_PROG_STR(*rn)) && lt == BC_RESULT_VAR);
+	good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) && lt == BC_RESULT_VAR);
 #else
-	assert(rt != BC_RESULT_STR);
+	assert((*r)->t != BC_RESULT_STR);
 #endif // DC_ENABLED
 
 	if (!good) s = bc_program_type_num(*r, *rn);
