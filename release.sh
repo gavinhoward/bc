@@ -368,11 +368,15 @@ if [ "$run_tests" -ne 0 ]; then
 	vg
 fi
 
-build "$release" "afl-gcc" "" make
+if [ "$run_tests" -ne 0 ]; then
 
-printf '\n'
-printf 'Run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
-printf 'Then run the GitHub release script as follows:\n'
-printf '\n'
-printf '    <github_release> %s <msg> dist/ .clang-format release.sh RELEASE.md \\\n' "$version"
-printf '    tests/afl.py tests/bc/scripts/timeconst.bc\n'
+	build "$release" "afl-gcc" "" make
+
+	printf '\n'
+	printf 'Run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
+	printf 'Then run the GitHub release script as follows:\n'
+	printf '\n'
+	printf '    <github_release> %s <msg> dist/ .clang-format release.sh RELEASE.md \\\n' "$version"
+	printf '    tests/afl.py tests/bc/scripts/timeconst.bc\n'
+
+fi
