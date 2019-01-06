@@ -348,7 +348,7 @@ BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
 		}
 	}
 
-	*nread = bc_history_codePoint(buf, buf_len, cp);
+	*nread = (ssize_t) bc_history_codePoint(buf, buf_len, cp);
 
 	return BC_STATUS_SUCCESS;
 
