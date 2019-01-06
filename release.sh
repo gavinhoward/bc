@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf 'usage: %s [toybox_repo] [run_tests] [test_with_gcc] [run_scan_build]\n' "$script"
+	printf 'usage: %s [run_tests] [test_with_gcc] [run_scan_build] [toybox_repo]\n' "$script"
 	exit 1
 }
 
@@ -306,13 +306,6 @@ script="$0"
 scriptdir=$(dirname "$script")
 
 if [ "$#" -gt 0 ]; then
-	toybox_repo="$1"
-	shift
-else
-	toybox_repo=""
-fi
-
-if [ "$#" -gt 0 ]; then
 	run_tests="$1"
 	shift
 else
@@ -331,6 +324,13 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	run_scan_build=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	toybox_repo="$1"
+	shift
+else
+	toybox_repo=""
 fi
 
 cd "$scriptdir"
