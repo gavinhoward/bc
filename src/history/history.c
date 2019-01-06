@@ -199,8 +199,8 @@ static bool bc_history_comboChar(unsigned long cp) {
  */
 static size_t bc_history_prevCharLen(const char *buf, size_t pos) {
 	size_t end = pos;
-	for (pos -= 1; pos >= 0 && (buf[pos] & 0xC0) == 0x80; --pos);
-	return end - pos;
+	for (pos -= 1; pos < end && (buf[pos] & 0xC0) == 0x80; --pos);
+	return end - (pos >= end ? 0 : pos);
 }
 
 /**
@@ -314,7 +314,7 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
  * Read a Unicode code point from a file.
  */
 BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
-                             unsigned int *cp, size_t *nread)
+                             unsigned int *cp, ssize_t *nread)
 {
 	BcStatus s = BC_STATUS_EOF;
 
@@ -1056,7 +1056,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		// Large enough for any encoding?
 		char cbuf[32];
 		unsigned int c;
-		size_t nread;
+		ssize_t nread;
 
 		s = bc_history_readCode(STDIN_FILENO, cbuf, sizeof(cbuf), &c, &nread);
 		if (s) return s;
@@ -1215,7 +1215,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			default:
 			{
-				s = bc_history_edit_insert(h, cbuf, nread);
+				s = bc_history_edit_insert(h, cbuf, (size_t) nread);
 				break;
 			}
 		}
