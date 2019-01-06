@@ -314,14 +314,15 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
  * Read a Unicode code point from a file.
  */
 BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
-                             unsigned int *cp, ssize_t *nread)
+                             unsigned int *cp, size_t *nread)
 {
 	BcStatus s = BC_STATUS_EOF;
+	ssize_t n;
 
 	assert(buf_len >= 1);
 
-	*nread = read(fd, buf, 1);
-	if (*nread <= 0) goto err;
+	n = read(fd, buf, 1);
+	if (n <= 0) goto err;
 
 	unsigned char byte = buf[0];
 
@@ -329,31 +330,32 @@ BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
 
 		if ((byte & 0xE0) == 0xC0) {
 			assert(buf_len >= 2);
-			*nread = read(fd, buf + 1, 1);
-			if (*nread <= 0) goto err;
+			n = read(fd, buf + 1, 1);
+			if (n <= 0) goto err;
 		}
 		else if ((byte & 0xF0) == 0xE0) {
 			assert(buf_len >= 3);
-			*nread = read(fd, buf + 1, 2);
-			if (*nread <= 0) goto err;
+			n = read(fd, buf + 1, 2);
+			if (n <= 0) goto err;
 		}
 		else if ((byte & 0xF8) == 0xF0) {
 			assert(buf_len >= 3);
-			*nread = read(fd, buf + 1, 3);
-			if (*nread <= 0) goto err;
+			n = read(fd, buf + 1, 3);
+			if (n <= 0) goto err;
 		}
 		else {
-			*nread = -1;
+			n = -1;
 			goto err;
 		}
 	}
 
-	*nread = (ssize_t) bc_history_codePoint(buf, buf_len, cp);
+	*nread = bc_history_codePoint(buf, buf_len, cp);
 
 	return BC_STATUS_SUCCESS;
 
 err:
-	if (*nread < 0) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (n < 0) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+	else *nread = n;
 	return s;
 }
 
@@ -1056,7 +1058,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		// Large enough for any encoding?
 		char cbuf[32];
 		unsigned int c;
-		ssize_t nread;
+		size_t nread;
 
 		s = bc_history_readCode(STDIN_FILENO, cbuf, sizeof(cbuf), &c, &nread);
 		if (s) return s;
@@ -1215,7 +1217,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			default:
 			{
-				s = bc_history_edit_insert(h, cbuf, (size_t) nread);
+				s = bc_history_edit_insert(h, cbuf, nread);
 				break;
 			}
 		}
