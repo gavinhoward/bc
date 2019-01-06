@@ -248,7 +248,7 @@ script="$0"
 
 scriptdir=$(dirname "$script")
 
-link="@printf 'No link necessary\\n'"
+link="@printf 'No link necessary\\\\n'"
 main_exec="BC_EXEC"
 
 bc_test="@tests/all.sh bc $extra_math $refs"
