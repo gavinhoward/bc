@@ -346,7 +346,7 @@ release "clang" "$run_tests"
 reldebug "clang" "$run_tests"
 minsize "clang" "$run_tests"
 
-if [ "$test_with_gcc" -ne 1 ]; then
+if [ "$test_with_gcc" -ne 0 ]; then
 	debug "gcc" "$run_tests"
 	release "gcc" "$run_tests"
 	reldebug "gcc" "$run_tests"
