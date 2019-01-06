@@ -25,9 +25,9 @@ header() {
 	shift
 
 	printf '\n'
-	printf '******\n'
+	printf '*******************\n'
 	printf '%s...\n' "$msg"
-	printf '******\n'
+	printf '*******************\n'
 	printf '\n'
 }
 
