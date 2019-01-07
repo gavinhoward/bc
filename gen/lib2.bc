@@ -104,6 +104,19 @@ define pi(s){
 	scale=t
 	return v@s
 }
+define void output(x,b){
+	auto b2
+	b2=obase
+	obase=b
+	x
+	obase=b2
+}
+define void hex(x){
+	output(x,G)
+}
+define void binary(x){
+	output(x,2)
+}
 define ubytes(x){
 	auto p,b,i
 	b=ibase
@@ -126,19 +139,6 @@ define sbytes(x){
 	if(x>p||(!z&&x==p))n*=2
 	ibase=b
 	return n
-}
-define void output(x,b){
-	auto b2
-	b2=obase
-	obase=b
-	x
-	obase=b2
-}
-define void hex(x){
-	output(x,G)
-}
-define void binary(x){
-	output(x,2)
 }
 define void output_byte(x,i){
 	auto j,p,y,b
