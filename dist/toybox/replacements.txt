@@ -26,7 +26,7 @@ FLAG_l
 FLAG_i
 maxof(
 minof(
-((size_t) -1)
+SIZE_MAX
 BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn) {\n
 s = bc_program_pushVar(p, code, &ip->idx);
  int
