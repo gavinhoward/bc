@@ -11,7 +11,7 @@ toys.optargs[i]
   if (CFG_TOYBOX_FREE) bc_vm_shutdown();\n  toys.exitval = (int) (\1);
 bc_parse_parse(&vm
 size_t len = strlen(bc_sig_msg);
-write(2, bc_sig_msg, strlen(bc_sig_msg))
+write(2, bc_sig_msg, len)
 bc_vm_info()
 if ((i - 1 > len || string[i - 1] != '\\\\') && c == '"') str = !str;
 '"'
