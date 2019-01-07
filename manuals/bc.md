@@ -208,19 +208,108 @@ This is a [void](#void-functions) function.
 
 ##### `uint(x)`
 
-Outputs the representation, in binary and hexadecimal, of the truncated absolute
-value of `x` as an unsigned integer. Both outputs are split into bytes separated
-by spaces.
+Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
+integer in as few power of two bytes as possible. Both outputs are split into
+bytes separated by spaces.
+
+If `x` is not an integer or is negative, an error message is printed instead.
 
 This is a [void](#void-functions) function.
 
 ##### `int(x)`
 
-Outputs the representation, in binary and hexadecimal, of the truncated value of
-`x` as a signed, two's-complement integer. Both outputs are split into bytes
-separated by spaces.
+Outputs the representation, in binary and hexadecimal, of `x` as a signed,
+two's-complement integer in as few power of two bytes as possible. Both outputs
+are split into bytes separated by spaces.
+
+If `x` is not an integer, an error message is printed instead.
 
 This is a [void](#void-functions) function.
+
+##### `uintn(x, n)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
+integer in `n` bytes. Both outputs are split into bytes separated by spaces.
+
+If `x` is not an integer, is negative, or cannot fit into `n` bytes, an error
+message is printed instead.
+
+##### `intn(x, n)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an signed,
+two's-complement integer in `n` bytes. Both outputs are split into bytes
+separated by spaces.
+
+If `x` is not an integer or cannot fit into `n` bytes, an error message is
+printed instead.
+
+##### `uint8(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
+integer in `1` byte. Both outputs are split into bytes separated by spaces.
+
+If `x` is not an integer, is negative, or cannot fit into `1` byte, an error
+message is printed instead.
+
+##### `int8(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an signed,
+two's-complement integer in `1` byte. Both outputs are split into bytes
+separated by spaces.
+
+If `x` is not an integer or cannot fit into `1` byte, an error message is
+printed instead.
+
+##### `uint16(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
+integer in `2` bytes. Both outputs are split into bytes separated by spaces.
+
+If `x` is not an integer, is negative, or cannot fit into `2` bytes, an error
+message is printed instead.
+
+##### `int16(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an signed,
+two's-complement integer in `2` bytes. Both outputs are split into bytes
+separated by spaces.
+
+If `x` is not an integer or cannot fit into `2` bytes, an error message is
+printed instead.
+
+##### `uint32(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
+integer in `4` bytes. Both outputs are split into bytes separated by spaces.
+
+If `x` is not an integer, is negative, or cannot fit into `4` bytes, an error
+message is printed instead.
+
+##### `int32(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an signed,
+two's-complement integer in `4` bytes. Both outputs are split into bytes
+separated by spaces.
+
+If `x` is not an integer or cannot fit into `4` bytes, an error message is
+printed instead.
+
+##### `uint64(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
+integer in `8` bytes. Both outputs are split into bytes separated by spaces.
+
+If `x` is not an integer, is negative, or cannot fit into `8` bytes, an error
+message is printed instead.
+
+##### `int64(x)`
+
+Outputs the representation, in binary and hexadecimal, of `x` as an signed,
+two's-complement integer in `8` bytes. Both outputs are split into bytes
+separated by spaces.
+
+If `x` is not an integer or cannot fit into `8` bytes, an error message is
+printed instead.
 
 ##### `hex_uint(x, n)`
 
