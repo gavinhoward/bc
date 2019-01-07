@@ -673,9 +673,9 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_copy(c, &copy);
 	resrdx = powrdx;
 
-	while (!BC_SIGNAL && (pow = (pow & ~(1)) >> 1)) {
+	while (!BC_SIGNAL && (pow >>= 1)) {
 
-		powrdx = (powrdx & ~(((size_t) 1) << (CHAR_BIT * sizeof(size_t) - 1))) << 1;
+		powrdx <<= 1;
 		s = bc_num_mul(&copy, &copy, &copy, powrdx);
 		if (s) goto err;
 
