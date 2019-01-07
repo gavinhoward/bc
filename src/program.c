@@ -237,7 +237,9 @@ BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 #ifndef NDEBUG
 		default:
 		{
+			bc_vm_shutdown();
 			assert(false);
+			exit(BC_STATUS_ERROR);
 			break;
 		}
 #endif // NDEBUG
@@ -1213,7 +1215,7 @@ BcStatus bc_program_asciify(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r, res;
-	BcNum *n, num;
+	BcNum *n = NULL, num;
 	char str[2], *str2, c;
 	size_t len;
 	unsigned long val;
@@ -1321,7 +1323,7 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	BcParse prs;
 	BcInstPtr ip;
 	size_t fidx, sidx;
-	BcNum *n;
+	BcNum *n = NULL;
 	bool exec;
 
 	s = bc_program_operand(p, &r, &n, 0);

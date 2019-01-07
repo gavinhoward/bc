@@ -52,16 +52,17 @@
 #ifndef _WIN32
 void bc_vm_sig(int sig) {
 	int err = errno;
-	if (sig == SIGINT) write(STDERR_FILENO, vm->sig_msg, vm->sig_len);
+	if (sig == SIGINT) {
+		size_t len = vm->sig_len;
+		if (write(STDERR_FILENO, vm->sig_msg, len) != (ssize_t) len) sig = 0;
+	}
 	vm->sig = (uchar) sig;
 	errno = err;
 }
 #else // _WIN32
 BOOL WINAPI bc_vm_sig(DWORD sig) {
-	if (sig == CTRL_C_EVENT) {
-		bc_vm_puts(vm->sig_msg, stderr);
-		vm->sig = (uchar) sig;
-	}
+	if (sig == CTRL_C_EVENT) bc_vm_puts(vm->sig_msg, stderr);
+	vm->sig = (uchar) sig;
 	return TRUE;
 }
 #endif // _WIN32
