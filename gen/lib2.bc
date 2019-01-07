@@ -94,6 +94,16 @@ define l2(x){
 define l10(x){
 	return log(x,10)
 }
+define pi(s){
+	auto t,v
+	if(s==0)return 3
+	s=abs(s)$
+	t=scale
+	scale=s+1
+	v=4*a(1)
+	scale=t
+	return v@s
+}
 define ubytes(x){
 	auto p,b,i
 	b=ibase
@@ -116,16 +126,6 @@ define sbytes(x){
 	if(x>p||(!z&&x==p))n*=2
 	ibase=b
 	return n
-}
-define pi(s){
-	auto t,v
-	if(s==0)return 3
-	s=abs(s)$
-	t=scale
-	scale=s+1
-	v=4*a(1)
-	scale=t
-	return v@s
 }
 define void output(x,b){
 	auto b2
