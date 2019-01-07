@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [test_with_gcc] [run_scan_build] [toybox_repo]\n' "$script"
+	printf 'usage: %s [run_tests] [test_with_gcc] [toybox_repo]\n' "$script"
 	exit 1
 }
 
@@ -173,16 +173,6 @@ runtests() {
 	runtestseries "$CFLAGS" "$CC" "$run_tests" make
 }
 
-scan_build() {
-
-	header "Running scan-build"
-
-	runtestseries "$debug" "$CC" 0 scan-build make
-	runtestseries "$release" "$CC" 0 scan-build make
-	runtestseries "$reldebug" "$CC" 0 scan-build make
-	runtestseries "$minsize" "$CC" 0 scan-build make
-}
-
 karatsuba() {
 
 	header "Running Karatsuba tests"
@@ -320,13 +310,6 @@ else
 fi
 
 if [ "$#" -gt 0 ]; then
-	run_scan_build="$1"
-	shift
-else
-	run_scan_build=1
-fi
-
-if [ "$#" -gt 0 ]; then
 	toybox_repo="$1"
 	shift
 else
@@ -351,10 +334,6 @@ if [ "$test_with_gcc" -ne 0 ]; then
 	release "gcc" "$run_tests"
 	reldebug "gcc" "$run_tests"
 	minsize "gcc" "$run_tests"
-fi
-
-if [ "$run_scan_build" -ne 0 ]; then
-	scan_build
 fi
 
 if [ "$toybox_repo" != "" ]; then
