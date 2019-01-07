@@ -628,7 +628,7 @@ BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum copy;
-	unsigned long pow;
+	unsigned long pow = 0;
 	size_t i, powrdx, resrdx;
 	bool neg, zero;
 
@@ -711,7 +711,7 @@ err:
 BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	unsigned long val;
+	unsigned long val = 0;
 
 	BC_UNUSED(scale);
 
@@ -727,7 +727,7 @@ BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	unsigned long val;
+	unsigned long val = 0;
 
 	BC_UNUSED(scale);
 
@@ -742,7 +742,7 @@ BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	unsigned long val;
+	unsigned long val = 0;
 	size_t len;
 
 	BC_UNUSED(scale);
