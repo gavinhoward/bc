@@ -237,7 +237,7 @@ void bc_result_free(void *result);
 // ** Exclude end. **
 
 void bc_array_expand(BcVec *a, size_t len);
-int bc_id_cmp(const BcId* e1, const BcId* e2);
+int bc_id_cmp(const BcId *e1, const BcId *e2);
 
 #ifndef NDEBUG
 extern const char bc_inst_chars[];
