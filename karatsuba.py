@@ -64,11 +64,11 @@ for i in range(mn, mx2 + 1):
 
 	print("\nCompiling...\n")
 
-	makecmd = [ "./configure", "-O3", "-k{}".format(i) ]
+	makecmd = [ "./configure.sh", "-O3", "-k{}".format(i) ]
 	p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	if p.returncode != 0:
-		print("configure returned an error ({}); exiting...".format(p.returncode))
+		print("configure.sh returned an error ({}); exiting...".format(p.returncode))
 		sys.exit(p.returncode)
 
 	makecmd = [ "make" ]
@@ -116,5 +116,5 @@ opt = nums[times.index(min(times))]
 
 print("\nOptimal Karatsuba Num (for this machine): {}".format(opt))
 print("Run the following:\n")
-print("./configure -O3 -k {}".format(opt))
+print("./configure.sh -O3 -k {}".format(opt))
 print("make")

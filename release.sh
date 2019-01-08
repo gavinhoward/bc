@@ -42,8 +42,8 @@ configure() {
 	local configure_flags="$1"
 	shift
 
-	header "Running \"./configure $configure_flags\" with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
-	CFLAGS="$CFLAGS" CC="$CC" ./configure $configure_flags > /dev/null
+	header "Running \"./configure.sh $configure_flags\" with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
+	CFLAGS="$CFLAGS" CC="$CC" ./configure.sh $configure_flags > /dev/null
 
 }
 
