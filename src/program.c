@@ -677,7 +677,7 @@ BcStatus bc_program_copyToVar(BcProgram *p, char *name, BcType t, bool last) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *ptr, r;
 	BcVec *vec;
-	BcNum *n;
+	BcNum *n = NULL;
 	bool var = (t == BC_TYPE_VAR);
 
 #if BC_ENABLED

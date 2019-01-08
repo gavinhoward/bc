@@ -1097,7 +1097,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				}
 				else s = bc_history_refresh(h);
 #else // BC_ENABLE_SIGNALS
-				write(STDERR_FILENO, "\n", 1);
+				if (write(STDERR_FILENO, "\n", 1) != 1)
+					bc_vm_err(BC_STATUS_VM_IO_ERR);
 
 				// Make sure the terminal is back to normal before exiting.
 				bc_vm_shutdown();
