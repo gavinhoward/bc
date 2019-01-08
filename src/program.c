@@ -276,7 +276,9 @@ BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 
 	lt = (*l)->t;
 
+#if BC_ENABLED
 	assert(lt != BC_RESULT_VOID && (*r)->t != BC_RESULT_VOID);
+#endif // BC_ENABLED
 
 	// We run this again under these conditions in case any vector has been
 	// reallocated out from under the BcNums or arrays we had.
