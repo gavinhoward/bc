@@ -102,6 +102,9 @@ This `bc` uses [semantic versioning](http://semver.org/).
 
 ## Contents
 
+Items labelled with `(maintainer use only)` are not included in release source
+tarballs.
+
 Files:
 
 	.clang-format    Clang-format file, used only for cutting a release for busybox (maintainer use only).
