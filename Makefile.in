@@ -96,7 +96,7 @@ INSTALL = ./install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
 
-VALGRIND_ARGS = --error-exitcode=1 --leak-check=full --show-leak-kinds=all
+VALGRIND_ARGS = --error-exitcode=1 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
 
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 

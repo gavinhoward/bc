@@ -58,14 +58,11 @@ build() {
 	local configure_flags="$1"
 	shift
 
-	local exe="$1"
-	shift
-
 	configure "$CFLAGS" "$CC" "$configure_flags"
 
 	header "Building with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
 
-	"$exe" "$@" > /dev/null 2> "$scriptdir/.test.txt"
+	make > /dev/null 2> "$scriptdir/.test.txt"
 
 	if [ -s "$scriptdir/.test.txt" ]; then
 		printf '%s generated warning(s):\n' "$CC"
@@ -105,30 +102,27 @@ runconfigtests() {
 	local run_tests="$1"
 	shift
 
-	local exe="$1"
-	shift
-
 	if [ "$run_tests" -ne 0 ]; then
 		header "Running tests with configure flags \"$configure_flags\", CC=\"$CC\", and CFLAGS=\"$CFLAGS\""
 	else
 		header "Building with configure flags \"$configure_flags\", CC=\"$CC\", and CFLAGS=\"$CFLAGS\""
 	fi
 
-	build "$CFLAGS" "$CC" "$configure_flags" "$exe" "$@"
+	build "$CFLAGS" "$CC" "$configure_flags"
 	if [ "$run_tests" -ne 0 ]; then
 		runtest
 	fi
 
 	make clean
 
-	build "$CFLAGS" "$CC" "$configure_flags -b" "$exe" "$@"
+	build "$CFLAGS" "$CC" "$configure_flags -b"
 	if [ "$run_tests" -ne 0 ]; then
 		runtest
 	fi
 
 	make clean
 
-	build "$CFLAGS" "$CC" "$configure_flags -d" "$exe" "$@"
+	build "$CFLAGS" "$CC" "$configure_flags -d"
 	if [ "$run_tests" -ne 0 ]; then
 		runtest
 	fi
@@ -147,25 +141,22 @@ runtestseries() {
 	local run_tests="$1"
 	shift
 
-	local exe="$1"
-	shift
-
-	runconfigtests "$CFLAGS" "$CC" "" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-E" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-H" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-R" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-S" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-EH" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-ER" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-ES" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-HR" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-HS" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-RS" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-EHR" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-EHS" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-ERS" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-HRS" "$run_tests" "$exe" "$@"
-	runconfigtests "$CFLAGS" "$CC" "-EHRS" "$run_tests" "$exe" "$@"
+	runconfigtests "$CFLAGS" "$CC" "" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-E" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-H" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-R" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-S" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-EH" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-ER" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-ES" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-HR" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-HS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-RS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-EHR" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-EHS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-ERS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-HRS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "-EHRS" "$run_tests"
 }
 
 runtests() {
@@ -179,7 +170,7 @@ runtests() {
 	local run_tests="$1"
 	shift
 
-	runtestseries "$CFLAGS" "$CC" "$run_tests" make
+	runtestseries "$CFLAGS" "$CC" "$run_tests"
 }
 
 karatsuba() {
@@ -192,20 +183,20 @@ vg() {
 
 	header "Running valgrind"
 
-	makebuild "$release" "$CC" all
-	runtest make valgrind_all
+	build "$reldebug" "$CC" "-g"
+	runtest make valgrind
 
-	make clean
+	make clean_config
 
-	makebuild "$release" "$CC" bc
-	runtest make valgrind_bc_all
+	build "$reldebug" "$CC" "-gb"
+	runtest make valgrind
 
-	make clean
+	make clean_config
 
-	makebuild "$release" "$CC" dc
-	runtest make valgrind_dc
+	build "$reldebug" "$CC" "-gd"
+	runtest make valgrind
 
-	make clean
+	make clean_config
 }
 
 build_dist() {
