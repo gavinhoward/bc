@@ -160,7 +160,7 @@ define void output_byte(x,i){
 define void output_uint(x,n){
 	auto i,b
 	b=ibase
-	base=A
+	ibase=A
 	for(i=n-1;i>=0;--i){
 		output_byte(x,i)
 		if(i)print " "
