@@ -1272,8 +1272,7 @@ void bc_history_add(BcHistory *h, char *line) {
 
 	// Don't add duplicated lines.
 	if (h->history.len) {
-		char* str = *((char**) bc_vec_item_rev(&h->history, 0));
-		if (!strcmp(str, line)) {
+		if (!strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line)) {
 			free(line);
 			return;
 		}
