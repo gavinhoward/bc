@@ -57,8 +57,6 @@ Sets `scale` (see the Scale section) to `20` and loads the included math library
 before running any code, including any expressions or files specified on the
 command line.
 
-In addition, `scale` (see the Scale section) is set to `20`.
-
 To learn what is in the library, see the [Library](#library) section.
 
 ##### `-q` `--quiet`
