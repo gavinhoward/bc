@@ -582,7 +582,7 @@ const uchar bc_parse_ops[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
 	BC_PARSE_OP(9, true), BC_PARSE_OP(9, true), BC_PARSE_OP(9, true),
-	BC_PARSE_OP(10, true), BC_PARSE_OP(10, true),
+	BC_PARSE_OP(11, true), BC_PARSE_OP(10, true),
 	BC_PARSE_OP(8, false), BC_PARSE_OP(8, false), BC_PARSE_OP(8, false),
 	BC_PARSE_OP(8, false), BC_PARSE_OP(8, false), BC_PARSE_OP(8, false),
 #if BC_ENABLE_EXTRA_MATH
