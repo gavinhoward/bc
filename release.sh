@@ -79,7 +79,16 @@ runtest() {
 
 	header "Running tests"
 
-	make test_all
+	if [ "$#" -gt 0 ]; then
+
+		exe="$1"
+		shift
+
+		"$exe" "$@"
+
+	else
+		make test_all
+	fi
 }
 
 runconfigtests() {
@@ -229,7 +238,7 @@ toybox() {
 
 	build_dist toybox "$toybox_bc" "$toybox_repo"
 
-	runtest tests/all.sh bc "$toybox_bc" bc
+	runtest tests/all.sh bc 0 0 1 "$toybox_bc" bc
 	runtest tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$toybox_bc" bc
 }
 
