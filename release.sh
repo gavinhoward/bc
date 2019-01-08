@@ -65,7 +65,7 @@ build() {
 
 	header "Building with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
 
-	"$exe" "$@" 2> "$scriptdir/.test.txt"
+	"$exe" "$@" > /dev/null 2> "$scriptdir/.test.txt"
 
 	if [ -s "$scriptdir/.test.txt" ]; then
 		printf '%s generated warning(s):\n' "$CC"
