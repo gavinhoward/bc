@@ -26,6 +26,8 @@
 #include <stddef.h>
 #include <limits.h>
 
+#include <signal.h>
+
 #include <status.h>
 #include <parse.h>
 #include <program.h>
