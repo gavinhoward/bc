@@ -357,7 +357,7 @@ arrow keys.
 
 The `bc` utility is compliant with the IEEE Std 1003.1-2017 (“POSIX.1-2017”)
 specification. The flags `-efhiqsvVw`, all long options, and the extensions
-noted above, are extensions to that specification.
+noted above are extensions to that specification.
 
 ## Authors
 
