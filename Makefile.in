@@ -177,8 +177,6 @@ test_dc:
 timeconst:
 	%%TIMECONST%%
 
-valgrind_all: valgrind valgrind_timeconst
-
 valgrind: valgrind_bc valgrind_dc
 
 valgrind_bc:
@@ -186,9 +184,6 @@ valgrind_bc:
 
 valgrind_dc:
 	%%VG_DC_TEST%%
-
-valgrind_timeconst:
-	%%TIMECONST_VG%%
 
 karatsuba:
 	%%KARATSUBA%%

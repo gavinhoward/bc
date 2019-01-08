@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-bD|-dB|-c] [-EghHRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-EgGhHRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -50,6 +50,9 @@ usage() {
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
 	printf '        flag. If this flag is *not* given, "-DNDEBUG" is added to CPPFLAGS\n'
 	printf '        and a strip flag is added to the link stage.\n'
+	printf '    -G\n'
+	printf '        Disable generating tests. This is for platforms that do not have a\n'
+	printf '        GNU bc-compatible bc to generate tests.\n'
 	printf '    -h\n'
 	printf '        Print this help message and exit.\n'
 	printf '    -H\n'
@@ -207,8 +210,9 @@ hist=1
 refs=1
 extra_math=1
 optimization=""
+generate_tests=1
 
-while getopts "bBcdDEghHk:O:RS" opt; do
+while getopts "bBcdDEgGhHk:O:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -218,6 +222,7 @@ while getopts "bBcdDEghHk:O:RS" opt; do
 		D) bc_only=1 ;;
 		E) extra_math=0 ;;
 		g) debug=1 ;;
+		G) generate_tests=0 ;;
 		h) usage ;;
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
@@ -251,21 +256,19 @@ scriptdir=$(dirname "$script")
 link="@printf 'No link necessary\\\\n'"
 main_exec="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math $refs 1"
-dc_test="@tests/all.sh dc $extra_math $refs 1"
+bc_test="@tests/all.sh bc $extra_math $refs $generate_tests"
+dc_test="@tests/all.sh dc $extra_math $refs $generate_tests"
 
 timeconst="@tests/bc/timeconst.sh"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math $refs 1 valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math $refs 1 valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
-	timeconst_vg="@printf '100\\\\n' | valgrind \$(VALGRIND_ARGS) \$(BC_EXEC) tests/bc/scripts/timeconst.bc"
+	vg_bc_test="@tests/all.sh bc $extra_math $refs $generate_tests valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc $extra_math $refs $generate_tests valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 else
 	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
 	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
-	timeconst_vg="@printf 'Cannot run valgrind without debug flags\\\\n'"
 fi
 
 karatsuba="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
@@ -306,7 +309,6 @@ elif [ "$dc_only" -eq 1 ]; then
 	vg_bc_test="@printf 'No bc tests to run\\\\n'"
 
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
-	timeconst_vg="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
 else
 
@@ -452,7 +454,6 @@ contents=$(replace "$contents" "VG_BC_TEST" "$vg_bc_test")
 contents=$(replace "$contents" "VG_DC_TEST" "$vg_dc_test")
 
 contents=$(replace "$contents" "TIMECONST" "$timeconst")
-contents=$(replace "$contents" "TIMECONST_VG" "$timeconst_vg")
 
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
