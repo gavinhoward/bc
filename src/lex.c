@@ -93,6 +93,8 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 		else {
 			++i;
 			bslashes += 1;
+			// Make sure to eat whitespace at the beginning of the line.
+			while(isspace(buf[i]) && buf[i] != '\n') ++i;
 		}
 	}
 
