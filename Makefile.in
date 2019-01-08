@@ -142,6 +142,7 @@ help:
 	@printf '\n'
 	@printf '    all (default)   builds %%EXECUTABLES%%\n'
 	@printf '    clean           removes all build files\n'
+	@printf '    clean_config    removes all build files as well as the generated Makefile\n'
 	@printf '    clean_tests     removes all build files as well as generated tests\n'
 	@printf '    install         installs to %s%s/bin\n' "$(DESTDIR)" "$(PREFIX)"
 	@printf '    karatsuba       runs the karatsuba script (requires Python 3)\n'
@@ -242,6 +243,10 @@ clean_tests: clean
 	@$(RM) -f .log_test.txt .log_bc.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt
 	@$(RM) -f .test.txt
+
+clean_config: clean
+	@printf 'Cleaning config...\n'
+	@$(RM) -f Makefile
 
 install:
 	$(INSTALL) $(DESTDIR)$(PREFIX)/$(BIN) $(BIN)
