@@ -104,7 +104,7 @@ This `bc` uses [semantic versioning](http://semver.org/).
 
 Files:
 
-	.clang-format    Clang-format file, used only for cutting a release for busybox.
+	.clang-format    Clang-format file, used only for cutting a release for busybox (maintainer use only).
 	configure        The custom (non-autotools-generated) configure script.
 	install.sh       Install script.
 	karatsuba.py     Script for package maintainers to find the optimal Karatsuba number.
