@@ -6,6 +6,6 @@ for (i = 1; i <= 100; ++i) {
 	print "a(1)\n"
 }
 
-"halt"
+print "halt\n"
 
 halt
