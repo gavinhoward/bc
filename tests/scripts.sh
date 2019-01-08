@@ -76,7 +76,7 @@ for s in $scriptdir/*.$d; do
 	elif [ -f "$results" ]; then
 		res="$results"
 	else
-		echo "$halt" | $d "$s" > "$out1"
+		echo "$halt" | "$d" "$s" > "$out1"
 		res="$out1"
 	fi
 
