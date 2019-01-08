@@ -263,7 +263,13 @@ make test
 ```
 
 This `bc`, if built, assumes a working `bc` in the `PATH` to generate some
-tests. The same goes for `dc`.
+tests, unless the `-G` option is given to `configure.sh`, as follows:
+
+```
+./configure.sh -G
+make
+make test
+```
 
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
 [2]: https://www.gnu.org/software/bc/
