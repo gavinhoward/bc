@@ -320,9 +320,9 @@ cd "$scriptdir"
 
 configure "$debug" "clang" ""
 
-make clean_tests
-
 version=$(make version)
+
+make clean_tests
 
 debug "clang" "$run_tests"
 release "clang" "$run_tests"

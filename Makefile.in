@@ -235,7 +235,11 @@ clean:
 	@$(RM) -f $(DC_HELP_C) $(DC_HELP_O)
 	@$(RM) -f $(DC_HELP_GCDA) $(DC_HELP_GCNO)
 
-clean_tests: clean
+clean_config: clean
+	@printf 'Cleaning config...\n'
+	@$(RM) -f Makefile
+
+clean_tests: clean clean_config
 	@printf 'Cleaning test files...\n'
 	@$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
 	@$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
@@ -243,10 +247,6 @@ clean_tests: clean
 	@$(RM) -f .log_test.txt .log_bc.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt
 	@$(RM) -f .test.txt
-
-clean_config: clean
-	@printf 'Cleaning config...\n'
-	@$(RM) -f Makefile
 
 install:
 	$(INSTALL) $(DESTDIR)$(PREFIX)/$(BIN) $(BIN)
