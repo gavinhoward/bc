@@ -39,8 +39,6 @@ mx = 200
 mx2 = mx // 2
 mn = 2
 
-var = "BC_NUM_KARATSUBA_LEN"
-
 num = "9" * mx
 
 if len(sys.argv) >= 2:
@@ -64,7 +62,16 @@ tests = [ "multiply", "modulus", "power", "sqrt" ]
 
 for i in range(mn, mx2 + 1):
 
-	makecmd = [ "make", "{}={}".format(var, i) ]
+	print("\nCompiling...\n")
+
+	makecmd = [ "./configure", "-O3", "-k{}".format(i) ]
+	p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+	if p.returncode != 0:
+		print("configure returned an error ({}); exiting...".format(p.returncode))
+		sys.exit(p.returncode)
+
+	makecmd = [ "make" ]
 	p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	if p.returncode != 0:
@@ -73,11 +80,11 @@ for i in range(mn, mx2 + 1):
 
 	if (test_num >= i):
 
-		print("\nRunning tests...\n")
+		print("Running tests...\n")
 
 		for test in tests:
 
-			cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, exe ]
+			cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", exe ]
 
 			p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
 
@@ -109,4 +116,5 @@ opt = nums[times.index(min(times))]
 
 print("\nOptimal Karatsuba Num (for this machine): {}".format(opt))
 print("Run the following:\n")
-print("{}={} make".format(var, opt))
+print("./configure -O3 -k {}".format(opt))
+print("make")
