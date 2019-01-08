@@ -3,14 +3,15 @@
 This `bc` attempts to be as portable as possible. It can be built on any
 POSIX-compliant system.
 
-To accomplish that, a POSIX-compatible `configure.sh` script is used to select
-build options, compiler, and compiler flags and generate a `Makefile`.
+To accomplish that, a POSIX-compatible, custom `configure`
+(non-autotools-generated) script is used to select build options, compiler, and
+compiler flags and generate a `Makefile`.
 
 The general form of configuring, building, and installing this `bc` is as
 follows:
 
 ```
-[ENVIRONMENT_VARIABLE=<value>...] ./configure.sh [build_options...]
+[ENVIRONMENT_VARIABLE=<value>...] ./configure [build_options...]
 make
 make install
 ```
@@ -19,11 +20,11 @@ To get all of the options, including any useful environment variables, use the
 following command:
 
 ```
-./configure.sh -h
+./configure -h
 ```
 
 To learn the available `make` targets run the following command after running
-the `configure.sh` script:
+the `configure` script:
 
 ```
 make help
@@ -44,7 +45,7 @@ file(s), if the architectures are not compatible (i.e., unlike i686 on x86_64).
 Thus, the approach is:
 
 ```
-HOSTCC="/path/to/native/compiler" ./configure.sh
+HOSTCC="/path/to/native/compiler" ./configure
 make
 make install
 ```
@@ -135,8 +136,8 @@ To build `bc` only (no `dc`), use either one of the following commands for the
 configure step:
 
 ```
-./configure.sh -b
-./configure.sh -D
+./configure -b
+./configure -D
 ```
 
 Those two commands are equivalent.
@@ -150,8 +151,8 @@ To build `dc` only (no `bc`), use either one of the following commands for the
 configure step:
 
 ```
-./configure.sh -d
-./configure.sh -B
+./configure -d
+./configure -B
 ```
 
 Those two commands are equivalent.
@@ -166,7 +167,7 @@ disabled (see above).
 To disable signal handling, use the `-S` flag in the configure step:
 
 ```
-./configure.sh -S
+./configure -S
 ```
 
 <a name="build-history"/>
@@ -176,7 +177,7 @@ To disable signal handling, use the `-S` flag in the configure step:
 To disable signal handling, use the `-H` flag in the configure step:
 
 ```
-./configure.sh -H
+./configure -H
 ```
 
 ***WARNING***: Of all of the code in the `bc`, this is the only code that is not
@@ -192,7 +193,7 @@ Array references are an extension to the [standard][1] first implemented by the
 step:
 
 ```
-./configure.sh -R
+./configure -R
 ```
 
 <a name="build-extra-math"/>
@@ -209,7 +210,7 @@ operators `$`, `@`, `H`, and `h`, respectively.
 Extra operators can be disabled using the `-E` flag in the configure step:
 
 ```
-./configure.sh -E
+./configure -E
 ```
 
 This `bc` also has a larger library that is only enabled if extra operators are.
@@ -225,7 +226,7 @@ recommend package and distro maintainers pass the highest optimization level
 available in `CC` to the configure script, as follows:
 
 ```
-./configure.sh -O3
+./configure -O3
 make
 make install
 ```
@@ -234,7 +235,7 @@ As usual, the configure script will also accept additional `CFLAGS` on the
 command line, so for SSE4 architectures, the following can add a bit more speed:
 
 ```
-CFLAGS="-march=native -msse4" ./configure.sh -O3
+CFLAGS="-march=native -msse4" ./configure -O3
 make
 make install
 ```
@@ -250,7 +251,7 @@ Debug builds (which also disable optimization if no optimization level is given
 and if no extra `CFLAGS` are given) can be enabled with:
 
 ```
-./configure.sh -g
+./configure -g
 make
 make install
 ```

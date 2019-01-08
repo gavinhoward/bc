@@ -32,7 +32,7 @@ For the default build with optimization, use the following commands in the root
 directory:
 
 ```
-./configure.sh -O3
+./configure -O3
 make
 ```
 
@@ -41,7 +41,7 @@ make
 For debug builds, use the following commands in the root directory:
 
 ```
-./configure.sh -g
+./configure -g
 make
 ```
 
@@ -105,7 +105,7 @@ This `bc` uses [semantic versioning](http://semver.org/).
 Files:
 
 	.clang-format    Clang-format file, used only for cutting a release for busybox.
-	configure.sh     The custom configure script.
+	configure        The custom (non-autotools-generated) configure script.
 	install.sh       Install script.
 	karatsuba.py     Script for package maintainers to find the optimal Karatsuba number.
 	LICENSE.md       A Markdown form of the BSD 0-clause License.
