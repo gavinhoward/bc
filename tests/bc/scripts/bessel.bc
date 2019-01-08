@@ -38,6 +38,6 @@ for (i = 0; i < l; ++i) {
 print "j(3, 0.75)\n"
 print "scale = 0; j(40, 0.75)\n"
 
-"halt"
+print "halt\n"
 
 halt
