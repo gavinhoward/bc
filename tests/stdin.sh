@@ -21,11 +21,11 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 1 ]; then
-	echo "usage: $0 dir [exe [args...]]"
-	echo "valid dirs are:"
-	echo ""
+	printf 'usage: %s dir [exe [args...]]\n' "$0"
+	printf 'valid dirs are:\n'
+	printf '\n'
 	cat "$testdir/all.txt"
-	echo ""
+	printf '\n'
 	exit 1
 fi
 
@@ -49,7 +49,7 @@ fi
 
 rm -f "$out"
 
-echo "Running $d stdin tests..."
+printf 'Running %s stdin tests...\n' "$d"
 
 while read t; do
 	printf '%s' "$t" | "$exe" "$@" "$options" >> "$out"

@@ -21,7 +21,7 @@ script="$0"
 testdir=$(dirname "${script}")
 
 if [ "$#" -eq 0 ]; then
-	echo "usage: $script dir [run_references_tests] [generate_tests] [exec args...]"
+	printf 'usage: %s dir [run_references_tests] [generate_tests] [exec args...]\n' "$script"
 	exit 1
 else
 	d="$1"
@@ -78,7 +78,7 @@ for s in $scriptdir/*.$d; do
 		fi
 	fi
 
-	echo "Running $d script: $f"
+	printf 'Running %s script: %s\n' "$d" "$f"
 
 	orig="$testdir/$name.txt"
 	results="$scriptdir/$name.txt"
@@ -91,11 +91,11 @@ for s in $scriptdir/*.$d; do
 		printf 'Skipping %s script %s\n' "$d" "$s"
 		continue
 	else
-		echo "$halt" | "$d" "$s" > "$out1"
+		printf '%s\n' "$halt" | "$d" "$s" > "$out1"
 		res="$out1"
 	fi
 
-	echo "$halt" | "$exe" "$@" $options "$s" > "$out2"
+	printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out2"
 
 	diff "$res" "$out2"
 
