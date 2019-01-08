@@ -66,7 +66,6 @@ fi
 if [ ! -f "$name" ]; then
 
 	if [ "$generate_tests" -eq 0 ]; then
-		printf 'Cannot generate %s %s test\n' "$d" "$t"
 		printf 'Skipping %s %s test\n' "$d" "$t"
 		exit 0
 	fi
