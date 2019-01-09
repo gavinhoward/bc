@@ -356,6 +356,6 @@ if [ "$run_tests" -ne 0 ]; then
 	printf 'Then run the GitHub release script as follows:\n'
 	printf '\n'
 	printf '    <github_release> %s <msg> dist/ release.sh RELEASE.md \\\n' "$version"
-	printf '    tests/afl.py tests/bc/scripts/timeconst.bc\n'
+	printf '    tests/afl.py tests/randmath.py tests/bc/scripts/timeconst.bc\n'
 
 fi
