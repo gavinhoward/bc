@@ -86,6 +86,23 @@ See the [build manual](./build.md).
 
 ## Language
 
+### Syntax
+
+The syntax for `bc` programs is mostly C-like, with some differences.
+
+In the sections below, `E` means expression, `S` means statement, and `I` means
+identifier. Identifiers start with a lowercase letter and can be followed by
+any number (up to `BC_NAME_MAX - 1`) of lowercase letters (`a-z`), digits (`0-9`),
+and underscores (`_`). Identifiers with more than one character (letter) are an
+extension.
+
+#### Comments
+
+There are two kinds of comments:
+
+1.	Block comments are enclosed in `/*` and `*/`.
+2.	Line comments go from `#` until the next newline.
+
 <a name="library"/>
 
 ### Library
