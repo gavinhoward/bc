@@ -1063,6 +1063,21 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		s = bc_history_readCode(STDIN_FILENO, cbuf, sizeof(cbuf), &c, &nread);
 		if (s) return s;
 
+		if (c >= BC_ACTION_CTRL_A && c <= BC_ACTION_CTRL_Z) {
+
+			char str[3] = "^A";
+
+			str[1] = c + 'A' - 1;
+
+			bc_vec_concat(&h->buf, str);
+
+			s = bc_history_refresh(h);
+			if (s) return s;
+
+			bc_vec_npop(&h->buf, sizeof(str));
+			bc_vec_pushByte(&h->buf, '\0');
+		}
+
 		switch (c) {
 
 			case BC_ACTION_LINE_FEED:
@@ -1076,13 +1091,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			{
 #if BC_ENABLE_SIGNALS
 				size_t rlen, slen;
-#endif // BC_ENABLE_SIGNALS
-
-				bc_vec_concat(&h->buf, bc_history_ctrlc);
-
-				s = bc_history_refresh(h);
-#if BC_ENABLE_SIGNALS
-				if (s) break;
 
 				s = bc_history_reset(h);
 				if (s) break;
@@ -1121,7 +1129,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				if (BC_HISTORY_BUF_LEN(h) > 0) s = bc_history_edit_delete(h);
 				else {
 					bc_vec_pop(&h->history);
-					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+					s = BC_STATUS_EOF;
 				}
 
 				break;

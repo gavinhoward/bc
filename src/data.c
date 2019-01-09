@@ -171,8 +171,6 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLE_HISTORY
 const char *bc_history_bad_terms[] = { "dumb", "cons25", "emacs", NULL };
 
-const char bc_history_ctrlc[] = "^C";
-
 // These are listed in ascending order for efficiency.
 const uint32_t bc_history_wchars[][2] = {
 	{ 0x1100, 0x115F },
