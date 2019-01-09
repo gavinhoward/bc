@@ -11,7 +11,9 @@ for (b = 2; b <= 101; ++b) {
 	for (i = 0; i <= s; ++i) {
 		i
 		print "0.", i, "\n"
+		print ".", i, "\n"
 		print "1.", i, "\n"
+		print i, ".", "\n"
 		print i, ".", i, "\n"
 	}
 

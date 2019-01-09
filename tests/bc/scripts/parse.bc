@@ -8,7 +8,9 @@ for (b = 2; b <= 16; ++b) {
 	for (i = 0; i <= 4096; ++i) {
 		i
 		print "0.", i, "\n"
+		print ".", i, "\n"
 		print "1.", i, "\n"
+		print i, ".", "\n"
 		print i, ".", i, "\n"
 	}
 }
