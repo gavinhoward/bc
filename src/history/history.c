@@ -1139,16 +1139,10 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				break;
 			}
 
-			// Remove char at right of cursor, or if the
-			// line is empty, act as end-of-file.
+			// Act as end-of-file.
 			case BC_ACTION_CTRL_D:
 			{
-				if (BC_HISTORY_BUF_LEN(h) > 0) s = bc_history_edit_delete(h);
-				else {
-					bc_vec_pop(&h->history);
-					s = BC_STATUS_EOF;
-				}
-
+				s = BC_STATUS_EOF;
 				break;
 			}
 
