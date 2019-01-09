@@ -80,7 +80,10 @@ else:
 if len(sys.argv) >= 4:
 	resultsdir = sys.argv[3]
 else:
-	resultsdir = testdir + "/../../results"
+	if exedir == "bc":
+		resultsdir = testdir + "/../../results"
+	else:
+		resultsdir = testdir + "/../../results_dc"
 
 exe = [ exe, options ]
 for i in range(4, len(sys.argv)):
