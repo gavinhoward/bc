@@ -158,7 +158,8 @@ void bc_num_extend(BcNum *restrict n, size_t places) {
 	memmove(n->num + places, n->num, sizeof(BcDig) * n->len);
 	memset(n->num, 0, sizeof(BcDig) * places);
 
-	n->len += places;
+	if (n->len) n->len += places;
+
 	n->rdx += places;
 }
 
@@ -726,8 +727,8 @@ BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	s = bc_num_intop(a, b, c, &val);
 	if (s) return s;
 
-	if (val < a->rdx) bc_num_truncate(c, a->rdx - val);
-	else if (val > a->rdx) bc_num_extend(c, val - a->rdx);
+	if (val < c->rdx) bc_num_truncate(c, c->rdx - val);
+	else if (val > c->rdx) bc_num_extend(c, val - c->rdx);
 
 	return s;
 }
@@ -808,6 +809,7 @@ BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	s = op(ptr_a, ptr_b, c, scale);
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
+	assert(c->rdx <= c->len || !c->len);
 
 	if (init) bc_num_free(&num2);
 
@@ -1377,6 +1379,7 @@ err:
 	bc_num_free(&num2);
 	bc_num_free(&num1);
 	assert(!b->neg || BC_NUM_NONZERO(b));
+	assert(b->rdx <= b->len || !b->len);
 	return s;
 }
 
@@ -1403,7 +1406,9 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	s = bc_num_r(ptr_a, b, c, d, scale, ts);
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
+	assert(c->rdx <= c->len || !c->len);
 	assert(!d->neg || BC_NUM_NONZERO(d));
+	assert(d->rdx <= d->len || !d->len);
 
 	if (init) bc_num_free(&num2);
 
