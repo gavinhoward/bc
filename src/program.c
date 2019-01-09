@@ -825,7 +825,7 @@ BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		}
 
 		if (val > max || val < min) return bc_vm_verr(e, min, max);
-		if (!sc) bc_num_copy(ib ? &p->ib : &p->ob, l);
+		if (!sc) bc_num_ulong2num(ib ? &p->ib : &p->ob, (unsigned long) val);
 
 		*ptr = (size_t) val;
 		s = BC_STATUS_SUCCESS;
