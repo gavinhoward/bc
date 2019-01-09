@@ -230,7 +230,8 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '.':
 		{
-			if (isdigit(l->buf[l->i])) s = bc_lex_number(l, c);
+			c2 = l->buf[l->i];
+			if (BC_LEX_NUM_CHAR(c2, 'Z', true)) s = bc_lex_number(l, c);
 			else {
 				l->t = BC_LEX_KEY_LAST;
 				s = bc_lex_posixErr(l, BC_ERROR_POSIX_DOT);

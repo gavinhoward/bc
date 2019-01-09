@@ -33,6 +33,9 @@
 #define bc_lex_err(l, e) (bc_vm_error((e), (l)->line))
 #define bc_lex_verr(l, e, ...) (bc_vm_error((e), (l)->line, __VA_ARGS__))
 
+#define BC_LEX_NUM_CHAR(c, l, pt) \
+	(isdigit(c) || ((c) >= 'A' && (c) <= (l)) || ((c) == '.' && !(pt)))
+
 // BC_LEX_NEG is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
 

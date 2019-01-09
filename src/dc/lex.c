@@ -145,7 +145,8 @@ BcStatus dc_lex_token(BcLex *l) {
 
 		case '.':
 		{
-			if (isdigit(l->buf[l->i])) s = bc_lex_number(l, c);
+			c2 = l->buf[l->i];
+			if (BC_LEX_NUM_CHAR(c2, 'F', true)) s = bc_lex_number(l, c);
 			else s = bc_lex_invalidChar(l, c);
 			break;
 		}

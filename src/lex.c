@@ -75,52 +75,42 @@ void bc_lex_whitespace(BcLex *l) {
 BcStatus bc_lex_number(BcLex *l, char start) {
 
 	const char *buf = l->buf + l->i;
-	size_t len, hits = 0, bslashes = 0, i = 0, j;
+	size_t i;
 	char last_valid, c;
-	bool last_pt, pt = start == '.';
+	bool last_pt = (start == '.'), pt;
 
-	last_pt = pt;
 	l->t = BC_LEX_NUMBER;
 	last_valid = BC_IS_BC ? 'Z' : 'F';
 
-	for (; (c = buf[i]) && ((c >= 'A' && c <= last_valid) || (c == '.' && !pt) ||
-	                        isdigit(c) || (c == '\\' && buf[i + 1] == '\n')); ++i)
-	{
-		if (c != '\\') {
-			last_pt = c == '.';
-			pt = pt || last_pt;
-		}
-		else {
-			++i;
-			bslashes += 1;
-			// Make sure to eat whitespace at the beginning of the line.
-			while(isspace(buf[i]) && buf[i] != '\n') ++i;
-		}
-	}
-
-	len = i + 1 * !last_pt - bslashes * 2;
-
-	if (len > BC_MAX_NUM)
-		return bc_lex_verr(l, BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
-
 	bc_vec_npop(&l->str, l->str.len);
-	bc_vec_expand(&l->str, len + 1);
 	bc_vec_push(&l->str, &start);
 
-	for (buf -= 1, j = 1; j < len + hits * 2; ++j) {
-
-		c = buf[j];
-
-		// If we have hit a backslash, skip it. We don't have
-		// to check for a newline because it's guaranteed.
-		if (hits < bslashes && c == '\\') {
-			++hits;
-			++j;
-			continue;
+	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, last_valid, last_pt) ||
+	                             (c == '\\' && buf[i + 1] == '\n')); ++i)
+	{
+		if (c != '\\') {
+			pt = (c == '.');
+			if (pt && last_pt) break;
+			last_pt = pt;
 		}
+		else if (buf[i + 1] == '\n') {
+
+			i += 2;
+
+			// Make sure to eat whitespace at the beginning of the line.
+			while(isspace(buf[i]) && buf[i] != '\n') ++i;
+
+			c = buf[i];
+
+			if (!BC_LEX_NUM_CHAR(c, last_valid, last_pt)) break;
+		}
+		else break;
 
 		bc_vec_push(&l->str, &c);
 	}
+
+	if (l->str.len > BC_MAX_NUM)
+		return bc_lex_verr(l, BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
 
 	bc_vec_pushByte(&l->str, '\0');
 	l->i += i;

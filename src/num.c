@@ -874,10 +874,15 @@ void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	n->rdx = (size_t) ((ptr != NULL) * ((val + len) - (ptr + 1)));
 
 	if (!zero) {
-		for (i = len - 1; i < len; ++n->len, i -= 1 + (i && val[i - 1] == '.')) {
+		for (i = len - 1; i < len; ++n->len, --i) {
+
 			char c = val[i];
-			if (isupper(c)) c = '9';
-			n->num[n->len] = c - '0';
+
+			if (c == '.') n->len -= 1;
+			else {
+				if (isupper(c)) c = '9';
+				n->num[n->len] = c - '0';
+			}
 		}
 	}
 }
