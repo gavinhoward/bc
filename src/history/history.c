@@ -456,7 +456,7 @@ static size_t bc_history_cursorPos() {
 	size_t cols, rows, i;
 
 	// Report cursor location.
-	if (write(STDERR_FILENO, "\x1b[6n", 4) != 4) return SIZE_MAX;
+	if (BC_HISTORY_WRITE("\x1b[6n", 4)) return SIZE_MAX;
 
 	// Read the response: ESC [ rows ; cols R.
 	for (i = 0; i < sizeof(buf) - 1; ++i) {
@@ -490,7 +490,7 @@ static size_t bc_history_columns() {
 		if (start == SIZE_MAX) return BC_HISTORY_DEF_COLS;
 
 		// Go to right margin and get position.
-		if (write(STDERR_FILENO, "\x1b[999C", 6) != 6) return BC_HISTORY_DEF_COLS;
+		if (BC_HISTORY_WRITE("\x1b[999C", 6)) return BC_HISTORY_DEF_COLS;
 		cols = bc_history_cursorPos();
 		if (cols == SIZE_MAX) return BC_HISTORY_DEF_COLS;
 
@@ -498,12 +498,14 @@ static size_t bc_history_columns() {
 		if (cols > start) {
 
 			char seq[64];
+			size_t len;
 
 			snprintf(seq, 64, "\x1b[%zuD", cols - start);
+			len = strlen(seq);
 
 			// If this fails, return a value that
 			// callers will translate into an error.
-			if (write(STDERR_FILENO, seq, strlen(seq)) == -1) return SIZE_MAX;
+			if (BC_HISTORY_WRITE(seq, len)) return SIZE_MAX;
 		}
 
 		return cols;
@@ -603,7 +605,7 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
 	bc_vec_concat(&h->refresh, seq);
 
-	if (write(STDERR_FILENO, h->refresh.v, h->refresh.len - 1) == -1)
+	if (BC_HISTORY_WRITE(h->refresh.v, h->refresh.len - 1))
 		return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 	return BC_STATUS_SUCCESS;
@@ -635,8 +637,7 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 
 		if (colpos < h->cols) {
 			// Avoid a full update of the line in the trivial case.
-			if (write(STDERR_FILENO, cbuf, clen) == -1)
-				s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+			if (BC_HISTORY_WRITE(cbuf, clen)) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 		}
 		else s = bc_history_refresh(h);
 	}
@@ -1036,6 +1037,33 @@ static BcStatus bc_history_reset(BcHistory *h) {
 	return BC_STATUS_SUCCESS;
 }
 
+static BcStatus bc_history_printCtrl(BcHistory *h, char c) {
+
+	BcStatus s;
+	char str[3] = "^A";
+	const char newline[2] = "\n";
+
+	str[1] = c + 'A' - 1;
+
+	bc_vec_concat(&h->buf, str);
+
+	s = bc_history_refresh(h);
+	if (s) return s;
+
+	bc_vec_npop(&h->buf, sizeof(str));
+	bc_vec_pushByte(&h->buf, '\0');
+
+	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D) {
+
+		if (BC_HISTORY_WRITE(newline, sizeof(newline) - 1))
+			return bc_vm_err(BC_ERROR_VM_IO_ERR);
+
+		s = bc_history_refresh(h);
+	}
+
+	return s;
+}
+
 /**
  * This function is the core of the line editing capability of bc history.
  * It expects 'fd' to be already in "raw mode" so that every key pressed
@@ -1050,8 +1078,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	h->prompt = prompt;
 	h->plen = strlen(prompt);
 
-	if (write(STDERR_FILENO, prompt, h->plen) == -1)
-		return bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (BC_HISTORY_WRITE(prompt, h->plen)) return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 	while (!s) {
 
@@ -1063,50 +1090,40 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		s = bc_history_readCode(STDIN_FILENO, cbuf, sizeof(cbuf), &c, &nread);
 		if (s) return s;
 
-		if (c >= BC_ACTION_CTRL_A && c <= BC_ACTION_CTRL_Z) {
-
-			char str[3] = "^A";
-
-			str[1] = c + 'A' - 1;
-
-			bc_vec_concat(&h->buf, str);
-
-			s = bc_history_refresh(h);
-			if (s) return s;
-
-			bc_vec_npop(&h->buf, sizeof(str));
-			bc_vec_pushByte(&h->buf, '\0');
-		}
-
 		switch (c) {
 
 			case BC_ACTION_LINE_FEED:
 			case BC_ACTION_ENTER:
 			{
+				if (c == BC_ACTION_LINE_FEED) s = bc_history_printCtrl(h, c);
 				bc_vec_pop(&h->history);
-				return BC_STATUS_SUCCESS;
+				return s;
 			}
 
 			case BC_ACTION_CTRL_C:
 			{
 #if BC_ENABLE_SIGNALS
 				size_t rlen, slen;
+#endif // BC_ENABLE_SIGNALS
 
+				s = bc_history_printCtrl(h, c);
+				if (s) return s;
+
+#if BC_ENABLE_SIGNALS
 				s = bc_history_reset(h);
 				if (s) break;
 
 				rlen = strlen(bc_program_ready_msg);
 				slen = vm->sig_len;
 
-				if (write(STDERR_FILENO, vm->sig_msg, slen) != (ssize_t) slen ||
-				    write(STDERR_FILENO, bc_program_ready_msg, rlen) != (ssize_t) rlen)
+				if (BC_HISTORY_WRITE(vm->sig_msg, slen) ||
+				    BC_HISTORY_WRITE(bc_program_ready_msg, rlen))
 				{
 					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 				}
 				else s = bc_history_refresh(h);
 #else // BC_ENABLE_SIGNALS
-				if (write(STDERR_FILENO, "\n", 1) != 1)
-					bc_vm_err(BC_STATUS_VM_IO_ERR);
+				if (BC_HISTORY_WRITE("\n", 1)) bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 				// Make sure the terminal is back to normal before exiting.
 				bc_vm_shutdown();
@@ -1211,7 +1228,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Clear screen.
 			case BC_ACTION_CTRL_L:
 			{
-				if (write(STDERR_FILENO, "\x1b[H\x1b[2J", 7) <= 0)
+				if (BC_HISTORY_WRITE("\x1b[H\x1b[2J", 7))
 					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 				if (!s) s = bc_history_refresh(h);
 				break;
@@ -1226,7 +1243,9 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			default:
 			{
-				s = bc_history_edit_insert(h, cbuf, nread);
+				if (c >= BC_ACTION_CTRL_A && c <= BC_ACTION_CTRL_Z)
+					s = bc_history_printCtrl(h, c);
+				else s = bc_history_edit_insert(h, cbuf, nread);
 				break;
 			}
 		}
@@ -1248,7 +1267,7 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 
 	s = bc_history_edit(h, prompt);
 	bc_history_disableRaw(h);
-	bc_vm_puts("\n", stderr);
+	if (!s && BC_HISTORY_WRITE("\n", 1)) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 
 	return s;
 }
