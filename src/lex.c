@@ -91,7 +91,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 		if (c != '\\') {
 			pt = (c == '.');
 			if (pt && last_pt) break;
-			last_pt = pt;
+			last_pt = last_pt || pt;
 		}
 		else if (buf[i + 1] == '\n') {
 
