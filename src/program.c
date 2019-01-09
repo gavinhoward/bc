@@ -269,9 +269,9 @@ BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 
 	assert(p && l && ln && r && rn);
 
-	s = bc_program_operand(p, r, rn, 0);
-	if (s) return s;
 	s = bc_program_operand(p, l, ln, 1);
+	if (s) return s;
+	s = bc_program_operand(p, r, rn, 0);
 	if (s) return s;
 
 	lt = (*l)->t;
@@ -283,7 +283,7 @@ BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	// We run this again under these conditions in case any vector has been
 	// reallocated out from under the BcNums or arrays we had.
 	if (lt == (*r)->t && (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM))
-		s = bc_program_num(p, *r, rn);
+		s = bc_program_num(p, *l, ln);
 
 	if (lt == BC_RESULT_STR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 
