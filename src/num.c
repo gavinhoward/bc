@@ -1141,7 +1141,7 @@ void bc_num_free(void *num) {
 void bc_num_copy(BcNum *d, const BcNum *s) {
 	assert(d && s);
 	if (d == s) return;
-	bc_num_expand(d, s->cap);
+	bc_num_expand(d, s->len);
 	d->len = s->len;
 	d->neg = s->neg;
 	d->rdx = s->rdx;
