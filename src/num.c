@@ -177,7 +177,7 @@ void bc_num_retireMul(BcNum *restrict n, size_t scale, bool neg1, bool neg2) {
 	if (BC_NUM_NONZERO(n)) n->neg = (!neg1 != !neg2);
 }
 
-void bc_num_split(BcNum *restrict n, size_t idx, BcNum *restrict a, BcNum *restrict b) {
+void bc_num_split(const BcNum *restrict n, size_t idx, BcNum *restrict a, BcNum *restrict b) {
 
 	if (idx < n->len) {
 
@@ -372,7 +372,7 @@ BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	return s;
 }
 
-BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
+BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 	BcStatus s;
 	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2;
