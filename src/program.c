@@ -1333,7 +1333,6 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 
 	if (cond) {
 
-		BcVec *v;
 		char *name, *then_name = bc_program_name(code, bgn), *else_name = NULL;
 
 		if (((uchar) code[*bgn]) == BC_PARSE_STREND) (*bgn) += 1;
@@ -1347,10 +1346,7 @@ BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 			name = else_name;
 		}
 
-		if (exec) {
-			v = bc_program_search(p, name, BC_TYPE_VAR);
-			n = bc_vec_top(v);
-		}
+		if (exec) n = bc_vec_top(bc_program_search(p, name, BC_TYPE_VAR));
 
 		free(then_name);
 		free(else_name);
