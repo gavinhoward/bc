@@ -111,35 +111,45 @@ BcStatus bc_args(int argc, char *argv[]) {
 #if BC_ENABLED
 			case 'i':
 			{
+#if DC_ENABLED
 				if (!BC_IS_BC) err = c;
+#endif // DC_ENABLED
 				vm->flags |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
+#if DC_ENABLED
 				if (!BC_IS_BC) err = c;
+#endif // DC_ENABLED
 				vm->flags |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
+#if DC_ENABLED
 				if (!BC_IS_BC) err = c;
+#endif // DC_ENABLED
 				vm->flags |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
+#if DC_ENABLED
 				if (!BC_IS_BC) err = c;
+#endif // DC_ENABLED
 				vm->flags |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
+#if DC_ENABLED
 				if (!BC_IS_BC) err = c;
+#endif // DC_ENABLED
 				vm->flags |= BC_FLAG_W;
 				break;
 			}
@@ -156,7 +166,9 @@ BcStatus bc_args(int argc, char *argv[]) {
 #if DC_ENABLED
 			case 'x':
 			{
+#if BC_ENABLED
 				if (BC_IS_BC) err = c;
+#endif // BC_ENABLED
 				vm->flags |= DC_FLAG_X;
 				break;
 			}
