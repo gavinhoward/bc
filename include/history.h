@@ -190,9 +190,9 @@ void bc_history_free(BcHistory *h);
 
 extern const char *bc_history_bad_terms[];
 extern const char bc_history_ctrlc[];
-extern const unsigned long bc_history_wchars[][2];
+extern const uint32_t bc_history_wchars[][2];
 extern const size_t bc_history_wchars_len;
-extern const unsigned long bc_history_combo_chars[];
+extern const uint32_t bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
 #ifndef NDEBUG
 extern FILE *bc_history_debug_fp;

@@ -38,7 +38,7 @@
 #include <program.h>
 #include <vm.h>
 
-bool bc_read_binary(const char *buf, size_t size) {
+static bool bc_read_binary(const char *buf, size_t size) {
 
 	size_t i;
 

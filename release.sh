@@ -283,7 +283,9 @@ minsize() {
 	runtests "$minsize" "$CC" "$run_tests"
 }
 
-cflags="-Wall -Wextra -pedantic -std=c99"
+cflags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
+cflags="$cflags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
+cflags="$cflags -Wall -Wextra -pedantic -std=c99"
 
 debug="$cflags -g -O0 -fno-omit-frame-pointer"
 release="$cflags -DNDEBUG -O3"

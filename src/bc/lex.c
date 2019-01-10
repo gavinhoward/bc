@@ -30,7 +30,7 @@
 #include <bc.h>
 #include <vm.h>
 
-BcStatus bc_lex_identifier(BcLex *l) {
+static BcStatus bc_lex_identifier(BcLex *l) {
 
 	BcStatus s;
 	size_t i;
@@ -64,7 +64,7 @@ BcStatus bc_lex_identifier(BcLex *l) {
 	return s;
 }
 
-BcStatus bc_lex_string(BcLex *l) {
+static BcStatus bc_lex_string(BcLex *l) {
 
 	size_t len, nlines = 0, i = l->i;
 	const char *buf = l->buf;
@@ -92,7 +92,7 @@ BcStatus bc_lex_string(BcLex *l) {
 	return BC_STATUS_SUCCESS;
 }
 
-void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
+static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 	if (l->buf[l->i] == '=') {
 		++l->i;
 		l->t = with;

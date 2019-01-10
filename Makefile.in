@@ -122,17 +122,17 @@ $(GEN_EXEC):
 	$(HOSTCC) $(CFLAGS) -o $(GEN_EXEC) $(GEN_C)
 
 $(BC_LIB_C): $(GEN_EXEC) $(BC_LIB)
-	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc_lib_name $(BC_ENABLED_NAME) 1
+	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc.h bc_lib_name $(BC_ENABLED_NAME) 1
 
 $(BC_LIB2_C): $(GEN_EXEC) $(BC_LIB2)
-	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB2) $(BC_LIB2_C) bc_lib2 bc_lib2_name \
+	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB2) $(BC_LIB2_C) bc_lib2 bc.h bc_lib2_name \
 	"$(BC_ENABLED_NAME) && $(BC_ENABLE_EXTRA_MATH_NAME)" 1
 
 $(BC_HELP_C): $(GEN_EXEC) $(BC_HELP)
-	$(GEN_EMU) $(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help "" $(BC_ENABLED_NAME)
+	$(GEN_EMU) $(GEN_EXEC) $(BC_HELP) $(BC_HELP_C) bc_help bc.h "" $(BC_ENABLED_NAME)
 
 $(DC_HELP_C): $(GEN_EXEC) $(DC_HELP)
-	$(GEN_EMU) $(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help "" $(DC_ENABLED_NAME)
+	$(GEN_EMU) $(GEN_EXEC) $(DC_HELP) $(DC_HELP_C) dc_help dc.h "" $(DC_ENABLED_NAME)
 
 make_bin:
 	$(MKDIR) -p $(BIN)

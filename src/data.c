@@ -20,11 +20,14 @@
  *
  */
 
+#include <args.h>
 #include <lex.h>
 #include <parse.h>
 #include <bc.h>
+#include <dc.h>
 #include <num.h>
 #include <program.h>
+#include <vm.h>
 
 // clang-format off
 

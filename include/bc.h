@@ -37,6 +37,10 @@
 int bc_main(int argc, char **argv);
 
 extern const char bc_help[];
+extern const char bc_lib[];
+extern const char* bc_lib_name;
+extern const char bc_lib2[];
+extern const char* bc_lib2_name;
 // ** Busybox exclude end. **
 // ** Exclude end. **
 
@@ -109,7 +113,7 @@ BcStatus bc_lex_token(BcLex *l);
 	 ((e5) << 3) | ((e6) << 2) | ((e7) << 1) | ((e8) << 0))
 
 #define BC_PARSE_EXPR(i) \
-	(bc_parse_exprs[(((i) & ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
+	(bc_parse_exprs[(((i) & (uchar) ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
 
 #define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
 #define BC_PARSE_LEAF(prev, bin_last, rparen) \
@@ -132,11 +136,7 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
 // ** Exclude end. **
 
 BcStatus bc_parse_parse(BcParse *p);
-
-BcStatus bc_parse_expr_error(BcParse *p, uint8_t flags, BcParseNext next);
 BcStatus bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
-BcStatus bc_parse_else(BcParse *p);
-BcStatus bc_parse_stmt(BcParse *p);
 
 #if BC_ENABLE_SIGNALS
 extern const char bc_sig_msg[];

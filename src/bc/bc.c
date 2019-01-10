@@ -30,17 +30,21 @@
 
 int bc_main(int argc, char **argv) {
 
+	BcStatus s;
+
 	vm->read_ret = BC_INST_RET;
 	vm->help = bc_help;
 #if BC_ENABLE_SIGNALS
 	vm->sig_msg = bc_sig_msg;
-	vm->sig_len = strlen(vm->sig_msg);
+	vm->sig_len = (uchar) strlen(vm->sig_msg);
 #endif // BC_ENABLE_SIGNALS
 
 	vm->next = bc_lex_token;
 	vm->parse = bc_parse_parse;
 	vm->expr = bc_parse_expr;
 
-	return (int) bc_vm_boot(argc, argv, "BC_LINE_LENGTH");
+	s = bc_vm_boot(argc, argv, "BC_LINE_LENGTH");
+
+	return (int) s;
 }
 #endif // BC_ENABLED

@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_ALL, "");
 
 	vm = calloc(1, sizeof(BcVm));
-	if (!vm) return bc_vm_err(BC_ERROR_VM_ALLOC_ERR);
+	if (!vm) return (int) bc_vm_err(BC_ERROR_VM_ALLOC_ERR);
 
 	name = strrchr(argv[0], '/');
 	vm->name = !name ? argv[0] : name + 1;

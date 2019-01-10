@@ -50,7 +50,7 @@
 
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
-void bc_vm_sig(int sig) {
+static void bc_vm_sig(int sig) {
 	int err = errno;
 	if (sig == SIGINT) {
 		size_t len = vm->sig_len;
@@ -60,7 +60,7 @@ void bc_vm_sig(int sig) {
 	errno = err;
 }
 #else // _WIN32
-BOOL WINAPI bc_vm_sig(DWORD sig) {
+static BOOL WINAPI bc_vm_sig(DWORD sig) {
 	if (sig == CTRL_C_EVENT) bc_vm_puts(vm->sig_msg, stderr);
 	vm->sig = (uchar) sig;
 	return TRUE;
@@ -74,8 +74,9 @@ void bc_vm_info(const char* const help) {
 	if (help) bc_vm_printf(help, vm->name);
 }
 
-void bc_vm_printError(BcError e, const char* const fmt, size_t line, va_list args) {
-
+static void bc_vm_printError(BcError e, const char* const fmt,
+                             size_t line, va_list args)
+{
 	// Make sure all of stdout is written first.
 	fflush(stdout);
 
@@ -130,7 +131,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
 	return (!!p) ? BC_STATUS_ERROR : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vm_envArgs() {
+static BcStatus bc_vm_envArgs(void) {
 
 	BcStatus s;
 	BcVec v;
@@ -165,7 +166,7 @@ BcStatus bc_vm_envArgs() {
 }
 #endif // BC_ENABLED
 
-size_t bc_vm_envLen(const char *var) {
+static size_t bc_vm_envLen(const char *var) {
 
 	char *lenv = getenv(var);
 	size_t i, len = BC_NUM_PRINT_WIDTH;
@@ -185,7 +186,7 @@ size_t bc_vm_envLen(const char *var) {
 	return len;
 }
 
-void bc_vm_exit(BcError e) {
+static void bc_vm_exit(BcError e) {
 	BcStatus s = bc_vm_err(e);
 	bc_vm_shutdown();
 	exit((int) s);
@@ -235,7 +236,7 @@ void bc_vm_fflush(FILE *restrict f) {
 	if (fflush(f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
 }
 
-void bc_vm_clean() {
+static void bc_vm_clean() {
 
 	BcProgram *prog = &vm->prog;
 	BcVec *fns = &prog->fns;
@@ -285,7 +286,7 @@ void bc_vm_clean() {
 	}
 }
 
-BcStatus bc_vm_process(const char *text, bool is_stdin) {
+static BcStatus bc_vm_process(const char *text, bool is_stdin) {
 
 	BcStatus s;
 
@@ -310,7 +311,7 @@ err:
 	return s == BC_STATUS_QUIT || !BC_I || !is_stdin ? s : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_vm_file(const char *file) {
+static BcStatus bc_vm_file(const char *file) {
 
 	BcStatus s;
 	char *data;
@@ -332,7 +333,7 @@ err:
 	return s;
 }
 
-BcStatus bc_vm_stdin() {
+static BcStatus bc_vm_stdin(void) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
@@ -365,7 +366,7 @@ BcStatus bc_vm_stdin() {
 		for (i = 0; i < len; ++i) {
 
 			bool notend = len > i + 1;
-			uchar c = str[i];
+			uchar c = (uchar) str[i];
 
 			if (!comment && (i - 1 > len || str[i - 1] != '\\')) {
 				if (BC_IS_BC) string ^= c == '"';
@@ -417,7 +418,7 @@ err:
 }
 
 #if BC_ENABLED
-BcStatus bc_vm_load(const char *name, const char *text) {
+static BcStatus bc_vm_load(const char *name, const char *text) {
 
 	BcStatus s;
 
@@ -430,7 +431,7 @@ BcStatus bc_vm_load(const char *name, const char *text) {
 }
 #endif // BC_ENABLED
 
-BcStatus bc_vm_exec() {
+static BcStatus bc_vm_exec(void) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
@@ -462,7 +463,7 @@ BcStatus bc_vm_exec() {
 	return s;
 }
 
-void bc_vm_shutdown() {
+void bc_vm_shutdown(void) {
 #if BC_ENABLE_HISTORY
 	// This must always run to ensure that the terminal is back to normal.
 	bc_history_free(&vm->history);
@@ -495,7 +496,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
-	vm->line_len = bc_vm_envLen(env_len);
+	vm->line_len = (uint16_t) bc_vm_envLen(env_len);
 
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
 	bc_vec_init(&vm->exprs, sizeof(uchar), NULL);

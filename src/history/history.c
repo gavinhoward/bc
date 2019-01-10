@@ -206,11 +206,11 @@ static size_t bc_history_prevCharLen(const char *buf, size_t pos) {
 /**
  * Convert UTF-8 to Unicode code point.
  */
-static size_t bc_history_codePoint(const char *s, size_t len, unsigned int *cp)
-{
+static size_t bc_history_codePoint(const char *s, size_t len, uint32_t *cp) {
+
 	if (len) {
 
-		unsigned char byte = s[0];
+		uchar byte = (uchar) s[0];
 
 		if ((byte & 0x80) == 0) {
 			*cp = byte;
@@ -219,27 +219,27 @@ static size_t bc_history_codePoint(const char *s, size_t len, unsigned int *cp)
 		else if ((byte & 0xE0) == 0xC0) {
 
 			if (len >= 2) {
-				*cp = (((unsigned long) (s[0] & 0x1F)) << 6) |
-					   ((unsigned long) (s[1] & 0x3F));
+				*cp = (((uint32_t) (s[0] & 0x1F)) << 6) |
+					   ((uint32_t) (s[1] & 0x3F));
 				return 2;
 			}
 		}
 		else if ((byte & 0xF0) == 0xE0) {
 
 			if (len >= 3) {
-				*cp = (((unsigned long) (s[0] & 0x0F)) << 12) |
-					  (((unsigned long) (s[1] & 0x3F)) << 6) |
-					   ((unsigned long) (s[2] & 0x3F));
+				*cp = (((uint32_t) (s[0] & 0x0F)) << 12) |
+					  (((uint32_t) (s[1] & 0x3F)) << 6) |
+					   ((uint32_t) (s[2] & 0x3F));
 				return 3;
 			}
 		}
 		else if ((byte & 0xF8) == 0xF0) {
 
 			if (len >= 4) {
-				*cp = (((unsigned long) (s[0] & 0x07)) << 18) |
-					  (((unsigned long) (s[1] & 0x3F)) << 12) |
-					  (((unsigned long) (s[2] & 0x3F)) << 6) |
-					   ((unsigned long) (s[3] & 0x3F));
+				*cp = (((uint32_t) (s[0] & 0x07)) << 18) |
+					  (((uint32_t) (s[1] & 0x3F)) << 12) |
+					  (((uint32_t) (s[2] & 0x3F)) << 6) |
+					   ((uint32_t) (s[3] & 0x3F));
 				return 4;
 			}
 		}
@@ -257,8 +257,8 @@ static size_t bc_history_codePoint(const char *s, size_t len, unsigned int *cp)
 /**
  * Get length of next grapheme.
  */
-size_t bc_history_nextLen(const char *buf, size_t buf_len,
-                          size_t pos, size_t *col_len)
+static size_t bc_history_nextLen(const char *buf, size_t buf_len,
+                                 size_t pos, size_t *col_len)
 {
 	unsigned int cp;
 	size_t beg = pos;
@@ -288,8 +288,8 @@ size_t bc_history_nextLen(const char *buf, size_t buf_len,
 /**
  * Get length of previous grapheme.
  */
-size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
-{
+static size_t bc_history_prevLen(const char *buf, size_t pos, size_t *col_len) {
+
 	size_t end = pos;
 
 	while (pos > 0) {
@@ -313,8 +313,8 @@ size_t bc_history_prevLen(const char* buf, size_t pos, size_t *col_len)
 /**
  * Read a Unicode code point from a file.
  */
-BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
-                             unsigned int *cp, size_t *nread)
+static BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
+                                    uint32_t *cp, size_t *nread)
 {
 	BcStatus s = BC_STATUS_EOF;
 	ssize_t n;
@@ -324,7 +324,7 @@ BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
 	n = read(fd, buf, 1);
 	if (n <= 0) goto err;
 
-	unsigned char byte = buf[0];
+	uchar byte = (uchar) buf[0];
 
 	if ((byte & 0x80) != 0) {
 
@@ -355,7 +355,7 @@ BcStatus bc_history_readCode(int fd, char *buf, size_t buf_len,
 
 err:
 	if (n < 0) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
-	else *nread = n;
+	else *nread = (size_t) n;
 	return s;
 }
 
@@ -416,14 +416,14 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 	// Input modes: no break, no CR to NL, no parity check, no strip char,
 	// no start/stop output control.
-	raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+	raw.c_iflag &= (unsigned int) (~(BRKINT | ICRNL | INPCK | ISTRIP | IXON));
 
 	// Control modes - set 8 bit chars.
 	raw.c_cflag |= (CS8);
 
 	// Local modes - choing off, canonical off, no extended functions,
 	// no signal chars (^Z,^C).
-	raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+	raw.c_lflag &= (unsigned int) (~(ECHO | ICANON | IEXTEN | ISIG));
 
 	// Control chars - set return condition: min number of bytes and timer.
 	// We want read to give every single byte, w/o timeout (1 byte, no timer).
@@ -614,8 +614,9 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 /**
  * Insert the character 'c' at cursor current position.
  */
-BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
-
+static BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf,
+                                       size_t clen)
+{
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	bc_vec_expand(&h->buf, h->buf.len + clen);
@@ -661,7 +662,7 @@ BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen) {
 /**
  * Move cursor to the left.
  */
-BcStatus bc_history_edit_left(BcHistory *h) {
+static BcStatus bc_history_edit_left(BcHistory *h) {
 
 	if (h->pos <= 0) return BC_STATUS_SUCCESS;
 
@@ -673,7 +674,7 @@ BcStatus bc_history_edit_left(BcHistory *h) {
 /**
  * Move cursor on the right.
 */
-BcStatus bc_history_edit_right(BcHistory *h) {
+static BcStatus bc_history_edit_right(BcHistory *h) {
 
 	if (h->pos == BC_HISTORY_BUF_LEN(h)) return BC_STATUS_SUCCESS;
 
@@ -685,7 +686,7 @@ BcStatus bc_history_edit_right(BcHistory *h) {
 /**
  * Move cursor to the end of the current word.
  */
-BcStatus bc_history_edit_wordEnd(BcHistory *h) {
+static BcStatus bc_history_edit_wordEnd(BcHistory *h) {
 
 	size_t len = BC_HISTORY_BUF_LEN(h);
 
@@ -703,7 +704,7 @@ BcStatus bc_history_edit_wordEnd(BcHistory *h) {
 /**
  * Move cursor to the start of the current word.
  */
-BcStatus bc_history_edit_wordStart(BcHistory *h) {
+static BcStatus bc_history_edit_wordStart(BcHistory *h) {
 
 	size_t len = BC_HISTORY_BUF_LEN(h);
 
@@ -723,7 +724,7 @@ BcStatus bc_history_edit_wordStart(BcHistory *h) {
 /**
  * Move cursor to the start of the line.
  */
-BcStatus bc_history_edit_home(BcHistory *h) {
+static BcStatus bc_history_edit_home(BcHistory *h) {
 
 	if (!h->pos) return BC_STATUS_SUCCESS;
 
@@ -735,7 +736,7 @@ BcStatus bc_history_edit_home(BcHistory *h) {
 /**
  * Move cursor to the end of the line.
  */
-BcStatus bc_history_edit_end(BcHistory *h) {
+static BcStatus bc_history_edit_end(BcHistory *h) {
 
 	if (h->pos == BC_HISTORY_BUF_LEN(h)) return BC_STATUS_SUCCESS;
 
@@ -748,7 +749,7 @@ BcStatus bc_history_edit_end(BcHistory *h) {
  * Substitute the currently edited line with the next or previous history
  * entry as specified by 'dir' (direction).
  */
-BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
+static BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 
 	char* dup;
 
@@ -761,7 +762,7 @@ BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 	bc_vec_replaceAt(&h->history, h->history.len - 1 - h->idx, &dup);
 
 	// Show the new entry.
-	h->idx += (dir == BC_HISTORY_PREV ? 1 : -1);
+	h->idx += (unsigned int) (dir == BC_HISTORY_PREV ? 1 : -1);
 
 	if (h->idx == SIZE_MAX) {
 		h->idx = 0;
@@ -784,7 +785,7 @@ BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
  * Delete the character at the right of the cursor without altering the cursor
  * position. Basically this is what happens with the "Delete" keyboard key.
  */
-BcStatus bc_history_edit_delete(BcHistory *h) {
+static BcStatus bc_history_edit_delete(BcHistory *h) {
 
 	size_t chlen, len = BC_HISTORY_BUF_LEN(h);
 
@@ -800,7 +801,7 @@ BcStatus bc_history_edit_delete(BcHistory *h) {
 	return bc_history_refresh(h);
 }
 
-BcStatus bc_history_edit_backspace(BcHistory *h) {
+static BcStatus bc_history_edit_backspace(BcHistory *h) {
 
 	size_t chlen, len = BC_HISTORY_BUF_LEN(h);
 
@@ -821,7 +822,7 @@ BcStatus bc_history_edit_backspace(BcHistory *h) {
  * Delete the previous word, maintaining the cursor at the start of the
  * current word.
  */
-BcStatus bc_history_edit_deletePrevWord(BcHistory *h) {
+static BcStatus bc_history_edit_deletePrevWord(BcHistory *h) {
 
 	size_t diff, old_pos = h->pos;
 
@@ -839,7 +840,7 @@ BcStatus bc_history_edit_deletePrevWord(BcHistory *h) {
 /**
  * Delete the next word, maintaining the cursor at the same position.
  */
-BcStatus bc_history_edit_deleteNextWord(BcHistory *h) {
+static BcStatus bc_history_edit_deleteNextWord(BcHistory *h) {
 
 	size_t next_end = h->pos, len = BC_HISTORY_BUF_LEN(h);
 
@@ -853,7 +854,7 @@ BcStatus bc_history_edit_deleteNextWord(BcHistory *h) {
 	return bc_history_refresh(h);
 }
 
-BcStatus bc_history_swap(BcHistory *h) {
+static BcStatus bc_history_swap(BcHistory *h) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t pcl, ncl;
@@ -1037,13 +1038,13 @@ static BcStatus bc_history_reset(BcHistory *h) {
 	return BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_history_printCtrl(BcHistory *h, char c) {
+static BcStatus bc_history_printCtrl(BcHistory *h, unsigned int c) {
 
 	BcStatus s;
 	char str[3] = "^A";
 	const char newline[2] = "\n";
 
-	str[1] = c + 'A' - 1;
+	str[1] = (char) (c + 'A' - BC_ACTION_CTRL_A);
 
 	bc_vec_concat(&h->buf, str);
 

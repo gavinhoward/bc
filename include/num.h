@@ -114,9 +114,6 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
                       BcNum *restrict base, size_t base_t, bool letter);
 BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
                       size_t base_t, bool newline);
-#ifndef NDEBUG
-void bc_num_printDecimal(const BcNum *restrict n);
-#endif // NDEBUG
 #if DC_ENABLED
 BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED

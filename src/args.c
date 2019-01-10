@@ -52,12 +52,12 @@ static const struct option bc_args_lopt[] = {
 
 static const char* const bc_args_opt = "e:f:hilqsvVwx";
 
-void bc_args_exprs(BcVec *exprs, const char *str) {
+static void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, str);
 	bc_vec_concat(exprs, "\n");
 }
 
-BcStatus bc_args_file(BcVec *exprs, const char *file) {
+static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 
 	BcStatus s;
 	char *buf;
@@ -74,8 +74,7 @@ BcStatus bc_args_file(BcVec *exprs, const char *file) {
 BcStatus bc_args(int argc, char *argv[]) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	int c, i;
-	char err = 0;
+	int c, i, err = 0;
 	bool do_exit = false;
 
 	i = optind = 0;
@@ -176,7 +175,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 		if (err && !s) {
 
 			for (i = 0; bc_args_lopt[i].name; ++i) {
-				if (bc_args_lopt[i].val == (int) err) break;
+				if (bc_args_lopt[i].val == err) break;
 			}
 
 			s = bc_vm_verr(BC_ERROR_VM_OPTION, err, bc_args_lopt[i].name);

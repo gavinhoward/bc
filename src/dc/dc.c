@@ -30,17 +30,21 @@
 
 int dc_main(int argc, char **argv) {
 
+	BcStatus s;
+
 	vm->read_ret = BC_INST_POP_EXEC;
 	vm->help = dc_help;
 #if BC_ENABLE_SIGNALS
 	vm->sig_msg = dc_sig_msg;
-	vm->sig_len = strlen(vm->sig_msg);
+	vm->sig_len = (uchar) strlen(vm->sig_msg);
 #endif // BC_ENABLE_SIGNALS
 
 	vm->next = dc_lex_token;
 	vm->parse = dc_parse_parse;
 	vm->expr = dc_parse_expr;
 
-	return (int) bc_vm_boot(argc, argv, "DC_LINE_LENGTH");
+	s = bc_vm_boot(argc, argv, "DC_LINE_LENGTH");
+
+	return (int) s;
 }
 #endif // DC_ENABLED

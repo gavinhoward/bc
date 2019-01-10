@@ -29,7 +29,7 @@
 #include <dc.h>
 #include <vm.h>
 
-BcStatus dc_lex_register(BcLex *l) {
+static BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
@@ -40,7 +40,7 @@ BcStatus dc_lex_register(BcLex *l) {
 	}
 	else {
 		bc_vec_npop(&l->str, l->str.len);
-		bc_vec_pushByte(&l->str, l->buf[l->i - 1]);
+		bc_vec_pushByte(&l->str, (uchar) l->buf[l->i - 1]);
 		bc_vec_pushByte(&l->str, '\0');
 		l->t = BC_LEX_NAME;
 	}
@@ -48,7 +48,7 @@ BcStatus dc_lex_register(BcLex *l) {
 	return s;
 }
 
-BcStatus dc_lex_string(BcLex *l) {
+static BcStatus dc_lex_string(BcLex *l) {
 
 	size_t depth = 1, nls = 0, i = l->i;
 	char c;

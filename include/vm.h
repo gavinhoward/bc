@@ -154,7 +154,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...);
 // ** Exclude start. **
 void bc_vm_info(const char* const help);
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len);
-void bc_vm_shutdown();
+void bc_vm_shutdown(void);
 // ** Exclude end. **
 
 // ** Busybox exclude start. **
@@ -189,7 +189,7 @@ extern const char* const bc_warn_fmt;
 extern const char* const bc_err_line;
 extern const char *bc_errs[];
 extern const char bc_err_ids[];
-extern const char *bc_err_msgs[];
+extern const char* const bc_err_msgs[];
 // ** Exclude end. **
 
 // ** Busybox exclude end. **

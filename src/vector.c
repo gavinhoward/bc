@@ -29,7 +29,7 @@
 #include <lang.h>
 #include <vm.h>
 
-void bc_vec_grow(BcVec *restrict v, size_t n) {
+static void bc_vec_grow(BcVec *restrict v, size_t n) {
 	size_t cap = v->cap * 2;
 	while (cap < v->len + n) cap *= 2;
 	v->v = bc_vm_realloc(v->v, v->size * cap);
@@ -94,7 +94,7 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 	bc_vec_npush(v, amt, nums);
 }
 
-void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
+static void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 
 	assert(v && data && idx <= v->len);
 
@@ -184,7 +184,7 @@ void bc_vec_free(void *vec) {
 	free(v->v);
 }
 
-size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
+static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 
 	size_t low = 0, high = v->len;
 

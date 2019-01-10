@@ -32,7 +32,7 @@
 #include <program.h>
 #include <vm.h>
 
-BcStatus dc_parse_register(BcParse *p) {
+static BcStatus dc_parse_register(BcParse *p) {
 
 	BcStatus s;
 
@@ -45,7 +45,7 @@ BcStatus dc_parse_register(BcParse *p) {
 	return s;
 }
 
-BcStatus dc_parse_string(BcParse *p) {
+static BcStatus dc_parse_string(BcParse *p) {
 
 	BcFunc f;
 
@@ -55,7 +55,7 @@ BcStatus dc_parse_string(BcParse *p) {
 	return bc_lex_next(&p->l);
 }
 
-BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
+static BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
 
 	BcStatus s;
 
@@ -74,7 +74,7 @@ BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
 	return bc_lex_next(&p->l);
 }
 
-BcStatus dc_parse_cond(BcParse *p, uchar inst) {
+static BcStatus dc_parse_cond(BcParse *p, uchar inst) {
 
 	BcStatus s;
 
@@ -97,7 +97,7 @@ BcStatus dc_parse_cond(BcParse *p, uchar inst) {
 	return s;
 }
 
-BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
+static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	uchar inst;
@@ -112,7 +112,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_OP_REL_LT:
 		case BC_LEX_OP_REL_GT:
 		{
-			s = dc_parse_cond(p, t - BC_LEX_OP_REL_EQ + BC_INST_REL_EQ);
+			s = dc_parse_cond(p, (uchar) (t - BC_LEX_OP_REL_EQ + BC_INST_REL_EQ));
 			break;
 		}
 
@@ -177,7 +177,7 @@ BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_STORE_OBASE:
 		case BC_LEX_STORE_SCALE:
 		{
-			inst = t - BC_LEX_STORE_IBASE + BC_INST_IBASE;
+			inst = (uchar) (t - BC_LEX_STORE_IBASE + BC_INST_IBASE);
 			s = dc_parse_mem(p, inst, false, true);
 			break;
 		}
