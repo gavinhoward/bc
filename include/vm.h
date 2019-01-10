@@ -66,7 +66,7 @@
 #define BC_S (BC_ENABLED && (vm->flags & BC_FLAG_S))
 #define BC_W (BC_ENABLED && (vm->flags & BC_FLAG_W))
 #define BC_L (BC_ENABLED && (vm->flags & BC_FLAG_L))
-#define BC_I (BC_ENABLED && (vm->flags & BC_FLAG_I))
+#define BC_I (vm->flags & BC_FLAG_I)
 #define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
