@@ -71,7 +71,7 @@ static void bc_parse_operator(BcParse *p, BcLexType type,
 
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
 		bc_vec_pop(&p->ops);
-		*nexprs -= t != BC_LEX_OP_BOOL_NOT && t != BC_LEX_NEG;
+		*nexprs -= !BC_PARSE_OP_PREFIX(t);
 	}
 
 	bc_vec_push(&p->ops, &type);
@@ -88,7 +88,7 @@ static BcStatus bc_parse_rightParen(BcParse *p, size_t ops_bgn, size_t *nexs) {
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
 
 		bc_vec_pop(&p->ops);
-		*nexs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
+		*nexs -= !BC_PARSE_OP_PREFIX(top);
 
 		if (p->ops.len <= ops_bgn) return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 	}
@@ -1295,19 +1295,19 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next)
 			case BC_LEX_OP_BOOL_OR:
 			case BC_LEX_OP_BOOL_AND:
 			{
-				if (t == BC_LEX_OP_BOOL_NOT) {
-					if (!bin_last && p->l.last != BC_LEX_OP_BOOL_NOT)
+				if (BC_PARSE_OP_PREFIX(t)) {
+					if (!bin_last && !BC_PARSE_OP_PREFIX(p->l.last))
 						return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 				}
-				else if (BC_PARSE_PREV_PRE(prev) || bin_last)
+				else if (BC_PARSE_PREV_PREFIX(prev) || bin_last)
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
-				nrelops += t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT;
+				nrelops += (t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT);
 				prev = BC_PARSE_TOKEN_INST(t);
 				bc_parse_operator(p, t, ops_bgn, &nexprs);
 				rprn = incdec = false;
 				get_token = true;
-				bin_last = t != BC_LEX_OP_BOOL_NOT;
+				bin_last = !BC_PARSE_OP_PREFIX(t);
 
 				break;
 			}
@@ -1331,7 +1331,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next)
 				// is handled in bc_parse_expr_status().
 				if (p->l.last == BC_LEX_LPAREN) return BC_STATUS_EMPTY_EXPR;
 
-				if (bin_last || prev == BC_INST_BOOL_NOT)
+				if (bin_last || BC_PARSE_PREV_PREFIX(prev))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
 				if (!nparens) {
@@ -1457,12 +1457,11 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next)
 
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
 
-		nexprs -= top != BC_LEX_OP_BOOL_NOT && top != BC_LEX_NEG;
+		nexprs -= !BC_PARSE_OP_PREFIX(top);
 		bc_vec_pop(&p->ops);
 	}
 
-	if (prev == BC_INST_BOOL_NOT || nexprs != 1)
-		return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
+	if (nexprs != 1) return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
 	for (i = 0; i < next.len && t != next.tokens[i]; ++i);
 	if (i == next.len && !BC_PARSE_VALID_END_TOKEN(t))

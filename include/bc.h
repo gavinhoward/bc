@@ -122,7 +122,9 @@ BcStatus bc_lex_token(BcLex *l);
 	((t) == BC_INST_VAR || (t) == BC_INST_ARRAY_ELEM || (t) == BC_INST_LAST || \
 	 (t) == BC_INST_SCALE || (t) == BC_INST_IBASE || (t) == BC_INST_OBASE)
 
-#define BC_PARSE_PREV_PRE(p) ((p) >= BC_INST_INC_PRE && (p) <= BC_INST_BOOL_NOT)
+#define BC_PARSE_PREV_PREFIX(p) \
+	((p) >= BC_INST_INC_PRE && (p) <= BC_INST_BOOL_NOT)
+#define BC_PARSE_OP_PREFIX(t) ((t) == BC_LEX_OP_BOOL_NOT || (t) == BC_LEX_NEG)
 
 // We can calculate the conversion between tokens and exprs by subtracting the
 // position of the first operator in the lex enum and adding the position of
