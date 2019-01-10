@@ -932,8 +932,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	}
 
 	res.t = BC_RESULT_ONE;
-	inst2 = inst == BC_INST_INC_PRE || inst == BC_INST_INC_POST ?
-	           BC_INST_ASSIGN_PLUS : BC_INST_ASSIGN_MINUS;
+	inst2 = BC_INST_ASSIGN_PLUS + (inst & 0x01);
 
 	bc_vec_push(&p->results, &res);
 	bc_program_assign(p, inst2);
