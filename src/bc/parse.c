@@ -1299,7 +1299,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next)
 					if (!bin_last && p->l.last != BC_LEX_OP_BOOL_NOT)
 						return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 				}
-				else if (prev == BC_INST_BOOL_NOT || bin_last)
+				else if (BC_PARSE_PREV_PRE(prev) || bin_last)
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
 				nrelops += t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT;

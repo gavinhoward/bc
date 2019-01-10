@@ -122,6 +122,8 @@ BcStatus bc_lex_token(BcLex *l);
 	((t) == BC_INST_VAR || (t) == BC_INST_ARRAY_ELEM || (t) == BC_INST_LAST || \
 	 (t) == BC_INST_SCALE || (t) == BC_INST_IBASE || (t) == BC_INST_OBASE)
 
+#define BC_PARSE_PREV_PRE(p) ((p) >= BC_INST_INC_PRE && (p) <= BC_INST_BOOL_NOT)
+
 // We can calculate the conversion between tokens and exprs by subtracting the
 // position of the first operator in the lex enum and adding the position of
 // the first in the expr enum. Note: This only works for binary operators.
