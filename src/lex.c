@@ -111,7 +111,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 		bc_vec_push(&l->str, &c);
 	}
 
-	if (l->str.len > BC_MAX_NUM)
+	if (l->str.len - last_pt > BC_MAX_NUM)
 		return bc_lex_verr(l, BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
 
 	bc_vec_pushByte(&l->str, '\0');
