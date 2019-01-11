@@ -1123,6 +1123,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 				}
 				else s = bc_history_refresh(h);
+
+				break;
 #else // BC_ENABLE_SIGNALS
 				if (BC_HISTORY_WRITE("\n", 1)) bc_vm_err(BC_ERROR_VM_IO_ERR);
 
@@ -1130,7 +1132,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				bc_vm_shutdown();
 				exit((((uchar) 1) << (CHAR_BIT - 1)) + SIGINT);
 #endif // BC_ENABLE_SIGNALS
-				break;
 			}
 
 			case BC_ACTION_BACKSPACE:
