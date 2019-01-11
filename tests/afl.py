@@ -26,7 +26,7 @@ def usage():
 def check_crash(exebase, out, error, file, type, test):
 	if error < 0:
 		print("\n{} crashed ({}) on {}:\n".format(exebase, -error, type))
-		print("    {}".format(test.decode()))
+		print("    {}".format(test))
 		print("\nCopying to \"{}\"".format(out))
 		shutil.copy2(file, out)
 		print("\nexiting...")
@@ -118,7 +118,7 @@ for d in dirs:
 			lines = f.readlines()
 
 		for l in lines:
-			run_test(exe, exebase, tout, l, out, file, "test", l)
+			run_test(exe, exebase, tout, l, out, file, "test", l.decode())
 
 		print("        Running whole file...")
 
