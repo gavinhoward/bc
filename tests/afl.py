@@ -118,7 +118,7 @@ for d in dirs:
 			lines = f.readlines()
 
 		for l in lines:
-			run_test(exe, exebase, tout, l, out, file, "test", l.decode())
+			run_test(exe, exebase, tout, l, out, file, "test", l)
 
 		print("        Running whole file...")
 
