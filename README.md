@@ -107,7 +107,6 @@ tarballs.
 
 Files:
 
-	.clang-format    Clang-format file, used only for cutting a release for busybox (maintainer use only).
 	configure.sh     The configure script.
 	install.sh       Install script.
 	karatsuba.py     Script for package maintainers to find the optimal Karatsuba number.
