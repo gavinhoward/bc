@@ -77,7 +77,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	const char *buf = l->buf + l->i;
 	size_t i;
 	char last_valid, c;
-	bool last_pt = (start == '.'), pt;
+	bool last_pt, pt = (start == '.');
 
 	l->t = BC_LEX_NUMBER;
 	last_valid = BC_IS_BC ? 'Z' : 'F';
@@ -85,7 +85,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	bc_vec_npop(&l->str, l->str.len);
 	bc_vec_push(&l->str, &start);
 
-	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, last_valid, last_pt) ||
+	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, last_valid, pt) ||
 	                             (c == '\\' && buf[i + 1] == '\n')); ++i)
 	{
 		if (c == '\\') {
@@ -99,19 +99,19 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 				c = buf[i];
 
-				if (!BC_LEX_NUM_CHAR(c, last_valid, last_pt)) break;
+				if (!BC_LEX_NUM_CHAR(c, last_valid, pt)) break;
 			}
 			else break;
 		}
 
-		pt = (c == '.');
+		last_pt = (c == '.');
 		if (pt && last_pt) break;
-		last_pt = last_pt || pt;
+		pt = pt || last_pt;
 
 		bc_vec_push(&l->str, &c);
 	}
 
-	if (l->str.len - last_pt > BC_MAX_NUM)
+	if (l->str.len - pt > BC_MAX_NUM)
 		return bc_lex_verr(l, BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
 
 	bc_vec_pushByte(&l->str, '\0');
