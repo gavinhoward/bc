@@ -147,7 +147,22 @@ precedence.
 | `=` `<<=` `>>=` `+=` `-=` `*=` `/=` `%=` `^=` `@=` | Binary | Right | assignment |
 | `==` `<=` `>=` `!=` `<` `>` | Binary | Left      | relational                |
 | `&&`        | Binary             | Left          | boolean and               |
-| \|\|        | Binary             | Left          | boolean or                |
+| \`|`\`|`        | Binary             | Left          | boolean or                |
+
+##### `++` `--` (Unary Prefix and Postfix)
+
+These are the prefix and postfix `increment` and `decrement` operators. They
+behave exactly like they would in C.
+
+##### `-` `!` (Unary Prefix)
+
+These are the `negation` and `boolean not` operators, respectively.
+
+For negation, if a user attempts to negate any expression with the value `0`,
+an exact copy of the expression is returned. Otherwise, a copy of the expression
+with its sign flipped is returned.
+
+For boolean not
 
 There are differences between how these operators work in C (if they exist) and
 how they work in `bc`:
