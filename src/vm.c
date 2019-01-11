@@ -186,6 +186,21 @@ static size_t bc_vm_envLen(const char *var) {
 	return len;
 }
 
+void bc_vm_shutdown(void) {
+#if BC_ENABLE_HISTORY
+	// This must always run to ensure that the terminal is back to normal.
+	bc_history_free(&vm->history);
+#endif // BC_ENABLE_HISTORY
+#ifndef NDEBUG
+	bc_vec_free(&vm->files);
+	bc_vec_free(&vm->exprs);
+	bc_program_free(&vm->prog);
+	bc_parse_free(&vm->prs);
+	free(vm->env_args);
+	free(vm);
+#endif // NDEBUG
+}
+
 static void bc_vm_exit(BcError e) {
 	BcStatus s = bc_vm_err(e);
 	bc_vm_shutdown();
@@ -463,21 +478,6 @@ static BcStatus bc_vm_exec(void) {
 	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
 
 	return s;
-}
-
-void bc_vm_shutdown(void) {
-#if BC_ENABLE_HISTORY
-	// This must always run to ensure that the terminal is back to normal.
-	bc_history_free(&vm->history);
-#endif // BC_ENABLE_HISTORY
-#ifndef NDEBUG
-	bc_vec_free(&vm->files);
-	bc_vec_free(&vm->exprs);
-	bc_program_free(&vm->prog);
-	bc_parse_free(&vm->prs);
-	free(vm->env_args);
-	free(vm);
-#endif // NDEBUG
 }
 
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {

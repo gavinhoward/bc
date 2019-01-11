@@ -39,7 +39,7 @@
 ^\tBC_STATUS_INVALID_OPTION,$
 ^void bc_parse_init\(BcParse \*p, BcProgram \*prog, size_t func\) \{.*?\}
 ^BcStatus bc_parse_read\(BcParse \*p, BcVec \*code, uint8_t flags\) \{.*?\}
-^BcStatus bc_vm_envArgs\(\) \{.*?\n\}
+^static BcStatus bc_vm_envArgs\(void\) \{.*?\n\}
 ^[ ]*vm->env_args = NULL;$
 \n[ ]*free\(vm->env_args\);$
 ^#ifndef BC_NUM_KARATSUBA_LEN$
@@ -50,7 +50,7 @@
 ^void\* bc_vm_malloc\(size_t n\) \{.*?\n\}$
 ^void\* bc_vm_realloc\(void \*ptr, size_t n\) \{.*?\n\}$
 ^char\* bc_vm_strdup\(const char \*str\) \{.*?\n\}$
-^void bc_vm_exit\(BcError e\) \{.*?\n\}$
+^static void bc_vm_exit\(BcError e\) \{.*?\n\}$
 ^size_t bc_vm_printf\(const char \*fmt, \.\.\.\) \{.*?\n\}$
 ^void bc_vm_puts\(const char \*str, FILE \*restrict f\) \{.*?\n\}$
 ^void bc_vm_putchar\(int c\) \{.*?\n\}$
