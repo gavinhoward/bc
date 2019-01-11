@@ -88,23 +88,25 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, last_valid, last_pt) ||
 	                             (c == '\\' && buf[i + 1] == '\n')); ++i)
 	{
-		if (c != '\\') {
-			pt = (c == '.');
-			if (pt && last_pt) break;
-			last_pt = last_pt || pt;
+		if (c == '\\') {
+
+			if (buf[i + 1] == '\n') {
+
+				i += 2;
+
+				// Make sure to eat whitespace at the beginning of the line.
+				while(isspace(buf[i]) && buf[i] != '\n') ++i;
+
+				c = buf[i];
+
+				if (!BC_LEX_NUM_CHAR(c, last_valid, last_pt)) break;
+			}
+			else break;
 		}
-		else if (buf[i + 1] == '\n') {
 
-			i += 2;
-
-			// Make sure to eat whitespace at the beginning of the line.
-			while(isspace(buf[i]) && buf[i] != '\n') ++i;
-
-			c = buf[i];
-
-			if (!BC_LEX_NUM_CHAR(c, last_valid, last_pt)) break;
-		}
-		else break;
+		pt = (c == '.');
+		if (pt && last_pt) break;
+		last_pt = last_pt || pt;
 
 		bc_vec_push(&l->str, &c);
 	}
