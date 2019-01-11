@@ -88,20 +88,77 @@ See the [build manual](./build.md).
 
 ### Syntax
 
-The syntax for `bc` programs is mostly C-like, with some differences.
+The syntax for `bc` programs is mostly C-like, with some differences. This `bc`
+follows the [POSIX standard][1], which is a much more thorough resource for the
+language this `bc` accepts. This section is meant to be a summary and a listing
+of all the extensions to the [standard][1].
 
 In the sections below, `E` means expression, `S` means statement, and `I` means
 identifier. Identifiers start with a lowercase letter and can be followed by
-any number (up to `BC_NAME_MAX - 1`) of lowercase letters (`a-z`), digits (`0-9`),
-and underscores (`_`). Identifiers with more than one character (letter) are an
-extension.
+any number (up to `BC_NAME_MAX - 1`) of lowercase letters (`a-z`), digits
+(`0-9`), and underscores (`_`). Identifiers with more than one character
+(letter) are an extension.
 
 #### Comments
 
 There are two kinds of comments:
 
 1.	Block comments are enclosed in `/*` and `*/`.
-2.	Line comments go from `#` until the next newline.
+2.	Line comments go from `#` until, and not including, the next newline. This
+	is a non-portable extension.
+
+#### Names
+
+1.	Variables: `I`
+2.	Array Elements: `I[E]`
+3.	`ibase`
+4.	`obase`
+5.	`scale`
+6.	`last` or a single dot (`.`)
+
+#### Operands
+
+1.	Numbers with at most `BC_NUM_MAX` digits and an optional decimal point.
+	Digits can include `[0-9A-Z]`, where the uppercase letters equal 9 + their
+	position in the alphabet (i.e., `A` equals `10`, or `9+1`).
+2.	`(E)`: The value of `E`.
+3.	`sqrt(E)`: The square root of `E`.
+4.	`length(E)`: The number of significant decimal digits in `E`.
+5.	`length(I[])`: The number of elements in the array `I`. This is a
+	non-portable extension.
+6.	`scale(E)`: Number of digits right of the decimal point in `E`.
+
+#### Operators
+
+The following arithmetic and logical operators can be used. They are listed in
+order of decreasing precedence. Operators in the same group have the same
+precedence.
+
+| Operators   | Type               | Associativity | Description               |
+|-------------|--------------------|---------------|---------------------------|
+| `++` `--`   | Prefix and Postfix | None          | increment, decrement      |
+| `-` `!`     | Prefix             | None          | negation, boolean not     |
+| `$`         | Postfix            | None          | truncation                |
+| `@`         | Binary             | Right         | set precision             |
+| `^`         | Binary             | Right         | power                     |
+| `*` `/` `%` | Binary             | Left          | multiply, divide, modulus |
+| `+` `-`     | Binary             | Left          | plus, minus               |
+| `<<` `>>`   | Binary             | Left          | shift left, shift right   |
+| `=` `<<=` `>>=` `+=` `-=` `*=` `/=` `%=` `^=` `@=` | Binary | Right | assignment |
+| `==` `<=` `>=` `!=` `<` `>` | Binary | Left      | relational                |
+| `&&`        | Binary             | Left          | boolean and               |
+| \|\|        | Binary             | Left          | boolean or                |
+
+There are differences between how these operators work in C (if they exist) and
+how they work in `bc`:
+
+1.	`$` is truncation, which is to take the given expression, copy it, and
+	return a new value that is equivalent to that expression except with all of
+	its fractional part (any digits after a decimal point) removed.
+2.	`@` is set precision, which takes two expressions and returns a copy of the
+	first with the same amount of decimal places as the value of the second
+	expression. The second expression must be an integer (no fractional part).
+3.	`^` is power, not exclusive or.
 
 <a name="library"/>
 
