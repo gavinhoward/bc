@@ -86,6 +86,18 @@ See the [build manual](./build.md).
 
 ## Language
 
+### Terms
+
+`ibase` is a global variable determining how to interpret constant numbers. It
+is the "input" base, or the number base used for input.
+
+`obase` is a global variable determining how to output results. It is the
+"output" base, or the number base used for input.
+
+The **scale** of an expression is the number of digits in the result of the
+expression right of the decimal point, and `scale` is a global variable setting
+the precision of any operations, with exceptions.
+
 ### Syntax
 
 The syntax for `bc` programs is mostly C-like, with some differences. This `bc`
@@ -107,7 +119,9 @@ There are two kinds of comments:
 2.	Line comments go from `#` until, and not including, the next newline. This
 	is a non-portable extension.
 
-#### Names
+<a name="named-expressions"/>
+
+#### Named Expressions
 
 1.	Variables: `I`
 2.	Array Elements: `I[E]`
@@ -120,13 +134,15 @@ There are two kinds of comments:
 
 1.	Numbers with at most `BC_NUM_MAX` digits and an optional decimal point.
 	Digits can include `[0-9A-Z]`, where the uppercase letters equal 9 + their
-	position in the alphabet (i.e., `A` equals `10`, or `9+1`).
-2.	`(E)`: The value of `E`.
+	position in the alphabet (i.e., `A` equals `10`, or `9+1`). If a digit makes
+	no sense with the current value of `ibase`, they are set to the value of the
+	highest valid digit in `ibase`.
+2.	`(E)`: The value of `E` (used to change precedence).
 3.	`sqrt(E)`: The square root of `E`.
 4.	`length(E)`: The number of significant decimal digits in `E`.
 5.	`length(I[])`: The number of elements in the array `I`. This is a
 	non-portable extension.
-6.	`scale(E)`: Number of digits right of the decimal point in `E`.
+6.	`scale(E)`: `E`'s scale.
 
 #### Operators
 
@@ -134,46 +150,309 @@ The following arithmetic and logical operators can be used. They are listed in
 order of decreasing precedence. Operators in the same group have the same
 precedence.
 
-| Operators   | Type               | Associativity | Description               |
-|-------------|--------------------|---------------|---------------------------|
-| `++` `--`   | Prefix and Postfix | None          | increment, decrement      |
-| `-` `!`     | Prefix             | None          | negation, boolean not     |
-| `$`         | Postfix            | None          | truncation                |
-| `@`         | Binary             | Right         | set precision             |
-| `^`         | Binary             | Right         | power                     |
-| `*` `/` `%` | Binary             | Left          | multiply, divide, modulus |
-| `+` `-`     | Binary             | Left          | plus, minus               |
-| `<<` `>>`   | Binary             | Left          | shift left, shift right   |
-| `=` `<<=` `>>=` `+=` `-=` `*=` `/=` `%=` `^=` `@=` | Binary | Right | assignment |
-| `==` `<=` `>=` `!=` `<` `>` | Binary | Left      | relational                |
-| `&&`        | Binary             | Left          | boolean and               |
-| \`|`\`|`        | Binary             | Left          | boolean or                |
+| Operators   | Type               | Associativity | Description                     |
+|-------------|--------------------|---------------|---------------------------------|
+| `++` `--`   | Prefix and Postfix | None          | `increment`, `decrement`        |
+| `-` `!`     | Prefix             | None          | `negation`, `boolean not`       |
+| `$`         | Postfix            | None          | `truncation`                    |
+| `@`         | Binary             | Right         | `set precision`                 |
+| `^`         | Binary             | Right         | `power`                         |
+| `*` `/` `%` | Binary             | Left          | `multiply`, `divide`, `modulus` |
+| `+` `-`     | Binary             | Left          | `plus`, `subtract`              |
+| `<<` `>>`   | Binary             | Left          | `shift left`, `shift right`     |
+| `=` `<<=` `>>=` `+=` `-=` `*=` `/=` `%=` `^=` `@=` | Binary | Right | `assignment` |
+| `==` `<=` `>=` `!=` `<` `>` | Binary | Left      | `relational`                    |
+| `&&`        | Binary             | Left          | `boolean and`                   |
+| <code>&#124;&#124;</code>   | Binary | Left      | `boolean or`                    |
 
-##### `++` `--` (Unary Prefix and Postfix)
+They will be descrbed in more detail below.
+
+##### `++` `--`
 
 These are the prefix and postfix `increment` and `decrement` operators. They
 behave exactly like they would in C.
 
-##### `-` `!` (Unary Prefix)
+##### `-`
 
-These are the `negation` and `boolean not` operators, respectively.
+This is the `negation` operator. If a user attempts to negate any expression
+with the value `0`, an exact copy of the expression is returned. Otherwise, a
+copy of the expression with its sign flipped is returned.
 
-For negation, if a user attempts to negate any expression with the value `0`,
-an exact copy of the expression is returned. Otherwise, a copy of the expression
-with its sign flipped is returned.
+##### `!`
 
-For boolean not
+This is the `boolean not` operator. It returns `1` if the expression is `0`, or
+`0` otherwise.
 
-There are differences between how these operators work in C (if they exist) and
-how they work in `bc`:
+This is a non-portable extension.
 
-1.	`$` is truncation, which is to take the given expression, copy it, and
-	return a new value that is equivalent to that expression except with all of
-	its fractional part (any digits after a decimal point) removed.
-2.	`@` is set precision, which takes two expressions and returns a copy of the
-	first with the same amount of decimal places as the value of the second
-	expression. The second expression must be an integer (no fractional part).
-3.	`^` is power, not exclusive or.
+##### `$`
+
+This is the `truncation` operator. It returns a copy of the given expression
+with all of its **scale** removed.
+
+This is a non-portable extension.
+
+This is only available if `bc` has been compiled with the
+[extra math](./build.md#build-extra-math) option enabled.
+
+##### `@`
+
+This is the `set precision` operator. It takes two expressions and returns a
+copy of the first with its **scale** equal to the value of the second
+expression. That could either mean that the number is returned without change
+(if the first expression's **scale** matches the value of the second
+expression), extended (if it is less), or truncated (if it is more).
+
+The second expression must be an integer (no **scale**).
+
+This is a non-portable extension.
+
+This is only available if `bc` has been compiled with the
+[extra math](./build.md#build-extra-math) option enabled.
+
+##### `^`
+
+This is the `power` operator, not the `exclusive or` operator. It takes two
+expressions and raises the first to the power of the value of the second.
+
+The second expression must be an integer (no **scale**).
+
+##### `*`
+
+This is the `multiply` operator. It takes two expressions, multiplies them, and
+returns the product. If `a` is the **scale** of the first expression and `b` is
+the **scale** of the second expression, the scale of the result is equal to:
+
+```
+min(a + b, max(scale, a, b))
+```
+
+where `min` and `max` return the obvious values.
+
+##### `/`
+
+This is the `divide` operator. It takes two expressions, divides them, and
+returns the quotient. The scale of the result shall be the value of `scale`.
+
+##### `%`
+
+This is the `modulus` operator. It takes two expressions, `a` and `b`, and
+evaluates them according to the following steps:
+
+1.	Compute `a/b` to current `scale`
+2.	Use the result of step 1 to calculate `a-(a/b)*b` to scale
+	`max(scale + scale(b), scale(a))`.
+
+##### `+`
+
+This is the `add` operator. It takes two expressions, `a` and `b`, and returns
+the sum, with a scale equal to:
+
+```
+max(scale(a), scale(b))
+```
+
+where `max` returns the obvious value.
+
+##### `-`
+
+This is the `subtract` operator. It takes two expressions, `a` and `b`, and
+returns the difference, with a scale equal to:
+
+```
+max(scale(a), scale(b))
+```
+
+where `max` returns the obvious value.
+
+##### `<<`
+
+This is the `left shift` operator. It takes two expressions, `a` and `b`, and
+returns the value of `a` with its decimal point moved `b` places to the right.
+
+The second expression must be an integer (no **scale**).
+
+This is a non-portable extension.
+
+This is only available if `bc` has been compiled with the
+[extra math](./build.md#build-extra-math) option enabled.
+
+##### `>>`
+
+This is the `right shift` operator. It takes two expressions, `a` and `b`, and
+returns the value of `a` with its decimal point moved `b` places to the left.
+
+The second expression must be an integer (no **scale**).
+
+This is a non-portable extension.
+
+This is only available if `bc` has been compiled with the
+[extra math](./build.md#build-extra-math) option enabled.
+
+##### `=` `<<=` `>>=` `+=` `-=` `*=` `/=` `%=` `^=` `@=`
+
+These are the `assignment` operators. They take two expressions, `a` and `b`
+where `a` is a [named expression](#named-expressions).
+
+For `=`, `b` is copied and the result is assigned to `a`. For all others, `a`
+and `b` are applied as operands to the corresponding arithmetic operators and
+the result is assigned to `a`.
+
+The `assignment` operators that correspond to operators that are extensions are
+themselves extensions.
+
+Also, those `assignment` operators that are extensions are only available if
+`bc` has been compiled with the [extra math](./build.md#build-extra-math) option
+enabled.
+
+##### `==` `<=` `>=` `!=` `<` `>`
+
+These are the `relational` operators. They compare two expressions, `a` and `b`,
+and if the relation holds, according to C language semantics, the result is `1`.
+Otherwise, it is `0`.
+
+Also, unlike the [standard][1] requires, these operators can appear anywhere any
+other expressions can be used. This allowance is an extension.
+
+##### `&&`
+
+This is the `boolean and` operator. It takes two expressions and returns `1` if
+both expressions are non-zero, `1` otherwise.
+
+This is ***not*** a short-circuit operator.
+
+This is a non-portable extension.
+
+##### `||`
+
+This is the `boolean or` operator. It takes two expressions and returns `1` if
+one of the expressions is non-zero, `1` otherwise.
+
+This is ***not*** a short-circuit operator.
+
+This is a non-portable extension.
+
+#### Statements
+
+1.	`E`
+2.	`{` `S` `;` ... `;` `S` `}`
+3.	`if` `(` `E` `)` `S`
+4.	`if` `(` `E` `)` `S` `else` `S`
+5.	`while` `(` `E` `)` `S`
+6.	`for` `(` `E` `;` `E` `;` `E` `)` `S`
+7.	An empty statement
+8.	`break`
+9.	`continue`
+10.	`quit`
+11.	`halt`
+12.	`limits`
+13.	A string of characters, enclosed in double quotes
+14.	`print` `E` `,` ... `,` `E`
+
+Numbers 4, 9, 11, 12, and 14 are extensions.
+
+Also, as an extension, any or all of the expressions in the header of a for loop
+may be omitted. If the condition (second expression) is omitted, it is assumed
+to be a constant `1`.
+
+The `continue` statement causes a loop iteration to stop early and returns to
+the start of the loop, including testing the loop condition.
+
+The `if` `else` statement does the same thing as in C.
+
+The `halt` statement causes `bc` to quit, if it is executed. (Unlike `quit` if
+it is on a branch of an `if` statement that is not executed, `bc` does not
+quit.)
+
+The `limits` statement prints the limits that this `bc` is subject to.
+
+The "expressions" in a `print` statement may also be strings. If they are, there
+are backslash escape sequences that are interpreted specially. What those
+sequences are, and what they cause to be printed, are shown below:
+
+| Sequence | Prints          |
+|----------|-----------------|
+| `\a`     | alert           |
+| `\b`     | backspace       |
+| `\\`     | `\`             |
+| `\e`     | `\`             |
+| `\f`     | formfeed        |
+| `\n`     | newline         |
+| `\q`     | `"`             |
+| `\r`     | carriage return |
+| `\t`     | tab             |
+
+Any other character following a backslash causes the backslash and character to
+be printed as-is.
+
+Any non-string expression in a print statement shall be assigned to `last`, like
+any other expression that is printed.
+
+#### Function Definitions
+
+Function definitions follow what is required by the bc spec:
+
+```
+define I(I,...,I){
+	auto I,...,I
+	S;...S
+	return(E)
+}
+```
+
+Any `I` in the parameter list or `auto` list may be replaced with `I[]` to make
+a parameter or `auto` var an array.
+
+As a non-portable extension, the opening brace of a `define` statement may
+appear on the next line.
+
+The return statement may also be in the following forms:
+
+1.	`return`
+2.	`return` `(` `)`
+3.	`return `E`
+
+The first two, or not specifying a `return` statement, is equivalent to
+`return (0)`.
+
+<a name="void-functions"/>
+
+##### Void Functions
+
+Functions can also be void functions, defined as follows:
+
+```
+define void I(I,...,I){
+	auto I,...,I
+	S;...S
+	return(E)
+}
+```
+
+They can only be used as standalone expressions, where such an expression would
+be printed alone, except in a print statement.
+
+Void functions can only use the first two `return` statements listed above.
+
+This is a non-portable extension.
+
+##### Array References
+
+For any array in the parameter list, if the array is declared in the form
+
+```
+*I[]
+```
+
+it is a **reference**. Any changes to the array in the function are reflected
+when the function returns.
+
+Other than this, all function arguments are passed by value.
+
+This is a non-portable extension.
+
+This is only available if `bc` has been compiled with the
+[array references](./build.md#array-references) option enabled.
 
 <a name="library"/>
 
@@ -181,7 +460,7 @@ how they work in `bc`:
 
 All of the functions below, including the functions in the
 [extended library](#extended-library) if `bc` has been compiled with the
-[extra math](./build.md#extra-math) option enabled, are available when the `-l`
+[extra math](./build.md#build-extra-math) option enabled, are available when the `-l`
 or `--mathlib` command-line flags are given.
 
 <a name="standard-library"/>
@@ -219,8 +498,8 @@ Returns the bessel integer order `n` of `x`.
 #### Extended Library
 
 In addition to the [standard library](#standard-library), if `bc` has been built
-with the [extra math](./build.md#extra-math) option, the following functions are
-available when either the `-l` or `--mathlib` options are given.
+with the [extra math](./build.md#build-extra-math) option, the following
+functions are available when either the `-l` or `--mathlib` options are given.
 
 However, the extended library is ***not*** loaded when the `-s`/`--standard` or
 `-w`/`--warn` options are given since they are not part of the library defined
@@ -428,6 +707,12 @@ Outputs byte `i` of the truncated absolute value of `x`, where `0` is the least
 significant byte and `number_of_bytes - 1` is the most significant byte.
 
 This is a [void](#void-functions) function.
+
+## Signal Handling
+
+If `bc` has been compiled with the
+[signal handling](./build.md#build-signal-handling), sending a `SIGINT` to it
+will cause it to stop its current execution and reset, asking for more input.
 
 ## Command Line History
 
