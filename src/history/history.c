@@ -1085,8 +1085,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 		// Large enough for any encoding?
 		char cbuf[32];
-		unsigned int c;
-		size_t nread;
+		unsigned int c = 0;
+		size_t nread = 0;
 
 		s = bc_history_readCode(STDIN_FILENO, cbuf, sizeof(cbuf), &c, &nread);
 		if (s) return s;

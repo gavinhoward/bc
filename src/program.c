@@ -1033,7 +1033,7 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 
 	if (inst == BC_INST_RET) {
 
-		BcNum *num;
+		BcNum *num = NULL;
 		BcResult *operand;
 
 		s = bc_program_operand(p, &operand, &num, 0);
