@@ -29,6 +29,11 @@
 #include <dc.h>
 #include <vm.h>
 
+bool dc_lex_negCommand(BcLex *l) {
+	char c = l->buf[l->i];
+	return !BC_LEX_NUM_CHAR(c, 'F', false);
+}
+
 static BcStatus dc_lex_register(BcLex *l) {
 
 	BcStatus s = BC_STATUS_SUCCESS;

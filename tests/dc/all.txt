@@ -9,6 +9,7 @@ power
 sqrt
 modexp
 boolean
+negate
 trunc
 places
 shift

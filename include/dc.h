@@ -42,6 +42,7 @@ extern const char dc_help[];
 // ** Exclude end. **
 
 BcStatus dc_lex_token(BcLex *l);
+bool dc_lex_negCommand(BcLex *l);
 
 #if BC_ENABLE_SIGNALS
 extern const char dc_sig_msg[];

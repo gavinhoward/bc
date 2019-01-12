@@ -130,15 +130,19 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		}
 
 		case BC_LEX_NEG:
-		case BC_LEX_NUMBER:
 		{
-			if (t == BC_LEX_NEG) {
-				s = bc_lex_next(&p->l);
-				if (s) return s;
-				if (p->l.t != BC_LEX_NUMBER)
-					return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+			if (dc_lex_negCommand(&p->l)) {
+				bc_parse_push(p, BC_INST_NEG);
+				get_token = true;
+				break;
 			}
 
+			s = bc_lex_next(&p->l);
+			if (s) return s;
+		}
+		// Fallthrough
+		case BC_LEX_NUMBER:
+		{
 			bc_parse_number(p);
 
 			if (t == BC_LEX_NEG) bc_parse_push(p, BC_INST_NEG);
