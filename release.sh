@@ -42,6 +42,10 @@ configure() {
 	local configure_flags="$1"
 	shift
 
+	if [ "$CC" = "clang" ]; then
+		CFLAGS="$clang_flags $CFLAGS"
+	fi
+
 	header "Running \"./configure.sh $configure_flags\" with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
 	CFLAGS="$CFLAGS" CC="$CC" ./configure.sh $configure_flags > /dev/null
 
@@ -282,6 +286,10 @@ minsize() {
 
 	runtests "$minsize" "$CC" "$run_tests"
 }
+
+clang_flags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
+clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
+clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
 
 cflags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
 cflags="$cflags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
