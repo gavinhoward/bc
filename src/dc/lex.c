@@ -58,7 +58,8 @@ static BcStatus dc_lex_string(BcLex *l) {
 
 	for (; (c = l->buf[i]) && depth; ++i) {
 
-		if (i == l->i || l->buf[i - 1] != '\\') {
+		if (c == '\\') c = l->buf[++i];
+		else {
 			depth += (c == '[');
 			depth -= (c == ']');
 		}

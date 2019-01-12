@@ -1,9 +1,9 @@
 13
 Hello, World!
-16
-Hello, \[ World!
-16
-Hello, \] World!
+15
+Hello, [ World!
+15
+Hello, ] World!
 1
 2
 3
@@ -34,3 +34,5 @@ Hello, \] World!
 28
 29
 30
+\
+[]
