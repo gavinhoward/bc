@@ -291,9 +291,7 @@ clang_flags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
 clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
 clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
 
-cflags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
-cflags="$cflags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
-cflags="$cflags -Wno-unreachable-code -Wno-unreachable-code-return -Wall -Wextra -pedantic -std=c99"
+cflags="-Wall -Wextra -pedantic -std=c99"
 
 debug="$cflags -g -O0 -fno-omit-frame-pointer"
 release="$cflags -DNDEBUG -O3"
