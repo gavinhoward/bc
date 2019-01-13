@@ -68,7 +68,7 @@ BC_IS_BC && ([a-z])
 BC_IS_BC;
 int good = BC_IS_BC;[\n]*[ ]*good = !good \|\| !BC_PARSE_NO_EXEC\(&vm->prs\);
 \{\n[ ]*if \(BC_IS_BC\) ([a-z])
-^([ ]*)(BC_VM->line_len = bc_vm_envLen\("BC_LINE_LENGTH"\);)$
+^([ ]*)(BC_VM->line_len = \(uint16_t\) bc_vm_envLen\("BC_LINE_LENGTH"\);)$
 NULL\);[\n]*  toys\.optflags
 STDIN_FILENO
 STDOUT_FILENO
