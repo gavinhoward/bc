@@ -64,10 +64,10 @@ int main(int argc, char *argv[]) {
 	name = argv[3];
 	include = argv[4];
 
-	has_label = argc > 5 && strcmp("", argv[5]);
+	has_label = argc > 5 && strcmp("", argv[5]) != 0;
 	label = has_label ? argv[5] : "";
 
-	has_define = argc > 6 && strcmp("", argv[6]);
+	has_define = argc > 6 && strcmp("", argv[6]) != 0;
 	define = has_define ? argv[6] : "";
 
 	remove_tabs = argc > 7;
