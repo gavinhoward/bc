@@ -64,8 +64,6 @@ int main(int argc, char *argv[]) {
 	name = argv[3];
 	include = argv[4];
 
-	printf("Header: %s\n", include);
-
 	has_label = argc > 5 && strcmp("", argv[5]);
 	label = has_label ? argv[5] : "";
 
