@@ -86,17 +86,17 @@ See the [build manual](./build.md).
 
 ## Language
 
-### Terms
-
 `ibase` is a global variable determining how to interpret constant numbers. It
-is the "input" base, or the number base used for input.
+is the "input" base, or the number base used for interpreting input numbers.
+`ibase` is initially `10`.
 
 `obase` is a global variable determining how to output results. It is the
-"output" base, or the number base used for input.
+"output" base, or the number base used for outputting numbers.
+`obase` is initially `10`.
 
 The **scale** of an expression is the number of digits in the result of the
 expression right of the decimal point, and `scale` is a global variable setting
-the precision of any operations, with exceptions.
+the precision of any operations, with exceptions. `scale` is initially `0`.
 
 ### Syntax
 
@@ -130,19 +130,33 @@ There are two kinds of comments:
 5.	`scale`
 6.	`last` or a single dot (`.`)
 
+Variables and arrays do not interfere; users can have arrays named the same as
+variables. This also applies to [functions](#bc-functions), so a user can have
+a variable, array, and function that all have the same name.
+
 #### Operands
 
-1.	Numbers with at most `BC_NUM_MAX` digits and an optional decimal point.
-	Digits can include `[0-9A-Z]`, where the uppercase letters equal 9 + their
-	position in the alphabet (i.e., `A` equals `10`, or `9+1`). If a digit makes
-	no sense with the current value of `ibase`, they are set to the value of the
-	highest valid digit in `ibase`.
+1.	Numbers (see [Numbers](#bc-numbers) below).
 2.	`(E)`: The value of `E` (used to change precedence).
 3.	`sqrt(E)`: The square root of `E`.
 4.	`length(E)`: The number of significant decimal digits in `E`.
 5.	`length(I[])`: The number of elements in the array `I`. This is a
 	non-portable extension.
 6.	`scale(E)`: `E`'s scale.
+
+<a name="bc-numbers"/>
+
+##### Numbers
+
+Numbers are strings made up of digits, uppercase letters, and at most `1` period
+for a radix. Numbers can have up to `BC_NUM_MAX` digits. Uppercase letters
+equal `9` + their position in the alphabet (i.e., `A` equals `10`, or `9 + 1`).
+If a digit or letter makes no sense with the current value of `ibase`, they are
+set to the value of the highest valid digit in `ibase`.
+
+Single-character numbers (i.e., `A`) take the value that they would have if they
+were valid digits, regardless of the value of `ibase`. This means that `A`
+always equals decimal `10` and `Z` always equals decimal `35`.
 
 #### Operators
 
@@ -203,7 +217,7 @@ expression. That could either mean that the number is returned without change
 (if the first expression's **scale** matches the value of the second
 expression), extended (if it is less), or truncated (if it is more).
 
-The second expression must be an integer (no **scale**).
+The second expression must be an integer (no **scale**) and non-negative.
 
 This is a non-portable extension.
 
@@ -270,7 +284,7 @@ where `max` returns the obvious value.
 This is the `left shift` operator. It takes two expressions, `a` and `b`, and
 returns the value of `a` with its decimal point moved `b` places to the right.
 
-The second expression must be an integer (no **scale**).
+The second expression must be an integer (no **scale**) and non-negative.
 
 This is a non-portable extension.
 
@@ -282,7 +296,7 @@ This is only available if `bc` has been compiled with the
 This is the `right shift` operator. It takes two expressions, `a` and `b`, and
 returns the value of `a` with its decimal point moved `b` places to the left.
 
-The second expression must be an integer (no **scale**).
+The second expression must be an integer (no **scale**) and non-negative.
 
 This is a non-portable extension.
 
@@ -334,6 +348,8 @@ This is a non-portable extension.
 
 #### Statements
 
+The following items are statements:
+
 1.	`E`
 2.	`{` `S` `;` ... `;` `S` `}`
 3.	`if` `(` `E` `)` `S`
@@ -366,6 +382,8 @@ quit.)
 
 The `limits` statement prints the limits that this `bc` is subject to.
 
+##### Print Statement
+
 The "expressions" in a `print` statement may also be strings. If they are, there
 are backslash escape sequences that are interpreted specially. What those
 sequences are, and what they cause to be printed, are shown below:
@@ -388,14 +406,16 @@ be printed as-is.
 Any non-string expression in a print statement shall be assigned to `last`, like
 any other expression that is printed.
 
-#### Function Definitions
+<a name="bc-functions"/>
+
+#### Functions
 
 Function definitions follow what is required by the bc spec:
 
 ```
 define I(I,...,I){
 	auto I,...,I
-	S;...S
+	S;...;S
 	return(E)
 }
 ```
@@ -410,7 +430,7 @@ The return statement may also be in the following forms:
 
 1.	`return`
 2.	`return` `(` `)`
-3.	`return `E`
+3.	`return` `E`
 
 The first two, or not specifying a `return` statement, is equivalent to
 `return (0)`.
@@ -424,7 +444,7 @@ Functions can also be void functions, defined as follows:
 ```
 define void I(I,...,I){
 	auto I,...,I
-	S;...S
+	S;...;S
 	return(E)
 }
 ```
@@ -713,6 +733,8 @@ This is a [void](#void-functions) function.
 If `bc` has been compiled with the
 [signal handling](./build.md#build-signal-handling), sending a `SIGINT` to it
 will cause it to stop its current execution and reset, asking for more input.
+
+Otherwise, any signals cause `bc` to exit.
 
 ## Command Line History
 
