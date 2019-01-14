@@ -391,7 +391,7 @@ static BcStatus bc_vm_stdin(void) {
 				else if (c == '[') string += 1;
 			}
 
-			if (!string && notend) {
+			if (BC_IS_BC && !string && notend) {
 
 				c2 = str[i + 1];
 
