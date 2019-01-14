@@ -1215,8 +1215,8 @@ BcStatus bc_parse_parse(BcParse *p) {
 	return s;
 }
 
-static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next)
-{
+static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
+
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst prev = BC_INST_PRINT;
 	BcLexType top, t = p->l.t;
