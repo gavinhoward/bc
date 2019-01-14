@@ -1358,10 +1358,10 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 
 		if (r->t == BC_RESULT_STR) sidx = r->d.id.idx;
 		else if (r->t == BC_RESULT_VAR) {
-			if (!BC_PROG_STR(n)) goto exit;
+			if (!BC_PROG_STR(n)) goto no_exec;
 			sidx = n->rdx;
 		}
-		else goto exit;
+		else goto no_exec;
 	}
 
 	fidx = sidx + BC_PROG_REQ_FUNCS;
@@ -1399,6 +1399,7 @@ err:
 	bc_vec_npop(&f->code, f->code.len);
 exit:
 	bc_vec_pop(&p->results);
+no_exec:
 	return s;
 }
 #endif // DC_ENABLED
