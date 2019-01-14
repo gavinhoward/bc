@@ -186,6 +186,7 @@ define r() { auto a[], 4; return a[0]; }
 define s() { auto a[ 4; return a[0]; }
 define void y() { return (1); }
 print uint(0)
+x$if(x) x else x
 bytes(1) + 4
 3 / 0.00000000000000
 ibase = 100
