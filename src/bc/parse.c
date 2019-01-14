@@ -1015,6 +1015,7 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len;
+	uint16_t flags;
 
 	switch (p->l.t) {
 
@@ -1067,6 +1068,7 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 	}
 
 	len = p->flags.len;
+	flags = BC_PARSE_TOP_FLAG(p);
 
 	switch (p->l.t) {
 
@@ -1188,8 +1190,9 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 		}
 	}
 
-	if (!s && len == p->flags.len && !bc_parse_isDelimiter(p))
-		s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+	if (!s && len == p->flags.len && flags == BC_PARSE_TOP_FLAG(p)) {
+		if (!bc_parse_isDelimiter(p)) s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+	}
 
 	// Make sure semicolons are eaten.
 	while (!s && p->l.t == BC_LEX_SCOLON) s = bc_lex_next(&p->l);
