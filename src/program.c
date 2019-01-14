@@ -1933,7 +1933,7 @@ void bc_program_printInst(BcProgram *p, const char *restrict code,
 {
 	uchar inst = (uchar) code[(*bgn)++];
 
-	bc_vm_putchar(bc_inst_chars[(uint32_t) inst]);
+	bc_vm_printf("Inst: %u, %c; ", inst, (char) inst);
 
 	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
 	    inst == BC_INST_ARRAY)
@@ -1952,6 +1952,8 @@ void bc_program_printInst(BcProgram *p, const char *restrict code,
 		bc_program_printIndex(code, bgn);
 		if (inst == BC_INST_CALL) bc_program_printIndex(code, bgn);
 	}
+
+	bc_vm_putchar('\n');
 }
 
 void bc_program_code(BcProgram *p) {
