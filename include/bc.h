@@ -98,10 +98,8 @@ BcStatus bc_lex_token(BcLex *l);
 
 #define BC_PARSE_NO_EXEC(p) ((p)->flags.len != 1 || BC_PARSE_TOP_FLAG(p) != 0)
 
-#define BC_PARSE_VALID_END_TOKEN(t)                                            \
-	((t) == BC_LEX_SCOLON || (t) == BC_LEX_KEY_ELSE || (t) == BC_LEX_RBRACE || \
-	 (t) == BC_LEX_KEY_IF || (t) == BC_LEX_NLINE || (t) == BC_LEX_KEY_FOR ||   \
-	 (t) == BC_LEX_KEY_WHILE || (t) == BC_LEX_EOF)
+#define BC_PARSE_DELIMITER(t) \
+	((t) == BC_LEX_SCOLON || (t) == BC_LEX_NLINE || (t) == BC_LEX_EOF)
 
 #define BC_PARSE_OP(p, l) (((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
 
