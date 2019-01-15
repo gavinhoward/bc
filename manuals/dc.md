@@ -60,7 +60,7 @@ is the "input" base, or the number base used for interpreting input numbers.
 
 The **scale** of an expression is the number of digits in the result of the
 expression right of the decimal point, and `scale` is a global variable setting
-the precision of any operations, with exceptions. `scale` is initially `0`.
+the precision of any operations (with exceptions). `scale` is initially `0`.
 
 Each item ([numbers](#dc-numbers) or [commands](#dc-commands)) in the input
 source code is processed and executed, in order.
@@ -132,20 +132,21 @@ These are the commands used for arithmetic.
 ##### `+`
 
 The top two values are popped off the stack, added, and the result is pushed
-onto the stack. The result's scale is equal to the max **scale** of both
+onto the stack. The result's **scale** is equal to the max **scale** of both
 operands.
 
 ##### `-`
 
 The top two values are popped off the stack, subtracted, and the result is
-pushed onto the stack. The result's scale is equal to the max **scale** of both
-operands.
+pushed onto the stack. The result's **scale** is equal to the max **scale** of
+both operands.
 
 ##### `*`
 
 The top two values are popped off the stack, multiplied, and the result is
 pushed onto the stack. If `a` is the **scale** of the first expression and `b`
-is the **scale** of the second expression, the scale of the result is equal to:
+is the **scale** of the second expression, the **scale** of the result is equal
+to:
 
 ```
 min(a + b, max(scale, a, b))
@@ -156,7 +157,7 @@ where `min` and `max` return the obvious values.
 ##### `/`
 
 The top two values are popped off the stack, divided, and the result is pushed
-onto the stack. The result's scale is equal to `scale`.
+onto the stack. The result's **scale** is equal to `scale`.
 
 ##### `%`
 
@@ -166,7 +167,7 @@ pushed onto the stack.
 Remaindering is equivalent to the following steps:
 
 1.	Compute `a/b` to current `scale`
-2.	Use the result of step 1 to calculate `a-(a/b)*b` to scale
+2.	Use the result of step 1 to calculate `a-(a/b)*b` to **scale**
 	`max(scale + scale(b), scale(a))`.
 
 ##### `~`

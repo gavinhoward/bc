@@ -336,6 +336,9 @@ These are the `relational` operators. They compare two expressions, `a` and `b`,
 and if the relation holds, according to C language semantics, the result is `1`.
 Otherwise, it is `0`.
 
+Note that these operators have a lower precedence than the `assignment`
+operators, which means that `a=b>c` is interpreted as `(a=b)>c`.
+
 Also, unlike the [standard][1] requires, these operators can appear anywhere any
 other expressions can be used. This allowance is an extension.
 
