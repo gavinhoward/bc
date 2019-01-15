@@ -412,6 +412,11 @@ calculated. If that result is `0`, push an empty string; otherwise, push a
 one-character string where the character is the result of the mod interpreted as
 an ASCII character.
 
+If it is a string, then a new string is made. If the original string is empty,
+the new string is empty. If it is not, then the first character of the original
+string is used to create the new string as a one-character string. The new
+string is then pushed onto the stack.
+
 This is a non-portable extension.
 
 ##### `x`
