@@ -63,6 +63,7 @@ BC_ENABLED && \((.*?)\)
 BC_IS_BC && \((.*?)\)
 BC_IS_BC \? (.*?) : .*?;$
 BC_IS_BC && ([a-z])
+BC_IS_BC && !string
 [!]+BC_IS_BC \|\| ([a-z])
 ^[ ]*if \(BC_IS_BC\) \{\n([ ]*)  (.*?;)\n([ ]*)  (.*?;)\n[ ]*\}\n[ ]*else .*?;
 BC_IS_BC;
