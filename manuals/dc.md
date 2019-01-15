@@ -6,7 +6,7 @@ dc — arbitrary-precision reverse-Polish notation calculator
 
 ## Synopsis
 
-`dc` [`-hvVx`] [`--help`] [`--extended-register`] [`-e` *expr*]
+`dc` [`-hvVx`] [`--version`] [`--help`] [`--extended-register`] [`-e` *expr*]
 [`--expression=`*expr*...] [`-f` *file*...] [`-file=`*file*...] [*file*...]
 
 ## Description
