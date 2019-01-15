@@ -48,7 +48,7 @@ static BcStatus bc_program_type_num(BcResult *r, BcNum *n) {
 
 static BcStatus bc_program_type_match(BcResult *r, BcType t) {
 #if DC_ENABLED
-	if (r->t == BC_RESULT_STR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
+	if (BC_IS_BC && r->t == BC_RESULT_STR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 #endif // DC_ENABLED
 	if ((r->t != BC_RESULT_ARRAY) != (!t)) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	return BC_STATUS_SUCCESS;
@@ -316,7 +316,8 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 #endif // BC_ENABLED
 
 #if DC_ENABLED
-	good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) && lt == BC_RESULT_VAR);
+	good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
+	        (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM));
 #else
 	assert((*r)->t != BC_RESULT_STR);
 #endif // DC_ENABLED
@@ -784,8 +785,21 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	assert(left->t != BC_RESULT_STR);
 
 	if (right->t == BC_RESULT_STR) {
-		BcVec *v = bc_program_search(p, left->d.id.name, BC_TYPE_VAR);
-		return bc_program_assignStr(p, right, v, false);
+
+		size_t idx =  right->d.id.idx;
+		bool array = (left->t == BC_RESULT_ARRAY_ELEM);
+
+		if (array) {
+			if (BC_PROG_NUM(left, l)) bc_num_free(l);
+			memset(l, 0, sizeof(BcNum));
+			l->rdx = idx;
+		}
+		else {
+			BcVec *v = bc_program_search(p, left->d.id.name, BC_TYPE_VAR);
+			s = bc_program_assignStr(p, right, v, false);
+		}
+
+		return s;
 	}
 #endif // DC_ENABLED
 
