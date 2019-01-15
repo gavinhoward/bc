@@ -63,7 +63,8 @@ expression right of the decimal point, and `scale` is a global variable setting
 the precision of any operations (with exceptions). `scale` is initially `0`.
 
 Each item ([numbers](#dc-numbers) or [commands](#dc-commands)) in the input
-source code is processed and executed, in order.
+source code is processed and executed, in order. Input is processed immediately
+when entered.
 
 #### Comments
 
