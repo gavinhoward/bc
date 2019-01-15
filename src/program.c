@@ -778,8 +778,8 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	s = bc_program_assignPrep(p, &left, &l, &right, &r);
 	if (s) return s;
 
-	ib = left->t == BC_RESULT_IBASE;
-	sc = left->t == BC_RESULT_SCALE;
+	ib = (left->t == BC_RESULT_IBASE);
+	sc = (left->t == BC_RESULT_SCALE);
 
 #if DC_ENABLED
 	assert(left->t != BC_RESULT_STR);
@@ -1098,7 +1098,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	BcResult *opnd;
 	BcNum *num = NULL;
 	BcResult res;
-	bool len = inst == BC_INST_LENGTH;
+	bool len = (inst == BC_INST_LENGTH);
 
 	s = bc_program_operand(p, &opnd, &num, 0);
 	if (s) return s;
@@ -1792,7 +1792,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_EXECUTE:
 			case BC_INST_EXEC_COND:
 			{
-				cond = inst == BC_INST_EXEC_COND;
+				cond = (inst == BC_INST_EXEC_COND);
 				s = bc_program_execStr(p, code, &ip->idx, cond);
 				break;
 			}
