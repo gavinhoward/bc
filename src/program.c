@@ -790,7 +790,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		bool array = (left->t == BC_RESULT_ARRAY_ELEM);
 
 		if (array) {
-			if (BC_PROG_NUM(left, l)) bc_num_free(l);
+			bc_num_free(l);
 			memset(l, 0, sizeof(BcNum));
 			l->rdx = idx;
 		}
