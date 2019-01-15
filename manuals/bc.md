@@ -98,6 +98,17 @@ The **scale** of an expression is the number of digits in the result of the
 expression right of the decimal point, and `scale` is a global variable setting
 the precision of any operations, with exceptions. `scale` is initially `0`.
 
+`bc` has both **global** variables and **local** variables. All **local**
+variables are local to the function; they are parameters or are introduced in a
+function's `auto` list (see [Functions](#bc-functions)). If a variable is
+accessed which is not a parameter or in the `auto` list, it is assumed to be
+**global**. If a parent function has a **local** variable version of a
+**global** variable that is accessed by a function that it calls, the value of
+that **global** variable in the child function is the value of the variable in
+the parent function, not the value of the actual **global** variable.
+
+All of the above applies to arrays as well.
+
 ### Syntax
 
 The syntax for `bc` programs is mostly C-like, with some differences. This `bc`
@@ -142,11 +153,11 @@ a variable, array, and function that all have the same name.
 4.	`length(E)`: The number of significant decimal digits in `E`.
 5.	`length(I[])`: The number of elements in the array `I`. This is a
 	non-portable extension.
-6.	`scale(E)`: `E`'s scale.
+6.	`scale(E)`: `E`'s **scale**.
 
 <a name="bc-numbers"/>
 
-##### Numbers
+#### Numbers
 
 Numbers are strings made up of digits, uppercase letters, and at most `1` period
 for a radix. Numbers can have up to `BC_NUM_MAX` digits. Uppercase letters
@@ -376,11 +387,15 @@ the start of the loop, including testing the loop condition.
 
 The `if` `else` statement does the same thing as in C.
 
+The `quit` statement causes `bc` to quit, even if it is on a branch that will
+not be executed (it is a compile-time command).
+
 The `halt` statement causes `bc` to quit, if it is executed. (Unlike `quit` if
 it is on a branch of an `if` statement that is not executed, `bc` does not
 quit.)
 
-The `limits` statement prints the limits that this `bc` is subject to.
+The `limits` statement prints the limits that this `bc` is subject to. This is
+like the `quit` statement in that it is a compile-time command.
 
 ##### Print Statement
 
@@ -454,6 +469,9 @@ be printed alone, except in a print statement.
 
 Void functions can only use the first two `return` statements listed above.
 
+The word `void` is not treated as a keyword; it is still possible to have
+variables, arrays, and functions named `void`.
+
 This is a non-portable extension.
 
 ##### Array References
@@ -465,7 +483,7 @@ For any array in the parameter list, if the array is declared in the form
 ```
 
 it is a **reference**. Any changes to the array in the function are reflected
-when the function returns.
+when the function returns to the array that was passed in.
 
 Other than this, all function arguments are passed by value.
 
@@ -511,7 +529,7 @@ Returns the mathematical constant `e` raised to the power of `x`.
 
 ##### `j(x, n)`
 
-Returns the bessel integer order `n` of `x`.
+Returns the bessel integer order `n` (truncated) of `x`.
 
 <a name="extended-library"/>
 
@@ -562,7 +580,7 @@ Returns the logarithm base `b` of `x`.
 
 ##### `pi(p)`
 
-Returns `pi` to p decimal places.
+Returns `pi` to `p` decimal places.
 
 ##### `ubytes(x)`
 
