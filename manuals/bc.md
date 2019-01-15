@@ -109,6 +109,16 @@ the parent function, not the value of the actual **global** variable.
 
 All of the above applies to arrays as well.
 
+The value of a statement that is an expression (i.e., any of the
+[Named Expressions](#bc-named-expressions) or [Operands](#bc-operands)) is
+printed unless the lowest precedence operator is an
+[`assignment`](#bc-assignment) operator ***and*** the expression is not
+surrounded by parentheses. The value that is printed is also assigned to the
+special variable `last`. This is a non-portable extension. A single dot may also
+be used as a synonym for `last`.
+
+Either semicolons or newlines may separate statements.
+
 ### Syntax
 
 The syntax for `bc` programs is mostly C-like, with some differences. This `bc`
@@ -117,10 +127,12 @@ language this `bc` accepts. This section is meant to be a summary and a listing
 of all the extensions to the [standard][1].
 
 In the sections below, `E` means expression, `S` means statement, and `I` means
-identifier. Identifiers start with a lowercase letter and can be followed by
-any number (up to `BC_NAME_MAX - 1`) of lowercase letters (`a-z`), digits
-(`0-9`), and underscores (`_`). Identifiers with more than one character
-(letter) are an extension.
+identifier
+
+Identifiers (`I`) start with a lowercase letter and can be followed by any
+number (up to `BC_NAME_MAX-1`) of lowercase letters (`a-z`), digits (`0-9`), and
+underscores (`_`). The regex is `[a-z][a-z0-9_]*` Identifiers with more than one
+character (letter) are an extension.
 
 #### Comments
 
@@ -130,7 +142,7 @@ There are two kinds of comments:
 2.	Line comments go from `#` until, and not including, the next newline. This
 	is a non-portable extension.
 
-<a name="named-expressions"/>
+<a name="bc-named-expressions"/>
 
 #### Named Expressions
 
@@ -144,6 +156,12 @@ There are two kinds of comments:
 Variables and arrays do not interfere; users can have arrays named the same as
 variables. This also applies to [functions](#bc-functions), so a user can have
 a variable, array, and function that all have the same name.
+
+Named expressions are required as the operand of
+[`increment`/`decrement` operators](#bc-increment-decrement) and as the left
+side of [`assignment` operators](#bc-assignment).
+
+<a name="bc-operands"/>
 
 #### Operands
 
@@ -191,6 +209,8 @@ precedence.
 | <code>&#124;&#124;</code>   | Binary | Left      | `boolean or`                    |
 
 They will be descrbed in more detail below.
+
+<a name="bc-increment-decrement"/>
 
 ##### `++` `--`
 
@@ -314,10 +334,12 @@ This is a non-portable extension.
 This is only available if `bc` has been compiled with the
 [extra math](./build.md#build-extra-math) option enabled.
 
+<a name="bc-assignment"/>
+
 ##### `=` `<<=` `>>=` `+=` `-=` `*=` `/=` `%=` `^=` `@=`
 
 These are the `assignment` operators. They take two expressions, `a` and `b`
-where `a` is a [named expression](#named-expressions).
+where `a` is a [named expression](#bc-named-expressions).
 
 For `=`, `b` is copied and the result is assigned to `a`. For all others, `a`
 and `b` are applied as operands to the corresponding arithmetic operators and
@@ -385,8 +407,12 @@ Also, as an extension, any or all of the expressions in the header of a for loop
 may be omitted. If the condition (second expression) is omitted, it is assumed
 to be a constant `1`.
 
+The `break` statement causes a loop to stop iterating and resume execution
+immediately following a loop. This is only allowed in loops.
+
 The `continue` statement causes a loop iteration to stop early and returns to
-the start of the loop, including testing the loop condition.
+the start of the loop, including testing the loop condition. This is only
+allowed in loops.
 
 The `if` `else` statement does the same thing as in C.
 
