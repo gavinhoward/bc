@@ -38,4 +38,4 @@
 [\\]pR
 [\[\]]pR
 1xpR
-[1st] 0:b [dummy] Sb [2nd] 0:b 0;b p Lb 0;b p
+[1st] 0:b [2nd] 1:b 0;b p 1;b p
