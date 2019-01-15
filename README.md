@@ -34,6 +34,7 @@ directory:
 ```
 ./configure.sh -O3
 make
+make install
 ```
 
 ### Debug
@@ -43,6 +44,7 @@ For debug builds, use the following commands in the root directory:
 ```
 ./configure.sh -g
 make
+make install
 ```
 
 ### Pre-built Binaries
