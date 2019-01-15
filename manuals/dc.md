@@ -35,11 +35,11 @@ expressions are evaluated in the order given.
 
 ##### `-h` `--help`
 
-Prints a usage message and quits.
+Prints a usage message and exits.
 
 ##### `-v` `-V` `--version`
 
-Print the version information (copyright header) and exit.
+Print the version information (copyright header) and exits.
 
 ##### `-x` `--extended-register`
 
