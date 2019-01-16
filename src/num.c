@@ -1393,7 +1393,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	bool init = false;
 	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
 
-	assert(c != d && a != b && a != d && b != d && b != c);
+	assert(c != d && a != d && b != d && b != c);
 
 	if (c == a) {
 		memcpy(&num2, c, sizeof(BcNum));
