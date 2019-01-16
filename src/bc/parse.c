@@ -580,6 +580,9 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 	} while (p->flags.len > 1 && !new_else && !BC_PARSE_IF_END(p) &&
 	         !(has_brace = (BC_PARSE_BRACE(p) != 0)));
 
+	if (brace && !s && !BC_PARSE_DELIMITER(p->l.t))
+		s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+
 	return s;
 }
 
