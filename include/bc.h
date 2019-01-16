@@ -101,6 +101,9 @@ BcStatus bc_lex_token(BcLex *l);
 #define BC_PARSE_DELIMITER(t) \
 	((t) == BC_LEX_SCOLON || (t) == BC_LEX_NLINE || (t) == BC_LEX_EOF)
 
+#define BC_PARSE_BLOCK_STMT(f) \
+	((f) & (BC_PARSE_FLAG_ELSE | BC_PARSE_FLAG_LOOP_INNER))
+
 #define BC_PARSE_OP(p, l) (((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
 
 #define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))

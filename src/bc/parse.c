@@ -56,10 +56,11 @@ static bool bc_parse_isDelimiter(BcParse *p) {
 		size_t i;
 		uint16_t *fptr = NULL, flags = BC_PARSE_FLAG_ELSE;
 
-		for (i = 0; i < p->flags.len && (flags & BC_PARSE_FLAG_ELSE); ++i) {
+		for (i = 0; i < p->flags.len && BC_PARSE_BLOCK_STMT(flags); ++i) {
 			fptr = bc_vec_item_rev(&p->flags, i);
 			flags = *fptr;
-			if (flags & BC_PARSE_FLAG_BRACE) return false;
+			if ((flags & BC_PARSE_FLAG_BRACE) && p->l.last != BC_LEX_RBRACE)
+				return false;
 		}
 
 		good = ((flags & BC_PARSE_FLAG_IF) != 0 && !(flags & BC_PARSE_FLAG_BRACE));
@@ -515,6 +516,8 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		if (p->l.t == BC_LEX_RBRACE) {
 			s = bc_lex_next(&p->l);
 			if (s) return s;
+			if (!bc_parse_isDelimiter(p))
+				return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 		}
 		else return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 	}
@@ -579,9 +582,6 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 	} while (p->flags.len > 1 && !new_else && !BC_PARSE_IF_END(p) &&
 	         !(has_brace = (BC_PARSE_BRACE(p) != 0)));
-
-	if (brace && !s && !BC_PARSE_DELIMITER(p->l.t))
-		s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	return s;
 }
