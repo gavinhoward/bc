@@ -63,7 +63,7 @@ static bool bc_parse_isDelimiter(BcParse *p) {
 				return false;
 		}
 
-		good = ((flags & BC_PARSE_FLAG_IF) != 0 && !(flags & BC_PARSE_FLAG_BRACE));
+		good = ((flags & BC_PARSE_FLAG_IF) != 0);
 	}
 	else if (t == BC_LEX_RBRACE) {
 
