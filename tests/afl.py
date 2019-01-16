@@ -26,6 +26,7 @@ def usage():
 def check_crash(exebase, out, error, file, type, test):
 	if error < 0:
 		print("\n{} crashed ({}) on {}:\n".format(exebase, -error, type))
+		test = str(test, "utf-8")
 		print("    {}".format(test))
 		print("\nCopying to \"{}\"".format(out))
 		shutil.copy2(file, out)
