@@ -114,7 +114,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	s = bc_read_chars(vec, prompt);
 #endif // BC_ENABLE_HISTORY Remove
 
-	if (s) return s;
+	if (s && s != BC_STATUS_EOF) return s;
 	if (bc_read_binary(vec->v, vec->len - 1))
 		return bc_vm_verr(BC_ERROR_VM_BIN_FILE, bc_program_stdin_name);
 
