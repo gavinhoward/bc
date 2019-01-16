@@ -142,6 +142,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	if (BC_NUM_NONZERO(n)) {
 		n->len -= places;
+		if (!n->len) n->neg = false;
 		memmove(n->num, n->num + places, n->len * sizeof(BcDig));
 	}
 }
