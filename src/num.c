@@ -132,6 +132,12 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	return 0;
 }
 
+static void bc_num_clean(BcNum *restrict n) {
+	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) --n->len;
+	if (BC_NUM_ZERO(n)) n->neg = false;
+	else if (n->len < n->rdx) n->len = n->rdx;
+}
+
 void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	assert(places <= n->rdx && (BC_NUM_ZERO(n) || places <= n->len));
@@ -142,8 +148,8 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	if (BC_NUM_NONZERO(n)) {
 		n->len -= places;
-		if (!n->len) n->neg = false;
 		memmove(n->num, n->num + places, n->len * sizeof(BcDig));
+		bc_num_clean(n);
 	}
 }
 
@@ -161,12 +167,6 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	if (n->len) n->len += places;
 
 	n->rdx += places;
-}
-
-static void bc_num_clean(BcNum *restrict n) {
-	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) --n->len;
-	if (BC_NUM_ZERO(n)) n->neg = false;
-	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
 static void bc_num_retireMul(BcNum *restrict n, size_t scale, bool neg1, bool neg2) {
@@ -758,6 +758,8 @@ static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale
 
 	s = bc_num_intop(a, b, c, &val);
 	if (s) return s;
+
+	if (BC_NUM_ZERO(c)) return s;
 
 	len = c->rdx + val;
 
