@@ -100,6 +100,7 @@ define x(a[]) { return a[]; }
 define x(*a) { return a; }
 define x(a) return a;
 while e!=0 { i+=1 }
+while (e!=0) { i+=1 } if (x) x
 for i=0;i<2;++i { c+=i; }
 for (i=0;i<2,++i) { c+=i; }
 for (i=0,i<2;++i) { c+=i; }
