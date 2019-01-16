@@ -348,14 +348,14 @@ if [ "$toybox_repo" != "" ]; then
 	toybox
 fi
 
-build "$release" "clang" "" make
-
 if [ "$run_tests" -ne 0 ]; then
+
+	build "$release" "clang" "" make
 
 	karatsuba
 	vg
 
-	build "$release" "afl-gcc" "" make
+	build "$reldebug" "afl-gcc" "" make
 
 	printf '\n'
 	printf 'Run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
