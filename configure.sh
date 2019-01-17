@@ -88,10 +88,9 @@ usage() {
 	printf '    PREFIX       The prefix to install to. Default is "/usr/local".\n'
 	printf '                 If PREFIX is "/usr", install path will be "/usr/bin".\n'
 	printf '    BINDIR       The directory to install binaries. Default "$PREFIX/bin".\n'
-	printf '    DATAROOTDIR  The location for data files. Default is "$PREFIX/share".\n'
-	printf '    DATADIR      Same as DATAROOTDIR. If DATAROOTDIR also exists, it is used.\n'
-	printf '    MANDIR       The location to install manpages to. Default is\n'
-	printf '                 "$DATAROOTDIR/man" (or "$DATADIR/man" if it exists).\n'
+	printf '    DATAROOTDIR  The root location for data files. Default is "$PREFIX/share".\n'
+	printf '    DATADIR      The location for data files. Default is "$DATAROOTDIR".\n'
+	printf '    MANDIR       The location to install manpages to. Default is "$DATADIR/man".\n'
 	printf '    MAN1DIR      The location to install Section 1 manpages to. Default is\n'
 	printf '                 "$MANDIR/man1".\n'
 	printf '    DESTDIR      For package creation.\n'
@@ -394,14 +393,16 @@ if [ "$BINDIR" = "" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
-if [ "$DATAROOTDIR" = "" -a "$DATADIR" = "" ]; then
+if [ "$DATAROOTDIR" = "" ]; then
 	DATAROOTDIR="$PREFIX/share"
-elif [ "$DATAROOTDIR" = "" ]; then
-	DATAROOTDIR="$DATADIR"
+fi
+
+if [ "$DATADIR" = "" ]; then
+	DATADIR="$DATAROOTDIR"
 fi
 
 if [ "$MANDIR" = "" ]; then
-	MANDIR="$DATAROOTDIR/man"
+	MANDIR="$DATADIR/man"
 fi
 
 if [ "$MAN1DIR" = "" ]; then
