@@ -81,18 +81,20 @@ usage() {
 	printf '                 If this and HOST_CC are not defined, CC is used.\n'
 	printf '    HOST_CC      Same as HOSTCC. If HOSTCC also exists, it is used.\n'
 	printf '    CFLAGS       C compiler flags.\n'
-	printf '    HOSTCFLAGS   CFLAGS for HOSTCC. If this and HOST_CFLAGS are not defined,\n'
-	printf '                 CFLAGS is used.\n'
+	printf '    HOSTCFLAGS   CFLAGS for HOSTCC. Default is "$CFLAGS".\n'
 	printf '    HOST_CFLAGS  Same as HOST_CFLAGS. If HOST_CFLAGS also exists, it is used.\n'
 	printf '    CPPFLAGS     C preprocessor flags.\n'
 	printf '    LDFLAGS      Linker flags.\n'
 	printf '    PREFIX       The prefix to install to. Default is "/usr/local".\n'
 	printf '                 If PREFIX is "/usr", install path will be "/usr/bin".\n'
+	printf '    BINDIR       The directory to install binaries. Default "$PREFIX/bin".\n'
+	printf '    DATAROOTDIR  The location for data files. Default is "$PREFIX/share".\n'
+	printf '    DATADIR      Same as DATAROOTDIR. If DATAROOTDIR also exists, it is used.\n'
+	printf '    MANDIR       The location to install manpages to. Default is\n'
+	printf '                 "$DATAROOTDIR/man" (or "$DATADIR/man" if it exists).\n'
+	printf '    MAN1DIR      The location to install Section 1 manpages to. Default is\n'
+	printf '                 "$MANDIR/man1".\n'
 	printf '    DESTDIR      For package creation.\n'
-	printf '    MANPAGE_LOC  The location under PREFIX to put manpages. If PREFIX is\n'
-	printf '                 "/usr", and the default is used, it will be "/usr/share/man".\n'
-	printf '                 Manpages will then be installed to "/usr/share/man/man1".\n'
-	printf '                 Default is "share/man".\n'
 	printf '    GEN_EMU      Emulator to run string generator code under\n'
 	printf '                 (leave empty if not necessary).\n'
 
@@ -388,8 +390,22 @@ if [ "$PREFIX" = "" ]; then
 	PREFIX="/usr/local"
 fi
 
-if [ "$MANPAGE_LOC" = "" ]; then
-	MANPAGE_LOC="share/man"
+if [ "$BINDIR" = "" ]; then
+	BINDIR="$PREFIX/bin"
+fi
+
+if [ "$DATAROOTDIR" = "" -a "$DATADIR" = "" ]; then
+	DATAROOTDIR="$PREFIX/share"
+elif [ "$DATAROOTDIR" = "" ]; then
+	DATAROOTDIR="$DATADIR"
+fi
+
+if [ "$MANDIR" = "" ]; then
+	MANDIR="$DATAROOTDIR/man"
+fi
+
+if [ "$MAN1DIR" = "" ]; then
+	MAN1DIR="$MANDIR/man1"
 fi
 
 if [ "$CC" = "" ]; then
@@ -462,9 +478,9 @@ contents=$(replace "$contents" "DC_HELP_O" "$dc_help")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
-contents=$(replace "$contents" "PREFIX" "$PREFIX")
 contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
-contents=$(replace "$contents" "MANPAGE_LOC" "$MANPAGE_LOC")
+contents=$(replace "$contents" "BINDIR" "$BINDIR")
+contents=$(replace "$contents" "MAN1DIR" "$MAN1DIR")
 contents=$(replace "$contents" "CFLAGS" "$CFLAGS")
 contents=$(replace "$contents" "HOSTCFLAGS" "$HOSTCFLAGS")
 contents=$(replace "$contents" "CPPFLAGS" "$CPPFLAGS")

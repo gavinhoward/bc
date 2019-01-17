@@ -76,22 +76,22 @@ DC_HELP_GCNO = $(GEN_DIR)/dc_help.gcno
 
 BIN = bin
 
-MANUALS = manuals
-BC_MANPAGE_NAME = bc.1
-BC_MANPAGE = $(MANUALS)/$(BC_MANPAGE_NAME)
-BC_RONN = $(BC_MANPAGE).ronn
-DC_MANPAGE_NAME = dc.1
-DC_MANPAGE = $(MANUALS)/$(DC_MANPAGE_NAME)
-DC_RONN = $(DC_MANPAGE).ronn
-
 BC = bc
 DC = dc
 BC_EXEC = $(BIN)/$(BC)
 DC_EXEC = $(BIN)/$(DC)
 
-PREFIX = %%PREFIX%%
+MANUALS = manuals
+BC_MANPAGE_NAME = $(BC).1
+BC_MANPAGE = $(MANUALS)/$(BC_MANPAGE_NAME)
+BC_RONN = $(BC_MANPAGE).ronn
+DC_MANPAGE_NAME = $(DC).1
+DC_MANPAGE = $(MANUALS)/$(DC_MANPAGE_NAME)
+DC_RONN = $(DC_MANPAGE).ronn
+
 DESTDIR = %%DESTDIR%%
-MANPAGE_LOC = $(DESTDIR)$(PREFIX)/%%MANPAGE_LOC%%/man1
+BINDIR = %%BINDIR%%
+MAN1DIR = %%MAN1DIR%%
 
 BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
@@ -158,11 +158,13 @@ help:
 	@printf '    clean           removes all build files\n'
 	@printf '    clean_config    removes all build files as well as the generated Makefile\n'
 	@printf '    clean_tests     removes all build files as well as generated tests\n'
-	@printf '    install         installs to %s%s/bin\n' "$(DESTDIR)" "$(PREFIX)"
+	@printf '    install         installs binaries to "%s%s"\n' "$(DESTDIR)" "$(BINDIR)"
+	@printf '                    and manpages to "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
 	@printf '    karatsuba       runs the karatsuba script (requires Python 3)\n'
 	@printf '    karatsuba_test  runs the karatsuba script while running tests\n'
 	@printf '                    (requires Python 3)\n'
-	@printf '    uninstall       uninstalls from %s%s/bin\n' "$(DESTDIR)" "$(PREFIX)"
+	@printf '    uninstall       uninstalls binaries from "%s%s"\n' "$(DESTDIR)" "$(BINDIR)"
+	@printf '                    and manpages from "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
 	@printf '    test            runs the test suite\n'
 	@printf '    test_all        runs the test suite as well as the Linux timeconst.bc test,\n'
 	@printf '                    if it exists and bc has been built\n'
@@ -262,18 +264,18 @@ clean_tests: clean clean_config
 	@$(RM) -f .test.txt
 
 install_bc_manpage:
-	$(SAFE_INSTALL) -D $(BC_MANPAGE) $(MANPAGE_LOC)/$(BC_MANPAGE_NAME)
+	$(SAFE_INSTALL) -D $(BC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
 
 install_dc_manpage:
-	$(SAFE_INSTALL) -D $(DC_MANPAGE) $(MANPAGE_LOC)/$(DC_MANPAGE_NAME)
+	$(SAFE_INSTALL) -D $(DC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
 install:%%INSTALL_PREREQS%%
-	$(INSTALL) $(DESTDIR)$(PREFIX)/$(BIN) $(BIN)
+	$(INSTALL) $(DESTDIR)$(BINDIR) $(BIN)
 
 uninstall:
-	$(RM) -f $(DESTDIR)$(PREFIX)/$(BC_EXEC)
-	$(RM) -f $(DESTDIR)$(PREFIX)/$(DC_EXEC)
-	$(RM) -f $(MANPAGE_LOC)/$(BC_MANPAGE_NAME)
-	$(RM) -f $(MANPAGE_LOC)/$(DC_MANPAGE_NAME)
+	$(RM) -f $(DESTDIR)$(BINDIR)/$(BC)
+	$(RM) -f $(DESTDIR)$(BINDIR)/$(DC)
+	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
+	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
 .PHONY: help clean clean_tests install uninstall test
