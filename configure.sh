@@ -75,16 +75,22 @@ usage() {
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
-	printf '    CC        C compiler. Must be compatible with POSIX c99.\n'
-	printf '    HOSTCC    Host C compiler. Must be compatible with POSIX c99.\n'
-	printf '    CFLAGS    C compiler flags. You can use this for extra optimization flags.\n'
-	printf '    CPPFLAGS  C preprocessor flags.\n'
-	printf '    LDFLAGS   Linker flags.\n'
-	printf '    PREFIX    the prefix to install to. Default is /usr/local.\n'
-	printf '              If PREFIX is \"/usr\", install path will be \"/usr/bin\".\n'
-	printf '    DESTDIR   For package creation.\n'
-	printf '    GEN_EMU   Emulator to run string generator code under\n'
-	printf '              (leave empty if not necessary).\n'
+	printf '    CC           C compiler. Must be compatible with POSIX c99.\n'
+	printf '                 Defaults to c99.\n'
+	printf '    HOSTCC       Host C compiler. Must be compatible with POSIX c99.\n'
+	printf '                 If this and HOST_CC are not defined, CC is used.\n'
+	printf '    HOST_CC      Same as HOSTCC. If HOSTCC also exists, it is used.\n'
+	printf '    CFLAGS       C compiler flags.\n'
+	printf '    HOSTCFLAGS   CFLAGS for HOSTCC. If this and HOST_CFLAGS are not defined,\n'
+	printf '                 CFLAGS is used.\n'
+	printf '    HOST_CFLAGS  Same as HOST_CFLAGS. If HOST_CFLAGS also exists, it is used.\n'
+	printf '    CPPFLAGS     C preprocessor flags.\n'
+	printf '    LDFLAGS      Linker flags.\n'
+	printf '    PREFIX       The prefix to install to. Default is /usr/local.\n'
+	printf '                 If PREFIX is \"/usr\", install path will be \"/usr/bin\".\n'
+	printf '    DESTDIR      For package creation.\n'
+	printf '    GEN_EMU      Emulator to run string generator code under\n'
+	printf '                 (leave empty if not necessary).\n'
 
 	exit "$val"
 }
@@ -324,6 +330,12 @@ else
 
 fi
 
+if [ "$HOSTCFLAGS" = "" -a "$HOST_CFLAGS" = "" ]; then
+	HOSTCFLAGS="$CFLAGS"
+elif [ "$HOSTCFLAGS" = "" ]; then
+	HOSTCFLAGS="$HOST_CFLAGS"
+fi
+
 if [ "$debug" -eq 1 ]; then
 
 	if [ "$CFLAGS" = "" -a "$optimization" = "" ]; then
@@ -370,8 +382,10 @@ if [ "$CC" = "" ]; then
 	CC="c99"
 fi
 
-if [ "$HOSTCC" = "" ]; then
+if [ "$HOSTCC" = "" -a "$HOST_CC" = "" ]; then
 	HOSTCC="$CC"
+elif [ "$HOSTCC" = "" ]; then
+	HOSTCC="$HOST_CC"
 fi
 
 if [ "$hist" -eq 1 ]; then
@@ -437,6 +451,7 @@ contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 contents=$(replace "$contents" "PREFIX" "$PREFIX")
 contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
 contents=$(replace "$contents" "CFLAGS" "$CFLAGS")
+contents=$(replace "$contents" "HOSTCFLAGS" "$HOSTCFLAGS")
 contents=$(replace "$contents" "CPPFLAGS" "$CPPFLAGS")
 contents=$(replace "$contents" "LDFLAGS" "$LDFLAGS")
 contents=$(replace "$contents" "CC" "$CC")
