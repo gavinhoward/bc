@@ -89,6 +89,10 @@ usage() {
 	printf '    PREFIX       The prefix to install to. Default is /usr/local.\n'
 	printf '                 If PREFIX is \"/usr\", install path will be \"/usr/bin\".\n'
 	printf '    DESTDIR      For package creation.\n'
+	printf '    MANPAGE_LOC  The location under PREFIX to put manpages. If PREFIX is\n'
+	printf '                 "/usr", and the default is used, it will be "/usr/share/man".\n'
+	printf '                 Manpages will then be installed to "/usr/share/man/man1".\n'
+	printf '                 Default is "share/man".\n'
 	printf '    GEN_EMU      Emulator to run string generator code under\n'
 	printf '                 (leave empty if not necessary).\n'
 
@@ -296,6 +300,8 @@ if [ "$bc_only" -eq 1 ]; then
 	dc_test="@printf 'No dc tests to run\\\\n'"
 	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
+	install_prereqs=" install_bc_manpage"
+
 elif [ "$dc_only" -eq 1 ]; then
 
 	bc=0
@@ -316,6 +322,8 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
+	install_prereqs=" install_dc_manpage"
+
 else
 
 	bc=1
@@ -327,6 +335,8 @@ else
 
 	karatsuba="@\$(KARATSUBA)"
 	karatsuba_test="@\$(KARATSUBA) 100 \$(BC_EXEC)"
+
+	install_prereqs=" install_bc_manpage install_dc_manpage"
 
 fi
 
@@ -376,6 +386,10 @@ fi
 
 if [ "$PREFIX" = "" ]; then
 	PREFIX="/usr/local"
+fi
+
+if [ "$MANPAGE_LOC" = "" ]; then
+	MANPAGE_LOC="share/man"
 fi
 
 if [ "$CC" = "" ]; then
@@ -450,6 +464,7 @@ contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "PREFIX" "$PREFIX")
 contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
+contents=$(replace "$contents" "MANPAGE_LOC" "$MANPAGE_LOC")
 contents=$(replace "$contents" "CFLAGS" "$CFLAGS")
 contents=$(replace "$contents" "HOSTCFLAGS" "$HOSTCFLAGS")
 contents=$(replace "$contents" "CPPFLAGS" "$CPPFLAGS")
@@ -458,6 +473,7 @@ contents=$(replace "$contents" "CC" "$CC")
 contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
 contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
+contents=$(replace "$contents" "INSTALL_PREREQS" "$install_prereqs")
 
 contents=$(replace "$contents" "EXECUTABLES" "$executables")
 contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")

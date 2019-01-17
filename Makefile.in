@@ -76,6 +76,14 @@ DC_HELP_GCNO = $(GEN_DIR)/dc_help.gcno
 
 BIN = bin
 
+MANUALS = manuals
+BC_MANPAGE_NAME = bc.1
+BC_MANPAGE = $(MANUALS)/$(BC_MANPAGE_NAME)
+BC_RONN = $(BC_MANPAGE).ronn
+DC_MANPAGE_NAME = dc.1
+DC_MANPAGE = $(MANUALS)/$(DC_MANPAGE_NAME)
+DC_RONN = $(DC_MANPAGE).ronn
+
 BC = bc
 DC = dc
 BC_EXEC = $(BIN)/$(BC)
@@ -83,6 +91,8 @@ DC_EXEC = $(BIN)/$(DC)
 
 PREFIX = %%PREFIX%%
 DESTDIR = %%DESTDIR%%
+MANPAGE_LOC = $(DESTDIR)$(PREFIX)/%%MANPAGE_LOC%%/man1
+
 BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
 BC_ENABLE_REFERENCES = %%REFERENCES%%
@@ -93,10 +103,12 @@ RM = rm
 MKDIR = mkdir
 
 INSTALL = ./install.sh
+SAFE_INSTALL = ./safe-install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
 
 VALGRIND_ARGS = --error-exitcode=1 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
+RONN_ARGS = --roff --organization="Gavin D. Howard" --manual="General Commands Manual"
 
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
@@ -205,6 +217,10 @@ libcname:
 extra_math:
 	@printf '%s' "$(BC_ENABLE_EXTRA_MATH)"
 
+manpages:
+	ronn $(RONN_ARGS) $(BC_RONN)
+	ronn $(RONN_ARGS) $(DC_RONN)
+
 clean:
 	@printf 'Cleaning files...\n'
 	@$(RM) -f $(OBJ)
@@ -245,11 +261,19 @@ clean_tests: clean clean_config
 	@$(RM) -f .math.txt .results.txt .ops.txt
 	@$(RM) -f .test.txt
 
-install:
+install_bc_manpage:
+	$(SAFE_INSTALL) -D $(BC_MANPAGE) $(MANPAGE_LOC)/$(BC_MANPAGE_NAME)
+
+install_dc_manpage:
+	$(SAFE_INSTALL) -D $(DC_MANPAGE) $(MANPAGE_LOC)/$(DC_MANPAGE_NAME)
+
+install:%%INSTALL_PREREQS%%
 	$(INSTALL) $(DESTDIR)$(PREFIX)/$(BIN) $(BIN)
 
 uninstall:
 	$(RM) -f $(DESTDIR)$(PREFIX)/$(BC_EXEC)
 	$(RM) -f $(DESTDIR)$(PREFIX)/$(DC_EXEC)
+	$(RM) -f $(MANPAGE_LOC)/$(BC_MANPAGE_NAME)
+	$(RM) -f $(MANPAGE_LOC)/$(DC_MANPAGE_NAME)
 
 .PHONY: help clean clean_tests install uninstall test
