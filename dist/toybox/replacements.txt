@@ -29,6 +29,7 @@ minof(
 SIZE_MAX
 BcStatus bc_program_pushVar(BcProgram *p, char *code, size_t *bgn) {\n
 s = bc_program_pushVar(p, code, &ip->idx);
+int good = \1;
  int
 int
  1
@@ -63,7 +64,7 @@ BC_VM->
 \1
 \1;
 \1
-!string
+!
 \1
 \1\2\n\3\4
 1;

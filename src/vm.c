@@ -257,10 +257,14 @@ static void bc_vm_clean() {
 	BcVec *fns = &prog->fns;
 	BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
 	BcInstPtr *ip = bc_vec_item(&prog->stack, 0);
-	bool good = BC_IS_BC;
+	bool good = false;
+
+#if BC_ENABLED
+	good = BC_IS_BC && !BC_PARSE_NO_EXEC(&vm->prs);
+#endif // BC_ENABLED
 
 #if DC_ENABLED
-	if (!good) {
+	if (!BC_IS_BC) {
 
 		size_t i;
 
@@ -297,9 +301,6 @@ static void bc_vm_clean() {
 	// If this condition is true, we can get rid of strings,
 	// constants, and code. This is an idea from busybox.
 	if (good && prog->stack.len == 1 && !prog->results.len &&
-#if BC_ENABLED
-	    !BC_PARSE_NO_EXEC(&vm->prs) &&
-#endif // BC_ENABLED
 	    ip->idx == f->code.len)
 	{
 #if BC_ENABLED

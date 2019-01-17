@@ -29,6 +29,7 @@ BC_MIN\(
 BC_VEC_INVALID_IDX
 BcStatus bc_program_pushVar\(BcProgram \*p, const char \*restrict code,\n[ ]*size_t \*restrict bgn, bool pop, bool copy\)\n\{
 s = bc_program_pushVar\(p, code, &ip->idx, false, false\);
+bool good = false;[\n]*[ ]*good = BC_IS_BC && (!BC_PARSE_NO_EXEC\(&vm->prs\));
 [ ]bool
 ^bool
  true
@@ -63,7 +64,7 @@ BC_ENABLED && \((.*?)\)
 BC_IS_BC && \((.*?)\)
 BC_IS_BC \? (.*?) : .*?;$
 BC_IS_BC && ([a-z])
-BC_IS_BC && !string
+BC_IS_BC && !
 [!]+BC_IS_BC \|\| ([a-z])
 ^[ ]*if \(BC_IS_BC\) \{\n([ ]*)  (.*?;)\n([ ]*)  (.*?;)\n[ ]*\}\n[ ]*else .*?;
 BC_IS_BC;
