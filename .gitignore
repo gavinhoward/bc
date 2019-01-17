@@ -39,9 +39,3 @@ perf.data.old
 *.gcov
 *.html
 *.profraw
-
-# Ignore generated documentation
-bc.1
-bc.1.html
-dc.1
-dc.1.html

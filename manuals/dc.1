@@ -1,0 +1,525 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "DC" "1" "January 2019" "Gavin D. Howard" "General Commands Manual"
+.
+.SH "NAME"
+\fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
+.
+.SH "SYNOPSIS"
+\fBdc\fR [\fB\-hvVx\fR] [\fB\-\-version\fR] [\fB\-\-help\fR] [\fB\-\-extended\-register\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
+.
+.SH "DESCRIPTION"
+dc(1) is an arbitrary\-precision calculator\. It uses a stack (reverse Polish notation) to store numbers and results of computations\. Arithmetic operations pop arguments off of the stack and push the results\.
+.
+.P
+If no expressions or files are given on the command line, as in options below, or for files, as extra command\-line arguments, then dc(1) reads from \fBstdin\fR\. Otherwise, those expressions and files are processed, and dc(1) will then exit\.
+.
+.SH "OPTIONS"
+The following are the options that bc(1) accepts\.
+.
+.TP
+\fB\-e\fR \fIexpr\fR
+Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
+.
+.TP
+\fB\-\-expression\fR=\fIexpr\fR
+Same as \fB\-e\fR\.
+.
+.TP
+\fB\-f\fR \fIfile\fR
+Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
+.
+.TP
+\fB\-\-file\fR=\fIfile\fR
+Same as \fB\-f\fR\.
+.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Prints a usage message and quits\.
+.
+.TP
+\fB\-v\fR, \fB\-V\fR, \fB\-\-version\fR
+Print the version information (copyright header) and exit\.
+.
+.TP
+\fB\-x\fR \fB\-\-extended\-register\fR
+Enables extended register mode\. See \fIREGISTERS\fR for more information\.
+.
+.SH "SYNTAX"
+\fBibase\fR is a global variable determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\.
+.
+.P
+\fBobase\fR is a global variable determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\.
+.
+.P
+The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a global variable setting the precision of any operations (with exceptions)\. \fBscale\fR is initially \fB0\fR\.
+.
+.P
+Each item (\fInumbers\fR or \fIcommands\fR) in the input source code is processed and executed, in order\. Input is processed immediately when entered\.
+.
+.SS "Comments"
+Comments go from \fB#\fR until, and not including, the next newline\. This is a non\-portable extension\.
+.
+.SH "NUMBERS"
+Numbers are strings made up of digits, uppercase letters up to \fBF\fR, and at most \fB1\fR period for a radix\. Numbers can have up to \fBBC_NUM_MAX\fR digits\. Uppercase letters equal \fB9\fR + their position in the alphabet (i\.e\., \fBA\fR equals \fB10\fR, or \fB9 + 1\fR)\. If a digit or letter makes no sense with the current value of \fBibase\fR, they are set to the value of the highest valid digit in \fBibase\fR\.
+.
+.P
+Single\-character numbers (i\.e\., \fBA\fR) take the value that they would have if they were valid digits, regardless of the value of \fBibase\fR\. This means that \fBA\fR always equals decimal \fB10\fR and \fBF\fR always equals decimal \fB15\fR\.
+.
+.SH "COMMANDS"
+The valid commands are listed below\.
+.
+.SS "Printing"
+These commands are used for printing\.
+.
+.TP
+\fBp\fR
+Prints the value on top of the stack, whether number or string, and prints a newline after\.
+.
+.IP
+This does not alter the stack\.
+.
+.TP
+\fBn\fR
+Prints the value on top of the tack, whether number or string, and pops it off of the stack\.
+.
+.TP
+\fBP\fR
+Pops a value off the stack\.
+.
+.IP
+If the value is a number, it is truncated and the result\'s absolute value is printed as though \fBobase\fR is \fBUCHAR_MAX + 1\fR and each digit is interpreted as an ASCII character, making it a byte stream\.
+.
+.IP
+If the value is a string, it is printed without a trailing newline\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fBf\fR
+Prints the entire contents of the stack, in order from newest to oldest, without altering anything\.
+.
+.IP
+Users should use this command when they get lost\.
+.
+.SS "Arithmetic"
+These are the commands used for arithmetic\.
+.
+.TP
+\fB+\fR
+The top two values are popped off the stack, added, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to the max \fBscale\fR of both operands\.
+.
+.TP
+\fB\-\fR
+The top two values are popped off the stack, subtracted, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to the max \fBscale\fR of both operands\.
+.
+.TP
+\fB*\fR
+The top two values are popped off the stack, multiplied, and the result is pushed onto the stack\. If \fBa\fR is the \fBscale\fR of the first expression and \fBb\fR is the \fBscale\fR of the second expression, the \fBscale\fR of the result is equal to \fBmin(a+b,max(scale,a,b))\fR where \fBmin\fR and \fBmax\fR return the obvious values\.
+.
+.TP
+\fB/\fR
+The top two values are popped off the stack, divided, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to \fBscale\fR\.
+.
+.TP
+\fB%\fR
+The top two values are popped off the stack, remaindered, and the result is pushed onto the stack\.
+.
+.IP
+Remaindering is equivalent to 1) Computing \fBa/b\fR to current \fBscale\fR, and 2) Using the result of step 1 to calculate \fBa\-(a/b)*b\fR to \fBscale\fR \fBmax(scale + scale(b), scale(a))\fR\.
+.
+.TP
+\fB~\fR
+The top two values are popped off the stack, divided and remaindered, and the results (divided first, remainder second) are pushed onto the stack\. This is equivalent to \fBx y / x y %\fR except that \fBx\fR and \fBy\fR are only evaluated once\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB^\fR
+The top two values are popped off the stack, the second is raised to the power of the first, and the result is pushed onto the stack\.
+.
+.IP
+The first value popped off the stack must be an integer\.
+.
+.TP
+\fBv\fR
+The top value is popped off the stack, its square root is computed, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to \fBscale\fR\.
+.
+.TP
+\fB_\fR
+If this command \fIimmediately\fR precedes a number (i\.e\., no spaces or other commands), then that number is input as a negative number\.
+.
+.IP
+Otherwise, the top value on the stack is popped and copied, and the copy is negated and pushed onto the stack\. This behavior without a number is a non\-portable extension\.
+.
+.TP
+\fB|\fR
+The top three values are popped off the stack, a modular exponentiation is computed, and the result is pushed onto the stack\.
+.
+.IP
+The first value popped is used as the reduction modulus and must be an integer and non\-zero\. The second value popped is used as the exponent and must be an integer and non\-negative\. The third value popped is the base and must be an integer\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB$\fR
+The top value is popped off the stack and copied, and the copy is truncated and pushed onto the stack\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB@\fR
+The top two values are popped off the stack, and the second\'s precision is set to the value of the first, whether by truncation or extension\.
+.
+.IP
+The first value must be an integer and non\-negative\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fBH\fR
+The top two values are popped off the stack, and the second is shifted left (radix shifted right) to the value of the first\.
+.
+.IP
+The first value must be an integer and non\-negative\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fBh\fR
+The top two values are popped off the stack, and the second is shifted right (radix shifted left) to the value of the first\.
+.
+.IP
+The first value must be an integer and non\-negative\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fBG\fR
+The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if they are equal, or \fB0\fR otherwise\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fBN\fR
+The top value is popped off of the stack, and if it a \fB0\fR, a \fB1\fR is pushed; otherwise, a \fB0\fR is pushed\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB(\fR
+The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is less than the second, or \fB0\fR otherwise\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB{\fR
+The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is less than or equal to the second, or \fB0\fR otherwise\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB)\fR
+The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is greater than the second, or \fB0\fR otherwise\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB}\fR
+The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is greater than or equal to the second, or \fB0\fR otherwise\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.SS "Stack Control"
+These commands control the stack\.
+.
+.TP
+\fBc\fR
+Removes all items from ("clears") the stack\.
+.
+.TP
+\fBd\fR
+Copies the item on top of the stack ("duplicates") and pushes the copy onto the stack\.
+.
+.TP
+\fBr\fR
+Swaps ("reverses") the two top items on the stack\.
+.
+.TP
+\fBR\fR
+Pops ("removes") the top value from the stack\.
+.
+.SS "Register Control"
+These commands control \fIregisters\fR\.
+.
+.TP
+\fBs\fR\fIr\fR
+Pops the value off the top of the stack and stores it into register \fBr\fR\.
+.
+.TP
+\fBl\fR\fIr\fR
+Copies the value in register \fBr\fR and pushes it onto the stack\. This does not alter the contents of \fBr\fR\.
+.
+.TP
+\fBS\fR\fIr\fR
+Pops the value off the top of the (main) stack and pushes it onto the stack of register \fBr\fR\. The previous value of the register becomes inaccessible\.
+.
+.TP
+\fBL\fR\fIr\fR
+Pops the value off the top of register \fBr\fR\'s stack and push it onto the main stack\. The previous value in register \fBr\fR\'s stack, if any, is now accessible via the \fBl\fR\fIr\fR command\.
+.
+.SS "Parameters"
+These commands control the values of \fBibase\fR, \fBobase\fR, and \fBscale\fR (see \fISYNTAX\fR)\.
+.
+.TP
+\fBi\fR
+Pops the value off of the top of the stack and uses it to set \fBibase\fR, which must be between \fB2\fR and \fB36\fR, inclusive\.
+.
+.IP
+If the value on top of the stack has any \fBscale\fR, the \fBscale\fR is ignored\.
+.
+.TP
+\fBo\fR
+Pops the value off of the top of the stack and uses it to set \fBobase\fR, which must be between \fB2\fR and \fBBC_BASE_MAX\fR, inclusive (see bc(1))\.
+.
+.IP
+If the value on top of the stack has any \fBscale\fR, the \fBscale\fR is ignored\.
+.
+.TP
+\fBk\fR
+Pops the value off of the top of the stack and uses it to set \fBscale\fR, which must be non\-negative\.
+.
+.IP
+If the value on top of the stack has any \fBscale\fR, the \fBscale\fR is ignored\.
+.
+.TP
+\fBI\fR
+Pushes the current value of \fBibase\fR onto the main stack\.
+.
+.TP
+\fBO\fR
+Pushes the current value of \fBobase\fR onto the main stack\.
+.
+.TP
+\fBK\fR
+Pushes the current value of \fBscale\fR onto the main stack\.
+.
+.SS "Strings"
+The following commands control strings\.
+.
+.P
+dc(1) can work with both numbers and strings, and \fIregisters\fR can hold both strings and numbers\. dc(1) always knows whether a register\'s contents are a string or a number\.
+.
+.P
+While arithmetic operations have to have numbers, and will print an error if given a string, other commands accept strings\.
+.
+.P
+Strings can also be executed as macros\. For example, if the string \fB[1pR]\fR is executed as a macro, then the code \fB1pR\fR is executed, meaning that the \fB1\fR will be printed with a newline after and then popped from the stack\.
+.
+.TP
+\fB[\fR\fIcharacters\fR\fB]\fR
+Makes a string containing \fBcharacters\fR and pushes it onto the stack\.
+.
+.IP
+If there are brackets (\fB[\fR and \fB]\fR) in the string, then they must be balanced\. Unbalanced brackets can be escaped using a backslash (\fB\e\fR) character\.
+.
+.IP
+If there is a backslash character in the string, the character after it (even another backslash) is put into the string verbatim, but the (first) backslash is not\.
+.
+.TP
+\fBa\fR
+The value on top of the stack is popped\.
+.
+.IP
+If it is a number, it is truncated and the result mod \fBUCHAR_MAX + 1\fR is calculated\. If that result is \fB0\fR, push an empty string; otherwise, push a one\-character string where the character is the result of the mod interpreted as an ASCII character\.
+.
+.IP
+If it is a string, then a new string is made\. If the original string is empty, the new string is empty\. If it is not, then the first character of the original string is used to create the new string as a one\-character string\. The new string is then pushed onto the stack\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fBx\fR
+Pops a value off of the top of the stack\.
+.
+.IP
+If it is a number, it is pushed onto the stack\.
+.
+.IP
+If it is a string, it is executed as a macro\.
+.
+.IP
+This behavior is the norm whenever a macro is executed, whether by this command or by the conditional execution commands below\.
+.
+.TP
+\fB>\fR\fIr\fR
+Pops two values off of the stack that must be numbers and compares them\. If the first value is greater than the second, then the contents of register \fBr\fR are executed\.
+.
+.IP
+For example, \fB0 1>a\fR will execute the contents of register \fBa\fR, and \fB1 0>a\fR will not\.
+.
+.TP
+\fB>\fR\fIr\fR\fBe\fR\fIs\fR
+Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB!>\fR\fIr\fR
+Pops two values off of the stack that must be numbers and compares them\. If the first value is not greater than the second (less than or equal to), then the contents of register \fBr\fR are executed\.
+.
+.TP
+\fB!>\fR\fIr\fR\fBe\fR\fIs\fR
+Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB<\fR\fIr\fR
+Pops two values off of the stack that must be numbers and compares them\. If the first value is less than the second, then the contents of register \fBr\fR are executed\.
+.
+.TP
+\fB<\fR\fIr\fR\fBe\fR\fIs\fR
+Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB!<\fR\fIr\fR
+Pops two values off of the stack that must be numbers and compares them\. If the first value is not less than the second (greater than or equal to), then the contents of register \fBr\fR are executed\.
+.
+.TP
+\fB!<\fR\fIr\fR\fBe\fR\fIs\fR
+Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB=\fR\fIr\fR
+Pops two values off of the stack that must be numbers and compares them\. If the first value is equal to the second (greater than or equal to), then the contents of register \fBr\fR are executed\.
+.
+.TP
+\fB=\fR\fIr\fR\fBe\fR\fIs\fR
+Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB!=\fR\fIr\fR
+Pops two values off of the stack that must be numbers and compares them\. If the first value is not equal to the second (greater than or equal to), then the contents of register \fBr\fR are executed\.
+.
+.TP
+\fB!=\fR\fIr\fR\fBe\fR\fIs\fR
+Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
+\fB?\fR
+Reads a line from the \fBstdin\fR and executes it\. This is to allow macros to request input from users\.
+.
+.TP
+\fBq\fR
+During execution of a macro, this exits that macro\'s execution and the execution of the macro that executed it\. If there are no macros, or only one macro executing, dc(1) exits\.
+.
+.TP
+\fBQ\fR
+Pops a value from the stack which must be non\-negative and is used the number of macro executions to pop off of the execution stack\. If the number of levels to pop is greater than the number of executing macros, dc(1) exits\.
+.
+.SS "Status"
+These commands query status of the stack or its top value\.
+.
+.TP
+\fBZ\fR
+Pops a value off of the stack\.
+.
+.IP
+If it is a number, calculates the number of significant decimal digits it has and pushes the result\.
+.
+.IP
+If it is a string, pushes the number of characters the string has\.
+.
+.TP
+\fBX\fR
+Pops a value off of the stack\.
+.
+.IP
+If it is a number, pushes the \fBscale\fR of the value onto the stack\.
+.
+.IP
+If it is a string, pushes \fB0\fR\.
+.
+.TP
+\fBz\fR
+Pushes the current stack depth (before execution of this command)\.
+.
+.SS "Arrays"
+These commands manipulate arrays\.
+.
+.TP
+\fB:\fR\fIr\fR
+Pops the top two values off of the stack\. The second value will be stored in the array \fBr\fR (see \fIRegisters\fR), indexed by the first value\.
+.
+.TP
+\fB;\fR\fIr\fR
+Pops the value on top of the stack and uses it as an index into the array \fBr\fR\. The selected value is then pushed onto the stack\.
+.
+.SH "REGISTERS"
+Registers are names that can store strings, numbers, and arrays\. (Number/string registers do not interfere with array registers\.)
+.
+.P
+Each register is also its own stack, so the current register value is the top of the register\'s stack\. All registers, when first referenced, have one value (\fB0\fR) in their stack\.
+.
+.P
+In non\-extended register mode, a register name is just the single character that follows any command that needs a register name\. The only exception is a newline (\fB\'\en\'\fR); it is a parse error for a newline to be used as a register name\.
+.
+.SS "Extended Register Mode"
+Unlike most other dc(1) implentations, this dc(1) provides nearly unlimited amounts of registers, if extended register mode is enabled\.
+.
+.P
+If extended register mode is enabled (\fB\-x\fR or \fB\-\-extended\-register\fR command\-line arguments are given), then normal single character registers are used \fB\fIunless\fR\fR the character immediately following a command that needs a register name is a space (according to \fBisspace()\fR) and not a newline (\fB\'\en\'\fR)\.
+.
+.P
+In that case, the register name is found according to the regex \fB[a\-z][a\-z0\-9_]*\fR (like bc(1)), and it is a parse error if the next non\-space characters do not match that regex\.
+.
+.SH "SIGNAL HANDLING"
+If dc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause dc(1) to stop execution of the current input and reset, asking for more input\.
+.
+.P
+Otherwise, any signals cause dc(1) to exit\.
+.
+.SH "COMMAND LINE HISTORY"
+dc(1) supports interactive command\-line editing, if compiled with the history option enabled\. If \fBstdin\fR is hooked to a terminal, it is enabled\. Previous lines can be recalled and edited with the arrow keys\.
+.
+.SH "SEE ALSO"
+bc(1)
+.
+.SH "STANDARDS"
+The dc(1) utility operators are compliant with the operators in the bc(1) IEEE Std 1003\.1\-2017 (“POSIX\.1\-2017”) \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR specification\.
+.
+.SH "AUTHOR"
+This dc(1) was made from scratch by Gavin D\. Howard\.
+.
+.SH "BUGS"
+None are known\. Report bugs at https://github\.com/gavinhoward/bc\.
