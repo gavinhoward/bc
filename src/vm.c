@@ -260,7 +260,7 @@ static void bc_vm_clean() {
 	bool good = false;
 
 #if BC_ENABLED
-	good = BC_IS_BC && !BC_PARSE_NO_EXEC(&vm->prs);
+	if (BC_IS_BC) good = !BC_PARSE_NO_EXEC(&vm->prs);
 #endif // BC_ENABLED
 
 #if DC_ENABLED
