@@ -19,7 +19,7 @@ This is the checklist for cutting a release.
 8.	Fuzz with AFL
 	* release
 9.	Fix AFL crashes as much as possible.
-10.	Repeat steps 3-8 again and repeat until nothing is found.
+10.	Repeat steps 3-9 again and repeat until nothing is found.
 11.	Change the version (remove "-dev") and commit.
 12.	Run "make clean_tests".
 13.	Run the release script.
