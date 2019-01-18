@@ -39,9 +39,10 @@ options.
 ## Cross Compiling
 
 To cross-compile this `bc`, an appropriate compiler must be present and assigned
-to the environment variable `HOSTCC`. This is in order to bootstrap core
-file(s), if the architectures are not compatible (i.e., unlike i686 on x86_64).
-Thus, the approach is:
+to the environment variable `HOSTCC` or `HOST_CC` (the two are equivalent,
+though `HOSTCC` is prioritized). This is in order to bootstrap core file(s), if
+the architectures are not compatible (i.e., unlike i686 on x86_64). Thus, the
+approach is:
 
 ```
 HOSTCC="/path/to/native/compiler" ./configure.sh
@@ -49,16 +50,29 @@ make
 make install
 ```
 
+`HOST_CC` will work in exactly the same way.
+
+`HOSTCFLAGS` and `HOST_CFLAGS` can be used to set compiler flags for `HOSTCC`.
+(The two are equivalent, as `HOSTCC` and `HOST_CC` are.) `HOSTCFLAGS` is
+prioritized over `HOST_CFLAGS`. If neither are present, `HOSTCC` (or `HOST_CC`)
+uses `CFLAGS` (see [Build Environment Variables](#build-environment-variables)
+for more details).
+
 It is expected that `CC` produces code for the target system. See
 [Build Environment Variables](#build-environment-variables) for more details.
+
+If an emulator is necessary to run the bootstrap binaries, it can be set with
+the environment variable `GEN_EMU`.
 
 <a name="build-environment-variables"/>
 
 ## Build Environment Variables
 
-This `bc` supports `CC`, `HOSTCC`, `CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`,
-`PREFIX`, and `DESTDIR` environment variables in `configure.sh`. Any values of
-those variables given to `configure.sh` will be put into the generated Makefile.
+This `bc` supports `CC`, `HOSTCC`, `HOST_CC`, `CFLAGS`, `HOSTCFLAGS`,
+`HOST_CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`, `DESTDIR`, `BINDIR`,
+`DATAROOTDIR`, `DATADIR`, `MANDIR`, `MAN1DIR`, and `GEN_EMU` environment
+variables in `configure.sh`. Any values of those variables given to
+`configure.sh` will be put into the generated Makefile.
 
 More detail on what those environment variables do can be found in the following
 sections.
@@ -70,18 +84,24 @@ behavior and options.
 
 Defaults to `c99`.
 
-### `HOSTCC`
+### `HOSTCC` or `HOST_CC`
 
-C compiler for the host system, used only in [cross compiling](#cross-compiling).
+C compiler for the host system, used only in
+[cross compiling](#cross-compiling).
 
-Defaults to `CC`.
+Defaults to `$CC`.
 
 ### `CFLAGS`
 
-Command-line flags that will be passed verbatim to both compilers (`CC` and
-`HOSTCC`).
+Command-line flags that will be passed verbatim to `CC`.
 
 Defaults to empty.
+
+### `HOSTCFLAGS` or `HOST_CFLAGS`
+
+Command-line flags that will be passed verbatim to `HOSTCC` or `HOST_CC`.
+
+Defaults to `$CFLAGS`.
 
 ### `CPPFLAGS`
 
@@ -115,6 +135,44 @@ Defaults to `/usr/local`.
 
 Path to prepend onto `PREFIX`. This is mostly for distro and package
 maintainers.
+
+Defaults to empty.
+
+### `BINDIR`
+
+The directory to install binaries in.
+
+Defaults to `$PREFIX/bin`.
+
+### `DATAROOTDIR`
+
+The root directory to install data files in.
+
+Defaults to `$PREFIX/share`.
+
+### `DATADIR`
+
+The directory to install data files in.
+
+Defaults to `$DATAROOTDIR`.
+
+### `MANDIR`
+
+The directory to install manpages in.
+
+Defaults to `$DATADIR/man`
+
+### `MAN1DIR`
+
+The directory to install Section 1 manpages in. Because both `bc` and `dc` are
+Section 1 commands, this is the only relevant section directory.
+
+Defaults to `$MANDIR/man1`.
+
+### `GEN_EMU`
+
+The emulator to run bootstrap binaries under. This is only if the binaries
+produced by `HOSTCC` (or `HOST_CC`) need to be run under an emulator to work.
 
 Defaults to empty.
 
@@ -178,6 +236,9 @@ To disable signal handling, use the `-H` flag in the configure step:
 ./configure.sh -H
 ```
 
+History is automatically disabled when building for Windows or on another
+platform that does not support the terminal handling that is required.
+
 ***WARNING***: Of all of the code in the `bc`, this is the only code that is not
 completely portable. If the `bc` does not work on your platform, your first step
 should be to retry with history disabled.
@@ -198,12 +259,20 @@ step:
 
 ### Extra Math
 
-This `bc` has 7 extra operators: `$` (truncation to integer), `@` (set
-precision), `<<` (shift number left; shifts radix right), `>>` (shift number
-right; shifts radix left), and assignment versions of the last three (`@=`,
-`<<=`, and `>>=`), though not for `$` since it is a unary operator. The
-assignment versions are not available in `dc`, but the others are, as the
-operators `$`, `@`, `H`, and `h`, respectively.
+This `bc` has 7 extra operators:
+
+* `$` (truncation to integer)
+* `@` (set precision)
+* `@=` (set precision and assign)
+* `<<` (shift number left, shifts radix right)
+* `<<=` (shift number left and assign)
+* `>>` (shift number right, shifts radix left)
+* `>>=` (shift number right and assign)
+
+There is no assignment version of `$` because it is a unary operator.
+
+The assignment versions of the above operators are not available in `dc`, but
+the others are, as the operators `$`, `@`, `H`, and `h`, respectively.
 
 Extra operators can be disabled using the `-E` flag in the configure step:
 
@@ -238,7 +307,8 @@ make
 make install
 ```
 
-Building with link-time optimization can further increase the performance.
+Building with link-time optimization (`-flto` in clang) can further increase the
+performance.
 
 Manual stripping is not necessary; non-debug builds are automatically stripped
 in the link stage.
@@ -254,22 +324,32 @@ make
 make install
 ```
 
-### Testing
+## Testing
 
-All available tests can be run by running the following command:
+The default test suite can be run with the following command:
 
 ```
 make test
 ```
 
-This `bc`, if built, assumes a working `bc` in the `PATH` to generate some
-tests, unless the `-G` option is given to `configure.sh`, as follows:
+All available tests can be run by running the following command:
+
+```
+make test_all
+```
+
+This `bc`, if built, assumes a working, GNU-compatible `bc` in the `PATH` to
+generate some tests, unless the `-G` option is given to `configure.sh`, as
+follows:
 
 ```
 ./configure.sh -G
 make
 make test
 ```
+
+This `dc` also assumes a working, GNU-compatible `dc` in the `PATH` to generate
+some tests, unless the above option is given to `configure.sh`.
 
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
 [2]: https://www.gnu.org/software/bc/
