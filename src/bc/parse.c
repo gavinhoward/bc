@@ -544,30 +544,32 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 	do {
 		size_t len = p->flags.len;
+		bool loop;
 
 		if (has_brace && !brace) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-		if (BC_PARSE_ELSE(p)) {
-			bc_vec_pop(&p->flags);
+		loop = BC_PARSE_LOOP_INNER(p) != 0;
+
+		if (loop || BC_PARSE_ELSE(p)) {
+
+			if (loop) {
+
+				size_t *label = bc_vec_top(&p->conds);
+
+				bc_parse_push(p, BC_INST_JUMP);
+				bc_parse_pushIndex(p, *label);
+
+				bc_vec_pop(&p->conds);
+			}
+
 			bc_parse_setLabel(p);
+			bc_vec_pop(&p->flags);
 		}
 		else if (BC_PARSE_FUNC_INNER(p)) {
 			BcInst inst = (p->func->voidfn ? BC_INST_RET_VOID : BC_INST_RET0);
 			bc_parse_push(p, inst);
 			bc_parse_updateFunc(p, BC_PROG_MAIN);
 			bc_vec_pop(&p->flags);
-		}
-		else if (BC_PARSE_LOOP_INNER(p)) {
-
-			size_t *label = bc_vec_top(&p->conds);
-
-			bc_parse_push(p, BC_INST_JUMP);
-			bc_parse_pushIndex(p, *label);
-
-			bc_parse_setLabel(p);
-
-			bc_vec_pop(&p->flags);
-			bc_vec_pop(&p->conds);
 		}
 		else if (BC_PARSE_BRACE(p) && !BC_PARSE_IF(p)) bc_vec_pop(&p->flags);
 
