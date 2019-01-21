@@ -999,61 +999,44 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len;
 	uint16_t flags;
+	BcLexType type = p->l.t;
 
-	switch (p->l.t) {
+	if (type == BC_LEX_NLINE) return bc_lex_next(&p->l);
+	if (type == BC_LEX_KEY_AUTO) return bc_parse_auto(p);
 
-		case BC_LEX_NLINE:
-		{
-			return bc_lex_next(&p->l);
+	if (type == BC_LEX_LBRACE) {
+
+		if (!BC_PARSE_BODY(p)) {
+			bc_parse_startBody(p, BC_PARSE_FLAG_BRACE);
+			s = bc_lex_next(&p->l);
+		}
+		else {
+			*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_BRACE;
+			s = bc_lex_next(&p->l);
+			if (!s) s = bc_parse_body(p, true);
 		}
 
-		case BC_LEX_KEY_ELSE:
-		{
-			p->auto_part = false;
-			break;
-		}
+		return s;
+	}
 
-		case BC_LEX_LBRACE:
-		{
-			if (!BC_PARSE_BODY(p)) {
-				bc_parse_startBody(p, BC_PARSE_FLAG_BRACE);
-				s = bc_lex_next(&p->l);
-			}
-			else {
-				*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_BRACE;
-				s = bc_lex_next(&p->l);
-				if (!s) s = bc_parse_body(p, true);
-			}
+	p->auto_part = false;
 
+	if (type != BC_LEX_KEY_ELSE) {
+
+		if (BC_PARSE_IF_END(p)) {
+			bc_parse_noElse(p);
+			if (p->flags.len > 1 && !BC_PARSE_BRACE(p))
+				s = bc_parse_endBody(p, false);
 			return s;
 		}
-
-		case BC_LEX_KEY_AUTO:
-		{
-			return bc_parse_auto(p);
-		}
-
-		default:
-		{
-			p->auto_part = false;
-
-			if (BC_PARSE_IF_END(p)) {
-				bc_parse_noElse(p);
-				if (p->flags.len > 1 && !BC_PARSE_BRACE(p))
-					s = bc_parse_endBody(p, false);
-				return s;
-			}
-			else if (BC_PARSE_BODY(p) && !BC_PARSE_BRACE(p))
-				return bc_parse_body(p, false);
-
-			break;
-		}
+		else if (BC_PARSE_BODY(p) && !BC_PARSE_BRACE(p))
+			return bc_parse_body(p, false);
 	}
 
 	len = p->flags.len;
 	flags = BC_PARSE_TOP_FLAG(p);
 
-	switch (p->l.t) {
+	switch (type) {
 
 		case BC_LEX_OP_INC:
 		case BC_LEX_OP_DEC:
