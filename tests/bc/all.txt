@@ -26,5 +26,6 @@ arrays
 misc
 misc1
 misc2
+misc3
 void
 lib2
