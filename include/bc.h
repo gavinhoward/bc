@@ -106,8 +106,9 @@ BcStatus bc_lex_token(BcLex *l);
 
 #define BC_PARSE_OP(p, l) (((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
 
-#define BC_PARSE_OP_LEFT(op) ((op) & BC_LEX_CHAR_MSB(1))
-#define BC_PARSE_OP_PREC(op) ((op) & ~(BC_LEX_CHAR_MSB(1)))
+#define BC_PARSE_OP_DATA(t) bc_parse_ops[((t) - BC_LEX_OP_INC)]
+#define BC_PARSE_OP_LEFT(op) (BC_PARSE_OP_DATA(op) & BC_LEX_CHAR_MSB(1))
+#define BC_PARSE_OP_PREC(op) (BC_PARSE_OP_DATA(op) & ~(BC_LEX_CHAR_MSB(1)))
 
 #define BC_PARSE_EXPR_ENTRY(e1, e2, e3, e4, e5, e6, e7, e8)  \
 	(((e1) << 7) | ((e2) << 6) | ((e3) << 5) | ((e4) << 4) | \

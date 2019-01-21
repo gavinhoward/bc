@@ -130,15 +130,15 @@ static void bc_parse_operator(BcParse *p, BcLexType type,
                               size_t start, size_t *nexprs)
 {
 	BcLexType t;
-	uchar l, r = BC_PARSE_OP_PREC(bc_parse_ops[type - BC_LEX_OP_INC]);
-	uchar left = BC_PARSE_OP_LEFT(bc_parse_ops[type - BC_LEX_OP_INC]);
+	uchar l, r = BC_PARSE_OP_PREC(type);
+	uchar left = BC_PARSE_OP_LEFT(type);
 
 	while (p->ops.len > start) {
 
 		t = BC_PARSE_TOP_OP(p);
 		if (t == BC_LEX_LPAREN) break;
 
-		l = BC_PARSE_OP_PREC(bc_parse_ops[t - BC_LEX_OP_INC]);
+		l = BC_PARSE_OP_PREC(t);
 		if (l >= r && (l != r || !left)) break;
 
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
