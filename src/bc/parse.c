@@ -104,9 +104,8 @@ static void bc_parse_createCondLabel(BcParse *p, size_t idx) {
 static void bc_parse_createExitLabel(BcParse *p, size_t idx, bool loop) {
 
 	BcInstPtr ip;
-	BcFunc *func = p->func;
 
-	assert(func == bc_vec_item(&p->prog->fns, p->fidx));
+	assert(p->func == bc_vec_item(&p->prog->fns, p->fidx));
 
 	ip.func = loop;
 	ip.idx = idx;
