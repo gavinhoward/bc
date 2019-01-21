@@ -465,16 +465,22 @@ static BcStatus bc_parse_print(BcParse *p) {
 		if (t == BC_LEX_STR) s = bc_parse_str(p, BC_INST_PRINT_POP);
 		else {
 			s = bc_parse_expr_status(p, 0, bc_parse_next_print);
-			if (s) return s;
-			bc_parse_push(p, BC_INST_PRINT_POP);
+			if (!s) bc_parse_push(p, BC_INST_PRINT_POP);
 		}
 
 		if (s) return s;
 
-		comma = p->l.t == BC_LEX_COMMA;
+		comma = (p->l.t == BC_LEX_COMMA);
+
 		if (comma) s = bc_lex_next(&p->l);
+		else {
+			if (!bc_parse_isDelimiter(p))
+				return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+			else break;
+		}
+
 		t = p->l.t;
-	} while (!s && !bc_parse_isDelimiter(p));
+	} while (!s);
 
 	if (s) return s;
 	if (comma) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
