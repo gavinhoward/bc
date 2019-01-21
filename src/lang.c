@@ -221,7 +221,11 @@ void bc_result_free(void *result) {
 			break;
 		}
 
-		default:
+		case BC_RESULT_STR:
+		case BC_RESULT_CONSTANT:
+		case BC_RESULT_VOID:
+		case BC_RESULT_ONE:
+		case BC_RESULT_LAST:
 		{
 			// Do nothing.
 			break;
