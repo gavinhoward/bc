@@ -364,39 +364,19 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
 		// right here, we need to increment this.
 		*nexs = *nexs + 1;
 
-		switch (type) {
-
-			case BC_LEX_NAME:
-			{
-				s = bc_parse_name(p, prev, flags | BC_PARSE_NOCALL);
-				break;
-			}
-
-			case BC_LEX_KEY_LAST:
-			case BC_LEX_KEY_IBASE:
-			case BC_LEX_KEY_OBASE:
-			{
-				bc_parse_push(p, type - BC_LEX_KEY_LAST + BC_INST_LAST);
-				s = bc_lex_next(&p->l);
-				break;
-			}
-
-			case BC_LEX_KEY_SCALE:
-			{
-				s = bc_lex_next(&p->l);
-				if (s) return s;
-				if (p->l.t == BC_LEX_LPAREN)
-					s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
-				else bc_parse_push(p, BC_INST_SCALE);
-				break;
-			}
-
-			default:
-			{
-				s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
-				break;
-			}
+		if (type == BC_LEX_NAME)
+			s = bc_parse_name(p, prev, flags | BC_PARSE_NOCALL);
+		else if (type >= BC_LEX_KEY_LAST && type <= BC_LEX_KEY_OBASE) {
+			bc_parse_push(p, type - BC_LEX_KEY_LAST + BC_INST_LAST);
+			s = bc_lex_next(&p->l);
 		}
+		else if (type == BC_LEX_KEY_SCALE) {
+			s = bc_lex_next(&p->l);
+			if (s) return s;
+			if (p->l.t == BC_LEX_LPAREN) s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+			else bc_parse_push(p, BC_INST_SCALE);
+		}
+		else s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 		if (!s) bc_parse_push(p, inst);
 	}
