@@ -304,7 +304,7 @@ These commands control the values of `ibase`, `obase`, and `scale` (see
 
   * `i`:
     Pops the value off of the top of the stack and uses it to set `ibase`, which
-    must be between `2` and `36`, inclusive.
+    must be between `2` and `16`, inclusive.
 
     If the value on top of the stack has any **scale**, the **scale** is
     ignored.
