@@ -593,11 +593,12 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			if (new_else) s = bc_parse_else(p);
 		}
 
-	} while ((!brace || !has_brace) && p->flags.len > 1 && !new_else &&
-	         (!BC_PARSE_IF_END(p) || brace) &&
+		if (brace && has_brace) brace = false;
+
+	} while (p->flags.len > 1 && !new_else && (!BC_PARSE_IF_END(p) || brace) &&
 	         !(has_brace = (BC_PARSE_BRACE(p) != 0)));
 
-	if (!s && p->flags.len == 1 && brace && !has_brace)
+	if (!s && p->flags.len == 1 && brace)
 		s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	return s;
@@ -1012,21 +1013,6 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 	if (type == BC_LEX_NLINE) return bc_lex_next(&p->l);
 	if (type == BC_LEX_KEY_AUTO) return bc_parse_auto(p);
 
-	if (type == BC_LEX_LBRACE) {
-
-		if (!BC_PARSE_BODY(p)) {
-			bc_parse_startBody(p, BC_PARSE_FLAG_BRACE);
-			s = bc_lex_next(&p->l);
-		}
-		else {
-			*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_BRACE;
-			s = bc_lex_next(&p->l);
-			if (!s) s = bc_parse_body(p, true);
-		}
-
-		return s;
-	}
-
 	p->auto_part = false;
 
 	if (type != BC_LEX_KEY_ELSE) {
@@ -1035,6 +1021,20 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 			bc_parse_noElse(p);
 			if (p->flags.len > 1 && !BC_PARSE_BRACE(p))
 				s = bc_parse_endBody(p, false);
+			return s;
+		}
+		else if (type == BC_LEX_LBRACE) {
+
+			if (!BC_PARSE_BODY(p)) {
+				bc_parse_startBody(p, BC_PARSE_FLAG_BRACE);
+				s = bc_lex_next(&p->l);
+			}
+			else {
+				*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_BRACE;
+				s = bc_lex_next(&p->l);
+				if (!s) s = bc_parse_body(p, true);
+			}
+
 			return s;
 		}
 		else if (BC_PARSE_BODY(p) && !BC_PARSE_BRACE(p))
