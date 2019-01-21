@@ -78,6 +78,44 @@ static bool bc_parse_isDelimiter(BcParse *p) {
 	return good;
 }
 
+static void bc_parse_setLabel(BcParse *p) {
+
+	BcFunc *func = p->func;
+	BcInstPtr *ip = bc_vec_top(&p->exits);
+	size_t *label;
+
+	assert(func == bc_vec_item(&p->prog->fns, p->fidx));
+
+	label = bc_vec_item(&func->labels, ip->idx);
+	*label = func->code.len;
+
+	bc_vec_pop(&p->exits);
+}
+
+static void bc_parse_createLabel(BcParse *p, size_t idx) {
+	bc_vec_push(&p->func->labels, &idx);
+}
+
+static void bc_parse_createCondLabel(BcParse *p, size_t idx) {
+	bc_parse_createLabel(p, p->func->code.len);
+	bc_vec_push(&p->conds, &idx);
+}
+
+static void bc_parse_createExitLabel(BcParse *p, size_t idx, bool loop) {
+
+	BcInstPtr ip;
+	BcFunc *func = p->func;
+
+	assert(func == bc_vec_item(&p->prog->fns, p->fidx));
+
+	ip.func = loop;
+	ip.idx = idx;
+	ip.len = 0;
+
+	bc_vec_push(&p->exits, &ip);
+	bc_parse_createLabel(p, idx);
+}
+
 static size_t bc_parse_addFunc(BcParse *p, char *name) {
 
 	size_t idx = bc_program_insertFunc(p->prog, name);
@@ -510,17 +548,8 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		if (has_brace && !brace) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 		if (BC_PARSE_ELSE(p)) {
-
-			BcInstPtr *ip;
-			size_t *label;
-
 			bc_vec_pop(&p->flags);
-
-			ip = bc_vec_top(&p->exits);
-			label = bc_vec_item(&p->func->labels, ip->idx);
-			*label = p->func->code.len;
-
-			bc_vec_pop(&p->exits);
+			bc_parse_setLabel(p);
 		}
 		else if (BC_PARSE_FUNC_INNER(p)) {
 			BcInst inst = (p->func->voidfn ? BC_INST_RET_VOID : BC_INST_RET0);
@@ -530,17 +559,14 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		}
 		else if (BC_PARSE_LOOP_INNER(p)) {
 
-			BcInstPtr *ip = bc_vec_top(&p->exits);
 			size_t *label = bc_vec_top(&p->conds);
 
 			bc_parse_push(p, BC_INST_JUMP);
 			bc_parse_pushIndex(p, *label);
 
-			label = bc_vec_item(&p->func->labels, ip->idx);
-			*label = p->func->code.len;
+			bc_parse_setLabel(p);
 
 			bc_vec_pop(&p->flags);
-			bc_vec_pop(&p->exits);
 			bc_vec_pop(&p->conds);
 		}
 		else if (BC_PARSE_BRACE(p) && !BC_PARSE_IF(p)) bc_vec_pop(&p->flags);
@@ -574,26 +600,15 @@ static void bc_parse_startBody(BcParse *p, uint16_t flags) {
 }
 
 static void bc_parse_noElse(BcParse *p) {
-
-	BcInstPtr *ip;
-	size_t *label;
 	uint16_t *flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
-
 	*flag_ptr = (*flag_ptr & ~(BC_PARSE_FLAG_IF_END));
-
-	ip = bc_vec_top(&p->exits);
-	assert(!ip->func && !ip->len);
-	assert(p->func == bc_vec_item(&p->prog->fns, p->fidx));
-	label = bc_vec_item(&p->func->labels, ip->idx);
-	*label = p->func->code.len;
-
-	bc_vec_pop(&p->exits);
+	bc_parse_setLabel(p);
 }
 
 static BcStatus bc_parse_if(BcParse *p) {
 
 	BcStatus s;
-	BcInstPtr ip;
+	size_t idx;
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
@@ -609,12 +624,10 @@ static BcStatus bc_parse_if(BcParse *p) {
 	if (s) return s;
 	bc_parse_push(p, BC_INST_JUMP_ZERO);
 
-	ip.idx = p->func->labels.len;
-	ip.func = ip.len = 0;
+	idx = p->func->labels.len;
 
-	bc_parse_pushIndex(p, ip.idx);
-	bc_vec_push(&p->exits, &ip);
-	bc_vec_push(&p->func->labels, &ip.idx);
+	bc_parse_pushIndex(p, idx);
+	bc_parse_createExitLabel(p, idx, false);
 	bc_parse_startBody(p, BC_PARSE_FLAG_IF);
 
 	return BC_STATUS_SUCCESS;
@@ -622,20 +635,16 @@ static BcStatus bc_parse_if(BcParse *p) {
 
 static BcStatus bc_parse_else(BcParse *p) {
 
-	BcInstPtr ip;
+	size_t idx = p->func->labels.len;
 
 	if (!BC_PARSE_IF_END(p)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-	ip.idx = p->func->labels.len;
-	ip.func = ip.len = 0;
-
 	bc_parse_push(p, BC_INST_JUMP);
-	bc_parse_pushIndex(p, ip.idx);
+	bc_parse_pushIndex(p, idx);
 
 	bc_parse_noElse(p);
 
-	bc_vec_push(&p->exits, &ip);
-	bc_vec_push(&p->func->labels, &ip.idx);
+	bc_parse_createExitLabel(p, idx, false);
 	bc_parse_startBody(p, BC_PARSE_FLAG_ELSE);
 
 	return bc_lex_next(&p->l);
@@ -644,7 +653,7 @@ static BcStatus bc_parse_else(BcParse *p) {
 static BcStatus bc_parse_while(BcParse *p) {
 
 	BcStatus s;
-	BcInstPtr ip;
+	size_t idx;
 
 	s = bc_lex_next(&p->l);
 	if (s) return s;
@@ -652,17 +661,11 @@ static BcStatus bc_parse_while(BcParse *p) {
 	s = bc_lex_next(&p->l);
 	if (s) return s;
 
-	ip.idx = p->func->labels.len;
+	bc_parse_createCondLabel(p, p->func->labels.len);
 
-	bc_vec_push(&p->func->labels, &p->func->code.len);
-	bc_vec_push(&p->conds, &ip.idx);
+	idx = p->func->labels.len;
 
-	ip.idx = p->func->labels.len;
-	ip.func = 1;
-	ip.len = 0;
-
-	bc_vec_push(&p->exits, &ip);
-	bc_vec_push(&p->func->labels, &ip.idx);
+	bc_parse_createExitLabel(p, idx, true);
 
 	s = bc_parse_expr_status(p, BC_PARSE_REL, bc_parse_next_rel);
 	if (s) return s;
@@ -671,7 +674,7 @@ static BcStatus bc_parse_while(BcParse *p) {
 	if (s) return s;
 
 	bc_parse_push(p, BC_INST_JUMP_ZERO);
-	bc_parse_pushIndex(p, ip.idx);
+	bc_parse_pushIndex(p, idx);
 	bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
 
 	return BC_STATUS_SUCCESS;
@@ -705,7 +708,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 	body_idx = update_idx + 1;
 	exit_idx = body_idx + 1;
 
-	bc_vec_push(&p->func->labels, &p->func->code.len);
+	bc_parse_createLabel(p, p->func->code.len);
 
 	if (p->l.t != BC_LEX_SCOLON)
 		s = bc_parse_expr_status(p, BC_PARSE_REL, bc_parse_next_for);
@@ -733,8 +736,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 
 	ip.idx = p->func->labels.len;
 
-	bc_vec_push(&p->conds, &update_idx);
-	bc_vec_push(&p->func->labels, &p->func->code.len);
+	bc_parse_createCondLabel(p, update_idx);
 
 	if (p->l.t != BC_LEX_RPAREN) {
 		s = bc_parse_expr_status(p, 0, bc_parse_next_rel);
@@ -747,14 +749,9 @@ static BcStatus bc_parse_for(BcParse *p) {
 	if (p->l.t != BC_LEX_RPAREN) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 	bc_parse_push(p, BC_INST_JUMP);
 	bc_parse_pushIndex(p, cond_idx);
-	bc_vec_push(&p->func->labels, &p->func->code.len);
+	bc_parse_createLabel(p, p->func->code.len);
 
-	ip.idx = exit_idx;
-	ip.func = 1;
-	ip.len = 0;
-
-	bc_vec_push(&p->exits, &ip);
-	bc_vec_push(&p->func->labels, &ip.idx);
+	bc_parse_createExitLabel(p, exit_idx, true);
 	s = bc_lex_next(&p->l);
 	if (!s) bc_parse_startBody(p, BC_PARSE_FLAG_LOOP | BC_PARSE_FLAG_LOOP_INNER);
 
