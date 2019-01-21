@@ -113,7 +113,7 @@ static void bc_parse_createExitLabel(BcParse *p, size_t idx, bool loop) {
 	ip.len = 0;
 
 	bc_vec_push(&p->exits, &ip);
-	bc_parse_createLabel(p, idx);
+	bc_parse_createLabel(p, SIZE_MAX);
 }
 
 static size_t bc_parse_addFunc(BcParse *p, char *name) {
