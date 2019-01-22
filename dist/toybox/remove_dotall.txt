@@ -63,7 +63,6 @@
 ^void bc_vm_puts\(const char \*str, FILE \*restrict f\);$
 ^void bc_vm_putchar\(int c\);$
 ^void bc_vm_fflush\(FILE \*restrict f\);$
- != 0
 \n\n[ ]*BC_STATUS_INVALID_OPTION,$
 ^BcStatus bc_parse_expression\(BcParse \*p, uint8_t flags\).*?\n\}$
 #define BC_IS_BC .*?$
