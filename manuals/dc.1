@@ -16,23 +16,7 @@ dc(1) is an arbitrary\-precision calculator\. It uses a stack (reverse Polish no
 If no expressions or files are given on the command line, as in options below, or for files, as extra command\-line arguments, then dc(1) reads from \fBstdin\fR\. Otherwise, those expressions and files are processed, and dc(1) will then exit\.
 .
 .SH "OPTIONS"
-The following are the options that bc(1) accepts\.
-.
-.TP
-\fB\-e\fR \fIexpr\fR
-Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
-.
-.TP
-\fB\-\-expression\fR=\fIexpr\fR
-Same as \fB\-e\fR\.
-.
-.TP
-\fB\-f\fR \fIfile\fR
-Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
-.
-.TP
-\fB\-\-file\fR=\fIfile\fR
-Same as \fB\-f\fR\.
+The following are the options that dc(1) accepts\.
 .
 .TP
 \fB\-h\fR, \fB\-\-help\fR
@@ -45,6 +29,14 @@ Print the version information (copyright header) and exit\.
 .TP
 \fB\-x\fR \fB\-\-extended\-register\fR
 Enables extended register mode\. See \fIREGISTERS\fR for more information\.
+.
+.TP
+\fB\-e\fR \fIexpr\fR, \fB\-\-expression\fR=\fIexpr\fR
+Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
+.
+.TP
+\fB\-f\fR \fIfile\fR, \fB\-\-file\fR=\fIfile\fR
+Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
 .
 .SH "SYNTAX"
 \fBibase\fR is a global variable determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\.

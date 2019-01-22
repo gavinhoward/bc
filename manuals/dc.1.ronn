@@ -21,23 +21,7 @@ Otherwise, those expressions and files are processed, and dc(1) will then exit.
 OPTIONS
 -------
 
-The following are the options that bc(1) accepts.
-
-  * `-e` <expr>:
-    Evaluates `expr`. If multiple expressions are given, they are evaluated in
-    order. If files are given as well (see below), the expressions and files are
-    evaluated in the order given. This means that if a file is given before an
-    expression, the file is read in and evaluated first.
-
-  * `--expression`=<expr>:
-    Same as `-e`.
-
-  * `-f` *file*:
-    Reads in `file` and evaluates it. If expressions are also given (see above),
-    the expressions are evaluated in the order given.
-
-  * `--file`=<file>:
-    Same as `-f`.
+The following are the options that dc(1) accepts.
 
   * `-h`, `--help`:
     Prints a usage message and quits.
@@ -48,6 +32,16 @@ The following are the options that bc(1) accepts.
   * `-x` `--extended-register`:
     Enables extended register mode. See [REGISTERS](#REGISTERS) for more
     information.
+
+  * `-e` <expr>, `--expression`=<expr>:
+    Evaluates `expr`. If multiple expressions are given, they are evaluated in
+    order. If files are given as well (see below), the expressions and files are
+    evaluated in the order given. This means that if a file is given before an
+    expression, the file is read in and evaluated first.
+
+  * `-f` *file*, `--file`=<file>:
+    Reads in `file` and evaluates it. If expressions are also given (see above),
+    the expressions are evaluated in the order given.
 
 SYNTAX
 ------

@@ -27,22 +27,6 @@ OPTIONS
 
 The following are the options that bc(1) accepts.
 
-  * `-e` <expr>:
-    Evaluates `expr`. If multiple expressions are given, they are evaluated in
-    order. If files are given as well (see below), the expressions and files are
-    evaluated in the order given. This means that if a file is given before an
-    expression, the file is read in and evaluated first.
-
-  * `--expression`=<expr>:
-    Same as `-e`.
-
-  * `-f` *file*:
-    Reads in `file` and evaluates it. If expressions are also given (see above),
-    the expressions are evaluated in the order given.
-
-  * `--file`=<file>:
-    Same as `-f`.
-
   * `-h`, `--help`:
     Prints a usage message and quits.
 
@@ -78,6 +62,16 @@ The following are the options that bc(1) accepts.
   * `-w`, `--warn`:
     Like `-s` and `--standard`, except that warnings (and not errors) are given
     for non-standard extensions.
+
+  * `-e` <expr>, `--expression`=<expr>:
+    Evaluates `expr`. If multiple expressions are given, they are evaluated in
+    order. If files are given as well (see below), the expressions and files are
+    evaluated in the order given. This means that if a file is given before an
+    expression, the file is read in and evaluated first.
+
+  * `-f` *file*, `--file`=<file>:
+    Reads in `file` and evaluates it. If expressions are also given (see above),
+    the expressions are evaluated in the order given.
 
 SYNTAX
 ------

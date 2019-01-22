@@ -22,22 +22,6 @@ With all build options enabled (except for extra math) this bc(1) is a drop\-in 
 The following are the options that bc(1) accepts\.
 .
 .TP
-\fB\-e\fR \fIexpr\fR
-Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
-.
-.TP
-\fB\-\-expression\fR=\fIexpr\fR
-Same as \fB\-e\fR\.
-.
-.TP
-\fB\-f\fR \fIfile\fR
-Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
-.
-.TP
-\fB\-\-file\fR=\fIfile\fR
-Same as \fB\-f\fR\.
-.
-.TP
 \fB\-h\fR, \fB\-\-help\fR
 Prints a usage message and quits\.
 .
@@ -73,6 +57,14 @@ Print the version information (copyright header) and exit\.
 .TP
 \fB\-w\fR, \fB\-\-warn\fR
 Like \fB\-s\fR and \fB\-\-standard\fR, except that warnings (and not errors) are given for non\-standard extensions\.
+.
+.TP
+\fB\-e\fR \fIexpr\fR, \fB\-\-expression\fR=\fIexpr\fR
+Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
+.
+.TP
+\fB\-f\fR \fIfile\fR, \fB\-\-file\fR=\fIfile\fR
+Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
 .
 .SH "SYNTAX"
 The syntax for bc(1) programs is mostly C\-like, with some differences\. This bc(1) follows the POSIX standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, which is a much more thorough resource for the language this bc(1) accepts\. This section is meant to be a summary and a listing of all the extensions to the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR\.
