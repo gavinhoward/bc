@@ -292,7 +292,7 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	for (carry = 0, i = 0; !BC_SIGNAL && i < min_rdx + min_int; ++i, ++c->len) {
 		in = ((unsigned int) ptr_a[i]) + ((unsigned int) ptr_b[i]) + carry;
 		carry = in / 10;
-		assert(carry >= 0 && carry < 10);
+		assert(carry < 10);
 		ptr_c[i] = (BcDig) (in % 10);
 		assert(ptr_c[i] >= 0 && ptr_c[i] < 10);
 	}
@@ -300,7 +300,7 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	for (; !BC_SIGNAL && i < max + min_rdx; ++i, ++c->len) {
 		in = ((unsigned int) ptr[i]) + carry;
 		carry = in / 10;
-		assert(carry >= 0 && carry < 10);
+		assert(carry < 10);
 		ptr_c[i] = (BcDig) (in % 10);
 		assert(ptr_c[i] >= 0 && ptr_c[i] < 10);
 	}
@@ -411,7 +411,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 				in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
 				in += carry;
 				carry = in / 10;
-				assert(carry >= 0 && carry < 10);
+				assert(carry < 10);
 				c->num[i + j] = (BcDig) (in % 10);
 				assert(c->num[i + j] >= 0 && c->num[i + j] < 10);
 			}

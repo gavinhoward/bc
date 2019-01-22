@@ -695,7 +695,6 @@ static BcStatus bc_parse_while(BcParse *p) {
 static BcStatus bc_parse_for(BcParse *p) {
 
 	BcStatus s;
-	BcInstPtr ip;
 	size_t cond_idx, exit_idx, body_idx, update_idx;
 
 	s = bc_lex_next(&p->l);
@@ -745,8 +744,6 @@ static BcStatus bc_parse_for(BcParse *p) {
 	bc_parse_pushIndex(p, exit_idx);
 	bc_parse_push(p, BC_INST_JUMP);
 	bc_parse_pushIndex(p, body_idx);
-
-	ip.idx = p->func->labels.len;
 
 	bc_parse_createCondLabel(p, update_idx);
 
