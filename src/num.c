@@ -238,11 +238,10 @@ static BcStatus bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
 static unsigned int bc_num_addDigit(BcDig *restrict num, unsigned int d, unsigned int c)
 {
 	d += c;
-	c = d / 10;
-	assert(c < 10);
 	*num = (BcDig) (d % 10);
 	assert(*num >= 0 && *num < 10);
-	return c;
+	assert((d / 10) < 10);
+	return d / 10;
 }
 
 static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
