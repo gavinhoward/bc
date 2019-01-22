@@ -235,14 +235,14 @@ static BcStatus bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-static unsigned int bc_num_setDigit(BcDig *restrict num, unsigned int in, unsigned int carry)
+static unsigned int bc_num_addDigit(BcDig *restrict num, unsigned int d, unsigned int c)
 {
-	in += carry;
-	carry = in / 10;
-	assert(carry < 10);
-	*num = (BcDig) (in % 10);
+	d += c;
+	c = d / 10;
+	assert(c < 10);
+	*num = (BcDig) (d % 10);
 	assert(*num >= 0 && *num < 10);
-	return carry;
+	return c;
 }
 
 static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
@@ -301,11 +301,11 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	for (carry = 0, i = 0; !BC_SIGNAL && i < min_rdx + min_int; ++i) {
 		unsigned int in = (unsigned int) (ptr_a[i] + ptr_b[i]);
-		carry = bc_num_setDigit(ptr_c + i, in, carry);
+		carry = bc_num_addDigit(ptr_c + i, in, carry);
 	}
 
 	for (; !BC_SIGNAL && i < max + min_rdx; ++i)
-		carry = bc_num_setDigit(ptr_c + i, (unsigned int) ptr[i], carry);
+		carry = bc_num_addDigit(ptr_c + i, (unsigned int) ptr[i], carry);
 
 	c->len += i;
 
@@ -418,7 +418,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 				unsigned int in = (uchar) ptr[j];
 				assert(in < 10);
 				in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
-				carry = bc_num_setDigit(ptr + j, in, carry);
+				carry = bc_num_addDigit(ptr + j, in, carry);
 			}
 
 			ptr[j] += (BcDig) carry;
