@@ -128,7 +128,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
 	bc_vm_printError(e, p ? bc_err_fmt : bc_warn_fmt, line, args);
 	va_end(args);
 
-	return (!!p) ? BC_STATUS_ERROR : BC_STATUS_SUCCESS;
+	return p ? BC_STATUS_ERROR : BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_vm_envArgs(void) {

@@ -94,7 +94,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	assert(a && b);
 
 	if (a == b) return 0;
-	if (BC_NUM_ZERO(a)) return BC_NUM_NEG(!!b->len, !b->neg);
+	if (BC_NUM_ZERO(a)) return BC_NUM_NEG(b->len != 0, !b->neg);
 	if (BC_NUM_ZERO(b)) return BC_NUM_CMP_ZERO(a);
 	if (a->neg) {
 		if (b->neg) neg = true;
