@@ -235,11 +235,21 @@ static BcStatus bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
+static unsigned int bc_num_setDigit(BcDig *restrict num, unsigned int in, unsigned int carry)
+{
+	in += carry;
+	carry = in / 10;
+	assert(carry < 10);
+	*num = (BcDig) (in % 10);
+	assert(*num >= 0 && *num < 10);
+	return carry;
+}
+
 static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
 	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
-	unsigned int carry, in;
+	unsigned int carry;
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
@@ -257,7 +267,6 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	c->neg = a->neg;
 	c->rdx = BC_MAX(a->rdx, b->rdx);
 	min_rdx = BC_MIN(a->rdx, b->rdx);
-	c->len = 0;
 
 	if (a->rdx > b->rdx) {
 		diff = a->rdx - b->rdx;
@@ -272,8 +281,9 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		ptr_b = b->num + diff;
 	}
 
-	for (ptr_c = c->num, i = 0; i < diff; ++i, ++c->len) ptr_c[i] = ptr[i];
+	for (ptr_c = c->num, i = 0; i < diff; ++i) ptr_c[i] = ptr[i];
 
+	c->len = diff;
 	ptr_c += diff;
 	a_int = BC_NUM_INT(a);
 	b_int = BC_NUM_INT(b);
@@ -289,21 +299,15 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		ptr = ptr_b;
 	}
 
-	for (carry = 0, i = 0; !BC_SIGNAL && i < min_rdx + min_int; ++i, ++c->len) {
-		in = ((unsigned int) ptr_a[i]) + ((unsigned int) ptr_b[i]) + carry;
-		carry = in / 10;
-		assert(carry < 10);
-		ptr_c[i] = (BcDig) (in % 10);
-		assert(ptr_c[i] >= 0 && ptr_c[i] < 10);
+	for (carry = 0, i = 0; !BC_SIGNAL && i < min_rdx + min_int; ++i) {
+		unsigned int in = (unsigned int) (ptr_a[i] + ptr_b[i]);
+		carry = bc_num_setDigit(ptr_c + i, in, carry);
 	}
 
-	for (; !BC_SIGNAL && i < max + min_rdx; ++i, ++c->len) {
-		in = ((unsigned int) ptr[i]) + carry;
-		carry = in / 10;
-		assert(carry < 10);
-		ptr_c[i] = (BcDig) (in % 10);
-		assert(ptr_c[i] >= 0 && ptr_c[i] < 10);
-	}
+	for (; !BC_SIGNAL && i < max + min_rdx; ++i)
+		carry = bc_num_setDigit(ptr_c + i, (unsigned int) ptr[i], carry);
+
+	c->len += i;
 
 	if (carry) c->num[c->len++] = (BcDig) carry;
 
@@ -396,29 +400,30 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	{
 		size_t i, j, len;
 		unsigned int carry;
+		BcDig *ptr_c;
 
 		bc_num_expand(c, a->len + b->len + 1);
 
-		memset(c->num, 0, sizeof(BcDig) * c->cap);
+		ptr_c = c->num;
+		memset(ptr_c, 0, sizeof(BcDig) * c->cap);
 		c->len = len = 0;
 
 		for (i = 0; !BC_SIGNAL && i < b->len; ++i) {
 
+			BcDig *ptr = ptr_c + i;
+
 			carry = 0;
 
 			for (j = 0; !BC_SIGNAL && j < a->len; ++j) {
-				unsigned int in = (uchar) c->num[i + j];
+				unsigned int in = (uchar) ptr[j];
+				assert(in < 10);
 				in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
-				in += carry;
-				carry = in / 10;
-				assert(carry < 10);
-				c->num[i + j] = (BcDig) (in % 10);
-				assert(c->num[i + j] >= 0 && c->num[i + j] < 10);
+				carry = bc_num_setDigit(ptr + j, in, carry);
 			}
 
-			c->num[i + j] += (BcDig) carry;
-			assert(c->num[i + j] >= 0 && c->num[i + j] < 10);
-			len = BC_MAX(len, i + j + !!carry);
+			ptr[j] += (BcDig) carry;
+			assert(ptr[j] >= 0 && ptr[j] < 10);
+			len = BC_MAX(len, i + j + (carry != 0));
 		}
 
 		c->len = len;
