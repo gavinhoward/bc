@@ -306,7 +306,8 @@ if [ "$bc_only" -eq 1 ]; then
 	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
 	install_prereqs=" install_bc_manpage"
-	uninstall_prereqs=" uninstall_bc_manpage"
+	uninstall_prereqs=" uninstall_bc"
+	uninstall_man_prereqs=" uninstall_bc_manpage"
 
 elif [ "$dc_only" -eq 1 ]; then
 
@@ -329,7 +330,8 @@ elif [ "$dc_only" -eq 1 ]; then
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
 	install_prereqs=" install_dc_manpage"
-	uninstall_prereqs=" uninstall_dc_manpage"
+	uninstall_prereqs=" uninstall_dc"
+	uninstall_man_prereqs=" uninstall_dc_manpage"
 
 else
 
@@ -344,7 +346,8 @@ else
 	karatsuba_test="@\$(KARATSUBA) 100 \$(BC_EXEC)"
 
 	install_prereqs=" install_bc_manpage install_dc_manpage"
-	uninstall_prereqs=" uninstall_bc_manpage uninstall_dc_manpage"
+	uninstall_prereqs=" uninstall_bc uninstall_dc"
+	uninstall_man_prereqs=" uninstall_bc_manpage uninstall_dc_manpage"
 
 fi
 
@@ -420,7 +423,7 @@ if [ "$install_manpages" -ne 0 ]; then
 
 else
 	install_prereqs=""
-	uninstall_prereqs=""
+	uninstall_man_prereqs=""
 fi
 
 if [ "$CC" = "" ]; then
@@ -505,6 +508,7 @@ contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
 contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
 contents=$(replace "$contents" "INSTALL_PREREQS" "$install_prereqs")
+contents=$(replace "$contents" "UNINSTALL_MAN_PREREQS" "$uninstall_man_prereqs")
 contents=$(replace "$contents" "UNINSTALL_PREREQS" "$uninstall_prereqs")
 
 contents=$(replace "$contents" "EXECUTABLES" "$executables")

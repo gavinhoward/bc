@@ -277,11 +277,15 @@ install:%%INSTALL_PREREQS%%
 uninstall_bc_manpage:
 	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
 
+uninstall_bc:
+	$(RM) -f $(DESTDIR)$(BINDIR)/$(BC)
+
 uninstall_dc_manpage:
 	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
-uninstall:%%UNINSTALL_PREREQS%%
-	$(RM) -f $(DESTDIR)$(BINDIR)/$(BC)
+uninstall_dc:
 	$(RM) -f $(DESTDIR)$(BINDIR)/$(DC)
+
+uninstall:%%UNINSTALL_MAN_PREREQS%%%%UNINSTALL_PREREQS%%
 
 .PHONY: help clean clean_tests install uninstall test
