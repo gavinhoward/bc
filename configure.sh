@@ -26,7 +26,7 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-bD|-dB|-c] [-EgGhHRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s [-bD|-dB|-c] [-EgGhHMRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
 	printf '\n'
 	printf '    -b\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -61,6 +61,8 @@ usage() {
 	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 32).\n'
 	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 2.\n'
 	printf '        It is an error if "-m" is specified too.\n'
+	printf '    -M\n'
+	printf '        Disable installing manpages.\n'
 	printf '    -O OPT_LEVEL\n'
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
@@ -222,8 +224,9 @@ refs=1
 extra_math=1
 optimization=""
 generate_tests=1
+install_manpages=1
 
-while getopts "bBcdDEgGhHk:O:RS" opt; do
+while getopts "bBcdDEgGhHk:MO:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -237,6 +240,7 @@ while getopts "bBcdDEgGhHk:O:RS" opt; do
 		h) usage ;;
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
+		M) install_manpages=0 ;;
 		O) optimization="$OPTARG" ;;
 		R) refs=0 ;;
 		S) signals=0 ;;
@@ -302,6 +306,7 @@ if [ "$bc_only" -eq 1 ]; then
 	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
 	install_prereqs=" install_bc_manpage"
+	uninstall_prereqs=" uninstall_bc_manpage"
 
 elif [ "$dc_only" -eq 1 ]; then
 
@@ -324,6 +329,7 @@ elif [ "$dc_only" -eq 1 ]; then
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
 	install_prereqs=" install_dc_manpage"
+	uninstall_prereqs=" uninstall_dc_manpage"
 
 else
 
@@ -338,6 +344,7 @@ else
 	karatsuba_test="@\$(KARATSUBA) 100 \$(BC_EXEC)"
 
 	install_prereqs=" install_bc_manpage install_dc_manpage"
+	uninstall_prereqs=" uninstall_bc_manpage uninstall_dc_manpage"
 
 fi
 
@@ -393,20 +400,27 @@ if [ "$BINDIR" = "" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
-if [ "$DATAROOTDIR" = "" ]; then
-	DATAROOTDIR="$PREFIX/share"
-fi
+if [ "$install_manpages" -ne 0 ]; then
 
-if [ "$DATADIR" = "" ]; then
-	DATADIR="$DATAROOTDIR"
-fi
+	if [ "$DATAROOTDIR" = "" ]; then
+		DATAROOTDIR="$PREFIX/share"
+	fi
 
-if [ "$MANDIR" = "" ]; then
-	MANDIR="$DATADIR/man"
-fi
+	if [ "$DATADIR" = "" ]; then
+		DATADIR="$DATAROOTDIR"
+	fi
 
-if [ "$MAN1DIR" = "" ]; then
-	MAN1DIR="$MANDIR/man1"
+	if [ "$MANDIR" = "" ]; then
+		MANDIR="$DATADIR/man"
+	fi
+
+	if [ "$MAN1DIR" = "" ]; then
+		MAN1DIR="$MANDIR/man1"
+	fi
+
+else
+	install_prereqs=""
+	uninstall_prereqs=""
 fi
 
 if [ "$CC" = "" ]; then
@@ -491,6 +505,7 @@ contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
 contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
 contents=$(replace "$contents" "INSTALL_PREREQS" "$install_prereqs")
+contents=$(replace "$contents" "UNINSTALL_PREREQS" "$uninstall_prereqs")
 
 contents=$(replace "$contents" "EXECUTABLES" "$executables")
 contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")

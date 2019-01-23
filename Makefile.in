@@ -89,6 +89,8 @@ DC_MANPAGE_NAME = $(DC).1
 DC_MANPAGE = $(MANUALS)/$(DC_MANPAGE_NAME)
 DC_RONN = $(DC_MANPAGE).ronn
 
+MANPAGE_INSTALL_ARGS = -Dm644
+
 DESTDIR = %%DESTDIR%%
 BINDIR = %%BINDIR%%
 MAN1DIR = %%MAN1DIR%%
@@ -264,18 +266,22 @@ clean_tests: clean clean_config
 	@$(RM) -f .test.txt
 
 install_bc_manpage:
-	$(SAFE_INSTALL) -D $(BC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
+	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(BC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
 
 install_dc_manpage:
-	$(SAFE_INSTALL) -D $(DC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
+	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(DC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
 install:%%INSTALL_PREREQS%%
 	$(INSTALL) $(DESTDIR)$(BINDIR) $(BIN)
 
-uninstall:
+uninstall_bc_manpage:
+	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
+
+uninstall_dc_manpage:
+	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
+
+uninstall:%%UNINSTALL_PREREQS%%
 	$(RM) -f $(DESTDIR)$(BINDIR)/$(BC)
 	$(RM) -f $(DESTDIR)$(BINDIR)/$(DC)
-	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
-	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
 .PHONY: help clean clean_tests install uninstall test
