@@ -161,12 +161,12 @@ help:
 	@printf '    clean_config    removes all build files as well as the generated Makefile\n'
 	@printf '    clean_tests     removes all build files as well as generated tests\n'
 	@printf '    install         installs binaries to "%s%s"\n' "$(DESTDIR)" "$(BINDIR)"
-	@printf '                    and manpages to "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
+	@printf '                    and (if enabled) manpages to "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
 	@printf '    karatsuba       runs the karatsuba script (requires Python 3)\n'
 	@printf '    karatsuba_test  runs the karatsuba script while running tests\n'
 	@printf '                    (requires Python 3)\n'
 	@printf '    uninstall       uninstalls binaries from "%s%s"\n' "$(DESTDIR)" "$(BINDIR)"
-	@printf '                    and manpages from "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
+	@printf '                    and (if enabled) manpages from "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
 	@printf '    test            runs the test suite\n'
 	@printf '    test_all        runs the test suite as well as the Linux timeconst.bc test,\n'
 	@printf '                    if it exists and bc has been built\n'
