@@ -61,6 +61,7 @@ vm->read_ret
 vm->name
 vm->
 BC_ENABLED && \((.*?)\)
+else if \(BC_IS_BC \|\| BC_PROG_NUM\(opnd, num\)\)
 BC_IS_BC && \((.*?)\)
 BC_IS_BC \? (.*?) : .*?;$
 BC_IS_BC && ([a-z])

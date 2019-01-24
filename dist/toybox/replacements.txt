@@ -61,6 +61,7 @@ BC_INST_RET
 toys.which->name
 BC_VM->
 \1
+else
 \1
 \1;
 \1
