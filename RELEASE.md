@@ -17,7 +17,7 @@ This is the checklist for cutting a release.
 	* minrelease
 7.	Have other testers try to break it.
 8.	Fuzz with AFL
-	* release
+	* reldebug
 9.	Fix AFL crashes as much as possible.
 10.	Repeat steps 3-9 again and repeat until nothing is found.
 11.	Change the version (remove "-dev") and commit.
