@@ -1098,7 +1098,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	if (s) return s;
 
 #if DC_ENABLED
-	if (!len) {
+	if (inst == BC_INST_ABS) {
 		s = bc_program_type_num(opnd, num);
 		if (s) return s;
 	}
@@ -1113,7 +1113,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	}
 	else {
 
-		unsigned long val;
+		unsigned long val = 0;
 
 		if (len) {
 			if (BC_IS_BC && opnd->t == BC_RESULT_ARRAY)
@@ -1126,7 +1126,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 #endif // DC_ENABLED
 			else val = bc_program_len(num);
 		}
-		else val = bc_program_scale(num);
+		else if (BC_IS_BC || BC_PROG_NUM(opnd, num)) val = bc_program_scale(num);
 
 		bc_num_createFromUlong(resn, val);
 	}
