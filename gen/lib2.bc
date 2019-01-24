@@ -76,24 +76,17 @@ define comb(n,r){
 	return f
 }
 define log(x,b){
-	auto p,i,s
-	i=ibase
-	ibase=A
+	auto p,s
 	s=scale
-	if(scale<20)scale=20
+	if(scale<K)scale=K
 	if(scale(x)>scale)scale=scale(x)
 	scale*=2
 	p=l(x)/l(b)
 	scale=s
-	ibase=i
 	return p
 }
-define l2(x){
-	return log(x,2)
-}
-define l10(x){
-	return log(x,10)
-}
+define l2(x){return log(x,2)}
+define l10(x){return log(x,A)}
 define pi(s){
 	auto t,v
 	if(s==0)return 3
@@ -105,18 +98,14 @@ define pi(s){
 	return v@s
 }
 define void output(x,b){
-	auto b2
-	b2=obase
+	auto c
+	c=obase
 	obase=b
 	x
-	obase=b2
+	obase=c
 }
-define void hex(x){
-	output(x,G)
-}
-define void binary(x){
-	output(x,2)
-}
+define void hex(x){output(x,G)}
+define void binary(x){output(x,2)}
 define ubytes(x){
 	auto p,b,i
 	b=ibase
@@ -152,7 +141,7 @@ define void output_byte(x,i){
 	y=log(256,obase)$
 	if(b>1)p=log(b,obase)$+1
 	else p=b
-	for(i=y-p;i>0;--i) print 0
+	for(i=y-p;i>0;--i)print 0
 	if(b)print b
 	scale=s
 	ibase=j
@@ -163,8 +152,8 @@ define void output_uint(x,n){
 	ibase=A
 	for(i=n-1;i>=0;--i){
 		output_byte(x,i)
-		if(i)print " "
-		else print "\n"
+		if(i)print" "
+		else print"\n"
 	}
 	ibase=b
 }
@@ -184,15 +173,15 @@ define void binary_uint(x,n){
 }
 define void uintn(x,n){
 	if(scale(x)){
-		print "Error: ", x, " is not an integer.\n"
+		print"Error: ",x," is not an integer.\n"
 		return
 	}
 	if(x<0){
-		print "Error: ", x, " is negative.\n"
+		print"Error: ",x," is negative.\n"
 		return
 	}
 	if(x>=2^(n*8)){
-		print "Error: ", x, " cannot fit into ", n, " unsigned byte(s).\n"
+		print"Error: ",x," cannot fit into ",n," unsigned byte(s).\n"
 		return
 	}
 	binary_uint(x,n)
@@ -201,45 +190,25 @@ define void uintn(x,n){
 define void intn(x,n){
 	auto t
 	if(scale(x)){
-		print "Error: ", x, " is not an integer.\n"
+		print"Error: ",x," is not an integer.\n"
 		return
 	}
 	t=2^(n*8-1)
 	if(abs(x)>=t&&(x>0||x!=-t)){
-		print "Error: ", x, " cannot fit into ", n, " signed byte(s).\n"
+		print "Error: ",x," cannot fit into ",n," signed byte(s).\n"
 		return
 	}
 	if(x<0)x=2^(n*8)-(-x)
 	binary_uint(x,n)
 	hex_uint(x,n)
 }
-define void uint8(x){
-	uintn(x,1)
-}
-define void int8(x){
-	intn(x,1)
-}
-define void uint16(x){
-	uintn(x,2)
-}
-define void int16(x){
-	intn(x,2)
-}
-define void uint32(x){
-	uintn(x,4)
-}
-define void int32(x){
-	intn(x,4)
-}
-define void uint64(x){
-	uintn(x,8)
-}
-define void int64(x){
-	intn(x,8)
-}
-define void uint(x){
-	uintn(x,ubytes(x))
-}
-define void int(x){
-	intn(x,sbytes(x))
-}
+define void uint8(x){uintn(x,1)}
+define void int8(x){intn(x,1)}
+define void uint16(x){uintn(x,2)}
+define void int16(x){intn(x,2)}
+define void uint32(x){uintn(x,4)}
+define void int32(x){intn(x,4)}
+define void uint64(x){uintn(x,8)}
+define void int64(x){intn(x,8)}
+define void uint(x){uintn(x,ubytes(x))}
+define void int(x){intn(x,sbytes(x))}
