@@ -1092,6 +1092,8 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	BcNum *num = NULL, *resn = &res.d.n;
 	bool len = (inst == BC_INST_LENGTH);
 
+	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_ABS);
+
 	s = bc_program_operand(p, &opnd, &num, 0);
 	if (s) return s;
 
@@ -1207,11 +1209,8 @@ err:
 }
 
 static void bc_program_stackLen(BcProgram *p) {
-
 	BcResult res;
-
 	res.t = BC_RESULT_TEMP;
-
 	bc_num_createFromUlong(&res.d.n, p->results.len);
 	bc_vec_push(&p->results, &res);
 }
@@ -1418,8 +1417,7 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 	BcResult res;
 	unsigned long val;
 
-	assert(inst == BC_INST_IBASE || inst == BC_INST_SCALE ||
-	       inst == BC_INST_OBASE);
+	assert(inst >= BC_INST_IBASE && inst <= BC_INST_SCALE);
 
 	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
 	if (inst == BC_INST_IBASE) val = (unsigned long) p->ib_t;
