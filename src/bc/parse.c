@@ -328,10 +328,11 @@ static BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
 	if (s) return s;
 	if (p->l.t != BC_LEX_LPAREN) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-	flags = (flags & ~(BC_PARSE_PRINT | BC_PARSE_REL)) | BC_PARSE_ARRAY;
-
 	s = bc_lex_next(&p->l);
 	if (s) return s;
+
+	flags = (flags & ~(BC_PARSE_PRINT | BC_PARSE_REL));
+	if (type == BC_LEX_KEY_LENGTH) flags |= BC_PARSE_ARRAY;
 
 	s = bc_parse_expr_status(p, flags, bc_parse_next_rel);
 	if (s) return s;
