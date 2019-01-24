@@ -15,7 +15,8 @@ functionality is unnecessary.
 For more information, see the `dc`'s [full manual](./manuals/dc.md).
 
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
-2-clause License. Full license text may be found in the `LICENSE.md` file.
+2-clause License. Full license text may be found in the
+[`LICENSE.md`](./LICENSE.md) file.
 
 ## Build
 
