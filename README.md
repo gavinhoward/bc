@@ -112,7 +112,7 @@ This `bc` uses [semantic versioning](http://semver.org/).
 
 ## Contents
 
-Items labelled with `(maintainer use only)` are not included in release source
+Items labeled with `(maintainer use only)` are not included in release source
 tarballs.
 
 Files:
