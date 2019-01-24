@@ -16,7 +16,7 @@ bc(1) is an interactive processor for a language first standardized in 1991 by P
 After parsing and handling options, this bc(1) reads any files given on the command line and executes them before reading from \fBstdin\fR\.
 .
 .P
-With all build options enabled (except for extra math) this bc(1) is a drop\-in replacement for \fB\fIany\fR\fR bc(1), including (and especially) the GNU bc(1)\.
+With all build options but extra math enabled this bc(1) is a drop\-in replacement for \fB\fIany\fR\fR bc(1), including (and especially) the GNU bc(1)\.
 .
 .SH "OPTIONS"
 The following are the options that bc(1) accepts\.
@@ -160,6 +160,9 @@ Numbers (see \fINumbers\fR below)\.
 .
 .IP "6." 4
 \fBscale(E)\fR: \fBE\fR\'s \fBscale\fR\.
+.
+.IP "7." 4
+\fBabs(E)\fR: The absolute value of \fBE\fR\. This is a non\-portable extension\.
 .
 .IP "" 0
 .

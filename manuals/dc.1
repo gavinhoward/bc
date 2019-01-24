@@ -148,6 +148,13 @@ If this command \fIimmediately\fR precedes a number (i\.e\., no spaces or other 
 Otherwise, the top value on the stack is popped and copied, and the copy is negated and pushed onto the stack\. This behavior without a number is a non\-portable extension\.
 .
 .TP
+\fBb\fR
+The top value is popped off the stack and its absolute value is pushed onto the stack\.
+.
+.IP
+This is a non\-portable extension\.
+.
+.TP
 \fB|\fR
 The top three values are popped off the stack, a modular exponentiation is computed, and the result is pushed onto the stack\.
 .

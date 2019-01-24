@@ -175,6 +175,12 @@ These are the commands used for arithmetic.
     negated and pushed onto the stack. This behavior without a number is a
     non-portable extension.
 
+  * `b`:
+    The top value is popped off the stack and its absolute value is pushed onto
+    the stack.
+
+    This is a non-portable extension.
+
   * `|`:
     The top three values are popped off the stack, a modular exponentiation is
     computed, and the result is pushed onto the stack.
