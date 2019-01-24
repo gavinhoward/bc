@@ -1320,7 +1320,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	assert(a && b && a != b);
 
 	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a) + 1) >> 1) + 1;
-	bc_num_expand(b, req);
+	bc_num_init(b, req);
 
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(b, scale);
