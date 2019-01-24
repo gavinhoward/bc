@@ -136,7 +136,7 @@ void bc_program_trunc(BcResult *r, BcNum *n);
 // ** Exclude start. **
 // ** Busybox exclude start. **
 extern const BcNumBinaryOp bc_program_ops[];
-extern const BcProgramBuiltIn bc_program_builtins[];
+extern const BcNumBinaryOpReq bc_program_opReqs[];
 extern const BcProgramUnary bc_program_unarys[];
 extern const char bc_program_exprs_name[];
 extern const char bc_program_stdin_name[];

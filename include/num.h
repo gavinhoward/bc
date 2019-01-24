@@ -68,10 +68,13 @@ typedef struct BcNum {
 	(BC_MAX((a)->rdx, (b)->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1)
 #define BC_NUM_MREQ(a, b, scale) \
 	(BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX((scale), (a)->rdx + (b)->rdx) + 1)
+#define BC_NUM_PREQ(a, b) ((a)->len + (b)->len + 1)
+#define BC_NUM_SHREQ(a) ((a)->len)
 
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + 10)
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
+typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
 
 void bc_num_init(BcNum *n, size_t req);
@@ -96,6 +99,14 @@ BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale);
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
+
+size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale);
+
+size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale);
+size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale);
+#if BC_ENABLE_EXTRA_MATH
+size_t bc_num_shiftReq(BcNum *a, BcNum *b, size_t scale);
+#endif // BC_ENABLE_EXTRA_MATH
 
 // ** Exclude start. **
 // ** Busybox exclude start. **

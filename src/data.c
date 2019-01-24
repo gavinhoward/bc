@@ -722,8 +722,12 @@ const BcNumBinaryOp bc_program_ops[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
-const BcProgramBuiltIn bc_program_builtins[] = {
-	bc_program_len, bc_program_scale,
+const BcNumBinaryOpReq bc_program_opReqs[] = {
+	bc_num_powReq, bc_num_mulReq, bc_num_mulReq, bc_num_mulReq,
+	bc_num_addReq, bc_num_addReq,
+#if BC_ENABLE_EXTRA_MATH
+	bc_num_shiftReq, bc_num_shiftReq, bc_num_shiftReq,
+#endif // BC_ENABLE_EXTRA_MATH
 };
 
 const BcProgramUnary bc_program_unarys[] = {

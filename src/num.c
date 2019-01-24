@@ -1239,48 +1239,67 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= 10) ptr[i] = val % 10;
 }
 
+size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
+	BC_UNUSED(scale);
+	return BC_NUM_AREQ(a, b);
+}
+
+size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
+	return BC_NUM_MREQ(a, b, scale);
+}
+
+size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
+	BC_UNUSED(scale);
+	return BC_NUM_PREQ(a, b);
+}
+
+#if BC_ENABLE_EXTRA_MATH
+size_t bc_num_shiftReq(BcNum *a, BcNum *b, size_t scale) {
+	BC_UNUSED(b);
+	BC_UNUSED(scale);
+	return BC_NUM_SHREQ(a);
+}
+#endif // BC_ENABLE_EXTRA_MATH
+
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_a : bc_num_s;
 	BC_UNUSED(scale);
-	return bc_num_binary(a, b, c, false, op, BC_NUM_AREQ(a, b));
+	return bc_num_binary(a, b, c, false, op, bc_num_addReq(a, b, scale));
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_s : bc_num_a;
 	BC_UNUSED(scale);
-	return bc_num_binary(a, b, c, true, op, BC_NUM_AREQ(a, b));
+	return bc_num_binary(a, b, c, true, op, bc_num_addReq(a, b, scale));
 }
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	size_t req = BC_NUM_MREQ(a, b, scale);
-	return bc_num_binary(a, b, c, scale, bc_num_m, req);
+	return bc_num_binary(a, b, c, scale, bc_num_m, bc_num_mulReq(a, b, scale));
 }
 
 BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	size_t req = BC_NUM_MREQ(a, b, scale);
-	return bc_num_binary(a, b, c, scale, bc_num_d, req);
+	return bc_num_binary(a, b, c, scale, bc_num_d, bc_num_mulReq(a, b, scale));
 }
 
 BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	size_t req = BC_NUM_MREQ(a, b, scale);
-	return bc_num_binary(a, b, c, scale, bc_num_rem, req);
+	return bc_num_binary(a, b, c, scale, bc_num_rem, bc_num_mulReq(a, b, scale));
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_p, a->len * b->len + 1);
+	return bc_num_binary(a, b, c, scale, bc_num_p, BC_NUM_PREQ(a, b));
 }
 
 #if BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_place, a->len);
+	return bc_num_binary(a, b, c, scale, bc_num_place, BC_NUM_SHREQ(a));
 }
 
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_left, a->len);
+	return bc_num_binary(a, b, c, scale, bc_num_left, BC_NUM_SHREQ(a));
 }
 
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_right, a->len);
+	return bc_num_binary(a, b, c, scale, bc_num_right, BC_NUM_SHREQ(a));
 }
 #endif // BC_ENABLE_EXTRA_MATH
 

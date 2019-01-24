@@ -361,12 +361,13 @@ static BcStatus bc_program_op(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
 	BcNum *n1 = NULL, *n2 = NULL;
+	size_t idx = inst - BC_INST_POWER;
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 	if (s) return s;
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
+	bc_num_init(&res.d.n, bc_program_opReqs[idx](n1, n2, p->scale));
 
-	s = bc_program_ops[inst - BC_INST_POWER](n1, n2, &res.d.n, p->scale);
+	s = bc_program_ops[idx](n1, n2, &res.d.n, p->scale);
 	if (s) goto err;
 	bc_program_binOpRetire(p, &res);
 
@@ -1148,12 +1149,14 @@ static BcStatus bc_program_divmod(BcProgram *p) {
 	BcStatus s;
 	BcResult *opd1, *opd2, res, res2;
 	BcNum *n1, *n2 = NULL;
+	size_t req;
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 	if (s) return s;
 
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
-	bc_num_init(&res2.d.n, n2->len);
+	req = bc_num_mulReq(n1, n2, p->scale);
+	bc_num_init(&res.d.n, req);
+	bc_num_init(&res2.d.n, req);
 
 	s = bc_num_divmod(n1, n2, &res2.d.n, &res.d.n, p->scale);
 	if (s) goto err;
