@@ -39,13 +39,13 @@ Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in 
 Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
 .
 .SH "SYNTAX"
-\fBibase\fR is a global variable determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\.
+\fBibase\fR is a [register][REGISTERS] determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\. The max allowable value for \fBibase\fR is \fB16\fR\. The min allowable value for \fBibase\fR is \fB2\fR\.
 .
 .P
-\fBobase\fR is a global variable determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\.
+\fBobase\fR is a [register][REGISTERS] determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\. The max allowable value for \fBobase\fR is \fBBC_BASE_MAX\fR\. The min allowable value for \fBobase\fR is \fB2\fR\.
 .
 .P
-The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a global variable setting the precision of any operations (with exceptions)\. \fBscale\fR is initially \fB0\fR\.
+The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a [register][REGISTERS] that sets the precision of any operations (with exceptions)\. \fBscale\fR is initially \fB0\fR\. \fBscale\fR cannot be negative\.
 .
 .P
 Each item (\fInumbers\fR or \fIcommands\fR) in the input source code is processed and executed, in order\. Input is processed immediately when entered\.

@@ -76,13 +76,13 @@ In the sections below, \fBE\fR means expression, \fBS\fR means statement, and \f
 Identifiers (\fBI\fR) start with a lowercase letter and can be followed by any number (up to \fBBC_NAME_MAX\-1\fR) of lowercase letters (\fBa\-z\fR), digits (\fB0\-9\fR), and underscores (\fB_\fR)\. The regex is \fB[a\-z][a\-z0\-9_]*\fR Identifiers with more than one character (letter) are an extension\.
 .
 .P
-\fBibase\fR is a global variable determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\.
+\fBibase\fR is a global variable determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\. If the \fB\-s\fR (\fB\-\-standard\fR) and \fB\-w\fR (\fB\-\-warn\fR) flags were not given on the command line, the max allowable value for \fBibase\fR is \fB36\fR\. Otherwise, it is \fB16\fR\. The min allowable value for \fBibase\fR is \fB2\fR\.
 .
 .P
-\fBobase\fR is a global variable determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\.
+\fBobase\fR is a global variable determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\. The max allowable value for \fBobase\fR is \fBBC_BASE_MAX\fR\. The min allowable value for \fBobase\fR is \fB2\fR\.
 .
 .P
-The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a global variable setting the precision of any operations, with exceptions\. \fBscale\fR is initially \fB0\fR\.
+The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a global variable that sets the precision of any operations, with exceptions\. \fBscale\fR is initially \fB0\fR\. \fBscale\fR cannot be negative\.
 .
 .P
 bc(1) has both \fBglobal\fR variables and \fBlocal\fR variables\. All \fBlocal\fR variables are local to the function; they are parameters or are introduced in a function\'s \fBauto\fR list (see \fIFunctions\fR)\. If a variable is accessed which is not a parameter or in the \fBauto\fR list, it is assumed to be \fBglobal\fR\. If a parent function has a \fBlocal\fR variable version of a \fBglobal\fR variable that is accessed by a function that it calls, the value of that \fBglobal\fR variable in the child function is the value of the variable in the parent function, not the value of the actual \fBglobal\fR variable\.

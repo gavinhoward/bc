@@ -91,15 +91,19 @@ character (letter) are an extension.
 
 `ibase` is a global variable determining how to interpret constant numbers. It
 is the "input" base, or the number base used for interpreting input numbers.
-`ibase` is initially `10`.
+`ibase` is initially `10`. If the `-s` (`--standard`) and `-w` (`--warn`) flags
+were not given on the command line, the max allowable value for `ibase` is `36`.
+Otherwise, it is `16`. The min allowable value for `ibase` is `2`.
 
 `obase` is a global variable determining how to output results. It is the
-"output" base, or the number base used for outputting numbers.
-`obase` is initially `10`.
+"output" base, or the number base used for outputting numbers. `obase` is
+initially `10`. The max allowable value for `obase` is `BC_BASE_MAX`. The min
+allowable value for `obase` is `2`.
 
 The **scale** of an expression is the number of digits in the result of the
-expression right of the decimal point, and `scale` is a global variable setting
-the precision of any operations, with exceptions. `scale` is initially `0`.
+expression right of the decimal point, and `scale` is a global variable that
+sets the precision of any operations, with exceptions. `scale` is initially `0`.
+`scale` cannot be negative.
 
 bc(1) has both **global** variables and **local** variables. All **local**
 variables are local to the function; they are parameters or are introduced in a

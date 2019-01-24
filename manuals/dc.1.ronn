@@ -46,17 +46,20 @@ The following are the options that dc(1) accepts.
 SYNTAX
 ------
 
-`ibase` is a global variable determining how to interpret constant numbers. It
-is the "input" base, or the number base used for interpreting input numbers.
-`ibase` is initially `10`.
+`ibase` is a [register][REGISTERS] determining how to interpret constant
+numbers. It is the "input" base, or the number base used for interpreting input
+numbers. `ibase` is initially `10`. The max allowable value for `ibase` is `16`.
+The min allowable value for `ibase` is `2`.
 
-`obase` is a global variable determining how to output results. It is the
-"output" base, or the number base used for outputting numbers.
-`obase` is initially `10`.
+`obase` is a [register][REGISTERS] determining how to output results. It is the
+"output" base, or the number base used for outputting numbers. `obase` is
+initially `10`. The max allowable value for `obase` is `BC_BASE_MAX`. The min
+allowable value for `obase` is `2`.
 
 The **scale** of an expression is the number of digits in the result of the
-expression right of the decimal point, and `scale` is a global variable setting
-the precision of any operations (with exceptions). `scale` is initially `0`.
+expression right of the decimal point, and `scale` is a [register][REGISTERS]
+that sets the precision of any operations (with exceptions). `scale` is
+initially `0`. `scale` cannot be negative.
 
 Each item ([numbers](#NUMBERS) or [commands](#COMMANDS)) in the input source
 code is processed and executed, in order. Input is processed immediately when
