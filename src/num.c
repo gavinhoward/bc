@@ -905,8 +905,8 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
 	if (zero) return BC_STATUS_SUCCESS;
 
-	bc_num_init(&temp, BC_NUM_DEF_SIZE);
-	bc_num_init(&mult, BC_NUM_DEF_SIZE);
+	bc_num_init(&temp, BC_NUM_LONG_LOG10);
+	bc_num_init(&mult, BC_NUM_LONG_LOG10);
 
 	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
 

@@ -153,36 +153,34 @@ static BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
 static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
+	BcNum *n = &r->d.n;
 
 	switch (r->t) {
-
-		case BC_RESULT_STR:
-		case BC_RESULT_TEMP:
-		case BC_RESULT_IBASE:
-		case BC_RESULT_SCALE:
-		case BC_RESULT_OBASE:
-		{
-			*num = &r->d.n;
-			break;
-		}
 
 		case BC_RESULT_CONSTANT:
 		{
 			char *str = bc_program_str(p, r->d.id.idx, false);
 			size_t len = strlen(str);
 
-			bc_num_init(&r->d.n, len);
+			bc_num_init(n, len);
 
-			s = bc_num_parse(&r->d.n, str, &p->ib, p->ib_t, len == 1);
+			s = bc_num_parse(n, str, &p->ib, p->ib_t, len == 1);
 
 			if (s) {
-				bc_num_free(&r->d.n);
+				bc_num_free(n);
 				return s;
 			}
 
-			*num = &r->d.n;
 			r->t = BC_RESULT_TEMP;
-
+		}
+		// Fallthrough.
+		case BC_RESULT_STR:
+		case BC_RESULT_TEMP:
+		case BC_RESULT_IBASE:
+		case BC_RESULT_SCALE:
+		case BC_RESULT_OBASE:
+		{
+			*num = n;
 			break;
 		}
 
@@ -536,8 +534,9 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 }
 
 void bc_program_negate(BcResult *r, BcNum *n) {
-	bc_num_copy(&r->d.n, n);
-	if (BC_NUM_NONZERO(&r->d.n)) r->d.n.neg = !r->d.n.neg;
+	BcNum *rn = &r->d.n;
+	bc_num_copy(rn, n);
+	if (BC_NUM_NONZERO(rn)) rn->neg = !rn->neg;
 }
 
 void bc_program_not(BcResult *r, BcNum *n) {
@@ -546,8 +545,9 @@ void bc_program_not(BcResult *r, BcNum *n) {
 
 #if BC_ENABLE_EXTRA_MATH
 void bc_program_trunc(BcResult *r, BcNum *n) {
-	bc_num_copy(&r->d.n, n);
-	bc_num_truncate(&r->d.n, n->rdx);
+	BcNum *rn = &r->d.n;
+	bc_num_copy(rn, n);
+	bc_num_truncate(rn, n->rdx);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -714,7 +714,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
 
-		BcVec *v = (BcVec*) n;
+		BcVec *v = (BcVec*) n, *rv = &r.d.v;
 #if BC_ENABLE_REFERENCES
 		bool ref, ref_size;
 
@@ -723,7 +723,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 
 		if (ref || (ref_size && t == BC_TYPE_REF))
 		{
-			bc_vec_init(&r.d.v, sizeof(uchar), NULL);
+			bc_vec_init(rv, sizeof(uchar), NULL);
 
 			if (ref) {
 
@@ -741,11 +741,11 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 				vidx = ((BcId*) bc_vec_item(&p->arr_map, vidx))->idx;
 				idx = v->len - 1;
 
-				bc_vec_pushIndex(&r.d.v, vidx);
-				bc_vec_pushIndex(&r.d.v, idx);
+				bc_vec_pushIndex(rv, vidx);
+				bc_vec_pushIndex(rv, idx);
 			}
 			// If we get here, we are copying a ref to a ref.
-			else bc_vec_npush(&r.d.v, v->len * sizeof(uchar), v->v);
+			else bc_vec_npush(rv, v->len * sizeof(uchar), v->v);
 
 			// We need to return early.
 			bc_vec_push(vec, &r.d);
@@ -756,8 +756,8 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 		else if (ref_size && t != BC_TYPE_REF) v = bc_program_dereference(p, v);
 #endif // BC_ENABLE_REFERENCES
 
-		bc_array_init(&r.d.v, true);
-		bc_array_copy(&r.d.v, v);
+		bc_array_init(rv, true);
+		bc_array_copy(rv, v);
 	}
 
 	bc_vec_push(vec, &r.d);
