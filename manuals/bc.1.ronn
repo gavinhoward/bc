@@ -276,7 +276,7 @@ The operators will be described in more detail below.
     as an operand.
 
   * `-`:
-    The `negation` operator return `0` if a user attempts to negate any
+    The `negation` operator returns `0` if a user attempts to negate any
     expression with the value `0`. Otherwise, a copy of the expression with its
     sign flipped is returned.
 
