@@ -544,7 +544,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	bc_num_init(&cp, BC_NUM_MREQ(a, b, scale));
+	bc_num_init(&cp, bc_num_mulReq(a, b, scale));
 	bc_num_copy(&cp, a);
 	len = b->len;
 
@@ -628,7 +628,7 @@ static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) 
 
 	BcStatus s;
 	BcNum c1;
-	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
+	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = bc_num_mulReq(a, b, ts);
 
 	bc_num_init(&c1, len);
 	s = bc_num_r(a, b, &c1, c, scale, ts);
@@ -1241,11 +1241,11 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 
 size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
 	BC_UNUSED(scale);
-	return BC_NUM_AREQ(a, b);
+	return BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
 }
 
 size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
-	return BC_NUM_MREQ(a, b, scale);
+	return BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx) + 1;
 }
 
 size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
@@ -1414,7 +1414,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	BcStatus s;
 	BcNum num2, *ptr_a;
 	bool init = false;
-	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = BC_NUM_MREQ(a, b, ts);
+	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = bc_num_mulReq(a, b, ts);
 
 	assert(c != d && a != d && b != d && b != c);
 
