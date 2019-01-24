@@ -1313,14 +1313,13 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, digs, digs1, resrdx, req, times = 0;
+	size_t pow, len, digs, digs1, resrdx, times = 0;
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
 	BcDig half_digs[2];
 
 	assert(a && b && a != b);
 
-	req = BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a) + 1) >> 1) + 1;
-	bc_num_init(b, req);
+	bc_num_init(b, BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a) + 1) >> 1) + 1);
 
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(b, scale);
