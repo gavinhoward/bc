@@ -15,7 +15,7 @@ functionality is unnecessary.
 For more information, see the `dc`'s [full manual](./manuals/dc.md).
 
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
-0-clause License. Full license text may be found in the `LICENSE.md` file.
+2-clause License. Full license text may be found in the `LICENSE.md` file.
 
 ## Build
 
@@ -24,7 +24,12 @@ This `bc` should build unmodified on any POSIX-compliant system.
 For more complex build requirements than the ones below, see the
 [build manual](./manuals/build.md).
 
-After building, `make install` will install the `bc` in `/usr/local`.
+### Pre-built Binaries
+
+It is possible to download pre-compiled binaries for a wide list of platforms,
+including Linux- and Windows-based systems, from
+[xstatic](https://xstatic.musl.cc/bc/). This link always points to the latest
+release of `bc`.
 
 ### Default
 
@@ -47,12 +52,15 @@ make
 make install
 ```
 
-### Pre-built Binaries
+### Install
 
-It is possible to download pre-compiled binaries for a wide list of platforms,
-including Linux- and Windows-based systems, from
-[xstatic](https://xstatic.musl.cc/bc/). This link always points to the latest
-release of `bc`.
+To install, use the following command:
+
+```
+make install
+```
+
+`bc` and `dc` will be installed in `/usr/local`.
 
 ## Status
 
