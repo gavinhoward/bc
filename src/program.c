@@ -1139,17 +1139,17 @@ static BcStatus bc_program_divmod(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res, res2;
-	BcNum *n1, *n2 = NULL;
+	BcNum *n1, *n2 = NULL, *resn = &res.d.n, *resn2 = &res2.d.n;
 	size_t req;
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 	if (s) return s;
 
 	req = bc_num_mulReq(n1, n2, p->scale);
-	bc_num_init(&res.d.n, req);
-	bc_num_init(&res2.d.n, req);
+	bc_num_init(resn, req);
+	bc_num_init(resn2, req);
 
-	s = bc_num_divmod(n1, n2, &res2.d.n, &res.d.n, p->scale);
+	s = bc_num_divmod(n1, n2, resn2, resn, p->scale);
 	if (s) goto err;
 
 	bc_program_binOpRetire(p, &res2);
@@ -1159,8 +1159,8 @@ static BcStatus bc_program_divmod(BcProgram *p) {
 	return s;
 
 err:
-	bc_num_free(&res2.d.n);
-	bc_num_free(&res.d.n);
+	bc_num_free(resn2);
+	bc_num_free(resn);
 	return s;
 }
 
