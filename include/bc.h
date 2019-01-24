@@ -121,8 +121,7 @@ BcStatus bc_lex_token(BcLex *l);
 #define BC_PARSE_LEAF(prev, bin_last, rparen) \
 	(!(bin_last) && ((rparen) || bc_parse_inst_isLeaf(prev)))
 #define BC_PARSE_INST_VAR(t) \
-	((t) == BC_INST_VAR || (t) == BC_INST_ARRAY_ELEM || (t) == BC_INST_LAST || \
-	 (t) == BC_INST_SCALE || (t) == BC_INST_IBASE || (t) == BC_INST_OBASE)
+	((t) >= BC_INST_VAR && (t) <= BC_INST_SCALE && (t) != BC_INST_ARRAY)
 
 #define BC_PARSE_PREV_PREFIX(p) \
 	((p) >= BC_INST_INC_PRE && (p) <= BC_INST_BOOL_NOT)
