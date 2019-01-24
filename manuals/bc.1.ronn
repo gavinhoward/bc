@@ -605,9 +605,6 @@ However, the extended library is ***not*** loaded when the `-s`/`--standard` or
 `-w`/`--warn` options are given since they are not part of the library defined
 by the [standard][1].
 
-  * `abs(x)`:
-    Returns the absolute value of `x`.
-
   * `r(x, p)`:
     Returns `x` rounded to `p` decimal places according to the rounding mode
     [round half away from `0`][3].
