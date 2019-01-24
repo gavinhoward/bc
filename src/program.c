@@ -1168,7 +1168,7 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r1, *r2, *r3, res;
-	BcNum *n1, *n2, *n3;
+	BcNum *n1, *n2, *n3, *resn = &res.d.n;
 
 	s = bc_program_binOpPrep(p, &r2, &n2, &r3, &n3);
 	if (s) return s;
@@ -1192,8 +1192,8 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 		}
 	}
 
-	bc_num_init(&res.d.n, n3->len);
-	s = bc_num_modexp(n1, n2, n3, &res.d.n);
+	bc_num_init(resn, n3->len);
+	s = bc_num_modexp(n1, n2, n3, resn);
 	if (s) goto err;
 
 	bc_vec_pop(&p->results);
@@ -1202,7 +1202,7 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 	return s;
 
 err:
-	bc_num_free(&res.d.n);
+	bc_num_free(resn);
 	return s;
 }
 
