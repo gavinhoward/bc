@@ -1098,13 +1098,11 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	if (s) return s;
 
 #if DC_ENABLED
-	if (inst == BC_INST_ABS) {
+	if (!len && inst != BC_INST_SCALE_FUNC) {
 		s = bc_program_type_num(opnd, num);
 		if (s) return s;
 	}
 #endif // DC_ENABLED
-
-	bc_num_init(resn, BC_NUM_DEF_SIZE);
 
 	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, resn, p->scale);
 	else if (inst == BC_INST_ABS) {
