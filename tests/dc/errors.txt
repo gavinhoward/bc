@@ -10,3 +10,7 @@ zp198202389.289374pzp[He World!]SzpzXfrfxzpfR
 2 _10 23|
 .
 @
+[string]b
+[s][s]+
+[s][s]@
+[s][s]v

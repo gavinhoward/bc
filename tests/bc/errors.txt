@@ -192,4 +192,9 @@ x$if(x) x else x
 bytes(1) + 4
 3 / 0.00000000000000
 ibase = 100
+length("string")
+abs("string")
+abs(a[])
+scale("string")
+scale(b[])
 read()

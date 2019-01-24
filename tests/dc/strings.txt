@@ -39,3 +39,4 @@
 [\[\]]pR
 1xpR
 [1st] 0:b [2nd] 1:b 0;b p 1;b p
+[string]XpR
