@@ -37,7 +37,7 @@ static BcStatus bc_parse_stmt(BcParse *p);
 static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next);
 
 static bool bc_parse_inst_isLeaf(BcInst t) {
-	return (t >= BC_INST_NUM && t <= BC_INST_SQRT) ||
+	return (t >= BC_INST_NUM && t <= BC_INST_ABS) ||
 #if BC_ENABLE_EXTRA_MATH
 	        t == BC_INST_TRUNC ||
 #endif // BC_ENABLE_EXTRA_MATH
@@ -1057,6 +1057,7 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 		case BC_LEX_KEY_READ:
 		case BC_LEX_KEY_SCALE:
 		case BC_LEX_KEY_SQRT:
+		case BC_LEX_KEY_ABS:
 		{
 			s = bc_parse_expr_status(p, BC_PARSE_PRINT, bc_parse_next_expr);
 			break;
@@ -1226,6 +1227,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			{
 				if (!BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+
 				// I can just add the instruction because
 				// negative will already be taken care of.
 				bc_parse_push(p, BC_INST_TRUNC);
@@ -1384,6 +1386,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_KEY_LENGTH:
 			case BC_LEX_KEY_SQRT:
+			case BC_LEX_KEY_ABS:
 			{
 				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);

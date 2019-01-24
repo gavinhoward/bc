@@ -11,6 +11,7 @@ places
 shift
 vars
 boolean
+abs
 strings
 letters
 parse

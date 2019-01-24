@@ -102,7 +102,6 @@ typedef struct BcProgram {
 #define BC_PROG_NUM(r, n) \
 	((r)->t != BC_RESULT_ARRAY && (r)->t != BC_RESULT_STR && !BC_PROG_STR(n))
 
-typedef unsigned long (*BcProgramBuiltIn)(const BcNum*);
 typedef void (*BcProgramUnary)(BcResult*, BcNum*);
 
 // ** Exclude start. **

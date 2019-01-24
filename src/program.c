@@ -1096,8 +1096,8 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *opnd;
-	BcNum *num = NULL;
 	BcResult res;
+	BcNum *num = NULL, *resn = &res.d.n;
 	bool len = (inst == BC_INST_LENGTH);
 
 	s = bc_program_operand(p, &opnd, &num, 0);
@@ -1110,27 +1110,31 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	}
 #endif // DC_ENABLED
 
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
+	bc_num_init(resn, BC_NUM_DEF_SIZE);
 
-	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, &res.d.n, p->scale);
-#if BC_ENABLED
-	else if (len && opnd->t == BC_RESULT_ARRAY) {
-		bc_num_ulong2num(&res.d.n, (unsigned long) ((BcVec*) num)->len);
+	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, resn, p->scale);
+	else if (inst == BC_INST_ABS) {
+		bc_num_createCopy(resn, num);
+		resn->neg = false;
 	}
-#endif // BC_ENABLED
-#if DC_ENABLED
-	else if (len && !BC_PROG_NUM(opnd, num)) {
-
-		char *str;
-		size_t idx = opnd->t == BC_RESULT_STR ? opnd->d.id.idx : num->rdx;
-
-		str = bc_program_str(p, idx, true);
-		bc_num_ulong2num(&res.d.n, strlen(str));
-	}
-#endif // DC_ENABLED
 	else {
-		assert(opnd->t != BC_RESULT_ARRAY);
-		bc_num_ulong2num(&res.d.n, bc_program_builtins[!len](num));
+
+		unsigned long val;
+
+		if (len) {
+			if (BC_IS_BC && opnd->t == BC_RESULT_ARRAY)
+				val = (unsigned long) ((BcVec*) num)->len;
+#if DC_ENABLED
+			else if (!BC_PROG_NUM(opnd, num)) {
+				size_t idx = opnd->t == BC_RESULT_STR ? opnd->d.id.idx : num->rdx;
+				val = strlen(bc_program_str(p, idx, true));
+			}
+#endif // DC_ENABLED
+			else val = bc_program_len(num);
+		}
+		else val = bc_program_scale(num);
+
+		bc_num_createFromUlong(resn, val);
 	}
 
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
@@ -1684,9 +1688,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_SCALE_FUNC:
 			case BC_INST_LENGTH:
+			case BC_INST_SCALE_FUNC:
 			case BC_INST_SQRT:
+			case BC_INST_ABS:
 			{
 				s = bc_program_builtin(p, inst);
 				break;

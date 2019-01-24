@@ -10,6 +10,7 @@ sqrt
 modexp
 boolean
 negate
+abs
 trunc
 places
 shift

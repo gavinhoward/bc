@@ -20,16 +20,12 @@
  *
  */
 
-define abs(x){
-	if(x<0)x=-x
-	return x
-}
 define r(x,p){
 	auto i,t,n
 	if(x==0)return x
 	p=abs(p)$
 	n=(x<0)
-	if(n)x=-x
+	x=abs(x)
 	t=x@p
 	if(p>=scale(x)){
 		if(n)t=-t
@@ -119,7 +115,7 @@ define ubytes(x){
 define sbytes(x){
 	auto p,b,n,z
 	z=(x<0)
-	if(z)x=-x
+	x=abs(x)
 	x=x$
 	n=ubytes(x)
 	b=ibase
