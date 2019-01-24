@@ -121,8 +121,7 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 
 	for (i = 0; i < s->len; ++i) {
 		BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
-		bc_num_init(dnum, snum->len);
-		bc_num_copy(dnum, snum);
+		bc_num_createCopy(dnum, snum);
 	}
 }
 
@@ -161,8 +160,7 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
 		{
-			bc_num_init(&d->d.n, src->d.n.len);
-			bc_num_copy(&d->d.n, &src->d.n);
+			bc_num_createCopy(&d->d.n, &src->d.n);
 			break;
 		}
 

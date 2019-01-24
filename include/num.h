@@ -77,6 +77,8 @@ void bc_num_init(BcNum *n, size_t req);
 void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
 void bc_num_expand(BcNum *n, size_t req);
 void bc_num_copy(BcNum *d, const BcNum *s);
+void bc_num_createCopy(BcNum *d, const BcNum *s);
+void bc_num_createFromUlong(BcNum *n, unsigned long val);
 void bc_num_free(void *num);
 
 BcStatus bc_num_ulong(const BcNum *n, unsigned long *result);

@@ -494,11 +494,9 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	scale = BC_MIN(a->rdx + b->rdx, scale);
 	maxrdx = BC_MAX(maxrdx, scale);
 
-	bc_num_init(&cpa, a->len);
-	bc_num_init(&cpb, b->len);
+	bc_num_createCopy(&cpa, a);
+	bc_num_createCopy(&cpb, b);
 
-	bc_num_copy(&cpa, a);
-	bc_num_copy(&cpb, b);
 	cpa.neg = cpb.neg = false;
 
 	s = bc_num_shift(&cpa, maxrdx);
@@ -667,8 +665,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	b->neg = neg;
 	if (s) return s;
 
-	bc_num_init(&copy, a->len);
-	bc_num_copy(&copy, a);
+	bc_num_createCopy(&copy, a);
 
 	if (!neg) scale = BC_MIN(a->rdx * pow, BC_MAX(scale, a->rdx));
 
@@ -1037,12 +1034,11 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	}
 
 	bc_vec_init(&stack, sizeof(unsigned long), NULL);
-	bc_num_init(&intp, n->len);
 	bc_num_init(&fracp, n->rdx);
 	bc_num_init(&digit, len);
 	bc_num_init(&frac_len, BC_NUM_INT(n));
-	bc_num_copy(&intp, n);
 	bc_num_one(&frac_len);
+	bc_num_createCopy(&intp, n);
 
 	bc_num_truncate(&intp, intp.rdx);
 	s = bc_num_sub(n, &intp, &fracp, 0);
@@ -1155,6 +1151,16 @@ void bc_num_copy(BcNum *d, const BcNum *s) {
 	d->neg = s->neg;
 	d->rdx = s->rdx;
 	memcpy(d->num, s->num, sizeof(BcDig) * d->len);
+}
+
+void bc_num_createCopy(BcNum *d, const BcNum *s) {
+	bc_num_init(d, s->len);
+	bc_num_copy(d, s);
+}
+
+void bc_num_createFromUlong(BcNum *n, unsigned long val) {
+	bc_num_init(n, BC_NUM_LONG_LOG10);
+	bc_num_ulong2num(n, val);
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
@@ -1457,7 +1463,6 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	bc_num_expand(d, c->len);
 	bc_num_init(&base, c->len);
-	bc_num_init(&exp, b->len);
 	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
 	bc_num_init(&temp, b->len);
 
@@ -1467,7 +1472,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	s = bc_num_rem(a, c, &base, 0);
 	if (s) goto err;
-	bc_num_copy(&exp, b);
+	bc_num_createCopy(&exp, b);
 
 	while (BC_NUM_NONZERO(&exp)) {
 

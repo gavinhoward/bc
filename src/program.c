@@ -711,10 +711,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 	// Do this once more to make sure that pointers were not invalidated.
 	vec = bc_program_search(p, name, t);
 
-	if (var) {
-		bc_num_init(&r.d.n, BC_NUM_DEF_SIZE);
-		bc_num_copy(&r.d.n, n);
-	}
+	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
 
 		BcVec *v = (BcVec*) n;
@@ -840,8 +837,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		s = BC_STATUS_SUCCESS;
 	}
 
-	bc_num_init(&res.d.n, l->len);
-	bc_num_copy(&res.d.n, l);
+	bc_num_createCopy(&res.d.n, l);
 	bc_program_binOpRetire(p, &res);
 
 	return s;
@@ -871,11 +867,8 @@ static BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
 			if (s) return s;
 
 			if (!BC_PROG_STR(num)) {
-
 				r.t = BC_RESULT_TEMP;
-
-				bc_num_init(&r.d.n, BC_NUM_DEF_SIZE);
-				bc_num_copy(&r.d.n, num);
+				bc_num_createCopy(&r.d.n, num);
 			}
 			else {
 				r.t = BC_RESULT_STR;
@@ -942,8 +935,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 
 	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
 		copy.t = BC_RESULT_TEMP;
-		bc_num_init(&copy.d.n, num->len);
-		bc_num_copy(&copy.d.n, num);
+		bc_num_createCopy(&copy.d.n, num);
 	}
 
 	res.t = BC_RESULT_ONE;
@@ -1054,8 +1046,7 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 		s = bc_program_operand(p, &operand, &num, 0);
 		if (s) return s;
 
-		bc_num_init(&res.d.n, num->len);
-		bc_num_copy(&res.d.n, num);
+		bc_num_createCopy(&res.d.n, num);
 	}
 	else if (inst == BC_INST_RET_VOID) res.t = BC_RESULT_VOID;
 	else bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
@@ -1218,12 +1209,10 @@ err:
 static void bc_program_stackLen(BcProgram *p) {
 
 	BcResult res;
-	size_t len = p->results.len;
 
 	res.t = BC_RESULT_TEMP;
 
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
-	bc_num_ulong2num(&res.d.n, len);
+	bc_num_createFromUlong(&res.d.n, p->results.len);
 	bc_vec_push(&p->results, &res);
 }
 
@@ -1247,8 +1236,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 
 	if (BC_PROG_NUM(r, n)) {
 
-		bc_num_init(&num, BC_NUM_DEF_SIZE);
-		bc_num_copy(&num, n);
+		bc_num_createCopy(&num, n);
 		bc_num_truncate(&num, num.rdx);
 
 		s = bc_num_mod(&num, &p->strmb, &num, 0);
@@ -1438,8 +1426,7 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 	else if (inst == BC_INST_SCALE) val = (unsigned long) p->scale;
 	else val = (unsigned long) p->ob_t;
 
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
-	bc_num_ulong2num(&res.d.n, val);
+	bc_num_createFromUlong(&res.d.n, val);
 	bc_vec_push(&p->results, &res);
 }
 
