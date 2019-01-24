@@ -66,7 +66,7 @@ other locations, see the [build manual][5].
 This `bc` is robust.
 
 It is well-tested, fuzzed, and fully standards-compliant (though not certified)
-with POSIX `bc`. The math has been tested with 30+ million random problems, so
+with POSIX `bc`. The math has been tested with 40+ million random problems, so
 it is as correct as I can make it.
 
 This `bc` can be used as a drop-in replacement for any existing `bc`. This `bc`
