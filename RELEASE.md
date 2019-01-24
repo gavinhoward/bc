@@ -27,4 +27,4 @@ This is the checklist for cutting a release.
 15.	Add sha's to release notes.
 16.	Edit release notes for the changelog.
 17.	Run toybox release and submit.
-18.	Increment to the next version.
+18.	Increment to the next version (with "-dev").
