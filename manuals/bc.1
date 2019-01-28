@@ -667,25 +667,43 @@ The standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\
 \fBs(x)\fR
 Returns the sine of \fBx\fR, which is assumed to be in radians\.
 .
+.IP
+This is a \fItranscendental function\fR\.
+.
 .TP
 \fBc(x)\fR
 Returns the cosine of \fBx\fR, which is assumed to be in radians\.
+.
+.IP
+This is a \fItranscendental function\fR\.
 .
 .TP
 \fBa(x)\fR
 Returns the arctangent of \fBx\fR, in radians\.
 .
+.IP
+This is a \fItranscendental function\fR\.
+.
 .TP
 \fBl(x)\fR
 Returns the natural logarithm of \fBx\fR\.
+.
+.IP
+This is a \fItranscendental function\fR\.
 .
 .TP
 \fBe(x)\fR
 Returns the mathematical constant \fBe\fR raised to the power of \fBx\fR\.
 .
+.IP
+This is a \fItranscendental function\fR\.
+.
 .TP
 \fBj(x, n)\fR
 Returns the bessel integer order \fBn\fR (truncated) of \fBx\fR\.
+.
+.IP
+This is a \fItranscendental function\fR\.
 .
 .P
  \fI\fR
@@ -716,17 +734,29 @@ Returns the combination of the truncated absolute value of \fBn\fR of the trunca
 \fBl2(x)\fR
 Returns the logarithm base \fB2\fR of \fBx\fR\.
 .
+.IP
+This is a \fItranscendental function\fR\.
+.
 .TP
 \fBl10(x)\fR
 Returns the logarithm base \fB10\fR of \fBx\fR\.
+.
+.IP
+This is a \fItranscendental function\fR\.
 .
 .TP
 \fBlog(x, b)\fR
 Returns the logarithm base \fBb\fR of \fBx\fR\.
 .
+.IP
+This is a \fItranscendental function\fR\.
+.
 .TP
 \fBpi(p)\fR
 Returns \fBpi\fR to \fBp\fR decimal places\.
+.
+.IP
+This is a \fItranscendental function\fR\.
 .
 .TP
 \fBubytes(x)\fR
@@ -904,6 +934,55 @@ Outputs byte \fBi\fR of the truncated absolute value of \fBx\fR, where \fB0\fR i
 .
 .IP
 This is a \fIvoid\fR function\.
+.
+.P
+ \fI\fR
+.
+.SS "Transcendental Functions"
+All transcendental functions can return slightly inaccurate results (up to 1 ULP \fIhttps://en\.wikipedia\.org/wiki/Unit_in_the_last_place\fR)\. This is unavoidable, and this article \fIhttps://people\.eecs\.berkeley\.edu/~wkahan/LOG10HAF\.TXT\fR explains why it is impossible and unnecessary to calculate exact results for the transcendental functions\.
+.
+.P
+Because of the possible inaccuracy, I recommend that users call those functions with the precision (\fBscale\fR) set to at least 1 higher than is necessary\. If exact results are \fIabsolutely\fR required, users can double the precision (\fBscale\fR) and then truncate\.
+.
+.P
+The transcendental functions in the standard math library are:
+.
+.IP "\(bu" 4
+\fBs(x)\fR
+.
+.IP "\(bu" 4
+\fBc(x)\fR
+.
+.IP "\(bu" 4
+\fBa(x)\fR
+.
+.IP "\(bu" 4
+\fBl(x)\fR
+.
+.IP "\(bu" 4
+\fBe(x)\fR
+.
+.IP "\(bu" 4
+\fBj(x, n)\fR
+.
+.IP "" 0
+.
+.P
+The transcendental functions in the extended math library are:
+.
+.IP "\(bu" 4
+\fBl2(x)\fR
+.
+.IP "\(bu" 4
+\fBl10(x)\fR
+.
+.IP "\(bu" 4
+\fBlog(x, b)\fR
+.
+.IP "\(bu" 4
+\fBpi(p)\fR
+.
+.IP "" 0
 .
 .SH "SIGNAL HANDLING"
 If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset, asking for more input\.

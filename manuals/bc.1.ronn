@@ -582,20 +582,32 @@ The [standard][1] defines the following functions for the math library:
   * `s(x)`:
     Returns the sine of `x`, which is assumed to be in radians.
 
+    This is a [transcendental function][5].
+
   * `c(x)`:
     Returns the cosine of `x`, which is assumed to be in radians.
+
+    This is a [transcendental function][5].
 
   * `a(x)`:
     Returns the arctangent of `x`, in radians.
 
+    This is a [transcendental function][5].
+
   * `l(x)`:
     Returns the natural logarithm of `x`.
+
+    This is a [transcendental function][5].
 
   * `e(x)`:
     Returns the mathematical constant `e` raised to the power of `x`.
 
+    This is a [transcendental function][5].
+
   * `j(x, n)`:
     Returns the bessel integer order `n` (truncated) of `x`.
+
+    This is a [transcendental function][5].
 
 <a name="extended-library"/>
 
@@ -627,14 +639,22 @@ by the [standard][1].
   * `l2(x)`:
     Returns the logarithm base `2` of `x`.
 
+    This is a [transcendental function][5].
+
   * `l10(x)`:
     Returns the logarithm base `10` of `x`.
+
+    This is a [transcendental function][5].
 
   * `log(x, b)`:
     Returns the logarithm base `b` of `x`.
 
+    This is a [transcendental function][5].
+
   * `pi(p)`:
     Returns `pi` to `p` decimal places.
+
+    This is a [transcendental function][5].
 
   * `ubytes(x)`:
     Returns the numbers of unsigned integer bytes required to hold the truncated
@@ -801,6 +821,36 @@ by the [standard][1].
 
     This is a [void](#void-functions) function.
 
+<a name="transcendental-functions"/>
+
+### Transcendental Functions
+
+All transcendental functions can return slightly inaccurate results (up to 1
+[ULP][4]). This is unavoidable, and [this article][6] explains why it is
+impossible and unnecessary to calculate exact results for the transcendental
+functions.
+
+Because of the possible inaccuracy, I recommend that users call those functions
+with the precision (`scale`) set to at least 1 higher than is necessary. If
+exact results are *absolutely* required, users can double the precision
+(`scale`) and then truncate.
+
+The transcendental functions in the standard math library are:
+
+* `s(x)`
+* `c(x)`
+* `a(x)`
+* `l(x)`
+* `e(x)`
+* `j(x, n)`
+
+The transcendental functions in the extended math library are:
+
+* `l2(x)`
+* `l10(x)`
+* `log(x, b)`
+* `pi(p)`
+
 SIGNAL HANDLING
 ---------------
 
@@ -842,3 +892,6 @@ None are known. Report bugs at https://github.com/gavinhoward/bc.
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
 [2]: https://www.gnu.org/software/bc/
 [3]: https://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero
+[4]: https://en.wikipedia.org/wiki/Unit_in_the_last_place
+[5]: #transcendental-functions
+[6]: https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT
