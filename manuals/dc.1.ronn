@@ -33,13 +33,13 @@ The following are the options that dc(1) accepts.
     Enables extended register mode. See [REGISTERS](#REGISTERS) for more
     information.
 
-  * `-e` <expr>, `--expression`=<expr>:
+  * `-e` *expr*, `--expression`=*expr*:
     Evaluates `expr`. If multiple expressions are given, they are evaluated in
     order. If files are given as well (see below), the expressions and files are
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
 
-  * `-f` *file*, `--file`=<file>:
+  * `-f` *file*, `--file`=*file*:
     Reads in `file` and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
 
