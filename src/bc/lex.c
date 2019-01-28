@@ -263,10 +263,10 @@ BcStatus bc_lex_token(BcLex *l) {
 		case 'D':
 		case 'E':
 		case 'F':
-		// Apparently, GNU bc (and maybe others allows any uppercase letter as a
-		// number. When single digits, they act like the ones above. When multi-
-		// digit, any letter above the input base is automatically set to the
-		// biggest allowable digit in the input base.
+		// Apparently, GNU bc (and maybe others) allows any uppercase letter as
+		// a number. When single digits, they act like the ones above. When
+		// multi-digit, any letter above the input base is automatically set to
+		// the biggest allowable digit in the input base.
 		case 'G':
 		case 'H':
 		case 'I':
