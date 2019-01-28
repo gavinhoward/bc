@@ -14,8 +14,7 @@ of digits.
 
 ### Multiplication
 
-This `bc` uses two algorithms:
-[Karatsuba](https://en.wikipedia.org/wiki/Karatsuba_algorithm) and brute force.
+This `bc` uses two algorithms: [Karatsuba][1] and brute force.
 
 Karatsuba is used for "large" numbers. ("Large" numbers are defined as any
 number with `BC_NUM_KARATSUBA_LEN` digits or larger. `BC_NUM_KARATSUBA_LEN` has
@@ -33,12 +32,11 @@ find the break even point on a particular machine.
 
 ### Division
 
-This `bc` uses Algorithm D
-([long division](https://en.wikipedia.org/wiki/Long_division)). Long division is
-polynomial (`O(n^2)`), but unlike Karatsuba, any division "divide and conquer"
-algorithm reaches its "break even" point with significantly larger numbers.
-"Fast" algorithms become less attractive with division as this operation
-typically reduces the problem size.
+This `bc` uses Algorithm D ([long division][2]). Long division is polynomial
+(`O(n^2)`), but unlike Karatsuba, any division "divide and conquer" algorithm
+reaches its "break even" point with significantly larger numbers. "Fast"
+algorithms become less attractive with division as this operation typically
+reduces the problem size.
 
 While the implementation of long division may appear to use the subtractive
 chunking method, it only uses subtraction to find a quotient digit. It avoids
@@ -55,19 +53,16 @@ complexity of `O(n^(2*log_2(3)))` (best case) and `O(n^3)` (worst case).
 
 ### Power
 
-This `bc` implements
-[Exponentiation by Squaring](https://en.wikipedia.org/wiki/Exponentiation_by_squaring),
-and (via Karatsuba) has a complexity of `O((n*log(n))^log_2(3))` which is
-favorable to the `O((n*log(n))^2)` without Karatsuba.
+This `bc` implements [Exponentiation by Squaring][3], which (via Karatsuba) has
+a complexity of `O((n*log(n))^log_2(3))` which is favorable to the
+`O((n*log(n))^2)` without Karatsuba.
 
 ### Square Root
 
-This `bc` implements the fast algorithm
-[Newton's Method](https://en.wikipedia.org/wiki/Newton%27s_method#Square_root_of_a_number)
-(also known as the Newton-Raphson Method, or the
-[Babylonian Method](https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method))
-to perform the square root operation. Its complexity is `O(log(n)*n^2)` as it
-requires one division per iteration.
+This `bc` implements the fast algorithm [Newton's Method][4] (also known as the
+Newton-Raphson Method, or the [Babylonian Method][5]) to perform the square root
+operation. Its complexity is `O(log(n)*n^2)` as it requires one division per
+iteration.
 
 ### Sine and Cosine (`bc` Only)
 
@@ -86,13 +81,12 @@ cos(x) = sin(x + pi/2)
 to calculate `cos(x)`. It has a complexity of `O(n^3)`.
 
 **Note**: this series has a tendency to *occasionally* produce an error of 1
-[ULP](https://en.wikipedia.org/wiki/Unit_in_the_last_place). (It is an
-unfortunate side effect of the algorithm, and there isn't any way around it;
-[this article](https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT) explains
-why calculating sine and cosine, and the other transcendental functions below,
-within less than 1 ULP is nearly impossible and unnecessary.) Therefore, I
-recommend that users do their calculations with the precision (`scale`) set to
-at least 1 greater than is needed.
+[ULP][6]. (It is an unfortunate side effect of the algorithm, and there isn't
+any way around it; [this article][7] explains why calculating sine and cosine,
+and the other transcendental functions below, within less than 1 ULP is nearly
+impossible and unnecessary.) Therefore, I recommend that users do their
+calculations with the precision (`scale`) set to at least 1 greater than is
+needed.
 
 ### Exponentiation (`bc` Only)
 
@@ -179,8 +173,16 @@ is needed.
 
 ### Modular Exponentiation (`dc` Only)
 
-This `dc` uses the
-[Memory-efficient method](https://en.wikipedia.org/wiki/Modular_exponentiation#Memory-efficient_method)
-to compute modular exponentiation. The complexity is `O(e*n^2)`, which may
-initially seem inefficient, but `n` is kept small by maintaining small numbers.
-In practice, it is extremely fast.
+This `dc` uses the [Memory-efficient method][8] to compute modular
+exponentiation. The complexity is `O(e*n^2)`, which may initially seem
+inefficient, but `n` is kept small by maintaining small numbers. In practice, it
+is extremely fast.
+
+[1]: https://en.wikipedia.org/wiki/Karatsuba_algorithm
+[2]: https://en.wikipedia.org/wiki/Long_division
+[3]: https://en.wikipedia.org/wiki/Exponentiation_by_squaring
+[4]: https://en.wikipedia.org/wiki/Newton%27s_method#Square_root_of_a_number
+[5]: https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
+[6]: https://en.wikipedia.org/wiki/Unit_in_the_last_place
+[7]: https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT
+[8]: https://en.wikipedia.org/wiki/Modular_exponentiation#Memory-efficient_method

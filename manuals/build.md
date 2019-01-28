@@ -29,10 +29,9 @@ the `configure.sh` script:
 make help
 ```
 
-See [Build Environment Variables](#build-environment-variables) for a more
-detailed description of all accepted environment variables and
-[Build Options](#build-options) for more detail about all accepted build
-options.
+See [Build Environment Variables][4] for a more detailed description of all
+accepted environment variables and [Build Options][5] for more detail about all
+accepted build options.
 
 <a name="cross-compiling"/>
 
@@ -55,11 +54,10 @@ make install
 `HOSTCFLAGS` and `HOST_CFLAGS` can be used to set compiler flags for `HOSTCC`.
 (The two are equivalent, as `HOSTCC` and `HOST_CC` are.) `HOSTCFLAGS` is
 prioritized over `HOST_CFLAGS`. If neither are present, `HOSTCC` (or `HOST_CC`)
-uses `CFLAGS` (see [Build Environment Variables](#build-environment-variables)
-for more details).
+uses `CFLAGS` (see [Build Environment Variables][4] for more details).
 
 It is expected that `CC` produces code for the target system. See
-[Build Environment Variables](#build-environment-variables) for more details.
+[Build Environment Variables][4] for more details.
 
 If an emulator is necessary to run the bootstrap binaries, it can be set with
 the environment variable `GEN_EMU`.
@@ -86,8 +84,7 @@ Defaults to `c99`.
 
 ### `HOSTCC` or `HOST_CC`
 
-C compiler for the host system, used only in
-[cross compiling](#cross-compiling).
+C compiler for the host system, used only in [cross compiling][6].
 
 Defaults to `$CC`.
 
@@ -354,3 +351,6 @@ some tests, unless the above option is given to `configure.sh`.
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
 [2]: https://www.gnu.org/software/bc/
 [3]: https://www.musl-libc.org/
+[4]: #build-environment-variables
+[5]: #build-options
+[6]: #cross-compiling
