@@ -68,8 +68,8 @@ the environment variable `GEN_EMU`.
 
 This `bc` supports `CC`, `HOSTCC`, `HOST_CC`, `CFLAGS`, `HOSTCFLAGS`,
 `HOST_CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`, `DESTDIR`, `BINDIR`,
-`DATAROOTDIR`, `DATADIR`, `MANDIR`, `MAN1DIR`, and `GEN_EMU` environment
-variables in `configure.sh`. Any values of those variables given to
+`DATAROOTDIR`, `DATADIR`, `MANDIR`, `MAN1DIR`, `EXECSUFFIX` and `GEN_EMU`
+environment variables in `configure.sh`. Any values of those variables given to
 `configure.sh` will be put into the generated Makefile.
 
 More detail on what those environment variables do can be found in the following
@@ -165,6 +165,14 @@ The directory to install Section 1 manpages in. Because both `bc` and `dc` are
 Section 1 commands, this is the only relevant section directory.
 
 Defaults to `$MANDIR/man1`.
+
+### `EXECSUFFIX`
+
+The suffix to append onto the executable names *when installing*. This is for
+packagers and distro maintainers who want this `bc` as an option, but do not
+want to replace the default `bc`.
+
+Defaults to empty.
 
 ### `GEN_EMU`
 
