@@ -80,6 +80,7 @@ BC = bc
 DC = dc
 BC_EXEC = $(BIN)/$(BC)
 DC_EXEC = $(BIN)/$(DC)
+EXEC_SUFFIX = %%EXECSUFFIX%%
 
 MANUALS = manuals
 BC_MANPAGE_NAME = $(BC).1
@@ -273,19 +274,19 @@ install_dc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(DC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
 install:%%INSTALL_PREREQS%%
-	$(INSTALL) $(DESTDIR)$(BINDIR) $(BIN)
+	$(INSTALL) $(DESTDIR)$(BINDIR) $(BIN) $(EXEC_SUFFIX)
 
 uninstall_bc_manpage:
 	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
 
 uninstall_bc:
-	$(RM) -f $(DESTDIR)$(BINDIR)/$(BC)
+	$(RM) -f $(DESTDIR)$(BINDIR)/$(BC)$(EXEC_SUFFIX)
 
 uninstall_dc_manpage:
 	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
 uninstall_dc:
-	$(RM) -f $(DESTDIR)$(BINDIR)/$(DC)
+	$(RM) -f $(DESTDIR)$(BINDIR)/$(DC)$(EXEC_SUFFIX)
 
 uninstall:%%UNINSTALL_MAN_PREREQS%%%%UNINSTALL_PREREQS%%
 

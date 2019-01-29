@@ -95,6 +95,10 @@ usage() {
 	printf '    MANDIR       The location to install manpages to. Default is "$DATADIR/man".\n'
 	printf '    MAN1DIR      The location to install Section 1 manpages to. Default is\n'
 	printf '                 "$MANDIR/man1".\n'
+	printf '    EXECSUFFIX   The suffix to append to the executable names, used to not\n'
+	printf '                 interfere with other installed bc executables. This can only\n'
+	printf '                 be a suffix because bc uses the first letter of the executable\n'
+	printf '                 name to switch between bc and dc. Default is "".\n'
 	printf '    DESTDIR      For package creation. Default is "".\n'
 	printf '    GEN_EMU      Emulator to run string generator code under\n'
 	printf '                 (leave empty if not necessary). Default is "".\n'
@@ -497,6 +501,7 @@ contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
+contents=$(replace "$contents" "EXECSUFFIX" "$EXECSUFFIX")
 contents=$(replace "$contents" "BINDIR" "$BINDIR")
 contents=$(replace "$contents" "MAN1DIR" "$MAN1DIR")
 contents=$(replace "$contents" "CFLAGS" "$CFLAGS")
