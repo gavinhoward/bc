@@ -474,6 +474,23 @@ else
 	BC_LIB2_O=""
 fi
 
+printf '\n'
+printf 'CC=%s\n' "$CC"
+printf 'CFLAGS=%s\n' "$CFLAGS"
+printf 'HOSTCC=%s\n' "$HOSTCC"
+printf 'HOSTCFLAGS=%s\n' "$HOSTCFLAGS"
+printf 'CPPFLAGS=%s\n' "$CPPFLAGS"
+printf 'LDFLAGS=%s\n' "$LDFLAGS"
+printf 'PREFIX=%s\n' "$PREFIX"
+printf 'BINDIR=%s\n' "$BINDIR"
+printf 'DATAROOTDIR=%s\n' "$DATAROOTDIR"
+printf 'DATADIR=%s\n' "$DATADIR"
+printf 'MANDIR=%s\n' "$MANDIR"
+printf 'MAN1DIR=%s\n' "$MAN1DIR"
+printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
+printf 'DESTDIR=%s\n' "$DESTDIR"
+printf 'GEN_EMU=%s\n' "$GEN_EMU"
+
 contents=$(cat "$scriptdir/Makefile.in")
 
 needle="WARNING"
