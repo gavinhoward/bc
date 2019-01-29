@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [test_with_gcc] [toybox_repo]\n' "$script"
+	printf 'usage: %s [run_tests] [test_with_gcc]\n' "$script"
 	exit 1
 }
 
@@ -203,40 +203,6 @@ vg() {
 	make clean_config
 }
 
-build_dist() {
-
-	local project="$1"
-	shift
-
-	local bc="$1"
-	shift
-
-	local repo="$1"
-	shift
-
-	header "Building and testing $project"
-
-	dist/release.py "$project" "$repo"
-
-	d=$(pwd)
-
-	cd "$repo"
-	make clean
-	make
-
-	cd "$d"
-}
-
-toybox() {
-
-	toybox_bc="$toybox_repo/generated/unstripped/toybox"
-
-	build_dist toybox "$toybox_bc" "$toybox_repo"
-
-	runtest tests/all.sh bc 0 0 1 "$toybox_bc" bc
-	runtest tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc "$toybox_bc" bc
-}
-
 debug() {
 
 	local CC="$1"
@@ -317,13 +283,6 @@ else
 	test_with_gcc=1
 fi
 
-if [ "$#" -gt 0 ]; then
-	toybox_repo="$1"
-	shift
-else
-	toybox_repo=""
-fi
-
 cd "$scriptdir"
 
 build "$debug" "clang" ""
@@ -348,10 +307,6 @@ if [ "$test_with_gcc" -ne 0 ]; then
 	minsize "gcc" "$run_tests"
 fi
 
-if [ "$toybox_repo" != "" ]; then
-	toybox
-fi
-
 if [ "$run_tests" -ne 0 ]; then
 
 	build "$release" "clang" "" make
@@ -365,7 +320,7 @@ if [ "$run_tests" -ne 0 ]; then
 	printf 'Run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
 	printf 'Then run the GitHub release script as follows:\n'
 	printf '\n'
-	printf '    <github_release> %s <msg> dist/ release.sh RELEASE.md \\\n' "$version"
+	printf '    <github_release> %s <msg> release.sh RELEASE.md \\\n' "$version"
 	printf '    tests/afl.py tests/randmath.py tests/bc/scripts/timeconst.bc\n'
 
 fi
