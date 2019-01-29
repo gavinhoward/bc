@@ -115,7 +115,7 @@ Files:
 	configure.sh     The configure script.
 	install.sh       Install script.
 	karatsuba.py     Script for package maintainers to find the optimal Karatsuba number.
-	LICENSE.md       A Markdown form of the BSD 0-clause License.
+	LICENSE.md       A Markdown form of the BSD 2-clause License.
 	link.sh          A script to link dc to bc.
 	Makefile.in      The Makefile template.
 	NOTICE.md        List of contributors and copyright owners.
@@ -125,7 +125,6 @@ Files:
 
 Folders:
 
-	dist     Files to cut toybox/busybox releases (maintainer use only).
 	gen      The bc math library, help texts, and code to generate C source.
 	include  All header files.
 	manuals  Manuals for both programs.
