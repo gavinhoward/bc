@@ -1,9 +1,0 @@
-^#include .*$
-^#ifndef BC.*_H$
-^#define BC.*_H$
-^#endif \/\/ BC.*_H$
-^extern (?!BcGlobals bcg|\\.).*$
-\n[\t]*// \*\* Exclude start\. \*\*$
-\n[\t]*// \*\* Exclude end\. \*\*$
-\n[\t]*bcg.help = bc_help;$
-\n[\t]*bcg.help = dc_help;$
