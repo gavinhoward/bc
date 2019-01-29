@@ -8,7 +8,7 @@ For more information, see this `bc`'s [full manual][2].
 This `bc` also includes an implementation of `dc` in the same binary, accessible
 via a symbolic link, which implements all FreeBSD and GNU extensions. If a
 single `dc` binary is desired, `bc` can be copied and renamed to `dc`. The `!`
-command is omitted; I believe this is poses security concerns and that such
+command is omitted; I believe this poses security concerns and that such
 functionality is unnecessary.
 
 For more information, see the `dc`'s [full manual][3].
@@ -95,7 +95,7 @@ Other projects based on this bc are:
 
 ## Language
 
-This `bc` is written in pure ISO C99, using POSIX 2008 API's.
+This `bc` is written in pure ISO C99, using POSIX 2008 APIs.
 
 ## Commit Messages
 
