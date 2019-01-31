@@ -751,7 +751,7 @@ static BcStatus bc_history_edit_end(BcHistory *h) {
  */
 static BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 
-	char* dup, *str;
+	char *dup, *str;
 
 	if (h->history.len <= 1) return BC_STATUS_SUCCESS;
 
