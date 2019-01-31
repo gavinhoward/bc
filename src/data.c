@@ -745,6 +745,7 @@ const char bc_program_exprs_name[] = "<exprs>";
 
 const char bc_program_stdin_name[] = "<stdin>";
 const char bc_program_ready_msg[] = "ready for more input\n";
+const size_t bc_program_ready_msg_len = sizeof(bc_program_ready_msg) - 1;
 const char bc_program_esc_chars[] = "ab\\efnqrt";
 const char bc_program_esc_seqs[] = "\a\b\\\\\f\n\"\r\t";
 

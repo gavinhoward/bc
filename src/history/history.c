@@ -1065,10 +1065,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			case BC_ACTION_CTRL_C:
 			{
-#if BC_ENABLE_SIGNALS
-				size_t rlen, slen;
-#endif // BC_ENABLE_SIGNALS
-
 				s = bc_history_printCtrl(h, c);
 				if (s) return s;
 
@@ -1076,11 +1072,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				s = bc_history_reset(h);
 				if (s) break;
 
-				rlen = strlen(bc_program_ready_msg);
-				slen = vm->sig_len;
-
-				if (BC_HISTORY_WRITE(vm->sig_msg, slen) ||
-				    BC_HISTORY_WRITE(bc_program_ready_msg, rlen))
+				if (BC_HISTORY_WRITE(vm->sig_msg, vm->sig_len) ||
+				    BC_HISTORY_WRITE(bc_program_ready_msg, bc_program_ready_msg_len))
 				{
 					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
 				}
