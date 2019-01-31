@@ -1156,9 +1156,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			{
 				bc_vec_npop(&h->buf, h->buf.len - h->pos);
 				bc_vec_pushByte(&h->buf, '\0');
-
 				s = bc_history_refresh(h);
-
 				break;
 			}
 
