@@ -751,7 +751,7 @@ static BcStatus bc_history_edit_end(BcHistory *h) {
  */
 static BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 
-	char* dup;
+	char* dup, *str;
 
 	if (h->history.len <= 1) return BC_STATUS_SUCCESS;
 
@@ -762,7 +762,7 @@ static BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 	bc_vec_replaceAt(&h->history, h->history.len - 1 - h->idx, &dup);
 
 	// Show the new entry.
-	h->idx += (unsigned int) (dir == BC_HISTORY_PREV ? 1 : -1);
+	h->idx += (size_t) (dir == BC_HISTORY_PREV ? 1 : -1);
 
 	if (h->idx == SIZE_MAX) {
 		h->idx = 0;
@@ -773,7 +773,7 @@ static BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	char* str = *((char**) bc_vec_item(&h->history, h->history.len - 1 - h->idx));
+	str = *((char**) bc_vec_item(&h->history, h->history.len - 1 - h->idx));
 	bc_vec_string(&h->buf, strlen(str), str);
 
 	h->pos = BC_HISTORY_BUF_LEN(h);
