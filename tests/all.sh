@@ -111,8 +111,8 @@ f="$testdir/$d/add.txt"
 exprs=$(cat "$f")
 results=$(cat "$testdir/$d/add_results.txt")
 
-out1="$testdir/../.log_bc.txt"
-out2="$testdir/../.log_test.txt"
+out1="$testdir/../.log_$d.txt"
+out2="$testdir/../.log_${d}_test.txt"
 
 printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 

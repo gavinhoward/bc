@@ -39,7 +39,7 @@ else
 fi
 
 out1="$testdir/../.log_bc.txt"
-out2="$testdir/../.log_test.txt"
+out2="$testdir/../.log_bc_test.txt"
 
 base=$(basename "$timeconst")
 

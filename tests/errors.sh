@@ -101,7 +101,7 @@ else
 	shift
 fi
 
-out="$testdir/../.log_test.txt"
+out="$testdir/../.log_${d}_test.txt"
 
 exebase=$(basename "$exe")
 

@@ -49,8 +49,8 @@ else
 	exe="$testdir/../bin/$d"
 fi
 
-out1="$testdir/../.log_bc.txt"
-out2="$testdir/../.log_test.txt"
+out1="$testdir/../.log_$d.txt"
+out2="$testdir/../.log_${d}_test.txt"
 
 if [ "$d" = "bc" ]; then
 	options="-lq"
