@@ -31,6 +31,10 @@ header() {
 	printf '\n'
 }
 
+do_make() {
+	make -j4 "$@"
+}
+
 configure() {
 
 	local CFLAGS="$1"
@@ -66,7 +70,7 @@ build() {
 
 	header "Building with CC=\"$CC\" and CFLAGS=\"$CFLAGS\""
 
-	make > /dev/null 2> "$scriptdir/.test.txt"
+	do_make > /dev/null 2> "$scriptdir/.test.txt"
 
 	if [ -s "$scriptdir/.test.txt" ]; then
 		printf '%s generated warning(s):\n' "$CC"
@@ -81,14 +85,9 @@ runtest() {
 	header "Running tests"
 
 	if [ "$#" -gt 0 ]; then
-
-		exe="$1"
-		shift
-
-		"$exe" "$@"
-
+		do_make "$@"
 	else
-		make test_all
+		do_make test
 	fi
 }
 
@@ -117,21 +116,21 @@ runconfigtests() {
 		runtest
 	fi
 
-	make clean
+	do_make clean
 
 	build "$CFLAGS" "$CC" "$configure_flags -b"
 	if [ "$run_tests" -ne 0 ]; then
 		runtest
 	fi
 
-	make clean
+	do_make clean
 
 	build "$CFLAGS" "$CC" "$configure_flags -d"
 	if [ "$run_tests" -ne 0 ]; then
 		runtest
 	fi
 
-	make clean
+	do_make clean
 }
 
 runtestseries() {
@@ -180,7 +179,7 @@ runtests() {
 karatsuba() {
 
 	header "Running Karatsuba tests"
-	make karatsuba_test
+	do_make karatsuba_test
 }
 
 vg() {
@@ -188,19 +187,19 @@ vg() {
 	header "Running valgrind"
 
 	build "$reldebug" "$CC" "-g"
-	runtest make valgrind
+	runtest valgrind
 
-	make clean_config
+	do_make clean_config
 
 	build "$reldebug" "$CC" "-gb"
-	runtest make valgrind
+	runtest valgrind
 
-	make clean_config
+	do_make clean_config
 
 	build "$reldebug" "$CC" "-gd"
-	runtest make valgrind
+	runtest valgrind
 
-	make clean_config
+	do_make clean_config
 }
 
 debug() {
@@ -293,7 +292,7 @@ echo "quit" | bin/bc -ls
 
 version=$(make version)
 
-make clean_tests
+do_make clean_tests
 
 debug "clang" "$run_tests"
 release "clang" "$run_tests"
@@ -309,12 +308,12 @@ fi
 
 if [ "$run_tests" -ne 0 ]; then
 
-	build "$release" "clang" "" make
+	build "$release" "clang" ""
 
 	karatsuba
 	vg
 
-	build "$reldebug" "afl-gcc" "" make
+	build "$reldebug" "afl-gcc" ""
 
 	printf '\n'
 	printf 'Run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
