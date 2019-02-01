@@ -27,5 +27,4 @@ This is the checklist for cutting a release.
 15.	Upload the custom tarball to GitHub.
 16.	Add sha's to release notes.
 17.	Edit release notes for the changelog.
-18.	Run toybox release and submit.
-19.	Increment to the next version (with "-dev").
+18.	Increment to the next version (with "-dev").
