@@ -38,8 +38,8 @@ else
 	bc="$testdir/../../bin/bc"
 fi
 
-out1="$testdir/../.log_bc.txt"
-out2="$testdir/../.log_bc_test.txt"
+out1="$testdir/../.log_bc_timeconst.txt"
+out2="$testdir/../.log_bc_timeconst_test.txt"
 
 base=$(basename "$timeconst")
 
