@@ -170,23 +170,17 @@ help:
 	@printf '    uninstall       uninstalls binaries from "%s%s"\n' "$(DESTDIR)" "$(BINDIR)"
 	@printf '                    and (if enabled) manpages from "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
 	@printf '    test            runs the test suite\n'
-	@printf '    test_all        runs the test suite as well as the Linux timeconst.bc test,\n'
-	@printf '                    if it exists and bc has been built\n'
 	@printf '    test_bc         runs the bc test suite, if bc has been built\n'
 	@printf '    test_dc         runs the dc test suite, if dc has been built\n'
 	@printf '    timeconst       runs the test on the Linux timeconst.bc script,\n'
 	@printf '                    if it exists and bc has been built\n'
 	@printf '    valgrind        runs the test suite through valgrind\n'
-	@printf '    valgrind_all    runs the test suite, and the Linux timeconst.bc test,\n'
-	@printf '                    if it exists and bc has been built, through valgrind\n'
 	@printf '    valgrind_bc     runs the bc test suite, if bc has been built,\n'
 	@printf '                    through valgrind\n'
 	@printf '    valgrind_dc     runs the dc test suite, if dc has been built,\n'
 	@printf '                    through valgrind\n'
 
-test_all: test timeconst
-
-test: test_bc test_dc
+test: test_bc timeconst test_dc
 
 test_bc:
 	%%BC_TEST%%
