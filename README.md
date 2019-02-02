@@ -16,6 +16,14 @@ For more information, see the `dc`'s [full manual][3].
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 2-clause License. Full license text may be found in the [`LICENSE.md`][4] file.
 
+## Prerequisites
+
+This `bc` only requires a POSIX 2008-compatible system, or an *almost* POSIX
+2008-compatible system (like Linux).
+
+It requires a C99 compiler, which POSIX 2008 requires as `c99`, and its build
+system uses only POSIX `sh` and POSIX 2008 utilities.
+
 ## Build
 
 This `bc` should build unmodified on any POSIX-compliant system.
