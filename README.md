@@ -18,11 +18,19 @@ This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 
 ## Prerequisites
 
-This `bc` only requires a (mostly) POSIX 2008-compatible system with the XSI
-(X/Open System Interfaces) option group.
+This `bc` only requires a C99-compatible compiler and a (mostly) POSIX
+2008-compatible system with the XSI (X/Open System Interfaces) option group.
 
-It requires a C99 compiler, which POSIX 2008 requires as `c99`, and its build
-system uses only POSIX `sh` and POSIX 2008 utilities.
+Since POSIX 2008 with XSI requires the existence of a C99 compiler as `c99`, any
+POSIX and XSI-compatible system will have everything needed.
+
+Systems that are known to work:
+
+* Linux
+* FreeBSD
+
+Please submit bug reports if this `bc` does not build out of the box on other
+systems.
 
 ## Build
 
