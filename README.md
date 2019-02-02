@@ -18,8 +18,8 @@ This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 
 ## Prerequisites
 
-This `bc` only requires a POSIX 2008-compatible system, or an *almost* POSIX
-2008-compatible system (like Linux).
+This `bc` only requires a (mostly) POSIX 2008-compatible system with the XSI
+(X/Open System Interfaces) option group.
 
 It requires a C99 compiler, which POSIX 2008 requires as `c99`, and its build
 system uses only POSIX `sh` and POSIX 2008 utilities.
