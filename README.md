@@ -152,7 +152,7 @@ Folders:
 [3]: ./manuals/dc.md
 [4]: ./LICENSE.md
 [5]: ./manuals/build.md
-[6]: https://xstatic.musl.cc/bc/
+[6]: https://pkg.musl.cc/bc/
 [7]: ./manuals/algorithms.md
 [8]: https://git.busybox.net/busybox/tree/miscutils/bc.c
 [9]: https://github.com/landley/toybox/blob/master/toys/pending/bc.c
