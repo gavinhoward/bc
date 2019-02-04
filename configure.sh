@@ -371,9 +371,7 @@ if [ "$debug" -eq 1 ]; then
 
 else
 	CPPFLAGS="$CPPFLAGS -DNDEBUG"
-	if [ "$bc" -ne 0 -a "$dc" -ne 0 ]; then
-		link="$link 1"
-	fi
+	LDFLAGS="$LDFLAGS -s"
 fi
 
 if [ "$optimization" != "" ]; then
