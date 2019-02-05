@@ -623,8 +623,7 @@ static BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf,
 
 	if (h->pos == BC_HISTORY_BUF_LEN(h)) {
 
-		size_t colpos;
-		size_t len;
+		size_t colpos, len;
 
 		memcpy(bc_vec_item(&h->buf, h->pos), cbuf, clen);
 
