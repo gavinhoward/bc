@@ -40,9 +40,9 @@ static const char* const bc_gen_ifdef = "#if %s\n";
 static const char* const bc_gen_endif = "#endif // %s\n";
 static const char* const bc_gen_name = "const char %s[] = {\n";
 
-#define INVALID_PARAMS (1)
+#define IO_ERR (1)
 #define INVALID_INPUT_FILE (2)
-#define IO_ERR (3)
+#define INVALID_PARAMS (3)
 
 #define MAX_WIDTH (74)
 
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
 	if (!count && (fputc(' ', out) == EOF || fputc(' ', out) == EOF)) goto err;
 	if (fprintf(out, "0\n};\n") < 0) goto err;
 
-	if (!has_define || fprintf(out, bc_gen_endif, define) >= 0) err = 0;
+	err = (has_define && fprintf(out, bc_gen_endif, define) < 0);
 
 err:
 	fclose(out);
