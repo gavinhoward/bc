@@ -42,8 +42,7 @@ static const char* const bc_gen_name = "const char %s[] = {\n";
 
 #define INVALID_PARAMS (1)
 #define INVALID_INPUT_FILE (2)
-#define INVALID_OUTPUT_FILE (3)
-#define IO_ERR (4)
+#define IO_ERR (3)
 
 #define MAX_WIDTH (74)
 
@@ -51,10 +50,8 @@ int main(int argc, char *argv[]) {
 
 	FILE *in, *out;
 	char *label, *define, *name, *include;
-	int c, count, err, slashes;
+	int c, count, slashes, err = IO_ERR;
 	bool has_label, has_define, remove_tabs;
-
-	err = 0;
 
 	if (argc < 5) {
 		printf("usage: %s input output name header [label [define [remove_tabs]]]\n", argv[0]);
@@ -64,65 +61,39 @@ int main(int argc, char *argv[]) {
 	name = argv[3];
 	include = argv[4];
 
-	has_label = argc > 5 && strcmp("", argv[5]) != 0;
+	has_label = (argc > 5 && strcmp("", argv[5]) != 0);
 	label = has_label ? argv[5] : "";
 
-	has_define = argc > 6 && strcmp("", argv[6]) != 0;
+	has_define = (argc > 6 && strcmp("", argv[6]) != 0);
 	define = has_define ? argv[6] : "";
 
-	remove_tabs = argc > 7;
+	remove_tabs = (argc > 7);
 
 	in = fopen(argv[1], "r");
-
 	if (!in) return INVALID_INPUT_FILE;
 
 	out = fopen(argv[2], "w");
+	if (!out) goto out_err;
 
-	if (!out) {
-		err = INVALID_OUTPUT_FILE;
-		goto out_err;
-	}
-
-	if (fprintf(out, bc_gen_header, argv[1]) < 0) {
-		err = IO_ERR;
-		goto error;
-	}
-
-	if (has_define && fprintf(out, bc_gen_ifdef, define) < 0) {
-		err = IO_ERR;
-		goto error;
-	}
-
-	if (fprintf(out, bc_gen_include, include) < 0) {
-		err = IO_ERR;
-		goto error;
-	}
-
-	if (has_label && fprintf(out, bc_gen_label, label, argv[1]) < 0) {
-		err = IO_ERR;
-		goto error;
-	}
-
-	if (fprintf(out, bc_gen_name, name) < 0) {
-		err = IO_ERR;
-		goto error;
-	}
+	if (fprintf(out, bc_gen_header, argv[1]) < 0) goto err;
+	if (has_define && fprintf(out, bc_gen_ifdef, define) < 0) goto err;
+	if (fprintf(out, bc_gen_include, include) < 0) goto err;
+	if (has_label && fprintf(out, bc_gen_label, label, argv[1]) < 0) goto err;
+	if (fprintf(out, bc_gen_name, name) < 0) goto err;
 
 	c = count = slashes = 0;
 
 	while (slashes < 2 && (c = fgetc(in)) >= 0) {
-		if (slashes == 1 && c == '/' && fgetc(in) == '\n') ++slashes;
-		if (!slashes && c == '/' && fgetc(in) == '*') ++slashes;
+		slashes += (slashes == 1 && c == '/' && fgetc(in) == '\n');
+		slashes += (!slashes && c == '/' && fgetc(in) == '*');
 	}
 
 	if (c < 0) {
 		err = INVALID_INPUT_FILE;
-		goto error;
+		goto err;
 	}
 
-	c = fgetc(in);
-
-	if (c == '\n') c = fgetc(in);
+	while ((c = fgetc(in)) == '\n');
 
 	while (c >= 0) {
 
@@ -130,51 +101,28 @@ int main(int argc, char *argv[]) {
 
 		if (!remove_tabs || c != '\t') {
 
-			if (!count) {
-				if (fputc('\t', out) == EOF) {
-					err = IO_ERR;
-					goto error;
-				}
-			}
+			if (!count && fputc('\t', out) == EOF) goto err;
 
 			val = fprintf(out, "%d,", c);
-
-			if (val < 0) {
-				err = IO_ERR;
-				goto error;
-			}
+			if (val < 0) goto err;
 
 			count += val;
 
 			if (count > MAX_WIDTH) {
-
 				count = 0;
-
-				if (fputc('\n', out) == EOF) {
-					err = IO_ERR;
-					goto error;
-				}
+				if (fputc('\n', out) == EOF) goto err;
 			}
 		}
 
 		c = fgetc(in);
 	}
 
-	if (!count) {
-		if (fputc(' ', out) == EOF || fputc(' ', out) == EOF) {
-			err = IO_ERR;
-			goto error;
-		}
-	}
+	if (!count && (fputc(' ', out) == EOF || fputc(' ', out) == EOF)) goto err;
+	if (fprintf(out, "0\n};\n") < 0) goto err;
 
-	if (fprintf(out, "0\n};\n") < 0) {
-		err = IO_ERR;
-		goto error;
-	}
+	if (!has_define || fprintf(out, bc_gen_endif, define) >= 0) err = 0;
 
-	if (has_define && fprintf(out, bc_gen_endif, define) < 0) err = IO_ERR;
-
-error:
+err:
 	fclose(out);
 out_err:
 	fclose(in);
