@@ -31,7 +31,7 @@
 
 static const char* const bc_gen_header =
 	"// Copyright (c) 2018 Gavin D. Howard.\n"
-	"// Licensed under the 0-clause BSD license.\n"
+	"// Licensed under the 2-clause BSD license.\n"
 	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
 
 static const char* const bc_gen_include = "#include <%s>\n\n";
