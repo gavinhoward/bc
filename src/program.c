@@ -1504,7 +1504,7 @@ void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
 #if BC_ENABLED
 size_t bc_program_insertFunc(BcProgram *p, char *name) {
 
-	BcId id, *id_ptr;
+	BcId id;
 	BcFunc f;
 	bool new;
 	size_t idx;
@@ -1515,11 +1515,10 @@ size_t bc_program_insertFunc(BcProgram *p, char *name) {
 	id.idx = p->fns.len;
 
 	new = bc_map_insert(&p->fn_map, &id, &idx);
-	id_ptr = bc_vec_item(&p->fn_map, idx);
-	idx = id_ptr->idx;
+	idx = ((BcId*) bc_vec_item(&p->fn_map, idx))->idx;
 
 	if (!new) {
-		BcFunc *func = bc_vec_item(&p->fns, id_ptr->idx);
+		BcFunc *func = bc_vec_item(&p->fns, idx);
 		bc_func_reset(func);
 		free(name);
 	}
