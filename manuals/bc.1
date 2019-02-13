@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BC" "1" "January 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "February 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
@@ -759,6 +759,20 @@ Returns \fBpi\fR to \fBp\fR decimal places\.
 This is a \fItranscendental function\fR\.
 .
 .TP
+\fBr2d(x)\fR
+Converts \fBx\fR from radians to degrees and returns the result\.
+.
+.IP
+This is a \fItranscendental function\fR\.
+.
+.TP
+\fBr2d(x)\fR
+Converts \fBx\fR from degrees to radians and returns the result\.
+.
+.IP
+This is a \fItranscendental function\fR\.
+.
+.TP
 \fBubytes(x)\fR
 Returns the numbers of unsigned integer bytes required to hold the truncated absolute value of \fBx\fR\.
 .
@@ -981,6 +995,12 @@ The transcendental functions in the extended math library are:
 .
 .IP "\(bu" 4
 \fBpi(p)\fR
+.
+.IP "\(bu" 4
+\fBr2d(x)\fR
+.
+.IP "\(bu" 4
+\fBd2r(x)\fR
 .
 .IP "" 0
 .

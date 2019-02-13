@@ -656,6 +656,16 @@ by the [standard][1].
 
     This is a [transcendental function][5].
 
+  * `r2d(x)`:
+    Converts `x` from radians to degrees and returns the result.
+
+    This is a [transcendental function][5].
+
+  * `r2d(x)`:
+    Converts `x` from degrees to radians and returns the result.
+
+    This is a [transcendental function][5].
+
   * `ubytes(x)`:
     Returns the numbers of unsigned integer bytes required to hold the truncated
     absolute value of `x`.
@@ -850,6 +860,8 @@ The transcendental functions in the extended math library are:
 * `l10(x)`
 * `log(x, b)`
 * `pi(p)`
+* `r2d(x)`
+* `d2r(x)`
 
 SIGNAL HANDLING
 ---------------
