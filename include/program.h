@@ -104,8 +104,6 @@ typedef struct BcProgram {
 
 typedef void (*BcProgramUnary)(BcResult*, BcNum*);
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
 void bc_program_init(BcProgram *p);
 void bc_program_free(BcProgram *p);
 
@@ -116,8 +114,6 @@ void bc_program_printInst(BcProgram *p, const char *code,
                           size_t *restrict bgn);
 #endif // BC_ENABLED && DC_ENABLED
 #endif // NDEBUG
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 void bc_program_addFunc(BcProgram *p, BcFunc *f, const char* name);
 size_t bc_program_insertFunc(BcProgram *p, char *name);
@@ -133,8 +129,6 @@ void bc_program_not(BcResult *r, BcNum *n);
 void bc_program_trunc(BcResult *r, BcNum *n);
 #endif // BC_ENABLE_EXTRA_MATH
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
 extern const BcNumBinaryOp bc_program_ops[];
 extern const BcNumBinaryOpReq bc_program_opReqs[];
 extern const BcProgramUnary bc_program_unarys[];
@@ -144,7 +138,5 @@ extern const char bc_program_ready_msg[];
 extern const size_t bc_program_ready_msg_len;
 extern const char bc_program_esc_chars[];
 extern const char bc_program_esc_seqs[];
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 #endif // BC_PROGRAM_H

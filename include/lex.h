@@ -164,10 +164,8 @@ typedef enum BcLexType {
 
 } BcLexType;
 
-// ** Exclude start. **
 struct BcLex;
 typedef BcStatus (*BcLexNext)(struct BcLex*);
-// ** Exclude end. **
 
 typedef struct BcLex {
 
@@ -182,9 +180,6 @@ typedef struct BcLex {
 
 } BcLex;
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
-
 void bc_lex_init(BcLex *l);
 void bc_lex_free(BcLex *l);
 void bc_lex_file(BcLex *l, const char *file);
@@ -198,8 +193,5 @@ BcStatus bc_lex_number(BcLex *l, char start);
 BcStatus bc_lex_name(BcLex *l);
 
 BcStatus bc_lex_invalidChar(BcLex *l, char c);
-
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 #endif // BC_LEX_H

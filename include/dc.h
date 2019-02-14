@@ -33,13 +33,9 @@
 // to have to calculate log base 2 of n.
 #define DC_PARSE_BUF_LEN ((int) (sizeof(uint32_t) * CHAR_BIT))
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
 int dc_main(int argc, char **argv);
 
 extern const char dc_help[];
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 BcStatus dc_lex_token(BcLex *l);
 bool dc_lex_negCommand(BcLex *l);

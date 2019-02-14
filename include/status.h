@@ -40,9 +40,7 @@ typedef enum BcError {
 	BC_ERROR_VM_IO_ERR,
 	BC_ERROR_VM_BIN_FILE,
 	BC_ERROR_VM_PATH_DIR,
-	// ** Exclude start. **
 	BC_ERROR_VM_OPTION,
-	// ** Exclude end. **
 
 	BC_ERROR_PARSE_EOF,
 	BC_ERROR_PARSE_CHAR,

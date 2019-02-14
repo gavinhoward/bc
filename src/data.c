@@ -29,8 +29,6 @@
 #include <program.h>
 #include <vm.h>
 
-// clang-format off
-
 #if BC_ENABLE_SIGNALS
 #if BC_ENABLED
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
@@ -45,9 +43,7 @@ const char bc_copyright[] =
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
-// ** Exclude start. **
 const char* const bc_args_env_name = "BC_ENV_ARGS";
-// ** Exclude end. **
 
 const char* const bc_err_fmt = "\n%s error: ";
 const char* const bc_warn_fmt = "\n%s warning: ";
@@ -64,10 +60,7 @@ const char *bc_errs[] = {
 };
 
 const char bc_err_ids[] = {
-	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
-	// ** Exclude start. **
-	BC_ERR_IDX_VM,
-	// ** Exclude end. **
+	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #if BC_ENABLED
@@ -102,9 +95,7 @@ const char* const bc_err_msgs[] = {
 	"I/O error",
 	"file is not ASCII: %s",
 	"path is a directory: %s",
-	// ** Exclude start. **
 	"Bad command-line option: '%c' (\"%s\")",
-	// ** Exclude end. **
 
 	"end of file",
 	"bad character (%c)",
@@ -552,7 +543,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
-#if BC_ENABLE_EXTRA_MATH // Remove
+#if BC_ENABLE_EXTRA_MATH
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
@@ -565,7 +556,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
 	BC_PARSE_EXPR_ENTRY(true, true, false, true, false, 0, 0, 0)
-#endif // BC_ENABLE_EXTRA_MATH Remove
+#endif // BC_ENABLE_EXTRA_MATH
 };
 
 // This is an array of data for operators that correspond to token types.
@@ -618,11 +609,11 @@ const uint8_t dc_lex_regs[] = {
 const size_t dc_lex_regs_len = sizeof(dc_lex_regs) / sizeof(uint8_t);
 
 const uint8_t dc_lex_tokens[] = {
-#if BC_ENABLE_EXTRA_MATH // Remove
+#if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_TRUNC,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH Remove
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_MODULUS, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_LPAREN,
 	BC_LEX_RPAREN, BC_LEX_OP_MULTIPLY, BC_LEX_OP_PLUS, BC_LEX_INVALID,
 	BC_LEX_OP_MINUS, BC_LEX_INVALID, BC_LEX_OP_DIVIDE,
@@ -631,18 +622,18 @@ const uint8_t dc_lex_tokens[] = {
 	BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_COLON, BC_LEX_SCOLON, BC_LEX_OP_REL_GT, BC_LEX_OP_REL_EQ,
 	BC_LEX_OP_REL_LT, BC_LEX_KEY_READ,
-#if BC_ENABLE_EXTRA_MATH // Remove
+#if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_PLACES,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH Remove
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_EQ_NO_REG,
-#if BC_ENABLE_EXTRA_MATH // Remove
+#if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_LSHIFT,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH Remove
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_KEY_IBASE, BC_LEX_INVALID, BC_LEX_KEY_SCALE, BC_LEX_LOAD_POP,
 	BC_LEX_INVALID, BC_LEX_OP_BOOL_NOT, BC_LEX_KEY_OBASE, BC_LEX_PRINT_STREAM,
 	BC_LEX_NQUIT, BC_LEX_POP, BC_LEX_STORE_PUSH, BC_LEX_INVALID, BC_LEX_INVALID,
@@ -651,11 +642,11 @@ const uint8_t dc_lex_tokens[] = {
 	BC_LEX_OP_POWER, BC_LEX_NEG, BC_LEX_INVALID,
 	BC_LEX_ASCIIFY, BC_LEX_KEY_ABS, BC_LEX_CLEAR_STACK, BC_LEX_DUPLICATE,
 	BC_LEX_KEY_ELSE, BC_LEX_PRINT_STACK, BC_LEX_INVALID,
-#if BC_ENABLE_EXTRA_MATH // Remove
+#if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_RSHIFT,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
-#endif // BC_ENABLE_EXTRA_MATH Remove
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_STORE_IBASE, BC_LEX_INVALID, BC_LEX_STORE_SCALE, BC_LEX_LOAD,
 	BC_LEX_INVALID, BC_LEX_PRINT_POP, BC_LEX_STORE_OBASE, BC_LEX_KEY_PRINT,
 	BC_LEX_KEY_QUIT, BC_LEX_SWAP, BC_LEX_OP_ASSIGN, BC_LEX_INVALID,
@@ -711,9 +702,7 @@ const uint8_t dc_parse_insts[] = {
 };
 #endif // DC_ENABLED
 
-// ** Busybox exclude start. **
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
-// ** Busybox exclude end. **
 
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
@@ -737,16 +726,10 @@ const BcProgramUnary bc_program_unarys[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
 const char bc_program_exprs_name[] = "<exprs>";
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 const char bc_program_stdin_name[] = "<stdin>";
 const char bc_program_ready_msg[] = "ready for more input\n";
 const size_t bc_program_ready_msg_len = sizeof(bc_program_ready_msg) - 1;
 const char bc_program_esc_chars[] = "ab\\efnqrt";
 const char bc_program_esc_seqs[] = "\a\b\\\\\f\n\"\r\t";
-
-// clang-format on

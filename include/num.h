@@ -108,9 +108,6 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale);
 size_t bc_num_shiftReq(BcNum *a, BcNum *b, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
-
 void bc_num_truncate(BcNum *restrict n, size_t places);
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
 
@@ -128,9 +125,6 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 #if DC_ENABLED
 BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED
-
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 extern const char bc_num_hex_digits[];
 

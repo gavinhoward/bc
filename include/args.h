@@ -26,10 +26,8 @@
 #include <status.h>
 #include <vm.h>
 
-// ** Busybox exclude start. **
 BcStatus bc_args(int argc, char *argv[]);
 
 extern const char* const bc_args_env_name;
-// ** Busybox exclude end. **
 
 #endif // BC_ARGS_H

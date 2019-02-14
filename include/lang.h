@@ -220,8 +220,6 @@ typedef enum BcType {
 #endif // BC_ENABLE_REFERENCES
 } BcType;
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
 void bc_func_init(BcFunc *f, const char* name);
 BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line);
 void bc_func_reset(BcFunc *f);
@@ -234,8 +232,6 @@ void bc_string_free(void *string);
 void bc_id_free(void *id);
 void bc_result_copy(BcResult *d, BcResult *src);
 void bc_result_free(void *result);
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 void bc_array_expand(BcVec *a, size_t len);
 int bc_id_cmp(const BcId *e1, const BcId *e2);

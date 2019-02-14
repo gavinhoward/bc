@@ -42,11 +42,9 @@
 #error CHAR_BIT must be at least 6.
 #endif
 
-// ** Exclude start. **
 #define VERSION_STR(V) #V
 #define VERSION_STR2(V) VERSION_STR(V)
 #define BC_VERSION VERSION_STR2(VERSION)
-// ** Exclude end. **
 
 // Windows has deprecated isatty().
 #ifdef _WIN32
@@ -111,28 +109,22 @@ typedef struct BcVm {
 	const char* file;
 
 #if BC_ENABLE_SIGNALS
-	// ** Exclude start. **
 	const char *sig_msg;
 	uchar sig_len;
-	// ** Exclude end. **
 	uchar sig;
 #endif // BC_ENABLE_SIGNALS
 
 	uint16_t line_len;
 	uchar max_ibase;
 
-	// ** Exclude start. **
 	uint8_t flags;
 	uchar read_ret;
 
 	BcVec files;
-
-	// ** Busybox exclude start. **
 	BcVec exprs;
 
 	const char *name;
 	const char *help;
-	// ** Busybox exclude end. **
 
 	char *env_args;
 
@@ -143,7 +135,6 @@ typedef struct BcVm {
 	BcLexNext next;
 	BcParseParse parse;
 	BcParseExpr expr;
-	// ** Exclude end. **
 
 } BcVm;
 
@@ -151,24 +142,18 @@ typedef struct BcVm {
 BcStatus bc_vm_posixError(BcError e, size_t line, ...);
 #endif // BC_ENABLED
 
-// ** Exclude start. **
 void bc_vm_info(const char* const help);
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len);
 void bc_vm_shutdown(void);
-// ** Exclude end. **
-
-// ** Busybox exclude start. **
 
 size_t bc_vm_printf(const char *fmt, ...);
 void bc_vm_puts(const char *str, FILE *restrict f);
 void bc_vm_putchar(int c);
 void bc_vm_fflush(FILE *restrict f);
 
-// ** Exclude start. **
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
-// ** Exclude end. **
 
 BcStatus bc_vm_error(BcError e, size_t line, ...);
 
@@ -181,7 +166,6 @@ extern const char *bc_lib2_name;
 #endif // BC_ENABLE_EXTRA_MATH
 #endif // BC_ENABLED
 
-// ** Exclude start. **
 extern const char bc_copyright[];
 
 extern const char* const bc_err_fmt;
@@ -190,9 +174,6 @@ extern const char* const bc_err_line;
 extern const char *bc_errs[];
 extern const char bc_err_ids[];
 extern const char* const bc_err_msgs[];
-// ** Exclude end. **
-
-// ** Busybox exclude end. **
 
 extern BcVm *vm;
 

@@ -55,16 +55,11 @@ typedef struct BcParseNext {
 #define BC_PARSE_NEXT(a, ...) \
 	{ .len = (uchar) (a), BC_PARSE_NEXT_TOKENS(__VA_ARGS__) }
 
-// ** Exclude start. **
 struct BcParse;
-// ** Exclude end. **
-
 struct BcProgram;
 
-// ** Exclude start. **
 typedef BcStatus (*BcParseParse)(struct BcParse*);
 typedef BcStatus (*BcParseExpr)(struct BcParse*, uint8_t);
-// ** Exclude end. **
 
 typedef struct BcParse {
 
@@ -85,9 +80,6 @@ typedef struct BcParse {
 
 } BcParse;
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
-
 void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
@@ -97,8 +89,5 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx);
 void bc_parse_pushName(BcParse* p, char *name);
 void bc_parse_pushIndex(BcParse* p, size_t idx);
 BcStatus bc_parse_text(BcParse *p, const char *text);
-
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 #endif // BC_PARSE_H

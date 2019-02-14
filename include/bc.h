@@ -32,8 +32,6 @@
 #include <lex.h>
 #include <parse.h>
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
 int bc_main(int argc, char **argv);
 
 extern const char bc_help[];
@@ -41,8 +39,6 @@ extern const char bc_lib[];
 extern const char* bc_lib_name;
 extern const char bc_lib2[];
 extern const char* bc_lib2_name;
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 typedef struct BcLexKeyword {
 	uchar data;
@@ -134,11 +130,7 @@ BcStatus bc_lex_token(BcLex *l);
 
 #define bc_parse_posixErr(p, e) (bc_vm_posixError((e), (p)->l.line))
 
-// ** Exclude start. **
-// ** Busybox exclude start. **
 BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
-// ** Busybox exclude end. **
-// ** Exclude end. **
 
 BcStatus bc_parse_parse(BcParse *p);
 BcStatus bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
