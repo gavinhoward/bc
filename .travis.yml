@@ -45,9 +45,4 @@ addons:
     branch_pattern: coverity_scan
 
 # command to run tests
-script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
-  -   ./configure.sh
-  -   make -j4
-  -   make -j4 test
-  - fi
+script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./configure.sh "$CONFIGURE_ARGS" && make -j4 && make -j4 test ; fi
