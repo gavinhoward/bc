@@ -1,8 +1,8 @@
 # `bc`
 
-[![Build Status](https://travis-ci.com/gavinhoward/bc.svg?branch=master)](https://travis-ci.com/gavinhoward/bc)
+[![Build Status][12]][13]
 
-[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/16609.svg)](https://scan.coverity.com/projects/gavinhoward-bc)
+[![Coverity Scan Build Status][14]][15]
 
 This is an implementation of POSIX `bc` that implements [GNU `bc`][1]
 extensions, as well as the period (`.`) extension for the BSD flavor of `bc`.
@@ -162,3 +162,7 @@ Folders:
 [9]: https://github.com/landley/toybox/blob/master/toys/pending/bc.c
 [10]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [11]: http://semver.org/
+[12]: https://travis-ci.com/gavinhoward/bc.svg?branch=master
+[13]: https://travis-ci.com/gavinhoward/bc
+[14]: https://img.shields.io/coverity/scan/16609.svg
+[15]: https://scan.coverity.com/projects/gavinhoward-bc
