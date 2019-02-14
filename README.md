@@ -1,5 +1,10 @@
 # `bc`
 
+<a href="https://scan.coverity.com/projects/gavinhoward-bc">
+  <img alt="Coverity Scan Build Status"
+       src="https://img.shields.io/coverity/scan/16609.svg"/>
+</a>
+
 This is an implementation of POSIX `bc` that implements [GNU `bc`][1]
 extensions, as well as the period (`.`) extension for the BSD flavor of `bc`.
 
