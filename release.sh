@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [test_with_gcc]\n' "$script"
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc]\n' "$script"
 	exit 1
 }
 
@@ -45,6 +45,10 @@ configure() {
 
 	local configure_flags="$1"
 	shift
+
+	if [ "$gen_tests" -ne 0 ]; then
+		configure_flags="-G $configure_flags"
+	fi
 
 	if [ "$CC" = "clang" ]; then
 		CFLAGS="$clang_flags $CFLAGS"
@@ -273,6 +277,13 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	run_tests=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	gen_tests="$1"
+	shift
+else
+	gen_tests=1
 fi
 
 if [ "$#" -gt 0 ]; then
