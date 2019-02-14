@@ -94,7 +94,7 @@ define pi(s){
 	return v@s
 }
 define r2d(x){
-	auto p,i,s
+	auto r,i,s
 	s=scale
 	scale+=5
 	i=ibase
@@ -105,7 +105,7 @@ define r2d(x){
 	return r@s
 }
 define d2r(x){
-	auto p,i,s
+	auto r,i,s
 	s=scale
 	scale+=5
 	i=ibase
