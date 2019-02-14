@@ -46,7 +46,7 @@ configure() {
 	local configure_flags="$1"
 	shift
 
-	if [ "$gen_tests" -ne 0 ]; then
+	if [ "$gen_tests" -eq 0 ]; then
 		configure_flags="-G $configure_flags"
 	fi
 
@@ -282,7 +282,6 @@ fi
 if [ "$#" -gt 0 ]; then
 	gen_tests="$1"
 	shift
-	printf 'Gen tests: %d\n' "$gen_tests"
 else
 	gen_tests=1
 fi
