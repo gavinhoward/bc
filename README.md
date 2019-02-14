@@ -1,9 +1,7 @@
 # `bc`
 
 [![Build Status][12]][13]
-
 [![codecov][14]][15]
-
 [![Coverity Scan Build Status][16]][17]
 
 This is an implementation of POSIX `bc` that implements [GNU `bc`][1]
