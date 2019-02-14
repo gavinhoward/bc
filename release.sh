@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc]\n' "$script"
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers]\n' "$script"
 	exit 1
 }
 
@@ -216,7 +216,7 @@ debug() {
 
 	runtests "$debug" "$CC" "$run_tests"
 
-	if [ "$CC" = "clang" -a "$run_tests" -ne 0 ]; then
+	if [ "$CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
 		runtests "$debug -fsanitize=address" "$CC" "$run_tests"
 		runtests "$debug -fsanitize=undefined" "$CC" "$run_tests"
 		runtests "$debug -fsanitize=memory" "$CC" "$run_tests"
@@ -291,6 +291,13 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	test_with_gcc=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	run_sanitizers="$1"
+	shift
+else
+	run_sanitizers=1
 fi
 
 cd "$scriptdir"
