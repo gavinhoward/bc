@@ -24,8 +24,6 @@ env:
   - CONFIGURE_ARGS=-HRSOs
   - CONFIGURE_ARGS=-EHRSOs
   global:
-    # COVERITY_SCAN_TOKEN
-    # ** specific to your project **
     - secure: "KV0IvhMmkv3HgataE2Mszg"
 
 addons:
@@ -34,20 +32,12 @@ addons:
     # GitHub project metadata
     # ** specific to your project **
     project:
-      name: my_github/my_project
-      version: 1.0
-      description: My Project
+      name: gavinhoward/bc
+      version: 1.2.0
+      description: Implementation of POSIX bc with GNU extensions
 
     # Where email notification of build analysis results will be sent
-    notification_email: scan_notifications@example.com
-
-    # Commands to prepare for build_command
-    # ** likely specific to your build **
-    build_command_prepend: ./configure
-
-    # The command that will be added as an argument to "cov-build" to compile your project for analysis,
-    # ** likely specific to your build **
-    build_command: make
+    notification_email: yzena.tech@gmail.com
 
     # Pattern to match selecting branches that will run analysis. We recommend leaving this set to 'coverity_scan'.
     # Take care in resource usage, and consider the build frequency allowances per
