@@ -55,13 +55,9 @@ define e(x){
 }
 define l(x){
 	auto b,s,r,p,a,q,i,v
+	if(x<=0)return((1-A^scale)/1)
 	b=ibase
 	ibase=A
-	if(x<=0){
-		r=(1-10^scale)/1
-		ibase=b
-		return(r)
-	}
 	s=scale
 	scale+=6
 	p=2
