@@ -1,0 +1,63 @@
+dist: xenial
+
+language: c
+
+compiler:
+  - clang
+  - gcc
+
+env:
+  - CONFIGURE_ARGS=-Os
+  - CONFIGURE_ARGS=-EOs
+  - CONFIGURE_ARGS=-HOs
+  - CONFIGURE_ARGS=-ROs
+  - CONFIGURE_ARGS=-SOs
+  - CONFIGURE_ARGS=-EHOs
+  - CONFIGURE_ARGS=-EROs
+  - CONFIGURE_ARGS=-ESOs
+  - CONFIGURE_ARGS=-HROs
+  - CONFIGURE_ARGS=-HSOs
+  - CONFIGURE_ARGS=-RSOs
+  - CONFIGURE_ARGS=-EHROs
+  - CONFIGURE_ARGS=-EHSOs
+  - CONFIGURE_ARGS=-ERSOs
+  - CONFIGURE_ARGS=-HRSOs
+  - CONFIGURE_ARGS=-EHRSOs
+  global:
+    # COVERITY_SCAN_TOKEN
+    # ** specific to your project **
+    - secure: "KV0IvhMmkv3HgataE2Mszg"
+
+addons:
+  coverity_scan:
+
+    # GitHub project metadata
+    # ** specific to your project **
+    project:
+      name: my_github/my_project
+      version: 1.0
+      description: My Project
+
+    # Where email notification of build analysis results will be sent
+    notification_email: scan_notifications@example.com
+
+    # Commands to prepare for build_command
+    # ** likely specific to your build **
+    build_command_prepend: ./configure
+
+    # The command that will be added as an argument to "cov-build" to compile your project for analysis,
+    # ** likely specific to your build **
+    build_command: make
+
+    # Pattern to match selecting branches that will run analysis. We recommend leaving this set to 'coverity_scan'.
+    # Take care in resource usage, and consider the build frequency allowances per
+    #   https://scan.coverity.com/faq#frequency
+    branch_pattern: coverity_scan
+
+# command to run tests
+script:
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
+  -   ./configure.sh
+  -   make -j4
+  -   make -j4 test
+  - fi
