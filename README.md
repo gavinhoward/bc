@@ -2,7 +2,9 @@
 
 [![Build Status][12]][13]
 
-[![Coverity Scan Build Status][14]][15]
+[![codecov][14]][15]
+
+[![Coverity Scan Build Status][16]][17]
 
 This is an implementation of POSIX `bc` that implements [GNU `bc`][1]
 extensions, as well as the period (`.`) extension for the BSD flavor of `bc`.
@@ -164,5 +166,7 @@ Folders:
 [11]: http://semver.org/
 [12]: https://travis-ci.com/gavinhoward/bc.svg?branch=master
 [13]: https://travis-ci.com/gavinhoward/bc
-[14]: https://img.shields.io/coverity/scan/16609.svg
-[15]: https://scan.coverity.com/projects/gavinhoward-bc
+[14]: https://codecov.io/gh/gavinhoward/bc/branch/master/graph/badge.svg
+[15]: https://codecov.io/gh/gavinhoward/bc
+[16]: https://img.shields.io/coverity/scan/16609.svg
+[17]: https://scan.coverity.com/projects/gavinhoward-bc
