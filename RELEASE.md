@@ -6,11 +6,9 @@ This is the checklist for cutting a release.
 2.	Update the manuals.
 3.	Run and pass the `release.sh` script, without tests, on my own machine.
 4.	Run and pass the `release.sh` script on my own machine.
-5.	Run and pass the `release.sh` script, without generated tests, on FreeBSD.
+5.	Run and pass the `release.sh` script, without generated tests and
+	sanitizers, on FreeBSD.
 6.	Run Coverity Scan and eliminate warnings, if possible (both only).
-	* debug
-	* release
-	* minrelease
 7.	Run the randmath.py script an excessive amount and add failing tests to
 	test suite.
 	* debug
