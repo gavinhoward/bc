@@ -7,25 +7,42 @@ compiler:
   - gcc
 
 env:
-  - CONFIGURE_ARGS=-GOs
-  - CONFIGURE_ARGS=-EGOs
-  - CONFIGURE_ARGS=-HGOs
-  - CONFIGURE_ARGS=-RGOs
-  - CONFIGURE_ARGS=-SGOs
-  - CONFIGURE_ARGS=-EHGOs
-  - CONFIGURE_ARGS=-ERGOs
-  - CONFIGURE_ARGS=-ESGOs
-  - CONFIGURE_ARGS=-HRGOs
-  - CONFIGURE_ARGS=-HSGOs
-  - CONFIGURE_ARGS=-RSGOs
-  - CONFIGURE_ARGS=-EHRGOs
-  - CONFIGURE_ARGS=-EHSGOs
-  - CONFIGURE_ARGS=-ERSGOs
-  - CONFIGURE_ARGS=-HRSGOs
-  - CONFIGURE_ARGS=-EHRSGOs
   global:
     - CODECOV_TOKEN="040ce7eb-5bc7-4040-8324-364f3ef4baa3"
     - CFLAGS="-coverage"
+    - secure: "KV0IvhMmkv3HgataE2Mszg"
+  matrix:
+    - CONFIGURE_ARGS=-GOs
+    - CONFIGURE_ARGS=-EGOs
+    - CONFIGURE_ARGS=-HGOs
+    - CONFIGURE_ARGS=-RGOs
+    - CONFIGURE_ARGS=-SGOs
+    - CONFIGURE_ARGS=-EHGOs
+    - CONFIGURE_ARGS=-ERGOs
+    - CONFIGURE_ARGS=-ESGOs
+    - CONFIGURE_ARGS=-HRGOs
+    - CONFIGURE_ARGS=-HSGOs
+    - CONFIGURE_ARGS=-RSGOs
+    - CONFIGURE_ARGS=-EHRGOs
+    - CONFIGURE_ARGS=-EHSGOs
+    - CONFIGURE_ARGS=-ERSGOs
+    - CONFIGURE_ARGS=-HRSGOs
+    - CONFIGURE_ARGS=-EHRSGOs
+
+addons:
+  coverity_scan:
+  # GitHub project metadata
+  # ** specific to your project **
+  project:
+    name: gavinhoward/bc
+    version: 1.2.0
+    description: Implementation of POSIX bc with GNU extensions
+  # Where email notification of build analysis results will be sent
+  notification_email: yzena.tech@gmail.com
+  # Pattern to match selecting branches that will run analysis. We recommend leaving this set to 'coverity_scan'.
+  # Take care in resource usage, and consider the build frequency allowances per
+  #   https://scan.coverity.com/faq#frequency
+  branch_pattern: coverity_scan
 
 before_install:
   - pip install --user codecov
