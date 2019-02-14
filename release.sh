@@ -282,6 +282,7 @@ fi
 if [ "$#" -gt 0 ]; then
 	gen_tests="$1"
 	shift
+	printf 'Gen tests: %d\n' "$gen_tests"
 else
 	gen_tests=1
 fi
