@@ -23,26 +23,6 @@ env:
   - CONFIGURE_ARGS=-ERSOs
   - CONFIGURE_ARGS=-HRSOs
   - CONFIGURE_ARGS=-EHRSOs
-  global:
-    - secure: "KV0IvhMmkv3HgataE2Mszg"
-
-addons:
-  coverity_scan:
-
-    # GitHub project metadata
-    # ** specific to your project **
-    project:
-      name: gavinhoward/bc
-      version: 1.2.0
-      description: Implementation of POSIX bc with GNU extensions
-
-    # Where email notification of build analysis results will be sent
-    notification_email: yzena.tech@gmail.com
-
-    # Pattern to match selecting branches that will run analysis. We recommend leaving this set to 'coverity_scan'.
-    # Take care in resource usage, and consider the build frequency allowances per
-    #   https://scan.coverity.com/faq#frequency
-    branch_pattern: coverity_scan
 
 # command to run tests
 script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./configure.sh "$CONFIGURE_ARGS" && make -j4 && make -j4 test ; fi
