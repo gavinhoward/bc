@@ -1,4 +1,2 @@
 #! /usr/bin/dc
 0si[lid:rli1+sili100>x]dsxxli1-si[li;rpRli1-sili0!>x]dsxxli1+si[li;rpRli1+sili100>x]dsxx
-# Print something to trigger garbage collection.
-4pR
