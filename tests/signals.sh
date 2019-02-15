@@ -42,22 +42,10 @@ printf 'Running %s signal tests...' "$d"
 "$exe" 2> /dev/null &
 chpid=$!
 
-#printf '%s\n' "$chpid"
-
-#jobs
-
-#sleep 1
-
-#bg %1
-
-#ps -p "$chpid"
-
 kill -s 2 "$chpid"
 kill -s 15 "$chpid"
 
 "$exe" "$name" &
-
-#sleep 1
 
 kill -s 2 "$chpid"
 kill -s 15 "$chpid"
