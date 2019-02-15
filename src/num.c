@@ -199,8 +199,6 @@ static void bc_num_split(const BcNum *restrict n, size_t idx, BcNum *restrict a,
 static BcStatus bc_num_shift(BcNum *restrict n, size_t places) {
 
 	if (!places || BC_NUM_ZERO(n)) return BC_STATUS_SUCCESS;
-	if (places + n->len > BC_MAX_NUM)
-		return bc_vm_verr(BC_ERROR_MATH_OVERFLOW, "shifted left too far");
 
 	if (n->rdx >= places) n->rdx -= places;
 	else {
@@ -1204,7 +1202,7 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 	size_t i;
-	unsigned long pow, r;
+	unsigned long r;
 
 	assert(n && result);
 
@@ -1212,15 +1210,10 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 	if (n->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
-	for (r = 0, pow = 1, i = n->rdx; i < n->len; ++i) {
-
-		unsigned long prev = r, powprev = pow;
-
-		r += ((unsigned long) n->num[i]) * pow;
-		pow *= 10;
-
-		if (r < prev || pow < powprev)
-			return bc_vm_verr(BC_ERROR_MATH_OVERFLOW, "number cannot fit");
+	for (r = 0, i = n->len; i > n->rdx;) {
+		unsigned long prev = r;
+		r = r * 10 + ((uchar) n->num[--i]);
+		if ((r / 8) < prev) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	}
 
 	*result = r;

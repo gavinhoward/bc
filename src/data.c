@@ -119,7 +119,7 @@ const char* const bc_err_msgs[] = {
 
 	"negative number",
 	"non integer number",
-	"overflow; %s",
+	"overflow; number cannot fit",
 	"divide by zero",
 #if BC_ENABLE_EXTRA_MATH
 	"underflow; shifted right too far",
