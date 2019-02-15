@@ -204,6 +204,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst inst;
 	BcLexType t;
+	bool have_expr = false, need_expr = (flags & BC_PARSE_NOREAD) != 0;
 
 	while (!BC_SIGNAL && !s && (t = p->l.t) != BC_LEX_EOF) {
 
@@ -219,10 +220,14 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 			s = bc_lex_next(&p->l);
 		}
 		else s = dc_parse_token(p, t, flags);
+
+		have_expr = true;
 	}
 
 	if (!s) {
 		if (BC_SIGNAL) s = BC_STATUS_SIGNAL;
+		else if (need_expr && !have_expr)
+			s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 		else if (p->l.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
 			bc_parse_push(p, BC_INST_POP_EXEC);
 	}
