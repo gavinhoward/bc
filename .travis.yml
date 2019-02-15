@@ -11,16 +11,17 @@ env:
     - CODECOV_TOKEN="040ce7eb-5bc7-4040-8324-364f3ef4baa3"
     - CFLAGS="-coverage"
   matrix:
-    - CONFIGURE_ARGS=-HGO3
-    - CONFIGURE_ARGS=-EHGO3
-    - CONFIGURE_ARGS=-HRGO3
-    - CONFIGURE_ARGS=-HSGO3
-    - CONFIGURE_ARGS=-EHRGO3
-    - CONFIGURE_ARGS=-EHSGO3
-    - CONFIGURE_ARGS=-HRSGO3
-    - CONFIGURE_ARGS=-EHRSGO3
+    - CONFIGURE_ARGS=-HO3
+    - CONFIGURE_ARGS=-EHO3
+    - CONFIGURE_ARGS=-HRO3
+    - CONFIGURE_ARGS=-HSO3
+    - CONFIGURE_ARGS=-EHRO3
+    - CONFIGURE_ARGS=-EHSO3
+    - CONFIGURE_ARGS=-HRSO3
+    - CONFIGURE_ARGS=-EHRSO3
 
 before_install:
+  - sudo apt-get install -y dc
   - pip install --user codecov
 
 after_success:
