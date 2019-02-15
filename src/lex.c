@@ -72,6 +72,12 @@ void bc_lex_whitespace(BcLex *l) {
 	for (c = l->buf[l->i]; c != '\n' && isspace(c); c = l->buf[++l->i]);
 }
 
+void bc_lex_commonTokens(BcLex *l, char c) {
+	if (!c) l->t = BC_LEX_EOF;
+	else if (c == '\n') l->t = BC_LEX_NLINE;
+	else bc_lex_whitespace(l);
+}
+
 BcStatus bc_lex_number(BcLex *l, char start) {
 
 	const char *buf = l->buf + l->i;

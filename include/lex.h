@@ -191,6 +191,7 @@ BcStatus bc_lex_comment(BcLex *l);
 void bc_lex_whitespace(BcLex *l);
 BcStatus bc_lex_number(BcLex *l, char start);
 BcStatus bc_lex_name(BcLex *l);
+void bc_lex_commonTokens(BcLex *l, char c);
 
 BcStatus bc_lex_invalidChar(BcLex *l, char c);
 
