@@ -114,8 +114,8 @@ if [ "$base" != "bc" -a "$base" != "dc" ]; then
 fi
 
 if [ "$d" = "bc" ]; then
-	printf 'Running bc environment var test...\n'
-	BC_ENV_ARGS="-l -q"
+	printf 'Running %s environment var test...\n' "$d"
+	export BC_ENV_ARGS="-l -q"
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
 fi
 
