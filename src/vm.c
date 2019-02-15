@@ -485,7 +485,8 @@ static BcStatus bc_vm_exec(void) {
 		if (s) return s;
 	}
 
-	for (i = 0; !s && i < vm->files.len; ++i) s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
+	for (i = 0; !s && i < vm->files.len; ++i)
+		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 	if (s && s != BC_STATUS_QUIT) return s;
 
 	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
