@@ -78,8 +78,6 @@ for s in $scriptdir/*.$d; do
 		fi
 	fi
 
-	printf 'Running %s script: %s\n' "$d" "$f"
-
 	orig="$testdir/$name.txt"
 	results="$scriptdir/$name.txt"
 
@@ -94,6 +92,8 @@ for s in $scriptdir/*.$d; do
 		printf '%s\n' "$halt" | "$d" "$s" > "$out1"
 		res="$out1"
 	fi
+
+	printf 'Running %s script: %s\n' "$d" "$f"
 
 	printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out2"
 
