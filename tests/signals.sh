@@ -45,7 +45,7 @@ else
 	options="-x"
 fi
 
-sleep 5 | "$exe" "$options" 2>&1 > /dev/null &
+(sleep 5 && echo "1+3") | "$exe" "$options" 2>&1 > /dev/null &
 chpid=$!
 
 sleep 0.5
