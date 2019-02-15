@@ -24,7 +24,7 @@ if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	printf 'usage: %s dir [run_extended_tests] [run_reference_tests] [generate_tests] [exec args...]\n' "$script"
+	printf 'usage: %s dir [run_extended_tests] [run_reference_tests] [run_signal_tests] [generate_tests] [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -39,6 +39,13 @@ if [ "$#" -lt 1 ]; then
 	refs=1
 else
 	refs="$1"
+	shift
+fi
+
+if [ "$#" -lt 1 ]; then
+	signals=1
+else
+	signals="$1"
 	shift
 fi
 
@@ -84,6 +91,10 @@ sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
 sh "$testdir/scripts.sh" "$d" "$refs" "$generate_tests" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
+
+if [ "$signals" -ne 0 ]; then
+	sh "$testdir/signals.sh" "$d" "$exe" "$@"
+fi
 
 num=100000000000000000000000000000000000000000000000000000000000000000000000000000
 numres="$num"
