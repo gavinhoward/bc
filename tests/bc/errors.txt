@@ -196,6 +196,12 @@ define s() { auto a[ 4; return a[0]; }
 define void y() { return (1); }
 print uint(0)
 4 + uint(4)
+4 + 4 scale
+4 + 4 scale(s)
+4 * 4 read()
+5 abs(-5)
+2 sqrt(4)
+5 + 3 length(4)
 x$if(x) x else x
 bytes(1) + 4
 3 / 0.00000000000000
