@@ -111,9 +111,6 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 		bc_vec_push(&l->str, &c);
 	}
 
-	if (l->str.len - pt > BC_MAX_NUM)
-		return bc_lex_verr(l, BC_ERROR_EXEC_NUM_LEN, BC_MAX_NUM);
-
 	bc_vec_pushByte(&l->str, '\0');
 	l->i += i;
 
@@ -129,9 +126,6 @@ BcStatus bc_lex_name(BcLex *l) {
 	l->t = BC_LEX_NAME;
 
 	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
-
-	if (i > BC_MAX_NAME)
-		return bc_lex_verr(l, BC_ERROR_EXEC_NAME_LEN, BC_MAX_NAME);
 
 	bc_vec_string(&l->str, i, buf);
 

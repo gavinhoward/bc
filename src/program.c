@@ -907,11 +907,6 @@ static BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
 		s = bc_num_ulong(num, &temp);
 		if (s) goto err;
 
-		if (temp > BC_MAX_DIM) {
-			s = bc_vm_verr(BC_ERROR_EXEC_ARRAY_LEN, BC_MAX_DIM);
-			goto err;
-		}
-
 		r.d.id.idx = (size_t) temp;
 		bc_program_retire(p, &r, BC_RESULT_ARRAY_ELEM);
 	}

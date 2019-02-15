@@ -102,9 +102,6 @@ const char* const bc_err_msgs[] = {
 	"string end could not be found",
 	"comment end could not be found",
 	"bad token",
-	"name too long: must be [1, %lu]",
-	"string too long: must be [1, %lu]",
-	"array too long; must be [1, %lu]",
 #if BC_ENABLED
 	"bad expression",
 	"empty expression",
@@ -130,7 +127,6 @@ const char* const bc_err_msgs[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 
 	"could not open file: %s",
-	"number too long: must be [1, %lu]",
 	"bad ibase; must be [%lu, %lu]",
 	"bad obase; must be [%lu, %lu]",
 	"bad scale; must be [%lu, %lu]",

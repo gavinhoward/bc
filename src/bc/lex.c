@@ -80,10 +80,6 @@ static BcStatus bc_lex_string(BcLex *l) {
 	}
 
 	len = i - l->i;
-
-	if (len > BC_MAX_STRING)
-		return bc_lex_verr(l, BC_ERROR_EXEC_STRING_LEN, BC_MAX_STRING);
-
 	bc_vec_string(&l->str, len, l->buf + l->i);
 
 	l->i = i + 1;
