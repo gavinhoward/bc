@@ -115,7 +115,7 @@ fi
 
 if [ "$d" = "bc" ]; then
 	printf 'Running %s environment var test...\n' "$d"
-	export BC_ENV_ARGS="-l -q"
+	export BC_ENV_ARGS=" -l -q"
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
 fi
 
@@ -159,6 +159,15 @@ printf '%s\n' "$halt" | "$exe" "$@" -v > /dev/null
 printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
 
 set +e
+
+"$exe" "$@" -f "saotehasotnehasthistohntnsahxstnhalcrgxgrlpyasxtsaosysxsatnhoy.txt" > /dev/null 2>&1
+err="$?"
+
+if [ "$err" -eq 0 ]; then
+	printf '%s did not return an error (%d) on invalid file argument test\n' "$d" "$err"
+	printf 'exiting...\n'
+	exit 1
+fi
 
 "$exe" "$@" "-$opt" -e "$exprs" > /dev/null 2>&1
 err="$?"
