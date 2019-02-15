@@ -1425,12 +1425,13 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 
 				break;
 			}
-
+#ifndef NDEBUG
 			default:
 			{
 				s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 				break;
 			}
+#endif // NDEBUG
 		}
 
 		if (!s && get_token) s = bc_lex_next(&p->l);
