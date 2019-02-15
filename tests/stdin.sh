@@ -51,7 +51,7 @@ rm -f "$out"
 
 printf 'Running %s stdin tests...\n' "$d"
 
-cat "$testdir/$d/stdin.txt" | "$exe" "$@" "$options" > "$out"
+cat "$testdir/$d/stdin.txt" | "$exe" "$@" "$options" > "$out" 2> /dev/null
 
 diff "$testdir/$d/stdin_results.txt" "$out"
 
