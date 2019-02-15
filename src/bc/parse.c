@@ -537,13 +537,13 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 	if (p->flags.len <= 1) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	if (brace) {
-		if (p->l.t == BC_LEX_RBRACE) {
-			s = bc_lex_next(&p->l);
-			if (s) return s;
-			if (!bc_parse_isDelimiter(p))
-				return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
-		}
-		else return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+
+		assert(p->l.t == BC_LEX_RBRACE);
+
+		s = bc_lex_next(&p->l);
+		if (s) return s;
+		if (!bc_parse_isDelimiter(p))
+			return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 	}
 
 	has_brace = (BC_PARSE_BRACE(p) != 0);
@@ -554,7 +554,7 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 		if (has_brace && !brace) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-		loop = BC_PARSE_LOOP_INNER(p) != 0;
+		loop = (BC_PARSE_LOOP_INNER(p) != 0);
 
 		if (loop || BC_PARSE_ELSE(p)) {
 
