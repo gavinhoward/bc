@@ -42,7 +42,7 @@ fi
 out="$testdir/../.log_${d}_test.txt"
 
 if [ "$d" = "bc" ]; then
-	options="-lq"
+	options="-ilq"
 else
 	options="-x"
 fi
