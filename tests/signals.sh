@@ -39,13 +39,36 @@ name="$testdir/$d/signals.txt"
 
 printf 'Running %s signal tests...' "$d"
 
-"$exe" 2> /dev/null &
+if [ "$d" = "bc" ]; then
+	options="-iq"
+else
+	options="-x"
+fi
+
+sleep 5 | "$exe" "$options" 2>&1 > /dev/null &
 chpid=$!
 
+sleep 0.5
+
+jobs
+
+#bg %1
+
 kill -s 2 "$chpid"
 kill -s 15 "$chpid"
 
-"$exe" "$name" &
+set +e
+
+kill -s 9 "$chpid"
+
+"$exe" "$options" "$name" 2>&1 > /dev/null &
+chpid=$!
+
+sleep 0.5
 
 kill -s 2 "$chpid"
 kill -s 15 "$chpid"
+
+set +e
+
+kill -s 9 "$chpid"
