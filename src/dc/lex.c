@@ -107,24 +107,14 @@ BcStatus dc_lex_token(BcLex *l) {
 	switch (c) {
 
 		case '\0':
-		{
-			l->t = BC_LEX_EOF;
-			break;
-		}
-
 		case '\n':
-		{
-			l->t = BC_LEX_NLINE;
-			break;
-		}
-
 		case '\t':
 		case '\v':
 		case '\f':
 		case '\r':
 		case ' ':
 		{
-			bc_lex_whitespace(l);
+			bc_lex_commonTokens(l, c);
 			break;
 		}
 
