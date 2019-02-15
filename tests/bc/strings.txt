@@ -10,3 +10,4 @@ print "string"
 print "newline\n"
 
 print "\\\e\n"
+print "\d\n"

@@ -3,3 +3,4 @@ another
 stringnoescapes\nnewline
 stringnewline
 \\
+\d
