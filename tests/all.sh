@@ -85,17 +85,25 @@ sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 sh "$testdir/scripts.sh" "$d" "$refs" "$generate_tests" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
-printf '\nRunning quit test...\n'
+num=100000000000000000000000000000000000000000000000000000000000000000000000000000
+numres="$num"
+num70="10000000000000000000000000000000000000000000000000000000000000000000\\
+0000000000"
 
 if [ "$d" = "bc" ]; then
 	halt="quit"
 	opt="x"
 	lopt="extended-register"
+	line_var="BC_LINE_LENGTH"
 else
 	halt="q"
 	opt="l"
 	lopt="mathlib"
+	line_var="DC_LINE_LENGTH"
+	num="$num pR"
 fi
+
+printf '\nRunning quit test...\n'
 
 printf '%s\n' "$halt" | "$exe" "$@" > /dev/null 2>&1
 
@@ -105,21 +113,42 @@ if [ "$base" != "bc" -a "$base" != "dc" ]; then
 	exit 0
 fi
 
-printf 'Running arg tests...\n'
+if [ "$d" = "bc" ]; then
+	printf 'Running bc environment var test...\n'
+	BC_ENV_ARGS="-l -q"
+	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
+fi
+
+out1="$testdir/../.log_$d.txt"
+out2="$testdir/../.log_${d}_test.txt"
+
+printf 'Running %s line length tests\n' "$d"
+
+printf '%s\n' "$numres" > "$out1"
+
+export "$line_var"=80
+printf '%s\n' "$num" | "$exe" "$@" > "$out2"
+
+diff "$out1" "$out2"
+
+printf '%s\n' "$num70" > "$out1"
+
+export "$line_var"=2147483647
+printf '%s\n' "$num" | "$exe" "$@" > "$out2"
+
+diff "$out1" "$out2"
+
+printf 'Running %s arg tests...\n' "$d"
 
 f="$testdir/$d/add.txt"
 exprs=$(cat "$f")
 results=$(cat "$testdir/$d/add_results.txt")
-
-out1="$testdir/../.log_$d.txt"
-out2="$testdir/../.log_${d}_test.txt"
 
 printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 
 "$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" > "$out2"
 
 diff "$out1" "$out2"
-err="$?"
 
 if [ "$d" = "bc" ]; then
 	printf '%s\n' "$halt" | "$exe" "$@" -i > /dev/null 2>&1
@@ -149,7 +178,7 @@ if [ "$err" -eq 0 ]; then
 	exit 1
 fi
 
-printf 'Running directory test...\n'
+printf 'Running %s directory test...\n' "$d"
 
 "$exe" "$@" "$testdir" > /dev/null 2>&1
 err="$?"
@@ -160,7 +189,7 @@ if [ "$err" -eq 0 ]; then
 	exit 1
 fi
 
-printf 'Running binary file test...\n'
+printf 'Running %s binary file test...\n' "$d"
 
 bin="/bin/sh"
 
@@ -173,7 +202,7 @@ if [ "$err" -eq 0 ]; then
 	exit 1
 fi
 
-printf 'Running binary stdin test...\n'
+printf 'Running %s binary stdin test...\n' "$d"
 
 cat "$bin" | "$exe" "$@" > /dev/null 2>&1
 err="$?"
@@ -186,7 +215,7 @@ fi
 
 if [ "$d" = "bc" ]; then
 
-	printf 'Running limits tests...\n'
+	printf 'Running %s limits tests...\n' "$d"
 	printf 'limits\n' | "$exe" "$@" > "$out2" /dev/null 2>&1
 
 	if [ ! -s "$out2" ]; then
