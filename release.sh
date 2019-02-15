@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers]\n' "$script"
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] [run_valgrind]\n' "$script"
 	exit 1
 }
 
@@ -300,6 +300,13 @@ else
 	run_sanitizers=1
 fi
 
+if [ "$#" -gt 0 ]; then
+	run_valgrind="$1"
+	shift
+else
+	run_valgrind=1
+fi
+
 cd "$scriptdir"
 
 build "$debug" "clang" ""
@@ -329,7 +336,10 @@ if [ "$run_tests" -ne 0 ]; then
 	build "$release" "clang" ""
 
 	karatsuba
-	vg
+
+	if [ "$run_valgrind" -ne 0 ]; then
+		vg
+	fi
 
 	build "$reldebug" "afl-gcc" ""
 
