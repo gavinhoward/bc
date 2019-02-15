@@ -122,7 +122,7 @@ fi
 out1="$testdir/../.log_$d.txt"
 out2="$testdir/../.log_${d}_test.txt"
 
-printf 'Running %s line length tests\n' "$d"
+printf 'Running %s line length tests...\n' "$d"
 
 printf '%s\n' "$numres" > "$out1"
 
