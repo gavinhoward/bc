@@ -103,7 +103,7 @@ else
 	num="$num pR"
 fi
 
-printf '\nRunning quit test...\n'
+printf '\nRunning %s quit test...\n' "$d"
 
 printf '%s\n' "$halt" | "$exe" "$@" > /dev/null 2>&1
 
