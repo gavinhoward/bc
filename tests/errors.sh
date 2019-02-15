@@ -136,7 +136,7 @@ for testfile in $testdir/$d/*errors.txt; do
 
 	base=$(basename "$testfile")
 	base="${base%.*}"
-	printf 'Running %s %s...\n' $d" "$base"
+	printf 'Running %s %s...\n' "$d" "$base"
 
 	while read -r line; do
 
