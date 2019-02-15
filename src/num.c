@@ -73,7 +73,7 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, siz
 			assert(a[i + j - 1] >= 0 && a[i + j - 1] < 10);
 		}
 	}
-	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
 static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b, size_t len)
@@ -308,7 +308,7 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	if (carry) c->num[c->len++] = (BcDig) carry;
 
-	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
@@ -382,7 +382,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	bool aone = BC_NUM_ONE(a);
 
 	// This is here because the function is recursive.
-	if (BC_SIGNAL) return BC_STATUS_SIGNAL;
+	if (BC_SIGNAL) return BC_STATUS_SUCCESS;
 	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
@@ -425,7 +425,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 		c->len = len;
 
-		return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+		return BC_STATUS_SUCCESS;
 	}
 
 	bc_num_init(&l1, max);
@@ -673,10 +673,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if (s) goto err;
 	}
 
-	if (BC_SIGNAL) {
-		s = BC_STATUS_SIGNAL;
-		goto err;
-	}
+	if (BC_SIGNAL) goto err;
 
 	bc_num_copy(c, &copy);
 	resrdx = powrdx;
@@ -699,10 +696,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if (s) goto err;
 	}
 
-	if (BC_SIGNAL) {
-		s = BC_STATUS_SIGNAL;
-		goto err;
-	}
+	if (BC_SIGNAL) goto err;
 
 	if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
 
@@ -814,7 +808,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	if (init) bc_num_free(&num2);
 
-	return s;
+	return !s && BC_SIGNAL ? BC_STATUS_SIGNAL : s;
 }
 
 #ifndef NDEBUG
