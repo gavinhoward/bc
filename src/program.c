@@ -1541,7 +1541,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 #endif // BC_ENABLE_SIGNALS
 
 	if (!s || s == BC_STATUS_SIGNAL) {
-		if (BC_TTYIN) {
+		if (BC_TTYIN || BC_I) {
 			bc_vm_puts(bc_program_ready_msg, stderr);
 			bc_vm_fflush(stderr);
 			s = BC_STATUS_SUCCESS;
