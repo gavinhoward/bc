@@ -98,6 +98,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case 'f':
 			{
 				s = bc_args_file(&vm->exprs, optarg);
+				if (s) return s;
 				break;
 			}
 
@@ -178,22 +179,19 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case '?':
 			default:
 			{
-				// We don't set err, so we won't print a message.
-				s = BC_STATUS_ERROR;
-				break;
+				return BC_STATUS_ERROR;
 			}
 		}
 
-		if (err && !s) {
+		if (err) {
 
 			for (i = 0; bc_args_lopt[i].name; ++i) {
 				if (bc_args_lopt[i].val == err) break;
 			}
 
 			s = bc_vm_verr(BC_ERROR_VM_OPTION, err, bc_args_lopt[i].name);
+			if (s) return s;
 		}
-
-		if (s) return s;
 	}
 
 	if (vm->flags & BC_FLAG_V) bc_vm_info(NULL);
