@@ -390,7 +390,7 @@ if [ "$coverage" -eq 1 ]; then
 	COVERAGE="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
 	COVERAGE="$COVERAGE;\$(RM) -f \$(GEN)*.gc*"
 	COVERAGE="$COVERAGE;gcovr --html-details --output index.html"
-	COVERAGE_PREREQS=" test_all"
+	COVERAGE_PREREQS=" test"
 
 else
 	COVERAGE="@printf 'Coverage not generated\\\\n'"
