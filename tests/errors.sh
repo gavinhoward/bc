@@ -142,7 +142,7 @@ for testfile in $testdir/$d/*errors.txt; do
 
 		rm -f "$out"
 
-		printf '%s\n' "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
+		printf '%s\nread()\n' "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
 		err="$?"
 
 		checktest "$err" "$line" "$out" "$exebase"
