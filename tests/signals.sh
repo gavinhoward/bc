@@ -48,29 +48,29 @@ fi
 "$exe" "$options" 2>&1 > /dev/null &
 chpid=$!
 
-kill -s 2 "$chpid"
-kill -s 15 "$chpid"
+kill -s INT "$chpid"
+kill -s TERM "$chpid"
 
 set +e
 
-kill -s 9 "$chpid"
+kill -s KILL "$chpid"
 
 "$exe" "$options" "$name" 2>&1 > /dev/null &
 chpid=$!
 
-kill -s 2 "$chpid"
-kill -s 15 "$chpid"
+kill -s INT "$chpid"
+kill -s TERM "$chpid"
 
 set +e
 
-kill -s 9 "$chpid"
+kill -s KILL "$chpid"
 
 "$exe" -l "$options" "$name" 2>&1 > /dev/null &
 chpid=$!
 
-kill -s 2 "$chpid"
-kill -s 15 "$chpid"
+kill -s INT "$chpid"
+kill -s TERM "$chpid"
 
 set +e
 
-kill -s 9 "$chpid"
+kill -s KILL "$chpid"
