@@ -246,7 +246,7 @@ static BcStatus bc_program_operand(BcProgram *p, BcResult **r,
 #endif // BC_PROG_NO_STACK_CHECK
 
 	*r = bc_vec_item_rev(&p->results, idx);
-	if ((*r)->t == BC_RESULT_VOID) return s = bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+	if ((*r)->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
 	*n = bc_program_num(p, *r);
 
 	return BC_STATUS_SUCCESS;
