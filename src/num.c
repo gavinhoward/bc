@@ -899,6 +899,9 @@ static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	// return success, so I don't need to worry about them. Also, the one time
 	// that there is a division, it is a bug if it ends up doing a divide by 0.
 
+	// Make sure to not have compiler warnings.
+	BC_UNUSED(s);
+
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
 	if (zero) return;
 
@@ -935,9 +938,6 @@ static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	assert(!s);
 	s = bc_num_add(n, &result, n, digits);
 	assert(!s);
-
-	// Make sure to not have compiler warnings.
-	BC_UNUSED(s);
 
 	if (BC_NUM_NONZERO(n)) {
 		if (n->rdx < digits) bc_num_extend(n, digits - n->rdx);
@@ -1013,8 +1013,8 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 		bc_num_printHex((size_t) n->num[i], 1, i == rdx);
 }
 
-static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
-                                size_t len, BcNumDigitOp print)
+static void bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
+                            size_t len, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
@@ -1023,9 +1023,22 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	size_t i;
 	bool radix;
 
+	// In this function, I don't check return values from the binary funcions
+	// because they are just multiply and add. Those are guaranteed to always
+	// return success, so I don't need to worry about them. Also, the one time
+	// that there is a division, it is a bug if it ends up doing a divide by 0.
+	// Also, there is a bc_num_ulong(), but that is also guaranteed to return
+	// success because the digit can never be higher than the output base, which
+	// can never be higher than ULONG_MAX.
+
+	// Make sure to not have compiler warnings.
+	BC_UNUSED(s);
+
+	assert(!BC_NUM_ZERO(base));
+
 	if (BC_NUM_ZERO(n)) {
 		print(0, len, false);
-		return BC_STATUS_SUCCESS;
+		return;
 	}
 
 	bc_vec_init(&stack, sizeof(unsigned long), NULL);
@@ -1037,13 +1050,13 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 
 	bc_num_truncate(&intp, intp.rdx);
 	s = bc_num_sub(n, &intp, &fracp, 0);
-	if (s) goto err;
+	assert(!s);
 
 	while (BC_NUM_NONZERO(&intp)) {
 		s = bc_num_divmod(&intp, base, &intp, &digit, 0);
-		if (s) goto err;
+		assert(!s);
 		s = bc_num_ulong(&digit, &dig);
-		if (s) goto err;
+		assert(!s);
 		bc_vec_push(&stack, &dig);
 	}
 
@@ -1057,15 +1070,15 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 
 	for (radix = true; frac_len.len <= n->rdx; radix = false) {
 		s = bc_num_mul(&fracp, base, &fracp, n->rdx);
-		if (s) goto err;
+		assert(!s);
 		s = bc_num_ulong(&fracp, &dig);
-		if (s) goto err;
+		assert(!s);
 		bc_num_ulong2num(&intp, dig);
 		s = bc_num_sub(&fracp, &intp, &fracp, 0);
-		if (s) goto err;
+		assert(!s);
 		print(dig, len, radix);
 		s = bc_num_mul(&frac_len, base, &frac_len, 0);
-		if (s) goto err;
+		assert(!s);
 	}
 
 err:
@@ -1074,12 +1087,11 @@ err:
 	bc_num_free(&fracp);
 	bc_num_free(&intp);
 	bc_vec_free(&stack);
-	return s;
 }
 
-static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base, size_t base_t) {
-
-	BcStatus s;
+static void bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
+                             size_t base_t)
+{
 	size_t width;
 	BcNumDigitOp print;
 	bool neg = n->neg;
@@ -1098,15 +1110,13 @@ static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base, size_t
 		print = bc_num_printDigits;
 	}
 
-	s = bc_num_printNum(n, base, width, print);
+	bc_num_printNum(n, base, width, print);
 	n->neg = neg;
-
-	return s;
 }
 
 #if DC_ENABLED
-BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base) {
-	return bc_num_printNum(n, base, 1, bc_num_printChar);
+void bc_num_stream(BcNum *restrict n, BcNum *restrict base) {
+	bc_num_printNum(n, base, 1, bc_num_printChar);
 }
 #endif // DC_ENABLED
 
@@ -1170,11 +1180,9 @@ void bc_num_parse(BcNum *restrict n, const char *restrict val,
 	else bc_num_parseBase(n, val, base, base_t);
 }
 
-BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
-                      size_t base_t, bool newline)
+void bc_num_print(BcNum *restrict n, BcNum *restrict base,
+                  size_t base_t, bool newline)
 {
-	BcStatus s = BC_STATUS_SUCCESS;
-
 	assert(n && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_MAX_OBASE);
 
@@ -1182,14 +1190,12 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 
 	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
 	else if (base_t == 10) bc_num_printDecimal(n);
-	else s = bc_num_printBase(n, base, base_t);
+	else bc_num_printBase(n, base, base_t);
 
-	if (!s && newline) {
+	if (newline) {
 		bc_vm_putchar('\n');
 		vm->nchars = 0;
 	}
-
-	return s;
 }
 
 BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {

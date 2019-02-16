@@ -507,9 +507,9 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
-		s = bc_num_print(n, &p->ob, p->ob_t, !pop);
+		bc_num_print(n, &p->ob, p->ob_t, !pop);
 #if BC_ENABLED
-		if (!s) bc_num_copy(&p->last, n);
+		bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
 	}
 	else {
@@ -1269,7 +1269,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 	s = bc_program_operand(p, &r, &n, 0);
 	if (s) return s;
 
-	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb);
+	if (BC_PROG_NUM(r, n)) bc_num_stream(n, &p->strmb);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		bc_program_printChars(bc_program_str(p, idx, true));
