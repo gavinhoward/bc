@@ -884,8 +884,8 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	}
 }
 
-static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
-                                 BcNum *restrict base, size_t base_t)
+static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
+                             BcNum *restrict base, size_t base_t)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum temp, mult, result;
@@ -894,58 +894,61 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	unsigned long v;
 	size_t i, digits, len = strlen(val);
 
+	// In this function, I don't check return values from the binary funcions
+	// because they are just multiply and add. Those are guaranteed to always
+	// return success, so I don't need to worry about them. Also, the one time
+	// that there is a division, it is a bug if it ends up doing a divide by 0.
+
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
-	if (zero) return BC_STATUS_SUCCESS;
+	if (zero) return;
 
 	bc_num_init(&temp, BC_NUM_LONG_LOG10);
 	bc_num_init(&mult, BC_NUM_LONG_LOG10);
 
 	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
-
 		v = bc_num_parseChar(c, base_t);
-
 		s = bc_num_mul(n, base, &mult, 0);
-		if (s) goto int_err;
+		assert(!s);
 		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&mult, &temp, n, 0);
-		if (s) goto int_err;
+		assert(!s);
 	}
 
-	if (i == len && !(c = val[i])) goto int_err;
+	if (i == len && !(c = val[i])) goto err;
 
 	assert(c == '.');
 	bc_num_init(&result, base->len);
 	bc_num_one(&mult);
 
 	for (i += 1, digits = 0; i < len && (c = val[i]); ++i, ++digits) {
-
 		v = bc_num_parseChar(c, base_t);
-
 		s = bc_num_mul(&result, base, &result, 0);
-		if (s) goto err;
+		assert(!s);
 		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&result, &temp, &result, 0);
-		if (s) goto err;
+		assert(!s);
 		s = bc_num_mul(&mult, base, &mult, 0);
-		if (s) goto err;
+		assert(!s);
 	}
 
 	s = bc_num_div(&result, &mult, &result, digits);
-	if (s) goto err;
+	assert(!s);
 	s = bc_num_add(n, &result, n, digits);
-	if (s) goto err;
+	assert(!s);
+
+	// Make sure to not have compiler warnings.
+	BC_UNUSED(s);
 
 	if (BC_NUM_NONZERO(n)) {
 		if (n->rdx < digits) bc_num_extend(n, digits - n->rdx);
 	}
 	else bc_num_zero(n);
 
-err:
 	bc_num_free(&result);
-int_err:
+
+err:
 	bc_num_free(&mult);
 	bc_num_free(&temp);
-	return s;
 }
 
 static void bc_num_printNewline() {
@@ -1155,20 +1158,16 @@ void bc_num_createFromUlong(BcNum *n, unsigned long val) {
 	bc_num_ulong2num(n, val);
 }
 
-BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      BcNum *restrict base, size_t base_t, bool letter)
+void bc_num_parse(BcNum *restrict n, const char *restrict val,
+                  BcNum *restrict base, size_t base_t, bool letter)
 {
-	BcStatus s = BC_STATUS_SUCCESS;
-
 	assert(n && val && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= vm->max_ibase);
 	assert(bc_num_strValid(val));
 
 	if (letter) bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
 	else if (base_t == 10) bc_num_parseDecimal(n, val);
-	else s = bc_num_parseBase(n, val, base, base_t);
-
-	return s;
+	else bc_num_parseBase(n, val, base, base_t);
 }
 
 BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
