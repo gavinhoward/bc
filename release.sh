@@ -341,10 +341,12 @@ if [ "$run_tests" -ne 0 ]; then
 		vg
 	fi
 
-	build "$reldebug" "afl-gcc" ""
+	configure "$reldebug" "afl-gcc" ""
 
 	printf '\n'
-	printf 'Run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
+	printf 'Run make\n'
+	printf '\n'
+	printf 'Thenun %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
 	printf 'Then run the GitHub release script as follows:\n'
 	printf '\n'
 	printf '    <github_release> %s <msg> release.sh RELEASE.md \\\n' "$version"
