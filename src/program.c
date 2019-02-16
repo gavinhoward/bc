@@ -1557,7 +1557,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	char *code = func->code.v;
 	bool cond = false;
 #if BC_ENABLED
-	BcNum *num;
+	BcNum *num = NULL;
 #endif // BC_ENABLED
 
 	while (!BC_SIGNAL && !s && ip->idx < func->code.len) {
