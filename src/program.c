@@ -1165,7 +1165,7 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r1, *r2, *r3, res;
-	BcNum *n1, *n2, *n3, *resn = &res.d.n;
+	BcNum *n1 = NULL, *n2 = NULL, *n3, *resn = &res.d.n;
 
 	s = bc_program_binOpPrep(p, &r2, &n2, &r3, &n3);
 	if (s) return s;
