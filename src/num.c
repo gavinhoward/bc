@@ -374,7 +374,7 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
+	BcStatus s;
 	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	bool aone = BC_NUM_ONE(a);
@@ -667,7 +667,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if (s) goto err;
 	}
 
-	if (BC_SIGNAL) goto err;
+	if (BC_SIGNAL) goto sig_err;
 
 	bc_num_copy(c, &copy);
 	resrdx = powrdx;
@@ -685,14 +685,20 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		}
 	}
 
-	if (BC_SIGNAL) goto err;
-	if (neg) s = bc_num_inv(c, c, scale);
+	if (BC_SIGNAL) goto sig_err;
+	if (neg) {
+		s = bc_num_inv(c, c, scale);
+		if (s) goto err;
+	}
+
 	if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
 
 	// We can't use bc_num_clean() here.
 	for (zero = true, i = 0; zero && i < c->len; ++i) zero = !c->num[i];
 	if (zero) bc_num_setToZero(c, scale);
 
+sig_err:
+	if (!s && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 err:
 	bc_num_free(&copy);
 	return s;
@@ -890,7 +896,9 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	bc_num_init(&mult, BC_NUM_LONG_LOG10);
 
 	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
+
 		v = bc_num_parseChar(c, base_t);
+
 		s = bc_num_mul(n, base, &mult, 0);
 		if (s) goto int_err;
 		bc_num_ulong2num(&temp, v);
@@ -907,6 +915,7 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	for (i += 1, digits = 0; i < len && (c = val[i]); ++i, ++digits) {
 
 		v = bc_num_parseChar(c, base_t);
+
 		s = bc_num_mul(&result, base, &result, 0);
 		if (s) goto err;
 
@@ -1060,10 +1069,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 		if (s) goto err;
 	}
 
-	if (!BC_SIGNAL) goto err;
-
 sig_err:
-	s = BC_STATUS_SIGNAL;
+	if (!s && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 err:
 	bc_num_free(&frac_len);
 	bc_num_free(&digit);
