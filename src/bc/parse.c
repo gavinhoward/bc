@@ -217,12 +217,11 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	idx = bc_map_index(&p->prog->fn_map, &id);
 
 	if (idx == BC_VEC_INVALID_IDX) {
-		idx = bc_parse_addFunc(p, name);
+		bc_parse_addFunc(p, name);
+		idx = bc_map_index(&p->prog->fn_map, &id);
 		assert(idx != BC_VEC_INVALID_IDX);
 	}
 	else free(name);
-
-	assert(idx != BC_VEC_INVALID_IDX);
 
 	id_ptr = bc_vec_item(&p->prog->fn_map, idx);
 	assert(id_ptr);
