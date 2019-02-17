@@ -63,7 +63,7 @@ static size_t bc_num_log10(size_t i) {
 	return len;
 }
 
-static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, size_t len)
+static void bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, size_t len)
 {
 	size_t i, j;
 	for (i = 0; !BC_SIGNAL && i < len; ++i) {
@@ -73,7 +73,6 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, siz
 			assert(a[i + j - 1] >= 0 && a[i + j - 1] < 10);
 		}
 	}
-	return BC_STATUS_SUCCESS;
 }
 
 static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b, size_t len)
@@ -311,7 +310,6 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
-	BcStatus s;
 	ssize_t cmp;
 	BcNum *minuend, *subtrahend;
 	size_t start;
@@ -365,11 +363,10 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 	else start = c->rdx - subtrahend->rdx;
 
-	s = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
-
+	bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
 	bc_num_clean(c);
 
-	return s;
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
@@ -566,10 +563,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	c->len = cp.len;
 	p = b->num;
 
-	for (i = end - 1; !BC_SIGNAL && !s && i < end; --i) {
+	for (i = end - 1; !BC_SIGNAL && i < end; --i) {
 		n = cp.num + i;
-		for (q = 0; !s && (n[len] || bc_num_compare(n, p, len) >= 0); ++q)
-			s = bc_num_subArrays(n, p, len);
+		for (q = 0; n[len] || bc_num_compare(n, p, len) >= 0; ++q)
+			bc_num_subArrays(n, p, len);
 		c->num[i] = q;
 	}
 
