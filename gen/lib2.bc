@@ -31,10 +31,7 @@ define r(x,p){
 		if(n)t=-t
 		return t
 	}
-	i=ibase
-	ibase=A
-	if((x-t)>=(.5>>p))t+=1>>p
-	ibase=i
+	if((x-t)>=(5>>p+1))t+=1>>p
 	if(n)t=-t
 	return t
 }
