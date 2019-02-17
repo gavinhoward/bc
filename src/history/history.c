@@ -605,6 +605,8 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
 	bc_vec_concat(&h->refresh, seq);
 
+	assert(h->refresh.len > 0);
+
 	if (BC_HISTORY_WRITE(h->refresh.v, h->refresh.len - 1))
 		return bc_vm_err(BC_ERROR_VM_IO_ERR);
 
@@ -892,7 +894,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 	c = seq[0];
 
 	// ESC ? sequences.
-	if (c != '[' && c != '0') {
+	if (c != '[' && c != 'O') {
 		if (c == 'f') s = bc_history_edit_wordEnd(h);
 		else if (c == 'b') s = bc_history_edit_wordStart(h);
 		else if (c == 'd') s = bc_history_edit_deleteNextWord(h);
