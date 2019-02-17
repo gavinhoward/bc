@@ -34,14 +34,12 @@ bool dc_lex_negCommand(BcLex *l) {
 	return !BC_LEX_NUM_CHAR(c, 'F', false);
 }
 
-static BcStatus dc_lex_register(BcLex *l) {
-
-	BcStatus s = BC_STATUS_SUCCESS;
+static void dc_lex_register(BcLex *l) {
 
 	if (DC_X && isspace(l->buf[l->i - 1])) {
 		bc_lex_whitespace(l);
-		++l->i;
-		s = bc_lex_name(l);
+		l->i += 1;
+		bc_lex_name(l);
 	}
 	else {
 		bc_vec_npop(&l->str, l->str.len);
@@ -49,8 +47,6 @@ static BcStatus dc_lex_register(BcLex *l) {
 		bc_vec_pushByte(&l->str, '\0');
 		l->t = BC_LEX_NAME;
 	}
-
-	return s;
 }
 
 static BcStatus dc_lex_string(BcLex *l) {
@@ -94,7 +90,10 @@ BcStatus dc_lex_token(BcLex *l) {
 	size_t i;
 
 	for (i = 0; i < dc_lex_regs_len; ++i) {
-		if (l->last == dc_lex_regs[i]) return dc_lex_register(l);
+		if (l->last == dc_lex_regs[i]) {
+			dc_lex_register(l);
+			return s;
+		}
 	}
 
 	if (c >= '$' && c <= '~' &&
@@ -127,7 +126,7 @@ BcStatus dc_lex_token(BcLex *l) {
 			else if (c2 == '>') l->t = BC_LEX_OP_REL_GE;
 			else return bc_lex_invalidChar(l, c);
 
-			++l->i;
+			l->i += 1;
 			break;
 		}
 
@@ -140,7 +139,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '.':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LEX_NUM_CHAR(c2, 'F', true)) s = bc_lex_number(l, c);
+			if (BC_LEX_NUM_CHAR(c2, 'F', true)) bc_lex_number(l, c);
 			else s = bc_lex_invalidChar(l, c);
 			break;
 		}
@@ -162,7 +161,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case 'E':
 		case 'F':
 		{
-			s = bc_lex_number(l, c);
+			bc_lex_number(l, c);
 			break;
 		}
 

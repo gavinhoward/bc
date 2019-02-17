@@ -36,7 +36,7 @@ BcStatus bc_lex_invalidChar(BcLex *l, char c) {
 
 void bc_lex_lineComment(BcLex *l) {
 	l->t = BC_LEX_WHITESPACE;
-	while (l->i < l->len && l->buf[l->i] != '\n') ++l->i;
+	while (l->i < l->len && l->buf[l->i] != '\n') l->i += 1;
 }
 
 BcStatus bc_lex_comment(BcLex *l) {
@@ -46,9 +46,10 @@ BcStatus bc_lex_comment(BcLex *l) {
 	bool end = false;
 	char c;
 
+	l->i += 1;
 	l->t = BC_LEX_WHITESPACE;
 
-	for (i = ++l->i; !end; i += !end) {
+	for (i = l->i; !end; i += !end) {
 
 		for (; (c = buf[i]) && c != '*'; ++i) nlines += (c == '\n');
 
@@ -78,7 +79,7 @@ void bc_lex_commonTokens(BcLex *l, char c) {
 	else bc_lex_whitespace(l);
 }
 
-BcStatus bc_lex_number(BcLex *l, char start) {
+void bc_lex_number(BcLex *l, char start) {
 
 	const char *buf = l->buf + l->i;
 	size_t i;
@@ -119,11 +120,9 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 	bc_vec_pushByte(&l->str, '\0');
 	l->i += i;
-
-	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_lex_name(BcLex *l) {
+void bc_lex_name(BcLex *l) {
 
 	size_t i = 0;
 	const char *buf = l->buf + l->i - 1;
@@ -137,8 +136,6 @@ BcStatus bc_lex_name(BcLex *l) {
 
 	// Increment the index. We minus 1 because it has already been incremented.
 	l->i += i - 1;
-
-	return BC_STATUS_SUCCESS;
 }
 
 void bc_lex_init(BcLex *l) {

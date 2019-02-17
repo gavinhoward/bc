@@ -32,7 +32,7 @@
 
 static BcStatus bc_lex_identifier(BcLex *l) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 	const char *buf = l->buf + l->i - 1;
 
@@ -56,8 +56,7 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 		}
 	}
 
-	s = bc_lex_name(l);
-	if (s) return s;
+	bc_lex_name(l);
 
 	if (l->str.len - 1 > 1) s = bc_lex_vposixErr(l, BC_ERROR_POSIX_NAME_LEN, buf);
 
@@ -90,7 +89,7 @@ static BcStatus bc_lex_string(BcLex *l) {
 
 static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 	if (l->buf[l->i] == '=') {
-		++l->i;
+		l->i += 1;
 		l->t = with;
 	}
 	else l->t = without;
@@ -158,7 +157,7 @@ BcStatus bc_lex_token(BcLex *l) {
 				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "&&");
 				if (s) return s;
 
-				++l->i;
+				l->i += 1;
 				l->t = BC_LEX_OP_BOOL_AND;
 			}
 			else s = bc_lex_invalidChar(l, c);
@@ -195,7 +194,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			c2 = l->buf[l->i];
 			if (c2 == '+') {
-				++l->i;
+				l->i += 1;
 				l->t = BC_LEX_OP_INC;
 			}
 			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_PLUS, BC_LEX_OP_PLUS);
@@ -212,7 +211,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			c2 = l->buf[l->i];
 			if (c2 == '-') {
-				++l->i;
+				l->i += 1;
 				l->t = BC_LEX_OP_DEC;
 			}
 			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_MINUS, BC_LEX_OP_MINUS);
@@ -222,7 +221,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '.':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LEX_NUM_CHAR(c2, 'Z', true)) s = bc_lex_number(l, c);
+			if (BC_LEX_NUM_CHAR(c2, 'Z', true)) bc_lex_number(l, c);
 			else {
 				l->t = BC_LEX_KEY_LAST;
 				s = bc_lex_posixErr(l, BC_ERROR_POSIX_DOT);
@@ -279,7 +278,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case 'Y':
 		case 'Z':
 		{
-			s = bc_lex_number(l, c);
+			bc_lex_number(l, c);
 			break;
 		}
 
@@ -335,8 +334,8 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '\\':
 		{
 			if (l->buf[l->i] == '\n') {
+				l->i += 1;
 				l->t = BC_LEX_WHITESPACE;
-				++l->i;
 			}
 			else s = bc_lex_invalidChar(l, c);
 			break;
@@ -395,7 +394,7 @@ BcStatus bc_lex_token(BcLex *l) {
 				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "||");
 				if (s) return s;
 
-				++l->i;
+				l->i += 1;
 				l->t = BC_LEX_OP_BOOL_OR;
 			}
 			else s = bc_lex_invalidChar(l, c);
