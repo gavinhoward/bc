@@ -370,6 +370,10 @@ static BcStatus bc_program_op(BcProgram *p, uchar inst) {
 
 	s = bc_program_ops[idx](n1, n2, &res.d.n, p->scale);
 	if (s) goto err;
+	if (BC_SIGNAL) {
+		s = BC_STATUS_SIGNAL;
+		goto err;
+	}
 	bc_program_binOpRetire(p, &res);
 
 	return s;
@@ -808,6 +812,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	else {
 		s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
 		if (s) return s;
+		if (BC_SIGNAL) return BC_STATUS_SIGNAL;
 	}
 #endif // BC_ENABLED
 
