@@ -229,7 +229,6 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 		case BC_RESULT_VOID:
 		{
-			n = &r->d.n;
 #ifndef NDEBUG
 			assert(false);
 			break;
@@ -376,10 +375,6 @@ static BcStatus bc_program_op(BcProgram *p, uchar inst) {
 
 	s = bc_program_ops[idx](n1, n2, &res.d.n, p->scale);
 	if (s) goto err;
-	if (BC_SIGNAL) {
-		s = BC_STATUS_SIGNAL;
-		goto err;
-	}
 	bc_program_binOpRetire(p, &res);
 
 	return s;
@@ -521,9 +516,8 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
 		s = bc_num_print(n, &p->ob, p->ob_t, !pop);
-		if (s) return s;
 #if BC_ENABLED
-		bc_num_copy(&p->last, n);
+		if (!s) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
 	}
 	else {
@@ -820,7 +814,6 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	else {
 		s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
 		if (s) return s;
-		if (BC_SIGNAL) return BC_STATUS_SIGNAL;
 	}
 #endif // BC_ENABLED
 
@@ -1117,7 +1110,6 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	if (inst == BC_INST_SQRT) {
 		s = bc_num_sqrt(num, resn, p->scale);
 		if (s) return s;
-		if (BC_SIGNAL) return BC_STATUS_SIGNAL;
 	}
 	else if (inst == BC_INST_ABS) {
 		bc_num_createCopy(resn, num);
@@ -1165,10 +1157,6 @@ static BcStatus bc_program_divmod(BcProgram *p) {
 
 	s = bc_num_divmod(n1, n2, resn2, resn, p->scale);
 	if (s) goto err;
-	if (BC_SIGNAL) {
-		s = BC_STATUS_SIGNAL;
-		goto err;
-	}
 
 	bc_program_binOpRetire(p, &res2);
 	res.t = BC_RESULT_TEMP;
@@ -1213,10 +1201,6 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 	bc_num_init(resn, n3->len);
 	s = bc_num_modexp(n1, n2, n3, resn);
 	if (s) goto err;
-	if (BC_SIGNAL) {
-		s = BC_STATUS_SIGNAL;
-		goto err;
-	}
 
 	bc_vec_pop(&p->results);
 	bc_program_binOpRetire(p, &res);

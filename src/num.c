@@ -1389,7 +1389,10 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		x1 = temp;
 	}
 
-	if (BC_SIGNAL) goto err;
+	if (BC_SIGNAL) {
+		s = BC_STATUS_SIGNAL;
+		goto err;
+	}
 
 	bc_num_copy(b, x0);
 	scale -= 1;
