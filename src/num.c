@@ -367,6 +367,7 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	else start = c->rdx - subtrahend->rdx;
 
 	s = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
+
 	bc_num_clean(c);
 
 	return s;
@@ -1484,6 +1485,8 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 		s = bc_num_rem(&temp, c, &base, 0);
 		if (s) goto err;
 	}
+
+	if (!s && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 
 err:
 	bc_num_free(&temp);
