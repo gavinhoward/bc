@@ -21,17 +21,13 @@
  */
 
 define r(x,p){
-	auto i,t,n
+	auto t,n
 	if(x==0)return x
 	p=abs(p)$
 	n=(x<0)
 	x=abs(x)
 	t=x@p
-	if(p>=scale(x)){
-		if(n)t=-t
-		return t
-	}
-	if((x-t)>=(5>>p+1))t+=1>>p
+	if(p<scale(x)&&x-t>=5>>p+1)t+=1>>p
 	if(n)t=-t
 	return t
 }
