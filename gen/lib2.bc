@@ -31,6 +31,16 @@ define r(x,p){
 	if(n)t=-t
 	return t
 }
+define ceil(x,p){
+	auto t,n
+	if(x==0)return x
+	p=abs(p)$
+	n=(x<0)
+	x=abs(x)
+	t=(x+(9>>p+1))@p
+	if(n)t=-t
+	return t
+}
 define f(n){
 	auto r
 	n=abs(n)$
