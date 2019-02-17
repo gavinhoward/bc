@@ -971,7 +971,7 @@ static BcStatus bc_parse_body(BcParse *p, bool brace) {
 
 		if (!brace) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-		p->auto_part = p->l.t != BC_LEX_KEY_AUTO;
+		p->auto_part = (p->l.t != BC_LEX_KEY_AUTO);
 
 		if (!p->auto_part) {
 
