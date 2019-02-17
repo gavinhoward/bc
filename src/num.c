@@ -63,7 +63,8 @@ static size_t bc_num_log10(size_t i) {
 	return len;
 }
 
-static void bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, size_t len)
+static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
+                                 size_t len)
 {
 	size_t i, j;
 	for (i = 0; !BC_SIGNAL && i < len; ++i) {
@@ -73,6 +74,7 @@ static void bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b, size_t 
 			assert(a[i + j - 1] >= 0 && a[i + j - 1] < 10);
 		}
 	}
+	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b, size_t len)
@@ -305,11 +307,12 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	if (carry) c->num[c->len++] = (BcDig) carry;
 
-	return BC_STATUS_SUCCESS;
+	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
+	BcStatus s;
 	ssize_t cmp;
 	BcNum *minuend, *subtrahend;
 	size_t start;
@@ -363,21 +366,21 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 	else start = c->rdx - subtrahend->rdx;
 
-	bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
+	s = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
 	bc_num_clean(c);
 
-	return BC_STATUS_SUCCESS;
+	return s;
 }
 
 static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	bool aone = BC_NUM_ONE(a);
 
 	// This is here because the function is recursive.
-	if (BC_SIGNAL) return BC_STATUS_SUCCESS;
+	if (BC_SIGNAL) return BC_STATUS_SIGNAL;
 	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
@@ -420,7 +423,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 		c->len = len;
 
-		return BC_STATUS_SUCCESS;
+		return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 	}
 
 	bc_num_init(&l1, max);
@@ -563,10 +566,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	c->len = cp.len;
 	p = b->num;
 
-	for (i = end - 1; !BC_SIGNAL && i < end; --i) {
+	for (i = end - 1; !BC_SIGNAL && !s && i < end; --i) {
 		n = cp.num + i;
-		for (q = 0; n[len] || bc_num_compare(n, p, len) >= 0; ++q)
-			bc_num_subArrays(n, p, len);
+		for (q = 0; !s && (n[len] || bc_num_compare(n, p, len) >= 0); ++q)
+			s = bc_num_subArrays(n, p, len);
 		c->num[i] = q;
 	}
 
@@ -682,13 +685,8 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		}
 	}
 
-	if (neg) {
-		s = bc_num_inv(c, c, scale);
-		if (s) goto err;
-	}
-
 	if (BC_SIGNAL) goto err;
-
+	if (neg) s = bc_num_inv(c, c, scale);
 	if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
 
 	// We can't use bc_num_clean() here.
@@ -875,8 +873,8 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	}
 }
 
-static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
-                             BcNum *restrict base, size_t base_t)
+static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
+                                 BcNum *restrict base, size_t base_t)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum temp, mult, result;
@@ -885,16 +883,8 @@ static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	unsigned long v;
 	size_t i, digits, len = strlen(val);
 
-	// In this function, I don't check return values from the binary funcions
-	// because they are just multiply and add. Those are guaranteed to always
-	// return success, so I don't need to worry about them. Also, the one time
-	// that there is a division, it is a bug if it ends up doing a divide by 0.
-
-	// Make sure to not have compiler warnings.
-	BC_UNUSED(s);
-
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
-	if (zero) return;
+	if (zero) return BC_STATUS_SUCCESS;
 
 	bc_num_init(&temp, BC_NUM_LONG_LOG10);
 	bc_num_init(&mult, BC_NUM_LONG_LOG10);
@@ -902,44 +892,47 @@ static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
 		v = bc_num_parseChar(c, base_t);
 		s = bc_num_mul(n, base, &mult, 0);
-		assert(!s);
+		if (s) goto int_err;
 		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&mult, &temp, n, 0);
-		assert(!s);
+		if (s) goto int_err;
 	}
 
-	if (i == len && !(c = val[i])) goto err;
+	if (i == len && !(c = val[i])) goto int_err;
 
 	assert(c == '.');
 	bc_num_init(&result, base->len);
 	bc_num_one(&mult);
 
 	for (i += 1, digits = 0; i < len && (c = val[i]); ++i, ++digits) {
+
 		v = bc_num_parseChar(c, base_t);
 		s = bc_num_mul(&result, base, &result, 0);
-		assert(!s);
+		if (s) goto err;
+
 		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&result, &temp, &result, 0);
-		assert(!s);
+		if (s) goto err;
 		s = bc_num_mul(&mult, base, &mult, 0);
-		assert(!s);
+		if (s) goto err;
 	}
 
 	s = bc_num_div(&result, &mult, &result, digits);
-	assert(!s);
+	if (s) goto err;
 	s = bc_num_add(n, &result, n, digits);
-	assert(!s);
+	if (s) goto err;
 
 	if (BC_NUM_NONZERO(n)) {
 		if (n->rdx < digits) bc_num_extend(n, digits - n->rdx);
 	}
 	else bc_num_zero(n);
 
-	bc_num_free(&result);
-
 err:
+	bc_num_free(&result);
+int_err:
 	bc_num_free(&mult);
 	bc_num_free(&temp);
+	return s;
 }
 
 static void bc_num_printNewline() {
@@ -1004,8 +997,8 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 		bc_num_printHex((size_t) n->num[i], 1, i == rdx);
 }
 
-static void bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
-                            size_t len, BcNumDigitOp print)
+static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
+                                size_t len, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
@@ -1014,22 +1007,11 @@ static void bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	size_t i;
 	bool radix;
 
-	// In this function, I don't check return values from the binary funcions
-	// because they are just multiply and add. Those are guaranteed to always
-	// return success, so I don't need to worry about them. Also, the one time
-	// that there is a division, it is a bug if it ends up doing a divide by 0.
-	// Also, there is a bc_num_ulong(), but that is also guaranteed to return
-	// success because the digit can never be higher than the output base, which
-	// can never be higher than ULONG_MAX.
-
-	// Make sure to not have compiler warnings.
-	BC_UNUSED(s);
-
 	assert(!BC_NUM_ZERO(base));
 
 	if (BC_NUM_ZERO(n)) {
 		print(0, len, false);
-		return;
+		return BC_STATUS_SUCCESS;
 	}
 
 	bc_vec_init(&stack, sizeof(unsigned long), NULL);
@@ -1041,48 +1023,60 @@ static void bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 
 	bc_num_truncate(&intp, intp.rdx);
 	s = bc_num_sub(n, &intp, &fracp, 0);
-	assert(!s);
+	if (s) goto err;
 
-	while (BC_NUM_NONZERO(&intp)) {
+	while (!BC_SIGNAL && BC_NUM_NONZERO(&intp)) {
 		s = bc_num_divmod(&intp, base, &intp, &digit, 0);
-		assert(!s);
+		if (s) goto err;
 		s = bc_num_ulong(&digit, &dig);
-		assert(!s);
+		if (s) goto err;
 		bc_vec_push(&stack, &dig);
 	}
 
-	for (i = 0; i < stack.len; ++i) {
+	if (BC_SIGNAL) goto sig_err;
+
+	for (i = 0; !BC_SIGNAL && i < stack.len; ++i) {
 		ptr = bc_vec_item_rev(&stack, i);
 		assert(ptr);
 		print(*ptr, len, false);
 	}
 
+	if (BC_SIGNAL) goto sig_err;
 	if (!n->rdx) goto err;
 
-	for (radix = true; frac_len.len <= n->rdx; radix = false) {
+	for (radix = true; !BC_SIGNAL && frac_len.len <= n->rdx; radix = false) {
+
 		s = bc_num_mul(&fracp, base, &fracp, n->rdx);
-		assert(!s);
+		if (s) goto err;
 		s = bc_num_ulong(&fracp, &dig);
-		assert(!s);
+		if (s) goto err;
+
 		bc_num_ulong2num(&intp, dig);
 		s = bc_num_sub(&fracp, &intp, &fracp, 0);
-		assert(!s);
+		if (s) goto err;
+
 		print(dig, len, radix);
 		s = bc_num_mul(&frac_len, base, &frac_len, 0);
-		assert(!s);
+		if (s) goto err;
 	}
 
+	if (!BC_SIGNAL) goto err;
+
+sig_err:
+	s = BC_STATUS_SIGNAL;
 err:
 	bc_num_free(&frac_len);
 	bc_num_free(&digit);
 	bc_num_free(&fracp);
 	bc_num_free(&intp);
 	bc_vec_free(&stack);
+	return s;
 }
 
-static void bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
-                             size_t base_t)
+static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
+                                 size_t base_t)
 {
+	BcStatus s;
 	size_t width;
 	BcNumDigitOp print;
 	bool neg = n->neg;
@@ -1101,13 +1095,15 @@ static void bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 		print = bc_num_printDigits;
 	}
 
-	bc_num_printNum(n, base, width, print);
+	s = bc_num_printNum(n, base, width, print);
 	n->neg = neg;
+
+	return s;
 }
 
 #if DC_ENABLED
-void bc_num_stream(BcNum *restrict n, BcNum *restrict base) {
-	bc_num_printNum(n, base, 1, bc_num_printChar);
+BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base) {
+	return bc_num_printNum(n, base, 1, bc_num_printChar);
 }
 #endif // DC_ENABLED
 
@@ -1159,21 +1155,27 @@ void bc_num_createFromUlong(BcNum *n, unsigned long val) {
 	bc_num_ulong2num(n, val);
 }
 
-void bc_num_parse(BcNum *restrict n, const char *restrict val,
-                  BcNum *restrict base, size_t base_t, bool letter)
+BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
+                      BcNum *restrict base, size_t base_t, bool letter)
 {
+	BcStatus s = BC_STATUS_SUCCESS;
+
 	assert(n && val && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= vm->max_ibase);
 	assert(bc_num_strValid(val));
 
 	if (letter) bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
 	else if (base_t == 10) bc_num_parseDecimal(n, val);
-	else bc_num_parseBase(n, val, base, base_t);
+	else s = bc_num_parseBase(n, val, base, base_t);
+
+	return s;
 }
 
-void bc_num_print(BcNum *restrict n, BcNum *restrict base,
-                  size_t base_t, bool newline)
+BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
+                      size_t base_t, bool newline)
 {
+	BcStatus s = BC_STATUS_SUCCESS;
+
 	assert(n && base);
 	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_MAX_OBASE);
 
@@ -1181,12 +1183,14 @@ void bc_num_print(BcNum *restrict n, BcNum *restrict base,
 
 	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
 	else if (base_t == 10) bc_num_printDecimal(n);
-	else bc_num_printBase(n, base, base_t);
+	else s = bc_num_printBase(n, base, base_t);
 
-	if (newline) {
+	if (!s && newline) {
 		bc_vm_putchar('\n');
 		vm->nchars = 0;
 	}
+
+	return s;
 }
 
 BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
@@ -1378,10 +1382,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		x1 = temp;
 	}
 
-	if (BC_SIGNAL) {
-		s = BC_STATUS_SIGNAL;
-		goto err;
-	}
+	if (BC_SIGNAL) goto err;
 
 	bc_num_copy(b, x0);
 	scale -= 1;
@@ -1456,7 +1457,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	if (s) goto err;
 	bc_num_createCopy(&exp, b);
 
-	while (BC_NUM_NONZERO(&exp)) {
+	while (!BC_SIGNAL && BC_NUM_NONZERO(&exp)) {
 
 		s = bc_num_divmod(&exp, &two, &exp, &temp, 0);
 		if (s) goto err;

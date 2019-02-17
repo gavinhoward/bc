@@ -153,8 +153,9 @@ static BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
 	return bc_vec_item(v, ptr->idx);
 }
 
-static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
+static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
+	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum *n = &r->d.n;
 
 	switch (r->t) {
@@ -165,7 +166,11 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 			size_t len = strlen(str);
 
 			bc_num_init(n, len);
-			bc_num_parse(n, str, &p->ib, p->ib_t, len == 1);
+			s = bc_num_parse(n, str, &p->ib, p->ib_t, len == 1);
+			if (s) {
+				bc_num_free(n);
+				return s;
+			}
 
 			r->t = BC_RESULT_TEMP;
 			break;
@@ -233,7 +238,9 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 #endif // BC_ENABLED
 	}
 
-	return n;
+	*num = n;
+
+	return s;
 }
 
 static BcStatus bc_program_operand(BcProgram *p, BcResult **r,
@@ -249,9 +256,8 @@ static BcStatus bc_program_operand(BcProgram *p, BcResult **r,
 #if BC_ENABLED
 	if ((*r)->t == BC_RESULT_VOID) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
 #endif // BC_ENABLED
-	*n = bc_program_num(p, *r);
 
-	return BC_STATUS_SUCCESS;
+	return bc_program_num(p, *r, n);
 }
 
 static BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
@@ -276,9 +282,9 @@ static BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	// We run this again under these conditions in case any vector has been
 	// reallocated out from under the BcNums or arrays we had.
 	if (lt == (*r)->t && (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM))
-		*ln = bc_program_num(p, *l);
+		s = bc_program_num(p, *l, ln);
 
-	if (lt == BC_RESULT_STR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
+	if (!s && lt == BC_RESULT_STR) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 
 	return s;
 }
@@ -509,11 +515,13 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	}
 #endif // BC_ENABLED
 
-	n = bc_program_num(p, r);
+	s = bc_program_num(p, r, &n);
+	if (s) return s;
 
 	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
-		bc_num_print(n, &p->ob, p->ob_t, !pop);
+		s = bc_num_print(n, &p->ob, p->ob_t, !pop);
+		if (s) return s;
 #if BC_ENABLED
 		bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
@@ -694,7 +702,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 			n = bc_vec_item_rev(v, 1);
 		}
 		else if (ptr->t == BC_RESULT_VOID) s = bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
-		else n = bc_program_num(p, ptr);
+		else s = bc_program_num(p, ptr, &n);
 	}
 	else s = bc_program_operand(p, &ptr, &n, 0);
 #else // BC_ENABLED
@@ -1106,7 +1114,11 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	}
 #endif // DC_ENABLED
 
-	if (inst == BC_INST_SQRT) s = bc_num_sqrt(num, resn, p->scale);
+	if (inst == BC_INST_SQRT) {
+		s = bc_num_sqrt(num, resn, p->scale);
+		if (s) return s;
+		if (BC_SIGNAL) return BC_STATUS_SIGNAL;
+	}
 	else if (inst == BC_INST_ABS) {
 		bc_num_createCopy(resn, num);
 		resn->neg = false;
@@ -1153,6 +1165,10 @@ static BcStatus bc_program_divmod(BcProgram *p) {
 
 	s = bc_num_divmod(n1, n2, resn2, resn, p->scale);
 	if (s) goto err;
+	if (BC_SIGNAL) {
+		s = BC_STATUS_SIGNAL;
+		goto err;
+	}
 
 	bc_program_binOpRetire(p, &res2);
 	res.t = BC_RESULT_TEMP;
@@ -1182,13 +1198,25 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 
 	// Make sure that the values have their pointers updated, if necessary.
 	if (r1->t == BC_RESULT_VAR || r1->t == BC_RESULT_ARRAY_ELEM) {
-		if (r1->t == r2->t) n2 = bc_program_num(p, r2);
-		if (r1->t == r3->t) n3 = bc_program_num(p, r3);
+
+		if (r1->t == r2->t) {
+			s = bc_program_num(p, r2, &n2);
+			if (s) return s;
+		}
+
+		if (r1->t == r3->t) {
+			s = bc_program_num(p, r3, &n3);
+			if (s) return s;
+		}
 	}
 
 	bc_num_init(resn, n3->len);
 	s = bc_num_modexp(n1, n2, n3, resn);
 	if (s) goto err;
+	if (BC_SIGNAL) {
+		s = BC_STATUS_SIGNAL;
+		goto err;
+	}
 
 	bc_vec_pop(&p->results);
 	bc_program_binOpRetire(p, &res);
@@ -1276,7 +1304,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 	s = bc_program_operand(p, &r, &n, 0);
 	if (s) return s;
 
-	if (BC_PROG_NUM(r, n)) bc_num_stream(n, &p->strmb);
+	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		bc_program_printChars(bc_program_str(p, idx, true));

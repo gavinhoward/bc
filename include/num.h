@@ -118,12 +118,12 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 void bc_num_one(BcNum *restrict n);
 void bc_num_ten(BcNum *restrict n);
 
-void bc_num_parse(BcNum *restrict n, const char *restrict val,
-                  BcNum *restrict base, size_t base_t, bool letter);
-void bc_num_print(BcNum *restrict n, BcNum *restrict base,
-                  size_t base_t, bool newline);
+BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
+                      BcNum *restrict base, size_t base_t, bool letter);
+BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
+                      size_t base_t, bool newline);
 #if DC_ENABLED
-void bc_num_stream(BcNum *restrict n, BcNum *restrict base);
+BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED
 
 extern const char bc_num_hex_digits[];
