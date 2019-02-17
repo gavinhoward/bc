@@ -776,6 +776,7 @@ static BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 
 	str = *((char**) bc_vec_item(&h->history, h->history.len - 1 - h->idx));
 	bc_vec_string(&h->buf, strlen(str), str);
+	assert(h->buf.len > 0);
 
 	h->pos = BC_HISTORY_BUF_LEN(h);
 

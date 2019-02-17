@@ -217,8 +217,7 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	idx = bc_map_index(&p->prog->fn_map, &id);
 
 	if (idx == BC_VEC_INVALID_IDX) {
-		bc_parse_addFunc(p, name);
-		idx = bc_map_index(&p->prog->fn_map, &id);
+		idx = bc_parse_addFunc(p, name);
 		assert(idx != BC_VEC_INVALID_IDX);
 	}
 	else free(name);

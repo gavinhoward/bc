@@ -1185,7 +1185,7 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && base);
-	assert(base_t >= BC_NUM_MIN_BASE && base_t <= BC_MAX_OBASE);
+	assert(base_t >= BC_NUM_MIN_BASE);
 
 	bc_num_printNewline();
 
