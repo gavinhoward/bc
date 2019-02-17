@@ -115,16 +115,6 @@ static void bc_parse_createExitLabel(BcParse *p, size_t idx, bool loop) {
 	bc_parse_createLabel(p, SIZE_MAX);
 }
 
-static size_t bc_parse_addFunc(BcParse *p, char *name) {
-
-	size_t idx = bc_program_insertFunc(p->prog, name);
-
-	// Make sure that this pointer was not invalidated.
-	p->func = bc_vec_item(&p->prog->fns, p->fidx);
-
-	return idx;
-}
-
 static void bc_parse_operator(BcParse *p, BcLexType type,
                               size_t start, size_t *nexprs)
 {
@@ -201,7 +191,7 @@ static BcStatus bc_parse_params(BcParse *p, uint8_t flags) {
 static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	BcStatus s;
-	BcId id, *id_ptr;
+	BcId id;
 	size_t idx;
 
 	id.name = name;
@@ -217,15 +207,19 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	idx = bc_map_index(&p->prog->fn_map, &id);
 
 	if (idx == BC_VEC_INVALID_IDX) {
-		bc_parse_addFunc(p, name);
-		idx = bc_map_index(&p->prog->fn_map, &id);
-		assert(idx != BC_VEC_INVALID_IDX);
-	}
-	else free(name);
 
-	id_ptr = bc_vec_item(&p->prog->fn_map, idx);
-	assert(id_ptr);
-	bc_parse_pushIndex(p, id_ptr->idx);
+		idx = bc_program_insertFunc(p->prog, name);
+		assert(idx != BC_VEC_INVALID_IDX);
+
+		// Make sure that this pointer was not invalidated.
+		p->func = bc_vec_item(&p->prog->fns, p->fidx);
+	}
+	else {
+		free(name);
+		idx = ((BcId*) bc_vec_item(&p->prog->fn_map, idx))->idx;
+	}
+
+	bc_parse_pushIndex(p, idx);
 
 	return bc_lex_next(&p->l);
 
