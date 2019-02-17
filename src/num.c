@@ -196,9 +196,9 @@ static void bc_num_split(const BcNum *restrict n, size_t idx, BcNum *restrict a,
 	bc_num_clean(a);
 }
 
-static BcStatus bc_num_shift(BcNum *restrict n, size_t places) {
+static void bc_num_shift(BcNum *restrict n, size_t places) {
 
-	if (!places || BC_NUM_ZERO(n)) return BC_STATUS_SUCCESS;
+	if (!places || BC_NUM_ZERO(n)) return;
 
 	if (n->rdx >= places) n->rdx -= places;
 	else {
@@ -207,8 +207,6 @@ static BcStatus bc_num_shift(BcNum *restrict n, size_t places) {
 	}
 
 	bc_num_clean(n);
-
-	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
@@ -459,10 +457,8 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	s = bc_num_sub(&temp, &z2, &z1, 0);
 	if (s) goto err;
 
-	s = bc_num_shift(&z0, max2 * 2);
-	if (s) goto err;
-	s = bc_num_shift(&z1, max2);
-	if (s) goto err;
+	bc_num_shift(&z0, max2 * 2);
+	bc_num_shift(&z1, max2);
 	s = bc_num_add(&z0, &z1, &temp, 0);
 	if (s) goto err;
 	s = bc_num_add(&temp, &z2, c, 0);
@@ -497,10 +493,8 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	cpa.neg = cpb.neg = false;
 
-	s = bc_num_shift(&cpa, maxrdx);
-	if (s) goto err;
-	s = bc_num_shift(&cpb, maxrdx);
-	if (s) goto err;
+	bc_num_shift(&cpa, maxrdx);
+	bc_num_shift(&cpb, maxrdx);
 	s = bc_num_k(&cpa, &cpb, c);
 	if (s) goto err;
 
