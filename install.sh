@@ -15,29 +15,26 @@
 #
 
 usage() {
-	printf "usage: %s install_dir bin_dir exec_suffix\n" "$0" 1>&2
+	printf "usage: %s install_dir exec_suffix\n" "$0" 1>&2
 	exit 1
 }
 
-script=$(realpath "$0")
+script="$0"
 scriptdir=$(dirname "$script")
 
 INSTALL="$scriptdir/safe-install.sh"
 
-test "$#" -ge 3 || usage
+test "$#" -ge 2 || usage
 
 installdir="$1"
-shift
-
-bindir="$1"
 shift
 
 exec_suffix="$1"
 shift
 
-cd "$bindir"
+bindir="$scriptdir/bin"
 
-for exe in ./*; do
+for exe in $bindir/*; do
 
 	base=$(basename "$exe")
 
