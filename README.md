@@ -1,11 +1,12 @@
 # `bc`
 
-[![Build Status][12]][13]
-[![codecov][14]][15]
-[![Coverity Scan Build Status][16]][17]
+[![Build Status][13]][14]
+[![codecov][15]][16]
+[![Coverity Scan Build Status][17]][18]
 
-This is an implementation of POSIX `bc` that implements [GNU `bc`][1]
-extensions, as well as the period (`.`) extension for the BSD flavor of `bc`.
+This is an implementation of the [POSIX `bc` calculator][12] that implements
+[GNU `bc`][1] extensions, as well as the period (`.`) extension for the BSD
+flavor of `bc`.
 
 For more information, see this `bc`'s [full manual][2].
 
@@ -160,9 +161,10 @@ Folders:
 [9]: https://github.com/landley/toybox/blob/master/toys/pending/bc.c
 [10]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [11]: http://semver.org/
-[12]: https://travis-ci.com/gavinhoward/bc.svg?branch=master
-[13]: https://travis-ci.com/gavinhoward/bc
-[14]: https://codecov.io/gh/gavinhoward/bc/branch/master/graph/badge.svg
-[15]: https://codecov.io/gh/gavinhoward/bc
-[16]: https://img.shields.io/coverity/scan/16609.svg
-[17]: https://scan.coverity.com/projects/gavinhoward-bc
+[12]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
+[13]: https://travis-ci.com/gavinhoward/bc.svg?branch=master
+[14]: https://travis-ci.com/gavinhoward/bc
+[15]: https://codecov.io/gh/gavinhoward/bc/branch/master/graph/badge.svg
+[16]: https://codecov.io/gh/gavinhoward/bc
+[17]: https://img.shields.io/coverity/scan/16609.svg
+[18]: https://scan.coverity.com/projects/gavinhoward-bc
