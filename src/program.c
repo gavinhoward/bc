@@ -97,7 +97,7 @@ static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 
 	assert(ptr);
 
-	s = bc_vm_malloc(((unsigned long) ptr) - ((unsigned long) str) + 1);
+	s = bc_vm_malloc(((uintptr_t) ptr) - ((uintptr_t) str) + 1);
 
 	for (i = 0; (c = (uchar) code[(*bgn)++]) && c != BC_PARSE_STREND; ++i)
 		s[i] = (char) c;

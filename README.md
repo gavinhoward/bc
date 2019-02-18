@@ -25,6 +25,8 @@ This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 
 This `bc` only requires a C99-compatible compiler and a (mostly) POSIX
 2008-compatible system with the XSI (X/Open System Interfaces) option group.
+Be aware that this `bc` requires some items in C99 that are considered optional,
+such as `uintptr_t`.
 
 Since POSIX 2008 with XSI requires the existence of a C99 compiler as `c99`, any
 POSIX and XSI-compatible system will have everything needed.
