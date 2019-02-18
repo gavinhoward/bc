@@ -469,7 +469,7 @@ static size_t bc_history_cursorPos() {
 	if (buf[0] != BC_ACTION_ESC || buf[1] != '[') return SIZE_MAX;
 	if (sscanf(buf + 2, "%zu;%zu", &rows, &cols) != 2) return SIZE_MAX;
 
-	return cols;
+	return cols <= UINT16_MAX ? cols : 0;
 }
 
 /**
