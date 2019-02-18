@@ -19,6 +19,16 @@ usage() {
 	exit 1
 }
 
+readlink() {
+
+	local exe="$1"
+	shift
+
+	L=$(ls -dl "$exe")
+
+	printf ${L#*-> }
+}
+
 script="$0"
 scriptdir=$(dirname "$script")
 
@@ -40,7 +50,7 @@ for exe in $bindir/*; do
 
 	if [ -L "$exe" ]; then
 		L=$(ls -dl "$exe")
-		link=$(printf ${L#*-> })
+		link=$(readlink "$exe")
 		"$INSTALL" -Dlm 755 "$link$exec_suffix" "$installdir/$base$exec_suffix"
 	else
 		"$INSTALL" -Dm 755 "$exe" "$installdir/$base$exec_suffix"
