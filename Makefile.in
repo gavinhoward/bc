@@ -48,6 +48,11 @@ GEN = strgen
 GEN_EXEC = $(GEN_DIR)/$(GEN)
 GEN_C = $(GEN_DIR)/$(GEN).c
 
+REALPATH_DIR = realpath
+REALPATH = realpath
+REALPATH_EXEC = $(REALPATH_DIR)/$(REALPATH)
+REALPATH_C    = $(REALPATH_DIR)/$(REALPATH).c
+
 GEN_EMU = %%GEN_EMU%%
 
 BC_LIB = $(GEN_DIR)/lib.bc
@@ -138,6 +143,9 @@ all: make_bin $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_LIB2_O) $(BC_LIB3_O) $(
 
 $(GEN_EXEC):
 	$(HOSTCC) $(HOSTCFLAGS) -o $(GEN_EXEC) $(GEN_C)
+
+$(REALPATH_EXEC):
+	$(HOSTCC) $(HOSTCFLAGS) -o $(REALPATH_EXEC) $(REALPATH_C)
 
 $(BC_LIB_C): $(GEN_EXEC) $(BC_LIB)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc.h bc_lib_name $(BC_ENABLED_NAME) 1
@@ -268,7 +276,7 @@ install_bc_manpage:
 install_dc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(DC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
-install:%%INSTALL_PREREQS%%
+install:%%INSTALL_PREREQS%% $(REALPATH_EXEC)
 	$(INSTALL) $(DESTDIR)$(BINDIR) $(BIN) "$(EXEC_SUFFIX)"
 
 uninstall_bc_manpage:

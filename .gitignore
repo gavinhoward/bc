@@ -16,6 +16,7 @@ bc.old
 .results.txt
 .ops.txt
 gen/strgen
+realpath/realpath
 lib.c
 lib2.c
 lib3.c

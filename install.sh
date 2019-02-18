@@ -19,7 +19,7 @@ usage() {
 	exit 1
 }
 
-script=$(realpath "$0")
+script=$(./realpath/realpath "$0")
 scriptdir=$(dirname "$script")
 
 INSTALL="$scriptdir/safe-install.sh"
