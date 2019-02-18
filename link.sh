@@ -27,9 +27,8 @@ shift
 link="$1"
 shift
 
-cd "$bindir"
 
-for exe in ./*; do
+for exe in "$bindir"/*; do
 
 	if [ ! -L "$exe" ]; then
 
@@ -42,7 +41,7 @@ for exe in ./*; do
 			name="$link"
 		fi
 
-		ln -fs "$exe" "./$name"
+		ln -fs "$base" "$bindir/$name"
 	fi
 
 done
