@@ -132,7 +132,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	assert(path);
 
 	f = fopen(path, "r");
-	if (!f) return bc_vm_verr(BC_ERROR_EXEC_FILE_ERR, path);
+	if (!f) return bc_vm_verr(BC_ERROR_VM_FILE_ERR, path);
 	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {

@@ -61,6 +61,7 @@ const char *bc_errs[] = {
 
 const char bc_err_ids[] = {
 	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
+	BC_ERR_IDX_VM,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE,
 #if BC_ENABLED
@@ -76,7 +77,7 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_MATH,
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 #if DC_ENABLED
 	BC_ERR_IDX_EXEC,
 #endif // DC_ENABLED
@@ -93,6 +94,7 @@ const char* const bc_err_msgs[] = {
 
 	"memory allocation error",
 	"I/O error",
+	"could not open file: %s",
 	"file is not ASCII: %s",
 	"path is a directory: %s",
 	"Bad command-line option: '%c' (\"%s\")",
@@ -126,7 +128,6 @@ const char* const bc_err_msgs[] = {
 	"underflow; shifted right too far",
 #endif // BC_ENABLE_EXTRA_MATH
 
-	"could not open file: %s",
 	"bad ibase; must be [%lu, %lu]",
 	"bad obase; must be [%lu, %lu]",
 	"bad scale; must be [%lu, %lu]",
