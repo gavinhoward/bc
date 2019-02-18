@@ -49,7 +49,6 @@ for exe in $bindir/*; do
 	base=$(basename "$exe")
 
 	if [ -L "$exe" ]; then
-		L=$(ls -dl "$exe")
 		link=$(readlink "$exe")
 		"$INSTALL" -Dlm 755 "$link$exec_suffix" "$installdir/$base$exec_suffix"
 	else
