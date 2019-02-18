@@ -625,6 +625,10 @@ by the [standard][1].
     Returns `x` rounded to `p` decimal places according to the rounding mode
     [round half away from `0`][3].
 
+  * `ceil(x, p)`:
+    Returns `x` rounded to `p` decimal places according to the rounding mode
+    [round away from `0`][7].
+
   * `f(x)`:
     Returns the factorial of the truncated absolute value of `x`.
 
@@ -863,6 +867,30 @@ The transcendental functions in the extended math library are:
 * `r2d(x)`
 * `d2r(x)`
 
+ENVIRONMENT VARIABLES
+---------------------
+
+This `bc` recognizes the following environment variables:
+
+  * `POSIXLY_CORRECT`:
+    If this variables exists (no matter the contents), this `bc` behaves as if
+    the `-s` option was given.
+
+  * `BC_ENV_ARGS`:
+    This is another way to give command-line arguments to this `bc`. They should
+    be in the same format as all other command-line arguments. These are always
+    processed first, so any files given in `BC_ENV_ARGS` will be processed
+    before files given on the command-line. This gives the user the ability to
+    set up "standard" options and files to be used at every invocation. The most
+    useful thing for such files to contain would be useful functions that the
+    user might want every time `bc` runs.
+
+  * `BC_LINE_LENGTH`:
+    If this environment variable exists and contains an integer that is greater
+    than `1` and is less than `UINT16_MAX` (`2^16-1`), `bc` will output lines to
+    that length, including the backslash newline combo. `bc`'s default line
+    length is `70`.
+
 SIGNAL HANDLING
 ---------------
 
@@ -907,3 +935,4 @@ None are known. Report bugs at https://github.com/gavinhoward/bc.
 [4]: https://en.wikipedia.org/wiki/Unit_in_the_last_place
 [5]: #transcendental-functions
 [6]: https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT
+[7]: https://en.wikipedia.org/wiki/Rounding#Rounding_away_from_zero

@@ -719,6 +719,10 @@ However, the extended library is \fB\fInot\fR\fR loaded when the \fB\-s\fR/\fB\-
 Returns \fBx\fR rounded to \fBp\fR decimal places according to the rounding mode round half away from \fB0\fR \fIhttps://en\.wikipedia\.org/wiki/Rounding#Round_half_away_from_zero\fR\.
 .
 .TP
+\fBceil(x, p)\fR
+Returns \fBx\fR rounded to \fBp\fR decimal places according to the rounding mode round away from \fB0\fR \fIhttps://en\.wikipedia\.org/wiki/Rounding#Rounding_away_from_zero\fR\.
+.
+.TP
 \fBf(x)\fR
 Returns the factorial of the truncated absolute value of \fBx\fR\.
 .
@@ -1003,6 +1007,21 @@ The transcendental functions in the extended math library are:
 \fBd2r(x)\fR
 .
 .IP "" 0
+.
+.SH "ENVIRONMENT VARIABLES"
+This \fBbc\fR recognizes the following environment variables:
+.
+.TP
+\fBPOSIXLY_CORRECT\fR
+If this variables exists (no matter the contents), this \fBbc\fR behaves as if the \fB\-s\fR option was given\.
+.
+.TP
+\fBBC_ENV_ARGS\fR
+This is another way to give command\-line arguments to this \fBbc\fR\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBBC_ENV_ARGS\fR will be processed before files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time \fBbc\fR runs\.
+.
+.TP
+\fBBC_LINE_LENGTH\fR
+If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), \fBbc\fR will output lines to that length, including the backslash newline combo\. \fBbc\fR\'s default line length is \fB70\fR\.
 .
 .SH "SIGNAL HANDLING"
 If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset, asking for more input\.

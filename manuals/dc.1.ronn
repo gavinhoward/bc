@@ -526,6 +526,17 @@ In that case, the register name is found according to the regex
 `[a-z][a-z0-9_]*` (like bc(1)), and it is a parse error if the next
 non-space characters do not match that regex.
 
+ENVIRONMENT VARIABLES
+---------------------
+
+This `dc` recognizes the following environment variables:
+
+  * `DC_LINE_LENGTH`:
+    If this environment variable exists and contains an integer that is greater
+    than `1` and is less than `UINT16_MAX` (`2^16-1`), `dc` will output lines to
+    that length, including the backslash newline combo. `dc`'s default line
+    length is `70`.
+
 SIGNAL HANDLING
 ---------------
 

@@ -502,6 +502,13 @@ If extended register mode is enabled (\fB\-x\fR or \fB\-\-extended\-register\fR 
 .P
 In that case, the register name is found according to the regex \fB[a\-z][a\-z0\-9_]*\fR (like bc(1)), and it is a parse error if the next non\-space characters do not match that regex\.
 .
+.SH "ENVIRONMENT VARIABLES"
+This \fBdc\fR recognizes the following environment variables:
+.
+.TP
+\fBDC_LINE_LENGTH\fR
+If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), \fBdc\fR will output lines to that length, including the backslash newline combo\. \fBdc\fR\'s default line length is \fB70\fR\.
+.
 .SH "SIGNAL HANDLING"
 If dc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause dc(1) to stop execution of the current input and reset, asking for more input\.
 .
