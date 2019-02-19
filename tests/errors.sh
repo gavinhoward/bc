@@ -121,10 +121,21 @@ posix="posix_errors"
 if [ "$d" = "bc" ]; then
 	opts="-l"
 	halt="halt"
+	read_expr="read()"
 else
 	opts="-x"
 	halt="q"
+	read_expr="?"
 fi
+
+printf 'Running %s empty read test...\n' "$d"
+
+read_test=$(printf '%s\n\n' "$read_expr")
+
+printf '%s\n' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
+err="$?"
+
+checktest "$err" "$read_test" "$out" "$exebase"
 
 for testfile in $testdir/$d/*errors.txt; do
 
