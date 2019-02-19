@@ -897,6 +897,43 @@ The transcendental functions in the extended math library are:
 * `r2d(x)`
 * `d2r(x)`
 
+LIMITS
+------
+
+The following are the limits on this `bc`:
+
+  * `BC_BASE_MAX`:
+    The maximum output base. Set at `ULONG_MAX`.
+
+  * `BC_DIM_MAX`:
+    The maximum size of arrays. Set at `SIZE_MAX-1`.
+
+  * `BC_SCALE_MAX`:
+    The maximum `scale`. Set at `SIZE_MAX-1`.
+
+  * `BC_STRING_MAX`:
+    The maximum length of strings. Set at `SIZE_MAX-1`.
+
+  * `BC_NAME_MAX`:
+    The maximum length of identifiers. Set at `SIZE_MAX-1`.
+
+  * `BC_NUM_MAX`:
+    The maximum length of a number (in decimal digits), which includes digits
+    after the decimal point. Set at `SIZE_MAX-1`.
+
+  * Exponent:
+    The maximum allowable exponent (positive or negative). Set at `ULONG_MAX`.
+
+  * Number of vars:
+    The maximum number of vars/arrays. Set at `SIZE_MAX-1`.
+
+Actual values can be queried with the `limits` statement.
+
+These limits are meant to be effectively non-existent; the limits are so large
+(at least on 64-bit machines) that there should not be any point at which they
+become a problem. In fact, memory should be exhausted before these limits should
+be hit.
+
 ENVIRONMENT VARIABLES
 ---------------------
 

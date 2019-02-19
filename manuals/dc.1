@@ -502,6 +502,47 @@ If extended register mode is enabled (\fB\-x\fR or \fB\-\-extended\-register\fR 
 .P
 In that case, the register name is found according to the regex \fB[a\-z][a\-z0\-9_]*\fR (like bc(1)), and it is a parse error if the next non\-space characters do not match that regex\.
 .
+.SH "LIMITS"
+The following are the limits on this \fBdc\fR:
+.
+.TP
+\fBDC_BASE_MAX\fR
+The maximum output base\. Set at \fBULONG_MAX\fR\.
+.
+.TP
+\fBDC_DIM_MAX\fR
+The maximum size of arrays\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBDC_SCALE_MAX\fR
+The maximum \fBscale\fR\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBDC_STRING_MAX\fR
+The maximum length of strings\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBDC_NAME_MAX\fR
+The maximum length of identifiers\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBDC_NUM_MAX\fR
+The maximum length of a number (in decimal digits), which includes digits after the decimal point\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+exponent
+The maximum allowable exponent (positive or negative)\. Set at \fBULONG_MAX\fR\.
+.
+.TP
+Number of vars
+The maximum number of vars/arrays\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.P
+Actual values can be queried with the \fBlimits\fR statement\.
+.
+.P
+These limits are meant to be effectively non\-existent; the limits are so large (at least on 64\-bit machines) that there should not be any point at which they become a problem\. In fact, memory should be exhausted before these limits should be hit\.
+.
 .SH "ENVIRONMENT VARIABLES"
 This \fBdc\fR recognizes the following environment variables:
 .

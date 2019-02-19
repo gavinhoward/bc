@@ -1057,6 +1057,47 @@ The transcendental functions in the extended math library are:
 .
 .IP "" 0
 .
+.SH "LIMITS"
+The following are the limits on this \fBbc\fR:
+.
+.TP
+\fBBC_BASE_MAX\fR
+The maximum output base\. Set at \fBULONG_MAX\fR\.
+.
+.TP
+\fBBC_DIM_MAX\fR
+The maximum size of arrays\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBBC_SCALE_MAX\fR
+The maximum \fBscale\fR\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBBC_STRING_MAX\fR
+The maximum length of strings\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBBC_NAME_MAX\fR
+The maximum length of identifiers\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+\fBBC_NUM_MAX\fR
+The maximum length of a number (in decimal digits), which includes digits after the decimal point\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.TP
+Exponent
+The maximum allowable exponent (positive or negative)\. Set at \fBULONG_MAX\fR\.
+.
+.TP
+Number of vars
+The maximum number of vars/arrays\. Set at \fBSIZE_MAX\-1\fR\.
+.
+.P
+Actual values can be queried with the \fBlimits\fR statement\.
+.
+.P
+These limits are meant to be effectively non\-existent; the limits are so large (at least on 64\-bit machines) that there should not be any point at which they become a problem\. In fact, memory should be exhausted before these limits should be hit\.
+.
 .SH "ENVIRONMENT VARIABLES"
 This \fBbc\fR recognizes the following environment variables:
 .
