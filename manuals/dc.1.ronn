@@ -83,6 +83,13 @@ Single-character numbers (i.e., `A`) take the value that they would have if they
 were valid digits, regardless of the value of `ibase`. This means that `A`
 always equals decimal `10` and `F` always equals decimal `15`.
 
+In addition, if bc(1) was built with the extra math option, it accepts numbers
+in scientific notation. For bc(1), an example is `1.89237e9`, which is equal to
+`1892370000`. Negative exponents are also allowed, so `4.2890e-3` is equal to
+`0.0042890`.
+
+Scientific notation is a non-portable extension.
+
 COMMANDS
 --------
 
@@ -91,6 +98,16 @@ The valid commands are listed below.
 ### Printing
 
 These commands are used for printing.
+
+Note that if dc(1) has been built with the extra math option enabled, both
+scientific notation and engineering notation are available for printing numbers.
+Scientific notation is activated by assigning `0` to `obase` (in any other
+context, an `obase` of `0` is invalid), and engineering notation is activated by
+assigning `1` to `obase` (which is also invalid in any other context). To
+deactivate them, just assign a different value to `obase`.
+
+Printing numbers in scientific notation and/or engineering notation is a
+non-portable extension.
 
   * `p`:
     Prints the value on top of the stack, whether number or string, and prints a

@@ -59,11 +59,23 @@ Numbers are strings made up of digits, uppercase letters up to \fBF\fR, and at m
 .P
 Single\-character numbers (i\.e\., \fBA\fR) take the value that they would have if they were valid digits, regardless of the value of \fBibase\fR\. This means that \fBA\fR always equals decimal \fB10\fR and \fBF\fR always equals decimal \fB15\fR\.
 .
+.P
+In addition, if bc(1) was built with the extra math option, it accepts numbers in scientific notation\. For bc(1), an example is \fB1\.89237e9\fR, which is equal to \fB1892370000\fR\. Negative exponents are also allowed, so \fB4\.2890e\-3\fR is equal to \fB0\.0042890\fR\.
+.
+.P
+Scientific notation is a non\-portable extension\.
+.
 .SH "COMMANDS"
 The valid commands are listed below\.
 .
 .SS "Printing"
 These commands are used for printing\.
+.
+.P
+Note that if dc(1) has been built with the extra math option enabled, both scientific notation and engineering notation are available for printing numbers\. Scientific notation is activated by assigning \fB0\fR to \fBobase\fR (in any other context, an \fBobase\fR of \fB0\fR is invalid), and engineering notation is activated by assigning \fB1\fR to \fBobase\fR (which is also invalid in any other context)\. To deactivate them, just assign a different value to \fBobase\fR\.
+.
+.P
+Printing numbers in scientific notation and/or engineering notation is a non\-portable extension\.
 .
 .TP
 \fBp\fR

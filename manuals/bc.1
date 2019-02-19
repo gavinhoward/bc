@@ -175,6 +175,12 @@ Numbers are strings made up of digits, uppercase letters, and at most \fB1\fR pe
 .P
 Single\-character numbers (i\.e\., \fBA\fR) take the value that they would have if they were valid digits, regardless of the value of \fBibase\fR\. This means that \fBA\fR always equals decimal \fB10\fR and \fBZ\fR always equals decimal \fB35\fR\.
 .
+.P
+In addition, if bc(1) was built with the extra math option, it accepts numbers in scientific notation\. For bc(1), an example is \fB1\.89237e9\fR, which is equal to \fB1892370000\fR\. Negative exponents are also allowed, so \fB4\.2890e\-3\fR is equal to \fB0\.0042890\fR\.
+.
+.P
+Scientific notation is a non\-portable extension\.
+.
 .SS "Operators"
 The following arithmetic and logical operators can be used\. They are listed in order of decreasing precedence\. Operators in the same group have the same precedence\.
 .
@@ -513,7 +519,10 @@ The \fBhalt\fR statement causes bc(1) to quit, if it is executed\. (Unlike \fBqu
 The \fBlimits\fR statement prints the limits that this bc(1) is subject to\. This is like the \fBquit\fR statement in that it is a compile\-time command\.
 .
 .P
-An expression by itself is evaluated and printed, followed by a newline\.
+An expression by itself is evaluated and printed, followed by a newline\. If bc(1) has been built with the extra math option enabled, both scientific notation and engineering notation are available for printing the results of expressions\. Scientific notation is activated by assigning \fB0\fR to \fBobase\fR (in any other context, an \fBobase\fR of \fB0\fR is invalid), and engineering notation is activated by assigning \fB1\fR to \fBobase\fR (which is also invalid in any other context)\. To deactivate them, just assign a different value to \fBobase\fR\.
+.
+.P
+Printing numbers in scientific notation and/or engineering notation is a non\-portable extension\.
 .
 .SS "Print Statement"
 The "expressions" in a \fBprint\fR statement may also be strings\. If they are, there are backslash escape sequences that are interpreted specially\. What those sequences are, and what they cause to be printed, are shown below:
