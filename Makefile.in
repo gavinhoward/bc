@@ -284,5 +284,3 @@ uninstall_dc:
 	$(RM) -f $(DESTDIR)$(BINDIR)/$(DC)$(EXEC_SUFFIX)
 
 uninstall:%%UNINSTALL_MAN_PREREQS%%%%UNINSTALL_PREREQS%%
-
-.PHONY: help clean clean_tests install uninstall test
