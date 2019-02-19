@@ -688,15 +688,9 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 
 #if BC_ENABLED
 	if (!last) {
-
 		ptr = bc_vec_top(&p->results);
-
-		if (ptr->t == BC_RESULT_VAR || ptr->t == BC_RESULT_ARRAY) {
-			BcVec *v = bc_program_search(p, ptr->d.id.name, t);
-			n = bc_vec_item_rev(v, 1);
-		}
-		else if (ptr->t == BC_RESULT_VOID) s = bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
-		else s = bc_program_num(p, ptr, &n);
+		assert(ptr->t == BC_RESULT_VAR || ptr->t == BC_RESULT_ARRAY);
+		n = bc_vec_item_rev(bc_program_search(p, ptr->d.id.name, t), 1);
 	}
 	else s = bc_program_operand(p, &ptr, &n, 0);
 #else // BC_ENABLED
