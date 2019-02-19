@@ -183,7 +183,7 @@ print;
 print 1,2 print 45
 print "s" "4"
 }
-for (i=0; i; ++i) if (i) print "stuff"; else i; if (!i) i + 1; else i;
+for (i=0; i; ++i) if (i) print "stuff"; else i; if (!i) i + 1; else i; }
 if (i == 0) break; else i;
 while (x != 0) { break 4; }
 while (x != 0) { continue 4; }
