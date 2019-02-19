@@ -364,7 +364,7 @@ fi
 if [ "$debug" -eq 1 ]; then
 
 	if [ "$CFLAGS" = "" -a "$optimization" = "" ]; then
-		CFLAGS="-O0"
+		CFLAGS="-Og"
 	fi
 
 	CFLAGS="$CFLAGS -g"
