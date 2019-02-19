@@ -121,14 +121,14 @@ posix="posix_errors"
 if [ "$d" = "bc" ]; then
 	opts="-l"
 	halt="halt"
-	read_expr="read()"
+	read_expr="read()\n5+5;"
 else
 	opts="-x"
 	halt="q"
 	read_expr="?"
 fi
 
-printf 'Running %s empty read test...\n' "$d"
+printf 'Running %s read error...\n' "$d"
 
 read_test=$(printf '%s\n\n' "$read_expr")
 
