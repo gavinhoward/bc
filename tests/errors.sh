@@ -72,6 +72,17 @@ checktest()
 		die "$d" "returned no error" "$name" 127
 	fi
 
+	if [ "$error" -eq 100 ]; then
+
+		output=$(cat "$out")
+		fatal_error="Fatal error"
+
+		if [ "${output##*$fatal_error*}" ]; then
+			printf "%s\n" "$output"
+			die "$d" "had memory errors on a non-fatal error" "$name" "$error"
+		fi
+	fi
+
 	if [ ! -s "$out" ]; then
 		die "$d" "produced no error message" "$name" "$error"
 	fi
