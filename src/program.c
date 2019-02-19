@@ -689,8 +689,14 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 #if BC_ENABLED
 	if (last) s = bc_program_operand(p, &ptr, &n, 0);
 	else {
+
 		ptr = bc_vec_top(&p->results);
+
+		// The only place that last could not be true is when doing parameters
+		// for a function that are either a variable or an array. Thus, we can
+		// assert that here instead of check.
 		assert(ptr->t == BC_RESULT_VAR || ptr->t == BC_RESULT_ARRAY);
+
 		n = bc_vec_item_rev(bc_program_search(p, ptr->d.id.name, t), 1);
 	}
 #else // BC_ENABLED
