@@ -139,15 +139,6 @@ err="$?"
 
 checktest "$err" "$read_test" "$out" "$exebase"
 
-printf 'Running %s read EOF error...\n' "$d"
-
-read_test=$(printf '%s' "$read_call")
-
-printf '%s\n' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
-err="$?"
-
-checktest "$err" "$read_test" "$out" "$exebase"
-
 for testfile in $testdir/$d/*errors.txt; do
 
 	if [ -z "${testfile##*$posix*}" ]; then
