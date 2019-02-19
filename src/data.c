@@ -50,18 +50,16 @@ const char* const bc_warn_fmt = "\n%s warning: ";
 const char* const bc_err_line = ":%zu";
 
 const char *bc_errs[] = {
-	"VM",
-	"Parse",
 	"Math",
+	"Parse",
 	"Runtime",
-#if BC_ENABLED
-	"POSIX",
-#endif // BC_ENABLED
+	"Fatal",
 };
 
 const char bc_err_ids[] = {
-	BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM, BC_ERR_IDX_VM,
-	BC_ERR_IDX_VM,
+
+	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
+
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE,
 #if BC_ENABLED
@@ -71,11 +69,13 @@ const char bc_err_ids[] = {
 #if BC_ENABLE_REFERENCES
 	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLE_REFERENCES
+
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
-	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
-#if BC_ENABLE_EXTRA_MATH
-	BC_ERR_IDX_MATH,
-#endif // BC_ENABLE_EXTRA_MATH
+
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 #if DC_ENABLED
@@ -83,21 +83,18 @@ const char bc_err_ids[] = {
 #endif // DC_ENABLED
 #if BC_ENABLED
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
-	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
-	BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX, BC_ERR_IDX_POSIX,
-	BC_ERR_IDX_POSIX,
 #endif // BC_ENABLED
+
+	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
 };
 
 const char* const bc_err_msgs[] = {
 
-	"memory allocation error",
-	"I/O error",
-	"could not open file: %s",
-	"file is not ASCII: %s",
-	"path is a directory: %s",
-	"Bad command-line option: '%c' (\"%s\")",
+	"negative number",
+	"non integer number",
+	"overflow; number cannot fit",
+	"divide by zero",
 
 	"end of file",
 	"bad character (%c)",
@@ -118,29 +115,6 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLE_REFERENCES
 	"var cannot be reference: %s",
 #endif // BC_ENABLE_REFERENCES
-#endif // BC_ENABLED
-
-	"negative number",
-	"non integer number",
-	"overflow; number cannot fit",
-	"divide by zero",
-#if BC_ENABLE_EXTRA_MATH
-	"underflow; shifted right too far",
-#endif // BC_ENABLE_EXTRA_MATH
-
-	"bad ibase; must be [%lu, %lu]",
-	"bad obase; must be [%lu, %lu]",
-	"bad scale; must be [%lu, %lu]",
-	"bad read() expression",
-	"read() call inside of a read() call",
-	"variable is wrong type",
-#if DC_ENABLED
-	"stack has too few elements",
-#endif // DC_ENABLED
-#if BC_ENABLED
-	"mismatched parameters; need %zu, have %zu",
-	"undefined function: %s()",
-	"cannot use a void value in an expression",
 
 	"POSIX does not allow names longer than 1 character, like \"%s\"",
 	"POSIX does not allow '#' script comments",
@@ -156,6 +130,28 @@ const char* const bc_err_msgs[] = {
 	"POSIX requires the left brace be on the same line as the function header",
 	"POSIX does not allow array references as function parameters",
 #endif // BC_ENABLED
+
+	"bad ibase; must be [%lu, %lu]",
+	"bad obase; must be [%lu, %lu]",
+	"bad scale; must be [%lu, %lu]",
+	"bad read() expression",
+	"read() call inside of a read() call",
+	"variable is wrong type",
+#if DC_ENABLED
+	"stack has too few elements",
+#endif // DC_ENABLED
+#if BC_ENABLED
+	"mismatched parameters; need %zu, have %zu",
+	"undefined function: %s()",
+	"cannot use a void value in an expression",
+#endif // BC_ENABLED
+
+	"memory allocation error",
+	"I/O error",
+	"could not open file: %s",
+	"file is not ASCII: %s",
+	"path is a directory: %s",
+	"Bad command-line option: '%c' (\"%s\")",
 
 };
 

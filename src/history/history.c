@@ -354,7 +354,7 @@ static BcStatus bc_history_readCode(char *buf, size_t buf_len,
 	return BC_STATUS_SUCCESS;
 
 err:
-	if (n < 0) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (n < 0) s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 	else *nread = (size_t) n;
 	return s;
 }
@@ -409,7 +409,7 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 	if (h->rawMode) return BC_STATUS_SUCCESS;
 
 	if (tcgetattr(STDIN_FILENO, &h->orig_termios) == -1)
-		return bc_vm_err(BC_ERROR_VM_IO_ERR);
+		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	// Modify the original mode.
 	raw = h->orig_termios;
@@ -432,7 +432,7 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 	// Put terminal in raw mode after flushing.
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) < 0)
-		return bc_vm_err(BC_ERROR_VM_IO_ERR);
+		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	h->rawMode = true;
 
@@ -608,7 +608,7 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	assert(h->refresh.len > 0);
 
 	if (BC_HISTORY_WRITE(h->refresh.v, h->refresh.len - 1))
-		return bc_vm_err(BC_ERROR_VM_IO_ERR);
+		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	return BC_STATUS_SUCCESS;
 }
@@ -639,7 +639,7 @@ static BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf,
 
 		if (colpos < h->cols) {
 			// Avoid a full update of the line in the trivial case.
-			if (BC_HISTORY_WRITE(cbuf, clen)) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+			if (BC_HISTORY_WRITE(cbuf, clen)) s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 		}
 		else s = bc_history_refresh(h);
 	}
@@ -903,7 +903,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 	else {
 
 		if (read(STDIN_FILENO, seq + 1, 1) == -1)
-			s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+			s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 		// ESC [ sequences.
 		if (c == '[') {
@@ -914,7 +914,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 
 				// Extended escape, read additional byte.
 				if (read(STDIN_FILENO, seq + 2, 1) == -1)
-					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 				if (seq[2] == '~' && c == '3') s = bc_history_edit_delete(h);
 			}
@@ -990,7 +990,7 @@ static BcStatus bc_history_reset(BcHistory *h) {
 	h->cols = bc_history_columns();
 
 	// Check for error from bc_history_columns.
-	if (h->cols == SIZE_MAX) return bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (h->cols == SIZE_MAX) return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
@@ -1021,7 +1021,7 @@ static BcStatus bc_history_printCtrl(BcHistory *h, unsigned int c) {
 	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D) {
 
 		if (BC_HISTORY_WRITE(newline, sizeof(newline) - 1))
-			return bc_vm_err(BC_ERROR_VM_IO_ERR);
+			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 		s = bc_history_refresh(h);
 	}
@@ -1043,7 +1043,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	h->prompt = prompt;
 	h->plen = strlen(prompt);
 
-	if (BC_HISTORY_WRITE(prompt, h->plen)) return bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (BC_HISTORY_WRITE(prompt, h->plen)) return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	while (!s) {
 
@@ -1077,7 +1077,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				if (BC_HISTORY_WRITE(vm->sig_msg, vm->sig_len) ||
 				    BC_HISTORY_WRITE(bc_program_ready_msg, bc_program_ready_msg_len))
 				{
-					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 				}
 				else s = bc_history_refresh(h);
 
@@ -1180,7 +1180,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			case BC_ACTION_CTRL_L:
 			{
 				if (BC_HISTORY_WRITE("\x1b[H\x1b[2J", 7))
-					s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 				if (!s) s = bc_history_refresh(h);
 				break;
 			}
@@ -1218,7 +1218,7 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 
 	s = bc_history_edit(h, prompt);
 	bc_history_disableRaw(h);
-	if (!s && BC_HISTORY_WRITE("\n", 1)) s = bc_vm_err(BC_ERROR_VM_IO_ERR);
+	if (!s && BC_HISTORY_WRITE("\n", 1)) s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	return s;
 }

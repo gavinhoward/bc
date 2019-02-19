@@ -99,6 +99,9 @@
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
 
+#define BC_STATUS_IS_ERROR(s) \
+	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_PARSE)
+
 typedef struct BcVm {
 
 	BcParse prs;

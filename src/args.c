@@ -167,7 +167,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case '?':
 			default:
 			{
-				return BC_STATUS_ERROR;
+				return BC_STATUS_ERROR_VM;
 			}
 		}
 

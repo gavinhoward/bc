@@ -116,14 +116,14 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 	if (s && s != BC_STATUS_EOF) return s;
 	if (bc_read_binary(vec->v, vec->len - 1))
-		return bc_vm_verr(BC_ERROR_VM_BIN_FILE, bc_program_stdin_name);
+		return bc_vm_verr(BC_ERROR_FATAL_BIN_FILE, bc_program_stdin_name);
 
 	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_read_file(const char *path, char **buf) {
 
-	BcError e = BC_ERROR_VM_IO_ERR;
+	BcError e = BC_ERROR_FATAL_IO_ERR;
 	FILE *f;
 	size_t size, read;
 	long res;
@@ -132,11 +132,11 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	assert(path);
 
 	f = fopen(path, "r");
-	if (!f) return bc_vm_verr(BC_ERROR_VM_FILE_ERR, path);
+	if (!f) return bc_vm_verr(BC_ERROR_FATAL_FILE_ERR, path);
 	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
 
 	if (S_ISDIR(pstat.st_mode)) {
-		e = BC_ERROR_VM_PATH_DIR;
+		e = BC_ERROR_FATAL_PATH_DIR;
 		goto malloc_err;
 	}
 
@@ -154,7 +154,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	(*buf)[size] = '\0';
 
 	if (bc_read_binary(*buf, size)) {
-		e = BC_ERROR_VM_BIN_FILE;
+		e = BC_ERROR_FATAL_BIN_FILE;
 		goto read_err;
 	}
 

@@ -754,7 +754,6 @@ static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale
 
 	if (len > c->len) {
 
-		if (len > BC_MAX_NUM) return bc_vm_err(BC_ERROR_MATH_UNDERFLOW);
 		if (len > c->cap) bc_num_expand(c, len);
 
 		memset(c->num + c->len, 0, len - c->len);

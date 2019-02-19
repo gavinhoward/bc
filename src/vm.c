@@ -74,13 +74,15 @@ void bc_vm_info(const char* const help) {
 	if (help) bc_vm_printf(help, vm->name);
 }
 
-static void bc_vm_printError(BcError e, const char* const fmt,
-                             size_t line, va_list args)
+static BcStatus bc_vm_printError(BcError e, const char* const fmt,
+                                 size_t line, va_list args)
 {
+	size_t id = (size_t) bc_err_ids[e];
+
 	// Make sure all of stdout is written first.
 	fflush(stdout);
 
-	fprintf(stderr, fmt, bc_errs[(size_t) bc_err_ids[e]]);
+	fprintf(stderr, fmt, bc_errs[id]);
 	vfprintf(stderr, bc_err_msgs[e], args);
 
 	assert(vm->file);
@@ -99,36 +101,40 @@ static void bc_vm_printError(BcError e, const char* const fmt,
 
 	fputs("\n\n", stderr);
 	fflush(stderr);
+
+	return (BcStatus) (id + 1);
 }
 
 BcStatus bc_vm_error(BcError e, size_t line, ...) {
 
+	BcStatus s;
 	va_list args;
 
-	assert(e < BC_ERROR_POSIX_START);
+	assert(e < BC_ERROR_POSIX_START || e > BC_ERROR_POSIX_END);
 
 	va_start(args, line);
-	bc_vm_printError(e, bc_err_fmt, line, args);
+	s = bc_vm_printError(e, bc_err_fmt, line, args);
 	va_end(args);
 
-	return BC_STATUS_ERROR;
+	return s;
 }
 
 #if BC_ENABLED
 BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
 
+	BcStatus s;
 	va_list args;
 	int p = (int) BC_S, w = (int) BC_W;
 
-	assert(e >= BC_ERROR_POSIX_START);
+	assert(e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END);
 
 	if (!(p || w)) return BC_STATUS_SUCCESS;
 
 	va_start(args, line);
-	bc_vm_printError(e, p ? bc_err_fmt : bc_warn_fmt, line, args);
+	s = bc_vm_printError(e, p ? bc_err_fmt : bc_warn_fmt, line, args);
 	va_end(args);
 
-	return p ? BC_STATUS_ERROR : BC_STATUS_SUCCESS;
+	return p ? s : BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_vm_envArgs(void) {
@@ -375,13 +381,14 @@ static BcStatus bc_vm_stdin(void) {
 	bc_vec_init(&buffer, sizeof(uchar), NULL);
 	bc_vec_init(&buf, sizeof(uchar), NULL);
 	bc_vec_pushByte(&buffer, '\0');
+	s = bc_read_line(&buf, ">>> ");
 
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	while (!done && (s = bc_read_line(&buf, ">>> ")) != BC_STATUS_ERROR &&
-	       buf.len > 1 && !BC_SIGNAL && s != BC_STATUS_SIGNAL)
+	for (; !done && !BC_STATUS_IS_ERROR(s) && buf.len > 1 && !BC_SIGNAL &&
+	       s != BC_STATUS_SIGNAL; s = bc_read_line(&buf, ">>> "))
 	{
 		char c2, *str = buf.v;
 		size_t i, len = buf.len - 1;
@@ -432,7 +439,7 @@ static BcStatus bc_vm_stdin(void) {
 
 	if (s && s != BC_STATUS_EOF) goto err;
 	else if (BC_SIGNAL && !s) s = BC_STATUS_SIGNAL;
-	else if (s != BC_STATUS_ERROR) {
+	else if (!BC_STATUS_IS_ERROR(s)) {
 		if (comment) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);
 		else if (string) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_STRING);
 #if BC_ENABLED
@@ -538,7 +545,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	vm->flags |= isatty(STDIN_FILENO) ? BC_FLAG_TTYIN : 0;
 	vm->flags |= BC_TTYIN && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
 
-	vm->max_ibase = BC_IS_BC && !BC_S && !BC_W ? BC_NUM_MAX_POSIX_IBASE : BC_NUM_MAX_IBASE;
+	vm->max_ibase = BC_IS_BC && !BC_S && !BC_W ? BC_NUM_MAX_IBASE :
+	                                             BC_NUM_MAX_POSIX_IBASE;
 
 	if (BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 
@@ -546,5 +554,5 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 exit:
 	bc_vm_shutdown();
-	return s != BC_STATUS_ERROR ? BC_STATUS_SUCCESS : s;
+	return !BC_STATUS_IS_ERROR(s) ? BC_STATUS_SUCCESS : s;
 }
