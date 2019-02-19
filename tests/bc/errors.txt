@@ -196,6 +196,7 @@ define s() { auto a[ 4; return a[0]; }
 define void y() { return (1); }
 print uint(0)
 4 + uint(4)
+s(uint(5))
 4 + 4 scale
 4 + 4 scale(s)
 4 * 4 read()
