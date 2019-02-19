@@ -70,7 +70,9 @@ printf '\nRunning %s tests...\n\n' "$d"
 while read t; do
 
 	if [ "$extra" -eq 0  ]; then
-		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" ]; then
+		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" \
+		     -o "$t" = "scientific" -o "$t" = "engineering" ]
+		then
 			printf 'Skipping %s %s\n' "$d" "$t"
 			continue
 		fi

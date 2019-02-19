@@ -10,10 +10,12 @@ sqrt
 modexp
 boolean
 negate
-abs
 trunc
 places
 shift
+abs
+scientific
+engineering
 vars
 misc
 strings

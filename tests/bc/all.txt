@@ -12,6 +12,8 @@ shift
 vars
 boolean
 abs
+scientific
+engineering
 strings
 letters
 parse
