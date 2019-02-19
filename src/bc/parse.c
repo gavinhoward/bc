@@ -776,10 +776,7 @@ static BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 		ip = bc_vec_item(&p->exits, i);
 
 		while (!ip->func && i < p->exits.len) ip = bc_vec_item(&p->exits, i--);
-		assert(ip);
-		if (i >= p->exits.len && !ip->func)
-			return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
-
+		assert(ip && (i < p->exits.len || ip->func));
 		i = ip->idx;
 	}
 	else i = *((size_t*) bc_vec_top(&p->conds));
