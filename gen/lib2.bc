@@ -96,6 +96,10 @@ define pi(s){
 	scale=t
 	return v@s
 }
+define sin(x){return s(x)}
+define cos(x){return c(x)}
+define atan(x){return a(x)}
+define tan(x){return s(x)/c(x)}
 define r2d(x){
 	auto r,i,s
 	s=scale
