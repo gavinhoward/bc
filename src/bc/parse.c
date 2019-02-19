@@ -203,6 +203,8 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	// ensure that the next token is what it should be.
 	assert(p->l.t == BC_LEX_RPAREN);
 
+	// We cannot use bc_program_insertFunc() here
+	// because it will overwrite an existing function.
 	idx = bc_map_index(&p->prog->fn_map, &id);
 
 	if (idx == BC_VEC_INVALID_IDX) {
