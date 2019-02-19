@@ -35,6 +35,7 @@ Systems that are known to work:
 
 * Linux
 * FreeBSD
+* Mac OSX
 
 Please submit bug reports if this `bc` does not build out of the box on other
 systems.
