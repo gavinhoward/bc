@@ -687,12 +687,12 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 	bool var = (t == BC_TYPE_VAR);
 
 #if BC_ENABLED
-	if (!last) {
+	if (last) s = bc_program_operand(p, &ptr, &n, 0);
+	else {
 		ptr = bc_vec_top(&p->results);
 		assert(ptr->t == BC_RESULT_VAR || ptr->t == BC_RESULT_ARRAY);
 		n = bc_vec_item_rev(bc_program_search(p, ptr->d.id.name, t), 1);
 	}
-	else s = bc_program_operand(p, &ptr, &n, 0);
 #else // BC_ENABLED
 	s = bc_program_operand(p, &ptr, &n, 0);
 #endif // BC_ENABLED
