@@ -1061,7 +1061,7 @@ The transcendental functions in the extended math library are:
 .IP "" 0
 .
 .SH "LIMITS"
-The following are the limits on this \fBbc\fR:
+The following are the limits on bc(1):
 .
 .TP
 \fBBC_BASE_MAX\fR
@@ -1102,19 +1102,66 @@ Actual values can be queried with the \fBlimits\fR statement\.
 These limits are meant to be effectively non\-existent; the limits are so large (at least on 64\-bit machines) that there should not be any point at which they become a problem\. In fact, memory should be exhausted before these limits should be hit\.
 .
 .SH "ENVIRONMENT VARIABLES"
-This \fBbc\fR recognizes the following environment variables:
+bc(1) recognizes the following environment variables:
 .
 .TP
 \fBPOSIXLY_CORRECT\fR
-If this variables exists (no matter the contents), this \fBbc\fR behaves as if the \fB\-s\fR option was given\.
+If this variables exists (no matter the contents), bc(1) behaves as if the \fB\-s\fR option was given\.
 .
 .TP
 \fBBC_ENV_ARGS\fR
-This is another way to give command\-line arguments to this \fBbc\fR\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBBC_ENV_ARGS\fR will be processed before files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time \fBbc\fR runs\.
+This is another way to give command\-line arguments to bc(1)\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBBC_ENV_ARGS\fR will be processed before files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time bc(1) runs\.
 .
 .TP
 \fBBC_LINE_LENGTH\fR
-If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), \fBbc\fR will output lines to that length, including the backslash newline combo\. \fBbc\fR\'s default line length is \fB70\fR\.
+If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), bc(1) will output lines to that length, including the backslash newline combo\. The default line length is \fB70\fR\.
+.
+.SH "EXIT STATUS"
+bc(1) returns the following exit statuses:
+.
+.TP
+\fB0\fR
+No error\.
+.
+.TP
+\fB1\fR
+A math error occurred\. This follows standard practice of using \fB1\fR for expected errors, since math errors will happen in the process of normal execution\.
+.
+.IP
+Math errors include divide by \fB0\fR, taking the square root of a negative number, attempting to convert a negative number to a hardware integer, and overflow when converting a number to a hardware integer\.
+.
+.IP
+Converting to a hardware integer happens for the second operand of the power (\fB^\fR), places (\fB@\fR), left shift (\fB<<\fR), and right shift (\fB>>\fR) operators\.
+.
+.TP
+\fB2\fR
+A parse error occurred\.
+.
+.IP
+Parse errors include unexpected \fBEOF\fR, using an invalid character, failing to find the end of a string or comment, using a token where it\'s invalid, giving an invalid expression, giving an invalid print statement, giving an invalid function definition, attempting to assign to an expression that is not a \fInamed expression\fR, giving an invalid \fBauto\fR list, having a duplicate \fBauto\fR/function parameter, failing to find the end of a code block, attempting to return a value from a \fBvoid\fR function, attempting to use a variable as a reference, and using any extensions when the option \fB\-s\fR or any equivalents were given\.
+.
+.TP
+\fB3\fR
+A runtime error occurred\.
+.
+.IP
+Runtime errors include assigning an invalid number to \fBibase\fR, \fBobase\fR, or \fBscale\fR; give a bad expression to a \fBread()\fR call, calling \fBread()\fR inside of a \fBread()\fR call, type errors, passing the wrong number of parameters to functions, attempting to call an undefined function, and attempting to use a \fBvoid\fR function call as a value in an expression\.
+.
+.TP
+\fB4\fR
+A fatal error occurred\.
+.
+.IP
+Fatal errors include memory allocation errors, I/O errors, failing to open files, attempting to use files that do not have only ASCII characters (bc(1) only accepts ASCII characters), attempting to open a directory as a file, and giving invalid command\-line options\.
+.
+.P
+The exit status \fB4\fR is special; when a fatal error occurs, bc(1) always exits and returns \fB4\fR, no matter what mode bc(1) is in\.
+.
+.P
+The other statuses will only be returned when bc(1) is not in interactive mode, since bc(1) resets its state and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
+.
+.P
+These exit statuses allow bc(1) to be used in shell scripting with error checking, and its normal behavior can be forced by using \fB\-i\fR\.
 .
 .SH "SIGNAL HANDLING"
 If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset, asking for more input\.

@@ -529,7 +529,7 @@ non-space characters do not match that regex.
 LIMITS
 ------
 
-The following are the limits on this `dc`:
+The following are the limits on dc(1):
 
   * `DC_BASE_MAX`:
     The maximum output base. Set at `ULONG_MAX`.
@@ -566,13 +566,67 @@ be hit.
 ENVIRONMENT VARIABLES
 ---------------------
 
-This `dc` recognizes the following environment variables:
+dc(1) recognizes the following environment variables:
 
   * `DC_LINE_LENGTH`:
     If this environment variable exists and contains an integer that is greater
-    than `1` and is less than `UINT16_MAX` (`2^16-1`), `dc` will output lines to
-    that length, including the backslash newline combo. `dc`'s default line
+    than `1` and is less than `UINT16_MAX` (`2^16-1`), dc(1) will output lines
+    to that length, including the backslash newline combo. The default line
     length is `70`.
+
+EXIT STATUS
+-----------
+
+dc(1) returns the following exit statuses:
+
+  * `0`:
+    No error.
+
+  * `1`:
+    A math error occurred. This follows standard practice of using `1` for
+    expected errors, since math errors will happen in the process of normal
+    execution.
+
+    Math errors include divide by `0`, taking the square root of a negative
+    number, attempting to convert a negative number to a hardware integer, and
+    overflow when converting a number to a hardware integer.
+
+    Converting to a hardware integer happens for the second operand of the power
+    (`^`), places (`@`), left shift (`H`), and right shift (`h`) operators.
+
+  * `2`:
+    A parse error occurred.
+
+    Parse errors include unexpected `EOF`, using an invalid character, failing
+    to find the end of a string or comment, and using a token where it's
+    invalid.
+
+  * `3`:
+    A runtime error occurred.
+
+    Runtime errors include assigning an invalid number to `ibase`, `obase`, or
+    `scale`; give a bad expression to a `read()` call, calling `read()` inside
+    of a `read()` call, type errors, and attempting an operation when the stack
+    has too few elements.
+
+  * `4`:
+    A fatal error occurred.
+
+    Fatal errors include memory allocation errors, I/O errors, failing to open
+    files, attempting to use files that do not have only ASCII characters (dc(1)
+    only accepts ASCII characters), attempting to open a directory as a file,
+    and giving invalid command-line options.
+
+The exit status `4` is special; when a fatal error occurs, dc(1) always exits
+and returns `4`, no matter what mode dc(1) is in.
+
+The other statuses will only be returned when dc(1) is not in interactive mode,
+since dc(1) resets its state and accepts more input when one of those errors
+occurs in interactive mode. This is also the case when interactive mode is
+forced by the `-i` option.
+
+These exit statuses allow dc(1) to be used in shell scripting with error
+checking, and its normal behavior can be forced by using `-i`.
 
 SIGNAL HANDLING
 ---------------

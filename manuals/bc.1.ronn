@@ -902,7 +902,7 @@ The transcendental functions in the extended math library are:
 LIMITS
 ------
 
-The following are the limits on this `bc`:
+The following are the limits on bc(1):
 
   * `BC_BASE_MAX`:
     The maximum output base. Set at `ULONG_MAX`.
@@ -939,26 +939,87 @@ be hit.
 ENVIRONMENT VARIABLES
 ---------------------
 
-This `bc` recognizes the following environment variables:
+bc(1) recognizes the following environment variables:
 
   * `POSIXLY_CORRECT`:
-    If this variables exists (no matter the contents), this `bc` behaves as if
+    If this variables exists (no matter the contents), bc(1) behaves as if
     the `-s` option was given.
 
   * `BC_ENV_ARGS`:
-    This is another way to give command-line arguments to this `bc`. They should
-    be in the same format as all other command-line arguments. These are always
+    This is another way to give command-line arguments to bc(1). They should be
+    in the same format as all other command-line arguments. These are always
     processed first, so any files given in `BC_ENV_ARGS` will be processed
     before files given on the command-line. This gives the user the ability to
     set up "standard" options and files to be used at every invocation. The most
     useful thing for such files to contain would be useful functions that the
-    user might want every time `bc` runs.
+    user might want every time bc(1) runs.
 
   * `BC_LINE_LENGTH`:
     If this environment variable exists and contains an integer that is greater
-    than `1` and is less than `UINT16_MAX` (`2^16-1`), `bc` will output lines to
-    that length, including the backslash newline combo. `bc`'s default line
+    than `1` and is less than `UINT16_MAX` (`2^16-1`), bc(1) will output lines
+    to that length, including the backslash newline combo. The default line
     length is `70`.
+
+EXIT STATUS
+-----------
+
+bc(1) returns the following exit statuses:
+
+  * `0`:
+    No error.
+
+  * `1`:
+    A math error occurred. This follows standard practice of using `1` for
+    expected errors, since math errors will happen in the process of normal
+    execution.
+
+    Math errors include divide by `0`, taking the square root of a negative
+    number, attempting to convert a negative number to a hardware integer, and
+    overflow when converting a number to a hardware integer.
+
+    Converting to a hardware integer happens for the second operand of the power
+    (`^`), places (`@`), left shift (`<<`), and right shift (`>>`) operators.
+
+  * `2`:
+    A parse error occurred.
+
+    Parse errors include unexpected `EOF`, using an invalid character, failing
+    to find the end of a string or comment, using a token where it's invalid,
+    giving an invalid expression, giving an invalid print statement, giving an
+    invalid function definition, attempting to assign to an expression that is
+    not a [named expression](#bc-named-expressions), giving an invalid `auto`
+    list, having a duplicate `auto`/function parameter, failing to find the end
+    of a code block, attempting to return a value from a `void` function,
+    attempting to use a variable as a reference, and using any extensions when
+    the option `-s` or any equivalents were given.
+
+  * `3`:
+    A runtime error occurred.
+
+    Runtime errors include assigning an invalid number to `ibase`, `obase`, or
+    `scale`; give a bad expression to a `read()` call, calling `read()` inside
+    of a `read()` call, type errors, passing the wrong number of parameters to
+    functions, attempting to call an undefined function, and attempting to use a
+    `void` function call as a value in an expression.
+
+  * `4`:
+    A fatal error occurred.
+
+    Fatal errors include memory allocation errors, I/O errors, failing to open
+    files, attempting to use files that do not have only ASCII characters (bc(1)
+    only accepts ASCII characters), attempting to open a directory as a file,
+    and giving invalid command-line options.
+
+The exit status `4` is special; when a fatal error occurs, bc(1) always exits
+and returns `4`, no matter what mode bc(1) is in.
+
+The other statuses will only be returned when bc(1) is not in interactive mode,
+since bc(1) resets its state and accepts more input when one of those errors
+occurs in interactive mode. This is also the case when interactive mode is
+forced by the `-i` option.
+
+These exit statuses allow bc(1) to be used in shell scripting with error
+checking, and its normal behavior can be forced by using `-i`.
 
 SIGNAL HANDLING
 ---------------
