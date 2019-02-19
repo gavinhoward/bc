@@ -215,19 +215,19 @@ static void bc_vm_exit(BcError e) {
 
 void* bc_vm_malloc(size_t n) {
 	void* ptr = malloc(n);
-	if (!ptr) bc_vm_exit(BC_ERROR_VM_ALLOC_ERR);
+	if (!ptr) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return ptr;
 }
 
 void* bc_vm_realloc(void *ptr, size_t n) {
 	void* temp = realloc(ptr, n);
-	if (!temp) bc_vm_exit(BC_ERROR_VM_ALLOC_ERR);
+	if (!temp) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return temp;
 }
 
 char* bc_vm_strdup(const char *str) {
 	char *s = strdup(str);
-	if (!s) bc_vm_exit(BC_ERROR_VM_ALLOC_ERR);
+	if (!s) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return s;
 }
 
@@ -240,21 +240,21 @@ size_t bc_vm_printf(const char *fmt, ...) {
 	ret = vprintf(fmt, args);
 	va_end(args);
 
-	if (ret < 0 || ferror(stdout)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (ret < 0 || ferror(stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 
 	return (size_t) ret;
 }
 
 void bc_vm_puts(const char *str, FILE *restrict f) {
-	if (fputs(str, f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (fputs(str, f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 void bc_vm_putchar(int c) {
-	if (putchar(c) == EOF || ferror(stdout)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (putchar(c) == EOF || ferror(stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 void bc_vm_fflush(FILE *restrict f) {
-	if (fflush(f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_VM_IO_ERR);
+	if (fflush(f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 static void bc_vm_clean() {
