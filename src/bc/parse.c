@@ -199,10 +199,9 @@ static BcStatus bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	s = bc_parse_params(p, flags);
 	if (s) goto err;
 
-	if (p->l.t != BC_LEX_RPAREN) {
-		s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
-		goto err;
-	}
+	// We just assert this because bc_parse_params() should
+	// ensure that the next token is what it should be.
+	assert(p->l.t == BC_LEX_RPAREN);
 
 	idx = bc_map_index(&p->prog->fn_map, &id);
 
