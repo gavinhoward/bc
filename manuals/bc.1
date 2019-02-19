@@ -512,6 +512,9 @@ The \fBhalt\fR statement causes bc(1) to quit, if it is executed\. (Unlike \fBqu
 .P
 The \fBlimits\fR statement prints the limits that this bc(1) is subject to\. This is like the \fBquit\fR statement in that it is a compile\-time command\.
 .
+.P
+An expression by itself is evaluated and printed, followed by a newline\.
+.
 .SS "Print Statement"
 The "expressions" in a \fBprint\fR statement may also be strings\. If they are, there are backslash escape sequences that are interpreted specially\. What those sequences are, and what they cause to be printed, are shown below:
 .

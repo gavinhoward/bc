@@ -456,6 +456,8 @@ quit.)
 The `limits` statement prints the limits that this bc(1) is subject to. This is
 like the `quit` statement in that it is a compile-time command.
 
+An expression by itself is evaluated and printed, followed by a newline.
+
 ### Print Statement
 
 The "expressions" in a `print` statement may also be strings. If they are, there

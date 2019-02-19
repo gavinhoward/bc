@@ -550,7 +550,7 @@ The following are the limits on this `dc`:
     The maximum length of a number (in decimal digits), which includes digits
     after the decimal point. Set at `SIZE_MAX-1`.
 
-  * exponent:
+  * Exponent:
     The maximum allowable exponent (positive or negative). Set at `ULONG_MAX`.
 
   * Number of vars:
