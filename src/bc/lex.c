@@ -58,7 +58,8 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 	bc_lex_name(l);
 
-	if (l->str.len - 1 > 1) s = bc_lex_vposixErr(l, BC_ERROR_POSIX_NAME_LEN, buf);
+	if (l->str.len - 1 > 1)
+		s = bc_lex_vposixErr(l, BC_ERROR_POSIX_NAME_LEN, l->str.v);
 
 	return s;
 }
