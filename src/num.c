@@ -1313,13 +1313,14 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	assert(a && b && a != b);
 
+	if (a->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+
 	bc_num_init(b, BC_MAX(scale, a->rdx) + ((BC_NUM_INT(a) + 1) >> 1) + 1);
 
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(b, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	if (a->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 	if (BC_NUM_ONE(a)) {
 		bc_num_one(b);
 		bc_num_extend(b, scale);
