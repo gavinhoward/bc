@@ -1176,26 +1176,20 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 	BcResult *r1, *r2, *r3, res;
 	BcNum *n1 = NULL, *n2 = NULL, *n3, *resn = &res.d.n;
 
-	s = bc_program_binOpPrep(p, &r2, &n2, &r3, &n3);
-	if (s) return s;
-
 	s = bc_program_operand(p, &r1, &n1, 2);
 	if (s) return s;
 	s = bc_program_type_num(r1, n1);
 	if (s) return s;
 
+	s = bc_program_binOpPrep(p, &r2, &n2, &r3, &n3);
+	if (s) return s;
+
 	// Make sure that the values have their pointers updated, if necessary.
-	if (r1->t == BC_RESULT_VAR || r1->t == BC_RESULT_ARRAY_ELEM) {
-
-		if (r1->t == r2->t) {
-			s = bc_program_num(p, r2, &n2);
-			if (s) return s;
-		}
-
-		if (r1->t == r3->t) {
-			s = bc_program_num(p, r3, &n3);
-			if (s) return s;
-		}
+	if ((r1->t == BC_RESULT_VAR || r1->t == BC_RESULT_ARRAY_ELEM) &&
+	    (r1->t == r2->t || r1->t == r3->t))
+	{
+		s = bc_program_num(p, r1, &n1);
+		if (s) return s;
 	}
 
 	bc_num_init(resn, n3->len);
