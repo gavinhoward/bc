@@ -1550,7 +1550,6 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 #if BC_ENABLE_SIGNALS
 	if (BC_SIGTERM || (!s && BC_SIGINT && BC_I)) return BC_STATUS_QUIT;
 	vm->sig = 0;
-#endif // BC_ENABLE_SIGNALS
 
 	if (!s || s == BC_STATUS_SIGNAL) {
 		if (BC_TTYIN || BC_I) {
@@ -1560,6 +1559,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 		}
 		else s = BC_STATUS_QUIT;
 	}
+#endif // BC_ENABLE_SIGNALS
 
 	return s;
 }
