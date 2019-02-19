@@ -121,16 +121,27 @@ posix="posix_errors"
 if [ "$d" = "bc" ]; then
 	opts="-l"
 	halt="halt"
-	read_expr="read()\n5+5;"
+	read_call="read()\n"
+	read_expr="${read_call}5+5;"
 else
 	opts="-x"
 	halt="q"
-	read_expr="?"
+	read_call="?\n"
+	read_expr="${read_call}"
 fi
 
 printf 'Running %s read error...\n' "$d"
 
 read_test=$(printf '%s\n\n' "$read_expr")
+
+printf '%s\n' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
+err="$?"
+
+checktest "$err" "$read_test" "$out" "$exebase"
+
+printf 'Running %s read EOF error...\n' "$d"
+
+read_test=$(printf '%s' "$read_call")
 
 printf '%s\n' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
 err="$?"
