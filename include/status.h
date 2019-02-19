@@ -106,9 +106,9 @@ typedef enum BcError {
 } BcError;
 
 #define BC_ERR_IDX_MATH (0)
-#define BC_ERR_IDX_FATAL (1)
+#define BC_ERR_IDX_PARSE (1)
 #define BC_ERR_IDX_EXEC (2)
-#define BC_ERR_IDX_PARSE (3)
+#define BC_ERR_IDX_FATAL (3)
 
 #define BC_UNUSED(e) ((void) (e))
 
