@@ -120,9 +120,6 @@ size_t bc_program_insertFunc(BcProgram *p, char *name);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);
 BcStatus bc_program_exec(BcProgram *p);
 
-unsigned long bc_program_scale(const BcNum *restrict n);
-unsigned long bc_program_len(const BcNum *restrict n);
-
 void bc_program_negate(BcResult *r, BcNum *n);
 void bc_program_not(BcResult *r, BcNum *n);
 #if BC_ENABLE_EXTRA_MATH

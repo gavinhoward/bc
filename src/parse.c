@@ -48,17 +48,44 @@ void bc_parse_pushIndex(BcParse *p, size_t idx) {
 	bc_vec_pushIndex(&p->func->code, idx);
 }
 
-void bc_parse_addId(BcParse *p, uchar inst) {
+void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
 
 	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
 	BcVec *v = inst == BC_INST_NUM ? &f->consts : &f->strs;
 	size_t idx = v->len;
-	char *str = bc_vm_strdup(p->l.str.v);
+	char *str = bc_vm_strdup(string);
 
 	bc_vec_push(v, &str);
 	bc_parse_updateFunc(p, p->fidx);
 	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);
+}
+
+void bc_parse_number(BcParse *p) {
+
+#if BC_ENABLE_EXTRA_MATH
+	char *exp = strchr(p->l.str.v, 'e');
+	size_t idx = SIZE_MAX;
+
+	if (exp) {
+		idx = ((uintptr_t) exp) - ((uintptr_t) p->l.str.v);
+		*exp = 0;
+	}
+#endif // BC_ENABLE_EXTRA_MATH
+
+	bc_parse_addId(p, p->l.str.v, BC_INST_NUM);
+
+#if BC_ENABLE_EXTRA_MATH
+	if (exp) {
+
+		bool neg;
+
+		neg = (*((char*) bc_vec_item(&p->l.str, idx + 1)) == BC_LEX_NEG_CHAR);
+
+		bc_parse_addId(p, bc_vec_item(&p->l.str, idx + 1 + neg), BC_INST_NUM);
+		bc_parse_push(p, BC_INST_LSHIFT + neg);
+	}
+#endif // BC_ENABLE_EXTRA_MATH
 }
 
 BcStatus bc_parse_text(BcParse *p, const char *text) {

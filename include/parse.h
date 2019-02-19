@@ -40,8 +40,7 @@
 #define BC_PARSE_ARRAY (1<<4)
 
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
-#define bc_parse_number(p)(bc_parse_addId((p), BC_INST_NUM))
-#define bc_parse_string(p)(bc_parse_addId((p), BC_INST_STR))
+#define bc_parse_string(p)(bc_parse_addId((p), (p)->l.str.v, BC_INST_STR))
 
 #define bc_parse_err(p, e) (bc_vm_error((e), (p)->l.line))
 #define bc_parse_verr(p, e, ...) (bc_vm_error((e), (p)->l.line, __VA_ARGS__))
@@ -84,7 +83,8 @@ void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 void bc_parse_free(BcParse *p);
 BcStatus bc_parse_reset(BcParse *p, BcStatus s);
 
-void bc_parse_addId(BcParse *p, uchar inst);
+void bc_parse_addId(BcParse *p, const char *string, uchar inst);
+void bc_parse_number(BcParse *p);
 void bc_parse_updateFunc(BcParse *p, size_t fidx);
 void bc_parse_pushName(BcParse* p, char *name);
 void bc_parse_pushIndex(BcParse* p, size_t idx);

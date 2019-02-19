@@ -197,7 +197,7 @@ static void bc_num_split(const BcNum *restrict n, size_t idx, BcNum *restrict a,
 	bc_num_clean(a);
 }
 
-static void bc_num_shift(BcNum *restrict n, size_t places) {
+static void bc_num_shift_l(BcNum *restrict n, size_t places) {
 
 	if (!places || BC_NUM_ZERO(n)) return;
 
@@ -209,6 +209,27 @@ static void bc_num_shift(BcNum *restrict n, size_t places) {
 
 	bc_num_clean(n);
 }
+
+#if BC_ENABLE_EXTRA_MATH
+static void bc_num_shift_r(BcNum *restrict n, size_t places) {
+
+	size_t len;
+
+	len = n->rdx + places;
+
+	if (len > n->len) {
+
+		if (len > n->cap) bc_num_expand(n, len);
+
+		memset(n->num + n->len, 0, len - n->len);
+		n->len = len;
+	}
+
+	n->rdx += places;
+
+	assert(n->rdx <= n->len && n->len <= n->cap);
+}
+#endif // BC_ENABLE_EXTRA_MATH
 
 static BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 
@@ -458,8 +479,8 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	s = bc_num_sub(&temp, &z2, &z1, 0);
 	if (s) goto err;
 
-	bc_num_shift(&z0, max2 * 2);
-	bc_num_shift(&z1, max2);
+	bc_num_shift_l(&z0, max2 * 2);
+	bc_num_shift_l(&z1, max2);
 	s = bc_num_add(&z0, &z1, &temp, 0);
 	if (s) goto err;
 	s = bc_num_add(&temp, &z2, c, 0);
@@ -494,8 +515,8 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	cpa.neg = cpb.neg = false;
 
-	bc_num_shift(&cpa, maxrdx);
-	bc_num_shift(&cpb, maxrdx);
+	bc_num_shift_l(&cpa, maxrdx);
+	bc_num_shift_l(&cpb, maxrdx);
 	s = bc_num_k(&cpa, &cpb, c);
 	if (s) goto err;
 
@@ -732,7 +753,7 @@ static BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 	s = bc_num_intop(a, b, c, &val);
 	if (s) return s;
 
-	bc_num_shift(c, val);
+	bc_num_shift_l(c, (size_t) val);
 
 	return s;
 }
@@ -741,7 +762,6 @@ static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	unsigned long val = 0;
-	size_t len;
 
 	BC_UNUSED(scale);
 
@@ -750,19 +770,7 @@ static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale
 
 	if (BC_NUM_ZERO(c)) return s;
 
-	len = c->rdx + val;
-
-	if (len > c->len) {
-
-		if (len > c->cap) bc_num_expand(c, len);
-
-		memset(c->num + c->len, 0, len - c->len);
-		c->len = len;
-	}
-
-	c->rdx += val;
-
-	assert(c->rdx <= c->len && c->len <= c->cap);
+	bc_num_shift_r(c, (size_t) val);
 
 	return s;
 }
@@ -1006,6 +1014,54 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 		bc_num_printHex((size_t) n->num[i], 1, i == rdx);
 }
 
+#if BC_ENABLE_EXTRA_MATH
+static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
+
+	bool neg = (n->len <= n->rdx);
+	BcNum temp, exp;
+	size_t places, mod;
+	BcDig digs[BC_NUM_LONG_LOG10];
+
+	bc_num_createCopy(&temp, n);
+
+	if (neg) {
+		places = n->rdx - bc_num_len(n) + 1;
+		mod = places % 3;
+		if (eng && mod != 0) places += 3 - mod;
+		bc_num_shift_l(&temp, places);
+	}
+	else {
+		places = BC_NUM_INT(n) - 1;
+		mod = places % 3;
+		if (eng && mod != 0) places -= 3 - (3 - mod);
+		bc_num_shift_r(&temp, places);
+	}
+
+	bc_num_printDecimal(&temp);
+
+	bc_num_printNewline();
+	bc_vm_putchar('e');
+
+	if (!places) {
+		bc_num_printHex(0, 1, false);
+		goto exit;
+	}
+
+	if (neg) {
+		bc_num_printNewline();
+		bc_vm_putchar('-');
+	}
+
+	bc_num_setup(&exp, digs, BC_NUM_LONG_LOG10);
+	bc_num_ulong2num(&exp, (unsigned long) places);
+
+	bc_num_printDecimal(&exp);
+
+exit:
+	bc_num_free(&temp);
+}
+#endif // BC_ENABLE_EXTRA_MATH
+
 static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
                                 size_t len, BcNumDigitOp print)
 {
@@ -1162,6 +1218,20 @@ void bc_num_createFromUlong(BcNum *n, unsigned long val) {
 	bc_num_ulong2num(n, val);
 }
 
+size_t bc_num_scale(const BcNum *restrict n) {
+	return n->rdx;
+}
+
+size_t bc_num_len(const BcNum *restrict n) {
+
+	size_t i, len = n->len;
+
+	if (n->rdx != n->len) return len;
+	for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
+
+	return len;
+}
+
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
                       BcNum *restrict base, size_t base_t, bool letter)
 {
@@ -1184,12 +1254,15 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && base);
-	assert(base_t >= BC_NUM_MIN_BASE);
+	assert(BC_ENABLE_EXTRA_MATH || base_t >= BC_NUM_MIN_BASE);
 
 	bc_num_printNewline();
 
 	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
 	else if (base_t == 10) bc_num_printDecimal(n);
+#if BC_ENABLE_EXTRA_MATH
+	else if (base_t == 0 || base_t == 1) bc_num_printExponent(n, base_t != 0);
+#endif // BC_ENABLE_EXTRA_MATH
 	else s = bc_num_printBase(n, base, base_t);
 
 	if (!s && newline) {

@@ -780,12 +780,13 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *left, *right, res;
 	BcNum *l = NULL, *r = NULL;
-	bool ib, sc;
+	bool ib, ob, sc;
 
 	s = bc_program_assignPrep(p, &left, &l, &right, &r);
 	if (s) return s;
 
 	ib = (left->t == BC_RESULT_IBASE);
+	ob = (left->t == BC_RESULT_OBASE);
 	sc = (left->t == BC_RESULT_SCALE);
 
 #if DC_ENABLED
@@ -817,7 +818,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	}
 #endif // BC_ENABLED
 
-	if (ib || sc || left->t == BC_RESULT_OBASE) {
+	if (ib || ob || sc) {
 
 		size_t *ptr;
 		unsigned long val, max, min;
@@ -828,13 +829,13 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		e = left->t - BC_RESULT_IBASE + BC_ERROR_EXEC_IBASE;
 
 		if (sc) {
-			max = BC_MAX_SCALE;
 			min = 0;
+			max = BC_MAX_SCALE;
 			ptr = &p->scale;
 		}
 		else {
+			min = BC_ENABLE_EXTRA_MATH && ob ? 0 : BC_NUM_MIN_BASE;
 			max = ib ? vm->max_ibase : BC_MAX_OBASE;
-			min = BC_NUM_MIN_BASE;
 			ptr = ib ? &p->ib_t : &p->ob_t;
 		}
 
@@ -1072,37 +1073,22 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 }
 #endif // BC_ENABLED
 
-unsigned long bc_program_scale(const BcNum *restrict n) {
-	return (unsigned long) n->rdx;
-}
-
-unsigned long bc_program_len(const BcNum *restrict n) {
-
-	unsigned long len = n->len;
-	size_t i;
-
-	if (n->rdx != n->len) return len;
-	for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
-
-	return len;
-}
-
 static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 
 	BcStatus s;
-	BcResult *opnd;
+	BcResult *opd;
 	BcResult res;
 	BcNum *num = NULL, *resn = &res.d.n;
 	bool len = (inst == BC_INST_LENGTH);
 
 	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_ABS);
 
-	s = bc_program_operand(p, &opnd, &num, 0);
+	s = bc_program_operand(p, &opd, &num, 0);
 	if (s) return s;
 
 #if DC_ENABLED
 	if (!len && inst != BC_INST_SCALE_FUNC) {
-		s = bc_program_type_num(opnd, num);
+		s = bc_program_type_num(opd, num);
 		if (s) return s;
 	}
 #endif // DC_ENABLED
@@ -1120,17 +1106,18 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 		unsigned long val = 0;
 
 		if (len) {
-			if (BC_IS_BC && opnd->t == BC_RESULT_ARRAY)
+			if (BC_IS_BC && opd->t == BC_RESULT_ARRAY)
 				val = (unsigned long) ((BcVec*) num)->len;
 #if DC_ENABLED
-			else if (!BC_PROG_NUM(opnd, num)) {
-				size_t idx = opnd->t == BC_RESULT_STR ? opnd->d.id.idx : num->rdx;
+			else if (!BC_PROG_NUM(opd, num)) {
+				size_t idx = opd->t == BC_RESULT_STR ? opd->d.id.idx : num->rdx;
 				val = strlen(bc_program_str(p, idx, true));
 			}
 #endif // DC_ENABLED
-			else val = bc_program_len(num);
+			else val = (unsigned long) bc_num_len(num);
 		}
-		else if (BC_IS_BC || BC_PROG_NUM(opnd, num)) val = bc_program_scale(num);
+		else if (BC_IS_BC || BC_PROG_NUM(opd, num))
+			val = (unsigned long) bc_num_scale(num);
 
 		bc_num_createFromUlong(resn, val);
 	}

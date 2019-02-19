@@ -79,20 +79,14 @@ void bc_lex_commonTokens(BcLex *l, char c) {
 	else bc_lex_whitespace(l);
 }
 
-void bc_lex_number(BcLex *l, char start) {
+static size_t bc_lex_num(BcLex *l, char start, bool int_only) {
 
 	const char *buf = l->buf + l->i;
 	size_t i;
-	char last_valid, c;
+	char c;
 	bool last_pt, pt = (start == '.');
 
-	l->t = BC_LEX_NUMBER;
-	last_valid = BC_IS_BC ? 'Z' : 'F';
-
-	bc_vec_npop(&l->str, l->str.len);
-	bc_vec_push(&l->str, &start);
-
-	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, last_valid, pt) ||
+	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, pt, int_only) ||
 	                             (c == '\\' && buf[i + 1] == '\n')); ++i)
 	{
 		if (c == '\\') {
@@ -102,11 +96,11 @@ void bc_lex_number(BcLex *l, char start) {
 				i += 2;
 
 				// Make sure to eat whitespace at the beginning of the line.
-				while(isspace(buf[i]) && buf[i] != '\n') ++i;
+				while(isspace(buf[i]) && buf[i] != '\n') i += 1;
 
 				c = buf[i];
 
-				if (!BC_LEX_NUM_CHAR(c, last_valid, pt)) break;
+				if (!BC_LEX_NUM_CHAR(c, pt, int_only)) break;
 			}
 			else break;
 		}
@@ -118,8 +112,44 @@ void bc_lex_number(BcLex *l, char start) {
 		bc_vec_push(&l->str, &c);
 	}
 
+	return i;
+}
+
+BcStatus bc_lex_number(BcLex *l, char start) {
+
+	l->t = BC_LEX_NUMBER;
+
+	bc_vec_npop(&l->str, l->str.len);
+	bc_vec_push(&l->str, &start);
+
+	l->i += bc_lex_num(l, start, false);
+#if BC_ENABLE_EXTRA_MATH
+	{
+		char c = l->buf[l->i];
+
+		if (c == 'e') {
+
+			bc_vec_push(&l->str, &c);
+			l->i += 1;
+			c = l->buf[l->i];
+
+			if (c == BC_LEX_NEG_CHAR) {
+				bc_vec_push(&l->str, &c);
+				l->i += 1;
+				c = l->buf[l->i];
+			}
+
+			if (!BC_LEX_NUM_CHAR(c, false, true))
+				return bc_lex_verr(l, BC_ERROR_PARSE_CHAR, c);
+
+			l->i += bc_lex_num(l, 0, true);
+		}
+	}
+#endif // BC_ENABLE_EXTRA_MATH
+
 	bc_vec_pushByte(&l->str, '\0');
-	l->i += i;
+
+	return BC_STATUS_SUCCESS;
 }
 
 void bc_lex_name(BcLex *l) {

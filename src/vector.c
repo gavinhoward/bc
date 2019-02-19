@@ -153,12 +153,15 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx) {
 
 	char* ptr, *data;
 
+	assert(idx + 1 < v->len);
+
 	ptr = bc_vec_item(v, idx);
 	data = bc_vec_item(v, idx + 1);
 
 	if (v->dtor) v->dtor(ptr);
 
-	memmove(ptr, data, --v->len * v->size);
+	v->len -= 1;
+	memmove(ptr, data, v->len * v->size);
 }
 
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {

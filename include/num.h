@@ -83,6 +83,9 @@ void bc_num_createCopy(BcNum *d, const BcNum *s);
 void bc_num_createFromUlong(BcNum *n, unsigned long val);
 void bc_num_free(void *num);
 
+size_t bc_num_scale(const BcNum *restrict n);
+size_t bc_num_len(const BcNum *restrict n);
+
 BcStatus bc_num_ulong(const BcNum *n, unsigned long *result);
 void bc_num_ulong2num(BcNum *n, unsigned long val);
 

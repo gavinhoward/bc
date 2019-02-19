@@ -33,8 +33,11 @@
 #define bc_lex_err(l, e) (bc_vm_error((e), (l)->line))
 #define bc_lex_verr(l, e, ...) (bc_vm_error((e), (l)->line, __VA_ARGS__))
 
-#define BC_LEX_NUM_CHAR(c, l, pt) \
-	(isdigit(c) || ((c) >= 'A' && (c) <= (l)) || ((c) == '.' && !(pt)))
+#define BC_LEX_NEG_CHAR (BC_IS_BC ? '-' : '_')
+#define BC_LEX_LAST_NUM_CHAR (BC_IS_BC ? 'Z' : 'F')
+#define BC_LEX_NUM_CHAR(c, pt, int_only)                          \
+	(isdigit(c) || ((c) >= 'A' && (c) <= BC_LEX_LAST_NUM_CHAR) || \
+	 ((c) == '.' && !(pt) && !(int_only)))
 
 // BC_LEX_NEG is not used in lexing; it is only for parsing.
 typedef enum BcLexType {
@@ -189,7 +192,7 @@ BcStatus bc_lex_next(BcLex *l);
 void bc_lex_lineComment(BcLex *l);
 BcStatus bc_lex_comment(BcLex *l);
 void bc_lex_whitespace(BcLex *l);
-void bc_lex_number(BcLex *l, char start);
+BcStatus bc_lex_number(BcLex *l, char start);
 void bc_lex_name(BcLex *l);
 void bc_lex_commonTokens(BcLex *l, char c);
 

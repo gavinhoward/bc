@@ -31,7 +31,7 @@
 
 bool dc_lex_negCommand(BcLex *l) {
 	char c = l->buf[l->i];
-	return !BC_LEX_NUM_CHAR(c, 'F', false);
+	return !BC_LEX_NUM_CHAR(c, false, false);
 }
 
 static void dc_lex_register(BcLex *l) {
@@ -139,7 +139,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '.':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LEX_NUM_CHAR(c2, 'F', true)) bc_lex_number(l, c);
+			if (BC_LEX_NUM_CHAR(c2, true, false)) s = bc_lex_number(l, c);
 			else s = bc_lex_invalidChar(l, c);
 			break;
 		}
@@ -161,7 +161,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case 'E':
 		case 'F':
 		{
-			bc_lex_number(l, c);
+			s = bc_lex_number(l, c);
 			break;
 		}
 
