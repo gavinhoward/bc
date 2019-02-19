@@ -1197,7 +1197,9 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 
 	// We want to eat newlines if newlines are not a valid ending token.
 	// This is for spacing in things like for loop headers.
-	while (!s && (t = p->l.t) == BC_LEX_NLINE) s = bc_lex_next(&p->l);
+	if (!(flags & BC_PARSE_NOREAD)) {
+		while (!s && (t = p->l.t) == BC_LEX_NLINE) s = bc_lex_next(&p->l);
+	}
 
 	for (; !BC_SIGNAL && !s && !done && BC_PARSE_EXPR(t); t = p->l.t) {
 
