@@ -1854,7 +1854,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_LOAD:
 			case BC_INST_PUSH_VAR:
 			{
-				bool copy = inst == BC_INST_LOAD;
+				bool copy = (inst == BC_INST_LOAD);
 				s = bc_program_pushVar(p, code, &ip->idx, true, copy);
 				break;
 			}
