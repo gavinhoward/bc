@@ -1368,11 +1368,12 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	}
 	else {
 
+		// In non-conditional situations, only the top of stack can be executed,
+		// and in those cases, variables are not allowed to be "on the stack";
+		// they are only put on the stack to be assigned to.
+		assert(r->t != BC_RESULT_VAR);
+
 		if (r->t == BC_RESULT_STR) sidx = r->d.id.idx;
-		else if (r->t == BC_RESULT_VAR) {
-			if (!BC_PROG_STR(n)) goto no_exec;
-			sidx = n->rdx;
-		}
 		else goto no_exec;
 	}
 
@@ -1388,10 +1389,9 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 		s = vm->expr(&prs, BC_PARSE_NOCALL);
 		if (s) goto err;
 
-		if (prs.l.t != BC_LEX_EOF) {
-			s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
-			goto err;
-		}
+		// We can just assert this here because
+		// dc should parse everything until EOF.
+		assert(prs.l.t == BC_LEX_EOF);
 
 		bc_parse_free(&prs);
 	}
