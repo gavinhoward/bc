@@ -11,10 +11,10 @@ env:
     - CODECOV_TOKEN="040ce7eb-5bc7-4040-8324-364f3ef4baa3"
     - CFLAGS="-coverage"
   matrix:
-    - CONFIGURE_ARGS=-gHSOg
-    - CONFIGURE_ARGS=-gEHSOg
-    - CONFIGURE_ARGS=-gHRSOg
-    - CONFIGURE_ARGS=-gEHRSOg
+    - CONFIGURE_ARGS=-HSOg
+    - CONFIGURE_ARGS=-EHSOg
+    - CONFIGURE_ARGS=-HRSOg
+    - CONFIGURE_ARGS=-EHRSOg
 
 before_install:
   - sudo apt-get install -y dc
