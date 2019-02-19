@@ -660,6 +660,32 @@ by the [standard][1].
 
     This is a [transcendental function][5].
 
+  * `sin(x)`:
+    Returns the sine of `x`, which is assumed to be in radians.
+
+    This is an alias of `s(x)`.
+
+    This is a [transcendental function][5].
+
+  * `cos(x)`:
+    Returns the cosine of `x`, which is assumed to be in radians.
+
+    This is an alias of `c(x)`.
+
+    This is a [transcendental function][5].
+
+  * `tan(x)`:
+    Returns the tangent of `x`, which is assumed to be in radians.
+
+    This is a [transcendental function][5].
+
+  * `atan(x)`:
+    Returns the arctangent of `x`, in radians.
+
+    This is an alias of `a(x)`.
+
+    This is a [transcendental function][5].
+
   * `r2d(x)`:
     Converts `x` from radians to degrees and returns the result.
 
@@ -864,6 +890,10 @@ The transcendental functions in the extended math library are:
 * `l10(x)`
 * `log(x, b)`
 * `pi(p)`
+* `sin(x)`
+* `cos(x)`
+* `tan(x)`
+* `atan(x)`
 * `r2d(x)`
 * `d2r(x)`
 
