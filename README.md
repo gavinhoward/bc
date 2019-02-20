@@ -134,6 +134,9 @@ tarballs.
 
 Files:
 
+	.gitignore       The git ignore file (maintainer use only).
+	.travis.yml      The Travis CI file (maintainer use only).
+	codecov.yml      The Codecov file (maintainer use only).
 	configure.sh     The configure script.
 	install.sh       Install script.
 	karatsuba.py     Script for package maintainers to find the optimal Karatsuba number.
