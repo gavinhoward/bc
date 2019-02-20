@@ -1393,10 +1393,10 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 
 			case BC_LEX_KEY_READ:
 			{
-				assert(!(flags & BC_PARSE_NOREAD));
-
 				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
+				else if (flags & BC_PARSE_NOREAD)
+					s = bc_parse_err(p, BC_ERROR_EXEC_REC_READ);
 				else s = bc_parse_read(p);
 
 				rprn = get_token = bin_last = incdec = false;
