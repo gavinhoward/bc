@@ -83,9 +83,9 @@ Single-character numbers (i.e., `A`) take the value that they would have if they
 were valid digits, regardless of the value of `ibase`. This means that `A`
 always equals decimal `10` and `F` always equals decimal `15`.
 
-In addition, if bc(1) was built with the extra math option, it accepts numbers
-in scientific notation. For bc(1), an example is `1.89237e9`, which is equal to
-`1892370000`. Negative exponents are also allowed, so `4.2890e-3` is equal to
+In addition, if dc(1) was built with the extra math option, it accepts numbers
+in scientific notation. For dc(1), an example is `1.89237e9`, which is equal to
+`1892370000`. Negative exponents are also allowed, so `4.2890e_3` is equal to
 `0.0042890`.
 
 Scientific notation is a non-portable extension.
