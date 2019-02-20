@@ -479,6 +479,74 @@ static BcStatus bc_vm_load(const char *name, const char *text) {
 }
 #endif // BC_ENABLED
 
+static void bc_vm_gettext() {
+
+	size_t i;
+#if BC_ENABLE_NLS
+	BcVec dir;
+	char *dot, id = 0;
+	int set, msg;
+
+	bc_vec_init(&dir, sizeof(char), NULL);
+
+	bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
+	bc_vec_concat(&dir, "/");
+	bc_vec_concat(&dir, vm->locale);
+
+	dot = strrchr(dir.v, '.');
+
+	if (dot) {
+		uintptr_t idx = ((uintptr_t) dot) - ((uintptr_t) dir.v);
+		bc_vec_npop(&dir, dir.len - idx);
+		bc_vec_pushByte(&dir, '\0');
+	}
+
+	bc_vec_concat(&dir, ".cat");
+	vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
+
+	set = msg = 1;
+
+	vm->error_header = catgets(vm->catalog, set, msg, bc_err_fmt);
+#if BC_ENABLED
+	vm->warn_header = catgets(vm->catalog, set, msg + 1, bc_warn_fmt);
+#endif // BC_ENABLED
+
+	for (set += 1, msg = 1; msg < BC_ERR_IDX_NELEMS + 1; ++msg) {
+		vm->err_ids[msg - 1] = catgets(vm->catalog, set, msg, bc_errs[msg - 1]);
+		//printf("%s\n", vm->err_ids[msg - 1]);
+	}
+
+	i = 0;
+	id = bc_err_ids[i];
+
+	for (set = id + 3, msg = 1; i < BC_ERROR_NELEMS; ++i, ++msg) {
+
+		if (id != bc_err_ids[i]) {
+			msg = 1;
+			id = bc_err_ids[i];
+			set = id + 3;
+		}
+
+		//printf("set: %d, msg: %d\n", set, msg);
+
+		//errno = 0;
+		vm->err_msgs[i] = catgets(vm->catalog, set, msg, bc_err_msgs[i]);
+		//if (errno) printf("error happened: %d\n", errno);
+		//if (i == BC_ERROR_PARSE_EXPR) printf("%s\n", vm->err_msgs[i]);
+	}
+
+	bc_vec_free(&dir);
+
+#else // BC_ENABLE_NLS
+
+	vm->error_header = bc_err_fmt;
+#if BC_ENABLED
+	vm->warn_header = bc_warn_fmt;
+#endif // BC_ENABLED
+	for (i = 0; i < BC_ERROR_NELEMS; ++i) vm->err_msgs[i] = bc_err_msgs[i];
+#endif // BC_ENABLE_NLS
+}
+
 static BcStatus bc_vm_exec(void) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -515,7 +583,6 @@ static BcStatus bc_vm_exec(void) {
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 	BcStatus s;
-	int i;
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
 	struct sigaction sa;
@@ -531,36 +598,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
-#if BC_ENABLE_NLS
-	{
-		BcVec dir;
-		char *dot;
-
-		bc_vec_init(&dir, sizeof(char), NULL);
-
-		bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
-		bc_vec_concat(&dir, "/");
-		bc_vec_concat(&dir, vm->locale);
-
-		dot = strrchr(dir.v, '.');
-
-		if (dot) {
-			uintptr_t idx = ((uintptr_t) dot) - ((uintptr_t) dir.v);
-			bc_vec_npop(&dir, dir.len - idx);
-			bc_vec_pushByte(&dir, '\0');
-		}
-
-		vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
-
-		for (i = 0; i < BC_ERROR_NELEMS; ++i)
-			vm->err_msgs[i] = catgets(vm->catalog, NL_SETD, i + 1, bc_err_msgs[i]);
-
-		bc_vec_free(&dir);
-	}
-#else // BC_ENABLE_NLS
-		for (i = 0; i < BC_ERROR_NELEMS; ++i)
-			vm->err_msgs[i] = bc_err_msgs[i];
-#endif // BC_ENABLE_NLS
+	bc_vm_gettext();
 
 	vm->line_len = (uint16_t) bc_vm_envLen(env_len);
 

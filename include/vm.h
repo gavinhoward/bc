@@ -27,7 +27,9 @@
 #include <limits.h>
 
 #include <signal.h>
+#if BC_ENABLE_NLS
 #include <nl_types.h>
+#endif // BC_ENABLE_NLS
 
 #include <status.h>
 #include <parse.h>
@@ -149,6 +151,11 @@ typedef struct BcVm {
 	BcParseParse parse;
 	BcParseExpr expr;
 
+	const char *error_header;
+#if BC_ENABLED
+	const char *warn_header;
+#endif // BC_ENABLED
+	const char *err_ids[BC_ERR_IDX_NELEMS];
 	const char *err_msgs[BC_ERROR_NELEMS];
 
 	char *locale;

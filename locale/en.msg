@@ -15,11 +15,13 @@ $ $
 
 $quote "
 
+$ Headers for printing errors/warnings.
 $set 1
 
 1 "\n%s error: "
 2 "\n%s warning: "
 
+$ Error types.
 $set 2
 
 1 "Math"
@@ -27,6 +29,7 @@ $set 2
 3 "Runtime"
 4 "Fatal"
 
+$ Math errors.
 $set 3
 
 1 "negative number"
@@ -34,29 +37,8 @@ $set 3
 3 "overflow; number does not fit into a hardware type"
 4 "divide by 0"
 
+$ Parse errors.
 $set 4
-
-1 "memory allocation error"
-2 "I/O error"
-3 "could not open file: %s"
-4 "file is not ASCII: %s"
-5 "path is a directory: %s"
-6 "invalid command-line option: '%c' (\"%s\")"
-
-$set 5
-
-1 "invalid ibase; must be [%lu, %lu]"
-2 "invalid obase; must be [%lu, %lu]"
-3 "invalid scale; must be [%lu, %lu]"
-4 "invalid read() expression"
-5 "recursive read() call"
-6 "variable or array element is the wrong type"
-7 "stack has too few elements"
-8 "wrong number of parameters; need %zu, have %zu"
-9 "undefined function: %s()"
-10 "cannot use a void value in an expression"
-
-$set 6
 
 1 "end of file"
 2 "invalid character (%c)"
@@ -87,3 +69,27 @@ $set 6
 27 "POSIX does not allow exponential notation"
 28 "POSIX does not allow array references as function parameters"
 29 "POSIX requires the left brace be on the same line as the function header"
+
+$ Runtime errors.
+$set 5
+
+1 "invalid ibase; must be [%lu, %lu]"
+2 "invalid obase; must be [%lu, %lu]"
+3 "invalid scale; must be [%lu, %lu]"
+4 "invalid read() expression"
+5 "recursive read() call"
+6 "variable or array element is the wrong type"
+7 "stack has too few elements"
+8 "wrong number of parameters; need %zu, have %zu"
+9 "undefined function: %s()"
+10 "cannot use a void value in an expression"
+
+$ Fatal errors.
+$set 6
+
+1 "memory allocation failed"
+2 "I/O error"
+3 "could not open file: %s"
+4 "file is not ASCII: %s"
+5 "path is a directory: %s"
+6 "invalid command-line option: '%c' (\"%s\")"

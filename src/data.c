@@ -88,7 +88,7 @@ const char* const bc_err_msgs[] = {
 	"overflow; number cannot fit",
 	"divide by 0",
 
-	"memory allocation error",
+	"memory allocation failed",
 	"I/O error",
 	"could not open file: %s",
 	"file is not ASCII: %s",
