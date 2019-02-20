@@ -474,7 +474,7 @@ static BcStatus bc_vm_exec(void) {
 	size_t i;
 
 #if BC_ENABLED
-	if (vm->flags & BC_FLAG_L) {
+	if (BC_IS_BC && vm->flags & BC_FLAG_L) {
 		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (s) return s;
 #if BC_ENABLE_EXTRA_MATH
