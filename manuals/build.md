@@ -68,9 +68,9 @@ the environment variable `GEN_EMU`.
 
 This `bc` supports `CC`, `HOSTCC`, `HOST_CC`, `CFLAGS`, `HOSTCFLAGS`,
 `HOST_CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`, `DESTDIR`, `BINDIR`,
-`DATAROOTDIR`, `DATADIR`, `MANDIR`, `MAN1DIR`, `EXECSUFFIX` and `GEN_EMU`
-environment variables in `configure.sh`. Any values of those variables given to
-`configure.sh` will be put into the generated Makefile.
+`DATAROOTDIR`, `DATADIR`, `MANDIR`, `MAN1DIR`, `LOCALEDIR` `EXECSUFFIX` and
+`GEN_EMU` environment variables in `configure.sh`. Any values of those variables
+given to `configure.sh` will be put into the generated Makefile.
 
 More detail on what those environment variables do can be found in the following
 sections.
@@ -166,6 +166,12 @@ Section 1 commands, this is the only relevant section directory.
 
 Defaults to `$MANDIR/man1`.
 
+### `LOCALEDIR`
+
+The directory to install locales in.
+
+Defaults to `$DATAROOTDIR/locale`.
+
 ### `EXECSUFFIX`
 
 The suffix to append onto the executable names *when installing*. This is for
@@ -247,6 +253,15 @@ platform that does not support the terminal handling that is required.
 ***WARNING***: Of all of the code in the `bc`, this is the only code that is not
 completely portable. If the `bc` does not work on your platform, your first step
 should be to retry with history disabled.
+
+### NLS (Locale Support)
+
+To disable locale support (use only English), use the `-N` flag in the configure
+step:
+
+```
+./configure.sh -N
+```
 
 <a name="build-array-references"/>
 
