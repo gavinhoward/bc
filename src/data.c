@@ -128,7 +128,7 @@ const char* const bc_err_msgs[] = {
 	"POSIX does not allow an empty condition expression in a for loop",
 	"POSIX does not allow an empty update expression in a for loop",
 #if BC_ENABLE_EXTRA_MATH
-	"POSIX does not allow exponential notation"
+	"POSIX does not allow exponential notation",
 #endif // BC_ENABLE_EXTRA_MATH
 #if BC_ENABLE_REFERENCES
 	"POSIX does not allow array references as function parameters",
