@@ -80,6 +80,7 @@
 #define BC_MAX_VARS ((unsigned long) (SIZE_MAX - 1))
 
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm->name[0] != 'd'))
+#define BC_IS_POSIX (BC_S || BC_W)
 
 #if BC_ENABLE_SIGNALS
 

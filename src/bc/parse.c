@@ -800,7 +800,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 
-	voidfn = (!BC_S && !BC_W && p->l.t == BC_LEX_NAME &&
+	voidfn = (!BC_IS_POSIX && p->l.t == BC_LEX_NAME &&
 	          !strcmp(p->l.str.v, "void"));
 
 	s = bc_lex_next(&p->l);

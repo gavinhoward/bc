@@ -28,6 +28,7 @@
 #include <status.h>
 #include <lex.h>
 #include <vm.h>
+#include <bc.h>
 
 BcStatus bc_lex_invalidChar(BcLex *l, char c) {
 	l->t = BC_LEX_INVALID;
@@ -123,11 +124,19 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 	bc_vec_push(&l->str, &start);
 
 	l->i += bc_lex_num(l, start, false);
+
 #if BC_ENABLE_EXTRA_MATH
 	{
 		char c = l->buf[l->i];
 
 		if (c == 'e') {
+
+#if BC_ENABLED
+			if (BC_IS_POSIX) {
+				BcStatus s = bc_lex_posixErr(l, BC_ERROR_POSIX_EXP_NUM);
+				if (s) return s;
+			}
+#endif // BC_ENABLED
 
 			bc_vec_push(&l->str, &c);
 			l->i += 1;

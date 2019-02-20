@@ -73,7 +73,7 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
 
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -127,8 +127,13 @@ const char* const bc_err_msgs[] = {
 	"POSIX does not allow an empty init expression in a for loop",
 	"POSIX does not allow an empty condition expression in a for loop",
 	"POSIX does not allow an empty update expression in a for loop",
-	"POSIX requires the left brace be on the same line as the function header",
+#if BC_ENABLE_EXTRA_MATH
+	"POSIX does not allow exponential notation"
+#endif // BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_REFERENCES
 	"POSIX does not allow array references as function parameters",
+#endif // BC_ENABLE_REFERENCES
+	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
 
 	"bad ibase; must be [%lu, %lu]",

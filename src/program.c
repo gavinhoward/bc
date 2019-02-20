@@ -834,7 +834,9 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 			ptr = &p->scale;
 		}
 		else {
-			min = BC_ENABLE_EXTRA_MATH && ob ? 0 : BC_NUM_MIN_BASE;
+			min = BC_NUM_MIN_BASE;
+			if (BC_ENABLE_EXTRA_MATH && ob && (!BC_IS_BC || !BC_IS_POSIX))
+				min = 0;
 			max = ib ? vm->max_ibase : BC_MAX_OBASE;
 			ptr = ib ? &p->ib_t : &p->ob_t;
 		}

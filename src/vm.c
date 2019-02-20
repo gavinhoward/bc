@@ -478,7 +478,7 @@ static BcStatus bc_vm_exec(void) {
 		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (s) return s;
 #if BC_ENABLE_EXTRA_MATH
-		if (!BC_S && !BC_W) {
+		if (BC_IS_POSIX) {
 			s = bc_vm_load(bc_lib2_name, bc_lib2);
 			if (s) return s;
 		}
@@ -545,8 +545,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	vm->flags |= isatty(STDIN_FILENO) ? BC_FLAG_TTYIN : 0;
 	vm->flags |= BC_TTYIN && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
 
-	vm->max_ibase = BC_IS_BC && !BC_S && !BC_W ? BC_NUM_MAX_IBASE :
-	                                             BC_NUM_MAX_POSIX_IBASE;
+	vm->max_ibase = BC_IS_BC && !BC_IS_POSIX ? BC_NUM_MAX_IBASE :
+	                                           BC_NUM_MAX_POSIX_IBASE;
 
 	if (BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 
