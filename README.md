@@ -37,8 +37,8 @@ Systems that are known to work:
 * FreeBSD
 * Mac OSX
 
-Please submit bug reports if this `bc` does not build out of the box on other
-systems.
+Please submit bug reports if this `bc` does not build out of the box on any
+system besides Windows.
 
 ## Build
 
