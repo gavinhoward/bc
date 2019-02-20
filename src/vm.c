@@ -351,7 +351,6 @@ static BcStatus bc_vm_process(const char *text, bool is_stdin) {
 	if (BC_I) bc_vm_fflush(stdout);
 
 err:
-	if (s || BC_SIGNAL) s = bc_program_reset(&vm->prog, s);
 	bc_vm_clean();
 	return s == BC_STATUS_QUIT || !BC_I || !is_stdin ? s : BC_STATUS_SUCCESS;
 }
