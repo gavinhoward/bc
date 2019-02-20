@@ -83,7 +83,7 @@ static BcStatus bc_vm_printError(BcError e, const char* const fmt,
 	fflush(stdout);
 
 	fprintf(stderr, fmt, bc_errs[id]);
-	vfprintf(stderr, bc_err_msgs[e], args);
+	vfprintf(stderr, vm->err_msgs[e], args);
 
 	assert(vm->file);
 
@@ -202,6 +202,9 @@ static size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_shutdown(void) {
+#if BC_ENABLE_NLS
+	catclose(vm->catalog);
+#endif // BC_ENABLE_NLS
 #if BC_ENABLE_HISTORY
 	// This must always run to ensure that the terminal is back to normal.
 	bc_history_free(&vm->history);
@@ -512,6 +515,7 @@ static BcStatus bc_vm_exec(void) {
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 	BcStatus s;
+	int i;
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
 	struct sigaction sa;
@@ -526,6 +530,37 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
+
+#if BC_ENABLE_NLS
+	{
+		BcVec dir;
+		char *dot;
+
+		bc_vec_init(&dir, sizeof(char), NULL);
+
+		bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
+		bc_vec_concat(&dir, "/");
+		bc_vec_concat(&dir, vm->locale);
+
+		dot = strrchr(dir.v, '.');
+
+		if (dot) {
+			uintptr_t idx = ((uintptr_t) dot) - ((uintptr_t) dir.v);
+			bc_vec_npop(&dir, dir.len - idx);
+			bc_vec_pushByte(&dir, '\0');
+		}
+
+		vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
+
+		for (i = 0; i < BC_ERROR_NELEMS; ++i)
+			vm->err_msgs[i] = catgets(vm->catalog, NL_SETD, i + 1, bc_err_msgs[i]);
+
+		bc_vec_free(&dir);
+	}
+#else // BC_ENABLE_NLS
+		for (i = 0; i < BC_ERROR_NELEMS; ++i)
+			vm->err_msgs[i] = bc_err_msgs[i];
+#endif // BC_ENABLE_NLS
 
 	vm->line_len = (uint16_t) bc_vm_envLen(env_len);
 

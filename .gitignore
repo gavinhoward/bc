@@ -39,3 +39,4 @@ perf.data.old
 *.gcov
 *.html
 *.profraw
+*.cat

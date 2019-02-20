@@ -38,10 +38,10 @@ int main(int argc, char *argv[]) {
 	int s;
 	char *name;
 
-	setlocale(LC_ALL, "");
-
 	vm = calloc(1, sizeof(BcVm));
 	if (!vm) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+
+	vm->locale = setlocale(LC_ALL, "");
 
 	name = strrchr(argv[0], '/');
 	vm->name = !name ? argv[0] : name + 1;

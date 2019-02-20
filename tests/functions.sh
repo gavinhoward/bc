@@ -14,6 +14,16 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
+readlink() {
+
+	local exe="$1"
+	shift
+
+	L=$(ls -dl "$exe")
+
+	printf ${L#*-> }
+}
+
 die() {
 
 	local d="$1"

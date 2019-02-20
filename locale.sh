@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf "usage: %s install_dir exec_suffix\n" "$0" 1>&2
+	printf "usage: %s install_dir\n" "$0" 1>&2
 	exit 1
 }
 
@@ -26,25 +26,28 @@ scriptdir=$(dirname "$script")
 
 INSTALL="$scriptdir/safe-install.sh"
 
-test "$#" -ge 2 || usage
+test "$#" -ge 1 || usage
 
 installdir="$1"
 shift
 
-exec_suffix="$1"
-shift
+mkdir -p "$installdir"
 
-bindir="$scriptdir/bin"
+localedir="$scriptdir/locale"
 
-for exe in $bindir/*; do
+for file in $localedir/*.msg; do
 
-	base=$(basename "$exe")
+	base=$(basename "$file")
+	name=$(echo "$base" | cut -f 1 -d '.')
+	f="$localedir/$name.cat"
 
-	if [ -L "$exe" ]; then
-		link=$(readlink "$exe")
-		"$INSTALL" -Dlm 755 "$link$exec_suffix" "$installdir/$base$exec_suffix"
+	if [ -L "$file" ]; then
+		link=$(readlink "$file")
+		link=$(echo "$link" | cut -f 1 -d '.')
+		"$INSTALL" -Dlm 755 "$link.cat" "$installdir/$name.cat"
 	else
-		"$INSTALL" -Dm 755 "$exe" "$installdir/$base$exec_suffix"
+		gencat "$f" "$file"
+		"$INSTALL" -Dm 755 "$f" "$installdir/$name.cat"
 	fi
 
 done

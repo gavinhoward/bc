@@ -51,8 +51,10 @@ BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line) {
 
 	for (i = 0; i < f->autos.len; ++i) {
 		BcId *id = bc_vec_item(&f->autos, i);
-		if (!strcmp(name, id->name) && type == (BcType) id->idx)
-			return bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name);
+		if (!strcmp(name, id->name) && type == (BcType) id->idx) {
+			const char *array = type == BC_TYPE_ARRAY ? "[]" : "";
+			return bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name, array);
+		}
 	}
 
 	a.idx = type;

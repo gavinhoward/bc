@@ -60,41 +60,59 @@ const char bc_err_ids[] = {
 
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 
+	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE,
 #if BC_ENABLED
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE,
-#if BC_ENABLE_REFERENCES
-	BC_ERR_IDX_PARSE,
-#endif // BC_ENABLE_REFERENCES
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
-
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-#if DC_ENABLED
-	BC_ERR_IDX_EXEC,
-#endif // DC_ENABLED
-#if BC_ENABLED
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-#endif // BC_ENABLED
-
-	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
-	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
 };
 
 const char* const bc_err_msgs[] = {
 
 	"negative number",
-	"non integer number",
+	"non-integer number",
 	"overflow; number cannot fit",
-	"divide by zero",
+	"divide by 0",
+
+	"memory allocation error",
+	"I/O error",
+	"could not open file: %s",
+	"file is not ASCII: %s",
+	"path is a directory: %s",
+	"bad command-line option: '%c' (\"%s\")",
+
+	"bad ibase; must be [%lu, %lu]",
+	"bad obase; must be [%lu, %lu]",
+	"bad scale; must be [%lu, %lu]",
+	"bad read() expression",
+	"read() call inside of a read() call",
+	"variable or array element is the wrong type",
+#if DC_ENABLED
+	"stack has too few elements",
+#else // DC_ENABLED
+	NULL,
+#endif // DC_ENABLED
+#if BC_ENABLED
+	"wrong number of parameters; need %zu, have %zu",
+	"undefined function: %s()",
+	"cannot use a void value in an expression",
+#else
+	NULL, NULL, NULL
+#endif // BC_ENABLED
 
 	"end of file",
 	"bad character (%c)",
@@ -109,54 +127,38 @@ const char* const bc_err_msgs[] = {
 	"bad assignment: left side must be scale, ibase, "
 		"obase, last, var, or array element",
 	"no auto variable found",
-	"function parameter or auto \"%s\" already exists",
+	"function parameter or auto \"%s%s\" already exists",
 	"block end could not be found",
 	"cannot return a value from void function: %s()",
 #if BC_ENABLE_REFERENCES
 	"var cannot be reference: %s",
+#else
+	NULL,
 #endif // BC_ENABLE_REFERENCES
 
-	"POSIX does not allow names longer than 1 character, like \"%s\"",
+	"POSIX does not allow names longer than 1 character: %s",
 	"POSIX does not allow '#' script comments",
-	"POSIX does not allow \"%s\" as a keyword",
+	"POSIX does not allow the following keyword: %s",
 	"POSIX does not allow a period ('.') as a shortcut for the last result",
 	"POSIX requires parentheses around return expressions",
-	"POSIX does not allow the \"%s\" operators",
-	"POSIX does not allow comparison operators outside if or loops",
-	"POSIX requires zero or one comparison operator per condition",
+	"POSIX does not allow the following operator: %s",
+	"POSIX does not allow comparison operators outside if statements or loops",
+	"POSIX requires 0 or 1 comparison operators per condition",
 	"POSIX does not allow an empty init expression in a for loop",
 	"POSIX does not allow an empty condition expression in a for loop",
 	"POSIX does not allow an empty update expression in a for loop",
 #if BC_ENABLE_EXTRA_MATH
 	"POSIX does not allow exponential notation",
+#else
+	NULL,
 #endif // BC_ENABLE_EXTRA_MATH
 #if BC_ENABLE_REFERENCES
 	"POSIX does not allow array references as function parameters",
+#else
+	NULL,
 #endif // BC_ENABLE_REFERENCES
 	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
-
-	"bad ibase; must be [%lu, %lu]",
-	"bad obase; must be [%lu, %lu]",
-	"bad scale; must be [%lu, %lu]",
-	"bad read() expression",
-	"read() call inside of a read() call",
-	"variable is wrong type",
-#if DC_ENABLED
-	"stack has too few elements",
-#endif // DC_ENABLED
-#if BC_ENABLED
-	"mismatched parameters; need %zu, have %zu",
-	"undefined function: %s()",
-	"cannot use a void value in an expression",
-#endif // BC_ENABLED
-
-	"memory allocation error",
-	"I/O error",
-	"could not open file: %s",
-	"file is not ASCII: %s",
-	"path is a directory: %s",
-	"Bad command-line option: '%c' (\"%s\")",
 
 };
 

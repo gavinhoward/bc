@@ -63,6 +63,8 @@ usage() {
 	printf '        It is an error if "-m" is specified too.\n'
 	printf '    -M\n'
 	printf '        Disable installing manpages.\n'
+	printf '    -N\n'
+	printf '        Disable POSIX locale (NLS) support.\n'
 	printf '    -O OPT_LEVEL\n'
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
@@ -229,8 +231,9 @@ extra_math=1
 optimization=""
 generate_tests=1
 install_manpages=1
+nls=1
 
-while getopts "bBcdDEgGhHk:MO:RS" opt; do
+while getopts "bBcdDEgGhHk:MNO:RS" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -245,6 +248,7 @@ while getopts "bBcdDEgGhHk:MO:RS" opt; do
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
 		M) install_manpages=0 ;;
+		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		R) refs=0 ;;
 		S) signals=0 ;;
@@ -273,7 +277,8 @@ script="$0"
 scriptdir=$(dirname "$script")
 
 link="@printf 'No link necessary\\\\n'"
-main_exec="BC_EXEC"
+main_exec="BC"
+executable="BC_EXEC"
 
 bc_test="@tests/all.sh bc $extra_math $refs $generate_tests"
 dc_test="@tests/all.sh dc $extra_math $refs $generate_tests"
@@ -326,7 +331,8 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	executables="dc"
 
-	main_exec="DC_EXEC"
+	main_exec="DC"
+	executable="DC_EXEC"
 
 	bc_test="@printf 'No bc tests to run\\\\n'"
 	vg_bc_test="@printf 'No bc tests to run\\\\n'"
@@ -405,11 +411,22 @@ if [ "$BINDIR" = "" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
-if [ "$install_manpages" -ne 0 ]; then
-
+if [ "$install_manpages" -ne 0 -o "$nls" -ne 0 ]; then
 	if [ "$DATAROOTDIR" = "" ]; then
 		DATAROOTDIR="$PREFIX/share"
 	fi
+fi
+
+if [ "$nls" -ne 0 ]; then
+	LOCALEDIR="$DATAROOTDIR/locale"
+	install_locales_prereqs=" install_locales"
+	uninstall_locales_prereqs=" uninstall_locales"
+else
+	install_locales_prereqs=""
+	uninstall_locales_prereqs=""
+fi
+
+if [ "$install_manpages" -ne 0 ]; then
 
 	if [ "$DATADIR" = "" ]; then
 		DATADIR="$DATAROOTDIR"
@@ -473,6 +490,13 @@ else
 	BC_LIB2_O=""
 fi
 
+# Print out the values; this is for debugging.
+printf '\n'
+printf 'BC_ENABLE_SIGNALS=%s\n' "$signals"
+printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
+printf 'BC_ENABLE_REFERENCES=%s\n' "$refs"
+printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
+printf 'BC_ENABLE_NLS=%s\n' "$nls"
 printf '\n'
 printf 'CC=%s\n' "$CC"
 printf 'CFLAGS=%s\n' "$CFLAGS"
@@ -486,6 +510,7 @@ printf 'DATAROOTDIR=%s\n' "$DATAROOTDIR"
 printf 'DATADIR=%s\n' "$DATADIR"
 printf 'MANDIR=%s\n' "$MANDIR"
 printf 'MAN1DIR=%s\n' "$MAN1DIR"
+printf 'LOCALEDIR=%s\n' "$LOCALEDIR"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
 printf 'DESTDIR=%s\n' "$DESTDIR"
 printf 'GEN_EMU=%s\n' "$GEN_EMU"
@@ -510,12 +535,15 @@ contents=$(replace "$contents" "SIGNALS" "$signals")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "REFERENCES" "$refs")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
+contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
+contents=$(replace "$contents" "LOCALEDIR" "$LOCALEDIR")
+contents=$(replace "$contents" "RELLOCALEDIR" "$RELLOCALEDIR")
 contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
 contents=$(replace "$contents" "EXECSUFFIX" "$EXECSUFFIX")
 contents=$(replace "$contents" "BINDIR" "$BINDIR")
@@ -529,11 +557,14 @@ contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
 contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
 contents=$(replace "$contents" "INSTALL_PREREQS" "$install_prereqs")
+contents=$(replace "$contents" "INSTALL_LOCALES_PREREQS" "$install_locales_prereqs")
 contents=$(replace "$contents" "UNINSTALL_MAN_PREREQS" "$uninstall_man_prereqs")
 contents=$(replace "$contents" "UNINSTALL_PREREQS" "$uninstall_prereqs")
+contents=$(replace "$contents" "UNINSTALL_LOCALES_PREREQS" "$uninstall_locales_prereqs")
 
 contents=$(replace "$contents" "EXECUTABLES" "$executables")
 contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
+contents=$(replace "$contents" "EXEC" "$executable")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
 contents=$(replace "$contents" "DC_TEST" "$dc_test")

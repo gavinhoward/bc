@@ -27,6 +27,7 @@
 #include <limits.h>
 
 #include <signal.h>
+#include <nl_types.h>
 
 #include <status.h>
 #include <parse.h>
@@ -42,9 +43,11 @@
 #error CHAR_BIT must be at least 6.
 #endif
 
-#define VERSION_STR(V) #V
-#define VERSION_STR2(V) VERSION_STR(V)
-#define BC_VERSION VERSION_STR2(VERSION)
+#define GEN_STR(V) #V
+#define GEN_STR2(V) GEN_STR(V)
+
+#define BC_VERSION GEN_STR2(VERSION)
+#define BC_LOCALEDIR GEN_STR2(LOCALEDIR)
 
 // Windows has deprecated isatty().
 #ifdef _WIN32
@@ -97,6 +100,12 @@
 #define BC_SIGNAL (0)
 #endif // BC_ENABLE_SIGNALS
 
+#if BC_ENABLE_NLS
+#ifdef _WIN32
+#error NLS is not supported on Windows.
+#endif // _WIN32
+#endif // BC_ENABLE_NLS
+
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
 
@@ -139,6 +148,14 @@ typedef struct BcVm {
 	BcLexNext next;
 	BcParseParse parse;
 	BcParseExpr expr;
+
+	const char *err_msgs[BC_ERROR_NELEMS];
+
+	char *locale;
+
+#if BC_ENABLE_NLS
+	nl_catd catalog;
+#endif // BC_ENABLE_NLS
 
 } BcVm;
 

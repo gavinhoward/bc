@@ -75,6 +75,7 @@ DC_HELP_GCDA = $(GEN_DIR)/dc_help.gcda
 DC_HELP_GCNO = $(GEN_DIR)/dc_help.gcno
 
 BIN = bin
+LOCALE = locale
 
 BC = bc
 DC = dc
@@ -95,12 +96,16 @@ MANPAGE_INSTALL_ARGS = -Dm644
 DESTDIR = %%DESTDIR%%
 BINDIR = %%BINDIR%%
 MAN1DIR = %%MAN1DIR%%
+MAIN_EXEC = $(%%MAIN_EXEC%%)
+EXEC = $(%%EXEC%%)
+LOCALEDIR = %%LOCALEDIR%%/$(MAIN_EXEC)
 
 BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
 BC_ENABLE_REFERENCES = %%REFERENCES%%
 BC_ENABLE_EXTRA_MATH_NAME = BC_ENABLE_EXTRA_MATH
 BC_ENABLE_EXTRA_MATH = %%EXTRA_MATH%%
+BC_ENABLE_NLS = %%NLS%%
 
 RM = rm
 MKDIR = mkdir
@@ -109,6 +114,7 @@ INSTALL = ./install.sh
 SAFE_INSTALL = ./safe-install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
+LOCALE_INSTALL = ./locale.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
 RONN_ARGS = --roff --organization="Gavin D. Howard" --manual="General Commands Manual"
@@ -117,10 +123,10 @@ BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
 CPPFLAGS1 = %%CPPFLAGS%%
 CPPFLAGS2 = $(CPPFLAGS1) -D$(BC_ENABLED_NAME)=$(BC_ENABLED) -D$(DC_ENABLED_NAME)=$(DC_ENABLED)
-CPPFLAGS3 = $(CPPFLAGS2) -I./include/ -DVERSION=$(VERSION)
+CPPFLAGS3 = $(CPPFLAGS2) -I./include/ -DVERSION=$(VERSION) -DLOCALEDIR=$(LOCALEDIR)
 CPPFLAGS4 = $(CPPFLAGS3) -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 CPPFLAGS5 = $(CPPFLAGS4) -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
-CPPFLAGS6 = $(CPPFLAGS5) -DBC_ENABLE_REFERENCES=$(BC_ENABLE_REFERENCES)
+CPPFLAGS6 = $(CPPFLAGS5) -DBC_ENABLE_NLS=$(BC_ENABLE_NLS) -DBC_ENABLE_REFERENCES=$(BC_ENABLE_REFERENCES)
 CPPFLAGS7 = $(CPPFLAGS6) -D$(BC_ENABLE_EXTRA_MATH_NAME)=$(BC_ENABLE_EXTRA_MATH)
 CPPFLAGS = $(CPPFLAGS7) -DBC_ENABLE_SIGNALS=$(BC_ENABLE_SIGNALS) -DBC_ENABLE_HISTORY=$(BC_ENABLE_HISTORY)
 CFLAGS = $(CPPFLAGS) %%CFLAGS%%
@@ -133,7 +139,7 @@ HOSTCC = %%HOSTCC%%
 
 all: make_bin $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_LIB2_O) $(BC_LIB3_O) $(BC_OBJ) $(DC_OBJ) $(HISTORY_OBJ) $(OBJ)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(OBJ) $(DC_OBJ) $(BC_OBJ) $(HISTORY_OBJ) $(BC_HELP_O) $(DC_HELP_O) \
-	$(BC_LIB_O) $(BC_LIB2_O) $(BC_LIB3_O) $(LDFLAGS) -o $(%%MAIN_EXEC%%)
+	$(BC_LIB_O) $(BC_LIB2_O) $(BC_LIB3_O) $(LDFLAGS) -o $(EXEC)
 	%%LINK%%
 
 $(GEN_EXEC):
@@ -239,6 +245,7 @@ clean:
 	@$(RM) -f *.html
 	@$(RM) -f *.gcda *.gcno
 	@$(RM) -f *.profraw
+	@$(RM) -f $(LOCALE)/*.cat
 	@$(RM) -f $(GEN_EXEC)
 	@$(RM) -f $(BC_LIB_C) $(BC_LIB_O)
 	@$(RM) -f $(BC_LIB_GCDA) $(BC_LIB_GCNO)
@@ -262,14 +269,20 @@ clean_tests: clean clean_config
 	@$(RM) -f .math.txt .results.txt .ops.txt
 	@$(RM) -f .test.txt
 
+install_locales:
+	$(LOCALE_INSTALL) $(LOCALEDIR)
+
 install_bc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(BC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
 
 install_dc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(DC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
-install:%%INSTALL_PREREQS%%
+install:%%INSTALL_LOCALES_PREREQS%%%%INSTALL_PREREQS%%
 	$(INSTALL) $(DESTDIR)$(BINDIR) "$(EXEC_SUFFIX)"
+
+uninstall_locales:
+	$(RM) -fr $(LOCALEDIR)
 
 uninstall_bc_manpage:
 	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
@@ -283,4 +296,4 @@ uninstall_dc_manpage:
 uninstall_dc:
 	$(RM) -f $(DESTDIR)$(BINDIR)/$(DC)$(EXEC_SUFFIX)
 
-uninstall:%%UNINSTALL_MAN_PREREQS%%%%UNINSTALL_PREREQS%%
+uninstall:%%UNINSTALL_LOCALES_PREREQS%%%%UNINSTALL_MAN_PREREQS%%%%UNINSTALL_PREREQS%%

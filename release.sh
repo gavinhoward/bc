@@ -313,7 +313,7 @@ build "$debug" "clang" ""
 
 header "Running math library under --standard"
 
-echo "quit" | bin/bc -ls
+printf 'quit\n' | bin/bc -ls
 
 version=$(make version)
 
