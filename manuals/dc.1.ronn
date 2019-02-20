@@ -88,6 +88,10 @@ in scientific notation. For dc(1), an example is `1.89237e9`, which is equal to
 `1892370000`. Negative exponents are also allowed, so `4.2890e_3` is equal to
 `0.0042890`.
 
+**WARNING**: Both the number and the exponent in scientific notation are
+interpreted according to the current `ibase`, but the number is still multiplied
+by `10^exp` regardless of the current `ibase`.
+
 Scientific notation is a non-portable extension.
 
 COMMANDS

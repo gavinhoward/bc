@@ -63,6 +63,9 @@ Single\-character numbers (i\.e\., \fBA\fR) take the value that they would have 
 In addition, if dc(1) was built with the extra math option, it accepts numbers in scientific notation\. For dc(1), an example is \fB1\.89237e9\fR, which is equal to \fB1892370000\fR\. Negative exponents are also allowed, so \fB4\.2890e_3\fR is equal to \fB0\.0042890\fR\.
 .
 .P
+\fBWARNING\fR: Both the number and the exponent in scientific notation are interpreted according to the current \fBibase\fR, but the number is still multiplied by \fB10^exp\fR regardless of the current \fBibase\fR\.
+.
+.P
 Scientific notation is a non\-portable extension\.
 .
 .SH "COMMANDS"
