@@ -111,7 +111,7 @@ const char* const bc_err_msgs[] = {
 	"undefined function: %s()",
 	"cannot use a void value in an expression",
 #else
-	NULL, NULL, NULL
+	NULL, NULL, NULL,
 #endif // BC_ENABLED
 
 	"end of file",
