@@ -154,12 +154,19 @@ static BcStatus bc_vm_envArgs(void) {
 	bc_vec_push(&v, &bc_args_env_name);
 
 	while (*buf) {
+
 		if (!isspace(*buf)) {
+
 			bc_vec_push(&v, &buf);
-			while (*buf && !isspace(*buf)) ++buf;
-			if (*buf) (*(buf++)) = '\0';
+
+			while (*buf && !isspace(*buf)) buf += 1;
+
+			if (*buf) {
+				*buf = '\0';
+				buf += 1;
+			}
 		}
-		else ++buf;
+		else buf += 1;
 	}
 
 	// Make sure to push a NULL pointer at the end.
@@ -419,11 +426,11 @@ static BcStatus bc_vm_stdin(void) {
 
 				if (c == '/' && !comment && c2 == '*') {
 					comment = true;
-					++i;
+					i += 1;
 				}
 				else if (c == '*' && comment && c2 == '/') {
 					comment = false;
-					++i;
+					i += 1;
 				}
 			}
 		}

@@ -842,7 +842,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 		if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 
-		++p->func->nparams;
+		p->func->nparams += 1;
 
 		name = bc_vm_strdup(p->l.str.v);
 		s = bc_lex_next(&p->l);
@@ -1300,7 +1300,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_PARSE_LEAF(prev, bin_last, rprn))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
-				++nparens;
+				nparens += 1;
 				rprn = incdec = false;
 				get_token = true;
 				bc_vec_push(&p->ops, &t);
@@ -1341,7 +1341,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				get_token = bin_last = false;
 				s = bc_parse_name(p, &prev, flags & ~BC_PARSE_NOCALL);
 				rprn = (prev == BC_INST_CALL);
-				++nexprs;
+				nexprs += 1;
 
 				break;
 			}
@@ -1372,7 +1372,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 
 				get_token = true;
 				rprn = bin_last = false;
-				++nexprs;
+				nexprs += 1;
 
 				break;
 			}
@@ -1386,7 +1386,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 
 				s = bc_parse_builtin(p, t, flags, &prev);
 				rprn = get_token = bin_last = incdec = false;
-				++nexprs;
+				nexprs += 1;
 
 				break;
 			}
@@ -1400,7 +1400,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				else s = bc_parse_read(p);
 
 				rprn = get_token = bin_last = incdec = false;
-				++nexprs;
+				nexprs += 1;
 				prev = BC_INST_READ;
 
 				break;
@@ -1413,7 +1413,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 
 				s = bc_parse_scale(p, &prev, flags);
 				rprn = get_token = bin_last = false;
-				++nexprs;
+				nexprs += 1;
 
 				break;
 			}
