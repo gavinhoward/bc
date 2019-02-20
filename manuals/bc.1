@@ -1190,11 +1190,20 @@ Otherwise, any signals cause bc(1) to exit\.
 .SH "COMMAND LINE HISTORY"
 bc(1) supports interactive command\-line editing, if compiled with the history option enabled\. If \fBstdin\fR is hooked to a terminal, it is enabled\. Previous lines can be recalled and edited with the arrow keys\.
 .
+.SH "LOCALES"
+This bc(1) ships with support for adding error messages for different locales\.
+.
 .SH "SEE ALSO"
 dc(1)
 .
 .SH "STANDARDS"
 bc(1) is compliant with the IEEE Std 1003\.1\-2017 (“POSIX\.1\-2017”) \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR specification\. The flags \fB\-efhiqsvVw\fR, all long options, and the extensions noted above are extensions to that specification\.
+.
+.P
+Note that the specification explicitly says that bc(1) only accepts numbers that use a period (\fB\.\fR) as a radix point, regardless of the value of \fBLC_NUMERIC\fR\.
+.
+.P
+Because this bc(1) ships with support for adding error messages for different locales, so it supports \fBLC_MESSAGES\fR\.
 .
 .SH "AUTHOR"
 This bc(1) was made from scratch by Gavin D\. Howard\.

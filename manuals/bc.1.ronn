@@ -1067,6 +1067,11 @@ bc(1) supports interactive command-line editing, if compiled with the history
 option enabled. If `stdin` is hooked to a terminal, it is enabled. Previous
 lines can be recalled and edited with the arrow keys.
 
+LOCALES
+-------
+
+This bc(1) ships with support for adding error messages for different locales.
+
 SEE ALSO
 --------
 
@@ -1078,6 +1083,12 @@ STANDARDS
 bc(1) is compliant with the [IEEE Std 1003.1-2017 (“POSIX.1-2017”)][1]
 specification. The flags `-efhiqsvVw`, all long options, and the extensions
 noted above are extensions to that specification.
+
+Note that the specification explicitly says that bc(1) only accepts numbers that
+use a period (`.`) as a radix point, regardless of the value of `LC_NUMERIC`.
+
+Because this bc(1) ships with support for adding error messages for different
+locales, so it supports `LC_MESSAGES`.
 
 AUTHOR
 ------
