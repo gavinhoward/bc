@@ -75,7 +75,7 @@ DC_HELP_GCDA = $(GEN_DIR)/dc_help.gcda
 DC_HELP_GCNO = $(GEN_DIR)/dc_help.gcno
 
 BIN = bin
-LOCALE = locale
+LOCALES = locales
 
 BC = bc
 DC = dc
@@ -114,7 +114,7 @@ INSTALL = ./install.sh
 SAFE_INSTALL = ./safe-install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
-LOCALE_INSTALL = ./locale.sh
+LOCALES_INSTALL = ./locales.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
 RONN_ARGS = --roff --organization="Gavin D. Howard" --manual="General Commands Manual"
@@ -245,7 +245,7 @@ clean:
 	@$(RM) -f *.html
 	@$(RM) -f *.gcda *.gcno
 	@$(RM) -f *.profraw
-	@$(RM) -f $(LOCALE)/*.cat
+	@$(RM) -f $(LOCALES)/*.cat
 	@$(RM) -f $(GEN_EXEC)
 	@$(RM) -f $(BC_LIB_C) $(BC_LIB_O)
 	@$(RM) -f $(BC_LIB_GCDA) $(BC_LIB_GCNO)
@@ -270,7 +270,7 @@ clean_tests: clean clean_config
 	@$(RM) -f .test.txt
 
 install_locales:
-	$(LOCALE_INSTALL) $(LOCALEDIR)
+	$(LOCALES_INSTALL) $(LOCALEDIR)
 
 install_bc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(BC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)

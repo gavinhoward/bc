@@ -33,7 +33,7 @@ shift
 
 mkdir -p "$installdir"
 
-localedir="$scriptdir/locale"
+localedir="$scriptdir/locales"
 
 for file in $localedir/*.msg; do
 
