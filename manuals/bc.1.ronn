@@ -190,7 +190,10 @@ respectively, command-line options (or equivalents) are given.
 
 **WARNING**: Both the number and the exponent in scientific notation are
 interpreted according to the current `ibase`, but the number is still multiplied
-by `10^exp` regardless of the current `ibase`.
+by `10^exponent` regardless of the current `ibase`. For example, if `ibase` is
+`16` and bc(1) is given the number string `"FFeA"`, the resulting decimal number
+will be `2550000000000`, and if bc(1) is given the number string `"10e-4"`, the
+resulting decimal number will be `0.0016`.
 
 Scientific notation is a non-portable extension.
 

@@ -182,7 +182,7 @@ In addition, if bc(1) was built with the extra math option, it accepts numbers i
 Using scientific notation is an error or warning if the \fB\-s\fR or \fB\-w\fR, respectively, command\-line options (or equivalents) are given\.
 .
 .P
-\fBWARNING\fR: Both the number and the exponent in scientific notation are interpreted according to the current \fBibase\fR, but the number is still multiplied by \fB10^exp\fR regardless of the current \fBibase\fR\.
+\fBWARNING\fR: Both the number and the exponent in scientific notation are interpreted according to the current \fBibase\fR, but the number is still multiplied by \fB10^exponent\fR regardless of the current \fBibase\fR\. For example, if \fBibase\fR is \fB16\fR and bc(1) is given the number string \fB"FFeA"\fR, the resulting decimal number will be \fB2550000000000\fR, and if bc(1) is given the number string \fB"10e\-4"\fR, the resulting decimal number will be \fB0\.0016\fR\.
 .
 .P
 Scientific notation is a non\-portable extension\.
