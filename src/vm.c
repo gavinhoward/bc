@@ -110,7 +110,9 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 	BcStatus s;
 	va_list args;
 
+#if BC_ENABLED
 	assert(e < BC_ERROR_POSIX_START || e > BC_ERROR_POSIX_END);
+#endif // BC_ENABLED
 
 	va_start(args, line);
 	s = bc_vm_printError(e, bc_err_fmt, line, args);
