@@ -106,6 +106,12 @@ available.
 
 To see what algorithms this `bc` uses, see the [algorithms manual][7].
 
+## Locales
+
+Currently, this `bc` only has support for English (and US English) locales.
+Patches are welcome for translations; use the existing files in `locales/` as a
+starting point.
+
 ## Other Projects
 
 Other projects based on this bc are:
@@ -143,6 +149,7 @@ Files:
 	karatsuba.py     Script for package maintainers to find the optimal Karatsuba number.
 	LICENSE.md       A Markdown form of the BSD 2-clause License.
 	link.sh          A script to link dc to bc.
+	locales.sh       A script to install locales, if desired.
 	Makefile.in      The Makefile template.
 	NOTICE.md        List of contributors and copyright owners.
 	RELEASE.md       A checklist for making a release (maintainer use only).
@@ -153,6 +160,7 @@ Folders:
 
 	gen      The bc math library, help texts, and code to generate C source.
 	include  All header files.
+	locales  Locale files, in .msg format. Patches welcome for translations.
 	manuals  Manuals for both programs.
 	src      All source code.
 	tests    All tests.
