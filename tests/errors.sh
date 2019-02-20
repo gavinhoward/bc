@@ -16,86 +16,10 @@
 
 # WARNING: Test files cannot have empty lines!
 
-die() {
-
-	local d="$1"
-	shift
-
-	local msg="$1"
-	shift
-
-	local name="$1"
-	shift
-
-	local err="$1"
-	shift
-
-	printf '\n'
-	printf '%s %s on test:\n' "$d" "$msg"
-	printf '\n'
-	printf '    %s\n' "$name"
-	printf '\n'
-	printf 'exiting...\n'
-	exit "$err"
-}
-
-checkcrash() {
-
-	local error="$1"
-	shift
-
-	local name="$1"
-	shift
-
-	if [ "$error" -gt 127 ]; then
-		die "$d" "crashed" "$name" "$error"
-	fi
-}
-
-checktest()
-{
-	local error="$1"
-	shift
-
-	local name="$1"
-	shift
-
-	local out="$1"
-	shift
-
-	local exebase="$1"
-	shift
-
-	checkcrash "$error" "$name"
-
-	if [ "$error" -eq 0 ]; then
-		die "$d" "returned no error" "$name" 127
-	fi
-
-	if [ "$error" -eq 100 ]; then
-
-		output=$(cat "$out")
-		fatal_error="Fatal error"
-
-		if [ "${output##*$fatal_error*}" ]; then
-			printf "%s\n" "$output"
-			die "$d" "had memory errors on a non-fatal error" "$name" "$error"
-		fi
-	fi
-
-	if [ ! -s "$out" ]; then
-		die "$d" "produced no error message" "$name" "$error"
-	fi
-
-	# Display the error messages if not directly running exe.
-	# This allows the script to print valgrind output.
-	if [ "$exebase" != "bc" -a "$exebase" != "dc" ]; then
-		cat "$out"
-	fi
-}
-
 script="$0"
 testdir=$(dirname "$script")
+
+. "$testdir/functions.sh"
 
 if [ "$#" -eq 0 ]; then
 	printf 'usage: %s dir [exec args...]\n' "$script"
@@ -117,6 +41,7 @@ out="$testdir/../.log_${d}_test.txt"
 exebase=$(basename "$exe")
 
 posix="posix_errors"
+read_errors="read_errors"
 
 if [ "$d" = "bc" ]; then
 	opts="-l"
@@ -126,38 +51,14 @@ if [ "$d" = "bc" ]; then
 else
 	opts="-x"
 	halt="q"
-	read_call="?"
-	read_expr="${read_call}"
 fi
 
-printf 'Running %s read error...\n' "$d"
-
-read_test=$(printf '%s\n' "$read_expr")
-
-printf '%s' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
-err="$?"
-
-checktest "$err" "$read_test" "$out" "$exebase"
-
-printf 'Running %s empty read...\n' "$d"
-
-read_test=$(printf '%s\n' "$read_call")
-
-printf '%s\n' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
-err="$?"
-
-checktest "$err" "$read_test" "$out" "$exebase"
-
-printf 'Running %s read EOF...\n' "$d"
-
-read_test=$(printf '%s' "$read_call")
-
-printf '%s' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
-err="$?"
-
-checktest "$err" "$read_test" "$out" "$exebase"
-
 for testfile in $testdir/$d/*errors.txt; do
+
+	if [ -z "${testfile##*$read_errors*}" ]; then
+		# We don't test read errors here. Skip.
+		continue
+	fi
 
 	if [ -z "${testfile##*$posix*}" ]; then
 

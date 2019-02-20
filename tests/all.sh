@@ -85,6 +85,7 @@ done < "$testdir/$d/all.txt"
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
 sh "$testdir/scripts.sh" "$d" "$refs" "$generate_tests" "$exe" "$@"
+sh "$testdir/read.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
 num=100000000000000000000000000000000000000000000000000000000000000000000000000000
