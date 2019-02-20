@@ -478,7 +478,7 @@ static BcStatus bc_vm_exec(void) {
 		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (s) return s;
 #if BC_ENABLE_EXTRA_MATH
-		if (BC_IS_POSIX) {
+		if (!BC_IS_POSIX) {
 			s = bc_vm_load(bc_lib2_name, bc_lib2);
 			if (s) return s;
 		}
