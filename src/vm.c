@@ -511,10 +511,8 @@ static void bc_vm_gettext() {
 	vm->warn_header = catgets(vm->catalog, set, msg + 1, bc_warn_fmt);
 #endif // BC_ENABLED
 
-	for (set += 1, msg = 1; msg < BC_ERR_IDX_NELEMS + 1; ++msg) {
+	for (set += 1, msg = 1; msg < BC_ERR_IDX_NELEMS + 1; ++msg)
 		vm->err_ids[msg - 1] = catgets(vm->catalog, set, msg, bc_errs[msg - 1]);
-		//printf("%s\n", vm->err_ids[msg - 1]);
-	}
 
 	i = 0;
 	id = bc_err_ids[i];
@@ -527,12 +525,7 @@ static void bc_vm_gettext() {
 			set = id + 3;
 		}
 
-		//printf("set: %d, msg: %d\n", set, msg);
-
-		//errno = 0;
 		vm->err_msgs[i] = catgets(vm->catalog, set, msg, bc_err_msgs[i]);
-		//if (errno) printf("error happened: %d\n", errno);
-		//if (i == BC_ERROR_PARSE_EXPR) printf("%s\n", vm->err_msgs[i]);
 	}
 
 	bc_vec_free(&dir);
