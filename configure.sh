@@ -543,7 +543,6 @@ contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "LOCALEDIR" "$LOCALEDIR")
-contents=$(replace "$contents" "RELLOCALEDIR" "$RELLOCALEDIR")
 contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
 contents=$(replace "$contents" "EXECSUFFIX" "$EXECSUFFIX")
 contents=$(replace "$contents" "BINDIR" "$BINDIR")
