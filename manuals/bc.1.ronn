@@ -475,6 +475,9 @@ any other context, an `obase` of `0` is invalid), and engineering notation is
 activated by assigning `1` to `obase` (which is also invalid in any other
 context). To deactivate them, just assign a different value to `obase`.
 
+Scientific notation and engineering notation are disabled if bc(1) is run with
+either the `-s` or `-w` command-line options (or equivalents).
+
 Printing numbers in scientific notation and/or engineering notation is a
 non-portable extension.
 
