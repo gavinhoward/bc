@@ -97,6 +97,8 @@ static BcStatus bc_vm_printError(BcError e, const char* const fmt,
 		BcInstPtr *ip = bc_vec_item_rev(&vm->prog.stack, 0);
 		BcFunc *f = bc_vec_item(&vm->prog.fns, ip->func);
 		fprintf(stderr, "\n    Function: %s", f->name);
+		if (ip->func != BC_PROG_MAIN && ip->func != BC_PROG_READ)
+			fprintf(stderr, "()");
 	}
 
 	fputs("\n\n", stderr);
