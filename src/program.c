@@ -556,7 +556,7 @@ void bc_program_negate(BcResult *r, BcNum *n) {
 }
 
 void bc_program_not(BcResult *r, BcNum *n) {
-	if (!BC_NUM_CMP_ZERO(n)) bc_num_one(&r->d.n);
+	if (!bc_num_isZero(n)) bc_num_one(&r->d.n);
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -596,9 +596,9 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	if (inst == BC_INST_BOOL_AND)
-		cond = BC_NUM_CMP_ZERO(n1) && BC_NUM_CMP_ZERO(n2);
+		cond = bc_num_isZero(n1) && bc_num_isZero(n2);
 	else if (inst == BC_INST_BOOL_OR)
-		cond = BC_NUM_CMP_ZERO(n1) || BC_NUM_CMP_ZERO(n2);
+		cond = bc_num_isZero(n1) || bc_num_isZero(n2);
 	else {
 
 		cmp = bc_num_cmp(n1, n2);
@@ -1591,7 +1591,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				s = bc_program_prep(p, &ptr, &num);
 				if (s) return s;
-				cond = !BC_NUM_CMP_ZERO(num);
+				cond = !bc_num_isZero(num);
 				bc_vec_pop(&p->results);
 			}
 			// Fallthrough.
