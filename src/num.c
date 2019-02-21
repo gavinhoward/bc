@@ -32,6 +32,10 @@
 #include <num.h>
 #include <vm.h>
 
+bool bc_num_isZero(const BcNum *n) {
+	return BC_NUM_NEG((n)->len != 0, (n)->neg);
+}
+
 static size_t bc_num_int(const BcNum *n) {
 	return n->len ? n->len - n->rdx : 0;
 }
@@ -113,7 +117,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 	if (a == b) return 0;
 	if (BC_NUM_ZERO(a)) return BC_NUM_NEG(b->len != 0, !b->neg);
-	if (BC_NUM_ZERO(b)) return BC_NUM_CMP_ZERO(a);
+	if (BC_NUM_ZERO(b)) return bc_num_isZero(a);
 	if (a->neg) {
 		if (b->neg) neg = true;
 		else return -1;

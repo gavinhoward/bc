@@ -63,8 +63,8 @@ typedef struct BcNum {
 #define BC_NUM_NEG(n, neg) ((((ssize_t) (n)) ^ -((ssize_t) (neg))) + (neg))
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
-#define BC_NUM_CMP_ZERO(a) (BC_NUM_NEG((a)->len != 0, (a)->neg))
-#define BC_NUM_PREQ(a, b) (bc_vm_checkSize((a)->len, (b)->len) + 1)
+//#define BC_NUM_CMP_ZERO(a) (BC_NUM_NEG((a)->len != 0, (a)->neg))
+#define BC_NUM_PREQ(a, b) (bc_vm_checkSize3((a)->len, (b)->len, 1))
 #define BC_NUM_SHREQ(a) ((a)->len)
 
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + 10)
@@ -117,6 +117,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 
 void bc_num_one(BcNum *restrict n);
 void bc_num_ten(BcNum *restrict n);
+bool bc_num_isZero(const BcNum *n);
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
                       BcNum *restrict base, size_t base_t, bool letter);
