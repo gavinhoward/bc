@@ -36,6 +36,10 @@ static size_t bc_num_int(const BcNum *n) {
 	return n->len ? n->len - n->rdx : 0;
 }
 
+static bool bc_num_isOne(const BcNum *n) {
+	return n->len == 1 && n->rdx == 0 && n->num[0] == 1;
+}
+
 static void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
@@ -411,7 +415,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	BcStatus s;
 	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
-	bool aone = BC_NUM_ONE(a);
+	bool aone = bc_num_isOne(a);
 
 	// This is here because the function is recursive.
 	if (BC_SIGNAL) return BC_STATUS_SIGNAL;
@@ -419,7 +423,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
 	}
-	if (aone || BC_NUM_ONE(b)) {
+	if (aone || bc_num_isOne(b)) {
 		bc_num_copy(c, aone ? b : a);
 		return BC_STATUS_SUCCESS;
 	}
@@ -562,7 +566,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	if (BC_NUM_ONE(b)) {
+	if (bc_num_isOne(b)) {
 		bc_num_copy(c, a);
 		bc_num_retireMul(c, scale, a->neg, b->neg);
 		return BC_STATUS_SUCCESS;
@@ -684,7 +688,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	if (BC_NUM_ONE(b)) {
+	if (bc_num_isOne(b)) {
 		if (!b->neg) bc_num_copy(c, a);
 		else s = bc_num_inv(a, c, scale);
 		return s;
@@ -1426,7 +1430,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		bc_num_setToZero(b, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	if (BC_NUM_ONE(a)) {
+	if (bc_num_isOne(a)) {
 		bc_num_one(b);
 		bc_num_extend(b, scale);
 		return BC_STATUS_SUCCESS;
@@ -1584,7 +1588,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 		s = bc_num_divmod(&exp, &two, &exp, &temp, 0);
 		if (BC_STATUS_SIGNAL_ONLY(s)) goto err;
 
-		if (BC_NUM_ONE(&temp)) {
+		if (bc_num_isOne(&temp)) {
 			s = bc_num_mul(d, &base, &temp, 0);
 			if (BC_STATUS_SIGNAL_ONLY(s)) goto err;
 
