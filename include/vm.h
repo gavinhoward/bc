@@ -113,6 +113,7 @@
 
 #define BC_STATUS_IS_ERROR(s) \
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_PARSE)
+#define BC_STATUS_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && (s))
 
 typedef struct BcVm {
 

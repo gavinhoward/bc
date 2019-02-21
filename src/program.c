@@ -167,10 +167,16 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 			bc_num_init(n, len);
 			s = bc_num_parse(n, str, &p->ib, p->ib_t, len == 1);
-			if (s) {
+
+#if BC_ENABLE_SIGNALS
+			// bc_num_parse() only does operations that can only fail
+			// when signals happen. Thus, if signals are not enabled,
+			// we don't need this check.
+			if (BC_STATUS_SIGNAL_ONLY(s)) {
 				bc_num_free(n);
 				return s;
 			}
+#endif // BC_ENABLE_SIGNALS
 
 			r->t = BC_RESULT_TEMP;
 			break;
@@ -1223,10 +1229,20 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		bc_num_createCopy(&num, n);
 		bc_num_truncate(&num, num.rdx);
 
+		// This is guaranteed to not have a divide by 0
+		// because strmb is equal to UCHAR_MAX + 1.
 		s = bc_num_mod(&num, &p->strmb, &num, 0);
-		if (s) goto num_err;
+#if BC_ENABLE_SIGNALS
+		if (BC_STATUS_SIGNAL_ONLY(s)) goto num_err;
+#endif // BC_ENABLE_SIGNALS
+
+		// This is also guaranteed to not error because num is in the range
+		// [0, UCHAR_MAX], which is definitely in range for an unsigned long.
+		// And it is not negative.
 		s = bc_num_ulong(&num, &val);
-		if (s) goto num_err;
+#if BC_ENABLE_SIGNALS
+		if (BC_STATUS_SIGNAL_ONLY(s)) goto num_err;
+#endif // BC_ENABLE_SIGNALS
 
 		c = (char) val;
 
@@ -1255,9 +1271,11 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 
 	return BC_STATUS_SUCCESS;
 
+#if BC_ENABLE_SIGNALS
 num_err:
 	bc_num_free(&num);
 	return s;
+#endif // BC_ENABLE_SIGNALS
 }
 
 static BcStatus bc_program_printStream(BcProgram *p) {
