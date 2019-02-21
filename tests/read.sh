@@ -68,7 +68,7 @@ printf 'Running %s read...\n' "$d"
 
 while read line; do
 
-	printf '%s\n%s\n' "$read_call" "$line" | "$exe" "$options" "$@" > "$out"
+	printf '%s\n%s\n' "$read_call" "$line" | "$exe" "$@" "$options" > "$out"
 	diff "$results" "$out"
 
 done < "$name"
@@ -79,7 +79,7 @@ printf 'Running %s read errors...\n' "$d"
 
 while read line; do
 
-	printf '%s\n%s\n' "$read_call" "$line" | "$exe" "$options" "$@" 2> "$out" > /dev/null
+	printf '%s\n%s\n' "$read_call" "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
 	err="$?"
 
 	checktest "$err" "$line" "$out" "$exebase"
