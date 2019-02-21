@@ -82,7 +82,7 @@ static BcStatus bc_vm_printError(BcError e, const char* const fmt,
 	// Make sure all of stdout is written first.
 	fflush(stdout);
 
-	fprintf(stderr, fmt, bc_errs[id]);
+	fprintf(stderr, fmt, vm->err_ids[id]);
 	vfprintf(stderr, vm->err_msgs[e], args);
 
 	assert(vm->file);
@@ -115,7 +115,7 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 #endif // BC_ENABLED
 
 	va_start(args, line);
-	s = bc_vm_printError(e, bc_err_fmt, line, args);
+	s = bc_vm_printError(e, vm->error_header, line, args);
 	va_end(args);
 
 	return s;
@@ -133,7 +133,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
 	if (!(p || w)) return BC_STATUS_SUCCESS;
 
 	va_start(args, line);
-	s = bc_vm_printError(e, p ? bc_err_fmt : bc_warn_fmt, line, args);
+	s = bc_vm_printError(e, p ? vm->error_header : vm->warn_header, line, args);
 	va_end(args);
 
 	return p ? s : BC_STATUS_SUCCESS;
@@ -536,6 +536,8 @@ static void bc_vm_gettext() {
 #if BC_ENABLED
 	vm->warn_header = bc_warn_fmt;
 #endif // BC_ENABLED
+
+	for (i = 0; i < BC_ERR_IDX_NELEMS; ++i) vm->err_ids[i] = bc_errs[i];
 	for (i = 0; i < BC_ERROR_NELEMS; ++i) vm->err_msgs[i] = bc_err_msgs[i];
 #endif // BC_ENABLE_NLS
 }
