@@ -166,12 +166,14 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			size_t len = strlen(str);
 
 			bc_num_init(n, len);
+
 			s = bc_num_parse(n, str, &p->ib, p->ib_t, len == 1);
+			assert(!s || s == BC_STATUS_SIGNAL);
 
 #if BC_ENABLE_SIGNALS
-			// bc_num_parse() only does operations that can only fail
-			// when signals happen. Thus, if signals are not enabled,
-			// we don't need this check.
+			// bc_num_parse() should only do operations that can
+			// only fail when signals happen. Thus, if signals
+			// are not enabled, we don't need this check.
 			if (BC_STATUS_SIGNAL_ONLY(s)) {
 				bc_num_free(n);
 				return s;
@@ -1232,6 +1234,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		// This is guaranteed to not have a divide by 0
 		// because strmb is equal to UCHAR_MAX + 1.
 		s = bc_num_mod(&num, &p->strmb, &num, 0);
+		assert(!s || s == BC_STATUS_SIGNAL);
 #if BC_ENABLE_SIGNALS
 		if (BC_STATUS_SIGNAL_ONLY(s)) goto num_err;
 #endif // BC_ENABLE_SIGNALS
@@ -1240,6 +1243,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		// [0, UCHAR_MAX], which is definitely in range for an unsigned long.
 		// And it is not negative.
 		s = bc_num_ulong(&num, &val);
+		assert(!s || s == BC_STATUS_SIGNAL);
 #if BC_ENABLE_SIGNALS
 		if (BC_STATUS_SIGNAL_ONLY(s)) goto num_err;
 #endif // BC_ENABLE_SIGNALS
