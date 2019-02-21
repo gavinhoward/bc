@@ -1559,7 +1559,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	// We already checked for 0.
 	s = bc_num_rem(a, c, &base, 0);
 	assert(!s || s == BC_STATUS_SIGNAL);
-	if (BC_STATUS_SIGNAL_ONLY(s)) goto err;
+	if (BC_STATUS_SIGNAL_ONLY(s)) goto rem_err;
 	bc_num_createCopy(&exp, b);
 
 	while (!BC_SIGNAL && BC_NUM_NONZERO(&exp)) {
@@ -1590,8 +1590,9 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	if (!s && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 
 err:
-	bc_num_free(&temp);
 	bc_num_free(&exp);
+rem_err:
+	bc_num_free(&temp);
 	bc_num_free(&base);
 	assert(!d->neg || d->len);
 	return s;
