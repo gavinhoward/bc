@@ -32,6 +32,10 @@
 #include <num.h>
 #include <vm.h>
 
+static size_t bc_num_int(const BcNum *n) {
+	return n->len ? n->len - n->rdx : 0;
+}
+
 static void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
@@ -112,8 +116,8 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 	else if (b->neg) return 1;
 
-	a_int = BC_NUM_INT(a);
-	b_int = BC_NUM_INT(b);
+	a_int = bc_num_int(a);
+	b_int = bc_num_int(b);
 	a_int -= b_int;
 	a_max = (a->rdx > b->rdx);
 
@@ -310,8 +314,8 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	c->len = diff;
 	ptr_c += diff;
-	a_int = BC_NUM_INT(a);
-	b_int = BC_NUM_INT(b);
+	a_int = bc_num_int(a);
+	b_int = bc_num_int(b);
 
 	if (a_int > b_int) {
 		min_int = b_int;
@@ -1048,7 +1052,7 @@ static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		bc_num_shift_l(&temp, places);
 	}
 	else {
-		places = BC_NUM_INT(n) - 1;
+		places = bc_num_int(n) - 1;
 		mod = places % 3;
 		if (eng && mod != 0) places -= 3 - (3 - mod);
 		bc_num_shift_r(&temp, places);
@@ -1099,7 +1103,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	bc_vec_init(&stack, sizeof(unsigned long), NULL);
 	bc_num_init(&fracp, n->rdx);
 	bc_num_init(&digit, len);
-	bc_num_init(&frac_len, BC_NUM_INT(n));
+	bc_num_init(&frac_len, bc_num_int(n));
 	bc_num_one(&frac_len);
 	bc_num_createCopy(&intp, n);
 
@@ -1336,15 +1340,15 @@ size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
 
 	ardx = a->rdx;
 	brdx = b->rdx;
-	aint = BC_NUM_INT(a);
-	bint = BC_NUM_INT(b);
+	aint = bc_num_int(a);
+	bint = bc_num_int(b);
 
 	return bc_vm_checkSize3(BC_MAX(ardx, brdx), BC_MAX(aint, bint), 1);
 }
 
 size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
 	size_t rdx = bc_vm_checkSize(a->rdx, b->rdx);
-	rdx = bc_vm_checkSize3(BC_NUM_INT(a), BC_NUM_INT(b), BC_MAX(scale, rdx));
+	rdx = bc_vm_checkSize3(bc_num_int(a), bc_num_int(b), BC_MAX(scale, rdx));
 	return rdx + 1;
 }
 
@@ -1415,7 +1419,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	if (a->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
-	len = bc_vm_checkSize(BC_NUM_INT(a), 1);
+	len = bc_vm_checkSize(bc_num_int(a), 1);
 	bc_num_init(b, bc_vm_checkSize3(BC_MAX(scale, a->rdx), len >> 1, 1));
 
 	if (BC_NUM_ZERO(a)) {
@@ -1446,7 +1450,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	x1 = &num2;
 
 	bc_num_one(x0);
-	pow = BC_NUM_INT(a);
+	pow = bc_num_int(a);
 
 	if (pow) {
 
@@ -1463,7 +1467,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	x0->rdx = digs = digs1 = 0;
 	resrdx = scale + 2;
-	len = BC_NUM_INT(x0) + resrdx - 1;
+	len = bc_num_int(x0) + resrdx - 1;
 
 	while (!BC_SIGNAL && (cmp || digs < len)) {
 
