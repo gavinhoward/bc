@@ -344,6 +344,42 @@ make
 make install
 ```
 
+## Binary Size
+
+When built with both calculators, all available features, and `-Os` using clang,
+the executable is 101 kb (100,912 bytes) on x86_64. That isn't much for what is
+contained in the binary, but if necessary, it can be reduced.
+
+The single largest user of space is the `bc` calculator. If just `dc` is needed,
+the size can be reduced to to 72 kb (72,223 bytes).
+
+The next largest user of space is history support. If that is not needed, size
+can be reduced (for a build with both calculators) to 84 kb (84,448 bytes).
+
+There are several reasons that history is a bigger user of space than `dc`
+itself:
+
+* `dc`'s lexer and parser are *tiny* compared to `bc`'s.
+* `dc` does not have much extra code for runtime.
+* History has a lot of const data for supporting UTF-8 terminals.
+
+The next biggest user is `dc`, so if just `bc` is needed, the size can be
+reduced to 89 kb (88,624 bytes) with history and 76 kb (76,256 bytes) without
+history.
+
+The next biggest user is signal handling. Without it, the size (with both
+calculators) is reduced to 97 kb (97,800 bytes) with history and 84 kb (84,416
+bytes) without history.
+
+The next largest user is extra math support. If this is not needed, the size
+(with both calculators) can be reduced to 97 kb (96,808 bytes) with history and
+signal handling, 80 kb (80,344 bytes) without history, 93 kb (92,696 bytes)
+without signal handling, and 76 kb (76,216 bytes) without both.
+
+While disabling references reduces the amount of code, because of alignment and
+other reasons, it only reduces the executable size if extra math is disabled (to
+93 kb or 92,712 bytes).
+
 ## Testing
 
 The default test suite can be run with the following command:
