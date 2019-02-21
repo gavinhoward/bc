@@ -32,8 +32,12 @@
 #include <num.h>
 #include <vm.h>
 
+static ssize_t bc_num_neg(size_t n, bool neg) {
+	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
+}
+
 bool bc_num_isZero(const BcNum *n) {
-	return BC_NUM_NEG((n)->len != 0, (n)->neg);
+	return bc_num_neg((n)->len != 0, (n)->neg);
 }
 
 static size_t bc_num_int(const BcNum *n) {
@@ -103,7 +107,7 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b, 
 	size_t i;
 	int c = 0;
 	for (i = len - 1; !BC_SIGNAL && i < len && !(c = a[i] - b[i]); --i);
-	return BC_NUM_NEG(i + 1, c < 0);
+	return bc_num_neg(i + 1, c < 0);
 }
 
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
@@ -116,7 +120,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	assert(a && b);
 
 	if (a == b) return 0;
-	if (BC_NUM_ZERO(a)) return BC_NUM_NEG(b->len != 0, !b->neg);
+	if (BC_NUM_ZERO(a)) return bc_num_neg(b->len != 0, !b->neg);
 	if (BC_NUM_ZERO(b)) return bc_num_isZero(a);
 	if (a->neg) {
 		if (b->neg) neg = true;
@@ -145,10 +149,10 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
-	if (cmp) return BC_NUM_NEG(cmp, (!a_max) != neg);
+	if (cmp) return bc_num_neg((size_t) cmp, (!a_max) != neg);
 
 	for (max_num -= diff, i = diff - 1; !BC_SIGNAL && i < diff; --i) {
-		if (max_num[i]) return BC_NUM_NEG(1, (!a_max) != neg);
+		if (max_num[i]) return bc_num_neg(1, (!a_max) != neg);
 	}
 
 	return 0;

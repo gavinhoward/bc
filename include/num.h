@@ -60,10 +60,8 @@ typedef struct BcNum {
 // the size required for ibase and obase BcNum's.
 #define BC_NUM_LONG_LOG10 ((CHAR_BIT * sizeof(unsigned long) + 1) / 2 + 1)
 
-#define BC_NUM_NEG(n, neg) ((((ssize_t) (n)) ^ -((ssize_t) (neg))) + (neg))
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
-//#define BC_NUM_CMP_ZERO(a) (BC_NUM_NEG((a)->len != 0, (a)->neg))
 #define BC_NUM_PREQ(a, b) (bc_vm_checkSize3((a)->len, (b)->len, 1))
 #define BC_NUM_SHREQ(a) ((a)->len)
 
