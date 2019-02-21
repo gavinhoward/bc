@@ -64,9 +64,9 @@ typedef struct BcNum {
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
 #define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
-#define BC_NUM_INT(n) ((n)->len - (n)->rdx)
+#define BC_NUM_INT(n) ((n)->len ? (n)->len - (n)->rdx : 0)
 #define BC_NUM_CMP_ZERO(a) (BC_NUM_NEG((a)->len != 0, (a)->neg))
-#define BC_NUM_PREQ(a, b) ((a)->len + (b)->len + 1)
+#define BC_NUM_PREQ(a, b) (bc_vm_checkSize((a)->len, (b)->len) + 1)
 #define BC_NUM_SHREQ(a) ((a)->len)
 
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + 10)
@@ -77,7 +77,6 @@ typedef void (*BcNumDigitOp)(size_t, size_t, bool);
 
 void bc_num_init(BcNum *n, size_t req);
 void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
-void bc_num_expand(BcNum *n, size_t req);
 void bc_num_copy(BcNum *d, const BcNum *s);
 void bc_num_createCopy(BcNum *d, const BcNum *s);
 void bc_num_createFromUlong(BcNum *n, unsigned long val);

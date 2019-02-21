@@ -621,7 +621,7 @@ static BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	bc_vec_expand(&h->buf, h->buf.len + clen);
+	bc_vec_expand(&h->buf, bc_vm_checkSize(h->buf.len, clen));
 
 	if (h->pos == BC_HISTORY_BUF_LEN(h)) {
 

@@ -227,6 +227,17 @@ static void bc_vm_exit(BcError e) {
 	exit((int) s);
 }
 
+size_t bc_vm_checkSize(size_t a, size_t b) {
+	size_t result = a + b;
+	if (result == SIZE_MAX || result < a || result < b)
+		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	return result;
+}
+
+size_t bc_vm_checkSize3(size_t a, size_t b, size_t c) {
+	return bc_vm_checkSize(bc_vm_checkSize(a, b), c);
+}
+
 void* bc_vm_malloc(size_t n) {
 	void* ptr = malloc(n);
 	if (!ptr) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
