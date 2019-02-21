@@ -1303,7 +1303,8 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 	for (r = 0, i = n->len; i > n->rdx;) {
 		unsigned long prev = r;
 		r = r * 10 + ((uchar) n->num[--i]);
-		if ((r / 8) < prev) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+		if (r == SIZE_MAX || (r / 8) < prev)
+			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	}
 
 	*result = r;
