@@ -1330,12 +1330,22 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 }
 
 size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
+
+	size_t aint, bint, ardx, brdx;
+
 	BC_UNUSED(scale);
-	return BC_MAX(a->rdx, b->rdx) + BC_MAX(BC_NUM_INT(a), BC_NUM_INT(b)) + 1;
+
+	ardx = a->rdx;
+	brdx = b->rdx;
+	aint = BC_NUM_INT(a);
+	bint = BC_NUM_INT(b);
+
+	return BC_MAX(ardx, brdx) + BC_MAX(aint, bint) + 1;
 }
 
 size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
-	return BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, a->rdx + b->rdx) + 1;
+	size_t rdx = a->rdx + b->rdx;
+	return BC_NUM_INT(a) + BC_NUM_INT(b) + BC_MAX(scale, rdx) + 1;
 }
 
 size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
