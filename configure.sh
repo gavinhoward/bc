@@ -462,6 +462,7 @@ if [ "$hist" -eq 1 ]; then
 	printf 'Testing history...\n'
 
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
+	flags="$flags -DBC_ENABLE_NLS=$nls"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -DBC_ENABLE_REFERENCES=$refs -I./include/"
 
 	"$CC" $CFLAGS $flags -c "src/history/history.c" > /dev/null 2>&1
