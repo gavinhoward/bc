@@ -51,7 +51,7 @@ typedef struct BcNum {
 #define BC_NUM_PRINT_WIDTH (69)
 
 #ifndef BC_NUM_KARATSUBA_LEN
-#define BC_NUM_KARATSUBA_LEN (32)
+#define BC_NUM_KARATSUBA_LEN (64)
 #elif BC_NUM_KARATSUBA_LEN < 2
 #error BC_NUM_KARATSUBA_LEN must be at least 2
 #endif // BC_NUM_KARATSUBA_LEN
