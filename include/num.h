@@ -66,8 +66,6 @@ typedef struct BcNum {
 
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + 10)
 
-#define BC_NUM_KARATSUBA_ALLOCS (6)
-
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);

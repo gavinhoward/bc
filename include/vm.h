@@ -181,7 +181,6 @@ void bc_vm_puts(const char *str, FILE *restrict f);
 void bc_vm_putchar(int c);
 void bc_vm_fflush(FILE *restrict f);
 
-size_t bc_vm_arraySize(size_t n, size_t size);
 size_t bc_vm_checkSize(size_t a, size_t b);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);

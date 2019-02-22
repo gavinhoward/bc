@@ -37,7 +37,7 @@ static void bc_vec_grow(BcVec *restrict v, size_t n) {
 
 	while (cap < len) cap = bc_vm_checkSize(cap, cap);
 
-	v->v = bc_vm_realloc(v->v, bc_vm_arraySize(cap, v->size));
+	v->v = bc_vm_realloc(v->v, v->size * cap);
 	v->cap = cap;
 }
 
@@ -53,7 +53,7 @@ void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
 void bc_vec_expand(BcVec *restrict v, size_t req) {
 	assert(v);
 	if (v->cap < req) {
-		v->v = bc_vm_realloc(v->v, bc_vm_arraySize(req, v->size));
+		v->v = bc_vm_realloc(v->v, v->size * req);
 		v->cap = req;
 	}
 }
