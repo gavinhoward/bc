@@ -62,7 +62,6 @@ typedef struct BcNum {
 
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
-#define BC_NUM_PREQ(a, b) (bc_vm_checkSize3((a)->len, (b)->len, 1))
 #define BC_NUM_SHREQ(a) ((a)->len)
 
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + 10)

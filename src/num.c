@@ -443,7 +443,7 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 		unsigned int carry;
 		BcDig *ptr_c;
 
-		bc_num_expand(c, bc_vm_checkSize3(a->len, b->len, 1));
+		bc_num_expand(c, bc_vm_checkSize(bc_vm_checkSize(a->len, b->len), 1));
 
 		ptr_c = c->num;
 		memset(ptr_c, 0, sizeof(BcDig) * c->cap);
@@ -1355,18 +1355,18 @@ size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
 	aint = bc_num_int(a);
 	bint = bc_num_int(b);
 
-	return bc_vm_checkSize3(BC_MAX(ardx, brdx), BC_MAX(aint, bint), 1);
+	return bc_vm_checkSize(bc_vm_checkSize(BC_MAX(ardx, brdx), BC_MAX(aint, bint)), 1);
 }
 
 size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
 	size_t rdx = bc_vm_checkSize(a->rdx, b->rdx);
-	rdx = bc_vm_checkSize3(bc_num_int(a), bc_num_int(b), BC_MAX(scale, rdx));
+	rdx = bc_vm_checkSize(bc_vm_checkSize(bc_num_int(a), bc_num_int(b)), BC_MAX(scale, rdx));
 	return rdx + 1;
 }
 
 size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 	BC_UNUSED(scale);
-	return BC_NUM_PREQ(a, b);
+	return bc_vm_checkSize(bc_vm_checkSize(a->len, b->len), 1);
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -1402,7 +1402,7 @@ BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 }
 
 BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_p, BC_NUM_PREQ(a, b));
+	return bc_num_binary(a, b, c, scale, bc_num_p, bc_num_powReq(a, b, scale));
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -1432,7 +1432,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	if (a->neg) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	len = bc_vm_checkSize(bc_num_int(a), 1);
-	bc_num_init(b, bc_vm_checkSize3(BC_MAX(scale, a->rdx), len >> 1, 1));
+	bc_num_init(b, bc_vm_checkSize(bc_vm_checkSize(BC_MAX(scale, a->rdx), len >> 1), 1));
 
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(b, scale);
