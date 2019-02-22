@@ -149,10 +149,10 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
-	if (cmp) return bc_num_neg((size_t) cmp, (!a_max) != neg);
+	if (cmp) return bc_num_neg((size_t) cmp, !a_max == !neg);
 
 	for (max_num -= diff, i = diff - 1; !BC_SIGNAL && i < diff; --i) {
-		if (max_num[i]) return bc_num_neg(1, (!a_max) != neg);
+		if (max_num[i]) return bc_num_neg(1, !a_max == !neg);
 	}
 
 	return 0;
