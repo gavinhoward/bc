@@ -36,7 +36,7 @@ static ssize_t bc_num_neg(size_t n, bool neg) {
 	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
 }
 
-bool bc_num_isZero(const BcNum *n) {
+ssize_t bc_num_cmpZero(const BcNum *n) {
 	return bc_num_neg((n)->len != 0, (n)->neg);
 }
 
@@ -121,7 +121,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 	if (a == b) return 0;
 	if (BC_NUM_ZERO(a)) return bc_num_neg(b->len != 0, !b->neg);
-	if (BC_NUM_ZERO(b)) return bc_num_isZero(a);
+	if (BC_NUM_ZERO(b)) return bc_num_cmpZero(a);
 	if (a->neg) {
 		if (b->neg) neg = true;
 		else return -1;

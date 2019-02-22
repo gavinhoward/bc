@@ -115,7 +115,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 
 void bc_num_one(BcNum *restrict n);
 void bc_num_ten(BcNum *restrict n);
-bool bc_num_isZero(const BcNum *n);
+ssize_t bc_num_cmpZero(const BcNum *n);
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
                       BcNum *restrict base, size_t base_t, bool letter);
