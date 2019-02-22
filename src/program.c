@@ -174,7 +174,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			// bc_num_parse() should only do operations that can
 			// only fail when signals happen. Thus, if signals
 			// are not enabled, we don't need this check.
-			if (BC_STATUS_SIGNAL_ONLY(s)) {
+			if (BC_ERROR_SIGNAL_ONLY(s)) {
 				bc_num_free(n);
 				return s;
 			}
@@ -1236,7 +1236,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		s = bc_num_mod(&num, &p->strmb, &num, 0);
 		assert(!s || s == BC_STATUS_SIGNAL);
 #if BC_ENABLE_SIGNALS
-		if (BC_STATUS_SIGNAL_ONLY(s)) goto num_err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto num_err;
 #endif // BC_ENABLE_SIGNALS
 
 		// This is also guaranteed to not error because num is in the range
@@ -1245,7 +1245,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		s = bc_num_ulong(&num, &val);
 		assert(!s || s == BC_STATUS_SIGNAL);
 #if BC_ENABLE_SIGNALS
-		if (BC_STATUS_SIGNAL_ONLY(s)) goto num_err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto num_err;
 #endif // BC_ENABLE_SIGNALS
 
 		c = (char) val;
