@@ -221,7 +221,7 @@ static void bc_num_split(const BcNum *restrict n, size_t idx, BcNum *restrict a,
 	bc_num_clean(a);
 }
 
-static void bc_num_shift_l(BcNum *restrict n, size_t places) {
+static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
 	if (!places || BC_NUM_ZERO(n)) return;
 
@@ -235,7 +235,7 @@ static void bc_num_shift_l(BcNum *restrict n, size_t places) {
 }
 
 #if BC_ENABLE_EXTRA_MATH
-static void bc_num_shift_r(BcNum *restrict n, size_t places) {
+static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 	size_t len = bc_vm_checkSize(n->rdx, places);
 
@@ -503,8 +503,8 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	s = bc_num_sub(&temp, &z2, &z1, 0);
 	if (BC_STATUS_SIGNAL_ONLY(s)) goto err;
 
-	bc_num_shift_l(&z0, max2 * 2);
-	bc_num_shift_l(&z1, max2);
+	bc_num_shiftLeft(&z0, max2 * 2);
+	bc_num_shiftLeft(&z1, max2);
 	s = bc_num_add(&z0, &z1, &temp, 0);
 	if (BC_STATUS_SIGNAL_ONLY(s)) goto err;
 	s = bc_num_add(&temp, &z2, c, 0);
@@ -539,8 +539,8 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	cpa.neg = cpb.neg = false;
 
-	bc_num_shift_l(&cpa, maxrdx);
-	bc_num_shift_l(&cpb, maxrdx);
+	bc_num_shiftLeft(&cpa, maxrdx);
+	bc_num_shiftLeft(&cpb, maxrdx);
 	s = bc_num_k(&cpa, &cpb, c);
 	if (BC_STATUS_SIGNAL_ONLY(s)) goto err;
 
@@ -782,7 +782,7 @@ static BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 	s = bc_num_intop(a, b, c, &val);
 	if (s) return s;
 
-	bc_num_shift_l(c, (size_t) val);
+	bc_num_shiftLeft(c, (size_t) val);
 
 	return s;
 }
@@ -799,7 +799,7 @@ static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale
 
 	if (BC_NUM_ZERO(c)) return s;
 
-	bc_num_shift_r(c, (size_t) val);
+	bc_num_shiftRight(c, (size_t) val);
 
 	return s;
 }
@@ -1061,13 +1061,13 @@ static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		places = n->rdx - bc_num_len(n) + 1;
 		mod = places % 3;
 		if (eng && mod != 0) places += 3 - mod;
-		bc_num_shift_l(&temp, places);
+		bc_num_shiftLeft(&temp, places);
 	}
 	else {
 		places = bc_num_int(n) - 1;
 		mod = places % 3;
 		if (eng && mod != 0) places -= 3 - (3 - mod);
-		bc_num_shift_r(&temp, places);
+		bc_num_shiftRight(&temp, places);
 	}
 
 	bc_num_printDecimal(&temp);
