@@ -54,7 +54,7 @@ BcStatus bc_lex_comment(BcLex *l) {
 
 		for (; (c = buf[i]) && c != '*'; ++i) nlines += (c == '\n');
 
-		if (!c || buf[i + 1] == '\0') {
+		if (BC_ERR(!c || buf[i + 1] == '\0')) {
 			l->i = i;
 			return bc_lex_err(l, BC_ERROR_PARSE_COMMENT);
 		}
@@ -134,7 +134,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 #if BC_ENABLED
 			if (BC_IS_POSIX) {
 				BcStatus s = bc_lex_posixErr(l, BC_ERROR_POSIX_EXP_NUM);
-				if (s) return s;
+				if (BC_ERR(s)) return s;
 			}
 #endif // BC_ENABLED
 
@@ -148,7 +148,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 				c = l->buf[l->i];
 			}
 
-			if (!BC_LEX_NUM_CHAR(c, false, true))
+			if (BC_ERR(!BC_LEX_NUM_CHAR(c, false, true)))
 				return bc_lex_verr(l, BC_ERROR_PARSE_CHAR, c);
 
 			l->i += bc_lex_num(l, 0, true);
@@ -202,7 +202,8 @@ BcStatus bc_lex_next(BcLex *l) {
 	l->last = l->t;
 	l->line += (l->i != 0 && l->buf[l->i - 1] == '\n');
 
-	if (l->last == BC_LEX_EOF) return bc_lex_err(l, BC_ERROR_PARSE_EOF);
+	if (BC_ERR(l->last == BC_LEX_EOF))
+		return bc_lex_err(l, BC_ERROR_PARSE_EOF);
 
 	l->t = BC_LEX_EOF;
 
@@ -212,7 +213,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	// is so the parser doesn't get inundated with whitespace.
 	do {
 		s = vm->next(l);
-	} while (!s && l->t == BC_LEX_WHITESPACE);
+	} while (BC_NO_ERR(s) && l->t == BC_LEX_WHITESPACE);
 
 	return s;
 }

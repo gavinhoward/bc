@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 	char *name;
 
 	vm = calloc(1, sizeof(BcVm));
-	if (!vm) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(!vm)) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
 
 	vm->locale = setlocale(LC_ALL, "");
 
