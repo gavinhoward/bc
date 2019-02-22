@@ -47,7 +47,7 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 			if (!BC_LEX_KW_POSIX(kw)) {
 				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_KW, kw->name);
-				if (BC_ERR(s)) return s;
+				if (s) return s;
 			}
 
 			// We minus 1 because the index has already been incremented.
@@ -58,7 +58,7 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 	bc_lex_name(l);
 
-	if (BC_ERR(l->str.len - 1 > 1))
+	if (l->str.len - 1 > 1)
 		s = bc_lex_vposixErr(l, BC_ERROR_POSIX_NAME_LEN, l->str.v);
 
 	return s;
@@ -74,7 +74,7 @@ static BcStatus bc_lex_string(BcLex *l) {
 
 	for (; (c = buf[i]) && c != '"'; ++i) nlines += c == '\n';
 
-	if (BC_ERR(c == '\0')) {
+	if (c == '\0') {
 		l->i = i;
 		return bc_lex_err(l, BC_ERROR_PARSE_STRING);
 	}
@@ -122,7 +122,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 			if (l->t == BC_LEX_OP_BOOL_NOT) {
 				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "!");
-				if (BC_ERR(s)) return s;
+				if (s) return s;
 			}
 
 			break;
@@ -137,7 +137,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '#':
 		{
 			s = bc_lex_posixErr(l, BC_ERROR_POSIX_COMMENT);
-			if (BC_ERR(s)) return s;
+			if (s) return s;
 
 			bc_lex_lineComment(l);
 
@@ -153,10 +153,10 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '&':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LIKELY(c2 == '&')) {
+			if (c2 == '&') {
 
 				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "&&");
-				if (BC_ERR(s)) return s;
+				if (s) return s;
 
 				l->i += 1;
 				l->t = BC_LEX_OP_BOOL_AND;
@@ -334,7 +334,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '\\':
 		{
-			if (BC_LIKELY(l->buf[l->i] == '\n')) {
+			if (l->buf[l->i] == '\n') {
 				l->i += 1;
 				l->t = BC_LEX_WHITESPACE;
 			}
@@ -390,10 +390,10 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			c2 = l->buf[l->i];
 
-			if (BC_LIKELY(c2 == '|')) {
+			if (c2 == '|') {
 
 				s = bc_lex_vposixErr(l, BC_ERROR_POSIX_BOOL, "||");
-				if (BC_ERR(s)) return s;
+				if (s) return s;
 
 				l->i += 1;
 				l->t = BC_LEX_OP_BOOL_OR;

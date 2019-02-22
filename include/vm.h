@@ -89,8 +89,7 @@
 
 #if BC_ENABLE_SIGNALS
 
-#define BC_SIGNAL BC_UNLIKELY(vm->sig)
-#define BC_NO_SIGNAL BC_LIKELY(!vm->sig)
+#define BC_SIGNAL (vm->sig)
 #define BC_SIGINT (vm->sig == SIGINT)
 
 #ifdef SIGQUIT
@@ -114,7 +113,7 @@
 
 #define BC_STATUS_IS_ERROR(s) \
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_PARSE)
-#define BC_ERROR_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && BC_ERR(s))
+#define BC_STATUS_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && (s))
 
 typedef struct BcVm {
 

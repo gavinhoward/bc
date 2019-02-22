@@ -89,7 +89,7 @@
 #define BC_HISTORY_MAX_LINE (4095)
 
 #define BC_HISTORY_BUF_LEN(h) ((h)->buf.len - 1)
-#define BC_HISTORY_BAD_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
+#define BC_HISTORY_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
 
 #define BC_HISTORY_NEXT (false)
 #define BC_HISTORY_PREV (true)

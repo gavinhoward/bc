@@ -53,9 +53,8 @@
 static void bc_vm_sig(int sig) {
 	int err = errno;
 	if (sig == SIGINT) {
-		size_t n = vm->sig_len;
-		if (BC_ERR(write(STDERR_FILENO, vm->sig_msg, n) != (ssize_t) n))
-			sig = 0;
+		size_t len = vm->sig_len;
+		if (write(STDERR_FILENO, vm->sig_msg, len) != (ssize_t) len) sig = 0;
 	}
 	vm->sig = (uchar) sig;
 	errno = err;
@@ -133,7 +132,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
 
 	assert(e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END);
 
-	if (BC_UNLIKELY(!(p || w))) return BC_STATUS_SUCCESS;
+	if (!(p || w)) return BC_STATUS_SUCCESS;
 
 	va_start(args, line);
 	s = bc_vm_printError(e, p ? vm->error_header : vm->warn_header, line, args);
@@ -230,25 +229,26 @@ static void bc_vm_exit(BcError e) {
 
 size_t bc_vm_checkSize(size_t a, size_t b) {
 	size_t result = a + b;
-	if (BC_ERR(result < a || result < b)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (result == SIZE_MAX || result < a || result < b)
+		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return result;
 }
 
 void* bc_vm_malloc(size_t n) {
 	void* ptr = malloc(n);
-	if (BC_ERR(!ptr)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (!ptr) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return ptr;
 }
 
 void* bc_vm_realloc(void *ptr, size_t n) {
 	void* temp = realloc(ptr, n);
-	if (BC_ERR(!temp)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (!temp) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return temp;
 }
 
 char* bc_vm_strdup(const char *str) {
 	char *s = strdup(str);
-	if (BC_ERR(!s)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (!s) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return s;
 }
 
@@ -261,24 +261,21 @@ size_t bc_vm_printf(const char *fmt, ...) {
 	ret = vprintf(fmt, args);
 	va_end(args);
 
-	if (BC_ERR(ret < 0 || ferror(stdout))) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (ret < 0 || ferror(stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 
 	return (size_t) ret;
 }
 
 void bc_vm_puts(const char *str, FILE *restrict f) {
-	if (BC_ERR(fputs(str, f) == EOF || ferror(f)))
-		bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (fputs(str, f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 void bc_vm_putchar(int c) {
-	if (BC_ERR(putchar(c) == EOF || ferror(stdout)))
-		bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (putchar(c) == EOF || ferror(stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 void bc_vm_fflush(FILE *restrict f) {
-	if (BC_ERR(fflush(f) == EOF || ferror(f)))
-		bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (fflush(f) == EOF || ferror(f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 static void bc_vm_clean() {
@@ -351,11 +348,11 @@ static BcStatus bc_vm_process(const char *text, bool is_stdin) {
 	BcStatus s;
 
 	s = bc_parse_text(&vm->prs, text);
-	if (BC_ERR(s)) goto err;
+	if (s) goto err;
 
 	while (vm->prs.l.t != BC_LEX_EOF) {
 		s = vm->parse(&vm->prs);
-		if (BC_ERR(s)) goto err;
+		if (s) goto err;
 	}
 
 #if BC_ENABLED
@@ -377,13 +374,13 @@ static BcStatus bc_vm_file(const char *file) {
 
 	bc_lex_file(&vm->prs.l, file);
 	s = bc_read_file(file, &data);
-	if (BC_ERR(s)) return s;
+	if (s) return s;
 
 	s = bc_vm_process(data, false);
-	if (BC_ERR(s)) goto err;
+	if (s) goto err;
 
 #if BC_ENABLED
-	if (BC_ERR(BC_PARSE_NO_EXEC(&vm->prs)))
+	if (BC_PARSE_NO_EXEC(&vm->prs))
 		s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 
@@ -410,7 +407,7 @@ static BcStatus bc_vm_stdin(void) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	for (; !done && !BC_STATUS_IS_ERROR(s) && buf.len > 1 && BC_NO_SIGNAL &&
+	for (; !done && !BC_STATUS_IS_ERROR(s) && buf.len > 1 && !BC_SIGNAL &&
 	       s != BC_STATUS_SIGNAL; s = bc_read_line(&buf, ">>> "))
 	{
 		char c2, *str = buf.v;
@@ -455,20 +452,18 @@ static BcStatus bc_vm_stdin(void) {
 		if (len >= 2 && str[len - 2] == '\\' && str[len - 1] == '\n') continue;
 
 		s = bc_vm_process(buffer.v, true);
-		if (BC_ERR(s)) goto err;
+		if (s) goto err;
 
 		bc_vec_empty(&buffer);
 	}
 
-	if (BC_ERR(s && s != BC_STATUS_EOF)) goto err;
-	else if (BC_NO_ERR(s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
+	if (s && s != BC_STATUS_EOF) goto err;
+	else if (BC_SIGNAL && !s) s = BC_STATUS_SIGNAL;
 	else if (!BC_STATUS_IS_ERROR(s)) {
-		if (BC_ERR(comment))
-			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);
-		else if (BC_ERR(string))
-			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_STRING);
+		if (comment) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);
+		else if (string) s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_STRING);
 #if BC_ENABLED
-		else if (BC_ERR(BC_PARSE_NO_EXEC(&vm->prs)))
+		else if (BC_PARSE_NO_EXEC(&vm->prs))
 			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 	}
@@ -487,7 +482,7 @@ static BcStatus bc_vm_load(const char *name, const char *text) {
 	bc_lex_file(&vm->prs.l, name);
 	s = bc_parse_text(&vm->prs, text);
 
-	while (BC_NO_ERR(s) && vm->prs.l.t != BC_LEX_EOF) s = vm->parse(&vm->prs);
+	while (!s && vm->prs.l.t != BC_LEX_EOF) s = vm->parse(&vm->prs);
 
 	return s;
 }
@@ -564,11 +559,11 @@ static BcStatus bc_vm_exec(void) {
 #if BC_ENABLED
 	if (BC_IS_BC && vm->flags & BC_FLAG_L) {
 		s = bc_vm_load(bc_lib_name, bc_lib);
-		if (BC_ERR(s)) return s;
+		if (s) return s;
 #if BC_ENABLE_EXTRA_MATH
 		if (!BC_IS_POSIX) {
 			s = bc_vm_load(bc_lib2_name, bc_lib2);
-			if (BC_ERR(s)) return s;
+			if (s) return s;
 		}
 #endif // BC_ENABLE_EXTRA_MATH
 	}
@@ -577,12 +572,12 @@ static BcStatus bc_vm_exec(void) {
 	if (vm->exprs.len) {
 		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
 		s = bc_vm_process(vm->exprs.v, false);
-		if (BC_ERR(s)) return s;
+		if (s) return s;
 	}
 
-	for (i = 0; BC_NO_ERR(s) && i < vm->files.len; ++i)
+	for (i = 0; !s && i < vm->files.len; ++i)
 		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
-	if (BC_ERR(s && s != BC_STATUS_QUIT)) return s;
+	if (s && s != BC_STATUS_QUIT) return s;
 
 	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
 
@@ -625,12 +620,12 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	if (BC_IS_BC) {
 		vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 		s = bc_vm_envArgs();
-		if (BC_ERR(s)) goto exit;
+		if (s) goto exit;
 	}
 #endif // BC_ENABLED
 
 	s = bc_args(argc, argv);
-	if (BC_ERR(s)) goto exit;
+	if (s) goto exit;
 
 	vm->flags |= isatty(STDIN_FILENO) ? BC_FLAG_TTYIN : 0;
 	vm->flags |= BC_TTYIN && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;

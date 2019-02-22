@@ -63,7 +63,7 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	char *buf;
 
 	s = bc_read_file(file, &buf);
-	if (BC_ERR(s)) return s;
+	if (s) return s;
 
 	bc_args_exprs(exprs, buf);
 	free(buf);
@@ -98,7 +98,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case 'f':
 			{
 				s = bc_args_file(&vm->exprs, optarg);
-				if (BC_ERR(s)) return s;
+				if (s) return s;
 				break;
 			}
 
@@ -112,35 +112,35 @@ BcStatus bc_args(int argc, char *argv[]) {
 #if BC_ENABLED
 			case 'i':
 			{
-				if (BC_ERR(!BC_IS_BC)) err = c;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_I;
 				break;
 			}
 
 			case 'l':
 			{
-				if (BC_ERR(!BC_IS_BC)) err = c;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
-				if (BC_ERR(!BC_IS_BC)) err = c;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
-				if (BC_ERR(!BC_IS_BC)) err = c;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
-				if (BC_ERR(!BC_IS_BC)) err = c;
+				if (!BC_IS_BC) err = c;
 				vm->flags |= BC_FLAG_W;
 				break;
 			}
@@ -157,7 +157,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 #if DC_ENABLED
 			case 'x':
 			{
-				if (BC_ERR(BC_IS_BC)) err = c;
+				if (BC_IS_BC) err = c;
 				vm->flags |= DC_FLAG_X;
 				break;
 			}
@@ -171,13 +171,14 @@ BcStatus bc_args(int argc, char *argv[]) {
 			}
 		}
 
-		if (BC_ERR(err)) {
+		if (err) {
 
 			for (i = 0; bc_args_lopt[i].name; ++i) {
 				if (bc_args_lopt[i].val == err) break;
 			}
 
-			return bc_vm_verr(BC_ERROR_FATAL_OPTION, err, bc_args_lopt[i].name);
+			s = bc_vm_verr(BC_ERROR_FATAL_OPTION, err, bc_args_lopt[i].name);
+			if (s) return s;
 		}
 	}
 

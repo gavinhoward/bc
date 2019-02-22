@@ -322,7 +322,7 @@ static BcStatus bc_history_readCode(char *buf, size_t buf_len,
 	assert(buf_len >= 1);
 
 	n = read(STDIN_FILENO, buf, 1);
-	if (BC_ERR(n <= 0)) goto err;
+	if (n <= 0) goto err;
 
 	uchar byte = (uchar) buf[0];
 
@@ -331,17 +331,17 @@ static BcStatus bc_history_readCode(char *buf, size_t buf_len,
 		if ((byte & 0xE0) == 0xC0) {
 			assert(buf_len >= 2);
 			n = read(STDIN_FILENO, buf + 1, 1);
-			if (BC_ERR(n <= 0)) goto err;
+			if (n <= 0) goto err;
 		}
 		else if ((byte & 0xF0) == 0xE0) {
 			assert(buf_len >= 3);
 			n = read(STDIN_FILENO, buf + 1, 2);
-			if (BC_ERR(n <= 0)) goto err;
+			if (n <= 0) goto err;
 		}
 		else if ((byte & 0xF8) == 0xF0) {
 			assert(buf_len >= 3);
 			n = read(STDIN_FILENO, buf + 1, 3);
-			if (BC_ERR(n <= 0)) goto err;
+			if (n <= 0) goto err;
 		}
 		else {
 			n = -1;
@@ -354,7 +354,7 @@ static BcStatus bc_history_readCode(char *buf, size_t buf_len,
 	return BC_STATUS_SUCCESS;
 
 err:
-	if (BC_ERR(n < 0)) s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	if (n < 0) s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 	else *nread = (size_t) n;
 	return s;
 }
@@ -408,7 +408,7 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 	if (h->rawMode) return BC_STATUS_SUCCESS;
 
-	if (BC_ERR(tcgetattr(STDIN_FILENO, &h->orig_termios) == -1))
+	if (tcgetattr(STDIN_FILENO, &h->orig_termios) == -1)
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	// Modify the original mode.
@@ -431,7 +431,7 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 	raw.c_cc[VTIME] = 0;
 
 	// Put terminal in raw mode after flushing.
-	if (BC_ERR(tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) < 0))
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) < 0)
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	h->rawMode = true;
@@ -441,8 +441,7 @@ static BcStatus bc_history_enableRaw(BcHistory *h) {
 
 static void bc_history_disableRaw(BcHistory *h) {
 	// Don't even check the return value as it's too late.
-	if (!h->rawMode) return;
-	if (BC_ERR(tcsetattr(STDIN_FILENO, TCSAFLUSH, &h->orig_termios) != -1))
+	if (h->rawMode && tcsetattr(STDIN_FILENO, TCSAFLUSH, &h->orig_termios) != -1)
 		h->rawMode = false;
 }
 
@@ -457,7 +456,7 @@ static size_t bc_history_cursorPos() {
 	size_t cols, rows, i;
 
 	// Report cursor location.
-	if (BC_ERR(BC_HISTORY_BAD_WRITE("\x1b[6n", 4))) return SIZE_MAX;
+	if (BC_HISTORY_WRITE("\x1b[6n", 4)) return SIZE_MAX;
 
 	// Read the response: ESC [ rows ; cols R.
 	for (i = 0; i < sizeof(buf) - 1; ++i) {
@@ -467,8 +466,8 @@ static size_t bc_history_cursorPos() {
 	buf[i] = '\0';
 
 	// Parse it.
-	if (BC_ERR(buf[0] != BC_ACTION_ESC || buf[1] != '[')) return SIZE_MAX;
-	if (BC_ERR(sscanf(buf + 2, "%zu;%zu", &rows, &cols) != 2)) return SIZE_MAX;
+	if (buf[0] != BC_ACTION_ESC || buf[1] != '[') return SIZE_MAX;
+	if (sscanf(buf + 2, "%zu;%zu", &rows, &cols) != 2) return SIZE_MAX;
 
 	return cols <= UINT16_MAX ? cols : 0;
 }
@@ -481,20 +480,19 @@ static size_t bc_history_columns() {
 
 	struct winsize ws;
 
-	if (BC_ERR(ioctl(STDERR_FILENO, TIOCGWINSZ, &ws) == -1 || !ws.ws_col)) {
+	if (ioctl(STDERR_FILENO, TIOCGWINSZ, &ws) == -1 || !ws.ws_col) {
 
 		// Calling ioctl() failed. Try to query the terminal itself.
 		size_t start, cols;
 
 		// Get the initial position so we can restore it later.
 		start = bc_history_cursorPos();
-		if (BC_ERR(start == SIZE_MAX)) return BC_HISTORY_DEF_COLS;
+		if (start == SIZE_MAX) return BC_HISTORY_DEF_COLS;
 
 		// Go to right margin and get position.
-		if (BC_ERR(BC_HISTORY_BAD_WRITE("\x1b[999C", 6)))
-			return BC_HISTORY_DEF_COLS;
+		if (BC_HISTORY_WRITE("\x1b[999C", 6)) return BC_HISTORY_DEF_COLS;
 		cols = bc_history_cursorPos();
-		if (BC_ERR(cols == SIZE_MAX)) return BC_HISTORY_DEF_COLS;
+		if (cols == SIZE_MAX) return BC_HISTORY_DEF_COLS;
 
 		// Restore position.
 		if (cols > start) {
@@ -507,7 +505,7 @@ static size_t bc_history_columns() {
 
 			// If this fails, return a value that
 			// callers will translate into an error.
-			if (BC_ERR(BC_HISTORY_BAD_WRITE(seq, len))) return SIZE_MAX;
+			if (BC_HISTORY_WRITE(seq, len)) return SIZE_MAX;
 		}
 
 		return cols;
@@ -609,7 +607,7 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 
 	assert(h->refresh.len > 0);
 
-	if (BC_ERR(BC_HISTORY_BAD_WRITE(h->refresh.v, h->refresh.len - 1)))
+	if (BC_HISTORY_WRITE(h->refresh.v, h->refresh.len - 1))
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	return BC_STATUS_SUCCESS;
@@ -641,8 +639,7 @@ static BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf,
 
 		if (colpos < h->cols) {
 			// Avoid a full update of the line in the trivial case.
-			if (BC_ERR(BC_HISTORY_BAD_WRITE(cbuf, clen)))
-				s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+			if (BC_HISTORY_WRITE(cbuf, clen)) s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 		}
 		else s = bc_history_refresh(h);
 	}
@@ -905,7 +902,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 	}
 	else {
 
-		if (BC_ERR(read(STDIN_FILENO, seq + 1, 1) == -1))
+		if (read(STDIN_FILENO, seq + 1, 1) == -1)
 			s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 		// ESC [ sequences.
@@ -916,7 +913,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 			if (c >= '0' && c <= '9') {
 
 				// Extended escape, read additional byte.
-				if (BC_ERR(read(STDIN_FILENO, seq + 2, 1) == -1))
+				if (read(STDIN_FILENO, seq + 2, 1) == -1)
 					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 				if (seq[2] == '~' && c == '3') s = bc_history_edit_delete(h);
@@ -993,7 +990,7 @@ static BcStatus bc_history_reset(BcHistory *h) {
 	h->cols = bc_history_columns();
 
 	// Check for error from bc_history_columns.
-	if (BC_ERR(h->cols == SIZE_MAX)) return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	if (h->cols == SIZE_MAX) return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
@@ -1016,14 +1013,14 @@ static BcStatus bc_history_printCtrl(BcHistory *h, unsigned int c) {
 	bc_vec_concat(&h->buf, str);
 
 	s = bc_history_refresh(h);
-	if (BC_ERR(s)) return s;
+	if (s) return s;
 
 	bc_vec_npop(&h->buf, sizeof(str));
 	bc_vec_pushByte(&h->buf, '\0');
 
 	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D) {
 
-		if (BC_ERR(BC_HISTORY_BAD_WRITE(newline, sizeof(newline) - 1)))
+		if (BC_HISTORY_WRITE(newline, sizeof(newline) - 1))
 			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 		s = bc_history_refresh(h);
@@ -1041,15 +1038,14 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	BcStatus s = bc_history_reset(h);
 
-	if (BC_ERR(s)) return s;
+	if (s) return s;
 
 	h->prompt = prompt;
 	h->plen = strlen(prompt);
 
-	if (BC_ERR(BC_HISTORY_BAD_WRITE(prompt, h->plen)))
-		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	if (BC_HISTORY_WRITE(prompt, h->plen)) return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
-	while (BC_NO_ERR(s)) {
+	while (!s) {
 
 		// Large enough for any encoding?
 		char cbuf[32];
@@ -1057,7 +1053,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		size_t nread = 0;
 
 		s = bc_history_readCode(cbuf, sizeof(cbuf), &c, &nread);
-		if (BC_ERR(s)) return s;
+		if (s) return s;
 
 		switch (c) {
 
@@ -1072,15 +1068,14 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			case BC_ACTION_CTRL_C:
 			{
 				s = bc_history_printCtrl(h, c);
-				if (BC_ERR(s)) return s;
+				if (s) return s;
 
 #if BC_ENABLE_SIGNALS
 				s = bc_history_reset(h);
-				if (BC_ERR(s)) break;
+				if (s) break;
 
-				if (BC_ERR(BC_HISTORY_BAD_WRITE(vm->sig_msg, vm->sig_len)) ||
-				    BC_ERR(BC_HISTORY_BAD_WRITE(bc_program_ready_msg,
-				                                bc_program_ready_msg_len)))
+				if (BC_HISTORY_WRITE(vm->sig_msg, vm->sig_len) ||
+				    BC_HISTORY_WRITE(bc_program_ready_msg, bc_program_ready_msg_len))
 				{
 					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 				}
@@ -1088,8 +1083,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 				break;
 #else // BC_ENABLE_SIGNALS
-				if (BC_ERR(BC_HISTORY_BAD_WRITE("\n", 1)))
-					bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+				if (BC_HISTORY_WRITE("\n", 1)) bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 				// Make sure the terminal is back to normal before exiting.
 				bc_vm_shutdown();
@@ -1185,9 +1179,9 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Clear screen.
 			case BC_ACTION_CTRL_L:
 			{
-				if (BC_ERR(BC_HISTORY_BAD_WRITE("\x1b[H\x1b[2J", 7)))
+				if (BC_HISTORY_WRITE("\x1b[H\x1b[2J", 7))
 					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
-				if (BC_NO_ERR(s)) s = bc_history_refresh(h);
+				if (!s) s = bc_history_refresh(h);
 				break;
 			}
 
@@ -1220,12 +1214,11 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 	BcStatus s;
 
 	s = bc_history_enableRaw(h);
-	if (BC_ERR(s)) return s;
+	if (s) return s;
 
 	s = bc_history_edit(h, prompt);
 	bc_history_disableRaw(h);
-	if (BC_NO_ERR(s) && BC_ERR(BC_HISTORY_BAD_WRITE("\n", 1)))
-		s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	if (!s && BC_HISTORY_WRITE("\n", 1)) s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	return s;
 }
@@ -1238,7 +1231,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	if (BC_TTYIN && !vm->history.badTerm) {
 
 		s = bc_history_raw(h, prompt);
-		if (BC_ERR(s)) return s;
+		if (s) return s;
 
 		bc_vec_string(vec, BC_HISTORY_BUF_LEN(h), h->buf.v);
 
@@ -1302,7 +1295,7 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 	             "Type 'quit' at any time to exit.\n");
 
 	s = bc_history_enableRaw(h);
-	if (BC_ERR(s)) return s;
+	if (s) return s;
 	memset(quit, ' ', 4);
 
 	while(true) {
