@@ -421,8 +421,9 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 	BcStatus s;
-	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2;
+	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2, total, size;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
+	BcDig *digs, *dig_ptr;
 	bool aone = bc_num_isOne(a);
 
 	// This is here because the function is recursive.
@@ -472,12 +473,22 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 		return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 	}
 
-	bc_num_init(&l1, max);
-	bc_num_init(&h1, max);
-	bc_num_init(&l2, max);
-	bc_num_init(&h2, max);
-	bc_num_init(&m1, max);
-	bc_num_init(&m2, max);
+	size = BC_NUM_KARATSUBA_ALLOCS * sizeof(BcDig);
+	total = bc_vm_arraySize(size, max);
+	digs = dig_ptr = bc_vm_malloc(total);
+	size = max * sizeof(BcDig);
+
+	bc_num_setup(&l1, dig_ptr, max);
+	dig_ptr += size;
+	bc_num_setup(&h1, dig_ptr, max);
+	dig_ptr += size;
+	bc_num_setup(&l2, dig_ptr, max);
+	dig_ptr += size;
+	bc_num_setup(&h2, dig_ptr, max);
+	dig_ptr += size;
+	bc_num_setup(&m1, dig_ptr, max);
+	dig_ptr += size;
+	bc_num_setup(&m2, dig_ptr, max);
 	bc_num_init(&z0, max);
 	bc_num_init(&z1, max);
 	bc_num_init(&z2, max);
@@ -486,8 +497,10 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	bc_num_split(a, max2, &l1, &h1);
 	bc_num_split(b, max2, &l2, &h2);
 
+	assert(bc_num_addReq(&h1, &l1, 0) <= m1.cap);
 	s = bc_num_add(&h1, &l1, &m1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	assert(bc_num_addReq(&h2, &l2, 0) <= m2.cap);
 	s = bc_num_add(&h2, &l2, &m2, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
@@ -510,16 +523,11 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	s = bc_num_add(&temp, &z2, c, 0);
 
 err:
+	free(digs);
 	bc_num_free(&temp);
 	bc_num_free(&z2);
 	bc_num_free(&z1);
 	bc_num_free(&z0);
-	bc_num_free(&m2);
-	bc_num_free(&m1);
-	bc_num_free(&h2);
-	bc_num_free(&l2);
-	bc_num_free(&h1);
-	bc_num_free(&l1);
 	return s;
 }
 
@@ -1319,9 +1327,15 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 	if (BC_ERR(n->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	for (r = 0, i = n->len; i > n->rdx;) {
-		unsigned long prev = r;
-		r = r * 10 + ((uchar) n->num[--i]);
-		if (r == SIZE_MAX || (r / 8) < prev)
+
+		unsigned long prev = r * 10;
+
+		if (BC_ERR(prev == SIZE_MAX || prev / 10 != r))
+			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+
+		r = prev + ((uchar) n->num[--i]);
+
+		if (BC_ERR(r == SIZE_MAX || r < prev))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	}
 
