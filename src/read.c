@@ -43,7 +43,7 @@ static bool bc_read_binary(const char *buf, size_t size) {
 	size_t i;
 
 	for (i = 0; i < size; ++i) {
-		if (BC_READ_BIN_CHAR(buf[i])) return true;
+		if (BC_ERR(BC_READ_BIN_CHAR(buf[i]))) return true;
 	}
 
 	return false;
@@ -63,11 +63,11 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 		bc_vm_fflush(stderr);
 	}
 
-	while (!BC_SIGNAL && c != '\n') {
+	while (BC_NO_SIGNAL && c != '\n') {
 
 		i = fgetc(stdin);
 
-		if (i == EOF) {
+		if (BC_UNLIKELY(i == EOF)) {
 
 #if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
@@ -114,8 +114,8 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	s = bc_read_chars(vec, prompt);
 #endif // BC_ENABLE_HISTORY
 
-	if (s && s != BC_STATUS_EOF) return s;
-	if (bc_read_binary(vec->v, vec->len - 1))
+	if (BC_ERR(s && s != BC_STATUS_EOF)) return s;
+	if (BC_ERR(bc_read_binary(vec->v, vec->len - 1)))
 		return bc_vm_verr(BC_ERROR_FATAL_BIN_FILE, bc_program_stdin_name);
 
 	return s;
@@ -132,28 +132,28 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	assert(path);
 
 	f = fopen(path, "r");
-	if (!f) return bc_vm_verr(BC_ERROR_FATAL_FILE_ERR, path);
-	if (fstat(fileno(f), &pstat) == -1) goto malloc_err;
+	if (BC_ERR(!f)) return bc_vm_verr(BC_ERROR_FATAL_FILE_ERR, path);
+	if (BC_ERR(fstat(fileno(f), &pstat) == -1)) goto malloc_err;
 
-	if (S_ISDIR(pstat.st_mode)) {
+	if (BC_ERR(S_ISDIR(pstat.st_mode))) {
 		e = BC_ERROR_FATAL_PATH_DIR;
 		goto malloc_err;
 	}
 
-	if (fseek(f, 0, SEEK_END) == -1) goto malloc_err;
+	if (BC_ERR(fseek(f, 0, SEEK_END) == -1)) goto malloc_err;
 	res = ftell(f);
-	if (res < 0) goto malloc_err;
-	if (fseek(f, 0, SEEK_SET) == -1) goto malloc_err;
+	if (BC_ERR(res < 0)) goto malloc_err;
+	if (BC_ERR(fseek(f, 0, SEEK_SET) == -1)) goto malloc_err;
 
 	size = (size_t) res;
 	*buf = bc_vm_malloc(size + 1);
 
 	read = fread(*buf, 1, size, f);
-	if (read != size) goto read_err;
+	if (BC_ERR(read != size)) goto read_err;
 
 	(*buf)[size] = '\0';
 
-	if (bc_read_binary(*buf, size)) {
+	if (BC_ERR(bc_read_binary(*buf, size))) {
 		e = BC_ERROR_FATAL_BIN_FILE;
 		goto read_err;
 	}

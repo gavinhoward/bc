@@ -70,7 +70,7 @@ static BcStatus dc_lex_string(BcLex *l) {
 		if (depth) bc_vec_push(&l->str, &c);
 	}
 
-	if (c == '\0' && depth) {
+	if (BC_ERR(c == '\0' && depth)) {
 		l->i = i;
 		return bc_lex_err(l, BC_ERROR_PARSE_STRING);
 	}
@@ -139,7 +139,8 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '.':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LEX_NUM_CHAR(c2, true, false)) s = bc_lex_number(l, c);
+			if (BC_LIKELY(BC_LEX_NUM_CHAR(c2, true, false)))
+				s = bc_lex_number(l, c);
 			else s = bc_lex_invalidChar(l, c);
 			break;
 		}
