@@ -620,15 +620,15 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	c->len = cp.len;
 	p = b->num;
 
-	for (i = end - 1; BC_NO_SIGNAL && BC_NO_ERR(s) && i < end; --i) {
+	for (i = end - 1; BC_NO_SIGNAL && BC_NO_ERR(!s) && i < end; --i) {
 		n = cp.num + i;
 		q = 0;
-		for (; BC_NO_ERR(s) && (n[len] || bc_num_compare(n, p, len) >= 0); ++q)
+		for (; BC_NO_ERR(!s) && (n[len] || bc_num_compare(n, p, len) >= 0); ++q)
 			s = bc_num_subArrays(n, p, len);
 		c->num[i] = q;
 	}
 
-	if (BC_NO_ERR(s)) bc_num_retireMul(c, scale, a->neg, b->neg);
+	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	bc_num_free(&cp);
 
 	return s;
@@ -758,7 +758,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (zero) bc_num_setToZero(c, scale);
 
 sig_err:
-	if (BC_NO_ERR(s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
+	if (BC_NO_ERR(!s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 err:
 	bc_num_free(&copy);
 	return s;
@@ -1177,7 +1177,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	}
 
 sig_err:
-	if (BC_NO_ERR(s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
+	if (BC_NO_ERR(!s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 err:
 	bc_num_free(&frac_len);
 	bc_num_free(&digit);
@@ -1307,7 +1307,7 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 #endif // BC_ENABLE_EXTRA_MATH
 	else s = bc_num_printBase(n, base, base_t);
 
-	if (BC_NO_ERR(s) && newline) {
+	if (BC_NO_ERR(!s) && newline) {
 		bc_vm_putchar('\n');
 		vm->nchars = 0;
 	}
@@ -1631,7 +1631,7 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
-	if (BC_NO_ERR(s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
+	if (BC_NO_ERR(!s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 
 err:
 	bc_num_free(&exp);

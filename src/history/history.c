@@ -1049,7 +1049,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	if (BC_ERR(BC_HISTORY_BAD_WRITE(prompt, h->plen)))
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
-	while (BC_NO_ERR(s)) {
+	while (BC_NO_ERR(!s)) {
 
 		// Large enough for any encoding?
 		char cbuf[32];
@@ -1187,7 +1187,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			{
 				if (BC_ERR(BC_HISTORY_BAD_WRITE("\x1b[H\x1b[2J", 7)))
 					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
-				if (BC_NO_ERR(s)) s = bc_history_refresh(h);
+				if (BC_NO_ERR(!s)) s = bc_history_refresh(h);
 				break;
 			}
 
@@ -1224,7 +1224,7 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 
 	s = bc_history_edit(h, prompt);
 	bc_history_disableRaw(h);
-	if (BC_NO_ERR(s) && BC_ERR(BC_HISTORY_BAD_WRITE("\n", 1)))
+	if (BC_NO_ERR(!s) && BC_ERR(BC_HISTORY_BAD_WRITE("\n", 1)))
 		s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	return s;

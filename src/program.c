@@ -296,7 +296,7 @@ static BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	if (lt == (*r)->t && (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM))
 		s = bc_program_num(p, *l, ln);
 
-	if (BC_NO_ERR(s) && BC_ERR(lt == BC_RESULT_STR))
+	if (BC_NO_ERR(!s) && BC_ERR(lt == BC_RESULT_STR))
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 
 	return s;
@@ -535,7 +535,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		assert(inst != BC_INST_PRINT_STR);
 		s = bc_num_print(n, &p->ob, p->ob_t, !pop);
 #if BC_ENABLED
-		if (BC_NO_ERR(s)) bc_num_copy(&p->last, n);
+		if (BC_NO_ERR(!s)) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
 	}
 	else {
@@ -554,7 +554,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		}
 	}
 
-	if (BC_NO_ERR(s) && pop) bc_vec_pop(&p->results);
+	if (BC_NO_ERR(!s) && pop) bc_vec_pop(&p->results);
 
 	return s;
 }
@@ -1591,7 +1591,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcNum *num = NULL;
 #endif // BC_ENABLED
 
-	while (BC_NO_SIGNAL && BC_NO_ERR(s) && ip->idx < func->code.len) {
+	while (BC_NO_SIGNAL && BC_NO_ERR(!s) && ip->idx < func->code.len) {
 
 		uchar inst = (uchar) code[(ip->idx)++];
 
@@ -1810,7 +1810,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_PRINT_STACK:
 			{
-				for (idx = 0; BC_NO_ERR(s) && idx < p->results.len; ++idx)
+				for (idx = 0; BC_NO_ERR(!s) && idx < p->results.len; ++idx)
 					s = bc_program_print(p, BC_INST_PRINT, idx);
 				break;
 			}

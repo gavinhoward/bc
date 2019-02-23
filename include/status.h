@@ -128,6 +128,6 @@ typedef enum BcError {
 #endif // __clang__
 
 #define BC_ERR(e) BC_UNLIKELY(e)
-#define BC_NO_ERR(s) BC_LIKELY(!(s))
+#define BC_NO_ERR(s) BC_LIKELY(s)
 
 #endif // BC_STATUS_H

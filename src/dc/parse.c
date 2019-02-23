@@ -195,7 +195,7 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		}
 	}
 
-	if (BC_NO_ERR(s) && get_token) s = bc_lex_next(&p->l);
+	if (BC_NO_ERR(!s) && get_token) s = bc_lex_next(&p->l);
 
 	return s;
 }
@@ -207,7 +207,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	BcLexType t;
 	bool have_expr = false, need_expr = (flags & BC_PARSE_NOREAD) != 0;
 
-	while (BC_NO_SIGNAL && BC_NO_ERR(s) && (t = p->l.t) != BC_LEX_EOF) {
+	while (BC_NO_SIGNAL && BC_NO_ERR(!s) && (t = p->l.t) != BC_LEX_EOF) {
 
 		if (t == BC_LEX_NLINE) {
 			s = bc_lex_next(&p->l);
@@ -225,7 +225,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 		have_expr = true;
 	}
 
-	if (BC_NO_ERR(s)) {
+	if (BC_NO_ERR(!s)) {
 		if (BC_SIGNAL) s = BC_STATUS_SIGNAL;
 		else if (BC_ERR(need_expr && !have_expr))
 			s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);

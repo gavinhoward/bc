@@ -468,7 +468,7 @@ static BcStatus bc_vm_stdin(void) {
 	}
 
 	if (BC_ERR(s && s != BC_STATUS_EOF)) goto err;
-	else if (BC_NO_ERR(s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
+	else if (BC_NO_ERR(!s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
 	else if (!BC_STATUS_IS_ERROR(s)) {
 		if (BC_ERR(comment))
 			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);
@@ -494,7 +494,7 @@ static BcStatus bc_vm_load(const char *name, const char *text) {
 	bc_lex_file(&vm->prs.l, name);
 	s = bc_parse_text(&vm->prs, text);
 
-	while (BC_NO_ERR(s) && vm->prs.l.t != BC_LEX_EOF) s = vm->parse(&vm->prs);
+	while (BC_NO_ERR(!s) && vm->prs.l.t != BC_LEX_EOF) s = vm->parse(&vm->prs);
 
 	return s;
 }
@@ -587,7 +587,7 @@ static BcStatus bc_vm_exec(void) {
 		if (BC_ERR(s)) return s;
 	}
 
-	for (i = 0; BC_NO_ERR(s) && i < vm->files.len; ++i)
+	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
 		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 	if (BC_ERR(s && s != BC_STATUS_QUIT)) return s;
 

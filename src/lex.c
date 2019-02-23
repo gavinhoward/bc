@@ -213,7 +213,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	// is so the parser doesn't get inundated with whitespace.
 	do {
 		s = vm->next(l);
-	} while (BC_NO_ERR(s) && l->t == BC_LEX_WHITESPACE);
+	} while (BC_NO_ERR(!s) && l->t == BC_LEX_WHITESPACE);
 
 	return s;
 }
