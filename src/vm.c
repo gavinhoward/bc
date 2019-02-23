@@ -222,6 +222,7 @@ void bc_vm_shutdown(void) {
 #endif // NDEBUG
 }
 
+BC_NO_RETURN
 static void bc_vm_exit(BcError e) {
 	BcStatus s = bc_vm_err(e);
 	bc_vm_shutdown();

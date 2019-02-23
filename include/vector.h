@@ -65,7 +65,10 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx);
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data);
 #endif // BC_ENABLE_HISTORY
 
+BC_RET_NONNULL
 void* bc_vec_item(const BcVec *restrict v, size_t idx);
+
+BC_RET_NONNULL
 void* bc_vec_item_rev(const BcVec *restrict v, size_t idx);
 
 void bc_vec_free(void *vec);

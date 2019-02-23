@@ -61,6 +61,7 @@ static BcStatus bc_program_type_match(BcResult *r, BcType t) {
 	return BC_STATUS_SUCCESS;
 }
 
+BC_RET_NONNULL
 static char* bc_program_str(BcProgram *p, size_t idx, bool str) {
 
 	BcFunc *f;
@@ -92,6 +93,7 @@ static size_t bc_program_index(const char *restrict code, size_t *restrict bgn) 
 	return res;
 }
 
+BC_MALLOC BC_RET_NONNULL
 static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 
 	size_t i;
@@ -112,6 +114,7 @@ static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 }
 
 #if BC_ENABLE_REFERENCES
+BC_RET_NONNULL
 static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 
 	BcVec *v;
@@ -131,6 +134,7 @@ static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 }
 #endif // BC_ENABLE_REFERENCES
 
+BC_RET_NONNULL
 static BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
 
 	BcId e, *ptr;
