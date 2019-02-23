@@ -54,7 +54,7 @@ $set 4
 12 "function parameter or auto \"%s%s\" already exists"
 13 "block end could not be found"
 14 "cannot return a value from void function: %s()"
-15 "var cannot be reference: %s"
+15 "var cannot be a reference: %s"
 16 "POSIX does not allow names longer than 1 character: %s"
 17 "POSIX does not allow '#' script comments"
 18 "POSIX does not allow the following keyword: %s"

@@ -131,7 +131,7 @@ const char* const bc_err_msgs[] = {
 	"block end could not be found",
 	"cannot return a value from void function: %s()",
 #if BC_ENABLE_REFERENCES
-	"var cannot be reference: %s",
+	"var cannot be a reference: %s",
 #else
 	NULL,
 #endif // BC_ENABLE_REFERENCES
