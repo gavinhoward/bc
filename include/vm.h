@@ -101,6 +101,7 @@
 
 #else // BC_ENABLE_SIGNALS
 #define BC_SIGNAL (0)
+#define BC_NO_SIGNAL (1)
 #endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_NLS
