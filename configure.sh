@@ -69,11 +69,6 @@ usage() {
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
 	printf '        This is passed through to the compiler, so it must be supported.\n'
-	printf '    -R\n'
-	printf '        Disable the array references extension. This feature is an\n'
-	printf '        undocumented feature of the GNU bc, but this bc supports it.\n'
-	printf '        Additionally, since this feature is only available to bc,\n'
-	printf '        specifying "-d" ("-B") implies this option.\n'
 	printf '    -S\n'
 	printf '        Disable signal handling. On by default.\n'
 	printf '\n'
@@ -226,14 +221,13 @@ karatsuba_len=32
 debug=0
 signals=1
 hist=1
-refs=1
 extra_math=1
 optimization=""
 generate_tests=1
 install_manpages=1
 nls=1
 
-while getopts "bBcdDEgGhHk:MNO:RS" opt; do
+while getopts "bBcdDEgGhHk:MNO:S" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -250,7 +244,6 @@ while getopts "bBcdDEgGhHk:MNO:RS" opt; do
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
-		R) refs=0 ;;
 		S) signals=0 ;;
 		?) usage "Invalid option" ;;
 	esac
@@ -280,16 +273,16 @@ link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math $refs $generate_tests"
-dc_test="@tests/all.sh dc $extra_math $refs $generate_tests"
+bc_test="@tests/all.sh bc $extra_math $generate_tests"
+dc_test="@tests/all.sh dc $extra_math $generate_tests"
 
 timeconst="@tests/bc/timeconst.sh"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math $refs $generate_tests valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math $refs $generate_tests valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	vg_bc_test="@tests/all.sh bc $extra_math $generate_tests valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc $extra_math $generate_tests valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 else
 	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
 	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
@@ -325,9 +318,6 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	bc_lib=""
 	bc_help=""
-
-	printf 'dc only; disabling references...\n'
-	refs=0
 
 	executables="dc"
 
@@ -463,7 +453,7 @@ if [ "$hist" -eq 1 ]; then
 
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
 	flags="$flags -DBC_ENABLE_NLS=$nls"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -DBC_ENABLE_REFERENCES=$refs -I./include/"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 
 	"$CC" $CFLAGS $flags -c "src/history/history.c" > /dev/null
 
@@ -495,7 +485,6 @@ fi
 printf '\n'
 printf 'BC_ENABLE_SIGNALS=%s\n' "$signals"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
-printf 'BC_ENABLE_REFERENCES=%s\n' "$refs"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
 printf '\n'
@@ -534,7 +523,6 @@ contents=$(replace "$contents" "LINK" "$link")
 
 contents=$(replace "$contents" "SIGNALS" "$signals")
 contents=$(replace "$contents" "HISTORY" "$hist")
-contents=$(replace "$contents" "REFERENCES" "$refs")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")

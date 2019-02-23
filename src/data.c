@@ -130,11 +130,7 @@ const char* const bc_err_msgs[] = {
 	"function parameter or auto \"%s%s\" already exists",
 	"block end could not be found",
 	"cannot return a value from void function: %s()",
-#if BC_ENABLE_REFERENCES
 	"var cannot be a reference: %s",
-#else
-	NULL,
-#endif // BC_ENABLE_REFERENCES
 
 	"POSIX does not allow names longer than 1 character: %s",
 	"POSIX does not allow '#' script comments",
@@ -152,11 +148,7 @@ const char* const bc_err_msgs[] = {
 #else
 	NULL,
 #endif // BC_ENABLE_EXTRA_MATH
-#if BC_ENABLE_REFERENCES
 	"POSIX does not allow array references as function parameters",
-#else
-	NULL,
-#endif // BC_ENABLE_REFERENCES
 	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
 

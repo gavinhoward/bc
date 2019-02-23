@@ -851,7 +851,6 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 		BcType t = BC_TYPE_VAR;
 
-#if BC_ENABLE_REFERENCES
 		if (p->l.t == BC_LEX_OP_MULTIPLY) {
 			t = BC_TYPE_REF;
 			s = bc_lex_next(&p->l);
@@ -859,7 +858,6 @@ static BcStatus bc_parse_func(BcParse *p) {
 			s = bc_parse_posixErr(p, BC_ERROR_POSIX_REF);
 			if (BC_ERR(s)) return s;
 		}
-#endif // BC_ENABLE_REFERENCES
 
 		if (BC_ERR(p->l.t != BC_LEX_NAME))
 			return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
@@ -885,12 +883,10 @@ static BcStatus bc_parse_func(BcParse *p) {
 			s = bc_lex_next(&p->l);
 			if (BC_ERR(s)) goto err;
 		}
-#if BC_ENABLE_REFERENCES
 		else if (BC_ERR(t == BC_TYPE_REF)) {
 			s = bc_parse_verr(p, BC_ERROR_PARSE_REF_VAR, name);
 			goto err;
 		}
-#endif // BC_ENABLE_REFERENCES
 
 		comma = (p->l.t == BC_LEX_COMMA);
 		if (comma) {

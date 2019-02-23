@@ -194,8 +194,7 @@ Defaults to empty.
 This `bc` comes with several build options, all of which are enabled by default.
 
 All options can be used with each other, with a few exceptions that will be
-noted below. Also, array references are turned off automatically when building
-only `dc`.
+noted below.
 
 ### `bc` Only
 
@@ -261,18 +260,6 @@ step:
 
 ```
 ./configure.sh -N
-```
-
-<a name="build-array-references"/>
-
-### Array References
-
-Array references are an extension to the [standard][1] first implemented by the
-[GNU `bc`][2]. They can be disabled by using the `-R` flag in the configure
-step:
-
-```
-./configure.sh -R
 ```
 
 <a name="build-extra-math"/>
@@ -375,10 +362,6 @@ The next largest user is extra math support. If this is not needed, the size
 (with both calculators) can be reduced to 97 kb (96,808 bytes) with history and
 signal handling, 80 kb (80,344 bytes) without history, 93 kb (92,696 bytes)
 without signal handling, and 76 kb (76,216 bytes) without both.
-
-While disabling references reduces the amount of code, because of alignment and
-other reasons, it only reduces the executable size if extra math is disabled (to
-93 kb or 92,712 bytes).
 
 ## Testing
 

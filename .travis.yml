@@ -13,12 +13,8 @@ env:
   matrix:
     - CONFIGURE_ARGS=-HSOg
     - CONFIGURE_ARGS=-HNSOg
-    - CONFIGURE_ARGS=-HRSOg
-    - CONFIGURE_ARGS=-HRNSOg
     - CONFIGURE_ARGS=-EHSOg
     - CONFIGURE_ARGS=-EHNSOg
-    - CONFIGURE_ARGS=-EHRSOg
-    - CONFIGURE_ARGS=-EHNRSOg
 
 before_install:
   - sudo apt-get install -y dc

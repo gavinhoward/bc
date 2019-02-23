@@ -593,9 +593,6 @@ Other than this, all function arguments are passed by value.
 
 This is a non-portable extension.
 
-This is only available if bc(1) has been compiled with the array references
-option enabled.
-
 LIBRARY
 -------
 

@@ -111,7 +111,7 @@ static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 	return s;
 }
 
-#if BC_ENABLE_REFERENCES
+#if BC_ENABLED
 static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 
 	BcVec *v;
@@ -129,7 +129,7 @@ static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 
 	return v;
 }
-#endif // BC_ENABLE_REFERENCES
+#endif // BC_ENABLED
 
 static BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
 
@@ -212,9 +212,9 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 				v = bc_vec_top(v);
 
-#if BC_ENABLE_REFERENCES
+#if BC_ENABLED
 				if (v->size == sizeof(uchar)) v = bc_program_dereference(p, v);
-#endif // BC_ENABLE_REFERENCES
+#endif // BC_ENABLED
 
 				assert(v->size == sizeof(BcNum));
 
@@ -742,7 +742,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 	else {
 
 		BcVec *v = (BcVec*) n, *rv = &r.d.v;
-#if BC_ENABLE_REFERENCES
+#if BC_ENABLED
 		bool ref, ref_size;
 
 		ref = (v->size == sizeof(BcVec) && t != BC_TYPE_ARRAY);
@@ -781,7 +781,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 			return s;
 		}
 		else if (ref_size && t != BC_TYPE_REF) v = bc_program_dereference(p, v);
-#endif // BC_ENABLE_REFERENCES
+#endif // BC_ENABLED
 
 		bc_array_init(rv, true);
 		bc_array_copy(rv, v);
@@ -1032,9 +1032,9 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 			bc_vec_push(v, &param.n);
 		}
 		else {
-#if BC_ENABLE_REFERENCES
+#if BC_ENABLED
 			assert(a->idx == BC_TYPE_ARRAY);
-#endif // BC_ENABLE_REFERENCES
+#endif // BC_ENABLED
 			bc_array_init(&param.v, true);
 			bc_vec_push(v, &param.v);
 		}

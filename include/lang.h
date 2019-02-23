@@ -215,9 +215,9 @@ typedef struct BcInstPtr {
 typedef enum BcType {
 	BC_TYPE_VAR,
 	BC_TYPE_ARRAY,
-#if BC_ENABLE_REFERENCES
+#if BC_ENABLED
 	BC_TYPE_REF,
-#endif // BC_ENABLE_REFERENCES
+#endif // BC_ENABLED
 } BcType;
 
 void bc_func_init(BcFunc *f, const char* name);
