@@ -235,7 +235,7 @@ size_t bc_vm_arraySize(size_t n, size_t size) {
 	return result;
 }
 
-size_t bc_vm_checkSize(size_t a, size_t b) {
+size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t result = a + b;
 	if (BC_ERR(result < a || result < b)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return result;

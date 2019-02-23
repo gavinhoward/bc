@@ -33,9 +33,9 @@ static void bc_vec_grow(BcVec *restrict v, size_t n) {
 
 	size_t len, cap = v->cap;
 
-	len = bc_vm_checkSize(v->len, n);
+	len = bc_vm_growSize(v->len, n);
 
-	while (cap < len) cap = bc_vm_checkSize(cap, cap);
+	while (cap < len) cap = bc_vm_growSize(cap, cap);
 
 	v->v = bc_vm_realloc(v->v, bc_vm_arraySize(cap, v->size));
 	v->cap = cap;
@@ -123,7 +123,7 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 	assert(!v->len || !v->v[v->len - 1]);
 
 	bc_vec_npop(v, v->len);
-	bc_vec_expand(v, bc_vm_checkSize(len, 1));
+	bc_vec_expand(v, bc_vm_growSize(len, 1));
 	memcpy(v->v, str, len);
 	v->len = len;
 
