@@ -34,10 +34,18 @@ bool dc_lex_negCommand(BcLex *l) {
 	return !BC_LEX_NUM_CHAR(c, false, false);
 }
 
-static void dc_lex_register(BcLex *l) {
+static BcStatus dc_lex_register(BcLex *l) {
 
 	if (DC_X && isspace(l->buf[l->i - 1])) {
+
+		char c;
+
 		bc_lex_whitespace(l);
+		c = l->buf[l->i];
+
+		if (!isalnum(c) && c != '_')
+			return bc_lex_verr(l, BC_ERROR_PARSE_CHAR, c);
+
 		l->i += 1;
 		bc_lex_name(l);
 	}
@@ -47,6 +55,8 @@ static void dc_lex_register(BcLex *l) {
 		bc_vec_pushByte(&l->str, '\0');
 		l->t = BC_LEX_NAME;
 	}
+
+	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus dc_lex_string(BcLex *l) {
@@ -90,10 +100,7 @@ BcStatus dc_lex_token(BcLex *l) {
 	size_t i;
 
 	for (i = 0; i < dc_lex_regs_len; ++i) {
-		if (l->last == dc_lex_regs[i]) {
-			dc_lex_register(l);
-			return s;
-		}
+		if (l->last == dc_lex_regs[i]) return dc_lex_register(l);
 	}
 
 	if (c >= '$' && c <= '~' &&
