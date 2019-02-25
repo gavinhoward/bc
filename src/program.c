@@ -1192,11 +1192,12 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 	s = bc_program_binOpPrep(p, &r2, &n2, &r3, &n3);
 	if (BC_ERR(s)) return s;
 
-	// Because vars and array elements are only used for actually assigning,
-	// there is no way we can have invalidated pointers here because the result
-	// type needs to always be a temp or a constant. We assert that here, just
-	// in case.
-	assert(r1->t != BC_RESULT_VAR && r1->t != BC_RESULT_ARRAY_ELEM);
+	// Make sure that the values have their pointers updated, if necessary.
+	// Only array elements are possible.
+	if (r1->t == BC_RESULT_ARRAY_ELEM && (r1->t == r2->t || r1->t == r3->t)) {
+		s = bc_program_num(p, r1, &n1);
+		if (s) return s;
+	}
 
 	bc_num_init(resn, n3->len);
 	s = bc_num_modexp(n1, n2, n3, resn);
