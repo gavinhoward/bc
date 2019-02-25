@@ -53,9 +53,8 @@
 static void bc_vm_sig(int sig) {
 	int err = errno;
 	if (sig == SIGINT) {
-		size_t n = vm->sig_len;
-		if (BC_ERR(write(STDERR_FILENO, vm->sig_msg, n) != (ssize_t) n))
-			sig = 0;
+		size_t n = vm->siglen;
+		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n)) sig = 0;
 	}
 	vm->sig = (uchar) sig;
 	errno = err;
@@ -413,7 +412,7 @@ static BcStatus bc_vm_stdin(void) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	for (; !done && !BC_STATUS_IS_ERROR(s) && buf.len > 1 && BC_NO_SIGNAL &&
+	for (; !done && !BC_STATUS_IS_ERROR(s) && buf.len > 1 && BC_NO_SIG &&
 	       s != BC_STATUS_SIGNAL; s = bc_read_line(&buf, ">>> "))
 	{
 		char c2, *str = buf.v;
@@ -464,7 +463,7 @@ static BcStatus bc_vm_stdin(void) {
 	}
 
 	if (BC_ERR(s && s != BC_STATUS_EOF)) goto err;
-	else if (BC_NO_ERR(!s) && BC_SIGNAL) s = BC_STATUS_SIGNAL;
+	else if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 	else if (!BC_STATUS_IS_ERROR(s)) {
 		if (BC_ERR(comment))
 			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_COMMENT);

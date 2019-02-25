@@ -382,8 +382,11 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
 	BcInst etype = *prev;
 	BcLexType last = p->l.last;
 
-	if (BC_ERR(last == BC_LEX_OP_INC || last == BC_LEX_OP_DEC || last == BC_LEX_RPAREN))
+	if (BC_ERR(last == BC_LEX_OP_INC || last == BC_LEX_OP_DEC ||
+	           last == BC_LEX_RPAREN))
+	{
 		return s = bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
+	}
 
 	if (BC_PARSE_INST_VAR(etype)) {
 		*prev = inst = BC_INST_INC_POST + (p->l.t != BC_LEX_OP_INC);
@@ -1198,8 +1201,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 	}
 	else s = bc_parse_stmt(p);
 
-	if (BC_ERR((s && s != BC_STATUS_QUIT)) || BC_SIGNAL)
-		s = bc_parse_reset(p, s);
+	if (BC_ERR((s && s != BC_STATUS_QUIT)) || BC_SIG) s = bc_parse_reset(p, s);
 
 	return s;
 }
@@ -1225,7 +1227,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			s = bc_lex_next(&p->l);
 	}
 
-	for (; BC_NO_SIGNAL && BC_NO_ERR(!s) && !done && BC_PARSE_EXPR(t); t = p->l.t)
+	for (; BC_NO_SIG && BC_NO_ERR(!s) && !done && BC_PARSE_EXPR(t); t = p->l.t)
 	{
 		switch (t) {
 
@@ -1457,7 +1459,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 	}
 
 	if (BC_ERR(s)) return s;
-	if (BC_SIGNAL) return BC_STATUS_SIGNAL;
+	if (BC_SIG) return BC_STATUS_SIGNAL;
 
 	while (p->ops.len > ops_bgn) {
 

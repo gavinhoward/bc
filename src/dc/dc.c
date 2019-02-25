@@ -35,8 +35,8 @@ int dc_main(int argc, char **argv) {
 	vm->read_ret = BC_INST_POP_EXEC;
 	vm->help = dc_help;
 #if BC_ENABLE_SIGNALS
-	vm->sig_msg = dc_sig_msg;
-	vm->sig_len = (uchar) strlen(vm->sig_msg);
+	vm->sigmsg = dc_sig_msg;
+	vm->siglen = (uchar) strlen(vm->sigmsg);
 #endif // BC_ENABLE_SIGNALS
 
 	vm->next = dc_lex_token;

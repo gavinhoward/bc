@@ -113,7 +113,8 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_OP_REL_LT:
 		case BC_LEX_OP_REL_GT:
 		{
-			s = dc_parse_cond(p, (uchar) (t - BC_LEX_OP_REL_EQ + BC_INST_REL_EQ));
+			inst = (uchar) (t - BC_LEX_OP_REL_EQ + BC_INST_REL_EQ);
+			s = dc_parse_cond(p, inst);
 			break;
 		}
 
@@ -207,7 +208,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	BcLexType t;
 	bool have_expr = false, need_expr = (flags & BC_PARSE_NOREAD) != 0;
 
-	while (BC_NO_SIGNAL && BC_NO_ERR(!s) && (t = p->l.t) != BC_LEX_EOF) {
+	while (BC_NO_SIG && BC_NO_ERR(!s) && (t = p->l.t) != BC_LEX_EOF) {
 
 		if (t == BC_LEX_NLINE) {
 			s = bc_lex_next(&p->l);
@@ -226,7 +227,7 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 	}
 
 	if (BC_NO_ERR(!s)) {
-		if (BC_SIGNAL) s = BC_STATUS_SIGNAL;
+		if (BC_SIG) s = BC_STATUS_SIGNAL;
 		else if (BC_ERR(need_expr && !have_expr))
 			s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 		else if (p->l.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
@@ -245,7 +246,7 @@ BcStatus dc_parse_parse(BcParse *p) {
 	if (BC_ERR(p->l.t == BC_LEX_EOF)) s = bc_parse_err(p, BC_ERROR_PARSE_EOF);
 	else s = dc_parse_expr(p, 0);
 
-	if (BC_ERR(s) || BC_SIGNAL) s = bc_parse_reset(p, s);
+	if (BC_ERR(s) || BC_SIG) s = bc_parse_reset(p, s);
 
 	return s;
 }

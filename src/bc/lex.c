@@ -39,10 +39,10 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 	for (i = 0; i < bc_lex_kws_len; ++i) {
 
 		const BcLexKeyword *kw = bc_lex_kws + i;
-		size_t len = BC_LEX_KW_LEN(kw);
+		size_t n = BC_LEX_KW_LEN(kw);
 
-		if (!strncmp(buf, kw->name, len) && !isalnum(buf[len]) && buf[len] != '_')
-		{
+		if (!strncmp(buf, kw->name, n) && !isalnum(buf[n]) && buf[n] != '_') {
+
 			l->t = BC_LEX_KEY_AUTO + (BcLexType) i;
 
 			if (!BC_LEX_KW_POSIX(kw)) {
@@ -51,7 +51,7 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 			}
 
 			// We minus 1 because the index has already been incremented.
-			l->i += len - 1;
+			l->i += n - 1;
 			return BC_STATUS_SUCCESS;
 		}
 	}

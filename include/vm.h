@@ -89,8 +89,8 @@
 
 #if BC_ENABLE_SIGNALS
 
-#define BC_SIGNAL BC_UNLIKELY(vm->sig)
-#define BC_NO_SIGNAL BC_LIKELY(!vm->sig)
+#define BC_SIG BC_UNLIKELY(vm->sig)
+#define BC_NO_SIG BC_LIKELY(!vm->sig)
 #define BC_SIGINT (vm->sig == SIGINT)
 
 #ifdef SIGQUIT
@@ -128,8 +128,8 @@ typedef struct BcVm {
 	const char* file;
 
 #if BC_ENABLE_SIGNALS
-	const char *sig_msg;
-	uchar sig_len;
+	const char *sigmsg;
+	uchar siglen;
 	uchar sig;
 #endif // BC_ENABLE_SIGNALS
 

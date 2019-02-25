@@ -77,8 +77,8 @@ static char* bc_program_str(BcProgram *p, size_t idx, bool str) {
 	return *((char**) bc_vec_item(v, idx));
 }
 
-static size_t bc_program_index(const char *restrict code, size_t *restrict bgn) {
-
+static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
+{
 	uchar amt = (uchar) code[(*bgn)++], i = 0;
 	size_t res = 0;
 
@@ -665,8 +665,9 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 }
 
 #if DC_ENABLED
-static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r, BcVec *v, bool push) {
-
+static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
+                                     BcVec *v, bool push)
+{
 	BcNum n2;
 	BcResult res;
 
@@ -1589,7 +1590,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcNum *num = NULL;
 #endif // BC_ENABLED
 
-	while (BC_NO_SIGNAL && BC_NO_ERR(!s) && ip->idx < func->code.len) {
+	while (BC_NO_SIG && BC_NO_ERR(!s) && ip->idx < func->code.len) {
 
 		uchar inst = (uchar) code[(ip->idx)++];
 
@@ -1901,7 +1902,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 #endif // NDEBUG
 		}
 
-		if (BC_UNLIKELY((s && s != BC_STATUS_QUIT)) || BC_SIGNAL)
+		if (BC_UNLIKELY((s && s != BC_STATUS_QUIT)) || BC_SIG)
 			s = bc_program_reset(p, s);
 
 		// If the stack has changed, pointers may be invalid.
@@ -1915,8 +1916,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 #ifndef NDEBUG
 #if BC_ENABLED && DC_ENABLED
-static void bc_program_printIndex(const char *restrict code, size_t *restrict bgn) {
-
+static void bc_program_printIndex(const char *restrict code,
+                                  size_t *restrict bgn)
+{
 	uchar byte, i, bytes = (uchar) code[(*bgn)++];
 	unsigned long val = 0;
 
@@ -1928,8 +1930,9 @@ static void bc_program_printIndex(const char *restrict code, size_t *restrict bg
 	bc_vm_printf(" (%lu) ", val);
 }
 
-static void bc_program_printName(const char *restrict code, size_t *restrict bgn) {
-
+static void bc_program_printName(const char *restrict code,
+                                 size_t *restrict bgn)
+{
 	uchar byte;
 
 	bc_vm_printf(" (");

@@ -210,8 +210,9 @@ static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 	return low;
 }
 
-bool bc_map_insert(BcVec *restrict v, const BcId *restrict ptr, size_t *restrict i) {
-
+bool bc_map_insert(BcVec *restrict v, const BcId *restrict ptr,
+                   size_t *restrict i)
+{
 	assert(v && ptr && i);
 
 	*i = bc_map_find(v, ptr);

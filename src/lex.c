@@ -202,8 +202,7 @@ BcStatus bc_lex_next(BcLex *l) {
 	l->last = l->t;
 	l->line += (l->i != 0 && l->buf[l->i - 1] == '\n');
 
-	if (BC_ERR(l->last == BC_LEX_EOF))
-		return bc_lex_err(l, BC_ERROR_PARSE_EOF);
+	if (BC_ERR(l->last == BC_LEX_EOF)) return bc_lex_err(l, BC_ERROR_PARSE_EOF);
 
 	l->t = BC_LEX_EOF;
 

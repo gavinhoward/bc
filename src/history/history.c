@@ -1078,7 +1078,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				s = bc_history_reset(h);
 				if (BC_ERR(s)) break;
 
-				if (BC_ERR(BC_HISTORY_BAD_WRITE(vm->sig_msg, vm->sig_len)) ||
+				if (BC_ERR(BC_HISTORY_BAD_WRITE(vm->sigmsg, vm->siglen)) ||
 				    BC_ERR(BC_HISTORY_BAD_WRITE(bc_program_ready_msg,
 				                                bc_program_ready_msg_len)))
 				{

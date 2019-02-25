@@ -63,7 +63,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 		bc_vm_fflush(stderr);
 	}
 
-	while (BC_NO_SIGNAL && c != '\n') {
+	while (BC_NO_SIG && c != '\n') {
 
 		i = fgetc(stdin);
 
@@ -97,7 +97,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_pushByte(vec, '\0');
 
-	return BC_SIGNAL ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_read_line(BcVec *vec, const char *prompt) {
