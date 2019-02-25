@@ -329,7 +329,7 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	lt = (*l)->t;
 
 	if (BC_ERR(lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||
-	                lt == BC_RESULT_ARRAY))
+	           lt == BC_RESULT_ARRAY))
 	{
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	}
