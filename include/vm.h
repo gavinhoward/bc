@@ -100,8 +100,8 @@
 #endif // SIGQUIT
 
 #else // BC_ENABLE_SIGNALS
-#define BC_SIGNAL (0)
-#define BC_NO_SIGNAL (1)
+#define BC_SIG (0)
+#define BC_NO_SIG (1)
 #endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_NLS
