@@ -43,17 +43,16 @@ static BcStatus bc_program_checkStack(BcVec *v, size_t n) {
 #endif // BC_PROG_NO_STACK_CHECK
 
 static BcStatus bc_program_type_num(BcResult *r, BcNum *n) {
-	if (BC_ERR(!BC_PROG_NUM(r, n))) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 #if BC_ENABLED
 	assert(r->t != BC_RESULT_VOID);
 #endif // BC_ENABLED
+	if (BC_ERR(!BC_PROG_NUM(r, n))) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	return BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_program_type_match(BcResult *r, BcType t) {
 #if DC_ENABLED
-	if (BC_IS_BC && BC_ERR(r->t == BC_RESULT_STR))
-		return bc_vm_err(BC_ERROR_EXEC_TYPE);
+	assert(!BC_IS_BC || BC_NO_ERR(r->t != BC_RESULT_STR));
 #endif // DC_ENABLED
 	if (BC_ERR((r->t != BC_RESULT_ARRAY) != (!t)))
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
