@@ -274,18 +274,15 @@ size_t bc_vm_printf(const char *fmt, ...) {
 }
 
 void bc_vm_puts(const char *str, FILE *restrict f) {
-	if (BC_ERR(fputs(str, f) == EOF || ferror(f)))
-		bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (BC_IO_ERR(fputs(str, f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 void bc_vm_putchar(int c) {
-	if (BC_ERR(putchar(c) == EOF || ferror(stdout)))
-		bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (BC_IO_ERR(fputc(c, stdout), stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 void bc_vm_fflush(FILE *restrict f) {
-	if (BC_ERR(fflush(f) == EOF || ferror(f)))
-		bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (BC_IO_ERR(fflush(f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
 static void bc_vm_clean() {
