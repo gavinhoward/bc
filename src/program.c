@@ -1194,7 +1194,7 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 	// Only array elements are possible.
 	if (r1->t == BC_RESULT_ARRAY_ELEM && (r1->t == r2->t || r1->t == r3->t)) {
 		s = bc_program_num(p, r1, &n1);
-		if (s) return s;
+		if (BC_ERR(s)) return s;
 	}
 
 	bc_num_init(resn, n3->len);
