@@ -109,6 +109,15 @@ static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 	return s;
 }
 
+static void bc_program_prepGlobals(BcProgram *p) {
+	size_t val;
+	bc_vec_push(&p->scale_v, &p->scale);
+	val = BC_PROG_GLOBAL(&p->ib_v);
+	bc_vec_push(&p->ib_v, &val);
+	val = BC_PROG_GLOBAL(&p->ob_v);
+	bc_vec_push(&p->ob_v, &val);
+}
+
 #if BC_ENABLED
 static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 
@@ -165,11 +174,11 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 		case BC_RESULT_CONSTANT:
 		{
 			char *str = bc_program_str(p, r->d.id.idx, false);
-			size_t len = strlen(str);
+			size_t len = strlen(str), val = BC_PROG_GLOBAL(&p->ib_v);
 
 			bc_num_init(n, len);
 
-			s = bc_num_parse(n, str, &p->ib, p->ib_t, len == 1);
+			s = bc_num_parse(n, str, &p->ib, val, len == 1);
 			assert(!s || s == BC_STATUS_SIGNAL);
 
 #if BC_ENABLE_SIGNALS
@@ -438,6 +447,8 @@ static BcStatus bc_program_read(BcProgram *p) {
 		goto exec_err;
 	}
 
+	if (BC_G) bc_program_prepGlobals(p);
+
 	ip.func = BC_PROG_READ;
 	ip.idx = 0;
 	ip.len = p->results.len;
@@ -530,7 +541,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
-		s = bc_num_print(n, &p->ob, p->ob_t, !pop);
+		s = bc_num_print(n, &p->ob, BC_PROG_GLOBAL(&p->ob_v), !pop);
 #if BC_ENABLED
 		if (BC_NO_ERR(!s)) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
@@ -836,6 +847,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 	if (ib || ob || sc) {
 
+		BcVec *v;
 		size_t *ptr;
 		unsigned long val, max, min;
 		BcError e;
@@ -847,18 +859,21 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		if (sc) {
 			min = 0;
 			max = BC_MAX_SCALE;
-			ptr = &p->scale;
+			v = &p->scale_v;
 		}
 		else {
 			min = BC_NUM_MIN_BASE;
 			if (BC_ENABLE_EXTRA_MATH && ob && (!BC_IS_BC || !BC_IS_POSIX))
 				min = 0;
 			max = ib ? vm->max_ibase : BC_MAX_OBASE;
-			ptr = ib ? &p->ib_t : &p->ob_t;
+			v = ib ? &p->ib_v : &p->ob_v;
 		}
 
+		ptr = bc_vec_top(v);
+
 		if (BC_ERR(val > max || val < min)) return bc_vm_verr(e, min, max);
-		if (!sc) bc_num_ulong2num(ib ? &p->ib : &p->ob, (unsigned long) val);
+		if (sc) p->scale = (size_t) val;
+		else bc_num_ulong2num(ib ? &p->ib : &p->ob, (unsigned long) val);
 
 		*ptr = (size_t) val;
 		s = BC_STATUS_SUCCESS;
@@ -998,6 +1013,8 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 
 	assert(BC_PROG_STACK(&p->results, nparams));
 
+	if (BC_G) bc_program_prepGlobals(p);
+
 	for (i = 0; i < nparams; ++i) {
 
 		size_t j;
@@ -1085,6 +1102,23 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 	}
 
 	bc_vec_npop(&p->results, p->results.len - ip->len);
+
+	if (BC_G) {
+
+		size_t val;
+
+		bc_vec_pop(&p->scale_v);
+		p->scale = BC_PROG_GLOBAL(&p->scale_v);
+
+		bc_vec_pop(&p->ib_v);
+		val = BC_PROG_GLOBAL(&p->ib_v);
+		bc_num_ulong2num(&p->ib, (unsigned long) val);
+
+		bc_vec_pop(&p->ob_v);
+		val = BC_PROG_GLOBAL(&p->ob_v);
+		bc_num_ulong2num(&p->ob, (unsigned long) val);
+	}
+
 	bc_vec_push(&p->results, &res);
 	bc_vec_pop(&p->stack);
 
@@ -1437,9 +1471,11 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 	assert(inst >= BC_INST_IBASE && inst <= BC_INST_SCALE);
 
 	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
-	if (inst == BC_INST_IBASE) val = (unsigned long) p->ib_t;
-	else if (inst == BC_INST_SCALE) val = (unsigned long) p->scale;
-	else val = (unsigned long) p->ob_t;
+	if (inst == BC_INST_SCALE) val = (unsigned long) p->scale;
+	else {
+		BcVec *v = inst == BC_INST_IBASE ? &p->ib_v : &p->ob_v;
+		val = (unsigned long) BC_PROG_GLOBAL(v);
+	}
 
 	bc_num_createFromUlong(&res.d.n, val);
 	bc_vec_push(&p->results, &res);
@@ -1448,6 +1484,9 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 #ifndef NDEBUG
 void bc_program_free(BcProgram *p) {
 	assert(p);
+	bc_vec_free(&p->scale_v);
+	bc_vec_free(&p->ib_v);
+	bc_vec_free(&p->ob_v);
 	bc_vec_free(&p->fns);
 #if BC_ENABLED
 	bc_vec_free(&p->fn_map);
@@ -1467,19 +1506,26 @@ void bc_program_free(BcProgram *p) {
 void bc_program_init(BcProgram *p) {
 
 	BcInstPtr ip;
+	size_t val = 0;
 
 	assert(p);
 
 	memset(p, 0, sizeof(BcProgram));
 	memset(&ip, 0, sizeof(BcInstPtr));
 
+	bc_vec_init(&p->scale_v, sizeof(size_t), NULL);
+	bc_vec_push(&p->scale_v, &val);
+
 	bc_num_setup(&p->ib, p->ib_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ib);
-	p->ib_t = 10;
+	val = 10;
+	bc_vec_init(&p->ib_v, sizeof(size_t), NULL);
+	bc_vec_push(&p->ib_v, &val);
 
 	bc_num_setup(&p->ob, p->ob_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ob);
-	p->ob_t = 10;
+	bc_vec_init(&p->ob_v, sizeof(size_t), NULL);
+	bc_vec_push(&p->ob_v, &val);
 
 #if DC_ENABLED
 	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_LONG_LOG10);

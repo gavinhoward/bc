@@ -35,11 +35,12 @@
 typedef struct BcProgram {
 
 	size_t scale;
+	BcVec scale_v;
 
 	BcNum ib;
-	size_t ib_t;
+	BcVec ib_v;
 	BcNum ob;
-	size_t ob_t;
+	BcVec ob_v;
 
 #if DC_ENABLED
 	BcNum strmb;
@@ -78,6 +79,8 @@ typedef struct BcProgram {
 } BcProgram;
 
 #define BC_PROG_STACK(s, n) ((s)->len >= ((size_t) (n)))
+
+#define BC_PROG_GLOBAL(v) (*((size_t*) bc_vec_top(v)))
 
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)

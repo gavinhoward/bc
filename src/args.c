@@ -38,6 +38,7 @@ static const struct option bc_args_lopt[] = {
 
 	{ "expression", required_argument, NULL, 'e' },
 	{ "file", required_argument, NULL, 'f' },
+	{ "global-stacks", no_argument, NULL, 'g' },
 	{ "help", no_argument, NULL, 'h' },
 	{ "interactive", no_argument, NULL, 'i' },
 	{ "mathlib", no_argument, NULL, 'l' },
@@ -50,7 +51,7 @@ static const struct option bc_args_lopt[] = {
 
 };
 
-static const char* const bc_args_opt = "e:f:hilqsvVwx";
+static const char* const bc_args_opt = "e:f:ghilqsvVwx";
 
 static void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, str);
@@ -75,7 +76,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	int c, i, err = 0;
-	bool do_exit = false;
+	bool do_exit = false, version = false;
 
 	i = optind = 0;
 
@@ -110,6 +111,13 @@ BcStatus bc_args(int argc, char *argv[]) {
 			}
 
 #if BC_ENABLED
+			case 'g':
+			{
+				if (BC_ERR(!BC_IS_BC)) err = c;
+				vm->flags |= BC_FLAG_G;
+				break;
+			}
+
 			case 'i':
 			{
 				if (BC_ERR(!BC_IS_BC)) err = c;
@@ -149,8 +157,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case 'V':
 			case 'v':
 			{
-				vm->flags |= BC_FLAG_V;
-				do_exit = true;
+				do_exit = version = true;
 				break;
 			}
 
@@ -181,7 +188,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 		}
 	}
 
-	if (vm->flags & BC_FLAG_V) bc_vm_info(NULL);
+	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) s);
 	if (vm->exprs.len > 1 || !BC_IS_BC) vm->flags |= BC_FLAG_Q;
 	if (argv[optind] && !strcmp(argv[optind], "--")) ++optind;
