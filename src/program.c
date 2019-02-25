@@ -335,8 +335,7 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	}
 
 #if BC_ENABLED
-	if (BC_IS_BC && BC_ERR(lt == BC_RESULT_ONE))
-		return bc_vm_err(BC_ERROR_EXEC_TYPE);
+	assert(!BC_IS_BC | BC_NO_ERR(lt != BC_RESULT_ONE));
 #endif // BC_ENABLED
 
 #if DC_ENABLED
