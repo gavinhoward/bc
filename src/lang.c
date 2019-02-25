@@ -131,6 +131,8 @@ void bc_array_expand(BcVec *a, size_t len) {
 
 	assert(a);
 
+	bc_vec_expand(a, len);
+
 	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
 		BcNum n;
 		while (len > a->len) {
