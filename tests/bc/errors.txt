@@ -222,6 +222,15 @@ scale("string")
 scale(b[])
 sqrt("string")
 sqrt(c[])
+sqrt
+length
+abs
+sqrt(1
+length(1
+abs(1
+scale(.2093
+read
+read(
 read()
 read()
 read()
