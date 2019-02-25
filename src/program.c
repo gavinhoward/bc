@@ -45,8 +45,7 @@ static BcStatus bc_program_checkStack(BcVec *v, size_t n) {
 static BcStatus bc_program_type_num(BcResult *r, BcNum *n) {
 	if (BC_ERR(!BC_PROG_NUM(r, n))) return bc_vm_err(BC_ERROR_EXEC_TYPE);
 #if BC_ENABLED
-	if (BC_ERR(r->t == BC_RESULT_VOID))
-		return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+	assert(r->t != BC_RESULT_VOID);
 #endif // BC_ENABLED
 	return BC_STATUS_SUCCESS;
 }
