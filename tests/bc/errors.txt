@@ -211,6 +211,8 @@ s(uint(5))
 x$if(x) x else x
 bytes(1) + 4
 3 / 0.00000000000000
+4e4.4
+4e-4.2
 ibase = 100
 length("string")
 abs("string")
