@@ -46,7 +46,7 @@ out1="$testdir/../.log_$d.txt"
 out2="$testdir/../.log_${d}_test.txt"
 
 if [ "$d" = "bc" ]; then
-	options="-lq"
+	options="-lgq"
 	halt="halt"
 else
 	options="-x"
