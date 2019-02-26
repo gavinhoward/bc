@@ -115,6 +115,19 @@ static void bc_program_prepGlobals(BcProgram *p) {
 	bc_vec_push(&p->ob_v, &p->ob_t);
 }
 
+static void bc_program_copyGlobal(BcProgram *p, BcResultType t, BcNum *n) {
+
+	size_t val;
+
+	assert(t >= BC_RESULT_IBASE && t <= BC_RESULT_SCALE);
+
+	if (t == BC_RESULT_IBASE) val = p->ib_t;
+	else if (t == BC_RESULT_OBASE) val = p->ob_t;
+	else val = p->scale;
+
+	bc_num_createFromUlong(n, (unsigned long) val);
+}
+
 #if BC_ENABLED
 static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 
@@ -194,10 +207,15 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 		case BC_RESULT_STR:
 		case BC_RESULT_TEMP:
+		{
+			break;
+		}
+
 		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
 		{
+			bc_program_copyGlobal(p, r->t, n);
 			break;
 		}
 
@@ -874,10 +892,9 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 		*ptr = val;
 		*ptr_t = val;
-		s = BC_STATUS_SUCCESS;
 	}
 
-	bc_num_createCopy(&res.d.n, r);
+	bc_num_createCopy(&res.d.n, l);
 	bc_program_binOpRetire(p, &res);
 
 	return s;
@@ -1462,16 +1479,11 @@ no_exec:
 static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 
 	BcResult res;
-	size_t val;
 
 	assert(inst >= BC_INST_IBASE && inst <= BC_INST_SCALE);
 
 	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
-	if (inst == BC_INST_IBASE) val = p->ib_t;
-	else if (inst == BC_INST_SCALE) val = p->scale;
-	else val = p->ob_t;
-
-	bc_num_createFromUlong(&res.d.n, (unsigned long) val);
+	bc_program_copyGlobal(p, res.t, &res.d.n);
 	bc_vec_push(&p->results, &res);
 }
 
