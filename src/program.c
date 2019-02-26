@@ -117,15 +117,11 @@ static void bc_program_prepGlobals(BcProgram *p) {
 
 static void bc_program_copyGlobal(BcProgram *p, BcResultType t, BcNum *n) {
 
-	size_t val;
-
 	assert(t >= BC_RESULT_IBASE && t <= BC_RESULT_SCALE);
 
-	if (t == BC_RESULT_IBASE) val = p->ib_t;
-	else if (t == BC_RESULT_OBASE) val = p->ob_t;
-	else val = p->scale;
-
-	bc_num_createFromUlong(n, (unsigned long) val);
+	if (t == BC_RESULT_SCALE)
+		bc_num_createFromUlong(n, (unsigned long) p->scale);
+	else bc_num_createCopy(n, t == BC_RESULT_IBASE ? &p->ib : &p->ob);
 }
 
 #if BC_ENABLED
