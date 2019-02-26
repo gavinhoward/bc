@@ -32,6 +32,9 @@ Forces interactive mode\.
 .IP
 Per the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, bc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, bc(1) attempts to recover from errors and flushes \fBstdout\fR as soon as execution is done for the current input\.
 .
+.IP
+This is an extension\.
+.
 .TP
 \fB\-l\fR, \fB\-\-mathlib\fR
 Sets \fBscale\fR (see the Scale section) to \fB20\fR and loads the included math library before running any code, including any expressions or files specified on the command line\.
@@ -46,9 +49,15 @@ Do not print copyright header\. bc(1) will also suppress the header in non\-inte
 .IP
 This is mostly for compatibility with the GNU bc(1) \fIhttps://www\.gnu\.org/software/bc/\fR\.
 .
+.IP
+This is an extension\.
+.
 .TP
 \fB\-s\fR, \fB\-\-standard\fR
 Process exactly the language defined by the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR and error if any extensions are used\.
+.
+.IP
+This is an extension\.
 .
 .TP
 \fB\-v\fR, \fB\-V\fR, \fB\-\-version\fR
@@ -58,13 +67,59 @@ Print the version information (copyright header) and exit\.
 \fB\-w\fR, \fB\-\-warn\fR
 Like \fB\-s\fR and \fB\-\-standard\fR, except that warnings (and not errors) are given for non\-standard extensions\.
 .
+.IP
+This is an extension\.
+.
+.TP
+\fB\-g\fR, \fB\-\-global\-stacks\fR
+Turns the globals \fBibase\fR, \fBobase\fR, and \fBscale\fR into stacks\.
+.
+.IP
+This has the effect that a copy of the current value of all three are pushed onto a stack for every function call\. This means that functions can assign to any and all of those globals without worrying that the change will affect other functions\. Thus, \fBoutput(x,b)\fR (in the \fIextended library\fR) can be written like this:
+.
+.IP
+\fBdefine void output(x, b) { obase=b; x }\fR
+.
+.IP
+instead of like this:
+.
+.IP
+\fBdefine void output(x, b) { auto c; c=obase; obase=b; x; obase=c }\fR
+.
+.IP
+This makes writing functions much easier\.
+.
+.IP
+However, since using this flag means that functions cannot set \fBibase\fR, \fBobase\fR, or \fBscale\fR globally, functions that are made to do so cannot work anymore\. There are two possible use cases for that, and each has a solution\.
+.
+.IP
+First, if a function is called on startup to turn bc(1) into a number converter, it is possible to replace that capability with various shell aliases\. Examples:
+.
+.IP
+\fBalias d2o="bc \-e ibase=A \-e obase=8"; alias h2b="bc \-e ibase=G \-e obase=2"\fR
+.
+.IP
+Second, if a function\'s purpose is to set \fBibase\fR, \fBobase\fR, or \fBscale\fR globally for any other purpose, it could be split into one to three functions (based on how many globals it sets) and each of those functions could return the desired value for a global\.
+.
+.IP
+If this behavior is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see \fIEnvironment Variables\fR for more detail)\.
+.
+.IP
+This is an extension\.
+.
 .TP
 \fB\-e\fR \fIexpr\fR, \fB\-\-expression\fR=\fIexpr\fR
 Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
 .
+.IP
+This is an extension\.
+.
 .TP
 \fB\-f\fR \fIfile\fR, \fB\-\-file\fR=\fIfile\fR
 Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
+.
+.IP
+This is an extension\.
 .
 .SH "SYNTAX"
 The syntax for bc(1) programs is mostly C\-like, with some differences\. This bc(1) follows the POSIX standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, which is a much more thorough resource for the language this bc(1) accepts\. This section is meant to be a summary and a listing of all the extensions to the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR\.
@@ -1142,7 +1197,7 @@ This is another way to give command\-line arguments to bc(1)\. They should be in
 .
 .TP
 \fBBC_LINE_LENGTH\fR
-If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), bc(1) will output lines to that length, including the backslash newline combo\. The default line length is \fB70\fR\.
+If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), bc(1) will output lines to that length, including the backslash (\fB\e\fR)\. The default line length is \fB70\fR\.
 .
 .SH "EXIT STATUS"
 bc(1) returns the following exit statuses:

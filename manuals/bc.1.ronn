@@ -39,6 +39,8 @@ The following are the options that bc(1) accepts.
     cases. In interactive mode, bc(1) attempts to recover from errors and
     flushes `stdout` as soon as execution is done for the current input.
 
+    This is an extension.
+
   * `-l`, `--mathlib`:
     Sets `scale` (see the Scale section) to `20` and loads the included math
     library before running any code, including any expressions or files specified
@@ -52,9 +54,13 @@ The following are the options that bc(1) accepts.
 
     This is mostly for compatibility with the [GNU bc(1)][2].
 
+    This is an extension.
+
   * `-s`, `--standard`:
     Process exactly the language defined by the [standard][1] and error if any
     extensions are used.
+
+    This is an extension.
 
   * `-v`, `-V`, `--version`:
     Print the version information (copyright header) and exit.
@@ -63,15 +69,59 @@ The following are the options that bc(1) accepts.
     Like `-s` and `--standard`, except that warnings (and not errors) are given
     for non-standard extensions.
 
+    This is an extension.
+
+  * `-g`, `--global-stacks`:
+    Turns the globals `ibase`, `obase`, and `scale` into stacks.
+
+    This has the effect that a copy of the current value of all three are pushed
+    onto a stack for every function call. This means that functions can assign
+    to any and all of those globals without worrying that the change will affect
+    other functions. Thus, `output(x,b)` (in the
+    [extended library](#extended-library)) can be written like this:
+
+    `define void output(x, b) { obase=b; x }`
+
+    instead of like this:
+
+    `define void output(x, b) { auto c; c=obase; obase=b; x; obase=c }`
+
+    This makes writing functions much easier.
+
+    However, since using this flag means that functions cannot set `ibase`,
+    `obase`, or `scale` globally, functions that are made to do so cannot work
+    anymore. There are two possible use cases for that, and each has a solution.
+
+    First, if a function is called on startup to turn bc(1) into a number
+    converter, it is possible to replace that capability with various shell
+    aliases. Examples:
+
+    `alias d2o="bc -e ibase=A -e obase=8"; alias h2b="bc -e ibase=G -e obase=2"`
+
+    Second, if a function's purpose is to set `ibase`, `obase`, or `scale`
+    globally for any other purpose, it could be split into one to three
+    functions (based on how many globals it sets) and each of those functions
+    could return the desired value for a global.
+
+    If this behavior is desired for every run of bc(1), then users could make
+    sure to define `BC_ENV_ARGS` and include this option (see
+    [Environment Variables](#ENVIRONMENT-VARIABLES) for more detail).
+
+    This is an extension.
+
   * `-e` *expr*, `--expression`=*expr*:
     Evaluates `expr`. If multiple expressions are given, they are evaluated in
     order. If files are given as well (see below), the expressions and files are
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
 
+    This is an extension.
+
   * `-f` *file*, `--file`=*file*:
     Reads in `file` and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
+
+    This is an extension.
 
 SYNTAX
 ------
@@ -991,8 +1041,8 @@ bc(1) recognizes the following environment variables:
   * `BC_LINE_LENGTH`:
     If this environment variable exists and contains an integer that is greater
     than `1` and is less than `UINT16_MAX` (`2^16-1`), bc(1) will output lines
-    to that length, including the backslash newline combo. The default line
-    length is `70`.
+    to that length, including the backslash (`\`). The default line length is
+    `70`.
 
 EXIT STATUS
 -----------
