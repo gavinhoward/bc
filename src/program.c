@@ -115,15 +115,6 @@ static void bc_program_prepGlobals(BcProgram *p) {
 	bc_vec_push(&p->ob_v, &p->ob_t);
 }
 
-static void bc_program_copyGlobal(BcProgram *p, BcResultType t, BcNum *n) {
-
-	assert(t >= BC_RESULT_IBASE && t <= BC_RESULT_SCALE);
-
-	if (t == BC_RESULT_SCALE)
-		bc_num_createFromUlong(n, (unsigned long) p->scale);
-	else bc_num_createCopy(n, t == BC_RESULT_IBASE ? &p->ib : &p->ob);
-}
-
 #if BC_ENABLED
 static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 
@@ -1473,8 +1464,11 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 
 	assert(inst >= BC_INST_IBASE && inst <= BC_INST_SCALE);
 
+	if (inst == BC_INST_SCALE)
+		bc_num_createFromUlong(&res.d.n, (unsigned long) p->scale);
+	else bc_num_createCopy(&res.d.n, inst == BC_INST_IBASE ? &p->ib : &p->ob);
+
 	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
-	bc_program_copyGlobal(p, res.t, &res.d.n);
 	bc_vec_push(&p->results, &res);
 }
 
