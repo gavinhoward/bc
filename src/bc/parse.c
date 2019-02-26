@@ -138,20 +138,14 @@ static void bc_parse_operator(BcParse *p, BcLexType type,
 	bc_vec_push(&p->ops, &type);
 }
 
-static BcStatus bc_parse_rightParen(BcParse *p, size_t ops_bgn, size_t *nexs) {
+static BcStatus bc_parse_rightParen(BcParse *p, size_t *nexs) {
 
 	BcLexType top;
 
-	assert(BC_NO_ERR(p->ops.len > ops_bgn));
-
 	while ((top = BC_PARSE_TOP_OP(p)) != BC_LEX_LPAREN) {
-
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(top));
-
 		bc_vec_pop(&p->ops);
 		*nexs -= !BC_PARSE_OP_PREFIX(top);
-
-		assert(BC_NO_ERR(p->ops.len > ops_bgn));
 	}
 
 	bc_vec_pop(&p->ops);
@@ -1353,7 +1347,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				rprn = true;
 				get_token = bin_last = incdec = false;
 
-				s = bc_parse_rightParen(p, ops_bgn, &nexprs);
+				s = bc_parse_rightParen(p, &nexprs);
 
 				break;
 			}
