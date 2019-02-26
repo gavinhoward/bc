@@ -58,9 +58,8 @@ usage() {
 	printf '    -H\n'
 	printf '        Disable history.\n'
 	printf '    -k KARATSUBA_LEN\n'
-	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 32).\n'
-	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 2.\n'
-	printf '        It is an error if "-m" is specified too.\n'
+	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 64).\n'
+	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 16.\n'
 	printf '    -M\n'
 	printf '        Disable installing manpages.\n'
 	printf '    -N\n'
@@ -217,7 +216,7 @@ gen_file_lists() {
 bc_only=0
 dc_only=0
 coverage=0
-karatsuba_len=32
+karatsuba_len=64
 debug=0
 signals=1
 hist=1
@@ -259,8 +258,8 @@ case $karatsuba_len in
 	(*) ;;
 esac
 
-if [ "$karatsuba_len" -lt 2 ]; then
-	usage "KARATSUBA_LEN is less than 2"
+if [ "$karatsuba_len" -lt 16 ]; then
+	usage "KARATSUBA_LEN is less than 16"
 fi
 
 set -e
