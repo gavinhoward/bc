@@ -637,6 +637,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	vm->flags |= isatty(STDIN_FILENO) ? BC_FLAG_TTYIN : 0;
 	vm->flags |= BC_TTYIN && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
 
+	if (BC_IS_POSIX) vm->flags &= ~(BC_FLAG_G);
+
 	vm->max_ibase = BC_IS_BC && !BC_IS_POSIX ? BC_NUM_MAX_IBASE :
 	                                           BC_NUM_MAX_POSIX_IBASE;
 
