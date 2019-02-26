@@ -1286,7 +1286,8 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && val && base);
-	assert(base_t >= BC_NUM_MIN_BASE && base_t <= vm->max_ibase);
+	assert(BC_ENABLE_EXTRA_MATH ||
+	       (base_t >= BC_NUM_MIN_BASE && base_t <= vm->max_ibase));
 	assert(bc_num_strValid(val));
 
 	if (letter) bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
