@@ -425,7 +425,7 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 	BcStatus s;
-	size_t max = BC_MAX(a->len, b->len), max2 = (max + 1) / 2, total, size;
+	size_t max, max2, total, size;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	BcDig *digs, *dig_ptr;
 	bool aone = bc_num_isOne(a);
@@ -476,6 +476,10 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 		return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 	}
+
+	max = BC_MAX(a->len, b->len);
+	max = max < BC_NUM_DEF_SIZE ? BC_NUM_DEF_SIZE : max;
+	max2 = (max + 1) / 2;
 
 	size = BC_NUM_KARATSUBA_ALLOCS * sizeof(BcDig);
 	total = bc_vm_arraySize(size, max);
