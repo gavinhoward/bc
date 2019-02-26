@@ -203,15 +203,10 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 		case BC_RESULT_STR:
 		case BC_RESULT_TEMP:
-		{
-			break;
-		}
-
 		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
 		{
-			bc_program_copyGlobal(p, r->t, n);
 			break;
 		}
 
