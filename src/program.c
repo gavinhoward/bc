@@ -1633,8 +1633,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcNum *num = NULL;
 #endif // BC_ENABLED
 
-	while (BC_NO_SIG && BC_NO_ERR(!s) && ip->idx < func->code.len) {
-
+	while (BC_NO_SIG && BC_NO_ERR(!s) && s != BC_STATUS_QUIT &&
+	       ip->idx < func->code.len)
+	{
 		uchar inst = (uchar) code[(ip->idx)++];
 
 		switch (inst) {
