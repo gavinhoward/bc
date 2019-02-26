@@ -4,9 +4,9 @@ bc(1) -- arbitrary-precision arithmetic language and calculator
 SYNOPSIS
 --------
 
-`bc` [`-hilqsvVw`] [`--help`] [`--interactive`] [`--mathlib`] [`--quiet`]
-[`--standard`] [`--warn`] [`--version`] [`-e` *expr*] [`--expression=`*expr*...]
-[`-f` *file*...] [`-file=`*file*...] [*file*...]
+`bc` [`-ghilqsvVw`] [`--global-stacks`] [`--help`] [`--interactive`]
+[`--mathlib`] [`--quiet`] [`--standard`] [`--warn`] [`--version`] [`-e` *expr*]
+[`--expression=`*expr*...] [`-f` *file*...] [`-file=`*file*...] [*file*...]
 
 DESCRIPTION
 -----------
@@ -26,6 +26,45 @@ OPTIONS
 -------
 
 The following are the options that bc(1) accepts.
+
+  * `-g`, `--global-stacks`:
+    Turns the globals `ibase`, `obase`, and `scale` into stacks.
+
+    This has the effect that a copy of the current value of all three are pushed
+    onto a stack for every function call, as well as popped when every function
+    returns. This means that functions can assign to any and all of those
+    globals without worrying that the change will affect other functions.
+    Thus, `output(x,b)` (in the [extended library](#extended-library)) can be
+    written like this:
+
+    `define void output(x, b) { obase=b; x }`
+
+    instead of like this:
+
+    `define void output(x, b) { auto c; c=obase; obase=b; x; obase=c }`
+
+    This makes writing functions much easier.
+
+    However, since using this flag means that functions cannot set `ibase`,
+    `obase`, or `scale` globally, functions that are made to do so cannot work
+    anymore. There are two possible use cases for that, and each has a solution.
+
+    First, if a function is called on startup to turn bc(1) into a number
+    converter, it is possible to replace that capability with various shell
+    aliases. Examples:
+
+    `alias d2o="bc -e ibase=A -e obase=8"; alias h2b="bc -e ibase=G -e obase=2"`
+
+    Second, if a function's purpose is to set `ibase`, `obase`, or `scale`
+    globally for any other purpose, it could be split into one to three
+    functions (based on how many globals it sets) and each of those functions
+    could return the desired value for a global.
+
+    If this behavior is desired for every run of bc(1), then users could make
+    sure to define `BC_ENV_ARGS` and include this option (see
+    [Environment Variables](#ENVIRONMENT-VARIABLES) for more details).
+
+    This is an extension.
 
   * `-h`, `--help`:
     Prints a usage message and quits.
@@ -68,44 +107,6 @@ The following are the options that bc(1) accepts.
   * `-w`, `--warn`:
     Like `-s` and `--standard`, except that warnings (and not errors) are given
     for non-standard extensions.
-
-    This is an extension.
-
-  * `-g`, `--global-stacks`:
-    Turns the globals `ibase`, `obase`, and `scale` into stacks.
-
-    This has the effect that a copy of the current value of all three are pushed
-    onto a stack for every function call. This means that functions can assign
-    to any and all of those globals without worrying that the change will affect
-    other functions. Thus, `output(x,b)` (in the
-    [extended library](#extended-library)) can be written like this:
-
-    `define void output(x, b) { obase=b; x }`
-
-    instead of like this:
-
-    `define void output(x, b) { auto c; c=obase; obase=b; x; obase=c }`
-
-    This makes writing functions much easier.
-
-    However, since using this flag means that functions cannot set `ibase`,
-    `obase`, or `scale` globally, functions that are made to do so cannot work
-    anymore. There are two possible use cases for that, and each has a solution.
-
-    First, if a function is called on startup to turn bc(1) into a number
-    converter, it is possible to replace that capability with various shell
-    aliases. Examples:
-
-    `alias d2o="bc -e ibase=A -e obase=8"; alias h2b="bc -e ibase=G -e obase=2"`
-
-    Second, if a function's purpose is to set `ibase`, `obase`, or `scale`
-    globally for any other purpose, it could be split into one to three
-    functions (based on how many globals it sets) and each of those functions
-    could return the desired value for a global.
-
-    If this behavior is desired for every run of bc(1), then users could make
-    sure to define `BC_ENV_ARGS` and include this option (see
-    [Environment Variables](#ENVIRONMENT-VARIABLES) for more detail).
 
     This is an extension.
 
