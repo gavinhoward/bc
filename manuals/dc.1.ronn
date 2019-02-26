@@ -68,7 +68,7 @@ entered.
 ### Comments
 
 Comments go from `#` until, and not including, the next newline. This is a
-non-portable extension.
+**non-portable extension**.
 
 NUMBERS
 -------
@@ -95,7 +95,7 @@ by `10^exponent` regardless of the current `ibase`. For example, if `ibase` is
 will be `2550000000000`, and if dc(1) is given the number string `"10e_4"`, the
 resulting decimal number will be `0.0016`.
 
-Scientific notation is a non-portable extension.
+Scientific notation is a **non-portable extension**.
 
 COMMANDS
 --------
@@ -114,7 +114,7 @@ assigning `1` to `obase` (which is also invalid in any other context). To
 deactivate them, just assign a different value to `obase`.
 
 Printing numbers in scientific notation and/or engineering notation is a
-non-portable extension.
+**non-portable extension**.
 
   * `p`:
     Prints the value on top of the stack, whether number or string, and prints a
@@ -135,7 +135,7 @@ non-portable extension.
 
     If the value is a string, it is printed without a trailing newline.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `f`:
     Prints the entire contents of the stack, in order from newest to oldest,
@@ -182,7 +182,7 @@ These are the commands used for arithmetic.
     This is equivalent to `x y / x y %` except that `x` and `y` are only
     evaluated once.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `^`:
     The top two values are popped off the stack, the second is raised to the
@@ -206,7 +206,7 @@ These are the commands used for arithmetic.
     The top value is popped off the stack and its absolute value is pushed onto
     the stack.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `|`:
     The top three values are popped off the stack, a modular exponentiation is
@@ -217,13 +217,13 @@ These are the commands used for arithmetic.
     must be an integer and non-negative. The third value popped is the base and
     must be an integer.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `$`:
     The top value is popped off the stack and copied, and the copy is truncated
     and pushed onto the stack.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `@`:
     The top two values are popped off the stack, and the second's precision is
@@ -231,7 +231,7 @@ These are the commands used for arithmetic.
 
     The first value must be an integer and non-negative.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `H`:
     The top two values are popped off the stack, and the second is shifted left
@@ -239,7 +239,7 @@ These are the commands used for arithmetic.
 
     The first value must be an integer and non-negative.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `h`:
     The top two values are popped off the stack, and the second is shifted right
@@ -247,45 +247,45 @@ These are the commands used for arithmetic.
 
     The first value must be an integer and non-negative.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `G`:
     The top two values are popped off of the stack, they are compared, and a `1`
     is pushed if they are equal, or `0` otherwise.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `N`:
     The top value is popped off of the stack, and if it a `0`, a `1` is pushed;
     otherwise, a `0` is pushed.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `(`:
     The top two values are popped off of the stack, they are compared, and a `1`
     is pushed if the first is less than the second, or `0` otherwise.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `{`:
     The top two values are popped off of the stack, they are compared, and a `1`
     is pushed if the first is less than or equal to the second, or `0`
     otherwise.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `)`:
     The top two values are popped off of the stack, they are compared, and a `1`
     is pushed if the first is greater than the second, or `0` otherwise.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `}`:
     The top two values are popped off of the stack, they are compared, and a `1`
     is pushed if the first is greater than or equal to the second, or `0`
     otherwise.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
 ### Stack Control
 
@@ -398,7 +398,7 @@ be printed with a newline after and then popped from the stack.
     the original string is used to create the new string as a one-character
     string. The new string is then pushed onto the stack.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `x`:
     Pops a value off of the top of the stack.
@@ -421,7 +421,7 @@ be printed with a newline after and then popped from the stack.
   * `>`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `!>`*r*:
     Pops two values off of the stack that must be numbers and compares them. If
@@ -431,7 +431,7 @@ be printed with a newline after and then popped from the stack.
   * `!>`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `<`*r*:
     Pops two values off of the stack that must be numbers and compares them. If
@@ -441,7 +441,7 @@ be printed with a newline after and then popped from the stack.
   * `<`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `!<`*r*:
     Pops two values off of the stack that must be numbers and compares them. If
@@ -451,7 +451,7 @@ be printed with a newline after and then popped from the stack.
   * `!<`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `=`*r*:
     Pops two values off of the stack that must be numbers and compares them. If
@@ -461,7 +461,7 @@ be printed with a newline after and then popped from the stack.
   * `=`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `!=`*r*:
     Pops two values off of the stack that must be numbers and compares them. If
@@ -471,7 +471,7 @@ be printed with a newline after and then popped from the stack.
   * `!=`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `?`:
     Reads a line from the `stdin` and executes it. This is to allow macros to

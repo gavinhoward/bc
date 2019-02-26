@@ -51,7 +51,7 @@ The \fBscale\fR of an expression is the number of digits in the result of the ex
 Each item (\fInumbers\fR or \fIcommands\fR) in the input source code is processed and executed, in order\. Input is processed immediately when entered\.
 .
 .SS "Comments"
-Comments go from \fB#\fR until, and not including, the next newline\. This is a non\-portable extension\.
+Comments go from \fB#\fR until, and not including, the next newline\. This is a \fBnon\-portable extension\fR\.
 .
 .SH "NUMBERS"
 Numbers are strings made up of digits, uppercase letters up to \fBF\fR, and at most \fB1\fR period for a radix\. Numbers can have up to \fBBC_NUM_MAX\fR digits\. Uppercase letters equal \fB9\fR + their position in the alphabet (i\.e\., \fBA\fR equals \fB10\fR, or \fB9 + 1\fR)\. If a digit or letter makes no sense with the current value of \fBibase\fR, they are set to the value of the highest valid digit in \fBibase\fR\.
@@ -66,7 +66,7 @@ In addition, if dc(1) was built with the extra math option, it accepts numbers i
 \fBWARNING\fR: Both the number and the exponent in scientific notation are interpreted according to the current \fBibase\fR, but the number is still multiplied by \fB10^exponent\fR regardless of the current \fBibase\fR\. For example, if \fBibase\fR is \fB16\fR and dc(1) is given the number string \fB"FFeA"\fR, the resulting decimal number will be \fB2550000000000\fR, and if dc(1) is given the number string \fB"10e_4"\fR, the resulting decimal number will be \fB0\.0016\fR\.
 .
 .P
-Scientific notation is a non\-portable extension\.
+Scientific notation is a \fBnon\-portable extension\fR\.
 .
 .SH "COMMANDS"
 The valid commands are listed below\.
@@ -78,7 +78,7 @@ These commands are used for printing\.
 Note that if dc(1) has been built with the extra math option enabled, both scientific notation and engineering notation are available for printing numbers\. Scientific notation is activated by assigning \fB0\fR to \fBobase\fR (in any other context, an \fBobase\fR of \fB0\fR is invalid), and engineering notation is activated by assigning \fB1\fR to \fBobase\fR (which is also invalid in any other context)\. To deactivate them, just assign a different value to \fBobase\fR\.
 .
 .P
-Printing numbers in scientific notation and/or engineering notation is a non\-portable extension\.
+Printing numbers in scientific notation and/or engineering notation is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBp\fR
@@ -102,7 +102,7 @@ If the value is a number, it is truncated and the result\'s absolute value is pr
 If the value is a string, it is printed without a trailing newline\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBf\fR
@@ -142,7 +142,7 @@ Remaindering is equivalent to 1) Computing \fBa/b\fR to current \fBscale\fR, and
 The top two values are popped off the stack, divided and remaindered, and the results (divided first, remainder second) are pushed onto the stack\. This is equivalent to \fBx y / x y %\fR except that \fBx\fR and \fBy\fR are only evaluated once\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB^\fR
@@ -167,7 +167,7 @@ Otherwise, the top value on the stack is popped and copied, and the copy is nega
 The top value is popped off the stack and its absolute value is pushed onto the stack\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB|\fR
@@ -177,14 +177,14 @@ The top three values are popped off the stack, a modular exponentiation is compu
 The first value popped is used as the reduction modulus and must be an integer and non\-zero\. The second value popped is used as the exponent and must be an integer and non\-negative\. The third value popped is the base and must be an integer\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB$\fR
 The top value is popped off the stack and copied, and the copy is truncated and pushed onto the stack\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB@\fR
@@ -194,7 +194,7 @@ The top two values are popped off the stack, and the second\'s precision is set 
 The first value must be an integer and non\-negative\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBH\fR
@@ -204,7 +204,7 @@ The top two values are popped off the stack, and the second is shifted left (rad
 The first value must be an integer and non\-negative\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBh\fR
@@ -214,49 +214,49 @@ The top two values are popped off the stack, and the second is shifted right (ra
 The first value must be an integer and non\-negative\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBG\fR
 The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if they are equal, or \fB0\fR otherwise\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBN\fR
 The top value is popped off of the stack, and if it a \fB0\fR, a \fB1\fR is pushed; otherwise, a \fB0\fR is pushed\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB(\fR
 The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is less than the second, or \fB0\fR otherwise\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB{\fR
 The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is less than or equal to the second, or \fB0\fR otherwise\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB)\fR
 The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is greater than the second, or \fB0\fR otherwise\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB}\fR
 The top two values are popped off of the stack, they are compared, and a \fB1\fR is pushed if the first is greater than or equal to the second, or \fB0\fR otherwise\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .SS "Stack Control"
 These commands control the stack\.
@@ -365,7 +365,7 @@ If it is a number, it is truncated and the result mod \fBUCHAR_MAX + 1\fR is cal
 If it is a string, then a new string is made\. If the original string is empty, the new string is empty\. If it is not, then the first character of the original string is used to create the new string as a one\-character string\. The new string is then pushed onto the stack\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBx\fR
@@ -392,7 +392,7 @@ For example, \fB0 1>a\fR will execute the contents of register \fBa\fR, and \fB1
 Like the above, but will execute register \fBs\fR if the comparison fails\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB!>\fR\fIr\fR
@@ -403,7 +403,7 @@ Pops two values off of the stack that must be numbers and compares them\. If the
 Like the above, but will execute register \fBs\fR if the comparison fails\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB<\fR\fIr\fR
@@ -414,7 +414,7 @@ Pops two values off of the stack that must be numbers and compares them\. If the
 Like the above, but will execute register \fBs\fR if the comparison fails\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB!<\fR\fIr\fR
@@ -425,7 +425,7 @@ Pops two values off of the stack that must be numbers and compares them\. If the
 Like the above, but will execute register \fBs\fR if the comparison fails\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB=\fR\fIr\fR
@@ -436,7 +436,7 @@ Pops two values off of the stack that must be numbers and compares them\. If the
 Like the above, but will execute register \fBs\fR if the comparison fails\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB!=\fR\fIr\fR
@@ -447,7 +447,7 @@ Pops two values off of the stack that must be numbers and compares them\. If the
 Like the above, but will execute register \fBs\fR if the comparison fails\.
 .
 .IP
-This is a non\-portable extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB?\fR

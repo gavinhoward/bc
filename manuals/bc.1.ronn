@@ -78,7 +78,7 @@ The following are the options that bc(1) accepts.
     cases. In interactive mode, bc(1) attempts to recover from errors and
     flushes `stdout` as soon as execution is done for the current input.
 
-    This is an extension.
+    This is a **non-portable extension**.
 
   * `-l`, `--mathlib`:
     Sets `scale` (see the Scale section) to `20` and loads the included math
@@ -93,13 +93,13 @@ The following are the options that bc(1) accepts.
 
     This is mostly for compatibility with the [GNU bc(1)][2].
 
-    This is an extension.
+    This is a **non-portable extension**.
 
   * `-s`, `--standard`:
     Process exactly the language defined by the [standard][1] and error if any
     extensions are used.
 
-    This is an extension.
+    This is a **non-portable extension**.
 
   * `-v`, `-V`, `--version`:
     Print the version information (copyright header) and exit.
@@ -108,7 +108,7 @@ The following are the options that bc(1) accepts.
     Like `-s` and `--standard`, except that warnings (and not errors) are given
     for non-standard extensions.
 
-    This is an extension.
+    This is a **non-portable extension**.
 
   * `-e` *expr*, `--expression`=*expr*:
     Evaluates `expr`. If multiple expressions are given, they are evaluated in
@@ -116,13 +116,13 @@ The following are the options that bc(1) accepts.
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
 
-    This is an extension.
+    This is a **non-portable extension**.
 
   * `-f` *file*, `--file`=*file*:
     Reads in `file` and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
 
-    This is an extension.
+    This is a **non-portable extension**.
 
 SYNTAX
 ------
@@ -138,7 +138,7 @@ identifier
 Identifiers (`I`) start with a lowercase letter and can be followed by any
 number (up to `BC_NAME_MAX-1`) of lowercase letters (`a-z`), digits (`0-9`), and
 underscores (`_`). The regex is `[a-z][a-z0-9_]*` Identifiers with more than one
-character (letter) are an extension.
+character (letter) are a **non-portable extension**.
 
 `ibase` is a global variable determining how to interpret constant numbers. It
 is the "input" base, or the number base used for interpreting input numbers.
@@ -172,8 +172,8 @@ The value of a statement that is an expression (i.e., any of the
 printed unless the lowest precedence operator is an
 [`assignment`](#bc-assignment) operator ***and*** the expression is not
 surrounded by parentheses. The value that is printed is also assigned to the
-special variable `last`. This is a non-portable extension. A single dot may also
-be used as a synonym for `last`.
+special variable `last`. A single dot may also be used as a synonym for `last`.
+These are **non-portable extensions**.
 
 Either semicolons or newlines may separate statements.
 
@@ -183,7 +183,7 @@ There are two kinds of comments:
 
 1.	Block comments are enclosed in `/*` and `*/`.
 2.	Line comments go from `#` until, and not including, the next newline. This
-	is a non-portable extension.
+	is a **non-portable extension**.
 
 <a name="bc-named-expressions"/>
 
@@ -213,9 +213,9 @@ side of [`assignment` operators](#bc-assignment).
 3.	`sqrt(E)`: The square root of `E`.
 4.	`length(E)`: The number of significant decimal digits in `E`.
 5.	`length(I[])`: The number of elements in the array `I`. This is a
-	non-portable extension.
+	**non-portable extension**.
 6.	`scale(E)`: `E`'s **scale**.
-7.	`abs(E)`: The absolute value of `E`. This is a non-portable extension.
+7.	`abs(E)`: The absolute value of `E`. This is a **non-portable extension**.
 
 <a name="bc-numbers"/>
 
@@ -246,7 +246,7 @@ by `10^exponent` regardless of the current `ibase`. For example, if `ibase` is
 will be `2550000000000`, and if bc(1) is given the number string `"10e-4"`, the
 resulting decimal number will be `0.0016`.
 
-Scientific notation is a non-portable extension.
+Scientific notation is a **non-portable extension**.
 
 ### Operators
 
@@ -356,13 +356,13 @@ The operators will be described in more detail below.
     The `boolean not` operator returns `1` if the expression is `0`, or `0`
     otherwise.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `$`:
     The `truncation` operator returns a copy of the given expression with all of
     its **scale** removed.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
     This is only available if bc(1) has been compiled with the extra math option
     enabled.
@@ -376,7 +376,7 @@ The operators will be described in more detail below.
 
     The second expression must be an integer (no **scale**) and non-negative.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
     This is only available if bc(1) has been compiled with the extra math option
     enabled.
@@ -419,7 +419,7 @@ The operators will be described in more detail below.
 
     The second expression must be an integer (no **scale**) and non-negative.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
     This is only available if bc(1) has been compiled with the extra math option
     enabled.
@@ -431,7 +431,7 @@ The operators will be described in more detail below.
 
     The second expression must be an integer (no **scale**) and non-negative.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
     This is only available if bc(1) has been compiled with the extra math option
     enabled.
@@ -462,7 +462,8 @@ The operators will be described in more detail below.
     `(a=b)>c`.
 
     Also, unlike the [standard][1] requires, these operators can appear anywhere
-    any other expressions can be used. This allowance is an extension.
+    any other expressions can be used. This allowance is a
+    **non-portable extension**.
 
   * `&&`:
     The `boolean and` operator takes two expressions and returns `1` if both
@@ -470,7 +471,7 @@ The operators will be described in more detail below.
 
     This is ***not*** a short-circuit operator.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
   * `||`:
     The `boolean or` operator takes two expressions and returns `1` if one of
@@ -478,7 +479,7 @@ The operators will be described in more detail below.
 
     This is ***not*** a short-circuit operator.
 
-    This is a non-portable extension.
+    This is a **non-portable extension**.
 
 ### Statements
 
@@ -499,11 +500,11 @@ The following items are statements:
 13.	A string of characters, enclosed in double quotes
 14.	`print` `E` `,` ... `,` `E`
 
-Numbers 4, 9, 11, 12, and 14 are extensions.
+Numbers 4, 9, 11, 12, and 14 are **non-portable extensions**.
 
-Also, as an extension, any or all of the expressions in the header of a for loop
-may be omitted. If the condition (second expression) is omitted, it is assumed
-to be a constant `1`.
+Also, as a **non-portable extension**, any or all of the expressions in the
+header of a for loop may be omitted. If the condition (second expression) is
+omitted, it is assumed to be a constant `1`.
 
 The `break` statement causes a loop to stop iterating and resume execution
 immediately following a loop. This is only allowed in loops.
@@ -536,7 +537,7 @@ Scientific notation and engineering notation are disabled if bc(1) is run with
 either the `-s` or `-w` command-line options (or equivalents).
 
 Printing numbers in scientific notation and/or engineering notation is a
-non-portable extension.
+**non-portable extension**.
 
 ### Print Statement
 
@@ -593,7 +594,7 @@ define I(I,...,I){
 Any `I` in the parameter list or `auto` list may be replaced with `I[]` to make
 a parameter or `auto` var an array.
 
-As a non-portable extension, the opening brace of a `define` statement may
+As a **non-portable extension**, the opening brace of a `define` statement may
 appear on the next line.
 
 The return statement may also be in the following forms:
@@ -627,7 +628,7 @@ Void functions can only use the first two `return` statements listed above.
 The word `void` is not treated as a keyword; it is still possible to have
 variables, arrays, and functions named `void`.
 
-This is a non-portable extension.
+This is a **non-portable extension**.
 
 ### Array References
 
@@ -642,7 +643,7 @@ when the function returns to the array that was passed in.
 
 Other than this, all function arguments are passed by value.
 
-This is a non-portable extension.
+This is a **non-portable extension**.
 
 LIBRARY
 -------
@@ -699,6 +700,8 @@ either the `-l` or `--mathlib` options are given.
 However, the extended library is ***not*** loaded when the `-s`/`--standard` or
 `-w`/`--warn` options are given since they are not part of the library defined
 by the [standard][1].
+
+The extended library is a **non-portable extension**.
 
   * `r(x, p)`:
     Returns `x` rounded to `p` decimal places according to the rounding mode
@@ -1137,7 +1140,7 @@ STANDARDS
 ---------
 
 bc(1) is compliant with the [IEEE Std 1003.1-2017 (“POSIX.1-2017”)][1]
-specification. The flags `-efhiqsvVw`, all long options, and the extensions
+specification. The flags `-efghiqsvVw`, all long options, and the extensions
 noted above are extensions to that specification.
 
 Note that the specification explicitly says that bc(1) only accepts numbers that
