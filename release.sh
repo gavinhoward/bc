@@ -347,6 +347,7 @@ if [ "$run_tests" -ne 0 ]; then
 	printf 'Run make\n'
 	printf '\n'
 	printf 'Then run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
+	printf '\n'
 	printf 'Then run the GitHub release script as follows:\n'
 	printf '\n'
 	printf '    <github_release> %s <msg> .travis.yml codecov.yml release.sh RELEASE.md \\\n' "$version"
