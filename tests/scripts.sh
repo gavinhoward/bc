@@ -75,7 +75,7 @@ for s in $scriptdir/*.$d; do
 		printf 'Skipping %s script %s\n' "$d" "$s"
 		continue
 	else
-		printf 'Generating %s results...\n' "$d" "$f"
+		printf 'Generating %s results...\n' "$f"
 		printf '%s\n' "$halt" | "$d" "$s" > "$out1"
 		res="$out1"
 	fi
