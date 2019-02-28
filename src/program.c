@@ -1269,6 +1269,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 
 		bc_num_createCopy(&num, n);
 		bc_num_truncate(&num, num.rdx);
+		num.neg = false;
 
 		// This is guaranteed to not have a divide by 0
 		// because strmb is equal to UCHAR_MAX + 1.
