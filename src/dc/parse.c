@@ -38,7 +38,7 @@ static BcStatus dc_parse_register(BcParse *p) {
 
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
-	assert(p->l.t == BC_LEX_NAME);
+	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	bc_parse_pushName(p, p->l.str.v);
 
