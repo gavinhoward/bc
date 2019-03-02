@@ -548,7 +548,7 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 		size_t len = p->flags.len;
 		bool loop;
 
-		assert(BC_NO_ERR(!has_brace || brace));
+		if (has_brace && !brace) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 		loop = (BC_PARSE_LOOP_INNER(p) != 0);
 
