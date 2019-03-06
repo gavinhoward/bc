@@ -1238,7 +1238,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	if (BC_TTYIN && !vm->history.badTerm) {
 
 		s = bc_history_raw(h, prompt);
-		if (BC_ERR(s)) return s;
+		if (BC_ERR(s && s != BC_STATUS_EOF)) return s;
 
 		bc_vec_string(vec, BC_HISTORY_BUF_LEN(h), h->buf.v);
 
