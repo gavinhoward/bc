@@ -412,7 +412,7 @@ static BcStatus bc_vm_stdin(void) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	for (; !done && !BC_STATUS_IS_ERROR(s) && buf.len > 1 && BC_NO_SIG &&
+	for (; !BC_STATUS_IS_ERROR(s) && buf.len > 1 && BC_NO_SIG &&
 	       s != BC_STATUS_SIGNAL; s = bc_read_line(&buf, ">>> "))
 	{
 		char c2, *str = buf.v;
@@ -460,6 +460,8 @@ static BcStatus bc_vm_stdin(void) {
 		if (BC_ERR(s)) goto err;
 
 		bc_vec_empty(&buffer);
+
+		if (done) break;
 	}
 
 	if (BC_ERR(s && s != BC_STATUS_EOF)) goto err;
