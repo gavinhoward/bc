@@ -114,18 +114,13 @@ typedef enum BcError {
 
 #define BC_UNUSED(e) ((void) (e))
 
-#ifdef __clang__
-#	define BC_LIKELY(e) __builtin_expect(!!(e), 1)
-#	define BC_UNLIKELY(e) __builtin_expect(!!(e), 0)
-#else // __clang__
-#	ifdef __GNUC__
-#		define BC_LIKELY(e) __builtin_expect(!!(e), 1)
-#		define BC_UNLIKELY(e) __builtin_expect(!!(e), 0)
-#	else // __GNUC_
-#		define BC_LIKELY(e) (e)
-#		define BC_UNLIKELY(e) (e)
-#	endif // __GNUC__
-#endif // __clang__
+#ifndef BC_LIKELY
+#define BC_LIKELY(e) (e)
+#endif // BC_LIKELY
+
+#ifndef BC_UNLIKELY
+#define BC_UNLIKELY(e) (e)
+#endif // BC_UNLIKELY
 
 #define BC_ERR(e) BC_UNLIKELY(e)
 #define BC_NO_ERR(s) BC_LIKELY(s)
