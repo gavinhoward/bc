@@ -339,7 +339,7 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	}
 
 #if BC_ENABLED
-	assert(!BC_IS_BC | BC_NO_ERR(lt != BC_RESULT_ONE));
+	assert(!BC_IS_BC || BC_NO_ERR(lt != BC_RESULT_ONE));
 #endif // BC_ENABLED
 
 #if DC_ENABLED

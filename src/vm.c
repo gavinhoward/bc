@@ -132,7 +132,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
 
 	assert(e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END);
 
-	if (BC_UNLIKELY(!(p || w))) return BC_STATUS_SUCCESS;
+	if (!(p || w)) return BC_STATUS_SUCCESS;
 
 	va_start(args, line);
 	s = bc_vm_printError(e, p ? vm->error_header : vm->warn_header, line, args);
