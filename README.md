@@ -109,8 +109,11 @@ To see what algorithms this `bc` uses, see the [algorithms manual][7].
 ## Locales
 
 Currently, this `bc` only has support for English (and US English) locales.
-Patches are welcome for translations; use the existing files in `locales/` as a
-starting point.
+Patches are welcome for translations; use the existing `*.msg` files in
+`locales/` as a starting point.
+
+When submitting a translations, you need to run `make catalogs` before
+committing; this will generate `*.cat` files for all of the translations.
 
 ## Other Projects
 

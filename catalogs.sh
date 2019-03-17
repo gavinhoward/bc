@@ -14,36 +14,26 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-usage() {
-	printf "usage: %s install_dir\n" "$0" 1>&2
-	exit 1
-}
-
 script="$0"
 scriptdir=$(dirname "$script")
 
 . "$scriptdir/tests/functions.sh"
 
-INSTALL="$scriptdir/safe-install.sh"
+localedir="$scriptdir/locales"
 
-test "$#" -ge 1 || usage
-
-installdir="$1"
-shift
-
-mkdir -p "$installdir"
-
-catalogdir="$scriptdir/locales/catalogs"
-
-for file in $catalogdir/*.cat; do
+for file in $localedir/*.msg; do
 
 	base=$(basename "$file")
+	name=$(echo "$base" | cut -f 1 -d '.')
+	f="$localedir/catalogs/$name.cat"
 
 	if [ -L "$file" ]; then
 		link=$(readlink "$file")
-		"$INSTALL" -Dlm 755 "$link" "$installdir/$base"
+		link=$(echo "$link" | cut -f 1 -d '.')
+		rm -rf "$localedir/catalogs/$name.cat"
+		ln -s "$link.cat" "$localedir/catalogs/$name.cat"
 	else
-		"$INSTALL" -Dm 755 "$file" "$installdir/$base"
+		gencat "$f" "$file"
 	fi
 
 done
