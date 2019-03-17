@@ -146,6 +146,7 @@ Files:
 
 	.gitignore       The git ignore file (maintainer use only).
 	.travis.yml      The Travis CI file (maintainer use only).
+	catalogs.sh      A script to generate catalogs (maintainer use only).
 	codecov.yml      The Codecov file (maintainer use only).
 	configure.sh     The configure script.
 	install.sh       Install script.
