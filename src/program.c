@@ -501,7 +501,7 @@ static void bc_program_printString(const char *restrict str) {
 				// Just print the backslash. The following
 				// character will be printed later.
 				bc_vm_putchar('\\');
-				++vm->nchars;
+				vm->nchars += 1;
 			}
 		}
 
