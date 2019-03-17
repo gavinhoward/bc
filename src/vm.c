@@ -61,7 +61,7 @@ static void bc_vm_sig(int sig) {
 }
 #else // _WIN32
 static BOOL WINAPI bc_vm_sig(DWORD sig) {
-	if (sig == CTRL_C_EVENT) bc_vm_puts(vm->sig_msg, stderr);
+	if (sig == CTRL_C_EVENT) bc_vm_puts(vm->sigmsg, stderr);
 	vm->sig = (uchar) sig;
 	return TRUE;
 }
