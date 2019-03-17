@@ -845,7 +845,8 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	if (ib || ob || sc) {
 
 		BcVec *v;
-		size_t *ptr, *ptr_t, val, max, min;
+		size_t *ptr, *ptr_t;
+		unsigned long val, max, min;
 		BcError e;
 
 		s = bc_num_ulong(l, &val);
@@ -870,10 +871,10 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		ptr = bc_vec_top(v);
 
 		if (BC_ERR(val > max || val < min)) return bc_vm_verr(e, min, max);
-		if (!sc) bc_num_ulong2num(ib ? &p->ib : &p->ob, (unsigned long) val);
+		if (!sc) bc_num_ulong2num(ib ? &p->ib : &p->ob, val);
 
-		*ptr = val;
-		*ptr_t = val;
+		*ptr = (size_t) val;
+		*ptr_t = (size_t) val;
 	}
 
 	bc_num_createCopy(&res.d.n, l);
