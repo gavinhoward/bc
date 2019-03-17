@@ -16,7 +16,7 @@ This is the checklist for cutting a release.
 	* debug
 	* release
 	* minrelease
-9.	Have other testers try to break it.
+9.	Build with xstatic.
 10.	Fuzz with AFL.
 	* reldebug
 11.	Fix AFL crashes.
