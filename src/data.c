@@ -39,7 +39,7 @@ const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
 
 const char bc_copyright[] =
-	"Copyright (c) 2018 Gavin D. Howard and contributors\n"
+	"Copyright (c) 2018-2019 Gavin D. Howard and contributors\n"
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
@@ -79,6 +79,7 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
+
 };
 
 const char* const bc_err_msgs[] = {
