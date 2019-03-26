@@ -139,12 +139,10 @@ void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 
 	if (!v->len) bc_vec_pushByte(v, '\0');
 
-	len = v->len + strlen(str);
-
-	if (v->cap < len) bc_vec_grow(v, len - v->len);
-	strcat(v->v, str);
-
-	v->len = len;
+	len = strlen(str);
+	bc_vec_grow(v, len);
+	strcat(v->v + v->len - 1, str);
+	v->len += len;
 }
 
 void bc_vec_empty(BcVec *restrict v) {
