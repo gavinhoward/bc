@@ -11,12 +11,12 @@ This is the checklist for cutting a release.
 	sanitizers, on FreeBSD.
 7.	Run Coverity Scan and eliminate warnings, if possible (both only).
 	* debug
-8.	Run the randmath.py script an excessive amount and add failing tests to
+8.	Build with xstatic.
+9.	Run the randmath.py script an excessive amount and add failing tests to
 	test suite.
 	* debug
 	* release
 	* minrelease
-9.	Build with xstatic.
 10.	Fuzz with AFL.
 	* reldebug
 11.	Fix AFL crashes.
