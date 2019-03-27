@@ -515,7 +515,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	BcResult *r;
 	char *str;
 	BcNum *n = NULL;
-	bool pop = inst != BC_INST_PRINT;
+	bool pop = (inst != BC_INST_PRINT);
 
 	assert(p);
 
