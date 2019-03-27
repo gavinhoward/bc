@@ -444,6 +444,36 @@ elif [ "$HOSTCC" = "" ]; then
 	HOSTCC="$HOST_CC"
 fi
 
+if [ "$nls" -eq 1 ]; then
+
+	set +e
+
+	printf 'Testing NLS...\n'
+
+	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
+	flags="$flags -DBC_ENABLE_HISTORY=$hist"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+
+	"$CC" $CFLAGS $flags -c "src/vm.c" > /dev/null 2>&1
+
+	err="$?"
+
+	rm -rf "$scriptdir/vm.o"
+
+	# If this errors, it is probably because of building on Windows,
+	# and NLS is not supported on Windows, so disable it.
+	if [ "$err" -ne 0 ]; then
+		printf 'NLS does not work.\n'
+		printf 'Disabling NLS...\n'
+		nls=0
+	else
+		printf 'NLS works.\n'
+	fi
+
+	set -e
+
+fi
+
 if [ "$hist" -eq 1 ]; then
 
 	set +e
