@@ -24,7 +24,7 @@ if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	printf 'usage: %s dir [run_extended_tests] [generate_tests] [exec args...]\n' "$script"
+	printf 'usage: %s dir [run_extended_tests] [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -32,6 +32,13 @@ if [ "$#" -lt 1 ]; then
 	extra=1
 else
 	extra="$1"
+	shift
+fi
+
+if [ "$#" -lt 1 ]; then
+	run_stack_tests=1
+else
+	run_stack_tests="$1"
 	shift
 fi
 
@@ -77,7 +84,7 @@ done < "$testdir/$d/all.txt"
 
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
-sh "$testdir/scripts.sh" "$d" "$generate_tests" "$exe" "$@"
+sh "$testdir/scripts.sh" "$d" "$run_stack_tests" "$generate_tests" "$exe" "$@"
 sh "$testdir/read.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 

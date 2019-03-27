@@ -272,16 +272,16 @@ link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math $generate_tests"
-dc_test="@tests/all.sh dc $extra_math $generate_tests"
+bc_test="@tests/all.sh bc $extra_math 1 $generate_tests"
+dc_test="@tests/all.sh dc $extra_math 1 $generate_tests"
 
 timeconst="@tests/bc/timeconst.sh"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math $generate_tests valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math $generate_tests valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	vg_bc_test="@tests/all.sh bc $extra_math 1 $generate_tests valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc $extra_math 1 $generate_tests valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 else
 	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
 	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"

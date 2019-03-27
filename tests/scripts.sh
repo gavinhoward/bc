@@ -21,11 +21,18 @@ script="$0"
 testdir=$(dirname "${script}")
 
 if [ "$#" -eq 0 ]; then
-	printf 'usage: %s dir [generate_tests] [exec args...]\n' "$script"
+	printf 'usage: %s dir [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
 	exit 1
 else
 	d="$1"
 	shift
+fi
+
+if [ "$#" -gt 0 ]; then
+	run_stack_tests="$1"
+	shift
+else
+	run_stack_tests=1
 fi
 
 if [ "$#" -gt 0 ]; then
@@ -46,8 +53,15 @@ out1="$testdir/../.log_$d.txt"
 out2="$testdir/../.log_${d}_test.txt"
 
 if [ "$d" = "bc" ]; then
-	options="-lgq"
+
+	if [ "$run_stack_tests" -ne 0 ]; then
+		options="-lgq"
+	else
+		options="-lq"
+	fi
+
 	halt="halt"
+
 else
 	options="-x"
 	halt="q"
@@ -62,6 +76,15 @@ for s in $scriptdir/*.$d; do
 
 	if [ "$f" = "timeconst.bc" ]; then
 		continue
+	fi
+
+	if [ "$run_stack_tests" -eq 0 ]; then
+
+		if [ "$f" = "globals.bc" -o "$f" = "references.bc" ]; then
+			printf 'Skipping %s script %s\n' "$d" "$s"
+			continue
+		fi
+
 	fi
 
 	orig="$testdir/$name.txt"
