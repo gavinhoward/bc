@@ -629,10 +629,17 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	p = b->num;
 
 	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end; --i) {
+
 		n = cp.num + i;
 		q = 0;
-		for (; BC_NO_ERR(!s) && (n[len] || bc_num_compare(n, p, len) >= 0); ++q)
+
+		while (BC_NO_SIG && BC_NO_ERR(!s) &&
+		       (n[len] || bc_num_compare(n, p, len) >= 0))
+		{
 			s = bc_num_subArrays(n, p, len);
+			q += 1;
+		}
+
 		c->num[i] = q;
 	}
 
