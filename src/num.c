@@ -862,7 +862,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	s = op(ptr_a, ptr_b, c, scale);
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
-	assert(c->rdx <= c->len || !c->len || BC_SIG);
+	assert(c->rdx <= c->len || !c->len || s);
 
 	if (init) bc_num_free(&num2);
 
