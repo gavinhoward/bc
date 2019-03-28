@@ -27,8 +27,15 @@
 #include <limits.h>
 
 #include <signal.h>
+
 #if BC_ENABLE_NLS
+
+#	ifdef _WIN32
+#	error NLS is not supported on Windows.
+#	endif // _WIN32
+
 #include <nl_types.h>
+
 #endif // BC_ENABLE_NLS
 
 #include <status.h>
