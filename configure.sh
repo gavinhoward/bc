@@ -262,11 +262,18 @@ if [ "$karatsuba_len" -lt 16 ]; then
 	usage "KARATSUBA_LEN is less than 16"
 fi
 
-set -e
-
 script="$0"
-
 scriptdir=$(dirname "$script")
+
+cwd=$(pwd)
+
+cd "$scriptdir"
+
+make clean_config > /dev/null 2>&1
+
+cd "$cwd"
+
+set -e
 
 link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
