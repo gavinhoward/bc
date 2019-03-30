@@ -273,7 +273,7 @@ clean_tests: clean clean_config
 	@$(RM) -f $(DC_HELP_GCDA) $(DC_HELP_GCNO)
 
 install_locales:
-	$(LOCALES_INSTALL) $(LOCALEDIR)
+	$(LOCALES_INSTALL) $(DESTDIR)$(LOCALEDIR)
 
 install_bc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(BC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
@@ -285,7 +285,7 @@ install:%%INSTALL_LOCALES_PREREQS%%%%INSTALL_PREREQS%%
 	$(INSTALL) $(DESTDIR)$(BINDIR) "$(EXEC_SUFFIX)"
 
 uninstall_locales:
-	$(RM) -fr $(LOCALEDIR)
+	$(RM) -fr $(DESTDIR)$(LOCALEDIR)
 
 uninstall_bc_manpage:
 	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
