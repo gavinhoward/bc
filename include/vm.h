@@ -112,12 +112,6 @@
 #define BC_NO_SIG (1)
 #endif // BC_ENABLE_SIGNALS
 
-#if BC_ENABLE_NLS
-#ifdef _WIN32
-#error NLS is not supported on Windows.
-#endif // _WIN32
-#endif // BC_ENABLE_NLS
-
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
 
