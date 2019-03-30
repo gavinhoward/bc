@@ -460,6 +460,7 @@ if [ "$nls" -eq 1 ]; then
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
 	"$CC" $CFLAGS $flags -c "src/vm.c" > /dev/null 2>&1
 
@@ -490,6 +491,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
 	flags="$flags -DBC_ENABLE_NLS=$nls"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
 	"$CC" $CFLAGS $flags -c "src/history/history.c" > /dev/null 2>&1
 
