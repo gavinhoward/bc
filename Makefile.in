@@ -265,6 +265,9 @@ clean_tests: clean clean_config
 	@$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
 	@$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
 	@$(RM) -f tests/bc/bessel.txt tests/bc/bessel_results.txt
+	@$(RM) -f tests/bc/scripts/bessel.txt
+	@$(RM) -f tests/bc/scripts/parse.txt
+	@$(RM) -f tests/bc/scripts/print.txt
 	@$(RM) -f tests/dc/scripts/prime.txt tests/dc/scripts/stream.txt
 	@$(RM) -f .log_*.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt
