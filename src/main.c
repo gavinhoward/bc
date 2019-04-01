@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
 
 	int s;
 	char *name;
+	size_t len = strlen(bc_exec_prefix);
 
 	vm = calloc(1, sizeof(BcVm));
 	if (BC_ERR(!vm)) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
@@ -45,6 +46,8 @@ int main(int argc, char *argv[]) {
 
 	name = strrchr(argv[0], '/');
 	vm->name = !name ? argv[0] : name + 1;
+
+	if (strlen(vm->name) > len) vm->name += len;
 
 #if !DC_ENABLED
 	s = bc_main(argc, argv);

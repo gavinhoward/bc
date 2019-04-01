@@ -92,9 +92,9 @@ usage() {
 	printf '    MAN1DIR      The location to install Section 1 manpages to. Default is\n'
 	printf '                 "$MANDIR/man1".\n'
 	printf '    EXECSUFFIX   The suffix to append to the executable names, used to not\n'
-	printf '                 interfere with other installed bc executables. This can only\n'
-	printf '                 be a suffix because bc uses the first letter of the executable\n'
-	printf '                 name to switch between bc and dc. Default is "".\n'
+	printf '                 interfere with other installed bc executables. Default is "".\n'
+	printf '    EXECPREFIX   The prefix to append to the executable names, used to not\n'
+	printf '                 interfere with other installed bc executables. Default is "".\n'
 	printf '    DESTDIR      For package creation. Default is "".\n'
 	printf '    GEN_EMU      Emulator to run string generator code under\n'
 	printf '                 (leave empty if not necessary). Default is "".\n'
@@ -279,10 +279,10 @@ link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math 1 $generate_tests"
-dc_test="@tests/all.sh dc $extra_math 1 $generate_tests"
+bc_test="@tests/all.sh bc $extra_math 1 $generate_tests \$(BC_EXEC)"
+dc_test="@tests/all.sh dc $extra_math 1 $generate_tests \$(DC_EXEC)"
 
-timeconst="@tests/bc/timeconst.sh"
+timeconst="@tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
@@ -346,9 +346,9 @@ else
 
 	executables="bc and dc"
 
-	link="\$(LINK) \$(BIN) \$(DC)"
+	link="\$(LINK) \$(BIN) \$(EXEC_PREFIX)\$(DC)"
 
-	karatsuba="@\$(KARATSUBA)"
+	karatsuba="@\$(KARATSUBA) 0 \$(BC_EXEC)"
 	karatsuba_test="@\$(KARATSUBA) 100 \$(BC_EXEC)"
 
 	install_prereqs=" install_bc_manpage install_dc_manpage"
@@ -540,6 +540,7 @@ printf 'MANDIR=%s\n' "$MANDIR"
 printf 'MAN1DIR=%s\n' "$MAN1DIR"
 printf 'LOCALEDIR=%s\n' "$LOCALEDIR"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
+printf 'EXECPREFIX=%s\n' "$EXECPREFIX"
 printf 'DESTDIR=%s\n' "$DESTDIR"
 printf 'GEN_EMU=%s\n' "$GEN_EMU"
 
@@ -572,6 +573,7 @@ contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 contents=$(replace "$contents" "LOCALEDIR" "$LOCALEDIR")
 contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
 contents=$(replace "$contents" "EXECSUFFIX" "$EXECSUFFIX")
+contents=$(replace "$contents" "EXECPREFIX" "$EXECPREFIX")
 contents=$(replace "$contents" "BINDIR" "$BINDIR")
 contents=$(replace "$contents" "MAN1DIR" "$MAN1DIR")
 contents=$(replace "$contents" "CFLAGS" "$CFLAGS")

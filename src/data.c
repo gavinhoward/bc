@@ -29,6 +29,8 @@
 #include <program.h>
 #include <vm.h>
 
+const char bc_exec_prefix[] = BC_EXECPREFIX;
+
 #if BC_ENABLE_SIGNALS
 #if BC_ENABLED
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";

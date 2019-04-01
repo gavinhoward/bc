@@ -3,10 +3,10 @@
 *.files
 *.includes
 *.creator.user
-bin/bc
-bin/bc.exe
-bin/dc
-bin/dc.exe
+bin/*bc
+bin/*bc.exe
+bin/*dc
+bin/*dc.exe
 bc.old
 *.o
 *.a
