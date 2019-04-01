@@ -15,7 +15,7 @@
 #
 
 usage() {
-	printf "usage: %s install_dir\n" "$0" 1>&2
+	printf "usage: %s locale_dir\n" "$0" 1>&2
 	exit 1
 }
 
@@ -26,24 +26,17 @@ scriptdir=$(dirname "$script")
 
 INSTALL="$scriptdir/safe-install.sh"
 
-test "$#" -ge 1 || usage
+test "$#" -ge 2 || usage
 
-installdir="$1"
+locale_dir="$1"
 shift
 
-mkdir -p "$installdir"
+main_exec="$1"
+shift
 
-catalogdir="$scriptdir/locales/catalogs"
+for d in $locale_dir/*/; do
 
-for file in $catalogdir/*.cat; do
-
-	base=$(basename "$file")
-
-	if [ -L "$file" ]; then
-		link=$(readlink "$file")
-		"$INSTALL" -Dlm 755 "$link" "$installdir/$base"
-	else
-		"$INSTALL" -Dm 755 "$file" "$installdir/$base"
-	fi
+	d=${d%*/}
+	rm -f "$d/LC_MESSAGES/$main_exec.cat"
 
 done

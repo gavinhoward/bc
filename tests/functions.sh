@@ -24,6 +24,14 @@ readlink() {
 	printf ${L#*-> }
 }
 
+removeext() {
+
+	local name="$1"
+	shift
+
+	printf '%s' "$name" | cut -f 1 -d '.'
+}
+
 die() {
 
 	local d="$1"

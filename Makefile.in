@@ -99,7 +99,7 @@ BINDIR = %%BINDIR%%
 MAN1DIR = %%MAN1DIR%%
 MAIN_EXEC = $(%%MAIN_EXEC%%)
 EXEC = $(%%EXEC%%)
-LOCALEDIR = %%LOCALEDIR%%/$(EXEC_PREFIX)$(MAIN_EXEC)$(EXEC_SUFFIX)
+LOCALEDIR = %%LOCALEDIR%%
 
 BC_ENABLE_SIGNALS = %%SIGNALS%%
 BC_ENABLE_HISTORY = %%HISTORY%%
@@ -114,7 +114,8 @@ INSTALL = ./install.sh
 SAFE_INSTALL = ./safe-install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
-LOCALES_INSTALL = ./locales.sh
+LOCALE_INSTALL = ./locale_install.sh
+LOCALE_UNINSTALL = ./locale_uninstall.sh
 CATALOGS = ./catalogs.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
@@ -282,7 +283,7 @@ clean_tests: clean clean_config
 	@$(RM) -f $(DC_HELP_GCDA) $(DC_HELP_GCNO)
 
 install_locales:
-	$(LOCALES_INSTALL) $(DESTDIR)$(LOCALEDIR)
+	$(LOCALE_INSTALL) $(DESTDIR)$(LOCALEDIR) $(EXEC_PREFIX)$(MAIN_EXEC)$(EXEC_SUFFIX)
 
 install_bc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(BC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
@@ -294,7 +295,7 @@ install:%%INSTALL_LOCALES_PREREQS%%%%INSTALL_PREREQS%%
 	$(INSTALL) $(DESTDIR)$(BINDIR) "$(EXEC_SUFFIX)"
 
 uninstall_locales:
-	$(RM) -fr $(DESTDIR)$(LOCALEDIR)
+	$(LOCALE_UNINSTALL) $(DESTDIR)$(LOCALEDIR) $(EXEC_PREFIX)$(MAIN_EXEC)$(EXEC_SUFFIX)
 
 uninstall_bc_manpage:
 	$(RM) -f $(DESTDIR)$(MAN1DIR)/$(BC_MANPAGE_NAME)
