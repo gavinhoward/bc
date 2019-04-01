@@ -19,7 +19,7 @@
 script="$0"
 testdir=$(dirname "$script")
 
-. "$testdir/functions.sh"
+. "$testdir/../functions.sh"
 
 if [ "$#" -eq 0 ]; then
 	printf 'usage: %s dir [exec args...]\n' "$script"

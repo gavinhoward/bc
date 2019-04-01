@@ -22,7 +22,7 @@ usage() {
 script="$0"
 scriptdir=$(dirname "$script")
 
-. "$scriptdir/tests/functions.sh"
+. "$scriptdir/functions.sh"
 
 INSTALL="$scriptdir/safe-install.sh"
 

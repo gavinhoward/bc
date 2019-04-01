@@ -17,7 +17,7 @@
 script="$0"
 scriptdir=$(dirname "$script")
 
-. "$scriptdir/tests/functions.sh"
+. "$scriptdir/functions.sh"
 
 localedir="$scriptdir/locales"
 

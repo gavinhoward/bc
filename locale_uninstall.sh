@@ -22,8 +22,6 @@ usage() {
 script="$0"
 scriptdir=$(dirname "$script")
 
-. "$scriptdir/tests/functions.sh"
-
 INSTALL="$scriptdir/safe-install.sh"
 
 test "$#" -ge 2 || usage
