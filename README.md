@@ -144,21 +144,22 @@ tarballs.
 
 Files:
 
-	.gitignore       The git ignore file (maintainer use only).
-	.travis.yml      The Travis CI file (maintainer use only).
-	catalogs.sh      A script to generate catalogs (maintainer use only).
-	codecov.yml      The Codecov file (maintainer use only).
-	configure.sh     The configure script.
-	install.sh       Install script.
-	karatsuba.py     Script for package maintainers to find the optimal Karatsuba number.
-	LICENSE.md       A Markdown form of the BSD 2-clause License.
-	link.sh          A script to link dc to bc.
-	locales.sh       A script to install locales, if desired.
-	Makefile.in      The Makefile template.
-	NOTICE.md        List of contributors and copyright owners.
-	RELEASE.md       A checklist for making a release (maintainer use only).
-	release.sh       A script to run during the release process (maintainer use only).
-	safe-install.sh  Safe install script from musl libc.
+	.gitignore           The git ignore file (maintainer use only).
+	.travis.yml          The Travis CI file (maintainer use only).
+	catalogs.sh          A script to generate catalogs (maintainer use only).
+	codecov.yml          The Codecov file (maintainer use only).
+	configure.sh         The configure script.
+	install.sh           Install script.
+	karatsuba.py         Script to find the optimal Karatsuba number.
+	LICENSE.md           A Markdown form of the BSD 2-clause License.
+	link.sh              A script to link dc to bc.
+	locale_install.sh    A script to install locales, if desired.
+	locale_uninstall.sh  A script to uninstall locales.
+	Makefile.in          The Makefile template.
+	NOTICE.md            List of contributors and copyright owners.
+	RELEASE.md           A checklist for making a release (maintainer use only).
+	release.sh           A script to test for release (maintainer use only).
+	safe-install.sh      Safe install script from musl libc.
 
 Folders:
 
