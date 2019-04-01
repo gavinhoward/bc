@@ -149,6 +149,7 @@ Files:
 	catalogs.sh          A script to generate catalogs (maintainer use only).
 	codecov.yml          The Codecov file (maintainer use only).
 	configure.sh         The configure script.
+	functions.sh         A script with functions used by other scripts.
 	install.sh           Install script.
 	karatsuba.py         Script to find the optimal Karatsuba number.
 	LICENSE.md           A Markdown form of the BSD 2-clause License.
