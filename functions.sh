@@ -21,7 +21,7 @@ readlink() {
 
 	L=$(ls -dl "$exe")
 
-	printf ${L#*-> }
+	printf "${L#*-> }"
 }
 
 removeext() {
@@ -29,7 +29,7 @@ removeext() {
 	local name="$1"
 	shift
 
-	printf '%s' "$name" | cut -f 1 -d '.'
+	printf "${name%.*}"
 }
 
 die() {

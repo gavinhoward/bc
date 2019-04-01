@@ -166,7 +166,7 @@ typedef struct BcVm {
 	const char *err_ids[BC_ERR_IDX_NELEMS];
 	const char *err_msgs[BC_ERROR_NELEMS];
 
-	char *locale;
+	const char *locale;
 
 #if BC_ENABLE_NLS
 	nl_catd catalog;

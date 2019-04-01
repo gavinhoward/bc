@@ -502,17 +502,10 @@ static void bc_vm_gettext() {
 	size_t i;
 #if BC_ENABLE_NLS
 	BcVec dir;
-	char *dot, id = 0;
+	char id = 0;
 	int set, msg;
 
 	bc_vec_init(&dir, sizeof(char), NULL);
-
-	dot = strrchr(vm->locale, '.');
-
-	if (dot) {
-		uintptr_t idx = ((uintptr_t) dot) - ((uintptr_t) vm->locale);
-		vm->locale[idx] = '\0';
-	}
 
 	bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
 	bc_vec_concat(&dir, "/");

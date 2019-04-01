@@ -24,12 +24,12 @@ localedir="$scriptdir/locales"
 for file in $localedir/*.msg; do
 
 	base=$(basename "$file")
-	name=$(echo "$base" | cut -f 1 -d '.')
+	name=$(removeext "$base")
 	f="$localedir/catalogs/$name.cat"
 
 	if [ -L "$file" ]; then
 		link=$(readlink "$file")
-		link=$(echo "$link" | cut -f 1 -d '.')
+		link=$(removeext "$link")
 		rm -rf "$localedir/catalogs/$name.cat"
 		ln -s "$link.cat" "$localedir/catalogs/$name.cat"
 	else
