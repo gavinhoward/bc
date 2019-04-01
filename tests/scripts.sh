@@ -49,8 +49,7 @@ else
 	exe="$testdir/../bin/$d"
 fi
 
-out1="$testdir/../.log_$d.txt"
-out2="$testdir/../.log_${d}_test.txt"
+out="$testdir/../.log_${d}_test.txt"
 
 if [ "$d" = "bc" ]; then
 
@@ -99,16 +98,16 @@ for s in $scriptdir/*.$d; do
 		continue
 	else
 		printf 'Generating %s results...\n' "$f"
-		printf '%s\n' "$halt" | "$d" "$s" > "$out1"
-		res="$out1"
+		printf '%s\n' "$halt" | "$d" "$s" > "$results"
+		res="$results"
 	fi
 
 	printf 'Running %s script: %s\n' "$d" "$f"
 
-	printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out2"
+	printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out"
 
-	diff "$res" "$out2"
+	diff "$res" "$out"
 
 done
 
-rm -rf "$out1" "$out2"
+rm -rf "$out"
