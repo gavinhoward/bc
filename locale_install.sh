@@ -47,8 +47,8 @@ for file in $catalog_dir/*.cat; do
 
 	if [ -L "$file" ]; then
 		link=$(readlink "$file")
-		linkname=$(basename "$link")
-		"$INSTALL" -Dlm 755 "../../$linkname/LC_MESSAGES/$link" "$loc"
+		linkname=$(removeext "$link")
+		"$INSTALL" -Dlm 755 "../../$linkname/LC_MESSAGES/$main_exec.cat" "$loc"
 	else
 		"$INSTALL" -Dm 755 "$file" "$loc"
 	fi

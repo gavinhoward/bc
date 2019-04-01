@@ -58,6 +58,7 @@
 #define BC_VERSION GEN_STR2(VERSION)
 #define BC_LOCALEDIR GEN_STR2(LOCALEDIR)
 #define BC_EXECPREFIX GEN_STR2(EXECPREFIX)
+#define BC_MAINEXEC GEN_STR2(MAINEXEC)
 
 // Windows has deprecated isatty().
 #ifdef _WIN32
@@ -165,7 +166,7 @@ typedef struct BcVm {
 	const char *err_ids[BC_ERR_IDX_NELEMS];
 	const char *err_msgs[BC_ERROR_NELEMS];
 
-	const char *locale;
+	char *locale;
 
 #if BC_ENABLE_NLS
 	nl_catd catalog;
@@ -193,8 +194,6 @@ void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
 BcStatus bc_vm_error(BcError e, size_t line, ...);
-
-extern const char bc_exec_prefix[];
 
 #if BC_ENABLED
 extern const char bc_lib[];

@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
 	int s;
 	char *name;
-	size_t len = strlen(bc_exec_prefix);
+	size_t len = strlen(BC_EXECPREFIX);
 
 	vm = calloc(1, sizeof(BcVm));
 	if (BC_ERR(!vm)) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);

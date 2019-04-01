@@ -507,21 +507,21 @@ static void bc_vm_gettext() {
 
 	bc_vec_init(&dir, sizeof(char), NULL);
 
+	dot = strrchr(vm->locale, '.');
+
+	if (dot) {
+		uintptr_t idx = ((uintptr_t) dot) - ((uintptr_t) vm->locale);
+		vm->locale[idx] = '\0';
+	}
+
 	bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
 	bc_vec_concat(&dir, "/");
 	bc_vec_concat(&dir, vm->locale);
-
-	dot = strrchr(dir.v, '.');
-
-	if (dot) {
-		uintptr_t idx = ((uintptr_t) dot) - ((uintptr_t) dir.v);
-		bc_vec_npop(&dir, dir.len - idx);
-		bc_vec_pushByte(&dir, '\0');
-	}
-
+	bc_vec_concat(&dir, "/LC_MESSAGES/");
+	bc_vec_concat(&dir, BC_MAINEXEC);
 	bc_vec_concat(&dir, ".cat");
-	vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
 
+	vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
 	set = msg = 1;
 
 	vm->error_header = catgets(vm->catalog, set, msg, bc_err_fmt);
