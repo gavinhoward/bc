@@ -15,7 +15,8 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] [run_valgrind]\n' "$script"
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [test_with_pcc] \\\n' "$script"
+	printf '          [run_sanitizers] [run_valgrind]\n'
 	exit 1
 }
 
@@ -256,6 +257,20 @@ minsize() {
 	runtests "$minsize" "$CC" "$run_tests"
 }
 
+build_set() {
+
+	local CC="$1"
+	shift
+
+	local run_tests="$1"
+	shift
+
+	debug "$CC" "$run_tests"
+	release "$CC" "$run_tests"
+	reldebug "$CC" "$run_tests"
+	minsize "$CC" "$run_tests"
+}
+
 clang_flags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
 clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
 clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
@@ -294,6 +309,13 @@ else
 fi
 
 if [ "$#" -gt 0 ]; then
+	test_with_pcc="$1"
+	shift
+else
+	test_with_pcc=1
+fi
+
+if [ "$#" -gt 0 ]; then
 	run_sanitizers="$1"
 	shift
 else
@@ -319,16 +341,14 @@ version=$(make version)
 
 do_make clean_tests
 
-debug "clang" "$run_tests"
-release "clang" "$run_tests"
-reldebug "clang" "$run_tests"
-minsize "clang" "$run_tests"
+build_set "clang" "$run_tests"
 
 if [ "$test_with_gcc" -ne 0 ]; then
-	debug "gcc" "$run_tests"
-	release "gcc" "$run_tests"
-	reldebug "gcc" "$run_tests"
-	minsize "gcc" "$run_tests"
+	build_set "gcc" "$run_tests"
+fi
+
+if [ "$test_with_pcc" -ne 0 ]; then
+	build_set "pcc" "$run_tests"
 fi
 
 if [ "$run_tests" -ne 0 ]; then
