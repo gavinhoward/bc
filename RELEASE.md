@@ -8,7 +8,7 @@ This is the checklist for cutting a release.
 4.	Run and pass the `release.sh` script, without tests, on my own machine.
 5.	Run and pass the `release.sh` script on my own machine.
 6.	Run and pass the `release.sh` script, without generated tests and
-	sanitizers, on FreeBSD.
+	sanitizers, on FreeBSD. Use `clang` and `pcc`.
 7.	Run Coverity Scan and eliminate warnings, if possible (both only).
 	* debug
 8.	Build with xstatic.
