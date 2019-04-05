@@ -41,7 +41,7 @@ $ Parse errors.
 $set 4
 
 1 "end of file"
-2 "invalid character (%c)"
+2 "invalid character '%c'"
 3 "string end could not be found"
 4 "comment end could not be found"
 5 "invalid token"
@@ -73,9 +73,9 @@ $set 4
 $ Runtime errors.
 $set 5
 
-1 "invalid ibase; must be [%lu, %lu]"
-2 "invalid obase; must be [%lu, %lu]"
-3 "invalid scale; must be [%lu, %lu]"
+1 "invalid ibase: must be [%lu, %lu]"
+2 "invalid obase: must be [%lu, %lu]"
+3 "invalid scale: must be [%lu, %lu]"
 4 "invalid read() expression"
 5 "recursive read() call"
 6 "variable or array element is the wrong type"

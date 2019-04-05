@@ -96,9 +96,9 @@ const char* const bc_err_msgs[] = {
 	"path is a directory: %s",
 	"bad command-line option: '%c' (\"%s\")",
 
-	"bad ibase; must be [%lu, %lu]",
-	"bad obase; must be [%lu, %lu]",
-	"bad scale; must be [%lu, %lu]",
+	"bad ibase: must be [%lu, %lu]",
+	"bad obase: must be [%lu, %lu]",
+	"bad scale: must be [%lu, %lu]",
 	"bad read() expression",
 	"read() call inside of a read() call",
 	"variable or array element is the wrong type",
@@ -116,7 +116,7 @@ const char* const bc_err_msgs[] = {
 #endif // BC_ENABLED
 
 	"end of file",
-	"bad character (%c)",
+	"bad character '%c'",
 	"string end could not be found",
 	"comment end could not be found",
 	"bad token",
