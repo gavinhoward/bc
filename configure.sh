@@ -477,23 +477,21 @@ if [ "$nls" -eq 1 ]; then
 			printf 'Cross-compile detected.\n\n'
 			printf 'WARNING: Catalog files generated with gencat may not be portable\n'
 			printf '         across different architectures.\n\n'
+		fi
+
+		printf 'Testing gencat...\n'
+		gencat "$scriptdir/en.cat" "$scriptdir/locales/en.msg" > /dev/null 2>&1
+
+		err="$?"
+
+		rm -rf "$scriptdir/en.cat"
+
+		if [ "$err" -ne 0 ]; then
+			printf 'gencat does not work.\n'
+			printf 'Disabling NLS...\n\n'
+			nls=0
 		else
-
-			printf 'Testing gencat...\n'
-			gencat "$scriptdir/en.cat" "$scriptdir/locales/en.msg" > /dev/null 2>&1
-
-			err="$?"
-
-			rm -rf "$scriptdir/en.cat"
-
-			if [ "$err" -ne 0 ]; then
-				printf 'gencat does not work.\n'
-				printf 'Disabling NLS...\n\n'
-				nls=0
-			else
-				printf 'gencat works.\n\n'
-			fi
-
+			printf 'gencat works.\n\n'
 		fi
 
 	fi
