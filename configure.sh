@@ -458,7 +458,7 @@ if [ "$nls" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CFLAGS $flags -c "src/vm.c" > /dev/null 2>&1
+	"$CC" $CFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
 
 	err="$?"
 
@@ -471,7 +471,31 @@ if [ "$nls" -eq 1 ]; then
 		printf 'Disabling NLS...\n'
 		nls=0
 	else
-		printf 'NLS works.\n'
+		printf 'NLS works.\n\n'
+
+		if [ "$HOSTCC" != "$CC" ]; then
+			printf 'Cross-compile detected.\n\n'
+			printf 'WARNING: Catalog files generated with gencat may not be portable\n'
+			printf '         across different architectures.\n\n'
+		else
+
+			printf 'Testing gencat...\n'
+			gencat "$scriptdir/en.cat" "$scriptdir/locales/en.msg" > /dev/null 2>&1
+
+			err="$?"
+
+			rm -rf "$scriptdir/en.cat"
+
+			if [ "$err" -ne 0 ]; then
+				printf 'gencat does not work.\n'
+				printf 'Disabling NLS...\n\n'
+				nls=0
+			else
+				printf 'gencat works.\n\n'
+			fi
+
+		fi
+
 	fi
 
 	set -e
@@ -489,7 +513,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CFLAGS $flags -c "src/history/history.c" > /dev/null 2>&1
+	"$CC" $CFLAGS $flags -c "src/history/history.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
 
 	err="$?"
 

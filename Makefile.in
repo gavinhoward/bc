@@ -116,7 +116,6 @@ LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
 LOCALE_INSTALL = ./locale_install.sh
 LOCALE_UNINSTALL = ./locale_uninstall.sh
-CATALOGS = ./catalogs.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
 RONN_ARGS = --roff --organization="Gavin D. Howard" --manual="General Commands Manual"
@@ -233,9 +232,6 @@ extra_math:
 manpages:
 	ronn $(RONN_ARGS) $(BC_RONN)
 	ronn $(RONN_ARGS) $(DC_RONN)
-
-catalogs:
-	$(CATALOGS)
 
 clean:
 	@printf 'Cleaning files...\n'

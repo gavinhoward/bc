@@ -34,9 +34,9 @@ shift
 main_exec="$1"
 shift
 
-catalog_dir="$scriptdir/locales/catalogs"
+locales_dir="$scriptdir/locales"
 
-for file in $catalog_dir/*.cat; do
+for file in $locales_dir/*.msg; do
 
 	base=$(basename "$file")
 	name=$(removeext "$base")
@@ -50,7 +50,7 @@ for file in $catalog_dir/*.cat; do
 		linkname=$(removeext "$link")
 		"$INSTALL" -Dlm 755 "../../$linkname/LC_MESSAGES/$main_exec.cat" "$loc"
 	else
-		"$INSTALL" -Dm 755 "$file" "$loc"
+		gencat "$loc" "$file"
 	fi
 
 done

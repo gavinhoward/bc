@@ -112,9 +112,6 @@ Currently, this `bc` only has support for English (and US English) locales.
 Patches are welcome for translations; use the existing `*.msg` files in
 `locales/` as a starting point.
 
-When submitting a translations, you need to run `make catalogs` before
-committing; this will generate `*.cat` files for all of the translations.
-
 ## Other Projects
 
 Other projects based on this bc are:
@@ -146,7 +143,6 @@ Files:
 
 	.gitignore           The git ignore file (maintainer use only).
 	.travis.yml          The Travis CI file (maintainer use only).
-	catalogs.sh          A script to generate catalogs (maintainer use only).
 	codecov.yml          The Codecov file (maintainer use only).
 	configure.sh         The configure script.
 	functions.sh         A script with functions used by other scripts.
