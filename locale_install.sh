@@ -50,7 +50,10 @@ for file in $locales_dir/*.msg; do
 		linkname=$(removeext "$link")
 		"$INSTALL" -Dlm 755 "../../$linkname/LC_MESSAGES/$main_exec.cat" "$loc"
 	else
-		gencat "$loc" "$file"
+		err_msgs=$(gencat "$loc" "$file" 2>&1)
+		if [ "$err_msgs" != "" ]; then
+			printf '\nWarning: gencat produced the following errors:\n\n%s\n\n' "$err_msgs"
+		fi
 	fi
 
 done
