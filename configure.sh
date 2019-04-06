@@ -26,50 +26,87 @@ usage() {
 		val=0
 	fi
 
-	printf 'usage: %s [-bD|-dB|-c] [-EgGhHMRS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$0"
+	printf 'usage: %s -h\n' "$script"
+	printf '       %s --help\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EgGHMNS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s \\\n' "$script"
+	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]    \\\n'
+	printf '           [--debug --disable-extra-math --disable-generated-tests]      \\\n'
+	printf '           [--disable-history --disable-man-pages --disable-nls]         \\\n'
+	printf '           [--disable-signal-handling]                                   \\\n'
+	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]             \\\n'
+	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                           \\\n'
+	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]               \\\n'
+	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR] [--localedir=LOCALEDIR] \\\n'
 	printf '\n'
-	printf '    -b\n'
+	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
-	printf '    -B\n'
-	printf '        Disable bc. It is an error if "-b" or "-D" are specified too.\n'
-	printf '    -c\n'
+	printf '    -B, --disable-bc\n'
+	printf '        Disable bc. It is an error if "-b", "--bc-only", "-D", or "--disable-dc"\n'
+	printf '        are specified too.\n'
+	printf '    -c, --coverage\n'
 	printf '        Generate test coverage code. Requires gcov and regcovr.\n'
 	printf '        It is an error if either "-b" ("-D") or "-d" ("-B") is specified.\n'
 	printf '        Requires a compiler that use gcc-compatible coverage options\n'
-	printf '    -d\n'
+	printf '    -d, --dc-only\n'
 	printf '        Build dc only. It is an error if "-b" is specified too.\n'
-	printf '    -D\n'
-	printf '        Disable dc. It is an error if "-d" or "-B" are specified too.\n'
-	printf '    -E\n'
+	printf '    -D, --disable-dc\n'
+	printf '        Disable dc. It is an error if "-d", "--dc-only" "-B", or "--disable-bc"\n'
+	printf '        are specified too.\n'
+	printf '    -E, --disable-extra-math\n'
 	printf '        Disable extra math. This includes: "$" operator (truncate to integer),\n'
 	printf '        "@" operator (set number of decimal places), and r(x, p) (rounding\n'
 	printf '        function). Additionally, this option disables the extra printing\n'
 	printf '        functions in the math library.\n'
-	printf '    -g\n'
+	printf '    -g, --debug\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
 	printf '        flag. If this flag is *not* given, "-DNDEBUG" is added to CPPFLAGS\n'
 	printf '        and a strip flag is added to the link stage.\n'
-	printf '    -G\n'
+	printf '    -G, --disable-generated-tests\n'
 	printf '        Disable generating tests. This is for platforms that do not have a\n'
 	printf '        GNU bc-compatible bc to generate tests.\n'
-	printf '    -h\n'
+	printf '    -h, --help\n'
 	printf '        Print this help message and exit.\n'
-	printf '    -H\n'
+	printf '    -H, --disable-history\n'
 	printf '        Disable history.\n'
-	printf '    -k KARATSUBA_LEN\n'
+	printf '    -k KARATSUBA_LEN, --karatsuba-len KARATSUBA_LEN\n'
 	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 64).\n'
 	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 16.\n'
-	printf '    -M\n'
+	printf '    -M, --disable-man-pages\n'
 	printf '        Disable installing manpages.\n'
-	printf '    -N\n'
+	printf '    -N, --disable-nls\n'
 	printf '        Disable POSIX locale (NLS) support.\n'
-	printf '    -O OPT_LEVEL\n'
+	printf '    -O OPT_LEVEL, --opt OPT_LEVEL\n'
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
 	printf '        This is passed through to the compiler, so it must be supported.\n'
-	printf '    -S\n'
+	printf '    -S, --disable-signal-handling\n'
 	printf '        Disable signal handling. On by default.\n'
+	printf '    --prefix PREFIX\n'
+	printf '        The prefix to install to. Overrides "$PREFIX" if it exists.\n'
+	printf '        If PREFIX is "/usr", install path will be "/usr/bin".\n'
+	printf '        Default is "/usr/local".\n'
+	printf '    --bindir BINDIR\n'
+	printf '        The directory to install binaries. Overrides "$BINDIR if it exists.\n'
+	printf '        Default is "$PREFIX/bin".\n'
+	printf '    --datarootdir DATAROOTDIR\n'
+	printf '        The root location for data files. Overrides "$DATAROOTDIR" if it exists.\n'
+	printf '        Default is "$PREFIX/share".\n'
+	printf '    --datadir DATADIR\n'
+	printf '        The location for data files. Overrides "$DATADIR" if it exists.\n'
+	printf '        Default is "$DATAROOTDIR".\n'
+	printf '    --mandir MANDIR\n'
+	printf '        The location to install manpages to. Overrides "$MANDIR" if it exists.\n'
+	printf '        Default is "$DATADIR/man".\n'
+	printf '    --man1dir MAN1DIR\n'
+	printf '        The location to install Section 1 manpages to. Overrides "$MAN1DIR if it\n'
+	printf '        exists. Default is "$MANDIR/man1".\n'
+	printf '    --localedir LOCALEDIR\n'
+	printf '        The location to install locale catalogs to. Each locale will then be\n'
+	printf '        installed to "$LOCALEDIR/$LOCALE/LC_MESSAGES/$EXEC.cat", where "$LOCALE"\n'
+	printf '        is the locale of the catalog and "$EXEC" is the main executable name.\n'
+	printf '        Overrides "$LOCALEDIR" if it exists. Defaults to "$DATAROOTDIR/locale".\n'
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
@@ -92,14 +129,16 @@ usage() {
 	printf '    MAN1DIR      The location to install Section 1 manpages to. Default is\n'
 	printf '                 "$MANDIR/man1".\n'
 	printf '    LOCALEDIR    The location to install locale catalogs to. Each locale will\n'
-	printf '                 then be installed to "$LOCALEDIR/$LOCALE/LC_MESSAGES/$EXEC.cat",\n'
+	printf '                 then be installed to "$LOCALEDIR/$LOCALE/LC_MESSAGES/$EXEC.cat"\n'
 	printf '                 where "$LOCALE" is the locale of the catalog and "$EXEC" is the\n'
 	printf '                 main executable name. Defaults to "$DATAROOTDIR/locale".\n'
 	printf '    EXECSUFFIX   The suffix to append to the executable names, used to not\n'
 	printf '                 interfere with other installed bc executables. Default is "".\n'
 	printf '    EXECPREFIX   The prefix to append to the executable names, used to not\n'
 	printf '                 interfere with other installed bc executables. Default is "".\n'
-	printf '    DESTDIR      For package creation. Default is "".\n'
+	printf '    DESTDIR      For package creation. Default is "". If it is empty when\n'
+	printf '                 %s is run, it can also be passed to `make install`\n' "$script"
+	printf '                 later as an environment variable.\n'
 	printf '    GEN_EMU      Emulator to run string generator code under\n'
 	printf '                 (leave empty if not necessary). Default is "".\n'
 
@@ -217,6 +256,10 @@ gen_file_lists() {
 	printf '%s\n' "$contents"
 }
 
+script="$0"
+scriptdir=$(dirname "$script")
+script=$(basename "$script")
+
 bc_only=0
 dc_only=0
 coverage=0
@@ -230,7 +273,7 @@ generate_tests=1
 install_manpages=1
 nls=1
 
-while getopts "bBcdDEgGhHk:MNO:S" opt; do
+while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -248,8 +291,102 @@ while getopts "bBcdDEgGhHk:MNO:S" opt; do
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		S) signals=0 ;;
+		-)
+			arg="$1"
+			arg="${arg#--}"
+			LONG_OPTARG="${arg#*=}"
+			case $arg in
+				help) usage ;;
+				bc-only) bc_only=1 ;;
+				dc-only) dc_only=1 ;;
+				coverage) coverage=1 ;;
+				debug) debug=1 ;;
+				prefix=?*) PREFIX="$LONG_OPTARG" ;;
+				prefix)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					PREFIX="$2"
+					shift ;;
+				bindir=?*) BINDIR="$LONG_OPTARG" ;;
+				bindir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					BINDIR="$2"
+					shift ;;
+				datarootdir=?*) DATAROOTDIR="$LONG_OPTARG" ;;
+				datarootdir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					DATAROOTDIR="$2"
+					shift ;;
+				datadir=?*) DATADIR="$LONG_OPTARG" ;;
+				datadir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					DATADIR="$2"
+					shift ;;
+				mandir=?*) MANDIR="$LONG_OPTARG" ;;
+				mandir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					MANDIR="$2"
+					shift ;;
+				man1dir=?*) MAN1DIR="$LONG_OPTARG" ;;
+				man1dir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					MAN1DIR="$2"
+					shift ;;
+				localedir=?*) LOCALEDIR="$LONG_OPTARG" ;;
+				localedir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					LOCALEDIR="$2"
+					shift ;;
+				karatsuba-len=?*) karatsuba_len="$LONG_OPTARG" ;;
+				karatsuba-len)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					karatsuba_len="$1"
+					shift ;;
+				opt=?*) optimization="$LONG_OPTARG" ;;
+				opt)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					optimization="$1"
+					shift ;;
+				disable-bc) dc_only=1 ;;
+				disable-dc) bc_only=1 ;;
+				disable-extra-math) extra_math=0 ;;
+				disable-generated-tests) generate_tests=0 ;;
+				disable-history) hist=0 ;;
+				disable-man-pages) install_manpages=0 ;;
+				disable-nls) nls=0 ;;
+				disable-signal-handling) signals=0 ;;
+				help* | bc-only* | dc-only* | coverage* | debug*)
+					usage "No arg allowed for --$arg option" ;;
+				disable-bc* | disable-dc* | disable-extra-math*)
+					usage "No arg allowed for --$arg option" ;;
+				disable-generated-tests* | disable-history*)
+					usage "No arg allowed for --$arg option" ;;
+				disable-man-pages* | disable-nls* | disable-signal-handling*)
+					usage "No arg allowed for --$arg option" ;;
+				'') break ;; # "--" terminates argument processing
+				* ) usage "Invalid option" ;;
+			esac ;;
 		?) usage "Invalid option" ;;
 	esac
+
+	shift
 
 done
 
@@ -265,9 +402,6 @@ esac
 if [ "$karatsuba_len" -lt 16 ]; then
 	usage "KARATSUBA_LEN is less than 16"
 fi
-
-script="$0"
-scriptdir=$(dirname "$script")
 
 set -e
 
@@ -353,15 +487,15 @@ else
 
 fi
 
-if [ "$HOSTCFLAGS" = "" -a "$HOST_CFLAGS" = "" ]; then
+if [ -z "$HOSTCFLAGS" -a -z "$HOST_CFLAGS" ]; then
 	HOSTCFLAGS="$CFLAGS"
-elif [ "$HOSTCFLAGS" = "" ]; then
+elif [ -z "$HOSTCFLAGS" ]; then
 	HOSTCFLAGS="$HOST_CFLAGS"
 fi
 
 if [ "$debug" -eq 1 ]; then
 
-	if [ "$CFLAGS" = "" -a "$optimization" = "" ]; then
+	if [ -z "$CFLAGS" -a -z "$optimization" ]; then
 		CFLAGS="-O0"
 	fi
 
@@ -372,7 +506,7 @@ else
 	LDFLAGS="$LDFLAGS -s"
 fi
 
-if [ "$optimization" != "" ]; then
+if [ -n "$optimization" ]; then
 	CFLAGS="$CFLAGS -O$optimization"
 fi
 
@@ -395,22 +529,32 @@ else
 	COVERAGE_PREREQS=""
 fi
 
-if [ "$PREFIX" = "" ]; then
+if [ -z "${DESTDIR+set}" ]; then
+	destdir=""
+else
+	destdir="DESTDIR = $DESTDIR"
+fi
+
+if [ -z "$PREFIX" ]; then
 	PREFIX="/usr/local"
 fi
 
-if [ "$BINDIR" = "" ]; then
+if [ -z "$BINDIR" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
 if [ "$install_manpages" -ne 0 -o "$nls" -ne 0 ]; then
-	if [ "$DATAROOTDIR" = "" ]; then
+	if [ -z "$DATAROOTDIR" ]; then
 		DATAROOTDIR="$PREFIX/share"
 	fi
 fi
 
 if [ "$nls" -ne 0 ]; then
-	LOCALEDIR="$DATAROOTDIR/locale"
+
+	if [ -z "$LOCALEDIR" ]; then
+		LOCALEDIR="$DATAROOTDIR/locale"
+	fi
+
 	install_locales_prereqs=" install_locales"
 	uninstall_locales_prereqs=" uninstall_locales"
 else
@@ -420,15 +564,15 @@ fi
 
 if [ "$install_manpages" -ne 0 ]; then
 
-	if [ "$DATADIR" = "" ]; then
+	if [ -z "$DATADIR" ]; then
 		DATADIR="$DATAROOTDIR"
 	fi
 
-	if [ "$MANDIR" = "" ]; then
+	if [ -z "$MANDIR" ]; then
 		MANDIR="$DATADIR/man"
 	fi
 
-	if [ "$MAN1DIR" = "" ]; then
+	if [ -z "$MAN1DIR" ]; then
 		MAN1DIR="$MANDIR/man1"
 	fi
 
@@ -437,13 +581,13 @@ else
 	uninstall_man_prereqs=""
 fi
 
-if [ "$CC" = "" ]; then
+if [ -z "$CC" ]; then
 	CC="c99"
 fi
 
-if [ "$HOSTCC" = "" -a "$HOST_CC" = "" ]; then
+if [ -z "$HOSTCC" -a -z "$HOST_CC" ]; then
 	HOSTCC="$CC"
-elif [ "$HOSTCC" = "" ]; then
+elif [ -z "$HOSTCC" ]; then
 	HOSTCC="$HOST_CC"
 fi
 
@@ -539,6 +683,17 @@ fi
 
 # Print out the values; this is for debugging.
 printf '\n'
+if [ "$bc" -ne 0 ]; then
+	printf 'Building bc\n'
+else
+	printf 'Not building bc\n'
+fi
+if [ "$dc" -ne 0 ]; then
+	printf 'Building dc\n'
+else
+	printf 'Not building dc\n'
+fi
+printf '\n'
 printf 'BC_ENABLE_SIGNALS=%s\n' "$signals"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
@@ -589,7 +744,7 @@ contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
 contents=$(replace "$contents" "LOCALEDIR" "$LOCALEDIR")
-contents=$(replace "$contents" "DESTDIR" "$DESTDIR")
+contents=$(replace "$contents" "DESTDIR" "$destdir")
 contents=$(replace "$contents" "EXECSUFFIX" "$EXECSUFFIX")
 contents=$(replace "$contents" "EXECPREFIX" "$EXECPREFIX")
 contents=$(replace "$contents" "BINDIR" "$BINDIR")
