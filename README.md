@@ -35,6 +35,7 @@ Systems that are known to work:
 
 * Linux
 * FreeBSD
+* OpenBSD
 * Mac OSX
 
 Please submit bug reports if this `bc` does not build out of the box on any
@@ -61,6 +62,22 @@ directory:
 
 ```
 ./configure.sh -O3
+make
+```
+
+### One Calculator
+
+To only build `bc`, use the following commands:
+
+```
+./configure.sh --disable-dc
+make
+```
+
+To only build `dc`, use the following commands:
+
+```
+./configure.sh --disable-bc
 make
 ```
 
