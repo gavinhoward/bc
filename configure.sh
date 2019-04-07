@@ -138,7 +138,8 @@ usage() {
 	printf '                 interfere with other installed bc executables. Default is "".\n'
 	printf '    DESTDIR      For package creation. Default is "". If it is empty when\n'
 	printf '                 %s is run, it can also be passed to `make install`\n' "$script"
-	printf '                 later as an environment variable.\n'
+	printf '                 later as an environment variable. If both are specified,\n'
+	printf '                 the one given to %s takes precedence.\n' "$script"
 	printf '    GEN_EMU      Emulator to run string generator code under\n'
 	printf '                 (leave empty if not necessary). Default is "".\n'
 
