@@ -488,9 +488,9 @@ else
 
 fi
 
-if [ -z "$HOSTCFLAGS" -a -z "$HOST_CFLAGS" ]; then
+if [ -z "${HOSTCFLAGS+set}" -a -z "${HOST_CFLAGS+set}" ]; then
 	HOSTCFLAGS="$CFLAGS"
-elif [ -z "$HOSTCFLAGS" ]; then
+elif [ -z "${HOSTCFLAGS+set}" ]; then
 	HOSTCFLAGS="$HOST_CFLAGS"
 fi
 
@@ -536,23 +536,23 @@ else
 	destdir="DESTDIR = $DESTDIR"
 fi
 
-if [ -z "$PREFIX" ]; then
+if [ -z "${PREFIX+set}" ]; then
 	PREFIX="/usr/local"
 fi
 
-if [ -z "$BINDIR" ]; then
+if [ -z "${BINDIR+set}" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
 if [ "$install_manpages" -ne 0 -o "$nls" -ne 0 ]; then
-	if [ -z "$DATAROOTDIR" ]; then
+	if [ -z "${DATAROOTDIR+set}" ]; then
 		DATAROOTDIR="$PREFIX/share"
 	fi
 fi
 
 if [ "$nls" -ne 0 ]; then
 
-	if [ -z "$LOCALEDIR" ]; then
+	if [ -z "${LOCALEDIR+set}" ]; then
 		LOCALEDIR="$DATAROOTDIR/locale"
 	fi
 
@@ -565,15 +565,15 @@ fi
 
 if [ "$install_manpages" -ne 0 ]; then
 
-	if [ -z "$DATADIR" ]; then
+	if [ -z "${DATADIR+set}" ]; then
 		DATADIR="$DATAROOTDIR"
 	fi
 
-	if [ -z "$MANDIR" ]; then
+	if [ -z "${MANDIR+set}" ]; then
 		MANDIR="$DATADIR/man"
 	fi
 
-	if [ -z "$MAN1DIR" ]; then
+	if [ -z "${MAN1DIR+set}" ]; then
 		MAN1DIR="$MANDIR/man1"
 	fi
 
