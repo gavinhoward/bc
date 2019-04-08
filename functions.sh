@@ -122,3 +122,18 @@ checktest()
 		cat "$out"
 	fi
 }
+
+substring_replace() {
+
+	if [ "$#" -ne 3 ]; then
+		err_exit "Invalid number of args to $0"
+	fi
+
+	str="$1"
+	needle="$2"
+	replacement="$3"
+
+	result=$(printf '%s' "$str" | sed -e "s!$needle!$replacement!g")
+
+	printf '%s\n' "$result"
+}

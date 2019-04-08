@@ -28,26 +28,26 @@ $ $
 
 $quote "
 
-$ Headers for printing errors/warnings.
+$ Miscellaneous messages.
 $set 1
 
-1 "\n%s error: "
-2 "\n%s warning: "
+1 "Function:"
 
 $ Error types.
 $set 2
 
-1 "Math"
-2 "Parse"
-3 "Runtime"
-4 "Fatal"
+1 "Math error:"
+2 "Parse error:"
+3 "Runtime error:"
+4 "Fatal error:"
+5 "Warning:"
 
 $ Math errors.
 $set 3
 
 1 "negative number"
 2 "non-integer number"
-3 "overflow; number does not fit into a hardware type"
+3 "overflow: number does not fit into a hardware number"
 4 "divide by 0"
 
 $ Parse errors.

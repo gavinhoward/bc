@@ -87,16 +87,30 @@ void bc_vm_info(const char* const help) {
 	if (help) bc_vm_printf(help, vm->name);
 }
 
-static BcStatus bc_vm_printError(BcError e, const char* const fmt,
-                                 size_t line, va_list args)
-{
+BcStatus bc_vm_error(BcError e, size_t line, ...) {
+
+	va_list args;
 	size_t id = (size_t) bc_err_ids[e];
+	const char* err_type = bc_errs[id];
+
+#if BC_ENABLED
+	if (!BC_S && e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END) {
+		if (BC_W) {
+			// Make sure to not return an error.
+			id = SIZE_MAX;
+			err_type = bc_errs[BC_ERR_IDX_WARN];
+		}
+		else return BC_STATUS_SUCCESS;
+	}
+#endif // BC_ENABLED
 
 	// Make sure all of stdout is written first.
 	fflush(stdout);
 
-	fprintf(stderr, fmt, vm->err_ids[id]);
+	va_start(args, line);
+	fprintf(stderr, "\n%s ", err_type);
 	vfprintf(stderr, vm->err_msgs[e], args);
+	va_end(args);
 
 	assert(vm->file);
 
@@ -109,7 +123,7 @@ static BcStatus bc_vm_printError(BcError e, const char* const fmt,
 	else {
 		BcInstPtr *ip = bc_vec_item_rev(&vm->prog.stack, 0);
 		BcFunc *f = bc_vec_item(&vm->prog.fns, ip->func);
-		fprintf(stderr, "\n    Function: %s", f->name);
+		fprintf(stderr, "\n    %s %s", vm->func_header, f->name);
 		if (ip->func != BC_PROG_MAIN && ip->func != BC_PROG_READ)
 			fprintf(stderr, "()");
 	}
@@ -120,40 +134,7 @@ static BcStatus bc_vm_printError(BcError e, const char* const fmt,
 	return (BcStatus) (id + 1);
 }
 
-BcStatus bc_vm_error(BcError e, size_t line, ...) {
-
-	BcStatus s;
-	va_list args;
-
 #if BC_ENABLED
-	assert(e < BC_ERROR_POSIX_START || e > BC_ERROR_POSIX_END);
-#endif // BC_ENABLED
-
-	va_start(args, line);
-	s = bc_vm_printError(e, vm->error_header, line, args);
-	va_end(args);
-
-	return s;
-}
-
-#if BC_ENABLED
-BcStatus bc_vm_posixError(BcError e, size_t line, ...) {
-
-	BcStatus s;
-	va_list args;
-	int p = (int) BC_S, w = (int) BC_W;
-
-	assert(e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END);
-
-	if (!(p || w)) return BC_STATUS_SUCCESS;
-
-	va_start(args, line);
-	s = bc_vm_printError(e, p ? vm->error_header : vm->warn_header, line, args);
-	va_end(args);
-
-	return p ? s : BC_STATUS_SUCCESS;
-}
-
 static BcStatus bc_vm_envArgs(void) {
 
 	BcStatus s;
@@ -510,32 +491,54 @@ static BcStatus bc_vm_load(const char *name, const char *text) {
 }
 #endif // BC_ENABLED
 
-static void bc_vm_gettext() {
+static void bc_vm_defaultMsgs() {
 
 	size_t i;
+
+	vm->func_header = bc_err_func_header;
+
+	for (i = 0; i < BC_ERR_IDX_NELEMS + BC_ENABLED; ++i)
+		vm->err_ids[i] = bc_errs[i];
+	for (i = 0; i < BC_ERROR_NELEMS; ++i) vm->err_msgs[i] = bc_err_msgs[i];
+}
+
+static void bc_vm_gettext() {
+
 #if BC_ENABLE_NLS
-	BcVec dir;
 	char id = 0;
 	int set, msg;
+	size_t i;
 
-	bc_vec_init(&dir, sizeof(char), NULL);
+	if (!vm->locale) {
+		bc_vm_defaultMsgs();
+		return;
+	}
 
-	bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
-	bc_vec_concat(&dir, "/");
-	bc_vec_concat(&dir, vm->locale);
-	bc_vec_concat(&dir, "/LC_MESSAGES/");
-	bc_vec_concat(&dir, BC_MAINEXEC);
-	bc_vec_concat(&dir, ".cat");
+	vm->catalog = catopen(BC_MAINEXEC, NL_CAT_LOCALE);
 
-	vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
+	if (vm->catalog == (nl_catd) -1) {
+
+		BcVec dir;
+
+		bc_vec_init(&dir, sizeof(char), NULL);
+
+		bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
+		bc_vec_concat(&dir, "/");
+		bc_vec_concat(&dir, vm->locale);
+		bc_vec_concat(&dir, "/LC_MESSAGES/");
+		bc_vec_concat(&dir, BC_MAINEXEC);
+		bc_vec_concat(&dir, ".cat");
+
+		vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
+
+		bc_vec_free(&dir);
+	}
+
 	set = msg = 1;
 
-	vm->error_header = catgets(vm->catalog, set, msg, bc_err_fmt);
-#if BC_ENABLED
-	vm->warn_header = catgets(vm->catalog, set, msg + 1, bc_warn_fmt);
-#endif // BC_ENABLED
+	vm->func_header = catgets(vm->catalog, set, msg, bc_err_func_header);
 
-	for (set += 1, msg = 1; msg < BC_ERR_IDX_NELEMS + 1; ++msg)
+	for (set += 1, msg = 1; msg <= BC_ERR_IDX_NELEMS + BC_ENABLED; ++msg)
 		vm->err_ids[msg - 1] = catgets(vm->catalog, set, msg, bc_errs[msg - 1]);
 
 	i = 0;
@@ -552,17 +555,8 @@ static void bc_vm_gettext() {
 		vm->err_msgs[i] = catgets(vm->catalog, set, msg, bc_err_msgs[i]);
 	}
 
-	bc_vec_free(&dir);
-
 #else // BC_ENABLE_NLS
-
-	vm->error_header = bc_err_fmt;
-#if BC_ENABLED
-	vm->warn_header = bc_warn_fmt;
-#endif // BC_ENABLED
-
-	for (i = 0; i < BC_ERR_IDX_NELEMS; ++i) vm->err_ids[i] = bc_errs[i];
-	for (i = 0; i < BC_ERROR_NELEMS; ++i) vm->err_msgs[i] = bc_err_msgs[i];
+	bc_vm_defaultMsgs();
 #endif // BC_ENABLE_NLS
 }
 

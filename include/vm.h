@@ -172,11 +172,9 @@ typedef struct BcVm {
 	BcParseParse parse;
 	BcParseExpr expr;
 
-	const char *error_header;
-#if BC_ENABLED
-	const char *warn_header;
-#endif // BC_ENABLED
-	const char *err_ids[BC_ERR_IDX_NELEMS];
+	const char *func_header;
+
+	const char *err_ids[BC_ERR_IDX_NELEMS + BC_ENABLED];
 	const char *err_msgs[BC_ERROR_NELEMS];
 
 	const char *locale;
@@ -218,10 +216,8 @@ extern const char *bc_lib2_name;
 #endif // BC_ENABLED
 
 extern const char bc_copyright[];
-
-extern const char* const bc_err_fmt;
-extern const char* const bc_warn_fmt;
 extern const char* const bc_err_line;
+extern const char* const bc_err_func_header;
 extern const char *bc_errs[];
 extern const char bc_err_ids[];
 extern const char* const bc_err_msgs[];

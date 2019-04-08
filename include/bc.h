@@ -66,10 +66,6 @@ typedef struct BcLexKeyword {
 #define BC_LEX_KW_ENTRY(a, b, c) \
 	{ .data = ((b) & ~(BC_LEX_CHAR_MSB(1))) | BC_LEX_CHAR_MSB(c),.name = a }
 
-#define bc_lex_posixErr(l, e) (bc_vm_posixError((e), (l)->line))
-#define bc_lex_vposixErr(l, e, ...) \
-	(bc_vm_posixError((e), (l)->line, __VA_ARGS__))
-
 extern const BcLexKeyword bc_lex_kws[];
 extern const size_t bc_lex_kws_len;
 
@@ -140,8 +136,6 @@ BcStatus bc_lex_token(BcLex *l);
 // position of the first operator in the lex enum and adding the position of
 // the first in the expr enum. Note: This only works for binary operators.
 #define BC_PARSE_TOKEN_INST(t) ((uchar) ((t) - BC_LEX_NEG + BC_INST_NEG))
-
-#define bc_parse_posixErr(p, e) (bc_vm_posixError((e), (p)->l.line))
 
 BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
 

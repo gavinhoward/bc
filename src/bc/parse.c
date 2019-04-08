@@ -526,7 +526,7 @@ static BcStatus bc_parse_return(BcParse *p) {
 		}
 
 		if (!paren || p->l.last != BC_LEX_RPAREN) {
-			s = bc_parse_posixErr(p, BC_ERROR_POSIX_RET);
+			s = bc_parse_err(p, BC_ERROR_POSIX_RET);
 			if (BC_ERR(s)) return s;
 		}
 		else if (BC_ERR(p->func->voidfn))
@@ -723,7 +723,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 		s = bc_parse_expr_status(p, 0, bc_parse_next_for);
 		if (BC_NO_ERR(!s)) bc_parse_push(p, BC_INST_POP);
 	}
-	else s = bc_parse_posixErr(p, BC_ERROR_POSIX_FOR1);
+	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR1);
 
 	if (BC_ERR(s)) return s;
 	if (BC_ERR(p->l.t != BC_LEX_SCOLON))
@@ -748,7 +748,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 		bc_vec_string(&p->l.str, strlen(bc_parse_const1), bc_parse_const1);
 		bc_parse_number(p);
 
-		s = bc_parse_posixErr(p, BC_ERROR_POSIX_FOR2);
+		s = bc_parse_err(p, BC_ERROR_POSIX_FOR2);
 	}
 
 	if (BC_ERR(s)) return s;
@@ -769,7 +769,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 		s = bc_parse_expr_status(p, 0, bc_parse_next_rel);
 		if (BC_NO_ERR(!s)) bc_parse_push(p, BC_INST_POP);
 	}
-	else s = bc_parse_posixErr(p, BC_ERROR_POSIX_FOR3);
+	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR3);
 
 	if (BC_ERR(s)) return s;
 
@@ -862,7 +862,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 			t = BC_TYPE_REF;
 			s = bc_lex_next(&p->l);
 			if (BC_ERR(s)) return s;
-			s = bc_parse_posixErr(p, BC_ERROR_POSIX_REF);
+			s = bc_parse_err(p, BC_ERROR_POSIX_REF);
 			if (BC_ERR(s)) return s;
 		}
 
@@ -913,7 +913,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
 
-	if (p->l.t != BC_LEX_LBRACE) s = bc_parse_posixErr(p, BC_ERROR_POSIX_BRACE);
+	if (p->l.t != BC_LEX_LBRACE) s = bc_parse_err(p, BC_ERROR_POSIX_BRACE);
 
 	return s;
 
@@ -1486,11 +1486,11 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 		return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
 	if (!(flags & BC_PARSE_REL) && nrelops) {
-		s = bc_parse_posixErr(p, BC_ERROR_POSIX_REL_POS);
+		s = bc_parse_err(p, BC_ERROR_POSIX_REL_POS);
 		if (BC_ERR(s)) return s;
 	}
 	else if ((flags & BC_PARSE_REL) && nrelops > 1) {
-		s = bc_parse_posixErr(p, BC_ERROR_POSIX_MULTIREL);
+		s = bc_parse_err(p, BC_ERROR_POSIX_MULTIREL);
 		if (BC_ERR(s)) return s;
 	}
 

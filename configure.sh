@@ -27,6 +27,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+script="$0"
+scriptdir=$(dirname "$script")
+script=$(basename "$script")
+
+. "$scriptdir/functions.sh"
+
 usage() {
 
 	if [ $# -gt 0 ]; then
@@ -213,9 +219,7 @@ replace() {
 	needle="$2"
 	replacement="$3"
 
-	result=$(printf '%s' "$str" | sed -e "s!%%$needle%%!$replacement!g")
-
-	printf '%s\n' "$result"
+	substring_replace "$str" "%%$needle%%" "$replacement"
 }
 
 gen_file_lists() {
@@ -269,10 +273,6 @@ gen_file_lists() {
 
 	printf '%s\n' "$contents"
 }
-
-script="$0"
-scriptdir=$(dirname "$script")
-script=$(basename "$script")
 
 bc_only=0
 dc_only=0

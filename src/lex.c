@@ -146,7 +146,7 @@ BcStatus bc_lex_number(BcLex *l, char start) {
 
 #if BC_ENABLED
 			if (BC_IS_POSIX) {
-				BcStatus s = bc_lex_posixErr(l, BC_ERROR_POSIX_EXP_NUM);
+				BcStatus s = bc_lex_err(l, BC_ERROR_POSIX_EXP_NUM);
 				if (BC_ERR(s)) return s;
 			}
 #endif // BC_ENABLED

@@ -125,6 +125,8 @@ typedef enum BcError {
 #define BC_ERR_IDX_FATAL (3)
 #define BC_ERR_IDX_NELEMS (4)
 
+#define BC_ERR_IDX_WARN (BC_ERR_IDX_NELEMS)
+
 #define BC_UNUSED(e) ((void) (e))
 
 #ifndef BC_LIKELY

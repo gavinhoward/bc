@@ -58,15 +58,17 @@ const char bc_copyright[] =
 
 const char* const bc_args_env_name = "BC_ENV_ARGS";
 
-const char* const bc_err_fmt = "\n%s error: ";
-const char* const bc_warn_fmt = "\n%s warning: ";
+const char* const bc_err_func_header = "Function:";
 const char* const bc_err_line = ":%zu";
 
 const char *bc_errs[] = {
-	"Math",
-	"Parse",
-	"Runtime",
-	"Fatal",
+	"Math error:",
+	"Parse error:",
+	"Runtime error:",
+	"Fatal error:",
+#if BC_ENABLED
+	"Warning:",
+#endif // BC_ENABLED
 };
 
 const char bc_err_ids[] = {
@@ -99,7 +101,7 @@ const char* const bc_err_msgs[] = {
 
 	"negative number",
 	"non-integer number",
-	"overflow; number cannot fit",
+	"overflow: number cannot fit",
 	"divide by 0",
 
 	"memory allocation failed",
