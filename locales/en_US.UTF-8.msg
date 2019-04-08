@@ -1,1 +1,1 @@
-en.UTF-8.msg
+en_US.msg
