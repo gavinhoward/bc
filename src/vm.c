@@ -509,30 +509,10 @@ static void bc_vm_gettext() {
 	int set, msg;
 	size_t i;
 
-	if (!vm->locale) {
-		bc_vm_defaultMsgs();
-		return;
-	}
+	if (!vm->locale) goto def;
 
 	vm->catalog = catopen(BC_MAINEXEC, NL_CAT_LOCALE);
-
-	if (vm->catalog == (nl_catd) -1) {
-
-		BcVec dir;
-
-		bc_vec_init(&dir, sizeof(char), NULL);
-
-		bc_vec_string(&dir, strlen(BC_LOCALEDIR), BC_LOCALEDIR);
-		bc_vec_concat(&dir, "/");
-		bc_vec_concat(&dir, vm->locale);
-		bc_vec_concat(&dir, "/LC_MESSAGES/");
-		bc_vec_concat(&dir, BC_MAINEXEC);
-		bc_vec_concat(&dir, ".cat");
-
-		vm->catalog = catopen(dir.v, NL_CAT_LOCALE);
-
-		bc_vec_free(&dir);
-	}
+	if (vm->catalog == (nl_catd) -1) goto def;
 
 	set = msg = 1;
 
@@ -555,6 +535,8 @@ static void bc_vm_gettext() {
 		vm->err_msgs[i] = catgets(vm->catalog, set, msg, bc_err_msgs[i]);
 	}
 
+def:
+	bc_vm_defaultMsgs();
 #else // BC_ENABLE_NLS
 	bc_vm_defaultMsgs();
 #endif // BC_ENABLE_NLS
