@@ -29,12 +29,27 @@
 
 readlink() {
 
-	local exe="$1"
+	local f="$1"
 	shift
 
-	L=$(ls -dl "$exe")
+	local arrow="-> "
+	local d=$(dirname "$f")
 
-	printf "${L#*-> }"
+	local lsout=""
+	local link=""
+
+	lsout=$(ls -dl "$f")
+	link=$(printf '%s' "${lsout#*$arrow}")
+
+	while [ -z "${lsout##*$arrow*}" ]; do
+		cd "$d"
+		f="$link"
+		d=$(dirname "$f")
+		lsout=$(ls -dl "$f")
+		link=$(printf '%s' "${lsout#*$arrow}")
+	done
+
+	printf '%s' "${f##*$d/}"
 }
 
 removeext() {
@@ -125,15 +140,71 @@ checktest()
 
 substring_replace() {
 
-	if [ "$#" -ne 3 ]; then
-		err_exit "Invalid number of args to $0"
-	fi
+	local str="$1"
+	shift
 
-	str="$1"
-	needle="$2"
-	replacement="$3"
+	local needle="$1"
+	shift
+
+	local replacement="$1"
+	shift
 
 	result=$(printf '%s' "$str" | sed -e "s!$needle!$replacement!g")
 
 	printf '%s\n' "$result"
+}
+
+gen_nlspath() {
+
+	local nlspath="$1"
+	shift
+
+	local locale="$1"
+	shift
+
+	local execname="$1"
+	shift
+
+	local char="@"
+	local modifier="${locale#*$char}"
+	local tmplocale="${locale%%$char*}"
+
+	char="."
+	local charset="${tmplocale#*$char}"
+	tmplocale="${tmplocale%%$char*}"
+
+	if [ "$charset" = "$tmplocale" ]; then
+		charset=""
+	fi
+
+	char="_"
+	local territory="${tmplocale#*$char}"
+	local language="${tmplocale%%$char*}"
+
+	if [ "$territory" = "$tmplocale" ]; then
+		territory=""
+	fi
+
+	if [ "$language" = "$tmplocale" ]; then
+		language=""
+	fi
+
+	local needles="%%:%L:%N:%l:%t:%c"
+
+	needles=$(printf '%s' "$needles" | tr ':' '\n')
+
+	for i in $needles; do
+		nlspath=$(substring_replace "$nlspath" "$i" "\n$i\n")
+	done
+
+	nlspath=$(substring_replace "$nlspath" "%%" "%")
+	nlspath=$(substring_replace "$nlspath" "%L" "$locale")
+	nlspath=$(substring_replace "$nlspath" "%N" "$execname")
+	nlspath=$(substring_replace "$nlspath" "%l" "$language")
+	nlspath=$(substring_replace "$nlspath" "%t" "$territory")
+	nlspath=$(substring_replace "$nlspath" "%c" "$charset")
+
+	nlspath=$(printf '%s' "$nlspath" | tr -d '\n')
+
+	printf '%s\n' "$nlspath"
 }
