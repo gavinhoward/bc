@@ -76,12 +76,10 @@ $set 4
 21 "POSIX does not allow the following operator: %s"
 22 "POSIX does not allow comparison operators outside if statements or loops"
 23 "POSIX requires 0 or 1 comparison operators per condition"
-24 "POSIX does not allow an empty init expression in a for loop"
-25 "POSIX does not allow an empty condition expression in a for loop"
-26 "POSIX does not allow an empty update expression in a for loop"
-27 "POSIX does not allow exponential notation"
-28 "POSIX does not allow array references as function parameters"
-29 "POSIX requires the left brace be on the same line as the function header"
+24 "POSIX requires all 3 parts of a for loop to be non-empty"
+25 "POSIX does not allow exponential notation"
+26 "POSIX does not allow array references as function parameters"
+27 "POSIX requires the left brace be on the same line as the function header"
 
 $ Runtime errors.
 $set 5

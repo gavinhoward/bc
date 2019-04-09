@@ -28,7 +28,7 @@
 #
 
 usage() {
-	printf "usage: %s install_dir main_exec\n" "$0" 1>&2
+	printf "usage: %s NLSPATH main_exec\n" "$0" 1>&2
 	exit 1
 }
 
@@ -41,7 +41,7 @@ INSTALL="$scriptdir/safe-install.sh"
 
 test "$#" -ge 2 || usage
 
-install_dir="$1"
+nlspath="$1"
 shift
 
 main_exec="$1"
@@ -49,24 +49,30 @@ shift
 
 locales_dir="$scriptdir/locales"
 
+locales=$(locale -a)
+
 for file in $locales_dir/*.msg; do
 
 	base=$(basename "$file")
-	name=$(removeext "$base")
-	d="$install_dir/$name/LC_MESSAGES"
-	loc="$install_dir/$name/LC_MESSAGES/$main_exec.cat"
+	locale=$(removeext "$base")
+	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
-	mkdir -p "$d"
+	if [ ! -z "${locales##*$locale*}" ]; then
+		printf 'The following locale is not supported: %s\nContinuing...\n' "$locale"
+		continue
+	fi
+
+	mkdir -p $(dirname "$loc")
 
 	if [ -L "$file" ]; then
 		link=$(readlink "$file")
-		linkname=$(removeext "$link")
-		"$INSTALL" -Dlm 755 "../../$linkname/LC_MESSAGES/$main_exec.cat" "$loc"
-	else
-		err_msgs=$(gencat "$loc" "$file" 2>&1)
-		if [ "$err_msgs" != "" ]; then
-			printf '\nWarning: gencat produced the following errors:\n\n%s\n\n' "$err_msgs"
-		fi
+		d=$(dirname "$file")
+		file="$d/$link"
+	fi
+
+	err_msgs=$(gencat "$loc" "$file" 2>&1)
+	if [ "$err_msgs" != "" ]; then
+		printf '\nWarning: gencat produced the following errors:\n\n%s\n\n' "$err_msgs"
 	fi
 
 done

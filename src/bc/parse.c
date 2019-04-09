@@ -723,7 +723,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 		s = bc_parse_expr_status(p, 0, bc_parse_next_for);
 		if (BC_NO_ERR(!s)) bc_parse_push(p, BC_INST_POP);
 	}
-	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR1);
+	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR);
 
 	if (BC_ERR(s)) return s;
 	if (BC_ERR(p->l.t != BC_LEX_SCOLON))
@@ -748,7 +748,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 		bc_vec_string(&p->l.str, strlen(bc_parse_const1), bc_parse_const1);
 		bc_parse_number(p);
 
-		s = bc_parse_err(p, BC_ERROR_POSIX_FOR2);
+		s = bc_parse_err(p, BC_ERROR_POSIX_FOR);
 	}
 
 	if (BC_ERR(s)) return s;
@@ -769,7 +769,7 @@ static BcStatus bc_parse_for(BcParse *p) {
 		s = bc_parse_expr_status(p, 0, bc_parse_next_rel);
 		if (BC_NO_ERR(!s)) bc_parse_push(p, BC_INST_POP);
 	}
-	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR3);
+	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR);
 
 	if (BC_ERR(s)) return s;
 

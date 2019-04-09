@@ -49,14 +49,14 @@ usage() {
 	printf '       %s --help\n' "$script"
 	printf '       %s [-bD|-dB|-c] [-EgGHMNS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
-	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]    \\\n'
-	printf '           [--debug --disable-extra-math --disable-generated-tests]      \\\n'
-	printf '           [--disable-history --disable-man-pages --disable-nls]         \\\n'
-	printf '           [--disable-signal-handling]                                   \\\n'
-	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]             \\\n'
-	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                           \\\n'
-	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]               \\\n'
-	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR] [--localedir=LOCALEDIR] \\\n'
+	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage] \\\n'
+	printf '           [--debug --disable-extra-math --disable-generated-tests]   \\\n'
+	printf '           [--disable-history --disable-man-pages --disable-nls]      \\\n'
+	printf '           [--disable-signal-handling]                                \\\n'
+	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]          \\\n'
+	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                        \\\n'
+	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]            \\\n'
+	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR]                      \\\n'
 	printf '\n'
 	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -121,11 +121,6 @@ usage() {
 	printf '    --man1dir MAN1DIR\n'
 	printf '        The location to install Section 1 manpages to. Overrides "$MAN1DIR if it\n'
 	printf '        exists. Default is "$MANDIR/man1".\n'
-	printf '    --localedir LOCALEDIR\n'
-	printf '        The location to install locale catalogs to. Each locale will then be\n'
-	printf '        installed to "$LOCALEDIR/$LOCALE/LC_MESSAGES/$EXEC.cat", where "$LOCALE"\n'
-	printf '        is the locale of the catalog and "$EXEC" is the main executable name.\n'
-	printf '        Overrides "$LOCALEDIR" if it exists. Defaults to "$DATAROOTDIR/locale".\n'
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
@@ -147,10 +142,11 @@ usage() {
 	printf '    MANDIR       The location to install manpages to. Default is "$DATADIR/man".\n'
 	printf '    MAN1DIR      The location to install Section 1 manpages to. Default is\n'
 	printf '                 "$MANDIR/man1".\n'
-	printf '    LOCALEDIR    The location to install locale catalogs to. Each locale will\n'
-	printf '                 then be installed to "$LOCALEDIR/$LOCALE/LC_MESSAGES/$EXEC.cat"\n'
-	printf '                 where "$LOCALE" is the locale of the catalog and "$EXEC" is the\n'
-	printf '                 main executable name. Defaults to "$DATAROOTDIR/locale".\n'
+	printf '    NLSPATH      The location to install locale catalogs to. Must be an absolute\n'
+	printf '                 path (or contain one). This is treated the same as the POSIX\n'
+	printf '                 definition of $NLSPATH (see POSIX environment variables,\n'
+	printf '                 https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02\n'
+	printf '                 for more information). Default is "/usr/share/locale/%L/%N".\n'
 	printf '    EXECSUFFIX   The suffix to append to the executable names, used to not\n'
 	printf '                 interfere with other installed bc executables. Default is "".\n'
 	printf '    EXECPREFIX   The prefix to append to the executable names, used to not\n'
@@ -396,11 +392,10 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option" ;;
-			esac ;;
+			esac
+			shift ;;
 		?) usage "Invalid option" ;;
 	esac
-
-	shift
 
 done
 
@@ -565,8 +560,8 @@ fi
 
 if [ "$nls" -ne 0 ]; then
 
-	if [ -z "${LOCALEDIR+set}" ]; then
-		LOCALEDIR="$DATAROOTDIR/locale"
+	if [ -z "$NLSPATH" ]; then
+		NLSPATH="/usr/share/locale/%L/%N"
 	fi
 
 	install_locales_prereqs=" install_locales"
@@ -642,7 +637,7 @@ if [ "$nls" -eq 1 ]; then
 
 		err="$?"
 
-		rm -rf "$scriptdir/en.cat"
+		rm -rf "$scriptdir/en_US.cat"
 
 		if [ "$err" -ne 0 ]; then
 			printf 'gencat does not work.\n'
@@ -725,7 +720,7 @@ printf 'DATAROOTDIR=%s\n' "$DATAROOTDIR"
 printf 'DATADIR=%s\n' "$DATADIR"
 printf 'MANDIR=%s\n' "$MANDIR"
 printf 'MAN1DIR=%s\n' "$MAN1DIR"
-printf 'LOCALEDIR=%s\n' "$LOCALEDIR"
+printf 'NLSPATH=%s\n' "$NLSPATH"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
 printf 'EXECPREFIX=%s\n' "$EXECPREFIX"
 printf 'DESTDIR=%s\n' "$DESTDIR"
@@ -757,7 +752,7 @@ contents=$(replace "$contents" "DC_HELP_O" "$dc_help")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
 
-contents=$(replace "$contents" "LOCALEDIR" "$LOCALEDIR")
+contents=$(replace "$contents" "NLSPATH" "$NLSPATH")
 contents=$(replace "$contents" "DESTDIR" "$destdir")
 contents=$(replace "$contents" "EXECSUFFIX" "$EXECSUFFIX")
 contents=$(replace "$contents" "EXECPREFIX" "$EXECPREFIX")

@@ -28,26 +28,31 @@
 #
 
 usage() {
-	printf "usage: %s locale_dir\n" "$0" 1>&2
+	printf "usage: %s NLSPATH main_exec\n" "$0" 1>&2
 	exit 1
 }
 
 script="$0"
 scriptdir=$(dirname "$script")
 
+. "$scriptdir/functions.sh"
+
 INSTALL="$scriptdir/safe-install.sh"
 
 test "$#" -ge 2 || usage
 
-locale_dir="$1"
+nlspath="$1"
 shift
 
 main_exec="$1"
 shift
 
-for d in $locale_dir/*/; do
+locales=$(locale -a)
 
-	d=${d%*/}
-	rm -f "$d/LC_MESSAGES/$main_exec.cat"
+for l in $locales; do
+
+	path=$(gen_nlspath "$nlspath" "$l" "$main_exec")
+	printf '%s\n' "$path"
+	rm -f "$path"
 
 done
