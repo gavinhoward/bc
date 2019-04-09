@@ -54,7 +54,5 @@ shift
 locales=$(gen_nlspath "$nlspath" "*" "$main_exec")
 
 for l in $locales; do
-
 	rm -f "$l"
-
 done
