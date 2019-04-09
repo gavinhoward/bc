@@ -65,8 +65,7 @@ locales=$(locale -a)
 
 for file in $locales_dir/*.msg; do
 
-	base=$(basename "$file")
-	locale=$(removeext "$base")
+	locale=$(basename "$file" ".msg")
 	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
 	if [ ! -z "${locales##*$locale*}" ]; then
@@ -83,8 +82,7 @@ done
 
 for file in $locales_dir/*.msg; do
 
-	base=$(basename "$file")
-	locale=$(removeext "$base")
+	locale=$(basename "$file" ".msg")
 	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
 	if [ ! -z "${locales##*$locale*}" ]; then

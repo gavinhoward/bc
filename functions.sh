@@ -51,14 +51,6 @@ readlink() {
 	printf '%s' "${f##*$d/}"
 }
 
-removeext() {
-
-	local name="$1"
-	shift
-
-	printf "${name%.*}"
-}
-
 die() {
 
 	local d="$1"
