@@ -777,7 +777,7 @@ static BcStatus bc_history_edit_next(BcHistory *h, bool dir) {
 	bc_vec_replaceAt(&h->history, h->history.len - 1 - h->idx, &dup);
 
 	// Show the new entry.
-	h->idx += (size_t) (dir == BC_HIST_PREV ? 1 : -1);
+	h->idx += (dir == BC_HIST_PREV ? 1 : SIZE_MAX);
 
 	if (h->idx == SIZE_MAX) {
 		h->idx = 0;
