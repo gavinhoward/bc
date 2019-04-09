@@ -205,5 +205,5 @@ gen_nlspath() {
 
 	nlspath=$(printf '%s' "$nlspath" | tr -d '\n')
 
-	printf '%s\n' "$nlspath"
+	printf '%s' "$nlspath"
 }
