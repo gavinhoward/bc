@@ -613,12 +613,6 @@ if [ "$nls" -ne 0 ]; then
 	else
 		printf 'NLS works.\n\n'
 
-		if [ "$HOSTCC" != "$CC" ]; then
-			printf 'Cross-compile detected.\n\n'
-			printf 'WARNING: Catalog files generated with gencat may not be portable\n'
-			printf '         across different architectures.\n\n'
-		fi
-
 		printf 'Testing gencat...\n'
 		gencat "$scriptdir/en_US.cat" "$scriptdir/locales/en_US.msg" > /dev/null 2>&1
 
@@ -633,6 +627,12 @@ if [ "$nls" -ne 0 ]; then
 		else
 
 			printf 'gencat works.\n\n'
+
+			if [ "$HOSTCC" != "$CC" ]; then
+				printf 'Cross-compile detected.\n\n'
+				printf 'WARNING: Catalog files generated with gencat may not be portable\n'
+				printf '         across different architectures.\n\n'
+			fi
 
 			if [ -z "$NLSPATH" ]; then
 				NLSPATH="/usr/share/locale/%L/%N"
