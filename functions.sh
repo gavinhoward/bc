@@ -193,7 +193,7 @@ gen_nlspath() {
 	needles=$(printf '%s' "$needles" | tr ':' '\n')
 
 	for i in $needles; do
-		nlspath=$(substring_replace "$nlspath" "$i" "\n$i\n")
+		nlspath=$(substring_replace "$nlspath" "$i" "|$i|")
 	done
 
 	nlspath=$(substring_replace "$nlspath" "%%" "%")
@@ -203,7 +203,7 @@ gen_nlspath() {
 	nlspath=$(substring_replace "$nlspath" "%t" "$territory")
 	nlspath=$(substring_replace "$nlspath" "%c" "$charset")
 
-	nlspath=$(printf '%s' "$nlspath" | tr -d '\n')
+	nlspath=$(printf '%s' "$nlspath" | tr -d '|')
 
 	printf '%s' "$nlspath"
 }
