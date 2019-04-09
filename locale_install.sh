@@ -97,7 +97,7 @@ for file in $locales_dir/*.msg; do
 		locale=$(basename "$link" .msg)
 		linksrc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
-		if [ ! -f "$linksrc" ];
+		if [ ! -f "$linksrc" ]; then
 			gencatfile "$linksrc" "$link"
 		fi
 
