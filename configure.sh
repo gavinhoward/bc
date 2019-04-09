@@ -392,11 +392,10 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option" ;;
-			esac ;;
+			esac
+			shift ;;
 		?) usage "Invalid option" ;;
 	esac
-
-	shift
 
 done
 
