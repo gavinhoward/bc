@@ -42,8 +42,7 @@ readlink() {
 	link=$(printf '%s' "${lsout#*$arrow}")
 
 	while [ -z "${lsout##*$arrow*}" ]; do
-		cd "$d"
-		f="$link"
+		f="$d/$link"
 		d=$(dirname "$f")
 		lsout=$(ls -dl "$f")
 		link=$(printf '%s' "${lsout#*$arrow}")
