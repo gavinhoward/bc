@@ -11,9 +11,7 @@ env:
     - CODECOV_TOKEN="040ce7eb-5bc7-4040-8324-364f3ef4baa3"
     - CFLAGS="-coverage"
   matrix:
-    - CONFIGURE_ARGS=-HSOg
     - CONFIGURE_ARGS=-HNSOg
-    - CONFIGURE_ARGS=-EHSOg
     - CONFIGURE_ARGS=-EHNSOg
 
 before_install:
