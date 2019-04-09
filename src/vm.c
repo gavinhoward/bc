@@ -91,14 +91,14 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 
 	va_list args;
 	size_t id = (size_t) bc_err_ids[e];
-	const char* err_type = bc_errs[id];
+	const char* err_type = vm->err_ids[id];
 
 #if BC_ENABLED
 	if (!BC_S && e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END) {
 		if (BC_W) {
 			// Make sure to not return an error.
-			id = SIZE_MAX;
-			err_type = bc_errs[BC_ERR_IDX_WARN];
+			id = (size_t)-1;
+			err_type = vm->err_ids[BC_ERR_IDX_WARN];
 		}
 		else return BC_STATUS_SUCCESS;
 	}
@@ -535,11 +535,10 @@ static void bc_vm_gettext() {
 		vm->err_msgs[i] = catgets(vm->catalog, set, msg, bc_err_msgs[i]);
 	}
 
+	return;
 def:
-	bc_vm_defaultMsgs();
-#else // BC_ENABLE_NLS
-	bc_vm_defaultMsgs();
 #endif // BC_ENABLE_NLS
+	bc_vm_defaultMsgs();
 }
 
 static BcStatus bc_vm_exec(void) {
