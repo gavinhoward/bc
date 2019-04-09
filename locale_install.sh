@@ -58,7 +58,6 @@ for file in $locales_dir/*.msg; do
 	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
 	if [ ! -z "${locales##*$locale*}" ]; then
-		printf 'The following locale is not supported: %s\nContinuing...\n' "$locale"
 		continue
 	fi
 
@@ -70,9 +69,6 @@ for file in $locales_dir/*.msg; do
 		file="$d/$link"
 	fi
 
-	err_msgs=$(gencat "$loc" "$file" 2>&1)
-	if [ "$err_msgs" != "" ]; then
-		printf '\nWarning: gencat produced the following errors:\n\n%s\n\n' "$err_msgs"
-	fi
+	gencat "$loc" "$file" > /dev/null 2>&1
 
 done
