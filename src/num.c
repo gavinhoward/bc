@@ -121,7 +121,7 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 	size_t i;
 	int c = 0;
 	for (i = len - 1; BC_NO_SIG && i < len && !(c = a[i] - b[i]); --i);
-	return bc_num_neg(i + 1, c < 0);
+	return BC_SIG ? BC_NUM_SSIZE_MIN : bc_num_neg(i + 1, c < 0);
 }
 
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
@@ -163,13 +163,14 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
+	if (cmp == BC_NUM_SSIZE_MIN) return cmp;
 	if (cmp) return bc_num_neg((size_t) cmp, !a_max == !neg);
 
 	for (max_num -= diff, i = diff - 1; BC_NO_SIG && i < diff; --i) {
 		if (max_num[i]) return bc_num_neg(1, !a_max == !neg);
 	}
 
-	return 0;
+	return BC_SIG ? BC_NUM_SSIZE_MIN : 0;
 }
 
 static void bc_num_clean(BcNum *restrict n) {
@@ -398,6 +399,7 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	a->neg = b->neg = false;
 
 	cmp = bc_num_cmp(a, b);
+	if (cmp == BC_NUM_SSIZE_MIN) return BC_STATUS_SIGNAL;
 
 	a->neg = aneg;
 	b->neg = bneg;
@@ -656,6 +658,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		c->num[i] = q;
 	}
 
+	if (BC_SIG) s = BC_STATUS_SIGNAL;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	bc_num_free(&cp);
 
@@ -1001,6 +1004,11 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_mul(&mult, base, &mult, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	}
+
+	if (BC_SIG) {
+		s = BC_STATUS_SIGNAL;
+		goto err;
 	}
 
 	// This one cannot be a divide by 0 because mult starts out at 1, then is
@@ -1546,6 +1554,11 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		cmp = bc_num_cmp(x1, x0);
+		if (cmp == BC_NUM_SSIZE_MIN) {
+			s = BC_STATUS_SIGNAL;
+			break;
+		}
+
 		digs = x1->len - (unsigned long long) llabs(cmp);
 
 		if (cmp == cmp2 && digs == digs1) times += 1;

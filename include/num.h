@@ -81,6 +81,8 @@ typedef struct BcNum {
 
 #define BC_NUM_KARATSUBA_ALLOCS (6)
 
+#define BC_NUM_SSIZE_MIN (~SSIZE_MAX)
+
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
