@@ -638,7 +638,7 @@ if [ "$nls" -eq 1 ]; then
 		fi
 
 		printf 'Testing gencat...\n'
-		gencat "$scriptdir/en.cat" "$scriptdir/locales/en.msg" > /dev/null 2>&1
+		gencat "$scriptdir/en_US.cat" "$scriptdir/locales/en_US.msg" > /dev/null 2>&1
 
 		err="$?"
 
