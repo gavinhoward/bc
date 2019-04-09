@@ -558,19 +558,6 @@ if [ "$install_manpages" -ne 0 -o "$nls" -ne 0 ]; then
 	fi
 fi
 
-if [ "$nls" -ne 0 ]; then
-
-	if [ -z "$NLSPATH" ]; then
-		NLSPATH="/usr/share/locale/%L/%N"
-	fi
-
-	install_locales_prereqs=" install_locales"
-	uninstall_locales_prereqs=" uninstall_locales"
-else
-	install_locales_prereqs=""
-	uninstall_locales_prereqs=""
-fi
-
 if [ "$install_manpages" -ne 0 ]; then
 
 	if [ -z "${DATADIR+set}" ]; then
@@ -600,7 +587,7 @@ elif [ -z "$HOSTCC" ]; then
 	HOSTCC="$HOST_CC"
 fi
 
-if [ "$nls" -eq 1 ]; then
+if [ "$nls" -ne 0 ]; then
 
 	set +e
 
@@ -644,13 +631,25 @@ if [ "$nls" -eq 1 ]; then
 			printf 'Disabling NLS...\n\n'
 			nls=0
 		else
+
 			printf 'gencat works.\n\n'
+
+			if [ -z "$NLSPATH" ]; then
+				NLSPATH="/usr/share/locale/%L/%N"
+			fi
+
+			install_locales_prereqs=" install_locales"
+			uninstall_locales_prereqs=" uninstall_locales"
+
 		fi
 
 	fi
 
 	set -e
 
+else
+	install_locales_prereqs=""
+	uninstall_locales_prereqs=""
 fi
 
 if [ "$hist" -eq 1 ]; then
