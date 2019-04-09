@@ -1572,6 +1572,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	if (b->rdx > scale) bc_num_truncate(b, b->rdx - scale);
 
 err:
+	if (BC_ERR(s)) bc_num_free(b);
 	bc_num_free(&fprime);
 	bc_num_free(&f);
 	bc_num_free(&num2);
