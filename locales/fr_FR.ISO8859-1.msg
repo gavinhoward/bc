@@ -77,11 +77,9 @@ $set 4
 22 "POSIX interdit les opérateurs de comparaison en dehors des expressions 'if' ou des boucles"
 23 "POSIX impose 0 ou 1 opérateur de comparaison par condition"
 24 "POSIX interdit une expression vide dans une boucle 'for'"
-25 "POSIX interdit une expression vide dans une boucle 'for'"
-26 "POSIX interdit une expression vide dans une boucle 'for'"
-27 "POSIX interdit la notation exponentielle"
-28 "POSIX interdit les références à un tableau dans les paramètres d'une fonction"
-29 "POSIX impose que l'en-tête de la fonction et le '{' soient sur la même ligne"
+25 "POSIX interdit la notation exponentielle"
+26 "POSIX interdit les références à un tableau dans les paramètres d'une fonction"
+27 "POSIX impose que l'en-tête de la fonction et le '{' soient sur la même ligne"
 
 $ Runtime errors.
 $set 5
