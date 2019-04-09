@@ -92,7 +92,6 @@ const char bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
 
 };
@@ -156,9 +155,7 @@ const char* const bc_err_msgs[] = {
 	"POSIX does not allow the following operator: %s",
 	"POSIX does not allow comparison operators outside if statements or loops",
 	"POSIX requires 0 or 1 comparison operators per condition",
-	"POSIX does not allow an empty init expression in a for loop",
-	"POSIX does not allow an empty condition expression in a for loop",
-	"POSIX does not allow an empty update expression in a for loop",
+	"POSIX requires all 3 parts of a for loop to be non-empty",
 #if BC_ENABLE_EXTRA_MATH
 	"POSIX does not allow exponential notation",
 #else

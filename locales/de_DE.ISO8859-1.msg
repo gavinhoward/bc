@@ -48,12 +48,10 @@ $set 4
 21 "POSIX erlaubt den Operator \"%s\" nicht"
 22 "POSIX erlaubt keine Vergleichsoperatoren außerhalb von if-Anweisungen oder Schleifen"
 23 "POSIX benötigt 0 oder 1 Vergleichsoperatoren pro Bedingung"
-24 "POSIX erlaubt keinen leeren Initialisierungs-Ausdruck in einer for-Schleife"
-25 "POSIX erlaubt keinen leeren Bedingungsausdruck in einer for-Schleife"
-26 "POSIX erlaubt keinen leeren Aktualisierungs-Ausdruck in einer for-Schleife"
-27 "POSIX erlaubt keine exponentielle Notation"
-28 "POSIX erlaubt keine Feld-Referenzen als Funktionsparameter"
-29 "POSIX erfordert, dass die linke Klammer auf der gleichen Linie wie der Funktionskopf steht"
+24 "POSIX erlaubt keinen leeren Ausdruck in einer for-Schleife"
+25 "POSIX erlaubt keine exponentielle Notation"
+26 "POSIX erlaubt keine Feld-Referenzen als Funktionsparameter"
+27 "POSIX erfordert, dass die linke Klammer auf der gleichen Linie wie der Funktionskopf steht"
 
 $ Runtime errors.
 $set 5
