@@ -218,7 +218,7 @@ extern const char bc_copyright[];
 extern const char* const bc_err_line;
 extern const char* const bc_err_func_header;
 extern const char *bc_errs[];
-extern const char bc_err_ids[];
+extern const uchar bc_err_ids[];
 extern const char* const bc_err_msgs[];
 
 extern BcVm *vm;

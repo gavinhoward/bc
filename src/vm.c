@@ -90,14 +90,16 @@ void bc_vm_info(const char* const help) {
 BcStatus bc_vm_error(BcError e, size_t line, ...) {
 
 	va_list args;
-	size_t id = (size_t) bc_err_ids[e];
+	uchar id = bc_err_ids[e];
 	const char* err_type = vm->err_ids[id];
 
+	assert(e < BC_ERROR_NELEMS);
+
 #if BC_ENABLED
-	if (!BC_S && e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END) {
+	if (!BC_S && e >= BC_ERROR_POSIX_START) {
 		if (BC_W) {
 			// Make sure to not return an error.
-			id = SIZE_MAX;
+			id = UCHAR_MAX;
 			err_type = vm->err_ids[BC_ERR_IDX_WARN];
 		}
 		else return BC_STATUS_SUCCESS;
@@ -505,7 +507,7 @@ static void bc_vm_defaultMsgs() {
 static void bc_vm_gettext() {
 
 #if BC_ENABLE_NLS
-	char id = 0;
+	uchar id = 0;
 	int set, msg;
 	size_t i;
 

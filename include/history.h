@@ -97,15 +97,15 @@
 #include <status.h>
 #include <vector.h>
 
-#define BC_HISTORY_DEF_COLS (80)
-#define BC_HISTORY_MAX_LEN (128)
-#define BC_HISTORY_MAX_LINE (4095)
+#define BC_HIST_DEF_COLS (80)
+#define BC_HIST_MAX_LEN (128)
+#define BC_HIST_MAX_LINE (4095)
 
-#define BC_HISTORY_BUF_LEN(h) ((h)->buf.len - 1)
-#define BC_HISTORY_BAD_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
+#define BC_HIST_BUF_LEN(h) ((h)->buf.len - 1)
+#define BC_HIST_BAD_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
 
-#define BC_HISTORY_NEXT (false)
-#define BC_HISTORY_PREV (true)
+#define BC_HIST_NEXT (false)
+#define BC_HIST_PREV (true)
 
 #ifndef NDEBUG
 #define lndebug(...)                                               \
@@ -164,7 +164,7 @@ typedef struct BcHistory {
 
 	/// A temporary buffer for refresh. Using this
 	/// prevents an allocation on every refresh.
-	BcVec refresh;
+	BcVec tmp;
 
 	/// Prompt to display.
 	const char *prompt;

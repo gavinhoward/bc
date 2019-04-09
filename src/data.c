@@ -71,7 +71,7 @@ const char *bc_errs[] = {
 #endif // BC_ENABLED
 };
 
-const char bc_err_ids[] = {
+const uchar bc_err_ids[] = {
 
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 
