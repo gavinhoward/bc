@@ -97,7 +97,7 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 	if (!BC_S && e >= BC_ERROR_POSIX_START && e <= BC_ERROR_POSIX_END) {
 		if (BC_W) {
 			// Make sure to not return an error.
-			id = (size_t)-1;
+			id = SIZE_MAX;
 			err_type = vm->err_ids[BC_ERR_IDX_WARN];
 		}
 		else return BC_STATUS_SUCCESS;
@@ -509,10 +509,16 @@ static void bc_vm_gettext() {
 	int set, msg;
 	size_t i;
 
-	if (!vm->locale) goto def;
+	if (!vm->locale) {
+		bc_vm_defaultMsgs();
+		return;
+	}
 
 	vm->catalog = catopen(BC_MAINEXEC, NL_CAT_LOCALE);
-	if (vm->catalog == (nl_catd) -1) goto def;
+	if (vm->catalog == (nl_catd) -1) {
+		bc_vm_defaultMsgs();
+		return;
+	}
 
 	set = msg = 1;
 
@@ -534,11 +540,9 @@ static void bc_vm_gettext() {
 
 		vm->err_msgs[i] = catgets(vm->catalog, set, msg, bc_err_msgs[i]);
 	}
-
-	return;
-def:
-#endif // BC_ENABLE_NLS
+#else // BC_ENABLE_NLS
 	bc_vm_defaultMsgs();
+#endif // BC_ENABLE_NLS
 }
 
 static BcStatus bc_vm_exec(void) {
