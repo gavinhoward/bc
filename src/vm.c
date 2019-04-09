@@ -543,7 +543,6 @@ static void bc_vm_gettext() {
 #else // BC_ENABLE_NLS
 	bc_vm_defaultMsgs();
 #endif // BC_ENABLE_NLS
-	bc_vm_defaultMsgs();
 }
 
 static BcStatus bc_vm_exec(void) {
