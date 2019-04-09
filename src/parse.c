@@ -81,7 +81,7 @@ void bc_parse_number(BcParse *p) {
 	size_t idx = SIZE_MAX;
 
 	if (exp) {
-		idx = ((uintptr_t) exp) - ((uintptr_t) p->l.str.v);
+		idx = ((size_t) (exp - p->l.str.v));
 		*exp = 0;
 	}
 #endif // BC_ENABLE_EXTRA_MATH
