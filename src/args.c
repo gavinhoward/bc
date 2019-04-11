@@ -189,17 +189,23 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case '?':
 			default:
 			{
-				return BC_STATUS_ERROR_VM;
+				err = '?';
+				break;
 			}
 		}
 
 		if (BC_ERR(err)) {
 
-			for (i = 0; bc_args_lopt[i].name; ++i) {
-				if (bc_args_lopt[i].val == err) break;
-			}
+			if (err == '?') return bc_vm_err(BC_ERROR_FATAL_UNRECOGNIZED_OPT);
+			else {
 
-			return bc_vm_verr(BC_ERROR_FATAL_OPTION, err, bc_args_lopt[i].name);
+				for (i = 0; bc_args_lopt[i].name; ++i) {
+					if (bc_args_lopt[i].val == err) break;
+				}
+
+				return bc_vm_verr(BC_ERROR_FATAL_BAD_OPT,
+				                  err, bc_args_lopt[i].name);
+			}
 		}
 	}
 

@@ -191,6 +191,16 @@ err="$?"
 
 checktest "$err" "invalid long option argument" "$out2" "$d"
 
+"$exe" "$@" "-u" -e "$exprs" > /dev/null 2> "$out2"
+err="$?"
+
+checktest "$err" "unrecognized option argument" "$out2" "$d"
+
+"$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
+err="$?"
+
+checktest "$err" "unrecognized long option argument" "$out2" "$d"
+
 printf 'Running %s directory test...\n' "$d"
 
 "$exe" "$@" "$testdir" > /dev/null 2> "$out2"

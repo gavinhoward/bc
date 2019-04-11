@@ -49,8 +49,6 @@ scriptdir=$(dirname "$script")
 
 . "$scriptdir/functions.sh"
 
-INSTALL="$scriptdir/safe-install.sh"
-
 test "$#" -ge 2 || usage
 
 nlspath="$1"
@@ -58,6 +56,8 @@ shift
 
 main_exec="$1"
 shift
+
+"$scriptdir/locale_uninstall.sh" "$nlspath" "$main_exec"
 
 locales_dir="$scriptdir/locales"
 
