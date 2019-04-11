@@ -51,6 +51,18 @@ readlink() {
 	printf '%s' "${f##*$d/}"
 }
 
+err_exit() {
+
+	if [ "$#" -ne 2 ]; then
+		printf 'Invalid number of args to err_exit\n'
+		exit 1
+	fi
+
+	printf '%s\n' "$1"
+	printf '\nexiting...\n'
+	exit "$2"
+}
+
 die() {
 
 	local d="$1"
@@ -65,13 +77,9 @@ die() {
 	local err="$1"
 	shift
 
-	printf '\n'
-	printf '%s %s on test:\n' "$d" "$msg"
-	printf '\n'
-	printf '    %s\n' "$name"
-	printf '\n'
-	printf 'exiting...\n'
-	exit "$err"
+	str=$(printf '\n%s %s on test:\n\n    %s\n' "$d" "$msg" "$name")
+
+	err_exit "$str" "$err"
 }
 
 checkcrash() {
@@ -83,7 +91,7 @@ checkcrash() {
 	shift
 
 	if [ "$error" -gt 127 ]; then
-		die "$d" "crashed" "$name" "$error"
+		die "$d" "crashed ($error)" "$name" "$error"
 	fi
 }
 
