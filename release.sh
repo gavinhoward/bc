@@ -374,7 +374,7 @@ if [ "$run_tests" -ne 0 ]; then
 		vg
 	fi
 
-	configure "$reldebug" "afl-gcc" ""
+	configure "$reldebug" "afl-gcc" "-HS"
 
 	printf '\n'
 	printf 'Run make\n'
