@@ -159,25 +159,28 @@ runtestseries() {
 	local CC="$1"
 	shift
 
+	local configure_flags="$1"
+	shift
+
 	local run_tests="$1"
 	shift
 
-	runconfigtests "$CFLAGS" "$CC" "" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-E" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-H" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-N" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-S" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-EH" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-EN" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-ES" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-HN" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-HS" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-NS" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-EHN" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-EHS" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-ENS" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-HNS" "$run_tests"
-	runconfigtests "$CFLAGS" "$CC" "-EHNS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -E" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -H" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -N" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -S" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -EH" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -EN" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -ES" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -HN" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -HS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -NS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -EHN" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -EHS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -ENS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -HNS" "$run_tests"
+	runconfigtests "$CFLAGS" "$CC" "$configure_flags -EHNS" "$run_tests"
 }
 
 runtests() {
@@ -188,10 +191,13 @@ runtests() {
 	local CC="$1"
 	shift
 
+	local configure_flags="$1"
+	shift
+
 	local run_tests="$1"
 	shift
 
-	runtestseries "$CFLAGS" "$CC" "$run_tests"
+	runtestseries "$CFLAGS" "$CC" "$configure_flags" "$run_tests"
 }
 
 karatsuba() {
@@ -204,17 +210,17 @@ vg() {
 
 	header "Running valgrind"
 
-	build "$reldebug" "$CC" "-g"
+	build "$debug" "$CC" "-g"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$reldebug" "$CC" "-gb"
+	build "$debug" "$CC" "-gb"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$reldebug" "$CC" "-gd"
+	build "$debug" "$CC" "-gd"
 	runtest valgrind
 
 	do_make clean_config
@@ -228,12 +234,12 @@ debug() {
 	local run_tests="$1"
 	shift
 
-	runtests "$debug" "$CC" "$run_tests"
+	runtests "$debug" "$CC" "-g" "$run_tests"
 
 	if [ "$CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runtests "$debug -fsanitize=address" "$CC" "$run_tests"
-		runtests "$debug -fsanitize=undefined" "$CC" "$run_tests"
-		runtests "$debug -fsanitize=memory" "$CC" "$run_tests"
+		runtests "$debug -fsanitize=address" "$CC" "-g" "$run_tests"
+		runtests "$debug -fsanitize=undefined" "$CC" "-g" "$run_tests"
+		runtests "$debug -fsanitize=memory" "$CC" "-g" "$run_tests"
 	fi
 }
 
@@ -245,7 +251,7 @@ release() {
 	local run_tests="$1"
 	shift
 
-	runtests "$release" "$CC" "$run_tests"
+	runtests "$release" "$CC" "-O3" "$run_tests"
 }
 
 reldebug() {
@@ -256,7 +262,7 @@ reldebug() {
 	local run_tests="$1"
 	shift
 
-	runtests "$reldebug" "$CC" "$run_tests"
+	runtests "$debug" "$CC" "-gO3" "$run_tests"
 }
 
 minsize() {
@@ -267,7 +273,7 @@ minsize() {
 	local run_tests="$1"
 	shift
 
-	runtests "$minsize" "$CC" "$run_tests"
+	runtests "$release" "$CC" "-Os" "$run_tests"
 }
 
 build_set() {
@@ -290,10 +296,8 @@ clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
 
 cflags="-Wall -Wextra -Werror -pedantic -std=c99"
 
-debug="$cflags -g -O0 -fno-omit-frame-pointer"
-release="$cflags -DNDEBUG -O3"
-reldebug="$cflags -O3 -g -fno-omit-frame-pointer"
-minsize="$cflags -DNDEBUG -Os"
+debug="$cflags -fno-omit-frame-pointer"
+release="$cflags -DNDEBUG"
 
 set -e
 
@@ -374,7 +378,7 @@ if [ "$run_tests" -ne 0 ]; then
 		vg
 	fi
 
-	configure "$reldebug" "afl-gcc" "-HS"
+	configure "$reldebug" "afl-gcc" "-HSg"
 
 	printf '\n'
 	printf 'Run make\n'
