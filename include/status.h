@@ -138,4 +138,6 @@ typedef enum BcError {
 #define BC_ERR(e) BC_UNLIKELY(e)
 #define BC_NO_ERR(s) BC_LIKELY(s)
 
+#define BC_DEBUG_CODE (0)
+
 #endif // BC_STATUS_H

@@ -1972,7 +1972,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	return s;
 }
 
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 #if BC_ENABLED && DC_ENABLED
 static void bc_program_printIndex(const char *restrict code,
                                   size_t *restrict bgn)
@@ -2063,4 +2063,4 @@ void bc_program_code(BcProgram *p) {
 	}
 }
 #endif // BC_ENABLED && DC_ENABLED
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE

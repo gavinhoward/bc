@@ -1302,7 +1302,7 @@ void bc_history_free(BcHistory *h) {
  * This special mode is used by bc history in order to print scan codes
  * on screen for debugging / development purposes.
  */
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 BcStatus bc_history_printKeyCodes(BcHistory *h) {
 
 	BcStatus s;
@@ -1343,6 +1343,6 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 
 	return s;
 }
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE
 
 #endif // BC_ENABLE_HISTORY
