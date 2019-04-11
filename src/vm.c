@@ -632,7 +632,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	vm->max_ibase = BC_IS_BC && !BC_IS_POSIX ? BC_NUM_MAX_IBASE :
 	                                           BC_NUM_MAX_POSIX_IBASE;
 
-	if (BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
+	if (BC_IS_BC && BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 
 	s = bc_vm_exec();
 
