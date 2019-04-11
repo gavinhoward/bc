@@ -28,8 +28,7 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [test_with_pcc] \\\n' "$script"
-	printf '          [run_sanitizers] [run_valgrind]\n'
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] [run_valgrind]\n' "$script"
 	exit 1
 }
 
@@ -326,13 +325,6 @@ else
 fi
 
 if [ "$#" -gt 0 ]; then
-	test_with_pcc="$1"
-	shift
-else
-	test_with_pcc=1
-fi
-
-if [ "$#" -gt 0 ]; then
 	run_sanitizers="$1"
 	shift
 else
@@ -364,10 +356,6 @@ if [ "$test_with_gcc" -ne 0 ]; then
 	build_set "gcc" "$run_tests"
 fi
 
-if [ "$test_with_pcc" -ne 0 ]; then
-	build_set "pcc" "$run_tests"
-fi
-
 if [ "$run_tests" -ne 0 ]; then
 
 	build "$release" "clang" ""
@@ -378,7 +366,7 @@ if [ "$run_tests" -ne 0 ]; then
 		vg
 	fi
 
-	configure "$reldebug" "afl-gcc" "-HSg"
+	configure "$debug" "afl-gcc" "-HSg"
 
 	printf '\n'
 	printf 'Run make\n'
