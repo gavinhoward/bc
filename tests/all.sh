@@ -220,7 +220,7 @@ if [ "$d" = "bc" ]; then
 	printf 'limits\n' | "$exe" "$@" > "$out2" /dev/null 2>&1
 
 	if [ ! -s "$out2" ]; then
-		err_ext "$d did not produce output on the limits test" 1
+		err_exit "$d did not produce output on the limits test" 1
 	fi
 
 fi
