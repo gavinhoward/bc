@@ -76,6 +76,8 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	BcStatus s;
 	char *buf;
 
+	vm->file = file;
+
 	s = bc_read_file(file, &buf);
 	if (BC_ERR(s)) return s;
 

@@ -114,20 +114,21 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 	vfprintf(stderr, vm->err_msgs[e], args);
 	va_end(args);
 
-	assert(vm->file);
+	if (BC_NO_ERR(vm->file)) {
 
-	// This is the condition for parsing vs runtime.
-	// If line is not 0, it is parsing.
-	if (line) {
-		fprintf(stderr, "\n    %s", vm->file);
-		fprintf(stderr, bc_err_line, line);
-	}
-	else {
-		BcInstPtr *ip = bc_vec_item_rev(&vm->prog.stack, 0);
-		BcFunc *f = bc_vec_item(&vm->prog.fns, ip->func);
-		fprintf(stderr, "\n    %s %s", vm->func_header, f->name);
-		if (ip->func != BC_PROG_MAIN && ip->func != BC_PROG_READ)
-			fprintf(stderr, "()");
+		// This is the condition for parsing vs runtime.
+		// If line is not 0, it is parsing.
+		if (line) {
+			fprintf(stderr, "\n    %s", vm->file);
+			fprintf(stderr, bc_err_line, line);
+		}
+		else {
+			BcInstPtr *ip = bc_vec_item_rev(&vm->prog.stack, 0);
+			BcFunc *f = bc_vec_item(&vm->prog.fns, ip->func);
+			fprintf(stderr, "\n    %s %s", vm->func_header, f->name);
+			if (ip->func != BC_PROG_MAIN && ip->func != BC_PROG_READ)
+				fprintf(stderr, "()");
+		}
 	}
 
 	fputs("\n\n", stderr);
