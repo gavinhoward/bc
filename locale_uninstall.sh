@@ -47,12 +47,12 @@ shift
 main_exec="$1"
 shift
 
-locales=$(locale -a)
+# I do something clever here. I am replacing the locale spot with
+# a wildcard, which should make it search all locale directories.
+# This way, we can delete catalogs for locales that we had to install
+# because they are symlinks.
+locales=$(gen_nlspath "$nlspath" "*" "$main_exec")
 
 for l in $locales; do
-
-	path=$(gen_nlspath "$nlspath" "$l" "$main_exec")
-	printf '%s\n' "$path"
-	rm -f "$path"
-
+	rm -f "$l"
 done

@@ -107,7 +107,7 @@
 #define BC_HIST_NEXT (false)
 #define BC_HIST_PREV (true)
 
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 #define lndebug(...)                                               \
 	do {                                                           \
 		if (bc_history_debug_fp == NULL) {                         \
@@ -121,9 +121,9 @@
 		fprintf(bc_history_debug_fp, ", " __VA_ARGS__);            \
 		fflush(bc_history_debug_fp);                               \
 	} while (0)
-#else // NDEBUG
+#else // BC_DEBUG_CODE
 #define lndebug(fmt, ...)
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE
 
 typedef enum BcHistoryAction {
 
@@ -207,10 +207,10 @@ extern const uint32_t bc_history_wchars[][2];
 extern const size_t bc_history_wchars_len;
 extern const uint32_t bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 extern FILE *bc_history_debug_fp;
 BcStatus bc_history_printKeyCodes(BcHistory* l);
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE
 
 #endif // BC_ENABLE_HISTORY
 

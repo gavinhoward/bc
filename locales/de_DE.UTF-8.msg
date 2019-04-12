@@ -76,3 +76,4 @@ $set 6
 4 "Datei ist nicht ASCII: %s"
 5 "Pfad ist ein Verzeichnis: %s"
 6 "ungültige Befehlszeilenoption: '%c' (\"%s\")"
+7 "unerkannt Befehlszeilenoption"

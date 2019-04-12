@@ -249,9 +249,9 @@ void bc_result_free(void *result);
 void bc_array_expand(BcVec *a, size_t len);
 int bc_id_cmp(const BcId *e1, const BcId *e2);
 
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 extern const char bc_inst_chars[];
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE
 
 extern const char bc_func_main[];
 extern const char bc_func_read[];

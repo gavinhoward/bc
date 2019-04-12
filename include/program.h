@@ -126,13 +126,13 @@ typedef void (*BcProgramUnary)(BcResult*, BcNum*);
 void bc_program_init(BcProgram *p);
 void bc_program_free(BcProgram *p);
 
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 #if BC_ENABLED && DC_ENABLED
 void bc_program_code(BcProgram *p);
 void bc_program_printInst(BcProgram *p, const char *code,
                           size_t *restrict bgn);
 #endif // BC_ENABLED && DC_ENABLED
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE
 
 void bc_program_addFunc(BcProgram *p, BcFunc *f, const char* name);
 size_t bc_program_insertFunc(BcProgram *p, char *name);

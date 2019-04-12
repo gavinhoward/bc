@@ -32,12 +32,22 @@ usage() {
 	exit 1
 }
 
+gencatfile() {
+
+	local loc="$1"
+	shift
+
+	local file="$1"
+	shift
+
+	mkdir -p $(dirname "$loc")
+	gencat "$loc" "$file" > /dev/null 2>&1
+}
+
 script="$0"
 scriptdir=$(dirname "$script")
 
 . "$scriptdir/functions.sh"
-
-INSTALL="$scriptdir/safe-install.sh"
 
 test "$#" -ge 2 || usage
 
@@ -47,14 +57,32 @@ shift
 main_exec="$1"
 shift
 
+"$scriptdir/locale_uninstall.sh" "$nlspath" "$main_exec"
+
 locales_dir="$scriptdir/locales"
 
 locales=$(locale -a)
 
 for file in $locales_dir/*.msg; do
 
-	base=$(basename "$file")
-	locale=$(removeext "$base")
+	locale=$(basename "$file" ".msg")
+	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
+
+	if [ ! -z "${locales##*$locale*}" ]; then
+		continue
+	fi
+
+	if [ -L "$file" ]; then
+		continue
+	fi
+
+	gencatfile "$loc" "$file"
+
+done
+
+for file in $locales_dir/*.msg; do
+
+	locale=$(basename "$file" ".msg")
 	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
 	if [ ! -z "${locales##*$locale*}" ]; then
@@ -64,10 +92,17 @@ for file in $locales_dir/*.msg; do
 	mkdir -p $(dirname "$loc")
 
 	if [ -L "$file" ]; then
-		continue
-	fi
 
-	gencat "$loc" "$file" > /dev/null 2>&1
+		link=$(readlink "$file")
+		locale=$(basename "$link" .msg)
+		linksrc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
+
+		if [ ! -f "$linksrc" ]; then
+			gencatfile "$linksrc" "$link"
+		fi
+
+		ln "$linksrc" "$loc"
+	fi
 
 done
 

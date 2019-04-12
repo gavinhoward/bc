@@ -30,15 +30,15 @@
 set -e
 
 script="$0"
-
 testdir=$(dirname "$script")
+
+. "$testdir/../functions.sh"
 
 if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	printf 'usage: %s dir [run_extended_tests] [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
-	exit 1
+	err_exit "usage: $script dir [run_extended_tests] [run_stack_tests] [generate_tests] [exec args...]"
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -176,67 +176,53 @@ printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
 
 set +e
 
-"$exe" "$@" -f "saotehasotnehasthistohntnsahxstnhalcrgxgrlpyasxtsaosysxsatnhoy.txt" > /dev/null 2>&1
+"$exe" "$@" -f "saotehasotnehasthistohntnsahxstnhalcrgxgrlpyasxtsaosysxsatnhoy.txt" > /dev/null 2> "$out2"
 err="$?"
 
-if [ "$err" -eq 0 ]; then
-	printf '%s did not return an error (%d) on invalid file argument test\n' "$d" "$err"
-	printf 'exiting...\n'
-	exit 1
-fi
+checktest "$err" "invalid file argument" "$out2" "$d"
 
-"$exe" "$@" "-$opt" -e "$exprs" > /dev/null 2>&1
+"$exe" "$@" "-$opt" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-if [ "$err" -eq 0 ]; then
-	printf '%s did not return an error (%d) on invalid option argument test\n' "$d" "$err"
-	printf 'exiting...\n'
-	exit 1
-fi
+checktest "$err" "invalid option argument" "$out2" "$d"
 
-"$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2>&1
+"$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-if [ "$err" -eq 0 ]; then
-	printf '%s did not return an error (%d) on invalid long option argument test\n' "$d" "$err"
-	printf 'exiting...\n'
-	exit 1
-fi
+checktest "$err" "invalid long option argument" "$out2" "$d"
+
+"$exe" "$@" "-u" -e "$exprs" > /dev/null 2> "$out2"
+err="$?"
+
+checktest "$err" "unrecognized option argument" "$out2" "$d"
+
+"$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
+err="$?"
+
+checktest "$err" "unrecognized long option argument" "$out2" "$d"
 
 printf 'Running %s directory test...\n' "$d"
 
-"$exe" "$@" "$testdir" > /dev/null 2>&1
+"$exe" "$@" "$testdir" > /dev/null 2> "$out2"
 err="$?"
 
-if [ "$err" -eq 0 ]; then
-	printf '%s did not return an error (%d) on directory test\n' "$d" "$err"
-	printf 'exiting...\n'
-	exit 1
-fi
+checktest "$err" "directory" "$out2" "$d"
 
 printf 'Running %s binary file test...\n' "$d"
 
 bin="/bin/sh"
 
-"$exe" "$@" "$bin" > /dev/null 2>&1
+"$exe" "$@" "$bin" > /dev/null 2> "$out2"
 err="$?"
 
-if [ "$err" -eq 0 ]; then
-	printf '%s did not return an error (%d) on binary file test\n' "$d" "$err"
-	printf 'exiting...\n'
-	exit 1
-fi
+checktest "$err" "binary file" "$out2" "$d"
 
 printf 'Running %s binary stdin test...\n' "$d"
 
-cat "$bin" | "$exe" "$@" > /dev/null 2>&1
+cat "$bin" | "$exe" "$@" > /dev/null 2> "$out2"
 err="$?"
 
-if [ "$err" -eq 0 ]; then
-	printf '%s did not return an error (%d) on binary stdin test\n' "$d" "$err"
-	printf 'exiting...\n'
-	exit 1
-fi
+checktest "$err" "binary stdin" "$out2" "$d"
 
 if [ "$d" = "bc" ]; then
 
@@ -244,9 +230,7 @@ if [ "$d" = "bc" ]; then
 	printf 'limits\n' | "$exe" "$@" > "$out2" /dev/null 2>&1
 
 	if [ ! -s "$out2" ]; then
-		printf '%s did not produce output on the limits test\n' "$d"
-		printf 'exiting...\n'
-		exit 1
+		err_exit "$d did not produce output on the limits test" 1
 	fi
 
 fi

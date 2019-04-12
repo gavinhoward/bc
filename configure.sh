@@ -161,17 +161,6 @@ usage() {
 	exit "$val"
 }
 
-err_exit() {
-
-	if [ "$#" -ne 1 ]; then
-		printf 'Invalid number of args to err_exit\n'
-		exit 1
-	fi
-
-	printf '%s\n' "$1"
-	exit 1
-}
-
 replace_ext() {
 
 	if [ "$#" -ne 3 ]; then

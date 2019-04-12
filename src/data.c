@@ -76,7 +76,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 
 	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
-	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
 
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -109,6 +109,7 @@ const char* const bc_err_msgs[] = {
 	"file is not ASCII: %s",
 	"path is a directory: %s",
 	"bad command-line option: '%c' (\"%s\")",
+	"unrecognized command-line option",
 
 	"bad ibase: must be [%lu, %lu]",
 	"bad obase: must be [%lu, %lu]",
@@ -500,18 +501,18 @@ const uint32_t bc_history_combo_chars[] = {
 const size_t bc_history_combo_chars_len =
 	sizeof(bc_history_combo_chars) / sizeof(bc_history_combo_chars[0]);
 
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 FILE *bc_history_debug_fp = NULL;
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE
 #endif // BC_ENABLE_HISTORY
 
 const char bc_func_main[] = "(main)";
 const char bc_func_read[] = "(read)";
 
-#ifndef NDEBUG
+#if BC_DEBUG_CODE
 const char bc_inst_chars[] =
 	"edED_^*/%+-=;?~<>!|&`{}@[],NVMACaI.LlrOqpQsSJjPR$bHovxzatfcZdghkKuU";
-#endif // NDEBUG
+#endif // BC_DEBUG_CODE
 
 #if BC_ENABLED
 const BcLexKeyword bc_lex_kws[] = {
