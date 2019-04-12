@@ -104,4 +104,3 @@ $set 6
 4 "file is not ASCII: %s"
 5 "path is a directory: %s"
 6 "invalid command-line option: '%c' (\"%s\")"
-7 "unrecognized command-line option"

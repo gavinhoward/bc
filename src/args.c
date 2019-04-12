@@ -51,20 +51,30 @@ static const struct option bc_args_lopt[] = {
 
 	{ "expression", required_argument, NULL, 'e' },
 	{ "file", required_argument, NULL, 'f' },
-	{ "global-stacks", no_argument, NULL, 'g' },
 	{ "help", no_argument, NULL, 'h' },
+#if BC_ENABLED
+	{ "global-stacks", no_argument, NULL, 'g' },
 	{ "interactive", no_argument, NULL, 'i' },
 	{ "mathlib", no_argument, NULL, 'l' },
 	{ "quiet", no_argument, NULL, 'q' },
 	{ "standard", no_argument, NULL, 's' },
 	{ "warn", no_argument, NULL, 'w' },
+#endif // BC_ENABLED
 	{ "version", no_argument, NULL, 'v' },
+#if DC_ENABLED
 	{ "extended-register", no_argument, NULL, 'x' },
+#endif // DC_ENABLED
 	{ 0, 0, 0, 0 },
 
 };
 
+#if !BC_ENABLED
+static const char* const bc_args_opt = "e:f:hvVx";
+#elif !DC_ENABLED
+static const char* const bc_args_opt = "e:f:ghilqsvVw";
+#else // BC_ENABLED && DC_ENABLED
 static const char* const bc_args_opt = "e:f:ghilqsvVwx";
+#endif // BC_ENABLED && DC_ENABLED
 
 static void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, str);
@@ -189,23 +199,17 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case '?':
 			default:
 			{
-				err = '?';
-				break;
+				return BC_STATUS_ERROR_VM;
 			}
 		}
 
 		if (BC_ERR(err)) {
 
-			if (err == '?') return bc_vm_err(BC_ERROR_FATAL_UNRECOGNIZED_OPT);
-			else {
-
-				for (i = 0; bc_args_lopt[i].name; ++i) {
-					if (bc_args_lopt[i].val == err) break;
-				}
-
-				return bc_vm_verr(BC_ERROR_FATAL_BAD_OPT,
-				                  err, bc_args_lopt[i].name);
+			for (i = 0; bc_args_lopt[i].name; ++i) {
+				if (bc_args_lopt[i].val == err) break;
 			}
+
+			return bc_vm_verr(BC_ERROR_FATAL_OPTION, err, bc_args_lopt[i].name);
 		}
 	}
 
