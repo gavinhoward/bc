@@ -105,25 +105,3 @@ for file in $locales_dir/*.msg; do
 	fi
 
 done
-
-for file in $locales_dir/*.msg; do
-
-	base=$(basename "$file")
-	locale=$(removeext "$base")
-	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
-
-	if [ ! -z "${locales##*$locale*}" ]; then
-		continue
-	fi
-
-	mkdir -p $(dirname "$loc")
-
-	if [ -L "$file" ]; then
-		link=$(readlink "$file")
-		locale=$(basename "$link" .msg)
-		linksrc="$(gen_nlspath "$nlspath" "$locale" "$main_exec")"
-
-		ln "$linksrc" "$loc"
-	fi
-
-done
