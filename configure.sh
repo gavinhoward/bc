@@ -383,7 +383,7 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 				* ) usage "Invalid option $LONG_OPTARG" ;;
 			esac
 			shift ;;
-		?) usage "Invalid option" ;;
+		?) usage "Invalid option $opt" ;;
 	esac
 
 done
