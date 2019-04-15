@@ -380,7 +380,7 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 				disable-man-pages* | disable-nls* | disable-signal-handling*)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
-				* ) usage "Invalid option" ;;
+				* ) usage "Invalid option $LONG_OPTARG" ;;
 			esac
 			shift ;;
 		?) usage "Invalid option" ;;
