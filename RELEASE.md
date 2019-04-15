@@ -20,11 +20,13 @@ This is the checklist for cutting a release.
 10.	Fuzz with AFL.
 	* reldebug
 11.	Fix AFL crashes.
-12.	Repeat steps 3-11 again and repeat until nothing is found.
-13.	Change the version (remove "-dev") and commit.
-14.	Run "make clean_tests".
-15.	Run the release script.
-16.	Upload the custom tarball to GitHub.
-17.	Add sha's to release notes.
-18.	Edit release notes for the changelog.
-19.	Increment to the next version (with "-dev").
+12.	Find ASan crashes on AFL test cases.
+13.	Fix ASan crashes.
+14.	Repeat steps 3-13 again and repeat until nothing is found.
+15.	Change the version (remove "-dev") and commit.
+16.	Run "make clean_tests".
+17.	Run the release script.
+18.	Upload the custom tarball to GitHub.
+19.	Add sha's to release notes.
+20.	Edit release notes for the changelog.
+21.	Increment to the next version (with "-dev").

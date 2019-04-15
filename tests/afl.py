@@ -33,7 +33,7 @@ import shutil
 import subprocess
 
 def usage():
-	print("usage: {} dir [exe results_dir]".format(script))
+	print("usage: {} [--asan] dir [exe results_dir]".format(script))
 	sys.exit(1)
 
 def check_crash(exebase, out, error, file, type, test):
@@ -45,12 +45,39 @@ def check_crash(exebase, out, error, file, type, test):
 		print("\nexiting...")
 		sys.exit(error)
 
-def run_test(exe, exebase, tout, indata, out, file, type, test):
+def run_test(cmd, exebase, tout, indata, out, file, type, test, env=None):
 	try:
-		p = subprocess.run(exe, timeout=tout, input=indata, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		p = subprocess.run(cmd, timeout=tout, input=indata, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 		check_crash(exebase, out, p.returncode, file, type, test)
 	except subprocess.TimeoutExpired:
 		print("\n    {} timed out. Continuing...\n".format(exebase))
+
+def create_test(file, env=None):
+
+	print("    {}".format(file))
+
+	base = os.path.basename(file)
+
+	if base == "README.txt":
+		return
+
+	with open(file, "rb") as f:
+		lines = f.readlines()
+
+	for l in lines:
+		run_test(exe, exebase, tout, l, out, file, "test", l, env)
+
+	print("        Running whole file...")
+
+	run_test(exe + [ file ], exebase, tout, halt.encode(), out, file, "file", file, env)
+
+	print("        Running file through stdin...")
+
+	with open(file, "rb") as f:
+		content = f.read()
+
+	run_test(exe, exebase, tout, content, out, file, "running {} through stdin".format(file), file, env)
+
 
 def get_children(dir, get_files):
 	dirs = []
@@ -74,9 +101,19 @@ tout = 3
 if len(sys.argv) < 2:
 	usage()
 
-exedir = sys.argv[1]
+idx = 1
 
-if len(sys.argv) >= 3:
+exedir = sys.argv[idx]
+
+asan = (exedir == "--asan")
+
+if asan:
+	idx += 1
+	if len(sys.argv) < idx + 1:
+		usage()
+	exedir = sys.argv[idx]
+
+if len(sys.argv) >= idx + 2:
 	exe = sys.argv[2]
 else:
 	exe = testdir + "/../bin/" + exedir
@@ -108,6 +145,10 @@ print(os.path.realpath(os.getcwd()))
 
 dirs = get_children(resultsdir, False)
 
+if asan:
+	env = os.environ.copy()
+	env['ASAN_OPTIONS'] = 'abort_on_error=1:allocator_may_return_null=1'
+
 for d in dirs:
 
 	d = resultsdir + "/" + d
@@ -117,32 +158,17 @@ for d in dirs:
 	files = get_children(d + "/crashes/", True)
 
 	for file in files:
-
 		file = d + "/crashes/" + file
+		create_test(file)
 
-		print("    {}".format(file))
+	if not asan:
+		continue
 
-		base = os.path.basename(file)
+	files = get_children(d + "/queue/", True)
 
-		if base == "README.txt":
-			continue
-
-		with open(file, "rb") as f:
-			lines = f.readlines()
-
-		for l in lines:
-			run_test(exe, exebase, tout, l, out, file, "test", l)
-
-		print("        Running whole file...")
-
-		run_test(exe + [ file ], exebase, tout, halt.encode(), out, file, "file", file)
-
-		print("        Running file through stdin...")
-
-		with open(file, "rb") as f:
-			content = f.read()
-
-		run_test(exe, exebase, tout, content, out, file, "running {} through stdin".format(file), file)
+	for file in files:
+		file = d + "/queue/" + file
+		create_test(file, env)
 
 print("Done")
 
