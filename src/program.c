@@ -1445,7 +1445,7 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	if (!f->code.len) {
 
 		bc_parse_init(&prs, p, fidx);
-		bc_lex_file(&prs.l, str);
+		bc_lex_file(&prs.l, vm->file);
 		s = bc_parse_text(&prs, str);
 		if (BC_ERR(s)) goto err;
 		s = vm->expr(&prs, BC_PARSE_NOCALL);
