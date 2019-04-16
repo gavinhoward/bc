@@ -2,7 +2,7 @@
 *.creator
 *.files
 *.includes
-*.creator.user
+*.creator.user*
 *.cflags
 *.cxxflags
 bin/*bc
