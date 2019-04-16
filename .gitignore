@@ -3,6 +3,8 @@
 *.files
 *.includes
 *.creator.user
+*.cflags
+*.cxxflags
 bin/*bc
 bin/*bc.exe
 bin/*dc
