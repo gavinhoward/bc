@@ -30,3 +30,15 @@ This is the checklist for cutting a release.
 19.	Add sha's to release notes.
 20.	Edit release notes for the changelog.
 21.	Increment to the next version (with "-dev").
+22.	Notify the following:
+	* FreeBSD
+	* Adelie Linux
+	* Sabotage
+	* xstatic
+23.	Submit new packages for the following:
+	* OpenBSD
+	* Alpine Linux
+	* Void Linux
+	* Gentoo Linux
+	* Linux from Scratch
+	* Arch Linux
