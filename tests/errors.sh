@@ -83,7 +83,7 @@ for testfile in $testdir/$d/*errors.txt; do
 			die "$d" "returned an error ($err)" "POSIX warning" 1
 		fi
 
-		checktest "1" "$line" "$out" "$exebase"
+		checktest "$d" "1" "$line" "$out" "$exebase"
 
 		options="-ls"
 	else
@@ -101,7 +101,7 @@ for testfile in $testdir/$d/*errors.txt; do
 		printf '%s\n' "$line" | "$exe" "$@" "$options" 2> "$out" > /dev/null
 		err="$?"
 
-		checktest "$err" "$line" "$out" "$exebase"
+		checktest "$d" "$err" "$line" "$out" "$exebase"
 
 	done < "$testfile"
 
@@ -114,13 +114,13 @@ for testfile in $testdir/$d/errors/*.txt; do
 	printf '%s\n' "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
 	err="$?"
 
-	checktest "$err" "$testfile" "$out" "$exebase"
+	checktest "$d" "$err" "$testfile" "$out" "$exebase"
 
 	printf 'Running %s error file %s through cat...\n' "$d" "$testfile"
 
 	cat "$testfile" | "$exe" "$@" $opts 2> "$out" > /dev/null
 	err="$?"
 
-	checkcrash "$err" "$testfile"
+	checkcrash "$d" "$err" "$testfile"
 
 done

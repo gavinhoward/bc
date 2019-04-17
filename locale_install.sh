@@ -34,14 +34,14 @@ usage() {
 
 gencatfile() {
 
-	local loc="$1"
+	_gencatfile_loc="$1"
 	shift
 
-	local file="$1"
+	_gencatfile_file="$1"
 	shift
 
-	mkdir -p $(dirname "$loc")
-	gencat "$loc" "$file" > /dev/null 2>&1
+	mkdir -p $(dirname "$_gencatfile_loc")
+	gencat "$_gencatfile_loc" "$_gencatfile_file" > /dev/null 2>&1
 }
 
 script="$0"

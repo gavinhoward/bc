@@ -29,26 +29,26 @@
 
 readlink() {
 
-	local f="$1"
+	_readlink_f="$1"
 	shift
 
-	local arrow="-> "
-	local d=$(dirname "$f")
+	_readlink_arrow="-> "
+	_readlink_d=$(dirname "$_readlink_f")
 
-	local lsout=""
-	local link=""
+	_readlink_lsout=""
+	_readlink_link=""
 
-	lsout=$(ls -dl "$f")
-	link=$(printf '%s' "${lsout#*$arrow}")
+	_readlink_lsout=$(ls -dl "$_readlink_f")
+	_readlink_link=$(printf '%s' "${_readlink_lsout#*$_readlink_arrow}")
 
-	while [ -z "${lsout##*$arrow*}" ]; do
-		f="$d/$link"
-		d=$(dirname "$f")
-		lsout=$(ls -dl "$f")
-		link=$(printf '%s' "${lsout#*$arrow}")
+	while [ -z "${_readlink_lsout##*$_readlink_arrow*}" ]; do
+		_readlink_f="$_readlink_d/$_readlink_link"
+		_readlink_d=$(dirname "$_readlink_f")
+		_readlink_lsout=$(ls -dl "$_readlink_f")
+		_readlink_link=$(printf '%s' "${_readlink_lsout#*$_readlink_arrow}")
 	done
 
-	printf '%s' "${f##*$d/}"
+	printf '%s' "${_readlink_f##*$_readlink_d/}"
 }
 
 err_exit() {
@@ -65,145 +65,154 @@ err_exit() {
 
 die() {
 
-	local d="$1"
+	_die_d="$1"
 	shift
 
-	local msg="$1"
+	_die_msg="$1"
 	shift
 
-	local name="$1"
+	_die_name="$1"
 	shift
 
-	local err="$1"
+	_die_err="$1"
 	shift
 
-	str=$(printf '\n%s %s on test:\n\n    %s\n' "$d" "$msg" "$name")
+	_die_str=$(printf '\n%s %s on test:\n\n    %s\n' "$_die_d" "$_die_msg" "$_die_name")
 
-	err_exit "$str" "$err"
+	err_exit "$_die_str" "$_die_err"
 }
 
 checkcrash() {
 
-	local error="$1"
+	_checkcrash_d="$1"
 	shift
 
-	local name="$1"
+	_checkcrash_error="$1"
 	shift
 
-	if [ "$error" -gt 127 ]; then
-		die "$d" "crashed ($error)" "$name" "$error"
+	_checkcrash_name="$1"
+	shift
+
+	if [ "$_checkcrash_error" -gt 127 ]; then
+		die "$_checkcrash_d" "crashed ($_checkcrash_error)" \
+			"$_checkcrash_name" "$_checkcrash_error"
 	fi
 }
 
 checktest()
 {
-	local error="$1"
+	_checktest_d="$1"
 	shift
 
-	local name="$1"
+	_checktest_error="$1"
 	shift
 
-	local out="$1"
+	_checktest_name="$1"
 	shift
 
-	local exebase="$1"
+	_checktest_out="$1"
 	shift
 
-	checkcrash "$error" "$name"
+	_checktest_exebase="$1"
+	shift
 
-	if [ "$error" -eq 0 ]; then
-		die "$d" "returned no error" "$name" 127
+	checkcrash "$_checktest_d" "$_checktest_error" "$_checktest_name"
+
+	if [ "$_checktest_error" -eq 0 ]; then
+		die "$_checktest_d" "returned no error" "$_checktest_name" 127
 	fi
 
-	if [ "$error" -eq 100 ]; then
+	if [ "$_checktest_error" -eq 100 ]; then
 
-		output=$(cat "$out")
-		fatal_error="Fatal error"
+		_checktest_output=$(cat "$_checktest_out")
+		_checktest_fatal_error="Fatal error"
 
-		if [ "${output##*$fatal_error*}" ]; then
-			printf "%s\n" "$output"
-			die "$d" "had memory errors on a non-fatal error" "$name" "$error"
+		if [ "${_checktest_output##*$_checktest_fatal_error*}" ]; then
+			printf "%s\n" "$_checktest_output"
+			die "$_checktest_d" "had memory errors on a non-fatal error" \
+				"$_checktest_name" "$_checktest_error"
 		fi
 	fi
 
-	if [ ! -s "$out" ]; then
-		die "$d" "produced no error message" "$name" "$error"
+	if [ ! -s "$_checktest_out" ]; then
+		die "$_checktest_d" "produced no error message" "$_checktest_name" "$_checktest_error"
 	fi
 
 	# Display the error messages if not directly running exe.
 	# This allows the script to print valgrind output.
-	if [ "$exebase" != "bc" -a "$exebase" != "dc" ]; then
-		cat "$out"
+	if [ "$_checktest_exebase" != "bc" -a "$_checktest_exebase" != "dc" ]; then
+		cat "$_checktest_out"
 	fi
 }
 
 substring_replace() {
 
-	local str="$1"
+	_substring_replace_str="$1"
 	shift
 
-	local needle="$1"
+	_substring_replace_needle="$1"
 	shift
 
-	local replacement="$1"
+	_substring_replace_replacement="$1"
 	shift
 
-	result=$(printf '%s' "$str" | sed -e "s!$needle!$replacement!g")
+	_substring_replace_result=$(printf '%s' "$_substring_replace_str" | \
+		sed -e "s!$_substring_replace_needle!$_substring_replace_replacement!g")
 
-	printf '%s\n' "$result"
+	printf '%s\n' "$_substring_replace_result"
 }
 
 gen_nlspath() {
 
-	local nlspath="$1"
+	_gen_nlspath_nlspath="$1"
 	shift
 
-	local locale="$1"
+	_gen_nlspath_locale="$1"
 	shift
 
-	local execname="$1"
+	_gen_nlspath_execname="$1"
 	shift
 
-	local char="@"
-	local modifier="${locale#*$char}"
-	local tmplocale="${locale%%$char*}"
+	_gen_nlspath_char="@"
+	_gen_nlspath_modifier="${_gen_nlspath_locale#*$_gen_nlspath_char}"
+	_gen_nlspath_tmplocale="${_gen_nlspath_locale%%$_gen_nlspath_char*}"
 
-	char="."
-	local charset="${tmplocale#*$char}"
-	tmplocale="${tmplocale%%$char*}"
+	_gen_nlspath_char="."
+	_gen_nlspath_charset="${_gen_nlspath_tmplocale#*$_gen_nlspath_char}"
+	_gen_nlspath_tmplocale="${_gen_nlspath_tmplocale%%$_gen_nlspath_char*}"
 
-	if [ "$charset" = "$tmplocale" ]; then
-		charset=""
+	if [ "$_gen_nlspath_charset" = "$_gen_nlspath_tmplocale" ]; then
+		_gen_nlspath_charset=""
 	fi
 
-	char="_"
-	local territory="${tmplocale#*$char}"
-	local language="${tmplocale%%$char*}"
+	_gen_nlspath_char="_"
+	_gen_nlspath_territory="${_gen_nlspath_tmplocale#*$_gen_nlspath_char}"
+	_gen_nlspath_language="${_gen_nlspath_tmplocale%%$_gen_nlspath_char*}"
 
-	if [ "$territory" = "$tmplocale" ]; then
-		territory=""
+	if [ "$_gen_nlspath_territory" = "$_gen_nlspath_tmplocale" ]; then
+		_gen_nlspath_territory=""
 	fi
 
-	if [ "$language" = "$tmplocale" ]; then
-		language=""
+	if [ "$_gen_nlspath_language" = "$_gen_nlspath_tmplocale" ]; then
+		_gen_nlspath_language=""
 	fi
 
-	local needles="%%:%L:%N:%l:%t:%c"
+	_gen_nlspath_needles="%%:%L:%N:%l:%t:%c"
 
-	needles=$(printf '%s' "$needles" | tr ':' '\n')
+	_gen_nlspath_needles=$(printf '%s' "$_gen_nlspath_needles" | tr ':' '\n')
 
-	for i in $needles; do
-		nlspath=$(substring_replace "$nlspath" "$i" "|$i|")
+	for _gen_nlspath_i in $_gen_nlspath_needles; do
+		_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "$_gen_nlspath_i" "|$_gen_nlspath_i|")
 	done
 
-	nlspath=$(substring_replace "$nlspath" "%%" "%")
-	nlspath=$(substring_replace "$nlspath" "%L" "$locale")
-	nlspath=$(substring_replace "$nlspath" "%N" "$execname")
-	nlspath=$(substring_replace "$nlspath" "%l" "$language")
-	nlspath=$(substring_replace "$nlspath" "%t" "$territory")
-	nlspath=$(substring_replace "$nlspath" "%c" "$charset")
+	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%%" "%")
+	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%L" "$_gen_nlspath_locale")
+	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%N" "$_gen_nlspath_execname")
+	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%l" "$_gen_nlspath_language")
+	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%t" "$_gen_nlspath_territory")
+	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%c" "$_gen_nlspath_charset")
 
-	nlspath=$(printf '%s' "$nlspath" | tr -d '|')
+	_gen_nlspath_nlspath=$(printf '%s' "$_gen_nlspath_nlspath" | tr -d '|')
 
-	printf '%s' "$nlspath"
+	printf '%s' "$_gen_nlspath_nlspath"
 }

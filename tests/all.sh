@@ -179,34 +179,34 @@ set +e
 "$exe" "$@" -f "saotehasotnehasthistohntnsahxstnhalcrgxgrlpyasxtsaosysxsatnhoy.txt" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "invalid file argument" "$out2" "$d"
+checktest "$d" "$err" "invalid file argument" "$out2" "$d"
 
 "$exe" "$@" "-$opt" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "invalid option argument" "$out2" "$d"
+checktest "$d" "$err" "invalid option argument" "$out2" "$d"
 
 "$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "invalid long option argument" "$out2" "$d"
+checktest "$d" "$err" "invalid long option argument" "$out2" "$d"
 
 "$exe" "$@" "-u" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "unrecognized option argument" "$out2" "$d"
+checktest "$d" "$err" "unrecognized option argument" "$out2" "$d"
 
 "$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "unrecognized long option argument" "$out2" "$d"
+checktest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
 
 printf 'Running %s directory test...\n' "$d"
 
 "$exe" "$@" "$testdir" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "directory" "$out2" "$d"
+checktest "$d" "$err" "directory" "$out2" "$d"
 
 printf 'Running %s binary file test...\n' "$d"
 
@@ -215,14 +215,14 @@ bin="/bin/sh"
 "$exe" "$@" "$bin" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "binary file" "$out2" "$d"
+checktest "$d" "$err" "binary file" "$out2" "$d"
 
 printf 'Running %s binary stdin test...\n' "$d"
 
 cat "$bin" | "$exe" "$@" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$err" "binary stdin" "$out2" "$d"
+checktest "$d" "$err" "binary stdin" "$out2" "$d"
 
 if [ "$d" = "bc" ]; then
 
