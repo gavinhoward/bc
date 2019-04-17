@@ -373,6 +373,11 @@ if [ "$run_tests" -ne 0 ]; then
 	printf '\n'
 	printf 'Then run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
 	printf '\n'
+	printf 'Then run ASan on the fuzzer test cases with the following build:\n'
+	printf '\n'
+	printf '    CFLAGS=-fsanitize=address ./configure.sh -O3\n'
+	printf '    make\n'
+	printf '\n'
 	printf 'Then run the GitHub release script as follows:\n'
 	printf '\n'
 	printf '    <github_release> %s <msg> .travis.yml codecov.yml release.sh \\\n' "$version"
