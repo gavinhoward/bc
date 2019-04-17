@@ -101,7 +101,7 @@ for file in $locales_dir/*.msg; do
 			gencatfile "$linksrc" "$link"
 		fi
 
-		ln "$linksrc" "$loc"
+		ln -s "$linksrc" "$loc"
 	fi
 
 done
