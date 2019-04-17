@@ -28,7 +28,7 @@
 #
 
 usage() {
-	printf "usage: %s NLSPATH main_exec\n" "$0" 1>&2
+	printf "usage: %s NLSPATH main_exec [DESTDIR]\n" "$0" 1>&2
 	exit 1
 }
 
@@ -57,7 +57,14 @@ shift
 main_exec="$1"
 shift
 
-"$scriptdir/locale_uninstall.sh" "$nlspath" "$main_exec"
+if [ "$#" -ge 1 ]; then
+	destdir="$1"
+	shift
+else
+	destdir=""
+fi
+
+"$scriptdir/locale_uninstall.sh" "$nlspath" "$main_exec" "$destdir"
 
 locales_dir="$scriptdir/locales"
 
@@ -66,7 +73,7 @@ locales=$(locale -a)
 for file in $locales_dir/*.msg; do
 
 	locale=$(basename "$file" ".msg")
-	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
+	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
 
 	if [ ! -z "${locales##*$locale*}" ]; then
 		continue
@@ -83,7 +90,7 @@ done
 for file in $locales_dir/*.msg; do
 
 	locale=$(basename "$file" ".msg")
-	loc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
+	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
 
 	if [ ! -z "${locales##*$locale*}" ]; then
 		continue
@@ -98,7 +105,7 @@ for file in $locales_dir/*.msg; do
 		linksrc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
 		if [ ! -f "$linksrc" ]; then
-			gencatfile "$linksrc" "$link"
+			gencatfile "$destdir/$linksrc" "$link"
 		fi
 
 		ln -s "$linksrc" "$loc"

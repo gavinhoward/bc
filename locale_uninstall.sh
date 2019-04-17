@@ -28,7 +28,7 @@
 #
 
 usage() {
-	printf "usage: %s NLSPATH main_exec\n" "$0" 1>&2
+	printf "usage: %s NLSPATH main_exec [DESTDIR]\n" "$0" 1>&2
 	exit 1
 }
 
@@ -47,11 +47,18 @@ shift
 main_exec="$1"
 shift
 
+if [ "$#" -ge 1 ]; then
+	destdir="$1"
+	shift
+else
+	destdir=""
+fi
+
 # I do something clever here. I am replacing the locale spot with
 # a wildcard, which should make it search all locale directories.
 # This way, we can delete catalogs for locales that we had to install
 # because they are symlinks.
-locales=$(gen_nlspath "$nlspath" "*" "$main_exec")
+locales=$(gen_nlspath "$destdir/$nlspath" "*" "$main_exec")
 
 for l in $locales; do
 	rm -f "$l"
