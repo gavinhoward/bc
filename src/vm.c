@@ -172,7 +172,7 @@ static BcStatus bc_vm_envArgs(void) {
 	buf = NULL;
 	bc_vec_push(&v, &buf);
 
-	s = bc_args((int) v.len - 1, (char**) v.v);
+	s = bc_args((int) v.len - 1, (char**) &v.v);
 
 	bc_vec_free(&v);
 
