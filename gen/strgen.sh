@@ -48,13 +48,3 @@ $(sed -e "$remtabsexpr "'1,/^$/d; s:\\n:\\\\n:g; s:":\\":g; s:^:":; s:$:\\n":')
 ;
 ${condend}
 EOF
-
-
-exit 0
-
-#if BC_ENABLED && BC_ENABLE_EXTRA_MATH
-#include <bc.h>
-
-const char *bc_lib2_name = "gen/lib2.bc";
-
-const char bc_lib2[] = {
