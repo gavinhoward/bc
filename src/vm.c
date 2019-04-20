@@ -84,7 +84,10 @@ static BOOL WINAPI bc_vm_sig(DWORD sig) {
 void bc_vm_info(const char* const help) {
 	bc_vm_printf("%s %s\n", vm->name, BC_VERSION);
 	bc_vm_puts(bc_copyright, stdout);
-	if (help) bc_vm_printf(help, vm->name);
+	if (help) {
+		bc_vm_putchar('\n');
+		bc_vm_printf(help, vm->name, vm->name);
+	}
 }
 
 BcStatus bc_vm_error(BcError e, size_t line, ...) {
