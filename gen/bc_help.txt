@@ -36,15 +36,14 @@
 usage: %s [options] [file...]
 
 bc is a command-line, arbitrary-precision calculator with a Turing-complete
-language. For details, see this bc's full manual
-(https://github.com/gavinhoward/bc/blob/master/manuals/bc.md).
+language. For details, use `man %s`.
 
 This bc is compatible with both the GNU bc and the POSIX bc spec. See the GNU bc
 manual (https://www.gnu.org/software/bc/manual/bc.html) and bc spec
 (http://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 for details.
 
-This bc has four differences to the GNU bc:
+This bc has five differences to the GNU bc:
 
   1) The period (.) can also be used as a shortcut for "last", as in the BSD bc.
   2) Arrays are copied before being passed as arguments to functions. This
@@ -59,6 +58,8 @@ This bc has four differences to the GNU bc:
      unary minus (-), or negation, operator. This still allows POSIX-compliant
      scripts to work while somewhat preserving expected behavior (versus C) and
      making parsing easier.
+  5) This bc has many more extensions than the GNU bc does. For details, see the
+     man page.
 
 Options:
 
@@ -70,6 +71,12 @@ Options:
   -f  file  --file=file
 
       Run the bc code in "file" and exit. See above as well.
+
+  -g  --global-stacks
+
+      Turn scale, ibase, and obase into stacks. This makes the value of each be
+      be restored on returning from functions. See the man page for more
+      details.
 
   -h  --help
 
