@@ -128,7 +128,7 @@ German locales. Patches are welcome for translations; use the existing `*.msg`
 files in `locales/` as a starting point.
 
 The message files provided assume that locales apply to all regions where a 
-language is used, but this might not be true for, e.g., `fr_CA´ and `fr_CH´. 
+language is used, but this might not be true for, e.g., `fr_CA` and `fr_CH`. 
 Any corrections or a confirmation that the current texts are acceptable in 
 those regions would be appreciated, too.
 
