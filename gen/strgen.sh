@@ -30,7 +30,7 @@ if [ -n "$define" ]; then
 	condend="#endif"
 fi
 
-if [ -n "$remove_tabs" -a "$remove_tabs" -ne 0 ]; then
+if [ -n "$remove_tabs" ] && [ "$remove_tabs" -ne 0 ]; then
 	remtabsexpr='s:	::g;'
 fi
 
