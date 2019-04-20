@@ -36,8 +36,7 @@
 usage: %s [options] [file...]
 
 dc is a reverse-polish notation command-line calculator which supports unlimited
-precision arithmetic. For details, see this dc's full manual
-(https://github.com/gavinhoward/bc/blob/master/manuals/dc.md).
+precision arithmetic. For details, use `man %s`.
 
 This dc is (mostly) compatible with the FreeBSD dc and the GNU dc. See the
 FreeBSD man page (https://www.unix.com/man-page/FreeBSD/1/dc/) and the GNU dc
@@ -51,7 +50,8 @@ This dc has a few differences from the two above:
   2) This dc implements the GNU extensions for divmod ("~") and modular
      exponentiation ("|").
   3) This dc implements all FreeBSD extensions, except for "J" and "M".
-  4) Like the FreeBSD dc, this dc supports extended registers. However, they are
+  4) This dc does not implement the run command ("!"), for security reasons.
+  5) Like the FreeBSD dc, this dc supports extended registers. However, they are
      implemented differently. When it encounters whitespace where a register
      should be, it skips the whitespace. If the character following is not
      a lowercase letter, an error is issued. Otherwise, the register name is
