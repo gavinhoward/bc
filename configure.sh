@@ -144,19 +144,36 @@ usage() {
 	printf '                 "$MANDIR/man1".\n'
 	printf '    NLSPATH      The location to install locale catalogs to. Must be an absolute\n'
 	printf '                 path (or contain one). This is treated the same as the POSIX\n'
-	printf '                 definition of $NLSPATH (see POSIX environment variables,\n'
-	printf '                 https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02\n'
-	printf '                 for more information). Default is "/usr/share/locale/%L/%N".\n'
+	printf '                 definition of $NLSPATH (see POSIX environment variables for\n'
+	printf '                 more information). Default is "/usr/share/locale/%%L/%%N".\n'
 	printf '    EXECSUFFIX   The suffix to append to the executable names, used to not\n'
 	printf '                 interfere with other installed bc executables. Default is "".\n'
 	printf '    EXECPREFIX   The prefix to append to the executable names, used to not\n'
 	printf '                 interfere with other installed bc executables. Default is "".\n'
 	printf '    DESTDIR      For package creation. Default is "". If it is empty when\n'
-	printf '                 %s is run, it can also be passed to `make install`\n' "$script"
+	printf '                 `%s` is run, it can also be passed to `make install`\n' "$script"
 	printf '                 later as an environment variable. If both are specified,\n'
-	printf '                 the one given to %s takes precedence.\n' "$script"
-	printf '    GEN_EMU      Emulator to run string generator code under\n'
-	printf '                 (leave empty if not necessary). Default is "".\n'
+	printf '                 the one given to `%s` takes precedence.\n' "$script"
+	printf '    GEN_HOST     Whether to use `gen/strgen.c`, instead of `gen/strgen.sh`, to\n'
+	printf '                 produce the C files that contain the help texts as well as the\n'
+	printf '                 math libraries. By default, `gen/strgen.c` is used, compiled by\n'
+	printf '                 "$HOSTCC" and run on the host machine. Using `gen/strgen.sh`\n'
+	printf '                 removes the need to compile and run an executable on the host\n'
+	printf '                 machine since `gen/strgen.sh is a POSIX shell script. However,\n'
+	printf '                 `gen/lib2.bc` is perilously close to 4095 characters, the max\n'
+	printf '                 supported length of a string literal in C99 (and it could be\n'
+	printf '                 added to in the future), and `gen/strgen.sh` generates a string\n'
+	printf '                 literal instead of an array, as `gen/strgen.c` does. For most\n'
+	printf '                 production-ready compilers, this limit probably is not\n'
+	printf '                 enforced, but it could be. Both options are still available for\n'
+	printf '                 this reason. If you are sure your compiler does not have the\n'
+	printf '                 limit and do not want to compile and run a binary on the host\n'
+	printf '                 machine, set this variable to "0". Any other value, or a\n'
+	printf '                 non-existent value, will cause the build system to compile and\n'
+	printf '                 run `gen/strgen.c`. Default is "".\n'
+	printf '    GEN_EMU      Emulator to run string generator code under (leave empty if not\n'
+	printf '                 necessary). This is not necessary when using `gen/strgen.sh`.\n'
+	printf '                 Default is "".\n'
 
 	exit "$val"
 }
@@ -678,6 +695,20 @@ else
 	BC_LIB2_O=""
 fi
 
+GEN="strgen"
+GEN_EXEC_TARGET="\$(HOSTCC) \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
+CLEAN_PREREQS=" clean_gen"
+
+if [ -z "${GEN_HOST+set}" ]; then
+	GEN_HOST=1
+else
+	if [ "$GEN_HOST" -eq 0 ]; then
+		GEN="strgen.sh"
+		GEN_EXEC_TARGET="@printf 'Do not need to build gen/strgen.c\\\\n'"
+		CLEAN_PREREQS=""
+	fi
+fi
+
 # Print out the values; this is for debugging.
 printf '\n'
 if [ "$bc" -ne 0 ]; then
@@ -712,6 +743,7 @@ printf 'NLSPATH=%s\n' "$NLSPATH"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
 printf 'EXECPREFIX=%s\n' "$EXECPREFIX"
 printf 'DESTDIR=%s\n' "$DESTDIR"
+printf 'GEN_HOST=%s\n' "$GEN_HOST"
 printf 'GEN_EMU=%s\n' "$GEN_EMU"
 
 contents=$(cat "$scriptdir/Makefile.in")
@@ -775,6 +807,9 @@ contents=$(replace "$contents" "TIMECONST" "$timeconst")
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
 
+contents=$(replace "$contents" "GEN" "$GEN")
+contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")
+contents=$(replace "$contents" "CLEAN_PREREQS" "$CLEAN_PREREQS")
 contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
 
 printf '%s\n' "$contents" > "$scriptdir/Makefile"

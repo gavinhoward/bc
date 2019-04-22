@@ -57,7 +57,7 @@ DC_ENABLED = %%DC_ENABLED%%
 VERSION = 1.3.0
 
 GEN_DIR = gen
-GEN = strgen
+GEN = %%GEN%%
 GEN_EXEC = $(GEN_DIR)/$(GEN)
 GEN_C = $(GEN_DIR)/$(GEN).c
 
@@ -161,7 +161,7 @@ all: make_bin $(DC_HELP_O) $(BC_HELP_O) $(BC_LIB_O) $(BC_LIB2_O) $(BC_LIB3_O) $(
 	%%LINK%%
 
 $(GEN_EXEC):
-	$(HOSTCC) $(HOSTCFLAGS) -o $(GEN_EXEC) $(GEN_C)
+	%%GEN_EXEC_TARGET%%
 
 $(BC_LIB_C): $(GEN_EXEC) $(BC_LIB)
 	$(GEN_EMU) $(GEN_EXEC) $(BC_LIB) $(BC_LIB_C) bc_lib bc.h bc_lib_name $(BC_ENABLED_NAME) 1
@@ -246,7 +246,10 @@ manpages:
 	ronn $(RONN_ARGS) $(BC_RONN)
 	ronn $(RONN_ARGS) $(DC_RONN)
 
-clean:
+clean_gen:
+	@$(RM) -f $(GEN_EXEC)
+
+clean:%%CLEAN_PREREQS%%
 	@printf 'Cleaning files...\n'
 	@$(RM) -f $(OBJ)
 	@$(RM) -f $(BC_OBJ)
@@ -260,7 +263,6 @@ clean:
 	@$(RM) -f *.gcda *.gcno
 	@$(RM) -f *.profraw
 	@$(RM) -f $(LOCALES)/*.cat
-	@$(RM) -f $(GEN_EXEC)
 	@$(RM) -f $(BC_LIB_C) $(BC_LIB_O)
 	@$(RM) -f $(BC_LIB2_C) $(BC_LIB2_O)
 	@$(RM) -f $(BC_HELP_C) $(BC_HELP_O)
