@@ -24,4 +24,4 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then \
-        "$CONFIGURE_ENV" ./configure.sh "$CONFIGURE_ARGS" && make -j4 && make -j4 test ; fi
+        ./configure.sh "$CONFIGURE_ENV" "$CONFIGURE_ARGS" && make -j4 && make -j4 test ; fi
