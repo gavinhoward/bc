@@ -45,6 +45,10 @@
 
 #include <status.h>
 
+#ifndef BC_ENABLE_EXTRA_MATH
+#define BC_ENABLE_EXTRA_MATH (1)
+#endif // BC_ENABLE_EXTRA_MATH
+
 typedef signed char BcDig;
 
 typedef struct BcNum {

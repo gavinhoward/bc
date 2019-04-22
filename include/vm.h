@@ -65,6 +65,22 @@
 #error CHAR_BIT must be at least 6.
 #endif
 
+#ifndef BC_ENABLE_NLS
+#define BC_ENABLE_NLS (0)
+#endif // BC_ENABLE_NLS
+
+#ifndef BC_ENABLE_SIGNALS
+#define BC_ENABLE_SIGNALS (1)
+#endif // BC_ENABLE_SIGNALS
+
+#ifndef MAINEXEC
+#define MAINEXEC bc
+#endif
+
+#ifndef EXECPREFIX
+#define EXECPREFIX
+#endif
+
 #define GEN_STR(V) #V
 #define GEN_STR2(V) GEN_STR(V)
 
