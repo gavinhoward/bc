@@ -44,7 +44,7 @@ ${condstart}
 $nameline
 
 const char ${name}[] =
-$(sed -e "$remtabsexpr "'1,/^$/d; s:\\n:\\\\n:g; s:":\\":g; s:^:":; s:$:\\n":')
+$(sed -e "$remtabsexpr " -e '1,/^$/d; s:\\n:\\\\n:g; s:":\\":g; s:^:":; s:$:\\n":')
 ;
 ${condend}
 EOF
