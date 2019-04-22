@@ -437,7 +437,9 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	return s;
 }
 
-static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
+static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
+
+static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s;
 	size_t max, max2, total, size;
@@ -527,11 +529,11 @@ static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	s = bc_num_add(&h2, &l2, &m2, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	s = bc_num_k(&h1, &h2, &z0);
+	s = bc_num_m(&h1, &h2, &z0, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	s = bc_num_k(&m1, &m2, &z1);
+	s = bc_num_m(&m1, &m2, &z1, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	s = bc_num_k(&l1, &l2, &z2);
+	s = bc_num_m(&l1, &l2, &z2, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	s = bc_num_sub(&z1, &z0, &temp, 0);
@@ -572,7 +574,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_shiftLeft(&cpa, maxrdx);
 	bc_num_shiftLeft(&cpb, maxrdx);
-	s = bc_num_k(&cpa, &cpb, c);
+	s = bc_num_k(&cpa, &cpb, c, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	maxrdx += scale;
