@@ -30,8 +30,10 @@ if [ -n "$define" ]; then
 	condend="#endif"
 fi
 
-if [ -n "$remove_tabs" ] && [ "$remove_tabs" -ne 0 ]; then
-	remtabsexpr='s:	::g;'
+if [ -n "$remove_tabs" ]; then
+	if [ "$remove_tabs" -ne 0 ]; then
+		remtabsexpr='s:	::g;'
+	fi
 fi
 
 cat<<EOF
