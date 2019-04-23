@@ -471,11 +471,13 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	unsigned int carry;
 	BcDig *ptr_c;
 
-	bc_num_expand(c, bc_vm_growSize(bc_vm_growSize(a->len, b->len), 1));
+	assert(!a->rdx && !b->rdx);
+
+	c->len = bc_vm_growSize(bc_vm_growSize(a->len, b->len), 1);
+	bc_num_expand(c, c->len);
 
 	ptr_c = c->num;
-	memset(ptr_c, 0, sizeof(BcDig) * c->cap);
-	c->len = len = 0;
+	memset(ptr_c, 0, sizeof(BcDig) * c->len);
 
 	for (i = 0; BC_NO_SIG && i < b->len; ++i) {
 
@@ -492,10 +494,7 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 
 		ptr[j] += (BcDig) carry;
 		assert(ptr[j] >= 0 && ptr[j] < BC_BASE);
-		len = BC_MAX(len, i + j + (carry != 0));
 	}
-
-	c->len = len;
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
