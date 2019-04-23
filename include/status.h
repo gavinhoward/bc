@@ -36,6 +36,14 @@
 #ifndef BC_STATUS_H
 #define BC_STATUS_H
 
+#ifndef BC_ENABLED
+#define BC_ENABLED (1)
+#endif // BC_ENABLED
+
+#ifndef DC_ENABLED
+#define DC_ENABLED (1)
+#endif // DC_ENABLED
+
 typedef enum BcStatus {
 
 	BC_STATUS_SUCCESS = 0,
@@ -123,7 +131,9 @@ typedef enum BcError {
 #define BC_ERR_IDX_FATAL (3)
 #define BC_ERR_IDX_NELEMS (4)
 
+#if BC_ENABLED
 #define BC_ERR_IDX_WARN (BC_ERR_IDX_NELEMS)
+#endif // BC_ENABLED
 
 #define BC_UNUSED(e) ((void) (e))
 

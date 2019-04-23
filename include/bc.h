@@ -36,10 +36,6 @@
 #ifndef BC_BC_H
 #define BC_BC_H
 
-#ifndef BC_ENABLED
-#define BC_ENABLED (1)
-#endif // BC_ENABLED
-
 #if BC_ENABLED
 
 #include <limits.h>

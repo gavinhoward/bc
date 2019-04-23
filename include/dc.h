@@ -36,10 +36,6 @@
 #ifndef BC_DC_H
 #define BC_DC_H
 
-#ifndef DC_ENABLED
-#define DC_ENABLED (1)
-#endif // DC_ENABLED
-
 #if DC_ENABLED
 
 #include <status.h>
