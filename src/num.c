@@ -238,6 +238,25 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 	bc_num_clean(a);
 }
 
+static size_t bc_num_shiftZero(BcNum *restrict n) {
+
+	size_t i;
+
+	assert(!n->rdx || BC_NUM_ZERO(n));
+
+	for (i = 0; i < n->len && !n->num[i]; ++i);
+
+	n->len -= i;
+	n->num += i;
+
+	return i;
+}
+
+static void bc_num_unshiftZero(BcNum *restrict n, size_t places) {
+	n->len += places;
+	n->num -= places;
+}
+
 static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
 	if (!places || BC_NUM_ZERO(n)) return;
@@ -254,7 +273,16 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 #if BC_ENABLE_EXTRA_MATH
 static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
-	size_t len = bc_vm_growSize(n->rdx, places);
+	size_t len;
+
+	if (!places) return;
+	if (BC_NUM_ZERO(n)) {
+		n->rdx += places;
+		bc_num_expand(n, n->rdx);
+		return;
+	}
+
+	len = bc_vm_growSize(n->rdx, places);
 
 	if (len > n->len) {
 
@@ -439,13 +467,15 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
-static BcStatus bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c, size_t scale) {
+static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s;
 	size_t max, max2, total, size;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	BcDig *digs, *dig_ptr;
 	bool aone = bc_num_isOne(a);
+
+	assert(BC_NUM_ZERO(c));
 
 	// This is here because the function is recursive.
 	if (BC_SIG) return BC_STATUS_SIGNAL;
@@ -560,36 +590,43 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s;
 	BcNum cpa, cpb;
-	size_t maxrdx = BC_MAX(a->rdx, b->rdx);
+	size_t ardx = a->rdx, brdx = b->rdx, azero, bzero, zero, len, rscale;
 
-	scale = BC_MAX(scale, a->rdx);
-	scale = BC_MAX(scale, b->rdx);
-	scale = BC_MIN(a->rdx + b->rdx, scale);
-	maxrdx = BC_MAX(maxrdx, scale);
+	bc_num_setToZero(c, 0);
+
+	scale = BC_MAX(scale, ardx);
+	scale = BC_MAX(scale, brdx);
+	rscale = ardx + brdx;
+	scale = BC_MIN(rscale, scale);
 
 	bc_num_createCopy(&cpa, a);
 	bc_num_createCopy(&cpb, b);
 
 	cpa.neg = cpb.neg = false;
 
-	bc_num_shiftLeft(&cpa, maxrdx);
-	bc_num_shiftLeft(&cpb, maxrdx);
+	bc_num_shiftLeft(&cpa, ardx);
+	bc_num_clean(&cpa);
+	azero = bc_num_shiftZero(&cpa);
+	bc_num_shiftLeft(&cpb, brdx);
+	bzero = bc_num_shiftZero(&cpb);
+	bc_num_clean(&cpb);
+
 	s = bc_num_k(&cpa, &cpb, c, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	maxrdx += scale;
-	bc_num_expand(c, bc_vm_growSize(c->len, maxrdx));
+	zero = bc_vm_growSize(azero, bzero);
+	len = bc_vm_growSize(c->len, zero);
 
-	if (c->len < maxrdx) {
-		memset(c->num + c->len, 0, (c->cap - c->len) * sizeof(BcDig));
-		c->len += maxrdx;
-	}
+	bc_num_expand(c, len);
+	bc_num_shiftLeft(c, len - c->len);
+	bc_num_shiftRight(c, rscale);
 
-	c->rdx = maxrdx;
 	bc_num_retireMul(c, scale, a->neg, b->neg);
 
 err:
+	bc_num_unshiftZero(&cpb, bzero);
 	bc_num_free(&cpb);
+	bc_num_unshiftZero(&cpa, azero);
 	bc_num_free(&cpa);
 	return s;
 }
@@ -1484,7 +1521,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, req, digs, digs1, resrdx, times = 0;
+	size_t pow, len, req, digs, digs1, digs2, resrdx, times = 0;
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
 	BcDig half_digs[2];
 
@@ -1539,7 +1576,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		x0->rdx -= pow;
 	}
 
-	x0->rdx = digs = digs1 = 0;
+	x0->rdx = digs = digs1 = digs2 = 0;
 	resrdx = scale + 2;
 	len = bc_num_int(x0) + resrdx - 1;
 
