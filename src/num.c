@@ -45,6 +45,8 @@
 #include <num.h>
 #include <vm.h>
 
+static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
+
 static ssize_t bc_num_neg(size_t n, bool neg) {
 	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
 }
@@ -464,8 +466,6 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	return s;
 }
-
-static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
 static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
