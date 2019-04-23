@@ -272,7 +272,6 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	bc_num_clean(n);
 }
 
-#if BC_ENABLE_EXTRA_MATH
 static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 	size_t len;
@@ -298,7 +297,6 @@ static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 	assert(n->rdx <= n->len && n->len <= n->cap);
 }
-#endif // BC_ENABLE_EXTRA_MATH
 
 static BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 
@@ -467,6 +465,41 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	return s;
 }
 
+static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
+{
+	size_t i, j, len;
+	unsigned int carry;
+	BcDig *ptr_c;
+
+	bc_num_expand(c, bc_vm_growSize(bc_vm_growSize(a->len, b->len), 1));
+
+	ptr_c = c->num;
+	memset(ptr_c, 0, sizeof(BcDig) * c->cap);
+	c->len = len = 0;
+
+	for (i = 0; BC_NO_SIG && i < b->len; ++i) {
+
+		BcDig *ptr = ptr_c + i;
+
+		carry = 0;
+
+		for (j = 0; BC_NO_SIG && j < a->len; ++j) {
+			unsigned int in = (uchar) ptr[j];
+			assert(in < 10);
+			in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
+			carry = bc_num_addDigit(ptr + j, in, carry);
+		}
+
+		ptr[j] += (BcDig) carry;
+		assert(ptr[j] >= 0 && ptr[j] < 10);
+		len = BC_MAX(len, i + j + (carry != 0));
+	}
+
+	c->len = len;
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+}
+
 static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s;
@@ -491,37 +524,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (a->len + b->len < BC_NUM_KARATSUBA_LEN ||
 	    a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
 	{
-		size_t i, j, len;
-		unsigned int carry;
-		BcDig *ptr_c;
-
-		bc_num_expand(c, bc_vm_growSize(bc_vm_growSize(a->len, b->len), 1));
-
-		ptr_c = c->num;
-		memset(ptr_c, 0, sizeof(BcDig) * c->cap);
-		c->len = len = 0;
-
-		for (i = 0; BC_NO_SIG && i < b->len; ++i) {
-
-			BcDig *ptr = ptr_c + i;
-
-			carry = 0;
-
-			for (j = 0; BC_NO_SIG && j < a->len; ++j) {
-				unsigned int in = (uchar) ptr[j];
-				assert(in < 10);
-				in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
-				carry = bc_num_addDigit(ptr + j, in, carry);
-			}
-
-			ptr[j] += (BcDig) carry;
-			assert(ptr[j] >= 0 && ptr[j] < 10);
-			len = BC_MAX(len, i + j + (carry != 0));
-		}
-
-		c->len = len;
-
-		return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+		return bc_num_m_simp(a, b, c);
 	}
 
 	max = BC_MAX(a->len, b->len);
