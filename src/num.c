@@ -1437,6 +1437,7 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 	if (!val) return;
 
 	bc_num_expand(n, bc_num_log10(ULONG_MAX));
+
 	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= BC_BASE)
 		ptr[i] = val % BC_BASE;
 }
