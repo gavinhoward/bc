@@ -387,7 +387,7 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 
 	for (carry = 0, i = 0; BC_NO_SIG && i < min_rdx + min_int; ++i) {
-		unsigned int in = (unsigned int) (ptr_a[i] + ptr_b[i]);
+		unsigned int in = ((unsigned int) ptr_a[i]) + ((unsigned int) ptr_b[i]);
 		carry = bc_num_addDigit(ptr_c + i, in, carry);
 	}
 

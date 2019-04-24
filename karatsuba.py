@@ -48,7 +48,7 @@ print("You have been warned.\n")
 if __name__ != "__main__":
 	usage()
 
-mx = 200
+mx = 520
 mx2 = mx // 2
 mn = 16
 
@@ -66,10 +66,15 @@ else:
 
 exedir = os.path.dirname(exe)
 
-indata = "for (i = 0; i < 100; ++i) {} * {}\nhalt".format(num, num)
+indata = "for (i = 0; i < 100; ++i) {} * {}\n1.23456789^10000\nhalt".format(num, num)
 
 times = []
 nums = []
+runs = []
+nruns = 5
+
+for i in range(0, nruns):
+	runs.append(0)
 
 tests = [ "multiply", "modulus", "power", "sqrt" ]
 
@@ -109,21 +114,30 @@ for i in range(mn, mx2 + 1):
 
 		print("")
 
-	print("Timing Karatsuba Num: {}".format(i), end='', flush=True)
+	elif test_num == 0:
 
-	cmd = [ exe, "{}/tests/bc/power.txt".format(testdir) ]
+		print("Timing Karatsuba Num: {}".format(i), end='', flush=True)
 
-	start = time.perf_counter()
-	p = subprocess.run(cmd, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	end = time.perf_counter()
+		for j in range(0, nruns):
 
-	if p.returncode != 0:
-		print("bc returned an error; exiting...")
-		sys.exit(p.returncode)
+			cmd = [ exe, "{}/tests/bc/power.txt".format(testdir) ]
 
-	nums.append(i)
-	times.append(end - start)
-	print(", Time: {}".format(times[i - mn]))
+			start = time.perf_counter()
+			p = subprocess.run(cmd, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			end = time.perf_counter()
+
+			if p.returncode != 0:
+				print("bc returned an error; exiting...")
+				sys.exit(p.returncode)
+
+			runs[j] = end - start
+
+		run_times = runs[1:]
+		avg = sum(run_times) / len(run_times)
+
+		times.append(avg)
+		nums.append(i)
+		print(", Time: {}".format(times[i - mn]))
 
 opt = nums[times.index(min(times))]
 
