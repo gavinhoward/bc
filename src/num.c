@@ -493,7 +493,7 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 
 	if (sum) {
 		assert(sum < BC_BASE);
-		c->num[clen] = (BcDig) sum;
+		ptr_c[clen] = (BcDig) sum;
 		clen += 1;
 	}
 
