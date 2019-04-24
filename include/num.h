@@ -39,6 +39,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include <sys/types.h>
@@ -49,7 +50,34 @@
 #define BC_ENABLE_EXTRA_MATH (1)
 #endif // BC_ENABLE_EXTRA_MATH
 
-typedef signed int BcDig;
+#define BC_BASE (10)
+
+#if SIZE_MAX >= UINT_FAST64_MAX
+
+typedef int_fast32_t BcDig;
+
+#define BC_BASE_DIG (1000000000)
+#define BC_BASE_POWER (9)
+
+#elif SIZE_MAX >= UINT_FAST32_MAX
+
+typedef int_fast16_t BcDig;
+
+#define BC_BASE_DIG (10000)
+#define BC_BASE_POWER (4)
+
+#elif SIZE_MAX >= UINT_FAST8_MAX
+
+typedef int_fast8_t BcDig;
+
+#define BC_BASE_DIG (10)
+#define BC_BASE_POWER (1)
+
+#else
+
+#error size_t must be at least 8 bits
+
+#endif // SIZE_MAX >= UINT_FAST64_MAX
 
 typedef struct BcNum {
 	BcDig *restrict num;

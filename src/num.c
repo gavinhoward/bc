@@ -133,9 +133,9 @@ static unsigned int bc_num_addDigit(BcDig *restrict num, unsigned int d,
                                     unsigned int c)
 {
 	d += c;
-	*num = (BcDig) (d % BC_BASE9);
-	assert(*num >= 0 && *num < BC_BASE9);
-	return d / BC_BASE9;
+	*num = (BcDig) (d % BC_BASE_DIG);
+	assert(*num >= 0 && *num < BC_BASE_DIG);
+	return d / BC_BASE_DIG;
 }
 
 static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
@@ -163,10 +163,10 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
 	for (i = 0; BC_NO_SIG && i < len; ++i) {
 
 		for (a[i] -= b[i], j = 0; BC_NO_SIG && a[i + j] < 0;) {
-			assert(a[i + j] >= -BC_BASE9);
-			a[i + j++] += BC_BASE9;
+			assert(a[i + j] >= -BC_BASE_DIG);
+			a[i + j++] += BC_BASE_DIG;
 			a[i + j] -= 1;
-			assert(a[i + j - 1] >= 0 && a[i + j - 1] < BC_BASE9);
+			assert(a[i + j - 1] >= 0 && a[i + j - 1] < BC_BASE_DIG);
 		}
 	}
 
@@ -535,20 +535,20 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 
 			sum += ((size_t) ptr_a[j]) * ((size_t) ptr_b[k]);
 
-			if (sum >= BC_BASE9) {
-				carry += sum / BC_BASE9;
-				sum %= BC_BASE9;
+			if (sum >= BC_BASE_DIG) {
+				carry += sum / BC_BASE_DIG;
+				sum %= BC_BASE_DIG;
 			}
 		}
 
 		ptr_c[i] = (BcDig) sum;
-		assert(ptr_c[i] < BC_BASE9);
+		assert(ptr_c[i] < BC_BASE_DIG);
 		sum = carry;
 		carry = 0;
 	}
 
 	if (sum) {
-		assert(sum < BC_BASE9);
+		assert(sum < BC_BASE_DIG);
 		ptr_c[clen] = (BcDig) sum;
 		clen += 1;
 	}
@@ -1524,9 +1524,9 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 	for (r = 0, i = n->len; i > n->rdx;) {
 
-		unsigned long prev = r * BC_BASE9;
+		unsigned long prev = r * BC_BASE_DIG;
 
-		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE9 != r))
+		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE_DIG != r))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
 		r = prev + n->num[--i];
@@ -1554,8 +1554,8 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 	bc_num_expand(n, bc_num_log10(ULONG_MAX));
 
 	while (val) {
-		n->num[n->len++] = val % BC_BASE9;
-		val /= BC_BASE9;
+		n->num[n->len++] = val % BC_BASE_DIG;
+		val /= BC_BASE_DIG;
 	}
 }
 
