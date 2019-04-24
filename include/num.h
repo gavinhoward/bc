@@ -49,7 +49,7 @@
 #define BC_ENABLE_EXTRA_MATH (1)
 #endif // BC_ENABLE_EXTRA_MATH
 
-typedef signed char BcDig;
+typedef int BcDig;
 
 typedef struct BcNum {
 	BcDig *restrict num;
@@ -64,7 +64,7 @@ typedef struct BcNum {
 #define BC_NUM_MAX_IBASE ((unsigned long) 36)
 // This is the max base allowed by bc_num_parseChar().
 #define BC_NUM_MAX_LBASE ('Z' + BC_BASE + 1)
-#define BC_NUM_DEF_SIZE (16)
+#define BC_NUM_DEF_SIZE (2)
 #define BC_NUM_PRINT_WIDTH (69)
 
 #ifndef BC_NUM_KARATSUBA_LEN
