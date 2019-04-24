@@ -549,10 +549,11 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_setup(&m1, dig_ptr, max);
 	dig_ptr += size;
 	bc_num_setup(&m2, dig_ptr, max);
+	max = bc_vm_growSize(max, 1);
 	bc_num_init(&z0, max);
 	bc_num_init(&z1, max);
 	bc_num_init(&z2, max);
-	bc_num_init(&temp, bc_vm_growSize(max, max));
+	bc_num_init(&temp, bc_vm_growSize(max, max) + 1);
 
 	bc_num_split(a, max2, &l1, &h1);
 	bc_num_split(b, max2, &l2, &h2);
@@ -1312,7 +1313,7 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 }
 
 void bc_num_init(BcNum *restrict n, size_t req) {
-	assert(n);
+	assert(n && req);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	bc_num_setup(n, bc_vm_malloc(req), req);
 }
