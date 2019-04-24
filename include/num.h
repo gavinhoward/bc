@@ -90,6 +90,7 @@ typedef struct BcNum {
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
+typedef BcStatus (*BcNumShiftAddOp)(BcDig*, const BcDig*, size_t);
 
 void bc_num_init(BcNum *n, size_t req);
 void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
