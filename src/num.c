@@ -45,6 +45,18 @@
 #include <num.h>
 #include <vm.h>
 
+#if BC_DEBUG_CODE
+static void bc_num_printDecimal(const BcNum *restrict a);
+
+static void bc_num_printDebug(const BcNum *n, const char* name, bool emptynl) {
+	printf("%s: ", name);
+	bc_num_printDecimal(n);
+	printf("\n");
+	if (emptynl) printf("\n");
+	vm->nchars = 0;
+}
+#endif // BC_DEBUG_CODE
+
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
 static ssize_t bc_num_neg(size_t n, bool neg) {
