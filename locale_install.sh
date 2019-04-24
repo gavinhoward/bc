@@ -44,6 +44,28 @@ gencatfile() {
 	gencat "$_gencatfile_loc" "$_gencatfile_file" > /dev/null 2>&1
 }
 
+localeexists() {
+
+	_localeexists_locales="$1"
+	shift
+
+	_localeexists_locale="$1"
+	shift
+
+	_localeexists_destdir="$1"
+	shift
+
+	if [ "$_localeexists_destdir" != "" ]; then
+		_localeexists_char="@"
+		_localeexists_locale="${_localeexists_locale%%_localeexists_char*}"
+		_localeexists_char="."
+		_localeexists_locale="${_localeexists_locale##*$_localeexists_char}"
+	fi
+
+	test ! -z "${_localeexists_locales##*$_localeexists_locale*}"
+	return $?
+}
+
 script="$0"
 scriptdir=$(dirname "$script")
 
@@ -68,14 +90,23 @@ fi
 
 locales_dir="$scriptdir/locales"
 
-locales=$(locale -a)
+# What this does is if installing to a package, it installs all locales that
+# match supported charsets instead of installing all directly supported locales.
+if [ "$destdir" = "" ]; then
+	locales=$(locale -a)
+else
+	locales=$(locale -m)
+fi
 
 for file in $locales_dir/*.msg; do
 
 	locale=$(basename "$file" ".msg")
 	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
 
-	if [ ! -z "${locales##*$locale*}" ]; then
+	localeexists "$locales" "$locale" "$destdir"
+	err="$?"
+
+	if [ "$err" -eq 0 ]; then
 		continue
 	fi
 
@@ -92,7 +123,10 @@ for file in $locales_dir/*.msg; do
 	locale=$(basename "$file" ".msg")
 	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
 
-	if [ ! -z "${locales##*$locale*}" ]; then
+	localeexists "$locales" "$locale" "$destdir"
+	err="$?"
+
+	if [ "$err" -eq 0 ]; then
 		continue
 	fi
 
@@ -101,11 +135,12 @@ for file in $locales_dir/*.msg; do
 	if [ -L "$file" ]; then
 
 		link=$(readlink "$file")
+		linkdir=$(dirname "$file")
 		locale=$(basename "$link" .msg)
 		linksrc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
 
 		if [ ! -f "$destdir/$linksrc" ]; then
-			gencatfile "$destdir/$linksrc" "$link"
+			gencatfile "$destdir/$linksrc" "$linkdir/$link"
 		fi
 
 		ln -s "$linksrc" "$loc"

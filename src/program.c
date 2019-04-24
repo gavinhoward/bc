@@ -1528,13 +1528,13 @@ void bc_program_init(BcProgram *p) {
 
 	bc_num_setup(&p->ib, p->ib_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ib);
-	p->ib_t = 10;
+	p->ib_t = BC_BASE;
 	bc_vec_init(&p->ib_v, sizeof(size_t), NULL);
 	bc_vec_push(&p->ib_v, &p->ib_t);
 
 	bc_num_setup(&p->ob, p->ob_num, BC_NUM_LONG_LOG10);
 	bc_num_ten(&p->ob);
-	p->ob_t = 10;
+	p->ob_t = BC_BASE;
 	bc_vec_init(&p->ob_v, sizeof(size_t), NULL);
 	bc_vec_push(&p->ob_v, &p->ob_t);
 

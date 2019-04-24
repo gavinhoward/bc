@@ -81,6 +81,10 @@
 #ifndef BC_HISTORY_H
 #define BC_HISTORY_H
 
+#ifndef BC_ENABLE_HISTORY
+#define BC_ENABLE_HISTORY (1)
+#endif // BC_ENABLE_HISTORY
+
 #if BC_ENABLE_HISTORY
 
 #ifdef _WIN32

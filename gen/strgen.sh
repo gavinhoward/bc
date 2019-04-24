@@ -30,8 +30,10 @@ if [ -n "$define" ]; then
 	condend="#endif"
 fi
 
-if [ -n "$remove_tabs" ] && [ "$remove_tabs" -ne 0 ]; then
-	remtabsexpr='s:	::g;'
+if [ -n "$remove_tabs" ]; then
+	if [ "$remove_tabs" -ne 0 ]; then
+		remtabsexpr='s:	::g;'
+	fi
 fi
 
 cat<<EOF
@@ -44,7 +46,7 @@ ${condstart}
 $nameline
 
 const char ${name}[] =
-$(sed -e "$remtabsexpr "'1,/^$/d; s:\\n:\\\\n:g; s:":\\":g; s:^:":; s:$:\\n":')
+$(sed -e "$remtabsexpr " -e '1,/^$/d; s:\\n:\\\\n:g; s:":\\":g; s:^:":; s:$:\\n":')
 ;
 ${condend}
 EOF
