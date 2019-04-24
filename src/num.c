@@ -467,34 +467,37 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
-	size_t i, j, len, sum;
-	unsigned int carry;
-	BcDig *ptr_c;
+	size_t i, sum = 0, alen = a->len, blen = b->len, clen;
+	BcDig *ptr_a = a->num, *ptr_b = b->num, *ptr_c;
 
 	assert(!a->rdx && !b->rdx);
 
-	c->len = bc_vm_growSize(bc_vm_growSize(a->len, b->len), 1);
-	bc_num_expand(c, c->len);
+	clen = bc_vm_growSize(alen, blen);
+	bc_num_expand(c, clen + 1);
 
 	ptr_c = c->num;
-	memset(ptr_c, 0, sizeof(BcDig) * c->len);
+	memset(ptr_c, 0, sizeof(BcDig) * c->cap);
 
-	for (i = 0; BC_NO_SIG && i < b->len; ++i) {
+	for (i = 0; BC_NO_SIG && i < clen; ++i) {
 
-		BcDig *ptr = ptr_c + i;
+		ssize_t sidx = (ssize_t) (i - blen + 1);
+		size_t j = (size_t) BC_MAX(0, sidx), k = BC_MIN(i, blen - 1);
 
-		carry = 0;
+		for (; BC_NO_SIG && j < alen && k < blen; ++j, --k)
+			sum += ((size_t) ptr_a[j]) * ((size_t) ptr_b[k]);
 
-		for (j = 0; BC_NO_SIG && j < a->len; ++j) {
-			unsigned int in = (uchar) ptr[j];
-			assert(in < BC_BASE);
-			in += ((unsigned int) a->num[j]) * ((unsigned int) b->num[i]);
-			carry = bc_num_addDigit(ptr + j, in, carry);
-		}
-
-		ptr[j] += (BcDig) carry;
-		assert(ptr[j] >= 0 && ptr[j] < BC_BASE);
+		ptr_c[i] = (BcDig) (sum % BC_BASE);
+		assert(ptr_c[i] < BC_BASE);
+		sum /= BC_BASE;
 	}
+
+	if (sum) {
+		assert(sum < BC_BASE);
+		c->num[clen] = (BcDig) sum;
+		clen += 1;
+	}
+
+	c->len = clen;
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -510,7 +513,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	assert(BC_NUM_ZERO(c));
 
 	// This is here because the function is recursive.
-	if (BC_SIG) return BC_STATUS_SIGNAL;
+ 	if (BC_SIG) return BC_STATUS_SIGNAL;
 	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) {
 		bc_num_zero(c);
 		return BC_STATUS_SUCCESS;
