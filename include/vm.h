@@ -114,6 +114,8 @@
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #define BC_BASE (10)
+#define BC_BASE9 (1000000000)
+#define BC_BASE_POWER (9)
 
 #define BC_MAX_OBASE ((unsigned long) ULONG_MAX)
 #define BC_MAX_DIM ((unsigned long) (SIZE_MAX - 1))

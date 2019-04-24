@@ -55,6 +55,21 @@ static void bc_num_printDebug(const BcNum *n, const char* name, bool emptynl) {
 	if (emptynl) printf("\n");
 	vm->nchars = 0;
 }
+
+static void DUMP_NUM(const char *c, const BcNum *n) {
+
+	int i;
+
+	fprintf(stderr, "\n%s=", c);
+
+	for (i = n->len -1; i >= 0; i--) {
+		if (i+1 == n->rdx)
+			fprintf(stderr, ".");
+		fprintf(stderr, "%09d ", n->num[i]);
+	}
+
+	fprintf(stderr, "(%p|%zu/%zu)\n", n->num, n->len, n->cap);
+}
 #endif // BC_DEBUG_CODE
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
@@ -79,7 +94,7 @@ static void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	if (req > n->cap) {
-		n->num = bc_vm_realloc(n->num, req);
+		n->num = bc_vm_realloc(n->num, req * sizeof(BcDig));
 		n->cap = req;
 	}
 }
@@ -105,8 +120,7 @@ void bc_num_ten(BcNum *restrict n) {
 	assert(n);
 	bc_num_setToZero(n, 0);
 	n->len = 2;
-	n->num[0] = 0;
-	n->num[1] = 1;
+	n->num[0] = BC_BASE;
 }
 
 static size_t bc_num_log10(size_t i) {
@@ -119,9 +133,9 @@ static unsigned int bc_num_addDigit(BcDig *restrict num, unsigned int d,
                                     unsigned int c)
 {
 	d += c;
-	*num = (BcDig) (d % BC_BASE);
-	assert(*num >= 0 && *num < BC_BASE);
-	return d / BC_BASE;
+	*num = (BcDig) (d % BC_BASE9);
+	assert(*num >= 0 && *num < BC_BASE9);
+	return d / BC_BASE9;
 }
 
 static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
@@ -149,10 +163,10 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
 	for (i = 0; BC_NO_SIG && i < len; ++i) {
 
 		for (a[i] -= b[i], j = 0; BC_NO_SIG && a[i + j] < 0;) {
-			assert(a[i + j] >= -BC_BASE);
-			a[i + j++] += BC_BASE;
+			assert(a[i + j] >= -BC_BASE9);
+			a[i + j++] += BC_BASE9;
 			a[i + j] -= 1;
-			assert(a[i + j - 1] >= 0 && a[i + j - 1] < BC_BASE);
+			assert(a[i + j - 1] >= 0 && a[i + j - 1] < BC_BASE9);
 		}
 	}
 
@@ -245,8 +259,8 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	if (!places) return;
 	if (n->cap < len) bc_num_expand(n, len);
 
-	memmove(n->num + places, n->num, sizeof(BcDig) * n->len);
-	memset(n->num, 0, sizeof(BcDig) * places);
+	memmove(n->num + places, n->num, n->len * sizeof(BcDig));
+	memset(n->num, 0, places * sizeof(BcDig));
 
 	if (n->len) n->len += places;
 
@@ -499,32 +513,42 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
-	size_t i, sum = 0, alen = a->len, blen = b->len, clen;
+	size_t i, sum = 0, carry = 0, alen = a->len, blen = b->len, clen;
 	BcDig *ptr_a = a->num, *ptr_b = b->num, *ptr_c;
 
+	// XXX: This needs to be portable to non-64-bit platforms.
+	assert(sizeof(sum) >= 8);
 	assert(!a->rdx && !b->rdx);
 
 	clen = bc_vm_growSize(alen, blen);
 	bc_num_expand(c, clen + 1);
 
 	ptr_c = c->num;
-	memset(ptr_c, 0, sizeof(BcDig) * c->cap);
+	memset(ptr_c, 0, c->cap * sizeof(BcDig));
 
 	for (i = 0; BC_NO_SIG && i < clen; ++i) {
 
 		ssize_t sidx = (ssize_t) (i - blen + 1);
 		size_t j = (size_t) BC_MAX(0, sidx), k = BC_MIN(i, blen - 1);
 
-		for (; BC_NO_SIG && j < alen && k < blen; ++j, --k)
+		for (; BC_NO_SIG && j < alen && k < blen; ++j, --k) {
+
 			sum += ((size_t) ptr_a[j]) * ((size_t) ptr_b[k]);
 
-		ptr_c[i] = (BcDig) (sum % BC_BASE);
-		assert(ptr_c[i] < BC_BASE);
-		sum /= BC_BASE;
+			if (sum >= BC_BASE9) {
+				carry += sum / BC_BASE9;
+				sum %= BC_BASE9;
+			}
+		}
+
+		ptr_c[i] = (BcDig) sum;
+		assert(ptr_c[i] < BC_BASE9);
+		sum = carry;
+		carry = 0;
 	}
 
 	if (sum) {
-		assert(sum < BC_BASE);
+		assert(sum < BC_BASE9);
 		ptr_c[clen] = (BcDig) sum;
 		clen += 1;
 	}
@@ -571,24 +595,23 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	}
 
 	max = BC_MAX(a->len, b->len);
-	max = max < BC_NUM_DEF_SIZE ? BC_NUM_DEF_SIZE : max;
+	max = BC_MAX(max, BC_NUM_DEF_SIZE);
 	max2 = (max + 1) / 2;
 
-	size = BC_NUM_KARATSUBA_ALLOCS * sizeof(BcDig);
-	total = bc_vm_arraySize(size, max);
-	digs = dig_ptr = bc_vm_malloc(total);
+	size = max * sizeof(BcDig);
+	total = bc_vm_arraySize(BC_NUM_KARATSUBA_ALLOCS, size);
 	size = max * sizeof(BcDig);
 
 	bc_num_setup(&l1, dig_ptr, max);
-	dig_ptr += size;
+	dig_ptr += max;
 	bc_num_setup(&h1, dig_ptr, max);
-	dig_ptr += size;
+	dig_ptr += max;
 	bc_num_setup(&l2, dig_ptr, max);
-	dig_ptr += size;
+	dig_ptr += max;
 	bc_num_setup(&h2, dig_ptr, max);
-	dig_ptr += size;
+	dig_ptr += max;
 	bc_num_setup(&m1, dig_ptr, max);
-	dig_ptr += size;
+	dig_ptr += max;
 	bc_num_setup(&m2, dig_ptr, max);
 	max = bc_vm_growSize(max, 1);
 	bc_num_init(&z0, max);
@@ -1033,11 +1056,20 @@ static unsigned long bc_num_parseChar(char c, size_t base_t) {
 	return (unsigned long) (uchar) c;
 }
 
+static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
+                                 BcNum *restrict base, size_t base_t); // <se>
+
 static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	size_t len, i;
 	const char *ptr;
 	bool zero = true;
+
+	BcNum tmp;
+	bc_num_createFromUlong(&tmp, 10);
+
+	bc_num_parseBase(n, val, &tmp, BC_BASE);	// <se> use generic function for now ...
+	return;
 
 	for (i = 0; val[i] == '0'; ++i);
 
@@ -1060,6 +1092,8 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 			char c = val[i];
 
+			// <se> rewrite for 9 decimal digits per BcDig
+			// <se> adjust for fractional part that is not a multple of 9!!!
 			if (c == '.') n->len -= 1;
 			else {
 				if (isupper(c)) c = '9';
@@ -1195,13 +1229,26 @@ static void bc_num_printHex(size_t n, size_t len, bool rdx) {
 
 static void bc_num_printDecimal(const BcNum *restrict n) {
 
-	size_t i, rdx = n->rdx - 1;
+	ssize_t i, j, rdx = n->rdx - 1;
+	BcDig n9;
+	bool zeroes = true;
+	char buffer[BC_BASE_POWER];
 
 	if (n->neg) bc_vm_putchar('-');
 	vm->nchars += n->neg;
 
-	for (i = n->len - 1; i < n->len; --i)
-		bc_num_printHex((size_t) n->num[i], 1, i == rdx);
+	for (i = n->len - 1; i >= 0; --i) {
+		n9 = n->num[i];
+		for (j = 0; j < BC_BASE_POWER; j++) {
+			buffer[j] = n9 % BC_BASE;
+			n9 /= BC_BASE;
+		}
+		for (j = BC_BASE_POWER - 1; j >= 0; j--) {
+			zeroes &= (buffer[j] == 0);
+			if (!zeroes)
+				bc_num_printHex((size_t) buffer[j], 1, i == rdx);
+		}
+	}
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -1380,7 +1427,7 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 void bc_num_init(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	bc_num_setup(n, bc_vm_malloc(req), req);
+	bc_num_setup(n, bc_vm_malloc(req * sizeof(BcDig)), req);
 }
 
 void bc_num_free(void *num) {
@@ -1404,7 +1451,7 @@ void bc_num_createCopy(BcNum *d, const BcNum *s) {
 }
 
 void bc_num_createFromUlong(BcNum *n, unsigned long val) {
-	bc_num_init(n, BC_NUM_LONG_LOG10);
+	bc_num_init(n, (BC_NUM_LONG_LOG10 - 1) / BC_BASE_POWER + 1);
 	bc_num_ulong2num(n, val);
 }
 
@@ -1477,12 +1524,12 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 	for (r = 0, i = n->len; i > n->rdx;) {
 
-		unsigned long prev = r * BC_BASE;
+		unsigned long prev = r * BC_BASE9;
 
-		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE != r))
+		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE9 != r))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
-		r = prev + ((uchar) n->num[--i]);
+		r = prev + n->num[--i];
 
 		if (BC_ERR(r == SIZE_MAX || r < prev))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
@@ -1506,8 +1553,10 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 
 	bc_num_expand(n, bc_num_log10(ULONG_MAX));
 
-	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= BC_BASE)
-		ptr[i] = val % BC_BASE;
+	while (val) {
+		n->num[n->len++] = val % BC_BASE9;
+		val /= BC_BASE9;
+	}
 }
 
 size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
