@@ -1313,7 +1313,7 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 }
 
 void bc_num_init(BcNum *restrict n, size_t req) {
-	assert(n && req);
+	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	bc_num_setup(n, bc_vm_malloc(req), req);
 }
