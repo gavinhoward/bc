@@ -92,8 +92,8 @@ typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
 typedef BcStatus (*BcNumShiftAddOp)(BcDig*, const BcDig*, size_t);
 
-void bc_num_init(BcNum *n, size_t req);
-void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
+void bc_num_init(BcNum *restrict n, size_t req);
+void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap);
 void bc_num_copy(BcNum *d, const BcNum *s);
 void bc_num_createCopy(BcNum *d, const BcNum *s);
 void bc_num_createFromUlong(BcNum *n, unsigned long val);
@@ -102,8 +102,8 @@ void bc_num_free(void *num);
 size_t bc_num_scale(const BcNum *restrict n);
 size_t bc_num_len(const BcNum *restrict n);
 
-BcStatus bc_num_ulong(const BcNum *n, unsigned long *result);
-void bc_num_ulong2num(BcNum *n, unsigned long val);
+BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result);
+void bc_num_ulong2num(BcNum *restrict n, unsigned long val);
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);
