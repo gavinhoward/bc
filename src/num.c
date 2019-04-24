@@ -120,7 +120,12 @@ void bc_num_ten(BcNum *restrict n) {
 	assert(n);
 	bc_num_setToZero(n, 0);
 	n->len = 2;
+#if BC_BASE_DIG == 10
+	n->num[0] = 0;
+	n->num[1] = 1;
+#else // BC_BASE_DIG == 10
 	n->num[0] = BC_BASE;
+#endif // BC_BASE_DIG == 10
 }
 
 static size_t bc_num_log10(size_t i) {
