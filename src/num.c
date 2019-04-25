@@ -1567,9 +1567,6 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 
-	BcDig *ptr;
-	unsigned long i, j, sum;
-
 	assert(n);
 
 	bc_num_zero(n);
