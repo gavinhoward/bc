@@ -534,18 +534,6 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	return s;
 }
 
-static void DUMP_NUM(const char *c, const BcNum *n) {
-	return;
-	int i;
-	fprintf(stderr, "\n%s=", c);
-	for (i = n->len -1; i >= 0; i--) {
-		if (i+1 == n->rdx)
-			fprintf(stderr, ".");
-		fprintf(stderr, "%09d ", n->num[i]);
-	}
-	fprintf(stderr, "(%p|%zu/%zu)\n", n->num, n->len, n->cap);
-}
-
 static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
 	size_t i, sum = 0, carry = 0, alen = a->len, blen = b->len, clen;
