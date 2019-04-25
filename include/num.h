@@ -39,6 +39,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include <sys/types.h>
@@ -49,7 +50,34 @@
 #define BC_ENABLE_EXTRA_MATH (1)
 #endif // BC_ENABLE_EXTRA_MATH
 
-typedef int BcDig;
+#define BC_BASE (10)
+
+#if SIZE_MAX >= UINT_FAST64_MAX
+
+typedef int_fast32_t BcDig;
+
+#define BC_BASE_DIG (1000000000)
+#define BC_BASE_POWER (9)
+
+#elif SIZE_MAX >= UINT_FAST32_MAX
+
+typedef int_fast16_t BcDig;
+
+#define BC_BASE_DIG (10000)
+#define BC_BASE_POWER (4)
+
+#elif SIZE_MAX >= UINT_FAST8_MAX
+
+typedef int_fast8_t BcDig;
+
+#define BC_BASE_DIG (10)
+#define BC_BASE_POWER (1)
+
+#else
+
+#error size_t must be at least 8 bits
+
+#endif // SIZE_MAX >= UINT_FAST64_MAX
 
 typedef struct BcNum {
 	BcDig *restrict num;
@@ -68,8 +96,8 @@ typedef struct BcNum {
 #define BC_NUM_PRINT_WIDTH (69)
 
 #ifndef BC_NUM_KARATSUBA_LEN
-#define BC_NUM_KARATSUBA_LEN (64)
-#elif BC_NUM_KARATSUBA_LEN < BC_NUM_DEF_SIZE
+#define BC_NUM_KARATSUBA_LEN (128)
+#elif BC_NUM_KARATSUBA_LEN < 16
 #error BC_NUM_KARATSUBA_LEN must be at least 16
 #endif // BC_NUM_KARATSUBA_LEN
 
@@ -90,9 +118,10 @@ typedef struct BcNum {
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
+typedef BcStatus (*BcNumShiftAddOp)(BcDig*, const BcDig*, size_t);
 
-void bc_num_init(BcNum *n, size_t req);
-void bc_num_setup(BcNum *n, BcDig *num, size_t cap);
+void bc_num_init(BcNum *restrict n, size_t req);
+void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap);
 void bc_num_copy(BcNum *d, const BcNum *s);
 void bc_num_createCopy(BcNum *d, const BcNum *s);
 void bc_num_createFromUlong(BcNum *n, unsigned long val);
@@ -101,8 +130,8 @@ void bc_num_free(void *num);
 size_t bc_num_scale(const BcNum *restrict n);
 size_t bc_num_len(const BcNum *restrict n);
 
-BcStatus bc_num_ulong(const BcNum *n, unsigned long *result);
-void bc_num_ulong2num(BcNum *n, unsigned long val);
+BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result);
+void bc_num_ulong2num(BcNum *restrict n, unsigned long val);
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);

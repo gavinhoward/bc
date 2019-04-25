@@ -45,6 +45,33 @@
 #include <num.h>
 #include <vm.h>
 
+#if BC_DEBUG_CODE
+static void bc_num_printDecimal(const BcNum *restrict a);
+
+static void bc_num_printDebug(const BcNum *n, const char* name, bool emptynl) {
+	printf("%s: ", name);
+	bc_num_printDecimal(n);
+	printf("\n");
+	if (emptynl) printf("\n");
+	vm->nchars = 0;
+}
+
+static void DUMP_NUM(const char *c, const BcNum *n) {
+
+	int i;
+
+	fprintf(stderr, "\n%s=", c);
+
+	for (i = n->len -1; i >= 0; i--) {
+		if (i+1 == n->rdx)
+			fprintf(stderr, ".");
+		fprintf(stderr, "%09d ", n->num[i]);
+	}
+
+	fprintf(stderr, "(%p|%zu/%zu)\n", n->num, n->len, n->cap);
+}
+#endif // BC_DEBUG_CODE
+
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
 static ssize_t bc_num_neg(size_t n, bool neg) {
@@ -92,8 +119,13 @@ void bc_num_one(BcNum *restrict n) {
 void bc_num_ten(BcNum *restrict n) {
 	assert(n);
 	bc_num_setToZero(n, 0);
-	n->len = 1;
-	n->num[0] = 10;
+	n->len = 2;
+#if BC_BASE_DIG == 10
+	n->num[0] = 0;
+	n->num[1] = 1;
+#else // BC_BASE_DIG == 10
+	n->num[0] = BC_BASE;
+#endif // BC_BASE_DIG == 10
 }
 
 static void bc_num_set(BcDig *restrict dst, const size_t val,
@@ -120,17 +152,47 @@ static size_t bc_num_log10(size_t i) {
 	return len;
 }
 
+static unsigned int bc_num_addDigit(BcDig *restrict num, unsigned int d,
+                                    unsigned int c)
+{
+	d += c;
+	*num = (BcDig) (d % BC_BASE_DIG);
+	assert(*num >= 0 && *num < BC_BASE_DIG);
+	return d / BC_BASE_DIG;
+}
+
+static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
+                                 size_t len)
+{
+	size_t i;
+	unsigned int carry = 0;
+
+	for (i = 0; BC_NO_SIG && i < len; ++i) {
+		unsigned int in = ((unsigned int) a[i]) + ((unsigned int) b[i]);
+		carry = bc_num_addDigit(a + i, in, carry);
+	}
+
+	for (; BC_NO_SIG && carry; ++i)
+		carry = bc_num_addDigit(a + i, (unsigned int) a[i], carry);
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+}
+
 static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
                                  size_t len)
 {
 	size_t i, j;
+
 	for (i = 0; BC_NO_SIG && i < len; ++i) {
+
 		for (a[i] -= b[i], j = 0; BC_NO_SIG && a[i + j] < 0;) {
-			a[i + j++] += BC_BASE9;
+			assert(a[i + j] >= -BC_BASE_DIG);
+			a[i + j++] += BC_BASE_DIG;
 			a[i + j] -= 1;
-			assert(a[i + j - 1] >= 0 && a[i + j - 1] < BC_BASE9);
+			assert(a[i + j - 1] >= 0 && a[i + j - 1] < BC_BASE_DIG);
 		}
 	}
+
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
@@ -339,16 +401,6 @@ static BcStatus bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-static unsigned int bc_num_addDigit(BcDig *restrict num, unsigned int d,
-                                    unsigned int c)
-{
-	d += c;
-	*num = (BcDig) (d % BC_BASE9);
-	assert(*num >= 0 && *num < BC_BASE9);
-	assert((d / BC_BASE) < BC_BASE9);
-	return d / BC_BASE9;
-}
-
 static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
@@ -404,7 +456,7 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 
 	for (carry = 0, i = 0; BC_NO_SIG && i < min_rdx + min_int; ++i) {
-		unsigned int in = (unsigned int) (ptr_a[i] + ptr_b[i]);
+		unsigned int in = ((unsigned int) ptr_a[i]) + ((unsigned int) ptr_b[i]);
 		carry = bc_num_addDigit(ptr_c + i, in, carry);
 	}
 
@@ -499,7 +551,8 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	size_t i, sum = 0, carry = 0, alen = a->len, blen = b->len, clen;
 	BcDig *ptr_a = a->num, *ptr_b = b->num, *ptr_c;
 
-	assert(sizeof(sum) >= 8);	// just to be sure ...
+	// XXX: This needs to be portable to non-64-bit platforms.
+	assert(sizeof(sum) >= 8);
 	assert(!a->rdx && !b->rdx);
 
 	clen = bc_vm_growSize(alen, blen);
@@ -516,21 +569,24 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 		size_t j = (size_t) BC_MAX(0, sidx), k = BC_MIN(i, blen - 1);
 
 		for (; BC_NO_SIG && j < alen && k < blen; ++j, --k) {
+
 			sum += ((size_t) ptr_a[j]) * ((size_t) ptr_b[k]);
-			if (sum >= BC_BASE9) {
-				carry += sum / BC_BASE9;
-				sum %= BC_BASE9;
+
+			if (sum >= BC_BASE_DIG) {
+				carry += sum / BC_BASE_DIG;
+				sum %= BC_BASE_DIG;
 			}
 		}
+
 		ptr_c[i] = (BcDig) sum;
-		assert(ptr_c[i] < BC_BASE9);
+		assert(ptr_c[i] < BC_BASE_DIG);
 		sum = carry;
 		carry = 0;
 	}
 
 	if (sum) {
-		assert(sum < BC_BASE9);
-		c->num[clen] = (BcDig) sum;
+		assert(sum < BC_BASE_DIG);
+		ptr_c[clen] = (BcDig) sum;
 		clen += 1;
 	}
 
@@ -540,12 +596,21 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+static BcStatus bc_num_shiftAddSub(BcNum *restrict n, const BcNum *restrict a,
+                                   size_t shift, BcNumShiftAddOp op)
+{
+	assert(n->len >= shift + a->len);
+	assert(!n->rdx && !a->rdx);
+	return op(n->num + shift, a->num, a->len);
+}
+
+static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 
 	BcStatus s;
-	size_t max, max2, total, size;
+	size_t max, max2, total;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	BcDig *digs, *dig_ptr;
+	BcNumShiftAddOp op;
 	bool aone = bc_num_isOne(a);
 
 	assert(BC_NUM_ZERO(c));
@@ -585,38 +650,63 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_setup(&m1, dig_ptr, max);
 	dig_ptr += max;
 	bc_num_setup(&m2, dig_ptr, max);
+	max = bc_vm_growSize(max, 1);
 	bc_num_init(&z0, max);
 	bc_num_init(&z1, max);
 	bc_num_init(&z2, max);
-	bc_num_init(&temp, bc_vm_growSize(max, max));
+	max = bc_vm_growSize(max, max) + 1;
+	bc_num_init(&temp, max);
 
 	bc_num_split(a, max2, &l1, &h1);
+	bc_num_clean(&l1);
+	bc_num_clean(&h1);
 	bc_num_split(b, max2, &l2, &h2);
+	bc_num_clean(&l2);
+	bc_num_clean(&h2);
 
-	assert(bc_num_addReq(&h1, &l1, 0) <= m1.cap);
-	s = bc_num_add(&h1, &l1, &m1, 0);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	assert(bc_num_addReq(&h2, &l2, 0) <= m2.cap);
-	s = bc_num_add(&h2, &l2, &m2, 0);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	bc_num_expand(c, max);
+	c->len = max;
+	memset(c->num, 0, c->len * sizeof(BcDig));
 
-	s = bc_num_m(&h1, &h2, &z0, scale);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	s = bc_num_m(&m1, &m2, &z1, scale);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	s = bc_num_m(&l1, &l2, &z2, scale);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	s = bc_num_sub(&h1, &l1, &m1, 0);
+	if (BC_ERR(s)) goto err;
+	s = bc_num_sub(&l2, &h2, &m2, 0);
+	if (BC_ERR(s)) goto err;
 
-	s = bc_num_sub(&z1, &z0, &temp, 0);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	s = bc_num_sub(&temp, &z2, &z1, 0);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	if (!BC_NUM_ZERO(&h1) && !BC_NUM_ZERO(&h2)) {
 
-	bc_num_shiftLeft(&z0, max2 * 2);
-	bc_num_shiftLeft(&z1, max2);
-	s = bc_num_add(&z0, &z1, &temp, 0);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	s = bc_num_add(&temp, &z2, c, 0);
+		s = bc_num_m(&h1, &h2, &z2, 0);
+		if (BC_ERR(s)) goto err;
+		bc_num_clean(&z2);
+
+		s = bc_num_shiftAddSub(c, &z2, max2 * 2, bc_num_addArrays);
+		if (BC_ERR(s)) goto err;
+		s = bc_num_shiftAddSub(c, &z2, max2, bc_num_addArrays);
+		if (BC_ERR(s)) goto err;
+	}
+
+	if (!BC_NUM_ZERO(&l1) && !BC_NUM_ZERO(&l2)) {
+
+		s = bc_num_m(&l1, &l2, &z0, 0);
+		if (BC_ERR(s)) goto err;
+		bc_num_clean(&z0);
+
+		s = bc_num_shiftAddSub(c, &z0, max2, bc_num_addArrays);
+		if (BC_ERR(s)) goto err;
+		s = bc_num_shiftAddSub(c, &z0, 0, bc_num_addArrays);
+		if (BC_ERR(s)) goto err;
+	}
+
+	if (!BC_NUM_ZERO(&m1) && !BC_NUM_ZERO(&m2)) {
+
+		s = bc_num_m(&m1, &m2, &z1, 0);
+		if (BC_ERR(s)) goto err;
+		bc_num_clean(&z1);
+
+		op = (m1.neg != m2.neg) ? bc_num_subArrays : bc_num_addArrays;
+		s = bc_num_shiftAddSub(c, &z1, max2, op);
+		if (BC_ERR(s)) goto err;
+	}
 
 err:
 	free(digs);
@@ -652,7 +742,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bzero = bc_num_shiftZero(&cpb);
 	bc_num_clean(&cpb);
 
-	s = bc_num_k(&cpa, &cpb, c, scale);
+	s = bc_num_k(&cpa, &cpb, c);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	zero = bc_vm_growSize(azero, bzero);
@@ -1004,7 +1094,7 @@ static unsigned long bc_num_parseChar(char c, size_t base_t) {
 }
 
 static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
-    BcNum *restrict base, size_t base_t); // <se>
+                                 BcNum *restrict base, size_t base_t); // <se>
 
 static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
@@ -1014,7 +1104,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	BcNum tmp;
 	bc_num_createFromUlong(&tmp, 10);
- 
+
 	bc_num_parseBase(n, val, &tmp, BC_BASE);	// <se> use generic function for now ...
 	return;
 
@@ -1179,18 +1269,18 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 	ssize_t i, j, rdx = n->rdx - 1;
 	BcDig n9;
 	bool zeroes = true;
-	char buffer[9];
+	char buffer[BC_BASE_POWER];
 
 	if (n->neg) bc_vm_putchar('-');
 	vm->nchars += n->neg;
 
 	for (i = n->len - 1; i >= 0; --i) {
 		n9 = n->num[i];
-		for (j = 0; j <= 8; j++) {
+		for (j = 0; j < BC_BASE_POWER; j++) {
 			buffer[j] = n9 % BC_BASE;
 			n9 /= BC_BASE;
 		}
-		for (j = 8; j >= 0; j--) {
+		for (j = BC_BASE_POWER - 1; j >= 0; j--) {
 			zeroes &= (buffer[j] == 0);
 			if (!zeroes)
 				bc_num_printHex((size_t) buffer[j], 1, i == rdx);
@@ -1398,7 +1488,7 @@ void bc_num_createCopy(BcNum *d, const BcNum *s) {
 }
 
 void bc_num_createFromUlong(BcNum *n, unsigned long val) {
-	bc_num_init(n, (BC_NUM_LONG_LOG10-1)/9+1);
+	bc_num_init(n, (BC_NUM_LONG_LOG10 - 1) / BC_BASE_POWER + 1);
 	bc_num_ulong2num(n, val);
 }
 
@@ -1471,9 +1561,9 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 	for (r = 0, i = n->len; i > n->rdx;) {
 
-		unsigned long prev = r * BC_BASE9;
+		unsigned long prev = r * BC_BASE_DIG;
 
-		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE9 != r))
+		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE_DIG != r))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
 		r = prev + n->num[--i];
@@ -1501,8 +1591,8 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 	bc_num_expand(n, bc_num_log10(ULONG_MAX));
 
 	while (val) {
-		n->num[n->len++] = val % BC_BASE9;
-		val /= BC_BASE9;
+		n->num[n->len++] = val % BC_BASE_DIG;
+		val /= BC_BASE_DIG;
 	}
 }
 
