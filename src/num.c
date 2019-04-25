@@ -666,7 +666,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 
 	bc_num_expand(c, max);
 	c->len = max;
-	memset(c->num, 0, c->len * sizeof(BcDig));
+	bc_num_set(c->num, 0, c->len);
 
 	s = bc_num_sub(&h1, &l1, &m1, 0);
 	if (BC_ERR(s)) goto err;
