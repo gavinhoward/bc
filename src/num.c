@@ -97,6 +97,24 @@ void bc_num_ten(BcNum *restrict n) {
 	n->num[0] = 10;
 }
 
+static void bc_num_set(BcDig *restrict dst, const size_t val,
+		       const size_t n)
+{
+	memset(dst, val, n  * sizeof(BcDig));
+}
+
+static void bc_num_cpy(BcDig *restrict dst, const BcDig *restrict src,
+		       const size_t n)
+{
+	memcpy(dst, src, n  * sizeof(BcDig));
+}
+
+static void bc_num_move(BcDig *restrict dst, const BcDig *restrict src,
+		       const size_t n)
+{
+	memmove(dst, src, n  * sizeof(BcDig));
+}
+
 static size_t bc_num_log10(size_t i) {
 	size_t len;
 	for (len = 1; i; i /= BC_BASE, ++len);
@@ -191,7 +209,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	if (BC_NUM_NONZERO(n)) {
 		n->len -= places;
-		memmove(n->num, n->num + places, n->len * sizeof(BcDig));
+		bc_num_move(n->num, n->num + places, n->len);
 		bc_num_clean(n);
 	}
 }
@@ -203,8 +221,8 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	if (!places) return;
 	if (n->cap < len) bc_num_expand(n, len);
 
-	memmove(n->num + places, n->num, n->len * sizeof(BcDig));
-	memset(n->num, 0, places * sizeof(BcDig));
+	bc_num_move(n->num + places, n->num, n->len);
+	bc_num_set(n->num, 0, places);
 
 	if (n->len) n->len += places;
 
@@ -230,8 +248,8 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 		a->len = idx;
 		a->rdx = b->rdx = 0;
 
-		memcpy(b->num, n->num + idx, b->len * sizeof(BcDig));
-		memcpy(a->num, n->num, idx * sizeof(BcDig));
+		bc_num_cpy(b->num, n->num + idx, b->len);
+		bc_num_cpy(a->num, n->num, idx);
 
 		bc_num_clean(b);
 	}
@@ -289,7 +307,7 @@ static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 		if (len > n->cap) bc_num_expand(n, len);
 
-		memset(n->num + n->len, 0, (len - n->len) * sizeof(BcDig));
+		bc_num_set(n->num + n->len, 0, len - n->len);
 		n->len = len;
 	}
 
@@ -490,7 +508,7 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	bc_num_expand(c, clen + 1);
 
 	ptr_c = c->num;
-	memset(ptr_c, 0, c->cap * sizeof(BcDig));
+	bc_num_set(ptr_c, 0, c->cap);
 
 	DUMP_NUM("a", a);
 	DUMP_NUM("b", b);
@@ -705,7 +723,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_expand(c, cp.len);
 
-	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
+	bc_num_set(c->num + end, 0, c->cap - end);
 	c->rdx = cp.rdx;
 	c->len = cp.len;
 	p = b->num;
@@ -1376,7 +1394,7 @@ void bc_num_copy(BcNum *d, const BcNum *s) {
 	d->len = s->len;
 	d->neg = s->neg;
 	d->rdx = s->rdx;
-	memcpy(d->num, s->num, sizeof(BcDig) * d->len);
+	bc_num_cpy(d->num, s->num, d->len);
 }
 
 void bc_num_createCopy(BcNum *d, const BcNum *s) {
