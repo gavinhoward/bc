@@ -239,7 +239,6 @@ size_t bc_vm_growSize(size_t a, size_t b) {
 	return res;
 }
 
-#if 0
 void* bc_vm_malloc(size_t n) {
 	void* ptr = malloc(n);
 	if (BC_ERR(!ptr)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
@@ -251,18 +250,13 @@ void* bc_vm_realloc(void *ptr, size_t n) {
 	if (BC_ERR(!temp)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return temp;
 }
-#endif
 
-void* bc_vm_malloc_digs(size_t n) {
-	BcDig* ptr = malloc(n * sizeof(BcDig));
-	if (BC_ERR(!ptr)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
-	return ptr;
+BcDig* bc_vm_malloc_digs(size_t n) {
+	return bc_vm_malloc(n * sizeof(BcDig));
 }
 
-void* bc_vm_realloc_digs(BcDig *ptr, size_t n) {
-	BcDig* temp = realloc(ptr, n * sizeof(BcDig));
-	if (BC_ERR(!temp)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
-	return temp;
+BcDig* bc_vm_realloc_digs(BcDig *ptr, size_t n) {
+	return bc_vm_realloc(ptr, n * sizeof(BcDig));
 }
 
 char* bc_vm_strdup(const char *str) {
