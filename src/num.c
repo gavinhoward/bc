@@ -66,9 +66,8 @@ static bool bc_num_isOne(const BcNum *n) {
 static void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-//fprintf(stderr, "\n>> expand(%p, cap=%zu, req=%zu)\n", n->num, n->cap, req);
 	if (req > n->cap) {
-		n->num = bc_vm_realloc(n->num, req * sizeof(BcDig));
+		n->num = bc_vm_realloc_digs(n->num, req);
 		n->cap = req;
 	}
 }
@@ -504,7 +503,6 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	assert(!a->rdx && !b->rdx);
 
 	clen = bc_vm_growSize(alen, blen);
-//fprintf(stderr, "CLEN=%zu\n", clen);
 	bc_num_expand(c, clen + 1);
 
 	ptr_c = c->num;
@@ -521,7 +519,6 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 			sum += ((size_t) ptr_a[j]) * ((size_t) ptr_b[k]);
 			if (sum >= BC_BASE9) {
 				carry += sum / BC_BASE9;
-//fprintf(stderr, "Carry=%zu\n", carry);
 				sum %= BC_BASE9;
 			}
 		}
@@ -532,7 +529,6 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	}
 
 	if (sum) {
-//fprintf(stderr, "Sum=%zu\n", sum);
 		assert(sum < BC_BASE9);
 		c->num[clen] = (BcDig) sum;
 		clen += 1;
@@ -575,9 +571,8 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	max = BC_MAX(max, BC_NUM_DEF_SIZE);
 	max2 = (max + 1) / 2;
 
-	size = max * sizeof(BcDig);
-	total = bc_vm_arraySize(BC_NUM_KARATSUBA_ALLOCS, size);
-	digs = dig_ptr = bc_vm_malloc(total);
+	total = bc_vm_arraySize(BC_NUM_KARATSUBA_ALLOCS, max);
+	digs = dig_ptr = bc_vm_malloc_digs(total);
 
 	bc_num_setup(&l1, dig_ptr, max);
 	dig_ptr += max;
@@ -1379,7 +1374,7 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 void bc_num_init(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	bc_num_setup(n, bc_vm_malloc(sizeof(BcDig) * req), req);
+	bc_num_setup(n, bc_vm_malloc_digs(req), req);
 }
 
 void bc_num_free(void *num) {
