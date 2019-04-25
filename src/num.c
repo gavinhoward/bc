@@ -549,8 +549,6 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	ptr_c = c->num;
 	bc_num_set(ptr_c, 0, c->cap);
 
-	DUMP_NUM("a", a);
-	DUMP_NUM("b", b);
 	for (i = 0; BC_NO_SIG && i < clen; ++i) {
 
 		ssize_t sidx = (ssize_t) (i - blen + 1);
@@ -579,7 +577,6 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	}
 
 	c->len = clen;
-	DUMP_NUM("c", c);
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -1271,7 +1268,7 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 		for (j = BC_BASE_POWER - 1; j >= 0; j--) {
 			zeroes &= (buffer[j] == 0);
 			if (!zeroes)
-				bc_num_printHex((size_t) buffer[j], 1, i == rdx);
+				bc_num_printHex((size_t) buffer[j], 1, i == rdx && j == BC_BASE_POWER - 1);
 		}
 	}
 }
