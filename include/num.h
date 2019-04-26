@@ -82,6 +82,7 @@ typedef int_fast8_t BcDig;
 typedef struct BcNum {
 	BcDig *restrict num;
 	size_t rdx;
+	size_t scale;
 	size_t len;
 	size_t cap;
 	bool neg;
