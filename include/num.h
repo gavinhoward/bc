@@ -52,21 +52,21 @@
 
 #define BC_BASE (10)
 
-#if SIZE_MAX >= UINT_FAST64_MAX
+#if LONG_BIT >= 64
 
 typedef int_fast32_t BcDig;
 
 #define BC_BASE_DIG (1000000000)
 #define BC_BASE_POWER (9)
 
-#elif SIZE_MAX >= UINT_FAST32_MAX
+#elif LONG_BIT >= 32
 
 typedef int_fast16_t BcDig;
 
 #define BC_BASE_DIG (10000)
 #define BC_BASE_POWER (4)
 
-#elif SIZE_MAX >= UINT_FAST8_MAX
+#elif LONG_BIT >= 8
 
 typedef int_fast8_t BcDig;
 
@@ -75,7 +75,7 @@ typedef int_fast8_t BcDig;
 
 #else
 
-#error size_t must be at least 8 bits
+#error long must be at least 8 bits
 
 #endif // SIZE_MAX >= UINT_FAST64_MAX
 

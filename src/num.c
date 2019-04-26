@@ -132,19 +132,19 @@ void bc_num_ten(BcNum *restrict n) {
 static void bc_num_set(BcDig *restrict dst, const size_t val,
 		       const size_t n)
 {
-	memset(dst, val, n  * sizeof(BcDig));
+	memset(dst, val, n * sizeof(BcDig));
 }
 
 static void bc_num_cpy(BcDig *restrict dst, const BcDig *restrict src,
 		       const size_t n)
 {
-	memcpy(dst, src, n  * sizeof(BcDig));
+	memcpy(dst, src, n * sizeof(BcDig));
 }
 
 static void bc_num_move(BcDig *restrict dst, const BcDig *restrict src,
 		       const size_t n)
 {
-	memmove(dst, src, n  * sizeof(BcDig));
+	memmove(dst, src, n * sizeof(BcDig));
 }
 
 static size_t bc_num_log10(size_t i) {
