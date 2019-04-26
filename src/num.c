@@ -58,17 +58,17 @@ static void bc_num_printDebug(const BcNum *n, const char* name, bool emptynl) {
 
 static void bc_num_dump(const BcNum *n, const char *c) {
 
-	int i;
+	unsigned long i;
 
 	fprintf(stderr, "\n%s=", c);
 
-	for (i = n->len -1; i >= 0; i--) {
-		if (i+1 == n->rdx)
+	for (i = n->len -1; i < n->len; i--) {
+		if (i + 1 == n->rdx)
 			fprintf(stderr, ".");
 		fprintf(stderr, "%09d ", n->num[i]);
 	}
 
-	fprintf(stderr, "(%p|%zu/%zu)\n", n->num, n->len, n->cap);
+	fprintf(stderr, "(%p|%zu/%zu)\n", (void*) n->num, n->len, n->cap);
 }
 #endif // BC_DEBUG_CODE
 
