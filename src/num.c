@@ -1162,7 +1162,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 				size_t idx = exp / BC_BASE_POWER;
 
 				if (isupper(c)) c = '9';
-				n->num[idx] += (c - '0') * pow;
+				n->num[idx] += (((unsigned long) c) - '0') * pow;
 
 				if ((exp + 1) % BC_BASE_POWER == 0) pow = 1;
 				else pow *= BC_BASE;
