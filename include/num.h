@@ -54,30 +54,38 @@
 
 #if LONG_BIT >= 64
 
-typedef int_fast32_t BcDig;
+typedef int_least32_t BcDig;
 
 #define BC_BASE_DIG (1000000000)
 #define BC_BASE_POWER (9)
 
 #elif LONG_BIT >= 32
 
-typedef int_fast16_t BcDig;
+typedef int_least16_t BcDig;
 
 #define BC_BASE_DIG (10000)
 #define BC_BASE_POWER (4)
 
-#elif LONG_BIT >= 8
+#else
 
-typedef int_fast8_t BcDig;
+typedef int_least8_t BcDig;
+
+#if LONG_BIT >= 16
+
+#define BC_BASE_DIG (100)
+#define BC_BASE_POWER (2)
+
+#elif LONG_BIT >= 8
 
 #define BC_BASE_DIG (10)
 #define BC_BASE_POWER (1)
 
-#else
+#else // LONG_BIT >= 64
 
 #error long must be at least 8 bits
 
-#endif // SIZE_MAX >= UINT_FAST64_MAX
+#endif // LONG_BIT >= 16
+#endif // LONG_BIT >= 64
 
 typedef struct BcNum {
 	BcDig *restrict num;
