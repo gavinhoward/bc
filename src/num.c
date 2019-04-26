@@ -1310,47 +1310,34 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 
 	// TODO: Check this function.
 
-	ssize_t i, j, rdx = n->rdx;
-	BcDig n9;
-	bool nonzero = false;
-	size_t fracdigit = 0;
-	size_t trailzeroes = 0;
-	char buffer[BC_BASE_POWER];
+	size_t i, j, rdx = n->rdx;
+	bool zero = true;
+	size_t buffer[BC_BASE_POWER];
 
 	if (n->neg) bc_vm_putchar('-');
 	vm->nchars += n->neg;
 
-	for (i = n->len - 1; i >= 0; --i) {
-		n9 = n->num[i];
-		for (j = 0; j < BC_BASE_POWER; j++) {
+	for (i = n->len - 1; i < n->len; --i) {
+
+		BcDig n9 = n->num[i];
+		size_t temp;
+		bool irdx = (i == rdx - 1);
+
+		zero = (zero & !irdx);
+		temp = n->scale % BC_BASE_POWER;
+		temp = i || !temp ? 0 : BC_BASE_POWER - temp;
+
+		memset(buffer, 0, BC_BASE_POWER * sizeof(size_t));
+
+		for (j = 0; n9 && j < BC_BASE_POWER; ++j) {
 			buffer[j] = n9 % BC_BASE;
 			n9 /= BC_BASE;
 		}
-		for (j = BC_BASE_POWER - 1; j >= 0; j--) {
-			if (i == rdx - 1 && j == BC_BASE_POWER - 1) {
-				fracdigit = 1;
-				if (nonzero == false) {
-					//bc_num_printHex(0, 1, 0);
-					nonzero = true;
-				}
-			} else
-				nonzero |= (buffer[j] != 0);
 
-			if (nonzero) {
-				if (fracdigit > 0 && buffer[j] == 0)
-					trailzeroes++;
-				else {
-					while (trailzeroes != 0) {
-						bc_num_printHex(0, 1, fracdigit == 1);
-						if (fracdigit > 0)
-							fracdigit++;
-						trailzeroes--;
-					}
-					bc_num_printHex((size_t) buffer[j], 1, fracdigit == 1);
-					if (fracdigit > 0)
-						fracdigit++;
-				}
-			}
+		for (j = BC_BASE_POWER - 1; j < BC_BASE_POWER && j >= temp; --j) {
+			bool print_rdx = (irdx & (j == BC_BASE_POWER - 1));
+			zero = (zero && buffer[j] == 0);
+			if (!zero) bc_num_printHex(buffer[j], 1, print_rdx);
 		}
 	}
 }
