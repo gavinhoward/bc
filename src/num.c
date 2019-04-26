@@ -1116,52 +1116,56 @@ static unsigned long bc_num_parseChar(char c, size_t base_t) {
 	return (unsigned long) (uchar) c;
 }
 
-static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
-                                 BcNum *restrict base, size_t base_t); // <se>
-
 static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	// TODO: Check this function.
 
 	size_t len, i;
 	const char *ptr;
-	bool zero = true;
-
-	BcNum tmp;
-	bc_num_createFromUlong(&tmp, 10);
-
-	bc_num_parseBase(n, val, &tmp, BC_BASE);	// <se> use generic function for now ...
-	return;
+	bool zero = true, rdx;
 
 	for (i = 0; val[i] == '0'; ++i);
 
 	val += i;
 	len = strlen(val);
 
-	if (len) {
-		for (i = 0; zero && i < len; ++i)
-			zero = (val[i] == '0' || val[i] == '.');
-		bc_num_expand(n, len / BC_BASE_POWER);
-	}
-
 	ptr = strchr(val, '.');
+	rdx = (ptr != NULL);
 
-	// Explicitly test for NULL here to produce either a 0 or 1.
-	len += (BC_BASE_POWER - 1) / BC_BASE_POWER;
-	n->rdx = (size_t) ((ptr != NULL) * ((val + len) - (ptr + 1)));
+	for (i = 0; i < len && (zero = (val[i] == '0' || val[i] == '.')); ++i);
+
+	n->scale = (size_t) (rdx * ((val + len) - (ptr + 1)));
+	n->rdx = (n->scale + (BC_BASE_POWER - 1)) / BC_BASE_POWER;
+
+	i = (len - i - rdx + (BC_BASE_POWER - 1)) / BC_BASE_POWER;
+	n->len = i + (n->scale % BC_BASE_POWER != 0);
+
+	bc_num_expand(n, n->len);
+	bc_num_set(n->num, 0, n->len);
 
 	if (!zero) {
 
-		for (i = len - 1; i < len; ++n->len, --i) {
+		size_t exp, pow = 1;
+
+		exp = n->scale ? (BC_BASE_POWER - n->scale) % BC_BASE_POWER : 0;
+		for (i = 0; i < exp; pow *= BC_BASE, ++i);
+
+		for (i = len - 1; i < len; --i, ++exp) {
 
 			char c = val[i];
 
 			// <se> rewrite for 9 decimal digits per BcDig
 			// <se> adjust for fractional part that is not a multple of 9!!!
-			if (c == '.') n->len -= 1;
+			if (c == '.') exp -= 1;
 			else {
+
+				size_t idx = exp / BC_BASE_POWER;
+
 				if (isupper(c)) c = '9';
-				n->num[n->len] = c - '0';
+				n->num[idx] += (c - '0') * pow;
+
+				if ((exp + 1) % BC_BASE_POWER == 0) pow = 1;
+				else pow *= BC_BASE;
 			}
 		}
 	}
