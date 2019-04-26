@@ -931,7 +931,7 @@ static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	s = bc_num_sub(a, &temp, d, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	if (ts > d->rdx && BC_NUM_NONZERO(d)) bc_num_extend(d, ts - d->rdx);
+	if (ts > d->scale && BC_NUM_NONZERO(d)) bc_num_extend(d, ts - d->scale);
 
 	neg = d->neg;
 	bc_num_retireMul(d, ts, a->neg, b->neg);
@@ -949,8 +949,8 @@ static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 	BcNum c1;
 	size_t ts;
 
-	ts = bc_vm_growSize(scale, b->rdx);
-	ts = BC_MAX(ts, a->rdx);
+	ts = bc_vm_growSize(scale, b->scale);
+	ts = BC_MAX(ts, a->scale);
 
 	bc_num_init(&c1, bc_num_mulReq(a, b, ts));
 	s = bc_num_r(a, b, &c1, c, scale, ts);
@@ -1226,7 +1226,7 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	// TODO: Check this function.
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum temp, mult, result;
-	BcDig c = 0;
+	char c = 0;
 	bool zero = true;
 	unsigned long v;
 	size_t i, digs, len = strlen(val);
@@ -1676,7 +1676,7 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE_DIG != r))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
-		r = prev + n->num[--i];
+		r = prev + (unsigned long) n->num[--i];
 
 		if (BC_ERR(r == SIZE_MAX || r < prev))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
