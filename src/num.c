@@ -1120,13 +1120,14 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	// TODO: Check this function.
 
-	size_t len, i;
+	size_t len, i, temp, mod;
 	const char *ptr;
 	bool zero = true, rdx;
 
 	for (i = 0; val[i] == '0'; ++i);
 
 	val += i;
+	assert(isalnum(val[0]) || val[0] == '.');
 	len = strlen(val);
 
 	ptr = strchr(val, '.');
@@ -1137,17 +1138,20 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	n->scale = (size_t) (rdx * ((val + len) - (ptr + 1)));
 	n->rdx = (n->scale + (BC_BASE_POWER - 1)) / BC_BASE_POWER;
 
-	i = (len - i - rdx + (BC_BASE_POWER - 1)) / BC_BASE_POWER;
-	n->len = i + (n->scale % BC_BASE_POWER != 0);
+	i = len - (ptr == val ? 0 : i) - rdx;
+	temp = i + (BC_BASE_POWER - 1);
+	mod = n->scale % BC_BASE_POWER;
+	i = mod ? BC_BASE_POWER - mod : 0;
+	n->len = ((temp + i) / BC_BASE_POWER);
 
 	bc_num_expand(n, n->len);
 	bc_num_set(n->num, 0, n->len);
 
 	if (!zero) {
 
-		size_t exp, pow = 1;
+		unsigned long exp, pow = 1;
 
-		exp = n->scale ? (BC_BASE_POWER - n->scale) % BC_BASE_POWER : 0;
+		exp = i;
 		for (i = 0; i < exp; pow *= BC_BASE, ++i);
 
 		for (i = len - 1; i < len; --i, ++exp) {
