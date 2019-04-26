@@ -171,7 +171,6 @@ static unsigned long bc_num_addDigit(BcDig *restrict num, unsigned long d,
 static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
                                  size_t len)
 {
-	// TODO: Check this function.
 	size_t i;
 	unsigned long carry = 0;
 
@@ -189,7 +188,6 @@ static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
 static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
                                  size_t len)
 {
-	// TODO: Check this function.
 	size_t i, j;
 
 	for (i = 0; BC_NO_SIG && i < len; ++i) {
@@ -318,7 +316,6 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 static void bc_num_retireMul(BcNum *restrict n, size_t scale,
                              bool neg1, bool neg2)
 {
-	// TODO: Check this function.
 	if (n->scale < scale) bc_num_extend(n, scale - n->scale);
 	else bc_num_truncate(n, n->scale - scale);
 
@@ -334,7 +331,7 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 
 		b->len = n->len - idx;
 		a->len = idx;
-		a->rdx = b->rdx = 0;
+		a->scale = a->rdx = b->scale = b->rdx = 0;
 
 		bc_num_cpy(b->num, n->num + idx, b->len);
 		bc_num_cpy(a->num, n->num, idx);
@@ -1325,7 +1322,6 @@ static void bc_num_printNewline() {
 
 #if DC_ENABLED
 static void bc_num_printChar(size_t n, size_t len, bool rdx) {
-	// TODO: Check this function.
 	BC_UNUSED(rdx);
 	bc_vm_putchar((uchar) n);
 	vm->nchars += len;
@@ -1682,8 +1678,6 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 
 BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
-	// TODO: Check this function.
-
 	size_t i;
 	unsigned long r;
 
@@ -1712,8 +1706,6 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 }
 
 void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
-
-	// TODO: Check this function.
 
 	assert(n);
 
