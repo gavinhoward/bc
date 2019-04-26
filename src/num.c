@@ -56,7 +56,7 @@ static void bc_num_printDebug(const BcNum *n, const char* name, bool emptynl) {
 	vm->nchars = 0;
 }
 
-static void DUMP_NUM(const char *c, const BcNum *n) {
+static void bc_num_dump(const BcNum *n, const char *c) {
 
 	int i;
 
