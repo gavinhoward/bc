@@ -429,7 +429,7 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
 	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
-	unsigned int carry;
+	unsigned long carry;
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
@@ -481,12 +481,13 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 
 	for (carry = 0, i = 0; BC_NO_SIG && i < min_rdx + min_int; ++i) {
-		unsigned int in = ((unsigned int) ptr_a[i]) + ((unsigned int) ptr_b[i]);
+		unsigned long in;
+		in = ((unsigned long) ptr_a[i]) + ((unsigned long) ptr_b[i]);
 		carry = bc_num_addDigit(ptr_c + i, in, carry);
 	}
 
 	for (; BC_NO_SIG && i < max + min_rdx; ++i)
-		carry = bc_num_addDigit(ptr_c + i, (unsigned int) ptr[i], carry);
+		carry = bc_num_addDigit(ptr_c + i, (unsigned long) ptr[i], carry);
 
 	c->len += i;
 
