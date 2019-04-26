@@ -1135,7 +1135,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	for (i = 0; i < len && (zero = (val[i] == '0' || val[i] == '.')); ++i);
 
 	n->scale = (size_t) (rdx * ((val + len) - (ptr + 1)));
-	n->rdx = (n->scale + (BC_BASE_POWER - 1)) / BC_BASE_POWER;
+	n->rdx = BC_NUM_RDX(n->scale);
 
 	i = len - (ptr == val ? 0 : i) - rdx;
 	temp = i + (BC_BASE_POWER - 1);
