@@ -290,7 +290,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 		bc_num_move(n->num, n->num + places_rdx, n->len);
 
 		// Clear the lower part of the last digit.
-		if (BC_NUM_NONZERO(n)) n->num[0] -= n->num[0] % pow;
+		if (BC_NUM_NONZERO(n)) n->num[0] -= n->num[0] % (BcDig) pow;
 
 		bc_num_clean(n);
 	}
