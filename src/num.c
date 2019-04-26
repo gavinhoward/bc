@@ -153,6 +153,12 @@ static size_t bc_num_log10(size_t i) {
 	return len;
 }
 
+static unsigned long bc_num_pow10(unsigned long i) {
+	unsigned long pow;
+	for (pow = 1; i; --i, pow *= BC_BASE);
+	return pow;
+}
+
 static unsigned long bc_num_addDigit(BcDig *restrict num, unsigned long d,
                                     unsigned long c)
 {
@@ -167,15 +173,15 @@ static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
 {
 	// TODO: Check this function.
 	size_t i;
-	unsigned int carry = 0;
+	unsigned long carry = 0;
 
 	for (i = 0; BC_NO_SIG && i < len; ++i) {
-		unsigned int in = ((unsigned int) a[i]) + ((unsigned int) b[i]);
+		unsigned long in = ((unsigned long) a[i]) + ((unsigned long) b[i]);
 		carry = bc_num_addDigit(a + i, in, carry);
 	}
 
 	for (; BC_NO_SIG && carry; ++i)
-		carry = bc_num_addDigit(a + i, (unsigned int) a[i], carry);
+		carry = bc_num_addDigit(a + i, (unsigned long) a[i], carry);
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -307,8 +313,8 @@ static void bc_num_retireMul(BcNum *restrict n, size_t scale,
                              bool neg1, bool neg2)
 {
 	// TODO: Check this function.
-	if (n->rdx < scale) bc_num_extend(n, scale - n->rdx);
-	else bc_num_truncate(n, n->rdx - scale);
+	if (n->scale < scale) bc_num_extend(n, scale - n->scale);
+	else bc_num_truncate(n, n->scale - scale);
 
 	bc_num_clean(n);
 	if (BC_NUM_NONZERO(n)) n->neg = (!neg1 != !neg2);
@@ -404,7 +410,7 @@ static BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 	BcNum one;
 	BcDig num[2];
 
-	assert(!BC_NUM_ZERO(a));
+	assert(BC_NUM_NONZERO(a));
 
 	one.cap = 2;
 	one.num = num;
@@ -561,11 +567,11 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
 	// TODO: Check this function.
-	size_t i, sum = 0, carry = 0, alen = a->len, blen = b->len, clen;
+	size_t i, alen = a->len, blen = b->len, clen;
 	BcDig *ptr_a = a->num, *ptr_b = b->num, *ptr_c;
+	unsigned long sum = 0, carry = 0;
 
-	// TODO: This needs to be portable to non-64-bit platforms.
-	assert(sizeof(sum) >= 8);
+	assert(sizeof(sum) >= sizeof(BcDig) * 2);
 	assert(!a->rdx && !b->rdx);
 
 	clen = bc_vm_growSize(alen, blen);
@@ -581,7 +587,7 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 
 		for (; BC_NO_SIG && j < alen && k < blen; ++j, --k) {
 
-			sum += ((size_t) ptr_a[j]) * ((size_t) ptr_b[k]);
+			sum += ((unsigned long) ptr_a[j]) * ((unsigned long) ptr_b[k]);
 
 			if (sum >= BC_BASE_DIG) {
 				carry += sum / BC_BASE_DIG;
@@ -686,7 +692,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	s = bc_num_sub(&l2, &h2, &m2, 0);
 	if (BC_ERR(s)) goto err;
 
-	if (!BC_NUM_ZERO(&h1) && !BC_NUM_ZERO(&h2)) {
+	if (BC_NUM_NONZERO(&h1) && BC_NUM_NONZERO(&h2)) {
 
 		s = bc_num_m(&h1, &h2, &z2, 0);
 		if (BC_ERR(s)) goto err;
@@ -698,7 +704,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 		if (BC_ERR(s)) goto err;
 	}
 
-	if (!BC_NUM_ZERO(&l1) && !BC_NUM_ZERO(&l2)) {
+	if (BC_NUM_NONZERO(&l1) && BC_NUM_NONZERO(&l2)) {
 
 		s = bc_num_m(&l1, &l2, &z0, 0);
 		if (BC_ERR(s)) goto err;
@@ -710,7 +716,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 		if (BC_ERR(s)) goto err;
 	}
 
-	if (!BC_NUM_ZERO(&m1) && !BC_NUM_ZERO(&m2)) {
+	if (BC_NUM_NONZERO(&m1) && BC_NUM_NONZERO(&m2)) {
 
 		s = bc_num_m(&m1, &m2, &z1, 0);
 		if (BC_ERR(s)) goto err;
@@ -1152,10 +1158,10 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	if (zero) n->len = n->rdx = 0;
 	else {
 
-		unsigned long exp, pow = 1;
+		unsigned long exp, pow;
 
 		exp = i;
-		for (i = 0; i < exp; pow *= BC_BASE, ++i);
+		pow = bc_num_pow10(exp);
 
 		for (i = len - 1; i < len; --i, ++exp) {
 
@@ -1399,7 +1405,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	size_t i;
 	bool radix;
 
-	assert(!BC_NUM_ZERO(base));
+	assert(BC_NUM_NONZERO(base));
 
 	if (BC_NUM_ZERO(n)) {
 		print(0, len, false);
@@ -1806,7 +1812,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	while (BC_NO_SIG && (cmp || digs < len)) {
 
-		assert(!BC_NUM_ZERO(x0));
+		assert(BC_NUM_NONZERO(x0));
 
 		s = bc_num_div(a, x0, &f, resrdx);
 		assert(!s || s == BC_STATUS_SIGNAL);
