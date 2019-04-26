@@ -272,16 +272,26 @@ static void bc_num_clean(BcNum *restrict n) {
 void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	// TODO: Check this function.
-
-	assert(places <= n->rdx && (BC_NUM_ZERO(n) || places <= n->len));
+	size_t places_rdx;
 
 	if (!places) return;
 
-	n->rdx -= places;
+	places_rdx = n->rdx - BC_NUM_RDX(n->scale - places);
+	assert(places <= n->scale && (BC_NUM_ZERO(n) || places_rdx <= n->len));
+
+	n->scale -= places;
+	n->rdx -= places_rdx;
 
 	if (BC_NUM_NONZERO(n)) {
-		n->len -= places;
-		bc_num_move(n->num, n->num + places, n->len);
+
+		size_t pow = bc_num_pow10(n->scale % BC_BASE_POWER);
+
+		n->len -= places_rdx;
+		bc_num_move(n->num, n->num + places_rdx, n->len);
+
+		// Clear the lower part of the last digit.
+		if (BC_NUM_NONZERO(n)) n->num[0] -= n->num[0] % pow;
+
 		bc_num_clean(n);
 	}
 }
@@ -289,22 +299,16 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 static void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	// TODO: Check this function.
-
-	size_t len, places_rdx;
+	size_t places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
 	if (!places) return;
 
-	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
-	len = bc_vm_growSize(n->len, places_rdx);
-	if (n->cap < len) bc_num_expand(n, len);
-
+	bc_num_expand(n, n->len + places_rdx);
 	bc_num_move(n->num + places_rdx, n->num, n->len);
 	bc_num_set(n->num, 0, places_rdx);
-
-	if (n->len) n->len += places_rdx;
-
 	n->rdx += places_rdx;
 	n->scale += places;
+	n->len += places_rdx;
 
 	assert(n->rdx == BC_NUM_RDX(n->scale));
 }
@@ -342,8 +346,6 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 
 static size_t bc_num_shiftZero(BcNum *restrict n) {
 
-	// TODO: Check this function.
-
 	size_t i;
 
 	assert(!n->rdx || BC_NUM_ZERO(n));
@@ -357,40 +359,79 @@ static size_t bc_num_shiftZero(BcNum *restrict n) {
 }
 
 static void bc_num_unshiftZero(BcNum *restrict n, size_t places) {
-	// TODO: Check this function.
 	n->len += places;
 	n->num -= places;
 }
 
-static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
+static BcStatus bc_num_shift(BcNum *restrict n, BcDig *restrict ptr, unsigned long dig, size_t len) {
 
-	// TODO: Check this function.
+	size_t i;
+	unsigned long carry = 0;
 
-	if (!places || BC_NUM_ZERO(n)) return;
+	assert(dig < BC_BASE_POWER);
 
-	if (n->rdx >= places) n->rdx -= places;
-	else {
-		bc_num_extend(n, places - n->rdx);
-		n->rdx = 0;
+	dig = bc_num_pow10(dig);
+
+	for (i = 0; BC_NO_SIG && i < len; ++i) {
+		unsigned long in = ((unsigned long) ptr[i]) * dig;
+		carry = bc_num_addDigit(ptr + i, in, carry);
 	}
 
-	bc_num_clean(n);
+	if (carry) {
+		bc_num_expand(n, n->len + 1);
+		assert(carry < BC_BASE_DIG);
+		n->num[n->len] = (BcDig) carry;
+		n->len += 1;
+	}
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
-static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
+static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
-	// TODO: Check this function.
+	BcStatus s = BC_STATUS_SUCCESS;
+	unsigned long dig = (unsigned long) (places % BC_BASE_POWER);
+	bool shift = (dig != 0);
+	size_t places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx - 1;
 
-	size_t len;
+	if (!places) return s;
 
-	if (!places) return;
+	if (n->scale >= places) {
+		n->scale -= places;
+		n->rdx = BC_NUM_RDX(n->scale);
+	}
+	else if (BC_NUM_NONZERO(n)) {
+		bc_num_expand(n, n->len + places_rdx + 1);
+		bc_num_move(n->num + places_rdx, n->num, n->len);
+		bc_num_set(n->num, 0, places_rdx);
+		n->len += places_rdx;
+		n->scale = n->rdx = 0;
+	}
+	else n->scale = 0;
+
+	if (shift) s = bc_num_shift(n, n->num + places_rdx, dig, n->len - places_rdx);
+
+	bc_num_clean(n);
+
+	return BC_SIG && !s ? BC_STATUS_SIGNAL : s;
+}
+
+static BcStatus bc_num_shiftRight(BcNum *restrict n, size_t places) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	unsigned long dig = (unsigned long) (places % BC_BASE_POWER);
+	bool shift = (dig != 0);
+	size_t len, places_rdx;
+
+	if (!places) return s;
 	if (BC_NUM_ZERO(n)) {
-		n->rdx += places;
-		bc_num_expand(n, n->rdx);
-		return;
+		n->scale += places;
+		bc_num_expand(n, BC_NUM_RDX(n->scale));
+		return s;
 	}
 
-	len = bc_vm_growSize(n->rdx, places);
+	places_rdx = BC_NUM_RDX(places);
+	len = bc_vm_growSize(n->len, places_rdx);
 
 	if (len > n->len) {
 
@@ -400,9 +441,15 @@ static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 		n->len = len;
 	}
 
-	n->rdx += places;
+	n->scale += places;
+	n->rdx += places_rdx;
+
+	if (shift) s = bc_num_shift(n, n->num, BC_BASE_POWER - dig, n->len);
 
 	assert(n->rdx <= n->len && n->len <= n->cap);
+	assert(n->rdx == BC_NUM_RDX(n->scale));
+
+	return BC_SIG && !s ? BC_STATUS_SIGNAL : s;
 }
 
 static BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
@@ -1022,9 +1069,7 @@ static BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 	s = bc_num_intop(a, b, c, &val);
 	if (BC_ERR(s)) return s;
 
-	bc_num_shiftLeft(c, (size_t) val);
-
-	return s;
+	return bc_num_shiftLeft(c, (size_t) val);
 }
 
 static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c,
@@ -1041,9 +1086,7 @@ static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c,
 
 	if (BC_NUM_ZERO(c)) return s;
 
-	bc_num_shiftRight(c, (size_t) val);
-
-	return s;
+	return bc_num_shiftRight(c, (size_t) val);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1345,10 +1388,11 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 }
 
 #if BC_ENABLE_EXTRA_MATH
-static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
+static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 
 	// TODO: Check this function.
 
+	BcStatus s = BC_STATUS_SUCCESS;
 	bool neg = (n->len <= n->rdx);
 	BcNum temp, exp;
 	size_t places, mod;
@@ -1360,13 +1404,15 @@ static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		places = n->rdx - bc_num_len(n) + 1;
 		mod = places % 3;
 		if (eng && mod != 0) places += 3 - mod;
-		bc_num_shiftLeft(&temp, places);
+		s = bc_num_shiftLeft(&temp, places);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto exit;
 	}
 	else {
 		places = bc_num_int(n) - 1;
 		mod = places % 3;
 		if (eng && mod != 0) places -= 3 - (3 - mod);
-		bc_num_shiftRight(&temp, places);
+		s = bc_num_shiftRight(&temp, places);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto exit;
 	}
 
 	bc_num_printDecimal(&temp);
@@ -1391,6 +1437,7 @@ static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
 
 exit:
 	bc_num_free(&temp);
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1604,7 +1651,8 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
 	else if (base_t == BC_BASE) bc_num_printDecimal(n);
 #if BC_ENABLE_EXTRA_MATH
-	else if (base_t == 0 || base_t == 1) bc_num_printExponent(n, base_t != 0);
+	else if (base_t == 0 || base_t == 1)
+		s = bc_num_printExponent(n, base_t != 0);
 #endif // BC_ENABLE_EXTRA_MATH
 	else s = bc_num_printBase(n, base, base_t);
 
