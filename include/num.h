@@ -124,7 +124,8 @@ typedef struct BcNum {
 
 #define BC_NUM_SSIZE_MIN (~SSIZE_MAX)
 
-#define BC_NUM_RDX(s) (((s) + (BC_BASE_POWER - 1)) / BC_BASE_POWER)
+#define BC_NUM_ROUND_POW(s) ((s) + (BC_BASE_POWER - 1))
+#define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_POWER)
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
