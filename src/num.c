@@ -1063,7 +1063,6 @@ err:
 static BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c,
                              size_t scale)
 {
-	// TODO: Check this function.
 	BcStatus s = BC_STATUS_SUCCESS;
 	unsigned long val = 0;
 
@@ -1080,7 +1079,6 @@ static BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c,
 
 static BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 {
-	// TODO: Check this function.
 	BcStatus s = BC_STATUS_SUCCESS;
 	unsigned long val = 0;
 
@@ -1095,7 +1093,6 @@ static BcStatus bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c,
                              size_t scale)
 {
-	// TODO: Check this function.
 	BcStatus s = BC_STATUS_SUCCESS;
 	unsigned long val = 0;
 
@@ -1113,7 +1110,6 @@ static BcStatus bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c,
 static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
                               BcNumBinaryOp op, size_t req)
 {
-	// TODO: Check this function.
 	BcStatus s;
 	BcNum num2, *ptr_a, *ptr_b;
 	bool init = false;
