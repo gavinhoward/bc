@@ -1118,8 +1118,6 @@ static unsigned long bc_num_parseChar(char c, size_t base_t) {
 
 static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
-	// TODO: Check this function.
-
 	size_t len, i, temp, mod;
 	const char *ptr;
 	bool zero = true, rdx;
@@ -1159,8 +1157,6 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 			char c = val[i];
 
-			// <se> rewrite for 9 decimal digits per BcDig
-			// <se> adjust for fractional part that is not a multple of 9!!!
 			if (c == '.') exp -= 1;
 			else {
 
@@ -1291,8 +1287,6 @@ static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
 
 static void bc_num_printHex(size_t n, size_t len, bool rdx) {
 
-	// TODO: Check this function.
-
 	assert(len == 1);
 
 	if (rdx) {
@@ -1307,8 +1301,6 @@ static void bc_num_printHex(size_t n, size_t len, bool rdx) {
 }
 
 static void bc_num_printDecimal(const BcNum *restrict n) {
-
-	// TODO: Check this function.
 
 	size_t i, j, rdx = n->rdx;
 	bool zero = true;
