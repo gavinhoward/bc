@@ -271,7 +271,6 @@ static void bc_num_clean(BcNum *restrict n) {
 
 void bc_num_truncate(BcNum *restrict n, size_t places) {
 
-	// TODO: Check this function.
 	size_t places_rdx;
 
 	if (!places) return;
@@ -284,7 +283,11 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	if (BC_NUM_NONZERO(n)) {
 
-		size_t pow = bc_num_pow10(n->scale % BC_BASE_POWER);
+		size_t pow;
+
+		pow = n->scale % BC_BASE_POWER;
+		pow = pow ? BC_BASE_POWER - pow : 0;
+		pow = bc_num_pow10(pow);
 
 		n->len -= places_rdx;
 		bc_num_move(n->num, n->num + places_rdx, n->len);
@@ -298,7 +301,6 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 static void bc_num_extend(BcNum *restrict n, size_t places) {
 
-	// TODO: Check this function.
 	size_t places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
 	if (!places) return;
@@ -1052,8 +1054,8 @@ static BcStatus bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c,
 	s = bc_num_intop(a, b, c, &val);
 	if (BC_ERR(s)) return s;
 
-	if (val < c->rdx) bc_num_truncate(c, c->rdx - val);
-	else if (val > c->rdx) bc_num_extend(c, val - c->rdx);
+	if (val < c->scale) bc_num_truncate(c, c->scale - val);
+	else if (val > c->scale) bc_num_extend(c, val - c->scale);
 
 	return s;
 }
