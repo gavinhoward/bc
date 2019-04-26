@@ -440,6 +440,7 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	c->neg = a->neg;
 	c->rdx = BC_MAX(a->rdx, b->rdx);
+	c->scale = BC_MAX(a->scale, b->scale);
 	min_rdx = BC_MIN(a->rdx, b->rdx);
 
 	if (a->rdx > b->rdx) {
