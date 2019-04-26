@@ -284,17 +284,23 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	// TODO: Check this function.
 
-	size_t len = bc_vm_growSize(n->len, places);
+	size_t len, places_rdx;
 
 	if (!places) return;
+
+	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
+	len = bc_vm_growSize(n->len, places_rdx);
 	if (n->cap < len) bc_num_expand(n, len);
 
-	bc_num_move(n->num + places, n->num, n->len);
-	bc_num_set(n->num, 0, places);
+	bc_num_move(n->num + places_rdx, n->num, n->len);
+	bc_num_set(n->num, 0, places_rdx);
 
-	if (n->len) n->len += places;
+	if (n->len) n->len += places_rdx;
 
-	n->rdx += places;
+	n->rdx += places_rdx;
+	n->scale += places;
+
+	assert(n->rdx == BC_NUM_RDX(n->scale));
 }
 
 static void bc_num_retireMul(BcNum *restrict n, size_t scale,
@@ -542,8 +548,8 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	bc_num_copy(c, minuend);
 	c->neg = neg;
 
-	if (c->rdx < subtrahend->rdx) {
-		bc_num_extend(c, subtrahend->rdx - c->rdx);
+	if (c->scale < subtrahend->scale) {
+		bc_num_extend(c, subtrahend->scale - c->scale);
 		start = 0;
 	}
 	else start = c->rdx - subtrahend->rdx;
