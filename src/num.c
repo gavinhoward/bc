@@ -1147,7 +1147,8 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	bc_num_expand(n, n->len);
 	bc_num_set(n->num, 0, n->len);
 
-	if (!zero) {
+	if (zero) n->len = n->rdx = 0;
+	else {
 
 		unsigned long exp, pow = 1;
 
