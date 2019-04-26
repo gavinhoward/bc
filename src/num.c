@@ -425,8 +425,6 @@ static BcStatus bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
 
 static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
-	// TODO: Check this function.
-
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
 	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
 	unsigned long carry;
@@ -497,8 +495,6 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 }
 
 static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
-
-	// TODO: Check this function.
 
 	BcStatus s;
 	ssize_t cmp;
