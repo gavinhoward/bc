@@ -127,6 +127,8 @@ typedef struct BcNum {
 #define BC_NUM_ROUND_POW(s) ((s) + (BC_BASE_POWER - 1))
 #define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_POWER)
 
+#define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
+
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);

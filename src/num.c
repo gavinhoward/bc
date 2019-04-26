@@ -94,7 +94,7 @@ static void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	if (req > n->cap) {
-		n->num = bc_vm_realloc_digs(n->num, req);
+		n->num = bc_vm_realloc(n->num, BC_NUM_SIZE(req));
 		n->cap = req;
 	}
 }
@@ -127,24 +127,6 @@ void bc_num_ten(BcNum *restrict n) {
 	n->len = 1;
 	n->num[0] = BC_BASE;
 #endif // BC_BASE_DIG == 10
-}
-
-static void bc_num_set(BcDig *restrict dst, const size_t val,
-		       const size_t n)
-{
-	memset(dst, val, n * sizeof(BcDig));
-}
-
-static void bc_num_cpy(BcDig *restrict dst, const BcDig *restrict src,
-		       const size_t n)
-{
-	memcpy(dst, src, n * sizeof(BcDig));
-}
-
-static void bc_num_move(BcDig *restrict dst, const BcDig *restrict src,
-		       const size_t n)
-{
-	memmove(dst, src, n * sizeof(BcDig));
 }
 
 static size_t bc_num_log10(size_t i) {
@@ -288,7 +270,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 		pow = bc_num_pow10(pow);
 
 		n->len -= places_rdx;
-		bc_num_move(n->num, n->num + places_rdx, n->len);
+		memmove(n->num, n->num + places_rdx, BC_NUM_SIZE(n->len));
 
 		// Clear the lower part of the last digit.
 		if (BC_NUM_NONZERO(n)) n->num[0] -= n->num[0] % (BcDig) pow;
@@ -304,8 +286,8 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	if (!places) return;
 
 	bc_num_expand(n, n->len + places_rdx);
-	bc_num_move(n->num + places_rdx, n->num, n->len);
-	bc_num_set(n->num, 0, places_rdx);
+	memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
+	memset(n->num, 0, BC_NUM_SIZE(places_rdx));
 	n->rdx += places_rdx;
 	n->scale += places;
 	n->len += places_rdx;
@@ -333,8 +315,8 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 		a->len = idx;
 		a->scale = a->rdx = b->scale = b->rdx = 0;
 
-		bc_num_cpy(b->num, n->num + idx, b->len);
-		bc_num_cpy(a->num, n->num, idx);
+		memcpy(b->num, n->num + idx, BC_NUM_SIZE(b->len));
+		memcpy(a->num, n->num, BC_NUM_SIZE(idx));
 
 		bc_num_clean(b);
 	}
@@ -408,8 +390,8 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
 		if (places_rdx != n->rdx) {
 			bc_num_expand(n, n->len + places_rdx - n->rdx + shift);
-			bc_num_move(n->num + places_rdx - n->rdx, n->num, n->len);
-			bc_num_set(n->num, 0, places_rdx - n->rdx);
+			memmove(n->num + places_rdx - n->rdx, n->num, BC_NUM_SIZE(n->len));
+			memset(n->num, 0, BC_NUM_SIZE(places_rdx - n->rdx));
 			n->len += places_rdx;
 		}
 
@@ -445,7 +427,7 @@ static BcStatus bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 		if (len > n->cap) bc_num_expand(n, len);
 
-		bc_num_set(n->num + n->len, 0, len - n->len);
+		memset(n->num + n->len, 0, BC_NUM_SIZE(len - n->len));
 		n->len = len;
 	}
 
@@ -633,7 +615,7 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	bc_num_expand(c, clen + 1);
 
 	ptr_c = c->num;
-	bc_num_set(ptr_c, 0, c->cap);
+	memset(ptr_c, 0, BC_NUM_SIZE(c->cap));
 
 	for (i = 0; BC_NO_SIG && i < clen; ++i) {
 
@@ -711,7 +693,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	max2 = (max + 1) / 2;
 
 	total = bc_vm_arraySize(BC_NUM_KARATSUBA_ALLOCS, max);
-	digs = dig_ptr = bc_vm_malloc_digs(total);
+	digs = dig_ptr = bc_vm_malloc(BC_NUM_SIZE(total));
 
 	bc_num_setup(&l1, dig_ptr, max);
 	dig_ptr += max;
@@ -740,7 +722,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 
 	bc_num_expand(c, max);
 	c->len = max;
-	bc_num_set(c->num, 0, c->len);
+	memset(c->num, 0, BC_NUM_SIZE(c->len));
 
 	s = bc_num_sub(&h1, &l1, &m1, 0);
 	if (BC_ERR(s)) goto err;
@@ -895,7 +877,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_expand(c, cp.len);
 
-	bc_num_set(c->num + end, 0, c->cap - end);
+	memset(c->num + end, 0, BC_NUM_SIZE(c->cap - end));
 	c->rdx = cp.rdx;
 	c->len = cp.len;
 	p = b->num;
@@ -1209,7 +1191,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	n->len = ((temp + i) / BC_BASE_POWER);
 
 	bc_num_expand(n, n->len);
-	bc_num_set(n->num, 0, n->len);
+	memset(n->num, 0, BC_NUM_SIZE(n->len));
 
 	if (zero) n->len = n->rdx = 0;
 	else {
@@ -1583,7 +1565,7 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 void bc_num_init(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	bc_num_setup(n, bc_vm_malloc_digs(req), req);
+	bc_num_setup(n, bc_vm_malloc(BC_NUM_SIZE(req)), req);
 }
 
 void bc_num_free(void *num) {
@@ -1599,7 +1581,7 @@ void bc_num_copy(BcNum *d, const BcNum *s) {
 	d->neg = s->neg;
 	d->rdx = s->rdx;
 	d->scale = s->scale;
-	bc_num_cpy(d->num, s->num, d->len);
+	memcpy(d->num, s->num, BC_NUM_SIZE(d->len));
 }
 
 void bc_num_createCopy(BcNum *d, const BcNum *s) {
