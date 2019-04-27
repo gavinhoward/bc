@@ -251,14 +251,6 @@ void* bc_vm_realloc(void *ptr, size_t n) {
 	return temp;
 }
 
-BcDig* bc_vm_malloc_digs(size_t n) {
-	return bc_vm_malloc(n * sizeof(BcDig));
-}
-
-BcDig* bc_vm_realloc_digs(BcDig *ptr, size_t n) {
-	return bc_vm_realloc(ptr, n * sizeof(BcDig));
-}
-
 char* bc_vm_strdup(const char *str) {
 	char *s = strdup(str);
 	if (BC_ERR(!s)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);

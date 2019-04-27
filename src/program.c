@@ -591,7 +591,7 @@ void bc_program_not(BcResult *r, BcNum *n) {
 void bc_program_trunc(BcResult *r, BcNum *n) {
 	BcNum *rn = &r->d.n;
 	bc_num_copy(rn, n);
-	bc_num_truncate(rn, n->rdx);
+	bc_num_truncate(rn, n->scale);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1286,7 +1286,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	if (BC_PROG_NUM(r, n)) {
 
 		bc_num_createCopy(&num, n);
-		bc_num_truncate(&num, num.rdx);
+		bc_num_truncate(&num, num.scale);
 		num.neg = false;
 
 		// This is guaranteed to not have a divide by 0

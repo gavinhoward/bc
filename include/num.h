@@ -52,36 +52,45 @@
 
 #define BC_BASE (10)
 
-#if SIZE_MAX >= UINT_FAST64_MAX
+#if LONG_BIT >= 64
 
-typedef int_fast32_t BcDig;
+typedef int_least32_t BcDig;
 
 #define BC_BASE_DIG (1000000000)
 #define BC_BASE_POWER (9)
 
-#elif SIZE_MAX >= UINT_FAST32_MAX
+#elif LONG_BIT >= 32
 
-typedef int_fast16_t BcDig;
+typedef int_least16_t BcDig;
 
 #define BC_BASE_DIG (10000)
 #define BC_BASE_POWER (4)
 
-#elif SIZE_MAX >= UINT_FAST8_MAX
+#else
 
-typedef int_fast8_t BcDig;
+typedef int_least8_t BcDig;
+
+#if LONG_BIT >= 16
+
+#define BC_BASE_DIG (100)
+#define BC_BASE_POWER (2)
+
+#elif LONG_BIT >= 8
 
 #define BC_BASE_DIG (10)
 #define BC_BASE_POWER (1)
 
-#else
+#else // LONG_BIT >= 64
 
-#error size_t must be at least 8 bits
+#error long must be at least 8 bits
 
-#endif // SIZE_MAX >= UINT_FAST64_MAX
+#endif // LONG_BIT >= 16
+#endif // LONG_BIT >= 64
 
 typedef struct BcNum {
 	BcDig *restrict num;
 	size_t rdx;
+	size_t scale;
 	size_t len;
 	size_t cap;
 	bool neg;
@@ -114,6 +123,11 @@ typedef struct BcNum {
 #define BC_NUM_KARATSUBA_ALLOCS (6)
 
 #define BC_NUM_SSIZE_MIN (~SSIZE_MAX)
+
+#define BC_NUM_ROUND_POW(s) ((s) + (BC_BASE_POWER - 1))
+#define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_POWER)
+
+#define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
