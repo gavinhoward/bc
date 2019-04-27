@@ -953,15 +953,17 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 		bc_num_mul(&f, &b1, &b1, scale);
 
-		if (b1.num[b1.len - 1] != 1) {
+		if (b1.num[b1.len - 1] == 1) {
+			b1.rdx = b1.len - 1; // only possible if b1 == 1.000000...
+		} else {
 			b1.rdx = b1.len;
 			validbits = factor < divisor ? intlog2(factor) : intlog2(divisor);
 			bc_num_invert(&b1, validbits, (a->len + b1.len) * BC_BASE_POWER);
+			if (b1.len > c->len)
+				bc_num_extend(c, c->len + b1.len);	// ???
+			bc_num_mul(&b1, c, c, scale);
 		}
-		if (b1.len > c->len)
-			bc_num_extend(c, c->len + b1.len);	// ???
 		bc_num_mul(&f, c, c, scale);
-		bc_num_mul(&b1, c, c, scale);
 		c->rdx = c->len - 1;
 	}
 	if (shift > 0) {
