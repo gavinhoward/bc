@@ -196,7 +196,7 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 	return BC_SIG ? BC_NUM_SSIZE_MIN : bc_num_neg(i + 1, c < 0);
 }
 
-static ssize_t bc_num_compare2(const BcDig *restrict a, size_t len_a, 
+static ssize_t bc_num_compare2(const BcDig *restrict a, size_t len_a,
 			       const BcDig *restrict b, size_t len_b)
 {
 	int i;
@@ -380,9 +380,9 @@ static size_t bc_num_shiftZero(BcNum *restrict n) {
 	return i;
 }
 
-static void bc_num_unshiftZero(BcNum *restrict n, size_t nBcDig) {
-	n->len += nBcDig;
-	n->num -= nBcDig;
+static void bc_num_unshiftZero(BcNum *restrict n, size_t places_rdx) {
+	n->len += places_rdx;
+	n->num -= places_rdx;
 }
 
 static BcStatus bc_num_shift(BcNum *restrict n, BcDig *restrict ptr,
