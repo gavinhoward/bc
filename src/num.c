@@ -824,8 +824,10 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_setToZero(c, 0);
 
-	ascale = BC_MAX(scale, a->scale);
-	bscale = BC_MAX(scale, b->scale);
+	ascale = a->scale;
+	bscale = b->scale;
+	scale = BC_MAX(scale, ascale);
+	scale = BC_MAX(scale, b->scale);
 	rscale = ascale + bscale;
 	scale = BC_MIN(rscale, scale);
 
@@ -859,6 +861,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_retireMul(c, scale, a->neg, b->neg);
+
 err:
 	bc_num_unshiftZero(&cpb, bzero);
 	bc_num_free(&cpb);
