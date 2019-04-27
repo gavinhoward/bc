@@ -1664,19 +1664,28 @@ size_t bc_num_scale(const BcNum *restrict n) {
 
 size_t bc_num_len(const BcNum *restrict n) {
 
-	// TODO: Check this function.
-
-	size_t i, len = n->len;
+	size_t i, pow, scale, len = n->len;
 	BcDig dig;
 
-	if (n->rdx != len) return len;
-	for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
+	if (BC_NUM_ZERO(n)) return 0;
+
+	if (n->rdx == len) {
+		for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
+	}
 
 	dig = n->num[len - 1];
+	pow = BC_BASE_DIG;
+	i = BC_BASE_POWER + 1;
 
-	for (i = BC_BASE_DIG; i && (dig % (BcDig) i == dig); i /= BC_BASE);
+	while (pow && (dig % (BcDig) pow == dig)) {
+		i -= 1;
+		pow /= BC_BASE;
+	}
 
-	return (len - 1) * BC_BASE_POWER + i;
+	scale = n->scale % BC_BASE_POWER;
+	scale = scale ? scale : BC_BASE_POWER;
+
+	return (len - 1) * BC_BASE_POWER + i - (BC_BASE_POWER - scale);
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
