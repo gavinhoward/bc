@@ -48,30 +48,44 @@
 #if BC_DEBUG_CODE
 static void bc_num_printDecimal(const BcNum *restrict a);
 
-static void bc_num_printDebug(const BcNum *n, const char* name, bool emptynl) {
+static void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline)
+{
 	printf("%s: ", name);
 	bc_num_printDecimal(n);
 	printf("\n");
-	if (emptynl) printf("\n");
+	if (emptyline) printf("\n");
 	vm->nchars = 0;
 }
 
-static void DUMP_NUM(const char *varname, const BcNum *n) {
+static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
+
+	size_t i;
+
+	printf("%s len: %zu, rdx: %zu, scale: %zu\n",
+	       name, n->len, n->rdx, n->scale);
+
+	for (i = n->len - 1; i < n->len; --i)
+		printf(" %0*d", BC_BASE_POWER, n->num[i]);
+
+	printf("\n");
+	if (emptyline) printf("\n");
+	vm->nchars = 0;
+}
+
+static void bc_num_dump(const char *varname, const BcNum *n) {
 
 	unsigned long i;
 
 	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
 
 	for (i = n->len -1; i < n->len; i--) {
-		if (i+1 == n->rdx)
-			fprintf(stderr, ". ");
+		if (i + 1 == n->rdx) fprintf(stderr, ". ");
 		fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 	}
 
-	fprintf(stderr, "(%p | %zu.%zu/%zu)\n", n->num, n->len, n->rdx, n->cap);
+	fprintf(stderr, "(%p | %zu.%zu/%zu)\n",
+	        (void*) n->num, n->len, n->rdx, n->cap);
 }
-
-#define P(x) fprintf(stderr, "%s = %zu\n", #x, (unsigned long)(x))
 #endif // BC_DEBUG_CODE
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
@@ -297,22 +311,6 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	assert(n->rdx == BC_NUM_RDX(n->scale));
 }
 
-#if 0 // <se>
-static void bc_num_truncDecimals(BcNum *restrict n, int digits) { // --> num.h <se>
-	int i, d;
-
-	if (n->rdx * BC_BASE_POWER > digits) {
-		bc_num_truncate(n, n->rdx - (digits + BC_BASE_POWER - 1) / BC_BASE_POWER);
-		if (n->rdx * BC_BASE_POWER > digits) {
-			d = 10;
-			for (i = digits % BC_BASE_POWER + 1; i < BC_BASE_POWER; i++)
-				d = d * 10;
-			n->num[0] -= n->num[0] % d;
-		}
-	}
-}
-#endif
-
 static void bc_num_retireMul(BcNum *restrict n, size_t scale,
                              bool neg1, bool neg2)
 {
@@ -357,9 +355,9 @@ static size_t bc_num_shiftZero(BcNum *restrict n) {
 	return i;
 }
 
-static void bc_num_unshiftZero(BcNum *restrict n, size_t nBcDig) {
-	n->len += nBcDig;
-	n->num -= nBcDig;
+static void bc_num_unshiftZero(BcNum *restrict n, size_t places_rdx) {
+	n->len += places_rdx;
+	n->num -= places_rdx;
 }
 
 static BcStatus bc_num_shift(BcNum *restrict n, BcDig *restrict ptr,
@@ -802,6 +800,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bscale = b->scale;
 	ascale = BC_MAX(scale, ascale);
 	bscale = BC_MAX(scale, bscale);
+
 	rscale = ascale + bscale;
 	scale = BC_MIN(rscale, scale);
 	bc_num_createCopy(&cpa, a);
@@ -832,6 +831,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	s = bc_num_shiftRight(c, ardx + brdx);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	bc_num_retireMul(c, scale, a->neg, b->neg);
+
 err:
 	bc_num_unshiftZero(&cpb, bzero);
 	bc_num_free(&cpb);
@@ -1680,19 +1680,28 @@ size_t bc_num_scale(const BcNum *restrict n) {
 
 size_t bc_num_len(const BcNum *restrict n) {
 
-	// TODO: Check this function.
-
-	size_t i, len = n->len;
+	size_t i, pow, scale, len = n->len;
 	BcDig dig;
 
-	if (n->rdx != len) return len;
-	for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
+	if (BC_NUM_ZERO(n)) return 0;
+
+	if (n->rdx == len) {
+		for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
+	}
 
 	dig = n->num[len - 1];
+	pow = BC_BASE_DIG;
+	i = BC_BASE_POWER + 1;
 
-	for (i = BC_BASE_DIG; i && (dig % (BcDig) i == dig); i /= BC_BASE);
+	while (pow && (dig % (BcDig) pow == dig)) {
+		i -= 1;
+		pow /= BC_BASE;
+	}
 
-	return (len - 1) * BC_BASE_POWER + i;
+	scale = n->scale % BC_BASE_POWER;
+	scale = scale ? scale : BC_BASE_POWER;
+
+	return (len - 1) * BC_BASE_POWER + i - (BC_BASE_POWER - scale);
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
