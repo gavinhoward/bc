@@ -1689,6 +1689,9 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 
+	BcDig *ptr;
+	unsigned long i;
+
 	assert(n);
 
 	bc_num_zero(n);
@@ -1697,10 +1700,8 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 
 	bc_num_expand(n, bc_num_log10(ULONG_MAX));
 
-	while (val) {
-		n->num[n->len++] = val % BC_BASE_DIG;
-		val /= BC_BASE_DIG;
-	}
+	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= BC_BASE_DIG)
+		ptr[i] = val % BC_BASE_DIG;
 }
 
 size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
