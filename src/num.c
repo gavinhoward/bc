@@ -1000,10 +1000,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_mul(c, a, c, scale);
 	bc_num_shiftRight(c, i);
 //	bc_num_truncDecimals(c, scale);
+
 err:
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b1.neg);
-
 	return s;
 }
 
