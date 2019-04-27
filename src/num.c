@@ -79,8 +79,7 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 	fprintf(stderr, "\n%s= %c", varname, n->len ? (n->neg ? '-' : '+') : ' ');
 
 	for (i = n->len -1; i < n->len; i--) {
-		if (i+1 == n->rdx)
-			fprintf(stderr, ". ");
+		if (i + 1 == n->rdx) fprintf(stderr, ". ");
 		fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 	}
 
