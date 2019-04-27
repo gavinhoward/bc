@@ -48,15 +48,30 @@
 #if BC_DEBUG_CODE
 static void bc_num_printDecimal(const BcNum *restrict a);
 
-static void bc_num_printDebug(const BcNum *n, const char* name, bool emptynl) {
+static void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline)
+{
 	printf("%s: ", name);
 	bc_num_printDecimal(n);
 	printf("\n");
-	if (emptynl) printf("\n");
+	if (emptyline) printf("\n");
 	vm->nchars = 0;
 }
 
-static void DUMP_NUM(const char *varname, const BcNum *n) {
+static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
+
+	size_t i;
+
+	printf("%s:", name);
+
+	for (i = n->len - 1; i < n->len; --i)
+		printf(" %0*d", BC_BASE_POWER, n->num[i]);
+
+	printf("\n");
+	if (emptyline) printf("\n");
+	vm->nchars = 0;
+}
+
+static void bc_num_dump(const char *varname, const BcNum *n) {
 
 	unsigned long i;
 
