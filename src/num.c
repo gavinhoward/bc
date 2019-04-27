@@ -964,7 +964,9 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	digits = 0;
 	j = 0;
 
-	for (i = 1; digits < maxdigits; i++) {
+	for (i = 1; i < b1.len && b1.num[b1.len - i] == 0; ++i);
+
+	for (; i < b1.len && digits < maxdigits; ++i) {
 		dividend = dividend * BC_BASE_DIG;
 		digits += BC_BASE_POWER;
 		rdx++;
