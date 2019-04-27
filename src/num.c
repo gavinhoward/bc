@@ -83,10 +83,9 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 		fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 	}
 
-	fprintf(stderr, "(%p | %zu.%zu/%zu)\n", n->num, n->len, n->rdx, n->cap);
+	fprintf(stderr, "(%p | %zu.%zu/%zu)\n",
+	        (void*) n->num, n->len, n->rdx, n->cap);
 }
-
-#define BC_NUM_PRINT(x) fprintf(stderr, "%s = %lu\n", #x, (unsigned long)(x))
 #endif // BC_DEBUG_CODE
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);

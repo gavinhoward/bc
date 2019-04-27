@@ -129,6 +129,10 @@ typedef struct BcNum {
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
+#if BC_DEBUG_CODE
+#define BC_NUM_PRINT(x) fprintf(stderr, "%s = %lu\n", #x, (unsigned long)(x))
+#endif // BC_DEBUG_CODE
+
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
