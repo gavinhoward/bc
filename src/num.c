@@ -86,7 +86,7 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 	fprintf(stderr, "(%p | %zu.%zu/%zu)\n", n->num, n->len, n->rdx, n->cap);
 }
 
-#define P(x) fprintf(stderr, "%s = %zu\n", #x, (unsigned long)(x))
+#define BC_NUM_PRINT(x) fprintf(stderr, "%s = %lu\n", #x, (unsigned long)(x))
 #endif // BC_DEBUG_CODE
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
