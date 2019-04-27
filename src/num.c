@@ -61,7 +61,8 @@ static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
 
 	size_t i;
 
-	printf("%s:", name);
+	printf("%s len: %zu, rdx: %zu, scale: %zu\n",
+	       name, n->len, n->rdx, n->scale);
 
 	for (i = n->len - 1; i < n->len; --i)
 		printf(" %0*d", BC_BASE_POWER, n->num[i]);
