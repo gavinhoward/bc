@@ -196,52 +196,6 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 	return BC_SIG ? BC_NUM_SSIZE_MIN : bc_num_neg(i + 1, c < 0);
 }
 
-#if 0
-static ssize_t bc_num_cmp_abs(const BcNum *restrict n_a, const BcNum *restrict n_b)
-{
-	int i;
-	int c = 0;
-	size_t len;
-	size_t len_a = a->len;
-	size_t len_b = b->len;
-	size_t e_a = len_a - a->rdx;
-	size_t e_b = len_b - b->rdx;
-	BcDig *a = a->num;
-	BcDig *b = b->num;
-
-	while (e_a > 0 && a[len_a -1] == 0) {
-		e_a--;
-		len_a--;
-	}
-P(len_a);
-	while (e_b > 0 && b[len_b -1] == 0) {
-		e_b--;
-		len_b--;
-	}
-P(len_b);
-	c = e_a - e_b;
-P(c);
-	if (c != 0)
-		return c;
-
-	len = BC_MIN(len_a, len_b);
-P(len);
-	for (i = len; c == 0 && i > 0 && BC_NO_SIG; --i) {
-		c = a[--len_a] - b[--len_b];
-		fprintf(stderr, "Compare [%zu,%zu] %09d-%09d => %d\n", len_a, len_b, a[len_a], b[len_b], c);
-	}
-	for (i = len_a; c == 0 && i > 0 && BC_NO_SIG; --i) {
-                c = a[--len_a];
-		fprintf(stderr, "Compare [%zu,%d] %09d-%09d => %d\n", len_a, -1, a[len_a], 0, c);
-	}
-	for (i = len_b; c == 0 && i > 0 && BC_NO_SIG; --i) {
-		c = -b[--len_b];
-		fprintf(stderr, "Compare [%d,%zu] %09d-%09d => %d\n", -1, len_b, 0, b[len_b], c);
-	}
-	return BC_SIG ? BC_NUM_SSIZE_MIN : c;
-}
-#endif
-
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 	size_t i, min, a_int, b_int, diff;
@@ -893,27 +847,18 @@ static BcStatus bc_num_invert(BcNum *val, size_t bits, size_t scale) { // --> nu
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	bitlimit = ((val->rdx + 1) * 50 * BC_BASE_POWER) / 10;
-	//	P(bitlimit);
-	//	P(bits);
-	//	P(scale);
 	bc_num_createCopy(&xi, val);
-	//	bc_num_expand(&xi, scale);
 	bc_num_init(&two, 1);
 	bc_num_ulong2num(&two, 2);
 	bc_num_init(&temp, bc_num_mulReq(val, &xi, scale));
-	//	DUMP_NUM("x0", &xi);
 	while (bits <= bitlimit) {
 		s = bc_num_mul(val, &xi, &temp, scale + 1);
-		//	DUMP_NUM("val*xi", &temp);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_sub(&two, &temp, &temp, scale + 1);
-		//	DUMP_NUM("2 - val*xi", &temp);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_mul(&temp, &xi, &xi, scale + 1);
-		//	DUMP_NUM("xi = xi*(2 - val*xi)", &xi);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bits *= 2;
-		//	P(bits);
 	}
 	bc_num_copy(val, &xi);
 err:
@@ -940,11 +885,13 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	// TODO: Check this function.
 
 	BcStatus s = BC_STATUS_SUCCESS;
+	ssize_t cmp;
 	size_t len, rdx;
 	BcNum b1, f;
 	size_t factor, dividend, divisor;
 	size_t i, j, digits, maxdigits, mindivisor;
 	int validbits, shift;
+	bool neg;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -964,15 +911,15 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	shift = (a->len - a->rdx) - (b->len - b->rdx);
 
 	bc_num_createCopy(c, a);
-	c->rdx = c->len; // apply exp_a at end
+	c->rdx = c->len; // apply e_a at end
 
 	bc_num_createCopy(&b1, b);
-	b1.rdx = b1.len; // apply exp_b at end
+	b1.rdx = b1.len; // apply e_b at end
 
-	bool neg = c->neg != b1.neg;
+	neg = c->neg != b1.neg;
 	c->neg = false;
 	b1.neg = false;
-	int cmp = bc_num_cmp(&b1, c);
+	cmp = bc_num_cmp(&b1, c);
 	if (cmp == 0) {
 		bc_num_free(c);
 		bc_num_init(c, 1);	// identical BcNum arrays
