@@ -210,29 +210,6 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 	return BC_SIG ? BC_NUM_SSIZE_MIN : bc_num_neg(i + 1, c < 0);
 }
 
-static ssize_t bc_num_compare2(const BcDig *restrict a, size_t len_a,
-			       const BcDig *restrict b, size_t len_b)
-{
-	int i;
-	int c = 0;
-	size_t len;
-
-	len = BC_MIN(len_a, len_b);
-	for (i = len; c == 0 && i > 0 && BC_NO_SIG; --i) {
-		c = a[--len_a] - b[--len_b];
-		fprintf(stderr, "Compare [%zu,%zu] %09d-%09d => %d\n", len_a, len_b, a[len_a], b[len_b], c);
-	}
-	for (i = len_a; c == 0 && i > 0 && BC_NO_SIG; --i) {
-                c = a[--len_a];
-		fprintf(stderr, "Compare [%zu,%d] %09d-%09d => %d\n", len_a, -1, a[len_a], 0, c);
-	}
-	for (i = len_b; c == 0 && i > 0 && BC_NO_SIG; --i) {
-		c = -b[--len_b];
-		fprintf(stderr, "Compare [%d,%zu] %09d-%09d => %d\n", -1, len_b, 0, b[len_b], c);
-	}
-	return BC_SIG ? BC_NUM_SSIZE_MIN : bc_num_neg(i + 1, c < 0);
-}
-
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 	size_t i, min, a_int, b_int, diff;
@@ -333,22 +310,6 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	assert(n->rdx == BC_NUM_RDX(n->scale));
 }
-
-#if 0 // <se>
-static void bc_num_truncDecimals(BcNum *restrict n, int digits) { // --> num.h <se>
-	int i, d;
-
-	if (n->rdx * BC_BASE_POWER > digits) {
-		bc_num_truncate(n, n->rdx - (digits + BC_BASE_POWER - 1) / BC_BASE_POWER);
-		if (n->rdx * BC_BASE_POWER > digits) {
-			d = 10;
-			for (i = digits % BC_BASE_POWER + 1; i < BC_BASE_POWER; i++)
-				d = d * 10;
-			n->num[0] -= n->num[0] % d;
-		}
-	}
-}
-#endif
 
 static void bc_num_retireMul(BcNum *restrict n, size_t scale,
                              bool neg1, bool neg2)
