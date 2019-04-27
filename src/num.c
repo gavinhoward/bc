@@ -388,7 +388,7 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	}
 	else if (BC_NUM_NONZERO(n)) {
 
-		if (places_rdx != n->rdx) {
+		if (places_rdx > n->rdx) {
 			bc_num_expand(n, n->len + places_rdx - n->rdx + shift);
 			memmove(n->num + places_rdx - n->rdx, n->num, BC_NUM_SIZE(n->len));
 			memset(n->num, 0, BC_NUM_SIZE(places_rdx - n->rdx));
