@@ -276,7 +276,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	size_t places_rdx;
 
-	if (!nBcDig) return;
+	if (!places) return;
 
 	places_rdx = n->rdx - BC_NUM_RDX(n->scale - places);
 	assert(places <= n->scale && (BC_NUM_ZERO(n) || places_rdx <= n->len));
@@ -302,7 +302,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 	}
 }
 
-static void bc_num_extend(BcNum *restrict n, size_t nBcDig) {
+static void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	size_t places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
