@@ -311,6 +311,45 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	assert(n->rdx == BC_NUM_RDX(n->scale));
 }
 
+void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
+
+	size_t rdx, place, i;
+	BcDig p10, sum;
+
+	if (places >= n->scale || places >= n->rdx * BC_BASE_POWER) {
+		n->scale = places;
+		return;
+	}
+	rdx = n->rdx - BC_NUM_RDX(places + 1);
+	place = BC_BASE_POWER - (places % BC_BASE_POWER + 1);
+
+	for (i = 0; i < rdx; i++)
+		n->num[i] = 0;
+
+	p10 = bc_num_pow10(place);
+	sum = n->num[rdx] + 5 * p10;
+	sum = sum - sum % (10 * p10);
+
+	if (sum < BC_BASE_DIG) {
+		n->num[rdx] = sum;
+	} else {
+		sum -= BC_BASE_DIG;
+		n->num[rdx] = sum;
+
+		do {
+			rdx++;
+			if (n->len <= rdx) {
+				bc_num_expand(n, rdx + 1);
+				n->num[rdx] = 0;
+				n->len = rdx +1;
+			}
+			sum = n->num[rdx] + 1;
+			n->num[rdx] = sum < BC_BASE_DIG ? sum : sum - BC_BASE_DIG;
+		} while (sum >= BC_BASE_DIG);
+	}
+	n->scale = places;
+}
+
 static void bc_num_retireMul(BcNum *restrict n, size_t scale,
                              bool neg1, bool neg2)
 {
