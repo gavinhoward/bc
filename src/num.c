@@ -798,8 +798,8 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_setToZero(c, 0);
 	ascale = a->scale;
 	bscale = b->scale;
-	ascale = BC_MAX(scale, ascale);
-	bscale = BC_MAX(scale, bscale);
+	scale = BC_MAX(scale, ascale);
+	scale = BC_MAX(scale, bscale);
 
 	rscale = ascale + bscale;
 	scale = BC_MIN(rscale, scale);
