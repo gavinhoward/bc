@@ -879,6 +879,40 @@ err:
 	return s;
 }
 
+static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
+
+	BcNum one, x, temp;
+	bool done = false;
+	BcStatus s = BC_STATUS_SUCCESS;
+
+	bc_num_createFromUlong(&one, 1);
+	bc_num_extend(&one, scale);
+	bc_num_init(&temp, scale / BC_BASE_POWER + 2);
+	bc_num_init(&x, scale / BC_BASE_POWER + 2);
+	s = bc_num_sub(&one, val, &x, scale);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	s = bc_num_add(&one, &x, val, scale);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	for (;;) {
+		s = bc_num_mul(&x, &x, &x, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if BC_NUM_ZERO(&x) break;
+
+		s = bc_num_mul(val, &x, &temp, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		s = bc_num_add(val, &temp, val, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	}
+err:
+	bc_num_free(&one);
+	bc_num_free(&x);
+	bc_num_free(&temp);
+
+	return s;
+}
+
+#if 0
 static BcStatus bc_num_invert(BcNum *val, size_t bits, size_t scale) { // --> num.h <se>
 
 	BcNum xi, two, temp;
@@ -888,8 +922,8 @@ static BcStatus bc_num_invert(BcNum *val, size_t bits, size_t scale) { // --> nu
 	bitlimit = ((val->rdx + 1) * 50 * BC_BASE_POWER) / 10;
 	bc_num_createCopy(&xi, val);
 	bc_num_extend(&xi, scale);
-	bc_num_init(&two, 1);
-	bc_num_ulong2num(&two, 2);
+
+	bc_num_createFromUlong(&two, 2);
 	bc_num_init(&temp, bc_num_mulReq(val, &xi, scale));
 	while (bits <= bitlimit) {
 		s = bc_num_mul(val, &xi, &temp, scale);
@@ -908,6 +942,7 @@ err:
 
 	return s;
 }
+#endif
 
 static int intlog2(size_t n) {
 	int bits = 0;
@@ -991,19 +1026,25 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		bc_num_init(&f, maxdigits);
 		bc_num_ulong2num(&f, factor);
 
+		bc_num_extend(&b1, scale);
 		bc_num_mul(&f, &b1, &b1, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		if (b1.num[b1.len - 1] == 1) {
 			b1.rdx = b1.len - 1; // only possible if b1 == 1.000000...
 		} else {
 			b1.rdx = b1.len;
-			validbits = factor < divisor ? intlog2(factor) : intlog2(divisor);
-			bc_num_invert(&b1, validbits, (a->len + b1.len) * BC_BASE_POWER);
+			validbits = factor < divisor ? intlog2(factor) : intlog2(divisor); // not required for Goldschmidt algo
+			//s = bc_num_invert(&b1, validbits, (a->len + b1.len) * BC_BASE_POWER);
+			s = bc_num_invert(&b1, (a->len + b1.len) * BC_BASE_POWER);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 			if (b1.len > c->len)
 				bc_num_extend(c, c->len + b1.len);	// ???
 			bc_num_mul(&b1, c, c, scale);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
 		bc_num_mul(&f, c, c, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		c->rdx = c->len - 1;
 	}
 	if (shift > 0) {
@@ -1013,8 +1054,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		bc_num_extend(c, -shift * BC_BASE_POWER);
 		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
 	}
-	// bc_num_truncDecimals(c, scale);
-
+	//bc_num_roundPlaces(c, scale);
 err:
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, neg, false);
