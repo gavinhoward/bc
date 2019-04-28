@@ -76,7 +76,7 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 
 	unsigned long i;
 
-	fprintf(stderr, "\n%s= %c", varname, n->len ? (n->neg ? '-' : '+') : ' ');
+	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
 
 	for (i = n->len -1; i < n->len; i--) {
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
@@ -846,18 +846,16 @@ err:
 }
 
 static BcStatus bc_num_invert(BcNum *val, size_t bits, size_t scale) { // --> num.h <se>
-	int i;
+
 	BcNum xi, two, temp;
+ 	size_t rdx, bitlimit;
 	BcStatus s = BC_STATUS_SUCCESS;
- 	size_t len, rdx, bitlimit;
 
 	bitlimit = ((val->rdx + 1) * 50 * BC_BASE_POWER) / 10;
-
 	bc_num_createCopy(&xi, val);
-	bc_num_init(&temp, xi.len + 1);
 	bc_num_init(&two, 1);
 	bc_num_ulong2num(&two, 2);
-
+	bc_num_init(&temp, bc_num_mulReq(val, &xi, scale));
 	while (bits <= bitlimit) {
 		s = bc_num_mul(val, &xi, &temp, scale + 1);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -887,16 +885,18 @@ static int intlog2(size_t n) {
 	return (bits);
 }
 
-static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	// TODO: Check this function.
 
 	BcStatus s = BC_STATUS_SUCCESS;
+	ssize_t cmp;
 	size_t len, rdx;
 	BcNum b1, f;
 	size_t factor, dividend, divisor;
-	size_t i, j, digits, maxdigits, maxdivisor;
-	int validbits;
+	size_t i, j, digits, maxdigits, mindivisor;
+	int validbits, shift;
+	bool neg;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -909,60 +909,81 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	bc_num_init(&b1, b->len +1);
-	bc_num_copy(&b1, b);
-	len = b1.len;
-	rdx = b1.rdx;
-
 	maxdigits = (sizeof(dividend) * 24) / 10;
-	maxdigits = ((maxdigits / BC_BASE_POWER) * BC_BASE_POWER);
-	maxdivisor = (1 << (((maxdigits - BC_BASE_POWER - 7) * 8) / 3)) + 1;
+	maxdigits = (maxdigits / BC_BASE_POWER) * BC_BASE_POWER;
+	mindivisor = (1 << ((((maxdigits - BC_BASE_POWER)/2 + 1) * 3) + 2)) + 1;
 
-	dividend = 1;
-	divisor = 0;
-	digits = 0;
-	j = 0;
+	shift = (a->len - a->rdx) - (b->len - b->rdx);
 
-	for (i = 1; i < b1.len && b1.num[b1.len - i] == 0; ++i);
+	bc_num_createCopy(c, a);
+	c->rdx = c->len; // apply e_a at end
 
-	for (; i < b1.len && digits < maxdigits; ++i) {
-		dividend = dividend * BC_BASE_DIG;
-		digits += BC_BASE_POWER;
-		rdx++;
-		if (i <= b1.len) {
-			if (divisor <= maxdivisor) {
-				rdx--;
-				divisor = divisor * BC_BASE_DIG + b1.num[b1.len - i];
-			} else {
-				j = 1;
+	bc_num_createCopy(&b1, b);
+	b1.rdx = b1.len; // apply e_b at end
+
+	neg = c->neg != b1.neg;
+	c->neg = false;
+	b1.neg = false;
+	cmp = bc_num_cmp(&b1, c);
+	if (cmp == 0) {
+		bc_num_free(c);
+		bc_num_init(c, 1);	// identical BcNum arrays
+		bc_num_ulong2num(c, 1);
+	} else {
+		if (cmp > 0)		//==> b > a, result will be one exp higher
+			shift--;
+
+		dividend = 1;
+		divisor = 0;
+		digits = 0;
+		j = 0;
+
+		for (i = 0, digits = 0; digits < maxdigits; digits += BC_BASE_POWER, i++) {
+			dividend = dividend * BC_BASE_DIG;
+			if (i < b1.len) {
+				if (divisor < mindivisor)
+					divisor = divisor * BC_BASE_DIG + b1.num[b1.len - 1 - i];
+				else
+					if (b1.num[b1.len - 1 - i] != 0) j = 1;
 			}
 		}
+		for (; i < b1.len; i++)
+			if (b1.num[b1.len - 1 - i] != 0) j = 1;
+
+		divisor += j;
+		factor = dividend / divisor;
+
+		bc_num_init(&f, maxdigits);
+		bc_num_ulong2num(&f, factor);
+
+		bc_num_mul(&f, &b1, &b1, scale);
+
+		if (b1.num[b1.len - 1] == 1) {
+			b1.rdx = b1.len - 1; // only possible if b1 == 1.000000...
+		} else {
+			b1.rdx = b1.len;
+			validbits = factor < divisor ? intlog2(factor) : intlog2(divisor);
+			bc_num_invert(&b1, validbits, (a->len + b1.len) * BC_BASE_POWER);
+			if (b1.len > c->len)
+				bc_num_extend(c, c->len + b1.len);	// ???
+			bc_num_mul(&b1, c, c, scale);
+		}
+		bc_num_mul(&f, c, c, scale);
+		c->rdx = c->len - 1;
 	}
-	divisor += j;
-
-	factor = dividend / divisor;
-	validbits = factor < divisor ? intlog2(factor) : intlog2(divisor);
-
-	bc_num_init(&f, maxdigits);
-	bc_num_ulong2num(&f, factor);
-	bc_num_mul(&b1, &f, &b1, scale);
-	i = b1.len - b1.rdx;
-	b1.rdx = b1.len;
-
-	if (b1.num[b1.len - 1] == 1) {
-		b1.rdx -= 2;
+	if (shift > 0) {
+		bc_num_expand(c, shift * BC_BASE_POWER);
+		bc_num_shiftLeft(c, shift * BC_BASE_POWER);
 	} else {
-		bc_num_invert(&b1, validbits, a->len + b1.len + 1);
+		bc_num_extend(c, -shift * BC_BASE_POWER);
+		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
 	}
-	bc_num_init(c, bc_num_mulReq(a, &b1, scale));
-	bc_num_mul(&f, &b1, c, scale);
-	bc_num_mul(c, a, c, scale);
-	bc_num_shiftRight(c, i);
-//	bc_num_truncDecimals(c, scale);
+	// bc_num_truncDecimals(c, scale);
 
 err:
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
-	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b1.neg);
+	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, neg, false);
+
 	return s;
 }
 
