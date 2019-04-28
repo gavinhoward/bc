@@ -882,20 +882,21 @@ err:
 static BcStatus bc_num_invert(BcNum *val, size_t bits, size_t scale) { // --> num.h <se>
 
 	BcNum xi, two, temp;
- 	size_t rdx, bitlimit;
+	size_t bitlimit;
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	bitlimit = ((val->rdx + 1) * 50 * BC_BASE_POWER) / 10;
 	bc_num_createCopy(&xi, val);
+	bc_num_extend(&xi, scale);
 	bc_num_init(&two, 1);
 	bc_num_ulong2num(&two, 2);
 	bc_num_init(&temp, bc_num_mulReq(val, &xi, scale));
 	while (bits <= bitlimit) {
-		s = bc_num_mul(val, &xi, &temp, scale + 1);
+		s = bc_num_mul(val, &xi, &temp, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_sub(&two, &temp, &temp, scale + 1);
+		s = bc_num_sub(&two, &temp, &temp, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&temp, &xi, &xi, scale + 1);
+		s = bc_num_mul(&temp, &xi, &xi, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bits *= 2;
 	}
@@ -925,7 +926,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	ssize_t cmp;
-	size_t len, rdx;
 	BcNum b1, f;
 	size_t factor, dividend, divisor;
 	size_t i, j, digits, maxdigits, mindivisor;
@@ -950,14 +950,15 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	shift = (a->len - a->rdx) - (b->len - b->rdx);
 
 	bc_num_createCopy(c, a);
-	c->rdx = c->len; // apply e_a at end
+	c->rdx = c->len;
 
 	bc_num_createCopy(&b1, b);
-	b1.rdx = b1.len; // apply e_b at end
+	b1.rdx = b1.len;
 
 	neg = c->neg != b1.neg;
 	c->neg = false;
 	b1.neg = false;
+
 	cmp = bc_num_cmp(&b1, c);
 	if (cmp == 0) {
 		bc_num_free(c);
