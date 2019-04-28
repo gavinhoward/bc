@@ -170,7 +170,6 @@ static unsigned long bc_num_pow10(unsigned long i) {
 
 	unsigned long pow;
 
-	if (i == 0) return 1;
 	if (i < POW10N) return pow10[i];
 
 	i -= POW10N - 1;
@@ -1012,6 +1011,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	bc_num_createCopy(&b1, b);
 	b1.rdx = b1.len;
+	b1.scale = b1.rdx * BC_BASE_POWER;
 
 	neg = c->neg != b1.neg;
 	c->neg = false;
@@ -1020,8 +1020,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	cmp = bc_num_cmp(&b1, c);
 	if (cmp == 0) {
 		bc_num_free(c);
-		bc_num_init(c, 1);	// identical BcNum arrays
-		bc_num_ulong2num(c, 1);
+		bc_num_createFromUlong(c, 1);	// identical BcNum arrays
 	} else {
 		if (cmp > 0)		//==> b > a, result will be one exp higher
 			shift--;
@@ -1031,50 +1030,76 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		digits = 0;
 		j = 0;
 
-		for (i = 0, digits = 0; digits < maxdigits; digits += BC_BASE_POWER, i++) {
+		for (i = 0; i < b1.len && b1.num[b1.len - 1 - i] == 0; i++);
+
+		for (digits = 0; digits < maxdigits; digits += BC_BASE_POWER, i++) {
 			dividend = dividend * BC_BASE_DIG;
+			//P(dividend);
 			if (i < b1.len) {
 				if (divisor < mindivisor)
 					divisor = divisor * BC_BASE_DIG + b1.num[b1.len - 1 - i];
 				else
 					if (b1.num[b1.len - 1 - i] != 0) j = 1;
 			}
+			//P(divisor);
 		}
-		for (; i < b1.len; i++)
-			if (b1.num[b1.len - 1 - i] != 0) j = 1;
+#if 0
+		// experimental algorithm for initial factor
+		dividend = BC_BASE_DIG;
+		while (dividend * BC_BASE_DIG > dividend) {
+			dividend *= BC_BASE_DIG;
+P(dividend);
+		}
 
+		ssize_t temp;
+		j = 1;
+		divisor = 0;
+		for (i = 0; i < b1.len; i++) {
+			temp = divisor * BC_BASE_DIG + b1.num[b1.len - 1 - i];
+			if (temp > divisor) {
+				factor = dividend / (temp);
+				if (factor > divisor) {
+					divisor = temp;
+					j = 0;
+					//P(divisor);
+					//P(factor);
+					continue;
+				} else {
+					break;
+				}
+			}
+			j = 1;
+		}
+#endif
 		divisor += j;
 		factor = dividend / divisor;
-
-		bc_num_init(&f, maxdigits);
-		bc_num_ulong2num(&f, factor);
-
-		bc_num_extend(&b1, scale);
-		bc_num_mul(&f, &b1, &b1, scale);
+		bc_num_createFromUlong(&f, factor);
+		bc_num_mul(&b1, &f, &b1, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		if (b1.num[b1.len - 1] == 1) {
 			b1.rdx = b1.len - 1; // only possible if b1 == 1.000000...
+			b1.scale = b1.rdx * BC_BASE_POWER;
 		} else {
 			b1.rdx = b1.len;
-			validbits = factor < divisor ? intlog2(factor) : intlog2(divisor); // not required for Goldschmidt algo
+			b1.scale = b1.rdx * BC_BASE_POWER;
+			//validbits = factor < divisor ? intlog2(factor) : intlog2(divisor); // not required for Goldschmidt algo
 			//s = bc_num_invert(&b1, validbits, (a->len + b1.len) * BC_BASE_POWER);
-			s = bc_num_invert(&b1, (a->len + b1.len) * BC_BASE_POWER);
+			s = bc_num_invert(&b1, (a->len + b1.len + 2) * BC_BASE_POWER);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 			if (b1.len > c->len)
-				bc_num_extend(c, c->len + b1.len);	// ???
+				bc_num_expand(c, c->len + b1.len + 4);	// ???
 			bc_num_mul(&b1, c, c, scale);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
 		bc_num_mul(&f, c, c, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		c->rdx = c->len - 1;
+		c->scale = c->rdx * BC_BASE_POWER;
 	}
 	if (shift > 0) {
-		bc_num_expand(c, shift * BC_BASE_POWER);
 		bc_num_shiftLeft(c, shift * BC_BASE_POWER);
 	} else {
-		bc_num_extend(c, -shift * BC_BASE_POWER);
 		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
 	}
 	//bc_num_roundPlaces(c, scale);
