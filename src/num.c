@@ -151,10 +151,33 @@ static size_t bc_num_log10(size_t i) {
 	return len;
 }
 
+#define POW10N 10
+
+static unsigned long pow10[POW10N] = {
+		    1,
+		    10,
+		    100,
+		    1000,
+		    10000,
+		    100000,
+		    1000000,
+		    10000000,
+		    100000000,
+		    1000000000,
+};
+
 static unsigned long bc_num_pow10(unsigned long i) {
+
 	unsigned long pow;
-	for (pow = 1; i; --i, pow *= BC_BASE);
-	return pow;
+
+	if (i == 0) return 1;
+	if (i < POW10N) return pow10[i];
+
+	i -= POW10N - 1;
+	pow = pow10[POW10N - 1];
+
+	if (i < POW10N) return pow * pow10[i];
+	return -1;
 }
 
 static unsigned long bc_num_addDigit(BcDig *restrict num, unsigned long d,
