@@ -959,7 +959,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	if (!req) req = cpa.len - bc_num_nonzeroIdx(&cpa);
 	req = BC_BASE_POWER * (req + 1);
 	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
-	req += BC_NUM_RDX(scale) * BC_BASE_POWER;
+	req += BC_NUM_RDX(scale) * BC_BASE_POWER + 2;
 
 	rscale += req;
 	bc_num_extend(&cpa, req);
@@ -987,10 +987,9 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 			s = BC_STATUS_SIGNAL;
 			goto err;
 		}
-
-//		printf("cmp: %zu\n", cmp);
 	}
 
+	bc_num_roundPlaces(&cpa, scale + 2);
 	bc_num_copy(c, &cpa);
 
 err:
