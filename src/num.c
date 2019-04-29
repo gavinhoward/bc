@@ -120,6 +120,20 @@ static size_t bc_num_int(const BcNum *n) {
 	return n->len ? n->len - n->rdx : 0;
 }
 
+static size_t bc_num_log10(size_t i); // --> num.h
+
+static size_t bc_num_int_digits(const BcNum *n) {
+	size_t digits;
+
+	digits = bc_num_int(n) * BC_BASE_POWER;
+
+	if (digits > 0) {
+		digits -= BC_BASE_POWER - bc_num_log10(n->num[n->len -1]);
+	}
+
+	return digits;
+}
+
 static bool bc_num_isOne(const BcNum *n) {
 	return n->len == 1 && n->rdx == 0 && n->num[0] == 1;
 }
@@ -169,10 +183,32 @@ static size_t bc_num_log10(size_t i) {
 	return len;
 }
 
+#define POW10N 10
+
+static unsigned long pow10[POW10N] = {
+		    1,
+		    10,
+		    100,
+		    1000,
+		    10000,
+		    100000,
+		    1000000,
+		    10000000,
+		    100000000,
+		    1000000000,
+};
+
 static unsigned long bc_num_pow10(unsigned long i) {
+
 	unsigned long pow;
-	for (pow = 1; i; --i, pow *= BC_BASE);
-	return pow;
+
+	if (i == 0) return 1;
+	if (i < POW10N) return pow10[i];
+
+	i -= POW10N;
+	if (i < POW10N - 1) return pow10[POW10N - 1] * pow10[i + 1];
+
+	return -1;
 }
 
 static size_t bc_num_nonzeroIdx(const BcNum *restrict n) {
