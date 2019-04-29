@@ -431,11 +431,11 @@ static void bc_num_unshiftZero(BcNum *restrict n, size_t places_rdx) {
 	n->num -= places_rdx;
 }
 
-static BcStatus bc_num_shift(BcNum *restrict n, BcDig *restrict ptr,
-                             unsigned long dig, size_t len)
-{
-	size_t i;
+static BcStatus bc_num_shift(BcNum *restrict n, unsigned long dig) {
+
+	size_t i, len = n->len;
 	unsigned long carry = 0;
+	BcDig *ptr = n->num;
 
 	assert(dig < BC_BASE_POWER);
 
@@ -460,14 +460,14 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	unsigned long dig;
-	bool shift;
 	size_t places_rdx;
+	bool shift;
 
 	if (!places) return s;
 
 	dig = (unsigned long) (places % BC_BASE_POWER);
 	shift = (dig != 0);
-	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx - shift;
+	places_rdx = BC_NUM_RDX(places);
 
 	if (n->scale >= places) {
 		n->scale -= places;
@@ -476,17 +476,19 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	else if (BC_NUM_NONZERO(n)) {
 
 		if (places_rdx > n->rdx) {
-			bc_num_expand(n, n->len + places_rdx - n->rdx + shift);
-			memmove(n->num + places_rdx - n->rdx, n->num, BC_NUM_SIZE(n->len));
-			memset(n->num, 0, BC_NUM_SIZE(places_rdx - n->rdx));
-			n->len += places_rdx;
+			bc_num_expand(n, n->len + places_rdx - n->rdx + 1);
+			memmove(n->num + places_rdx - n->rdx - 1, n->num, BC_NUM_SIZE(n->len));
+			memset(n->num, 0, BC_NUM_SIZE(places_rdx - n->rdx - 1));
+			n->len += places_rdx - n->rdx - 1;
 		}
+
+		//bc_num_printDebug(n, "n", true);
 
 		n->scale = n->rdx = 0;
 	}
 	else n->scale = 0;
 
-	if (shift) s = bc_num_shift(n, n->num + places_rdx, dig, n->len - places_rdx);
+	if (shift) s = bc_num_shift(n, dig);
 
 	bc_num_clean(n);
 
@@ -521,7 +523,7 @@ static BcStatus bc_num_shiftRight(BcNum *restrict n, size_t places) {
 	n->scale += places;
 	n->rdx += places_rdx;
 
-	if (shift) s = bc_num_shift(n, n->num, BC_BASE_POWER - dig, n->len);
+	if (shift) s = bc_num_shift(n, BC_BASE_POWER - dig);
 
 	assert(n->rdx <= n->len && n->len <= n->cap);
 	assert(n->rdx == BC_NUM_RDX(n->scale));
