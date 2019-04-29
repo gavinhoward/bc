@@ -845,58 +845,15 @@ err:
 	return s;
 }
 
-static BcStatus bc_num_invert(BcNum *val, size_t bits, size_t scale) { // --> num.h <se>
-
-	BcNum xi, two, temp;
- 	size_t rdx, bitlimit;
-	BcStatus s = BC_STATUS_SUCCESS;
-
-	bitlimit = ((val->rdx + 1) * 50 * BC_BASE_POWER) / 10;
-	bc_num_createCopy(&xi, val);
-	bc_num_init(&two, 1);
-	bc_num_ulong2num(&two, 2);
-	bc_num_init(&temp, bc_num_mulReq(val, &xi, scale));
-	while (bits <= bitlimit) {
-		s = bc_num_mul(val, &xi, &temp, scale + 1);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_sub(&two, &temp, &temp, scale + 1);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&temp, &xi, &xi, scale + 1);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		bits *= 2;
-	}
-	bc_num_copy(val, &xi);
-err:
-	bc_num_free(&xi);
-	bc_num_free(&temp);
-	bc_num_free(&two);
-
-	return s;
-}
-
-static int intlog2(size_t n) {
-	int bits = 0;
-
-	n >>= 1;
-	while (n != 0) {
-		bits++;
-		n >>= 1;
-	}
-	return (bits);
-}
-
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	// TODO: Check this function.
 
 	BcStatus s = BC_STATUS_SUCCESS;
+	size_t rdx;
 	ssize_t cmp;
-	size_t len, rdx;
-	BcNum b1, f;
-	size_t factor, dividend, divisor;
-	size_t i, j, digits, maxdigits, mindivisor;
-	int validbits, shift;
-	bool neg;
+	BcNum cpa, cpb;
+	bool aneg, bneg, shift_left;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -905,85 +862,43 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	}
 	if (bc_num_isOne(b)) {
 		bc_num_copy(c, a);
-		bc_num_retireMul(c, scale, a->neg, b->neg);
-		return BC_STATUS_SUCCESS;
+		goto exit;
 	}
 
-	maxdigits = (sizeof(dividend) * 24) / 10;
-	maxdigits = (maxdigits / BC_BASE_POWER) * BC_BASE_POWER;
-	mindivisor = (1 << ((((maxdigits - BC_BASE_POWER)/2 + 1) * 3) + 2)) + 1;
+	aneg = a->neg;
+	bneg = b->neg;
+	aneg = bneg = false;
+	cmp = bc_num_cmp(a, b);
+	a->neg = aneg;
+	b->neg = bneg;
 
-	shift = (a->len - a->rdx) - (b->len - b->rdx);
-
-	bc_num_createCopy(c, a);
-	c->rdx = c->len; // apply e_a at end
-
-	bc_num_createCopy(&b1, b);
-	b1.rdx = b1.len; // apply e_b at end
-
-	neg = c->neg != b1.neg;
-	c->neg = false;
-	b1.neg = false;
-	cmp = bc_num_cmp(&b1, c);
-	if (cmp == 0) {
-		bc_num_free(c);
-		bc_num_init(c, 1);	// identical BcNum arrays
-		bc_num_ulong2num(c, 1);
-	} else {
-		if (cmp > 0)		//==> b > a, result will be one exp higher
-			shift--;
-
-		dividend = 1;
-		divisor = 0;
-		digits = 0;
-		j = 0;
-
-		for (i = 0, digits = 0; digits < maxdigits; digits += BC_BASE_POWER, i++) {
-			dividend = dividend * BC_BASE_DIG;
-			if (i < b1.len) {
-				if (divisor < mindivisor)
-					divisor = divisor * BC_BASE_DIG + b1.num[b1.len - 1 - i];
-				else
-					if (b1.num[b1.len - 1 - i] != 0) j = 1;
-			}
-		}
-		for (; i < b1.len; i++)
-			if (b1.num[b1.len - 1 - i] != 0) j = 1;
-
-		divisor += j;
-		factor = dividend / divisor;
-
-		bc_num_init(&f, maxdigits);
-		bc_num_ulong2num(&f, factor);
-
-		bc_num_mul(&f, &b1, &b1, scale);
-
-		if (b1.num[b1.len - 1] == 1) {
-			b1.rdx = b1.len - 1; // only possible if b1 == 1.000000...
-		} else {
-			b1.rdx = b1.len;
-			validbits = factor < divisor ? intlog2(factor) : intlog2(divisor);
-			bc_num_invert(&b1, validbits, (a->len + b1.len) * BC_BASE_POWER);
-			if (b1.len > c->len)
-				bc_num_extend(c, c->len + b1.len);	// ???
-			bc_num_mul(&b1, c, c, scale);
-		}
-		bc_num_mul(&f, c, c, scale);
-		c->rdx = c->len - 1;
+	if (cmp == BC_NUM_SSIZE_MIN) return BC_STATUS_SIGNAL;
+	if (!cmp) {
+		bc_num_one(c);
+		goto exit;
 	}
-	if (shift > 0) {
-		bc_num_expand(c, shift * BC_BASE_POWER);
-		bc_num_shiftLeft(c, shift * BC_BASE_POWER);
-	} else {
-		bc_num_extend(c, -shift * BC_BASE_POWER);
-		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
+
+	bc_num_createCopy(&cpa, a);
+	bc_num_createCopy(&cpb, b);
+
+	shift_left = (b->rdx == b->len);
+
+	if (shift_left) {
+
 	}
-	// bc_num_truncDecimals(c, scale);
+	else {
+		rdx = b->len - b->rdx;
+		s = bc_num_shiftRight(&cpa, rdx * BC_BASE_POWER);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		s = bc_num_shiftRight(&cpb, rdx * BC_BASE_POWER);
+	}
 
 err:
+	bc_num_free(&cpb);
+	bc_num_free(&cpa);
+exit:
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
-	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, neg, false);
-
+	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	return s;
 }
 
