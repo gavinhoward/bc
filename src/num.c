@@ -157,6 +157,13 @@ static unsigned long bc_num_pow10(unsigned long i) {
 	return pow;
 }
 
+static size_t bc_num_nonzeroIdx(const BcNum *restrict n) {
+	size_t i, len = n->len;
+	assert(len == n->rdx);
+	for (i = len - 1; i < n->len && !n->num[i]; --len, --i);
+	return len;
+}
+
 static unsigned long bc_num_addDigit(BcDig *restrict num, unsigned long d,
                                     unsigned long c)
 {
@@ -1604,10 +1611,7 @@ size_t bc_num_len(const BcNum *restrict n) {
 	BcDig dig;
 
 	if (BC_NUM_ZERO(n)) return 0;
-
-	if (n->rdx == len) {
-		for (i = n->len - 1; i < n->len && !n->num[i]; --len, --i);
-	}
+	if (n->rdx == len) len = bc_num_nonzeroIdx(n);
 
 	dig = n->num[len - 1];
 	pow = BC_BASE_DIG;
