@@ -1977,7 +1977,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, req, digs, digs1, digs2, resrdx, times = 0;
+	size_t pow, len, rdx, req, digs, digs1, digs2, resscale, times = 0;
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
 	BcDig half_digs[2];
 
@@ -1986,7 +1986,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	if (BC_ERR(a->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	len = bc_vm_growSize(bc_num_int(a), 1);
-	req = bc_vm_growSize(BC_MAX(scale, a->rdx), len >> 1);
+	req = bc_vm_growSize(BC_MAX(BC_NUM_RDX(scale), a->rdx), len >> 1);
 	bc_num_init(b, bc_vm_growSize(req, 1));
 
 	if (BC_NUM_ZERO(a)) {
@@ -1999,16 +1999,17 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	scale = BC_MAX(scale, a->rdx) + 1;
-	len = bc_vm_growSize(a->len, scale);
+	rdx = BC_MAX(BC_NUM_RDX(scale), a->rdx);
+	len = bc_vm_growSize(a->len, rdx);
 
 	bc_num_init(&num1, len);
 	bc_num_init(&num2, len);
 	bc_num_setup(&half, half_digs, sizeof(half_digs) / sizeof(BcDig));
 
 	bc_num_one(&half);
-	half.num[0] = 5;
+	half.num[0] = BC_BASE_DIG / 2;
 	half.rdx = 1;
+	half.scale = 1;
 
 	bc_num_init(&f, len);
 	bc_num_init(&fprime, len);
@@ -2030,22 +2031,24 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 		// Make sure to move the radix back.
 		x0->rdx -= pow;
+		x0->scale -= pow * BC_BASE_POWER;
 	}
 
 	x0->rdx = digs = digs1 = digs2 = 0;
-	resrdx = scale + 2;
-	len = bc_num_int(x0) + resrdx - 1;
+	x0->scale = 0;
+	resscale = scale + 2 * BC_BASE_POWER;
+	len = bc_num_int(x0) + BC_NUM_RDX(resscale - 1); // <se> apply -1 after BC_NUM_RDX???
 
 	while (BC_NO_SIG && (cmp || digs < len)) {
 
 		assert(BC_NUM_NONZERO(x0));
 
-		s = bc_num_div(a, x0, &f, resrdx);
+		s = bc_num_div(a, x0, &f, resscale);
 		assert(!s || s == BC_STATUS_SIGNAL);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_add(x0, &f, &fprime, resrdx);
+		s = bc_num_add(x0, &f, &fprime, resscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&fprime, &half, x1, resrdx);
+		s = bc_num_mul(&fprime, &half, x1, resscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		cmp = bc_num_cmp(x1, x0);
@@ -2059,7 +2062,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		if (cmp == cmp2 && digs == digs1) times += 1;
 		else times = 0;
 
-		resrdx += times > 4;
+		resscale += times > 4;
 
 		cmp2 = cmp1;
 		cmp1 = cmp;
@@ -2077,7 +2080,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	bc_num_copy(b, x0);
 	scale -= 1;
-	if (b->rdx > scale) bc_num_truncate(b, b->rdx - scale);
+	if (b->scale > scale) bc_num_truncate(b, b->scale - scale);
 
 err:
 	if (BC_ERR(s)) bc_num_free(b);
