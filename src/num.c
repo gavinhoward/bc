@@ -1053,7 +1053,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_createCopy(&copy, a);
 
-	if (!neg) scale = BC_MIN(a->rdx * pow, BC_MAX(scale, a->rdx));
+	if (!neg) scale = BC_MIN(a->scale * pow, BC_MAX(scale, a->scale));
 
 	for (powrdx = a->rdx; BC_NO_SIG && !(pow & 1); pow >>= 1) {
 		powrdx <<= 1;
@@ -1085,7 +1085,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
-	if (c->rdx > scale) bc_num_truncate(c, c->rdx - scale);
+	if (c->scale > scale) bc_num_truncate(c, c->scale - scale);
 
 	// We can't use bc_num_clean() here.
 	for (zero = true, i = 0; zero && i < c->len; ++i) zero = !c->num[i];
