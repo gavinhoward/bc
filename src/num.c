@@ -113,6 +113,20 @@ static size_t bc_num_int(const BcNum *n) {
 	return n->len ? n->len - n->rdx : 0;
 }
 
+static size_t bc_num_log10(size_t i); // --> num.h
+
+static size_t bc_num_int_digits(const BcNum *n) {
+	size_t digits;
+
+	digits = bc_num_int(n) * BC_BASE_POWER;
+
+	if (digits > 0) {
+		digits -= BC_BASE_POWER - bc_num_log10(n->num[n->len -1]);
+	}
+
+	return digits;
+}
+
 static bool bc_num_isOne(const BcNum *n) {
 	return n->len == 1 && n->rdx == 0 && n->num[0] == 1;
 }
@@ -1580,7 +1594,7 @@ static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto exit;
 	}
 	else {
-		places = bc_num_int(n) - 1;
+		places = bc_num_int_digits(n) - 1;
 		mod = places % 3;
 		if (eng && mod != 0) places -= 3 - (3 - mod);
 		s = bc_num_shiftRight(&temp, places);
@@ -1910,7 +1924,7 @@ size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
 	size_t max, rdx;
 	rdx = bc_vm_growSize(a->rdx, b->rdx);
-	max = bc_vm_growSize(BC_MAX(scale, rdx), 1);
+	max = bc_vm_growSize(BC_MAX(BC_NUM_RDX(scale), rdx), 1);
 	rdx = bc_vm_growSize(bc_vm_growSize(bc_num_int(a), bc_num_int(b)), max);
 	return rdx;
 }
@@ -1979,7 +1993,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
 	size_t pow, len, rdx, req, digs, digs1, digs2, resscale, times = 0;
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
-	BcDig half_digs[2];
+	BcDig half_digs[1];
 
 	assert(a && b && a != b);
 
@@ -2008,6 +2022,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	bc_num_one(&half);
 	half.num[0] = BC_BASE_DIG / 2;
+	half.len = 1;
 	half.rdx = 1;
 	half.scale = 1;
 
@@ -2018,7 +2033,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	x1 = &num2;
 
 	bc_num_one(x0);
-	pow = bc_num_int(a);
+	pow = bc_num_int_digits(a);
 
 	if (pow) {
 
@@ -2026,18 +2041,18 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		else x0->num[0] = 6;
 
 		pow -= 2 - (pow & 1);
-
-		bc_num_extend(x0, pow);
+		bc_num_shiftLeft(x0, pow / 2);
 
 		// Make sure to move the radix back.
-		x0->rdx -= pow;
-		x0->scale -= pow * BC_BASE_POWER;
+		x0->scale -= pow;
+		x0->rdx = BC_NUM_RDX(x0->scale);
 	}
 
 	x0->rdx = digs = digs1 = digs2 = 0;
 	x0->scale = 0;
-	resscale = scale + 2 * BC_BASE_POWER;
-	len = bc_num_int(x0) + BC_NUM_RDX(resscale - 1); // <se> apply -1 after BC_NUM_RDX???
+	resscale = scale * 2;
+
+	len = BC_NUM_RDX(bc_num_int_digits(x0) + resscale - 1); // <se> apply -1 after BC_NUM_RDX???
 
 	while (BC_NO_SIG && (cmp || digs < len)) {
 
@@ -2100,7 +2115,8 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	BcStatus s;
 	BcNum num2, *ptr_a;
 	bool init = false;
-	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = bc_num_mulReq(a, b, ts);
+	size_t ts = BC_MAX(scale + b->scale, a->scale); // <se> scale or rdx ???
+	size_t len = bc_num_mulReq(a, b, ts);
 
 	assert(c != d && a != d && b != d && b != c);
 
