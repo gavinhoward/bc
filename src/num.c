@@ -2033,7 +2033,10 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	BcStatus s;
 	BcNum num2, *ptr_a;
 	bool init = false;
-	size_t ts = BC_MAX(scale + b->rdx, a->rdx), len = bc_num_mulReq(a, b, ts);
+	size_t ts, len;
+
+	ts = BC_MAX(scale + b->scale, a->scale);
+	len = bc_num_mulReq(a, b, ts);
 
 	assert(c != d && a != d && b != d && b != c);
 
