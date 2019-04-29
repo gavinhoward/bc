@@ -917,11 +917,11 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	req = bc_num_int(&cpa);
 	if (!req) req = cpa.len - bc_num_nonzeroIdx(&cpa);
-	req = BC_BASE_POWER * req;
+	req = BC_BASE_POWER * (req + 1);
 	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
-	req *= 2;
+	req += BC_NUM_RDX(scale) * BC_BASE_POWER;
 
-	rscale += BC_NUM_RDX(scale) + req;
+	rscale += req;
 	bc_num_extend(&cpa, req);
 	bc_num_extend(&cpb, req);
 
