@@ -444,7 +444,7 @@ static BcStatus bc_num_shiftRight(BcNum *restrict n, size_t places) {
 	}
 
 	places_rdx = BC_NUM_RDX(places);
-	len = bc_vm_growSize(n->len, places_rdx);
+	len = bc_vm_growSize(n->rdx, places_rdx);
 
 	if (len > n->len) {
 
@@ -857,10 +857,14 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	// TODO: Check this function.
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	size_t rdx;
+	size_t rdx, rscale, req;
 	ssize_t cmp;
-	BcNum cpa, cpb;
+	BcNum cpa, cpb, two, factor, factor2, *fi, *fnext, *temp;
+	BcDig two_digs[2];
 	bool aneg, bneg, shift_left;
+
+	aneg = a->neg;
+	bneg = b->neg;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -872,12 +876,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		goto exit;
 	}
 
-	aneg = a->neg;
-	bneg = b->neg;
-	aneg = bneg = false;
+	a->neg = b->neg = false;
 	cmp = bc_num_cmp(a, b);
-	a->neg = aneg;
-	b->neg = bneg;
 
 	if (cmp == BC_NUM_SSIZE_MIN) return BC_STATUS_SIGNAL;
 	if (!cmp) {
@@ -888,22 +888,89 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	bc_num_createCopy(&cpa, a);
 	bc_num_createCopy(&cpb, b);
 
+	req = bc_num_int(a) + BC_NUM_RDX(scale) + 1;
+	bc_num_init(&factor, req);
+	bc_num_init(&factor2, req);
+
+	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
+	bc_num_one(&two);
+	two.num[0] = 2;
+
 	shift_left = (b->rdx == b->len);
 
 	if (shift_left) {
-
+		rdx = cpb.len - bc_num_nonzeroIdx(&cpb);
+		rscale = rdx * BC_BASE_POWER;
+		s = bc_num_shiftLeft(&cpa, rscale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		s = bc_num_shiftLeft(&cpb, rscale);
 	}
 	else {
 		rdx = b->len - b->rdx;
-		s = bc_num_shiftRight(&cpa, rdx * BC_BASE_POWER);
+		rscale = rdx * BC_BASE_POWER;
+		s = bc_num_shiftRight(&cpa, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_shiftRight(&cpb, rdx * BC_BASE_POWER);
+		s = bc_num_shiftRight(&cpb, rscale);
 	}
 
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	req = bc_num_int(&cpa);
+	if (!req) req = cpa.len - bc_num_nonzeroIdx(&cpa);
+	req = BC_BASE_POWER * req;
+	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
+	req *= 2;
+
+	rscale += BC_NUM_RDX(scale) + req;
+	bc_num_extend(&cpa, req);
+	bc_num_extend(&cpb, req);
+
+//	bc_num_printDebug(&two, "two", true);
+//	bc_num_printDebug(&factor, "factor", false);
+//	bc_num_printDebug(&cpa, "N", false);
+//	bc_num_printDebug(&cpb, "D", true);
+
+	fi = &factor;
+	fnext = &factor2;
+	cmp = 1;
+
+	while (!bc_num_isOne(fi) && cmp) {
+
+		s = bc_num_sub(&two, &cpb, fi, rscale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		s = bc_num_mul(&cpa, fi, &cpa, rscale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		s = bc_num_mul(&cpb, fi, &cpb, rscale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+//		bc_num_printDebug(fi, "fi", false);
+//		bc_num_printDebug(fnext, "fnext", false);
+//		bc_num_printDebug(&cpa, "N", false);
+//		bc_num_printDebug(&cpb, "D", true);
+
+		temp = fi;
+		fi = fnext;
+		fnext = temp;
+
+		cmp = bc_num_cmp(fi, fnext);
+		if (cmp == BC_NUM_SSIZE_MIN) {
+			s = BC_STATUS_SIGNAL;
+			goto err;
+		}
+
+//		printf("cmp: %zu\n", cmp);
+	}
+
+	bc_num_copy(c, &cpa);
+
 err:
+	bc_num_free(&factor2);
+	bc_num_free(&factor);
 	bc_num_free(&cpb);
 	bc_num_free(&cpa);
 exit:
+	a->neg = aneg;
+	b->neg = bneg;
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	return s;
