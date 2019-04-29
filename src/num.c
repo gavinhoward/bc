@@ -82,7 +82,7 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
 
-		if (scale / BC_BASE_POWER != n->rdx -i -1)
+		if (scale / BC_BASE_POWER != n->rdx - i)
 			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 		else {
 
@@ -90,7 +90,8 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 			BcDig div;
 
 			if (mod != 0) {
-				div = n->num[i] / (BcDig) bc_num_pow10[BC_BASE_POWER - mod];
+				size_t temp = scale / BC_BASE_POWER;
+				div = n->num[i] / (BcDig) bc_num_pow10[BC_BASE_POWER - temp];
 				fprintf(stderr, "%0*d", (int) mod, div);
 			}
 
