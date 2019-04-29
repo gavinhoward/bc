@@ -861,7 +861,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	ssize_t cmp;
 	BcNum cpa, cpb, two, factor, factor2, *fi, *fnext, *temp;
 	BcDig two_digs[2];
-	bool aneg, bneg, shift_left;
+	bool aneg, bneg;
 
 	aneg = a->neg;
 	bneg = b->neg;
@@ -896,9 +896,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	bc_num_one(&two);
 	two.num[0] = 2;
 
-	shift_left = (b->rdx == b->len);
-
-	if (shift_left) {
+	if (b->rdx == b->len) {
 		rdx = cpb.len - bc_num_nonzeroIdx(&cpb);
 		rscale = rdx * BC_BASE_POWER;
 		s = bc_num_shiftLeft(&cpa, rscale);
@@ -925,11 +923,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	bc_num_extend(&cpa, req);
 	bc_num_extend(&cpb, req);
 
-//	bc_num_printDebug(&two, "two", true);
-//	bc_num_printDebug(&factor, "factor", false);
-//	bc_num_printDebug(&cpa, "N", false);
-//	bc_num_printDebug(&cpb, "D", true);
-
 	fi = &factor;
 	fnext = &factor2;
 	cmp = 1;
@@ -942,11 +935,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_mul(&cpb, fi, &cpb, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-//		bc_num_printDebug(fi, "fi", false);
-//		bc_num_printDebug(fnext, "fnext", false);
-//		bc_num_printDebug(&cpa, "N", false);
-//		bc_num_printDebug(&cpb, "D", true);
 
 		temp = fi;
 		fi = fnext;
