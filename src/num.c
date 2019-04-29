@@ -85,18 +85,24 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 
 	for (i = n->len -1; i < n->len; i--) {
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
-		if (scale / BC_BASE_POWER != n->rdx -i -1) {
+		if (scale / BC_BASE_POWER != n->rdx -i -1)
 			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
-		} else {
+		else {
 			if (scale % BC_BASE_POWER != 0)
 				fprintf(stderr, "%0*lu", (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(BC_BASE_POWER  - scale % BC_BASE_POWER));
-			fprintf(stderr, " ' %0*lu ", BC_BASE_POWER - (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(scale % BC_BASE_POWER));
+			fprintf(stderr, " ' %0*lu ", BC_BASE_POWER - (int)scale % BC_BASE_POWER, n->num[i] % bc_num_pow10(scale % BC_BASE_POWER));
 		}
 	}
 
 	fprintf(stderr, "(%zu | %zu.%zu/%zu) %p\n",
 		n->scale, n->len, n->rdx, n->cap, (void*) n->num);
 }
+#else // BC_DEBUG_CODE
+
+#undef DUMP_NUM
+#define DUMP_NUM(x,y)
+#P(x)
+
 #endif // BC_DEBUG_CODE
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
@@ -378,7 +384,8 @@ static void bc_num_roundPlaces(BcNum *restrict n, size_t places) { // --> num.h
 
 	if (sum < BC_BASE_DIG) {
 		n->num[rdx] = sum;
-	} else {
+	}
+	else {
 		sum -= BC_BASE_DIG;
 		n->num[rdx] = sum;
 
@@ -488,18 +495,19 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 		n->scale -= places;
 		n->rdx = BC_NUM_RDX(n->scale);
 	}
-	else if (BC_NUM_NONZERO(n)) {
+	else
+		if (BC_NUM_NONZERO(n)) {
 
-		if (places_rdx > n->rdx) {
-			bc_num_expand(n, n->len + places_rdx - n->rdx + shift);
-			memmove(n->num + places_rdx - n->rdx, n->num, BC_NUM_SIZE(n->len));
-			memset(n->num, 0, BC_NUM_SIZE(places_rdx - n->rdx));
-			n->len += places_rdx;
+			if (places_rdx > n->rdx) {
+				bc_num_expand(n, n->len + places_rdx - n->rdx + shift);
+				memmove(n->num + places_rdx - n->rdx, n->num, BC_NUM_SIZE(n->len));
+				memset(n->num, 0, BC_NUM_SIZE(places_rdx - n->rdx));
+				n->len += places_rdx;
+			}
+
+			n->scale = n->rdx = 0;
 		}
-
-		n->scale = n->rdx = 0;
-	}
-	else n->scale = 0;
+		else n->scale = 0;
 
 	if (shift) s = bc_num_shift(n, n->num + places_rdx, dig, n->len - places_rdx);
 
@@ -1030,7 +1038,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	if (cmp == 0) {
 		bc_num_free(c);
 		bc_num_createFromUlong(c, 1);	// identical BcNum arrays
-	} else {
+	}
+	else {
 		if (cmp > 0)		//==> b > a, result will be one exp higher
 			shift--;
 
@@ -1050,7 +1059,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 			if (divisor < mindivisor) {
 				divisor *= BC_BASE_DIG;
 				divisor += b1.num[b1.len - 1 - i];
-			} else {
+			}
+			else {
 				if (b1.num[b1.len - 1 - i] != 0)
 					j = 1;
 			}
@@ -1068,7 +1078,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		if (b1.num[b1.len - 1] == 1) {
 			b1.rdx = b1.len - 1; // only possible if b1 == 1.000000...
 			b1.scale = b1.rdx * BC_BASE_POWER;
-		} else {
+		}
+		else {
 			b1.rdx = b1.len;
 			b1.scale = b1.rdx * BC_BASE_POWER;
 			s = bc_num_invert(&b1, temp_scale + BC_BASE_POWER);
@@ -1081,11 +1092,12 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		c->rdx = c->len - 1;
 		c->scale = c->rdx * BC_BASE_POWER;
 	}
-	if (shift > 0) {
+
+	if (shift > 0)
 		bc_num_shiftLeft(c, shift * BC_BASE_POWER);
-	} else {
+	else
 		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
-	}
+
 	bc_num_roundPlaces(c, scale +3); // <se> is this correct???
 err:
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
