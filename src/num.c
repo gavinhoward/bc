@@ -2050,7 +2050,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	x0->rdx = digs = digs1 = digs2 = 0;
 	x0->scale = 0;
-	resscale = scale * 2;
+	resscale = (scale + BC_BASE_POWER) * 2;
 
 	len = BC_NUM_RDX(bc_num_int_digits(x0) + resscale - 1); // <se> apply -1 after BC_NUM_RDX???
 
@@ -2077,7 +2077,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		if (cmp == cmp2 && digs == digs1) times += 1;
 		else times = 0;
 
-		resscale += times > 4;
+		resscale += times > 2;
 
 		cmp2 = cmp1;
 		cmp1 = cmp;
@@ -2094,7 +2094,6 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	}
 
 	bc_num_copy(b, x0);
-	scale -= 1;
 	if (b->scale > scale) bc_num_truncate(b, b->scale - scale);
 
 err:
