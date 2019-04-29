@@ -1999,7 +1999,8 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	if (BC_ERR(a->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
-	len = bc_vm_growSize(bc_num_int(a), 1);
+	if (a->scale > scale) scale = a->scale;
+	len = bc_vm_growSize(bc_num_int_digits(a), 1);
 	req = bc_vm_growSize(BC_MAX(BC_NUM_RDX(scale), a->rdx), len >> 1);
 	bc_num_init(b, bc_vm_growSize(req, 1));
 
@@ -2114,7 +2115,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	BcStatus s;
 	BcNum num2, *ptr_a;
 	bool init = false;
-	size_t ts = BC_MAX(scale + b->scale, a->scale); // <se> scale or rdx ???
+	size_t ts = BC_MAX(scale + b->scale, a->scale);
 	size_t len = bc_num_mulReq(a, b, ts);
 
 	assert(c != d && a != d && b != d && b != c);
