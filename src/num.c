@@ -72,19 +72,30 @@ static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
 	vm->nchars = 0;
 }
 
+#define P(x) fprintf(stderr, "%s = %ld\n", #x, (long)x)
+
+static unsigned long bc_num_pow10(unsigned long i);
+
+#define DUMP_NUM bc_num_dump
 static void bc_num_dump(const char *varname, const BcNum *n) {
 
-	unsigned long i;
+	unsigned long i, scale = n->scale;
 
 	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
 
 	for (i = n->len -1; i < n->len; i--) {
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
-		fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
+		if (scale / BC_BASE_POWER != n->rdx -i -1) {
+			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
+		} else {
+			if (scale % BC_BASE_POWER != 0)
+				fprintf(stderr, "%0*lu", (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(BC_BASE_POWER  - scale % BC_BASE_POWER));
+			fprintf(stderr, " ' %0*lu ", BC_BASE_POWER - (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(scale % BC_BASE_POWER));
+		}
 	}
 
-	fprintf(stderr, "(%p | %zu.%zu/%zu)\n",
-	        (void*) n->num, n->len, n->rdx, n->cap);
+	fprintf(stderr, "(%zu | %zu.%zu/%zu) %p\n",
+		n->scale, n->len, n->rdx, n->cap, (void*) n->num);
 }
 #endif // BC_DEBUG_CODE
 
@@ -170,12 +181,12 @@ static unsigned long bc_num_pow10(unsigned long i) {
 
 	unsigned long pow;
 
+	if (i == 0) return 1;
 	if (i < POW10N) return pow10[i];
 
-	i -= POW10N - 1;
-	pow = pow10[POW10N - 1];
+	i -= POW10N;
+	if (i < POW10N - 1) return pow10[POW10N - 1] * pow10[i + 1];
 
-	if (i < POW10N) return pow * pow10[i];
 	return -1;
 }
 
