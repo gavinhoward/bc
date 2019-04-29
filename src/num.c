@@ -1055,7 +1055,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	if (!neg) scale = BC_MIN(a->scale * pow, BC_MAX(scale, a->scale));
 
-	for (powrdx = a->rdx; BC_NO_SIG && !(pow & 1); pow >>= 1) {
+	for (powrdx = a->scale; BC_NO_SIG && !(pow & 1); pow >>= 1) {
 		powrdx <<= 1;
 		s = bc_num_mul(&copy, &copy, &copy, powrdx);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
