@@ -72,8 +72,6 @@ static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
 	vm->nchars = 0;
 }
 
-static unsigned long bc_num_pow10(unsigned long i);
-
 static void bc_num_dump(const char *varname, const BcNum *n) {
 
 	unsigned long i, scale = n->scale;
@@ -92,11 +90,11 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 			BcDig div;
 
 			if (mod != 0) {
-				div = n->num[i] / (BcDig) bc_num_pow10(BC_BASE_POWER - mod);
+				div = n->num[i] / (BcDig) bc_num_pow10[BC_BASE_POWER - mod];
 				fprintf(stderr, "%0*d", (int) mod, div);
 			}
 
-			div = n->num[i] / (BcDig) bc_num_pow10(mod);
+			div = n->num[i] / (BcDig) bc_num_pow10[mod];
 			fprintf(stderr, " ' %0*d ", BC_BASE_POWER - (int) mod, div);
 		}
 	}
@@ -179,34 +177,6 @@ static size_t bc_num_int_digits(const BcNum *n) {
 		digits -= BC_BASE_POWER - bc_num_log10((size_t) n->num[n->len -1]);
 
 	return digits;
-}
-
-#define POW10N 10
-
-static unsigned long pow10[POW10N] = {
-		    1,
-		    10,
-		    100,
-		    1000,
-		    10000,
-		    100000,
-		    1000000,
-		    10000000,
-		    100000000,
-		    1000000000,
-};
-
-static unsigned long bc_num_pow10(unsigned long i) {
-
-	unsigned long pow;
-
-	if (i == 0) return 1;
-	if (i < POW10N) return pow10[i];
-
-	i -= POW10N;
-	if (i < POW10N - 1) return pow10[POW10N - 1] * pow10[i + 1];
-
-	return -1;
 }
 
 static size_t bc_num_nonzeroIdx(const BcNum *restrict n) {
@@ -342,7 +312,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 		pow = n->scale % BC_BASE_POWER;
 		pow = pow ? BC_BASE_POWER - pow : 0;
-		pow = bc_num_pow10(pow);
+		pow = bc_num_pow10[pow];
 
 		n->len -= places_rdx;
 		memmove(n->num, n->num + places_rdx, BC_NUM_SIZE(n->len));
@@ -385,7 +355,7 @@ static void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
 
 	for (i = 0; i < rdx; i++) n->num[i] = 0;
 
-	p10 = (BcDig) bc_num_pow10(place);
+	p10 = (BcDig) bc_num_pow10[place];
 	sum = n->num[rdx] + (BC_BASE / 2) * p10;
 	sum = sum - sum % (BC_BASE * p10);
 
@@ -468,7 +438,7 @@ static BcStatus bc_num_shift(BcNum *restrict n, BcDig *restrict ptr,
 
 	assert(dig < BC_BASE_POWER);
 
-	dig = bc_num_pow10(dig);
+	dig = bc_num_pow10[dig];
 
 	for (i = 0; BC_NO_SIG && i < len; ++i) {
 		unsigned long in = ((unsigned long) ptr[i]) * dig;
@@ -1341,7 +1311,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 		unsigned long exp, pow;
 
 		exp = i;
-		pow = bc_num_pow10(exp);
+		pow = bc_num_pow10[exp];
 
 		for (i = len - 1; i < len; --i, ++exp) {
 

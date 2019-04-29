@@ -80,7 +80,7 @@ typedef int_least8_t BcDig;
 #define BC_BASE_DIG (10)
 #define BC_BASE_POWER (1)
 
-#else // LONG_BIT >= 64
+#else // LONG_BIT >= 8
 
 #error long must be at least 8 bits
 
@@ -193,5 +193,6 @@ BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED
 
 extern const char bc_num_hex_digits[];
+extern const unsigned long bc_num_pow10[BC_BASE_POWER + 1];
 
 #endif // BC_NUM_H
