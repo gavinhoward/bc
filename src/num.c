@@ -373,7 +373,6 @@ static void bc_num_retireMul(BcNum *restrict n, size_t scale,
 static void bc_num_split(const BcNum *restrict n, size_t idx,
                          BcNum *restrict a, BcNum *restrict b)
 {
-	// TODO: Check this function.
 	if (idx < n->len) {
 
 		b->len = n->len - idx;
@@ -668,7 +667,6 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
-	// TODO: Check this function.
 	size_t i, alen = a->len, blen = b->len, clen;
 	BcDig *ptr_a = a->num, *ptr_b = b->num, *ptr_c;
 	unsigned long sum = 0, carry = 0;
@@ -717,15 +715,12 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 static BcStatus bc_num_shiftAddSub(BcNum *restrict n, const BcNum *restrict a,
                                    size_t shift, BcNumShiftAddOp op)
 {
-	// TODO: Check this function.
 	assert(n->len >= shift + a->len);
 	assert(!n->rdx && !a->rdx);
 	return op(n->num + shift, a->num, a->len);
 }
 
 static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
-
-	// TODO: Check this function.
 
 	BcStatus s;
 	size_t max, max2, total;
@@ -840,8 +835,6 @@ err:
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	// TODO: Check this function.
-
 	BcStatus s;
 	BcNum cpa, cpb;
 	size_t ascale, bscale, ardx, brdx, azero = 0, bzero = 0, zero, len, rscale;
@@ -895,8 +888,6 @@ err:
 }
 
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-
-	// TODO: Check this function.
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t rdx, rscale, req;
@@ -1008,7 +999,6 @@ exit:
 static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
                          BcNum *restrict d, size_t scale, size_t ts)
 {
-	// TODO: Check this function.
 	BcStatus s;
 	BcNum temp;
 	bool neg;
@@ -1045,7 +1035,6 @@ err:
 
 static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 {
-	// TODO: Check this function.
 	BcStatus s;
 	BcNum c1;
 	size_t ts;
@@ -1061,8 +1050,6 @@ static BcStatus bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale)
 }
 
 static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
-
-	// TODO: Check this function.
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum copy;
