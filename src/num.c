@@ -85,11 +85,11 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 
 	for (i = n->len -1; i < n->len; i--) {
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
-		if (scale / BC_BASE_POWER != n->rdx -i -1)
+		if (scale / BC_BASE_POWER != n->rdx -i)
 			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 		else {
 			if (scale % BC_BASE_POWER != 0)
-				fprintf(stderr, "%0*lu", (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(BC_BASE_POWER  - scale % BC_BASE_POWER));
+				fprintf(stderr, "%0*lu", (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(BC_BASE_POWER  - scale / BC_BASE_POWER));
 			fprintf(stderr, " ' %0*lu ", BC_BASE_POWER - (int)scale % BC_BASE_POWER, n->num[i] % bc_num_pow10(scale % BC_BASE_POWER));
 		}
 	}
