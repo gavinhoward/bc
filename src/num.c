@@ -1515,7 +1515,7 @@ static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto exit;
 	}
 	else {
-		places = bc_num_int(n) - 1;
+		places = bc_num_int_digits(n) - 1;
 		mod = places % 3;
 		if (eng && mod != 0) places -= 3 - (3 - mod);
 		s = bc_num_shiftRight(&temp, places);
