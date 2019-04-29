@@ -72,19 +72,37 @@ static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
 	vm->nchars = 0;
 }
 
+static unsigned long bc_num_pow10(unsigned long i);
+
 static void bc_num_dump(const char *varname, const BcNum *n) {
 
-	unsigned long i;
+	unsigned long i, scale = n->scale;
 
 	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
 
 	for (i = n->len -1; i < n->len; i--) {
+
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
-		fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
+
+		if (scale / BC_BASE_POWER != n->rdx -i -1)
+			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
+		else {
+
+			size_t mod = scale % BC_BASE_POWER;
+			BcDig div;
+
+			if (mod != 0) {
+				div = n->num[i] / (BcDig) bc_num_pow10(BC_BASE_POWER - mod);
+				fprintf(stderr, "%0*d", (int) mod, div);
+			}
+
+			div = n->num[i] / (BcDig) bc_num_pow10(mod);
+			fprintf(stderr, " ' %0*d ", BC_BASE_POWER - (int) mod, div);
+		}
 	}
 
-	fprintf(stderr, "(%p | %zu.%zu/%zu)\n",
-	        (void*) n->num, n->len, n->rdx, n->cap);
+	fprintf(stderr, "(%zu | %zu.%zu/%zu) %p\n",
+		n->scale, n->len, n->rdx, n->cap, (void*) n->num);
 }
 #endif // BC_DEBUG_CODE
 
