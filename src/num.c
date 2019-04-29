@@ -1025,7 +1025,7 @@ static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	assert(!s || s == BC_STATUS_SIGNAL);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	if (scale) scale = ts;
+	if (scale) scale = ts + 1;
 
 	s = bc_num_m(c, b, &temp, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -1036,7 +1036,7 @@ static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 
 	neg = d->neg;
 	bc_num_retireMul(d, ts, a->neg, b->neg);
-	d->neg = neg;
+	d->neg = BC_NUM_NONZERO(d) ? neg : false;
 
 err:
 	bc_num_free(&temp);
