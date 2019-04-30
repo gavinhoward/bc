@@ -85,16 +85,16 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 
 	for (i = n->len -1; i < n->len; i--) {
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
-		if (scale / BC_BASE_POWER != n->rdx -i)
+		if (scale / BC_BASE_POWER != n->rdx -i -1)
 			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 		else {
 			if (scale % BC_BASE_POWER != 0)
-				fprintf(stderr, "%0*lu", (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(BC_BASE_POWER  - scale / BC_BASE_POWER));
-			fprintf(stderr, " ' %0*lu ", BC_BASE_POWER - (int)scale % BC_BASE_POWER, n->num[i] % bc_num_pow10(scale % BC_BASE_POWER));
+				fprintf(stderr, "%0*lu", (int)scale % BC_BASE_POWER, n->num[i] / bc_num_pow10(BC_BASE_POWER - scale % BC_BASE_POWER));
+			fprintf(stderr, " ' %0*lu ", BC_BASE_POWER - (int)scale % BC_BASE_POWER, n->num[i] % bc_num_pow10(scale % BC_BASE_POWER+1));
 		}
 	}
 
-	fprintf(stderr, "(%zu | %zu.%zu/%zu) %p\n",
+	fprintf(stderr, "(%zd | %zd.%zd/%zd) %p\n",
 		n->scale, n->len, n->rdx, n->cap, (void*) n->num);
 }
 #else // BC_DEBUG_CODE
