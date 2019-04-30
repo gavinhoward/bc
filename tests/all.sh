@@ -38,7 +38,7 @@ if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	err_exit "usage: $script dir [run_extended_tests] [run_stack_tests] [generate_tests] [exec args...]"
+	err_exit "usage: $script dir [run_extended_tests] [run_stack_tests] [generate_tests] [exec args...]" 1
 fi
 
 if [ "$#" -lt 1 ]; then
