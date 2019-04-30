@@ -1693,7 +1693,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	if (BC_SIG) goto sig_err;
 	if (!n->rdx) goto err;
 
-	for (radix = true; BC_NO_SIG && frac_len.len <= n->rdx; radix = false) {
+	for (radix = true; BC_NO_SIG && bc_num_int_digits(&frac_len) <= n->scale + 1; radix = false) {
 
 		s = bc_num_mul(&fracp, base, &fracp, n->rdx);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
