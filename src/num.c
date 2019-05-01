@@ -334,7 +334,7 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
-	bc_num_expand(n, n->len + places_rdx);
+	bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
 	memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
 	memset(n->num, 0, BC_NUM_SIZE(places_rdx));
 
@@ -374,7 +374,7 @@ static void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
 			rdx += 1;
 
 			if (n->len <= rdx) {
-				bc_num_expand(n, rdx + 1);
+				bc_num_expand(n, bc_vm_growSize(rdx, 1));
 				n->num[rdx] = 0;
 				n->len = rdx +1;
 			}
@@ -495,7 +495,7 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	}
 
 	if (places_rdx) {
-		bc_num_expand(n, n->len + places_rdx);
+		bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
 		memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
 		memset(n->num, 0, BC_NUM_SIZE(places_rdx));
 		n->len += places_rdx;
@@ -549,7 +549,7 @@ static BcStatus bc_num_shiftRight(BcNum *restrict n, size_t places) {
 	else expand = 0;
 
 	bc_num_extend(n, places_rdx * BC_BASE_POWER);
-	bc_num_expand(n, expand + n->len);
+	bc_num_expand(n, bc_vm_growSize(expand, n->len));
 	memset(n->num + n->len, 0, BC_NUM_SIZE(expand));
 	n->len += expand;
 	n->scale = n->rdx = 0;
@@ -736,7 +736,7 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	assert(!a->rdx && !b->rdx);
 
 	clen = bc_vm_growSize(alen, blen);
-	bc_num_expand(c, clen + 1);
+	bc_num_expand(c, bc_vm_growSize(clen, 1));
 
 	ptr_c = c->num;
 	memset(ptr_c, 0, BC_NUM_SIZE(c->cap));
