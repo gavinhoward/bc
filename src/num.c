@@ -1042,6 +1042,13 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		}
 	}
 
+	// We round to 2 extra places here. The reason is because without rounding,
+	// the Goldschmidt algorithm can produce numbers that are 1 digit off in the
+	// last place, because of the nature of the algorithm. If we only shift by
+	// one place, the last digit in the number gets rounded, which is wrong
+	// according to the bc spec (it needs to be truncated).
+	// Note: I would really prefer an exact division algorithm here, even if
+	// it's slightly slower than this one.
 	bc_num_roundPlaces(&cpa, scale + 2);
 	bc_num_copy(c, &cpa);
 
