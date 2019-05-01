@@ -1271,8 +1271,6 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	if (init) bc_num_free(&num2);
 
-//	bc_num_truncDecimals(c, scale);
-
 	return s;
 }
 
