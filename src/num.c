@@ -472,16 +472,23 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	dig = (unsigned long) (places % BC_BASE_POWER);
 	shift = (dig != 0);
 
-	if (!n->scale) {
-		places_rdx = BC_NUM_RDX(places);
-	}
+	if (!n->scale) places_rdx = BC_NUM_RDX(places);
 	else {
-		places_rdx = BC_NUM_RDX(places);
-		if (dig >= n->scale % BC_BASE_POWER) places_rdx -= 1;
-		places_rdx -= (n->rdx - 1);
-	}
 
-	// TODO: Calculate places_rdx.
+		places_rdx = BC_NUM_RDX(places);
+
+		if (n->rdx >= places_rdx) {
+
+			size_t mod = n->scale % BC_BASE_POWER, revdig;
+
+			mod = mod ? mod : BC_BASE_POWER;
+			revdig = dig ? BC_BASE_POWER - dig : 0;
+
+			if (mod + revdig > BC_BASE_POWER) places_rdx = 1;
+			else places_rdx = 0;
+		}
+		else places_rdx -= n->rdx;
+	}
 
 	if (places_rdx) {
 		bc_num_expand(n, n->len + places_rdx);
