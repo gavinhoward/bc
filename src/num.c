@@ -165,7 +165,7 @@ void bc_num_ten(BcNum *restrict n) {
 static size_t bc_num_log10(size_t i) {
 	size_t len;
 	for (len = 1; i; i /= BC_BASE, ++len);
-	return len;
+	return len - 1;
 }
 
 static size_t bc_num_int_digits(const BcNum *n) {
@@ -175,15 +175,16 @@ static size_t bc_num_int_digits(const BcNum *n) {
 	digits = bc_num_int(n) * BC_BASE_POWER;
 
 	if (digits > 0)
-		digits -= BC_BASE_POWER - bc_num_log10((size_t) n->num[n->len -1]);
+		digits -= BC_BASE_POWER - bc_num_log10((size_t) n->num[n->len - 1]);
 
 	return digits;
 }
 
-static size_t bc_num_nonzeroIdx(const BcNum *restrict n) {
+static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
 	size_t i, len = n->len;
 	assert(len == n->rdx);
 	for (i = len - 1; i < n->len && !n->num[i]; --len, --i);
+	assert(len > 0);
 	return len;
 }
 
@@ -991,7 +992,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	two.num[0] = 2;
 
 	if (b->rdx == b->len) {
-		rdx = cpb.len - bc_num_nonzeroIdx(&cpb);
+		rdx = cpb.len - bc_num_nonzeroLen(&cpb);
 		rscale = rdx * BC_BASE_POWER;
 		s = bc_num_shiftLeft(&cpa, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -1008,7 +1009,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	req = bc_num_int(&cpa);
-	if (!req) req = cpa.len - bc_num_nonzeroIdx(&cpa);
+	if (!req) req = cpa.len - bc_num_nonzeroLen(&cpa);
 	req = BC_BASE_POWER * (req + 1);
 	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
 	req += BC_NUM_RDX(scale) * BC_BASE_POWER + 2;
@@ -1546,8 +1547,21 @@ static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 	bc_num_createCopy(&temp, n);
 
 	if (neg) {
-		places = n->rdx - bc_num_len(n) + 1;
+
+		size_t i, idx = bc_num_nonzeroLen(n) - 1;
+
+		places = 1;
+
+		for (i = BC_BASE_POWER - 1; i < BC_BASE_POWER; --i) {
+			if (bc_num_pow10[i] > (unsigned long) n->num[idx])
+				places += 1;
+			else break;
+		}
+
+		places += (n->rdx - (idx + 1)) * BC_BASE_POWER;
+
 		mod = places % 3;
+
 		if (eng && mod != 0) places += 3 - mod;
 		s = bc_num_shiftLeft(&temp, places);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto exit;
@@ -1755,7 +1769,7 @@ size_t bc_num_len(const BcNum *restrict n) {
 	BcDig dig;
 
 	if (BC_NUM_ZERO(n)) return 0;
-	if (n->rdx == len) len = bc_num_nonzeroIdx(n);
+	if (n->rdx == len) len = bc_num_nonzeroLen(n);
 
 	dig = n->num[len - 1];
 	pow = BC_BASE_DIG;
