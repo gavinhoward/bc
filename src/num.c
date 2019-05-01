@@ -1432,7 +1432,7 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	if (BC_NUM_NONZERO(n)) {
-		if (n->rdx < digs) bc_num_extend(n, digs - n->rdx);
+		if (n->scale < digs) bc_num_extend(n, digs - n->scale);
 	}
 	else bc_num_zero(n);
 
