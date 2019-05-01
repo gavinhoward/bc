@@ -1425,9 +1425,10 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 
 	// This one cannot be a divide by 0 because mult starts out at 1, then is
 	// multiplied by base, and base cannot be 0, so mult cannot be 0.
-	s = bc_num_div(&result, &mult, &result, digs);
+	s = bc_num_div(&result, &mult, &result, digs * 2);
 	assert(!s || s == BC_STATUS_SIGNAL);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	bc_num_truncate(&result, digs);
 	s = bc_num_add(n, &result, n, digs);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
