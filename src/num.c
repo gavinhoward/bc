@@ -327,13 +327,16 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 static void bc_num_extend(BcNum *restrict n, size_t places) {
 
-	size_t places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
+	size_t places_rdx;
 
 	if (!places) return;
+
+	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
 	bc_num_expand(n, n->len + places_rdx);
 	memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
 	memset(n->num, 0, BC_NUM_SIZE(places_rdx));
+
 	n->rdx += places_rdx;
 	n->scale += places;
 	n->len += places_rdx;
@@ -513,9 +516,9 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 static BcStatus bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	unsigned long dig = (unsigned long) (places % BC_BASE_POWER);
-	bool shift = (dig != 0);
-	size_t len, places_rdx, places_rdx_orig, scale, int_len;
+	unsigned long dig;
+	size_t places_rdx, scale, scale_mod, int_len, expand;
+	bool shift;
 
 	if (!places) return s;
 	if (BC_NUM_ZERO(n)) {
@@ -524,29 +527,30 @@ static BcStatus bc_num_shiftRight(BcNum *restrict n, size_t places) {
 		return s;
 	}
 
+	dig = (unsigned long) (places % BC_BASE_POWER);
+	shift = (dig != 0);
 	scale = n->scale;
+	scale_mod = scale % BC_BASE_POWER;
+	scale_mod = scale_mod ? scale_mod : BC_BASE_POWER;
 	int_len = bc_num_int(n);
 	places_rdx = BC_NUM_RDX(places);
 
-	// TODO: Calculate places_rdx;
-
-	if (scale == 0) {
-		if (places_rdx > int_len) places_rdx -= int_len;
-		else places_rdx = shift;
+	if (scale_mod + dig > BC_BASE_POWER) {
+		expand = places_rdx - 1;
+		places_rdx = 1;
 	}
 	else {
-
-		places_rdx = BC_NUM_RDX(places + scale) - n->rdx;
-
-		if (int_len) {
-			if (places_rdx + 1 > int_len) {
-				places_rdx -= (int_len - 1);
-			}
-			else places_rdx = 0;
-		}
+		expand = places_rdx;
+		places_rdx = 0;
 	}
 
+	if (expand > int_len) expand -= int_len;
+	else expand = 0;
+
 	bc_num_extend(n, places_rdx * BC_BASE_POWER);
+	bc_num_expand(n, expand + n->len);
+	memset(n->num + n->len, 0, BC_NUM_SIZE(expand));
+	n->len += expand;
 	n->scale = n->rdx = 0;
 
 	if (shift) s = bc_num_shift(n, dig);
