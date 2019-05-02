@@ -74,7 +74,7 @@ static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
 
 #define P(x) fprintf(stderr, "%s = %ld\n", #x, (long)x)
 
-//static unsigned long bc_num_pow10(unsigned long i);
+static unsigned long bc_num_pow10(unsigned long i);
 
 #define DUMP_NUM bc_num_dump
 static void bc_num_dump(const char *varname, const BcNum *n) {
