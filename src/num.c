@@ -957,11 +957,12 @@ err:
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	size_t rdx, rscale, req;
+	size_t len, end, i, req, bscale;
 	ssize_t cmp;
-	BcNum cpa, cpb, two, factor, factor2, *fi, *fnext, *temp;
-	BcDig two_digs[2];
-	bool aneg, bneg;
+	BcNum cp, prod, target, factor;
+	BcDig *n, *p;
+	unsigned long q;
+	bool aneg, bneg, zero = true;
 
 	aneg = a->neg;
 	bneg = b->neg;
@@ -985,83 +986,123 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		goto exit;
 	}
 
-	bc_num_createCopy(&cpa, a);
-	bc_num_createCopy(&cpb, b);
-
-	req = bc_num_int(a) + BC_NUM_RDX(scale) + 1;
+	req = bc_num_mulReq(a, b, scale);
+	bc_num_init(&prod, req);
+	bc_num_init(&target, req);
 	bc_num_init(&factor, req);
-	bc_num_init(&factor2, req);
 
-	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
-	bc_num_one(&two);
-	two.num[0] = 2;
+	bc_num_init(&cp, req);
+	bc_num_copy(&cp, a);
+	len = b->len;
+
+	if (len > cp.len) {
+		bc_num_expand(&cp, bc_vm_growSize(len, 2));
+		bc_num_extend(&cp, (len - cp.len) * BC_BASE_POWER);
+	}
+
+	if (b->scale > cp.scale) bc_num_extend(&cp, b->scale - cp.scale);
+	cp.scale -= b->scale;
+	cp.rdx = BC_NUM_RDX(cp.scale);
+	if (scale > cp.scale) bc_num_extend(&cp, scale - cp.scale);
 
 	if (b->rdx == b->len) {
-		rdx = cpb.len - bc_num_nonzeroLen(&cpb);
-		rscale = rdx * BC_BASE_POWER;
-		s = bc_num_shiftLeft(&cpa, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_shiftLeft(&cpb, rscale);
-	}
-	else {
-		rdx = b->len - b->rdx;
-		rscale = rdx * BC_BASE_POWER;
-		s = bc_num_shiftRight(&cpa, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_shiftRight(&cpb, rscale);
+		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
+		assert(i != len || !zero);
+		len -= i - 1;
 	}
 
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	if (cp.cap == cp.len) bc_num_expand(&cp, bc_vm_growSize(cp.len, 1));
 
-	req = bc_num_int(&cpa);
-	if (!req) req = cpa.len - bc_num_nonzeroLen(&cpa);
-	req = BC_BASE_POWER * (req + 1);
-	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
-	req += BC_NUM_RDX(scale) * BC_BASE_POWER + 2;
+	// We want an extra zero in front to make things simpler.
+	cp.num[cp.len++] = 0;
+	end = cp.len - len;
 
-	rscale += req;
-	bc_num_extend(&cpa, req);
-	bc_num_extend(&cpb, req);
+	bc_num_expand(c, cp.len);
 
-	fi = &factor;
-	fnext = &factor2;
-	cmp = 1;
+	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
+	c->rdx = cp.rdx;
+	c->scale = cp.scale;
+	c->len = cp.len;
+	cp.scale = cp.rdx = 0;
+	p = b->num;
+	bscale = b->scale;
+	b->scale = b->rdx = 0;
+	bc_num_expand(&target, len);
 
-	while (!bc_num_isOne(fi) && cmp) {
+	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end; --i) {
 
-		s = bc_num_sub(&two, &cpb, fi, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpa, fi, &cpa, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpb, fi, &cpb, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		unsigned long dividend, divisor, factor_l, product;
 
-		temp = fi;
-		fi = fnext;
-		fnext = temp;
+		n = cp.num + i;
+		q = 0;
 
-		cmp = bc_num_cmp(fi, fnext);
-		if (cmp == BC_NUM_SSIZE_MIN) {
-			s = BC_STATUS_SIGNAL;
-			goto err;
+		assert(len > 0);
+
+		dividend = n[len] * BC_BASE_DIG + n[len - 1];
+		divisor = p[len - 1];
+
+		if (dividend < divisor) {
+			c->num[i] = q;
+			continue;
 		}
-	}
 
-	// We round to 2 extra places here. The reason is because without rounding,
-	// the Goldschmidt algorithm can produce numbers that are 1 digit off in the
-	// last place, because of the nature of the algorithm. If we only shift by
-	// one place, the last digit in the number gets rounded, which is wrong
-	// according to the bc spec (it needs to be truncated).
-	// Note: I would really prefer an exact division algorithm here, even if
-	// it's slightly slower than this one.
-	bc_num_roundPlaces(&cpa, scale + 2);
-	bc_num_copy(c, &cpa);
+		factor_l = dividend / divisor;
+
+		bc_num_ulong2num(&factor, factor_l);
+		s = bc_num_mul(b, &factor, &prod, 0);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		bc_num_printDigs(n, len + 1, false);
+		bc_num_printDebug(&prod, "prod", true);
+
+		cmp = bc_num_compare(n, prod.num, len + 1);
+		if (cmp == BC_NUM_SSIZE_MIN) goto err;
+		q = factor_l;
+
+		if (cmp < 0) {
+
+			while (cmp < 0) {
+				bc_num_subArrays(prod.num, p, len);
+				bc_num_printDebug(&prod, "prod sub", true);
+				q -= 1;
+				cmp = bc_num_compare(n, prod.num, len + 1);
+				if (cmp == BC_NUM_SSIZE_MIN) goto err;
+			}
+		}
+		else if (cmp > 0) {
+
+			memcpy(target.num, n, BC_NUM_SIZE(len + 1));
+			s = bc_num_subArrays(target.num, p, len);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+			printf("target: ");
+			bc_num_printDigs(target.num, len + 1, false);
+
+			cmp = bc_num_compare(target.num, prod.num, len + 1);
+
+			while (cmp >= 0) {
+				bc_num_addArrays(prod.num, p, len);
+				bc_num_printDebug(&prod, "prod add", true);
+				q += 1;
+				cmp = bc_num_compare(target.num, prod.num, len + 1);
+				if (cmp == BC_NUM_SSIZE_MIN) goto err;
+			}
+		}
+
+		s = bc_num_subArrays(n, prod.num, len);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		assert(q < BC_BASE_DIG);
+		c->num[i] = (BcDig) q;
+	}
 
 err:
-	bc_num_free(&factor2);
+	b->scale = bscale;
+	b->rdx = BC_NUM_RDX(b->scale);
+	bc_num_free(&cp);
 	bc_num_free(&factor);
-	bc_num_free(&cpb);
-	bc_num_free(&cpa);
+	bc_num_free(&target);
+	bc_num_free(&prod);
 exit:
 	a->neg = aneg;
 	b->neg = bneg;
