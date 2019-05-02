@@ -57,19 +57,24 @@ static void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline)
 	vm->nchars = 0;
 }
 
-static void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
+static void bc_num_printDigs(const BcDig *n, size_t len, bool emptyline) {
 
 	size_t i;
 
-	printf("%s len: %zu, rdx: %zu, scale: %zu\n",
-	       name, n->len, n->rdx, n->scale);
-
-	for (i = n->len - 1; i < n->len; --i)
-		printf(" %0*d", BC_BASE_POWER, n->num[i]);
+	for (i = len - 1; i < len; --i)
+		printf(" %0*d", BC_BASE_POWER, n[i]);
 
 	printf("\n");
 	if (emptyline) printf("\n");
 	vm->nchars = 0;
+}
+
+static void bc_num_printWithDigs(const BcNum *n, const char *name,
+                                 bool emptyline)
+{
+	printf("%s len: %zu, rdx: %zu, scale: %zu\n",
+	       name, n->len, n->rdx, n->scale);
+	bc_num_printDigs(n->num, n->len, emptyline);
 }
 
 static void bc_num_dump(const char *varname, const BcNum *n) {
