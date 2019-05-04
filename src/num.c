@@ -1904,7 +1904,7 @@ static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 		print = bc_num_printHex;
 	}
 	else {
-		width = bc_num_log10(base_t - 1) - 1;
+		width = bc_num_log10(base_t - 1);
 		print = bc_num_printDigits;
 	}
 
