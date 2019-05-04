@@ -1113,16 +1113,12 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		bc_num_mul(&b1, &f, &b1, temp_scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		if (b1.num[b1.len - 1] == 1) {
-			b1.rdx = b1.len - 1; // only possible if b1 == 1.000000...
-			b1.scale = b1.rdx * BC_BASE_POWER;
-		}
-		else {
+		if (b1.num[b1.len - 1] != 1) {
 			b1.rdx = b1.len;
 			b1.scale = b1.rdx * BC_BASE_POWER;
-			s = bc_num_invert(&b1, temp_scale + BC_BASE_POWER);
+			s = bc_num_invert(&b1, temp_scale);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-			bc_num_mul(&b1, c, c, temp_scale);
+			bc_num_mul(&b1, c, c, temp_scale + BC_BASE_POWER);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
 		bc_num_mul(&f, c, c, temp_scale);
@@ -1136,8 +1132,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		bc_num_shiftLeft(c, shift * BC_BASE_POWER);
 	else
 		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
-
-	bc_num_roundPlaces(c, scale + 3); // <se> is this correct???
 err:
 	bc_num_free(&b1);
 exit:
