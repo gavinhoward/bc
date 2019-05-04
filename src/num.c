@@ -91,9 +91,8 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 		else {
 
-			size_t mod = scale % BC_BASE_POWER;
-			size_t d = BC_BASE_POWER - mod;
-
+			int mod = scale % BC_BASE_POWER;
+			int d = BC_BASE_POWER - mod;
 			BcDig div;
 
 			if (mod != 0) {
