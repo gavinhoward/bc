@@ -1277,6 +1277,7 @@ static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 
 	bc_num_init(&temp, d->cap);
 	s = bc_num_d(a, b, c, scale);
+	//s = bc_num_div(a, b, c, scale);		// <se> ???
 	assert(!s || s == BC_STATUS_SIGNAL);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
@@ -1285,6 +1286,7 @@ static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	s = bc_num_m(c, b, &temp, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	s = bc_num_sub(a, &temp, d, scale);
+	//s = bc_num_sub(a, &temp, d, 0);		// <se> ???
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	if (ts > d->scale && BC_NUM_NONZERO(d)) bc_num_extend(d, ts - d->scale);
@@ -1632,6 +1634,7 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	assert(!s || s == BC_STATUS_SIGNAL);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	bc_num_truncate(&result, digs);
+	//bc_num_truncate(&result, result.scale - digs);	// <se> is this a fixed version of the line above?
 	s = bc_num_add(n, &result, n, digs);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
@@ -1854,11 +1857,12 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	}
 
 	if (BC_SIG) goto sig_err;
-	if (!n->rdx) goto err;
+	if (!n->scale) goto err;
 
 	for (radix = true; BC_NO_SIG && bc_num_int_digits(&frac_len) < n->scale + 1; radix = false) {
 
 		s = bc_num_mul(&fracp, base, &fracp, n->rdx);
+		//s = bc_num_mul(&fracp, base, &fracp, n->scale);	// <se> is this a fixed version of the line above?
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Will never fail (except for signals) because fracp is
