@@ -1048,7 +1048,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	size_t factor, dividend, divisor;
 	size_t i, j, mindivisor, temp_scale;
 	int shift;
-	bool neg;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -1068,7 +1067,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	bc_num_createCopy(&b1, b);
 	shift -= bc_num_normalize(&b1);
 
-	neg = c->neg != b1.neg;
 	c->neg = false;
 	b1.neg = false;
 
@@ -1106,8 +1104,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		divisor += j;
 
 		factor = dividend / divisor;
-		if (j == 0 && factor * divisor != dividend)
-			factor = dividend / (divisor + 1);
 
 		bc_num_createFromUlong(&f, factor);
 		bc_num_mul(&b1, &f, &b1, temp_scale);
@@ -1129,6 +1125,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		c->rdx = c->len - 1;
 		c->scale = c->rdx * BC_BASE_POWER;
+		bc_num_free(&f);
 	}
 
 	if (shift > 0)
@@ -1136,15 +1133,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	else
 		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
 
-	bc_num_roundPlaces(c, scale +3); // <se> is this correct???
+	bc_num_roundPlaces(c, scale + 3); // <se> is this correct???
 err:
-	bc_num_free(&factor2);
-	bc_num_free(&factor);
-	bc_num_free(&cpb);
-	bc_num_free(&cpa);
+	bc_num_free(&b1);
 exit:
-	a->neg = aneg;
-	b->neg = bneg;
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	return s;
