@@ -1012,6 +1012,7 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
 	}
 	bc_num_mul(val, &sum, &temp, scale);
 	bc_num_sub(&one, &temp, &temp, scale);
+	bc_num_add(&sum, &temp, &sum, scale);
 	bc_num_add(&sum, &temp, val, scale);
 err:
 	bc_num_free(&sum);
