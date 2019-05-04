@@ -87,27 +87,30 @@ static void bc_num_dump(const char *varname, const BcNum *n) {
 
 		if (i + 1 == n->rdx) fprintf(stderr, ". ");
 
-		if (scale / BC_BASE_POWER != n->rdx - i)
+		if (scale / BC_BASE_POWER != n->rdx - i - 1)
 			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
 		else {
 
 			size_t mod = scale % BC_BASE_POWER;
+			size_t d = BC_BASE_POWER - mod;
+
 			BcDig div;
 
 			if (mod != 0) {
 				size_t temp = scale / BC_BASE_POWER;
-				div = n->num[i] / (BcDig) bc_num_pow10(BC_BASE_POWER - temp);
+				div = n->num[i] / (BcDig) bc_num_pow10(d);
 				fprintf(stderr, "%0*d", (int) mod, div);
 			}
 
-			div = n->num[i] / (BcDig) bc_num_pow10(mod);
-			fprintf(stderr, " ' %0*d ", BC_BASE_POWER - (int) mod, div);
+			div = n->num[i] % (BcDig) bc_num_pow10(d);
+			fprintf(stderr, " ' %0*d ", d, div);
 		}
 	}
 
-	fprintf(stderr, "(%zu | %zu.%zu/%zu) %p\n",
+	fprintf(stderr, "(%zu | %zu.%zu / %zu) %p\n",
 		n->scale, n->len, n->rdx, n->cap, (void*) n->num);
 }
+
 #else // BC_DEBUG_CODE
 
 #undef DUMP_NUM
