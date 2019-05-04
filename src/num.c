@@ -1861,8 +1861,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 
 	for (radix = true; BC_NO_SIG && bc_num_int_digits(&frac_len) < n->scale + 1; radix = false) {
 
-		s = bc_num_mul(&fracp, base, &fracp, n->rdx);
-		//s = bc_num_mul(&fracp, base, &fracp, n->scale);	// <se> is this a fixed version of the line above?
+		s = bc_num_mul(&fracp, base, &fracp, n->scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Will never fail (except for signals) because fracp is
