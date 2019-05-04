@@ -1,6 +1,7 @@
 decimal
 length
 scale
+shift
 add
 subtract
 multiply
@@ -10,7 +11,6 @@ power
 sqrt
 trunc
 places
-shift
 vars
 boolean
 abs
@@ -19,8 +19,8 @@ engineering
 globals
 strings
 letters
-parse
 print
+parse
 exponent
 log
 pi
