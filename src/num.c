@@ -987,16 +987,17 @@ err:
 #ifdef USE_GOLDSCHMIDT
 static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
 
-	BcNum one, x, temp;
+	BcNum one, x, temp, sum;
 	bool done = false;
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	bc_num_createFromUlong(&one, 1);
 	bc_num_init(&temp, scale / BC_BASE_POWER + 1);
 	bc_num_init(&x, scale / BC_BASE_POWER + 1);
+	bc_num_init(&sum, scale / BC_BASE_POWER + 1);
 	s = bc_num_sub(&one, val, &x, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	s = bc_num_add(&one, &x, val, scale);
+	s = bc_num_add(&one, &x, &sum, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	for (;;) {
@@ -1004,12 +1005,16 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		if BC_NUM_ZERO(&x) break;
 
-		s = bc_num_mul(val, &x, &temp, scale);
+		s = bc_num_mul(&sum, &x, &temp, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_add(val, &temp, val, scale);
+		s = bc_num_add(&sum, &temp, &sum, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
+	bc_num_mul(val, &sum, &temp, scale);
+	bc_num_sub(&one, &temp, &temp, scale);
+	bc_num_add(&sum, &temp, val, scale);
 err:
+	bc_num_free(&sum);
 	bc_num_free(&one);
 	bc_num_free(&x);
 	bc_num_free(&temp);
