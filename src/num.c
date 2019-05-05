@@ -508,6 +508,7 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	bool shift;
 
 	if (!places) return s;
+	if (places > 1<<31) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	if (BC_NUM_ZERO(n)) {
 		if (n->scale >= places) n->scale -= places;
 		else n->scale = 0;
@@ -2149,7 +2150,7 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_shiftReq(BcNum *a, BcNum *b, size_t scale) {
 	BC_UNUSED(b);
 	BC_UNUSED(scale);
-	return BC_NUM_SHREQ(a);
+	return bc_num_int_digits(a); // <se> required???
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -2184,15 +2185,15 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 #if BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_place, BC_NUM_SHREQ(a));
+	return bc_num_binary(a, b, c, scale, bc_num_place, scale);
 }
 
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_left, BC_NUM_SHREQ(a));
+	return bc_num_binary(a, b, c, scale, bc_num_left, scale);
 }
 
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_right, BC_NUM_SHREQ(a));
+	return bc_num_binary(a, b, c, scale, bc_num_right, scale);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
