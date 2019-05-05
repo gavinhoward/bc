@@ -214,6 +214,5 @@ BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED
 
 extern const char bc_num_hex_digits[];
-//extern const unsigned long bc_num_pow10[BC_BASE_POWER + 1];
 
 #endif // BC_NUM_H

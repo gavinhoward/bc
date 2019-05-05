@@ -193,10 +193,9 @@ static size_t bc_num_int_digits(const BcNum *n) {
 	return digits;
 }
 
-#define POW10N 10
+#define POW10N 9
 
 static unsigned long pow10[POW10N] = {
-		    1,
 		    10,
 		    100,
 		    1000,
@@ -209,15 +208,11 @@ static unsigned long pow10[POW10N] = {
 };
 
 static unsigned long bc_num_pow10(unsigned long i) {
-
-	unsigned long pow;
-
 	if (i == 0) return 1;
+	i--;
 	if (i < POW10N) return pow10[i];
-
 	i -= POW10N;
-	if (i < POW10N - 1) return pow10[POW10N - 1] * pow10[i + 1];
-
+	if (i < POW10N) return pow10[POW10N - 1] * pow10[i];
 	return -1;
 }
 
