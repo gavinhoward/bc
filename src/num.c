@@ -441,11 +441,9 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
 	dig = (unsigned long) (places % BC_BASE_POWER);
 	shift = (dig != 0);
+	places_rdx = BC_NUM_RDX(places);
 
-	if (!n->scale) places_rdx = BC_NUM_RDX(places); // <se> this line is executed for either condition ...
-	else {
-
-		places_rdx = BC_NUM_RDX(places);
+	if (n->scale) {
 
 		if (n->rdx >= places_rdx) {
 
