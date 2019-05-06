@@ -1503,7 +1503,12 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	for (i = 0; val[i] == '0'; ++i);
 
 	val += i;
-	assert(isalnum(val[0]) || val[0] == '.');
+	assert(!val[0] || isalnum(val[0]) || val[0] == '.');
+
+	// All 0's. We can just return, since this
+	// procedure expects a virgin (already 0) BcNum.
+	if (!val[0]) return;
+
 	len = strlen(val);
 
 	ptr = strchr(val, '.');
