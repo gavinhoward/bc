@@ -145,7 +145,7 @@ typedef struct BcNum {
 
 #define BC_NUM_SSIZE_MIN (~SSIZE_MAX)
 
-#define BC_NUM_ROUND_POW(s) ((s) + (BC_BASE_POWER - 1))
+#define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_POWER - 1))
 #define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_POWER)
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))

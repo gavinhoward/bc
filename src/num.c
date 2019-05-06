@@ -2094,10 +2094,8 @@ size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
 	BC_UNUSED(s);
 	BC_UNUSED(scale);
 
-	s = bc_num_ulong(b, &places);
-
 	// This error will be taken care of later. Ignore.
-	assert(s != BC_STATUS_ERROR_MATH);
+	s = bc_num_ulong(b, &places);
 
 	if (a->scale <= places) rdx = BC_NUM_RDX(places);
 	else rdx = BC_NUM_RDX(a->scale - places);
@@ -2113,10 +2111,8 @@ size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
 	BC_UNUSED(s);
 	BC_UNUSED(scale);
 
-	s = bc_num_ulong(b, &places);
-
 	// This error will be taken care of later. Ignore.
-	assert(s != BC_STATUS_ERROR_MATH);
+	s = bc_num_ulong(b, &places);
 
 	if (a->scale <= places) rdx = BC_NUM_RDX(places) - a->rdx + 1;
 	else rdx = 0;
@@ -2132,10 +2128,8 @@ size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale) {
 	BC_UNUSED(s);
 	BC_UNUSED(scale);
 
-	s = bc_num_ulong(b, &places);
-
 	// This error will be taken care of later. Ignore.
-	assert(s != BC_STATUS_ERROR_MATH);
+	s = bc_num_ulong(b, &places);
 
 	int_digs = BC_NUM_RDX(bc_num_int_digits(a));
 	rdx = BC_NUM_RDX(places);
@@ -2178,15 +2172,18 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 #if BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_place, scale);
+	size_t req = bc_num_placesReq(a, b, scale);
+	return bc_num_binary(a, b, c, scale, bc_num_place, req);
 }
 
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_left, scale);
+	size_t req = bc_num_shiftLeftReq(a, b, scale);
+	return bc_num_binary(a, b, c, scale, bc_num_left, req);
 }
 
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_right, scale);
+	size_t req = bc_num_shiftRightReq(a, b, scale);
+	return bc_num_binary(a, b, c, scale, bc_num_right, req);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
