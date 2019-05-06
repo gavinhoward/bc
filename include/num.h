@@ -56,6 +56,11 @@
 #define BC_LONG_BIT LONG_BIT
 #endif // BC_LONG_BIT
 
+#if BC_LONG_BIT > LONG_BIT
+#undef BC_LONG_BIT
+#define BC_LONG_BIT LONG_BIT
+#endif // BC_LONG_BIT > LONG_BIT
+
 #if BC_LONG_BIT >= 64
 
 typedef int_least32_t BcDig;
