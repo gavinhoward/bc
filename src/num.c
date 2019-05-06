@@ -1025,8 +1025,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	cmp = bc_num_cmp(&b1, c);
 	if (cmp == 0) {
 		// if the normalized values are identical the result will be a power of (10^BC_BASE_POWER)
-		bc_num_free(c);
-		bc_num_createFromUlong(c, 1);	// identical BcNum arrays
+		bc_num_ulong2num(c, 1);
 	}
 	else {
 		if (cmp > 0)		//==> b > a, result will be one exp higher
