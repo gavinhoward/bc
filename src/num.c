@@ -1483,8 +1483,6 @@ static bool bc_num_strValid(const char *val) {
 
 static unsigned long bc_num_parseChar(char c, size_t base_t) {
 
-	// TODO: Check this function.
-
 	if (isupper(c)) {
 		c = BC_NUM_NUM_LETTER(c);
 		c = ((size_t) c) >= base_t ? (char) base_t - 1 : c;
@@ -1558,7 +1556,6 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
                                  BcNum *restrict base, size_t base_t)
 {
-	// TODO: Check this function.
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum temp, mult, result;
 	char c = 0;
@@ -1649,8 +1646,6 @@ static void bc_num_printChar(size_t n, size_t len, bool rdx) {
 
 static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
 
-	// TODO: Check this function.
-
 	size_t exp, pow;
 
 	bc_num_printNewline();
@@ -1721,8 +1716,6 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 #if BC_ENABLE_EXTRA_MATH
 static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 
-	// TODO: Check this function.
-
 	BcStatus s = BC_STATUS_SUCCESS;
 	bool neg = (n->len <= n->rdx);
 	BcNum temp, exp;
@@ -1788,7 +1781,6 @@ exit:
 static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
                                 size_t len, BcNumDigitOp print)
 {
-	// TODO: Check this function.
 	BcStatus s;
 	BcVec stack;
 	BcNum intp, fracp, digit, frac_len;
@@ -1872,7 +1864,6 @@ err:
 static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
                                  size_t base_t)
 {
-	// TODO: Check this function.
 	BcStatus s;
 	size_t width;
 	BcNumDigitOp print;
@@ -2194,8 +2185,6 @@ BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
-	// TODO: Check this function.
-
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
 	size_t pow, len, rdx, req, digs, digs1, digs2, resscale, times = 0;
@@ -2318,8 +2307,6 @@ err:
 
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
-	// TODO: Check this function.
-
 	BcStatus s;
 	BcNum num2, *ptr_a;
 	bool init = false;
@@ -2355,8 +2342,6 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 #if DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
-
-	// TODO: Check this function.
 
 	BcStatus s;
 	BcNum base, exp, two, temp;
