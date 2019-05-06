@@ -1178,7 +1178,7 @@ exit:
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	size_t rdx, rscale, req;
+	size_t rdx, rdx2, rscale, scale2, req;
 	ssize_t cmp;
 	BcNum cpa, cpb, two, factor, factor2, *fi, *fnext, *temp;
 	BcDig two_digs[2];
@@ -1209,7 +1209,15 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	bc_num_createCopy(&cpa, a);
 	bc_num_createCopy(&cpb, b);
 
-	req = bc_num_int(a) + BC_NUM_RDX(scale) + 1;
+	// This is to calculate enough digits to make rounding only happen when
+	// necessary. It rounds the scale up to the next BcDig boundary, then adds
+	// on enough to create a whole extra BcDig which will then be tested to see
+	// if it's equal to BC_BASE_DIG - 1. If it is, then, and only then, should
+	// rounding be needed.
+	scale2 = BC_NUM_RDX(scale + 1) * BC_BASE_POWER + BC_BASE_POWER + 1;
+	rdx2 = BC_NUM_RDX(scale2);
+	req = bc_num_int(a) + rdx2 + 1;
+	scale2 = rdx2 * BC_BASE_POWER;
 	bc_num_init(&factor, req);
 	bc_num_init(&factor2, req);
 
@@ -1238,7 +1246,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	if (!req) req = cpa.len - bc_num_nonzeroLen(&cpa);
 	req = BC_BASE_POWER * (req + 1);
 	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
-	req += BC_NUM_RDX(scale) * BC_BASE_POWER + 2;
+	req += scale2;
 
 	rscale += req;
 	bc_num_extend(&cpa, req);
@@ -1262,23 +1270,31 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		fnext = temp;
 
 		cmp = bc_num_cmp(fi, fnext);
-		if (cmp == BC_NUM_SSIZE_MIN) {
-			s = BC_STATUS_SIGNAL;
-			goto err;
-		}
+		if (cmp == BC_NUM_SSIZE_MIN) goto err;
 	}
 
-	// We round to 2 extra places here. The reason is because without rounding,
-	// the Goldschmidt algorithm can produce numbers that are 1 digit off in the
-	// last place, because of the nature of the algorithm. If we only shift by
-	// one place, the last digit in the number gets rounded, which is wrong
-	// according to the bc spec (it needs to be truncated).
-	// Note: I would really prefer an exact division algorithm here, even if
-	// it's slightly slower than this one.
-	bc_num_roundPlaces(&cpa, scale + 2);
+	// We only round here if an entire BcDig is equal to BC_BASE_DIG - 1. We
+	// have to round because without rounding, the Goldschmidt algorithm can
+	// produce numbers that are 1 digit off in the last place, because of the
+	// nature of the algorithm. That throws off things like negative powers
+	// (like 10 ^ -1, which Goldschmidt calculates as 0.099999999...). The bc
+	// spec requires truncation, but without this rounding, *more* calculations
+	// will be off. To fix this, I have the algorithm calculate the result to
+	// the scale plus 1 place plus a whole extra BcDig (at least). Then, when
+	// rounding, I only round if the extra BcDig is only 1 less than the max,
+	// and then I only add 1 to the right place (see bc_num_roundPlaces() for
+	// more info). What this means is that if there is a chain of 9's from the
+	// *actual* scale position to the rounded position, then rounding will
+	// happen, but if not, the actual scale will not be affected (i.e., it will
+	// appear truncated). By extending the calculation by 1 extra digit, then a
+	// whole extra BcDig, I create a separation between the two that only is
+	// closed when Goldschmidt has failed to calculate the exact truncated
+	// number (or at least, I hope it does).
+	assert(cpa.rdx >= rdx2);
+	if (cpa.num[cpa.rdx - rdx2] == BC_BASE_DIG - 1)
+		bc_num_roundPlaces(&cpa, scale2 - 1);
 	bc_num_copy(c, &cpa);
 
-	//bc_num_roundPlaces(c, scale +3); // <se> is this correct???
 err:
 	bc_num_free(&factor2);
 	bc_num_free(&factor);
