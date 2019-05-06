@@ -2247,7 +2247,8 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		bc_num_shiftLeft(x0, pow / 2);
 
 		// Make sure to move the radix back.
-		x0->scale -= pow;
+		if (x0->scale >= pow) x0->scale -= pow;
+		else x0->scale = 0;
 		x0->rdx = BC_NUM_RDX(x0->scale);
 	}
 
