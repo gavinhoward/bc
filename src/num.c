@@ -297,9 +297,11 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
-	bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
-	memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
-	memset(n->num, 0, BC_NUM_SIZE(places_rdx));
+	if (places_rdx) {
+		bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
+		memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
+		memset(n->num, 0, BC_NUM_SIZE(places_rdx));
+	}
 
 	n->rdx += places_rdx;
 	n->scale += places;
@@ -314,7 +316,7 @@ static void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
 	BcDig p10, sum;
 
 	if (places >= n->scale || places >= n->rdx * BC_BASE_POWER) {
- 		bc_num_extend(n, places - n->scale); // <se> should not be called if places <= n->rdx * BC_BASE_POWER !!!
+ 		bc_num_extend(n, places - n->scale);
 		return;
 	}
 
