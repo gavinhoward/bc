@@ -432,7 +432,10 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	bool shift;
 
 	if (!places) return s;
-	if (places > 1<<31) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+	if (places > n->scale) {
+		size_t size = bc_vm_growSize(BC_NUM_RDX(places - n->scale), n->len);
+		if (size > SIZE_MAX - 1) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+	}
 	if (BC_NUM_ZERO(n)) {
 		if (n->scale >= places) n->scale -= places;
 		else n->scale = 0;
