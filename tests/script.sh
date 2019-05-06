@@ -87,14 +87,14 @@ scriptdir="$testdir/$d/scripts"
 name="${f%.*}"
 
 if [ "$f" = "timeconst.bc" ]; then
-	continue
+	exit 0
 fi
 
 if [ "$run_stack_tests" -eq 0 ]; then
 
 	if [ "$f" = "globals.bc" -o "$f" = "references.bc" ]; then
 		printf 'Skipping %s script %s\n' "$d" "$s"
-		continue
+		exit 0
 	fi
 
 fi
@@ -108,7 +108,7 @@ elif [ -f "$results" ]; then
 	res="$results"
 elif [ "$generate" -eq 0 ]; then
 	printf 'Skipping %s script %s\n' "$d" "$s"
-	continue
+	exit 0
 else
 	printf 'Generating %s results...\n' "$f"
 	printf '%s\n' "$halt" | "$d" "$s" > "$results"
