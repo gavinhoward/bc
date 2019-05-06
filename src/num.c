@@ -2463,12 +2463,11 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 			BcDig div;
 
 			if (mod != 0) {
-				size_t temp = scale / BC_BASE_POWER;
-				div = n->num[i] / (BcDig) bc_num_pow10(d);
+				div = n->num[i] / ((BcDig) bc_num_pow10((unsigned long) d));
 				fprintf(stderr, "%0*d", (int) mod, div);
 			}
 
-			div = n->num[i] % (BcDig) bc_num_pow10(d);
+			div = n->num[i] % ((BcDig) bc_num_pow10((unsigned long) d));
 			fprintf(stderr, " ' %0*d ", d, div);
 		}
 	}
