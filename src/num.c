@@ -2083,10 +2083,65 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 }
 
 #if BC_ENABLE_EXTRA_MATH
-size_t bc_num_shiftReq(BcNum *a, BcNum *b, size_t scale) {
-	BC_UNUSED(b);
+size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
+
+	BcStatus s;
+	unsigned long places;
+	size_t rdx;
+
+	BC_UNUSED(s);
 	BC_UNUSED(scale);
-	return bc_num_int_digits(a); // <se> required???
+
+	s = bc_num_ulong(b, &places);
+
+	// This error will be taken care of later. Ignore.
+	assert(s != BC_STATUS_ERROR_MATH);
+
+	if (a->scale <= places) rdx = BC_NUM_RDX(places);
+	else rdx = BC_NUM_RDX(a->scale - places);
+
+	return BC_NUM_RDX(bc_num_int_digits(a)) + rdx;
+}
+
+size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
+
+	BcStatus s;
+	unsigned long places, rdx;
+
+	BC_UNUSED(s);
+	BC_UNUSED(scale);
+
+	s = bc_num_ulong(b, &places);
+
+	// This error will be taken care of later. Ignore.
+	assert(s != BC_STATUS_ERROR_MATH);
+
+	if (a->scale <= places) rdx = BC_NUM_RDX(places) - a->rdx + 1;
+	else rdx = 0;
+
+	return a->len + rdx;
+}
+
+size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale) {
+
+	BcStatus s;
+	unsigned long places, int_digs, rdx;
+
+	BC_UNUSED(s);
+	BC_UNUSED(scale);
+
+	s = bc_num_ulong(b, &places);
+
+	// This error will be taken care of later. Ignore.
+	assert(s != BC_STATUS_ERROR_MATH);
+
+	int_digs = BC_NUM_RDX(bc_num_int_digits(a));
+	rdx = BC_NUM_RDX(places);
+
+	if (int_digs <= rdx) rdx -= int_digs;
+	else rdx = 0;
+
+	return a->len + rdx;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
