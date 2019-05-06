@@ -139,8 +139,8 @@ static unsigned long bc_num_pow10(unsigned long i) {
 	i--;
 	if (i < POW10N) return pow10[i];
 	i -= POW10N;
-	if (i < POW10N) return pow10[POW10N - 1] * pow10[i];
-	return -1;
+	assert(i < POW10N);
+	return pow10[POW10N - 1] * pow10[i];
 }
 
 static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
