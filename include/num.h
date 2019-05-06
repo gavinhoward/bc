@@ -52,62 +52,46 @@
 
 #define BC_BASE (10)
 
-#ifndef BC_BASE_POWER
+#ifndef BC_LONG_BIT
+#define BC_LONG_BIT LONG_BIT
+#endif // BC_LONG_BIT
 
-#if LONG_BIT >= 64
-
-#define BC_BASE_POWER (9)
-
-#elif LONG_BIT >= 32
-// sizeof(long) has been guaranteed to be at least 32 bit long since at least c99
-// and has actually been a 32 bit value on the PDP/11, nearly 50 years ago ...
-
-#define BC_BASE_POWER (4)
-
-#else
-
-#if LONG_BIT >= 16
-
-#define BC_BASE_POWER (2)
-
-#elif LONG_BIT >= 8
-
-#define BC_BASE_POWER (1)
-
-#endif // LONG_BIT >= 16
-#endif // LONG_BIT >= 64
-#endif // !defined(BC_BASE_POWER)
-
-#if BC_BASE_POWER == 9
+#if BC_LONG_BIT >= 64
 
 typedef int_least32_t BcDig;
 
+#define BC_BASE_POWER (9)
 #define BC_BASE_DIG (1000000000)
 
-#elif BC_BASE_POWER == 4
+#elif BC_LONG_BIT >= 32
+// sizeof(long) has been guaranteed to be at least 32 bit long since at least c99
+// and has actually been a 32 bit value on the PDP/11, nearly 50 years ago ...
 
 typedef int_least16_t BcDig;
 
+#define BC_BASE_POWER (4)
 #define BC_BASE_DIG (10000)
 
 #else
 
 typedef int_least8_t BcDig;
 
-#if BC_BASE_POWER == 2
+#if BC_LONG_BIT >= 16
 
+#define BC_BASE_POWER (2)
 #define BC_BASE_DIG (100)
 
-#elif BC_BASE_POWER == 1
+#elif BC_LONG_BIT >= 8
 
+#define BC_BASE_POWER (1)
 #define BC_BASE_DIG (10)
 
-#else // BC_BASE_POWER == 2
+#else
 
-#error BC_BASE_POWER must be one of 1, 2, 4, or 9
+#error BC_LONG_BIT must be at least 8
 
-#endif // BC_BASE_POWER == 4
-#endif // BC_BASE_POWER == 9
+#endif // BC_LONG_BIT >= 16
+#endif // BC_LONG_BIT >= 64
 
 typedef struct BcNum {
 	BcDig *restrict num;
