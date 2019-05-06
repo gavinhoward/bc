@@ -1008,7 +1008,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	temp_scale = BC_MAX(scale, BC_BASE_POWER * (a->len + b->len + 1));
 
 	// create normalized copy of first argument in result variable "c"
-	bc_num_createCopy(c, a);
+	bc_num_copy(c, a);
 	// the shift value records be how many BcDigs the decimal has been shifted to the left
 	shift = bc_num_normalize(c);
 
