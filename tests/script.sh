@@ -99,6 +99,7 @@ if [ "$run_stack_tests" -eq 0 ]; then
 
 fi
 
+s="$scriptdir/$f"
 orig="$testdir/$name.txt"
 results="$scriptdir/$name.txt"
 
@@ -117,7 +118,7 @@ fi
 
 printf 'Running %s script: %s\n' "$d" "$f"
 
-printf '%s\n' "$halt" | "$exe" "$@" $options "$scriptdir/$f" > "$out"
+printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out"
 
 diff "$res" "$out"
 
