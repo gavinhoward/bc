@@ -152,6 +152,11 @@ typedef struct BcNum {
 
 #if BC_DEBUG_CODE
 #define BC_NUM_PRINT(x) fprintf(stderr, "%s = %lu\n", #x, (unsigned long)(x))
+#define DUMP_NUM bc_num_dump
+#else // BC_DEBUG_CODE
+#undef DUMP_NUM
+#define DUMP_NUM(x,y)
+#define BC_NUM_PRINT(x)
 #endif // BC_DEBUG_CODE
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
@@ -212,6 +217,12 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 #if DC_ENABLED
 BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED
+
+#if BC_DEBUG_CODE
+void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline);
+void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline);
+void bc_num_dump(const char *varname, const BcNum *n);
+#endif // BC_DEBUG_CODE
 
 extern const char bc_num_hex_digits[];
 
