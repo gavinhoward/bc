@@ -1697,8 +1697,7 @@ static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
 	for (exp = 0, pow = 1; exp < len - 1; ++exp, pow *= BC_BASE);
 
 	for (exp = 0; exp < len; pow /= BC_BASE, ++exp) {
-		size_t dig;
-		dig = n / pow;
+		size_t dig = n / pow;
 		n -= dig * pow;
 		bc_num_putchar(((uchar) dig) + '0');
 	}
