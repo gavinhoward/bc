@@ -919,9 +919,11 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 	BcNum one, x, temp, sum;
 	bool done = false;
 	BcStatus s = BC_STATUS_SUCCESS;
+	BcDig one_digs[2];
 
 	// We need one constant value 1 to start...
-	bc_num_createFromUlong(&one, 1);
+	bc_num_setup(&one, one_digs, sizeof(one_digs) / sizeof(BcDig));
+	bc_num_ulong2num(&one, 1);
 
 	// Create temporary variable used in each iteration step.
 	bc_num_init(&temp, scale / BC_BASE_POWER + 1);
@@ -970,7 +972,6 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 
 err:
 	bc_num_free(&sum);
-	bc_num_free(&one);
 	bc_num_free(&x);
 	bc_num_free(&temp);
 	return s;
