@@ -1022,8 +1022,13 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
 	// the correction is derived from 1.0 - sum * (1/sum)
 	bc_num_sub(&one, &temp, &temp, scale);
 	// add delta twice, we could also use Newton-Raphson for the correction
+#if 0
 	bc_num_add(&sum, &temp, &sum, scale);
 	bc_num_add(&sum, &temp, val, scale);
+#else
+	bc_num_mul(&sum, &temp, &temp, scale * 2);
+	bc_num_add(&sum, &temp, val, scale);
+#endif
 err:
 	bc_num_free(&sum);
 	bc_num_free(&one);
