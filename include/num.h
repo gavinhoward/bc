@@ -67,6 +67,7 @@ typedef int_least32_t BcDig;
 
 #define BC_BASE_POWER (9)
 #define BC_BASE_DIG (1000000000)
+#define BC_NUM_DEF_SIZE (2)
 
 #elif BC_LONG_BIT >= 32
 // sizeof(long) has been guaranteed to be at least 32 bit long since at least c99
@@ -76,6 +77,7 @@ typedef int_least16_t BcDig;
 
 #define BC_BASE_POWER (4)
 #define BC_BASE_DIG (10000)
+#define BC_NUM_DEF_SIZE (4)
 
 #else
 
@@ -85,11 +87,13 @@ typedef int_least8_t BcDig;
 
 #define BC_BASE_POWER (2)
 #define BC_BASE_DIG (100)
+#define BC_NUM_DEF_SIZE (8)
 
 #elif BC_LONG_BIT >= 8
 
 #define BC_BASE_POWER (1)
 #define BC_BASE_DIG (10)
+#define BC_NUM_DEF_SIZE (16)
 
 #else
 
@@ -112,13 +116,12 @@ typedef struct BcNum {
 #define BC_NUM_MAX_IBASE ((unsigned long) 36)
 // This is the max base allowed by bc_num_parseChar().
 #define BC_NUM_MAX_LBASE ('Z' + BC_BASE + 1)
-#define BC_NUM_DEF_SIZE (2)
 #define BC_NUM_PRINT_WIDTH (69)
 
 #ifndef BC_NUM_KARATSUBA_LEN
-#define BC_NUM_KARATSUBA_LEN (128)
-#elif BC_NUM_KARATSUBA_LEN < 16
-#error BC_NUM_KARATSUBA_LEN must be at least 16
+#define BC_NUM_KARATSUBA_LEN (32)
+#elif BC_NUM_KARATSUBA_LEN < BC_NUM_DEF_SIZE
+#error BC_NUM_KARATSUBA_LEN must be at least equal to BC_NUM_DEF_SIZE.
 #endif // BC_NUM_KARATSUBA_LEN
 
 // A crude, but always big enough, calculation of
