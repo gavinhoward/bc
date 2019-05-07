@@ -1129,8 +1129,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	// Adjust the decimal point to account for
 	// the normalization of the arguments A and B.
-	if (shift < 0) bc_num_shiftRight(c, -shift * BC_BASE_POWER);
-	else bc_num_shiftLeft(c, shift * BC_BASE_POWER);
+	if (shift < 0) s = bc_num_shiftRight(c, -shift * BC_BASE_POWER);
+	else s = bc_num_shiftLeft(c, shift * BC_BASE_POWER);
 
 err:
 	bc_num_free(&b1);
