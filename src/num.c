@@ -1893,8 +1893,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 		s = bc_num_ulong(&fracp2, &dig);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		bc_num_ulong2num(&intp1, dig);
-		s = bc_num_sub(&fracp2, &intp1, &fracp1, 0);
+		bc_num_ulong2num(&digit, dig);
+		s = bc_num_sub(&fracp2, &digit, &fracp1, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		print(dig, len, radix);
