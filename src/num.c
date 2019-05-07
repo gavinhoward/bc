@@ -919,7 +919,7 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 	BcNum one, x, temp, sum;
 	bool done = false;
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcDig one_digs[2];
+	BcDig one_digs[BC_NUM_LONG_LOG10];
 
 	// We need one constant value 1 to start...
 	bc_num_setup(&one, one_digs, sizeof(one_digs) / sizeof(BcDig));
