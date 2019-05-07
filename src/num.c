@@ -1045,6 +1045,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	// Compare normalized operands to determine whether
 	// the result of dividing them will be < or > 1.
 	cmp = bc_num_cmp(&b1, c);
+
 	if (cmp == 0) {
 		// If the normalized values are identical the
 		// result will be a power of (10^BC_BASE_POWER).
