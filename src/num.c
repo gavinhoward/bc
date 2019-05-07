@@ -990,8 +990,7 @@ static ssize_t bc_num_normalize(BcNum *n) {
 	len = n->len;
 	rdx = n->rdx;
 
-	while (len > 0 && n->num[len - 1] == 0)
-		len--;
+	while (len > 0 && n->num[len - 1] == 0) len -= 1;
 
 	n->len = len;
 	n->rdx = len;
