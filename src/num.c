@@ -939,6 +939,7 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	for (;;) {
+
 		// Calculate square of delta for next iteration.
 		s = bc_num_mul(&x, &x, &x, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
