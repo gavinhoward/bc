@@ -768,7 +768,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 #if BC_ENABLED
 		bool ref, ref_size;
 
-		ref = (v->size == sizeof(BcVec) && t != BC_TYPE_ARRAY);
+		ref = (v->size == sizeof(BcNum) && t != BC_TYPE_ARRAY);
 		ref_size = (v->size == sizeof(uchar));
 
 		if (ref || (ref_size && t == BC_TYPE_REF))
