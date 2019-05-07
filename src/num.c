@@ -956,6 +956,7 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 		s = bc_num_add(&sum, &temp, &sum, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
+
 	// Apply correction for finite number of series elements
 	// considered. Could be further optimized...
 	bc_num_mul(val, &sum, &temp, scale);
