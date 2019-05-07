@@ -52,40 +52,51 @@
 
 #define BC_BASE (10)
 
-#if LONG_BIT >= 64
+#ifndef BC_LONG_BIT
+#define BC_LONG_BIT LONG_BIT
+#endif // BC_LONG_BIT
+
+#if BC_LONG_BIT > LONG_BIT
+#undef BC_LONG_BIT
+#define BC_LONG_BIT LONG_BIT
+#endif // BC_LONG_BIT > LONG_BIT
+
+#if BC_LONG_BIT >= 64
 
 typedef int_least32_t BcDig;
 
-#define BC_BASE_DIG (1000000000)
 #define BC_BASE_POWER (9)
+#define BC_BASE_DIG (1000000000)
 
-#elif LONG_BIT >= 32
+#elif BC_LONG_BIT >= 32
+// sizeof(long) has been guaranteed to be at least 32 bit long since at least c99
+// and has actually been a 32 bit value on the PDP/11, nearly 50 years ago ...
 
 typedef int_least16_t BcDig;
 
-#define BC_BASE_DIG (10000)
 #define BC_BASE_POWER (4)
+#define BC_BASE_DIG (10000)
 
 #else
 
 typedef int_least8_t BcDig;
 
-#if LONG_BIT >= 16
+#if BC_LONG_BIT >= 16
 
-#define BC_BASE_DIG (100)
 #define BC_BASE_POWER (2)
+#define BC_BASE_DIG (100)
 
-#elif LONG_BIT >= 8
+#elif BC_LONG_BIT >= 8
 
-#define BC_BASE_DIG (10)
 #define BC_BASE_POWER (1)
+#define BC_BASE_DIG (10)
 
-#else // LONG_BIT >= 8
+#else
 
-#error long must be at least 8 bits
+#error BC_LONG_BIT must be at least 8
 
-#endif // LONG_BIT >= 16
-#endif // LONG_BIT >= 64
+#endif // BC_LONG_BIT >= 16
+#endif // BC_LONG_BIT >= 64
 
 typedef struct BcNum {
 	BcDig *restrict num;
@@ -116,7 +127,6 @@ typedef struct BcNum {
 
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
-#define BC_NUM_SHREQ(a) ((a)->len)
 
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + BC_BASE)
 
@@ -124,13 +134,18 @@ typedef struct BcNum {
 
 #define BC_NUM_SSIZE_MIN (~SSIZE_MAX)
 
-#define BC_NUM_ROUND_POW(s) ((s) + (BC_BASE_POWER - 1))
+#define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_POWER - 1))
 #define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_POWER)
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
 #if BC_DEBUG_CODE
 #define BC_NUM_PRINT(x) fprintf(stderr, "%s = %lu\n", #x, (unsigned long)(x))
+#define DUMP_NUM bc_num_dump
+#else // BC_DEBUG_CODE
+#undef DUMP_NUM
+#define DUMP_NUM(x,y)
+#define BC_NUM_PRINT(x)
 #endif // BC_DEBUG_CODE
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
@@ -170,7 +185,9 @@ size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale);
 size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale);
 size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale);
 #if BC_ENABLE_EXTRA_MATH
-size_t bc_num_shiftReq(BcNum *a, BcNum *b, size_t scale);
+size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale);
+size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale);
+size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
 
 void bc_num_truncate(BcNum *restrict n, size_t places);
@@ -192,7 +209,12 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base);
 #endif // DC_ENABLED
 
+#if BC_DEBUG_CODE
+void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline);
+void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline);
+void bc_num_dump(const char *varname, const BcNum *n);
+#endif // BC_DEBUG_CODE
+
 extern const char bc_num_hex_digits[];
-extern const unsigned long bc_num_pow10[BC_BASE_POWER + 1];
 
 #endif // BC_NUM_H

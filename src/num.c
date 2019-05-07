@@ -45,71 +45,6 @@
 #include <num.h>
 #include <vm.h>
 
-#if BC_DEBUG_CODE
-static void bc_num_printDecimal(const BcNum *restrict a);
-
-static void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline)
-{
-	printf("%s: ", name);
-	bc_num_printDecimal(n);
-	printf("\n");
-	if (emptyline) printf("\n");
-	vm->nchars = 0;
-}
-
-static void bc_num_printDigs(const BcDig *n, size_t len, bool emptyline) {
-
-	size_t i;
-
-	for (i = len - 1; i < len; --i)
-		printf(" %0*d", BC_BASE_POWER, n[i]);
-
-	printf("\n");
-	if (emptyline) printf("\n");
-	vm->nchars = 0;
-}
-
-static void bc_num_printWithDigs(const BcNum *n, const char *name,
-                                 bool emptyline)
-{
-	printf("%s len: %zu, rdx: %zu, scale: %zu\n",
-	       name, n->len, n->rdx, n->scale);
-	bc_num_printDigs(n->num, n->len, emptyline);
-}
-
-static void bc_num_dump(const char *varname, const BcNum *n) {
-
-	unsigned long i, scale = n->scale;
-
-	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
-
-	for (i = n->len -1; i < n->len; i--) {
-
-		if (i + 1 == n->rdx) fprintf(stderr, ". ");
-
-		if (scale / BC_BASE_POWER != n->rdx - i)
-			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
-		else {
-
-			size_t mod = scale % BC_BASE_POWER;
-			BcDig div;
-
-			if (mod != 0) {
-				size_t temp = scale / BC_BASE_POWER;
-				div = n->num[i] / (BcDig) bc_num_pow10[BC_BASE_POWER - temp];
-				fprintf(stderr, "%0*d", (int) mod, div);
-			}
-
-			div = n->num[i] / (BcDig) bc_num_pow10[mod];
-			fprintf(stderr, " ' %0*d ", BC_BASE_POWER - (int) mod, div);
-		}
-	}
-
-	fprintf(stderr, "(%zu | %zu.%zu/%zu) %p\n",
-		n->scale, n->len, n->rdx, n->cap, (void*) n->num);
-}
-#endif // BC_DEBUG_CODE
-
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
 static ssize_t bc_num_neg(size_t n, bool neg) {
@@ -183,6 +118,29 @@ static size_t bc_num_int_digits(const BcNum *n) {
 		digits -= BC_BASE_POWER - bc_num_log10((size_t) n->num[n->len - 1]);
 
 	return digits;
+}
+
+#define POW10N 9
+
+static unsigned long pow10[POW10N] = {
+		    10,
+		    100,
+		    1000,
+		    10000,
+		    100000,
+		    1000000,
+		    10000000,
+		    100000000,
+		    1000000000,
+};
+
+static unsigned long bc_num_pow10(unsigned long i) {
+	if (i == 0) return 1;
+	i--;
+	if (i < POW10N) return pow10[i];
+	i -= POW10N;
+	assert(i < POW10N);
+	return pow10[POW10N - 1] * pow10[i];
 }
 
 static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
@@ -319,7 +277,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 		pow = n->scale % BC_BASE_POWER;
 		pow = pow ? BC_BASE_POWER - pow : 0;
-		pow = bc_num_pow10[pow];
+		pow = bc_num_pow10(pow);
 
 		n->len -= places_rdx;
 		memmove(n->num, n->num + places_rdx, BC_NUM_SIZE(n->len));
@@ -339,9 +297,11 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
-	bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
-	memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
-	memset(n->num, 0, BC_NUM_SIZE(places_rdx));
+	if (places_rdx) {
+		bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
+		memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
+		memset(n->num, 0, BC_NUM_SIZE(places_rdx));
+	}
 
 	n->rdx += places_rdx;
 	n->scale += places;
@@ -356,7 +316,7 @@ static void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
 	BcDig p10, sum;
 
 	if (places >= n->scale || places >= n->rdx * BC_BASE_POWER) {
-		bc_num_extend(n, places - n->scale);
+ 		bc_num_extend(n, places - n->scale);
 		return;
 	}
 
@@ -365,7 +325,7 @@ static void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
 
 	for (i = 0; i < rdx; i++) n->num[i] = 0;
 
-	p10 = (BcDig) bc_num_pow10[place];
+	p10 = (BcDig) bc_num_pow10(place);
 	sum = n->num[rdx] + (BC_BASE / 2) * p10;
 	sum = sum - sum % (BC_BASE * p10);
 
@@ -448,8 +408,8 @@ static BcStatus bc_num_shift(BcNum *restrict n, unsigned long dig) {
 
 	assert(dig < BC_BASE_POWER);
 
-	pow = bc_num_pow10[dig];
-	dig = bc_num_pow10[BC_BASE_POWER - dig];
+	pow = bc_num_pow10(dig);
+	dig = bc_num_pow10(BC_BASE_POWER - dig);
 
 	for (i = len - 1; BC_NO_SIG && i < len; --i) {
 		unsigned long in, temp;
@@ -472,6 +432,10 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	bool shift;
 
 	if (!places) return s;
+	if (places > n->scale) {
+		size_t size = bc_vm_growSize(BC_NUM_RDX(places - n->scale), n->len);
+		if (size > SIZE_MAX - 1) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+	}
 	if (BC_NUM_ZERO(n)) {
 		if (n->scale >= places) n->scale -= places;
 		else n->scale = 0;
@@ -480,11 +444,9 @@ static BcStatus bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
 	dig = (unsigned long) (places % BC_BASE_POWER);
 	shift = (dig != 0);
+	places_rdx = BC_NUM_RDX(places);
 
-	if (!n->scale) places_rdx = BC_NUM_RDX(places);
-	else {
-
-		places_rdx = BC_NUM_RDX(places);
+	if (n->scale) {
 
 		if (n->rdx >= places_rdx) {
 
@@ -774,7 +736,6 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	}
 
 	c->len = clen;
-
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
@@ -807,7 +768,6 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 		bc_num_copy(c, aone ? b : a);
 		return BC_STATUS_SUCCESS;
 	}
-
 	if (a->len + b->len < BC_NUM_KARATSUBA_LEN ||
 	    a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
 	{
@@ -906,7 +866,6 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	size_t ascale, bscale, ardx, brdx, azero = 0, bzero = 0, zero, len, rscale;
 
 	bc_num_setToZero(c, 0);
-
 	ascale = a->scale;
 	bscale = b->scale;
 	scale = BC_MAX(scale, ascale);
@@ -914,12 +873,10 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	rscale = ascale + bscale;
 	scale = BC_MIN(rscale, scale);
-
 	bc_num_createCopy(&cpa, a);
 	bc_num_createCopy(&cpb, b);
 
 	cpa.neg = cpb.neg = false;
-
 	ardx = cpa.rdx * BC_BASE_POWER;
 	s = bc_num_shiftLeft(&cpa, ardx);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -943,7 +900,6 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	s = bc_num_shiftRight(c, ardx + brdx);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
 	bc_num_retireMul(c, scale, a->neg, b->neg);
 
 err:
@@ -954,15 +910,208 @@ err:
 	return s;
 }
 
+#ifdef USE_GOLDSCHMIDT
+// find reciprocal value for paramezter in range 0.5 < val <= 1.0
+static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
+
+	BcNum one, x, temp, sum;
+	bool done = false;
+	BcStatus s = BC_STATUS_SUCCESS;
+
+	// we need one constant value 1 to start ...
+	bc_num_createFromUlong(&one, 1);
+	// create temporary variable used in each iteration step
+	bc_num_init(&temp, scale / BC_BASE_POWER + 1);
+	// create variable to be squared per iteration
+	bc_num_init(&x, scale / BC_BASE_POWER + 1);
+	// create variable for the sum the series elements
+	bc_num_init(&sum, scale / BC_BASE_POWER + 1);
+	s = bc_num_sub(&one, val, &x, scale);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	// initialize series sum to 1.0 + error
+	s = bc_num_add(&one, &x, &sum, scale);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	for (;;) {
+		// calculate square of delta for next iteration
+		s = bc_num_mul(&x, &x, &x, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		// nothing left to do, if the squared delta truncated to "scale" decimals is 0.0
+		if BC_NUM_ZERO(&x) break;
+
+		// multiply current series sum with the squared delta
+		s = bc_num_mul(&sum, &x, &temp, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		// add series element to sum
+		s = bc_num_add(&sum, &temp, &sum, scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	}
+	// apply correction for finite number of series elements considered
+	// could be further optimized ...
+	bc_num_mul(val, &sum, &temp, scale);
+	// the correction is derived from 1.0 - sum * (1/sum)
+	bc_num_sub(&one, &temp, &temp, scale);
+	// add delta twice, we could also use Newton-Raphson for the correction
+	bc_num_add(&sum, &temp, &sum, scale);
+	bc_num_add(&sum, &temp, val, scale);
+err:
+	bc_num_free(&sum);
+	bc_num_free(&one);
+	bc_num_free(&x);
+	bc_num_free(&temp);
+
+	return s;
+}
+
+// normalize number to have rdx == len and return the number of BcDigs the value has been shifted to the right (negative for left)
+static int bc_num_normalize(BcNum *n) {
+
+	int i, shift = 0;
+	ssize_t len, rdx;
+
+	if (BC_NUM_ZERO(n)) return 0;
+
+	len = n->len;
+	rdx = n->rdx;
+
+	while (len > 0 && n->num[len - 1] == 0)
+		len--;
+
+	n->len = len;
+	n->rdx = len;
+	n->scale += (len - rdx) * BC_BASE_POWER;
+
+	return len - rdx;
+}
+
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len, end, i, req, bscale;
 	ssize_t cmp;
-	BcNum cp, prod, target, factor;
-	BcDig *n, *p;
-	unsigned long q;
-	bool aneg, bneg, zero = true;
+	BcNum b1, f;
+	size_t factor, dividend, divisor;
+	size_t i, j, mindivisor, temp_scale;
+	int shift;
+
+	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(a)) {
+		bc_num_setToZero(c, scale);
+		return BC_STATUS_SUCCESS;
+	}
+	if (bc_num_isOne(b)) {
+		bc_num_copy(c, a);
+		goto exit;
+	}
+
+	// scale that allows to represent all possible multiplication results
+	temp_scale = BC_MAX(scale, BC_BASE_POWER * (a->len + b->len + 1));
+
+	// create normalized copy of first argument in result variable "c"
+	bc_num_copy(c, a);
+	// the shift value records be how many BcDigs the decimal has been shifted to the left
+	shift = bc_num_normalize(c);
+
+	// create normalized copy of first argument as temporary variable b1
+	bc_num_createCopy(&b1, b);
+	// the shift value now records by how many BcDigs the result will need to be shifted
+	shift -= bc_num_normalize(&b1);
+
+	// set sign of (copies of the) operands to positive
+	c->neg = false;
+	b1.neg = false;
+
+	// compare normalized operands to determine whether the result of dividing them will be < or > 1
+	cmp = bc_num_cmp(&b1, c);
+	if (cmp == 0) {
+		// if the normalized values are identical the result will be a power of (10^BC_BASE_POWER)
+		bc_num_ulong2num(c, 1);
+	}
+	else {
+		if (cmp > 0)		//==> b > a, result will be one exp higher
+			shift--;
+
+		dividend = 1;
+		divisor = 0;
+
+		// calculate the maximum power of BC_BASE_DIG that will fit into a size_t
+		for (i = 0; i < 19 / BC_BASE_POWER; i++) {
+			dividend *= BC_BASE_DIG;
+		}
+
+		// determine the minimum number acceptable for the initial divide operation
+		mindivisor = bc_num_pow10((19 - BC_BASE_POWER)/2);
+		if (BC_BASE_POWER % 2 != 0)
+			mindivisor *= 3;
+
+		j = 0;
+		for (i = 0; i < b1.len; i++) {
+			if (divisor < mindivisor) {
+				// accumulate BcDigs until the minimum desired divisor has been formed
+				divisor *= BC_BASE_DIG;
+				divisor += b1.num[b1.len - 1 - i];
+			}
+			else {
+				if (b1.num[b1.len - 1 - i] != 0)
+					// there were further non-zero digits not included in the divisor
+					// account for them by incrementing the divisor just to be sure
+					j = 1;
+			}
+		}
+		divisor += j;
+
+		// the quotient is used as the initial estimate of the (scaled) reciprocal value of the divisor
+		factor = dividend / divisor;
+
+		// Multiply the estimate of 1/B ("factor") with the actual value of B giving a result <= 1.0
+		bc_num_createFromUlong(&f, factor);
+		bc_num_mul(&b1, &f, &b1, temp_scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		if (b1.num[b1.len - 1] != 1) {
+			// a correction is required, we multiply with the inverse of the error since we cannot divide ...
+			b1.rdx = b1.len;
+			// calculate the inverse of the error to twice the number of decimals
+			b1.scale = b1.rdx * BC_BASE_POWER;
+			s = bc_num_invert(&b1, temp_scale);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+			// multiply with the correction factor (== the reciprocal value of the error factor)
+			bc_num_mul(&b1, c, c, temp_scale + BC_BASE_POWER);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		}
+		// multiply the corrected reciprocal value of B with A to get A/B
+		bc_num_mul(&f, c, c, temp_scale);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		// adjust the decimal point in such a way that the result is 1 <= C <= BC_BASE_DIG -1
+		c->rdx = c->len - 1;
+		c->scale = c->rdx * BC_BASE_POWER;
+		bc_num_free(&f);
+	}
+
+	// adjust the decimal point to account for the normalization of the arguments A and B
+	if (shift > 0)
+		bc_num_shiftLeft(c, shift * BC_BASE_POWER);
+	else
+		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
+err:
+	bc_num_free(&b1);
+exit:
+	if (BC_SIG) s = BC_STATUS_SIGNAL;
+	// adjust sign of the result from the preserved input parameters
+	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
+	return s;
+}
+
+#else // USE_GOLDSCHMIDT
+
+static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	size_t rdx, rdx2, rscale, scale2, req;
+	ssize_t cmp;
+	BcNum cpa, cpb, two, factor, factor2, *fi, *fnext, *temp;
+	BcDig two_digs[2];
+	bool aneg, bneg;
 
 	aneg = a->neg;
 	bneg = b->neg;
@@ -986,9 +1135,18 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		goto exit;
 	}
 
-	req = bc_num_mulReq(a, b, scale);
-	bc_num_init(&prod, req);
-	bc_num_init(&target, req);
+	bc_num_createCopy(&cpa, a);
+	bc_num_createCopy(&cpb, b);
+
+	// This is to calculate enough digits to make rounding only happen when
+	// necessary. It rounds the scale up to the next BcDig boundary, then adds
+	// on enough to create a whole extra BcDig which will then be tested to see
+	// if it's equal to BC_BASE_DIG - 1. If it is, then, and only then, should
+	// rounding be needed.
+	scale2 = BC_NUM_RDX(scale + 1) * BC_BASE_POWER + BC_BASE_POWER + 1;
+	rdx2 = BC_NUM_RDX(scale2);
+	req = bc_num_int(a) + rdx2 + 1;
+	scale2 = rdx2 * BC_BASE_POWER;
 	bc_num_init(&factor, req);
 
 	bc_num_init(&cp, req);
@@ -1013,9 +1171,11 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	if (cp.cap == cp.len) bc_num_expand(&cp, bc_vm_growSize(cp.len, 1));
 
-	// We want an extra zero in front to make things simpler.
-	cp.num[cp.len++] = 0;
-	end = cp.len - len;
+	req = bc_num_int(&cpa);
+	if (!req) req = cpa.len - bc_num_nonzeroLen(&cpa);
+	req = BC_BASE_POWER * (req + 1);
+	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
+	req += scale2;
 
 	bc_num_expand(c, cp.len);
 
@@ -1055,46 +1215,31 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		bc_num_printDigs(n, len + 1, false);
 		bc_num_printDebug(&prod, "prod", true);
 
-		cmp = bc_num_compare(n, prod.num, len + 1);
+		cmp = bc_num_cmp(fi, fnext);
 		if (cmp == BC_NUM_SSIZE_MIN) goto err;
-		q = factor_l;
-
-		if (cmp < 0) {
-
-			while (cmp < 0) {
-				bc_num_subArrays(prod.num, p, len);
-				bc_num_printDebug(&prod, "prod sub", true);
-				q -= 1;
-				cmp = bc_num_compare(n, prod.num, len + 1);
-				if (cmp == BC_NUM_SSIZE_MIN) goto err;
-			}
-		}
-		else if (cmp > 0) {
-
-			memcpy(target.num, n, BC_NUM_SIZE(len + 1));
-			s = bc_num_subArrays(target.num, p, len);
-			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-			printf("target: ");
-			bc_num_printDigs(target.num, len + 1, false);
-
-			cmp = bc_num_compare(target.num, prod.num, len + 1);
-
-			while (cmp >= 0) {
-				bc_num_addArrays(prod.num, p, len);
-				bc_num_printDebug(&prod, "prod add", true);
-				q += 1;
-				cmp = bc_num_compare(target.num, prod.num, len + 1);
-				if (cmp == BC_NUM_SSIZE_MIN) goto err;
-			}
-		}
-
-		s = bc_num_subArrays(n, prod.num, len);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		assert(q < BC_BASE_DIG);
-		c->num[i] = (BcDig) q;
 	}
+
+	// We only round here if an entire BcDig is equal to BC_BASE_DIG - 1. We
+	// have to round because without rounding, the Goldschmidt algorithm can
+	// produce numbers that are 1 digit off in the last place, because of the
+	// nature of the algorithm. That throws off things like negative powers
+	// (like 10 ^ -1, which Goldschmidt calculates as 0.099999999...). The bc
+	// spec requires truncation, but without this rounding, *more* calculations
+	// will be off. To fix this, I have the algorithm calculate the result to
+	// the scale plus 1 place plus a whole extra BcDig (at least). Then, when
+	// rounding, I only round if the extra BcDig is only 1 less than the max,
+	// and then I only add 1 to the right place (see bc_num_roundPlaces() for
+	// more info). What this means is that if there is a chain of 9's from the
+	// *actual* scale position to the rounded position, then rounding will
+	// happen, but if not, the actual scale will not be affected (i.e., it will
+	// appear truncated). By extending the calculation by 1 extra digit, then a
+	// whole extra BcDig, I create a separation between the two that only is
+	// closed when Goldschmidt has failed to calculate the exact truncated
+	// number (or at least, I hope it does).
+	assert(cpa.rdx >= rdx2);
+	if (cpa.num[cpa.rdx - rdx2] == BC_BASE_DIG - 1)
+		bc_num_roundPlaces(&cpa, scale2 - 1);
+	bc_num_copy(c, &cpa);
 
 err:
 	b->scale = bscale;
@@ -1110,6 +1255,7 @@ exit:
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	return s;
 }
+#endif // USE_GOLDSCHMIDT
 
 static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
                          BcNum *restrict d, size_t scale, size_t ts)
@@ -1356,8 +1502,6 @@ static bool bc_num_strValid(const char *val) {
 
 static unsigned long bc_num_parseChar(char c, size_t base_t) {
 
-	// TODO: Check this function.
-
 	if (isupper(c)) {
 		c = BC_NUM_NUM_LETTER(c);
 		c = ((size_t) c) >= base_t ? (char) base_t - 1 : c;
@@ -1376,7 +1520,12 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	for (i = 0; val[i] == '0'; ++i);
 
 	val += i;
-	assert(isalnum(val[0]) || val[0] == '.');
+	assert(!val[0] || isalnum(val[0]) || val[0] == '.');
+
+	// All 0's. We can just return, since this
+	// procedure expects a virgin (already 0) BcNum.
+	if (!val[0]) return;
+
 	len = strlen(val);
 
 	ptr = strchr(val, '.');
@@ -1402,7 +1551,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 		unsigned long exp, pow;
 
 		exp = i;
-		pow = bc_num_pow10[exp];
+		pow = bc_num_pow10(exp);
 
 		for (i = len - 1; i < len; --i, ++exp) {
 
@@ -1426,7 +1575,6 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
                                  BcNum *restrict base, size_t base_t)
 {
-	// TODO: Check this function.
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum temp, mult, result;
 	char c = 0;
@@ -1482,6 +1630,7 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	assert(!s || s == BC_STATUS_SIGNAL);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	bc_num_truncate(&result, digs);
+	//bc_num_truncate(&result, result.scale - digs);	// <se> is this a fixed version of the line above?
 	s = bc_num_add(n, &result, n, digs);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
@@ -1516,13 +1665,11 @@ static void bc_num_printChar(size_t n, size_t len, bool rdx) {
 
 static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
 
-	// TODO: Check this function.
-
 	size_t exp, pow;
 
 	bc_num_printNewline();
 	bc_vm_putchar(rdx ? '.' : ' ');
-	++vm->nchars;
+	vm->nchars += 1;
 
 	bc_num_printNewline();
 	for (exp = 0, pow = 1; exp < len - 1; ++exp, pow *= BC_BASE);
@@ -1588,8 +1735,6 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 #if BC_ENABLE_EXTRA_MATH
 static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 
-	// TODO: Check this function.
-
 	BcStatus s = BC_STATUS_SUCCESS;
 	bool neg = (n->len <= n->rdx);
 	BcNum temp, exp;
@@ -1605,7 +1750,7 @@ static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		places = 1;
 
 		for (i = BC_BASE_POWER - 1; i < BC_BASE_POWER; --i) {
-			if (bc_num_pow10[i] > (unsigned long) n->num[idx])
+			if (bc_num_pow10(i) > (unsigned long) n->num[idx])
 				places += 1;
 			else break;
 		}
@@ -1655,7 +1800,6 @@ exit:
 static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
                                 size_t len, BcNumDigitOp print)
 {
-	// TODO: Check this function.
 	BcStatus s;
 	BcVec stack;
 	BcNum intp, fracp, digit, frac_len;
@@ -1677,7 +1821,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	bc_num_one(&frac_len);
 	bc_num_createCopy(&intp, n);
 
-	bc_num_truncate(&intp, intp.rdx);
+	bc_num_truncate(&intp, intp.scale);
 	s = bc_num_sub(n, &intp, &fracp, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
@@ -1704,11 +1848,11 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	}
 
 	if (BC_SIG) goto sig_err;
-	if (!n->rdx) goto err;
+	if (!n->scale) goto err;
 
-	for (radix = true; BC_NO_SIG && frac_len.len <= n->rdx; radix = false) {
+	for (radix = true; BC_NO_SIG && bc_num_int_digits(&frac_len) < n->scale + 1; radix = false) {
 
-		s = bc_num_mul(&fracp, base, &fracp, n->rdx);
+		s = bc_num_mul(&fracp, base, &fracp, n->scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Will never fail (except for signals) because fracp is
@@ -1739,7 +1883,6 @@ err:
 static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
                                  size_t base_t)
 {
-	// TODO: Check this function.
 	BcStatus s;
 	size_t width;
 	BcNumDigitOp print;
@@ -1755,7 +1898,7 @@ static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 		print = bc_num_printHex;
 	}
 	else {
-		width = bc_num_log10(base_t - 1) - 1;
+		width = bc_num_log10(base_t - 1);
 		print = bc_num_printDigits;
 	}
 
@@ -1957,10 +2100,59 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 }
 
 #if BC_ENABLE_EXTRA_MATH
-size_t bc_num_shiftReq(BcNum *a, BcNum *b, size_t scale) {
-	BC_UNUSED(b);
+size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
+
+	BcStatus s;
+	unsigned long places;
+	size_t rdx;
+
+	BC_UNUSED(s);
 	BC_UNUSED(scale);
-	return BC_NUM_SHREQ(a);
+
+	// This error will be taken care of later. Ignore.
+	s = bc_num_ulong(b, &places);
+
+	if (a->scale <= places) rdx = BC_NUM_RDX(places);
+	else rdx = BC_NUM_RDX(a->scale - places);
+
+	return BC_NUM_RDX(bc_num_int_digits(a)) + rdx;
+}
+
+size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
+
+	BcStatus s;
+	unsigned long places, rdx;
+
+	BC_UNUSED(s);
+	BC_UNUSED(scale);
+
+	// This error will be taken care of later. Ignore.
+	s = bc_num_ulong(b, &places);
+
+	if (a->scale <= places) rdx = BC_NUM_RDX(places) - a->rdx + 1;
+	else rdx = 0;
+
+	return a->len + rdx;
+}
+
+size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale) {
+
+	BcStatus s;
+	unsigned long places, int_digs, rdx;
+
+	BC_UNUSED(s);
+	BC_UNUSED(scale);
+
+	// This error will be taken care of later. Ignore.
+	s = bc_num_ulong(b, &places);
+
+	int_digs = BC_NUM_RDX(bc_num_int_digits(a));
+	rdx = BC_NUM_RDX(places);
+
+	if (int_digs <= rdx) rdx -= int_digs;
+	else rdx = 0;
+
+	return a->len + rdx;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1995,21 +2187,22 @@ BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 #if BC_ENABLE_EXTRA_MATH
 BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_place, BC_NUM_SHREQ(a));
+	size_t req = bc_num_placesReq(a, b, scale);
+	return bc_num_binary(a, b, c, scale, bc_num_place, req);
 }
 
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_left, BC_NUM_SHREQ(a));
+	size_t req = bc_num_shiftLeftReq(a, b, scale);
+	return bc_num_binary(a, b, c, scale, bc_num_left, req);
 }
 
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return bc_num_binary(a, b, c, scale, bc_num_right, BC_NUM_SHREQ(a));
+	size_t req = bc_num_shiftRightReq(a, b, scale);
+	return bc_num_binary(a, b, c, scale, bc_num_right, req);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
 BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
-
-	// TODO: Check this function.
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
@@ -2067,7 +2260,8 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		bc_num_shiftLeft(x0, pow / 2);
 
 		// Make sure to move the radix back.
-		x0->scale -= pow;
+		if (x0->scale >= pow) x0->scale -= pow;
+		else x0->scale = 0;
 		x0->rdx = BC_NUM_RDX(x0->scale);
 	}
 
@@ -2075,7 +2269,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	x0->scale = 0;
 	resscale = (scale + BC_BASE_POWER) * 2;
 
-	len = BC_NUM_RDX(bc_num_int_digits(x0) + resscale - 1); // <se> apply -1 after BC_NUM_RDX???
+	len = BC_NUM_RDX(bc_num_int_digits(x0) + resscale - 1);
 
 	while (BC_NO_SIG && (cmp || digs < len)) {
 
@@ -2132,8 +2326,6 @@ err:
 
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
-	// TODO: Check this function.
-
 	BcStatus s;
 	BcNum num2, *ptr_a;
 	bool init = false;
@@ -2169,8 +2361,6 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 #if DC_ENABLED
 BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
-
-	// TODO: Check this function.
 
 	BcStatus s;
 	BcNum base, exp, two, temp;
@@ -2235,3 +2425,60 @@ rem_err:
 	return s;
 }
 #endif // DC_ENABLED
+
+#if BC_DEBUG_CODE
+void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline) {
+	printf("%s: ", name);
+	bc_num_printDecimal(n);
+	printf("\n");
+	if (emptyline) printf("\n");
+	vm->nchars = 0;
+}
+
+void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline) {
+
+	size_t i;
+
+	printf("%s len: %zu, rdx: %zu, scale: %zu\n",
+	       name, n->len, n->rdx, n->scale);
+
+	for (i = n->len - 1; i < n->len; --i)
+		printf(" %0*d", BC_BASE_POWER, n->num[i]);
+
+	printf("\n");
+	if (emptyline) printf("\n");
+	vm->nchars = 0;
+}
+
+void bc_num_dump(const char *varname, const BcNum *n) {
+
+	unsigned long i, scale = n->scale;
+
+	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
+
+	for (i = n->len - 1; i < n->len; --i) {
+
+		if (i + 1 == n->rdx) fprintf(stderr, ". ");
+
+		if (scale / BC_BASE_POWER != n->rdx - i - 1)
+			fprintf(stderr, "%0*d ", BC_BASE_POWER, n->num[i]);
+		else {
+
+			int mod = scale % BC_BASE_POWER;
+			int d = BC_BASE_POWER - mod;
+			BcDig div;
+
+			if (mod != 0) {
+				div = n->num[i] / ((BcDig) bc_num_pow10((unsigned long) d));
+				fprintf(stderr, "%0*d", (int) mod, div);
+			}
+
+			div = n->num[i] % ((BcDig) bc_num_pow10((unsigned long) d));
+			fprintf(stderr, " ' %0*d ", d, div);
+		}
+	}
+
+	fprintf(stderr, "(%zu | %zu.%zu / %zu) %p\n",
+	        n->scale, n->len, n->rdx, n->cap, (void*) n->num);
+}
+#endif // BC_DEBUG_CODE

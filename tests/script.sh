@@ -33,13 +33,16 @@ script="$0"
 
 testdir=$(dirname "${script}")
 
-if [ "$#" -eq 0 ]; then
-	printf 'usage: %s dir [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
+if [ "$#" -lt 2 ]; then
+	printf 'usage: %s dir script [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
 	exit 1
-else
-	d="$1"
-	shift
 fi
+
+d="$1"
+shift
+
+f="$1"
+shift
 
 if [ "$#" -gt 0 ]; then
 	run_stack_tests="$1"
@@ -62,11 +65,61 @@ else
 	exe="$testdir/../bin/$d"
 fi
 
+out="$testdir/../.log_${d}_test.txt"
+
+if [ "$d" = "bc" ]; then
+
+	if [ "$run_stack_tests" -ne 0 ]; then
+		options="-lgq"
+	else
+		options="-lq"
+	fi
+
+	halt="halt"
+
+else
+	options="-x"
+	halt="q"
+fi
+
 scriptdir="$testdir/$d/scripts"
 
-for s in $scriptdir/*.$d; do
+name="${f%.*}"
 
-	f=$(basename -- "$s")
-	sh "$testdir/script.sh" "$d" "$f" "$run_stack_tests" "$generate" "$exe" "$@"
+if [ "$f" = "timeconst.bc" ]; then
+	exit 0
+fi
 
-done
+if [ "$run_stack_tests" -eq 0 ]; then
+
+	if [ "$f" = "globals.bc" -o "$f" = "references.bc" ]; then
+		printf 'Skipping %s script %s\n' "$d" "$s"
+		exit 0
+	fi
+
+fi
+
+s="$scriptdir/$f"
+orig="$testdir/$name.txt"
+results="$scriptdir/$name.txt"
+
+if [ -f "$orig" ]; then
+	res="$orig"
+elif [ -f "$results" ]; then
+	res="$results"
+elif [ "$generate" -eq 0 ]; then
+	printf 'Skipping %s script %s\n' "$d" "$s"
+	exit 0
+else
+	printf 'Generating %s results...\n' "$f"
+	printf '%s\n' "$halt" | "$d" "$s" > "$results"
+	res="$results"
+fi
+
+printf 'Running %s script: %s\n' "$d" "$f"
+
+printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out"
+
+diff "$res" "$out"
+
+rm -rf "$out"

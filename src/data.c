@@ -709,25 +709,6 @@ const uint8_t dc_parse_insts[] = {
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
-const unsigned long bc_num_pow10[BC_BASE_POWER + 1] = {
-	1,
-	10,
-#if LONG_BIT >= 16
-	100,
-#if LONG_BIT >= 32
-	1000,
-	10000,
-#if LONG_BIT >= 64
-	100000,
-	1000000,
-	10000000,
-	100000000,
-	1000000000,
-#endif // LONG_BIT >= 64
-#endif // LONG_BIT >= 32
-#endif // LONG_BIT >= 16
-};
-
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
 #if BC_ENABLE_EXTRA_MATH
@@ -739,7 +720,7 @@ const BcNumBinaryOpReq bc_program_opReqs[] = {
 	bc_num_powReq, bc_num_mulReq, bc_num_mulReq, bc_num_mulReq,
 	bc_num_addReq, bc_num_addReq,
 #if BC_ENABLE_EXTRA_MATH
-	bc_num_shiftReq, bc_num_shiftReq, bc_num_shiftReq,
+	bc_num_placesReq, bc_num_shiftLeftReq, bc_num_shiftRightReq,
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
