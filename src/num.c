@@ -1018,7 +1018,7 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
 	}
 	// apply correction for finite number of series elements considered
 	// could be further optimized ...
-	bc_num_mul(val, &sum, &temp, scale);
+	bc_num_mul(val, &sum, &temp, scale + 1);
 	// the correction is derived from 1.0 - sum * (1/sum)
 	bc_num_sub(&one, &temp, &temp, scale);
 	// add delta twice, we could also use Newton-Raphson for the correction
@@ -1145,10 +1145,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		if (b1.num[b1.len - 1] != 1) {
+			// calculate the inverse of the error to twice the number of decimals
+			b1.scale += (b1.len - b1.rdx) * BC_BASE_POWER; // * BC_BASE_POWER;
 			// a correction is required, we multiply with the inverse of the error since we cannot divide ...
 			b1.rdx = b1.len;
-			// calculate the inverse of the error to twice the number of decimals
-			b1.scale = b1.rdx * BC_BASE_POWER;
 			s = bc_num_invert(&b1, temp_scale);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 			// multiply with the correction factor (== the reciprocal value of the error factor)
