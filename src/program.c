@@ -495,7 +495,7 @@ static void bc_program_printString(const char *restrict str) {
 	}
 #endif // DC_ENABLED
 
-	for (i = 0; i < len; ++i, ++vm->nchars) {
+	for (i = 0; i < len; ++i) {
 
 		int c = str[i];
 
@@ -514,7 +514,6 @@ static void bc_program_printString(const char *restrict str) {
 				// Just print the backslash. The following
 				// character will be printed later.
 				bc_vm_putchar('\\');
-				vm->nchars += 1;
 			}
 		}
 
@@ -565,10 +564,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
 		else {
 			bc_program_printString(str);
-			if (inst == BC_INST_PRINT) {
-				bc_vm_putchar('\n');
-				vm->nchars = 0;
-			}
+			if (inst == BC_INST_PRINT) bc_vm_putchar('\n');
 		}
 	}
 
