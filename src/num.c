@@ -1825,7 +1825,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	BcDig flen1_digs[BC_NUM_LONG_LOG10];
 	BcDig flen2_digs[BC_NUM_LONG_LOG10];
 
-	assert(BC_NUM_NONZERO(base));
+	assert(BC_NUM_NONZERO(base) && !bc_num_isOne(base));
 
 	if (BC_NUM_ZERO(n)) {
 		print(0, len, false);
