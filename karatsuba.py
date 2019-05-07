@@ -50,7 +50,7 @@ if __name__ != "__main__":
 
 mx = 520
 mx2 = mx // 2
-mn = 2
+mn = 16
 
 num = "9" * mx
 
@@ -66,7 +66,9 @@ else:
 
 exedir = os.path.dirname(exe)
 
-indata = "for (i = 0; i < 100; ++i) {} * {}\n1.23456789^10000\nhalt".format(num, num)
+indata = "for (i = 0; i < 100; ++i) {} * {}\n"
+indata += "1.23456789^10000\n1.23456789^10000\nhalt"
+indata = indata.format(num, num)
 
 times = []
 nums = []

@@ -50,76 +50,28 @@
 #define BC_ENABLE_EXTRA_MATH (1)
 #endif // BC_ENABLE_EXTRA_MATH
 
-#define BC_BASE (10)
-
-#ifndef BC_LONG_BIT
-#define BC_LONG_BIT LONG_BIT
-#endif // BC_LONG_BIT
-
-#if BC_LONG_BIT > LONG_BIT
-#undef BC_LONG_BIT
-#define BC_LONG_BIT LONG_BIT
-#endif // BC_LONG_BIT > LONG_BIT
-
-#if BC_LONG_BIT >= 64
-
-typedef int_least32_t BcDig;
-
-#define BC_BASE_POWER (9)
-#define BC_BASE_DIG (1000000000)
-#define BC_NUM_DEF_SIZE (2)
-
-#elif BC_LONG_BIT >= 32
-// sizeof(long) has been guaranteed to be at least 32 bit long since at least c99
-// and has actually been a 32 bit value on the PDP/11, nearly 50 years ago ...
-
-typedef int_least16_t BcDig;
-
-#define BC_BASE_POWER (4)
-#define BC_BASE_DIG (10000)
-#define BC_NUM_DEF_SIZE (4)
-
-#else
-
-typedef int_least8_t BcDig;
-
-#if BC_LONG_BIT >= 16
-
-#define BC_BASE_POWER (2)
-#define BC_BASE_DIG (100)
-#define BC_NUM_DEF_SIZE (8)
-
-#elif BC_LONG_BIT >= 8
-
-#define BC_BASE_POWER (1)
-#define BC_BASE_DIG (10)
-#define BC_NUM_DEF_SIZE (16)
-
-#else
-
-#error BC_LONG_BIT must be at least 8
-
-#endif // BC_LONG_BIT >= 16
-#endif // BC_LONG_BIT >= 64
+typedef signed char BcDig;
 
 typedef struct BcNum {
 	BcDig *restrict num;
 	size_t rdx;
-	size_t scale;
 	size_t len;
 	size_t cap;
 	bool neg;
 } BcNum;
+
+#define BC_BASE (10)
 
 #define BC_NUM_MIN_BASE ((unsigned long) 2)
 #define BC_NUM_MAX_POSIX_IBASE ((unsigned long) 16)
 #define BC_NUM_MAX_IBASE ((unsigned long) 36)
 // This is the max base allowed by bc_num_parseChar().
 #define BC_NUM_MAX_LBASE ('Z' + BC_BASE + 1)
+#define BC_NUM_DEF_SIZE (16)
 #define BC_NUM_PRINT_WIDTH (69)
 
 #ifndef BC_NUM_KARATSUBA_LEN
-#define BC_NUM_KARATSUBA_LEN (32)
+#define BC_NUM_KARATSUBA_LEN (64)
 #elif BC_NUM_KARATSUBA_LEN < BC_NUM_DEF_SIZE
 #error BC_NUM_KARATSUBA_LEN must be at least equal to BC_NUM_DEF_SIZE.
 #endif // BC_NUM_KARATSUBA_LEN
@@ -136,9 +88,6 @@ typedef struct BcNum {
 #define BC_NUM_KARATSUBA_ALLOCS (6)
 
 #define BC_NUM_SSIZE_MIN (~SSIZE_MAX)
-
-#define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_POWER - 1))
-#define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_POWER)
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
