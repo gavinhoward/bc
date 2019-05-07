@@ -964,7 +964,7 @@ err:
 }
 
 // normalize number to have rdx == len and return the number of BcDigs the value has been shifted to the right (negative for left)
-static int bc_num_normalize(BcNum *n) {
+static ssize_t bc_num_normalize(BcNum *n) {
 
 	int i, shift = 0;
 	ssize_t len, rdx;
@@ -988,11 +988,11 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t rdx, rscale, req;
-	ssize_t cmp;
+	ssize_t cmp, shift;
 	BcNum b1, f;
 	size_t factor, dividend, divisor;
 	size_t i, j, mindivisor, temp_scale;
-	int shift;
+	BcDig f_digs[BC_NUM_LONG_LOG10];
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -1003,6 +1003,9 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		bc_num_copy(c, a);
 		goto exit;
 	}
+
+	// set up f
+	bc_num_setup(&f, f_digs, BC_NUM_LONG_LOG10);
 
 	// scale that allows to represent all possible multiplication results
 	temp_scale = BC_MAX(scale, BC_BASE_POWER * (a->len + b->len + 1));
@@ -1064,7 +1067,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		factor = dividend / divisor;
 
 		// Multiply the estimate of 1/B ("factor") with the actual value of B giving a result <= 1.0
-		bc_num_createFromUlong(&f, factor);
+		bc_num_ulong2num(&f, factor);
 		bc_num_mul(&b1, &f, &b1, temp_scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
@@ -1085,7 +1088,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		// adjust the decimal point in such a way that the result is 1 <= C <= BC_BASE_DIG -1
 		c->rdx = c->len - 1;
 		c->scale = c->rdx * BC_BASE_POWER;
-		bc_num_free(&f);
 	}
 
 	// adjust the decimal point to account for the normalization of the arguments A and B
