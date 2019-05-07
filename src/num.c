@@ -1911,9 +1911,9 @@ sig_err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 err:
 	bc_num_free(&intp2);
+	bc_num_free(&intp1);
 	bc_num_free(&fracp2);
 	bc_num_free(&fracp1);
-	bc_num_free(&intp1);
 	bc_vec_free(&stack);
 	return s;
 }
