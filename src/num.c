@@ -1673,6 +1673,11 @@ static void bc_num_printNewline() {
 	}
 }
 
+static void bc_num_putchar(int c) {
+	if (c != '\n') bc_num_printNewline();
+	bc_vm_putchar(c);
+}
+
 #if DC_ENABLED
 static void bc_num_printChar(size_t n, size_t len, bool rdx) {
 	BC_UNUSED(rdx);
@@ -1686,18 +1691,16 @@ static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
 
 	size_t exp, pow;
 
-	bc_num_printNewline();
-	bc_vm_putchar(rdx ? '.' : ' ');
+	bc_num_putchar(rdx ? '.' : ' ');
 
 	bc_num_printNewline();
 	for (exp = 0, pow = 1; exp < len - 1; ++exp, pow *= BC_BASE);
 
 	for (exp = 0; exp < len; pow /= BC_BASE, ++exp) {
 		size_t dig;
-		bc_num_printNewline();
 		dig = n / pow;
 		n -= dig * pow;
-		bc_vm_putchar(((uchar) dig) + '0');
+		bc_num_putchar(((uchar) dig) + '0');
 	}
 }
 
@@ -1707,13 +1710,9 @@ static void bc_num_printHex(size_t n, size_t len, bool rdx) {
 
 	assert(len == 1);
 
-	if (rdx) {
-		bc_num_printNewline();
-		bc_vm_putchar('.');
-	}
+	if (rdx) bc_num_putchar('.');
 
-	bc_num_printNewline();
-	bc_vm_putchar(bc_num_hex_digits[n]);
+	bc_num_putchar(bc_num_hex_digits[n]);
 }
 
 static void bc_num_printDecimal(const BcNum *restrict n) {
@@ -1722,7 +1721,7 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 	bool zero = true;
 	size_t buffer[BC_BASE_POWER];
 
-	if (n->neg) bc_vm_putchar('-');
+	if (n->neg) bc_num_putchar('-');
 
 	for (i = n->len - 1; i < n->len; --i) {
 
@@ -1787,19 +1786,14 @@ static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 	}
 
 	bc_num_printDecimal(&temp);
-
-	bc_num_printNewline();
-	bc_vm_putchar('e');
+	bc_num_putchar('e');
 
 	if (!places) {
 		bc_num_printHex(0, 1, false);
 		goto exit;
 	}
 
-	if (neg) {
-		bc_num_printNewline();
-		bc_vm_putchar('-');
-	}
+	if (neg) bc_num_putchar('-');
 
 	bc_num_setup(&exp, digs, BC_NUM_LONG_LOG10);
 	bc_num_ulong2num(&exp, (unsigned long) places);
@@ -1926,7 +1920,7 @@ static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 	BcNumDigitOp print;
 	bool neg = n->neg;
 
-	if (neg) bc_vm_putchar('-');
+	if (neg) bc_num_putchar('-');
 
 	n->neg = false;
 
@@ -2053,7 +2047,7 @@ BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
 #endif // BC_ENABLE_EXTRA_MATH
 	else s = bc_num_printBase(n, base, base_t);
 
-	if (BC_NO_ERR(!s) && newline) bc_vm_putchar('\n');
+	if (BC_NO_ERR(!s) && newline) bc_num_putchar('\n');
 
 	return s;
 }
