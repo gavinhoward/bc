@@ -1817,10 +1817,11 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 {
 	BcStatus s;
 	BcVec stack;
-	BcNum intp, fracp, digit, frac_len;
+	BcNum intp1, intp2, *int1, *int2, fracp, digit, frac_len, *temp;
 	unsigned long dig, *ptr;
 	size_t i;
 	bool radix;
+	BcDig digit_digs[BC_NUM_LONG_LOG10];
 
 	assert(BC_NUM_NONZERO(base));
 
@@ -1831,19 +1832,24 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 
 	bc_vec_init(&stack, sizeof(unsigned long), NULL);
 	bc_num_init(&fracp, n->rdx);
-	bc_num_init(&digit, len);
+	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
 	bc_num_init(&frac_len, bc_num_int(n));
 	bc_num_one(&frac_len);
-	bc_num_createCopy(&intp, n);
+	bc_num_createCopy(&intp1, n);
 
-	bc_num_truncate(&intp, intp.scale);
-	s = bc_num_sub(n, &intp, &fracp, 0);
+	bc_num_truncate(&intp1, intp1.scale);
+	bc_num_init(&intp2, intp1.len);
+
+	s = bc_num_sub(n, &intp1, &fracp, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	while (BC_NO_SIG && BC_NUM_NONZERO(&intp)) {
+	int1 = &intp1;
+	int2 = &intp2;
+
+	while (BC_NO_SIG && BC_NUM_NONZERO(int1)) {
 
 		// Dividing by base cannot be divide by 0 because base cannot be 0.
-		s = bc_num_divmod(&intp, base, &intp, &digit, 0);
+		s = bc_num_divmod(int1, base, int2, &digit, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Will never fail (except for signals) because digit is
@@ -1852,6 +1858,10 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		bc_vec_push(&stack, &dig);
+
+		temp = int1;
+		int1 = int2;
+		int2 = temp;
 	}
 
 	if (BC_SIG) goto sig_err;
@@ -1875,8 +1885,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 		s = bc_num_ulong(&fracp, &dig);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		bc_num_ulong2num(&intp, dig);
-		s = bc_num_sub(&fracp, &intp, &fracp, 0);
+		bc_num_ulong2num(&intp1, dig);
+		s = bc_num_sub(&fracp, int1, &fracp, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		print(dig, len, radix);
@@ -1887,10 +1897,10 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 sig_err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 err:
+	bc_num_free(&intp2);
 	bc_num_free(&frac_len);
-	bc_num_free(&digit);
 	bc_num_free(&fracp);
-	bc_num_free(&intp);
+	bc_num_free(&intp1);
 	bc_vec_free(&stack);
 	return s;
 }
