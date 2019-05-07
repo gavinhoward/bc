@@ -1650,7 +1650,7 @@ static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
 
 	bc_num_printNewline();
 	bc_vm_putchar(rdx ? '.' : ' ');
-	++vm->nchars;
+	vm->nchars += 1;
 
 	bc_num_printNewline();
 	for (exp = 0, pow = 1; exp < len - 1; ++exp, pow *= BC_BASE);
