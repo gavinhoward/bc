@@ -1647,7 +1647,6 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	assert(!s || s == BC_STATUS_SIGNAL);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	bc_num_truncate(&result, digs);
-	//bc_num_truncate(&result, result.scale - digs);	// <se> is this a fixed version of the line above?
 	s = bc_num_add(n, &result, n, digs);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
