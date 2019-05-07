@@ -911,59 +911,73 @@ err:
 }
 
 #ifdef USE_GOLDSCHMIDT
-// find reciprocal value for paramezter in range 0.5 < val <= 1.0
-static BcStatus bc_num_invert(BcNum *val, size_t scale) { // --> num.h <se>
+/*
+ * Find reciprocal value for paramezter in range 0.5 < val <= 1.0.
+ */
+static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 
 	BcNum one, x, temp, sum;
 	bool done = false;
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	// we need one constant value 1 to start ...
+	// We need one constant value 1 to start...
 	bc_num_createFromUlong(&one, 1);
-	// create temporary variable used in each iteration step
+
+	// Create temporary variable used in each iteration step.
 	bc_num_init(&temp, scale / BC_BASE_POWER + 1);
-	// create variable to be squared per iteration
+
+	// Create variable to be squared per iteration.
 	bc_num_init(&x, scale / BC_BASE_POWER + 1);
-	// create variable for the sum the series elements
+
+	// Create variable for the sum the series elements.
 	bc_num_init(&sum, scale / BC_BASE_POWER + 1);
 	s = bc_num_sub(&one, val, &x, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	// initialize series sum to 1.0 + error
+
+	// Initialize series sum to 1.0 + error.
 	s = bc_num_add(&one, &x, &sum, scale);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	for (;;) {
-		// calculate square of delta for next iteration
+		// Calculate square of delta for next iteration.
 		s = bc_num_mul(&x, &x, &x, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		// nothing left to do, if the squared delta truncated to "scale" decimals is 0.0
+
+		// Nothing left to do, if the squared delta
+		// truncated to "scale" decimals is 0.0.
 		if BC_NUM_ZERO(&x) break;
 
-		// multiply current series sum with the squared delta
+		// Multiply current series sum with the squared delta.
 		s = bc_num_mul(&sum, &x, &temp, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		// add series element to sum
+
+		// Add series element to sum.
 		s = bc_num_add(&sum, &temp, &sum, scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
-	// apply correction for finite number of series elements considered
-	// could be further optimized ...
+	// Apply correction for finite number of series elements
+	// considered. Could be further optimized...
 	bc_num_mul(val, &sum, &temp, scale);
-	// the correction is derived from 1.0 - sum * (1/sum)
+
+	// The correction is derived from 1.0 - sum * (1/sum).
 	bc_num_sub(&one, &temp, &temp, scale);
-	// add delta twice, we could also use Newton-Raphson for the correction
+
+	// Add delta twice, we could also use Newton-Raphson for the correction.
 	bc_num_add(&sum, &temp, &sum, scale);
 	bc_num_add(&sum, &temp, val, scale);
+
 err:
 	bc_num_free(&sum);
 	bc_num_free(&one);
 	bc_num_free(&x);
 	bc_num_free(&temp);
-
 	return s;
 }
 
-// normalize number to have rdx == len and return the number of BcDigs the value has been shifted to the right (negative for left)
+/*
+ * Normalize number to have rdx == len and return the number of
+ * BcDigs the value has been shifted to the right (negative for left).
+ */
 static ssize_t bc_num_normalize(BcNum *n) {
 
 	int i, shift = 0;
@@ -1004,102 +1018,122 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		goto exit;
 	}
 
-	// set up f
+	// Set up f.
 	bc_num_setup(&f, f_digs, BC_NUM_LONG_LOG10);
 
-	// scale that allows to represent all possible multiplication results
+	// Calculate scale that allows to represent
+	// all possible multiplication results.
 	temp_scale = BC_MAX(scale, BC_BASE_POWER * (a->len + b->len + 1));
 
-	// create normalized copy of first argument in result variable "c"
+	// Create normalized copy of first argument in result variable "c".
 	bc_num_copy(c, a);
-	// the shift value records be how many BcDigs the decimal has been shifted to the left
+	// The shift value now records by how many
+	// BcDigs the result will need to be shifted.
 	shift = bc_num_normalize(c);
 
-	// create normalized copy of first argument as temporary variable b1
+	// Create normalized copy of second argument as temporary variable b1.
 	bc_num_createCopy(&b1, b);
-	// the shift value now records by how many BcDigs the result will need to be shifted
+	// The shift value now records by how many
+	// BcDigs the result will need to be shifted.
 	shift -= bc_num_normalize(&b1);
 
-	// set sign of (copies of the) operands to positive
+	// Set sign of (copies of the) operands to positive.
 	c->neg = false;
 	b1.neg = false;
 
-	// compare normalized operands to determine whether the result of dividing them will be < or > 1
+	// Compare normalized operands to determine whether
+	// the result of dividing them will be < or > 1.
 	cmp = bc_num_cmp(&b1, c);
 	if (cmp == 0) {
-		// if the normalized values are identical the result will be a power of (10^BC_BASE_POWER)
+		// If the normalized values are identical the
+		// result will be a power of (10^BC_BASE_POWER).
 		bc_num_ulong2num(c, 1);
 	}
 	else {
-		if (cmp > 0)		//==> b > a, result will be one exp higher
-			shift--;
+
+		//==> b > a, result will be one exp higher
+		shift -= (cmp > 0);
 
 		dividend = 1;
 		divisor = 0;
 
-		// calculate the maximum power of BC_BASE_DIG that will fit into a size_t
-		for (i = 0; i < 19 / BC_BASE_POWER; i++) {
-			dividend *= BC_BASE_DIG;
-		}
+		// Calculate the maximum power of BC_BASE_DIG
+		// that will fit into a size_t.
+		for (i = 0; i < 19 / BC_BASE_POWER; ++i) dividend *= BC_BASE_DIG;
 
-		// determine the minimum number acceptable for the initial divide operation
-		mindivisor = bc_num_pow10((19 - BC_BASE_POWER)/2);
-		if (BC_BASE_POWER % 2 != 0)
-			mindivisor *= 3;
+		// Determine the minimum number acceptable
+		// for the initial divide operation.
+		mindivisor = bc_num_pow10((19 - BC_BASE_POWER) / 2);
+		if (BC_BASE_POWER % 2 != 0) mindivisor *= 3;
 
-		j = 0;
-		for (i = 0; i < b1.len; i++) {
+		for (i = 0, j = 0; i < b1.len; ++i) {
+
 			if (divisor < mindivisor) {
-				// accumulate BcDigs until the minimum desired divisor has been formed
+
+				// Accumulate BcDigs until the minimum
+				// desired divisor has been formed
 				divisor *= BC_BASE_DIG;
 				divisor += b1.num[b1.len - 1 - i];
 			}
 			else {
 				if (b1.num[b1.len - 1 - i] != 0)
-					// there were further non-zero digits not included in the divisor
-					// account for them by incrementing the divisor just to be sure
+					// There were further non-zero digits not included
+					// in the divisor. Account for them by incrementing
+					// the divisor just to be sure
 					j = 1;
 			}
 		}
+
 		divisor += j;
 
-		// the quotient is used as the initial estimate of the (scaled) reciprocal value of the divisor
+		// The quotient is used as the initial estimate of
+		// the (scaled) reciprocal value of the divisor.
 		factor = dividend / divisor;
 
-		// Multiply the estimate of 1/B ("factor") with the actual value of B giving a result <= 1.0
+		// Multiply the estimate of 1/B ("factor") with
+		// the actual value of B giving a result <= 1.0.
 		bc_num_ulong2num(&f, factor);
 		bc_num_mul(&b1, &f, &b1, temp_scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		if (b1.num[b1.len - 1] != 1) {
-			// a correction is required, we multiply with the inverse of the error since we cannot divide ...
+
+			// A correction is required, we multiply with the
+			// inverse of the error since we cannot divide...
 			b1.rdx = b1.len;
-			// calculate the inverse of the error to twice the number of decimals
+
+			// Calculate the inverse of the error
+			// to twice the number of decimals.
 			b1.scale = b1.rdx * BC_BASE_POWER;
 			s = bc_num_invert(&b1, temp_scale);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-			// multiply with the correction factor (== the reciprocal value of the error factor)
+
+			// Multiply with the correction factor (i.e.,
+			// the reciprocal value of the error factor).
 			bc_num_mul(&b1, c, c, temp_scale + BC_BASE_POWER);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
-		// multiply the corrected reciprocal value of B with A to get A/B
+
+		// Multiply the corrected reciprocal value of B with A to get A/B.
 		bc_num_mul(&f, c, c, temp_scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		// adjust the decimal point in such a way that the result is 1 <= C <= BC_BASE_DIG -1
+
+		// Adjust the decimal point in such a way that
+		// the result is 1 <= C <= BC_BASE_DIG - 1.
 		c->rdx = c->len - 1;
 		c->scale = c->rdx * BC_BASE_POWER;
 	}
 
-	// adjust the decimal point to account for the normalization of the arguments A and B
-	if (shift < 0)
-		bc_num_shiftRight(c, -shift * BC_BASE_POWER);
-	else
-		bc_num_shiftLeft(c, shift * BC_BASE_POWER);
+	// Adjust the decimal point to account for
+	// the normalization of the arguments A and B.
+	if (shift < 0) bc_num_shiftRight(c, -shift * BC_BASE_POWER);
+	else bc_num_shiftLeft(c, shift * BC_BASE_POWER);
+
 err:
 	bc_num_free(&b1);
 exit:
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
-	// adjust sign of the result from the preserved input parameters
+	// Adjust sign of the result from the preserved input parameters.
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	return s;
 }
