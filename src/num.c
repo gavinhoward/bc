@@ -1817,11 +1817,13 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 {
 	BcStatus s;
 	BcVec stack;
-	BcNum intp1, intp2, *int1, *int2, fracp, digit, frac_len, *temp;
+	BcNum intp1, intp2, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
 	unsigned long dig, *ptr;
 	size_t i;
 	bool radix;
 	BcDig digit_digs[BC_NUM_LONG_LOG10];
+	BcDig flen1_digs[BC_NUM_LONG_LOG10];
+	BcDig flen2_digs[BC_NUM_LONG_LOG10];
 
 	assert(BC_NUM_NONZERO(base));
 
@@ -1831,25 +1833,27 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	}
 
 	bc_vec_init(&stack, sizeof(unsigned long), NULL);
-	bc_num_init(&fracp, n->rdx);
+	bc_num_init(&fracp1, n->rdx);
+	bc_num_init(&fracp2, n->rdx);
 	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
-	bc_num_init(&frac_len, bc_num_int(n));
-	bc_num_one(&frac_len);
+	bc_num_setup(&flen1, flen1_digs, sizeof(flen1_digs) / sizeof(BcDig));
+	bc_num_setup(&flen2, flen2_digs, sizeof(flen2_digs) / sizeof(BcDig));
+	bc_num_one(&flen1);
 	bc_num_createCopy(&intp1, n);
 
 	bc_num_truncate(&intp1, intp1.scale);
 	bc_num_init(&intp2, intp1.len);
 
-	s = bc_num_sub(n, &intp1, &fracp, 0);
+	s = bc_num_sub(n, &intp1, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	int1 = &intp1;
-	int2 = &intp2;
+	n1 = &intp1;
+	n2 = &intp2;
 
-	while (BC_NO_SIG && BC_NUM_NONZERO(int1)) {
+	while (BC_NO_SIG && BC_NUM_NONZERO(n1)) {
 
 		// Dividing by base cannot be divide by 0 because base cannot be 0.
-		s = bc_num_divmod(int1, base, int2, &digit, 0);
+		s = bc_num_divmod(n1, base, n2, &digit, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Will never fail (except for signals) because digit is
@@ -1859,9 +1863,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 
 		bc_vec_push(&stack, &dig);
 
-		temp = int1;
-		int1 = int2;
-		int2 = temp;
+		temp = n1;
+		n1 = n2;
+		n2 = temp;
 	}
 
 	if (BC_SIG) goto sig_err;
@@ -1876,34 +1880,39 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	if (!n->scale) goto err;
 
 	radix = true;
+	n1 = &flen1;
+	n2 = &flen2;
 
-	while (BC_NO_SIG && bc_num_int_digits(&frac_len) < n->scale + 1) {
+	while (BC_NO_SIG && bc_num_int_digits(n1) < n->scale + 1) {
 
-		s = bc_num_mul(&fracp, base, &fracp, n->scale);
+		s = bc_num_mul(&fracp1, base, &fracp2, n->scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Will never fail (except for signals) because fracp is
 		// guaranteed to be non-negative and small enough.
-		s = bc_num_ulong(&fracp, &dig);
+		s = bc_num_ulong(&fracp2, &dig);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		bc_num_ulong2num(&intp1, dig);
-		s = bc_num_sub(&fracp, int1, &fracp, 0);
+		s = bc_num_sub(&fracp2, &intp1, &fracp1, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		print(dig, len, radix);
-		s = bc_num_mul(&frac_len, base, &frac_len, 0);
+		s = bc_num_mul(n1, base, n2, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		radix = false;
+		temp = n1;
+		n1 = n2;
+		n2 = temp;
 	}
 
 sig_err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 err:
 	bc_num_free(&intp2);
-	bc_num_free(&frac_len);
-	bc_num_free(&fracp);
+	bc_num_free(&fracp2);
+	bc_num_free(&fracp1);
 	bc_num_free(&intp1);
 	bc_vec_free(&stack);
 	return s;
