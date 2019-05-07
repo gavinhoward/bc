@@ -2065,8 +2065,6 @@ BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result) {
 
 	assert(n && result);
 
-	*result = 0;
-
 	if (BC_ERR(n->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	for (r = 0, i = n->len; i > n->rdx;) {
@@ -2098,7 +2096,7 @@ void bc_num_ulong2num(BcNum *restrict n, unsigned long val) {
 
 	if (!val) return;
 
-	bc_num_expand(n, bc_num_log10(ULONG_MAX));
+	bc_num_expand(n, BC_NUM_LONG_LOG10);
 
 	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= BC_BASE_DIG)
 		ptr[i] = val % BC_BASE_DIG;
