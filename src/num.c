@@ -1875,7 +1875,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	if (BC_SIG) goto sig_err;
 	if (!n->scale) goto err;
 
-	for (radix = true; BC_NO_SIG && bc_num_int_digits(&frac_len) < n->scale + 1; radix = false) {
+	radix = true;
+
+	while (BC_NO_SIG && bc_num_int_digits(&frac_len) < n->scale + 1) {
 
 		s = bc_num_mul(&fracp, base, &fracp, n->scale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -1892,6 +1894,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 		print(dig, len, radix);
 		s = bc_num_mul(&frac_len, base, &frac_len, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		radix = false;
 	}
 
 sig_err:
