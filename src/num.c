@@ -736,6 +736,7 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 	}
 
 	c->len = clen;
+
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
@@ -967,7 +968,7 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 	bc_num_sub(&one, &temp, &temp, scale);
 
 	// Add delta twice, we could also use Newton-Raphson for the correction.
-#if 0
+#if 1
 	bc_num_add(&sum, &temp, &sum, scale);
 	bc_num_add(&sum, &temp, val, scale);
 #else
@@ -1106,13 +1107,13 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 		if (b1.num[b1.len - 1] != 1) {
 
-			// Calculate the inverse of the error
-			// to twice the number of decimals.
-			b1.scale = b1.rdx * BC_BASE_POWER;
-
 			// A correction is required, we multiply with the
 			// inverse of the error since we cannot divide...
 			b1.rdx = b1.len;
+
+			// Calculate the inverse of the error
+			// to twice the number of decimals.
+			b1.scale = b1.rdx * BC_BASE_POWER;
 			s = bc_num_invert(&b1, temp_scale);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
