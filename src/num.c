@@ -1735,8 +1735,8 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	m1 = &mult1;
 	m2 = &mult2;
 
-	for (i += 1, digs = 0; BC_NO_SIG && i < len && (c = val[i]); ++i, ++digs)
-	{
+	for (i += 1, digs = 0; BC_NO_SIG && i < len && (c = val[i]); ++i, ++digs) {
+
 		v = bc_num_parseChar(c, base);
 
 		s = bc_num_mulArray(&result1, base, &result2);
