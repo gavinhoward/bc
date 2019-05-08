@@ -124,29 +124,6 @@ static size_t bc_num_int_digits(const BcNum *n) {
 	return digits;
 }
 
-#define POW10N 9
-
-static BcBigDig pow10[POW10N] = {
-		    10,
-		    100,
-		    1000,
-		    10000,
-		    100000,
-		    1000000,
-		    10000000,
-		    100000000,
-		    1000000000,
-};
-
-static BcBigDig bc_num_pow10(BcBigDig i) {
-	if (i == 0) return 1;
-	i--;
-	if (i < POW10N) return pow10[i];
-	i -= POW10N;
-	assert(i < POW10N);
-	return pow10[POW10N - 1] * pow10[i];
-}
-
 static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
 	size_t i, len = n->len;
 	assert(len == n->rdx);
@@ -320,7 +297,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 		pow = n->scale % BC_BASE_POWER;
 		pow = pow ? BC_BASE_POWER - pow : 0;
-		pow = bc_num_pow10(pow);
+		pow = bc_num_pow10[pow];
 
 		n->len -= places_rdx;
 		memmove(n->num, n->num + places_rdx, BC_NUM_SIZE(n->len));
@@ -368,7 +345,7 @@ static void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
 
 	for (i = 0; i < rdx; i++) n->num[i] = 0;
 
-	p10 = (BcDig) bc_num_pow10(place);
+	p10 = (BcDig) bc_num_pow10[place];
 	sum = n->num[rdx] + (BC_BASE / 2) * p10;
 	sum = sum - sum % (BC_BASE * p10);
 
@@ -451,8 +428,8 @@ static BcStatus bc_num_shift(BcNum *restrict n, BcBigDig dig) {
 
 	assert(dig < BC_BASE_POWER);
 
-	pow = bc_num_pow10(dig);
-	dig = bc_num_pow10(BC_BASE_POWER - dig);
+	pow = bc_num_pow10[dig];
+	dig = bc_num_pow10[BC_BASE_POWER - dig];
 
 	for (i = len - 1; BC_NO_SIG && i < len; --i) {
 		BcBigDig in, temp;
@@ -1354,7 +1331,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 		BcBigDig exp, pow;
 
 		exp = i;
-		pow = bc_num_pow10(exp);
+		pow = bc_num_pow10[exp];
 
 		for (i = len - 1; i < len; --i, ++exp) {
 
@@ -1558,7 +1535,7 @@ static BcStatus bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		places = 1;
 
 		for (i = BC_BASE_POWER - 1; i < BC_BASE_POWER; --i) {
-			if (bc_num_pow10(i) > (BcBigDig) n->num[idx]) places += 1;
+			if (bc_num_pow10[i] > (BcBigDig) n->num[idx]) places += 1;
 			else break;
 		}
 

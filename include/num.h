@@ -222,5 +222,6 @@ void bc_num_dump(const char *varname, const BcNum *n);
 #endif // BC_DEBUG_CODE
 
 extern const char bc_num_hex_digits[];
+extern const BcBigDig bc_num_pow10[BC_BASE_POWER + 1];
 
 #endif // BC_NUM_H
