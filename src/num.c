@@ -978,110 +978,13 @@ err:
 	return s;
 }
 
-#ifdef USE_GOLDSCHMIDT
-/*
- * Find reciprocal value for paramezter in range 0.5 < val <= 1.0.
- */
-static BcStatus bc_num_invert(BcNum *val, size_t scale) {
-
-	BcNum one, x, temp, sum;
-	bool done = false;
-	BcStatus s = BC_STATUS_SUCCESS;
-	BcDig one_digs[BC_NUM_BIGDIG_LOG10];
-
-	// We need one constant value 1 to start...
-	bc_num_setup(&one, one_digs, sizeof(one_digs) / sizeof(BcDig));
-	bc_num_bigdig2num(&one, 1);
-
-	// Create temporary variable used in each iteration step.
-	bc_num_init(&temp, scale / BC_BASE_POWER + 1);
-
-	// Create variable to be squared per iteration.
-	bc_num_init(&x, scale / BC_BASE_POWER + 1);
-
-	// Create variable for the sum the series elements.
-	bc_num_init(&sum, scale / BC_BASE_POWER + 1);
-	s = bc_num_sub(&one, val, &x, scale);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-	// Initialize series sum to 1.0 + error.
-	s = bc_num_add(&one, &x, &sum, scale);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-	for (;;) {
-
-		// Calculate square of delta for next iteration.
-		s = bc_num_mul(&x, &x, &x, scale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		// Nothing left to do, if the squared delta
-		// truncated to "scale" decimals is 0.0.
-		if (BC_NUM_ZERO(&x)) break;
-
-		// Multiply current series sum with the squared delta.
-		s = bc_num_mul(&sum, &x, &temp, scale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		// Add series element to sum.
-		s = bc_num_add(&sum, &temp, &sum, scale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	}
-
-	// Apply correction for finite number of series elements
-	// considered. Could be further optimized...
-	bc_num_mul(val, &sum, &temp, scale + 1);
-
-	// The correction is derived from 1.0 - sum * (1/sum).
-	bc_num_sub(&one, &temp, &temp, scale);
-
-	// Add delta twice, we could also use Newton-Raphson for the correction.
-#if 1
-	bc_num_add(&sum, &temp, &sum, scale);
-	bc_num_add(&sum, &temp, val, scale);
-#else
-	bc_num_mul(&sum, &temp, &temp, scale * 2);
-	bc_num_add(&sum, &temp, val, scale);
-#endif
-
-err:
-	bc_num_free(&sum);
-	bc_num_free(&x);
-	bc_num_free(&temp);
-	return s;
-}
-
-/*
- * Normalize number to have rdx == len and return the number of
- * BcDigs the value has been shifted to the right (negative for left).
- */
-static ssize_t bc_num_normalize(BcNum *n) {
-
-	int i, shift = 0;
-	ssize_t len, rdx;
-
-	if (BC_NUM_ZERO(n)) return 0;
-
-	len = n->len;
-	rdx = n->rdx;
-
-	while (len > 0 && n->num[len - 1] == 0) len -= 1;
-
-	n->len = len;
-	n->rdx = len;
-	n->scale += (len - rdx) * BC_BASE_POWER;
-
-	return len - rdx;
-}
-
-static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
+static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	size_t rdx, rscale, req;
-	ssize_t cmp, shift;
-	BcNum b1, f;
-	size_t factor, dividend, divisor;
-	size_t i, mindivisor, temp_scale;
-	BcDig f_digs[BC_NUM_BIGDIG_LOG10];
+	BcDig *n, *p, q;
+	size_t len, end, i;
+	BcNum cp;
+	bool zero = true;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -1090,297 +993,72 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	}
 	if (bc_num_isOne(b)) {
 		bc_num_copy(c, a);
-		goto exit;
-	}
-	if (b->len == 1 && !b->rdx && !scale) {
-		BcBigDig rem;
-		s = bc_num_divArray(a, b->num[0], c, &rem);
-		goto exit;
-	}
-
-	// Set up f.
-	bc_num_setup(&f, f_digs, BC_NUM_BIGDIG_LOG10);
-
-	// Calculate scale that allows to represent
-	// all possible multiplication results.
-	temp_scale = BC_MAX(scale, BC_BASE_POWER * (a->len + b->len + 1));
-
-	// Create normalized copy of first argument in result variable "c".
-	bc_num_copy(c, a);
-	// The shift value now records by how many
-	// BcDigs the result will need to be shifted.
-	shift = bc_num_normalize(c);
-
-	// Create normalized copy of second argument as temporary variable b1.
-	bc_num_createCopy(&b1, b);
-	// The shift value now records by how many
-	// BcDigs the result will need to be shifted.
-	shift -= bc_num_normalize(&b1);
-
-	// Set sign of (copies of the) operands to positive.
-	c->neg = false;
-	b1.neg = false;
-
-	// Compare normalized operands to determine whether
-	// the result of dividing them will be < or > 1.
-	cmp = bc_num_cmp(&b1, c);
-
-	if (cmp == 0) {
-		// If the normalized values are identical the
-		// result will be a power of (10^BC_BASE_POWER).
-		bc_num_bigdig2num(c, 1);
-	}
-	else {
-
-		bool extra = false;
-
-		//==> b > a, result will be one exp higher
-		shift -= (cmp > 0);
-
-		dividend = 1;
-		divisor = 0;
-
-		// Calculate the maximum power of BC_BASE_DIG
-		// that will fit into a size_t.
-		for (i = 0; i < 19 / BC_BASE_POWER; ++i) dividend *= BC_BASE_DIG;
-
-		// Determine the minimum number acceptable
-		// for the initial divide operation.
-		mindivisor = bc_num_pow10((19 - BC_BASE_POWER) / 2);
-		if (BC_BASE_POWER % 2 != 0) mindivisor *= 3;
-
-		for (i = 0; i < b1.len; ++i) {
-
-			if (divisor < mindivisor) {
-
-				// Accumulate BcDigs until the minimum
-				// desired divisor has been formed
-				divisor *= BC_BASE_DIG;
-				divisor += b1.num[b1.len - 1 - i];
-			}
-			else {
-				if (b1.num[b1.len - 1 - i] != 0)
-					// There were further non-zero digits not included
-					// in the divisor. Account for them by incrementing
-					// the divisor just to be sure
-					extra = true;
-			}
-		}
-
-		divisor += extra;
-
-		// The quotient is used as the initial estimate of
-		// the (scaled) reciprocal value of the divisor.
-		factor = dividend / divisor;
-
-		// Multiply the estimate of 1/B ("factor") with
-		// the actual value of B giving a result <= 1.0.
-		bc_num_bigdig2num(&f, factor);
-		bc_num_mul(&b1, &f, &b1, temp_scale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		if (b1.num[b1.len - 1] != 1) {
-
-			// A correction is required, we multiply with the
-			// inverse of the error since we cannot divide...
-			b1.rdx = b1.len;
-
-			// Calculate the inverse of the error
-			// to twice the number of decimals.
-			b1.scale = b1.rdx * BC_BASE_POWER;
-			s = bc_num_invert(&b1, temp_scale);
-			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-			// Multiply with the correction factor (i.e.,
-			// the reciprocal value of the error factor).
-			bc_num_mul(&b1, c, c, temp_scale + BC_BASE_POWER);
-			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		}
-
-		// Multiply the corrected reciprocal value of B with A to get A/B.
-		bc_num_mul(&f, c, c, temp_scale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		// Adjust the decimal point in such a way that
-		// the result is 1 <= C <= BC_BASE_DIG - 1.
-		c->rdx = c->len - 1;
-		c->scale = c->rdx * BC_BASE_POWER;
-	}
-
-	// Adjust the decimal point to account for
-	// the normalization of the arguments A and B.
-	if (shift < 0) s = bc_num_shiftRight(c, -shift * BC_BASE_POWER);
-	else s = bc_num_shiftLeft(c, shift * BC_BASE_POWER);
-
-err:
-	bc_num_free(&b1);
-exit:
-	if (BC_SIG) s = BC_STATUS_SIGNAL;
-	// Adjust sign of the result from the preserved input parameters.
-	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
-	return s;
-}
-
-#else // USE_GOLDSCHMIDT
-
-static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-
-	BcStatus s = BC_STATUS_SUCCESS;
-	size_t rdx, rdx2, rscale, scale2, req;
-	ssize_t cmp;
-	BcNum cpa, cpb, one, two, factor, factor2, *fi, *fnext, *temp;
-	BcDig one_digs[2], two_digs[2];
-	bool aneg, bneg;
-
-	aneg = a->neg;
-	bneg = b->neg;
-
-	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
-	if (BC_NUM_ZERO(a)) {
-		bc_num_setToZero(c, scale);
+		bc_num_retireMul(c, scale, a->neg, b->neg);
 		return BC_STATUS_SUCCESS;
 	}
-	if (bc_num_isOne(b)) {
-		bc_num_copy(c, a);
-		goto exit;
+
+	bc_num_init(&cp, bc_num_mulReq(a, b, scale));
+	bc_num_copy(&cp, a);
+	len = b->len;
+
+	if (len > cp.len) {
+		bc_num_expand(&cp, bc_vm_growSize(len, 2));
+		bc_num_extend(&cp, len - cp.len);
 	}
 
-	a->neg = b->neg = false;
-	cmp = bc_num_cmp(a, b);
-
-	if (cmp == BC_NUM_SSIZE_MIN) return BC_STATUS_SIGNAL;
-	if (!cmp) {
-		bc_num_one(c);
-		goto exit;
-	}
-
-	bc_num_createCopy(&cpa, a);
-	bc_num_createCopy(&cpb, b);
-
-	// This is to calculate enough digits to make rounding only happen when
-	// necessary. It rounds the scale up to the next BcDig boundary, then adds
-	// on enough to create a whole extra BcDig which will then be tested to see
-	// if it's equal to BC_BASE_DIG - 1. If it is, then, and only then, should
-	// rounding be needed.
-	rdx2 = 8 / BC_BASE_POWER;
-	rdx2 = rdx2 ? rdx2 : 1;
-	scale2 = (BC_NUM_RDX(scale) + rdx2) * BC_BASE_POWER;
-	rdx2 = BC_NUM_RDX(scale2);
-	req = bc_num_int(a) + rdx2 + 1;
-	bc_num_init(&factor, req);
-	bc_num_init(&factor2, req);
-
-	bc_num_setup(&one, one_digs, sizeof(one_digs) / sizeof(BcDig));
-	bc_num_one(&one);
-
-	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
-	bc_num_one(&two);
-	two.num[0] = 2;
+	if (b->rdx > cp.rdx) bc_num_extend(&cp, b->rdx - cp.rdx);
+	cp.rdx -= b->rdx;
+	if (scale > cp.rdx) bc_num_extend(&cp, scale - cp.rdx);
 
 	if (b->rdx == b->len) {
-		rdx = bc_num_nonzeroLen(&cpb);
-		rscale = bc_num_zeroDigits(cpb.num + rdx - 1);
-		rscale += BC_NUM_RDX(cpb.len - rdx);
-		s = bc_num_shiftLeft(&cpa, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_shiftLeft(&cpb, rscale);
-	}
-	else {
-		rscale = bc_num_int_digits(&cpb);
-		s = bc_num_shiftRight(&cpa, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_shiftRight(&cpb, rscale);
+		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
+		assert(i != len || !zero);
+		len -= i - 1;
 	}
 
-//	bc_num_printDebug(&cpa, "cpa", false);
-//	bc_num_printDebug(&cpb, "cpb", true);
+	if (cp.cap == cp.len) bc_num_expand(&cp, bc_vm_growSize(cp.len, 1));
 
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	// We want an extra zero in front to make things simpler.
+	cp.num[cp.len++] = 0;
+	end = cp.len - len;
 
-	req = bc_num_int(&cpa);
+	bc_num_expand(c, cp.len);
 
-	if (!req) {
+	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
+	c->rdx = cp.rdx;
+	c->len = cp.len;
+	p = b->num;
 
-		size_t zlen, nonzero = bc_num_nonzeroLen(&cpa);
+	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end; --i) {
 
-		zlen = cpa.len - nonzero;
-		rscale = zlen + bc_num_zeroDigits(cpa.num + zlen);
+		ssize_t cmp;
+
+		n = cp.num + i;
+		q = 0;
+
+		cmp = bc_num_compare(n, p, len + 1);
+		if (cmp == BC_NUM_SSIZE_MIN) break;
+
+		if (!cmp) q = 1;
+		else if (cmp > 0) {
+
+			while (BC_NO_SIG && BC_NO_ERR(!s) &&
+			       (n[len] || bc_num_compare(n, p, len) >= 0))
+			{
+				s = bc_num_subArrays(n, p, len);
+				q += 1;
+			}
+		}
+
+		c->num[i] = q;
 	}
 
-	rscale = BC_MAX(rscale, cpa.scale);
-	rscale = BC_MAX(rscale, cpb.scale);
-	rscale += scale2;
-	rscale = BC_NUM_RDX(rscale);
-	req += rscale;
-	rscale *= BC_BASE_POWER;
-
-	bc_num_extend(&cpa, rscale - cpa.scale);
-	bc_num_extend(&cpb, rscale - cpb.scale);
-
-//	bc_num_printDebug(&cpa, "cpa", false);
-//	bc_num_printDebug(&cpb, "cpb", true);
-
-	fi = &factor;
-	fnext = &factor2;
-	cmp = 1;
-
-	while (!bc_num_isOne(fi) && cmp) {
-
-		s = bc_num_sub(&two, &cpb, fi, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpa, fi, &cpa, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpb, fi, &cpb, rscale);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-//		bc_num_printDebug(&cpa, "cpa", false);
-//		bc_num_printDebug(&cpb, "cpb", false);
-//		bc_num_printDebug(fi, "fi", false);
-//		bc_num_printDebug(fnext, "fnext", true);
-
-		temp = fi;
-		fi = fnext;
-		fnext = temp;
-
-		cmp = bc_num_cmp(fi, fnext);
-		if (cmp == BC_NUM_SSIZE_MIN) goto err;
-	}
-
-	// We only round here if an entire BcDig is equal to BC_BASE_DIG - 1. We
-	// have to round because without rounding, the Goldschmidt algorithm can
-	// produce numbers that are 1 digit off in the last place, because of the
-	// nature of the algorithm. That throws off things like negative powers
-	// (like 10 ^ -1, which Goldschmidt calculates as 0.099999999...). The bc
-	// spec requires truncation, but without this rounding, *more* calculations
-	// will be off. To fix this, I have the algorithm calculate the result to
-	// the scale plus 1 place plus a whole extra BcDig (at least). Then, when
-	// rounding, I only round if the extra BcDig is only 1 less than the max,
-	// and then I only add 1 to the right place (see bc_num_roundPlaces() for
-	// more info). What this means is that if there is a chain of 9's from the
-	// *actual* scale position to the rounded position, then rounding will
-	// happen, but if not, the actual scale will not be affected (i.e., it will
-	// appear truncated). By extending the calculation by 1 extra digit, then a
-	// whole extra BcDig, I create a separation between the two that only is
-	// closed when Goldschmidt has failed to calculate the exact truncated
-	// number (or at least, I hope it does).
-	bc_num_sub(fi, &one, fnext, rscale);
-	bc_num_shiftLeft(fnext, 1);
-	bc_num_add(&cpa, fnext, fi, rscale);
-	bc_num_add(fi, fnext, c, rscale);
-
-err:
-	bc_num_free(&factor2);
-	bc_num_free(&factor);
-	bc_num_free(&cpb);
-	bc_num_free(&cpa);
-exit:
-	a->neg = aneg;
-	b->neg = bneg;
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
+	bc_num_free(&cp);
+
 	return s;
 }
-#endif // USE_GOLDSCHMIDT
 
 static BcStatus bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
                          BcNum *restrict d, size_t scale, size_t ts)
