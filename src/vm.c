@@ -229,13 +229,15 @@ static void bc_vm_exit(BcError e) {
 
 size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
-	if (BC_ERR(n != 0 && res / n != size)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(res >= BC_NUM_BIGDIG_MAX || (n != 0 && res / n != size)))
+		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
 
 size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t res = a + b;
-	if (BC_ERR(res < a || res < b)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(res >= BC_NUM_BIGDIG_MAX || res < a || res < b))
+		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
 

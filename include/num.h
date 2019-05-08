@@ -64,6 +64,9 @@
 #if BC_LONG_BIT >= 64
 
 typedef int_least32_t BcDig;
+typedef uint_fast64_t BcBigDig;
+
+#define BC_NUM_BIGDIG_MAX (UINT_FAST64_MAX)
 
 #define BC_BASE_POWER (9)
 #define BC_BASE_DIG (1000000000)
@@ -74,6 +77,9 @@ typedef int_least32_t BcDig;
 // and has actually been a 32 bit value on the PDP/11, nearly 50 years ago ...
 
 typedef int_least16_t BcDig;
+typedef uint_fast32_t BcBigDig;
+
+#define BC_NUM_BIGDIG_MAX (UINT_FAST32_MAX)
 
 #define BC_BASE_POWER (4)
 #define BC_BASE_DIG (10000)
@@ -82,6 +88,9 @@ typedef int_least16_t BcDig;
 #else
 
 typedef int_least8_t BcDig;
+typedef uint_fast16_t BcBigDig;
+
+#define BC_NUM_BIGDIG_MAX (UINT_FAST16_MAX)
 
 #if BC_LONG_BIT >= 16
 
@@ -105,9 +114,9 @@ typedef struct BcNum {
 	bool neg;
 } BcNum;
 
-#define BC_NUM_MIN_BASE ((unsigned long) 2)
-#define BC_NUM_MAX_POSIX_IBASE ((unsigned long) 16)
-#define BC_NUM_MAX_IBASE ((unsigned long) 36)
+#define BC_NUM_MIN_BASE ((BcBigDig) 2)
+#define BC_NUM_MAX_POSIX_IBASE ((BcBigDig) 16)
+#define BC_NUM_MAX_IBASE ((BcBigDig) 36)
 // This is the max base allowed by bc_num_parseChar().
 #define BC_NUM_MAX_LBASE ('Z' + BC_BASE + 1)
 #define BC_NUM_PRINT_WIDTH (69)
@@ -120,7 +129,7 @@ typedef struct BcNum {
 
 // A crude, but always big enough, calculation of
 // the size required for ibase and obase BcNum's.
-#define BC_NUM_LONG_LOG10 ((CHAR_BIT * sizeof(unsigned long) + 1) / 2 + 1)
+#define BC_NUM_BIGDIG_LOG10 ((CHAR_BIT * sizeof(BcBigDig) + 1) / 2 + 1)
 
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
@@ -154,14 +163,14 @@ void bc_num_init(BcNum *restrict n, size_t req);
 void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap);
 void bc_num_copy(BcNum *d, const BcNum *s);
 void bc_num_createCopy(BcNum *d, const BcNum *s);
-void bc_num_createFromUlong(BcNum *n, unsigned long val);
+void bc_num_createFromBigdig(BcNum *n, BcBigDig val);
 void bc_num_free(void *num);
 
 size_t bc_num_scale(const BcNum *restrict n);
 size_t bc_num_len(const BcNum *restrict n);
 
-BcStatus bc_num_ulong(const BcNum *restrict n, unsigned long *result);
-void bc_num_ulong2num(BcNum *restrict n, unsigned long val);
+BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result);
+void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);
@@ -199,10 +208,10 @@ void bc_num_ten(BcNum *restrict n);
 ssize_t bc_num_cmpZero(const BcNum *n);
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      unsigned long base, bool letter);
-BcStatus bc_num_print(BcNum *restrict n, unsigned long base, bool newline);
+                      BcBigDig base, bool letter);
+BcStatus bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
 #if DC_ENABLED
-BcStatus bc_num_stream(BcNum *restrict n, unsigned long base);
+BcStatus bc_num_stream(BcNum *restrict n, BcBigDig base);
 #endif // DC_ENABLED
 
 #if BC_DEBUG_CODE
