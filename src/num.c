@@ -1226,8 +1226,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t rdx, rdx2, rscale, scale2, req;
 	ssize_t cmp;
-	BcNum cpa, cpb, two, factor, factor2, *fi, *fnext, *temp;
-	BcDig two_digs[2];
+	BcNum cpa, cpb, one, two, factor, factor2, *fi, *fnext, *temp;
+	BcDig one_digs[2], two_digs[2];
 	bool aneg, bneg;
 
 	aneg = a->neg;
@@ -1260,27 +1260,31 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	// on enough to create a whole extra BcDig which will then be tested to see
 	// if it's equal to BC_BASE_DIG - 1. If it is, then, and only then, should
 	// rounding be needed.
-	scale2 = BC_NUM_RDX(scale + 1) * BC_BASE_POWER + BC_BASE_POWER + 1;
+	rdx2 = 8 / BC_BASE_POWER;
+	rdx2 = rdx2 ? rdx2 : 1;
+	scale2 = (BC_NUM_RDX(scale) + rdx2) * BC_BASE_POWER;
 	rdx2 = BC_NUM_RDX(scale2);
 	req = bc_num_int(a) + rdx2 + 1;
-	scale2 = rdx2 * BC_BASE_POWER;
 	bc_num_init(&factor, req);
 	bc_num_init(&factor2, req);
+
+	bc_num_setup(&one, one_digs, sizeof(one_digs) / sizeof(BcDig));
+	bc_num_one(&one);
 
 	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
 	bc_num_one(&two);
 	two.num[0] = 2;
 
 	if (b->rdx == b->len) {
-		rdx = cpb.len - bc_num_nonzeroLen(&cpb);
-		rscale = rdx * BC_BASE_POWER;
+		rdx = bc_num_nonzeroLen(&cpb);
+		rscale = bc_num_zeroDigits(cpb.num + rdx - 1);
+		rscale += BC_NUM_RDX(cpb.len - rdx);
 		s = bc_num_shiftLeft(&cpa, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_shiftLeft(&cpb, rscale);
 	}
 	else {
-		rdx = b->len - b->rdx;
-		rscale = rdx * BC_BASE_POWER;
+		rscale = bc_num_int_digits(&cpb);
 		s = bc_num_shiftRight(&cpa, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_shiftRight(&cpb, rscale);
@@ -1304,11 +1308,11 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	while (!bc_num_isOne(fi) && cmp) {
 
-		s = bc_num_sub(&two, &cpb, fi, rscale);
+		s = bc_num_sub(&two, &cpb, fi, rscale + 1);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpa, fi, &cpa, rscale);
+		s = bc_num_mul(&cpa, fi, &cpa, rscale + 1);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpb, fi, &cpb, rscale);
+		s = bc_num_mul(&cpb, fi, &cpb, rscale + 1);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		temp = fi;
@@ -1336,10 +1340,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	// whole extra BcDig, I create a separation between the two that only is
 	// closed when Goldschmidt has failed to calculate the exact truncated
 	// number (or at least, I hope it does).
-	assert(cpa.rdx >= rdx2);
-	if (cpa.num[cpa.rdx - rdx2] == BC_BASE_DIG - 1)
-		bc_num_roundPlaces(&cpa, scale2 - 1);
-	bc_num_copy(c, &cpa);
+	bc_num_sub(fi, &one, fnext, rscale);
+	bc_num_shiftLeft(fnext, 1);
+	bc_num_add(&cpa, fnext, fi, rscale);
+	bc_num_add(fi, fnext, c, rscale);
 
 err:
 	bc_num_free(&factor2);
