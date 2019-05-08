@@ -1678,7 +1678,7 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
                                  BcBigDig base)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcNum temp, mult, result;
+	BcNum temp, mult1, mult2, result1, result2, *m1, *m2, *ptr;
 	char c = 0;
 	bool zero = true;
 	BcBigDig v;
@@ -1688,37 +1688,46 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	if (zero) return BC_STATUS_SUCCESS;
 
 	bc_num_init(&temp, BC_NUM_BIGDIG_LOG10);
-	bc_num_init(&mult, BC_NUM_BIGDIG_LOG10);
+	bc_num_init(&mult1, BC_NUM_BIGDIG_LOG10);
 
 	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
 
 		v = bc_num_parseChar(c, base);
 
-		s = bc_num_mulArray(n, base, &mult);
+		s = bc_num_mulArray(n, base, &mult1);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto int_err;
 		bc_num_bigdig2num(&temp, v);
-		s = bc_num_add(&mult, &temp, n, 0);
+		s = bc_num_add(&mult1, &temp, n, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto int_err;
 	}
 
 	if (i == len && !(c = val[i])) goto int_err;
 
 	assert(c == '.');
-	bc_num_init(&result, BC_NUM_DEF_SIZE);
-	bc_num_one(&mult);
+	bc_num_init(&mult2, BC_NUM_BIGDIG_LOG10);
+	bc_num_init(&result1, BC_NUM_DEF_SIZE);
+	bc_num_init(&result2, BC_NUM_DEF_SIZE);
+	bc_num_one(&mult1);
+
+	m1 = &mult1;
+	m2 = &mult2;
 
 	for (i += 1, digs = 0; BC_NO_SIG && i < len && (c = val[i]); ++i, ++digs)
 	{
 		v = bc_num_parseChar(c, base);
 
-		s = bc_num_mulArray(&result, base, &result);
+		s = bc_num_mulArray(&result1, base, &result2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		bc_num_bigdig2num(&temp, v);
-		s = bc_num_add(&result, &temp, &result, 0);
+		s = bc_num_add(&result2, &temp, &result1, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mulArray(&mult, base, &mult);
+		s = bc_num_mulArray(m1, base, m2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		ptr = m1;
+		m1 = m2;
+		m2 = ptr;
 	}
 
 	if (BC_SIG) {
@@ -1728,11 +1737,11 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 
 	// This one cannot be a divide by 0 because mult starts out at 1, then is
 	// multiplied by base, and base cannot be 0, so mult cannot be 0.
-	s = bc_num_div(&result, &mult, &result, digs * 2);
+	s = bc_num_div(&result1, m1, &result2, digs * 2);
 	assert(!s || s == BC_STATUS_SIGNAL);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-	bc_num_truncate(&result, digs);
-	s = bc_num_add(n, &result, n, digs);
+	bc_num_truncate(&result2, digs);
+	s = bc_num_add(n, &result2, n, digs);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	if (BC_NUM_NONZERO(n)) {
@@ -1741,9 +1750,11 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	else bc_num_zero(n);
 
 err:
-	bc_num_free(&result);
+	bc_num_free(&result2);
+	bc_num_free(&result1);
+	bc_num_free(&mult2);
 int_err:
-	bc_num_free(&mult);
+	bc_num_free(&mult1);
 	bc_num_free(&temp);
 	return s;
 }
