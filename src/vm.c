@@ -268,6 +268,8 @@ size_t bc_vm_printf(const char *fmt, ...) {
 
 	if (BC_ERR(ret < 0 || ferror(stdout))) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 
+	vm->nchars = 0;
+
 	return (size_t) ret;
 }
 
@@ -277,6 +279,7 @@ void bc_vm_puts(const char *str, FILE *restrict f) {
 
 void bc_vm_putchar(int c) {
 	if (BC_IO_ERR(fputc(c, stdout), stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	vm->nchars = (c == '\n' ? 0 : vm->nchars + 1);
 }
 
 void bc_vm_fflush(FILE *restrict f) {

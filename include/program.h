@@ -47,17 +47,16 @@
 
 typedef struct BcProgram {
 
-	size_t scale;
+	unsigned long scale;
 	BcVec scale_v;
 
-	BcNum ib;
 	BcVec ib_v;
-	size_t ib_t;
-	BcNum ob;
+	unsigned long ib;
 	BcVec ob_v;
-	size_t ob_t;
+	unsigned long ob;
 
 #if DC_ENABLED
+	unsigned long strm;
 	BcNum strmb;
 #endif // DC_ENABLED
 
@@ -80,8 +79,6 @@ typedef struct BcProgram {
 	BcNum last;
 #endif // BC_ENABLED
 
-	BcDig ib_num[BC_NUM_LONG_LOG10];
-	BcDig ob_num[BC_NUM_LONG_LOG10];
 #if DC_ENABLED
 	// This uses BC_NUM_LONG_LOG10 because it is used in bc_num_ulong2num(),
 	// which attempts to realloc, unless it is big enough. This is big enough.
@@ -96,7 +93,7 @@ typedef struct BcProgram {
 #define BC_PROG_STACK(s, n) ((s)->len >= ((size_t) (n)))
 
 #define BC_PROG_GLOBAL_PTR(v) (bc_vec_top(v))
-#define BC_PROG_GLOBAL(v) (*((size_t*) BC_PROG_GLOBAL_PTR(v)))
+#define BC_PROG_GLOBAL(v) (*((unsigned long*) BC_PROG_GLOBAL_PTR(v)))
 
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)

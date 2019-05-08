@@ -279,7 +279,7 @@ gen_file_lists() {
 bc_only=0
 dc_only=0
 coverage=0
-karatsuba_len=64
+karatsuba_len=32
 debug=0
 signals=1
 hist=1
@@ -414,8 +414,8 @@ case $karatsuba_len in
 	(*) ;;
 esac
 
-if [ "$karatsuba_len" -lt 16 ]; then
-	usage "KARATSUBA_LEN is less than 16"
+if [ "$karatsuba_len" -lt 2 ]; then
+	usage "KARATSUBA_LEN is less than 2"
 fi
 
 set -e

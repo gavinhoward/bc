@@ -50,7 +50,7 @@ if __name__ != "__main__":
 
 mx = 520
 mx2 = mx // 2
-mn = 16
+mn = 2
 
 num = "9" * mx
 
