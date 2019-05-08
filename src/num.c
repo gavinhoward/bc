@@ -1292,17 +1292,33 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		s = bc_num_shiftRight(&cpb, rscale);
 	}
 
+//	bc_num_printDebug(&cpa, "cpa", false);
+//	bc_num_printDebug(&cpb, "cpb", true);
+
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	req = bc_num_int(&cpa);
-	if (!req) req = cpa.len - bc_num_nonzeroLen(&cpa);
-	req = BC_BASE_POWER * (req + 1);
-	req += b->scale % BC_BASE_POWER == 0 ? BC_BASE_POWER : 0;
-	req += scale2;
 
-	rscale += req;
-	bc_num_extend(&cpa, req);
-	bc_num_extend(&cpb, req);
+	if (!req) {
+
+		size_t zlen, nonzero = bc_num_nonzeroLen(&cpa);
+
+		zlen = cpa.len - nonzero;
+		rscale = zlen + bc_num_zeroDigits(cpa.num + zlen);
+	}
+
+	rscale = BC_MAX(rscale, cpa.scale);
+	rscale = BC_MAX(rscale, cpb.scale);
+	rscale += scale2;
+	rscale = BC_NUM_RDX(rscale);
+	req += rscale;
+	rscale *= BC_BASE_POWER;
+
+	bc_num_extend(&cpa, rscale - cpa.scale);
+	bc_num_extend(&cpb, rscale - cpb.scale);
+
+//	bc_num_printDebug(&cpa, "cpa", false);
+//	bc_num_printDebug(&cpb, "cpb", true);
 
 	fi = &factor;
 	fnext = &factor2;
@@ -1310,12 +1326,17 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 	while (!bc_num_isOne(fi) && cmp) {
 
-		s = bc_num_sub(&two, &cpb, fi, rscale + 1);
+		s = bc_num_sub(&two, &cpb, fi, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpa, fi, &cpa, rscale + 1);
+		s = bc_num_mul(&cpa, fi, &cpa, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&cpb, fi, &cpb, rscale + 1);
+		s = bc_num_mul(&cpb, fi, &cpb, rscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+//		bc_num_printDebug(&cpa, "cpa", false);
+//		bc_num_printDebug(&cpb, "cpb", false);
+//		bc_num_printDebug(fi, "fi", false);
+//		bc_num_printDebug(fnext, "fnext", true);
 
 		temp = fi;
 		fi = fnext;
