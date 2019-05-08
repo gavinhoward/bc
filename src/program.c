@@ -880,10 +880,9 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 			ptr_t = ib ? &p->ib : &p->ob;
 		}
 
-		ptr = bc_vec_top(v);
-
 		if (BC_ERR(val > max || val < min)) return bc_vm_verr(e, min, max);
 
+		ptr = bc_vec_top(v);
 		*ptr = val;
 		*ptr_t = val;
 	}
