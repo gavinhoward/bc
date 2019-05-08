@@ -114,15 +114,13 @@ static size_t bc_num_log10(size_t i) {
 	return len - 1;
 }
 
+static size_t bc_num_zeroDigits(const BcDig *n) {
+	return BC_BASE_POWER - bc_num_log10((size_t) *n);
+}
+
 static size_t bc_num_int_digits(const BcNum *n) {
-
-	size_t digits;
-
-	digits = bc_num_int(n) * BC_BASE_POWER;
-
-	if (digits > 0)
-		digits -= BC_BASE_POWER - bc_num_log10((size_t) n->num[n->len - 1]);
-
+	size_t digits = bc_num_int(n) * BC_BASE_POWER;
+	if (digits > 0) digits -= bc_num_zeroDigits(n->num +n->len - 1);
 	return digits;
 }
 
