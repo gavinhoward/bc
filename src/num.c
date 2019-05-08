@@ -1016,7 +1016,7 @@ static BcStatus bc_num_invert(BcNum *val, size_t scale) {
 
 		// Nothing left to do, if the squared delta
 		// truncated to "scale" decimals is 0.0.
-		if BC_NUM_ZERO(&x) break;
+		if (BC_NUM_ZERO(&x)) break;
 
 		// Multiply current series sum with the squared delta.
 		s = bc_num_mul(&sum, &x, &temp, scale);
