@@ -1080,7 +1080,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	ssize_t cmp, shift;
 	BcNum b1, f;
 	size_t factor, dividend, divisor;
-	size_t i, j, mindivisor, temp_scale;
+	size_t i, mindivisor, temp_scale;
 	BcDig f_digs[BC_NUM_BIGDIG_LOG10];
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
@@ -1132,6 +1132,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	}
 	else {
 
+		bool extra = false;
+
 		//==> b > a, result will be one exp higher
 		shift -= (cmp > 0);
 
@@ -1147,7 +1149,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		mindivisor = bc_num_pow10((19 - BC_BASE_POWER) / 2);
 		if (BC_BASE_POWER % 2 != 0) mindivisor *= 3;
 
-		for (i = 0, j = 0; i < b1.len; ++i) {
+		for (i = 0; i < b1.len; ++i) {
 
 			if (divisor < mindivisor) {
 
@@ -1161,11 +1163,11 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 					// There were further non-zero digits not included
 					// in the divisor. Account for them by incrementing
 					// the divisor just to be sure
-					j = 1;
+					extra = true;
 			}
 		}
 
-		divisor += j;
+		divisor += extra;
 
 		// The quotient is used as the initial estimate of
 		// the (scaled) reciprocal value of the divisor.
