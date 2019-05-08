@@ -921,7 +921,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	cpa.neg = cpb.neg = false;
 
-	if ((a->len == 1 && !a->rdx) || (b->len == 1 && !b->rdx)) {
+	if ((a->len == 1 || b->len == 1) && !a->rdx && !b->rdx) {
 
 		BcNum *operand;
 		BcBigDig dig;
