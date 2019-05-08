@@ -2466,7 +2466,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	if (b->len == 1 && !scale) {
 		BcBigDig rem;
-		s = bc_num_divArray(ptr_a, b->num[0], c, &rem);
+		s = bc_num_divArray(ptr_a, (BcBigDig) b->num[0], c, &rem);
 		assert(rem < BC_BASE_DIG);
 		d->num[0] = (BcDig) rem;
 		d->len = 1;
