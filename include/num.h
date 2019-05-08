@@ -216,7 +216,8 @@ BcStatus bc_num_stream(BcNum *restrict n, BcBigDig base);
 
 #if BC_DEBUG_CODE
 void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline);
-void bc_num_printDigs(const BcNum *n, const char *name, bool emptyline);
+void bc_num_printDigs(const BcDig* n, size_t len, bool emptyline);
+void bc_num_printWithDigs(const BcNum *n, const char *name, bool emptyline);
 void bc_num_dump(const char *varname, const BcNum *n);
 #endif // BC_DEBUG_CODE
 
