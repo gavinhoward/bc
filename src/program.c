@@ -124,8 +124,8 @@ static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 
 static void bc_program_prepGlobals(BcProgram *p) {
 	bc_vec_push(&p->scale_v, &p->scale);
-	bc_vec_push(&p->ib_v, &p->ib_t);
-	bc_vec_push(&p->ob_v, &p->ob_t);
+	bc_vec_push(&p->ib_v, &p->ib);
+	bc_vec_push(&p->ob_v, &p->ob);
 }
 
 #if BC_ENABLED
@@ -188,7 +188,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 			bc_num_init(n, len);
 
-			s = bc_num_parse(n, str, &p->ib, p->ib_t, len == 1);
+			s = bc_num_parse(n, str, p->ib, len == 1);
 			assert(!s || s == BC_STATUS_SIGNAL);
 
 #if BC_ENABLE_SIGNALS
@@ -550,7 +550,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
-		s = bc_num_print(n, &p->ob, BC_PROG_GLOBAL(&p->ob_v), !pop);
+		s = bc_num_print(n, BC_PROG_GLOBAL(&p->ob_v), !pop);
 #if BC_ENABLED
 		if (BC_NO_ERR(!s)) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
@@ -858,8 +858,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	if (ib || ob || sc) {
 
 		BcVec *v;
-		size_t *ptr, *ptr_t;
-		unsigned long val, max, min;
+		unsigned long *ptr, *ptr_t, val, max, min;
 		BcError e;
 
 		s = bc_num_ulong(l, &val);
@@ -878,16 +877,15 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 				min = 0;
 			max = ib ? vm->max_ibase : BC_MAX_OBASE;
 			v = ib ? &p->ib_v : &p->ob_v;
-			ptr_t = ib ? &p->ib_t : &p->ob_t;
+			ptr_t = ib ? &p->ib : &p->ob;
 		}
 
 		ptr = bc_vec_top(v);
 
 		if (BC_ERR(val > max || val < min)) return bc_vm_verr(e, min, max);
-		if (!sc) bc_num_ulong2num(ib ? &p->ib : &p->ob, val);
 
-		*ptr = (size_t) val;
-		*ptr_t = (size_t) val;
+		*ptr = val;
+		*ptr_t = val;
 	}
 
 	bc_num_createCopy(&res.d.n, l);
@@ -1120,12 +1118,10 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 		p->scale = BC_PROG_GLOBAL(&p->scale_v);
 
 		bc_vec_pop(&p->ib_v);
-		p->ib_t = BC_PROG_GLOBAL(&p->ib_v);
-		bc_num_ulong2num(&p->ib, (unsigned long) p->ib_t);
+		p->ib = BC_PROG_GLOBAL(&p->ib_v);
 
 		bc_vec_pop(&p->ob_v);
-		p->ob_t = BC_PROG_GLOBAL(&p->ob_v);
-		bc_num_ulong2num(&p->ob, (unsigned long) p->ob_t);
+		p->ob = BC_PROG_GLOBAL(&p->ob_v);
 	}
 
 	bc_vec_push(&p->results, &res);
@@ -1345,7 +1341,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
 
-	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, &p->strmb);
+	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, p->strm);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 		bc_program_printChars(bc_program_str(p, idx, true));
@@ -1482,7 +1478,8 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 
 	if (inst == BC_INST_SCALE)
 		bc_num_createFromUlong(&res.d.n, (unsigned long) p->scale);
-	else bc_num_createCopy(&res.d.n, inst == BC_INST_IBASE ? &p->ib : &p->ob);
+	else
+		bc_num_createFromUlong(&res.d.n, inst == BC_INST_IBASE ? p->ib : p->ob);
 
 	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
 	bc_vec_push(&p->results, &res);
@@ -1522,21 +1519,18 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->scale_v, sizeof(size_t), NULL);
 	bc_vec_push(&p->scale_v, &p->scale);
 
-	bc_num_setup(&p->ib, p->ib_num, BC_NUM_LONG_LOG10);
-	bc_num_ten(&p->ib);
-	p->ib_t = BC_BASE;
-	bc_vec_init(&p->ib_v, sizeof(size_t), NULL);
-	bc_vec_push(&p->ib_v, &p->ib_t);
+	p->ib = BC_BASE;
+	bc_vec_init(&p->ib_v, sizeof(unsigned long), NULL);
+	bc_vec_push(&p->ib_v, &p->ib);
 
-	bc_num_setup(&p->ob, p->ob_num, BC_NUM_LONG_LOG10);
-	bc_num_ten(&p->ob);
-	p->ob_t = BC_BASE;
-	bc_vec_init(&p->ob_v, sizeof(size_t), NULL);
-	bc_vec_push(&p->ob_v, &p->ob_t);
+	p->ob = BC_BASE;
+	bc_vec_init(&p->ob_v, sizeof(unsigned long), NULL);
+	bc_vec_push(&p->ob_v, &p->ob);
 
 #if DC_ENABLED
+	p->strm = UCHAR_MAX + 1;
 	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_LONG_LOG10);
-	bc_num_ulong2num(&p->strmb, UCHAR_MAX + 1);
+	bc_num_ulong2num(&p->strmb, p->strm);
 #endif // DC_ENABLED
 
 #if BC_ENABLED

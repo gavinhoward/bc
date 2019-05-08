@@ -102,6 +102,12 @@ void bc_num_ten(BcNum *restrict n) {
 #endif // BC_BASE_DIG == 10
 }
 
+static void bc_num_clean(BcNum *restrict n) {
+	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) --n->len;
+	if (BC_NUM_ZERO(n)) n->neg = false;
+	else if (n->len < n->rdx) n->len = n->rdx;
+}
+
 static size_t bc_num_log10(size_t i) {
 	size_t len;
 	for (len = 1; i; i /= BC_BASE, ++len);
@@ -195,6 +201,52 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
+static BcStatus bc_num_mulArray(const BcNum *restrict a, unsigned long b,
+                                BcNum *restrict c)
+{
+	size_t i;
+	unsigned long carry = 0;
+
+	assert(c->cap >= a->len + 1);
+
+	memset(c->num, 0, BC_NUM_SIZE(c->cap));
+
+	for (i = 0; BC_NO_SIG && i < a->len; ++i) {
+		unsigned long in = ((unsigned long) a->num[i]) * b + carry;
+		c->num[i] = in % BC_BASE_DIG;
+		carry = in / BC_BASE_DIG;
+	}
+
+	if (BC_NO_SIG) {
+		c->num[i] = carry;
+		c->len = a->len;
+		c->len += (carry != 0);
+	}
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_divArray(const BcNum *restrict a, unsigned long b,
+                                BcNum *restrict c, unsigned long *rem)
+{
+	size_t i;
+	unsigned long carry = 0;
+
+	assert(c->cap >= a->len);
+
+	for (i = a->len - 1; BC_NO_SIG && i < a->len; --i) {
+		unsigned long in = ((unsigned long) a->num[i]) + carry * BC_BASE_DIG;
+		c->num[i] = in / b;
+		carry = in % b;
+	}
+
+	c->len = a->len;
+	bc_num_clean(c);
+	*rem = carry;
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+}
+
 static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
                               size_t len)
 {
@@ -251,12 +303,6 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 
 	return BC_SIG ? BC_NUM_SSIZE_MIN : 0;
-}
-
-static void bc_num_clean(BcNum *restrict n) {
-	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) --n->len;
-	if (BC_NUM_ZERO(n)) n->neg = false;
-	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
 void bc_num_truncate(BcNum *restrict n, size_t places) {
@@ -878,6 +924,30 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_createCopy(&cpb, b);
 
 	cpa.neg = cpb.neg = false;
+
+	if ((a->len == 1 && !a->rdx) || (b->len == 1 && !b->rdx)) {
+
+		BcNum *operand;
+		unsigned long dig;
+
+		if (a->len == 1) {
+			dig = a->num[0];
+			operand = b;
+		}
+		else {
+			dig = b->num[0];
+			operand = a;
+		}
+
+		s = bc_num_mulArray(operand, dig, c);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		c->scale = operand->scale;
+		c->rdx = operand->rdx;
+		c->neg = (a->neg != b->neg);
+		goto err;
+	}
+
 	ardx = cpa.rdx * BC_BASE_POWER;
 	s = bc_num_shiftLeft(&cpa, ardx);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -901,6 +971,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	s = bc_num_shiftRight(c, ardx + brdx);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
 	bc_num_retireMul(c, scale, a->neg, b->neg);
 
 err:
@@ -1023,6 +1094,11 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	}
 	if (bc_num_isOne(b)) {
 		bc_num_copy(c, a);
+		goto exit;
+	}
+	if (b->len == 1 && !b->rdx && !scale) {
+		unsigned long rem;
+		s = bc_num_divArray(a, b->num[0], c, &rem);
 		goto exit;
 	}
 
@@ -1599,7 +1675,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 }
 
 static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
-                                 BcNum *restrict base, size_t base_t)
+                                 unsigned long base)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum temp, mult, result;
@@ -1616,9 +1692,9 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 
 	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
 
-		v = bc_num_parseChar(c, base_t);
+		v = bc_num_parseChar(c, base);
 
-		s = bc_num_mul(n, base, &mult, 0);
+		s = bc_num_mulArray(n, base, &mult);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto int_err;
 		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&mult, &temp, n, 0);
@@ -1628,20 +1704,20 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	if (i == len && !(c = val[i])) goto int_err;
 
 	assert(c == '.');
-	bc_num_init(&result, base->len);
+	bc_num_init(&result, BC_NUM_DEF_SIZE);
 	bc_num_one(&mult);
 
 	for (i += 1, digs = 0; BC_NO_SIG && i < len && (c = val[i]); ++i, ++digs)
 	{
-		v = bc_num_parseChar(c, base_t);
+		v = bc_num_parseChar(c, base);
 
-		s = bc_num_mul(&result, base, &result, 0);
+		s = bc_num_mulArray(&result, base, &result);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		bc_num_ulong2num(&temp, v);
 		s = bc_num_add(&result, &temp, &result, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		s = bc_num_mul(&mult, base, &mult, 0);
+		s = bc_num_mulArray(&mult, base, &mult);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
@@ -1810,7 +1886,7 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
+static BcStatus bc_num_printNum(BcNum *restrict n, unsigned long base,
                                 size_t len, BcNumDigitOp print)
 {
 	BcStatus s;
@@ -1823,7 +1899,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	BcDig flen1_digs[BC_NUM_LONG_LOG10];
 	BcDig flen2_digs[BC_NUM_LONG_LOG10];
 
-	assert(BC_NUM_NONZERO(base) && !bc_num_isOne(base));
+	assert(base > 1);
 
 	if (BC_NUM_ZERO(n)) {
 		print(0, len, false);
@@ -1851,12 +1927,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 	while (BC_NO_SIG && BC_NUM_NONZERO(n1)) {
 
 		// Dividing by base cannot be divide by 0 because base cannot be 0.
-		s = bc_num_divmod(n1, base, n2, &digit, 0);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		// Will never fail (except for signals) because digit is
-		// guaranteed to be non-negative and small enough.
-		s = bc_num_ulong(&digit, &dig);
+		s = bc_num_divArray(n1, base, n2, &dig);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		bc_vec_push(&stack, &dig);
@@ -1883,8 +1954,11 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 
 	while (BC_NO_SIG && bc_num_int_digits(n1) < n->scale + 1) {
 
-		s = bc_num_mul(&fracp1, base, &fracp2, n->scale);
+		bc_num_expand(&fracp2, fracp1.len + 1);
+		s = bc_num_mulArray(&fracp1, base, &fracp2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		fracp2.scale = n->scale;
+		fracp2.rdx = BC_NUM_RDX(fracp2.scale);
 
 		// Will never fail (except for signals) because fracp is
 		// guaranteed to be non-negative and small enough.
@@ -1896,7 +1970,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcNum *restrict base,
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		print(dig, len, radix);
-		s = bc_num_mul(n1, base, n2, 0);
+		s = bc_num_mulArray(n1, base, n2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		radix = false;
@@ -1916,9 +1990,8 @@ err:
 	return s;
 }
 
-static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
-                                 size_t base_t)
-{
+static BcStatus bc_num_printBase(BcNum *restrict n, unsigned long base) {
+
 	BcStatus s;
 	size_t width;
 	BcNumDigitOp print;
@@ -1928,12 +2001,12 @@ static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 
 	n->neg = false;
 
-	if (base_t <= BC_NUM_MAX_POSIX_IBASE) {
+	if (base <= BC_NUM_MAX_POSIX_IBASE) {
 		width = 1;
 		print = bc_num_printHex;
 	}
 	else {
-		width = bc_num_log10(base_t - 1);
+		width = bc_num_log10(base - 1);
 		print = bc_num_printDigits;
 	}
 
@@ -1944,7 +2017,7 @@ static BcStatus bc_num_printBase(BcNum *restrict n, BcNum *restrict base,
 }
 
 #if DC_ENABLED
-BcStatus bc_num_stream(BcNum *restrict n, BcNum *restrict base) {
+BcStatus bc_num_stream(BcNum *restrict n, unsigned long base) {
 	return bc_num_printNum(n, base, 1, bc_num_printChar);
 }
 #endif // DC_ENABLED
@@ -2017,39 +2090,38 @@ size_t bc_num_len(const BcNum *restrict n) {
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      BcNum *restrict base, size_t base_t, bool letter)
+                      unsigned long base, bool letter)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && val && base);
 	assert(BC_ENABLE_EXTRA_MATH ||
-	       (base_t >= BC_NUM_MIN_BASE && base_t <= vm->max_ibase));
+	       (base >= BC_NUM_MIN_BASE && base <= vm->max_ibase));
 	assert(bc_num_strValid(val));
 
 	if (letter) bc_num_ulong2num(n, bc_num_parseChar(val[0], BC_NUM_MAX_LBASE));
-	else if (base_t == BC_BASE) bc_num_parseDecimal(n, val);
-	else s = bc_num_parseBase(n, val, base, base_t);
+	else if (base == BC_BASE) bc_num_parseDecimal(n, val);
+	else s = bc_num_parseBase(n, val, base);
 
 	return s;
 }
 
-BcStatus bc_num_print(BcNum *restrict n, BcNum *restrict base,
-                      size_t base_t, bool newline)
-{
+BcStatus bc_num_print(BcNum *restrict n, unsigned long base, bool newline) {
+
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	assert(n && base);
-	assert(BC_ENABLE_EXTRA_MATH || base_t >= BC_NUM_MIN_BASE);
+	assert(n);
+	assert(BC_ENABLE_EXTRA_MATH || base >= BC_NUM_MIN_BASE);
 
 	bc_num_printNewline();
 
 	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
-	else if (base_t == BC_BASE) bc_num_printDecimal(n);
+	else if (base == BC_BASE) bc_num_printDecimal(n);
 #if BC_ENABLE_EXTRA_MATH
-	else if (base_t == 0 || base_t == 1)
-		s = bc_num_printExponent(n, base_t != 0);
+	else if (base == 0 || base == 1)
+		s = bc_num_printExponent(n, base != 0);
 #endif // BC_ENABLE_EXTRA_MATH
-	else s = bc_num_printBase(n, base, base_t);
+	else s = bc_num_printBase(n, base);
 
 	if (BC_NO_ERR(!s) && newline) bc_num_putchar('\n');
 
@@ -2378,7 +2450,16 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 		bc_num_expand(c, len);
 	}
 
-	s = bc_num_r(ptr_a, b, c, d, scale, ts);
+	if (b->len == 1 && !scale) {
+		unsigned long rem;
+		s = bc_num_divArray(ptr_a, b->num[0], c, &rem);
+		assert(rem < BC_BASE_DIG);
+		d->num[0] = (BcDig) rem;
+		d->len = 1;
+	}
+	else {
+		s = bc_num_r(ptr_a, b, c, d, scale, ts);
+	}
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len);
