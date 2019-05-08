@@ -89,15 +89,9 @@ typedef int_least8_t BcDig;
 #define BC_BASE_DIG (100)
 #define BC_NUM_DEF_SIZE (8)
 
-#elif BC_LONG_BIT >= 8
-
-#define BC_BASE_POWER (1)
-#define BC_BASE_DIG (10)
-#define BC_NUM_DEF_SIZE (16)
-
 #else
 
-#error BC_LONG_BIT must be at least 8
+#error BC_LONG_BIT must be at least 16
 
 #endif // BC_LONG_BIT >= 16
 #endif // BC_LONG_BIT >= 64
