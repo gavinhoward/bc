@@ -955,13 +955,28 @@ err:
 	return s;
 }
 
+static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
+
+	ssize_t cmp;
+
+	if (b->len > len && a[len]) cmp = bc_num_compare(a, b->num, len + 1);
+	else if (b->len <= len) {
+		if (a[len]) cmp = 1;
+		else cmp = bc_num_compare(a, b->num, len);
+	}
+	else cmp = -1;
+
+	return cmp;
+}
+
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcDig *n, *p, q;
-	size_t len, end, i;
-	BcNum cp;
-	bool zero = true;
+	BcDig *n, q;
+	BcBigDig divisor;
+	size_t len, end, i, ascale, alen, bscale, blen;
+	BcNum cpa, cpb, diff, sub;
+	bool zero = true, aneg, bneg;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -974,18 +989,23 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	bc_num_init(&cp, bc_num_mulReq(a, b, scale));
-	bc_num_copy(&cp, a);
+	len = bc_num_mulReq(a, b, scale);
+	bc_num_init(&cpa, len);
+	bc_num_copy(&cpa, a);
+	bc_num_init(&cpb, len + 1);
+	bc_num_init(&diff, len + 1);
+	bc_num_init(&sub, len + 1);
 	len = b->len;
 
-	if (len > cp.len) {
-		bc_num_expand(&cp, bc_vm_growSize(len, 2));
-		bc_num_extend(&cp, len - cp.len);
+	if (len > cpa.len) {
+		bc_num_expand(&cpa, bc_vm_growSize(len, 2));
+		bc_num_extend(&cpa, (len - cpa.len) * BC_BASE_POWER);
 	}
 
-	if (b->rdx > cp.rdx) bc_num_extend(&cp, b->rdx - cp.rdx);
-	cp.rdx -= b->rdx;
-	if (scale > cp.rdx) bc_num_extend(&cp, scale - cp.rdx);
+	if (b->scale > cpa.scale) bc_num_extend(&cpa, b->scale - cpa.scale);
+	cpa.scale -= b->scale;
+	cpa.rdx = BC_NUM_RDX(cpa.scale);
+	if (scale > cpa.scale) bc_num_extend(&cpa, scale - cpa.scale);
 
 	if (b->rdx == b->len) {
 		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
@@ -993,47 +1013,140 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		len -= i - 1;
 	}
 
-	if (cp.cap == cp.len) bc_num_expand(&cp, bc_vm_growSize(cp.len, 1));
+	if (cpa.cap == cpa.len) bc_num_expand(&cpa, bc_vm_growSize(cpa.len, 1));
 
 	// We want an extra zero in front to make things simpler.
-	cp.num[cp.len++] = 0;
-	end = cp.len - len;
+	cpa.num[cpa.len++] = 0;
+	end = cpa.len - len;
 
-	bc_num_expand(c, cp.len);
+	bc_num_expand(c, cpa.len);
 
 	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
-	c->rdx = cp.rdx;
-	c->len = cp.len;
-	p = b->num;
+	c->rdx = cpa.rdx;
+	c->len = cpa.len;
+
+	alen = a->len;
+	blen = b->len;
+	if (a->rdx == a->len) a->len = bc_num_nonzeroLen(a);
+	if (b->rdx == b->len) b->len = bc_num_nonzeroLen(b);
+	ascale = a->scale;
+	bscale = b->scale;
+	aneg = a->neg;
+	bneg = b->neg;
+	a->scale = a->rdx = b->scale = b->rdx = 0;
+	a->neg = b->neg = false;
+
+	divisor = (BcBigDig) b->num[len - 1];
 
 	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end; --i) {
 
 		ssize_t cmp;
 
-		n = cp.num + i;
+		n = cpa.num + i;
 		q = 0;
 
-		cmp = bc_num_compare(n, p, len + 1);
+		bc_num_printDigs(n, len + 1, false);
+		bc_num_printDigs(b->num, b->len, true);
+
+		cmp = bc_num_divCmp(n, b, len);
 		if (cmp == BC_NUM_SSIZE_MIN) break;
 
 		if (!cmp) q = 1;
 		else if (cmp > 0) {
 
-			while (BC_NO_SIG && BC_NO_ERR(!s) &&
-			       (n[len] || bc_num_compare(n, p, len) >= 0))
-			{
-				s = bc_num_subArrays(n, p, len);
-				q += 1;
+			BcBigDig n1, pow, factor, dividend;
+
+			n1 = (BcBigDig) n[len];
+			dividend = n1 * BC_BASE_DIG + (BcBigDig) n[len - 1];
+			q = dividend / divisor + 1;
+			dividend = ((BcBigDig) bc_num_log10((size_t) q));
+
+			pow = bc_num_pow10[dividend - 1];
+			bc_num_copy(&sub, b);
+
+			s = bc_num_mulArray(b, q, &cpb);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+			s = bc_num_shiftLeft(&sub, (size_t) dividend - 1);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+			bc_num_printDebug(&cpb, "cpb", false);
+
+			while (BC_NO_SIG && BC_NO_ERR(!s) && pow > 0) {
+
+				bc_num_copy(&diff, &cpb);
+
+				bc_num_printDebug(&sub, "sub", false);
+				bc_num_printDebug(&diff, "diff1", true);
+
+				s = bc_num_subArrays(diff.num, sub.num, sub.len);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+				bc_num_clean(&diff);
+
+				bc_num_printDebug(&diff, "diff2", true);
+
+				cmp = bc_num_divCmp(n, &diff, len);
+				if (cmp == BC_NUM_SSIZE_MIN) goto err;
+
+				while (BC_NO_SIG && BC_NO_ERR(!s) && cmp < 0) {
+
+					q -= pow;
+
+					s = bc_num_subArrays(cpb.num, sub.num, sub.len);
+					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+					s = bc_num_subArrays(diff.num, sub.num, sub.len);
+					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+					bc_num_clean(&diff);
+
+					bc_num_printDebug(&diff, "diff2", true);
+
+					cmp = bc_num_divCmp(n, &diff, len);
+					if (cmp == BC_NUM_SSIZE_MIN) goto err;
+				}
+
+				pow /= BC_BASE;
+				s = bc_num_shiftRight(&sub, 1);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+				bc_num_truncate(&sub, sub.scale);
 			}
+
+			q -= 1;
+		}
+
+		assert(q <= BC_BASE_DIG);
+
+		if (q) {
+
+			s = bc_num_mulArray(b, q, &cpb);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+			s = bc_num_subArrays(n, cpb.num, len);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
 
 		c->num[i] = q;
 	}
 
+err:
+	a->scale = ascale;
+	a->rdx = BC_NUM_RDX(a->scale);
+	a->len = alen;
+	a->neg = aneg;
+	b->scale = bscale;
+	b->rdx = BC_NUM_RDX(b->scale);
+	b->len = blen;
+	b->neg = bneg;
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
+	c->rdx = a->rdx + b->rdx;
+	c->scale = c->rdx * BC_BASE_POWER;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
-	bc_num_free(&cp);
-
+	bc_num_free(&diff);
+	bc_num_free(&cpb);
+	bc_num_free(&cpa);
 	return s;
 }
 
