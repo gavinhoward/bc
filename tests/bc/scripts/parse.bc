@@ -4,7 +4,8 @@ for (b = 2; b <= 16; ++b) {
 	if (b == 10) continue
 	obase = 10
 	print "ibase = A; ibase = ", b, "\n"
-	print "print \qibase = \q, ", b, ", \q\\n\q\n"
+	print "\qibase = \q\n"
+	b
 	obase = b
 	for (i = 0; i <= 4096; ++i) {
 		i
