@@ -214,7 +214,8 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	}
 
 	if (BC_NO_SIG) {
-		c->num[i] = carry;
+		assert(carry < BC_BASE_DIG);
+		c->num[i] = (BcDig) carry;
 		c->len = a->len;
 		c->len += (carry != 0);
 	}
@@ -232,7 +233,7 @@ static BcStatus bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 
 	for (i = a->len - 1; BC_NO_SIG && i < a->len; --i) {
 		BcBigDig in = ((BcBigDig) a->num[i]) + carry * BC_BASE_DIG;
-		c->num[i] = in / b;
+		c->num[i] = (BcDig) (in / b);
 		carry = in % b;
 	}
 
