@@ -1284,14 +1284,18 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		// because strmb is equal to UCHAR_MAX + 1.
 		s = bc_num_mod(&num, &p->strmb, &num, 0);
 		assert(!s || s == BC_STATUS_SIGNAL);
+#if BC_ENABLE_SIGNALS
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto num_err;
+#endif // BC_ENABLE_SIGNALS
 
 		// This is also guaranteed to not error because num is in the range
 		// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
 		// it is not negative.
 		s = bc_num_bigdig(&num, &val);
 		assert(!s || s == BC_STATUS_SIGNAL);
+#if BC_ENABLE_SIGNALS
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto num_err;
+#endif // BC_ENABLE_SIGNALS
 
 		c = (char) val;
 
