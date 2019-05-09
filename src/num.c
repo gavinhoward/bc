@@ -46,8 +46,6 @@
 #include <vm.h>
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
-static BcStatus bc_num_bz(BcNum *restrict a, BcNum *restrict b,
-                          BcNum *restrict c, BcNum *restrict r);
 
 static ssize_t bc_num_neg(size_t n, bool neg) {
 	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
@@ -354,15 +352,6 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 	else bc_num_copy(a, n);
 
 	bc_num_clean(a);
-}
-
-static void bc_num_combine(BcNum *restrict n, size_t len,
-                           BcNum *restrict a, BcDig *restrict b)
-{
-	n->len = len + a->len;
-	if (n->cap < n->len) bc_num_expand(n, n->len);
-	memcpy(n->num + len, a->num, BC_NUM_SIZE(a->len));
-	memcpy(n->num, b, BC_NUM_SIZE(len));
 }
 
 static size_t bc_num_shiftZero(BcNum *restrict n) {
