@@ -222,7 +222,7 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 	size_t i;
 	long c = 0;
 	for (i = len - 1; BC_NO_SIG && i < len && !(c = a[i] - b[i]); --i);
-	return BC_SIG ? BC_NUM_SSIZE_MIN : bc_num_neg(i + 1, c < 0);
+	return BC_SIG ? BC_NUM_CMP_SIGNAL : bc_num_neg(i + 1, c < 0);
 }
 
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
@@ -264,14 +264,14 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
-	if (cmp == BC_NUM_SSIZE_MIN) return cmp;
+	if (cmp == BC_NUM_CMP_SIGNAL) return cmp;
 	if (cmp) return bc_num_neg((size_t) cmp, !a_max == !neg);
 
 	for (max_num -= diff, i = diff - 1; BC_NO_SIG && i < diff; --i) {
 		if (max_num[i]) return bc_num_neg(1, !a_max == !neg);
 	}
 
-	return BC_SIG ? BC_NUM_SSIZE_MIN : 0;
+	return BC_SIG ? BC_NUM_CMP_SIGNAL : 0;
 }
 
 void bc_num_truncate(BcNum *restrict n, size_t places) {
@@ -627,7 +627,7 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	a->neg = b->neg = false;
 
 	cmp = bc_num_cmp(a, b);
-	if (cmp == BC_NUM_SSIZE_MIN) return BC_STATUS_SIGNAL;
+	if (cmp == BC_NUM_CMP_SIGNAL) return BC_STATUS_SIGNAL;
 
 	a->neg = aneg;
 	b->neg = bneg;
@@ -1009,7 +1009,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		q = 0;
 
 		cmp = bc_num_divCmp(n, b, len);
-		if (cmp == BC_NUM_SSIZE_MIN) break;
+		if (cmp == BC_NUM_CMP_SIGNAL) break;
 
 		if (!cmp) q = 1;
 		else if (cmp > 0) {
@@ -1041,7 +1041,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 				bc_num_clean(&diff);
 
 				cmp = bc_num_divCmp(n, &diff, len);
-				if (cmp == BC_NUM_SSIZE_MIN) goto err;
+				if (cmp == BC_NUM_CMP_SIGNAL) goto err;
 
 				while (BC_NO_SIG && BC_NO_ERR(!s) && cmp < 0) {
 
@@ -1056,7 +1056,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 					bc_num_clean(&diff);
 
 					cmp = bc_num_divCmp(n, &diff, len);
-					if (cmp == BC_NUM_SSIZE_MIN) goto err;
+					if (cmp == BC_NUM_CMP_SIGNAL) goto err;
 				}
 
 				pow /= BC_BASE;
@@ -2142,7 +2142,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		cmp = bc_num_cmp(x1, x0);
-		if (cmp == BC_NUM_SSIZE_MIN) {
+		if (cmp == BC_NUM_CMP_SIGNAL) {
 			s = BC_STATUS_SIGNAL;
 			break;
 		}

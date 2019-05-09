@@ -626,7 +626,7 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 	else {
 
 		cmp = bc_num_cmp(n1, n2);
-		if (cmp == BC_NUM_SSIZE_MIN) {
+		if (cmp == BC_NUM_CMP_SIGNAL) {
 			bc_num_free(&res.d.n);
 			return BC_STATUS_SIGNAL;
 		}
