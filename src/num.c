@@ -174,6 +174,7 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	size_t i;
 	BcBigDig carry = 0;
 
+	assert(b <= BC_BASE_DIG);
 	assert(c->cap >= a->len + 1);
 
 	memset(c->num, 0, BC_NUM_SIZE(c->cap));
@@ -1018,6 +1019,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 			n1 = (BcBigDig) n[len];
 			dividend = n1 * BC_BASE_DIG + (BcBigDig) n[len - 1];
 			q = (dividend / divisor + 1);
+			q = q > BC_BASE_DIG ? BC_BASE_DIG : q;
 			dividend = ((BcBigDig) bc_num_log10((size_t) q));
 
 			pow = bc_num_pow10[dividend - 1];
