@@ -113,7 +113,7 @@
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define BC_MAX_OBASE ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
+#define BC_MAX_OBASE ((unsigned long) (BC_BASE_DIG))
 #define BC_MAX_DIM ((unsigned long) (BC_NUM_BIGDIG_MAX / sizeof(BcNum) - 1))
 #define BC_MAX_SCALE ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
 #define BC_MAX_STRING ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
