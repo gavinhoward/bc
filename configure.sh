@@ -293,7 +293,7 @@ generate_tests=1
 install_manpages=1
 nls=1
 
-while getopts "bBcdDEgGhHk:MNO:S-" opt; do
+while getopts "bBcdDEgGhHk:MNO:Sz:-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
