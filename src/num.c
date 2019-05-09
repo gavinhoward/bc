@@ -965,12 +965,11 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 			dividend = ((BcBigDig) bc_num_log10((size_t) q));
 
 			pow = bc_num_pow10[dividend - 1];
-			bc_num_copy(&sub, b);
 
 			s = bc_num_mulArray(b, (BcBigDig) q, &cpb);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-			s = bc_num_shiftLeft(&sub, (size_t) dividend - 1);
+			s = bc_num_mulArray(b, pow, &sub);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 			while (BC_NO_SIG && BC_NO_ERR(!s) && pow > 0) {
