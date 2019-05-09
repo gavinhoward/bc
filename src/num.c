@@ -92,14 +92,8 @@ void bc_num_one(BcNum *restrict n) {
 void bc_num_ten(BcNum *restrict n) {
 	assert(n);
 	bc_num_setToZero(n, 0);
-#if BC_BASE_DIG == 10
-	n->len = 2;
-	n->num[0] = 0;
-	n->num[1] = 1;
-#else // BC_BASE_DIG == 10
 	n->len = 1;
 	n->num[0] = BC_BASE;
-#endif // BC_BASE_DIG == 10
 }
 
 static void bc_num_clean(BcNum *restrict n) {
