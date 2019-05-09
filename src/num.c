@@ -1043,9 +1043,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		n = cpa.num + i;
 		q = 0;
 
-		bc_num_printDigs(n, len + 1, false);
-		bc_num_printDigs(b->num, b->len, true);
-
 		cmp = bc_num_divCmp(n, b, len);
 		if (cmp == BC_NUM_SSIZE_MIN) break;
 
@@ -1068,21 +1065,14 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 			s = bc_num_shiftLeft(&sub, (size_t) dividend - 1);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-			bc_num_printDebug(&cpb, "cpb", false);
-
 			while (BC_NO_SIG && BC_NO_ERR(!s) && pow > 0) {
 
 				bc_num_copy(&diff, &cpb);
-
-				bc_num_printDebug(&sub, "sub", false);
-				bc_num_printDebug(&diff, "diff1", true);
 
 				s = bc_num_subArrays(diff.num, sub.num, sub.len);
 				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 				bc_num_clean(&diff);
-
-				bc_num_printDebug(&diff, "diff2", true);
 
 				cmp = bc_num_divCmp(n, &diff, len);
 				if (cmp == BC_NUM_SSIZE_MIN) goto err;
@@ -1098,8 +1088,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 					bc_num_clean(&diff);
-
-					bc_num_printDebug(&diff, "diff2", true);
 
 					cmp = bc_num_divCmp(n, &diff, len);
 					if (cmp == BC_NUM_SSIZE_MIN) goto err;
