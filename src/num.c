@@ -929,7 +929,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BcBigDig divisor, q;
 	size_t len, end, i, ascale, alen, bscale, blen;
 	BcNum cpa, cpb, diff, sub;
-	bool zero = true, aneg, bneg;
+	bool zero = true;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -994,10 +994,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (b->rdx == b->len) b->len = bc_num_nonzeroLen(b);
 	ascale = a->scale;
 	bscale = b->scale;
-	aneg = a->neg;
-	bneg = b->neg;
 	a->scale = a->rdx = b->scale = b->rdx = 0;
-	a->neg = b->neg = false;
 
 	divisor = (BcBigDig) b->num[len - 1];
 
@@ -1087,11 +1084,9 @@ err:
 	a->scale = ascale;
 	a->rdx = BC_NUM_RDX(a->scale);
 	a->len = alen;
-	a->neg = aneg;
 	b->scale = bscale;
 	b->rdx = BC_NUM_RDX(b->scale);
 	b->len = blen;
-	b->neg = bneg;
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	bc_num_free(&diff);
