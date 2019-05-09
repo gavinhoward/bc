@@ -123,13 +123,13 @@ To see what algorithms this `bc` uses, see the [algorithms manual][7].
 
 ## Locales
 
-Currently, this `bc` only has support for English (and US English), French and 
-German locales. Patches are welcome for translations; use the existing `*.msg` 
+Currently, this `bc` only has support for English (and US English), French and
+German locales. Patches are welcome for translations; use the existing `*.msg`
 files in `locales/` as a starting point.
 
-The message files provided assume that locales apply to all regions where a 
-language is used, but this might not be true for, e.g., `fr_CA` and `fr_CH`. 
-Any corrections or a confirmation that the current texts are acceptable for 
+The message files provided assume that locales apply to all regions where a
+language is used, but this might not be true for, e.g., `fr_CA` and `fr_CH`.
+Any corrections or a confirmation that the current texts are acceptable for
 those regions would be appreciated, too.
 
 ## Other Projects
