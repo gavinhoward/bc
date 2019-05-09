@@ -919,87 +919,34 @@ static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 	return cmp;
 }
 
-static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
-
+static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
+                              BcNum *restrict c)
+{
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcDig *n;
 	BcBigDig divisor, q;
-	size_t len, end, i, ascale, alen, bscale, blen;
-	BcNum cpa, cpb, diff, sub;
-	bool zero = true;
+	size_t len, end, i;
+	BcNum cpb, diff, sub;
+	BcDig *n;
 
-	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
-	if (BC_NUM_ZERO(a)) {
-		bc_num_setToZero(c, scale);
-		return BC_STATUS_SUCCESS;
-	}
-	if (bc_num_isOne(b)) {
-		bc_num_copy(c, a);
-		bc_num_retireMul(c, scale, a->neg, b->neg);
-		return BC_STATUS_SUCCESS;
-	}
-	if (!a->rdx && !b->rdx && b->len == 1 && !scale) {
-		BcBigDig rem;
-		s = bc_num_divArray(a, (BcBigDig) b->num[0], c, &rem);
-		bc_num_retireMul(c, scale, a->neg, b->neg);
-		return s;
-	}
+	len = b->len;
+	end = a->len - len;
+	divisor = (BcBigDig) b->num[len - 1];
 
-	len = bc_num_mulReq(a, b, scale);
-	bc_num_init(&cpa, len);
-	bc_num_copy(&cpa, a);
+	bc_num_expand(c, a->len);
+	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
+	c->rdx = a->rdx;
+	c->scale = a->scale;
+	c->len = a->len;
+
 	bc_num_init(&cpb, len + 1);
 	bc_num_init(&diff, len + 1);
 	bc_num_init(&sub, len + 1);
-	len = b->len;
-
-	if (len > cpa.len) {
-		bc_num_expand(&cpa, bc_vm_growSize(len, 2));
-		bc_num_extend(&cpa, (len - cpa.len) * BC_BASE_POWER);
-	}
-
-	cpa.scale = cpa.rdx * BC_BASE_POWER;
-
-	bc_num_extend(&cpa, b->scale);
-	cpa.rdx -= BC_NUM_RDX(b->scale);
-	cpa.scale = cpa.rdx * BC_BASE_POWER;
-	bc_num_extend(&cpa, scale);
-	cpa.scale = cpa.rdx * BC_BASE_POWER;
-
-	if (b->rdx == b->len) {
-		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
-		assert(i != len || !zero);
-		len -= i - 1;
-	}
-
-	if (cpa.cap == cpa.len) bc_num_expand(&cpa, bc_vm_growSize(cpa.len, 1));
-
-	// We want an extra zero in front to make things simpler.
-	cpa.num[cpa.len++] = 0;
-	end = cpa.len - len;
-
-	bc_num_expand(c, cpa.len);
-
-	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
-	c->rdx = cpa.rdx;
-	c->scale = cpa.scale;
-	c->len = cpa.len;
-
-	alen = a->len;
-	blen = b->len;
-	if (a->rdx == a->len) a->len = bc_num_nonzeroLen(a);
-	if (b->rdx == b->len) b->len = bc_num_nonzeroLen(b);
-	ascale = a->scale;
-	bscale = b->scale;
-	a->scale = a->rdx = b->scale = b->rdx = 0;
-
-	divisor = (BcBigDig) b->num[len - 1];
 
 	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end; --i) {
 
 		ssize_t cmp;
 
-		n = cpa.num + i;
+		n = a->num + i;
 		q = 0;
 
 		cmp = bc_num_divCmp(n, b, len);
@@ -1078,17 +1025,105 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 
 err:
-	a->scale = ascale;
-	a->rdx = BC_NUM_RDX(a->scale);
+	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
+	bc_num_init(&cpb, len + 1);
+	bc_num_init(&diff, len + 1);
+	bc_num_init(&sub, len + 1);
+	return s;
+}
+
+static BcStatus bc_num_bz(BcNum *restrict a, BcNum *restrict b,
+                          BcNum *restrict c)
+{
+	assert(BC_NUM_ZERO(c));
+
+	// This is here because the function is recursive.
+	if (BC_SIG) return BC_STATUS_SIGNAL;
+	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) return BC_STATUS_SUCCESS;
+	if (bc_num_isOne(b)) {
+		bc_num_copy(c, a);
+		return BC_STATUS_SUCCESS;
+	}
+	if (a->len + b->len < BC_NUM_BURNZIEG_LEN ||
+	    a->len < BC_NUM_BURNZIEG_LEN || b->len < BC_NUM_BURNZIEG_LEN)
+	{
+		return bc_num_d_long(a, b, c);
+	}
+}
+
+static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	size_t len, end, i, alen, bscale, blen;
+	BcNum cpa;
+	bool zero = true;
+
+	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(a)) {
+		bc_num_setToZero(c, scale);
+		return BC_STATUS_SUCCESS;
+	}
+	if (bc_num_isOne(b)) {
+		bc_num_copy(c, a);
+		bc_num_retireMul(c, scale, a->neg, b->neg);
+		return BC_STATUS_SUCCESS;
+	}
+	if (!a->rdx && !b->rdx && b->len == 1 && !scale) {
+		BcBigDig rem;
+		s = bc_num_divArray(a, (BcBigDig) b->num[0], c, &rem);
+		bc_num_retireMul(c, scale, a->neg, b->neg);
+		return s;
+	}
+
+	len = bc_num_mulReq(a, b, scale);
+	bc_num_init(&cpa, len);
+	bc_num_copy(&cpa, a);
+
+	if (len > cpa.len) {
+		bc_num_expand(&cpa, bc_vm_growSize(len, 2));
+		bc_num_extend(&cpa, (len - cpa.len) * BC_BASE_POWER);
+	}
+
+	cpa.scale = cpa.rdx * BC_BASE_POWER;
+
+	bc_num_extend(&cpa, b->scale);
+	cpa.rdx -= BC_NUM_RDX(b->scale);
+	cpa.scale = cpa.rdx * BC_BASE_POWER;
+	bc_num_extend(&cpa, scale);
+	cpa.scale = cpa.rdx * BC_BASE_POWER;
+
+	if (b->rdx == b->len) {
+		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
+		assert(i != len || !zero);
+		len -= i - 1;
+	}
+
+	if (cpa.cap == cpa.len) bc_num_expand(&cpa, bc_vm_growSize(cpa.len, 1));
+
+	// We want an extra zero in front to make things simpler.
+	cpa.num[cpa.len++] = 0;
+
+	alen = a->len;
+	blen = b->len;
+	if (a->rdx == a->len) a->len = bc_num_nonzeroLen(a);
+	if (b->rdx == b->len) b->len = bc_num_nonzeroLen(b);
+	bscale = b->scale;
+	b->scale = b->rdx = 0;
+
+	s = bc_num_d_long(&cpa, b, c);
+
 	a->len = alen;
 	b->scale = bscale;
 	b->rdx = BC_NUM_RDX(b->scale);
 	b->len = blen;
-	if (BC_SIG) s = BC_STATUS_SIGNAL;
-	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
-	bc_num_free(&diff);
-	bc_num_free(&cpb);
+
+	if (BC_NO_ERR(!s)) {
+		bc_num_retireMul(c, scale, a->neg, b->neg);
+		if (BC_SIG) s = BC_STATUS_SIGNAL;
+	}
+
 	bc_num_free(&cpa);
+
 	return s;
 }
 
