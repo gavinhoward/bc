@@ -1003,7 +1003,8 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 				pow /= BC_BASE;
 
 				bc_num_copy(&diff, &sub);
-				bc_num_divArray(&diff, 10, &sub, &rem);
+				s = bc_num_divArray(&diff, 10, &sub, &rem);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 			}
 
 			q -= 1;
