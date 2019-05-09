@@ -324,48 +324,6 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	assert(n->rdx == BC_NUM_RDX(n->scale));
 }
 
-static void bc_num_roundPlaces(BcNum *restrict n, size_t places) {
-
-	size_t rdx, place, i;
-	BcDig p10, sum;
-
-	if (places >= n->scale || places >= n->rdx * BC_BASE_POWER) {
- 		bc_num_extend(n, places - n->scale);
-		return;
-	}
-
-	rdx = n->rdx - BC_NUM_RDX(places + 1);
-	place = BC_BASE_POWER - (places % BC_BASE_POWER + 1);
-
-	for (i = 0; i < rdx; i++) n->num[i] = 0;
-
-	p10 = (BcDig) bc_num_pow10[place];
-	sum = n->num[rdx] + (BC_BASE / 2) * p10;
-	sum = sum - sum % (BC_BASE * p10);
-
-	if (sum < BC_BASE_DIG) n->num[rdx] = sum;
-	else {
-
-		sum -= BC_BASE_DIG;
-		n->num[rdx] = sum;
-
-		do {
-			rdx += 1;
-
-			if (n->len <= rdx) {
-				bc_num_expand(n, bc_vm_growSize(rdx, 1));
-				n->num[rdx] = 0;
-				n->len = rdx +1;
-			}
-
-			sum = n->num[rdx] + 1;
-			n->num[rdx] = sum < BC_BASE_DIG ? sum : sum - BC_BASE_DIG;
-		} while (sum >= BC_BASE_DIG);
-	}
-
-	bc_num_truncate(n, n->scale - places);
-}
-
 static void bc_num_retireMul(BcNum *restrict n, size_t scale,
                              bool neg1, bool neg2)
 {
@@ -966,8 +924,8 @@ static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcDig *n, q;
-	BcBigDig divisor;
+	BcDig *n;
+	BcBigDig divisor, q;
 	size_t len, end, i, ascale, alen, bscale, blen;
 	BcNum cpa, cpb, diff, sub;
 	bool zero = true, aneg, bneg;
@@ -1049,17 +1007,17 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		if (!cmp) q = 1;
 		else if (cmp > 0) {
 
-			BcBigDig n1, pow, factor, dividend;
+			BcBigDig n1, pow, dividend;
 
 			n1 = (BcBigDig) n[len];
 			dividend = n1 * BC_BASE_DIG + (BcBigDig) n[len - 1];
-			q = dividend / divisor + 1;
+			q = (dividend / divisor + 1);
 			dividend = ((BcBigDig) bc_num_log10((size_t) q));
 
 			pow = bc_num_pow10[dividend - 1];
 			bc_num_copy(&sub, b);
 
-			s = bc_num_mulArray(b, q, &cpb);
+			s = bc_num_mulArray(b, (BcBigDig) q, &cpb);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 			s = bc_num_shiftLeft(&sub, (size_t) dividend - 1);
@@ -1114,7 +1072,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
 
-		c->num[i] = q;
+		c->num[i] = (BcDig) q;
 	}
 
 err:
