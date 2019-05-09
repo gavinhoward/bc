@@ -843,10 +843,6 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	rscale = ascale + bscale;
 	scale = BC_MIN(rscale, scale);
-	bc_num_createCopy(&cpa, a);
-	bc_num_createCopy(&cpb, b);
-
-	cpa.neg = cpb.neg = false;
 
 	if ((a->len == 1 || b->len == 1) && !a->rdx && !b->rdx) {
 
@@ -863,13 +859,20 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		}
 
 		s = bc_num_mulArray(operand, dig, c);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 
 		c->scale = operand->scale;
 		c->rdx = operand->rdx;
 		c->neg = (a->neg != b->neg);
-		goto err;
+		return s;
 	}
+
+	bc_num_init(&cpa, a->len + a->rdx);
+	bc_num_init(&cpb, b->len + b->rdx);
+	bc_num_copy(&cpa, a);
+	bc_num_copy(&cpb, b);
+
+	cpa.neg = cpb.neg = false;
 
 	ardx = cpa.rdx * BC_BASE_POWER;
 	s = bc_num_shiftLeft(&cpa, ardx);
@@ -1026,9 +1029,9 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
-	bc_num_init(&cpb, len + 1);
-	bc_num_init(&diff, len + 1);
-	bc_num_init(&sub, len + 1);
+	bc_num_free(&cpb);
+	bc_num_free(&diff);
+	bc_num_free(&sub);
 	return s;
 }
 
