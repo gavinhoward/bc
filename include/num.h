@@ -127,6 +127,12 @@ typedef struct BcNum {
 #error BC_NUM_KARATSUBA_LEN must be at least equal to BC_NUM_DEF_SIZE.
 #endif // BC_NUM_KARATSUBA_LEN
 
+#ifndef BC_NUM_BURNZIEG_LEN
+#define BC_NUM_BURNZIEG_LEN (32)
+#elif BC_NUM_BURNZIEG_LEN < BC_NUM_DEF_SIZE
+#error BC_NUM_BURNZIEG_LEN must be at least equal to BC_NUM_DEF_SIZE.
+#endif // BC_NUM_KARATSUBA_LEN
+
 // A crude, but always big enough, calculation of
 // the size required for ibase and obase BcNum's.
 #define BC_NUM_BIGDIG_LOG10 ((CHAR_BIT * sizeof(BcBigDig) + 1) / 2 + 1)

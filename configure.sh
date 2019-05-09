@@ -47,13 +47,13 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EgGHMNS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EgGHMNS] [-O OPT_LEVEL] [-k KLEN] [-z BLEN] \n' "$script"
 	printf '       %s \\\n' "$script"
 	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage] \\\n'
 	printf '           [--debug --disable-extra-math --disable-generated-tests]   \\\n'
 	printf '           [--disable-history --disable-man-pages --disable-nls]      \\\n'
-	printf '           [--disable-signal-handling]                                \\\n'
-	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]          \\\n'
+	printf '           [--disable-signal-handling]  [--opt=OPT_LEVEL]             \\\n'
+	printf '           [--karatsuba-len=KLEN] [--burnzieg-len=BLEN]               \\\n'
 	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                        \\\n'
 	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]            \\\n'
 	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR]                      \\\n'
@@ -89,9 +89,9 @@ usage() {
 	printf '        Print this help message and exit.\n'
 	printf '    -H, --disable-history\n'
 	printf '        Disable history.\n'
-	printf '    -k KARATSUBA_LEN, --karatsuba-len KARATSUBA_LEN\n'
-	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 64).\n'
-	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 16.\n'
+	printf '    -k KLEN, --karatsuba-len KLEN\n'
+	printf '        Set the karatsuba length to KLEN (default is 64). It is an error if\n'
+	printf '        KLEN is not a number or is less than 16.\n'
 	printf '    -M, --disable-man-pages\n'
 	printf '        Disable installing manpages.\n'
 	printf '    -N, --disable-nls\n'
@@ -102,12 +102,15 @@ usage() {
 	printf '        This is passed through to the compiler, so it must be supported.\n'
 	printf '    -S, --disable-signal-handling\n'
 	printf '        Disable signal handling. On by default.\n'
+	printf '    -z BLEN, --burnzieg-len BLEN\n'
+	printf '        Set the Burnikel/Ziegler length to BLEN (default is 32). It is an error\n'
+	printf '        if BLEN is not a number or is less than 16.\n'
 	printf '    --prefix PREFIX\n'
 	printf '        The prefix to install to. Overrides "$PREFIX" if it exists.\n'
 	printf '        If PREFIX is "/usr", install path will be "/usr/bin".\n'
 	printf '        Default is "/usr/local".\n'
 	printf '    --bindir BINDIR\n'
-	printf '        The directory to install binaries. Overrides "$BINDIR if it exists.\n'
+	printf '        The directory to install binaries. Overrides "$BINDIR" if it exists.\n'
 	printf '        Default is "$PREFIX/bin".\n'
 	printf '    --datarootdir DATAROOTDIR\n'
 	printf '        The root location for data files. Overrides "$DATAROOTDIR" if it exists.\n'
@@ -119,8 +122,8 @@ usage() {
 	printf '        The location to install manpages to. Overrides "$MANDIR" if it exists.\n'
 	printf '        Default is "$DATADIR/man".\n'
 	printf '    --man1dir MAN1DIR\n'
-	printf '        The location to install Section 1 manpages to. Overrides "$MAN1DIR if it\n'
-	printf '        exists. Default is "$MANDIR/man1".\n'
+	printf '        The location to install Section 1 manpages to. Overrides "$MAN1DIR" if\n'
+	printf '        it exists. Default is "$MANDIR/man1".\n'
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
@@ -280,6 +283,7 @@ bc_only=0
 dc_only=0
 coverage=0
 karatsuba_len=32
+burnzieg_len=32
 debug=0
 signals=1
 hist=1
@@ -307,6 +311,7 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		S) signals=0 ;;
+		z) burnzieg_len="$OPTARG" ;;
 		-)
 			arg="$1"
 			arg="${arg#--}"
@@ -373,6 +378,13 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 					fi
 					karatsuba_len="$1"
 					shift ;;
+				burnzieg_len=?*) burnzieg_len="$LONG_OPTARG" ;;
+				burnzieg_len)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					burnzieg_len="$1"
+					shift ;;
 				opt=?*) optimization="$LONG_OPTARG" ;;
 				opt)
 					if [ "$#" -lt 2 ]; then
@@ -410,12 +422,21 @@ if [ "$bc_only" -eq 1 -a "$dc_only" -eq 1 ]; then
 fi
 
 case $karatsuba_len in
-	(*[!0-9]*|'') usage "KARATSUBA_LEN is not a number" ;;
+	(*[!0-9]*|'') usage "KLEN is not a number" ;;
 	(*) ;;
 esac
 
 if [ "$karatsuba_len" -lt 2 ]; then
-	usage "KARATSUBA_LEN is less than 2"
+	usage "KLEN is less than 2"
+fi
+
+case $burnzieg_len in
+	(*[!0-9]*|'') usage "BLEN is not a number" ;;
+	(*) ;;
+esac
+
+if [ "$burnzieg_len" -lt 2 ]; then
+	usage "BLEN is less than 2"
 fi
 
 set -e
@@ -441,6 +462,9 @@ fi
 
 karatsuba="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
 karatsuba_test="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
+
+burnzieg="@printf 'burnzieg cannot be run because one of bc or dc is not built\\\\n'"
+burnzieg_test="@printf 'burnzieg cannot be run because one of bc or dc is not built\\\\n'"
 
 bc_lib="\$(GEN_DIR)/lib.o"
 bc_help="\$(GEN_DIR)/bc_help.o"
@@ -495,6 +519,9 @@ else
 
 	karatsuba="@\$(KARATSUBA) 0 \$(BC_EXEC)"
 	karatsuba_test="@\$(KARATSUBA) 100 \$(BC_EXEC)"
+
+	burnzieg="@\$(BURNZIEG) 0 \$(BC_EXEC)"
+	burnzieg_test="@\$(BURNZIEG) 100 \$(BC_EXEC)"
 
 	install_prereqs=" install_bc_manpage install_dc_manpage"
 	uninstall_prereqs=" uninstall_bc uninstall_dc"
@@ -771,6 +798,7 @@ contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")
 contents=$(replace "$contents" "BC_LIB2_O" "$BC_LIB2_O")
 contents=$(replace "$contents" "KARATSUBA_LEN" "$karatsuba_len")
+contents=$(replace "$contents" "BURNZIEG_LEN" "$burnzieg_len")
 
 contents=$(replace "$contents" "NLSPATH" "$NLSPATH")
 contents=$(replace "$contents" "DESTDIR" "$destdir")
@@ -806,6 +834,9 @@ contents=$(replace "$contents" "TIMECONST" "$timeconst")
 
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
+
+contents=$(replace "$contents" "BURNZIEG" "$burnzieg")
+contents=$(replace "$contents" "BURNZIEG_TEST" "$burnzieg_test")
 
 contents=$(replace "$contents" "GEN" "$GEN")
 contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")
