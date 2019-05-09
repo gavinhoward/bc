@@ -996,10 +996,13 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		bc_num_extend(&cpa, (len - cpa.len) * BC_BASE_POWER);
 	}
 
-	if (b->scale > cpa.scale) bc_num_extend(&cpa, b->scale - cpa.scale);
-	cpa.scale -= b->scale;
-	cpa.rdx = BC_NUM_RDX(cpa.scale);
-	if (scale > cpa.scale) bc_num_extend(&cpa, scale - cpa.scale);
+	cpa.scale = cpa.rdx * BC_BASE_POWER;
+
+	bc_num_extend(&cpa, b->scale);
+	cpa.rdx -= BC_NUM_RDX(b->scale);
+	cpa.scale = cpa.rdx * BC_BASE_POWER;
+	bc_num_extend(&cpa, scale);
+	cpa.scale = cpa.rdx * BC_BASE_POWER;
 
 	if (b->rdx == b->len) {
 		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
@@ -1017,6 +1020,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
 	c->rdx = cpa.rdx;
+	c->scale = cpa.scale;
 	c->len = cpa.len;
 
 	alen = a->len;
@@ -1135,8 +1139,6 @@ err:
 	b->len = blen;
 	b->neg = bneg;
 	if (BC_SIG) s = BC_STATUS_SIGNAL;
-	c->rdx = a->rdx + b->rdx;
-	c->scale = c->rdx * BC_BASE_POWER;
 	if (BC_NO_ERR(!s)) bc_num_retireMul(c, scale, a->neg, b->neg);
 	bc_num_free(&diff);
 	bc_num_free(&cpb);
