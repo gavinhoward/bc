@@ -940,6 +940,12 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		bc_num_retireMul(c, scale, a->neg, b->neg);
 		return BC_STATUS_SUCCESS;
 	}
+	if (!a->rdx && !b->rdx && b->len == 1 && !scale) {
+		BcBigDig rem;
+		s = bc_num_divArray(a, (BcBigDig) b->num[0], c, &rem);
+		bc_num_retireMul(c, scale, a->neg, b->neg);
+		return s;
+	}
 
 	len = bc_num_mulReq(a, b, scale);
 	bc_num_init(&cpa, len);
