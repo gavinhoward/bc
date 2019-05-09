@@ -2239,16 +2239,14 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 		bc_num_expand(c, len);
 	}
 
-	if (b->len == 1 && !scale) {
+	if (BC_NUM_NONZERO(a) && !a->rdx && !b->rdx && b->len == 1 && !scale) {
 		BcBigDig rem;
 		s = bc_num_divArray(ptr_a, (BcBigDig) b->num[0], c, &rem);
 		assert(rem < BC_BASE_DIG);
 		d->num[0] = (BcDig) rem;
-		d->len = 1;
+		d->len = (rem != 0);
 	}
-	else {
-		s = bc_num_r(ptr_a, b, c, d, scale, ts);
-	}
+	else s = bc_num_r(ptr_a, b, c, d, scale, ts);
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len);
