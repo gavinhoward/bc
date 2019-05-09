@@ -36,14 +36,14 @@ from mathconfig import *
 
 def usage():
 	print("usage: {} [test_num exe]".format(script))
-	print("\n    test_num is the last Karatsuba number to run through tests")
+	print("\n    test_num is the last Burnikel/Ziegler number to run through tests")
 	sys.exit(1)
 
 if __name__ != "__main__":
 	usage()
 
-name = "Karatsuba"
-option = "k"
+name = "Burnikel/Ziegler"
+option = "z"
 
 print_warning(name)
 parse_args()
@@ -51,12 +51,13 @@ parse_args()
 mx = 520
 mn = 2
 
-num = "9" * mx
+num = "9" * mx * mx
+num2 = "123456789" * mx
 
 set_limits(mx, mn)
 
-indata = "for (i = 0; i < 100; ++i) {} * {}\n1.23456789^10000\nhalt".format(num, num)
+indata = "for (i = 0; i < 100; ++i) {} / i\n {} / {}\n1.23456789^10000 / 123456789^10000\nhalt".format(num, num, num2)
 
-optimal = run(name, indata, [ "multiply", "modulus", "power", "sqrt" ], option)
+optimal = run(name, indata, [ "divide", "modulus", "power", "sqrt" ], option)
 
 print_result(name, option, optimal)
