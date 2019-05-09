@@ -945,6 +945,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end; --i) {
 
 		ssize_t cmp;
+		BcBigDig rem;
 
 		n = a->num + i;
 		q = 0;
@@ -1001,10 +1002,9 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 				}
 
 				pow /= BC_BASE;
-				s = bc_num_shiftRight(&sub, 1);
-				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-				bc_num_truncate(&sub, sub.scale);
+				bc_num_copy(&diff, &sub);
+				bc_num_divArray(&diff, 10, &sub, &rem);
 			}
 
 			q -= 1;
