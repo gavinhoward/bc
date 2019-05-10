@@ -923,12 +923,12 @@ static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 }
 
 static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
-                              BcNum *restrict c)
+                              BcNum *restrict c, size_t scale)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcBigDig divisor, q;
-	size_t len, end, i;
-	BcNum cpb, diff, sub;
+	size_t len, end, i, rdx;
+	BcNum cpb, sub, temp;
 	BcDig *n;
 
 	len = b->len;
@@ -937,15 +937,19 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 	bc_num_expand(c, a->len);
 	memset(c->num + end, 0, (c->cap - end) * sizeof(BcDig));
+
 	c->rdx = a->rdx;
 	c->scale = a->scale;
 	c->len = a->len;
 
-	bc_num_init(&cpb, len + 1);
-	bc_num_init(&diff, len + 1);
-	bc_num_init(&sub, len + 1);
+	assert(c->scale >= scale);
+	rdx = c->rdx - BC_NUM_RDX(scale);
 
-	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end; --i) {
+	bc_num_init(&cpb, len + 1);
+	bc_num_init(&sub, len + 1);
+	bc_num_init(&temp, len + 1);
+
+	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end && i >= rdx; --i) {
 
 		ssize_t cmp;
 		BcBigDig rem;
@@ -956,10 +960,17 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 		cmp = bc_num_divCmp(n, b, len);
 		if (cmp == BC_NUM_CMP_SIGNAL) break;
 
-		if (!cmp) q = 1;
+		if (!cmp) {
+
+			q = 1;
+
+			s = bc_num_mulArray(b, (BcBigDig) q, &cpb);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		}
 		else if (cmp > 0) {
 
 			BcBigDig n1, pow, dividend;
+			size_t cpblen;
 
 			n1 = (BcBigDig) n[len];
 			dividend = n1 * BC_BASE_DIG + (BcBigDig) n[len - 1];
@@ -975,16 +986,16 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 			s = bc_num_mulArray(b, pow, &sub);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
+			cpblen = cpb.len;
+
 			while (BC_NO_SIG && BC_NO_ERR(!s) && pow > 0) {
 
-				bc_num_copy(&diff, &cpb);
-
-				s = bc_num_subArrays(diff.num, sub.num, sub.len);
+				s = bc_num_subArrays(cpb.num, sub.num, sub.len);
 				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-				bc_num_clean(&diff);
+				bc_num_clean(&cpb);
 
-				cmp = bc_num_divCmp(n, &diff, len);
+				cmp = bc_num_divCmp(n, &cpb, len);
 				if (cmp == BC_NUM_CMP_SIGNAL) goto err;
 
 				while (BC_NO_SIG && BC_NO_ERR(!s) && cmp < 0) {
@@ -994,20 +1005,27 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 					s = bc_num_subArrays(cpb.num, sub.num, sub.len);
 					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-					s = bc_num_subArrays(diff.num, sub.num, sub.len);
-					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+					bc_num_clean(&cpb);
 
-					bc_num_clean(&diff);
-
-					cmp = bc_num_divCmp(n, &diff, len);
+					cmp = bc_num_divCmp(n, &cpb, len);
 					if (cmp == BC_NUM_CMP_SIGNAL) goto err;
 				}
 
 				pow /= BC_BASE;
 
-				bc_num_copy(&diff, &sub);
-				s = bc_num_divArray(&diff, 10, &sub, &rem);
-				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+				if (pow) {
+
+					s = bc_num_addArrays(cpb.num, sub.num, sub.len);
+					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+					cpb.len = cpblen;
+					bc_num_clean(&cpb);
+
+					bc_num_copy(&temp, &sub);
+					s = bc_num_divArray(&temp, 10, &sub, &rem);
+					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+					assert(rem == 0);
+				}
 			}
 
 			q -= 1;
@@ -1016,9 +1034,6 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 		assert(q <= BC_BASE_DIG);
 
 		if (q) {
-
-			s = bc_num_mulArray(b, q, &cpb);
-			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 			s = bc_num_subArrays(n, cpb.num, len);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -1029,8 +1044,8 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
+	bc_num_free(&temp);
 	bc_num_free(&cpb);
-	bc_num_free(&diff);
 	bc_num_free(&sub);
 	return s;
 }
@@ -1074,8 +1089,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_extend(&cpa, b->scale);
 	cpa.rdx -= BC_NUM_RDX(b->scale);
 	cpa.scale = cpa.rdx * BC_BASE_POWER;
-	bc_num_extend(&cpa, scale);
-	cpa.scale = cpa.rdx * BC_BASE_POWER;
+	if (scale > cpa.scale) {
+		bc_num_extend(&cpa, scale);
+		cpa.scale = cpa.rdx * BC_BASE_POWER;
+	}
 
 	if (b->rdx == b->len) {
 		size_t i;
@@ -1093,7 +1110,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (cpb.rdx == cpb.len) cpb.len = bc_num_nonzeroLen(&cpb);
 	cpb.scale = cpb.rdx = 0;
 
-	s = bc_num_d_long(&cpa, &cpb, c);
+	s = bc_num_d_long(&cpa, &cpb, c, scale);
 
 	if (BC_NO_ERR(!s)) {
 		bc_num_retireMul(c, scale, a->neg, b->neg);
