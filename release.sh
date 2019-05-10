@@ -193,23 +193,23 @@ runconfigseries() {
 	_runconfigseries_run_tests="$1"
 	shift
 
-	runconfigtests "$_runconfigseries_CFLAGS -DBC_LONG_BIT=64" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "GEN_HOST=1" "$_runconfigseries_run_tests"
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=64 GEN_HOST=1" "$_runconfigseries_run_tests"
 
-	runconfigtests "$_runconfigseries_CFLAGS -DBC_LONG_BIT=64" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "GEN_HOST=0" "$_runconfigseries_run_tests"
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=64 GEN_HOST=0" "$_runconfigseries_run_tests"
 
-	runconfigtests "$_runconfigseries_CFLAGS -DBC_LONG_BIT=32" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "GEN_HOST=1" "$_runconfigseries_run_tests"
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=32 GEN_HOST=1" "$_runconfigseries_run_tests"
 
-	runconfigtests "$_runconfigseries_CFLAGS -DBC_LONG_BIT=32" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "GEN_HOST=0" "$_runconfigseries_run_tests"
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=32 GEN_HOST=0" "$_runconfigseries_run_tests"
 
-	runconfigtests "$_runconfigseries_CFLAGS -DBC_LONG_BIT=16" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "GEN_HOST=1" "$_runconfigseries_run_tests"
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=16 GEN_HOST=1" "$_runconfigseries_run_tests"
 
-	runconfigtests "$_runconfigseries_CFLAGS -DBC_LONG_BIT=16" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "GEN_HOST=0" "$_runconfigseries_run_tests"
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=16 GEN_HOST=0" "$_runconfigseries_run_tests"
 }
 
 runtestseries() {
