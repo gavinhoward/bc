@@ -1,5 +1,6 @@
 #! /usr/bin/bc -lq
 
+scale = 20
 x = 123456789
 len = length(x) + 1
 
