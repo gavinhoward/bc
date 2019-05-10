@@ -154,12 +154,20 @@ usage() {
 	printf '                 `%s` is run, it can also be passed to `make install`\n' "$script"
 	printf '                 later as an environment variable. If both are specified,\n'
 	printf '                 the one given to `%s` takes precedence.\n' "$script"
+	printf '    LONG_BIT     The number of bits in a C `long` type. This is mostly for the\n'
+	printf '                 embedded space since this `bc` uses `long`s internally for\n'
+	printf '                 overflow checking. In C99, a `long` is required to be 32 bits.\n'
+	printf '                 For this reason, on 8-bit and 16-bit microcontrollers, the\n'
+	printf '                 generated code to do math with `long` types may be inefficient.\n'
+	printf '                 Users may set this lower to improve the efficiency of the\n'
+	printf '                 generated code for math. Default is the default of `LONG_BIT`\n'
+	printf '                 for the target platform. Minimum allowed is `16`.\n'
 	printf '    GEN_HOST     Whether to use `gen/strgen.c`, instead of `gen/strgen.sh`, to\n'
 	printf '                 produce the C files that contain the help texts as well as the\n'
 	printf '                 math libraries. By default, `gen/strgen.c` is used, compiled by\n'
 	printf '                 "$HOSTCC" and run on the host machine. Using `gen/strgen.sh`\n'
 	printf '                 removes the need to compile and run an executable on the host\n'
-	printf '                 machine since `gen/strgen.sh is a POSIX shell script. However,\n'
+	printf '                 machine since `gen/strgen.sh` is a POSIX shell script. However,\n'
 	printf '                 `gen/lib2.bc` is perilously close to 4095 characters, the max\n'
 	printf '                 supported length of a string literal in C99 (and it could be\n'
 	printf '                 added to in the future), and `gen/strgen.sh` generates a string\n'
@@ -502,6 +510,12 @@ else
 
 fi
 
+if [ -z "${LONG_BIT+set}" ]; then
+	LONG_BIT="LONG_BIT"
+elif [ "$LONG_BIT" -lt 16 ]; then
+	usage "LONG_BIT is less than 16"
+fi
+
 if [ -z "${HOSTCFLAGS+set}" -a -z "${HOST_CFLAGS+set}" ]; then
 	HOSTCFLAGS="$CFLAGS"
 elif [ -z "${HOSTCFLAGS+set}" ]; then
@@ -743,6 +757,7 @@ printf 'NLSPATH=%s\n' "$NLSPATH"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
 printf 'EXECPREFIX=%s\n' "$EXECPREFIX"
 printf 'DESTDIR=%s\n' "$DESTDIR"
+printf 'LONG_BIT=%s\n' "$LONG_BIT"
 printf 'GEN_HOST=%s\n' "$GEN_HOST"
 printf 'GEN_EMU=%s\n' "$GEN_EMU"
 
@@ -806,6 +821,8 @@ contents=$(replace "$contents" "TIMECONST" "$timeconst")
 
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
+
+contents=$(replace "$contents" "LONG_BIT" "$LONG_BIT")
 
 contents=$(replace "$contents" "GEN" "$GEN")
 contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")
