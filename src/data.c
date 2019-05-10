@@ -713,10 +713,10 @@ const BcBigDig bc_num_pow10[BC_BASE_POWER + 1] = {
 	1,
 	10,
 	100,
-#if BC_LONG_BIT > 16
+#if BC_BASE_POWER > 2
 	1000,
 	10000,
-#if BC_LONG_BIT > 32
+#if BC_BASE_POWER > 4
 	100000,
 	1000000,
 	10000000,
