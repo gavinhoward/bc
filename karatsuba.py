@@ -78,6 +78,9 @@ for i in range(0, nruns):
 
 tests = [ "multiply", "modulus", "power", "sqrt" ]
 
+if test_num != 0:
+	mx2 = test_num
+
 for i in range(mn, mx2 + 1):
 
 	print("\nCompiling...\n")
@@ -98,7 +101,7 @@ for i in range(mn, mx2 + 1):
 
 	if (test_num >= i):
 
-		print("Running tests...\n")
+		print("Running tests for Karatsuba Num: {}\n".format(i))
 
 		for test in tests:
 
@@ -139,9 +142,11 @@ for i in range(mn, mx2 + 1):
 		nums.append(i)
 		print(", Time: {}".format(times[i - mn]))
 
-opt = nums[times.index(min(times))]
+if test_num == 0:
 
-print("\nOptimal Karatsuba Num (for this machine): {}".format(opt))
-print("Run the following:\n")
-print("./configure.sh -O3 -k {}".format(opt))
-print("make")
+	opt = nums[times.index(min(times))]
+
+	print("\nOptimal Karatsuba Num (for this machine): {}".format(opt))
+	print("Run the following:\n")
+	print("./configure.sh -O3 -k {}".format(opt))
+	print("make")
