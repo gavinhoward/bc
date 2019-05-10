@@ -127,7 +127,6 @@ INSTALL = ./install.sh
 SAFE_INSTALL = ./safe-install.sh
 LINK = ./link.sh
 KARATSUBA = ./karatsuba.py
-BURNZIEG = ./burnzieg.py
 LOCALE_INSTALL = ./locale_install.sh
 LOCALE_UNINSTALL = ./locale_uninstall.sh
 
@@ -183,9 +182,6 @@ help:
 	@printf 'available targets:\n'
 	@printf '\n'
 	@printf '    all (default)   builds %%EXECUTABLES%%\n'
-	@printf '    burnzieg        runs the burnzieg script (requires Python 3)\n'
-	@printf '    burnzieg_test   runs the burnzieg script while running tests\n'
-	@printf '                    (requires Python 3)\n'
 	@printf '    clean           removes all build files\n'
 	@printf '    clean_config    removes all build files as well as the generated Makefile\n'
 	@printf '    clean_tests     removes all build files, the generated Makefile,\n
@@ -232,12 +228,6 @@ karatsuba:
 
 karatsuba_test:
 	%%KARATSUBA_TEST%%
-
-burnzieg:
-	%%BURNZIEG%%
-
-burnzieg_test:
-	%%BURNZIEG_TEST%%
 
 coverage:%%COVERAGE_PREREQS%%
 	%%COVERAGE%%
