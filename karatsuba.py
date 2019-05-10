@@ -42,7 +42,8 @@ testdir = os.path.dirname(script)
 
 print("\nWARNING: This script is for distro and package maintainers.")
 print("It is for finding the optimal Karatsuba number.")
-print("It takes forever to run.")
+print("Though it only needs to be run once per release/platform,")
+print("it takes forever to run.")
 print("You have been warned.\n")
 
 if __name__ != "__main__":
@@ -50,7 +51,7 @@ if __name__ != "__main__":
 
 mx = 520
 mx2 = mx // 2
-mn = 2
+mn = 16
 
 num = "9" * mx
 
@@ -66,7 +67,9 @@ else:
 
 exedir = os.path.dirname(exe)
 
-indata = "for (i = 0; i < 100; ++i) {} * {}\n1.23456789^10000\nhalt".format(num, num)
+indata = "for (i = 0; i < 100; ++i) {} * {}\n"
+indata += "1.23456789^100000\n1.23456789^100000\nhalt"
+indata = indata.format(num, num)
 
 times = []
 nums = []
@@ -92,7 +95,7 @@ for i in range(mn, mx2 + 1):
 		print("configure.sh returned an error ({}); exiting...".format(p.returncode))
 		sys.exit(p.returncode)
 
-	makecmd = [ "make" ]
+	makecmd = [ "make", "-j4" ]
 	p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	if p.returncode != 0:
