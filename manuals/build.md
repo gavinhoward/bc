@@ -217,7 +217,8 @@ required to be 32 bits. For this reason, on 8-bit and 16-bit microcontrollers,
 the generated code to do math with `long` types may be inefficient. Users may
 set this lower to improve the efficiency of the generated code for math.
 
-For most normal desktop systems, setting this is unnecessary.
+For most normal desktop systems, setting this is unnecessary, except that 32-bit
+platforms with 64-bit longs may want to set it to `32`.
 
 Defaults to the default value of `LONG_BIT` for the target platform. For
 compliance with the `bc` spec, the minimum allowed value is `16`.
