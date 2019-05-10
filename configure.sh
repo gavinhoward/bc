@@ -432,16 +432,18 @@ link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math 1 $generate_tests \$(BC_EXEC)"
-dc_test="@tests/all.sh dc $extra_math 1 $generate_tests \$(DC_EXEC)"
+bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 \$(BC_EXEC)"
+bc_time_test="@tests/all.sh bc $extra_math 1 $generate_tests 1 \$(BC_EXEC)"
+dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 \$(DC_EXEC)"
+dc_time_test="@tests/all.sh dc $extra_math 1 $generate_tests 1 \$(DC_EXEC)"
 
 timeconst="@tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math 1 $generate_tests valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math 1 $generate_tests valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	vg_bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 else
 	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
 	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
@@ -464,6 +466,7 @@ if [ "$bc_only" -eq 1 ]; then
 	executables="bc"
 
 	dc_test="@printf 'No dc tests to run\\\\n'"
+	dc_time_test="@printf 'No dc tests to run\\\\n'"
 	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
 	install_prereqs=" install_bc_manpage"
@@ -484,6 +487,7 @@ elif [ "$dc_only" -eq 1 ]; then
 	executable="DC_EXEC"
 
 	bc_test="@printf 'No bc tests to run\\\\n'"
+	bc_time_test="@printf 'No bc tests to run\\\\n'"
 	vg_bc_test="@printf 'No bc tests to run\\\\n'"
 
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
@@ -812,7 +816,9 @@ contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
 contents=$(replace "$contents" "EXEC" "$executable")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
+contents=$(replace "$contents" "BC_TIME_TEST" "$bc_time_test")
 contents=$(replace "$contents" "DC_TEST" "$dc_test")
+contents=$(replace "$contents" "DC_TIME_TEST" "$dc_time_test")
 
 contents=$(replace "$contents" "VG_BC_TEST" "$vg_bc_test")
 contents=$(replace "$contents" "VG_DC_TEST" "$vg_dc_test")

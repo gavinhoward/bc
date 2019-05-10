@@ -197,6 +197,9 @@ help:
 	@printf '    test            runs the test suite\n'
 	@printf '    test_bc         runs the bc test suite, if bc has been built\n'
 	@printf '    test_dc         runs the dc test suite, if dc has been built\n'
+	@printf '    time_test       runs the test suite, displaying times for some things\n'
+	@printf '    time_test_bc    runs the bc test suite, displaying times for some things\n'
+	@printf '    time_test_dc    runs the dc test suite, displaying times for some things\n'
 	@printf '    timeconst       runs the test on the Linux timeconst.bc script,\n'
 	@printf '                    if it exists and bc has been built\n'
 	@printf '    valgrind        runs the test suite through valgrind\n'
@@ -212,6 +215,14 @@ test_bc:
 
 test_dc:
 	%%DC_TEST%%
+
+time_test: time_test_bc timeconst time_test_dc
+
+time_test_bc:
+	%%BC_TIME_TEST%%
+
+time_test_dc:
+	%%DC_TIME_TEST%%
 
 timeconst:
 	%%TIMECONST%%
