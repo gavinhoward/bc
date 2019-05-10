@@ -45,6 +45,7 @@ print("It is for finding the optimal Karatsuba number.")
 print("Though it only needs to be run once per release/platform,")
 print("it takes forever to run.")
 print("You have been warned.\n")
+print("Note: If you send an interrupt, it will report the current best number.\n")
 
 if __name__ != "__main__":
 	usage()
@@ -84,72 +85,78 @@ tests = [ "multiply", "modulus", "power", "sqrt" ]
 if test_num != 0:
 	mx2 = test_num
 
-for i in range(mn, mx2 + 1):
+try:
 
-	print("\nCompiling...\n")
+	for i in range(mn, mx2 + 1):
 
-	makecmd = [ "./configure.sh", "-O3", "-k{}".format(i) ]
-	p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		print("\nCompiling...\n")
 
-	if p.returncode != 0:
-		print("configure.sh returned an error ({}); exiting...".format(p.returncode))
-		sys.exit(p.returncode)
+		makecmd = [ "./configure.sh", "-O3", "-k{}".format(i) ]
+		p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	makecmd = [ "make", "-j4" ]
-	p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		if p.returncode != 0:
+			print("configure.sh returned an error ({}); exiting...".format(p.returncode))
+			sys.exit(p.returncode)
 
-	if p.returncode != 0:
-		print("make returned an error ({}); exiting...".format(p.returncode))
-		sys.exit(p.returncode)
+		makecmd = [ "make", "-j4" ]
+		p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	if (test_num >= i):
+		if p.returncode != 0:
+			print("make returned an error ({}); exiting...".format(p.returncode))
+			sys.exit(p.returncode)
 
-		print("Running tests for Karatsuba Num: {}\n".format(i))
+		if (test_num >= i):
 
-		for test in tests:
+			print("Running tests for Karatsuba Num: {}\n".format(i))
 
-			cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", exe ]
+			for test in tests:
 
-			p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
+				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", exe ]
 
-			if p.returncode != 0:
-				print("{} test failed:\n".format(test, p.returncode))
-				print(p.stderr.decode())
-				print("\nexiting...")
-				sys.exit(p.returncode)
+				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
 
-		print("")
+				if p.returncode != 0:
+					print("{} test failed:\n".format(test, p.returncode))
+					print(p.stderr.decode())
+					print("\nexiting...")
+					sys.exit(p.returncode)
 
-	elif test_num == 0:
+			print("")
 
-		print("Timing Karatsuba Num: {}".format(i), end='', flush=True)
+		elif test_num == 0:
 
-		for j in range(0, nruns):
+			print("Timing Karatsuba Num: {}".format(i), end='', flush=True)
 
-			cmd = [ exe, "{}/tests/bc/power.txt".format(testdir) ]
+			for j in range(0, nruns):
 
-			start = time.perf_counter()
-			p = subprocess.run(cmd, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-			end = time.perf_counter()
+				cmd = [ exe, "{}/tests/bc/power.txt".format(testdir) ]
 
-			if p.returncode != 0:
-				print("bc returned an error; exiting...")
-				sys.exit(p.returncode)
+				start = time.perf_counter()
+				p = subprocess.run(cmd, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+				end = time.perf_counter()
 
-			runs[j] = end - start
+				if p.returncode != 0:
+					print("bc returned an error; exiting...")
+					sys.exit(p.returncode)
 
-		run_times = runs[1:]
-		avg = sum(run_times) / len(run_times)
+				runs[j] = end - start
 
-		times.append(avg)
-		nums.append(i)
-		print(", Time: {}".format(times[i - mn]))
+			run_times = runs[1:]
+			avg = sum(run_times) / len(run_times)
+
+			times.append(avg)
+			nums.append(i)
+			print(", Time: {}".format(times[i - mn]))
+
+except KeyboardInterrupt:
+	nums = nums[0:i]
+	times = times[0:i]
 
 if test_num == 0:
 
 	opt = nums[times.index(min(times))]
 
-	print("\nOptimal Karatsuba Num (for this machine): {}".format(opt))
+	print("\n\nOptimal Karatsuba Num (for this machine): {}".format(opt))
 	print("Run the following:\n")
 	print("./configure.sh -O3 -k {}".format(opt))
 	print("make")
