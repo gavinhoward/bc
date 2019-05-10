@@ -27,6 +27,9 @@ before_install:
   - sudo apt-get install -y dc
   - pip install --user codecov
 
+before_script:
+  - curl -o tests/bc/scripts/timeconst.bc https://raw.githubusercontent.com/torvalds/linux/master/kernel/time/timeconst.bc
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
