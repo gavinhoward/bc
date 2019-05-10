@@ -34,7 +34,7 @@ script="$0"
 testdir=$(dirname "$script")
 
 if [ "$#" -lt 2 ]; then
-	printf 'usage: %s dir test [generate_tests] [exe [args...]]\n' "$0"
+	printf 'usage: %s dir test [generate_tests] [time_tests] [exe [args...]]\n' "$0"
 	printf 'valid dirs are:\n'
 	printf '\n'
 	cat "$testdir/all.txt"
@@ -55,6 +55,13 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	generate_tests=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	time_tests="$1"
+	shift
+else
+	time_tests=0
 fi
 
 if [ "$#" -gt 0 ]; then
@@ -100,7 +107,13 @@ export $var=string
 
 printf 'Running %s %s...\n' "$d" "$t"
 
-printf '%s\n' "$halt" | "$exe" "$@" $options "$name" > "$out"
+if [ "$time_tests" -ne 0 ]; then
+	printf '\n'
+	printf '%s\n' "$halt" | time -p "$exe" "$@" $options "$name" > "$out"
+	printf '\n'
+else
+	printf '%s\n' "$halt" | "$exe" "$@" $options "$name" > "$out"
+fi
 
 diff "$results" "$out"
 

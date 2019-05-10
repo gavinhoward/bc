@@ -34,7 +34,7 @@ script="$0"
 testdir=$(dirname "${script}")
 
 if [ "$#" -eq 0 ]; then
-	printf 'usage: %s dir [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
+	printf 'usage: %s dir [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"
 	exit 1
 else
 	d="$1"
@@ -56,6 +56,13 @@ else
 fi
 
 if [ "$#" -gt 0 ]; then
+	time_tests="$1"
+	shift
+else
+	time_tests=0
+fi
+
+if [ "$#" -gt 0 ]; then
 	exe="$1"
 	shift
 else
@@ -67,6 +74,6 @@ scriptdir="$testdir/$d/scripts"
 for s in $scriptdir/*.$d; do
 
 	f=$(basename -- "$s")
-	sh "$testdir/script.sh" "$d" "$f" "$run_stack_tests" "$generate" "$exe" "$@"
+	sh "$testdir/script.sh" "$d" "$f" "$run_stack_tests" "$generate" "$time_tests" "$exe" "$@"
 
 done
