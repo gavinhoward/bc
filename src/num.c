@@ -1425,7 +1425,9 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 		BcBigDig exp, pow;
 
-		exp = i;
+		assert(i <= BC_NUM_BIGDIG_MAX);
+
+		exp = (BcBigDig) i;
 		pow = bc_num_pow10[exp];
 
 		for (i = len - 1; i < len; --i, ++exp) {
@@ -1928,7 +1930,7 @@ BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 
 		BcBigDig prev = r * BC_BASE_POW;
 
-		if (BC_ERR(prev == SIZE_MAX || prev / BC_BASE_POW != r))
+		if (BC_ERR(((size_t) prev) == SIZE_MAX || prev / BC_BASE_POW != r))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
 		r = prev + (BcBigDig) n->num[--i];
@@ -2011,7 +2013,8 @@ size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
 
 	BcStatus s;
-	BcBigDig places = 0, rdx;
+	BcBigDig places = 0;
+	size_t rdx;
 
 	BC_UNUSED(s);
 	BC_UNUSED(scale);
@@ -2028,7 +2031,8 @@ size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale) {
 
 	BcStatus s;
-	BcBigDig places = 0, int_digs, rdx;
+	BcBigDig places = 0;
+	size_t int_digs, rdx;
 
 	BC_UNUSED(s);
 	BC_UNUSED(scale);
