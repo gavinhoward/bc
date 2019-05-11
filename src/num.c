@@ -1203,7 +1203,10 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_createCopy(&copy, a);
 
-	if (!neg) scale = BC_MIN(a->scale * pow, BC_MAX(scale, a->scale));
+	if (!neg) {
+		size_t max = BC_MAX(scale, a->scale), scalepow = a->scale * pow;
+		scale = BC_MIN(scalepow, max);
+	}
 
 	for (powrdx = a->scale; BC_NO_SIG && !(pow & 1); pow >>= 1) {
 		powrdx <<= 1;
@@ -2092,7 +2095,8 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	if (a->scale > scale) scale = a->scale;
 	len = bc_vm_growSize(bc_num_intDigits(a), 1);
-	req = bc_vm_growSize(BC_MAX(BC_NUM_RDX(scale), a->rdx), len >> 1);
+	rdx = BC_NUM_RDX(scale);
+	req = bc_vm_growSize(BC_MAX(rdx, a->rdx), len >> 1);
 	bc_num_init(b, bc_vm_growSize(req, 1));
 
 	if (BC_NUM_ZERO(a)) {
@@ -2105,7 +2109,8 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 
-	rdx = BC_MAX(BC_NUM_RDX(scale), a->rdx);
+	rdx = BC_NUM_RDX(scale);
+	rdx = BC_MAX(rdx, a->rdx);
 	len = bc_vm_growSize(a->len, rdx);
 
 	bc_num_init(&num1, len);
@@ -2135,15 +2140,9 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		pow -= 2 - (pow & 1);
 		s = bc_num_shiftLeft(x0, pow / 2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		// Make sure to move the radix back.
-		if (x0->scale >= pow) x0->scale -= pow;
-		else x0->scale = 0;
-		x0->rdx = BC_NUM_RDX(x0->scale);
 	}
 
-	x0->rdx = digs = digs1 = digs2 = 0;
-	x0->scale = 0;
+	x0->scale = x0->rdx = digs = digs1 = digs2 = 0;
 	resscale = (scale + BC_BASE_POWER) * 2;
 
 	len = BC_NUM_RDX(bc_num_intDigits(x0) + resscale - 1);
@@ -2171,7 +2170,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		if (cmp == cmp2 && digs == digs1) times += 1;
 		else times = 0;
 
-		resscale += times > 2;
+		resscale += (times > 2);
 
 		cmp2 = cmp1;
 		cmp1 = cmp;
