@@ -164,8 +164,7 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	BcBigDig carry = 0;
 
 	assert(b <= BC_BASE_POW);
-
-	if (a->len + 1 > c->cap) bc_num_expand(c, a->len + 1);
+	assert(c->cap >= a->len + 1);
 
 	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
@@ -1682,9 +1681,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	BcBigDig dig, *ptr;
 	size_t i;
 	bool radix;
-	BcDig digit_digs[BC_NUM_BIGDIG_LOG10];
-	BcDig flen1_digs[BC_NUM_BIGDIG_LOG10];
-	BcDig flen2_digs[BC_NUM_BIGDIG_LOG10];
+	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
+	BcDig flen1_digs[BC_NUM_BIGDIG_LOG10 + 1];
+	BcDig flen2_digs[BC_NUM_BIGDIG_LOG10 + 1];
 
 	assert(base > 1);
 
