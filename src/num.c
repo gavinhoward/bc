@@ -1935,7 +1935,7 @@ BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 
 		r = prev + (BcBigDig) n->num[--i];
 
-		if (BC_ERR(r == SIZE_MAX || r < prev))
+		if (BC_ERR(((size_t) r) == SIZE_MAX || r < prev))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	}
 
