@@ -72,6 +72,8 @@ typedef uint_fast64_t BcBigDig;
 #define BC_BASE_POW (1000000000)
 #define BC_NUM_DEF_SIZE (2)
 
+#define BC_NUM_BIGDIG_C UINT64_C
+
 #elif BC_LONG_BIT >= 32
 // sizeof(long) has been guaranteed to be at least 32 bit long since at least c99
 // and has actually been a 32 bit value on the PDP/11, nearly 50 years ago ...
@@ -85,6 +87,8 @@ typedef uint_fast32_t BcBigDig;
 #define BC_BASE_POW (10000)
 #define BC_NUM_DEF_SIZE (4)
 
+#define BC_NUM_BIGDIG_C UINT32_C
+
 #else
 
 typedef int_least8_t BcDig;
@@ -97,6 +101,8 @@ typedef uint_fast16_t BcBigDig;
 #define BC_BASE_DIGS (2)
 #define BC_BASE_POW (100)
 #define BC_NUM_DEF_SIZE (8)
+
+#define BC_NUM_BIGDIG_C UINT16_C
 
 #else
 
@@ -114,15 +120,15 @@ typedef struct BcNum {
 	bool neg;
 } BcNum;
 
-#define BC_NUM_MIN_BASE ((BcBigDig) 2)
-#define BC_NUM_MAX_POSIX_IBASE ((BcBigDig) 16)
-#define BC_NUM_MAX_IBASE ((BcBigDig) 36)
+#define BC_NUM_MIN_BASE (BC_NUM_BIGDIG_C(2))
+#define BC_NUM_MAX_POSIX_IBASE (BC_NUM_BIGDIG_C(16))
+#define BC_NUM_MAX_IBASE (BC_NUM_BIGDIG_C(36))
 // This is the max base allowed by bc_num_parseChar().
-#define BC_NUM_MAX_LBASE ('Z' + BC_BASE + 1)
-#define BC_NUM_PRINT_WIDTH (69)
+#define BC_NUM_MAX_LBASE (BC_NUM_BIGDIG_C('Z' + BC_BASE + 1))
+#define BC_NUM_PRINT_WIDTH (BC_NUM_BIGDIG_C(69))
 
 #ifndef BC_NUM_KARATSUBA_LEN
-#define BC_NUM_KARATSUBA_LEN (64)
+#define BC_NUM_KARATSUBA_LEN (BC_NUM_BIGDIG_C(64))
 #elif BC_NUM_KARATSUBA_LEN < 16
 #error BC_NUM_KARATSUBA_LEN must be at least 16.
 #endif // BC_NUM_KARATSUBA_LEN
