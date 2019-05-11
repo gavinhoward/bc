@@ -1930,13 +1930,12 @@ BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 
 		BcBigDig prev = r * BC_BASE_POW;
 
-		if (BC_ERR(((size_t) prev) == SIZE_MAX || prev / BC_BASE_POW != r))
+		if (BC_ERR(prev / BC_BASE_POW != r))
 			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
 		r = prev + (BcBigDig) n->num[--i];
 
-		if (BC_ERR(((size_t) r) == SIZE_MAX || r < prev))
-			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+		if (BC_ERR(r < prev)) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 	}
 
 	*result = r;
