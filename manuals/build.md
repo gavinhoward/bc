@@ -406,6 +406,8 @@ the `-k` flag or the `--karatsuba-len` option to `configure.sh` as follows:
 
 Both commands are equivalent.
 
+Default is `64`.
+
 ***WARNING***: The Karatsuba Length must be a **integer** greater than or equal
 to `16` (to prevent stack overflow). If it is not, `configure.sh` will give an
 error.

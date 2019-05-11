@@ -289,7 +289,7 @@ gen_file_lists() {
 bc_only=0
 dc_only=0
 coverage=0
-karatsuba_len=32
+karatsuba_len=64
 debug=0
 signals=1
 hist=1
@@ -424,8 +424,8 @@ case $karatsuba_len in
 	(*) ;;
 esac
 
-if [ "$karatsuba_len" -lt 2 ]; then
-	usage "KARATSUBA_LEN is less than 2"
+if [ "$karatsuba_len" -lt 16 ]; then
+	usage "KARATSUBA_LEN is less than 16"
 fi
 
 set -e
@@ -746,6 +746,8 @@ printf 'BC_ENABLE_SIGNALS=%s\n' "$signals"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
+printf '\n'
+printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
 printf '\n'
 printf 'CC=%s\n' "$CC"
 printf 'CFLAGS=%s\n' "$CFLAGS"
