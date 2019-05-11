@@ -60,7 +60,10 @@ configure() {
 	_configure_configure_flags="$1"
 	shift
 
-	_configure_configure_env="$1"
+	_configure_GEN_HOST="$1"
+	shift
+
+	_configure_LONG_BIT="$1"
 	shift
 
 	if [ "$gen_tests" -eq 0 ]; then
@@ -74,11 +77,12 @@ configure() {
 	_configure_header=$(printf 'Running ./configure.sh %s ...' "$_configure_configure_flags")
 	_configure_header=$(printf "$_configure_header\n    CC=\"%s\"\n" "$_configure_CC")
 	_configure_header=$(printf "$_configure_header\n    CFLAGS=\"%s\"\n" "$_configure_CFLAGS")
-	_configure_header=$(printf "$_configure_header\n    %s" "$_configure_configure_env")
+	_configure_header=$(printf "$_configure_header\n    GEN_HOST=%s" "$_configure_GEN_HOST")
+	_configure_header=$(printf "$_configure_header\n    LONG_BIT=%s" "$_configure_LONG_BIT")
 
 	header "$_configure_header"
-	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" ./configure.sh \
-		$_configure_configure_env $_configure_configure_flags > /dev/null
+	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" GEN_HOST="$_configure_GEN_HOST" \
+		LONG_BIT="$_configure_LONG_BIT" ./configure.sh $_configure_configure_flags
 
 }
 
@@ -93,14 +97,18 @@ build() {
 	_build_configure_flags="$1"
 	shift
 
-	_build_configure_env="$1"
+	_build_GEN_HOST="$1"
 	shift
 
-	configure "$_build_CFLAGS" "$_build_CC" "$_build_configure_flags" "$_build_configure_env"
+	_build_LONG_BIT="$1"
+	shift
+
+	configure "$_build_CFLAGS" "$_build_CC" "$_build_configure_flags" "$_build_GEN_HOST" "$_build_LONG_BIT"
 
 	_build_header=$(printf 'Building...\n    CC=%s' "$_build_CC")
 	_build_header=$(printf "$_build_header\n    CFLAGS=\"%s\"" "$_build_CFLAGS")
-	_build_header=$(printf "$_build_header\n    %s" "$_build_configure_env")
+	_build_header=$(printf "$_build_header\n    GEN_HOST=%s" "$_build_GEN_HOST")
+	_build_header=$(printf "$_build_header\n    LONG_BIT=%s" "$_build_LONG_BIT")
 
 	header "$_build_header"
 
@@ -136,7 +144,10 @@ runconfigtests() {
 	_runconfigtests_configure_flags="$1"
 	shift
 
-	_runconfigtests_configure_env="$1"
+	_runconfigtests_GEN_HOST="$1"
+	shift
+
+	_runconfigtests_LONG_BIT="$1"
 	shift
 
 	_runconfigtests_run_tests="$1"
@@ -151,11 +162,15 @@ runconfigtests() {
 	_runconfigtests_header=$(printf "$_runconfigtests_header \"%s\" ...\n" "$_runconfigtests_configure_flags")
 	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CC=%s\n" "$_runconfigseries_CC")
 	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CFLAGS=\"%s\"" "$_runconfigseries_CFLAGS")
+	_runconfigtests_header=$(printf "$_runconfigtests_header\n    GEN_HOST=%s" "$_runconfigseries_GEN_HOST")
+	_runconfigtests_header=$(printf "$_runconfigtests_header\n    LONG_BIT=%s" "$_runconfigseries_LONG_BIT")
 
 	header "$_runconfigtests_header"
 
 	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" \
-		"$_runconfigtests_configure_flags" "$_runconfigtests_configure_env"
+		"$_runconfigtests_configure_flags" "$_runconfigtests_GEN_HOST" \
+		"$_runconfigtests_LONG_BIT"
+
 	if [ "$_runconfigtests_run_tests" -ne 0 ]; then
 		runtest
 	fi
@@ -163,7 +178,9 @@ runconfigtests() {
 	do_make clean
 
 	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" \
-		"$_runconfigtests_configure_flags -b" "$_runconfigtests_configure_env"
+		"$_runconfigtests_configure_flags -b" "$_runconfigtests_GEN_HOST" \
+		"$_runconfigtests_LONG_BIT"
+
 	if [ "$_runconfigtests_run_tests" -ne 0 ]; then
 		runtest
 	fi
@@ -171,7 +188,9 @@ runconfigtests() {
 	do_make clean
 
 	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" \
-		"$_runconfigtests_configure_flags -d" "$_runconfigtests_configure_env"
+		"$_runconfigtests_configure_flags -d" "$_runconfigtests_GEN_HOST" \
+		"$_runconfigtests_LONG_BIT"
+
 	if [ "$_runconfigtests_run_tests" -ne 0 ]; then
 		runtest
 	fi
@@ -194,22 +213,22 @@ runconfigseries() {
 	shift
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "LONG_BIT=64 GEN_HOST=1" "$_runconfigseries_run_tests"
+		"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "LONG_BIT=64 GEN_HOST=0" "$_runconfigseries_run_tests"
+		"$_runconfigseries_configure_flags" 0 64 "$_runconfigseries_run_tests"
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "LONG_BIT=32 GEN_HOST=1" "$_runconfigseries_run_tests"
+		"$_runconfigseries_configure_flags" 1 32 "$_runconfigseries_run_tests"
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "LONG_BIT=32 GEN_HOST=0" "$_runconfigseries_run_tests"
+		"$_runconfigseries_configure_flags" 0 32 "$_runconfigseries_run_tests"
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "LONG_BIT=16 GEN_HOST=1" "$_runconfigseries_run_tests"
+		"$_runconfigseries_configure_flags" 1 16 "$_runconfigseries_run_tests"
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" "LONG_BIT=16 GEN_HOST=0" "$_runconfigseries_run_tests"
+		"$_runconfigseries_configure_flags" 0 16 "$_runconfigseries_run_tests"
 }
 
 runtestseries() {
@@ -287,17 +306,17 @@ vg() {
 
 	header "Running valgrind"
 
-	build "$debug" "$CC" "-g" "GEN_HOST=1"
+	build "$debug" "$CC" "-g" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "$CC" "-gb" "GEN_HOST=1"
+	build "$debug" "$CC" "-gb" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "$CC" "-gd" "GEN_HOST=1"
+	build "$debug" "$CC" "-gd" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
@@ -418,7 +437,7 @@ fi
 
 cd "$scriptdir"
 
-build "$debug" "clang" "-g" "GEN_HOST=1"
+build "$debug" "clang" "-g" "1" "64"
 
 header "Running math library under --standard"
 
@@ -436,7 +455,7 @@ fi
 
 if [ "$run_tests" -ne 0 ]; then
 
-	build "$release" "clang" "-O3" "GEN_HOST=1"
+	build "$release" "clang" "-O3" "1" "64"
 
 	karatsuba
 
