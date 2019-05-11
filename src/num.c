@@ -85,13 +85,6 @@ void bc_num_one(BcNum *restrict n) {
 	n->num[0] = 1;
 }
 
-void bc_num_ten(BcNum *restrict n) {
-	assert(n);
-	bc_num_setToZero(n, 0);
-	n->len = 1;
-	n->num[0] = BC_BASE;
-}
-
 static void bc_num_clean(BcNum *restrict n) {
 	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) --n->len;
 	if (BC_NUM_ZERO(n)) n->neg = false;
