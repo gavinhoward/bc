@@ -164,7 +164,8 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	BcBigDig carry = 0;
 
 	assert(b <= BC_BASE_POW);
-	assert(c->cap >= a->len + 1);
+
+	if (a->len + 1 > c->cap) bc_num_expand(c, a->len + 1);
 
 	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
