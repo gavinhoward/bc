@@ -738,11 +738,8 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 		bc_num_copy(c, aone ? b : a);
 		return BC_STATUS_SUCCESS;
 	}
-	if (a->len + b->len < BC_NUM_KARATSUBA_LEN ||
-	    a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
-	{
+	if (a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
 		return bc_num_m_simp(a, b, c);
-	}
 
 	max = BC_MAX(a->len, b->len);
 	max = BC_MAX(max, BC_NUM_DEF_SIZE);
