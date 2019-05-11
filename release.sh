@@ -162,8 +162,8 @@ runconfigtests() {
 	_runconfigtests_header=$(printf "$_runconfigtests_header \"%s\" ...\n" "$_runconfigtests_configure_flags")
 	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CC=%s\n" "$_runconfigseries_CC")
 	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CFLAGS=\"%s\"" "$_runconfigseries_CFLAGS")
-	_runconfigtests_header=$(printf "$_runconfigtests_header\n    GEN_HOST=%s" "$_runconfigseries_GEN_HOST")
-	_runconfigtests_header=$(printf "$_runconfigtests_header\n    LONG_BIT=%s" "$_runconfigseries_LONG_BIT")
+	_runconfigtests_header=$(printf "$_runconfigtests_header\n    GEN_HOST=%s" "$_runconfigtests_GEN_HOST")
+	_runconfigtests_header=$(printf "$_runconfigtests_header\n    LONG_BIT=%s" "$_runconfigtests_LONG_BIT")
 
 	header "$_runconfigtests_header"
 
