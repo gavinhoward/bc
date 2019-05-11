@@ -1171,7 +1171,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 #if DC_ENABLED
 			else if (!BC_PROG_NUM(opd, num)) {
 				size_t idx = opd->t == BC_RESULT_STR ? opd->d.id.idx : num->rdx;
-				val = strlen(bc_program_str(p, idx, true));
+				val = (BcBigDig) strlen(bc_program_str(p, idx, true));
 			}
 #endif // DC_ENABLED
 			else val = (BcBigDig) bc_num_len(num);
@@ -1255,7 +1255,7 @@ err:
 static void bc_program_stackLen(BcProgram *p) {
 	BcResult res;
 	res.t = BC_RESULT_TEMP;
-	bc_num_createFromBigdig(&res.d.n, p->results.len);
+	bc_num_createFromBigdig(&res.d.n, (BcBigDig) p->results.len);
 	bc_vec_push(&p->results, &res);
 }
 
