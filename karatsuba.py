@@ -98,7 +98,7 @@ try:
 			print("configure.sh returned an error ({}); exiting...".format(p.returncode))
 			sys.exit(p.returncode)
 
-		makecmd = [ "make", "-j4" ]
+		makecmd = [ "make" ]
 		p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 		if p.returncode != 0:
