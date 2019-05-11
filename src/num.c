@@ -1074,6 +1074,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_copy(&cpa, a);
 	bc_num_createCopy(&cpb, b);
 
+	len = b->len;
+
 	if (len > cpa.len) {
 		bc_num_expand(&cpa, bc_vm_growSize(len, 2));
 		bc_num_extend(&cpa, (len - cpa.len) * BC_BASE_DIGS);
