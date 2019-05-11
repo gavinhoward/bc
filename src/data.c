@@ -709,14 +709,14 @@ const uint8_t dc_parse_insts[] = {
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
-const BcBigDig bc_num_pow10[BC_BASE_POWER + 1] = {
+const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {
 	1,
 	10,
 	100,
-#if BC_BASE_POWER > 2
+#if BC_BASE_DIGS > 2
 	1000,
 	10000,
-#if BC_BASE_POWER > 4
+#if BC_BASE_DIGS > 4
 	100000,
 	1000000,
 	10000000,

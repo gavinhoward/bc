@@ -68,8 +68,8 @@ typedef uint_fast64_t BcBigDig;
 
 #define BC_NUM_BIGDIG_MAX (UINT_FAST64_MAX)
 
-#define BC_BASE_POWER (9)
-#define BC_BASE_DIG (1000000000)
+#define BC_BASE_DIGS (9)
+#define BC_BASE_POW (1000000000)
 #define BC_NUM_DEF_SIZE (2)
 
 #elif BC_LONG_BIT >= 32
@@ -81,8 +81,8 @@ typedef uint_fast32_t BcBigDig;
 
 #define BC_NUM_BIGDIG_MAX (UINT_FAST32_MAX)
 
-#define BC_BASE_POWER (4)
-#define BC_BASE_DIG (10000)
+#define BC_BASE_DIGS (4)
+#define BC_BASE_POW (10000)
 #define BC_NUM_DEF_SIZE (4)
 
 #else
@@ -94,8 +94,8 @@ typedef uint_fast16_t BcBigDig;
 
 #if BC_LONG_BIT >= 16
 
-#define BC_BASE_POWER (2)
-#define BC_BASE_DIG (100)
+#define BC_BASE_DIGS (2)
+#define BC_BASE_POW (100)
 #define BC_NUM_DEF_SIZE (8)
 
 #else
@@ -141,8 +141,8 @@ typedef struct BcNum {
 
 #define BC_NUM_CMP_SIGNAL (~((ssize_t) ((size_t) SSIZE_MAX)))
 
-#define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_POWER - 1))
-#define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_POWER)
+#define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_DIGS - 1))
+#define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_DIGS)
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
@@ -223,6 +223,6 @@ void bc_num_dump(const char *varname, const BcNum *n);
 #endif // BC_DEBUG_CODE
 
 extern const char bc_num_hex_digits[];
-extern const BcBigDig bc_num_pow10[BC_BASE_POWER + 1];
+extern const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1];
 
 #endif // BC_NUM_H
