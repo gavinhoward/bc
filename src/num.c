@@ -59,10 +59,6 @@ static size_t bc_num_int(const BcNum *n) {
 	return n->len ? n->len - n->rdx : 0;
 }
 
-static bool bc_num_isOne(const BcNum *n) {
-	return n->len == 1 && n->rdx == 0 && n->num[0] == 1;
-}
-
 static void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
@@ -727,15 +723,16 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
 	BcDig *digs, *dig_ptr;
 	BcNumShiftAddOp op;
-	bool aone = bc_num_isOne(a);
+	bool aone = BC_NUM_ONE(a);
 
 	assert(BC_NUM_ZERO(c));
 
 	// This is here because the function is recursive.
  	if (BC_SIG) return BC_STATUS_SIGNAL;
 	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) return BC_STATUS_SUCCESS;
-	if (aone || bc_num_isOne(b)) {
+	if (aone || BC_NUM_ONE(b)) {
 		bc_num_copy(c, aone ? b : a);
+		if ((aone && a->neg) || b->neg) c->neg = !c->neg;
 		return BC_STATUS_SUCCESS;
 	}
 	if (a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
@@ -1060,7 +1057,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	if (bc_num_isOne(b)) {
+	if (BC_NUM_ONE(b)) {
 		bc_num_copy(c, a);
 		bc_num_retireMul(c, scale, a->neg, b->neg);
 		return BC_STATUS_SUCCESS;
@@ -1192,7 +1189,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	if (bc_num_isOne(b)) {
+	if (BC_NUM_ONE(b)) {
 		if (!b->neg) bc_num_copy(c, a);
 		else s = bc_num_inv(a, c, scale);
 		return s;
@@ -2101,7 +2098,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		bc_num_setToZero(b, scale);
 		return BC_STATUS_SUCCESS;
 	}
-	if (bc_num_isOne(a)) {
+	if (BC_NUM_ONE(a)) {
 		bc_num_one(b);
 		bc_num_extend(b, scale);
 		return BC_STATUS_SUCCESS;
@@ -2281,7 +2278,8 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 		s = bc_num_divmod(&exp, &two, &exp, &temp, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		if (bc_num_isOne(&temp)) {
+		if (BC_NUM_ONE(&temp) && !temp.neg) {
+
 			s = bc_num_mul(d, &base, &temp, 0);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 

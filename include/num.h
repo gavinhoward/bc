@@ -133,6 +133,7 @@ typedef struct BcNum {
 
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
+#define BC_NUM_ONE(n) ((n)->len == 1 && (n)->rdx == 0 && (n)->num[0] == 1)
 
 #define BC_NUM_NUM_LETTER(c) ((c) - 'A' + BC_BASE)
 
