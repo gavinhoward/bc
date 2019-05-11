@@ -204,6 +204,11 @@ static size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_shutdown(void) {
+
+	// I know the operating system should do this for us, but by having this
+	// line, my test coverage increases. >_<
+	fflush(stdout);
+
 #if BC_ENABLE_NLS
 	catclose(vm->catalog);
 #endif // BC_ENABLE_NLS
