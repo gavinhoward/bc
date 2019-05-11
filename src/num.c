@@ -164,7 +164,8 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	BcBigDig carry = 0;
 
 	assert(b <= BC_BASE_POW);
-	assert(c->cap >= a->len + 1);
+
+	if (a->len + 1 > c->cap) bc_num_expand(c, a->len + 1);
 
 	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
@@ -1682,8 +1683,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	size_t i;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
-	BcDig flen1_digs[BC_NUM_BIGDIG_LOG10 + 1];
-	BcDig flen2_digs[BC_NUM_BIGDIG_LOG10 + 1];
 
 	assert(base > 1);
 
@@ -1696,8 +1695,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	bc_num_init(&fracp1, n->rdx);
 	bc_num_init(&fracp2, n->rdx);
 	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
-	bc_num_setup(&flen1, flen1_digs, sizeof(flen1_digs) / sizeof(BcDig));
-	bc_num_setup(&flen2, flen2_digs, sizeof(flen2_digs) / sizeof(BcDig));
+	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
+	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_one(&flen1);
 	bc_num_createCopy(&intp1, n);
 
@@ -1770,6 +1769,8 @@ sig_err:
 err:
 	bc_num_free(&intp2);
 	bc_num_free(&intp1);
+	bc_num_free(&flen2);
+	bc_num_free(&flen1);
 	bc_num_free(&fracp2);
 	bc_num_free(&fracp1);
 	bc_vec_free(&stack);
