@@ -253,7 +253,11 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
+
+#if BC_ENABLE_SIGNALS
 	if (cmp == BC_NUM_CMP_SIGNAL) return cmp;
+#endif // BC_ENABLE_SIGNALS
+
 	if (cmp) return bc_num_neg((size_t) cmp, !a_max == !neg);
 
 	for (max_num -= diff, i = diff - 1; BC_NO_SIG && i < diff; --i) {
@@ -616,7 +620,10 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	a->neg = b->neg = false;
 
 	cmp = bc_num_cmp(a, b);
+
+#if BC_ENABLE_SIGNALS
 	if (cmp == BC_NUM_CMP_SIGNAL) return BC_STATUS_SIGNAL;
+#endif // BC_ENABLE_SIGNALS
 
 	a->neg = aneg;
 	b->neg = bneg;
@@ -944,7 +951,10 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 		q = 0;
 
 		cmp = bc_num_divCmp(n, b, len);
+
+#if BC_ENABLE_SIGNALS
 		if (cmp == BC_NUM_CMP_SIGNAL) break;
+#endif // BC_ENABLE_SIGNALS
 
 		if (!cmp) {
 
@@ -982,7 +992,10 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 				bc_num_clean(&cpb);
 
 				cmp = bc_num_divCmp(n, &cpb, len);
+
+#if BC_ENABLE_SIGNALS
 				if (cmp == BC_NUM_CMP_SIGNAL) goto err;
+#endif // BC_ENABLE_SIGNALS
 
 				while (BC_NO_SIG && BC_NO_ERR(!s) && cmp < 0) {
 
@@ -994,7 +1007,10 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 					bc_num_clean(&cpb);
 
 					cmp = bc_num_divCmp(n, &cpb, len);
+
+#if BC_ENABLE_SIGNALS
 					if (cmp == BC_NUM_CMP_SIGNAL) goto err;
+#endif // BC_ENABLE_SIGNALS
 				}
 
 				pow /= BC_BASE;
@@ -2155,10 +2171,13 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		cmp = bc_num_cmp(x1, x0);
+
+#if BC_ENABLE_SIGNALS
 		if (cmp == BC_NUM_CMP_SIGNAL) {
 			s = BC_STATUS_SIGNAL;
 			break;
 		}
+#endif // BC_ENABLE_SIGNALS
 
 		digs = x1->len - (unsigned long long) llabs(cmp);
 
