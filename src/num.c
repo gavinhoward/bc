@@ -1981,7 +1981,7 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
 
 	BcStatus s;
-	BcBigDig places;
+	BcBigDig places = 0;
 	size_t rdx;
 
 	BC_UNUSED(s);
@@ -1999,7 +1999,7 @@ size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
 
 	BcStatus s;
-	BcBigDig places, rdx;
+	BcBigDig places = 0, rdx;
 
 	BC_UNUSED(s);
 	BC_UNUSED(scale);
@@ -2016,7 +2016,7 @@ size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale) {
 
 	BcStatus s;
-	BcBigDig places, int_digs, rdx;
+	BcBigDig places = 0, int_digs, rdx;
 
 	BC_UNUSED(s);
 	BC_UNUSED(scale);
