@@ -234,10 +234,12 @@ perilously close to 4095 characters, the max supported length of a string
 literal in C99 (and it could be added to in the future), and `gen/strgen.sh`
 generates a string literal instead of an array, as `gen/strgen.c` does. For most
 production-ready compilers, this limit probably is not enforced, but it could
-be. Both options are still available for this reason. If you are sure your
-compiler does not have the limit and do not want to compile and run a binary on
-the host machine, set this variable to "0". Any other value, or a non-existent
-value, will cause the build system to compile and run `gen/strgen.c`.
+be. Both options are still available for this reason.
+
+If you are sure your compiler does not have the limit and do not want to compile
+and run a binary on the host machine, set this variable to "0". Any other value,
+or a non-existent value, will cause the build system to compile and run
+`gen/strgen.c`.
 
 Default is "".
 
