@@ -1964,7 +1964,8 @@ size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
 size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
 	size_t max, rdx;
 	rdx = bc_vm_growSize(a->rdx, b->rdx);
-	max = bc_vm_growSize(BC_MAX(BC_NUM_RDX(scale), rdx), 1);
+	max = BC_NUM_RDX(scale);
+	max = bc_vm_growSize(BC_MAX(max, rdx), 1);
 	rdx = bc_vm_growSize(bc_vm_growSize(bc_num_int(a), bc_num_int(b)), max);
 	return rdx;
 }
