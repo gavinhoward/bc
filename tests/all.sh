@@ -38,7 +38,7 @@ if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	err_exit "usage: $script dir [run_extended_tests] [run_stack_tests] [generate_tests] [exec args...]" 1
+	err_exit "usage: $script dir [run_extra_tests] [run_stack_tests] [gen_tests] [time_tests] [exec args...]" 1
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -59,6 +59,13 @@ if [ "$#" -lt 1 ]; then
 	generate_tests=1
 else
 	generate_tests="$1"
+	shift
+fi
+
+if [ "$#" -lt 1 ]; then
+	time_tests=0
+else
+	time_tests="$1"
 	shift
 fi
 
@@ -91,13 +98,13 @@ while read t; do
 		fi
 	fi
 
-	sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$exe" "$@"
+	sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$time_tests" "$exe" "$@"
 
 done < "$testdir/$d/all.txt"
 
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
-sh "$testdir/scripts.sh" "$d" "$run_stack_tests" "$generate_tests" "$exe" "$@"
+sh "$testdir/scripts.sh" "$d" "$run_stack_tests" "$generate_tests" "$time_tests" "$exe" "$@"
 sh "$testdir/read.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 

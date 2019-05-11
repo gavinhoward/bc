@@ -71,9 +71,9 @@ the environment variable `GEN_EMU`.
 This `bc` supports `CC`, `HOSTCC`, `HOST_CC`, `CFLAGS`, `HOSTCFLAGS`,
 `HOST_CFLAGS`, `CPPFLAGS`, `LDFLAGS`, `LDLIBS`, `PREFIX`, `DESTDIR`, `BINDIR`,
 `DATAROOTDIR`, `DATADIR`, `MANDIR`, `MAN1DIR`, `LOCALEDIR` `EXECSUFFIX`,
-`EXECPREFIX` and `GEN_EMU` environment variables in `configure.sh`. Any values
-of those variables given to `configure.sh` will be put into the generated
-Makefile.
+`EXECPREFIX`, `LONG_BIT`, `GEN_HOST`, and `GEN_EMU` environment variables in
+`configure.sh`. Any values of those variables given to `configure.sh` will be
+put into the generated Makefile.
 
 More detail on what those environment variables do can be found in the following
 sections.
@@ -207,6 +207,41 @@ This is for packagers and distro maintainers who want this `bc` as an option,
 but do not want to replace the default `bc`.
 
 Defaults to empty.
+
+### `LONG_BIT`
+
+The number of bits in a C `long` type. This is mostly for the embedded space.
+
+This `bc` uses `long`s internally for overflow checking. In C99, a `long` is
+required to be 32 bits. For this reason, on 8-bit and 16-bit microcontrollers,
+the generated code to do math with `long` types may be inefficient. Users may
+set this lower to improve the efficiency of the generated code for math.
+
+For most normal desktop systems, setting this is unnecessary, except that 32-bit
+platforms with 64-bit longs may want to set it to `32`.
+
+Defaults to the default value of `LONG_BIT` for the target platform. For
+compliance with the `bc` spec, the minimum allowed value is `16`.
+
+### `GEN_HOST`
+
+Whether to use `gen/strgen.c`, instead of `gen/strgen.sh`, to produce the C
+files that contain the help texts as well as the math libraries. By default,
+`gen/strgen.c` is used, compiled by `$HOSTCC` and run on the host machine. Using
+`gen/strgen.sh` removes the need to compile and run an executable on the host
+machine since `gen/strgen.sh` is a POSIX shell script. However, `gen/lib2.bc` is
+perilously close to 4095 characters, the max supported length of a string
+literal in C99 (and it could be added to in the future), and `gen/strgen.sh`
+generates a string literal instead of an array, as `gen/strgen.c` does. For most
+production-ready compilers, this limit probably is not enforced, but it could
+be. Both options are still available for this reason.
+
+If you are sure your compiler does not have the limit and do not want to compile
+and run a binary on the host machine, set this variable to "0". Any other value,
+or a non-existent value, will cause the build system to compile and run
+`gen/strgen.c`.
+
+Default is "".
 
 ### `GEN_EMU`
 
@@ -373,8 +408,11 @@ the `-k` flag or the `--karatsuba-len` option to `configure.sh` as follows:
 
 Both commands are equivalent.
 
+Default is `64`.
+
 ***WARNING***: The Karatsuba Length must be a **integer** greater than or equal
-to `16`. If it is not, `configure.sh` will give an error.
+to `16` (to prevent stack overflow). If it is not, `configure.sh` will give an
+error.
 
 ### Install Options
 

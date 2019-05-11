@@ -709,6 +709,23 @@ const uint8_t dc_parse_insts[] = {
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
+const BcBigDig bc_num_pow10[BC_BASE_POWER + 1] = {
+	1,
+	10,
+	100,
+#if BC_BASE_POWER > 2
+	1000,
+	10000,
+#if BC_BASE_POWER > 4
+	100000,
+	1000000,
+	10000000,
+	100000000,
+	1000000000,
+#endif // BC_LONG_BIT > 32
+#endif // BC_LONG_BIT > 16
+};
+
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
 #if BC_ENABLE_EXTRA_MATH

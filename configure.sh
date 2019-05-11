@@ -107,7 +107,7 @@ usage() {
 	printf '        If PREFIX is "/usr", install path will be "/usr/bin".\n'
 	printf '        Default is "/usr/local".\n'
 	printf '    --bindir BINDIR\n'
-	printf '        The directory to install binaries. Overrides "$BINDIR if it exists.\n'
+	printf '        The directory to install binaries. Overrides "$BINDIR" if it exists.\n'
 	printf '        Default is "$PREFIX/bin".\n'
 	printf '    --datarootdir DATAROOTDIR\n'
 	printf '        The root location for data files. Overrides "$DATAROOTDIR" if it exists.\n'
@@ -119,8 +119,8 @@ usage() {
 	printf '        The location to install manpages to. Overrides "$MANDIR" if it exists.\n'
 	printf '        Default is "$DATADIR/man".\n'
 	printf '    --man1dir MAN1DIR\n'
-	printf '        The location to install Section 1 manpages to. Overrides "$MAN1DIR if it\n'
-	printf '        exists. Default is "$MANDIR/man1".\n'
+	printf '        The location to install Section 1 manpages to. Overrides "$MAN1DIR" if\n'
+	printf '        it exists. Default is "$MANDIR/man1".\n'
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
@@ -154,12 +154,22 @@ usage() {
 	printf '                 `%s` is run, it can also be passed to `make install`\n' "$script"
 	printf '                 later as an environment variable. If both are specified,\n'
 	printf '                 the one given to `%s` takes precedence.\n' "$script"
+	printf '    LONG_BIT     The number of bits in a C `long` type. This is mostly for the\n'
+	printf '                 embedded space since this `bc` uses `long`s internally for\n'
+	printf '                 overflow checking. In C99, a `long` is required to be 32 bits.\n'
+	printf '                 For this reason, on 8-bit and 16-bit microcontrollers, the\n'
+	printf '                 generated code to do math with `long` types may be inefficient.\n'
+	printf '                 Users may set this lower to improve the efficiency of the\n'
+	printf '                 generated code for math. For most normal desktop systems,\n'
+	printf '                 setting this is unnecessary, except that 32-bit platforms with\n'
+	printf '                 64-bit longs may want to set it to `32`. Default is the default\n'
+	printf '                 of `LONG_BIT` for the target platform. Minimum allowed is `16`.\n'
 	printf '    GEN_HOST     Whether to use `gen/strgen.c`, instead of `gen/strgen.sh`, to\n'
 	printf '                 produce the C files that contain the help texts as well as the\n'
 	printf '                 math libraries. By default, `gen/strgen.c` is used, compiled by\n'
 	printf '                 "$HOSTCC" and run on the host machine. Using `gen/strgen.sh`\n'
 	printf '                 removes the need to compile and run an executable on the host\n'
-	printf '                 machine since `gen/strgen.sh is a POSIX shell script. However,\n'
+	printf '                 machine since `gen/strgen.sh` is a POSIX shell script. However,\n'
 	printf '                 `gen/lib2.bc` is perilously close to 4095 characters, the max\n'
 	printf '                 supported length of a string literal in C99 (and it could be\n'
 	printf '                 added to in the future), and `gen/strgen.sh` generates a string\n'
@@ -424,16 +434,18 @@ link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math 1 $generate_tests \$(BC_EXEC)"
-dc_test="@tests/all.sh dc $extra_math 1 $generate_tests \$(DC_EXEC)"
+bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 \$(BC_EXEC)"
+bc_time_test="@tests/all.sh bc $extra_math 1 $generate_tests 1 \$(BC_EXEC)"
+dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 \$(DC_EXEC)"
+dc_time_test="@tests/all.sh dc $extra_math 1 $generate_tests 1 \$(DC_EXEC)"
 
 timeconst="@tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math 1 $generate_tests valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math 1 $generate_tests valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	vg_bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 else
 	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
 	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
@@ -456,6 +468,7 @@ if [ "$bc_only" -eq 1 ]; then
 	executables="bc"
 
 	dc_test="@printf 'No dc tests to run\\\\n'"
+	dc_time_test="@printf 'No dc tests to run\\\\n'"
 	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
 	install_prereqs=" install_bc_manpage"
@@ -476,6 +489,7 @@ elif [ "$dc_only" -eq 1 ]; then
 	executable="DC_EXEC"
 
 	bc_test="@printf 'No bc tests to run\\\\n'"
+	bc_time_test="@printf 'No bc tests to run\\\\n'"
 	vg_bc_test="@printf 'No bc tests to run\\\\n'"
 
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
@@ -500,6 +514,12 @@ else
 	uninstall_prereqs=" uninstall_bc uninstall_dc"
 	uninstall_man_prereqs=" uninstall_bc_manpage uninstall_dc_manpage"
 
+fi
+
+if [ -z "${LONG_BIT+set}" ]; then
+	LONG_BIT="LONG_BIT"
+elif [ "$LONG_BIT" -lt 16 ]; then
+	usage "LONG_BIT is less than 16"
 fi
 
 if [ -z "${HOSTCFLAGS+set}" -a -z "${HOST_CFLAGS+set}" ]; then
@@ -727,6 +747,8 @@ printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
 printf '\n'
+printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
+printf '\n'
 printf 'CC=%s\n' "$CC"
 printf 'CFLAGS=%s\n' "$CFLAGS"
 printf 'HOSTCC=%s\n' "$HOSTCC"
@@ -743,6 +765,7 @@ printf 'NLSPATH=%s\n' "$NLSPATH"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
 printf 'EXECPREFIX=%s\n' "$EXECPREFIX"
 printf 'DESTDIR=%s\n' "$DESTDIR"
+printf 'LONG_BIT=%s\n' "$LONG_BIT"
 printf 'GEN_HOST=%s\n' "$GEN_HOST"
 printf 'GEN_EMU=%s\n' "$GEN_EMU"
 
@@ -797,7 +820,9 @@ contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
 contents=$(replace "$contents" "EXEC" "$executable")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
+contents=$(replace "$contents" "BC_TIME_TEST" "$bc_time_test")
 contents=$(replace "$contents" "DC_TEST" "$dc_test")
+contents=$(replace "$contents" "DC_TIME_TEST" "$dc_time_test")
 
 contents=$(replace "$contents" "VG_BC_TEST" "$vg_bc_test")
 contents=$(replace "$contents" "VG_DC_TEST" "$vg_dc_test")
@@ -806,6 +831,8 @@ contents=$(replace "$contents" "TIMECONST" "$timeconst")
 
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
+
+contents=$(replace "$contents" "LONG_BIT" "$LONG_BIT")
 
 contents=$(replace "$contents" "GEN" "$GEN")
 contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")

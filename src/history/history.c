@@ -170,7 +170,7 @@
 /**
  * Check if the code is a wide character.
  */
-static bool bc_history_wchar(unsigned long cp) {
+static bool bc_history_wchar(uint32_t cp) {
 
 	size_t i;
 
@@ -192,7 +192,7 @@ static bool bc_history_wchar(unsigned long cp) {
 /**
  * Check if the code is a combining character.
  */
-static bool bc_history_comboChar(unsigned long cp) {
+static bool bc_history_comboChar(uint32_t cp) {
 
 	size_t i;
 

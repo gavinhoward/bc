@@ -39,7 +39,8 @@ header() {
 
 	printf '\n'
 	printf '*******************\n'
-	printf '%s...\n' "$_header_msg"
+	printf "$_header_msg"
+	printf '\n'
 	printf '*******************\n'
 	printf '\n'
 }
@@ -59,6 +60,9 @@ configure() {
 	_configure_configure_flags="$1"
 	shift
 
+	_configure_configure_env="$1"
+	shift
+
 	if [ "$gen_tests" -eq 0 ]; then
 		_configure_configure_flags="-G $_configure_configure_flags"
 	fi
@@ -67,8 +71,14 @@ configure() {
 		_configure_CFLAGS="$clang_flags $_configure_CFLAGS"
 	fi
 
-	header "Running \"./configure.sh $_configure_configure_flags\" with CC=\"$_configure_CC\" and CFLAGS=\"$_configure_CFLAGS\""
-	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" ./configure.sh $_configure_configure_flags > /dev/null
+	_configure_header=$(printf 'Running ./configure.sh %s ...' "$_configure_configure_flags")
+	_configure_header=$(printf "$_configure_header\n    CC=\"%s\"\n" "$_configure_CC")
+	_configure_header=$(printf "$_configure_header\n    CFLAGS=\"%s\"\n" "$_configure_CFLAGS")
+	_configure_header=$(printf "$_configure_header\n    %s" "$_configure_configure_env")
+
+	header "$_configure_header"
+	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" ./configure.sh \
+		$_configure_configure_env $_configure_configure_flags > /dev/null
 
 }
 
@@ -83,9 +93,16 @@ build() {
 	_build_configure_flags="$1"
 	shift
 
-	configure "$_build_CFLAGS" "$_build_CC" "$_build_configure_flags"
+	_build_configure_env="$1"
+	shift
 
-	header "Building with CC=\"$_build_CC\" and CFLAGS=\"$_build_CFLAGS\""
+	configure "$_build_CFLAGS" "$_build_CC" "$_build_configure_flags" "$_build_configure_env"
+
+	_build_header=$(printf 'Building...\n    CC=%s' "$_build_CC")
+	_build_header=$(printf "$_build_header\n    CFLAGS=\"%s\"" "$_build_CFLAGS")
+	_build_header=$(printf "$_build_header\n    %s" "$_build_configure_env")
+
+	header "$_build_header"
 
 	do_make > /dev/null 2> "$scriptdir/.test.txt"
 
@@ -119,35 +136,80 @@ runconfigtests() {
 	_runconfigtests_configure_flags="$1"
 	shift
 
+	_runconfigtests_configure_env="$1"
+	shift
+
 	_runconfigtests_run_tests="$1"
 	shift
 
 	if [ "$_runconfigtests_run_tests" -ne 0 ]; then
-		header "Running tests with configure flags \"$_runconfigtests_configure_flags\", CC=\"$_runconfigtests_CC\", and CFLAGS=\"$_runconfigtests_CFLAGS\""
+		_runconfigtests_header=$(printf 'Running tests with configure flags')
 	else
-		header "Building with configure flags \"$_runconfigtests_configure_flags\", CC=\"$_runconfigtests_CC\", and CFLAGS=\"$_runconfigtests_CFLAGS\""
+		_runconfigtests_header=$(printf 'Building with configure flags')
 	fi
 
-	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" "$_runconfigtests_configure_flags"
+	_runconfigtests_header=$(printf "$_runconfigtests_header \"%s\" ...\n" "$_runconfigtests_configure_flags")
+	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CC=%s\n" "$_runconfigseries_CC")
+	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CFLAGS=\"%s\"" "$_runconfigseries_CFLAGS")
+
+	header "$_runconfigtests_header"
+
+	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" \
+		"$_runconfigtests_configure_flags" "$_runconfigtests_configure_env"
 	if [ "$_runconfigtests_run_tests" -ne 0 ]; then
 		runtest
 	fi
 
 	do_make clean
 
-	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" "$_runconfigtests_configure_flags -b"
+	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" \
+		"$_runconfigtests_configure_flags -b" "$_runconfigtests_configure_env"
 	if [ "$_runconfigtests_run_tests" -ne 0 ]; then
 		runtest
 	fi
 
 	do_make clean
 
-	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" "$_runconfigtests_configure_flags -d"
+	build "$_runconfigtests_CFLAGS" "$_runconfigtests_CC" \
+		"$_runconfigtests_configure_flags -d" "$_runconfigtests_configure_env"
 	if [ "$_runconfigtests_run_tests" -ne 0 ]; then
 		runtest
 	fi
 
 	do_make clean
+}
+
+runconfigseries() {
+
+	_runconfigseries_CFLAGS="$1"
+	shift
+
+	_runconfigseries_CC="$1"
+	shift
+
+	_runconfigseries_configure_flags="$1"
+	shift
+
+	_runconfigseries_run_tests="$1"
+	shift
+
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=64 GEN_HOST=1" "$_runconfigseries_run_tests"
+
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=64 GEN_HOST=0" "$_runconfigseries_run_tests"
+
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=32 GEN_HOST=1" "$_runconfigseries_run_tests"
+
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=32 GEN_HOST=0" "$_runconfigseries_run_tests"
+
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=16 GEN_HOST=1" "$_runconfigseries_run_tests"
+
+	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+		"$_runconfigseries_configure_flags" "LONG_BIT=16 GEN_HOST=0" "$_runconfigseries_run_tests"
 }
 
 runtestseries() {
@@ -164,22 +226,38 @@ runtestseries() {
 	_runtestseries_run_tests="$1"
 	shift
 
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -E" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -H" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -N" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -S" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -EH" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -EN" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -ES" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -HN" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -HS" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -NS" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -EHN" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -EHS" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -ENS" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -HNS" "$_runtestseries_run_tests"
-	runconfigtests "$_runtestseries_CFLAGS" "$_runtestseries_CC" "$_runtestseries_configure_flags -EHNS" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -E" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -H" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -N" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -S" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -EH" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -EN" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -ES" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -HN" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -HS" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -NS" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -EHN" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -EHS" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -ENS" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -HNS" "$_runtestseries_run_tests"
+	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+		"$_runtestseries_configure_flags -EHNS" "$_runtestseries_run_tests"
 }
 
 runtests() {
@@ -209,17 +287,17 @@ vg() {
 
 	header "Running valgrind"
 
-	build "$debug" "$CC" "-g"
+	build "$debug" "$CC" "-g" "GEN_HOST=1"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "$CC" "-gb"
+	build "$debug" "$CC" "-gb" "GEN_HOST=1"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "$CC" "-gd"
+	build "$debug" "$CC" "-gd" "GEN_HOST=1"
 	runtest valgrind
 
 	do_make clean_config
@@ -340,7 +418,7 @@ fi
 
 cd "$scriptdir"
 
-build "$debug" "clang" ""
+build "$debug" "clang" "-g" "GEN_HOST=1"
 
 header "Running math library under --standard"
 
@@ -358,7 +436,7 @@ fi
 
 if [ "$run_tests" -ne 0 ]; then
 
-	build "$release" "clang" ""
+	build "$release" "clang" "-O3" "GEN_HOST=1"
 
 	karatsuba
 

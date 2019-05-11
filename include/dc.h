@@ -42,10 +42,6 @@
 #include <lex.h>
 #include <parse.h>
 
-// I use 32 as the length because I don't want
-// to have to calculate log base 2 of n.
-#define DC_PARSE_BUF_LEN ((int) (sizeof(uint32_t) * CHAR_BIT))
-
 int dc_main(int argc, char **argv);
 
 extern const char dc_help[];
