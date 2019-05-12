@@ -473,7 +473,7 @@ if [ "$run_tests" -ne 0 ]; then
 
 	set -e
 
-	if [ "$err" -ne 0 ]; then
+	if [ "$err" -eq 0 ]; then
 
 		header "Building with afl-gcc..."
 
