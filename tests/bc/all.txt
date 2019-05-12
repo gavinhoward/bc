@@ -33,5 +33,6 @@ misc
 misc1
 misc2
 misc3
+misc4
 void
 lib2
