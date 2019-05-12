@@ -143,6 +143,9 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
 BcStatus bc_parse_parse(BcParse *p);
 BcStatus bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
 
+// This is necessary to clear up for if statements at the end of files.
+void bc_parse_noElse(BcParse *p);
+
 #if BC_ENABLE_SIGNALS
 extern const char bc_sig_msg[];
 #endif // BC_ENABLE_SIGNALS
