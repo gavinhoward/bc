@@ -475,9 +475,9 @@ if [ "$run_tests" -ne 0 ]; then
 
 	if [ "$err" -eq 0 ]; then
 
-		header "Building with afl-gcc..."
+		header "Configuring for afl-gcc..."
 
-		configure "$debug" "afl-gcc" "-HSg"
+		configure "$debug" "afl-gcc" "-HSg" "1" "64"
 
 		printf '\n'
 		printf 'Run make\n'
@@ -486,7 +486,7 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run ASan on the fuzzer test cases with the following build:\n'
 		printf '\n'
-		printf '    CFLAGS=-fsanitize=address ./configure.sh -O3\n'
+		printf '    CFLAGS=-fsanitize=address ./configure.sh -g\n'
 		printf '    make\n'
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
