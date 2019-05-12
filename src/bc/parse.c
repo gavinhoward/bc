@@ -836,6 +836,8 @@ static BcStatus bc_parse_func(BcParse *p) {
 	voidfn = (voidfn && p->l.t == BC_LEX_NAME);
 
 	if (voidfn) {
+		s = bc_parse_err(p, BC_ERROR_POSIX_VOID);
+		if (BC_ERR(s)) return s;
 		s = bc_lex_next(&p->l);
 		if (BC_ERR(s)) return s;
 	}

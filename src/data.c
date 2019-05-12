@@ -92,6 +92,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
 
 };
@@ -162,6 +163,7 @@ const char* const bc_err_msgs[] = {
 	NULL,
 #endif // BC_ENABLE_EXTRA_MATH
 	"POSIX does not allow array references as function parameters",
+	"POSIX does not allow void functions",
 	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
 
