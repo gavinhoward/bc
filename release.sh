@@ -306,17 +306,17 @@ vg() {
 
 	header "Running valgrind"
 
-	build "$debug" "clang" "-O0 -g" "1" "64"
+	build "$debug" "gcc" "-O0 -g" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "clang" "-O0 -gb" "1" "64"
+	build "$debug" "gcc" "-O0 -gb" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "clang" "-O0 -gd" "1" "64"
+	build "$debug" "gcc" "-O0 -gd" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
@@ -459,7 +459,7 @@ if [ "$run_tests" -ne 0 ]; then
 
 	karatsuba
 
-	if [ "$run_valgrind" -ne 0 ]; then
+	if [ "$run_valgrind" -ne 0 -a "$test_with_gcc" -ne 0 ]; then
 		vg
 	fi
 
