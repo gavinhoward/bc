@@ -299,7 +299,7 @@ runtests() {
 karatsuba() {
 
 	header "Running Karatsuba tests"
-	runtest karatsuba_test
+	do_make karatsuba_test
 }
 
 vg() {
