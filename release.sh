@@ -463,21 +463,37 @@ if [ "$run_tests" -ne 0 ]; then
 		vg
 	fi
 
-	configure "$debug" "afl-gcc" "-HSg"
+	printf '\n'
+	printf 'Tests successful.\n'
 
-	printf '\n'
-	printf 'Run make\n'
-	printf '\n'
-	printf 'Then run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
-	printf '\n'
-	printf 'Then run ASan on the fuzzer test cases with the following build:\n'
-	printf '\n'
-	printf '    CFLAGS=-fsanitize=address ./configure.sh -O3\n'
-	printf '    make\n'
-	printf '\n'
-	printf 'Then run the GitHub release script as follows:\n'
-	printf '\n'
-	printf '    <github_release> %s <msg> .travis.yml codecov.yml release.sh \\\n' "$version"
-	printf '    RELEASE.md tests/afl.py tests/randmath.py tests/bc/scripts/timeconst.bc\n'
+	set +e
+
+	command -v afl-gcc > /dev/null 2>&1
+	err="$?"
+
+	set -e
+
+	if [ "$err" -ne 0 ]; then
+
+		header "Building with afl-gcc..."
+
+		configure "$debug" "afl-gcc" "-HSg"
+
+		printf '\n'
+		printf 'Run make\n'
+		printf '\n'
+		printf 'Then run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
+		printf '\n'
+		printf 'Then run ASan on the fuzzer test cases with the following build:\n'
+		printf '\n'
+		printf '    CFLAGS=-fsanitize=address ./configure.sh -O3\n'
+		printf '    make\n'
+		printf '\n'
+		printf 'Then run the GitHub release script as follows:\n'
+		printf '\n'
+		printf '    <github_release> %s <msg> .travis.yml codecov.yml release.sh \\\n' "$version"
+		printf '    RELEASE.md tests/afl.py tests/randmath.py tests/bc/scripts/timeconst.bc\n'
+
+	fi
 
 fi
