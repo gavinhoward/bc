@@ -77,8 +77,8 @@ configure() {
 	_configure_header=$(printf 'Running ./configure.sh %s ...' "$_configure_configure_flags")
 	_configure_header=$(printf "$_configure_header\n    CC=\"%s\"\n" "$_configure_CC")
 	_configure_header=$(printf "$_configure_header\n    CFLAGS=\"%s\"\n" "$_configure_CFLAGS")
-	_configure_header=$(printf "$_configure_header\n    GEN_HOST=%s" "$_configure_GEN_HOST")
 	_configure_header=$(printf "$_configure_header\n    LONG_BIT=%s" "$_configure_LONG_BIT")
+	_configure_header=$(printf "$_configure_header\n    GEN_HOST=%s" "$_configure_GEN_HOST")
 
 	header "$_configure_header"
 	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" GEN_HOST="$_configure_GEN_HOST" \
@@ -107,8 +107,8 @@ build() {
 
 	_build_header=$(printf 'Building...\n    CC=%s' "$_build_CC")
 	_build_header=$(printf "$_build_header\n    CFLAGS=\"%s\"" "$_build_CFLAGS")
-	_build_header=$(printf "$_build_header\n    GEN_HOST=%s" "$_build_GEN_HOST")
 	_build_header=$(printf "$_build_header\n    LONG_BIT=%s" "$_build_LONG_BIT")
+	_build_header=$(printf "$_build_header\n    GEN_HOST=%s" "$_build_GEN_HOST")
 
 	header "$_build_header"
 
@@ -162,8 +162,8 @@ runconfigtests() {
 	_runconfigtests_header=$(printf "$_runconfigtests_header \"%s\" ...\n" "$_runconfigtests_configure_flags")
 	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CC=%s\n" "$_runconfigseries_CC")
 	_runconfigtests_header=$(printf "$_runconfigtests_header\n    CFLAGS=\"%s\"" "$_runconfigseries_CFLAGS")
-	_runconfigtests_header=$(printf "$_runconfigtests_header\n    GEN_HOST=%s" "$_runconfigtests_GEN_HOST")
 	_runconfigtests_header=$(printf "$_runconfigtests_header\n    LONG_BIT=%s" "$_runconfigtests_LONG_BIT")
+	_runconfigtests_header=$(printf "$_runconfigtests_header\n    GEN_HOST=%s" "$_runconfigtests_GEN_HOST")
 
 	header "$_runconfigtests_header"
 
