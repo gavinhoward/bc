@@ -455,6 +455,8 @@ fi
 
 if [ "$run_tests" -ne 0 ]; then
 
+	build "$release" "clang" "-O3" "1" "64"
+
 	karatsuba
 
 	if [ "$run_valgrind" -ne 0 -a "$test_with_gcc" -ne 0 ]; then
