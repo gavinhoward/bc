@@ -597,10 +597,14 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			}
 
 			bc_vec_pop(&p->flags);
-			*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_IF_END;
 
-			new_else = (p->l.t == BC_LEX_KEY_ELSE);
-			if (new_else) s = bc_parse_else(p);
+			if (!BC_S) {
+
+				*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_IF_END;
+
+				new_else = (p->l.t == BC_LEX_KEY_ELSE);
+				if (new_else) s = bc_parse_else(p);
+			}
 		}
 
 		if (brace && has_brace) brace = false;
