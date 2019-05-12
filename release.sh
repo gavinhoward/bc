@@ -306,17 +306,17 @@ vg() {
 
 	header "Running valgrind"
 
-	build "$debug" "clang" "-g" "1" "64"
+	build "$debug" "clang" "-O0 -g" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "clang" "-gb" "1" "64"
+	build "$debug" "clang" "-O0 -gb" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "clang" "-gd" "1" "64"
+	build "$debug" "clang" "-O0 -gd" "1" "64"
 	runtest valgrind
 
 	do_make clean_config
