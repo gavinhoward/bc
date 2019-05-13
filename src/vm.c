@@ -431,11 +431,6 @@ static BcStatus bc_vm_stdin(void) {
 
 		done = (s == BC_STATUS_EOF);
 
-		if (len >= 2 && str[len - 1] == '\n' && str[len - 2] == '\\') {
-			bc_vec_concat(&buffer, buf.v);
-			continue;
-		}
-
 		for (i = 0; i < len; ++i) {
 
 			bool notend = len > i + 1;
