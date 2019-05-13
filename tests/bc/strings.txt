@@ -11,3 +11,6 @@ print "newline\n"
 
 print "\\\e\n"
 print "\d\n"
+"abc\\
+def
+"
