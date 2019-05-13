@@ -605,6 +605,7 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 				new_else = (p->l.t == BC_LEX_KEY_ELSE);
 				if (new_else) s = bc_parse_else(p);
 			}
+			else bc_parse_noElse(p);
 		}
 
 		if (brace && has_brace) brace = false;
