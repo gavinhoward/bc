@@ -437,7 +437,7 @@ static BcStatus bc_vm_stdin(void) {
 			uchar c = (uchar) str[i];
 
 			if (!comment && (i - 1 > len || str[i - 1] != '\\')) {
-				if (BC_IS_BC) string ^= c == '"';
+				if (BC_IS_BC) string ^= (c == '"');
 				else if (c == ']') string -= 1;
 				else if (c == '[') string += 1;
 			}
