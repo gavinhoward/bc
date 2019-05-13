@@ -477,7 +477,7 @@ if [ "$run_tests" -ne 0 ]; then
 
 		header "Configuring for afl-gcc..."
 
-		configure "$debug" "afl-gcc" "-HSg" "1" "64"
+		configure "$debug" "afl-gcc" "-HS -gO3" "1" "64"
 
 		printf '\n'
 		printf 'Run make\n'
