@@ -94,7 +94,7 @@ static void bc_num_clean(BcNum *restrict n) {
 static size_t bc_num_log10(size_t i) {
 	size_t len;
 	for (len = 1; i; i /= BC_BASE, ++len);
-	assert(len <= BC_BASE_DIGS + 1);
+	assert(len - 1 <= BC_BASE_DIGS + 1);
 	return len - 1;
 }
 
