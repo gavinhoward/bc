@@ -94,6 +94,7 @@ static void bc_num_clean(BcNum *restrict n) {
 static size_t bc_num_log10(size_t i) {
 	size_t len;
 	for (len = 1; i; i /= BC_BASE, ++len);
+	assert(len <= BC_BASE_DIGS + 1);
 	return len - 1;
 }
 
@@ -974,6 +975,8 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 			q = (dividend / divisor + 1);
 			q = q > BC_BASE_POW ? BC_BASE_POW : q;
 			dividend = ((BcBigDig) bc_num_log10((size_t) q));
+
+			assert(dividend > 0);
 
 			pow = bc_num_pow10[dividend - 1];
 
