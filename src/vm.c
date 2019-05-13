@@ -369,8 +369,11 @@ static BcStatus bc_vm_process(const char *text, bool is_stdin) {
 	{
 		uint16_t *flags = BC_PARSE_TOP_FLAG_PTR(&vm->prs);
 
-		if (!is_stdin && vm->prs.flags.len == 1 && *flags == BC_PARSE_FLAG_IF_END)
+		if (!is_stdin && vm->prs.flags.len == 1 &&
+		    *flags == BC_PARSE_FLAG_IF_END)
+		{
 			bc_parse_noElse(&vm->prs);
+		}
 
 		if (BC_PARSE_NO_EXEC(&vm->prs)) goto err;
 	}
