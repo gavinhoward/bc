@@ -57,8 +57,7 @@
 #endif // BC_LONG_BIT
 
 #if BC_LONG_BIT > LONG_BIT
-#undef BC_LONG_BIT
-#define BC_LONG_BIT LONG_BIT
+#error BC_LONG_BIT cannot be greater than LONG_BIT
 #endif // BC_LONG_BIT > LONG_BIT
 
 #if BC_LONG_BIT >= 64
