@@ -1858,10 +1858,12 @@ size_t bc_num_scale(const BcNum *restrict n) {
 
 size_t bc_num_len(const BcNum *restrict n) {
 
-	size_t zero, scale, len = n->len;
+	size_t len = n->len;
 
 	if (BC_NUM_ZERO(n)) return 0;
 	if (n->rdx == len) {
+
+		size_t zero, scale;
 
 		len = bc_num_nonzeroLen(n);
 
