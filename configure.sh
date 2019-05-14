@@ -519,9 +519,11 @@ else
 fi
 
 if [ -z "${LONG_BIT+set}" ]; then
-	LONG_BIT="LONG_BIT"
+	LONG_BIT_DEFINE=""
 elif [ "$LONG_BIT" -lt 16 ]; then
 	usage "LONG_BIT is less than 16"
+else
+	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
 fi
 
 if [ -z "${HOSTCFLAGS+set}" -a -z "${HOST_CFLAGS+set}" ]; then
@@ -835,6 +837,7 @@ contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
 
 contents=$(replace "$contents" "LONG_BIT" "$LONG_BIT")
+contents=$(replace "$contents" "LONG_BIT_DEFINE" "$LONG_BIT_DEFINE")
 
 contents=$(replace "$contents" "GEN" "$GEN")
 contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")
