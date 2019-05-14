@@ -1858,25 +1858,17 @@ size_t bc_num_scale(const BcNum *restrict n) {
 
 size_t bc_num_len(const BcNum *restrict n) {
 
-	size_t i, pow, scale, len = n->len;
-	BcDig dig;
+	size_t zero, scale, len = n->len;
 
 	if (BC_NUM_ZERO(n)) return 0;
 	if (n->rdx == len) len = bc_num_nonzeroLen(n);
 
-	dig = n->num[len - 1];
-	pow = BC_BASE_POW;
-	i = BC_BASE_DIGS + 1;
-
-	while (pow && (dig % (BcDig) pow == dig)) {
-		i -= 1;
-		pow /= BC_BASE;
-	}
-
 	scale = n->scale % BC_BASE_DIGS;
 	scale = scale ? scale : BC_BASE_DIGS;
 
-	return (len - 1) * BC_BASE_DIGS + i - (BC_BASE_DIGS - scale);
+	zero = bc_num_zeroDigits(n->num + len - 1);
+
+	return len * BC_BASE_DIGS - zero - (BC_BASE_DIGS - scale);
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
