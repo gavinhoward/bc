@@ -111,9 +111,9 @@ static size_t bc_num_intDigits(const BcNum *n) {
 static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
 	size_t i, len = n->len;
 	assert(len == n->rdx);
-	for (i = len - 1; i < n->len && !n->num[i]; --len, --i);
-	assert(len > 0);
-	return len;
+	for (i = len - 1; i < n->len && !n->num[i]; --i);
+	assert(i + 1 > 0);
+	return i + 1;
 }
 
 static BcBigDig bc_num_addDigit(BcDig *restrict num, BcBigDig d, BcBigDig c) {
