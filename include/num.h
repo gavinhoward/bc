@@ -52,6 +52,12 @@
 
 #define BC_BASE (10)
 
+// For some reason, LONG_BIT is not defined in some versions of gcc.
+// I define it here to the minimum accepted value in the POSIX standard.
+#ifndef LONG_BIT
+#define LONG_BIT (32)
+#endif // LONG_BIT
+
 #ifndef BC_LONG_BIT
 #define BC_LONG_BIT LONG_BIT
 #endif // BC_LONG_BIT
