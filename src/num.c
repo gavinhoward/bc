@@ -211,7 +211,7 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
                               size_t len)
 {
 	size_t i;
-	long c = 0;
+	BcDig c = 0;
 	for (i = len - 1; BC_NO_SIG && i < len && !(c = a[i] - b[i]); --i);
 	return BC_SIG ? BC_NUM_CMP_SIGNAL : bc_num_neg(i + 1, c < 0);
 }
