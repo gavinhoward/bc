@@ -861,9 +861,8 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		s = bc_num_mulArray(operand, dig, c);
 		if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 
-		c->scale = operand->scale;
-		c->rdx = operand->rdx;
 		if (BC_NUM_NONZERO(c)) c->neg = (a->neg != b->neg);
+
 		return s;
 	}
 
