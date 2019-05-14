@@ -859,7 +859,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 		c->scale = operand->scale;
 		c->rdx = operand->rdx;
-		c->neg = (a->neg != b->neg);
+		if (BC_NUM_NONZERO(c)) c->neg = (a->neg != b->neg);
 		return s;
 	}
 
