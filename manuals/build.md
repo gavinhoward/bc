@@ -223,6 +223,9 @@ platforms with 64-bit longs may want to set it to `32`.
 Defaults to the default value of `LONG_BIT` for the target platform. For
 compliance with the `bc` spec, the minimum allowed value is `16`.
 
+If the specified value is greater than the default value of `LONG_BIT` for the
+target platform, then the default value of `LONG_BIT` is used instead.
+
 ### `GEN_HOST`
 
 Whether to use `gen/strgen.c`, instead of `gen/strgen.sh`, to produce the C

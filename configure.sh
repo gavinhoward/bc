@@ -164,6 +164,8 @@ usage() {
 	printf '                 setting this is unnecessary, except that 32-bit platforms with\n'
 	printf '                 64-bit longs may want to set it to `32`. Default is the default\n'
 	printf '                 of `LONG_BIT` for the target platform. Minimum allowed is `16`.\n'
+	printf '                 Also, be aware that if `LONG_BIT` is greater than the target\n'
+	printf '                 platform\047s `LONG_BIT`, the platform one will be used. instead.\n'
 	printf '    GEN_HOST     Whether to use `gen/strgen.c`, instead of `gen/strgen.sh`, to\n'
 	printf '                 produce the C files that contain the help texts as well as the\n'
 	printf '                 math libraries. By default, `gen/strgen.c` is used, compiled by\n'
