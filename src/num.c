@@ -304,6 +304,10 @@ static void bc_num_extend(BcNum *restrict n, size_t places) {
 	size_t places_rdx;
 
 	if (!places) return;
+	if (BC_NUM_ZERO(n)) {
+		n->scale += places;
+		return;
+	}
 
 	places_rdx = BC_NUM_RDX(places + n->scale) - n->rdx;
 
