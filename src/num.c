@@ -1861,14 +1861,20 @@ size_t bc_num_len(const BcNum *restrict n) {
 	size_t zero, scale, len = n->len;
 
 	if (BC_NUM_ZERO(n)) return 0;
-	if (n->rdx == len) len = bc_num_nonzeroLen(n);
+	if (n->rdx == len) {
 
-	scale = n->scale % BC_BASE_DIGS;
-	scale = scale ? scale : BC_BASE_DIGS;
+		len = bc_num_nonzeroLen(n);
 
-	zero = bc_num_zeroDigits(n->num + len - 1);
+		scale = n->scale % BC_BASE_DIGS;
+		scale = scale ? scale : BC_BASE_DIGS;
 
-	return len * BC_BASE_DIGS - zero - (BC_BASE_DIGS - scale);
+		zero = bc_num_zeroDigits(n->num + len - 1);
+
+		len = len * BC_BASE_DIGS - zero - (BC_BASE_DIGS - scale);
+	}
+	else len = bc_num_intDigits(n) + n->scale;
+
+	return len;
 }
 
 BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
