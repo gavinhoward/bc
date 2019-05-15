@@ -1,15 +1,13 @@
 #! /usr/bin/bc -lq
 
 scale = 20
-x = 123456789
-len = length(x) + 1
+x = 1234567890 / scale
+len = length(x) + 1 + scale
 
-for (i = -scale; i <= len; ++i) {
-	a[i] = x / (10^i)
+for (i = 0; i <= len; ++i) {
+	a[i] = x * (10^i)
 	a[i]
 }
-
-len += scale
 
 for (i = 1; i <= 10000; ++i) {
 	for (j = 0; j < len; ++j) {
