@@ -1963,8 +1963,10 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
 
 	bc_num_expand(n, BC_NUM_BIGDIG_LOG10);
 
-	for (ptr = n->num, i = 0; val; ++i, ++n->len, val /= BC_BASE_POW)
+	for (ptr = n->num, i = 0; val; ++i, val /= BC_BASE_POW)
 		ptr[i] = val % BC_BASE_POW;
+
+	n->len = i;
 }
 
 size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
