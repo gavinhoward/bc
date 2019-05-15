@@ -235,7 +235,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 				assert(v->size == sizeof(BcNum));
 
-				if (v->len <= idx) bc_array_expand(v, idx + 1);
+				if (v->len <= idx) bc_array_expand(v, bc_vm_growSize(idx, 1));
 				n = bc_vec_item(v, idx);
 			}
 			else n = bc_vec_top(v);
