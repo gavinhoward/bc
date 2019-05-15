@@ -81,6 +81,7 @@ for i in range(0, nruns):
 	runs.append(0)
 
 tests = [ "multiply", "modulus", "power", "sqrt" ]
+scripts = [ "multiply" ]
 
 if test_num != 0:
 	mx2 = test_num
@@ -112,6 +113,21 @@ try:
 			for test in tests:
 
 				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", exe ]
+
+				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
+
+				if p.returncode != 0:
+					print("{} test failed:\n".format(test, p.returncode))
+					print(p.stderr.decode())
+					print("\nexiting...")
+					sys.exit(p.returncode)
+
+			print("")
+
+			for script in scripts:
+
+				cmd = [ "{}/tests/script.sh".format(testdir), "bc", script + ".bc",
+				        "0", "1", "0", exe ]
 
 				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
 
