@@ -104,7 +104,7 @@ static size_t bc_num_zeroDigits(const BcDig *n) {
 
 static size_t bc_num_intDigits(const BcNum *n) {
 	size_t digits = bc_num_int(n) * BC_BASE_DIGS;
-	if (digits > 0) digits -= bc_num_zeroDigits(n->num +n->len - 1);
+	if (digits > 0) digits -= bc_num_zeroDigits(n->num + n->len - 1);
 	return digits;
 }
 
