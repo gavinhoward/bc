@@ -104,14 +104,14 @@ static size_t bc_num_zeroDigits(const BcDig *n) {
 
 static size_t bc_num_intDigits(const BcNum *n) {
 	size_t digits = bc_num_int(n) * BC_BASE_DIGS;
-	if (digits > 0) digits -= bc_num_zeroDigits(n->num + n->len - 1);
+	if (digits > 0) digits -= bc_num_zeroDigits(bc_vec_item_rev(&n->n, 0));
 	return digits;
 }
 
 static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
 	size_t i, len = n->len;
 	assert(len == n->rdx);
-	for (i = len - 1; i < n->len && !n->num[i]; --i);
+	for (i = len - 1; i < len && !n->num[i]; --i);
 	assert(i + 1 > 0);
 	return i + 1;
 }
