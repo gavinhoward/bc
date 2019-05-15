@@ -196,6 +196,7 @@ static BcStatus bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 
 	for (i = a->len - 1; BC_NO_SIG && i < a->len; --i) {
 		BcBigDig in = ((BcBigDig) a->num[i]) + carry * BC_BASE_POW;
+		assert(in / b < BC_BASE_POW);
 		c->num[i] = (BcDig) (in / b);
 		carry = in % b;
 	}
