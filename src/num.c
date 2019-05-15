@@ -513,8 +513,7 @@ static BcStatus bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 
 	assert(BC_NUM_NONZERO(a));
 
-	one.cap = 2;
-	one.num = num;
+	bc_num_setup(&one, num, sizeof(num) / sizeof(BcDig));
 	bc_num_one(&one);
 
 	return bc_num_div(&one, a, b, scale);
