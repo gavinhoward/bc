@@ -34,7 +34,7 @@ script="$0"
 testdir=$(dirname "${script}")
 
 if [ "$#" -lt 2 ]; then
-	printf 'usage: %s dir script [run_stack_tests] [generate_tests] [exec args...]\n' "$script"
+	printf 'usage: %s dir script [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -56,6 +56,13 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	generate=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	time_tests="$1"
+	shift
+else
+	time_tests=0
 fi
 
 if [ "$#" -gt 0 ]; then
@@ -118,7 +125,13 @@ fi
 
 printf 'Running %s script: %s\n' "$d" "$f"
 
-printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out"
+if [ "$time_tests" -ne 0 ]; then
+	printf '\n'
+	time -p $(printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out")
+	printf '\n'
+else
+	printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out"
+fi
 
 diff "$res" "$out"
 

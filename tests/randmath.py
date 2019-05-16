@@ -292,7 +292,7 @@ for i in range(0, len(tests)):
 		name = testdir + "/" + exe + "/" + files[op]
 
 		with open(name + ".txt", "a") as f:
-			f.write(tests[i])
+			f.write(tests[i] + "\n")
 
 		with open(name + "_results.txt", "a") as f:
 			f.write(expected)

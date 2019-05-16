@@ -74,31 +74,31 @@ BcStatus bc_lex_token(BcLex *l);
 #define BC_PARSE_TOP_FLAG_PTR(p) ((uint16_t*) bc_vec_top(&(p)->flags))
 #define BC_PARSE_TOP_FLAG(p) (*(BC_PARSE_TOP_FLAG_PTR(p)))
 
-#define BC_PARSE_FLAG_BRACE (1<<0)
+#define BC_PARSE_FLAG_BRACE (UINTMAX_C(1)<<0)
 #define BC_PARSE_BRACE(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_BRACE)
 
-#define BC_PARSE_FLAG_FUNC_INNER (1<<1)
+#define BC_PARSE_FLAG_FUNC_INNER (UINTMAX_C(1)<<1)
 #define BC_PARSE_FUNC_INNER(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_FUNC_INNER)
 
-#define BC_PARSE_FLAG_FUNC (1<<2)
+#define BC_PARSE_FLAG_FUNC (UINTMAX_C(1)<<2)
 #define BC_PARSE_FUNC(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_FUNC)
 
-#define BC_PARSE_FLAG_BODY (1<<3)
+#define BC_PARSE_FLAG_BODY (UINTMAX_C(1)<<3)
 #define BC_PARSE_BODY(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_BODY)
 
-#define BC_PARSE_FLAG_LOOP (1<<4)
+#define BC_PARSE_FLAG_LOOP (UINTMAX_C(1)<<4)
 #define BC_PARSE_LOOP(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_LOOP)
 
-#define BC_PARSE_FLAG_LOOP_INNER (1<<5)
+#define BC_PARSE_FLAG_LOOP_INNER (UINTMAX_C(1)<<5)
 #define BC_PARSE_LOOP_INNER(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_LOOP_INNER)
 
-#define BC_PARSE_FLAG_IF (1<<6)
+#define BC_PARSE_FLAG_IF (UINTMAX_C(1)<<6)
 #define BC_PARSE_IF(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_IF)
 
-#define BC_PARSE_FLAG_ELSE (1<<7)
+#define BC_PARSE_FLAG_ELSE (UINTMAX_C(1)<<7)
 #define BC_PARSE_ELSE(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_ELSE)
 
-#define BC_PARSE_FLAG_IF_END (1<<8)
+#define BC_PARSE_FLAG_IF_END (UINTMAX_C(1)<<8)
 #define BC_PARSE_IF_END(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_IF_END)
 
 #define BC_PARSE_NO_EXEC(p) ((p)->flags.len != 1 || BC_PARSE_TOP_FLAG(p) != 0)
@@ -116,8 +116,9 @@ BcStatus bc_lex_token(BcLex *l);
 #define BC_PARSE_OP_PREC(op) (BC_PARSE_OP_DATA(op) & ~(BC_LEX_CHAR_MSB(1)))
 
 #define BC_PARSE_EXPR_ENTRY(e1, e2, e3, e4, e5, e6, e7, e8)  \
-	(((e1) << 7) | ((e2) << 6) | ((e3) << 5) | ((e4) << 4) | \
-	 ((e5) << 3) | ((e6) << 2) | ((e7) << 1) | ((e8) << 0))
+	((UINTMAX_C(e1) << 7) | (UINTMAX_C(e2) << 6) | (UINTMAX_C(e3) << 5) | \
+	 (UINTMAX_C(e4) << 4) | (UINTMAX_C(e5) << 3) | (UINTMAX_C(e6) << 2) | \
+	 (UINTMAX_C(e7) << 1) | (UINTMAX_C(e8) << 0))
 
 #define BC_PARSE_EXPR(i) \
 	(bc_parse_exprs[(((i) & (uchar) ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
@@ -141,6 +142,9 @@ BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
 
 BcStatus bc_parse_parse(BcParse *p);
 BcStatus bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
+
+// This is necessary to clear up for if statements at the end of files.
+void bc_parse_noElse(BcParse *p);
 
 #if BC_ENABLE_SIGNALS
 extern const char bc_sig_msg[];

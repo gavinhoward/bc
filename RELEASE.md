@@ -5,23 +5,23 @@ This is the checklist for cutting a release.
 1.	Update the README.
 2.	Update the manuals.
 3.	Test history manually.
-4.	Run and pass the `release.sh` script, without tests, on my own machine.
-5.	Run and pass the `release.sh` script on my own machine.
-6.	Run and pass the `release.sh` script, without generated tests and
-	sanitizers, on FreeBSD.
-7.	Run Coverity Scan and eliminate warnings, if possible (both only).
-	* debug
-8.	Build with xstatic.
-9.	Run the randmath.py script an excessive amount and add failing tests to
+4.	Run the randmath.py script an excessive amount and add failing tests to
 	test suite.
 	* debug
 	* release
 	* minrelease
-10.	Fuzz with AFL.
+5.	Fuzz with AFL.
 	* reldebug
-11.	Fix AFL crashes.
-12.	Find ASan crashes on AFL test cases.
-13.	Fix ASan crashes.
+6.	Fix AFL crashes.
+7.	Find ASan crashes on AFL test cases.
+8.	Fix ASan crashes.
+9.	Build with xstatic.
+10.	Run and pass the `release.sh` script, without tests, on my own machine.
+11.	Run and pass the `release.sh` script on my own machine.
+12.	Run and pass the `release.sh` script, without generated tests and
+	sanitizers, on FreeBSD.
+13.	Run Coverity Scan and eliminate warnings, if possible (both only).
+	* debug
 14.	Repeat steps 3-13 again and repeat until nothing is found.
 15.	Change the version (remove "-dev") and commit.
 16.	Run "make clean_tests".

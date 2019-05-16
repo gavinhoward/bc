@@ -235,7 +235,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 				assert(v->size == sizeof(BcNum));
 
-				if (v->len <= idx) bc_array_expand(v, idx + 1);
+				if (v->len <= idx) bc_array_expand(v, bc_vm_growSize(idx, 1));
 				n = bc_vec_item(v, idx);
 			}
 			else n = bc_vec_top(v);
@@ -626,10 +626,13 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 	else {
 
 		cmp = bc_num_cmp(n1, n2);
-		if (cmp == BC_NUM_SSIZE_MIN) {
+
+#if BC_ENABLE_SIGNALS
+		if (cmp == BC_NUM_CMP_SIGNAL) {
 			bc_num_free(&res.d.n);
 			return BC_STATUS_SIGNAL;
 		}
+#endif // BC_ENABLE_SIGNALS
 
 		switch (inst) {
 
@@ -858,10 +861,10 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	if (ib || ob || sc) {
 
 		BcVec *v;
-		unsigned long *ptr, *ptr_t, val, max, min;
+		BcBigDig *ptr, *ptr_t, val, max, min;
 		BcError e;
 
-		s = bc_num_ulong(l, &val);
+		s = bc_num_bigdig(l, &val);
 		if (BC_ERR(s)) return s;
 		e = left->t - BC_RESULT_IBASE + BC_ERROR_EXEC_IBASE;
 
@@ -880,10 +883,9 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 			ptr_t = ib ? &p->ib : &p->ob;
 		}
 
-		ptr = bc_vec_top(v);
-
 		if (BC_ERR(val > max || val < min)) return bc_vm_verr(e, min, max);
 
+		ptr = bc_vec_top(v);
 		*ptr = val;
 		*ptr_t = val;
 	}
@@ -952,11 +954,11 @@ static BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
 	else {
 
 		BcResult *operand;
-		unsigned long temp;
+		BcBigDig temp;
 
 		s = bc_program_prep(p, &operand, &num);
 		if (BC_ERR(s)) goto err;
-		s = bc_num_ulong(num, &temp);
+		s = bc_num_bigdig(num, &temp);
 		if (BC_ERR(s)) goto err;
 
 		r.d.id.idx = (size_t) temp;
@@ -1161,23 +1163,23 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	}
 	else {
 
-		unsigned long val = 0;
+		BcBigDig val = 0;
 
 		if (len) {
 			if (BC_IS_BC && opd->t == BC_RESULT_ARRAY)
-				val = (unsigned long) ((BcVec*) num)->len;
+				val = (BcBigDig) ((BcVec*) num)->len;
 #if DC_ENABLED
 			else if (!BC_PROG_NUM(opd, num)) {
 				size_t idx = opd->t == BC_RESULT_STR ? opd->d.id.idx : num->rdx;
-				val = strlen(bc_program_str(p, idx, true));
+				val = (BcBigDig) strlen(bc_program_str(p, idx, true));
 			}
 #endif // DC_ENABLED
-			else val = (unsigned long) bc_num_len(num);
+			else val = (BcBigDig) bc_num_len(num);
 		}
 		else if (BC_IS_BC || BC_PROG_NUM(opd, num))
-			val = (unsigned long) bc_num_scale(num);
+			val = (BcBigDig) bc_num_scale(num);
 
-		bc_num_createFromUlong(resn, val);
+		bc_num_createFromBigdig(resn, val);
 	}
 
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
@@ -1253,7 +1255,7 @@ err:
 static void bc_program_stackLen(BcProgram *p) {
 	BcResult res;
 	res.t = BC_RESULT_TEMP;
-	bc_num_createFromUlong(&res.d.n, p->results.len);
+	bc_num_createFromBigdig(&res.d.n, (BcBigDig) p->results.len);
 	bc_vec_push(&p->results, &res);
 }
 
@@ -1264,7 +1266,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	BcNum *n = NULL, num;
 	char str[2], *str2, c;
 	size_t len;
-	unsigned long val;
+	BcBigDig val;
 	BcFunc f, *func;
 
 	s = bc_program_operand(p, &r, &n, 0);
@@ -1290,9 +1292,9 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 #endif // BC_ENABLE_SIGNALS
 
 		// This is also guaranteed to not error because num is in the range
-		// [0, UCHAR_MAX], which is definitely in range for an unsigned long.
-		// And it is not negative.
-		s = bc_num_ulong(&num, &val);
+		// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
+		// it is not negative.
+		s = bc_num_bigdig(&num, &val);
 		assert(!s || s == BC_STATUS_SIGNAL);
 #if BC_ENABLE_SIGNALS
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto num_err;
@@ -1355,11 +1357,11 @@ static BcStatus bc_program_nquit(BcProgram *p) {
 	BcStatus s;
 	BcResult *opnd;
 	BcNum *num = NULL;
-	unsigned long val;
+	BcBigDig val;
 
 	s = bc_program_prep(p, &opnd, &num);
 	if (BC_ERR(s)) return s;
-	s = bc_num_ulong(num, &val);
+	s = bc_num_bigdig(num, &val);
 	if (BC_ERR(s)) return s;
 
 	bc_vec_pop(&p->results);
@@ -1476,10 +1478,11 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 
 	assert(inst >= BC_INST_IBASE && inst <= BC_INST_SCALE);
 
-	if (inst == BC_INST_SCALE)
-		bc_num_createFromUlong(&res.d.n, (unsigned long) p->scale);
-	else
-		bc_num_createFromUlong(&res.d.n, inst == BC_INST_IBASE ? p->ib : p->ob);
+	if (inst != BC_INST_SCALE) {
+		BcBigDig dig = (inst == BC_INST_IBASE) ? p->ib : p->ob;
+		bc_num_createFromBigdig(&res.d.n, dig);
+	}
+	else bc_num_createFromBigdig(&res.d.n, p->scale);
 
 	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
 	bc_vec_push(&p->results, &res);
@@ -1520,17 +1523,17 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_push(&p->scale_v, &p->scale);
 
 	p->ib = BC_BASE;
-	bc_vec_init(&p->ib_v, sizeof(unsigned long), NULL);
+	bc_vec_init(&p->ib_v, sizeof(BcBigDig), NULL);
 	bc_vec_push(&p->ib_v, &p->ib);
 
 	p->ob = BC_BASE;
-	bc_vec_init(&p->ob_v, sizeof(unsigned long), NULL);
+	bc_vec_init(&p->ob_v, sizeof(BcBigDig), NULL);
 	bc_vec_push(&p->ob_v, &p->ob);
 
 #if DC_ENABLED
 	p->strm = UCHAR_MAX + 1;
-	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_LONG_LOG10);
-	bc_num_ulong2num(&p->strmb, p->strm);
+	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
+	bc_num_bigdig2num(&p->strmb, p->strm);
 #endif // DC_ENABLED
 
 #if BC_ENABLED

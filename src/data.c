@@ -92,6 +92,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
 
 };
@@ -162,6 +163,7 @@ const char* const bc_err_msgs[] = {
 	NULL,
 #endif // BC_ENABLE_EXTRA_MATH
 	"POSIX does not allow array references as function parameters",
+	"POSIX does not allow void functions",
 	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
 
@@ -708,6 +710,23 @@ const uint8_t dc_parse_insts[] = {
 #endif // DC_ENABLED
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
+
+const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {
+	1,
+	10,
+	100,
+#if BC_BASE_DIGS > 2
+	1000,
+	10000,
+#if BC_BASE_DIGS > 4
+	100000,
+	1000000,
+	10000000,
+	100000000,
+	1000000000,
+#endif // BC_LONG_BIT > 32
+#endif // BC_LONG_BIT > 16
+};
 
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,

@@ -119,6 +119,7 @@ BC_ENABLE_HISTORY = %%HISTORY%%
 BC_ENABLE_EXTRA_MATH_NAME = BC_ENABLE_EXTRA_MATH
 BC_ENABLE_EXTRA_MATH = %%EXTRA_MATH%%
 BC_ENABLE_NLS = %%NLS%%
+BC_LONG_BIT = %%LONG_BIT%%
 
 RM = rm
 MKDIR = mkdir
@@ -136,7 +137,7 @@ RONN_ARGS = --roff --organization="Gavin D. Howard" --manual="General Commands M
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
 CPPFLAGS1 = -D$(BC_ENABLED_NAME)=$(BC_ENABLED) -D$(DC_ENABLED_NAME)=$(DC_ENABLED)
-CPPFLAGS2 = $(CPPFLAGS1) -I./include/ -DVERSION=$(VERSION)
+CPPFLAGS2 = $(CPPFLAGS1) -I./include/ -DVERSION=$(VERSION) %%LONG_BIT_DEFINE%%
 CPPFLAGS3 = $(CPPFLAGS2) -DEXECPREFIX=$(EXEC_PREFIX) -DMAINEXEC=$(MAIN_EXEC)
 CPPFLAGS4 = $(CPPFLAGS3) -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 CPPFLAGS5 = $(CPPFLAGS4) -DBC_NUM_KARATSUBA_LEN=$(BC_NUM_KARATSUBA_LEN)
@@ -196,6 +197,9 @@ help:
 	@printf '    test            runs the test suite\n'
 	@printf '    test_bc         runs the bc test suite, if bc has been built\n'
 	@printf '    test_dc         runs the dc test suite, if dc has been built\n'
+	@printf '    time_test       runs the test suite, displaying times for some things\n'
+	@printf '    time_test_bc    runs the bc test suite, displaying times for some things\n'
+	@printf '    time_test_dc    runs the dc test suite, displaying times for some things\n'
 	@printf '    timeconst       runs the test on the Linux timeconst.bc script,\n'
 	@printf '                    if it exists and bc has been built\n'
 	@printf '    valgrind        runs the test suite through valgrind\n'
@@ -211,6 +215,14 @@ test_bc:
 
 test_dc:
 	%%DC_TEST%%
+
+time_test: time_test_bc timeconst time_test_dc
+
+time_test_bc:
+	%%BC_TIME_TEST%%
+
+time_test_dc:
+	%%DC_TIME_TEST%%
 
 timeconst:
 	%%TIMECONST%%
@@ -279,6 +291,8 @@ clean_tests: clean clean_config
 	@$(RM) -f tests/bc/scripts/bessel.txt
 	@$(RM) -f tests/bc/scripts/parse.txt
 	@$(RM) -f tests/bc/scripts/print.txt
+	@$(RM) -f tests/bc/scripts/divide.txt
+	@$(RM) -f tests/bc/scripts/multiply.txt
 	@$(RM) -f tests/dc/scripts/prime.txt tests/dc/scripts/stream.txt
 	@$(RM) -f .log_*.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt

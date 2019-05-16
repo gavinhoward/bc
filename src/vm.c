@@ -229,13 +229,15 @@ static void bc_vm_exit(BcError e) {
 
 size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
-	if (BC_ERR(n != 0 && res / n != size)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(res >= BC_NUM_BIGDIG_MAX || (n != 0 && res / n != size)))
+		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
 
 size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t res = a + b;
-	if (BC_ERR(res < a || res < b)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(res >= BC_NUM_BIGDIG_MAX || res < a || res < b))
+		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
 
@@ -364,7 +366,17 @@ static BcStatus bc_vm_process(const char *text, bool is_stdin) {
 	}
 
 #if BC_ENABLED
-	if (BC_PARSE_NO_EXEC(&vm->prs)) goto err;
+	{
+		uint16_t *flags = BC_PARSE_TOP_FLAG_PTR(&vm->prs);
+
+		if (!is_stdin && vm->prs.flags.len == 1 &&
+		    *flags == BC_PARSE_FLAG_IF_END)
+		{
+			bc_parse_noElse(&vm->prs);
+		}
+
+		if (BC_PARSE_NO_EXEC(&vm->prs)) goto err;
+	}
 #endif // BC_ENABLED
 
 	s = bc_program_exec(&vm->prog);
@@ -423,18 +435,13 @@ static BcStatus bc_vm_stdin(void) {
 
 		done = (s == BC_STATUS_EOF);
 
-		if (len >= 2 && str[len - 1] == '\n' && str[len - 2] == '\\') {
-			bc_vec_concat(&buffer, buf.v);
-			continue;
-		}
-
 		for (i = 0; i < len; ++i) {
 
 			bool notend = len > i + 1;
 			uchar c = (uchar) str[i];
 
 			if (!comment && (i - 1 > len || str[i - 1] != '\\')) {
-				if (BC_IS_BC) string ^= c == '"';
+				if (BC_IS_BC) string ^= (c == '"');
 				else if (c == ']') string -= 1;
 				else if (c == '[') string += 1;
 			}

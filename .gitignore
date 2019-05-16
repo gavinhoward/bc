@@ -36,6 +36,8 @@ bessel.txt
 bessel_results.txt
 prime.txt
 stream.txt
+tests/bc/scripts/divide.txt
+tests/bc/scripts/multiply.txt
 perf.data
 perf.data.old
 *.gcda

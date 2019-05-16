@@ -25,3 +25,4 @@ for (;;) { y += 1; }
 9.892108e-20
 obase = 0
 obase = 1
+define void a(e) { "stuff" }

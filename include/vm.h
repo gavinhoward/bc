@@ -93,14 +93,14 @@
 #define isatty _isatty
 #endif // _WIN32
 
-#define DC_FLAG_X (1<<0)
-#define BC_FLAG_W (1<<1)
-#define BC_FLAG_S (1<<2)
-#define BC_FLAG_Q (1<<3)
-#define BC_FLAG_L (1<<4)
-#define BC_FLAG_I (1<<5)
-#define BC_FLAG_G (1<<6)
-#define BC_FLAG_TTYIN (1<<7)
+#define DC_FLAG_X (UINTMAX_C(1)<<0)
+#define BC_FLAG_W (UINTMAX_C(1)<<1)
+#define BC_FLAG_S (UINTMAX_C(1)<<2)
+#define BC_FLAG_Q (UINTMAX_C(1)<<3)
+#define BC_FLAG_L (UINTMAX_C(1)<<4)
+#define BC_FLAG_I (UINTMAX_C(1)<<5)
+#define BC_FLAG_G (UINTMAX_C(1)<<6)
+#define BC_FLAG_TTYIN (UINTMAX_C(1)<<7)
 #define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
 
 #define BC_S (BC_ENABLED && (vm->flags & BC_FLAG_S))
@@ -113,14 +113,14 @@
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define BC_MAX_OBASE ((unsigned long) ULONG_MAX)
-#define BC_MAX_DIM ((unsigned long) (SIZE_MAX - 1))
-#define BC_MAX_SCALE ((unsigned long) (SIZE_MAX / BC_BASE - 1))
-#define BC_MAX_STRING ((unsigned long) (SIZE_MAX - 1))
+#define BC_MAX_OBASE ((unsigned long) (BC_BASE_POW))
+#define BC_MAX_DIM ((unsigned long) (SIZE_MAX / sizeof(BcNum) - 1))
+#define BC_MAX_SCALE ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
+#define BC_MAX_STRING ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
 #define BC_MAX_NAME BC_MAX_STRING
 #define BC_MAX_NUM BC_MAX_SCALE
-#define BC_MAX_EXP ((unsigned long) ULONG_MAX)
-#define BC_MAX_VARS ((unsigned long) (SIZE_MAX - 1))
+#define BC_MAX_EXP ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
+#define BC_MAX_VARS ((unsigned long) (SIZE_MAX / sizeof(BcId) - 1))
 
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm->name[0] != 'd'))
 #define BC_IS_POSIX (BC_S || BC_W)

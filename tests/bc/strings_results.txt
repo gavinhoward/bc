@@ -4,3 +4,5 @@ stringnoescapes\nnewline
 stringnewline
 \\
 \d
+abc\\
+def

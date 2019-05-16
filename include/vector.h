@@ -43,7 +43,7 @@
 #include <status.h>
 
 #define BC_VEC_INVALID_IDX (SIZE_MAX)
-#define BC_VEC_START_CAP (1<<5)
+#define BC_VEC_START_CAP (UINTMAX_C(1)<<5)
 
 typedef unsigned char uchar;
 
