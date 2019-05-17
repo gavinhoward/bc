@@ -927,7 +927,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 	if (BC_ERR(comma)) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 
-	flags = BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FUNC_INNER | BC_PARSE_FLAG_BODY;
+	flags = BC_PARSE_FLAG_FUNC | BC_PARSE_FLAG_FUNC_INNER;
 	bc_parse_startBody(p, flags);
 
 	s = bc_lex_next(&p->l);
