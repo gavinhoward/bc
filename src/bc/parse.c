@@ -604,6 +604,8 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 				new_else = (p->l.t == BC_LEX_KEY_ELSE);
 				if (new_else) s = bc_parse_else(p);
+				else if (!has_brace && (!BC_PARSE_IF_END(p) || brace))
+					bc_parse_noElse(p);
 			}
 			else bc_parse_noElse(p);
 		}
@@ -615,6 +617,17 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 	if (BC_NO_ERR(!s) && BC_ERR(p->flags.len == 1 && brace))
 		s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+	else if (brace && BC_PARSE_BRACE(p)) {
+
+		uint16_t flags = BC_PARSE_TOP_FLAG(p);
+
+		if (!(flags & (BC_PARSE_FLAG_FUNC_INNER | BC_PARSE_FLAG_LOOP_INNER)) &&
+		    !(flags & (BC_PARSE_FLAG_IF | BC_PARSE_FLAG_ELSE)) &&
+		    !(flags & (BC_PARSE_FLAG_IF_END)))
+		{
+			bc_vec_pop(&p->flags);
+		}
+	}
 
 	return s;
 }
@@ -1016,9 +1029,10 @@ static BcStatus bc_parse_body(BcParse *p, bool brace) {
 		if (p->l.t == BC_LEX_NLINE) s = bc_lex_next(&p->l);
 	}
 	else {
+		size_t len = p->flags.len;
 		assert(*flag_ptr);
 		s = bc_parse_stmt(p);
-		if (BC_NO_ERR(!s) && !brace && !BC_PARSE_BODY(p))
+		if (BC_NO_ERR(!s) && !brace && !BC_PARSE_BODY(p) && len <= p->flags.len)
 			s = bc_parse_endBody(p, false);
 	}
 
