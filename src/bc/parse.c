@@ -70,8 +70,10 @@ static bool bc_parse_isDelimiter(BcParse *p) {
 		uint16_t *fptr = NULL, flags = BC_PARSE_FLAG_ELSE;
 
 		for (i = 0; i < p->flags.len && BC_PARSE_BLOCK_STMT(flags); ++i) {
+
 			fptr = bc_vec_item_rev(&p->flags, i);
 			flags = *fptr;
+
 			if ((flags & BC_PARSE_FLAG_BRACE) && p->l.last != BC_LEX_RBRACE)
 				return false;
 		}
