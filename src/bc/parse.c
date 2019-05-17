@@ -1029,9 +1029,13 @@ static BcStatus bc_parse_body(BcParse *p, bool brace) {
 		if (p->l.t == BC_LEX_NLINE) s = bc_lex_next(&p->l);
 	}
 	else {
+
 		size_t len = p->flags.len;
+
 		assert(*flag_ptr);
+
 		s = bc_parse_stmt(p);
+
 		if (BC_NO_ERR(!s) && !brace && !BC_PARSE_BODY(p) && len <= p->flags.len)
 			s = bc_parse_endBody(p, false);
 	}
@@ -1240,7 +1244,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 	uint32_t i, nparens, nrelops;
 	bool pfirst, rprn, done, get_token, assign, bin_last, incdec;
 
-	pfirst = p->l.t == BC_LEX_LPAREN;
+	pfirst = (p->l.t == BC_LEX_LPAREN);
 	nparens = nrelops = 0;
 	rprn = done = get_token = assign = incdec = false;
 	bin_last = true;
