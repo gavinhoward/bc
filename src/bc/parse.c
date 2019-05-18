@@ -1429,8 +1429,8 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
-				prev = (uchar) (t - BC_LEX_KW_LAST + BC_INST_LAST);
-				bc_parse_push(p, (uchar) prev);
+				prev = t - BC_LEX_KW_LAST + BC_INST_LAST;
+				bc_parse_push(p, prev);
 
 				get_token = true;
 				rprn = bin_last = false;
