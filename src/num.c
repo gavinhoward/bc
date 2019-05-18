@@ -1980,52 +1980,6 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-#ifdef USE_SE_PRINT
-
-size_t pre_fixup(BcDig *a, size_t n, size_t cap, size_t pow_f, size_t pow_p) {
-	int i;
-	BcBigDig acc;
-
-	if (n < 2) return n;
-	for (i = n - 1; i > 0; i--) {
-		acc = (BcBigDig)a[i] * pow_f + (BcBigDig)a[i-1];
-		a[i-1] = (BcDig)(acc % pow_p);
-		acc /= pow_p;
-		acc += a[i];
-		if (acc >= BC_BASE_POW) {
-			if (i == n - 1) {
-				assert(n < cap);
-				a[n] = 0;
-				n += 1;
-			}
-			a[i + 1] += acc / BC_BASE_POW;
-			acc %= BC_BASE_POW;
-		}
-		a[i] = acc;
-	}
-	return n;
-}
-
-void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
-	size_t i;
-
-	for (i = 0; i < n->len; i++) {
-		n->len = pre_fixup(n->num + i, n->len - i, n->cap -i, pow_f, pow_p) + i;
-	}
-	for (i = 0; i < n->len; i++) {
-		if (n->num[i] >= pow_p) {
-			if (i + 1 == n->len) {
-				assert(n->len < n->cap);
-				n->num[i + 1] = 0;
-				n->len++;
-			}
-			n->num[i + 1] += n->num[i] / pow_p;
-			n->num[i] %= pow_p;
-		}
-	}
-}
-#endif
-
 static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
                                 size_t len, BcNumDigitOp print)
 {
@@ -2051,36 +2005,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_one(&flen1);
-#ifdef USE_SE_PRINT
-	{
-		int i, j, maxlen;
-		size_t acc, pow_p, pow_e, pow_f;
-
-		bc_num_init(&intp1, 2 * n->len + 1);
-		bc_num_copy(&intp1, n);
-		bc_num_truncate(&intp1, intp1.scale);
-
-		s = bc_num_sub(n, &intp1, &fracp1, 0);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		for (pow_p = 1, pow_e = 0; pow_p * base <= BC_BASE_POW; pow_p *= base, pow_e ++);
-		pow_f = BC_BASE_POW - pow_p;
-
-		if (pow_f != 0)
-			bc_num_preparePrint(&intp1, pow_f, pow_p);
-
-		acc = 0;
-		for (i = intp1.rdx; i < intp1.len; i++) {
-			acc = intp1.num[i];
-			for (j = 0; j < pow_e && (i < intp1.len - 1 || acc != 0); j++) {
-				dig = acc % base;
-				acc /= base;
-				bc_vec_push(&stack, &dig);
-			}
-			assert(acc == 0);
-		}
-	}
-#else
 	bc_num_createCopy(&intp1, n);
 
 	bc_num_truncate(&intp1, intp1.scale);
@@ -2104,7 +2028,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		n1 = n2;
 		n2 = temp;
 	}
-#endif
 
 	if (BC_SIG) goto sig_err;
 
