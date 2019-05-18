@@ -50,7 +50,7 @@ static BcStatus bc_parse_stmt(BcParse *p);
 static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next);
 
 static bool bc_parse_inst_isLeaf(BcInst t) {
-	return (t >= BC_INST_NUM && t <= BC_INST_ABS) ||
+	return (t >= BC_INST_NUM && t <= BC_INST_MAXSCALE) ||
 #if BC_ENABLE_EXTRA_MATH
 	        t == BC_INST_TRUNC ||
 #endif // BC_ENABLE_EXTRA_MATH
@@ -1099,10 +1099,13 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 		case BC_LEX_KW_LAST:
 		case BC_LEX_KW_LENGTH:
 		case BC_LEX_KW_OBASE:
-		case BC_LEX_KW_READ:
 		case BC_LEX_KW_SCALE:
 		case BC_LEX_KW_SQRT:
 		case BC_LEX_KW_ABS:
+		case BC_LEX_KW_READ:
+		case BC_LEX_KW_MAXIBASE:
+		case BC_LEX_KW_MAXOBASE:
+		case BC_LEX_KW_MAXSCALE:
 		{
 			s = bc_parse_expr_status(p, BC_PARSE_PRINT, bc_parse_next_expr);
 			break;
