@@ -304,7 +304,7 @@ err:
 	return s;
 }
 
-static BcStatus bc_parse_read(BcParse *p) {
+static BcStatus bc_parse_noArgBuiltin(BcParse *p, BcInst inst) {
 
 	BcStatus s;
 
@@ -318,7 +318,7 @@ static BcStatus bc_parse_read(BcParse *p) {
 	if ((p->l.t != BC_LEX_RPAREN))
 		return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-	bc_parse_push(p, BC_INST_READ);
+	bc_parse_push(p, inst);
 
 	return bc_lex_next(&p->l);
 }
@@ -1451,16 +1451,21 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			}
 
 			case BC_LEX_KEY_READ:
+			case BC_LEX_KEY_MAXIBASE:
+			case BC_LEX_KEY_MAXOBASE:
+			case BC_LEX_KEY_MAXSCALE:
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
-				else if (BC_ERR(flags & BC_PARSE_NOREAD))
-					s = bc_parse_err(p, BC_ERROR_EXEC_REC_READ);
-				else s = bc_parse_read(p);
+				else if (t == BC_LEX_KEY_READ && BC_ERR(flags & BC_PARSE_NOREAD))
+					return bc_parse_err(p, BC_ERROR_EXEC_REC_READ);
+				else {
+					prev = t - BC_LEX_KEY_READ + BC_INST_READ;
+					s = bc_parse_noArgBuiltin(p, prev);
+				}
 
 				rprn = get_token = bin_last = incdec = false;
 				nexprs += 1;
-				prev = BC_INST_READ;
 
 				break;
 			}

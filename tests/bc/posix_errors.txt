@@ -26,3 +26,6 @@ for (;;) { y += 1; }
 obase = 0
 obase = 1
 define void a(e) { "stuff" }
+maxibase()
+maxobase()
+maxscale()

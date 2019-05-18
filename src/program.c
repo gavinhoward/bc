@@ -123,9 +123,9 @@ static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
 }
 
 static void bc_program_prepGlobals(BcProgram *p) {
-	bc_vec_push(&p->scale_v, &p->scale);
-	bc_vec_push(&p->ib_v, &p->ib);
-	bc_vec_push(&p->ob_v, &p->ob);
+	size_t i;
+	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i)
+		bc_vec_push(p->globals_v + i, p->globals + i);
 }
 
 #if BC_ENABLED
@@ -188,7 +188,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 			bc_num_init(n, len);
 
-			s = bc_num_parse(n, str, p->ib, len == 1);
+			s = bc_num_parse(n, str, BC_PROG_IBASE(p), len == 1);
 			assert(!s || s == BC_STATUS_SIGNAL);
 
 #if BC_ENABLE_SIGNALS
@@ -405,9 +405,9 @@ static BcStatus bc_program_op(BcProgram *p, uchar inst) {
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 	if (BC_ERR(s)) return s;
-	bc_num_init(&res.d.n, bc_program_opReqs[idx](n1, n2, p->scale));
+	bc_num_init(&res.d.n, bc_program_opReqs[idx](n1, n2, BC_PROG_SCALE(p)));
 
-	s = bc_program_ops[idx](n1, n2, &res.d.n, p->scale);
+	s = bc_program_ops[idx](n1, n2, &res.d.n, BC_PROG_SCALE(p));
 	if (BC_ERR(s)) goto err;
 	bc_program_binOpRetire(p, &res);
 
@@ -550,7 +550,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	if (BC_PROG_NUM(r, n)) {
 		assert(inst != BC_INST_PRINT_STR);
-		s = bc_num_print(n, BC_PROG_GLOBAL(&p->ob_v), !pop);
+		s = bc_num_print(n, BC_PROG_OBASE(p), !pop);
 #if BC_ENABLED
 		if (BC_NO_ERR(!s)) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
@@ -853,7 +853,8 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	if (!BC_IS_BC || inst == BC_INST_ASSIGN) bc_num_copy(l, r);
 #if BC_ENABLED
 	else {
-		s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, p->scale);
+		BcBigDig scale = BC_PROG_SCALE(p);
+		s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, scale);
 		if (BC_ERR(s)) return s;
 	}
 #endif // BC_ENABLED
@@ -870,17 +871,17 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 		if (sc) {
 			min = 0;
-			max = BC_MAX_SCALE;
-			v = &p->scale_v;
-			ptr_t = &p->scale;
+			max = vm->maxes[BC_PROG_GLOBALS_SCALE];
+			v = p->globals_v + BC_PROG_GLOBALS_SCALE;
+			ptr_t = p->globals + BC_PROG_GLOBALS_SCALE;
 		}
 		else {
 			min = BC_NUM_MIN_BASE;
 			if (BC_ENABLE_EXTRA_MATH && ob && (!BC_IS_BC || !BC_IS_POSIX))
 				min = 0;
-			max = ib ? vm->max_ibase : BC_MAX_OBASE;
-			v = ib ? &p->ib_v : &p->ob_v;
-			ptr_t = ib ? &p->ib : &p->ob;
+			max = vm->maxes[ob + BC_PROG_GLOBALS_IBASE];
+			v = p->globals_v + BC_PROG_GLOBALS_IBASE + ob;
+			ptr_t = p->globals + BC_PROG_GLOBALS_IBASE + ob;
 		}
 
 		if (BC_ERR(val > max || val < min)) return bc_vm_verr(e, min, max);
@@ -1116,14 +1117,11 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 
 	if (BC_G) {
 
-		bc_vec_pop(&p->scale_v);
-		p->scale = BC_PROG_GLOBAL(&p->scale_v);
-
-		bc_vec_pop(&p->ib_v);
-		p->ib = BC_PROG_GLOBAL(&p->ib_v);
-
-		bc_vec_pop(&p->ob_v);
-		p->ob = BC_PROG_GLOBAL(&p->ob_v);
+		for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) {
+			BcVec *v = p->globals_v + i;
+			bc_vec_pop(v);
+			p->globals[i] = BC_PROG_GLOBAL(v);
+		}
 	}
 
 	bc_vec_push(&p->results, &res);
@@ -1154,7 +1152,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 #endif // DC_ENABLED
 
 	if (inst == BC_INST_SQRT) {
-		s = bc_num_sqrt(num, resn, p->scale);
+		s = bc_num_sqrt(num, resn, BC_PROG_SCALE(p));
 		if (BC_ERR(s)) return s;
 	}
 	else if (inst == BC_INST_ABS) {
@@ -1198,11 +1196,11 @@ static BcStatus bc_program_divmod(BcProgram *p) {
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 	if (BC_ERR(s)) return s;
 
-	req = bc_num_mulReq(n1, n2, p->scale);
+	req = bc_num_mulReq(n1, n2, BC_PROG_SCALE(p));
 	bc_num_init(resn, req);
 	bc_num_init(resn2, req);
 
-	s = bc_num_divmod(n1, n2, resn2, resn, p->scale);
+	s = bc_num_divmod(n1, n2, resn2, resn, BC_PROG_SCALE(p));
 	if (BC_ERR(s)) goto err;
 
 	bc_program_binOpRetire(p, &res2);
@@ -1472,28 +1470,35 @@ no_exec:
 }
 #endif // DC_ENABLED
 
+static void bc_program_pushBigDig(BcProgram *p, BcBigDig dig, BcResultType type)
+{
+	BcResult res;
+
+	bc_num_createFromBigdig(&res.d.n, dig);
+
+	res.t = type;
+	bc_vec_push(&p->results, &res);
+}
+
 static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 
-	BcResult res;
+	BcResultType t;
 
 	assert(inst >= BC_INST_IBASE && inst <= BC_INST_SCALE);
 
-	if (inst != BC_INST_SCALE) {
-		BcBigDig dig = (inst == BC_INST_IBASE) ? p->ib : p->ob;
-		bc_num_createFromBigdig(&res.d.n, dig);
-	}
-	else bc_num_createFromBigdig(&res.d.n, p->scale);
-
-	res.t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
-	bc_vec_push(&p->results, &res);
+	t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
+	bc_program_pushBigDig(p, p->globals[inst - BC_INST_IBASE], t);
 }
 
 #ifndef NDEBUG
 void bc_program_free(BcProgram *p) {
+
+	size_t i;
+
 	assert(p);
-	bc_vec_free(&p->scale_v);
-	bc_vec_free(&p->ib_v);
-	bc_vec_free(&p->ob_v);
+
+	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) bc_vec_free(p->globals_v + i);
+
 	bc_vec_free(&p->fns);
 #if BC_ENABLED
 	bc_vec_free(&p->fn_map);
@@ -1513,22 +1518,20 @@ void bc_program_free(BcProgram *p) {
 void bc_program_init(BcProgram *p) {
 
 	BcInstPtr ip;
+	size_t i;
+	BcBigDig val = BC_BASE;
 
 	assert(p);
 
 	memset(p, 0, sizeof(BcProgram));
 	memset(&ip, 0, sizeof(BcInstPtr));
 
-	bc_vec_init(&p->scale_v, sizeof(size_t), NULL);
-	bc_vec_push(&p->scale_v, &p->scale);
-
-	p->ib = BC_BASE;
-	bc_vec_init(&p->ib_v, sizeof(BcBigDig), NULL);
-	bc_vec_push(&p->ib_v, &p->ib);
-
-	p->ob = BC_BASE;
-	bc_vec_init(&p->ob_v, sizeof(BcBigDig), NULL);
-	bc_vec_push(&p->ob_v, &p->ob);
+	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) {
+		bc_vec_init(p->globals_v + i, sizeof(BcBigDig), NULL);
+		val = i == BC_PROG_GLOBALS_SCALE ? 0 : val;
+		bc_vec_push(p->globals_v + i, &val);
+		p->globals[i] = val;
+	}
 
 #if DC_ENABLED
 	p->strm = UCHAR_MAX + 1;
@@ -1719,6 +1722,15 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_READ:
 			{
 				s = bc_program_read(p);
+				break;
+			}
+
+			case BC_INST_MAXIBASE:
+			case BC_INST_MAXOBASE:
+			case BC_INST_MAXSCALE:
+			{
+				BcBigDig dig = vm->maxes[inst - BC_INST_MAXIBASE];
+				bc_program_pushBigDig(p, dig, BC_RESULT_TEMP);
 				break;
 			}
 

@@ -359,6 +359,21 @@ These commands control the values of `ibase`, `obase`, and `scale` (see
   * `K`:
     Pushes the current value of `scale` onto the main stack.
 
+  * `T`:
+    Pushes the maximum allowable value of `ibase` onto the main stack.
+
+    This is a **non-portable extension**.
+
+  * `U`:
+    Pushes the maximum allowable value of `obase` onto the main stack.
+
+    This is a **non-portable extension**.
+
+  * `V`:
+    Pushes the maximum allowable value of `scale` onto the main stack.
+
+    This is a **non-portable extension**.
+
 ### Strings
 
 The following commands control strings.

@@ -43,17 +43,17 @@
 #include <lang.h>
 #include <num.h>
 
+#define BC_PROG_GLOBALS_IBASE (0)
+#define BC_PROG_GLOBALS_OBASE (1)
+#define BC_PROG_GLOBALS_SCALE (2)
+#define BC_PROG_GLOBALS_LEN (3)
+
 #define BC_PROG_ONE_CAP (1)
 
 typedef struct BcProgram {
 
-	BcBigDig scale;
-	BcVec scale_v;
-
-	BcVec ib_v;
-	BcBigDig ib;
-	BcVec ob_v;
-	BcBigDig ob;
+	BcBigDig globals[BC_PROG_GLOBALS_LEN];
+	BcVec globals_v[BC_PROG_GLOBALS_LEN];
 
 #if DC_ENABLED
 	BcBigDig strm;
@@ -94,6 +94,10 @@ typedef struct BcProgram {
 
 #define BC_PROG_GLOBAL_PTR(v) (bc_vec_top(v))
 #define BC_PROG_GLOBAL(v) (*((BcBigDig*) BC_PROG_GLOBAL_PTR(v)))
+
+#define BC_PROG_IBASE(p) ((p)->globals[BC_PROG_GLOBALS_IBASE])
+#define BC_PROG_OBASE(p) ((p)->globals[BC_PROG_GLOBALS_OBASE])
+#define BC_PROG_SCALE(p) ((p)->globals[BC_PROG_GLOBALS_SCALE])
 
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)

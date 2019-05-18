@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "DC" "1" "February 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "DC" "1" "May 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
@@ -331,6 +331,27 @@ Pushes the current value of \fBobase\fR onto the main stack\.
 .TP
 \fBK\fR
 Pushes the current value of \fBscale\fR onto the main stack\.
+.
+.TP
+\fBT\fR
+Pushes the maximum allowable value of \fBibase\fR onto the main stack\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
+.
+.TP
+\fBU\fR
+Pushes the maximum allowable value of \fBobase\fR onto the main stack\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
+.
+.TP
+\fBV\fR
+Pushes the maximum allowable value of \fBscale\fR onto the main stack\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
 .
 .SS "Strings"
 The following commands control strings\.

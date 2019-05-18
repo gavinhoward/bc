@@ -165,11 +165,12 @@ typedef struct BcVm {
 	uchar sig;
 #endif // BC_ENABLE_SIGNALS
 
-	uint16_t line_len;
-	uchar max_ibase;
-
 	uint8_t flags;
 	uchar read_ret;
+
+	uint16_t line_len;
+
+	BcBigDig maxes[BC_PROG_GLOBALS_LEN];
 
 	BcVec files;
 	BcVec exprs;

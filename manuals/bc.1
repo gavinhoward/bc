@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BC" "1" "February 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "May 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
@@ -221,6 +221,18 @@ Numbers (see \fINumbers\fR below)\.
 .
 .IP "7." 4
 \fBabs(E)\fR: The absolute value of \fBE\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "8." 4
+\fBread()\fR: Reads a line from \fBstdin\fR and uses that as an expression\. The result of that expression is the result of the \fBread()\fR operand\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "9." 4
+\fBmaxibase()\fR: The max allowable \fBibase\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "10." 4
+\fBmaxobase()\fR: The max allowable \fBobase\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "11." 4
+\fBmaxscale()\fR: The max allowable \fBscale\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "" 0
 .

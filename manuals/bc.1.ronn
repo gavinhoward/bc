@@ -218,6 +218,15 @@ side of [`assignment` operators](#bc-assignment).
 	**non-portable extension**.
 6.	`scale(E)`: `E`'s **scale**.
 7.	`abs(E)`: The absolute value of `E`. This is a **non-portable extension**.
+8.	`read()`: Reads a line from `stdin` and uses that as an expression. The
+	result of that expression is the result of the `read()` operand. This is a
+	**non-portable extension**.
+9.	`maxibase()`: The max allowable `ibase`. This is a **non-portable
+	extension**.
+10.	`maxobase()`: The max allowable `obase`. This is a **non-portable
+	extension**.
+11.	`maxscale()`: The max allowable `scale`. This is a **non-portable
+	extension**.
 
 <a name="bc-numbers"/>
 
