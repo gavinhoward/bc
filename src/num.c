@@ -1078,7 +1078,7 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 		bc_num_copy(c, a);
 		goto exit;
 	}
-	if (b->len == 1 && !b->rdx && !a->scale && !scale) {
+	if (!a->rdx && !b->rdx && b->len == 1 && !scale) {
 		BcBigDig rem;
 		s = bc_num_divArray(a, b->num[0], c, &rem);
 		goto exit;
@@ -2054,7 +2054,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 #ifdef USE_SE_PRINT
 	{
 		int i, j, maxlen;
-		size_t acc, pow_p, pow_e, pow_f;
+		size_t acc;
+		static size_t last_base = SIZE_MAX, pow_p, pow_e, pow_f;
 
 		bc_num_init(&intp1, 2 * n->len + 1);
 		bc_num_copy(&intp1, n);
@@ -2063,8 +2064,11 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		s = bc_num_sub(n, &intp1, &fracp1, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		for (pow_p = 1, pow_e = 0; pow_p * base <= BC_BASE_POW; pow_p *= base, pow_e ++);
-		pow_f = BC_BASE_POW - pow_p;
+		if (base != last_base) {
+			for (pow_p = 1, pow_e = 0; pow_p * base <= BC_BASE_POW; pow_p *= base, pow_e ++);
+			pow_f = BC_BASE_POW - pow_p;
+			last_base = base;
+		}
 
 		if (pow_f != 0)
 			bc_num_preparePrint(&intp1, pow_f, pow_p);
