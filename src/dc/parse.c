@@ -100,7 +100,7 @@ static BcStatus dc_parse_cond(BcParse *p, uchar inst) {
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
 
-	if (p->l.t == BC_LEX_KEY_ELSE) {
+	if (p->l.t == BC_LEX_KW_ELSE) {
 		s = dc_parse_register(p);
 		if (BC_ERR(s)) return s;
 		s = bc_lex_next(&p->l);
@@ -165,7 +165,7 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			break;
 		}
 
-		case BC_LEX_KEY_READ:
+		case BC_LEX_KW_READ:
 		{
 			if (BC_ERR(flags & BC_PARSE_NOREAD))
 				s = bc_parse_err(p, BC_ERROR_EXEC_REC_READ);

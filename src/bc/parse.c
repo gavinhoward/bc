@@ -64,7 +64,7 @@ static bool bc_parse_isDelimiter(BcParse *p) {
 
 	if (BC_PARSE_DELIMITER(t)) return true;
 
-	if (t == BC_LEX_KEY_ELSE) {
+	if (t == BC_LEX_KW_ELSE) {
 
 		size_t i;
 		uint16_t *fptr = NULL, flags = BC_PARSE_FLAG_ELSE;
@@ -337,7 +337,7 @@ static BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
 	if (BC_ERR(s)) return s;
 
 	flags = (flags & ~(BC_PARSE_PRINT | BC_PARSE_REL));
-	if (type == BC_LEX_KEY_LENGTH) flags |= BC_PARSE_ARRAY;
+	if (type == BC_LEX_KW_LENGTH) flags |= BC_PARSE_ARRAY;
 
 	s = bc_parse_expr_status(p, flags, bc_parse_next_rel);
 	if (BC_ERR(s)) return s;
@@ -345,7 +345,7 @@ static BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
 	if (BC_ERR(p->l.t != BC_LEX_RPAREN))
 		return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-	*prev = type - BC_LEX_KEY_LENGTH + BC_INST_LENGTH;
+	*prev = type - BC_LEX_KW_LENGTH + BC_INST_LENGTH;
 	bc_parse_push(p, *prev);
 
 	return bc_lex_next(&p->l);
@@ -414,11 +414,11 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
 
 		if (type == BC_LEX_NAME)
 			s = bc_parse_name(p, prev, flags | BC_PARSE_NOCALL);
-		else if (type >= BC_LEX_KEY_LAST && type <= BC_LEX_KEY_OBASE) {
-			bc_parse_push(p, type - BC_LEX_KEY_LAST + BC_INST_LAST);
+		else if (type >= BC_LEX_KW_LAST && type <= BC_LEX_KW_OBASE) {
+			bc_parse_push(p, type - BC_LEX_KW_LAST + BC_INST_LAST);
 			s = bc_lex_next(&p->l);
 		}
-		else if (BC_LIKELY(type == BC_LEX_KEY_SCALE)) {
+		else if (BC_LIKELY(type == BC_LEX_KW_SCALE)) {
 			s = bc_lex_next(&p->l);
 			if (BC_ERR(s)) return s;
 			if (BC_ERR(p->l.t == BC_LEX_LPAREN))
@@ -604,7 +604,7 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 
 				*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_IF_END;
 
-				new_else = (p->l.t == BC_LEX_KEY_ELSE);
+				new_else = (p->l.t == BC_LEX_KW_ELSE);
 				if (new_else) s = bc_parse_else(p);
 				else if (!has_brace && (!BC_PARSE_IF_END(p) || brace))
 					bc_parse_noElse(p);
@@ -814,7 +814,7 @@ static BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 
 	if (BC_ERR(!BC_PARSE_LOOP(p))) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-	if (type == BC_LEX_KEY_BREAK) {
+	if (type == BC_LEX_KW_BREAK) {
 
 		if (BC_ERR(!p->exits.len)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
@@ -1017,7 +1017,7 @@ static BcStatus bc_parse_body(BcParse *p, bool brace) {
 
 		if (BC_ERR(!brace)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-		p->auto_part = (p->l.t != BC_LEX_KEY_AUTO);
+		p->auto_part = (p->l.t != BC_LEX_KW_AUTO);
 
 		if (!p->auto_part) {
 
@@ -1053,11 +1053,11 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 	BcLexType type = p->l.t;
 
 	if (type == BC_LEX_NLINE) return bc_lex_next(&p->l);
-	if (type == BC_LEX_KEY_AUTO) return bc_parse_auto(p);
+	if (type == BC_LEX_KW_AUTO) return bc_parse_auto(p);
 
 	p->auto_part = false;
 
-	if (type != BC_LEX_KEY_ELSE) {
+	if (type != BC_LEX_KW_ELSE) {
 
 		if (BC_PARSE_IF_END(p)) {
 			bc_parse_noElse(p);
@@ -1095,20 +1095,20 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 		case BC_LEX_LPAREN:
 		case BC_LEX_NAME:
 		case BC_LEX_NUMBER:
-		case BC_LEX_KEY_IBASE:
-		case BC_LEX_KEY_LAST:
-		case BC_LEX_KEY_LENGTH:
-		case BC_LEX_KEY_OBASE:
-		case BC_LEX_KEY_READ:
-		case BC_LEX_KEY_SCALE:
-		case BC_LEX_KEY_SQRT:
-		case BC_LEX_KEY_ABS:
+		case BC_LEX_KW_IBASE:
+		case BC_LEX_KW_LAST:
+		case BC_LEX_KW_LENGTH:
+		case BC_LEX_KW_OBASE:
+		case BC_LEX_KW_READ:
+		case BC_LEX_KW_SCALE:
+		case BC_LEX_KW_SQRT:
+		case BC_LEX_KW_ABS:
 		{
 			s = bc_parse_expr_status(p, BC_PARSE_PRINT, bc_parse_next_expr);
 			break;
 		}
 
-		case BC_LEX_KEY_ELSE:
+		case BC_LEX_KW_ELSE:
 		{
 			s = bc_parse_else(p);
 			break;
@@ -1132,33 +1132,33 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 			break;
 		}
 
-		case BC_LEX_KEY_BREAK:
-		case BC_LEX_KEY_CONTINUE:
+		case BC_LEX_KW_BREAK:
+		case BC_LEX_KW_CONTINUE:
 		{
 			s = bc_parse_loopExit(p, p->l.t);
 			break;
 		}
 
-		case BC_LEX_KEY_FOR:
+		case BC_LEX_KW_FOR:
 		{
 			s = bc_parse_for(p);
 			break;
 		}
 
-		case BC_LEX_KEY_HALT:
+		case BC_LEX_KW_HALT:
 		{
 			bc_parse_push(p, BC_INST_HALT);
 			s = bc_lex_next(&p->l);
 			break;
 		}
 
-		case BC_LEX_KEY_IF:
+		case BC_LEX_KW_IF:
 		{
 			s = bc_parse_if(p);
 			break;
 		}
 
-		case BC_LEX_KEY_LIMITS:
+		case BC_LEX_KW_LIMITS:
 		{
 			bc_vm_printf("BC_BASE_MAX     = %lu\n", BC_MAX_OBASE);
 			bc_vm_printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM);
@@ -1174,13 +1174,13 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 			break;
 		}
 
-		case BC_LEX_KEY_PRINT:
+		case BC_LEX_KW_PRINT:
 		{
 			s = bc_parse_print(p);
 			break;
 		}
 
-		case BC_LEX_KEY_QUIT:
+		case BC_LEX_KW_QUIT:
 		{
 			// Quit is a compile-time command. We don't exit directly,
 			// so the vm can clean up. Limits do the same thing.
@@ -1188,13 +1188,13 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 			break;
 		}
 
-		case BC_LEX_KEY_RETURN:
+		case BC_LEX_KW_RETURN:
 		{
 			s = bc_parse_return(p);
 			break;
 		}
 
-		case BC_LEX_KEY_WHILE:
+		case BC_LEX_KW_WHILE:
 		{
 			s = bc_parse_while(p);
 			break;
@@ -1225,7 +1225,7 @@ BcStatus bc_parse_parse(BcParse *p) {
 	assert(p);
 
 	if (BC_ERR(p->l.t == BC_LEX_EOF)) s = bc_parse_err(p, BC_ERROR_PARSE_EOF);
-	else if (p->l.t == BC_LEX_KEY_DEFINE) {
+	else if (p->l.t == BC_LEX_KW_DEFINE) {
 		if (BC_ERR(BC_PARSE_NO_EXEC(p)))
 			return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 		s = bc_parse_func(p);
@@ -1419,14 +1419,14 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				break;
 			}
 
-			case BC_LEX_KEY_IBASE:
-			case BC_LEX_KEY_LAST:
-			case BC_LEX_KEY_OBASE:
+			case BC_LEX_KW_IBASE:
+			case BC_LEX_KW_LAST:
+			case BC_LEX_KW_OBASE:
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
-				prev = (uchar) (t - BC_LEX_KEY_LAST + BC_INST_LAST);
+				prev = (uchar) (t - BC_LEX_KW_LAST + BC_INST_LAST);
 				bc_parse_push(p, (uchar) prev);
 
 				get_token = true;
@@ -1436,9 +1436,9 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				break;
 			}
 
-			case BC_LEX_KEY_LENGTH:
-			case BC_LEX_KEY_SQRT:
-			case BC_LEX_KEY_ABS:
+			case BC_LEX_KW_LENGTH:
+			case BC_LEX_KW_SQRT:
+			case BC_LEX_KW_ABS:
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
@@ -1450,17 +1450,17 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				break;
 			}
 
-			case BC_LEX_KEY_READ:
-			case BC_LEX_KEY_MAXIBASE:
-			case BC_LEX_KEY_MAXOBASE:
-			case BC_LEX_KEY_MAXSCALE:
+			case BC_LEX_KW_READ:
+			case BC_LEX_KW_MAXIBASE:
+			case BC_LEX_KW_MAXOBASE:
+			case BC_LEX_KW_MAXSCALE:
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
-				else if (t == BC_LEX_KEY_READ && BC_ERR(flags & BC_PARSE_NOREAD))
+				else if (t == BC_LEX_KW_READ && BC_ERR(flags & BC_PARSE_NOREAD))
 					return bc_parse_err(p, BC_ERROR_EXEC_REC_READ);
 				else {
-					prev = t - BC_LEX_KEY_READ + BC_INST_READ;
+					prev = t - BC_LEX_KW_READ + BC_INST_READ;
 					s = bc_parse_noArgBuiltin(p, prev);
 				}
 
@@ -1470,7 +1470,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				break;
 			}
 
-			case BC_LEX_KEY_SCALE:
+			case BC_LEX_KW_SCALE:
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);

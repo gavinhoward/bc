@@ -56,7 +56,7 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 		if (!strncmp(buf, kw->name, n) && !isalnum(buf[n]) && buf[n] != '_') {
 
-			l->t = BC_LEX_KEY_AUTO + (BcLexType) i;
+			l->t = BC_LEX_KW_AUTO + (BcLexType) i;
 
 			if (!BC_LEX_KW_POSIX(kw)) {
 				s = bc_lex_verr(l, BC_ERROR_POSIX_KW, kw->name);
@@ -237,7 +237,7 @@ BcStatus bc_lex_token(BcLex *l) {
 			c2 = l->buf[l->i];
 			if (BC_LEX_NUM_CHAR(c2, true, false)) s = bc_lex_number(l, c);
 			else {
-				l->t = BC_LEX_KEY_LAST;
+				l->t = BC_LEX_KW_LAST;
 				s = bc_lex_err(l, BC_ERROR_POSIX_DOT);
 			}
 			break;
