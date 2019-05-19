@@ -223,12 +223,6 @@ runconfigseries() {
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
 		"$_runconfigseries_configure_flags" 0 32 "$_runconfigseries_run_tests"
-
-	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" 1 16 "$_runconfigseries_run_tests"
-
-	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" 0 16 "$_runconfigseries_run_tests"
 }
 
 runtestseries() {
