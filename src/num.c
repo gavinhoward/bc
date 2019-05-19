@@ -1681,92 +1681,58 @@ exit:
 
 #ifdef USE_SE_PRINT
 
-// Distribute contributions from higher BcDigs into the lowest one passed
-// in, which is limited to < pow_p. Overflow is accumulated in the upper
-// BcDigs. Multiple iterations are required to process the whole number.
-//
-// E.g. for BC_BASE_POW=100 and assuming BcNum = 1|00 a representation
-// in base 7 would have pow_p = 7^2 = 49 and pow_f = 100 - 49 = 51.
-//
-// Therefore for printing in base 7, num[0] has to be increased by 51
-// if num[1] = 1 is to be interpreted as value 1*pow_p = 49 for printing.
-// For 2|00 the calculation will lead to 2+(2*51)/49 | 0+(2*51)%49
-// which gives 3|3 (to be interpreted as 3*49+3 = 200).
-// This algorithm has been designed to require multiple passes over the
-// array of BcDigs to keep the numeric range under control (to not need
-// extended range of the "accumulator").
 size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
 	size_t i;
 	BcBigDig acc;
 	size_t len = n->len - idx;
 	BcDig *a = n->num + idx;
 
-	// We need at least 2 BcDigs since we want to transfer a reminder from
-	// one to the other.
 	if (len < 2) return len;
-	// From the highest BcDig to the lowest one passed in distribute the part
-	// of the upper BcDig that contributes to the result of the division of
-	// the lower BcDig by base (or rather base^n).
+
 	for (i = len - 1; i > 0; i--) {
-		// In base BC_BASE_POW one "unit" represents a value that is
-		// higher by pow_f compared to base pow_p between BcDigs.
+
 		acc = (BcBigDig)a[i] * pow_f + (BcBigDig)a[i-1];
-		// The lower BcDig receives the reminder of the sum from above
 		a[i-1] = (BcDig)(acc % pow_p);
-		// The value divided by pow_p will be add to the upper BcDig
 		acc /= pow_p;
-		// Add this value with detection of overflow and increment of
-		// the next higher BcDig in that case
 		acc += a[i];
+
 		if (acc >= BC_BASE_POW) {
+
 			if (i == len - 1) {
-				//assert(len < n->cap - idx);
 				bc_num_expand(n, bc_vm_growSize(n->len, bc_vm_growSize(idx, 1)));
 				a = n->num + idx;
 				a[len] = 0;
 				len += 1;
 			}
-			// This addition may lead to a slight "overflow" of this
-			// BcDig beyond pow_p. This will be fixed by the next
-			// iteration through this array or at the end after
-			// the final invocation of this function.
+
 			a[i + 1] += acc / BC_BASE_POW;
 			acc %= BC_BASE_POW;
 		}
-		// Assign value which now is at most pow_p - 1
+
 		a[i] = acc;
 	}
 	return len;
 }
 
-// Convert BcNum with BcDigs with "base" BC_BIG_POW to "base" pow_p with
-// pow_p the highest power of obase that fits into BC_BIG_POW.
-// E.g., on entry n->num[1] = 1 represents BC_BIG_POW, while n->num[1] = 1
-// would be interpreted as value of pow_p on exit.
-// This allows to print the BcNum in the selected obase after being
-// transformed by this function.
 void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
+
 	size_t i;
 
 	for (i = 0; i < n->len; i++) {
-		// Perform fixup for BcDigs from low to high
-		// After each iteration one more BcDig is finished
 		n->len = pre_fixup(n, pow_f, pow_p, i) + i;
 	}
-	// The BcDigs may contain values that are slightly larger than pow_p, which
-	// is the highest value that can be printed in base with pow_e "digits"
+
 	for (i = 0; i < n->len; i++) {
+
 		if (n->num[i] >= pow_p) {
-			// If the most significant BcDig has a value above pow_p
-			// another BcDig will be required
+
 			if (i + 1 == n->len) {
 				bc_num_expand(n, bc_vm_growSize(n->len, 1));
 				n->num[i + 1] = 0;
 				n->len += 1;
 			}
-			// Add overflow part to higher BcDig
+
 			n->num[i + 1] += n->num[i] / pow_p;
-			// Limit BcDig to less than pow_p after overflow has been dealt with
 			n->num[i] %= pow_p;
 		}
 	}
@@ -1814,31 +1780,26 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		static size_t last_base = SIZE_MAX, pow_p, pow_e, pow_f;
 
 		if (base != last_base) {
-			// Calculate the largest power of base that fits into BC_BASE_POW
+
 			for (pow_p = 1, pow_e = 0; pow_p * base <= BC_BASE_POW; pow_p *= base, pow_e ++);
-			// Calculate the difference between the BcDig bases BC_BASE_POW of
-			// the input values and pow_p of the result that can be printed as
-			// individual BcDigs in the chosen base.
+
 			pow_f = BC_BASE_POW - pow_p;
 			last_base = base;
 		}
 
-		// If there cannit be a carry from one BcDig to the next the BcNum can be used as is
 		if (pow_f != 0)
 			bc_num_preparePrint(&intp1, pow_f, pow_p);
 
-		// Operate on BcDigs of the integer part from low to high digits
-		// There is no carry between BcDigs, thus output could also be created from
-		// high BcDigs towards low BcDigs, reducing the amount of digits to be reversed
 		for (i = 0; i < intp1.len; i++) {
+
 			acc = intp1.num[i];
-			// Simple div and mod algorithm
+
 			for (j = 0; j < pow_e && (i < intp1.len - 1 || acc != 0); j++) {
 				dig = acc % base;
 				acc /= base;
 				bc_vec_push(&stack, &dig);
 			}
-			// The whole BcDig will be printed, no carry to the next higher digit
+
 			assert(acc == 0);
 		}
 	}
