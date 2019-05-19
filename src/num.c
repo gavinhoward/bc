@@ -1763,9 +1763,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	bc_num_one(&flen1);
 
 	bc_num_createCopy(&intp1, n);
-
 	bc_num_truncate(&intp1, intp1.scale);
-	bc_num_init(&intp2, intp1.len);
 
 	s = bc_num_sub(n, &intp1, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
