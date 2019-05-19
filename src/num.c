@@ -1769,7 +1769,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	{
-		int i, j, maxlen;
+		size_t i, j;
 		size_t acc;
 
 		if (base != vm->last_base) {
