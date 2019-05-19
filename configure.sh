@@ -521,8 +521,8 @@ fi
 
 if [ -z "${LONG_BIT+set}" ]; then
 	LONG_BIT_DEFINE=""
-elif [ "$LONG_BIT" -lt 16 ]; then
-	usage "LONG_BIT is less than 16"
+elif [ "$LONG_BIT" -lt 32 ]; then
+	usage "LONG_BIT is less than 32"
 else
 	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
 fi
