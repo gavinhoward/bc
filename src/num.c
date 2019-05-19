@@ -1679,8 +1679,6 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-<<<<<<< HEAD
-=======
 static BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
                                   BcBigDig pow, size_t idx)
 {
@@ -1751,7 +1749,6 @@ static BcStatus bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
 	return BC_NO_ERR(!s) && BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
->>>>>>> long9
 static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
                                 size_t len, BcNumDigitOp print)
 {
@@ -1772,14 +1769,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
-<<<<<<< HEAD
-	bc_num_init(&fracp2, n->rdx);
-	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
-	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
-	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
-	bc_num_one(&flen1);
-	bc_num_createCopy(&intp1, n);
-=======
 
 	bc_num_createCopy(&intp, n);
 	bc_num_truncate(&intp, intp.scale);
@@ -1796,7 +1785,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 			vm->last_pow *= base;
 			vm->last_exp += 1;
 		}
->>>>>>> long9
 
 		vm->last_rem = BC_BASE_POW - vm->last_pow;
 		vm->last_base = base;
