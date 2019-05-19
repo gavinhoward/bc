@@ -1694,7 +1694,7 @@ static BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
 		assert(acc % pow < BC_BASE_POW);
 		a[i - 1] = (BcDig) (acc % pow);
 		acc /= pow;
-		acc += a[i];
+		acc += (BcBigDig) a[i];
 
 		if (acc >= BC_BASE_POW) {
 
@@ -1708,7 +1708,8 @@ static BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
 			acc %= BC_BASE_POW;
 		}
 
-		a[i] = acc;
+		assert(acc < BC_BASE_POW);
+		a[i] = (BcDig) acc;
 	}
 
 	n->len = len + idx;
@@ -1727,7 +1728,7 @@ static BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig rem,
 
 	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i) {
 
-		if (n->num[i] >= pow) {
+		if (pow < (BcBigDig) n->num[i]) {
 
 			if (i + 1 == n->len) {
 				assert(n->len < n->cap);
@@ -1735,8 +1736,9 @@ static BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig rem,
 				n->len += 1;
 			}
 
-			n->num[i + 1] += n->num[i] / pow;
-			n->num[i] %= pow;
+			assert(pow < BC_BASE_POW);
+			n->num[i + 1] += n->num[i] / ((BcDig) pow);
+			n->num[i] %= ((BcDig) pow);
 		}
 	}
 
@@ -1788,7 +1790,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 	for (i = intp.rdx; BC_NO_SIG && i < intp.len; ++i) {
 
-		acc = intp.num[i];
+		acc = (BcBigDig) intp.num[i];
 
 		for (j = 0; j < exp && (i < intp.len - 1 || acc != 0); ++j) {
 			dig = acc % base;
