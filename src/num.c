@@ -1742,7 +1742,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 {
 	BcStatus s;
 	BcVec stack;
-	BcNum intp1, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
+	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
 	BcBigDig dig, *ptr, acc;
 	size_t i, j;
 	bool radix;
@@ -1757,16 +1757,11 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
-	bc_num_init(&fracp2, n->rdx);
-	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
-	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
-	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
-	bc_num_one(&flen1);
 
-	bc_num_createCopy(&intp1, n);
-	bc_num_truncate(&intp1, intp1.scale);
+	bc_num_createCopy(&intp, n);
+	bc_num_truncate(&intp, intp.scale);
 
-	s = bc_num_sub(n, &intp1, &fracp1, 0);
+	s = bc_num_sub(n, &intp, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	if (base != vm->last_base) {
@@ -1784,13 +1779,13 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	}
 
 	if (vm->last_rem != 0)
-		bc_num_preparePrint(&intp1, vm->last_rem, vm->last_pow);
+		bc_num_preparePrint(&intp, vm->last_rem, vm->last_pow);
 
-	for (i = 0; i < intp1.len; ++i) {
+	for (i = 0; i < intp.len; ++i) {
 
-		acc = (BcBigDig) intp1.num[i];
+		acc = (BcBigDig) intp.num[i];
 
-		for (j = 0; j < vm->last_exp && (i < intp1.len - 1 || acc != 0); ++j) {
+		for (j = 0; j < vm->last_exp && (i < intp.len - 1 || acc != 0); ++j) {
 			dig = acc % base;
 			acc /= base;
 			bc_vec_push(&stack, &dig);
@@ -1810,6 +1805,12 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	if (BC_SIG) goto sig_err;
 	if (!n->scale) goto err;
 
+	bc_num_init(&fracp2, n->rdx);
+	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
+	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
+	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
+	bc_num_one(&flen1);
+
 	radix = true;
 	n1 = &flen1;
 	n2 = &flen2;
@@ -1818,22 +1819,22 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 		bc_num_expand(&fracp2, fracp1.len + 1);
 		s = bc_num_mulArray(&fracp1, base, &fracp2);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 		fracp2.scale = n->scale;
 		fracp2.rdx = BC_NUM_RDX(fracp2.scale);
 
 		// Will never fail (except for signals) because fracp is
 		// guaranteed to be non-negative and small enough.
 		s = bc_num_bigdig(&fracp2, &dig);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 
 		bc_num_bigdig2num(&digit, dig);
 		s = bc_num_sub(&fracp2, &digit, &fracp1, 0);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 
 		print(dig, len, radix);
 		s = bc_num_mulArray(n1, base, n2);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 
 		radix = false;
 		temp = n1;
@@ -1841,14 +1842,15 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		n2 = temp;
 	}
 
-sig_err:
-	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
-err:
-	bc_num_free(&intp1);
+frac_err:
 	bc_num_free(&flen2);
 	bc_num_free(&flen1);
 	bc_num_free(&fracp2);
+sig_err:
+	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
+err:
 	bc_num_free(&fracp1);
+	bc_num_free(&intp);
 	bc_vec_free(&stack);
 	return s;
 }
