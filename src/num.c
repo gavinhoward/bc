@@ -1681,26 +1681,29 @@ exit:
 
 #ifdef USE_SE_PRINT
 
-size_t bc_num_printFixup(BcDig *a, size_t n, size_t cap, size_t rem, size_t pow)
+BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
+                           BcBigDig pow, size_t idx)
 {
-	size_t i;
+	size_t i, len = n->len - idx;
 	BcBigDig acc;
+	BcDig *a = n->num + idx;
 
-	if (n < 2) return n;
+	if (len < 2) return BC_STATUS_SUCCESS;
 
-	for (i = n - 1; i > 0; --i) {
+	for (i = len - 1; BC_NO_SIG && i > 0; --i) {
 
-		acc = (BcBigDig) a[i] * rem + (BcBigDig) a[i - 1];
+		acc = ((BcBigDig) a[i]) * rem + ((BcBigDig) a[i - 1]);
+		assert(acc % pow < BC_BASE_POW);
 		a[i - 1] = (BcDig) (acc % pow);
 		acc /= pow;
 		acc += a[i];
 
 		if (acc >= BC_BASE_POW) {
 
-			if (i == n - 1) {
-				assert(n < cap);
-				a[n] = 0;
-				n += 1;
+			if (i == len - 1) {
+				assert(len < n->cap - idx);
+				a[len] = 0;
+				len += 1;
 			}
 
 			a[i + 1] += acc / BC_BASE_POW;
@@ -1710,20 +1713,20 @@ size_t bc_num_printFixup(BcDig *a, size_t n, size_t cap, size_t rem, size_t pow)
 		a[i] = acc;
 	}
 
-	return n;
+	n->len = len + idx;
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
-void bc_num_preparePrint(BcNum *restrict n, size_t rem, size_t pow) {
+BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig rem, BcBigDig pow) {
 
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 
-	for (i = 0; i < n->len; ++i) {
-		size_t len;
-		len = bc_num_printFixup(n->num + i, n->len - i, n->cap - i, rem, pow);
-		n->len = len + i;
-	}
+	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i)
+		s = bc_num_printFixup(n, rem, pow, i);
 
-	for (i = 0; i < n->len; ++i) {
+	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i) {
 
 		if (n->num[i] >= pow) {
 
@@ -1737,6 +1740,8 @@ void bc_num_preparePrint(BcNum *restrict n, size_t rem, size_t pow) {
 			n->num[i] %= pow;
 		}
 	}
+
+	return BC_NO_ERR(!s) && BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 #endif
 
@@ -1767,8 +1772,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	bc_num_one(&flen1);
 #ifdef USE_SE_PRINT
 	{
-		int i, j, maxlen;
-		size_t acc, pow, exp, rem;
+		size_t i, j;
+		BcBigDig acc, pow, exp, rem;
 
 		bc_num_init(&intp1, bc_vm_growSize(bc_vm_arraySize(2, n->len), 1));
 		bc_num_copy(&intp1, n);
@@ -1780,11 +1785,14 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		for (pow = 1, exp = 0; pow * base <= BC_BASE_POW; pow *= base, ++exp);
 		rem = BC_BASE_POW - pow;
 
-		if (rem != 0) bc_num_preparePrint(&intp1, rem, pow);
+		if (rem != 0) {
+			s = bc_num_preparePrint(&intp1, rem, pow);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		}
 
 		acc = 0;
 
-		for (i = intp1.rdx; i < intp1.len; ++i) {
+		for (i = intp1.rdx; BC_NO_SIG && i < intp1.len; ++i) {
 
 			acc = intp1.num[i];
 
