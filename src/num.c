@@ -1679,8 +1679,6 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-#ifdef USE_SE_PRINT
-
 BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
                            BcBigDig pow, size_t idx)
 {
@@ -1743,16 +1741,15 @@ BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig rem, BcBigDig pow) {
 
 	return BC_NO_ERR(!s) && BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
-#endif
 
 static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
                                 size_t len, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
-	BcNum intp1, intp2, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
-	BcBigDig dig, *ptr;
-	size_t i;
+	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
+	BcBigDig dig, *ptr, acc, pow, exp, rem;
+	size_t i, j;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
 
@@ -1770,66 +1767,36 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_one(&flen1);
-#ifdef USE_SE_PRINT
-	{
-		size_t i, j;
-		BcBigDig acc, pow, exp, rem;
 
-		bc_num_init(&intp1, bc_vm_growSize(bc_vm_arraySize(2, n->len), 1));
-		bc_num_copy(&intp1, n);
-		bc_num_truncate(&intp1, intp1.scale);
+	bc_num_init(&intp, bc_vm_growSize(bc_vm_arraySize(2, n->len), 1));
+	bc_num_copy(&intp, n);
+	bc_num_truncate(&intp, intp.scale);
 
-		s = bc_num_sub(n, &intp1, &fracp1, 0);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		for (pow = 1, exp = 0; pow * base <= BC_BASE_POW; pow *= base, ++exp);
-		rem = BC_BASE_POW - pow;
-
-		if (rem != 0) {
-			s = bc_num_preparePrint(&intp1, rem, pow);
-			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-		}
-
-		acc = 0;
-
-		for (i = intp1.rdx; BC_NO_SIG && i < intp1.len; ++i) {
-
-			acc = intp1.num[i];
-
-			for (j = 0; j < exp && (i < intp1.len - 1 || acc != 0); ++j) {
-				dig = acc % base;
-				acc /= base;
-				bc_vec_push(&stack, &dig);
-			}
-
-			assert(acc == 0);
-		}
-	}
-#else
-	bc_num_createCopy(&intp1, n);
-
-	bc_num_truncate(&intp1, intp1.scale);
-	bc_num_init(&intp2, intp1.len);
-
-	s = bc_num_sub(n, &intp1, &fracp1, 0);
+	s = bc_num_sub(n, &intp, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	n1 = &intp1;
-	n2 = &intp2;
+	for (pow = 1, exp = 0; pow * base <= BC_BASE_POW; pow *= base, ++exp);
+	rem = BC_BASE_POW - pow;
 
-	while (BC_NO_SIG && BC_NUM_NONZERO(n1)) {
-
-		// Dividing by base cannot be divide by 0 because base cannot be 0.
-		s = bc_num_divArray(n1, base, n2, &dig);
+	if (rem != 0) {
+		s = bc_num_preparePrint(&intp, rem, pow);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		bc_vec_push(&stack, &dig);
-
-		temp = n1;
-		n1 = n2;
-		n2 = temp;
 	}
-#endif
+
+	acc = 0;
+
+	for (i = intp.rdx; BC_NO_SIG && i < intp.len; ++i) {
+
+		acc = intp.num[i];
+
+		for (j = 0; j < exp && (i < intp.len - 1 || acc != 0); ++j) {
+			dig = acc % base;
+			acc /= base;
+			bc_vec_push(&stack, &dig);
+		}
+
+		assert(acc == 0);
+	}
 
 	if (BC_SIG) goto sig_err;
 
@@ -1876,10 +1843,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 sig_err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 err:
-#ifndef USE_SE_PRINT
-	bc_num_free(&intp2);
-#endif // USE_SE_PRINT
-	bc_num_free(&intp1);
+	bc_num_free(&intp);
 	bc_num_free(&flen2);
 	bc_num_free(&flen1);
 	bc_num_free(&fracp2);
