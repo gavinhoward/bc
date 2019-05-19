@@ -80,8 +80,6 @@ typedef uint_fast64_t BcBigDig;
 #define BC_NUM_BIGDIG_C UINT64_C
 
 #elif BC_LONG_BIT >= 32
-// sizeof(long) has been guaranteed to be at least 32 bit long since at least c99
-// and has actually been a 32 bit value on the PDP/11, nearly 50 years ago ...
 
 typedef int_least16_t BcDig;
 typedef uint_fast32_t BcBigDig;
@@ -96,24 +94,8 @@ typedef uint_fast32_t BcBigDig;
 
 #else
 
-typedef int_least8_t BcDig;
-typedef uint_fast16_t BcBigDig;
+#error BC_LONG_BIT must be at least 32
 
-#define BC_NUM_BIGDIG_MAX (UINT_FAST16_MAX)
-
-#if BC_LONG_BIT >= 16
-
-#define BC_BASE_DIGS (2)
-#define BC_BASE_POW (100)
-#define BC_NUM_DEF_SIZE (8)
-
-#define BC_NUM_BIGDIG_C UINT16_C
-
-#else
-
-#error BC_LONG_BIT must be at least 16
-
-#endif // BC_LONG_BIT >= 16
 #endif // BC_LONG_BIT >= 64
 
 typedef struct BcNum {
