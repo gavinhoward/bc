@@ -1742,8 +1742,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	BcStatus s;
 	BcVec stack;
 	BcNum intp1, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
-	BcBigDig dig, *ptr;
-	size_t i;
+	BcBigDig dig, *ptr, acc;
+	size_t i, j;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
 
@@ -1768,39 +1768,35 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	s = bc_num_sub(n, &intp1, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	{
-		size_t i, j;
-		size_t acc;
 
-		if (base != vm->last_base) {
+	if (base != vm->last_base) {
 
-			vm->last_pow = 1;
-			vm->last_exp = 0;
+		vm->last_pow = 1;
+		vm->last_exp = 0;
 
-			while (vm->last_pow * base <= BC_BASE_POW) {
-				vm->last_pow *= base;
-				vm->last_exp += 1;
-			}
-
-			vm->last_rem = BC_BASE_POW - vm->last_pow;
-			vm->last_base = base;
+		while (vm->last_pow * base <= BC_BASE_POW) {
+			vm->last_pow *= base;
+			vm->last_exp += 1;
 		}
 
-		if (vm->last_rem != 0)
-			bc_num_preparePrint(&intp1, vm->last_rem, vm->last_pow);
+		vm->last_rem = BC_BASE_POW - vm->last_pow;
+		vm->last_base = base;
+	}
 
-		for (i = 0; i < intp1.len; i++) {
+	if (vm->last_rem != 0)
+		bc_num_preparePrint(&intp1, vm->last_rem, vm->last_pow);
 
-			acc = intp1.num[i];
+	for (i = 0; i < intp1.len; i++) {
 
-			for (j = 0; j < vm->last_exp && (i < intp1.len - 1 || acc != 0); j++) {
-				dig = acc % base;
-				acc /= base;
-				bc_vec_push(&stack, &dig);
-			}
+		acc = intp1.num[i];
 
-			assert(acc == 0);
+		for (j = 0; j < vm->last_exp && (i < intp1.len - 1 || acc != 0); j++) {
+			dig = acc % base;
+			acc /= base;
+			bc_vec_push(&stack, &dig);
 		}
+
+		assert(acc == 0);
 	}
 
 	if (BC_SIG) goto sig_err;
