@@ -2338,9 +2338,13 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	}
 
 	if (BC_NUM_NONZERO(a) && !a->rdx && !b->rdx && b->len == 1 && !scale) {
+
 		BcBigDig rem;
+
 		s = bc_num_divArray(ptr_a, (BcBigDig) b->num[0], c, &rem);
+
 		assert(rem < BC_BASE_POW);
+
 		d->num[0] = (BcDig) rem;
 		d->len = (rem != 0);
 	}
