@@ -146,6 +146,7 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
 	size_t i, j;
 
 	for (i = 0; BC_NO_SIG && i < len; ++i) {
+
 		for (a[i] -= b[i], j = 0; BC_NO_SIG && a[i + j] < 0;) {
 			assert(a[i + j] >= -BC_BASE_POW);
 			a[i + j++] += BC_BASE_POW;
@@ -609,6 +610,7 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
+
 	if (BC_NUM_ZERO(a)) {
 		bc_num_copy(c, b);
 		if (sub && BC_NUM_NONZERO(c)) c->neg = !c->neg;
@@ -2389,5 +2391,6 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 
 	fprintf(stderr, "(%zu | %zu.%zu / %zu) %p\n",
 	        n->scale, n->len, n->rdx, n->cap, (void*) n->num);
+	vm->nchars = 0;
 }
 #endif // BC_DEBUG_CODE
