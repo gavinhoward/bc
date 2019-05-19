@@ -1698,10 +1698,10 @@ static BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
 		if (acc >= BC_BASE_POW) {
 
 			if (i == len - 1) {
-				bc_num_expand(n, bc_vm_growSize(len, bc_vm_growSize(idx, 1)));
+				len = bc_vm_growSize(len, 1);
+				bc_num_expand(n, bc_vm_growSize(len, idx));
 				a = n->num + idx;
-				a[len] = 0;
-				len += 1;
+				a[len - 1] = 0;
 			}
 
 			a[i + 1] += acc / BC_BASE_POW;
@@ -1735,9 +1735,9 @@ static BcStatus bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
 		if (n->num[i] >= (BcDig) pow) {
 
 			if (i + 1 == n->len) {
-				bc_num_expand(n, bc_vm_growSize(n->len, 1));
+				n->len = bc_vm_growSize(n->len, 1);
+				bc_num_expand(n, n->len);
 				n->num[i + 1] = 0;
-				n->len += 1;
 			}
 
 			n->num[i + 1] += n->num[i] / ((BcDig) pow);
