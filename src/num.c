@@ -1740,6 +1740,7 @@ static BcStatus bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
 				n->num[i + 1] = 0;
 			}
 
+			assert(pow < BC_BASE_POW);
 			n->num[i + 1] += n->num[i] / ((BcDig) pow);
 			n->num[i] %= (BcDig) pow;
 		}
