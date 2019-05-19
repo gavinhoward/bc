@@ -1679,15 +1679,15 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-static size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
+static BcStatus pre_fixup(BcNum *restrict n, BcBigDig pow_f, BcBigDig pow_p, size_t idx) {
 
 	size_t i, len = n->len - idx;
 	BcBigDig acc;
 	BcDig *a = n->num + idx;
 
-	if (len < 2) return len;
+	if (len < 2) return BC_STATUS_SUCCESS;
 
-	for (i = len - 1; i > 0; --i) {
+	for (i = len - 1; BC_NO_SIG && i > 0; --i) {
 
 		acc = ((BcBigDig) a[i]) * pow_f + ((BcBigDig) a[i - 1]);
 		a[i - 1] = (BcDig) (acc % pow_p);
@@ -1711,17 +1711,24 @@ static size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t id
 		a[i] = (BcDig) acc;
 	}
 
-	return len;
+	n->len = len + idx;
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
-static void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
+static BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig pow_f, BcBigDig pow_p) {
 
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 
-	for (i = 0; i < n->len; ++i)
-		n->len = pre_fixup(n, pow_f, pow_p, i) + i;
+	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i)
+		s = pre_fixup(n, pow_f, pow_p, i);
 
-	for (i = 0; i < n->len; ++i) {
+	if (BC_ERR(s)) return s;
+
+	for (i = 0; BC_NO_SIG && i < n->len; ++i) {
+
+		assert(pow_p == ((BcBigDig) ((BcDig) pow_p)));
 
 		if (n->num[i] >= (BcDig) pow_p) {
 
@@ -1735,6 +1742,8 @@ static void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
 			n->num[i] %= (BcDig) pow_p;
 		}
 	}
+
+	return BC_NO_ERR(!s) && BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
 static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
@@ -1743,7 +1752,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	BcStatus s;
 	BcVec stack;
 	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
-	BcBigDig dig, *ptr, acc;
+	BcBigDig dig, *ptr, acc, exp;
 	size_t i, j;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
@@ -1778,20 +1787,25 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		vm->last_base = base;
 	}
 
-	if (vm->last_rem != 0)
-		bc_num_preparePrint(&intp, vm->last_rem, vm->last_pow);
+	exp = vm->last_exp;
 
-	for (i = 0; i < intp.len; ++i) {
+	if (vm->last_rem != 0) {
+		s = bc_num_preparePrint(&intp, vm->last_rem, vm->last_pow);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	}
+
+	for (i = 0; BC_NO_SIG && i < intp.len; ++i) {
 
 		acc = (BcBigDig) intp.num[i];
 
-		for (j = 0; j < vm->last_exp && (i < intp.len - 1 || acc != 0); ++j) {
+		for (j = 0; BC_NO_SIG && j < exp && (i < intp.len - 1 || acc != 0); ++j)
+		{
 			dig = acc % base;
 			acc /= base;
 			bc_vec_push(&stack, &dig);
 		}
 
-		assert(acc == 0);
+		assert(acc == 0 || BC_SIG);
 	}
 
 	if (BC_SIG) goto sig_err;
