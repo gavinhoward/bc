@@ -2025,8 +2025,7 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n && val && base);
-	assert(BC_ENABLE_EXTRA_MATH ||
-	       (base >= BC_NUM_MIN_BASE && base <= vm->max_ibase));
+	assert(base >= BC_NUM_MIN_BASE && base <= vm->maxes[BC_PROG_GLOBALS_IBASE]);
 	assert(bc_num_strValid(val));
 
 	if (letter) {
