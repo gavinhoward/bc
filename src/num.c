@@ -1679,8 +1679,9 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-static BcStatus pre_fixup(BcNum *restrict n, BcBigDig pow_f, BcBigDig pow_p, size_t idx) {
-
+static BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
+                                  BcBigDig pow, size_t idx)
+{
 	size_t i, len = n->len - idx;
 	BcBigDig acc;
 	BcDig *a = n->num + idx;
@@ -1689,9 +1690,9 @@ static BcStatus pre_fixup(BcNum *restrict n, BcBigDig pow_f, BcBigDig pow_p, siz
 
 	for (i = len - 1; BC_NO_SIG && i > 0; --i) {
 
-		acc = ((BcBigDig) a[i]) * pow_f + ((BcBigDig) a[i - 1]);
-		a[i - 1] = (BcDig) (acc % pow_p);
-		acc /= pow_p;
+		acc = ((BcBigDig) a[i]) * rem + ((BcBigDig) a[i - 1]);
+		a[i - 1] = (BcDig) (acc % pow);
+		acc /= pow;
 		acc += (BcBigDig) a[i];
 
 		if (acc >= BC_BASE_POW) {
@@ -1716,21 +1717,22 @@ static BcStatus pre_fixup(BcNum *restrict n, BcBigDig pow_f, BcBigDig pow_p, siz
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
-static BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig pow_f, BcBigDig pow_p) {
-
+static BcStatus bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
+                                    BcBigDig pow)
+{
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 
 	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i)
-		s = pre_fixup(n, pow_f, pow_p, i);
+		s = bc_num_printFixup(n, rem, pow, i);
 
 	if (BC_ERR(s)) return s;
 
 	for (i = 0; BC_NO_SIG && i < n->len; ++i) {
 
-		assert(pow_p == ((BcBigDig) ((BcDig) pow_p)));
+		assert(pow == ((BcBigDig) ((BcDig) pow)));
 
-		if (n->num[i] >= (BcDig) pow_p) {
+		if (n->num[i] >= (BcDig) pow) {
 
 			if (i + 1 == n->len) {
 				bc_num_expand(n, bc_vm_growSize(n->len, 1));
@@ -1738,8 +1740,8 @@ static BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig pow_f, BcBigDig 
 				n->len += 1;
 			}
 
-			n->num[i + 1] += n->num[i] / ((BcDig) pow_p);
-			n->num[i] %= (BcDig) pow_p;
+			n->num[i + 1] += n->num[i] / ((BcDig) pow);
+			n->num[i] %= (BcDig) pow;
 		}
 	}
 
@@ -1790,7 +1792,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	exp = vm->last_exp;
 
 	if (vm->last_rem != 0) {
-		s = bc_num_preparePrint(&intp, vm->last_rem, vm->last_pow);
+		s = bc_num_printPrepare(&intp, vm->last_rem, vm->last_pow);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
