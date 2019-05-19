@@ -1699,7 +1699,7 @@ size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
 		if (acc >= BC_BASE_POW) {
 
 			if (i == len - 1) {
-				bc_num_expand(n, bc_vm_growSize(n->len, bc_vm_growSize(idx, 1)));
+				bc_num_expand(n, bc_vm_growSize(len, bc_vm_growSize(idx, 1)));
 				a = n->num + idx;
 				a[len] = 0;
 				len += 1;
