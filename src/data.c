@@ -720,7 +720,6 @@ const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {
 	1,
 	10,
 	100,
-#if BC_BASE_DIGS > 2
 	1000,
 	10000,
 #if BC_BASE_DIGS > 4
@@ -729,8 +728,7 @@ const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {
 	10000000,
 	100000000,
 	1000000000,
-#endif // BC_LONG_BIT > 32
-#endif // BC_LONG_BIT > 16
+#endif // BC_BASE_DIGS > 4
 };
 
 const BcNumBinaryOp bc_program_ops[] = {

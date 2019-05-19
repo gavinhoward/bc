@@ -1679,14 +1679,87 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
+<<<<<<< HEAD
+=======
+static BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
+                                  BcBigDig pow, size_t idx)
+{
+	size_t i, len = n->len - idx;
+	BcBigDig acc;
+	BcDig *a = n->num + idx;
+
+	if (len < 2) return BC_STATUS_SUCCESS;
+
+	for (i = len - 1; BC_NO_SIG && i > 0; --i) {
+
+		acc = ((BcBigDig) a[i]) * rem + ((BcBigDig) a[i - 1]);
+		a[i - 1] = (BcDig) (acc % pow);
+		acc /= pow;
+		acc += (BcBigDig) a[i];
+
+		if (acc >= BC_BASE_POW) {
+
+			if (i == len - 1) {
+				len = bc_vm_growSize(len, 1);
+				bc_num_expand(n, bc_vm_growSize(len, idx));
+				a = n->num + idx;
+				a[len - 1] = 0;
+			}
+
+			a[i + 1] += acc / BC_BASE_POW;
+			acc %= BC_BASE_POW;
+		}
+
+		assert(acc < BC_BASE_POW);
+		a[i] = (BcDig) acc;
+	}
+
+	n->len = len + idx;
+
+	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+}
+
+static BcStatus bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
+                                    BcBigDig pow)
+{
+	BcStatus s = BC_STATUS_SUCCESS;
+	size_t i;
+
+	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i)
+		s = bc_num_printFixup(n, rem, pow, i);
+
+	if (BC_ERR(s)) return s;
+
+	for (i = 0; BC_NO_SIG && i < n->len; ++i) {
+
+		assert(pow == ((BcBigDig) ((BcDig) pow)));
+
+		if (n->num[i] >= (BcDig) pow) {
+
+			if (i + 1 == n->len) {
+				n->len = bc_vm_growSize(n->len, 1);
+				bc_num_expand(n, n->len);
+				n->num[i + 1] = 0;
+			}
+
+			assert(pow < BC_BASE_POW);
+			n->num[i + 1] += n->num[i] / ((BcDig) pow);
+			n->num[i] %= (BcDig) pow;
+		}
+	}
+
+	return BC_NO_ERR(!s) && BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+}
+
+>>>>>>> long9
 static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
                                 size_t len, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
-	BcNum intp1, intp2, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
-	BcBigDig dig, *ptr;
-	size_t i;
+	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
+	BcBigDig dig, *ptr, acc, exp;
+	size_t i, j;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
 
@@ -1699,33 +1772,55 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
+<<<<<<< HEAD
 	bc_num_init(&fracp2, n->rdx);
 	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
 	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_one(&flen1);
 	bc_num_createCopy(&intp1, n);
+=======
 
-	bc_num_truncate(&intp1, intp1.scale);
-	bc_num_init(&intp2, intp1.len);
+	bc_num_createCopy(&intp, n);
+	bc_num_truncate(&intp, intp.scale);
 
-	s = bc_num_sub(n, &intp1, &fracp1, 0);
+	s = bc_num_sub(n, &intp, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	n1 = &intp1;
-	n2 = &intp2;
+	if (base != vm->last_base) {
 
-	while (BC_NO_SIG && BC_NUM_NONZERO(n1)) {
+		vm->last_pow = 1;
+		vm->last_exp = 0;
 
-		// Dividing by base cannot be divide by 0 because base cannot be 0.
-		s = bc_num_divArray(n1, base, n2, &dig);
+		while (vm->last_pow * base <= BC_BASE_POW) {
+			vm->last_pow *= base;
+			vm->last_exp += 1;
+		}
+>>>>>>> long9
+
+		vm->last_rem = BC_BASE_POW - vm->last_pow;
+		vm->last_base = base;
+	}
+
+	exp = vm->last_exp;
+
+	if (vm->last_rem != 0) {
+		s = bc_num_printPrepare(&intp, vm->last_rem, vm->last_pow);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+	}
 
-		bc_vec_push(&stack, &dig);
+	for (i = 0; BC_NO_SIG && i < intp.len; ++i) {
 
-		temp = n1;
-		n1 = n2;
-		n2 = temp;
+		acc = (BcBigDig) intp.num[i];
+
+		for (j = 0; BC_NO_SIG && j < exp && (i < intp.len - 1 || acc != 0); ++j)
+		{
+			dig = acc % base;
+			acc /= base;
+			bc_vec_push(&stack, &dig);
+		}
+
+		assert(acc == 0 || BC_SIG);
 	}
 
 	if (BC_SIG) goto sig_err;
@@ -1739,6 +1834,12 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	if (BC_SIG) goto sig_err;
 	if (!n->scale) goto err;
 
+	bc_num_init(&fracp2, n->rdx);
+	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
+	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
+	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
+	bc_num_one(&flen1);
+
 	radix = true;
 	n1 = &flen1;
 	n2 = &flen2;
@@ -1747,22 +1848,22 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 		bc_num_expand(&fracp2, fracp1.len + 1);
 		s = bc_num_mulArray(&fracp1, base, &fracp2);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 		fracp2.scale = n->scale;
 		fracp2.rdx = BC_NUM_RDX(fracp2.scale);
 
 		// Will never fail (except for signals) because fracp is
 		// guaranteed to be non-negative and small enough.
 		s = bc_num_bigdig(&fracp2, &dig);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 
 		bc_num_bigdig2num(&digit, dig);
 		s = bc_num_sub(&fracp2, &digit, &fracp1, 0);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 
 		print(dig, len, radix);
 		s = bc_num_mulArray(n1, base, n2);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 
 		radix = false;
 		temp = n1;
@@ -1770,15 +1871,15 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		n2 = temp;
 	}
 
-sig_err:
-	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
-err:
-	bc_num_free(&intp2);
-	bc_num_free(&intp1);
+frac_err:
 	bc_num_free(&flen2);
 	bc_num_free(&flen1);
 	bc_num_free(&fracp2);
+sig_err:
+	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
+err:
 	bc_num_free(&fracp1);
+	bc_num_free(&intp);
 	bc_vec_free(&stack);
 	return s;
 }
@@ -2249,9 +2350,13 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	}
 
 	if (BC_NUM_NONZERO(a) && !a->rdx && !b->rdx && b->len == 1 && !scale) {
+
 		BcBigDig rem;
+
 		s = bc_num_divArray(ptr_a, (BcBigDig) b->num[0], c, &rem);
+
 		assert(rem < BC_BASE_POW);
+
 		d->num[0] = (BcDig) rem;
 		d->len = (rem != 0);
 	}
