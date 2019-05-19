@@ -1777,24 +1777,29 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	{
 		int i, j, maxlen;
 		size_t acc;
-		static size_t last_base = SIZE_MAX, pow_p, pow_e, pow_f;
 
-		if (base != last_base) {
+		if (base != vm->last_base) {
 
-			for (pow_p = 1, pow_e = 0; pow_p * base <= BC_BASE_POW; pow_p *= base, pow_e ++);
+			vm->last_pow = 1;
+			vm->last_exp = 0;
 
-			pow_f = BC_BASE_POW - pow_p;
-			last_base = base;
+			while (vm->last_pow * base <= BC_BASE_POW) {
+				vm->last_pow *= base;
+				vm->last_exp += 1;
+			}
+
+			vm->last_rem = BC_BASE_POW - vm->last_pow;
+			vm->last_base = base;
 		}
 
-		if (pow_f != 0)
-			bc_num_preparePrint(&intp1, pow_f, pow_p);
+		if (vm->last_rem != 0)
+			bc_num_preparePrint(&intp1, vm->last_rem, vm->last_pow);
 
 		for (i = 0; i < intp1.len; i++) {
 
 			acc = intp1.num[i];
 
-			for (j = 0; j < pow_e && (i < intp1.len - 1 || acc != 0); j++) {
+			for (j = 0; j < vm->last_exp && (i < intp1.len - 1 || acc != 0); j++) {
 				dig = acc % base;
 				acc /= base;
 				bc_vec_push(&stack, &dig);

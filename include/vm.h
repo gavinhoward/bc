@@ -196,6 +196,11 @@ typedef struct BcVm {
 
 	const char *locale;
 
+	BcBigDig last_base;
+	BcBigDig last_pow;
+	BcBigDig last_exp;
+	BcBigDig last_rem;
+
 #if BC_ENABLE_NLS
 	nl_catd catalog;
 #endif // BC_ENABLE_NLS
