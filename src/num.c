@@ -1798,21 +1798,20 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_one(&flen1);
+
+	bc_num_createCopy(&intp1, n);
+
+	bc_num_truncate(&intp1, intp1.scale);
+	bc_num_init(&intp2, intp1.len);
+
+	s = bc_num_sub(n, &intp1, &fracp1, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
 #ifdef USE_SE_PRINT
 	{
 		int i, j, maxlen;
 		size_t acc;
 		static size_t last_base = SIZE_MAX, pow_p, pow_e, pow_f;
-
-		// Prepare copy of n in intp1 and expect twice
-		// the current length plus one
-		bc_num_init(&intp1, bc_vm_growSize(n->len - n->rdx, 1));
-		bc_num_copy(&intp1, n);
-		bc_num_truncate(&intp1, intp1.scale);
-
-		// Assign fractional part to fracp1
-		s = bc_num_sub(n, &intp1, &fracp1, 0);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		if (base != last_base) {
 			// Calculate the largest power of base that fits into BC_BASE_POW
@@ -1844,13 +1843,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		}
 	}
 #else
-	bc_num_createCopy(&intp1, n);
-
-	bc_num_truncate(&intp1, intp1.scale);
-	bc_num_init(&intp2, intp1.len);
-
-	s = bc_num_sub(n, &intp1, &fracp1, 0);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	n1 = &intp1;
 	n2 = &intp2;
