@@ -1679,7 +1679,7 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
+static BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
                            BcBigDig pow, size_t idx)
 {
 	size_t i, len = n->len - idx;
@@ -1716,8 +1716,9 @@ BcStatus bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig rem, BcBigDig pow) {
-
+static BcStatus bc_num_preparePrint(BcNum *restrict n, BcBigDig rem,
+                                    BcBigDig pow)
+{
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 
