@@ -1679,8 +1679,6 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-#ifdef USE_SE_PRINT
-
 size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
 	size_t i;
 	BcBigDig acc;
@@ -1737,14 +1735,13 @@ void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
 		}
 	}
 }
-#endif
 
 static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
                                 size_t len, BcNumDigitOp print)
 {
 	BcStatus s;
 	BcVec stack;
-	BcNum intp1, intp2, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
+	BcNum intp1, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
 	BcBigDig dig, *ptr;
 	size_t i;
 	bool radix;
@@ -1773,7 +1770,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	s = bc_num_sub(n, &intp1, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-#ifdef USE_SE_PRINT
 	{
 		int i, j, maxlen;
 		size_t acc;
@@ -1808,24 +1804,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 			assert(acc == 0);
 		}
 	}
-#else
-
-	n1 = &intp1;
-	n2 = &intp2;
-
-	while (BC_NO_SIG && BC_NUM_NONZERO(n1)) {
-
-		// Dividing by base cannot be divide by 0 because base cannot be 0.
-		s = bc_num_divArray(n1, base, n2, &dig);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		bc_vec_push(&stack, &dig);
-
-		temp = n1;
-		n1 = n2;
-		n2 = temp;
-	}
-#endif
 
 	if (BC_SIG) goto sig_err;
 
@@ -1872,9 +1850,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 sig_err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 err:
-#ifndef USE_SE_PRINT
-	bc_num_free(&intp2);
-#endif // USE_SE_PRINT
 	bc_num_free(&intp1);
 	bc_num_free(&flen2);
 	bc_num_free(&flen1);
