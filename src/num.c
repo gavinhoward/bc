@@ -1695,9 +1695,11 @@ exit:
 // This algorithm has been designed to require multiple passes over the
 // array of BcDigs to keep the numeric range under control (to not need
 // extended range of the "accumulator").
-size_t pre_fixup(BcDig *a, size_t len, size_t cap, size_t pow_f, size_t pow_p) {
-	int i;
+size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
+	size_t i;
 	BcBigDig acc;
+	size_t len = n->len - idx;
+	BcDig *a = n->num + idx;
 
 	// We need at least 2 BcDigs since we want to transfer a reminder from
 	// one to the other.
@@ -1718,7 +1720,9 @@ size_t pre_fixup(BcDig *a, size_t len, size_t cap, size_t pow_f, size_t pow_p) {
 		acc += a[i];
 		if (acc >= BC_BASE_POW) {
 			if (i == len - 1) {
-				assert(len < cap);
+				//assert(len < n->cap - idx);
+				bc_num_expand(n, bc_vm_growSize(n->len, bc_vm_growSize(idx, 1)));
+				a = n->num + idx;
 				a[len] = 0;
 				len += 1;
 			}
@@ -1747,7 +1751,7 @@ void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
 	for (i = 0; i < n->len; i++) {
 		// Perform fixup for BcDigs from low to high
 		// After each iteration one more BcDig is finished
-		n->len = pre_fixup(n->num + i, n->len - i, n->cap -i, pow_f, pow_p) + i;
+		n->len = pre_fixup(n, pow_f, pow_p, i) + i;
 	}
 	// The BcDigs may contain values that are slightly larger than pow_p, which
 	// is the highest value that can be printed in base with pow_e "digits"
@@ -1756,9 +1760,9 @@ void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
 			// If the most significant BcDig has a value above pow_p
 			// another BcDig will be required
 			if (i + 1 == n->len) {
-				assert(n->len < n->cap);
+				bc_num_expand(n, bc_vm_growSize(n->len, 1));
 				n->num[i + 1] = 0;
-				n->len++;
+				n->len += 1;
 			}
 			// Add overflow part to higher BcDig
 			n->num[i + 1] += n->num[i] / pow_p;
@@ -1802,7 +1806,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 		// Prepare copy of n in intp1 and expect twice
 		// the current length plus one
-		bc_num_init(&intp1, 2 * (n->len - n->rdx) + 1);
+		bc_num_init(&intp1, bc_vm_growSize(n->len - n->rdx, 1));
 		bc_num_copy(&intp1, n);
 		bc_num_truncate(&intp1, intp1.scale);
 
@@ -1910,7 +1914,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 sig_err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 err:
+#ifndef USE_SE_PRINT
 	bc_num_free(&intp2);
+#endif // USE_SE_PRINT
 	bc_num_free(&intp1);
 	bc_num_free(&flen2);
 	bc_num_free(&flen1);
