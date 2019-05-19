@@ -1679,20 +1679,20 @@ exit:
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
-	size_t i;
+static size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
+
+	size_t i, len = n->len - idx;
 	BcBigDig acc;
-	size_t len = n->len - idx;
 	BcDig *a = n->num + idx;
 
 	if (len < 2) return len;
 
-	for (i = len - 1; i > 0; i--) {
+	for (i = len - 1; i > 0; --i) {
 
-		acc = (BcBigDig)a[i] * pow_f + (BcBigDig)a[i-1];
-		a[i-1] = (BcDig)(acc % pow_p);
+		acc = ((BcBigDig) a[i]) * pow_f + ((BcBigDig) a[i - 1]);
+		a[i - 1] = (BcDig) (acc % pow_p);
 		acc /= pow_p;
-		acc += a[i];
+		acc += (BcBigDig) a[i];
 
 		if (acc >= BC_BASE_POW) {
 
@@ -1707,22 +1707,23 @@ size_t pre_fixup(BcNum *restrict n, size_t pow_f, size_t pow_p, size_t idx) {
 			acc %= BC_BASE_POW;
 		}
 
-		a[i] = acc;
+		assert(acc < BC_BASE_POW);
+		a[i] = (BcDig) acc;
 	}
+
 	return len;
 }
 
-void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
+static void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
 
 	size_t i;
 
-	for (i = 0; i < n->len; i++) {
+	for (i = 0; i < n->len; ++i)
 		n->len = pre_fixup(n, pow_f, pow_p, i) + i;
-	}
 
-	for (i = 0; i < n->len; i++) {
+	for (i = 0; i < n->len; ++i) {
 
-		if (n->num[i] >= pow_p) {
+		if (n->num[i] >= (BcDig) pow_p) {
 
 			if (i + 1 == n->len) {
 				bc_num_expand(n, bc_vm_growSize(n->len, 1));
@@ -1730,8 +1731,8 @@ void bc_num_preparePrint(BcNum *restrict n, size_t pow_f, size_t pow_p) {
 				n->len += 1;
 			}
 
-			n->num[i + 1] += n->num[i] / pow_p;
-			n->num[i] %= pow_p;
+			n->num[i + 1] += n->num[i] / ((BcDig) pow_p);
+			n->num[i] %= (BcDig) pow_p;
 		}
 	}
 }
@@ -1768,7 +1769,6 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	s = bc_num_sub(n, &intp1, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-
 	if (base != vm->last_base) {
 
 		vm->last_pow = 1;
@@ -1786,11 +1786,11 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	if (vm->last_rem != 0)
 		bc_num_preparePrint(&intp1, vm->last_rem, vm->last_pow);
 
-	for (i = 0; i < intp1.len; i++) {
+	for (i = 0; i < intp1.len; ++i) {
 
-		acc = intp1.num[i];
+		acc = (BcBigDig) intp1.num[i];
 
-		for (j = 0; j < vm->last_exp && (i < intp1.len - 1 || acc != 0); j++) {
+		for (j = 0; j < vm->last_exp && (i < intp1.len - 1 || acc != 0); ++j) {
 			dig = acc % base;
 			acc /= base;
 			bc_vec_push(&stack, &dig);
