@@ -353,8 +353,8 @@ reldebug() {
 	runtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 
 	if [ "$_reldebug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runtests "$debug -fsanitize=address" "$_debug_CC" "-g" "$_debug_run_tests"
-		runtests "$debug -fsanitize=memory" "$_debug_CC" "-g" "$_debug_run_tests"
+		runtests "$debug -fsanitize=address" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
+		runtests "$debug -fsanitize=memory" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 	fi
 }
 
