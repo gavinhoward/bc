@@ -327,9 +327,7 @@ debug() {
 	runtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 
 	if [ "$_debug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runtests "$debug -fsanitize=address" "$_debug_CC" "-g" "$_debug_run_tests"
 		runtests "$debug -fsanitize=undefined" "$_debug_CC" "-g" "$_debug_run_tests"
-		runtests "$debug -fsanitize=memory" "$_debug_CC" "-g" "$_debug_run_tests"
 	fi
 }
 
@@ -353,6 +351,11 @@ reldebug() {
 	shift
 
 	runtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
+
+	if [ "$_reldebug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
+		runtests "$debug -fsanitize=address" "$_debug_CC" "-g" "$_debug_run_tests"
+		runtests "$debug -fsanitize=memory" "$_debug_CC" "-g" "$_debug_run_tests"
+	fi
 }
 
 minsize() {
@@ -480,7 +483,7 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run ASan on the fuzzer test cases with the following build:\n'
 		printf '\n'
-		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer" ./configure.sh -gO1\n'
+		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer" ./configure.sh -gO3\n'
 		printf '    make\n'
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
