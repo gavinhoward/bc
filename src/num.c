@@ -1808,6 +1808,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 				acc /= base;
 			}
 			else {
+				assert(acc < base);
 				dig = acc;
 				acc = 0;
 			}
