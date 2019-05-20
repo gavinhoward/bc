@@ -71,7 +71,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_npop(vec, vec->len);
 
-	if ((BC_TTYIN || BC_I) && !BC_S) {
+	if (BC_TTY && !BC_S) {
 		bc_vm_puts(prompt, stderr);
 		bc_vm_fflush(stderr);
 	}
@@ -91,7 +91,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				if (BC_TTYIN || BC_I) {
 					bc_vm_puts(bc_program_ready_msg, stderr);
-					if (!BC_S) bc_vm_puts(prompt, stderr);
+					if (BC_TTY && !BC_S) bc_vm_puts(prompt, stderr);
 					bc_vm_fflush(stderr);
 				}
 				else return BC_STATUS_SIGNAL;

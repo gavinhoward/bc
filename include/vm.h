@@ -103,6 +103,7 @@
 #define BC_FLAG_G (UINTMAX_C(1)<<6)
 #define BC_FLAG_TTYIN (UINTMAX_C(1)<<7)
 #define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
+#define BC_TTY (vm->tty)
 
 #define BC_S (BC_ENABLED && (vm->flags & BC_FLAG_S))
 #define BC_W (BC_ENABLED && (vm->flags & BC_FLAG_W))
@@ -168,6 +169,7 @@ typedef struct BcVm {
 
 	uint8_t flags;
 	uchar read_ret;
+	bool tty;
 
 	uint16_t line_len;
 

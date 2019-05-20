@@ -597,6 +597,7 @@ static BcStatus bc_vm_exec(void) {
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 
 	BcStatus s;
+	int ttyin, ttyout, ttyerr;
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
 	struct sigaction sa;
@@ -637,8 +638,14 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	s = bc_args(argc, argv);
 	if (BC_ERR(s)) goto exit;
 
-	vm->flags |= isatty(STDIN_FILENO) ? BC_FLAG_TTYIN : 0;
-	vm->flags |= BC_TTYIN && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
+	ttyin = isatty(STDIN_FILENO);
+	ttyout = isatty(STDOUT_FILENO);
+	ttyerr = isatty(STDERR_FILENO);
+
+	vm->flags |= ttyin ? BC_FLAG_TTYIN : 0;
+	vm->flags |= ttyin && ttyout ? BC_FLAG_I : 0;
+
+	vm->tty = ttyin != 0 && ttyerr != 0;
 
 	if (BC_IS_POSIX) vm->flags &= ~(BC_FLAG_G);
 
