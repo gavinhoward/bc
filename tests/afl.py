@@ -47,7 +47,8 @@ def check_crash(exebase, out, error, file, type, test):
 
 def run_test(cmd, exebase, tout, indata, out, file, type, test, env=None):
 	try:
-		p = subprocess.run(cmd, timeout=tout, input=indata, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+		p = subprocess.run(cmd, timeout=tout, input=indata, stdout=subprocess.PIPE,
+		                   stderr=subprocess.PIPE, env=env)
 		check_crash(exebase, out, p.returncode, file, type, test)
 	except subprocess.TimeoutExpired:
 		print("\n    {} timed out. Continuing...\n".format(exebase))
@@ -76,7 +77,8 @@ def create_test(file, env=None):
 	with open(file, "rb") as f:
 		content = f.read()
 
-	run_test(exe, exebase, tout, content, out, file, "running {} through stdin".format(file), file, env)
+	run_test(exe, exebase, tout, content, out, file,
+	         "running {} through stdin".format(file), file, env)
 
 
 def get_children(dir, get_files):
