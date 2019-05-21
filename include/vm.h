@@ -214,7 +214,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...);
 void bc_vm_info(const char* const help);
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
                     const char* const env_args);
-void bc_vm_shutdown(void);
+void bc_vm_shutdown();
 
 size_t bc_vm_printf(const char *fmt, ...);
 void bc_vm_puts(const char *str, FILE *restrict f);

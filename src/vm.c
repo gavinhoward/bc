@@ -205,7 +205,7 @@ static size_t bc_vm_envLen(const char *var) {
 	return len;
 }
 
-void bc_vm_shutdown(void) {
+void bc_vm_shutdown() {
 #if BC_ENABLE_NLS
 	catclose(vm->catalog);
 #endif // BC_ENABLE_NLS
@@ -410,7 +410,7 @@ err:
 	return s;
 }
 
-static BcStatus bc_vm_stdin(void) {
+static BcStatus bc_vm_stdin() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
@@ -562,7 +562,7 @@ static void bc_vm_gettext() {
 #endif // BC_ENABLE_NLS
 }
 
-static BcStatus bc_vm_exec(void) {
+static BcStatus bc_vm_exec() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
