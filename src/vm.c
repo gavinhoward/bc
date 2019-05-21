@@ -572,7 +572,6 @@ static BcStatus bc_vm_exprs() {
 	}
 
 	bc_vec_free(&vm->exprs);
-	memset(&vm->exprs, 0, sizeof(BcVec));
 
 	return s;
 }
@@ -586,7 +585,6 @@ static BcStatus bc_vm_files() {
 		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 
 	bc_vec_free(&vm->files);
-	memset(&vm->files, 0, sizeof(BcVec));
 
 	return s;
 }
