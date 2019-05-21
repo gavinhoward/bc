@@ -143,20 +143,19 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 	return (BcStatus) (id + 1);
 }
 
-#if BC_ENABLED
-static BcStatus bc_vm_envArgs(void) {
+static BcStatus bc_vm_envArgs(const char* const env_args_name) {
 
 	BcStatus s;
 	BcVec v;
-	char *env_args = getenv(bc_args_env_name), *buf;
+	char *env_args = getenv(env_args_name), *buffer, *buf;
 
 	if (!env_args) return BC_STATUS_SUCCESS;
 
-	vm->env_args = bc_vm_strdup(env_args);
-	buf = vm->env_args;
+	buffer = bc_vm_strdup(env_args);
+	buf = buffer;
 
 	bc_vec_init(&v, sizeof(char*), NULL);
-	bc_vec_push(&v, &bc_args_env_name);
+	bc_vec_push(&v, &env_args_name);
 
 	while (*buf) {
 
@@ -181,10 +180,10 @@ static BcStatus bc_vm_envArgs(void) {
 	s = bc_args((int) v.len - 1, bc_vec_item(&v, 0));
 
 	bc_vec_free(&v);
+	free(buffer);
 
 	return s;
 }
-#endif // BC_ENABLED
 
 static size_t bc_vm_envLen(const char *var) {
 
@@ -219,7 +218,6 @@ void bc_vm_shutdown(void) {
 	bc_vec_free(&vm->exprs);
 	bc_program_free(&vm->prog);
 	bc_parse_free(&vm->prs);
-	free(vm->env_args);
 	free(vm);
 #endif // NDEBUG
 }
@@ -597,8 +595,9 @@ static BcStatus bc_vm_exec(void) {
 	return s;
 }
 
-BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
-
+BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
+                    const char* const env_args)
+{
 	BcStatus s;
 	int ttyin, ttyout, ttyerr;
 #if BC_ENABLE_SIGNALS
@@ -634,7 +633,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 #if BC_ENABLED
 	if (BC_IS_BC) {
 		vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
-		s = bc_vm_envArgs();
+		s = bc_vm_envArgs(env_args);
 		if (BC_ERR(s)) goto exit;
 	}
 #endif // BC_ENABLED

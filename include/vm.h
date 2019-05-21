@@ -181,8 +181,6 @@ typedef struct BcVm {
 	const char *name;
 	const char *help;
 
-	char *env_args;
-
 #if BC_ENABLE_HISTORY
 	BcHistory history;
 #endif // BC_ENABLE_HISTORY
@@ -214,7 +212,8 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...);
 #endif // BC_ENABLED
 
 void bc_vm_info(const char* const help);
-BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len);
+BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
+                    const char* const env_args);
 void bc_vm_shutdown(void);
 
 size_t bc_vm_printf(const char *fmt, ...);
