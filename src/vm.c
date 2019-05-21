@@ -64,12 +64,15 @@
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
 static void bc_vm_sig(int sig) {
+
 	int err = errno;
+
 	if (sig == SIGINT) {
 		size_t n = vm->siglen;
 		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n)) sig = 0;
 	}
-	vm->sig = (uchar) sig;
+
+	vm->sig = (sig_atomic_t) sig;
 	errno = err;
 }
 #else // _WIN32
