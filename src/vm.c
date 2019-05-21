@@ -631,12 +631,11 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 #endif // BC_ENABLE_HISTORY
 
 #if BC_ENABLED
-	if (BC_IS_BC) {
-		vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
-		s = bc_vm_envArgs(env_args);
-		if (BC_ERR(s)) goto exit;
-	}
+	if (BC_IS_BC) vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 #endif // BC_ENABLED
+
+	s = bc_vm_envArgs(env_args);
+	if (BC_ERR(s)) goto exit;
 
 	s = bc_args(argc, argv);
 	if (BC_ERR(s)) goto exit;
