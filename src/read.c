@@ -85,7 +85,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 #if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
 
-				if (BC_SIGTERM) return BC_STATUS_SIGNAL;
+				if (BC_SIGTERM) return BC_STATUS_QUIT;
 
 				vm->sig = 0;
 
