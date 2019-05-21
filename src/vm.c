@@ -562,15 +562,45 @@ static void bc_vm_gettext() {
 #endif // BC_ENABLE_NLS
 }
 
-static BcStatus bc_vm_exec() {
+static BcStatus bc_vm_exprs() {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+
+	if (vm->exprs.len) {
+		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
+		s = bc_vm_process(vm->exprs.v, false);
+	}
+
+	bc_vec_free(&vm->exprs);
+	memset(&vm->exprs, 0, sizeof(BcVec));
+
+	return s;
+}
+
+static BcStatus bc_vm_files() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 
+	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
+		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
+
+	bc_vec_free(&vm->files);
+	memset(&vm->files, 0, sizeof(BcVec));
+
+	return s;
+}
+
+static BcStatus bc_vm_exec() {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+
 #if BC_ENABLED
 	if (BC_IS_BC && vm->flags & BC_FLAG_L) {
+
 		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (BC_ERR(s)) return s;
+
 #if BC_ENABLE_EXTRA_MATH
 		if (!BC_IS_POSIX) {
 			s = bc_vm_load(bc_lib2_name, bc_lib2);
@@ -580,14 +610,10 @@ static BcStatus bc_vm_exec() {
 	}
 #endif // BC_ENABLED
 
-	if (vm->exprs.len) {
-		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
-		s = bc_vm_process(vm->exprs.v, false);
-		if (BC_ERR(s)) return s;
-	}
+	s = bc_vm_exprs();
+	if (BC_ERR(s)) return s;
 
-	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
-		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
+	s = bc_vm_files();
 	if (BC_ERR(s)) return s;
 
 	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
