@@ -136,10 +136,14 @@ if [ "$base" != "bc" -a "$base" != "dc" ]; then
 	exit 0
 fi
 
+printf 'Running %s environment var test...\n' "$d"
+
 if [ "$d" = "bc" ]; then
-	printf 'Running %s environment var test...\n' "$d"
 	export BC_ENV_ARGS=" -l -q"
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
+else
+	export DC_ENV_ARGS="-x"
+	printf '4s stuff\n' | "$exe" "$@" > /dev/null
 fi
 
 out1="$testdir/../.log_$d.txt"
