@@ -163,8 +163,8 @@ typedef struct BcVm {
 
 #if BC_ENABLE_SIGNALS
 	const char *sigmsg;
-	sig_atomic_t siglen;
 	volatile sig_atomic_t sig;
+	uchar siglen;
 #endif // BC_ENABLE_SIGNALS
 
 	uint8_t flags;
