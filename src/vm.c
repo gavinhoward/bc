@@ -562,29 +562,6 @@ static void bc_vm_gettext() {
 #endif // BC_ENABLE_NLS
 }
 
-static BcStatus bc_vm_exprs() {
-
-	BcStatus s = BC_STATUS_SUCCESS;
-
-	if (vm->exprs.len) {
-		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
-		s = bc_vm_process(vm->exprs.v, false);
-	}
-
-	bc_vec_free(&vm->exprs);
-
-	return s;
-}
-
-static BcStatus bc_vm_files() {
-
-	BcStatus s = BC_STATUS_SUCCESS;
-
-	bc_vec_free(&vm->files);
-
-	return s;
-}
-
 static BcStatus bc_vm_exec() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
