@@ -568,7 +568,7 @@ static BcStatus bc_vm_exec() {
 	size_t i;
 
 #if BC_ENABLED
-	if (BC_IS_BC && vm->flags & BC_FLAG_L) {
+	if (BC_IS_BC && (vm->flags & BC_FLAG_L)) {
 
 		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (BC_ERR(s)) return s;
