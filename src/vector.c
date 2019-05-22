@@ -201,7 +201,6 @@ void bc_vec_free(void *vec) {
 	BcVec *v = (BcVec*) vec;
 	bc_vec_npop(v, v->len);
 	free(v->v);
-	v->v = NULL;
 }
 
 static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
