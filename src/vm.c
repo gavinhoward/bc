@@ -205,7 +205,7 @@ static size_t bc_vm_envLen(const char *var) {
 	return len;
 }
 
-void bc_vm_shutdown() {
+void bc_vm_shutdown(void) {
 #if BC_ENABLE_NLS
 	catclose(vm->catalog);
 #endif // BC_ENABLE_NLS
@@ -289,7 +289,7 @@ void bc_vm_fflush(FILE *restrict f) {
 	if (BC_IO_ERR(fflush(f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
-static void bc_vm_clean() {
+static void bc_vm_clean(void) {
 
 	BcProgram *prog = &vm->prog;
 	BcVec *fns = &prog->fns;
@@ -410,7 +410,7 @@ err:
 	return s;
 }
 
-static BcStatus bc_vm_stdin() {
+static BcStatus bc_vm_stdin(void) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcVec buf, buffer;
@@ -508,7 +508,7 @@ static BcStatus bc_vm_load(const char *name, const char *text) {
 }
 #endif // BC_ENABLED
 
-static void bc_vm_defaultMsgs() {
+static void bc_vm_defaultMsgs(void) {
 
 	size_t i;
 
@@ -519,7 +519,7 @@ static void bc_vm_defaultMsgs() {
 	for (i = 0; i < BC_ERROR_NELEMS; ++i) vm->err_msgs[i] = bc_err_msgs[i];
 }
 
-static void bc_vm_gettext() {
+static void bc_vm_gettext(void) {
 
 #if BC_ENABLE_NLS
 	uchar id = 0;
@@ -562,7 +562,7 @@ static void bc_vm_gettext() {
 #endif // BC_ENABLE_NLS
 }
 
-static BcStatus bc_vm_exec() {
+static BcStatus bc_vm_exec(void) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
