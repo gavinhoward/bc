@@ -579,10 +579,6 @@ static BcStatus bc_vm_exprs() {
 static BcStatus bc_vm_files() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	size_t i;
-
-	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
-		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 
 	bc_vec_free(&vm->files);
 
@@ -592,6 +588,7 @@ static BcStatus bc_vm_files() {
 static BcStatus bc_vm_exec() {
 
 	BcStatus s = BC_STATUS_SUCCESS;
+	size_t i;
 
 #if BC_ENABLED
 	if (BC_IS_BC && vm->flags & BC_FLAG_L) {
@@ -608,10 +605,14 @@ static BcStatus bc_vm_exec() {
 	}
 #endif // BC_ENABLED
 
-	s = bc_vm_exprs();
-	if (BC_ERR(s)) return s;
+	if (vm->exprs.len) {
+		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
+		s = bc_vm_process(vm->exprs.v, false);
+		if (BC_ERR(s)) return s;
+	}
 
-	s = bc_vm_files();
+	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
+		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 	if (BC_ERR(s)) return s;
 
 	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
