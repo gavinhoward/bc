@@ -43,6 +43,7 @@
 #include <lex.h>
 #include <parse.h>
 #include <bc.h>
+#include <num.h>
 #include <vm.h>
 
 static BcStatus bc_parse_else(BcParse *p);
@@ -1163,14 +1164,19 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 
 		case BC_LEX_KW_LIMITS:
 		{
-			bc_vm_printf("BC_BASE_MAX     = %lu\n", BC_MAX_OBASE);
-			bc_vm_printf("BC_DIM_MAX      = %lu\n", BC_MAX_DIM);
-			bc_vm_printf("BC_SCALE_MAX    = %lu\n", BC_MAX_SCALE);
-			bc_vm_printf("BC_STRING_MAX   = %lu\n", BC_MAX_STRING);
-			bc_vm_printf("BC_NAME_MAX     = %lu\n", BC_MAX_NAME);
-			bc_vm_printf("BC_NUM_MAX      = %lu\n", BC_MAX_NUM);
-			bc_vm_printf("MAX Exponent    = %lu\n", BC_MAX_EXP);
-			bc_vm_printf("Number of vars  = %lu\n", BC_MAX_VARS);
+			bc_vm_printf("BC_LONG_BIT      = %lu\n", (ulong) BC_LONG_BIT);
+			bc_vm_printf("BC_BASE_DIGS     = %lu\n", (ulong) BC_BASE_DIGS);
+			bc_vm_printf("BC_BASE_POW      = %lu\n", (ulong) BC_BASE_POW);
+			bc_vm_printf("BC_OVERFLOW_MAX  = %lu\n", (ulong) BC_NUM_BIGDIG_MAX);
+			bc_vm_printf("\n");
+			bc_vm_printf("BC_BASE_MAX      = %lu\n", BC_MAX_OBASE);
+			bc_vm_printf("BC_DIM_MAX       = %lu\n", BC_MAX_DIM);
+			bc_vm_printf("BC_SCALE_MAX     = %lu\n", BC_MAX_SCALE);
+			bc_vm_printf("BC_STRING_MAX    = %lu\n", BC_MAX_STRING);
+			bc_vm_printf("BC_NAME_MAX      = %lu\n", BC_MAX_NAME);
+			bc_vm_printf("BC_NUM_MAX       = %lu\n", BC_MAX_NUM);
+			bc_vm_printf("MAX Exponent     = %lu\n", BC_MAX_EXP);
+			bc_vm_printf("Number of vars   = %lu\n", BC_MAX_VARS);
 
 			s = bc_lex_next(&p->l);
 

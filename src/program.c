@@ -1989,11 +1989,11 @@ static void bc_program_printIndex(const char *restrict code,
                                   size_t *restrict bgn)
 {
 	uchar byte, i, bytes = (uchar) code[(*bgn)++];
-	unsigned long val = 0;
+	ulong val = 0;
 
 	for (byte = 1, i = 0; byte && i < bytes; ++i) {
 		byte = (uchar) code[(*bgn)++];
-		if (byte) val |= ((unsigned long) byte) << (CHAR_BIT * i);
+		if (byte) val |= ((ulong) byte) << (CHAR_BIT * i);
 	}
 
 	bc_vm_printf(" (%lu) ", val);

@@ -2466,7 +2466,7 @@ void bc_num_printWithDigs(const BcNum *n, const char *name, bool emptyline) {
 
 void bc_num_dump(const char *varname, const BcNum *n) {
 
-	unsigned long i, scale = n->scale;
+	ulong i, scale = n->scale;
 
 	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
 
@@ -2483,11 +2483,11 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 			BcDig div;
 
 			if (mod != 0) {
-				div = n->num[i] / ((BcDig) bc_num_pow10[(unsigned long) d]);
+				div = n->num[i] / ((BcDig) bc_num_pow10[(ulong) d]);
 				fprintf(stderr, "%0*d", (int) mod, div);
 			}
 
-			div = n->num[i] % ((BcDig) bc_num_pow10[(unsigned long) d]);
+			div = n->num[i] % ((BcDig) bc_num_pow10[(ulong) d]);
 			fprintf(stderr, " ' %0*d ", d, div);
 		}
 	}

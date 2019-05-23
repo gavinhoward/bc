@@ -52,6 +52,8 @@
 
 #define BC_BASE (10)
 
+typedef unsigned long ulong;
+
 // For some reason, LONG_BIT is not defined in some versions of gcc.
 // I define it here to the minimum accepted value in the POSIX standard.
 #ifndef LONG_BIT
