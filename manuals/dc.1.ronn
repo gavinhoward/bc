@@ -30,7 +30,7 @@ The following are the options that dc(1) accepts.
     Print the version information (copyright header) and exit.
 
   * `-x` `--extended-register`:
-    Enables extended register mode. See [REGISTERS](#REGISTERS) for more
+    Enables extended register mode. See the REGISTERS section for more
     information.
 
   * `-e` *expr*, `--expression`=*expr*:
@@ -46,24 +46,33 @@ The following are the options that dc(1) accepts.
 SYNTAX
 ------
 
-`ibase` is a [register][REGISTERS] determining how to interpret constant
-numbers. It is the "input" base, or the number base used for interpreting input
-numbers. `ibase` is initially `10`. The max allowable value for `ibase` is `16`.
-The min allowable value for `ibase` is `2`.
+`ibase` is a register (see the REGISTERS section) determining how to interpret
+constant numbers. It is the "input" base, or the number base used for
+interpreting input numbers. `ibase` is initially `10`. The max allowable value
+for `ibase` is `16`. The min allowable value for `ibase` is `2`. The max
+allowable value for `ibase` can be queried in dc(1) programs with the `T`
+command.
 
-`obase` is a [register][REGISTERS] determining how to output results. It is the
-"output" base, or the number base used for outputting numbers. `obase` is
-initially `10`. The max allowable value for `obase` is `BC_BASE_MAX`. The min
-allowable value for `obase` is `2`.
+`obase` is a register (see the REGISTERS section) determining how to output
+results. It is the "output" base, or the number base used for outputting
+numbers. `obase` is initially `10`. The max allowable value for `obase` is
+`DC_BASE_MAX`. The min allowable value for `obase` is `2` unless dc(1) was built
+with the extra math option. If it was, then the min allowable value is `0`. In
+this case, if `obase` is `0`, values are output in scientific notation, and if
+`obase` is `1`, values are output in engineering notation. (Outputting in
+scientific or engineering notation are **non-portable extensions**.) The max
+allowable value for `obase` can be queried in dc(1) programs with the `U`
+command.
 
 The **scale** of an expression is the number of digits in the result of the
-expression right of the decimal point, and `scale` is a [register][REGISTERS]
-that sets the precision of any operations (with exceptions). `scale` is
-initially `0`. `scale` cannot be negative.
+expression right of the decimal point, and `scale` is a register (see the
+REGISTERS section) that sets the precision of any operations (with exceptions).
+`scale` is initially `0`. `scale` cannot be negative. The max allowable value
+for `scale` can be queried in dc(1) programs with the `V` command.
 
-Each item ([numbers](#NUMBERS) or [commands](#COMMANDS)) in the input source
-code is processed and executed, in order. Input is processed immediately when
-entered.
+Each item in the input source code, either a number (see the NUMBERS section) or
+a command (see the COMMANDS section), is processed and executed, in order. Input
+is processed immediately when entered.
 
 ### Comments
 
@@ -74,7 +83,7 @@ NUMBERS
 -------
 
 Numbers are strings made up of digits, uppercase letters up to `F`, and at most
-`1` period for a radix. Numbers can have up to `BC_NUM_MAX` digits. Uppercase
+`1` period for a radix. Numbers can have up to `DC_NUM_MAX` digits. Uppercase
 letters equal `9` + their position in the alphabet (i.e., `A` equals `10`, or
 `9 + 1`). If a digit or letter makes no sense with the current value of `ibase`,
 they are set to the value of the highest valid digit in `ibase`.
@@ -95,7 +104,7 @@ by `10^exponent` regardless of the current `ibase`. For example, if `ibase` is
 will be `2550000000000`, and if dc(1) is given the number string `"10e_4"`, the
 resulting decimal number will be `0.0016`.
 
-Scientific notation is a **non-portable extension**.
+Accepting input as scientific notation is a **non-portable extension**.
 
 COMMANDS
 --------
@@ -108,10 +117,10 @@ These commands are used for printing.
 
 Note that if dc(1) has been built with the extra math option enabled, both
 scientific notation and engineering notation are available for printing numbers.
-Scientific notation is activated by assigning `0` to `obase` (in any other
-context, an `obase` of `0` is invalid), and engineering notation is activated by
-assigning `1` to `obase` (which is also invalid in any other context). To
-deactivate them, just assign a different value to `obase`.
+Scientific notation is activated by assigning `0` to `obase` using `0o` (in any
+other context, an `obase` of `0` is invalid), and engineering notation is
+activated by assigning `1` to `obase` using `1o` (which is also invalid in any
+other context). To deactivate them, just assign a different value to `obase`.
 
 Printing numbers in scientific notation and/or engineering notation is a
 **non-portable extension**.
@@ -200,7 +209,7 @@ These are the commands used for arithmetic.
 
     Otherwise, the top value on the stack is popped and copied, and the copy is
     negated and pushed onto the stack. This behavior without a number is a
-    non-portable extension.
+    **non-portable extension**.
 
   * `b`:
     The top value is popped off the stack and its absolute value is pushed onto
@@ -306,7 +315,7 @@ These commands control the stack.
 
 ### Register Control
 
-These commands control [registers](#REGISTERS).
+These commands control registers (see the REGISTERS section).
 
   * `s`*r*:
     Pops the value off the top of the stack and stores it into register `r`.
@@ -326,8 +335,8 @@ These commands control [registers](#REGISTERS).
 
 ### Parameters
 
-These commands control the values of `ibase`, `obase`, and `scale` (see
-[SYNTAX](#SYNTAX)).
+These commands control the values of `ibase`, `obase`, and `scale` (see the
+SYNTAX section).
 
   * `i`:
     Pops the value off of the top of the stack and uses it to set `ibase`, which
@@ -338,7 +347,8 @@ These commands control the values of `ibase`, `obase`, and `scale` (see
 
   * `o`:
     Pops the value off of the top of the stack and uses it to set `obase`, which
-    must be between `2` and `BC_BASE_MAX`, inclusive (see bc(1)).
+    must be between `2` and `DC_BASE_MAX`, inclusive (see bc(1)). The value can
+    be either `0` or `1` if dc(1) was built with the extra math option.
 
     If the value on top of the stack has any **scale**, the **scale** is
     ignored.
@@ -378,9 +388,9 @@ These commands control the values of `ibase`, `obase`, and `scale` (see
 
 The following commands control strings.
 
-dc(1) can work with both numbers and strings, and [registers](#REGISTERS) can
-hold both strings and numbers. dc(1) always knows whether a register's contents
-are a string or a number.
+dc(1) can work with both numbers and strings, and registers (see the REGISTERS
+section) can hold both strings and numbers. dc(1) always knows whether a
+register's contents are a string or a number.
 
 While arithmetic operations have to have numbers, and will print an error if
 given a string, other commands accept strings.
@@ -531,7 +541,7 @@ These commands manipulate arrays.
 
   * `:`*r*:
     Pops the top two values off of the stack. The second value will be stored in
-    the array `r` (see [Registers](#REGISTERS)), indexed by the first value.
+    the array `r` (see the REGISTERS section), indexed by the first value.
 
   * `;`*r*:
     Pops the value on top of the stack and uses it as an index into the array
@@ -565,37 +575,74 @@ In that case, the register name is found according to the regex
 `[a-z][a-z0-9_]*` (like bc(1)), and it is a parse error if the next
 non-space characters do not match that regex.
 
+PERFORMANCE
+-----------
+
+Most dc(1) implementations use `char` types to calculate the value of `1`
+decimal digit at a time, but that can be slow. This dc(1) does something
+different.
+
+It uses large integers to calculate more than `1` decimal digit at a time. If
+built in a environment where `DC_LONG_BIT` (see the LIMITS section) is `64`,
+then each integer has `9` decimal digits. If built in an environment where
+`DC_LONG_BIT` is `32` then each integer has `4` decimal digits. This value (the
+number of decimal digits per large integer) is called `DC_BASE_DIGS`.
+
+In addition, this dc(1) uses an even larger integer for overflow checking. This
+integer type depends on the value of `DC_LONG_BIT`, but is always at least twice
+as large as the integer type used to store digits.
+
 LIMITS
 ------
 
 The following are the limits on dc(1):
 
+  * `DC_LONG_BIT`:
+    The number of bits in the `long` type in the environment where dc(1) was
+    built. This determines how many decimal digits can be stored in a single
+    large integer (see the PERFORMANCE section).
+
+  * `DC_BASE_DIGS`:
+    The number of decimal digits per large integer (see the PERFORMANCE
+    section). Depends on `DC_LONG_BIT`.
+
+  * `DC_BASE_POW`:
+    The max decimal number that each large integer can store (see
+    `DC_BASE_DIGS`) plus `1`. Depends on `DC_BASE_DIGS`.
+
+  * `DC_OVERFLOW_MAX`:
+    The max number that the overflow type (see the PERFORMANCE section) can
+    hold. Depends on `DC_LONG_BIT`.
+
+  * `DC_BASE_DIGS`:
+    The number of decimal digits per large integer (see the PERFORMANCE
+    section).
+
   * `DC_BASE_MAX`:
-    The maximum output base. Set at `ULONG_MAX`.
+    The maximum output base. Set at `DC_BASE_POW`.
 
   * `DC_DIM_MAX`:
     The maximum size of arrays. Set at `SIZE_MAX-1`.
 
   * `DC_SCALE_MAX`:
-    The maximum `scale`. Set at `SIZE_MAX-1`.
+    The maximum `scale`. Set at `DC_OVERFLOW_MAX-1`.
 
   * `DC_STRING_MAX`:
-    The maximum length of strings. Set at `SIZE_MAX-1`.
+    The maximum length of strings. Set at `DC_OVERFLOW_MAX-1`.
 
   * `DC_NAME_MAX`:
-    The maximum length of identifiers. Set at `SIZE_MAX-1`.
+    The maximum length of identifiers. Set at `DC_OVERFLOW_MAX-1`.
 
   * `DC_NUM_MAX`:
     The maximum length of a number (in decimal digits), which includes digits
-    after the decimal point. Set at `SIZE_MAX-1`.
+    after the decimal point. Set at `DC_OVERFLOW_MAX-1`.
 
   * Exponent:
-    The maximum allowable exponent (positive or negative). Set at `ULONG_MAX`.
+    The maximum allowable exponent (positive or negative). Set at
+    `DC_OVERFLOW_MAX`.
 
   * Number of vars:
     The maximum number of vars/arrays. Set at `SIZE_MAX-1`.
-
-Actual values can be queried with the `limits` statement.
 
 These limits are meant to be effectively non-existent; the limits are so large
 (at least on 64-bit machines) that there should not be any point at which they
@@ -606,6 +653,16 @@ ENVIRONMENT VARIABLES
 ---------------------
 
 dc(1) recognizes the following environment variables:
+
+  * `DC_ENV_ARGS`:
+    This is another way to give command-line arguments to dc(1). They should be
+    in the same format as all other command-line arguments. These are always
+    processed first, so any files given in `DC_ENV_ARGS` will be processed
+    before files given on the command-line. This gives the user the ability to
+    set up "standard" options and files to be used at every invocation. The most
+    useful thing for such files to contain would be useful functions that the
+    user might want every time dc(1) runs. Another use would be to use the `-e`
+    option to set `scale` to a value other than `0`.
 
   * `DC_LINE_LENGTH`:
     If this environment variable exists and contains an integer that is greater
@@ -672,10 +729,14 @@ SIGNAL HANDLING
 ---------------
 
 If dc(1) has been compiled with the signal handling, sending a `SIGINT` will
-cause dc(1) to stop  execution of the current input and reset, asking for more
+cause dc(1) to stop execution of the current input and reset, asking for more
 input.
 
-Otherwise, any signals cause dc(1) to exit.
+Otherwise, `SIGTERM` and `SIGQUIT` cause dc(1) to clean up and exit, and it uses
+the default handler for all other signals.
+
+If dc(1) has not been compiled with signal handling, it uses the default signal
+handlers for all signals.
 
 COMMAND LINE HISTORY
 --------------------
