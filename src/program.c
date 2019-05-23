@@ -1616,7 +1616,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 #if BC_ENABLE_SIGNALS
 	if (BC_SIGTERM || (!s && BC_SIGINT && BC_I)) return BC_STATUS_QUIT;
 
-	vm->sig = 0;
+	vm->sig_chk = vm->sig;
 
 	if (!s || s == BC_STATUS_SIGNAL) {
 

@@ -68,17 +68,26 @@ static void bc_vm_sig(int sig) {
 	int err = errno;
 
 	if (sig == SIGINT) {
-		size_t n = vm->siglen;
-		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n)) sig = 0;
-	}
 
-	vm->sig = (sig_atomic_t) sig;
+		size_t n = vm->siglen;
+
+		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n)) abort();
+
+		vm->sig += 1;
+	}
+	else vm->sig = BC_SIGTERM_VAL;
+
 	errno = err;
 }
 #else // _WIN32
 static BOOL WINAPI bc_vm_sig(DWORD sig) {
-	if (sig == CTRL_C_EVENT) bc_vm_puts(vm->sigmsg, stderr);
-	vm->sig = (uchar) sig;
+
+	if (sig == CTRL_C_EVENT) {
+		bc_vm_puts(vm->sigmsg, stderr);
+		vm->sig += 1;
+	}
+	else vm->sig = BC_SIGTERM_VAL;
+
 	return TRUE;
 }
 #endif // _WIN32

@@ -87,7 +87,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				if (BC_SIGTERM) return BC_STATUS_QUIT;
 
-				vm->sig = 0;
+				vm->sig_chk = vm->sig;
 
 				if (BC_TTYIN || BC_I) {
 					bc_vm_puts(bc_program_ready_msg, stderr);

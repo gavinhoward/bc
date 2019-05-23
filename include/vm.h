@@ -129,15 +129,12 @@
 
 #if BC_ENABLE_SIGNALS
 
-#define BC_SIG BC_UNLIKELY(vm->sig)
-#define BC_NO_SIG BC_LIKELY(!vm->sig)
-#define BC_SIGINT (vm->sig == SIGINT)
+#define BC_SIG BC_UNLIKELY(vm->sig != vm->sig_chk)
+#define BC_NO_SIG BC_LIKELY(vm->sig == vm->sig_chk)
 
-#ifdef SIGQUIT
-#define BC_SIGTERM (vm->sig == SIGTERM || vm->sig == SIGQUIT)
-#else // SIGQUIT
-#define BC_SIGTERM (vm->sig == SIGTERM)
-#endif // SIGQUIT
+#define BC_SIGTERM_VAL ((sig_atomic_t) -1)
+#define BC_SIGTERM (vm->sig == BC_SIGTERM_VAL)
+#define BC_SIGINT (vm->sig && vm->sig != BC_SIGTERM_VAL)
 
 #else // BC_ENABLE_SIGNALS
 #define BC_SIG (0)
@@ -164,6 +161,7 @@ typedef struct BcVm {
 #if BC_ENABLE_SIGNALS
 	const char *sigmsg;
 	volatile sig_atomic_t sig;
+	sig_atomic_t sig_chk;
 	uchar siglen;
 #endif // BC_ENABLE_SIGNALS
 
