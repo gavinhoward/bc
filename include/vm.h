@@ -146,7 +146,7 @@
 
 #define BC_IO_ERR(e, f) (BC_ERR((e) == EOF || ferror(f)))
 #define BC_STATUS_IS_ERROR(s) \
-	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_PARSE)
+	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
 #define BC_ERROR_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && BC_ERR(s))
 
 typedef struct BcVm {

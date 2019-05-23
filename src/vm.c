@@ -71,7 +71,8 @@ static void bc_vm_sig(int sig) {
 
 		size_t n = vm->siglen;
 
-		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n)) abort();
+		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n))
+			_Exit(BC_STATUS_ERROR_FATAL);
 
 		vm->sig += 1;
 	}
