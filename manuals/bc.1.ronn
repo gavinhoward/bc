@@ -767,6 +767,12 @@ The extended library is a **non-portable extension**.
 
     This is a [transcendental function][5].
 
+  * `a2(y, x)`:
+    Returns the arctangent of `y/x`, in radians. This function is the same as
+    the `atan2()` function in many popular programming languages.
+
+    This is a [transcendental function][5].
+
   * `sin(x)`:
     Returns the sine of `x`, which is assumed to be in radians.
 
@@ -792,6 +798,14 @@ The extended library is a **non-portable extension**.
     Returns the arctangent of `x`, in radians.
 
     This is an alias of `a(x)`.
+
+    This is a [transcendental function][5].
+
+  * `atan2(y, x)`:
+    Returns the arctangent of `y/x`, in radians. This function is the same as
+    the `atan2()` function in many popular programming languages.
+
+    This is an alias of `a2(y, x)`.
 
     This is a [transcendental function][5].
 
