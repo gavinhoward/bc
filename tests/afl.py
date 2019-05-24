@@ -53,7 +53,7 @@ def run_test(cmd, exebase, tout, indata, out, file, type, test, env=None):
 	except subprocess.TimeoutExpired:
 		print("\n    {} timed out. Continuing...\n".format(exebase))
 
-def create_test(file, env=None):
+def create_test(file, tout, env=None):
 
 	print("    {}".format(file))
 
@@ -161,7 +161,7 @@ for d in dirs:
 
 	for file in files:
 		file = d + "/crashes/" + file
-		create_test(file)
+		create_test(file, tout)
 
 	if not asan:
 		continue
@@ -170,7 +170,7 @@ for d in dirs:
 
 	for file in files:
 		file = d + "/queue/" + file
-		create_test(file, env)
+		create_test(file, tout * 2.5, env)
 
 print("Done")
 
