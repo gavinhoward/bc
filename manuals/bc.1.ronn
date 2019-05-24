@@ -768,8 +768,11 @@ The extended library is a **non-portable extension**.
     This is a [transcendental function][5].
 
   * `a2(y, x)`:
-    Returns the arctangent of `y/x`, in radians. This function is the same as
-    the `atan2()` function in many popular programming languages.
+    Returns the arctangent of `y/x`, in radians. Causes an error if both `y` and
+    `x` are equal to `0`.
+
+    This function is the same as the `atan2()` function in many programming
+    languages.
 
     This is a [transcendental function][5].
 
@@ -802,8 +805,11 @@ The extended library is a **non-portable extension**.
     This is a [transcendental function][5].
 
   * `atan2(y, x)`:
-    Returns the arctangent of `y/x`, in radians. This function is the same as
-    the `atan2()` function in many popular programming languages.
+    Returns the arctangent of `y/x`, in radians. Causes an error if both `y` and
+    `x` are equal to `0`.
+
+    This function is the same as the `atan2()` function in many programming
+    languages.
 
     This is an alias of `a2(y, x)`.
 
