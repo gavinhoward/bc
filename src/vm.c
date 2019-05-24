@@ -533,7 +533,7 @@ static void bc_vm_gettext(void) {
 
 #if BC_ENABLE_NLS
 	uchar id = 0;
-	int set, msg;
+	int set = 1, msg = 1;
 	size_t i;
 
 	if (!vm->locale) {
@@ -542,16 +542,15 @@ static void bc_vm_gettext(void) {
 	}
 
 	vm->catalog = catopen(BC_MAINEXEC, NL_CAT_LOCALE);
+
 	if (vm->catalog == (nl_catd) -1) {
 		bc_vm_defaultMsgs();
 		return;
 	}
 
-	set = msg = 1;
-
 	vm->func_header = catgets(vm->catalog, set, msg, bc_err_func_header);
 
-	for (set += 1, msg = 1; msg <= BC_ERR_IDX_NELEMS + BC_ENABLED; ++msg)
+	for (set += 1; msg <= BC_ERR_IDX_NELEMS + BC_ENABLED; ++msg)
 		vm->err_ids[msg - 1] = catgets(vm->catalog, set, msg, bc_errs[msg - 1]);
 
 	i = 0;
