@@ -483,7 +483,7 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run ASan on the fuzzer test cases with the following build:\n'
 		printf '\n'
-		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer" ./configure.sh -gO3\n'
+		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer" ./configure.sh -gO3 -HNS\n'
 		printf '    make\n'
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
