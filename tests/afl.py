@@ -45,15 +45,15 @@ def check_crash(exebase, out, error, file, type, test):
 		print("\nexiting...")
 		sys.exit(error)
 
-def run_test(cmd, exebase, tout, indata, out, file, type, test, env=None):
+def run_test(cmd, exebase, tout, indata, out, file, type, test, environ=None):
 	try:
 		p = subprocess.run(cmd, timeout=tout, input=indata, stdout=subprocess.PIPE,
-		                   stderr=subprocess.PIPE, env=env)
+		                   stderr=subprocess.PIPE, env=environ)
 		check_crash(exebase, out, p.returncode, file, type, test)
 	except subprocess.TimeoutExpired:
 		print("\n    {} timed out. Continuing...\n".format(exebase))
 
-def create_test(file, tout, env=None):
+def create_test(file, tout, environ=None):
 
 	print("    {}".format(file))
 
@@ -66,11 +66,11 @@ def create_test(file, tout, env=None):
 		lines = f.readlines()
 
 	for l in lines:
-		run_test(exe, exebase, tout, l, out, file, "test", l, env)
+		run_test(exe, exebase, tout, l, out, file, "test", l, environ)
 
 	print("        Running whole file...")
 
-	run_test(exe + [ file ], exebase, tout, halt.encode(), out, file, "file", file, env)
+	run_test(exe + [ file ], exebase, tout, halt.encode(), out, file, "file", file, environ)
 
 	print("        Running file through stdin...")
 
@@ -78,7 +78,7 @@ def create_test(file, tout, env=None):
 		content = f.read()
 
 	run_test(exe, exebase, tout, content, out, file,
-	         "running {} through stdin".format(file), file, env)
+	         "running {} through stdin".format(file), file, environ)
 
 
 def get_children(dir, get_files):
@@ -98,7 +98,7 @@ testdir = os.path.dirname(script)
 if __name__ != "__main__":
 	usage()
 
-tout = 3
+timeout = 3
 
 if len(sys.argv) < 2:
 	usage()
@@ -161,7 +161,7 @@ for d in dirs:
 
 	for file in files:
 		file = d + "/crashes/" + file
-		create_test(file, tout)
+		create_test(file, timeout)
 
 	if not asan:
 		continue
@@ -170,7 +170,7 @@ for d in dirs:
 
 	for file in files:
 		file = d + "/queue/" + file
-		create_test(file, tout * 2.5, env)
+		create_test(file, timeout * 3, env)
 
 print("Done")
 
