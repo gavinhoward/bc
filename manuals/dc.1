@@ -7,13 +7,19 @@
 \fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
 .
 .SH "SYNOPSIS"
-\fBdc\fR [\fB\-hvVx\fR] [\fB\-\-version\fR] [\fB\-\-help\fR] [\fB\-\-extended\-register\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
+\fBdc\fR [\fB\-hivVx\fR] [\fB\-\-version\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-extended\-register\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
 .
 .SH "DESCRIPTION"
 dc(1) is an arbitrary\-precision calculator\. It uses a stack (reverse Polish notation) to store numbers and results of computations\. Arithmetic operations pop arguments off of the stack and push the results\.
 .
 .P
-If no expressions or files are given on the command line, as in options below, or for files, as extra command\-line arguments, then dc(1) reads from \fBstdin\fR\. Otherwise, those expressions and files are processed, and dc(1) will then exit\.
+If no files are given on the command\-line as extra arguments (i\.e\., not as \fB\-f\fR or \fB\-\-file\fR arguments), then dc(1) reads from \fBstdin\fR\. Otherwise, those files are processed, and dc(1) will then exit\.
+.
+.P
+This is different from the dc(1) on OpenBSD and possibly other dc(1) implementations, where \fB\-e\fR (\fB\-\-expression\fR) and \fB\-f\fR (\fB\-\-file\fR) arguments cause dc(1) to execute them and exit\. The reason for this is that this dc(1) allows users to set arguments in the environment variable \fBDC_ENV_ARGS\fR (see the ENVIRONMENT VARIABLES section)\. Any expressions given on the command\-line should be used to set up a standard environment\. For example, if a user wants the \fBscale\fR always set to \fB10\fR, they can set \fBDC_ENV_ARGS\fR to "\-e 10k", and this dc(1) will always start with a \fBscale\fR of \fB10\fR\.
+.
+.P
+If users want to have dc(1) exit after processing all input from \fB\-e\fR and \fB\-f\fR arguments (and their equivalents), then they can just simply add "\-e q" as the last command\-line argument\.
 .
 .SH "OPTIONS"
 The following are the options that dc(1) accepts\.
@@ -25,6 +31,16 @@ Prints a usage message and quits\.
 .TP
 \fB\-v\fR, \fB\-V\fR, \fB\-\-version\fR
 Print the version information (copyright header) and exit\.
+.
+.TP
+\fB\-i\fR, \fB\-\-interactive\fR
+Forces interactive mode\.
+.
+.IP
+Per the bc standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, dc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, dc(1) attempts to recover from errors (see the RESET section), and in normal execution, flushes \fBstdout\fR as soon as execution is done for the current input\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-x\fR \fB\-\-extended\-register\fR
@@ -538,6 +554,15 @@ If extended register mode is enabled (\fB\-x\fR or \fB\-\-extended\-register\fR 
 .P
 In that case, the register name is found according to the regex \fB[a\-z][a\-z0\-9_]*\fR (like bc(1)), and it is a parse error if the next non\-space characters do not match that regex\.
 .
+.SH "RESET"
+When dc(1) encounters an error or a signal that it has a non\-default handler for, it resets\. This means that several things happen\.
+.
+.P
+First, any macros that are executing are stopped and popped off the stack\. The behavior is not unlike that of exceptions in programming languages\. Then the execution point is set so that any code waiting to execute (after all functions returned) is skipped\.
+.
+.P
+Thus, when dc(1) resets, it skips any remaining code waiting to be executed\. Then, if it is interactive mode, and the error was not a fatal error (see the EXIT STATUS section), it asks for more input; otherwise, it exits with the appropriate return code\.
+.
 .SH "PERFORMANCE"
 Most dc(1) implementations use \fBchar\fR types to calculate the value of \fB1\fR decimal digit at a time, but that can be slow\. This dc(1) does something different\.
 .
@@ -658,13 +683,13 @@ Fatal errors include memory allocation errors, I/O errors, failing to open files
 The exit status \fB4\fR is special; when a fatal error occurs, dc(1) always exits and returns \fB4\fR, no matter what mode dc(1) is in\.
 .
 .P
-The other statuses will only be returned when dc(1) is not in interactive mode, since dc(1) resets its state and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
+The other statuses will only be returned when dc(1) is not in interactive mode, since dc(1) resets its state (see the RESET section) and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
 .
 .P
 These exit statuses allow dc(1) to be used in shell scripting with error checking, and its normal behavior can be forced by using \fB\-i\fR\.
 .
 .SH "SIGNAL HANDLING"
-If dc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause dc(1) to stop execution of the current input and reset, asking for more input\.
+If dc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause dc(1) to stop execution of the current input and reset (see the RESET section), asking for more input\.
 .
 .P
 Otherwise, \fBSIGTERM\fR and \fBSIGQUIT\fR cause dc(1) to clean up and exit, and it uses the default handler for all other signals\.

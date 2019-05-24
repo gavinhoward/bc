@@ -70,7 +70,7 @@ Prints a usage message and quits\.
 Forces interactive mode\.
 .
 .IP
-Per the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, bc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, bc(1) attempts to recover from errors and flushes \fBstdout\fR as soon as execution is done for the current input\.
+Per the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, bc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, bc(1) attempts to recover from errors (see the RESET section), and in normal execution, flushes \fBstdout\fR as soon as execution is done for the current input\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -865,7 +865,7 @@ This is a \fItranscendental function\fR\.
 .
 .TP
 \fBa2(y, x)\fR
-Returns the arctangent of \fBy/x\fR, in radians\. Causes an error if both \fBy\fR and \fBx\fR are equal to \fB0\fR\.
+Returns the arctangent of \fBy/x\fR, in radians\. If both \fBy\fR and \fBx\fR are equal to \fB0\fR, it raises an error and causes bc(1) to reset (see the RESET section)\. Otherwise, if \fBx\fR is greater than \fB0\fR, it returns \fBa(y/x)\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is greater than or equal to \fB0\fR, it returns \fBa(y/x) + pi\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fBa(y/x) \- pi\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is greater than \fB0\fR, it returns \fBpi/2\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fB\-pi/2\fR\.
 .
 .IP
 This function is the same as the \fBatan2()\fR function in many programming languages\.
@@ -915,7 +915,7 @@ This is a \fItranscendental function\fR\.
 .
 .TP
 \fBatan2(y, x)\fR
-Returns the arctangent of \fBy/x\fR, in radians\. Causes an error if both \fBy\fR and \fBx\fR are equal to \fB0\fR\.
+Returns the arctangent of \fBy/x\fR, in radians\. If both \fBy\fR and \fBx\fR are equal to \fB0\fR, it raises an error and causes bc(1) to reset (see the RESET section)\. Otherwise, if \fBx\fR is greater than \fB0\fR, it returns \fBa(y/x)\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is greater than or equal to \fB0\fR, it returns \fBa(y/x) + pi\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fBa(y/x) \- pi\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is greater than \fB0\fR, it returns \fBpi/2\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fB\-pi/2\fR\.
 .
 .IP
 This function is the same as the \fBatan2()\fR function in many programming languages\.
@@ -974,7 +974,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in as few power of two bytes as possible\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or is negative, an error message is printed instead\.
+If \fBx\fR is not an integer or is negative, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -984,7 +984,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in as few power of two bytes as possible\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, an error message is printed instead\.
+If \fBx\fR is not an integer, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -994,7 +994,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fBn\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fBn\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fBn\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1004,7 +1004,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fBn\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fBn\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fBn\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1014,7 +1014,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB1\fR byte\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB1\fR byte, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB1\fR byte, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1024,7 +1024,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB1\fR byte\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB1\fR byte, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB1\fR byte, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1034,7 +1034,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB2\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB2\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB2\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1044,7 +1044,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB2\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB2\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB2\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1054,7 +1054,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB4\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB4\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB4\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1064,7 +1064,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB4\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB4\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB4\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1074,7 +1074,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB8\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB8\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB8\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1084,7 +1084,7 @@ This is a \fIvoid function\fR\.
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB8\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB8\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB8\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
 This is a \fIvoid function\fR\.
@@ -1192,6 +1192,15 @@ The transcendental functions in the extended math library are:
 \fBd2r(x)\fR
 .
 .IP "" 0
+.
+.SH "RESET"
+When bc(1) encounters an error or a signal that it has a non\-default handler for, it resets\. This means that several things happen\.
+.
+.P
+First, any functions that are executing are stopped and popped off the stack\. The behavior is not unlike that of exceptions in programming languages\. Then the execution point is set so that any code waiting to execute (after all functions returned) is skipped\.
+.
+.P
+Thus, when bc(1) resets, it skips any remaining code waiting to be executed\. Then, if it is interactive mode, and the error was not a fatal error (see the EXIT STATUS section), it asks for more input; otherwise, it exits with the appropriate return code\.
 .
 .SH "PERFORMANCE"
 Most bc(1) implementations use \fBchar\fR types to calculate the value of \fB1\fR decimal digit at a time, but that can be slow\. This bc(1) does something different\.
@@ -1316,13 +1325,13 @@ Fatal errors include memory allocation errors, I/O errors, failing to open files
 The exit status \fB4\fR is special; when a fatal error occurs, bc(1) always exits and returns \fB4\fR, no matter what mode bc(1) is in\.
 .
 .P
-The other statuses will only be returned when bc(1) is not in interactive mode, since bc(1) resets its state and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
+The other statuses will only be returned when bc(1) is not in interactive mode, since bc(1) resets its state (see the RESET section) and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
 .
 .P
 These exit statuses allow bc(1) to be used in shell scripting with error checking, and its normal behavior can be forced by using \fB\-i\fR\.
 .
 .SH "SIGNAL HANDLING"
-If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset, asking for more input\.
+If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset (see the RESET section), asking for more input\.
 .
 .P
 Otherwise, \fBSIGTERM\fR and \fBSIGQUIT\fR cause bc(1) to clean up and exit, and it uses the default handler for all other signals\.

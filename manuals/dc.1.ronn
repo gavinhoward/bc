@@ -4,8 +4,9 @@ dc(1) -- arbitrary-precision reverse-Polish notation calculator
 SYNOPSIS
 --------
 
-`dc` [`-hvVx`] [`--version`] [`--help`] [`--extended-register`] [`-e` *expr*]
-[`--expression=`*expr*...] [`-f` *file*...] [`-file=`*file*...] [*file*...]
+`dc` [`-hivVx`] [`--version`] [`--help`] [`--interactive`]
+[`--extended-register`] [`-e` *expr*] [`--expression=`*expr*...]
+[`-f` *file*...] [`-file=`*file*...] [*file*...]
 
 DESCRIPTION
 -----------
@@ -14,9 +15,22 @@ dc(1) is an arbitrary-precision calculator. It uses a stack (reverse Polish
 notation) to store numbers and results of computations. Arithmetic operations
 pop arguments off of the stack and push the results.
 
-If no expressions or files are given on the command line, as in options below,
-or for files, as extra command-line arguments, then dc(1) reads from `stdin`.
-Otherwise, those expressions and files are processed, and dc(1) will then exit.
+If no files are given on the command-line as extra arguments (i.e., not as `-f`
+or `--file` arguments), then dc(1) reads from `stdin`. Otherwise, those files
+are processed, and dc(1) will then exit.
+
+This is different from the dc(1) on OpenBSD and possibly other dc(1)
+implementations, where `-e` (`--expression`) and `-f` (`--file`) arguments cause
+dc(1) to execute them and exit. The reason for this is that this dc(1) allows
+users to set arguments in the environment variable `DC_ENV_ARGS` (see the
+ENVIRONMENT VARIABLES section). Any expressions given on the command-line should
+be used to set up a standard environment. For example, if a user wants the
+`scale` always set to `10`, they can set `DC_ENV_ARGS` to "-e 10k", and this
+dc(1) will always start with a `scale` of `10`.
+
+If users want to have dc(1) exit after processing all input from `-e` and `-f`
+arguments (and their equivalents), then they can just simply add "-e q" as the
+last command-line argument.
 
 OPTIONS
 -------
@@ -28,6 +42,18 @@ The following are the options that dc(1) accepts.
 
   * `-v`, `-V`, `--version`:
     Print the version information (copyright header) and exit.
+
+  * `-i`, `--interactive`:
+    Forces interactive mode.
+
+    Per the [bc standard][1], dc(1) has an interactive mode and a
+    non-interactive mode. The interactive mode is turned on automatically when
+    both `stdin` and `stdout` are hooked to a terminal, but this flag can turn
+    it on in other cases. In interactive mode, dc(1) attempts to recover from
+    errors (see the RESET section), and in normal execution, flushes `stdout` as
+    soon as execution is done for the current input.
+
+    This is a **non-portable extension**.
 
   * `-x` `--extended-register`:
     Enables extended register mode. See the REGISTERS section for more
@@ -575,6 +601,22 @@ In that case, the register name is found according to the regex
 `[a-z][a-z0-9_]*` (like bc(1)), and it is a parse error if the next
 non-space characters do not match that regex.
 
+RESET
+-----
+
+When dc(1) encounters an error or a signal that it has a non-default handler
+for, it resets. This means that several things happen.
+
+First, any macros that are executing are stopped and popped off the stack.
+The behavior is not unlike that of exceptions in programming languages. Then
+the execution point is set so that any code waiting to execute (after all
+functions returned) is skipped.
+
+Thus, when dc(1) resets, it skips any remaining code waiting to be executed.
+Then, if it is interactive mode, and the error was not a fatal error (see the
+EXIT STATUS section), it asks for more input; otherwise, it exits with the
+appropriate return code.
+
 PERFORMANCE
 -----------
 
@@ -718,9 +760,9 @@ The exit status `4` is special; when a fatal error occurs, dc(1) always exits
 and returns `4`, no matter what mode dc(1) is in.
 
 The other statuses will only be returned when dc(1) is not in interactive mode,
-since dc(1) resets its state and accepts more input when one of those errors
-occurs in interactive mode. This is also the case when interactive mode is
-forced by the `-i` option.
+since dc(1) resets its state (see the RESET section) and accepts more input when
+one of those errors occurs in interactive mode. This is also the case when
+interactive mode is forced by the `-i` option.
 
 These exit statuses allow dc(1) to be used in shell scripting with error
 checking, and its normal behavior can be forced by using `-i`.
@@ -729,8 +771,8 @@ SIGNAL HANDLING
 ---------------
 
 If dc(1) has been compiled with the signal handling, sending a `SIGINT` will
-cause dc(1) to stop execution of the current input and reset, asking for more
-input.
+cause dc(1) to stop execution of the current input and reset (see the RESET
+section), asking for more input.
 
 Otherwise, `SIGTERM` and `SIGQUIT` cause dc(1) to clean up and exit, and it uses
 the default handler for all other signals.

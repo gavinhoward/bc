@@ -77,8 +77,9 @@ The following are the options that bc(1) accepts.
     Per the [standard][1], bc(1) has an interactive mode and a non-interactive
     mode. The interactive mode is turned on automatically when both `stdin` and
     `stdout` are hooked to a terminal, but this flag can turn it on in other
-    cases. In interactive mode, bc(1) attempts to recover from errors and
-    flushes `stdout` as soon as execution is done for the current input.
+    cases. In interactive mode, bc(1) attempts to recover from errors (see the
+    RESET section), and in normal execution, flushes `stdout` as soon as
+    execution is done for the current input.
 
     This is a **non-portable extension**.
 
@@ -768,8 +769,14 @@ The extended library is a **non-portable extension**.
     This is a [transcendental function][5].
 
   * `a2(y, x)`:
-    Returns the arctangent of `y/x`, in radians. Causes an error if both `y` and
-    `x` are equal to `0`.
+    Returns the arctangent of `y/x`, in radians. If both `y` and `x` are equal
+    to `0`, it raises an error and causes bc(1) to reset (see the RESET
+    section). Otherwise, if `x` is greater than `0`, it returns `a(y/x)`. If `x`
+    is less than `0`, and `y` is greater than or equal to `0`, it returns
+    `a(y/x) + pi`. If `x` is less than `0`, and `y` is less than `0`, it returns
+    `a(y/x) - pi`. If `x` is equal to `0`, and `y` is greater than `0`, it
+    returns `pi/2`. If `x` is equal to `0`, and `y` is less than `0`, it returns
+    `-pi/2`.
 
     This function is the same as the `atan2()` function in many programming
     languages.
@@ -805,8 +812,14 @@ The extended library is a **non-portable extension**.
     This is a [transcendental function][5].
 
   * `atan2(y, x)`:
-    Returns the arctangent of `y/x`, in radians. Causes an error if both `y` and
-    `x` are equal to `0`.
+    Returns the arctangent of `y/x`, in radians. If both `y` and `x` are equal
+    to `0`, it raises an error and causes bc(1) to reset (see the RESET
+    section). Otherwise, if `x` is greater than `0`, it returns `a(y/x)`. If `x`
+    is less than `0`, and `y` is greater than or equal to `0`, it returns
+    `a(y/x) + pi`. If `x` is less than `0`, and `y` is less than `0`, it returns
+    `a(y/x) - pi`. If `x` is equal to `0`, and `y` is greater than `0`, it
+    returns `pi/2`. If `x` is equal to `0`, and `y` is less than `0`, it returns
+    `-pi/2`.
 
     This function is the same as the `atan2()` function in many programming
     languages.
@@ -854,7 +867,7 @@ The extended library is a **non-portable extension**.
     into bytes separated by spaces.
 
     If `x` is not an integer or is negative, an error message is printed
-    instead.
+    instead, but bc(1) is not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -863,7 +876,8 @@ The extended library is a **non-portable extension**.
     two's-complement integer in as few power of two bytes as possible. Both
     outputs are split into bytes separated by spaces.
 
-    If `x` is not an integer, an error message is printed instead.
+    If `x` is not an integer, an error message is printed instead, but bc(1) is
+    not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -872,7 +886,8 @@ The extended library is a **non-portable extension**.
     integer in `n` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `n` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
     This is a [void function](#void-functions).
 
@@ -882,7 +897,7 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `n` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -891,7 +906,7 @@ The extended library is a **non-portable extension**.
     integer in `1` byte. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `1` byte, an error
-    message is printed instead.
+    message is printed instead, but bc(1) is not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -901,7 +916,7 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `1` byte, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -910,7 +925,8 @@ The extended library is a **non-portable extension**.
     integer in `2` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `2` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
     This is a [void function](#void-functions).
 
@@ -920,7 +936,7 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `2` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -929,7 +945,8 @@ The extended library is a **non-portable extension**.
     integer in `4` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `4` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
     This is a [void function](#void-functions).
 
@@ -939,7 +956,7 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `4` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -948,7 +965,8 @@ The extended library is a **non-portable extension**.
     integer in `8` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `8` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
     This is a [void function](#void-functions).
 
@@ -958,7 +976,7 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `8` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
     This is a [void function](#void-functions).
 
@@ -1028,6 +1046,22 @@ The transcendental functions in the extended math library are:
 * `atan2(y, x)`
 * `r2d(x)`
 * `d2r(x)`
+
+RESET
+-----
+
+When bc(1) encounters an error or a signal that it has a non-default handler
+for, it resets. This means that several things happen.
+
+First, any functions that are executing are stopped and popped off the stack.
+The behavior is not unlike that of exceptions in programming languages. Then
+the execution point is set so that any code waiting to execute (after all
+functions returned) is skipped.
+
+Thus, when bc(1) resets, it skips any remaining code waiting to be executed.
+Then, if it is interactive mode, and the error was not a fatal error (see the
+EXIT STATUS section), it asks for more input; otherwise, it exits with the
+appropriate return code.
 
 PERFORMANCE
 -----------
@@ -1181,9 +1215,9 @@ The exit status `4` is special; when a fatal error occurs, bc(1) always exits
 and returns `4`, no matter what mode bc(1) is in.
 
 The other statuses will only be returned when bc(1) is not in interactive mode,
-since bc(1) resets its state and accepts more input when one of those errors
-occurs in interactive mode. This is also the case when interactive mode is
-forced by the `-i` option.
+since bc(1) resets its state (see the RESET section) and accepts more input when
+one of those errors occurs in interactive mode. This is also the case when
+interactive mode is forced by the `-i` option.
 
 These exit statuses allow bc(1) to be used in shell scripting with error
 checking, and its normal behavior can be forced by using `-i`.
@@ -1192,8 +1226,8 @@ SIGNAL HANDLING
 ---------------
 
 If bc(1) has been compiled with the signal handling, sending a `SIGINT` will
-cause bc(1) to stop execution of the current input and reset, asking for more
-input.
+cause bc(1) to stop execution of the current input and reset (see the RESET
+section), asking for more input.
 
 Otherwise, `SIGTERM` and `SIGQUIT` cause bc(1) to clean up and exit, and it uses
 the default handler for all other signals.
