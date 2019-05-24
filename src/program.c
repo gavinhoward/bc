@@ -767,6 +767,8 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 #if BC_ENABLED
 		bool ref, ref_size;
 
+		assert(v != NULL);
+
 		ref = (v->size == sizeof(BcNum) && t != BC_TYPE_ARRAY);
 		ref_size = (v->size == sizeof(uchar));
 
@@ -1144,6 +1146,8 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	s = bc_program_operand(p, &opd, &num, 0);
 	if (BC_ERR(s)) return s;
 
+	assert(num != NULL);
+
 #if DC_ENABLED
 	if (!len && inst != BC_INST_SCALE_FUNC) {
 		s = bc_program_type_num(opd, num);
@@ -1270,6 +1274,8 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
 
+	assert(n != NULL);
+
 	func = bc_vec_item(&p->fns, BC_PROG_MAIN);
 	len = func->strs.len;
 
@@ -1340,6 +1346,8 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
+
+	assert(n != NULL);
 
 	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, p->strm);
 	else {

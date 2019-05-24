@@ -1102,16 +1102,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_extend(&cpa, b->scale);
 	cpa.rdx -= BC_NUM_RDX(b->scale);
 	cpa.scale = cpa.rdx * BC_BASE_DIGS;
+
 	if (scale > cpa.scale) {
 		bc_num_extend(&cpa, scale);
 		cpa.scale = cpa.rdx * BC_BASE_DIGS;
-	}
-
-	if (b->rdx == b->len) {
-		size_t i;
-		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
-		assert(i != len || !zero);
-		len -= i - 1;
 	}
 
 	if (cpa.cap == cpa.len) bc_num_expand(&cpa, bc_vm_growSize(cpa.len, 1));
@@ -1755,7 +1749,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	BcStatus s;
 	BcVec stack;
 	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
-	BcBigDig dig, *ptr, acc, exp;
+	BcBigDig dig = 0, *ptr, acc, exp;
 	size_t i, j;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
