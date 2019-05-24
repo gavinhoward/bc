@@ -167,7 +167,7 @@ for d in dirs:
 
 	for file in files:
 		file = d + "/queue/" + file
-		create_test(file, timeout * 3, env)
+		create_test(file, timeout * 2, env)
 
 print("Done")
 
