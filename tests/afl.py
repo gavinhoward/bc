@@ -65,8 +65,10 @@ def create_test(file, tout, environ=None):
 	with open(file, "rb") as f:
 		lines = f.readlines()
 
-	for l in lines:
-		run_test(exe, exebase, tout, l, out, file, "test", l, environ)
+	# Don't do this for asan.
+	if environ is not None:
+		for l in lines:
+			run_test(exe, exebase, tout, l, out, file, "test", l, environ)
 
 	print("        Running whole file...")
 
