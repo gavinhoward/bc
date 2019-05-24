@@ -740,7 +740,7 @@ const BcNumBinaryOpReq bc_program_opReqs[] = {
 	bc_num_powReq, bc_num_mulReq, bc_num_mulReq, bc_num_mulReq,
 	bc_num_addReq, bc_num_addReq,
 #if BC_ENABLE_EXTRA_MATH
-	bc_num_placesReq, bc_num_shiftLeftReq, bc_num_shiftRightReq,
+	bc_num_placesReq, bc_num_placesReq, bc_num_placesReq,
 #endif // BC_ENABLE_EXTRA_MATH
 };
 

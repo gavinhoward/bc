@@ -2099,60 +2099,7 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 
 #if BC_ENABLE_EXTRA_MATH
 size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
-
-	BcStatus s;
-	BcBigDig places = 0;
-	size_t rdx;
-
-	BC_UNUSED(s);
-	BC_UNUSED(scale);
-
-	// This error will be taken care of later. Ignore.
-	s = bc_num_bigdig(b, &places);
-
-	if (a->scale <= places) rdx = BC_NUM_RDX(places);
-	else rdx = BC_NUM_RDX(a->scale - places);
-
-	return BC_NUM_RDX(bc_num_intDigits(a)) + rdx;
-}
-
-size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
-
-	BcStatus s;
-	BcBigDig places = 0;
-	size_t rdx;
-
-	BC_UNUSED(s);
-	BC_UNUSED(scale);
-
-	// This error will be taken care of later. Ignore.
-	s = bc_num_bigdig(b, &places);
-
-	if (a->scale <= places) rdx = BC_NUM_RDX(places) - a->rdx + 1;
-	else rdx = 0;
-
-	return a->len + rdx;
-}
-
-size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale) {
-
-	BcStatus s;
-	BcBigDig places = 0;
-	size_t int_digs, rdx;
-
-	BC_UNUSED(s);
-	BC_UNUSED(scale);
-
-	// This error will be taken care of later. Ignore.
-	s = bc_num_bigdig(b, &places);
-
-	int_digs = BC_NUM_RDX(bc_num_intDigits(a));
-	rdx = BC_NUM_RDX(places);
-
-	if (int_digs <= rdx) rdx -= int_digs;
-	else rdx = 0;
-
-	return a->len + rdx;
+	return a->len + b->len - a->rdx - b->rdx;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -2192,12 +2139,12 @@ BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 }
 
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	size_t req = bc_num_shiftLeftReq(a, b, scale);
+	size_t req = bc_num_placesReq(a, b, scale);
 	return bc_num_binary(a, b, c, scale, bc_num_left, req);
 }
 
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	size_t req = bc_num_shiftRightReq(a, b, scale);
+	size_t req = bc_num_placesReq(a, b, scale);
 	return bc_num_binary(a, b, c, scale, bc_num_right, req);
 }
 #endif // BC_ENABLE_EXTRA_MATH
