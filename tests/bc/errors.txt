@@ -237,6 +237,7 @@ sqrt(1
 length(1
 abs(1
 scale(.2093
+a2(0,0)
 read
 read(
 read()
