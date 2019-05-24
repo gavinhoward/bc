@@ -1066,7 +1066,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len;
 	BcNum cpa, cpb;
-	bool zero = true;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -2093,6 +2092,7 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 
 #if BC_ENABLE_EXTRA_MATH
 size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
+	BC_UNUSED(scale);
 	return a->len + b->len - a->rdx - b->rdx;
 }
 #endif // BC_ENABLE_EXTRA_MATH
