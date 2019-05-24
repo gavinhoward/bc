@@ -1014,10 +1014,12 @@ The transcendental functions in the extended math library are:
 * `log(x, b)`
 * `pi(p)`
 * `t(x)`
+* `a2(y, x)`
 * `sin(x)`
 * `cos(x)`
 * `tan(x)`
 * `atan(x)`
+* `atan2(y, x)`
 * `r2d(x)`
 * `d2r(x)`
 
