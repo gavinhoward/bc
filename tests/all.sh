@@ -114,7 +114,7 @@ num70="10000000000000000000000000000000000000000000000000000000000000000000\\
 0000000000"
 
 if [ "$d" = "bc" ]; then
-	halt="quit"
+	halt="halt"
 	opt="x"
 	lopt="extended-register"
 	line_var="BC_LINE_LENGTH"
@@ -173,7 +173,7 @@ results=$(cat "$testdir/$d/add_results.txt")
 
 printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 
-"$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" > "$out2"
+"$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" -e "$halt" > "$out2"
 
 diff "$out1" "$out2"
 
