@@ -109,7 +109,7 @@ printf 'Running %s %s...\n' "$d" "$t"
 
 if [ "$time_tests" -ne 0 ]; then
 	printf '\n'
-	time -p $(printf '%s\n' "$halt" | "$exe" "$@" $options "$name" > "$out")
+	printf '%s\n' "$halt" | time -p "$exe" "$@" $options "$name" > "$out"
 	printf '\n'
 else
 	printf '%s\n' "$halt" | "$exe" "$@" $options "$name" > "$out"

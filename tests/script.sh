@@ -127,7 +127,7 @@ printf 'Running %s script: %s\n' "$d" "$f"
 
 if [ "$time_tests" -ne 0 ]; then
 	printf '\n'
-	time -p $(printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out")
+	printf '%s\n' "$halt" | time -p "$exe" "$@" $options "$s" > "$out"
 	printf '\n'
 else
 	printf '%s\n' "$halt" | "$exe" "$@" $options "$s" > "$out"
