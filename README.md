@@ -103,6 +103,29 @@ other locations, use the `PREFIX` environment variable when running
 
 ### Package and Distro Maintainers
 
+#### Using This `bc` as an Alternative
+
+If this `bc` is packaged as an alternative to an already existing `bc` package,
+it is possible to rename it in the build to prevent name collision. To prepend
+to the name, just run the following:
+
+```
+EXECPREFIX=<some_prefix> ./configure.sh
+```
+
+To append to the name, just run the following:
+
+```
+EXECSUFFIX=<some_suffix> ./configure.sh
+```
+
+If a package maintainer wishes to add both a prefix and a suffix, that is
+allowed.
+
+**Note**: The suggested name (and package name) is `bc-gh`.
+
+#### Karatsuba Number
+
 Package and distro maintainers have one tool at their disposal to build this
 `bc` in the optimal configuration: `karatsuba.py`.
 
