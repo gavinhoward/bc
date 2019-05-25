@@ -921,7 +921,7 @@ static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 	return cmp;
 }
 
-static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
+static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
                               BcNum *restrict c, size_t scale)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -955,6 +955,8 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 		n = a->num + i;
 		q = 0;
 
+//		bc_num_printDebug(a, "a", true);
+
 		cmp = bc_num_divCmp(n, b, len);
 
 #if BC_ENABLE_SIGNALS
@@ -970,48 +972,63 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 		}
 		else if (cmp > 0) {
 
-			BcBigDig n1, pow, dividend;
+			BcBigDig n1, pow, dividend, inc;
 			size_t cpblen;
+			bool add = false;
+			BcNumShiftAddOp op;
 
 			n1 = (BcBigDig) n[len];
 			dividend = n1 * BC_BASE_POW + (BcBigDig) n[len - 1];
 			q = (dividend / divisor + 1);
-			q = q > BC_BASE_POW ? BC_BASE_POW : q;
+			//q = q > BC_BASE_POW ? BC_BASE_POW : q;
 			dividend = ((BcBigDig) bc_num_log10((size_t) q));
 
 			assert(dividend > 0);
 
 			pow = bc_num_pow10[dividend - 1];
 
-			s = bc_num_mulArray(b, (BcBigDig) q, &cpb);
-			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+			if (q <= BC_BASE_POW) {
+				s = bc_num_mulArray(b, (BcBigDig) q, &cpb);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+			}
+			else {
+				bc_num_bigdig2num(&temp, q);
+				s = bc_num_mul(b, &temp, &cpb, 0);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+			}
 
 			s = bc_num_mulArray(b, pow, &sub);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 			cpblen = cpb.len;
+			cmp = -1;
 
 			while (BC_NO_SIG && BC_NO_ERR(!s) && pow > 0) {
 
-				s = bc_num_subArrays(cpb.num, sub.num, sub.len);
-				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+//				bc_num_printDebug(&cpb, "cpb start", false);
+//				bc_num_printDebug(&sub, "sub start", true);
 
-				bc_num_clean(&cpb);
+				if (add) {
+					inc = pow;
+					op = bc_num_addArrays;
+				}
+				else {
+					inc = 0 - pow;
+					op = bc_num_subArrays;
+				}
 
-				cmp = bc_num_divCmp(n, &cpb, len);
+				while (BC_NO_SIG && BC_NO_ERR(!s) && ((add && cmp > 0) || (!add && cmp < 0))) {
 
-#if BC_ENABLE_SIGNALS
-				if (cmp == BC_NUM_CMP_SIGNAL) goto err;
-#endif // BC_ENABLE_SIGNALS
+					q += inc;
 
-				while (BC_NO_SIG && BC_NO_ERR(!s) && cmp < 0) {
-
-					q -= pow;
-
-					s = bc_num_subArrays(cpb.num, sub.num, sub.len);
+					s = op(cpb.num, sub.num, sub.len);
 					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
+					cpb.len += (cpb.cap > cpb.len && cpb.num[cpb.len] != 0);
+
 					bc_num_clean(&cpb);
+
+//					bc_num_printDebug(&cpb, "cpb loop", true);
 
 					cmp = bc_num_divCmp(n, &cpb, len);
 
@@ -1026,20 +1043,25 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 					BcBigDig rem;
 
-					s = bc_num_addArrays(cpb.num, sub.num, sub.len);
-					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-					cpb.len = cpblen;
-					bc_num_clean(&cpb);
-
 					bc_num_copy(&temp, &sub);
 					s = bc_num_divArray(&temp, 10, &sub, &rem);
 					if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 					assert(rem == 0);
 				}
+
+				add = !add;
 			}
 
-			q -= 1;
+			if (!add && cmp) {
+
+				q -= 1;
+
+				s = bc_num_subArrays(cpb.num, sub.num, sub.len);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+				cpb.len = cpblen;
+				bc_num_clean(&cpb);
+			}
 		}
 
 		assert(q <= BC_BASE_POW);
