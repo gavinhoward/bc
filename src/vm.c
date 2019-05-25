@@ -139,11 +139,17 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 			fprintf(stderr, bc_err_line, line);
 		}
 		else {
+
 			BcInstPtr *ip = bc_vec_item_rev(&vm->prog.stack, 0);
 			BcFunc *f = bc_vec_item(&vm->prog.fns, ip->func);
+
 			fprintf(stderr, "\n    %s %s", vm->func_header, f->name);
-			if (ip->func != BC_PROG_MAIN && ip->func != BC_PROG_READ)
+
+			if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
+			    ip->func != BC_PROG_READ)
+			{
 				fprintf(stderr, "()");
+			}
 		}
 	}
 
