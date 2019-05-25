@@ -1760,6 +1760,33 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		return BC_STATUS_SUCCESS;
 	}
 
+	// This function uses an algorithm that Stefan Esser <se@freebsd.org> came
+	// up with to print the integer part of a number. What it does is convert
+	// intp into a number of the specified base, but it does it directly,
+	// instead of just doing a series of divisions and printing the remainders
+	// in reverse order.
+	//
+	// Let me explain in a bit more detail:
+	//
+	// The algorithm takes the current least significant digit (after intp has
+	// been converted to an integer) and the next to least significant digit,
+	// and it converts the least significant digit into one of the specified
+	// base, putting any overflow into the next to least significant digit. It
+	// iterates through the whole number, from least significant to most
+	// significant, doing this conversion. At the end of that iteration, the
+	// least significant digit is converted, but the others are not, so it
+	// iterates again, starting at the next to least significant digit. It keeps
+	// doing that conversion, skipping one more digit than the last time, until
+	// all digits have been converted. Then it prints them in reverse order.
+	//
+	// That is the gist of the algorithm. It leaves out several things, such as
+	// the fact that digits are not always converted into the specified base,
+	// but into something close (basically a power of the specified base). This
+	// fact is what necessitates the existence of the loop later in this
+	// function. (The conversion happens in bc_num_printPrepare() where the
+	// outer loop happens and bc_num_printFixup() where the inner loop, or
+	// actual conversion, happens.)
+
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
 
