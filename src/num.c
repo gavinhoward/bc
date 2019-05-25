@@ -1781,9 +1781,15 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	//
 	// That is the gist of the algorithm. It leaves out several things, such as
 	// the fact that digits are not always converted into the specified base,
-	// but into something close (basically a power of the specified base). This
-	// fact is what necessitates the existence of the loop later in this
-	// function. (The conversion happens in bc_num_printPrepare() where the
+	// but into something close, basically a power of the specified base. In
+	// Stefan's words, "You could consider BcDigs to be of base 10^BC_BASE_DIGS
+	// in the normal case and obase^N for the largest value of N that satisfies
+	// obase^N <= 10^BC_BASE_DIGS. [This means that] the result is not in base
+	// "obase", but in base "obase^N", which happens to be printable as a number
+	// of base "obase" without consideration for neighbouring BcDigs." This fact
+	// is what necessitates the existence of the loop later in this function.
+	//
+	// The conversion happens in bc_num_printPrepare() where the
 	// outer loop happens and bc_num_printFixup() where the inner loop, or
 	// actual conversion, happens.)
 
