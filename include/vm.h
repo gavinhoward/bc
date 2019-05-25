@@ -149,6 +149,8 @@
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
 #define BC_ERROR_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && BC_ERR(s))
 
+#define BC_VM_INVALID_CATALOG ((nl_catd) -1)
+
 typedef struct BcVm {
 
 	BcParse prs;

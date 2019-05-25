@@ -217,7 +217,7 @@ static size_t bc_vm_envLen(const char *var) {
 
 void bc_vm_shutdown(void) {
 #if BC_ENABLE_NLS
-	catclose(vm->catalog);
+	if (vm->catalog != BC_VM_INVALID_CATALOG) catclose(vm->catalog);
 #endif // BC_ENABLE_NLS
 #if BC_ENABLE_HISTORY
 	// This must always run to ensure that the terminal is back to normal.
@@ -537,13 +537,14 @@ static void bc_vm_gettext(void) {
 	size_t i;
 
 	if (!vm->locale) {
+		vm->catalog = BC_VM_INVALID_CATALOG;
 		bc_vm_defaultMsgs();
 		return;
 	}
 
 	vm->catalog = catopen(BC_MAINEXEC, NL_CAT_LOCALE);
 
-	if (vm->catalog == (nl_catd) -1) {
+	if (vm->catalog == BC_VM_INVALID_CATALOG) {
 		bc_vm_defaultMsgs();
 		return;
 	}
