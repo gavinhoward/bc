@@ -21,9 +21,9 @@ For GNU `bc`:
 ```
 Running bc script: add.bc
 
-real 0.80
-user 0.37
-sys 0.43
+real 2.08
+user 1.01
+sys 1.06
 ```
 
 For this `bc`:
@@ -31,9 +31,9 @@ For this `bc`:
 ```
 Running bc script: add.bc
 
-real 0.56
-user 0.55
-sys 0.00
+real 1.29
+user 1.24
+sys 0.04
 ```
 
 ### Subtraction
@@ -49,9 +49,9 @@ For GNU `bc`:
 ```
 Running bc script: subtract.bc
 
-real 0.82
-user 0.40
-sys 0.42
+real 2.12
+user 1.12
+sys 1.00
 ```
 
 For this `bc`:
@@ -59,9 +59,9 @@ For this `bc`:
 ```
 Running bc script: subtract.bc
 
-real 0.57
-user 0.55
-sys 0.01
+real 1.33
+user 1.31
+sys 0.02
 ```
 
 ### Multiplication
