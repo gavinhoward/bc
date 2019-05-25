@@ -183,6 +183,7 @@ help:
 	@printf 'available targets:\n'
 	@printf '\n'
 	@printf '    all (default)   builds %%EXECUTABLES%%\n'
+	@printf '    check           alias for `make test`\n'
 	@printf '    clean           removes all build files\n'
 	@printf '    clean_config    removes all build files as well as the generated Makefile\n'
 	@printf '    clean_tests     removes all build files, the generated Makefile,\n
@@ -207,6 +208,8 @@ help:
 	@printf '                    through valgrind\n'
 	@printf '    valgrind_dc     runs the dc test suite, if dc has been built,\n'
 	@printf '                    through valgrind\n'
+
+check: test
 
 test: test_bc timeconst test_dc
 
