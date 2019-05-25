@@ -504,34 +504,37 @@ make install
 ## Binary Size
 
 When built with both calculators, all available features, and `-Os` using clang,
-the executable is 101 kb (100,912 bytes) on x86_64. That isn't much for what is
+the executable is 113 kb (113,248 bytes) on x86_64. That isn't much for what is
 contained in the binary, but if necessary, it can be reduced.
 
 The single largest user of space is the `bc` calculator. If just `dc` is needed,
-the size can be reduced to to 72 kb (72,223 bytes).
+the size can be reduced to 80 kb (80,432 bytes).
 
 The next largest user of space is history support. If that is not needed, size
-can be reduced (for a build with both calculators) to 84 kb (84,448 bytes).
+can be reduced (for a build with both calculators) to 97 kb (97,760 bytes).
 
 There are several reasons that history is a bigger user of space than `dc`
 itself:
 
-* `dc`'s lexer and parser are *tiny* compared to `bc`'s.
+* `dc`'s lexer and parser are *tiny* compared to `bc`'s because `dc` code is
+  almost already in the form that it is executed in, while `bc` has to not only
+  adjust the form to be executable, it has to parse functions, loops, `if`
+  statements, and other extra features.
 * `dc` does not have much extra code in the interpreter.
 * History has a lot of const data for supporting `UTF-8` terminals.
 
 The next biggest user is `dc`, so if just `bc` is needed, the size can be
-reduced to 89 kb (88,624 bytes) with history and 76 kb (76,256 bytes) without
+reduced to 101 kb (100,960 bytes) with history and 84 kb (84,472 bytes) without
 history.
 
 The next biggest user is signal handling. Without it, the size (with both
-calculators) is reduced to 97 kb (97,800 bytes) with history and 84 kb (84,416
+calculators) is reduced to 109 kb (109,120 bytes) with history and 93 kb (93,632
 bytes) without history.
 
 The next largest user is extra math support. If this is not needed, the size
-(with both calculators) can be reduced to 97 kb (96,808 bytes) with history and
-signal handling, 80 kb (80,344 bytes) without history, 93 kb (92,696 bytes)
-without signal handling, and 76 kb (76,216 bytes) without both.
+(with both calculators) can be reduced to 105 kb (105,048 bytes) with history
+and signal handling, 89 kb (88,560 bytes) without history, 101 kb (100,920
+bytes) without signal handling, and 84 kb (84,432 bytes) without both.
 
 ## Testing
 
