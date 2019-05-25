@@ -143,3 +143,42 @@ real 0.81
 user 0.81
 sys 0.00
 ```
+
+### Scripts
+
+A script was created that contained the following:
+
+```
+#!/bin/sh
+
+exe="$1"
+
+for i in $(seq 0 1000); do
+	printf '%d\n' "$i" | "$exe" -q tests/bc/scripts/timeconst.bc > /dev/null
+done
+```
+
+where `tests/bc/scripts/timeconst.bc` is [this file][1]. The script was saved at
+`../test.sh`.
+
+The command used was:
+
+```
+time -p sh ../test.sh [bc]
+```
+
+For GNU `bc`:
+
+```
+real 0.92
+user 0.85
+sys 0.17
+```
+
+```
+real 1.01
+user 0.96
+sys 0.15
+```
+
+[1]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc

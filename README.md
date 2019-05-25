@@ -135,6 +135,10 @@ Because this `bc` packs more than `1` decimal digit per hardware integer, this
 `bc` is faster than GNU `bc` and can be *much* faster. Full benchmarks can be
 found at [manuals/benchmarks.md][19].
 
+There is one instance where this `bc` is slower: if scripts are light on math.
+This is because this `bc`'s intepreter is slightly slower than GNU `bc`, but
+that is because it is more robust. See the [benchmarks][19].
+
 ## Algorithms
 
 To see what algorithms this `bc` uses, see the [algorithms manual][7].
