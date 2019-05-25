@@ -111,11 +111,29 @@ This `bc` can be used as a drop-in replacement for any existing `bc`. This `bc`
 is also compatible with MinGW toolchains, though history is not supported on
 Windows.
 
+## Comparison to GNU `bc`
+
+This `bc` compares favorably to GNU `bc`.
+
+* It has more extensions, which make this `bc` more useful for scripting.
+* This `bc` is a bit more POSIX compliant.
+* It has a much less buggy parser. The GNU `bc` will give parse errors for what
+  is actually valid `bc` code, or should be. For example, putting an `else` on
+  a new line after a brace can cause GNU `bc` to give a parse error.
+* This `bc` has fewer crashes.
+* GNU `bc` will report errors when there are none. For example, `0 ^ -251`
+  causes GNU `bc` to report a divide by `0`.
+* GNU `bc` will sometimes print numbers incorrectly. For example, when running
+  it on the file `tests/bc/power.txt` in this repo, GNU `bc` gets all the right
+  answers, but for some inexplicable reason, it fails to wrap the numbers at the
+  proper place.
+* This `bc` is faster. (See [Performance](#performance).)
+
 ### Performance
 
-This `bc` has similar performance to GNU `bc`. It is slightly slower on certain
-operations and slightly faster on others. Full benchmark data are not yet
-available.
+Because this `bc` packs more than `1` decimal digit per hardware integer, this
+`bc` is faster than GNU `bc` and can be *much* faster. Full benchmarks can be
+found at [manuals/benchmarks.md][19].
 
 ## Algorithms
 
@@ -205,3 +223,4 @@ Folders:
 [16]: https://codecov.io/gh/gavinhoward/bc
 [17]: https://img.shields.io/coverity/scan/16609.svg
 [18]: https://scan.coverity.com/projects/gavinhoward-bc
+[19]: ./manuals/benchmarks.md
