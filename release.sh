@@ -305,17 +305,23 @@ vg() {
 
 	header "Running valgrind"
 
-	build "$debug" "gcc" "-O0 -g" "1" "64"
+	if [ "$run_64_bit" -ne 0 ]; then
+		_vg_bits=64
+	else
+		_vg_bits=32
+	fi
+
+	build "$debug" "gcc" "-O0 -g" "1" "$_vg_bits"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O0 -gb" "1" "64"
+	build "$debug" "gcc" "-O0 -gb" "1" "$_vg_bits"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O0 -gd" "1" "64"
+	build "$debug" "gcc" "-O0 -gd" "1" "$_vg_bits"
 	runtest valgrind
 
 	do_make clean_config
@@ -444,9 +450,15 @@ else
 	run_64_bit=1
 fi
 
+if [ "$run_64_bit" -ne 0 ]; then
+	bits=64
+else
+	bits=32
+fi
+
 cd "$scriptdir"
 
-build "$debug" "clang" "-g" "1" "64"
+build "$debug" "clang" "-g" "1" "$bits"
 
 header "Running math library under --standard"
 
@@ -464,7 +476,7 @@ fi
 
 if [ "$run_tests" -ne 0 ]; then
 
-	build "$release" "clang" "-O3" "1" "64"
+	build "$release" "clang" "-O3" "1" "$bits"
 
 	karatsuba
 
@@ -486,7 +498,7 @@ if [ "$run_tests" -ne 0 ]; then
 
 		header "Configuring for afl-gcc..."
 
-		configure "$debug" "afl-gcc" "-HNS -gO3" "1" "64"
+		configure "$debug" "afl-gcc" "-HNS -gO3" "1" "$bits"
 
 		printf '\n'
 		printf 'Run make\n'
