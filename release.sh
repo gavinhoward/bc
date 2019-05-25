@@ -28,7 +28,8 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] [run_valgrind]\n' "$script"
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] \n'
+	printf '          [run_valgrind] [run_64_bit]\n' "$script"
 	exit 1
 }
 
@@ -212,11 +213,15 @@ runconfigseries() {
 	_runconfigseries_run_tests="$1"
 	shift
 
-	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
+	if [ "$run_64_bit" -ne 0 ]; then
 
-	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" 0 64 "$_runconfigseries_run_tests"
+		runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+			"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
+
+		runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+			"$_runconfigseries_configure_flags" 0 64 "$_runconfigseries_run_tests"
+
+	fi
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
 		"$_runconfigseries_configure_flags" 1 32 "$_runconfigseries_run_tests"
@@ -430,6 +435,13 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	run_valgrind=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	run_64_bit="$1"
+	shift
+else
+	run_64_bit=1
 fi
 
 cd "$scriptdir"
