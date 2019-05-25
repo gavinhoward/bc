@@ -175,6 +175,8 @@ user 0.85
 sys 0.17
 ```
 
+For this `bc`:
+
 ```
 real 1.01
 user 0.96
