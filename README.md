@@ -11,9 +11,9 @@ flavor of `bc`.
 For more information, see this `bc`'s [full manual][2].
 
 This `bc` also includes an implementation of `dc` in the same binary, accessible
-via a symbolic link, which implements all FreeBSD and GNU extensions. If a
-single `dc` binary is desired, `bc` can be copied and renamed to `dc`. The `!`
-command is omitted; I believe this poses security concerns and that such
+via a symbolic link, which implements all FreeBSD and GNU extensions. (If a
+standalone `dc` binary is desired, `bc` can be copied and renamed to `dc`.) The
+`!` command is omitted; I believe this poses security concerns and that such
 functionality is unnecessary.
 
 For more information, see the `dc`'s [full manual][3].
@@ -97,7 +97,22 @@ make install
 ```
 
 By default, `bc` and `dc` will be installed in `/usr/local`. For installing in
-other locations, see the [build manual][5].
+other locations, use the `PREFIX` environment variable when running
+`configure.sh` or pass the `--prefix=<prefix>` option to `configure.sh`. See the
+[build manual][5], or run `./configure.sh --help`, for more details.
+
+### Package and Distro Maintainers
+
+Package and distro maintainers have one tool at their disposal to build this
+`bc` in the optimal configuration: `karatsuba.py`.
+
+This script is not a compile-time or runtime prerequisite; it is for package and
+distro maintainers to run once when a package is being created. It finds the
+optimal Karatsuba number (see the [algorithms manual][7] for more information)
+for the machine that it is running on.
+
+If desired, maintainers can also skip running this script because there is a
+sane default for the Karatsuba number.
 
 ## Status
 
