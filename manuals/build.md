@@ -23,6 +23,9 @@ either one of the following commands:
 ./configure.sh --help
 ```
 
+***WARNING***: even though `configure.sh` supports both option types, short and
+long, it does not support handling both at the same time. Use only one type.
+
 To learn the available `make` targets run the following command after running
 the `configure.sh` script:
 
@@ -214,14 +217,13 @@ The number of bits in a C `long` type. This is mostly for the embedded space.
 
 This `bc` uses `long`s internally for overflow checking. In C99, a `long` is
 required to be 32 bits. For this reason, on 8-bit and 16-bit microcontrollers,
-the generated code to do math with `long` types may be inefficient. Users may
-set this lower to improve the efficiency of the generated code for math.
+the generated code to do math with `long` types may be inefficient.
 
 For most normal desktop systems, setting this is unnecessary, except that 32-bit
 platforms with 64-bit longs may want to set it to `32`.
 
 Defaults to the default value of `LONG_BIT` for the target platform. For
-compliance with the `bc` spec, the minimum allowed value is `16`.
+compliance with the `bc` spec, the minimum allowed value is `32`.
 
 It is an error if the specified value is greater than the default value of
 `LONG_BIT` for the target platform.
@@ -443,6 +445,9 @@ respectively.
 
 ***WARNING***: If the option is given, the value of the corresponding
 environment variable is overridden.
+
+***WARNING***: If the command-line options are used, the long form of all other
+command-line options must be used.
 
 ## Optimization
 

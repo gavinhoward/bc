@@ -16,7 +16,7 @@ bc(1) is an interactive processor for a language first standardized in 1991 by P
 After parsing and handling options, this bc(1) reads any files given on the command line and executes them before reading from \fBstdin\fR\.
 .
 .P
-With all build options but extra math enabled this bc(1) is a drop\-in replacement for \fB\fIany\fR\fR bc(1), including (and especially) the GNU bc(1)\.
+With all build options, except for extra math, enabled this bc(1) is a drop\-in replacement for \fB\fIany\fR\fR bc(1), including (and especially) the GNU bc(1)\. It is also a drop\-in replacement for any bc(1) if extra math is enabled, but it will have extra features not found in other bc(1) implementations\.
 .
 .SH "OPTIONS"
 The following are the options that bc(1) accepts\.
@@ -26,7 +26,7 @@ The following are the options that bc(1) accepts\.
 Turns the globals \fBibase\fR, \fBobase\fR, and \fBscale\fR into stacks\.
 .
 .IP
-This has the effect that a copy of the current value of all three are pushed onto a stack for every function call, as well as popped when every function returns\. This means that functions can assign to any and all of those globals without worrying that the change will affect other functions\. Thus, \fBoutput(x,b)\fR (in the \fIextended library\fR) can be written like this:
+This has the effect that a copy of the current value of all three are pushed onto a stack for every function call, as well as popped when every function returns\. This means that functions can assign to any and all of those globals without worrying that the change will affect other functions\. Thus, \fBoutput(x,b)\fR (in the \fIextended library\fR) could have been written like this:
 .
 .IP
 \fBdefine void output(x, b) { obase=b; x }\fR
@@ -53,13 +53,13 @@ First, if a function is called on startup to turn bc(1) into a number converter,
 Second, if a function\'s purpose is to set \fBibase\fR, \fBobase\fR, or \fBscale\fR globally for any other purpose, it could be split into one to three functions (based on how many globals it sets) and each of those functions could return the desired value for a global\.
 .
 .IP
-If this behavior is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see ENVIRONMENT\-VARIABLES for more details)\.
+If this behavior is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see the ENVIRONMENT VARIABLES section for more details)\.
 .
 .IP
 If \fB\-s\fR, \fB\-w\fR, or any equivalents are used, this option is ignored\.
 .
 .IP
-This is an extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-h\fR, \fB\-\-help\fR
@@ -102,6 +102,9 @@ This is a \fBnon\-portable extension\fR\.
 .TP
 \fB\-v\fR, \fB\-V\fR, \fB\-\-version\fR
 Print the version information (copyright header) and exit\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-w\fR, \fB\-\-warn\fR
@@ -149,7 +152,10 @@ bc(1) has both \fBglobal\fR variables and \fBlocal\fR variables\. All \fBlocal\f
 All of the above applies to arrays as well\.
 .
 .P
-The value of a statement that is an expression (i\.e\., any of the \fINamed Expressions\fR or \fIOperands\fR) is printed unless the lowest precedence operator is an \fI\fBassignment\fR\fR operator \fB\fIand\fR\fR the expression is not surrounded by parentheses\. The value that is printed is also assigned to the special variable \fBlast\fR\. A single dot (\fB\.\fR) may also be used as a synonym for \fBlast\fR\. These are \fBnon\-portable extensions\fR\.
+The value of a statement that is an expression (i\.e\., any of the \fINamed Expressions\fR or \fIOperands\fR) is printed unless the lowest precedence operator is an \fI\fBassignment\fR\fR operator \fB\fIand\fR\fR the expression is not surrounded by parentheses\.
+.
+.P
+The value that is printed is also assigned to the special variable \fBlast\fR\. A single dot (\fB\.\fR) may also be used as a synonym for \fBlast\fR\. These are \fBnon\-portable extensions\fR\.
 .
 .P
 Either semicolons or newlines may separate statements\.
@@ -689,7 +695,7 @@ The return statement may also be in the following forms:
 .IP "" 0
 .
 .P
-The first two, or not specifying a \fBreturn\fR statement, is equivalent to \fBreturn (0)\fR, unless the function is a \fI\fBvoid\fR function\fR\.
+The first two, or not specifying a \fBreturn\fR statement, is equivalent to \fBreturn (0)\fR, unless the function is a \fIvoid function\fR\.
 .
 .P
  \fI\fR
@@ -1201,6 +1207,9 @@ First, any functions that are executing are stopped and popped off the stack\. T
 .
 .P
 Thus, when bc(1) resets, it skips any remaining code waiting to be executed\. Then, if it is interactive mode, and the error was not a fatal error (see the EXIT STATUS section), it asks for more input; otherwise, it exits with the appropriate return code\.
+.
+.P
+Note that this reset behavior is different from the GNU bc(1), which attempts to start executing the statement right after the one that caused an error\.
 .
 .SH "PERFORMANCE"
 Most bc(1) implementations use \fBchar\fR types to calculate the value of \fB1\fR decimal digit at a time, but that can be slow\. This bc(1) does something different\.

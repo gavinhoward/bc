@@ -46,12 +46,12 @@ The following are the options that dc(1) accepts.
   * `-i`, `--interactive`:
     Forces interactive mode.
 
-    Per the [bc standard][1], dc(1) has an interactive mode and a
-    non-interactive mode. The interactive mode is turned on automatically when
-    both `stdin` and `stdout` are hooked to a terminal, but this flag can turn
-    it on in other cases. In interactive mode, dc(1) attempts to recover from
-    errors (see the RESET section), and in normal execution, flushes `stdout` as
-    soon as execution is done for the current input.
+    dc(1) has an interactive mode and a non-interactive mode. The interactive
+    mode is turned on automatically when both `stdin` and `stdout` are hooked to
+    a terminal, but this flag can turn it on in other cases. In interactive
+    mode, dc(1) attempts to recover from errors (see the RESET section), and in
+    normal execution, flushes `stdout` as soon as execution is done for the
+    current input.
 
     This is a **non-portable extension**.
 

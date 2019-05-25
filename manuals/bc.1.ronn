@@ -19,8 +19,10 @@ Such differences will be noted in this document.
 After parsing and handling options, this bc(1) reads any files given on the
 command line and executes them before reading from `stdin`.
 
-With all build options but extra math enabled this bc(1) is a drop-in
-replacement for ***any*** bc(1), including (and especially) the GNU bc(1).
+With all build options, except for extra math, enabled this bc(1) is a drop-in
+replacement for ***any*** bc(1), including (and especially) the GNU bc(1). It is
+also a drop-in replacement for any bc(1) if extra math is enabled, but it will
+have extra features not found in other bc(1) implementations.
 
 OPTIONS
 -------
@@ -34,8 +36,8 @@ The following are the options that bc(1) accepts.
     onto a stack for every function call, as well as popped when every function
     returns. This means that functions can assign to any and all of those
     globals without worrying that the change will affect other functions.
-    Thus, `output(x,b)` (in the [extended library](#extended-library)) can be
-    written like this:
+    Thus, `output(x,b)` (in the [extended library](#extended-library)) could
+    have been written like this:
 
     `define void output(x, b) { obase=b; x }`
 
@@ -61,12 +63,12 @@ The following are the options that bc(1) accepts.
     could return the desired value for a global.
 
     If this behavior is desired for every run of bc(1), then users could make
-    sure to define `BC_ENV_ARGS` and include this option (see
-    ENVIRONMENT-VARIABLES for more details).
+    sure to define `BC_ENV_ARGS` and include this option (see the
+    ENVIRONMENT VARIABLES section for more details).
 
     If `-s`, `-w`, or any equivalents are used, this option is ignored.
 
-    This is an extension.
+    This is a **non-portable extension**.
 
   * `-h`, `--help`:
     Prints a usage message and quits.
@@ -106,6 +108,8 @@ The following are the options that bc(1) accepts.
 
   * `-v`, `-V`, `--version`:
     Print the version information (copyright header) and exit.
+
+    This is a **non-portable extension**.
 
   * `-w`, `--warn`:
     Like `-s` and `--standard`, except that warnings (and not errors) are given
@@ -182,9 +186,11 @@ The value of a statement that is an expression (i.e., any of the
 [Named Expressions](#bc-named-expressions) or [Operands](#bc-operands)) is
 printed unless the lowest precedence operator is an
 [`assignment`](#bc-assignment) operator ***and*** the expression is not
-surrounded by parentheses. The value that is printed is also assigned to the
-special variable `last`. A single dot (`.`) may also be used as a synonym for
-`last`. These are **non-portable extensions**.
+surrounded by parentheses.
+
+The value that is printed is also assigned to the special variable `last`. A
+single dot (`.`) may also be used as a synonym for `last`. These are
+**non-portable extensions**.
 
 Either semicolons or newlines may separate statements.
 
@@ -625,7 +631,7 @@ The return statement may also be in the following forms:
 3.	`return` `E`
 
 The first two, or not specifying a `return` statement, is equivalent to
-`return (0)`, unless the function is a [`void` function](#void-functions).
+`return (0)`, unless the function is a [void function](#void-functions).
 
 <a name="void-functions"/>
 
@@ -1062,6 +1068,9 @@ Thus, when bc(1) resets, it skips any remaining code waiting to be executed.
 Then, if it is interactive mode, and the error was not a fatal error (see the
 EXIT STATUS section), it asks for more input; otherwise, it exits with the
 appropriate return code.
+
+Note that this reset behavior is different from the GNU bc(1), which attempts to
+start executing the statement right after the one that caused an error.
 
 PERFORMANCE
 -----------

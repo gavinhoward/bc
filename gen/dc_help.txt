@@ -84,6 +84,10 @@ Options:
 
       Print this usage message and exit.
 
+  -i  --interactive
+
+      Put dc into interactive mode. See the man page for more details.
+
   -V  --version
 
       Print version and copyright and exit.

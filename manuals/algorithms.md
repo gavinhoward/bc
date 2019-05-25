@@ -40,7 +40,8 @@ reduces the problem size.
 
 While the implementation of long division may appear to use the subtractive
 chunking method, it only uses subtraction to find a quotient digit. It avoids
-unnecessary work by aligning digits prior to performing subtraction.
+unnecessary work by aligning digits prior to performing subtraction and finding
+a starting guess for the quotient.
 
 Subtraction was used instead of multiplication for two reasons:
 
