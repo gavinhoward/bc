@@ -2230,7 +2230,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		}
 #endif // BC_ENABLE_SIGNALS
 
-		digs = x1->len - (unsigned long long) llabs(cmp);
+		digs = x1->len - (size_t) labs(cmp);
 
 		if (cmp == cmp2 && digs == digs1) times += 1;
 		else times = 0;
