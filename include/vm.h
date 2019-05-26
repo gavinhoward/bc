@@ -101,7 +101,8 @@
 #define BC_FLAG_L (UINTMAX_C(1)<<4)
 #define BC_FLAG_I (UINTMAX_C(1)<<5)
 #define BC_FLAG_G (UINTMAX_C(1)<<6)
-#define BC_FLAG_TTYIN (UINTMAX_C(1)<<7)
+#define BC_FLAG_P (UINTMAX_C(1)<<7)
+#define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
 #define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
 #define BC_TTY (vm->tty)
 
@@ -111,6 +112,9 @@
 #define BC_I (vm->flags & BC_FLAG_I)
 #define BC_G (BC_ENABLED && (vm->flags & BC_FLAG_G))
 #define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
+#define BC_P (vm->flags & BC_FLAG_P)
+
+#define BC_USE_PROMPT (!BC_P && BC_TTY && !BC_S)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -167,7 +171,7 @@ typedef struct BcVm {
 	uchar siglen;
 #endif // BC_ENABLE_SIGNALS
 
-	uint8_t flags;
+	uint16_t flags;
 	uchar read_ret;
 	bool tty;
 

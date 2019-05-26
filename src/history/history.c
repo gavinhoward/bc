@@ -606,7 +606,7 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	bc_vec_string(&h->tmp, strlen(seq), seq);
 
 	// Write the prompt and the current buffer content, if desired.
-	if (BC_TTY && !BC_S) {
+	if (BC_USE_PROMPT) {
 		bc_vec_concat(&h->tmp, h->prompt);
 		bc_vec_concat(&h->tmp, buf);
 	}
@@ -1054,9 +1054,11 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	if (BC_ERR(s)) return s;
 
-	h->prompt = prompt;
-	h->plen = strlen(prompt);
-	h->pcol = bc_history_promptColLen(prompt, h->plen);
+	if (!BC_P) {
+		h->prompt = prompt;
+		h->plen = strlen(prompt);
+		h->pcol = bc_history_promptColLen(prompt, h->plen);
+	}
 
 	if (BC_TTY && !BC_S && BC_ERR(BC_HIST_BAD_WRITE(prompt, h->plen)))
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);

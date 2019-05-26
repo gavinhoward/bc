@@ -53,6 +53,7 @@ static const struct option bc_args_lopt[] = {
 	{ "file", required_argument, NULL, 'f' },
 	{ "help", no_argument, NULL, 'h' },
 	{ "interactive", no_argument, NULL, 'i' },
+	{ "no-prompt", no_argument, NULL, 'P' },
 #if BC_ENABLED
 	{ "global-stacks", no_argument, NULL, 'g' },
 	{ "mathlib", no_argument, NULL, 'l' },
@@ -69,11 +70,11 @@ static const struct option bc_args_lopt[] = {
 };
 
 #if !BC_ENABLED
-static const char* const bc_args_opt = "e:f:hivVx";
+static const char* const bc_args_opt = "e:f:hiPvVx";
 #elif !DC_ENABLED
-static const char* const bc_args_opt = "e:f:ghilqsvVw";
+static const char* const bc_args_opt = "e:f:ghilPqsvVw";
 #else // BC_ENABLED && DC_ENABLED
-static const char* const bc_args_opt = "e:f:ghilqsvVwx";
+static const char* const bc_args_opt = "e:f:ghilPqsvVwx";
 #endif // BC_ENABLED && DC_ENABLED
 
 static void bc_args_exprs(BcVec *exprs, const char *str) {
@@ -138,6 +139,12 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case 'i':
 			{
 				vm->flags |= BC_FLAG_I;
+				break;
+			}
+
+			case 'P':
+			{
+				vm->flags |= BC_FLAG_P;
 				break;
 			}
 
