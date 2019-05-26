@@ -135,4 +135,4 @@ fi
 
 diff "$res" "$out"
 
-rm -rf "$out"
+rm -f "$out"

@@ -117,4 +117,4 @@ fi
 
 diff "$results" "$out"
 
-rm -rf "$out"
+rm -f "$out"
