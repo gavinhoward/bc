@@ -1054,14 +1054,15 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	if (BC_ERR(s)) return s;
 
-	if (!BC_P) {
+	if (BC_USE_PROMPT) {
+
 		h->prompt = prompt;
 		h->plen = strlen(prompt);
 		h->pcol = bc_history_promptColLen(prompt, h->plen);
-	}
 
-	if (BC_TTY && !BC_S && BC_ERR(BC_HIST_BAD_WRITE(prompt, h->plen)))
-		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+		if (BC_ERR(BC_HIST_BAD_WRITE(prompt, h->plen)))
+			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	}
 
 	while (BC_NO_ERR(!s)) {
 
