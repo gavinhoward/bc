@@ -4,7 +4,7 @@ dc(1) -- arbitrary-precision reverse-Polish notation calculator
 SYNOPSIS
 --------
 
-`dc` [`-hivVx`] [`--version`] [`--help`] [`--interactive`]
+`dc` [`-hiPvVx`] [`--version`] [`--help`] [`--interactive`] [`--no-prompt`]
 [`--extended-register`] [`-e` *expr*] [`--expression=`*expr*...]
 [`-f` *file*...] [`-file=`*file*...] [*file*...]
 
@@ -52,6 +52,13 @@ The following are the options that dc(1) accepts.
     mode, dc(1) attempts to recover from errors (see the RESET section), and in
     normal execution, flushes `stdout` as soon as execution is done for the
     current input.
+
+    This is a **non-portable extension**.
+
+  * `-P`, `--no-prompt`:
+    Disables the prompt in interactive mode. This is mostly for those users that
+    do not want a prompt or are not used to having them in `dc`. Most of those
+    users would want to put this option in `DC_ENV_ARGS`.
 
     This is a **non-portable extension**.
 

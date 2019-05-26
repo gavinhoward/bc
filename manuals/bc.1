@@ -7,7 +7,7 @@
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
 .
 .SH "SYNOPSIS"
-\fBbc\fR [\fB\-ghilqsvVw\fR] [\fB\-\-global\-stacks\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-mathlib\fR] [\fB\-\-quiet\fR] [\fB\-\-standard\fR] [\fB\-\-warn\fR] [\fB\-\-version\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
+\fBbc\fR [\fB\-ghilPqsvVw\fR] [\fB\-\-global\-stacks\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-mathlib\fR] [\fB\-\-no\-prompt\fR] [\fB\-\-quiet\fR] [\fB\-\-standard\fR] [\fB\-\-warn\fR] [\fB\-\-version\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
 .
 .SH "DESCRIPTION"
 bc(1) is an interactive processor for a language first standardized in 1991 by POSIX\. (The current standard is here \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR\.) The language provides unlimited precision decimal arithmetic and is somewhat C\-like, but there are differences\. Such differences will be noted in this document\.
@@ -81,6 +81,13 @@ Sets \fBscale\fR (see the Scale section) to \fB20\fR and loads the included math
 .
 .IP
 To learn what is in the library, see the LIBRARY section\.
+.
+.TP
+\fB\-P\fR, \fB\-\-no\-prompt\fR
+Disables the prompt in interactive mode\. This is mostly for those users that do not want a prompt or are not used to having them in \fBbc\fR\. Most of those users would want to put this option in \fBBC_ENV_ARGS\fR\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-q\fR, \fB\-\-quiet\fR

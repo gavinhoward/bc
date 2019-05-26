@@ -88,6 +88,10 @@ Options:
 
       Put dc into interactive mode. See the man page for more details.
 
+  -P  --no-prompt
+
+      Disable the prompt in interactive mode.
+
   -V  --version
 
       Print version and copyright and exit.

@@ -7,7 +7,7 @@
 \fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
 .
 .SH "SYNOPSIS"
-\fBdc\fR [\fB\-hivVx\fR] [\fB\-\-version\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-extended\-register\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
+\fBdc\fR [\fB\-hiPvVx\fR] [\fB\-\-version\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-no\-prompt\fR] [\fB\-\-extended\-register\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
 .
 .SH "DESCRIPTION"
 dc(1) is an arbitrary\-precision calculator\. It uses a stack (reverse Polish notation) to store numbers and results of computations\. Arithmetic operations pop arguments off of the stack and push the results\.
@@ -38,6 +38,13 @@ Forces interactive mode\.
 .
 .IP
 dc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, dc(1) attempts to recover from errors (see the RESET section), and in normal execution, flushes \fBstdout\fR as soon as execution is done for the current input\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
+.
+.TP
+\fB\-P\fR, \fB\-\-no\-prompt\fR
+Disables the prompt in interactive mode\. This is mostly for those users that do not want a prompt or are not used to having them in \fBdc\fR\. Most of those users would want to put this option in \fBDC_ENV_ARGS\fR\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.

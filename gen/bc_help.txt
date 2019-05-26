@@ -94,6 +94,10 @@ Options:
           e(expr)  =  raises e to the power of expr
           j(n, x)  =  Bessel function of integer order n of x
 
+  -P  --no-prompt
+
+      Disable the prompt in interactive mode.
+
   -q  --quiet
 
       Don't print version and copyright.
