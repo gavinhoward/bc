@@ -439,7 +439,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_init(&buf, sizeof(char), NULL);
 
-	s = bc_read_line(&buf, "read> ");
+	s = bc_read_line(&buf, BC_IS_BC ? "read> " : "?> ");
 	if (BC_ERR(s)) {
 		if (s == BC_STATUS_EOF) s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 		goto io_err;
