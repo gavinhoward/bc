@@ -75,6 +75,8 @@ static void bc_vm_sig(int sig) {
 			_Exit(BC_STATUS_ERROR_FATAL);
 
 		vm->sig += 1;
+
+		if (vm->sig == BC_SIGTERM_VAL) vm->sig = 1;
 	}
 	else vm->sig = BC_SIGTERM_VAL;
 
@@ -86,6 +88,7 @@ static BOOL WINAPI bc_vm_sig(DWORD sig) {
 	if (sig == CTRL_C_EVENT) {
 		bc_vm_puts(vm->sigmsg, stderr);
 		vm->sig += 1;
+		if (vm->sig == BC_SIGTERM_VAL) vm->sig = 1;
 	}
 	else vm->sig = BC_SIGTERM_VAL;
 
