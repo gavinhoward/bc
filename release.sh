@@ -512,7 +512,7 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
 		printf '\n'
-		printf '    <github_release> %s <msg> .travis.yml codecov.yml release.sh \\\n' "$version"
+		printf '    <github_release> %s .travis.yml codecov.yml release.sh \\\n' "$version"
 		printf '    RELEASE.md tests/afl.py tests/randmath.py tests/bc/scripts/timeconst.bc\n'
 
 	fi
