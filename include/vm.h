@@ -136,7 +136,7 @@
 #define BC_SIG BC_UNLIKELY(vm->sig != vm->sig_chk)
 #define BC_NO_SIG BC_LIKELY(vm->sig == vm->sig_chk)
 
-#define BC_SIGTERM_VAL ((sig_atomic_t) -1)
+#define BC_SIGTERM_VAL (SIG_ATOMIC_MAX)
 #define BC_SIGTERM (vm->sig == BC_SIGTERM_VAL)
 #define BC_SIGINT (vm->sig && vm->sig != BC_SIGTERM_VAL)
 
