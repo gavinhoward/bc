@@ -1066,7 +1066,6 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len;
 	BcNum cpa, cpb;
-	bool zero = true;
 
 	if (BC_NUM_ZERO(b)) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
@@ -1102,16 +1101,10 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_extend(&cpa, b->scale);
 	cpa.rdx -= BC_NUM_RDX(b->scale);
 	cpa.scale = cpa.rdx * BC_BASE_DIGS;
+
 	if (scale > cpa.scale) {
 		bc_num_extend(&cpa, scale);
 		cpa.scale = cpa.rdx * BC_BASE_DIGS;
-	}
-
-	if (b->rdx == b->len) {
-		size_t i;
-		for (i = 0; zero && i < len; ++i) zero = !b->num[len - i - 1];
-		assert(i != len || !zero);
-		len -= i - 1;
 	}
 
 	if (cpa.cap == cpa.len) bc_num_expand(&cpa, bc_vm_growSize(cpa.len, 1));
@@ -1755,7 +1748,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	BcStatus s;
 	BcVec stack;
 	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
-	BcBigDig dig, *ptr, acc, exp;
+	BcBigDig dig = 0, *ptr, acc, exp;
 	size_t i, j;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
@@ -1766,6 +1759,39 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		print(0, len, false);
 		return BC_STATUS_SUCCESS;
 	}
+
+	// This function uses an algorithm that Stefan Esser <se@freebsd.org> came
+	// up with to print the integer part of a number. What it does is convert
+	// intp into a number of the specified base, but it does it directly,
+	// instead of just doing a series of divisions and printing the remainders
+	// in reverse order.
+	//
+	// Let me explain in a bit more detail:
+	//
+	// The algorithm takes the current least significant digit (after intp has
+	// been converted to an integer) and the next to least significant digit,
+	// and it converts the least significant digit into one of the specified
+	// base, putting any overflow into the next to least significant digit. It
+	// iterates through the whole number, from least significant to most
+	// significant, doing this conversion. At the end of that iteration, the
+	// least significant digit is converted, but the others are not, so it
+	// iterates again, starting at the next to least significant digit. It keeps
+	// doing that conversion, skipping one more digit than the last time, until
+	// all digits have been converted. Then it prints them in reverse order.
+	//
+	// That is the gist of the algorithm. It leaves out several things, such as
+	// the fact that digits are not always converted into the specified base,
+	// but into something close, basically a power of the specified base. In
+	// Stefan's words, "You could consider BcDigs to be of base 10^BC_BASE_DIGS
+	// in the normal case and obase^N for the largest value of N that satisfies
+	// obase^N <= 10^BC_BASE_DIGS. [This means that] the result is not in base
+	// "obase", but in base "obase^N", which happens to be printable as a number
+	// of base "obase" without consideration for neighbouring BcDigs." This fact
+	// is what necessitates the existence of the loop later in this function.
+	//
+	// The conversion happens in bc_num_printPrepare() where the
+	// outer loop happens and bc_num_printFixup() where the inner loop, or
+	// actual conversion, happens.)
 
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
@@ -2095,60 +2121,8 @@ size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
 
 #if BC_ENABLE_EXTRA_MATH
 size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
-
-	BcStatus s;
-	BcBigDig places = 0;
-	size_t rdx;
-
-	BC_UNUSED(s);
 	BC_UNUSED(scale);
-
-	// This error will be taken care of later. Ignore.
-	s = bc_num_bigdig(b, &places);
-
-	if (a->scale <= places) rdx = BC_NUM_RDX(places);
-	else rdx = BC_NUM_RDX(a->scale - places);
-
-	return BC_NUM_RDX(bc_num_intDigits(a)) + rdx;
-}
-
-size_t bc_num_shiftLeftReq(BcNum *a, BcNum *b, size_t scale) {
-
-	BcStatus s;
-	BcBigDig places = 0;
-	size_t rdx;
-
-	BC_UNUSED(s);
-	BC_UNUSED(scale);
-
-	// This error will be taken care of later. Ignore.
-	s = bc_num_bigdig(b, &places);
-
-	if (a->scale <= places) rdx = BC_NUM_RDX(places) - a->rdx + 1;
-	else rdx = 0;
-
-	return a->len + rdx;
-}
-
-size_t bc_num_shiftRightReq(BcNum *a, BcNum *b, size_t scale) {
-
-	BcStatus s;
-	BcBigDig places = 0;
-	size_t int_digs, rdx;
-
-	BC_UNUSED(s);
-	BC_UNUSED(scale);
-
-	// This error will be taken care of later. Ignore.
-	s = bc_num_bigdig(b, &places);
-
-	int_digs = BC_NUM_RDX(bc_num_intDigits(a));
-	rdx = BC_NUM_RDX(places);
-
-	if (int_digs <= rdx) rdx -= int_digs;
-	else rdx = 0;
-
-	return a->len + rdx;
+	return a->len + b->len - a->rdx - b->rdx;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -2188,12 +2162,12 @@ BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 }
 
 BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	size_t req = bc_num_shiftLeftReq(a, b, scale);
+	size_t req = bc_num_placesReq(a, b, scale);
 	return bc_num_binary(a, b, c, scale, bc_num_left, req);
 }
 
 BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	size_t req = bc_num_shiftRightReq(a, b, scale);
+	size_t req = bc_num_placesReq(a, b, scale);
 	return bc_num_binary(a, b, c, scale, bc_num_right, req);
 }
 #endif // BC_ENABLE_EXTRA_MATH
@@ -2285,7 +2259,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		}
 #endif // BC_ENABLE_SIGNALS
 
-		digs = x1->len - (unsigned long long) llabs(cmp);
+		digs = x1->len - (size_t) labs(cmp);
 
 		if (cmp == cmp2 && digs == digs1) times += 1;
 		else times = 0;
@@ -2462,7 +2436,7 @@ void bc_num_printWithDigs(const BcNum *n, const char *name, bool emptyline) {
 
 void bc_num_dump(const char *varname, const BcNum *n) {
 
-	unsigned long i, scale = n->scale;
+	ulong i, scale = n->scale;
 
 	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
 
@@ -2479,11 +2453,11 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 			BcDig div;
 
 			if (mod != 0) {
-				div = n->num[i] / ((BcDig) bc_num_pow10[(unsigned long) d]);
+				div = n->num[i] / ((BcDig) bc_num_pow10[(ulong) d]);
 				fprintf(stderr, "%0*d", (int) mod, div);
 			}
 
-			div = n->num[i] % ((BcDig) bc_num_pow10[(unsigned long) d]);
+			div = n->num[i] % ((BcDig) bc_num_pow10[(ulong) d]);
 			fprintf(stderr, " ' %0*d ", d, div);
 		}
 	}

@@ -77,4 +77,5 @@ for i in $(seq 0 1000); do
 
 done
 
-rm -rf "$out1" "$out2"
+rm -f "$out1"
+rm -f "$out2"

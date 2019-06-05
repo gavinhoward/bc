@@ -101,42 +101,44 @@
 #define BC_FLAG_L (UINTMAX_C(1)<<4)
 #define BC_FLAG_I (UINTMAX_C(1)<<5)
 #define BC_FLAG_G (UINTMAX_C(1)<<6)
-#define BC_FLAG_TTYIN (UINTMAX_C(1)<<7)
+#define BC_FLAG_P (UINTMAX_C(1)<<7)
+#define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
 #define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
+#define BC_TTY (vm->tty)
 
 #define BC_S (BC_ENABLED && (vm->flags & BC_FLAG_S))
 #define BC_W (BC_ENABLED && (vm->flags & BC_FLAG_W))
 #define BC_L (BC_ENABLED && (vm->flags & BC_FLAG_L))
-#define BC_I (BC_ENABLED && (vm->flags & BC_FLAG_I))
+#define BC_I (vm->flags & BC_FLAG_I)
 #define BC_G (BC_ENABLED && (vm->flags & BC_FLAG_G))
 #define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
+#define BC_P (vm->flags & BC_FLAG_P)
+
+#define BC_USE_PROMPT (!BC_P && BC_TTY && !BC_S)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define BC_MAX_OBASE ((unsigned long) (BC_BASE_POW))
-#define BC_MAX_DIM ((unsigned long) (SIZE_MAX / sizeof(BcNum) - 1))
-#define BC_MAX_SCALE ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
-#define BC_MAX_STRING ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
+#define BC_MAX_OBASE ((ulong) (BC_BASE_POW))
+#define BC_MAX_DIM ((ulong) (SIZE_MAX - 1))
+#define BC_MAX_SCALE ((ulong) (BC_NUM_BIGDIG_MAX - 1))
+#define BC_MAX_STRING ((ulong) (BC_NUM_BIGDIG_MAX - 1))
 #define BC_MAX_NAME BC_MAX_STRING
 #define BC_MAX_NUM BC_MAX_SCALE
-#define BC_MAX_EXP ((unsigned long) (BC_NUM_BIGDIG_MAX - 1))
-#define BC_MAX_VARS ((unsigned long) (SIZE_MAX / sizeof(BcId) - 1))
+#define BC_MAX_EXP ((ulong) (BC_NUM_BIGDIG_MAX))
+#define BC_MAX_VARS ((ulong) (SIZE_MAX - 1))
 
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm->name[0] != 'd'))
 #define BC_IS_POSIX (BC_S || BC_W)
 
 #if BC_ENABLE_SIGNALS
 
-#define BC_SIG BC_UNLIKELY(vm->sig)
-#define BC_NO_SIG BC_LIKELY(!vm->sig)
-#define BC_SIGINT (vm->sig == SIGINT)
+#define BC_SIG BC_UNLIKELY(vm->sig != vm->sig_chk)
+#define BC_NO_SIG BC_LIKELY(vm->sig == vm->sig_chk)
 
-#ifdef SIGQUIT
-#define BC_SIGTERM (vm->sig == SIGTERM || vm->sig == SIGQUIT)
-#else // SIGQUIT
-#define BC_SIGTERM (vm->sig == SIGTERM)
-#endif // SIGQUIT
+#define BC_SIGTERM_VAL (SIG_ATOMIC_MAX)
+#define BC_SIGTERM (vm->sig == BC_SIGTERM_VAL)
+#define BC_SIGINT (vm->sig && vm->sig != BC_SIGTERM_VAL)
 
 #else // BC_ENABLE_SIGNALS
 #define BC_SIG (0)
@@ -148,8 +150,10 @@
 
 #define BC_IO_ERR(e, f) (BC_ERR((e) == EOF || ferror(f)))
 #define BC_STATUS_IS_ERROR(s) \
-	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_PARSE)
+	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
 #define BC_ERROR_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && BC_ERR(s))
+
+#define BC_VM_INVALID_CATALOG ((nl_catd) -1)
 
 typedef struct BcVm {
 
@@ -162,12 +166,14 @@ typedef struct BcVm {
 
 #if BC_ENABLE_SIGNALS
 	const char *sigmsg;
+	volatile sig_atomic_t sig;
+	sig_atomic_t sig_chk;
 	uchar siglen;
-	uchar sig;
 #endif // BC_ENABLE_SIGNALS
 
-	uint8_t flags;
+	uint16_t flags;
 	uchar read_ret;
+	bool tty;
 
 	uint16_t line_len;
 
@@ -178,8 +184,6 @@ typedef struct BcVm {
 
 	const char *name;
 	const char *help;
-
-	char *env_args;
 
 #if BC_ENABLE_HISTORY
 	BcHistory history;
@@ -212,7 +216,8 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...);
 #endif // BC_ENABLED
 
 void bc_vm_info(const char* const help);
-BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len);
+BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
+                    const char* const env_args);
 void bc_vm_shutdown(void);
 
 size_t bc_vm_printf(const char *fmt, ...);

@@ -7,7 +7,7 @@
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
 .
 .SH "SYNOPSIS"
-\fBbc\fR [\fB\-ghilqsvVw\fR] [\fB\-\-global\-stacks\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-mathlib\fR] [\fB\-\-quiet\fR] [\fB\-\-standard\fR] [\fB\-\-warn\fR] [\fB\-\-version\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
+\fBbc\fR [\fB\-ghilPqsvVw\fR] [\fB\-\-global\-stacks\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-mathlib\fR] [\fB\-\-no\-prompt\fR] [\fB\-\-quiet\fR] [\fB\-\-standard\fR] [\fB\-\-warn\fR] [\fB\-\-version\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
 .
 .SH "DESCRIPTION"
 bc(1) is an interactive processor for a language first standardized in 1991 by POSIX\. (The current standard is here \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR\.) The language provides unlimited precision decimal arithmetic and is somewhat C\-like, but there are differences\. Such differences will be noted in this document\.
@@ -16,7 +16,7 @@ bc(1) is an interactive processor for a language first standardized in 1991 by P
 After parsing and handling options, this bc(1) reads any files given on the command line and executes them before reading from \fBstdin\fR\.
 .
 .P
-With all build options but extra math enabled this bc(1) is a drop\-in replacement for \fB\fIany\fR\fR bc(1), including (and especially) the GNU bc(1)\.
+With all build options, except for extra math, enabled this bc(1) is a drop\-in replacement for \fB\fIany\fR\fR bc(1), including (and especially) the GNU bc(1)\. It is also a drop\-in replacement for any bc(1) if extra math is enabled, but it will have extra features not found in other bc(1) implementations\.
 .
 .SH "OPTIONS"
 The following are the options that bc(1) accepts\.
@@ -26,7 +26,7 @@ The following are the options that bc(1) accepts\.
 Turns the globals \fBibase\fR, \fBobase\fR, and \fBscale\fR into stacks\.
 .
 .IP
-This has the effect that a copy of the current value of all three are pushed onto a stack for every function call, as well as popped when every function returns\. This means that functions can assign to any and all of those globals without worrying that the change will affect other functions\. Thus, \fBoutput(x,b)\fR (in the \fIextended library\fR) can be written like this:
+This has the effect that a copy of the current value of all three are pushed onto a stack for every function call, as well as popped when every function returns\. This means that functions can assign to any and all of those globals without worrying that the change will affect other functions\. Thus, \fBoutput(x,b)\fR (in the \fIextended library\fR) could have been written like this:
 .
 .IP
 \fBdefine void output(x, b) { obase=b; x }\fR
@@ -53,13 +53,13 @@ First, if a function is called on startup to turn bc(1) into a number converter,
 Second, if a function\'s purpose is to set \fBibase\fR, \fBobase\fR, or \fBscale\fR globally for any other purpose, it could be split into one to three functions (based on how many globals it sets) and each of those functions could return the desired value for a global\.
 .
 .IP
-If this behavior is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see \fIEnvironment Variables\fR for more details)\.
+If this behavior is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see the ENVIRONMENT VARIABLES section for more details)\.
 .
 .IP
 If \fB\-s\fR, \fB\-w\fR, or any equivalents are used, this option is ignored\.
 .
 .IP
-This is an extension\.
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-h\fR, \fB\-\-help\fR
@@ -70,7 +70,7 @@ Prints a usage message and quits\.
 Forces interactive mode\.
 .
 .IP
-Per the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, bc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, bc(1) attempts to recover from errors and flushes \fBstdout\fR as soon as execution is done for the current input\.
+Per the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, bc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, bc(1) attempts to recover from errors (see the RESET section), and in normal execution, flushes \fBstdout\fR as soon as execution is done for the current input\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -80,7 +80,14 @@ This is a \fBnon\-portable extension\fR\.
 Sets \fBscale\fR (see the Scale section) to \fB20\fR and loads the included math library before running any code, including any expressions or files specified on the command line\.
 .
 .IP
-To learn what is in the library, see the \fILibrary\fR section\.
+To learn what is in the library, see the LIBRARY section\.
+.
+.TP
+\fB\-P\fR, \fB\-\-no\-prompt\fR
+Disables the prompt in interactive mode\. This is mostly for those users that do not want a prompt or are not used to having them in \fBbc\fR\. Most of those users would want to put this option in \fBBC_ENV_ARGS\fR\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-q\fR, \fB\-\-quiet\fR
@@ -102,6 +109,9 @@ This is a \fBnon\-portable extension\fR\.
 .TP
 \fB\-v\fR, \fB\-V\fR, \fB\-\-version\fR
 Print the version information (copyright header) and exit\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-w\fR, \fB\-\-warn\fR
@@ -128,28 +138,31 @@ This is a \fBnon\-portable extension\fR\.
 The syntax for bc(1) programs is mostly C\-like, with some differences\. This bc(1) follows the POSIX standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, which is a much more thorough resource for the language this bc(1) accepts\. This section is meant to be a summary and a listing of all the extensions to the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR\.
 .
 .P
-In the sections below, \fBE\fR means expression, \fBS\fR means statement, and \fBI\fR means identifier
+In the sections below, \fBE\fR means expression, \fBS\fR means statement, and \fBI\fR means identifier\.
 .
 .P
 Identifiers (\fBI\fR) start with a lowercase letter and can be followed by any number (up to \fBBC_NAME_MAX\-1\fR) of lowercase letters (\fBa\-z\fR), digits (\fB0\-9\fR), and underscores (\fB_\fR)\. The regex is \fB[a\-z][a\-z0\-9_]*\fR Identifiers with more than one character (letter) are a \fBnon\-portable extension\fR\.
 .
 .P
-\fBibase\fR is a global variable determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\. If the \fB\-s\fR (\fB\-\-standard\fR) and \fB\-w\fR (\fB\-\-warn\fR) flags were not given on the command line, the max allowable value for \fBibase\fR is \fB36\fR\. Otherwise, it is \fB16\fR\. The min allowable value for \fBibase\fR is \fB2\fR\.
+\fBibase\fR is a global variable determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\. If the \fB\-s\fR (\fB\-\-standard\fR) and \fB\-w\fR (\fB\-\-warn\fR) flags were not given on the command line, the max allowable value for \fBibase\fR is \fB36\fR\. Otherwise, it is \fB16\fR\. The min allowable value for \fBibase\fR is \fB2\fR\. The max allowable value for \fBibase\fR can be queried in bc(1) programs with the \fBmaxibase()\fR built in function\.
 .
 .P
-\fBobase\fR is a global variable determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\. The max allowable value for \fBobase\fR is \fBBC_BASE_MAX\fR\. The min allowable value for \fBobase\fR is \fB2\fR\.
+\fBobase\fR is a global variable determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\. The max allowable value for \fBobase\fR is \fBBC_BASE_MAX\fR\. The min allowable value for \fBobase\fR is \fB2\fR, unless bc(1) was built with the extra math option\. If it was, then the min allowable value is \fB0\fR\. In this case, if \fBobase\fR is \fB0\fR, values are output in scientific notation, and if \fBobase\fR is \fB1\fR, values are output in engineering notation\. (Outputting in scientific or engineering notation are \fBnon\-portable extensions\fR\.) The max allowable value for \fBobase\fR can be queried in bc(1) programs with the \fBmaxobase()\fR built in function\.
 .
 .P
-The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a global variable that sets the precision of any operations, with exceptions\. \fBscale\fR is initially \fB0\fR\. \fBscale\fR cannot be negative\.
+The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a global variable that sets the precision of any operations, with exceptions\. \fBscale\fR is initially \fB0\fR\. \fBscale\fR cannot be negative\. The max allowable value for \fBscale\fR can be queried in bc(1) programs with the \fBmaxscale()\fR built in function\.
 .
 .P
-bc(1) has both \fBglobal\fR variables and \fBlocal\fR variables\. All \fBlocal\fR variables are local to the function; they are parameters or are introduced in a function\'s \fBauto\fR list (see \fIFunctions\fR)\. If a variable is accessed which is not a parameter or in the \fBauto\fR list, it is assumed to be \fBglobal\fR\. If a parent function has a \fBlocal\fR variable version of a \fBglobal\fR variable that is accessed by a function that it calls, the value of that \fBglobal\fR variable in the child function is the value of the variable in the parent function, not the value of the actual \fBglobal\fR variable\.
+bc(1) has both \fBglobal\fR variables and \fBlocal\fR variables\. All \fBlocal\fR variables are local to the function; they are parameters or are introduced in a function\'s \fBauto\fR list (see FUNCTIONS)\. If a variable is accessed which is not a parameter or in the \fBauto\fR list, it is assumed to be \fBglobal\fR\. If a parent function has a \fBlocal\fR variable version of a \fBglobal\fR variable that is accessed by a function that it calls, the value of that \fBglobal\fR variable in the child function is the value of the variable in the parent function, not the value of the actual \fBglobal\fR variable\.
 .
 .P
 All of the above applies to arrays as well\.
 .
 .P
-The value of a statement that is an expression (i\.e\., any of the \fINamed Expressions\fR or \fIOperands\fR) is printed unless the lowest precedence operator is an \fI\fBassignment\fR\fR operator \fB\fIand\fR\fR the expression is not surrounded by parentheses\. The value that is printed is also assigned to the special variable \fBlast\fR\. A single dot may also be used as a synonym for \fBlast\fR\. These are \fBnon\-portable extensions\fR\.
+The value of a statement that is an expression (i\.e\., any of the \fINamed Expressions\fR or \fIOperands\fR) is printed unless the lowest precedence operator is an \fI\fBassignment\fR\fR operator \fB\fIand\fR\fR the expression is not surrounded by parentheses\.
+.
+.P
+The value that is printed is also assigned to the special variable \fBlast\fR\. A single dot (\fB\.\fR) may also be used as a synonym for \fBlast\fR\. These are \fBnon\-portable extensions\fR\.
 .
 .P
 Either semicolons or newlines may separate statements\.
@@ -191,7 +204,7 @@ Array Elements: \fBI[E]\fR
 .IP "" 0
 .
 .P
-Variables and arrays do not interfere; users can have arrays named the same as variables\. This also applies to \fIfunctions\fR, so a user can have a variable, array, and function that all have the same name\.
+Variables and arrays do not interfere; users can have arrays named the same as variables\. This also applies to functions (see the FUNCTIONS section), so a user can have a variable, array, and function that all have the same name\.
 .
 .P
 Named expressions are required as the operand of \fI\fBincrement\fR/\fBdecrement\fR operators\fR and as the left side of \fI\fBassignment\fR operators\fR\.
@@ -205,33 +218,36 @@ Named expressions are required as the operand of \fI\fBincrement\fR/\fBdecrement
 Numbers (see \fINumbers\fR below)\.
 .
 .IP "2." 4
-\fB(E)\fR: The value of \fBE\fR (used to change precedence)\.
+Array indices (\fBI[E]\fR)\.
 .
 .IP "3." 4
-\fBsqrt(E)\fR: The square root of \fBE\fR\.
+\fB(E)\fR: The value of \fBE\fR (used to change precedence)\.
 .
 .IP "4." 4
-\fBlength(E)\fR: The number of significant decimal digits in \fBE\fR\.
+\fBsqrt(E)\fR: The square root of \fBE\fR\.
 .
 .IP "5." 4
-\fBlength(I[])\fR: The number of elements in the array \fBI\fR\. This is a \fBnon\-portable extension\fR\.
+\fBlength(E)\fR: The number of significant decimal digits in \fBE\fR\.
 .
 .IP "6." 4
-\fBscale(E)\fR: \fBE\fR\'s \fBscale\fR\.
+\fBlength(I[])\fR: The number of elements in the array \fBI\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "7." 4
-\fBabs(E)\fR: The absolute value of \fBE\fR\. This is a \fBnon\-portable extension\fR\.
+\fBscale(E)\fR: \fBE\fR\'s \fBscale\fR\.
 .
 .IP "8." 4
-\fBread()\fR: Reads a line from \fBstdin\fR and uses that as an expression\. The result of that expression is the result of the \fBread()\fR operand\. This is a \fBnon\-portable extension\fR\.
+\fBabs(E)\fR: The absolute value of \fBE\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "9." 4
-\fBmaxibase()\fR: The max allowable \fBibase\fR\. This is a \fBnon\-portable extension\fR\.
+\fBread()\fR: Reads a line from \fBstdin\fR and uses that as an expression\. The result of that expression is the result of the \fBread()\fR operand\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "10." 4
-\fBmaxobase()\fR: The max allowable \fBobase\fR\. This is a \fBnon\-portable extension\fR\.
+\fBmaxibase()\fR: The max allowable \fBibase\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "11." 4
+\fBmaxobase()\fR: The max allowable \fBobase\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "12." 4
 \fBmaxscale()\fR: The max allowable \fBscale\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "" 0
@@ -255,7 +271,7 @@ Using scientific notation is an error or warning if the \fB\-s\fR or \fB\-w\fR, 
 \fBWARNING\fR: Both the number and the exponent in scientific notation are interpreted according to the current \fBibase\fR, but the number is still multiplied by \fB10^exponent\fR regardless of the current \fBibase\fR\. For example, if \fBibase\fR is \fB16\fR and bc(1) is given the number string \fB"FFeA"\fR, the resulting decimal number will be \fB2550000000000\fR, and if bc(1) is given the number string \fB"10e\-4"\fR, the resulting decimal number will be \fB0\.0016\fR\.
 .
 .P
-Scientific notation is a \fBnon\-portable extension\fR\.
+Accepting input as scientific notation is a \fBnon\-portable extension\fR\.
 .
 .SS "Operators"
 The following arithmetic and logical operators can be used\. They are listed in order of decreasing precedence\. Operators in the same group have the same precedence\.
@@ -686,7 +702,7 @@ The return statement may also be in the following forms:
 .IP "" 0
 .
 .P
-The first two, or not specifying a \fBreturn\fR statement, is equivalent to \fBreturn (0)\fR\.
+The first two, or not specifying a \fBreturn\fR statement, is equivalent to \fBreturn (0)\fR, unless the function is a \fIvoid function\fR\.
 .
 .P
  \fI\fR
@@ -734,7 +750,7 @@ For any array in the parameter list, if the array is declared in the form
 .IP "" 0
 .
 .P
-it is a \fBreference\fR\. Any changes to the array in the function are reflected when the function returns to the array that was passed in\.
+it is a \fBreference\fR\. Any changes to the array in the function are reflected, when the function returns, to the array that was passed in\.
 .
 .P
 Other than this, all function arguments are passed by value\.
@@ -861,6 +877,16 @@ Returns the tangent of \fBx\fR, which is assumed to be in radians\.
 This is a \fItranscendental function\fR\.
 .
 .TP
+\fBa2(y, x)\fR
+Returns the arctangent of \fBy/x\fR, in radians\. If both \fBy\fR and \fBx\fR are equal to \fB0\fR, it raises an error and causes bc(1) to reset (see the RESET section)\. Otherwise, if \fBx\fR is greater than \fB0\fR, it returns \fBa(y/x)\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is greater than or equal to \fB0\fR, it returns \fBa(y/x) + pi\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fBa(y/x) \- pi\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is greater than \fB0\fR, it returns \fBpi/2\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fB\-pi/2\fR\.
+.
+.IP
+This function is the same as the \fBatan2()\fR function in many programming languages\.
+.
+.IP
+This is a \fItranscendental function\fR\.
+.
+.TP
 \fBsin(x)\fR
 Returns the sine of \fBx\fR, which is assumed to be in radians\.
 .
@@ -901,6 +927,19 @@ This is an alias of \fBa(x)\fR\.
 This is a \fItranscendental function\fR\.
 .
 .TP
+\fBatan2(y, x)\fR
+Returns the arctangent of \fBy/x\fR, in radians\. If both \fBy\fR and \fBx\fR are equal to \fB0\fR, it raises an error and causes bc(1) to reset (see the RESET section)\. Otherwise, if \fBx\fR is greater than \fB0\fR, it returns \fBa(y/x)\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is greater than or equal to \fB0\fR, it returns \fBa(y/x) + pi\fR\. If \fBx\fR is less than \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fBa(y/x) \- pi\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is greater than \fB0\fR, it returns \fBpi/2\fR\. If \fBx\fR is equal to \fB0\fR, and \fBy\fR is less than \fB0\fR, it returns \fB\-pi/2\fR\.
+.
+.IP
+This function is the same as the \fBatan2()\fR function in many programming languages\.
+.
+.IP
+This is an alias of \fBa2(y, x)\fR\.
+.
+.IP
+This is a \fItranscendental function\fR\.
+.
+.TP
 \fBr2d(x)\fR
 Converts \fBx\fR from radians to degrees and returns the result\.
 .
@@ -908,7 +947,7 @@ Converts \fBx\fR from radians to degrees and returns the result\.
 This is a \fItranscendental function\fR\.
 .
 .TP
-\fBr2d(x)\fR
+\fBd2r(x)\fR
 Converts \fBx\fR from degrees to radians and returns the result\.
 .
 .IP
@@ -927,169 +966,169 @@ Returns the numbers of signed, two\'s\-complement integer bytes required to hold
 Outputs the hexadecimal (base \fB16\fR) representation of \fBx\fR\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBbinary(x)\fR
 Outputs the binary (base \fB2\fR) representation of \fBx\fR\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBoutput(x, b)\fR
 Outputs the base \fBb\fR representation of \fBx\fR\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBuint(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in as few power of two bytes as possible\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or is negative, an error message is printed instead\.
+If \fBx\fR is not an integer or is negative, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBint(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in as few power of two bytes as possible\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, an error message is printed instead\.
+If \fBx\fR is not an integer, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBuintn(x, n)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fBn\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fBn\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fBn\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBintn(x, n)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fBn\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fBn\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fBn\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBuint8(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB1\fR byte\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB1\fR byte, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB1\fR byte, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBint8(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB1\fR byte\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB1\fR byte, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB1\fR byte, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBuint16(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB2\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB2\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB2\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBint16(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB2\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB2\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB2\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBuint32(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB4\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB4\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB4\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBint32(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB4\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB4\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB4\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBuint64(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as an unsigned integer in \fB8\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer, is negative, or cannot fit into \fB8\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer, is negative, or cannot fit into \fB8\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBint64(x)\fR
 Outputs the representation, in binary and hexadecimal, of \fBx\fR as a signed, two\'s\-complement integer in \fB8\fR bytes\. Both outputs are split into bytes separated by spaces\.
 .
 .IP
-If \fBx\fR is not an integer or cannot fit into \fB8\fR bytes, an error message is printed instead\.
+If \fBx\fR is not an integer or cannot fit into \fB8\fR bytes, an error message is printed instead, but bc(1) is not reset (see the RESET section)\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBhex_uint(x, n)\fR
 Outputs the representation of the truncated absolute value of \fBx\fR as an unsigned integer in hexadecimal using \fBn\fR bytes\. Not all of the value will be output if \fBn\fR is too small\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBbinary_uint(x, n)\fR
 Outputs the representation of the truncated absolute value of \fBx\fR as an unsigned integer in binary using \fBn\fR bytes\. Not all of the value will be output if \fBn\fR is too small\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBoutput_uint(x, n)\fR
 Outputs the representation of the truncated absolute value of \fBx\fR as an unsigned integer in the current \fI\fBobase\fR\fR using \fBn\fR bytes\. Not all of the value will be output if \fBn\fR is too small\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .TP
 \fBoutput_byte(x, i)\fR
 Outputs byte \fBi\fR of the truncated absolute value of \fBx\fR, where \fB0\fR is the least significant byte and \fBnumber_of_bytes \- 1\fR is the most significant byte\.
 .
 .IP
-This is a \fIvoid\fR function\.
+This is a \fIvoid function\fR\.
 .
 .P
  \fI\fR
@@ -1142,6 +1181,9 @@ The transcendental functions in the extended math library are:
 \fBt(x)\fR
 .
 .IP "\(bu" 4
+\fBa2(y, x)\fR
+.
+.IP "\(bu" 4
 \fBsin(x)\fR
 .
 .IP "\(bu" 4
@@ -1154,6 +1196,9 @@ The transcendental functions in the extended math library are:
 \fBatan(x)\fR
 .
 .IP "\(bu" 4
+\fBatan2(y, x)\fR
+.
+.IP "\(bu" 4
 \fBr2d(x)\fR
 .
 .IP "\(bu" 4
@@ -1161,12 +1206,49 @@ The transcendental functions in the extended math library are:
 .
 .IP "" 0
 .
+.SH "RESET"
+When bc(1) encounters an error or a signal that it has a non\-default handler for, it resets\. This means that several things happen\.
+.
+.P
+First, any functions that are executing are stopped and popped off the stack\. The behavior is not unlike that of exceptions in programming languages\. Then the execution point is set so that any code waiting to execute (after all functions returned) is skipped\.
+.
+.P
+Thus, when bc(1) resets, it skips any remaining code waiting to be executed\. Then, if it is interactive mode, and the error was not a fatal error (see the EXIT STATUS section), it asks for more input; otherwise, it exits with the appropriate return code\.
+.
+.P
+Note that this reset behavior is different from the GNU bc(1), which attempts to start executing the statement right after the one that caused an error\.
+.
+.SH "PERFORMANCE"
+Most bc(1) implementations use \fBchar\fR types to calculate the value of \fB1\fR decimal digit at a time, but that can be slow\. This bc(1) does something different\.
+.
+.P
+It uses large integers to calculate more than \fB1\fR decimal digit at a time\. If built in a environment where \fBBC_LONG_BIT\fR (see the LIMITS section) is \fB64\fR, then each integer has \fB9\fR decimal digits\. If built in an environment where \fBBC_LONG_BIT\fR is \fB32\fR then each integer has \fB4\fR decimal digits\. This value (the number of decimal digits per large integer) is called \fBBC_BASE_DIGS\fR\.
+.
+.P
+In addition, this bc(1) uses an even larger integer for overflow checking\. This integer type depends on the value of \fBBC_LONG_BIT\fR, but is always at least twice as large as the integer type used to store digits\.
+.
 .SH "LIMITS"
 The following are the limits on bc(1):
 .
 .TP
+\fBBC_LONG_BIT\fR
+The number of bits in the \fBlong\fR type in the environment where bc(1) was built\. This determines how many decimal digits can be stored in a single large integer (see the PERFORMANCE section)\.
+.
+.TP
+\fBBC_BASE_DIGS\fR
+The number of decimal digits per large integer (see the PERFORMANCE section)\. Depends on \fBBC_LONG_BIT\fR\.
+.
+.TP
+\fBBC_BASE_POW\fR
+The max decimal number that each large integer can store (see \fBBC_BASE_DIGS\fR) plus \fB1\fR\. Depends on \fBBC_BASE_DIGS\fR\.
+.
+.TP
+\fBBC_OVERFLOW_MAX\fR
+The max number that the overflow type (see the PERFORMANCE section) can hold\. Depends on \fBBC_LONG_BIT\fR\.
+.
+.TP
 \fBBC_BASE_MAX\fR
-The maximum output base\. Set at \fBULONG_MAX\fR\.
+The maximum output base\. Set at \fBBC_BASE_POW\fR\.
 .
 .TP
 \fBBC_DIM_MAX\fR
@@ -1174,23 +1256,23 @@ The maximum size of arrays\. Set at \fBSIZE_MAX\-1\fR\.
 .
 .TP
 \fBBC_SCALE_MAX\fR
-The maximum \fBscale\fR\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum \fBscale\fR\. Set at \fBBC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 \fBBC_STRING_MAX\fR
-The maximum length of strings\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum length of strings\. Set at \fBBC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 \fBBC_NAME_MAX\fR
-The maximum length of identifiers\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum length of identifiers\. Set at \fBBC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 \fBBC_NUM_MAX\fR
-The maximum length of a number (in decimal digits), which includes digits after the decimal point\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum length of a number (in decimal digits), which includes digits after the decimal point\. Set at \fBBC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 Exponent
-The maximum allowable exponent (positive or negative)\. Set at \fBULONG_MAX\fR\.
+The maximum allowable exponent (positive or negative)\. Set at \fBBC_OVERFLOW_MAX\fR\.
 .
 .TP
 Number of vars
@@ -1232,7 +1314,7 @@ A math error occurred\. This follows standard practice of using \fB1\fR for expe
 Math errors include divide by \fB0\fR, taking the square root of a negative number, attempting to convert a negative number to a hardware integer, overflow when converting a number to a hardware integer, and attempting to use a non\-integer where an integer is required\.
 .
 .IP
-Converting to a hardware integer happens for the second operand of the power (\fB^\fR), places (\fB@\fR), left shift (\fB<<\fR), and right shift (\fB>>\fR) operators\.
+Converting to a hardware integer happens for the second operand of the power (\fB^\fR), places (\fB@\fR), left shift (\fB<<\fR), and right shift (\fB>>\fR) operators and their corresponding assignment operators\.
 .
 .TP
 \fB2\fR
@@ -1259,16 +1341,19 @@ Fatal errors include memory allocation errors, I/O errors, failing to open files
 The exit status \fB4\fR is special; when a fatal error occurs, bc(1) always exits and returns \fB4\fR, no matter what mode bc(1) is in\.
 .
 .P
-The other statuses will only be returned when bc(1) is not in interactive mode, since bc(1) resets its state and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
+The other statuses will only be returned when bc(1) is not in interactive mode, since bc(1) resets its state (see the RESET section) and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
 .
 .P
 These exit statuses allow bc(1) to be used in shell scripting with error checking, and its normal behavior can be forced by using \fB\-i\fR\.
 .
 .SH "SIGNAL HANDLING"
-If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset, asking for more input\.
+If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset (see the RESET section), asking for more input\.
 .
 .P
-Otherwise, any signals cause bc(1) to exit\.
+Otherwise, \fBSIGTERM\fR and \fBSIGQUIT\fR cause bc(1) to clean up and exit, and it uses the default handler for all other signals\.
+.
+.P
+If bc(1) has not been compiled with signal handling, it uses the default signal handlers for all signals\.
 .
 .SH "COMMAND LINE HISTORY"
 bc(1) supports interactive command\-line editing, if compiled with the history option enabled\. If \fBstdin\fR is hooked to a terminal, it is enabled\. Previous lines can be recalled and edited with the arrow keys\.

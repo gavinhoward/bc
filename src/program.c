@@ -439,7 +439,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_init(&buf, sizeof(char), NULL);
 
-	s = bc_read_line(&buf, "read> ");
+	s = bc_read_line(&buf, BC_IS_BC ? "read> " : "?> ");
 	if (BC_ERR(s)) {
 		if (s == BC_STATUS_EOF) s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 		goto io_err;
@@ -766,6 +766,8 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 		BcVec *v = (BcVec*) n, *rv = &r.d.v;
 #if BC_ENABLED
 		bool ref, ref_size;
+
+		assert(v != NULL);
 
 		ref = (v->size == sizeof(BcNum) && t != BC_TYPE_ARRAY);
 		ref_size = (v->size == sizeof(uchar));
@@ -1144,6 +1146,8 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	s = bc_program_operand(p, &opd, &num, 0);
 	if (BC_ERR(s)) return s;
 
+	assert(num != NULL);
+
 #if DC_ENABLED
 	if (!len && inst != BC_INST_SCALE_FUNC) {
 		s = bc_program_type_num(opd, num);
@@ -1270,6 +1274,8 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
 
+	assert(n != NULL);
+
 	func = bc_vec_item(&p->fns, BC_PROG_MAIN);
 	len = func->strs.len;
 
@@ -1340,6 +1346,8 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
+
+	assert(n != NULL);
 
 	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, p->strm);
 	else {
@@ -1615,9 +1623,11 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 
 #if BC_ENABLE_SIGNALS
 	if (BC_SIGTERM || (!s && BC_SIGINT && BC_I)) return BC_STATUS_QUIT;
-	vm->sig = 0;
+
+	vm->sig_chk = vm->sig;
 
 	if (!s || s == BC_STATUS_SIGNAL) {
+
 		if (BC_TTYIN || BC_I) {
 			bc_vm_puts(bc_program_ready_msg, stderr);
 			bc_vm_fflush(stderr);
@@ -1987,11 +1997,11 @@ static void bc_program_printIndex(const char *restrict code,
                                   size_t *restrict bgn)
 {
 	uchar byte, i, bytes = (uchar) code[(*bgn)++];
-	unsigned long val = 0;
+	ulong val = 0;
 
 	for (byte = 1, i = 0; byte && i < bytes; ++i) {
 		byte = (uchar) code[(*bgn)++];
-		if (byte) val |= ((unsigned long) byte) << (CHAR_BIT * i);
+		if (byte) val |= ((ulong) byte) << (CHAR_BIT * i);
 	}
 
 	bc_vm_printf(" (%lu) ", val);

@@ -28,7 +28,8 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] [run_valgrind]\n' "$script"
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] \n'
+	printf '          [run_valgrind] [run_64_bit]\n' "$script"
 	exit 1
 }
 
@@ -212,11 +213,15 @@ runconfigseries() {
 	_runconfigseries_run_tests="$1"
 	shift
 
-	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
+	if [ "$run_64_bit" -ne 0 ]; then
 
-	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-		"$_runconfigseries_configure_flags" 0 64 "$_runconfigseries_run_tests"
+		runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+			"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
+
+		runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+			"$_runconfigseries_configure_flags" 0 64 "$_runconfigseries_run_tests"
+
+	fi
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
 		"$_runconfigseries_configure_flags" 1 32 "$_runconfigseries_run_tests"
@@ -300,17 +305,23 @@ vg() {
 
 	header "Running valgrind"
 
-	build "$debug" "gcc" "-O0 -g" "1" "64"
+	if [ "$run_64_bit" -ne 0 ]; then
+		_vg_bits=64
+	else
+		_vg_bits=32
+	fi
+
+	build "$debug" "gcc" "-O0 -g" "1" "$_vg_bits"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O0 -gb" "1" "64"
+	build "$debug" "gcc" "-O0 -gb" "1" "$_vg_bits"
 	runtest valgrind
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O0 -gd" "1" "64"
+	build "$debug" "gcc" "-O0 -gd" "1" "$_vg_bits"
 	runtest valgrind
 
 	do_make clean_config
@@ -327,9 +338,7 @@ debug() {
 	runtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 
 	if [ "$_debug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runtests "$debug -fsanitize=address" "$_debug_CC" "-g" "$_debug_run_tests"
 		runtests "$debug -fsanitize=undefined" "$_debug_CC" "-g" "$_debug_run_tests"
-		runtests "$debug -fsanitize=memory" "$_debug_CC" "-g" "$_debug_run_tests"
 	fi
 }
 
@@ -353,6 +362,11 @@ reldebug() {
 	shift
 
 	runtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
+
+	if [ "$_reldebug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
+		runtests "$debug -fsanitize=address" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
+		runtests "$debug -fsanitize=memory" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
+	fi
 }
 
 minsize() {
@@ -429,9 +443,22 @@ else
 	run_valgrind=1
 fi
 
+if [ "$#" -gt 0 ]; then
+	run_64_bit="$1"
+	shift
+else
+	run_64_bit=1
+fi
+
+if [ "$run_64_bit" -ne 0 ]; then
+	bits=64
+else
+	bits=32
+fi
+
 cd "$scriptdir"
 
-build "$debug" "clang" "-g" "1" "64"
+build "$debug" "clang" "-g" "1" "$bits"
 
 header "Running math library under --standard"
 
@@ -449,7 +476,7 @@ fi
 
 if [ "$run_tests" -ne 0 ]; then
 
-	build "$release" "clang" "-O3" "1" "64"
+	build "$release" "clang" "-O3" "1" "$bits"
 
 	karatsuba
 
@@ -471,7 +498,7 @@ if [ "$run_tests" -ne 0 ]; then
 
 		header "Configuring for afl-gcc..."
 
-		configure "$debug" "afl-gcc" "-HS -gO3" "1" "64"
+		configure "$debug" "afl-gcc" "-HNS -gO3" "1" "$bits"
 
 		printf '\n'
 		printf 'Run make\n'
@@ -480,12 +507,12 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run ASan on the fuzzer test cases with the following build:\n'
 		printf '\n'
-		printf '    CFLAGS=-fsanitize=address ./configure.sh -g\n'
+		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer" ./configure.sh -gO3 -HNS\n'
 		printf '    make\n'
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
 		printf '\n'
-		printf '    <github_release> %s <msg> .travis.yml codecov.yml release.sh \\\n' "$version"
+		printf '    <github_release> %s .travis.yml codecov.yml release.sh \\\n' "$version"
 		printf '    RELEASE.md tests/afl.py tests/randmath.py tests/bc/scripts/timeconst.bc\n'
 
 	fi

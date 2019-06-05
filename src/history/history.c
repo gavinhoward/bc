@@ -585,11 +585,9 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 
 	char seq[64];
 	char* buf = h->buf.v;
-	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos, pcollen;
+	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos;
 
-	pcollen = bc_history_promptColLen(h->prompt, h->plen);
-
-	while(pcollen + bc_history_colPos(buf, len, pos) >= h->cols) {
+	while(h->pcol + bc_history_colPos(buf, len, pos) >= h->cols) {
 
 		size_t chlen = bc_history_nextLen(buf, len, 0, NULL);
 
@@ -598,7 +596,7 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 		pos -= chlen;
 	}
 
-	while (pcollen + bc_history_colPos(buf, len, len) > h->cols)
+	while (h->pcol + bc_history_colPos(buf, len, len) > h->cols)
 		len -= bc_history_prevLen(buf, len, NULL);
 
 	bc_vec_npop(&h->tmp, h->tmp.len);
@@ -607,16 +605,18 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	snprintf(seq, 64, "\r");
 	bc_vec_string(&h->tmp, strlen(seq), seq);
 
-	// Write the prompt and the current buffer content.
-	bc_vec_concat(&h->tmp, h->prompt);
-	bc_vec_concat(&h->tmp, buf);
+	// Write the prompt and the current buffer content, if desired.
+	if (BC_USE_PROMPT) {
+		bc_vec_concat(&h->tmp, h->prompt);
+		bc_vec_concat(&h->tmp, buf);
+	}
 
 	// Erase to right.
 	snprintf(seq, 64, "\x1b[0K");
 	bc_vec_concat(&h->tmp, seq);
 
 	// Move cursor to original position.
-	colpos = bc_history_colPos(buf, len, pos) + pcollen;
+	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
 	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
 	bc_vec_concat(&h->tmp, seq);
 
@@ -1054,11 +1054,15 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	if (BC_ERR(s)) return s;
 
-	h->prompt = prompt;
-	h->plen = strlen(prompt);
+	if (BC_USE_PROMPT) {
 
-	if (BC_ERR(BC_HIST_BAD_WRITE(prompt, h->plen)))
-		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+		h->prompt = prompt;
+		h->plen = strlen(prompt);
+		h->pcol = bc_history_promptColLen(prompt, h->plen);
+
+		if (BC_ERR(BC_HIST_BAD_WRITE(prompt, h->plen)))
+			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	}
 
 	while (BC_NO_ERR(!s)) {
 

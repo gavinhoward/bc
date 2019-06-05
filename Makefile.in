@@ -54,7 +54,7 @@ BC_ENABLED = %%BC_ENABLED%%
 DC_ENABLED_NAME = DC_ENABLED
 DC_ENABLED = %%DC_ENABLED%%
 
-VERSION = 1.3.0
+VERSION = 2.0.2
 
 GEN_DIR = gen
 GEN = %%GEN%%
@@ -183,6 +183,7 @@ help:
 	@printf 'available targets:\n'
 	@printf '\n'
 	@printf '    all (default)   builds %%EXECUTABLES%%\n'
+	@printf '    check           alias for `make test`\n'
 	@printf '    clean           removes all build files\n'
 	@printf '    clean_config    removes all build files as well as the generated Makefile\n'
 	@printf '    clean_tests     removes all build files, the generated Makefile,\n
@@ -207,6 +208,8 @@ help:
 	@printf '                    through valgrind\n'
 	@printf '    valgrind_dc     runs the dc test suite, if dc has been built,\n'
 	@printf '                    through valgrind\n'
+
+check: test
 
 test: test_bc timeconst test_dc
 
@@ -291,8 +294,10 @@ clean_tests: clean clean_config
 	@$(RM) -f tests/bc/scripts/bessel.txt
 	@$(RM) -f tests/bc/scripts/parse.txt
 	@$(RM) -f tests/bc/scripts/print.txt
+	@$(RM) -f tests/bc/scripts/add.txt
 	@$(RM) -f tests/bc/scripts/divide.txt
 	@$(RM) -f tests/bc/scripts/multiply.txt
+	@$(RM) -f tests/bc/scripts/subtract.txt
 	@$(RM) -f tests/dc/scripts/prime.txt tests/dc/scripts/stream.txt
 	@$(RM) -f .log_*.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt

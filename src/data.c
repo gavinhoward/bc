@@ -56,8 +56,6 @@ const char bc_copyright[] =
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
-const char* const bc_args_env_name = "BC_ENV_ARGS";
-
 const char* const bc_err_func_header = "Function:";
 const char* const bc_err_line = ":%zu";
 
@@ -742,7 +740,7 @@ const BcNumBinaryOpReq bc_program_opReqs[] = {
 	bc_num_powReq, bc_num_mulReq, bc_num_mulReq, bc_num_mulReq,
 	bc_num_addReq, bc_num_addReq,
 #if BC_ENABLE_EXTRA_MATH
-	bc_num_placesReq, bc_num_shiftLeftReq, bc_num_shiftRightReq,
+	bc_num_placesReq, bc_num_placesReq, bc_num_placesReq,
 #endif // BC_ENABLE_EXTRA_MATH
 };
 

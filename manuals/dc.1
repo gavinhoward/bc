@@ -7,13 +7,19 @@
 \fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
 .
 .SH "SYNOPSIS"
-\fBdc\fR [\fB\-hvVx\fR] [\fB\-\-version\fR] [\fB\-\-help\fR] [\fB\-\-extended\-register\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
+\fBdc\fR [\fB\-hiPvVx\fR] [\fB\-\-version\fR] [\fB\-\-help\fR] [\fB\-\-interactive\fR] [\fB\-\-no\-prompt\fR] [\fB\-\-extended\-register\fR] [\fB\-e\fR \fIexpr\fR] [\fB\-\-expression=\fR\fIexpr\fR\.\.\.] [\fB\-f\fR \fIfile\fR\.\.\.] [\fB\-file=\fR\fIfile\fR\.\.\.] [\fIfile\fR\.\.\.]
 .
 .SH "DESCRIPTION"
 dc(1) is an arbitrary\-precision calculator\. It uses a stack (reverse Polish notation) to store numbers and results of computations\. Arithmetic operations pop arguments off of the stack and push the results\.
 .
 .P
-If no expressions or files are given on the command line, as in options below, or for files, as extra command\-line arguments, then dc(1) reads from \fBstdin\fR\. Otherwise, those expressions and files are processed, and dc(1) will then exit\.
+If no files are given on the command\-line as extra arguments (i\.e\., not as \fB\-f\fR or \fB\-\-file\fR arguments), then dc(1) reads from \fBstdin\fR\. Otherwise, those files are processed, and dc(1) will then exit\.
+.
+.P
+This is different from the dc(1) on OpenBSD and possibly other dc(1) implementations, where \fB\-e\fR (\fB\-\-expression\fR) and \fB\-f\fR (\fB\-\-file\fR) arguments cause dc(1) to execute them and exit\. The reason for this is that this dc(1) allows users to set arguments in the environment variable \fBDC_ENV_ARGS\fR (see the ENVIRONMENT VARIABLES section)\. Any expressions given on the command\-line should be used to set up a standard environment\. For example, if a user wants the \fBscale\fR always set to \fB10\fR, they can set \fBDC_ENV_ARGS\fR to "\-e 10k", and this dc(1) will always start with a \fBscale\fR of \fB10\fR\.
+.
+.P
+If users want to have dc(1) exit after processing all input from \fB\-e\fR and \fB\-f\fR arguments (and their equivalents), then they can just simply add "\-e q" as the last command\-line argument\.
 .
 .SH "OPTIONS"
 The following are the options that dc(1) accepts\.
@@ -27,8 +33,25 @@ Prints a usage message and quits\.
 Print the version information (copyright header) and exit\.
 .
 .TP
+\fB\-i\fR, \fB\-\-interactive\fR
+Forces interactive mode\.
+.
+.IP
+dc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, dc(1) attempts to recover from errors (see the RESET section), and in normal execution, flushes \fBstdout\fR as soon as execution is done for the current input\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
+.
+.TP
+\fB\-P\fR, \fB\-\-no\-prompt\fR
+Disables the prompt in interactive mode\. This is mostly for those users that do not want a prompt or are not used to having them in \fBdc\fR\. Most of those users would want to put this option in \fBDC_ENV_ARGS\fR\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
+.
+.TP
 \fB\-x\fR \fB\-\-extended\-register\fR
-Enables extended register mode\. See \fIREGISTERS\fR for more information\.
+Enables extended register mode\. See the REGISTERS section for more information\.
 .
 .TP
 \fB\-e\fR \fIexpr\fR, \fB\-\-expression\fR=\fIexpr\fR
@@ -39,22 +62,22 @@ Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in 
 Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
 .
 .SH "SYNTAX"
-\fBibase\fR is a [register][REGISTERS] determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\. The max allowable value for \fBibase\fR is \fB16\fR\. The min allowable value for \fBibase\fR is \fB2\fR\.
+\fBibase\fR is a register (see the REGISTERS section) determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\. The max allowable value for \fBibase\fR is \fB16\fR\. The min allowable value for \fBibase\fR is \fB2\fR\. The max allowable value for \fBibase\fR can be queried in dc(1) programs with the \fBT\fR command\.
 .
 .P
-\fBobase\fR is a [register][REGISTERS] determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\. The max allowable value for \fBobase\fR is \fBBC_BASE_MAX\fR\. The min allowable value for \fBobase\fR is \fB2\fR\.
+\fBobase\fR is a register (see the REGISTERS section) determining how to output results\. It is the "output" base, or the number base used for outputting numbers\. \fBobase\fR is initially \fB10\fR\. The max allowable value for \fBobase\fR is \fBDC_BASE_MAX\fR\. The min allowable value for \fBobase\fR is \fB2\fR unless dc(1) was built with the extra math option\. If it was, then the min allowable value is \fB0\fR\. In this case, if \fBobase\fR is \fB0\fR, values are output in scientific notation, and if \fBobase\fR is \fB1\fR, values are output in engineering notation\. (Outputting in scientific or engineering notation are \fBnon\-portable extensions\fR\.) The max allowable value for \fBobase\fR can be queried in dc(1) programs with the \fBU\fR command\.
 .
 .P
-The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a [register][REGISTERS] that sets the precision of any operations (with exceptions)\. \fBscale\fR is initially \fB0\fR\. \fBscale\fR cannot be negative\.
+The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a register (see the REGISTERS section) that sets the precision of any operations (with exceptions)\. \fBscale\fR is initially \fB0\fR\. \fBscale\fR cannot be negative\. The max allowable value for \fBscale\fR can be queried in dc(1) programs with the \fBV\fR command\.
 .
 .P
-Each item (\fInumbers\fR or \fIcommands\fR) in the input source code is processed and executed, in order\. Input is processed immediately when entered\.
+Each item in the input source code, either a number (see the NUMBERS section) or a command (see the COMMANDS section), is processed and executed, in order\. Input is processed immediately when entered\.
 .
 .SS "Comments"
 Comments go from \fB#\fR until, and not including, the next newline\. This is a \fBnon\-portable extension\fR\.
 .
 .SH "NUMBERS"
-Numbers are strings made up of digits, uppercase letters up to \fBF\fR, and at most \fB1\fR period for a radix\. Numbers can have up to \fBBC_NUM_MAX\fR digits\. Uppercase letters equal \fB9\fR + their position in the alphabet (i\.e\., \fBA\fR equals \fB10\fR, or \fB9 + 1\fR)\. If a digit or letter makes no sense with the current value of \fBibase\fR, they are set to the value of the highest valid digit in \fBibase\fR\.
+Numbers are strings made up of digits, uppercase letters up to \fBF\fR, and at most \fB1\fR period for a radix\. Numbers can have up to \fBDC_NUM_MAX\fR digits\. Uppercase letters equal \fB9\fR + their position in the alphabet (i\.e\., \fBA\fR equals \fB10\fR, or \fB9 + 1\fR)\. If a digit or letter makes no sense with the current value of \fBibase\fR, they are set to the value of the highest valid digit in \fBibase\fR\.
 .
 .P
 Single\-character numbers (i\.e\., \fBA\fR) take the value that they would have if they were valid digits, regardless of the value of \fBibase\fR\. This means that \fBA\fR always equals decimal \fB10\fR and \fBF\fR always equals decimal \fB15\fR\.
@@ -66,7 +89,7 @@ In addition, if dc(1) was built with the extra math option, it accepts numbers i
 \fBWARNING\fR: Both the number and the exponent in scientific notation are interpreted according to the current \fBibase\fR, but the number is still multiplied by \fB10^exponent\fR regardless of the current \fBibase\fR\. For example, if \fBibase\fR is \fB16\fR and dc(1) is given the number string \fB"FFeA"\fR, the resulting decimal number will be \fB2550000000000\fR, and if dc(1) is given the number string \fB"10e_4"\fR, the resulting decimal number will be \fB0\.0016\fR\.
 .
 .P
-Scientific notation is a \fBnon\-portable extension\fR\.
+Accepting input as scientific notation is a \fBnon\-portable extension\fR\.
 .
 .SH "COMMANDS"
 The valid commands are listed below\.
@@ -75,7 +98,7 @@ The valid commands are listed below\.
 These commands are used for printing\.
 .
 .P
-Note that if dc(1) has been built with the extra math option enabled, both scientific notation and engineering notation are available for printing numbers\. Scientific notation is activated by assigning \fB0\fR to \fBobase\fR (in any other context, an \fBobase\fR of \fB0\fR is invalid), and engineering notation is activated by assigning \fB1\fR to \fBobase\fR (which is also invalid in any other context)\. To deactivate them, just assign a different value to \fBobase\fR\.
+Note that if dc(1) has been built with the extra math option enabled, both scientific notation and engineering notation are available for printing numbers\. Scientific notation is activated by assigning \fB0\fR to \fBobase\fR using \fB0o\fR (in any other context, an \fBobase\fR of \fB0\fR is invalid), and engineering notation is activated by assigning \fB1\fR to \fBobase\fR using \fB1o\fR (which is also invalid in any other context)\. To deactivate them, just assign a different value to \fBobase\fR\.
 .
 .P
 Printing numbers in scientific notation and/or engineering notation is a \fBnon\-portable extension\fR\.
@@ -160,7 +183,7 @@ The top value is popped off the stack, its square root is computed, and the resu
 If this command \fIimmediately\fR precedes a number (i\.e\., no spaces or other commands), then that number is input as a negative number\.
 .
 .IP
-Otherwise, the top value on the stack is popped and copied, and the copy is negated and pushed onto the stack\. This behavior without a number is a non\-portable extension\.
+Otherwise, the top value on the stack is popped and copied, and the copy is negated and pushed onto the stack\. This behavior without a number is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fBb\fR
@@ -278,7 +301,7 @@ Swaps ("reverses") the two top items on the stack\.
 Pops ("removes") the top value from the stack\.
 .
 .SS "Register Control"
-These commands control \fIregisters\fR\.
+These commands control registers (see the REGISTERS section)\.
 .
 .TP
 \fBs\fR\fIr\fR
@@ -297,7 +320,7 @@ Pops the value off the top of the (main) stack and pushes it onto the stack of r
 Pops the value off the top of register \fBr\fR\'s stack and push it onto the main stack\. The previous value in register \fBr\fR\'s stack, if any, is now accessible via the \fBl\fR\fIr\fR command\.
 .
 .SS "Parameters"
-These commands control the values of \fBibase\fR, \fBobase\fR, and \fBscale\fR (see \fISYNTAX\fR)\.
+These commands control the values of \fBibase\fR, \fBobase\fR, and \fBscale\fR (see the SYNTAX section)\.
 .
 .TP
 \fBi\fR
@@ -308,7 +331,7 @@ If the value on top of the stack has any \fBscale\fR, the \fBscale\fR is ignored
 .
 .TP
 \fBo\fR
-Pops the value off of the top of the stack and uses it to set \fBobase\fR, which must be between \fB2\fR and \fBBC_BASE_MAX\fR, inclusive (see bc(1))\.
+Pops the value off of the top of the stack and uses it to set \fBobase\fR, which must be between \fB2\fR and \fBDC_BASE_MAX\fR, inclusive (see bc(1))\. The value can be either \fB0\fR or \fB1\fR if dc(1) was built with the extra math option\.
 .
 .IP
 If the value on top of the stack has any \fBscale\fR, the \fBscale\fR is ignored\.
@@ -357,7 +380,7 @@ This is a \fBnon\-portable extension\fR\.
 The following commands control strings\.
 .
 .P
-dc(1) can work with both numbers and strings, and \fIregisters\fR can hold both strings and numbers\. dc(1) always knows whether a register\'s contents are a string or a number\.
+dc(1) can work with both numbers and strings, and registers (see the REGISTERS section) can hold both strings and numbers\. dc(1) always knows whether a register\'s contents are a string or a number\.
 .
 .P
 While arithmetic operations have to have numbers, and will print an error if given a string, other commands accept strings\.
@@ -514,7 +537,7 @@ These commands manipulate arrays\.
 .
 .TP
 \fB:\fR\fIr\fR
-Pops the top two values off of the stack\. The second value will be stored in the array \fBr\fR (see \fIRegisters\fR), indexed by the first value\.
+Pops the top two values off of the stack\. The second value will be stored in the array \fBr\fR (see the REGISTERS section), indexed by the first value\.
 .
 .TP
 \fB;\fR\fIr\fR
@@ -538,12 +561,50 @@ If extended register mode is enabled (\fB\-x\fR or \fB\-\-extended\-register\fR 
 .P
 In that case, the register name is found according to the regex \fB[a\-z][a\-z0\-9_]*\fR (like bc(1)), and it is a parse error if the next non\-space characters do not match that regex\.
 .
+.SH "RESET"
+When dc(1) encounters an error or a signal that it has a non\-default handler for, it resets\. This means that several things happen\.
+.
+.P
+First, any macros that are executing are stopped and popped off the stack\. The behavior is not unlike that of exceptions in programming languages\. Then the execution point is set so that any code waiting to execute (after all functions returned) is skipped\.
+.
+.P
+Thus, when dc(1) resets, it skips any remaining code waiting to be executed\. Then, if it is interactive mode, and the error was not a fatal error (see the EXIT STATUS section), it asks for more input; otherwise, it exits with the appropriate return code\.
+.
+.SH "PERFORMANCE"
+Most dc(1) implementations use \fBchar\fR types to calculate the value of \fB1\fR decimal digit at a time, but that can be slow\. This dc(1) does something different\.
+.
+.P
+It uses large integers to calculate more than \fB1\fR decimal digit at a time\. If built in a environment where \fBDC_LONG_BIT\fR (see the LIMITS section) is \fB64\fR, then each integer has \fB9\fR decimal digits\. If built in an environment where \fBDC_LONG_BIT\fR is \fB32\fR then each integer has \fB4\fR decimal digits\. This value (the number of decimal digits per large integer) is called \fBDC_BASE_DIGS\fR\.
+.
+.P
+In addition, this dc(1) uses an even larger integer for overflow checking\. This integer type depends on the value of \fBDC_LONG_BIT\fR, but is always at least twice as large as the integer type used to store digits\.
+.
 .SH "LIMITS"
 The following are the limits on dc(1):
 .
 .TP
+\fBDC_LONG_BIT\fR
+The number of bits in the \fBlong\fR type in the environment where dc(1) was built\. This determines how many decimal digits can be stored in a single large integer (see the PERFORMANCE section)\.
+.
+.TP
+\fBDC_BASE_DIGS\fR
+The number of decimal digits per large integer (see the PERFORMANCE section)\. Depends on \fBDC_LONG_BIT\fR\.
+.
+.TP
+\fBDC_BASE_POW\fR
+The max decimal number that each large integer can store (see \fBDC_BASE_DIGS\fR) plus \fB1\fR\. Depends on \fBDC_BASE_DIGS\fR\.
+.
+.TP
+\fBDC_OVERFLOW_MAX\fR
+The max number that the overflow type (see the PERFORMANCE section) can hold\. Depends on \fBDC_LONG_BIT\fR\.
+.
+.TP
+\fBDC_BASE_DIGS\fR
+The number of decimal digits per large integer (see the PERFORMANCE section)\.
+.
+.TP
 \fBDC_BASE_MAX\fR
-The maximum output base\. Set at \fBULONG_MAX\fR\.
+The maximum output base\. Set at \fBDC_BASE_POW\fR\.
 .
 .TP
 \fBDC_DIM_MAX\fR
@@ -551,36 +612,37 @@ The maximum size of arrays\. Set at \fBSIZE_MAX\-1\fR\.
 .
 .TP
 \fBDC_SCALE_MAX\fR
-The maximum \fBscale\fR\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum \fBscale\fR\. Set at \fBDC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 \fBDC_STRING_MAX\fR
-The maximum length of strings\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum length of strings\. Set at \fBDC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 \fBDC_NAME_MAX\fR
-The maximum length of identifiers\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum length of identifiers\. Set at \fBDC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 \fBDC_NUM_MAX\fR
-The maximum length of a number (in decimal digits), which includes digits after the decimal point\. Set at \fBSIZE_MAX\-1\fR\.
+The maximum length of a number (in decimal digits), which includes digits after the decimal point\. Set at \fBDC_OVERFLOW_MAX\-1\fR\.
 .
 .TP
 Exponent
-The maximum allowable exponent (positive or negative)\. Set at \fBULONG_MAX\fR\.
+The maximum allowable exponent (positive or negative)\. Set at \fBDC_OVERFLOW_MAX\fR\.
 .
 .TP
 Number of vars
 The maximum number of vars/arrays\. Set at \fBSIZE_MAX\-1\fR\.
 .
 .P
-Actual values can be queried with the \fBlimits\fR statement\.
-.
-.P
 These limits are meant to be effectively non\-existent; the limits are so large (at least on 64\-bit machines) that there should not be any point at which they become a problem\. In fact, memory should be exhausted before these limits should be hit\.
 .
 .SH "ENVIRONMENT VARIABLES"
 dc(1) recognizes the following environment variables:
+.
+.TP
+\fBDC_ENV_ARGS\fR
+This is another way to give command\-line arguments to dc(1)\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBDC_ENV_ARGS\fR will be processed before files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time dc(1) runs\. Another use would be to use the \fB\-e\fR option to set \fBscale\fR to a value other than \fB0\fR\.
 .
 .TP
 \fBDC_LINE_LENGTH\fR
@@ -628,16 +690,19 @@ Fatal errors include memory allocation errors, I/O errors, failing to open files
 The exit status \fB4\fR is special; when a fatal error occurs, dc(1) always exits and returns \fB4\fR, no matter what mode dc(1) is in\.
 .
 .P
-The other statuses will only be returned when dc(1) is not in interactive mode, since dc(1) resets its state and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
+The other statuses will only be returned when dc(1) is not in interactive mode, since dc(1) resets its state (see the RESET section) and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
 .
 .P
 These exit statuses allow dc(1) to be used in shell scripting with error checking, and its normal behavior can be forced by using \fB\-i\fR\.
 .
 .SH "SIGNAL HANDLING"
-If dc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause dc(1) to stop execution of the current input and reset, asking for more input\.
+If dc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause dc(1) to stop execution of the current input and reset (see the RESET section), asking for more input\.
 .
 .P
-Otherwise, any signals cause dc(1) to exit\.
+Otherwise, \fBSIGTERM\fR and \fBSIGQUIT\fR cause dc(1) to clean up and exit, and it uses the default handler for all other signals\.
+.
+.P
+If dc(1) has not been compiled with signal handling, it uses the default signal handlers for all signals\.
 .
 .SH "COMMAND LINE HISTORY"
 dc(1) supports interactive command\-line editing, if compiled with the history option enabled\. If \fBstdin\fR is hooked to a terminal, it is enabled\. Previous lines can be recalled and edited with the arrow keys\.

@@ -11,9 +11,9 @@ flavor of `bc`.
 For more information, see this `bc`'s [full manual][2].
 
 This `bc` also includes an implementation of `dc` in the same binary, accessible
-via a symbolic link, which implements all FreeBSD and GNU extensions. If a
-single `dc` binary is desired, `bc` can be copied and renamed to `dc`. The `!`
-command is omitted; I believe this poses security concerns and that such
+via a symbolic link, which implements all FreeBSD and GNU extensions. (If a
+standalone `dc` binary is desired, `bc` can be copied and renamed to `dc`.) The
+`!` command is omitted; I believe this poses security concerns and that such
 functionality is unnecessary.
 
 For more information, see the `dc`'s [full manual][3].
@@ -34,6 +34,7 @@ Systems that are known to work:
 * Linux
 * FreeBSD
 * OpenBSD
+* NetBSD
 * Mac OSX
 
 Please submit bug reports if this `bc` does not build out of the box on any
@@ -97,7 +98,45 @@ make install
 ```
 
 By default, `bc` and `dc` will be installed in `/usr/local`. For installing in
-other locations, see the [build manual][5].
+other locations, use the `PREFIX` environment variable when running
+`configure.sh` or pass the `--prefix=<prefix>` option to `configure.sh`. See the
+[build manual][5], or run `./configure.sh --help`, for more details.
+
+### Package and Distro Maintainers
+
+#### Using This `bc` as an Alternative
+
+If this `bc` is packaged as an alternative to an already existing `bc` package,
+it is possible to rename it in the build to prevent name collision. To prepend
+to the name, just run the following:
+
+```
+EXECPREFIX=<some_prefix> ./configure.sh
+```
+
+To append to the name, just run the following:
+
+```
+EXECSUFFIX=<some_suffix> ./configure.sh
+```
+
+If a package maintainer wishes to add both a prefix and a suffix, that is
+allowed.
+
+**Note**: The suggested name (and package name) is `bc-gh`.
+
+#### Karatsuba Number
+
+Package and distro maintainers have one tool at their disposal to build this
+`bc` in the optimal configuration: `karatsuba.py`.
+
+This script is not a compile-time or runtime prerequisite; it is for package and
+distro maintainers to run once when a package is being created. It finds the
+optimal Karatsuba number (see the [algorithms manual][7] for more information)
+for the machine that it is running on.
+
+If desired, maintainers can also skip running this script because there is a
+sane default for the Karatsuba number.
 
 ## Status
 
@@ -111,11 +150,33 @@ This `bc` can be used as a drop-in replacement for any existing `bc`. This `bc`
 is also compatible with MinGW toolchains, though history is not supported on
 Windows.
 
+## Comparison to GNU `bc`
+
+This `bc` compares favorably to GNU `bc`.
+
+* It has more extensions, which make this `bc` more useful for scripting.
+* This `bc` is a bit more POSIX compliant.
+* It has a much less buggy parser. The GNU `bc` will give parse errors for what
+  is actually valid `bc` code, or should be. For example, putting an `else` on
+  a new line after a brace can cause GNU `bc` to give a parse error.
+* This `bc` has fewer crashes.
+* GNU `bc` will report errors when there are none. For example, `0 ^ -251`
+  causes GNU `bc` to report a divide by `0`.
+* GNU `bc` will sometimes print numbers incorrectly. For example, when running
+  it on the file `tests/bc/power.txt` in this repo, GNU `bc` gets all the right
+  answers, but for some inexplicable reason, it fails to wrap the numbers at the
+  proper place.
+* This `bc` is faster. (See [Performance](#performance).)
+
 ### Performance
 
-This `bc` has similar performance to GNU `bc`. It is slightly slower on certain
-operations and slightly faster on others. Full benchmark data are not yet
-available.
+Because this `bc` packs more than `1` decimal digit per hardware integer, this
+`bc` is faster than GNU `bc` and can be *much* faster. Full benchmarks can be
+found at [manuals/benchmarks.md][19].
+
+There is one instance where this `bc` is slower: if scripts are light on math.
+This is because this `bc`'s intepreter is slightly slower than GNU `bc`, but
+that is because it is more robust. See the [benchmarks][19].
 
 ## Algorithms
 
@@ -205,3 +266,4 @@ Folders:
 [16]: https://codecov.io/gh/gavinhoward/bc
 [17]: https://img.shields.io/coverity/scan/16609.svg
 [18]: https://scan.coverity.com/projects/gavinhoward-bc
+[19]: ./manuals/benchmarks.md

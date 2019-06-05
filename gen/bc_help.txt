@@ -43,22 +43,19 @@ manual (https://www.gnu.org/software/bc/manual/bc.html) and bc spec
 (http://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 for details.
 
-This bc has five differences to the GNU bc:
+This bc has three differences to the GNU bc:
 
-  1) The period (.) can also be used as a shortcut for "last", as in the BSD bc.
-  2) Arrays are copied before being passed as arguments to functions. This
-     behavior is required by the bc spec.
-  3) Arrays can be passed to the builtin "length" function to get the number of
+  1) Arrays can be passed to the builtin "length" function to get the number of
      elements currently in the array. The following example prints "1":
 
        a[0] = 0
        length(a[])
 
-  4) The precedence of the boolean "not" operator (!) is equal to that of the
+  2) The precedence of the boolean "not" operator (!) is equal to that of the
      unary minus (-), or negation, operator. This still allows POSIX-compliant
      scripts to work while somewhat preserving expected behavior (versus C) and
      making parsing easier.
-  5) This bc has many more extensions than the GNU bc does. For details, see the
+  3) This bc has many more extensions than the GNU bc does. For details, see the
      man page.
 
 Options:
@@ -96,6 +93,10 @@ Options:
           l(expr)  =  natural log of expr
           e(expr)  =  raises e to the power of expr
           j(n, x)  =  Bessel function of integer order n of x
+
+  -P  --no-prompt
+
+      Disable the prompt in interactive mode.
 
   -q  --quiet
 

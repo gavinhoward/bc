@@ -114,7 +114,7 @@ num70="10000000000000000000000000000000000000000000000000000000000000000000\\
 0000000000"
 
 if [ "$d" = "bc" ]; then
-	halt="quit"
+	halt="halt"
 	opt="x"
 	lopt="extended-register"
 	line_var="BC_LINE_LENGTH"
@@ -136,10 +136,14 @@ if [ "$base" != "bc" -a "$base" != "dc" ]; then
 	exit 0
 fi
 
+printf 'Running %s environment var test...\n' "$d"
+
 if [ "$d" = "bc" ]; then
-	printf 'Running %s environment var test...\n' "$d"
 	export BC_ENV_ARGS=" -l -q"
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
+else
+	export DC_ENV_ARGS="-x"
+	printf '4s stuff\n' | "$exe" "$@" > /dev/null
 fi
 
 out1="$testdir/../.log_$d.txt"
@@ -169,7 +173,7 @@ results=$(cat "$testdir/$d/add_results.txt")
 
 printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 
-"$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" > "$out2"
+"$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" -e "$halt" > "$out2"
 
 diff "$out1" "$out2"
 

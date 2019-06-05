@@ -176,6 +176,9 @@ typedef struct BcHistory {
 	/// Prompt length.
 	size_t plen;
 
+	/// Prompt column length.
+	size_t pcol;
+
 	/// Current cursor position.
 	size_t pos;
 

@@ -4,9 +4,10 @@ bc(1) -- arbitrary-precision arithmetic language and calculator
 SYNOPSIS
 --------
 
-`bc` [`-ghilqsvVw`] [`--global-stacks`] [`--help`] [`--interactive`]
-[`--mathlib`] [`--quiet`] [`--standard`] [`--warn`] [`--version`] [`-e` *expr*]
-[`--expression=`*expr*...] [`-f` *file*...] [`-file=`*file*...] [*file*...]
+`bc` [`-ghilPqsvVw`] [`--global-stacks`] [`--help`] [`--interactive`]
+[`--mathlib`] [`--no-prompt`] [`--quiet`] [`--standard`] [`--warn`]
+[`--version`] [`-e` *expr*] [`--expression=`*expr*...] [`-f` *file*...]
+[`-file=`*file*...] [*file*...]
 
 DESCRIPTION
 -----------
@@ -19,8 +20,10 @@ Such differences will be noted in this document.
 After parsing and handling options, this bc(1) reads any files given on the
 command line and executes them before reading from `stdin`.
 
-With all build options but extra math enabled this bc(1) is a drop-in
-replacement for ***any*** bc(1), including (and especially) the GNU bc(1).
+With all build options, except for extra math, enabled this bc(1) is a drop-in
+replacement for ***any*** bc(1), including (and especially) the GNU bc(1). It is
+also a drop-in replacement for any bc(1) if extra math is enabled, but it will
+have extra features not found in other bc(1) implementations.
 
 OPTIONS
 -------
@@ -34,8 +37,8 @@ The following are the options that bc(1) accepts.
     onto a stack for every function call, as well as popped when every function
     returns. This means that functions can assign to any and all of those
     globals without worrying that the change will affect other functions.
-    Thus, `output(x,b)` (in the [extended library](#extended-library)) can be
-    written like this:
+    Thus, `output(x,b)` (in the [extended library](#extended-library)) could
+    have been written like this:
 
     `define void output(x, b) { obase=b; x }`
 
@@ -61,12 +64,12 @@ The following are the options that bc(1) accepts.
     could return the desired value for a global.
 
     If this behavior is desired for every run of bc(1), then users could make
-    sure to define `BC_ENV_ARGS` and include this option (see
-    [Environment Variables](#ENVIRONMENT-VARIABLES) for more details).
+    sure to define `BC_ENV_ARGS` and include this option (see the
+    ENVIRONMENT VARIABLES section for more details).
 
     If `-s`, `-w`, or any equivalents are used, this option is ignored.
 
-    This is an extension.
+    This is a **non-portable extension**.
 
   * `-h`, `--help`:
     Prints a usage message and quits.
@@ -77,17 +80,25 @@ The following are the options that bc(1) accepts.
     Per the [standard][1], bc(1) has an interactive mode and a non-interactive
     mode. The interactive mode is turned on automatically when both `stdin` and
     `stdout` are hooked to a terminal, but this flag can turn it on in other
-    cases. In interactive mode, bc(1) attempts to recover from errors and
-    flushes `stdout` as soon as execution is done for the current input.
+    cases. In interactive mode, bc(1) attempts to recover from errors (see the
+    RESET section), and in normal execution, flushes `stdout` as soon as
+    execution is done for the current input.
 
     This is a **non-portable extension**.
 
   * `-l`, `--mathlib`:
     Sets `scale` (see the Scale section) to `20` and loads the included math
-    library before running any code, including any expressions or files specified
-    on the command line.
+    library before running any code, including any expressions or files
+    specified on the command line.
 
-    To learn what is in the library, see the [Library](#LIBRARY) section.
+    To learn what is in the library, see the LIBRARY section.
+
+  * `-P`, `--no-prompt`:
+    Disables the prompt in interactive mode. This is mostly for those users that
+    do not want a prompt or are not used to having them in `bc`. Most of those
+    users would want to put this option in `BC_ENV_ARGS`.
+
+    This is a **non-portable extension**.
 
   * `-q`, `--quiet`:
     Do not print copyright header. bc(1) will also suppress the header in
@@ -105,6 +116,8 @@ The following are the options that bc(1) accepts.
 
   * `-v`, `-V`, `--version`:
     Print the version information (copyright header) and exit.
+
+    This is a **non-portable extension**.
 
   * `-w`, `--warn`:
     Like `-s` and `--standard`, except that warnings (and not errors) are given
@@ -135,7 +148,7 @@ for the language this bc(1) accepts. This section is meant to be a summary and a
 listing of all the extensions to the [standard][1].
 
 In the sections below, `E` means expression, `S` means statement, and `I` means
-identifier
+identifier.
 
 Identifiers (`I`) start with a lowercase letter and can be followed by any
 number (up to `BC_NAME_MAX-1`) of lowercase letters (`a-z`), digits (`0-9`), and
@@ -146,26 +159,34 @@ character (letter) are a **non-portable extension**.
 is the "input" base, or the number base used for interpreting input numbers.
 `ibase` is initially `10`. If the `-s` (`--standard`) and `-w` (`--warn`) flags
 were not given on the command line, the max allowable value for `ibase` is `36`.
-Otherwise, it is `16`. The min allowable value for `ibase` is `2`.
+Otherwise, it is `16`. The min allowable value for `ibase` is `2`. The max
+allowable value for `ibase` can be queried in bc(1) programs with the
+`maxibase()` built in function.
 
 `obase` is a global variable determining how to output results. It is the
 "output" base, or the number base used for outputting numbers. `obase` is
 initially `10`. The max allowable value for `obase` is `BC_BASE_MAX`. The min
-allowable value for `obase` is `2`.
+allowable value for `obase` is `2`, unless bc(1) was built with the extra math
+option. If it was, then the min allowable value is `0`. In this case, if `obase`
+is `0`, values are output in scientific notation, and if `obase` is `1`, values
+are output in engineering notation. (Outputting in scientific or engineering
+notation are **non-portable extensions**.) The max allowable value for `obase`
+can be queried in bc(1) programs with the `maxobase()` built in function.
 
 The **scale** of an expression is the number of digits in the result of the
 expression right of the decimal point, and `scale` is a global variable that
 sets the precision of any operations, with exceptions. `scale` is initially `0`.
-`scale` cannot be negative.
+`scale` cannot be negative. The max allowable value for `scale` can be queried
+in bc(1) programs with the `maxscale()` built in function.
 
 bc(1) has both **global** variables and **local** variables. All **local**
 variables are local to the function; they are parameters or are introduced in a
-function's `auto` list (see [Functions](#FUNCTIONS)). If a variable is
-accessed which is not a parameter or in the `auto` list, it is assumed to be
-**global**. If a parent function has a **local** variable version of a
-**global** variable that is accessed by a function that it calls, the value of
-that **global** variable in the child function is the value of the variable in
-the parent function, not the value of the actual **global** variable.
+function's `auto` list (see FUNCTIONS). If a variable is accessed which is not a
+parameter or in the `auto` list, it is assumed to be **global**. If a parent
+function has a **local** variable version of a **global** variable that is
+accessed by a function that it calls, the value of that **global** variable in
+the child function is the value of the variable in the parent function, not the
+value of the actual **global** variable.
 
 All of the above applies to arrays as well.
 
@@ -173,9 +194,11 @@ The value of a statement that is an expression (i.e., any of the
 [Named Expressions](#bc-named-expressions) or [Operands](#bc-operands)) is
 printed unless the lowest precedence operator is an
 [`assignment`](#bc-assignment) operator ***and*** the expression is not
-surrounded by parentheses. The value that is printed is also assigned to the
-special variable `last`. A single dot may also be used as a synonym for `last`.
-These are **non-portable extensions**.
+surrounded by parentheses.
+
+The value that is printed is also assigned to the special variable `last`. A
+single dot (`.`) may also be used as a synonym for `last`. These are
+**non-portable extensions**.
 
 Either semicolons or newlines may separate statements.
 
@@ -199,8 +222,8 @@ There are two kinds of comments:
 6.	`last` or a single dot (`.`)
 
 Variables and arrays do not interfere; users can have arrays named the same as
-variables. This also applies to [functions](#FUNCTIONS), so a user can have
-a variable, array, and function that all have the same name.
+variables. This also applies to functions (see the FUNCTIONS section), so a user
+can have a variable, array, and function that all have the same name.
 
 Named expressions are required as the operand of
 [`increment`/`decrement` operators](#bc-increment-decrement) and as the left
@@ -211,21 +234,22 @@ side of [`assignment` operators](#bc-assignment).
 ### Operands
 
 1.	Numbers (see [Numbers](#bc-numbers) below).
-2.	`(E)`: The value of `E` (used to change precedence).
-3.	`sqrt(E)`: The square root of `E`.
-4.	`length(E)`: The number of significant decimal digits in `E`.
-5.	`length(I[])`: The number of elements in the array `I`. This is a
+2.	Array indices (`I[E]`).
+3.	`(E)`: The value of `E` (used to change precedence).
+4.	`sqrt(E)`: The square root of `E`.
+5.	`length(E)`: The number of significant decimal digits in `E`.
+6.	`length(I[])`: The number of elements in the array `I`. This is a
 	**non-portable extension**.
-6.	`scale(E)`: `E`'s **scale**.
-7.	`abs(E)`: The absolute value of `E`. This is a **non-portable extension**.
-8.	`read()`: Reads a line from `stdin` and uses that as an expression. The
+7.	`scale(E)`: `E`'s **scale**.
+8.	`abs(E)`: The absolute value of `E`. This is a **non-portable extension**.
+9.	`read()`: Reads a line from `stdin` and uses that as an expression. The
 	result of that expression is the result of the `read()` operand. This is a
 	**non-portable extension**.
-9.	`maxibase()`: The max allowable `ibase`. This is a **non-portable
+10.	`maxibase()`: The max allowable `ibase`. This is a **non-portable
 	extension**.
-10.	`maxobase()`: The max allowable `obase`. This is a **non-portable
+11.	`maxobase()`: The max allowable `obase`. This is a **non-portable
 	extension**.
-11.	`maxscale()`: The max allowable `scale`. This is a **non-portable
+12.	`maxscale()`: The max allowable `scale`. This is a **non-portable
 	extension**.
 
 <a name="bc-numbers"/>
@@ -257,7 +281,7 @@ by `10^exponent` regardless of the current `ibase`. For example, if `ibase` is
 will be `2550000000000`, and if bc(1) is given the number string `"10e-4"`, the
 resulting decimal number will be `0.0016`.
 
-Scientific notation is a **non-portable extension**.
+Accepting input as scientific notation is a **non-portable extension**.
 
 ### Operators
 
@@ -615,7 +639,7 @@ The return statement may also be in the following forms:
 3.	`return` `E`
 
 The first two, or not specifying a `return` statement, is equivalent to
-`return (0)`.
+`return (0)`, unless the function is a [void function](#void-functions).
 
 <a name="void-functions"/>
 
@@ -649,8 +673,8 @@ For any array in the parameter list, if the array is declared in the form
 *I[]
 ```
 
-it is a **reference**. Any changes to the array in the function are reflected
-when the function returns to the array that was passed in.
+it is a **reference**. Any changes to the array in the function are reflected,
+when the function returns, to the array that was passed in.
 
 Other than this, all function arguments are passed by value.
 
@@ -758,6 +782,21 @@ The extended library is a **non-portable extension**.
 
     This is a [transcendental function][5].
 
+  * `a2(y, x)`:
+    Returns the arctangent of `y/x`, in radians. If both `y` and `x` are equal
+    to `0`, it raises an error and causes bc(1) to reset (see the RESET
+    section). Otherwise, if `x` is greater than `0`, it returns `a(y/x)`. If `x`
+    is less than `0`, and `y` is greater than or equal to `0`, it returns
+    `a(y/x) + pi`. If `x` is less than `0`, and `y` is less than `0`, it returns
+    `a(y/x) - pi`. If `x` is equal to `0`, and `y` is greater than `0`, it
+    returns `pi/2`. If `x` is equal to `0`, and `y` is less than `0`, it returns
+    `-pi/2`.
+
+    This function is the same as the `atan2()` function in many programming
+    languages.
+
+    This is a [transcendental function][5].
+
   * `sin(x)`:
     Returns the sine of `x`, which is assumed to be in radians.
 
@@ -786,12 +825,29 @@ The extended library is a **non-portable extension**.
 
     This is a [transcendental function][5].
 
+  * `atan2(y, x)`:
+    Returns the arctangent of `y/x`, in radians. If both `y` and `x` are equal
+    to `0`, it raises an error and causes bc(1) to reset (see the RESET
+    section). Otherwise, if `x` is greater than `0`, it returns `a(y/x)`. If `x`
+    is less than `0`, and `y` is greater than or equal to `0`, it returns
+    `a(y/x) + pi`. If `x` is less than `0`, and `y` is less than `0`, it returns
+    `a(y/x) - pi`. If `x` is equal to `0`, and `y` is greater than `0`, it
+    returns `pi/2`. If `x` is equal to `0`, and `y` is less than `0`, it returns
+    `-pi/2`.
+
+    This function is the same as the `atan2()` function in many programming
+    languages.
+
+    This is an alias of `a2(y, x)`.
+
+    This is a [transcendental function][5].
+
   * `r2d(x)`:
     Converts `x` from radians to degrees and returns the result.
 
     This is a [transcendental function][5].
 
-  * `r2d(x)`:
+  * `d2r(x)`:
     Converts `x` from degrees to radians and returns the result.
 
     This is a [transcendental function][5].
@@ -807,17 +863,17 @@ The extended library is a **non-portable extension**.
   * `hex(x)`:
     Outputs the hexadecimal (base `16`) representation of `x`.
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `binary(x)`:
     Outputs the binary (base `2`) representation of `x`.
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `output(x, b)`:
     Outputs the base `b` representation of `x`.
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `uint(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
@@ -825,27 +881,29 @@ The extended library is a **non-portable extension**.
     into bytes separated by spaces.
 
     If `x` is not an integer or is negative, an error message is printed
-    instead.
+    instead, but bc(1) is not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `int(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as a signed,
     two's-complement integer in as few power of two bytes as possible. Both
     outputs are split into bytes separated by spaces.
 
-    If `x` is not an integer, an error message is printed instead.
+    If `x` is not an integer, an error message is printed instead, but bc(1) is
+    not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `uintn(x, n)`:
     Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
     integer in `n` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `n` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `intn(x, n)`:
     Outputs the representation, in binary and hexadecimal, of `x` as a signed,
@@ -853,18 +911,18 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `n` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `uint8(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
     integer in `1` byte. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `1` byte, an error
-    message is printed instead.
+    message is printed instead, but bc(1) is not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `int8(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as a signed,
@@ -872,18 +930,19 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `1` byte, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `uint16(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
     integer in `2` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `2` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `int16(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as a signed,
@@ -891,18 +950,19 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `2` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `uint32(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
     integer in `4` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `4` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `int32(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as a signed,
@@ -910,18 +970,19 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `4` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `uint64(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as an unsigned
     integer in `8` bytes. Both outputs are split into bytes separated by spaces.
 
     If `x` is not an integer, is negative, or cannot fit into `8` bytes, an
-    error message is printed instead.
+    error message is printed instead, but bc(1) is not reset (see the RESET
+    section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `int64(x)`:
     Outputs the representation, in binary and hexadecimal, of `x` as a signed,
@@ -929,37 +990,37 @@ The extended library is a **non-portable extension**.
     separated by spaces.
 
     If `x` is not an integer or cannot fit into `8` bytes, an error message is
-    printed instead.
+    printed instead, but bc(1) is not reset (see the RESET section).
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `hex_uint(x, n)`:
     Outputs the representation of the truncated absolute value of `x` as an
     unsigned integer in hexadecimal using `n` bytes. Not all of the value will
     be output if `n` is too small.
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `binary_uint(x, n)`:
     Outputs the representation of the truncated absolute value of `x` as an
     unsigned integer in binary using `n` bytes. Not all of the value will be
     output if `n` is too small.
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `output_uint(x, n)`:
     Outputs the representation of the truncated absolute value of `x` as an
     unsigned integer in the current [`obase`](#obase) using `n` bytes. Not all
     of the value will be output if `n` is too small.
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
   * `output_byte(x, i)`:
     Outputs byte `i` of the truncated absolute value of `x`, where `0` is the
     least significant byte and `number_of_bytes - 1` is the most significant
     byte.
 
-    This is a [void](#void-functions) function.
+    This is a [void function](#void-functions).
 
 <a name="transcendental-functions"/>
 
@@ -991,39 +1052,95 @@ The transcendental functions in the extended math library are:
 * `log(x, b)`
 * `pi(p)`
 * `t(x)`
+* `a2(y, x)`
 * `sin(x)`
 * `cos(x)`
 * `tan(x)`
 * `atan(x)`
+* `atan2(y, x)`
 * `r2d(x)`
 * `d2r(x)`
+
+RESET
+-----
+
+When bc(1) encounters an error or a signal that it has a non-default handler
+for, it resets. This means that several things happen.
+
+First, any functions that are executing are stopped and popped off the stack.
+The behavior is not unlike that of exceptions in programming languages. Then
+the execution point is set so that any code waiting to execute (after all
+functions returned) is skipped.
+
+Thus, when bc(1) resets, it skips any remaining code waiting to be executed.
+Then, if it is interactive mode, and the error was not a fatal error (see the
+EXIT STATUS section), it asks for more input; otherwise, it exits with the
+appropriate return code.
+
+Note that this reset behavior is different from the GNU bc(1), which attempts to
+start executing the statement right after the one that caused an error.
+
+PERFORMANCE
+-----------
+
+Most bc(1) implementations use `char` types to calculate the value of `1`
+decimal digit at a time, but that can be slow. This bc(1) does something
+different.
+
+It uses large integers to calculate more than `1` decimal digit at a time. If
+built in a environment where `BC_LONG_BIT` (see the LIMITS section) is `64`,
+then each integer has `9` decimal digits. If built in an environment where
+`BC_LONG_BIT` is `32` then each integer has `4` decimal digits. This value (the
+number of decimal digits per large integer) is called `BC_BASE_DIGS`.
+
+In addition, this bc(1) uses an even larger integer for overflow checking. This
+integer type depends on the value of `BC_LONG_BIT`, but is always at least twice
+as large as the integer type used to store digits.
 
 LIMITS
 ------
 
 The following are the limits on bc(1):
 
+  * `BC_LONG_BIT`:
+    The number of bits in the `long` type in the environment where bc(1) was
+    built. This determines how many decimal digits can be stored in a single
+    large integer (see the PERFORMANCE section).
+
+  * `BC_BASE_DIGS`:
+    The number of decimal digits per large integer (see the PERFORMANCE
+    section). Depends on `BC_LONG_BIT`.
+
+  * `BC_BASE_POW`:
+    The max decimal number that each large integer can store (see
+    `BC_BASE_DIGS`) plus `1`. Depends on `BC_BASE_DIGS`.
+
+  * `BC_OVERFLOW_MAX`:
+    The max number that the overflow type (see the PERFORMANCE section) can
+    hold. Depends on `BC_LONG_BIT`.
+
   * `BC_BASE_MAX`:
-    The maximum output base. Set at `ULONG_MAX`.
+    The maximum output base. Set at `BC_BASE_POW`.
 
   * `BC_DIM_MAX`:
     The maximum size of arrays. Set at `SIZE_MAX-1`.
 
   * `BC_SCALE_MAX`:
-    The maximum `scale`. Set at `SIZE_MAX-1`.
+    The maximum `scale`. Set at `BC_OVERFLOW_MAX-1`.
 
   * `BC_STRING_MAX`:
-    The maximum length of strings. Set at `SIZE_MAX-1`.
+    The maximum length of strings. Set at `BC_OVERFLOW_MAX-1`.
 
   * `BC_NAME_MAX`:
-    The maximum length of identifiers. Set at `SIZE_MAX-1`.
+    The maximum length of identifiers. Set at `BC_OVERFLOW_MAX-1`.
 
   * `BC_NUM_MAX`:
     The maximum length of a number (in decimal digits), which includes digits
-    after the decimal point. Set at `SIZE_MAX-1`.
+    after the decimal point. Set at `BC_OVERFLOW_MAX-1`.
 
   * Exponent:
-    The maximum allowable exponent (positive or negative). Set at `ULONG_MAX`.
+    The maximum allowable exponent (positive or negative). Set at
+    `BC_OVERFLOW_MAX`.
 
   * Number of vars:
     The maximum number of vars/arrays. Set at `SIZE_MAX-1`.
@@ -1078,7 +1195,8 @@ bc(1) returns the following exit statuses:
     use a non-integer where an integer is required.
 
     Converting to a hardware integer happens for the second operand of the power
-    (`^`), places (`@`), left shift (`<<`), and right shift (`>>`) operators.
+    (`^`), places (`@`), left shift (`<<`), and right shift (`>>`) operators and
+    their corresponding assignment operators.
 
   * `2`:
     A parse error occurred.
@@ -1114,9 +1232,9 @@ The exit status `4` is special; when a fatal error occurs, bc(1) always exits
 and returns `4`, no matter what mode bc(1) is in.
 
 The other statuses will only be returned when bc(1) is not in interactive mode,
-since bc(1) resets its state and accepts more input when one of those errors
-occurs in interactive mode. This is also the case when interactive mode is
-forced by the `-i` option.
+since bc(1) resets its state (see the RESET section) and accepts more input when
+one of those errors occurs in interactive mode. This is also the case when
+interactive mode is forced by the `-i` option.
 
 These exit statuses allow bc(1) to be used in shell scripting with error
 checking, and its normal behavior can be forced by using `-i`.
@@ -1125,10 +1243,14 @@ SIGNAL HANDLING
 ---------------
 
 If bc(1) has been compiled with the signal handling, sending a `SIGINT` will
-cause bc(1) to stop  execution of the current input and reset, asking for more
-input.
+cause bc(1) to stop execution of the current input and reset (see the RESET
+section), asking for more input.
 
-Otherwise, any signals cause bc(1) to exit.
+Otherwise, `SIGTERM` and `SIGQUIT` cause bc(1) to clean up and exit, and it uses
+the default handler for all other signals.
+
+If bc(1) has not been compiled with signal handling, it uses the default signal
+handlers for all signals.
 
 COMMAND LINE HISTORY
 --------------------

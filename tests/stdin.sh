@@ -68,4 +68,4 @@ cat "$testdir/$d/stdin.txt" | "$exe" "$@" "$options" > "$out" 2> /dev/null
 
 diff "$testdir/$d/stdin_results.txt" "$out"
 
-rm -rf "$out1"
+rm -f "$out1"

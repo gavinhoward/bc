@@ -22,21 +22,23 @@ This is the checklist for cutting a release.
 	sanitizers, on FreeBSD.
 13.	Run Coverity Scan and eliminate warnings, if possible (both only).
 	* debug
-14.	Repeat steps 3-13 again and repeat until nothing is found.
-15.	Change the version (remove "-dev") and commit.
-16.	Run "make clean_tests".
-17.	Run the release script.
-18.	Upload the custom tarball to GitHub.
-19.	Add sha's to release notes.
-20.	Edit release notes for the changelog.
-21.	Increment to the next version (with "-dev").
-22.	Notify the following:
+14.	Run `scan-build make`.
+15.	Repeat steps 3-14 again and repeat until nothing is found.
+16.	Change the version (remove "-dev") and commit.
+17.	Run "make clean_tests".
+18.	Run the release script.
+19.	Upload the custom tarball to GitHub.
+20.	Add sha's to release notes.
+21.	Edit release notes for the changelog.
+22.	Increment to the next version (with "-dev").
+23.	Notify the following:
 	* FreeBSD
 	* Adelie Linux
 	* Sabotage
 	* xstatic
-23.	Submit new packages for the following:
+24.	Submit new packages for the following:
 	* OpenBSD
+	* NetBSD
 	* Alpine Linux
 	* Void Linux
 	* Gentoo Linux

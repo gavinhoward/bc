@@ -64,18 +64,34 @@
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
 static void bc_vm_sig(int sig) {
+
 	int err = errno;
+
 	if (sig == SIGINT) {
+
 		size_t n = vm->siglen;
-		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n)) sig = 0;
+
+		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n))
+			_Exit(BC_STATUS_ERROR_FATAL);
+
+		vm->sig += 1;
+
+		if (vm->sig == BC_SIGTERM_VAL) vm->sig = 1;
 	}
-	vm->sig = (uchar) sig;
+	else vm->sig = BC_SIGTERM_VAL;
+
 	errno = err;
 }
 #else // _WIN32
 static BOOL WINAPI bc_vm_sig(DWORD sig) {
-	if (sig == CTRL_C_EVENT) bc_vm_puts(vm->sigmsg, stderr);
-	vm->sig = (uchar) sig;
+
+	if (sig == CTRL_C_EVENT) {
+		bc_vm_puts(vm->sigmsg, stderr);
+		vm->sig += 1;
+		if (vm->sig == BC_SIGTERM_VAL) vm->sig = 1;
+	}
+	else vm->sig = BC_SIGTERM_VAL;
+
 	return TRUE;
 }
 #endif // _WIN32
@@ -126,11 +142,17 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 			fprintf(stderr, bc_err_line, line);
 		}
 		else {
+
 			BcInstPtr *ip = bc_vec_item_rev(&vm->prog.stack, 0);
 			BcFunc *f = bc_vec_item(&vm->prog.fns, ip->func);
+
 			fprintf(stderr, "\n    %s %s", vm->func_header, f->name);
-			if (ip->func != BC_PROG_MAIN && ip->func != BC_PROG_READ)
+
+			if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
+			    ip->func != BC_PROG_READ)
+			{
 				fprintf(stderr, "()");
+			}
 		}
 	}
 
@@ -140,20 +162,19 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 	return (BcStatus) (id + 1);
 }
 
-#if BC_ENABLED
-static BcStatus bc_vm_envArgs(void) {
+static BcStatus bc_vm_envArgs(const char* const env_args_name) {
 
 	BcStatus s;
 	BcVec v;
-	char *env_args = getenv(bc_args_env_name), *buf;
+	char *env_args = getenv(env_args_name), *buffer, *buf;
 
 	if (!env_args) return BC_STATUS_SUCCESS;
 
-	vm->env_args = bc_vm_strdup(env_args);
-	buf = vm->env_args;
+	buffer = bc_vm_strdup(env_args);
+	buf = buffer;
 
 	bc_vec_init(&v, sizeof(char*), NULL);
-	bc_vec_push(&v, &bc_args_env_name);
+	bc_vec_push(&v, &env_args_name);
 
 	while (*buf) {
 
@@ -178,10 +199,10 @@ static BcStatus bc_vm_envArgs(void) {
 	s = bc_args((int) v.len - 1, bc_vec_item(&v, 0));
 
 	bc_vec_free(&v);
+	free(buffer);
 
 	return s;
 }
-#endif // BC_ENABLED
 
 static size_t bc_vm_envLen(const char *var) {
 
@@ -205,7 +226,7 @@ static size_t bc_vm_envLen(const char *var) {
 
 void bc_vm_shutdown(void) {
 #if BC_ENABLE_NLS
-	catclose(vm->catalog);
+	if (vm->catalog != BC_VM_INVALID_CATALOG) catclose(vm->catalog);
 #endif // BC_ENABLE_NLS
 #if BC_ENABLE_HISTORY
 	// This must always run to ensure that the terminal is back to normal.
@@ -216,7 +237,6 @@ void bc_vm_shutdown(void) {
 	bc_vec_free(&vm->exprs);
 	bc_program_free(&vm->prog);
 	bc_parse_free(&vm->prs);
-	free(vm->env_args);
 	free(vm);
 #endif // NDEBUG
 }
@@ -229,14 +249,14 @@ static void bc_vm_exit(BcError e) {
 
 size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
-	if (BC_ERR(res >= BC_NUM_BIGDIG_MAX || (n != 0 && res / n != size)))
+	if (BC_ERR(res >= SIZE_MAX || (n != 0 && res / n != size)))
 		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
 
 size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t res = a + b;
-	if (BC_ERR(res >= BC_NUM_BIGDIG_MAX || res < a || res < b))
+	if (BC_ERR(res >= SIZE_MAX || res < a || res < b))
 		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
@@ -288,7 +308,7 @@ void bc_vm_fflush(FILE *restrict f) {
 	if (BC_IO_ERR(fflush(f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 }
 
-static void bc_vm_clean() {
+static void bc_vm_clean(void) {
 
 	BcProgram *prog = &vm->prog;
 	BcVec *fns = &prog->fns;
@@ -507,7 +527,7 @@ static BcStatus bc_vm_load(const char *name, const char *text) {
 }
 #endif // BC_ENABLED
 
-static void bc_vm_defaultMsgs() {
+static void bc_vm_defaultMsgs(void) {
 
 	size_t i;
 
@@ -518,29 +538,29 @@ static void bc_vm_defaultMsgs() {
 	for (i = 0; i < BC_ERROR_NELEMS; ++i) vm->err_msgs[i] = bc_err_msgs[i];
 }
 
-static void bc_vm_gettext() {
+static void bc_vm_gettext(void) {
 
 #if BC_ENABLE_NLS
 	uchar id = 0;
-	int set, msg;
+	int set = 1, msg = 1;
 	size_t i;
 
 	if (!vm->locale) {
+		vm->catalog = BC_VM_INVALID_CATALOG;
 		bc_vm_defaultMsgs();
 		return;
 	}
 
 	vm->catalog = catopen(BC_MAINEXEC, NL_CAT_LOCALE);
-	if (vm->catalog == (nl_catd) -1) {
+
+	if (vm->catalog == BC_VM_INVALID_CATALOG) {
 		bc_vm_defaultMsgs();
 		return;
 	}
 
-	set = msg = 1;
-
 	vm->func_header = catgets(vm->catalog, set, msg, bc_err_func_header);
 
-	for (set += 1, msg = 1; msg <= BC_ERR_IDX_NELEMS + BC_ENABLED; ++msg)
+	for (set += 1; msg <= BC_ERR_IDX_NELEMS + BC_ENABLED; ++msg)
 		vm->err_ids[msg - 1] = catgets(vm->catalog, set, msg, bc_errs[msg - 1]);
 
 	i = 0;
@@ -567,9 +587,11 @@ static BcStatus bc_vm_exec(void) {
 	size_t i;
 
 #if BC_ENABLED
-	if (BC_IS_BC && vm->flags & BC_FLAG_L) {
+	if (BC_IS_BC && (vm->flags & BC_FLAG_L)) {
+
 		s = bc_vm_load(bc_lib_name, bc_lib);
 		if (BC_ERR(s)) return s;
+
 #if BC_ENABLE_EXTRA_MATH
 		if (!BC_IS_POSIX) {
 			s = bc_vm_load(bc_lib2_name, bc_lib2);
@@ -589,14 +611,16 @@ static BcStatus bc_vm_exec(void) {
 		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
 	if (BC_ERR(s)) return s;
 
-	if ((BC_IS_BC || !vm->files.len) && !vm->exprs.len) s = bc_vm_stdin();
+	if (BC_IS_BC || !vm->files.len) s = bc_vm_stdin();
 
 	return s;
 }
 
-BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
-
+BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
+                    const char* const env_args)
+{
 	BcStatus s;
+	int ttyin, ttyout, ttyerr;
 #if BC_ENABLE_SIGNALS
 #ifndef _WIN32
 	struct sigaction sa;
@@ -604,6 +628,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = bc_vm_sig;
 	sa.sa_flags = 0;
+
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
@@ -627,26 +652,32 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len) {
 #endif // BC_ENABLE_HISTORY
 
 #if BC_ENABLED
-	if (BC_IS_BC) {
-		vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
-		s = bc_vm_envArgs();
-		if (BC_ERR(s)) goto exit;
-	}
+	if (BC_IS_BC) vm->flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 #endif // BC_ENABLED
+
+	s = bc_vm_envArgs(env_args);
+	if (BC_ERR(s)) goto exit;
 
 	s = bc_args(argc, argv);
 	if (BC_ERR(s)) goto exit;
 
-	vm->flags |= isatty(STDIN_FILENO) ? BC_FLAG_TTYIN : 0;
-	vm->flags |= BC_TTYIN && isatty(STDOUT_FILENO) ? BC_FLAG_I : 0;
+	ttyin = isatty(STDIN_FILENO);
+	ttyout = isatty(STDOUT_FILENO);
+	ttyerr = isatty(STDERR_FILENO);
+
+	vm->flags |= ttyin ? BC_FLAG_TTYIN : 0;
+	vm->flags |= ttyin && ttyout ? BC_FLAG_I : 0;
+
+	vm->tty = ttyin != 0 && ttyerr != 0;
 
 	if (BC_IS_POSIX) vm->flags &= ~(BC_FLAG_G);
 
-	vm->maxes[BC_PROG_GLOBALS_IBASE] = BC_IS_BC && !BC_IS_POSIX ?
-	                                       BC_NUM_MAX_IBASE :
-	                                       BC_NUM_MAX_POSIX_IBASE;
+	vm->maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_POSIX_IBASE;
 	vm->maxes[BC_PROG_GLOBALS_OBASE] = BC_MAX_OBASE;
 	vm->maxes[BC_PROG_GLOBALS_SCALE] = BC_MAX_SCALE;
+
+	if (BC_IS_BC && !BC_IS_POSIX)
+		vm->maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_IBASE;
 
 	if (BC_IS_BC && BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 

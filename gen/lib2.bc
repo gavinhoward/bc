@@ -118,10 +118,26 @@ define t(x){
 	scale=l
 	return s/c
 }
+define a2(y,x){
+	auto a,p
+	if(!x&&!y)y/x
+	if(x<=0){
+		p=pi(scale+2)
+		if(y<0)p=-p
+	}
+	if(x==0)a=p/2
+	else{
+		scale+=2
+		a=a(y/x)+p
+		scale-=2
+	}
+	return a@scale
+}
 define sin(x){return s(x)}
 define cos(x){return c(x)}
 define atan(x){return a(x)}
 define tan(x){return t(x)}
+define atan2(y,x){return a2(y,x)}
 define r2d(x){
 	auto r,i,s
 	s=scale
