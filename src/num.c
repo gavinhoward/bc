@@ -925,7 +925,6 @@ static bool bc_num_nonZeroDig(BcDig *restrict a, size_t len)
 {
 	size_t i;
 	bool nonzero = false;
-
 	for (i = len - 1; !nonzero && i < len; --i) nonzero = (a[i] != 0);
 	return nonzero;
 }
@@ -962,11 +961,9 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	BcNum cpb;
 	bool nonzero = false;
 
-	DUMP_NUM("a", a);
-	DUMP_NUM("b", b);
-
 	len = b->len;
 	end = a->len - len;
+	assert(len >= 1);
 
 	bc_num_expand(c, a->len);
 	memset(c->num, 0, c->cap * sizeof(BcDig));
@@ -977,7 +974,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 	divisor = (BcBigDig) b->num[len - 1];
 
-	if (bc_num_nonZeroDig(b->num, len -1)) {
+	if (len > 1 && bc_num_nonZeroDig(b->num, len - 1)) {
 		nonzero = true;
 		if (divisor < BC_BASE_POW / BC_BASE) {
 			bc_num_divExtend(a, b, divisor);
@@ -985,8 +982,6 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 			a->len++;
 			len = b->len;
 			end = a->len - len;
-	DUMP_NUM("a*", a);
-	DUMP_NUM("b*", b);
 			divisor = (BcBigDig) b->num[len - 1];
 			nonzero = bc_num_nonZeroDig(b->num, len -1);
 		}
@@ -1058,14 +1053,11 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 		assert(result < BC_BASE_POW);
 
 		c->num[i] = (BcDig) result;
-		DUMP_NUM("a**", a);
-		DUMP_NUM("c**", c);
 	}
 
 err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 	bc_num_free(&cpb);
-DUMP_NUM("c", c);
 	return s;
 }
 
