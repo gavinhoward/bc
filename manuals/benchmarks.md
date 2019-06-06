@@ -13,7 +13,7 @@ directory is the root directory of this repository. Also, this `bc` was built at
 The command used was:
 
 ```
-tests/script bc add.bc 0 1 1 [bc]
+tests/script.sh bc add.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
@@ -41,7 +41,7 @@ sys 0.04
 The command used was:
 
 ```
-tests/script bc subtract.bc 0 1 1 [bc]
+tests/script.sh bc subtract.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
@@ -69,7 +69,7 @@ sys 0.02
 The command used was:
 
 ```
-tests/script bc multiply.bc 0 1 1 [bc]
+tests/script.sh bc multiply.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
