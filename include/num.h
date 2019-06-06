@@ -134,7 +134,8 @@ typedef struct BcNum {
 
 #define BC_NUM_KARATSUBA_ALLOCS (6)
 
-#define BC_NUM_CMP_SIGNAL (~((ssize_t) ((size_t) SSIZE_MAX)))
+#define BC_NUM_CMP_SIGNAL_VAL (~((ssize_t) ((size_t) SSIZE_MAX)))
+#define BC_NUM_CMP_SIGNAL(cmp) (cmp == BC_NUM_CMP_SIGNAL_VAL)
 
 #define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_DIGS - 1))
 #define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_DIGS)

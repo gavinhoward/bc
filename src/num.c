@@ -144,22 +144,29 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
                                  size_t len)
 {
 	size_t i;
-	BcBigDig acc, sub;
-	bool carry;
+	BcBigDig acc;
+	bool carry = false;
 
-	carry = false;
-	for (i = 0; i < len; i++) {
+	for (i = 0; i < len; ++i) {
+
+		BcBigDig sub;
+
 		acc = (BcBigDig) a[i];
 		sub = ((BcBigDig) b[i]) + carry;
-		carry = acc < sub;
-		if (carry) acc += BC_BASE_POW;
+
+		carry = (acc < sub);
+		acc += carry ? BC_BASE_POW : 0;
+
 		assert(acc - sub < BC_BASE_POW);
+
 		a[i] = (BcDig) (acc - sub);
 	}
-	for ( ; carry; i++) {
+
+	while (carry) {
 		acc = (BcBigDig) a[i];
-		carry = acc == 0;
+		carry = (acc == 0);
 		a[i] = (BcDig) (carry ? BC_BASE_POW - 1 : acc - 1);
+		i += 1;
 	}
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
@@ -221,7 +228,7 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 	size_t i;
 	BcDig c = 0;
 	for (i = len - 1; BC_NO_SIG && i < len && !(c = a[i] - b[i]); --i);
-	return BC_SIG ? BC_NUM_CMP_SIGNAL : bc_num_neg(i + 1, c < 0);
+	return BC_SIG ? BC_NUM_CMP_SIGNAL_VAL : bc_num_neg(i + 1, c < 0);
 }
 
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
@@ -265,7 +272,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
 
 #if BC_ENABLE_SIGNALS
-	if (cmp == BC_NUM_CMP_SIGNAL) return cmp;
+	if (BC_NUM_CMP_SIGNAL(cmp)) return cmp;
 #endif // BC_ENABLE_SIGNALS
 
 	if (cmp) return bc_num_neg((size_t) cmp, !a_max == !neg);
@@ -274,7 +281,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 		if (max_num[i]) return bc_num_neg(1, !a_max == !neg);
 	}
 
-	return BC_SIG ? BC_NUM_CMP_SIGNAL : 0;
+	return BC_SIG ? BC_NUM_CMP_SIGNAL_VAL : 0;
 }
 
 void bc_num_truncate(BcNum *restrict n, size_t places) {
@@ -638,7 +645,7 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	b->neg = bneg;
 
 #if BC_ENABLE_SIGNALS
-	if (cmp == BC_NUM_CMP_SIGNAL) return BC_STATUS_SIGNAL;
+	if (BC_NUM_CMP_SIGNAL(cmp)) return BC_STATUS_SIGNAL;
 #endif // BC_ENABLE_SIGNALS
 
 	if (!cmp) {
@@ -970,7 +977,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 		cmp = bc_num_divCmp(n, b, len);
 
 #if BC_ENABLE_SIGNALS
-		if (cmp == BC_NUM_CMP_SIGNAL) goto err;
+		if (BC_NUM_CMP_SIGNAL(cmp)) goto err;
 #endif // BC_ENABLE_SIGNALS
 
 		while (cmp >= 0) {
@@ -1005,7 +1012,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 			if (a->len > i) {
 				cmp = bc_num_divCmp(n, b, len);
 #if BC_ENABLE_SIGNALS
-				if (cmp == BC_NUM_CMP_SIGNAL) goto err;
+				if (BC_NUM_CMP_SIGNAL(cmp)) goto err;
 #endif // BC_ENABLE_SIGNALS
 			}
 			else cmp = -1;
@@ -2214,7 +2221,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		cmp = bc_num_cmp(x1, x0);
 
 #if BC_ENABLE_SIGNALS
-		if (cmp == BC_NUM_CMP_SIGNAL) {
+		if (BC_NUM_CMP_SIGNAL(cmp)) {
 			s = BC_STATUS_SIGNAL;
 			break;
 		}
