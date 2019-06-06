@@ -481,7 +481,7 @@ static void bc_program_printChars(const char *str) {
 	const char *nl;
 	vm->nchars += bc_vm_printf("%s", str);
 	nl = strrchr(str, '\n');
-	if (nl) vm->nchars = strlen(nl - 1);
+	if (nl) vm->nchars = strlen(nl + 1);
 }
 
 static void bc_program_printString(const char *restrict str) {
