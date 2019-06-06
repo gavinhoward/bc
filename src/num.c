@@ -987,6 +987,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 			}
 			else {
+
 				assert(q <= BC_BASE_POW);
 
 				s = bc_num_mulArray(b, (BcBigDig) q, &cpb);
