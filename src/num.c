@@ -143,16 +143,23 @@ static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
 static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
                                  size_t len)
 {
-	size_t i, j;
+	size_t i;
+	BcBigDig acc, sub;
+	bool carry;
 
-	for (i = 0; BC_NO_SIG && i < len; ++i) {
-
-		for (a[i] -= b[i], j = 0; BC_NO_SIG && a[i + j] < 0;) {
-			assert(a[i + j] >= -BC_BASE_POW);
-			a[i + j++] += BC_BASE_POW;
-			a[i + j] -= 1;
-			assert(a[i + j - 1] >= 0 && a[i + j - 1] < BC_BASE_POW);
-		}
+	carry = false;
+	for (i = 0; i < len; i++) {
+		acc = (BcBigDig) a[i];
+		sub = ((BcBigDig) b[i]) + carry;
+		carry = acc < sub;
+		if (carry) acc += BC_BASE_POW;
+		assert(acc - sub < BC_BASE_POW);
+		a[i] = (BcDig) (acc - sub);
+	}
+	for ( ; carry; i++) {
+		acc = (BcBigDig) a[i];
+		carry = acc == 0;
+		a[i] = (BcDig) (carry ? BC_BASE_POW - 1 : acc - 1);
 	}
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
@@ -907,65 +914,18 @@ err:
 	return s;
 }
 
-static int bc_num_nonZeroDig(BcDig *restrict a, size_t len)
-{
-	size_t i = len - 1;
+static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 
-	for (i = len - 1; i < len; i--) {
-		if (a[i] != 0)
-			return 1;
-	}
-	return 0;
-}
+	ssize_t cmp;
 
-// return -1 if a < b, 0 if both are equal, +1 if a > b
-int bc_num_cmpArrays(BcDig *restrict a, size_t a_len, BcDig *restrict b, size_t b_len)
-{
-	size_t i;
-	size_t len;
+	if (b->len > len && a[len]) cmp = bc_num_compare(a, b->num, len + 1);
+	else if (b->len <= len) {
+		if (a[len]) cmp = 1;
+		else cmp = bc_num_compare(a, b->num, len);
+	}
+	else cmp = -1;
 
-	len = a_len;
-	if (a_len < b_len) {
-		if (bc_num_nonZeroDig(b + len, b_len - len))
-			return -1;
-	}
-	else if (a_len > b_len) {
-		len = b_len;
-		if (bc_num_nonZeroDig(a + len, a_len - len))
-			return 1;
-	}
-	for (i = 1; i <= len; i++) {
-		if (a[len - i] != b[len - i])
-			return a[len - i] < b[len - i] ? -1 : 1;
-	}
-	return 0;
-}
-
-// subtract BcNum from BcDig array and return 1 on underflow
-static int bc_num_subNum(BcDig *restrict n, size_t len, const BcNum *restrict b)
-{
-	size_t max;
-	size_t i;
-	BcDig acc, sub;
-	int carry;
-
-	assert(len >= b->len);
-	max = BC_MIN(len, b->len); // max = b->len;
-	carry = 0;
-	for (i = 0; i < max; i++) {
-		acc = n[i];
-		sub = b->num[i] + carry;
-		carry = acc < sub;
-		if (carry)
-			acc += BC_BASE_POW;
-		n[i] = acc - sub;
-	}
-	for ( ; carry != 0 && i < len; i++) {
-		acc = n[i];
-		carry = acc == 0;
-		n[i] = carry ? BC_BASE_POW - 1 : acc - 1;
-	}
-	return carry;
+	return cmp;
 }
 
 static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
