@@ -97,7 +97,7 @@ sys 0.03
 The command used was:
 
 ```
-tests/script bc divide.bc 0 1 1 [bc]
+tests/script.sh bc divide.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
