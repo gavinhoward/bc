@@ -2460,6 +2460,5 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 
 	fprintf(stderr, "(%zu | %zu.%zu / %zu) %p\n",
 	        n->scale, n->len, n->rdx, n->cap, (void*) n->num);
-	vm->nchars = 0;
 }
 #endif // BC_DEBUG_CODE
