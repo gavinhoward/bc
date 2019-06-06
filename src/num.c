@@ -734,7 +734,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	assert(BC_NUM_ZERO(c));
 
 	// This is here because the function is recursive.
- 	if (BC_SIG) return BC_STATUS_SIGNAL;
+	if (BC_SIG) return BC_STATUS_SIGNAL;
 	if (BC_NUM_ZERO(a) || BC_NUM_ZERO(b)) return BC_STATUS_SUCCESS;
 	if (aone || BC_NUM_ONE(b)) {
 		bc_num_copy(c, aone ? b : a);
