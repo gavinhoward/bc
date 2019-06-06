@@ -1052,6 +1052,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 			}
 			else cmp = -1;
 		}
+
 		assert(result < BC_BASE_POW);
 
 		c->num[i] = (BcDig) result;
