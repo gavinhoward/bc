@@ -3,7 +3,7 @@
 These are the results of benchmarks comparing this `bc` (at version `2.0.0`) and
 GNU `bc` (at version `1.07.1`).
 
-Note: all benchmarks were run four time, and the fastest run is the one shown.
+Note: all benchmarks were run four times, and the fastest run is the one shown.
 Also, `[bc]` means whichever `bc` was being run, and the assumed working
 directory is the root directory of this repository. Also, this `bc` was built at
 `-O2`.
@@ -13,7 +13,7 @@ directory is the root directory of this repository. Also, this `bc` was built at
 The command used was:
 
 ```
-tests/script bc add.bc 0 1 1 [bc]
+tests/script.sh bc add.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
@@ -41,7 +41,7 @@ sys 0.04
 The command used was:
 
 ```
-tests/script bc subtract.bc 0 1 1 [bc]
+tests/script.sh bc subtract.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
@@ -69,7 +69,7 @@ sys 0.02
 The command used was:
 
 ```
-tests/script bc multiply.bc 0 1 1 [bc]
+tests/script.sh bc multiply.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
@@ -97,7 +97,7 @@ sys 0.03
 The command used was:
 
 ```
-tests/script bc divide.bc 0 1 1 [bc]
+tests/script.sh bc divide.bc 0 1 1 [bc]
 ```
 
 For GNU `bc`:
@@ -105,9 +105,9 @@ For GNU `bc`:
 ```
 Running bc script: divide.bc
 
-real 2.89
-user 1.62
-sys 1.26
+real 2.95
+user 1.89
+sys 1.06
 ```
 
 For this `bc`:
@@ -115,9 +115,9 @@ For this `bc`:
 ```
 Running bc script: divide.bc
 
-real 2.24
-user 2.22
-sys 0.01
+real 1.78
+user 1.78
+sys 0.00
 ```
 
 ### Power
@@ -170,17 +170,17 @@ time -p sh ../test.sh [bc]
 For GNU `bc`:
 
 ```
-real 0.92
-user 0.85
-sys 0.17
+real 1.30
+user 1.22
+sys 0.23
 ```
 
 For this `bc`:
 
 ```
-real 1.01
-user 0.96
-sys 0.15
+real 1.91
+user 1.73
+sys 0.38
 ```
 
 [1]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc

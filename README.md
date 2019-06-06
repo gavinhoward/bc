@@ -162,6 +162,7 @@ This `bc` compares favorably to GNU `bc`.
 * This `bc` has fewer crashes.
 * GNU `bc` will report errors when there are none. For example, `0 ^ -251`
   causes GNU `bc` to report a divide by `0`.
+* GNU `bc` calculates the wrong number of significant digits for `length(x)`.
 * GNU `bc` will sometimes print numbers incorrectly. For example, when running
   it on the file `tests/bc/power.txt` in this repo, GNU `bc` gets all the right
   answers, but for some inexplicable reason, it fails to wrap the numbers at the

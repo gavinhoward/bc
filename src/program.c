@@ -620,15 +620,15 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	if (inst == BC_INST_BOOL_AND)
-		cond = bc_num_cmpZero(n1) && bc_num_cmpZero(n2);
+		cond = (bc_num_cmpZero(n1) && bc_num_cmpZero(n2));
 	else if (inst == BC_INST_BOOL_OR)
-		cond = bc_num_cmpZero(n1) || bc_num_cmpZero(n2);
+		cond = (bc_num_cmpZero(n1) || bc_num_cmpZero(n2));
 	else {
 
 		cmp = bc_num_cmp(n1, n2);
 
 #if BC_ENABLE_SIGNALS
-		if (cmp == BC_NUM_CMP_SIGNAL) {
+		if (BC_NUM_CMP_SIGNAL(cmp)) {
 			bc_num_free(&res.d.n);
 			return BC_STATUS_SIGNAL;
 		}
@@ -638,37 +638,37 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 
 			case BC_INST_REL_EQ:
 			{
-				cond = cmp == 0;
+				cond = (cmp == 0);
 				break;
 			}
 
 			case BC_INST_REL_LE:
 			{
-				cond = cmp <= 0;
+				cond = (cmp <= 0);
 				break;
 			}
 
 			case BC_INST_REL_GE:
 			{
-				cond = cmp >= 0;
+				cond = (cmp >= 0);
 				break;
 			}
 
 			case BC_INST_REL_NE:
 			{
-				cond = cmp != 0;
+				cond = (cmp != 0);
 				break;
 			}
 
 			case BC_INST_REL_LT:
 			{
-				cond = cmp < 0;
+				cond = (cmp < 0);
 				break;
 			}
 
 			case BC_INST_REL_GT:
 			{
-				cond = cmp > 0;
+				cond = (cmp > 0);
 				break;
 			}
 #ifndef NDEBUG
