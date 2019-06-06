@@ -950,6 +950,8 @@ static void bc_num_divExtend(BcNum *restrict a, BcNum *restrict b, BcDig divisor
 	pow = BC_BASE_DIGS - bc_num_log10(divisor);
 	bc_num_shiftLeft(a, pow);
 	bc_num_shiftLeft(b, pow);
+
+	return cmp;
 }
 
 static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
