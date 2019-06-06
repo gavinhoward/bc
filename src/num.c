@@ -968,7 +968,16 @@ static int bc_num_subNum(BcDig *restrict n, size_t len, const BcNum *restrict b)
 	return carry;
 }
 
-static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
+void bc_num_divExtend(BcNum *restrict a, BcNum *restrict b, BcDig divisor)
+{
+	int pow;
+
+	pow = BC_BASE_DIGS - bc_num_log10(divisor);
+	bc_num_shiftLeft(a, pow);
+	bc_num_shiftLeft(b, pow);
+}
+
+static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
                               BcNum *restrict c, size_t scale)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -980,16 +989,30 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 	len = b->len;
 	end = a->len - len;
-	divisor = (BcBigDig) b->num[len - 1];
-	if (bc_num_nonZeroDig(b->num, len -1))
-		divisor++;
-
-	bc_num_expand(c, a->len);
-	memset(c->num, 0, c->cap * sizeof(BcDig));
 
 	c->rdx = a->rdx;
 	c->scale = a->scale;
 	c->len = a->len;
+
+	divisor = (BcBigDig) b->num[len - 1];
+	if (bc_num_nonZeroDig(b->num, len -1)) {
+		if (divisor >= BC_BASE_POW / 10) {
+			divisor++;
+		}
+		else {
+			bc_num_divExtend(a, b, divisor);
+			bc_num_expand(a, a->len + 1);
+			a->len++;
+			len = b->len;
+			end = a->len - len;
+			divisor = (BcBigDig) b->num[len - 1];
+			if (bc_num_nonZeroDig(b->num, len -1))
+				divisor++;
+		}
+	}
+
+	bc_num_expand(c, a->len);
+	memset(c->num, 0, c->cap * sizeof(BcDig));
 
 	assert(c->scale >= scale);
 	rdx = c->rdx - BC_NUM_RDX(scale);
