@@ -932,17 +932,17 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
                               BcNum *restrict c, size_t scale)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcBigDig divisor, q, result;
+	BcBigDig divisor;
 	size_t len, end, i, rdx;
 	BcNum cpb;
-	BcDig *n;
-	int carry;
+	bool nonzero = false;
 
 	len = b->len;
 	end = a->len - len;
 	divisor = (BcBigDig) b->num[len - 1];
-	if (bc_num_nonZeroDig(b->num, len -1))
-		divisor++;
+
+	for (i = len - 2; !nonzero && i < len - 1; --i) nonzero = (b->num[i] != 0);
+	divisor += nonzero;
 
 	bc_num_expand(c, a->len);
 	memset(c->num, 0, c->cap * sizeof(BcDig));
@@ -956,37 +956,35 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 	bc_num_init(&cpb, len + 1);
 
-	result = 0;
 	i = end - 1;
 
-	for (i = end - 1; BC_NO_SIG && BC_NO_ERR(!s) && i < end && i >= rdx && !BC_NUM_ZERO(a); i--) {
+	for (; BC_NO_SIG && i < end && i >= rdx && BC_NUM_NONZERO(a); --i) {
 
 		ssize_t cmp;
+		BcDig *n;
+		BcBigDig q, result;
 
 		n = a->num + i;
-		q = 0;
+		result = q = 0;
 
-		cmp = bc_num_cmpArrays(n, a->len - i, b->num, len);
+		cmp = bc_num_divCmp(n, b, len);
 
 #if BC_ENABLE_SIGNALS
-		if (cmp == BC_NUM_CMP_SIGNAL) break;
+		if (cmp == BC_NUM_CMP_SIGNAL) goto err;
 #endif // BC_ENABLE_SIGNALS
 
-		result = 0;
 		while (cmp >= 0) {
 
 			BcBigDig n1, dividend;
-			size_t cpblen;
 
 			n1 = (BcBigDig) n[len];
 			dividend = n1 * BC_BASE_POW + (BcBigDig) n[len - 1];
 			q = (dividend / divisor);
-			if (q == 0) {
-				do { // loop should not be required - only 1 iteration occurs
-					q++;
-					carry = bc_num_subNum(n, a->len - i, b);
-					assert(carry == 0);
-				} while (bc_num_cmpArrays(n, a->len - i, b->num, len) > 0);
+
+			if (q <= 1) {
+				q = 1;
+				s = bc_num_subArrays(n, b->num, len);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 			}
 			else {
 				assert(q <= BC_BASE_POW);
@@ -994,8 +992,8 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 				s = bc_num_mulArray(b, (BcBigDig) q, &cpb);
 				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-				carry = bc_num_subNum(n, a->len - i, &cpb);
-				assert(carry == 0);
+				s = bc_num_subArrays(n, cpb.num, cpb.len);
+				if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 			}
 
 			result += q;
@@ -1003,14 +1001,20 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 			bc_num_clean(a);
 
-			if (a->len > i)
-				cmp = bc_num_cmpArrays(n, a->len - i, b->num, len);
-			else
-				cmp = -1;
+			if (a->len > i) {
+				cmp = bc_num_divCmp(n, b, len);
+#if BC_ENABLE_SIGNALS
+				if (cmp == BC_NUM_CMP_SIGNAL) goto err;
+#endif // BC_ENABLE_SIGNALS
+			}
+			else cmp = -1;
 		}
 
-		c->num[i] = result;
+		assert(result < BC_BASE_POW);
+
+		c->num[i] = (BcDig) result;
 	}
+
 err:
 	if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
 	bc_num_free(&cpb);
