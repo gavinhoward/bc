@@ -627,12 +627,12 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	cmp = bc_num_cmp(a, b);
 
+	a->neg = aneg;
+	b->neg = bneg;
+
 #if BC_ENABLE_SIGNALS
 	if (cmp == BC_NUM_CMP_SIGNAL) return BC_STATUS_SIGNAL;
 #endif // BC_ENABLE_SIGNALS
-
-	a->neg = aneg;
-	b->neg = bneg;
 
 	if (!cmp) {
 		bc_num_setToZero(c, BC_MAX(a->rdx, b->rdx));
