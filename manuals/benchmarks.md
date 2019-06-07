@@ -1,6 +1,6 @@
 # Benchmarks
 
-These are the results of benchmarks comparing this `bc` (at version `2.0.0`) and
+These are the results of benchmarks comparing this `bc` (at version `2.0.3`) and
 GNU `bc` (at version `1.07.1`).
 
 Note: all benchmarks were run four times, and the fastest run is the one shown.
@@ -105,9 +105,9 @@ For GNU `bc`:
 ```
 Running bc script: divide.bc
 
-real 2.95
-user 1.89
-sys 1.06
+real 2.94
+user 1.90
+sys 1.04
 ```
 
 For this `bc`:
@@ -115,9 +115,9 @@ For this `bc`:
 ```
 Running bc script: divide.bc
 
-real 1.78
-user 1.78
-sys 0.00
+real 1.90
+user 1.88
+sys 0.02
 ```
 
 ### Power
@@ -146,41 +146,48 @@ sys 0.00
 
 ### Scripts
 
-A script was created that contained the following:
+[This file][1] was downloaded, saved at `../timeconst.bc` and the following
+patch was applied:
 
 ```
-#!/bin/sh
-
-exe="$1"
-
-for i in $(seq 0 1000); do
-	printf '%d\n' "$i" | "$exe" -q tests/bc/scripts/timeconst.bc > /dev/null
-done
+--- tests/bc/scripts/timeconst.bc	2018-09-28 11:32:22.808669000 -0600
++++ ../timeconst.bc	2019-06-07 07:26:36.359913078 -0600
+@@ -108,8 +108,10 @@
+ 
+ 		print "#endif /* KERNEL_TIMECONST_H */\n"
+ 	}
+-	halt
+ }
+ 
+-hz = read();
+-timeconst(hz)
++for (i = 0; i <= 10000; ++i) {
++	timeconst(i)
++}
++
++halt
 ```
-
-where `tests/bc/scripts/timeconst.bc` is [this file][1]. The script was saved at
-`../test.sh`.
 
 The command used was:
 
 ```
-time -p sh ../test.sh [bc]
+time -p [bc] ../timeconst.bc > /dev/null
 ```
 
 For GNU `bc`:
 
 ```
-real 1.30
-user 1.22
-sys 0.23
+real 3.05
+user 2.91
+sys 0.13
 ```
 
 For this `bc`:
 
 ```
-real 1.91
-user 1.73
-sys 0.38
+real 4.41
+user 4.41
+sys 0.00
 ```
 
 [1]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc
