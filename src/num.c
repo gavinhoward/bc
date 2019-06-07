@@ -921,6 +921,14 @@ err:
 	return s;
 }
 
+static bool bc_num_nonZeroDig(BcDig *restrict a, size_t len)
+{
+	size_t i;
+	bool nonzero = false;
+	for (i = len - 1; !nonzero && i < len; --i) nonzero = (a[i] != 0);
+	return nonzero;
+}
+
 static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 
 	ssize_t cmp;
@@ -935,7 +943,16 @@ static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 	return cmp;
 }
 
-static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
+static void bc_num_divExtend(BcNum *restrict a, BcNum *restrict b, BcDig divisor)
+{
+	int pow;
+
+	pow = BC_BASE_DIGS - bc_num_log10(divisor);
+	bc_num_shiftLeft(a, pow);
+	bc_num_shiftLeft(b, pow);
+}
+
+static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
                               BcNum *restrict c, size_t scale)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -946,10 +963,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 
 	len = b->len;
 	end = a->len - len;
-	divisor = (BcBigDig) b->num[len - 1];
-
-	for (i = len - 2; !nonzero && i < len - 1; --i) nonzero = (b->num[i] != 0);
-	divisor += nonzero;
+	assert(len >= 1);
 
 	bc_num_expand(c, a->len);
 	memset(c->num, 0, c->cap * sizeof(BcDig));
@@ -957,6 +971,25 @@ static BcStatus bc_num_d_long(BcNum *restrict a, const BcNum *restrict b,
 	c->rdx = a->rdx;
 	c->scale = a->scale;
 	c->len = a->len;
+
+	divisor = (BcBigDig) b->num[len - 1];
+
+	if (len > 1 && bc_num_nonZeroDig(b->num, len - 1)) {
+		nonzero = true;
+		if (divisor < BC_BASE_POW / BC_BASE) {
+			bc_num_divExtend(a, b, divisor);
+			bc_num_expand(a, a->len + 1);
+			a->len++;
+			len = b->len;
+			end = a->len - len;
+			divisor = (BcBigDig) b->num[len - 1];
+			nonzero = bc_num_nonZeroDig(b->num, len -1);
+		}
+	}
+	divisor += nonzero;
+
+	bc_num_expand(c, a->len);
+	memset(c->num, 0, c->cap * sizeof(BcDig));
 
 	assert(c->scale >= scale);
 	rdx = c->rdx - BC_NUM_RDX(scale);
@@ -2432,6 +2465,5 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 
 	fprintf(stderr, "(%zu | %zu.%zu / %zu) %p\n",
 	        n->scale, n->len, n->rdx, n->cap, (void*) n->num);
-	vm->nchars = 0;
 }
 #endif // BC_DEBUG_CODE
