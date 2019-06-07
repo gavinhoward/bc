@@ -943,13 +943,18 @@ static ssize_t bc_num_divCmp(const BcDig *a, const BcNum *b, size_t len) {
 	return cmp;
 }
 
-static void bc_num_divExtend(BcNum *restrict a, BcNum *restrict b, BcDig divisor)
+static BcStatus bc_num_divExtend(BcNum *restrict a, BcNum *restrict b,
+                                 BcBigDig divisor)
 {
-	int pow;
+	BcStatus s;
+	size_t pow;
 
-	pow = BC_BASE_DIGS - bc_num_log10(divisor);
-	bc_num_shiftLeft(a, pow);
-	bc_num_shiftLeft(b, pow);
+	pow = BC_BASE_DIGS - bc_num_log10((size_t) divisor);
+
+	s = bc_num_shiftLeft(a, pow);
+	if (BC_ERROR_SIGNAL_ONLY(s)) return s;
+
+	return bc_num_shiftLeft(b, pow);
 }
 
 static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
@@ -975,17 +980,25 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	divisor = (BcBigDig) b->num[len - 1];
 
 	if (len > 1 && bc_num_nonZeroDig(b->num, len - 1)) {
-		nonzero = true;
-		if (divisor < BC_BASE_POW / BC_BASE) {
-			bc_num_divExtend(a, b, divisor);
+
+		nonzero = (divisor >= BC_BASE_POW / BC_BASE);
+
+		if (!nonzero) {
+
+			s = bc_num_divExtend(a, b, divisor);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
 			bc_num_expand(a, a->len + 1);
-			a->len++;
+			a->len += 1;
+
 			len = b->len;
 			end = a->len - len;
 			divisor = (BcBigDig) b->num[len - 1];
-			nonzero = bc_num_nonZeroDig(b->num, len -1);
+
+			nonzero = bc_num_nonZeroDig(b->num, len - 1);
 		}
 	}
+
 	divisor += nonzero;
 
 	bc_num_expand(c, a->len);
