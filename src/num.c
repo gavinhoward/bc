@@ -986,7 +986,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 		if (!nonzero) {
 
 			s = bc_num_divExtend(a, b, divisor);
-			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+			if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 
 			bc_num_expand(a, a->len + 1);
 			a->len += 1;
