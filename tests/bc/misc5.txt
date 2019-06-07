@@ -14,3 +14,7 @@ else {}
 	if (1) if (1)
 }
 print "n\n"
+
+if (1) {
+	print "true\n"
+}

@@ -182,6 +182,7 @@ if [ "$d" = "bc" ]; then
 fi
 
 printf '%s\n' "$halt" | "$exe" "$@" -h > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" -P > /dev/null
 printf '%s\n' "$halt" | "$exe" "$@" -v > /dev/null
 printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
 
