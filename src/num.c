@@ -981,7 +981,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 	if (len > 1 && bc_num_nonZeroDig(b->num, len - 1)) {
 
-		nonzero = (divisor >= BC_BASE_POW / BC_BASE);
+		nonzero = (divisor >= BC_BASE_POW / (BC_BASE * BC_BASE));
 
 		if (!nonzero) {
 
