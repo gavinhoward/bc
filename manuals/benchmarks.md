@@ -190,4 +190,22 @@ user 4.41
 sys 0.00
 ```
 
+Note that, in this case, the optimization used is not the one I recommend, which
+is `-O3 -flto -march=native`. This `bc` separates its code into modules that,
+when optimized at link time, removes a lot of the inefficiency that comes from
+function overhead. This is most keenly felt with one function: `bc_vec_item()`,
+which should just turn into one instruction when optimized at link time and
+inlined. There are other functions that matter as well.
+
+When compiling this `bc` with the recommended optimizations, the results for the
+above command are:
+
+```
+real 3.69
+user 3.69
+sys 0.00
+```
+
+This is more competitive.
+
 [1]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc
