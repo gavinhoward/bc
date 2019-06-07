@@ -208,4 +208,7 @@ sys 0.00
 
 This is more competitive.
 
+In addition, when compiling with the above recommendation, this `bc` gets even
+faster when doing math.
+
 [1]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc
