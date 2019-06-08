@@ -130,6 +130,10 @@ printf '\nRunning %s quit test...\n' "$d"
 
 printf '%s\n' "$halt" | "$exe" "$@" > /dev/null 2>&1
 
+if [ "$d" = bc ]; then
+	printf '%s\n' "quit" | "$exe" "$@" > /dev/null 2>&1
+fi
+
 base=$(basename "$exe")
 
 if [ "$base" != "bc" -a "$base" != "dc" ]; then
