@@ -160,8 +160,6 @@ This `bc` compares favorably to GNU `bc`.
   is actually valid `bc` code, or should be. For example, putting an `else` on
   a new line after a brace can cause GNU `bc` to give a parse error.
 * This `bc` has fewer crashes.
-* GNU `bc` will report errors when there are none. For example, `0 ^ -251`
-  causes GNU `bc` to report a divide by `0`.
 * GNU `bc` calculates the wrong number of significant digits for `length(x)`.
 * GNU `bc` will sometimes print numbers incorrectly. For example, when running
   it on the file `tests/bc/power.txt` in this repo, GNU `bc` gets all the right

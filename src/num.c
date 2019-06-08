@@ -1211,6 +1211,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 	if (BC_NUM_ZERO(a)) {
+		if (b->neg) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
