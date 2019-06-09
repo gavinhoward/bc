@@ -197,9 +197,14 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			break;
 		}
 
+#endif // BC_ENABLED
 		case BC_RESULT_LAST:
 		case BC_RESULT_ONE:
-#endif // BC_ENABLED
+		{
+			// Do nothing.
+			break;
+		}
+
 		case BC_RESULT_CONSTANT:
 		case BC_RESULT_STR:
 		{
