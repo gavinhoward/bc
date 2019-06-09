@@ -190,22 +190,24 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			break;
 		}
 
-#if BC_ENABLED
-		case BC_RESULT_VOID:
-		{
-			// Do nothing.
-			break;
-		}
-
-		case BC_RESULT_LAST:
-		case BC_RESULT_ONE:
-#endif // BC_ENABLED
 		case BC_RESULT_CONSTANT:
 		case BC_RESULT_STR:
 		{
 			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));
 			break;
 		}
+
+#if BC_ENABLED
+		case BC_RESULT_VOID:
+		case BC_RESULT_ONE:
+		case BC_RESULT_LAST:
+		{
+#ifndef NDEBUG
+			assert(false);
+			break;
+#endif // NDEBUG
+		}
+#endif // BC_ENABLED
 	}
 }
 #endif // DC_ENABLED
