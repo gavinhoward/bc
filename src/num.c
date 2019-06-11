@@ -1842,7 +1842,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 		acc = (BcBigDig) intp.num[i];
 
-		for (j = 0; BC_NO_SIG && j < exp && (i < intp.len - 1 || acc != 0); ++j) {
+		for (j = 0; BC_NO_SIG && j < exp && (i < intp.len - 1 || acc != 0); ++j)
+		{
 			if (j != exp - 1) {
 				dig = acc % base;
 				acc /= base;
@@ -1851,7 +1852,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 				dig = acc;
 				acc = 0;
 			}
+
 			assert(dig < base);
+
 			bc_vec_push(&stack, &dig);
 		}
 
