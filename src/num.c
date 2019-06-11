@@ -1804,9 +1804,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	// of base "obase" without consideration for neighbouring BcDigs." This fact
 	// is what necessitates the existence of the loop later in this function.
 	//
-	// The conversion happens in bc_num_printPrepare() where the
-	// outer loop happens and bc_num_printFixup() where the inner loop, or
-	// actual conversion, happens.)
+	// The conversion happens in bc_num_printPrepare() where the outer loop
+	// happens and bc_num_printFixup() where the inner loop, or actual
+	// conversion, happens.
 
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
