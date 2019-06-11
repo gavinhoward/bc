@@ -29,7 +29,7 @@ This is the checklist for cutting a release.
 17.	Run `scan-build make`.
 18.	Repeat steps 3-14 again and repeat until nothing is found.
 19.	Change the version (remove "-dev") and commit.
-20.	Run "make clean_tests".
+20.	Run `make clean_tests`.
 21.	Run the release script.
 22.	Upload the custom tarball to GitHub.
 23.	Add sha's to release notes.
