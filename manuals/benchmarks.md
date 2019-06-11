@@ -21,9 +21,9 @@ For GNU `bc`:
 ```
 Running bc script: add.bc
 
-real 2.08
-user 1.01
-sys 1.06
+real 2.24
+user 1.13
+sys 1.11
 ```
 
 For this `bc`:
@@ -31,9 +31,9 @@ For this `bc`:
 ```
 Running bc script: add.bc
 
-real 1.29
-user 1.24
-sys 0.04
+real 1.32
+user 1.30
+sys 0.02
 ```
 
 ### Subtraction
@@ -49,9 +49,9 @@ For GNU `bc`:
 ```
 Running bc script: subtract.bc
 
-real 2.12
-user 1.12
-sys 1.00
+real 2.28
+user 1.33
+sys 0.94
 ```
 
 For this `bc`:
@@ -59,8 +59,8 @@ For this `bc`:
 ```
 Running bc script: subtract.bc
 
-real 1.33
-user 1.31
+real 1.37
+user 1.34
 sys 0.02
 ```
 
@@ -77,9 +77,9 @@ For GNU `bc`:
 ```
 Running bc script: multiply.bc
 
-real 5.74
-user 3.95
-sys 1.79
+real 6.02
+user 4.06
+sys 1.92
 ```
 
 For this `bc`:
@@ -88,8 +88,8 @@ For this `bc`:
 Running bc script: multiply.bc
 
 real 2.59
-user 2.55
-sys 0.03
+user 2.53
+sys 0.05
 ```
 
 ### Division
@@ -106,8 +106,8 @@ For GNU `bc`:
 Running bc script: divide.bc
 
 real 2.94
-user 1.90
-sys 1.04
+user 1.85
+sys 1.09
 ```
 
 For this `bc`:
@@ -115,9 +115,9 @@ For this `bc`:
 ```
 Running bc script: divide.bc
 
-real 1.90
-user 1.88
-sys 0.02
+real 1.91
+user 1.90
+sys 0.00
 ```
 
 ### Power
@@ -131,16 +131,16 @@ printf '1234567890^100000; halt\n' | time -p [bc] -lq > /dev/null
 For GNU `bc`:
 
 ```
-real 12.08
-user 12.08
+real 11.81
+user 11.80
 sys 0.00
 ```
 
 For this `bc`:
 
 ```
-real 0.81
-user 0.81
+real 0.76
+user 0.75
 sys 0.00
 ```
 
@@ -177,8 +177,8 @@ time -p [bc] ../timeconst.bc > /dev/null
 For GNU `bc`:
 
 ```
-real 3.05
-user 2.91
+real 3.03
+user 2.90
 sys 0.13
 ```
 
@@ -201,8 +201,8 @@ When compiling this `bc` with the recommended optimizations, the results for the
 above command are:
 
 ```
-real 3.69
-user 3.69
+real 3.62
+user 3.62
 sys 0.00
 ```
 
