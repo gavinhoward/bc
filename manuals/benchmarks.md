@@ -1,6 +1,6 @@
 # Benchmarks
 
-These are the results of benchmarks comparing this `bc` (at version `2.0.0`) and
+These are the results of benchmarks comparing this `bc` (at version `2.0.3`) and
 GNU `bc` (at version `1.07.1`).
 
 Note: all benchmarks were run four times, and the fastest run is the one shown.
@@ -21,9 +21,9 @@ For GNU `bc`:
 ```
 Running bc script: add.bc
 
-real 2.08
-user 1.01
-sys 1.06
+real 2.24
+user 1.13
+sys 1.11
 ```
 
 For this `bc`:
@@ -31,9 +31,9 @@ For this `bc`:
 ```
 Running bc script: add.bc
 
-real 1.29
-user 1.24
-sys 0.04
+real 1.32
+user 1.30
+sys 0.02
 ```
 
 ### Subtraction
@@ -49,9 +49,9 @@ For GNU `bc`:
 ```
 Running bc script: subtract.bc
 
-real 2.12
-user 1.12
-sys 1.00
+real 2.28
+user 1.33
+sys 0.94
 ```
 
 For this `bc`:
@@ -59,8 +59,8 @@ For this `bc`:
 ```
 Running bc script: subtract.bc
 
-real 1.33
-user 1.31
+real 1.37
+user 1.34
 sys 0.02
 ```
 
@@ -77,9 +77,9 @@ For GNU `bc`:
 ```
 Running bc script: multiply.bc
 
-real 5.74
-user 3.95
-sys 1.79
+real 6.02
+user 4.06
+sys 1.92
 ```
 
 For this `bc`:
@@ -88,8 +88,8 @@ For this `bc`:
 Running bc script: multiply.bc
 
 real 2.59
-user 2.55
-sys 0.03
+user 2.53
+sys 0.05
 ```
 
 ### Division
@@ -105,9 +105,9 @@ For GNU `bc`:
 ```
 Running bc script: divide.bc
 
-real 2.95
-user 1.89
-sys 1.06
+real 2.94
+user 1.85
+sys 1.09
 ```
 
 For this `bc`:
@@ -115,8 +115,8 @@ For this `bc`:
 ```
 Running bc script: divide.bc
 
-real 1.78
-user 1.78
+real 1.91
+user 1.90
 sys 0.00
 ```
 
@@ -131,56 +131,84 @@ printf '1234567890^100000; halt\n' | time -p [bc] -lq > /dev/null
 For GNU `bc`:
 
 ```
-real 12.08
-user 12.08
+real 11.81
+user 11.80
 sys 0.00
 ```
 
 For this `bc`:
 
 ```
-real 0.81
-user 0.81
+real 0.76
+user 0.75
 sys 0.00
 ```
 
 ### Scripts
 
-A script was created that contained the following:
+[This file][1] was downloaded, saved at `../timeconst.bc` and the following
+patch was applied:
 
 ```
-#!/bin/sh
-
-exe="$1"
-
-for i in $(seq 0 1000); do
-	printf '%d\n' "$i" | "$exe" -q tests/bc/scripts/timeconst.bc > /dev/null
-done
+--- tests/bc/scripts/timeconst.bc	2018-09-28 11:32:22.808669000 -0600
++++ ../timeconst.bc	2019-06-07 07:26:36.359913078 -0600
+@@ -108,8 +108,10 @@
+ 
+ 		print "#endif /* KERNEL_TIMECONST_H */\n"
+ 	}
+-	halt
+ }
+ 
+-hz = read();
+-timeconst(hz)
++for (i = 0; i <= 10000; ++i) {
++	timeconst(i)
++}
++
++halt
 ```
-
-where `tests/bc/scripts/timeconst.bc` is [this file][1]. The script was saved at
-`../test.sh`.
 
 The command used was:
 
 ```
-time -p sh ../test.sh [bc]
+time -p [bc] ../timeconst.bc > /dev/null
 ```
 
 For GNU `bc`:
 
 ```
-real 1.30
-user 1.22
-sys 0.23
+real 3.03
+user 2.90
+sys 0.13
 ```
 
 For this `bc`:
 
 ```
-real 1.91
-user 1.73
-sys 0.38
+real 4.41
+user 4.41
+sys 0.00
 ```
+
+Note that, in this case, the optimization used is not the one I recommend, which
+is `-O3 -flto -march=native`. This `bc` separates its code into modules that,
+when optimized at link time, removes a lot of the inefficiency that comes from
+function overhead. This is most keenly felt with one function: `bc_vec_item()`,
+which should just turn into one instruction when optimized at link time and
+inlined. There are other functions that matter as well.
+
+When compiling this `bc` with the recommended optimizations, the results for the
+above command are:
+
+```
+real 3.62
+user 3.62
+sys 0.00
+```
+
+This is more competitive.
+
+In addition, when compiling with the above recommendation, this `bc` gets even
+faster when doing math.
 
 [1]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc

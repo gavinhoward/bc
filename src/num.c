@@ -1211,6 +1211,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return BC_STATUS_SUCCESS;
 	}
 	if (BC_NUM_ZERO(a)) {
+		if (b->neg) return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
 		bc_num_setToZero(c, scale);
 		return BC_STATUS_SUCCESS;
 	}
@@ -1802,9 +1803,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	// of base "obase" without consideration for neighbouring BcDigs." This fact
 	// is what necessitates the existence of the loop later in this function.
 	//
-	// The conversion happens in bc_num_printPrepare() where the
-	// outer loop happens and bc_num_printFixup() where the inner loop, or
-	// actual conversion, happens.)
+	// The conversion happens in bc_num_printPrepare() where the outer loop
+	// happens and bc_num_printFixup() where the inner loop, or actual
+	// conversion, happens.
 
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
@@ -1840,7 +1841,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 		acc = (BcBigDig) intp.num[i];
 
-		for (j = 0; BC_NO_SIG && j < exp && (i < intp.len - 1 || acc != 0); ++j) {
+		for (j = 0; BC_NO_SIG && j < exp && (i < intp.len - 1 || acc != 0); ++j)
+		{
 			if (j != exp - 1) {
 				dig = acc % base;
 				acc /= base;
@@ -1849,7 +1851,9 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 				dig = acc;
 				acc = 0;
 			}
+
 			assert(dig < base);
+
 			bc_vec_push(&stack, &dig);
 		}
 
