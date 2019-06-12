@@ -183,26 +183,51 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 		case BC_RESULT_CONSTANT:
 		{
-			char *str = bc_program_str(p, r->d.id.idx, false);
-			size_t len = strlen(str);
+			size_t ibase = BC_PROG_IBASE(p);
+			size_t idx = r->d.id.idx;
+			size_t i;
+			BcFunc *f;
+			BcNum *cval;
 
-			if (BC_PROG_IBASE(p) <= 10 || BC_PROG_IBASE(p) > 36)
-				bc_num_init(n, BC_NUM_RDX(len));
-			else
-				bc_num_init(n, BC_NUM_RDX((5 * len) / 3));
-
-			s = bc_num_parse(n, str, BC_PROG_IBASE(p), len == 1);
-			assert(!s || s == BC_STATUS_SIGNAL);
-
-#if BC_ENABLE_SIGNALS
-			// bc_num_parse() should only do operations that can
-			// only fail when signals happen. Thus, if signals
-			// are not enabled, we don't need this check.
-			if (BC_ERROR_SIGNAL_ONLY(s)) {
-				bc_num_free(n);
-				return s;
+			if (BC_IS_BC) {
+				BcInstPtr *ip = bc_vec_item_rev(&p->stack, 0);
+				i = ip->func;
 			}
+			else i = BC_PROG_MAIN;
+
+			f = bc_vec_item(&p->fns, i);
+
+			if (f->consts.cap > f->constvals.cap)
+				bc_array_expand(&f->constvals, f->consts.cap);
+
+			cval = bc_vec_item(&f->constvals, idx);
+
+			if (cval->len && f->ibase == ibase) {
+				bc_num_createCopy(n, cval);
+			}
+			else {
+				char *str = bc_program_str(p, idx, false);
+				size_t len = strlen(str);
+
+				if (BC_PROG_IBASE(p) <= 10 || BC_PROG_IBASE(p) > 36)
+					bc_num_init(n, BC_NUM_RDX(len));
+				else
+					bc_num_init(n, BC_NUM_RDX((5 * len) / 3));
+
+				s = bc_num_parse(n, str, BC_PROG_IBASE(p), len == 1);
+				assert(!s || s == BC_STATUS_SIGNAL);
+				bc_num_copy(cval, n);
+				f->ibase = ibase;
+#if BC_ENABLE_SIGNALS
+				// bc_num_parse() should only do operations that can
+				// only fail when signals happen. Thus, if signals
+				// are not enabled, we don't need this check.
+				if (BC_ERROR_SIGNAL_ONLY(s)) {
+					bc_num_free(n);
+					return s;
+				}
 #endif // BC_ENABLE_SIGNALS
+			}
 
 			r->t = BC_RESULT_TEMP;
 			break;

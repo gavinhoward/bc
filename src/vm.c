@@ -365,6 +365,7 @@ static void bc_vm_clean(void) {
 #endif // BC_ENABLED
 		bc_vec_npop(&f->strs, f->strs.len);
 		bc_vec_npop(&f->consts, f->consts.len);
+		bc_vec_npop(&f->constvals, f->constvals.len);
 		bc_vec_npop(&f->code, f->code.len);
 		ip->idx = 0;
 #if DC_ENABLED

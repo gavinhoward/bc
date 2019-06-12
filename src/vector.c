@@ -180,12 +180,12 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx) {
 	memmove(ptr, data, v->len * v->size);
 }
 
+#endif // BC_ENABLE_HISTORY
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
 	char *ptr = bc_vec_item(v, idx);
 	if (v->dtor) v->dtor(ptr);
 	memcpy(ptr, data, v->size);
 }
-#endif // BC_ENABLE_HISTORY
 
 void* bc_vec_item(const BcVec *restrict v, size_t idx) {
 	assert(v && v->len && idx < v->len);

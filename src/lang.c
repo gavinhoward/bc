@@ -84,9 +84,11 @@ void bc_func_init(BcFunc *f, const char *name) {
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
 	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
 	bc_vec_init(&f->consts, sizeof(char*), bc_string_free);
+	bc_vec_init(&f->constvals, sizeof(BcNum), bc_num_free);
 #if BC_ENABLED
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
+	f->ibase = SIZE_T_MAX;
 	f->nparams = 0;
 	f->voidfn = false;
 #endif // BC_ENABLED
@@ -98,6 +100,7 @@ void bc_func_reset(BcFunc *f) {
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_npop(&f->strs, f->strs.len);
 	bc_vec_npop(&f->consts, f->consts.len);
+	bc_vec_npop(&f->constvals, f->constvals.len);
 #if BC_ENABLED
 	bc_vec_npop(&f->autos, f->autos.len);
 	bc_vec_npop(&f->labels, f->labels.len);
@@ -112,6 +115,7 @@ void bc_func_free(void *func) {
 	bc_vec_free(&f->code);
 	bc_vec_free(&f->strs);
 	bc_vec_free(&f->consts);
+	bc_vec_free(&f->constvals);
 #if BC_ENABLED
 	bc_vec_free(&f->autos);
 	bc_vec_free(&f->labels);

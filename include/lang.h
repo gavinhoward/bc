@@ -181,8 +181,10 @@ typedef struct BcFunc {
 
 	BcVec strs;
 	BcVec consts;
+	BcVec constvals;
 
 	const char *name;
+	size_t ibase;
 #if BC_ENABLED
 	bool voidfn;
 #endif // BC_ENABLED
