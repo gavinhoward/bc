@@ -186,7 +186,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			char *str = bc_program_str(p, r->d.id.idx, false);
 			size_t len = strlen(str);
 
-			bc_num_init(n, len);
+			bc_num_init(n, BC_NUM_RDX(2 * len));
 
 			s = bc_num_parse(n, str, BC_PROG_IBASE(p), len == 1);
 			assert(!s || s == BC_STATUS_SIGNAL);
