@@ -974,7 +974,11 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	inst2 = BC_INST_ASSIGN_PLUS + (inst & 0x01);
 
 	bc_vec_push(&p->results, &res);
-	bc_program_assign(p, inst2);
+	s = bc_program_assign(p, inst2);
+	if (BC_ERR(s)) {
+		bc_num_free(&copy);
+		return s;
+	}
 
 	if (post) {
 		bc_vec_pop(&p->results);
