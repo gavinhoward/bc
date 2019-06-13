@@ -351,8 +351,8 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 #endif // BC_ENABLED
 
 #if DC_ENABLED
-	good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
-	        (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM));
+	if(!BC_IS_BC) good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
+	                      (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM));
 #else
 	assert((*r)->t != BC_RESULT_STR);
 #endif // DC_ENABLED
@@ -612,7 +612,6 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 	if (BC_ERR(s)) return s;
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	if (inst == BC_INST_BOOL_AND)
 		cond = (bc_num_cmpZero(n1) && bc_num_cmpZero(n2));
@@ -623,10 +622,7 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 		cmp = bc_num_cmp(n1, n2);
 
 #if BC_ENABLE_SIGNALS
-		if (BC_NUM_CMP_SIGNAL(cmp)) {
-			bc_num_free(&res.d.n);
-			return BC_STATUS_SIGNAL;
-		}
+		if (BC_NUM_CMP_SIGNAL(cmp)) return BC_STATUS_SIGNAL;
 #endif // BC_ENABLE_SIGNALS
 
 		switch (inst) {
@@ -676,6 +672,7 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 		}
 	}
 
+	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 	if (cond) bc_num_one(&res.d.n);
 
 	bc_program_binOpRetire(p, &res);
@@ -838,7 +835,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	}
 #endif // DC_ENABLED
 
-	if (!BC_IS_BC || inst == BC_INST_ASSIGN) bc_num_copy(l, r);
+	if (inst == BC_INST_ASSIGN || !BC_IS_BC) bc_num_copy(l, r);
 #if BC_ENABLED
 	else {
 		BcBigDig scale = BC_PROG_SCALE(p);
