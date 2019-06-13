@@ -52,10 +52,6 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 	p->func = bc_vec_item(&p->prog->fns, fidx);
 }
 
-void bc_parse_pushIndex(BcParse *p, size_t idx) {
-	bc_vec_pushIndex(&p->func->code, idx);
-}
-
 void bc_parse_pushName(BcParse *p, char *name, bool var) {
 	size_t idx = bc_program_search(p->prog, name, var);
 	bc_parse_pushIndex(p, idx);
