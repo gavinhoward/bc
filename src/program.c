@@ -1014,7 +1014,7 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 
 	for (i = 0; i < nparams; ++i) {
 
-		size_t idx, j;
+		size_t j;
 		bool last = true;
 
 		a = bc_vec_item(&f->autos, nparams - 1 - i);
@@ -1035,8 +1035,6 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 	}
 
 	for (; i < f->autos.len; ++i) {
-
-		size_t idx;
 
 		a = bc_vec_item(&f->autos, i);
 		v = bc_program_vec(p, a->loc, (BcType) a->idx);
