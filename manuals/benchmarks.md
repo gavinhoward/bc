@@ -185,8 +185,8 @@ sys 0.13
 For this `bc`:
 
 ```
-real 4.41
-user 4.41
+real 2.64
+user 2.64
 sys 0.00
 ```
 
