@@ -108,25 +108,6 @@ static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
 	return res;
 }
 
-static char* bc_program_name(const char *restrict code, size_t *restrict bgn) {
-
-	size_t i;
-	uchar c;
-	char *s;
-	const char *str = code + *bgn, *ptr = strchr(str, BC_PARSE_STREND);
-
-	assert(ptr);
-
-	s = bc_vm_malloc(((size_t) (ptr - str)) + 1);
-
-	for (i = 0; (c = (uchar) code[(*bgn)++]) && c != BC_PARSE_STREND; ++i)
-		s[i] = (char) c;
-
-	s[i] = '\0';
-
-	return s;
-}
-
 static void bc_program_prepGlobals(BcProgram *p) {
 	size_t i;
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i)
@@ -153,13 +134,13 @@ static BcVec* bc_program_dereference(BcProgram *p, BcVec *vec) {
 }
 #endif // BC_ENABLED
 
-static BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
+size_t bc_program_search(BcProgram *p, char *id, bool var) {
 
 	BcId e, *ptr;
 	BcVec *v, *map;
 	size_t i;
 	BcResultData data;
-	bool new, var = (type == BC_TYPE_VAR);
+	bool new;
 
 	v = var ? &p->vars : &p->arrs;
 	map = var ? &p->var_map : &p->arr_map;
@@ -176,7 +157,12 @@ static BcVec* bc_program_search(BcProgram *p, char *id, BcType type) {
 	ptr = bc_vec_item(map, i);
 	if (new) ptr->name = bc_vm_strdup(e.name);
 
-	return bc_vec_item(v, ptr->idx);
+	return ptr->idx;
+}
+
+static BcVec* bc_program_vec(BcProgram *p, size_t idx, BcType type) {
+	BcVec *v = (type == BC_TYPE_VAR) ? &p->vars : &p->arrs;
+	return bc_vec_item(v, idx);
 }
 
 static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
@@ -230,11 +216,11 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			BcVec *v;
 			BcType type = (r->t == BC_RESULT_VAR) ? BC_TYPE_VAR : BC_TYPE_ARRAY;
 
-			v = bc_program_search(p, r->d.id.name, type);
+			v = bc_program_vec(p, r->d.loc.loc, type);
 
 			if (r->t == BC_RESULT_ARRAY_ELEM) {
 
-				size_t idx = r->d.id.idx;
+				size_t idx = r->d.loc.idx;
 
 				v = bc_vec_top(v);
 
@@ -726,7 +712,7 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
 }
 #endif // DC_ENABLED
 
-static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
+static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
                                      BcType t, bool last)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
@@ -746,7 +732,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 		// assert that here instead of check.
 		assert(ptr->t == BC_RESULT_VAR || ptr->t == BC_RESULT_ARRAY);
 
-		n = bc_vec_item_rev(bc_program_search(p, ptr->d.id.name, t), 1);
+		n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 	}
 #else // BC_ENABLED
 	s = bc_program_operand(p, &ptr, &n, 0);
@@ -757,7 +743,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 	s = bc_program_type_match(ptr, t);
 	if (BC_ERR(s)) return s;
 
-	vec = bc_program_search(p, name, t);
+	vec = bc_program_vec(p, idx, t);
 
 #if DC_ENABLED
 	if (ptr->t == BC_RESULT_STR) {
@@ -767,7 +753,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 #endif // DC_ENABLED
 
 	// Do this once more to make sure that pointers were not invalidated.
-	vec = bc_program_search(p, name, t);
+	vec = bc_program_vec(p, idx, t);
 
 	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
@@ -787,22 +773,13 @@ static BcStatus bc_program_copyToVar(BcProgram *p, char *name,
 
 			if (ref) {
 
-				size_t vidx, idx;
-				BcId id;
-
-				id.name = ptr->d.id.name;
-				v = bc_program_search(p, ptr->d.id.name, BC_TYPE_REF);
+				v = bc_program_vec(p, ptr->d.loc.loc, BC_TYPE_REF);
 
 				// Make sure the pointer was not invalidated.
-				vec = bc_program_search(p, name, t);
+				vec = bc_program_vec(p, idx, t);
 
-				vidx = bc_map_index(&p->arr_map, &id);
-				assert(vidx != BC_VEC_INVALID_IDX);
-				vidx = ((BcId*) bc_vec_item(&p->arr_map, vidx))->idx;
-				idx = v->len - 1;
-
-				bc_vec_pushIndex(rv, vidx);
-				bc_vec_pushIndex(rv, idx);
+				bc_vec_pushIndex(rv, ptr->d.loc.loc);
+				bc_vec_pushIndex(rv, v->len - 1);
 			}
 			// If we get here, we are copying a ref to a ref.
 			else bc_vec_npush(rv, v->len * sizeof(uchar), v->v);
@@ -853,7 +830,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 			l->rdx = idx;
 		}
 		else {
-			BcVec *v = bc_program_search(p, left->d.id.name, BC_TYPE_VAR);
+			BcVec *v = bc_program_vec(p, left->d.loc.loc, BC_TYPE_VAR);
 			s = bc_program_assignStr(p, right, v, false);
 		}
 
@@ -913,20 +890,17 @@ static BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r;
-	char *name = bc_program_name(code, bgn);
+	size_t idx = bc_program_index(code, bgn);
 
 	r.t = BC_RESULT_VAR;
-	r.d.id.name = name;
+	r.d.loc.loc = idx;
 
 #if DC_ENABLED
 	{
-		BcVec *v = bc_program_search(p, name, BC_TYPE_VAR);
+		BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
 
 		if (pop || copy) {
-
-			free(name);
-			name = NULL;
 
 			s = bc_program_checkStack(v, 2 - copy);
 			if (BC_ERR(s)) return s;
@@ -957,7 +931,7 @@ static BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
 	BcResult r;
 	BcNum *num = NULL;
 
-	r.d.id.name = bc_program_name(code, bgn);
+	r.d.loc.loc = bc_program_index(code, bgn);
 
 	if (inst == BC_INST_ARRAY) {
 		r.t = BC_RESULT_ARRAY;
@@ -973,7 +947,7 @@ static BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
 		s = bc_num_bigdig(num, &temp);
 		if (BC_ERR(s)) goto err;
 
-		r.d.id.idx = (size_t) temp;
+		r.d.loc.idx = (size_t) temp;
 		bc_program_retire(p, &r, BC_RESULT_ARRAY_ELEM);
 	}
 
@@ -1020,7 +994,7 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 	size_t i, nparams = bc_program_index(code, idx);
 	BcFunc *f;
 	BcVec *v;
-	BcId *a;
+	BcLoc *a;
 	BcResultData param;
 	BcResult *arg;
 
@@ -1040,7 +1014,7 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 
 	for (i = 0; i < nparams; ++i) {
 
-		size_t j;
+		size_t idx, j;
 		bool last = true;
 
 		a = bc_vec_item(&f->autos, nparams - 1 - i);
@@ -1050,20 +1024,22 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 		// get the previous version, not the already pushed one.
 		if (arg->t == BC_RESULT_VAR || arg->t == BC_RESULT_ARRAY) {
 			for (j = 0; j < i && last; ++j) {
-				BcId *id = bc_vec_item(&f->autos, nparams - 1 - j);
-				last = (strcmp(arg->d.id.name, id->name) != 0 ||
-				       (!id->idx) != (arg->t == BC_RESULT_VAR));
+				BcLoc *loc = bc_vec_item(&f->autos, nparams - 1 - j);
+				last = (arg->d.loc.loc != loc->loc ||
+				       (!loc->idx) != (arg->t == BC_RESULT_VAR));
 			}
 		}
 
-		s = bc_program_copyToVar(p, a->name, (BcType) a->idx, last);
+		s = bc_program_copyToVar(p, a->loc, (BcType) a->idx, last);
 		if (BC_ERR(s)) return s;
 	}
 
 	for (; i < f->autos.len; ++i) {
 
+		size_t idx;
+
 		a = bc_vec_item(&f->autos, i);
-		v = bc_program_search(p, a->name, (BcType) a->idx);
+		v = bc_program_vec(p, a->loc, (BcType) a->idx);
 
 		if (a->idx == BC_TYPE_VAR) {
 			bc_num_init(&param.n, BC_NUM_DEF_SIZE);
@@ -1117,10 +1093,9 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 	// We need to pop arguments as well, so this takes that into account.
 	for (i = 0; i < f->autos.len; ++i) {
 
-		BcVec *v;
-		BcId *a = bc_vec_item(&f->autos, i);
+		BcLoc *a = bc_vec_item(&f->autos, i);
+		BcVec *v = bc_program_vec(p, a->loc, (BcType) a->idx);
 
-		v = bc_program_search(p, a->name, (BcType) a->idx);
 		bc_vec_pop(v);
 	}
 
@@ -1408,25 +1383,20 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 
 	if (cond) {
 
-		char *name = NULL, *then_name, *else_name = NULL;
+		size_t idx = SIZE_MAX, then_idx, else_idx;
 
-		then_name = bc_program_name(code, bgn);
-
-		if (((uchar) code[*bgn]) == BC_PARSE_STREND) (*bgn) += 1;
-		else else_name = bc_program_name(code, bgn);
+		then_idx = bc_program_index(code, bgn);
+		else_idx = bc_program_index(code, bgn);
 
 		exec = (r->d.n.len != 0);
 
-		if (exec) name = then_name;
-		else if (else_name != NULL) {
+		if (exec) idx = then_idx;
+		else if (else_idx != SIZE_MAX) {
 			exec = true;
-			name = else_name;
+			idx = else_idx;
 		}
 
-		if (exec) n = bc_vec_top(bc_program_search(p, name, BC_TYPE_VAR));
-
-		free(then_name);
-		free(else_name);
+		if (exec) n = bc_vec_top(bc_program_vec(p, idx, BC_TYPE_VAR));
 
 		if (!exec) goto exit;
 		if (BC_ERR(!BC_PROG_STR(n))) {
@@ -1977,9 +1947,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_PUSH_TO_VAR:
 			{
-				char *name = bc_program_name(code, &ip->idx);
-				s = bc_program_copyToVar(p, name, BC_TYPE_VAR, true);
-				free(name);
+				idx = bc_program_index(code, &ip->idx);
+				s = bc_program_copyToVar(p, idx, BC_TYPE_VAR, true);
 				break;
 			}
 

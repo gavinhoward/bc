@@ -45,7 +45,7 @@
 #include <program.h>
 #include <vm.h>
 
-static BcStatus dc_parse_register(BcParse *p) {
+static BcStatus dc_parse_register(BcParse *p, bool var) {
 
 	BcStatus s;
 
@@ -53,7 +53,7 @@ static BcStatus dc_parse_register(BcParse *p) {
 	if (BC_ERR(s)) return s;
 	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-	bc_parse_pushName(p, p->l.str.v);
+	bc_parse_pushName(p, p->l.str.v, var);
 
 	return s;
 }
@@ -74,7 +74,7 @@ static BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
 
 	bc_parse_push(p, inst);
 	if (name) {
-		s = dc_parse_register(p);
+		s = dc_parse_register(p, inst != BC_INST_ARRAY_ELEM);
 		if (BC_ERR(s)) return s;
 	}
 
@@ -94,18 +94,18 @@ static BcStatus dc_parse_cond(BcParse *p, uchar inst) {
 	bc_parse_push(p, inst);
 	bc_parse_push(p, BC_INST_EXEC_COND);
 
-	s = dc_parse_register(p);
+	s = dc_parse_register(p, true);
 	if (BC_ERR(s)) return s;
 
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
 
 	if (p->l.t == BC_LEX_KW_ELSE) {
-		s = dc_parse_register(p);
+		s = dc_parse_register(p, true);
 		if (BC_ERR(s)) return s;
 		s = bc_lex_next(&p->l);
 	}
-	else bc_parse_push(p, BC_PARSE_STREND);
+	else bc_parse_pushIndex(p, SIZE_MAX);
 
 	return s;
 }

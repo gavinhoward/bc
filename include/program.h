@@ -135,6 +135,7 @@ void bc_program_printInst(BcProgram *p, const char *code,
 #endif // BC_ENABLED && DC_ENABLED
 #endif // BC_DEBUG_CODE
 
+size_t bc_program_search(BcProgram *p, char* id, bool var);
 void bc_program_addFunc(BcProgram *p, BcFunc *f, const char* name);
 size_t bc_program_insertFunc(BcProgram *p, char *name);
 BcStatus bc_program_reset(BcProgram *p, BcStatus s);

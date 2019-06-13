@@ -170,6 +170,11 @@ typedef struct BcId {
 	size_t idx;
 } BcId;
 
+typedef struct BcLoc {
+	size_t loc;
+	size_t idx;
+} BcLoc;
+
 typedef struct BcConst {
 	char *val;
 	BcBigDig base;
@@ -221,6 +226,7 @@ typedef union BcResultData {
 	BcNum n;
 	BcVec v;
 	BcId id;
+	BcLoc loc;
 } BcResultData;
 
 typedef struct BcResult {
@@ -242,8 +248,11 @@ typedef enum BcType {
 #endif // BC_ENABLED
 } BcType;
 
+struct BcProgram;
+
 void bc_func_init(BcFunc *f, const char* name);
-BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line);
+BcStatus bc_func_insert(BcFunc *f, struct BcProgram* p, char* name,
+                        BcType type, size_t line);
 void bc_func_reset(BcFunc *f);
 void bc_func_free(void *func);
 

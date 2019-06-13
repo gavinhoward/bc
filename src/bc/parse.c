@@ -280,7 +280,7 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 		if (BC_ERR(s)) goto err;
 
 		bc_parse_push(p, *type);
-		bc_parse_pushName(p, name);
+		bc_parse_pushName(p, name, false);
 	}
 	else if (p->l.t == BC_LEX_LPAREN) {
 
@@ -297,7 +297,7 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 	else {
 		*type = BC_INST_VAR;
 		bc_parse_push(p, BC_INST_VAR);
-		bc_parse_pushName(p, name);
+		bc_parse_pushName(p, name, true);
 	}
 
 err:
@@ -880,6 +880,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 	while (p->l.t != BC_LEX_RPAREN) {
 
 		BcType t = BC_TYPE_VAR;
+		size_t idx;
 
 		if (p->l.t == BC_LEX_OP_MULTIPLY) {
 			t = BC_TYPE_REF;
@@ -924,7 +925,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 			if (BC_ERR(s)) goto err;
 		}
 
-		s = bc_func_insert(p->func, name, t, p->l.line);
+		s = bc_func_insert(p->func, p->prog, name, t, p->l.line);
 		if (BC_ERR(s)) goto err;
 	}
 
@@ -961,6 +962,7 @@ static BcStatus bc_parse_auto(BcParse *p) {
 	while (p->l.t == BC_LEX_NAME) {
 
 		BcType t;
+		size_t idx;
 
 		name = bc_vm_strdup(p->l.str.v);
 		s = bc_lex_next(&p->l);
@@ -989,7 +991,7 @@ static BcStatus bc_parse_auto(BcParse *p) {
 			if (BC_ERR(s)) goto err;
 		}
 
-		s = bc_func_insert(p->func, name, t, p->l.line);
+		s = bc_func_insert(p->func, p->prog, name, t, p->l.line);
 		if (BC_ERR(s)) goto err;
 	}
 

@@ -62,23 +62,26 @@ void bc_const_free(void *constant) {
 }
 
 #if BC_ENABLED
-BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line) {
+BcStatus bc_func_insert(BcFunc *f, BcProgram *p, char *name,
+                        BcType type, size_t line)
+{
+	BcLoc a;
+	size_t i, idx;
 
-	BcId a;
-	size_t i;
+	assert(f);
 
-	assert(f && name);
+	idx = bc_program_search(p, name, type == BC_TYPE_VAR);
 
 	for (i = 0; i < f->autos.len; ++i) {
-		BcId *id = bc_vec_item(&f->autos, i);
-		if (BC_ERR(!strcmp(name, id->name) && type == (BcType) id->idx)) {
+		BcLoc *id = bc_vec_item(&f->autos, i);
+		if (BC_ERR(idx == id->loc && type == (BcType) id->idx)) {
 			const char *array = type == BC_TYPE_ARRAY ? "[]" : "";
 			return bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name, array);
 		}
 	}
 
+	a.loc = idx;
 	a.idx = type;
-	a.name = name;
 
 	bc_vec_push(&f->autos, &a);
 
@@ -92,7 +95,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
 	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
 #if BC_ENABLED
-	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
+	bc_vec_init(&f->autos, sizeof(BcLoc), NULL);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
 	f->nparams = 0;
 	f->voidfn = false;
@@ -192,8 +195,7 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_ARRAY:
 		case BC_RESULT_ARRAY_ELEM:
 		{
-			assert(src->d.id.name);
-			d->d.id.name = bc_vm_strdup(src->d.id.name);
+			memcpy(&d->d.loc, &src->d.loc, sizeof(BcLoc));
 			break;
 		}
 
@@ -239,12 +241,6 @@ void bc_result_free(void *result) {
 		case BC_RESULT_VAR:
 		case BC_RESULT_ARRAY:
 		case BC_RESULT_ARRAY_ELEM:
-		{
-			assert(r->d.id.name);
-			free(r->d.id.name);
-			break;
-		}
-
 		case BC_RESULT_STR:
 		case BC_RESULT_CONSTANT:
 #if BC_ENABLED
