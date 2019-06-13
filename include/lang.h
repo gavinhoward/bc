@@ -170,6 +170,12 @@ typedef struct BcId {
 	size_t idx;
 } BcId;
 
+typedef struct BcConst {
+	char *val;
+	BcBigDig base;
+	BcNum num;
+} BcConst;
+
 typedef struct BcFunc {
 
 	BcVec code;
@@ -245,6 +251,7 @@ void bc_array_init(BcVec *a, bool nums);
 void bc_array_copy(BcVec *d, const BcVec *s);
 
 void bc_string_free(void *string);
+void bc_const_free(void *constant);
 void bc_id_free(void *id);
 void bc_result_copy(BcResult *d, BcResult *src);
 void bc_result_free(void *result);

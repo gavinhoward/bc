@@ -54,6 +54,13 @@ void bc_string_free(void *string) {
 	free(*((char**) string));
 }
 
+void bc_const_free(void *constant) {
+	BcConst *c = constant;
+	assert(c->val);
+	free(c->val);
+	bc_num_free(&c->num);
+}
+
 #if BC_ENABLED
 BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line) {
 
@@ -83,7 +90,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 	assert(f && name);
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
 	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
-	bc_vec_init(&f->consts, sizeof(char*), bc_string_free);
+	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
 #if BC_ENABLED
 	bc_vec_init(&f->autos, sizeof(BcId), bc_id_free);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);

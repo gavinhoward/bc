@@ -68,7 +68,15 @@ void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
 	size_t idx = v->len;
 	char *str = bc_vm_strdup(string);
 
-	bc_vec_push(v, &str);
+	if (inst == BC_INST_NUM) {
+		BcConst c;
+		c.val = str;
+		c.base = BC_NUM_BIGDIG_MAX;
+		bc_num_init(&c.num, strlen(str));
+		bc_vec_push(v, &c);
+	}
+	else bc_vec_push(v, &str);
+
 	bc_parse_updateFunc(p, p->fidx);
 	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);

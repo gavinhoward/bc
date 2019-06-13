@@ -72,10 +72,8 @@ static BcStatus bc_program_type_match(BcResult *r, BcType t) {
 	return BC_STATUS_SUCCESS;
 }
 
-static char* bc_program_str(BcProgram *p, size_t idx, bool str) {
+static BcFunc* bc_program_func(BcProgram *p) {
 
-	BcFunc *f;
-	BcVec *v;
 	size_t i;
 
 	if (BC_IS_BC) {
@@ -84,10 +82,17 @@ static char* bc_program_str(BcProgram *p, size_t idx, bool str) {
 	}
 	else i = BC_PROG_MAIN;
 
-	f = bc_vec_item(&p->fns, i);
-	v = str ? &f->strs : &f->consts;
+	return bc_vec_item(&p->fns, i);
+}
 
-	return *((char**) bc_vec_item(v, idx));
+static BcConst* bc_program_const(BcProgram *p, size_t idx) {
+	BcFunc *f = bc_program_func(p);
+	return bc_vec_item(&f->consts, idx);
+}
+
+static char* bc_program_str(BcProgram *p, size_t idx) {
+	BcFunc *f = bc_program_func(p);
+	return *((char**) bc_vec_item(&f->strs, idx));
 }
 
 static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
@@ -183,23 +188,27 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 		case BC_RESULT_CONSTANT:
 		{
-			char *str = bc_program_str(p, r->d.id.idx, false);
-			size_t len = strlen(str);
+			BcConst *c = bc_program_const(p, r->d.id.idx);
+			BcBigDig base = BC_PROG_IBASE(p);
 
-			bc_num_init(n, len);
+			if (c->base != base) {
 
-			s = bc_num_parse(n, str, BC_PROG_IBASE(p), len == 1);
-			assert(!s || s == BC_STATUS_SIGNAL);
+				size_t len = strlen(c->val);
+
+				s = bc_num_parse(&c->num, c->val, BC_PROG_IBASE(p), len == 1);
+				assert(!s || s == BC_STATUS_SIGNAL);
 
 #if BC_ENABLE_SIGNALS
 			// bc_num_parse() should only do operations that can
 			// only fail when signals happen. Thus, if signals
 			// are not enabled, we don't need this check.
-			if (BC_ERROR_SIGNAL_ONLY(s)) {
-				bc_num_free(n);
-				return s;
-			}
+			if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 #endif // BC_ENABLE_SIGNALS
+
+				c->base = base;
+			}
+
+			bc_num_createCopy(n, &c->num);
 
 			r->t = BC_RESULT_TEMP;
 			break;
@@ -559,7 +568,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 		size_t i = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
 
-		str = bc_program_str(p, i, true);
+		str = bc_program_str(p, i);
 
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
 		else {
@@ -1173,7 +1182,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 #if DC_ENABLED
 			else if (!BC_PROG_NUM(opd, num)) {
 				size_t idx = opd->t == BC_RESULT_STR ? opd->d.id.idx : num->rdx;
-				val = (BcBigDig) strlen(bc_program_str(p, idx, true));
+				val = (BcBigDig) strlen(bc_program_str(p, idx));
 			}
 #endif // DC_ENABLED
 			else val = (BcBigDig) bc_num_len(num);
@@ -1352,7 +1361,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, p->strm);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.id.idx : n->rdx;
-		bc_program_printChars(bc_program_str(p, idx, true));
+		bc_program_printChars(bc_program_str(p, idx));
 	}
 
 	return s;
@@ -1439,7 +1448,7 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	}
 
 	fidx = sidx + BC_PROG_REQ_FUNCS;
-	str = bc_program_str(p, sidx, true);
+	str = bc_program_str(p, sidx);
 	f = bc_vec_item(&p->fns, fidx);
 
 	if (!f->code.len) {
@@ -2046,7 +2055,7 @@ static void bc_program_printStr(BcProgram *p, const char *restrict code,
 	size_t idx = bc_program_index(code, bgn);
 	char *s;
 
-	s = bc_program_str(p, idx, true);
+	s = bc_program_str(p, idx);
 
 	bc_vm_printf(" (\"%s\") ", s);
 }
@@ -2066,8 +2075,8 @@ void bc_program_printInst(BcProgram *p, const char *restrict code,
 	else if (inst == BC_INST_STR) bc_program_printStr(p, code, bgn);
 	else if (inst == BC_INST_NUM) {
 		size_t idx = bc_program_index(code, bgn);
-		char *str = bc_program_str(p, idx, false);
-		bc_vm_printf("(%s)", str);
+		BcConst *c = bc_program_const(p, idx);
+		bc_vm_printf("(%s)", c->val);
 	}
 	else if (inst == BC_INST_CALL ||
 	         (inst > BC_INST_STR && inst <= BC_INST_JUMP_ZERO))
