@@ -190,7 +190,6 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			// are not enabled, we don't need this check.
 			if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 #endif // BC_ENABLE_SIGNALS
-			}
 
 				c->base = base;
 			}

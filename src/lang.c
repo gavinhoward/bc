@@ -97,7 +97,6 @@ void bc_func_init(BcFunc *f, const char *name) {
 #if BC_ENABLED
 	bc_vec_init(&f->autos, sizeof(BcLoc), NULL);
 	bc_vec_init(&f->labels, sizeof(size_t), NULL);
-	f->ibase = SIZE_T_MAX;
 	f->nparams = 0;
 	f->voidfn = false;
 #endif // BC_ENABLED
