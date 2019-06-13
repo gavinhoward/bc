@@ -1653,9 +1653,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcNum *num = NULL;
 #endif // BC_ENABLED
 
-	while (BC_NO_SIG && BC_NO_ERR(!s) && s != BC_STATUS_QUIT &&
-	       ip->idx < func->code.len)
-	{
+	while (BC_NO_SIG && BC_NO_ERR(!s) && ip->idx < func->code.len) {
+
 		uchar inst = (uchar) code[(ip->idx)++];
 
 		switch (inst) {
@@ -1686,6 +1685,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_CALL:
 			{
 				s = bc_program_call(p, code, &ip->idx);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 
@@ -1709,6 +1711,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_RET_VOID:
 			{
 				s = bc_program_return(p, inst);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 
@@ -1736,6 +1741,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_READ:
 			{
 				s = bc_program_read(p);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 
@@ -1861,6 +1869,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				assert(BC_PROG_STACK(&p->stack, 2));
 				bc_vec_pop(&p->stack);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 
@@ -1881,6 +1892,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				cond = (inst == BC_INST_EXEC_COND);
 				s = bc_program_execStr(p, code, &ip->idx, cond);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 
@@ -1932,6 +1946,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_ASCIIFY:
 			{
 				s = bc_program_asciify(p);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 
@@ -1961,12 +1978,18 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				if (p->stack.len <= 2) s = BC_STATUS_QUIT;
 				else bc_vec_npop(&p->stack, 2);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 
 			case BC_INST_NQUIT:
 			{
 				s = bc_program_nquit(p);
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
 				break;
 			}
 #endif // DC_ENABLED
@@ -1978,15 +2001,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 			}
 #endif // NDEBUG
 		}
-
-		if (BC_UNLIKELY((s && s != BC_STATUS_QUIT)) || BC_SIG)
-			s = bc_program_reset(p, s);
-
-		// If the stack has changed, pointers may be invalid.
-		ip = bc_vec_top(&p->stack);
-		func = bc_vec_item(&p->fns, ip->func);
-		code = func->code.v;
 	}
+
+	if (BC_UNLIKELY(s && s != BC_STATUS_QUIT) || BC_SIG)
+		s = bc_program_reset(p, s);
 
 	return s;
 }
