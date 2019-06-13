@@ -893,26 +893,24 @@ static BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
 	r.d.loc.loc = idx;
 
 #if DC_ENABLED
-	{
+	if (pop || copy) {
+
 		BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
 
-		if (pop || copy) {
+		s = bc_program_checkStack(v, 2 - copy);
+		if (BC_ERR(s)) return s;
 
-			s = bc_program_checkStack(v, 2 - copy);
-			if (BC_ERR(s)) return s;
-
-			if (!BC_PROG_STR(num)) {
-				r.t = BC_RESULT_TEMP;
-				bc_num_createCopy(&r.d.n, num);
-			}
-			else {
-				r.t = BC_RESULT_STR;
-				r.d.id.idx = num->rdx;
-			}
-
-			if (!copy) bc_vec_pop(v);
+		if (!BC_PROG_STR(num)) {
+			r.t = BC_RESULT_TEMP;
+			bc_num_createCopy(&r.d.n, num);
 		}
+		else {
+			r.t = BC_RESULT_STR;
+			r.d.id.idx = num->rdx;
+		}
+
+		if (!copy) bc_vec_pop(v);
 	}
 #endif // DC_ENABLED
 
@@ -960,11 +958,14 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	BcResult *ptr, res, copy;
 	BcNum *num = NULL;
 	uchar inst2;
+	bool post;
 
 	s = bc_program_prep(p, &ptr, &num);
 	if (BC_ERR(s)) return s;
 
-	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
+	post = (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST);
+
+	if (post) {
 		copy.t = BC_RESULT_TEMP;
 		bc_num_createCopy(&copy.d.n, num);
 	}
@@ -975,7 +976,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	bc_vec_push(&p->results, &res);
 	bc_program_assign(p, inst2);
 
-	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
+	if (post) {
 		bc_vec_pop(&p->results);
 		bc_vec_push(&p->results, &copy);
 	}
