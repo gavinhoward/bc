@@ -185,25 +185,123 @@ sys 0.13
 For this `bc`:
 
 ```
-real 4.41
-user 4.41
+real 2.64
+user 2.64
 sys 0.00
 ```
 
-Note that, in this case, the optimization used is not the one I recommend, which
-is `-O3 -flto -march=native`. This `bc` separates its code into modules that,
-when optimized at link time, removes a lot of the inefficiency that comes from
-function overhead. This is most keenly felt with one function: `bc_vec_item()`,
-which should just turn into one instruction when optimized at link time and
-inlined. There are other functions that matter as well.
-
-When compiling this `bc` with the recommended optimizations, the results for the
-above command are:
+Because this `bc` is faster when doing math, it might be a better comparison to
+run a script that is not running any math. As such, I put the following into
+`../test.bc`:
 
 ```
-real 3.62
-user 3.62
+for (i = 0; i < 100000000; ++i) {
+	y = i
+}
+
+i
+y
+
+halt
+```
+
+The command used was:
+
+```
+time -p [bc] ../test.bc > /dev/null
+```
+
+For GNU `bc`:
+
+```
+real 13.46
+user 13.46
 sys 0.00
+```
+
+For this `bc`:
+
+```
+real 24.72
+user 24.72
+sys 0.00
+```
+
+However, when I put the following into `../test2.bc`:
+
+```
+i = 0
+
+while (i < 100000000) {
+	++i
+}
+
+i
+
+halt
+```
+
+the results were surprising.
+
+The command used was:
+
+```
+time -p [bc] ../test2.bc > /dev/null
+```
+
+For GNU `bc`:
+
+```
+real 53.85
+user 39.50
+sys 14.34
+```
+
+For this `bc`:
+
+```
+real 26.61
+user 26.58
+sys 0.03
+```
+
+It seems that both `bc`'s run `for` loops faster than `while` loops. I don't
+know why my `bc` does that because both loops are using the same code underneath
+the hood.
+
+Note that, when running the benchmarks, the optimization used is not the one I
+recommend, which is `-O3 -flto -march=native`. This `bc` separates its code into
+modules that, when optimized at link time, removes a lot of the inefficiency
+that comes from function overhead. This is most keenly felt with one function:
+`bc_vec_item()`, which should just turn into one instruction (on `x86_64`) when
+optimized at link time and inlined. There are other functions that matter as
+well.
+
+When compiling this `bc` with the recommended optimizations, the results are as
+follows.
+
+For the first script:
+
+```
+real 1.88
+user 1.88
+sys 0.00
+```
+
+For the second script:
+
+```
+real 19.43
+user 19.43
+sys 0.00
+```
+
+For the third script:
+
+```
+real 20.58
+user 20.53
+sys 0.03
 ```
 
 This is more competitive.

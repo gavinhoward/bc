@@ -351,8 +351,8 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 #endif // BC_ENABLED
 
 #if DC_ENABLED
-	good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
-	        (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM));
+	if(!BC_IS_BC) good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
+	                      (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM));
 #else
 	assert((*r)->t != BC_RESULT_STR);
 #endif // DC_ENABLED
@@ -612,7 +612,6 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 	if (BC_ERR(s)) return s;
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 
 	if (inst == BC_INST_BOOL_AND)
 		cond = (bc_num_cmpZero(n1) && bc_num_cmpZero(n2));
@@ -623,10 +622,7 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 		cmp = bc_num_cmp(n1, n2);
 
 #if BC_ENABLE_SIGNALS
-		if (BC_NUM_CMP_SIGNAL(cmp)) {
-			bc_num_free(&res.d.n);
-			return BC_STATUS_SIGNAL;
-		}
+		if (BC_NUM_CMP_SIGNAL(cmp)) return BC_STATUS_SIGNAL;
 #endif // BC_ENABLE_SIGNALS
 
 		switch (inst) {
@@ -676,6 +672,7 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 		}
 	}
 
+	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 	if (cond) bc_num_one(&res.d.n);
 
 	bc_program_binOpRetire(p, &res);
@@ -808,14 +805,10 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *left, *right, res;
 	BcNum *l = NULL, *r = NULL;
-	bool ib, ob, sc;
+	bool ob, sc;
 
 	s = bc_program_assignPrep(p, &left, &l, &right, &r);
 	if (BC_ERR(s)) return s;
-
-	ib = (left->t == BC_RESULT_IBASE);
-	ob = (left->t == BC_RESULT_OBASE);
-	sc = (left->t == BC_RESULT_SCALE);
 
 #if DC_ENABLED
 	assert(left->t != BC_RESULT_STR);
@@ -838,7 +831,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	}
 #endif // DC_ENABLED
 
-	if (!BC_IS_BC || inst == BC_INST_ASSIGN) bc_num_copy(l, r);
+	if (inst == BC_INST_ASSIGN || !BC_IS_BC) bc_num_copy(l, r);
 #if BC_ENABLED
 	else {
 		BcBigDig scale = BC_PROG_SCALE(p);
@@ -847,7 +840,10 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	}
 #endif // BC_ENABLED
 
-	if (ib || ob || sc) {
+	ob = (left->t == BC_RESULT_OBASE);
+	sc = (left->t == BC_RESULT_SCALE);
+
+	if (ob || sc || left->t == BC_RESULT_IBASE) {
 
 		BcVec *v;
 		BcBigDig *ptr, *ptr_t, val, max, min;
@@ -896,26 +892,24 @@ static BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
 	r.d.loc.loc = idx;
 
 #if DC_ENABLED
-	{
+	if (pop || copy) {
+
 		BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
 
-		if (pop || copy) {
+		s = bc_program_checkStack(v, 2 - copy);
+		if (BC_ERR(s)) return s;
 
-			s = bc_program_checkStack(v, 2 - copy);
-			if (BC_ERR(s)) return s;
-
-			if (!BC_PROG_STR(num)) {
-				r.t = BC_RESULT_TEMP;
-				bc_num_createCopy(&r.d.n, num);
-			}
-			else {
-				r.t = BC_RESULT_STR;
-				r.d.id.idx = num->rdx;
-			}
-
-			if (!copy) bc_vec_pop(v);
+		if (!BC_PROG_STR(num)) {
+			r.t = BC_RESULT_TEMP;
+			bc_num_createCopy(&r.d.n, num);
 		}
+		else {
+			r.t = BC_RESULT_STR;
+			r.d.id.idx = num->rdx;
+		}
+
+		if (!copy) bc_vec_pop(v);
 	}
 #endif // DC_ENABLED
 
@@ -963,11 +957,14 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	BcResult *ptr, res, copy;
 	BcNum *num = NULL;
 	uchar inst2;
+	bool post;
 
 	s = bc_program_prep(p, &ptr, &num);
 	if (BC_ERR(s)) return s;
 
-	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
+	post = (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST);
+
+	if (post) {
 		copy.t = BC_RESULT_TEMP;
 		bc_num_createCopy(&copy.d.n, num);
 	}
@@ -976,9 +973,13 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	inst2 = BC_INST_ASSIGN_PLUS + (inst & 0x01);
 
 	bc_vec_push(&p->results, &res);
-	bc_program_assign(p, inst2);
+	s = bc_program_assign(p, inst2);
+	if (BC_ERR(s)) {
+		bc_num_free(&copy);
+		return s;
+	}
 
-	if (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST) {
+	if (post) {
 		bc_vec_pop(&p->results);
 		bc_vec_push(&p->results, &copy);
 	}

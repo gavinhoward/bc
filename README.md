@@ -163,8 +163,8 @@ This `bc` compares favorably to GNU `bc`.
 * GNU `bc` calculates the wrong number of significant digits for `length(x)`.
 * GNU `bc` will sometimes print numbers incorrectly. For example, when running
   it on the file `tests/bc/power.txt` in this repo, GNU `bc` gets all the right
-  answers, but for some inexplicable reason, it fails to wrap the numbers at the
-  proper place.
+  answers, but it fails to wrap the numbers at the proper place when outputting
+  to a file.
 * This `bc` is faster. (See [Performance](#performance).)
 
 ### Performance

@@ -114,7 +114,7 @@
 #define DC_X (DC_ENABLED && (vm->flags & DC_FLAG_X))
 #define BC_P (vm->flags & BC_FLAG_P)
 
-#define BC_USE_PROMPT (!BC_P && BC_TTY && !BC_S)
+#define BC_USE_PROMPT (!BC_P && BC_TTY && !BC_IS_POSIX)
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
