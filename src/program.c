@@ -805,14 +805,10 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *left, *right, res;
 	BcNum *l = NULL, *r = NULL;
-	bool ib, ob, sc;
+	bool ob, sc;
 
 	s = bc_program_assignPrep(p, &left, &l, &right, &r);
 	if (BC_ERR(s)) return s;
-
-	ib = (left->t == BC_RESULT_IBASE);
-	ob = (left->t == BC_RESULT_OBASE);
-	sc = (left->t == BC_RESULT_SCALE);
 
 #if DC_ENABLED
 	assert(left->t != BC_RESULT_STR);
@@ -844,7 +840,10 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	}
 #endif // BC_ENABLED
 
-	if (ib || ob || sc) {
+	ob = (left->t == BC_RESULT_OBASE);
+	sc = (left->t == BC_RESULT_SCALE);
+
+	if (ob || sc || left->t == BC_RESULT_IBASE) {
 
 		BcVec *v;
 		BcBigDig *ptr, *ptr_t, val, max, min;
