@@ -1421,8 +1421,6 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	for (i = 0; zero && val[i] != '\0'; ++i)
 		zero = (val[i] == '0' || val[i] == '.');
 
-	if (zero) return;
-
 	len = i + strlen(val + i);
 	ptr = strchr(val, '.');
 
@@ -1433,6 +1431,8 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 		intchars = ptr - val;
 	}
 	else intchars = len;
+
+	if (zero) return;
 
 	n->len = BC_NUM_RDX(intchars) + n->rdx;
 	bc_num_expand(n, n->len);
