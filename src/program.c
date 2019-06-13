@@ -181,14 +181,14 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 				size_t len = strlen(c->val);
 
-				s = bc_num_parse(&c->num, c->val, BC_PROG_IBASE(p), len == 1);
+				s = bc_num_parse(&c->num, c->val, base, len == 1);
 				assert(!s || s == BC_STATUS_SIGNAL);
 
 #if BC_ENABLE_SIGNALS
-			// bc_num_parse() should only do operations that can
-			// only fail when signals happen. Thus, if signals
-			// are not enabled, we don't need this check.
-			if (BC_ERROR_SIGNAL_ONLY(s)) return s;
+				// bc_num_parse() should only do operations that can
+				// only fail when signals happen. Thus, if signals
+				// are not enabled, we don't need this check.
+				if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 #endif // BC_ENABLE_SIGNALS
 
 				c->base = base;
