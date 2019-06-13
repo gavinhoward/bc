@@ -52,13 +52,9 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 	p->func = bc_vec_item(&p->prog->fns, fidx);
 }
 
-void bc_parse_pushName(BcParse *p, char *name) {
-	bc_vec_npush(&p->func->code, strlen(name), name);
-	bc_parse_push(p, BC_PARSE_STREND);
-}
-
-void bc_parse_pushIndex(BcParse *p, size_t idx) {
-	bc_vec_pushIndex(&p->func->code, idx);
+void bc_parse_pushName(BcParse *p, char *name, bool var) {
+	size_t idx = bc_program_search(p->prog, name, var);
+	bc_parse_pushIndex(p, idx);
 }
 
 void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
@@ -68,7 +64,15 @@ void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
 	size_t idx = v->len;
 	char *str = bc_vm_strdup(string);
 
-	bc_vec_push(v, &str);
+	if (inst == BC_INST_NUM) {
+		BcConst c;
+		c.val = str;
+		c.base = BC_NUM_BIGDIG_MAX;
+		bc_num_init(&c.num, strlen(str));
+		bc_vec_push(v, &c);
+	}
+	else bc_vec_push(v, &str);
+
 	bc_parse_updateFunc(p, p->fidx);
 	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);

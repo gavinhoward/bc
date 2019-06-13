@@ -170,6 +170,17 @@ typedef struct BcId {
 	size_t idx;
 } BcId;
 
+typedef struct BcLoc {
+	size_t loc;
+	size_t idx;
+} BcLoc;
+
+typedef struct BcConst {
+	char *val;
+	BcBigDig base;
+	BcNum num;
+} BcConst;
+
 typedef struct BcFunc {
 
 	BcVec code;
@@ -181,7 +192,6 @@ typedef struct BcFunc {
 
 	BcVec strs;
 	BcVec consts;
-	BcVec constvals;
 
 	const char *name;
 	size_t ibase;
@@ -217,6 +227,7 @@ typedef union BcResultData {
 	BcNum n;
 	BcVec v;
 	BcId id;
+	BcLoc loc;
 } BcResultData;
 
 typedef struct BcResult {
@@ -238,8 +249,11 @@ typedef enum BcType {
 #endif // BC_ENABLED
 } BcType;
 
+struct BcProgram;
+
 void bc_func_init(BcFunc *f, const char* name);
-BcStatus bc_func_insert(BcFunc *f, char *name, BcType type, size_t line);
+BcStatus bc_func_insert(BcFunc *f, struct BcProgram* p, char* name,
+                        BcType type, size_t line);
 void bc_func_reset(BcFunc *f);
 void bc_func_free(void *func);
 
@@ -247,6 +261,7 @@ void bc_array_init(BcVec *a, bool nums);
 void bc_array_copy(BcVec *d, const BcVec *s);
 
 void bc_string_free(void *string);
+void bc_const_free(void *constant);
 void bc_id_free(void *id);
 void bc_result_copy(BcResult *d, BcResult *src);
 void bc_result_free(void *result);
