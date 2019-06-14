@@ -981,7 +981,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 	if (len > 1 && bc_num_nonZeroDig(b->num, len - 1)) {
 
-		nonzero = (divisor >= BC_BASE_POW / (BC_BASE * BC_BASE));
+		nonzero = (divisor > 1 << ((10 * BC_BASE_DIGS) / 6 + 1));
 
 		if (!nonzero) {
 
@@ -1403,9 +1403,11 @@ static BcBigDig bc_num_parseChar(char c, size_t base_t) {
 
 static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
-	size_t len, i, temp, mod;
+	size_t len, i, j, idx, intdigs, intchars;
 	const char *ptr;
-	bool zero = true, rdx;
+	char c;
+	BcDig bcdig;
+	bool zero = true;
 
 	for (i = 0; val[i] == '0'; ++i);
 
@@ -1416,52 +1418,48 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 	// procedure expects a virgin (already 0) BcNum.
 	if (!val[0]) return;
 
-	len = strlen(val);
+	for (i = 0; zero && val[i] != '\0'; ++i)
+		zero = (val[i] == '0' || val[i] == '.');
 
+	len = i + strlen(val + i);
 	ptr = strchr(val, '.');
-	rdx = (ptr != NULL);
 
-	for (i = 0; i < len && (zero = (val[i] == '0' || val[i] == '.')); ++i);
+	if (ptr != NULL) {
+		// decimal point at index (ptr - val)
+		n->scale = (size_t) (len - (ptr - val + 1));
+		n->rdx = BC_NUM_RDX(n->scale);
+		intchars = ptr - val;
+	}
+	else intchars = len;
 
-	n->scale = (size_t) (rdx * ((val + len) - (ptr + 1)));
-	n->rdx = BC_NUM_RDX(n->scale);
+	if (zero) return;
 
-	i = len - (ptr == val ? 0 : i) - rdx;
-	temp = BC_NUM_ROUND_POW(i);
-	mod = n->scale % BC_BASE_DIGS;
-	i = mod ? BC_BASE_DIGS - mod : 0;
-	n->len = ((temp + i) / BC_BASE_DIGS);
-
+	n->len = BC_NUM_RDX(intchars) + n->rdx;
 	bc_num_expand(n, n->len);
-	memset(n->num, 0, BC_NUM_SIZE(n->len));
 
-	if (zero) n->len = n->rdx = 0;
-	else {
-
-		BcBigDig exp, pow;
-
-		assert(i <= BC_NUM_BIGDIG_MAX);
-
-		exp = (BcBigDig) i;
-		pow = bc_num_pow10[exp];
-
-		for (i = len - 1; i < len; --i, ++exp) {
-
-			char c = val[i];
-
-			if (c == '.') exp -= 1;
-			else {
-
-				size_t idx = exp / BC_BASE_DIGS;
-
+	intchars %= BC_BASE_DIGS;
+	if (intchars == 0) intchars = BC_BASE_DIGS;
+	idx = n->len;
+	c = *val;
+	do {
+		idx--;
+		bcdig = 0;
+		if (c == '.') {
+			val++;
+			c = *val;
+		}
+		for (j = 0; j < intchars; j++) {
+			bcdig *= 10;
+			if (c != '\0') {
 				if (isupper(c)) c = '9';
-				n->num[idx] += (((BcBigDig) c) - '0') * pow;
-
-				if ((exp + 1) % BC_BASE_DIGS == 0) pow = 1;
-				else pow *= BC_BASE;
+				bcdig += (BcBigDig) c - '0';
+				val++;
+				c = *val;
 			}
 		}
-	}
+		n->num[idx] = bcdig;
+		intchars = 9;
+	} while (idx != 0);
 }
 
 static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
