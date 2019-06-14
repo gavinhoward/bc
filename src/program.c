@@ -693,9 +693,9 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
 		if (BC_ERR(s)) return s;
 #endif // BC_PROG_NO_STACK_CHECK
 		bc_vec_pop(v);
+		bc_vec_pop(&p->results);
 	}
 
-	bc_vec_pop(&p->results);
 	bc_vec_pop(&p->results);
 	bc_vec_push(v, &n2);
 
