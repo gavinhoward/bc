@@ -179,9 +179,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 			if (c->base != base) {
 
-				size_t len = strlen(c->val);
-
-				s = bc_num_parse(&c->num, c->val, BC_PROG_IBASE(p), len == 1);
+				s = bc_num_parse(&c->num, c->val, base, !c->val[1]);
 				assert(!s || s == BC_STATUS_SIGNAL);
 
 #if BC_ENABLE_SIGNALS
