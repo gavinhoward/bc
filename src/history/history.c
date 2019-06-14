@@ -908,7 +908,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 	else {
 
 		if (BC_ERR(BC_HIST_READ(seq + 1, 1)))
-			s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 		// ESC [ sequences.
 		if (c == '[') {
@@ -919,7 +919,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 
 				// Extended escape, read additional byte.
 				if (BC_ERR(BC_HIST_READ(seq + 2, 1)))
-					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+					return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 				if (seq[2] == '~' && c == '3') s = bc_history_edit_delete(h);
 			}
