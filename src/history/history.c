@@ -706,11 +706,8 @@ static BcStatus bc_history_edit_wordEnd(BcHistory *h) {
 
 	if (!len || h->pos >= len) return BC_STATUS_SUCCESS;
 
-	if (h->buf.v[h->pos] == ' ') {
-		while (h->pos < len && h->buf.v[h->pos] == ' ') ++h->pos;
-	}
-
-	while (h->pos < len && h->buf.v[h->pos] != ' ') ++h->pos;
+	while (h->pos < len && isspace(h->buf.v[h->pos])) h->pos += 1;
+	while (h->pos < len && !isspace(h->buf.v[h->pos])) h->pos += 1;
 
 	return bc_history_refresh(h);
 }
@@ -724,13 +721,8 @@ static BcStatus bc_history_edit_wordStart(BcHistory *h) {
 
 	if (!len) return BC_STATUS_SUCCESS;
 
-	if (h->pos && h->buf.v[h->pos - 1] == ' ') --h->pos;
-
-	if (h->buf.v[h->pos] == ' ') {
-		while (h->pos < len && h->buf.v[h->pos] == ' ') --h->pos;
-	}
-
-	while (h->pos < len && h->buf.v[h->pos - 1] != ' ') --h->pos;
+	while (h->pos > 0 && isspace(h->buf.v[h->pos - 1])) h->pos -= 1;
+	while (h->pos > 0 && !isspace(h->buf.v[h->pos - 1])) h->pos -= 1;
 
 	return bc_history_refresh(h);
 }
