@@ -80,8 +80,7 @@ static BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
 
 	if (store) {
 		bc_parse_push(p, BC_INST_SWAP);
-		bc_parse_push(p, BC_INST_ASSIGN);
-		bc_parse_push(p, BC_INST_POP);
+		bc_parse_push(p, BC_INST_ASSIGN_NO_VAL);
 	}
 
 	return bc_lex_next(&p->l);

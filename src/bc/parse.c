@@ -180,7 +180,9 @@ static BcStatus bc_parse_params(BcParse *p, uint8_t flags) {
 
 	for (nparams = 0; p->l.t != BC_LEX_RPAREN; ++nparams) {
 
-		flags = (flags & ~(BC_PARSE_PRINT | BC_PARSE_REL)) | BC_PARSE_ARRAY;
+		flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
+		flags |= (BC_PARSE_ARRAY | BC_PARSE_NEEDVAL);
+
 		s = bc_parse_expr_status(p, flags, bc_parse_next_param);
 		if (BC_ERR(s)) return s;
 
@@ -267,6 +269,8 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 			*type = BC_INST_ARRAY_ELEM;
 
 			flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
+			flags |= BC_PARSE_NEEDVAL;
+
 			s = bc_parse_expr_status(p, flags, bc_parse_next_elem);
 			if (BC_ERR(s)) goto err;
 
@@ -337,7 +341,8 @@ static BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
 
-	flags = (flags & ~(BC_PARSE_PRINT | BC_PARSE_REL));
+	flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
+	flags |= BC_PARSE_NEEDVAL;
 	if (type == BC_LEX_KW_LENGTH) flags |= BC_PARSE_ARRAY;
 
 	s = bc_parse_expr_status(p, flags, bc_parse_next_rel);
@@ -367,6 +372,7 @@ static BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags) {
 
 	*type = BC_INST_SCALE_FUNC;
 	flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
+	flags |= BC_PARSE_NEEDVAL;
 
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
@@ -476,7 +482,7 @@ static BcStatus bc_parse_print(BcParse *p) {
 	do {
 		if (t == BC_LEX_STR) s = bc_parse_str(p, BC_INST_PRINT_POP);
 		else {
-			s = bc_parse_expr_status(p, 0, bc_parse_next_print);
+			s = bc_parse_expr_status(p, BC_PARSE_NEEDVAL, bc_parse_next_print);
 			if (BC_NO_ERR(!s)) bc_parse_push(p, BC_INST_PRINT_POP);
 		}
 
@@ -520,7 +526,7 @@ static BcStatus bc_parse_return(BcParse *p) {
 	if (bc_parse_isDelimiter(p)) bc_parse_push(p, inst);
 	else {
 
-		s = bc_parse_expr_err(p, 0, bc_parse_next_expr);
+		s = bc_parse_expr_err(p, BC_PARSE_NEEDVAL, bc_parse_next_expr);
 		if (BC_ERR(s && s != BC_STATUS_EMPTY_EXPR)) return s;
 		else if (s == BC_STATUS_EMPTY_EXPR) {
 			bc_parse_push(p, inst);
@@ -652,6 +658,7 @@ static BcStatus bc_parse_if(BcParse *p) {
 
 	BcStatus s;
 	size_t idx;
+	uint8_t flags = (BC_PARSE_REL | BC_PARSE_NEEDVAL);
 
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
@@ -660,7 +667,7 @@ static BcStatus bc_parse_if(BcParse *p) {
 
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
-	s = bc_parse_expr_status(p, BC_PARSE_REL, bc_parse_next_rel);
+	s = bc_parse_expr_status(p, flags, bc_parse_next_rel);
 	if (BC_ERR(s)) return s;
 	if (BC_ERR(p->l.t != BC_LEX_RPAREN))
 		return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
@@ -700,6 +707,7 @@ static BcStatus bc_parse_while(BcParse *p) {
 
 	BcStatus s;
 	size_t idx;
+	uint8_t flags = (BC_PARSE_REL | BC_PARSE_NEEDVAL);
 
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
@@ -709,12 +717,10 @@ static BcStatus bc_parse_while(BcParse *p) {
 	if (BC_ERR(s)) return s;
 
 	bc_parse_createCondLabel(p, p->func->labels.len);
-
 	idx = p->func->labels.len;
-
 	bc_parse_createExitLabel(p, idx, true);
 
-	s = bc_parse_expr_status(p, BC_PARSE_REL, bc_parse_next_rel);
+	s = bc_parse_expr_status(p, flags, bc_parse_next_rel);
 	if (BC_ERR(s)) return s;
 	if (BC_ERR(p->l.t != BC_LEX_RPAREN))
 		return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
@@ -740,10 +746,8 @@ static BcStatus bc_parse_for(BcParse *p) {
 	s = bc_lex_next(&p->l);
 	if (BC_ERR(s)) return s;
 
-	if (p->l.t != BC_LEX_SCOLON) {
+	if (p->l.t != BC_LEX_SCOLON)
 		s = bc_parse_expr_status(p, 0, bc_parse_next_for);
-		if (BC_NO_ERR(!s)) bc_parse_push(p, BC_INST_POP);
-	}
 	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR);
 
 	if (BC_ERR(s)) return s;
@@ -759,8 +763,10 @@ static BcStatus bc_parse_for(BcParse *p) {
 
 	bc_parse_createLabel(p, p->func->code.len);
 
-	if (p->l.t != BC_LEX_SCOLON)
-		s = bc_parse_expr_status(p, BC_PARSE_REL, bc_parse_next_for);
+	if (p->l.t != BC_LEX_SCOLON) {
+		uint8_t flags = (BC_PARSE_REL | BC_PARSE_NEEDVAL);
+		s = bc_parse_expr_status(p, flags, bc_parse_next_for);
+	}
 	else {
 
 		// Set this for the next call to bc_parse_number.
@@ -786,10 +792,8 @@ static BcStatus bc_parse_for(BcParse *p) {
 
 	bc_parse_createCondLabel(p, update_idx);
 
-	if (p->l.t != BC_LEX_RPAREN) {
+	if (p->l.t != BC_LEX_RPAREN)
 		s = bc_parse_expr_status(p, 0, bc_parse_next_rel);
-		if (BC_NO_ERR(!s)) bc_parse_push(p, BC_INST_POP);
-	}
 	else s = bc_parse_err(p, BC_ERROR_POSIX_FOR);
 
 	if (BC_ERR(s)) return s;
@@ -1253,7 +1257,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 	BcLexType top, t = p->l.t;
 	size_t nexprs = 0, ops_bgn = p->ops.len;
 	uint32_t i, nparens, nrelops;
-	bool pfirst, rprn, done, get_token, assign, bin_last, incdec;
+	bool pfirst, rprn, done, get_token, assign, bin_last, incdec, pop = true;
 
 	pfirst = (p->l.t == BC_LEX_LPAREN);
 	nparens = nrelops = 0;
@@ -1265,6 +1269,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 	if (!(flags & BC_PARSE_NOREAD)) {
 		while (BC_NO_ERR(!s) && (t = p->l.t) == BC_LEX_NLINE)
 			s = bc_lex_next(&p->l);
+		if (BC_ERR(s)) return s;
 	}
 
 	for (; BC_NO_SIG && BC_NO_ERR(!s) && !done && BC_PARSE_EXPR(t); t = p->l.t)
@@ -1535,9 +1540,30 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 		if (BC_ERR(s)) return s;
 	}
 
+	if (!(flags & BC_PARSE_NEEDVAL) && !pfirst) {
+
+		uchar inst = BC_INST_INVALID;
+
+		if (assign) {
+			inst = *((uchar*) bc_vec_top(&p->func->code));
+			inst += (BC_INST_ASSIGN_POWER_NO_VAL - BC_INST_ASSIGN_POWER);
+		}
+		else if (incdec && !(flags & BC_PARSE_PRINT)) {
+			inst = *((uchar*) bc_vec_top(&p->func->code));
+			inst = BC_INST_INC_NO_VAL + (inst & 0x01);
+		}
+
+		pop = !(inst >= BC_INST_INC_NO_VAL && inst <= BC_INST_ASSIGN_NO_VAL);
+
+		if (!pop) {
+			bc_vec_pop(&p->func->code);
+			bc_parse_push(p, inst);
+		}
+	}
+
 	if (flags & BC_PARSE_PRINT) {
 		if (pfirst || !assign) bc_parse_push(p, BC_INST_PRINT);
-		bc_parse_push(p, BC_INST_POP);
+		if (pop) bc_parse_push(p, BC_INST_POP);
 	}
 
 	// We want to eat newlines if newlines are not a valid ending token.

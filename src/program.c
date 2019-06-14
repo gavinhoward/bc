@@ -442,7 +442,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
 	s = bc_parse_text(&parse, buf.v);
 	if (BC_ERR(s)) goto exec_err;
-	s = vm->expr(&parse, BC_PARSE_NOREAD);
+	s = vm->expr(&parse, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
 	if (BC_ERR(s)) goto exec_err;
 
 	if (BC_ERR(parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF)) {
@@ -683,11 +683,9 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
                                      BcVec *v, bool push)
 {
 	BcNum n2;
-	BcResult res;
 
 	memset(&n2, 0, sizeof(BcNum));
-	n2.rdx = res.d.id.idx = r->d.id.idx;
-	res.t = BC_RESULT_STR;
+	n2.rdx = r->d.id.idx;
 
 	if (!push) {
 #ifndef BC_PROG_NO_STACK_CHECK
@@ -695,12 +693,10 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
 		if (BC_ERR(s)) return s;
 #endif // BC_PROG_NO_STACK_CHECK
 		bc_vec_pop(v);
-		bc_vec_pop(&p->results);
 	}
 
 	bc_vec_pop(&p->results);
-
-	bc_vec_push(&p->results, &res);
+	bc_vec_pop(&p->results);
 	bc_vec_push(v, &n2);
 
 	return BC_STATUS_SUCCESS;
@@ -803,7 +799,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *left, *right, res;
 	BcNum *l = NULL, *r = NULL;
-	bool ob, sc;
+	bool ob, sc, use_val = BC_INST_USE_VAL(inst);
 
 	s = bc_program_assignPrep(p, &left, &l, &right, &r);
 	if (BC_ERR(s)) return s;
@@ -829,10 +825,15 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 	}
 #endif // DC_ENABLED
 
-	if (inst == BC_INST_ASSIGN || !BC_IS_BC) bc_num_copy(l, r);
+	if (BC_INST_IS_ASSIGN(inst)) bc_num_copy(l, r);
 #if BC_ENABLED
 	else {
+
 		BcBigDig scale = BC_PROG_SCALE(p);
+
+		if (!use_val)
+			inst -= (BC_INST_ASSIGN_POWER_NO_VAL - BC_INST_ASSIGN_POWER);
+
 		s = bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, scale);
 		if (BC_ERR(s)) return s;
 	}
@@ -873,8 +874,14 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		*ptr_t = val;
 	}
 
-	bc_num_createCopy(&res.d.n, l);
-	bc_program_binOpRetire(p, &res);
+	if (use_val) {
+		bc_num_createCopy(&res.d.n, l);
+		bc_program_binOpRetire(p, &res);
+	}
+	else {
+		bc_vec_pop(&p->results);
+		bc_vec_pop(&p->results);
+	}
 
 	return s;
 }
@@ -955,12 +962,13 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	BcResult *ptr, res, copy;
 	BcNum *num = NULL;
 	uchar inst2;
-	bool post;
+	bool post, use_val;
 
 	s = bc_program_prep(p, &ptr, &num);
 	if (BC_ERR(s)) return s;
 
-	post = (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST);
+	use_val = (inst != BC_INST_INC_NO_VAL && inst != BC_INST_DEC_NO_VAL);
+	post = use_val && (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST);
 
 	if (post) {
 		copy.t = BC_RESULT_TEMP;
@@ -969,15 +977,18 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 
 	res.t = BC_RESULT_ONE;
 	inst2 = BC_INST_ASSIGN_PLUS + (inst & 0x01);
+	if (!use_val) inst2 += (BC_INST_ASSIGN_PLUS_NO_VAL - BC_INST_ASSIGN_PLUS);
 
 	bc_vec_push(&p->results, &res);
 	s = bc_program_assign(p, inst2);
-	if (BC_ERR(s)) {
-		bc_num_free(&copy);
-		return s;
-	}
 
 	if (post) {
+
+		if (BC_ERR(s)) {
+			bc_num_free(&copy);
+			return s;
+		}
+
 		bc_vec_pop(&p->results);
 		bc_vec_push(&p->results, &copy);
 	}
@@ -1671,6 +1682,8 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_DEC_PRE:
 			case BC_INST_INC_POST:
 			case BC_INST_DEC_POST:
+			case BC_INST_INC_NO_VAL:
+			case BC_INST_DEC_NO_VAL:
 			{
 				s = bc_program_incdec(p, inst);
 				break;
@@ -1834,8 +1847,20 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_ASSIGN_LSHIFT:
 			case BC_INST_ASSIGN_RSHIFT:
 #endif // BC_ENABLE_EXTRA_MATH
-#endif // BC_ENABLED
 			case BC_INST_ASSIGN:
+			case BC_INST_ASSIGN_POWER_NO_VAL:
+			case BC_INST_ASSIGN_MULTIPLY_NO_VAL:
+			case BC_INST_ASSIGN_DIVIDE_NO_VAL:
+			case BC_INST_ASSIGN_MODULUS_NO_VAL:
+			case BC_INST_ASSIGN_PLUS_NO_VAL:
+			case BC_INST_ASSIGN_MINUS_NO_VAL:
+			#if BC_ENABLE_EXTRA_MATH
+			case BC_INST_ASSIGN_PLACES_NO_VAL:
+			case BC_INST_ASSIGN_LSHIFT_NO_VAL:
+			case BC_INST_ASSIGN_RSHIFT_NO_VAL:
+			#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLED
+			case BC_INST_ASSIGN_NO_VAL:
 			{
 				s = bc_program_assign(p, inst);
 				break;
