@@ -922,6 +922,15 @@ static BcStatus bc_history_escape(BcHistory *h) {
 					return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 				if (seq[2] == '~' && c == '3') s = bc_history_edit_delete(h);
+				else if(seq[2] == ';') {
+
+					if (BC_ERR(BC_HIST_READ(seq, 2)))
+						return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+
+					if (seq[0] != '5') return s;
+					else if (seq[1] == 'C') s = bc_history_edit_wordEnd(h);
+					else if (seq[1] == 'D') s = bc_history_edit_wordStart(h);
+				}
 			}
 			else {
 
