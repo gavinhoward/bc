@@ -104,6 +104,34 @@ other locations, use the `PREFIX` environment variable when running
 
 ### Package and Distro Maintainers
 
+#### Recommended Optimizations
+
+I wrote this `bc` with Separation of Concerns, which means that there are many
+small functions that could be inlined. However, they are often called across
+file boundaries, and the default optimizer can only look at the current file,
+which means that they are not inlined.
+
+Thus, because of the way this `bc` is built, it will automatically be slower
+than other `bc` implementations when running scripts with no math. (My `bc`'s
+math is *much* faster, so any non-trivial script should run faster in my `bc`.)
+
+Some, or all, of the difference can be made up with the right optimizations. The
+optimizations I recommend are:
+
+1.	`-O3`
+2.	`-flto` (link-time optimization)
+3.	`-march=native` (optimize for the current CPU)
+
+in that order.
+
+Link-time optimization, in particular, speeds up the `bc` a lot. This is because
+when link-time optimization is turned on, the optimizer can look across files
+and inline *much* more heavily.
+
+For packages that are not built on the oldest supported hardware,
+`-march=native` is not recommended because of the possibility of illegal
+instructions.
+
 #### Using This `bc` as an Alternative
 
 If this `bc` is packaged as an alternative to an already existing `bc` package,

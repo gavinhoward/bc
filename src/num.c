@@ -1547,7 +1547,7 @@ int_err:
 	return s;
 }
 
-static void bc_num_printNewline() {
+static void bc_num_printNewline(void) {
 	if (vm->nchars >= (size_t) (vm->line_len - 1)) {
 		bc_vm_putchar('\\');
 		bc_vm_putchar('\n');

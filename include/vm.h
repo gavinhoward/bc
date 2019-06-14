@@ -233,15 +233,6 @@ char* bc_vm_strdup(const char *str);
 
 BcStatus bc_vm_error(BcError e, size_t line, ...);
 
-#if BC_ENABLED
-extern const char bc_lib[];
-extern const char *bc_lib_name;
-#if BC_ENABLE_EXTRA_MATH
-extern const char bc_lib2[];
-extern const char *bc_lib2_name;
-#endif // BC_ENABLE_EXTRA_MATH
-#endif // BC_ENABLED
-
 extern const char bc_copyright[];
 extern const char* const bc_err_line;
 extern const char* const bc_err_func_header;

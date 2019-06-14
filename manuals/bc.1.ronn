@@ -139,6 +139,34 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
+STDOUT
+------
+
+Any non-error output is written to `stdout`.
+
+**Note**: Unlike other bc(1) implementations, this bc(1) will issue a fatal
+error (see the EXIT STATUS section) if it cannot write to `stdout`, so if
+`stdout` is closed, as in `bc <file> >&-`, it will quit with an error. This is
+done so that bc(1) can report problems when `stdout` is redirected to a file.
+
+If there are scripts that depend on the behavior of other bc(1) implementations,
+it is recommended that those scripts be changed to redirect `stdout` to
+`/dev/null`.
+
+STDERR
+------
+
+Any error output is written to `stderr`.
+
+**Note**: Unlike other bc(1) implementations, this bc(1) will issue a fatal
+error (see the EXIT STATUS section) if it cannot write to `stderr`, so if
+`stderr` is closed, as in `bc <file> 2>&-`, it will quit with an error. This is
+done so that bc(1) can report problems when `stderr` is redirected to a file.
+
+If there are scripts that depend on the behavior of other bc(1) implementations,
+it is recommended that those scripts be changed to redirect `stderr` to
+`/dev/null`.
+
 SYNTAX
 ------
 

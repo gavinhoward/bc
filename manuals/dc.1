@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "DC" "1" "May 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "DC" "1" "June 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
@@ -60,6 +60,24 @@ Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in 
 .TP
 \fB\-f\fR \fIfile\fR, \fB\-\-file\fR=\fIfile\fR
 Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
+.
+.SH "STDOUT"
+Any non\-error output is written to \fBstdout\fR\.
+.
+.P
+\fBNote\fR: Unlike other dc(1) implementations, this dc(1) will issue a fatal error (see the EXIT STATUS section) if it cannot write to \fBstdout\fR, so if \fBstdout\fR is closed, as in \fBbc <file> >&\-\fR, it will quit with an error\. This is done so that dc(1) can report problems when \fBstdout\fR is redirected to a file\.
+.
+.P
+If there are scripts that depend on the behavior of other dc(1) implementations, it is recommended that those scripts be changed to redirect \fBstdout\fR to \fB/dev/null\fR\.
+.
+.SH "STDERR"
+Any error output is written to \fBstderr\fR\.
+.
+.P
+\fBNote\fR: Unlike other dc(1) implementations, this dc(1) will issue a fatal error (see the EXIT STATUS section) if it cannot write to \fBstderr\fR, so if \fBstderr\fR is closed, as in \fBbc <file> 2>&\-\fR, it will quit with an error\. This is done so that dc(1) can report problems when \fBstderr\fR is redirected to a file\.
+.
+.P
+If there are scripts that depend on the behavior of other dc(1) implementations, it is recommended that those scripts be changed to redirect \fBstderr\fR to \fB/dev/null\fR\.
 .
 .SH "SYNTAX"
 \fBibase\fR is a register (see the REGISTERS section) determining how to interpret constant numbers\. It is the "input" base, or the number base used for interpreting input numbers\. \fBibase\fR is initially \fB10\fR\. The max allowable value for \fBibase\fR is \fB16\fR\. The min allowable value for \fBibase\fR is \fB2\fR\. The max allowable value for \fBibase\fR can be queried in dc(1) programs with the \fBT\fR command\.
