@@ -2025,19 +2025,14 @@ static void bc_program_printIndex(const char *restrict code,
 	bc_vm_printf(" (%lu) ", val);
 }
 
-static void bc_program_printName(const char *restrict code,
+static void bc_program_printName(BcProgram *p, const char *restrict code,
                                  size_t *restrict bgn)
 {
-	uchar byte;
-
-	bc_vm_printf(" (");
-
-	while ((byte = (uchar) code[(*bgn)++]) && byte != BC_PARSE_STREND)
-		bc_vm_putchar(byte);
-
-	assert(byte);
-
-	bc_vm_printf(") ");
+	size_t idx = bc_program_index(code, bgn);
+	BcFunc *f = bc_program_func(p);
+	char **str = bc_vec_item(&f->strs, idx);
+	assert(str && *str);
+	bc_vm_printf(" (%s) ", *str);
 }
 
 static void bc_program_printStr(BcProgram *p, const char *restrict code,
@@ -2061,7 +2056,7 @@ void bc_program_printInst(BcProgram *p, const char *restrict code,
 	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
 	    inst == BC_INST_ARRAY)
 	{
-		bc_program_printName(code, bgn);
+		bc_program_printName(p, code, bgn);
 	}
 	else if (inst == BC_INST_STR) bc_program_printStr(p, code, bgn);
 	else if (inst == BC_INST_NUM) {
