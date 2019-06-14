@@ -809,7 +809,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 	if (right->t == BC_RESULT_STR) {
 
-		size_t idx =  right->d.id.idx;
+		size_t idx = right->d.id.idx;
 
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
 			bc_num_free(l);
