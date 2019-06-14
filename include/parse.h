@@ -44,13 +44,12 @@
 #include <lex.h>
 #include <lang.h>
 
-#define BC_PARSE_STREND ((uchar) UCHAR_MAX)
-
 #define BC_PARSE_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
 #define BC_PARSE_NOREAD (1<<3)
 #define BC_PARSE_ARRAY (1<<4)
+#define BC_PARSE_NEEDVAL (1<<5)
 
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
 #define bc_parse_string(p)(bc_parse_addId((p), (p)->l.str.v, BC_INST_STR))

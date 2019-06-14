@@ -616,7 +616,7 @@ const uint8_t dc_lex_regs[] = {
 
 const size_t dc_lex_regs_len = sizeof(dc_lex_regs) / sizeof(uint8_t);
 
-const uint8_t dc_lex_tokens[] = {
+const uchar dc_lex_tokens[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_TRUNC,
 #else // BC_ENABLE_EXTRA_MATH
@@ -665,7 +665,7 @@ const uint8_t dc_lex_tokens[] = {
 	BC_LEX_INVALID
 };
 
-const uint8_t dc_parse_insts[] = {
+const uchar dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLED
 	BC_INST_INVALID, BC_INST_INVALID,

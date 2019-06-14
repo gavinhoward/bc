@@ -106,7 +106,8 @@
 #define BC_HIST_MAX_LINE (4095)
 
 #define BC_HIST_BUF_LEN(h) ((h)->buf.len - 1)
-#define BC_HIST_BAD_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
+#define BC_HIST_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
+#define BC_HIST_READ(s, n) (read(STDIN_FILENO, (s), (n)) == -1)
 
 #define BC_HIST_NEXT (false)
 #define BC_HIST_PREV (true)

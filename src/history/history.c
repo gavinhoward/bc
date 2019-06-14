@@ -470,7 +470,7 @@ static size_t bc_history_cursorPos() {
 	size_t cols, rows, i;
 
 	// Report cursor location.
-	if (BC_ERR(BC_HIST_BAD_WRITE("\x1b[6n", 4))) return SIZE_MAX;
+	if (BC_ERR(BC_HIST_WRITE("\x1b[6n", 4))) return SIZE_MAX;
 
 	// Read the response: ESC [ rows ; cols R.
 	for (i = 0; i < sizeof(buf) - 1; ++i) {
@@ -504,8 +504,7 @@ static size_t bc_history_columns() {
 		if (BC_ERR(start == SIZE_MAX)) return BC_HIST_DEF_COLS;
 
 		// Go to right margin and get position.
-		if (BC_ERR(BC_HIST_BAD_WRITE("\x1b[999C", 6)))
-			return BC_HIST_DEF_COLS;
+		if (BC_ERR(BC_HIST_WRITE("\x1b[999C", 6))) return BC_HIST_DEF_COLS;
 		cols = bc_history_cursorPos();
 		if (BC_ERR(cols == SIZE_MAX)) return BC_HIST_DEF_COLS;
 
@@ -520,7 +519,7 @@ static size_t bc_history_columns() {
 
 			// If this fails, return a value that
 			// callers will translate into an error.
-			if (BC_ERR(BC_HIST_BAD_WRITE(seq, len))) return SIZE_MAX;
+			if (BC_ERR(BC_HIST_WRITE(seq, len))) return SIZE_MAX;
 		}
 
 		return cols;
@@ -620,7 +619,7 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
 	bc_vec_concat(&h->tmp, seq);
 
-	if (h->tmp.len && BC_ERR(BC_HIST_BAD_WRITE(h->tmp.v, h->tmp.len - 1)))
+	if (h->tmp.len && BC_ERR(BC_HIST_WRITE(h->tmp.v, h->tmp.len - 1)))
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	return BC_STATUS_SUCCESS;
@@ -652,7 +651,7 @@ static BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf,
 
 		if (colpos < h->cols) {
 			// Avoid a full update of the line in the trivial case.
-			if (BC_ERR(BC_HIST_BAD_WRITE(cbuf, clen)))
+			if (BC_ERR(BC_HIST_WRITE(cbuf, clen)))
 				s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 		}
 		else s = bc_history_refresh(h);
@@ -707,11 +706,8 @@ static BcStatus bc_history_edit_wordEnd(BcHistory *h) {
 
 	if (!len || h->pos >= len) return BC_STATUS_SUCCESS;
 
-	if (h->buf.v[h->pos] == ' ') {
-		while (h->pos < len && h->buf.v[h->pos] == ' ') ++h->pos;
-	}
-
-	while (h->pos < len && h->buf.v[h->pos] != ' ') ++h->pos;
+	while (h->pos < len && isspace(h->buf.v[h->pos])) h->pos += 1;
+	while (h->pos < len && !isspace(h->buf.v[h->pos])) h->pos += 1;
 
 	return bc_history_refresh(h);
 }
@@ -725,13 +721,8 @@ static BcStatus bc_history_edit_wordStart(BcHistory *h) {
 
 	if (!len) return BC_STATUS_SUCCESS;
 
-	if (h->pos && h->buf.v[h->pos - 1] == ' ') --h->pos;
-
-	if (h->buf.v[h->pos] == ' ') {
-		while (h->pos < len && h->buf.v[h->pos] == ' ') --h->pos;
-	}
-
-	while (h->pos < len && h->buf.v[h->pos - 1] != ' ') --h->pos;
+	while (h->pos > 0 && isspace(h->buf.v[h->pos - 1])) h->pos -= 1;
+	while (h->pos > 0 && !isspace(h->buf.v[h->pos - 1])) h->pos -= 1;
 
 	return bc_history_refresh(h);
 }
@@ -904,7 +895,7 @@ static BcStatus bc_history_escape(BcHistory *h) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	char c, seq[3];
 
-	if (read(STDIN_FILENO, seq, 1) == -1) return s;
+	if (BC_ERR(BC_HIST_READ(seq, 1))) return s;
 
 	c = seq[0];
 
@@ -916,8 +907,8 @@ static BcStatus bc_history_escape(BcHistory *h) {
 	}
 	else {
 
-		if (BC_ERR(read(STDIN_FILENO, seq + 1, 1) == -1))
-			s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+		if (BC_ERR(BC_HIST_READ(seq + 1, 1)))
+			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 		// ESC [ sequences.
 		if (c == '[') {
@@ -927,10 +918,19 @@ static BcStatus bc_history_escape(BcHistory *h) {
 			if (c >= '0' && c <= '9') {
 
 				// Extended escape, read additional byte.
-				if (BC_ERR(read(STDIN_FILENO, seq + 2, 1) == -1))
-					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+				if (BC_ERR(BC_HIST_READ(seq + 2, 1)))
+					return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 				if (seq[2] == '~' && c == '3') s = bc_history_edit_delete(h);
+				else if(seq[2] == ';') {
+
+					if (BC_ERR(BC_HIST_READ(seq, 2)))
+						return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+
+					if (seq[0] != '5') return s;
+					else if (seq[1] == 'C') s = bc_history_edit_wordEnd(h);
+					else if (seq[1] == 'D') s = bc_history_edit_wordStart(h);
+				}
 			}
 			else {
 
@@ -1034,7 +1034,7 @@ static BcStatus bc_history_printCtrl(BcHistory *h, unsigned int c) {
 
 	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D) {
 
-		if (BC_ERR(BC_HIST_BAD_WRITE(newline, sizeof(newline) - 1)))
+		if (BC_ERR(BC_HIST_WRITE(newline, sizeof(newline) - 1)))
 			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 		s = bc_history_refresh(h);
@@ -1060,7 +1060,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		h->plen = strlen(prompt);
 		h->pcol = bc_history_promptColLen(prompt, h->plen);
 
-		if (BC_ERR(BC_HIST_BAD_WRITE(prompt, h->plen)))
+		if (BC_ERR(BC_HIST_WRITE(prompt, h->plen)))
 			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 	}
 
@@ -1093,9 +1093,9 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				s = bc_history_reset(h);
 				if (BC_ERR(s)) break;
 
-				if (BC_ERR(BC_HIST_BAD_WRITE(vm->sigmsg, vm->siglen)) ||
-				    BC_ERR(BC_HIST_BAD_WRITE(bc_program_ready_msg,
-				                                bc_program_ready_msg_len)))
+				if (BC_ERR(BC_HIST_WRITE(vm->sigmsg, vm->siglen)) ||
+				    BC_ERR(BC_HIST_WRITE(bc_program_ready_msg,
+				                         bc_program_ready_msg_len)))
 				{
 					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 				}
@@ -1200,7 +1200,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Clear screen.
 			case BC_ACTION_CTRL_L:
 			{
-				if (BC_ERR(BC_HIST_BAD_WRITE("\x1b[H\x1b[2J", 7)))
+				if (BC_ERR(BC_HIST_WRITE("\x1b[H\x1b[2J", 7)))
 					s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 				if (BC_NO_ERR(!s)) s = bc_history_refresh(h);
 				break;
@@ -1239,7 +1239,7 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 
 	s = bc_history_edit(h, prompt);
 	bc_history_disableRaw(h);
-	if (BC_NO_ERR(!s) && BC_ERR(BC_HIST_BAD_WRITE("\n", 1)))
+	if (BC_NO_ERR(!s) && BC_ERR(BC_HIST_WRITE("\n", 1)))
 		s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 	return s;

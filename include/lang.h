@@ -42,6 +42,15 @@
 #include <vector.h>
 #include <num.h>
 
+#if BC_ENABLED
+#define BC_INST_IS_ASSIGN(i) \
+	((i) == BC_INST_ASSIGN || (i) == BC_INST_ASSIGN_NO_VAL)
+#define BC_INST_USE_VAL(i) ((i) <= BC_INST_ASSIGN)
+#else // BC_ENABLED
+#define BC_INST_IS_ASSIGN(i) ((i) == BC_INST_ASSIGN_NO_VAL)
+#define BC_INST_USE_VAL(i) (false)
+#endif // BC_ENABLED
+
 typedef enum BcInst {
 
 #if BC_ENABLED
@@ -93,8 +102,24 @@ typedef enum BcInst {
 	BC_INST_ASSIGN_LSHIFT,
 	BC_INST_ASSIGN_RSHIFT,
 #endif // BC_ENABLE_EXTRA_MATH
-#endif // BC_ENABLED
 	BC_INST_ASSIGN,
+
+	BC_INST_INC_NO_VAL,
+	BC_INST_DEC_NO_VAL,
+
+	BC_INST_ASSIGN_POWER_NO_VAL,
+	BC_INST_ASSIGN_MULTIPLY_NO_VAL,
+	BC_INST_ASSIGN_DIVIDE_NO_VAL,
+	BC_INST_ASSIGN_MODULUS_NO_VAL,
+	BC_INST_ASSIGN_PLUS_NO_VAL,
+	BC_INST_ASSIGN_MINUS_NO_VAL,
+#if BC_ENABLE_EXTRA_MATH
+	BC_INST_ASSIGN_PLACES_NO_VAL,
+	BC_INST_ASSIGN_LSHIFT_NO_VAL,
+	BC_INST_ASSIGN_RSHIFT_NO_VAL,
+#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLED
+	BC_INST_ASSIGN_NO_VAL,
 
 	BC_INST_NUM,
 	BC_INST_VAR,
@@ -225,7 +250,6 @@ typedef enum BcResultType {
 typedef union BcResultData {
 	BcNum n;
 	BcVec v;
-	BcId id;
 	BcLoc loc;
 } BcResultData;
 

@@ -14,6 +14,7 @@ places
 vars
 boolean
 abs
+functions
 scientific
 engineering
 globals
