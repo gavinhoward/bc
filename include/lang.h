@@ -250,7 +250,6 @@ typedef enum BcResultType {
 typedef union BcResultData {
 	BcNum n;
 	BcVec v;
-	BcId id;
 	BcLoc loc;
 } BcResultData;
 
