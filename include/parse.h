@@ -44,8 +44,6 @@
 #include <lex.h>
 #include <lang.h>
 
-#define BC_PARSE_STREND ((uchar) UCHAR_MAX)
-
 #define BC_PARSE_REL (1<<0)
 #define BC_PARSE_PRINT (1<<1)
 #define BC_PARSE_NOCALL (1<<2)
