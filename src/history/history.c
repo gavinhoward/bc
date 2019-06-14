@@ -396,7 +396,7 @@ static size_t bc_history_colPos(const char *buf, size_t buf_len, size_t pos) {
  * Return true if the terminal name is in the list of terminals we know are
  * not able to understand basic escape sequences.
  */
-static bool bc_history_isBadTerm() {
+static bool bc_history_isBadTerm(void) {
 
 	size_t i;
 	char *term = getenv("TERM");
@@ -464,7 +464,7 @@ static void bc_history_disableRaw(BcHistory *h) {
  * and return it. On error -1 is returned, on success the position of the
  * cursor.
  */
-static size_t bc_history_cursorPos() {
+static size_t bc_history_cursorPos(void) {
 
 	char buf[64];
 	size_t cols, rows, i;
@@ -490,7 +490,7 @@ static size_t bc_history_cursorPos() {
  * Try to get the number of columns in the current terminal, or assume 80
  * if it fails.
  */
-static size_t bc_history_columns() {
+static size_t bc_history_columns(void) {
 
 	struct winsize ws;
 
