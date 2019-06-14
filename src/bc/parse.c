@@ -880,7 +880,6 @@ static BcStatus bc_parse_func(BcParse *p) {
 	while (p->l.t != BC_LEX_RPAREN) {
 
 		BcType t = BC_TYPE_VAR;
-		size_t idx;
 
 		if (p->l.t == BC_LEX_OP_MULTIPLY) {
 			t = BC_TYPE_REF;
@@ -962,7 +961,6 @@ static BcStatus bc_parse_auto(BcParse *p) {
 	while (p->l.t == BC_LEX_NAME) {
 
 		BcType t;
-		size_t idx;
 
 		name = bc_vm_strdup(p->l.str.v);
 		s = bc_lex_next(&p->l);
