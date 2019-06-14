@@ -974,8 +974,12 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	}
 
 	res.t = BC_RESULT_ONE;
-	inst2 = BC_INST_ASSIGN_PLUS + (inst & 0x01);
-	if (!use_val) inst2 += (BC_INST_ASSIGN_PLUS_NO_VAL - BC_INST_ASSIGN_PLUS);
+	inst2 = BC_INST_ASSIGN_PLUS;
+	if (!use_val) {
+		inst2 += (inst == BC_INST_DEC_NO_VAL);
+		inst2 += (BC_INST_ASSIGN_PLUS_NO_VAL - BC_INST_ASSIGN_PLUS);
+	}
+	else inst2 += (inst & 0x01);
 
 	bc_vec_push(&p->results, &res);
 	s = bc_program_assign(p, inst2);
