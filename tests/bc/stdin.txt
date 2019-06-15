@@ -6,3 +6,6 @@
 2 /* Comment with full "string" */ + 3
 1 + \
 2
+i = 4
+read()
+i *= 5
