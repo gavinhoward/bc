@@ -47,6 +47,8 @@
 
 int bc_main(int argc, char **argv);
 
+extern const char bc_help[];
+
 typedef struct BcLexKeyword {
 	uchar data;
 	const char name[9];
