@@ -125,11 +125,17 @@ This is a \fBnon\-portable extension\fR\.
 Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
 .
 .IP
+In other bc(1) implementations, this option causes the program to execute the expressions and then exit\. This bc(1) does not, unless the \fBBC_EXPR_EXIT\fR is defined (see the ENVIRONMENT VARIABLES section)\.
+.
+.IP
 This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-f\fR \fIfile\fR, \fB\-\-file\fR=\fIfile\fR
 Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
+.
+.IP
+In other bc(1) implementations, this option causes the program to execute the files and then exit\. This bc(1) does not, unless the \fBBC_EXPR_EXIT\fR is defined (see the ENVIRONMENT VARIABLES section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -1307,7 +1313,7 @@ bc(1) recognizes the following environment variables:
 .
 .TP
 \fBPOSIXLY_CORRECT\fR
-If this variables exists (no matter the contents), bc(1) behaves as if the \fB\-s\fR option was given\.
+If this variable exists (no matter the contents), bc(1) behaves as if the \fB\-s\fR option was given\.
 .
 .TP
 \fBBC_ENV_ARGS\fR
@@ -1316,6 +1322,10 @@ This is another way to give command\-line arguments to bc(1)\. They should be in
 .TP
 \fBBC_LINE_LENGTH\fR
 If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), bc(1) will output lines to that length, including the backslash (\fB\e\fR)\. The default line length is \fB70\fR\.
+.
+.TP
+\fBBC_EXPR_EXIT\fR
+If this variable exists (no matter the contents), bc(1) will exit immediately after executing expressions and files given by the \fB\-e\fR and/or \fB\-f\fR command\-line options (and any equivalents)\.
 .
 .SH "EXIT STATUS"
 bc(1) returns the following exit statuses:

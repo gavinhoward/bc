@@ -131,11 +131,19 @@ The following are the options that bc(1) accepts.
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
 
+    In other bc(1) implementations, this option causes the program to execute
+    the expressions and then exit. This bc(1) does not, unless the
+    `BC_EXPR_EXIT` is defined (see the ENVIRONMENT VARIABLES section).
+
     This is a **non-portable extension**.
 
   * `-f` *file*, `--file`=*file*:
     Reads in `file` and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
+
+    In other bc(1) implementations, this option causes the program to execute
+    the files and then exit. This bc(1) does not, unless the
+    `BC_EXPR_EXIT` is defined (see the ENVIRONMENT VARIABLES section).
 
     This is a **non-portable extension**.
 
@@ -1186,7 +1194,7 @@ ENVIRONMENT VARIABLES
 bc(1) recognizes the following environment variables:
 
   * `POSIXLY_CORRECT`:
-    If this variables exists (no matter the contents), bc(1) behaves as if
+    If this variable exists (no matter the contents), bc(1) behaves as if
     the `-s` option was given.
 
   * `BC_ENV_ARGS`:
@@ -1203,6 +1211,11 @@ bc(1) recognizes the following environment variables:
     than `1` and is less than `UINT16_MAX` (`2^16-1`), bc(1) will output lines
     to that length, including the backslash (`\`). The default line length is
     `70`.
+
+  * `BC_EXPR_EXIT`:
+    If this variable exists (no matter the contents), bc(1) will exit
+    immediately after executing expressions and files given by the `-e` and/or
+    `-f` command-line options (and any equivalents).
 
 EXIT STATUS
 -----------
