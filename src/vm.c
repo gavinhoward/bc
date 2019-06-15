@@ -487,6 +487,9 @@ static BcStatus bc_vm_stdin(void) {
 
 		if (string || comment) continue;
 		if (len >= 2 && str[len - 2] == '\\' && str[len - 1] == '\n') continue;
+#if BC_ENABLE_HISTORY
+		if (vm->history.stdin_has_data) continue;
+#endif // BC_ENABLE_HISTORY
 
 		s = bc_vm_process(buffer.v, true);
 		if (BC_ERR(s)) goto err;
