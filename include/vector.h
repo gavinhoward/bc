@@ -90,6 +90,10 @@ size_t bc_map_index(const BcVec *restrict v, const struct BcId *restrict ptr);
 #define bc_vec_pop(v) (bc_vec_npop((v), 1))
 #define bc_vec_top(v) (bc_vec_item_rev((v), 0))
 
+#ifndef NDEBUG
 #define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), bc_id_free))
+#else // NDEBUG
+#define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), NULL))
+#endif // NDEBUG
 
 #endif // BC_VECTOR_H

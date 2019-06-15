@@ -161,6 +161,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 
 #include <vector.h>
 #include <history.h>
@@ -1079,9 +1080,15 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			case BC_ACTION_LINE_FEED:
 			case BC_ACTION_ENTER:
 			{
-				if (c == BC_ACTION_LINE_FEED) s = bc_history_printCtrl(h, c);
 				bc_vec_pop(&h->history);
 				return s;
+			}
+
+			case BC_ACTION_TAB:
+			{
+				memcpy(cbuf, bc_history_tab, bc_history_tab_len + 1);
+				s = bc_history_edit_insert(h, cbuf, bc_history_tab_len);
+				break;
 			}
 
 			case BC_ACTION_CTRL_C:
@@ -1226,6 +1233,12 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	return s;
 }
 
+static bool bc_history_stdinHasData(BcHistory *h) {
+	int n;
+	return pselect(1, &h->rdset, NULL, NULL, &h->ts, &h->sigmask) > 0 ||
+	       (ioctl(STDIN_FILENO, FIONREAD, &n) >= 0 && n > 0);
+}
+
 /**
  * This function calls the line editing function bc_history_edit()
  * using the STDIN file descriptor set in raw mode.
@@ -1238,7 +1251,10 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 	if (BC_ERR(s)) return s;
 
 	s = bc_history_edit(h, prompt);
-	bc_history_disableRaw(h);
+
+	h->stdin_has_data = bc_history_stdinHasData(h);
+	if (!h->stdin_has_data) bc_history_disableRaw(h);
+
 	if (BC_NO_ERR(!s) && BC_ERR(BC_HIST_WRITE("\n", 1)))
 		s = bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
@@ -1260,7 +1276,6 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		line = bc_vm_strdup(h->buf.v);
 		bc_history_add(h, line);
 
-		// Make sure to append a newline.
 		bc_vec_concat(vec, "\n");
 	}
 	else s = bc_read_chars(vec, prompt);
@@ -1270,7 +1285,6 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 void bc_history_add(BcHistory *h, char *line) {
 
-	// Don't add duplicated lines.
 	if (h->history.len) {
 		if (!strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line)) {
 			free(line);
@@ -1285,12 +1299,20 @@ void bc_history_add(BcHistory *h, char *line) {
 
 void bc_history_init(BcHistory *h) {
 
-	h->rawMode = false;
-	h->badTerm = bc_history_isBadTerm();
-
 	bc_vec_init(&h->buf, sizeof(char), NULL);
 	bc_vec_init(&h->history, sizeof(char*), bc_string_free);
 	bc_vec_init(&h->tmp, sizeof(char), NULL);
+
+	FD_ZERO(&h->rdset);
+	FD_SET(STDIN_FILENO, &h->rdset);
+	h->ts.tv_sec = 0;
+	h->ts.tv_nsec = 0;
+
+	sigemptyset(&h->sigmask);
+	sigaddset(&h->sigmask, SIGINT);
+
+	h->rawMode = h->stdin_has_data = false;
+	h->badTerm = bc_history_isBadTerm();
 }
 
 void bc_history_free(BcHistory *h) {

@@ -66,15 +66,29 @@ The following are the options that dc(1) accepts.
     Enables extended register mode. See the REGISTERS section for more
     information.
 
+    This is a **non-portable extension**.
+
   * `-e` *expr*, `--expression`=*expr*:
     Evaluates `expr`. If multiple expressions are given, they are evaluated in
     order. If files are given as well (see below), the expressions and files are
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
 
+    In other dc(1) implementations, this option causes the program to execute
+    the expressions and then exit. This dc(1) does not, unless the
+    `DC_EXPR_EXIT` is defined (see the ENVIRONMENT VARIABLES section).
+
+    This is a **non-portable extension**.
+
   * `-f` *file*, `--file`=*file*:
     Reads in `file` and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
+
+    In other dc(1) implementations, this option causes the program to execute
+    the files and then exit. This dc(1) does not, unless the
+    `DC_EXPR_EXIT` is defined (see the ENVIRONMENT VARIABLES section).
+
+    This is a **non-portable extension**.
 
 STDOUT
 ------
@@ -746,6 +760,11 @@ dc(1) recognizes the following environment variables:
     than `1` and is less than `UINT16_MAX` (`2^16-1`), dc(1) will output lines
     to that length, including the backslash newline combo. The default line
     length is `70`.
+
+  * `DC_EXPR_EXIT`:
+    If this variable exists (no matter the contents), dc(1) will exit
+    immediately after executing expressions and files given by the `-e` and/or
+    `-f` command-line options (and any equivalents).
 
 EXIT STATUS
 -----------

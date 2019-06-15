@@ -131,11 +131,19 @@ The following are the options that bc(1) accepts.
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
 
+    In other bc(1) implementations, this option causes the program to execute
+    the expressions and then exit. This bc(1) does not, unless the
+    `BC_EXPR_EXIT` is defined (see the ENVIRONMENT VARIABLES section).
+
     This is a **non-portable extension**.
 
   * `-f` *file*, `--file`=*file*:
     Reads in `file` and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
+
+    In other bc(1) implementations, this option causes the program to execute
+    the files and then exit. This bc(1) does not, unless the
+    `BC_EXPR_EXIT` is defined (see the ENVIRONMENT VARIABLES section).
 
     This is a **non-portable extension**.
 
@@ -270,14 +278,17 @@ side of [`assignment` operators](#bc-assignment).
 	**non-portable extension**.
 7.	`scale(E)`: `E`'s **scale**.
 8.	`abs(E)`: The absolute value of `E`. This is a **non-portable extension**.
-9.	`read()`: Reads a line from `stdin` and uses that as an expression. The
+9.	`I()`, `I(E)`, `I(E, E)`, and so on, where `I` is an identifier for a
+	non-[void function](#void-functions). The `E` parameters may also be arrays
+	and [array references](#array-references).
+10.	`read()`: Reads a line from `stdin` and uses that as an expression. The
 	result of that expression is the result of the `read()` operand. This is a
 	**non-portable extension**.
-10.	`maxibase()`: The max allowable `ibase`. This is a **non-portable
+11.	`maxibase()`: The max allowable `ibase`. This is a **non-portable
 	extension**.
-11.	`maxobase()`: The max allowable `obase`. This is a **non-portable
+12.	`maxobase()`: The max allowable `obase`. This is a **non-portable
 	extension**.
-12.	`maxscale()`: The max allowable `scale`. This is a **non-portable
+13.	`maxscale()`: The max allowable `scale`. This is a **non-portable
 	extension**.
 
 <a name="bc-numbers"/>
@@ -562,8 +573,11 @@ The following items are statements:
 12.	`limits`
 13.	A string of characters, enclosed in double quotes
 14.	`print` `E` `,` ... `,` `E`
+15.	`I()`, `I(E)`, `I(E, E)`, and so on, where `I` is an identifier for a
+	[void function](#void-functions). The `E` parameters may also be arrays and
+	[array references](#array-references).
 
-Numbers 4, 9, 11, 12, and 14 are **non-portable extensions**.
+Numbers 4, 9, 11, 12, 14, and 15 are **non-portable extensions**.
 
 Also, as a **non-portable extension**, any or all of the expressions in the
 header of a for loop may be omitted. If the condition (second expression) is
@@ -692,6 +706,8 @@ The word `void` is not treated as a keyword; it is still possible to have
 variables, arrays, and functions named `void`.
 
 This is a **non-portable extension**.
+
+<a name="array-references"/>
 
 ### Array References
 
@@ -1186,7 +1202,7 @@ ENVIRONMENT VARIABLES
 bc(1) recognizes the following environment variables:
 
   * `POSIXLY_CORRECT`:
-    If this variables exists (no matter the contents), bc(1) behaves as if
+    If this variable exists (no matter the contents), bc(1) behaves as if
     the `-s` option was given.
 
   * `BC_ENV_ARGS`:
@@ -1203,6 +1219,11 @@ bc(1) recognizes the following environment variables:
     than `1` and is less than `UINT16_MAX` (`2^16-1`), bc(1) will output lines
     to that length, including the backslash (`\`). The default line length is
     `70`.
+
+  * `BC_EXPR_EXIT`:
+    If this variable exists (no matter the contents), bc(1) will exit
+    immediately after executing expressions and files given by the `-e` and/or
+    `-f` command-line options (and any equivalents).
 
 EXIT STATUS
 -----------

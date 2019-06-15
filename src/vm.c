@@ -71,8 +71,7 @@ static void bc_vm_sig(int sig) {
 
 		size_t n = vm->siglen;
 
-		if (BC_ERR(write(STDERR_FILENO, vm->sigmsg, n) != (ssize_t) n))
-			_Exit(BC_STATUS_ERROR_FATAL);
+		(void) write(STDERR_FILENO, vm->sigmsg, n);
 
 		vm->sig += 1;
 
@@ -98,8 +97,10 @@ static BOOL WINAPI bc_vm_sig(DWORD sig) {
 #endif // BC_ENABLE_SIGNALS
 
 void bc_vm_info(const char* const help) {
+
 	bc_vm_printf("%s %s\n", vm->name, BC_VERSION);
 	bc_vm_puts(bc_copyright, stdout);
+
 	if (help) {
 		bc_vm_putchar('\n');
 		bc_vm_printf(help, vm->name, vm->name);
@@ -285,10 +286,10 @@ size_t bc_vm_printf(const char *fmt, ...) {
 	int ret;
 
 	va_start(args, fmt);
-	ret = vprintf(fmt, args);
+	ret = vfprintf(stdout, fmt, args);
 	va_end(args);
 
-	if (BC_ERR(ret < 0 || ferror(stdout))) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (BC_IO_ERR(ret, stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 
 	vm->nchars = 0;
 
@@ -485,6 +486,9 @@ static BcStatus bc_vm_stdin(void) {
 
 		if (string || comment) continue;
 		if (len >= 2 && str[len - 2] == '\\' && str[len - 1] == '\n') continue;
+#if BC_ENABLE_HISTORY
+		if (vm->history.stdin_has_data) continue;
+#endif // BC_ENABLE_HISTORY
 
 		s = bc_vm_process(buffer.v, true);
 		if (BC_ERR(s)) goto err;
@@ -581,7 +585,7 @@ static void bc_vm_gettext(void) {
 #endif // BC_ENABLE_NLS
 }
 
-static BcStatus bc_vm_exec(void) {
+static BcStatus bc_vm_exec(const char* env_exp_exit) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
@@ -604,7 +608,7 @@ static BcStatus bc_vm_exec(void) {
 	if (vm->exprs.len) {
 		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
 		s = bc_vm_process(vm->exprs.v, false);
-		if (BC_ERR(s)) return s;
+		if (BC_ERR(s) || getenv(env_exp_exit) != NULL) return s;
 	}
 
 	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
@@ -617,7 +621,7 @@ static BcStatus bc_vm_exec(void) {
 }
 
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
-                    const char* const env_args)
+                    const char* const env_args, const char* env_exp_exit)
 {
 	BcStatus s;
 	int ttyin, ttyout, ttyerr;
@@ -681,7 +685,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	if (BC_IS_BC && BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 
-	s = bc_vm_exec();
+	s = bc_vm_exec(env_exp_exit);
 
 exit:
 	bc_vm_shutdown();

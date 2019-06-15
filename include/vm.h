@@ -148,7 +148,7 @@
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
 
-#define BC_IO_ERR(e, f) (BC_ERR((e) == EOF || ferror(f)))
+#define BC_IO_ERR(e, f) (BC_ERR((e) < 0 || ferror(f)))
 #define BC_STATUS_IS_ERROR(s) \
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
 #define BC_ERROR_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && BC_ERR(s))
@@ -217,7 +217,7 @@ BcStatus bc_vm_posixError(BcError e, size_t line, ...);
 
 void bc_vm_info(const char* const help);
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
-                    const char* const env_args);
+                    const char* const env_args, const char* env_exp_quit);
 void bc_vm_shutdown(void);
 
 size_t bc_vm_printf(const char *fmt, ...);

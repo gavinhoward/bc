@@ -44,10 +44,12 @@ int bc_id_cmp(const BcId *e1, const BcId *e2) {
 	return strcmp(e1->name, e2->name);
 }
 
+#ifndef NDEBUG
 void bc_id_free(void *id) {
 	assert(id);
 	free(((BcId*) id)->name);
 }
+#endif // NDEBUG
 
 void bc_string_free(void *string) {
 	assert(string && *((char**) string));

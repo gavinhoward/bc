@@ -95,8 +95,12 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include <signal.h>
+
 #include <termios.h>
+#include <time.h>
 #include <unistd.h>
+#include <sys/select.h>
 
 #include <status.h>
 #include <vector.h>
@@ -140,6 +144,7 @@ typedef enum BcHistoryAction {
 	BC_ACTION_CTRL_E = 5,
 	BC_ACTION_CTRL_F = 6,
 	BC_ACTION_CTRL_H = 8,
+	BC_ACTION_TAB = 9,
 	BC_ACTION_LINE_FEED = 10,
 	BC_ACTION_CTRL_K = 11,
 	BC_ACTION_CTRL_L = 12,
@@ -195,6 +200,18 @@ typedef struct BcHistory {
 	/// The original terminal state.
 	struct termios orig_termios;
 
+	/// This is to check if stdin has more data.
+	fd_set rdset;
+
+	/// This is to check if stdin has more data.
+	struct timespec ts;
+
+	/// This is to check if stdin has more data.
+	sigset_t sigmask;
+
+	/// This is to signal that there is more, so we don't process yet.
+	bool stdin_has_data;
+
 	/// Whether we are in rawmode.
 	bool rawMode;
 
@@ -210,6 +227,8 @@ void bc_history_init(BcHistory *h);
 void bc_history_free(BcHistory *h);
 
 extern const char *bc_history_bad_terms[];
+extern const char bc_history_tab[];
+extern const size_t bc_history_tab_len;
 extern const char bc_history_ctrlc[];
 extern const uint32_t bc_history_wchars[][2];
 extern const size_t bc_history_wchars_len;

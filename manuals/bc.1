@@ -125,11 +125,17 @@ This is a \fBnon\-portable extension\fR\.
 Evaluates \fBexpr\fR\. If multiple expressions are given, they are evaluated in order\. If files are given as well (see below), the expressions and files are evaluated in the order given\. This means that if a file is given before an expression, the file is read in and evaluated first\.
 .
 .IP
+In other bc(1) implementations, this option causes the program to execute the expressions and then exit\. This bc(1) does not, unless the \fBBC_EXPR_EXIT\fR is defined (see the ENVIRONMENT VARIABLES section)\.
+.
+.IP
 This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB\-f\fR \fIfile\fR, \fB\-\-file\fR=\fIfile\fR
 Reads in \fBfile\fR and evaluates it\. If expressions are also given (see above), the expressions are evaluated in the order given\.
+.
+.IP
+In other bc(1) implementations, this option causes the program to execute the files and then exit\. This bc(1) does not, unless the \fBBC_EXPR_EXIT\fR is defined (see the ENVIRONMENT VARIABLES section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -257,15 +263,18 @@ Array indices (\fBI[E]\fR)\.
 \fBabs(E)\fR: The absolute value of \fBE\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "9." 4
-\fBread()\fR: Reads a line from \fBstdin\fR and uses that as an expression\. The result of that expression is the result of the \fBread()\fR operand\. This is a \fBnon\-portable extension\fR\.
+\fBI()\fR, \fBI(E)\fR, \fBI(E, E)\fR, and so on, where \fBI\fR is an identifier for a non\-\fIvoid function\fR\. The \fBE\fR parameters may also be arrays and \fIarray references\fR\.
 .
 .IP "10." 4
-\fBmaxibase()\fR: The max allowable \fBibase\fR\. This is a \fBnon\-portable extension\fR\.
+\fBread()\fR: Reads a line from \fBstdin\fR and uses that as an expression\. The result of that expression is the result of the \fBread()\fR operand\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "11." 4
-\fBmaxobase()\fR: The max allowable \fBobase\fR\. This is a \fBnon\-portable extension\fR\.
+\fBmaxibase()\fR: The max allowable \fBibase\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "12." 4
+\fBmaxobase()\fR: The max allowable \fBobase\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "13." 4
 \fBmaxscale()\fR: The max allowable \fBscale\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "" 0
@@ -602,10 +611,13 @@ A string of characters, enclosed in double quotes
 .IP "14." 4
 \fBprint\fR \fBE\fR \fB,\fR \.\.\. \fB,\fR \fBE\fR
 .
+.IP "15." 4
+\fBI()\fR, \fBI(E)\fR, \fBI(E, E)\fR, and so on, where \fBI\fR is an identifier for a \fIvoid function\fR\. The \fBE\fR parameters may also be arrays and \fIarray references\fR\.
+.
 .IP "" 0
 .
 .P
-Numbers 4, 9, 11, 12, and 14 are \fBnon\-portable extensions\fR\.
+Numbers 4, 9, 11, 12, 14, and 15 are \fBnon\-portable extensions\fR\.
 .
 .P
 Also, as a \fBnon\-portable extension\fR, any or all of the expressions in the header of a for loop may be omitted\. If the condition (second expression) is omitted, it is assumed to be a constant \fB1\fR\.
@@ -753,6 +765,9 @@ The word \fBvoid\fR is not treated as a keyword; it is still possible to have va
 .
 .P
 This is a \fBnon\-portable extension\fR\.
+.
+.P
+ \fI\fR
 .
 .SS "Array References"
 For any array in the parameter list, if the array is declared in the form
@@ -1307,7 +1322,7 @@ bc(1) recognizes the following environment variables:
 .
 .TP
 \fBPOSIXLY_CORRECT\fR
-If this variables exists (no matter the contents), bc(1) behaves as if the \fB\-s\fR option was given\.
+If this variable exists (no matter the contents), bc(1) behaves as if the \fB\-s\fR option was given\.
 .
 .TP
 \fBBC_ENV_ARGS\fR
@@ -1316,6 +1331,10 @@ This is another way to give command\-line arguments to bc(1)\. They should be in
 .TP
 \fBBC_LINE_LENGTH\fR
 If this environment variable exists and contains an integer that is greater than \fB1\fR and is less than \fBUINT16_MAX\fR (\fB2^16\-1\fR), bc(1) will output lines to that length, including the backslash (\fB\e\fR)\. The default line length is \fB70\fR\.
+.
+.TP
+\fBBC_EXPR_EXIT\fR
+If this variable exists (no matter the contents), bc(1) will exit immediately after executing expressions and files given by the \fB\-e\fR and/or \fB\-f\fR command\-line options (and any equivalents)\.
 .
 .SH "EXIT STATUS"
 bc(1) returns the following exit statuses:
