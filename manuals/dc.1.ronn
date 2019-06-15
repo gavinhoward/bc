@@ -207,7 +207,7 @@ Printing numbers in scientific notation and/or engineering notation is a
     This does not alter the stack.
 
   * `n`:
-    Prints the value on top of the tack, whether number or string, and pops it
+    Prints the value on top of the stack, whether number or string, and pops it
     off of the stack.
 
   * `P`:

@@ -208,9 +208,14 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			break;
 		}
 
+		case BC_RESULT_ONE:
+		{
+			// Do nothing.
+			break;
+		}
+
 #if BC_ENABLED
 		case BC_RESULT_VOID:
-		case BC_RESULT_ONE:
 		case BC_RESULT_LAST:
 		{
 #ifndef NDEBUG
@@ -245,9 +250,9 @@ void bc_result_free(void *result) {
 		case BC_RESULT_ARRAY_ELEM:
 		case BC_RESULT_STR:
 		case BC_RESULT_CONSTANT:
+		case BC_RESULT_ONE:
 #if BC_ENABLED
 		case BC_RESULT_VOID:
-		case BC_RESULT_ONE:
 		case BC_RESULT_LAST:
 #endif // BC_ENABLED
 		{

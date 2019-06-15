@@ -71,9 +71,8 @@ static void bc_vm_sig(int sig) {
 
 		size_t n = vm->siglen;
 
-		(void) write(STDERR_FILENO, vm->sigmsg, n);
-
-		vm->sig += 1;
+		if (BC_NO_ERR(write(STDERR_FILENO, vm->sigmsg, n) == (ssize_t) n))
+			vm->sig += 1;
 
 		if (vm->sig == BC_SIGTERM_VAL) vm->sig = 1;
 	}

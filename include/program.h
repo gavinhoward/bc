@@ -74,8 +74,9 @@ typedef struct BcProgram {
 	BcVec arrs;
 	BcVec arr_map;
 
-#if BC_ENABLED
 	BcNum one;
+
+#if BC_ENABLED
 	BcNum last;
 #endif // BC_ENABLED
 
@@ -84,9 +85,8 @@ typedef struct BcProgram {
 	// which attempts to realloc, unless it is big enough. This is big enough.
 	BcDig strmb_num[BC_NUM_BIGDIG_LOG10];
 #endif // DC_ENABLED
-#if BC_ENABLED
+
 	BcDig one_num[BC_PROG_ONE_CAP];
-#endif // BC_ENABLED
 
 } BcProgram;
 
@@ -109,7 +109,7 @@ typedef struct BcProgram {
 #define bc_program_copyToVar(p, name, t, last) \
 	bc_program_copyToVar(p, name, t)
 #endif // !BC_ENABLED
-#else
+#else // DC_ENABLED
 // For bc, 'pop' and 'copy' are always false.
 #define bc_program_pushVar(p, code, bgn, pop, copy) \
 	bc_program_pushVar(p, code, bgn)

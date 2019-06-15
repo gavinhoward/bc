@@ -62,16 +62,29 @@ void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
 	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
 	BcVec *v = inst == BC_INST_NUM ? &f->consts : &f->strs;
 	size_t idx = v->len;
-	char *str = bc_vm_strdup(string);
 
 	if (inst == BC_INST_NUM) {
-		BcConst c;
-		c.val = str;
-		c.base = BC_NUM_BIGDIG_MAX;
-		bc_num_init(&c.num, strlen(str));
-		bc_vec_push(v, &c);
+
+		if (bc_parse_one[0] == string[0] && bc_parse_one[1] == string[1]) {
+			bc_parse_push(p, BC_INST_ONE);
+			return;
+		}
+		else {
+
+			BcConst c;
+			char *str = bc_vm_strdup(string);
+
+			c.val = str;
+			c.base = BC_NUM_BIGDIG_MAX;
+
+			bc_num_init(&c.num, strlen(str));
+			bc_vec_push(v, &c);
+		}
 	}
-	else bc_vec_push(v, &str);
+	else {
+		char *str = bc_vm_strdup(string);
+		bc_vec_push(v, &str);
+	}
 
 	bc_parse_updateFunc(p, p->fidx);
 	bc_parse_push(p, inst);

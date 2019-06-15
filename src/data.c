@@ -715,6 +715,8 @@ const uchar dc_parse_insts[] = {
 };
 #endif // DC_ENABLED
 
+const char bc_parse_one[] = "1";
+
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
 const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {

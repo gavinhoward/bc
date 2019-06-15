@@ -1259,7 +1259,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 	BcLexType top, t = p->l.t;
 	size_t nexprs = 0, ops_bgn = p->ops.len;
 	uint32_t i, nparens, nrelops;
-	bool pfirst, rprn, done, get_token, assign, bin_last, incdec, pop = true;
+	bool pfirst, rprn, done, get_token, assign, bin_last, incdec;
 
 	pfirst = (p->l.t == BC_LEX_LPAREN);
 	nparens = nrelops = 0;
@@ -1555,18 +1555,14 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			inst = BC_INST_INC_NO_VAL + (inst & 0x01);
 		}
 
-		pop = !(inst >= BC_INST_INC_NO_VAL && inst <= BC_INST_ASSIGN_NO_VAL);
-
-		if (!pop) {
+		if (inst >= BC_INST_INC_NO_VAL && inst <= BC_INST_ASSIGN_NO_VAL) {
 			bc_vec_pop(&p->func->code);
 			bc_parse_push(p, inst);
 		}
 	}
 
-	if (flags & BC_PARSE_PRINT) {
-		if (pfirst || !assign) bc_parse_push(p, BC_INST_PRINT);
-		if (pop) bc_parse_push(p, BC_INST_POP);
-	}
+	if ((flags & BC_PARSE_PRINT) && (pfirst || !assign))
+		bc_parse_push(p, BC_INST_PRINT);
 
 	// We want to eat newlines if newlines are not a valid ending token.
 	// This is for spacing in things like for loop headers.

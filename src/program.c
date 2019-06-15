@@ -236,16 +236,16 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			break;
 		}
 
+		case BC_RESULT_ONE:
+		{
+			n = &p->one;
+			break;
+		}
+
 #if BC_ENABLED
 		case BC_RESULT_LAST:
 		{
 			n = &p->last;
-			break;
-		}
-
-		case BC_RESULT_ONE:
-		{
-			n = &p->one;
 			break;
 		}
 
@@ -339,7 +339,7 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	lt = (*l)->t;
 
 	if (BC_ERR(lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||
-	           lt == BC_RESULT_ARRAY))
+	           lt == BC_RESULT_ARRAY || lt == BC_RESULT_ONE))
 	{
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	}
@@ -561,7 +561,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		}
 	}
 
-	if (BC_NO_ERR(!s) && pop) bc_vec_pop(&p->results);
+	if (BC_NO_ERR(!s) && (BC_IS_BC || pop)) bc_vec_pop(&p->results);
 
 	return s;
 }
@@ -1537,9 +1537,10 @@ void bc_program_init(BcProgram *p) {
 	bc_num_bigdig2num(&p->strmb, p->strm);
 #endif // DC_ENABLED
 
-#if BC_ENABLED
 	bc_num_setup(&p->one, p->one_num, BC_PROG_ONE_CAP);
 	bc_num_one(&p->one);
+
+#if BC_ENABLED
 	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
 
@@ -1709,13 +1710,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_LAST:
-			{
-				r.t = BC_RESULT_LAST;
-				bc_vec_push(&p->results, &r);
-				break;
-			}
-
 			case BC_INST_BOOL_OR:
 			case BC_INST_BOOL_AND:
 #endif // BC_ENABLED
@@ -1786,13 +1780,13 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_POP:
+			case BC_INST_ONE:
+#if BC_ENABLED
+			case BC_INST_LAST:
+#endif // BC_ENABLED
 			{
-#ifndef BC_PROG_NO_STACK_CHECK
-				s = bc_program_checkStack(&p->results, 1);
-				if (BC_ERR(s)) return s;
-#endif // BC_PROG_NO_STACK_CHECK
-				bc_vec_pop(&p->results);
+				r.t = BC_RESULT_ONE + (inst - BC_INST_ONE);
+				bc_vec_push(&p->results, &r);
 				break;
 			}
 
@@ -1868,7 +1862,18 @@ BcStatus bc_program_exec(BcProgram *p) {
 				s = bc_program_assign(p, inst);
 				break;
 			}
+
 #if DC_ENABLED
+			case BC_INST_POP:
+			{
+#ifndef BC_PROG_NO_STACK_CHECK
+				s = bc_program_checkStack(&p->results, 1);
+				if (BC_ERR(s)) return s;
+#endif // BC_PROG_NO_STACK_CHECK
+				bc_vec_pop(&p->results);
+				break;
+			}
+
 			case BC_INST_POP_EXEC:
 			{
 				assert(BC_PROG_STACK(&p->stack, 2));
