@@ -236,16 +236,16 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 			break;
 		}
 
+		case BC_RESULT_ONE:
+		{
+			n = &p->one;
+			break;
+		}
+
 #if BC_ENABLED
 		case BC_RESULT_LAST:
 		{
 			n = &p->last;
-			break;
-		}
-
-		case BC_RESULT_ONE:
-		{
-			n = &p->one;
 			break;
 		}
 
@@ -339,7 +339,7 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	lt = (*l)->t;
 
 	if (BC_ERR(lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||
-	           lt == BC_RESULT_ARRAY))
+	           lt == BC_RESULT_ARRAY || lt == BC_RESULT_ONE))
 	{
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	}
@@ -1709,13 +1709,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_LAST:
-			{
-				r.t = BC_RESULT_LAST;
-				bc_vec_push(&p->results, &r);
-				break;
-			}
-
 			case BC_INST_BOOL_OR:
 			case BC_INST_BOOL_AND:
 #endif // BC_ENABLED
@@ -1782,6 +1775,16 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				r.t = BC_RESULT_CONSTANT;
 				r.d.loc.loc = bc_program_index(code, &ip->idx);
+				bc_vec_push(&p->results, &r);
+				break;
+			}
+
+			case BC_INST_ONE:
+#if BC_ENABLED
+			case BC_INST_LAST:
+#endif // BC_ENABLED
+			{
+				r.t = BC_RESULT_ONE + (inst - BC_INST_ONE);
 				bc_vec_push(&p->results, &r);
 				break;
 			}
