@@ -1260,7 +1260,6 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		line = bc_vm_strdup(h->buf.v);
 		bc_history_add(h, line);
 
-		// Make sure to append a newline.
 		bc_vec_concat(vec, "\n");
 	}
 	else s = bc_read_chars(vec, prompt);
@@ -1270,7 +1269,6 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 void bc_history_add(BcHistory *h, char *line) {
 
-	// Don't add duplicated lines.
 	if (h->history.len) {
 		if (!strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line)) {
 			free(line);
