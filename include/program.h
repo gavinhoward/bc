@@ -109,7 +109,7 @@ typedef struct BcProgram {
 #define bc_program_copyToVar(p, name, t, last) \
 	bc_program_copyToVar(p, name, t)
 #endif // !BC_ENABLED
-#else
+#else // DC_ENABLED
 // For bc, 'pop' and 'copy' are always false.
 #define bc_program_pushVar(p, code, bgn, pop, copy) \
 	bc_program_pushVar(p, code, bgn)

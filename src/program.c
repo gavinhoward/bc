@@ -1789,16 +1789,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_POP:
-			{
-#ifndef BC_PROG_NO_STACK_CHECK
-				s = bc_program_checkStack(&p->results, 1);
-				if (BC_ERR(s)) return s;
-#endif // BC_PROG_NO_STACK_CHECK
-				bc_vec_pop(&p->results);
-				break;
-			}
-
 			case BC_INST_PRINT:
 			case BC_INST_PRINT_POP:
 			case BC_INST_PRINT_STR:
@@ -1871,7 +1861,18 @@ BcStatus bc_program_exec(BcProgram *p) {
 				s = bc_program_assign(p, inst);
 				break;
 			}
+
 #if DC_ENABLED
+			case BC_INST_POP:
+			{
+#ifndef BC_PROG_NO_STACK_CHECK
+				s = bc_program_checkStack(&p->results, 1);
+				if (BC_ERR(s)) return s;
+#endif // BC_PROG_NO_STACK_CHECK
+				bc_vec_pop(&p->results);
+				break;
+			}
+
 			case BC_INST_POP_EXEC:
 			{
 				assert(BC_PROG_STACK(&p->stack, 2));
