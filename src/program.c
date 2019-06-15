@@ -1537,9 +1537,10 @@ void bc_program_init(BcProgram *p) {
 	bc_num_bigdig2num(&p->strmb, p->strm);
 #endif // DC_ENABLED
 
-#if BC_ENABLED
 	bc_num_setup(&p->one, p->one_num, BC_PROG_ONE_CAP);
 	bc_num_one(&p->one);
+
+#if BC_ENABLED
 	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
 

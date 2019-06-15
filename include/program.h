@@ -74,8 +74,9 @@ typedef struct BcProgram {
 	BcVec arrs;
 	BcVec arr_map;
 
-#if BC_ENABLED
 	BcNum one;
+
+#if BC_ENABLED
 	BcNum last;
 #endif // BC_ENABLED
 
