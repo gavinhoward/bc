@@ -426,8 +426,10 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
 			s = bc_lex_next(&p->l);
 		}
 		else if (BC_LIKELY(type == BC_LEX_KW_SCALE)) {
+
 			s = bc_lex_next(&p->l);
 			if (BC_ERR(s)) return s;
+
 			if (BC_ERR(p->l.t == BC_LEX_LPAREN))
 				s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 			else bc_parse_push(p, BC_INST_SCALE);
@@ -610,8 +612,8 @@ static BcStatus bc_parse_endBody(BcParse *p, bool brace) {
 			if (!BC_S) {
 
 				*(BC_PARSE_TOP_FLAG_PTR(p)) |= BC_PARSE_FLAG_IF_END;
-
 				new_else = (p->l.t == BC_LEX_KW_ELSE);
+
 				if (new_else) s = bc_parse_else(p);
 				else if (!has_brace && (!BC_PARSE_IF_END(p) || brace))
 					bc_parse_noElse(p);
