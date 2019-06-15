@@ -561,7 +561,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		}
 	}
 
-	if (BC_NO_ERR(!s) && pop) bc_vec_pop(&p->results);
+	if (BC_NO_ERR(!s) && (BC_IS_BC || pop)) bc_vec_pop(&p->results);
 
 	return s;
 }
