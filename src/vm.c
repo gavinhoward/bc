@@ -285,10 +285,10 @@ size_t bc_vm_printf(const char *fmt, ...) {
 	int ret;
 
 	va_start(args, fmt);
-	ret = vprintf(fmt, args);
+	ret = vfprintf(stdout, fmt, args);
 	va_end(args);
 
-	if (BC_ERR(ret < 0 || ferror(stdout))) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	if (BC_IO_ERR(ret, stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 
 	vm->nchars = 0;
 
