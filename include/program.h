@@ -85,9 +85,8 @@ typedef struct BcProgram {
 	// which attempts to realloc, unless it is big enough. This is big enough.
 	BcDig strmb_num[BC_NUM_BIGDIG_LOG10];
 #endif // DC_ENABLED
-#if BC_ENABLED
+
 	BcDig one_num[BC_PROG_ONE_CAP];
-#endif // BC_ENABLED
 
 } BcProgram;
 
