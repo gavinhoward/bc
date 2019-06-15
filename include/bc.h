@@ -47,12 +47,6 @@
 
 int bc_main(int argc, char **argv);
 
-extern const char bc_help[];
-extern const char bc_lib[];
-extern const char* bc_lib_name;
-extern const char bc_lib2[];
-extern const char* bc_lib2_name;
-
 typedef struct BcLexKeyword {
 	uchar data;
 	const char name[9];
