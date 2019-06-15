@@ -56,7 +56,7 @@ int bc_main(int argc, char **argv) {
 	vm->parse = bc_parse_parse;
 	vm->expr = bc_parse_expr;
 
-	s = bc_vm_boot(argc, argv, "BC_LINE_LENGTH", "BC_ENV_ARGS");
+	s = bc_vm_boot(argc, argv, "BC_LINE_LENGTH", "BC_ENV_ARGS", "BC_EXPR_EXIT");
 
 	return (int) s;
 }

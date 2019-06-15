@@ -585,7 +585,7 @@ static void bc_vm_gettext(void) {
 #endif // BC_ENABLE_NLS
 }
 
-static BcStatus bc_vm_exec(void) {
+static BcStatus bc_vm_exec(const char* env_exp_exit) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
@@ -608,7 +608,7 @@ static BcStatus bc_vm_exec(void) {
 	if (vm->exprs.len) {
 		bc_lex_file(&vm->prs.l, bc_program_exprs_name);
 		s = bc_vm_process(vm->exprs.v, false);
-		if (BC_ERR(s)) return s;
+		if (BC_ERR(s) || getenv(env_exp_exit) != NULL) return s;
 	}
 
 	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
@@ -621,7 +621,7 @@ static BcStatus bc_vm_exec(void) {
 }
 
 BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
-                    const char* const env_args)
+                    const char* const env_args, const char* env_exp_exit)
 {
 	BcStatus s;
 	int ttyin, ttyout, ttyerr;
@@ -685,7 +685,7 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	if (BC_IS_BC && BC_I && !(vm->flags & BC_FLAG_Q)) bc_vm_info(NULL);
 
-	s = bc_vm_exec();
+	s = bc_vm_exec(env_exp_exit);
 
 exit:
 	bc_vm_shutdown();
