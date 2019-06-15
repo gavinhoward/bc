@@ -162,9 +162,9 @@ typedef enum BcInst {
 #endif // BC_ENABLED
 
 	BC_INST_POP,
-	BC_INST_POP_EXEC,
 
 #if DC_ENABLED
+	BC_INST_POP_EXEC,
 	BC_INST_MODEXP,
 	BC_INST_DIVMOD,
 
