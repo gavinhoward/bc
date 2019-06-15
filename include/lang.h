@@ -184,9 +184,9 @@ typedef enum BcInst {
 
 	BC_INST_QUIT,
 	BC_INST_NQUIT,
+#endif // DC_ENABLED
 
 	BC_INST_INVALID = UCHAR_MAX,
-#endif // DC_ENABLED
 
 } BcInst;
 
