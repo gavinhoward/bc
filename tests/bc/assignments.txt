@@ -36,8 +36,10 @@ i = 0
 
 i = 0
 
-a[i++] += 1
+a[i++] += ++i
 i--
+i--
+i
 a[i]
 
 a[i]++
@@ -108,3 +110,13 @@ while (i -= 2) print "i: ", i += 1, "\n"
 a = 5
 
 for (i = 5; i-= 1; --a) print "i: ", i, "; a: ", a, "\n"
+
+define void t(x, y) {
+	print "x: ", x, "; y: ", y, "\n"
+}
+
+t(i++, i++)
+i
+
+t(++i, ++i)
+i
