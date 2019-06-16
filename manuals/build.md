@@ -446,8 +446,9 @@ respectively.
 ***WARNING***: If the option is given, the value of the corresponding
 environment variable is overridden.
 
-***WARNING***: If the command-line options are used, the long form of all other
-command-line options must be used.
+***WARNING***: If any long command-line options are used, the long form of all
+other command-line options must be used. Mixing long and short options is not
+supported.
 
 ## Optimization
 
