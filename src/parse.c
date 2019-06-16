@@ -158,9 +158,13 @@ void bc_parse_free(BcParse *p) {
 
 void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 
-	assert(p && prog);
 #if BC_ENABLED
 	uint16_t flag = 0;
+#endif // BC_ENABLED
+
+	assert(p && prog);
+
+#if BC_ENABLED
 	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
 	bc_vec_push(&p->flags, &flag);
 	bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
