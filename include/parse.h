@@ -83,6 +83,7 @@ typedef struct BcParse {
 	BcVec exits;
 	BcVec conds;
 	BcVec ops;
+	BcVec buf;
 #endif // BC_ENABLED
 
 	struct BcProgram *prog;

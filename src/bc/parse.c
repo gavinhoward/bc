@@ -845,7 +845,6 @@ static BcStatus bc_parse_func(BcParse *p) {
 	BcStatus s;
 	bool comma = false, voidfn;
 	uint16_t flags;
-	char *name;
 	size_t idx;
 
 	s = bc_lex_next(&p->l);
@@ -874,8 +873,7 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 	assert(p->prog->fns.len == p->prog->fn_map.len);
 
-	name = bc_vm_strdup(p->l.str.v);
-	idx = bc_program_insertFunc(p->prog, name);
+	idx = bc_program_insertFunc(p->prog, bc_vm_strdup(p->l.str.v));
 	assert(idx);
 	bc_parse_updateFunc(p, idx);
 	p->func->voidfn = voidfn;
@@ -900,38 +898,35 @@ static BcStatus bc_parse_func(BcParse *p) {
 
 		p->func->nparams += 1;
 
-		name = bc_vm_strdup(p->l.str.v);
+		bc_vec_string(&p->buf, p->l.str.len, p->l.str.v);
+
 		s = bc_lex_next(&p->l);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERR(s)) return s;
 
 		if (p->l.t == BC_LEX_LBRACKET) {
 
 			if (t == BC_TYPE_VAR) t = BC_TYPE_ARRAY;
 
 			s = bc_lex_next(&p->l);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERR(s)) return s;
 
-			if (BC_ERR(p->l.t != BC_LEX_RBRACKET)) {
-				s = bc_parse_err(p, BC_ERROR_PARSE_FUNC);
-				goto err;
-			}
+			if (BC_ERR(p->l.t != BC_LEX_RBRACKET))
+				return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 
 			s = bc_lex_next(&p->l);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERR(s)) return s;
 		}
-		else if (BC_ERR(t == BC_TYPE_REF)) {
-			s = bc_parse_verr(p, BC_ERROR_PARSE_REF_VAR, name);
-			goto err;
-		}
+		else if (BC_ERR(t == BC_TYPE_REF))
+			return bc_parse_verr(p, BC_ERROR_PARSE_REF_VAR, p->buf.v);
 
 		comma = (p->l.t == BC_LEX_COMMA);
 		if (comma) {
 			s = bc_lex_next(&p->l);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERR(s)) return s;
 		}
 
-		s = bc_func_insert(p->func, p->prog, name, t, p->l.line);
-		if (BC_ERR(s)) goto err;
+		s = bc_func_insert(p->func, p->prog, p->buf.v, t, p->l.line);
+		if (BC_ERR(s)) return s;
 	}
 
 	if (BC_ERR(comma)) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
@@ -945,17 +940,12 @@ static BcStatus bc_parse_func(BcParse *p) {
 	if (p->l.t != BC_LEX_LBRACE) s = bc_parse_err(p, BC_ERROR_POSIX_BRACE);
 
 	return s;
-
-err:
-	free(name);
-	return s;
 }
 
 static BcStatus bc_parse_auto(BcParse *p) {
 
 	BcStatus s;
 	bool comma, one;
-	char *name;
 
 	if (BC_ERR(!p->auto_part)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 	s = bc_lex_next(&p->l);
@@ -968,35 +958,34 @@ static BcStatus bc_parse_auto(BcParse *p) {
 
 		BcType t;
 
-		name = bc_vm_strdup(p->l.str.v);
+		bc_vec_string(&p->buf, p->l.str.len - 1, p->l.str.v);
+
 		s = bc_lex_next(&p->l);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERR(s)) return s;
 
 		if (p->l.t == BC_LEX_LBRACKET) {
 
 			t = BC_TYPE_ARRAY;
 
 			s = bc_lex_next(&p->l);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERR(s)) return s;
 
-			if (BC_ERR(p->l.t != BC_LEX_RBRACKET)) {
-				s = bc_parse_err(p, BC_ERROR_PARSE_FUNC);
-				goto err;
-			}
+			if (BC_ERR(p->l.t != BC_LEX_RBRACKET))
+				return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
 
 			s = bc_lex_next(&p->l);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERR(s)) return s;
 		}
 		else t = BC_TYPE_VAR;
 
 		comma = (p->l.t == BC_LEX_COMMA);
 		if (comma) {
 			s = bc_lex_next(&p->l);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERR(s)) return s;
 		}
 
-		s = bc_func_insert(p->func, p->prog, name, t, p->l.line);
-		if (BC_ERR(s)) goto err;
+		s = bc_func_insert(p->func, p->prog, p->buf.v, t, p->l.line);
+		if (BC_ERR(s)) return s;
 	}
 
 	if (BC_ERR(comma)) return bc_parse_err(p, BC_ERROR_PARSE_FUNC);
@@ -1004,10 +993,6 @@ static BcStatus bc_parse_auto(BcParse *p) {
 	if (BC_ERR(!bc_parse_isDelimiter(p)))
 		return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
-	return s;
-
-err:
-	free(name);
 	return s;
 }
 
