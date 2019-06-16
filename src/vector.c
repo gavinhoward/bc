@@ -148,8 +148,6 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
 void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 
-	size_t len;
-
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
 	assert(v->v != str);
