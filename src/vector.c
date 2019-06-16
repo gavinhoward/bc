@@ -48,8 +48,6 @@ static void bc_vec_grow(BcVec *restrict v, size_t n) {
 
 	len = bc_vm_growSize(v->len, n);
 
-	if (cap >= len) return;
-
 	while (cap < len) cap = bc_vm_growSize(cap, cap);
 
 	v->v = bc_vm_realloc(v->v, bc_vm_arraySize(cap, v->size));
