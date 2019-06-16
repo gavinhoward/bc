@@ -134,6 +134,7 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
+	assert(v->v != str);
 
 	bc_vec_npop(v, v->len);
 	bc_vec_expand(v, bc_vm_growSize(len, 1));
