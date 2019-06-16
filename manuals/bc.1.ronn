@@ -669,7 +669,7 @@ argument is `1`, while `i` is equal to `2` before the function starts executing.
 FUNCTIONS
 ---------
 
-Function definitions follow what is required by the bc spec:
+Function definitions are as follows:
 
 ```
 define I(I,...,I){
