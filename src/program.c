@@ -1171,14 +1171,19 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 				val = (BcBigDig) ((BcVec*) num)->len;
 			else
 #endif // BC_ENABLED
+			{
 #if DC_ENABLED
-			if (!BC_PROG_NUM(opd, num)) {
-				size_t idx;
-				idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->rdx;
-				val = (BcBigDig) strlen(bc_program_str(p, idx));
-			}
+				if (!BC_PROG_NUM(opd, num)) {
+					size_t idx;
+					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->rdx;
+					val = (BcBigDig) strlen(bc_program_str(p, idx));
+				}
+				else
 #endif // DC_ENABLED
-			else val = (BcBigDig) bc_num_len(num);
+				{
+					val = (BcBigDig) bc_num_len(num);
+				}
+			}
 		}
 		else if (BC_IS_BC || BC_PROG_NUM(opd, num))
 			val = (BcBigDig) bc_num_scale(num);
