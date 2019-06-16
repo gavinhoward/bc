@@ -694,6 +694,12 @@ Any other character following a backslash causes the backslash and character to 
 .P
 Any non\-string expression in a print statement shall be assigned to \fBlast\fR, like any other expression that is printed\.
 .
+.SS "Order of Evaluation"
+All expressions in a statment are evaluated left to right, except as necessary to maintain order of operations\. This means, for example, that in the expression \fBi = 0; a[i++] = i++\fR, the first (or 0th) element of \fBa\fR is set to \fB1\fR, and \fBi\fR is equal to \fB2\fR at the end of the expression\.
+.
+.P
+This includes function arguments\. Thus, this means that in the expression \fBi = 0; x(i++, i++)\fR, the first argument passed to \fBx()\fR is \fB0\fR, and the second argument is \fB1\fR, while \fBi\fR is equal to \fB2\fR before the function starts executing\.
+.
 .SH "FUNCTIONS"
 Function definitions follow what is required by the bc spec:
 .

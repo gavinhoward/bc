@@ -655,6 +655,17 @@ be printed as-is.
 Any non-string expression in a print statement shall be assigned to `last`, like
 any other expression that is printed.
 
+### Order of Evaluation
+
+All expressions in a statment are evaluated left to right, except as necessary
+to maintain order of operations. This means, for example, that in the expression
+`i = 0; a[i++] = i++`, the first (or 0th) element of `a` is set to `1`, and `i`
+is equal to `2` at the end of the expression.
+
+This includes function arguments. Thus, this means that in the expression
+`i = 0; x(i++, i++)`, the first argument passed to `x()` is `0`, and the second
+argument is `1`, while `i` is equal to `2` before the function starts executing.
+
 FUNCTIONS
 ---------
 
