@@ -1319,6 +1319,9 @@ bc(1) supports interactive command-line editing, if compiled with the history
 option enabled. If `stdin` is hooked to a terminal, it is enabled. Previous
 lines can be recalled and edited with the arrow keys.
 
+**Note**: when bc(1) is built with history support, tabs are converted to 8
+spaces.
+
 LOCALES
 -------
 
