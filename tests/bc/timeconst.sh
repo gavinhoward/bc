@@ -61,7 +61,9 @@ fi
 
 printf 'Running %s...\n' "$base"
 
-for i in $(seq 0 1000); do
+nums=$(printf 'for (i = 0; i <= 1000; ++i) { i }\n' | bc)
+
+for i in $nums; do
 
 	printf '%s\n' "$i" | bc -q "$timeconst" > "$out1"
 	printf '%s\n' "$i" | "$bc" "$@" -q "$timeconst" > "$out2"
