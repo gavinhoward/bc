@@ -465,7 +465,15 @@ fi
 
 cd "$scriptdir"
 
-build "$debug" "clang" "-g" "1" "$bits"
+if [ "$test_with_clang" -ne 0 ]; then
+	defcc="clang"
+elif [ "$test_with_gcc" -ne 0 ]; then
+	defcc="gcc"
+else
+	defcc="c99"
+fi
+
+build "$debug" "$defcc" "-g" "1" "$bits"
 
 header "Running math library under --standard"
 
@@ -485,7 +493,7 @@ fi
 
 if [ "$run_tests" -ne 0 ]; then
 
-	build "$release" "clang" "-O3" "1" "$bits"
+	build "$release" "$defcc" "-O3" "1" "$bits"
 
 	karatsuba
 
