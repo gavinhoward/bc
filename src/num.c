@@ -1458,7 +1458,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 			}
 		}
 		n->num[idx] = bcdig;
-		intchars = 9;
+		intchars = BC_BASE_DIGS;
 	} while (idx != 0);
 }
 
