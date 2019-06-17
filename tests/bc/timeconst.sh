@@ -61,9 +61,19 @@ fi
 
 printf 'Running %s...\n' "$base"
 
-for i in $(seq 0 1000); do
+nums=$(printf 'for (i = 0; i <= 1000; ++i) { i }\n' | bc)
+
+for i in $nums; do
 
 	printf '%s\n' "$i" | bc -q "$timeconst" > "$out1"
+
+	err="$?"
+
+	if [ "$err" -ne 0 ]; then
+		printf 'Other bc is not GNU compatible. Skipping...\n'
+		exit 0
+	fi
+
 	printf '%s\n' "$i" | "$bc" "$@" -q "$timeconst" > "$out2"
 
 	diff "$out1" "$out2"

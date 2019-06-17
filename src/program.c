@@ -63,6 +63,7 @@ static BcStatus bc_program_type_num(BcResult *r, BcNum *n) {
 	return BC_STATUS_SUCCESS;
 }
 
+#if BC_ENABLED
 static BcStatus bc_program_type_match(BcResult *r, BcType t) {
 #if DC_ENABLED
 	assert(!BC_IS_BC || BC_NO_ERR(r->t != BC_RESULT_STR));
@@ -71,6 +72,7 @@ static BcStatus bc_program_type_match(BcResult *r, BcType t) {
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	return BC_STATUS_SUCCESS;
 }
+#endif // BC_ENABLED
 
 static BcFunc* bc_program_func(BcProgram *p) {
 
@@ -208,7 +210,9 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 		}
 
 		case BC_RESULT_VAR:
+#if BC_ENABLED
 		case BC_RESULT_ARRAY:
+#endif // BC_ENABLED
 		case BC_RESULT_ARRAY_ELEM:
 		{
 			BcVec *v;
@@ -339,13 +343,14 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	lt = (*l)->t;
 
 	if (BC_ERR(lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||
-	           lt == BC_RESULT_ARRAY || lt == BC_RESULT_ONE))
+	           lt == BC_RESULT_ONE))
 	{
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 	}
 
 #if BC_ENABLED
-	assert(!BC_IS_BC || BC_NO_ERR(lt != BC_RESULT_ONE));
+	if (BC_ERR(lt == BC_RESULT_ARRAY))
+		return bc_vm_err(BC_ERROR_EXEC_TYPE);
 #endif // BC_ENABLED
 
 #if DC_ENABLED
@@ -731,8 +736,10 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 
 	if (BC_ERR(s)) return s;
 
+#if BC_ENABLED
 	s = bc_program_type_match(ptr, t);
 	if (BC_ERR(s)) return s;
+#endif // BC_ENABLED
 
 	vec = bc_program_vec(p, idx, t);
 
@@ -797,7 +804,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 	BcStatus s;
-	BcResult *left, *right, res;
+	BcResult *left, *right = NULL, res;
 	BcNum *l = NULL, *r = NULL;
 	bool ob, sc, use_val = BC_INST_USE_VAL(inst);
 
@@ -927,28 +934,27 @@ static BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
                                      size_t *restrict bgn, uchar inst)
 {
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcResult r;
+	BcResult r, *operand;
 	BcNum *num = NULL;
+	BcBigDig temp;
 
 	r.d.loc.loc = bc_program_index(code, bgn);
 
+#if BC_ENABLED
 	if (inst == BC_INST_ARRAY) {
 		r.t = BC_RESULT_ARRAY;
 		bc_vec_push(&p->results, &r);
+		return s;
 	}
-	else {
+#endif // BC_ENABLED
 
-		BcResult *operand;
-		BcBigDig temp;
+	s = bc_program_prep(p, &operand, &num);
+	if (BC_ERR(s)) return s;
+	s = bc_num_bigdig(num, &temp);
+	if (BC_ERR(s)) return s;
 
-		s = bc_program_prep(p, &operand, &num);
-		if (BC_ERR(s)) return s;
-		s = bc_num_bigdig(num, &temp);
-		if (BC_ERR(s)) return s;
-
-		r.d.loc.idx = (size_t) temp;
-		bc_program_retire(p, &r, BC_RESULT_ARRAY_ELEM);
-	}
+	r.d.loc.idx = (size_t) temp;
+	bc_program_retire(p, &r, BC_RESULT_ARRAY_ELEM);
 
 	return s;
 }
@@ -1056,9 +1062,7 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 			bc_vec_push(v, &param.n);
 		}
 		else {
-#if BC_ENABLED
 			assert(a->idx == BC_TYPE_ARRAY);
-#endif // BC_ENABLED
 			bc_array_init(&param.v, true);
 			bc_vec_push(v, &param.v);
 		}
@@ -1162,16 +1166,24 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 		BcBigDig val = 0;
 
 		if (len) {
+#if BC_ENABLED
 			if (BC_IS_BC && opd->t == BC_RESULT_ARRAY)
 				val = (BcBigDig) ((BcVec*) num)->len;
+			else
+#endif // BC_ENABLED
+			{
 #if DC_ENABLED
-			else if (!BC_PROG_NUM(opd, num)) {
-				size_t idx;
-				idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->rdx;
-				val = (BcBigDig) strlen(bc_program_str(p, idx));
-			}
+				if (!BC_PROG_NUM(opd, num)) {
+					size_t idx;
+					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->rdx;
+					val = (BcBigDig) strlen(bc_program_str(p, idx));
+				}
+				else
 #endif // DC_ENABLED
-			else val = (BcBigDig) bc_num_len(num);
+				{
+					val = (BcBigDig) bc_num_len(num);
+				}
+			}
 		}
 		else if (BC_IS_BC || BC_PROG_NUM(opd, num))
 			val = (BcBigDig) bc_num_scale(num);
@@ -1749,7 +1761,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			}
 
 			case BC_INST_ARRAY_ELEM:
+#if BC_ENABLED
 			case BC_INST_ARRAY:
+#endif // BC_ENABLED
 			{
 				s = bc_program_pushArray(p, code, &ip->idx, inst);
 				break;

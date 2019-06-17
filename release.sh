@@ -28,8 +28,8 @@
 #
 
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_gcc] [run_sanitizers] \n'
-	printf '          [run_valgrind] [run_64_bit]\n' "$script"
+	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n'
+	printf '          [run_sanitizers] [run_valgrind] [run_64_bit]\n' "$script"
 	exit 1
 }
 
@@ -423,6 +423,13 @@ else
 fi
 
 if [ "$#" -gt 0 ]; then
+	test_with_clang="$1"
+	shift
+else
+	test_with_clang=1
+fi
+
+if [ "$#" -gt 0 ]; then
 	test_with_gcc="$1"
 	shift
 else
@@ -468,7 +475,9 @@ version=$(make version)
 
 do_make clean_tests
 
-build_set "clang" "$run_tests"
+if [ "$test_with_clang" -ne 0 ]; then
+	build_set "clang" "$run_tests"
+fi
 
 if [ "$test_with_gcc" -ne 0 ]; then
 	build_set "gcc" "$run_tests"

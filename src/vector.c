@@ -134,6 +134,7 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
+	assert(v->v != str);
 
 	bc_vec_npop(v, v->len);
 	bc_vec_expand(v, bc_vm_growSize(len, 1));
@@ -145,17 +146,13 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
 void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 
-	size_t len;
-
 	assert(v && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
+	assert(v->v != str);
 
-	if (!v->len) bc_vec_pushByte(v, '\0');
+	if (v->len) bc_vec_pop(v);
 
-	len = strlen(str);
-	bc_vec_grow(v, len);
-	strcat(v->v + v->len - 1, str);
-	v->len += len;
+	bc_vec_npush(v, strlen(str) + 1, str);
 }
 
 void bc_vec_empty(BcVec *restrict v) {

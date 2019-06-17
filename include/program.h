@@ -119,8 +119,15 @@ typedef struct BcProgram {
 #endif // DC_ENABLED
 
 #define BC_PROG_STR(n) ((n)->num == NULL && !(n)->cap)
+#if BC_ENABLED
 #define BC_PROG_NUM(r, n) \
 	((r)->t != BC_RESULT_ARRAY && (r)->t != BC_RESULT_STR && !BC_PROG_STR(n))
+#else // BC_ENABLED
+#define BC_PROG_NUM(r, n) ((r)->t != BC_RESULT_STR && !BC_PROG_STR(n))
+// For dc, inst is always BC_INST_ARRAY_ELEM.
+#define bc_program_pushArray(p, code, bgn, inst) \
+	bc_program_pushArray(p, code, bgn)
+#endif // BC_ENABLED
 
 typedef void (*BcProgramUnary)(BcResult*, BcNum*);
 

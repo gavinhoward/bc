@@ -124,7 +124,9 @@ typedef enum BcInst {
 	BC_INST_NUM,
 	BC_INST_VAR,
 	BC_INST_ARRAY_ELEM,
+#if BC_ENABLED
 	BC_INST_ARRAY,
+#endif // BC_ENABLED
 
 	BC_INST_ONE,
 
@@ -230,7 +232,9 @@ typedef enum BcResultType {
 
 	BC_RESULT_VAR,
 	BC_RESULT_ARRAY_ELEM,
+#if BC_ENABLED
 	BC_RESULT_ARRAY,
+#endif // BC_ENABLED
 
 	BC_RESULT_STR,
 

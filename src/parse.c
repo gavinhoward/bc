@@ -152,20 +152,26 @@ void bc_parse_free(BcParse *p) {
 	bc_vec_free(&p->exits);
 	bc_vec_free(&p->conds);
 	bc_vec_free(&p->ops);
+	bc_vec_free(&p->buf);
 #endif // BC_ENABLED
 	bc_lex_free(&p->l);
 }
 
 void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 
-	assert(p && prog);
 #if BC_ENABLED
 	uint16_t flag = 0;
+#endif // BC_ENABLED
+
+	assert(p && prog);
+
+#if BC_ENABLED
 	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
 	bc_vec_push(&p->flags, &flag);
 	bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
 	bc_vec_init(&p->conds, sizeof(size_t), NULL);
 	bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
+	bc_vec_init(&p->buf, sizeof(char), NULL);
 #endif // BC_ENABLED
 
 	bc_lex_init(&p->l);
