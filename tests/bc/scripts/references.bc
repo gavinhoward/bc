@@ -98,9 +98,9 @@ len = 16
 
 a1(a[], len)
 printarray(a[], len)
-a3(a[], len)
-printarray(a[], len)
+a3(b[], len)
+printarray(b[], len)
 a5(a[], len)
 printarray(a[], len)
-a7(a[], len)
-printarray(a[], len)
+a7(b[], len)
+printarray(b[], len)
