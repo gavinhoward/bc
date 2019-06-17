@@ -71,6 +71,7 @@ for i in $nums; do
 
 	if [ "$err" -ne 0 ]; then
 		printf 'Other bc is not GNU compatible. Skipping...\n'
+		exit 0
 	fi
 
 	printf '%s\n' "$i" | "$bc" "$@" -q "$timeconst" > "$out2"
