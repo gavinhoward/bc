@@ -804,7 +804,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 	BcStatus s;
-	BcResult *left, *right, res;
+	BcResult *left, *right = NULL, res;
 	BcNum *l = NULL, *r = NULL;
 	bool ob, sc, use_val = BC_INST_USE_VAL(inst);
 
