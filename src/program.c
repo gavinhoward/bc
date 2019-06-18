@@ -181,6 +181,12 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 			if (c->base != base) {
 
+				if (c->num.num == NULL) {
+					if (10 < base && base <= 36)
+						bc_num_init(&c->num, BC_NUM_RDX(5 * strlen(c->val) / 3));
+					else
+						bc_num_init(&c->num, BC_NUM_RDX(strlen(c->val)));
+				}
 				s = bc_num_parse(&c->num, c->val, base, !c->val[1]);
 				assert(!s || s == BC_STATUS_SIGNAL);
 
