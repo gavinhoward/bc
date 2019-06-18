@@ -981,7 +981,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 	if (len > 1 && bc_num_nonZeroDig(b->num, len - 1)) {
 
-		nonzero = (divisor >= BC_BASE_POW / (BC_BASE * BC_BASE));
+		nonzero = (divisor > 1 << ((10 * BC_BASE_DIGS) / 6 + 1));
 
 		if (!nonzero) {
 
@@ -993,7 +993,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 			len = b->len;
 			end = (len < a->len) ? end = a->len - len : 1;
-			divisor = (BcBigDig) b->num[b->len - 1];
+			divisor = (BcBigDig) b->num[len - 1];
 
 			nonzero = bc_num_nonZeroDig(b->num, len - 1);
 		}
