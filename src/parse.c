@@ -77,7 +77,7 @@ void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
 			c.val = str;
 			c.base = BC_NUM_BIGDIG_MAX;
 
-			bc_num_init(&c.num, strlen(str));
+			bc_num_init(&c.num, strlen(str) / BC_BASE_DIGS + 1);
 			bc_vec_push(v, &c);
 		}
 	}
