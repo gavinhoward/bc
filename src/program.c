@@ -720,15 +720,8 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 #if BC_ENABLED
 	if (last) s = bc_program_operand(p, &ptr, &n, 0);
 	else {
-
 		ptr = bc_vec_top(&p->results);
-
-		// The only place that last could not be true is when doing parameters
-		// for a function that are either a variable or an array. Thus, we can
-		// assert that here instead of check.
-		assert(ptr->t == BC_RESULT_VAR || ptr->t == BC_RESULT_ARRAY);
-
-		n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
+		if (var) n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 	}
 #else // BC_ENABLED
 	s = bc_program_operand(p, &ptr, &n, 0);
@@ -749,9 +742,6 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 		return bc_program_assignStr(p, ptr, vec, true);
 	}
 #endif // DC_ENABLED
-
-	// Do this once more to make sure that pointers were not invalidated.
-	vec = bc_program_vec(p, idx, t);
 
 	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
