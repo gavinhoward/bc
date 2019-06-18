@@ -17,7 +17,7 @@ define a2(a[], len) {
 		a[i] = a[i] * a[i]
 	}
 
-	printarray(a[], len)
+	printarray(len, len)
 }
 
 define a4(a__[], len) {
@@ -98,8 +98,8 @@ len = 16
 
 a1(a[], len)
 printarray(a[], len)
-a3(b[], len)
-printarray(b[], len)
+a3(a[], len)
+printarray(a[], len)
 a5(a[], len)
 printarray(a[], len)
 a7(a[], len)

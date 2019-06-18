@@ -241,8 +241,9 @@ err:
 	return s;
 }
 
-static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
-
+static BcStatus bc_parse_name(BcParse *p, BcInst *type,
+                              bool *can_assign, uint8_t flags)
+{
 	BcStatus s;
 	char *name;
 
@@ -263,10 +264,9 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 			}
 
 			*type = BC_INST_ARRAY;
+			*can_assign = false;
 		}
 		else {
-
-			*type = BC_INST_ARRAY_ELEM;
 
 			flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
 			flags |= BC_PARSE_NEEDVAL;
@@ -278,6 +278,9 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 				s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 				goto err;
 			}
+
+			*type = BC_INST_ARRAY_ELEM;
+			*can_assign = true;
 		}
 
 		s = bc_lex_next(&p->l);
@@ -294,12 +297,14 @@ static BcStatus bc_parse_name(BcParse *p, BcInst *type, uint8_t flags) {
 		}
 
 		*type = BC_INST_CALL;
+		*can_assign = false;
 
 		// Return early because bc_parse_call() frees the name.
 		return bc_parse_call(p, name, flags);
 	}
 	else {
 		*type = BC_INST_VAR;
+		*can_assign = true;
 		bc_parse_push(p, BC_INST_VAR);
 		bc_parse_pushName(p, name, true);
 	}
@@ -357,8 +362,9 @@ static BcStatus bc_parse_builtin(BcParse *p, BcLexType type,
 	return bc_lex_next(&p->l);
 }
 
-static BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags) {
-
+static BcStatus bc_parse_scale(BcParse *p, BcInst *type,
+                               bool *can_assign, uint8_t flags)
+{
 	BcStatus s;
 
 	s = bc_lex_next(&p->l);
@@ -366,11 +372,13 @@ static BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags) {
 
 	if (p->l.t != BC_LEX_LPAREN) {
 		*type = BC_INST_SCALE;
+		*can_assign = true;
 		bc_parse_push(p, BC_INST_SCALE);
 		return BC_STATUS_SUCCESS;
 	}
 
 	*type = BC_INST_SCALE_FUNC;
+	*can_assign = false;
 	flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
 	flags |= BC_PARSE_NEEDVAL;
 
@@ -387,7 +395,7 @@ static BcStatus bc_parse_scale(BcParse *p, BcInst *type, uint8_t flags) {
 	return bc_lex_next(&p->l);
 }
 
-static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
+static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
                                 size_t *nexs, uint8_t flags)
 {
 	BcStatus s;
@@ -403,9 +411,13 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
 	}
 
 	if (BC_PARSE_INST_VAR(etype)) {
+
+		if (!*can_assign) return bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
+
 		*prev = inst = BC_INST_INC_POST + (p->l.t != BC_LEX_OP_INC);
 		bc_parse_push(p, inst);
 		s = bc_lex_next(&p->l);
+		*can_assign = false;
 	}
 	else {
 
@@ -420,10 +432,11 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
 		*nexs = *nexs + 1;
 
 		if (type == BC_LEX_NAME)
-			s = bc_parse_name(p, prev, flags | BC_PARSE_NOCALL);
+			s = bc_parse_name(p, prev, can_assign, flags | BC_PARSE_NOCALL);
 		else if (type >= BC_LEX_KW_LAST && type <= BC_LEX_KW_OBASE) {
 			bc_parse_push(p, type - BC_LEX_KW_LAST + BC_INST_LAST);
 			s = bc_lex_next(&p->l);
+			*can_assign = false;
 		}
 		else if (BC_LIKELY(type == BC_LEX_KW_SCALE)) {
 
@@ -433,6 +446,8 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev,
 			if (BC_ERR(p->l.t == BC_LEX_LPAREN))
 				s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 			else bc_parse_push(p, BC_INST_SCALE);
+
+			*can_assign = false;
 		}
 		else s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
@@ -1244,11 +1259,11 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 	BcLexType top, t = p->l.t;
 	size_t nexprs = 0, ops_bgn = p->ops.len;
 	uint32_t i, nparens, nrelops;
-	bool pfirst, rprn, done, get_token, assign, bin_last, incdec;
+	bool pfirst, rprn, done, get_token, assign, bin_last, incdec, can_assign;
 
 	pfirst = (p->l.t == BC_LEX_LPAREN);
 	nparens = nrelops = 0;
-	rprn = done = get_token = assign = incdec = false;
+	rprn = done = get_token = assign = incdec = can_assign = false;
 	bin_last = true;
 
 	// We want to eat newlines if newlines are not a valid ending token.
@@ -1268,7 +1283,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			{
 				if (BC_ERR(incdec))
 					return bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
-				s = bc_parse_incdec(p, &prev, &nexprs, flags);
+				s = bc_parse_incdec(p, &prev, &can_assign, &nexprs, flags);
 				rprn = get_token = bin_last = false;
 				incdec = true;
 				break;
@@ -1283,7 +1298,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				// I can just add the instruction because
 				// negative will already be taken care of.
 				bc_parse_push(p, BC_INST_TRUNC);
-				rprn = false;
+				rprn = can_assign = false;
 				get_token = true;
 				break;
 			}
@@ -1292,7 +1307,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_OP_MINUS:
 			{
 				s = bc_parse_minus(p, &prev, ops_bgn, rprn, bin_last, &nexprs);
-				rprn = get_token = false;
+				rprn = get_token = can_assign = false;
 				bin_last = (prev == BC_INST_MINUS);
 				if (bin_last) incdec = false;
 				break;
@@ -1347,7 +1362,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				nrelops += (t >= BC_LEX_OP_REL_EQ && t <= BC_LEX_OP_REL_GT);
 				prev = BC_PARSE_TOKEN_INST(t);
 				bc_parse_operator(p, t, ops_bgn, &nexprs);
-				rprn = incdec = false;
+				rprn = incdec = can_assign = false;
 				get_token = true;
 				bin_last = !BC_PARSE_OP_PREFIX(t);
 
@@ -1360,7 +1375,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
 				nparens += 1;
-				rprn = incdec = false;
+				rprn = incdec = can_assign = false;
 				get_token = true;
 				bc_vec_push(&p->ops, &t);
 
@@ -1399,7 +1414,8 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
 				get_token = bin_last = false;
-				s = bc_parse_name(p, &prev, flags & ~BC_PARSE_NOCALL);
+				s = bc_parse_name(p, &prev, &can_assign,
+				                  flags & ~BC_PARSE_NOCALL);
 				rprn = (prev == BC_INST_CALL);
 				nexprs += 1;
 
@@ -1415,7 +1431,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				nexprs += 1;
 				prev = BC_INST_NUM;
 				get_token = true;
-				rprn = bin_last = false;
+				rprn = bin_last = can_assign = false;
 
 				break;
 			}
@@ -1430,7 +1446,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				prev = t - BC_LEX_KW_LAST + BC_INST_LAST;
 				bc_parse_push(p, prev);
 
-				get_token = true;
+				get_token = can_assign = true;
 				rprn = bin_last = false;
 				nexprs += 1;
 
@@ -1445,7 +1461,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
 				s = bc_parse_builtin(p, t, flags, &prev);
-				rprn = get_token = bin_last = incdec = false;
+				rprn = get_token = bin_last = incdec = can_assign = false;
 				nexprs += 1;
 
 				break;
@@ -1465,7 +1481,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 					s = bc_parse_noArgBuiltin(p, prev);
 				}
 
-				rprn = get_token = bin_last = incdec = false;
+				rprn = get_token = bin_last = incdec = can_assign = false;
 				nexprs += 1;
 
 				break;
@@ -1476,7 +1492,7 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
 
-				s = bc_parse_scale(p, &prev, flags);
+				s = bc_parse_scale(p, &prev, &can_assign, flags);
 				rprn = get_token = bin_last = false;
 				nexprs += 1;
 

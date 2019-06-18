@@ -467,7 +467,7 @@ static void bc_history_disableRaw(BcHistory *h) {
  */
 static size_t bc_history_cursorPos(void) {
 
-	char buf[64];
+	char buf[BC_HIST_SEQ_SIZE];
 	size_t cols, rows, i;
 
 	// Report cursor location.
@@ -512,10 +512,10 @@ static size_t bc_history_columns(void) {
 		// Restore position.
 		if (cols > start) {
 
-			char seq[64];
+			char seq[BC_HIST_SEQ_SIZE];
 			size_t len;
 
-			snprintf(seq, 64, "\x1b[%zuD", cols - start);
+			snprintf(seq, BC_HIST_SEQ_SIZE, "\x1b[%zuD", cols - start);
 			len = strlen(seq);
 
 			// If this fails, return a value that
@@ -583,7 +583,7 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
  */
 static BcStatus bc_history_refresh(BcHistory *h) {
 
-	char seq[64];
+	char seq[BC_HIST_SEQ_SIZE];
 	char* buf = h->buf.v;
 	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos;
 
@@ -599,26 +599,26 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	while (h->pcol + bc_history_colPos(buf, len, len) > h->cols)
 		len -= bc_history_prevLen(buf, len, NULL);
 
-	bc_vec_npop(&h->tmp, h->tmp.len);
-
 	// Cursor to left edge.
-	snprintf(seq, 64, "\r");
+	snprintf(seq, BC_HIST_SEQ_SIZE, "\r");
 	bc_vec_string(&h->tmp, strlen(seq), seq);
 
-	// Write the prompt and the current buffer content, if desired.
-	if (BC_USE_PROMPT) {
-		bc_vec_concat(&h->tmp, h->prompt);
-		bc_vec_concat(&h->tmp, buf);
-	}
+	// Write the prompt, if desired.
+	if (BC_USE_PROMPT) bc_vec_concat(&h->tmp, h->prompt);
+
+	bc_vec_concat(&h->tmp, buf);
 
 	// Erase to right.
-	snprintf(seq, 64, "\x1b[0K");
+	snprintf(seq, BC_HIST_SEQ_SIZE, "\x1b[0K");
 	bc_vec_concat(&h->tmp, seq);
 
 	// Move cursor to original position.
 	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
-	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
-	bc_vec_concat(&h->tmp, seq);
+
+	if (colpos) {
+		snprintf(seq, BC_HIST_SEQ_SIZE, "\r\x1b[%zuC", colpos);
+		bc_vec_concat(&h->tmp, seq);
+	}
 
 	if (h->tmp.len && BC_ERR(BC_HIST_WRITE(h->tmp.v, h->tmp.len - 1)))
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);

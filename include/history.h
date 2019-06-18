@@ -108,6 +108,7 @@
 #define BC_HIST_DEF_COLS (80)
 #define BC_HIST_MAX_LEN (128)
 #define BC_HIST_MAX_LINE (4095)
+#define BC_HIST_SEQ_SIZE (64)
 
 #define BC_HIST_BUF_LEN(h) ((h)->buf.len - 1)
 #define BC_HIST_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
