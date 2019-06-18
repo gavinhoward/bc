@@ -615,13 +615,25 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	snprintf(seq, 64, "\x1b[0K");
 	bc_vec_concat(&h->tmp, seq);
 
-	// Move cursor to original position.
-	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
-	snprintf(seq, 64, "\r\x1b[%zuC", colpos);
-	bc_vec_concat(&h->tmp, seq);
-
 	if (h->tmp.len && BC_ERR(BC_HIST_WRITE(h->tmp.v, h->tmp.len - 1)))
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+
+	if (BC_HIST_BUF_LEN(h)) {
+		if (BC_ERR(BC_HIST_WRITE(h->buf.v, BC_HIST_BUF_LEN(h))))
+			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	}
+
+	// Move cursor to original position.
+	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
+
+	if (colpos) {
+
+		snprintf(seq, 64, "\r\x1b[%zuC", colpos);
+		len = strlen(seq);
+
+		if (len && BC_ERR(BC_HIST_WRITE(seq, len)))
+			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	}
 
 	return BC_STATUS_SUCCESS;
 }
