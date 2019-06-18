@@ -603,11 +603,10 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	snprintf(seq, BC_HIST_SEQ_SIZE, "\r");
 	bc_vec_string(&h->tmp, strlen(seq), seq);
 
-	// Write the prompt and the current buffer content, if desired.
-	if (BC_USE_PROMPT) {
-		bc_vec_concat(&h->tmp, h->prompt);
-		bc_vec_concat(&h->tmp, buf);
-	}
+	// Write the prompt, if desired.
+	if (BC_USE_PROMPT) bc_vec_concat(&h->tmp, h->prompt);
+
+	bc_vec_concat(&h->tmp, buf);
 
 	// Erase to right.
 	snprintf(seq, BC_HIST_SEQ_SIZE, "\x1b[0K");
@@ -615,8 +614,11 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 
 	// Move cursor to original position.
 	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
-	snprintf(seq, BC_HIST_SEQ_SIZE, "\r\x1b[%zuC", colpos);
-	bc_vec_concat(&h->tmp, seq);
+
+	if (colpos) {
+		snprintf(seq, BC_HIST_SEQ_SIZE, "\r\x1b[%zuC", colpos);
+		bc_vec_concat(&h->tmp, seq);
+	}
 
 	if (h->tmp.len && BC_ERR(BC_HIST_WRITE(h->tmp.v, h->tmp.len - 1)))
 		return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
