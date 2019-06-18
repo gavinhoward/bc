@@ -599,8 +599,6 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	while (h->pcol + bc_history_colPos(buf, len, len) > h->cols)
 		len -= bc_history_prevLen(buf, len, NULL);
 
-	bc_vec_npop(&h->tmp, h->tmp.len);
-
 	// Cursor to left edge.
 	snprintf(seq, 64, "\r");
 	bc_vec_string(&h->tmp, strlen(seq), seq);
