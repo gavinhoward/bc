@@ -977,6 +977,33 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	c->scale = a->scale;
 	c->len = a->len;
 
+	divisor = (BcBigDig) b->num[len - 1];
+
+	if (len > 1 && bc_num_nonZeroDig(b->num, len - 1)) {
+
+		nonzero = (divisor >= BC_BASE_POW / (BC_BASE * BC_BASE));
+
+		if (!nonzero) {
+
+			s = bc_num_divExtend(a, b, divisor);
+			if (BC_ERROR_SIGNAL_ONLY(s)) return s;
+
+			bc_num_expand(a, a->len + 1);
+			a->len += 1;
+
+			len = b->len;
+			end = (len < a->len) ? end = a->len - len : 1;
+			divisor = (BcBigDig) b->num[b->len - 1];
+
+			nonzero = bc_num_nonZeroDig(b->num, len - 1);
+		}
+	}
+
+	divisor += nonzero;
+
+	bc_num_expand(c, a->len);
+	memset(c->num, 0, c->cap * sizeof(BcDig));
+
 	assert(c->scale >= scale);
 	rdx = c->rdx - BC_NUM_RDX(scale);
 
