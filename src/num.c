@@ -966,6 +966,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	BcNum cpb;
 	bool nonzero = false;
 
+	assert(b->len < a->len);
 	len = b->len;
 	end = a->len - len;
 	assert(len >= 1);
@@ -988,11 +989,13 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 			s = bc_num_divExtend(a, b, divisor);
 			if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 
-			bc_num_expand(a, a->len + 1);
-			a->len += 1;
+			len = BC_MAX(a->len, b->len);
+			bc_num_expand(a, len + 1);
+			if (len + 1 > a->len)
+				a->len = len + 1;
 
 			len = b->len;
-			end = (len < a->len) ? end = a->len - len : 1;
+			end = a->len - len;
 			divisor = (BcBigDig) b->num[len - 1];
 
 			nonzero = bc_num_nonZeroDig(b->num, len - 1);
@@ -1018,6 +1021,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 		BcBigDig q, result;
 
 		n = a->num + i;
+		assert(n >= a->num);
 		result = q = 0;
 
 		cmp = bc_num_divCmp(n, b, len);
