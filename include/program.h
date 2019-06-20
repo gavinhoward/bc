@@ -139,6 +139,7 @@ void bc_program_free(BcProgram *p);
 void bc_program_code(BcProgram *p);
 void bc_program_printInst(BcProgram *p, const char *code,
                           size_t *restrict bgn);
+BcStatus bc_program_printStackDebug(BcProgram *p);
 #endif // BC_ENABLED && DC_ENABLED
 #endif // BC_DEBUG_CODE
 

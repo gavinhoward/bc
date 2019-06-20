@@ -1471,6 +1471,17 @@ exit:
 no_exec:
 	return s;
 }
+
+static BcStatus bc_program_printStack(BcProgram *p) {
+
+	BcStatus s = BC_STATUS_SUCCESS;
+	size_t idx;
+
+	for (idx = 0; BC_NO_ERR(!s) && idx < p->results.len; ++idx)
+		s = bc_program_print(p, BC_INST_PRINT, idx);
+
+	return s;
+}
 #endif // DC_ENABLED
 
 static void bc_program_pushBigDig(BcProgram *p, BcBigDig dig, BcResultType type)
@@ -1916,8 +1927,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_PRINT_STACK:
 			{
-				for (idx = 0; BC_NO_ERR(!s) && idx < p->results.len; ++idx)
-					s = bc_program_print(p, BC_INST_PRINT, idx);
+				s = bc_program_printStack(p);
 				break;
 			}
 
@@ -2016,6 +2026,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 			}
 #endif // NDEBUG
 		}
+#if BC_DEBUG_CODE
+		bc_program_printStackDebug(p);
+#endif // BC_DEBUG_CODE
 	}
 
 	if (BC_UNLIKELY(s && s != BC_STATUS_QUIT) || BC_SIG)
@@ -2026,6 +2039,17 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 #if BC_DEBUG_CODE
 #if BC_ENABLED && DC_ENABLED
+BcStatus bc_program_printStackDebug(BcProgram *p) {
+
+	BcStatus s;
+
+	printf("-------------- Stack ----------\n");
+	s = bc_program_printStack(p);
+	printf("-------------- Stack End ------\n");
+
+	return s;
+}
+
 static void bc_program_printIndex(const char *restrict code,
                                   size_t *restrict bgn)
 {
