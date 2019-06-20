@@ -86,7 +86,7 @@ void bc_num_one(BcNum *restrict n) {
 }
 
 static void bc_num_clean(BcNum *restrict n) {
-	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) --n->len;
+	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) n->len -= 1;
 	if (BC_NUM_ZERO(n)) n->neg = false;
 	else if (n->len < n->rdx) n->len = n->rdx;
 }
@@ -197,6 +197,10 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 		c->len += (carry != 0);
 	}
 
+	assert(!c->neg || BC_NUM_NONZERO(c));
+	assert(c->rdx <= c->len || !c->len || BC_SIG);
+	assert(c->num[c->len - 1] || c->rdx == c->len);
+
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
 
@@ -218,6 +222,10 @@ static BcStatus bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 	c->len = a->len;
 	bc_num_clean(c);
 	*rem = carry;
+
+	assert(!c->neg || BC_NUM_NONZERO(c));
+	assert(c->rdx <= c->len || !c->len || BC_SIG);
+	assert(c->num[c->len - 1] || c->rdx == c->len);
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -1005,7 +1013,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	divisor += nonzero;
 
 	bc_num_expand(c, a->len);
-	memset(c->num, 0, c->cap * sizeof(BcDig));
+	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
 	assert(c->scale >= scale);
 	rdx = c->rdx - BC_NUM_RDX(scale);
@@ -1361,6 +1369,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len || s);
+	assert(c->num[c->len - 1] || c->rdx == c->len);
 
 	if (init) bc_num_free(&num2);
 
@@ -2317,6 +2326,7 @@ err:
 	bc_num_free(&num1);
 	assert(!b->neg || BC_NUM_NONZERO(b));
 	assert(b->rdx <= b->len || !b->len);
+	assert(b->num[b->len - 1] || b->rdx == b->len);
 	return s;
 }
 
@@ -2358,8 +2368,10 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len);
+	assert(c->num[c->len - 1] || c->rdx == c->len);
 	assert(!d->neg || BC_NUM_NONZERO(d));
 	assert(d->rdx <= d->len || !d->len);
+	assert(d->num[d->len - 1] || d->rdx == d->len);
 
 	if (init) bc_num_free(&num2);
 
@@ -2430,6 +2442,7 @@ rem_err:
 	bc_num_free(&temp);
 	bc_num_free(&base);
 	assert(!d->neg || d->len);
+	assert(d->num[d->len - 1] || d->rdx == d->len);
 	return s;
 }
 #endif // DC_ENABLED
