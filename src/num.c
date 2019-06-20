@@ -303,7 +303,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	if (!places) return;
 
-	places_rdx = n->rdx - BC_NUM_RDX(n->scale - places);
+	places_rdx = n->rdx ? n->rdx - BC_NUM_RDX(n->scale - places) : 0;
 	assert(places <= n->scale && (BC_NUM_ZERO(n) || places_rdx <= n->len));
 
 	n->scale -= places;
@@ -1533,6 +1533,8 @@ static BcStatus bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_mulArray(m1, base, m2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		if (m2->len < m2->rdx) m2->len = m2->rdx;
 
 		ptr = m1;
 		m1 = m2;
