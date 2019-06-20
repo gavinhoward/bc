@@ -200,7 +200,7 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 		c->len += (carry != 0);
 	}
 
-	if (!c->rdx) bc_num_clean(c);
+	bc_num_clean(c);
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len || BC_SIG);
@@ -225,7 +225,7 @@ static BcStatus bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 	}
 
 	c->len = a->len;
-	if (!c->rdx) bc_num_clean(c);
+	bc_num_clean(c);
 	*rem = carry;
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
@@ -1903,14 +1903,14 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	n1 = &flen1;
 	n2 = &flen2;
 
+	fracp2.scale = n->scale;
+	fracp2.rdx = BC_NUM_RDX(fracp2.scale);
+
 	while (BC_NO_SIG && bc_num_intDigits(n1) < n->scale + 1) {
 
 		bc_num_expand(&fracp2, fracp1.len + 1);
 		s = bc_num_mulArray(&fracp1, base, &fracp2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
-
-		fracp2.scale = n->scale;
-		fracp2.rdx = BC_NUM_RDX(fracp2.scale);
 		if (fracp2.len < fracp2.rdx) fracp2.len = fracp2.rdx;
 
 		// Will never fail (except for signals) because fracp is
