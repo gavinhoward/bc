@@ -2026,9 +2026,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 			}
 #endif // NDEBUG
 		}
-#if BC_DEBUG_CODE
-		bc_program_printStackDebug(p);
-#endif // BC_DEBUG_CODE
 	}
 
 	if (BC_UNLIKELY(s && s != BC_STATUS_QUIT) || BC_SIG)
