@@ -2110,23 +2110,28 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
 	n->len = i;
 }
 
-size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale) {
+size_t bc_num_addReq(const BcNum *a, const BcNum *b, size_t scale) {
 
 	size_t aint, bint, ardx, brdx;
 
 	BC_UNUSED(scale);
 
 	ardx = a->rdx;
-	brdx = b->rdx;
 	aint = bc_num_int(a);
+	assert(aint <= a->len && ardx <= a->len);
+
+	brdx = b->rdx;
 	bint = bc_num_int(b);
+	assert(bint <= b->len && brdx <= b->len);
+
 	ardx = BC_MAX(ardx, brdx);
 	aint = BC_MAX(aint, bint);
+
 
 	return bc_vm_growSize(bc_vm_growSize(ardx, aint), 1);
 }
 
-size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
+size_t bc_num_mulReq(const BcNum *a, const BcNum *b, size_t scale) {
 	size_t max, rdx;
 	rdx = bc_vm_growSize(a->rdx, b->rdx);
 	max = BC_NUM_RDX(scale);
@@ -2135,13 +2140,13 @@ size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale) {
 	return rdx;
 }
 
-size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale) {
+size_t bc_num_powReq(const BcNum *a, const BcNum *b, size_t scale) {
 	BC_UNUSED(scale);
 	return bc_vm_growSize(bc_vm_growSize(a->len, b->len), 1);
 }
 
 #if BC_ENABLE_EXTRA_MATH
-size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale) {
+size_t bc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale) {
 	BC_UNUSED(scale);
 	return a->len + b->len - a->rdx - b->rdx;
 }
