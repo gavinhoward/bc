@@ -87,7 +87,10 @@ void bc_num_one(BcNum *restrict n) {
 
 static void bc_num_clean(BcNum *restrict n) {
 	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) n->len -= 1;
-	if (BC_NUM_ZERO(n)) n->neg = false;
+	if (BC_NUM_ZERO(n)) {
+		n->neg = false;
+		n->rdx = 0;
+	}
 	else if (n->len < n->rdx) n->len = n->rdx;
 }
 
@@ -197,9 +200,11 @@ static BcStatus bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 		c->len += (carry != 0);
 	}
 
+	if (!c->rdx) bc_num_clean(c);
+
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len || BC_SIG);
-	assert(c->num[c->len - 1] || c->rdx == c->len);
+	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -220,12 +225,12 @@ static BcStatus bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 	}
 
 	c->len = a->len;
-	bc_num_clean(c);
+	if (!c->rdx) bc_num_clean(c);
 	*rem = carry;
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len || BC_SIG);
-	assert(c->num[c->len - 1] || c->rdx == c->len);
+	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -681,6 +686,8 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		start = 0;
 	}
 	else start = c->rdx - subtrahend->rdx;
+
+	memset(c->num + c->len, 0, BC_NUM_SIZE(c->cap - c->len));
 
 	s = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
 
@@ -1369,7 +1376,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len || s);
-	assert(c->num[c->len - 1] || c->rdx == c->len);
+	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 
 	if (init) bc_num_free(&num2);
 
@@ -1899,8 +1906,10 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		bc_num_expand(&fracp2, fracp1.len + 1);
 		s = bc_num_mulArray(&fracp1, base, &fracp2);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
+
 		fracp2.scale = n->scale;
 		fracp2.rdx = BC_NUM_RDX(fracp2.scale);
+		if (fracp2.len < fracp2.rdx) fracp2.len = fracp2.rdx;
 
 		// Will never fail (except for signals) because fracp is
 		// guaranteed to be non-negative and small enough.
@@ -2136,7 +2145,6 @@ size_t bc_num_addReq(const BcNum *a, const BcNum *b, size_t scale) {
 	ardx = BC_MAX(ardx, brdx);
 	aint = BC_MAX(aint, bint);
 
-
 	return bc_vm_growSize(bc_vm_growSize(ardx, aint), 1);
 }
 
@@ -2326,7 +2334,7 @@ err:
 	bc_num_free(&num1);
 	assert(!b->neg || BC_NUM_NONZERO(b));
 	assert(b->rdx <= b->len || !b->len);
-	assert(b->num[b->len - 1] || b->rdx == b->len);
+	assert(!b->len || b->num[b->len - 1] || b->rdx == b->len);
 	return s;
 }
 
@@ -2368,10 +2376,10 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
 	assert(c->rdx <= c->len || !c->len);
-	assert(c->num[c->len - 1] || c->rdx == c->len);
+	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 	assert(!d->neg || BC_NUM_NONZERO(d));
 	assert(d->rdx <= d->len || !d->len);
-	assert(d->num[d->len - 1] || d->rdx == d->len);
+	assert(!d->len || d->num[d->len - 1] || d->rdx == d->len);
 
 	if (init) bc_num_free(&num2);
 
@@ -2442,7 +2450,7 @@ rem_err:
 	bc_num_free(&temp);
 	bc_num_free(&base);
 	assert(!d->neg || d->len);
-	assert(d->num[d->len - 1] || d->rdx == d->len);
+	assert(!d->len || d->num[d->len - 1] || d->rdx == d->len);
 	return s;
 }
 #endif // DC_ENABLED
