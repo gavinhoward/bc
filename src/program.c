@@ -558,7 +558,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	}
 	else {
 
-		size_t i = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->rdx;
+		size_t i = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
 
 		str = bc_program_str(p, i);
 
@@ -693,7 +693,7 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
 	BcNum n2;
 
 	memset(&n2, 0, sizeof(BcNum));
-	n2.rdx = r->d.loc.loc;
+	n2.scale = r->d.loc.loc;
 
 	if (!push) {
 #ifndef BC_PROG_NO_STACK_CHECK
@@ -814,7 +814,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
 			bc_num_free(l);
 			memset(l, 0, sizeof(BcNum));
-			l->rdx = idx;
+			l->scale = idx;
 		}
 		else {
 			BcVec *v = bc_program_vec(p, left->d.loc.loc, BC_TYPE_VAR);
@@ -911,7 +911,7 @@ static BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
 		}
 		else {
 			r.t = BC_RESULT_STR;
-			r.d.loc.loc = num->rdx;
+			r.d.loc.loc = num->scale;
 		}
 
 		if (!copy) bc_vec_pop(v);
@@ -1168,7 +1168,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 #if DC_ENABLED
 				if (!BC_PROG_NUM(opd, num)) {
 					size_t idx;
-					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->rdx;
+					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->scale;
 					val = (BcBigDig) strlen(bc_program_str(p, idx));
 				}
 				else
@@ -1309,7 +1309,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		bc_num_free(&num);
 	}
 	else {
-		size_t idx = r->t == BC_RESULT_STR ? r->d.loc.loc : n->rdx;
+		size_t idx = r->t == BC_RESULT_STR ? r->d.loc.loc : n->scale;
 		str2 = *((char**) bc_vec_item(&func->strs, idx));
 		c = str2[0];
 	}
@@ -1351,7 +1351,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 
 	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, p->strm);
 	else {
-		size_t idx = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->rdx;
+		size_t idx = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
 		bc_program_printChars(bc_program_str(p, idx));
 	}
 
@@ -1420,7 +1420,7 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 			goto exit;
 		}
 
-		sidx = n->rdx;
+		sidx = n->scale;
 	}
 	else {
 
