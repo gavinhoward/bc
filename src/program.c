@@ -1677,14 +1677,16 @@ BcStatus bc_program_exec(BcProgram *p) {
 			// Fallthrough.
 			case BC_INST_JUMP:
 			{
-				size_t *addr;
-
 				idx = bc_program_index(code, &ip->idx);
-				addr = bc_vec_item(&func->labels, idx);
 
-				assert(*addr != SIZE_MAX);
+				if (inst == BC_INST_JUMP || cond) {
 
-				if (inst == BC_INST_JUMP || cond) ip->idx = *addr;
+					size_t *addr = bc_vec_item(&func->labels, idx);
+
+					assert(*addr != SIZE_MAX);
+
+					ip->idx = *addr;
+				}
 
 				break;
 			}
