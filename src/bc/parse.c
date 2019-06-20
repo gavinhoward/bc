@@ -58,7 +58,7 @@ static bool bc_parse_inst_isLeaf(BcInst t) {
 	        t == BC_INST_INC_POST || t == BC_INST_DEC_POST;
 }
 
-static bool bc_parse_isDelimiter(BcParse *p) {
+static bool bc_parse_isDelimiter(const BcParse *p) {
 
 	BcLexType t = p->l.t;
 	bool good = false;

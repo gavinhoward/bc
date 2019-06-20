@@ -136,10 +136,10 @@ void bc_program_free(BcProgram *p);
 
 #if BC_DEBUG_CODE
 #if BC_ENABLED && DC_ENABLED
-void bc_program_code(BcProgram *p);
-void bc_program_printInst(BcProgram *p, const char *code,
+void bc_program_code(const BcProgram *p);
+void bc_program_printInst(const BcProgram *p, const char *code,
                           size_t *restrict bgn);
-BcStatus bc_program_printStackDebug(BcProgram *p);
+BcStatus bc_program_printStackDebug(BcProgram* p);
 #endif // BC_ENABLED && DC_ENABLED
 #endif // BC_DEBUG_CODE
 
