@@ -22,8 +22,10 @@ This is the checklist for cutting a release.
 	sanitizers, on FreeBSD.
 13.	Run and pass the `release.sh` script, without generated tests, sanitizers,
 	and 64-bit, on Thalheim's ARM server.
-14.	Run and pass the test suite on NetBSD.
-15.	Run and pass the test suite on OpenBSD.
+14.	Run and pass the release script, with no generated tests, no clang, no
+	sanitizers, and no valgrind, on NetBSD.
+15.	Run and pass the release script, with no generated tests, no clang, no
+	sanitizers, and no valgrind, on OpenBSD.
 16.	Run Coverity Scan and eliminate warnings, if possible (both only).
 	* debug
 17.	Run `scan-build make`.
