@@ -215,6 +215,7 @@ static size_t bc_vm_envLen(const char *var) {
 	len = strlen(lenv);
 
 	for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
+
 	if (num) {
 		len = (size_t) atoi(lenv) - 1;
 		if (len < 2 || len >= UINT16_MAX) len = BC_NUM_PRINT_WIDTH;

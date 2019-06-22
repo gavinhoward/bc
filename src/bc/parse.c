@@ -404,6 +404,8 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 	BcInst etype = *prev;
 	BcLexType last = p->l.last;
 
+	assert(prev != NULL && can_assign != NULL);
+
 	if (BC_ERR(last == BC_LEX_OP_INC || last == BC_LEX_OP_DEC ||
 	           last == BC_LEX_RPAREN))
 	{

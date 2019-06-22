@@ -1409,14 +1409,14 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 		exec = (r->d.n.len != 0);
 
 		if (exec) idx = then_idx;
-		else if (else_idx != SIZE_MAX) {
-			exec = true;
+		else {
+			exec = (else_idx != SIZE_MAX);
 			idx = else_idx;
 		}
 
 		if (exec) n = bc_vec_top(bc_program_vec(p, idx, BC_TYPE_VAR));
+		else goto exit;
 
-		if (!exec) goto exit;
 		if (BC_ERR(!BC_PROG_STR(n))) {
 			s = bc_vm_err(BC_ERROR_EXEC_TYPE);
 			goto exit;
