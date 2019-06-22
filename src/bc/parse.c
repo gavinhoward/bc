@@ -438,7 +438,7 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 			s = bc_lex_next(&p->l);
 			*can_assign = false;
 		}
-		else if (BC_LIKELY(type == BC_LEX_KW_SCALE)) {
+		else if (BC_NO_ERR(type == BC_LEX_KW_SCALE)) {
 
 			s = bc_lex_next(&p->l);
 			if (BC_ERR(s)) return s;

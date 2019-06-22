@@ -2032,8 +2032,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 		}
 	}
 
-	if (BC_UNLIKELY(s && s != BC_STATUS_QUIT) || BC_SIG)
-		s = bc_program_reset(p, s);
+	if (BC_ERR(s && s != BC_STATUS_QUIT) || BC_SIG) s = bc_program_reset(p, s);
 
 	return s;
 }
