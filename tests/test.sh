@@ -83,6 +83,14 @@ else
 	halt="q"
 fi
 
+if [ "${exe#*toybox}" != "$exe" -o "${exe#*busybox}" != "$exe" ]; then
+	if [ "$t" = "print2" -o "$t" = "misc4" ]; then
+		base=$(basename "$exe")
+		printf 'Skipping %s test for %s...\n' "$t" "$base"
+		exit 0
+	fi
+fi
+
 if [ ! -f "$name" ]; then
 
 	if [ "$generate_tests" -eq 0 ]; then

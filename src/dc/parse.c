@@ -73,6 +73,7 @@ static BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
 	BcStatus s;
 
 	bc_parse_push(p, inst);
+
 	if (name) {
 		s = dc_parse_register(p, inst != BC_INST_ARRAY_ELEM);
 		if (BC_ERR(s)) return s;
@@ -252,7 +253,7 @@ BcStatus dc_parse_parse(BcParse *p) {
 
 	BcStatus s;
 
-	assert(p);
+	assert(p != NULL);
 
 	if (BC_ERR(p->l.t == BC_LEX_EOF)) s = bc_parse_err(p, BC_ERROR_PARSE_EOF);
 	else s = dc_parse_expr(p, 0);

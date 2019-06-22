@@ -159,7 +159,7 @@ BcStatus dc_lex_token(BcLex *l) {
 		case '.':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LIKELY(BC_LEX_NUM_CHAR(c2, true, false)))
+			if (BC_NO_ERR(BC_LEX_NUM_CHAR(c2, true, false)))
 				s = bc_lex_number(l, c);
 			else s = bc_lex_invalidChar(l, c);
 			break;

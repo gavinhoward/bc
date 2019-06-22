@@ -168,7 +168,7 @@ static BcStatus bc_vm_envArgs(const char* const env_args_name) {
 	BcVec v;
 	char *env_args = getenv(env_args_name), *buffer, *buf;
 
-	if (!env_args) return BC_STATUS_SUCCESS;
+	if (env_args == NULL) return BC_STATUS_SUCCESS;
 
 	buffer = bc_vm_strdup(env_args);
 	buf = buffer;
@@ -210,11 +210,12 @@ static size_t bc_vm_envLen(const char *var) {
 	size_t i, len = BC_NUM_PRINT_WIDTH;
 	int num;
 
-	if (!lenv) return len;
+	if (lenv == NULL) return len;
 
 	len = strlen(lenv);
 
 	for (num = 1, i = 0; num && i < len; ++i) num = isdigit(lenv[i]);
+
 	if (num) {
 		len = (size_t) atoi(lenv) - 1;
 		if (len < 2 || len >= UINT16_MAX) len = BC_NUM_PRINT_WIDTH;
@@ -263,13 +264,13 @@ size_t bc_vm_growSize(size_t a, size_t b) {
 
 void* bc_vm_malloc(size_t n) {
 	void* ptr = malloc(n);
-	if (BC_ERR(!ptr)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(ptr == NULL)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return ptr;
 }
 
 void* bc_vm_realloc(void *ptr, size_t n) {
 	void* temp = realloc(ptr, n);
-	if (BC_ERR(!temp)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(temp == NULL)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
 	return temp;
 }
 
@@ -548,7 +549,7 @@ static void bc_vm_gettext(void) {
 	int set = 1, msg = 1;
 	size_t i;
 
-	if (!vm->locale) {
+	if (vm->locale == NULL) {
 		vm->catalog = BC_VM_INVALID_CATALOG;
 		bc_vm_defaultMsgs();
 		return;
@@ -639,6 +640,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
+
+	vm->file = NULL;
 
 	bc_vm_gettext();
 

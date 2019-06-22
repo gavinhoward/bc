@@ -104,6 +104,7 @@
 
 #include <status.h>
 #include <vector.h>
+#include <read.h>
 
 #define BC_HIST_DEF_COLS (80)
 #define BC_HIST_MAX_LEN (128)
@@ -134,6 +135,12 @@
 #else // BC_DEBUG_CODE
 #define lndebug(fmt, ...)
 #endif // BC_DEBUG_CODE
+
+#if !BC_ENABLE_PROMPT
+#define bc_history_line(h, vec, prompt) bc_history_line(h, vec)
+#define bc_history_raw(h, prompt) bc_history_raw(h)
+#define bc_history_edit(h, prompt) bc_history_edit(h)
+#endif // BC_ENABLE_PROMPT
 
 typedef enum BcHistoryAction {
 
@@ -177,11 +184,13 @@ typedef struct BcHistory {
 	/// prevents an allocation on every refresh.
 	BcVec tmp;
 
+#if BC_ENABLE_PROMPT
 	/// Prompt to display.
 	const char *prompt;
 
 	/// Prompt length.
 	size_t plen;
+#endif // BC_ENABLE_PROMPT
 
 	/// Prompt column length.
 	size_t pcol;

@@ -152,7 +152,7 @@ typedef struct BcNum {
 #endif // BC_DEBUG_CODE
 
 typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
-typedef size_t (*BcNumBinaryOpReq)(BcNum*, BcNum*, size_t);
+typedef size_t (*BcNumBinaryOpReq)(const BcNum*, const BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
 typedef BcStatus (*BcNumShiftAddOp)(BcDig*, const BcDig*, size_t);
 
@@ -183,12 +183,12 @@ BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale);
 BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
-size_t bc_num_addReq(BcNum *a, BcNum *b, size_t scale);
+size_t bc_num_addReq(const BcNum* a, const BcNum* b, size_t scale);
 
-size_t bc_num_mulReq(BcNum *a, BcNum *b, size_t scale);
-size_t bc_num_powReq(BcNum *a, BcNum *b, size_t scale);
+size_t bc_num_mulReq(const BcNum *a, const BcNum *b, size_t scale);
+size_t bc_num_powReq(const BcNum *a, const BcNum *b, size_t scale);
 #if BC_ENABLE_EXTRA_MATH
-size_t bc_num_placesReq(BcNum *a, BcNum *b, size_t scale);
+size_t bc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
 
 void bc_num_truncate(BcNum *restrict n, size_t places);

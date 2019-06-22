@@ -100,6 +100,8 @@ usage() {
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
 	printf '        This is passed through to the compiler, so it must be supported.\n'
+	printf '    -P, --disable-prompt\n'
+	printf '        Disables the prompt in the built bc. The prompt will never show up.\n'
 	printf '    -S, --disable-signal-handling\n'
 	printf '        Disable signal handling. On by default.\n'
 	printf '    --prefix PREFIX\n'
@@ -300,8 +302,9 @@ optimization=""
 generate_tests=1
 install_manpages=1
 nls=1
+prompt=1
 
-while getopts "bBcdDEgGhHk:MNO:S-" opt; do
+while getopts "bBcdDEgGhHk:MNO:PS-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -318,6 +321,7 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
+		P) prompt=0 ;;
 		S) signals=0 ;;
 		-)
 			arg="$1"
@@ -399,6 +403,7 @@ while getopts "bBcdDEgGhHk:MNO:S-" opt; do
 				disable-history) hist=0 ;;
 				disable-man-pages) install_manpages=0 ;;
 				disable-nls) nls=0 ;;
+				disable-prompt) prompt=0 ;;
 				disable-signal-handling) signals=0 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
@@ -750,6 +755,7 @@ printf 'BC_ENABLE_SIGNALS=%s\n' "$signals"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
+printf 'BC_ENABLE_PROMPT=%s\n' "$prompt"
 printf '\n'
 printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
 printf '\n'
@@ -793,6 +799,7 @@ contents=$(replace "$contents" "SIGNALS" "$signals")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
+contents=$(replace "$contents" "PROMPT" "$prompt")
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")

@@ -191,17 +191,17 @@ void bc_lex_name(BcLex *l) {
 }
 
 void bc_lex_init(BcLex *l) {
-	assert(l);
+	assert(l != NULL);
 	bc_vec_init(&l->str, sizeof(char), NULL);
 }
 
 void bc_lex_free(BcLex *l) {
-	assert(l);
+	assert(l != NULL);
 	bc_vec_free(&l->str);
 }
 
 void bc_lex_file(BcLex *l, const char *file) {
-	assert(l && file);
+	assert(l != NULL && file != NULL);
 	l->line = 1;
 	vm->file = file;
 }
@@ -210,7 +210,7 @@ BcStatus bc_lex_next(BcLex *l) {
 
 	BcStatus s;
 
-	assert(l);
+	assert(l != NULL);
 
 	l->last = l->t;
 	l->line += (l->i != 0 && l->buf[l->i - 1] == '\n');
@@ -231,7 +231,7 @@ BcStatus bc_lex_next(BcLex *l) {
 }
 
 BcStatus bc_lex_text(BcLex *l, const char *text) {
-	assert(l && text);
+	assert(l != NULL && text != NULL);
 	l->buf = text;
 	l->i = 0;
 	l->len = strlen(text);

@@ -299,7 +299,7 @@ void bc_array_expand(BcVec *a, size_t len);
 int bc_id_cmp(const BcId *e1, const BcId *e2);
 
 #if BC_DEBUG_CODE
-extern const char bc_inst_chars[];
+extern const char* bc_inst_names[];
 #endif // BC_DEBUG_CODE
 
 extern const char bc_func_main[];

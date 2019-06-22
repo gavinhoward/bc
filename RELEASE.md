@@ -22,26 +22,29 @@ This is the checklist for cutting a release.
 	sanitizers, on FreeBSD.
 13.	Run and pass the `release.sh` script, without generated tests, sanitizers,
 	and 64-bit, on Thalheim's ARM server.
-14.	Run and pass the test suite on NetBSD.
-15.	Run and pass the test suite on OpenBSD.
+14.	Run and pass the release script, with no generated tests, no clang, no
+	sanitizers, and no valgrind, on NetBSD.
+15.	Run and pass the release script, with no generated tests, no clang, no
+	sanitizers, and no valgrind, on OpenBSD.
 16.	Run Coverity Scan and eliminate warnings, if possible (both only).
 	* debug
 17.	Run `scan-build make`.
 18.	Repeat steps 3-14 again and repeat until nothing is found.
-19.	Change the version (remove "-dev") and commit.
-20.	Run `make clean_tests`.
-21.	Run the release script.
-22.	Upload the custom tarball to GitHub.
-23.	Add sha's to release notes.
-24.	Edit release notes for the changelog.
-25.	Increment to the next version (with "-dev").
-26.	Notify the following:
+19.	Update the benchmarks.
+20.	Change the version (remove "-dev") and commit.
+21.	Run `make clean_tests`.
+22.	Run the release script.
+23.	Upload the custom tarball to GitHub.
+24.	Add sha's to release notes.
+25.	Edit release notes for the changelog.
+26.	Increment to the next version (with "-dev").
+27.	Notify the following:
 	* FreeBSD
 	* Adelie Linux
 	* Ataraxia Linux
 	* Sabotage
 	* xstatic
-27.	Submit new packages for the following:
+28.	Submit new packages for the following:
 	* OpenBSD
 	* NetBSD
 	* Alpine Linux

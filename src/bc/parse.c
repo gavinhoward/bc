@@ -58,7 +58,7 @@ static bool bc_parse_inst_isLeaf(BcInst t) {
 	        t == BC_INST_INC_POST || t == BC_INST_DEC_POST;
 }
 
-static bool bc_parse_isDelimiter(BcParse *p) {
+static bool bc_parse_isDelimiter(const BcParse *p) {
 
 	BcLexType t = p->l.t;
 	bool good = false;
@@ -404,6 +404,8 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 	BcInst etype = *prev;
 	BcLexType last = p->l.last;
 
+	assert(prev != NULL && can_assign != NULL);
+
 	if (BC_ERR(last == BC_LEX_OP_INC || last == BC_LEX_OP_DEC ||
 	           last == BC_LEX_RPAREN))
 	{
@@ -438,7 +440,7 @@ static BcStatus bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 			s = bc_lex_next(&p->l);
 			*can_assign = false;
 		}
-		else if (BC_LIKELY(type == BC_LEX_KW_SCALE)) {
+		else if (BC_NO_ERR(type == BC_LEX_KW_SCALE)) {
 
 			s = bc_lex_next(&p->l);
 			if (BC_ERR(s)) return s;
@@ -844,7 +846,7 @@ static BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 		ip = bc_vec_item(&p->exits, i);
 
 		while (!ip->func && i < p->exits.len) ip = bc_vec_item(&p->exits, i--);
-		assert(ip && (i < p->exits.len || ip->func));
+		assert(ip != NULL && (i < p->exits.len || ip->func));
 		i = ip->idx;
 	}
 	else i = *((size_t*) bc_vec_top(&p->conds));
@@ -1016,6 +1018,7 @@ static BcStatus bc_parse_body(BcParse *p, bool brace) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	uint16_t *flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
 
+	assert(flag_ptr != NULL);
 	assert(p->flags.len >= 2);
 
 	*flag_ptr &= ~(BC_PARSE_FLAG_BODY);

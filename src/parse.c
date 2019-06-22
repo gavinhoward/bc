@@ -52,7 +52,7 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 	p->func = bc_vec_item(&p->prog->fns, fidx);
 }
 
-void bc_parse_pushName(BcParse *p, char *name, bool var) {
+void bc_parse_pushName(const BcParse *p, char *name, bool var) {
 	size_t idx = bc_program_search(p->prog, name, var);
 	bc_parse_pushIndex(p, idx);
 }
@@ -97,7 +97,7 @@ void bc_parse_number(BcParse *p) {
 	char *exp = strchr(p->l.str.v, 'e');
 	size_t idx = SIZE_MAX;
 
-	if (exp) {
+	if (exp != NULL) {
 		idx = ((size_t) (exp - p->l.str.v));
 		*exp = 0;
 	}
@@ -106,7 +106,7 @@ void bc_parse_number(BcParse *p) {
 	bc_parse_addId(p, p->l.str.v, BC_INST_NUM);
 
 #if BC_ENABLE_EXTRA_MATH
-	if (exp) {
+	if (exp != NULL) {
 
 		bool neg;
 
@@ -146,7 +146,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 }
 
 void bc_parse_free(BcParse *p) {
-	assert(p);
+	assert(p != NULL);
 #if BC_ENABLED
 	bc_vec_free(&p->flags);
 	bc_vec_free(&p->exits);
@@ -163,7 +163,7 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 	uint16_t flag = 0;
 #endif // BC_ENABLED
 
-	assert(p && prog);
+	assert(p != NULL && prog != NULL);
 
 #if BC_ENABLED
 	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);

@@ -41,9 +41,18 @@
 #include <status.h>
 #include <vector.h>
 
+#ifndef BC_ENABLE_PROMPT
+#define BC_ENABLE_PROMPT (1)
+#endif // BC_ENABLE_PROMPT
+
+#if !BC_ENABLE_PROMPT
+#define bc_read_line(vec, prompt) bc_read_line(vec)
+#define bc_read_chars(vec, prompt) bc_read_chars(vec)
+#endif // BC_ENABLE_PROMPT
+
 #define BC_READ_BIN_CHAR(c) (((c) < ' ' && !isspace((c))) || ((uchar) c) > '~')
 
-BcStatus bc_read_line(BcVec* vec, const char *prompt);
+BcStatus bc_read_line(BcVec *vec, const char *prompt);
 BcStatus bc_read_file(const char *path, char **buf);
 BcStatus bc_read_chars(BcVec *vec, const char *prompt);
 

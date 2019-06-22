@@ -53,12 +53,12 @@ int main(int argc, char *argv[]) {
 	size_t len = strlen(BC_EXECPREFIX);
 
 	vm = calloc(1, sizeof(BcVm));
-	if (BC_ERR(!vm)) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(vm == NULL)) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
 
 	vm->locale = setlocale(LC_ALL, "");
 
 	name = strrchr(argv[0], '/');
-	vm->name = !name ? argv[0] : name + 1;
+	vm->name = (name == NULL) ? argv[0] : name + 1;
 
 	if (strlen(vm->name) > len) vm->name += len;
 

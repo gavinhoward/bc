@@ -166,7 +166,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '&':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LIKELY(c2 == '&')) {
+			if (BC_NO_ERR(c2 == '&')) {
 
 				s = bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "&&");
 				if (BC_ERR(s)) return s;
@@ -347,7 +347,7 @@ BcStatus bc_lex_token(BcLex *l) {
 
 		case '\\':
 		{
-			if (BC_LIKELY(l->buf[l->i] == '\n')) {
+			if (BC_NO_ERR(l->buf[l->i] == '\n')) {
 				l->i += 1;
 				l->t = BC_LEX_WHITESPACE;
 			}
@@ -403,7 +403,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			c2 = l->buf[l->i];
 
-			if (BC_LIKELY(c2 == '|')) {
+			if (BC_NO_ERR(c2 == '|')) {
 
 				s = bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "||");
 				if (BC_ERR(s)) return s;
