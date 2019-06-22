@@ -1059,7 +1059,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 			bc_num_clean(a);
 
-			if (a->len > i) {
+			if (nonzero && a->len > i) {
 				cmp = bc_num_divCmp(n, b, len);
 #if BC_ENABLE_SIGNALS
 				if (BC_NUM_CMP_SIGNAL(cmp)) goto err;
