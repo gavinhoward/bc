@@ -71,10 +71,12 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_npop(vec, vec->len);
 
+#if BC_ENABLE_PROMPT
 	if (BC_USE_PROMPT) {
 		bc_vm_puts(prompt, stderr);
 		bc_vm_fflush(stderr);
 	}
+#endif // BC_ENABLE_PROMPT
 
 	while (BC_NO_SIG && c != '\n') {
 
@@ -91,7 +93,9 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				if (BC_TTYIN || BC_I) {
 					bc_vm_puts(bc_program_ready_msg, stderr);
+#if BC_ENABLE_PROMPT
 					if (BC_USE_PROMPT) bc_vm_puts(prompt, stderr);
+#endif // BC_ENABLE_PROMPT
 					bc_vm_fflush(stderr);
 				}
 				else return BC_STATUS_SIGNAL;

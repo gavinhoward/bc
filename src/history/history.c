@@ -557,6 +557,7 @@ static bool bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len)
 /**
  * Get column length of prompt text.
  */
+#if BC_ENABLE_PROMPT
 static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 
 	char buf[BC_HIST_MAX_LINE + 1];
@@ -576,6 +577,7 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 
 	return bc_history_colPos(buf, buf_len, buf_len);
 }
+#endif // BC_ENABLE_PROMPT
 
 /**
  * Rewrites the currently edited line accordingly to the buffer content,
@@ -604,7 +606,9 @@ static BcStatus bc_history_refresh(BcHistory *h) {
 	bc_vec_string(&h->tmp, strlen(seq), seq);
 
 	// Write the prompt, if desired.
+#if BC_ENABLE_PROMPT
 	if (BC_USE_PROMPT) bc_vec_concat(&h->tmp, h->prompt);
+#endif // BC_ENABLE_PROMPT
 
 	bc_vec_concat(&h->tmp, buf);
 
@@ -647,7 +651,9 @@ static BcStatus bc_history_edit_insert(BcHistory *h, const char *cbuf,
 		bc_vec_pushByte(&h->buf, '\0');
 
 		len = BC_HIST_BUF_LEN(h);
-		colpos = !bc_history_promptColLen(h->prompt, h->plen);
+#if BC_ENABLE_PROMPT
+		colpos = bc_history_promptColLen(h->prompt, h->plen);
+#endif // BC_ENABLE_PROMPT
 		colpos += bc_history_colPos(h->buf.v, len, len);
 
 		if (colpos < h->cols) {
@@ -1055,6 +1061,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	if (BC_ERR(s)) return s;
 
+#if BC_ENABLE_PROMPT
 	if (BC_USE_PROMPT) {
 
 		h->prompt = prompt;
@@ -1064,6 +1071,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		if (BC_ERR(BC_HIST_WRITE(prompt, h->plen)))
 			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 	}
+#endif // BC_ENABLE_PROMPT
 
 	while (BC_NO_ERR(!s)) {
 
