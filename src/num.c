@@ -1020,7 +1020,7 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	divisor += nonzero;
 
 	bc_num_expand(c, a->len);
-	memset(c->num, 0, c->cap * sizeof(BcDig));
+	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
 	assert(c->scale >= scale);
 	rdx = c->rdx - BC_NUM_RDX(scale);
