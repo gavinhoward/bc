@@ -295,7 +295,7 @@ static BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	BcStatus s;
 	BcResultType lt;
 
-	assert(p && l && ln && r && rn);
+	assert(p != NULL && l != NULL && ln != NULL && r != NULL && rn != NULL);
 
 	s = bc_program_operand(p, l, ln, 1);
 	if (BC_ERR(s)) return s;
@@ -379,7 +379,7 @@ static BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n) {
 
 	BcStatus s;
 
-	assert(p && r && n);
+	assert(p != NULL && r != NULL && n != NULL);
 
 	s = bc_program_operand(p, r, n, 0);
 	if (BC_ERR(s)) return s;
@@ -530,7 +530,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	BcNum *n = NULL;
 	bool pop = (inst != BC_INST_PRINT);
 
-	assert(p);
+	assert(p != NULL);
 
 #ifndef BC_PROG_NO_STACK_CHECK
 	s = bc_program_checkStack(&p->results, idx + 1);
@@ -1511,7 +1511,7 @@ void bc_program_free(BcProgram *p) {
 
 	size_t i;
 
-	assert(p);
+	assert(p != NULL);
 
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) bc_vec_free(p->globals_v + i);
 
@@ -1537,7 +1537,7 @@ void bc_program_init(BcProgram *p) {
 	size_t i;
 	BcBigDig val = BC_BASE;
 
-	assert(p);
+	assert(p != NULL);
 
 	memset(p, 0, sizeof(BcProgram));
 	memset(&ip, 0, sizeof(BcInstPtr));
@@ -1599,7 +1599,7 @@ size_t bc_program_insertFunc(BcProgram *p, char *name) {
 	bool new;
 	size_t idx;
 
-	assert(p && name);
+	assert(p != NULL && name != NULL);
 
 	id.name = name;
 	id.idx = p->fns.len;

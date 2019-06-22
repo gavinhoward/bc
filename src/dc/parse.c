@@ -253,7 +253,7 @@ BcStatus dc_parse_parse(BcParse *p) {
 
 	BcStatus s;
 
-	assert(p);
+	assert(p != NULL);
 
 	if (BC_ERR(p->l.t == BC_LEX_EOF)) s = bc_parse_err(p, BC_ERROR_PARSE_EOF);
 	else s = dc_parse_expr(p, 0);

@@ -55,7 +55,7 @@ static void bc_vec_grow(BcVec *restrict v, size_t n) {
 }
 
 void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
-	assert(v && esize);
+	assert(v != NULL && esize);
 	v->size = esize;
 	v->cap = BC_VEC_START_CAP;
 	v->len = 0;
@@ -64,7 +64,7 @@ void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
 }
 
 void bc_vec_expand(BcVec *restrict v, size_t req) {
-	assert(v);
+	assert(v != NULL);
 	if (v->cap < req) {
 		v->v = bc_vm_realloc(v->v, bc_vm_arraySize(req, v->size));
 		v->cap = req;
@@ -72,7 +72,7 @@ void bc_vec_expand(BcVec *restrict v, size_t req) {
 }
 
 void bc_vec_npop(BcVec *restrict v, size_t n) {
-	assert(v && n <= v->len);
+	assert(v != NULL && n <= v->len);
 	if (v->dtor == NULL) v->len -= n;
 	else {
 		size_t len = v->len - n;
@@ -81,7 +81,7 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 }
 
 void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
-	assert(v && data);
+	assert(v != NULL && data != NULL);
 	if (v->len + n > v->cap) bc_vec_grow(v, n);
 	memcpy(v->v + (v->size * v->len), data, v->size * n);
 	v->len += n;
@@ -92,7 +92,7 @@ void bc_vec_push(BcVec *restrict v, const void *data) {
 }
 
 void bc_vec_pushByte(BcVec *restrict v, uchar data) {
-	assert(v && v->size == sizeof(uchar));
+	assert(v != NULL && v->size == sizeof(uchar));
 	bc_vec_push(v, &data);
 }
 
@@ -100,6 +100,7 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 
 	uchar amt, nums[sizeof(size_t)];
 
+	assert(v != NULL);
 	assert(v->size == sizeof(uchar));
 
 	for (amt = 0; idx; ++amt) {
@@ -114,7 +115,7 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 
 static void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 
-	assert(v && data && idx <= v->len);
+	assert(v != NULL && data != NULL && idx <= v->len);
 
 	if (idx == v->len) bc_vec_push(v, data);
 	else {
@@ -132,7 +133,7 @@ static void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 
 void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
-	assert(v && v->size == sizeof(char));
+	assert(v != NULL && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
 	assert(v->v != str);
 
@@ -146,7 +147,7 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
 void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 
-	assert(v && v->size == sizeof(char));
+	assert(v != NULL && v->size == sizeof(char));
 	assert(!v->len || !v->v[v->len - 1]);
 	assert(v->v != str);
 
@@ -156,7 +157,7 @@ void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 }
 
 void bc_vec_empty(BcVec *restrict v) {
-	assert(v && v->size == sizeof(char));
+	assert(v != NULL && v->size == sizeof(char));
 	bc_vec_npop(v, v->len);
 	bc_vec_pushByte(v, '\0');
 }
@@ -166,6 +167,7 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx) {
 
 	char* ptr, *data;
 
+	assert(v != NULL);
 	assert(idx + 1 < v->len);
 
 	ptr = bc_vec_item(v, idx);
@@ -178,19 +180,25 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx) {
 }
 
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
-	char *ptr = bc_vec_item(v, idx);
+
+	char *ptr;
+
+	assert(v != NULL);
+
+	ptr = bc_vec_item(v, idx);
+
 	if (v->dtor != NULL) v->dtor(ptr);
 	memcpy(ptr, data, v->size);
 }
 #endif // BC_ENABLE_HISTORY
 
 void* bc_vec_item(const BcVec *restrict v, size_t idx) {
-	assert(v && v->len && idx < v->len);
+	assert(v != NULL && v->len && idx < v->len);
 	return v->v + v->size * idx;
 }
 
 void* bc_vec_item_rev(const BcVec *restrict v, size_t idx) {
-	assert(v && v->len && idx < v->len);
+	assert(v != NULL && v->len && idx < v->len);
 	return v->v + v->size * (v->len - idx - 1);
 }
 
@@ -221,7 +229,7 @@ static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 bool bc_map_insert(BcVec *restrict v, const BcId *restrict ptr,
                    size_t *restrict i)
 {
-	assert(v && ptr && i);
+	assert(v != NULL && ptr != NULL && i != NULL);
 
 	*i = bc_map_find(v, ptr);
 
@@ -235,8 +243,14 @@ bool bc_map_insert(BcVec *restrict v, const BcId *restrict ptr,
 }
 
 size_t bc_map_index(const BcVec *restrict v, const BcId *restrict ptr) {
-	assert(v && ptr);
-	size_t i = bc_map_find(v, ptr);
+
+	size_t i;
+
+	assert(v != NULL && ptr != NULL);
+
+	i = bc_map_find(v, ptr);
+
 	if (i >= v->len) return BC_VEC_INVALID_IDX;
+
 	return bc_id_cmp(ptr, bc_vec_item(v, i)) ? BC_VEC_INVALID_IDX : i;
 }

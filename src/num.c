@@ -60,7 +60,7 @@ static size_t bc_num_int(const BcNum *n) {
 }
 
 static void bc_num_expand(BcNum *restrict n, size_t req) {
-	assert(n);
+	assert(n != NULL);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	if (req > n->cap) {
 		n->num = bc_vm_realloc(n->num, BC_NUM_SIZE(req));
@@ -69,7 +69,7 @@ static void bc_num_expand(BcNum *restrict n, size_t req) {
 }
 
 static void bc_num_setToZero(BcNum *restrict n, size_t scale) {
-	assert(n);
+	assert(n != NULL);
 	n->scale = scale;
 	n->len = n->rdx = 0;
 	n->neg = false;
@@ -251,7 +251,7 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	bool a_max, neg = false;
 	ssize_t cmp;
 
-	assert(a && b);
+	assert(a != NULL && b != NULL);
 
 	if (a == b) return 0;
 	if (BC_NUM_ZERO(a)) return bc_num_neg(b->len != 0, !b->neg);
@@ -1351,7 +1351,7 @@ static BcStatus bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	BcNum num2, *ptr_a, *ptr_b;
 	bool init = false;
 
-	assert(a && b && c && op);
+	assert(a != NULL && b != NULL && c != NULL && op != NULL);
 
 	if (c == a) {
 		ptr_a = &num2;
@@ -1887,7 +1887,7 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 	for (i = 0; BC_NO_SIG && i < stack.len; ++i) {
 		ptr = bc_vec_item_rev(&stack, i);
-		assert(ptr);
+		assert(ptr != NULL);
 		print(*ptr, len, false);
 	}
 
@@ -1979,7 +1979,7 @@ BcStatus bc_num_stream(BcNum *restrict n, BcBigDig base) {
 #endif // DC_ENABLED
 
 void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
-	assert(n);
+	assert(n != NULL);
 	n->num = num;
 	n->cap = cap;
 	n->rdx = n->scale = n->len = 0;
@@ -1987,18 +1987,18 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 }
 
 void bc_num_init(BcNum *restrict n, size_t req) {
-	assert(n);
+	assert(n != NULL);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	bc_num_setup(n, bc_vm_malloc(BC_NUM_SIZE(req)), req);
 }
 
 void bc_num_free(void *num) {
-	assert(num);
+	assert(num != NULL);
 	free(((BcNum*) num)->num);
 }
 
 void bc_num_copy(BcNum *d, const BcNum *s) {
-	assert(d && s);
+	assert(d != NULL && s != NULL);
 	if (d == s) return;
 	bc_num_expand(d, s->len);
 	d->len = s->len;
@@ -2027,6 +2027,7 @@ size_t bc_num_len(const BcNum *restrict n) {
 	size_t len = n->len;
 
 	if (BC_NUM_ZERO(n)) return 0;
+
 	if (n->rdx == len) {
 
 		size_t zero, scale;
@@ -2050,7 +2051,7 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	assert(n && val && base);
+	assert(n != NULL && val != NULL && base);
 	assert(base >= BC_NUM_MIN_BASE && base <= vm->maxes[BC_PROG_GLOBALS_IBASE]);
 	assert(bc_num_strValid(val));
 
@@ -2068,7 +2069,7 @@ BcStatus bc_num_print(BcNum *restrict n, BcBigDig base, bool newline) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
-	assert(n);
+	assert(n != NULL);
 	assert(BC_ENABLE_EXTRA_MATH || base >= BC_NUM_MIN_BASE);
 
 	bc_num_printNewline();
@@ -2091,7 +2092,7 @@ BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 	size_t i;
 	BcBigDig r;
 
-	assert(n && result);
+	assert(n != NULL && result != NULL);
 
 	if (BC_ERR(n->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
@@ -2117,7 +2118,7 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
 	BcDig *ptr;
 	size_t i;
 
-	assert(n);
+	assert(n != NULL);
 
 	bc_num_zero(n);
 
@@ -2226,7 +2227,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
 	BcDig half_digs[1];
 
-	assert(a && b && a != b);
+	assert(a != NULL && b != NULL && a != b);
 
 	if (BC_ERR(a->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
@@ -2351,6 +2352,7 @@ BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	ts = BC_MAX(scale + b->scale, a->scale);
 	len = bc_num_mulReq(a, b, ts);
 
+	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(c != d && a != d && b != d && b != c);
 
 	if (c == a) {
@@ -2396,7 +2398,8 @@ BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	BcNum base, exp, two, temp;
 	BcDig two_digs[2];
 
-	assert(a && b && c && d && a != d && b != d && c != d);
+	assert(a != NULL && b != NULL && c != NULL && d != NULL);
+	assert(a != d && b != d && c != d);
 
 	if (BC_ERR(BC_NUM_ZERO(c)))
 		return bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);

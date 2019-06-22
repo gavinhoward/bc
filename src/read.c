@@ -67,7 +67,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 	int i;
 	signed char c = 0;
 
-	assert(vec && vec->size == sizeof(char));
+	assert(vec != NULL && vec->size == sizeof(char));
 
 	bc_vec_npop(vec, vec->len);
 
@@ -142,7 +142,7 @@ BcStatus bc_read_file(const char *path, char **buf) {
 	long res;
 	struct stat pstat;
 
-	assert(path);
+	assert(path != NULL);
 
 	f = fopen(path, "r");
 	if (BC_ERR(f == NULL)) return bc_vm_verr(BC_ERROR_FATAL_FILE_ERR, path);

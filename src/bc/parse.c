@@ -846,7 +846,7 @@ static BcStatus bc_parse_loopExit(BcParse *p, BcLexType type) {
 		ip = bc_vec_item(&p->exits, i);
 
 		while (!ip->func && i < p->exits.len) ip = bc_vec_item(&p->exits, i--);
-		assert(ip && (i < p->exits.len || ip->func));
+		assert(ip != NULL && (i < p->exits.len || ip->func));
 		i = ip->idx;
 	}
 	else i = *((size_t*) bc_vec_top(&p->conds));
@@ -1018,6 +1018,7 @@ static BcStatus bc_parse_body(BcParse *p, bool brace) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	uint16_t *flag_ptr = BC_PARSE_TOP_FLAG_PTR(p);
 
+	assert(flag_ptr != NULL);
 	assert(p->flags.len >= 2);
 
 	*flag_ptr &= ~(BC_PARSE_FLAG_BODY);

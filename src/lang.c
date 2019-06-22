@@ -46,19 +46,19 @@ int bc_id_cmp(const BcId *e1, const BcId *e2) {
 
 #ifndef NDEBUG
 void bc_id_free(void *id) {
-	assert(id);
+	assert(id != NULL);
 	free(((BcId*) id)->name);
 }
 #endif // NDEBUG
 
 void bc_string_free(void *string) {
-	assert(string && *((char**) string));
+	assert(string != NULL && (*((char**) string)) != NULL);
 	free(*((char**) string));
 }
 
 void bc_const_free(void *constant) {
 	BcConst *c = constant;
-	assert(c->val);
+	assert(c->val != NULL);
 	free(c->val);
 	bc_num_free(&c->num);
 }
@@ -70,7 +70,7 @@ BcStatus bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 	BcLoc a;
 	size_t i, idx;
 
-	assert(f);
+	assert(f != NULL);
 
 	idx = bc_program_search(p, name, type == BC_TYPE_VAR);
 
@@ -92,7 +92,7 @@ BcStatus bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 #endif // BC_ENABLED
 
 void bc_func_init(BcFunc *f, const char *name) {
-	assert(f && name);
+	assert(f != NULL && name != NULL);
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
 	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
 	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
@@ -106,7 +106,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 }
 
 void bc_func_reset(BcFunc *f) {
-	assert(f);
+	assert(f != NULL);
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_npop(&f->strs, f->strs.len);
 	bc_vec_npop(&f->consts, f->consts.len);
@@ -120,7 +120,7 @@ void bc_func_reset(BcFunc *f) {
 
 void bc_func_free(void *func) {
 	BcFunc *f = (BcFunc*) func;
-	assert(f);
+	assert(f != NULL);
 	bc_vec_free(&f->code);
 	bc_vec_free(&f->strs);
 	bc_vec_free(&f->consts);
@@ -140,7 +140,8 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 
 	size_t i;
 
-	assert(d && s && d != s && d->size == s->size && d->dtor == s->dtor);
+	assert(d != NULL && s != NULL);
+	assert(d != s && d->size == s->size && d->dtor == s->dtor);
 
 	bc_vec_npop(d, d->len);
 	bc_vec_expand(d, s->cap);
@@ -154,7 +155,7 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 
 void bc_array_expand(BcVec *a, size_t len) {
 
-	assert(a);
+	assert(a != NULL);
 
 	bc_vec_expand(a, len);
 
@@ -178,7 +179,7 @@ void bc_array_expand(BcVec *a, size_t len) {
 #if DC_ENABLED
 void bc_result_copy(BcResult *d, BcResult *src) {
 
-	assert(d && src);
+	assert(d != NULL && src != NULL);
 
 	d->t = src->t;
 
@@ -234,7 +235,7 @@ void bc_result_free(void *result) {
 
 	BcResult *r = (BcResult*) result;
 
-	assert(r);
+	assert(r != NULL);
 
 	switch (r->t) {
 

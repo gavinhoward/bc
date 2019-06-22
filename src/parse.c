@@ -146,7 +146,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 }
 
 void bc_parse_free(BcParse *p) {
-	assert(p);
+	assert(p != NULL);
 #if BC_ENABLED
 	bc_vec_free(&p->flags);
 	bc_vec_free(&p->exits);
@@ -163,7 +163,7 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 	uint16_t flag = 0;
 #endif // BC_ENABLED
 
-	assert(p && prog);
+	assert(p != NULL && prog != NULL);
 
 #if BC_ENABLED
 	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
