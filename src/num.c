@@ -1420,6 +1420,7 @@ static BcBigDig bc_num_parseChar(char c, size_t base_t) {
 
 	return (BcBigDig) (uchar) c;
 }
+
 static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	size_t len, i, temp, mod;
