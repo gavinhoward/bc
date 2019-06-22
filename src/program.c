@@ -693,6 +693,7 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
 	BcNum n2;
 
 	memset(&n2, 0, sizeof(BcNum));
+	n2.num = NULL;
 	n2.scale = r->d.loc.loc;
 
 	if (!push) {
@@ -814,6 +815,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
 			bc_num_free(l);
 			memset(l, 0, sizeof(BcNum));
+			l->num = NULL;
 			l->scale = idx;
 		}
 		else {

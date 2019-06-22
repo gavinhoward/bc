@@ -640,6 +640,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
+	vm->file = NULL;
+
 	bc_vm_gettext();
 
 	vm->line_len = (uint16_t) bc_vm_envLen(env_len);
