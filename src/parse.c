@@ -97,7 +97,7 @@ void bc_parse_number(BcParse *p) {
 	char *exp = strchr(p->l.str.v, 'e');
 	size_t idx = SIZE_MAX;
 
-	if (exp) {
+	if (exp != NULL) {
 		idx = ((size_t) (exp - p->l.str.v));
 		*exp = 0;
 	}
@@ -106,7 +106,7 @@ void bc_parse_number(BcParse *p) {
 	bc_parse_addId(p, p->l.str.v, BC_INST_NUM);
 
 #if BC_ENABLE_EXTRA_MATH
-	if (exp) {
+	if (exp != NULL) {
 
 		bool neg;
 

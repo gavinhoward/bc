@@ -181,7 +181,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 			if (c->base != base) {
 
-				if (!c->num.num)
+				if (c->num.num == NULL)
 					bc_num_init(&c->num, BC_NUM_RDX(strlen(c->val)));
 
 				s = bc_num_parse(&c->num, c->val, base, !c->val[1]);
@@ -507,7 +507,7 @@ static void bc_program_printString(const char *restrict str) {
 			c = str[++i];
 			ptr = strchr(bc_program_esc_chars, c);
 
-			if (ptr) {
+			if (ptr != NULL) {
 				if (c == 'n') vm->nchars = SIZE_MAX;
 				c = bc_program_esc_seqs[(size_t) (ptr - bc_program_esc_chars)];
 			}

@@ -211,7 +211,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 		if (BC_ERR(err)) {
 
-			for (i = 0; bc_args_lopt[i].name; ++i) {
+			for (i = 0; bc_args_lopt[i].name != NULL; ++i) {
 				if (bc_args_lopt[i].val == err) break;
 			}
 
@@ -222,7 +222,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) s);
 	if (vm->exprs.len > 1 || !BC_IS_BC) vm->flags |= BC_FLAG_Q;
-	if (argv[optind] && !strcmp(argv[optind], "--")) ++optind;
+	if (argv[optind] != NULL && !strcmp(argv[optind], "--")) ++optind;
 
 	for (i = optind; i < argc; ++i) bc_vec_push(&vm->files, argv + i);
 

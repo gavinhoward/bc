@@ -73,7 +73,7 @@ void bc_vec_expand(BcVec *restrict v, size_t req) {
 
 void bc_vec_npop(BcVec *restrict v, size_t n) {
 	assert(v && n <= v->len);
-	if (!v->dtor) v->len -= n;
+	if (v->dtor == NULL) v->len -= n;
 	else {
 		size_t len = v->len - n;
 		while (v->len > len) v->dtor(v->v + (v->size * --v->len));
@@ -171,7 +171,7 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx) {
 	ptr = bc_vec_item(v, idx);
 	data = bc_vec_item(v, idx + 1);
 
-	if (v->dtor) v->dtor(ptr);
+	if (v->dtor != NULL) v->dtor(ptr);
 
 	v->len -= 1;
 	memmove(ptr, data, v->len * v->size);
@@ -179,7 +179,7 @@ void bc_vec_popAt(BcVec *restrict v, size_t idx) {
 
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
 	char *ptr = bc_vec_item(v, idx);
-	if (v->dtor) v->dtor(ptr);
+	if (v->dtor != NULL) v->dtor(ptr);
 	memcpy(ptr, data, v->size);
 }
 #endif // BC_ENABLE_HISTORY
