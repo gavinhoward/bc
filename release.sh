@@ -244,38 +244,16 @@ runtestseries() {
 	_runtestseries_run_tests="$1"
 	shift
 
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -E" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -H" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -N" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -S" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -EH" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -EN" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -ES" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -HN" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -HS" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -NS" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -EHN" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -EHS" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -ENS" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -HNS" "$_runtestseries_run_tests"
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-		"$_runtestseries_configure_flags -EHNS" "$_runtestseries_run_tests"
+	_runtestseries_flags="E H N P S EH EN EP ES HN HP HS NP NS PS EHN EHP EHS
+		ENP ENS EPS HNP HNS HPS NPS EHNP EHNS EHPS ENPS HNPS EHNPS"
+
+	#runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+	#	"$_runtestseries_configure_flags" "$_runtestseries_run_tests"
+
+	for f in $_runtestseries_flags; do
+		runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+			"$_runtestseries_configure_flags -$f" "$_runtestseries_run_tests"
+	done
 }
 
 runtests() {
