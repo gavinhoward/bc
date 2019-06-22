@@ -100,7 +100,7 @@ fi
 if [ "$run_stack_tests" -eq 0 ]; then
 
 	if [ "$f" = "globals.bc" -o "$f" = "references.bc" ]; then
-		printf 'Skipping %s script %s\n' "$d" "$s"
+		printf 'Skipping %s script: %s\n' "$d" "$f"
 		exit 0
 	fi
 
