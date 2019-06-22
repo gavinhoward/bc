@@ -529,6 +529,7 @@ static size_t bc_history_columns(void) {
 	return ws.ws_col;
 }
 
+#if BC_ENABLE_PROMPT
 /**
  * Check if text is an ANSI escape sequence.
  */
@@ -557,7 +558,6 @@ static bool bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len)
 /**
  * Get column length of prompt text.
  */
-#if BC_ENABLE_PROMPT
 static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 
 	char buf[BC_HIST_MAX_LINE + 1];
