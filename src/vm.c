@@ -589,6 +589,7 @@ static BcStatus bc_vm_exec(const char* env_exp_exit) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
+	bool has_file = false;
 
 #if BC_ENABLED
 	if (BC_IS_BC && (vm->flags & BC_FLAG_L)) {
@@ -611,11 +612,16 @@ static BcStatus bc_vm_exec(const char* env_exp_exit) {
 		if (BC_ERR(s) || getenv(env_exp_exit) != NULL) return s;
 	}
 
-	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i)
-		s = bc_vm_file(*((char**) bc_vec_item(&vm->files, i)));
+	for (i = 0; BC_NO_ERR(!s) && i < vm->files.len; ++i) {
+		char *path = *((char**) bc_vec_item(&vm->files, i));
+		if (!strcmp(path, "")) continue;
+		has_file = true;
+		s = bc_vm_file(path);
+	}
+
 	if (BC_ERR(s)) return s;
 
-	if (BC_IS_BC || !vm->files.len) s = bc_vm_stdin();
+	if (BC_IS_BC || !has_file) s = bc_vm_stdin();
 
 	return s;
 }
