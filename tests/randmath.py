@@ -178,7 +178,10 @@ def run_test(t):
 
 	print("Test {}: {}".format(t, test))
 
-	args = [ exe, options ]
+	if exe == "bc":
+		args = [ exe, options ]
+	else:
+		args = [ exe ]
 
 	p = subprocess.run(args, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
