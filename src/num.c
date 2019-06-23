@@ -936,8 +936,7 @@ err:
 	return s;
 }
 
-static bool bc_num_nonZeroDig(BcDig *restrict a, size_t len)
-{
+static bool bc_num_nonZeroDig(BcDig *restrict a, size_t len) {
 	size_t i;
 	bool nonzero = false;
 	for (i = len - 1; !nonzero && i < len; --i) nonzero = (a[i] != 0);
