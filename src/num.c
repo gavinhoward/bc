@@ -1072,13 +1072,13 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 			result += q;
 			assert(result <= BC_BASE_POW);
 
-			cmp = -1;
 			if (nonzero) {
 				cmp = bc_num_divCmp(n, b, len);
 #if BC_ENABLE_SIGNALS
 				if (BC_NUM_CMP_SIGNAL(cmp)) goto err;
 #endif // BC_ENABLE_SIGNALS
 			}
+			else cmp = -1;
 		}
 
 		assert(result < BC_BASE_POW);
