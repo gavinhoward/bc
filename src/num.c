@@ -1006,8 +1006,8 @@ static BcStatus bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 			len = BC_MAX(a->len, b->len);
 			bc_num_expand(a, len + 1);
-			if (len + 1 > a->len)
-				a->len = len + 1;
+
+			if (len + 1 > a->len) a->len = len + 1;
 
 			len = b->len;
 			end = a->len - len;
