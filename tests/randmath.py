@@ -166,7 +166,7 @@ def run_test(t):
 	else:
 		exe = "dc"
 		halt = "q"
-		options = ""
+		options = "-P"
 
 	test = gen_test(op)
 
