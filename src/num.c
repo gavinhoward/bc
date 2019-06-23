@@ -1150,8 +1150,8 @@ static BcStatus bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	s = bc_num_d_long(&cpa, &cpb, c, scale);
 
 	if (BC_NO_ERR(!s)) {
-		bc_num_retireMul(c, scale, a->neg, b->neg);
 		if (BC_SIG) s = BC_STATUS_SIGNAL;
+		else bc_num_retireMul(c, scale, a->neg, b->neg);
 	}
 
 	bc_num_free(&cpb);
