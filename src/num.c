@@ -2330,15 +2330,16 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	bc_num_copy(b, x0);
 	if (b->scale > scale) bc_num_truncate(b, b->scale - scale);
 
+	assert(!b->neg || BC_NUM_NONZERO(b));
+	assert(b->rdx <= b->len || !b->len);
+	assert(!b->len || b->num[b->len - 1] || b->rdx == b->len);
+
 err:
 	if (BC_ERR(s)) bc_num_free(b);
 	bc_num_free(&fprime);
 	bc_num_free(&f);
 	bc_num_free(&num2);
 	bc_num_free(&num1);
-	assert(!b->neg || BC_NUM_NONZERO(b));
-	assert(b->rdx <= b->len || !b->len);
-	assert(!b->len || b->num[b->len - 1] || b->rdx == b->len);
 	return s;
 }
 
