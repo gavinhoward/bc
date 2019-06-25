@@ -356,6 +356,20 @@ Both commands are equivalent.
 NLS (locale support) is automatically disabled when building for Windows or on
 another platform that does not support the POSIX locale API or utilities.
 
+### Prompt
+
+By default, `bc` and `dc` print a prompt when in interactive mode. They both
+have the command-line option `-P`/`--no-prompt`, which turns that off, but it
+can be disabled permanently in the build by passing the `-P` flag or the
+`--disable-prompt` option to `configure.sh`, as follows:
+
+```
+./configure.sh -P
+./configure.sh --disable-prompt
+```
+
+Both commands are equivalent.
+
 ### Extra Math
 
 This `bc` has 7 extra operators:
