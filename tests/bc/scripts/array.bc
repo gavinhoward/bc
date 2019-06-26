@@ -18,6 +18,14 @@ define x(a[]) {
 	z(a[])
 }
 
+define g(x[], y[]) {
+	return x[0] + y[0]
+}
+
+define h(y[], x[]) {
+	return x(x, y)
+}
+
 for (i = 0; i < 101; ++i) {
 	a[i] = i
 }
@@ -34,5 +42,10 @@ z(a[])
 x(a[])
 z(a[])
 l
+
+x[0] = 5
+y[0] = 4
+
+h(x[], y[])
 
 halt
