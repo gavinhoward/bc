@@ -19,7 +19,7 @@ define x(a[]) {
 }
 
 define g(x[], y[]) {
-	return x[0] + y[0]
+	return x[0] - y[0]
 }
 
 define h(y[], x[]) {
