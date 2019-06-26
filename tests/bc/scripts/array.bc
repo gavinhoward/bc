@@ -23,7 +23,7 @@ define g(x[], y[]) {
 }
 
 define h(y[], x[]) {
-	return x(x, y)
+	return g(x, y)
 }
 
 for (i = 0; i < 101; ++i) {
