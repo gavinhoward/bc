@@ -197,6 +197,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 				c->base = base;
 			}
 
+			n = &r->d.n;
 			bc_num_createCopy(n, &c->num);
 
 			r->t = BC_RESULT_TEMP;
@@ -204,6 +205,12 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 		}
 
 		case BC_RESULT_STR:
+		{
+			n = &r->d.n;
+			n->num = NULL;
+			break;
+		}
+
 		case BC_RESULT_TEMP:
 		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
@@ -752,9 +759,12 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
 
-		BcVec *v = (BcVec*) n, *rv = &r.d.v;
+		BcVec *v, *rv = &r.d.v;
 #if BC_ENABLED
 		bool ref, ref_size;
+
+		n = NULL;
+		v = (BcVec*) n;
 
 		assert(v != NULL);
 
