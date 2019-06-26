@@ -727,8 +727,14 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 #if BC_ENABLED
 	if (last) s = bc_program_operand(p, &ptr, &n, 0);
 	else {
+
+		BcVec *tempv;
+
 		ptr = bc_vec_top(&p->results);
-		if (var) n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
+		tempv = bc_program_vec(p, ptr->d.loc.loc, t);
+
+		if (var) n = bc_vec_item_rev(tempv, 1);
+		else n = (BcNum*) tempv;
 	}
 #else // BC_ENABLED
 	s = bc_program_operand(p, &ptr, &n, 0);
@@ -757,7 +763,6 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 #if BC_ENABLED
 		bool ref, ref_size;
 
-		n = NULL;
 		v = (BcVec*) n;
 
 		assert(v != NULL);
