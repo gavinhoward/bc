@@ -236,6 +236,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 				assert(v->size == sizeof(BcNum));
 
 				if (v->len <= idx) bc_array_expand(v, bc_vm_growSize(idx, 1));
+
 				n = bc_vec_item(v, idx);
 			}
 			else n = bc_vec_top(v);
@@ -976,6 +977,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 
 	res.t = BC_RESULT_ONE;
 	inst2 = BC_INST_ASSIGN_PLUS;
+
 	if (!use_val) {
 		inst2 += (inst == BC_INST_DEC_NO_VAL);
 		inst2 += (BC_INST_ASSIGN_PLUS_NO_VAL - BC_INST_ASSIGN_PLUS);
