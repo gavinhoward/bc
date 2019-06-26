@@ -170,7 +170,7 @@ static BcVec* bc_program_vec(const BcProgram *p, size_t idx, BcType type) {
 static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
-	BcNum *n = &r->d.n;
+	BcNum *n;
 
 	switch (r->t) {
 
@@ -209,6 +209,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
 		{
+			n = &r->d.n;
 			break;
 		}
 
