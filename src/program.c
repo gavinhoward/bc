@@ -205,12 +205,6 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 		}
 
 		case BC_RESULT_STR:
-		{
-			n = &r->d.n;
-			n->num = NULL;
-			break;
-		}
-
 		case BC_RESULT_TEMP:
 		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
