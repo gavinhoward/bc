@@ -988,7 +988,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 	if (post) {
 
 		if (BC_ERR(s)) {
-			bc_num_free(&copy);
+			bc_num_free(&copy.d.n);
 			return s;
 		}
 
