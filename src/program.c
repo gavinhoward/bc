@@ -403,7 +403,7 @@ static BcStatus bc_program_op(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
-	BcNum *n1 = NULL, *n2 = NULL;
+	BcNum *n1, *n2;
 	size_t idx = inst - BC_INST_POWER;
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
@@ -529,7 +529,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
 	char *str;
-	BcNum *n = NULL;
+	BcNum *n;
 	bool pop = (inst != BC_INST_PRINT);
 
 	assert(p != NULL);
@@ -598,7 +598,7 @@ static BcStatus bc_program_unary(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult res, *ptr;
-	BcNum *num = NULL;
+	BcNum *num;
 
 	s = bc_program_prep(p, &ptr, &num);
 	if (BC_ERR(s)) return s;
@@ -614,7 +614,7 @@ static BcStatus bc_program_logical(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res;
-	BcNum *n1 = NULL, *n2 = NULL;
+	BcNum *n1, *n2;
 	bool cond = 0;
 	ssize_t cmp;
 
@@ -720,7 +720,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *ptr, r;
 	BcVec *vec;
-	BcNum *n = NULL;
+	BcNum *n;
 	bool var = (t == BC_TYPE_VAR);
 
 #if BC_ENABLED
@@ -800,8 +800,8 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 	BcStatus s;
-	BcResult *left, *right = NULL, res;
-	BcNum *l = NULL, *r = NULL;
+	BcResult *left, *right, res;
+	BcNum *l, *r;
 	bool ob, sc, use_val = BC_INST_USE_VAL(inst);
 
 	s = bc_program_assignPrep(p, &left, &l, &right, &r);
@@ -932,7 +932,7 @@ static BcStatus bc_program_pushArray(BcProgram *p, const char *restrict code,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult r, *operand;
-	BcNum *num = NULL;
+	BcNum *num;
 	BcBigDig temp;
 
 	r.d.loc.loc = bc_program_index(code, bgn);
@@ -961,7 +961,7 @@ static BcStatus bc_program_incdec(BcProgram *p, uchar inst) {
 
 	BcStatus s;
 	BcResult *ptr, res, copy;
-	BcNum *num = NULL;
+	BcNum *num;
 	uchar inst2;
 	bool post, use_val;
 
@@ -1091,7 +1091,7 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 
 	if (inst == BC_INST_RET) {
 
-		BcNum *num = NULL;
+		BcNum *num;
 		BcResult *operand;
 
 		s = bc_program_operand(p, &operand, &num, 0);
@@ -1134,7 +1134,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	BcStatus s;
 	BcResult *opd;
 	BcResult res;
-	BcNum *num = NULL, *resn = &res.d.n;
+	BcNum *num, *resn = &res.d.n;
 	bool len = (inst == BC_INST_LENGTH);
 
 	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_ABS);
@@ -1199,7 +1199,7 @@ static BcStatus bc_program_divmod(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *opd1, *opd2, res, res2;
-	BcNum *n1, *n2 = NULL, *resn = &res.d.n, *resn2 = &res2.d.n;
+	BcNum *n1, *n2, *resn = &res.d.n, *resn2 = &res2.d.n;
 	size_t req;
 
 	s = bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
@@ -1228,7 +1228,7 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r1, *r2, *r3, res;
-	BcNum *n1 = NULL, *n2 = NULL, *n3, *resn = &res.d.n;
+	BcNum *n1, *n2, *n3, *resn = &res.d.n;
 
 	s = bc_program_operand(p, &r1, &n1, 2);
 	if (BC_ERR(s)) return s;
@@ -1270,7 +1270,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r, res;
-	BcNum *n = NULL, num;
+	BcNum *n, num;
 	char str[2], *str2, c;
 	size_t len;
 	BcBigDig val;
@@ -1347,7 +1347,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *r;
-	BcNum *n = NULL;
+	BcNum *n;
 
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
@@ -1367,7 +1367,7 @@ static BcStatus bc_program_nquit(BcProgram *p) {
 
 	BcStatus s;
 	BcResult *opnd;
-	BcNum *num = NULL;
+	BcNum *num;
 	BcBigDig val;
 
 	s = bc_program_prep(p, &opnd, &num);
@@ -1396,7 +1396,7 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	BcParse prs;
 	BcInstPtr ip;
 	size_t fidx, sidx;
-	BcNum *n = NULL;
+	BcNum *n;
 	bool exec;
 
 	s = bc_program_operand(p, &r, &n, 0);
@@ -1662,7 +1662,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 	char *code = func->code.v;
 	bool cond = false;
 #if BC_ENABLED
-	BcNum *num = NULL;
+	BcNum *num;
 #endif // BC_ENABLED
 
 	while (BC_NO_SIG && BC_NO_ERR(!s) && ip->idx < func->code.len) {
