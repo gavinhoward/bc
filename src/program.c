@@ -728,7 +728,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	if (last) s = bc_program_operand(p, &ptr, &n, 0);
 	else {
 		ptr = bc_vec_top(&p->results);
-		n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
+		if (var) n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 	}
 #else // BC_ENABLED
 	s = bc_program_operand(p, &ptr, &n, 0);
@@ -753,15 +753,20 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
 
-		BcVec *v, *rv = &r.d.v;
+		BcVec *v, *parent, *rv = &r.d.v;
 #if BC_ENABLED
 		bool ref, ref_size;
 
-		v = (BcVec*) n;
+		parent = bc_program_vec(p, ptr->d.loc.loc, t);
+
+		assert(parent != NULL);
+
+		if (last) v = (BcVec*) n;
+		else v = bc_vec_item_rev(parent, !last);
 
 		assert(v != NULL);
 
-		ref = (v->size == sizeof(BcNum) && t != BC_TYPE_ARRAY);
+		ref = (v->size == sizeof(BcNum) && t == BC_TYPE_REF);
 		ref_size = (v->size == sizeof(uchar));
 
 		if (ref || (ref_size && t == BC_TYPE_REF)) {
@@ -770,13 +775,11 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 
 			if (ref) {
 
-				v = bc_program_vec(p, ptr->d.loc.loc, BC_TYPE_REF);
-
 				// Make sure the pointer was not invalidated.
 				vec = bc_program_vec(p, idx, t);
 
 				bc_vec_pushIndex(rv, ptr->d.loc.loc);
-				bc_vec_pushIndex(rv, v->len - 1);
+				bc_vec_pushIndex(rv, parent->len - 1 - !last);
 			}
 			// If we get here, we are copying a ref to a ref.
 			else bc_vec_npush(rv, v->len * sizeof(uchar), v->v);
