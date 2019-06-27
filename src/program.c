@@ -773,7 +773,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 
 			if (ref) {
 
-				assert(parent->len >= !last + 1);
+				assert(parent->len >= (size_t) (!last + 1));
 
 				// Make sure the pointer was not invalidated.
 				vec = bc_program_vec(p, idx, t);
