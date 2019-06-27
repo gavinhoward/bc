@@ -47,12 +47,12 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EgGHMNS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EgGHMNPS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
 	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage] \\\n'
 	printf '           [--debug --disable-extra-math --disable-generated-tests]   \\\n'
 	printf '           [--disable-history --disable-man-pages --disable-nls]      \\\n'
-	printf '           [--disable-signal-handling]                                \\\n'
+	printf '           [--disable-prompt --disable-signal-handling]               \\\n'
 	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]          \\\n'
 	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                        \\\n'
 	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]            \\\n'
