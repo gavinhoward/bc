@@ -752,18 +752,15 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
 
-		BcVec *v, *rv = &r.d.v;
+		BcVec *v = (BcVec*) n, *rv = &r.d.v;
 #if BC_ENABLED
 		BcVec *parent;
 		bool ref, ref_size;
 
 		parent = bc_program_vec(p, ptr->d.loc.loc, t);
-
 		assert(parent != NULL);
 
-		if (last) v = (BcVec*) n;
-		else v = bc_vec_item_rev(parent, !last);
-
+		if (!last) v = bc_vec_item_rev(parent, !last);
 		assert(v != NULL);
 
 		ref = (v->size == sizeof(BcNum) && t == BC_TYPE_REF);
