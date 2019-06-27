@@ -127,8 +127,7 @@ static BcVec* bc_program_dereference(const BcProgram *p, BcVec *vec) {
 	vidx = bc_program_index(vec->v, &i);
 	nidx = bc_program_index(vec->v, &i);
 
-	v = bc_vec_item(&p->arrs, vidx);
-	v = bc_vec_item(v, nidx);
+	v = bc_vec_item(bc_vec_item(&p->arrs, vidx), nidx);
 
 	assert(v->size != sizeof(uchar));
 
