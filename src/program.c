@@ -773,11 +773,13 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 
 			if (ref) {
 
+				assert(parent->len >= !last + 1);
+
 				// Make sure the pointer was not invalidated.
 				vec = bc_program_vec(p, idx, t);
 
 				bc_vec_pushIndex(rv, ptr->d.loc.loc);
-				bc_vec_pushIndex(rv, parent->len - 1 - !last);
+				bc_vec_pushIndex(rv, parent->len - !last - 1);
 			}
 			// If we get here, we are copying a ref to a ref.
 			else bc_vec_npush(rv, v->len * sizeof(uchar), v->v);
