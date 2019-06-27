@@ -27,6 +27,8 @@ config.mak
 timeconst.bc
 Makefile
 
+.gdb_history
+
 # Ignore the generated test files
 parse.txt
 parse_results.txt
