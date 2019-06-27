@@ -26,6 +26,14 @@ define h(y[], x[]) {
 	return g(x[], y[])
 }
 
+define m(*x[], *y[]) {
+	return x[0] / y[0]
+}
+
+define n(*y[], *x[]) {
+	return m(x[], y[])
+}
+
 for (i = 0; i < 101; ++i) {
 	a[i] = i
 }
@@ -47,5 +55,6 @@ x[0] = 5
 y[0] = 4
 
 h(x[], y[])
+n(x[], y[])
 
 halt
