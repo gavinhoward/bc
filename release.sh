@@ -73,6 +73,8 @@ configure() {
 
 	if [ "$_configure_CC" = "clang" ]; then
 		_configure_CFLAGS="$clang_flags $_configure_CFLAGS"
+	elif [ "$_configure_CC" = "gcc" ]; then
+		_configure_CFLAGS="$gcc_flags $_configure_CFLAGS"
 	fi
 
 	_configure_header=$(printf 'Running ./configure.sh %s ...' "$_configure_configure_flags")
@@ -375,8 +377,9 @@ build_set() {
 clang_flags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
 clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
 clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
+gcc_flags="-Wno-maybe-uninitialized"
 
-cflags="-Wall -Wextra -Werror -pedantic -std=c99 -Wno-conditional-uninitialized -Wno-maybe-uninitialized"
+cflags="-Wall -Wextra -Werror -pedantic -std=c99 -Wno-conditional-uninitialized"
 
 debug="$cflags -fno-omit-frame-pointer"
 release="$cflags -DNDEBUG"
