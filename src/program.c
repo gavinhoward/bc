@@ -725,21 +725,19 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	bool var = (t == BC_TYPE_VAR);
 
 #if BC_ENABLED
-	if (last) s = bc_program_operand(p, &ptr, &n, 0);
-	else {
-		ptr = bc_vec_top(&p->results);
-		if (var) n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
-	}
+
+	ptr = bc_vec_top(&p->results);
+
+	s = bc_program_type_match(ptr, t);
+	if (BC_ERR(s)) return s;
+
+	if (last) s = bc_program_num(p, ptr, &n);
+	else if (var) n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 #else // BC_ENABLED
 	s = bc_program_operand(p, &ptr, &n, 0);
 #endif // BC_ENABLED
 
 	if (BC_ERR(s)) return s;
-
-#if BC_ENABLED
-	s = bc_program_type_match(ptr, t);
-	if (BC_ERR(s)) return s;
-#endif // BC_ENABLED
 
 	vec = bc_program_vec(p, idx, t);
 
