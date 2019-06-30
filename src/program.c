@@ -1037,8 +1037,11 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 		size_t j;
 		bool last = true;
 
-		a = bc_vec_item(&f->autos, nparams - 1 - i);
 		arg = bc_vec_top(&p->results);
+		if (BC_ERR(arg->t == BC_RESULT_VOID))
+			return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+
+		a = bc_vec_item(&f->autos, nparams - 1 - i);
 
 		// If I have already pushed to a var, I need to make sure I
 		// get the previous version, not the already pushed one.
