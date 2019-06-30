@@ -44,3 +44,7 @@
 [[[q 1 3+pR]x]x]x4 5^pR
 4xpR
 5 112ax 90ax 112ax 82ax
+[\q] pR
+[q\\] pR
+[\\] pR
+92 a pR
