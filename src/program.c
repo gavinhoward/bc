@@ -545,6 +545,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 #if BC_ENABLED
 	if (r->t == BC_RESULT_VOID) {
 		if (BC_ERR(pop)) return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
+		bc_vec_pop(&p->results);
 		return s;
 	}
 #endif // BC_ENABLED
@@ -1901,7 +1902,6 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-#if DC_ENABLED
 			case BC_INST_POP:
 			{
 #ifndef BC_PROG_NO_STACK_CHECK
@@ -1912,6 +1912,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+#if DC_ENABLED
 			case BC_INST_POP_EXEC:
 			{
 				assert(BC_PROG_STACK(&p->stack, 2));
