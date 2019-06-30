@@ -1048,7 +1048,7 @@ static BcStatus bc_program_call(BcProgram *p, const char *restrict code,
 			for (j = 0; j < i && last; ++j) {
 				BcLoc *loc = bc_vec_item(&f->autos, nparams - 1 - j);
 				last = (arg->d.loc.loc != loc->loc ||
-				       (!loc->idx) != (arg->t == BC_RESULT_VAR));
+				        (!loc->idx) != (arg->t == BC_RESULT_VAR));
 			}
 		}
 
