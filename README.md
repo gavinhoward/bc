@@ -178,6 +178,10 @@ This `bc` can be used as a drop-in replacement for any existing `bc`. This `bc`
 is also compatible with MinGW toolchains, though history is not supported on
 Windows.
 
+In addition, this `bc` is considered complete; i.e., there will be no more
+releases with additional features. However, it *is* actively maintained, so if
+any bugs are found, they will be fixed in new releases.
+
 ## Comparison to GNU `bc`
 
 This `bc` compares favorably to GNU `bc`.
