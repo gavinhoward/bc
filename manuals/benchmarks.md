@@ -21,9 +21,9 @@ For GNU `bc`:
 ```
 Running bc script: add.bc
 
-real 2.24
-user 1.13
-sys 1.11
+real 2.23
+user 1.23
+sys 1.00
 ```
 
 For this `bc`:
@@ -31,8 +31,8 @@ For this `bc`:
 ```
 Running bc script: add.bc
 
-real 1.32
-user 1.30
+real 0.91
+user 0.88
 sys 0.02
 ```
 
@@ -49,9 +49,9 @@ For GNU `bc`:
 ```
 Running bc script: subtract.bc
 
-real 2.28
-user 1.33
-sys 0.94
+real 2.29
+user 1.19
+sys 1.09
 ```
 
 For this `bc`:
@@ -59,9 +59,9 @@ For this `bc`:
 ```
 Running bc script: subtract.bc
 
-real 1.37
-user 1.34
-sys 0.02
+real 0.94
+user 0.91
+sys 0.03
 ```
 
 ### Multiplication
@@ -77,9 +77,9 @@ For GNU `bc`:
 ```
 Running bc script: multiply.bc
 
-real 6.02
-user 4.06
-sys 1.92
+real 5.92
+user 3.94
+sys 1.97
 ```
 
 For this `bc`:
@@ -87,9 +87,9 @@ For this `bc`:
 ```
 Running bc script: multiply.bc
 
-real 2.59
-user 2.53
-sys 0.05
+real 2.07
+user 2.01
+sys 0.06
 ```
 
 ### Division
@@ -106,8 +106,8 @@ For GNU `bc`:
 Running bc script: divide.bc
 
 real 2.94
-user 1.85
-sys 1.09
+user 1.82
+sys 1.12
 ```
 
 For this `bc`:
@@ -115,9 +115,9 @@ For this `bc`:
 ```
 Running bc script: divide.bc
 
-real 1.91
-user 1.90
-sys 0.00
+real 1.39
+user 1.37
+sys 0.01
 ```
 
 ### Power
@@ -131,8 +131,8 @@ printf '1234567890^100000; halt\n' | time -p [bc] -lq > /dev/null
 For GNU `bc`:
 
 ```
-real 11.81
-user 11.80
+real 11.83
+user 11.82
 sys 0.00
 ```
 
@@ -161,7 +161,7 @@ patch was applied:
  
 -hz = read();
 -timeconst(hz)
-+for (i = 0; i <= 10000; ++i) {
++for (i = 0; i <= 50000; ++i) {
 +	timeconst(i)
 +}
 +
@@ -177,16 +177,16 @@ time -p [bc] ../timeconst.bc > /dev/null
 For GNU `bc`:
 
 ```
-real 3.03
-user 2.90
-sys 0.13
+real 15.49
+user 14.88
+sys 0.60
 ```
 
 For this `bc`:
 
 ```
-real 2.64
-user 2.64
+real 10.69
+user 10.69
 sys 0.00
 ```
 
@@ -214,16 +214,16 @@ time -p [bc] ../test.bc > /dev/null
 For GNU `bc`:
 
 ```
-real 13.46
-user 13.46
-sys 0.00
+real 13.59
+user 13.45
+sys 0.06
 ```
 
 For this `bc`:
 
 ```
-real 24.72
-user 24.72
+real 20.78
+user 20.77
 sys 0.00
 ```
 
@@ -252,28 +252,27 @@ time -p [bc] ../test2.bc > /dev/null
 For GNU `bc`:
 
 ```
-real 53.85
-user 39.50
-sys 14.34
+real 13.84
+user 13.84
+sys 0.00
 ```
 
 For this `bc`:
 
 ```
-real 26.61
-user 26.58
-sys 0.03
+real 14.65
+user 14.65
+sys 0.00
 ```
 
-It seems that both `bc`'s run `for` loops faster than `while` loops. I don't
-know why my `bc` does that because both loops are using the same code underneath
-the hood.
+It seems that my `bc` runs `for` loops faster than `while` loops. I don't know
+why it does that because both loops are using the same code underneath the hood.
 
 Note that, when running the benchmarks, the optimization used is not the one I
 recommend, which is `-O3 -flto -march=native`. This `bc` separates its code into
 modules that, when optimized at link time, removes a lot of the inefficiency
 that comes from function overhead. This is most keenly felt with one function:
-`bc_vec_item()`, which should just turn into one instruction (on `x86_64`) when
+`bc_vec_item()`, which should turn into just one instruction (on `x86_64`) when
 optimized at link time and inlined. There are other functions that matter as
 well.
 
@@ -283,25 +282,25 @@ follows.
 For the first script:
 
 ```
-real 1.88
-user 1.88
+real 8.76
+user 8.75
 sys 0.00
 ```
 
 For the second script:
 
 ```
-real 19.43
-user 19.43
+real 16.60
+user 16.60
 sys 0.00
 ```
 
 For the third script:
 
 ```
-real 20.58
-user 20.53
-sys 0.03
+real 11.92
+user 11.92
+sys 0.00
 ```
 
 This is more competitive.
