@@ -60,6 +60,9 @@ The following are the options that dc(1) accepts.
     do not want a prompt or are not used to having them in `dc`. Most of those
     users would want to put this option in `DC_ENV_ARGS`.
 
+    If the prompt has been disabled while building bc(1), this option is a
+    no-op.
+
     This is a **non-portable extension**.
 
   * `-x` `--extended-register`:

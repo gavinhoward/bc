@@ -98,6 +98,9 @@ The following are the options that bc(1) accepts.
     do not want a prompt or are not used to having them in `bc`. Most of those
     users would want to put this option in `BC_ENV_ARGS`.
 
+    If the prompt has been disabled while building bc(1), this option is a
+    no-op.
+
     This is a **non-portable extension**.
 
   * `-q`, `--quiet`:

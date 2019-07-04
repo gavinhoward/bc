@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "DC" "1" "June 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "DC" "1" "July 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
@@ -45,6 +45,9 @@ This is a \fBnon\-portable extension\fR\.
 .TP
 \fB\-P\fR, \fB\-\-no\-prompt\fR
 Disables the prompt in interactive mode\. This is mostly for those users that do not want a prompt or are not used to having them in \fBdc\fR\. Most of those users would want to put this option in \fBDC_ENV_ARGS\fR\.
+.
+.IP
+If the prompt has been disabled while building bc(1), this option is a no\-op\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
