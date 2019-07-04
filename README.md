@@ -180,7 +180,8 @@ Windows.
 
 In addition, this `bc` is considered complete; i.e., there will be no more
 releases with additional features. However, it *is* actively maintained, so if
-any bugs are found, they will be fixed in new releases.
+any bugs are found, they will be fixed in new releases. Also, additional
+translations will also be added as they are provided.
 
 ## Comparison to GNU `bc`
 
