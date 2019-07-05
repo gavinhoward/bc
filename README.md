@@ -104,6 +104,12 @@ other locations, use the `PREFIX` environment variable when running
 
 ### Package and Distro Maintainers
 
+#### Recommended Compiler
+
+When I ran benchmarks with my `bc` compiled under `clang`, it performed much
+better than when compiled under `gcc`. I recommend compiling this `bc` with
+`clang`.
+
 #### Recommended Optimizations
 
 I wrote this `bc` with Separation of Concerns, which means that there are many
