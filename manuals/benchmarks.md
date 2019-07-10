@@ -11,7 +11,7 @@ directory is the root directory of this repository. Also, this `bc` was built at
 Note: some mistakes were made when updating these benchmarks for `2.1.0`.
 First, I did not update this `bc`'s version in this file. Second, I ran this
 `bc` after compiling with `clang` when the GNU `bc` was almost certainly
-compiled with `gcc`.
+compiled with `gcc`. Those mistakes have been fixed.
 
 ### Addition
 
