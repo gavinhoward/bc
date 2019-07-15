@@ -77,7 +77,7 @@ else
 	read_expr="${read_call}"
 fi
 
-printf 'Running %s read...\n' "$d"
+printf 'Running %s read...' "$d"
 
 while read line; do
 
@@ -86,9 +86,11 @@ while read line; do
 
 done < "$name"
 
+printf 'pass\n'
+
 set +e
 
-printf 'Running %s read errors...\n' "$d"
+printf 'Running %s read errors...' "$d"
 
 while read line; do
 
@@ -99,7 +101,9 @@ while read line; do
 
 done < "$errors"
 
-printf 'Running %s empty read...\n' "$d"
+printf 'pass\n'
+
+printf 'Running %s empty read...' "$d"
 
 read_test=$(printf '%s\n' "$read_call")
 
@@ -108,7 +112,9 @@ err="$?"
 
 checktest "$d" "$err" "$read_test" "$out" "$exebase"
 
-printf 'Running %s read EOF...\n' "$d"
+printf 'pass\n'
+
+printf 'Running %s read EOF...' "$d"
 
 read_test=$(printf '%s' "$read_call")
 
@@ -116,3 +122,5 @@ printf '%s' "$read_test" | "$exe" "$@" "$opts" 2> "$out" > /dev/null
 err="$?"
 
 checktest "$d" "$err" "$read_test" "$out" "$exebase"
+
+printf 'pass\n'

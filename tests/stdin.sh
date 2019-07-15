@@ -62,10 +62,12 @@ fi
 
 rm -f "$out"
 
-printf 'Running %s stdin tests...\n' "$d"
+printf 'Running %s stdin tests...' "$d"
 
 cat "$testdir/$d/stdin.txt" | "$exe" "$@" "$options" > "$out" 2> /dev/null
 
 diff "$testdir/$d/stdin_results.txt" "$out"
 
 rm -f "$out1"
+
+printf 'pass\n'

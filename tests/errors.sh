@@ -92,7 +92,7 @@ for testfile in $testdir/$d/*errors.txt; do
 
 	base=$(basename "$testfile")
 	base="${base%.*}"
-	printf 'Running %s %s...\n' "$d" "$base"
+	printf 'Running %s %s...' "$d" "$base"
 
 	while read -r line; do
 
@@ -105,22 +105,28 @@ for testfile in $testdir/$d/*errors.txt; do
 
 	done < "$testfile"
 
+	printf 'pass\n'
+
 done
 
 for testfile in $testdir/$d/errors/*.txt; do
 
-	printf 'Running %s error file %s...\n' "$d" "$testfile"
+	printf 'Running %s error file %s...' "$d" "$testfile"
 
 	printf '%s\n' "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
 	err="$?"
 
 	checktest "$d" "$err" "$testfile" "$out" "$exebase"
 
-	printf 'Running %s error file %s through cat...\n' "$d" "$testfile"
+	printf 'pass\n'
+
+	printf 'Running %s error file %s through cat...' "$d" "$testfile"
 
 	cat "$testfile" | "$exe" "$@" $opts 2> "$out" > /dev/null
 	err="$?"
 
 	checkcrash "$d" "$err" "$testfile"
+
+	printf 'pass\n'
 
 done

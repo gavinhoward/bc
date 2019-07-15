@@ -118,12 +118,13 @@ elif [ "$generate" -eq 0 ]; then
 	printf 'Skipping %s script %s\n' "$d" "$s"
 	exit 0
 else
-	printf 'Generating %s results...\n' "$f"
+	printf 'Generating %s results...' "$f"
 	printf '%s\n' "$halt" | "$d" "$s" > "$results"
+	printf '\n'
 	res="$results"
 fi
 
-printf 'Running %s script: %s\n' "$d" "$f"
+printf 'Running %s script %s...' "$d" "$f"
 
 if [ "$time_tests" -ne 0 ]; then
 	printf '\n'
@@ -136,3 +137,5 @@ fi
 diff "$res" "$out"
 
 rm -f "$out"
+
+printf 'pass\n'

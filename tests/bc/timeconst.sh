@@ -59,7 +59,7 @@ if [ ! -f "$timeconst" ]; then
 	exit 0
 fi
 
-printf 'Running %s...\n' "$base"
+printf 'Running %s...' "$base"
 
 nums=$(printf 'for (i = 0; i <= 1000; ++i) { i }\n' | bc)
 
@@ -70,7 +70,7 @@ for i in $nums; do
 	err="$?"
 
 	if [ "$err" -ne 0 ]; then
-		printf 'Other bc is not GNU compatible. Skipping...\n'
+		printf '\nOther bc is not GNU compatible. Skipping...\n'
 		exit 0
 	fi
 
@@ -81,7 +81,7 @@ for i in $nums; do
 	error="$?"
 
 	if [ "$error" -ne 0 ]; then
-		printf 'Failed on input: %s\n' "$i"
+		printf '\nFailed on input: %s\n' "$i"
 		exit "$error"
 	fi
 
@@ -89,3 +89,5 @@ done
 
 rm -f "$out1"
 rm -f "$out2"
+
+printf 'pass\n'

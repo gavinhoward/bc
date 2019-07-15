@@ -126,7 +126,7 @@ else
 	num="$num pR"
 fi
 
-printf '\nRunning %s quit test...\n' "$d"
+printf '\nRunning %s quit test...' "$d"
 
 printf '%s\n' "$halt" | "$exe" "$@" > /dev/null 2>&1
 
@@ -134,13 +134,15 @@ if [ "$d" = bc ]; then
 	printf '%s\n' "quit" | "$exe" "$@" > /dev/null 2>&1
 fi
 
+printf 'pass\n'
+
 base=$(basename "$exe")
 
 if [ "$base" != "bc" -a "$base" != "dc" ]; then
 	exit 0
 fi
 
-printf 'Running %s environment var tests...\n' "$d"
+printf 'Running %s environment var tests...' "$d"
 
 if [ "$d" = "bc" ]; then
 	export BC_ENV_ARGS=" -l -q"
@@ -154,10 +156,12 @@ else
 	"$exe" -e 4pR "$@" > /dev/null
 fi
 
+printf 'pass\n'
+
 out1="$testdir/../.log_$d.txt"
 out2="$testdir/../.log_${d}_test.txt"
 
-printf 'Running %s line length tests...\n' "$d"
+printf 'Running %s line length tests...' "$d"
 
 printf '%s\n' "$numres" > "$out1"
 
@@ -173,7 +177,9 @@ printf '%s\n' "$num" | "$exe" "$@" > "$out2"
 
 diff "$out1" "$out2"
 
-printf 'Running %s arg tests...\n' "$d"
+printf 'pass\n'
+
+printf 'Running %s arg tests...' "$d"
 
 f="$testdir/$d/add.txt"
 exprs=$(cat "$f")
@@ -221,14 +227,18 @@ err="$?"
 
 checktest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
 
-printf 'Running %s directory test...\n' "$d"
+printf 'pass\n'
+
+printf 'Running %s directory test...' "$d"
 
 "$exe" "$@" "$testdir" > /dev/null 2> "$out2"
 err="$?"
 
 checktest "$d" "$err" "directory" "$out2" "$d"
 
-printf 'Running %s binary file test...\n' "$d"
+printf 'pass\n'
+
+printf 'Running %s binary file test...' "$d"
 
 bin="/bin/sh"
 
@@ -237,22 +247,30 @@ err="$?"
 
 checktest "$d" "$err" "binary file" "$out2" "$d"
 
-printf 'Running %s binary stdin test...\n' "$d"
+printf 'pass\n'
+
+printf 'Running %s binary stdin test...' "$d"
 
 cat "$bin" | "$exe" "$@" > /dev/null 2> "$out2"
 err="$?"
 
 checktest "$d" "$err" "binary stdin" "$out2" "$d"
 
+printf 'pass\n'
+
 if [ "$d" = "bc" ]; then
 
-	printf 'Running %s limits tests...\n' "$d"
+	printf 'Running %s limits tests...' "$d"
 	printf 'limits\n' | "$exe" "$@" > "$out2" /dev/null 2>&1
 
 	if [ ! -s "$out2" ]; then
 		err_exit "$d did not produce output on the limits test" 1
 	fi
 
+	printf 'pass\n'
+
 fi
+
+printf '\nAll %s tests passed.\n' "$d"
 
 printf '\n%s\n' "$stars"

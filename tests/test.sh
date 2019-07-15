@@ -113,7 +113,7 @@ fi
 
 export $var=string
 
-printf 'Running %s %s...\n' "$d" "$t"
+printf 'Running %s %s...' "$d" "$t"
 
 if [ "$time_tests" -ne 0 ]; then
 	printf '\n'
@@ -126,3 +126,5 @@ fi
 diff "$results" "$out"
 
 rm -f "$out"
+
+printf 'pass\n'
