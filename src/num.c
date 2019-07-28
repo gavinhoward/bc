@@ -119,26 +119,53 @@ static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
 	return i + 1;
 }
 
-static BcBigDig bc_num_addDigit(BcDig *restrict num, BcBigDig d, BcBigDig c) {
-	d += c;
-	*num = (BcDig) (d % BC_BASE_POW);
-	assert(*num >= 0 && *num < BC_BASE_POW);
-	return d / BC_BASE_POW;
+//static BcBigDig bc_num_addDigit(BcDig *restrict num, BcBigDig d, BcBigDig c) {
+//	d += c;
+//	*num = (BcDig) (d % BC_BASE_POW);
+//	assert(*num >= 0 && *num < BC_BASE_POW);
+//	return d / BC_BASE_POW;
+//}
+
+static BcDig bc_num_addDigits(BcDig a, BcDig b, bool *carry) {
+	assert((BcBigDig)BC_BASE_POW * 2 == (BcDig)BC_BASE_POW * 2);
+	assert(a < BC_BASE_POW);
+	assert(b < BC_BASE_POW);
+	assert(*carry <= 1);
+
+	a += b + *carry;
+	*carry = a >= BC_BASE_POW;
+	if (*carry != 0) a -= BC_BASE_POW;
+
+	assert(0 <= a);
+	assert(a < BC_BASE_POW);
+	return a;
+}
+
+static BcDig bc_num_subDigits(BcDig a, BcDig b, bool *carry) {
+	assert(a < BC_BASE_POW);
+	assert(b < BC_BASE_POW);
+	assert(*carry <= 1);
+
+	b += *carry;
+	*carry = a < b;
+	if (*carry != 0) a += BC_BASE_POW;
+
+	assert(0 <= a - b);
+	assert(a - b < BC_BASE_POW);
+	return a - b;
 }
 
 static BcStatus bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
                                  size_t len)
 {
 	size_t i;
-	BcBigDig carry = 0;
+	bool carry = false;
 
-	for (i = 0; BC_NO_SIG && i < len; ++i) {
-		BcBigDig in = ((BcBigDig) a[i]) + ((BcBigDig) b[i]);
-		carry = bc_num_addDigit(a + i, in, carry);
-	}
+	for (i = 0; BC_NO_SIG && i < len; ++i)
+		a[i] = bc_num_addDigits(a[i], b[i], &carry);
 
 	for (; BC_NO_SIG && carry; ++i)
-		carry = bc_num_addDigit(a + i, (BcBigDig) a[i], carry);
+		a[i] = bc_num_addDigits(a[i], 0, &carry);
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -147,29 +174,13 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
                                  size_t len)
 {
 	size_t i;
-	BcBigDig acc;
 	bool carry = false;
 
-	for (i = 0; BC_NO_SIG && i < len; ++i) {
+	for (i = 0; BC_NO_SIG && i < len; ++i)
+		a[i] = bc_num_subDigits(a[i], b[i], &carry);
 
-		BcBigDig sub;
-
-		acc = (BcBigDig) a[i];
-		sub = ((BcBigDig) b[i]) + carry;
-
-		carry = (acc < sub);
-		acc += carry ? BC_BASE_POW : 0;
-
-		assert(acc - sub < BC_BASE_POW);
-
-		a[i] = (BcDig) (acc - sub);
-	}
-
-	for (; BC_NO_SIG && carry; ++i) {
-		acc = (BcBigDig) a[i];
-		carry = (acc == 0);
-		a[i] = (BcDig) (carry ? BC_BASE_POW - 1 : acc - 1);
-	}
+	for (; BC_NO_SIG && carry; ++i)
+		a[i] = bc_num_subDigits(a[i], 0, &carry);
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
@@ -566,7 +577,8 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
 	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
-	BcBigDig carry;
+	//BcBigDig carry;
+	bool carry;
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
@@ -618,12 +630,14 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 
 	for (carry = 0, i = 0; BC_NO_SIG && i < min_rdx + min_int; ++i) {
-		BcBigDig in = ((BcBigDig) ptr_a[i]) + ((BcBigDig) ptr_b[i]);
-		carry = bc_num_addDigit(ptr_c + i, in, carry);
+		//BcBigDig in = ((BcBigDig) ptr_a[i]) + ((BcBigDig) ptr_b[i]);
+		//carry = bc_num_addDigit(ptr_c + i, in, carry);
+		ptr_c[i] = bc_num_addDigits(ptr_a[i], ptr_b[i], &carry);
 	}
 
 	for (; BC_NO_SIG && i < max + min_rdx; ++i)
-		carry = bc_num_addDigit(ptr_c + i, (BcBigDig) ptr[i], carry);
+		//carry = bc_num_addDigit(ptr_c + i, (BcBigDig) ptr[i], carry);
+		ptr_c[i] = bc_num_addDigits(ptr[i], 0, &carry);
 
 	c->len += i;
 
