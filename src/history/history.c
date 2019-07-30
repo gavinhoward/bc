@@ -997,8 +997,45 @@ static BcStatus bc_history_escape(BcHistory *h) {
 		}
 		// ESC O sequences.
 		else if (c == 'O') {
-			if (seq[1] == 'H') s = bc_history_edit_home(h);
-			else if (seq[1] == 'F') s = bc_history_edit_end(h);
+
+			switch (seq[1]) {
+
+				case 'A':
+				{
+					s = bc_history_edit_next(h, BC_HISTORY_PREV);
+					break;
+				}
+
+				case 'B':
+				{
+					s = bc_history_edit_next(h, BC_HISTORY_NEXT);
+					break;
+				}
+
+				case 'C':
+				{
+					s = bc_history_edit_right(h);
+					break;
+				}
+
+				case 'D':
+				{
+					s = bc_history_edit_left(h);
+					break;
+				}
+
+				case 'F':
+				{
+					s = bc_history_edit_end(h);
+					break;
+				}
+
+				case 'H':
+				{
+					s = bc_history_edit_home(h);
+					break;
+				}
+			}
 		}
 	}
 
