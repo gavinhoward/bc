@@ -1155,7 +1155,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 				break;
 #else // BC_ENABLE_SIGNALS
-				if (BC_ERR(BC_HIST_BAD_WRITE("\n", 1)))
+				if (BC_ERR(BC_HIST_WRITE("\n", 1)))
 					bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
 				// Make sure the terminal is back to normal before exiting.
