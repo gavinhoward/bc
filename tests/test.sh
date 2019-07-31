@@ -98,13 +98,15 @@ if [ ! -f "$name" ]; then
 		exit 0
 	fi
 
-	printf 'Generating %s %s...\n' "$d" "$t"
+	printf 'Generating %s %s...' "$d" "$t"
 	"$testdir/$d/scripts/$t.$d" > "$name"
+	printf 'done\n'
 fi
 
 if [ ! -f "$results" ]; then
-	printf 'Generating %s %s results...\n' "$d" "$t"
+	printf 'Generating %s %s results...' "$d" "$t"
 	printf '%s\n' "$halt" | "$d" $options "$name" > "$results"
+	printf 'done\n'
 fi
 
 if [ "$d" = "dc" ]; then

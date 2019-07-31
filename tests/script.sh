@@ -120,7 +120,7 @@ elif [ "$generate" -eq 0 ]; then
 else
 	printf 'Generating %s results...' "$f"
 	printf '%s\n' "$halt" | "$d" "$s" > "$results"
-	printf '\n'
+	printf 'done\n'
 	res="$results"
 fi
 
