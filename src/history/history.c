@@ -1002,13 +1002,13 @@ static BcStatus bc_history_escape(BcHistory *h) {
 
 				case 'A':
 				{
-					s = bc_history_edit_next(h, BC_HISTORY_PREV);
+					s = bc_history_edit_next(h, BC_HIST_PREV);
 					break;
 				}
 
 				case 'B':
 				{
-					s = bc_history_edit_next(h, BC_HISTORY_NEXT);
+					s = bc_history_edit_next(h, BC_HIST_NEXT);
 					break;
 				}
 
