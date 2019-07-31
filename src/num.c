@@ -813,11 +813,7 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	bc_num_init(&temp, max);
 
 	bc_num_split(a, max2, &l1, &h1);
-	bc_num_clean(&l1);
-	bc_num_clean(&h1);
 	bc_num_split(b, max2, &l2, &h2);
-	bc_num_clean(&l2);
-	bc_num_clean(&h2);
 
 	bc_num_expand(c, max);
 	c->len = max;
