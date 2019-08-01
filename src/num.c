@@ -2315,23 +2315,19 @@ size_t bc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale) {
 #ifndef USE_SE_ADD
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_a : bc_num_s;
-	BC_UNUSED(scale);
 	return bc_num_binary(a, b, c, false, op, bc_num_addReq(a, b, scale));
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_s : bc_num_a;
-	BC_UNUSED(scale);
 	return bc_num_binary(a, b, c, true, op, bc_num_addReq(a, b, scale));
 }
 #else
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	BC_UNUSED(scale);
 	return bc_num_binary(a, b, c, false, bc_num_as, bc_num_addReq(a, b, scale));
 }
 
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	BC_UNUSED(scale);
 	return bc_num_binary(a, b, c, true, bc_num_as, bc_num_addReq(a, b, scale));
 }
 #endif
