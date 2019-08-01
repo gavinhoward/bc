@@ -150,7 +150,7 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
 	BcBigDig acc;
 	bool carry = false;
 
-	for (i = 0; i < len; ++i) {
+	for (i = 0; BC_NO_SIG && i < len; ++i) {
 
 		BcBigDig sub;
 
@@ -165,11 +165,10 @@ static BcStatus bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
 		a[i] = (BcDig) (acc - sub);
 	}
 
-	while (carry) {
+	for (; BC_NO_SIG && carry; ++i) {
 		acc = (BcBigDig) a[i];
 		carry = (acc == 0);
 		a[i] = (BcDig) (carry ? BC_BASE_POW - 1 : acc - 1);
-		i += 1;
 	}
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
