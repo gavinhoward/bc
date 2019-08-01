@@ -725,10 +725,15 @@ static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 
 			sum += ((BcBigDig) ptr_a[j]) * ((BcBigDig) ptr_b[k]);
 
-			if (sum >= BC_BASE_POW) {
+			if (sum >= ((BcBigDig) BC_BASE_POW) * BC_BASE_POW) {
 				carry += sum / BC_BASE_POW;
 				sum %= BC_BASE_POW;
 			}
+		}
+
+		if (sum >= BC_BASE_POW) {
+			carry += sum / BC_BASE_POW;
+			sum %= BC_BASE_POW;
 		}
 
 		ptr_c[i] = (BcDig) sum;
