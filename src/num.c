@@ -80,7 +80,7 @@ static void bc_num_zero(BcNum *restrict n) {
 }
 
 void bc_num_one(BcNum *restrict n) {
-	bc_num_setToZero(n, 0);
+	bc_num_zero(n);
 	n->len = 1;
 	n->num[0] = 1;
 }
@@ -869,7 +869,7 @@ static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BcNum cpa, cpb;
 	size_t ascale, bscale, ardx, brdx, azero = 0, bzero = 0, zero, len, rscale;
 
-	bc_num_setToZero(c, 0);
+	bc_num_zero(c);
 	ascale = a->scale;
 	bscale = b->scale;
 	scale = BC_MAX(scale, ascale);
@@ -1984,8 +1984,7 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 	assert(n != NULL);
 	n->num = num;
 	n->cap = cap;
-	n->rdx = n->scale = n->len = 0;
-	n->neg = false;
+	bc_num_zero(n);
 }
 
 void bc_num_init(BcNum *restrict n, size_t req) {
