@@ -568,146 +568,6 @@ static BcStatus bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-#ifndef USE_SE_ADD
-static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
-
-	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
-	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
-	bool carry;
-
-	// Because this function doesn't need to use scale (per the bc spec),
-	// I am hijacking it to say whether it's doing an add or a subtract.
-
-	if (BC_NUM_ZERO(a)) {
-		bc_num_copy(c, b);
-		if (sub && BC_NUM_NONZERO(c)) c->neg = !c->neg;
-		return BC_STATUS_SUCCESS;
-	}
-	if (BC_NUM_ZERO(b)) {
-		bc_num_copy(c, a);
-		return BC_STATUS_SUCCESS;
-	}
-
-	c->neg = a->neg;
-	c->rdx = BC_MAX(a->rdx, b->rdx);
-	c->scale = BC_MAX(a->scale, b->scale);
-	min_rdx = BC_MIN(a->rdx, b->rdx);
-
-	if (a->rdx > b->rdx) {
-		diff = a->rdx - b->rdx;
-		ptr = a->num;
-		ptr_a = a->num + diff;
-		ptr_b = b->num;
-	}
-	else {
-		diff = b->rdx - a->rdx;
-		ptr = b->num;
-		ptr_a = a->num;
-		ptr_b = b->num + diff;
-	}
-
-	for (ptr_c = c->num, i = 0; i < diff; ++i) ptr_c[i] = ptr[i];
-
-	c->len = diff;
-	ptr_c += diff;
-	a_int = bc_num_int(a);
-	b_int = bc_num_int(b);
-
-	if (a_int > b_int) {
-		min_int = b_int;
-		max = a_int;
-		ptr = ptr_a;
-	}
-	else {
-		min_int = a_int;
-		max = b_int;
-		ptr = ptr_b;
-	}
-
-	for (carry = 0, i = 0; BC_NO_SIG && i < min_rdx + min_int; ++i)
-		ptr_c[i] = bc_num_addDigits(ptr_a[i], ptr_b[i], &carry);
-
-	for (; BC_NO_SIG && i < max + min_rdx; ++i)
-		ptr_c[i] = bc_num_addDigits(ptr[i], 0, &carry);
-
-	c->len += i;
-
-	if (carry) c->num[c->len++] = (BcDig) carry;
-
-	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
-}
-
-static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
-
-	BcStatus s;
-	ssize_t cmp;
-	BcNum *minuend, *subtrahend;
-	size_t start;
-	bool aneg, bneg, neg;
-
-	// Because this function doesn't need to use scale (per the bc spec),
-	// I am hijacking it to say whether it's doing an add or a subtract.
-
-	if (BC_NUM_ZERO(a)) {
-		bc_num_copy(c, b);
-		if (sub && BC_NUM_NONZERO(c)) c->neg = !c->neg;
-		return BC_STATUS_SUCCESS;
-	}
-	if (BC_NUM_ZERO(b)) {
-		bc_num_copy(c, a);
-		return BC_STATUS_SUCCESS;
-	}
-
-	aneg = a->neg;
-	bneg = b->neg;
-	a->neg = b->neg = false;
-
-	cmp = bc_num_cmp(a, b);
-
-	a->neg = aneg;
-	b->neg = bneg;
-
-#if BC_ENABLE_SIGNALS
-	if (BC_NUM_CMP_SIGNAL(cmp)) return BC_STATUS_SIGNAL;
-#endif // BC_ENABLE_SIGNALS
-
-	if (!cmp) {
-		bc_num_setToZero(c, BC_MAX(a->rdx, b->rdx));
-		return BC_STATUS_SUCCESS;
-	}
-
-	if (cmp > 0) {
-		neg = a->neg;
-		minuend = a;
-		subtrahend = b;
-	}
-	else {
-		neg = b->neg;
-		if (sub) neg = !neg;
-		minuend = b;
-		subtrahend = a;
-	}
-
-	bc_num_copy(c, minuend);
-	c->neg = neg;
-
-	if (c->scale < subtrahend->scale) {
-		bc_num_extend(c, subtrahend->scale - c->scale);
-		start = 0;
-	}
-	else start = c->rdx - subtrahend->rdx;
-
-	memset(c->num + c->len, 0, BC_NUM_SIZE(c->cap - c->len));
-
-	s = bc_num_subArrays(c->num + start, subtrahend->num, subtrahend->len);
-
-	bc_num_clean(c);
-
-	return s;
-}
-
-#else
-
 static BcStatus bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr_c, *ptr_l, *ptr_r;
@@ -836,7 +696,6 @@ static BcStatus bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
-#endif
 
 static BcStatus bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
@@ -2312,17 +2171,6 @@ size_t bc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale) {
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-#ifndef USE_SE_ADD
-BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_a : bc_num_s;
-	return bc_num_binary(a, b, c, false, op, bc_num_addReq(a, b, scale));
-}
-
-BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	BcNumBinaryOp op = (!a->neg == !b->neg) ? bc_num_s : bc_num_a;
-	return bc_num_binary(a, b, c, true, op, bc_num_addReq(a, b, scale));
-}
-#else
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	return bc_num_binary(a, b, c, false, bc_num_as, bc_num_addReq(a, b, scale));
 }
@@ -2330,7 +2178,6 @@ BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	return bc_num_binary(a, b, c, true, bc_num_as, bc_num_addReq(a, b, scale));
 }
-#endif
 
 BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 	return bc_num_binary(a, b, c, scale, bc_num_m, bc_num_mulReq(a, b, scale));
