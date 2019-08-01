@@ -364,11 +364,17 @@ static void bc_num_retireMul(BcNum *restrict n, size_t scale,
 static void bc_num_split(const BcNum *restrict n, size_t idx,
                          BcNum *restrict a, BcNum *restrict b)
 {
+	assert(BC_NUM_ZERO(a));
+	assert(BC_NUM_ZERO(b));
+
 	if (idx < n->len) {
 
 		b->len = n->len - idx;
 		a->len = idx;
 		a->scale = a->rdx = b->scale = b->rdx = 0;
+
+		assert(a->cap >= a->len);
+		assert(b->cap >= b->len);
 
 		memcpy(b->num, n->num + idx, BC_NUM_SIZE(b->len));
 		memcpy(a->num, n->num, BC_NUM_SIZE(idx));
