@@ -119,39 +119,34 @@ static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
 	return i + 1;
 }
 
-//static BcBigDig bc_num_addDigit(BcDig *restrict num, BcBigDig d, BcBigDig c) {
-//	d += c;
-//	*num = (BcDig) (d % BC_BASE_POW);
-//	assert(*num >= 0 && *num < BC_BASE_POW);
-//	return d / BC_BASE_POW;
-//}
-
 static BcDig bc_num_addDigits(BcDig a, BcDig b, bool *carry) {
-	assert((BcBigDig)BC_BASE_POW * 2 == (BcDig)BC_BASE_POW * 2);
+
+	assert(((BcBigDig) BC_BASE_POW) * 2 == ((BcDig) BC_BASE_POW) * 2);
 	assert(a < BC_BASE_POW);
 	assert(b < BC_BASE_POW);
-	assert(*carry <= 1);
 
 	a += b + *carry;
-	*carry = a >= BC_BASE_POW;
-	if (*carry != 0) a -= BC_BASE_POW;
+	*carry = (a >= BC_BASE_POW);
+	if (*carry) a -= BC_BASE_POW;
 
-	assert(0 <= a);
+	assert(a >= 0);
 	assert(a < BC_BASE_POW);
+
 	return a;
 }
 
 static BcDig bc_num_subDigits(BcDig a, BcDig b, bool *carry) {
+
 	assert(a < BC_BASE_POW);
 	assert(b < BC_BASE_POW);
-	assert(*carry <= 1);
 
 	b += *carry;
-	*carry = a < b;
-	if (*carry != 0) a += BC_BASE_POW;
+	*carry = (a < b);
+	if (*carry) a += BC_BASE_POW;
 
-	assert(0 <= a - b);
+	assert(a - b >= 0);
 	assert(a - b < BC_BASE_POW);
+
 	return a - b;
 }
 
@@ -577,7 +572,6 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr, *ptr_a, *ptr_b, *ptr_c;
 	size_t i, max, min_rdx, min_int, diff, a_int, b_int;
-	//BcBigDig carry;
 	bool carry;
 
 	// Because this function doesn't need to use scale (per the bc spec),
@@ -629,14 +623,10 @@ static BcStatus bc_num_a(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		ptr = ptr_b;
 	}
 
-	for (carry = 0, i = 0; BC_NO_SIG && i < min_rdx + min_int; ++i) {
-		//BcBigDig in = ((BcBigDig) ptr_a[i]) + ((BcBigDig) ptr_b[i]);
-		//carry = bc_num_addDigit(ptr_c + i, in, carry);
+	for (carry = 0, i = 0; BC_NO_SIG && i < min_rdx + min_int; ++i)
 		ptr_c[i] = bc_num_addDigits(ptr_a[i], ptr_b[i], &carry);
-	}
 
 	for (; BC_NO_SIG && i < max + min_rdx; ++i)
-		//carry = bc_num_addDigit(ptr_c + i, (BcBigDig) ptr[i], carry);
 		ptr_c[i] = bc_num_addDigits(ptr[i], 0, &carry);
 
 	c->len += i;
