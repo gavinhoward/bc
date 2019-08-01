@@ -711,16 +711,13 @@ static BcStatus bc_num_s(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 static BcStatus bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	BcDig *ptr_c, *ptr_l, *ptr_r;
-	size_t i, min_rdx, max_rdx, diff, a_int, b_int, min_len,  max_len, max_int, len_l, len_r;
+	size_t i, min_rdx, max_rdx, diff, a_int, b_int, min_len, max_len, max_int;
+	size_t len_l, len_r;
 	bool b_neg, do_sub, do_rev_sub, carry;
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
 	// Convert substraction to addition of negative second operand.
-
-	// Invert sign of b if it is to be subtracted. This operation must
-	// preced the tests for any of the operands being zero.
-	b_neg = (b->neg != sub);
 
 	if (BC_NUM_ZERO(b)) {
 		bc_num_copy(c, a);
@@ -728,11 +725,11 @@ static BcStatus bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 	if (BC_NUM_ZERO(a)) {
 		bc_num_copy(c, b);
-		c->neg = b_neg;
+		c->neg = (b->neg != sub);
 		return BC_STATUS_SUCCESS;
 	}
 
-	// Actually add the numbers if their signs are equal, else subtract.
+	b_neg = (b->neg != sub);
 	do_sub = (a->neg != b_neg);
 
 	a_int = bc_num_int(a);
@@ -746,88 +743,96 @@ static BcStatus bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	max_len = max_int + max_rdx;
 
 	if (do_sub) {
-		// Check whether b has to be subtracted from a or a from b.
-		if (a_int != b_int)
-			do_rev_sub = a_int < b_int;
+		if (a_int != b_int) do_rev_sub = (a_int < b_int);
 		else if (a->rdx > b->rdx)
-			do_rev_sub = bc_num_compare(a->num + diff, b->num, b->len) < 0;
+			do_rev_sub = (bc_num_compare(a->num + diff, b->num, b->len) < 0);
 		else
-			do_rev_sub = bc_num_compare(a->num, b->num + diff, a->len) <= 0;
+			do_rev_sub = (bc_num_compare(a->num, b->num + diff, a->len) <= 0);
 	}
 	else {
-		// The result array of the addition might come out one element
-		// longer than the biger of the operand arrays.
-		++max_len;
+		max_len += 1;
 		do_rev_sub = false;
 	}
+
 	assert(max_len <= c->cap);
 
 	if (do_rev_sub) {
-		ptr_l = b->num; ptr_r = a->num;
-		len_l = b->len; len_r = a->len;
+		ptr_l = b->num;
+		ptr_r = a->num;
+		len_l = b->len;
+		len_r = a->len;
 	}
 	else {
-		ptr_l = a->num; ptr_r = b->num;
-		len_l = a->len; len_r = b->len;
+		ptr_l = a->num;
+		ptr_r = b->num;
+		len_l = a->len;
+		len_r = b->len;
 	}
-	ptr_c = c->num;
 
+	ptr_c = c->num;
 	carry = false;
+
 	if (diff) {
-		// If the rdx values of the operands do not match, the result will
-		// have low end elements that are the positive or negative trailing
-		// elements of the operand with higher rdx value.
-		if (a->rdx > b->rdx != do_rev_sub) {
-			// !do_rev_sub && a->rdx > b->rdx || do_rev_sub && b->rdx > a->rdx
-			// The left operand has BcDig values that need to be copied,
-			// either from a or from b (in case of a reversed subtraction).
+
+		if ((a->rdx > b->rdx) != do_rev_sub) {
 			memcpy(ptr_c, ptr_l, BC_NUM_SIZE(diff));
 			ptr_l += diff;
 			len_l -= diff;
 		}
 		else {
-			// The right operand has BcDig values that need to be copied
-			// or subtracted from zero (in case of a subtraction).
-			if (do_sub)
-				// do_sub (do_rev_sub && a->rdx > b->rdx || !do_rev_sub && b->rdx > a->rdx)
-				for (i = 0; i < diff; i++) ptr_c[i] = bc_num_subDigits(0, ptr_r[i], &carry);
-			else
-				// !do_sub && b->rdx > a->rdx
-				memcpy(ptr_c, ptr_r, BC_NUM_SIZE(diff));
+
+			if (do_sub) {
+
+				for (i = 0; BC_NO_SIG && i < diff; i++)
+					ptr_c[i] = bc_num_subDigits(0, ptr_r[i], &carry);
+
+				if (BC_SIG) return BC_STATUS_SIGNAL;
+			}
+			else memcpy(ptr_c, ptr_r, BC_NUM_SIZE(diff));
+
 			ptr_r += diff;
 			len_r -= diff;
 		}
+
 		ptr_c += diff;
 	}
+
 	min_len = BC_MIN(len_l, len_r);
 
-	// After dealing with possible low array elements that depend on only one
-	// operand, the actual add or subtract can be performed as if the rdx of
-	// both operands was the same.
-	// Inlining takes care of eliminating constant zero arguments to add/subDigit
-	// (checked in disassembly of resulting bc binary compiled with gcc and clang).
 	if (do_sub) {
-		for (i = 0; i < min_len; i++)		ptr_c[i] = bc_num_subDigits(ptr_l[i], ptr_r[i], &carry);
-		for ( ; i < len_l; i++)			ptr_c[i] = bc_num_subDigits(ptr_l[i], 0, &carry);
-		for ( ; i < len_r; i++)			ptr_c[i] = bc_num_subDigits(0, ptr_r[i], &carry);
-		for ( ; i < max_len - diff; i++)	ptr_c[i] = bc_num_subDigits(0, 0, &carry);
+		for (i = 0; BC_NO_SIG && i < min_len; i++)
+			ptr_c[i] = bc_num_subDigits(ptr_l[i], ptr_r[i], &carry);
+		for (; BC_NO_SIG && i < len_l; i++)
+			ptr_c[i] = bc_num_subDigits(ptr_l[i], 0, &carry);
+		for (; BC_NO_SIG && i < len_r; i++)
+			ptr_c[i] = bc_num_subDigits(0, ptr_r[i], &carry);
+		for (; BC_NO_SIG && i < max_len - diff; i++)
+			ptr_c[i] = bc_num_subDigits(0, 0, &carry);
 	}
 	else {
-		for (i = 0; i < min_len; i++)		ptr_c[i] = bc_num_addDigits(ptr_l[i], ptr_r[i], &carry);
-		for ( ; i < len_l; i++)			ptr_c[i] = bc_num_addDigits(ptr_l[i], 0, &carry);
-		for ( ; i < len_r; i++)			ptr_c[i] = bc_num_addDigits(0, ptr_r[i], &carry);
-		for ( ; i < max_len - diff; i++)	ptr_c[i] = bc_num_addDigits(0, 0, &carry);
+		for (i = 0; BC_NO_SIG && i < min_len; i++)
+			ptr_c[i] = bc_num_addDigits(ptr_l[i], ptr_r[i], &carry);
+		for (; BC_NO_SIG && i < len_l; i++)
+			ptr_c[i] = bc_num_addDigits(ptr_l[i], 0, &carry);
+		for (; BC_NO_SIG && i < len_r; i++)
+			ptr_c[i] = bc_num_addDigits(0, ptr_r[i], &carry);
+		for (; BC_NO_SIG && i < max_len - diff; i++)
+			ptr_c[i] = bc_num_addDigits(0, 0, &carry);
 	}
-	assert(carry == false);
 
-	// The result has the same sign as a, unless the operation was a
-	// reverse subtraction (b - a).
-	c->neg = (a->neg != do_rev_sub);
-	c->len = max_len;
-	c->rdx = max_rdx;
-	c->scale = BC_MAX(a->scale, b->scale);
+	if (BC_NO_SIG) {
 
-	bc_num_clean(c);
+		assert(carry == false);
+
+		// The result has the same sign as a, unless the operation was a
+		// reverse subtraction (b - a).
+		c->neg = (a->neg != do_rev_sub);
+		c->len = max_len;
+		c->rdx = max_rdx;
+		c->scale = BC_MAX(a->scale, b->scale);
+
+		bc_num_clean(c);
+	}
 
 	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
 }
