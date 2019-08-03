@@ -4,9 +4,6 @@
 [![codecov][15]][16]
 [![Coverity Scan Build Status][17]][18]
 
-***Note: This bc is now maintained by [stesser][20] and can be found
-[here][21]***.
-
 This is an implementation of the [POSIX `bc` calculator][12] that implements
 [GNU `bc`][1] extensions, as well as the period (`.`) extension for the BSD
 flavor of `bc`.
@@ -308,5 +305,3 @@ Folders:
 [17]: https://img.shields.io/coverity/scan/16609.svg
 [18]: https://scan.coverity.com/projects/gavinhoward-bc
 [19]: ./manuals/benchmarks.md
-[20]: https://github.com/stesser
-[21]: https://github.com/stesser/bc
