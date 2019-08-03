@@ -77,6 +77,10 @@ usage() {
 	printf '        "@" operator (set number of decimal places), and r(x, p) (rounding\n'
 	printf '        function). Additionally, this option disables the extra printing\n'
 	printf '        functions in the math library.\n'
+	printf '    -f, --force\n'
+	printf '        Force use of all enabled options, even if they do not work. This\n'
+	printf '        option is to allow the maintainer a way to test that certain options\n'
+	printf '        are not failing invisibly. (Development only.)'
 	printf '    -g, --debug\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
@@ -305,8 +309,9 @@ generate_tests=1
 install_manpages=1
 nls=1
 prompt=1
+force=0
 
-while getopts "bBcdDEgGhHk:MNO:PS-" opt; do
+while getopts "bBcdDEfgGhHk:MNO:PS-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -315,6 +320,7 @@ while getopts "bBcdDEgGhHk:MNO:PS-" opt; do
 		d) dc_only=1 ;;
 		D) bc_only=1 ;;
 		E) extra_math=0 ;;
+		f) force=1 ;;
 		g) debug=1 ;;
 		G) generate_tests=0 ;;
 		h) usage ;;
@@ -335,6 +341,7 @@ while getopts "bBcdDEgGhHk:MNO:PS-" opt; do
 				dc-only) dc_only=1 ;;
 				coverage) coverage=1 ;;
 				debug) debug=1 ;;
+				force) force=1 ;;
 				prefix=?*) PREFIX="$LONG_OPTARG" ;;
 				prefix)
 					if [ "$#" -lt 2 ]; then
@@ -645,8 +652,12 @@ if [ "$nls" -ne 0 ]; then
 	# and NLS is not supported on Windows, so disable it.
 	if [ "$err" -ne 0 ]; then
 		printf 'NLS does not work.\n'
-		printf 'Disabling NLS...\n'
-		nls=0
+		if [ $force -eq 0 ]; then
+			printf 'Disabling NLS...\n'
+			nls=0
+		else
+			printf 'Forcing NLS...\n'
+		fi
 	else
 		printf 'NLS works.\n\n'
 
@@ -659,8 +670,12 @@ if [ "$nls" -ne 0 ]; then
 
 		if [ "$err" -ne 0 ]; then
 			printf 'gencat does not work.\n'
-			printf 'Disabling NLS...\n\n'
-			nls=0
+			if [ $force -eq 0 ]; then
+				printf 'Disabling NLS...\n\n'
+				nls=0
+			else
+				printf 'Forcing NLS...\n\n'
+			fi
 		else
 
 			printf 'gencat works.\n\n'
@@ -710,8 +725,12 @@ if [ "$hist" -eq 1 ]; then
 	# and history is not supported on Windows, so disable it.
 	if [ "$err" -ne 0 ]; then
 		printf 'History does not work.\n'
-		printf 'Disabling history...\n'
-		hist=0
+		if [ $force -eq 0 ]; then
+			printf 'Disabling history...\n'
+			hist=0
+		else
+			printf 'Forcing history...\n'
+		fi
 	else
 		printf 'History works.\n'
 	fi

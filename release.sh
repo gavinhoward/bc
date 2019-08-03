@@ -58,7 +58,7 @@ configure() {
 	_configure_CC="$1"
 	shift
 
-	_configure_configure_flags="$1"
+	_configure_configure_flags="-f $1"
 	shift
 
 	_configure_GEN_HOST="$1"
