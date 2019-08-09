@@ -66,6 +66,85 @@ localeexists() {
 	return $?
 }
 
+splitpath() {
+
+	_splitpath_path="$1"
+	shift
+
+	if [ "$_splitpath_path" = "${_splitpath_path#/}" ]; then
+		printf 'Must use absolute paths\n'
+		exit 1
+	fi
+
+	if [ "${_splitpath_path#\n*}" != "$_splitpath_path" ]; then
+		exit 1
+	fi
+
+	_splitpath_list=""
+	_splitpath_item=""
+
+	while [ "$_splitpath_path" != "/" ]; do
+		_splitpath_item=$(basename "$_splitpath_path")
+		_splitpath_list=$(printf '\n%s%s' "$_splitpath_item" "$_splitpath_list")
+		_splitpath_path=$(dirname "$_splitpath_path")
+	done
+
+	if [ "$_splitpath_list" != "/" ]; then
+		_splitpath_list="${_splitpath_list#?}"
+	fi
+
+	printf '%s' "$_splitpath_list"
+}
+
+relpath() {
+
+	_relpath_path1="$1"
+	shift
+		
+	_relpath_path2="$1"
+	shift
+
+	_relpath_nl=$(printf '\nx')
+	_relpath_nl="${_relpath_nl%x}"
+
+	_relpath_splitpath1=`splitpath "$_relpath_path1"`
+	_relpath_splitpath2=`splitpath "$_relpath_path2"`
+
+	_relpath_path=""
+	_relpath_temp1="$_relpath_splitpath1"
+
+	IFS="$_relpath_nl"
+	
+	for _relpath_part in $_relpath_temp1; do
+
+		_relpath_temp2="${_relpath_splitpath2#$_relpath_part$_relpath_nl}"
+
+		if [ "$_relpath_temp2" = "$_relpath_splitpath2" ]; then
+			break
+		fi
+
+		_relpath_splitpath2="$_relpath_temp2"
+		_relpath_splitpath1="${_relpath_splitpath1#$_relpath_part$_relpath_nl}"
+
+	done
+
+	for _relpath_part in $_relpath_splitpath2; do
+		_relpath_path="../$_relpath_path"
+	done
+
+	_relpath_path="${_relpath_path%../}"
+
+	for _relpath_part in $_relpath_splitpath1; do
+		_relpath_path="$_relpath_path$_relpath_part/"
+	done
+
+	_relpath_path="${_relpath_path%/}"
+
+	unset IFS
+
+	printf '%s\n' "$_relpath_path"
+}
+
 script="$0"
 scriptdir=$(dirname "$script")
 
@@ -138,12 +217,13 @@ for file in $locales_dir/*.msg; do
 		linkdir=$(dirname "$file")
 		locale=$(basename "$link" .msg)
 		linksrc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
+		rel=$(relpath "$linksrc" "$loc")
 
 		if [ ! -f "$destdir/$linksrc" ]; then
 			gencatfile "$destdir/$linksrc" "$linkdir/$link"
 		fi
 
-		ln -s "$linksrc" "$loc"
+		ln -s "$rel" "$loc"
 	fi
 
 done
