@@ -47,7 +47,7 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EgGHMNPS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EfgGHMNPS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
 	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage] \\\n'
 	printf '           [--debug --disable-extra-math --disable-generated-tests]   \\\n'
@@ -57,6 +57,7 @@ usage() {
 	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                        \\\n'
 	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]            \\\n'
 	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR]                      \\\n'
+	printf '           [--force]                                                  \\\n'
 	printf '\n'
 	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
