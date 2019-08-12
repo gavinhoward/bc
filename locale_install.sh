@@ -217,7 +217,8 @@ for file in $locales_dir/*.msg; do
 		linkdir=$(dirname "$file")
 		locale=$(basename "$link" .msg)
 		linksrc=$(gen_nlspath "$nlspath" "$locale" "$main_exec")
-		rel=$(relpath "$linksrc" "$loc")
+		relloc="${loc##$destdir/}"
+		rel=$(relpath "$linksrc" "$relloc")
 
 		if [ ! -f "$destdir/$linksrc" ]; then
 			gencatfile "$destdir/$linksrc" "$linkdir/$link"
