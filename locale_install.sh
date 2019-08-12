@@ -223,7 +223,7 @@ for file in $locales_dir/*.msg; do
 			gencatfile "$destdir/$linksrc" "$linkdir/$link"
 		fi
 
-		ln -s "$rel" "$loc"
+		ln -fs "$rel" "$loc"
 	fi
 
 done
