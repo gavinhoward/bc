@@ -426,7 +426,8 @@ while getopts "bBcdDEfgGhHk:MNO:PS-" opt; do
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
 			esac
-			shift ;;
+			shift
+			OPTIND=1 ;;
 		?) usage "Invalid option $opt" ;;
 	esac
 
