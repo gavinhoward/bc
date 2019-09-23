@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BC" "1" "July 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "September 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
@@ -50,7 +50,7 @@ First, if a function is called on startup to turn bc(1) into a number converter,
 \fBalias d2o="bc \-e ibase=A \-e obase=8"; alias h2b="bc \-e ibase=G \-e obase=2"\fR
 .
 .IP
-Second, if a function\'s purpose is to set \fBibase\fR, \fBobase\fR, or \fBscale\fR globally for any other purpose, it could be split into one to three functions (based on how many globals it sets) and each of those functions could return the desired value for a global\.
+Second, if the purpose of a function is to set \fBibase\fR, \fBobase\fR, or \fBscale\fR globally for any other purpose, it could be split into one to three functions (based on how many globals it sets) and each of those functions could return the desired value for a global\.
 .
 .IP
 If this behavior is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see the ENVIRONMENT VARIABLES section for more details)\.
@@ -180,7 +180,7 @@ Identifiers (\fBI\fR) start with a lowercase letter and can be followed by any n
 The \fBscale\fR of an expression is the number of digits in the result of the expression right of the decimal point, and \fBscale\fR is a global variable that sets the precision of any operations, with exceptions\. \fBscale\fR is initially \fB0\fR\. \fBscale\fR cannot be negative\. The max allowable value for \fBscale\fR can be queried in bc(1) programs with the \fBmaxscale()\fR built in function\.
 .
 .P
-bc(1) has both \fBglobal\fR variables and \fBlocal\fR variables\. All \fBlocal\fR variables are local to the function; they are parameters or are introduced in a function\'s \fBauto\fR list (see FUNCTIONS)\. If a variable is accessed which is not a parameter or in the \fBauto\fR list, it is assumed to be \fBglobal\fR\. If a parent function has a \fBlocal\fR variable version of a \fBglobal\fR variable that is accessed by a function that it calls, the value of that \fBglobal\fR variable in the child function is the value of the variable in the parent function, not the value of the actual \fBglobal\fR variable\.
+bc(1) has both \fBglobal\fR variables and \fBlocal\fR variables\. All \fBlocal\fR variables are local to the function; they are parameters or are introduced in the \fBauto\fR list of a function (see FUNCTIONS)\. If a variable is accessed which is not a parameter or in the \fBauto\fR list, it is assumed to be \fBglobal\fR\. If a parent function has a \fBlocal\fR variable version of a \fBglobal\fR variable that is accessed by a function that it calls, the value of that \fBglobal\fR variable in the child function is the value of the variable in the parent function, not the value of the actual \fBglobal\fR variable\.
 .
 .P
 All of the above applies to arrays as well\.
@@ -260,7 +260,7 @@ Array indices (\fBI[E]\fR)\.
 \fBlength(I[])\fR: The number of elements in the array \fBI\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "7." 4
-\fBscale(E)\fR: \fBE\fR\'s \fBscale\fR\.
+\fBscale(E)\fR: The \fBscale\fR of \fBE\fR\.
 .
 .IP "8." 4
 \fBabs(E)\fR: The absolute value of \fBE\fR\. This is a \fBnon\-portable extension\fR\.
@@ -459,7 +459,7 @@ This is only available if bc(1) has been compiled with the extra math option ena
 .
 .TP
 \fB@\fR
-The \fBset precision\fR operator takes two expressions and returns a copy of the first with its \fBscale\fR equal to the value of the second expression\. That could either mean that the number is returned without change (if the first expression\'s \fBscale\fR matches the value of the second expression), extended (if it is less), or truncated (if it is more)\.
+The \fBset precision\fR operator takes two expressions and returns a copy of the first with its \fBscale\fR equal to the value of the second expression\. That could either mean that the number is returned without change (if the \fBscale\fR of the first expression matches the value of the second expression), extended (if it is less), or truncated (if it is more)\.
 .
 .IP
 The second expression must be an integer (no \fBscale\fR) and non\-negative\.
@@ -1367,7 +1367,7 @@ Converting to a hardware integer happens for the second operand of the power (\f
 A parse error occurred\.
 .
 .IP
-Parse errors include unexpected \fBEOF\fR, using an invalid character, failing to find the end of a string or comment, using a token where it\'s invalid, giving an invalid expression, giving an invalid print statement, giving an invalid function definition, attempting to assign to an expression that is not a \fInamed expression\fR, giving an invalid \fBauto\fR list, having a duplicate \fBauto\fR/function parameter, failing to find the end of a code block, attempting to return a value from a \fBvoid\fR function, attempting to use a variable as a reference, and using any extensions when the option \fB\-s\fR or any equivalents were given\.
+Parse errors include unexpected \fBEOF\fR, using an invalid character, failing to find the end of a string or comment, using a token where it is invalid, giving an invalid expression, giving an invalid print statement, giving an invalid function definition, attempting to assign to an expression that is not a \fInamed expression\fR, giving an invalid \fBauto\fR list, having a duplicate \fBauto\fR/function parameter, failing to find the end of a code block, attempting to return a value from a \fBvoid\fR function, attempting to use a variable as a reference, and using any extensions when the option \fB\-s\fR or any equivalents were given\.
 .
 .TP
 \fB3\fR

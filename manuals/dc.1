@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "DC" "1" "July 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "DC" "1" "September 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBdc\fR \- arbitrary\-precision reverse\-Polish notation calculator
@@ -47,7 +47,7 @@ This is a \fBnon\-portable extension\fR\.
 Disables the prompt in interactive mode\. This is mostly for those users that do not want a prompt or are not used to having them in \fBdc\fR\. Most of those users would want to put this option in \fBDC_ENV_ARGS\fR\.
 .
 .IP
-If the prompt has been disabled while building bc(1), this option is a no\-op\.
+If the prompt has been disabled while building dc(1), this option is a no\-op\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -83,7 +83,7 @@ This is a \fBnon\-portable extension\fR\.
 Any non\-error output is written to \fBstdout\fR\.
 .
 .P
-\fBNote\fR: Unlike other dc(1) implementations, this dc(1) will issue a fatal error (see the EXIT STATUS section) if it cannot write to \fBstdout\fR, so if \fBstdout\fR is closed, as in \fBbc <file> >&\-\fR, it will quit with an error\. This is done so that dc(1) can report problems when \fBstdout\fR is redirected to a file\.
+\fBNote\fR: Unlike other dc(1) implementations, this dc(1) will issue a fatal error (see the EXIT STATUS section) if it cannot write to \fBstdout\fR, so if \fBstdout\fR is closed, as in \fBdc <file> >&\-\fR, it will quit with an error\. This is done so that dc(1) can report problems when \fBstdout\fR is redirected to a file\.
 .
 .P
 If there are scripts that depend on the behavior of other dc(1) implementations, it is recommended that those scripts be changed to redirect \fBstdout\fR to \fB/dev/null\fR\.
@@ -92,7 +92,7 @@ If there are scripts that depend on the behavior of other dc(1) implementations,
 Any error output is written to \fBstderr\fR\.
 .
 .P
-\fBNote\fR: Unlike other dc(1) implementations, this dc(1) will issue a fatal error (see the EXIT STATUS section) if it cannot write to \fBstderr\fR, so if \fBstderr\fR is closed, as in \fBbc <file> 2>&\-\fR, it will quit with an error\. This is done so that dc(1) can report problems when \fBstderr\fR is redirected to a file\.
+\fBNote\fR: Unlike other dc(1) implementations, this dc(1) will issue a fatal error (see the EXIT STATUS section) if it cannot write to \fBstderr\fR, so if \fBstderr\fR is closed, as in \fBdc <file> 2>&\-\fR, it will quit with an error\. This is done so that dc(1) can report problems when \fBstderr\fR is redirected to a file\.
 .
 .P
 If there are scripts that depend on the behavior of other dc(1) implementations, it is recommended that those scripts be changed to redirect \fBstderr\fR to \fB/dev/null\fR\.
@@ -155,7 +155,7 @@ Prints the value on top of the stack, whether number or string, and pops it off 
 Pops a value off the stack\.
 .
 .IP
-If the value is a number, it is truncated and the result\'s absolute value is printed as though \fBobase\fR is \fBUCHAR_MAX + 1\fR and each digit is interpreted as an ASCII character, making it a byte stream\.
+If the value is a number, it is truncated and the absolute value of the result is printed as though \fBobase\fR is \fBUCHAR_MAX + 1\fR and each digit is interpreted as an ASCII character, making it a byte stream\.
 .
 .IP
 If the value is a string, it is printed without a trailing newline\.
@@ -175,11 +175,11 @@ These are the commands used for arithmetic\.
 .
 .TP
 \fB+\fR
-The top two values are popped off the stack, added, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to the max \fBscale\fR of both operands\.
+The top two values are popped off the stack, added, and the result is pushed onto the stack\. The \fBscale\fR of the result is equal to the max \fBscale\fR of both operands\.
 .
 .TP
 \fB\-\fR
-The top two values are popped off the stack, subtracted, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to the max \fBscale\fR of both operands\.
+The top two values are popped off the stack, subtracted, and the result is pushed onto the stack\. The \fBscale\fR of the result is equal to the max \fBscale\fR of both operands\.
 .
 .TP
 \fB*\fR
@@ -187,7 +187,7 @@ The top two values are popped off the stack, multiplied, and the result is pushe
 .
 .TP
 \fB/\fR
-The top two values are popped off the stack, divided, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to \fBscale\fR\.
+The top two values are popped off the stack, divided, and the result is pushed onto the stack\. The \fBscale\fR of the result is equal to \fBscale\fR\.
 .
 .TP
 \fB%\fR
@@ -212,7 +212,7 @@ The first value popped off the stack must be an integer\.
 .
 .TP
 \fBv\fR
-The top value is popped off the stack, its square root is computed, and the result is pushed onto the stack\. The result\'s \fBscale\fR is equal to \fBscale\fR\.
+The top value is popped off the stack, its square root is computed, and the result is pushed onto the stack\. The \fBscale\fR of the result is equal to \fBscale\fR\.
 .
 .TP
 \fB_\fR
@@ -247,7 +247,7 @@ This is a \fBnon\-portable extension\fR\.
 .
 .TP
 \fB@\fR
-The top two values are popped off the stack, and the second\'s precision is set to the value of the first, whether by truncation or extension\.
+The top two values are popped off the stack, and the precision of the second is set to the value of the first, whether by truncation or extension\.
 .
 .IP
 The first value must be an integer and non\-negative\.
@@ -353,7 +353,7 @@ Pops the value off the top of the (main) stack and pushes it onto the stack of r
 .
 .TP
 \fBL\fR\fIr\fR
-Pops the value off the top of register \fBr\fR\'s stack and push it onto the main stack\. The previous value in register \fBr\fR\'s stack, if any, is now accessible via the \fBl\fR\fIr\fR command\.
+Pops the value off the top of the stack for register \fBr\fR and push it onto the main stack\. The previous value in the stack for register \fBr\fR, if any, is now accessible via the \fBl\fR\fIr\fR command\.
 .
 .SS "Parameters"
 These commands control the values of \fBibase\fR, \fBobase\fR, and \fBscale\fR (see the SYNTAX section)\.
@@ -416,7 +416,7 @@ This is a \fBnon\-portable extension\fR\.
 The following commands control strings\.
 .
 .P
-dc(1) can work with both numbers and strings, and registers (see the REGISTERS section) can hold both strings and numbers\. dc(1) always knows whether a register\'s contents are a string or a number\.
+dc(1) can work with both numbers and strings, and registers (see the REGISTERS section) can hold both strings and numbers\. dc(1) always knows whether the contents of a register are a string or a number\.
 .
 .P
 While arithmetic operations have to have numbers, and will print an error if given a string, other commands accept strings\.
@@ -535,7 +535,7 @@ Reads a line from the \fBstdin\fR and executes it\. This is to allow macros to r
 .
 .TP
 \fBq\fR
-During execution of a macro, this exits that macro\'s execution and the execution of the macro that executed it\. If there are no macros, or only one macro executing, dc(1) exits\.
+During execution of a macro, this exits the execution of that macro and the execution of the macro that executed it\. If there are no macros, or only one macro executing, dc(1) exits\.
 .
 .TP
 \fBQ\fR
@@ -583,7 +583,7 @@ Pops the value on top of the stack and uses it as an index into the array \fBr\f
 Registers are names that can store strings, numbers, and arrays\. (Number/string registers do not interfere with array registers\.)
 .
 .P
-Each register is also its own stack, so the current register value is the top of the register\'s stack\. All registers, when first referenced, have one value (\fB0\fR) in their stack\.
+Each register is also its own stack, so the current register value is the top of the stack for the register\. All registers, when first referenced, have one value (\fB0\fR) in their stack\.
 .
 .P
 In non\-extended register mode, a register name is just the single character that follows any command that needs a register name\. The only exception is a newline (\fB\'\en\'\fR); it is a parse error for a newline to be used as a register name\.
@@ -710,7 +710,7 @@ Converting to a hardware integer happens for the second operand of the power (\f
 A parse error occurred\.
 .
 .IP
-Parse errors include unexpected \fBEOF\fR, using an invalid character, failing to find the end of a string or comment, and using a token where it\'s invalid\.
+Parse errors include unexpected \fBEOF\fR, using an invalid character, failing to find the end of a string or comment, and using a token where it is invalid\.
 .
 .TP
 \fB3\fR

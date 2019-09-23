@@ -58,7 +58,7 @@ The following are the options that bc(1) accepts.
 
     `alias d2o="bc -e ibase=A -e obase=8"; alias h2b="bc -e ibase=G -e obase=2"`
 
-    Second, if a function's purpose is to set `ibase`, `obase`, or `scale`
+    Second, if the purpose of a function is to set `ibase`, `obase`, or `scale`
     globally for any other purpose, it could be split into one to three
     functions (based on how many globals it sets) and each of those functions
     could return the desired value for a global.
@@ -219,13 +219,13 @@ sets the precision of any operations, with exceptions. `scale` is initially `0`.
 in bc(1) programs with the `maxscale()` built in function.
 
 bc(1) has both **global** variables and **local** variables. All **local**
-variables are local to the function; they are parameters or are introduced in a
-function's `auto` list (see FUNCTIONS). If a variable is accessed which is not a
-parameter or in the `auto` list, it is assumed to be **global**. If a parent
-function has a **local** variable version of a **global** variable that is
-accessed by a function that it calls, the value of that **global** variable in
-the child function is the value of the variable in the parent function, not the
-value of the actual **global** variable.
+variables are local to the function; they are parameters or are introduced in
+the `auto` list of a function (see FUNCTIONS). If a variable is accessed which
+is not a parameter or in the `auto` list, it is assumed to be **global**. If a
+parent function has a **local** variable version of a **global** variable that
+is accessed by a function that it calls, the value of that **global** variable
+in the child function is the value of the variable in the parent function, not
+the value of the actual **global** variable.
 
 All of the above applies to arrays as well.
 
@@ -279,7 +279,7 @@ side of [`assignment` operators](#bc-assignment).
 5.	`length(E)`: The number of significant decimal digits in `E`.
 6.	`length(I[])`: The number of elements in the array `I`. This is a
 	**non-portable extension**.
-7.	`scale(E)`: `E`'s **scale**.
+7.	`scale(E)`: The **scale** of `E`.
 8.	`abs(E)`: The absolute value of `E`. This is a **non-portable extension**.
 9.	`I()`, `I(E)`, `I(E, E)`, and so on, where `I` is an identifier for a
 	non-[void function](#void-functions). The `E` parameters may also be arrays
@@ -447,9 +447,9 @@ The operators will be described in more detail below.
   * `@`:
     The `set precision` operator takes two expressions and returns a copy of the
     first with its **scale** equal to the value of the second expression. That
-    could either mean that the number is returned without change (if the first
-    expression's **scale** matches the value of the second expression), extended
-    (if it is less), or truncated (if it is more).
+    could either mean that the number is returned without change (if the
+    **scale** of the first expression matches the value of the second
+    expression), extended (if it is less), or truncated (if it is more).
 
     The second expression must be an integer (no **scale**) and non-negative.
 
@@ -1265,7 +1265,7 @@ bc(1) returns the following exit statuses:
     A parse error occurred.
 
     Parse errors include unexpected `EOF`, using an invalid character, failing
-    to find the end of a string or comment, using a token where it's invalid,
+    to find the end of a string or comment, using a token where it is invalid,
     giving an invalid expression, giving an invalid print statement, giving an
     invalid function definition, attempting to assign to an expression that is
     not a [named expression](#bc-named-expressions), giving an invalid `auto`

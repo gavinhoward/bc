@@ -60,7 +60,7 @@ The following are the options that dc(1) accepts.
     do not want a prompt or are not used to having them in `dc`. Most of those
     users would want to put this option in `DC_ENV_ARGS`.
 
-    If the prompt has been disabled while building bc(1), this option is a
+    If the prompt has been disabled while building dc(1), this option is a
     no-op.
 
     This is a **non-portable extension**.
@@ -100,7 +100,7 @@ Any non-error output is written to `stdout`.
 
 **Note**: Unlike other dc(1) implementations, this dc(1) will issue a fatal
 error (see the EXIT STATUS section) if it cannot write to `stdout`, so if
-`stdout` is closed, as in `bc <file> >&-`, it will quit with an error. This is
+`stdout` is closed, as in `dc <file> >&-`, it will quit with an error. This is
 done so that dc(1) can report problems when `stdout` is redirected to a file.
 
 If there are scripts that depend on the behavior of other dc(1) implementations,
@@ -114,7 +114,7 @@ Any error output is written to `stderr`.
 
 **Note**: Unlike other dc(1) implementations, this dc(1) will issue a fatal
 error (see the EXIT STATUS section) if it cannot write to `stderr`, so if
-`stderr` is closed, as in `bc <file> 2>&-`, it will quit with an error. This is
+`stderr` is closed, as in `dc <file> 2>&-`, it will quit with an error. This is
 done so that dc(1) can report problems when `stderr` is redirected to a file.
 
 If there are scripts that depend on the behavior of other dc(1) implementations,
@@ -216,9 +216,9 @@ Printing numbers in scientific notation and/or engineering notation is a
   * `P`:
     Pops a value off the stack.
 
-    If the value is a number, it is truncated and the result's absolute value is
-    printed as though `obase` is `UCHAR_MAX + 1` and each digit is interpreted
-    as an ASCII character, making it a byte stream.
+    If the value is a number, it is truncated and the absolute value of the
+    result is printed as though `obase` is `UCHAR_MAX + 1` and each digit is
+    interpreted as an ASCII character, making it a byte stream.
 
     If the value is a string, it is printed without a trailing newline.
 
@@ -236,13 +236,13 @@ These are the commands used for arithmetic.
 
   * `+`:
     The top two values are popped off the stack, added, and the result is pushed
-    onto the stack. The result's **scale** is equal to the max **scale** of both
-    operands.
+    onto the stack. The **scale** of the result is equal to the max **scale** of
+    both operands.
 
   * `-`:
     The top two values are popped off the stack, subtracted, and the result is
-    pushed onto the stack. The result's **scale** is equal to the max **scale**
-    of both operands.
+    pushed onto the stack. The **scale** of the result is equal to the max
+    **scale** of both operands.
 
   * `*`:
     The top two values are popped off the stack, multiplied, and the result is
@@ -253,7 +253,7 @@ These are the commands used for arithmetic.
 
   * `/`:
     The top two values are popped off the stack, divided, and the result is
-    pushed onto the stack. The result's **scale** is equal to `scale`.
+    pushed onto the stack. The **scale** of the result is equal to `scale`.
 
   * `%`:
     The top two values are popped off the stack, remaindered, and the result is
@@ -279,7 +279,8 @@ These are the commands used for arithmetic.
 
   * `v`:
     The top value is popped off the stack, its square root is computed, and the
-    result is pushed onto the stack. The result's **scale** is equal to `scale`.
+    result is pushed onto the stack. The **scale** of the result is equal to
+    `scale`.
 
   * `_`:
     If this command *immediately* precedes a number (i.e., no spaces or other
@@ -313,8 +314,8 @@ These are the commands used for arithmetic.
     This is a **non-portable extension**.
 
   * `@`:
-    The top two values are popped off the stack, and the second's precision is
-    set to the value of the first, whether by truncation or extension.
+    The top two values are popped off the stack, and the precision of the second
+    is set to the value of the first, whether by truncation or extension.
 
     The first value must be an integer and non-negative.
 
@@ -407,9 +408,9 @@ These commands control registers (see the REGISTERS section).
     of register `r`. The previous value of the register becomes inaccessible.
 
   * `L`*r*:
-    Pops the value off the top of register `r`'s stack and push it onto the main
-    stack. The previous value in register `r`'s stack, if any, is now accessible
-    via the `l`*r* command.
+    Pops the value off the top of the stack for register `r` and push it onto
+    the main stack. The previous value in the stack for register `r`, if any, is
+    now accessible via the `l`*r* command.
 
 ### Parameters
 
@@ -467,8 +468,8 @@ SYNTAX section).
 The following commands control strings.
 
 dc(1) can work with both numbers and strings, and registers (see the REGISTERS
-section) can hold both strings and numbers. dc(1) always knows whether a
-register's contents are a string or a number.
+section) can hold both strings and numbers. dc(1) always knows whether the
+contents of a register are a string or a number.
 
 While arithmetic operations have to have numbers, and will print an error if
 given a string, other commands accept strings.
@@ -581,7 +582,7 @@ be printed with a newline after and then popped from the stack.
     request input from users.
 
   * `q`:
-    During execution of a macro, this exits that macro's execution and the
+    During execution of a macro, this exits the execution of that macro and the
     execution of the macro that executed it. If there are no macros, or only one
     macro executing, dc(1) exits.
 
@@ -632,8 +633,8 @@ Registers are names that can store strings, numbers, and arrays. (Number/string
 registers do not interfere with array registers.)
 
 Each register is also its own stack, so the current register value is the top of
-the register's stack. All registers, when first referenced, have one value (`0`)
-in their stack.
+the stack for the register. All registers, when first referenced, have one value
+(`0`) in their stack.
 
 In non-extended register mode, a register name is just the single character that
 follows any command that needs a register name. The only exception is a newline
@@ -794,7 +795,7 @@ dc(1) returns the following exit statuses:
     A parse error occurred.
 
     Parse errors include unexpected `EOF`, using an invalid character, failing
-    to find the end of a string or comment, and using a token where it's
+    to find the end of a string or comment, and using a token where it is
     invalid.
 
   * `3`:
