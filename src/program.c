@@ -284,6 +284,7 @@ static BcStatus bc_program_operand(BcProgram *p, BcResult **r,
 #endif // BC_PROG_NO_STACK_CHECK
 
 	*r = bc_vec_item_rev(&p->results, idx);
+
 #if BC_ENABLED
 	if (BC_ERR((*r)->t == BC_RESULT_VOID))
 		return bc_vm_err(BC_ERROR_EXEC_VOID_VAL);
@@ -722,7 +723,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *ptr, r;
 	BcVec *vec;
-	BcNum *n;
+	BcNum *n = NULL;
 	bool var = (t == BC_TYPE_VAR);
 
 #if BC_ENABLED

@@ -49,3 +49,6 @@ perf.data.old
 *.gcov
 *.html
 *.profraw
+
+cscope*.out
+tags
