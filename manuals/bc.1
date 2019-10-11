@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BC" "1" "September 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "October 2019" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
@@ -209,6 +209,7 @@ Line comments go from \fB#\fR until, and not including, the next newline\. This 
  \fI\fR
 .
 .SS "Named Expressions"
+The following are named expressions in bc(1):
 .
 .IP "1." 4
 Variables: \fBI\fR
@@ -231,7 +232,10 @@ Array Elements: \fBI[E]\fR
 .IP "" 0
 .
 .P
-Variables and arrays do not interfere; users can have arrays named the same as variables\. This also applies to functions (see the FUNCTIONS section), so a user can have a variable, array, and function that all have the same name\.
+Number 6 is a \fBnon\-portable extension\fR\.
+.
+.P
+Variables and arrays do not interfere; users can have arrays named the same as variables\. This also applies to functions (see the FUNCTIONS section), so a user can have a variable, array, and function that all have the same name, and they will not shadow each other\.
 .
 .P
 Named expressions are required as the operand of \fI\fBincrement\fR/\fBdecrement\fR operators\fR and as the left side of \fI\fBassignment\fR operators\fR\.
@@ -240,6 +244,7 @@ Named expressions are required as the operand of \fI\fBincrement\fR/\fBdecrement
  \fI\fR
 .
 .SS "Operands"
+The following are valid operands in bc(1):
 .
 .IP "1." 4
 Numbers (see \fINumbers\fR below)\.
@@ -756,7 +761,7 @@ Functions can also be void functions, defined as follows:
 define void I(I,\.\.\.,I){
     auto I,\.\.\.,I
     S;\.\.\.;S
-    return(E)
+    return
 }
 .
 .fi
@@ -767,10 +772,10 @@ define void I(I,\.\.\.,I){
 They can only be used as standalone expressions, where such an expression would be printed alone, except in a print statement\.
 .
 .P
-Void functions can only use the first two \fBreturn\fR statements listed above\.
+Void functions can only use the first two \fBreturn\fR statements listed above\. They can also omit the return statement entirely\.
 .
 .P
-The word \fBvoid\fR is not treated as a keyword; it is still possible to have variables, arrays, and functions named \fBvoid\fR\.
+The word \fBvoid\fR is not treated as a keyword; it is still possible to have variables, arrays, and functions named \fBvoid\fR\. The word \fBvoid\fR is only treated specially right after the \fBdefine\fR keyword\.
 .
 .P
 This is a \fBnon\-portable extension\fR\.

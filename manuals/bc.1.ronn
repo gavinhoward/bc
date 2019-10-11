@@ -253,6 +253,8 @@ There are two kinds of comments:
 
 ### Named Expressions
 
+The following are named expressions in bc(1):
+
 1.	Variables: `I`
 2.	Array Elements: `I[E]`
 3.	`ibase`
@@ -260,9 +262,12 @@ There are two kinds of comments:
 5.	`scale`
 6.	`last` or a single dot (`.`)
 
+Number 6 is a **non-portable extension**.
+
 Variables and arrays do not interfere; users can have arrays named the same as
 variables. This also applies to functions (see the FUNCTIONS section), so a user
-can have a variable, array, and function that all have the same name.
+can have a variable, array, and function that all have the same name, and they
+will not shadow each other.
 
 Named expressions are required as the operand of
 [`increment`/`decrement` operators](#bc-increment-decrement) and as the left
@@ -271,6 +276,8 @@ side of [`assignment` operators](#bc-assignment).
 <a name="bc-operands"/>
 
 ### Operands
+
+The following are valid operands in bc(1):
 
 1.	Numbers (see [Numbers](#bc-numbers) below).
 2.	Array indices (`I[E]`).
@@ -707,17 +714,19 @@ Functions can also be void functions, defined as follows:
 define void I(I,...,I){
 	auto I,...,I
 	S;...;S
-	return(E)
+	return
 }
 ```
 
 They can only be used as standalone expressions, where such an expression would
 be printed alone, except in a print statement.
 
-Void functions can only use the first two `return` statements listed above.
+Void functions can only use the first two `return` statements listed above. They
+can also omit the return statement entirely.
 
 The word `void` is not treated as a keyword; it is still possible to have
-variables, arrays, and functions named `void`.
+variables, arrays, and functions named `void`. The word `void` is only treated
+specially right after the `define` keyword.
 
 This is a **non-portable extension**.
 
