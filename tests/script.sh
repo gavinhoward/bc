@@ -34,7 +34,7 @@ script="$0"
 testdir=$(dirname "${script}")
 
 if [ "$#" -lt 2 ]; then
-	printf 'usage: %s dir script [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"
+	printf 'usage: %s dir script [run_extra_tests] [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"
 	exit 1
 fi
 
@@ -43,6 +43,13 @@ shift
 
 f="$1"
 shift
+
+if [ "$#" -gt 0 ]; then
+	run_extra_tests="$1"
+	shift
+else
+	run_extra_tests=1
+fi
 
 if [ "$#" -gt 0 ]; then
 	run_stack_tests="$1"
@@ -97,9 +104,16 @@ if [ "$f" = "timeconst.bc" ]; then
 	exit 0
 fi
 
+if [ "$run_extra_tests" -eq 0 ]; then
+	if [ "$f" = "rand.bc" ]; then
+		printf 'Skipping %s script: %s\n' "$d" "$f"
+		exit 0
+	fi
+fi
+
 if [ "$run_stack_tests" -eq 0 ]; then
 
-	if [ "$f" = "globals.bc" -o "$f" = "references.bc" ]; then
+	if [ "$f" = "globals.bc" -o "$f" = "references.bc" -o "$f" = "rand.bc" ]; then
 		printf 'Skipping %s script: %s\n' "$d" "$f"
 		exit 0
 	fi

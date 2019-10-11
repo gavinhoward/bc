@@ -91,7 +91,7 @@ while read t; do
 
 	if [ "$extra" -eq 0  ]; then
 		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" \
-		     -o "$t" = "scientific" -o "$t" = "engineering" ]
+		     -o "$t" = "scientific" -o "$t" = "engineering" -o "$t" = "rand" ]
 		then
 			printf 'Skipping %s %s\n' "$d" "$t"
 			continue
@@ -104,7 +104,7 @@ done < "$testdir/$d/all.txt"
 
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
-sh "$testdir/scripts.sh" "$d" "$run_stack_tests" "$generate_tests" "$time_tests" "$exe" "$@"
+sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" "$time_tests" "$exe" "$@"
 sh "$testdir/read.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 

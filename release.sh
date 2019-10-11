@@ -58,7 +58,7 @@ configure() {
 	_configure_CC="$1"
 	shift
 
-	_configure_configure_flags="-f $1"
+	_configure_configure_flags="$1"
 	shift
 
 	_configure_GEN_HOST="$1"
@@ -224,6 +224,9 @@ runconfigseries() {
 			runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
 				"$_runconfigseries_configure_flags" 0 64 "$_runconfigseries_run_tests"
 		fi
+
+		runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
+			"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
 
 	fi
 
