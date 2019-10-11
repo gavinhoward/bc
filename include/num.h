@@ -45,6 +45,7 @@
 #include <sys/types.h>
 
 #include <status.h>
+#include <vector.h>
 
 #ifndef BC_ENABLE_EXTRA_MATH
 #define BC_ENABLE_EXTRA_MATH (1)
@@ -109,6 +110,9 @@ typedef struct BcNum {
 	bool neg;
 } BcNum;
 
+// Forward declaration
+struct BcRNG;
+
 #define BC_NUM_MIN_BASE (BC_NUM_BIGDIG_C(2))
 #define BC_NUM_MAX_POSIX_IBASE (BC_NUM_BIGDIG_C(16))
 #define BC_NUM_MAX_IBASE (BC_NUM_BIGDIG_C(36))
@@ -168,6 +172,13 @@ size_t bc_num_len(const BcNum *restrict n);
 
 BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result);
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
+
+#if BC_ENABLE_EXTRA_MATH
+BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
+                      struct BcRNG *restrict rng);
+BcStatus bc_num_rng(const BcNum *restrict n, struct BcRNG *rng);
+BcStatus bc_num_createFromRNG(BcNum *restrict n, struct BcRNG *rng);
+#endif // BC_ENABLE_EXTRA_MATH
 
 BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);

@@ -42,11 +42,15 @@
 #include <parse.h>
 #include <lang.h>
 #include <num.h>
+#include <rand.h>
 
 #define BC_PROG_GLOBALS_IBASE (0)
 #define BC_PROG_GLOBALS_OBASE (1)
 #define BC_PROG_GLOBALS_SCALE (2)
-#define BC_PROG_GLOBALS_LEN (3)
+#if BC_ENABLE_EXTRA_MATH
+#define BC_PROG_MAX_RAND (3)
+#endif // BC_ENABLE_EXTRA_MATH
+#define BC_PROG_GLOBALS_LEN (3 + BC_ENABLE_EXTRA_MATH)
 
 #define BC_PROG_ONE_CAP (1)
 
@@ -54,6 +58,10 @@ typedef struct BcProgram {
 
 	BcBigDig globals[BC_PROG_GLOBALS_LEN];
 	BcVec globals_v[BC_PROG_GLOBALS_LEN];
+
+#if BC_ENABLE_EXTRA_MATH
+	BcRNG rng;
+#endif // BC_ENABLE_EXTRA_MATH
 
 #if DC_ENABLED
 	BcBigDig strm;

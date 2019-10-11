@@ -184,6 +184,15 @@ define d2r(x){
 	scale=s
 	return r@s
 }
+define frand(p){
+	p=abs(p)$
+	return irand(10^p)>>p
+}
+define ifrand(i,p){return irand(i)+frand(p)}
+define srand(x){
+	if (irand(2))return -x
+	return x
+}
 define void output(x,b){
 	auto c
 	c=obase

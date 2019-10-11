@@ -1110,12 +1110,24 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 		case BC_LEX_KW_LENGTH:
 		case BC_LEX_KW_OBASE:
 		case BC_LEX_KW_SCALE:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_KW_SEED:
+#endif // BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_SQRT:
 		case BC_LEX_KW_ABS:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_KW_IRAND:
+#endif // BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_READ:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_KW_RAND:
+#endif // BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_MAXIBASE:
 		case BC_LEX_KW_MAXOBASE:
 		case BC_LEX_KW_MAXSCALE:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_KW_MAXRAND:
+#endif // BC_ENABLE_EXTRA_MATH
 		{
 			s = bc_parse_expr_status(p, BC_PARSE_PRINT, bc_parse_next_expr);
 			break;
@@ -1184,6 +1196,7 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 			bc_vm_printf("BC_STRING_MAX    = %lu\n", BC_MAX_STRING);
 			bc_vm_printf("BC_NAME_MAX      = %lu\n", BC_MAX_NAME);
 			bc_vm_printf("BC_NUM_MAX       = %lu\n", BC_MAX_NUM);
+			bc_vm_printf("BC_RAND_MAX      = %lu\n", BC_MAX_RAND);
 			bc_vm_printf("MAX Exponent     = %lu\n", BC_MAX_EXP);
 			bc_vm_printf("Number of vars   = %lu\n", BC_MAX_VARS);
 
@@ -1445,6 +1458,9 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_KW_IBASE:
 			case BC_LEX_KW_LAST:
 			case BC_LEX_KW_OBASE:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_KW_SEED:
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
@@ -1462,6 +1478,9 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			case BC_LEX_KW_LENGTH:
 			case BC_LEX_KW_SQRT:
 			case BC_LEX_KW_ABS:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_KW_IRAND:
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);
@@ -1474,9 +1493,15 @@ static BcStatus bc_parse_expr_err(BcParse *p, uint8_t flags, BcParseNext next) {
 			}
 
 			case BC_LEX_KW_READ:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_KW_RAND:
+#endif // BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_MAXIBASE:
 			case BC_LEX_KW_MAXOBASE:
 			case BC_LEX_KW_MAXSCALE:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_KW_MAXRAND:
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
 					return bc_parse_err(p, BC_ERROR_PARSE_EXPR);

@@ -125,6 +125,7 @@
 #define BC_MAX_STRING ((ulong) (BC_NUM_BIGDIG_MAX - 1))
 #define BC_MAX_NAME BC_MAX_STRING
 #define BC_MAX_NUM BC_MAX_SCALE
+#define BC_MAX_RAND ((ulong) (((BcRand) 0) - 1))
 #define BC_MAX_EXP ((ulong) (BC_NUM_BIGDIG_MAX))
 #define BC_MAX_VARS ((ulong) (SIZE_MAX - 1))
 
@@ -177,7 +178,7 @@ typedef struct BcVm {
 
 	uint16_t line_len;
 
-	BcBigDig maxes[BC_PROG_GLOBALS_LEN];
+	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
 
 	BcVec files;
 	BcVec exprs;

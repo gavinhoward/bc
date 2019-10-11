@@ -688,6 +688,10 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	vm->maxes[BC_PROG_GLOBALS_OBASE] = BC_MAX_OBASE;
 	vm->maxes[BC_PROG_GLOBALS_SCALE] = BC_MAX_SCALE;
 
+#if BC_ENABLE_EXTRA_MATH
+	vm->maxes[BC_PROG_MAX_RAND] = ((BcRand) 0) - 1;
+#endif // BC_ENABLE_EXTRA_MATH
+
 	if (BC_IS_BC && !BC_IS_POSIX)
 		vm->maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_IBASE;
 

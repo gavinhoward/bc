@@ -189,6 +189,9 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_RESULT_SEED:
+#endif // BC_ENABLE_EXTRA_MATH
 		{
 			bc_num_createCopy(&d->d.n, &src->d.n);
 			break;
@@ -243,6 +246,9 @@ void bc_result_free(void *result) {
 		case BC_RESULT_IBASE:
 		case BC_RESULT_SCALE:
 		case BC_RESULT_OBASE:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_RESULT_SEED:
+#endif // BC_ENABLE_EXTRA_MATH
 		{
 			bc_num_free(&r->d.n);
 			break;
