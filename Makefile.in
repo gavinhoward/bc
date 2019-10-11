@@ -311,6 +311,8 @@ clean_tests: clean clean_config
 	@$(RM) -f $(BC_LIB2_GCDA) $(BC_LIB2_GCNO)
 	@$(RM) -f $(BC_HELP_GCDA) $(BC_HELP_GCNO)
 	@$(RM) -f $(DC_HELP_GCDA) $(DC_HELP_GCNO)
+	@$(RM) -f tags .gdbbreakpoints .gdb_history .gdbsetup
+	@$(RM) -f cscope.*
 
 install_locales:
 	$(LOCALE_INSTALL) $(NLSPATH) $(MAIN_EXEC) $(DESTDIR)
