@@ -128,12 +128,12 @@ MKDIR = mkdir
 INSTALL = ./install.sh
 SAFE_INSTALL = ./safe-install.sh
 LINK = ./link.sh
+MANPAGE = ./manpage.sh
 KARATSUBA = ./karatsuba.py
 LOCALE_INSTALL = ./locale_install.sh
 LOCALE_UNINSTALL = ./locale_uninstall.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
-RONN_ARGS = --roff --organization="Gavin D. Howard" --manual="General Commands Manual"
 
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
@@ -258,8 +258,8 @@ extra_math:
 	@printf '%s' "$(BC_ENABLE_EXTRA_MATH)"
 
 manpages:
-	ronn $(RONN_ARGS) $(BC_RONN)
-	ronn $(RONN_ARGS) $(DC_RONN)
+	$(MANPAGE) $(BC_RONN) $(BC_MANPAGE)
+	$(MANPAGE) $(DC_RONN) $(DC_MANPAGE)
 
 clean_gen:
 	@$(RM) -f $(GEN_EXEC)

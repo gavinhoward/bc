@@ -152,6 +152,28 @@ Each item in the input source code, either a number (see the NUMBERS section) or
 a command (see the COMMANDS section), is processed and executed, in order. Input
 is processed immediately when entered.
 
+If dc(1) was built with the extra math option, there is an additional register
+named `seed`. This is the current seed used by the pseudo-random number
+generator. If the current value of `seed` is queried and stored, then if it is
+assigned to `seed` later, the pseudo-random number generator is guaranteed to
+produce the same sequence of pseudo-random numbers that were generated after the
+value of `seed` was first queried.
+
+Multiple values assigned to `seed` can produce the same sequence of
+pseudo-random numbers. Likewise, when a value is assigned to `seed`, it is not
+guaranteed that querying `seed` immediately after will return the same value.
+In addition, the value of `seed` will change after any call to the `'` or `"`
+commands. The maximum integer returned by the `'` command can be queried with
+the `W` command.
+
+**Note**: The values returned by the pseudo-random number generator with the
+`'` and `"` commands are guaranteed to **NOT** be cryptographically-secure.
+This is a consequence of using a seeded pseudo-random number generator. However,
+they **are** guaranteed to be reproducible with identical `seed` values.
+
+The pseudo-random number generator, `seed`, and all associated operations are
+**non-portable extensions**.
+
 ### Comments
 
 Comments go from `#` until, and not including, the next newline. This is a
@@ -385,6 +407,44 @@ These are the commands used for arithmetic.
 
     This is a **non-portable extension**.
 
+### Pseudo-Random Number Generator
+
+If dc(1) was built with the extra math option, it has a built-in pseudo-random
+number generator. These commands query the pseudo-random number generator. (See
+Parameters for more information about the `seed` value that controls the
+pseudo-random number generator.)
+
+The pseudo-random number generator is guaranteed to **NOT** be
+cryptographically-secure.
+
+  * `'`:
+    Generates an integer between 0 and `DC_RAND_MAX`, inclusive (see the LIMITS
+    section).
+
+    The generated integer is made as unbiased as possible, subject to the
+    limitations of the pseudo-random number generator.
+
+    This command is only available if dc(1) was built with the extra math
+    option.
+
+    This is a **non-portable extension**.
+
+  * `"`:
+    Pops a value off of the stack, and its truncated absolute value is used as
+    an exclusive upper bound on the integer that will be generated. If the bound
+    is larger than `DC_RAND_MAX`, the higher bound is honored by generating
+    several pseudo-random integers, multiplying them by appropriate powers of
+    `DC_RAND_MAX + 1`, and adding them together. Thus, the size of integer that
+    can be generated with this command is unbounded.
+
+    The generated integer is made as unbiased as possible, subject to the
+    limitations of the pseudo-random number generator.
+
+    This command is only available if dc(1) was built with the extra math
+    option.
+
+    This is a **non-portable extension**.
+
 ### Stack Control
 
 These commands control the stack.
@@ -449,6 +509,31 @@ SYNTAX section).
     If the value on top of the stack has any **scale**, the **scale** is
     ignored.
 
+  * `j`:
+    Pops the value off of the top of the stack and uses it to set `seed`. The
+    meaning of `seed` is dependent on the current pseudo-random number
+    generator but is guaranteed to not change except for new major versions.
+
+    The **scale** of the value may be significant.
+
+    If a previously used `seed` value is used again, the pseudo-random number
+    generator is guaranteed to produce the same sequence of pseudo-random
+    numbers as it did when the `seed` value was previously used.
+
+    The exact value assigned to `seed` is not guaranteed to be returned if the
+    `J` command is used. However, if `seed` *does* return a different value,
+    both values, when assigned to `seed`, are guaranteed to produce the same
+    sequence of pseudo-random numbers. This means that certain values assigned
+    to `seed` will not produce unique sequences of pseudo-random numbers.
+
+    There is no limit to the length (number of significant decimal digits) or
+    *scale* of the value that can be assigned to `seed`.
+
+    This command is only available if dc(1) was built with the extra math
+    option.
+
+    This is a **non-portable extension**.
+
   * `I`:
     Pushes the current value of `ibase` onto the main stack.
 
@@ -457,6 +542,14 @@ SYNTAX section).
 
   * `K`:
     Pushes the current value of `scale` onto the main stack.
+
+  * `J`:
+    Pushes the current value of `seed` onto the main stack.
+
+    This command is only available if dc(1) was built with the extra math
+    option.
+
+    This is a **non-portable extension**.
 
   * `T`:
     Pushes the maximum allowable value of `ibase` onto the main stack.
@@ -470,6 +563,15 @@ SYNTAX section).
 
   * `V`:
     Pushes the maximum allowable value of `scale` onto the main stack.
+
+    This is a **non-portable extension**.
+
+  * `W`:
+    Pushes the maximum (inclusive) integer that can be generated with the `'`
+    pseudo-random number generator command.
+
+    This command is only available if dc(1) was built with the extra math
+    option.
 
     This is a **non-portable extension**.
 
@@ -741,6 +843,10 @@ The following are the limits on dc(1):
   * `DC_NUM_MAX`:
     The maximum length of a number (in decimal digits), which includes digits
     after the decimal point. Set at `DC_OVERFLOW_MAX-1`.
+
+  * `DC_RAND_MAX`:
+    The maximum integer (inclusive) returned by the `'` command. Set at
+    `2^DC_LONG_BIT-1`.
 
   * Exponent:
     The maximum allowable exponent (positive or negative). Set at

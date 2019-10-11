@@ -23,7 +23,7 @@ The following are the options that bc(1) accepts\.
 .
 .TP
 \fB\-g\fR, \fB\-\-global\-stacks\fR
-Turns the globals \fBibase\fR, \fBobase\fR, and \fBscale\fR into stacks\.
+Turns the globals \fBibase\fR, \fBobase\fR, and \fBscale\fR into stacks\. This includes \fBseed\fR if bc(1) was built with the extra math option\.
 .
 .IP
 This has the effect that a copy of the current value of all three are pushed onto a stack for every function call, as well as popped when every function returns\. This means that functions can assign to any and all of those globals without worrying that the change will affect other functions\. Thus, \fBoutput(x,b)\fR (in the \fIextended library\fR) could have been written like this:
@@ -53,7 +53,16 @@ First, if a function is called on startup to turn bc(1) into a number converter,
 Second, if the purpose of a function is to set \fBibase\fR, \fBobase\fR, or \fBscale\fR globally for any other purpose, it could be split into one to three functions (based on how many globals it sets) and each of those functions could return the desired value for a global\.
 .
 .IP
-If this behavior is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see the ENVIRONMENT VARIABLES section for more details)\.
+For functions that set \fBseed\fR, the value assigned to \fBseed\fR is not propagated to parent functions\. This means that the sequence of pseudo\-random numbers that they see will not be the same sequence of pseudo\-random numbers that any parent sees\. This is only the case once \fBseed\fR has been set\.
+.
+.IP
+If a function desires to not affect the sequence of pseudo\-random numbers of its parents, but wants to use the same \fBseed\fR, it can use the following line:
+.
+.IP
+\fBseed = seed\fR
+.
+.IP
+If the behavior of this option is desired for every run of bc(1), then users could make sure to define \fBBC_ENV_ARGS\fR and include this option (see the ENVIRONMENT VARIABLES section for more details)\.
 .
 .IP
 If \fB\-s\fR, \fB\-w\fR, or any equivalents are used, this option is ignored\.
@@ -235,6 +244,35 @@ Array Elements: \fBI[E]\fR
 Number 6 is a \fBnon\-portable extension\fR\.
 .
 .P
+If bc(1) was built with the extra math option, the following is also a named expression:
+.
+.IP "1." 4
+\fBseed\fR
+.
+.IP "" 0
+.
+.P
+The meaning of \fBseed\fR is dependent on the current pseudo\-random number generator but is guaranteed to not change except for new major versions\.
+.
+.P
+The \fBscale\fR of the value may be significant\.
+.
+.P
+If a previously used \fBseed\fR value is assigned to \fBseed\fR and used again, the pseudo\-random number generator is guaranteed to produce the same sequence of pseudo\-random numbers as it did when the \fBseed\fR value was previously used\.
+.
+.P
+The exact value assigned to \fBseed\fR is not guaranteed to be returned if \fBseed\fR is queried again immediately\. However, if \fBseed\fR \fIdoes\fR return a different value, both values, when assigned to \fBseed\fR, are guaranteed to produce the same sequence of pseudo\-random numbers\. This means that certain values assigned to \fBseed\fR will not produce unique sequences of pseudo\-random numbers\. The value of \fBseed\fR will change after any use of the \fBrand()\fR and \fBirand(E)\fR operands\.
+.
+.P
+There is no limit to the length (number of significant decimal digits) or \fIscale\fR of the value that can be assigned to \fBseed\fR\.
+.
+.P
+This command is only available if bc(1) was built with the extra math option\.
+.
+.P
+This is a \fBnon\-portable extension\fR\.
+.
+.P
 Variables and arrays do not interfere; users can have arrays named the same as variables\. This also applies to functions (see the FUNCTIONS section), so a user can have a variable, array, and function that all have the same name, and they will not shadow each other\.
 .
 .P
@@ -286,6 +324,26 @@ Array indices (\fBI[E]\fR)\.
 \fBmaxscale()\fR: The max allowable \fBscale\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "" 0
+.
+.P
+If bc(1) was built with the extra math option, the following are also valid operands:
+.
+.IP "1." 4
+\fBrand()\fR: A pseudo\-random integer between \fB0\fR (inclusive) and \fBBC_RAND_MAX\fR (inclusive)\. Using this operand will change the value of \fBseed\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "2." 4
+\fBirand(E)\fR: A pseudo\-random integer between \fB0\fR (inclusive) and the truncated absolute value of \fBE\fR (exclusive)\. If the bound is larger than \fBBC_RAND_MAX\fR, the higher bound is honored by generating several pseudo\-random integers, multiplying them by appropriate powers of \fBBC_RAND_MAX + 1\fR, and adding them together\. Thus, the size of integer that can be generated with this operand is unbounded\. Using this operand will change the value of \fBseed\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "3." 4
+\fBmaxrand()\fR: The max integer returned by \fBrand()\fR\. This is a \fBnon\-portable extension\fR\.
+.
+.IP "" 0
+.
+.P
+The integers generated by \fBrand()\fR and \fBirand(E)\fR are guaranteed to be as unbiased as possible, subject to the limitations of the pseudo\-random number generator\.
+.
+.P
+\fBNote\fR: The values returned by the pseudo\-random number generator with \fBrand()\fR and \fBirand(E)\fR are guaranteed to \fBNOT\fR be cryptographically\-secure\. This is a consequence of using a seeded pseudo\-random number generator\. However, they \fBare\fR guaranteed to be reproducible with identical \fBseed\fR values\.
 .
 .P
  \fI\fR
@@ -1021,6 +1079,18 @@ Converts \fBx\fR from degrees to radians and returns the result\.
 This is a \fItranscendental function\fR\.
 .
 .TP
+\fBfrand(p)\fR
+Generates a pseudo\-random number between \fB0\fR (inclusive) and \fB1\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\.
+.
+.TP
+\fBifrand(i, p)\fR
+Generates a pseudo\-random number that is between \fB0\fR (inclusive) and the truncated absolute value of \fBi\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\.
+.
+.TP
+\fBsrand(x)\fR
+Returns \fBx\fR with its sign flipped with probability \fB0\.5\fR\.
+.
+.TP
 \fBubytes(x)\fR
 Returns the numbers of unsigned integer bytes required to hold the truncated absolute value of \fBx\fR\.
 .
@@ -1336,6 +1406,10 @@ The maximum length of identifiers\. Set at \fBBC_OVERFLOW_MAX\-1\fR\.
 .TP
 \fBBC_NUM_MAX\fR
 The maximum length of a number (in decimal digits), which includes digits after the decimal point\. Set at \fBBC_OVERFLOW_MAX\-1\fR\.
+.
+.TP
+\fBBC_RAND_MAX\fR
+The maximum integer (inclusive) returned by the \fBrand()\fR operand\. Set at \fB2^BC_LONG_BIT\-1\fR\.
 .
 .TP
 Exponent
