@@ -2263,20 +2263,28 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 {
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcRand r;
-	BcNum pow, pow2, cp, cp2, temp1, temp2, rand;
+	BcBigDig modl;
+	BcNum pow, pow2, cp, cp2, mod, temp1, temp2, rand;
 	BcNum *p1, *p2, *t1, *t2, *c1, *c2, *tmp;
 	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
+	bool carry = false, start = true;
+
+	assert(a != b);
 
 	bc_num_createCopy(&cp, a);
+	bc_num_truncate(&cp, cp.scale);
+	cp.neg = false;
+
+	if (BC_NUM_ZERO(&cp) || BC_NUM_ONE(&cp)) goto early_exit;
+
 	bc_num_init(&cp2, cp.len);
+	bc_num_init(&mod, BC_NUM_BIGDIG_LOG10);
 	bc_num_init(&temp1, BC_NUM_DEF_SIZE);
 	bc_num_init(&temp2, BC_NUM_DEF_SIZE);
 	bc_num_init(&pow2, BC_NUM_DEF_SIZE);
 	bc_num_init(&pow, BC_NUM_DEF_SIZE);
 	bc_num_one(&pow);
 	bc_num_setup(&rand, rand_num, sizeof(rand_num) / sizeof(BcDig));
-
-	cp.neg = false;
 
 	p1 = &pow;
 	p2 = &pow2;
@@ -2285,9 +2293,21 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	c1 = &cp;
 	c2 = &cp2;
 
-	while (bc_num_cmp(c1, &rng->max) >= 0) {
+	while (BC_NUM_NONZERO(c1)) {
 
-		r = bc_rand_int(rng);
+		s = bc_num_divmod(c1, &rng->max, c2, &mod, 0);
+		if (BC_ERR(s)) goto err;
+
+		s = bc_num_bigdig(&mod, &modl);
+		if (BC_ERR(s)) goto err;
+
+		if (start || carry) carry = !modl;
+		else modl += 1;
+
+		if (!modl) r = bc_rand_int(rng);
+		else if (modl == 1) r = 0;
+		else r = bc_rand_bounded(rng, (BcRand) modl);
+
 		bc_num_bigdig2num(&rand, r);
 
 		s = bc_num_mul(&rand, p1, p2, 0);
@@ -2296,52 +2316,39 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 		s = bc_num_add(p2, t1, t2, 0);
 		if (BC_ERR(s)) goto err;
 
-		s = bc_num_mul(&rng->max, p1, p2, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_NUM_NONZERO(c2)) {
 
-		s = bc_num_div(c1, &rng->max, c2, 0);
-		if (BC_ERR(s)) goto err;
+			s = bc_num_mul(&rng->max, p1, p2, 0);
+			if (BC_ERR(s)) goto err;
+
+			tmp = p1;
+			p1 = p2;
+			p2 = tmp;
+
+			tmp = c1;
+			c1 = c2;
+			c2 = tmp;
+
+			start = false;
+		}
+		else c1 = c2;
 
 		tmp = t1;
 		t1 = t2;
 		t2 = tmp;
-
-		tmp = p1;
-		p1 = p2;
-		p2 = tmp;
-
-		tmp = c1;
-		c1 = c2;
-		c2 = tmp;
-	}
-
-	if (BC_NUM_NONZERO(c1)) {
-
-		BcBigDig d;
-
-		s = bc_num_bigdig(c1, &d);
-		if (BC_ERR(s)) goto err;
-
-		r = bc_rand_bounded(rng, (BcRand) d);
-		bc_num_bigdig2num(&rand, r);
-
-		s = bc_num_mul(&rand, p1, p2, 0);
-		if (BC_ERR(s)) goto err;
-
-		s = bc_num_add(p2, t1, t2, 0);
-		if (BC_ERR(s)) goto err;
-
-		t1 = t2;
 	}
 
 	bc_num_copy(b, t1);
+	bc_num_clean(b);
 
 err:
 	bc_num_free(&pow);
 	bc_num_free(&pow2);
 	bc_num_free(&temp2);
 	bc_num_free(&temp1);
+	bc_num_free(&mod);
 	bc_num_free(&cp2);
+early_exit:
 	bc_num_free(&cp);
 	return s;
 }
