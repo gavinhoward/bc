@@ -1,3 +1,5 @@
+print "Gathering array...\n"
+
 s = seed
 
 sum = 0
@@ -7,6 +9,8 @@ for (i = 0; i < 100; ++i) {
 	sum += a[i]
 	b[i] = irand(sum)
 }
+
+print "Testing implementation...\n"
 
 if (maxrand() >= 2^64 - 1) {
 
@@ -247,6 +251,8 @@ else {
 	}
 }
 
+print "Testing array...\n"
+
 ibase = A
 
 seed = s
@@ -259,6 +265,8 @@ for (i = 0; i < 100; ++i) {
 	b[i] == irand(sum)
 }
 
+print "Exercising irand()...\n"
+
 scale = 256
 
 pow = (maxrand() + 1) ^ 4
@@ -269,3 +277,13 @@ seed < s
 s = -459.125
 seed = s
 seed == -s
+
+irand(0)
+irand(0.0281927340987)
+irand(1)
+irand(1.0182739504871)
+irand(maxrand() + 1) <= maxrand()
+
+for (i = 0; i < 200; ++i) {
+	irand(20) < 20
+}
