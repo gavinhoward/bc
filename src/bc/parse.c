@@ -1196,7 +1196,9 @@ static BcStatus bc_parse_stmt(BcParse *p) {
 			bc_vm_printf("BC_STRING_MAX    = %lu\n", BC_MAX_STRING);
 			bc_vm_printf("BC_NAME_MAX      = %lu\n", BC_MAX_NAME);
 			bc_vm_printf("BC_NUM_MAX       = %lu\n", BC_MAX_NUM);
+#if BC_ENABLE_EXTRA_MATH
 			bc_vm_printf("BC_RAND_MAX      = %lu\n", BC_MAX_RAND);
+#endif // BC_ENABLE_EXTRA_MATH
 			bc_vm_printf("MAX Exponent     = %lu\n", BC_MAX_EXP);
 			bc_vm_printf("Number of vars   = %lu\n", BC_MAX_VARS);
 
