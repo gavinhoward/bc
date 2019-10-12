@@ -355,6 +355,9 @@ Generates an integer between 0 and \fBDC_RAND_MAX\fR, inclusive (see the LIMITS 
 The generated integer is made as unbiased as possible, subject to the limitations of the pseudo\-random number generator\.
 .
 .IP
+If the truncated absolute value of the operand is \fB0\fR or \fB1\fR, then the result pushed onto the stack is \fB0\fR, and \fBseed\fR is not changed\.
+.
+.IP
 This command is only available if dc(1) was built with the extra math option\.
 .
 .IP
@@ -762,7 +765,7 @@ The maximum length of a number (in decimal digits), which includes digits after 
 .
 .TP
 \fBDC_RAND_MAX\fR
-The maximum integer (inclusive) returned by the \fB'\fR command\. Set at \fB2^DC_LONG_BIT\-1\fR\.
+The maximum integer (inclusive) returned by the \fB'\fR command, if dc(1) has been built with the extra math option\. Set at \fB2^DC_LONG_BIT\-1\fR\.
 .
 .TP
 Exponent

@@ -354,7 +354,9 @@ operands:
 	pseudo-random integers, multiplying them by appropriate powers of
 	`BC_RAND_MAX + 1`, and adding them together. Thus, the size of integer that
 	can be generated with this operand is unbounded. Using this operand will
-	change the value of `seed`. This is a **non-portable extension**.
+	change the value of `seed`. If the truncated absolute value of `E` is `0` or
+	`1`, then `0` is returned, and `seed` is not changed. This is a
+	**non-portable extension**.
 3.	`maxrand()`: The max integer returned by `rand()`. This is a **non-portable
 	extension**.
 
@@ -1304,8 +1306,8 @@ The following are the limits on bc(1):
     after the decimal point. Set at `BC_OVERFLOW_MAX-1`.
 
   * `BC_RAND_MAX`:
-    The maximum integer (inclusive) returned by the `rand()` operand. Set at
-    `2^BC_LONG_BIT-1`.
+    The maximum integer (inclusive) returned by the `rand()` operand, if bc(1)
+    has been built with the extra math option. Set at `2^BC_LONG_BIT-1`.
 
   * Exponent:
     The maximum allowable exponent (positive or negative). Set at

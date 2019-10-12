@@ -424,6 +424,9 @@ cryptographically-secure.
     The generated integer is made as unbiased as possible, subject to the
     limitations of the pseudo-random number generator.
 
+    If the truncated absolute value of the operand is `0` or `1`, then the
+    result pushed onto the stack is `0`, and `seed` is not changed.
+
     This command is only available if dc(1) was built with the extra math
     option.
 
@@ -845,8 +848,8 @@ The following are the limits on dc(1):
     after the decimal point. Set at `DC_OVERFLOW_MAX-1`.
 
   * `DC_RAND_MAX`:
-    The maximum integer (inclusive) returned by the `'` command. Set at
-    `2^DC_LONG_BIT-1`.
+    The maximum integer (inclusive) returned by the `'` command, if dc(1) has
+    been built with the extra math option. Set at `2^DC_LONG_BIT-1`.
 
   * Exponent:
     The maximum allowable exponent (positive or negative). Set at

@@ -332,7 +332,7 @@ If bc(1) was built with the extra math option, the following are also valid oper
 \fBrand()\fR: A pseudo\-random integer between \fB0\fR (inclusive) and \fBBC_RAND_MAX\fR (inclusive)\. Using this operand will change the value of \fBseed\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "2." 4
-\fBirand(E)\fR: A pseudo\-random integer between \fB0\fR (inclusive) and the truncated absolute value of \fBE\fR (exclusive)\. If the bound is larger than \fBBC_RAND_MAX\fR, the higher bound is honored by generating several pseudo\-random integers, multiplying them by appropriate powers of \fBBC_RAND_MAX + 1\fR, and adding them together\. Thus, the size of integer that can be generated with this operand is unbounded\. Using this operand will change the value of \fBseed\fR\. This is a \fBnon\-portable extension\fR\.
+\fBirand(E)\fR: A pseudo\-random integer between \fB0\fR (inclusive) and the truncated absolute value of \fBE\fR (exclusive)\. If the bound is larger than \fBBC_RAND_MAX\fR, the higher bound is honored by generating several pseudo\-random integers, multiplying them by appropriate powers of \fBBC_RAND_MAX + 1\fR, and adding them together\. Thus, the size of integer that can be generated with this operand is unbounded\. Using this operand will change the value of \fBseed\fR\. If the truncated absolute value of \fBE\fR is \fB0\fR or \fB1\fR, then \fB0\fR is returned, and \fBseed\fR is not changed\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "3." 4
 \fBmaxrand()\fR: The max integer returned by \fBrand()\fR\. This is a \fBnon\-portable extension\fR\.
@@ -1409,7 +1409,7 @@ The maximum length of a number (in decimal digits), which includes digits after 
 .
 .TP
 \fBBC_RAND_MAX\fR
-The maximum integer (inclusive) returned by the \fBrand()\fR operand\. Set at \fB2^BC_LONG_BIT\-1\fR\.
+The maximum integer (inclusive) returned by the \fBrand()\fR operand, if bc(1) has been built with the extra math option\. Set at \fB2^BC_LONG_BIT\-1\fR\.
 .
 .TP
 Exponent
