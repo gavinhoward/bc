@@ -38,6 +38,7 @@
 #include <string.h>
 
 #include <signal.h>
+#include <time.h>
 
 #include <read.h>
 #include <parse.h>
