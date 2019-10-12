@@ -195,7 +195,7 @@ static void bc_rand_setInc(BcRNGData *r) {
 	r->inc <<= 1UL;
 #else // BC_RAND_BUILTIN
 	r->inc.hi <<= 1UL;
-	r->inc.hi |= (r->inc.lo & (1UL << (BC_LONG_BIT - 1)) >> (BC_LONG_BIT - 1));
+	r->inc.hi |= (r->inc.lo & (1UL << (BC_LONG_BIT - 1))) >> (BC_LONG_BIT - 1);
 	r->inc.lo <<= 1UL;
 #endif // BC_RAND_BUILTIN
 }
