@@ -37,12 +37,12 @@ usage() {
 
 	if [ $# -gt 0 ]; then
 
-		val=1
+		_usage_val=1
 
 		printf "%s\n\n" "$1"
 
 	else
-		val=0
+		_usage_val=0
 	fi
 
 	printf 'usage: %s -h\n' "$script"
@@ -196,7 +196,7 @@ usage() {
 	printf 'WARNING: even though `configure.sh` supports both option types, short and\n'
 	printf 'long, it does not support handling both at the same time. Use only one type.\n'
 
-	exit "$val"
+	exit "$_usage_val"
 }
 
 replace_ext() {
@@ -205,13 +205,13 @@ replace_ext() {
 		err_exit "Invalid number of args to $0"
 	fi
 
-	file="$1"
-	ext1="$2"
-	ext2="$3"
+	_replace_ext_file="$1"
+	_replace_ext_ext1="$2"
+	_replace_ext_ext2="$3"
 
-	result=$(printf "$file" | sed -e "s@\.$ext1@\.$ext2@")
+	_replace_ext_result=$(printf "$_replace_ext_file" | sed -e "s@\.$_replace_ext_ext1@\.$_replace_ext_ext2@")
 
-	printf '%s\n' "$result"
+	printf '%s\n' "$_replace_ext_result"
 }
 
 replace_exts() {
@@ -220,16 +220,16 @@ replace_exts() {
 		err_exit "Invalid number of args to $0"
 	fi
 
-	files="$1"
-	ext1="$2"
-	ext2="$3"
+	_replace_exts_files="$1"
+	_replace_exts_ext1="$2"
+	_replace_exts_ext2="$3"
 
-	for file in $files; do
-		new_name=$(replace_ext "$file" "$ext1" "$ext2")
-		result="$result $new_name"
+	for _replace_exts_file in $_replace_exts_files; do
+		_replace_exts_new_name=$(replace_ext "$_replace_exts_file" "$_replace_exts_ext1" "$_replace_exts_ext2")
+		_replace_exts_result="$_replace_exts_result $_replace_exts_new_name"
 	done
 
-	printf '%s\n' "$result"
+	printf '%s\n' "$_replace_exts_result"
 }
 
 replace() {
@@ -238,11 +238,11 @@ replace() {
 		err_exit "Invalid number of args to $0"
 	fi
 
-	str="$1"
-	needle="$2"
-	replacement="$3"
+	_replace_str="$1"
+	_replace_needle="$2"
+	_replace_replacement="$3"
 
-	substring_replace "$str" "%%$needle%%" "$replacement"
+	substring_replace "$_replace_str" "%%$_replace_needle%%" "$_replace_replacement"
 }
 
 gen_file_lists() {
@@ -251,50 +251,50 @@ gen_file_lists() {
 		err_exit "Invalid number of args to $0"
 	fi
 
-	contents="$1"
+	_gen_file_lists_contents="$1"
 	shift
 
-	filedir="$1"
+	_gen_file_lists_filedir="$1"
 	shift
 
-	typ="$1"
+	_gen_file_lists_typ="$1"
 	shift
 
 	# If there is an extra argument, and it
 	# is zero, we keep the file lists empty.
 	if [ "$#" -gt 0 ]; then
-		use="$1"
+		_gen_file_lists_use="$1"
 	else
-		use="1"
+		_gen_file_lists_use="1"
 	fi
 
-	needle_src="${typ}SRC"
-	needle_obj="${typ}OBJ"
-	needle_gcda="${typ}GCDA"
-	needle_gcno="${typ}GCNO"
+	_gen_file_lists_needle_src="${_gen_file_lists_typ}SRC"
+	_gen_file_lists_needle_obj="${_gen_file_lists_typ}OBJ"
+	_gen_file_lists_needle_gcda="${_gen_file_lists_typ}GCDA"
+	_gen_file_lists_needle_gcno="${_gen_file_lists_typ}GCNO"
 
-	if [ "$use" -ne 0 ]; then
+	if [ "$_gen_file_lists_use" -ne 0 ]; then
 
-		replacement=$(ls $filedir/*.c | tr '\n' ' ')
-		contents=$(replace "$contents" "$needle_src" "$replacement")
+		_gen_file_lists_replacement=$(ls $_gen_file_lists_filedir/*.c | tr '\n' ' ')
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_src" "$_gen_file_lists_replacement")
 
-		replacement=$(replace_exts "$replacement" "c" "o")
-		contents=$(replace "$contents" "$needle_obj" "$replacement")
+		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "c" "o")
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_obj" "$_gen_file_lists_replacement")
 
-		replacement=$(replace_exts "$replacement" "o" "gcda")
-		contents=$(replace "$contents" "$needle_gcda" "$replacement")
+		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "o" "gcda")
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcda" "$_gen_file_lists_replacement")
 
-		replacement=$(replace_exts "$replacement" "gcda" "gcno")
-		contents=$(replace "$contents" "$needle_gcno" "$replacement")
+		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "gcda" "gcno")
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcno" "$_gen_file_lists_replacement")
 
 	else
-		contents=$(replace "$contents" "$needle_src" "")
-		contents=$(replace "$contents" "$needle_obj" "")
-		contents=$(replace "$contents" "$needle_gcda" "")
-		contents=$(replace "$contents" "$needle_gcno" "")
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_src" "")
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_obj" "")
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcda" "")
+		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcno" "")
 	fi
 
-	printf '%s\n' "$contents"
+	printf '%s\n' "$_gen_file_lists_contents"
 }
 
 bc_only=0
