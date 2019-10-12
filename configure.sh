@@ -813,6 +813,7 @@ contents=$(gen_file_lists "$contents" "$scriptdir/src" "")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/bc" "BC_" "$bc")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/dc" "DC_" "$dc")
 contents=$(gen_file_lists "$contents" "$scriptdir/src/history" "HISTORY_" "$hist")
+contents=$(gen_file_lists "$contents" "$scriptdir/src/rand" "RAND_" "$extra_math")
 
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
 contents=$(replace "$contents" "DC_ENABLED" "$dc")
