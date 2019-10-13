@@ -2139,19 +2139,19 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	ulong state1, state2, inc1, inc2;
 	BcDig temp2_num[BC_RAND_NUM_SIZE];
 	BcDig pow_num[BC_RAND_NUM_SIZE];
-	BcDig intn_num[BC_RAND_NUM_SIZE], frac_num[BC_RAND_NUM_SIZE];
+	BcDig intn_num[BC_RAND_NUM_SIZE];
 
 	bc_num_setup(&temp2, temp2_num, sizeof(temp2_num) / sizeof(BcDig));
 	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
 	bc_num_setup(&intn, intn_num, sizeof(intn_num) / sizeof(BcDig));
-	bc_num_setup(&frac, frac_num, sizeof(frac_num) / sizeof(BcDig));
 
 	bc_num_init(&temp, n->len);
+	bc_num_init(&frac, n->rdx);
 
 	s = bc_num_mul(&rng->max, &rng->max, &pow, 0);
 	if (BC_ERR(s)) goto err;
 
-	memcpy(frac_num, n->num, BC_NUM_SIZE(n->rdx));
+	memcpy(frac.num, n->num, BC_NUM_SIZE(n->rdx));
 	frac.len = n->rdx;
 	frac.rdx = n->rdx;
 	frac.scale = n->scale;
@@ -2200,6 +2200,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	bc_rand_seed(rng, state1, state2, inc1, inc2);
 
 err:
+	bc_num_free(&frac);
 	bc_num_free(&temp);
 	return s;
 }
