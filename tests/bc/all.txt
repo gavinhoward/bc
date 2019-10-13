@@ -42,4 +42,5 @@ misc5
 void
 rand
 rand2
+rand3
 lib2
