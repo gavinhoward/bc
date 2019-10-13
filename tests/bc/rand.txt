@@ -288,3 +288,6 @@ irand(maxrand() + 1) <= maxrand()
 for (i = 0; i < 200; ++i) {
 	irand(20) < 20
 }
+
+seed = 738
+seed != 738
