@@ -282,6 +282,7 @@ irand(0)
 irand(0.0281927340987)
 irand(1)
 irand(1.0182739504871)
+seed == -s
 irand(maxrand() + 1) <= maxrand()
 
 for (i = 0; i < 200; ++i) {
