@@ -282,7 +282,7 @@ The following are valid operands in bc(1):
 1.	Numbers (see [Numbers](#bc-numbers) below).
 2.	Array indices (`I[E]`).
 3.	`(E)`: The value of `E` (used to change precedence).
-4.	`sqrt(E)`: The square root of `E`.
+4.	`sqrt(E)`: The square root of `E`. `E` must be non-negative.
 5.	`length(E)`: The number of significant decimal digits in `E`.
 6.	`length(I[])`: The number of elements in the array `I`. This is a
 	**non-portable extension**.
@@ -470,7 +470,8 @@ The operators will be described in more detail below.
     takes two expressions and raises the first to the power of the value of the
     second.
 
-    The second expression must be an integer (no **scale**).
+    The second expression must be an integer (no **scale**), and if it is
+    negative, the first value must be non-zero.
 
   * `*`:
     The `multiply` operator takes two expressions, multiplies them, and returns
@@ -482,10 +483,14 @@ The operators will be described in more detail below.
     The `divide` operator takes two expressions, divides them, and returns the
     quotient. The scale of the result shall be the value of `scale`.
 
+    The second expression must be non-zero.
+
   * `%`:
     The `modulus` operator takes two expressions, `a` and `b`, and evaluates
     them by 1) Computing `a/b` to current `scale` and 2) Using the result of
     step 1 to calculate `a-(a/b)*b` to scale `max(scale+scale(b),scale(a))`.
+
+    The second expression must be non-zero.
 
   * `+`:
     The `add` operator takes two expressions, `a` and `b`, and returns the sum,
@@ -839,6 +844,17 @@ The extended library is a **non-portable extension**.
 
     This is a [transcendental function][5].
 
+  * `cbrt(x)`:
+    Returns the cube root of `x`.
+
+  * `root(x, n)`:
+    Calculates the truncated absolute value of `n`, `r`, and returns the `r`th
+    root of `x` to the current `scale`.
+
+    If `n` is `0`, this raises an error and causes bc(1) to reset (see the RESET
+    section). It also raises an error and causes bc(1) to reset if `n` is even
+    and `x` is negative.
+
   * `pi(p)`:
     Returns `pi` to `p` decimal places.
 
@@ -880,6 +896,9 @@ The extended library is a **non-portable extension**.
 
   * `tan(x)`:
     Returns the tangent of `x`, which is assumed to be in radians.
+
+    If `x` is equal to `1` or `-1`, this raises an error and causes bc(1) to
+    reset (see the RESET section).
 
     This is an alias of `t(x)`.
 
@@ -1354,8 +1373,8 @@ noted above are extensions to that specification.
 Note that the specification explicitly says that bc(1) only accepts numbers that
 use a period (`.`) as a radix point, regardless of the value of `LC_NUMERIC`.
 
-Because this bc(1) ships with support for adding error messages for different
-locales, so it supports `LC_MESSAGES`.
+This bc(1) ships with support for adding error messages for different locales,
+so it supports `LC_MESSAGES`.
 
 AUTHOR
 ------

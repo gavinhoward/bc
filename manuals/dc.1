@@ -189,6 +189,9 @@ The top two values are popped off the stack, multiplied, and the result is pushe
 \fB/\fR
 The top two values are popped off the stack, divided, and the result is pushed onto the stack\. The \fBscale\fR of the result is equal to \fBscale\fR\.
 .
+.IP
+The first value popped off of the stack must be non\-zero\.
+.
 .TP
 \fB%\fR
 The top two values are popped off the stack, remaindered, and the result is pushed onto the stack\.
@@ -196,9 +199,15 @@ The top two values are popped off the stack, remaindered, and the result is push
 .IP
 Remaindering is equivalent to 1) Computing \fBa/b\fR to current \fBscale\fR, and 2) Using the result of step 1 to calculate \fBa\-(a/b)*b\fR to \fBscale\fR \fBmax(scale + scale(b), scale(a))\fR\.
 .
+.IP
+The first value popped off of the stack must be non\-zero\.
+.
 .TP
 \fB~\fR
 The top two values are popped off the stack, divided and remaindered, and the results (divided first, remainder second) are pushed onto the stack\. This is equivalent to \fBx y / x y %\fR except that \fBx\fR and \fBy\fR are only evaluated once\.
+.
+.IP
+The first value popped off of the stack must be non\-zero\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -208,11 +217,14 @@ This is a \fBnon\-portable extension\fR\.
 The top two values are popped off the stack, the second is raised to the power of the first, and the result is pushed onto the stack\.
 .
 .IP
-The first value popped off the stack must be an integer\.
+The first value popped off of the stack must be an integer, and if that value is negative, the second value popped off of the stack must be non\-zero\.
 .
 .TP
 \fBv\fR
 The top value is popped off the stack, its square root is computed, and the result is pushed onto the stack\. The \fBscale\fR of the result is equal to \fBscale\fR\.
+.
+.IP
+The value popped off of the stack must be non\-negative\.
 .
 .TP
 \fB_\fR
@@ -223,7 +235,7 @@ Otherwise, the top value on the stack is popped and copied, and the copy is nega
 .
 .TP
 \fBb\fR
-The top value is popped off the stack and its absolute value is pushed onto the stack\.
+The top value is popped off the stack, and if it is zero, it is pushed back onto the stack\. Otherwise, its absolute value is pushed onto the stack\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -250,7 +262,7 @@ This is a \fBnon\-portable extension\fR\.
 The top two values are popped off the stack, and the precision of the second is set to the value of the first, whether by truncation or extension\.
 .
 .IP
-The first value must be an integer and non\-negative\.
+The first value popped off of the stack must be an integer and non\-negative\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -260,7 +272,7 @@ This is a \fBnon\-portable extension\fR\.
 The top two values are popped off the stack, and the second is shifted left (radix shifted right) to the value of the first\.
 .
 .IP
-The first value must be an integer and non\-negative\.
+The first value popped off of the stack must be an integer and non\-negative\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -270,7 +282,7 @@ This is a \fBnon\-portable extension\fR\.
 The top two values are popped off the stack, and the second is shifted right (radix shifted left) to the value of the first\.
 .
 .IP
-The first value must be an integer and non\-negative\.
+The first value popped off of the stack must be an integer and non\-negative\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.

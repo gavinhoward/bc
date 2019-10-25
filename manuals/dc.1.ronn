@@ -255,6 +255,8 @@ These are the commands used for arithmetic.
     The top two values are popped off the stack, divided, and the result is
     pushed onto the stack. The **scale** of the result is equal to `scale`.
 
+    The first value popped off of the stack must be non-zero.
+
   * `%`:
     The top two values are popped off the stack, remaindered, and the result is
     pushed onto the stack.
@@ -263,11 +265,15 @@ These are the commands used for arithmetic.
     Using the result of step 1 to calculate `a-(a/b)*b` to **scale**
     `max(scale + scale(b), scale(a))`.
 
+    The first value popped off of the stack must be non-zero.
+
   * `~`:
     The top two values are popped off the stack, divided and remaindered, and
     the results (divided first, remainder second) are pushed onto the stack.
     This is equivalent to `x y / x y %` except that `x` and `y` are only
     evaluated once.
+
+    The first value popped off of the stack must be non-zero.
 
     This is a **non-portable extension**.
 
@@ -275,12 +281,16 @@ These are the commands used for arithmetic.
     The top two values are popped off the stack, the second is raised to the
     power of the first, and the result is pushed onto the stack.
 
-    The first value popped off the stack must be an integer.
+    The first value popped off of the stack must be an integer, and if that
+    value is negative, the second value popped off of the stack must be
+    non-zero.
 
   * `v`:
     The top value is popped off the stack, its square root is computed, and the
     result is pushed onto the stack. The **scale** of the result is equal to
     `scale`.
+
+    The value popped off of the stack must be non-negative.
 
   * `_`:
     If this command *immediately* precedes a number (i.e., no spaces or other
@@ -291,8 +301,8 @@ These are the commands used for arithmetic.
     **non-portable extension**.
 
   * `b`:
-    The top value is popped off the stack and its absolute value is pushed onto
-    the stack.
+    The top value is popped off the stack, and if it is zero, it is pushed back
+    onto the stack. Otherwise, its absolute value is pushed onto the stack.
 
     This is a **non-portable extension**.
 
@@ -317,7 +327,7 @@ These are the commands used for arithmetic.
     The top two values are popped off the stack, and the precision of the second
     is set to the value of the first, whether by truncation or extension.
 
-    The first value must be an integer and non-negative.
+    The first value popped off of the stack must be an integer and non-negative.
 
     This is a **non-portable extension**.
 
@@ -325,7 +335,7 @@ These are the commands used for arithmetic.
     The top two values are popped off the stack, and the second is shifted left
     (radix shifted right) to the value of the first.
 
-    The first value must be an integer and non-negative.
+    The first value popped off of the stack must be an integer and non-negative.
 
     This is a **non-portable extension**.
 
@@ -333,7 +343,7 @@ These are the commands used for arithmetic.
     The top two values are popped off the stack, and the second is shifted right
     (radix shifted left) to the value of the first.
 
-    The first value must be an integer and non-negative.
+    The first value popped off of the stack must be an integer and non-negative.
 
     This is a **non-portable extension**.
 

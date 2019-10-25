@@ -256,7 +256,7 @@ Array indices (\fBI[E]\fR)\.
 \fB(E)\fR: The value of \fBE\fR (used to change precedence)\.
 .
 .IP "4." 4
-\fBsqrt(E)\fR: The square root of \fBE\fR\.
+\fBsqrt(E)\fR: The square root of \fBE\fR\. \fBE\fR must be non\-negative\.
 .
 .IP "5." 4
 \fBlength(E)\fR: The number of significant decimal digits in \fBE\fR\.
@@ -480,7 +480,7 @@ This is only available if bc(1) has been compiled with the extra math option ena
 The \fBpower\fR operator (not the \fBexclusive or\fR operator, as it would be in C) takes two expressions and raises the first to the power of the value of the second\.
 .
 .IP
-The second expression must be an integer (no \fBscale\fR)\.
+The second expression must be an integer (no \fBscale\fR), and if it is negative, the first value must be non\-zero\.
 .
 .TP
 \fB*\fR
@@ -490,9 +490,15 @@ The \fBmultiply\fR operator takes two expressions, multiplies them, and returns 
 \fB/\fR
 The \fBdivide\fR operator takes two expressions, divides them, and returns the quotient\. The scale of the result shall be the value of \fBscale\fR\.
 .
+.IP
+The second expression must be non\-zero\.
+.
 .TP
 \fB%\fR
 The \fBmodulus\fR operator takes two expressions, \fBa\fR and \fBb\fR, and evaluates them by 1) Computing \fBa/b\fR to current \fBscale\fR and 2) Using the result of step 1 to calculate \fBa\-(a/b)*b\fR to scale \fBmax(scale+scale(b),scale(a))\fR\.
+.
+.IP
+The second expression must be non\-zero\.
 .
 .TP
 \fB+\fR
@@ -910,6 +916,17 @@ Returns the logarithm base \fBb\fR of \fBx\fR\.
 This is a \fItranscendental function\fR\.
 .
 .TP
+\fBcbrt(x)\fR
+Returns the cube root of \fBx\fR\.
+.
+.TP
+\fBroot(x, n)\fR
+Calculates the truncated absolute value of \fBn\fR, \fBr\fR, and returns the \fBr\fRth root of \fBx\fR to the current \fBscale\fR\.
+.
+.IP
+If \fBn\fR is \fB0\fR, this raises an error and causes bc(1) to reset (see the RESET section)\. It also raises an error and causes bc(1) to reset if \fBn\fR is even and \fBx\fR is negative\.
+.
+.TP
 \fBpi(p)\fR
 Returns \fBpi\fR to \fBp\fR decimal places\.
 .
@@ -956,6 +973,9 @@ This is a \fItranscendental function\fR\.
 .TP
 \fBtan(x)\fR
 Returns the tangent of \fBx\fR, which is assumed to be in radians\.
+.
+.IP
+If \fBx\fR is equal to \fB1\fR or \fB\-1\fR, this raises an error and causes bc(1) to reset (see the RESET section)\.
 .
 .IP
 This is an alias of \fBt(x)\fR\.
@@ -1425,7 +1445,7 @@ bc(1) is compliant with the IEEE Std 1003\.1\-2017 (“POSIX\.1\-2017”) \fIhtt
 Note that the specification explicitly says that bc(1) only accepts numbers that use a period (\fB\.\fR) as a radix point, regardless of the value of \fBLC_NUMERIC\fR\.
 .
 .P
-Because this bc(1) ships with support for adding error messages for different locales, so it supports \fBLC_MESSAGES\fR\.
+This bc(1) ships with support for adding error messages for different locales, so it supports \fBLC_MESSAGES\fR\.
 .
 .SH "AUTHOR"
 This bc(1) was made from scratch by Gavin D\. Howard\.
