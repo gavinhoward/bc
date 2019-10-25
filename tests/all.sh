@@ -91,8 +91,7 @@ while read t; do
 
 	if [ "$extra" -eq 0  ]; then
 		if [ "$t" = "trunc" -o "$t" = "places" -o "$t" = "shift" -o "$t" = "lib2" \
-		     -o "$t" = "scientific" -o "$t" = "engineering" -o "$t" = "rand" \
-			 -o "$t" = "rand2" -o "$t" = "rand3" ]
+		     -o "$t" = "scientific" -o "$t" = "engineering" -o "$t" = "rand" ]
 		then
 			printf 'Skipping %s %s\n' "$d" "$t"
 			continue
