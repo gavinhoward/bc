@@ -272,6 +272,7 @@ Files:
 	locale_install.sh    A script to install locales, if desired.
 	locale_uninstall.sh  A script to uninstall locales.
 	Makefile.in          The Makefile template.
+	manpage.sh           Script to generate man pages from ronn files.
 	NOTICE.md            List of contributors and copyright owners.
 	RELEASE.md           A checklist for making a release (maintainer use only).
 	release.sh           A script to test for release (maintainer use only).
