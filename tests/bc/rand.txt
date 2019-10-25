@@ -294,7 +294,7 @@ seed != 738
 
 s = 2398@0625
 seed = s
-seed < s
+seed != s
 
 pow = (maxrand() + 1) ^ 4
 s = 2^2560 + 2^128 + (irand(pow) / pow)
