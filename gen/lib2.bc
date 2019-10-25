@@ -99,6 +99,29 @@ define log(x,b){
 }
 define l2(x){return log(x,2)}
 define l10(x){return log(x,A)}
+define root(x,n){
+	auto s,m,r,q,p
+	n=abs(n)$
+	if(n==0)x/n
+	if(n==1)return x
+	if(n==2)return sqrt(x)
+	s=scale
+	scale=0
+	if(x<0&&n%2==0)sqrt(x)
+	scale=s+2
+	m=(x<0)
+	x=abs(x)
+	p=n-1
+	q=10^ceil((length(x$)/n)$,0)
+	while(r!=q){
+		r=q
+		q=(p*r+x/r^p)/n
+	}
+	if(m)r=-r
+	scale=s
+	return r@s
+}
+define cbrt(x){return root(x,3)}
 define pi(s){
 	auto t,v
 	if(s==0)return 3
