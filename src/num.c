@@ -2217,8 +2217,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, rdx, req, digs, digs1, digs2, resscale, times = 0;
-	ssize_t cmp = 1, cmp1 = SSIZE_MAX, cmp2 = SSIZE_MAX;
+	size_t pow, len, rdx, req, digs, digs1, digs2, resscale;
 	BcDig half_digs[1];
 
 	assert(a != NULL && b != NULL && a != b);
@@ -2275,11 +2274,9 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	}
 
 	x0->scale = x0->rdx = digs = digs1 = digs2 = 0;
-	resscale = (scale + BC_BASE_DIGS) * 2;
+	resscale = (scale + BC_BASE_DIGS) + 2;
 
-	len = BC_NUM_RDX(bc_num_intDigits(x0) + resscale - 1);
-
-	while (BC_NO_SIG && (cmp || digs < len)) {
+	while (BC_NO_SIG && bc_num_cmp(x1, x0)) {
 
 		assert(BC_NUM_NONZERO(x0));
 
@@ -2290,26 +2287,6 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_mul(&fprime, &half, x1, resscale);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
-
-		cmp = bc_num_cmp(x1, x0);
-
-#if BC_ENABLE_SIGNALS
-		if (BC_NUM_CMP_SIGNAL(cmp)) {
-			s = BC_STATUS_SIGNAL;
-			break;
-		}
-#endif // BC_ENABLE_SIGNALS
-
-		digs = x1->len - (size_t) labs(cmp);
-
-		if (cmp == cmp2 && digs == digs1) times += 1;
-		else times = 0;
-
-		resscale += (times > 2);
-
-		cmp2 = cmp1;
-		cmp1 = cmp;
-		digs1 = digs;
 
 		temp = x0;
 		x0 = x1;
