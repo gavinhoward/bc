@@ -921,10 +921,10 @@ Returns the cube root of \fBx\fR\.
 .
 .TP
 \fBroot(x, n)\fR
-Calculates the truncated absolute value of \fBn\fR, \fBr\fR, and returns the \fBr\fRth root of \fBx\fR to the current \fBscale\fR\.
+Calculates the truncated value of \fBn\fR, \fBr\fR, and returns the \fBr\fRth root of \fBx\fR to the current \fBscale\fR\.
 .
 .IP
-If \fBn\fR is \fB0\fR, this raises an error and causes bc(1) to reset (see the RESET section)\. It also raises an error and causes bc(1) to reset if \fBn\fR is even and \fBx\fR is negative\.
+If \fBr\fR is \fB0\fR or negative, this raises an error and causes bc(1) to reset (see the RESET section)\. It also raises an error and causes bc(1) to reset if \fBr\fR is even and \fBx\fR is negative\.
 .
 .TP
 \fBpi(p)\fR

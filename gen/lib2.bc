@@ -101,6 +101,7 @@ define l2(x){return log(x,2)}
 define l10(x){return log(x,A)}
 define root(x,n){
 	auto s,m,r,q,p
+	if(n<0)sqrt(n)
 	n=abs(n)$
 	if(n==0)x/n
 	if(n==1)return x

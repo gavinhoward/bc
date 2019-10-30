@@ -848,12 +848,12 @@ The extended library is a **non-portable extension**.
     Returns the cube root of `x`.
 
   * `root(x, n)`:
-    Calculates the truncated absolute value of `n`, `r`, and returns the `r`th
-    root of `x` to the current `scale`.
+    Calculates the truncated value of `n`, `r`, and returns the `r`th root of
+    `x` to the current `scale`.
 
-    If `n` is `0`, this raises an error and causes bc(1) to reset (see the RESET
-    section). It also raises an error and causes bc(1) to reset if `n` is even
-    and `x` is negative.
+    If `r` is `0` or negative, this raises an error and causes bc(1) to reset
+    (see the RESET section). It also raises an error and causes bc(1) to reset
+    if `r` is even and `x` is negative.
 
   * `pi(p)`:
     Returns `pi` to `p` decimal places.
