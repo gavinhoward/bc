@@ -296,7 +296,8 @@ queried again immediately. However, if `seed` *does* return a different value,
 both values, when assigned to `seed`, are guaranteed to produce the same
 sequence of pseudo-random numbers. This means that certain values assigned to
 `seed` will not produce unique sequences of pseudo-random numbers. The value of
-`seed` will change after any use of the `rand()` and `irand(E)` operands.
+`seed` will change after any use of the `rand()` and `irand(E)` operands, except
+if the parameter passed to `irand(E)` is `0` or `1`.
 
 There is no limit to the length (number of significant decimal digits) or
 *scale* of the value that can be assigned to `seed`.
@@ -349,14 +350,14 @@ operands:
 	(inclusive). Using this operand will change the value of `seed`. This is a
 	**non-portable extension**.
 2.	`irand(E)`: A pseudo-random integer between `0` (inclusive) and the
-	truncated absolute value of `E` (exclusive). If the bound is larger than
-	`BC_RAND_MAX`, the higher bound is honored by generating several
-	pseudo-random integers, multiplying them by appropriate powers of
-	`BC_RAND_MAX + 1`, and adding them together. Thus, the size of integer that
-	can be generated with this operand is unbounded. Using this operand will
-	change the value of `seed`. If the truncated absolute value of `E` is `0` or
-	`1`, then `0` is returned, and `seed` is not changed. This is a
-	**non-portable extension**.
+	value of `E` (exclusive). If `E` is negative or is a non-integer (**scale**
+	is not `0`), an error is raised, and bc(1) resets (see the RESET section).
+	If `E` is larger than `BC_RAND_MAX`, the higher bound is honored by
+		generating several pseudo-random integers, multiplying them by appropriate
+	powers of `BC_RAND_MAX + 1`, and adding them together. Thus, the size of
+	integer that can be generated with this operand is unbounded. Using this
+	operand will change the value of `seed`. If `E` is `0` or `1`, then `0` is
+	returned, and `seed` is not changed. This is a **non-portable extension**.
 3.	`maxrand()`: The max integer returned by `rand()`. This is a **non-portable
 	extension**.
 
@@ -1009,12 +1010,15 @@ The extended library is a **non-portable extension**.
   * `frand(p)`:
     Generates a pseudo-random number between `0` (inclusive) and `1` (exclusive)
     with the number of decimal digits after the decimal point equal to the
-    truncated absolute value of `p`.
+    truncated absolute value of `p`. If `p` is not `0`, then calling this
+    function will change the value of `seed`.
 
   * `ifrand(i, p)`:
     Generates a pseudo-random number that is between `0` (inclusive) and the
     truncated absolute value of `i` (exclusive) with the number of decimal
     digits after the decimal point equal to the truncated absolute value of `p`.
+    If the absolute value of `i` is greater than or equal to `2`, and `p` is not
+    `0`, then calling this function will change the value of `seed`.
 
   * `srand(x)`:
     Returns `x` with its sign flipped with probability `0.5`.

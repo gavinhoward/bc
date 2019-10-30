@@ -188,7 +188,7 @@ define frand(p){
 	p=abs(p)$
 	return irand(10^p)>>p
 }
-define ifrand(i,p){return irand(i)+frand(p)}
+define ifrand(i,p){return irand(abs(i)$)+frand(p)}
 define srand(x){
 	if (irand(2))return -x
 	return x

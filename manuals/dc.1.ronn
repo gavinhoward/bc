@@ -424,21 +424,23 @@ cryptographically-secure.
     The generated integer is made as unbiased as possible, subject to the
     limitations of the pseudo-random number generator.
 
-    If the truncated absolute value of the operand is `0` or `1`, then the
-    result pushed onto the stack is `0`, and `seed` is not changed.
-
     This command is only available if dc(1) was built with the extra math
     option.
 
     This is a **non-portable extension**.
 
   * `"`:
-    Pops a value off of the stack, and its truncated absolute value is used as
-    an exclusive upper bound on the integer that will be generated. If the bound
-    is larger than `DC_RAND_MAX`, the higher bound is honored by generating
-    several pseudo-random integers, multiplying them by appropriate powers of
-    `DC_RAND_MAX + 1`, and adding them together. Thus, the size of integer that
-    can be generated with this command is unbounded.
+    Pops a value off of the stack, which is used as an **exclusive** upper bound
+    on the integer that will be generated. If the bound is negative or is a
+    non-integer, an error is raised, and dc(1) resets (see the RESET section).
+    If the bound is larger than `DC_RAND_MAX`, the higher bound is honored by
+    generating several pseudo-random integers, multiplying them by appropriate
+    powers of `DC_RAND_MAX + 1`, and adding them together. Thus, the size of
+    integer that can be generated with this command is unbounded. Using this
+    command will change the value of `seed`.
+
+    If the operand is `0` or `1`, then the result pushed onto the stack is `0`,
+    and `seed` is not changed.
 
     The generated integer is made as unbiased as possible, subject to the
     limitations of the pseudo-random number generator.

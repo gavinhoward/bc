@@ -2272,11 +2272,11 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 
 	assert(a != b);
 
-	bc_num_createCopy(&cp, a);
-	bc_num_truncate(&cp, cp.scale);
-	cp.neg = false;
+	if (BC_ERR(a->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_ERR(a->rdx)) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return s;
 
-	if (BC_NUM_ZERO(&cp) || BC_NUM_ONE(&cp)) goto early_exit;
+	bc_num_createCopy(&cp, a);
 
 	bc_num_init(&cp2, cp.len);
 	bc_num_init(&mod, BC_NUM_BIGDIG_LOG10);
@@ -2349,7 +2349,6 @@ err:
 	bc_num_free(&temp1);
 	bc_num_free(&mod);
 	bc_num_free(&cp2);
-early_exit:
 	bc_num_free(&cp);
 	return s;
 }

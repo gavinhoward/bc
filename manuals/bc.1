@@ -261,7 +261,7 @@ The \fBscale\fR of the value may be significant\.
 If a previously used \fBseed\fR value is assigned to \fBseed\fR and used again, the pseudo\-random number generator is guaranteed to produce the same sequence of pseudo\-random numbers as it did when the \fBseed\fR value was previously used\.
 .
 .P
-The exact value assigned to \fBseed\fR is not guaranteed to be returned if \fBseed\fR is queried again immediately\. However, if \fBseed\fR \fIdoes\fR return a different value, both values, when assigned to \fBseed\fR, are guaranteed to produce the same sequence of pseudo\-random numbers\. This means that certain values assigned to \fBseed\fR will not produce unique sequences of pseudo\-random numbers\. The value of \fBseed\fR will change after any use of the \fBrand()\fR and \fBirand(E)\fR operands\.
+The exact value assigned to \fBseed\fR is not guaranteed to be returned if \fBseed\fR is queried again immediately\. However, if \fBseed\fR \fIdoes\fR return a different value, both values, when assigned to \fBseed\fR, are guaranteed to produce the same sequence of pseudo\-random numbers\. This means that certain values assigned to \fBseed\fR will not produce unique sequences of pseudo\-random numbers\. The value of \fBseed\fR will change after any use of the \fBrand()\fR and \fBirand(E)\fR operands, except if the parameter passed to \fBirand(E)\fR is \fB0\fR or \fB1\fR\.
 .
 .P
 There is no limit to the length (number of significant decimal digits) or \fIscale\fR of the value that can be assigned to \fBseed\fR\.
@@ -332,7 +332,7 @@ If bc(1) was built with the extra math option, the following are also valid oper
 \fBrand()\fR: A pseudo\-random integer between \fB0\fR (inclusive) and \fBBC_RAND_MAX\fR (inclusive)\. Using this operand will change the value of \fBseed\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "2." 4
-\fBirand(E)\fR: A pseudo\-random integer between \fB0\fR (inclusive) and the truncated absolute value of \fBE\fR (exclusive)\. If the bound is larger than \fBBC_RAND_MAX\fR, the higher bound is honored by generating several pseudo\-random integers, multiplying them by appropriate powers of \fBBC_RAND_MAX + 1\fR, and adding them together\. Thus, the size of integer that can be generated with this operand is unbounded\. Using this operand will change the value of \fBseed\fR\. If the truncated absolute value of \fBE\fR is \fB0\fR or \fB1\fR, then \fB0\fR is returned, and \fBseed\fR is not changed\. This is a \fBnon\-portable extension\fR\.
+\fBirand(E)\fR: A pseudo\-random integer between \fB0\fR (inclusive) and the value of \fBE\fR (exclusive)\. If \fBE\fR is negative or is a non\-integer (\fBscale\fR is not \fB0\fR), an error is raised, and bc(1) resets (see the RESET section)\. If \fBE\fR is larger than \fBBC_RAND_MAX\fR, the higher bound is honored by generating several pseudo\-random integers, multiplying them by appropriate powers of \fBBC_RAND_MAX + 1\fR, and adding them together\. Thus, the size of integer that can be generated with this operand is unbounded\. Using this operand will change the value of \fBseed\fR\. If \fBE\fR is \fB0\fR or \fB1\fR, then \fB0\fR is returned, and \fBseed\fR is not changed\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "3." 4
 \fBmaxrand()\fR: The max integer returned by \fBrand()\fR\. This is a \fBnon\-portable extension\fR\.
@@ -1080,11 +1080,11 @@ This is a \fItranscendental function\fR\.
 .
 .TP
 \fBfrand(p)\fR
-Generates a pseudo\-random number between \fB0\fR (inclusive) and \fB1\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\.
+Generates a pseudo\-random number between \fB0\fR (inclusive) and \fB1\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\. If \fBp\fR is not \fB0\fR, then calling this function will change the value of \fBseed\fR\.
 .
 .TP
 \fBifrand(i, p)\fR
-Generates a pseudo\-random number that is between \fB0\fR (inclusive) and the truncated absolute value of \fBi\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\.
+Generates a pseudo\-random number that is between \fB0\fR (inclusive) and the truncated absolute value of \fBi\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\. If the absolute value of \fBi\fR is greater than or equal to \fB2\fR, and \fBp\fR is not \fB0\fR, then calling this function will change the value of \fBseed\fR\.
 .
 .TP
 \fBsrand(x)\fR
