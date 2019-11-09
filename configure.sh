@@ -554,15 +554,15 @@ if [ "$debug" -eq 1 ]; then
 		CFLAGS="-O0"
 	fi
 
-	CFLAGS="$CFLAGS -g"
+	CFLAGS="-g $CFLAGS"
 
 else
-	CPPFLAGS="$CPPFLAGS -DNDEBUG"
-	LDFLAGS="$LDFLAGS -s"
+	CPPFLAGS="-DNDEBUG $CPPFLAGS"
+	LDFLAGS="-s $LDFLAGS"
 fi
 
 if [ -n "$optimization" ]; then
-	CFLAGS="$CFLAGS -O$optimization"
+	CFLAGS="-O$optimization $CFLAGS"
 fi
 
 if [ "$coverage" -eq 1 ]; then
@@ -571,8 +571,8 @@ if [ "$coverage" -eq 1 ]; then
 		usage "Can only specify -c without -b or -d"
 	fi
 
-	CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage -g -O0"
-	CPPFLAGS="$CPPFLAGS -DNDEBUG"
+	CFLAGS="-fprofile-arcs -ftest-coverage -g -O0 $CFLAGS"
+	CPPFLAGS="-DNDEBUG $CPPFLAGS"
 
 	COVERAGE="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
 	COVERAGE="$COVERAGE;\$(RM) -f \$(GEN)*.gc*"
@@ -644,7 +644,7 @@ if [ "$nls" -ne 0 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
+	"$HOSTCC" $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
 
 	err="$?"
 
@@ -717,7 +717,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
+	"$HOSTCC" $HOSTCFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
 
 	err="$?"
 
