@@ -1217,7 +1217,10 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 	else if (inst == BC_INST_IRAND) {
 		bc_num_init(resn, num->len - num->rdx);
 		s = bc_num_irand(num, resn, &p->rng);
-		if (BC_ERR(s)) return s;
+		if (BC_ERR(s)) {
+			bc_num_free(resn);
+			return s;
+		}
 	}
 #endif // BC_ENABLE_EXTRA_MATH
 	else {
