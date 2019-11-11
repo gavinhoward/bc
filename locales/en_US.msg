@@ -62,7 +62,7 @@ $set 4
 7 "empty expression"
 8 "invalid print statement"
 9 "invalid function definition"
-10 "invalid assignment: left side must be scale, ibase, obase, last, var, or array element"
+10 "invalid assignment: left side must be scale, ibase, obase, seed, last, var, or array element"
 11 "no auto variable found"
 12 "function parameter or auto \"%s%s\" already exists"
 13 "block end could not be found"

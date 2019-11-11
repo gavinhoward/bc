@@ -34,7 +34,7 @@ $set 4
 7 "leerer Ausdruck"
 8 "Ungültige Druckanweisung"
 9 "Ungültige Funktionsdefinition"
-10 "Ungültige Zuweisung: Die linke Seite muss \"scale\", \"ibase\", \"obase\", \"last\", \"var\" oder \"array element\" sein"
+10 "Ungültige Zuweisung: Die linke Seite muss \"scale\", \"ibase\", \"obase\", \"seed\", \"last\", \"var\" oder \"array element\" sein"
 11 "keine automatische Variable gefunden"
 12 "Funktionsparameter oder Variable \"%s%s\" existiert bereits"
 13 "Blockende konnte nicht gefunden werden"

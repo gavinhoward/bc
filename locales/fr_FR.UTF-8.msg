@@ -62,7 +62,7 @@ $set 4
 7 "expression vide"
 8 "instruction d'écriture invalide"
 9 "définition de fonction invalide"
-10 "affectation invalide : la partie gauche doit être 'scale', 'ibase', 'obase', 'last', une variable ou une case de tableau"
+10 "affectation invalide : la partie gauche doit être 'scale', 'ibase', 'obase', 'seed', 'last', une variable ou une case de tableau"
 11 "aucune variable auto trouvée"
 12 "Le paramètre de fonction ou variable auto \"%s%s\" existe déjà"
 13 "fin de bloc non trouvée"
