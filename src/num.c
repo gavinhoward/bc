@@ -2275,6 +2275,11 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	if (BC_ERR(a->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 	if (BC_ERR(a->rdx)) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return s;
+	if (!bc_num_cmp(a, &rng->max)) {
+		r = bc_rand_int(rng);
+		bc_num_bigdig2num(b, r);
+		return s;
+	}
 
 	bc_num_createCopy(&cp, a);
 
