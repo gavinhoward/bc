@@ -13,6 +13,7 @@ trunc
 places
 vars
 boolean
+compneg
 abs
 assignments
 functions
