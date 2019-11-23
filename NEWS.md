@@ -453,7 +453,7 @@ This is a beta release. It does not have the complete set of features, and it is
 not thoroughly tested.
 
 [1]: https://docs.microsoft.com/en-us/windows/wsl/install-win10
-[2]: http://xstatic.musl.cc/bc/
+[2]: https://pkg.musl.cc/bc/
 [3]: http://lcamtuf.coredump.cx/afl/
 [4]: ./karatsuba.py
 [5]: ./README.md
