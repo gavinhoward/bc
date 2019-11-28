@@ -47,17 +47,17 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EfgGHMNPS] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EfgGHMNPST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
-	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage] \\\n'
-	printf '           [--debug --disable-extra-math --disable-generated-tests]   \\\n'
-	printf '           [--disable-history --disable-man-pages --disable-nls]      \\\n'
-	printf '           [--disable-prompt --disable-signal-handling]               \\\n'
-	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]          \\\n'
-	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                        \\\n'
-	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]            \\\n'
-	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR]                      \\\n'
-	printf '           [--force]                                                  \\\n'
+	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]    \\\n'
+	printf '           [--debug --disable-extra-math --disable-generated-tests]      \\\n'
+	printf '           [--disable-history --disable-man-pages --disable-nls]         \\\n'
+	printf '           [--disable-prompt --disable-signal-handling --disable-strip]  \\\n'
+	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]             \\\n'
+	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                           \\\n'
+	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]               \\\n'
+	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR]                         \\\n'
+	printf '           [--force]                                                     \\\n'
 	printf '\n'
 	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -111,6 +111,9 @@ usage() {
 	printf '        enabled.\n'
 	printf '    -S, --disable-signal-handling\n'
 	printf '        Disable signal handling. On by default.\n'
+	printf '    -T, --disable-strip\n'
+	printf '        Disable stripping symbols from the compiled binary or binaries.\n'
+	printf '        Stripping symbols only happens when debug mode is off.\n'
 	printf '    --prefix PREFIX\n'
 	printf '        The prefix to install to. Overrides "$PREFIX" if it exists.\n'
 	printf '        If PREFIX is "/usr", install path will be "/usr/bin".\n'
@@ -311,8 +314,9 @@ install_manpages=1
 nls=1
 prompt=1
 force=0
+strip_bin=1
 
-while getopts "bBcdDEfgGhHk:MNO:PS-" opt; do
+while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -332,6 +336,7 @@ while getopts "bBcdDEfgGhHk:MNO:PS-" opt; do
 		O) optimization="$OPTARG" ;;
 		P) prompt=0 ;;
 		S) signals=0 ;;
+		T) strip_bin=0 ;;
 		-)
 			arg="$1"
 			arg="${arg#--}"
@@ -415,6 +420,7 @@ while getopts "bBcdDEfgGhHk:MNO:PS-" opt; do
 				disable-nls) nls=0 ;;
 				disable-prompt) prompt=0 ;;
 				disable-signal-handling) signals=0 ;;
+				disable-strip) strip_bin=0 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-bc* | disable-dc* | disable-extra-math*)
@@ -422,6 +428,8 @@ while getopts "bBcdDEfgGhHk:MNO:PS-" opt; do
 				disable-generated-tests* | disable-history*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-man-pages* | disable-nls* | disable-signal-handling*)
+					usage "No arg allowed for --$arg option" ;;
+				disable-strip*)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
@@ -558,7 +566,9 @@ if [ "$debug" -eq 1 ]; then
 
 else
 	CPPFLAGS="-DNDEBUG $CPPFLAGS"
-	LDFLAGS="-s $LDFLAGS"
+	if [ "$strip_bin" -ne 0 ]; then
+		LDFLAGS="-s $LDFLAGS"
+	fi
 fi
 
 if [ -n "$optimization" ]; then

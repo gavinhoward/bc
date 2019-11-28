@@ -138,6 +138,11 @@ For packages that are not built on the oldest supported hardware,
 `-march=native` is not recommended because of the possibility of illegal
 instructions.
 
+#### Stripping Binaries
+
+By default, non-debug binaries are stripped, but stripping can be disabled with
+the `-T` option to `configure.sh`.
+
 #### Using This `bc` as an Alternative
 
 If this `bc` is packaged as an alternative to an already existing `bc` package,
