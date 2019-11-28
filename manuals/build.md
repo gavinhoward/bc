@@ -521,6 +521,26 @@ make
 make install
 ```
 
+## Stripping Binaries
+
+By default, when `bc` and `dc` are not built in debug mode, the binaries are
+stripped. Stripping can be disabled with either the `-T` or the
+`--disable-strip` option, as follows:
+
+```
+./configure.sh -T
+./configure.sh --disable-strip
+```
+
+Both commands are equivalent.
+
+The build and install can then be run as normal:
+
+```
+make
+make install
+```
+
 ## Binary Size
 
 When built with both calculators, all available features, and `-Os` using clang,

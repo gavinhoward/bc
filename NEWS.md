@@ -1,5 +1,11 @@
 # News
 
+## 2.3.2
+
+This is a production release meant to fix warnings in the Gentoo `ebuild` by
+making it possible to disable binary stripping. Other users do *not* need to
+upgrade.
+
 ## 2.3.1
 
 This is a production release. It fixes a bug that caused `-1000000000 < -1` to
