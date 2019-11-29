@@ -298,3 +298,15 @@ pow = (maxrand() + 1) ^ 4
 s = 2^2560 + 2^128 + (irand(pow) / pow)
 seed = s
 seed < s
+
+b = 0
+m = maxrand() + 1
+n = m + 1
+
+for (i = 0; !b && i < 100; ++i) {
+	c = irand(n)
+	b = (c != 0 && c != m)
+	if (c >= n) print "irand() result is too large.\n"
+}
+
+b
