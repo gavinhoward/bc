@@ -1021,7 +1021,8 @@ The extended library is a **non-portable extension**.
     `0`, then calling this function will change the value of `seed`.
 
   * `srand(x)`:
-    Returns `x` with its sign flipped with probability `0.5`.
+    Returns `x` with its sign flipped with probability `0.5`. In other words, it
+    randomizes the sign of `x`.
 
   * `ubytes(x)`:
     Returns the numbers of unsigned integer bytes required to hold the truncated
