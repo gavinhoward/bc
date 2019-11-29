@@ -2268,18 +2268,26 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	BcNum pow, pow2, cp, cp2, mod, temp1, temp2, rand;
 	BcNum *p1, *p2, *t1, *t2, *c1, *c2, *tmp;
 	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
-	bool carry = false, start = true;
+	bool carry;
+	ssize_t cmp;
 
 	assert(a != b);
 
 	if (BC_ERR(a->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 	if (BC_ERR(a->rdx)) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return s;
-	if (!bc_num_cmp(a, &rng->max)) {
+
+	cmp = bc_num_cmp(a, &rng->max);
+
+	if (!cmp) {
 		r = bc_rand_int(rng);
 		bc_num_bigdig2num(b, r);
 		return s;
 	}
+
+	// In the case where a is less than rng->max, we have to make sure we have
+	// an exclusive bound. This ensures that it happens. (See below.)
+	carry = (cmp < 0);
 
 	bc_num_createCopy(&cp, a);
 
@@ -2307,12 +2315,24 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 		s = bc_num_bigdig(&mod, &modl);
 		if (BC_ERR(s)) goto err;
 
-		if (start || carry) carry = !modl;
-		else modl += 1;
+		if (bc_num_cmp(c1, &rng->max) < 0) {
 
-		if (!modl) r = bc_rand_int(rng);
-		else if (modl == 1) r = 0;
-		else r = bc_rand_bounded(rng, (BcRand) modl);
+			// In this case, if there is no carry, then we know we can generate
+			// an integer *equal* to modl. Thus, we add one if there is no
+			// carry. Otherwise, we add zero, and we are still bounded properly.
+			// Since the last portion is guaranteed to be greater than 1, we
+			// know modl isn't 0 unless there is no carry.
+			modl += !carry;
+
+			if (modl == 1) r = 0;
+			else if (!modl) r = bc_rand_int(rng);
+			else r = bc_rand_bounded(rng, (BcRand) modl);
+		}
+		else {
+			if (modl) modl -= carry;
+			r = bc_rand_int(rng);
+			carry = (r >= (BcRand) modl);
+		}
 
 		bc_num_bigdig2num(&rand, r);
 
@@ -2334,8 +2354,6 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 			tmp = c1;
 			c1 = c2;
 			c2 = tmp;
-
-			start = false;
 		}
 		else c1 = c2;
 
