@@ -1534,9 +1534,6 @@ void bc_program_free(BcProgram *p) {
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) bc_vec_free(p->globals_v + i);
 
 	bc_vec_free(&p->fns);
-#if BC_ENABLED
-	bc_vec_free(&p->fn_map);
-#endif // BC_ENABLED
 	bc_vec_free(&p->vars);
 	bc_vec_free(&p->var_map);
 	bc_vec_free(&p->arrs);
@@ -1544,7 +1541,10 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
 #if BC_ENABLED
-	bc_num_free(&p->last);
+	if (BC_IS_BC) {
+		bc_vec_free(&p->fn_map);
+		bc_num_free(&p->last);
+	}
 #endif // BC_ENABLED
 }
 #endif // NDEBUG
@@ -1568,16 +1568,18 @@ void bc_program_init(BcProgram *p) {
 	}
 
 #if DC_ENABLED
-	p->strm = UCHAR_MAX + 1;
-	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
-	bc_num_bigdig2num(&p->strmb, p->strm);
+	if (!BC_IS_BC) {
+		p->strm = UCHAR_MAX + 1;
+		bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
+		bc_num_bigdig2num(&p->strmb, p->strm);
+	}
 #endif // DC_ENABLED
 
 	bc_num_setup(&p->one, p->one_num, BC_PROG_ONE_CAP);
 	bc_num_one(&p->one);
 
 #if BC_ENABLED
-	bc_num_init(&p->last, BC_NUM_DEF_SIZE);
+	if (BC_IS_BC) bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
 
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);

@@ -136,24 +136,31 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 	p->auto_part = false;
 
 #if BC_ENABLED
-	bc_vec_npop(&p->flags, p->flags.len - 1);
-	bc_vec_npop(&p->exits, p->exits.len);
-	bc_vec_npop(&p->conds, p->conds.len);
-	bc_vec_npop(&p->ops, p->ops.len);
+	if (BC_IS_BC) {
+		bc_vec_npop(&p->flags, p->flags.len - 1);
+		bc_vec_npop(&p->exits, p->exits.len);
+		bc_vec_npop(&p->conds, p->conds.len);
+		bc_vec_npop(&p->ops, p->ops.len);
+	}
 #endif // BC_ENABLED
 
 	return bc_program_reset(p->prog, s);
 }
 
 void bc_parse_free(BcParse *p) {
+
 	assert(p != NULL);
+
 #if BC_ENABLED
-	bc_vec_free(&p->flags);
-	bc_vec_free(&p->exits);
-	bc_vec_free(&p->conds);
-	bc_vec_free(&p->ops);
-	bc_vec_free(&p->buf);
+	if (BC_IS_BC) {
+		bc_vec_free(&p->flags);
+		bc_vec_free(&p->exits);
+		bc_vec_free(&p->conds);
+		bc_vec_free(&p->ops);
+		bc_vec_free(&p->buf);
+	}
 #endif // BC_ENABLED
+
 	bc_lex_free(&p->l);
 }
 
@@ -166,12 +173,14 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 	assert(p != NULL && prog != NULL);
 
 #if BC_ENABLED
-	bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
-	bc_vec_push(&p->flags, &flag);
-	bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
-	bc_vec_init(&p->conds, sizeof(size_t), NULL);
-	bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
-	bc_vec_init(&p->buf, sizeof(char), NULL);
+	if (BC_IS_BC) {
+		bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
+		bc_vec_push(&p->flags, &flag);
+		bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
+		bc_vec_init(&p->conds, sizeof(size_t), NULL);
+		bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
+		bc_vec_init(&p->buf, sizeof(char), NULL);
+	}
 #endif // BC_ENABLED
 
 	bc_lex_init(&p->l);
