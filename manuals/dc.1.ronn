@@ -676,8 +676,8 @@ be printed with a newline after and then popped from the stack.
 
   * `=`*r*:
     Pops two values off of the stack that must be numbers and compares them. If
-    the first value is equal to the second (greater than or equal to), then the
-    contents of register `r` are executed.
+    the first value is equal to the second, then the contents of register `r`
+    are executed.
 
   * `=`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
@@ -686,8 +686,8 @@ be printed with a newline after and then popped from the stack.
 
   * `!=`*r*:
     Pops two values off of the stack that must be numbers and compares them. If
-    the first value is not equal to the second (greater than or equal to), then
-    the contents of register `r` are executed.
+    the first value is not equal to the second, then the contents of register
+    `r` are executed.
 
   * `!=`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
