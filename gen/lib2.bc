@@ -193,6 +193,7 @@ define srand(x){
 	if (irand(2))return -x
 	return x
 }
+define brand(){return irand(2)}
 define void output(x,b){
 	auto c
 	c=obase
