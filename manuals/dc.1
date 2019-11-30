@@ -329,6 +329,26 @@ The top two values are popped off of the stack, they are compared, and a \fB1\fR
 .IP
 This is a \fBnon\-portable extension\fR\.
 .
+.TP
+\fBM\fR
+The top two values are popped off of the stack\. If they are both non\-zero, a \fB1\fR is pushed onto the stack\. If either of them is zero, or both of them are, then a \fB0\fR is pushed onto the stack\.
+.
+.IP
+This is like the \fB&&\fR operator in bc(1), and it is not a short\-circuit operator\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
+.
+.TP
+\fBm\fR
+The top two values are popped off of the stack\. If at least one of them is non\-zero, a \fB1\fR is pushed onto the stack\. If both of them are zero, then a \fB0\fR is pushed onto the stack\.
+.
+.IP
+This is like the \fB||\fR operator in bc(1), and it is not a short\-circuit operator\.
+.
+.IP
+This is a \fBnon\-portable extension\fR\.
+.
 .SS "Stack Control"
 These commands control the stack\.
 .
@@ -438,7 +458,7 @@ Strings can also be executed as macros\. For example, if the string \fB[1pR]\fR 
 .
 .TP
 \fB[\fR\fIcharacters\fR\fB]\fR
-Makes a string containing \fBcharacters\fR and pushes it onto the stack\.
+Makes a string containing \fIcharacters\fR and pushes it onto the stack\.
 .
 .IP
 If there are brackets (\fB[\fR and \fB]\fR) in the string, then they must be balanced\. Unbalanced brackets can be escaped using a backslash (\fB\e\fR) character\.
