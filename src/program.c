@@ -1791,10 +1791,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				break;
 			}
+#endif // BC_ENABLED
 
 			case BC_INST_BOOL_OR:
 			case BC_INST_BOOL_AND:
-#endif // BC_ENABLED
 			case BC_INST_REL_EQ:
 			case BC_INST_REL_LE:
 			case BC_INST_REL_GE:
