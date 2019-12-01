@@ -564,7 +564,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		assert(inst != BC_INST_PRINT_STR);
 		s = bc_num_print(n, BC_PROG_OBASE(p), !pop);
 #if BC_ENABLED
-		if (BC_NO_ERR(!s)) bc_num_copy(&p->last, n);
+		if (BC_NO_ERR(!s) && BC_IS_BC) bc_num_copy(&p->last, n);
 #endif // BC_ENABLED
 	}
 	else {
@@ -1567,6 +1567,7 @@ void bc_program_free(BcProgram *p) {
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) bc_vec_free(p->globals_v + i);
 
 	bc_vec_free(&p->fns);
+	bc_vec_free(&p->fn_map);
 	bc_vec_free(&p->vars);
 	bc_vec_free(&p->var_map);
 	bc_vec_free(&p->arrs);
@@ -1576,7 +1577,6 @@ void bc_program_free(BcProgram *p) {
 
 #if BC_ENABLED
 	if (BC_IS_BC) {
-		bc_vec_free(&p->fn_map);
 		bc_num_free(&p->last);
 	}
 #endif // BC_ENABLED
