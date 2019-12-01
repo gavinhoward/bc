@@ -362,7 +362,7 @@ static void bc_vm_clean(void) {
 	    ip->idx == f->code.len)
 	{
 #if BC_ENABLED
-		bc_vec_npop(&f->labels, f->labels.len);
+		if (BC_IS_BC) bc_vec_npop(&f->labels, f->labels.len);
 #endif // BC_ENABLED
 		bc_vec_npop(&f->strs, f->strs.len);
 		bc_vec_npop(&f->consts, f->consts.len);
@@ -387,7 +387,8 @@ static BcStatus bc_vm_process(const char *text, bool is_stdin) {
 	}
 
 #if BC_ENABLED
-	{
+	if (BC_IS_BC) {
+
 		uint16_t *flags = BC_PARSE_TOP_FLAG_PTR(&vm->prs);
 
 		if (!is_stdin && vm->prs.flags.len == 1 &&
@@ -421,7 +422,7 @@ static BcStatus bc_vm_file(const char *file) {
 	if (BC_ERR(s)) goto err;
 
 #if BC_ENABLED
-	if (BC_ERR(BC_PARSE_NO_EXEC(&vm->prs)))
+	if (BC_IS_BC && BC_ERR(BC_PARSE_NO_EXEC(&vm->prs)))
 		s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 
@@ -506,7 +507,7 @@ static BcStatus bc_vm_stdin(void) {
 		else if (BC_ERR(string))
 			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_STRING);
 #if BC_ENABLED
-		else if (BC_ERR(BC_PARSE_NO_EXEC(&vm->prs)))
+		else if (BC_IS_BC && BC_ERR(BC_PARSE_NO_EXEC(&vm->prs)))
 			s = bc_parse_err(&vm->prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 	}
