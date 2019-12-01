@@ -1573,6 +1573,7 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->arr_map);
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
+
 #if BC_ENABLED
 	if (BC_IS_BC) {
 		bc_vec_free(&p->fn_map);
