@@ -63,11 +63,6 @@ typedef struct BcProgram {
 	BcRNG rng;
 #endif // BC_ENABLE_EXTRA_MATH
 
-#if DC_ENABLED
-	BcBigDig strm;
-	BcNum strmb;
-#endif // DC_ENABLED
-
 	BcVec results;
 	BcVec stack;
 
@@ -81,6 +76,13 @@ typedef struct BcProgram {
 
 	BcVec arrs;
 	BcVec arr_map;
+
+#if DC_ENABLED
+	BcVec tail_calls;
+
+	BcBigDig strm;
+	BcNum strmb;
+#endif // DC_ENABLED
 
 	BcNum one;
 

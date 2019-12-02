@@ -97,10 +97,12 @@ void bc_func_init(BcFunc *f, const char *name) {
 	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
 	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
 #if BC_ENABLED
-	bc_vec_init(&f->autos, sizeof(BcLoc), NULL);
-	bc_vec_init(&f->labels, sizeof(size_t), NULL);
-	f->nparams = 0;
-	f->voidfn = false;
+	if (BC_IS_BC) {
+		bc_vec_init(&f->autos, sizeof(BcLoc), NULL);
+		bc_vec_init(&f->labels, sizeof(size_t), NULL);
+		f->nparams = 0;
+		f->voidfn = false;
+	}
 #endif // BC_ENABLED
 	f->name = name;
 }
@@ -111,10 +113,12 @@ void bc_func_reset(BcFunc *f) {
 	bc_vec_npop(&f->strs, f->strs.len);
 	bc_vec_npop(&f->consts, f->consts.len);
 #if BC_ENABLED
-	bc_vec_npop(&f->autos, f->autos.len);
-	bc_vec_npop(&f->labels, f->labels.len);
-	f->nparams = 0;
-	f->voidfn = false;
+	if (BC_IS_BC) {
+		bc_vec_npop(&f->autos, f->autos.len);
+		bc_vec_npop(&f->labels, f->labels.len);
+		f->nparams = 0;
+		f->voidfn = false;
+	}
 #endif // BC_ENABLED
 }
 
@@ -125,8 +129,10 @@ void bc_func_free(void *func) {
 	bc_vec_free(&f->strs);
 	bc_vec_free(&f->consts);
 #if BC_ENABLED
-	bc_vec_free(&f->autos);
-	bc_vec_free(&f->labels);
+	if (BC_IS_BC) {
+		bc_vec_free(&f->autos);
+		bc_vec_free(&f->labels);
+	}
 #endif // BC_ENABLED
 }
 

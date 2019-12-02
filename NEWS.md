@@ -1,5 +1,24 @@
 # News
 
+## 2.4.0
+
+This is a production release primarily aimed at improving `dc`.
+
+* A couple of copy and paste errors in the [`dc` manual][10] were fixed.
+* `dc` startup was optimized by making sure it didn't have to set up `bc`-only
+  things.
+* The `bc` `&&` and `||` were made available to `dc` through the `M` and `m`
+  commands, respectively.
+* `dc` macros were changed to be tail call-optimized.
+
+The last item, tail call optimization, means that if the last thing in a macro
+is a call to another macro, then the old macro is popped before executing the
+new macro. This change was made to stop `dc` from consuming more and more memory
+as macros are executed in a loop.
+
+The `q` and `Q` commands still respect the "hidden" macros by way of recording
+how many macros were removed by tail call optimization.
+
 ## 2.3.2
 
 This is a production release meant to fix warnings in the Gentoo `ebuild` by
