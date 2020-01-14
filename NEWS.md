@@ -1,5 +1,12 @@
 # News
 
+## 2.5.0
+
+This is a production release with new translations. No code changed.
+
+The translations were contributed by [bugcrazy][15], and they are for
+Portuguese, both Portugal and Brazil locales.
+
 ## 2.4.0
 
 This is a production release primarily aimed at improving `dc`.
@@ -491,3 +498,4 @@ not thoroughly tested.
 [12]: ./locale_install.sh
 [13]: ./manuals/build.md
 [14]: https://github.com/stesser
+[15]: https://github.com/bugcrazy
