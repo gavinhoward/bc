@@ -278,7 +278,7 @@ gen_file_lists() {
 
 	if [ "$_gen_file_lists_use" -ne 0 ]; then
 
-		_gen_file_lists_replacement=$(ls $_gen_file_lists_filedir/*.c | tr '\n' ' ')
+		_gen_file_lists_replacement=$(cd "$_gen_file_lists_filedir" && find . ! -name . -prune -name "*.c" | cut -d/ -f2 | sed "s@^@$_gen_file_lists_filedir/@g" | tr '\n' ' ')
 		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_src" "$_gen_file_lists_replacement")
 
 		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "c" "o")
@@ -441,7 +441,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 
 done
 
-if [ "$bc_only" -eq 1 -a "$dc_only" -eq 1 ]; then
+if [ "$bc_only" -eq 1 ] && [ "$dc_only" -eq 1 ]; then
 	usage "Can only specify one of -b(-D) or -d(-B)"
 fi
 
@@ -550,7 +550,7 @@ else
 	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
 fi
 
-if [ -z "${HOSTCFLAGS+set}" -a -z "${HOST_CFLAGS+set}" ]; then
+if [ -z "${HOSTCFLAGS+set}" ] && [ -z "${HOST_CFLAGS+set}" ]; then
 	HOSTCFLAGS="$CFLAGS"
 elif [ -z "${HOSTCFLAGS+set}" ]; then
 	HOSTCFLAGS="$HOST_CFLAGS"
@@ -558,7 +558,7 @@ fi
 
 if [ "$debug" -eq 1 ]; then
 
-	if [ -z "$CFLAGS" -a -z "$optimization" ]; then
+	if [ -z "$CFLAGS" ] && [ -z "$optimization" ]; then
 		CFLAGS="-O0"
 	fi
 
@@ -577,7 +577,7 @@ fi
 
 if [ "$coverage" -eq 1 ]; then
 
-	if [ "$bc_only" -eq 1 -o "$dc_only" -eq 1 ]; then
+	if [ "$bc_only" -eq 1 ] || [ "$dc_only" -eq 1 ]; then
 		usage "Can only specify -c without -b or -d"
 	fi
 
@@ -608,7 +608,7 @@ if [ -z "${BINDIR+set}" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
-if [ "$install_manpages" -ne 0 -o "$nls" -ne 0 ]; then
+if [ "$install_manpages" -ne 0 ] || [ "$nls" -ne 0 ]; then
 	if [ -z "${DATAROOTDIR+set}" ]; then
 		DATAROOTDIR="$PREFIX/share"
 	fi
@@ -637,7 +637,7 @@ if [ -z "$CC" ]; then
 	CC="c99"
 fi
 
-if [ -z "$HOSTCC" -a -z "$HOST_CC" ]; then
+if [ -z "$HOSTCC" ] && [ -z "$HOST_CC" ]; then
 	HOSTCC="$CC"
 elif [ -z "$HOSTCC" ]; then
 	HOSTCC="$HOST_CC"
@@ -652,7 +652,7 @@ if [ "$nls" -ne 0 ]; then
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
-	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
 	"$HOSTCC" $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
 
@@ -725,7 +725,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
 	flags="$flags -DBC_ENABLE_NLS=$nls"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
-	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
 	"$HOSTCC" $HOSTCFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
 
@@ -751,7 +751,7 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
-if [ "$extra_math" -eq 1 -a "$bc" -ne 0 ]; then
+if [ "$extra_math" -eq 1 ] && [ "$bc" -ne 0 ]; then
 	BC_LIB2_O="\$(GEN_DIR)/lib2.o"
 else
 	BC_LIB2_O=""
