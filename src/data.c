@@ -1,7 +1,7 @@
 /*
  * *****************************************************************************
  *
- * Copyright (c) 2018-2019 Gavin D. Howard and contributors.
+ * Copyright (c) 2018-2020 Gavin D. Howard and contributors.
  *
  * All rights reserved.
  *
@@ -52,7 +52,7 @@ const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 #endif // BC_ENABLE_SIGNALS
 
 const char bc_copyright[] =
-	"Copyright (c) 2018-2019 Gavin D. Howard and contributors\n"
+	"Copyright (c) 2018-2020 Gavin D. Howard and contributors\n"
 	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
