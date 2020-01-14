@@ -1,5 +1,11 @@
 # News
 
+## 2.5.5
+
+This is a production release which addresses portability concerns discovered
+in the `bc` build system. No `bc` code was changed. Minor documentation edits
+were performed (platform support and copyright year). Solaris SPARC now works.
+
 ## 2.5.0
 
 This is a production release with new translations. No code changed.
