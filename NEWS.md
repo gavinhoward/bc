@@ -1,6 +1,6 @@
 # News
 
-## 2.5.5
+## 2.5.1
 
 This is a production release which addresses portability concerns discovered
 in the `bc` build system. No `bc` code was changed. Minor documentation edits
