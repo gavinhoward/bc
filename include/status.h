@@ -168,6 +168,9 @@ typedef enum BcError {
 #ifndef UINT_FAST32_MAX
 #define UINT_FAST32_MAX __UINT_FAST32_MAX__
 #endif // UINT_FAST32_MAX
+#ifndef UINT16_MAX
+#define UINT16_MAX __UINT16_MAX__
+#endif // UINT16_MAX
 #ifndef SIG_ATOMIC_MAX
 #define SIG_ATOMIC_MAX __SIG_ATOMIC_MAX__
 #endif // SIG_ATOMIC_MAX
