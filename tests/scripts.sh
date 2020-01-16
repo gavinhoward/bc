@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (c) 2018-2019 Gavin D. Howard and contributors.
+# Copyright (c) 2018-2020 Gavin D. Howard and contributors.
 #
 # All rights reserved.
 #
@@ -73,7 +73,7 @@ scriptdir="$testdir/$d/scripts"
 
 for s in $scriptdir/*.$d; do
 
-	f=$(basename -- "$s")
+	f=$(basename "$s")
 	sh "$testdir/script.sh" "$d" "$f" "$run_stack_tests" "$generate" "$time_tests" "$exe" "$@"
 
 done

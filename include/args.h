@@ -1,7 +1,7 @@
 /*
  * *****************************************************************************
  *
- * Copyright (c) 2018-2019 Gavin D. Howard and contributors.
+ * Copyright (c) 2018-2020 Gavin D. Howard and contributors.
  *
  * All rights reserved.
  *
@@ -40,6 +40,11 @@
 #include <vm.h>
 
 BcStatus bc_args(int argc, char *argv[]);
+
+#if !BC_ENABLE_LONG_OPTIONS
+#define getopt_long(argc, argv, opts, longopts, longidx) \
+	getopt(argc, argv, opts)
+#endif // BC_ENABLE_LONG_OPTIONS
 
 extern const char* const bc_args_env_name;
 

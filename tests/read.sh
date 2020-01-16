@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (c) 2018-2019 Gavin D. Howard and contributors.
+# Copyright (c) 2018-2020 Gavin D. Howard and contributors.
 #
 # All rights reserved.
 #

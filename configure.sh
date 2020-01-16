@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (c) 2018-2019 Gavin D. Howard and contributors.
+# Copyright (c) 2018-2020 Gavin D. Howard and contributors.
 #
 # All rights reserved.
 #
@@ -47,17 +47,17 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EfgGHMNPST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EfgGHLMNPST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
-	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]    \\\n'
-	printf '           [--debug --disable-extra-math --disable-generated-tests]      \\\n'
-	printf '           [--disable-history --disable-man-pages --disable-nls]         \\\n'
-	printf '           [--disable-prompt --disable-signal-handling --disable-strip]  \\\n'
-	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]             \\\n'
-	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                           \\\n'
-	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]               \\\n'
-	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR]                         \\\n'
-	printf '           [--force]                                                     \\\n'
+	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]      \\\n'
+	printf '           [--debug --disable-extra-math --disable-generated-tests]        \\\n'
+	printf '           [--disable-history --disable-long-options --disable-man-pages]  \\\n'
+	printf '           [--disable-nls --disable-prompt --disable-signal-handling]      \\\n'
+	printf '           [--disable-strip] [--opt=OPT_LEVEL]                             \\\n'
+	printf '           [--karatsuba-len=KARATSUBA_LEN] [--prefix=PREFIX]               \\\n'
+	printf '           [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]                   \\\n'
+	printf '           [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]       \\\n'
+	printf '           [--force]                                                       \\\n'
 	printf '\n'
 	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -97,6 +97,10 @@ usage() {
 	printf '    -k KARATSUBA_LEN, --karatsuba-len KARATSUBA_LEN\n'
 	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 64).\n'
 	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 16.\n'
+	printf '    -L, --disable-long-options\n'
+	printf '        Disable use of getopt_long() and use getopt() instead. This is for\n'
+	printf '        platforms that do not have getopt_long() since it is not POSIX\n'
+	printf '        standard. This means that long options will be disabled.\n'
 	printf '    -M, --disable-man-pages\n'
 	printf '        Disable installing manpages.\n'
 	printf '    -N, --disable-nls\n'
@@ -212,7 +216,7 @@ replace_ext() {
 	_replace_ext_ext1="$2"
 	_replace_ext_ext2="$3"
 
-	_replace_ext_result=$(printf "$_replace_ext_file" | sed -e "s@\.$_replace_ext_ext1@\.$_replace_ext_ext2@")
+	_replace_ext_result=${_replace_ext_file%.$_replace_ext_ext1}.$_replace_ext_ext2
 
 	printf '%s\n' "$_replace_ext_result"
 }
@@ -278,7 +282,7 @@ gen_file_lists() {
 
 	if [ "$_gen_file_lists_use" -ne 0 ]; then
 
-		_gen_file_lists_replacement=$(ls $_gen_file_lists_filedir/*.c | tr '\n' ' ')
+		_gen_file_lists_replacement=$(cd "$_gen_file_lists_filedir" && find . ! -name . -prune -name "*.c" | cut -d/ -f2 | sed "s@^@$_gen_file_lists_filedir/@g" | tr '\n' ' ')
 		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_src" "$_gen_file_lists_replacement")
 
 		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "c" "o")
@@ -315,8 +319,9 @@ nls=1
 prompt=1
 force=0
 strip_bin=1
+loptions=1
 
-while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
+while getopts "bBcdDEfgGhHk:LMNO:PST-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -331,6 +336,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 		h) usage ;;
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
+		L) loptions=0 ;;
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
@@ -416,6 +422,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 				disable-extra-math) extra_math=0 ;;
 				disable-generated-tests) generate_tests=0 ;;
 				disable-history) hist=0 ;;
+				disable-long-options) loptions=0 ;;
 				disable-man-pages) install_manpages=0 ;;
 				disable-nls) nls=0 ;;
 				disable-prompt) prompt=0 ;;
@@ -441,7 +448,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 
 done
 
-if [ "$bc_only" -eq 1 -a "$dc_only" -eq 1 ]; then
+if [ "$bc_only" -eq 1 ] && [ "$dc_only" -eq 1 ]; then
 	usage "Can only specify one of -b(-D) or -d(-B)"
 fi
 
@@ -456,22 +463,81 @@ fi
 
 set -e
 
+if [ -z "${LONG_BIT+set}" ]; then
+	LONG_BIT_DEFINE=""
+elif [ "$LONG_BIT" -lt 32 ]; then
+	usage "LONG_BIT is less than 32"
+else
+	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
+fi
+
+if [ -z "${HOSTCFLAGS+set}" ] && [ -z "${HOST_CFLAGS+set}" ]; then
+	HOSTCFLAGS="$CFLAGS"
+elif [ -z "${HOSTCFLAGS+set}" ]; then
+	HOSTCFLAGS="$HOST_CFLAGS"
+fi
+
+if [ -z "$CC" ]; then
+	CC="c99"
+fi
+
+if [ -z "$HOSTCC" ] && [ -z "$HOST_CC" ]; then
+	HOSTCC="$CC"
+elif [ -z "$HOSTCC" ]; then
+	HOSTCC="$HOST_CC"
+fi
+
+if [ "$loptions" -eq 1 ]; then
+
+	set +e
+
+	printf 'Testing long options...\n'
+
+	flags="-DBC_ENABLE_LONG_OPTIONS=1 -DBC_ENABLED=1 -DDC_ENABLED=1 -DBC_ENABLE_SIGNALS=$signals"
+	flags="$flags -DBC_ENABLE_NLS=0 -DBC_ENABLE_HISTORY=0"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
+
+	"$HOSTCC" $HOSTCFLAGS $flags -c "src/args.c" -o "$scriptdir/args.o" > /dev/null 2>&1
+
+	err="$?"
+
+	rm -rf "$scriptdir/args.o"
+
+	# If this errors, it's probably because the platform does not have
+	# getopt_long(), so disable it.
+	if [ "$err" -ne 0 ]; then
+		printf 'Long options do not work.\n'
+		if [ $force -eq 0 ]; then
+			printf 'Disabling long options...\n'
+			loptions=0
+		else
+			printf 'Forcing long options...\n'
+		fi
+	else
+		printf 'Long options work.\n\n'
+	fi
+
+	set -e
+
+fi
+
 link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
-bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 \$(BC_EXEC)"
-bc_time_test="@tests/all.sh bc $extra_math 1 $generate_tests 1 \$(BC_EXEC)"
-dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 \$(DC_EXEC)"
-dc_time_test="@tests/all.sh dc $extra_math 1 $generate_tests 1 \$(DC_EXEC)"
+bc_test="@tests/all.sh bc $extra_math 1 $loptions $generate_tests 0 \$(BC_EXEC)"
+bc_time_test="@tests/all.sh bc $extra_math 1 $loptions $generate_tests 1 \$(BC_EXEC)"
+dc_test="@tests/all.sh dc $extra_math 1 $loptions $generate_tests 0 \$(DC_EXEC)"
+dc_time_test="@tests/all.sh dc $extra_math 1 $loptions $generate_tests 1 \$(DC_EXEC)"
 
 timeconst="@tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
 if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+	vg_bc_test="@tests/all.sh bc $extra_math 1 $loptions $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
+	vg_dc_test="@tests/all.sh dc $extra_math 1 $loptions $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
 else
 	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
 	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
@@ -542,23 +608,9 @@ else
 
 fi
 
-if [ -z "${LONG_BIT+set}" ]; then
-	LONG_BIT_DEFINE=""
-elif [ "$LONG_BIT" -lt 32 ]; then
-	usage "LONG_BIT is less than 32"
-else
-	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
-fi
-
-if [ -z "${HOSTCFLAGS+set}" -a -z "${HOST_CFLAGS+set}" ]; then
-	HOSTCFLAGS="$CFLAGS"
-elif [ -z "${HOSTCFLAGS+set}" ]; then
-	HOSTCFLAGS="$HOST_CFLAGS"
-fi
-
 if [ "$debug" -eq 1 ]; then
 
-	if [ -z "$CFLAGS" -a -z "$optimization" ]; then
+	if [ -z "$CFLAGS" ] && [ -z "$optimization" ]; then
 		CFLAGS="-O0"
 	fi
 
@@ -577,7 +629,7 @@ fi
 
 if [ "$coverage" -eq 1 ]; then
 
-	if [ "$bc_only" -eq 1 -o "$dc_only" -eq 1 ]; then
+	if [ "$bc_only" -eq 1 ] || [ "$dc_only" -eq 1 ]; then
 		usage "Can only specify -c without -b or -d"
 	fi
 
@@ -608,7 +660,7 @@ if [ -z "${BINDIR+set}" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
-if [ "$install_manpages" -ne 0 -o "$nls" -ne 0 ]; then
+if [ "$install_manpages" -ne 0 ] || [ "$nls" -ne 0 ]; then
 	if [ -z "${DATAROOTDIR+set}" ]; then
 		DATAROOTDIR="$PREFIX/share"
 	fi
@@ -633,16 +685,6 @@ else
 	uninstall_man_prereqs=""
 fi
 
-if [ -z "$CC" ]; then
-	CC="c99"
-fi
-
-if [ -z "$HOSTCC" -a -z "$HOST_CC" ]; then
-	HOSTCC="$CC"
-elif [ -z "$HOSTCC" ]; then
-	HOSTCC="$HOST_CC"
-fi
-
 if [ "$nls" -ne 0 ]; then
 
 	set +e
@@ -652,7 +694,7 @@ if [ "$nls" -ne 0 ]; then
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
-	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
 	"$HOSTCC" $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
 
@@ -725,7 +767,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
 	flags="$flags -DBC_ENABLE_NLS=$nls"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
-	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
 	"$HOSTCC" $HOSTCFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
 
@@ -751,7 +793,7 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
-if [ "$extra_math" -eq 1 -a "$bc" -ne 0 ]; then
+if [ "$extra_math" -eq 1 ] && [ "$bc" -ne 0 ]; then
 	BC_LIB2_O="\$(GEN_DIR)/lib2.o"
 else
 	BC_LIB2_O=""
@@ -789,6 +831,7 @@ printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
 printf 'BC_ENABLE_PROMPT=%s\n' "$prompt"
+printf 'BC_ENABLE_LONG_OPTIONS=%s\n' "$loptions"
 printf '\n'
 printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
 printf '\n'
@@ -834,6 +877,7 @@ contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "PROMPT" "$prompt")
+contents=$(replace "$contents" "LONG_OPTIONS" "$loptions")
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")

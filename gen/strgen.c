@@ -1,7 +1,7 @@
 /*
  * *****************************************************************************
  *
- * Copyright (c) 2018-2019 Gavin D. Howard and contributors.
+ * Copyright (c) 2018-2020 Gavin D. Howard and contributors.
  *
  * All rights reserved.
  *
@@ -43,7 +43,7 @@
 #include <libgen.h>
 
 static const char* const bc_gen_header =
-	"// Copyright (c) 2018-2019 Gavin D. Howard and contributors.\n"
+	"// Copyright (c) 2018-2020 Gavin D. Howard and contributors.\n"
 	"// Licensed under the 2-clause BSD license.\n"
 	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
 

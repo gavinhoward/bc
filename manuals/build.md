@@ -370,6 +370,22 @@ can be disabled permanently in the build by passing the `-P` flag or the
 
 Both commands are equivalent.
 
+### Long Options
+
+By default, `bc` and `dc` support long options like `--mathlib` and
+`--interactive`. However, support for these options requires `getopt_long()`
+which is not in the POSIX standard. For those platforms that do *not* have
+`getopt_long()` it will be disabled automatically, or if you wish to disable
+them regardless, you can pass the `-L` flag or the `--disable-long-options`
+option to `configure.sh`, as follows:
+
+```
+./configure.sh -L
+./configure.sh --disable-long-options
+```
+
+Both commands are equivalent.
+
 ### Extra Math
 
 This `bc` has 7 extra operators:

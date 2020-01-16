@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# Copyright (c) 2018-2019 Gavin D. Howard and contributors.
+# Copyright (c) 2018-2020 Gavin D. Howard and contributors.
 #
 # All rights reserved.
 #
@@ -156,10 +156,10 @@ substring_replace() {
 	_substring_replace_replacement="$1"
 	shift
 
-	_substring_replace_result=$(printf '%s' "$_substring_replace_str" | \
+	_substring_replace_result=$(printf '%s\n' "$_substring_replace_str" | \
 		sed -e "s!$_substring_replace_needle!$_substring_replace_replacement!g")
 
-	printf '%s\n' "$_substring_replace_result"
+	printf '%s' "$_substring_replace_result"
 }
 
 gen_nlspath() {

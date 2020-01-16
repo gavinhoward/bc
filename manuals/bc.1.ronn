@@ -163,6 +163,8 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
+**Note**: long options are only accepted if bc(1) is built with them enabled.
+
 STDOUT
 ------
 

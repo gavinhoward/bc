@@ -24,9 +24,9 @@ This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 ## Prerequisites
 
 This `bc` only requires a C99-compatible compiler and a (mostly) POSIX
-2008-compatible system with the XSI (X/Open System Interfaces) option group.
+2001-compatible system with the XSI (X/Open System Interfaces) option group.
 
-Since POSIX 2008 with XSI requires the existence of a C99 compiler as `c99`, any
+Since POSIX 2001 with XSI requires the existence of a C99 compiler as `c99`, any
 POSIX and XSI-compatible system will have everything needed.
 
 Systems that are known to work:
@@ -36,6 +36,8 @@ Systems that are known to work:
 * OpenBSD
 * NetBSD
 * Mac OSX
+* Solaris
+* AIX (without long options)
 
 Please submit bug reports if this `bc` does not build out of the box on any
 system besides Windows. If Windows binaries are needed, they can be found at
