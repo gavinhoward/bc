@@ -36,6 +36,8 @@
 #ifndef BC_STATUS_H
 #define BC_STATUS_H
 
+#include <stdint.h>
+
 #ifndef BC_ENABLED
 #define BC_ENABLED (1)
 #endif // BC_ENABLED
@@ -152,5 +154,16 @@ typedef enum BcError {
 #ifndef BC_DEBUG_CODE
 #define BC_DEBUG_CODE (0)
 #endif // BC_DEBUG_CODE
+
+// Workarounds for AIX's POSIX incompatibility.
+#ifndef SIZE_MAX
+#define SIZE_MAX __SIZE_MAX__
+#endif // SIZE_MAX
+#ifndef UINTMAX_C
+#define UINTMAX_C __UINTMAX_C
+#endif // UINTMAX_C
+#ifndef UINT_FAST32_MAX
+#define UINT_FAST32_MAX __UINT_FAST32_MAX__
+#endif // UINT_FAST32_MAX
 
 #endif // BC_STATUS_H
