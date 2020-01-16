@@ -213,6 +213,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 			// Getopt printed an error message, but we should exit.
 			case '?':
+			case ':':
 			default:
 			{
 				return BC_STATUS_ERROR_FATAL;
