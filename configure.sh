@@ -47,17 +47,17 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EfgGHMNPST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EfgGHLMNPST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
-	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]    \\\n'
-	printf '           [--debug --disable-extra-math --disable-generated-tests]      \\\n'
-	printf '           [--disable-history --disable-man-pages --disable-nls]         \\\n'
-	printf '           [--disable-prompt --disable-signal-handling --disable-strip]  \\\n'
-	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]             \\\n'
-	printf '           [--prefix=PREFIX] [--bindir=BINDIR]                           \\\n'
-	printf '           [--datarootdir=DATAROOTDIR] [--datadir=DATADIR]               \\\n'
-	printf '           [--mandir=MANDIR] [--man1dir=MAN1DIR]                         \\\n'
-	printf '           [--force]                                                     \\\n'
+	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]      \\\n'
+	printf '           [--debug --disable-extra-math --disable-generated-tests]        \\\n'
+	printf '           [--disable-history --disable-long-options --disable-man-pages]  \\\n'
+	printf '           [--disable-nls --disable-prompt --disable-signal-handling]      \\\n'
+	printf '           [--disable-strip] [--opt=OPT_LEVEL]                             \\\n'
+	printf '           [--karatsuba-len=KARATSUBA_LEN] [--prefix=PREFIX]               \\\n'
+	printf '           [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]                   \\\n'
+	printf '           [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]       \\\n'
+	printf '           [--force]                                                       \\\n'
 	printf '\n'
 	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d" or "-B" are specified too.\n'
@@ -97,6 +97,10 @@ usage() {
 	printf '    -k KARATSUBA_LEN, --karatsuba-len KARATSUBA_LEN\n'
 	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 64).\n'
 	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 16.\n'
+	printf '    -L, --disable-long-options\n'
+	printf '        Disable use of getopt_long() and use getopt() instead. This is for\n'
+	printf '        platforms that do not have getopt_long() since it is not POSIX\n'
+	printf '        standard. This means that long options will be disabled.\n'
 	printf '    -M, --disable-man-pages\n'
 	printf '        Disable installing manpages.\n'
 	printf '    -N, --disable-nls\n'
@@ -315,8 +319,9 @@ nls=1
 prompt=1
 force=0
 strip_bin=1
+loptions=1
 
-while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
+while getopts "bBcdDEfgGhHk:LMNO:PST-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -331,6 +336,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 		h) usage ;;
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
+		L) loptions=0 ;;
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
@@ -416,6 +422,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 				disable-extra-math) extra_math=0 ;;
 				disable-generated-tests) generate_tests=0 ;;
 				disable-history) hist=0 ;;
+				disable-long-options) loptions=0 ;;
 				disable-man-pages) install_manpages=0 ;;
 				disable-nls) nls=0 ;;
 				disable-prompt) prompt=0 ;;
@@ -751,6 +758,41 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
+if [ "$loptions" -eq 1 ]; then
+
+	set +e
+
+	printf 'Testing long options...\n'
+
+	flags="-DBC_ENABLE_LONG_OPTIONS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
+	flags="$flags -DBC_ENABLE_NLS=$nls"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
+
+	"$HOSTCC" $HOSTCFLAGS $flags -c "src/args.c" -o "$scriptdir/args.o" > /dev/null 2>&1
+
+	err="$?"
+
+	rm -rf "$scriptdir/args.o"
+
+	# If this errors, it's probably because the platform does not have
+	# getopt_long(), so disable it.
+	if [ "$err" -ne 0 ]; then
+		printf 'Long options do not work.\n'
+		if [ $force -eq 0 ]; then
+			printf 'Disabling long options...\n'
+			loptions=0
+		else
+			printf 'Forcing long options...\n'
+		fi
+	else
+		printf 'Long options work.\n'
+	fi
+
+	set -e
+
+fi
+
 if [ "$extra_math" -eq 1 ] && [ "$bc" -ne 0 ]; then
 	BC_LIB2_O="\$(GEN_DIR)/lib2.o"
 else
@@ -789,6 +831,7 @@ printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
 printf 'BC_ENABLE_PROMPT=%s\n' "$prompt"
+printf 'BC_ENABLE_LONG_OPTIONS=%s\n' "$loptions"
 printf '\n'
 printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
 printf '\n'
@@ -833,6 +876,7 @@ contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "PROMPT" "$prompt")
+contents=$(replace "$contents" "LONG_OPTIONS" "$loptions")
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")

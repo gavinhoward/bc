@@ -47,6 +47,7 @@
 #include <vm.h>
 #include <args.h>
 
+#if BC_ENABLE_LONG_OPTIONS
 static const struct option bc_args_lopt[] = {
 
 	{ "expression", required_argument, NULL, 'e' },
@@ -68,6 +69,7 @@ static const struct option bc_args_lopt[] = {
 	{ 0, 0, 0, 0 },
 
 };
+#endif //BC_ENABLE_LONG_OPTIONS
 
 #if !BC_ENABLED
 static const char* const bc_args_opt = "e:f:hiPvVx";
@@ -104,7 +106,11 @@ BcStatus bc_args(int argc, char *argv[]) {
 	int c, i, err = 0;
 	bool do_exit = false, version = false;
 
-	i = optind = 0;
+	optind = 0;
+
+#if BC_ENABLE_LONG_OPTIONS
+	i = 0;
+#endif // BC_ENABLE_LONG_OPTIONS
 
 	while ((c = getopt_long(argc, argv, bc_args_opt, bc_args_lopt, &i)) != -1) {
 
@@ -211,11 +217,19 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 		if (BC_ERR(err)) {
 
+			const char *name;
+
+#if BC_ENABLE_LONG_OPTIONS
 			for (i = 0; bc_args_lopt[i].name != NULL; ++i) {
 				if (bc_args_lopt[i].val == err) break;
 			}
 
-			return bc_vm_verr(BC_ERROR_FATAL_OPTION, err, bc_args_lopt[i].name);
+			name = bc_args_lopt[i].name;
+#else // BC_ENABLE_LONG_OPTIONS
+			name = "<long options disabled>";
+#endif // BC_ENABLE_LONG_OPTIONS
+
+			return bc_vm_verr(BC_ERROR_FATAL_OPTION, err, name);
 		}
 	}
 
