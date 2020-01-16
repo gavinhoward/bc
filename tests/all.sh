@@ -223,20 +223,28 @@ err="$?"
 
 checktest "$d" "$err" "invalid option argument" "$out2" "$d"
 
-"$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2> "$out2"
-err="$?"
+if [ "$use_long_options" -ne 0 ]; then
 
-checktest "$d" "$err" "invalid long option argument" "$out2" "$d"
+	"$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2> "$out2"
+	err="$?"
+
+	checktest "$d" "$err" "invalid long option argument" "$out2" "$d"
+
+fi
 
 "$exe" "$@" "-u" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
 checktest "$d" "$err" "unrecognized option argument" "$out2" "$d"
 
-"$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
-err="$?"
+if [ "$use_long_options" -ne 0 ]; then
 
-checktest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
+	"$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
+	err="$?"
+
+	checktest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
+
+fi
 
 printf 'pass\n'
 
