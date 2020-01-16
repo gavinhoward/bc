@@ -39,7 +39,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
+
+#if BC_ENABLE_LONG_OPTIONS
 #include <getopt.h>
+#endif // BC_ENABLE_LONG_OPTIONS
 
 #include <status.h>
 #include <vector.h>
