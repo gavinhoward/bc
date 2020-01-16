@@ -463,6 +463,30 @@ fi
 
 set -e
 
+if [ -z "${LONG_BIT+set}" ]; then
+	LONG_BIT_DEFINE=""
+elif [ "$LONG_BIT" -lt 32 ]; then
+	usage "LONG_BIT is less than 32"
+else
+	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
+fi
+
+if [ -z "${HOSTCFLAGS+set}" ] && [ -z "${HOST_CFLAGS+set}" ]; then
+	HOSTCFLAGS="$CFLAGS"
+elif [ -z "${HOSTCFLAGS+set}" ]; then
+	HOSTCFLAGS="$HOST_CFLAGS"
+fi
+
+if [ -z "$CC" ]; then
+	CC="c99"
+fi
+
+if [ -z "$HOSTCC" ] && [ -z "$HOST_CC" ]; then
+	HOSTCC="$CC"
+elif [ -z "$HOSTCC" ]; then
+	HOSTCC="$HOST_CC"
+fi
+
 if [ "$loptions" -eq 1 ]; then
 
 	set +e
@@ -491,7 +515,7 @@ if [ "$loptions" -eq 1 ]; then
 			printf 'Forcing long options...\n'
 		fi
 	else
-		printf 'Long options work.\n'
+		printf 'Long options work.\n\n'
 	fi
 
 	set -e
@@ -584,20 +608,6 @@ else
 
 fi
 
-if [ -z "${LONG_BIT+set}" ]; then
-	LONG_BIT_DEFINE=""
-elif [ "$LONG_BIT" -lt 32 ]; then
-	usage "LONG_BIT is less than 32"
-else
-	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
-fi
-
-if [ -z "${HOSTCFLAGS+set}" ] && [ -z "${HOST_CFLAGS+set}" ]; then
-	HOSTCFLAGS="$CFLAGS"
-elif [ -z "${HOSTCFLAGS+set}" ]; then
-	HOSTCFLAGS="$HOST_CFLAGS"
-fi
-
 if [ "$debug" -eq 1 ]; then
 
 	if [ -z "$CFLAGS" ] && [ -z "$optimization" ]; then
@@ -673,16 +683,6 @@ if [ "$install_manpages" -ne 0 ]; then
 else
 	install_prereqs=""
 	uninstall_man_prereqs=""
-fi
-
-if [ -z "$CC" ]; then
-	CC="c99"
-fi
-
-if [ -z "$HOSTCC" ] && [ -z "$HOST_CC" ]; then
-	HOSTCC="$CC"
-elif [ -z "$HOSTCC" ]; then
-	HOSTCC="$HOST_CC"
 fi
 
 if [ "$nls" -ne 0 ]; then
