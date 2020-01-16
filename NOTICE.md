@@ -1,6 +1,6 @@
 # Notice
 
-Copyright 2018-2019 Gavin D. Howard and contributors.
+Copyright 2018-2020 Gavin D. Howard and contributors.
 
 ## Contributors
 
