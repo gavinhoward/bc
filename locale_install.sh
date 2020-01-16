@@ -100,7 +100,7 @@ relpath() {
 
 	_relpath_path1="$1"
 	shift
-		
+
 	_relpath_path2="$1"
 	shift
 
@@ -114,7 +114,7 @@ relpath() {
 	_relpath_temp1="$_relpath_splitpath1"
 
 	IFS="$_relpath_nl"
-	
+
 	for _relpath_part in $_relpath_temp1; do
 
 		_relpath_temp2="${_relpath_splitpath2#$_relpath_part$_relpath_nl}"
