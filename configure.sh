@@ -463,6 +463,41 @@ fi
 
 set -e
 
+if [ "$loptions" -eq 1 ]; then
+
+	set +e
+
+	printf 'Testing long options...\n'
+
+	flags="-DBC_ENABLE_LONG_OPTIONS=1 -DBC_ENABLED=1 -DDC_ENABLED=1 -DBC_ENABLE_SIGNALS=$signals"
+	flags="$flags -DBC_ENABLE_NLS=0 -DBC_ENABLE_HISTORY=0"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
+
+	"$HOSTCC" $HOSTCFLAGS $flags -c "src/args.c" -o "$scriptdir/args.o" > /dev/null 2>&1
+
+	err="$?"
+
+	rm -rf "$scriptdir/args.o"
+
+	# If this errors, it's probably because the platform does not have
+	# getopt_long(), so disable it.
+	if [ "$err" -ne 0 ]; then
+		printf 'Long options do not work.\n'
+		if [ $force -eq 0 ]; then
+			printf 'Disabling long options...\n'
+			loptions=0
+		else
+			printf 'Forcing long options...\n'
+		fi
+	else
+		printf 'Long options work.\n'
+	fi
+
+	set -e
+
+fi
+
 link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
@@ -752,41 +787,6 @@ if [ "$hist" -eq 1 ]; then
 		fi
 	else
 		printf 'History works.\n'
-	fi
-
-	set -e
-
-fi
-
-if [ "$loptions" -eq 1 ]; then
-
-	set +e
-
-	printf 'Testing long options...\n'
-
-	flags="-DBC_ENABLE_LONG_OPTIONS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
-	flags="$flags -DBC_ENABLE_NLS=$nls"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
-	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
-
-	"$HOSTCC" $HOSTCFLAGS $flags -c "src/args.c" -o "$scriptdir/args.o" > /dev/null 2>&1
-
-	err="$?"
-
-	rm -rf "$scriptdir/args.o"
-
-	# If this errors, it's probably because the platform does not have
-	# getopt_long(), so disable it.
-	if [ "$err" -ne 0 ]; then
-		printf 'Long options do not work.\n'
-		if [ $force -eq 0 ]; then
-			printf 'Disabling long options...\n'
-			loptions=0
-		else
-			printf 'Forcing long options...\n'
-		fi
-	else
-		printf 'Long options work.\n'
 	fi
 
 	set -e
