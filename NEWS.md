@@ -3,8 +3,12 @@
 ## 2.5.1
 
 This is a production release which addresses portability concerns discovered
-in the `bc` build system. No `bc` code was changed. Minor documentation edits
-were performed (platform support and copyright year). Solaris SPARC now works.
+in the `bc` build system. No `bc` code was changed.
+
+* Support for Solaris SPARC and AIX were added.
+* Minor documentations edits were performed.
+* An option for `configure.sh` was added to disable long options if
+  `getopt_long()` is missing.
 
 ## 2.5.0
 
