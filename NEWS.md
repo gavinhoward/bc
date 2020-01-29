@@ -1,5 +1,22 @@
 # News
 
+## 2.5.2
+
+This release is a production release.
+
+No code was changed, but the build system was changed to allow `CFLAGS` to be
+given to `CC`, like this:
+
+```
+CC="gcc -O3 -march=native" ./configure.sh
+```
+
+If this happens, the flags are automatically put into `CFLAGS`, and the compiler
+is set appropriately. In the example above this means that `CC` will be "gcc"
+and `CFLAGS` will be "-O3 -march=native".
+
+This behavior was added to conform to GNU autotools practices.
+
 ## 2.5.1
 
 This is a production release which addresses portability concerns discovered

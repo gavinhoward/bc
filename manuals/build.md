@@ -86,11 +86,20 @@ sections.
 C compiler for the target system. `CC` must be compatible with POSIX `c99`
 behavior and options.
 
+If there is a space in the basename of the compiler, the items after the first
+space are assumed to be compiler flags, and in that case, the flags are
+automatically moved into CFLAGS.
+
 Defaults to `c99`.
 
 ### `HOSTCC` or `HOST_CC`
 
-C compiler for the host system, used only in [cross compiling][6].
+C compiler for the host system, used only in [cross compiling][6]. Must be
+compatible with POSIX `c99` behavior and options.
+
+If there is a space in the basename of the compiler, the items after the first
+space are assumed to be compiler flags, and in that case, the flags are
+automatically moved into HOSTCFLAGS.
 
 Defaults to `$CC`.
 
