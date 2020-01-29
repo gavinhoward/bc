@@ -140,10 +140,16 @@ usage() {
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
-	printf '    CC           C compiler. Must be compatible with POSIX c99.\n'
-	printf '                 Default is "c99".\n'
-	printf '    HOSTCC       Host C compiler. Must be compatible with POSIX c99.\n'
-	printf '                 Default is "$CC".\n'
+	printf '    CC           C compiler. Must be compatible with POSIX c99. If there is a\n'
+	printf '                 space in the basename of the compiler, the items after the\n'
+	printf '                 first space are assumed to be compiler flags, and in that case,\n'
+	printf '                 the flags are automatically moved into CFLAGS. Default is\n'
+	printf '                 "c99".\n'
+	printf '    HOSTCC       Host C compiler. Must be compatible with POSIX c99. If there is\n'
+	printf '                 a space in the basename of the compiler, the items after the\n'
+	printf '                 first space are assumed to be compiler flags, and in the case,\n'
+	printf '                 the flags are automatically moved into HOSTCFLAGS. Default is\n'
+	printf '                 "$CC".\n'
 	printf '    HOST_CC      Same as HOSTCC. If HOSTCC also exists, it is used.\n'
 	printf '    CFLAGS       C compiler flags.\n'
 	printf '    HOSTCFLAGS   CFLAGS for HOSTCC. Default is "$CFLAGS".\n'
@@ -471,20 +477,56 @@ else
 	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
 fi
 
-if [ -z "${HOSTCFLAGS+set}" ] && [ -z "${HOST_CFLAGS+set}" ]; then
-	HOSTCFLAGS="$CFLAGS"
-elif [ -z "${HOSTCFLAGS+set}" ]; then
-	HOSTCFLAGS="$HOST_CFLAGS"
-fi
-
 if [ -z "$CC" ]; then
 	CC="c99"
+else
+	ccbase=$(basename "$CC")
+	suffix=" *"
+	prefix="* "
+
+	if [ "${ccbase%%$suffix}" != "$ccbase" ]; then
+		ccflags="${ccbase#$prefix}"
+		cc="${ccbase%%$suffix}"
+		ccdir=$(dirname "$CC")
+		if [ "$ccdir" = "." ] && [ "${CC#.}" = "$CC" ]; then
+			ccdir=""
+		else
+			ccdir="$ccdir/"
+		fi
+		CC="${ccdir}${cc}"
+		CFLAGS="$CFLAGS $ccflags"
+	fi
 fi
 
 if [ -z "$HOSTCC" ] && [ -z "$HOST_CC" ]; then
 	HOSTCC="$CC"
 elif [ -z "$HOSTCC" ]; then
 	HOSTCC="$HOST_CC"
+fi
+
+if [ "$HOSTCC" != "$CC" ]; then
+	ccbase=$(basename "$HOSTCC")
+	suffix=" *"
+	prefix="* "
+
+	if [ "${ccbase%%$suffix}" != "$ccbase" ]; then
+		ccflags="${ccbase#$prefix}"
+		cc="${ccbase%%$suffix}"
+		ccdir=$(dirname "$HOSTCC")
+		if [ "$ccdir" = "." ] && [ "${HOSTCC#.}" = "$HOSTCC" ]; then
+			ccdir=""
+		else
+			ccdir="$ccdir/"
+		fi
+		HOSTCC="${ccdir}${cc}"
+		HOSTCFLAGS="$HOSTCFLAGS $ccflags"
+	fi
+fi
+
+if [ -z "${HOSTCFLAGS+set}" ] && [ -z "${HOST_CFLAGS+set}" ]; then
+	HOSTCFLAGS="$CFLAGS"
+elif [ -z "${HOSTCFLAGS+set}" ]; then
+	HOSTCFLAGS="$HOST_CFLAGS"
 fi
 
 if [ "$loptions" -eq 1 ]; then
