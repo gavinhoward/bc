@@ -74,6 +74,8 @@ This is a production release. It fixes a bug that caused `-1000000000 < -1` to
 return `0`. This only happened with negative numbers and only if the value on
 the left was more negative by a certain amount.
 
+**ALL USERS SHOULD UPDATE `bc`**.
+
 ## 2.3.0
 
 This is a production release with changes to the build system.
