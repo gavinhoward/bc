@@ -1,5 +1,14 @@
 # News
 
+## 2.5.3
+
+This release is a production release which addresses inconsistencies in the
+Portuguese locales. No `bc` code was changed.
+
+The issues were that the ISO files used different naming, and also that the
+files that should have been symlinks were not. I did not catch that because
+GitHub rendered them the exact same way.
+
 ## 2.5.2
 
 This release is a production release.
@@ -64,6 +73,8 @@ upgrade.
 This is a production release. It fixes a bug that caused `-1000000000 < -1` to
 return `0`. This only happened with negative numbers and only if the value on
 the left was more negative by a certain amount.
+
+**ALL USERS SHOULD UPDATE `bc`**.
 
 ## 2.3.0
 

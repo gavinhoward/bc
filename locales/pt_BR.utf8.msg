@@ -1,1 +1,1 @@
-pt_BR.UTF-8.msg
+pt_PT.UTF-8.msg
