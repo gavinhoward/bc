@@ -1,5 +1,14 @@
 # News
 
+## 2.5.3
+
+This release is a production release which addresses inconsistencies in the
+Portuguese locales. No `bc` code was changed.
+
+The issues were that the ISO files used different naming, and also that the
+files that should have been symlinks were not. I did not catch that because
+GitHub rendered them the exact same way.
+
 ## 2.5.2
 
 This release is a production release.
