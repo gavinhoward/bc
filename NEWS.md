@@ -50,8 +50,8 @@ This is a production release primarily aimed at improving `dc`.
 * A couple of copy and paste errors in the [`dc` manual][10] were fixed.
 * `dc` startup was optimized by making sure it didn't have to set up `bc`-only
   things.
-* The `bc` `&&` and `||` were made available to `dc` through the `M` and `m`
-  commands, respectively.
+* The `bc` `&&` and `||` operators were made available to `dc` through the `M`
+  and `m` commands, respectively.
 * `dc` macros were changed to be tail call-optimized.
 
 The last item, tail call optimization, means that if the last thing in a macro
@@ -72,7 +72,8 @@ upgrade.
 
 This is a production release. It fixes a bug that caused `-1000000000 < -1` to
 return `0`. This only happened with negative numbers and only if the value on
-the left was more negative by a certain amount.
+the left was more negative by a certain amount. That said, this bug *is* a bad
+bug, and needs to be fixed.
 
 **ALL USERS SHOULD UPDATE `bc`**.
 
