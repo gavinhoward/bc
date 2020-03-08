@@ -33,6 +33,10 @@
  *
  */
 
+define p(x,y){
+	if(y==y$)return x^y
+	return e(y*l(x))
+}
 define r(x,p){
 	auto t,n
 	if(x==0)return x
