@@ -34,7 +34,9 @@
  */
 
 define p(x,y){
-	if(y==y$)return x^y
+	auto a
+	a=y$
+	if(y==a)return (x^a)@scale
 	return e(y*l(x))
 }
 define r(x,p){
