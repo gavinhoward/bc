@@ -1,5 +1,17 @@
 # News
 
+## 2.6.0
+
+This release is a production release ***with no bugfixes***. If you do not want
+to upgrade, you don't have to.
+
+This release adds one function to the [extended math library][16]: `p(x, y)`,
+which calculates `x` to the power of `y`, whether or not `y` is an integer. (The
+`^` can only accept integer powers.)
+
+This release also includes a couple of small tweaks to the [extended math
+library][16].
+
 ## 2.5.3
 
 This release is a production release which addresses inconsistencies in the
@@ -538,3 +550,4 @@ not thoroughly tested.
 [13]: ./manuals/build.md
 [14]: https://github.com/stesser
 [15]: https://github.com/bugcrazy
+[16]: ./manuals/bc.1.ronn#extended-library
