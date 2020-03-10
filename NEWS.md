@@ -10,7 +10,7 @@ which calculates `x` to the power of `y`, whether or not `y` is an integer. (The
 `^` can only accept integer powers.)
 
 This release also includes a couple of small tweaks to the [extended math
-library][16].
+library][16], mostly to fix returning numbers with too high of `scale`.
 
 ## 2.5.3
 
