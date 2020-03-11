@@ -33,6 +33,12 @@
  *
  */
 
+define p(x,y){
+	auto a
+	a=y$
+	if(y==a)return (x^a)@scale
+	return e(y*l(x))
+}
 define r(x,p){
 	auto t,n
 	if(x==0)return x
@@ -95,14 +101,14 @@ define log(x,b){
 	scale*=2
 	p=l(x)/l(b)
 	scale=s
-	return p
+	return p@s
 }
 define l2(x){return log(x,2)}
 define l10(x){return log(x,A)}
 define root(x,n){
 	auto s,m,r,q,p
 	if(n<0)sqrt(n)
-	n=abs(n)$
+	n=n$
 	if(n==0)x/n
 	if(n==1)return x
 	if(n==2)return sqrt(x)
@@ -235,8 +241,8 @@ define void output_byte(x,i){
 	x=abs(x)$
 	b=x/(2^(i*8))
 	b%=2^8
-	y=log(256,obase)$
-	if(b>1)p=log(b,obase)$+1
+	y=log(256,obase)
+	if(b>1)p=log(b,obase)+1
 	else p=b
 	for(i=y-p;i>0;--i)print 0
 	if(b)print b

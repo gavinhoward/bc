@@ -1,5 +1,17 @@
 # News
 
+## 2.6.0
+
+This release is a production release ***with no bugfixes***. If you do not want
+to upgrade, you don't have to.
+
+This release adds one function to the [extended math library][16]: `p(x, y)`,
+which calculates `x` to the power of `y`, whether or not `y` is an integer. (The
+`^` operator can only accept integer powers.)
+
+This release also includes a couple of small tweaks to the [extended math
+library][16], mostly to fix returning numbers with too high of `scale`.
+
 ## 2.5.3
 
 This release is a production release which addresses inconsistencies in the
@@ -50,8 +62,8 @@ This is a production release primarily aimed at improving `dc`.
 * A couple of copy and paste errors in the [`dc` manual][10] were fixed.
 * `dc` startup was optimized by making sure it didn't have to set up `bc`-only
   things.
-* The `bc` `&&` and `||` were made available to `dc` through the `M` and `m`
-  commands, respectively.
+* The `bc` `&&` and `||` operators were made available to `dc` through the `M`
+  and `m` commands, respectively.
 * `dc` macros were changed to be tail call-optimized.
 
 The last item, tail call optimization, means that if the last thing in a macro
@@ -72,7 +84,8 @@ upgrade.
 
 This is a production release. It fixes a bug that caused `-1000000000 < -1` to
 return `0`. This only happened with negative numbers and only if the value on
-the left was more negative by a certain amount.
+the left was more negative by a certain amount. That said, this bug *is* a bad
+bug, and needs to be fixed.
 
 **ALL USERS SHOULD UPDATE `bc`**.
 
@@ -537,3 +550,4 @@ not thoroughly tested.
 [13]: ./manuals/build.md
 [14]: https://github.com/stesser
 [15]: https://github.com/bugcrazy
+[16]: ./manuals/bc.1.ronn#extended-library

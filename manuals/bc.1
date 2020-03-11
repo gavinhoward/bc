@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BC" "1" "December 2019" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "March 2020" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
@@ -151,6 +151,9 @@ In other bc(1) implementations, this option causes the program to execute the fi
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
+.
+.P
+\fBNote\fR: long options are only accepted if bc(1) is built with them enabled\.
 .
 .SH "STDOUT"
 Any non\-error output is written to \fBstdout\fR\.
@@ -931,6 +934,13 @@ However, the extended library is \fB\fInot\fR\fR loaded when the \fB\-s\fR/\fB\-
 .
 .P
 The extended library is a \fBnon\-portable extension\fR\.
+.
+.TP
+\fBp(x, y)\fR
+Calculates \fBx\fR to the power of \fBy\fR, even if \fBy\fR is not an integer, and returns the result to the current \fBscale\fR\.
+.
+.IP
+This is a \fItranscendental function\fR\.
 .
 .TP
 \fBr(x, p)\fR
