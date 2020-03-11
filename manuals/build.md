@@ -638,7 +638,7 @@ make test
 ```
 
 This `dc` also assumes a working, GNU-compatible `dc`, installed on the system
-and in the `PATH`, to generate some tests, unless on of the above options is
+and in the `PATH`, to generate some tests, unless one of the above options is
 given to `configure.sh`.
 
 To generate test coverage, pass the `-c` flag or the `--coverage` option to
