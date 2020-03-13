@@ -5,6 +5,8 @@
 This release is a production release ***with no bugfixes***. If you do not want
 to upgrade, you don't have to.
 
+No source code changed; the only thing that changed was `lib2.bc`.
+
 This release adds one function to the [extended math library][16]: `p(x, y)`,
 which calculates `x` to the power of `y`, whether or not `y` is an integer. (The
 `^` operator can only accept integer powers.)
