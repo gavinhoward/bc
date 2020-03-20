@@ -270,6 +270,7 @@ Files:
 	.gitignore           The git ignore file (maintainer use only).
 	.travis.yml          The Travis CI file (maintainer use only).
 	codecov.yml          The Codecov file (maintainer use only).
+	configure            A symlink to configure.sh to make packaging easier.
 	configure.sh         The configure script.
 	functions.sh         A script with functions used by other scripts.
 	install.sh           Install script.
