@@ -5,7 +5,7 @@
 [![Coverity Scan Build Status][17]][18]
 
 ***WARNING: This project has moved to [https:://git.gavinhoward.com][20] for
-[these reasons][21]***
+[these reasons][21].***
 
 This is an implementation of the [POSIX `bc` calculator][12] that implements
 [GNU `bc`][1] extensions, as well as the period (`.`) extension for the BSD
@@ -318,4 +318,4 @@ Folders:
 [18]: https://scan.coverity.com/projects/gavinhoward-bc
 [19]: ./manuals/benchmarks.md
 [20]: https://git.gavinhoward.com/gavin/bc
-
+[21]: https://gavinhoward.com/2020/04/i-am-moving-away-from-github/
