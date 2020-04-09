@@ -54,7 +54,7 @@ const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 
 const char bc_copyright[] =
 	"Copyright (c) 2018-2020 Gavin D. Howard and contributors\n"
-	"Report bugs at: https://github.com/gavinhoward/bc\n\n"
+	"Report bugs at: https://git.gavinhoward.com/gavin/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
 const char* const bc_err_func_header = "Function:";
