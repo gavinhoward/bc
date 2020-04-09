@@ -904,6 +904,6 @@ This dc(1) was made from scratch by Gavin D. Howard.
 BUGS
 ----
 
-None are known. Report bugs at https://github.com/gavinhoward/bc.
+None are known. Report bugs at https://git.gavinhoward.com/gavin/bc.
 
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
