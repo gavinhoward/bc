@@ -1485,7 +1485,7 @@ This bc(1) was made from scratch by Gavin D. Howard.
 BUGS
 ----
 
-None are known. Report bugs at https://git.gavinhoward.com/gavin/bc.
+None are known. Report bugs at https://git.yzena.com/gavin/bc.
 
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
 [2]: https://www.gnu.org/software/bc/
