@@ -89,7 +89,7 @@
 
 #ifdef _WIN32
 #error History is not supported on Windows.
-#endif
+#endif // _WIN32
 
 #include <stdbool.h>
 #include <stddef.h>

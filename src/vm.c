@@ -62,7 +62,6 @@
 #include <bc.h>
 
 #if BC_ENABLE_SIGNALS
-#ifndef _WIN32
 static void bc_vm_sig(int sig) {
 
 	int err = errno;
@@ -80,19 +79,6 @@ static void bc_vm_sig(int sig) {
 
 	errno = err;
 }
-#else // _WIN32
-static BOOL WINAPI bc_vm_sig(DWORD sig) {
-
-	if (sig == CTRL_C_EVENT) {
-		bc_vm_puts(vm->sigmsg, stderr);
-		vm->sig += 1;
-		if (vm->sig == BC_SIGTERM_VAL) vm->sig = 1;
-	}
-	else vm->sig = BC_SIGTERM_VAL;
-
-	return TRUE;
-}
-#endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
 void bc_vm_info(const char* const help) {
@@ -633,7 +619,6 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	BcStatus s;
 	int ttyin, ttyout, ttyerr;
 #if BC_ENABLE_SIGNALS
-#ifndef _WIN32
 	struct sigaction sa;
 
 	sigemptyset(&sa.sa_mask);
@@ -643,9 +628,6 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
-#else // _WIN32
-	SetConsoleCtrlHandler(bc_vm_sig, TRUE);
-#endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
 	vm->file = NULL;

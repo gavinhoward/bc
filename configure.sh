@@ -535,12 +535,12 @@ if [ "$loptions" -eq 1 ]; then
 
 	printf 'Testing long options...\n'
 
-	flags="-DBC_ENABLE_LONG_OPTIONS=1 -DBC_ENABLED=1 -DDC_ENABLED=1 -DBC_ENABLE_SIGNALS=$signals"
+	flags="-DBC_ENABLE_LONG_OPTIONS=1 -DBC_ENABLED=1 -DDC_ENABLED=1 -DBC_ENABLE_SIGNALS=0"
 	flags="$flags -DBC_ENABLE_NLS=0 -DBC_ENABLE_HISTORY=0"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
-	"$HOSTCC" $HOSTCFLAGS $flags -c "src/args.c" -o "$scriptdir/args.o" > /dev/null 2>&1
+	"$HOSTCC" $CPPFLAGS $HOSTCFLAGS $flags -c "src/args.c" -o "$scriptdir/args.o" > /dev/null 2>&1
 
 	err="$?"
 
@@ -733,12 +733,12 @@ if [ "$nls" -ne 0 ]; then
 
 	printf 'Testing NLS...\n'
 
-	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
+	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=0"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
-	"$HOSTCC" $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
+	"$HOSTCC" $CPPFLAGS $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
 
 	err="$?"
 
@@ -749,10 +749,10 @@ if [ "$nls" -ne 0 ]; then
 	if [ "$err" -ne 0 ]; then
 		printf 'NLS does not work.\n'
 		if [ $force -eq 0 ]; then
-			printf 'Disabling NLS...\n'
+			printf 'Disabling NLS...\n\n'
 			nls=0
 		else
-			printf 'Forcing NLS...\n'
+			printf 'Forcing NLS...\n\n'
 		fi
 	else
 		printf 'NLS works.\n\n'
@@ -806,12 +806,12 @@ if [ "$hist" -eq 1 ]; then
 
 	printf 'Testing history...\n'
 
-	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=$signals"
+	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=0"
 	flags="$flags -DBC_ENABLE_NLS=$nls"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
-	"$HOSTCC" $HOSTCFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
+	"$HOSTCC" $CPPFLAGS $HOSTCFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
 
 	err="$?"
 
@@ -822,13 +822,48 @@ if [ "$hist" -eq 1 ]; then
 	if [ "$err" -ne 0 ]; then
 		printf 'History does not work.\n'
 		if [ $force -eq 0 ]; then
-			printf 'Disabling history...\n'
+			printf 'Disabling history...\n\n'
 			hist=0
 		else
-			printf 'Forcing history...\n'
+			printf 'Forcing history...\n\n'
 		fi
 	else
-		printf 'History works.\n'
+		printf 'History works.\n\n'
+	fi
+
+	set -e
+
+fi
+
+if [ "$signals" -eq 1 ]; then
+
+	set +e
+
+	printf 'Testing signals...\n'
+
+	flags="-DBC_ENABLE_HISTORY=$hist -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=1"
+	flags="$flags -DBC_ENABLE_NLS=$nls"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
+
+	"$HOSTCC" $CPPFLAGS $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
+
+	err="$?"
+
+	rm -rf "$scriptdir/vm.o"
+
+	# If this errors, it is probably because of building on Windows,
+	# and signals are not supported on Windows, so disable it.
+	if [ "$err" -ne 0 ]; then
+		printf 'Signals do not work.\n'
+		if [ $force -eq 0 ]; then
+			printf 'Disabling signals...\n'
+			signals=0
+		else
+			printf 'Forcing signals...\n'
+		fi
+	else
+		printf 'Signals work.\n'
 	fi
 
 	set -e

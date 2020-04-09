@@ -39,7 +39,15 @@
 #include <stddef.h>
 #include <limits.h>
 
+#if BC_ENABLE_SIGNALS
+
+#	ifdef _WIN32
+#	error Signals are not supported on Windows.
+#	endif // _WIN32
+
 #include <signal.h>
+
+#endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_NLS
 
