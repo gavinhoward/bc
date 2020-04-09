@@ -4,7 +4,7 @@
 [![codecov][15]][16]
 [![Coverity Scan Build Status][17]][18]
 
-***WARNING: This project has moved to [https:://git.yzena.com][20] for [these
+***WARNING: This project has moved to [https://git.yzena.com/][20] for [these
 reasons][21].***
 
 This is an implementation of the [POSIX `bc` calculator][12] that implements
