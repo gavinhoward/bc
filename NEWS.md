@@ -1,5 +1,12 @@
 # News
 
+## 2.6.1
+
+This is a production release with a bug fix for FreeBSD.
+
+The bug was that when `bc` was built without long options, it would give a fatal
+error on every run. This was caused by a mishandling of `optind`.
+
 ## 2.6.0
 
 This release is a production release ***with no bugfixes***. If you do not want
