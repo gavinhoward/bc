@@ -891,7 +891,6 @@ else
 fi
 
 # Print out the values; this is for debugging.
-printf '\n'
 if [ "$bc" -ne 0 ]; then
 	printf 'Building bc\n'
 else
