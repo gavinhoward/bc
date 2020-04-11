@@ -551,10 +551,10 @@ if [ "$loptions" -eq 1 ]; then
 	if [ "$err" -ne 0 ]; then
 		printf 'Long options do not work.\n'
 		if [ $force -eq 0 ]; then
-			printf 'Disabling long options...\n'
+			printf 'Disabling long options...\n\n'
 			loptions=0
 		else
-			printf 'Forcing long options...\n'
+			printf 'Forcing long options...\n\n'
 		fi
 	else
 		printf 'Long options work.\n\n'
@@ -749,10 +749,10 @@ if [ "$nls" -ne 0 ]; then
 	if [ "$err" -ne 0 ]; then
 		printf 'NLS does not work.\n'
 		if [ $force -eq 0 ]; then
-			printf 'Disabling NLS...\n'
+			printf 'Disabling NLS...\n\n'
 			nls=0
 		else
-			printf 'Forcing NLS...\n'
+			printf 'Forcing NLS...\n\n'
 		fi
 	else
 		printf 'NLS works.\n\n'
@@ -822,10 +822,10 @@ if [ "$hist" -eq 1 ]; then
 	if [ "$err" -ne 0 ]; then
 		printf 'History does not work.\n'
 		if [ $force -eq 0 ]; then
-			printf 'Disabling history...\n'
+			printf 'Disabling history...\n\n'
 			hist=0
 		else
-			printf 'Forcing history...\n'
+			printf 'Forcing history...\n\n'
 		fi
 	else
 		printf 'History works.\n'
