@@ -134,6 +134,7 @@ static void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
 	assert(v != NULL && v->size == sizeof(char));
+	assert(v->dtor == NULL);
 	assert(!v->len || !v->v[v->len - 1]);
 	assert(v->v != str);
 
@@ -148,6 +149,7 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 
 	assert(v != NULL && v->size == sizeof(char));
+	assert(v->dtor == NULL);
 	assert(!v->len || !v->v[v->len - 1]);
 	assert(v->v != str);
 
@@ -158,6 +160,7 @@ void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 
 void bc_vec_empty(BcVec *restrict v) {
 	assert(v != NULL && v->size == sizeof(char));
+	assert(v->dtor == NULL);
 	bc_vec_npop(v, v->len);
 	bc_vec_pushByte(v, '\0');
 }
