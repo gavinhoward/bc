@@ -857,13 +857,13 @@ if [ "$signals" -eq 1 ]; then
 	if [ "$err" -ne 0 ]; then
 		printf 'Signals do not work.\n'
 		if [ $force -eq 0 ]; then
-			printf 'Disabling signals...\n'
+			printf 'Disabling signals...\n\n'
 			signals=0
 		else
-			printf 'Forcing signals...\n'
+			printf 'Forcing signals...\n\n'
 		fi
 	else
-		printf 'Signals work.\n'
+		printf 'Signals work.\n\n'
 	fi
 
 	set -e
