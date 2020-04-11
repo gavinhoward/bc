@@ -110,7 +110,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 	int c, i, err = 0;
 	bool do_exit = false, version = false;
 
-	optind = 0;
+	optind = 1;
 
 #if BC_ENABLE_LONG_OPTIONS
 	i = 0;

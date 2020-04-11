@@ -551,10 +551,10 @@ if [ "$loptions" -eq 1 ]; then
 	if [ "$err" -ne 0 ]; then
 		printf 'Long options do not work.\n'
 		if [ $force -eq 0 ]; then
-			printf 'Disabling long options...\n'
+			printf 'Disabling long options...\n\n'
 			loptions=0
 		else
-			printf 'Forcing long options...\n'
+			printf 'Forcing long options...\n\n'
 		fi
 	else
 		printf 'Long options work.\n\n'
