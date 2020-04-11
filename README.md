@@ -5,7 +5,7 @@
 [![Coverity Scan Build Status][17]][18]
 
 ***WARNING: This project has moved to [https://git.yzena.com/][20] for [these
-reasons][21].***
+reasons][21], though GitHub will remain a mirror.***
 
 This is an implementation of the [POSIX `bc` calculator][12] that implements
 [GNU `bc`][1] extensions, as well as the period (`.`) extension for the BSD
