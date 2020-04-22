@@ -828,7 +828,7 @@ if [ "$hist" -eq 1 ]; then
 			printf 'Forcing history...\n\n'
 		fi
 	else
-		printf 'History works.\n'
+		printf 'History works.\n\n'
 	fi
 
 	set -e
