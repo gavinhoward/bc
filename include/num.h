@@ -110,8 +110,10 @@ typedef struct BcNum {
 	bool neg;
 } BcNum;
 
+#if BC_ENABLE_EXTRA_MATH
 // Forward declaration
 struct BcRNG;
+#endif // BC_ENABLE_EXTRA_MATH
 
 #define BC_NUM_MIN_BASE (BC_NUM_BIGDIG_C(2))
 #define BC_NUM_MAX_POSIX_IBASE (BC_NUM_BIGDIG_C(16))

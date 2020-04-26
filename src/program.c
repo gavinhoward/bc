@@ -1175,7 +1175,7 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 
 #if BC_ENABLE_EXTRA_MATH
 		bc_rand_pop(&p->rng);
-#endif
+#endif // BC_ENABLE_EXTRA_MATH
 	}
 
 	bc_vec_push(&p->results, &res);

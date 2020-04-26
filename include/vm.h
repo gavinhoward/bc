@@ -125,7 +125,11 @@
 #define BC_MAX_STRING ((ulong) (BC_NUM_BIGDIG_MAX - 1))
 #define BC_MAX_NAME BC_MAX_STRING
 #define BC_MAX_NUM BC_MAX_SCALE
+
+#if BC_ENABLE_EXTRA_MATH
 #define BC_MAX_RAND ((ulong) (((BcRand) 0) - 1))
+#endif // BC_ENABLE_EXTRA_MATH
+
 #define BC_MAX_EXP ((ulong) (BC_NUM_BIGDIG_MAX))
 #define BC_MAX_VARS ((ulong) (SIZE_MAX - 1))
 
