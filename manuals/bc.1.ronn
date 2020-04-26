@@ -355,7 +355,7 @@ operands:
 	value of `E` (exclusive). If `E` is negative or is a non-integer (**scale**
 	is not `0`), an error is raised, and bc(1) resets (see the RESET section).
 	If `E` is larger than `BC_RAND_MAX`, the higher bound is honored by
-		generating several pseudo-random integers, multiplying them by appropriate
+	generating several pseudo-random integers, multiplying them by appropriate
 	powers of `BC_RAND_MAX + 1`, and adding them together. Thus, the size of
 	integer that can be generated with this operand is unbounded. Using this
 	operand will change the value of `seed`. If `E` is `0` or `1`, then `0` is
