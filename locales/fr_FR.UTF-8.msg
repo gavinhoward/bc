@@ -104,3 +104,5 @@ $set 6
 4 "fichier non ASCII : %s"
 5 "le chemin est un répertoire : %s"
 6 "option de ligne de commande invalide : '%c' (\"%s\")"
+7 "l'option '%c' (\"%s\") requiert un argument"
+8 "l'option '%c' (\"%s\") ne prend pas d'argument"

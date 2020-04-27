@@ -104,3 +104,5 @@ $set 6
 4 "file is not ASCII: %s"
 5 "path is a directory: %s"
 6 "invalid command-line option: '%c' (\"%s\")"
+7 "option requires an argument: '%c' (\"%s\")"
+8 "option takes no arguments: '%c' (\"%s\")"
