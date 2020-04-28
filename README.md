@@ -40,7 +40,7 @@ Systems that are known to work:
 * NetBSD
 * Mac OSX
 * Solaris
-* AIX (without long options)
+* AIX
 
 Please submit bug reports if this `bc` does not build out of the box on any
 system besides Windows. If Windows binaries are needed, they can be found at
