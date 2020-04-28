@@ -196,7 +196,7 @@ define frand(p){
 }
 define ifrand(i,p){return irand(abs(i)$)+frand(p)}
 define srand(x){
-	if (irand(2))return -x
+	if(irand(2))return -x
 	return x
 }
 define brand(){return irand(2)}
