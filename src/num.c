@@ -2300,9 +2300,24 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 
 	cmp = bc_num_cmp(a, &vm->max);
 
-	if (!cmp) {
-		r = bc_rand_int(rng);
+	if (cmp <= 0) {
+
+		BcRand bits = 0;
+
+		if (cmp < 0) bc_num_bigdig2(a, (BcBigDig*) &bits);
+
+		// This condition means that bits is a power of 2. In that case, we
+		// can just grab a full-size int and mask out the unneeded bits.
+		// Also, this condition says that 0 is a power of 2, which works for
+		// us, since a value of 0 means a == rng->max. The bitmask will mask
+		// nothing in that case as well.
+		if (!(bits & (bits - 1))) r = bc_rand_int(rng) & (bits - 1);
+		else r = bc_rand_bounded(rng, bits);
+
+		// We made sure that r is less than vm->max,
+		// so we can use bc_num_bigdig2() here.
 		bc_num_bigdig2num(b, r);
+
 		return s;
 	}
 
