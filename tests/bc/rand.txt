@@ -246,7 +246,6 @@ else {
 	ibase = G
 
 	for (i = 0; i < 64; ++i) {
-
 		rand()
 	}
 }

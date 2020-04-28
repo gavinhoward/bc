@@ -98,7 +98,7 @@ typedef uchar (*BcRandChar)(void*);
 #endif // __SIZEOF_INT128__
 #endif // BC_RAND_BUILTIN
 
-typedef uint_fast64_t BcRand;
+typedef uint64_t BcRand;
 
 #define BC_RAND_ROTC (63)
 
@@ -161,7 +161,7 @@ typedef struct BcRandState {
 #undef BC_RAND_BUILTIN
 #define BC_RAND_BUILTIN (1)
 
-typedef uint_fast32_t BcRand;
+typedef uint32_t BcRand;
 
 #define BC_RAND_ROTC (31)
 
