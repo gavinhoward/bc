@@ -1090,11 +1090,11 @@ This is a \fItranscendental function\fR\.
 .
 .TP
 \fBfrand(p)\fR
-Generates a pseudo\-random number between \fB0\fR (inclusive) and \fB1\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\. If \fBp\fR is not \fB0\fR, then calling this function will change the value of \fBseed\fR\.
+Generates a pseudo\-random number between \fB0\fR (inclusive) and \fB1\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\. If \fBp\fR is not \fB0\fR, then calling this function will change the value of \fBseed\fR\. If \fBp\fR is \fB0\fR, then \fB0\fR is returned, and \fBseed\fR is not changed\.
 .
 .TP
 \fBifrand(i, p)\fR
-Generates a pseudo\-random number that is between \fB0\fR (inclusive) and the truncated absolute value of \fBi\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\. If the absolute value of \fBi\fR is greater than or equal to \fB2\fR, and \fBp\fR is not \fB0\fR, then calling this function will change the value of \fBseed\fR\.
+Generates a pseudo\-random number that is between \fB0\fR (inclusive) and the truncated absolute value of \fBi\fR (exclusive) with the number of decimal digits after the decimal point equal to the truncated absolute value of \fBp\fR\. If the absolute value of \fBi\fR is greater than or equal to \fB2\fR, and \fBp\fR is not \fB0\fR, then calling this function will change the value of \fBseed\fR, otherwise, \fB0\fR is returned and \fBseed\fR is not changed\.
 .
 .TP
 \fBsrand(x)\fR
@@ -1448,7 +1448,13 @@ If this variable exists (no matter the contents), bc(1) behaves as if the \fB\-s
 .
 .TP
 \fBBC_ENV_ARGS\fR
-This is another way to give command\-line arguments to bc(1)\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBBC_ENV_ARGS\fR will be processed before files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time bc(1) runs\.
+This is another way to give command\-line arguments to bc(1)\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBBC_ENV_ARGS\fR will be processed before arguments and files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time bc(1) runs\.
+.
+.IP
+The code that parses \fBBC_ENV_ARGS\fR will correctly handle quoted arguments, but it does not understand escape sequences\. For example, the string \fB"/home/gavin/some bc file\.bc"\fR will be correctly parsed, but the string \fB"/home/gavin/some \e"bc\e" file\.bc"\fR will include the backslashes\.
+.
+.IP
+The quote parsing will handle either kind of quotes, \fB'\fR or \fB"\fR\. Thus, if you have a file with any number of single quotes in the name, you can use double quotes as the outside quotes, as in \fB"some \'bc\' file\.bc"\fR, and vice versa if you have a file with double quotes\. However, handling a file with both kinds of quotes in \fBDC_ENV_ARGS\fR is not supported due to the complexity of the parsing, though such files are still supported on the command\-line where the parsing is done by the shell\.
 .
 .TP
 \fBBC_LINE_LENGTH\fR
@@ -1470,7 +1476,7 @@ No error\.
 A math error occurred\. This follows standard practice of using \fB1\fR for expected errors, since math errors will happen in the process of normal execution\.
 .
 .IP
-Math errors include divide by \fB0\fR, taking the square root of a negative number, attempting to convert a negative number to a hardware integer, overflow when converting a number to a hardware integer, and attempting to use a non\-integer where an integer is required\.
+Math errors include divide by \fB0\fR, taking the square root of a negative number, using a negative number as a bound for the pseudo\-random number generator, attempting to convert a negative number to a hardware integer, overflow when converting a number to a hardware integer, and attempting to use a non\-integer where an integer is required\.
 .
 .IP
 Converting to a hardware integer happens for the second operand of the power (\fB^\fR), places (\fB@\fR), left shift (\fB<<\fR), and right shift (\fB>>\fR) operators and their corresponding assignment operators\.

@@ -806,7 +806,13 @@ dc(1) recognizes the following environment variables:
 .
 .TP
 \fBDC_ENV_ARGS\fR
-This is another way to give command\-line arguments to dc(1)\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBDC_ENV_ARGS\fR will be processed before files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time dc(1) runs\. Another use would be to use the \fB\-e\fR option to set \fBscale\fR to a value other than \fB0\fR\.
+This is another way to give command\-line arguments to dc(1)\. They should be in the same format as all other command\-line arguments\. These are always processed first, so any files given in \fBDC_ENV_ARGS\fR will be processed before arguments and files given on the command\-line\. This gives the user the ability to set up "standard" options and files to be used at every invocation\. The most useful thing for such files to contain would be useful functions that the user might want every time dc(1) runs\. Another use would be to use the \fB\-e\fR option to set \fBscale\fR to a value other than \fB0\fR\.
+.
+.IP
+The code that parses \fBDC_ENV_ARGS\fR will correctly handle quoted arguments, but it does not understand escape sequences\. For example, the string \fB"/home/gavin/some dc file\.dc"\fR will be correctly parsed, but the string \fB"/home/gavin/some \e"dc\e" file\.dc"\fR will include the backslashes\.
+.
+.IP
+The quote parsing will handle either kind of quotes, \fB'\fR or \fB"\fR\. Thus, if you have a file with any number of single quotes in the name, you can use double quotes as the outside quotes, as in \fB"some \'bc\' file\.bc"\fR, and vice versa if you have a file with double quotes\. However, handling a file with both kinds of quotes in \fBDC_ENV_ARGS\fR is not supported due to the complexity of the parsing, though such files are still supported on the command\-line where the parsing is done by the shell\.
 .
 .TP
 \fBDC_LINE_LENGTH\fR
@@ -828,7 +834,7 @@ No error\.
 A math error occurred\. This follows standard practice of using \fB1\fR for expected errors, since math errors will happen in the process of normal execution\.
 .
 .IP
-Math errors include divide by \fB0\fR, taking the square root of a negative number, attempting to convert a negative number to a hardware integer, overflow when converting a number to a hardware integer, and attempting to use a non\-integer where an integer is required\.
+Math errors include divide by \fB0\fR, taking the square root of a negative number, using a negative number as a bound for the pseudo\-random number generator, attempting to convert a negative number to a hardware integer, overflow when converting a number to a hardware integer, and attempting to use a non\-integer where an integer is required\.
 .
 .IP
 Converting to a hardware integer happens for the second operand of the power (\fB^\fR), places (\fB@\fR), left shift (\fBH\fR), and right shift (\fBh\fR) operators\.

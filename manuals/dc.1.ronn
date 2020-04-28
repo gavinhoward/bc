@@ -896,11 +896,24 @@ dc(1) recognizes the following environment variables:
     This is another way to give command-line arguments to dc(1). They should be
     in the same format as all other command-line arguments. These are always
     processed first, so any files given in `DC_ENV_ARGS` will be processed
-    before files given on the command-line. This gives the user the ability to
-    set up "standard" options and files to be used at every invocation. The most
-    useful thing for such files to contain would be useful functions that the
-    user might want every time dc(1) runs. Another use would be to use the `-e`
-    option to set `scale` to a value other than `0`.
+    before arguments and files given on the command-line. This gives the user
+    the ability to set up "standard" options and files to be used at every
+    invocation. The most useful thing for such files to contain would be useful
+    functions that the user might want every time dc(1) runs. Another use would
+    be to use the `-e` option to set `scale` to a value other than `0`.
+
+    The code that parses `DC_ENV_ARGS` will correctly handle quoted arguments,
+    but it does not understand escape sequences. For example, the string
+    `"/home/gavin/some dc file.dc"` will be correctly parsed, but the string
+    `"/home/gavin/some \"dc\" file.dc"` will include the backslashes.
+
+    The quote parsing will handle either kind of quotes, `'` or `"`. Thus, if
+    you have a file with any number of single quotes in the name, you can use
+    double quotes as the outside quotes, as in `"some 'bc' file.bc"`, and vice
+    versa if you have a file with double quotes. However, handling a file with
+    both kinds of quotes in `DC_ENV_ARGS` is not supported due to the complexity
+    of the parsing, though such files are still supported on the command-line
+    where the parsing is done by the shell.
 
   * `DC_LINE_LENGTH`:
     If this environment variable exists and contains an integer that is greater
@@ -927,7 +940,8 @@ dc(1) returns the following exit statuses:
     execution.
 
     Math errors include divide by `0`, taking the square root of a negative
-    number, attempting to convert a negative number to a hardware integer,
+    number, using a negative number as a bound for the pseudo-random number
+    generator, attempting to convert a negative number to a hardware integer,
     overflow when converting a number to a hardware integer, and attempting to
     use a non-integer where an integer is required.
 
