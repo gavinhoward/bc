@@ -50,6 +50,7 @@ int bc_main(int argc, char **argv);
 extern const char bc_help[];
 extern const char bc_lib[];
 extern const char* bc_lib_name;
+
 #if BC_ENABLE_EXTRA_MATH
 extern const char bc_lib2[];
 extern const char* bc_lib2_name;
