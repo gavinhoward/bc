@@ -928,7 +928,7 @@ const BcDig bc_num_bigdigMax[] = {
 	18U
 };
 #else // BC_LONG_BIT >= 64
-const BcDig bc_rand_bigdigMax[] = {
+const BcDig bc_num_bigdigMax[] = {
 	7296U,
 	9496U,
 	42U,
