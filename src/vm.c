@@ -165,41 +165,57 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 static BcStatus bc_vm_envArgs(const char* const env_args_name) {
 
 	BcStatus s;
-	BcVec v;
-	char *env_args = getenv(env_args_name), *buffer, *buf;
+	char *env_args = getenv(env_args_name), *buf, *start;
+	char instr = '\0';
 
 	if (env_args == NULL) return BC_STATUS_SUCCESS;
 
-	buffer = bc_vm_strdup(env_args);
-	buf = buffer;
+	start = buf = vm->env_args_buffer = bc_vm_strdup(env_args);
 
-	bc_vec_init(&v, sizeof(char*), NULL);
-	bc_vec_push(&v, &env_args_name);
+	bc_vec_init(&vm->env_args, sizeof(char*), NULL);
+	bc_vec_push(&vm->env_args, &env_args_name);
 
 	while (*buf) {
 
 		if (!isspace(*buf)) {
 
-			bc_vec_push(&v, &buf);
+			if (*buf == '"' || *buf == '\'') {
 
-			while (*buf && !isspace(*buf)) buf += 1;
+				instr = *buf;
+				buf += 1;
 
-			if (*buf) {
-				*buf = '\0';
+				if (*buf == instr) {
+					buf += 1;
+					continue;
+				}
+			}
+
+			bc_vec_push(&vm->env_args, &buf);
+
+			while (*buf && ((!instr && !isspace(*buf)) ||
+			                (instr && *buf != instr)))
+			{
 				buf += 1;
 			}
+
+			if (*buf) {
+
+				if (instr) instr = '\0';
+
+				*buf = '\0';
+				buf += 1;
+				start = buf;
+			}
+			else if (instr) return bc_vm_error(BC_ERROR_FATAL_OPTION, 0, start);
 		}
 		else buf += 1;
 	}
 
 	// Make sure to push a NULL pointer at the end.
 	buf = NULL;
-	bc_vec_push(&v, &buf);
+	bc_vec_push(&vm->env_args, &buf);
 
-	s = bc_args((int) v.len - 1, bc_vec_item(&v, 0));
-
-	bc_vec_free(&v);
-	free(buffer);
+	s = bc_args((int) vm->env_args.len - 1, bc_vec_item(&vm->env_args, 0));
 
 	return s;
 }
@@ -234,6 +250,8 @@ void bc_vm_shutdown(void) {
 	bc_history_free(&vm->history);
 #endif // BC_ENABLE_HISTORY
 #ifndef NDEBUG
+	bc_vec_free(&vm->env_args);
+	free(vm->env_args_buffer);
 	bc_vec_free(&vm->files);
 	bc_vec_free(&vm->exprs);
 	bc_program_free(&vm->prog);
