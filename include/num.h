@@ -173,6 +173,7 @@ size_t bc_num_scale(const BcNum *restrict n);
 size_t bc_num_len(const BcNum *restrict n);
 
 BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result);
+void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result);
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
 
 #if BC_ENABLE_EXTRA_MATH
@@ -230,5 +231,8 @@ void bc_num_dump(const char *varname, const BcNum *n);
 
 extern const char bc_num_hex_digits[];
 extern const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1];
+
+extern const BcDig bc_num_bigdigMax[];
+extern const size_t bc_num_bigdigMax_size;
 
 #endif // BC_NUM_H

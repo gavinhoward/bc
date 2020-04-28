@@ -666,6 +666,11 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 #endif // _WIN32
 #endif // BC_ENABLE_SIGNALS
 
+	memcpy(vm->max_num, bc_num_bigdigMax,
+	       bc_num_bigdigMax_size * sizeof(BcDig));
+	bc_num_setup(&vm->max, vm->max_num, BC_NUM_BIGDIG_LOG10);
+	vm->max.len = bc_num_bigdigMax_size;
+
 	vm->file = NULL;
 
 	bc_vm_gettext();

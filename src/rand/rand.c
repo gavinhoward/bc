@@ -391,9 +391,6 @@ void bc_rand_pop(BcRNG *r) {
 void bc_rand_init(BcRNG *r) {
 	bc_vec_init(&r->v, sizeof(BcRNGData), NULL);
 	bc_rand_push(r);
-	memcpy(r->max_num, bc_rand_max, bc_rand_max_size * sizeof(BcDig));
-	bc_num_setup(&r->max, r->max_num, BC_NUM_BIGDIG_LOG10);
-	r->max.len = bc_rand_max_size;
 }
 
 void bc_rand_free(BcRNG *r) {

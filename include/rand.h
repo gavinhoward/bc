@@ -205,8 +205,6 @@ typedef struct BcRNGData {
 typedef struct BcRNG {
 
 	BcVec v;
-	BcNum max;
-	BcDig max_num[BC_NUM_BIGDIG_LOG10];
 
 } BcRNG;
 
@@ -221,9 +219,6 @@ void bc_rand_pop(BcRNG *r);
 void bc_rand_getUlongs(BcRNG *r, ulong *s1, ulong *s2, ulong *i1, ulong *i2);
 
 extern const BcRandState bc_rand_multiplier;
-
-extern const BcDig bc_rand_max[];
-extern const size_t bc_rand_max_size;
 
 #endif // BC_ENABLE_EXTRA_MATH
 

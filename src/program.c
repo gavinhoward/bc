@@ -1373,8 +1373,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 		// This is also guaranteed to not error because num is in the range
 		// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
 		// it is not negative.
-		s = bc_num_bigdig(&num, &val);
-		assert(!s || s == BC_STATUS_SIGNAL);
+		bc_num_bigdig2(&num, &val);
 #if BC_ENABLE_SIGNALS
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto num_err;
 #endif // BC_ENABLE_SIGNALS

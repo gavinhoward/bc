@@ -1915,10 +1915,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 		if (fracp2.len < fracp2.rdx) fracp2.len = fracp2.rdx;
 
-		// Will never fail (except for signals) because fracp is
-		// guaranteed to be non-negative and small enough.
-		s = bc_num_bigdig(&fracp2, &dig);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
+		// fracp is guaranteed to be non-negative and small enough.
+		bc_num_bigdig2(&fracp2, &dig);
 
 		bc_num_bigdig2num(&digit, dig);
 		s = bc_num_sub(&fracp2, &digit, &fracp1, 0);
@@ -2087,28 +2085,46 @@ BcStatus bc_num_print(BcNum *restrict n, BcBigDig base, bool newline) {
 	return s;
 }
 
-BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
+void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 
-	size_t i;
-	BcBigDig r;
+	// This function returns no errors because it's guaranteed to succeed if
+	// its preconditions are met. Those preconditions include both parameters
+	// being non-NULL, n being non-negative, and n being less than vm->max. If
+	// all of that is true, then we can just convert without worrying about
+	// negative errors or overflow. We also don't care about signals because
+	// this function should execute in only a few iterations, meaning that
+	// ignoring signals here should be fine.
+
+	BcBigDig r = 0;
+
+	assert(n != NULL && result != NULL);
+	assert(!n->neg);
+	assert(bc_num_cmp(n, &vm->max) < 0);
+	assert(n->len - n->rdx <= 3);
+
+	// There is a small speed win from unrolling the loop here, and since it
+	// only adds 53 bytes, I decided that it was worth it.
+	switch (n->len - n->rdx) {
+		case 3:
+			r = (BcBigDig) n->num[n->rdx + 2];
+		case 2:
+			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx + 1];
+		case 1:
+			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx];
+	}
+
+	*result = r;
+}
+
+BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 
 	assert(n != NULL && result != NULL);
 
 	if (BC_ERR(n->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_ERR(bc_num_cmp(n, &vm->max) >= 0))
+		return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
-	for (r = 0, i = n->len; i > n->rdx;) {
-
-		BcBigDig prev = r * BC_BASE_POW;
-
-		if (BC_ERR(prev / BC_BASE_POW != r))
-			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
-
-		r = prev + (BcBigDig) n->num[--i];
-
-		if (BC_ERR(r < prev)) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
-	}
-
-	*result = r;
+	bc_num_bigdig2(n, result);
 
 	return BC_STATUS_SUCCESS;
 }
@@ -2147,7 +2163,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	bc_num_init(&frac, n->rdx);
 	bc_num_init(&intn, bc_num_int(n));
 
-	s = bc_num_mul(&rng->max, &rng->max, &pow, 0);
+	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	memcpy(frac.num, n->num, BC_NUM_SIZE(n->rdx));
@@ -2166,33 +2182,37 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 	if (BC_NUM_NONZERO(&frac)) {
 
-		s = bc_num_divmod(&frac, &rng->max, &temp, &temp2, 0);
+		s = bc_num_divmod(&frac, &vm->max, &temp, &temp2, 0);
 		if (BC_ERR(s)) goto err;
 
-		s = bc_num_bigdig(&temp2, &state1);
-		if (BC_ERR(s)) goto err;
-
-		s = bc_num_bigdig(&temp, &state2);
-		if (BC_ERR(s)) goto err;
+		// frac is guaranteed to be smaller than vm->max * vm->max (pow).
+		// This means that when dividing frac by vm->max, as above, the
+		// quotient and remainder are both guaranteed to be less than vm->max,
+		// which means we can use bc_num_bigdig2() here and not worry about
+		// overflow.
+		bc_num_bigdig2(&temp2, &state1);
+		bc_num_bigdig2(&temp, &state2);
 	}
 	else state1 = state2 = 0;
 
 	if (BC_NUM_NONZERO(&intn)) {
 
-		s = bc_num_divmod(&intn, &rng->max, &temp, &temp2, 0);
+		s = bc_num_divmod(&intn, &vm->max, &temp, &temp2, 0);
 		if (BC_ERR(s)) goto err;
 
-		s = bc_num_bigdig(&temp2, &inc1);
-		if (BC_ERR(s)) goto err;
+		// Because temp2 is the mod of vm->max, from above, it is guaranteed
+		// to be small enough to use bc_num_bigdig2().
+		bc_num_bigdig2(&temp2, &inc1);
 
-		if (bc_num_cmp(&temp, &rng->max) > 0) {
+		if (bc_num_cmp(&temp, &vm->max) > 0) {
 			bc_num_copy(&temp2, &temp);
-			s = bc_num_mod(&temp2, &rng->max, &temp, 0);
+			s = bc_num_mod(&temp2, &vm->max, &temp, 0);
 			if (BC_ERR(s)) goto err;
 		}
 
-		s = bc_num_bigdig(&temp, &inc2);
-		if (BC_ERR(s)) goto err;
+		// The if statement above ensures that temp is less than vm->max, which
+		// means that we can use bc_num_bigdig2() here.
+		bc_num_bigdig2(&temp, &inc2);
 	}
 	else inc1 = inc2 = 0;
 
@@ -2223,14 +2243,14 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	bc_num_setup(&temp2, temp2_num, sizeof(temp2_num) / sizeof(BcDig));
 	bc_num_setup(&conv, conv_num, sizeof(conv_num) / sizeof(BcDig));
 
-	s = bc_num_mul(&rng->max, &rng->max, &pow, 0);
+	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_rand_getUlongs(rng, &s1, &s2, &i1, &i2);
 
 	bc_num_bigdig2num(&conv, s2);
 
-	s = bc_num_mul(&conv, &rng->max, &temp1, 0);
+	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_bigdig2num(&conv, s1);
@@ -2243,7 +2263,7 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	bc_num_bigdig2num(&conv, i2);
 
-	s = bc_num_mul(&conv, &rng->max, &temp1, 0);
+	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_bigdig2num(&conv, i1);
@@ -2278,7 +2298,7 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	if (BC_ERR(a->rdx)) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return s;
 
-	cmp = bc_num_cmp(a, &rng->max);
+	cmp = bc_num_cmp(a, &vm->max);
 
 	if (!cmp) {
 		r = bc_rand_int(rng);
@@ -2310,13 +2330,14 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 
 	while (BC_NUM_NONZERO(c1)) {
 
-		s = bc_num_divmod(c1, &rng->max, c2, &mod, 0);
+		s = bc_num_divmod(c1, &vm->max, c2, &mod, 0);
 		if (BC_ERR(s)) goto err;
 
-		s = bc_num_bigdig(&mod, &modl);
-		if (BC_ERR(s)) goto err;
+		// Because mod is the mod of vm->max, it is guaranteed to be smaller,
+		// which means we can use bc_num_bigdig2() here.
+		bc_num_bigdig(&mod, &modl);
 
-		if (bc_num_cmp(c1, &rng->max) < 0) {
+		if (bc_num_cmp(c1, &vm->max) < 0) {
 
 			// In this case, if there is no carry, then we know we can generate
 			// an integer *equal* to modl. Thus, we add one if there is no
@@ -2345,7 +2366,7 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 
 		if (BC_NUM_NONZERO(c2)) {
 
-			s = bc_num_mul(&rng->max, p1, p2, 0);
+			s = bc_num_mul(&vm->max, p1, p2, 0);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 			tmp = p1;

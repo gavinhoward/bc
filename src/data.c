@@ -659,22 +659,6 @@ const char* bc_inst_names[] = {
 
 const BcRandState bc_rand_multiplier = BC_RAND_MULTIPLIER;
 
-#if BC_LONG_BIT >= 64
-const BcDig bc_rand_max[] = {
-	709551616U,
-	446744073U,
-	18U
-};
-#else // BC_LONG_BIT >= 64
-const BcDig bc_rand_max[] = {
-	7296U,
-	9496U,
-	42U,
-};
-#endif // BC_LONG_BIT >= 64
-
-const size_t bc_rand_max_size = sizeof(bc_rand_max) / sizeof(BcDig);
-
 #endif // BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLED
@@ -936,6 +920,22 @@ const uchar dc_parse_insts[] = {
 	BC_INST_PRINT_POP, BC_INST_NQUIT, BC_INST_SCALE_FUNC,
 };
 #endif // DC_ENABLED
+
+#if BC_LONG_BIT >= 64
+const BcDig bc_num_bigdigMax[] = {
+	709551616U,
+	446744073U,
+	18U
+};
+#else // BC_LONG_BIT >= 64
+const BcDig bc_rand_bigdigMax[] = {
+	7296U,
+	9496U,
+	42U,
+};
+#endif // BC_LONG_BIT >= 64
+
+const size_t bc_num_bigdigMax_size = sizeof(bc_num_bigdigMax) / sizeof(BcDig);
 
 const char bc_parse_one[] = "1";
 

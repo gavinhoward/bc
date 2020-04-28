@@ -213,6 +213,9 @@ typedef struct BcVm {
 	char *env_args_buffer;
 	BcVec env_args;
 
+	BcNum max;
+	BcDig max_num[BC_NUM_BIGDIG_LOG10];
+
 #if BC_ENABLE_NLS
 	nl_catd catalog;
 #endif // BC_ENABLE_NLS
