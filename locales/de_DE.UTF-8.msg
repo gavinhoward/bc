@@ -75,4 +75,6 @@ $set 6
 3 "konnte die Datei nicht öffnen: %s"
 4 "Datei ist nicht ASCII: %s"
 5 "Pfad ist ein Verzeichnis: %s"
-6 "ungültige Befehlszeilenoption: '%c' (\"%s\")"
+6 "ungültige Befehlszeilenoption: \"%s\""
+7 "Option erfordert ein Argument: '%c' (\"%s\")"
+8 "Option benutzt keine Argumente: '%c' (\"%s\")"
