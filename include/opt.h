@@ -29,18 +29,51 @@
  *
  * *****************************************************************************
  *
- * Definitions for processing command-line arguments.
+ * Adapted from https://github.com/skeeto/optparse
+ *
+ * *****************************************************************************
+ *
+ * Definitions for getopt_long() replacement.
  *
  */
 
-#ifndef BC_ARGS_H
-#define BC_ARGS_H
+#ifndef BC_OPT_H
+#define BC_OPT_H
 
-#include <status.h>
-#include <vm.h>
+#include <stdbool.h>
 
-BcStatus bc_args(int argc, char *argv[]);
+typedef struct BcOpt {
+	char **argv;
+	size_t optind;
+	int optopt;
+	int subopt;
+	char *optarg;
+} BcOpt;
 
-extern const char* const bc_args_env_name;
+typedef enum BcOptType {
+	BC_OPT_NONE,
+	BC_OPT_REQUIRED,
+	BC_OPT_BC_ONLY,
+	BC_OPT_DC_ONLY,
+} BcOptType;
 
-#endif // BC_ARGS_H
+typedef struct BcOptLong {
+	char *name;
+	BcOptType type;
+	int val;
+} BcOptLong;
+
+void bc_opt_init(BcOpt *o, char **argv);
+
+int bc_opt_parse(BcOpt *o, const BcOptLong *longopts);
+
+#define BC_OPT_ISDASHDASH(a) \
+	((a) != NULL && (a)[0] == '-' && (a)[1] == '-' && (a)[2] == '\0')
+
+#define BC_OPT_ISSHORTOPT(a) \
+	((a) != NULL && (a)[0] == '-' && (a)[1] != '-' && (a)[1] != '\0')
+
+#define BC_OPT_ISLONGOPT(a) \
+	((a) != NULL && (a)[0] == '-' && (a)[1] == '-' && (a)[2] != '\0')
+
+#endif // BC_OPT_H

@@ -210,6 +210,9 @@ typedef struct BcVm {
 	BcBigDig last_exp;
 	BcBigDig last_rem;
 
+	char *env_args_buffer;
+	BcVec env_args;
+
 #if BC_ENABLE_NLS
 	nl_catd catalog;
 #endif // BC_ENABLE_NLS

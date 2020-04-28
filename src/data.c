@@ -75,7 +75,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 
 	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
-	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
 
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -108,7 +108,9 @@ const char* const bc_err_msgs[] = {
 	"could not open file: %s",
 	"file is not ASCII: %s",
 	"path is a directory: %s",
-	"bad command-line option: '%c' (\"%s\")",
+	"bad command-line option: \"%s\"",
+	"option requires an argument: '%c' (\"%s\")",
+	"option takes no arguments: '%c' (\"%s\")",
 
 	"bad ibase: must be [%lu, %lu]",
 	"bad obase: must be [%lu, %lu]",

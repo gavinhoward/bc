@@ -38,7 +38,7 @@ if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	err_exit "usage: $script dir [run_extra_tests] [run_stack_tests] [use_long_options] [gen_tests] [time_tests] [exec args...]" 1
+	err_exit "usage: $script dir [run_extra_tests] [run_stack_tests] [gen_tests] [time_tests] [exec args...]" 1
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -52,13 +52,6 @@ if [ "$#" -lt 1 ]; then
 	run_stack_tests=1
 else
 	run_stack_tests="$1"
-	shift
-fi
-
-if [ "$#" -lt 1 ]; then
-	use_long_options=1
-else
-	use_long_options="$1"
 	shift
 fi
 
@@ -194,11 +187,7 @@ results=$(cat "$testdir/$d/add_results.txt")
 
 printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 
-if [ "$use_long_options" -ne 0 ]; then
-	"$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" -e "$halt" > "$out2"
-else
-	"$exe" "$@" -e "$exprs" -f "$f" -e "$exprs" -f "$f" -e "$halt" > "$out2"
-fi
+"$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" -e "$halt" > "$out2"
 
 diff "$out1" "$out2"
 
@@ -223,28 +212,20 @@ err="$?"
 
 checktest "$d" "$err" "invalid option argument" "$out2" "$d"
 
-if [ "$use_long_options" -ne 0 ]; then
+"$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2> "$out2"
+err="$?"
 
-	"$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2> "$out2"
-	err="$?"
-
-	checktest "$d" "$err" "invalid long option argument" "$out2" "$d"
-
-fi
+checktest "$d" "$err" "invalid long option argument" "$out2" "$d"
 
 "$exe" "$@" "-u" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
 checktest "$d" "$err" "unrecognized option argument" "$out2" "$d"
 
-if [ "$use_long_options" -ne 0 ]; then
+"$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
+err="$?"
 
-	"$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
-	err="$?"
-
-	checktest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
-
-fi
+checktest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
 
 printf 'pass\n'
 
