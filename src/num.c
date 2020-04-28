@@ -271,9 +271,10 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	a_int = bc_num_int(a);
 	b_int = bc_num_int(b);
 	a_int -= b_int;
-	a_max = (a->rdx > b->rdx);
 
 	if (a_int) return neg ? -((ssize_t) a_int) : (ssize_t) a_int;
+
+	a_max = (a->rdx > b->rdx);
 
 	if (a_max) {
 		min = b->rdx;
@@ -813,9 +814,9 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	memset(c->num, 0, BC_NUM_SIZE(c->len));
 
 	s = bc_num_sub(&h1, &l1, &m1, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	s = bc_num_sub(&l2, &h2, &m2, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	if (BC_NUM_NONZERO(&h1) && BC_NUM_NONZERO(&h2)) {
 
@@ -1244,7 +1245,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	b->neg = false;
 	s = bc_num_bigdig(b, &pow);
 	b->neg = neg;
-	if (s) return s;
+	if (BC_ERR(s)) return s;
 
 	bc_num_createCopy(&copy, a);
 
@@ -2147,7 +2148,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	bc_num_init(&intn, bc_num_int(n));
 
 	s = bc_num_mul(&rng->max, &rng->max, &pow, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	memcpy(frac.num, n->num, BC_NUM_SIZE(n->rdx));
 	frac.len = n->rdx;
@@ -2155,7 +2156,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	frac.scale = n->scale;
 
 	s = bc_num_mul(&frac, &pow, &temp, 0);
-	if (s) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_truncate(&temp, temp.scale);
 	bc_num_copy(&frac, &temp);
@@ -2223,19 +2224,19 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	bc_num_setup(&conv, conv_num, sizeof(conv_num) / sizeof(BcDig));
 
 	s = bc_num_mul(&rng->max, &rng->max, &pow, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_rand_getUlongs(rng, &s1, &s2, &i1, &i2);
 
 	bc_num_bigdig2num(&conv, s2);
 
 	s = bc_num_mul(&conv, &rng->max, &temp1, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_bigdig2num(&conv, s1);
 
 	s = bc_num_add(&conv, &temp1, &temp2, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	s = bc_num_div(&temp2, &pow, &temp3, BC_RAND_STATE_BITS);
 	if (BC_ERR(s)) goto err;
@@ -2243,15 +2244,15 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	bc_num_bigdig2num(&conv, i2);
 
 	s = bc_num_mul(&conv, &rng->max, &temp1, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_bigdig2num(&conv, i1);
 
 	s = bc_num_add(&conv, &temp1, &temp2, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	s = bc_num_add(&temp2, &temp3, n, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 err:
 	bc_num_free(&temp3);
@@ -2337,15 +2338,15 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 		bc_num_bigdig2num(&rand, r);
 
 		s = bc_num_mul(&rand, p1, p2, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		s = bc_num_add(p2, t1, t2, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		if (BC_NUM_NONZERO(c2)) {
 
 			s = bc_num_mul(&rng->max, p1, p2, 0);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 			tmp = p1;
 			p1 = p2;
