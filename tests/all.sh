@@ -85,6 +85,9 @@ else
 	halt="q"
 fi
 
+unset BC_ENV_ARGS
+unset BC_LINE_LENGTH
+
 printf '\nRunning %s tests...\n\n' "$d"
 
 while read t; do
