@@ -122,8 +122,8 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 
 				return bc_opt_error(BC_ERROR_FATAL_OPTION, option[0], str);
 			}
-			// Fallthrough.
 		}
+		// Fallthrough.
 		case BC_OPT_NONE:
 		{
 			if (option[1]) o->subopt += 1;

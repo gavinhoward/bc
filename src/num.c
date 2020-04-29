@@ -2107,8 +2107,10 @@ void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 	switch (n->len - n->rdx) {
 		case 3:
 			r = (BcBigDig) n->num[n->rdx + 2];
+			// Fallthrough.
 		case 2:
 			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx + 1];
+			// Fallthrough.
 		case 1:
 			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx];
 	}
