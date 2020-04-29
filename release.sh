@@ -468,8 +468,8 @@ else
 	defcc="c99"
 fi
 
-ASAN_OPTIONS="abort_on_error=1"
-UBSAN_OPTIONS="print_stack_trace=1,silence_unsigned_overflow=1"
+export ASAN_OPTIONS="abort_on_error=1"
+export UBSAN_OPTIONS="print_stack_trace=1,silence_unsigned_overflow=1"
 
 build "$debug" "$defcc" "-g" "1" "$bits"
 
