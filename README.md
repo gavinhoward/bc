@@ -232,9 +232,14 @@ To see what algorithms this `bc` uses, see the [algorithms manual][7].
 
 ## Locales
 
-Currently, this `bc` only has support for English (and US English), French and
-German locales. Patches are welcome for translations; use the existing `*.msg`
-files in `locales/` as a starting point.
+Currently, this `bc` only has support for English (and US English), French,
+German, Portuguese, Dutch, Polish, Russian, Japanese, and Chinese locales.
+Patches are welcome for translations; use the existing `*.msg` files in
+`locales/` as a starting point.
+
+In addition, patches for improvements are welcome; the last two messages in
+Portuguese were made with Google Translate, and the Dutch, Polish, Russian,
+Japanese, and Chinese locales were all generated with [DeepL][22].
 
 The message files provided assume that locales apply to all regions where a
 language is used, but this might not be true for, e.g., `fr_CA` and `fr_CH`.
@@ -319,3 +324,4 @@ Folders:
 [19]: ./manuals/benchmarks.md
 [20]: https://git.yzena.com/gavin/bc
 [21]: https://gavinhoward.com/2020/04/i-am-moving-away-from-github/
+[22]: https://www.deepl.com/translator
