@@ -2153,7 +2153,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 	BcStatus s;
 	BcNum pow, temp, temp2, intn, frac;
-	ulong state1, state2, inc1, inc2;
+	BcRand state1, state2, inc1, inc2;
 	BcDig pow_num[BC_RAND_NUM_SIZE];
 
 	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
@@ -2190,8 +2190,8 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 		// quotient and remainder are both guaranteed to be less than vm->max,
 		// which means we can use bc_num_bigdig2() here and not worry about
 		// overflow.
-		bc_num_bigdig2(&temp2, &state1);
-		bc_num_bigdig2(&temp, &state2);
+		bc_num_bigdig2(&temp2, (BcBigDig*) &state1);
+		bc_num_bigdig2(&temp, (BcBigDig*) &state2);
 	}
 	else state1 = state2 = 0;
 
@@ -2202,7 +2202,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 		// Because temp2 is the mod of vm->max, from above, it is guaranteed
 		// to be small enough to use bc_num_bigdig2().
-		bc_num_bigdig2(&temp2, &inc1);
+		bc_num_bigdig2(&temp2, (BcBigDig*) &inc1);
 
 		if (bc_num_cmp(&temp, &vm->max) > 0) {
 			bc_num_copy(&temp2, &temp);
@@ -2212,7 +2212,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 		// The if statement above ensures that temp is less than vm->max, which
 		// means that we can use bc_num_bigdig2() here.
-		bc_num_bigdig2(&temp, &inc2);
+		bc_num_bigdig2(&temp, (BcBigDig*) &inc2);
 	}
 	else inc1 = inc2 = 0;
 
@@ -2229,7 +2229,7 @@ err:
 BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	BcStatus s;
-	ulong s1, s2, i1, i2;
+	BcRand s1, s2, i1, i2;
 	BcNum pow, conv, temp1, temp2, temp3;
 	BcDig pow_num[BC_RAND_NUM_SIZE];
 	BcDig temp1_num[BC_RAND_NUM_SIZE], temp2_num[BC_RAND_NUM_SIZE];
@@ -2246,14 +2246,14 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	bc_rand_getUlongs(rng, &s1, &s2, &i1, &i2);
+	bc_rand_getRands(rng, &s1, &s2, &i1, &i2);
 
-	bc_num_bigdig2num(&conv, s2);
+	bc_num_bigdig2num(&conv, (BcBigDig) s2);
 
 	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	bc_num_bigdig2num(&conv, s1);
+	bc_num_bigdig2num(&conv, (BcBigDig) s1);
 
 	s = bc_num_add(&conv, &temp1, &temp2, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
@@ -2261,12 +2261,12 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	s = bc_num_div(&temp2, &pow, &temp3, BC_RAND_STATE_BITS);
 	if (BC_ERR(s)) goto err;
 
-	bc_num_bigdig2num(&conv, i2);
+	bc_num_bigdig2num(&conv, (BcBigDig) i2);
 
 	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	bc_num_bigdig2num(&conv, i1);
+	bc_num_bigdig2num(&conv, (BcBigDig) i1);
 
 	s = bc_num_add(&conv, &temp1, &temp2, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;

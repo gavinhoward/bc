@@ -360,8 +360,8 @@ static BcRandState bc_rand_getInc(BcRNGData *r) {
 	return res;
 }
 
-void bc_rand_getUlongs(BcRNG *r, ulong *s1, ulong *s2, ulong *i1, ulong *i2) {
-
+void bc_rand_getRands(BcRNG *r, BcRand *s1, BcRand *s2, BcRand *i1, BcRand *i2)
+{
 	BcRNGData *rng;
 	BcRandState inc;
 
