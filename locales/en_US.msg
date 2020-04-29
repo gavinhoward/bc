@@ -55,8 +55,8 @@ $set 4
 
 1 "end of file"
 2 "invalid character '%c'"
-3 "string end could not be found"
-4 "comment end could not be found"
+3 "string end cannot be found"
+4 "comment end cannot be found"
 5 "invalid token"
 6 "invalid expression"
 7 "empty expression"
@@ -65,7 +65,7 @@ $set 4
 10 "invalid assignment: left side must be scale, ibase, obase, seed, last, var, or array element"
 11 "no auto variable found"
 12 "function parameter or auto \"%s%s\" already exists"
-13 "block end could not be found"
+13 "block end cannot be found"
 14 "cannot return a value from void function: %s()"
 15 "var cannot be a reference: %s"
 16 "POSIX does not allow names longer than 1 character: %s"
@@ -100,7 +100,7 @@ $set 6
 
 1 "memory allocation failed"
 2 "I/O error"
-3 "could not open file: %s"
+3 "cannot open file: %s"
 4 "file is not ASCII: %s"
 5 "path is a directory: %s"
 6 "invalid command-line option: \"%s\""

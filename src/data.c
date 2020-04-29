@@ -105,7 +105,7 @@ const char* const bc_err_msgs[] = {
 
 	"memory allocation failed",
 	"I/O error",
-	"could not open file: %s",
+	"cannot open file: %s",
 	"file is not ASCII: %s",
 	"path is a directory: %s",
 	"bad command-line option: \"%s\"",
@@ -133,8 +133,8 @@ const char* const bc_err_msgs[] = {
 
 	"end of file",
 	"bad character '%c'",
-	"string end could not be found",
-	"comment end could not be found",
+	"string end cannot be found",
+	"comment end cannot be found",
 	"bad token",
 #if BC_ENABLED
 	"bad expression",
@@ -145,7 +145,7 @@ const char* const bc_err_msgs[] = {
 		"obase, seed, last, var, or array element",
 	"no auto variable found",
 	"function parameter or auto \"%s%s\" already exists",
-	"block end could not be found",
+	"block end cannot be found",
 	"cannot return a value from void function: %s()",
 	"var cannot be a reference: %s",
 
