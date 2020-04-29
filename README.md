@@ -167,7 +167,8 @@ EXECSUFFIX=<some_suffix> ./configure.sh
 If a package maintainer wishes to add both a prefix and a suffix, that is
 allowed.
 
-**Note**: The suggested name (and package name) is `bc-gh`.
+**Note**: The suggested name (and package name) when `bc` is not available is
+`bc-gh`.
 
 #### Karatsuba Number
 
