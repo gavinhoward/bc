@@ -2206,7 +2206,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 		// to be small enough to use bc_num_bigdig2().
 		bc_num_bigdig2(&temp2, (BcBigDig*) &inc1);
 
-		if (bc_num_cmp(&temp, &vm->max) > 0) {
+		if (bc_num_cmp(&temp, &vm->max) >= 0) {
 			bc_num_copy(&temp2, &temp);
 			s = bc_num_mod(&temp2, &vm->max, &temp, 0);
 			if (BC_ERR(s)) goto err;
