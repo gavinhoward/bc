@@ -259,7 +259,7 @@ Other projects based on this bc are:
 
 ## Language
 
-This `bc` is written in pure ISO C99, using POSIX 2008 APIs.
+This `bc` is written in pure ISO C99, using POSIX 2001 APIs.
 
 ## Commit Messages
 
