@@ -412,8 +412,14 @@ There is no assignment version of `$` because it is a unary operator.
 The assignment versions of the above operators are not available in `dc`, but
 the others are, as the operators `$`, `@`, `H`, and `h`, respectively.
 
-Extra operators can be disabled by passing either the `-E` flag or the
-`--disable-extra-math` option to `configure.sh`, as follows:
+In addition, this `bc` has the option of outputting in scientific notation or
+engineering notation. It can also take input in scientific or engineering
+notation. On top of that, it has a pseudo-random number generator. (See the
+[full manual](./bc.md) for more details.)
+
+Extra operators, scientific notation, engineering notation, and the
+pseudo-random number generator can be disabled by passing either the `-E` flag
+or the `--disable-extra-math` option to `configure.sh`, as follows:
 
 ```
 ./configure.sh -E
@@ -422,9 +428,9 @@ Extra operators can be disabled by passing either the `-E` flag or the
 
 Both commands are equivalent.
 
-This `bc` also has a larger library that is only enabled if extra operators are.
-More information about the functions can be found in the
-[Extended Library](./bc.md#extended-library) section of the
+This `bc` also has a larger library that is only enabled if extra operators and
+the pseudo-random number generator are. More information about the functions can
+be found in the [Extended Library](./bc.md#extended-library) section of the
 [full manual](./bc.md).
 
 ### Manpages
