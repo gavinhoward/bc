@@ -575,14 +575,14 @@ make install
 ## Binary Size
 
 When built with both calculators, all available features, and `-Os` using clang,
-the executable is 113 kb (113,248 bytes) on x86_64. That isn't much for what is
-contained in the binary, but if necessary, it can be reduced.
+the executable is 125.4 kb (125,400 bytes) on `x86_64`. That isn't much for what
+is contained in the binary, but if necessary, it can be reduced.
 
 The single largest user of space is the `bc` calculator. If just `dc` is needed,
-the size can be reduced to 80 kb (80,432 bytes).
+the size can be reduced to 96.7 kb (96,680 bytes).
 
 The next largest user of space is history support. If that is not needed, size
-can be reduced (for a build with both calculators) to 97 kb (97,760 bytes).
+can be reduced (for a build with both calculators) to 108.9 kb (108,912 bytes).
 
 There are several reasons that history is a bigger user of space than `dc`
 itself:
@@ -595,17 +595,17 @@ itself:
 * History has a lot of const data for supporting `UTF-8` terminals.
 
 The next biggest user is `dc`, so if just `bc` is needed, the size can be
-reduced to 101 kb (100,960 bytes) with history and 84 kb (84,472 bytes) without
-history.
+reduced to 113.1 kb (113,112 bytes) with history and 96.6 kb (96,624 bytes)
+without history.
 
-The next biggest user is signal handling. Without it, the size (with both
-calculators) is reduced to 109 kb (109,120 bytes) with history and 93 kb (93,632
-bytes) without history.
+The next biggest user is extra math support. Without it, the size (with both
+calculators) is reduced to 117.2 kb (117,168 bytes) with history and 96.6 kb
+(96,584 bytes) without history.
 
-The next largest user is extra math support. If this is not needed, the size
-(with both calculators) can be reduced to 105 kb (105,048 bytes) with history
-and signal handling, 89 kb (88,560 bytes) without history, 101 kb (100,920
-bytes) without signal handling, and 84 kb (84,432 bytes) without both.
+The next largest user is signal handling. If this is not needed, the size (with
+both calculators) can be reduced to 121.3 kb (121,288 bytes) with history and
+extra math support, 104.8 kb (104,784 bytes) without history, 113.1 kb (113,056
+bytes) without extra math support, and 92.5 kb (92,456 bytes) without both.
 
 ## Testing
 
