@@ -33,7 +33,7 @@ The PRNG is seeded, making it useful for applications where
 it also uses `/dev/urandom` to seed itself by default, so it will start with a
 good seed by default.
 
-It also outputs 32-bits on 32-bit platforms and 64-bits on 64-bit platforms, far
+It also outputs 32 bits on 32-bit platforms and 64 bits on 64-bit platforms, far
 better than the 15 bits of C's `rand()` and `bash`'s `$RANDOM`.
 
 In addition, the PRNG can take a bound, and when it gets a bound, it
