@@ -80,4 +80,4 @@ $set 6
 $set 7
 
 1 "opcja wymaga argumentu: '%c' (\"%s\")"
-2 "opcja nie wymaga żadnych argumentów: '%c' (\"%s\)"
+2 "opcja nie wymaga żadnych argumentów: '%c' (\"%s\")"

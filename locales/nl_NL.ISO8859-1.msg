@@ -43,7 +43,7 @@ $set 4
 16 "POSIX staat geen namen toe die langer zijn dan 1 teken: %s"
 17 "POSIX staat geen '#'-scriptcommentaar toe"
 18 "POSIX laat het volgende sleutelwoord niet toe: %s"
-19 "POSIX staat geen periode (".") toe als een kortere weg voor het laatste resultaat"
+19 "POSIX staat geen periode ('.') toe als een kortere weg voor het laatste resultaat"
 20 "POSIX vereist haakjes rond de terugkeeruitdrukkingen"
 21 "POSIX laat de volgende operator niet toe: %s"
 22 "POSIX laat geen vergelijking toe tussen operatoren buiten als verklaringen of lussen"
