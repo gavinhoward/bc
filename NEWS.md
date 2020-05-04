@@ -1,5 +1,10 @@
 # News
 
+## 2.7.1
+
+This is a production release with fixes for new locales and fixes for compiler
+warnings on FreeBSD.
+
 ## 2.7.0
 
 This is a production release with a bug fix for Linux, new translations, and new
