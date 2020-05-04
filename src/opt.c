@@ -51,7 +51,7 @@ static bool bc_opt_longoptsEnd(const BcOptLong *longopts, size_t i) {
 	return !longopts[i].name && !longopts[i].val;
 }
 
-static char* bc_opt_longopt(const BcOptLong *longopts, int c) {
+static const char* bc_opt_longopt(const BcOptLong *longopts, int c) {
 
 	size_t i;
 
@@ -62,7 +62,7 @@ static char* bc_opt_longopt(const BcOptLong *longopts, int c) {
 	return "NULL";
 }
 
-static int bc_opt_error(BcError err, int c, char *str) {
+static int bc_opt_error(BcError err, int c, const char *str) {
 
 	int result;
 
@@ -216,7 +216,7 @@ int bc_opt_parse(BcOpt *o, const BcOptLong *longopts) {
 
 	for (i = 0; !bc_opt_longoptsEnd(longopts, i); i++) {
 
-		char *name = longopts[i].name;
+		const char *name = longopts[i].name;
 
 		if (bc_opt_longoptsMatch(name, option)) {
 

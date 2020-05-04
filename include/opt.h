@@ -58,7 +58,7 @@ typedef enum BcOptType {
 } BcOptType;
 
 typedef struct BcOptLong {
-	char *name;
+	const char *name;
 	BcOptType type;
 	int val;
 } BcOptLong;
