@@ -20,7 +20,7 @@ if (maxrand() >= 2^64 - 1) {
 	ibase = G
 	obase = G
 
-	for (m = 0; i < 64; ++i) {
+	for (i = 0; i < 64; ++i) {
 		rand()
 	}
 
@@ -179,7 +179,7 @@ else {
 	5CDF9C7E26DD2C38
 	6A32443BBBB16774
 	3D8415FFECFB8B7F
-	3090ED9C47@635A3
+	3090ED9C47@6
 	6DBF241361C3E652
 	2CA9EF5A2AD971FC
 	44FBE937A1CF0FFC
