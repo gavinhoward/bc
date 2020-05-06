@@ -1,5 +1,16 @@
 # News
 
+## 2.7.2
+
+This is a production release with one major bug fix.
+
+The `length()` built-in function can take either a number or an array. If it
+takes an array, it returns the length of the array. Arrays can be passed by
+reference. The bug is that the `length()` function would not properly
+dereference arrays that were references. This is a bug that affects all users.
+
+**ALL USERS SHOULD UPDATE `bc`**.
+
 ## 2.7.1
 
 This is a production release with fixes for new locales and fixes for compiler
