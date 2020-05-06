@@ -1235,8 +1235,16 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 
 		if (len) {
 #if BC_ENABLED
-			if (BC_IS_BC && opd->t == BC_RESULT_ARRAY)
-				val = (BcBigDig) ((BcVec*) num)->len;
+			if (BC_IS_BC && opd->t == BC_RESULT_ARRAY) {
+
+				BcVec *v = (BcVec*) num;
+
+				if (v->size == sizeof(uchar)) v = bc_program_dereference(p, v);
+
+				assert(v->size == sizeof(BcNum));
+
+				val = (BcBigDig) v->len;
+			}
 			else
 #endif // BC_ENABLED
 			{
