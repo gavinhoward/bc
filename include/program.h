@@ -68,6 +68,9 @@ typedef struct BcProgram {
 	BcVec results;
 	BcVec stack;
 
+	BcVec *consts;
+	BcVec *strs;
+
 	BcVec fns;
 #if BC_ENABLED
 	BcVec fn_map;

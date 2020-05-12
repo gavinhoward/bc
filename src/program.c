@@ -45,16 +45,10 @@
 #include <program.h>
 #include <vm.h>
 
-#ifndef BC_PROG_NO_STACK_CHECK
-static BcStatus bc_program_checkStack(const BcVec *v, size_t n) {
-#if DC_ENABLED
-	if (!BC_IS_BC && BC_ERR(!BC_PROG_STACK(v, n)))
-		return bc_vm_err(BC_ERROR_EXEC_STACK);
-#endif // DC_ENABLED
-	assert(BC_PROG_STACK(v, n));
-	return BC_STATUS_SUCCESS;
+static void bc_program_setVecs(BcProgram *p, BcFunc *f) {
+	p->consts = &f->consts;
+	p->strs = &f->strs;
 }
-#endif // BC_PROG_NO_STACK_CHECK
 
 static BcStatus bc_program_type_num(BcResult *r, BcNum *n) {
 
@@ -80,29 +74,6 @@ static BcStatus bc_program_type_match(BcResult *r, BcType t) {
 	return BC_STATUS_SUCCESS;
 }
 #endif // BC_ENABLED
-
-static BcFunc* bc_program_func(const BcProgram *p) {
-
-	size_t i;
-
-	if (BC_IS_BC) {
-		BcInstPtr *ip = bc_vec_item_rev(&p->stack, 0);
-		i = ip->func;
-	}
-	else i = BC_PROG_MAIN;
-
-	return bc_vec_item(&p->fns, i);
-}
-
-static BcConst* bc_program_const(const BcProgram *p, size_t idx) {
-	BcFunc *f = bc_program_func(p);
-	return bc_vec_item(&f->consts, idx);
-}
-
-static char* bc_program_str(const BcProgram *p, size_t idx) {
-	BcFunc *f = bc_program_func(p);
-	return *((char**) bc_vec_item(&f->strs, idx));
-}
 
 static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
 {
@@ -188,7 +159,7 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 
 		case BC_RESULT_CONSTANT:
 		{
-			BcConst *c = bc_program_const(p, r->d.loc.loc);
+			BcConst *c = bc_vec_item(p->consts, r->d.loc.loc);
 			BcBigDig base = BC_PROG_IBASE(p);
 
 			if (c->base != base) {
@@ -613,7 +584,7 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 		size_t i = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
 
-		str = bc_program_str(p, i);
+		str = *((char**) bc_vec_item(p->strs, i));
 
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
 		else {
@@ -1290,7 +1261,7 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 				if (!BC_PROG_NUM(opd, num)) {
 					size_t idx;
 					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->scale;
-					val = (BcBigDig) strlen(bc_program_str(p, idx));
+					val = (BcBigDig) strlen(*((char**) bc_vec_item(p->strs, idx)));
 				}
 				else
 #endif // DC_ENABLED
@@ -1395,7 +1366,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	char str[2], *str2, c;
 	size_t len;
 	BcBigDig val;
-	BcFunc f, *func;
+	BcFunc f;
 
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
 		return bc_vm_err(BC_ERROR_EXEC_STACK);
@@ -1407,8 +1378,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 
 	assert(n != NULL);
 
-	func = bc_vec_item(&p->fns, BC_PROG_MAIN);
-	len = func->strs.len;
+	len = p->strs->len;
 
 	assert(len + BC_PROG_REQ_FUNCS == p->fns.len);
 
@@ -1440,7 +1410,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	}
 	else {
 		size_t idx = r->t == BC_RESULT_STR ? r->d.loc.loc : n->scale;
-		str2 = *((char**) bc_vec_item(&func->strs, idx));
+		str2 = *((char**) bc_vec_item(p->strs, idx));
 		c = str2[0];
 	}
 
@@ -1451,8 +1421,7 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	str2 = bc_vm_strdup(str);
 
 	// Make sure the pointer is updated.
-	func = bc_vec_item(&p->fns, BC_PROG_MAIN);
-	bc_vec_push(&func->strs, &str2);
+	bc_vec_push(p->strs, &str2);
 
 	res.t = BC_RESULT_STR;
 	res.d.loc.loc = len;
@@ -1487,7 +1456,7 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 	if (BC_PROG_NUM(r, n)) s = bc_num_stream(n, p->strm);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
-		bc_program_printChars(bc_program_str(p, idx));
+		bc_program_printChars(*((char**) bc_vec_item(p->strs, idx)));
 	}
 
 	return s;
@@ -1592,7 +1561,7 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	}
 
 	fidx = sidx + BC_PROG_REQ_FUNCS;
-	str = bc_program_str(p, sidx);
+	str = *((char**) bc_vec_item(p->strs, sidx));
 	f = bc_vec_item(&p->fns, fidx);
 
 	if (!f->code.len) {
@@ -1788,8 +1757,18 @@ void bc_program_init(BcProgram *p) {
 }
 
 void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
+
+	BcInstPtr *ip;
+
 	bc_func_init(f, name);
 	bc_vec_push(&p->fns, f);
+
+	// This is to make sure pointers are updated if the array was moved.
+	if (BC_IS_BC && p->stack.len) {
+		ip = bc_vec_item_rev(&p->stack, 0);
+		bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, ip->func));
+	}
+	else bc_program_setVecs(p, BC_PROG_MAIN);
 }
 
 #if BC_ENABLED
@@ -1827,8 +1806,9 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 	bc_vec_npop(&p->stack, p->stack.len - 1);
 	bc_vec_npop(&p->results, p->results.len);
 
-	f = bc_vec_item(&p->fns, 0);
+	f = bc_vec_item(&p->fns, BC_PROG_MAIN);
 	ip = bc_vec_top(&p->stack);
+	if (BC_IS_BC) bc_program_setVecs(p, f);
 	ip->idx = f->code.len;
 
 #if BC_ENABLE_SIGNALS
@@ -1863,6 +1843,9 @@ BcStatus bc_program_exec(BcProgram *p) {
 	BcNum *num;
 #endif // BC_ENABLED
 
+	if (BC_IS_BC) bc_program_setVecs(p, func);
+	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
+
 	while (BC_NO_SIG && BC_NO_ERR(!s) && ip->idx < func->code.len) {
 
 		uchar inst = (uchar) code[(ip->idx)++];
@@ -1896,10 +1879,16 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_CALL:
 			{
+				assert(BC_IS_BC);
+
 				s = bc_program_call(p, code, &ip->idx);
+
 				ip = bc_vec_top(&p->stack);
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
+
+				bc_program_setVecs(p, func);
+
 				break;
 			}
 
@@ -1925,9 +1914,13 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_RET_VOID:
 			{
 				s = bc_program_return(p, inst);
+
 				ip = bc_vec_top(&p->stack);
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
+
+				if (BC_IS_BC) bc_program_setVecs(p, func);
+
 				break;
 			}
 #endif // BC_ENABLED
@@ -1948,9 +1941,13 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_READ:
 			{
 				s = bc_program_read(p);
+
 				ip = bc_vec_top(&p->stack);
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
+
+				if (BC_IS_BC) bc_program_setVecs(p, func);
+
 				break;
 			}
 
@@ -2296,7 +2293,7 @@ static void bc_program_printStr(const BcProgram *p, const char *restrict code,
 	size_t idx = bc_program_index(code, bgn);
 	char *s;
 
-	s = bc_program_str(p, idx);
+	s = *((char**) bc_vec_item(p->strs, idx));
 
 	bc_vm_printf(" (\"%s\") ", s);
 }
@@ -2316,7 +2313,7 @@ void bc_program_printInst(const BcProgram *p, const char *restrict code,
 	else if (inst == BC_INST_STR) bc_program_printStr(p, code, bgn);
 	else if (inst == BC_INST_NUM) {
 		size_t idx = bc_program_index(code, bgn);
-		BcConst *c = bc_program_const(p, idx);
+		BcConst *c = bc_vec_item(p->consts, idx);
 		bc_vm_printf("(%s)", c->val);
 	}
 	else if (inst == BC_INST_CALL ||
