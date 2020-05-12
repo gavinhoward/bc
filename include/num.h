@@ -78,7 +78,7 @@ typedef uint64_t BcBigDig;
 
 #define BC_BASE_DIGS (9)
 #define BC_BASE_POW (1000000000)
-#define BC_NUM_DEF_SIZE (2)
+#define BC_NUM_DEF_SIZE (4)
 
 #define BC_NUM_BIGDIG_C UINT64_C
 
@@ -91,7 +91,7 @@ typedef uint32_t BcBigDig;
 
 #define BC_BASE_DIGS (4)
 #define BC_BASE_POW (10000)
-#define BC_NUM_DEF_SIZE (4)
+#define BC_NUM_DEF_SIZE (8)
 
 #define BC_NUM_BIGDIG_C UINT32_C
 
@@ -130,7 +130,7 @@ struct BcRNG;
 
 // A crude, but always big enough, calculation of
 // the size required for ibase and obase BcNum's.
-#define BC_NUM_BIGDIG_LOG10 ((CHAR_BIT * sizeof(BcBigDig) + 1) / 2 + 1)
+#define BC_NUM_BIGDIG_LOG10 (BC_NUM_DEF_SIZE)
 
 #define BC_NUM_NONZERO(n) ((n)->len)
 #define BC_NUM_ZERO(n) (!BC_NUM_NONZERO(n))
