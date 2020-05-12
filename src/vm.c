@@ -261,6 +261,15 @@ void bc_vm_shutdown(void) {
 
 	bc_program_free(&vm->prog);
 	bc_parse_free(&vm->prs);
+
+	{
+		size_t i;
+		for (i = 0; i < vm->temps.len; ++i)
+			free(((BcNum*) bc_vec_item(&vm->temps, i))->num);
+
+		bc_vec_free(&vm->temps);
+	}
+
 	free(vm);
 #endif // NDEBUG
 }
@@ -684,6 +693,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
 	bc_vec_init(&vm->exprs, sizeof(uchar), NULL);
+
+	bc_vec_init(&vm->temps, sizeof(BcNum), NULL);
 
 	bc_program_init(&vm->prog);
 	bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);

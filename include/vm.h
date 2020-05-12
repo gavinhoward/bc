@@ -169,6 +169,8 @@ typedef struct BcVm {
 
 	const char* file;
 
+	BcVec temps;
+
 #if BC_ENABLE_SIGNALS
 	const char *sigmsg;
 	volatile sig_atomic_t sig;

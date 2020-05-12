@@ -1985,14 +1985,31 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 }
 
 void bc_num_init(BcNum *restrict n, size_t req) {
+
+	BcDig *num;
+
 	assert(n != NULL);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	bc_num_setup(n, bc_vm_malloc(BC_NUM_SIZE(req)), req);
+
+	if (req == BC_NUM_DEF_SIZE && vm->temps.len) {
+		BcNum *nptr = bc_vec_top(&vm->temps);
+		num = nptr->num;
+		req = nptr->cap;
+		bc_vec_pop(&vm->temps);
+	}
+	else num = bc_vm_malloc(BC_NUM_SIZE(req));
+
+	bc_num_setup(n, num, req);
 }
 
 void bc_num_free(void *num) {
-	assert(num != NULL);
-	free(((BcNum*) num)->num);
+
+	BcNum *n = (BcNum*) num;
+
+	assert(n != NULL);
+
+	if (n->cap <= BC_NUM_DEF_SIZE * 2) bc_vec_push(&vm->temps, n);
+	else free(n->num);
 }
 
 void bc_num_copy(BcNum *d, const BcNum *s) {

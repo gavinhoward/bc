@@ -78,7 +78,7 @@ typedef uint64_t BcBigDig;
 
 #define BC_BASE_DIGS (9)
 #define BC_BASE_POW (1000000000)
-#define BC_NUM_DEF_SIZE (4)
+#define BC_NUM_DEF_SIZE (8)
 
 #define BC_NUM_BIGDIG_C UINT64_C
 
@@ -91,7 +91,7 @@ typedef uint32_t BcBigDig;
 
 #define BC_BASE_DIGS (4)
 #define BC_BASE_POW (10000)
-#define BC_NUM_DEF_SIZE (8)
+#define BC_NUM_DEF_SIZE (16)
 
 #define BC_NUM_BIGDIG_C UINT32_C
 
