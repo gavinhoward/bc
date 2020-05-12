@@ -1989,6 +1989,7 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 	BcDig *num;
 
 	assert(n != NULL);
+
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 
 	if (req == BC_NUM_DEF_SIZE && vm->temps.len) {
