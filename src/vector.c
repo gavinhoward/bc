@@ -218,7 +218,7 @@ static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 	while (low < high) {
 
 		size_t mid = (low + high) / 2;
-		BcId *id = bc_vec_item(v, mid);
+		const BcId *id = bc_vec_item(v, mid);
 		int result = bc_id_cmp(ptr, id);
 
 		if (!result) return mid;

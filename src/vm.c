@@ -56,6 +56,7 @@
 #endif // _WIN32
 
 #include <status.h>
+#include <vector.h>
 #include <args.h>
 #include <vm.h>
 #include <read.h>
@@ -242,18 +243,22 @@ static size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_shutdown(void) {
+
 #if BC_ENABLE_NLS
 	if (vm->catalog != BC_VM_INVALID_CATALOG) catclose(vm->catalog);
 #endif // BC_ENABLE_NLS
+
 #if BC_ENABLE_HISTORY
 	// This must always run to ensure that the terminal is back to normal.
 	bc_history_free(&vm->history);
 #endif // BC_ENABLE_HISTORY
+
 #ifndef NDEBUG
 	bc_vec_free(&vm->env_args);
 	free(vm->env_args_buffer);
 	bc_vec_free(&vm->files);
 	bc_vec_free(&vm->exprs);
+
 	bc_program_free(&vm->prog);
 	bc_parse_free(&vm->prs);
 	free(vm);

@@ -72,9 +72,8 @@ void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
 		else {
 
 			BcConst c;
-			char *str = bc_vm_strdup(string);
 
-			c.val = str;
+			c.val = bc_vm_strdup(string);
 			c.base = BC_NUM_BIGDIG_MAX;
 
 			memset(&c.num, 0, sizeof(BcNum));
