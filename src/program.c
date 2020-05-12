@@ -1768,7 +1768,7 @@ void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
 		ip = bc_vec_item_rev(&p->stack, 0);
 		bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, ip->func));
 	}
-	else bc_program_setVecs(p, BC_PROG_MAIN);
+	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
 }
 
 #if BC_ENABLED
