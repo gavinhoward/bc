@@ -293,12 +293,6 @@ static BcStatus bc_program_num(BcProgram *p, BcResult *r, BcNum **num) {
 static BcStatus bc_program_operand(BcProgram *p, BcResult **r,
                                    BcNum **n, size_t idx)
 {
-#ifndef BC_PROG_NO_STACK_CHECK
-	BcStatus s = bc_program_checkStack(&p->results, idx + 1);
-
-	if (BC_ERR(s)) return s;
-#endif // BC_PROG_NO_STACK_CHECK
-
 	*r = bc_vec_item_rev(&p->results, idx);
 
 #if BC_ENABLED
@@ -316,6 +310,15 @@ static BcStatus bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	BcResultType lt;
 
 	assert(p != NULL && l != NULL && ln != NULL && r != NULL && rn != NULL);
+
+#ifndef BC_PROG_NO_STACK_CHECK
+	if (!BC_IS_BC) {
+		if (BC_ERR(!BC_PROG_STACK(&p->results, 2)))
+			return bc_vm_err(BC_ERROR_EXEC_STACK);
+	}
+#endif // BC_PROG_NO_STACK_CHECK
+
+	assert(BC_PROG_STACK(&p->results, 2));
 
 	s = bc_program_operand(p, l, ln, 1);
 	if (BC_ERR(s)) return s;
@@ -357,41 +360,36 @@ static BcStatus bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
                                       BcResult **r, BcNum **rn)
 {
 	BcStatus s;
-	bool good = false;
-	BcResultType lt;
+	BcResultType lt, min;
+
+	min = BC_RESULT_CONSTANT - ((unsigned int) (BC_IS_BC << 1));
 
 	s = bc_program_binPrep(p, l, ln, r, rn);
 	if (BC_ERR(s)) return s;
 
 	lt = (*l)->t;
 
-	if (BC_ERR(lt == BC_RESULT_CONSTANT || lt == BC_RESULT_TEMP ||
-	           lt == BC_RESULT_ONE))
-	{
+	if (BC_ERR(lt >= min && lt <= BC_RESULT_ONE))
 		return bc_vm_err(BC_ERROR_EXEC_TYPE);
-	}
-
-#if BC_ENABLED
-	if (BC_ERR(lt == BC_RESULT_ARRAY))
-		return bc_vm_err(BC_ERROR_EXEC_TYPE);
-#endif // BC_ENABLED
 
 #if DC_ENABLED
-	if(!BC_IS_BC) good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
-	                      (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM));
+	if(!BC_IS_BC) {
+
+		bool good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
+		             lt <= BC_RESULT_ARRAY_ELEM);
+
+		if (!good) s = bc_program_type_num(*r, *rn);
+	}
 #else
 	assert((*r)->t != BC_RESULT_STR);
 #endif // DC_ENABLED
-
-	if (!good) s = bc_program_type_num(*r, *rn);
 
 	return s;
 }
 
 static void bc_program_binOpRetire(BcProgram *p, BcResult *r) {
 	r->t = BC_RESULT_TEMP;
-	bc_vec_pop(&p->results);
-	bc_vec_pop(&p->results);
+	bc_vec_npop(&p->results, 2);
 	bc_vec_push(&p->results, r);
 }
 
@@ -400,6 +398,15 @@ static BcStatus bc_program_prep(BcProgram *p, BcResult **r, BcNum **n) {
 	BcStatus s;
 
 	assert(p != NULL && r != NULL && n != NULL);
+
+#ifndef BC_PROG_NO_STACK_CHECK
+	if (!BC_IS_BC) {
+		if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+			return bc_vm_err(BC_ERROR_EXEC_STACK);
+	}
+#endif // BC_PROG_NO_STACK_CHECK
+
+	assert(BC_PROG_STACK(&p->results, 1));
 
 	s = bc_program_operand(p, r, n, 0);
 	if (BC_ERR(s)) return s;
@@ -574,9 +581,13 @@ static BcStatus bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	assert(p != NULL);
 
 #ifndef BC_PROG_NO_STACK_CHECK
-	s = bc_program_checkStack(&p->results, idx + 1);
-	if (BC_ERR(s)) return s;
+	if (!BC_IS_BC) {
+		if (BC_ERR(!BC_PROG_STACK(&p->results, idx + 1)))
+			return bc_vm_err(BC_ERROR_EXEC_STACK);
+	}
 #endif // BC_PROG_NO_STACK_CHECK
+
+	assert(BC_PROG_STACK(&p->results, idx + 1));
 
 	r = bc_vec_item_rev(&p->results, idx);
 
@@ -738,16 +749,14 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
 	n2.num = NULL;
 	n2.scale = r->d.loc.loc;
 
-	if (!push) {
-#ifndef BC_PROG_NO_STACK_CHECK
-		BcStatus s = bc_program_checkStack(&p->results, 2);
-		if (BC_ERR(s)) return s;
-#endif // BC_PROG_NO_STACK_CHECK
-		bc_vec_pop(v);
-		bc_vec_pop(&p->results);
-	}
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 1 + !push)))
+		return bc_vm_err(BC_ERROR_EXEC_STACK);
 
-	bc_vec_pop(&p->results);
+	assert(BC_PROG_STACK(&p->results, 2));
+
+	if (!push) bc_vec_pop(v);
+
+	bc_vec_npop(&p->results, 1 + !push);
 	bc_vec_push(v, &n2);
 
 	return BC_STATUS_SUCCESS;
@@ -765,7 +774,15 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 
 #if BC_ENABLED
 #if DC_ENABLED
-	if (!BC_IS_BC) s = bc_program_operand(p, &ptr, &n, 0);
+	if (!BC_IS_BC) {
+
+		if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+			return bc_vm_err(BC_ERROR_EXEC_STACK);
+
+		assert(BC_PROG_STACK(&p->results, 1));
+
+		s = bc_program_operand(p, &ptr, &n, 0);
+	}
 	else
 #endif // DC_ENABLED
 	{
@@ -779,6 +796,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 			n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 	}
 #else // BC_ENABLED
+	assert(BC_PROG_STACK(&p->results, 1));
 	s = bc_program_operand(p, &ptr, &n, 0);
 #endif // BC_ENABLED
 
@@ -937,10 +955,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 		bc_num_createCopy(&res.d.n, l);
 		bc_program_binOpRetire(p, &res);
 	}
-	else {
-		bc_vec_pop(&p->results);
-		bc_vec_pop(&p->results);
-	}
+	else bc_vec_npop(&p->results, 2);
 
 	return s;
 }
@@ -961,8 +976,12 @@ static BcStatus bc_program_pushVar(BcProgram *p, const char *restrict code,
 		BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
 
-		s = bc_program_checkStack(v, 2 - copy);
-		if (BC_ERR(s)) return s;
+		if (!BC_IS_BC) {
+			if (BC_ERR(!BC_PROG_STACK(v, 2 - copy)))
+				return bc_vm_err(BC_ERROR_EXEC_STACK);
+		}
+
+		assert(BC_PROG_STACK(v, 2 - copy));
 
 		if (!BC_PROG_STR(num)) {
 			r.t = BC_RESULT_TEMP;
@@ -1140,9 +1159,13 @@ static BcStatus bc_program_return(BcProgram *p, uchar inst) {
 	assert(BC_PROG_STACK(&p->stack, 2));
 
 #ifndef BC_PROG_NO_STACK_CHECK
-	s = bc_program_checkStack(&p->results, ip->len + (inst == BC_INST_RET));
-	if (BC_ERR(s)) return s;
+	if (!BC_IS_BC) {
+		if (BC_ERR(!BC_PROG_STACK(&p->results, ip->len + (inst == BC_INST_RET))))
+			return bc_vm_err(BC_ERROR_EXEC_STACK);
+	}
 #endif // BC_PROG_NO_STACK_CHECK
+
+	assert(BC_PROG_STACK(&p->results, ip->len + (inst == BC_INST_RET)));
 
 	f = bc_vec_item(&p->fns, ip->func);
 	res.t = BC_RESULT_TEMP;
@@ -1204,6 +1227,15 @@ static BcStatus bc_program_builtin(BcProgram *p, uchar inst) {
 #else // BC_ENABLE_EXTRA_MATH
 	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_ABS);
 #endif // BC_ENABLE_EXTRA_MATH
+
+#ifndef BC_PROG_NO_STACK_CHECK
+	if (!BC_IS_BC) {
+		if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+			return bc_vm_err(BC_ERROR_EXEC_STACK);
+	}
+#endif // BC_PROG_NO_STACK_CHECK
+
+	assert(BC_PROG_STACK(&p->results, 1));
 
 	s = bc_program_operand(p, &opd, &num, 0);
 	if (BC_ERR(s)) return s;
@@ -1314,6 +1346,11 @@ static BcStatus bc_program_modexp(BcProgram *p) {
 	BcResult *r1, *r2, *r3, res;
 	BcNum *n1, *n2, *n3, *resn = &res.d.n;
 
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 3)))
+		return bc_vm_err(BC_ERROR_EXEC_STACK);
+
+	assert(BC_PROG_STACK(&p->results, 3));
+
 	s = bc_program_operand(p, &r1, &n1, 2);
 	if (BC_ERR(s)) return s;
 	s = bc_program_type_num(r1, n1);
@@ -1359,6 +1396,11 @@ static BcStatus bc_program_asciify(BcProgram *p) {
 	size_t len;
 	BcBigDig val;
 	BcFunc f, *func;
+
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+		return bc_vm_err(BC_ERROR_EXEC_STACK);
+
+	assert(BC_PROG_STACK(&p->results, 1));
 
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
@@ -1432,6 +1474,11 @@ static BcStatus bc_program_printStream(BcProgram *p) {
 	BcResult *r;
 	BcNum *n;
 
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+		return bc_vm_err(BC_ERROR_EXEC_STACK);
+
+	assert(BC_PROG_STACK(&p->results, 1));
+
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
 
@@ -1499,6 +1546,11 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	bool exec;
 
 	assert(p->stack.len == p->tail_calls.len);
+
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+		return bc_vm_err(BC_ERROR_EXEC_STACK);
+
+	assert(BC_PROG_STACK(&p->results, 1));
 
 	s = bc_program_operand(p, &r, &n, 0);
 	if (BC_ERR(s)) return s;
@@ -2059,9 +2111,14 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_POP:
 			{
 #ifndef BC_PROG_NO_STACK_CHECK
-				s = bc_program_checkStack(&p->results, 1);
-				if (BC_ERR(s)) return s;
+				if (!BC_IS_BC) {
+					if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+						return bc_vm_err(BC_ERROR_EXEC_STACK);
+				}
 #endif // BC_PROG_NO_STACK_CHECK
+
+				assert(BC_PROG_STACK(&p->results, 1));
+
 				bc_vec_pop(&p->results);
 				break;
 			}
@@ -2121,11 +2178,15 @@ BcStatus bc_program_exec(BcProgram *p) {
 
 			case BC_INST_DUPLICATE:
 			{
-				s = bc_program_checkStack(&p->results, 1);
-				if (BC_ERR(s)) break;
+				if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+					return bc_vm_err(BC_ERROR_EXEC_STACK);
+
+				assert(BC_PROG_STACK(&p->results, 1));
+
 				ptr = bc_vec_top(&p->results);
 				bc_result_copy(&r, ptr);
 				bc_vec_push(&p->results, &r);
+
 				break;
 			}
 
@@ -2133,8 +2194,10 @@ BcStatus bc_program_exec(BcProgram *p) {
 			{
 				BcResult *ptr2;
 
-				s = bc_program_checkStack(&p->results, 2);
-				if (BC_ERR(s)) break;
+				if (BC_ERR(!BC_PROG_STACK(&p->results, 2)))
+					return bc_vm_err(BC_ERROR_EXEC_STACK);
+
+				assert(BC_PROG_STACK(&p->results, 2));
 
 				ptr = bc_vec_item_rev(&p->results, 0);
 				ptr2 = bc_vec_item_rev(&p->results, 1);
