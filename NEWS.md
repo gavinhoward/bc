@@ -1,5 +1,75 @@
 # News
 
+## 2.8.0
+
+This is a production release with some improvements and no bug fixes. **Users do
+not need to upgrade if they do not want to.**
+
+First, the requirements for `bc` were pushed back to POSIX 2008. `bc` uses one
+function, `strdup()`, which is not in POSIX 2001, and it is in the X/Open System
+Interfaces group 2001. It is, however, in POSIX 2008, and since POSIX 2008 is
+old enough to be supported anywhere that I care, that should be the requirement.
+
+Second, the interpreter received a speedup to make performance on non-math-heavy
+scripts more competitive with GNU `bc`. While improvements did, in fact, get it
+much closer (see the [benchmarks][19]), it isn't quite there.
+
+There were several things done to speed up the interpreter:
+
+First, several small inefficiencies were removed. These included calling the
+function `bc_vec_pop(v)` twice instead of calling `bc_vec_npop(v, 2)`. They also
+included an extra function call for checking the size of the stack and checking
+the size of the stack more than once on several operations.
+
+Second, since the current `bc` function is the one that stores constants and
+strings, the program caches pointers to the current function's vectors of
+constants and strings to prevent needing to grab the current function in order
+to grab a constant or a string.
+
+Third, `bc` tries to reuse `BcNum`'s (the internal representation of
+arbitary-precision numbers). If a `BcNum` has the default capacity of
+`BC_NUM_DEF_SIZE` (32 on 64-bit and 16 on 32-bit) when it is freed, it is added
+to a list of available `BcNum`'s. And then, when a `BcNum` is allocated with a
+capacity of `BC_NUM_DEF_SIZE` and any `BcNum`'s exist on the list of reusable
+ones, one of those ones is grabbed instead.
+
+In order to support these changes, the `BC_NUM_DEF_SIZE` was changed it used to
+be 16 bytes on all systems, but it was changed to more closely align with the
+minimum allocation size on Linux, which is either 32 bytes (64-bit musl), 24
+bytes (64-bit glibc), 16 bytes (32-bit musl), or 12 bytes (32-bit glibc). Since
+these are the minimum allocation sizes, these are the sizes that would be
+allocated anyway, making it worth it to just use the whole space.
+
+On top of that, at least on 64-bit, `BC_NUM_DEF_SIZE` supports numbers with
+either 72 integer digits or 45 integer digits and 27 fractional digits. This
+should be more than enough for most cases since `bc`'s default `scale` values
+are 0 or 20, meaning that, by default, it has at most 20 fractional digits. And
+45 integer digits are *a lot*; it's enough to calculate the amount of mass in
+the Milky Way galaxy in kilograms. Also, 72 digits is enough to calculate the
+diameter of the universe in Planck lengths.
+
+(For 32-bit, these numbers are either 32 integer digits or 12 integer digits and
+20 fractional digits. These are also quite big, and going much bigger on a
+32-bit system seems a little pointless since 12 digits in just under a trillion
+and 20 fractional digits is still enough for about any use since `10^-20` light
+years is just under a millimeter.)
+
+All of this together means that for ordinary uses, and even uses in scientific
+work, the default number size will be all that is needed, which means that
+nearly all, if not all, numbers will be reused, relieving pressure on the system
+allocator.
+
+*Note*: I did several experiments to find the changes that had the most impact,
+especially with regard to reusing `BcNum`'s. One was putting `BcNum`'s into
+buckets according to their capacity in powers of 2 up to 512. That performed
+worse than `bc` did in `2.7.2`. Another was putting any `BcNum` on the reuse
+list that had a capacity of `BC_NUM_DEF_SIZE * 2` and reusing them for `BcNum`'s
+that requested `BC_NUM_DEF_SIZE`. This did reduce the amount of time spent, but
+it also spent a lot of time in the system allocator for an unknown reason. (When
+using `strace`, a bunch more `brk` calls showed up.) Just reusing `BcNum`'s that
+had exactly `BC_NUM_DEF_SIZE` capacity spent the smallest amount of time in both
+user and system time.
+
 ## 2.7.2
 
 This is a production release with one major bug fix.
@@ -633,3 +703,4 @@ not thoroughly tested.
 [16]: ./manuals/bc.1.ronn#extended-library
 [17]: https://github.com/skeeto/optparse
 [18]: https://www.deepl.com/translator
+[19]: ./manuals/benchmarks.md
