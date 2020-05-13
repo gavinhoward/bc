@@ -27,10 +27,10 @@ This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 ## Prerequisites
 
 This `bc` only requires a C99-compatible compiler and a (mostly) POSIX
-2008-compatible system.
+2001-compatible system with the XSI (X/Open System Interfaces) option group.
 
-Since POSIX 2008 requires the existence of a C99 compiler as `c99`, any
-POSIX-compatible system will have everything needed.
+Since POSIX 2001 with XSI requires the existence of a C99 compiler as `c99`, any
+POSIX and XSI-compatible system will have everything needed.
 
 Systems that are known to work:
 
