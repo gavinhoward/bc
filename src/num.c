@@ -2009,9 +2009,7 @@ void bc_num_free(void *num) {
 
 	assert(n != NULL);
 
-	if (n->num == NULL) return;
-
-	if (n->cap <= BC_NUM_DEF_SIZE * 2) bc_vec_push(&vm->temps, n);
+	if (n->cap == BC_NUM_DEF_SIZE) bc_vec_push(&vm->temps, n);
 	else free(n->num);
 }
 
