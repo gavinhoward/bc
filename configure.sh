@@ -697,7 +697,7 @@ if [ "$nls" -ne 0 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
-	"$HOSTCC" $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
+	"$CC" $CFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
 
 	err="$?"
 
@@ -770,7 +770,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200112L -D_XOPEN_SOURCE=600"
 
-	"$HOSTCC" $HOSTCFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
+	"$CC" $CFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
 
 	err="$?"
 
