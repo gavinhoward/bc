@@ -743,7 +743,6 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 	BcNum *n = NULL;
 	bool var = (t == BC_TYPE_VAR);
 
-#if BC_ENABLED
 #if DC_ENABLED
 	if (!BC_IS_BC) {
 
@@ -753,9 +752,12 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 		assert(BC_PROG_STACK(&p->results, 1));
 
 		s = bc_program_operand(p, &ptr, &n, 0);
+		if (BC_ERR(s)) return s;
 	}
-	else
-#endif // DC_ENABLED
+#endif
+
+#if BC_ENABLED
+	if (BC_IS_BC)
 	{
 		ptr = bc_vec_top(&p->results);
 
@@ -766,12 +768,7 @@ static BcStatus bc_program_copyToVar(BcProgram *p, size_t idx,
 		else if (var)
 			n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 	}
-#else // BC_ENABLED
-	assert(BC_PROG_STACK(&p->results, 1));
-	s = bc_program_operand(p, &ptr, &n, 0);
 #endif // BC_ENABLED
-
-	if (BC_ERR(s)) return s;
 
 	vec = bc_program_vec(p, idx, t);
 
