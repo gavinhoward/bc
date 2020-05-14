@@ -723,7 +723,7 @@ static BcStatus bc_program_assignStr(BcProgram *p, BcResult *r,
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1 + !push)))
 		return bc_vm_err(BC_ERROR_EXEC_STACK);
 
-	assert(BC_PROG_STACK(&p->results, 2));
+	assert(BC_PROG_STACK(&p->results, 1 + !push));
 
 	if (!push) bc_vec_pop(v);
 
