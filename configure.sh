@@ -600,8 +600,8 @@ else
 
 	link="\$(LINK) \$(BIN) \$(EXEC_PREFIX)\$(DC)"
 
-	karatsuba="@\$(KARATSUBA) 0 \$(BC_EXEC)"
-	karatsuba_test="@\$(KARATSUBA) 100 \$(BC_EXEC)"
+	karatsuba="@\$(KARATSUBA) 30 0 \$(BC_EXEC)"
+	karatsuba_test="@\$(KARATSUBA) 1 100 \$(BC_EXEC)"
 
 	install_prereqs=" install_bc_manpage install_dc_manpage"
 	uninstall_prereqs=" uninstall_bc uninstall_dc"
