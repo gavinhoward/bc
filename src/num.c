@@ -821,36 +821,36 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	if (BC_NUM_NONZERO(&h1) && BC_NUM_NONZERO(&h2)) {
 
 		s = bc_num_m(&h1, &h2, &z2, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bc_num_clean(&z2);
 
 		s = bc_num_shiftAddSub(c, &z2, max2 * 2, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_shiftAddSub(c, &z2, max2, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
 	if (BC_NUM_NONZERO(&l1) && BC_NUM_NONZERO(&l2)) {
 
 		s = bc_num_m(&l1, &l2, &z0, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bc_num_clean(&z0);
 
 		s = bc_num_shiftAddSub(c, &z0, max2, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_shiftAddSub(c, &z0, 0, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
 	if (BC_NUM_NONZERO(&m1) && BC_NUM_NONZERO(&m2)) {
 
 		s = bc_num_m(&m1, &m2, &z1, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bc_num_clean(&z1);
 
 		op = (m1.neg != m2.neg) ? bc_num_subArrays : bc_num_addArrays;
 		s = bc_num_shiftAddSub(c, &z1, max2, op);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
 err:
@@ -1757,7 +1757,7 @@ static BcStatus bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
 	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i)
 		s = bc_num_printFixup(n, rem, pow, i);
 
-	if (BC_ERR(s)) return s;
+	if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 
 	for (i = 0; BC_NO_SIG && i < n->len; ++i) {
 
@@ -2200,10 +2200,15 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	memcpy(intn.num, n->num + n->rdx, BC_NUM_SIZE(bc_num_int(n)));
 	intn.len = bc_num_int(n);
 
+	// This assert is here because it has to be true. It is also here to justify
+	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
+	// below.
+	assert(BC_NUM_NONZERO(&vm->max));
+
 	if (BC_NUM_NONZERO(&frac)) {
 
 		s = bc_num_divmod(&frac, &vm->max, &temp, &temp2, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// frac is guaranteed to be smaller than vm->max * vm->max (pow).
 		// This means that when dividing frac by vm->max, as above, the
@@ -2218,7 +2223,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	if (BC_NUM_NONZERO(&intn)) {
 
 		s = bc_num_divmod(&intn, &vm->max, &temp, &temp2, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Because temp2 is the mod of vm->max, from above, it is guaranteed
 		// to be small enough to use bc_num_bigdig2().
@@ -2227,7 +2232,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 		if (bc_num_cmp(&temp, &vm->max) >= 0) {
 			bc_num_copy(&temp2, &temp);
 			s = bc_num_mod(&temp2, &vm->max, &temp, 0);
-			if (BC_ERR(s)) goto err;
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
 
 		// The if statement above ensures that temp is less than vm->max, which
@@ -2263,8 +2268,16 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	bc_num_setup(&temp2, temp2_num, sizeof(temp2_num) / sizeof(BcDig));
 	bc_num_setup(&conv, conv_num, sizeof(conv_num) / sizeof(BcDig));
 
+	// This assert is here because it has to be true. It is also here to justify
+	// the assumption that pow is not zero.
+	assert(BC_NUM_NONZERO(&vm->max));
+
 	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	// Because this is true, we can just use BC_ERROR_SIGNAL_ONLY() below when
+	// dividing by pow.
+	assert(BC_NUM_NONZERO(&pow));
 
 	bc_rand_getRands(rng, &s1, &s2, &i1, &i2);
 
@@ -2279,7 +2292,7 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	s = bc_num_div(&temp2, &pow, &temp3, BC_RAND_STATE_BITS);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_bigdig2num(&conv, (BcBigDig) i2);
 
@@ -2292,11 +2305,10 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	s = bc_num_add(&temp2, &temp3, n, 0);
-	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 err:
 	bc_num_free(&temp3);
-	if (BC_ERR(s)) bc_num_free(n);
+	if (BC_ERROR_SIGNAL_ONLY(s)) bc_num_free(n);
 	return s;
 }
 
@@ -2363,10 +2375,15 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	c1 = &cp;
 	c2 = &cp2;
 
+	// This assert is here because it has to be true. It is also here to justify
+	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
+	// below.
+	assert(BC_NUM_NONZERO(&vm->max));
+
 	while (BC_NUM_NONZERO(c1)) {
 
 		s = bc_num_divmod(c1, &vm->max, c2, &mod, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 		// Because mod is the mod of vm->max, it is guaranteed to be smaller,
 		// which means we can use bc_num_bigdig2() here.
@@ -2610,7 +2627,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	assert(!b->len || b->num[b->len - 1] || b->rdx == b->len);
 
 err:
-	if (BC_ERR(s)) bc_num_free(b);
+	if (BC_ERROR_SIGNAL_ONLY(s)) bc_num_free(b);
 	bc_num_free(&fprime);
 	bc_num_free(&f);
 	bc_num_free(&num2);
