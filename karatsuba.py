@@ -60,6 +60,8 @@ mn = 16
 
 num = "9" * mx
 
+args_idx = 4
+
 if len(sys.argv) >= 2:
 	num_iterations = int(sys.argv[1])
 else:
@@ -70,7 +72,7 @@ if len(sys.argv) >= 3:
 else:
 	test_num = 0
 
-if len(sys.argv) >= 4:
+if len(sys.argv) >= args_idx:
 	exe = sys.argv[3]
 else:
 	exe = testdir + "/bin/bc"
@@ -160,7 +162,7 @@ try:
 
 				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", "0", exe ]
 
-				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
+				p = subprocess.run(cmd + sys.argv[args_idx:], stderr=subprocess.PIPE)
 
 				if p.returncode != 0:
 					print("{} test failed:\n".format(test, p.returncode))
@@ -173,9 +175,9 @@ try:
 			for script in scripts:
 
 				cmd = [ "{}/tests/script.sh".format(testdir), "bc", script + ".bc",
-				        "0", "1", "0", "0", exe ]
+				        "0", "1", "1", "0", exe ]
 
-				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
+				p = subprocess.run(cmd + sys.argv[args_idx:], stderr=subprocess.PIPE)
 
 				if p.returncode != 0:
 					print("{} test failed:\n".format(test, p.returncode))
