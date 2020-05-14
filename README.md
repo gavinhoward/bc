@@ -180,6 +180,8 @@ distro maintainers to run once when a package is being created. It finds the
 optimal Karatsuba number (see the [algorithms manual][7] for more information)
 for the machine that it is running on.
 
+The easiest way to run this script is with `make karatsuba`.
+
 If desired, maintainers can also skip running this script because there is a
 sane default for the Karatsuba number.
 
