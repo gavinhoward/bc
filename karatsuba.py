@@ -112,7 +112,7 @@ try:
 
 			for test in tests:
 
-				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", exe ]
+				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", "0", exe ]
 
 				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
 
@@ -127,7 +127,7 @@ try:
 			for script in scripts:
 
 				cmd = [ "{}/tests/script.sh".format(testdir), "bc", script + ".bc",
-				        "0", "1", "0", exe ]
+				        "0", "1", "0", "0", exe ]
 
 				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
 
