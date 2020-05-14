@@ -10,7 +10,11 @@ function, `strdup()`, which is not in POSIX 2001, and it is in the X/Open System
 Interfaces group 2001. It is, however, in POSIX 2008, and since POSIX 2008 is
 old enough to be supported anywhere that I care, that should be the requirement.
 
-Second, the interpreter received a speedup to make performance on non-math-heavy
+Second, the default Karatsuba length was updated from 64 to 32 after making the
+optimization changes below, since 32 is going to be better than 64 after the
+changes.
+
+Third, the interpreter received a speedup to make performance on non-math-heavy
 scripts more competitive with GNU `bc`. While improvements did, in fact, get it
 much closer (see the [benchmarks][19]), it isn't quite there.
 
@@ -33,12 +37,13 @@ to a list of available `BcNum`'s. And then, when a `BcNum` is allocated with a
 capacity of `BC_NUM_DEF_SIZE` and any `BcNum`'s exist on the list of reusable
 ones, one of those ones is grabbed instead.
 
-In order to support these changes, the `BC_NUM_DEF_SIZE` was changed it used to
+In order to support these changes, the `BC_NUM_DEF_SIZE` was changed. It used to
 be 16 bytes on all systems, but it was changed to more closely align with the
 minimum allocation size on Linux, which is either 32 bytes (64-bit musl), 24
 bytes (64-bit glibc), 16 bytes (32-bit musl), or 12 bytes (32-bit glibc). Since
 these are the minimum allocation sizes, these are the sizes that would be
-allocated anyway, making it worth it to just use the whole space.
+allocated anyway, making it worth it to just use the whole space, so the value
+of `BC_NUM_DEF_SIZE` on 64-bit systems was changed to 32 bytes.
 
 On top of that, at least on 64-bit, `BC_NUM_DEF_SIZE` supports numbers with
 either 72 integer digits or 45 integer digits and 27 fractional digits. This
@@ -68,7 +73,9 @@ that requested `BC_NUM_DEF_SIZE`. This did reduce the amount of time spent, but
 it also spent a lot of time in the system allocator for an unknown reason. (When
 using `strace`, a bunch more `brk` calls showed up.) Just reusing `BcNum`'s that
 had exactly `BC_NUM_DEF_SIZE` capacity spent the smallest amount of time in both
-user and system time.
+user and system time. This makes sense, especially with the changes to make
+`BC_NUM_DEF_SIZE` bigger on 64-bit systems, since the vast majority of numbers
+will only ever use numbers with a size less than or equal to `BC_NUM_DEF_SIZE`.
 
 ## 2.7.2
 
