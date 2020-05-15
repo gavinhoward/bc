@@ -210,14 +210,7 @@ typedef struct BcHistory {
 	/// The original terminal state.
 	struct termios orig_termios;
 
-	/// This is to check if stdin has more data.
-	fd_set rdset;
-
-	/// This is to check if stdin has more data.
-	struct timespec ts;
-
-	/// This is to check if stdin has more data.
-	sigset_t sigmask;
+	/// These next three are here because pahole found a 4 byte hole here.
 
 	/// This is to signal that there is more, so we don't process yet.
 	bool stdin_has_data;
@@ -227,6 +220,15 @@ typedef struct BcHistory {
 
 	/// Whether the terminal is bad.
 	bool badTerm;
+
+	/// This is to check if stdin has more data.
+	fd_set rdset;
+
+	/// This is to check if stdin has more data.
+	struct timespec ts;
+
+	/// This is to check if stdin has more data.
+	sigset_t sigmask;
 
 } BcHistory;
 

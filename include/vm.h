@@ -111,8 +111,9 @@
 #define BC_FLAG_G (UINTMAX_C(1)<<6)
 #define BC_FLAG_P (UINTMAX_C(1)<<7)
 #define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
+#define BC_FLAG_TTY (UINTMAX_C(1)<<9)
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
-#define BC_TTY (vm.tty)
+#define BC_TTY (vm.flags & BC_FLAG_TTY)
 
 #define BC_S (BC_ENABLED && (vm.flags & BC_FLAG_S))
 #define BC_W (BC_ENABLED && (vm.flags & BC_FLAG_W))
@@ -187,7 +188,6 @@ typedef struct BcVm {
 #endif // BC_ENABLE_SIGNALS
 
 	uchar read_ret;
-	bool tty;
 	uint16_t flags;
 
 	uint16_t line_len;
