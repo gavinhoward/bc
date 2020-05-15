@@ -166,9 +166,9 @@ typedef struct BcVm {
 	BcParse prs;
 	BcProgram prog;
 
-	const char* file;
-
 	BcVec temps;
+
+	const char* file;
 
 #if BC_ENABLE_SIGNALS
 	const char *sigmsg;
