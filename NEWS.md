@@ -10,11 +10,15 @@ function, `strdup()`, which is not in POSIX 2001, and it is in the X/Open System
 Interfaces group 2001. It is, however, in POSIX 2008, and since POSIX 2008 is
 old enough to be supported anywhere that I care, that should be the requirement.
 
-Second, the default Karatsuba length was updated from 64 to 32 after making the
+Second, the BcVm global variable was put into `bss`. This actually reduces the
+size of the executable from a massive code shrink, and it will stop `bc` from
+allocating a large set of memory when `bc` starts.
+
+Third, the default Karatsuba length was updated from 64 to 32 after making the
 optimization changes below, since 32 is going to be better than 64 after the
 changes.
 
-Third, the interpreter received a speedup to make performance on non-math-heavy
+Fourth, the interpreter received a speedup to make performance on non-math-heavy
 scripts more competitive with GNU `bc`. While improvements did, in fact, get it
 much closer (see the [benchmarks][19]), it isn't quite there.
 
