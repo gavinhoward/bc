@@ -319,6 +319,12 @@ disabled (see above).
 
 ### Signal Handling
 
+Since `bc` version `2.9.0`, signal handling was changed to take advantage of a
+change to POSIX in POSIX 2016: allowing a call to `longjmp()` in a signal
+handler if certain conditions are met. This means that if signal handling is
+enabled, which it is by default, the prerequisites for this `bc` changes to
+POSIX 2016, instead of POSIX 2008.
+
 To disable signal handling, pass either the `-S` flag or the
 `--disable-signal-handling` option to `configure.sh`, as follows:
 
