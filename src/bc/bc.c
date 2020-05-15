@@ -49,7 +49,7 @@ int bc_main(int argc, char **argv) {
 	vm->help = bc_help;
 #if BC_ENABLE_SIGNALS
 	vm->sigmsg = bc_sig_msg;
-	vm->siglen = (uchar) strlen(vm->sigmsg);
+	vm->siglen = bc_sig_msg_len;
 #endif // BC_ENABLE_SIGNALS
 
 	vm->next = bc_lex_token;

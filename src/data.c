@@ -46,9 +46,11 @@
 #if BC_ENABLE_SIGNALS
 #if BC_ENABLED
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
+const uchar bc_sig_msg_len = (uchar) (sizeof(bc_sig_msg) - 1);
 #endif // BC_ENABLED
 #if DC_ENABLED
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
+const uchar dc_sig_msg_len = (uchar) (sizeof(dc_sig_msg) - 1);
 #endif // DC_ENABLED
 #endif // BC_ENABLE_SIGNALS
 
