@@ -52,9 +52,6 @@ int main(int argc, char *argv[]) {
 	char *name;
 	size_t len = strlen(BC_EXECPREFIX);
 
-	printf("%zu\n", sizeof(BcVm));
-	exit(0);
-
 	vm.locale = setlocale(LC_ALL, "");
 
 	name = strrchr(argv[0], '/');
