@@ -44,7 +44,7 @@
 #include <bc.h>
 #include <dc.h>
 
-BcVm *vm;
+BcVm vm;
 
 int main(int argc, char *argv[]) {
 
@@ -52,15 +52,15 @@ int main(int argc, char *argv[]) {
 	char *name;
 	size_t len = strlen(BC_EXECPREFIX);
 
-	vm = calloc(1, sizeof(BcVm));
-	if (BC_ERR(vm == NULL)) return (int) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+	printf("%zu\n", sizeof(BcVm));
+	exit(0);
 
-	vm->locale = setlocale(LC_ALL, "");
+	vm.locale = setlocale(LC_ALL, "");
 
 	name = strrchr(argv[0], '/');
-	vm->name = (name == NULL) ? argv[0] : name + 1;
+	vm.name = (name == NULL) ? argv[0] : name + 1;
 
-	if (strlen(vm->name) > len) vm->name += len;
+	if (strlen(vm.name) > len) vm.name += len;
 
 #if !DC_ENABLED
 	s = bc_main(argc, argv);

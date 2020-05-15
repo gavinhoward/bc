@@ -45,16 +45,16 @@ int dc_main(int argc, char **argv) {
 
 	BcStatus s;
 
-	vm->read_ret = BC_INST_POP_EXEC;
-	vm->help = dc_help;
+	vm.read_ret = BC_INST_POP_EXEC;
+	vm.help = dc_help;
 #if BC_ENABLE_SIGNALS
-	vm->sigmsg = dc_sig_msg;
-	vm->siglen = dc_sig_msg_len;
+	vm.sigmsg = dc_sig_msg;
+	vm.siglen = dc_sig_msg_len;
 #endif // BC_ENABLE_SIGNALS
 
-	vm->next = dc_lex_token;
-	vm->parse = dc_parse_parse;
-	vm->expr = dc_parse_expr;
+	vm.next = dc_lex_token;
+	vm.parse = dc_parse_parse;
+	vm.expr = dc_parse_expr;
 
 	s = bc_vm_boot(argc, argv, "DC_LINE_LENGTH", "DC_ENV_ARGS", "DC_EXPR_EXIT");
 

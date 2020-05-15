@@ -45,16 +45,16 @@ int bc_main(int argc, char **argv) {
 
 	BcStatus s;
 
-	vm->read_ret = BC_INST_RET;
-	vm->help = bc_help;
+	vm.read_ret = BC_INST_RET;
+	vm.help = bc_help;
 #if BC_ENABLE_SIGNALS
-	vm->sigmsg = bc_sig_msg;
-	vm->siglen = bc_sig_msg_len;
+	vm.sigmsg = bc_sig_msg;
+	vm.siglen = bc_sig_msg_len;
 #endif // BC_ENABLE_SIGNALS
 
-	vm->next = bc_lex_token;
-	vm->parse = bc_parse_parse;
-	vm->expr = bc_parse_expr;
+	vm.next = bc_lex_token;
+	vm.parse = bc_parse_parse;
+	vm.expr = bc_parse_expr;
 
 	s = bc_vm_boot(argc, argv, "BC_LINE_LENGTH", "BC_ENV_ARGS", "BC_EXPR_EXIT");
 

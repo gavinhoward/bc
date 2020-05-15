@@ -1145,7 +1145,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				s = bc_history_reset(h);
 				if (BC_ERR(s)) break;
 
-				if (BC_ERR(BC_HIST_WRITE(vm->sigmsg, vm->siglen)) ||
+				if (BC_ERR(BC_HIST_WRITE(vm.sigmsg, vm.siglen)) ||
 				    BC_ERR(BC_HIST_WRITE(bc_program_ready_msg,
 				                         bc_program_ready_msg_len)))
 				{
@@ -1311,7 +1311,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	BcStatus s;
 	char* line;
 
-	if (BC_TTYIN && !vm->history.badTerm) {
+	if (BC_TTYIN && !vm.history.badTerm) {
 
 		s = bc_history_raw(h, prompt);
 		if (BC_ERR(s && s != BC_STATUS_EOF)) return s;

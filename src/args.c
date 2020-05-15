@@ -82,7 +82,7 @@ static BcStatus bc_args_file(BcVec *exprs, const char *file) {
 	BcStatus s;
 	char *buf;
 
-	vm->file = file;
+	vm.file = file;
 
 	s = bc_read_file(file, &buf);
 	if (BC_ERR(s)) return s;
@@ -115,33 +115,33 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 			case 'e':
 			{
-				bc_args_exprs(&vm->exprs, opts.optarg);
+				bc_args_exprs(&vm.exprs, opts.optarg);
 				break;
 			}
 
 			case 'f':
 			{
-				s = bc_args_file(&vm->exprs, opts.optarg);
+				s = bc_args_file(&vm.exprs, opts.optarg);
 				if (BC_ERR(s)) return s;
 				break;
 			}
 
 			case 'h':
 			{
-				bc_vm_info(vm->help);
+				bc_vm_info(vm.help);
 				do_exit = true;
 				break;
 			}
 
 			case 'i':
 			{
-				vm->flags |= BC_FLAG_I;
+				vm.flags |= BC_FLAG_I;
 				break;
 			}
 
 			case 'P':
 			{
-				vm->flags |= BC_FLAG_P;
+				vm.flags |= BC_FLAG_P;
 				break;
 			}
 
@@ -149,35 +149,35 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case 'g':
 			{
 				assert(BC_IS_BC);
-				vm->flags |= BC_FLAG_G;
+				vm.flags |= BC_FLAG_G;
 				break;
 			}
 
 			case 'l':
 			{
 				assert(BC_IS_BC);
-				vm->flags |= BC_FLAG_L;
+				vm.flags |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
 				assert(BC_IS_BC);
-				vm->flags |= BC_FLAG_Q;
+				vm.flags |= BC_FLAG_Q;
 				break;
 			}
 
 			case 's':
 			{
 				assert(BC_IS_BC);
-				vm->flags |= BC_FLAG_S;
+				vm.flags |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
 				assert(BC_IS_BC);
-				vm->flags |= BC_FLAG_W;
+				vm.flags |= BC_FLAG_W;
 				break;
 			}
 #endif // BC_ENABLED
@@ -193,7 +193,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 			case 'x':
 			{
 				assert(!BC_IS_BC);
-				vm->flags |= DC_FLAG_X;
+				vm.flags |= DC_FLAG_X;
 				break;
 			}
 #endif // DC_ENABLED
@@ -210,10 +210,10 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) s);
-	if (vm->exprs.len > 1 || !BC_IS_BC) vm->flags |= BC_FLAG_Q;
+	if (vm.exprs.len > 1 || !BC_IS_BC) vm.flags |= BC_FLAG_Q;
 
 	for (i = opts.optind; i < (size_t) argc; ++i)
-		bc_vec_push(&vm->files, argv + i);
+		bc_vec_push(&vm.files, argv + i);
 
 	return s;
 }
