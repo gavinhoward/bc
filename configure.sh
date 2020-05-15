@@ -47,12 +47,13 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EfgGHMNPST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EfgGHMNPsST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
 	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]      \\\n'
 	printf '           [--debug --disable-extra-math --disable-generated-tests]        \\\n'
 	printf '           [--disable-history --disable-man-pages --disable-nls]           \\\n'
 	printf '           [--disable-prompt --disable-signal-handling --disable-strip]    \\\n'
+	printf '           [--enable-signal-exceptions]                                    \\\n'
 	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]               \\\n'
 	printf '           [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR] \\\n'
 	printf '           [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]       \\\n'
@@ -110,6 +111,12 @@ usage() {
 	printf '        Disables the prompt in the built bc. The prompt will never show up,\n'
 	printf '        or in other words, it will be permanently disabled and cannot be\n'
 	printf '        enabled.\n'
+	printf '    -s, --enable-signal-exceptions\n'
+	printf '        Enables signals that use setjmp() and longjmp() instead of polling on\n'
+	printf '        the signal variable. This option is ignored of the `-S` option is also\n'
+	printf '        given. WARNING: THIS OPTION SHOULD ONLY BE USED ON SYSTEMS THAT IMPLEMENT\n'
+	printf '        POSIX 2016! SIGNAL SEMANTICS DO NOT HAVE THE CORRECT GUARANTEES BEFORE THEN!\n'
+	printf '        Off by default.\n'
 	printf '    -S, --disable-signal-handling\n'
 	printf '        Disable signal handling. On by default.\n'
 	printf '    -T, --disable-strip\n'
@@ -313,6 +320,7 @@ coverage=0
 karatsuba_len=64
 debug=0
 signals=1
+signal_exceptions=0
 hist=1
 extra_math=1
 optimization=""
@@ -323,7 +331,7 @@ prompt=1
 force=0
 strip_bin=1
 
-while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
+while getopts "bBcdDEfgGhHk:MNO:PsST-" opt; do
 
 	case "$opt" in
 		b) bc_only=1 ;;
@@ -342,6 +350,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		P) prompt=0 ;;
+		s) signal_exceptions=1 ;;
 		S) signals=0 ;;
 		T) strip_bin=0 ;;
 		-)
@@ -428,6 +437,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 				disable-prompt) prompt=0 ;;
 				disable-signal-handling) signals=0 ;;
 				disable-strip) strip_bin=0 ;;
+				enable-signal-exceptions) signal_exceptions=1 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-bc* | disable-dc* | disable-extra-math*)
@@ -436,7 +446,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				disable-man-pages* | disable-nls* | disable-signal-handling*)
 					usage "No arg allowed for --$arg option" ;;
-				disable-strip*)
+				disable-strip* | enable-signal-exceptions)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
@@ -521,6 +531,14 @@ if [ -z "${HOSTCFLAGS+set}" ] && [ -z "${HOST_CFLAGS+set}" ]; then
 	HOSTCFLAGS="$CFLAGS"
 elif [ -z "${HOSTCFLAGS+set}" ]; then
 	HOSTCFLAGS="$HOST_CFLAGS"
+fi
+
+if [ "$signal_exceptions" -ne 0 ]; then
+	if [ "$signals" -eq 0 ]; then
+		signal_exceptions=0
+	else
+		signals=0
+	fi
 fi
 
 link="@printf 'No link necessary\\\\n'"
@@ -866,6 +884,7 @@ printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
 printf 'BC_ENABLE_PROMPT=%s\n' "$prompt"
+printf 'BC_ENABLE_SIGNAL_EXCEPTIONS=%s\n' "$signal_exceptions"
 printf '\n'
 printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
 printf '\n'
@@ -911,6 +930,7 @@ contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "PROMPT" "$prompt")
+contents=$(replace "$contents" "SIGNAL_EXCEPTIONS" "$signal_exceptions")
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")
