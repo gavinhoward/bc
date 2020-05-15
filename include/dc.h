@@ -51,6 +51,7 @@ bool dc_lex_negCommand(BcLex *l);
 
 #if BC_ENABLE_SIGNALS
 extern const char dc_sig_msg[];
+extern const uchar dc_sig_msg_len;
 #endif // BC_ENABLE_SIGNALS
 
 extern const uint8_t dc_lex_regs[];

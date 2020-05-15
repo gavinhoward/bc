@@ -157,6 +157,7 @@ void bc_parse_noElse(BcParse *p);
 
 #if BC_ENABLE_SIGNALS
 extern const char bc_sig_msg[];
+extern const uchar bc_sig_msg_len;
 #endif // BC_ENABLE_SIGNALS
 
 extern const char* const bc_parse_const1;
