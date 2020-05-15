@@ -527,7 +527,7 @@ static void bc_program_printString(const char *restrict str) {
 			ptr = strchr(bc_program_esc_chars, c);
 
 			if (ptr != NULL) {
-				if (c == 'n') vm.nchars = SIZE_MAX;
+				if (c == 'n') vm.nchars = UINT16_MAX;
 				c = bc_program_esc_seqs[(size_t) (ptr - bc_program_esc_chars)];
 			}
 			else {

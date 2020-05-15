@@ -166,8 +166,6 @@ typedef struct BcVm {
 	BcParse prs;
 	BcProgram prog;
 
-	size_t nchars;
-
 	const char* file;
 
 	BcVec temps;
@@ -182,6 +180,7 @@ typedef struct BcVm {
 	uchar read_ret;
 	uint16_t flags;
 
+	uint16_t nchars;
 	uint16_t line_len;
 
 	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
