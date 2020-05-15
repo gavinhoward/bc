@@ -433,24 +433,6 @@ the pseudo-random number generator are. More information about the functions can
 be found in the [Extended Library](./bc.md#extended-library) section of the
 [full manual](./bc.md).
 
-### Signal Exceptions
-
-This `bc` has the capability of implementing signal handling with `setjmp()` and
-`longjmp()`. This is *not* on by default, like most other options, since it
-requires a system with POSIX 2016. The reason for this is because POSIX 2016 has
-a guarantee about calling `longjmp()` from a signal handler that older POSIX
-standards do not.
-
-Signal exceptions can be enabled by passing either the `-s` flag or the
-`--enable-signal-exceptions` option to `configure.sh`, as follows:
-
-```
-./configure.sh -s
-./configure.sh --enable-signal-exceptions
-```
-
-Both commands are equivalent.
-
 ### Manpages
 
 To disable installing manpages, pass either the `-M` flag or the
