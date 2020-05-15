@@ -433,7 +433,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 			return bc_vm_err(BC_ERROR_EXEC_REC_READ);
 	}
 
-	file = vm->file;
+	file = vm.file;
 	bc_lex_file(&parse.l, bc_program_stdin_name);
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_init(&buf, sizeof(char), NULL);
@@ -448,7 +448,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 
 	s = bc_parse_text(&parse, buf.v);
 	if (BC_ERR(s)) goto exec_err;
-	s = vm->expr(&parse, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
+	s = vm.expr(&parse, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
 	if (BC_ERR(s)) goto exec_err;
 
 	if (BC_ERR(parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF)) {
@@ -465,7 +465,7 @@ static BcStatus bc_program_read(BcProgram *p) {
 	// Update this pointer, just in case.
 	f = bc_vec_item(&p->fns, BC_PROG_READ);
 
-	bc_vec_pushByte(&f->code, vm->read_ret);
+	bc_vec_pushByte(&f->code, vm.read_ret);
 	bc_vec_push(&p->stack, &ip);
 #if DC_ENABLED
 	if (!BC_IS_BC) {
@@ -478,7 +478,7 @@ exec_err:
 	bc_parse_free(&parse);
 io_err:
 	bc_vec_free(&buf);
-	vm->file = file;
+	vm.file = file;
 	return s;
 }
 
@@ -499,9 +499,9 @@ static void bc_program_rand(BcProgram *p) {
 
 static void bc_program_printChars(const char *str) {
 	const char *nl;
-	vm->nchars += bc_vm_printf("%s", str);
+	vm.nchars += bc_vm_printf("%s", str);
 	nl = strrchr(str, '\n');
-	if (nl) vm->nchars = strlen(nl + 1);
+	if (nl) vm.nchars = strlen(nl + 1);
 }
 
 static void bc_program_printString(const char *restrict str) {
@@ -527,7 +527,7 @@ static void bc_program_printString(const char *restrict str) {
 			ptr = strchr(bc_program_esc_chars, c);
 
 			if (ptr != NULL) {
-				if (c == 'n') vm->nchars = SIZE_MAX;
+				if (c == 'n') vm.nchars = SIZE_MAX;
 				c = bc_program_esc_seqs[(size_t) (ptr - bc_program_esc_chars)];
 			}
 			else {
@@ -893,7 +893,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 
 		if (sc) {
 			min = 0;
-			max = vm->maxes[BC_PROG_GLOBALS_SCALE];
+			max = vm.maxes[BC_PROG_GLOBALS_SCALE];
 			v = p->globals_v + BC_PROG_GLOBALS_SCALE;
 			ptr_t = p->globals + BC_PROG_GLOBALS_SCALE;
 		}
@@ -901,7 +901,7 @@ static BcStatus bc_program_assign(BcProgram *p, uchar inst) {
 			min = BC_NUM_MIN_BASE;
 			if (BC_ENABLE_EXTRA_MATH && ob && (!BC_IS_BC || !BC_IS_POSIX))
 				min = 0;
-			max = vm->maxes[ob + BC_PROG_GLOBALS_IBASE];
+			max = vm.maxes[ob + BC_PROG_GLOBALS_IBASE];
 			v = p->globals_v + BC_PROG_GLOBALS_IBASE + ob;
 			ptr_t = p->globals + BC_PROG_GLOBALS_IBASE + ob;
 		}
@@ -1566,10 +1566,10 @@ static BcStatus bc_program_execStr(BcProgram *p, const char *restrict code,
 	if (!f->code.len) {
 
 		bc_parse_init(&prs, p, fidx);
-		bc_lex_file(&prs.l, vm->file);
+		bc_lex_file(&prs.l, vm.file);
 		s = bc_parse_text(&prs, str);
 		if (BC_ERR(s)) goto err;
-		s = vm->expr(&prs, BC_PARSE_NOCALL);
+		s = vm.expr(&prs, BC_PARSE_NOCALL);
 		if (BC_ERR(s)) goto err;
 
 		// We can just assert this here because
@@ -1813,7 +1813,7 @@ BcStatus bc_program_reset(BcProgram *p, BcStatus s) {
 #if BC_ENABLE_SIGNALS
 	if (BC_SIGTERM || (!s && BC_SIGINT && BC_I)) return BC_STATUS_QUIT;
 
-	vm->sig_chk = vm->sig;
+	vm.sig_chk = vm.sig;
 
 	if (!s || s == BC_STATUS_SIGNAL) {
 
@@ -1965,7 +1965,7 @@ BcStatus bc_program_exec(BcProgram *p) {
 			case BC_INST_MAXRAND:
 #endif // BC_ENABLE_EXTRA_MATH
 			{
-				BcBigDig dig = vm->maxes[inst - BC_INST_MAXIBASE];
+				BcBigDig dig = vm.maxes[inst - BC_INST_MAXIBASE];
 				bc_program_pushBigDig(p, dig, BC_RESULT_TEMP);
 				break;
 			}

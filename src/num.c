@@ -1573,7 +1573,7 @@ int_err:
 }
 
 static void bc_num_printNewline(void) {
-	if (vm->nchars >= (size_t) (vm->line_len - 1)) {
+	if (vm.nchars >= (size_t) (vm.line_len - 1)) {
 		bc_vm_putchar('\\');
 		bc_vm_putchar('\n');
 	}
@@ -1840,24 +1840,24 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	s = bc_num_sub(n, &intp, &fracp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-	if (base != vm->last_base) {
+	if (base != vm.last_base) {
 
-		vm->last_pow = 1;
-		vm->last_exp = 0;
+		vm.last_pow = 1;
+		vm.last_exp = 0;
 
-		while (vm->last_pow * base <= BC_BASE_POW) {
-			vm->last_pow *= base;
-			vm->last_exp += 1;
+		while (vm.last_pow * base <= BC_BASE_POW) {
+			vm.last_pow *= base;
+			vm.last_exp += 1;
 		}
 
-		vm->last_rem = BC_BASE_POW - vm->last_pow;
-		vm->last_base = base;
+		vm.last_rem = BC_BASE_POW - vm.last_pow;
+		vm.last_base = base;
 	}
 
-	exp = vm->last_exp;
+	exp = vm.last_exp;
 
-	if (vm->last_rem != 0) {
-		s = bc_num_printPrepare(&intp, vm->last_rem, vm->last_pow);
+	if (vm.last_rem != 0) {
+		s = bc_num_printPrepare(&intp, vm.last_rem, vm.last_pow);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
@@ -1992,11 +1992,11 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 
-	if (req == BC_NUM_DEF_SIZE && vm->temps.len) {
-		BcNum *nptr = bc_vec_top(&vm->temps);
+	if (req == BC_NUM_DEF_SIZE && vm.temps.len) {
+		BcNum *nptr = bc_vec_top(&vm.temps);
 		num = nptr->num;
 		req = nptr->cap;
-		bc_vec_pop(&vm->temps);
+		bc_vec_pop(&vm.temps);
 	}
 	else num = bc_vm_malloc(BC_NUM_SIZE(req));
 
@@ -2009,7 +2009,7 @@ void bc_num_free(void *num) {
 
 	assert(n != NULL);
 
-	if (n->cap == BC_NUM_DEF_SIZE) bc_vec_push(&vm->temps, n);
+	if (n->cap == BC_NUM_DEF_SIZE) bc_vec_push(&vm.temps, n);
 	else free(n->num);
 }
 
@@ -2068,7 +2068,7 @@ BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
 	BcStatus s = BC_STATUS_SUCCESS;
 
 	assert(n != NULL && val != NULL && base);
-	assert(base >= BC_NUM_MIN_BASE && base <= vm->maxes[BC_PROG_GLOBALS_IBASE]);
+	assert(base >= BC_NUM_MIN_BASE && base <= vm.maxes[BC_PROG_GLOBALS_IBASE]);
 	assert(bc_num_strValid(val));
 
 	if (letter) {
@@ -2107,7 +2107,7 @@ void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 
 	// This function returns no errors because it's guaranteed to succeed if
 	// its preconditions are met. Those preconditions include both parameters
-	// being non-NULL, n being non-negative, and n being less than vm->max. If
+	// being non-NULL, n being non-negative, and n being less than vm.max. If
 	// all of that is true, then we can just convert without worrying about
 	// negative errors or overflow. We also don't care about signals because
 	// this function should execute in only a few iterations, meaning that
@@ -2117,7 +2117,7 @@ void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 
 	assert(n != NULL && result != NULL);
 	assert(!n->neg);
-	assert(bc_num_cmp(n, &vm->max) < 0);
+	assert(bc_num_cmp(n, &vm.max) < 0);
 	assert(n->len - n->rdx <= 3);
 
 	// There is a small speed win from unrolling the loop here, and since it
@@ -2141,7 +2141,7 @@ BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 	assert(n != NULL && result != NULL);
 
 	if (BC_ERR(n->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
-	if (BC_ERR(bc_num_cmp(n, &vm->max) >= 0))
+	if (BC_ERR(bc_num_cmp(n, &vm.max) >= 0))
 		return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
 	bc_num_bigdig2(n, result);
@@ -2183,7 +2183,7 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	bc_num_init(&frac, n->rdx);
 	bc_num_init(&intn, bc_num_int(n));
 
-	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
+	s = bc_num_mul(&vm.max, &vm.max, &pow, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	memcpy(frac.num, n->num, BC_NUM_SIZE(n->rdx));
@@ -2203,16 +2203,16 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	// This assert is here because it has to be true. It is also here to justify
 	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
 	// below.
-	assert(BC_NUM_NONZERO(&vm->max));
+	assert(BC_NUM_NONZERO(&vm.max));
 
 	if (BC_NUM_NONZERO(&frac)) {
 
-		s = bc_num_divmod(&frac, &vm->max, &temp, &temp2, 0);
+		s = bc_num_divmod(&frac, &vm.max, &temp, &temp2, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		// frac is guaranteed to be smaller than vm->max * vm->max (pow).
-		// This means that when dividing frac by vm->max, as above, the
-		// quotient and remainder are both guaranteed to be less than vm->max,
+		// frac is guaranteed to be smaller than vm.max * vm.max (pow).
+		// This means that when dividing frac by vm.max, as above, the
+		// quotient and remainder are both guaranteed to be less than vm.max,
 		// which means we can use bc_num_bigdig2() here and not worry about
 		// overflow.
 		bc_num_bigdig2(&temp2, (BcBigDig*) &state1);
@@ -2222,20 +2222,20 @@ BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 	if (BC_NUM_NONZERO(&intn)) {
 
-		s = bc_num_divmod(&intn, &vm->max, &temp, &temp2, 0);
+		s = bc_num_divmod(&intn, &vm.max, &temp, &temp2, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		// Because temp2 is the mod of vm->max, from above, it is guaranteed
+		// Because temp2 is the mod of vm.max, from above, it is guaranteed
 		// to be small enough to use bc_num_bigdig2().
 		bc_num_bigdig2(&temp2, (BcBigDig*) &inc1);
 
-		if (bc_num_cmp(&temp, &vm->max) >= 0) {
+		if (bc_num_cmp(&temp, &vm.max) >= 0) {
 			bc_num_copy(&temp2, &temp);
-			s = bc_num_mod(&temp2, &vm->max, &temp, 0);
+			s = bc_num_mod(&temp2, &vm.max, &temp, 0);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		}
 
-		// The if statement above ensures that temp is less than vm->max, which
+		// The if statement above ensures that temp is less than vm.max, which
 		// means that we can use bc_num_bigdig2() here.
 		bc_num_bigdig2(&temp, (BcBigDig*) &inc2);
 	}
@@ -2270,9 +2270,9 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	// This assert is here because it has to be true. It is also here to justify
 	// the assumption that pow is not zero.
-	assert(BC_NUM_NONZERO(&vm->max));
+	assert(BC_NUM_NONZERO(&vm.max));
 
-	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
+	s = bc_num_mul(&vm.max, &vm.max, &pow, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	// Because this is true, we can just use BC_ERROR_SIGNAL_ONLY() below when
@@ -2283,7 +2283,7 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	bc_num_bigdig2num(&conv, (BcBigDig) s2);
 
-	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
+	s = bc_num_mul(&conv, &vm.max, &temp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_bigdig2num(&conv, (BcBigDig) s1);
@@ -2296,7 +2296,7 @@ BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	bc_num_bigdig2num(&conv, (BcBigDig) i2);
 
-	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
+	s = bc_num_mul(&conv, &vm.max, &temp1, 0);
 	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	bc_num_bigdig2num(&conv, (BcBigDig) i1);
@@ -2330,7 +2330,7 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	if (BC_ERR(a->rdx)) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return s;
 
-	cmp = bc_num_cmp(a, &vm->max);
+	cmp = bc_num_cmp(a, &vm.max);
 
 	if (cmp <= 0) {
 
@@ -2346,7 +2346,7 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 		if (!(bits & (bits - 1))) r = bc_rand_int(rng) & (bits - 1);
 		else r = bc_rand_bounded(rng, bits);
 
-		// We made sure that r is less than vm->max,
+		// We made sure that r is less than vm.max,
 		// so we can use bc_num_bigdig2() here.
 		bc_num_bigdig2num(b, r);
 
@@ -2378,18 +2378,18 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	// This assert is here because it has to be true. It is also here to justify
 	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
 	// below.
-	assert(BC_NUM_NONZERO(&vm->max));
+	assert(BC_NUM_NONZERO(&vm.max));
 
 	while (BC_NUM_NONZERO(c1)) {
 
-		s = bc_num_divmod(c1, &vm->max, c2, &mod, 0);
+		s = bc_num_divmod(c1, &vm.max, c2, &mod, 0);
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
-		// Because mod is the mod of vm->max, it is guaranteed to be smaller,
+		// Because mod is the mod of vm.max, it is guaranteed to be smaller,
 		// which means we can use bc_num_bigdig2() here.
 		bc_num_bigdig(&mod, &modl);
 
-		if (bc_num_cmp(c1, &vm->max) < 0) {
+		if (bc_num_cmp(c1, &vm.max) < 0) {
 
 			// In this case, if there is no carry, then we know we can generate
 			// an integer *equal* to modl. Thus, we add one if there is no
@@ -2418,7 +2418,7 @@ BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 
 		if (BC_NUM_NONZERO(c2)) {
 
-			s = bc_num_mul(&vm->max, p1, p2, 0);
+			s = bc_num_mul(&vm.max, p1, p2, 0);
 			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 			tmp = p1;
@@ -2760,7 +2760,7 @@ void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline) {
 	bc_num_printDecimal(n);
 	printf("\n");
 	if (emptyline) printf("\n");
-	vm->nchars = 0;
+	vm.nchars = 0;
 }
 
 void bc_num_printDigs(const BcDig *n, size_t len, bool emptyline) {
@@ -2771,7 +2771,7 @@ void bc_num_printDigs(const BcDig *n, size_t len, bool emptyline) {
 
 	printf("\n");
 	if (emptyline) printf("\n");
-	vm->nchars = 0;
+	vm.nchars = 0;
 }
 
 void bc_num_printWithDigs(const BcNum *n, const char *name, bool emptyline) {

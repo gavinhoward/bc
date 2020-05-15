@@ -89,7 +89,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				if (BC_SIGTERM) return BC_STATUS_QUIT;
 
-				vm->sig_chk = vm->sig;
+				vm.sig_chk = vm.sig;
 
 				if (BC_TTYIN || BC_I) {
 					bc_vm_puts(bc_program_ready_msg, stderr);
@@ -126,7 +126,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	bc_vm_fflush(stdout);
 
 #if BC_ENABLE_HISTORY
-	s = bc_history_line(&vm->history, vec, prompt);
+	s = bc_history_line(&vm.history, vec, prompt);
 #else // BC_ENABLE_HISTORY
 	s = bc_read_chars(vec, prompt);
 #endif // BC_ENABLE_HISTORY
