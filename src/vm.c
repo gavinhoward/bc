@@ -716,9 +716,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	ttyerr = isatty(STDERR_FILENO);
 
 	vm.flags |= ttyin ? BC_FLAG_TTYIN : 0;
+	vm.flags |= (ttyin != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
 	vm.flags |= ttyin && ttyout ? BC_FLAG_I : 0;
-
-	vm.tty = (ttyin != 0 && ttyerr != 0);
 
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
 
