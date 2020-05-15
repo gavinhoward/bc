@@ -449,3 +449,14 @@ int64(-4294967296)
 uint(-3)
 uint(3.928375)
 int(4.000000)
+b = brand()
+b < 2
+b >= 0
+i = irand(maxrand() + 1)
+i <= maxrand()
+i >= 0
+f = frand(10)
+scale(f) == 10
+fi = ifrand(123, 28)
+scale(fi) == 28
+fi < 128

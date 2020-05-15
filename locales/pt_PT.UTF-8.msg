@@ -103,4 +103,6 @@ $set 6
 3 "impossível abrir o arquivo: %s"
 4 "arquivo não é ASCII: %s"
 5 "caminho é um diretório: %s"
-6 "opção de linha de comando inválida: '%c' (\"%s\")"
+6 "opção de linha de comando inválida: \"%s\""
+7 "opção requer um argumento: '%c' (\"%s\")"
+8 "a opção não aceita argumentos: '%c' (\"%s\")"

@@ -1,5 +1,153 @@
 # News
 
+## 2.8.0
+
+This is a production release with some improvements and no bug fixes. **Users do
+not need to upgrade if they do not want to.**
+
+First, the requirements for `bc` were pushed back to POSIX 2008. `bc` uses one
+function, `strdup()`, which is not in POSIX 2001, and it is in the X/Open System
+Interfaces group 2001. It is, however, in POSIX 2008, and since POSIX 2008 is
+old enough to be supported anywhere that I care, that should be the requirement.
+
+Second, the default Karatsuba length was updated from 64 to 32 after making the
+optimization changes below, since 32 is going to be better than 64 after the
+changes.
+
+Third, the interpreter received a speedup to make performance on non-math-heavy
+scripts more competitive with GNU `bc`. While improvements did, in fact, get it
+much closer (see the [benchmarks][19]), it isn't quite there.
+
+There were several things done to speed up the interpreter:
+
+First, several small inefficiencies were removed. These included calling the
+function `bc_vec_pop(v)` twice instead of calling `bc_vec_npop(v, 2)`. They also
+included an extra function call for checking the size of the stack and checking
+the size of the stack more than once on several operations.
+
+Second, since the current `bc` function is the one that stores constants and
+strings, the program caches pointers to the current function's vectors of
+constants and strings to prevent needing to grab the current function in order
+to grab a constant or a string.
+
+Third, `bc` tries to reuse `BcNum`'s (the internal representation of
+arbitary-precision numbers). If a `BcNum` has the default capacity of
+`BC_NUM_DEF_SIZE` (32 on 64-bit and 16 on 32-bit) when it is freed, it is added
+to a list of available `BcNum`'s. And then, when a `BcNum` is allocated with a
+capacity of `BC_NUM_DEF_SIZE` and any `BcNum`'s exist on the list of reusable
+ones, one of those ones is grabbed instead.
+
+In order to support these changes, the `BC_NUM_DEF_SIZE` was changed. It used to
+be 16 bytes on all systems, but it was changed to more closely align with the
+minimum allocation size on Linux, which is either 32 bytes (64-bit musl), 24
+bytes (64-bit glibc), 16 bytes (32-bit musl), or 12 bytes (32-bit glibc). Since
+these are the minimum allocation sizes, these are the sizes that would be
+allocated anyway, making it worth it to just use the whole space, so the value
+of `BC_NUM_DEF_SIZE` on 64-bit systems was changed to 32 bytes.
+
+On top of that, at least on 64-bit, `BC_NUM_DEF_SIZE` supports numbers with
+either 72 integer digits or 45 integer digits and 27 fractional digits. This
+should be more than enough for most cases since `bc`'s default `scale` values
+are 0 or 20, meaning that, by default, it has at most 20 fractional digits. And
+45 integer digits are *a lot*; it's enough to calculate the amount of mass in
+the Milky Way galaxy in kilograms. Also, 72 digits is enough to calculate the
+diameter of the universe in Planck lengths.
+
+(For 32-bit, these numbers are either 32 integer digits or 12 integer digits and
+20 fractional digits. These are also quite big, and going much bigger on a
+32-bit system seems a little pointless since 12 digits in just under a trillion
+and 20 fractional digits is still enough for about any use since `10^-20` light
+years is just under a millimeter.)
+
+All of this together means that for ordinary uses, and even uses in scientific
+work, the default number size will be all that is needed, which means that
+nearly all, if not all, numbers will be reused, relieving pressure on the system
+allocator.
+
+*Note*: I did several experiments to find the changes that had the most impact,
+especially with regard to reusing `BcNum`'s. One was putting `BcNum`'s into
+buckets according to their capacity in powers of 2 up to 512. That performed
+worse than `bc` did in `2.7.2`. Another was putting any `BcNum` on the reuse
+list that had a capacity of `BC_NUM_DEF_SIZE * 2` and reusing them for `BcNum`'s
+that requested `BC_NUM_DEF_SIZE`. This did reduce the amount of time spent, but
+it also spent a lot of time in the system allocator for an unknown reason. (When
+using `strace`, a bunch more `brk` calls showed up.) Just reusing `BcNum`'s that
+had exactly `BC_NUM_DEF_SIZE` capacity spent the smallest amount of time in both
+user and system time. This makes sense, especially with the changes to make
+`BC_NUM_DEF_SIZE` bigger on 64-bit systems, since the vast majority of numbers
+will only ever use numbers with a size less than or equal to `BC_NUM_DEF_SIZE`.
+
+## 2.7.2
+
+This is a production release with one major bug fix.
+
+The `length()` built-in function can take either a number or an array. If it
+takes an array, it returns the length of the array. Arrays can be passed by
+reference. The bug is that the `length()` function would not properly
+dereference arrays that were references. This is a bug that affects all users.
+
+**ALL USERS SHOULD UPDATE `bc`**.
+
+## 2.7.1
+
+This is a production release with fixes for new locales and fixes for compiler
+warnings on FreeBSD.
+
+## 2.7.0
+
+This is a production release with a bug fix for Linux, new translations, and new
+features.
+
+Bug fixes:
+
+* Option parsing in `BC_ENV_ARGS` was broken on Linux in 2.6.1 because `glibc`'s
+  `getopt_long()` is broken. To get around that, and to support long options on
+  every platform, an adapted version of [`optparse`][17] was added. Now, `bc`
+  does not even use `getopt()`.
+* Parsing `BC_ENV_ARGS` with quotes now works. It isn't the smartest, but it
+  does the job if there are spaces in file names.
+
+The following new languages are supported:
+
+* Dutch
+* Polish
+* Russian
+* Japanes
+* Simplified Chinese
+
+All of these translations were generated using [DeepL][18], so improvements are
+welcome.
+
+There is only one new feature: **`bc` now has a built-in pseudo-random number
+generator** (PRNG).
+
+The PRNG is seeded, making it useful for applications where
+`/dev/urandom` does not work because output needs to be reproducible. However,
+it also uses `/dev/urandom` to seed itself by default, so it will start with a
+good seed by default.
+
+It also outputs 32 bits on 32-bit platforms and 64 bits on 64-bit platforms, far
+better than the 15 bits of C's `rand()` and `bash`'s `$RANDOM`.
+
+In addition, the PRNG can take a bound, and when it gets a bound, it
+automatically adjusts to remove bias. It can also generate numbers of arbitrary
+size. (As of the time of release, the largest pseudo-random number generated by
+this `bc` was generated with a bound of `2^(2^20)`.)
+
+***IMPORTANT: read the [`bc` manual][9] and the [`dc` manual][10] to find out
+exactly what guarantees the PRNG provides. The underlying implementation is not
+guaranteed to stay the same, but the guarantees that it provides are guaranteed
+to stay the same regardless of the implementation.***
+
+On top of that, four functions were added to `bc`'s [extended math library][16]
+to make using the PRNG easier:
+
+* `frand(p)`: Generates a number between `[0,1)` to `p` decimal places.
+* `ifrand(i, p)`: Generates an integer with bound `i` and adds it to `frand(p)`.
+* `srand(x)`: Randomizes the sign of `x`. In other words, it flips the sign of
+  `x` with probability `0.5`.
+* `brand()`: Returns a random boolean value (either `0` or `1`).
+
 ## 2.6.1
 
 This is a production release with a bug fix for FreeBSD.
@@ -560,3 +708,6 @@ not thoroughly tested.
 [14]: https://github.com/stesser
 [15]: https://github.com/bugcrazy
 [16]: ./manuals/bc.1.ronn#extended-library
+[17]: https://github.com/skeeto/optparse
+[18]: https://www.deepl.com/translator
+[19]: ./manuals/benchmarks.md

@@ -41,11 +41,6 @@
 
 BcStatus bc_args(int argc, char *argv[]);
 
-#if !BC_ENABLE_LONG_OPTIONS
-#define getopt_long(argc, argv, opts, longopts, longidx) \
-	getopt(argc, argv, opts)
-#endif // BC_ENABLE_LONG_OPTIONS
-
 extern const char* const bc_args_env_name;
 
 #endif // BC_ARGS_H

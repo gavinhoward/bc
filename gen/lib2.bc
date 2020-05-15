@@ -190,6 +190,16 @@ define d2r(x){
 	scale=s
 	return r@s
 }
+define frand(p){
+	p=abs(p)$
+	return irand(10^p)>>p
+}
+define ifrand(i,p){return irand(abs(i)$)+frand(p)}
+define srand(x){
+	if(irand(2))return -x
+	return x
+}
+define brand(){return irand(2)}
 define void output(x,b){
 	auto c
 	c=obase

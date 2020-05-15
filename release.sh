@@ -58,7 +58,7 @@ configure() {
 	_configure_CC="$1"
 	shift
 
-	_configure_configure_flags="-f $1"
+	_configure_configure_flags="$1"
 	shift
 
 	_configure_GEN_HOST="$1"
@@ -224,6 +224,9 @@ runconfigseries() {
 			runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
 				"$_runconfigseries_configure_flags" 0 64 "$_runconfigseries_run_tests"
 		fi
+
+		runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
+			"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
 
 	fi
 
@@ -465,6 +468,9 @@ else
 	defcc="c99"
 fi
 
+export ASAN_OPTIONS="abort_on_error=1"
+export UBSAN_OPTIONS="print_stack_trace=1,silence_unsigned_overflow=1"
+
 build "$debug" "$defcc" "-g" "1" "$bits"
 
 header "Running math library under --standard"
@@ -522,7 +528,8 @@ if [ "$run_tests" -ne 0 ]; then
 		printf 'Then run the GitHub release script as follows:\n'
 		printf '\n'
 		printf '    <github_release> %s .travis.yml codecov.yml release.sh \\\n' "$version"
-		printf '    RELEASE.md tests/afl.py tests/randmath.py tests/bc/scripts/timeconst.bc\n'
+		printf '    RELEASE.md tests/afl.py tests/radamsa.sh tests/radamsa.txt tests/randmath.py \\\n'
+		printf '    tests/bc/scripts/timeconst.bc\n'
 
 	fi
 

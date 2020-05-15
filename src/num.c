@@ -43,6 +43,7 @@
 
 #include <status.h>
 #include <num.h>
+#include <rand.h>
 #include <vm.h>
 
 static BcStatus bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
@@ -270,9 +271,10 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	a_int = bc_num_int(a);
 	b_int = bc_num_int(b);
 	a_int -= b_int;
-	a_max = (a->rdx > b->rdx);
 
 	if (a_int) return neg ? -((ssize_t) a_int) : (ssize_t) a_int;
+
+	a_max = (a->rdx > b->rdx);
 
 	if (a_max) {
 		min = b->rdx;
@@ -812,43 +814,43 @@ static BcStatus bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	memset(c->num, 0, BC_NUM_SIZE(c->len));
 
 	s = bc_num_sub(&h1, &l1, &m1, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	s = bc_num_sub(&l2, &h2, &m2, 0);
-	if (BC_ERR(s)) goto err;
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 
 	if (BC_NUM_NONZERO(&h1) && BC_NUM_NONZERO(&h2)) {
 
 		s = bc_num_m(&h1, &h2, &z2, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bc_num_clean(&z2);
 
 		s = bc_num_shiftAddSub(c, &z2, max2 * 2, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_shiftAddSub(c, &z2, max2, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
 	if (BC_NUM_NONZERO(&l1) && BC_NUM_NONZERO(&l2)) {
 
 		s = bc_num_m(&l1, &l2, &z0, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bc_num_clean(&z0);
 
 		s = bc_num_shiftAddSub(c, &z0, max2, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		s = bc_num_shiftAddSub(c, &z0, 0, bc_num_addArrays);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
 	if (BC_NUM_NONZERO(&m1) && BC_NUM_NONZERO(&m2)) {
 
 		s = bc_num_m(&m1, &m2, &z1, 0);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 		bc_num_clean(&z1);
 
 		op = (m1.neg != m2.neg) ? bc_num_subArrays : bc_num_addArrays;
 		s = bc_num_shiftAddSub(c, &z1, max2, op);
-		if (BC_ERR(s)) goto err;
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
 	}
 
 err:
@@ -1243,7 +1245,7 @@ static BcStatus bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	b->neg = false;
 	s = bc_num_bigdig(b, &pow);
 	b->neg = neg;
-	if (s) return s;
+	if (BC_ERR(s)) return s;
 
 	bc_num_createCopy(&copy, a);
 
@@ -1755,7 +1757,7 @@ static BcStatus bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
 	for (i = 0; BC_NO_SIG && BC_NO_ERR(!s) && i < n->len; ++i)
 		s = bc_num_printFixup(n, rem, pow, i);
 
-	if (BC_ERR(s)) return s;
+	if (BC_ERROR_SIGNAL_ONLY(s)) return s;
 
 	for (i = 0; BC_NO_SIG && i < n->len; ++i) {
 
@@ -1913,10 +1915,8 @@ static BcStatus bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
 		if (fracp2.len < fracp2.rdx) fracp2.len = fracp2.rdx;
 
-		// Will never fail (except for signals) because fracp is
-		// guaranteed to be non-negative and small enough.
-		s = bc_num_bigdig(&fracp2, &dig);
-		if (BC_ERROR_SIGNAL_ONLY(s)) goto frac_err;
+		// fracp is guaranteed to be non-negative and small enough.
+		bc_num_bigdig2(&fracp2, &dig);
 
 		bc_num_bigdig2num(&digit, dig);
 		s = bc_num_sub(&fracp2, &digit, &fracp1, 0);
@@ -1985,14 +1985,32 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 }
 
 void bc_num_init(BcNum *restrict n, size_t req) {
+
+	BcDig *num;
+
 	assert(n != NULL);
+
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
-	bc_num_setup(n, bc_vm_malloc(BC_NUM_SIZE(req)), req);
+
+	if (req == BC_NUM_DEF_SIZE && vm->temps.len) {
+		BcNum *nptr = bc_vec_top(&vm->temps);
+		num = nptr->num;
+		req = nptr->cap;
+		bc_vec_pop(&vm->temps);
+	}
+	else num = bc_vm_malloc(BC_NUM_SIZE(req));
+
+	bc_num_setup(n, num, req);
 }
 
 void bc_num_free(void *num) {
-	assert(num != NULL);
-	free(((BcNum*) num)->num);
+
+	BcNum *n = (BcNum*) num;
+
+	assert(n != NULL);
+
+	if (n->cap == BC_NUM_DEF_SIZE) bc_vec_push(&vm->temps, n);
+	else free(n->num);
 }
 
 void bc_num_copy(BcNum *d, const BcNum *s) {
@@ -2085,28 +2103,48 @@ BcStatus bc_num_print(BcNum *restrict n, BcBigDig base, bool newline) {
 	return s;
 }
 
-BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
+void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 
-	size_t i;
-	BcBigDig r;
+	// This function returns no errors because it's guaranteed to succeed if
+	// its preconditions are met. Those preconditions include both parameters
+	// being non-NULL, n being non-negative, and n being less than vm->max. If
+	// all of that is true, then we can just convert without worrying about
+	// negative errors or overflow. We also don't care about signals because
+	// this function should execute in only a few iterations, meaning that
+	// ignoring signals here should be fine.
+
+	BcBigDig r = 0;
+
+	assert(n != NULL && result != NULL);
+	assert(!n->neg);
+	assert(bc_num_cmp(n, &vm->max) < 0);
+	assert(n->len - n->rdx <= 3);
+
+	// There is a small speed win from unrolling the loop here, and since it
+	// only adds 53 bytes, I decided that it was worth it.
+	switch (n->len - n->rdx) {
+		case 3:
+			r = (BcBigDig) n->num[n->rdx + 2];
+			// Fallthrough.
+		case 2:
+			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx + 1];
+			// Fallthrough.
+		case 1:
+			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx];
+	}
+
+	*result = r;
+}
+
+BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 
 	assert(n != NULL && result != NULL);
 
 	if (BC_ERR(n->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_ERR(bc_num_cmp(n, &vm->max) >= 0))
+		return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
 
-	for (r = 0, i = n->len; i > n->rdx;) {
-
-		BcBigDig prev = r * BC_BASE_POW;
-
-		if (BC_ERR(prev / BC_BASE_POW != r))
-			return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
-
-		r = prev + (BcBigDig) n->num[--i];
-
-		if (BC_ERR(r < prev)) return bc_vm_err(BC_ERROR_MATH_OVERFLOW);
-	}
-
-	*result = r;
+	bc_num_bigdig2(n, result);
 
 	return BC_STATUS_SUCCESS;
 }
@@ -2129,6 +2167,289 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
 
 	n->len = i;
 }
+
+#if BC_ENABLE_EXTRA_MATH
+BcStatus bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
+
+	BcStatus s;
+	BcNum pow, temp, temp2, intn, frac;
+	BcRand state1, state2, inc1, inc2;
+	BcDig pow_num[BC_RAND_NUM_SIZE];
+
+	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
+
+	bc_num_init(&temp, n->len);
+	bc_num_init(&temp2, n->len);
+	bc_num_init(&frac, n->rdx);
+	bc_num_init(&intn, bc_num_int(n));
+
+	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	memcpy(frac.num, n->num, BC_NUM_SIZE(n->rdx));
+	frac.len = n->rdx;
+	frac.rdx = n->rdx;
+	frac.scale = n->scale;
+
+	s = bc_num_mul(&frac, &pow, &temp, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	bc_num_truncate(&temp, temp.scale);
+	bc_num_copy(&frac, &temp);
+
+	memcpy(intn.num, n->num + n->rdx, BC_NUM_SIZE(bc_num_int(n)));
+	intn.len = bc_num_int(n);
+
+	// This assert is here because it has to be true. It is also here to justify
+	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
+	// below.
+	assert(BC_NUM_NONZERO(&vm->max));
+
+	if (BC_NUM_NONZERO(&frac)) {
+
+		s = bc_num_divmod(&frac, &vm->max, &temp, &temp2, 0);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		// frac is guaranteed to be smaller than vm->max * vm->max (pow).
+		// This means that when dividing frac by vm->max, as above, the
+		// quotient and remainder are both guaranteed to be less than vm->max,
+		// which means we can use bc_num_bigdig2() here and not worry about
+		// overflow.
+		bc_num_bigdig2(&temp2, (BcBigDig*) &state1);
+		bc_num_bigdig2(&temp, (BcBigDig*) &state2);
+	}
+	else state1 = state2 = 0;
+
+	if (BC_NUM_NONZERO(&intn)) {
+
+		s = bc_num_divmod(&intn, &vm->max, &temp, &temp2, 0);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		// Because temp2 is the mod of vm->max, from above, it is guaranteed
+		// to be small enough to use bc_num_bigdig2().
+		bc_num_bigdig2(&temp2, (BcBigDig*) &inc1);
+
+		if (bc_num_cmp(&temp, &vm->max) >= 0) {
+			bc_num_copy(&temp2, &temp);
+			s = bc_num_mod(&temp2, &vm->max, &temp, 0);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+		}
+
+		// The if statement above ensures that temp is less than vm->max, which
+		// means that we can use bc_num_bigdig2() here.
+		bc_num_bigdig2(&temp, (BcBigDig*) &inc2);
+	}
+	else inc1 = inc2 = 0;
+
+	bc_rand_seed(rng, state1, state2, inc1, inc2);
+
+err:
+	bc_num_free(&intn);
+	bc_num_free(&frac);
+	bc_num_free(&temp2);
+	bc_num_free(&temp);
+	return s;
+}
+
+BcStatus bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
+
+	BcStatus s;
+	BcRand s1, s2, i1, i2;
+	BcNum pow, conv, temp1, temp2, temp3;
+	BcDig pow_num[BC_RAND_NUM_SIZE];
+	BcDig temp1_num[BC_RAND_NUM_SIZE], temp2_num[BC_RAND_NUM_SIZE];
+	BcDig conv_num[BC_NUM_BIGDIG_LOG10];
+
+	bc_num_init(n, 2 * BC_RAND_NUM_SIZE);
+	bc_num_init(&temp3, 2 * BC_RAND_NUM_SIZE);
+
+	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
+	bc_num_setup(&temp1, temp1_num, sizeof(temp1_num) / sizeof(BcDig));
+	bc_num_setup(&temp2, temp2_num, sizeof(temp2_num) / sizeof(BcDig));
+	bc_num_setup(&conv, conv_num, sizeof(conv_num) / sizeof(BcDig));
+
+	// This assert is here because it has to be true. It is also here to justify
+	// the assumption that pow is not zero.
+	assert(BC_NUM_NONZERO(&vm->max));
+
+	s = bc_num_mul(&vm->max, &vm->max, &pow, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	// Because this is true, we can just use BC_ERROR_SIGNAL_ONLY() below when
+	// dividing by pow.
+	assert(BC_NUM_NONZERO(&pow));
+
+	bc_rand_getRands(rng, &s1, &s2, &i1, &i2);
+
+	bc_num_bigdig2num(&conv, (BcBigDig) s2);
+
+	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	bc_num_bigdig2num(&conv, (BcBigDig) s1);
+
+	s = bc_num_add(&conv, &temp1, &temp2, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	s = bc_num_div(&temp2, &pow, &temp3, BC_RAND_STATE_BITS);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	bc_num_bigdig2num(&conv, (BcBigDig) i2);
+
+	s = bc_num_mul(&conv, &vm->max, &temp1, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	bc_num_bigdig2num(&conv, (BcBigDig) i1);
+
+	s = bc_num_add(&conv, &temp1, &temp2, 0);
+	if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+	s = bc_num_add(&temp2, &temp3, n, 0);
+
+err:
+	bc_num_free(&temp3);
+	if (BC_ERROR_SIGNAL_ONLY(s)) bc_num_free(n);
+	return s;
+}
+
+BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
+                      BcRNG *restrict rng)
+{
+	BcStatus s = BC_STATUS_SUCCESS;
+	BcRand r;
+	BcBigDig modl;
+	BcNum pow, pow2, cp, cp2, mod, temp1, temp2, rand;
+	BcNum *p1, *p2, *t1, *t2, *c1, *c2, *tmp;
+	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
+	bool carry;
+	ssize_t cmp;
+
+	assert(a != b);
+
+	if (BC_ERR(a->neg)) return bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_ERR(a->rdx)) return bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return s;
+
+	cmp = bc_num_cmp(a, &vm->max);
+
+	if (cmp <= 0) {
+
+		BcRand bits = 0;
+
+		if (cmp < 0) bc_num_bigdig2(a, (BcBigDig*) &bits);
+
+		// This condition means that bits is a power of 2. In that case, we
+		// can just grab a full-size int and mask out the unneeded bits.
+		// Also, this condition says that 0 is a power of 2, which works for
+		// us, since a value of 0 means a == rng->max. The bitmask will mask
+		// nothing in that case as well.
+		if (!(bits & (bits - 1))) r = bc_rand_int(rng) & (bits - 1);
+		else r = bc_rand_bounded(rng, bits);
+
+		// We made sure that r is less than vm->max,
+		// so we can use bc_num_bigdig2() here.
+		bc_num_bigdig2num(b, r);
+
+		return s;
+	}
+
+	// In the case where a is less than rng->max, we have to make sure we have
+	// an exclusive bound. This ensures that it happens. (See below.)
+	carry = (cmp < 0);
+
+	bc_num_createCopy(&cp, a);
+
+	bc_num_init(&cp2, cp.len);
+	bc_num_init(&mod, BC_NUM_BIGDIG_LOG10);
+	bc_num_init(&temp1, BC_NUM_DEF_SIZE);
+	bc_num_init(&temp2, BC_NUM_DEF_SIZE);
+	bc_num_init(&pow2, BC_NUM_DEF_SIZE);
+	bc_num_init(&pow, BC_NUM_DEF_SIZE);
+	bc_num_one(&pow);
+	bc_num_setup(&rand, rand_num, sizeof(rand_num) / sizeof(BcDig));
+
+	p1 = &pow;
+	p2 = &pow2;
+	t1 = &temp1;
+	t2 = &temp2;
+	c1 = &cp;
+	c2 = &cp2;
+
+	// This assert is here because it has to be true. It is also here to justify
+	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
+	// below.
+	assert(BC_NUM_NONZERO(&vm->max));
+
+	while (BC_NUM_NONZERO(c1)) {
+
+		s = bc_num_divmod(c1, &vm->max, c2, &mod, 0);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		// Because mod is the mod of vm->max, it is guaranteed to be smaller,
+		// which means we can use bc_num_bigdig2() here.
+		bc_num_bigdig(&mod, &modl);
+
+		if (bc_num_cmp(c1, &vm->max) < 0) {
+
+			// In this case, if there is no carry, then we know we can generate
+			// an integer *equal* to modl. Thus, we add one if there is no
+			// carry. Otherwise, we add zero, and we are still bounded properly.
+			// Since the last portion is guaranteed to be greater than 1, we
+			// know modl isn't 0 unless there is no carry.
+			modl += !carry;
+
+			if (modl == 1) r = 0;
+			else if (!modl) r = bc_rand_int(rng);
+			else r = bc_rand_bounded(rng, (BcRand) modl);
+		}
+		else {
+			if (modl) modl -= carry;
+			r = bc_rand_int(rng);
+			carry = (r >= (BcRand) modl);
+		}
+
+		bc_num_bigdig2num(&rand, r);
+
+		s = bc_num_mul(&rand, p1, p2, 0);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		s = bc_num_add(p2, t1, t2, 0);
+		if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+		if (BC_NUM_NONZERO(c2)) {
+
+			s = bc_num_mul(&vm->max, p1, p2, 0);
+			if (BC_ERROR_SIGNAL_ONLY(s)) goto err;
+
+			tmp = p1;
+			p1 = p2;
+			p2 = tmp;
+
+			tmp = c1;
+			c1 = c2;
+			c2 = tmp;
+		}
+		else c1 = c2;
+
+		tmp = t1;
+		t1 = t2;
+		t2 = tmp;
+	}
+
+	bc_num_copy(b, t1);
+	bc_num_clean(b);
+
+err:
+	bc_num_free(&pow);
+	bc_num_free(&pow2);
+	bc_num_free(&temp2);
+	bc_num_free(&temp1);
+	bc_num_free(&mod);
+	bc_num_free(&cp2);
+	bc_num_free(&cp);
+	return s;
+}
+#endif // BC_ENABLE_EXTRA_MATH
 
 size_t bc_num_addReq(const BcNum *a, const BcNum *b, size_t scale) {
 
@@ -2306,7 +2627,7 @@ BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	assert(!b->len || b->num[b->len - 1] || b->rdx == b->len);
 
 err:
-	if (BC_ERR(s)) bc_num_free(b);
+	if (BC_ERROR_SIGNAL_ONLY(s)) bc_num_free(b);
 	bc_num_free(&fprime);
 	bc_num_free(&f);
 	bc_num_free(&num2);

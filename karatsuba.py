@@ -33,9 +33,13 @@ import subprocess
 import time
 
 def usage():
-	print("usage: {} [test_num exe]".format(script))
+	print("usage: {} [num_iterations test_num exe]".format(script))
+	print("\n    num_iterations is the number of times to run each karatsuba number; default is 4")
 	print("\n    test_num is the last Karatsuba number to run through tests")
 	sys.exit(1)
+
+def run(cmd, env=None):
+	return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
 script = sys.argv[0]
 testdir = os.path.dirname(script)
@@ -56,13 +60,20 @@ mn = 16
 
 num = "9" * mx
 
+args_idx = 4
+
 if len(sys.argv) >= 2:
-	test_num = int(sys.argv[1])
+	num_iterations = int(sys.argv[1])
+else:
+	num_iterations = 4
+
+if len(sys.argv) >= 3:
+	test_num = int(sys.argv[2])
 else:
 	test_num = 0
 
-if len(sys.argv) >= 3:
-	exe = sys.argv[2]
+if len(sys.argv) >= args_idx:
+	exe = sys.argv[3]
 else:
 	exe = testdir + "/bin/bc"
 
@@ -70,18 +81,57 @@ exedir = os.path.dirname(exe)
 
 indata = "for (i = 0; i < 100; ++i) {} * {}\n"
 indata += "1.23456789^100000\n1.23456789^100000\nhalt"
-indata = indata.format(num, num)
+indata = indata.format(num, num).encode()
 
 times = []
 nums = []
 runs = []
-nruns = 5
+nruns = num_iterations + 1
 
 for i in range(0, nruns):
 	runs.append(0)
 
 tests = [ "multiply", "modulus", "power", "sqrt" ]
 scripts = [ "multiply" ]
+
+print("Testing CFLAGS=\"-flto\"...")
+
+flags = dict(os.environ)
+try:
+	flags["CFLAGS"] = flags["CFLAGS"] + " " + "-flto"
+except KeyError:
+	flags["CFLAGS"] = "-flto"
+
+p = run([ "./configure.sh", "-O3" ], flags)
+if p.returncode != 0:
+	print("configure.sh returned an error ({}); exiting...".format(p.returncode))
+	sys.exit(p.returncode)
+
+p = run([ "make" ])
+
+if p.returncode == 0:
+	config_env = flags
+	print("Using CFLAGS=\"-flto\"")
+else:
+	config_env = os.environ
+	print("Not using CFLAGS=\"-flto\"")
+
+p = run([ "make", "clean" ])
+
+print("Testing \"make -j4\"")
+
+if p.returncode != 0:
+	print("make returned an error ({}); exiting...".format(p.returncode))
+	sys.exit(p.returncode)
+
+p = run([ "make", "-j4" ])
+
+if p.returncode == 0:
+	makecmd = [ "make", "-j4" ]
+	print("Using \"make -j4\"")
+else:
+	makecmd = [ "make" ]
+	print("Not using \"make -j4\"")
 
 if test_num != 0:
 	mx2 = test_num
@@ -92,15 +142,13 @@ try:
 
 		print("\nCompiling...\n")
 
-		makecmd = [ "./configure.sh", "-O3", "-k{}".format(i) ]
-		p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		p = run([ "./configure.sh", "-O3", "-k{}".format(i) ], config_env)
 
 		if p.returncode != 0:
 			print("configure.sh returned an error ({}); exiting...".format(p.returncode))
 			sys.exit(p.returncode)
 
-		makecmd = [ "make" ]
-		p = subprocess.run(makecmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		p = run(makecmd)
 
 		if p.returncode != 0:
 			print("make returned an error ({}); exiting...".format(p.returncode))
@@ -112,9 +160,9 @@ try:
 
 			for test in tests:
 
-				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", exe ]
+				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", "0", exe ]
 
-				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
+				p = subprocess.run(cmd + sys.argv[args_idx:], stderr=subprocess.PIPE)
 
 				if p.returncode != 0:
 					print("{} test failed:\n".format(test, p.returncode))
@@ -127,9 +175,9 @@ try:
 			for script in scripts:
 
 				cmd = [ "{}/tests/script.sh".format(testdir), "bc", script + ".bc",
-				        "0", "1", "0", exe ]
+				        "0", "1", "1", "0", exe ]
 
-				p = subprocess.run(cmd + sys.argv[3:], stderr=subprocess.PIPE)
+				p = subprocess.run(cmd + sys.argv[args_idx:], stderr=subprocess.PIPE)
 
 				if p.returncode != 0:
 					print("{} test failed:\n".format(test, p.returncode))
@@ -148,7 +196,7 @@ try:
 				cmd = [ exe, "{}/tests/bc/power.txt".format(testdir) ]
 
 				start = time.perf_counter()
-				p = subprocess.run(cmd, input=indata.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+				p = subprocess.run(cmd, input=indata, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 				end = time.perf_counter()
 
 				if p.returncode != 0:
@@ -174,5 +222,8 @@ if test_num == 0:
 
 	print("\n\nOptimal Karatsuba Num (for this machine): {}".format(opt))
 	print("Run the following:\n")
-	print("./configure.sh -O3 -k {}".format(opt))
+	if "-flto" in config_env["CFLAGS"]:
+		print("CFLAGS=\"-flto\" ./configure.sh -O3 -k {}".format(opt))
+	else:
+		print("./configure.sh -O3 -k {}".format(opt))
 	print("make")

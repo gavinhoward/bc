@@ -56,6 +56,7 @@
 #endif // _WIN32
 
 #include <status.h>
+#include <vector.h>
 #include <args.h>
 #include <vm.h>
 #include <read.h>
@@ -151,41 +152,57 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 static BcStatus bc_vm_envArgs(const char* const env_args_name) {
 
 	BcStatus s;
-	BcVec v;
-	char *env_args = getenv(env_args_name), *buffer, *buf;
+	char *env_args = getenv(env_args_name), *buf, *start;
+	char instr = '\0';
 
 	if (env_args == NULL) return BC_STATUS_SUCCESS;
 
-	buffer = bc_vm_strdup(env_args);
-	buf = buffer;
+	start = buf = vm->env_args_buffer = bc_vm_strdup(env_args);
 
-	bc_vec_init(&v, sizeof(char*), NULL);
-	bc_vec_push(&v, &env_args_name);
+	bc_vec_init(&vm->env_args, sizeof(char*), NULL);
+	bc_vec_push(&vm->env_args, &env_args_name);
 
 	while (*buf) {
 
 		if (!isspace(*buf)) {
 
-			bc_vec_push(&v, &buf);
+			if (*buf == '"' || *buf == '\'') {
 
-			while (*buf && !isspace(*buf)) buf += 1;
+				instr = *buf;
+				buf += 1;
 
-			if (*buf) {
-				*buf = '\0';
+				if (*buf == instr) {
+					buf += 1;
+					continue;
+				}
+			}
+
+			bc_vec_push(&vm->env_args, &buf);
+
+			while (*buf && ((!instr && !isspace(*buf)) ||
+			                (instr && *buf != instr)))
+			{
 				buf += 1;
 			}
+
+			if (*buf) {
+
+				if (instr) instr = '\0';
+
+				*buf = '\0';
+				buf += 1;
+				start = buf;
+			}
+			else if (instr) return bc_vm_error(BC_ERROR_FATAL_OPTION, 0, start);
 		}
 		else buf += 1;
 	}
 
 	// Make sure to push a NULL pointer at the end.
 	buf = NULL;
-	bc_vec_push(&v, &buf);
+	bc_vec_push(&vm->env_args, &buf);
 
-	s = bc_args((int) v.len - 1, bc_vec_item(&v, 0));
-
-	bc_vec_free(&v);
-	free(buffer);
+	s = bc_args((int) vm->env_args.len - 1, bc_vec_item(&vm->env_args, 0));
 
 	return s;
 }
@@ -212,18 +229,33 @@ static size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_shutdown(void) {
+
 #if BC_ENABLE_NLS
 	if (vm->catalog != BC_VM_INVALID_CATALOG) catclose(vm->catalog);
 #endif // BC_ENABLE_NLS
+
 #if BC_ENABLE_HISTORY
 	// This must always run to ensure that the terminal is back to normal.
 	bc_history_free(&vm->history);
 #endif // BC_ENABLE_HISTORY
+
 #ifndef NDEBUG
+	bc_vec_free(&vm->env_args);
+	free(vm->env_args_buffer);
 	bc_vec_free(&vm->files);
 	bc_vec_free(&vm->exprs);
+
 	bc_program_free(&vm->prog);
 	bc_parse_free(&vm->prs);
+
+	{
+		size_t i;
+		for (i = 0; i < vm->temps.len; ++i)
+			free(((BcNum*) bc_vec_item(&vm->temps, i))->num);
+
+		bc_vec_free(&vm->temps);
+	}
+
 	free(vm);
 #endif // NDEBUG
 }
@@ -630,6 +662,11 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	sigaction(SIGQUIT, &sa, NULL);
 #endif // BC_ENABLE_SIGNALS
 
+	memcpy(vm->max_num, bc_num_bigdigMax,
+	       bc_num_bigdigMax_size * sizeof(BcDig));
+	bc_num_setup(&vm->max, vm->max_num, BC_NUM_BIGDIG_LOG10);
+	vm->max.len = bc_num_bigdigMax_size;
+
 	vm->file = NULL;
 
 	bc_vm_gettext();
@@ -638,6 +675,8 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	bc_vec_init(&vm->files, sizeof(char*), NULL);
 	bc_vec_init(&vm->exprs, sizeof(uchar), NULL);
+
+	bc_vec_init(&vm->temps, sizeof(BcNum), NULL);
 
 	bc_program_init(&vm->prog);
 	bc_parse_init(&vm->prs, &vm->prog, BC_PROG_MAIN);
@@ -670,6 +709,10 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	vm->maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_POSIX_IBASE;
 	vm->maxes[BC_PROG_GLOBALS_OBASE] = BC_MAX_OBASE;
 	vm->maxes[BC_PROG_GLOBALS_SCALE] = BC_MAX_SCALE;
+
+#if BC_ENABLE_EXTRA_MATH
+	vm->maxes[BC_PROG_MAX_RAND] = ((BcRand) 0) - 1;
+#endif // BC_ENABLE_EXTRA_MATH
 
 	if (BC_IS_BC && !BC_IS_POSIX)
 		vm->maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_IBASE;

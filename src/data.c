@@ -39,6 +39,7 @@
 #include <bc.h>
 #include <dc.h>
 #include <num.h>
+#include <rand.h>
 #include <program.h>
 #include <vm.h>
 
@@ -74,7 +75,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
 
 	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
-	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
 
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -104,10 +105,12 @@ const char* const bc_err_msgs[] = {
 
 	"memory allocation failed",
 	"I/O error",
-	"could not open file: %s",
+	"cannot open file: %s",
 	"file is not ASCII: %s",
 	"path is a directory: %s",
-	"bad command-line option: '%c' (\"%s\")",
+	"bad command-line option: \"%s\"",
+	"option requires an argument: '%c' (\"%s\")",
+	"option takes no arguments: '%c' (\"%s\")",
 
 	"bad ibase: must be [%lu, %lu]",
 	"bad obase: must be [%lu, %lu]",
@@ -130,8 +133,8 @@ const char* const bc_err_msgs[] = {
 
 	"end of file",
 	"bad character '%c'",
-	"string end could not be found",
-	"comment end could not be found",
+	"string end cannot be found",
+	"comment end cannot be found",
 	"bad token",
 #if BC_ENABLED
 	"bad expression",
@@ -139,10 +142,10 @@ const char* const bc_err_msgs[] = {
 	"bad print statement",
 	"bad function definition",
 	"bad assignment: left side must be scale, ibase, "
-		"obase, last, var, or array element",
+		"obase, seed, last, var, or array element",
 	"no auto variable found",
 	"function parameter or auto \"%s%s\" already exists",
-	"block end could not be found",
+	"block end cannot be found",
 	"cannot return a value from void function: %s()",
 	"var cannot be a reference: %s",
 
@@ -652,6 +655,12 @@ const char* bc_inst_names[] = {
 };
 #endif // BC_DEBUG_CODE
 
+#if BC_ENABLE_EXTRA_MATH
+
+const BcRandState bc_rand_multiplier = BC_RAND_MULTIPLIER;
+
+#endif // BC_ENABLE_EXTRA_MATH
+
 #if BC_ENABLED
 const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
@@ -668,15 +677,27 @@ const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("ibase", 5, true),
 	BC_LEX_KW_ENTRY("obase", 5, true),
 	BC_LEX_KW_ENTRY("scale", 5, true),
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("seed", 4, false),
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("length", 6, true),
 	BC_LEX_KW_ENTRY("print", 5, false),
 	BC_LEX_KW_ENTRY("sqrt", 4, true),
 	BC_LEX_KW_ENTRY("abs", 3, false),
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("irand", 5, false),
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("quit", 4, true),
 	BC_LEX_KW_ENTRY("read", 4, false),
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("rand", 4, false),
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("maxibase", 8, false),
 	BC_LEX_KW_ENTRY("maxobase", 8, false),
 	BC_LEX_KW_ENTRY("maxscale", 8, false),
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("maxrand", 7, false),
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("else", 4, false),
 };
 
@@ -695,8 +716,9 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
-	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, false, true),
-	BC_PARSE_EXPR_ENTRY(true, false, true, true, true, true, false, 0),
+	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, true, false),
+	BC_PARSE_EXPR_ENTRY(true, true, true, false, true, true, true, true),
+	BC_PARSE_EXPR_ENTRY(true, true, false, 0, 0, 0, 0, 0)
 #else // BC_ENABLE_EXTRA_MATH
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
@@ -757,13 +779,24 @@ const size_t dc_lex_regs_len = sizeof(dc_lex_regs) / sizeof(uint8_t);
 
 const uchar dc_lex_tokens[] = {
 #if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_IRAND,
+#else // BC_ENABLE_EXTRA_MATH
+	BC_LEX_INVALID,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_INVALID,
+#if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_TRUNC,
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_LEX_OP_MODULUS, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_LPAREN,
-	BC_LEX_RPAREN, BC_LEX_OP_MULTIPLY, BC_LEX_OP_PLUS, BC_LEX_INVALID,
-	BC_LEX_OP_MINUS, BC_LEX_INVALID, BC_LEX_OP_DIVIDE,
+	BC_LEX_OP_MODULUS, BC_LEX_INVALID,
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_RAND,
+#else // BC_ENABLE_EXTRA_MATH
+	BC_LEX_INVALID,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_LPAREN, BC_LEX_RPAREN, BC_LEX_OP_MULTIPLY, BC_LEX_OP_PLUS,
+	BC_LEX_INVALID, BC_LEX_OP_MINUS, BC_LEX_INVALID, BC_LEX_OP_DIVIDE,
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_INVALID,
@@ -781,10 +814,21 @@ const uchar dc_lex_tokens[] = {
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_LEX_KW_IBASE, BC_LEX_INVALID, BC_LEX_KW_SCALE, BC_LEX_LOAD_POP,
-	BC_LEX_OP_BOOL_AND, BC_LEX_OP_BOOL_NOT, BC_LEX_KW_OBASE,
-	BC_LEX_PRINT_STREAM, BC_LEX_NQUIT, BC_LEX_POP, BC_LEX_STORE_PUSH,
-	BC_LEX_KW_MAXIBASE, BC_LEX_KW_MAXOBASE, BC_LEX_KW_MAXSCALE, BC_LEX_INVALID,
+	BC_LEX_KW_IBASE,
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_SEED,
+#else // BC_ENABLE_EXTRA_MATH
+	BC_LEX_INVALID,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_SCALE, BC_LEX_LOAD_POP, BC_LEX_OP_BOOL_AND, BC_LEX_OP_BOOL_NOT,
+	BC_LEX_KW_OBASE, BC_LEX_PRINT_STREAM, BC_LEX_NQUIT, BC_LEX_POP,
+	BC_LEX_STORE_PUSH, BC_LEX_KW_MAXIBASE, BC_LEX_KW_MAXOBASE,
+	BC_LEX_KW_MAXSCALE,
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_MAXRAND,
+#else // BC_ENABLE_EXTRA_MATH
+	BC_LEX_INVALID,
+#endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_SCALE_FACTOR,
 	BC_LEX_INVALID, BC_LEX_KW_LENGTH, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_OP_POWER, BC_LEX_NEG, BC_LEX_INVALID,
@@ -795,7 +839,13 @@ const uchar dc_lex_tokens[] = {
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_LEX_STORE_IBASE, BC_LEX_INVALID, BC_LEX_STORE_SCALE, BC_LEX_LOAD,
+	BC_LEX_STORE_IBASE,
+#if BC_ENABLE_EXTRA_MATH
+	BC_LEX_STORE_SEED,
+#else // BC_ENABLE_EXTRA_MATH
+	BC_LEX_INVALID,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_STORE_SCALE, BC_LEX_LOAD,
 	BC_LEX_OP_BOOL_OR, BC_LEX_PRINT_POP, BC_LEX_STORE_OBASE, BC_LEX_KW_PRINT,
 	BC_LEX_KW_QUIT, BC_LEX_SWAP, BC_LEX_OP_ASSIGN, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_KW_SQRT, BC_LEX_INVALID, BC_LEX_EXECUTE,
@@ -839,17 +889,53 @@ const uchar dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 #endif // BC_ENABLED
-	BC_INST_IBASE, BC_INST_OBASE, BC_INST_SCALE, BC_INST_LENGTH, BC_INST_PRINT,
-	BC_INST_SQRT, BC_INST_ABS, BC_INST_QUIT, BC_INST_INVALID, BC_INST_MAXIBASE,
-	BC_INST_MAXOBASE, BC_INST_MAXSCALE, BC_INST_INVALID,
+	BC_INST_IBASE, BC_INST_OBASE, BC_INST_SCALE,
+#if BC_ENABLE_EXTRA_MATH
+	BC_INST_SEED,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_INST_LENGTH, BC_INST_PRINT,
+	BC_INST_SQRT, BC_INST_ABS,
+#if BC_ENABLE_EXTRA_MATH
+	BC_INST_IRAND,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_INST_QUIT, BC_INST_INVALID,
+#if BC_ENABLE_EXTRA_MATH
+	BC_INST_RAND,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_INST_MAXIBASE,
+	BC_INST_MAXOBASE, BC_INST_MAXSCALE,
+#if BC_ENABLE_EXTRA_MATH
+	BC_INST_MAXRAND,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_INST_INVALID,
 	BC_INST_REL_EQ, BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_INVALID,
 	BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP, BC_INST_POP,
-	BC_INST_ASCIIFY, BC_INST_PRINT_STREAM, BC_INST_INVALID, BC_INST_INVALID,
-	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
+	BC_INST_ASCIIFY, BC_INST_PRINT_STREAM,
+	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
+#if BC_ENABLE_EXTRA_MATH
+	BC_INST_INVALID,
+#endif // BC_ENABLE_EXTRA_MATH
+	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 	BC_INST_PRINT_POP, BC_INST_NQUIT, BC_INST_SCALE_FUNC,
 };
 #endif // DC_ENABLED
+
+#if BC_LONG_BIT >= 64
+const BcDig bc_num_bigdigMax[] = {
+	709551616U,
+	446744073U,
+	18U
+};
+#else // BC_LONG_BIT >= 64
+const BcDig bc_num_bigdigMax[] = {
+	7296U,
+	9496U,
+	42U,
+};
+#endif // BC_LONG_BIT >= 64
+
+const size_t bc_num_bigdigMax_size = sizeof(bc_num_bigdigMax) / sizeof(BcDig);
 
 const char bc_parse_one[] = "1";
 

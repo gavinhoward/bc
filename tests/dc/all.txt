@@ -19,3 +19,4 @@ engineering
 vars
 misc
 strings
+rand

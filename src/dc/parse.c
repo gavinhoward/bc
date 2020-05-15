@@ -194,6 +194,9 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_STORE_IBASE:
 		case BC_LEX_STORE_OBASE:
 		case BC_LEX_STORE_SCALE:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_STORE_SEED:
+#endif // BC_ENABLE_EXTRA_MATH
 		{
 			inst = (uchar) (t - BC_LEX_STORE_IBASE + BC_INST_IBASE);
 			s = dc_parse_mem(p, inst, false, true);

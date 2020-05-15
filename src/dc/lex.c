@@ -119,8 +119,8 @@ BcStatus dc_lex_token(BcLex *l) {
 		if (l->last == dc_lex_regs[i]) return dc_lex_register(l);
 	}
 
-	if (c >= '$' && c <= '~' &&
-	    (l->t = dc_lex_tokens[(c - '$')]) != BC_LEX_INVALID)
+	if (c >= '"' && c <= '~' &&
+	    (l->t = dc_lex_tokens[(c - '"')]) != BC_LEX_INVALID)
 	{
 		return s;
 	}

@@ -127,12 +127,17 @@
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define BC_MAX_OBASE ((ulong) (BC_BASE_POW))
-#define BC_MAX_DIM ((ulong) (SIZE_MAX - 1))
-#define BC_MAX_SCALE ((ulong) (BC_NUM_BIGDIG_MAX - 1))
-#define BC_MAX_STRING ((ulong) (BC_NUM_BIGDIG_MAX - 1))
+#define BC_MAX_OBASE ((BcBigDig) (BC_BASE_POW))
+#define BC_MAX_DIM ((BcBigDig) (SIZE_MAX - 1))
+#define BC_MAX_SCALE ((BcBigDig) (BC_NUM_BIGDIG_MAX - 1))
+#define BC_MAX_STRING ((BcBigDig) (BC_NUM_BIGDIG_MAX - 1))
 #define BC_MAX_NAME BC_MAX_STRING
 #define BC_MAX_NUM BC_MAX_SCALE
+
+#if BC_ENABLE_EXTRA_MATH
+#define BC_MAX_RAND ((BcBigDig) (((BcRand) 0) - 1))
+#endif // BC_ENABLE_EXTRA_MATH
+
 #define BC_MAX_EXP ((ulong) (BC_NUM_BIGDIG_MAX))
 #define BC_MAX_VARS ((ulong) (SIZE_MAX - 1))
 
@@ -172,6 +177,8 @@ typedef struct BcVm {
 
 	const char* file;
 
+	BcVec temps;
+
 #if BC_ENABLE_SIGNALS
 	const char *sigmsg;
 	volatile sig_atomic_t sig;
@@ -185,7 +192,7 @@ typedef struct BcVm {
 
 	uint16_t line_len;
 
-	BcBigDig maxes[BC_PROG_GLOBALS_LEN];
+	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
 
 	BcVec files;
 	BcVec exprs;
@@ -212,6 +219,12 @@ typedef struct BcVm {
 	BcBigDig last_pow;
 	BcBigDig last_exp;
 	BcBigDig last_rem;
+
+	char *env_args_buffer;
+	BcVec env_args;
+
+	BcNum max;
+	BcDig max_num[BC_NUM_BIGDIG_LOG10];
 
 #if BC_ENABLE_NLS
 	nl_catd catalog;

@@ -1,44 +1,35 @@
 # Benchmarks
 
-These are the results of benchmarks comparing this `bc` (at version `2.1.0`) and
-GNU `bc` (at version `1.07.1`).
+These are the results of benchmarks comparing this `bc` (at version `2.7.0`) and
+GNU `bc` (at version `1.07.1`), both compiled with `clang 9` at `-O2`.
 
 Note: all benchmarks were run four times, and the fastest run is the one shown.
 Also, `[bc]` means whichever `bc` was being run, and the assumed working
 directory is the root directory of this repository. Also, this `bc` was built at
 `-O2`.
 
-Note: some mistakes were made when updating these benchmarks for `2.1.0`.
-First, I did not update this `bc`'s version in this file. Second, I ran this
-`bc` after compiling with `clang` when the GNU `bc` was almost certainly
-compiled with `gcc`. Those mistakes have been fixed.
-
 ### Addition
 
 The command used was:
 
 ```
-tests/script.sh bc add.bc 0 1 1 [bc]
+tests/script.sh bc add.bc 1 0 1 1 [bc]
 ```
 
 For GNU `bc`:
 
 ```
-Running bc script: add.bc
-
 real 2.06
-user 1.09
-sys 0.96
+user 1.11
+sys 0.95
 ```
 
 For this `bc`:
 
 ```
-Running bc script: add.bc
-
-real 0.95
-user 0.90
-sys 0.05
+real 0.98
+user 0.95
+sys 0.02
 ```
 
 ### Subtraction
@@ -46,27 +37,23 @@ sys 0.05
 The command used was:
 
 ```
-tests/script.sh bc subtract.bc 0 1 1 [bc]
+tests/script.sh bc subtract.bc 1 0 1 1 [bc]
 ```
 
 For GNU `bc`:
 
 ```
-Running bc script: subtract.bc
-
-real 2.08
-user 1.13
-sys 0.94
+real 2.04
+user 1.04
+sys 0.99
 ```
 
 For this `bc`:
 
 ```
-Running bc script: subtract.bc
-
-real 0.92
-user 0.88
-sys 0.04
+real 1.02
+user 1.00
+sys 0.01
 ```
 
 ### Multiplication
@@ -74,27 +61,23 @@ sys 0.04
 The command used was:
 
 ```
-tests/script.sh bc multiply.bc 0 1 1 [bc]
+tests/script.sh bc multiply.bc 1 0 1 1 [bc]
 ```
 
 For GNU `bc`:
 
 ```
-Running bc script: multiply.bc
-
-real 5.54
-user 3.72
-sys 1.81
+real 5.96
+user 4.27
+sys 1.68
 ```
 
 For this `bc`:
 
 ```
-Running bc script: multiply.bc
-
-real 2.06
-user 2.01
-sys 0.05
+real 2.15
+user 2.11
+sys 0.04
 ```
 
 ### Division
@@ -102,27 +85,23 @@ sys 0.05
 The command used was:
 
 ```
-tests/script.sh bc divide.bc 0 1 1 [bc]
+tests/script.sh bc divide.bc 1 0 1 1 [bc]
 ```
 
 For GNU `bc`:
 
 ```
-Running bc script: divide.bc
-
-real 2.80
-user 1.68
-sys 1.11
+real 2.74
+user 1.84
+sys 0.89
 ```
 
 For this `bc`:
 
 ```
-Running bc script: divide.bc
-
-real 1.45
-user 1.42
-sys 0.02
+real 1.49
+user 1.48
+sys 0.00
 ```
 
 ### Power
@@ -136,16 +115,16 @@ printf '1234567890^100000; halt\n' | time -p [bc] -lq > /dev/null
 For GNU `bc`:
 
 ```
-real 11.46
-user 11.45
-sys 0.00
+real 9.60
+user 9.58
+sys 0.01
 ```
 
 For this `bc`:
 
 ```
-real 0.75
-user 0.75
+real 0.67
+user 0.66
 sys 0.00
 ```
 
@@ -155,9 +134,9 @@ sys 0.00
 patch was applied:
 
 ```
---- tests/bc/scripts/timeconst.bc	2018-09-28 11:32:22.808669000 -0600
+--- ../timeconst.bc	2018-09-28 11:32:22.808669000 -0600
 +++ ../timeconst.bc	2019-06-07 07:26:36.359913078 -0600
-@@ -108,8 +108,10 @@
+@@ -110,8 +110,10 @@
  
  		print "#endif /* KERNEL_TIMECONST_H */\n"
  	}
@@ -182,16 +161,16 @@ time -p [bc] ../timeconst.bc > /dev/null
 For GNU `bc`:
 
 ```
-real 15.16
-user 14.59
-sys 0.56
+real 15.26
+user 14.60
+sys 0.64
 ```
 
 For this `bc`:
 
 ```
-real 11.63
-user 11.63
+real 11.24
+user 11.23
 sys 0.00
 ```
 
@@ -219,16 +198,16 @@ time -p [bc] ../test.bc > /dev/null
 For GNU `bc`:
 
 ```
-real 12.84
-user 12.84
+real 14.89
+user 14.88
 sys 0.00
 ```
 
 For this `bc`:
 
 ```
-real 21.20
-user 21.20
+real 22.19
+user 22.18
 sys 0.00
 ```
 
@@ -257,21 +236,21 @@ time -p [bc] ../test2.bc > /dev/null
 For GNU `bc`:
 
 ```
-real 13.80
-user 13.80
-sys 0.00
+real 42.92
+user 32.70
+sys 10.19
 ```
 
 For this `bc`:
 
 ```
-real 14.90
-user 14.90
-sys 0.00
+real 28.50
+user 28.44
+sys 0.02
 ```
 
-It seems that my `bc` runs `while` loops faster than `for` loops. I don't know
-why it does that because both loops are using the same code underneath the hood.
+I have no idea why the performance of both `bc`'s fell off a cliff, especially
+the dismal showing by the GNU `bc`.
 
 Note that, when running the benchmarks, the optimization used is not the one I
 recommend, which is `-O3 -flto -march=native`. This `bc` separates its code into
@@ -281,31 +260,73 @@ that comes from function overhead. This is most keenly felt with one function:
 optimized at link time and inlined. There are other functions that matter as
 well.
 
-When compiling this `bc` with the recommended optimizations, the results are as
-follows.
+When compiling both `bc`'s with the recommended optimizations, the results are
+as follows.
 
-For the first script:
+For the first script, the command was:
 
 ```
-real 9.85
-user 9.85
+time -p [bc] ../timeconst.bc > /dev/null
+```
+
+For GNU `bc`:
+
+```
+real 14.01
+user 13.41
+sys 0.59
+```
+
+For this `bc`:
+
+```
+real 9.40
+user 9.39
 sys 0.00
 ```
 
-For the second script:
+For the second script, the command was:
 
 ```
-real 18.04
-user 18.04
+time -p [bc] ../test.bc > /dev/null
+```
+
+For GNU `bc`:
+
+```
+real 12.58
+user 12.58
 sys 0.00
 ```
 
-For the third script:
+For this `bc`:
 
 ```
-real 12.66
-user 12.66
+real 17.99
+user 17.98
 sys 0.00
+```
+
+For the third script, the command was:
+
+```
+time -p [bc] ../test2.bc > /dev/null
+```
+
+For GNU `bc`:
+
+```
+real 39.74
+user 27.28
+sys 12.44
+```
+
+For this `bc`:
+
+```
+real 23.31
+user 23.27
+sys 0.02
 ```
 
 This is more competitive.
@@ -315,7 +336,8 @@ faster when doing math.
 
 ### Recommended Compiler
 
-When I ran these benchmarks with my `bc` compiled under `clang`, it performed
-much better. I recommend compiling this `bc` with `clang`.
+When I ran these benchmarks with my `bc` compiled under `clang` vs. `gcc`, it
+performed much better under `clang`. I recommend compiling this `bc` with
+`clang`.
 
 [1]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc
