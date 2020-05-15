@@ -46,12 +46,6 @@ Please submit bug reports if this `bc` does not build out of the box on any
 system besides Windows. If Windows binaries are needed, they can be found at
 [xstatic][6].
 
-### Signal Exceptions
-
-This `bc` has an option to be built with signals implemented by `setjmp()` and
-`longjmp()`. If built with this option, `bc` requires POSIX 2016 with X/Open
-System Interfaces.
-
 ## Build
 
 This `bc` should build unmodified on any POSIX-compliant system.
