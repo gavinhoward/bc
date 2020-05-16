@@ -43,9 +43,8 @@
 #include <bc.h>
 #include <vm.h>
 
-static BcStatus bc_lex_identifier(BcLex *l) {
+static void bc_lex_identifier(BcLex *l) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 	const char *buf = l->buf + l->i - 1;
 
@@ -58,26 +57,22 @@ static BcStatus bc_lex_identifier(BcLex *l) {
 
 			l->t = BC_LEX_KW_AUTO + (BcLexType) i;
 
-			if (!BC_LEX_KW_POSIX(kw)) {
-				s = bc_lex_verr(l, BC_ERROR_POSIX_KW, kw->name);
-				if (BC_ERR(s)) return s;
-			}
+			if (!BC_LEX_KW_POSIX(kw))
+				bc_lex_verr(l, BC_ERROR_POSIX_KW, kw->name);
 
 			// We minus 1 because the index has already been incremented.
 			l->i += n - 1;
-			return BC_STATUS_SUCCESS;
+			return;
 		}
 	}
 
 	bc_lex_name(l);
 
 	if (BC_ERR(l->str.len - 1 > 1))
-		s = bc_lex_verr(l, BC_ERROR_POSIX_NAME_LEN, l->str.v);
-
-	return s;
+		bc_lex_verr(l, BC_ERROR_POSIX_NAME_LEN, l->str.v);
 }
 
-static BcStatus bc_lex_string(BcLex *l) {
+static void bc_lex_string(BcLex *l) {
 
 	size_t len, nlines = 0, i = l->i;
 	const char *buf = l->buf;
@@ -89,7 +84,7 @@ static BcStatus bc_lex_string(BcLex *l) {
 
 	if (BC_ERR(c == '\0')) {
 		l->i = i;
-		return bc_lex_err(l, BC_ERROR_PARSE_STRING);
+		bc_lex_err(l, BC_ERROR_PARSE_STRING);
 	}
 
 	len = i - l->i;
@@ -97,8 +92,6 @@ static BcStatus bc_lex_string(BcLex *l) {
 
 	l->i = i + 1;
 	l->line += nlines;
-
-	return BC_STATUS_SUCCESS;
 }
 
 static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
@@ -109,9 +102,8 @@ static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 	else l->t = without;
 }
 
-BcStatus bc_lex_token(BcLex *l) {
+void bc_lex_token(BcLex *l) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	char c = l->buf[l->i++], c2;
 
 	// This is the workhorse of the lexer.
@@ -133,27 +125,22 @@ BcStatus bc_lex_token(BcLex *l) {
 		{
 			bc_lex_assign(l, BC_LEX_OP_REL_NE, BC_LEX_OP_BOOL_NOT);
 
-			if (l->t == BC_LEX_OP_BOOL_NOT) {
-				s = bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "!");
-				if (BC_ERR(s)) return s;
-			}
+			if (l->t == BC_LEX_OP_BOOL_NOT)
+				bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "!");
 
 			break;
 		}
 
 		case '"':
 		{
-			s = bc_lex_string(l);
+			bc_lex_string(l);
 			break;
 		}
 
 		case '#':
 		{
-			s = bc_lex_err(l, BC_ERROR_POSIX_COMMENT);
-			if (BC_ERR(s)) return s;
-
+			bc_lex_err(l, BC_ERROR_POSIX_COMMENT);
 			bc_lex_lineComment(l);
-
 			break;
 		}
 
@@ -168,13 +155,12 @@ BcStatus bc_lex_token(BcLex *l) {
 			c2 = l->buf[l->i];
 			if (BC_NO_ERR(c2 == '&')) {
 
-				s = bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "&&");
-				if (BC_ERR(s)) return s;
+				bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "&&");
 
 				l->i += 1;
 				l->t = BC_LEX_OP_BOOL_AND;
 			}
-			else s = bc_lex_invalidChar(l, c);
+			else bc_lex_invalidChar(l, c);
 
 			break;
 		}
@@ -235,10 +221,10 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '.':
 		{
 			c2 = l->buf[l->i];
-			if (BC_LEX_NUM_CHAR(c2, true, false)) s = bc_lex_number(l, c);
+			if (BC_LEX_NUM_CHAR(c2, true, false)) bc_lex_number(l, c);
 			else {
 				l->t = BC_LEX_KW_LAST;
-				s = bc_lex_err(l, BC_ERROR_POSIX_DOT);
+				bc_lex_err(l, BC_ERROR_POSIX_DOT);
 			}
 			break;
 		}
@@ -246,7 +232,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case '/':
 		{
 			c2 = l->buf[l->i];
-			if (c2 =='*') s = bc_lex_comment(l);
+			if (c2 =='*') bc_lex_comment(l);
 			else bc_lex_assign(l, BC_LEX_OP_ASSIGN_DIVIDE, BC_LEX_OP_DIVIDE);
 			break;
 		}
@@ -292,7 +278,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case 'Y':
 		case 'Z':
 		{
-			s = bc_lex_number(l, c);
+			bc_lex_number(l, c);
 			break;
 		}
 
@@ -351,7 +337,7 @@ BcStatus bc_lex_token(BcLex *l) {
 				l->i += 1;
 				l->t = BC_LEX_WHITESPACE;
 			}
-			else s = bc_lex_invalidChar(l, c);
+			else bc_lex_invalidChar(l, c);
 			break;
 		}
 
@@ -388,7 +374,7 @@ BcStatus bc_lex_token(BcLex *l) {
 		case 'y':
 		case 'z':
 		{
-			s = bc_lex_identifier(l);
+			bc_lex_identifier(l);
 			break;
 		}
 
@@ -405,24 +391,21 @@ BcStatus bc_lex_token(BcLex *l) {
 
 			if (BC_NO_ERR(c2 == '|')) {
 
-				s = bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "||");
-				if (BC_ERR(s)) return s;
+				bc_lex_verr(l, BC_ERROR_POSIX_BOOL, "||");
 
 				l->i += 1;
 				l->t = BC_LEX_OP_BOOL_OR;
 			}
-			else s = bc_lex_invalidChar(l, c);
+			else bc_lex_invalidChar(l, c);
 
 			break;
 		}
 
 		default:
 		{
-			s = bc_lex_invalidChar(l, c);
+			bc_lex_invalidChar(l, c);
 			break;
 		}
 	}
-
-	return s;
 }
 #endif // BC_ENABLED

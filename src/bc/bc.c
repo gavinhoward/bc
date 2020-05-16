@@ -41,9 +41,7 @@
 #include <bc.h>
 #include <vm.h>
 
-int bc_main(int argc, char **argv) {
-
-	BcStatus s;
+void bc_main(int argc, char **argv) {
 
 	vm.read_ret = BC_INST_RET;
 	vm.help = bc_help;
@@ -56,8 +54,6 @@ int bc_main(int argc, char **argv) {
 	vm.parse = bc_parse_parse;
 	vm.expr = bc_parse_expr;
 
-	s = bc_vm_boot(argc, argv, "BC_LINE_LENGTH", "BC_ENV_ARGS", "BC_EXPR_EXIT");
-
-	return (int) s;
+	bc_vm_boot(argc, argv, "BC_LINE_LENGTH", "BC_ENV_ARGS", "BC_EXPR_EXIT");
 }
 #endif // BC_ENABLED

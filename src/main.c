@@ -39,6 +39,10 @@
 #include <locale.h>
 #include <libgen.h>
 
+#if BC_ENABLE_SIGNALS
+#include <setjmp.h>
+#endif // BC_ENABLE_SIGNALS
+
 #include <status.h>
 #include <vm.h>
 #include <bc.h>
@@ -51,6 +55,9 @@ int main(int argc, char *argv[]) {
 	int s;
 	char *name;
 	size_t len = strlen(BC_EXECPREFIX);
+#if BC_ENABLE_SIGNALS
+	sigjmp_buf jb;
+#endif // BC_ENABLE_SIGNALS
 
 	vm.locale = setlocale(LC_ALL, "");
 
@@ -59,14 +66,37 @@ int main(int argc, char *argv[]) {
 
 	if (strlen(vm.name) > len) vm.name += len;
 
+#if BC_ENABLE_SIGNALS
+	BC_SIG_LOCK;
+
+	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
+
+	BC_SETJMP_LOCKED(exit);
+#endif // BC_ENABLE_SIGNALS
+
 #if !DC_ENABLED
-	s = bc_main(argc, argv);
+	bc_main(argc, argv);
 #elif !BC_ENABLED
-	s = dc_main(argc, argv);
+	dc_main(argc, argv);
 #else
-	if (BC_IS_BC) s = bc_main(argc, argv);
-	else s = dc_main(argc, argv);
+	if (BC_IS_BC) bc_main(argc, argv);
+	else dc_main(argc, argv);
 #endif
+
+#if BC_ENABLE_SIGNALS
+exit:
+	BC_SIG_LOCK;
+#endif // BC_ENABLE_SIGNALS
+
+	s = !BC_STATUS_IS_ERROR(vm.status) ? BC_STATUS_SUCCESS : vm.status;
+
+#ifndef NDEBUG
+#if BC_ENABLE_SIGNALS
+	bc_vec_free(&vm->jmp_bufs);
+#endif // BC_ENABLE_SIGNALS
+
+	free(vm);
+#endif // NDEBUG
 
 	return s;
 }

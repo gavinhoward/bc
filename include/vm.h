@@ -41,9 +41,9 @@
 
 #if BC_ENABLE_SIGNALS
 
-#	ifdef _WIN32
-#	error Signals are not supported on Windows.
-#	endif // _WIN32
+#ifdef _WIN32
+#error Signals are not supported on Windows.
+#endif // _WIN32
 
 #include <signal.h>
 
@@ -147,16 +147,61 @@
 
 #if BC_ENABLE_SIGNALS
 
-#define BC_SIG BC_UNLIKELY(vm.sig != vm.sig_chk)
-#define BC_NO_SIG BC_LIKELY(vm.sig == vm.sig_chk)
-
 #define BC_SIGTERM_VAL (SIG_ATOMIC_MAX)
 #define BC_SIGTERM (vm.sig == BC_SIGTERM_VAL)
 #define BC_SIGINT (vm.sig && vm.sig != BC_SIGTERM_VAL)
 
-#else // BC_ENABLE_SIGNALS
-#define BC_SIG (0)
-#define BC_NO_SIG (1)
+#define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
+#define BC_NO_SIG_EXC BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
+
+#ifndef NDEBUG
+#define BC_SIG_ASSERT_LOCKED do { assert(vm.sig_lock); } while (0)
+#else // NDEBUG
+#define BC_SIG_ASSERT_LOCKED
+#endif // NDEBUG
+
+#define BC_SIG_LOCK do { vm.sig_lock = 1; } while (0)
+
+#define BC_SIG_UNLOCK                        \
+	do {                                     \
+		if (BC_SIG_EXC) bc_vm_sigjmp(false); \
+		vm.sig_lock = 0;                     \
+	} while (0)
+
+#define BC_SETJMP(l)                         \
+	do {                                     \
+		sigjmp_buf sjb;                      \
+		vm.sig_lock = 1;                     \
+		if (sigsetjmp(sjb, 1)) goto l;       \
+		bc_vec_push(&vm.jmp_bufs, &sjb);     \
+		if (BC_SIG_EXC) bc_vm_sigjmp(false); \
+		vm.sig_lock = 0;                     \
+	} while (0)
+
+#define BC_SETJMP_LOCKED(l)               \
+	do {                                  \
+		sigjmp_buf sjb;                   \
+		BC_SIG_ASSERT_LOCKED;             \
+		if (sigsetjmp(sjb, 1)) goto l;    \
+		bc_vec_push(&vm.jmp_bufs, &sjb);  \
+	} while (0)
+
+#define BC_LONGJMP_CONT                     \
+	do {                                    \
+		if (BC_SIG_EXC) bc_vm_sigjmp(true); \
+		bc_vec_pop(&vm.jmp_bufs);           \
+		vm.sig_lock = 0;                    \
+	} while (0)
+
+#else
+
+#define BC_SIG_ASSERT_LOCKED
+#define BC_SIG_LOCK
+#define BC_SIG_UNLOCK
+#define BC_SETJMP(l)
+#define BC_SETJMP_LOCKED(l)
+#define BC_LONGJMP_CONT
+
 #endif // BC_ENABLE_SIGNALS
 
 #define bc_vm_err(e) (bc_vm_error((e), 0))
@@ -165,11 +210,16 @@
 #define BC_IO_ERR(e, f) (BC_ERR((e) < 0 || ferror(f)))
 #define BC_STATUS_IS_ERROR(s) \
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
-#define BC_ERROR_SIGNAL_ONLY(s) (BC_ENABLE_SIGNALS && BC_ERR(s))
 
 #define BC_VM_INVALID_CATALOG ((nl_catd) -1)
 
 typedef struct BcVm {
+
+#if BC_ENABLE_SIGNALS
+	volatile sig_atomic_t status;
+#else // BC_ENABLE_SIGNALS
+	sig_atomic_t status;
+#endif // BC_ENABLE_SIGNALS
 
 	BcParse prs;
 	BcProgram prog;
@@ -182,6 +232,7 @@ typedef struct BcVm {
 	const char *sigmsg;
 	volatile sig_atomic_t sig;
 	sig_atomic_t sig_chk;
+	volatile sig_atomic_t sig_lock;
 	uchar siglen;
 #endif // BC_ENABLE_SIGNALS
 
@@ -229,15 +280,15 @@ typedef struct BcVm {
 	nl_catd catalog;
 #endif // BC_ENABLE_NLS
 
+#if BC_ENABLE_SIGNALS
+	BcVec jmp_bufs;
+#endif // BC_ENABLE_SIGNALS
+
 } BcVm;
 
-#if BC_ENABLED
-BcStatus bc_vm_posixError(BcError e, size_t line, ...);
-#endif // BC_ENABLED
-
 void bc_vm_info(const char* const help);
-BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
-                    const char* const env_args, const char* env_exp_quit);
+void bc_vm_boot(int argc, char *argv[], const char *env_len,
+                const char* const env_args, const char* env_exp_quit);
 void bc_vm_shutdown(void);
 
 size_t bc_vm_printf(const char *fmt, ...);
@@ -251,7 +302,12 @@ void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
-BcStatus bc_vm_error(BcError e, size_t line, ...);
+#if BC_ENABLE_SIGNALS
+void bc_vm_sigjmp(bool pop);
+void bc_vm_checkSignal(bool pop);
+#endif // BC_ENABLE_SIGNALS
+
+void bc_vm_error(BcError e, size_t line, ...);
 
 extern const char bc_copyright[];
 extern const char* const bc_err_line;

@@ -53,7 +53,7 @@
 #define BC_READ_BIN_CHAR(c) (((c) < ' ' && !isspace((c))) || ((uchar) c) > '~')
 
 BcStatus bc_read_line(BcVec *vec, const char *prompt);
-BcStatus bc_read_file(const char *path, char **buf);
+void bc_read_file(const char *path, char **buf);
 BcStatus bc_read_chars(BcVec *vec, const char *prompt);
 
 #endif // BC_IO_H

@@ -71,8 +71,8 @@ typedef struct BcParseNext {
 struct BcParse;
 struct BcProgram;
 
-typedef BcStatus (*BcParseParse)(struct BcParse*);
-typedef BcStatus (*BcParseExpr)(struct BcParse*, uint8_t);
+typedef void (*BcParseParse)(struct BcParse*);
+typedef void (*BcParseExpr)(struct BcParse*, uint8_t);
 
 typedef struct BcParse {
 
@@ -96,13 +96,13 @@ typedef struct BcParse {
 
 void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 void bc_parse_free(BcParse *p);
-BcStatus bc_parse_reset(BcParse *p, BcStatus s);
+void bc_parse_reset(BcParse *p);
 
 void bc_parse_addId(BcParse *p, const char *string, uchar inst);
 void bc_parse_number(BcParse *p);
 void bc_parse_updateFunc(BcParse *p, size_t fidx);
 void bc_parse_pushName(const BcParse* p, char *name, bool var);
-BcStatus bc_parse_text(BcParse *p, const char *text);
+void bc_parse_text(BcParse *p, const char *text);
 
 extern const char bc_parse_one[];
 

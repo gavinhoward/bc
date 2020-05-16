@@ -140,9 +140,6 @@ struct BcRNG;
 
 #define BC_NUM_KARATSUBA_ALLOCS (6)
 
-#define BC_NUM_CMP_SIGNAL_VAL (~((ssize_t) ((size_t) SSIZE_MAX)))
-#define BC_NUM_CMP_SIGNAL(cmp) (cmp == BC_NUM_CMP_SIGNAL_VAL)
-
 #define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_DIGS - 1))
 #define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_DIGS)
 
@@ -157,10 +154,10 @@ struct BcRNG;
 #define BC_NUM_PRINT(x)
 #endif // BC_DEBUG_CODE
 
-typedef BcStatus (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
+typedef void (*BcNumBinaryOp)(BcNum*, BcNum*, BcNum*, size_t);
 typedef size_t (*BcNumBinaryOpReq)(const BcNum*, const BcNum*, size_t);
 typedef void (*BcNumDigitOp)(size_t, size_t, bool);
-typedef BcStatus (*BcNumShiftAddOp)(BcDig*, const BcDig*, size_t);
+typedef void (*BcNumShiftAddOp)(BcDig*, const BcDig*, size_t);
 
 void bc_num_init(BcNum *restrict n, size_t req);
 void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap);
@@ -172,30 +169,30 @@ void bc_num_free(void *num);
 size_t bc_num_scale(const BcNum *restrict n);
 size_t bc_num_len(const BcNum *restrict n);
 
-BcStatus bc_num_bigdig(const BcNum *restrict n, BcBigDig *result);
+void bc_num_bigdig(const BcNum *restrict n, BcBigDig *result);
 void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result);
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
 
 #if BC_ENABLE_EXTRA_MATH
-BcStatus bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
+void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
                       struct BcRNG *restrict rng);
-BcStatus bc_num_rng(const BcNum *restrict n, struct BcRNG *rng);
-BcStatus bc_num_createFromRNG(BcNum *restrict n, struct BcRNG *rng);
+void bc_num_rng(const BcNum *restrict n, struct BcRNG *rng);
+void bc_num_createFromRNG(BcNum *restrict n, struct BcRNG *rng);
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcStatus bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 #if BC_ENABLE_EXTRA_MATH
-BcStatus bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
-BcStatus bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
+void bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
-BcStatus bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale);
-BcStatus bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
+void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale);
+void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
 size_t bc_num_addReq(const BcNum* a, const BcNum* b, size_t scale);
 
@@ -209,17 +206,17 @@ void bc_num_truncate(BcNum *restrict n, size_t places);
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
 
 #if DC_ENABLED
-BcStatus bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
+void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 #endif // DC_ENABLED
 
 void bc_num_one(BcNum *restrict n);
 ssize_t bc_num_cmpZero(const BcNum *n);
 
-BcStatus bc_num_parse(BcNum *restrict n, const char *restrict val,
+void bc_num_parse(BcNum *restrict n, const char *restrict val,
                       BcBigDig base, bool letter);
-BcStatus bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
+void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
 #if DC_ENABLED
-BcStatus bc_num_stream(BcNum *restrict n, BcBigDig base);
+void bc_num_stream(BcNum *restrict n, BcBigDig base);
 #endif // DC_ENABLED
 
 #if BC_DEBUG_CODE

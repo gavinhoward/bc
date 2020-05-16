@@ -39,7 +39,7 @@
 #include <status.h>
 #include <vm.h>
 
-BcStatus bc_args(int argc, char *argv[]);
+void bc_args(int argc, char *argv[]);
 
 extern const char* const bc_args_env_name;
 

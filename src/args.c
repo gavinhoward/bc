@@ -77,29 +77,25 @@ static void bc_args_exprs(BcVec *exprs, const char *str) {
 	bc_vec_concat(exprs, "\n");
 }
 
-static BcStatus bc_args_file(BcVec *exprs, const char *file) {
+static void bc_args_file(BcVec *exprs, const char *file) {
 
-	BcStatus s;
 	char *buf;
 
 	vm.file = file;
 
-	s = bc_read_file(file, &buf);
-	if (BC_ERR(s)) return s;
-
+	bc_read_file(file, &buf);
 	bc_args_exprs(exprs, buf);
 	free(buf);
-
-	return s;
 }
 
-BcStatus bc_args(int argc, char *argv[]) {
+void bc_args(int argc, char *argv[]) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	int c;
 	size_t i;
 	bool do_exit = false, version = false;
 	BcOpt opts;
+
+	BC_SIG_ASSERT_LOCKED;
 
 	bc_opt_init(&opts, argv);
 
@@ -121,8 +117,7 @@ BcStatus bc_args(int argc, char *argv[]) {
 
 			case 'f':
 			{
-				s = bc_args_file(&vm.exprs, opts.optarg);
-				if (BC_ERR(s)) return s;
+				bc_args_file(&vm.exprs, opts.optarg);
 				break;
 			}
 
@@ -198,22 +193,24 @@ BcStatus bc_args(int argc, char *argv[]) {
 			}
 #endif // DC_ENABLED
 
-			// An error message has been printed, but we should exit.
+			// We shouldn't get here because bc_opt_error()/bc_vm_error() should
+			// longjmp() out.
 			case '?':
 			case ':':
 			default:
 			{
-				return BC_STATUS_ERROR_FATAL;
+#ifndef NDEBUG
+				assert(false);
+#endif // NDEBUG
+				return;
 			}
 		}
 	}
 
 	if (version) bc_vm_info(NULL);
-	if (do_exit) exit((int) s);
+	if (do_exit) exit((int) vm.status);
 	if (vm.exprs.len > 1 || !BC_IS_BC) vm.flags |= BC_FLAG_Q;
 
 	for (i = opts.optind; i < (size_t) argc; ++i)
 		bc_vec_push(&vm.files, argv + i);
-
-	return s;
 }

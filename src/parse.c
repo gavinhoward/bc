@@ -117,13 +117,15 @@ void bc_parse_number(BcParse *p) {
 #endif // BC_ENABLE_EXTRA_MATH
 }
 
-BcStatus bc_parse_text(BcParse *p, const char *text) {
+void bc_parse_text(BcParse *p, const char *text) {
 	// Make sure the pointer isn't invalidated.
 	p->func = bc_vec_item(&p->prog->fns, p->fidx);
-	return bc_lex_text(&p->l, text);
+	bc_lex_text(&p->l, text);
 }
 
-BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
+void bc_parse_reset(BcParse *p) {
+
+	BC_SIG_ASSERT_LOCKED;
 
 	if (p->fidx != BC_PROG_MAIN) {
 		bc_func_reset(p->func);
@@ -143,7 +145,7 @@ BcStatus bc_parse_reset(BcParse *p, BcStatus s) {
 	}
 #endif // BC_ENABLED
 
-	return bc_program_reset(p->prog, s);
+	bc_program_reset(p->prog);
 }
 
 void bc_parse_free(BcParse *p) {

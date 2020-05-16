@@ -42,11 +42,11 @@
 #include <lex.h>
 #include <parse.h>
 
-int dc_main(int argc, char **argv);
+void dc_main(int argc, char **argv);
 
 extern const char dc_help[];
 
-BcStatus dc_lex_token(BcLex *l);
+void dc_lex_token(BcLex *l);
 bool dc_lex_negCommand(BcLex *l);
 
 #if BC_ENABLE_SIGNALS
@@ -60,8 +60,8 @@ extern const size_t dc_lex_regs_len;
 extern const uint8_t dc_lex_tokens[];
 extern const uint8_t dc_parse_insts[];
 
-BcStatus dc_parse_parse(BcParse *p);
-BcStatus dc_parse_expr(BcParse *p, uint8_t flags);
+void dc_parse_parse(BcParse *p);
+void dc_parse_expr(BcParse *p, uint8_t flags);
 
 #endif // DC_ENABLED
 

@@ -42,6 +42,10 @@
 
 #include <signal.h>
 
+#if BC_ENABLE_SIGNALS
+#include <setjmp.h>
+#endif // BC_ENABLE_SIGNALS
+
 #ifndef _WIN32
 
 #include <sys/types.h>
@@ -63,22 +67,36 @@
 #include <bc.h>
 
 #if BC_ENABLE_SIGNALS
-static void bc_vm_sig(int sig) {
+void bc_vm_sigjmp(bool pop) {
 
-	int err = errno;
+	assert(vm.jmp_bufs.len - pop);
+
+	if (pop) bc_vec_pop(&vm.jmp_bufs);
+
+	siglongjmp(*((sigjmp_buf*) bc_vec_top(&vm.jmp_bufs)), 1);
+}
+
+static void bc_vm_sig(int sig) {
 
 	if (sig == SIGINT) {
 
 		size_t n = vm.siglen;
+		int err = errno;
 
 		if (BC_NO_ERR(write(STDERR_FILENO, vm.sigmsg, n) == (ssize_t) n))
 			vm.sig += 1;
 
 		if (vm.sig == BC_SIGTERM_VAL) vm.sig = 1;
+
+		errno = err;
 	}
 	else vm.sig = BC_SIGTERM_VAL;
 
-	errno = err;
+	assert(vm.jmp_bufs.len);
+
+	vm.status = BC_STATUS_SIGNAL;
+
+	if (!vm.sig_lock) bc_vm_sigjmp(false);
 }
 #endif // BC_ENABLE_SIGNALS
 
@@ -93,7 +111,7 @@ void bc_vm_info(const char* const help) {
 	}
 }
 
-BcStatus bc_vm_error(BcError e, size_t line, ...) {
+void bc_vm_error(BcError e, size_t line, ...) {
 
 	va_list args;
 	uchar id = bc_err_ids[e];
@@ -108,9 +126,11 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 			id = UCHAR_MAX;
 			err_type = vm.err_ids[BC_ERR_IDX_WARN];
 		}
-		else return BC_STATUS_SUCCESS;
+		else return;
 	}
 #endif // BC_ENABLED
+
+	BC_SIG_LOCK;
 
 	// Make sure all of stdout is written first.
 	fflush(stdout);
@@ -146,16 +166,19 @@ BcStatus bc_vm_error(BcError e, size_t line, ...) {
 	fputs("\n\n", stderr);
 	fflush(stderr);
 
-	return (BcStatus) (id + 1);
+	vm.status = (BcStatus) (id + 1);
+
+	bc_vm_sigjmp(false);
 }
 
-static BcStatus bc_vm_envArgs(const char* const env_args_name) {
+static void bc_vm_envArgs(const char* const env_args_name) {
 
-	BcStatus s;
 	char *env_args = getenv(env_args_name), *buf, *start;
 	char instr = '\0';
 
-	if (env_args == NULL) return BC_STATUS_SUCCESS;
+	BC_SIG_ASSERT_LOCKED;
+
+	if (env_args == NULL) return;
 
 	start = buf = vm.env_args_buffer = bc_vm_strdup(env_args);
 
@@ -193,7 +216,7 @@ static BcStatus bc_vm_envArgs(const char* const env_args_name) {
 				buf += 1;
 				start = buf;
 			}
-			else if (instr) return bc_vm_error(BC_ERROR_FATAL_OPTION, 0, start);
+			else if (instr) bc_vm_error(BC_ERROR_FATAL_OPTION, 0, start);
 		}
 		else buf += 1;
 	}
@@ -202,9 +225,7 @@ static BcStatus bc_vm_envArgs(const char* const env_args_name) {
 	buf = NULL;
 	bc_vec_push(&vm.env_args, &buf);
 
-	s = bc_args((int) vm.env_args.len - 1, bc_vec_item(&vm.env_args, 0));
-
-	return s;
+	bc_args((int) vm.env_args.len - 1, bc_vec_item(&vm.env_args, 0));
 }
 
 static size_t bc_vm_envLen(const char *var) {
@@ -229,6 +250,8 @@ static size_t bc_vm_envLen(const char *var) {
 }
 
 void bc_vm_shutdown(void) {
+
+	BC_SIG_ASSERT_LOCKED;
 
 #if BC_ENABLE_NLS
 	if (vm.catalog != BC_VM_INVALID_CATALOG) catclose(vm.catalog);
@@ -259,9 +282,9 @@ void bc_vm_shutdown(void) {
 }
 
 static void bc_vm_exit(BcError e) {
-	BcStatus s = bc_vm_err(e);
+	bc_vm_err(e);
 	bc_vm_shutdown();
-	exit((int) s);
+	exit((int) vm.status);
 }
 
 size_t bc_vm_arraySize(size_t n, size_t size) {
@@ -279,20 +302,41 @@ size_t bc_vm_growSize(size_t a, size_t b) {
 }
 
 void* bc_vm_malloc(size_t n) {
-	void* ptr = malloc(n);
+
+	void* ptr;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	ptr = malloc(n);
+
 	if (BC_ERR(ptr == NULL)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+
 	return ptr;
 }
 
 void* bc_vm_realloc(void *ptr, size_t n) {
-	void* temp = realloc(ptr, n);
+
+	void* temp;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	temp = realloc(ptr, n);
+
 	if (BC_ERR(temp == NULL)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+
 	return temp;
 }
 
 char* bc_vm_strdup(const char *str) {
-	char *s = strdup(str);
+
+	char *s;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	s = strdup(str);
+
 	if (BC_ERR(!s)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+
 	return s;
 }
 
@@ -300,6 +344,8 @@ size_t bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
 	int ret;
+
+	BC_SIG_LOCK;
 
 	va_start(args, fmt);
 	ret = vfprintf(stdout, fmt, args);
@@ -309,20 +355,28 @@ size_t bc_vm_printf(const char *fmt, ...) {
 
 	vm.nchars = 0;
 
+	BC_SIG_UNLOCK;
+
 	return (size_t) ret;
 }
 
 void bc_vm_puts(const char *str, FILE *restrict f) {
+	BC_SIG_LOCK;
 	if (BC_IO_ERR(fputs(str, f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	BC_SIG_UNLOCK;
 }
 
 void bc_vm_putchar(int c) {
+	BC_SIG_LOCK;
 	if (BC_IO_ERR(fputc(c, stdout), stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 	vm.nchars = (c == '\n' ? 0 : vm.nchars + 1);
+	BC_SIG_UNLOCK;
 }
 
 void bc_vm_fflush(FILE *restrict f) {
+	BC_SIG_LOCK;
 	if (BC_IO_ERR(fflush(f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	BC_SIG_UNLOCK;
 }
 
 static void bc_vm_clean(void) {
@@ -390,17 +444,13 @@ static void bc_vm_clean(void) {
 	}
 }
 
-static BcStatus bc_vm_process(const char *text, bool is_stdin) {
+static void bc_vm_process(const char *text, bool is_stdin) {
 
-	BcStatus s;
+	BC_SETJMP(err);
 
-	s = bc_parse_text(&vm.prs, text);
-	if (BC_ERR(s)) goto err;
+	bc_parse_text(&vm.prs, text);
 
-	while (vm.prs.l.t != BC_LEX_EOF) {
-		s = vm.parse(&vm.prs);
-		if (BC_ERR(s)) goto err;
-	}
+	while (vm.prs.l.t != BC_LEX_EOF) vm.parse(&vm.prs);
 
 #if BC_ENABLED
 	if (BC_IS_BC) {
@@ -417,56 +467,69 @@ static BcStatus bc_vm_process(const char *text, bool is_stdin) {
 	}
 #endif // BC_ENABLED
 
-	s = bc_program_exec(&vm.prog);
+	bc_program_exec(&vm.prog);
 	if (BC_I) bc_vm_fflush(stdout);
 
 err:
+	BC_SIG_LOCK;
+
 	bc_vm_clean();
-	return s == BC_STATUS_QUIT || !BC_I || !is_stdin ? s : BC_STATUS_SUCCESS;
+
+	vm.status = vm.status == BC_STATUS_QUIT || !BC_I || !is_stdin ?
+	    vm.status : BC_STATUS_SUCCESS;
+
+	BC_LONGJMP_CONT;
 }
 
-static BcStatus bc_vm_file(const char *file) {
+static void bc_vm_file(const char *file) {
 
-	BcStatus s;
-	char *data;
+	char *data = NULL;
 
 	bc_lex_file(&vm.prs.l, file);
-	s = bc_read_file(file, &data);
-	if (BC_ERR(s)) return s;
 
-	s = bc_vm_process(data, false);
-	if (BC_ERR(s)) goto err;
+	BC_SIG_LOCK;
+	BC_SETJMP_LOCKED(err);
+
+	bc_read_file(file, &data);
+
+	BC_SIG_UNLOCK;
+
+	bc_vm_process(data, false);
 
 #if BC_ENABLED
 	if (BC_IS_BC && BC_ERR(BC_PARSE_NO_EXEC(&vm.prs)))
-		s = bc_parse_err(&vm.prs, BC_ERROR_PARSE_BLOCK);
+		bc_parse_err(&vm.prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 
 err:
+	BC_SIG_LOCK;
 	free(data);
-	return s;
+	BC_LONGJMP_CONT;
 }
 
-static BcStatus bc_vm_stdin(void) {
+static void bc_vm_stdin(void) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
+	BcStatus s;
 	BcVec buf, buffer;
 	size_t string = 0;
 	bool comment = false, done = false;
 
 	bc_lex_file(&vm.prs.l, bc_program_stdin_name);
 
+	BC_SIG_LOCK;
 	bc_vec_init(&buffer, sizeof(uchar), NULL);
 	bc_vec_init(&buf, sizeof(uchar), NULL);
 	bc_vec_pushByte(&buffer, '\0');
+	BC_SETJMP_LOCKED(err);
+	BC_SIG_UNLOCK;
+
 	s = bc_read_line(&buf, ">>> ");
 
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	for (; !BC_STATUS_IS_ERROR(s) && buf.len > 1 && BC_NO_SIG &&
-	       s != BC_STATUS_SIGNAL; s = bc_read_line(&buf, ">>> "))
+	for (; buf.len > 1; s = bc_read_line(&buf, ">>> "))
 	{
 		char c2, *str = buf.v;
 		size_t i, len = buf.len - 1;
@@ -507,44 +570,37 @@ static BcStatus bc_vm_stdin(void) {
 		if (vm.history.stdin_has_data) continue;
 #endif // BC_ENABLE_HISTORY
 
-		s = bc_vm_process(buffer.v, true);
-		if (BC_ERR(s)) goto err;
-
+		bc_vm_process(buffer.v, true);
 		bc_vec_empty(&buffer);
 
 		if (done) break;
 	}
 
-	if (BC_ERR(s && s != BC_STATUS_EOF)) goto err;
-	else if (BC_NO_ERR(!s) && BC_SIG) s = BC_STATUS_SIGNAL;
-	else if (!BC_STATUS_IS_ERROR(s)) {
+	if (!BC_STATUS_IS_ERROR(s)) {
 		if (BC_ERR(comment))
-			s = bc_parse_err(&vm.prs, BC_ERROR_PARSE_COMMENT);
+			bc_parse_err(&vm.prs, BC_ERROR_PARSE_COMMENT);
 		else if (BC_ERR(string))
-			s = bc_parse_err(&vm.prs, BC_ERROR_PARSE_STRING);
+			bc_parse_err(&vm.prs, BC_ERROR_PARSE_STRING);
 #if BC_ENABLED
 		else if (BC_IS_BC && BC_ERR(BC_PARSE_NO_EXEC(&vm.prs)))
-			s = bc_parse_err(&vm.prs, BC_ERROR_PARSE_BLOCK);
+			bc_parse_err(&vm.prs, BC_ERROR_PARSE_BLOCK);
 #endif // BC_ENABLED
 	}
 
 err:
+	BC_SIG_LOCK;
 	bc_vec_free(&buf);
 	bc_vec_free(&buffer);
-	return s;
+	BC_LONGJMP_CONT;
 }
 
 #if BC_ENABLED
-static BcStatus bc_vm_load(const char *name, const char *text) {
-
-	BcStatus s;
+static void bc_vm_load(const char *name, const char *text) {
 
 	bc_lex_file(&vm.prs.l, name);
-	s = bc_parse_text(&vm.prs, text);
+	bc_parse_text(&vm.prs, text);
 
-	while (BC_NO_ERR(!s) && vm.prs.l.t != BC_LEX_EOF) s = vm.parse(&vm.prs);
-
-	return s;
+	while (vm.prs.l.t != BC_LEX_EOF) vm.parse(&vm.prs);
 }
 #endif // BC_ENABLED
 
@@ -602,51 +658,41 @@ static void bc_vm_gettext(void) {
 #endif // BC_ENABLE_NLS
 }
 
-static BcStatus bc_vm_exec(const char* env_exp_exit) {
+static void bc_vm_exec(const char* env_exp_exit) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	size_t i;
 	bool has_file = false;
 
 #if BC_ENABLED
 	if (BC_IS_BC && (vm.flags & BC_FLAG_L)) {
 
-		s = bc_vm_load(bc_lib_name, bc_lib);
-		if (BC_ERR(s)) return s;
+		bc_vm_load(bc_lib_name, bc_lib);
 
 #if BC_ENABLE_EXTRA_MATH
-		if (!BC_IS_POSIX) {
-			s = bc_vm_load(bc_lib2_name, bc_lib2);
-			if (BC_ERR(s)) return s;
-		}
+		if (!BC_IS_POSIX) bc_vm_load(bc_lib2_name, bc_lib2);
 #endif // BC_ENABLE_EXTRA_MATH
 	}
 #endif // BC_ENABLED
 
 	if (vm.exprs.len) {
 		bc_lex_file(&vm.prs.l, bc_program_exprs_name);
-		s = bc_vm_process(vm.exprs.v, false);
-		if (BC_ERR(s) || getenv(env_exp_exit) != NULL) return s;
+		bc_vm_process(vm.exprs.v, false);
+		if (getenv(env_exp_exit) != NULL) return;
 	}
 
-	for (i = 0; BC_NO_ERR(!s) && i < vm.files.len; ++i) {
+	for (i = 0; i < vm.files.len; ++i) {
 		char *path = *((char**) bc_vec_item(&vm.files, i));
 		if (!strcmp(path, "")) continue;
 		has_file = true;
-		s = bc_vm_file(path);
+		bc_vm_file(path);
 	}
 
-	if (BC_ERR(s)) return s;
-
-	if (BC_IS_BC || !has_file) s = bc_vm_stdin();
-
-	return s;
+	if (BC_IS_BC || !has_file) bc_vm_stdin();
 }
 
-BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
-                    const char* const env_args, const char* env_exp_exit)
+void  bc_vm_boot(int argc, char *argv[], const char *env_len,
+                 const char* const env_args, const char* env_exp_exit)
 {
-	BcStatus s;
 	int ttyin, ttyout, ttyerr;
 #if BC_ENABLE_SIGNALS
 	struct sigaction sa;
@@ -683,19 +729,20 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 	bc_history_init(&vm.history);
 #endif // BC_ENABLE_HISTORY
 
+	BC_SETJMP_LOCKED(exit);
+
 #if BC_ENABLED
 	if (BC_IS_BC) vm.flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
 #endif // BC_ENABLED
 
-	s = bc_vm_envArgs(env_args);
-	if (BC_ERR(s)) goto exit;
-
-	s = bc_args(argc, argv);
-	if (BC_ERR(s)) goto exit;
+	bc_vm_envArgs(env_args);
+	bc_args(argc, argv);
 
 	ttyin = isatty(STDIN_FILENO);
 	ttyout = isatty(STDOUT_FILENO);
 	ttyerr = isatty(STDERR_FILENO);
+
+	BC_SIG_UNLOCK;
 
 	vm.flags |= ttyin ? BC_FLAG_TTYIN : 0;
 	vm.flags |= (ttyin != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
@@ -716,9 +763,10 @@ BcStatus bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	if (BC_IS_BC && BC_I && !(vm.flags & BC_FLAG_Q)) bc_vm_info(NULL);
 
-	s = bc_vm_exec(env_exp_exit);
+	bc_vm_exec(env_exp_exit);
 
 exit:
+	BC_SIG_LOCK;
 	bc_vm_shutdown();
-	return !BC_STATUS_IS_ERROR(s) ? BC_STATUS_SUCCESS : s;
+	BC_LONGJMP_CONT;
 }

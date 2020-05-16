@@ -38,6 +38,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
 
 #include <status.h>
 #include <parse.h>
@@ -45,74 +46,56 @@
 #include <program.h>
 #include <vm.h>
 
-static BcStatus dc_parse_register(BcParse *p, bool var) {
+static void dc_parse_register(BcParse *p, bool var) {
 
-	BcStatus s;
-
-	s = bc_lex_next(&p->l);
-	if (BC_ERR(s)) return s;
-	if (p->l.t != BC_LEX_NAME) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+	bc_lex_next(&p->l);
+	if (p->l.t != BC_LEX_NAME) bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	bc_parse_pushName(p, p->l.str.v, var);
-
-	return s;
 }
 
-static BcStatus dc_parse_string(BcParse *p) {
+static void dc_parse_string(BcParse *p) {
 
 	BcFunc f;
 
 	bc_program_addFunc(p->prog, &f, bc_func_main);
 	bc_parse_string(p);
 
-	return bc_lex_next(&p->l);
+	bc_lex_next(&p->l);
 }
 
-static BcStatus dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
-
-	BcStatus s;
+static void dc_parse_mem(BcParse *p, uchar inst, bool name, bool store) {
 
 	bc_parse_push(p, inst);
 
-	if (name) {
-		s = dc_parse_register(p, inst != BC_INST_ARRAY_ELEM);
-		if (BC_ERR(s)) return s;
-	}
+	if (name) dc_parse_register(p, inst != BC_INST_ARRAY_ELEM);
 
 	if (store) {
 		bc_parse_push(p, BC_INST_SWAP);
 		bc_parse_push(p, BC_INST_ASSIGN_NO_VAL);
 	}
 
-	return bc_lex_next(&p->l);
+	bc_lex_next(&p->l);
 }
 
-static BcStatus dc_parse_cond(BcParse *p, uchar inst) {
-
-	BcStatus s;
+static void dc_parse_cond(BcParse *p, uchar inst) {
 
 	bc_parse_push(p, inst);
 	bc_parse_push(p, BC_INST_EXEC_COND);
 
-	s = dc_parse_register(p, true);
-	if (BC_ERR(s)) return s;
+	dc_parse_register(p, true);
 
-	s = bc_lex_next(&p->l);
-	if (BC_ERR(s)) return s;
+	bc_lex_next(&p->l);
 
 	if (p->l.t == BC_LEX_KW_ELSE) {
-		s = dc_parse_register(p, true);
-		if (BC_ERR(s)) return s;
-		s = bc_lex_next(&p->l);
+		dc_parse_register(p, true);
+		bc_lex_next(&p->l);
 	}
 	else bc_parse_pushIndex(p, SIZE_MAX);
-
-	return s;
 }
 
-static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
+static void dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	uchar inst;
 	bool assign, get_token = false;
 
@@ -126,20 +109,20 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_OP_REL_GT:
 		{
 			inst = (uchar) (t - BC_LEX_OP_REL_EQ + BC_INST_REL_EQ);
-			s = dc_parse_cond(p, inst);
+			dc_parse_cond(p, inst);
 			break;
 		}
 
 		case BC_LEX_SCOLON:
 		case BC_LEX_COLON:
 		{
-			s = dc_parse_mem(p, BC_INST_ARRAY_ELEM, true, t == BC_LEX_COLON);
+			dc_parse_mem(p, BC_INST_ARRAY_ELEM, true, t == BC_LEX_COLON);
 			break;
 		}
 
 		case BC_LEX_STR:
 		{
-			s = dc_parse_string(p);
+			dc_parse_string(p);
 			break;
 		}
 
@@ -151,8 +134,7 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 				break;
 			}
 
-			s = bc_lex_next(&p->l);
-			if (BC_ERR(s)) return s;
+			bc_lex_next(&p->l);
 		}
 		// Fallthrough.
 		case BC_LEX_NUMBER:
@@ -168,7 +150,7 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_KW_READ:
 		{
 			if (BC_ERR(flags & BC_PARSE_NOREAD))
-				s = bc_parse_err(p, BC_ERROR_EXEC_REC_READ);
+				bc_parse_err(p, BC_ERROR_EXEC_REC_READ);
 			else bc_parse_push(p, BC_INST_READ);
 			get_token = true;
 			break;
@@ -179,7 +161,7 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		{
 			assign = t == BC_LEX_OP_ASSIGN;
 			inst = assign ? BC_INST_VAR : BC_INST_PUSH_TO_VAR;
-			s = dc_parse_mem(p, inst, true, assign);
+			dc_parse_mem(p, inst, true, assign);
 			break;
 		}
 
@@ -187,7 +169,7 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		case BC_LEX_LOAD_POP:
 		{
 			inst = t == BC_LEX_LOAD_POP ? BC_INST_PUSH_VAR : BC_INST_LOAD;
-			s = dc_parse_mem(p, inst, true, false);
+			dc_parse_mem(p, inst, true, false);
 			break;
 		}
 
@@ -199,34 +181,31 @@ static BcStatus dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 #endif // BC_ENABLE_EXTRA_MATH
 		{
 			inst = (uchar) (t - BC_LEX_STORE_IBASE + BC_INST_IBASE);
-			s = dc_parse_mem(p, inst, false, true);
+			dc_parse_mem(p, inst, false, true);
 			break;
 		}
 
 		default:
 		{
-			s = bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+			bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 			get_token = true;
 			break;
 		}
 	}
 
-	if (BC_NO_ERR(!s) && get_token) s = bc_lex_next(&p->l);
-
-	return s;
+	if (get_token) bc_lex_next(&p->l);
 }
 
-BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
+void dc_parse_expr(BcParse *p, uint8_t flags) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	BcInst inst;
 	BcLexType t;
 	bool have_expr = false, need_expr = (flags & BC_PARSE_NOREAD) != 0;
 
-	while (BC_NO_SIG && BC_NO_ERR(!s) && (t = p->l.t) != BC_LEX_EOF) {
+	while ((t = p->l.t) != BC_LEX_EOF) {
 
 		if (t == BC_LEX_NLINE) {
-			s = bc_lex_next(&p->l);
+			bc_lex_next(&p->l);
 			continue;
 		}
 
@@ -234,35 +213,31 @@ BcStatus dc_parse_expr(BcParse *p, uint8_t flags) {
 
 		if (inst != BC_INST_INVALID) {
 			bc_parse_push(p, inst);
-			s = bc_lex_next(&p->l);
+			bc_lex_next(&p->l);
 		}
-		else s = dc_parse_token(p, t, flags);
+		else dc_parse_token(p, t, flags);
 
 		have_expr = true;
 	}
 
-	if (BC_NO_ERR(!s)) {
-		if (BC_SIG) s = BC_STATUS_SIGNAL;
-		else if (BC_ERR(need_expr && !have_expr))
-			s = bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
-		else if (p->l.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
-			bc_parse_push(p, BC_INST_POP_EXEC);
-	}
-
-	return s;
+	if (BC_ERR(need_expr && !have_expr))
+		bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
+	else if (p->l.t == BC_LEX_EOF && (flags & BC_PARSE_NOCALL))
+		bc_parse_push(p, BC_INST_POP_EXEC);
 }
 
-BcStatus dc_parse_parse(BcParse *p) {
-
-	BcStatus s;
+void dc_parse_parse(BcParse *p) {
 
 	assert(p != NULL);
 
-	if (BC_ERR(p->l.t == BC_LEX_EOF)) s = bc_parse_err(p, BC_ERROR_PARSE_EOF);
-	else s = dc_parse_expr(p, 0);
+	BC_SETJMP(exit);
 
-	if (BC_ERR(s) || BC_SIG) s = bc_parse_reset(p, s);
+	if (BC_ERR(p->l.t == BC_LEX_EOF)) bc_parse_err(p, BC_ERROR_PARSE_EOF);
+	else dc_parse_expr(p, 0);
 
-	return s;
+exit:
+	BC_SIG_LOCK;
+	if (BC_ERR(vm.status)) bc_parse_reset(p);
+	BC_LONGJMP_CONT;
 }
 #endif // DC_ENABLED

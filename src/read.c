@@ -78,7 +78,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 	}
 #endif // BC_ENABLE_PROMPT
 
-	while (BC_NO_SIG && c != '\n') {
+	while (c != '\n') {
 
 		i = fgetc(stdin);
 
@@ -114,7 +114,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_pushByte(vec, '\0');
 
-	return BC_SIG ? BC_STATUS_SIGNAL : BC_STATUS_SUCCESS;
+	return BC_STATUS_SUCCESS;
 }
 
 BcStatus bc_read_line(BcVec *vec, const char *prompt) {
@@ -131,20 +131,21 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	s = bc_read_chars(vec, prompt);
 #endif // BC_ENABLE_HISTORY
 
-	if (BC_ERR(s && s != BC_STATUS_EOF)) return s;
 	if (BC_ERR(bc_read_binary(vec->v, vec->len - 1)))
-		return bc_vm_verr(BC_ERROR_FATAL_BIN_FILE, bc_program_stdin_name);
+		bc_vm_verr(BC_ERROR_FATAL_BIN_FILE, bc_program_stdin_name);
 
 	return s;
 }
 
-BcStatus bc_read_file(const char *path, char **buf) {
+void bc_read_file(const char *path, char **buf) {
 
 	BcError e = BC_ERROR_FATAL_IO_ERR;
 	FILE *f;
 	size_t size, read;
 	long res;
 	struct stat pstat;
+
+	BC_SIG_ASSERT_LOCKED;
 
 	assert(path != NULL);
 
@@ -177,11 +178,11 @@ BcStatus bc_read_file(const char *path, char **buf) {
 
 	fclose(f);
 
-	return BC_STATUS_SUCCESS;
+	return;
 
 read_err:
 	free(*buf);
 malloc_err:
 	fclose(f);
-	return bc_vm_verr(e, path);
+	bc_vm_verr(e, path);
 }

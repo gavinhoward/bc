@@ -47,7 +47,7 @@ bool dc_lex_negCommand(BcLex *l) {
 	return !BC_LEX_NUM_CHAR(c, false, false);
 }
 
-static BcStatus dc_lex_register(BcLex *l) {
+static void dc_lex_register(BcLex *l) {
 
 	if (DC_X && isspace(l->buf[l->i - 1])) {
 
@@ -57,7 +57,7 @@ static BcStatus dc_lex_register(BcLex *l) {
 		c = l->buf[l->i];
 
 		if (!isalnum(c) && c != '_')
-			return bc_lex_verr(l, BC_ERROR_PARSE_CHAR, c);
+			bc_lex_verr(l, BC_ERROR_PARSE_CHAR, c);
 
 		l->i += 1;
 		bc_lex_name(l);
@@ -68,11 +68,9 @@ static BcStatus dc_lex_register(BcLex *l) {
 		bc_vec_pushByte(&l->str, '\0');
 		l->t = BC_LEX_NAME;
 	}
-
-	return BC_STATUS_SUCCESS;
 }
 
-static BcStatus dc_lex_string(BcLex *l) {
+static void dc_lex_string(BcLex *l) {
 
 	size_t depth = 1, nls = 0, i = l->i;
 	char c;
@@ -98,31 +96,31 @@ static BcStatus dc_lex_string(BcLex *l) {
 
 	if (BC_ERR(c == '\0' && depth)) {
 		l->i = i;
-		return bc_lex_err(l, BC_ERROR_PARSE_STRING);
+		bc_lex_err(l, BC_ERROR_PARSE_STRING);
 	}
 
 	bc_vec_pushByte(&l->str, '\0');
 
 	l->i = i;
 	l->line += nls;
-
-	return BC_STATUS_SUCCESS;
 }
 
-BcStatus dc_lex_token(BcLex *l) {
+void dc_lex_token(BcLex *l) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	char c = l->buf[l->i++], c2;
 	size_t i;
 
 	for (i = 0; i < dc_lex_regs_len; ++i) {
-		if (l->last == dc_lex_regs[i]) return dc_lex_register(l);
+		if (l->last == dc_lex_regs[i]) {
+			dc_lex_register(l);
+			return;
+		}
 	}
 
 	if (c >= '"' && c <= '~' &&
 	    (l->t = dc_lex_tokens[(c - '"')]) != BC_LEX_INVALID)
 	{
-		return s;
+		return;
 	}
 
 	// This is the workhorse of the lexer.
@@ -147,7 +145,7 @@ BcStatus dc_lex_token(BcLex *l) {
 			if (c2 == '=') l->t = BC_LEX_OP_REL_NE;
 			else if (c2 == '<') l->t = BC_LEX_OP_REL_LE;
 			else if (c2 == '>') l->t = BC_LEX_OP_REL_GE;
-			else return bc_lex_invalidChar(l, c);
+			else bc_lex_invalidChar(l, c);
 
 			l->i += 1;
 			break;
@@ -163,8 +161,8 @@ BcStatus dc_lex_token(BcLex *l) {
 		{
 			c2 = l->buf[l->i];
 			if (BC_NO_ERR(BC_LEX_NUM_CHAR(c2, true, false)))
-				s = bc_lex_number(l, c);
-			else s = bc_lex_invalidChar(l, c);
+				bc_lex_number(l, c);
+			else bc_lex_invalidChar(l, c);
 			break;
 		}
 
@@ -185,23 +183,21 @@ BcStatus dc_lex_token(BcLex *l) {
 		case 'E':
 		case 'F':
 		{
-			s = bc_lex_number(l, c);
+			bc_lex_number(l, c);
 			break;
 		}
 
 		case '[':
 		{
-			s = dc_lex_string(l);
+			dc_lex_string(l);
 			break;
 		}
 
 		default:
 		{
-			s = bc_lex_invalidChar(l, c);
+			bc_lex_invalidChar(l, c);
 			break;
 		}
 	}
-
-	return s;
 }
 #endif // DC_ENABLED

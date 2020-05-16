@@ -64,8 +64,8 @@ void bc_const_free(void *constant) {
 }
 
 #if BC_ENABLED
-BcStatus bc_func_insert(BcFunc *f, BcProgram *p, char *name,
-                        BcType type, size_t line)
+void bc_func_insert(BcFunc *f, BcProgram *p, char *name,
+                    BcType type, size_t line)
 {
 	BcLoc a;
 	size_t i, idx;
@@ -78,7 +78,7 @@ BcStatus bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 		BcLoc *id = bc_vec_item(&f->autos, i);
 		if (BC_ERR(idx == id->loc && type == (BcType) id->idx)) {
 			const char *array = type == BC_TYPE_ARRAY ? "[]" : "";
-			return bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name, array);
+			bc_vm_error(BC_ERROR_PARSE_DUP_LOCAL, line, name, array);
 		}
 	}
 
@@ -86,8 +86,6 @@ BcStatus bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 	a.idx = type;
 
 	bc_vec_push(&f->autos, &a);
-
-	return BC_STATUS_SUCCESS;
 }
 #endif // BC_ENABLED
 

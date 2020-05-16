@@ -45,7 +45,7 @@
 #include <lex.h>
 #include <parse.h>
 
-int bc_main(int argc, char **argv);
+void bc_main(int argc, char **argv);
 
 extern const char bc_help[];
 extern const char bc_lib[];
@@ -72,7 +72,7 @@ typedef struct BcLexKeyword {
 extern const BcLexKeyword bc_lex_kws[];
 extern const size_t bc_lex_kws_len;
 
-BcStatus bc_lex_token(BcLex *l);
+void bc_lex_token(BcLex *l);
 
 #define BC_PARSE_TOP_FLAG_PTR(p) ((uint16_t*) bc_vec_top(&(p)->flags))
 #define BC_PARSE_TOP_FLAG(p) (*(BC_PARSE_TOP_FLAG_PTR(p)))
@@ -147,10 +147,17 @@ BcStatus bc_lex_token(BcLex *l);
 // the first in the expr enum. Note: This only works for binary operators.
 #define BC_PARSE_TOKEN_INST(t) ((uchar) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
-BcStatus bc_parse_expr(BcParse *p, uint8_t flags);
+typedef enum BcParseStatus {
 
-BcStatus bc_parse_parse(BcParse *p);
-BcStatus bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
+	BC_PARSE_STATUS_SUCCESS,
+	BC_PARSE_STATUS_EMPTY_EXPR,
+
+} BcParseStatus;
+
+void bc_parse_expr(BcParse *p, uint8_t flags);
+
+void bc_parse_parse(BcParse *p);
+void bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
 
 // This is necessary to clear up for if statements at the end of files.
 void bc_parse_noElse(BcParse *p);

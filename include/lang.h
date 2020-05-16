@@ -297,8 +297,8 @@ typedef enum BcType {
 struct BcProgram;
 
 void bc_func_init(BcFunc *f, const char* name);
-BcStatus bc_func_insert(BcFunc *f, struct BcProgram* p, char* name,
-                        BcType type, size_t line);
+void bc_func_insert(BcFunc *f, struct BcProgram* p, char* name,
+                    BcType type, size_t line);
 void bc_func_reset(BcFunc *f);
 void bc_func_free(void *func);
 

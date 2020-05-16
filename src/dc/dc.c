@@ -41,9 +41,7 @@
 #include <dc.h>
 #include <vm.h>
 
-int dc_main(int argc, char **argv) {
-
-	BcStatus s;
+void dc_main(int argc, char **argv) {
 
 	vm.read_ret = BC_INST_POP_EXEC;
 	vm.help = dc_help;
@@ -56,8 +54,6 @@ int dc_main(int argc, char **argv) {
 	vm.parse = dc_parse_parse;
 	vm.expr = dc_parse_expr;
 
-	s = bc_vm_boot(argc, argv, "DC_LINE_LENGTH", "DC_ENV_ARGS", "DC_EXPR_EXIT");
-
-	return (int) s;
+	bc_vm_boot(argc, argv, "DC_LINE_LENGTH", "DC_ENV_ARGS", "DC_EXPR_EXIT");
 }
 #endif // DC_ENABLED
