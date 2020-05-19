@@ -393,8 +393,10 @@ void bc_rand_init(BcRNG *r) {
 	bc_rand_push(r);
 }
 
+#ifndef NDEBUG
 void bc_rand_free(BcRNG *r) {
 	bc_vec_free(&r->v);
 }
+#endif // NDEBUG
 
 #endif // BC_ENABLE_EXTRA_MATH

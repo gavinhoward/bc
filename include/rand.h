@@ -209,7 +209,9 @@ typedef struct BcRNG {
 } BcRNG;
 
 void bc_rand_init(BcRNG *r);
+#ifndef NDEBUG
 void bc_rand_free(BcRNG *r);
+#endif // NDEBUG
 
 BcRand bc_rand_int(BcRNG *r);
 BcRand bc_rand_bounded(BcRNG *r, BcRand bound);
