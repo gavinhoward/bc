@@ -148,12 +148,12 @@ fi
 printf 'Running %s environment var tests...' "$d"
 
 if [ "$d" = "bc" ]; then
-	export BC_ENV_ARGS=" -l -q"
+	export BC_ENV_ARGS=" '-l' -q"
 	export BC_EXPR_EXIT="1"
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
 	"$exe" -e 4 "$@" > /dev/null
 else
-	export DC_ENV_ARGS="-x"
+	export DC_ENV_ARGS="'-x'"
 	export DC_EXPR_EXIT="1"
 	printf '4s stuff\n' | "$exe" "$@" > /dev/null
 	"$exe" -e 4pR "$@" > /dev/null
