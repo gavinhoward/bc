@@ -93,9 +93,10 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
 
+#if BC_ENABLE_SIGNALS
 #include <signal.h>
+#endif // BC_ENABLE_SIGNALS
 
 #include <termios.h>
 #include <time.h>

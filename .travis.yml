@@ -12,7 +12,7 @@ compiler:
 env:
   global:
     - CODECOV_TOKEN="040ce7eb-5bc7-4040-8324-364f3ef4baa3"
-    - CFLAGS="-coverage"
+    - CFLAGS="-coverage -DBC_RAND_BUILTIN=0"
   matrix:
     - CONFIGURE_ARGS=-fHNPSOg GEN_HOST=1 LONG_BIT=64
     - CONFIGURE_ARGS=-bfHNPSOg GEN_HOST=1 LONG_BIT=64

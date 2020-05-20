@@ -46,6 +46,7 @@
 #endif // _WIN32
 
 #include <signal.h>
+#endif // BC_ENABLE_SIGNALS
 
 #endif // BC_ENABLE_SIGNALS
 

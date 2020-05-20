@@ -40,7 +40,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if BC_ENABLE_SIGNALS
 #include <signal.h>
+#endif // BC_ENABLE_SIGNALS
 
 #include <fcntl.h>
 #include <sys/stat.h>
