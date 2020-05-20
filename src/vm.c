@@ -40,7 +40,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#if BC_ENABLE_SIGNALS
 #include <signal.h>
+#endif // BC_ENABLE_SIGNALS
 
 #ifndef _WIN32
 

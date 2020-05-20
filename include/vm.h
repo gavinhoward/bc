@@ -39,7 +39,9 @@
 #include <stddef.h>
 #include <limits.h>
 
+#if BC_ENABLE_SIGNALS
 #include <signal.h>
+#endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_NLS
 
