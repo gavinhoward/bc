@@ -77,7 +77,7 @@
 #include <vector.h>
 #include <num.h>
 
-typedef uchar (*BcRandChar)(void*);
+typedef ulong (*BcRandUlong)(void*);
 
 #if BC_LONG_BIT >= 64
 

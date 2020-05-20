@@ -37,16 +37,13 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <string.h>
 
 #if BC_ENABLE_SIGNALS
 #include <signal.h>
 #endif // BC_ENABLE_SIGNALS
 
-#if BC_ENABLE_SIGNALS
 #include <setjmp.h>
-#endif // BC_ENABLE_SIGNALS
 
 #ifndef _WIN32
 
@@ -68,16 +65,21 @@
 #include <read.h>
 #include <bc.h>
 
-#if BC_ENABLE_SIGNALS
-void bc_vm_sigjmp(bool pop) {
+void bc_vm_sigjmp(void) {
 
-	assert(vm.jmp_bufs.len - pop);
+	assert(vm.status != BC_STATUS_SUCCESS);
 
-	if (pop) bc_vec_pop(&vm.jmp_bufs);
+#ifndef NDEBUG
+	assert(vm.jmp_bufs.len - vm.sig_pop);
+#endif // NDEBUG
+
+	if (vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);
+	else vm.sig_pop = 1;
 
 	siglongjmp(*((sigjmp_buf*) bc_vec_top(&vm.jmp_bufs)), 1);
 }
 
+#if BC_ENABLE_SIGNALS
 static void bc_vm_sig(int sig) {
 
 	if (sig == SIGINT) {
@@ -98,18 +100,20 @@ static void bc_vm_sig(int sig) {
 
 	vm.status = BC_STATUS_SIGNAL;
 
-	if (!vm.sig_lock) bc_vm_sigjmp(false);
+	if (!vm.sig_lock) bc_vm_sigjmp();
 }
 #endif // BC_ENABLE_SIGNALS
 
 void bc_vm_info(const char* const help) {
 
-	bc_vm_printf("%s %s\n", vm.name, BC_VERSION);
-	bc_vm_puts(bc_copyright, stdout);
+	bc_file_puts(&vm.fout, vm.name);
+	bc_file_putchar(&vm.fout, ' ');
+	bc_file_puts(&vm.fout, BC_VERSION);
+	bc_file_puts(&vm.fout, bc_copyright);
 
 	if (help) {
-		bc_vm_putchar('\n');
-		bc_vm_printf(help, vm.name, vm.name);
+		bc_file_putchar(&vm.fout, '\n');
+		bc_file_printf(&vm.fout, help, vm.name, vm.name);
 	}
 }
 
@@ -120,6 +124,9 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	const char* err_type = vm.err_ids[id];
 
 	assert(e < BC_ERROR_NELEMS);
+#if BC_ENABLE_SIGNALS
+	assert(!vm.sig_pop);
+#endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLED
 	if (!BC_S && e >= BC_ERROR_POSIX_START) {
@@ -135,11 +142,12 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	BC_SIG_LOCK;
 
 	// Make sure all of stdout is written first.
-	fflush(stdout);
+	bc_file_flush(&vm.fout);
 
 	va_start(args, line);
-	fprintf(stderr, "\n%s ", err_type);
-	vfprintf(stderr, vm.err_msgs[e], args);
+	bc_file_putchar(&vm.ferr, '\n');
+	bc_file_puts(&vm.ferr, err_type);
+	bc_file_vprintf(&vm.ferr, vm.err_msgs[e], args);
 	va_end(args);
 
 	if (BC_NO_ERR(vm.file)) {
@@ -147,30 +155,34 @@ void bc_vm_error(BcError e, size_t line, ...) {
 		// This is the condition for parsing vs runtime.
 		// If line is not 0, it is parsing.
 		if (line) {
-			fprintf(stderr, "\n    %s", vm.file);
-			fprintf(stderr, bc_err_line, line);
+			bc_file_puts(&vm.ferr, "\n    ");
+			bc_file_puts(&vm.ferr, vm.file);
+			bc_file_printf(&vm.ferr, bc_err_line, line);
 		}
 		else {
 
 			BcInstPtr *ip = bc_vec_item_rev(&vm.prog.stack, 0);
 			BcFunc *f = bc_vec_item(&vm.prog.fns, ip->func);
 
-			fprintf(stderr, "\n    %s %s", vm.func_header, f->name);
+			bc_file_puts(&vm.ferr, "\n    ");
+			bc_file_puts(&vm.ferr, vm.func_header);
+			bc_file_putchar(&vm.ferr, ' ');
+			bc_file_puts(&vm.ferr, f->name);
 
 			if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
 			    ip->func != BC_PROG_READ)
 			{
-				fprintf(stderr, "()");
+				bc_file_puts(&vm.ferr, "()");
 			}
 		}
 	}
 
-	fputs("\n\n", stderr);
-	fflush(stderr);
+	bc_file_puts(&vm.ferr, "\n\n");
+	bc_file_flush(&vm.ferr);
 
 	vm.status = (BcStatus) (id + 1);
 
-	bc_vm_sigjmp(false);
+	bc_vm_sigjmp();
 }
 
 static void bc_vm_envArgs(const char* const env_args_name) {
@@ -281,6 +293,9 @@ void bc_vm_shutdown(void) {
 		bc_vec_free(&vm.temps);
 	}
 #endif // NDEBUG
+
+	bc_file_free(&vm.fout);
+	bc_file_free(&vm.ferr);
 }
 
 static void bc_vm_exit(BcError e) {
@@ -342,7 +357,7 @@ char* bc_vm_strdup(const char *str) {
 	return s;
 }
 
-size_t bc_vm_printf(const char *fmt, ...) {
+void bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
 	int ret;
@@ -350,35 +365,17 @@ size_t bc_vm_printf(const char *fmt, ...) {
 	BC_SIG_LOCK;
 
 	va_start(args, fmt);
-	ret = vfprintf(stdout, fmt, args);
+	bc_file_vprintf(&vm.fout, fmt, args);
 	va_end(args);
-
-	if (BC_IO_ERR(ret, stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
 
 	vm.nchars = 0;
 
 	BC_SIG_UNLOCK;
-
-	return (size_t) ret;
-}
-
-void bc_vm_puts(const char *str, FILE *restrict f) {
-	BC_SIG_LOCK;
-	if (BC_IO_ERR(fputs(str, f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
-	BC_SIG_UNLOCK;
 }
 
 void bc_vm_putchar(int c) {
-	BC_SIG_LOCK;
-	if (BC_IO_ERR(fputc(c, stdout), stdout)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
+	bc_file_putchar(&vm.fout, (uchar) c);
 	vm.nchars = (c == '\n' ? 0 : vm.nchars + 1);
-	BC_SIG_UNLOCK;
-}
-
-void bc_vm_fflush(FILE *restrict f) {
-	BC_SIG_LOCK;
-	if (BC_IO_ERR(fflush(f), f)) bc_vm_exit(BC_ERROR_FATAL_IO_ERR);
-	BC_SIG_UNLOCK;
 }
 
 static void bc_vm_clean(void) {
@@ -470,7 +467,7 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 #endif // BC_ENABLED
 
 	bc_program_exec(&vm.prog);
-	if (BC_I) bc_vm_fflush(stdout);
+	if (BC_I) bc_file_flush(&vm.fout);
 
 err:
 	BC_SIG_LOCK;
@@ -531,7 +528,8 @@ static void bc_vm_stdin(void) {
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	for (; buf.len > 1; s = bc_read_line(&buf, ">>> "))
+	for (; BC_NO_ERR(!s || s == BC_STATUS_EOF) && buf.len > 1;
+	     s = bc_read_line(&buf, ">>> "))
 	{
 		char c2, *str = buf.v;
 		size_t i, len = buf.len - 1;
@@ -593,6 +591,8 @@ err:
 	BC_SIG_LOCK;
 	bc_vec_free(&buf);
 	bc_vec_free(&buffer);
+	bc_vec_pop(&vm.jmp_bufs);
+	vm.status = s;
 	BC_LONGJMP_CONT;
 }
 
@@ -699,6 +699,8 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 #if BC_ENABLE_SIGNALS
 	struct sigaction sa;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = bc_vm_sig;
 	sa.sa_flags = SA_SIGINFO;
@@ -716,6 +718,9 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	vm.file = NULL;
 
 	bc_vm_gettext();
+
+	bc_file_init(&vm.ferr, STDERR_FILENO, 81);
+	bc_file_init(&vm.fout, STDOUT_FILENO, vm.line_len + 1);
 
 	vm.line_len = (uint16_t) bc_vm_envLen(env_len);
 

@@ -29,62 +29,34 @@
  *
  * *****************************************************************************
  *
- * The entry point for bc.
+ * Definitions for implementing buffered I/O on my own terms.
  *
  */
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef BC_FILE_H
+#define BC_FILE_H
 
-#include <locale.h>
-#include <libgen.h>
+#include <stdarg.h>
 
-#include <setjmp.h>
+#include <vector.h>
 
-#include <status.h>
-#include <vm.h>
-#include <bc.h>
-#include <dc.h>
+#define BC_FILE_ULL_LENGTH (21)
 
-BcVm vm;
+typedef struct BcFile {
 
-int main(int argc, char *argv[]) {
+	int fd;
+	BcVec v;
 
-	int s;
-	char *name;
-	size_t len = strlen(BC_EXECPREFIX);
+} BcFile;
 
-	vm.locale = setlocale(LC_ALL, "");
+void bc_file_init(BcFile *f, int fd, size_t req);
+void bc_file_free(BcFile *f);
 
-	name = strrchr(argv[0], '/');
-	vm.name = (name == NULL) ? argv[0] : name + 1;
+BcStatus bc_file_putchar(BcFile *restrict f, uchar c);
+BcStatus bc_file_flush(BcFile *restrict f);
+BcStatus bc_file_write(BcFile *restrict f, const char *buf, size_t n);
+BcStatus bc_file_printf(BcFile *restrict f, const char *fmt, ...);
+BcStatus bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args);
+BcStatus bc_file_puts(BcFile *restrict f, const char *str);
 
-	if (strlen(vm.name) > len) vm.name += len;
-
-	BC_SIG_LOCK;
-
-	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
-
-	BC_SETJMP_LOCKED(exit);
-
-#if !DC_ENABLED
-	bc_main(argc, argv);
-#elif !BC_ENABLED
-	dc_main(argc, argv);
-#else
-	if (BC_IS_BC) bc_main(argc, argv);
-	else dc_main(argc, argv);
-#endif
-
-exit:
-	BC_SIG_LOCK;
-
-	s = !BC_STATUS_IS_ERROR(vm.status) ? BC_STATUS_SUCCESS : vm.status;
-
-#ifndef NDEBUG
-	bc_vec_free(&vm.jmp_bufs);
-#endif // NDEBUG
-
-	return s;
-}
+#endif // BC_FILE_H

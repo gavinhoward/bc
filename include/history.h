@@ -113,7 +113,6 @@
 #define BC_HIST_SEQ_SIZE (64)
 
 #define BC_HIST_BUF_LEN(h) ((h)->buf.len - 1)
-#define BC_HIST_WRITE(s, n) (write(STDERR_FILENO, (s), (n)) != (ssize_t) (n))
 #define BC_HIST_READ(s, n) (read(STDIN_FILENO, (s), (n)) == -1)
 
 #define BC_HIST_NEXT (false)
@@ -180,10 +179,6 @@ typedef struct BcHistory {
 
 	/// The history.
 	BcVec history;
-
-	/// A temporary buffer for refresh. Using this
-	/// prevents an allocation on every refresh.
-	BcVec tmp;
 
 #if BC_ENABLE_PROMPT
 	/// Prompt to display.

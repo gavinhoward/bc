@@ -65,6 +65,7 @@
 #include <parse.h>
 #include <program.h>
 #include <history.h>
+#include <file.h>
 
 #if !BC_ENABLED && !DC_ENABLED
 #error Must define BC_ENABLED, DC_ENABLED, or both
@@ -146,14 +147,14 @@
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm.name[0] != 'd'))
 #define BC_IS_POSIX (BC_S || BC_W)
 
+#define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
+#define BC_NO_SIG_EXC BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
+
 #if BC_ENABLE_SIGNALS
 
 #define BC_SIGTERM_VAL (SIG_ATOMIC_MAX)
 #define BC_SIGTERM (vm.sig == BC_SIGTERM_VAL)
 #define BC_SIGINT (vm.sig && vm.sig != BC_SIGTERM_VAL)
-
-#define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
-#define BC_NO_SIG_EXC BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
 
 #ifndef NDEBUG
 #define BC_SIG_ASSERT_LOCKED do { assert(vm.sig_lock); } while (0)
@@ -163,20 +164,20 @@
 
 #define BC_SIG_LOCK do { vm.sig_lock = 1; } while (0)
 
-#define BC_SIG_UNLOCK                        \
-	do {                                     \
-		if (BC_SIG_EXC) bc_vm_sigjmp(false); \
-		vm.sig_lock = 0;                     \
+#define BC_SIG_UNLOCK                   \
+	do {                                \
+		if (BC_SIG_EXC) bc_vm_sigjmp(); \
+		vm.sig_lock = 0;                \
 	} while (0)
 
-#define BC_SETJMP(l)                         \
-	do {                                     \
-		sigjmp_buf sjb;                      \
-		vm.sig_lock = 1;                     \
-		if (sigsetjmp(sjb, 1)) goto l;       \
-		bc_vec_push(&vm.jmp_bufs, &sjb);     \
-		if (BC_SIG_EXC) bc_vm_sigjmp(false); \
-		vm.sig_lock = 0;                     \
+#define BC_SETJMP(l)                     \
+	do {                                 \
+		sigjmp_buf sjb;                  \
+		vm.sig_lock = 1;                 \
+		if (sigsetjmp(sjb, 1)) goto l;   \
+		bc_vec_push(&vm.jmp_bufs, &sjb); \
+		if (BC_SIG_EXC) bc_vm_sigjmp();  \
+		vm.sig_lock = 0;                 \
 	} while (0)
 
 #define BC_SETJMP_LOCKED(l)               \
@@ -187,28 +188,63 @@
 		bc_vec_push(&vm.jmp_bufs, &sjb);  \
 	} while (0)
 
-#define BC_LONGJMP_CONT                     \
-	do {                                    \
-		if (BC_SIG_EXC) bc_vm_sigjmp(true); \
-		bc_vec_pop(&vm.jmp_bufs);           \
-		vm.sig_lock = 0;                    \
+#define BC_LONGJMP_CONT                 \
+	do {                                \
+		BC_SIG_ASSERT_LOCKED;           \
+		if (BC_SIG_EXC) bc_vm_sigjmp(); \
+		bc_vec_pop(&vm.jmp_bufs);       \
+		vm.sig_lock = 0;                \
 	} while (0)
+
+#define BC_LONGJMP_STOP           \
+	do {                          \
+		bc_vec_pop(&vm.jmp_bufs); \
+		vm.sig_pop = 0;           \
+
+// Chosen to take the rest of the end cacheline and the entire next cacheline.
+#define BC_VM_STDIN_BUF_SIZE (94)
 
 #else
 
 #define BC_SIG_ASSERT_LOCKED
 #define BC_SIG_LOCK
 #define BC_SIG_UNLOCK
-#define BC_SETJMP(l)
-#define BC_SETJMP_LOCKED(l)
-#define BC_LONGJMP_CONT
+
+#define BC_SETJMP(l)                     \
+	do {                                 \
+		sigjmp_buf sjb;                  \
+		if (sigsetjmp(sjb, 1)) goto l;   \
+		bc_vec_push(&vm.jmp_bufs, &sjb); \
+	} while (0)
+
+#define BC_SETJMP_LOCKED(l)               \
+	do {                                  \
+		sigjmp_buf sjb;                   \
+		BC_SIG_ASSERT_LOCKED;             \
+		if (sigsetjmp(sjb, 1)) goto l;    \
+		bc_vec_push(&vm.jmp_bufs, &sjb);  \
+	} while (0)
+
+#define BC_LONGJMP_CONT                 \
+	do {                                \
+		BC_SIG_ASSERT_LOCKED;           \
+		if (BC_SIG_EXC) bc_vm_sigjmp(); \
+		bc_vec_pop(&vm.jmp_bufs);       \
+	} while (0)
+
+#define BC_LONGJMP_STOP           \
+	do {                          \
+		bc_vec_pop(&vm.jmp_bufs); \
+	} while (0)
+
+// Chosen to take the rest of the end cacheline and the entire next cacheline.
+#define BC_VM_STDIN_BUF_SIZE (118)
 
 #endif // BC_ENABLE_SIGNALS
 
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
 
-#define BC_IO_ERR(e, f) (BC_ERR((e) < 0 || ferror(f)))
 #define BC_STATUS_IS_ERROR(s) \
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
 
@@ -222,8 +258,12 @@ typedef struct BcVm {
 	sig_atomic_t status;
 #endif // BC_ENABLE_SIGNALS
 
+	volatile sig_atomic_t sig_pop;
+
 	BcParse prs;
 	BcProgram prog;
+
+	BcVec jmp_bufs;
 
 	BcVec temps;
 
@@ -277,13 +317,15 @@ typedef struct BcVm {
 	BcNum max;
 	BcDig max_num[BC_NUM_BIGDIG_LOG10];
 
+	BcFile fout;
+	BcFile ferr;
+
 #if BC_ENABLE_NLS
 	nl_catd catalog;
 #endif // BC_ENABLE_NLS
 
-#if BC_ENABLE_SIGNALS
-	BcVec jmp_bufs;
-#endif // BC_ENABLE_SIGNALS
+	uint8_t stdin_len;
+	char stdin_buf[BC_VM_STDIN_BUF_SIZE + 1];
 
 } BcVm;
 
@@ -292,21 +334,15 @@ void bc_vm_boot(int argc, char *argv[], const char *env_len,
                 const char* const env_args, const char* env_exp_quit);
 void bc_vm_shutdown(void);
 
-size_t bc_vm_printf(const char *fmt, ...);
-void bc_vm_puts(const char *str, FILE *restrict f);
+void bc_vm_printf(const char *fmt, ...);
 void bc_vm_putchar(int c);
-void bc_vm_fflush(FILE *restrict f);
-
 size_t bc_vm_arraySize(size_t n, size_t size);
 size_t bc_vm_growSize(size_t a, size_t b);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
-#if BC_ENABLE_SIGNALS
-void bc_vm_sigjmp(bool pop);
-void bc_vm_checkSignal(bool pop);
-#endif // BC_ENABLE_SIGNALS
+void bc_vm_sigjmp(void);
 
 void bc_vm_error(BcError e, size_t line, ...);
 

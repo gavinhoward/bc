@@ -199,7 +199,7 @@ static void bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	bc_num_clean(c);
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
-	assert(c->rdx <= c->len || !c->len || BC_SIG);
+	assert(c->rdx <= c->len || !c->len);
 	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 }
 
@@ -223,7 +223,7 @@ static void bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 	*rem = carry;
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
-	assert(c->rdx <= c->len || !c->len || BC_SIG);
+	assert(c->rdx <= c->len || !c->len);
 	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 }
 
@@ -1262,7 +1262,7 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	op(ptr_a, ptr_b, c, scale);
 
 	assert(!c->neg || BC_NUM_NONZERO(c));
-	assert(c->rdx <= c->len || !c->len || s);
+	assert(c->rdx <= c->len || !c->len);
 	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 
 	if (init) bc_num_free(&num2);
@@ -1442,7 +1442,7 @@ int_err:
 }
 
 static void bc_num_printNewline(void) {
-	if (vm.nchars >= (size_t) (vm.line_len - 1)) {
+	if (vm.nchars >= vm.line_len - 1) {
 		bc_vm_putchar('\\');
 		bc_vm_putchar('\n');
 	}
@@ -1733,7 +1733,7 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 			bc_vec_push(&stack, &dig);
 		}
 
-		assert(acc == 0 || BC_SIG);
+		assert(acc == 0);
 	}
 
 	for (i = 0; i < stack.len; ++i) {

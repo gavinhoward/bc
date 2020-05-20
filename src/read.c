@@ -36,7 +36,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -64,27 +63,61 @@ static bool bc_read_binary(const char *buf, size_t size) {
 	return false;
 }
 
+static bool bc_read_fromBuf(BcVec *vec) {
+
+	char *nl;
+
+	if (!vm.stdin_len) return false;
+
+	nl = strchr(vm.stdin_buf, '\n');
+
+	if (nl) {
+
+		size_t len = (nl + 1) - vm.stdin_buf;
+
+		assert(vm.stdin_len >= len);
+
+		bc_vec_npush(vec, len, vm.stdin_buf);
+		vm.stdin_len -= len;
+		memmove(vm.stdin_buf, nl + 1, vm.stdin_len + 1);
+
+		return true;
+	}
+
+	bc_vec_npush(vec, vm.stdin_len, vm.stdin_buf);
+	vm.stdin_len = 0;
+
+	return false;
+}
+
 BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	int i;
-	signed char c = 0;
+	uchar c = 0;
+	char *nl = NULL;
+	bool done = false;
 
 	assert(vec != NULL && vec->size == sizeof(char));
+
+	BC_SIG_ASSERT_LOCKED;
 
 	bc_vec_npop(vec, vec->len);
 
 #if BC_ENABLE_PROMPT
 	if (BC_USE_PROMPT) {
-		bc_vm_puts(prompt, stderr);
-		bc_vm_fflush(stderr);
+		bc_file_puts(&vm.ferr, prompt);
+		bc_file_flush(&vm.ferr);
 	}
 #endif // BC_ENABLE_PROMPT
 
-	while (c != '\n') {
+	if (bc_read_fromBuf(vec)) return BC_STATUS_SUCCESS;
 
-		i = fgetc(stdin);
+	while (!done) {
 
-		if (BC_UNLIKELY(i == EOF)) {
+		// TODO: Put the 0 byte at the end.
+		ssize_t r = read(STDIN_FILENO, vm.stdin_buf, BC_VM_STDIN_BUF_SIZE);
+
+		if (BC_UNLIKELY(r <= 0)) {
 
 #if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
@@ -94,11 +127,11 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 				vm.sig_chk = vm.sig;
 
 				if (BC_TTYIN || BC_I) {
-					bc_vm_puts(bc_program_ready_msg, stderr);
+					bc_file_puts(&vm.ferr, bc_program_ready_msg);
 #if BC_ENABLE_PROMPT
-					if (BC_USE_PROMPT) bc_vm_puts(prompt, stderr);
+					if (BC_USE_PROMPT) bc_file_puts(&vm.ferr, prompt);
 #endif // BC_ENABLE_PROMPT
-					bc_vm_fflush(stderr);
+					bc_file_flush(&vm.ferr);
 				}
 				else return BC_STATUS_SIGNAL;
 
@@ -110,8 +143,9 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 			return BC_STATUS_EOF;
 		}
 
-		c = (signed char) i;
-		bc_vec_push(vec, &c);
+		vm.stdin_buf[r] = '\0';
+
+		done = bc_read_fromBuf(vec);
 	}
 
 	bc_vec_pushByte(vec, '\0');
@@ -125,7 +159,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 	// We are about to output to stderr, so flush stdout to
 	// make sure that we don't get the outputs mixed up.
-	bc_vm_fflush(stdout);
+	bc_file_flush(&vm.fout);
 
 #if BC_ENABLE_HISTORY
 	s = bc_history_line(&vm.history, vec, prompt);
@@ -142,34 +176,34 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 void bc_read_file(const char *path, char **buf) {
 
 	BcError e = BC_ERROR_FATAL_IO_ERR;
-	FILE *f;
-	size_t size, read;
+	size_t size, r;
+	off_t off;
 	long res;
 	struct stat pstat;
+	int fd;
 
 	BC_SIG_ASSERT_LOCKED;
 
 	assert(path != NULL);
 
-	f = fopen(path, "r");
-	if (BC_ERR(f == NULL)) return bc_vm_verr(BC_ERROR_FATAL_FILE_ERR, path);
-	if (BC_ERR(fstat(fileno(f), &pstat) == -1)) goto malloc_err;
+	fd = open(path, O_RDONLY);
+	if (BC_ERR(fd < 0)) bc_vm_verr(BC_ERROR_FATAL_FILE_ERR, path);
+	if (BC_ERR(fstat(fd, &pstat) == -1)) goto malloc_err;
 
 	if (BC_ERR(S_ISDIR(pstat.st_mode))) {
 		e = BC_ERROR_FATAL_PATH_DIR;
 		goto malloc_err;
 	}
 
-	if (BC_ERR(fseek(f, 0, SEEK_END) == -1)) goto malloc_err;
-	res = ftell(f);
-	if (BC_ERR(res < 0)) goto malloc_err;
-	if (BC_ERR(fseek(f, 0, SEEK_SET) == -1)) goto malloc_err;
+	off = lseek(fd, 0, SEEK_END);
+	if (BC_ERR(off == (off_t) -1)) goto malloc_err;
+	size = (size_t) off;
+	if (BC_ERR(lseek(fd, 0, SEEK_SET) == (off_t) -1)) goto malloc_err;
 
-	size = (size_t) res;
 	*buf = bc_vm_malloc(size + 1);
 
-	read = fread(*buf, 1, size, f);
-	if (BC_ERR(read != size)) goto read_err;
+	r = read(fd, *buf, size);
+	if (BC_ERR(r != size)) goto read_err;
 
 	(*buf)[size] = '\0';
 
@@ -178,13 +212,13 @@ void bc_read_file(const char *path, char **buf) {
 		goto read_err;
 	}
 
-	fclose(f);
+	close(fd);
 
 	return;
 
 read_err:
 	free(*buf);
 malloc_err:
-	fclose(f);
+	close(fd);
 	bc_vm_verr(e, path);
 }

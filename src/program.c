@@ -267,7 +267,6 @@ static void bc_program_operand(BcProgram *p, BcResult **r,
 static void bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
                                BcResult **r, BcNum **rn)
 {
-	BcStatus s;
 	BcResultType lt;
 
 	assert(p != NULL && l != NULL && ln != NULL && r != NULL && rn != NULL);
@@ -295,8 +294,7 @@ static void bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	if (lt == (*r)->t && (lt == BC_RESULT_VAR || lt == BC_RESULT_ARRAY_ELEM))
 		*ln = bc_program_num(p, *l);
 
-	if (BC_NO_ERR(!s) && BC_ERR(lt == BC_RESULT_STR))
-		bc_vm_err(BC_ERROR_EXEC_TYPE);
+	if (BC_ERR(lt == BC_RESULT_STR)) bc_vm_err(BC_ERROR_EXEC_TYPE);
 }
 
 static void bc_program_binOpPrep(BcProgram *p, BcResult **l, BcNum **ln,
@@ -461,10 +459,15 @@ static void bc_program_rand(BcProgram *p) {
 #endif // BC_ENABLE_EXTRA_MATH
 
 static void bc_program_printChars(const char *str) {
+
 	const char *nl;
-	vm.nchars += bc_vm_printf("%s", str);
+	size_t len = vm.nchars + strlen(str);
+
+	bc_file_puts(&vm.fout, str);
 	nl = strrchr(str, '\n');
+
 	if (nl) vm.nchars = strlen(nl + 1);
+	else vm.nchars = len > UINT16_MAX ? UINT16_MAX : (uint16_t) len;
 }
 
 static void bc_program_printString(const char *restrict str) {
@@ -1367,7 +1370,7 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 
 	if (i == p->stack.len) {
 		vm.status = BC_STATUS_QUIT;
-		bc_vm_sigjmp(false);
+		bc_vm_sigjmp();
 	}
 	else {
 		bc_vec_npop(&p->stack, i);
@@ -1683,6 +1686,7 @@ void bc_program_reset(BcProgram *p) {
 
 #if BC_ENABLE_SIGNALS
 	if (BC_SIGTERM || (!vm.status && BC_SIGINT && BC_I)) {
+		// TODO: Jmp again here?
 		vm.status = BC_STATUS_QUIT;
 		return;
 	}
@@ -1692,10 +1696,12 @@ void bc_program_reset(BcProgram *p) {
 	if (!vm.status || vm.status == BC_STATUS_SIGNAL) {
 
 		if (BC_TTYIN || BC_I) {
-			bc_vm_puts(bc_program_ready_msg, stderr);
-			bc_vm_fflush(stderr);
+			bc_file_flush(&vm.fout);
+			bc_file_puts(&vm.ferr, bc_program_ready_msg);
+			bc_file_flush(&vm.ferr);
 			vm.status = BC_STATUS_SUCCESS;
 		}
+		// TODO: Jmp again here?
 		else vm.status = BC_STATUS_QUIT;
 	}
 #endif // BC_ENABLE_SIGNALS
@@ -1775,7 +1781,7 @@ void bc_program_exec(BcProgram *p) {
 			case BC_INST_HALT:
 			{
 				vm.status = BC_STATUS_QUIT;
-				bc_vm_sigjmp(false);
+				bc_vm_sigjmp();
 				break;
 			}
 
