@@ -100,24 +100,6 @@ void bc_file_flush(BcFile *restrict f) {
 	BC_SIG_UNLOCK;
 }
 
-void bc_file_printf(BcFile *restrict f, const char *fmt, ...) {
-
-	va_list args;
-
-	BC_SIG_LOCK;
-
-	va_start(args, fmt);
-	bc_file_vprintf(f, fmt, args);
-	va_end(args);
-
-	BC_SIG_UNLOCK;
-}
-
-void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
-
-
-}
-
 void bc_file_write(BcFile *restrict f, const char *buf, size_t n) {
 
 	if (n > f->v.cap - f->v.len) {
@@ -134,6 +116,77 @@ void bc_file_write(BcFile *restrict f, const char *buf, size_t n) {
 		BC_SIG_UNLOCK;
 	}
 	else bc_vec_npush(&f->v, n, buf);
+}
+
+void bc_file_printf(BcFile *restrict f, const char *fmt, ...) {
+
+	va_list args;
+
+	BC_SIG_LOCK;
+
+	va_start(args, fmt);
+	bc_file_vprintf(f, fmt, args);
+	va_end(args);
+
+	BC_SIG_UNLOCK;
+}
+
+void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
+
+	char *percent;
+	const char *ptr = fmt;
+	char buf[BC_FILE_ULL_LENGTH];
+
+	percent = strchr(ptr, '%');
+
+	while (percent != NULL) {
+
+		char c;
+
+		if (percent != ptr) {
+			size_t len = percent - ptr;
+			bc_file_write(f, ptr, len);
+		}
+
+		c = percent[1];
+
+		if (c == 'c') {
+
+			uchar uc = (uchar) va_arg(args, int);
+
+			bc_file_putchar(f, uc);
+		}
+		else if (c == 's') {
+
+			char *s = va_arg(args, char*);
+
+			bc_file_puts(f, s);
+		}
+		else if (c == 'l') {
+
+			unsigned long ul;
+
+			assert(percent[2] == 'u');
+
+			ul = va_arg(args, unsigned long);
+			bc_file_ultoa((unsigned long long) ul, buf);
+			bc_file_puts(f, buf);
+		}
+		else {
+
+			size_t sz;
+
+			assert(c == 'z' && percent[2] == 'u');
+
+			sz = va_arg(args, size_t);
+			bc_file_ultoa((unsigned long long) sz, buf);
+			bc_file_puts(f, buf);
+		}
+
+		ptr = percent + 1 + (c == 'l' || c == 'z');
+	}
+
+	if (ptr[0]) bc_file_puts(f, ptr);
 }
 
 void bc_file_puts(BcFile *restrict f, const char *str) {
