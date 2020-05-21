@@ -2531,10 +2531,11 @@ rem_err:
 
 #if BC_DEBUG_CODE
 void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline) {
-	printf("%s: ", name);
+	bc_file_puts(&vm.fout, name);
+	bc_file_puts(&vm.fout, ": ");
 	bc_num_printDecimal(n);
-	printf("\n");
-	if (emptyline) printf("\n");
+	bc_file_putchar(&vm.fout, '\n');
+	if (emptyline) bc_file_putchar(&vm.fout, '\n');
 	vm.nchars = 0;
 }
 
@@ -2542,16 +2543,18 @@ void bc_num_printDigs(const BcDig *n, size_t len, bool emptyline) {
 
 	size_t i;
 
-	for (i = len - 1; i < len; --i) printf(" %0*d", BC_BASE_DIGS, n[i]);
+	for (i = len - 1; i < len; --i)
+		bc_file_printf(&vm.fout, " %lu", (unsigned long) n[i]);
 
-	printf("\n");
-	if (emptyline) printf("\n");
+	bc_file_putchar(&vm.fout, '\n');
+	if (emptyline) bc_file_putchar(&vm.fout, '\n');
 	vm.nchars = 0;
 }
 
 void bc_num_printWithDigs(const BcNum *n, const char *name, bool emptyline) {
-	printf("%s len: %zu, rdx: %zu, scale: %zu\n",
-	       name, n->len, n->rdx, n->scale);
+	bc_file_puts(&vm.fout, name);
+	bc_file_printf(&vm.fout, " len: %zu, rdx: %zu, scale: %zu\n",
+	               name, n->len, n->rdx, n->scale);
 	bc_num_printDigs(n->num, n->len, emptyline);
 }
 
@@ -2559,14 +2562,15 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 
 	ulong i, scale = n->scale;
 
-	fprintf(stderr, "\n%s = %s", varname, n->len ? (n->neg ? "-" : "+") : "0 ");
+	bc_file_printf(&vm.ferr, "\n%s = %s", varname,
+	               n->len ? (n->neg ? "-" : "+") : "0 ");
 
 	for (i = n->len - 1; i < n->len; --i) {
 
-		if (i + 1 == n->rdx) fprintf(stderr, ". ");
+		if (i + 1 == n->rdx) bc_file_puts(&vm.ferr, ". ");
 
 		if (scale / BC_BASE_DIGS != n->rdx - i - 1)
-			fprintf(stderr, "%0*d ", BC_BASE_DIGS, n->num[i]);
+			bc_file_printf(&vm.ferr, "%lu ", (unsigned long) n->num[i]);
 		else {
 
 			int mod = scale % BC_BASE_DIGS;
@@ -2575,15 +2579,16 @@ void bc_num_dump(const char *varname, const BcNum *n) {
 
 			if (mod != 0) {
 				div = n->num[i] / ((BcDig) bc_num_pow10[(ulong) d]);
-				fprintf(stderr, "%0*d", (int) mod, div);
+				bc_file_printf(&vm.ferr, "%lu", (unsigned long) div);
 			}
 
 			div = n->num[i] % ((BcDig) bc_num_pow10[(ulong) d]);
-			fprintf(stderr, " ' %0*d ", d, div);
+			bc_file_printf(&vm.ferr, " ' %lu ", (unsigned long) div);
 		}
 	}
 
-	fprintf(stderr, "(%zu | %zu.%zu / %zu) %p\n",
-	        n->scale, n->len, n->rdx, n->cap, (void*) n->num);
+	bc_file_printf(&vm.ferr, "(%zu | %zu.%zu / %zu) %lu\n",
+	               n->scale, n->len, n->rdx, n->cap,
+	               (unsigned long) (void*) n->num);
 }
 #endif // BC_DEBUG_CODE

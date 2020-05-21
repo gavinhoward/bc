@@ -2139,9 +2139,9 @@ exit:
 #if BC_DEBUG_CODE
 #if BC_ENABLED && DC_ENABLED
 void bc_program_printStackDebug(BcProgram *p) {
-	printf("-------------- Stack ----------\n");
+	bc_file_puts(&vm.fout, "-------------- Stack ----------\n");
 	bc_program_printStack(p);
-	printf("-------------- Stack End ------\n");
+	bc_file_puts(&vm.fout, "-------------- Stack End ------\n");
 }
 
 static void bc_program_printIndex(const char *restrict code,
@@ -2174,7 +2174,7 @@ void bc_program_printInst(const BcProgram *p, const char *restrict code,
 {
 	uchar inst = (uchar) code[(*bgn)++];
 
-	bc_vm_printf("Inst: %s [%u]; ", bc_inst_names[inst], inst);
+	bc_vm_printf("Inst: %s [%lu]; ", bc_inst_names[inst], (unsigned long) inst);
 
 	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
 	    inst == BC_INST_ARRAY)
@@ -2214,7 +2214,7 @@ void bc_program_code(const BcProgram* p) {
 
 		bc_vm_printf("func[%zu]:\n", ip.func);
 		while (ip.idx < f->code.len) bc_program_printInst(p, code, &ip.idx);
-		bc_vm_printf("\n\n");
+		bc_file_puts(&vm.fout, "\n\n");
 	}
 }
 #endif // BC_ENABLED && DC_ENABLED

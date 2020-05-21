@@ -1356,8 +1356,8 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 		quit[sizeof(quit) - 1] = c;
 		if (!memcmp(quit, "quit", sizeof(quit))) break;
 
-		printf("'%c' %02x (%d) (type quit to exit)\n",
-		       isprint(c) ? c : '?', (int) c, (int) c);
+		bc_vm_printf("'%c' %lu (type quit to exit)\n",
+		             isprint(c) ? c : '?', (unsigned long) c);
 
 		// Go left edge manually, we are in raw mode.
 		bc_vm_putchar('\r');
