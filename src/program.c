@@ -762,6 +762,7 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 			// We need to return early.
 			bc_vec_push(vec, &r.d);
 			bc_vec_pop(&p->results);
+			return;
 		}
 		else if (ref_size && t != BC_TYPE_REF) v = bc_program_dereference(p, v);
 #endif // BC_ENABLED

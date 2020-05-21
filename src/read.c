@@ -110,7 +110,10 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 	}
 #endif // BC_ENABLE_PROMPT
 
-	if (bc_read_fromBuf(vec)) return BC_STATUS_SUCCESS;
+	if (bc_read_fromBuf(vec)) {
+		bc_vec_pushByte(vec, '\0');
+		return BC_STATUS_SUCCESS;
+	}
 
 	while (!done) {
 
@@ -143,6 +146,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 			return BC_STATUS_EOF;
 		}
 
+		vm.stdin_len += r;
 		vm.stdin_buf[r] = '\0';
 
 		done = bc_read_fromBuf(vec);
