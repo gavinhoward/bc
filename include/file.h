@@ -52,11 +52,11 @@ typedef struct BcFile {
 void bc_file_init(BcFile *f, int fd, size_t req);
 void bc_file_free(BcFile *f);
 
-BcStatus bc_file_putchar(BcFile *restrict f, uchar c);
-BcStatus bc_file_flush(BcFile *restrict f);
-BcStatus bc_file_write(BcFile *restrict f, const char *buf, size_t n);
-BcStatus bc_file_printf(BcFile *restrict f, const char *fmt, ...);
-BcStatus bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args);
-BcStatus bc_file_puts(BcFile *restrict f, const char *str);
+void bc_file_putchar(BcFile *restrict f, uchar c);
+void bc_file_flush(BcFile *restrict f);
+void bc_file_write(BcFile *restrict f, const char *buf, size_t n);
+void bc_file_printf(BcFile *restrict f, const char *fmt, ...);
+void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args);
+void bc_file_puts(BcFile *restrict f, const char *str);
 
 #endif // BC_FILE_H

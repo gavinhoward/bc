@@ -60,7 +60,7 @@ static void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH])
 	for (i = 0; i <= len; ++i) buf[i] = buf2[len - i];
 }
 
-static BcStatus bc_file_output(int fd, const char *buf, size_t n) {
+static void bc_file_output(int fd, const char *buf, size_t n) {
 
 	size_t bytes = 0;
 
@@ -73,85 +73,77 @@ static BcStatus bc_file_output(int fd, const char *buf, size_t n) {
 		if (BC_ERR(written == -1)) {
 
 			if (errno == EPIPE) {
-				return BC_STATUS_EOF;
+				vm.status = BC_STATUS_EOF;
+				bc_vm_sigjmp();
 			}
 #if BC_ENABLE_SIGNALS
 			else if (errno == EINTR) {
-				return BC_STATUS_SIGNAL;
+				vm.status = BC_STATUS_SIGNAL;
+				bc_vm_sigjmp();
 			}
 #endif // BC_ENABLE_SIGNALS
 
-			return bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+			bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 		}
 
 		bytes += (size_t) written;
 	}
-
-	return BC_STATUS_SUCCESS;
 }
 
-BcStatus bc_file_flush(BcFile *restrict f) {
+void bc_file_flush(BcFile *restrict f) {
 
-	BcStatus s;
+	BC_SIG_LOCK;
 
-	s = bc_file_output(f->fd, f->v.v, f->v.len);
+	bc_file_output(f->fd, f->v.v, f->v.len);
 	bc_vec_npop(&f->v, f->v.len);
 
-	return s;
+	BC_SIG_UNLOCK;
 }
 
-BcStatus bc_file_printf(BcFile *restrict f, const char *fmt, ...) {
+void bc_file_printf(BcFile *restrict f, const char *fmt, ...) {
 
-	BcStatus s;
 	va_list args;
 
+	BC_SIG_LOCK;
+
 	va_start(args, fmt);
-	s = bc_file_vprintf(f, fmt, args);
+	bc_file_vprintf(f, fmt, args);
 	va_end(args);
 
-	return s;
+	BC_SIG_UNLOCK;
 }
 
-BcStatus bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
+void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 
 
 }
 
-BcStatus bc_file_write(BcFile *restrict f, const char *buf, size_t n) {
-
-	BcStatus s = BC_STATUS_SUCCESS;
+void bc_file_write(BcFile *restrict f, const char *buf, size_t n) {
 
 	if (n > f->v.cap - f->v.len) {
-		s = bc_file_flush(f);
-		if (BC_ERR(s)) return s;
+		bc_file_flush(f);
 		assert(!f->v.len);
 	}
 
-	if (BC_UNLIKELY(n > f->v.cap - f->v.len))
-		s = bc_file_output(f->fd, buf, n);
-	else bc_vec_npush(&f->v, n, buf);
+	if (BC_UNLIKELY(n > f->v.cap - f->v.len)) {
 
-	return s;
-}
+		BC_SIG_LOCK;
 
-BcStatus bc_file_puts(BcFile *restrict f, const char *str) {
-	return bc_file_write(f, str, strlen(str));
-}
+		bc_file_output(f->fd, buf, n);
 
-BcStatus bc_file_putchar(BcFile *restrict f, uchar c) {
-
-	BcStatus s = BC_STATUS_SUCCESS;
-
-	if (f->v.len == f->v.cap) {
-		s = bc_file_flush(f);
-		if (BC_ERR(s)) return s;
+		BC_SIG_UNLOCK;
 	}
+	else bc_vec_npush(&f->v, n, buf);
+}
 
+void bc_file_puts(BcFile *restrict f, const char *str) {
+	bc_file_write(f, str, strlen(str));
+}
+
+void bc_file_putchar(BcFile *restrict f, uchar c) {
+	if (f->v.len == f->v.cap) bc_file_flush(f);
 	assert(f->v.len < f->v.cap);
-
 	bc_vec_push(&f->v, &c);
-
-	return s;
 }
 
 void bc_file_init(BcFile *f, int fd, size_t req) {
