@@ -146,10 +146,10 @@
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm.name[0] != 'd'))
 #define BC_IS_POSIX (BC_S || BC_W)
 
+#if BC_ENABLE_SIGNALS
+
 #define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
 #define BC_NO_SIG_EXC BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
-
-#if BC_ENABLE_SIGNALS
 
 #define BC_SIGTERM_VAL (SIG_ATOMIC_MAX)
 #define BC_SIGTERM (vm.sig == BC_SIGTERM_VAL)
@@ -205,6 +205,9 @@
 
 #else
 
+#define BC_SIG_EXC BC_UNLIKELY(vm.status != BC_STATUS_SUCCESS)
+#define BC_NO_SIG_EXC BC_LIKELY(vm.status == BC_STATUS_SUCCESS)
+
 #define BC_SIG_ASSERT_LOCKED
 #define BC_SIG_LOCK
 #define BC_SIG_UNLOCK
@@ -253,11 +256,13 @@ typedef struct BcVm {
 
 #if BC_ENABLE_SIGNALS
 	volatile sig_atomic_t status;
-#else // BC_ENABLE_SIGNALS
-	sig_atomic_t status;
-#endif // BC_ENABLE_SIGNALS
 
 	volatile sig_atomic_t sig_pop;
+#else // BC_ENABLE_SIGNALS
+	BcStatus status;
+
+	int sig_pop;
+#endif // BC_ENABLE_SIGNALS
 
 	BcParse prs;
 	BcProgram prog;
