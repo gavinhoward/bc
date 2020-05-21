@@ -200,9 +200,6 @@
 		bc_vec_pop(&vm.jmp_bufs); \
 		vm.sig_pop = 0;           \
 
-// Chosen to take the rest of the end cacheline and the entire next cacheline.
-#define BC_VM_STDIN_BUF_SIZE (94)
-
 #else
 
 #define BC_SIG_EXC BC_UNLIKELY(vm.status != BC_STATUS_SUCCESS)
@@ -239,10 +236,9 @@
 		bc_vec_pop(&vm.jmp_bufs); \
 	} while (0)
 
-// Chosen to take the rest of the end cacheline and the entire next cacheline.
-#define BC_VM_STDIN_BUF_SIZE (118)
-
 #endif // BC_ENABLE_SIGNALS
+
+#define BC_VM_STDIN_BUF_SIZE (1023)
 
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
@@ -328,8 +324,8 @@ typedef struct BcVm {
 	nl_catd catalog;
 #endif // BC_ENABLE_NLS
 
-	uint8_t stdin_len;
-	char stdin_buf[BC_VM_STDIN_BUF_SIZE + 1];
+	char *buf;
+	size_t buf_len;
 
 } BcVm;
 

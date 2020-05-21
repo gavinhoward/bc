@@ -449,25 +449,33 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 
 	bc_parse_text(&vm.prs, text);
 
-	while (vm.prs.l.t != BC_LEX_EOF) vm.parse(&vm.prs);
+	do {
 
 #if BC_ENABLED
-	if (BC_IS_BC) {
-
-		uint16_t *flags = BC_PARSE_TOP_FLAG_PTR(&vm.prs);
-
-		if (!is_stdin && vm.prs.flags.len == 1 &&
-		    *flags == BC_PARSE_FLAG_IF_END)
-		{
-			bc_parse_noElse(&vm.prs);
-		}
-
-		if (BC_PARSE_NO_EXEC(&vm.prs)) goto err;
-	}
+		if (vm.prs.l.t == BC_LEX_KW_DEFINE) vm.parse(&vm.prs);
 #endif // BC_ENABLED
 
-	bc_program_exec(&vm.prog);
-	if (BC_I) bc_file_flush(&vm.fout);
+		while (BC_PARSE_CAN_PARSE(vm.prs)) vm.parse(&vm.prs);
+
+#if BC_ENABLED
+		if (BC_IS_BC) {
+
+			uint16_t *flags = BC_PARSE_TOP_FLAG_PTR(&vm.prs);
+
+			if (!is_stdin && vm.prs.flags.len == 1 &&
+			    *flags == BC_PARSE_FLAG_IF_END)
+			{
+				bc_parse_noElse(&vm.prs);
+			}
+
+			if (BC_PARSE_NO_EXEC(&vm.prs)) goto err;
+		}
+#endif // BC_ENABLED
+
+		bc_program_exec(&vm.prog);
+		if (BC_I) bc_file_flush(&vm.fout);
+
+	} while (vm.prs.l.t != BC_LEX_EOF);
 
 err:
 	BC_SIG_LOCK;

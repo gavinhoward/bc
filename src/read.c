@@ -63,29 +63,29 @@ static bool bc_read_binary(const char *buf, size_t size) {
 	return false;
 }
 
-static bool bc_read_fromBuf(BcVec *vec) {
+bool bc_read_buf(BcVec *vec) {
 
 	char *nl;
 
-	if (!vm.stdin_len) return false;
+	if (!vm.buf_len) return false;
 
-	nl = strchr(vm.stdin_buf, '\n');
+	nl = strchr(vm.buf, '\n');
 
 	if (nl) {
 
-		size_t len = (nl + 1) - vm.stdin_buf;
+		size_t nllen = (nl + 1) - vm.buf;
 
-		assert(vm.stdin_len >= len);
+		assert(vm.buf_len >= nllen);
 
-		bc_vec_npush(vec, len, vm.stdin_buf);
-		vm.stdin_len -= len;
-		memmove(vm.stdin_buf, nl + 1, vm.stdin_len + 1);
+		bc_vec_npush(vec, nllen, vm.buf);
+		vm.buf_len -= nllen;
+		memmove(vm.buf, nl + 1, vm.buf_len + 1);
 
 		return true;
 	}
 
-	bc_vec_npush(vec, vm.stdin_len, vm.stdin_buf);
-	vm.stdin_len = 0;
+	bc_vec_npush(vec, vm.buf_len, vm.buf);
+	vm.buf_len = 0;
 
 	return false;
 }
@@ -110,7 +110,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 	}
 #endif // BC_ENABLE_PROMPT
 
-	if (bc_read_fromBuf(vec)) {
+	if (bc_read_buf(vec)) {
 		bc_vec_pushByte(vec, '\0');
 		return BC_STATUS_SUCCESS;
 	}
@@ -118,7 +118,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 	while (!done) {
 
 		// TODO: Put the 0 byte at the end.
-		ssize_t r = read(STDIN_FILENO, vm.stdin_buf, BC_VM_STDIN_BUF_SIZE);
+		ssize_t r = read(STDIN_FILENO, vm.buf, BC_VM_STDIN_BUF_SIZE);
 
 		if (BC_UNLIKELY(r <= 0)) {
 
@@ -146,10 +146,10 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 			return BC_STATUS_EOF;
 		}
 
-		vm.stdin_len += r;
-		vm.stdin_buf[r] = '\0';
+		vm.buf_len += r;
+		vm.buf[r] = '\0';
 
-		done = bc_read_fromBuf(vec);
+		done = bc_read_buf(vec);
 	}
 
 	bc_vec_pushByte(vec, '\0');

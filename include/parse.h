@@ -52,6 +52,13 @@
 #define BC_PARSE_ARRAY (UINTMAX_C(1)<<4)
 #define BC_PARSE_NEEDVAL (UINTMAX_C(1)<<5)
 
+#if BC_ENABLED
+#define BC_PARSE_CAN_PARSE(p) \
+	((p).l.t != BC_LEX_EOF && (p).l.t != BC_LEX_KW_DEFINE)
+#else // BC_ENABLED
+#define BC_PARSE_CAN_PARSE(p) ((p).l.t != BC_LEX_EOF)
+#endif // BC_ENABLED
+
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
 #define bc_parse_string(p)(bc_parse_addId((p), (p)->l.str.v, BC_INST_STR))
 #define bc_parse_pushIndex(p, idx) (bc_vec_pushIndex(&(p)->func->code, (idx)))
