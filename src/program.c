@@ -717,9 +717,6 @@ static void bc_program_assignStr(BcProgram *p, BcResult *r,
 	n2.num = NULL;
 	n2.scale = r->d.loc.loc;
 
-	if (BC_ERR(!BC_PROG_STACK(&p->results, 1 + !push)))
-		bc_vm_err(BC_ERROR_EXEC_STACK);
-
 	assert(BC_PROG_STACK(&p->results, 1 + !push));
 
 	if (!push) bc_vec_pop(v);
