@@ -71,15 +71,15 @@ static bool bc_read_buf(BcVec *vec) {
 
 	nl = strchr(vm.buf, '\n');
 
-	if (nl) {
+	if (nl != NULL) {
 
-		size_t nllen = (nl + 1) - vm.buf;
+		size_t nllen = (size_t) ((nl + 1) - vm.buf);
 
-		assert(vm.buf_len >= nllen);
+		nllen = vm.buf_len >= nllen ? nllen : vm.buf_len;
 
 		bc_vec_npush(vec, nllen, vm.buf);
 		vm.buf_len -= nllen;
-		memmove(vm.buf, nl + 1, vm.buf_len + 1);
+		memmove(vm.buf, nl + 1, vm.buf_len);
 
 		return true;
 	}
@@ -92,9 +92,6 @@ static bool bc_read_buf(BcVec *vec) {
 
 BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
-	int i;
-	uchar c = 0;
-	char *nl = NULL;
 	bool done = false;
 
 	assert(vec != NULL && vec->size == sizeof(char));
@@ -117,10 +114,9 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	while (!done) {
 
-		// TODO: Put the 0 byte at the end.
 		ssize_t r = read(STDIN_FILENO, vm.buf, BC_VM_STDIN_BUF_SIZE);
 
-		if (BC_UNLIKELY(r <= 0)) {
+		if (BC_UNLIKELY(r < 0)) {
 
 #if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
@@ -142,12 +138,14 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 			}
 #endif // BC_ENABLE_SIGNALS
 
+			bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+		}
+		else if (r == 0) {
 			bc_vec_pushByte(vec, '\0');
 			return BC_STATUS_EOF;
 		}
 
-		vm.buf_len += r;
-		vm.buf[r] = '\0';
+		vm.buf_len += (size_t) r;
 
 		done = bc_read_buf(vec);
 	}
