@@ -399,10 +399,12 @@ static void bc_vm_clean(void) {
 	BcVec *fns = &prog->fns;
 	BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
 	BcInstPtr *ip = bc_vec_item(&prog->stack, 0);
-	bool good = false;
+	bool good = (vm.status && vm.status != BC_STATUS_QUIT);
+
+	if (good) bc_program_reset(&vm.prog);
 
 #if BC_ENABLED
-	if (BC_IS_BC) good = !BC_PARSE_NO_EXEC(&vm.prs);
+	if (good && BC_IS_BC) good = !BC_PARSE_NO_EXEC(&vm.prs);
 #endif // BC_ENABLED
 
 #if DC_ENABLED
