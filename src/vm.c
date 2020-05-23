@@ -526,7 +526,7 @@ static void bc_vm_stdin(void) {
 	BcStatus s;
 	BcVec buf, buffer;
 	size_t string = 0;
-	bool comment = false, done = false;
+	bool comment = false, done = false, hash_comment = false;
 
 	bc_lex_file(&vm.prs.l, bc_program_stdin_name);
 
@@ -556,10 +556,15 @@ static void bc_vm_stdin(void) {
 			bool notend = len > i + 1;
 			uchar c = (uchar) str[i];
 
-			if (!comment && (i - 1 > len || str[i - 1] != '\\')) {
+			hash_comment = (hash_comment && !comment && !string && c != '\n');
+
+			if (!hash_comment && !comment &&
+				(i - 1 > len || str[i - 1] != '\\'))
+			{
 				if (BC_IS_BC) string ^= (c == '"');
 				else if (c == ']') string -= 1;
 				else if (c == '[') string += 1;
+				else hash_comment = (c == '#');
 			}
 
 			if (BC_IS_BC && !string && notend) {
@@ -576,6 +581,8 @@ static void bc_vm_stdin(void) {
 				}
 			}
 		}
+
+		assert(buf.v[buf.len - 1] == '\n');
 
 		bc_vec_concat(&buffer, buf.v);
 
