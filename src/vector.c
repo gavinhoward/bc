@@ -108,7 +108,7 @@ void bc_vec_push(BcVec *restrict v, const void *data) {
 void bc_vec_pushByte(BcVec *restrict v, uchar data) {
 	assert(v != NULL && v->size == sizeof(uchar));
 	if (v->len == v->cap) bc_vec_grow(v, 1);
-	v->v[v->len] = data;
+	v->v[v->len] = (char) data;
 	v->len += 1;
 }
 
