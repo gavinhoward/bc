@@ -10,6 +10,8 @@ for (i = 0; i < 100; ++i) {
 	b[i] = irand(sum)
 }
 
+seed = 0.2890120
+
 print "Testing implementation...\n"
 
 if (maxrand() >= 2^64 - 1) {
