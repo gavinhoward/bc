@@ -51,6 +51,12 @@
 #define BC_INST_USE_VAL(i) (false)
 #endif // BC_ENABLED
 
+#ifndef NDEBUG
+#define BC_ENABLE_FUNC_FREE (1)
+#else // NDEBUG
+#define BC_ENABLE_FUNC_FREE DC_ENABLED
+#endif // NDEBUG
+
 typedef enum BcInst {
 
 #if BC_ENABLED

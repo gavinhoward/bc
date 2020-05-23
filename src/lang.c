@@ -126,6 +126,7 @@ void bc_func_reset(BcFunc *f) {
 }
 
 void bc_func_free(void *func) {
+#if BC_ENABLE_FUNC_FREE
 	BcFunc *f = (BcFunc*) func;
 	BC_SIG_ASSERT_LOCKED;
 	assert(f != NULL);
@@ -133,11 +134,14 @@ void bc_func_free(void *func) {
 	bc_vec_free(&f->strs);
 	bc_vec_free(&f->consts);
 #if BC_ENABLED
+#ifndef NDEBUG
 	if (BC_IS_BC) {
 		bc_vec_free(&f->autos);
 		bc_vec_free(&f->labels);
 	}
+#endif // NDEBUG
 #endif // BC_ENABLED
+#endif // BC_ENABLE_FUNC_FREE
 }
 
 void bc_array_init(BcVec *a, bool nums) {

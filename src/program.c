@@ -257,9 +257,9 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 		{
 #ifndef NDEBUG
 			assert(false);
-#endif // NDEBUG
 			n = &r->d.n;
 			break;
+#endif // NDEBUG
 		}
 #endif // BC_ENABLED
 	}
