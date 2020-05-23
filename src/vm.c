@@ -122,6 +122,7 @@ void bc_vm_info(const char* const help) {
 	bc_file_puts(&vm.fout, vm.name);
 	bc_file_putchar(&vm.fout, ' ');
 	bc_file_puts(&vm.fout, BC_VERSION);
+	bc_file_putchar(&vm.fout, '\n');
 	bc_file_puts(&vm.fout, bc_copyright);
 
 	if (help) {

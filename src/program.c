@@ -449,10 +449,8 @@ static void bc_program_read(BcProgram *p) {
 	bc_parse_text(&parse, buf.v);
 	vm.expr(&parse, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
 
-	if (BC_ERR(parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF)) {
+	if (BC_ERR(parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF))
 		bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
-		goto exec_err;
-	}
 
 	if (BC_G) bc_program_prepGlobals(p);
 
