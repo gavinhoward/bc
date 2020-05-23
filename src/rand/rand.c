@@ -278,21 +278,22 @@ static void bc_rand_seedZeroes(BcRNG *r, BcRNGData *rng, size_t idx) {
 	}
 }
 
-static void bc_rand_srand(BcRNG *r) {
+static void bc_rand_srand(BcRNGData *rng) {
 
-	BcRNGData *rng = bc_vec_top(&r->v);
+	int fd;
 
-	if (BC_ERR(BC_RAND_ZERO(rng))) {
+	BC_SIG_LOCK;
 
-		int fd = open("/dev/urandom", O_RDONLY);
+	fd = open("/dev/urandom", O_RDONLY);
 
-		if (BC_NO_ERR(fd >= 0)) {
-			bc_rand_fill(rng, bc_rand_frand, &fd);
-			close(fd);
-		}
+	if (BC_NO_ERR(fd >= 0)) {
+		bc_rand_fill(rng, bc_rand_frand, &fd);
+		close(fd);
 	}
 
 	while (BC_ERR(BC_RAND_ZERO(rng))) bc_rand_fill(rng, bc_rand_rand, NULL);
+
+	BC_SIG_UNLOCK;
 }
 
 static void bc_rand_propagate(BcRNG *r, BcRNGData *rng) {
@@ -317,11 +318,10 @@ static void bc_rand_propagate(BcRNG *r, BcRNGData *rng) {
 
 BcRand bc_rand_int(BcRNG *r) {
 
-	BcRNGData *rng;
+	BcRNGData *rng = bc_vec_top(&r->v);
 
-	bc_rand_srand(r);
+	if (BC_ERR(BC_RAND_ZERO(rng))) bc_rand_srand(rng);
 
-	rng = bc_vec_top(&r->v);
 	bc_rand_step(rng);
 	bc_rand_propagate(r, rng);
 
@@ -374,12 +374,11 @@ static BcRandState bc_rand_getInc(BcRNGData *r) {
 
 void bc_rand_getRands(BcRNG *r, BcRand *s1, BcRand *s2, BcRand *i1, BcRand *i2)
 {
-	BcRNGData *rng;
 	BcRandState inc;
+	BcRNGData *rng = bc_vec_top(&r->v);
 
-	bc_rand_srand(r);
+	if (BC_ERR(BC_RAND_ZERO(rng))) bc_rand_srand(rng);
 
-	rng = bc_vec_top(&r->v);
 	inc = bc_rand_getInc(rng);
 
 	*s1 = BC_RAND_TRUNC(rng->state);
