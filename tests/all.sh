@@ -194,7 +194,7 @@ printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 
 diff "$out1" "$out2"
 
-"$exe" "$@" -- "$f" "$f" "$f" "$f" > "$out2"
+printf 'halt\n' "$halt" | "$exe" "$@" -- "$f" "$f" "$f" "$f" > "$out2"
 
 diff "$out1" "$out2"
 
