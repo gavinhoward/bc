@@ -580,8 +580,6 @@ static void bc_vm_stdin(void) {
 			}
 		}
 
-		assert(buf.v[buf.len - 1] == '\n');
-
 		bc_vec_concat(&buffer, buf.v);
 
 		if (string || comment) continue;
