@@ -146,6 +146,12 @@
 #define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm.name[0] != 'd'))
 #define BC_IS_POSIX (BC_S || BC_W)
 
+#if BC_DEBUG_CODE
+#define BC_VM_JMP bc_vm_sigjmp(__func__)
+#else // BC_DEBUG_CODE
+#define BC_VM_JMP bc_vm_sigjmp()
+#endif // BC_DEBUG_CODE
+
 #if BC_ENABLE_SIGNALS
 
 #define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
@@ -345,7 +351,11 @@ void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
+#if BC_DEBUG_CODE
+void bc_vm_sigjmp(const char *f);
+#else // BC_DEBUG_CODE
 void bc_vm_sigjmp(void);
+#endif // BC_DEBUG_CODE
 
 void bc_vm_error(BcError e, size_t line, ...);
 

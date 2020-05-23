@@ -65,9 +65,20 @@
 #include <read.h>
 #include <bc.h>
 
+#if BC_DEBUG_CODE
+void bc_vm_sigjmp(const char* f) {
+#else // BC_DEBUG_CODE
 void bc_vm_sigjmp(void) {
+#endif
 
 	assert(vm.status != BC_STATUS_SUCCESS);
+
+#if BC_DEBUG_CODE
+	bc_file_puts(&vm.ferr, "Longjmp: ");
+	bc_file_puts(&vm.ferr, f);
+	bc_file_putchar(&vm.ferr, '\n');
+	bc_file_flush(&vm.ferr);
+#endif // BC_DEBUG_CODE
 
 #ifndef NDEBUG
 	assert(vm.jmp_bufs.len - vm.sig_pop);
