@@ -708,11 +708,9 @@ static void bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c)
 		carry = 0;
 	}
 
-	if (sum) {
-		assert(sum < BC_BASE_POW);
-		ptr_c[clen] = (BcDig) sum;
-		clen += 1;
-	}
+	// This should always be true because there should be no carry on the last
+	// digit; multiplication never goes above the sum of both lengths.
+	assert(!sum);
 
 	c->len = clen;
 }
