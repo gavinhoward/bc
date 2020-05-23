@@ -57,7 +57,7 @@ static void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH])
 
 	len = i;
 
-	for (i = 0; i <= len; ++i) buf[i] = buf2[len - i];
+	for (i = 0; i < len; ++i) buf[i] = buf2[len - i - 1];
 }
 
 static void bc_file_output(int fd, const char *buf, size_t n) {
