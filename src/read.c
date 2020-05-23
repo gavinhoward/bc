@@ -196,11 +196,7 @@ void bc_read_file(const char *path, char **buf) {
 		goto malloc_err;
 	}
 
-	off = lseek(fd, 0, SEEK_END);
-	if (BC_ERR(off == (off_t) -1)) goto malloc_err;
-	size = (size_t) off;
-	if (BC_ERR(lseek(fd, 0, SEEK_SET) == (off_t) -1)) goto malloc_err;
-
+	size = (size_t) pstat.st_size;
 	*buf = bc_vm_malloc(size + 1);
 
 	r = (size_t) read(fd, *buf, size);
