@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 exit:
 	BC_SIG_LOCK;
 
-	s = !BC_STATUS_IS_ERROR(vm.status) ? BC_STATUS_SUCCESS : vm.status;
+	s = !BC_STATUS_IS_ERROR(vm.status) ? BC_STATUS_SUCCESS : (int) vm.status;
 
 #ifndef NDEBUG
 	bc_vec_free(&vm.jmp_bufs);
