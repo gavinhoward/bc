@@ -501,8 +501,9 @@ static void bc_program_printChars(const char *str) {
 	bc_file_puts(&vm.fout, str);
 	nl = strrchr(str, '\n');
 
-	if (nl) vm.nchars = strlen(nl + 1);
-	else vm.nchars = len > UINT16_MAX ? UINT16_MAX : (uint16_t) len;
+	if (nl) len = strlen(nl + 1);
+
+	vm.nchars = len > UINT16_MAX ? UINT16_MAX : (uint16_t) len;
 }
 
 static void bc_program_printString(const char *restrict str) {
