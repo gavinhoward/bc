@@ -196,7 +196,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	bc_file_puts(&vm.ferr, "\n\n");
 	bc_file_flush(&vm.ferr);
 
-	vm.status = (BcStatus) (id + 1);
+	vm.status = (BC_VM_STATUS_TYPE) (id + 1);
 
 	if (BC_ERR(vm.status)) BC_VM_JMP;
 }

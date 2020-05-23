@@ -157,7 +157,6 @@ static BcVec* bc_program_vec(const BcProgram *p, size_t idx, BcType type) {
 
 static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
 	BcNum *n;
 
 	switch (r->t) {
@@ -255,9 +254,9 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
 		case BC_RESULT_VOID:
 		{
+			n = &r->d.n;
 #ifndef NDEBUG
 			assert(false);
-			n = &r->d.n;
 			break;
 #endif // NDEBUG
 		}
