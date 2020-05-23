@@ -537,14 +537,12 @@ static void bc_vm_stdin(void) {
 	BC_SETJMP_LOCKED(err);
 	BC_SIG_UNLOCK;
 
-	s = bc_read_line(&buf, ">>> ");
-
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	for (; BC_NO_ERR(!s || s == BC_STATUS_EOF) && buf.len > 1;
-	     s = bc_read_line(&buf, ">>> "))
+	while ((!(s = bc_read_line(&buf, ">>> ")) || s == BC_STATUS_EOF) &&
+	       buf.len > 1)
 	{
 		char c2, *str = buf.v;
 		size_t i, len = buf.len - 1;
