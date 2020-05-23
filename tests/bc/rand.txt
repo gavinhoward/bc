@@ -10,8 +10,6 @@ for (i = 0; i < 100; ++i) {
 	b[i] = irand(sum)
 }
 
-seed = 0.2890120
-
 print "Testing implementation...\n"
 
 if (maxrand() >= 2^64 - 1) {
@@ -25,6 +23,10 @@ if (maxrand() >= 2^64 - 1) {
 	for (i = 0; i < 64; ++i) {
 		rand()
 	}
+
+	seed = 0.2890120
+
+	rand()
 
 	7B47F409
 	BA1D3330
@@ -130,6 +132,8 @@ if (maxrand() >= 2^64 - 1) {
 	CB8F63B5
 	9B3227E5
 	9A61E339
+
+	40BDACF
 }
 else {
 
@@ -241,6 +245,8 @@ else {
 	DA8AFFE1353FF352
 	A7A3C331A64CB146
 
+	A1F53517A7BE0CAA
+
 	ibase = A
 
 	seed = 54.0950779151573258314404657465246373249101452529430389404296875000
@@ -250,6 +256,10 @@ else {
 	for (i = 0; i < 64; ++i) {
 		rand()
 	}
+
+	seed = 0.2890120
+
+	rand()
 }
 
 print "Testing array...\n"
