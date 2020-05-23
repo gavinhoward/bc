@@ -198,7 +198,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 
 	vm.status = (BcStatus) (id + 1);
 
-	BC_VM_JMP;
+	if (BC_ERR(vm.status)) BC_VM_JMP;
 }
 
 static void bc_vm_envArgs(const char* const env_args_name) {
