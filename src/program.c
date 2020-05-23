@@ -1305,8 +1305,7 @@ static void bc_program_modexp(BcProgram *p) {
 	BcResult *r1, *r2, *r3, res;
 	BcNum *n1, *n2, *n3, *resn = &res.d.n;
 
-	if (BC_ERR(!BC_PROG_STACK(&p->results, 3)))
-		bc_vm_err(BC_ERROR_EXEC_STACK);
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 3))) bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	assert(BC_PROG_STACK(&p->results, 3));
 
@@ -1440,8 +1439,7 @@ static void bc_program_printStream(BcProgram *p) {
 	BcResult *r;
 	BcNum *n;
 
-	if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
-		bc_vm_err(BC_ERROR_EXEC_STACK);
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	assert(BC_PROG_STACK(&p->results, 1));
 
@@ -1504,8 +1502,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 	assert(p->stack.len == p->tail_calls.len);
 
-	if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
-		bc_vm_err(BC_ERROR_EXEC_STACK);
+	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	assert(BC_PROG_STACK(&p->results, 1));
 
