@@ -402,12 +402,14 @@ void bc_rand_pop(BcRNG *r) {
 }
 
 void bc_rand_init(BcRNG *r) {
+	BC_SIG_ASSERT_LOCKED;
 	bc_vec_init(&r->v, sizeof(BcRNGData), NULL);
 	bc_rand_push(r);
 }
 
 #ifndef NDEBUG
 void bc_rand_free(BcRNG *r) {
+	BC_SIG_ASSERT_LOCKED;
 	bc_vec_free(&r->v);
 }
 #endif // NDEBUG

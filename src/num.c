@@ -38,7 +38,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <setjmp.h>
 #include <limits.h>
 
 #include <status.h>
@@ -64,8 +64,13 @@ static void bc_num_expand(BcNum *restrict n, size_t req) {
 	assert(n != NULL);
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 	if (req > n->cap) {
+
+		BC_SIG_LOCK;
+
 		n->num = bc_vm_realloc(n->num, BC_NUM_SIZE(req));
 		n->cap = req;
+
+		BC_SIG_UNLOCK;
 	}
 }
 
@@ -746,6 +751,9 @@ static void bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	max2 = (max + 1) / 2;
 
 	total = bc_vm_arraySize(BC_NUM_KARATSUBA_ALLOCS, max);
+
+	BC_SIG_LOCK;
+
 	digs = dig_ptr = bc_vm_malloc(BC_NUM_SIZE(total));
 
 	bc_num_setup(&l1, dig_ptr, max);
@@ -765,6 +773,10 @@ static void bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	bc_num_init(&z2, max);
 	max = bc_vm_growSize(max, max) + 1;
 	bc_num_init(&temp, max);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	bc_num_split(a, max2, &l1, &h1);
 	bc_num_split(b, max2, &l2, &h2);
@@ -804,11 +816,13 @@ static void bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
 	}
 
 err:
+	BC_SIG_LOCK;
 	free(digs);
 	bc_num_free(&temp);
 	bc_num_free(&z2);
 	bc_num_free(&z1);
 	bc_num_free(&z0);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
@@ -847,8 +861,15 @@ static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		return;
 	}
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&cpa, a->len + a->rdx);
 	bc_num_init(&cpb, b->len + b->rdx);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
+
 	bc_num_copy(&cpa, a);
 	bc_num_copy(&cpb, b);
 
@@ -876,10 +897,12 @@ static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bc_num_retireMul(c, scale, a->neg, b->neg);
 
 err:
+	BC_SIG_LOCK;
 	bc_num_unshiftZero(&cpb, bzero);
 	bc_num_free(&cpb);
 	bc_num_unshiftZero(&cpa, azero);
 	bc_num_free(&cpa);
+	BC_LONGJMP_CONT;
 }
 
 static bool bc_num_nonZeroDig(BcDig *restrict a, size_t len) {
@@ -965,7 +988,13 @@ static void bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	assert(c->scale >= scale);
 	rdx = c->rdx - BC_NUM_RDX(scale);
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&cpb, len + 1);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	i = end - 1;
 
@@ -1014,7 +1043,9 @@ static void bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	}
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&cpb);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
@@ -1040,9 +1071,16 @@ static void bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 
 	len = bc_num_mulReq(a, b, scale);
+
+	BC_SIG_LOCK;
+
 	bc_num_init(&cpa, len);
 	bc_num_copy(&cpa, a);
 	bc_num_createCopy(&cpb, b);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	len = b->len;
 
@@ -1075,8 +1113,11 @@ static void bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bc_num_retireMul(c, scale, a->neg, b->neg);
 
+err:
+	BC_SIG_LOCK;
 	bc_num_free(&cpb);
 	bc_num_free(&cpa);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
@@ -1092,7 +1133,14 @@ static void bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 		return;
 	}
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&temp, d->cap);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
+
 	bc_num_d(a, b, c, scale);
 
 	if (scale) scale = ts + 1;
@@ -1107,7 +1155,9 @@ static void bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	d->neg = BC_NUM_NONZERO(d) ? neg : false;
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&temp);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
@@ -1118,9 +1168,20 @@ static void bc_num_rem(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	ts = bc_vm_growSize(scale, b->scale);
 	ts = BC_MAX(ts, a->scale);
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&c1, bc_num_mulReq(a, b, ts));
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
+
 	bc_num_r(a, b, &c1, c, scale, ts);
+
+err:
+	BC_SIG_LOCK;
 	bc_num_free(&c1);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
@@ -1152,9 +1213,11 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	b->neg = false;
 	bc_num_bigdig(b, &pow);
 	b->neg = neg;
-	BC_SIG_UNLOCK;
 
 	bc_num_createCopy(&copy, a);
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	if (!neg) {
 		size_t max = BC_MAX(scale, a->scale), scalepow = a->scale * pow;
@@ -1191,7 +1254,9 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	if (zero) bc_num_setToZero(c, scale);
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&copy);
+	BC_LONGJMP_CONT;
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -1256,7 +1321,15 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	}
 	else ptr_b = b;
 
-	if (init) bc_num_init(c, req);
+	if (init) {
+		BC_SIG_LOCK;
+
+		bc_num_init(c, req);
+
+		BC_SETJMP_LOCKED(err);
+
+		BC_SIG_UNLOCK;
+	}
 	else bc_num_expand(c, req);
 
 	op(ptr_a, ptr_b, c, scale);
@@ -1265,7 +1338,12 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	assert(c->rdx <= c->len || !c->len);
 	assert(!c->len || c->num[c->len - 1] || c->rdx == c->len);
 
-	if (init) bc_num_free(&num2);
+err:
+	if (init) {
+		BC_SIG_LOCK;
+		bc_num_free(&num2);
+		BC_LONGJMP_CONT;
+	}
 }
 
 #ifndef NDEBUG
@@ -1381,8 +1459,14 @@ static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	for (i = 0; zero && i < len; ++i) zero = (val[i] == '.' || val[i] == '0');
 	if (zero) return;
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&temp, BC_NUM_BIGDIG_LOG10);
 	bc_num_init(&mult1, BC_NUM_BIGDIG_LOG10);
+
+	BC_SETJMP_LOCKED(int_err);
+
+	BC_SIG_UNLOCK;
 
 	for (i = 0; i < len && (c = val[i]) && c != '.'; ++i) {
 
@@ -1396,10 +1480,19 @@ static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	if (i == len && !(c = val[i])) goto int_err;
 
 	assert(c == '.');
+
+	BC_SIG_LOCK;
+
+	BC_UNSETJMP;
+
 	bc_num_init(&mult2, BC_NUM_BIGDIG_LOG10);
 	bc_num_init(&result1, BC_NUM_DEF_SIZE);
 	bc_num_init(&result2, BC_NUM_DEF_SIZE);
 	bc_num_one(&mult1);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	m1 = &mult1;
 	m2 = &mult2;
@@ -1433,12 +1526,15 @@ static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
 	else bc_num_zero(n);
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&result2);
 	bc_num_free(&result1);
 	bc_num_free(&mult2);
 int_err:
+	BC_SIG_LOCK;
 	bc_num_free(&mult1);
 	bc_num_free(&temp);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_num_printNewline(void) {
@@ -1529,7 +1625,13 @@ static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
 	size_t places, mod;
 	BcDig digs[BC_NUM_BIGDIG_LOG10];
 
+	BC_SIG_LOCK;
+
 	bc_num_createCopy(&temp, n);
+
+	BC_SETJMP_LOCKED(exit);
+
+	BC_SIG_UNLOCK;
 
 	if (neg) {
 
@@ -1571,7 +1673,9 @@ static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
 	bc_num_printDecimal(&exp);
 
 exit:
+	BC_SIG_LOCK;
 	bc_num_free(&temp);
+	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1687,10 +1791,17 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	// happens and bc_num_printFixup() where the inner loop, or actual
 	// conversion, happens.
 
+	BC_SIG_LOCK;
+
 	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
 	bc_num_init(&fracp1, n->rdx);
 
 	bc_num_createCopy(&intp, n);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
+
 	bc_num_truncate(&intp, intp.scale);
 
 	bc_num_sub(n, &intp, &fracp1, 0);
@@ -1744,10 +1855,19 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 	if (!n->scale) goto err;
 
+	BC_SIG_LOCK;
+
+	BC_UNSETJMP;
+
 	bc_num_init(&fracp2, n->rdx);
 	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
 	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
 	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
+
+	BC_SETJMP(frac_err);
+
+	BC_SIG_UNLOCK;
+
 	bc_num_one(&flen1);
 
 	radix = true;
@@ -1779,13 +1899,16 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	}
 
 frac_err:
+	BC_SIG_LOCK;
 	bc_num_free(&flen2);
 	bc_num_free(&flen1);
 	bc_num_free(&fracp2);
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&fracp1);
 	bc_num_free(&intp);
 	bc_vec_free(&stack);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_num_printBase(BcNum *restrict n, BcBigDig base) {
@@ -1838,7 +1961,18 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 		req = nptr->cap;
 		bc_vec_pop(&vm.temps);
 	}
-	else num = bc_vm_malloc(BC_NUM_SIZE(req));
+	else {
+
+#if BC_ENABLE_SIGNALS
+		sig_atomic_t lock;
+#endif // BC_ENABLE_SIGNALS
+
+		BC_SIG_TRYLOCK(lock);
+
+		num = bc_vm_malloc(BC_NUM_SIZE(req));
+
+		BC_SIG_TRYUNLOCK(lock);
+	}
 
 	bc_num_setup(n, num, req);
 }
@@ -2007,10 +2141,16 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&temp, n->len);
 	bc_num_init(&temp2, n->len);
 	bc_num_init(&frac, n->rdx);
 	bc_num_init(&intn, bc_num_int(n));
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	bc_num_mul(&vm.max, &vm.max, &pow, 0);
 
@@ -2068,10 +2208,12 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	bc_rand_seed(rng, state1, state2, inc1, inc2);
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&intn);
 	bc_num_free(&frac);
 	bc_num_free(&temp2);
 	bc_num_free(&temp);
+	BC_LONGJMP_CONT;
 }
 
 void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
@@ -2082,8 +2224,14 @@ void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	BcDig temp1_num[BC_RAND_NUM_SIZE], temp2_num[BC_RAND_NUM_SIZE];
 	BcDig conv_num[BC_NUM_BIGDIG_LOG10];
 
+	BC_SIG_LOCK;
+
 	bc_num_init(n, 2 * BC_RAND_NUM_SIZE);
 	bc_num_init(&temp3, 2 * BC_RAND_NUM_SIZE);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
 	bc_num_setup(&temp1, temp1_num, sizeof(temp1_num) / sizeof(BcDig));
@@ -2123,8 +2271,10 @@ void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 	bc_num_add(&temp2, &temp3, n, 0);
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&temp3);
 	if (BC_SIG_EXC) bc_num_free(n);
+	BC_LONGJMP_CONT;
 }
 
 void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
@@ -2171,6 +2321,8 @@ void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	// an exclusive bound. This ensures that it happens. (See below.)
 	carry = (cmp < 0);
 
+	BC_SIG_LOCK;
+
 	bc_num_createCopy(&cp, a);
 
 	bc_num_init(&cp2, cp.len);
@@ -2181,6 +2333,10 @@ void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	bc_num_init(&pow, BC_NUM_DEF_SIZE);
 	bc_num_one(&pow);
 	bc_num_setup(&rand, rand_num, sizeof(rand_num) / sizeof(BcDig));
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	p1 = &pow;
 	p2 = &pow2;
@@ -2249,6 +2405,7 @@ void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	bc_num_clean(b);
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&pow);
 	bc_num_free(&pow2);
 	bc_num_free(&temp2);
@@ -2256,6 +2413,7 @@ err:
 	bc_num_free(&mod);
 	bc_num_free(&cp2);
 	bc_num_free(&cp);
+	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -2370,6 +2528,8 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	rdx = BC_MAX(rdx, a->rdx);
 	len = bc_vm_growSize(a->len, rdx);
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&num1, len);
 	bc_num_init(&num2, len);
 	bc_num_setup(&half, half_digs, sizeof(half_digs) / sizeof(BcDig));
@@ -2382,6 +2542,10 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	bc_num_init(&f, len);
 	bc_num_init(&fprime, len);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	x0 = &num1;
 	x1 = &num2;
@@ -2422,11 +2586,12 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	assert(!b->len || b->num[b->len - 1] || b->rdx == b->len);
 
 err:
-	if (BC_SIG_EXC) bc_num_free(b);
+	BC_SIG_LOCK;
 	bc_num_free(&fprime);
 	bc_num_free(&f);
 	bc_num_free(&num2);
 	bc_num_free(&num1);
+	BC_LONGJMP_CONT;
 }
 
 void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
@@ -2442,10 +2607,19 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	assert(c != d && a != d && b != d && b != c);
 
 	if (c == a) {
+
 		memcpy(&num2, c, sizeof(BcNum));
 		ptr_a = &num2;
+
+		BC_SIG_LOCK;
+
 		bc_num_init(c, len);
+
 		init = true;
+
+		BC_SETJMP_LOCKED(err);
+
+		BC_SIG_UNLOCK;
 	}
 	else {
 		ptr_a = a;
@@ -2472,7 +2646,12 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	assert(d->rdx <= d->len || !d->len);
 	assert(!d->len || d->num[d->len - 1] || d->rdx == d->len);
 
-	if (init) bc_num_free(&num2);
+err:
+	if (init) {
+		BC_SIG_LOCK;
+		bc_num_free(&num2);
+		BC_LONGJMP_CONT;
+	}
 }
 
 #if DC_ENABLED
@@ -2490,9 +2669,17 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 		bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
 
 	bc_num_expand(d, c->len);
+
+	BC_SIG_LOCK;
+
 	bc_num_init(&base, c->len);
 	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
 	bc_num_init(&temp, b->len + 1);
+	bc_num_createCopy(&exp, b);
+
+	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	bc_num_one(&two);
 	two.num[0] = 2;
@@ -2500,7 +2687,6 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	// We already checked for 0.
 	bc_num_rem(a, c, &base, 0);
-	bc_num_createCopy(&exp, b);
 
 	while (BC_NUM_NONZERO(&exp)) {
 
@@ -2522,10 +2708,11 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	}
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&exp);
-rem_err:
 	bc_num_free(&temp);
 	bc_num_free(&base);
+	BC_LONGJMP_CONT;
 	assert(!d->neg || d->len);
 	assert(!d->len || d->num[d->len - 1] || d->rdx == d->len);
 }

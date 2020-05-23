@@ -111,11 +111,13 @@ static void bc_vm_sig(int sig) {
 
 	vm.status = BC_STATUS_SIGNAL;
 
-	if (!vm.sig_lock) bc_vm_sigjmp();
+	if (!vm.sig_lock) BC_VM_JMP;
 }
 #endif // BC_ENABLE_SIGNALS
 
 void bc_vm_info(const char* const help) {
+
+	BC_SIG_LOCK;
 
 	bc_file_puts(&vm.fout, vm.name);
 	bc_file_putchar(&vm.fout, ' ');
@@ -126,6 +128,8 @@ void bc_vm_info(const char* const help) {
 		bc_file_putchar(&vm.fout, '\n');
 		bc_file_printf(&vm.fout, help, vm.name, vm.name);
 	}
+
+	BC_SIG_UNLOCK;
 }
 
 void bc_vm_error(BcError e, size_t line, ...) {
@@ -193,7 +197,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 
 	vm.status = (BcStatus) (id + 1);
 
-	bc_vm_sigjmp();
+	BC_VM_JMP;
 }
 
 static void bc_vm_envArgs(const char* const env_args_name) {
@@ -456,8 +460,6 @@ static void bc_vm_clean(void) {
 
 static void bc_vm_process(const char *text, bool is_stdin) {
 
-	BC_SETJMP(err);
-
 	bc_parse_text(&vm.prs, text);
 
 	do {
@@ -479,7 +481,7 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 				bc_parse_noElse(&vm.prs);
 			}
 
-			if (BC_PARSE_NO_EXEC(&vm.prs)) goto err;
+			if (BC_PARSE_NO_EXEC(&vm.prs)) return;
 		}
 #endif // BC_ENABLED
 
@@ -487,16 +489,6 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 		if (BC_I) bc_file_flush(&vm.fout);
 
 	} while (vm.prs.l.t != BC_LEX_EOF);
-
-err:
-	BC_SIG_LOCK;
-
-	bc_vm_clean();
-
-	vm.status = vm.status == BC_STATUS_QUIT || !BC_I || !is_stdin ?
-	    vm.status : BC_STATUS_SUCCESS;
-
-	BC_LONGJMP_CONT;
 }
 
 static void bc_vm_file(const char *file) {
@@ -506,9 +498,10 @@ static void bc_vm_file(const char *file) {
 	bc_lex_file(&vm.prs.l, file);
 
 	BC_SIG_LOCK;
-	BC_SETJMP_LOCKED(err);
 
 	bc_read_file(file, &data);
+
+	BC_SETJMP_LOCKED(err);
 
 	BC_SIG_UNLOCK;
 
@@ -522,6 +515,7 @@ static void bc_vm_file(const char *file) {
 err:
 	BC_SIG_LOCK;
 	free(data);
+	bc_vm_clean();
 	BC_LONGJMP_CONT;
 }
 
@@ -610,8 +604,9 @@ err:
 	BC_SIG_LOCK;
 	bc_vec_free(&buf);
 	bc_vec_free(&buffer);
-	bc_vec_pop(&vm.jmp_bufs);
-	vm.status = s;
+	bc_vm_clean();
+	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
+	    vm.status : BC_STATUS_SUCCESS;
 	BC_LONGJMP_CONT;
 }
 

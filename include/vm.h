@@ -169,19 +169,31 @@
 
 #define BC_SIG_LOCK do { vm.sig_lock = 1; } while (0)
 
-#define BC_SIG_UNLOCK                   \
-	do {                                \
-		if (BC_SIG_EXC) bc_vm_sigjmp(); \
-		vm.sig_lock = 0;                \
+#define BC_SIG_UNLOCK              \
+	do {                           \
+		if (BC_SIG_EXC) BC_VM_JMP; \
+		vm.sig_lock = 0;           \
+	} while (0)
+
+#define BC_SIG_TRYLOCK(v) \
+	do {                  \
+		v = vm.sig_lock;  \
+		vm.sig_lock = 1;  \
+	} while (0)
+
+#define BC_SIG_TRYUNLOCK(v)                \
+	do {                                   \
+		if (!(v) && BC_SIG_EXC) BC_VM_JMP; \
+		vm.sig_lock = (v);                 \
 	} while (0)
 
 #define BC_SETJMP(l)                     \
 	do {                                 \
 		sigjmp_buf sjb;                  \
 		vm.sig_lock = 1;                 \
-		if (sigsetjmp(sjb, 1)) goto l;   \
+		if (sigsetjmp(sjb, 0)) goto l;   \
 		bc_vec_push(&vm.jmp_bufs, &sjb); \
-		if (BC_SIG_EXC) bc_vm_sigjmp();  \
+		if (BC_SIG_EXC) BC_VM_JMP;       \
 		vm.sig_lock = 0;                 \
 	} while (0)
 
@@ -189,22 +201,32 @@
 	do {                                  \
 		sigjmp_buf sjb;                   \
 		BC_SIG_ASSERT_LOCKED;             \
-		if (sigsetjmp(sjb, 1)) goto l;    \
+		if (sigsetjmp(sjb, 0)) goto l;    \
 		bc_vec_push(&vm.jmp_bufs, &sjb);  \
 	} while (0)
 
-#define BC_LONGJMP_CONT                 \
-	do {                                \
-		BC_SIG_ASSERT_LOCKED;           \
-		if (BC_SIG_EXC) bc_vm_sigjmp(); \
-		bc_vec_pop(&vm.jmp_bufs);       \
-		vm.sig_lock = 0;                \
+#define BC_LONGJMP_CONT            \
+	do {                           \
+		BC_SIG_ASSERT_LOCKED;      \
+		if (BC_SIG_EXC) BC_VM_JMP; \
+		bc_vec_pop(&vm.jmp_bufs);  \
+		vm.sig_lock = 0;           \
 	} while (0)
+
+#define BC_LONGJMP_CONT_LOCKED     \
+	do {                           \
+		BC_SIG_ASSERT_LOCKED;      \
+		if (BC_SIG_EXC) BC_VM_JMP; \
+		bc_vec_pop(&vm.jmp_bufs);  \
+	} while (0)
+
+#define BC_UNSETJMP bc_vec_pop(&vm.jmp_bufs)
 
 #define BC_LONGJMP_STOP           \
 	do {                          \
 		bc_vec_pop(&vm.jmp_bufs); \
 		vm.sig_pop = 0;           \
+	} while (0)
 
 #else
 
@@ -214,11 +236,13 @@
 #define BC_SIG_ASSERT_LOCKED
 #define BC_SIG_LOCK
 #define BC_SIG_UNLOCK
+#define BC_SIG_TRYLOCK(v)
+#define BC_SIG_TRYUNLOCK(v)
 
 #define BC_SETJMP(l)                     \
 	do {                                 \
 		sigjmp_buf sjb;                  \
-		if (sigsetjmp(sjb, 1)) goto l;   \
+		if (sigsetjmp(sjb, 0)) goto l;   \
 		bc_vec_push(&vm.jmp_bufs, &sjb); \
 	} while (0)
 
@@ -226,16 +250,20 @@
 	do {                                  \
 		sigjmp_buf sjb;                   \
 		BC_SIG_ASSERT_LOCKED;             \
-		if (sigsetjmp(sjb, 1)) goto l;    \
+		if (sigsetjmp(sjb, 0)) goto l;    \
 		bc_vec_push(&vm.jmp_bufs, &sjb);  \
 	} while (0)
 
-#define BC_LONGJMP_CONT                 \
-	do {                                \
-		BC_SIG_ASSERT_LOCKED;           \
-		if (BC_SIG_EXC) bc_vm_sigjmp(); \
-		bc_vec_pop(&vm.jmp_bufs);       \
+#define BC_LONGJMP_CONT            \
+	do {                           \
+		BC_SIG_ASSERT_LOCKED;      \
+		if (BC_SIG_EXC) BC_VM_JMP; \
+		bc_vec_pop(&vm.jmp_bufs);  \
 	} while (0)
+
+#define BC_LONGJMP_CONT_LOCKED BC_LONGJMP_CONT
+
+#define BC_UNSETJMP bc_vec_pop(&vm.jmp_bufs)
 
 #define BC_LONGJMP_STOP           \
 	do {                          \

@@ -46,18 +46,21 @@ int bc_id_cmp(const BcId *e1, const BcId *e2) {
 
 #ifndef NDEBUG
 void bc_id_free(void *id) {
+	BC_SIG_ASSERT_LOCKED;
 	assert(id != NULL);
 	free(((BcId*) id)->name);
 }
 #endif // NDEBUG
 
 void bc_string_free(void *string) {
+	BC_SIG_ASSERT_LOCKED;
 	assert(string != NULL && (*((char**) string)) != NULL);
 	free(*((char**) string));
 }
 
 void bc_const_free(void *constant) {
 	BcConst *c = constant;
+	BC_SIG_ASSERT_LOCKED;
 	assert(c->val != NULL);
 	free(c->val);
 	bc_num_free(&c->num);
@@ -90,6 +93,7 @@ void bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 #endif // BC_ENABLED
 
 void bc_func_init(BcFunc *f, const char *name) {
+	BC_SIG_ASSERT_LOCKED;
 	assert(f != NULL && name != NULL);
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
 	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
@@ -106,6 +110,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 }
 
 void bc_func_reset(BcFunc *f) {
+	BC_SIG_ASSERT_LOCKED;
 	assert(f != NULL);
 	bc_vec_npop(&f->code, f->code.len);
 	bc_vec_npop(&f->strs, f->strs.len);
@@ -122,6 +127,7 @@ void bc_func_reset(BcFunc *f) {
 
 void bc_func_free(void *func) {
 	BcFunc *f = (BcFunc*) func;
+	BC_SIG_ASSERT_LOCKED;
 	assert(f != NULL);
 	bc_vec_free(&f->code);
 	bc_vec_free(&f->strs);
@@ -135,6 +141,7 @@ void bc_func_free(void *func) {
 }
 
 void bc_array_init(BcVec *a, bool nums) {
+	BC_SIG_ASSERT_LOCKED;
 	if (nums) bc_vec_init(a, sizeof(BcNum), bc_num_free);
 	else bc_vec_init(a, sizeof(BcVec), bc_vec_free);
 	bc_array_expand(a, 1);
@@ -143,6 +150,8 @@ void bc_array_init(BcVec *a, bool nums) {
 void bc_array_copy(BcVec *d, const BcVec *s) {
 
 	size_t i;
+
+	BC_SIG_ASSERT_LOCKED;
 
 	assert(d != NULL && s != NULL);
 	assert(d != s && d->size == s->size && d->dtor == s->dtor);
@@ -160,6 +169,8 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 void bc_array_expand(BcVec *a, size_t len) {
 
 	assert(a != NULL);
+
+	BC_SIG_ASSERT_LOCKED;
 
 	bc_vec_expand(a, len);
 
@@ -241,6 +252,8 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 void bc_result_free(void *result) {
 
 	BcResult *r = (BcResult*) result;
+
+	BC_SIG_ASSERT_LOCKED;
 
 	assert(r != NULL);
 

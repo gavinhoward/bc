@@ -73,16 +73,27 @@ void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
 
 			BcConst c;
 
+			BC_SIG_LOCK;
+
 			c.val = bc_vm_strdup(string);
 			c.base = BC_NUM_BIGDIG_MAX;
 
 			memset(&c.num, 0, sizeof(BcNum));
 			bc_vec_push(v, &c);
+
+			BC_SIG_UNLOCK;
 		}
 	}
 	else {
-		char *str = bc_vm_strdup(string);
+
+		char *str;
+
+		BC_SIG_LOCK;
+
+		str = bc_vm_strdup(string);
 		bc_vec_push(v, &str);
+
+		BC_SIG_UNLOCK;
 	}
 
 	bc_parse_updateFunc(p, p->fidx);
@@ -150,6 +161,8 @@ void bc_parse_reset(BcParse *p) {
 
 void bc_parse_free(BcParse *p) {
 
+	BC_SIG_ASSERT_LOCKED;
+
 	assert(p != NULL);
 
 #if BC_ENABLED
@@ -170,6 +183,8 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 #if BC_ENABLED
 	uint16_t flag = 0;
 #endif // BC_ENABLED
+
+	BC_SIG_ASSERT_LOCKED;
 
 	assert(p != NULL && prog != NULL);
 

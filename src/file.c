@@ -63,8 +63,11 @@ static void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH])
 static void bc_file_output(int fd, const char *buf, size_t n) {
 
 	size_t bytes = 0;
+#if BC_ENABLE_SIGNALS
+		sig_atomic_t lock;
+#endif // BC_ENABLE_SIGNALS
 
-	BC_SIG_ASSERT_LOCKED;
+	BC_SIG_TRYLOCK(lock);
 
 	while (bytes < n) {
 
@@ -74,20 +77,16 @@ static void bc_file_output(int fd, const char *buf, size_t n) {
 
 			if (errno == EPIPE) {
 				vm.status = BC_STATUS_EOF;
-				bc_vm_sigjmp();
+				BC_VM_JMP;
 			}
-#if BC_ENABLE_SIGNALS
-			else if (errno == EINTR) {
-				vm.status = BC_STATUS_SIGNAL;
-				bc_vm_sigjmp();
-			}
-#endif // BC_ENABLE_SIGNALS
 
 			bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 		}
 
 		bytes += (size_t) written;
 	}
+
+	BC_SIG_TRYUNLOCK(lock);
 }
 
 void bc_file_flush(BcFile *restrict f) {
@@ -113,13 +112,9 @@ void bc_file_printf(BcFile *restrict f, const char *fmt, ...) {
 
 	va_list args;
 
-	BC_SIG_LOCK;
-
 	va_start(args, fmt);
 	bc_file_vprintf(f, fmt, args);
 	va_end(args);
-
-	BC_SIG_UNLOCK;
 }
 
 void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {

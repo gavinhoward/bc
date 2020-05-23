@@ -184,11 +184,13 @@ void bc_lex_name(BcLex *l) {
 }
 
 void bc_lex_init(BcLex *l) {
+	BC_SIG_ASSERT_LOCKED;
 	assert(l != NULL);
 	bc_vec_init(&l->str, sizeof(char), NULL);
 }
 
 void bc_lex_free(BcLex *l) {
+	BC_SIG_ASSERT_LOCKED;
 	assert(l != NULL);
 	bc_vec_free(&l->str);
 }

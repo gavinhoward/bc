@@ -37,6 +37,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <setjmp.h>
+
 #if BC_ENABLE_SIGNALS
 #include <signal.h>
 #endif // BC_ENABLE_SIGNALS
@@ -133,6 +135,8 @@ size_t bc_program_search(BcProgram *p, char *id, bool var) {
 	e.idx = v->len;
 	new = bc_map_insert(map, &e, &i);
 
+	BC_SIG_LOCK;
+
 	if (new) {
 		bc_array_init(&data.v, var);
 		bc_vec_push(v, &data.v);
@@ -140,6 +144,8 @@ size_t bc_program_search(BcProgram *p, char *id, bool var) {
 
 	ptr = bc_vec_item(map, i);
 	if (new) ptr->name = bc_vm_strdup(e.name);
+
+	BC_SIG_UNLOCK;
 
 	return ptr->idx;
 }
@@ -174,9 +180,14 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 			}
 
 			n = &r->d.n;
+
+#if BC_ENABLE_SIGNALS
+			n->num = NULL;
+#endif // BC_ENABLE_SIGNALS
+			r->t = BC_RESULT_TEMP;
+
 			bc_num_createCopy(n, &c->num);
 
-			r->t = BC_RESULT_TEMP;
 			break;
 		}
 
@@ -216,7 +227,11 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
 				assert(v->size == sizeof(BcNum));
 
-				if (v->len <= idx) bc_array_expand(v, bc_vm_growSize(idx, 1));
+				if (v->len <= idx) {
+					BC_SIG_LOCK;
+					bc_array_expand(v, bc_vm_growSize(idx, 1));
+					BC_SIG_UNLOCK;
+				}
 
 				n = bc_vec_item(v, idx);
 			}
@@ -374,15 +389,29 @@ static void bc_program_op(BcProgram *p, uchar inst) {
 	size_t idx = inst - BC_INST_POWER;
 
 	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
+
+#if BC_ENABLE_SIGNALS
+	res.d.n.num = NULL;
+#endif // BC_ENABLE_SIGNALS
+
+	BC_SETJMP(err);
+
 	bc_num_init(&res.d.n, bc_program_opReqs[idx](n1, n2, BC_PROG_SCALE(p)));
 
 	bc_program_ops[idx](n1, n2, &res.d.n, BC_PROG_SCALE(p));
+
+	BC_SIG_LOCK;
+
 	bc_program_binOpRetire(p, &res);
+
+	BC_LONGJMP_CONT;
 
 	return;
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(&res.d.n);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_program_read(BcProgram *p) {
@@ -401,15 +430,21 @@ static void bc_program_read(BcProgram *p) {
 			bc_vm_err(BC_ERROR_EXEC_REC_READ);
 	}
 
+	BC_SIG_LOCK;
+
 	file = vm.file;
+	bc_parse_init(&parse, p, BC_PROG_READ);
+	bc_vec_init(&buf, sizeof(char), NULL);
+
+	BC_SETJMP_LOCKED(exec_err);
+
+	BC_SIG_UNLOCK;
+
 	bc_lex_file(&parse.l, bc_program_stdin_name);
 	bc_vec_npop(&f->code, f->code.len);
-	bc_vec_init(&buf, sizeof(char), NULL);
 
 	s = bc_read_line(&buf, BC_IS_BC ? "read> " : "?> ");
 	if (s == BC_STATUS_EOF) bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
-
-	bc_parse_init(&parse, p, BC_PROG_READ);
 
 	bc_parse_text(&parse, buf.v);
 	vm.expr(&parse, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
@@ -438,9 +473,11 @@ static void bc_program_read(BcProgram *p) {
 #endif // DC_ENABLED
 
 exec_err:
+	BC_SIG_LOCK;
 	bc_parse_free(&parse);
 	bc_vec_free(&buf);
 	vm.file = file;
+	BC_LONGJMP_CONT;
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -562,17 +599,20 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 void bc_program_negate(BcResult *r, BcNum *n) {
 	BcNum *rn = &r->d.n;
+	BC_SIG_ASSERT_LOCKED;
 	bc_num_copy(rn, n);
 	if (BC_NUM_NONZERO(rn)) rn->neg = !rn->neg;
 }
 
 void bc_program_not(BcResult *r, BcNum *n) {
+	BC_SIG_ASSERT_LOCKED;
 	if (!bc_num_cmpZero(n)) bc_num_one(&r->d.n);
 }
 
 #if BC_ENABLE_EXTRA_MATH
 void bc_program_trunc(BcResult *r, BcNum *n) {
 	BcNum *rn = &r->d.n;
+	BC_SIG_ASSERT_LOCKED;
 	bc_num_copy(rn, n);
 	bc_num_truncate(rn, n->scale);
 }
@@ -585,9 +625,13 @@ static void bc_program_unary(BcProgram *p, uchar inst) {
 
 	bc_program_prep(p, &ptr, &num);
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&res.d.n, num->len);
 	bc_program_unarys[inst - BC_INST_NEG](&res, num);
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
+
+	BC_SIG_UNLOCK;
 }
 
 static void bc_program_logical(BcProgram *p, uchar inst) {
@@ -654,10 +698,14 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 		}
 	}
 
+	BC_SIG_LOCK;
+
 	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
 	if (cond) bc_num_one(&res.d.n);
 
 	bc_program_binOpRetire(p, &res);
+
+	BC_SIG_UNLOCK;
 }
 
 #if DC_ENABLED
@@ -725,6 +773,8 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 	}
 #endif // DC_ENABLED
 
+	BC_SIG_LOCK;
+
 	if (var) bc_num_createCopy(&r.d.n, n);
 	else {
 
@@ -762,6 +812,8 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 			// We need to return early.
 			bc_vec_push(vec, &r.d);
 			bc_vec_pop(&p->results);
+
+			BC_SIG_UNLOCK;
 			return;
 		}
 		else if (ref_size && t != BC_TYPE_REF) v = bc_program_dereference(p, v);
@@ -773,6 +825,8 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 
 	bc_vec_push(vec, &r.d);
 	bc_vec_pop(&p->results);
+
+	BC_SIG_UNLOCK;
 }
 
 static void bc_program_assign(BcProgram *p, uchar inst) {
@@ -791,10 +845,12 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		size_t idx = right->d.loc.loc;
 
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
+			BC_SIG_LOCK;
 			bc_num_free(l);
 			memset(l, 0, sizeof(BcNum));
 			l->num = NULL;
 			l->scale = idx;
+			BC_SIG_UNLOCK;
 		}
 		else {
 			BcVec *v = bc_program_vec(p, left->d.loc.loc, BC_TYPE_VAR);
@@ -855,11 +911,15 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 	else if (left->t == BC_RESULT_SEED) bc_num_rng(l, &p->rng);
 #endif // BC_ENABLE_EXTRA_MATH
 
+	BC_SIG_LOCK;
+
 	if (use_val) {
 		bc_num_createCopy(&res.d.n, l);
 		bc_program_binOpRetire(p, &res);
 	}
 	else bc_vec_npop(&p->results, 2);
+
+	BC_SIG_UNLOCK;
 }
 
 static void bc_program_pushVar(BcProgram *p, const char *restrict code,
@@ -885,12 +945,23 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 		assert(BC_PROG_STACK(v, 2 - copy));
 
 		if (!BC_PROG_STR(num)) {
+
+			BC_SIG_LOCK;
+
 			r.t = BC_RESULT_TEMP;
 			bc_num_createCopy(&r.d.n, num);
+
+			if (!copy) bc_vec_pop(v);
+
+			bc_vec_push(&p->results, &r);
+
+			BC_SIG_UNLOCK;
+
+			return;
 		}
 		else {
-			r.t = BC_RESULT_STR;
 			r.d.loc.loc = num->scale;
+			r.t = BC_RESULT_STR;
 		}
 
 		if (!copy) bc_vec_pop(v);
@@ -1014,6 +1085,8 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 		bc_program_copyToVar(p, a->loc, (BcType) a->idx, last);
 	}
 
+	BC_SIG_LOCK;
+
 	for (; i < f->autos.len; ++i) {
 
 		a = bc_vec_item(&f->autos, i);
@@ -1031,6 +1104,8 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 	}
 
 	bc_vec_push(&p->stack, &ip);
+
+	BC_SIG_UNLOCK;
 }
 
 static void bc_program_return(BcProgram *p, uchar inst) {
@@ -1053,6 +1128,8 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 
 	f = bc_vec_item(&p->fns, ip->func);
 	res.t = BC_RESULT_TEMP;
+
+	BC_SIG_LOCK;
 
 	if (inst == BC_INST_RET) {
 
@@ -1092,6 +1169,8 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 
 	bc_vec_push(&p->results, &res);
 	bc_vec_pop(&p->stack);
+
+	BC_SIG_UNLOCK;
 }
 #endif // BC_ENABLED
 
@@ -1124,6 +1203,10 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 #if DC_ENABLED
 	if (!len && inst != BC_INST_SCALE_FUNC) bc_program_type_num(opd, num);
 #endif // DC_ENABLED
+
+	resn->num = NULL;
+
+	BC_SETJMP(err);
 
 	if (inst == BC_INST_SQRT) bc_num_sqrt(num, resn, BC_PROG_SCALE(p));
 	else if (inst == BC_INST_ABS) {
@@ -1176,7 +1259,19 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 		bc_num_createFromBigdig(resn, val);
 	}
 
+	BC_SIG_LOCK;
+	BC_UNSETJMP;
+
 	bc_program_retire(p, &res, BC_RESULT_TEMP);
+
+	BC_SIG_UNLOCK;
+
+	return;
+
+err:
+	BC_SIG_LOCK;
+	if (resn->num) bc_num_free(resn);
+	BC_LONGJMP_CONT;
 }
 
 #if DC_ENABLED
@@ -1189,21 +1284,36 @@ static void bc_program_divmod(BcProgram *p) {
 	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 
 	req = bc_num_mulReq(n1, n2, BC_PROG_SCALE(p));
+
+#if BC_ENABLE_SIGNALS
+	resn->num = NULL;
+	resn2->num = NULL;
+#endif // BC_ENABLE_SIGNALS
+
+	BC_SETJMP(err);
+
 	bc_num_init(resn, req);
 	bc_num_init(resn2, req);
 
 	bc_num_divmod(n1, n2, resn2, resn, BC_PROG_SCALE(p));
 
+	BC_SIG_LOCK;
+
+	BC_UNSETJMP;
+
 	bc_program_binOpRetire(p, &res2);
 	res.t = BC_RESULT_TEMP;
 	bc_vec_push(&p->results, &res);
 
+	BC_SIG_UNLOCK;
+
 	return;
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(resn2);
 	bc_num_free(resn);
-	return;
+	BC_LONGJMP_CONT;
 }
 
 static void bc_program_modexp(BcProgram *p) {
@@ -1226,17 +1336,31 @@ static void bc_program_modexp(BcProgram *p) {
 	if (r1->t == BC_RESULT_ARRAY_ELEM && (r1->t == r2->t || r1->t == r3->t))
 		n1 = bc_program_num(p, r1);
 
+#if BC_ENABLE_SIGNALS
+	resn->num = NULL;
+#endif // BC_ENABLE_SIGNALS
+
+	BC_SETJMP(err);
+
 	bc_num_init(resn, n3->len);
+
 	bc_num_modexp(n1, n2, n3, resn);
+
+	BC_SIG_LOCK;
+
+	BC_UNSETJMP;
 
 	bc_vec_pop(&p->results);
 	bc_program_binOpRetire(p, &res);
 
+	BC_SIG_UNLOCK;
+
 	return;
 
 err:
+	BC_SIG_LOCK;
 	bc_num_free(resn);
-	return;
+	BC_LONGJMP_CONT;
 }
 
 static void bc_program_stackLen(BcProgram *p) {
@@ -1246,14 +1370,47 @@ static void bc_program_stackLen(BcProgram *p) {
 	bc_vec_push(&p->results, &res);
 }
 
+static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
+
+	BcNum num;
+	BcBigDig val;
+	uchar c;
+
+#if BC_ENABLE_SIGNALS
+	num.num = NULL;
+#endif // BC_ENABLE_SIGNALS
+
+	BC_SETJMP(num_err);
+
+	bc_num_createCopy(&num, n);
+	bc_num_truncate(&num, num.scale);
+	num.neg = false;
+
+	// This is guaranteed to not have a divide by 0
+	// because strmb is equal to UCHAR_MAX + 1.
+	bc_num_mod(&num, &p->strmb, &num, 0);
+
+	// This is also guaranteed to not error because num is in the range
+	// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
+	// it is not negative.
+	bc_num_bigdig2(&num, &val);
+
+	c = (uchar) val;
+
+num_err:
+	BC_SIG_LOCK;
+	bc_num_free(&num);
+	BC_LONGJMP_CONT;
+	return c;
+}
+
 static void bc_program_asciify(BcProgram *p) {
 
-	BcStatus s;
 	BcResult *r, res;
-	BcNum *n, num;
-	char str[2], *str2, c;
+	BcNum *n;
+	char str[2], *str2;
+	uchar c;
 	size_t len;
-	BcBigDig val;
 	BcFunc f;
 
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_vm_err(BC_ERROR_EXEC_STACK);
@@ -1268,53 +1425,30 @@ static void bc_program_asciify(BcProgram *p) {
 
 	assert(len + BC_PROG_REQ_FUNCS == p->fns.len);
 
-	if (BC_PROG_NUM(r, n)) {
-
-		bc_num_createCopy(&num, n);
-		bc_num_truncate(&num, num.scale);
-		num.neg = false;
-
-		// This is guaranteed to not have a divide by 0
-		// because strmb is equal to UCHAR_MAX + 1.
-		bc_num_mod(&num, &p->strmb, &num, 0);
-		assert(!s);
-
-		// This is also guaranteed to not error because num is in the range
-		// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
-		// it is not negative.
-		bc_num_bigdig2(&num, &val);
-
-		c = (char) val;
-
-		bc_num_free(&num);
-	}
+	if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
 	else {
 		size_t idx = r->t == BC_RESULT_STR ? r->d.loc.loc : n->scale;
 		str2 = *((char**) bc_vec_item(p->strs, idx));
-		c = str2[0];
+		c = (uchar) str2[0];
 	}
 
-	str[0] = c;
+	str[0] = (char) c;
 	str[1] = '\0';
 
 	bc_program_addFunc(p, &f, bc_func_main);
+
+	BC_SIG_LOCK;
 	str2 = bc_vm_strdup(str);
 
 	// Make sure the pointer is updated.
 	bc_vec_push(p->strs, &str2);
 
+	BC_SIG_UNLOCK;
+
 	res.t = BC_RESULT_STR;
 	res.d.loc.loc = len;
 	bc_vec_pop(&p->results);
 	bc_vec_push(&p->results, &res);
-
-	return;
-
-#if BC_ENABLE_SIGNALS
-num_err:
-	bc_num_free(&num);
-	return;
-#endif // BC_ENABLE_SIGNALS
 }
 
 static void bc_program_printStream(BcProgram *p) {
@@ -1365,7 +1499,7 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 
 	if (i == p->stack.len) {
 		vm.status = BC_STATUS_QUIT;
-		bc_vm_sigjmp();
+		BC_VM_JMP;
 	}
 	else {
 		bc_vec_npop(&p->stack, i);
@@ -1410,13 +1544,16 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 			idx = else_idx;
 		}
 
+		BC_SIG_LOCK;
+		BC_SETJMP_LOCKED(exit);
+
 		if (exec) n = bc_vec_top(bc_program_vec(p, idx, BC_TYPE_VAR));
 		else goto exit;
 
-		if (BC_ERR(!BC_PROG_STR(n))) {
-			bc_vm_err(BC_ERROR_EXEC_TYPE);
-			goto exit;
-		}
+		if (BC_ERR(!BC_PROG_STR(n))) bc_vm_err(BC_ERROR_EXEC_TYPE);
+
+		BC_UNSETJMP;
+		BC_SIG_UNLOCK;
 
 		sidx = n->scale;
 	}
@@ -1428,7 +1565,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 		assert(r->t != BC_RESULT_VAR);
 
 		if (r->t == BC_RESULT_STR) sidx = r->d.loc.loc;
-		else goto no_exec;
+		else return;
 	}
 
 	fidx = sidx + BC_PROG_REQ_FUNCS;
@@ -1437,16 +1574,25 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 	if (!f->code.len) {
 
+		BC_SIG_LOCK;
+
 		bc_parse_init(&prs, p, fidx);
 		bc_lex_file(&prs.l, vm.file);
+
+		BC_SETJMP_LOCKED(err);
+
 		bc_parse_text(&prs, str);
 		vm.expr(&prs, BC_PARSE_NOCALL);
+
+		BC_UNSETJMP;
 
 		// We can just assert this here because
 		// dc should parse everything until EOF.
 		assert(prs.l.t == BC_LEX_EOF);
 
 		bc_parse_free(&prs);
+
+		BC_SIG_UNLOCK;
 	}
 
 	ip.idx = 0;
@@ -1473,8 +1619,7 @@ err:
 	bc_vec_npop(&f->code, f->code.len);
 exit:
 	bc_vec_pop(&p->results);
-no_exec:
-	return;
+	BC_LONGJMP_CONT;
 }
 
 static void bc_program_printStack(BcProgram *p) {
@@ -1524,6 +1669,8 @@ void bc_program_free(BcProgram *p) {
 
 	size_t i;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	assert(p != NULL);
 
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) bc_vec_free(p->globals_v + i);
@@ -1558,6 +1705,8 @@ void bc_program_init(BcProgram *p) {
 	BcInstPtr ip;
 	size_t i;
 	BcBigDig val = BC_BASE;
+
+	BC_SIG_ASSERT_LOCKED;
 
 	assert(p != NULL);
 
@@ -1624,6 +1773,8 @@ void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
 
 	BcInstPtr *ip;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	bc_func_init(f, name);
 	bc_vec_push(&p->fns, f);
 
@@ -1642,6 +1793,8 @@ size_t bc_program_insertFunc(BcProgram *p, char *name) {
 	BcFunc f;
 	bool new;
 	size_t idx;
+
+	BC_SIG_ASSERT_LOCKED;
 
 	assert(p != NULL && name != NULL);
 
@@ -1781,7 +1934,7 @@ void bc_program_exec(BcProgram *p) {
 			case BC_INST_HALT:
 			{
 				vm.status = BC_STATUS_QUIT;
-				bc_vm_sigjmp();
+				BC_VM_JMP;
 				break;
 			}
 
@@ -2057,8 +2210,13 @@ void bc_program_exec(BcProgram *p) {
 				assert(BC_PROG_STACK(&p->results, 1));
 
 				ptr = bc_vec_top(&p->results);
+
+				BC_SIG_LOCK;
+
 				bc_result_copy(&r, ptr);
 				bc_vec_push(&p->results, &r);
+
+				BC_SIG_UNLOCK;
 
 				break;
 			}

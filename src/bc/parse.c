@@ -202,7 +202,11 @@ static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	id.name = name;
 
+	BC_SETJMP_LOCKED(err);
+
 	bc_parse_params(p, flags);
+
+	BC_UNSETJMP;
 
 	// We just assert this because bc_parse_params() should
 	// ensure that the next token is what it should be.
@@ -233,6 +237,7 @@ static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 err:
 	free(name);
+	BC_LONGJMP_CONT_LOCKED;
 }
 
 static void bc_parse_name(BcParse *p, BcInst *type,
@@ -240,7 +245,12 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 {
 	char *name;
 
+	BC_SIG_LOCK;
+
 	name = bc_vm_strdup(p->l.str.v);
+
+	BC_SETJMP_LOCKED(err);
+
 	bc_lex_next(&p->l);
 
 	if (p->l.t == BC_LEX_LBRACKET) {
@@ -282,8 +292,12 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 		*type = BC_INST_CALL;
 		*can_assign = false;
 
+		BC_UNSETJMP;
+
 		// Return early because bc_parse_call() frees the name.
 		bc_parse_call(p, name, flags);
+
+		BC_SIG_UNLOCK;
 		return;
 	}
 	else {
@@ -295,6 +309,7 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 
 err:
 	free(name);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_parse_noArgBuiltin(BcParse *p, BcInst inst) {
@@ -1110,7 +1125,7 @@ static void bc_parse_stmt(BcParse *p) {
 			// Quit is a compile-time command. We don't exit directly,
 			// so the vm can clean up. Limits do the same thing.
 			vm.status = BC_STATUS_QUIT;
-			bc_vm_sigjmp();
+			BC_VM_JMP;
 			break;
 		}
 

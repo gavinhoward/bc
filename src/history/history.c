@@ -751,6 +751,8 @@ static void bc_history_edit_next(BcHistory *h, bool dir) {
 
 	if (h->history.len <= 1) return;
 
+	BC_SIG_LOCK;
+
 	dup = bc_vm_strdup(h->buf.v);
 
 	// Update the current history entry before
@@ -776,6 +778,8 @@ static void bc_history_edit_next(BcHistory *h, bool dir) {
 	h->pos = BC_HIST_BUF_LEN(h);
 
 	bc_history_refresh(h);
+
+	BC_SIG_UNLOCK;
 }
 
 /**
@@ -1062,6 +1066,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	BcStatus s = BC_STATUS_SUCCESS;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	bc_history_reset(h);
 
 #if BC_ENABLE_PROMPT
@@ -1269,6 +1275,8 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 	if (BC_TTYIN && !vm.history.badTerm) {
 
+		BC_SIG_LOCK;
+
 		s = bc_history_raw(h, prompt);
 		assert(!s || s == BC_STATUS_EOF);
 
@@ -1278,6 +1286,8 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		bc_history_add(h, line);
 
 		bc_vec_concat(vec, "\n");
+
+		BC_SIG_UNLOCK;
 	}
 	else s = bc_read_chars(vec, prompt);
 
@@ -1300,6 +1310,8 @@ void bc_history_add(BcHistory *h, char *line) {
 
 void bc_history_init(BcHistory *h) {
 
+	BC_SIG_ASSERT_LOCKED;
+
 	bc_vec_init(&h->buf, sizeof(char), NULL);
 	bc_vec_init(&h->history, sizeof(char*), bc_string_free);
 
@@ -1316,6 +1328,7 @@ void bc_history_init(BcHistory *h) {
 }
 
 void bc_history_free(BcHistory *h) {
+	BC_SIG_ASSERT_LOCKED;
 	bc_history_disableRaw(h);
 #ifndef NDEBUG
 	bc_vec_free(&h->buf);

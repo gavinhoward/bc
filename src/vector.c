@@ -45,16 +45,22 @@
 static void bc_vec_grow(BcVec *restrict v, size_t n) {
 
 	size_t len, cap = v->cap;
+#if BC_ENABLE_SIGNALS
+	sig_atomic_t lock;
+#endif // BC_ENABLE_SIGNALS
 
 	len = bc_vm_growSize(v->len, n);
 
 	while (cap < len) cap = bc_vm_growSize(cap, cap);
 
+	BC_SIG_TRYLOCK(lock);
 	v->v = bc_vm_realloc(v->v, bc_vm_arraySize(cap, v->size));
 	v->cap = cap;
+	BC_SIG_TRYUNLOCK(lock);
 }
 
 void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
+	BC_SIG_ASSERT_LOCKED;
 	assert(v != NULL && esize);
 	v->size = esize;
 	v->cap = BC_VEC_START_CAP;
@@ -64,10 +70,18 @@ void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
 }
 
 void bc_vec_expand(BcVec *restrict v, size_t req) {
+
+#if BC_ENABLE_SIGNALS
+	sig_atomic_t lock;
+#endif // BC_ENABLE_SIGNALS
+
 	assert(v != NULL);
+
 	if (v->cap < req) {
+		BC_SIG_TRYLOCK(lock);
 		v->v = bc_vm_realloc(v->v, bc_vm_arraySize(req, v->size));
 		v->cap = req;
+		BC_SIG_TRYUNLOCK(lock);
 	}
 }
 
