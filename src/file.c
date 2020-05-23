@@ -153,6 +153,20 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 
 			bc_file_puts(f, s);
 		}
+#if BC_DEBUG_CODE
+		else if (c == 'd') {
+
+			int d = va_arg(args, int);
+
+			if (d < 0) {
+				bc_file_putchar(f, '-');
+				d = -d;
+			}
+
+			bc_file_ultoa((unsigned long long) d, buf);
+			bc_file_puts(f, buf);
+		}
+#endif // BC_DEBUG_CODE
 		else if (c == 'l') {
 
 			unsigned long ul;
