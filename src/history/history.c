@@ -642,6 +642,7 @@ static void bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen)
 		colpos += bc_history_colPos(h->buf.v, len, len);
 
 		if (colpos < h->cols) {
+
 			// Avoid a full update of the line in the trivial case.
 			bc_file_write(&vm.ferr, cbuf, clen);
 			bc_file_flush(&vm.ferr);
