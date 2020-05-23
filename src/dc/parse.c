@@ -188,8 +188,6 @@ static void dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 		default:
 		{
 			bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
-			get_token = true;
-			break;
 		}
 	}
 

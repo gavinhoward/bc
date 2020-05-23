@@ -1142,7 +1142,6 @@ static void bc_parse_stmt(BcParse *p) {
 		default:
 		{
 			bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
-			break;
 		}
 	}
 
@@ -1249,10 +1248,8 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 #endif // BC_ENABLE_EXTRA_MATH
 			case BC_LEX_OP_ASSIGN:
 			{
-				if (!BC_PARSE_INST_VAR(prev)) {
+				if (!BC_PARSE_INST_VAR(prev))
 					bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
-					break;
-				}
 			}
 			// Fallthrough.
 			case BC_LEX_OP_POWER:

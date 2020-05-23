@@ -404,7 +404,6 @@ void bc_lex_token(BcLex *l) {
 		default:
 		{
 			bc_lex_invalidChar(l, c);
-			break;
 		}
 	}
 }
