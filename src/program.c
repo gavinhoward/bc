@@ -1108,14 +1108,6 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 	BcInstPtr *ip = bc_vec_top(&p->stack);
 
 	assert(BC_PROG_STACK(&p->stack, 2));
-
-#ifndef BC_PROG_NO_STACK_CHECK
-	if (!BC_IS_BC) {
-		if (BC_ERR(!BC_PROG_STACK(&p->results, ip->len + (inst == BC_INST_RET))))
-			bc_vm_err(BC_ERROR_EXEC_STACK);
-	}
-#endif // BC_PROG_NO_STACK_CHECK
-
 	assert(BC_PROG_STACK(&p->results, ip->len + (inst == BC_INST_RET)));
 
 	f = bc_vec_item(&p->fns, ip->func);
