@@ -931,15 +931,12 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 	r.d.loc.loc = idx;
 
 #if DC_ENABLED
-	if (pop || copy) {
+	if (!BC_IS_BC && (pop || copy)) {
 
 		BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
 
-		if (!BC_IS_BC) {
-			if (BC_ERR(!BC_PROG_STACK(v, 2 - copy)))
-				bc_vm_err(BC_ERROR_EXEC_STACK);
-		}
+		if (BC_ERR(!BC_PROG_STACK(v, 2 - copy))) bc_vm_err(BC_ERROR_EXEC_STACK);
 
 		assert(BC_PROG_STACK(v, 2 - copy));
 
