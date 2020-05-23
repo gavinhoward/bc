@@ -1711,6 +1711,13 @@ void bc_program_exec(BcProgram *p) {
 #if BC_ENABLED
 	BcNum *num;
 #endif // BC_ENABLED
+#ifndef NDEBUG
+	size_t jmp_bufs_len;
+#endif // NDEBUG
+
+#ifndef NDEBUG
+	jmp_bufs_len = vm.jmp_bufs.len;
+#endif // NDEBUG
 
 	if (BC_IS_BC) bc_program_setVecs(p, func);
 	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
@@ -2122,11 +2129,13 @@ void bc_program_exec(BcProgram *p) {
 			}
 #endif // NDEBUG
 		}
-	}
 
-// TODO: Add a setjmp for this.
-exit:
-	if (BC_ERR(vm.status && vm.status != BC_STATUS_QUIT)) bc_program_reset(p);
+#ifndef NDEBUG
+		// This is to allow me to use a debugger to see the last instruction,
+		// which will point to which function was the problem.
+		assert(jmp_bufs_len == vm.jmp_bufs.len);
+#endif // NDEBUG
+	}
 }
 
 #if BC_DEBUG_CODE
