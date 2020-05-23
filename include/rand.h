@@ -195,6 +195,8 @@ typedef uint_fast64_t BcRandState;
 
 #define BC_RAND_NUM_SIZE (BC_NUM_BIGDIG_LOG10 * 2 + 2)
 
+#define BC_RAND_SRAND_BITS ((1 << CHAR_BIT) - 1)
+
 typedef struct BcRNGData {
 
 	BcRandState state;

@@ -193,7 +193,7 @@ static ulong bc_rand_rand(void *ptr) {
 	BC_UNUSED(ptr);
 
 	for (i = 0; i < sizeof(ulong); ++i)
-		res |= ((ulong) (uchar) (unsigned int) rand()) << (i * CHAR_BIT);
+		res |= ((ulong) (rand() & BC_RAND_SRAND_BITS)) << (i * CHAR_BIT);
 
 	return res;
 }
