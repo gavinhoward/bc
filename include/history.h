@@ -107,6 +107,10 @@
 #include <vector.h>
 #include <read.h>
 
+#if BC_DEBUG_CODE
+#include <file.h>
+#endif // BC_DEBUG_CODE
+
 #define BC_HIST_DEF_COLS (80)
 #define BC_HIST_MAX_LEN (128)
 #define BC_HIST_MAX_LINE (4095)
@@ -119,18 +123,24 @@
 #define BC_HIST_PREV (true)
 
 #if BC_DEBUG_CODE
-#define lndebug(...)                                               \
-	do {                                                           \
-		if (bc_history_debug_fp == NULL) {                         \
-			bc_history_debug_fp = fopen("/tmp/lndebug.txt","a");   \
-			fprintf(bc_history_debug_fp,                           \
-			       "[%zu %zu %zu] p: %d, rows: %d, "               \
-			       "rpos: %d, max: %zu, oldmax: %d\n",             \
-			       l->len, l->pos, l->oldcolpos, plen, rows, rpos, \
-			       l->maxrows, old_rows);                          \
-		}                                                          \
-		fprintf(bc_history_debug_fp, ", " __VA_ARGS__);            \
-		fflush(bc_history_debug_fp);                               \
+
+#define BC_HISTORY_DEBUG_BUF_SIZE (1024)
+
+#define lndebug(...)                                                        \
+	do {                                                                    \
+		if (bc_history_debug_fp.fd == 0) {                                  \
+			bc_history_debug_buf = bc_vm_malloc(BC_HISTORY_DEBUG_BUF_SIZE); \
+			bc_file_init(&bc_history_debug_fp,                              \
+			             open("/tmp/lndebug.txt", O_APPEND),                \
+		                 BC_HISTORY_DEBUG_BUF_SIZE);                        \
+			bc_file_printf(&bc_history_debug_fp,                            \
+			       "[%zu %zu %zu] p: %d, rows: %d, "                        \
+			       "rpos: %d, max: %zu, oldmax: %d\n",                      \
+			       l->len, l->pos, l->oldcolpos, plen, rows, rpos,          \
+			       l->maxrows, old_rows);                                   \
+		}                                                                   \
+		bc_file_printf(&bc_history_debug_fp, ", " __VA_ARGS__);             \
+		bc_file_flush(&bc_history_debug_fp);                                \
 	} while (0)
 #else // BC_DEBUG_CODE
 #define lndebug(fmt, ...)
@@ -243,8 +253,9 @@ extern const size_t bc_history_wchars_len;
 extern const uint32_t bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
 #if BC_DEBUG_CODE
-extern FILE *bc_history_debug_fp;
-BcStatus bc_history_printKeyCodes(BcHistory* l);
+extern BcFile bc_history_debug_fp;
+extern char *bc_history_debug_buf;
+void bc_history_printKeyCodes(BcHistory* l);
 #endif // BC_DEBUG_CODE
 
 #endif // BC_ENABLE_HISTORY

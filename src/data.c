@@ -509,7 +509,8 @@ const size_t bc_history_combo_chars_len =
 	sizeof(bc_history_combo_chars) / sizeof(bc_history_combo_chars[0]);
 
 #if BC_DEBUG_CODE
-FILE *bc_history_debug_fp = NULL;
+BcFile bc_history_debug_fp;
+char *bc_history_debug_buf;
 #endif // BC_DEBUG_CODE
 #endif // BC_ENABLE_HISTORY
 
