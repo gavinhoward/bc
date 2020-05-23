@@ -192,17 +192,17 @@ void bc_args(int argc, char *argv[]) {
 			}
 #endif // DC_ENABLED
 
+#ifndef NDEBUG
 			// We shouldn't get here because bc_opt_error()/bc_vm_error() should
 			// longjmp() out.
 			case '?':
 			case ':':
 			default:
 			{
-#ifndef NDEBUG
 				assert(false);
-#endif // NDEBUG
 				return;
 			}
+#endif // NDEBUG
 		}
 	}
 
