@@ -704,6 +704,7 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
                  const char* const env_args, const char* env_exp_exit)
 {
 	int ttyin, ttyout, ttyerr;
+	char *buf;
 #if BC_ENABLE_SIGNALS
 	struct sigaction sa;
 
@@ -727,8 +728,12 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	bc_vm_gettext();
 
-	bc_file_init(&vm.ferr, STDERR_FILENO, 81);
-	bc_file_init(&vm.fout, STDOUT_FILENO, vm.line_len + 1);
+	buf = bc_vm_malloc(BC_VM_BUF_SIZE);
+
+	bc_file_init(&vm.ferr, STDERR_FILENO, buf + BC_VM_STDOUT_BUF_SIZE,
+	             BC_VM_STDERR_BUF_SIZE);
+	bc_file_init(&vm.fout, STDOUT_FILENO, buf, BC_VM_STDOUT_BUF_SIZE);
+	vm.buf = buf + BC_VM_STDOUT_BUF_SIZE + BC_VM_STDERR_BUF_SIZE;
 
 	vm.line_len = (uint16_t) bc_vm_envLen(env_len);
 
@@ -783,5 +788,8 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 exit:
 	BC_SIG_LOCK;
 	bc_vm_shutdown();
+#ifndef NDEBUG
+	free(buf);
+#endif // NDEBUG
 	BC_LONGJMP_CONT;
 }

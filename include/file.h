@@ -45,11 +45,13 @@
 typedef struct BcFile {
 
 	int fd;
-	BcVec v;
+	char *buf;
+	size_t len;
+	size_t cap;
 
 } BcFile;
 
-void bc_file_init(BcFile *f, int fd, size_t req);
+void bc_file_init(BcFile *f, int fd, char *buf, size_t cap);
 void bc_file_free(BcFile *f);
 
 void bc_file_putchar(BcFile *restrict f, uchar c);

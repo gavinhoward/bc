@@ -238,7 +238,10 @@
 
 #endif // BC_ENABLE_SIGNALS
 
-#define BC_VM_STDIN_BUF_SIZE (1023)
+#define BC_VM_BUF_SIZE (1<<12)
+#define BC_VM_STDOUT_BUF_SIZE (1<<11)
+#define BC_VM_STDERR_BUF_SIZE (1<<10)
+#define BC_VM_STDIN_BUF_SIZE BC_VM_STDERR_BUF_SIZE
 
 #define bc_vm_err(e) (bc_vm_error((e), 0))
 #define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))

@@ -91,31 +91,22 @@ static void bc_file_output(int fd, const char *buf, size_t n) {
 }
 
 void bc_file_flush(BcFile *restrict f) {
-
-	BC_SIG_LOCK;
-
-	bc_file_output(f->fd, f->v.v, f->v.len);
-	bc_vec_npop(&f->v, f->v.len);
-
-	BC_SIG_UNLOCK;
+	bc_file_output(f->fd, f->buf, f->len);
+	f->len = 0;
 }
 
 void bc_file_write(BcFile *restrict f, const char *buf, size_t n) {
 
-	if (n > f->v.cap - f->v.len) {
+	if (n > f->cap - f->len) {
 		bc_file_flush(f);
-		assert(!f->v.len);
+		assert(!f->len);
 	}
 
-	if (BC_UNLIKELY(n > f->v.cap - f->v.len)) {
-
-		BC_SIG_LOCK;
-
-		bc_file_output(f->fd, buf, n);
-
-		BC_SIG_UNLOCK;
+	if (BC_UNLIKELY(n > f->cap - f->len)) bc_file_output(f->fd, buf, n);
+	else {
+		memcpy(f->buf + f->len, buf, n);
+		f->len += n;
 	}
-	else bc_vec_npush(&f->v, n, buf);
 }
 
 void bc_file_printf(BcFile *restrict f, const char *fmt, ...) {
@@ -194,20 +185,21 @@ void bc_file_puts(BcFile *restrict f, const char *str) {
 }
 
 void bc_file_putchar(BcFile *restrict f, uchar c) {
-	if (f->v.len == f->v.cap) bc_file_flush(f);
-	assert(f->v.len < f->v.cap);
-	bc_vec_push(&f->v, &c);
+	if (f->len == f->cap) bc_file_flush(f);
+	assert(f->len < f->cap);
+	f->buf[f->len] = (char) c;
+	f->len += 1;
 }
 
-void bc_file_init(BcFile *f, int fd, size_t req) {
+void bc_file_init(BcFile *f, int fd, char *buf, size_t cap) {
+	BC_SIG_ASSERT_LOCKED;
 	f->fd = fd;
-	bc_vec_init(&f->v, sizeof(char), NULL);
-	bc_vec_expand(&f->v, bc_vm_growSize(req, 1));
+	f->buf = buf;
+	f->len = 0;
+	f->cap = cap;
 }
 
 void bc_file_free(BcFile *f) {
+	BC_SIG_ASSERT_LOCKED;
 	bc_file_flush(f);
-#ifndef NDEBUG
-	bc_vec_free(&f->v);
-#endif // NDEBUG
 }
