@@ -570,7 +570,11 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		return;
 	}
 
+	// Invert sign of b if it is to be subtracted. This operation must
+	// preced the tests for any of the operands being zero.
 	b_neg = (b->neg != sub);
+
+	// Actually add the numbers if their signs are equal, else subtract.
 	do_sub = (a->neg != b_neg);
 
 	a_int = bc_num_int(a);
@@ -584,6 +588,8 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	max_len = max_int + max_rdx;
 
 	if (do_sub) {
+
+		// Check whether b has to be subtracted from a or a from b.
 		if (a_int != b_int) do_rev_sub = (a_int < b_int);
 		else if (a->rdx > b->rdx)
 			do_rev_sub = (bc_num_compare(a->num + diff, b->num, b->len) < 0);
@@ -591,6 +597,9 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 			do_rev_sub = (bc_num_compare(a->num, b->num + diff, a->len) <= 0);
 	}
 	else {
+
+		// The result array of the addition might come out one element
+		// longer than the bigger of the operand arrays.
 		max_len += 1;
 		do_rev_sub = false;
 	}
@@ -615,19 +624,34 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	if (diff) {
 
+		// If the rdx values of the operands do not match, the result will
+		// have low end elements that are the positive or negative trailing
+		// elements of the operand with higher rdx value.
 		if ((a->rdx > b->rdx) != do_rev_sub) {
+
+			// !do_rev_sub && a->rdx > b->rdx || do_rev_sub && b->rdx > a->rdx
+			// The left operand has BcDig values that need to be copied,
+			// either from a or from b (in case of a reversed subtraction).
 			memcpy(ptr_c, ptr_l, BC_NUM_SIZE(diff));
 			ptr_l += diff;
 			len_l -= diff;
 		}
 		else {
 
+			// The right operand has BcDig values that need to be copied
+			// or subtracted from zero (in case of a subtraction).
 			if (do_sub) {
 
+				// do_sub (do_rev_sub && a->rdx > b->rdx ||
+				// !do_rev_sub && b->rdx > a->rdx)
 				for (i = 0; i < diff; i++)
 					ptr_c[i] = bc_num_subDigits(0, ptr_r[i], &carry);
 			}
-			else memcpy(ptr_c, ptr_r, BC_NUM_SIZE(diff));
+			else {
+
+				// !do_sub && b->rdx > a->rdx
+				memcpy(ptr_c, ptr_r, BC_NUM_SIZE(diff));
+			}
 
 			ptr_r += diff;
 			len_r -= diff;
@@ -638,6 +662,12 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	min_len = BC_MIN(len_l, len_r);
 
+	// After dealing with possible low array elements that depend on only one
+	// operand, the actual add or subtract can be performed as if the rdx of
+	// both operands was the same.
+	// Inlining takes care of eliminating constant zero arguments to
+	// addDigit/subDigit (checked in disassembly of resulting bc binary
+	// compiled with gcc and clang).
 	if (do_sub) {
 		for (i = 0; i < min_len; ++i)
 			ptr_c[i] = bc_num_subDigits(ptr_l[i], ptr_r[i], &carry);
