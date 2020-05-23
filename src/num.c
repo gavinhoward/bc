@@ -2349,9 +2349,11 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	if (BC_ERR(a->neg)) bc_vm_err(BC_ERROR_MATH_NEGATIVE);
 
 	if (a->scale > scale) scale = a->scale;
+
 	len = bc_vm_growSize(bc_num_intDigits(a), 1);
 	rdx = BC_NUM_RDX(scale);
 	req = bc_vm_growSize(BC_MAX(rdx, a->rdx), len >> 1);
+
 	bc_num_init(b, bc_vm_growSize(req, 1));
 
 	if (BC_NUM_ZERO(a)) {

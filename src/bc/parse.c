@@ -215,6 +215,7 @@ static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	if (idx == BC_VEC_INVALID_IDX) {
 
 		idx = bc_program_insertFunc(p->prog, name);
+
 		assert(idx != BC_VEC_INVALID_IDX);
 
 		// Make sure that this pointer was not invalidated.
@@ -1157,8 +1158,7 @@ void bc_parse_parse(BcParse *p) {
 
 exit:
 	BC_SIG_LOCK;
-	if (BC_ERR((vm.status && vm.status != BC_STATUS_QUIT)))
-		bc_parse_reset(p);
+	if (BC_ERR((vm.status && vm.status != BC_STATUS_QUIT))) bc_parse_reset(p);
 	BC_LONGJMP_CONT;
 }
 

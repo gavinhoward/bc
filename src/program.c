@@ -1134,12 +1134,6 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 	else if (inst == BC_INST_IRAND) {
 		bc_num_init(resn, num->len - num->rdx);
 		bc_num_irand(num, resn, &p->rng);
-
-		// TODO: Do I need a setjmp for this?
-		/*if (BC_ERR(s)) {*/
-			/*bc_num_free(resn);*/
-			/*return s;*/
-		/*}*/
 	}
 #endif // BC_ENABLE_EXTRA_MATH
 	else {
@@ -1546,9 +1540,7 @@ void bc_program_free(BcProgram *p) {
 	bc_vec_free(&p->stack);
 
 #if BC_ENABLED
-	if (BC_IS_BC) {
-		bc_num_free(&p->last);
-	}
+	if (BC_IS_BC) bc_num_free(&p->last);
 #endif // BC_ENABLED
 
 #if BC_ENABLE_EXTRA_MATH
