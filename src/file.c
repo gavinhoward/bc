@@ -123,9 +123,7 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 	const char *ptr = fmt;
 	char buf[BC_FILE_ULL_LENGTH];
 
-	percent = strchr(ptr, '%');
-
-	while (percent != NULL) {
+	while ((percent = strchr(ptr, '%')) != NULL) {
 
 		char c;
 
@@ -183,7 +181,7 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 			bc_file_puts(f, buf);
 		}
 
-		ptr = percent + 1 + (c == 'l' || c == 'z');
+		ptr = percent + 2 + (c == 'l' || c == 'z');
 	}
 
 	if (ptr[0]) bc_file_puts(f, ptr);
