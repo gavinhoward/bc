@@ -582,7 +582,6 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
  */
 static void bc_history_refresh(BcHistory *h) {
 
-	char seq[BC_HIST_SEQ_SIZE];
 	char* buf = h->buf.v;
 	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos;
 
@@ -1038,7 +1037,6 @@ static void bc_history_reset(BcHistory *h) {
 
 static void bc_history_printCtrl(BcHistory *h, unsigned int c) {
 
-	BcStatus s;
 	char str[3] = "^A";
 	const char newline[2] = "\n";
 
@@ -1341,17 +1339,15 @@ void bc_history_free(BcHistory *h) {
  * on screen for debugging / development purposes.
  */
 #if BC_DEBUG_CODE
-BcStatus bc_history_printKeyCodes(BcHistory *h) {
+void bc_history_printKeyCodes(BcHistory *h) {
 
-	BcStatus s;
 	char quit[4];
 
 	bc_vm_printf("Linenoise key codes debugging mode.\n"
 	             "Press keys to see scan codes. "
 	             "Type 'quit' at any time to exit.\n");
 
-	s = bc_history_enableRaw(h);
-	if (BC_ERR(s)) return s;
+	bc_history_enableRaw(h);
 	memset(quit, ' ', 4);
 
 	while(true) {
@@ -1374,12 +1370,10 @@ BcStatus bc_history_printKeyCodes(BcHistory *h) {
 
 		// Go left edge manually, we are in raw mode.
 		bc_vm_putchar('\r');
-		bc_vm_fflush(stdout);
+		bc_file_flush(&vm.fout);
 	}
 
 	bc_history_disableRaw(h);
-
-	return s;
 }
 #endif // BC_DEBUG_CODE
 

@@ -81,7 +81,7 @@ void bc_vm_sigjmp(void) {
 #endif // BC_DEBUG_CODE
 
 #ifndef NDEBUG
-	assert(vm.jmp_bufs.len - vm.sig_pop);
+	assert(vm.jmp_bufs.len - (size_t) vm.sig_pop);
 #endif // NDEBUG
 
 	if (vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);
@@ -375,7 +375,6 @@ char* bc_vm_strdup(const char *str) {
 void bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
-	int ret;
 
 	BC_SIG_LOCK;
 

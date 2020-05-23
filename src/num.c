@@ -827,7 +827,6 @@ err:
 
 static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	BcStatus s;
 	BcNum cpa, cpb;
 	size_t ascale, bscale, ardx, brdx, azero = 0, bzero = 0, zero, len, rscale;
 

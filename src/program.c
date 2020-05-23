@@ -733,7 +733,7 @@ static void bc_program_assignStr(BcProgram *p, BcResult *r,
 static void bc_program_copyToVar(BcProgram *p, size_t idx,
                                  BcType t, bool last)
 {
-	BcResult *ptr, r;
+	BcResult *ptr = NULL, r;
 	BcVec *vec;
 	BcNum *n = NULL;
 	bool var = (t == BC_TYPE_VAR);
@@ -998,7 +998,6 @@ static void bc_program_pushArray(BcProgram *p, const char *restrict code,
 #if BC_ENABLED
 static void bc_program_incdec(BcProgram *p, uchar inst) {
 
-	BcStatus s;
 	BcResult *ptr, res, copy;
 	BcNum *num;
 	uchar inst2;
@@ -1453,7 +1452,6 @@ static void bc_program_asciify(BcProgram *p) {
 
 static void bc_program_printStream(BcProgram *p) {
 
-	BcStatus s;
 	BcResult *r;
 	BcNum *n;
 
@@ -1510,7 +1508,6 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 static void bc_program_execStr(BcProgram *p, const char *restrict code,
                                    size_t *restrict bgn, bool cond, size_t len)
 {
-	BcStatus s = BC_STATUS_SUCCESS;
 	BcResult *r;
 	char *str;
 	BcFunc *f;

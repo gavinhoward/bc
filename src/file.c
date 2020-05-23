@@ -130,7 +130,7 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 		char c;
 
 		if (percent != ptr) {
-			size_t len = percent - ptr;
+			size_t len = (size_t) (percent - ptr);
 			bc_file_write(f, ptr, len);
 		}
 

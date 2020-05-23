@@ -315,12 +315,10 @@ err:
 static void bc_parse_noArgBuiltin(BcParse *p, BcInst inst) {
 
 	bc_lex_next(&p->l);
-	if (BC_ERR(p->l.t != BC_LEX_LPAREN))
-		return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+	if (BC_ERR(p->l.t != BC_LEX_LPAREN)) bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	bc_lex_next(&p->l);
-	if ((p->l.t != BC_LEX_RPAREN))
-		return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+	if ((p->l.t != BC_LEX_RPAREN)) bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	bc_parse_push(p, inst);
 
@@ -397,7 +395,7 @@ static void bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 
 	if (BC_PARSE_INST_VAR(etype)) {
 
-		if (!*can_assign) return bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
+		if (!*can_assign) bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
 
 		*prev = inst = BC_INST_INC_POST + (p->l.t != BC_LEX_OP_INC);
 		bc_parse_push(p, inst);
@@ -534,7 +532,7 @@ static void bc_parse_endBody(BcParse *p, bool brace) {
 
 	bool has_brace, new_else = false;
 
-	if (BC_ERR(p->flags.len <= 1)) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+	if (BC_ERR(p->flags.len <= 1)) bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 	if (brace) {
 
@@ -551,7 +549,7 @@ static void bc_parse_endBody(BcParse *p, bool brace) {
 		size_t len = p->flags.len;
 		bool loop;
 
-		if (has_brace && !brace) return bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
+		if (has_brace && !brace) bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
 		loop = (BC_PARSE_LOOP_INNER(p) != 0);
 

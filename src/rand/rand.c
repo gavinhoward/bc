@@ -187,7 +187,6 @@ static ulong bc_rand_frand(void *ptr) {
 
 static ulong bc_rand_rand(void *ptr) {
 
-	char buf[sizeof(ulong)];
 	size_t i;
 	ulong res = 0;
 

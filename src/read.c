@@ -63,7 +63,7 @@ static bool bc_read_binary(const char *buf, size_t size) {
 	return false;
 }
 
-bool bc_read_buf(BcVec *vec) {
+static bool bc_read_buf(BcVec *vec) {
 
 	char *nl;
 
@@ -182,7 +182,6 @@ void bc_read_file(const char *path, char **buf) {
 	BcError e = BC_ERROR_FATAL_IO_ERR;
 	size_t size, r;
 	off_t off;
-	long res;
 	struct stat pstat;
 	int fd;
 
@@ -206,7 +205,7 @@ void bc_read_file(const char *path, char **buf) {
 
 	*buf = bc_vm_malloc(size + 1);
 
-	r = read(fd, *buf, size);
+	r = (size_t) read(fd, *buf, size);
 	if (BC_ERR(r != size)) goto read_err;
 
 	(*buf)[size] = '\0';
