@@ -225,6 +225,7 @@ static void bc_vm_envArgs(const char* const env_args_name) {
 				buf += 1;
 
 				if (*buf == instr) {
+					instr = '\0';
 					buf += 1;
 					continue;
 				}
