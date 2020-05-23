@@ -179,7 +179,6 @@ void bc_read_file(const char *path, char **buf) {
 
 	BcError e = BC_ERROR_FATAL_IO_ERR;
 	size_t size, r;
-	off_t off;
 	struct stat pstat;
 	int fd;
 
