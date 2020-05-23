@@ -644,6 +644,7 @@ static void bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen)
 		if (colpos < h->cols) {
 			// Avoid a full update of the line in the trivial case.
 			bc_file_write(&vm.ferr, cbuf, clen);
+			bc_file_flush(&vm.ferr);
 		}
 		else bc_history_refresh(h);
 	}
@@ -1076,6 +1077,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		h->pcol = bc_history_promptColLen(prompt, h->plen);
 
 		bc_file_write(&vm.ferr, prompt, h->plen);
+		bc_file_flush(&vm.ferr);
 	}
 #endif // BC_ENABLE_PROMPT
 
@@ -1262,6 +1264,7 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 	if (!h->stdin_has_data) bc_history_disableRaw(h);
 
 	bc_file_write(&vm.ferr, "\n", 1);
+	bc_file_flush(&vm.ferr);
 
 	return s;
 }
