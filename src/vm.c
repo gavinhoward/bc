@@ -314,23 +314,17 @@ void bc_vm_shutdown(void) {
 	bc_file_free(&vm.ferr);
 }
 
-static void bc_vm_exit(BcError e) {
-	bc_vm_err(e);
-	bc_vm_shutdown();
-	exit((int) vm.status);
-}
-
 size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
 	if (BC_ERR(res >= SIZE_MAX || (n != 0 && res / n != size)))
-		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+		bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
 
 size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t res = a + b;
 	if (BC_ERR(res >= SIZE_MAX || res < a || res < b))
-		bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+		bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
 	return res;
 }
 
@@ -342,7 +336,7 @@ void* bc_vm_malloc(size_t n) {
 
 	ptr = malloc(n);
 
-	if (BC_ERR(ptr == NULL)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(ptr == NULL)) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
 
 	return ptr;
 }
@@ -355,7 +349,7 @@ void* bc_vm_realloc(void *ptr, size_t n) {
 
 	temp = realloc(ptr, n);
 
-	if (BC_ERR(temp == NULL)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(temp == NULL)) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
 
 	return temp;
 }
@@ -368,7 +362,7 @@ char* bc_vm_strdup(const char *str) {
 
 	s = strdup(str);
 
-	if (BC_ERR(!s)) bc_vm_exit(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(!s)) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
 
 	return s;
 }
