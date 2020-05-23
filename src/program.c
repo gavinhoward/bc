@@ -173,7 +173,6 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
 				// bc_num_parse() should only do operations that cannot fail.
 				bc_num_parse(&c->num, c->val, base, !c->val[1]);
-				assert(!s);
 
 				c->base = base;
 			}
@@ -246,19 +245,18 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 		}
 
 #if BC_ENABLED
+		case BC_RESULT_VOID:
+#ifndef NDEBUG
+		{
+			assert(false);
+			break;
+		}
+#endif // NDEBUG
+		// Fallthrough
 		case BC_RESULT_LAST:
 		{
 			n = &p->last;
 			break;
-		}
-
-		case BC_RESULT_VOID:
-		{
-			n = &r->d.n;
-#ifndef NDEBUG
-			assert(false);
-			break;
-#endif // NDEBUG
 		}
 #endif // BC_ENABLED
 	}
