@@ -167,8 +167,12 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 			assert(percent[2] == 'u');
 
 			ul = va_arg(args, unsigned long);
-			bc_file_ultoa((unsigned long long) ul, buf);
-			bc_file_puts(f, buf);
+
+			if (!ul) bc_file_putchar(f, '0');
+			else {
+				bc_file_ultoa((unsigned long long) ul, buf);
+				bc_file_puts(f, buf);
+			}
 		}
 		else {
 
@@ -177,8 +181,12 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 			assert(c == 'z' && percent[2] == 'u');
 
 			sz = va_arg(args, size_t);
-			bc_file_ultoa((unsigned long long) sz, buf);
-			bc_file_puts(f, buf);
+
+			if (!sz) bc_file_putchar(f, '0');
+			else {
+				bc_file_ultoa((unsigned long long) sz, buf);
+				bc_file_puts(f, buf);
+			}
 		}
 
 		ptr = percent + 2 + (c == 'l' || c == 'z');
