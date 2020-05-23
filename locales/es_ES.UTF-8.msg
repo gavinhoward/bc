@@ -103,6 +103,6 @@ $set 6
 3 "no puede abrir el archivo: %s"
 4 "el archivo no es ASCII: %s"
 5 "el ruta es un directorio: %s"
-6 "una opción de línea de comandos no es válida: '%c' (\"%s\")"
+6 "una opción de línea de comandos no es válida: \"%s\""
 7 "una opción requiere un argumento: '%c' (\"%s\")"
 8 "una opción no tiene argumento: '%c' (\"%s\")"
