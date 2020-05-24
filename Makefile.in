@@ -309,10 +309,6 @@ clean:%%CLEAN_PREREQS%%
 	@$(RM) -f $(BC_EXEC)
 	@$(RM) -f $(DC_EXEC)
 	@$(RM) -fr $(BIN)
-	@$(RM) -f *.gcov
-	@$(RM) -f *.html
-	@$(RM) -f *.gcda *.gcno
-	@$(RM) -f *.profraw
 	@$(RM) -f $(LOCALES)/*.cat
 	@$(RM) -f $(BC_LIB_C) $(BC_LIB_O)
 	@$(RM) -f $(BC_LIB2_C) $(BC_LIB2_O)
@@ -325,6 +321,10 @@ clean_config: clean
 
 clean_coverage:
 	@printf 'Cleaning coverage files...\n'
+	@$(RM) -f *.gcov
+	@$(RM) -f *.html
+	@$(RM) -f *.gcda *.gcno
+	@$(RM) -f *.profraw
 	@$(RM) -f $(GCDA) $(GCNO)
 	@$(RM) -f $(BC_GCDA) $(BC_GCNO)
 	@$(RM) -f $(DC_GCDA) $(DC_GCNO)

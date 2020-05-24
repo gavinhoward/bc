@@ -646,7 +646,7 @@ if [ "$coverage" -eq 1 ]; then
 	CFLAGS="-fprofile-arcs -ftest-coverage -g -O0 $CFLAGS"
 	CPPFLAGS="-DNDEBUG $CPPFLAGS"
 
-	COVERAGE_OUTPUT="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
+	COVERAGE_OUTPUT="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA) \$(HISTORY_GCDA) \$(RAND_GCDA)"
 	COVERAGE_OUTPUT="$COVERAGE_OUTPUT;\$(RM) -f \$(GEN)*.gc*"
 	COVERAGE_OUTPUT="$COVERAGE_OUTPUT;gcovr --html-details --output index.html"
 	COVERAGE_PREREQS=" test coverage_output"
