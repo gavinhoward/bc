@@ -102,12 +102,6 @@ void bc_args(int argc, char *argv[]) {
 
 		switch (c) {
 
-			case 0:
-			{
-				// This is the case when a long option is found.
-				break;
-			}
-
 			case 'e':
 			{
 				bc_args_exprs(&vm.exprs, opts.optarg);

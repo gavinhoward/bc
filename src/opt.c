@@ -85,6 +85,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 	int type;
 	char *next;
 	char *option = o->argv[o->optind];
+	int ret;
 
 	o->optopt = 0;
 	o->optarg = NULL;
@@ -121,7 +122,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 				o->optind += 1;
 			}
 
-			return option[0];
+			ret = (int) option[0];
 		}
 
 		case BC_OPT_REQUIRED:
@@ -139,11 +140,11 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 				             bc_opt_longopt(longopts, option[0]));
 			}
 
-			return option[0];
+			ret = (int) option[0];
 		}
 	}
 
-	return 0;
+	return ret;
 }
 
 static bool bc_opt_longoptsMatch(const char *name, const char *option) {
