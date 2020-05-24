@@ -87,6 +87,8 @@ fi
 
 unset BC_ENV_ARGS
 unset BC_LINE_LENGTH
+unset DC_ENV_ARGS
+unset DC_LINE_LENGTH
 
 printf '\nRunning %s tests...\n\n' "$d"
 
