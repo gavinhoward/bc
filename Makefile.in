@@ -198,7 +198,7 @@ help:
 	@printf '    check           alias for `make test`\n'
 	@printf '    clean           removes all build files\n'
 	@printf '    clean_config    removes all build files as well as the generated Makefile\n'
-	@printf '    clean_tests     removes all build files, the generated Makefile,\n
+	@printf '    clean_tests     removes all build files, the generated Makefile,\n'
 	@printf '                    and generated tests\n'
 	@printf '    install         installs binaries to "%s%s"\n' "$(DESTDIR)" "$(BINDIR)"
 	@printf '                    and (if enabled) manpages to "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
