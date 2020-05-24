@@ -28,7 +28,7 @@ env:
     - CONFIGURE_ARGS=-dfENPSOg GEN_HOST=1 LONG_BIT=32
 
 before_install:
-  - sudo apt-get install -y dc
+  - sudo apt-get install -y dc expect
   - pip install --user codecov
 
 before_script:
