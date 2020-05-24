@@ -27,43 +27,35 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+source tests/functions.tcl
+
 spawn bin/bc
 
 expect {
 	-re "Gavin D. Howard" {}
 }
 
-send "1 + 1\r"
+test "1 + 1\r" "2" 0.1
 
-expect {
-	-re "2" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "2 + 2\r" "4" 0.1
 
-send "2 + 2\r"
+test "\x10\r" "4" 0.1
 
-expect {
-	-re "4" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "\x10\x10\r" "2" 0.1
 
-send "\x10\r"
+test "\t4 + 5\r" "9" 0.1
 
-expect {
-	-re "4" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "\x03" "" 0.1
 
-send "\x10\x10\r"
+test "\x07" "" 0.1
 
-expect {
-	-re "2" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "\x02\x06" "" 0.1
+
+test "1\x022\r" "21" 0.1
+
+test "1 + 1\x012\r" "22" 0.1
+
+test "111 + 111\x08\x7f\r" "112" 0.1
 
 send "quit\r"
 

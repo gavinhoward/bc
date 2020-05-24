@@ -27,51 +27,16 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-set -e
+proc test { input output sleep_time } {
 
-script="$0"
-testdir=$(dirname "$script")
+	send "$input"
 
-. "$testdir/../functions.sh"
+	sleep $sleep_time
 
-if [ "$#" -ge 1 ]; then
-	d="$1"
-	shift
-else
-	err_exit "usage: $script dir [exec args...]" 1
-fi
+	expect {
+		-re "$output" {}
+		timeout {exit 1}
+		default {exit 1}
+	}
 
-if [ "$#" -lt 1 ]; then
-	exe="$testdir/../bin/$d"
-else
-	exe="$1"
-	shift
-fi
-
-unset BC_ENV_ARGS
-unset BC_LINE_LENGTH
-unset DC_ENV_ARGS
-unset DC_LINE_LENGTH
-
-printf '\nRunning %s history tests...\n\n' "$d"
-
-set +e
-
-command -v expect > /dev/null 2>&1
-err="$?"
-
-set -e
-
-if [ "$err" -ne 0 ]; then
-	printf 'Cannot find expect; skipping %s history tests...\n' "$d"
-fi
-
-if [ ! -f "$testdir/$d/history/all.txt" ]; then
-	err_exit "Missing all.txt file" 2
-fi
-
-while read t; do
-
-	expect "$testdir/$d/history/$t.tcl" > /dev/null
-
-done < "$testdir/$d/history/all.txt"
+}

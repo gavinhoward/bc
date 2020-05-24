@@ -27,41 +27,31 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+source tests/functions.tcl
+
 spawn bin/dc
 
 sleep 0.1
 
-send "1 1+pR\r"
+test "1 1+pR\r" "2" 0.1
 
-expect {
-	-re "2" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "2 2+pR\r" "4" 0.1
 
-send "2 2+pR\r"
+test "\x10\r" "4" 0.1
 
-expect {
-	-re "4" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "\x10\x10\r" "2" 0.1
 
-send "\x10\r"
+test "\x03" "" 0.1
 
-expect {
-	-re "4" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "\x07" "" 0.1
 
-send "\x10\x10\r"
+test "\x02\x06" "" 0.1
 
-expect {
-	-re "2" {}
-	timeout {exit 1}
-	default {exit 1}
-}
+test "1\x022pR\r" "21" 0.1
+
+test "1 1+pR\x012\r" "22" 0.1
+
+test "111 111\x08\x7f+pR\r" "112" 0.1
 
 send "q\r"
 
