@@ -123,6 +123,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 			}
 
 			ret = (int) option[0];
+			break;
 		}
 
 		case BC_OPT_REQUIRED:
@@ -141,6 +142,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 			}
 
 			ret = (int) option[0];
+			break;
 		}
 	}
 
