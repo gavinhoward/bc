@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BC" "1" "April 2020" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "May 2020" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
@@ -312,7 +312,7 @@ Array indices (\fBI[E]\fR)\.
 \fBabs(E)\fR: The absolute value of \fBE\fR\. This is a \fBnon\-portable extension\fR\.
 .
 .IP "9." 4
-\fBI()\fR, \fBI(E)\fR, \fBI(E, E)\fR, and so on, where \fBI\fR is an identifier for a non\-\fIvoid function\fR\. The \fBE\fR parameters may also be arrays and \fIarray references\fR\.
+\fBI()\fR, \fBI(E)\fR, \fBI(E, E)\fR, and so on, where \fBI\fR is an identifier for a non\-\fIvoid function\fR\. The \fBE\fR parameters may also be arrays, which will automatically be turned into \fIarray references\fR if the corresponding parameter is an array reference\.
 .
 .IP "10." 4
 \fBread()\fR: Reads a line from \fBstdin\fR and uses that as an expression\. The result of that expression is the result of the \fBread()\fR operand\. This is a \fBnon\-portable extension\fR\.
@@ -687,7 +687,7 @@ A string of characters, enclosed in double quotes
 \fBprint\fR \fBE\fR \fB,\fR \.\.\. \fB,\fR \fBE\fR
 .
 .IP "15." 4
-\fBI()\fR, \fBI(E)\fR, \fBI(E, E)\fR, and so on, where \fBI\fR is an identifier for a \fIvoid function\fR\. The \fBE\fR parameters may also be arrays and \fIarray references\fR\.
+\fBI()\fR, \fBI(E)\fR, \fBI(E, E)\fR, and so on, where \fBI\fR is an identifier for a \fIvoid function\fR\. The \fBE\fR parameters may also be arrays, which will automatically be turned into \fIarray references\fR if the corresponding parameter is an array reference\.
 .
 .IP "" 0
 .
@@ -793,7 +793,7 @@ define I(I,\.\.\.,I){
 .IP "" 0
 .
 .P
-Any \fBI\fR in the parameter list or \fBauto\fR list may be replaced with \fBI[]\fR to make a parameter or \fBauto\fR var an array\.
+Any \fBI\fR in the parameter list or \fBauto\fR list may be replaced with \fBI[]\fR to make a parameter or \fBauto\fR var an array, and any \fBI\fR in the parameter list may be replaced with \fB*I[]\fR to make a parameter an array reference\. Callers of functions that take array references should not put an asterisk in the call; they must be called with just \fBI[]\fR like normal array parameters and will be automatically converted into references\.
 .
 .P
 As a \fBnon\-portable extension\fR, the opening brace of a \fBdefine\fR statement may appear on the next line\.

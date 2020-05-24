@@ -333,8 +333,10 @@ The following are valid operands in bc(1):
 7.	`scale(E)`: The **scale** of `E`.
 8.	`abs(E)`: The absolute value of `E`. This is a **non-portable extension**.
 9.	`I()`, `I(E)`, `I(E, E)`, and so on, where `I` is an identifier for a
-	non-[void function](#void-functions). The `E` parameters may also be arrays
-	and [array references](#array-references).
+	non-[void function](#void-functions). The `E` parameters may also be arrays,
+	which will automatically be turned into [array
+	references](#array-references) if the corresponding parameter is an array
+	reference.
 10.	`read()`: Reads a line from `stdin` and uses that as an expression. The
 	result of that expression is the result of the `read()` operand. This is a
 	**non-portable extension**.
@@ -660,8 +662,10 @@ The following items are statements:
 13.	A string of characters, enclosed in double quotes
 14.	`print` `E` `,` ... `,` `E`
 15.	`I()`, `I(E)`, `I(E, E)`, and so on, where `I` is an identifier for a
-	[void function](#void-functions). The `E` parameters may also be arrays and
-	[array references](#array-references).
+	[void function](#void-functions). The `E` parameters may also be arrays,
+	which will automatically be turned into [array
+	references](#array-references) if the corresponding parameter is an array
+	reference.
 
 Numbers 4, 9, 11, 12, 14, and 15 are **non-portable extensions**.
 
@@ -766,7 +770,11 @@ define I(I,...,I){
 ```
 
 Any `I` in the parameter list or `auto` list may be replaced with `I[]` to make
-a parameter or `auto` var an array.
+a parameter or `auto` var an array, and any `I` in the parameter list may be
+replaced with `*I[]` to make a parameter an array reference. Callers of
+functions that take array references should not put an asterisk in the call;
+they must be called with just `I[]` like normal array parameters and will be
+automatically converted into references.
 
 As a **non-portable extension**, the opening brace of a `define` statement may
 appear on the next line.
