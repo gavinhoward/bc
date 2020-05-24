@@ -323,7 +323,7 @@ clean_config: clean
 	@printf 'Cleaning config...\n'
 	@$(RM) -f Makefile
 
-clean_coverage: clean
+clean_coverage:
 	@printf 'Cleaning coverage files...\n'
 	@$(RM) -f $(GCDA) $(GCNO)
 	@$(RM) -f $(BC_GCDA) $(BC_GCNO)
