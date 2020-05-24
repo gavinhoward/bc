@@ -64,6 +64,7 @@ set -e
 
 if [ "$err" -ne 0 ]; then
 	printf 'Cannot find expect; skipping %s history tests...\n' "$d"
+	exit 0
 fi
 
 if [ ! -f "$testdir/$d/history/all.txt" ]; then
