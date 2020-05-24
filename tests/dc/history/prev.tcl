@@ -27,51 +27,44 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-set -e
+spawn bin/dc
 
-script="$0"
-testdir=$(dirname "$script")
+sleep 0.1
 
-. "$testdir/../functions.sh"
+send "1 1+pR\r"
 
-if [ "$#" -ge 1 ]; then
-	d="$1"
-	shift
-else
-	err_exit "usage: $script dir [exec args...]" 1
-fi
+expect {
+	-re "2" {}
+	timeout {exit 1}
+	default {exit 1}
+}
 
-if [ "$#" -lt 1 ]; then
-	exe="$testdir/../bin/$d"
-else
-	exe="$1"
-	shift
-fi
+send "2 2+pR\r"
 
-unset BC_ENV_ARGS
-unset BC_LINE_LENGTH
-unset DC_ENV_ARGS
-unset DC_LINE_LENGTH
+expect {
+	-re "4" {}
+	timeout {exit 1}
+	default {exit 1}
+}
 
-printf '\nRunning %s history tests...\n\n' "$d"
+send "\x10\r"
 
-set +e
+expect {
+	-re "4" {}
+	timeout {exit 1}
+	default {exit 1}
+}
 
-command -v expect > /dev/null 2>&1
-err="$?"
+send "\x10\x10\r"
 
-set -e
+expect {
+	-re "2" {}
+	timeout {exit 1}
+	default {exit 1}
+}
 
-if [ "$err" -ne 0 ]; then
-	printf 'Cannot find expect; skipping %s history tests...\n' "$d"
-fi
+send "q\r"
 
-if [ ! -f "$testdir/$d/history/all.txt" ]; then
-	err_exit "Missing all.txt file" 2
-fi
-
-while read t; do
-
-	expect "$testdir/$d/history/$t.tcl"
-
-done < "$testdir/$d/history/all.txt"
+expect {
+	timeout {exit 1}
+}
