@@ -278,8 +278,10 @@ karatsuba:
 karatsuba_test:
 	%%KARATSUBA_TEST%%
 
+coverage_output:
+	%%COVERAGE_OUTPUT%%
+
 coverage:%%COVERAGE_PREREQS%%
-	%%COVERAGE%%
 
 version:
 	@printf '%s' "$(VERSION)"
@@ -321,7 +323,19 @@ clean_config: clean
 	@printf 'Cleaning config...\n'
 	@$(RM) -f Makefile
 
-clean_tests: clean clean_config
+clean_coverage: clean
+	@printf 'Cleaning coverage files...\n'
+	@$(RM) -f $(GCDA) $(GCNO)
+	@$(RM) -f $(BC_GCDA) $(BC_GCNO)
+	@$(RM) -f $(DC_GCDA) $(DC_GCNO)
+	@$(RM) -f $(HISTORY_GCDA) $(HISTORY_GCNO)
+	@$(RM) -f $(RAND_GCDA) $(RAND_GCNO)
+	@$(RM) -f $(BC_LIB_GCDA) $(BC_LIB_GCNO)
+	@$(RM) -f $(BC_LIB2_GCDA) $(BC_LIB2_GCNO)
+	@$(RM) -f $(BC_HELP_GCDA) $(BC_HELP_GCNO)
+	@$(RM) -f $(DC_HELP_GCDA) $(DC_HELP_GCNO)
+
+clean_tests: clean clean_config clean_coverage
 	@printf 'Cleaning test files...\n'
 	@$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
 	@$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
@@ -337,15 +351,6 @@ clean_tests: clean clean_config
 	@$(RM) -f .log_*.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt
 	@$(RM) -f .test.txt
-	@$(RM) -f $(GCDA) $(GCNO)
-	@$(RM) -f $(BC_GCDA) $(BC_GCNO)
-	@$(RM) -f $(DC_GCDA) $(DC_GCNO)
-	@$(RM) -f $(HISTORY_GCDA) $(HISTORY_GCNO)
-	@$(RM) -f $(RAND_GCDA) $(RAND_GCNO)
-	@$(RM) -f $(BC_LIB_GCDA) $(BC_LIB_GCNO)
-	@$(RM) -f $(BC_LIB2_GCDA) $(BC_LIB2_GCNO)
-	@$(RM) -f $(BC_HELP_GCDA) $(BC_HELP_GCNO)
-	@$(RM) -f $(DC_HELP_GCDA) $(DC_HELP_GCNO)
 	@$(RM) -f tags .gdbbreakpoints .gdb_history .gdbsetup
 	@$(RM) -f cscope.*
 

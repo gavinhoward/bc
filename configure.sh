@@ -646,13 +646,13 @@ if [ "$coverage" -eq 1 ]; then
 	CFLAGS="-fprofile-arcs -ftest-coverage -g -O0 $CFLAGS"
 	CPPFLAGS="-DNDEBUG $CPPFLAGS"
 
-	COVERAGE="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
-	COVERAGE="$COVERAGE;\$(RM) -f \$(GEN)*.gc*"
-	COVERAGE="$COVERAGE;gcovr --html-details --output index.html"
-	COVERAGE_PREREQS=" test"
+	COVERAGE_OUTPUT="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA)"
+	COVERAGE_OUTPUT="$COVERAGE_OUTPUT;\$(RM) -f \$(GEN)*.gc*"
+	COVERAGE_OUTPUT="$COVERAGE_OUTPUT;gcovr --html-details --output index.html"
+	COVERAGE_PREREQS=" test coverage_output"
 
 else
-	COVERAGE="@printf 'Coverage not generated\\\\n'"
+	COVERAGE_OUTPUT="@printf 'Coverage not generated\\\\n'"
 	COVERAGE_PREREQS=""
 fi
 
@@ -948,7 +948,7 @@ contents=$(replace "$contents" "CPPFLAGS" "$CPPFLAGS")
 contents=$(replace "$contents" "LDFLAGS" "$LDFLAGS")
 contents=$(replace "$contents" "CC" "$CC")
 contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
-contents=$(replace "$contents" "COVERAGE" "$COVERAGE")
+contents=$(replace "$contents" "COVERAGE_OUTPUT" "$COVERAGE_OUTPUT")
 contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
 contents=$(replace "$contents" "INSTALL_PREREQS" "$install_prereqs")
 contents=$(replace "$contents" "INSTALL_LOCALES_PREREQS" "$install_locales_prereqs")
