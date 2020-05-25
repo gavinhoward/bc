@@ -90,8 +90,10 @@ static void bc_file_output(int fd, const char *buf, size_t n) {
 }
 
 void bc_file_flush(BcFile *restrict f) {
-	bc_file_output(f->fd, f->buf, f->len);
-	f->len = 0;
+	if (f->len) {
+		bc_file_output(f->fd, f->buf, f->len);
+		f->len = 0;
+	}
 }
 
 void bc_file_write(BcFile *restrict f, const char *buf, size_t n) {
