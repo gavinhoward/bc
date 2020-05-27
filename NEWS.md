@@ -2,17 +2,28 @@
 
 ## 2.8.0
 
-This is a production release with some improvements and no bug fixes. **Users do
-not need to upgrade if they do not want to.**
+This is a production release with some improvements and one major bug fix.
+**Users and package maintainers should update to this version as soon as
+possible.**
+
+The bug fix was in how `bc` executed files. Previously, a whole file was parsed
+before it was executed, but if a function is defined *after* code, especially if
+the function definition was actually a redefinition, and the code before the
+definition referred to the previous function, this `bc` would replace the
+function before executing any code. The fix was to make sure that all code that
+existed before a function definition was executed.
+
+Beyond that, this `bc` got several improvements that both sped it up, improved
+the handling of signals, and improved the error handling.
 
 First, the requirements for `bc` were pushed back to POSIX 2008. `bc` uses one
 function, `strdup()`, which is not in POSIX 2001, and it is in the X/Open System
 Interfaces group 2001. It is, however, in POSIX 2008, and since POSIX 2008 is
 old enough to be supported anywhere that I care, that should be the requirement.
 
-Second, the BcVm global variable was put into `bss`. This actually reduces the
-size of the executable from a massive code shrink, and it will stop `bc` from
-allocating a large set of memory when `bc` starts.
+Second, the BcVm global variable was put into `bss`. This actually slightly
+reduces the size of the executable from a massive code shrink, and it will stop
+`bc` from allocating a large set of memory when `bc` starts.
 
 Third, the default Karatsuba length was updated from 64 to 32 after making the
 optimization changes below, since 32 is going to be better than 64 after the
