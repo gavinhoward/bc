@@ -2,6 +2,15 @@
 
 ## 2.8.0
 
+*Note for package maintainers: The `2.7.0` release series saw a change in the
+option parsing. This made me change one error message and add a few others. The
+error message that was changed removed one format specifier. Unfortunately, `bc`
+cannot use any locale files except the ones that are already installed, so it
+will use the previous ones while running tests. If `bc` segfaults while running
+arg tests, it is because the global locale files have not been replaced. Make
+sure to either prevent the test suite from running on install or remove the old
+locale files.*
+
 This is a production release with some improvements and one major bug fix.
 **Users and package maintainers should update to this version as soon as
 possible.**
@@ -79,7 +88,7 @@ work, the default number size will be all that is needed, which means that
 nearly all, if not all, numbers will be reused, relieving pressure on the system
 allocator.
 
-*Note*: I did several experiments to find the changes that had the most impact,
+I did several experiments to find the changes that had the most impact,
 especially with regard to reusing `BcNum`'s. One was putting `BcNum`'s into
 buckets according to their capacity in powers of 2 up to 512. That performed
 worse than `bc` did in `2.7.2`. Another was putting any `BcNum` on the reuse
