@@ -23,3 +23,4 @@
 	* `write()`
 	* termios stuff
 * Lock all instances of `free()`.
+* Change signal handler to detect signal already in flight.
