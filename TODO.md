@@ -24,3 +24,7 @@
 	* termios stuff
 * Lock all instances of `free()`.
 * Change signal handler to detect signal already in flight.
+* Fix all TODO comments
+* Change history to not be limited.
+* Change history to not free empty strings and just push constant data for
+  those.
