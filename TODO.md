@@ -16,3 +16,4 @@
 * Change BC_LONGJMP_LOCKED to not exist and use explicit BC_SIG_UNLOCK instead?
 * Make sure to restore signal mask when stopping a longjmp() series.
 * Make sure to undo signal mask before returning from `main()`.
+* Run tests to be sure I can remove the extra code in `bc_num_as()`.
