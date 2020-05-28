@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 exit:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 
 	s = !BC_STATUS_IS_ERROR(vm.status) ? BC_STATUS_SUCCESS : (int) vm.status;
 

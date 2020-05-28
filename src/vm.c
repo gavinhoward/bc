@@ -510,7 +510,7 @@ static void bc_vm_file(const char *file) {
 #endif // BC_ENABLED
 
 err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	free(data);
 	bc_vm_clean();
 	BC_LONGJMP_CONT;
@@ -601,7 +601,7 @@ static void bc_vm_stdin(void) {
 	}
 
 err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	bc_vec_free(&buf);
 	bc_vec_free(&buffer);
 	bc_vm_clean();
@@ -771,7 +771,7 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	BC_SIG_UNLOCK;
 
 	vm.flags |= ttyin ? BC_FLAG_TTYIN : 0;
-	vm.flags |= (ttyin != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
+	vm.flags |= (ttyin != 0 && ttyout != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
 	vm.flags |= ttyin && ttyout ? BC_FLAG_I : 0;
 
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
@@ -792,7 +792,7 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	bc_vm_exec(env_exp_exit);
 
 exit:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	bc_vm_shutdown();
 #ifndef NDEBUG
 	free(buf);

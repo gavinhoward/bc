@@ -41,8 +41,8 @@
 #include <file.h>
 #include <vm.h>
 
-static void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH])
-{
+void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH]) {
+
 	char buf2[BC_FILE_ULL_LENGTH];
 	size_t i, len;
 

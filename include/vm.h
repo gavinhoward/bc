@@ -169,12 +169,22 @@
 #define BC_SIG_ASSERT_LOCKED
 #endif // NDEBUG
 
-#define BC_SIG_LOCK do { vm.sig_lock = 1; } while (0)
+#define BC_SIG_LOCK              \
+	do {                         \
+		assert(vm.sig_lock == 0); \
+		vm.sig_lock = 1;         \
+	} while (0)
 
 #define BC_SIG_UNLOCK              \
 	do {                           \
-		if (BC_SIG_EXC) BC_VM_JMP; \
+		BC_SIG_ASSERT_LOCKED;      \
 		vm.sig_lock = 0;           \
+		if (BC_SIG_EXC) BC_VM_JMP; \
+	} while (0)
+
+#define BC_SIG_MAYLOCK   \
+	do {                 \
+		vm.sig_lock = 1; \
 	} while (0)
 
 #define BC_SIG_TRYLOCK(v) \
@@ -185,8 +195,8 @@
 
 #define BC_SIG_TRYUNLOCK(v)                \
 	do {                                   \
-		if (!(v) && BC_SIG_EXC) BC_VM_JMP; \
 		vm.sig_lock = (v);                 \
+		if (!(v) && BC_SIG_EXC) BC_VM_JMP; \
 	} while (0)
 
 #define BC_SETJMP(l)                     \
@@ -195,8 +205,8 @@
 		vm.sig_lock = 1;                 \
 		if (sigsetjmp(sjb, 0)) goto l;   \
 		bc_vec_push(&vm.jmp_bufs, &sjb); \
-		if (BC_SIG_EXC) BC_VM_JMP;       \
 		vm.sig_lock = 0;                 \
+		if (BC_SIG_EXC) BC_VM_JMP;       \
 	} while (0)
 
 #define BC_SETJMP_LOCKED(l)               \
@@ -240,6 +250,7 @@
 #define BC_SIG_ASSERT_LOCKED
 #define BC_SIG_LOCK
 #define BC_SIG_UNLOCK
+#define BC_SIG_MAYLOCK
 #define BC_SIG_TRYLOCK(v)
 #define BC_SIG_TRYUNLOCK(v)
 

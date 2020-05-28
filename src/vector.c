@@ -89,8 +89,17 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 	assert(v != NULL && n <= v->len);
 	if (v->dtor == NULL) v->len -= n;
 	else {
+
 		size_t len = v->len - n;
+#if BC_ENABLE_SIGNALS
+		sig_atomic_t lock;
+#endif // BC_ENABLE_SIGNALS
+
+		BC_SIG_TRYLOCK(lock);
+
 		while (v->len > len) v->dtor(v->v + (v->size * --v->len));
+
+		BC_SIG_TRYUNLOCK(lock);
 	}
 }
 
@@ -169,7 +178,7 @@ void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 	assert(!v->len || !v->v[v->len - 1]);
 	assert(v->v != str);
 
-	if (v->len) bc_vec_pop(v);
+	if (v->len) v->len -= 1;
 
 	bc_vec_npush(v, strlen(str) + 1, str);
 }

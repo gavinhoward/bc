@@ -406,7 +406,7 @@ static void bc_program_op(BcProgram *p, uchar inst) {
 	return;
 
 err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	bc_num_free(&res.d.n);
 	BC_LONGJMP_CONT;
 }
@@ -468,7 +468,7 @@ static void bc_program_read(BcProgram *p) {
 #endif // DC_ENABLED
 
 exec_err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	bc_parse_free(&parse);
 	bc_vec_free(&buf);
 	vm.file = file;
@@ -1250,7 +1250,7 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 	return;
 
 err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	if (resn->num) bc_num_free(resn);
 	BC_LONGJMP_CONT;
 }
@@ -1291,7 +1291,7 @@ static void bc_program_divmod(BcProgram *p) {
 	return;
 
 err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	bc_num_free(resn2);
 	bc_num_free(resn);
 	BC_LONGJMP_CONT;
@@ -1338,7 +1338,7 @@ static void bc_program_modexp(BcProgram *p) {
 	return;
 
 err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	bc_num_free(resn);
 	BC_LONGJMP_CONT;
 }
@@ -1378,7 +1378,7 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	c = (uchar) val;
 
 num_err:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	bc_num_free(&num);
 	BC_LONGJMP_CONT;
 	return c;

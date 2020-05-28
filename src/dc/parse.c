@@ -234,7 +234,7 @@ void dc_parse_parse(BcParse *p) {
 	else dc_parse_expr(p, 0);
 
 exit:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	if (BC_ERR(vm.status)) bc_parse_reset(p);
 	BC_LONGJMP_CONT;
 }

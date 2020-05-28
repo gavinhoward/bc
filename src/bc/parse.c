@@ -195,18 +195,15 @@ static void bc_parse_params(BcParse *p, uint8_t flags) {
 	bc_parse_pushIndex(p, nparams);
 }
 
-static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
+static bool bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	BcId id;
 	size_t idx;
+	bool need_free = true;
 
 	id.name = name;
 
-	BC_SETJMP_LOCKED(err);
-
 	bc_parse_params(p, flags);
-
-	BC_UNSETJMP;
 
 	// We just assert this because bc_parse_params() should
 	// ensure that the next token is what it should be.
@@ -218,38 +215,41 @@ static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	if (idx == BC_VEC_INVALID_IDX) {
 
+		BC_SIG_LOCK;
+
 		idx = bc_program_insertFunc(p->prog, name);
+
+		need_free = false;
+
+		BC_SIG_UNLOCK;
 
 		assert(idx != BC_VEC_INVALID_IDX);
 
 		// Make sure that this pointer was not invalidated.
 		p->func = bc_vec_item(&p->prog->fns, p->fidx);
 	}
-	else {
-		free(name);
-		idx = ((BcId*) bc_vec_item(&p->prog->fn_map, idx))->idx;
-	}
+	else idx = ((BcId*) bc_vec_item(&p->prog->fn_map, idx))->idx;
 
 	bc_parse_pushIndex(p, idx);
 
 	bc_lex_next(&p->l);
-	return;
 
-err:
-	free(name);
-	BC_LONGJMP_CONT_LOCKED;
+	return need_free;
 }
 
 static void bc_parse_name(BcParse *p, BcInst *type,
-                              bool *can_assign, uint8_t flags)
+                          bool *can_assign, uint8_t flags)
 {
 	char *name;
+	bool need_free = true;
 
 	BC_SIG_LOCK;
 
 	name = bc_vm_strdup(p->l.str.v);
 
 	BC_SETJMP_LOCKED(err);
+
+	BC_SIG_UNLOCK;
 
 	bc_lex_next(&p->l);
 
@@ -292,13 +292,8 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 		*type = BC_INST_CALL;
 		*can_assign = false;
 
-		BC_UNSETJMP;
-
-		// Return early because bc_parse_call() frees the name.
-		bc_parse_call(p, name, flags);
-
-		BC_SIG_UNLOCK;
-		return;
+		// bc_parse_call() will tell us if we need to free or not.
+		need_free = bc_parse_call(p, name, flags);
 	}
 	else {
 		*type = BC_INST_VAR;
@@ -308,7 +303,8 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 	}
 
 err:
-	free(name);
+	BC_SIG_MAYLOCK;
+	if (need_free) free(name);
 	BC_LONGJMP_CONT;
 }
 
@@ -814,7 +810,12 @@ static void bc_parse_func(BcParse *p) {
 
 	assert(p->prog->fns.len == p->prog->fn_map.len);
 
+	BC_SIG_LOCK;
+
 	idx = bc_program_insertFunc(p->prog, bc_vm_strdup(p->l.str.v));
+
+	BC_SIG_UNLOCK;
+
 	assert(idx);
 	bc_parse_updateFunc(p, idx);
 	p->func->voidfn = voidfn;
@@ -1169,7 +1170,7 @@ void bc_parse_parse(BcParse *p) {
 	else bc_parse_stmt(p);
 
 exit:
-	BC_SIG_LOCK;
+	BC_SIG_MAYLOCK;
 	if (BC_ERR((vm.status && vm.status != BC_STATUS_QUIT))) bc_parse_reset(p);
 	BC_LONGJMP_CONT;
 }
