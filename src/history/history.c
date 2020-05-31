@@ -1051,21 +1051,12 @@ static void bc_history_escape(BcHistory *h) {
 
 static void bc_history_reset(BcHistory *h) {
 
-	char *str;
-
 	h->oldcolpos = h->pos = h->idx = 0;
 	h->cols = bc_history_columns();
 
-	// TODO: I need to figure out what to do here. This strdup is no bueno,
-	// because it requires a lock, while bc_history_add() needs to not have a
-	// lock. But the vector that takes it needs an allocated string.
-
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
-	BC_SIG_LOCK;
-	str = bc_vm_strdup("");
-	BC_SIG_UNLOCK;
-	bc_history_add(h, str);
+	bc_history_add(h, "");
 
 	// Buffer starts empty.
 	bc_vec_empty(&h->buf);
@@ -1333,7 +1324,8 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 void bc_history_add(BcHistory *h, char *line) {
 
 	if (h->history.len) {
-		if (!strcmp(*((char**) bc_vec_item_rev(&h->history, 0)), line)) {
+		char *s = *((char**) bc_vec_item_rev(&h->history, 0));
+		if (!strcmp(s, line) && strcmp(s, "")) {
 			BC_SIG_LOCK;
 			free(line);
 			BC_SIG_UNLOCK;
@@ -1346,12 +1338,17 @@ void bc_history_add(BcHistory *h, char *line) {
 	bc_vec_push(&h->history, &line);
 }
 
+static void bc_history_string_free(void *str) {
+	char *s = *((char**) str);
+	if (strcmp(s, "")) free(s);
+}
+
 void bc_history_init(BcHistory *h) {
 
 	BC_SIG_ASSERT_LOCKED;
 
 	bc_vec_init(&h->buf, sizeof(char), NULL);
-	bc_vec_init(&h->history, sizeof(char*), bc_string_free);
+	bc_vec_init(&h->history, sizeof(char*), bc_history_string_free);
 	bc_vec_init(&h->tmp, sizeof(char), NULL);
 
 	FD_ZERO(&h->rdset);
