@@ -613,6 +613,7 @@ err:
 
 	if (!vm.status) {
 		BC_SIG_UNLOCK;
+		bc_vec_empty(&buffer);
 		goto restart;
 	}
 
