@@ -1324,11 +1324,17 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 void bc_history_add(BcHistory *h, char *line) {
 
 	if (h->history.len) {
+
 		char *s = *((char**) bc_vec_item_rev(&h->history, 0));
+
 		if (!strcmp(s, line) && strcmp(s, "")) {
+
 			BC_SIG_LOCK;
+
 			free(line);
+
 			BC_SIG_UNLOCK;
+
 			return;
 		}
 	}
