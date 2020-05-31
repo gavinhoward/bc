@@ -1306,11 +1306,15 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 		bc_vec_string(vec, BC_HIST_BUF_LEN(h), h->buf.v);
 
-		BC_SIG_LOCK;
+		if (strcmp(h->buf.v, "")) {
 
-		line = bc_vm_strdup(h->buf.v);
+			BC_SIG_LOCK;
 
-		BC_SIG_UNLOCK;
+			line = bc_vm_strdup(h->buf.v);
+
+			BC_SIG_UNLOCK;
+		}
+		else line = "";
 
 		bc_history_add(h, line);
 
