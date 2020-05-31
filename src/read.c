@@ -39,9 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if BC_ENABLE_SIGNALS
 #include <signal.h>
-#endif // BC_ENABLE_SIGNALS
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -122,7 +120,6 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				if (BC_SIGTERM) return BC_STATUS_QUIT;
 
-#if BC_ENABLE_SIGNALS
 				vm.sig_chk = vm.sig;
 
 				if (BC_TTY) {
@@ -134,7 +131,6 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 				}
 
 				continue;
-#endif // BC_ENABLE_SIGNALS
 			}
 
 			bc_vm_err(BC_ERROR_FATAL_IO_ERR);

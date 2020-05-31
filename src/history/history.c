@@ -1143,23 +1143,23 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			{
 				bc_history_printCtrl(h, c);
 
-#if BC_ENABLE_SIGNALS
-				bc_history_reset(h);
+				if (BC_TTY) {
+					bc_history_reset(h);
 
-				bc_history_write(vm.sigmsg, vm.siglen);
-				bc_history_write(bc_program_ready_msg,
-				                 bc_program_ready_msg_len);
-				bc_history_refresh(h);
+					bc_history_write(vm.sigmsg, vm.siglen);
+					bc_history_write(bc_program_ready_msg,
+					                 bc_program_ready_msg_len);
+					bc_history_refresh(h);
+				}
+				else {
+					bc_history_write("\n", 1);
+
+					// Make sure the terminal is back to normal before exiting.
+					BC_SIG_LOCK;
+					exit((((uchar) 1) << (CHAR_BIT - 1)) + SIGINT);
+				}
 
 				break;
-#else // BC_ENABLE_SIGNALS
-				bc_history_write("\n", 1);
-
-				// Make sure the terminal is back to normal before exiting.
-				BC_SIG_LOCK;
-				bc_vm_shutdown();
-				exit((((uchar) 1) << (CHAR_BIT - 1)) + SIGINT);
-#endif // BC_ENABLE_SIGNALS
 			}
 
 			case BC_ACTION_BACKSPACE:

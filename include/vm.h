@@ -39,15 +39,7 @@
 #include <stddef.h>
 #include <limits.h>
 
-#if BC_ENABLE_SIGNALS
-
-#ifdef _WIN32
-#error Signals are not supported on Windows.
-#endif // _WIN32
-
 #include <signal.h>
-
-#endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLE_NLS
 
@@ -78,10 +70,6 @@
 #ifndef BC_ENABLE_NLS
 #define BC_ENABLE_NLS (0)
 #endif // BC_ENABLE_NLS
-
-#ifndef BC_ENABLE_SIGNALS
-#define BC_ENABLE_SIGNALS (1)
-#endif // BC_ENABLE_SIGNALS
 
 #ifndef MAINEXEC
 #define MAINEXEC bc
@@ -151,8 +139,6 @@
 #else // BC_DEBUG_CODE
 #define BC_VM_JMP bc_vm_sigjmp()
 #endif // BC_DEBUG_CODE
-
-#if BC_ENABLE_SIGNALS
 
 #define BC_VM_STATUS_TYPE sig_atomic_t
 
@@ -244,53 +230,6 @@
 		vm.sig_pop = 0;           \
 	} while (0)
 
-#else // BC_ENABLE_SIGNALS
-
-#define BC_VM_STATUS_TYPE BcStatus
-
-#define BC_SIG_EXC BC_UNLIKELY(vm.status != BC_STATUS_SUCCESS)
-#define BC_NO_SIG_EXC BC_LIKELY(vm.status == BC_STATUS_SUCCESS)
-
-#define BC_SIG_ASSERT_LOCKED
-#define BC_SIG_LOCK
-#define BC_SIG_UNLOCK
-#define BC_SIG_MAYLOCK
-#define BC_SIG_TRYLOCK(v)
-#define BC_SIG_TRYUNLOCK(v)
-
-#define BC_SETJMP(l)                     \
-	do {                                 \
-		sigjmp_buf sjb;                  \
-		if (sigsetjmp(sjb, 0)) goto l;   \
-		bc_vec_push(&vm.jmp_bufs, &sjb); \
-	} while (0)
-
-#define BC_SETJMP_LOCKED(l)               \
-	do {                                  \
-		sigjmp_buf sjb;                   \
-		BC_SIG_ASSERT_LOCKED;             \
-		if (sigsetjmp(sjb, 0)) goto l;    \
-		bc_vec_push(&vm.jmp_bufs, &sjb);  \
-	} while (0)
-
-#define BC_LONGJMP_CONT            \
-	do {                           \
-		BC_SIG_ASSERT_LOCKED;      \
-		if (BC_SIG_EXC) BC_VM_JMP; \
-		bc_vec_pop(&vm.jmp_bufs);  \
-	} while (0)
-
-#define BC_LONGJMP_CONT_LOCKED BC_LONGJMP_CONT
-
-#define BC_UNSETJMP bc_vec_pop(&vm.jmp_bufs)
-
-#define BC_LONGJMP_STOP           \
-	do {                          \
-		bc_vec_pop(&vm.jmp_bufs); \
-	} while (0)
-
-#endif // BC_ENABLE_SIGNALS
-
 #define BC_VM_BUF_SIZE (1<<12)
 #define BC_VM_STDOUT_BUF_SIZE (1<<11)
 #define BC_VM_STDERR_BUF_SIZE (1<<10)
@@ -306,15 +245,8 @@
 
 typedef struct BcVm {
 
-#if BC_ENABLE_SIGNALS
 	volatile sig_atomic_t status;
-
 	volatile sig_atomic_t sig_pop;
-#else // BC_ENABLE_SIGNALS
-	BcStatus status;
-
-	int sig_pop;
-#endif // BC_ENABLE_SIGNALS
 
 	BcParse prs;
 	BcProgram prog;
@@ -325,13 +257,11 @@ typedef struct BcVm {
 
 	const char* file;
 
-#if BC_ENABLE_SIGNALS
 	const char *sigmsg;
 	volatile sig_atomic_t sig;
 	volatile sig_atomic_t sig_chk;
 	volatile sig_atomic_t sig_lock;
 	uchar siglen;
-#endif // BC_ENABLE_SIGNALS
 
 	uchar read_ret;
 	uint16_t flags;
@@ -388,7 +318,6 @@ typedef struct BcVm {
 void bc_vm_info(const char* const help);
 void bc_vm_boot(int argc, char *argv[], const char *env_len,
                 const char* const env_args, const char* env_exp_quit);
-void bc_vm_shutdown(void);
 
 void bc_vm_printf(const char *fmt, ...);
 void bc_vm_putchar(int c);

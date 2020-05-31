@@ -39,9 +39,7 @@
 
 #include <setjmp.h>
 
-#if BC_ENABLE_SIGNALS
 #include <signal.h>
-#endif // BC_ENABLE_SIGNALS
 
 #include <time.h>
 
@@ -179,9 +177,7 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
 			n = &r->d.n;
 
-#if BC_ENABLE_SIGNALS
 			n->num = NULL;
-#endif // BC_ENABLE_SIGNALS
 			r->t = BC_RESULT_TEMP;
 
 			bc_num_createCopy(n, &c->num);
@@ -387,9 +383,7 @@ static void bc_program_op(BcProgram *p, uchar inst) {
 
 	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
 
-#if BC_ENABLE_SIGNALS
 	res.d.n.num = NULL;
-#endif // BC_ENABLE_SIGNALS
 
 	BC_SETJMP(err);
 
@@ -1266,10 +1260,8 @@ static void bc_program_divmod(BcProgram *p) {
 
 	req = bc_num_mulReq(n1, n2, BC_PROG_SCALE(p));
 
-#if BC_ENABLE_SIGNALS
 	resn->num = NULL;
 	resn2->num = NULL;
-#endif // BC_ENABLE_SIGNALS
 
 	BC_SETJMP(err);
 
@@ -1316,9 +1308,7 @@ static void bc_program_modexp(BcProgram *p) {
 	if (r1->t == BC_RESULT_ARRAY_ELEM && (r1->t == r2->t || r1->t == r3->t))
 		n1 = bc_program_num(p, r1);
 
-#if BC_ENABLE_SIGNALS
 	resn->num = NULL;
-#endif // BC_ENABLE_SIGNALS
 
 	BC_SETJMP(err);
 
@@ -1356,9 +1346,7 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	BcBigDig val;
 	uchar c;
 
-#if BC_ENABLE_SIGNALS
 	num.num = NULL;
-#endif // BC_ENABLE_SIGNALS
 
 	BC_SETJMP(num_err);
 
@@ -1812,7 +1800,6 @@ void bc_program_reset(BcProgram *p) {
 		return;
 	}
 
-#if BC_ENABLE_SIGNALS
 	vm.sig_chk = vm.sig;
 
 	if (!vm.status || vm.status == BC_STATUS_SIGNAL) {
@@ -1824,7 +1811,6 @@ void bc_program_reset(BcProgram *p) {
 			vm.status = BC_STATUS_SUCCESS;
 		}
 	}
-#endif // BC_ENABLE_SIGNALS
 }
 
 void bc_program_exec(BcProgram *p) {

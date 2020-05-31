@@ -55,9 +55,7 @@ typedef enum BcStatus {
 	BC_STATUS_ERROR_FATAL,
 	BC_STATUS_EOF,
 	BC_STATUS_QUIT,
-#if BC_ENABLE_SIGNALS
 	BC_STATUS_SIGNAL,
-#endif // BC_ENABLE_SIGNALS
 
 } BcStatus;
 

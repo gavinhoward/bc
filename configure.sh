@@ -47,12 +47,12 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EfgGHMNPST] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-EfgGHMNPT] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
 	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]      \\\n'
 	printf '           [--debug --disable-extra-math --disable-generated-tests]        \\\n'
 	printf '           [--disable-history --disable-man-pages --disable-nls]           \\\n'
-	printf '           [--disable-prompt --disable-signal-handling --disable-strip]    \\\n'
+	printf '           [--disable-prompt --disable-strip]                              \\\n'
 	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]               \\\n'
 	printf '           [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR] \\\n'
 	printf '           [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]       \\\n'
@@ -110,8 +110,6 @@ usage() {
 	printf '        Disables the prompt in the built bc. The prompt will never show up,\n'
 	printf '        or in other words, it will be permanently disabled and cannot be\n'
 	printf '        enabled.\n'
-	printf '    -S, --disable-signal-handling\n'
-	printf '        Disable signal handling. On by default.\n'
 	printf '    -T, --disable-strip\n'
 	printf '        Disable stripping symbols from the compiled binary or binaries.\n'
 	printf '        Stripping symbols only happens when debug mode is off.\n'
@@ -312,7 +310,6 @@ dc_only=0
 coverage=0
 karatsuba_len=64
 debug=0
-signals=1
 hist=1
 extra_math=1
 optimization=""
@@ -342,7 +339,6 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		P) prompt=0 ;;
-		S) signals=0 ;;
 		T) strip_bin=0 ;;
 		-)
 			arg="$1"
@@ -426,7 +422,6 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 				disable-man-pages) install_manpages=0 ;;
 				disable-nls) nls=0 ;;
 				disable-prompt) prompt=0 ;;
-				disable-signal-handling) signals=0 ;;
 				disable-strip) strip_bin=0 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
@@ -434,9 +429,7 @@ while getopts "bBcdDEfgGhHk:MNO:PST-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				disable-generated-tests* | disable-history*)
 					usage "No arg allowed for --$arg option" ;;
-				disable-man-pages* | disable-nls* | disable-signal-handling*)
-					usage "No arg allowed for --$arg option" ;;
-				disable-strip*)
+				disable-man-pages* | disable-nls* | disable-strip*)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
@@ -701,7 +694,7 @@ if [ "$nls" -ne 0 ]; then
 
 	printf 'Testing NLS...\n'
 
-	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=0"
+	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
@@ -774,7 +767,7 @@ if [ "$hist" -eq 1 ]; then
 
 	printf 'Testing history...\n'
 
-	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=0"
+	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_NLS=$nls"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
@@ -806,46 +799,6 @@ fi
 if [ "$hist" -eq 0 ]; then
 	bc_history_test="@printf 'No history tests to run\\\\n'"
 	dc_history_test="@printf 'No history tests to run\\\\n'"
-fi
-
-if [ "$signals" -eq 1 ]; then
-
-	set +e
-
-	printf 'Testing signals...\n'
-
-	flags="-DBC_ENABLE_HISTORY=$hist -DBC_ENABLED=$bc -DDC_ENABLED=$dc -DBC_ENABLE_SIGNALS=1"
-	flags="$flags -DBC_ENABLE_NLS=$nls"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
-	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
-
-	"$HOSTCC" $CPPFLAGS $HOSTCFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
-
-	err="$?"
-
-	rm -rf "$scriptdir/vm.o"
-
-	# If this errors, it is probably because of building on Windows,
-	# and signals are not supported on Windows, so disable it.
-	if [ "$err" -ne 0 ]; then
-		printf 'Signals do not work.\n'
-		if [ $force -eq 0 ]; then
-			printf 'Disabling signals...\n\n'
-			signals=0
-		else
-			printf 'Forcing signals...\n\n'
-		fi
-	else
-		printf 'Signals work.\n\n'
-	fi
-
-	set -e
-
-fi
-
-if [ "$signals" -eq 0 ]; then
-	bc_signals_test="@printf 'No signals tests to run\\\\n'"
-	dc_signals_test="@printf 'No signals tests to run\\\\n'"
 fi
 
 if [ "$extra_math" -eq 1 ] && [ "$bc" -ne 0 ]; then
@@ -880,7 +833,6 @@ else
 	printf 'Not building dc\n'
 fi
 printf '\n'
-printf 'BC_ENABLE_SIGNALS=%s\n' "$signals"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
@@ -925,7 +877,6 @@ contents=$(replace "$contents" "BC_ENABLED" "$bc")
 contents=$(replace "$contents" "DC_ENABLED" "$dc")
 contents=$(replace "$contents" "LINK" "$link")
 
-contents=$(replace "$contents" "SIGNALS" "$signals")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")

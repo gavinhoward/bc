@@ -45,9 +45,7 @@
 static void bc_vec_grow(BcVec *restrict v, size_t n) {
 
 	size_t len, cap = v->cap;
-#if BC_ENABLE_SIGNALS
 	sig_atomic_t lock;
-#endif // BC_ENABLE_SIGNALS
 
 	len = bc_vm_growSize(v->len, n);
 
@@ -71,13 +69,12 @@ void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
 
 void bc_vec_expand(BcVec *restrict v, size_t req) {
 
-#if BC_ENABLE_SIGNALS
-	sig_atomic_t lock;
-#endif // BC_ENABLE_SIGNALS
-
 	assert(v != NULL);
 
 	if (v->cap < req) {
+
+		sig_atomic_t lock;
+
 		BC_SIG_TRYLOCK(lock);
 		v->v = bc_vm_realloc(v->v, bc_vm_arraySize(req, v->size));
 		v->cap = req;
@@ -91,9 +88,7 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 	else {
 
 		size_t len = v->len - n;
-#if BC_ENABLE_SIGNALS
 		sig_atomic_t lock;
-#endif // BC_ENABLE_SIGNALS
 
 		BC_SIG_TRYLOCK(lock);
 

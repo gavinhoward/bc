@@ -43,7 +43,6 @@
 #include <program.h>
 #include <vm.h>
 
-#if BC_ENABLE_SIGNALS
 #if BC_ENABLED
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
 const uchar bc_sig_msg_len = (uchar) (sizeof(bc_sig_msg) - 1);
@@ -52,7 +51,6 @@ const uchar bc_sig_msg_len = (uchar) (sizeof(bc_sig_msg) - 1);
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 const uchar dc_sig_msg_len = (uchar) (sizeof(dc_sig_msg) - 1);
 #endif // DC_ENABLED
-#endif // BC_ENABLE_SIGNALS
 
 const char bc_copyright[] =
 	"Copyright (c) 2018-2020 Gavin D. Howard and contributors\n"
@@ -984,9 +982,7 @@ const BcProgramUnary bc_program_unarys[] = {
 const char bc_program_exprs_name[] = "<exprs>";
 
 const char bc_program_stdin_name[] = "<stdin>";
-#if BC_ENABLE_SIGNALS
 const char bc_program_ready_msg[] = "ready for more input\n";
 const size_t bc_program_ready_msg_len = sizeof(bc_program_ready_msg) - 1;
-#endif // BC_ENABLE_SIGNALS
 const char bc_program_esc_chars[] = "ab\\efnqrt";
 const char bc_program_esc_seqs[] = "\a\b\\\\\f\n\"\r\t";

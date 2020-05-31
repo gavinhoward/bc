@@ -39,9 +39,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#if BC_ENABLE_SIGNALS
 #include <signal.h>
-#endif // BC_ENABLE_SIGNALS
 
 #include <setjmp.h>
 
@@ -94,20 +92,18 @@ static void bc_vm_sig(int sig) {
 
 	// There is already a signal in flight.
 	if (vm.sig != vm.sig_chk) {
-#if BC_ENABLE_SIGNALS
 		if (sig != SIGINT) vm.sig = BC_SIGTERM_VAL;
-#endif // BC_ENABLE_SIGNALS
 		return;
 	}
 
 	vm.sig = BC_SIGTERM_VAL;
 
-	if (sig == SIGINT) {
+	if (BC_TTY && sig == SIGINT) {
 
 		size_t n = vm.siglen;
 		int err = errno;
 
-		if (BC_NO_ERR(write(STDERR_FILENO, vm.sigmsg, n) == (ssize_t) n))
+		if (write(STDERR_FILENO, vm.sigmsg, n) == (ssize_t) n)
 			vm.sig = vm.sig_chk + 1;
 
 		if (vm.sig == BC_SIGTERM_VAL) vm.sig = 1;
@@ -145,9 +141,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	const char* err_type = vm.err_ids[id];
 
 	assert(e < BC_ERROR_NELEMS);
-#if BC_ENABLE_SIGNALS
 	assert(!vm.sig_pop);
-#endif // BC_ENABLE_SIGNALS
 
 #if BC_ENABLED
 	if (!BC_S && e >= BC_ERROR_POSIX_START) {
@@ -285,7 +279,7 @@ static size_t bc_vm_envLen(const char *var) {
 	return len;
 }
 
-void bc_vm_shutdown(void) {
+static void bc_vm_shutdown(void) {
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -720,13 +714,6 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	BC_SIG_ASSERT_LOCKED;
 
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = bc_vm_sig;
-	sa.sa_flags = SA_SIGINFO;
-
-	sigaction(SIGTERM, &sa, NULL);
-	sigaction(SIGQUIT, &sa, NULL);
-
 	ttyin = isatty(STDIN_FILENO);
 	ttyout = isatty(STDOUT_FILENO);
 	ttyerr = isatty(STDERR_FILENO);
@@ -735,9 +722,13 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	vm.flags |= (ttyin != 0 && ttyout != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
 	vm.flags |= ttyin && ttyout ? BC_FLAG_I : 0;
 
-#if BC_ENABLE_SIGNALS
-	if (vm.flags & BC_FLAG_TTY) sigaction(SIGINT, &sa, NULL);
-#endif // BC_ENABLE_SIGNALS
+	sigemptyset(&sa.sa_mask);
+	sa.sa_handler = bc_vm_sig;
+	sa.sa_flags = SA_SIGINFO;
+
+	sigaction(SIGTERM, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
 
 	memcpy(vm.max_num, bc_num_bigdigMax,
 	       bc_num_bigdigMax_size * sizeof(BcDig));
@@ -769,7 +760,9 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	bc_history_init(&vm.history);
 #endif // BC_ENABLE_HISTORY
 
+#ifndef NDEBUG
 	BC_SETJMP_LOCKED(exit);
+#endif // NDEBUG
 
 #if BC_ENABLED
 	if (BC_IS_BC) vm.flags |= BC_FLAG_S * (getenv("POSIXLY_CORRECT") != NULL);
@@ -777,6 +770,8 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	bc_vm_envArgs(env_args);
 	bc_args(argc, argv);
+
+	atexit(bc_vm_shutdown);
 
 	BC_SIG_UNLOCK;
 
@@ -797,11 +792,10 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	bc_vm_exec(env_exp_exit);
 
+#ifndef NDEBUG
 exit:
 	BC_SIG_MAYLOCK;
-	bc_vm_shutdown();
-#ifndef NDEBUG
 	free(buf);
-#endif // NDEBUG
 	BC_LONGJMP_CONT;
+#endif // NDEBUG
 }

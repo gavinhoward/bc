@@ -1990,9 +1990,7 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 	}
 	else {
 
-#if BC_ENABLE_SIGNALS
 		sig_atomic_t lock;
-#endif // BC_ENABLE_SIGNALS
 
 		BC_SIG_TRYLOCK(lock);
 

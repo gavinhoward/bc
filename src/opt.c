@@ -85,7 +85,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 	int type;
 	char *next;
 	char *option = o->argv[o->optind];
-	int ret;
+	int ret = -1;
 
 	o->optopt = 0;
 	o->optarg = NULL;
