@@ -1888,10 +1888,10 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 
 	bc_num_init(&fracp2, n->rdx);
 	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
-	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10 + 1);
-	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10 + 1);
+	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10);
+	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10);
 
-	BC_SETJMP(frac_err);
+	BC_SETJMP_LOCKED(frac_err);
 
 	BC_SIG_UNLOCK;
 

@@ -103,8 +103,8 @@ void bc_file_write(BcFile *restrict f, const char *buf, size_t n) {
 
 	if (BC_UNLIKELY(n > f->cap - f->len)) bc_file_output(f->fd, buf, n);
 	else {
-		memcpy(f->buf, buf, n);
-		f->len = n;
+		memcpy(f->buf + f->len, buf, n);
+		f->len += n;
 	}
 }
 

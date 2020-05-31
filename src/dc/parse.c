@@ -58,7 +58,12 @@ static void dc_parse_string(BcParse *p) {
 
 	BcFunc f;
 
+	BC_SIG_LOCK;
+
 	bc_program_addFunc(p->prog, &f, bc_func_main);
+
+	BC_SIG_UNLOCK;
+
 	bc_parse_string(p);
 
 	bc_lex_next(&p->l);

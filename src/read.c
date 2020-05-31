@@ -94,7 +94,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	assert(vec != NULL && vec->size == sizeof(char));
 
-	BC_SIG_ASSERT_LOCKED;
+	BC_SIG_ASSERT_NOT_LOCKED;
 
 	bc_vec_npop(vec, vec->len);
 
@@ -112,30 +112,45 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	while (!done) {
 
-		ssize_t r = read(STDIN_FILENO, vm.buf, BC_VM_STDIN_BUF_SIZE);
+		ssize_t r;
+
+		BC_SIG_LOCK;
+
+		r = read(STDIN_FILENO, vm.buf + vm.buf_len,
+		         BC_VM_STDIN_BUF_SIZE - vm.buf_len);
 
 		if (BC_UNLIKELY(r < 0)) {
 
 			if (errno == EINTR) {
 
-				if (BC_SIGTERM) return BC_STATUS_QUIT;
-
-				vm.sig_chk = vm.sig;
-
-				if (BC_TTY) {
-					bc_file_puts(&vm.ferr, bc_program_ready_msg);
-#if BC_ENABLE_PROMPT
-					if (BC_USE_PROMPT) bc_file_puts(&vm.ferr, prompt);
-#endif // BC_ENABLE_PROMPT
-					bc_file_flush(&vm.ferr);
+				if (vm.status == (sig_atomic_t) BC_STATUS_QUIT) {
+					BC_SIG_UNLOCK;
+					return BC_STATUS_QUIT;
 				}
+
+				assert(vm.status == (sig_atomic_t) BC_STATUS_SIGNAL);
+
+				vm.status = (sig_atomic_t) BC_STATUS_SUCCESS;
+
+				bc_file_puts(&vm.ferr, bc_program_ready_msg);
+#if BC_ENABLE_PROMPT
+				if (BC_USE_PROMPT) bc_file_puts(&vm.ferr, prompt);
+#endif // BC_ENABLE_PROMPT
+				bc_file_flush(&vm.ferr);
+
+				BC_SIG_UNLOCK;
 
 				continue;
 			}
 
+			BC_SIG_UNLOCK;
+
 			bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 		}
-		else if (r == 0) {
+
+		BC_SIG_UNLOCK;
+
+		if (r == 0) {
 			bc_vec_pushByte(vec, '\0');
 			return BC_STATUS_EOF;
 		}

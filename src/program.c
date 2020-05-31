@@ -492,7 +492,7 @@ static void bc_program_printChars(const char *str) {
 	bc_file_puts(&vm.fout, str);
 	nl = strrchr(str, '\n');
 
-	if (nl) len = strlen(nl + 1);
+	if (nl != NULL) len = strlen(nl + 1);
 
 	vm.nchars = len > UINT16_MAX ? UINT16_MAX : (uint16_t) len;
 }
@@ -992,11 +992,16 @@ static void bc_program_incdec(BcProgram *p, uchar inst) {
 	use_val = (inst != BC_INST_INC_NO_VAL && inst != BC_INST_DEC_NO_VAL);
 	post = use_val && (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST);
 
-	BC_SIG_LOCK;
-
 	if (post) {
+
+		BC_SIG_LOCK;
+
 		copy.t = BC_RESULT_TEMP;
 		bc_num_createCopy(&copy.d.n, num);
+
+		BC_SETJMP_LOCKED(exit);
+
+		BC_SIG_UNLOCK;
 	}
 
 	res.t = BC_RESULT_ONE;
@@ -1014,10 +1019,23 @@ static void bc_program_incdec(BcProgram *p, uchar inst) {
 	// TODO: This function used to free copy.d.n when an error happened.
 	// I may need to do a setjmp here.
 	if (post) {
+
+		BC_SIG_LOCK;
+
 		bc_vec_pop(&p->results);
 		bc_vec_push(&p->results, &copy);
+
+		BC_UNSETJMP;
+
 		BC_SIG_UNLOCK;
 	}
+
+	return;
+
+exit:
+	BC_SIG_MAYLOCK;
+	bc_num_free(&copy.d.n);
+	BC_LONGJMP_CONT;
 }
 
 static void bc_program_call(BcProgram *p, const char *restrict code,
@@ -1403,9 +1421,10 @@ static void bc_program_asciify(BcProgram *p) {
 	str[0] = (char) c;
 	str[1] = '\0';
 
+	BC_SIG_LOCK;
+
 	bc_program_addFunc(p, &f, bc_func_main);
 
-	BC_SIG_LOCK;
 	str2 = bc_vm_strdup(str);
 
 	// Make sure the pointer is updated.
@@ -1545,8 +1564,12 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 		BC_SETJMP_LOCKED(err);
 
+		BC_SIG_UNLOCK;
+
 		bc_parse_text(&prs, str);
 		vm.expr(&prs, BC_PARSE_NOCALL);
+
+		BC_SIG_LOCK;
 
 		BC_UNSETJMP;
 
@@ -1784,6 +1807,7 @@ void bc_program_reset(BcProgram *p) {
 	BcFunc *f;
 	BcInstPtr *ip;
 
+	// TODO: Figure out about signal locking.
 	BC_SIG_ASSERT_LOCKED;
 
 	bc_vec_npop(&p->stack, p->stack.len - 1);
@@ -1794,23 +1818,14 @@ void bc_program_reset(BcProgram *p) {
 	if (BC_IS_BC) bc_program_setVecs(p, f);
 	ip->idx = f->code.len;
 
-	if (BC_SIGTERM || (!vm.status && BC_SIGINT && BC_I)) {
-		// TODO: Jmp again here?
-		vm.status = BC_STATUS_QUIT;
-		return;
+	if (vm.status == BC_STATUS_SIGNAL) {
+		bc_file_flush(&vm.fout);
+		bc_file_puts(&vm.ferr, bc_program_ready_msg);
+		bc_file_flush(&vm.ferr);
+		vm.status = BC_STATUS_SUCCESS;
 	}
 
-	vm.sig_chk = vm.sig;
-
-	if (!vm.status || vm.status == BC_STATUS_SIGNAL) {
-
-		if (BC_TTY) {
-			bc_file_flush(&vm.fout);
-			bc_file_puts(&vm.ferr, bc_program_ready_msg);
-			bc_file_flush(&vm.ferr);
-			vm.status = BC_STATUS_SUCCESS;
-		}
-	}
+	if (vm.status) BC_VM_JMP;
 }
 
 void bc_program_exec(BcProgram *p) {
