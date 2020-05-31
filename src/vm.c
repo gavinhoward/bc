@@ -533,6 +533,8 @@ static void bc_vm_stdin(void) {
 	BC_SETJMP_LOCKED(err);
 	BC_SIG_UNLOCK;
 
+restart:
+
 	// This loop is complex because the vm tries not to send any lines that end
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
@@ -603,11 +605,20 @@ static void bc_vm_stdin(void) {
 
 err:
 	BC_SIG_MAYLOCK;
-	bc_vec_free(&buf);
-	bc_vec_free(&buffer);
+
 	bc_vm_clean();
+
 	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
 	    vm.status : BC_STATUS_SUCCESS;
+
+	if (!vm.status) {
+		BC_SIG_UNLOCK;
+		goto restart;
+	}
+
+	bc_vec_free(&buf);
+	bc_vec_free(&buffer);
+
 	BC_LONGJMP_CONT;
 }
 
