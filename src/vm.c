@@ -90,8 +90,17 @@ void bc_vm_sigjmp(void) {
 	siglongjmp(*((sigjmp_buf*) bc_vec_top(&vm.jmp_bufs)), 1);
 }
 
-#if BC_ENABLE_SIGNALS
 static void bc_vm_sig(int sig) {
+
+	// There is already a signal in flight.
+	if (vm.sig != vm.sig_chk) {
+#if BC_ENABLE_SIGNALS
+		if (sig != SIGINT) vm.sig = BC_SIGTERM_VAL;
+#endif // BC_ENABLE_SIGNALS
+		return;
+	}
+
+	vm.sig = BC_SIGTERM_VAL;
 
 	if (sig == SIGINT) {
 
@@ -99,21 +108,17 @@ static void bc_vm_sig(int sig) {
 		int err = errno;
 
 		if (BC_NO_ERR(write(STDERR_FILENO, vm.sigmsg, n) == (ssize_t) n))
-			vm.sig += 1;
+			vm.sig = vm.sig_chk + 1;
 
 		if (vm.sig == BC_SIGTERM_VAL) vm.sig = 1;
 
 		errno = err;
 	}
-	else vm.sig = BC_SIGTERM_VAL;
 
 	assert(vm.jmp_bufs.len);
 
-	vm.status = BC_STATUS_SIGNAL;
-
 	if (!vm.sig_lock) BC_VM_JMP;
 }
-#endif // BC_ENABLE_SIGNALS
 
 void bc_vm_info(const char* const help) {
 
@@ -711,7 +716,6 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 {
 	int ttyin, ttyout, ttyerr;
 	char *buf;
-#if BC_ENABLE_SIGNALS
 	struct sigaction sa;
 
 	BC_SIG_ASSERT_LOCKED;
@@ -720,9 +724,19 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	sa.sa_handler = bc_vm_sig;
 	sa.sa_flags = SA_SIGINFO;
 
-	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
+
+	ttyin = isatty(STDIN_FILENO);
+	ttyout = isatty(STDOUT_FILENO);
+	ttyerr = isatty(STDERR_FILENO);
+
+	vm.flags |= ttyin ? BC_FLAG_TTYIN : 0;
+	vm.flags |= (ttyin != 0 && ttyout != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
+	vm.flags |= ttyin && ttyout ? BC_FLAG_I : 0;
+
+#if BC_ENABLE_SIGNALS
+	if (vm.flags & BC_FLAG_TTY) sigaction(SIGINT, &sa, NULL);
 #endif // BC_ENABLE_SIGNALS
 
 	memcpy(vm.max_num, bc_num_bigdigMax,
@@ -764,15 +778,7 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	bc_vm_envArgs(env_args);
 	bc_args(argc, argv);
 
-	ttyin = isatty(STDIN_FILENO);
-	ttyout = isatty(STDOUT_FILENO);
-	ttyerr = isatty(STDERR_FILENO);
-
 	BC_SIG_UNLOCK;
-
-	vm.flags |= ttyin ? BC_FLAG_TTYIN : 0;
-	vm.flags |= (ttyin != 0 && ttyout != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
-	vm.flags |= ttyin && ttyout ? BC_FLAG_I : 0;
 
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
 

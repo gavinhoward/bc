@@ -118,25 +118,24 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 		if (BC_UNLIKELY(r < 0)) {
 
-#if BC_ENABLE_SIGNALS
 			if (errno == EINTR) {
 
 				if (BC_SIGTERM) return BC_STATUS_QUIT;
 
+#if BC_ENABLE_SIGNALS
 				vm.sig_chk = vm.sig;
 
-				if (BC_TTYIN || BC_I) {
+				if (BC_TTY) {
 					bc_file_puts(&vm.ferr, bc_program_ready_msg);
 #if BC_ENABLE_PROMPT
 					if (BC_USE_PROMPT) bc_file_puts(&vm.ferr, prompt);
 #endif // BC_ENABLE_PROMPT
 					bc_file_flush(&vm.ferr);
 				}
-				else return BC_STATUS_SIGNAL;
 
 				continue;
-			}
 #endif // BC_ENABLE_SIGNALS
+			}
 
 			bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 		}

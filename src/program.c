@@ -1806,25 +1806,23 @@ void bc_program_reset(BcProgram *p) {
 	if (BC_IS_BC) bc_program_setVecs(p, f);
 	ip->idx = f->code.len;
 
-#if BC_ENABLE_SIGNALS
 	if (BC_SIGTERM || (!vm.status && BC_SIGINT && BC_I)) {
 		// TODO: Jmp again here?
 		vm.status = BC_STATUS_QUIT;
 		return;
 	}
 
+#if BC_ENABLE_SIGNALS
 	vm.sig_chk = vm.sig;
 
 	if (!vm.status || vm.status == BC_STATUS_SIGNAL) {
 
-		if (BC_TTYIN || BC_I) {
+		if (BC_TTY) {
 			bc_file_flush(&vm.fout);
 			bc_file_puts(&vm.ferr, bc_program_ready_msg);
 			bc_file_flush(&vm.ferr);
 			vm.status = BC_STATUS_SUCCESS;
 		}
-		// TODO: Jmp again here?
-		else vm.status = BC_STATUS_QUIT;
 	}
 #endif // BC_ENABLE_SIGNALS
 }
