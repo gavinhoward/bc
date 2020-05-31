@@ -629,7 +629,7 @@ static void bc_history_refresh(BcHistory *h) {
 	bc_vec_concat(&h->tmp, buf);
 
 	// Erase to right.
-	bc_history_write("\x1b[0K", 4);
+	bc_vec_concat(&h->tmp, "\x1b[0K");
 
 	// Move cursor to original position.
 	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
