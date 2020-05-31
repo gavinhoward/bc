@@ -135,9 +135,9 @@
 #define BC_IS_POSIX (BC_S || BC_W)
 
 #if BC_DEBUG_CODE
-#define BC_VM_JMP bc_vm_sigjmp(__func__)
+#define BC_VM_JMP bc_vm_jmp(__func__)
 #else // BC_DEBUG_CODE
-#define BC_VM_JMP bc_vm_sigjmp()
+#define BC_VM_JMP bc_vm_jmp()
 #endif // BC_DEBUG_CODE
 
 #define BC_VM_STATUS_TYPE sig_atomic_t
@@ -328,9 +328,9 @@ void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
 
 #if BC_DEBUG_CODE
-void bc_vm_sigjmp(const char *f);
+void bc_vm_jmp(const char *f);
 #else // BC_DEBUG_CODE
-void bc_vm_sigjmp(void);
+void bc_vm_jmp(void);
 #endif // BC_DEBUG_CODE
 
 void bc_vm_error(BcError e, size_t line, ...);

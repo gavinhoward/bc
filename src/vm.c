@@ -64,9 +64,9 @@
 #include <bc.h>
 
 #if BC_DEBUG_CODE
-void bc_vm_sigjmp(const char* f) {
+void bc_vm_jmp(const char* f) {
 #else // BC_DEBUG_CODE
-void bc_vm_sigjmp(void) {
+void bc_vm_jmp(void) {
 #endif
 
 	assert(vm.status != BC_STATUS_SUCCESS);
