@@ -1339,8 +1339,6 @@ void bc_history_add(BcHistory *h, char *line) {
 		}
 	}
 
-	if (h->history.len == BC_HIST_MAX_LEN) bc_vec_popAt(&h->history, 0);
-
 	bc_vec_push(&h->history, &line);
 }
 
