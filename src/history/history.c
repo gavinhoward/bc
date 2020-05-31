@@ -1299,7 +1299,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	BcStatus s;
 	char* line;
 
-	if (BC_TTYIN && !vm.history.badTerm) {
+	if (BC_TTY && !vm.history.badTerm) {
 
 		s = bc_history_raw(h, prompt);
 		assert(!s || s == BC_STATUS_EOF);
