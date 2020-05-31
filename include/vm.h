@@ -156,8 +156,12 @@
 
 #define BC_VM_STATUS_TYPE sig_atomic_t
 
-#define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
-#define BC_NO_SIG_EXC BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
+#define BC_SIG_EXC \
+	BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS || \
+	            vm.sig != vm.sig_chk)
+#define BC_NO_SIG_EXC \
+	BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS && \
+	          vm.sig == vm.sig_chk)
 
 #define BC_SIGTERM_VAL (SIG_ATOMIC_MAX)
 #define BC_SIGTERM (vm.sig == BC_SIGTERM_VAL)
@@ -324,7 +328,7 @@ typedef struct BcVm {
 #if BC_ENABLE_SIGNALS
 	const char *sigmsg;
 	volatile sig_atomic_t sig;
-	sig_atomic_t sig_chk;
+	volatile sig_atomic_t sig_chk;
 	volatile sig_atomic_t sig_lock;
 	uchar siglen;
 #endif // BC_ENABLE_SIGNALS
