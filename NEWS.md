@@ -1,17 +1,22 @@
 # News
 
-## 2.8.0
+## 3.0.0
+
+* Add Spanish translation.
+* Add getting rid of stdio and implementing my own.
+* Add new signal handling.
 
 *Note for package maintainers: The `2.7.0` release series saw a change in the
 option parsing. This made me change one error message and add a few others. The
 error message that was changed removed one format specifier. Unfortunately, `bc`
 cannot use any locale files except the ones that are already installed, so it
 will use the previous ones while running tests. If `bc` segfaults while running
-arg tests, it is because the global locale files have not been replaced. Make
-sure to either prevent the test suite from running on install or remove the old
-locale files.*
+arg tests when updating, it is because the global locale files have not been
+replaced. Make sure to either prevent the test suite from running on update or
+remove the old locale files before updating.*
 
-This is a production release with some improvements and one major bug fix.
+This is a production release with some small bug fixes, a few improvements, one
+major bug fix, and a complete redesign of `bc`'s error and signal handling.
 **Users and package maintainers should update to this version as soon as
 possible.**
 
