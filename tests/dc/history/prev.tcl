@@ -35,25 +35,25 @@ expect {
 	-re ">>> " {}
 }
 
-test "1 1+pR\r" "2" 0.1
+test "1 1+pR\r" "2"
 
-test "2 2+pR\r" "4" 0.1
+test "2 2+pR\r" "4"
 
-test "\x10\r" "4" 0.1
+test "\x10\r" "4"
 
-test "\x10\x10\r" "2" 0.1
+test "\x10\x10\r" "2"
 
-test "\x03" "" 0.1
+test "\x03" ""
 
-test "\x07" "" 0.1
+test "\x07" ""
 
-test "\x02\x06\r" "" 0.1
+test "\x02\x06\r" ""
 
-test "1\x022pR\r" "21" 0.1
+test "1\x022pR\r" "21"
 
-test "1 1+pR\x012\r" "22" 0.1
+test "1 1+pR\x012\r" "22"
 
-test "111 111\x08\x7f+pR\r" "112" 0.1
+test "111 111\x08\x7f+pR\r" "112"
 
 send "q\r"
 

@@ -35,27 +35,27 @@ expect {
 	-re ">>> " {}
 }
 
-test "1 + 1\r" "2" 0.1
+test "1 + 1\r" "2"
 
-test "2 + 2\r" "4" 0.1
+test "2 + 2\r" "4"
 
-test "\x10\r" "4" 0.1
+test "\x10\r" "4"
 
-test "\x10\x10\r" "2" 0.1
+test "\x10\x10\r" "2"
 
-test "\t4 + 5\r" "9" 0.1
+test "\t4 + 5\r" "9"
 
-test "\x03" "" 0.1
+test "\x03" ""
 
-test "\x07" "" 0.1
+test "\x07" ""
 
-test "\x02\x06\r" "" 0.1
+test "\x02\x06\r" ""
 
-test "1\x022\r" "21" 0.1
+test "1\x022\r" "21"
 
-test "1 + 1\x012\r" "22" 0.1
+test "1 + 1\x012\r" "22"
 
-test "111 + 111\x08\x7f\r" "112" 0.1
+test "111 + 111\x08\x7f\r" "112"
 
 send "quit\r"
 

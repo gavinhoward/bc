@@ -27,32 +27,31 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-proc test { input output sleep_time } {
+proc test { input output } {
 
 	set good 0
 
 	send "$input"
 
-	sleep $sleep_time
-
 	expect {
 		-re "$output" {
 			set good 1
-			exp_continue
 		}
-		-re ">>> " {
-			if { $good != 1 } {
-				exit 3
-			}
-			exp_continue
+		timeout {
+			send_error "here"
+			exit 2
 		}
-		timeout {exit 2}
 		default {exit 1}
-		eof {
+	}
+
+	expect {
+		-re ">>> " {
+			send_error "hehe"
 			if { $good != 1 } {
 				exit 3
 			}
 		}
+		default {exit 1}
 	}
 
 	if { $good != 1 } {
@@ -64,6 +63,6 @@ proc end_it { } {
 
 	expect {
 		timeout {exit 2}
-		eof {}
+		eof { wait }
 	}
 }
