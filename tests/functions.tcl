@@ -41,3 +41,11 @@ proc test { input output sleep_time } {
 	}
 
 }
+
+proc end_it { } {
+
+	expect {
+		timeout {exit 2}
+		eof {}
+	}
+}

@@ -55,7 +55,4 @@ test "111 111\x08\x7f+pR\r" "112" 0.1
 
 send "q\r"
 
-expect {
-	timeout {exit 2}
-	eof {}
-}
+end_it
