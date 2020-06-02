@@ -35,7 +35,7 @@ proc test { input output sleep_time } {
 
 	expect {
 		-re "$output" {}
-		timeout {exit 1}
+		timeout {exit 2}
 		default {exit 1}
 	}
 
