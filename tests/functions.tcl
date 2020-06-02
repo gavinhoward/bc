@@ -29,31 +29,34 @@
 
 proc test { input output } {
 
-	set good 0
-
 	send "$input"
 
-	expect {
-		-re "$output" {
-			set good 1
-		}
-		timeout {
-			exit 2
-		}
-		default {exit 1}
-	}
+	if {[string compare output ""] != 0} {
 
-	expect {
-		-re ">>> " {
-			if { $good != 1 } {
-				exit 3
+		set good 0
+
+		expect {
+			-re "$output" {
+				set good 1
 			}
+			timeout {
+				exit 2
+			}
+			default {exit 1}
 		}
-		default {exit 1}
-	}
 
-	if { $good != 1 } {
-		exit 4
+		expect {
+			-re ">>> " {
+				if { $good != 1 } {
+					exit 3
+				}
+			}
+			default {exit 1}
+		}
+
+		if { $good != 1 } {
+			exit 4
+		}
 	}
 }
 
