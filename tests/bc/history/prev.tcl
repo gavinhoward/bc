@@ -61,5 +61,4 @@ send "quit\r"
 
 expect {
 	timeout {exit 2}
-
-
+}
