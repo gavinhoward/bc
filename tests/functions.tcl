@@ -29,17 +29,28 @@
 
 proc test { input output sleep_time } {
 
+	set good 0
+
 	send "$input"
 
 	sleep $sleep_time
 
 	expect {
-		-re "$output" {}
+		-re "$output" {
+			set good 1
+		}
 		timeout {exit 2}
 		default {exit 1}
-		eof {}
+		eof {
+			if { $good != 1 } {
+				exit 3
+			}
+		}
 	}
 
+	if { $good != 1 } {
+		exit 4
+	}
 }
 
 proc end_it { } {
