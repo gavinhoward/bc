@@ -37,6 +37,7 @@ proc test { input output sleep_time } {
 		-re "$output" {}
 		timeout {exit 2}
 		default {exit 1}
+		eof {}
 	}
 
 }
