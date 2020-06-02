@@ -188,10 +188,6 @@ typedef struct BcHistory {
 	/// The history.
 	BcVec history;
 
-	/// A temporary buffer for refresh. Using this
-	/// prevents an allocation on every refresh.
-	BcVec tmp;
-
 #if BC_ENABLE_PROMPT
 	/// Prompt to display.
 	const char *prompt;

@@ -372,17 +372,6 @@ err:
 	return BC_STATUS_EOF;
 }
 
-static void bc_history_write(const char *str, size_t len) {
-
-	ssize_t ret;
-
-	do {
-		ret = write(STDOUT_FILENO, str, len);
-	} while (BC_ERR(ret < 0) && errno == EINTR);
-
-	if (BC_ERR(ret != (ssize_t) len)) bc_vm_err(BC_ERROR_FATAL_IO_ERR);
-}
-
 /**
  * Get column length from begining of buffer to current byte position.
  */
@@ -484,7 +473,8 @@ static size_t bc_history_cursorPos(void) {
 	size_t cols, rows, i;
 
 	// Report cursor location.
-	bc_history_write("\x1b[6n", 4);
+	bc_file_write(&vm.fout, "\x1b[6n", 4);
+	bc_file_flush(&vm.fout);
 
 	// Read the response: ESC [ rows ; cols R.
 	for (i = 0; i < sizeof(buf) - 1; ++i) {
@@ -528,16 +518,15 @@ static size_t bc_history_columns(void) {
 		if (BC_ERR(start == SIZE_MAX)) return BC_HIST_DEF_COLS;
 
 		// Go to right margin and get position.
-		bc_history_write("\x1b[999C", 6);
+		bc_file_write(&vm.fout, "\x1b[999C", 6);
+		bc_file_flush(&vm.fout);
 		cols = bc_history_cursorPos();
 		if (BC_ERR(cols == SIZE_MAX)) return BC_HIST_DEF_COLS;
 
 		// Restore position.
 		if (cols > start) {
-			bc_history_write("\x1b[", 2);
-			bc_file_ultoa(cols - start, ulbuf);
-			bc_history_write(ulbuf, strlen(ulbuf));
-			bc_history_write("D", 1);
+			bc_file_printf(&vm.fout, "\x1b[%zuD", cols - start);
+			bc_file_flush(&vm.fout);
 		}
 
 		return cols;
@@ -606,6 +595,8 @@ static void bc_history_refresh(BcHistory *h) {
 	char* buf = h->buf.v;
 	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos;
 
+	bc_file_flush(&vm.fout);
+
 	while(h->pcol + bc_history_colPos(buf, len, pos) >= h->cols) {
 
 		size_t chlen = bc_history_nextLen(buf, len, 0, NULL);
@@ -619,29 +610,24 @@ static void bc_history_refresh(BcHistory *h) {
 		len -= bc_history_prevLen(buf, len, NULL);
 
 	// Cursor to left edge.
-	bc_vec_string(&h->tmp, 1, "\r");
+	bc_file_write(&vm.fout, "\r", 1);
 
 	// Write the prompt, if desired.
 #if BC_ENABLE_PROMPT
-	if (BC_USE_PROMPT) bc_vec_concat(&h->tmp, h->prompt);
+	if (BC_USE_PROMPT) bc_file_write(&vm.fout, h->prompt, h->plen);
 #endif // BC_ENABLE_PROMPT
 
-	bc_vec_concat(&h->tmp, buf);
+	bc_file_write(&vm.fout, buf, BC_HIST_BUF_LEN(h));
 
 	// Erase to right.
-	bc_vec_concat(&h->tmp, "\x1b[0K");
+	bc_file_write(&vm.fout, "\x1b[0K", 4);
 
 	// Move cursor to original position.
 	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
 
-	if (colpos) {
-		bc_vec_concat(&h->tmp, "\r\x1b[");
-		bc_file_ultoa(colpos, ulbuf);
-		bc_vec_concat(&h->tmp, ulbuf);
-		bc_vec_concat(&h->tmp, "C");
-	}
+	if (colpos) bc_file_printf(&vm.fout, "\r\x1b[%zuC", colpos);
 
-	bc_history_write(h->tmp.v, h->tmp.len - 1);
+	bc_file_flush(&vm.fout);
 }
 
 /**
@@ -670,7 +656,8 @@ static void bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen)
 		if (colpos < h->cols) {
 
 			// Avoid a full update of the line in the trivial case.
-			bc_history_write(cbuf, clen);
+			bc_file_write(&vm.fout, cbuf, clen);
+			bc_file_flush(&vm.fout);
 		}
 		else bc_history_refresh(h);
 	}
@@ -1077,7 +1064,7 @@ static void bc_history_printCtrl(BcHistory *h, unsigned int c) {
 	bc_vec_pushByte(&h->buf, '\0');
 
 	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D) {
-		bc_history_write(newline, sizeof(newline) - 1);
+		bc_file_write(&vm.fout, newline, sizeof(newline) - 1);
 		bc_history_refresh(h);
 	}
 }
@@ -1100,7 +1087,8 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		h->plen = strlen(prompt);
 		h->pcol = bc_history_promptColLen(prompt, h->plen);
 
-		bc_history_write(prompt, h->plen);
+		bc_file_write(&vm.fout, prompt, h->plen);
+		bc_file_flush(&vm.fout);
 	}
 #endif // BC_ENABLE_PROMPT
 
@@ -1137,13 +1125,14 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				if (BC_TTY) {
 					bc_history_reset(h);
 
-					bc_history_write(vm.sigmsg, vm.siglen);
-					bc_history_write(bc_program_ready_msg,
-					                 bc_program_ready_msg_len);
+					bc_file_write(&vm.fout, vm.sigmsg, vm.siglen);
+					bc_file_write(&vm.fout, bc_program_ready_msg,
+					              bc_program_ready_msg_len);
 					bc_history_refresh(h);
 				}
 				else {
-					bc_history_write("\n", 1);
+					bc_file_write(&vm.fout, "\n", 1);
+					bc_file_flush(&vm.fout);
 
 					// Make sure the terminal is back to normal before exiting.
 					BC_SIG_LOCK;
@@ -1241,7 +1230,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Clear screen.
 			case BC_ACTION_CTRL_L:
 			{
-				bc_history_write("\x1b[H\x1b[2J", 7);
+				bc_file_write(&vm.fout, "\x1b[H\x1b[2J", 7);
 				bc_history_refresh(h);
 				break;
 			}
@@ -1289,7 +1278,7 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 	h->stdin_has_data = bc_history_stdinHasData(h);
 	if (!h->stdin_has_data) bc_history_disableRaw(h);
 
-	bc_history_write("\n", 1);
+	bc_file_write(&vm.fout, "\n", 1);
 
 	return s;
 }
@@ -1357,7 +1346,6 @@ void bc_history_init(BcHistory *h) {
 
 	bc_vec_init(&h->buf, sizeof(char), NULL);
 	bc_vec_init(&h->history, sizeof(char*), bc_history_string_free);
-	bc_vec_init(&h->tmp, sizeof(char), NULL);
 
 	FD_ZERO(&h->rdset);
 	FD_SET(STDIN_FILENO, &h->rdset);
@@ -1377,7 +1365,6 @@ void bc_history_free(BcHistory *h) {
 #ifndef NDEBUG
 	bc_vec_free(&h->buf);
 	bc_vec_free(&h->history);
-	bc_vec_free(&h->tmp);
 #endif // NDEBUG
 }
 
