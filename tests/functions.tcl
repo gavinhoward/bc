@@ -38,7 +38,6 @@ proc test { input output } {
 			set good 1
 		}
 		timeout {
-			send_error "here"
 			exit 2
 		}
 		default {exit 1}
@@ -46,7 +45,6 @@ proc test { input output } {
 
 	expect {
 		-re ">>> " {
-			send_error "hehe"
 			if { $good != 1 } {
 				exit 3
 			}
