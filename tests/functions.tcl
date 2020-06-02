@@ -52,7 +52,6 @@ proc test { input output sleep_time } {
 			if { $good != 1 } {
 				exit 3
 			}
-			wait
 		}
 	}
 
