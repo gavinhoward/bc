@@ -38,6 +38,13 @@ proc test { input output sleep_time } {
 	expect {
 		-re "$output" {
 			set good 1
+			exp_continue
+		}
+		-re ">>> " {
+			if { $good != 1 } {
+				exit 3
+			}
+			exp_continue
 		}
 		timeout {exit 2}
 		default {exit 1}
@@ -45,6 +52,7 @@ proc test { input output sleep_time } {
 			if { $good != 1 } {
 				exit 3
 			}
+			wait
 		}
 	}
 

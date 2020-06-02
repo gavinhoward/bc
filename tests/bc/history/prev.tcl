@@ -32,7 +32,7 @@ source tests/functions.tcl
 spawn bin/bc
 
 expect {
-	-re "Gavin D. Howard" {}
+	-re ">>> " {}
 }
 
 test "1 + 1\r" "2" 0.1

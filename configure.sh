@@ -803,6 +803,11 @@ else
 	BC_LIB2_O=""
 fi
 
+if [ "$prompt" -eq 0 ]; then
+	bc_history_test="@printf 'Cannot run history tests without a prompt\\\\n'"
+	dc_history_test="@printf 'Cannot run history tests without a prompt\\\\n'"
+fi
+
 GEN="strgen"
 GEN_EXEC_TARGET="\$(HOSTCC) \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
 CLEAN_PREREQS=" clean_gen"

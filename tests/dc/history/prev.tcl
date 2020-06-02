@@ -31,7 +31,9 @@ source tests/functions.tcl
 
 spawn bin/dc
 
-sleep 0.1
+expect {
+	-re ">>> " {}
+}
 
 test "1 1+pR\r" "2" 0.1
 
