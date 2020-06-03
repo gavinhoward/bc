@@ -73,6 +73,8 @@ fi
 
 while read t; do
 
-	expect "$testdir/$d/history/$t.tcl"
+	expect "$testdir/$d/history/$t.tcl" > /dev/null
 
 done < "$testdir/$d/history/all.txt"
+
+printf '\nAll %s history tests passed.\n' "$d"
