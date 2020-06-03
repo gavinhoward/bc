@@ -1295,7 +1295,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 		bc_vec_string(vec, BC_HIST_BUF_LEN(h), h->buf.v);
 
-		if (strcmp(h->buf.v, "")) {
+		if (h->buf.v[0]) {
 
 			BC_SIG_LOCK;
 
@@ -1320,7 +1320,7 @@ void bc_history_add(BcHistory *h, char *line) {
 
 		char *s = *((char**) bc_vec_item_rev(&h->history, 0));
 
-		if (!strcmp(s, line) && strcmp(s, "")) {
+		if (!strcmp(s, line) && s[0]) {
 
 			BC_SIG_LOCK;
 
@@ -1337,7 +1337,7 @@ void bc_history_add(BcHistory *h, char *line) {
 
 static void bc_history_string_free(void *str) {
 	char *s = *((char**) str);
-	if (strcmp(s, "")) free(s);
+	if (s[0]) free(s);
 }
 
 void bc_history_init(BcHistory *h) {
