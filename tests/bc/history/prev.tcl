@@ -49,7 +49,7 @@ test "\x03" ""
 
 test "\x07" ""
 
-test "\x02\x06\r" ""
+test "\x02\x061\x022\r" "21"
 
 test "1\x022\r" "21"
 
