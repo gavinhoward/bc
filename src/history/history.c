@@ -1122,22 +1122,12 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			{
 				bc_history_printCtrl(h, c);
 
-				if (BC_TTY) {
-					bc_history_reset(h);
+				bc_history_reset(h);
 
-					bc_file_write(&vm.fout, vm.sigmsg, vm.siglen);
-					bc_file_write(&vm.fout, bc_program_ready_msg,
-					              bc_program_ready_msg_len);
-					bc_history_refresh(h);
-				}
-				else {
-					bc_file_write(&vm.fout, "\n", 1);
-					bc_file_flush(&vm.fout);
-
-					// Make sure the terminal is back to normal before exiting.
-					BC_SIG_LOCK;
-					exit((((uchar) 1) << (CHAR_BIT - 1)) + SIGINT);
-				}
+				bc_file_write(&vm.fout, vm.sigmsg, vm.siglen);
+				bc_file_write(&vm.fout, bc_program_ready_msg,
+					          bc_program_ready_msg_len);
+				bc_history_refresh(h);
 
 				break;
 			}
