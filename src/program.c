@@ -1819,9 +1819,8 @@ void bc_program_reset(BcProgram *p) {
 	ip->idx = f->code.len;
 
 	if (vm.status == BC_STATUS_SIGNAL) {
+		bc_file_write(&vm.fout, bc_program_ready_msg, bc_program_ready_msg_len);
 		bc_file_flush(&vm.fout);
-		bc_file_puts(&vm.ferr, bc_program_ready_msg);
-		bc_file_flush(&vm.ferr);
 		vm.status = BC_STATUS_SUCCESS;
 	}
 

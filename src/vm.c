@@ -107,7 +107,7 @@ static void bc_vm_sig(int sig) {
 
 		vm.status = BC_STATUS_SIGNAL;
 
-		if (write(STDERR_FILENO, vm.sigmsg, n) != (ssize_t) n)
+		if (write(STDOUT_FILENO, vm.sigmsg, n) != (ssize_t) n)
 			vm.status = BC_STATUS_ERROR_FATAL;
 
 		errno = err;
