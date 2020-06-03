@@ -33,6 +33,7 @@ spawn bin/dc
 
 expect {
 	-re ">>> " {}
+	timeout { exit 5 }
 }
 
 test "1 1+pR\r" "2"

@@ -33,6 +33,7 @@ spawn bin/bc
 
 expect {
 	-re ">>> " {}
+	timeout { exit 5 }
 }
 
 test "1 + 1\r" "2"
