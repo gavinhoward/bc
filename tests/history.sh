@@ -77,4 +77,4 @@ while read t; do
 
 done < "$testdir/$d/history/all.txt"
 
-printf '\nAll %s history tests passed.\n' "$d"
+printf 'All %s history tests passed.\n\n' "$d"
