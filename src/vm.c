@@ -603,6 +603,8 @@ restart:
 #endif // BC_ENABLED
 	}
 
+	done = (s == BC_STATUS_EOF);
+
 err:
 	BC_SIG_MAYLOCK;
 
@@ -611,7 +613,7 @@ err:
 	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
 	    vm.status : BC_STATUS_SUCCESS;
 
-	if (!vm.status) {
+	if (!vm.status && !done) {
 		BC_SIG_UNLOCK;
 		bc_vec_empty(&buffer);
 		goto restart;
