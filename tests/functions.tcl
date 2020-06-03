@@ -29,11 +29,11 @@
 
 proc test { input output } {
 
-	send "$input"
-
 	if {[string compare output ""] != 0} {
 
 		set good 0
+
+		send "$input"
 
 		expect {
 			-re "$output" {
@@ -56,6 +56,13 @@ proc test { input output } {
 
 		if { $good != 1 } {
 			exit 4
+		}
+	} else {
+
+		send "$input"
+
+		expect {
+			default {}
 		}
 	}
 }
