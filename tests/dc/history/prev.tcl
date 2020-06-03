@@ -47,7 +47,7 @@ test "\x03" ""
 
 test "\x07" ""
 
-test "\x02\x061\x022\x06pR\r" ""
+test "\x02\x061\x022\x06pR\r" "21"
 
 test "1\x022pR\r" "21"
 
