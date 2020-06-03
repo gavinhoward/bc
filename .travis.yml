@@ -38,4 +38,4 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./configure.sh "$CONFIGURE_ARGS" && make -j4 && make -j2 test ; fi
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./configure.sh "$CONFIGURE_ARGS" && make -j4 && make test_history ; fi

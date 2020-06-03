@@ -73,7 +73,7 @@ fi
 
 while read t; do
 
-	expect "$testdir/$d/history/$t.tcl" > /dev/null
+	expect "$testdir/$d/history/$t.tcl"
 
 done < "$testdir/$d/history/all.txt"
 
