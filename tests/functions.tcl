@@ -42,7 +42,11 @@ proc test { input output } {
 			timeout {
 				exit 2
 			}
-			default {exit 1}
+			default {
+				if { $good != 1} {
+					exit 1
+				}
+			}
 		}
 
 		expect {
@@ -51,7 +55,11 @@ proc test { input output } {
 					exit 3
 				}
 			}
-			default {exit 1}
+			default {
+				if { $good != 1} {
+					exit 1
+				}
+			}
 		}
 
 		if { $good != 1 } {
