@@ -208,10 +208,7 @@ help:
 	@printf '                    and (if enabled) manpages from "%s%s"\n' "$(DESTDIR)" "$(MAN1DIR)"
 	@printf '    test            runs the test suite\n'
 	@printf '    test_bc         runs the bc test suite, if bc has been built\n'
-	@printf '    test_bc_history runs the bc history tests\n'
 	@printf '    test_dc         runs the dc test suite, if dc has been built\n'
-	@printf '    test_dc_history runs the dc history tests\n'
-	@printf '    test_history    runs the history tests for both executables\n'
 	@printf '    time_test       runs the test suite, displaying times for some things\n'
 	@printf '    time_test_bc    runs the bc test suite, displaying times for some things\n'
 	@printf '    time_test_dc    runs the dc test suite, displaying times for some things\n'
@@ -225,7 +222,7 @@ help:
 
 check: test
 
-test: test_bc timeconst test_dc test_history
+test: test_bc timeconst test_dc
 
 test_bc:
 	%%BC_TEST%%
@@ -243,14 +240,6 @@ time_test_dc:
 
 timeconst:
 	%%TIMECONST%%
-
-test_history: test_bc_history test_dc_history
-
-test_bc_history:
-	%%BC_HISTORY_TEST%%
-
-test_dc_history:
-	%%DC_HISTORY_TEST%%
 
 valgrind: valgrind_bc valgrind_dc
 
