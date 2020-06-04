@@ -29,3 +29,4 @@
 * Change history to not free empty strings and just push constant data for
   those.
 * Handle SIGHUP when history is enabled.
+* Run tests on Stefan's proposed change.
