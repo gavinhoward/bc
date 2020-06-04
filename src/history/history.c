@@ -506,7 +506,6 @@ static size_t bc_history_cursorPos(void) {
 static size_t bc_history_columns(void) {
 
 	struct winsize ws;
-	char ulbuf[BC_FILE_ULL_LENGTH];
 
 	if (BC_ERR(ioctl(vm.fout.fd, TIOCGWINSZ, &ws) == -1 || !ws.ws_col)) {
 
@@ -591,7 +590,6 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
  */
 static void bc_history_refresh(BcHistory *h) {
 
-	char ulbuf[BC_FILE_ULL_LENGTH];
 	char* buf = h->buf.v;
 	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos;
 
@@ -1269,6 +1267,7 @@ static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
 	if (!h->stdin_has_data) bc_history_disableRaw(h);
 
 	bc_file_write(&vm.fout, "\n", 1);
+	bc_file_flush(&vm.fout);
 
 	return s;
 }

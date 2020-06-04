@@ -197,7 +197,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	bc_file_puts(&vm.ferr, "\n\n");
 	bc_file_flush(&vm.ferr);
 
-	vm.status = (BC_VM_STATUS_TYPE) (id + 1);
+	vm.status = (BC_VM_STATUS_TYPE) (uchar) (id + 1);
 
 	if (BC_ERR(vm.status)) BC_VM_JMP;
 }
@@ -616,6 +616,7 @@ err:
 	if (!vm.status && !done) {
 		BC_SIG_UNLOCK;
 		bc_vec_empty(&buffer);
+		vm.sig_pop = 0;
 		goto restart;
 	}
 

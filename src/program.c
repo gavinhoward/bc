@@ -1823,8 +1823,6 @@ void bc_program_reset(BcProgram *p) {
 		bc_file_flush(&vm.fout);
 		vm.status = BC_STATUS_SUCCESS;
 	}
-
-	if (vm.status) BC_VM_JMP;
 }
 
 void bc_program_exec(BcProgram *p) {
