@@ -395,7 +395,7 @@ static void bc_program_op(BcProgram *p, uchar inst) {
 
 	bc_program_binOpRetire(p, &res);
 
-	BC_LONGJMP_CONT;
+	BC_SIG_UNLOCK;
 
 	return;
 

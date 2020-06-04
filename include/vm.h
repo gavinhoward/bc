@@ -208,13 +208,6 @@
 		BC_SIG_UNLOCK;             \
 	} while (0)
 
-#define BC_LONGJMP_CONT_LOCKED     \
-	do {                           \
-		BC_SIG_ASSERT_LOCKED;      \
-		if (BC_SIG_EXC) BC_VM_JMP; \
-		bc_vec_pop(&vm.jmp_bufs);  \
-	} while (0)
-
 #define BC_UNSETJMP               \
 	do {                          \
 		BC_SIG_ASSERT_LOCKED;     \
