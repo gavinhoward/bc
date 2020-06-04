@@ -28,3 +28,4 @@
 * Change history to not be limited.
 * Change history to not free empty strings and just push constant data for
   those.
+* Handle SIGHUP when history is enabled.
