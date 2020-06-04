@@ -1,13 +1,6 @@
 # TODO
 
-* Remove all instances of `BcStatus s`.
-* Make all functions `void`.
-* Rename `bc_vm_sigjmp()` to `bc_vm_jmp()`.
-* Just jmp out on `BC_STATUS_EOF`.
-* Properly lock all functions and provide `BC_SETJMP*`'s.
 * Figure out what to do about ordering unlocking and jmps.
-* Handle not doing strings in a script # comment.
-* Fix the file test breakage
 * Update README to POSIX 2008; the standard is good enough there.
 * Check all uses of BC_LONGJMP_CONT and change them to BC_LONGJMP_CONT_LOCKED or
   BC_UNSETJMP as necessary.
@@ -23,10 +16,5 @@
 	* `write()`
 	* termios stuff
 * Lock all instances of `free()`.
-* Change signal handler to detect signal already in flight.
 * Fix all TODO comments
-* Change history to not be limited.
-* Change history to not free empty strings and just push constant data for
-  those.
-* Handle SIGHUP when history is enabled.
 * Run tests on Stefan's proposed change.
