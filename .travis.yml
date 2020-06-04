@@ -1,9 +1,10 @@
-dist: xenial
+dist: bionic
 
 language: c
 
 arch:
   - amd64
+  - arm64
   - ppc64le
 
 compiler:
@@ -14,21 +15,21 @@ env:
     - CODECOV_TOKEN="040ce7eb-5bc7-4040-8324-364f3ef4baa3"
     - CFLAGS="-coverage -DBC_RAND_BUILTIN=0"
   matrix:
-    - CONFIGURE_ARGS=-fNOg GEN_HOST=1 LONG_BIT=64
-    - CONFIGURE_ARGS=-bfNOg GEN_HOST=1 LONG_BIT=64
-    - CONFIGURE_ARGS=-dfNOg GEN_HOST=1 LONG_BIT=64
-    - CONFIGURE_ARGS=-fENOg GEN_HOST=1 LONG_BIT=64
-    - CONFIGURE_ARGS=-bfENOg GEN_HOST=1 LONG_BIT=64
-    - CONFIGURE_ARGS=-dfENOg GEN_HOST=1 LONG_BIT=64
-    - CONFIGURE_ARGS=-fNOg GEN_HOST=1 LONG_BIT=32
-    - CONFIGURE_ARGS=-bfNOg GEN_HOST=1 LONG_BIT=32
-    - CONFIGURE_ARGS=-dfNOg GEN_HOST=1 LONG_BIT=32
-    - CONFIGURE_ARGS=-fENOg GEN_HOST=1 LONG_BIT=32
-    - CONFIGURE_ARGS=-bfENOg GEN_HOST=1 LONG_BIT=32
-    - CONFIGURE_ARGS=-dfENOg GEN_HOST=1 LONG_BIT=32
+    - CONFIGURE_ARGS=-fHNPOg GEN_HOST=1 LONG_BIT=64
+    - CONFIGURE_ARGS=-bfHNPOg GEN_HOST=1 LONG_BIT=64
+    - CONFIGURE_ARGS=-dfHNPOg GEN_HOST=1 LONG_BIT=64
+    - CONFIGURE_ARGS=-fEHNPOg GEN_HOST=1 LONG_BIT=64
+    - CONFIGURE_ARGS=-bfEHNPOg GEN_HOST=1 LONG_BIT=64
+    - CONFIGURE_ARGS=-dfEHNPOg GEN_HOST=1 LONG_BIT=64
+    - CONFIGURE_ARGS=-fHNPOg GEN_HOST=1 LONG_BIT=32
+    - CONFIGURE_ARGS=-bfHNPOg GEN_HOST=1 LONG_BIT=32
+    - CONFIGURE_ARGS=-dfHNPOg GEN_HOST=1 LONG_BIT=32
+    - CONFIGURE_ARGS=-fEHNPOg GEN_HOST=1 LONG_BIT=32
+    - CONFIGURE_ARGS=-bfEHNPOg GEN_HOST=1 LONG_BIT=32
+    - CONFIGURE_ARGS=-dfEHNPOg GEN_HOST=1 LONG_BIT=32
 
 before_install:
-  - sudo apt-get install -y dc expect
+  - sudo apt-get install -y dc
   - pip install --user codecov
 
 before_script:
@@ -38,4 +39,4 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./configure.sh "$CONFIGURE_ARGS" && make -j4 && make test_history ; fi
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then ./configure.sh "$CONFIGURE_ARGS" && make -j4 && make -j4 test ; fi
