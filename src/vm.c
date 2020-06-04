@@ -71,6 +71,8 @@ void bc_vm_jmp(void) {
 
 	assert(vm.status != BC_STATUS_SUCCESS);
 
+	BC_SIG_MAYLOCK;
+
 #if BC_DEBUG_CODE
 	bc_file_puts(&vm.ferr, "Longjmp: ");
 	bc_file_puts(&vm.ferr, f);
