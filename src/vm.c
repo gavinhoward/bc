@@ -614,9 +614,8 @@ err:
 	    vm.status : BC_STATUS_SUCCESS;
 
 	if (!vm.status && !done) {
-		BC_SIG_UNLOCK;
 		bc_vec_empty(&buffer);
-		vm.sig_pop = 0;
+		BC_LONGJMP_STOP;
 		goto restart;
 	}
 

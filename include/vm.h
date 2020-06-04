@@ -186,11 +186,10 @@
 #define BC_SETJMP(l)                     \
 	do {                                 \
 		sigjmp_buf sjb;                  \
-		vm.sig_lock = 1;                 \
+		BC_SIG_LOCK;                     \
 		if (sigsetjmp(sjb, 0)) goto l;   \
 		bc_vec_push(&vm.jmp_bufs, &sjb); \
-		vm.sig_lock = 0;                 \
-		if (BC_SIG_EXC) BC_VM_JMP;       \
+		BC_SIG_UNLOCK;                   \
 	} while (0)
 
 #define BC_SETJMP_LOCKED(l)               \
@@ -206,7 +205,7 @@
 		BC_SIG_ASSERT_LOCKED;      \
 		if (BC_SIG_EXC) BC_VM_JMP; \
 		bc_vec_pop(&vm.jmp_bufs);  \
-		vm.sig_lock = 0;           \
+		BC_SIG_UNLOCK;             \
 	} while (0)
 
 #define BC_LONGJMP_CONT_LOCKED     \
@@ -222,10 +221,10 @@
 		bc_vec_pop(&vm.jmp_bufs); \
 	} while (0)
 
-#define BC_LONGJMP_STOP           \
-	do {                          \
-		bc_vec_pop(&vm.jmp_bufs); \
-		vm.sig_pop = 0;           \
+#define BC_LONGJMP_STOP \
+	do {                \
+		vm.sig_pop = 0; \
+		BC_SIG_UNLOCK;  \
 	} while (0)
 
 #define BC_VM_BUF_SIZE (1<<12)
