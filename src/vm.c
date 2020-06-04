@@ -746,6 +746,10 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	sigaction(SIGQUIT, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
 
+#if BC_ENABLE_HISTORY
+	if (BC_TTY) sigaction(SIGHUP, &sa, NULL);
+#endif // BC_ENABLE_HISTORY
+
 	memcpy(vm.max_num, bc_num_bigdigMax,
 	       bc_num_bigdigMax_size * sizeof(BcDig));
 	bc_num_setup(&vm.max, vm.max_num, BC_NUM_BIGDIG_LOG10);
