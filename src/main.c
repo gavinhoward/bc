@@ -47,8 +47,8 @@
 #include <bc.h>
 #include <dc.h>
 
-BcVm vm;
 char output_bufs[BC_VM_BUF_SIZE];
+BcVm vm;
 
 int main(int argc, char *argv[]) {
 
