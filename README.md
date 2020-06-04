@@ -27,9 +27,9 @@ This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 ## Prerequisites
 
 This `bc` only requires a C99-compatible compiler and a (mostly) POSIX
-2016-compatible system with the XSI (X/Open System Interfaces) option group.
+2008-compatible system with the XSI (X/Open System Interfaces) option group.
 
-Since POSIX 2016 with XSI requires the existence of a C99 compiler as `c99`, any
+Since POSIX 2008 with XSI requires the existence of a C99 compiler as `c99`, any
 POSIX and XSI-compatible system will have everything needed.
 
 Systems that are known to work:
@@ -45,11 +45,6 @@ Systems that are known to work:
 Please submit bug reports if this `bc` does not build out of the box on any
 system besides Windows. If Windows binaries are needed, they can be found at
 [xstatic][6].
-
-### Signals
-
-If this `bc` is built without signals, it only requires POSIX 2008 with the XSI
-option group. See the [build manual][5] for more information.
 
 ## Build
 

@@ -315,26 +315,6 @@ Those commands are all equivalent.
 ***Warning***: It is an error to use those options if `dc` has also been
 disabled (see above).
 
-<a name="build-signal-handling"/>
-
-### Signal Handling
-
-Since `bc` version `2.9.0`, signal handling was changed to take advantage of a
-change to POSIX in POSIX 2016: allowing a call to `longjmp()` in a signal
-handler if certain conditions are met. This means that if signal handling is
-enabled, which it is by default, the prerequisites for this `bc` changes to
-POSIX 2016, instead of POSIX 2008.
-
-To disable signal handling, pass either the `-S` flag or the
-`--disable-signal-handling` option to `configure.sh`, as follows:
-
-```
-./configure.sh -S
-./configure.sh --disable-signal-handling
-```
-
-Both commands are equivalent.
-
 <a name="build-history"/>
 
 ### History
@@ -607,11 +587,6 @@ without history.
 The next biggest user is extra math support. Without it, the size (with both
 calculators) is reduced to 117.2 kb (117,168 bytes) with history and 96.6 kb
 (96,584 bytes) without history.
-
-The next largest user is signal handling. If this is not needed, the size (with
-both calculators) can be reduced to 121.3 kb (121,288 bytes) with history and
-extra math support, 104.8 kb (104,784 bytes) without history, 113.1 kb (113,056
-bytes) without extra math support, and 92.5 kb (92,456 bytes) without both.
 
 ## Testing
 

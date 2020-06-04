@@ -18,3 +18,5 @@
 * Lock all instances of `free()`.
 * Fix all TODO comments
 * Run tests on Stefan's proposed change.
+* Rerun benchmarks.
+* Redo executable size (with static binaries).
