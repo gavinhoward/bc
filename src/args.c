@@ -196,8 +196,7 @@ void bc_args(int argc, char *argv[]) {
 			case ':':
 			default:
 			{
-				assert(false);
-				return;
+				abort();
 			}
 #endif // NDEBUG
 		}

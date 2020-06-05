@@ -244,8 +244,7 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_LAST:
 		{
 #ifndef NDEBUG
-			assert(false);
-			break;
+			abort();
 #endif // NDEBUG
 		}
 #endif // BC_ENABLED

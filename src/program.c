@@ -244,8 +244,7 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 		case BC_RESULT_VOID:
 #ifndef NDEBUG
 		{
-			assert(false);
-			break;
+			abort();
 		}
 #endif // NDEBUG
 		// Fallthrough
@@ -683,8 +682,7 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 #ifndef NDEBUG
 			default:
 			{
-				assert(false);
-				break;
+				abort();
 			}
 #endif // NDEBUG
 		}
@@ -2253,8 +2251,7 @@ void bc_program_exec(BcProgram *p) {
 #ifndef NDEBUG
 			default:
 			{
-				assert(false);
-				break;
+				abort();
 			}
 #endif // NDEBUG
 		}
