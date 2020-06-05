@@ -1018,8 +1018,6 @@ static void bc_program_incdec(BcProgram *p, uchar inst) {
 	bc_vec_push(&p->results, &res);
 	bc_program_assign(p, inst2);
 
-	// TODO: This function used to free copy.d.n when an error happened.
-	// I may need to do a setjmp here.
 	if (post) {
 
 		BC_SIG_LOCK;
@@ -1809,7 +1807,6 @@ void bc_program_reset(BcProgram *p) {
 	BcFunc *f;
 	BcInstPtr *ip;
 
-	// TODO: Figure out about signal locking.
 	BC_SIG_ASSERT_LOCKED;
 
 	bc_vec_npop(&p->stack, p->stack.len - 1);
