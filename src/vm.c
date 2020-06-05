@@ -143,6 +143,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	va_list args;
 	uchar id = bc_err_ids[e];
 	const char* err_type = vm.err_ids[id];
+	sig_atomic_t lock;
 
 	assert(e < BC_ERROR_NELEMS);
 	assert(!vm.sig_pop);
@@ -158,7 +159,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	}
 #endif // BC_ENABLED
 
-	BC_SIG_MAYLOCK;
+	BC_SIG_TRYLOCK(lock);
 
 	// Make sure all of stdout is written first.
 	bc_file_flush(&vm.fout);
@@ -202,6 +203,8 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	vm.status = (BC_VM_STATUS_TYPE) (uchar) (id + 1);
 
 	if (BC_ERR(vm.status)) BC_VM_JMP;
+
+	BC_SIG_TRYUNLOCK(lock);
 }
 
 static void bc_vm_envArgs(const char* const env_args_name) {
