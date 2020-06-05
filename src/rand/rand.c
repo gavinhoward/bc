@@ -170,7 +170,7 @@ static void bc_rand_copy(BcRNGData *d, BcRNGData *s) {
 
 static ulong bc_rand_frand(void *ptr) {
 
-	char buf[sizeof(ulong)];
+	ulong buf[1];
 	int fd;
 	ssize_t nread;
 
