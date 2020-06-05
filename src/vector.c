@@ -105,7 +105,7 @@ void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
 	v->len += n;
 }
 
-void bc_vec_push(BcVec *restrict v, const void *data) {
+inline void bc_vec_push(BcVec *restrict v, const void *data) {
 	bc_vec_npush(v, 1, data);
 }
 
@@ -199,12 +199,12 @@ void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
 }
 #endif // BC_ENABLE_HISTORY
 
-void* bc_vec_item(const BcVec *restrict v, size_t idx) {
+inline void* bc_vec_item(const BcVec *restrict v, size_t idx) {
 	assert(v != NULL && v->len && idx < v->len);
 	return v->v + v->size * idx;
 }
 
-void* bc_vec_item_rev(const BcVec *restrict v, size_t idx) {
+inline void* bc_vec_item_rev(const BcVec *restrict v, size_t idx) {
 	assert(v != NULL && v->len && idx < v->len);
 	return v->v + v->size * (v->len - idx - 1);
 }
