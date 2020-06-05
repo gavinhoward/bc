@@ -237,7 +237,6 @@ typedef struct BcHistory {
 } BcHistory;
 
 BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt);
-void bc_history_add(BcHistory *h, char *line);
 
 void bc_history_init(BcHistory *h);
 void bc_history_free(BcHistory *h);

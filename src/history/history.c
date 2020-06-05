@@ -168,6 +168,9 @@
 #include <file.h>
 #include <vm.h>
 
+static void bc_history_add(BcHistory *h, char *line);
+static void bc_history_add_empty(BcHistory *h);
+
 /**
  * Check if the code is a wide character.
  */
@@ -1077,7 +1080,7 @@ static void bc_history_reset(BcHistory *h) {
 
 	// The latest history entry is always our current buffer, that
 	// initially is just an empty string.
-	bc_history_add(h, "");
+	bc_history_add_empty(h);
 
 	// Buffer starts empty.
 	bc_vec_empty(&h->buf);
@@ -1322,10 +1325,10 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 			line = bc_vm_strdup(h->buf.v);
 
 			BC_SIG_UNLOCK;
-		}
-		else line = "";
 
-		bc_history_add(h, line);
+			bc_history_add(h, line);
+		}
+		else bc_history_add_empty(h);
 
 		bc_vec_concat(vec, "\n");
 	}
@@ -1334,13 +1337,13 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	return s;
 }
 
-void bc_history_add(BcHistory *h, char *line) {
+static void bc_history_add(BcHistory *h, char *line) {
 
 	if (h->history.len) {
 
 		char *s = *((char**) bc_vec_item_rev(&h->history, 0));
 
-		if (!strcmp(s, line) && s[0]) {
+		if (!strcmp(s, line)) {
 
 			BC_SIG_LOCK;
 
@@ -1350,6 +1353,20 @@ void bc_history_add(BcHistory *h, char *line) {
 
 			return;
 		}
+	}
+
+	bc_vec_push(&h->history, &line);
+}
+
+static void bc_history_add_empty(BcHistory *h) {
+
+	const char *line = "";
+
+	if (h->history.len) {
+
+		char *s = *((char**) bc_vec_item_rev(&h->history, 0));
+
+		if (!s[0]) return;
 	}
 
 	bc_vec_push(&h->history, &line);
