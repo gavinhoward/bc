@@ -141,6 +141,9 @@ void bc_func_free(void *func) {
 	}
 #endif // NDEBUG
 #endif // BC_ENABLED
+
+#else // BC_ENABLE_FUNC_FREE
+	BC_UNUSED(func);
 #endif // BC_ENABLE_FUNC_FREE
 }
 
