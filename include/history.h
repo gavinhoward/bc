@@ -115,7 +115,7 @@
 #define BC_HIST_SEQ_SIZE (64)
 
 #define BC_HIST_BUF_LEN(h) ((h)->buf.len - 1)
-#define BC_HIST_READ(s, n) (read(STDIN_FILENO, (s), (n)) == -1)
+#define BC_HIST_READ(s, n) (bc_history_read((s), (n)) == -1)
 
 #define BC_HIST_NEXT (false)
 #define BC_HIST_PREV (true)

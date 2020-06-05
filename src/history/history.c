@@ -324,6 +324,21 @@ static size_t bc_history_prevLen(const char *buf, size_t pos, size_t *col_len) {
 	return 0;
 }
 
+static ssize_t bc_history_read(char *buf, size_t n) {
+
+	ssize_t ret;
+
+	BC_SIG_LOCK;
+
+	do {
+		ret = read(STDIN_FILENO, buf, n);
+	} while (ret == EINTR);
+
+	BC_SIG_UNLOCK;
+
+	return ret;
+}
+
 /**
  * Read a Unicode code point from a file.
  */
@@ -334,7 +349,7 @@ static BcStatus bc_history_readCode(char *buf, size_t buf_len,
 
 	assert(buf_len >= 1);
 
-	n = read(STDIN_FILENO, buf, 1);
+	n = bc_history_read(buf, 1);
 	if (BC_ERR(n <= 0)) goto err;
 
 	uchar byte = (uchar) buf[0];
@@ -343,17 +358,17 @@ static BcStatus bc_history_readCode(char *buf, size_t buf_len,
 
 		if ((byte & 0xE0) == 0xC0) {
 			assert(buf_len >= 2);
-			n = read(STDIN_FILENO, buf + 1, 1);
+			n = bc_history_read(buf + 1, 1);
 			if (BC_ERR(n <= 0)) goto err;
 		}
 		else if ((byte & 0xF0) == 0xE0) {
 			assert(buf_len >= 3);
-			n = read(STDIN_FILENO, buf + 1, 2);
+			n = bc_history_read(buf + 1, 2);
 			if (BC_ERR(n <= 0)) goto err;
 		}
 		else if ((byte & 0xF8) == 0xF0) {
 			assert(buf_len >= 3);
-			n = read(STDIN_FILENO, buf + 1, 3);
+			n = bc_history_read(buf + 1, 3);
 			if (BC_ERR(n <= 0)) goto err;
 		}
 		else {
@@ -422,8 +437,12 @@ static void bc_history_enableRaw(BcHistory *h) {
 
 	if (h->rawMode) return;
 
+	BC_SIG_LOCK;
+
 	if (BC_ERR(tcgetattr(STDIN_FILENO, &h->orig_termios) == -1))
 		bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+
+	BC_SIG_UNLOCK;
 
 	// Modify the original mode.
 	raw = h->orig_termios;
@@ -444,10 +463,14 @@ static void bc_history_enableRaw(BcHistory *h) {
 	raw.c_cc[VMIN] = 1;
 	raw.c_cc[VTIME] = 0;
 
+	BC_SIG_LOCK;
+
 	// Put terminal in raw mode after flushing.
 	do {
 		err = tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	} while (BC_ERR(err < 0) && errno == EINTR);
+
+	BC_SIG_UNLOCK;
 
 	if (BC_ERR(err < 0)) bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 
@@ -455,10 +478,16 @@ static void bc_history_enableRaw(BcHistory *h) {
 }
 
 static void bc_history_disableRaw(BcHistory *h) {
+
 	// Don't even check the return value as it's too late.
 	if (!h->rawMode) return;
+
+	BC_SIG_LOCK;
+
 	if (BC_ERR(tcsetattr(STDIN_FILENO, TCSAFLUSH, &h->orig_termios) != -1))
 		h->rawMode = false;
+
+	BC_SIG_UNLOCK;
 }
 
 /**
@@ -478,7 +507,7 @@ static size_t bc_history_cursorPos(void) {
 
 	// Read the response: ESC [ rows ; cols R.
 	for (i = 0; i < sizeof(buf) - 1; ++i) {
-		if (read(STDIN_FILENO, buf + i, 1) != 1 || buf[i] == 'R') break;
+		if (bc_history_read(buf + i, 1) != 1 || buf[i] == 'R') break;
 	}
 
 	buf[i] = '\0';
@@ -506,8 +535,15 @@ static size_t bc_history_cursorPos(void) {
 static size_t bc_history_columns(void) {
 
 	struct winsize ws;
+	int ret;
 
-	if (BC_ERR(ioctl(vm.fout.fd, TIOCGWINSZ, &ws) == -1 || !ws.ws_col)) {
+	BC_SIG_LOCK;
+
+	ret = ioctl(vm.fout.fd, TIOCGWINSZ, &ws);
+
+	BC_SIG_UNLOCK;
+
+	if (BC_ERR(ret == -1 || !ws.ws_col)) {
 
 		// Calling ioctl() failed. Try to query the terminal itself.
 		size_t start, cols;
@@ -1119,12 +1155,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			case BC_ACTION_CTRL_C:
 			{
 				bc_history_printCtrl(h, c);
-
 				bc_history_reset(h);
-
-				bc_file_write(&vm.fout, vm.sigmsg, vm.siglen);
-				bc_file_write(&vm.fout, bc_program_ready_msg,
-					          bc_program_ready_msg_len);
 				bc_history_refresh(h);
 
 				break;
@@ -1379,7 +1410,7 @@ void bc_history_printKeyCodes(BcHistory *h) {
 		char c;
 		ssize_t nread;
 
-		nread = read(STDIN_FILENO, &c, 1);
+		nread = bc_history_read(&c, 1);
 		if (nread <= 0) continue;
 
 		// Shift string to left.

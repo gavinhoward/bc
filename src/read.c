@@ -131,8 +131,6 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 				assert(vm.status == (sig_atomic_t) BC_STATUS_SIGNAL);
 
 				vm.status = (sig_atomic_t) BC_STATUS_SUCCESS;
-
-				bc_file_puts(&vm.fout, bc_program_ready_msg);
 #if BC_ENABLE_PROMPT
 				if (BC_USE_PROMPT) bc_file_puts(&vm.fout, prompt);
 #endif // BC_ENABLE_PROMPT
