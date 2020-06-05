@@ -253,8 +253,7 @@ runtestseries() {
 	_runtestseries_run_tests="$1"
 	shift
 
-	_runtestseries_flags="E H N P S EH EN EP ES HN HP HS NP NS PS EHN EHP EHS
-		ENP ENS EPS HNP HNS HPS NPS EHNP EHNS EHPS ENPS HNPS EHNPS"
+	_runtestseries_flags="E H N P EH EN EP HN HP NP EHN EHP ENP HNP EHNP"
 
 	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
 		"$_runtestseries_configure_flags" "$_runtestseries_run_tests"
