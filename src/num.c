@@ -1029,17 +1029,17 @@ static void bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 		ssize_t cmp;
 		BcDig *n;
-		BcBigDig q, result;
+		BcBigDig result;
 
 		n = a->num + i;
 		assert(n >= a->num);
-		result = q = 0;
+		result = 0;
 
 		cmp = bc_num_divCmp(n, b, len);
 
 		while (cmp >= 0) {
 
-			BcBigDig n1, dividend;
+			BcBigDig n1, dividend, q;
 
 			n1 = (BcBigDig) n[len];
 			dividend = n1 * BC_BASE_POW + (BcBigDig) n[len - 1];
