@@ -11,3 +11,4 @@
 * Run tests on all of Stefan's proposed changes.
 * Rerun benchmarks.
 * Redo executable size (with static binaries).
+* Stop passing BcProgram and BcHistory around?
