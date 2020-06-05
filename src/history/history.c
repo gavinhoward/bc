@@ -414,7 +414,7 @@ static size_t bc_history_colPos(const char *buf, size_t buf_len, size_t pos) {
  * Return true if the terminal name is in the list of terminals we know are
  * not able to understand basic escape sequences.
  */
-static bool bc_history_isBadTerm(void) {
+static inline bool bc_history_isBadTerm(void) {
 
 	size_t i;
 	char *term = getenv("TERM");
@@ -1277,7 +1277,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	return s;
 }
 
-static bool bc_history_stdinHasData(BcHistory *h) {
+static inline bool bc_history_stdinHasData(BcHistory *h) {
 	int n;
 	return pselect(1, &h->rdset, NULL, NULL, &h->ts, &h->sigmask) > 0 ||
 	       (ioctl(STDIN_FILENO, FIONREAD, &n) >= 0 && n > 0);
