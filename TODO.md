@@ -8,6 +8,6 @@
 	* termios stuff
 * Lock all instances of `free()`.
 * Fix all TODO comments
-* Run tests on Stefan's proposed change.
+* Run tests on all of Stefan's proposed changes.
 * Rerun benchmarks.
 * Redo executable size (with static binaries).
