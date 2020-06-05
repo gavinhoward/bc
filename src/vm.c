@@ -283,7 +283,7 @@ static size_t bc_vm_envLen(const char *var) {
 	return len;
 }
 
-static void bc_vm_shutdown(void) {
+void bc_vm_shutdown(void) {
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -785,8 +785,6 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	bc_vm_envArgs(env_args);
 	bc_args(argc, argv);
-
-	atexit(bc_vm_shutdown);
 
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
 

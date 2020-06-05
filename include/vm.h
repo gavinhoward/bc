@@ -306,6 +306,7 @@ typedef struct BcVm {
 void bc_vm_info(const char* const help);
 void bc_vm_boot(int argc, char *argv[], const char *env_len,
                 const char* const env_args, const char* env_exp_quit);
+void bc_vm_shutdown(void);
 
 void bc_vm_printf(const char *fmt, ...);
 void bc_vm_putchar(int c);

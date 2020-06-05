@@ -79,9 +79,11 @@ int main(int argc, char *argv[]) {
 #endif
 
 exit:
-	BC_SIG_MAYLOCK;
+	BC_SIG_ASSERT_LOCKED;
 
 	s = !BC_STATUS_IS_ERROR(vm.status) ? BC_STATUS_SUCCESS : (int) vm.status;
+
+	bc_vm_shutdown();
 
 #ifndef NDEBUG
 	bc_vec_free(&vm.jmp_bufs);
