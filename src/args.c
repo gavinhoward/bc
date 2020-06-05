@@ -80,14 +80,13 @@ static void bc_args_file(BcVec *exprs, const char *file) {
 
 	char *buf;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	vm.file = file;
 
 	bc_read_file(file, &buf);
 	bc_args_exprs(exprs, buf);
-
-	BC_SIG_LOCK;
 	free(buf);
-	BC_SIG_UNLOCK;
 }
 
 void bc_args(int argc, char *argv[]) {
