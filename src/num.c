@@ -601,7 +601,7 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		// The result array of the addition might come out one element
 		// longer than the bigger of the operand arrays.
 		max_len += 1;
-		do_rev_sub = false;
+		do_rev_sub = (a_int < b_int);
 	}
 
 	assert(max_len <= c->cap);
@@ -672,24 +672,19 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		for (i = 0; i < min_len; ++i)
 			ptr_c[i] = bc_num_subDigits(ptr_l[i], ptr_r[i], &carry);
 		for (; i < len_l; ++i) ptr_c[i] = bc_num_subDigits(ptr_l[i], 0, &carry);
-		for (; i < len_r; ++i) ptr_c[i] = bc_num_subDigits(0, ptr_r[i], &carry);
-		for (; i < max_len - diff; ++i)
-			ptr_c[i] = bc_num_subDigits(0, 0, &carry);
 	}
 	else {
 		for (i = 0; i < min_len; ++i)
 			ptr_c[i] = bc_num_addDigits(ptr_l[i], ptr_r[i], &carry);
 		for (; i < len_l; ++i) ptr_c[i] = bc_num_addDigits(ptr_l[i], 0, &carry);
-		for (; i < len_r; ++i) ptr_c[i] = bc_num_addDigits(0, ptr_r[i], &carry);
-		for (; i < max_len - diff; ++i)
-			ptr_c[i] = bc_num_addDigits(0, 0, &carry);
+		ptr_c[i] = bc_num_addDigits(0, 0, &carry);
 	}
 
 	assert(carry == false);
 
 	// The result has the same sign as a, unless the operation was a
 	// reverse subtraction (b - a).
-	c->neg = (a->neg != do_rev_sub);
+	c->neg = (a->neg != (do_sub && do_rev_sub));
 	c->len = max_len;
 	c->rdx = max_rdx;
 	c->scale = BC_MAX(a->scale, b->scale);
