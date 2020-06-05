@@ -2006,6 +2006,8 @@ void bc_num_free(void *num) {
 
 	BcNum *n = (BcNum*) num;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	assert(n != NULL);
 
 	if (n->cap == BC_NUM_DEF_SIZE) bc_vec_push(&vm.temps, n);

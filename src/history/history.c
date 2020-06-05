@@ -1326,6 +1326,7 @@ void bc_history_add(BcHistory *h, char *line) {
 
 static void bc_history_string_free(void *str) {
 	char *s = *((char**) str);
+	BC_SIG_ASSERT_LOCKED;
 	if (s[0]) free(s);
 }
 

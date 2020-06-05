@@ -211,6 +211,7 @@ void* bc_vec_item_rev(const BcVec *restrict v, size_t idx) {
 
 void bc_vec_free(void *vec) {
 	BcVec *v = (BcVec*) vec;
+	BC_SIG_ASSERT_LOCKED;
 	bc_vec_npop(v, v->len);
 	free(v->v);
 }
