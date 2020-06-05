@@ -156,6 +156,14 @@ typedef enum BcError {
 #define BC_DEBUG_CODE (0)
 #endif // BC_DEBUG_CODE
 
+#if __STDC_VERSION__ >= 201100L
+#include <stdnoreturn.h>
+#define BC_NORETURN _Noreturn
+#else // __STDC_VERSION__
+#define BC_NORETURN
+#define BC_MUST_RETURN
+#endif // __STDC_VERSION__
+
 // Workarounds for AIX's POSIX incompatibility.
 #ifndef SIZE_MAX
 #define SIZE_MAX __SIZE_MAX__
