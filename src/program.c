@@ -1772,7 +1772,7 @@ void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
 }
 
 #if BC_ENABLED
-size_t bc_program_insertFunc(BcProgram *p, char *name) {
+size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 
 	BcId *id_ptr, id;
 	BcFunc f;
@@ -1783,7 +1783,7 @@ size_t bc_program_insertFunc(BcProgram *p, char *name) {
 
 	assert(p != NULL && name != NULL);
 
-	id.name = name;
+	id.name = (char*) name;
 	id.idx = p->fns.len;
 
 	new = bc_map_insert(&p->fn_map, &id, &idx);

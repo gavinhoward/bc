@@ -160,7 +160,7 @@ void bc_program_printStackDebug(BcProgram* p);
 
 size_t bc_program_search(BcProgram *p, char* id, bool var);
 void bc_program_addFunc(BcProgram *p, BcFunc *f, const char* name);
-size_t bc_program_insertFunc(BcProgram *p, char *name);
+size_t bc_program_insertFunc(BcProgram *p, const char *name);
 void bc_program_reset(BcProgram *p);
 void bc_program_exec(BcProgram *p);
 
