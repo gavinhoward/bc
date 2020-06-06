@@ -222,14 +222,9 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 				assert(v->size == sizeof(BcNum));
 
 				if (v->len <= idx) {
-
-					sig_atomic_t lock;
-
-					BC_SIG_TRYLOCK(lock);
-
+					BC_SIG_LOCK;
 					bc_array_expand(v, bc_vm_growSize(idx, 1));
-
-					BC_SIG_TRYUNLOCK(lock);
+					BC_SIG_UNLOCK;
 				}
 
 				n = bc_vec_item(v, idx);
@@ -1124,8 +1119,9 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 
 	f = bc_vec_item(&p->fns, ip->func);
 	res.t = BC_RESULT_TEMP;
+	res.d.n.num = NULL;
 
-	BC_SIG_LOCK;
+	BC_SETJMP(err);
 
 	if (inst == BC_INST_RET) {
 
@@ -1163,10 +1159,22 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 #endif // BC_ENABLE_EXTRA_MATH
 	}
 
+	BC_SIG_LOCK;
+
 	bc_vec_push(&p->results, &res);
-	bc_vec_pop(&p->stack);
+
+	BC_UNSETJMP;
 
 	BC_SIG_UNLOCK;
+
+	bc_vec_pop(&p->stack);
+
+	return;
+
+err:
+	BC_SIG_MAYLOCK;
+	bc_num_free(&res.d.n);
+	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLED
 
