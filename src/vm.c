@@ -527,7 +527,7 @@ static void bc_vm_stdin(void) {
 	BcStatus s;
 	BcVec buf, buffer;
 	size_t string = 0;
-	bool comment = false, done = false, hash_comment = false;
+	bool comment = false, hash_comment = false;
 
 	bc_lex_file(&vm.prs.l, bc_program_stdin_name);
 
@@ -544,13 +544,11 @@ restart:
 	// with a backslash to the parser. The reason for that is because the parser
 	// treats a backslash+newline combo as whitespace, per the bc spec. In that
 	// case, and for strings and comments, the parser will expect more stuff.
-	while ((!(s = bc_read_line(&buf, ">>> ")) || s == BC_STATUS_EOF) &&
-	       buf.len > 1)
+	while ((!(s = bc_read_line(&buf, ">>> ")) ||
+	        (vm.eof = (s == BC_STATUS_EOF))) && buf.len > 1)
 	{
 		char c2, *str = buf.v;
 		size_t i, len = buf.len - 1;
-
-		done = (s == BC_STATUS_EOF);
 
 		for (i = 0; i < len; ++i) {
 
@@ -594,7 +592,7 @@ restart:
 		bc_vm_process(buffer.v, true);
 		bc_vec_empty(&buffer);
 
-		if (done) break;
+		if (vm.eof) break;
 	}
 
 	if (!BC_STATUS_IS_ERROR(s)) {
@@ -608,8 +606,6 @@ restart:
 #endif // BC_ENABLED
 	}
 
-	done = (s == BC_STATUS_EOF);
-
 err:
 	BC_SIG_MAYLOCK;
 
@@ -618,7 +614,7 @@ err:
 	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
 	    vm.status : BC_STATUS_SUCCESS;
 
-	if (!vm.status && !done) {
+	if (!vm.status && !vm.eof) {
 		bc_vec_empty(&buffer);
 		BC_LONGJMP_STOP;
 		goto restart;

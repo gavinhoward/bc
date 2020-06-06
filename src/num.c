@@ -899,12 +899,19 @@ static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	ardx = cpa.rdx * BC_BASE_DIGS;
 	bc_num_shiftLeft(&cpa, ardx);
-	bc_num_clean(&cpa);
-	azero = bc_num_shiftZero(&cpa);
 
 	brdx = cpb.rdx * BC_BASE_DIGS;
 	bc_num_shiftLeft(&cpb, brdx);
+
+	// We need to lock here because azero and bzero are used in the cleanup.
+	BC_SIG_LOCK;
+
+	azero = bc_num_shiftZero(&cpa);
 	bzero = bc_num_shiftZero(&cpb);
+
+	BC_SIG_UNLOCK;
+
+	bc_num_clean(&cpa);
 	bc_num_clean(&cpb);
 
 	bc_num_k(&cpa, &cpb, c);
@@ -1231,12 +1238,14 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 
 	BC_SIG_LOCK;
+
 	neg = b->neg;
 	b->neg = false;
 	bc_num_bigdig(b, &pow);
 	b->neg = neg;
 
 	bc_num_createCopy(&copy, a);
+
 	BC_SETJMP_LOCKED(err);
 
 	BC_SIG_UNLOCK;

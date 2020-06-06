@@ -187,7 +187,10 @@
 	do {                                 \
 		sigjmp_buf sjb;                  \
 		BC_SIG_LOCK;                     \
-		if (sigsetjmp(sjb, 0)) goto l;   \
+		if (sigsetjmp(sjb, 0)) {         \
+			assert(BC_SIG_EXC);          \
+			goto l;                      \
+		}                                \
 		bc_vec_push(&vm.jmp_bufs, &sjb); \
 		BC_SIG_UNLOCK;                   \
 	} while (0)
@@ -196,7 +199,10 @@
 	do {                                  \
 		sigjmp_buf sjb;                   \
 		BC_SIG_ASSERT_LOCKED;             \
-		if (sigsetjmp(sjb, 0)) goto l;    \
+		if (sigsetjmp(sjb, 0)) {          \
+			assert(BC_SIG_EXC);           \
+			goto l;                       \
+		}                                 \
 		bc_vec_push(&vm.jmp_bufs, &sjb);  \
 	} while (0)
 
@@ -262,6 +268,8 @@ typedef struct BcVm {
 
 	uint16_t nchars;
 	uint16_t line_len;
+
+	bool eof;
 
 	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
 

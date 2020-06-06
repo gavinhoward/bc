@@ -241,7 +241,6 @@ static void bc_parse_name(BcParse *p, BcInst *type,
                           bool *can_assign, uint8_t flags)
 {
 	char *name;
-	bool need_free = true;
 
 	BC_SIG_LOCK;
 
@@ -267,10 +266,10 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 		}
 		else {
 
-			flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
-			flags |= BC_PARSE_NEEDVAL;
+			uint8_t flags2 = (flags & ~(BC_PARSE_PRINT | BC_PARSE_REL)) |
+			    BC_PARSE_NEEDVAL;
 
-			bc_parse_expr_status(p, flags, bc_parse_next_elem);
+			bc_parse_expr_status(p, flags2, bc_parse_next_elem);
 
 			if (BC_ERR(p->l.t != BC_LEX_RBRACKET))
 				bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
@@ -293,7 +292,8 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 		*can_assign = false;
 
 		// bc_parse_call() will tell us if we need to free or not.
-		need_free = bc_parse_call(p, name, flags);
+		// If not, we set to NULL because free(NULL) is safe.
+		if (!bc_parse_call(p, name, flags)) name = NULL;
 	}
 	else {
 		*type = BC_INST_VAR;
@@ -304,7 +304,7 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 
 err:
 	BC_SIG_MAYLOCK;
-	if (need_free) free(name);
+	free(name);
 	BC_LONGJMP_CONT;
 }
 

@@ -1360,7 +1360,6 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 
 	BcNum num;
 	BcBigDig val;
-	uchar c;
 
 	num.num = NULL;
 
@@ -1379,13 +1378,11 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	// it is not negative.
 	bc_num_bigdig2(&num, &val);
 
-	c = (uchar) val;
-
 num_err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&num);
 	BC_LONGJMP_CONT;
-	return c;
+	return (uchar) val;
 }
 
 static void bc_program_asciify(BcProgram *p) {
@@ -1500,7 +1497,6 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 	BcInstPtr ip;
 	size_t fidx, sidx;
 	BcNum *n;
-	bool exec;
 
 	assert(p->stack.len == p->tail_calls.len);
 
@@ -1512,23 +1508,21 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 	if (cond) {
 
-		size_t idx = SIZE_MAX, then_idx, else_idx;
+		bool exec;
+		size_t idx, then_idx, else_idx;
 
 		then_idx = bc_program_index(code, bgn);
 		else_idx = bc_program_index(code, bgn);
 
 		exec = (r->d.n.len != 0);
 
-		if (exec) idx = then_idx;
-		else {
-			exec = (else_idx != SIZE_MAX);
-			idx = else_idx;
-		}
+		idx = exec ? then_idx : else_idx;
 
 		BC_SIG_LOCK;
 		BC_SETJMP_LOCKED(exit);
 
-		if (exec) n = bc_vec_top(bc_program_vec(p, idx, BC_TYPE_VAR));
+		if (exec || (else_idx != SIZE_MAX))
+			n = bc_vec_top(bc_program_vec(p, idx, BC_TYPE_VAR));
 		else goto exit;
 
 		if (BC_ERR(!BC_PROG_STR(n))) bc_vm_err(BC_ERROR_EXEC_TYPE);
@@ -1599,6 +1593,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 	return;
 
 err:
+	BC_SIG_MAYLOCK;
 	bc_parse_free(&prs);
 	f = bc_vec_item(&p->fns, fidx);
 	bc_vec_npop(&f->code, f->code.len);
