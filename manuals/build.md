@@ -84,7 +84,8 @@ sections.
 ### `CC`
 
 C compiler for the target system. `CC` must be compatible with POSIX `c99`
-behavior and options.
+behavior and options. However, **I encourage users to use any C99 or C11
+compatible compiler they wish.**
 
 If there is a space in the basename of the compiler, the items after the first
 space are assumed to be compiler flags, and in that case, the flags are

@@ -115,6 +115,9 @@ When I ran benchmarks with my `bc` compiled under `clang`, it performed much
 better than when compiled under `gcc`. I recommend compiling this `bc` with
 `clang`.
 
+I also recommend building this `bc` with C11 if you can because `bc` will detect
+a C11 compiler and add `_Noreturn` to any relevant function(s).
+
 #### Recommended Optimizations
 
 I wrote this `bc` with Separation of Concerns, which means that there are many
