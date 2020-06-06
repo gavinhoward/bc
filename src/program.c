@@ -222,9 +222,14 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 				assert(v->size == sizeof(BcNum));
 
 				if (v->len <= idx) {
-					BC_SIG_LOCK;
+
+					sig_atomic_t lock;
+
+					BC_SIG_TRYLOCK(lock);
+
 					bc_array_expand(v, bc_vm_growSize(idx, 1));
-					BC_SIG_UNLOCK;
+
+					BC_SIG_TRYUNLOCK(lock);
 				}
 
 				n = bc_vec_item(v, idx);
@@ -1844,6 +1849,8 @@ void bc_program_exec(BcProgram *p) {
 	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
 
 	while (ip->idx < func->code.len) {
+
+		BC_SIG_ASSERT_NOT_LOCKED;
 
 		uchar inst = (uchar) code[(ip->idx)++];
 
