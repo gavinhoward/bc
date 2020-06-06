@@ -513,7 +513,7 @@ if [ "$run_tests" -ne 0 ]; then
 
 		header "Configuring for afl-gcc..."
 
-		configure "$debug $gcc_flags" "afl-gcc" "-HNP -gO3" "1" "$bits"
+		configure "$debug $gcc_flags -DDC_ENABLE_RAND=0" "afl-gcc" "-HNP -gO3" "1" "$bits"
 
 		printf '\n'
 		printf 'Run make\n'
@@ -522,7 +522,7 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run ASan on the fuzzer test cases with the following build:\n'
 		printf '\n'
-		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer" ./configure.sh -gO3 -HNPS\n'
+		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer -DDC_ENABLE_RAND=0" ./configure.sh -gO3 -HNPS\n'
 		printf '    make\n'
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
