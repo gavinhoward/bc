@@ -278,7 +278,8 @@ runtests() {
 	_runtests_run_tests="$1"
 	shift
 
-	runtestseries "$_runtests_CFLAGS" "$_runtests_CC" "$_runtests_configure_flags" "$_runtests_run_tests"
+	runtestseries "-std=c99 $_runtests_CFLAGS" "$_runtests_CC" "$_runtests_configure_flags" "$_runtests_run_tests"
+	runtestseries "-std=c11 $_runtests_CFLAGS" "$_runtests_CC" "$_runtests_configure_flags" "$_runtests_run_tests"
 }
 
 karatsuba() {
@@ -385,7 +386,7 @@ clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-ma
 clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
 gcc_flags="-Wno-maybe-uninitialized"
 
-cflags="-Wall -Wextra -Werror -pedantic -std=c99 -Wno-conditional-uninitialized"
+cflags="-Wall -Wextra -Werror -pedantic -Wno-conditional-uninitialized"
 
 debug="$cflags -fno-omit-frame-pointer"
 release="$cflags -DNDEBUG"
