@@ -2,18 +2,21 @@
 
 ## 3.0.0
 
-* Add Spanish translation.
-* Add getting rid of stdio and implementing my own.
-* Add new signal handling.
+*Notes for package maintainers:*
 
-*Note for package maintainers: The `2.7.0` release series saw a change in the
-option parsing. This made me change one error message and add a few others. The
-error message that was changed removed one format specifier. Unfortunately, `bc`
-cannot use any locale files except the ones that are already installed, so it
-will use the previous ones while running tests. If `bc` segfaults while running
-arg tests when updating, it is because the global locale files have not been
-replaced. Make sure to either prevent the test suite from running on update or
-remove the old locale files before updating.*
+*First, the `2.7.0` release series saw a change in the option parsing. This made
+me change one error message and add a few others. The error message that was
+changed removed one format specifier. This means that `printf()` will seqfault
+on old locale files. Unfortunately, `bc` cannot use any locale files except the
+global ones that are already installed, so it will use the previous ones while
+running tests during install. **If `bc` segfaults while running arg tests when
+updating, it is because the global locale files have not been replaced. Make
+sure to either prevent the test suite from running on update or remove the old
+locale files before updating.** Once this is done, `bc` should install without
+problems.*
+
+*Second, **the option to build without signal support has been removed**. See
+below for the reasons why.*
 
 This is a production release with some small bug fixes, a few improvements, one
 major bug fix, and a complete redesign of `bc`'s error and signal handling.
@@ -43,16 +46,19 @@ Third, the default Karatsuba length was updated from 64 to 32 after making the
 optimization changes below, since 32 is going to be better than 64 after the
 changes.
 
-Fourth, the interpreter received a speedup to make performance on non-math-heavy
+Fourth, Spanish translations were added.
+
+Fifth, the interpreter received a speedup to make performance on non-math-heavy
 scripts more competitive with GNU `bc`. While improvements did, in fact, get it
 much closer (see the [benchmarks][19]), it isn't quite there.
 
 There were several things done to speed up the interpreter:
 
-First, several small inefficiencies were removed. These included calling the
-function `bc_vec_pop(v)` twice instead of calling `bc_vec_npop(v, 2)`. They also
-included an extra function call for checking the size of the stack and checking
-the size of the stack more than once on several operations.
+First, several small inefficiencies were removed. These inefficiencies included
+calling the function `bc_vec_pop(v)` twice instead of calling
+`bc_vec_npop(v, 2)`. They also included an extra function call for checking the
+size of the stack and checking the size of the stack more than once on several
+operations.
 
 Second, since the current `bc` function is the one that stores constants and
 strings, the program caches pointers to the current function's vectors of
@@ -105,6 +111,43 @@ had exactly `BC_NUM_DEF_SIZE` capacity spent the smallest amount of time in both
 user and system time. This makes sense, especially with the changes to make
 `BC_NUM_DEF_SIZE` bigger on 64-bit systems, since the vast majority of numbers
 will only ever use numbers with a size less than or equal to `BC_NUM_DEF_SIZE`.
+
+Last of all, `bc`'s signal handling underwent a complete redesign. (This is the
+reason that this version is `3.0.0` and not `2.8.0`.) The change was to move
+from a polling approach to signal handling to an interrupt-based approach.
+
+Previously, every single loop condition had a check for signals. I suspect that
+this could be expensive when in tight loops.
+
+Now, the signal handler just uses `longjmp()` (actually `siglongjmp()`) to start
+an unwinding of the stack until it is stopped or the stack is unwound to
+`main()`, which just returns. If `bc` is currenly executing code that cannot be
+safely interrupted (according to POSIX), then signals are "locked." The signal
+handler checks if the lock is taken, and if it is, it just sets the status to
+indicate that a signal arrived. Later, when the signal lock is released, the
+status is checked to see if a signal came in. If so, the stack unwinding starts.
+
+This design eliminates polling in favor of maintaining a stack of `jmp_buf`'s.
+This has its own performance implications, but it gives better interaction. And
+the cost of pushing and popping a `jmp_buf` in a function is paid at most twice.
+Most functions do not pay that price, and most of the rest only pay it once.
+(There are only some 3 functions in `bc` that push and pop a `jmp_buf` twice.)
+
+As a side effect of this change, I had to eliminate the use of `stdio.h` in `bc`
+because `stdio` does not play nice with signals and `longjmp()`. I implemented
+custom I/O buffer code that takes a fraction of the size. This means that static
+builds will be smaller, but non-static builds will be bigger, though they will
+have less linking time.
+
+This change is also good because my history implementation was already bypassing
+`stdio` for good reasons, and unifying the architecture was a win.
+
+Another reason for this change is that my `bc` should *always* behave correctly
+in the presence of signals like `SIGINT`, `SIGTERM`, and `SIGQUIT`. With the
+addition of my own I/O buffering, I needed to also make sure that the buffers
+were correctly flushed even when such signals happened.
+
+For this reason, I **removed the option to build without signal support**.
 
 ## 2.7.2
 
