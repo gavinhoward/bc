@@ -1728,8 +1728,8 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
 #if BC_ENABLED
 	bc_map_init(&p->fn_map);
-	bc_program_insertFunc(p, bc_vm_strdup(bc_func_main));
-	bc_program_insertFunc(p, bc_vm_strdup(bc_func_read));
+	bc_program_insertFunc(p, bc_func_main);
+	bc_program_insertFunc(p, bc_func_read);
 #else // BC_ENABLED
 	{
 		BcFunc f;
@@ -1769,7 +1769,7 @@ void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
 #if BC_ENABLED
 size_t bc_program_insertFunc(BcProgram *p, char *name) {
 
-	BcId id;
+	BcId *id_ptr, id;
 	BcFunc f;
 	bool new;
 	size_t idx;
@@ -1782,14 +1782,18 @@ size_t bc_program_insertFunc(BcProgram *p, char *name) {
 	id.idx = p->fns.len;
 
 	new = bc_map_insert(&p->fn_map, &id, &idx);
-	idx = ((BcId*) bc_vec_item(&p->fn_map, idx))->idx;
+	id_ptr = (BcId*) bc_vec_item(&p->fn_map, idx);
+	idx = id_ptr->idx;
 
 	if (!new) {
 		BcFunc *func = bc_vec_item(&p->fns, idx);
 		bc_func_reset(func);
-		free(name);
 	}
-	else bc_program_addFunc(p, &f, name);
+	else {
+		char *name_cp = strdup(name);
+		id_ptr->name = name_cp;
+		bc_program_addFunc(p, &f, name_cp);
+	}
 
 	return idx;
 }

@@ -195,11 +195,10 @@ static void bc_parse_params(BcParse *p, uint8_t flags) {
 	bc_parse_pushIndex(p, nparams);
 }
 
-static bool bc_parse_call(BcParse *p, char *name, uint8_t flags) {
+static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	BcId id;
 	size_t idx;
-	bool need_free = true;
 
 	id.name = name;
 
@@ -219,8 +218,6 @@ static bool bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 		idx = bc_program_insertFunc(p->prog, name);
 
-		need_free = false;
-
 		BC_SIG_UNLOCK;
 
 		assert(idx != BC_VEC_INVALID_IDX);
@@ -233,8 +230,6 @@ static bool bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 	bc_parse_pushIndex(p, idx);
 
 	bc_lex_next(&p->l);
-
-	return need_free;
 }
 
 static void bc_parse_name(BcParse *p, BcInst *type,
@@ -291,9 +286,7 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 		*type = BC_INST_CALL;
 		*can_assign = false;
 
-		// bc_parse_call() will tell us if we need to free or not.
-		// If not, we set to NULL because free(NULL) is safe.
-		if (!bc_parse_call(p, name, flags)) name = NULL;
+		bc_parse_call(p, name, flags);
 	}
 	else {
 		*type = BC_INST_VAR;
@@ -812,7 +805,7 @@ static void bc_parse_func(BcParse *p) {
 
 	BC_SIG_LOCK;
 
-	idx = bc_program_insertFunc(p->prog, bc_vm_strdup(p->l.str.v));
+	idx = bc_program_insertFunc(p->prog, p->l.str.v);
 
 	BC_SIG_UNLOCK;
 
