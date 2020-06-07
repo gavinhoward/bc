@@ -1406,7 +1406,7 @@ static void bc_program_asciify(BcProgram *p) {
 	BcNum *n;
 	char str[2], *str2;
 	uchar c;
-	size_t len, idx;
+	size_t idx;
 
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_vm_err(BC_ERROR_EXEC_STACK);
 
@@ -1416,9 +1416,7 @@ static void bc_program_asciify(BcProgram *p) {
 
 	assert(n != NULL);
 
-	len = p->strs->len;
-
-	assert(len + BC_PROG_REQ_FUNCS == p->fns.len);
+	assert(p->strs->len + BC_PROG_REQ_FUNCS == p->fns.len);
 
 	if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
 	else {
