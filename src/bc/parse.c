@@ -195,12 +195,9 @@ static void bc_parse_params(BcParse *p, uint8_t flags) {
 	bc_parse_pushIndex(p, nparams);
 }
 
-static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
+static void bc_parse_call(BcParse *p, const char *name, uint8_t flags) {
 
-	BcId id;
 	size_t idx;
-
-	id.name = name;
 
 	bc_parse_params(p, flags);
 
@@ -210,7 +207,7 @@ static void bc_parse_call(BcParse *p, char *name, uint8_t flags) {
 
 	// We cannot use bc_program_insertFunc() here
 	// because it will overwrite an existing function.
-	idx = bc_map_index(&p->prog->fn_map, &id);
+	idx = bc_map_index(&p->prog->fn_map, name);
 
 	if (idx == BC_VEC_INVALID_IDX) {
 
@@ -442,7 +439,7 @@ static void bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
 }
 
 static void bc_parse_str(BcParse *p, char inst) {
-	bc_parse_string(p);
+	bc_parse_addString(p);
 	bc_parse_push(p, inst);
 	bc_lex_next(&p->l);
 }

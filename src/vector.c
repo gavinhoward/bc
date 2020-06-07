@@ -83,12 +83,14 @@ void bc_vec_expand(BcVec *restrict v, size_t req) {
 }
 
 void bc_vec_npop(BcVec *restrict v, size_t n) {
+
 	assert(v != NULL && n <= v->len);
+
 	if (v->dtor == NULL) v->len -= n;
 	else {
 
-		size_t len = v->len - n;
 		sig_atomic_t lock;
+		size_t len = v->len - n;
 
 		BC_SIG_TRYLOCK(lock);
 
@@ -216,7 +218,7 @@ void bc_vec_free(void *vec) {
 	free(v->v);
 }
 
-static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
+static size_t bc_map_find(const BcVec *restrict v, const char *name) {
 
 	size_t low = 0, high = v->len;
 
@@ -224,7 +226,7 @@ static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 
 		size_t mid = (low + high) / 2;
 		const BcId *id = bc_vec_item(v, mid);
-		int result = bc_id_cmp(ptr, id);
+		int result = strcmp(name, id->name);
 
 		if (!result) return mid;
 		else if (result < 0) high = mid;
@@ -234,31 +236,40 @@ static size_t bc_map_find(const BcVec *restrict v, const BcId *restrict ptr) {
 	return low;
 }
 
-bool bc_map_insert(BcVec *restrict v, const BcId *restrict ptr,
-                   size_t *restrict i)
+bool bc_map_insert(BcVec *restrict v, const char *name,
+                   size_t idx, size_t *restrict i)
 {
-	assert(v != NULL && ptr != NULL && i != NULL);
+	BcId id;
 
-	*i = bc_map_find(v, ptr);
+	BC_SIG_ASSERT_LOCKED;
+
+	assert(v != NULL && name != NULL && i != NULL);
+
+	*i = bc_map_find(v, name);
 
 	assert(*i <= v->len);
 
-	if (*i == v->len) bc_vec_push(v, ptr);
-	else if (!bc_id_cmp(ptr, bc_vec_item(v, *i))) return false;
-	else bc_vec_pushAt(v, ptr, *i);
+	if (*i != v->len && !strcmp(name, ((BcId*) bc_vec_item(v, *i))->name))
+		return false;
+
+	id.name = bc_vm_strdup(name);
+	id.idx = idx;
+
+	bc_vec_pushAt(v, &id, *i);
 
 	return true;
 }
 
-size_t bc_map_index(const BcVec *restrict v, const BcId *restrict ptr) {
+size_t bc_map_index(const BcVec *restrict v, const char *name) {
 
 	size_t i;
 
-	assert(v != NULL && ptr != NULL);
+	assert(v != NULL && name != NULL);
 
-	i = bc_map_find(v, ptr);
+	i = bc_map_find(v, name);
 
 	if (i >= v->len) return BC_VEC_INVALID_IDX;
 
-	return bc_id_cmp(ptr, bc_vec_item(v, i)) ? BC_VEC_INVALID_IDX : i;
+	return strcmp(name, ((BcId*) bc_vec_item(v, i))->name) ?
+	    BC_VEC_INVALID_IDX : i;
 }

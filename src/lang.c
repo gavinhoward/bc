@@ -40,10 +40,6 @@
 #include <lang.h>
 #include <vm.h>
 
-int bc_id_cmp(const BcId *e1, const BcId *e2) {
-	return strcmp(e1->name, e2->name);
-}
-
 #ifndef NDEBUG
 void bc_id_free(void *id) {
 	BC_SIG_ASSERT_LOCKED;
@@ -55,7 +51,7 @@ void bc_id_free(void *id) {
 void bc_string_free(void *string) {
 	BC_SIG_ASSERT_LOCKED;
 	assert(string != NULL && (*((char**) string)) != NULL);
-	free(*((char**) string));
+	if (BC_IS_BC) free(*((char**) string));
 }
 
 void bc_const_free(void *constant) {
@@ -93,10 +89,26 @@ void bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 #endif // BC_ENABLED
 
 void bc_func_init(BcFunc *f, const char *name) {
+
 	BC_SIG_ASSERT_LOCKED;
+
 	assert(f != NULL && name != NULL);
+
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
-	bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
+
+	// This is necessary for not allocating memory where it isn't used.
+	// dc does not use strings except in the main function. The else part
+	// is necessary to stop uninitiazed data errors in valgrind.
+	if (BC_IS_BC || !strcmp(name, bc_func_main))
+		bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
+#if BC_ENABLE_FUNC_FREE
+	else {
+		f->strs.v = NULL;
+		f->strs.len = 0;
+		f->strs.dtor = NULL;
+	}
+#endif // BC_ENABLE_FUNC_FREE
+
 	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
 #if BC_ENABLED
 	if (BC_IS_BC) {
@@ -127,6 +139,7 @@ void bc_func_reset(BcFunc *f) {
 
 void bc_func_free(void *func) {
 #if BC_ENABLE_FUNC_FREE
+
 	BcFunc *f = (BcFunc*) func;
 	BC_SIG_ASSERT_LOCKED;
 	assert(f != NULL);

@@ -52,53 +52,64 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 	p->func = bc_vec_item(&p->prog->fns, fidx);
 }
 
-void bc_parse_pushName(const BcParse *p, char *name, bool var) {
-	size_t idx = bc_program_search(p->prog, name, var);
-	bc_parse_pushIndex(p, idx);
+inline void bc_parse_pushName(const BcParse *p, char *name, bool var) {
+	bc_parse_pushIndex(p, bc_program_search(p->prog, name, var));
 }
 
-void bc_parse_addId(BcParse *p, const char *string, uchar inst) {
-
-	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
-	BcVec *v = inst == BC_INST_NUM ? &f->consts : &f->strs;
-	size_t idx = v->len;
-
-	if (inst == BC_INST_NUM) {
-
-		if (bc_parse_one[0] == string[0] && bc_parse_one[1] == string[1]) {
-			bc_parse_push(p, BC_INST_ONE);
-			return;
-		}
-		else {
-
-			BcConst c;
-
-			BC_SIG_LOCK;
-
-			c.val = bc_vm_strdup(string);
-			c.base = BC_NUM_BIGDIG_MAX;
-
-			memset(&c.num, 0, sizeof(BcNum));
-			bc_vec_push(v, &c);
-
-			BC_SIG_UNLOCK;
-		}
-	}
-	else {
-
-		char *str;
-
-		BC_SIG_LOCK;
-
-		str = bc_vm_strdup(string);
-		bc_vec_push(v, &str);
-
-		BC_SIG_UNLOCK;
-	}
-
+static void bc_parse_update(BcParse *p, uchar inst, size_t idx) {
 	bc_parse_updateFunc(p, p->fidx);
 	bc_parse_push(p, inst);
 	bc_parse_pushIndex(p, idx);
+}
+
+void bc_parse_addString(BcParse *p) {
+
+	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
+	size_t idx;
+
+	BC_SIG_LOCK;
+
+	if (BC_IS_BC) {
+		const char *str = bc_vm_strdup(p->l.str.v);
+		idx = f->strs.len;
+		bc_vec_push(&f->strs, &str);
+	}
+	else idx = bc_program_insertFunc(p->prog, p->l.str.v) - BC_PROG_REQ_FUNCS;
+
+#ifndef NDEBUG
+	f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
+	assert(f->strs.len > idx);
+#endif // NDEBUG
+
+	bc_parse_update(p, BC_INST_STR, idx);
+
+	BC_SIG_UNLOCK;
+}
+
+static void bc_parse_addNum(BcParse *p, const char *string) {
+
+	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
+	size_t idx = f->consts.len;
+	BcConst c;
+
+	if (bc_parse_one[0] == string[0] && bc_parse_one[1] == string[1]) {
+		bc_parse_push(p, BC_INST_ONE);
+		return;
+	}
+
+	idx = f->consts.len;
+
+	BC_SIG_LOCK;
+
+	c.val = bc_vm_strdup(string);
+	c.base = BC_NUM_BIGDIG_MAX;
+
+	c.num.num = NULL;
+	bc_vec_push(&f->consts, &c);
+
+	bc_parse_update(p, BC_INST_NUM, idx);
+
+	BC_SIG_UNLOCK;
 }
 
 void bc_parse_number(BcParse *p) {
@@ -113,7 +124,7 @@ void bc_parse_number(BcParse *p) {
 	}
 #endif // BC_ENABLE_EXTRA_MATH
 
-	bc_parse_addId(p, p->l.str.v, BC_INST_NUM);
+	bc_parse_addNum(p, p->l.str.v);
 
 #if BC_ENABLE_EXTRA_MATH
 	if (exp != NULL) {
@@ -122,7 +133,7 @@ void bc_parse_number(BcParse *p) {
 
 		neg = (*((char*) bc_vec_item(&p->l.str, idx + 1)) == BC_LEX_NEG_CHAR);
 
-		bc_parse_addId(p, bc_vec_item(&p->l.str, idx + 1 + neg), BC_INST_NUM);
+		bc_parse_addNum(p, bc_vec_item(&p->l.str, idx + 1 + neg));
 		bc_parse_push(p, BC_INST_LSHIFT + neg);
 	}
 #endif // BC_ENABLE_EXTRA_MATH

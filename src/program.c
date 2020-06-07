@@ -48,7 +48,9 @@
 #include <program.h>
 #include <vm.h>
 
-static void bc_program_setVecs(BcProgram *p, BcFunc *f) {
+static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr);
+
+static inline void bc_program_setVecs(BcProgram *p, BcFunc *f) {
 	p->consts = &f->consts;
 	p->strs = &f->strs;
 }
@@ -118,9 +120,9 @@ static BcVec* bc_program_dereference(const BcProgram *p, BcVec *vec) {
 }
 #endif // BC_ENABLED
 
-size_t bc_program_search(BcProgram *p, char *id, bool var) {
+size_t bc_program_search(BcProgram *p, const char *id, bool var) {
 
-	BcId e, *ptr;
+	BcId *ptr;
 	BcVec *v, *map;
 	size_t i;
 	BcResultData data;
@@ -129,26 +131,24 @@ size_t bc_program_search(BcProgram *p, char *id, bool var) {
 	v = var ? &p->vars : &p->arrs;
 	map = var ? &p->var_map : &p->arr_map;
 
-	e.name = id;
-	e.idx = v->len;
-	new = bc_map_insert(map, &e, &i);
-
 	BC_SIG_LOCK;
+
+	new = bc_map_insert(map, id, v->len, &i);
 
 	if (new) {
 		bc_array_init(&data.v, var);
 		bc_vec_push(v, &data.v);
 	}
 
-	ptr = bc_vec_item(map, i);
-	if (new) ptr->name = bc_vm_strdup(e.name);
-
 	BC_SIG_UNLOCK;
+
+	ptr = bc_vec_item(map, i);
 
 	return ptr->idx;
 }
 
-static BcVec* bc_program_vec(const BcProgram *p, size_t idx, BcType type) {
+static inline BcVec* bc_program_vec(const BcProgram *p, size_t idx, BcType type)
+{
 	const BcVec *v = (type == BC_TYPE_VAR) ? &p->vars : &p->arrs;
 	return bc_vec_item(v, idx);
 }
@@ -309,7 +309,6 @@ static void bc_program_binOpPrep(BcProgram *p, BcResult **l, BcNum **ln,
 {
 	bc_program_binPrep(p, l, ln, r, rn);
 	bc_program_type_num(*l, *ln);
-
 	bc_program_type_num(*r, *rn);
 }
 
@@ -552,6 +551,9 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 #endif // BC_PROG_NO_STACK_CHECK
 
 	assert(BC_PROG_STACK(&p->results, idx + 1));
+
+	assert(BC_IS_BC ||
+	       p->strs == &((BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN))->strs);
 
 	r = bc_vec_item_rev(&p->results, idx);
 
@@ -1404,7 +1406,7 @@ static void bc_program_asciify(BcProgram *p) {
 	BcNum *n;
 	char str[2], *str2;
 	uchar c;
-	size_t len;
+	size_t len, idx;
 	BcFunc f;
 
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_vm_err(BC_ERROR_EXEC_STACK);
@@ -1431,17 +1433,12 @@ static void bc_program_asciify(BcProgram *p) {
 
 	BC_SIG_LOCK;
 
-	bc_program_addFunc(p, &f, bc_func_main);
-
-	str2 = bc_vm_strdup(str);
-
-	// Make sure the pointer is updated.
-	bc_vec_push(p->strs, &str2);
+	idx = bc_program_insertFunc(p, str) - BC_PROG_REQ_FUNCS;
 
 	BC_SIG_UNLOCK;
 
 	res.t = BC_RESULT_STR;
-	res.d.loc.loc = len;
+	res.d.loc.loc = idx;
 	bc_vec_pop(&p->results);
 	bc_vec_push(&p->results, &res);
 }
@@ -1657,6 +1654,59 @@ static void bc_program_pushSeed(BcProgram *p) {
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
+static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr) {
+
+	BcInstPtr *ip;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	bc_func_init(f, id_ptr->name);
+	bc_vec_push(&p->fns, f);
+
+	// This is to make sure pointers are updated if the array was moved.
+	if (BC_IS_BC && p->stack.len) {
+		ip = bc_vec_item_rev(&p->stack, 0);
+		bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, ip->func));
+	}
+	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
+}
+
+size_t bc_program_insertFunc(BcProgram *p, const char *name) {
+
+	BcId *id_ptr;
+	BcFunc f;
+	bool new;
+	size_t idx;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	assert(p != NULL && name != NULL);
+
+	new = bc_map_insert(&p->fn_map, name, p->fns.len, &idx);
+	id_ptr = (BcId*) bc_vec_item(&p->fn_map, idx);
+	idx = id_ptr->idx;
+
+	if (!new) {
+		if (BC_IS_BC) {
+			BcFunc *func = bc_vec_item(&p->fns, idx);
+			bc_func_reset(func);
+		}
+	}
+	else {
+
+		bc_program_addFunc(p, &f, id_ptr);
+
+		if (!BC_IS_BC && strcmp(name, bc_func_main) &&
+		    strcmp(name, bc_func_read))
+		{
+			bc_vec_push(p->strs, &id_ptr->name);
+			assert(p->strs->len == p->fns.len - BC_PROG_REQ_FUNCS);
+		}
+	}
+
+	return idx;
+}
+
 #ifndef NDEBUG
 void bc_program_free(BcProgram *p) {
 
@@ -1739,17 +1789,9 @@ void bc_program_init(BcProgram *p) {
 #endif // BC_ENABLED
 
 	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
-#if BC_ENABLED
 	bc_map_init(&p->fn_map);
 	bc_program_insertFunc(p, bc_func_main);
 	bc_program_insertFunc(p, bc_func_read);
-#else // BC_ENABLED
-	{
-		BcFunc f;
-		bc_program_addFunc(p, &f, bc_func_main);
-		bc_program_addFunc(p, &f, bc_func_read);
-	}
-#endif // BC_ENABLED
 
 	bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free);
 	bc_map_init(&p->var_map);
@@ -1761,56 +1803,6 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
 	bc_vec_push(&p->stack, &ip);
 }
-
-void bc_program_addFunc(BcProgram *p, BcFunc *f, const char *name) {
-
-	BcInstPtr *ip;
-
-	BC_SIG_ASSERT_LOCKED;
-
-	bc_func_init(f, name);
-	bc_vec_push(&p->fns, f);
-
-	// This is to make sure pointers are updated if the array was moved.
-	if (BC_IS_BC && p->stack.len) {
-		ip = bc_vec_item_rev(&p->stack, 0);
-		bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, ip->func));
-	}
-	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
-}
-
-#if BC_ENABLED
-size_t bc_program_insertFunc(BcProgram *p, const char *name) {
-
-	BcId *id_ptr, id;
-	BcFunc f;
-	bool new;
-	size_t idx;
-
-	BC_SIG_ASSERT_LOCKED;
-
-	assert(p != NULL && name != NULL);
-
-	id.name = (char*) name;
-	id.idx = p->fns.len;
-
-	new = bc_map_insert(&p->fn_map, &id, &idx);
-	id_ptr = (BcId*) bc_vec_item(&p->fn_map, idx);
-	idx = id_ptr->idx;
-
-	if (!new) {
-		BcFunc *func = bc_vec_item(&p->fns, idx);
-		bc_func_reset(func);
-	}
-	else {
-		char *name_cp = strdup(name);
-		id_ptr->name = name_cp;
-		bc_program_addFunc(p, &f, name_cp);
-	}
-
-	return idx;
-}
-#endif // BC_ENABLED
 
 void bc_program_reset(BcProgram *p) {
 

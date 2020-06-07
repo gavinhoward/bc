@@ -60,7 +60,6 @@
 #endif // BC_ENABLED
 
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
-#define bc_parse_string(p)(bc_parse_addId((p), (p)->l.str.v, BC_INST_STR))
 #define bc_parse_pushIndex(p, idx) (bc_vec_pushIndex(&(p)->func->code, (idx)))
 
 #define bc_parse_err(p, e) (bc_vm_error((e), (p)->l.line))
@@ -105,7 +104,7 @@ void bc_parse_init(BcParse *p, struct BcProgram *prog, size_t func);
 void bc_parse_free(BcParse *p);
 void bc_parse_reset(BcParse *p);
 
-void bc_parse_addId(BcParse *p, const char *string, uchar inst);
+void bc_parse_addString(BcParse *p);
 void bc_parse_number(BcParse *p);
 void bc_parse_updateFunc(BcParse *p, size_t fidx);
 void bc_parse_pushName(const BcParse* p, char *name, bool var);

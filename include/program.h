@@ -158,8 +158,7 @@ void bc_program_printStackDebug(BcProgram* p);
 #endif // BC_ENABLED && DC_ENABLED
 #endif // BC_DEBUG_CODE
 
-size_t bc_program_search(BcProgram *p, char* id, bool var);
-void bc_program_addFunc(BcProgram *p, BcFunc *f, const char* name);
+size_t bc_program_search(BcProgram *p, const char* id, bool var);
 size_t bc_program_insertFunc(BcProgram *p, const char *name);
 void bc_program_reset(BcProgram *p);
 void bc_program_exec(BcProgram *p);

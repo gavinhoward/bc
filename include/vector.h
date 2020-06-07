@@ -84,9 +84,9 @@ void* bc_vec_item_rev(const BcVec *restrict v, size_t idx);
 
 void bc_vec_free(void *vec);
 
-bool bc_map_insert(BcVec *restrict v, const struct BcId *restrict ptr,
-                   size_t *restrict i);
-size_t bc_map_index(const BcVec *restrict v, const struct BcId *restrict ptr);
+bool bc_map_insert(BcVec *restrict v, const char *name,
+                   size_t idx, size_t *restrict i);
+size_t bc_map_index(const BcVec *restrict v, const char *name);
 
 #define bc_vec_pop(v) (bc_vec_npop((v), 1))
 #define bc_vec_top(v) (bc_vec_item_rev((v), 0))

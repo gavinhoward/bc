@@ -54,18 +54,8 @@ static void dc_parse_register(BcParse *p, bool var) {
 	bc_parse_pushName(p, p->l.str.v, var);
 }
 
-static void dc_parse_string(BcParse *p) {
-
-	BcFunc f;
-
-	BC_SIG_LOCK;
-
-	bc_program_addFunc(p->prog, &f, bc_func_main);
-
-	BC_SIG_UNLOCK;
-
-	bc_parse_string(p);
-
+static inline void dc_parse_string(BcParse *p) {
+	bc_parse_addString(p);
 	bc_lex_next(&p->l);
 }
 
