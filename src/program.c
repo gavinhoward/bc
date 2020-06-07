@@ -1407,7 +1407,6 @@ static void bc_program_asciify(BcProgram *p) {
 	char str[2], *str2;
 	uchar c;
 	size_t len, idx;
-	BcFunc f;
 
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_vm_err(BC_ERROR_EXEC_STACK);
 
@@ -1423,8 +1422,8 @@ static void bc_program_asciify(BcProgram *p) {
 
 	if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
 	else {
-		size_t idx = r->t == BC_RESULT_STR ? r->d.loc.loc : n->scale;
-		str2 = *((char**) bc_vec_item(p->strs, idx));
+		size_t index = r->t == BC_RESULT_STR ? r->d.loc.loc : n->scale;
+		str2 = *((char**) bc_vec_item(p->strs, index));
 		c = (uchar) str2[0];
 	}
 
