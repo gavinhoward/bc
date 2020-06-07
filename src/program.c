@@ -1695,12 +1695,14 @@ size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 
 		bc_program_addFunc(p, &f, id_ptr);
 
+#if DC_ENABLED
 		if (!BC_IS_BC && strcmp(name, bc_func_main) &&
 		    strcmp(name, bc_func_read))
 		{
 			bc_vec_push(p->strs, &id_ptr->name);
 			assert(p->strs->len == p->fns.len - BC_PROG_REQ_FUNCS);
 		}
+#endif // DC_ENABLED
 	}
 
 	return idx;
