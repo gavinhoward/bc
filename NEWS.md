@@ -23,12 +23,12 @@ major bug fix, and a complete redesign of `bc`'s error and signal handling.
 **Users and package maintainers should update to this version as soon as
 possible.**
 
-The bug fix was in how `bc` executed files. Previously, a whole file was parsed
-before it was executed, but if a function is defined *after* code, especially if
-the function definition was actually a redefinition, and the code before the
-definition referred to the previous function, this `bc` would replace the
-function before executing any code. The fix was to make sure that all code that
-existed before a function definition was executed.
+The major bug fix was in how `bc` executed files. Previously, a whole file was
+parsed before it was executed, but if a function is defined *after* code,
+especially if the function definition was actually a redefinition, and the code
+before the definition referred to the previous function, this `bc` would replace
+the function before executing any code. The fix was to make sure that all code
+that existed before a function definition was executed.
 
 Beyond that, this `bc` got several improvements that both sped it up, improved
 the handling of signals, and improved the error handling.
