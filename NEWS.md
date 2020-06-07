@@ -121,7 +121,7 @@ this could be expensive when in tight loops.
 
 Now, the signal handler just uses `longjmp()` (actually `siglongjmp()`) to start
 an unwinding of the stack until it is stopped or the stack is unwound to
-`main()`, which just returns. If `bc` is currenly executing code that cannot be
+`main()`, which just returns. If `bc` is currently executing code that cannot be
 safely interrupted (according to POSIX), then signals are "locked." The signal
 handler checks if the lock is taken, and if it is, it just sets the status to
 indicate that a signal arrived. Later, when the signal lock is released, the
