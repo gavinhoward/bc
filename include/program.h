@@ -72,9 +72,7 @@ typedef struct BcProgram {
 	BcVec *strs;
 
 	BcVec fns;
-#if BC_ENABLED
 	BcVec fn_map;
-#endif // BC_ENABLED
 
 	BcVec vars;
 	BcVec var_map;

@@ -1720,9 +1720,7 @@ void bc_program_free(BcProgram *p) {
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) bc_vec_free(p->globals_v + i);
 
 	bc_vec_free(&p->fns);
-#if BC_ENABLED
 	bc_vec_free(&p->fn_map);
-#endif // BC_ENABLED
 	bc_vec_free(&p->vars);
 	bc_vec_free(&p->var_map);
 	bc_vec_free(&p->arrs);
