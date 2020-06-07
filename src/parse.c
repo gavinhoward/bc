@@ -74,7 +74,9 @@ void bc_parse_addString(BcParse *p) {
 		idx = f->strs.len;
 		bc_vec_push(&f->strs, &str);
 	}
+#if DC_ENABLED
 	else idx = bc_program_insertFunc(p->prog, p->l.str.v) - BC_PROG_REQ_FUNCS;
+#endif // DC_ENABLED
 
 #ifndef NDEBUG
 	f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
