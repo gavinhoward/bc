@@ -105,7 +105,6 @@ void bc_func_init(BcFunc *f, const char *name) {
 	else {
 		f->strs.v = NULL;
 		f->strs.len = 0;
-		f->strs.cap = 0;
 		f->strs.dtor = NULL;
 	}
 #endif // BC_ENABLE_FUNC_FREE

@@ -107,6 +107,7 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 	c.base = BC_NUM_BIGDIG_MAX;
 
 	c.num.num = NULL;
+	c.num.cap = 0;
 	bc_vec_push(&f->consts, &c);
 
 	bc_parse_update(p, BC_INST_NUM, idx);
