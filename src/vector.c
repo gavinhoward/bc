@@ -76,8 +76,10 @@ void bc_vec_expand(BcVec *restrict v, size_t req) {
 		sig_atomic_t lock;
 
 		BC_SIG_TRYLOCK(lock);
+
 		v->v = bc_vm_realloc(v->v, bc_vm_arraySize(req, v->size));
 		v->cap = req;
+
 		BC_SIG_TRYUNLOCK(lock);
 	}
 }
