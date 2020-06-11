@@ -167,6 +167,7 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	va_start(args, line);
 	bc_file_putchar(&vm.ferr, '\n');
 	bc_file_puts(&vm.ferr, err_type);
+	bc_file_putchar(&vm.ferr, ' ');
 	bc_file_vprintf(&vm.ferr, vm.err_msgs[e], args);
 	va_end(args);
 
