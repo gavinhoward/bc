@@ -1199,6 +1199,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				bc_parse_incdec(p, &prev, &can_assign, &nexprs, flags);
 				rprn = get_token = bin_last = false;
 				incdec = true;
+				flags &= ~(BC_PARSE_ARRAY);
 				break;
 			}
 
@@ -1213,6 +1214,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				bc_parse_push(p, BC_INST_TRUNC);
 				rprn = can_assign = false;
 				get_token = true;
+				flags &= ~(BC_PARSE_ARRAY);
 				break;
 			}
 #endif // BC_ENABLE_EXTRA_MATH
@@ -1223,6 +1225,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				rprn = get_token = can_assign = false;
 				bin_last = (prev == BC_INST_MINUS);
 				if (bin_last) incdec = false;
+				flags &= ~(BC_PARSE_ARRAY);
 				break;
 			}
 
@@ -1276,6 +1279,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				rprn = incdec = can_assign = false;
 				get_token = true;
 				bin_last = !BC_PARSE_OP_PREFIX(t);
+				flags &= ~(BC_PARSE_ARRAY);
 
 				break;
 			}
@@ -1342,6 +1346,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				prev = BC_INST_NUM;
 				get_token = true;
 				rprn = bin_last = can_assign = false;
+				flags &= ~(BC_PARSE_ARRAY);
 
 				break;
 			}
@@ -1362,6 +1367,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				get_token = can_assign = true;
 				rprn = bin_last = false;
 				nexprs += 1;
+				flags &= ~(BC_PARSE_ARRAY);
 
 				break;
 			}
@@ -1379,6 +1385,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				bc_parse_builtin(p, t, flags, &prev);
 				rprn = get_token = bin_last = incdec = can_assign = false;
 				nexprs += 1;
+				flags &= ~(BC_PARSE_ARRAY);
 
 				break;
 			}
@@ -1405,6 +1412,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 
 				rprn = get_token = bin_last = incdec = can_assign = false;
 				nexprs += 1;
+				flags &= ~(BC_PARSE_ARRAY);
 
 				break;
 			}
@@ -1417,6 +1425,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				bc_parse_scale(p, &prev, &can_assign, flags);
 				rprn = get_token = bin_last = false;
 				nexprs += 1;
+				flags &= ~(BC_PARSE_ARRAY);
 
 				break;
 			}
