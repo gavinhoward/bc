@@ -18,10 +18,10 @@ problems.*
 *Second, **the option to build without signal support has been removed**. See
 below for the reasons why.*
 
-This is a production release with some small bug fixes, a few improvements, two
-major bug fixes, and a complete redesign of `bc`'s error and signal handling.
-**Users and package maintainers should update to this version as soon as
-possible.**
+This is a production release with some small bug fixes, a few improvements,
+three major bug fixes, and a complete redesign of `bc`'s error and signal
+handling. **Users and package maintainers should update to this version as soon
+as possible.**
 
 The first major bug fix was in how `bc` executed files. Previously, a whole file
 was parsed before it was executed, but if a function is defined *after* code,
@@ -31,7 +31,12 @@ the function before executing any code. The fix was to make sure that all code
 that existed before a function definition was executed.
 
 The second major bug fix was in `bc`'s `lib2.bc`. The `ceil()` function had a
-bug where certain inputs caused it to output the wrong numbers.
+bug where a `0` in the decimal place after the truncation position, caused it to
+output the wrong numbers if there was any non-zero digit after.
+
+The third major bug is that when passing parameters to functions, if an
+expression included an array (not an array element) as a parameter, it was
+accepted, when it should have been rejected. It is now correctly rejected.
 
 Beyond that, this `bc` got several improvements that both sped it up, improved
 the handling of signals, and improved the error handling.
