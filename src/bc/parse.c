@@ -1332,6 +1332,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				                  flags & ~BC_PARSE_NOCALL);
 				rprn = (prev == BC_INST_CALL);
 				nexprs += 1;
+				flags &= ~(BC_PARSE_ARRAY);
 
 				break;
 			}

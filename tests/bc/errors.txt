@@ -233,6 +233,7 @@ bytes(1) + 4
 4e-4.2
 a[2^63] = 1
 ibase = 100
+length(l[] + i[])
 length("string")
 abs("string")
 abs(a[])
