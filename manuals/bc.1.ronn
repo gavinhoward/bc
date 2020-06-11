@@ -504,6 +504,9 @@ The operators will be described in more detail below.
     like they would in C. They require a [named expression](#named-expressions)
     as an operand.
 
+    The prefix versions of these operators are more efficient; use them where
+    possible.
+
   * `-`:
     The `negation` operator returns `0` if a user attempts to negate any
     expression with the value `0`. Otherwise, a copy of the expression with its

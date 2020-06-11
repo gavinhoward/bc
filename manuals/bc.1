@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "BC" "1" "May 2020" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "June 2020" "Gavin D. Howard" "General Commands Manual"
 .
 .SH "NAME"
 \fBbc\fR \- arbitrary\-precision arithmetic language and calculator
@@ -501,6 +501,9 @@ The operators will be described in more detail below\.
 .TP
 \fB++\fR \fB\-\-\fR
 The prefix and postfix \fBincrement\fR and \fBdecrement\fR operators behave exactly like they would in C\. They require a \fInamed expression\fR as an operand\.
+.
+.IP
+The prefix versions of these operators are more efficient; use them where possible\.
 .
 .TP
 \fB\-\fR
