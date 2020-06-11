@@ -528,7 +528,7 @@ static void bc_vm_stdin(void) {
 	BcStatus s;
 	BcVec buf, buffer;
 	size_t string = 0;
-	bool comment = false, hash_comment = false;
+	bool comment = false, hash = false;
 
 	bc_lex_file(&vm.prs.l, bc_program_stdin_name);
 
@@ -556,18 +556,16 @@ restart:
 			bool notend = len > i + 1;
 			uchar c = (uchar) str[i];
 
-			hash_comment = (hash_comment && !comment && !string && c != '\n');
+			hash = (!comment && !string && ((hash && c != '\n') ||
+			                                (!hash && c == '#')));
 
-			if (!hash_comment && !comment &&
-				(i - 1 > len || str[i - 1] != '\\'))
-			{
+			if (!hash && !comment && (i - 1 > len || str[i - 1] != '\\')) {
 				if (BC_IS_BC) string ^= (c == '"');
 				else if (c == ']') string -= 1;
 				else if (c == '[') string += 1;
-				else hash_comment = (c == '#');
 			}
 
-			if (BC_IS_BC && !string && notend) {
+			if (BC_IS_BC && !hash && !string && notend) {
 
 				c2 = str[i + 1];
 
