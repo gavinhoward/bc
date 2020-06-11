@@ -18,17 +18,20 @@ problems.*
 *Second, **the option to build without signal support has been removed**. See
 below for the reasons why.*
 
-This is a production release with some small bug fixes, a few improvements, one
-major bug fix, and a complete redesign of `bc`'s error and signal handling.
+This is a production release with some small bug fixes, a few improvements, two
+major bug fixes, and a complete redesign of `bc`'s error and signal handling.
 **Users and package maintainers should update to this version as soon as
 possible.**
 
-The major bug fix was in how `bc` executed files. Previously, a whole file was
-parsed before it was executed, but if a function is defined *after* code,
+The first major bug fix was in how `bc` executed files. Previously, a whole file
+was parsed before it was executed, but if a function is defined *after* code,
 especially if the function definition was actually a redefinition, and the code
 before the definition referred to the previous function, this `bc` would replace
 the function before executing any code. The fix was to make sure that all code
 that existed before a function definition was executed.
+
+The second major bug fix was in `bc`'s `lib2.bc`. The `ceil()` function had a
+bug where certain inputs caused it to output the wrong numbers.
 
 Beyond that, this `bc` got several improvements that both sped it up, improved
 the handling of signals, and improved the error handling.
@@ -148,6 +151,17 @@ addition of my own I/O buffering, I needed to also make sure that the buffers
 were correctly flushed even when such signals happened.
 
 For this reason, I **removed the option to build without signal support**.
+
+As a nice side effect of this change, the error handling code could be changed
+to take advantage of the stack unwinding that signals used. This means that
+signals and error handling use the same code paths, which means that the stack
+unwinding is well-tested. (Errors are tested heavily in the test suite.)
+
+It also means that functions do not need to return a status code that
+***every*** caller needs to check. This eliminated over 100 branches that simply
+checked return codes and then passed that return code up the stack if necessary.
+The code bloat savings from this is at least 1700 bytes on `x86_64`, *before*
+taking into account the extra code from removing `stdio.h`.
 
 ## 2.7.2
 
