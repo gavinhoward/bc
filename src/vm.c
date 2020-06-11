@@ -104,12 +104,11 @@ static void bc_vm_sig(int sig) {
 
 	if (BC_TTY && sig == SIGINT) {
 
-		size_t n = vm.siglen;
 		int err = errno;
 
 		vm.status = BC_STATUS_SIGNAL;
 
-		if (write(STDOUT_FILENO, vm.sigmsg, n) != (ssize_t) n)
+		if (write(STDOUT_FILENO, vm.sigmsg, vm.siglen) != (ssize_t) vm.siglen)
 			vm.status = BC_STATUS_ERROR_FATAL;
 
 		errno = err;
