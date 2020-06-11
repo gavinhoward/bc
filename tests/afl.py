@@ -95,7 +95,7 @@ testdir = os.path.dirname(script)
 if __name__ != "__main__":
 	usage()
 
-timeout = 8
+timeout = 5
 
 if len(sys.argv) < 2:
 	usage()
