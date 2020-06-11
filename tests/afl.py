@@ -33,7 +33,7 @@ import shutil
 import subprocess
 
 def usage():
-	print("usage: {} [--asan] dir [exe results_dir]".format(script))
+	print("usage: {} [--asan] dir [results_dir [exe options...]]".format(script))
 	sys.exit(1)
 
 def check_crash(exebase, out, error, file, type, test):
@@ -113,7 +113,15 @@ if asan:
 	exedir = sys.argv[idx]
 
 if len(sys.argv) >= idx + 2:
-	exe = sys.argv[2]
+	resultsdir = sys.argv[idx + 1]
+else:
+	if exedir == "bc":
+		resultsdir = testdir + "/../../results"
+	else:
+		resultsdir = testdir + "/../../results_dc"
+
+if len(sys.argv) >= idx + 3:
+	exe = sys.argv[idx + 2]
 else:
 	exe = testdir + "/../bin/" + exedir
 
@@ -126,15 +134,10 @@ else:
 	halt = "q\n"
 	options = "-x"
 
-if len(sys.argv) >= 4:
-	resultsdir = sys.argv[3]
+if len(sys.argv) >= idx + 4:
+	exe = [ exe, sys.argv[idx + 3:], options ]
 else:
-	if exedir == "bc":
-		resultsdir = testdir + "/../../results"
-	else:
-		resultsdir = testdir + "/../../results_dc"
-
-exe = [ exe, options ]
+	exe = [ exe, options ]
 for i in range(4, len(sys.argv)):
 	exe.append(sys.argv[i])
 
