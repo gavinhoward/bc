@@ -108,6 +108,8 @@ static size_t bc_num_log10(size_t i) {
 }
 
 static size_t bc_num_zeroDigits(const BcDig *n) {
+	assert(*n >= 0);
+	assert(((size_t) *n) < BC_BASE_POW);
 	return BC_BASE_DIGS - bc_num_log10((size_t) *n);
 }
 
@@ -959,6 +961,8 @@ static void bc_num_divExtend(BcNum *restrict a, BcNum *restrict b,
                              BcBigDig divisor)
 {
 	size_t pow;
+
+	assert(divisor < BC_BASE_POW);
 
 	pow = BC_BASE_DIGS - bc_num_log10((size_t) divisor);
 
@@ -1957,6 +1961,7 @@ static void bc_num_printBase(BcNum *restrict n, BcBigDig base) {
 		print = bc_num_printHex;
 	}
 	else {
+		assert(base <= BC_BASE_POW);
 		width = bc_num_log10(base - 1);
 		print = bc_num_printDigits;
 	}
