@@ -1113,8 +1113,6 @@ static void bc_history_printCtrl(BcHistory *h, unsigned int c) {
  */
 static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
-	BcStatus s = BC_STATUS_SUCCESS;
-
 	bc_history_reset(h);
 
 #if BC_ENABLE_PROMPT
@@ -1131,6 +1129,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 	for (;;) {
 
+		BcStatus s;
 		// Large enough for any encoding?
 		char cbuf[32];
 		unsigned int c = 0;
@@ -1160,7 +1159,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				bc_history_printCtrl(h, c);
 				bc_history_reset(h);
 				bc_history_refresh(h);
-
 				break;
 			}
 
@@ -1174,8 +1172,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Act as end-of-file.
 			case BC_ACTION_CTRL_D:
 			{
-				s = BC_STATUS_EOF;
-				break;
+				return BC_STATUS_EOF;
 			}
 
 			// Swaps current character with previous.
@@ -1274,7 +1271,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		}
 	}
 
-	return s;
+	return BC_STATUS_SUCCESS;
 }
 
 static inline bool bc_history_stdinHasData(BcHistory *h) {

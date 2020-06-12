@@ -1374,7 +1374,7 @@ static void bc_program_stackLen(BcProgram *p) {
 static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 
 	BcNum num;
-	BcBigDig val;
+	BcBigDig val = 0;
 
 	num.num = NULL;
 

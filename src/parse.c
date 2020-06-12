@@ -91,7 +91,7 @@ void bc_parse_addString(BcParse *p) {
 static void bc_parse_addNum(BcParse *p, const char *string) {
 
 	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
-	size_t idx = f->consts.len;
+	size_t idx;
 	BcConst c;
 
 	if (bc_parse_one[0] == string[0] && bc_parse_one[1] == string[1]) {

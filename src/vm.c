@@ -218,6 +218,8 @@ static void bc_vm_envArgs(const char* const env_args_name) {
 
 	start = buf = vm.env_args_buffer = bc_vm_strdup(env_args);
 
+	assert(buf != NULL);
+
 	bc_vec_init(&vm.env_args, sizeof(char*), NULL);
 	bc_vec_push(&vm.env_args, &env_args_name);
 
