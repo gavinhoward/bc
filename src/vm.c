@@ -100,19 +100,17 @@ static void bc_vm_sig(int sig) {
 		return;
 	}
 
-	vm.status = BC_STATUS_QUIT;
-
 	if (BC_TTY && sig == SIGINT) {
 
 		int err = errno;
 
-		vm.status = BC_STATUS_SIGNAL;
-
 		if (write(STDOUT_FILENO, vm.sigmsg, vm.siglen) != (ssize_t) vm.siglen)
 			vm.status = BC_STATUS_ERROR_FATAL;
+		else vm.status = BC_STATUS_SIGNAL;
 
 		errno = err;
 	}
+	else vm.status = BC_STATUS_QUIT;
 
 	assert(vm.jmp_bufs.len);
 
