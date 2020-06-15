@@ -756,7 +756,7 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = bc_vm_sig;
-	sa.sa_flags = SA_SIGINFO;
+	sa.sa_flags = SA_NODEFER;
 
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
