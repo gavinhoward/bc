@@ -167,10 +167,6 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 
 	BcStatus s;
 
-	// We are about to output to stderr, so flush stdout to
-	// make sure that we don't get the outputs mixed up.
-	bc_file_flush(&vm.fout);
-
 #if BC_ENABLE_HISTORY
 	s = bc_history_line(&vm.history, vec, prompt);
 #else // BC_ENABLE_HISTORY
