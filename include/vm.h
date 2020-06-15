@@ -218,10 +218,9 @@
 		bc_vec_pop(&vm.jmp_bufs); \
 	} while (0)
 
-#define BC_LONGJMP_STOP \
-	do {                \
-		vm.sig_pop = 0; \
-		BC_SIG_UNLOCK;  \
+#define BC_LONGJMP_STOP    \
+	do {                   \
+		vm.sig_pop = 0;    \
 	} while (0)
 
 #define BC_VM_BUF_SIZE (1<<12)

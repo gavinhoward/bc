@@ -506,6 +506,8 @@ static void bc_vm_file(const char *file) {
 
 	char *data = NULL;
 
+	assert(!vm.sig_pop);
+
 	bc_lex_file(&vm.prs.l, file);
 
 	BC_SIG_LOCK;
@@ -525,8 +527,15 @@ static void bc_vm_file(const char *file) {
 
 err:
 	BC_SIG_MAYLOCK;
+
 	free(data);
 	bc_vm_clean();
+
+	// bc_program_reset(), called by bc_vm_clean(), resets the status.
+	// We want it to clear the sig_pop variable in case it was set.
+	if (BC_TTY && vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
+		BC_LONGJMP_STOP;
+
 	BC_LONGJMP_CONT;
 }
 
@@ -623,6 +632,7 @@ err:
 	if (!vm.status && !vm.eof) {
 		bc_vec_empty(&buffer);
 		BC_LONGJMP_STOP;
+		BC_SIG_UNLOCK;
 		goto restart;
 	}
 
