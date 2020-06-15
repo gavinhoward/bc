@@ -137,6 +137,7 @@ void bc_vm_info(const char* const help) {
 
 void bc_vm_error(BcError e, size_t line, ...) {
 
+	BcStatus s;
 	va_list args;
 	uchar id = bc_err_ids[e];
 	const char* err_type = vm.err_ids[id];
@@ -159,7 +160,12 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	BC_SIG_TRYLOCK(lock);
 
 	// Make sure all of stdout is written first.
-	bc_file_flush(&vm.fout);
+	s = bc_file_flushErr(&vm.fout);
+
+	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) {
+		vm.status = (sig_atomic_t) s;
+		BC_VM_JMP;
+	}
 
 	va_start(args, line);
 	bc_file_putchar(&vm.ferr, '\n');
@@ -196,9 +202,11 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	}
 
 	bc_file_puts(&vm.ferr, "\n\n");
-	bc_file_flush(&vm.ferr);
 
-	vm.status = (BC_VM_STATUS_TYPE) (uchar) (id + 1);
+	s = bc_file_flushErr(&vm.ferr);
+
+	vm.status = s == BC_STATUS_ERROR_FATAL ?
+	    (sig_atomic_t) s : (sig_atomic_t) (uchar) (id + 1);
 
 	if (BC_ERR(vm.status)) BC_VM_JMP;
 

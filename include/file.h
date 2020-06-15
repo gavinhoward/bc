@@ -55,6 +55,7 @@ void bc_file_init(BcFile *f, int fd, char *buf, size_t cap);
 void bc_file_free(BcFile *f);
 
 void bc_file_putchar(BcFile *restrict f, uchar c);
+BcStatus bc_file_flushErr(BcFile *restrict f);
 void bc_file_flush(BcFile *restrict f);
 void bc_file_write(BcFile *restrict f, const char *buf, size_t n);
 void bc_file_printf(BcFile *restrict f, const char *fmt, ...);

@@ -60,7 +60,7 @@ void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH]) {
 	for (i = 0; i < len; ++i) buf[i] = buf2[len - i - 1];
 }
 
-static void bc_file_output(int fd, const char *buf, size_t n) {
+static BcStatus bc_file_output(int fd, const char *buf, size_t n) {
 
 	size_t bytes = 0;
 	sig_atomic_t lock;
@@ -71,26 +71,41 @@ static void bc_file_output(int fd, const char *buf, size_t n) {
 
 		ssize_t written = write(fd, buf + bytes, n - bytes);
 
-		if (BC_ERR(written == -1)) {
-
-			if (errno == EPIPE) {
-				vm.status = BC_STATUS_EOF;
-				BC_VM_JMP;
-			}
-
-			bc_vm_err(BC_ERROR_FATAL_IO_ERR);
-		}
+		if (BC_ERR(written == -1))
+			return errno == EPIPE ? BC_STATUS_EOF : BC_STATUS_ERROR_FATAL;
 
 		bytes += (size_t) written;
 	}
 
 	BC_SIG_TRYUNLOCK(lock);
+
+	return BC_STATUS_SUCCESS;
+}
+
+BcStatus bc_file_flushErr(BcFile *restrict f) {
+
+	BcStatus s;
+
+	if (f->len) {
+		s = bc_file_output(f->fd, f->buf, f->len);
+		f->len = 0;
+	}
+	else s = BC_STATUS_SUCCESS;
+
+	return s;
 }
 
 void bc_file_flush(BcFile *restrict f) {
-	if (f->len) {
-		bc_file_output(f->fd, f->buf, f->len);
-		f->len = 0;
+
+	BcStatus s = bc_file_flushErr(f);
+
+	if (BC_ERR(s)) {
+
+		if (s == BC_STATUS_EOF) {
+			vm.status = (sig_atomic_t) s;
+			BC_VM_JMP;
+		}
+		else bc_vm_err(BC_ERROR_FATAL_IO_ERR);
 	}
 }
 
