@@ -198,7 +198,11 @@ void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
 
 	ptr = bc_vec_item(v, idx);
 
-	if (v->dtor != NULL) v->dtor(ptr);
+	if (v->dtor != NULL) {
+		BC_SIG_LOCK;
+		v->dtor(ptr);
+		BC_SIG_UNLOCK;
+	}
 	memcpy(ptr, data, v->size);
 }
 #endif // BC_ENABLE_HISTORY
