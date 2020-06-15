@@ -296,7 +296,7 @@ void bc_vm_shutdown(void) {
 
 #if BC_ENABLE_HISTORY
 	// This must always run to ensure that the terminal is back to normal.
-	bc_history_free(&vm.history);
+	if (BC_TTY) bc_history_free(&vm.history);
 #endif // BC_ENABLE_HISTORY
 
 #ifndef NDEBUG
@@ -773,7 +773,7 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	bc_parse_init(&vm.prs, &vm.prog, BC_PROG_MAIN);
 
 #if BC_ENABLE_HISTORY
-	bc_history_init(&vm.history);
+	if (BC_TTY) bc_history_init(&vm.history);
 #endif // BC_ENABLE_HISTORY
 
 #if BC_ENABLED
