@@ -71,12 +71,14 @@ static const BcOptLong bc_args_lopt[] = {
 
 };
 
-static void bc_args_exprs(BcVec *exprs, const char *str) {
-	bc_vec_concat(exprs, str);
-	bc_vec_concat(exprs, "\n");
+static void bc_args_exprs(const char *str) {
+	BC_SIG_ASSERT_LOCKED;
+	if (vm.exprs.v == NULL) bc_vec_init(&vm.exprs, sizeof(uchar), NULL);
+	bc_vec_concat(&vm.exprs, str);
+	bc_vec_concat(&vm.exprs, "\n");
 }
 
-static void bc_args_file(BcVec *exprs, const char *file) {
+static void bc_args_file(const char *file) {
 
 	char *buf;
 
@@ -85,7 +87,7 @@ static void bc_args_file(BcVec *exprs, const char *file) {
 	vm.file = file;
 
 	bc_read_file(file, &buf);
-	bc_args_exprs(exprs, buf);
+	bc_args_exprs(buf);
 	free(buf);
 }
 
@@ -106,13 +108,13 @@ void bc_args(int argc, char *argv[]) {
 
 			case 'e':
 			{
-				bc_args_exprs(&vm.exprs, opts.optarg);
+				bc_args_exprs(opts.optarg);
 				break;
 			}
 
 			case 'f':
 			{
-				bc_args_file(&vm.exprs, opts.optarg);
+				bc_args_file(opts.optarg);
 				break;
 			}
 
@@ -204,6 +206,9 @@ void bc_args(int argc, char *argv[]) {
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) vm.status);
 	if (vm.exprs.len > 1 || !BC_IS_BC) vm.flags |= BC_FLAG_Q;
+
+	if (opts.optind < (size_t) argc)
+		bc_vec_init(&vm.files, sizeof(char*), NULL);
 
 	for (i = opts.optind; i < (size_t) argc; ++i)
 		bc_vec_push(&vm.files, argv + i);

@@ -102,11 +102,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 	if (BC_IS_BC || !strcmp(name, bc_func_main))
 		bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
 #if BC_ENABLE_FUNC_FREE
-	else {
-		f->strs.v = NULL;
-		f->strs.len = 0;
-		f->strs.dtor = NULL;
-	}
+	else bc_vec_clear(&f->strs);
 #endif // BC_ENABLE_FUNC_FREE
 
 	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);

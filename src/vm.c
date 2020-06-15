@@ -772,8 +772,8 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	vm.line_len = (uint16_t) bc_vm_envLen(env_len);
 
-	bc_vec_init(&vm.files, sizeof(char*), NULL);
-	bc_vec_init(&vm.exprs, sizeof(uchar), NULL);
+	bc_vec_clear(&vm.files);
+	bc_vec_clear(&vm.exprs);
 
 	bc_vec_init(&vm.temps, sizeof(BcNum), NULL);
 

@@ -81,6 +81,8 @@ void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data);
 void* bc_vec_item(const BcVec *restrict v, size_t idx);
 void* bc_vec_item_rev(const BcVec *restrict v, size_t idx);
 
+void bc_vec_clear(BcVec *restrict v);
+
 void bc_vec_free(void *vec);
 
 bool bc_map_insert(BcVec *restrict v, const char *name,

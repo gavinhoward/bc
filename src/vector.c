@@ -217,6 +217,12 @@ inline void* bc_vec_item_rev(const BcVec *restrict v, size_t idx) {
 	return v->v + v->size * (v->len - idx - 1);
 }
 
+inline void bc_vec_clear(BcVec *restrict v) {
+	v->v = NULL;
+	v->len = 0;
+	v->dtor = NULL;
+}
+
 void bc_vec_free(void *vec) {
 	BcVec *v = (BcVec*) vec;
 	BC_SIG_ASSERT_LOCKED;
