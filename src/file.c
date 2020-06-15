@@ -171,35 +171,25 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 				d = -d;
 			}
 
-			bc_file_ultoa((unsigned long long) d, buf);
-			bc_file_puts(f, buf);
-		}
-#endif // BC_DEBUG_CODE
-		else if (c == 'l') {
-
-			unsigned long ul;
-
-			assert(percent[2] == 'u');
-
-			ul = va_arg(args, unsigned long);
-
-			if (!ul) bc_file_putchar(f, '0');
+			if (!d) bc_file_putchar(f, '0');
 			else {
-				bc_file_ultoa((unsigned long long) ul, buf);
+				bc_file_ultoa((unsigned long long) d, buf);
 				bc_file_puts(f, buf);
 			}
 		}
+#endif // BC_DEBUG_CODE
 		else {
 
-			size_t sz;
+			unsigned long long ull;
 
-			assert(c == 'z' && percent[2] == 'u');
+			assert((c == 'l' || c == 'z') && percent[2] == 'u');
 
-			sz = va_arg(args, size_t);
+			if (c == 'z') ull = (unsigned long long) va_arg(args, size_t);
+			else ull = (unsigned long long) va_arg(args, unsigned long);
 
-			if (!sz) bc_file_putchar(f, '0');
+			if (!ull) bc_file_putchar(f, '0');
 			else {
-				bc_file_ultoa((unsigned long long) sz, buf);
+				bc_file_ultoa(ull, buf);
 				bc_file_puts(f, buf);
 			}
 		}
