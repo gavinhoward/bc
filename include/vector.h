@@ -75,7 +75,6 @@ void bc_vec_empty(BcVec *restrict v);
 void bc_vec_npopAt(BcVec *restrict v, size_t idx, size_t n);
 
 #if BC_ENABLE_HISTORY
-void bc_vec_popAt(BcVec *restrict v, size_t idx);
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data);
 #endif // BC_ENABLE_HISTORY
 
