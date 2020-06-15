@@ -140,8 +140,6 @@
 #define BC_VM_JMP bc_vm_jmp()
 #endif // BC_DEBUG_CODE
 
-#define BC_VM_STATUS_TYPE sig_atomic_t
-
 #define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
 #define BC_NO_SIG_EXC BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
 
