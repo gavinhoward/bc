@@ -1157,6 +1157,9 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			case BC_ACTION_CTRL_C:
 			{
 				bc_history_printCtrl(h, c);
+				bc_file_write(&vm.fout, vm.sigmsg, vm.siglen);
+				bc_file_write(&vm.fout, bc_program_ready_msg,
+				              bc_program_ready_msg_len);
 				bc_history_reset(h);
 				bc_history_refresh(h);
 				break;
@@ -1172,6 +1175,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			// Act as end-of-file.
 			case BC_ACTION_CTRL_D:
 			{
+				bc_history_printCtrl(h, c);
 				return BC_STATUS_EOF;
 			}
 
