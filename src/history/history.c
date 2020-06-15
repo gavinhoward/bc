@@ -1312,28 +1312,24 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	BcStatus s;
 	char* line;
 
-	if (BC_TTY && !vm.history.badTerm) {
+	s = bc_history_raw(h, prompt);
+	assert(!s || s == BC_STATUS_EOF);
 
-		s = bc_history_raw(h, prompt);
-		assert(!s || s == BC_STATUS_EOF);
+	bc_vec_string(vec, BC_HIST_BUF_LEN(h), h->buf.v);
 
-		bc_vec_string(vec, BC_HIST_BUF_LEN(h), h->buf.v);
+	if (h->buf.v[0]) {
 
-		if (h->buf.v[0]) {
+		BC_SIG_LOCK;
 
-			BC_SIG_LOCK;
+		line = bc_vm_strdup(h->buf.v);
 
-			line = bc_vm_strdup(h->buf.v);
+		BC_SIG_UNLOCK;
 
-			BC_SIG_UNLOCK;
-
-			bc_history_add(h, line);
-		}
-		else bc_history_add_empty(h);
-
-		bc_vec_concat(vec, "\n");
+		bc_history_add(h, line);
 	}
-	else s = bc_read_chars(vec, prompt);
+	else bc_history_add_empty(h);
+
+	bc_vec_concat(vec, "\n");
 
 	return s;
 }
