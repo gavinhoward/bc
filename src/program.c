@@ -2271,7 +2271,8 @@ void bc_program_printInst(const BcProgram *p, const char *restrict code,
 {
 	uchar inst = (uchar) code[(*bgn)++];
 
-	bc_vm_printf("Inst: %s [%lu]; ", bc_inst_names[inst], (unsigned long) inst);
+	bc_vm_printf("Inst[%zu]: %s [%lu]; ", *bgn - 1,
+	             bc_inst_names[inst], (unsigned long) inst);
 
 	if (inst == BC_INST_VAR || inst == BC_INST_ARRAY_ELEM ||
 	    inst == BC_INST_ARRAY)
