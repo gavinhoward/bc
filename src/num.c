@@ -1376,10 +1376,12 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 		bc_num_init(c, req);
 
 		BC_SETJMP_LOCKED(err);
+		BC_SIG_UNLOCK;
 	}
-	else bc_num_expand(c, req);
-
-	BC_SIG_UNLOCK;
+	else {
+		BC_SIG_UNLOCK;
+		bc_num_expand(c, req);
+	}
 
 	op(ptr_a, ptr_b, c, scale);
 
