@@ -115,6 +115,9 @@ typedef struct BcProgram {
 #define BC_PROG_MAIN (0)
 #define BC_PROG_READ (1)
 
+#define bc_program_retire(p, nres, nops) \
+	(bc_vec_npopAt(&(p)->results, (nops), (p)->results.len - (nres + nops)))
+
 #if DC_ENABLED
 #define BC_PROG_REQ_FUNCS (2)
 #if !BC_ENABLED

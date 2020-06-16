@@ -102,6 +102,31 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 	}
 }
 
+void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
+
+	char* ptr, *data;
+
+	assert(v != NULL);
+	assert(idx + n < v->len);
+
+	ptr = bc_vec_item(v, idx);
+	data = bc_vec_item(v, idx + n);
+
+	if (v->dtor != NULL) {
+
+		size_t i;
+
+		BC_SIG_LOCK;
+
+		for (i = 0; i < n; ++i) v->dtor(bc_vec_item(v, idx + i));
+
+		BC_SIG_UNLOCK;
+	}
+
+	v->len -= n;
+	memmove(ptr, data, (v->len - idx) * v->size);
+}
+
 void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
 	assert(v != NULL && data != NULL);
 	if (v->len + n > v->cap) bc_vec_grow(v, n);
@@ -194,15 +219,14 @@ void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
 
 	char *ptr;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	assert(v != NULL);
 
 	ptr = bc_vec_item(v, idx);
 
-	if (v->dtor != NULL) {
-		BC_SIG_LOCK;
-		v->dtor(ptr);
-		BC_SIG_UNLOCK;
-	}
+	if (v->dtor != NULL) v->dtor(ptr);
+
 	memcpy(ptr, data, v->size);
 }
 #endif // BC_ENABLE_HISTORY

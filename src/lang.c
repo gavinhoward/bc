@@ -207,10 +207,17 @@ void bc_array_expand(BcVec *a, size_t len) {
 	}
 }
 
+void bc_result_clear(BcResult *r) {
+	r->t = BC_RESULT_TEMP;
+	bc_num_clear(&r->d.n);
+}
+
 #if DC_ENABLED
 void bc_result_copy(BcResult *d, BcResult *src) {
 
 	assert(d != NULL && src != NULL);
+
+	BC_SIG_ASSERT_LOCKED;
 
 	d->t = src->t;
 

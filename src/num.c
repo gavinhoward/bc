@@ -1987,6 +1987,8 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 
 	BcDig *num;
 
+	BC_SIG_ASSERT_LOCKED;
+
 	assert(n != NULL);
 
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
@@ -1997,18 +1999,14 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 		req = nptr->cap;
 		bc_vec_pop(&vm.temps);
 	}
-	else {
-
-		sig_atomic_t lock;
-
-		BC_SIG_TRYLOCK(lock);
-
-		num = bc_vm_malloc(BC_NUM_SIZE(req));
-
-		BC_SIG_TRYUNLOCK(lock);
-	}
+	else num = bc_vm_malloc(BC_NUM_SIZE(req));
 
 	bc_num_setup(n, num, req);
+}
+
+void bc_num_clear(BcNum *restrict n) {
+	n->num = NULL;
+	n->cap = 0;
 }
 
 void bc_num_free(void *num) {
@@ -2035,11 +2033,13 @@ void bc_num_copy(BcNum *d, const BcNum *s) {
 }
 
 void bc_num_createCopy(BcNum *d, const BcNum *s) {
+	BC_SIG_ASSERT_LOCKED;
 	bc_num_init(d, s->len);
 	bc_num_copy(d, s);
 }
 
 void bc_num_createFromBigdig(BcNum *n, BcBigDig val) {
+	BC_SIG_ASSERT_LOCKED;
 	bc_num_init(n, (BC_NUM_BIGDIG_LOG10 - 1) / BC_BASE_DIGS + 1);
 	bc_num_bigdig2num(n, val);
 }
@@ -2262,7 +2262,6 @@ void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	BC_SIG_LOCK;
 
-	bc_num_init(n, 2 * BC_RAND_NUM_SIZE);
 	bc_num_init(&temp3, 2 * BC_RAND_NUM_SIZE);
 
 	BC_SETJMP_LOCKED(err);
@@ -2309,7 +2308,6 @@ void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&temp3);
-	if (BC_SIG_EXC) bc_num_free(n);
 	BC_LONGJMP_CONT;
 }
 
@@ -2548,7 +2546,11 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	rdx = BC_NUM_RDX(scale);
 	req = bc_vm_growSize(BC_MAX(rdx, a->rdx), len >> 1);
 
+	BC_SIG_LOCK;
+
 	bc_num_init(b, bc_vm_growSize(req, 1));
+
+	BC_SIG_UNLOCK;
 
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(b, scale);

@@ -395,8 +395,8 @@ void bc_rand_push(BcRNG *r) {
 	bc_vec_push(&r->v, &rng);
 }
 
-void bc_rand_pop(BcRNG *r) {
-	bc_vec_pop(&r->v);
+void bc_rand_pop(BcRNG *r, bool reset) {
+	bc_vec_npop(&r->v, reset ? r->v.len - 1 : 1);
 }
 
 void bc_rand_init(BcRNG *r) {

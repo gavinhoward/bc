@@ -163,6 +163,7 @@ void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap);
 void bc_num_copy(BcNum *d, const BcNum *s);
 void bc_num_createCopy(BcNum *d, const BcNum *s);
 void bc_num_createFromBigdig(BcNum *n, BcBigDig val);
+void bc_num_clear(BcNum *restrict n);
 void bc_num_free(void *num);
 
 size_t bc_num_scale(const BcNum *restrict n);

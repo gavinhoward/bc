@@ -64,6 +64,7 @@ void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor);
 void bc_vec_expand(BcVec *restrict v, size_t req);
 
 void bc_vec_npop(BcVec *restrict v, size_t n);
+void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx);
 
 void bc_vec_push(BcVec *restrict v, const void *data);
 void bc_vec_npush(BcVec *restrict v, size_t n, const void *data);
@@ -72,7 +73,6 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx);
 void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str);
 void bc_vec_concat(BcVec *restrict v, const char *restrict str);
 void bc_vec_empty(BcVec *restrict v);
-void bc_vec_npopAt(BcVec *restrict v, size_t idx, size_t n);
 
 #if BC_ENABLE_HISTORY
 void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data);

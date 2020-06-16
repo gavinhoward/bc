@@ -101,6 +101,35 @@ static void bc_program_prepGlobals(BcProgram *p) {
 #endif // BC_ENABLE_EXTRA_MATH
 }
 
+static void bc_program_popGlobals(BcProgram *p, bool reset) {
+
+	size_t i;
+
+	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) {
+		BcVec *v = p->globals_v + i;
+		bc_vec_npop(v, reset ? v->len - 1 : 1);
+		p->globals[i] = BC_PROG_GLOBAL(v);
+	}
+
+#if BC_ENABLE_EXTRA_MATH
+	bc_rand_pop(&p->rng, reset);
+#endif // BC_ENABLE_EXTRA_MATH
+}
+
+static void bc_program_pushBigdig(BcProgram *p, BcBigDig dig, BcResultType type)
+{
+	BcResult res;
+
+	res.t = type;
+
+	BC_SIG_LOCK;
+
+	bc_num_createFromBigdig(&res.d.n, dig);
+	bc_vec_push(&p->results, &res);
+
+	BC_SIG_UNLOCK;
+}
+
 #if BC_ENABLED
 static BcVec* bc_program_dereference(const BcProgram *p, BcVec *vec) {
 
@@ -166,8 +195,11 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
 			if (c->base != base) {
 
-				if (c->num.num == NULL)
+				if (c->num.num == NULL) {
+					BC_SIG_LOCK;
 					bc_num_init(&c->num, BC_NUM_RDX(strlen(c->val)));
+					BC_SIG_UNLOCK;
+				}
 
 				// bc_num_parse() should only do operations that cannot fail.
 				bc_num_parse(&c->num, c->val, base, !c->val[1]);
@@ -175,12 +207,15 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 				c->base = base;
 			}
 
+			BC_SIG_LOCK;
+
 			n = &r->d.n;
 
-			n->num = NULL;
 			r->t = BC_RESULT_TEMP;
 
 			bc_num_createCopy(n, &c->num);
+
+			BC_SIG_UNLOCK;
 
 			break;
 		}
@@ -272,7 +307,7 @@ static void bc_program_operand(BcProgram *p, BcResult **r,
 }
 
 static void bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
-                               BcResult **r, BcNum **rn)
+                               BcResult **r, BcNum **rn, size_t idx)
 {
 	BcResultType lt;
 
@@ -280,15 +315,15 @@ static void bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 
 #ifndef BC_PROG_NO_STACK_CHECK
 	if (!BC_IS_BC) {
-		if (BC_ERR(!BC_PROG_STACK(&p->results, 2)))
+		if (BC_ERR(!BC_PROG_STACK(&p->results, idx + 2)))
 			bc_vm_err(BC_ERROR_EXEC_STACK);
 	}
 #endif // BC_PROG_NO_STACK_CHECK
 
-	assert(BC_PROG_STACK(&p->results, 2));
+	assert(BC_PROG_STACK(&p->results, idx + 2));
 
-	bc_program_operand(p, l, ln, 1);
-	bc_program_operand(p, r, rn, 0);
+	bc_program_operand(p, l, ln, idx + 1);
+	bc_program_operand(p, r, rn, idx);
 
 	lt = (*l)->t;
 
@@ -305,21 +340,21 @@ static void bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 }
 
 static void bc_program_binOpPrep(BcProgram *p, BcResult **l, BcNum **ln,
-                                 BcResult **r, BcNum **rn)
+                                 BcResult **r, BcNum **rn, size_t idx)
 {
-	bc_program_binPrep(p, l, ln, r, rn);
+	bc_program_binPrep(p, l, ln, r, rn, idx);
 	bc_program_type_num(*l, *ln);
 	bc_program_type_num(*r, *rn);
 }
 
 static void bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
-                                      BcResult **r, BcNum **rn)
+                                  BcResult **r, BcNum **rn)
 {
 	BcResultType lt, min;
 
 	min = BC_RESULT_CONSTANT - ((unsigned int) (BC_IS_BC << 1));
 
-	bc_program_binPrep(p, l, ln, r, rn);
+	bc_program_binPrep(p, l, ln, r, rn, 0);
 
 	lt = (*l)->t;
 
@@ -339,26 +374,20 @@ static void bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 #endif // DC_ENABLED
 }
 
-static void bc_program_binOpRetire(BcProgram *p, BcResult *r) {
-	r->t = BC_RESULT_TEMP;
-	bc_vec_npop(&p->results, 2);
-	bc_vec_push(&p->results, r);
-}
-
-static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n) {
+static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, size_t idx) {
 
 	assert(p != NULL && r != NULL && n != NULL);
 
 #ifndef BC_PROG_NO_STACK_CHECK
 	if (!BC_IS_BC) {
-		if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+		if (BC_ERR(!BC_PROG_STACK(&p->results, idx + 1)))
 			bc_vm_err(BC_ERROR_EXEC_STACK);
 	}
 #endif // BC_PROG_NO_STACK_CHECK
 
-	assert(BC_PROG_STACK(&p->results, 1));
+	assert(BC_PROG_STACK(&p->results, idx + 1));
 
-	bc_program_operand(p, r, n, 0);
+	bc_program_operand(p, r, n, idx);
 
 #if DC_ENABLED
 	assert((*r)->t != BC_RESULT_VAR || !BC_PROG_STR(*n));
@@ -367,42 +396,35 @@ static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n) {
 	bc_program_type_num(*r, *n);
 }
 
-static void bc_program_retire(BcProgram *p, BcResult *r, BcResultType t) {
-	r->t = t;
-	bc_vec_pop(&p->results);
-	bc_vec_push(&p->results, r);
+static BcResult* bc_program_prepResult(BcProgram *p) {
+
+	BcResult res;
+
+	bc_result_clear(&res);
+	bc_vec_push(&p->results, &res);
+
+	return bc_vec_top(&p->results);
 }
 
 static void bc_program_op(BcProgram *p, uchar inst) {
 
-	BcResult *opd1, *opd2, res;
+	BcResult *opd1, *opd2, *res;
 	BcNum *n1, *n2;
 	size_t idx = inst - BC_INST_POWER;
 
-	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
+	res = bc_program_prepResult(p);
 
-	res.d.n.num = NULL;
-
-	BC_SETJMP(err);
-
-	bc_num_init(&res.d.n, bc_program_opReqs[idx](n1, n2, BC_PROG_SCALE(p)));
-
-	bc_program_ops[idx](n1, n2, &res.d.n, BC_PROG_SCALE(p));
+	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, 1);
 
 	BC_SIG_LOCK;
 
-	bc_program_binOpRetire(p, &res);
-
-	BC_UNSETJMP;
+	bc_num_init(&res->d.n, bc_program_opReqs[idx](n1, n2, BC_PROG_SCALE(p)));
 
 	BC_SIG_UNLOCK;
 
-	return;
+	bc_program_ops[idx](n1, n2, &res->d.n, BC_PROG_SCALE(p));
 
-err:
-	BC_SIG_MAYLOCK;
-	bc_num_free(&res.d.n);
-	BC_LONGJMP_CONT;
+	bc_program_retire(p, 1, 2);
 }
 
 static void bc_program_read(BcProgram *p) {
@@ -471,16 +493,8 @@ exec_err:
 
 #if BC_ENABLE_EXTRA_MATH
 static void bc_program_rand(BcProgram *p) {
-
-	BcRand rand;
-	BcResult res;
-
-	rand = bc_rand_int(&p->rng);
-
-	res.t = BC_RESULT_TEMP;
-	bc_num_createFromBigdig(&res.d.n, rand);
-
-	bc_vec_push(&p->results, &res);
+	BcRand rand = bc_rand_int(&p->rng);
+	bc_program_pushBigdig(p, (BcBigDig) rand, BC_RESULT_TEMP);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -591,50 +605,50 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 }
 
 void bc_program_negate(BcResult *r, BcNum *n) {
-	BcNum *rn = &r->d.n;
-	BC_SIG_ASSERT_LOCKED;
-	bc_num_copy(rn, n);
-	if (BC_NUM_NONZERO(rn)) rn->neg = !rn->neg;
+	bc_num_copy(&r->d.n, n);
+	if (BC_NUM_NONZERO(&r->d.n)) r->d.n.neg = !r->d.n.neg;
 }
 
 void bc_program_not(BcResult *r, BcNum *n) {
-	BC_SIG_ASSERT_LOCKED;
 	if (!bc_num_cmpZero(n)) bc_num_one(&r->d.n);
 }
 
 #if BC_ENABLE_EXTRA_MATH
 void bc_program_trunc(BcResult *r, BcNum *n) {
-	BcNum *rn = &r->d.n;
-	BC_SIG_ASSERT_LOCKED;
-	bc_num_copy(rn, n);
-	bc_num_truncate(rn, n->scale);
+	bc_num_copy(&r->d.n, n);
+	bc_num_truncate(&r->d.n, n->scale);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
 static void bc_program_unary(BcProgram *p, uchar inst) {
 
-	BcResult res, *ptr;
+	BcResult *res, *ptr;
 	BcNum *num;
 
-	bc_program_prep(p, &ptr, &num);
+	res = bc_program_prepResult(p);
+
+	bc_program_prep(p, &ptr, &num, 1);
 
 	BC_SIG_LOCK;
 
-	bc_num_init(&res.d.n, num->len);
-	bc_program_unarys[inst - BC_INST_NEG](&res, num);
-	bc_program_retire(p, &res, BC_RESULT_TEMP);
+	bc_num_init(&res->d.n, num->len);
 
 	BC_SIG_UNLOCK;
+
+	bc_program_unarys[inst - BC_INST_NEG](res, num);
+	bc_program_retire(p, 1, 1);
 }
 
 static void bc_program_logical(BcProgram *p, uchar inst) {
 
-	BcResult *opd1, *opd2, res;
+	BcResult *opd1, *opd2, *res;
 	BcNum *n1, *n2;
 	bool cond = 0;
 	ssize_t cmp;
 
-	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
+	res = bc_program_prepResult(p);
+
+	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, 1);
 
 	if (inst == BC_INST_BOOL_AND)
 		cond = (bc_num_cmpZero(n1) && bc_num_cmpZero(n2));
@@ -692,12 +706,13 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 
 	BC_SIG_LOCK;
 
-	bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
-	if (cond) bc_num_one(&res.d.n);
-
-	bc_program_binOpRetire(p, &res);
+	bc_num_init(&res->d.n, BC_NUM_DEF_SIZE);
 
 	BC_SIG_UNLOCK;
+
+	if (cond) bc_num_one(&res->d.n);
+
+	bc_program_retire(p, 1, 2);
 }
 
 #if DC_ENABLED
@@ -706,8 +721,7 @@ static void bc_program_assignStr(BcProgram *p, BcResult *r,
 {
 	BcNum n2;
 
-	memset(&n2, 0, sizeof(BcNum));
-	n2.num = NULL;
+	bc_num_clear(&n2);
 	n2.scale = r->d.loc.loc;
 
 	assert(BC_PROG_STACK(&p->results, 1 + !push));
@@ -829,15 +843,14 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 #if DC_ENABLED
 	assert(left->t != BC_RESULT_STR);
 
-	if (right->t == BC_RESULT_STR) {
+	if (right->t == BC_RESULT_STR || BC_PROG_STR(r)) {
 
 		size_t idx = right->d.loc.loc;
 
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
 			BC_SIG_LOCK;
 			bc_num_free(l);
-			memset(l, 0, sizeof(BcNum));
-			l->num = NULL;
+			bc_num_clear(l);
 			l->scale = idx;
 			BC_SIG_UNLOCK;
 		}
@@ -904,7 +917,9 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 
 	if (use_val) {
 		bc_num_createCopy(&res.d.n, l);
-		bc_program_binOpRetire(p, &res);
+		res.t = BC_RESULT_TEMP;
+		bc_vec_npop(&p->results, 2);
+		bc_vec_push(&p->results, &res);
 	}
 	else bc_vec_npop(&p->results, 2);
 
@@ -974,11 +989,13 @@ static void bc_program_pushArray(BcProgram *p, const char *restrict code,
 	}
 #endif // BC_ENABLED
 
-	bc_program_prep(p, &operand, &num);
+	bc_program_prep(p, &operand, &num, 0);
 	bc_num_bigdig(num, &temp);
 
+	r.t = BC_RESULT_ARRAY_ELEM;
 	r.d.loc.idx = (size_t) temp;
-	bc_program_retire(p, &r, BC_RESULT_ARRAY_ELEM);
+	bc_vec_pop(&p->results);
+	bc_vec_push(&p->results, &r);
 }
 
 #if BC_ENABLED
@@ -989,7 +1006,7 @@ static void bc_program_incdec(BcProgram *p, uchar inst) {
 	uchar inst2;
 	bool post, use_val;
 
-	bc_program_prep(p, &ptr, &num);
+	bc_program_prep(p, &ptr, &num, 0);
 
 	use_val = (inst != BC_INST_INC_NO_VAL && inst != BC_INST_DEC_NO_VAL);
 	post = use_val && (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST);
@@ -1111,31 +1128,35 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 
 static void bc_program_return(BcProgram *p, uchar inst) {
 
-	BcResult res;
+	BcResult *res;
 	BcFunc *f;
-	size_t i;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
+	size_t i, nops = p->results.len - ip->len;
 
 	assert(BC_PROG_STACK(&p->stack, 2));
 	assert(BC_PROG_STACK(&p->results, ip->len + (inst == BC_INST_RET)));
 
 	f = bc_vec_item(&p->fns, ip->func);
-	res.t = BC_RESULT_TEMP;
-	res.d.n.num = NULL;
-
-	BC_SETJMP(err);
+	res = bc_program_prepResult(p);
 
 	if (inst == BC_INST_RET) {
 
 		BcNum *num;
 		BcResult *operand;
 
-		bc_program_operand(p, &operand, &num, 0);
+		bc_program_operand(p, &operand, &num, 1);
 
-		bc_num_createCopy(&res.d.n, num);
+		BC_SIG_LOCK;
+
+		bc_num_createCopy(&res->d.n, num);
 	}
-	else if (inst == BC_INST_RET_VOID) res.t = BC_RESULT_VOID;
-	else bc_num_init(&res.d.n, BC_NUM_DEF_SIZE);
+	else if (inst == BC_INST_RET_VOID) res->t = BC_RESULT_VOID;
+	else {
+		BC_SIG_LOCK;
+		bc_num_init(&res->d.n, BC_NUM_DEF_SIZE);
+	}
+
+	BC_SIG_MAYUNLOCK;
 
 	// We need to pop arguments as well, so this takes that into account.
 	for (i = 0; i < f->autos.len; ++i) {
@@ -1146,45 +1167,18 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 		bc_vec_pop(v);
 	}
 
-	bc_vec_npop(&p->results, p->results.len - ip->len);
+	bc_program_retire(p, 1, nops);
 
-	if (BC_G) {
-
-		for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) {
-			BcVec *v = p->globals_v + i;
-			bc_vec_pop(v);
-			p->globals[i] = BC_PROG_GLOBAL(v);
-		}
-
-#if BC_ENABLE_EXTRA_MATH
-		bc_rand_pop(&p->rng);
-#endif // BC_ENABLE_EXTRA_MATH
-	}
-
-	BC_SIG_LOCK;
-
-	bc_vec_push(&p->results, &res);
-
-	BC_UNSETJMP;
-
-	BC_SIG_UNLOCK;
+	if (BC_G) bc_program_popGlobals(p, false);
 
 	bc_vec_pop(&p->stack);
-
-	return;
-
-err:
-	BC_SIG_MAYLOCK;
-	bc_num_free(&res.d.n);
-	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLED
 
 static void bc_program_builtin(BcProgram *p, uchar inst) {
 
-	BcResult *opd;
-	BcResult res;
-	BcNum *num, *resn = &res.d.n;
+	BcResult *opd, *res;
+	BcNum *num;
 	bool len = (inst == BC_INST_LENGTH);
 
 #if BC_ENABLE_EXTRA_MATH
@@ -1202,7 +1196,9 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 	assert(BC_PROG_STACK(&p->results, 1));
 
-	bc_program_operand(p, &opd, &num, 0);
+	res = bc_program_prepResult(p);
+
+	bc_program_operand(p, &opd, &num, 1);
 
 	assert(num != NULL);
 
@@ -1210,19 +1206,27 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 	if (!len && inst != BC_INST_SCALE_FUNC) bc_program_type_num(opd, num);
 #endif // DC_ENABLED
 
-	resn->num = NULL;
-
-	BC_SETJMP(err);
-
-	if (inst == BC_INST_SQRT) bc_num_sqrt(num, resn, BC_PROG_SCALE(p));
+	if (inst == BC_INST_SQRT) bc_num_sqrt(num, &res->d.n, BC_PROG_SCALE(p));
 	else if (inst == BC_INST_ABS) {
-		bc_num_createCopy(resn, num);
-		resn->neg = false;
+
+		BC_SIG_LOCK;
+
+		bc_num_createCopy(&res->d.n, num);
+
+		BC_SIG_UNLOCK;
+
+		res->d.n.neg = false;
 	}
 #if BC_ENABLE_EXTRA_MATH
 	else if (inst == BC_INST_IRAND) {
-		bc_num_init(resn, num->len - num->rdx);
-		bc_num_irand(num, resn, &p->rng);
+
+		BC_SIG_LOCK;
+
+		bc_num_init(&res->d.n, num->len - num->rdx);
+
+		BC_SIG_UNLOCK;
+
+		bc_num_irand(num, &res->d.n, &p->rng);
 	}
 #endif // BC_ENABLE_EXTRA_MATH
 	else {
@@ -1262,113 +1266,79 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 		else if (BC_IS_BC || BC_PROG_NUM(opd, num))
 			val = (BcBigDig) bc_num_scale(num);
 
-		bc_num_createFromBigdig(resn, val);
+		BC_SIG_LOCK;
+
+		bc_num_createFromBigdig(&res->d.n, val);
+
+		BC_SIG_UNLOCK;
 	}
 
-	BC_SIG_LOCK;
-	BC_UNSETJMP;
-
-	bc_program_retire(p, &res, BC_RESULT_TEMP);
-
-	BC_SIG_UNLOCK;
-
-	return;
-
-err:
-	BC_SIG_MAYLOCK;
-	if (resn->num) bc_num_free(resn);
-	BC_LONGJMP_CONT;
+	bc_program_retire(p, 1, 1);
 }
 
 #if DC_ENABLED
 static void bc_program_divmod(BcProgram *p) {
 
-	BcResult *opd1, *opd2, res, res2;
-	BcNum *n1, *n2, *resn = &res.d.n, *resn2 = &res2.d.n;
+	BcResult *opd1, *opd2, *res, *res2;
+	BcNum *n1, *n2;
 	size_t req;
 
-	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2);
+	res2 = bc_program_prepResult(p);
+	res = bc_program_prepResult(p);
+
+	// Update the pointer, just in case.
+	res2 = bc_vec_item_rev(&p->results, 1);
+
+	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, 2);
 
 	req = bc_num_mulReq(n1, n2, BC_PROG_SCALE(p));
 
-	resn->num = NULL;
-	resn2->num = NULL;
-
-	BC_SETJMP(err);
-
-	bc_num_init(resn, req);
-	bc_num_init(resn2, req);
-
-	bc_num_divmod(n1, n2, resn2, resn, BC_PROG_SCALE(p));
-
 	BC_SIG_LOCK;
 
-	BC_UNSETJMP;
-
-	bc_program_binOpRetire(p, &res2);
-	res.t = BC_RESULT_TEMP;
-	bc_vec_push(&p->results, &res);
+	bc_num_init(&res->d.n, req);
+	bc_num_init(&res2->d.n, req);
 
 	BC_SIG_UNLOCK;
 
-	return;
+	bc_num_divmod(n1, n2, &res2->d.n, &res->d.n, BC_PROG_SCALE(p));
 
-err:
-	BC_SIG_MAYLOCK;
-	bc_num_free(resn2);
-	bc_num_free(resn);
-	BC_LONGJMP_CONT;
+	bc_program_retire(p, 2, 2);
 }
 
 static void bc_program_modexp(BcProgram *p) {
 
-	BcResult *r1, *r2, *r3, res;
-	BcNum *n1, *n2, *n3, *resn = &res.d.n;
+	BcResult *r1, *r2, *r3, *res;
+	BcNum *n1, *n2, *n3;
 
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 3))) bc_vm_err(BC_ERROR_EXEC_STACK);
 
 	assert(BC_PROG_STACK(&p->results, 3));
 
-	bc_program_operand(p, &r1, &n1, 2);
+	res = bc_program_prepResult(p);
+
+	bc_program_operand(p, &r1, &n1, 3);
 	bc_program_type_num(r1, n1);
 
-	bc_program_binOpPrep(p, &r2, &n2, &r3, &n3);
+	bc_program_binOpPrep(p, &r2, &n2, &r3, &n3, 1);
 
 	// Make sure that the values have their pointers updated, if necessary.
 	// Only array elements are possible.
 	if (r1->t == BC_RESULT_ARRAY_ELEM && (r1->t == r2->t || r1->t == r3->t))
 		n1 = bc_program_num(p, r1);
 
-	resn->num = NULL;
-
-	BC_SETJMP(err);
-
-	bc_num_init(resn, n3->len);
-
-	bc_num_modexp(n1, n2, n3, resn);
-
 	BC_SIG_LOCK;
 
-	BC_UNSETJMP;
-
-	bc_vec_pop(&p->results);
-	bc_program_binOpRetire(p, &res);
+	bc_num_init(&res->d.n, n3->len);
 
 	BC_SIG_UNLOCK;
 
-	return;
+	bc_num_modexp(n1, n2, n3, &res->d.n);
 
-err:
-	BC_SIG_MAYLOCK;
-	bc_num_free(resn);
-	BC_LONGJMP_CONT;
+	bc_program_retire(p, 1, 3);
 }
 
 static void bc_program_stackLen(BcProgram *p) {
-	BcResult res;
-	res.t = BC_RESULT_TEMP;
-	bc_num_createFromBigdig(&res.d.n, (BcBigDig) p->results.len);
-	bc_vec_push(&p->results, &res);
+	bc_program_pushBigdig(p, (BcBigDig) p->results.len, BC_RESULT_TEMP);
 }
 
 static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
@@ -1376,11 +1346,16 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	BcNum num;
 	BcBigDig val = 0;
 
-	num.num = NULL;
+	bc_num_clear(&num);
 
 	BC_SETJMP(num_err);
 
+	BC_SIG_LOCK;
+
 	bc_num_createCopy(&num, n);
+
+	BC_SIG_UNLOCK;
+
 	bc_num_truncate(&num, num.scale);
 	num.neg = false;
 
@@ -1472,7 +1447,7 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 	if (inst == BC_INST_QUIT) val = 2;
 	else {
 
-		bc_program_prep(p, &opnd, &num);
+		bc_program_prep(p, &opnd, &num, 0);
 		bc_num_bigdig(num, &val);
 
 		bc_vec_pop(&p->results);
@@ -1618,16 +1593,6 @@ static void bc_program_printStack(BcProgram *p) {
 }
 #endif // DC_ENABLED
 
-static void bc_program_pushBigDig(BcProgram *p, BcBigDig dig, BcResultType type)
-{
-	BcResult res;
-
-	bc_num_createFromBigdig(&res.d.n, dig);
-
-	res.t = type;
-	bc_vec_push(&p->results, &res);
-}
-
 static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 
 	BcResultType t;
@@ -1635,19 +1600,24 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 	assert(inst >= BC_INST_IBASE && inst <= BC_INST_SCALE);
 
 	t = inst - BC_INST_IBASE + BC_RESULT_IBASE;
-	bc_program_pushBigDig(p, p->globals[inst - BC_INST_IBASE], t);
+	bc_program_pushBigdig(p, p->globals[inst - BC_INST_IBASE], t);
 }
 
 #if BC_ENABLE_EXTRA_MATH
 static void bc_program_pushSeed(BcProgram *p) {
 
-	BcResult res;
+	BcResult *res;
 
-	res.t = BC_RESULT_SEED;
+	res = bc_program_prepResult(p);
+	res->t = BC_RESULT_SEED;
 
-	bc_num_createFromRNG(&res.d.n, &p->rng);
+	BC_SIG_LOCK;
 
-	bc_vec_push(&p->results, &res);
+	bc_num_init(&res->d.n, 2 * BC_RAND_NUM_SIZE);
+
+	BC_SIG_UNLOCK;
+
+	bc_num_createFromRNG(&res->d.n, &p->rng);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1811,6 +1781,8 @@ void bc_program_reset(BcProgram *p) {
 	bc_vec_npop(&p->stack, p->stack.len - 1);
 	bc_vec_npop(&p->results, p->results.len);
 
+	if (BC_G) bc_program_popGlobals(p, true);
+
 	f = bc_vec_item(&p->fns, BC_PROG_MAIN);
 	ip = bc_vec_top(&p->stack);
 	if (BC_IS_BC) bc_program_setVecs(p, f);
@@ -1856,7 +1828,7 @@ void bc_program_exec(BcProgram *p) {
 #if BC_ENABLED
 			case BC_INST_JUMP_ZERO:
 			{
-				bc_program_prep(p, &ptr, &num);
+				bc_program_prep(p, &ptr, &num, 0);
 				cond = !bc_num_cmpZero(num);
 				bc_vec_pop(&p->results);
 			}
@@ -1968,7 +1940,7 @@ void bc_program_exec(BcProgram *p) {
 #endif // BC_ENABLE_EXTRA_MATH
 			{
 				BcBigDig dig = vm.maxes[inst - BC_INST_MAXIBASE];
-				bc_program_pushBigDig(p, dig, BC_RESULT_TEMP);
+				bc_program_pushBigdig(p, dig, BC_RESULT_TEMP);
 				break;
 			}
 
