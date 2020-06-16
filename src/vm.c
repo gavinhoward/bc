@@ -530,8 +530,7 @@ err:
 
 	// bc_program_reset(), called by bc_vm_clean(), resets the status.
 	// We want it to clear the sig_pop variable in case it was set.
-	if (BC_TTY && vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
-		BC_LONGJMP_STOP;
+	if (vm.status == (sig_atomic_t) BC_STATUS_SUCCESS) BC_LONGJMP_STOP;
 
 	BC_LONGJMP_CONT;
 }
