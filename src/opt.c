@@ -47,7 +47,7 @@
 #include <opt.h>
 #include <vm.h>
 
-static bool bc_opt_longoptsEnd(const BcOptLong *longopts, size_t i) {
+static inline bool bc_opt_longoptsEnd(const BcOptLong *longopts, size_t i) {
 	return !longopts[i].name && !longopts[i].val;
 }
 
@@ -136,10 +136,9 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 				o->optarg = next;
 				o->optind += 1;
 			}
-			else {
-				bc_opt_error(BC_ERROR_FATAL_OPTION_NO_ARG, option[0],
-				             bc_opt_longopt(longopts, option[0]));
-			}
+			else bc_opt_error(BC_ERROR_FATAL_OPTION_NO_ARG, option[0],
+			                  bc_opt_longopt(longopts, option[0]));
+
 
 			ret = (int) option[0];
 			break;
@@ -192,12 +191,8 @@ int bc_opt_parse(BcOpt *o, const BcOptLong *longopts) {
 		o->optind += 1;
 		return -1;
 	}
-	else if (BC_OPT_ISSHORTOPT(option)) {
-		return bc_opt_parseShort(o, longopts);
-	}
-	else if (!BC_OPT_ISLONGOPT(option)) {
-		return -1;
-	}
+	else if (BC_OPT_ISSHORTOPT(option)) return bc_opt_parseShort(o, longopts);
+	else if (!BC_OPT_ISLONGOPT(option)) return -1;
 
 	o->optopt = 0;
 	o->optarg = NULL;
