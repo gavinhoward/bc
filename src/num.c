@@ -48,7 +48,7 @@
 
 static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
-static ssize_t bc_num_neg(size_t n, bool neg) {
+static inline ssize_t bc_num_neg(size_t n, bool neg) {
 	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
 }
 
@@ -56,13 +56,16 @@ ssize_t bc_num_cmpZero(const BcNum *n) {
 	return bc_num_neg((n)->len != 0, (n)->neg);
 }
 
-static size_t bc_num_int(const BcNum *n) {
+static inline size_t bc_num_int(const BcNum *n) {
 	return n->len ? n->len - n->rdx : 0;
 }
 
 static void bc_num_expand(BcNum *restrict n, size_t req) {
+
 	assert(n != NULL);
+
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
+
 	if (req > n->cap) {
 
 		BC_SIG_LOCK;
@@ -81,7 +84,7 @@ static void bc_num_setToZero(BcNum *restrict n, size_t scale) {
 	n->neg = false;
 }
 
-static void bc_num_zero(BcNum *restrict n) {
+static inline void bc_num_zero(BcNum *restrict n) {
 	bc_num_setToZero(n, 0);
 }
 
@@ -92,7 +95,9 @@ void bc_num_one(BcNum *restrict n) {
 }
 
 static void bc_num_clean(BcNum *restrict n) {
+
 	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) n->len -= 1;
+
 	if (BC_NUM_ZERO(n)) {
 		n->neg = false;
 		n->rdx = 0;
@@ -107,7 +112,7 @@ static size_t bc_num_log10(size_t i) {
 	return len - 1;
 }
 
-static size_t bc_num_zeroDigits(const BcDig *n) {
+static inline size_t bc_num_zeroDigits(const BcDig *n) {
 	assert(*n >= 0);
 	assert(((size_t) *n) < BC_BASE_POW);
 	return BC_BASE_DIGS - bc_num_log10((size_t) *n);
@@ -1278,9 +1283,7 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		}
 	}
 
-	if (neg) {
-		bc_num_inv(c, c, scale);
-	}
+	if (neg) bc_num_inv(c, c, scale);
 
 	if (c->scale > scale) bc_num_truncate(c, c->scale - scale);
 
@@ -1341,14 +1344,18 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	assert(a != NULL && b != NULL && c != NULL && op != NULL);
 
 	if (c == a) {
+
 		ptr_a = &num2;
+
 		memcpy(ptr_a, c, sizeof(BcNum));
 		init = true;
 	}
 	else ptr_a = a;
 
 	if (c == b) {
+
 		ptr_b = &num2;
+
 		if (c != a) {
 			memcpy(ptr_b, c, sizeof(BcNum));
 			init = true;
