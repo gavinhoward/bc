@@ -171,6 +171,12 @@
 		vm.sig_lock = 1; \
 	} while (0)
 
+#define BC_SIG_MAYUNLOCK           \
+	do {                           \
+		vm.sig_lock = 0;           \
+		if (BC_SIG_EXC) BC_VM_JMP; \
+	} while (0)
+
 #define BC_SIG_TRYLOCK(v) \
 	do {                  \
 		v = vm.sig_lock;  \
