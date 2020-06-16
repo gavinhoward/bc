@@ -1788,10 +1788,10 @@ void bc_program_reset(BcProgram *p) {
 	if (BC_IS_BC) bc_program_setVecs(p, f);
 	ip->idx = f->code.len;
 
-	if (vm.status == BC_STATUS_SIGNAL) {
+	if (vm.sig) {
 		bc_file_write(&vm.fout, bc_program_ready_msg, bc_program_ready_msg_len);
 		bc_file_flush(&vm.fout);
-		vm.status = BC_STATUS_SUCCESS;
+		vm.sig = 0;
 	}
 }
 

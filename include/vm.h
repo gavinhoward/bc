@@ -140,8 +140,10 @@
 #define BC_VM_JMP bc_vm_jmp()
 #endif // BC_DEBUG_CODE
 
-#define BC_SIG_EXC BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS)
-#define BC_NO_SIG_EXC BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS)
+#define BC_SIG_EXC \
+	BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS || vm.sig)
+#define BC_NO_SIG_EXC \
+	BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS && !vm.sig)
 
 #ifndef NDEBUG
 #define BC_SIG_ASSERT_LOCKED do { assert(vm.sig_lock); } while (0)
@@ -204,12 +206,12 @@
 		bc_vec_push(&vm.jmp_bufs, &sjb);  \
 	} while (0)
 
-#define BC_LONGJMP_CONT            \
-	do {                           \
-		BC_SIG_ASSERT_LOCKED;      \
-		if (BC_SIG_EXC) BC_VM_JMP; \
-		bc_vec_pop(&vm.jmp_bufs);  \
-		BC_SIG_UNLOCK;             \
+#define BC_LONGJMP_CONT                             \
+	do {                                            \
+		BC_SIG_ASSERT_LOCKED;                       \
+		if (!vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);  \
+		if (BC_SIG_EXC) BC_VM_JMP;                  \
+		BC_SIG_UNLOCK;                              \
 	} while (0)
 
 #define BC_UNSETJMP               \
@@ -221,6 +223,7 @@
 #define BC_LONGJMP_STOP    \
 	do {                   \
 		vm.sig_pop = 0;    \
+		vm.sig = 0;        \
 	} while (0)
 
 #define BC_VM_BUF_SIZE (1<<12)
@@ -258,6 +261,7 @@ typedef struct BcVm {
 
 	const char *sigmsg;
 	volatile sig_atomic_t sig_lock;
+	volatile sig_atomic_t sig;
 	uchar siglen;
 
 	uchar read_ret;

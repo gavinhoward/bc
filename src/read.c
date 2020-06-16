@@ -128,7 +128,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 					return BC_STATUS_QUIT;
 				}
 
-				assert(vm.status == (sig_atomic_t) BC_STATUS_SIGNAL);
+				assert(vm.sig);
 
 				vm.status = (sig_atomic_t) BC_STATUS_SUCCESS;
 #if BC_ENABLE_PROMPT

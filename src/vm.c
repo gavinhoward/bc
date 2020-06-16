@@ -69,7 +69,7 @@ BC_NORETURN void bc_vm_jmp(const char* f) {
 BC_NORETURN void bc_vm_jmp(void) {
 #endif
 
-	assert(vm.status != BC_STATUS_SUCCESS);
+	assert(vm.status != BC_STATUS_SUCCESS || vm.sig);
 
 	BC_SIG_MAYLOCK;
 
@@ -93,9 +93,7 @@ BC_NORETURN void bc_vm_jmp(void) {
 static void bc_vm_sig(int sig) {
 
 	// There is already a signal in flight.
-	if (vm.status == (sig_atomic_t) BC_STATUS_QUIT ||
-	    vm.status == (sig_atomic_t) BC_STATUS_SIGNAL)
-	{
+	if (vm.status == (sig_atomic_t) BC_STATUS_QUIT || vm.sig) {
 		if (!BC_TTY || sig != SIGINT) vm.status = BC_STATUS_QUIT;
 		return;
 	}
@@ -106,7 +104,7 @@ static void bc_vm_sig(int sig) {
 
 		if (write(STDOUT_FILENO, vm.sigmsg, vm.siglen) != (ssize_t) vm.siglen)
 			vm.status = BC_STATUS_ERROR_FATAL;
-		else vm.status = BC_STATUS_SIGNAL;
+		else vm.sig = 1;
 
 		errno = err;
 	}
