@@ -910,11 +910,17 @@ static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	brdx = cpb.rdx * BC_BASE_DIGS;
 	bc_num_shiftLeft(&cpb, brdx);
 
-	// We need to lock here because azero and bzero are used in the cleanup.
+	// We need to reset the jump here because azero and bzero are used in the
+	// cleanup, and local variables are not guaranteed to be the same after a
+	// jump.
 	BC_SIG_LOCK;
+
+	BC_UNSETJMP;
 
 	azero = bc_num_shiftZero(&cpa);
 	bzero = bc_num_shiftZero(&cpb);
+
+	BC_SETJMP_LOCKED(err);
 
 	BC_SIG_UNLOCK;
 
@@ -1343,6 +1349,8 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	assert(a != NULL && b != NULL && c != NULL && op != NULL);
 
+	BC_SIG_LOCK;
+
 	if (c == a) {
 
 		ptr_a = &num2;
@@ -1364,15 +1372,14 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	else ptr_b = b;
 
 	if (init) {
-		BC_SIG_LOCK;
 
 		bc_num_init(c, req);
 
 		BC_SETJMP_LOCKED(err);
-
-		BC_SIG_UNLOCK;
 	}
 	else bc_num_expand(c, req);
+
+	BC_SIG_UNLOCK;
 
 	op(ptr_a, ptr_b, c, scale);
 
