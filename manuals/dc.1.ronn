@@ -661,8 +661,14 @@ be printed with a newline after and then popped from the stack.
     For example, `0 1>a` will execute the contents of register `a`, and `1 0>a`
     will not.
 
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
+
   * `>`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
+
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
 
     This is a **non-portable extension**.
 
@@ -671,8 +677,14 @@ be printed with a newline after and then popped from the stack.
     the first value is not greater than the second (less than or equal to), then
     the contents of register `r` are executed.
 
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
+
   * `!>`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
+
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
 
     This is a **non-portable extension**.
 
@@ -681,8 +693,14 @@ be printed with a newline after and then popped from the stack.
     the first value is less than the second, then the contents of register `r`
     are executed.
 
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
+
   * `<`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
+
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
 
     This is a **non-portable extension**.
 
@@ -691,8 +709,14 @@ be printed with a newline after and then popped from the stack.
     the first value is not less than the second (greater than or equal to), then
     the contents of register `r` are executed.
 
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
+
   * `!<`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
+
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
 
     This is a **non-portable extension**.
 
@@ -701,8 +725,14 @@ be printed with a newline after and then popped from the stack.
     the first value is equal to the second, then the contents of register `r`
     are executed.
 
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
+
   * `=`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
+
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
 
     This is a **non-portable extension**.
 
@@ -711,8 +741,14 @@ be printed with a newline after and then popped from the stack.
     the first value is not equal to the second, then the contents of register
     `r` are executed.
 
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
+
   * `!=`*r*`e`*s*:
     Like the above, but will execute register `s` if the comparison fails.
+
+    If either or both of the values are not numbers, dc(1) will raise an error
+    and reset (see the RESET section).
 
     This is a **non-portable extension**.
 

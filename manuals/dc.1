@@ -591,9 +591,15 @@ Pops two values off of the stack that must be numbers and compares them\. If the
 .IP
 For example, \fB0 1>a\fR will execute the contents of register \fBa\fR, and \fB1 0>a\fR will not\.
 .
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
+.
 .TP
 \fB>\fR\fIr\fR\fBe\fR\fIs\fR
 Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -602,9 +608,15 @@ This is a \fBnon\-portable extension\fR\.
 \fB!>\fR\fIr\fR
 Pops two values off of the stack that must be numbers and compares them\. If the first value is not greater than the second (less than or equal to), then the contents of register \fBr\fR are executed\.
 .
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
+.
 .TP
 \fB!>\fR\fIr\fR\fBe\fR\fIs\fR
 Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -613,9 +625,15 @@ This is a \fBnon\-portable extension\fR\.
 \fB<\fR\fIr\fR
 Pops two values off of the stack that must be numbers and compares them\. If the first value is less than the second, then the contents of register \fBr\fR are executed\.
 .
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
+.
 .TP
 \fB<\fR\fIr\fR\fBe\fR\fIs\fR
 Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -624,9 +642,15 @@ This is a \fBnon\-portable extension\fR\.
 \fB!<\fR\fIr\fR
 Pops two values off of the stack that must be numbers and compares them\. If the first value is not less than the second (greater than or equal to), then the contents of register \fBr\fR are executed\.
 .
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
+.
 .TP
 \fB!<\fR\fIr\fR\fBe\fR\fIs\fR
 Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -635,9 +659,15 @@ This is a \fBnon\-portable extension\fR\.
 \fB=\fR\fIr\fR
 Pops two values off of the stack that must be numbers and compares them\. If the first value is equal to the second, then the contents of register \fBr\fR are executed\.
 .
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
+.
 .TP
 \fB=\fR\fIr\fR\fBe\fR\fIs\fR
 Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -646,9 +676,15 @@ This is a \fBnon\-portable extension\fR\.
 \fB!=\fR\fIr\fR
 Pops two values off of the stack that must be numbers and compares them\. If the first value is not equal to the second, then the contents of register \fBr\fR are executed\.
 .
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
+.
 .TP
 \fB!=\fR\fIr\fR\fBe\fR\fIs\fR
 Like the above, but will execute register \fBs\fR if the comparison fails\.
+.
+.IP
+If either or both of the values are not numbers, dc(1) will raise an error and reset (see the RESET section)\.
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
