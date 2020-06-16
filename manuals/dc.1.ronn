@@ -30,7 +30,7 @@ dc(1) will always start with a `scale` of `10`.
 
 If users want to have dc(1) exit after processing all input from `-e` and `-f`
 arguments (and their equivalents), then they can just simply add "-e q" as the
-last command-line argument.
+last command-line argument or define the environment variable `DC_EXPR_EXIT`.
 
 OPTIONS
 -------
@@ -44,14 +44,7 @@ The following are the options that dc(1) accepts.
     Print the version information (copyright header) and exit.
 
   * `-i`, `--interactive`:
-    Forces interactive mode.
-
-    dc(1) has an interactive mode and a non-interactive mode. The interactive
-    mode is turned on automatically when both `stdin` and `stdout` are hooked to
-    a terminal, but this flag can turn it on in other cases. In interactive
-    mode, dc(1) attempts to recover from errors (see the RESET section), and in
-    normal execution, flushes `stdout` as soon as execution is done for the
-    current input.
+    Forces interactive mode. (See the INTERACTIVE MODE section.)
 
     This is a **non-portable extension**.
 
@@ -511,8 +504,8 @@ These commands control registers (see the REGISTERS section).
 
 ### Parameters
 
-These commands control the values of `ibase`, `obase`, and `scale` (see the
-SYNTAX section).
+These commands control the values of `ibase`, `obase`, `scale`, and `seed` (if
+dc(1) was built with the extra math option). Also see the SYNTAX section.
 
   * `i`:
     Pops the value off of the top of the stack and uses it to set `ibase`, which
@@ -1010,33 +1003,73 @@ dc(1) returns the following exit statuses:
 The exit status `4` is special; when a fatal error occurs, dc(1) always exits
 and returns `4`, no matter what mode dc(1) is in.
 
-The other statuses will only be returned when dc(1) is not in interactive mode,
-since dc(1) resets its state (see the RESET section) and accepts more input when
-one of those errors occurs in interactive mode. This is also the case when
-interactive mode is forced by the `-i` option.
+The other statuses will only be returned when dc(1) is not in interactive mode
+(see the INTERACTIVE MODE section), since dc(1) resets its state (see the RESET
+section) and accepts more input when one of those errors occurs in interactive
+mode. This is also the case when interactive mode is forced by the `-i` flag or
+`--interactive` option.
 
 These exit statuses allow dc(1) to be used in shell scripting with error
-checking, and its normal behavior can be forced by using `-i`.
+checking, and its normal behavior can be forced by using the `-i` flag or
+`--interactive` option.
+
+INTERACTIVE MODE
+----------------
+
+Like bc(1), dc(1) has an interactive mode and a non-interactive mode.
+Interactive mode is turned on automatically when both `stdin` and `stdout` are
+hooked to a terminal, but the `-i` flag and `--interactive` option can turn it
+on in other cases.
+
+In interactive mode, dc(1) attempts to recover from errors (see the RESET
+section), and in normal execution, flushes `stdout` as soon as execution is done
+for the current input.
+
+TTY MODE
+--------
+
+If `stdin`, `stdout`, and `stderr` are all connected to a TTY, dc(1) turns on
+"TTY mode."
+
+TTY mode is required for history to be enabled (see the COMMAND LINE HISTORY
+section). It is also required to enable special handling for `SIGINT` signals.
+
+TTY mode is different from interactive mode because interactive mode is required
+in the [bc(1) specification][1], and interactive mode requires only `stdin` and
+`stdout` to be connected to a terminal.
 
 SIGNAL HANDLING
 ---------------
 
-If dc(1) has been compiled with the signal handling, sending a `SIGINT` will
-cause dc(1) to stop execution of the current input and reset (see the RESET
-section), asking for more input.
+Sending a `SIGINT` will cause dc(1) to stop execution of the current input. If
+dc(1) is in TTY mode (see the TTY MODE section), it will reset (see the RESET
+section). Otherwise, it will clean up and exit.
 
-Otherwise, `SIGTERM` and `SIGQUIT` cause dc(1) to clean up and exit, and it uses
-the default handler for all other signals.
+Note that "current input" can mean one of two things. If dc(1) is processing
+input from `stdin` in TTY mode, it will ask for more input. If dc(1) is
+processing input from a file in TTY mode, it will stop processing the file and
+start processing the next file, if one exists, or ask for input from `stdin` if
+no other file exists.
 
-If dc(1) has not been compiled with signal handling, it uses the default signal
-handlers for all signals.
+This means that if a `SIGINT` is sent to dc(1) as it is executing a file, it can
+seem as though dc(1) did not respond to the signal since it will immediately
+start executing the next file. This is by design; most files that users execute
+when interacting with dc(1) have function definitions, which are quick to parse.
+If a file takes a long time to execute, there may be a bug in that file. The
+rest of the files could still be executed without problem, allowing the user to
+continue.
+
+`SIGTERM` and `SIGQUIT` cause dc(1) to clean up and exit, and it uses the
+default handler for all other signals. The one exception is `SIGHUP`, if dc(1)
+was built with history support; in that case, when dc(1) is in TTY mode, a
+`SIGHUP` will cause dc(1) to clean up and exit.
 
 COMMAND LINE HISTORY
 --------------------
 
 dc(1) supports interactive command-line editing, if compiled with the history
-option enabled. If `stdin` is hooked to a terminal, it is enabled. Previous
-lines can be recalled and edited with the arrow keys.
+option enabled. If dc(1) is in TTY mode (see the TTY MODE section), history is
+enabled. Previous lines can be recalled and edited with the arrow keys.
 
 **Note**: when dc(1) is built with history support, tabs are converted to 8
 spaces.

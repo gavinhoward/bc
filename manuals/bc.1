@@ -76,10 +76,7 @@ Prints a usage message and quits\.
 .
 .TP
 \fB\-i\fR, \fB\-\-interactive\fR
-Forces interactive mode\.
-.
-.IP
-Per the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, bc(1) has an interactive mode and a non\-interactive mode\. The interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but this flag can turn it on in other cases\. In interactive mode, bc(1) attempts to recover from errors (see the RESET section), and in normal execution, flushes \fBstdout\fR as soon as execution is done for the current input\.
+Forces interactive mode\. (See the INTERACTIVE MODE section\.)
 .
 .IP
 This is a \fBnon\-portable extension\fR\.
@@ -1457,7 +1454,7 @@ This is another way to give command\-line arguments to bc(1)\. They should be in
 The code that parses \fBBC_ENV_ARGS\fR will correctly handle quoted arguments, but it does not understand escape sequences\. For example, the string \fB"/home/gavin/some bc file\.bc"\fR will be correctly parsed, but the string \fB"/home/gavin/some \e"bc\e" file\.bc"\fR will include the backslashes\.
 .
 .IP
-The quote parsing will handle either kind of quotes, \fB'\fR or \fB"\fR\. Thus, if you have a file with any number of single quotes in the name, you can use double quotes as the outside quotes, as in \fB"some \'bc\' file\.bc"\fR, and vice versa if you have a file with double quotes\. However, handling a file with both kinds of quotes in \fBDC_ENV_ARGS\fR is not supported due to the complexity of the parsing, though such files are still supported on the command\-line where the parsing is done by the shell\.
+The quote parsing will handle either kind of quotes, \fB'\fR or \fB"\fR\. Thus, if you have a file with any number of single quotes in the name, you can use double quotes as the outside quotes, as in \fB"some \'bc\' file\.bc"\fR, and vice versa if you have a file with double quotes\. However, handling a file with both kinds of quotes in \fBBC_ENV_ARGS\fR is not supported due to the complexity of the parsing, though such files are still supported on the command\-line where the parsing is done by the shell\.
 .
 .TP
 \fBBC_LINE_LENGTH\fR
@@ -1509,22 +1506,40 @@ Fatal errors include memory allocation errors, I/O errors, failing to open files
 The exit status \fB4\fR is special; when a fatal error occurs, bc(1) always exits and returns \fB4\fR, no matter what mode bc(1) is in\.
 .
 .P
-The other statuses will only be returned when bc(1) is not in interactive mode, since bc(1) resets its state (see the RESET section) and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR option\.
+The other statuses will only be returned when bc(1) is not in interactive mode (see the INTERACTIVE MODE section), since bc(1) resets its state (see the RESET section) and accepts more input when one of those errors occurs in interactive mode\. This is also the case when interactive mode is forced by the \fB\-i\fR flag or \fB\-\-interactive\fR option\.
 .
 .P
-These exit statuses allow bc(1) to be used in shell scripting with error checking, and its normal behavior can be forced by using \fB\-i\fR\.
+These exit statuses allow bc(1) to be used in shell scripting with error checking, and its normal behavior can be forced by using the \fB\-i\fR flag or \fB\-\-interactive\fR option\.
+.
+.SH "INTERACTIVE MODE"
+Per the standard \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, bc(1) has an interactive mode and a non\-interactive mode\. Interactive mode is turned on automatically when both \fBstdin\fR and \fBstdout\fR are hooked to a terminal, but the \fB\-i\fR flag and \fB\-\-interactive\fR option can turn it on in other cases\.
+.
+.P
+In interactive mode, bc(1) attempts to recover from errors (see the RESET section), and in normal execution, flushes \fBstdout\fR as soon as execution is done for the current input\.
+.
+.SH "TTY MODE"
+If \fBstdin\fR, \fBstdout\fR, and \fBstderr\fR are all connected to a TTY, bc(1) turns on "TTY mode\."
+.
+.P
+TTY mode is required for history to be enabled (see the COMMAND LINE HISTORY section)\. It is also required to enable special handling for \fBSIGINT\fR signals\.
+.
+.P
+TTY mode is different from interactive mode because interactive mode is required in the bc(1) specification \fIhttps://pubs\.opengroup\.org/onlinepubs/9699919799/utilities/bc\.html\fR, and interactive mode requires only \fBstdin\fR and \fBstdout\fR to be connected to a terminal\.
 .
 .SH "SIGNAL HANDLING"
-If bc(1) has been compiled with the signal handling, sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input and reset (see the RESET section), asking for more input\.
+Sending a \fBSIGINT\fR will cause bc(1) to stop execution of the current input\. If bc(1) is in TTY mode (see the TTY MODE section), it will reset (see the RESET section)\. Otherwise, it will clean up and exit\.
 .
 .P
-Otherwise, \fBSIGTERM\fR and \fBSIGQUIT\fR cause bc(1) to clean up and exit, and it uses the default handler for all other signals\.
+Note that "current input" can mean one of two things\. If bc(1) is processing input from \fBstdin\fR in TTY mode, it will ask for more input\. If bc(1) is processing input from a file in TTY mode, it will stop processing the file and start processing the next file, if one exists, or ask for input from \fBstdin\fR if no other file exists\.
 .
 .P
-If bc(1) has not been compiled with signal handling, it uses the default signal handlers for all signals\.
+This means that if a \fBSIGINT\fR is sent to bc(1) as it is executing a file, it can seem as though bc(1) did not respond to the signal since it will immediately start executing the next file\. This is by design; most files that users execute when interacting with bc(1) have function definitions, which are quick to parse\. If a file takes a long time to execute, there may be a bug in that file\. The rest of the files could still be executed without problem, allowing the user to continue\.
+.
+.P
+\fBSIGTERM\fR and \fBSIGQUIT\fR cause bc(1) to clean up and exit, and it uses the default handler for all other signals\. The one exception is \fBSIGHUP\fR, if bc(1) was built with history support; in that case, when bc(1) is in TTY mode, a \fBSIGHUP\fR will cause bc(1) to clean up and exit\.
 .
 .SH "COMMAND LINE HISTORY"
-bc(1) supports interactive command\-line editing, if compiled with the history option enabled\. If \fBstdin\fR is hooked to a terminal, it is enabled\. Previous lines can be recalled and edited with the arrow keys\.
+bc(1) supports interactive command\-line editing, if compiled with the history option enabled\. If bc(1) is in TTY mode (see the TTY MODE section), history is enabled\. Previous lines can be recalled and edited with the arrow keys\.
 .
 .P
 \fBNote\fR: when bc(1) is built with history support, tabs are converted to 8 spaces\.
