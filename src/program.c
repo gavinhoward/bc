@@ -151,29 +151,23 @@ static BcVec* bc_program_dereference(const BcProgram *p, BcVec *vec) {
 
 size_t bc_program_search(BcProgram *p, const char *id, bool var) {
 
-	BcId *ptr;
 	BcVec *v, *map;
 	size_t i;
 	BcResultData data;
-	bool new;
 
 	v = var ? &p->vars : &p->arrs;
 	map = var ? &p->var_map : &p->arr_map;
 
 	BC_SIG_LOCK;
 
-	new = bc_map_insert(map, id, v->len, &i);
-
-	if (new) {
+	if (bc_map_insert(map, id, v->len, &i)) {
 		bc_array_init(&data.v, var);
 		bc_vec_push(v, &data.v);
 	}
 
 	BC_SIG_UNLOCK;
 
-	ptr = bc_vec_item(map, i);
-
-	return ptr->idx;
+	return ((BcId*) bc_vec_item(map, i))->idx;
 }
 
 static inline BcVec* bc_program_vec(const BcProgram *p, size_t idx, BcType type)
