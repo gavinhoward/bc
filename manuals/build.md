@@ -514,7 +514,10 @@ make install
 ```
 
 Building with link-time optimization (`-flto` in clang) can further increase the
-performance.
+performance. I ***highly*** recommend doing so.
+
+I do **NOT*** recommend building with `-march=native`; doing so reduces this
+`bc`'s performance.
 
 Manual stripping is not necessary; non-debug builds are automatically stripped
 in the link stage.

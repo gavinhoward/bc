@@ -134,7 +134,6 @@ optimizations I recommend are:
 
 1.	`-O3`
 2.	`-flto` (link-time optimization)
-3.	`-march=native` (optimize for the current CPU)
 
 in that order.
 
@@ -142,9 +141,9 @@ Link-time optimization, in particular, speeds up the `bc` a lot. This is because
 when link-time optimization is turned on, the optimizer can look across files
 and inline *much* more heavily.
 
-For packages that are not built on the oldest supported hardware,
-`-march=native` is not recommended because of the possibility of illegal
-instructions.
+However, I recommend ***NOT*** using `-march=native`. Doing so will reduce this
+`bc`'s performance, at least when building with link-time optimization. See the
+[benchmarks][19] for more details.
 
 #### Stripping Binaries
 
