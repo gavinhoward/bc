@@ -622,8 +622,9 @@ err:
 
 	bc_vm_clean();
 
-	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
-	    vm.status : BC_STATUS_SUCCESS;
+	vm.status = vm.status == BC_STATUS_ERROR_FATAL ||
+	            vm.status == BC_STATUS_QUIT || !BC_I ?
+	            vm.status : BC_STATUS_SUCCESS;
 
 	if (!vm.status && !vm.eof) {
 		bc_vec_empty(&buffer);
