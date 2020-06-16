@@ -564,15 +564,16 @@ make install
 
 ## Binary Size
 
-When built with both calculators, all available features, and `-Os` using clang,
-the executable is 125.4 kb (125,400 bytes) on `x86_64`. That isn't much for what
-is contained in the binary, but if necessary, it can be reduced.
+When built with both calculators, all available features, and `-Os` using
+`clang` and `musl`, the executable is 144.5 kb (144,480 bytes) on `x86_64`. That
+isn't much for what is contained in the binary, but if necessary, it can be
+reduced.
 
 The single largest user of space is the `bc` calculator. If just `dc` is needed,
-the size can be reduced to 96.7 kb (96,680 bytes).
+the size can be reduced to 107.6 kb (107,584 bytes).
 
 The next largest user of space is history support. If that is not needed, size
-can be reduced (for a build with both calculators) to 108.9 kb (108,912 bytes).
+can be reduced (for a build with both calculators) to 119.9 kb (119,864 bytes).
 
 There are several reasons that history is a bigger user of space than `dc`
 itself:
@@ -583,14 +584,20 @@ itself:
   statements, and other extra features.
 * `dc` does not have much extra code in the interpreter.
 * History has a lot of const data for supporting `UTF-8` terminals.
+* History pulls in a bunch of more code from the `libc`.
 
 The next biggest user is `dc`, so if just `bc` is needed, the size can be
-reduced to 113.1 kb (113,112 bytes) with history and 96.6 kb (96,624 bytes)
+reduced to 128.1 kb (128,096 bytes) with history and 107.6 kb (107,576 bytes)
 without history.
 
 The next biggest user is extra math support. Without it, the size (with both
-calculators) is reduced to 117.2 kb (117,168 bytes) with history and 96.6 kb
-(96,584 bytes) without history.
+calculators) is reduced to 128.1 kb (128,080 bytes) with history and 107.6 kb
+(107,560 bytes) without history.
+
+*Note*: all of these binary sizes were compiled using `musl` `1.2.0` as the
+`libc`, with `clang` `9.0.1` (well, `musl-clang` using `clang` `9.0.1`) as the
+compiler and using `-Os` optimizations. These builds were done on an `x86_64`
+machine running Gentoo Linux.
 
 ## Testing
 
