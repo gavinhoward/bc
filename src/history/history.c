@@ -803,13 +803,14 @@ static void bc_history_edit_next(BcHistory *h, bool dir) {
 
 	BC_SIG_LOCK;
 
-	dup = bc_vm_strdup(h->buf.v);
-
-	BC_SIG_UNLOCK;
+	if (h->buf.v[0]) dup = bc_vm_strdup(h->buf.v);
+	else dup = "";
 
 	// Update the current history entry before
 	// overwriting it with the next one.
 	bc_vec_replaceAt(&h->history, h->history.len - 1 - h->idx, &dup);
+
+	BC_SIG_UNLOCK;
 
 	// Show the new entry.
 	h->idx += (dir == BC_HIST_PREV ? 1 : SIZE_MAX);
