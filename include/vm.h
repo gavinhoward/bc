@@ -216,7 +216,6 @@
 	do {                                            \
 		BC_SIG_ASSERT_LOCKED;                       \
 		if (!vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);  \
-		if (BC_SIG_EXC) BC_VM_JMP;                  \
 		BC_SIG_UNLOCK;                              \
 	} while (0)
 
