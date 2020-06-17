@@ -595,9 +595,10 @@ calculators) is reduced to 128.1 kb (128,080 bytes) with history and 107.6 kb
 (107,560 bytes) without history.
 
 *Note*: all of these binary sizes were compiled using `musl` `1.2.0` as the
-`libc`, with `clang` `9.0.1` (well, `musl-clang` using `clang` `9.0.1`) as the
-compiler and using `-Os` optimizations. These builds were done on an `x86_64`
-machine running Gentoo Linux.
+`libc`, making a fully static executable, with `clang` `9.0.1` (well,
+`musl-clang` using `clang` `9.0.1`) as the compiler and using `-Os`
+optimizations. These builds were done on an `x86_64` machine running Gentoo
+Linux.
 
 ## Testing
 
