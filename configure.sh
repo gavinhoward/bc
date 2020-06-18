@@ -308,7 +308,7 @@ gen_file_lists() {
 bc_only=0
 dc_only=0
 coverage=0
-karatsuba_len=64
+karatsuba_len=32
 debug=0
 hist=1
 extra_math=1
