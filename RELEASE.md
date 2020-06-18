@@ -44,9 +44,9 @@ This is the checklist for cutting a release.
 	* Ataraxia Linux
 	* Sabotage
 	* xstatic
-28.	Submit new packages for the following:
 	* OpenBSD
 	* NetBSD
+28.	Submit new packages for the following:
 	* Alpine Linux
 	* Void Linux
 	* Gentoo Linux
