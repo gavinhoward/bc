@@ -519,10 +519,8 @@ const char bc_func_read[] = "(read)";
 const char* bc_inst_names[] = {
 
 #if BC_ENABLED
-	"BC_INST_INC_POST",
-	"BC_INST_DEC_POST",
-	"BC_INST_INC_PRE",
-	"BC_INST_DEC_PRE",
+	"BC_INST_INC",
+	"BC_INST_DEC",
 #endif // BC_ENABLED
 
 	"BC_INST_NEG",
@@ -568,9 +566,6 @@ const char* bc_inst_names[] = {
 	"BC_INST_ASSIGN_RSHIFT",
 #endif // BC_ENABLE_EXTRA_MATH
 	"BC_INST_ASSIGN",
-
-	"BC_INST_INC_NO_VAL",
-	"BC_INST_DEC_NO_VAL",
 
 	"BC_INST_ASSIGN_POWER_NO_VAL",
 	"BC_INST_ASSIGN_MULTIPLY_NO_VAL",

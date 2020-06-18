@@ -999,48 +999,32 @@ static void bc_program_incdec(BcProgram *p, uchar inst) {
 	BcResult *ptr, res, copy;
 	BcNum *num;
 	uchar inst2;
-	bool post, use_val;
 
 	bc_program_prep(p, &ptr, &num, 0);
 
-	use_val = (inst != BC_INST_INC_NO_VAL && inst != BC_INST_DEC_NO_VAL);
-	post = use_val && (inst == BC_INST_INC_POST || inst == BC_INST_DEC_POST);
+	BC_SIG_LOCK;
 
-	if (post) {
+	copy.t = BC_RESULT_TEMP;
+	bc_num_createCopy(&copy.d.n, num);
 
-		BC_SIG_LOCK;
+	BC_SETJMP_LOCKED(exit);
 
-		copy.t = BC_RESULT_TEMP;
-		bc_num_createCopy(&copy.d.n, num);
-
-		BC_SETJMP_LOCKED(exit);
-
-		BC_SIG_UNLOCK;
-	}
+	BC_SIG_UNLOCK;
 
 	res.t = BC_RESULT_ONE;
-	inst2 = BC_INST_ASSIGN_PLUS;
-
-	if (!use_val) {
-		inst2 += (inst == BC_INST_DEC_NO_VAL);
-		inst2 += (BC_INST_ASSIGN_PLUS_NO_VAL - BC_INST_ASSIGN_PLUS);
-	}
-	else inst2 += (inst & 0x01);
+	inst2 = BC_INST_ASSIGN_PLUS + (inst & 0x01);
 
 	bc_vec_push(&p->results, &res);
 	bc_program_assign(p, inst2);
 
-	if (post) {
+	BC_SIG_LOCK;
 
-		BC_SIG_LOCK;
+	bc_vec_pop(&p->results);
+	bc_vec_push(&p->results, &copy);
 
-		bc_vec_pop(&p->results);
-		bc_vec_push(&p->results, &copy);
+	BC_UNSETJMP;
 
-		BC_UNSETJMP;
-
-		BC_SIG_UNLOCK;
-	}
+	BC_SIG_UNLOCK;
 
 	return;
 
@@ -1859,12 +1843,8 @@ void bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-			case BC_INST_INC_PRE:
-			case BC_INST_DEC_PRE:
-			case BC_INST_INC_POST:
-			case BC_INST_DEC_POST:
-			case BC_INST_INC_NO_VAL:
-			case BC_INST_DEC_NO_VAL:
+			case BC_INST_INC:
+			case BC_INST_DEC:
 			{
 				bc_program_incdec(p, inst);
 				break;

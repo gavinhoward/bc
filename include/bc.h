@@ -139,7 +139,7 @@ void bc_lex_token(BcLex *l);
 #endif // BC_ENABLE_EXTRA_MATH
 
 #define BC_PARSE_PREV_PREFIX(p) \
-	((p) >= BC_INST_INC_PRE && (p) <= BC_INST_BOOL_NOT)
+	((p) >= BC_INST_NEG && (p) <= BC_INST_BOOL_NOT)
 #define BC_PARSE_OP_PREFIX(t) ((t) == BC_LEX_OP_BOOL_NOT || (t) == BC_LEX_NEG)
 
 // We can calculate the conversion between tokens and exprs by subtracting the

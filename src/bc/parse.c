@@ -58,7 +58,7 @@ static bool bc_parse_inst_isLeaf(BcInst t) {
 #if BC_ENABLE_EXTRA_MATH
 	        t == BC_INST_TRUNC ||
 #endif // BC_ENABLE_EXTRA_MATH
-	        t == BC_INST_INC_POST || t == BC_INST_DEC_POST;
+	        t <= BC_INST_DEC;
 }
 
 static bool bc_parse_isDelimiter(const BcParse *p) {
@@ -383,14 +383,14 @@ static void bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 
 		if (!*can_assign) bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
 
-		*prev = inst = BC_INST_INC_POST + (p->l.t != BC_LEX_OP_INC);
+		*prev = inst = BC_INST_INC + (p->l.t != BC_LEX_OP_INC);
 		bc_parse_push(p, inst);
 		bc_lex_next(&p->l);
 		*can_assign = false;
 	}
 	else {
 
-		*prev = inst = BC_INST_INC_PRE + (p->l.t != BC_LEX_OP_INC);
+		*prev = inst = BC_INST_ASSIGN_PLUS + (p->l.t != BC_LEX_OP_INC);
 
 		bc_lex_next(&p->l);
 		type = p->l.t;
@@ -404,7 +404,6 @@ static void bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 		else if (type >= BC_LEX_KW_LAST && type <= BC_LEX_KW_OBASE) {
 			bc_parse_push(p, type - BC_LEX_KW_LAST + BC_INST_LAST);
 			bc_lex_next(&p->l);
-			*can_assign = false;
 		}
 		else if (BC_NO_ERR(type == BC_LEX_KW_SCALE)) {
 
@@ -413,11 +412,12 @@ static void bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 			if (BC_ERR(p->l.t == BC_LEX_LPAREN))
 				bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 			else bc_parse_push(p, BC_INST_SCALE);
-
-			*can_assign = false;
 		}
 		else bc_parse_err(p, BC_ERROR_PARSE_TOKEN);
 
+		*can_assign = false;
+
+		bc_parse_push(p, BC_INST_ONE);
 		bc_parse_push(p, inst);
 	}
 }
@@ -1473,14 +1473,19 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 		if (assign) {
 			inst = *((uchar*) bc_vec_top(&p->func->code));
 			inst += (BC_INST_ASSIGN_POWER_NO_VAL - BC_INST_ASSIGN_POWER);
+			incdec = false;
 		}
 		else if (incdec && !(flags & BC_PARSE_PRINT)) {
 			inst = *((uchar*) bc_vec_top(&p->func->code));
-			inst = BC_INST_INC_NO_VAL + (inst & 0x01);
+			incdec = (inst <= BC_INST_DEC);
+			inst = BC_INST_ASSIGN_PLUS_NO_VAL + (inst != BC_INST_INC &&
+			                                     inst != BC_INST_ASSIGN_PLUS);
 		}
 
-		if (inst >= BC_INST_INC_NO_VAL && inst <= BC_INST_ASSIGN_NO_VAL) {
+		if (inst >= BC_INST_ASSIGN_PLUS_NO_VAL && inst <= BC_INST_ASSIGN_NO_VAL)
+		{
 			bc_vec_pop(&p->func->code);
+			if (incdec) bc_parse_push(p, BC_INST_ONE);
 			bc_parse_push(p, inst);
 		}
 	}
@@ -1489,7 +1494,8 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 		if (pfirst || !assign) bc_parse_push(p, BC_INST_PRINT);
 	}
 	else if (!(flags & BC_PARSE_NEEDVAL) &&
-	         (inst < BC_INST_INC_NO_VAL || inst > BC_INST_ASSIGN_NO_VAL))
+	         (inst < BC_INST_ASSIGN_POWER_NO_VAL ||
+	          inst > BC_INST_ASSIGN_NO_VAL))
 	{
 		bc_parse_push(p, BC_INST_POP);
 	}
