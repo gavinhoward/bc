@@ -565,7 +565,7 @@ make install
 ## Binary Size
 
 When built with both calculators, all available features, and `-Os` using
-`clang` and `musl`, the executable is 144.5 kb (144,480 bytes) on `x86_64`. That
+`clang` and `musl`, the executable is 140.4 kb (140,386 bytes) on `x86_64`. That
 isn't much for what is contained in the binary, but if necessary, it can be
 reduced.
 
@@ -573,7 +573,7 @@ The single largest user of space is the `bc` calculator. If just `dc` is needed,
 the size can be reduced to 107.6 kb (107,584 bytes).
 
 The next largest user of space is history support. If that is not needed, size
-can be reduced (for a build with both calculators) to 119.9 kb (119,864 bytes).
+can be reduced (for a build with both calculators) to 119.9 kb (119,866 bytes).
 
 There are several reasons that history is a bigger user of space than `dc`
 itself:
@@ -586,13 +586,24 @@ itself:
 * History has a lot of const data for supporting `UTF-8` terminals.
 * History pulls in a bunch of more code from the `libc`.
 
-The next biggest user is `dc`, so if just `bc` is needed, the size can be
-reduced to 128.1 kb (128,096 bytes) with history and 107.6 kb (107,576 bytes)
-without history.
+The next biggest user is extra math support. Without it, the size is reduced to
+124.0 kb (123,986 bytes) with history and 107.6 kb (107,560 bytes) without
+history.
 
-The next biggest user is extra math support. Without it, the size (with both
-calculators) is reduced to 128.1 kb (128,080 bytes) with history and 107.6 kb
-(107,560 bytes) without history.
+The reasons why extra math support is bigger than `dc`, besides the fact that
+`dc` is small already, are:
+
+* Extra math supports adds an extra math library that takes several kilobytes of
+  constant data space.
+* Extra math support includes support for a pseudo-random number generator,
+  including the code to convert a series of pseudo-random numbers into a number
+  of arbitrary size.
+* Extra math support adds several operators.
+
+The next biggest user is `dc`, so if just `bc` is needed, the size can be
+reduced to 128.1 kb (128,096 bytes) with history and extra math support, 107.6
+kb (107,576 bytes) without history and with extra math support, and 95.3 kb
+(95,272 bytes) without history and without extra math support.
 
 *Note*: all of these binary sizes were compiled using `musl` `1.2.0` as the
 `libc`, making a fully static executable, with `clang` `9.0.1` (well,
