@@ -846,6 +846,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			bc_num_free(l);
 			bc_num_clear(l);
 			l->scale = idx;
+			bc_vec_npop(&p->results, 2);
 			BC_SIG_UNLOCK;
 		}
 		else {
