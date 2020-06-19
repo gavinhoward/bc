@@ -56,8 +56,7 @@ define ceil(x,p){
 	p=abs(p)$
 	n=(x<0)
 	x=abs(x)
-	y=9+(x@(p+1)==x@p&&x!=x@p)
-	t=(x+(y>>p+1))@p
+	t=(x+((x@p<x)>>p))@p
 	if(n)t=-t
 	return t
 }
