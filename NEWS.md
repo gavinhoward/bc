@@ -1,5 +1,17 @@
 # News
 
+## 3.0.1
+
+This is a production release with two small changes. Users do ***NOT*** need to
+upgrade to this release; however, if they haven't upgraded to `3.0.0` yet, it
+may be worthwhile to upgrade to this release.
+
+The first change is fixing a compiler warning on FreeBSD with strict warnings
+on.
+
+The second change is to make the new implementation of `ceil()` in `lib2.bc`
+much more efficient.
+
 ## 3.0.0
 
 *Notes for package maintainers:*
