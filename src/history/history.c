@@ -797,7 +797,7 @@ static void bc_history_edit_end(BcHistory *h) {
  */
 static void bc_history_edit_next(BcHistory *h, bool dir) {
 
-	char *dup, *str;
+	const char *dup, *str;
 
 	if (h->history.len <= 1) return;
 
