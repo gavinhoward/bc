@@ -51,7 +51,7 @@ define r(x,p){
 	return t
 }
 define ceil(x,p){
-	auto t,n,y
+	auto t,n
 	if(x==0)return x
 	p=abs(p)$
 	n=(x<0)
