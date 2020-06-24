@@ -1,5 +1,13 @@
 # News
 
+## 3.0.2
+
+This is a production release that adds `utf8` locale symlinks and removes an
+unused `auto` variable from the `ceil()` function in the [extended math
+library][16].
+
+Users do ***NOT*** need to update unless they want the locales.
+
 ## 3.0.1
 
 This is a production release with two small changes. Users do ***NOT*** need to
