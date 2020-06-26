@@ -39,7 +39,7 @@ Systems that are known to work:
 * OpenBSD
 * NetBSD
 * Mac OSX
-* Solaris
+* Solaris* (as long as the Solaris version supports POSIX 2008)
 * AIX
 
 Please submit bug reports if this `bc` does not build out of the box on any
