@@ -1,5 +1,13 @@
 # News
 
+## 3.0.3
+
+This is a production release that adds one new feature: specific manpages.
+
+Before this release, `bc` and `dc` only used one manpage each that referred to
+various build options. This release changes it so there is one manpage set per
+relevant build type, and `configure.sh` selects the correct set for install.
+
 ## 3.0.2
 
 This is a production release that adds `utf8` locale symlinks and removes an
