@@ -11,7 +11,7 @@ This is an implementation of the [POSIX `bc` calculator][12] that implements
 [GNU `bc`][1] extensions, as well as the period (`.`) extension for the BSD
 flavor of `bc`.
 
-For more information, see this `bc`'s [full manual][2].
+For more information, see this `bc`'s full manual.
 
 This `bc` also includes an implementation of `dc` in the same binary, accessible
 via a symbolic link, which implements all FreeBSD and GNU extensions. (If a
@@ -19,7 +19,7 @@ standalone `dc` binary is desired, `bc` can be copied and renamed to `dc`.) The
 `!` command is omitted; I believe this poses security concerns and that such
 functionality is unnecessary.
 
-For more information, see the `dc`'s [full manual][3].
+For more information, see the `dc`'s full manual.
 
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 2-clause License. Full license text may be found in the [`LICENSE.md`][4] file.
@@ -309,8 +309,6 @@ Folders:
 	tests    All tests.
 
 [1]: https://www.gnu.org/software/bc/
-[2]: ./manuals/bc.md
-[3]: ./manuals/dc.md
 [4]: ./LICENSE.md
 [5]: ./manuals/build.md
 [6]: https://pkg.musl.cc/bc/
