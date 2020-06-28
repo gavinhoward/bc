@@ -1499,7 +1499,7 @@ Note that "current input" can mean one of two things\. If bc(1) is processing in
 This means that if a \fBSIGINT\fR is sent to bc(1) as it is executing a file, it can seem as though bc(1) did not respond to the signal since it will immediately start executing the next file\. This is by design; most files that users execute when interacting with bc(1) have function definitions, which are quick to parse\. If a file takes a long time to execute, there may be a bug in that file\. The rest of the files could still be executed without problem, allowing the user to continue\.
 .
 .P
-\fBSIGTERM\fR and \fBSIGQUIT\fR cause bc(1) to clean up and exit, and it uses the default handler for all other signals\. The one exception is \fBSIGHUP\fR, if bc(1) was built with history support; in that case, when bc(1) is in TTY mode, a \fBSIGHUP\fR will cause bc(1) to clean up and exit\.
+\fBSIGTERM\fR and \fBSIGQUIT\fR cause bc(1) to clean up and exit, and it uses the default handler for all other signals\.
 .
 .SH "SEE ALSO"
 dc(1)

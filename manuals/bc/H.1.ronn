@@ -1465,9 +1465,7 @@ rest of the files could still be executed without problem, allowing the user to
 continue.
 
 `SIGTERM` and `SIGQUIT` cause bc(1) to clean up and exit, and it uses the
-default handler for all other signals. The one exception is `SIGHUP`, if bc(1)
-was built with history support; in that case, when bc(1) is in TTY mode, a
-`SIGHUP` will cause bc(1) to clean up and exit.
+default handler for all other signals.
 
 LOCALES
 -------
