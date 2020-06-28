@@ -106,9 +106,11 @@ MANUALS = manuals
 BC_MANPAGE_NAME = $(EXEC_PREFIX)$(BC)$(EXEC_SUFFIX).1
 BC_MANPAGE = $(MANUALS)/$(BC).1
 BC_RONN = $(BC_MANPAGE).ronn
+BC_MD = $(BC_MANPAGE).md
 DC_MANPAGE_NAME = $(EXEC_PREFIX)$(DC)$(EXEC_SUFFIX).1
 DC_MANPAGE = $(MANUALS)/$(DC).1
 DC_RONN = $(DC_MANPAGE).ronn
+DC_MD = $(DC_MANPAGE).md
 
 MANPAGE_INSTALL_ARGS = -Dm644
 
@@ -270,8 +272,8 @@ extra_math:
 	@printf '%s' "$(BC_ENABLE_EXTRA_MATH)"
 
 manpages:
-	$(MANPAGE) $(BC_RONN) $(BC_MANPAGE)
-	$(MANPAGE) $(DC_RONN) $(DC_MANPAGE)
+	$(MANPAGE) bc
+	$(MANPAGE) dc
 
 clean_gen:
 	@$(RM) -f $(GEN_EXEC)
@@ -295,6 +297,9 @@ clean:%%CLEAN_PREREQS%%
 clean_config: clean
 	@printf 'Cleaning config...\n'
 	@$(RM) -f Makefile
+	@$(RM) -f $(BC_RONN) $(DC_RONN)
+	@$(RM) -f $(BC_MD) $(DC_MD)
+	@$(RM) -f $(BC_MANPAGE) $(DC_MANPAGE)
 
 clean_coverage:
 	@printf 'Cleaning coverage files...\n'
