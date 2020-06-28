@@ -1049,6 +1049,7 @@ the TTY MODE section), history is enabled. Previous lines can be recalled and
 edited with the arrow keys.
 
 **Note**: tabs are converted to 8 spaces.
+
 LOCALES
 -------
 

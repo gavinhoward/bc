@@ -895,6 +895,7 @@ continue.
 `SIGTERM` and `SIGQUIT` cause dc(1) to clean up and exit, and it uses the
 default handler for all other signals.
 
+
 LOCALES
 -------
 
