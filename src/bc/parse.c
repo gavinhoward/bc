@@ -1161,7 +1161,8 @@ void bc_parse_parse(BcParse *p) {
 
 exit:
 	BC_SIG_MAYLOCK;
-	if (BC_ERR((vm.status && vm.status != BC_STATUS_QUIT))) bc_parse_reset(p);
+	if (BC_ERR(((vm.status && vm.status != BC_STATUS_QUIT) || vm.sig)))
+		bc_parse_reset(p);
 	BC_LONGJMP_CONT;
 }
 
