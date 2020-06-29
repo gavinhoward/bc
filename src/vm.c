@@ -69,7 +69,7 @@ BC_NORETURN void bc_vm_jmp(const char* f) {
 BC_NORETURN void bc_vm_jmp(void) {
 #endif
 
-	assert(vm.status != BC_STATUS_SUCCESS || vm.sig);
+	assert(BC_SIG_EXC);
 
 	BC_SIG_MAYLOCK;
 
