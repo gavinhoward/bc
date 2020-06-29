@@ -406,7 +406,7 @@ static void bc_vm_clean(void) {
 	BcVec *fns = &prog->fns;
 	BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
 	BcInstPtr *ip = bc_vec_item(&prog->stack, 0);
-	bool good = (vm.status && vm.status != BC_STATUS_QUIT);
+	bool good = ((vm.status && vm.status != BC_STATUS_QUIT) || vm.sig);
 
 	if (good) bc_program_reset(&vm.prog);
 
