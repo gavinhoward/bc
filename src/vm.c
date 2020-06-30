@@ -404,10 +404,9 @@ void bc_vm_putchar(int c) {
 
 static void bc_vm_clean(void) {
 
-	BcProgram *prog = &vm.prog;
-	BcVec *fns = &prog->fns;
+	BcVec *fns = &vm.prog.fns;
 	BcFunc *f = bc_vec_item(fns, BC_PROG_MAIN);
-	BcInstPtr *ip = bc_vec_item(&prog->stack, 0);
+	BcInstPtr *ip = bc_vec_item(&vm.prog.stack, 0);
 	bool good = ((vm.status && vm.status != BC_STATUS_QUIT) || vm.sig);
 
 	if (good) bc_program_reset(&vm.prog);
@@ -448,14 +447,20 @@ static void bc_vm_clean(void) {
 
 			good = (i == vm.prog.arrs.len);
 		}
+
+		if (good) {
+
+			for (i = 0; good && i < vm.prog.results.len; ++i) {
+				BcResult *r = (BcResult*) bc_vec_item(&vm.prog.results, i);
+				good = BC_VM_SAFE_RESULT(r);
+			}
+		}
 	}
 #endif // DC_ENABLED
 
 	// If this condition is true, we can get rid of strings,
 	// constants, and code. This is an idea from busybox.
-	if (good && prog->stack.len == 1 && !prog->results.len &&
-	    ip->idx == f->code.len)
-	{
+	if (good && vm.prog.stack.len == 1 && ip->idx == f->code.len) {
 #if BC_ENABLED
 		if (BC_IS_BC) {
 			bc_vec_npop(&f->labels, f->labels.len);
@@ -609,6 +614,7 @@ restart:
 		bc_vec_empty(&buffer);
 
 		if (vm.eof) break;
+		else bc_vm_clean();
 	}
 
 	if (!BC_STATUS_IS_ERROR(s)) {
