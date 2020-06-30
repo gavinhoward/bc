@@ -39,11 +39,11 @@ gen_manpage() {
 
 	_gen_manpage_status="$ALL"
 	_gen_manpage_out="$manualsdir/$manpage/$_gen_manpage_args.1"
-	_gen_manpage_ronn="$manualsdir/$manpage/$_gen_manpage_args.1.ronn"
-	_gen_manpage_temp="$manualsdir/temp.1.ronn"
+	_gen_manpage_md="$manualsdir/$manpage/$_gen_manpage_args.1.md"
+	_gen_manpage_temp="$manualsdir/temp.1.md"
 	_gen_manpage_ifs="$IFS"
 
-	rm -rf "$_gen_manpage_out" "$_gen_manpage_ronn"
+	rm -rf "$_gen_manpage_out" "$_gen_manpage_md"
 
 	while IFS= read -r line; do
 
@@ -77,15 +77,16 @@ gen_manpage() {
 			fi
 		fi
 
-	done < "$manualsdir/${manpage}.1.ronn.in"
+	done < "$manualsdir/${manpage}.1.md.in"
 
-	uniq "$_gen_manpage_temp" "$_gen_manpage_ronn"
+	uniq "$_gen_manpage_temp" "$_gen_manpage_md"
 	rm -rf "$_gen_manpage_temp"
 
 	IFS="$_gen_manpage_ifs"
 
-	ronn --pipe --roff --organization="Gavin D. Howard" --manual="General Commands Manual" \
-		$_gen_manpage_ronn | sed 's|\\fB\\'"'"'\\fR|\\fB'"'"'\\fR|g' > "$_gen_manpage_out"
+	cat "$manualsdir/header.txt" > "$_gen_manpage_out"
+	cat "$manualsdir/header_${manpage}.txt" > "$_gen_manpage_out"
+	pandoc -f markdown -t man >> "$_gen_manpage_out"
 }
 
 set -e

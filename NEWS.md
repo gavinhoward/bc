@@ -820,14 +820,14 @@ not thoroughly tested.
 [6]: ./configure.sh
 [7]: https://github.com/rain-1/linenoise-mob
 [8]: https://github.com/antirez/linenoise
-[9]: ./manuals/bc.1.ronn
-[10]: ./manuals/dc.1.ronn
+[9]: ./manuals/bc/A.1.md
+[10]: ./manuals/dc/A.1.md
 [11]: https://scan.coverity.com/projects/gavinhoward-bc
 [12]: ./locale_install.sh
 [13]: ./manuals/build.md
 [14]: https://github.com/stesser
 [15]: https://github.com/bugcrazy
-[16]: ./manuals/bc.1.ronn#extended-library
+[16]: ./manuals/bc/A.1.md#extended-library
 [17]: https://github.com/skeeto/optparse
 [18]: https://www.deepl.com/translator
 [19]: ./manuals/benchmarks.md

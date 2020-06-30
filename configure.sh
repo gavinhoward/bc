@@ -946,11 +946,9 @@ printf '%s\n' "$contents" > "$scriptdir/Makefile"
 
 cd "$scriptdir"
 
-cp -f manuals/bc/$manpage_args.1.ronn manuals/bc.1.ronn
-cp -f manuals/bc/$manpage_args.1.ronn manuals/bc.1.md
+cp -f manuals/bc/$manpage_args.1.md manuals/bc.1.md
 cp -f manuals/bc/$manpage_args.1 manuals/bc.1
-cp -f manuals/dc/$manpage_args.1.ronn manuals/dc.1.ronn
-cp -f manuals/dc/$manpage_args.1.ronn manuals/dc.1.md
+cp -f manuals/dc/$manpage_args.1.md manuals/dc.1.md
 cp -f manuals/dc/$manpage_args.1 manuals/dc.1
 
 make clean > /dev/null
