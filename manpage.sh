@@ -40,6 +40,7 @@ gen_manpage() {
 	_gen_manpage_status="$ALL"
 	_gen_manpage_out="$manualsdir/$manpage/$_gen_manpage_args.1"
 	_gen_manpage_ronn="$manualsdir/$manpage/$_gen_manpage_args.1.ronn"
+	_gen_manpage_temp="$manualsdir/temp.1.ronn"
 	_gen_manpage_ifs="$IFS"
 
 	rm -rf "$_gen_manpage_out" "$_gen_manpage_ronn"
@@ -72,11 +73,14 @@ gen_manpage() {
 
 		else
 			if [ "$_gen_manpage_status" -ne "$SKIP" ]; then
-				printf '%s\n' "$line" >> "$_gen_manpage_ronn"
+				printf '%s\n' "$line" >> "$_gen_manpage_temp"
 			fi
 		fi
 
 	done < "$manualsdir/${manpage}.1.ronn.in"
+
+	uniq "$_gen_manpage_temp" "$_gen_manpage_ronn"
+	rm -rf "$_gen_manpage_temp"
 
 	IFS="$_gen_manpage_ifs"
 
