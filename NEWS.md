@@ -2,15 +2,22 @@
 
 ## 3.0.4
 
-This is a production release that fixes two bugs and improves manpages for
+This is a production release that fixes four bugs and improves manpages for
 FreeBSD. Because this release fixes bugs, **users and package maintainers should
 update to this version as soon as possible**.
 
-The first bug fix was in how output to `stdout` was handled in `SIGINT`. If a
+The first bug fix in how output to `stdout` was handled in `SIGINT`. If a
 `SIGINT` came in, the `stdout` buffer was not correctly flushed. In fact, a
 clean-up function was not getting called. This release fixes that bug.
 
 The second bug is in how `dc` handled input from `stdin`.
+
+The third fixed bug was that `bc` and `dc` could `abort()` (in debug mode) when
+receiving a `SIGTERM`.
+
+The fourth bug fixed was that `bc` could leave extra items on the stack and
+thus, not properly clean up some memory. (The memory would still get
+`free()`'ed, but it would not be `free()`'ed when it could have been.)
 
 The manpage improvement was done by switching from [ronn][20] to [Pandoc][21] to
 generate manpages. Pandoc generates much cleaner manpages and doesn't leave

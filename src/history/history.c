@@ -484,15 +484,17 @@ static void bc_history_enableRaw(BcHistory *h) {
 
 static void bc_history_disableRaw(BcHistory *h) {
 
+	sig_atomic_t lock;
+
 	// Don't even check the return value as it's too late.
 	if (!h->rawMode) return;
 
-	BC_SIG_LOCK;
+	BC_SIG_TRYLOCK(lock);
 
 	if (BC_ERR(tcsetattr(STDIN_FILENO, TCSAFLUSH, &h->orig_termios) != -1))
 		h->rawMode = false;
 
-	BC_SIG_UNLOCK;
+	BC_SIG_TRYUNLOCK(lock);
 }
 
 /**
