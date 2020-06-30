@@ -35,8 +35,8 @@
  *
  */
 
-#ifndef BC_IO_H
-#define BC_IO_H
+#ifndef BC_READ_H
+#define BC_READ_H
 
 #include <stdlib.h>
 
@@ -58,4 +58,4 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt);
 void bc_read_file(const char *path, char **buf);
 BcStatus bc_read_chars(BcVec *vec, const char *prompt);
 
-#endif // BC_IO_H
+#endif // BC_READ_H
