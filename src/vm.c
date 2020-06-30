@@ -496,6 +496,9 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 #endif // BC_ENABLED
 
 		bc_program_exec(&vm.prog);
+
+		assert(!BC_IS_BC || vm.prog.results.len == 0);
+
 		if (BC_I) bc_file_flush(&vm.fout);
 
 	} while (vm.prs.l.t != BC_LEX_EOF);
