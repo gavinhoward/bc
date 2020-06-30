@@ -2014,7 +2014,6 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 	if (req == BC_NUM_DEF_SIZE && vm.temps.len) {
 		BcNum *nptr = bc_vec_top(&vm.temps);
 		num = nptr->num;
-		req = nptr->cap;
 		bc_vec_pop(&vm.temps);
 	}
 	else num = bc_vm_malloc(BC_NUM_SIZE(req));
