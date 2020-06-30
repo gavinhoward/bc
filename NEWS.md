@@ -1,5 +1,21 @@
 # News
 
+## 3.0.4
+
+This is a production release that fixes two bugs and improves manpages for
+FreeBSD. Because this release fixes bugs, **users and package maintainers should
+update to this version as soon as possible**.
+
+The first bug fix was in how output to `stdout` was handled in `SIGINT`. If a
+`SIGINT` came in, the `stdout` buffer was not correctly flushed. In fact, a
+clean-up function was not getting called. This release fixes that bug.
+
+The second bug is in how `dc` handled input from `stdin`.
+
+The manpage improvement was done by switching from [ronn][20] to [Pandoc][21] to
+generate manpages. Pandoc generates much cleaner manpages and doesn't leave
+blank lines where they shouldn't be.
+
 ## 3.0.3
 
 This is a production release that adds one new feature: specific manpages.
@@ -41,8 +57,9 @@ global ones that are already installed, so it will use the previous ones while
 running tests during install. **If `bc` segfaults while running arg tests when
 updating, it is because the global locale files have not been replaced. Make
 sure to either prevent the test suite from running on update or remove the old
-locale files before updating.** Once this is done, `bc` should install without
-problems.*
+locale files before updating.** (Removing the locale files can be done with
+`make uninstall` or by running the `locale_uninstall.sh` script.) Once this is
+done, `bc` should install without problems.*
 
 *Second, **the option to build without signal support has been removed**. See
 below for the reasons why.*
@@ -831,3 +848,5 @@ not thoroughly tested.
 [17]: https://github.com/skeeto/optparse
 [18]: https://www.deepl.com/translator
 [19]: ./manuals/benchmarks.md
+[20]: https://github.com/apjanke/ronn-ng
+[21]: https://pandoc.org/
