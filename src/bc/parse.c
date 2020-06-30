@@ -1485,7 +1485,8 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 			                                     inst != BC_INST_ASSIGN_PLUS);
 		}
 
-		if (inst >= BC_INST_ASSIGN_PLUS_NO_VAL && inst <= BC_INST_ASSIGN_NO_VAL)
+		if (inst >= BC_INST_ASSIGN_POWER_NO_VAL &&
+		    inst <= BC_INST_ASSIGN_NO_VAL)
 		{
 			bc_vec_pop(&p->func->code);
 			if (incdec) bc_parse_push(p, BC_INST_ONE);
