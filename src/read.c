@@ -79,7 +79,7 @@ static bool bc_read_buf(BcVec *vec) {
 
 		bc_vec_npush(vec, nllen, vm.buf);
 		vm.buf_len -= nllen;
-		memmove(vm.buf, nl + 1, vm.buf_len);
+		memmove(vm.buf, nl + 1, vm.buf_len + 1);
 
 		return true;
 	}
@@ -156,6 +156,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 		}
 
 		vm.buf_len += (size_t) r;
+		vm.buf[vm.buf_len] = '\0';
 
 		done = bc_read_buf(vec);
 	}
