@@ -38,10 +38,6 @@
 #ifndef BC_DC_H
 #define BC_DC_H
 
-#ifndef DC_ENABLE_RAND
-#define DC_ENABLE_RAND (1)
-#endif // DC_ENABLE_RAND
-
 #if DC_ENABLED
 
 #include <status.h>

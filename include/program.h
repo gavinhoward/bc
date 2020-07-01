@@ -63,9 +63,9 @@ typedef struct BcProgram {
 	BcBigDig globals[BC_PROG_GLOBALS_LEN];
 	BcVec globals_v[BC_PROG_GLOBALS_LEN];
 
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 	BcRNG rng;
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 	BcVec results;
 	BcVec stack;

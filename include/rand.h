@@ -79,6 +79,14 @@
 #include <vector.h>
 #include <num.h>
 
+#if BC_ENABLE_EXTRA_MATH
+#ifndef BC_ENABLE_RAND
+#define BC_ENABLE_RAND (1)
+#endif // BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
+
+#if BC_ENABLE_RAND
+
 typedef ulong (*BcRandUlong)(void*);
 
 #if BC_LONG_BIT >= 64
@@ -225,6 +233,8 @@ void bc_rand_pop(BcRNG *r, bool reset);
 void bc_rand_getRands(BcRNG *r, BcRand *s1, BcRand *s2, BcRand *i1, BcRand *i2);
 
 extern const BcRandState bc_rand_multiplier;
+
+#endif // BC_ENABLE_RAND
 
 #endif // BC_ENABLE_EXTRA_MATH
 

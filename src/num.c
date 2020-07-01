@@ -2185,7 +2185,7 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
 	n->len = i;
 }
 
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 	BcNum pow, temp, temp2, intn, frac;
@@ -2466,7 +2466,7 @@ err:
 	bc_num_free(&cp);
 	BC_LONGJMP_CONT;
 }
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 size_t bc_num_addReq(const BcNum *a, const BcNum *b, size_t scale) {
 

@@ -68,7 +68,7 @@
  *
  */
 
-#if BC_ENABLE_EXTRA_MATH
+#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 #include <assert.h>
 #include <stdlib.h>
@@ -414,4 +414,4 @@ void bc_rand_free(BcRNG *r) {
 }
 #endif // NDEBUG
 
-#endif // BC_ENABLE_EXTRA_MATH
+#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
