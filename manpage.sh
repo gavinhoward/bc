@@ -90,8 +90,6 @@ gen_manpage() {
 	cat "$manualsdir/header_${manpage}.txt" > "$_gen_manpage_out"
 
 	pandoc -f markdown -t man "$_gen_manpage_md" >> "$_gen_manpage_out"
-
-	printf '%s\n' "$_gen_manpage_args" >&2
 }
 
 set -e
