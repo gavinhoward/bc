@@ -85,7 +85,7 @@ gen_manpage() {
 	IFS="$_gen_manpage_ifs"
 
 	cat "$manualsdir/header.txt" > "$_gen_manpage_out"
-	cat "$manualsdir/header_${manpage}.txt" > "$_gen_manpage_out"
+	cat "$manualsdir/header_${manpage}.txt" >> "$_gen_manpage_out"
 
 	pandoc -f markdown -t man "$_gen_manpage_md" >> "$_gen_manpage_out"
 }
