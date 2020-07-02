@@ -10,10 +10,12 @@ The first bug fix in how output to `stdout` was handled in `SIGINT`. If a
 `SIGINT` came in, the `stdout` buffer was not correctly flushed. In fact, a
 clean-up function was not getting called. This release fixes that bug.
 
-The second bug is in how `dc` handled input from `stdin`.
+The second bug is in how `dc` handled input from `stdin`. This affected `bc` as
+well since it was a mishandling of the `stdin` buffer.
 
 The third fixed bug was that `bc` and `dc` could `abort()` (in debug mode) when
-receiving a `SIGTERM`.
+receiving a `SIGTERM`. This one was a race condition with pushing and popping
+items onto and out of vectors.
 
 The fourth bug fixed was that `bc` could leave extra items on the stack and
 thus, not properly clean up some memory. (The memory would still get
