@@ -55,9 +55,9 @@ other implementations.
 
 The following are the options that bc(1) accepts.
 
-  * **-g**, **--global-stacks**
+**-g**, **--global-stacks**
 
-    Turns the globals **ibase**, **obase**, **scale**, and **seed** into stacks.
+:   Turns the globals **ibase**, **obase**, **scale**, and **seed** into stacks.
 
     This has the effect that a copy of the current value of all four are pushed
     onto a stack for every function call, as well as popped when every function
@@ -123,27 +123,27 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
-  * **-h**, **--help**
+**-h**, **--help**
 
-    Prints a usage message and quits.
+:   Prints a usage message and quits.
 
-  * **-i**, **--interactive**
+**-i**, **--interactive**
 
-    Forces interactive mode. (See the **INTERACTIVE MODE** section.)
+:   Forces interactive mode. (See the **INTERACTIVE MODE** section.)
 
     This is a **non-portable extension**.
 
-  * **-l**, **--mathlib**
+**-l**, **--mathlib**
 
-    Sets **scale** (see the **SYNTAX** section) to **20** and loads the included
+:   Sets **scale** (see the **SYNTAX** section) to **20** and loads the included
     math library and the extended math library before running any code,
     including any expressions or files specified on the command line.
 
     To learn what is in the libraries, see the **LIBRARY** section.
 
-  * **-P**, **--no-prompt**
+**-P**, **--no-prompt**
 
-    Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
+:   Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
     See the **TTY MODE** section) This is mostly for those users that do not
     want a prompt or are not used to having them in bc(1). Most of those users
     would want to put this option in **BC_ENV_ARGS** (see the
@@ -151,38 +151,38 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
-  * **-q**, **--quiet**
+**-q**, **--quiet**
 
-    Do not print copyright header. bc(1) will also suppress the header in
+:   Do not print copyright header. bc(1) will also suppress the header in
     non-interactive mode.
 
     This is mostly for compatibility with the [GNU bc(1)][2].
 
     This is a **non-portable extension**.
 
-  * **-s**, **--standard**
+**-s**, **--standard**
 
-    Process exactly the language defined by the [standard][1] and error if any
+:   Process exactly the language defined by the [standard][1] and error if any
     extensions are used.
 
     This is a **non-portable extension**.
 
-  * **-v**, **-V**, **--version**
+**-v**, **-V**, **--version**
 
-    Print the version information (copyright header) and exit.
+:   Print the version information (copyright header) and exit.
 
     This is a **non-portable extension**.
 
-  * **-w**, **--warn**
+**-w**, **--warn**
 
-    Like **-s** and **--standard**, except that warnings (and not errors) are
+:   Like **-s** and **--standard**, except that warnings (and not errors) are
     printed for non-standard extensions and execution continues normally.
 
     This is a **non-portable extension**.
 
-  * **-e** *expr*, **--expression**=*expr*
+**-e** *expr*, **--expression**=*expr*
 
-    Evaluates *expr*. If multiple expressions are given, they are evaluated in
+:   Evaluates *expr*. If multiple expressions are given, they are evaluated in
     order. If files are given as well (see below), the expressions and files are
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
@@ -193,9 +193,9 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
-  * **-f** *file*, **--file**=*file*
+**-f** *file*, **--file**=*file*
 
-    Reads in *file* and evaluates it. If expressions are also given (see above),
+:   Reads in *file* and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
 
     In other bc(1) implementations, this option causes the program to execute
@@ -440,98 +440,97 @@ The following arithmetic and logical operators can be used. They are listed in
 order of decreasing precedence. Operators in the same group have the same
 precedence.
 
-  * **++** **--**
+**++** **--**
 
-    Type: Prefix and Postfix
+:   Type: Prefix and Postfix
 
     Associativity: None
 
     Description: **increment**, **decrement**
 
-  * **-** **!**
+**-** **!**
 
-    Type: Prefix
+:   Type: Prefix
 
     Associativity: None
 
     Description: **negation**, **boolean not**
 
-  * **$**
+**\$**
 
-    Type: Postfix
+:   Type: Postfix
 
     Associativity: None
 
     Description: **truncation**
 
-  * **\@**
+**\@**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Right
 
     Description: **set precision**
 
-  * **\^**
+**\^**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Right
 
     Description: **power**
 
-  * **\*** **/** **%**
+**\*** **/** **%**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **multiply**, **divide**, **modulus**
 
-  * **+** **-**
+**+** **-**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **add**, **subtract**
 
-  * **\<\<** **\>\>**
+**\<\<** **\>\>**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **shift left**, **shift right**
 
-  * **=** **\<\<=** **\>\>=** **+=** **-=** **\*=** **/=** **%=** **\^=**
-    **\@=**
+**=** **\<\<=** **\>\>=** **+=** **-=** **\*=** **/=** **%=** **\^=** **\@=**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Right
 
     Description: **assignment**
 
-  * **==** **\<=** **\>=** **!=** **\<** **\>**
+**==** **\<=** **\>=** **!=** **\<** **\>**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **relational**
 
-  * **&&**
+**&&**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **boolean and**
 
-  * **||**
+**||**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
@@ -539,38 +538,38 @@ precedence.
 
 The operators will be described in more detail below.
 
-  * **++** **--**
+**++** **--**
 
-    The prefix and postfix **increment** and **decrement** operators behave
+:   The prefix and postfix **increment** and **decrement** operators behave
     exactly like they would in C. They require a named expression (see the
     *Named Expressions* subsection) as an operand.
 
     The prefix versions of these operators are more efficient; use them where
     possible.
 
-  * **-**
+**-**
 
-    The **negation** operator returns **0** if a user attempts to negate any
+:   The **negation** operator returns **0** if a user attempts to negate any
     expression with the value **0**. Otherwise, a copy of the expression with
     its sign flipped is returned.
 
-  * **!**
+**!**
 
-    The **boolean not** operator returns **1** if the expression is **0**, or
+:   The **boolean not** operator returns **1** if the expression is **0**, or
     **0** otherwise.
 
     This is a **non-portable extension**.
 
-  * **$**
+**\$**
 
-    The **truncation** operator returns a copy of the given expression with all
+:   The **truncation** operator returns a copy of the given expression with all
     of its *scale* removed.
 
     This is a **non-portable extension**.
 
-  * **\@**
+**\@**
 
-    The **set precision** operator takes two expressions and returns a copy of
+:   The **set precision** operator takes two expressions and returns a copy of
     the first with its *scale* equal to the value of the second expression. That
     could either mean that the number is returned without change (if the
     *scale* of the first expression matches the value of the second
@@ -580,53 +579,53 @@ The operators will be described in more detail below.
 
     This is a **non-portable extension**.
 
-  * **\^**
+**\^**
 
-    The **power** operator (not the **exclusive or** operator, as it would be in
+:   The **power** operator (not the **exclusive or** operator, as it would be in
     C) takes two expressions and raises the first to the power of the value of
     the second.
 
     The second expression must be an integer (no *scale*), and if it is
     negative, the first value must be non-zero.
 
-  * **\***
+**\***
 
-    The **multiply** operator takes two expressions, multiplies them, and
+:   The **multiply** operator takes two expressions, multiplies them, and
     returns the product. If **a** is the *scale* of the first expression and
     **b** is the *scale* of the second expression, the *scale* of the result is
     equal to **min(a+b,max(scale,a,b))** where **min()** and **max()** return
     the obvious values.
 
-  * **/**
+**/**
 
-    The **divide** operator takes two expressions, divides them, and returns the
+:   The **divide** operator takes two expressions, divides them, and returns the
     quotient. The *scale* of the result shall be the value of **scale**.
 
     The second expression must be non-zero.
 
-  * **%**
+**%**
 
-    The **modulus** operator takes two expressions, **a** and **b**, and
+:   The **modulus** operator takes two expressions, **a** and **b**, and
     evaluates them by 1) Computing **a/b** to current **scale** and 2) Using the
     result of step 1 to calculate **a-(a/b)\*b** to *scale*
     **max(scale+scale(b),scale(a))**.
 
     The second expression must be non-zero.
 
-  * **+**
+**+**
 
-    The **add** operator takes two expressions, **a** and **b**, and returns the
+:   The **add** operator takes two expressions, **a** and **b**, and returns the
     sum, with a *scale* equal to the max of the *scale*s of **a** and **b**.
 
-  * **-**
+**-**
 
-    The **subtract** operator takes two expressions, **a** and **b**, and
+:   The **subtract** operator takes two expressions, **a** and **b**, and
     returns the difference, with a *scale* equal to the max of the *scale*s of
     **a** and **b**.
 
-  * **\<\<**
+**\<\<**
 
-    The **left shift** operator takes two expressions, **a** and **b**, and
+:   The **left shift** operator takes two expressions, **a** and **b**, and
     returns a copy of the value of **a** with its decimal point moved **b**
     places to the right.
 
@@ -634,9 +633,9 @@ The operators will be described in more detail below.
 
     This is a **non-portable extension**.
 
-  * **\>\>**
+**\>\>**
 
-    The **right shift** operator takes two expressions, **a** and **b**, and
+:   The **right shift** operator takes two expressions, **a** and **b**, and
     returns a copy of the value of **a** with its decimal point moved **b**
     places to the left.
 
@@ -644,10 +643,9 @@ The operators will be described in more detail below.
 
     This is a **non-portable extension**.
 
-  * **=** **\<\<=** **\>\>=** **+=** **-=** **\*=** **/=** **%=** **\^=**
-    **\@=**
+**=** **\<\<=** **\>\>=** **+=** **-=** **\*=** **/=** **%=** **\^=** **\@=**
 
-    The **assignment** operators take two expressions, **a** and **b** where
+:   The **assignment** operators take two expressions, **a** and **b** where
     **a** is a named expression (see the *Named Expressions* subsection).
 
     For **=**, **b** is copied and the result is assigned to **a**. For all
@@ -657,9 +655,9 @@ The operators will be described in more detail below.
     The **assignment** operators that correspond to operators that are
     extensions are themselves **non-portable extensions**.
 
-  * **==** **\<=** **\>=** **!=** **\<** **\>**
+**==** **\<=** **\>=** **!=** **\<** **\>**
 
-    The **relational** operators compare two expressions, **a** and **b**, and
+:   The **relational** operators compare two expressions, **a** and **b**, and
     if the relation holds, according to C language semantics, the result is
     **1**. Otherwise, it is **0**.
 
@@ -671,18 +669,18 @@ The operators will be described in more detail below.
     any other expressions can be used. This allowance is a
     **non-portable extension**.
 
-  * **&&**
+**&&**
 
-    The **boolean and** operator takes two expressions and returns **1** if both
+:   The **boolean and** operator takes two expressions and returns **1** if both
     expressions are non-zero, **0** otherwise.
 
     This is *not* a short-circuit operator.
 
     This is a **non-portable extension**.
 
-  * **||**
+**||**
 
-    The **boolean or** operator takes two expressions and returns **1** if one
+:   The **boolean or** operator takes two expressions and returns **1** if one
     of the expressions is non-zero, **0** otherwise.
 
     This is *not* a short-circuit operator.
@@ -758,23 +756,17 @@ The "expressions" in a **print** statement may also be strings. If they are, the
 are backslash escape sequences that are interpreted specially. What those
 sequences are, and what they cause to be printed, are shown below:
 
-  * **\\a**: **\\a**
-
-  * **\\b**: **\\b**
-
-  * **\\\\**: **\\**
-
-  * **\\e**: **\\**
-
-  * **\\f**: **\\f**
-
-  * **\\n**: **\\n**
-
-  * **\\q**: **"**
-
-  * **\\r**: **\\r**
-
-  * **\\t**: **\\t**
+-------- -------
+**\\a**  **\\a**
+**\\b**  **\\b**
+**\\\\** **\\**
+**\\e**  **\\**
+**\\f**  **\\f**
+**\\n**  **\\n**
+**\\q**  **"**
+**\\r**  **\\r**
+**\\t**  **\\t**
+-------- -------
 
 Any other character following a backslash causes the backslash and character to
 be printed as-is.
@@ -885,44 +877,44 @@ equivalents are given.
 
 The [standard][1] defines the following functions for the math library:
 
-  * **s(x)**
+**s(x)**
 
-    Returns the sine of **x**, which is assumed to be in radians.
-
-    This is a transcendental function (see the *Transcendental Functions*
-    subsection below).
-
-  * **c(x)**
-
-    Returns the cosine of **x**, which is assumed to be in radians.
+:   Returns the sine of **x**, which is assumed to be in radians.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **a(x)**
+**c(x)**
 
-    Returns the arctangent of **x**, in radians.
-
-    This is a transcendental function (see the *Transcendental Functions*
-    subsection below).
-
-  * **l(x)**
-
-    Returns the natural logarithm of **x**.
+:   Returns the cosine of **x**, which is assumed to be in radians.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **e(x)**
+**a(x)**
 
-    Returns the mathematical constant **e** raised to the power of **x**.
+:   Returns the arctangent of **x**, in radians.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **j(x, n)**
+**l(x)**
 
-    Returns the bessel integer order **n** (truncated) of **x**.
+:   Returns the natural logarithm of **x**.
+
+    This is a transcendental function (see the *Transcendental Functions*
+    subsection below).
+
+**e(x)**
+
+:   Returns the mathematical constant **e** raised to the power of **x**.
+
+    This is a transcendental function (see the *Transcendental Functions*
+    subsection below).
+
+**j(x, n)**
+
+:   Returns the bessel integer order **n** (truncated) of **x**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
@@ -935,89 +927,89 @@ defined by the [standard][1].
 
 The extended library is a **non-portable extension**.
 
-  * **p(x, y)**
+**p(x, y)**
 
-    Calculates **x** to the power of **y**, even if **y** is not an integer, and
+:   Calculates **x** to the power of **y**, even if **y** is not an integer, and
     returns the result to the current **scale**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **r(x, p)**
+**r(x, p)**
 
-    Returns **x** rounded to **p** decimal places according to the rounding mode
+:   Returns **x** rounded to **p** decimal places according to the rounding mode
     [round half away from **0**][3].
 
-  * **ceil(x, p)**
+**ceil(x, p)**
 
-    Returns **x** rounded to **p** decimal places according to the rounding mode
+:   Returns **x** rounded to **p** decimal places according to the rounding mode
     [round away from **0**][6].
 
-  * **f(x)**
+**f(x)**
 
-    Returns the factorial of the truncated absolute value of **x**.
+:   Returns the factorial of the truncated absolute value of **x**.
 
-  * **perm(n, k)**
+**perm(n, k)**
 
-    Returns the permutation of the truncated absolute value of **n** of the
+:   Returns the permutation of the truncated absolute value of **n** of the
     truncated absolute value of **k**, if **k \<= n**. If not, it returns **0**.
 
-  * **comb(n, k)**
+**comb(n, k)**
 
-    Returns the combination of the truncated absolute value of **n** of the
+:   Returns the combination of the truncated absolute value of **n** of the
     truncated absolute value of **k**, if **k \<= n**. If not, it returns **0**.
 
-  * **l2(x)**
+**l2(x)**
 
-    Returns the logarithm base **2** of **x**.
-
-    This is a transcendental function (see the *Transcendental Functions*
-    subsection below).
-
-  * **l10(x)**
-
-    Returns the logarithm base **10** of **x**.
+:   Returns the logarithm base **2** of **x**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **log(x, b)**
+**l10(x)**
 
-    Returns the logarithm base **b** of **x**.
+:   Returns the logarithm base **10** of **x**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **cbrt(x)**
+**log(x, b)**
 
-    Returns the cube root of **x**.
+:   Returns the logarithm base **b** of **x**.
 
-  * **root(x, n)**
+    This is a transcendental function (see the *Transcendental Functions*
+    subsection below).
 
-    Calculates the truncated value of **n**, **r**, and returns the **r**th root
+**cbrt(x)**
+
+:   Returns the cube root of **x**.
+
+**root(x, n)**
+
+:   Calculates the truncated value of **n**, **r**, and returns the **r**th root
     of **x** to the current **scale**.
 
     If **r** is **0** or negative, this raises an error and causes bc(1) to
     reset (see the **RESET** section). It also raises an error and causes bc(1)
     to reset if **r** is even and **x** is negative.
 
-  * **pi(p)**
+**pi(p)**
 
-    Returns **pi** to **p** decimal places.
-
-    This is a transcendental function (see the *Transcendental Functions*
-    subsection below).
-
-  * **t(x)**
-
-    Returns the tangent of **x**, which is assumed to be in radians.
+:   Returns **pi** to **p** decimal places.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **a2(y, x)**
+**t(x)**
 
-    Returns the arctangent of **y/x**, in radians. If both **y** and **x** are
+:   Returns the tangent of **x**, which is assumed to be in radians.
+
+    This is a transcendental function (see the *Transcendental Functions*
+    subsection below).
+
+**a2(y, x)**
+
+:   Returns the arctangent of **y/x**, in radians. If both **y** and **x** are
     equal to **0**, it raises an error and causes bc(1) to reset (see the
     **RESET** section). Otherwise, if **x** is greater than **0**, it returns
     **a(y/x)**. If **x** is less than **0**, and **y** is greater than or equal
@@ -1032,27 +1024,27 @@ The extended library is a **non-portable extension**.
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **sin(x)**
+**sin(x)**
 
-    Returns the sine of **x**, which is assumed to be in radians.
+:   Returns the sine of **x**, which is assumed to be in radians.
 
     This is an alias of **s(x)**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **cos(x)**
+**cos(x)**
 
-    Returns the cosine of **x**, which is assumed to be in radians.
+:   Returns the cosine of **x**, which is assumed to be in radians.
 
     This is an alias of **c(x)**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **tan(x)**
+**tan(x)**
 
-    Returns the tangent of **x**, which is assumed to be in radians.
+:   Returns the tangent of **x**, which is assumed to be in radians.
 
     If **x** is equal to **1** or **-1**, this raises an error and causes bc(1)
     to reset (see the **RESET** section).
@@ -1062,18 +1054,18 @@ The extended library is a **non-portable extension**.
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **atan(x)**
+**atan(x)**
 
-    Returns the arctangent of **x**, in radians.
+:   Returns the arctangent of **x**, in radians.
 
     This is an alias of **a(x)**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **atan2(y, x)**
+**atan2(y, x)**
 
-    Returns the arctangent of **y/x**, in radians. If both **y** and **x** are
+:   Returns the arctangent of **y/x**, in radians. If both **y** and **x** are
     equal to **0**, it raises an error and causes bc(1) to reset (see the
     **RESET** section). Otherwise, if **x** is greater than **0**, it returns
     **a(y/x)**. If **x** is less than **0**, and **y** is greater than or equal
@@ -1090,80 +1082,80 @@ The extended library is a **non-portable extension**.
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **r2d(x)**
+**r2d(x)**
 
-    Converts **x** from radians to degrees and returns the result.
-
-    This is a transcendental function (see the *Transcendental Functions*
-    subsection below).
-
-  * **d2r(x)**
-
-    Converts **x** from degrees to radians and returns the result.
+:   Converts **x** from radians to degrees and returns the result.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **frand(p)**
+**d2r(x)**
 
-    Generates a pseudo-random number between **0** (inclusive) and **1**
+:   Converts **x** from degrees to radians and returns the result.
+
+    This is a transcendental function (see the *Transcendental Functions*
+    subsection below).
+
+**frand(p)**
+
+:   Generates a pseudo-random number between **0** (inclusive) and **1**
     (exclusive) with the number of decimal digits after the decimal point equal
     to the truncated absolute value of **p**. If **p** is not **0**, then
     calling this function will change the value of **seed**. If **p** is **0**,
     then **0** is returned, and **seed** is *not* changed.
 
-  * **ifrand(i, p)**
+**ifrand(i, p)**
 
-    Generates a pseudo-random number that is between **0** (inclusive) and the
+:   Generates a pseudo-random number that is between **0** (inclusive) and the
     truncated absolute value of **i** (exclusive) with the number of decimal
     digits after the decimal point equal to the truncated absolute value of
     **p**. If the absolute value of **i** is greater than or equal to **2**, and
     **p** is not **0**, then calling this function will change the value of
     **seed**; otherwise, **0** is returned and **seed** is not changed.
 
-  * **srand(x)**
+**srand(x)**
 
-    Returns **x** with its sign flipped with probability **0.5**. In other
+:   Returns **x** with its sign flipped with probability **0.5**. In other
     words, it randomizes the sign of **x**.
 
-  * **brand()**
+**brand()**
 
-    Returns a random boolean value (either **0** or **1**).
+:   Returns a random boolean value (either **0** or **1**).
 
-  * **ubytes(x)**
+**ubytes(x)**
 
-    Returns the numbers of unsigned integer bytes required to hold the truncated
+:   Returns the numbers of unsigned integer bytes required to hold the truncated
     absolute value of **x**.
 
-  * **sbytes(x)**
+**sbytes(x)**
 
-    Returns the numbers of signed, two's-complement integer bytes required to
+:   Returns the numbers of signed, two's-complement integer bytes required to
     hold the truncated value of **x**.
 
-  * **hex(x)**
+**hex(x)**
 
-    Outputs the hexadecimal (base **16**) representation of **x**.
-
-    This is a **void** function (see the *Void Functions* subsection of the
-    **FUNCTIONS** section).
-
-  * **binary(x)**
-
-    Outputs the binary (base **2**) representation of **x**.
+:   Outputs the hexadecimal (base **16**) representation of **x**.
 
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **output(x, b)**
+**binary(x)**
 
-    Outputs the base **b** representation of **x**.
+:   Outputs the binary (base **2**) representation of **x**.
 
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **uint(x)**
+**output(x, b)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as an
+:   Outputs the base **b** representation of **x**.
+
+    This is a **void** function (see the *Void Functions* subsection of the
+    **FUNCTIONS** section).
+
+**uint(x)**
+
+:   Outputs the representation, in binary and hexadecimal, of **x** as an
     unsigned integer in as few power of two bytes as possible. Both outputs are
     split into bytes separated by spaces.
 
@@ -1173,9 +1165,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **int(x)**
+**int(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as a signed,
+:   Outputs the representation, in binary and hexadecimal, of **x** as a signed,
     two's-complement integer in as few power of two bytes as possible. Both
     outputs are split into bytes separated by spaces.
 
@@ -1185,9 +1177,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **uintn(x, n)**
+**uintn(x, n)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as an
+:   Outputs the representation, in binary and hexadecimal, of **x** as an
     unsigned integer in **n** bytes. Both outputs are split into bytes separated
     by spaces.
 
@@ -1198,9 +1190,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **intn(x, n)**
+**intn(x, n)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as a signed,
+:   Outputs the representation, in binary and hexadecimal, of **x** as a signed,
     two's-complement integer in **n** bytes. Both outputs are split into bytes
     separated by spaces.
 
@@ -1210,9 +1202,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **uint8(x)**
+**uint8(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as an
+:   Outputs the representation, in binary and hexadecimal, of **x** as an
     unsigned integer in **1** byte. Both outputs are split into bytes separated
     by spaces.
 
@@ -1223,9 +1215,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **int8(x)**
+**int8(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as a signed,
+:   Outputs the representation, in binary and hexadecimal, of **x** as a signed,
     two's-complement integer in **1** byte. Both outputs are split into bytes
     separated by spaces.
 
@@ -1235,9 +1227,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **uint16(x)**
+**uint16(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as an
+:   Outputs the representation, in binary and hexadecimal, of **x** as an
     unsigned integer in **2** bytes. Both outputs are split into bytes separated
     by spaces.
 
@@ -1248,9 +1240,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **int16(x)**
+**int16(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as a signed,
+:   Outputs the representation, in binary and hexadecimal, of **x** as a signed,
     two's-complement integer in **2** bytes. Both outputs are split into bytes
     separated by spaces.
 
@@ -1260,9 +1252,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **uint32(x)**
+**uint32(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as an
+:   Outputs the representation, in binary and hexadecimal, of **x** as an
     unsigned integer in **4** bytes. Both outputs are split into bytes separated
     by spaces.
 
@@ -1273,9 +1265,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **int32(x)**
+**int32(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as a signed,
+:   Outputs the representation, in binary and hexadecimal, of **x** as a signed,
     two's-complement integer in **4** bytes. Both outputs are split into bytes
     separated by spaces.
 
@@ -1285,9 +1277,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **uint64(x)**
+**uint64(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as an
+:   Outputs the representation, in binary and hexadecimal, of **x** as an
     unsigned integer in **8** bytes. Both outputs are split into bytes separated
     by spaces.
 
@@ -1298,9 +1290,9 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **int64(x)**
+**int64(x)**
 
-    Outputs the representation, in binary and hexadecimal, of **x** as a signed,
+:   Outputs the representation, in binary and hexadecimal, of **x** as a signed,
     two's-complement integer in **8** bytes. Both outputs are split into bytes
     separated by spaces.
 
@@ -1310,36 +1302,36 @@ The extended library is a **non-portable extension**.
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **hex_uint(x, n)**
+**hex_uint(x, n)**
 
-    Outputs the representation of the truncated absolute value of **x** as an
+:   Outputs the representation of the truncated absolute value of **x** as an
     unsigned integer in hexadecimal using **n** bytes. Not all of the value will
     be output if **n** is too small.
 
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **binary_uint(x, n)**
+**binary_uint(x, n)**
 
-    Outputs the representation of the truncated absolute value of **x** as an
+:   Outputs the representation of the truncated absolute value of **x** as an
     unsigned integer in binary using **n** bytes. Not all of the value will be
     output if **n** is too small.
 
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **output_uint(x, n)**
+**output_uint(x, n)**
 
-    Outputs the representation of the truncated absolute value of **x** as an
+:   Outputs the representation of the truncated absolute value of **x** as an
     unsigned integer in the current **obase** (see the **SYNTAX** section) using
     **n** bytes. Not all of the value will be output if **n** is too small.
 
     This is a **void** function (see the *Void Functions* subsection of the
     **FUNCTIONS** section).
 
-  * **output_byte(x, i)**
+**output_byte(x, i)**
 
-    Outputs byte **i** of the truncated absolute value of **x**, where **0** is
+:   Outputs byte **i** of the truncated absolute value of **x**, where **0** is
     the least significant byte and **number_of_bytes - 1** is the most
     significant byte.
 
@@ -1422,67 +1414,67 @@ twice as large as the integer type used to store digits.
 
 The following are the limits on bc(1):
 
-  * **BC_LONG_BIT**
+**BC_LONG_BIT**
 
-    The number of bits in the **long** type in the environment where bc(1) was
+:   The number of bits in the **long** type in the environment where bc(1) was
     built. This determines how many decimal digits can be stored in a single
     large integer (see the **PERFORMANCE** section).
 
-  * **BC_BASE_DIGS**
+**BC_BASE_DIGS**
 
-    The number of decimal digits per large integer (see the **PERFORMANCE**
+:   The number of decimal digits per large integer (see the **PERFORMANCE**
     section). Depends on **BC_LONG_BIT**.
 
-  * **BC_BASE_POW**
+**BC_BASE_POW**
 
-    The max decimal number that each large integer can store (see
+:   The max decimal number that each large integer can store (see
     **BC_BASE_DIGS**) plus **1**. Depends on **BC_BASE_DIGS**.
 
-  * **BC_OVERFLOW_MAX**
+**BC_OVERFLOW_MAX**
 
-    The max number that the overflow type (see the **PERFORMANCE** section) can
+:   The max number that the overflow type (see the **PERFORMANCE** section) can
     hold. Depends on **BC_LONG_BIT**.
 
-  * **BC_BASE_MAX**
+**BC_BASE_MAX**
 
-    The maximum output base. Set at **BC_BASE_POW**.
+:   The maximum output base. Set at **BC_BASE_POW**.
 
-  * **BC_DIM_MAX**
+**BC_DIM_MAX**
 
-    The maximum size of arrays. Set at **SIZE_MAX-1**.
+:   The maximum size of arrays. Set at **SIZE_MAX-1**.
 
-  * **BC_SCALE_MAX**
+**BC_SCALE_MAX**
 
-    The maximum **scale**. Set at **BC_OVERFLOW_MAX-1**.
+:   The maximum **scale**. Set at **BC_OVERFLOW_MAX-1**.
 
-  * **BC_STRING_MAX**
+**BC_STRING_MAX**
 
-    The maximum length of strings. Set at **BC_OVERFLOW_MAX-1**.
+:   The maximum length of strings. Set at **BC_OVERFLOW_MAX-1**.
 
-  * **BC_NAME_MAX**
+**BC_NAME_MAX**
 
-    The maximum length of identifiers. Set at **BC_OVERFLOW_MAX-1**.
+:   The maximum length of identifiers. Set at **BC_OVERFLOW_MAX-1**.
 
-  * **BC_NUM_MAX**
+**BC_NUM_MAX**
 
-    The maximum length of a number (in decimal digits), which includes digits
+:   The maximum length of a number (in decimal digits), which includes digits
     after the decimal point. Set at **BC_OVERFLOW_MAX-1**.
 
-  * **BC_RAND_MAX**
+**BC_RAND_MAX**
 
-    The maximum integer (inclusive) returned by the **rand()** operand. Set at
+:   The maximum integer (inclusive) returned by the **rand()** operand. Set at
     **2\^BC_LONG_BIT-1**.
 
-  * Exponent
+Exponent
 
-    The maximum allowable exponent (positive or negative). Set at
+:   The maximum allowable exponent (positive or negative). Set at
     **BC_OVERFLOW_MAX**.
 
-  * Number of vars
+Number of vars
 
-    The maximum number of vars/arrays. Set at **SIZE_MAX-1**.
+:   The maximum number of vars/arrays. Set at **SIZE_MAX-1**.
 
-Actual values can be queried with the **limits** statement.
+The actual values can be queried with the **limits** statement.
 
 These limits are meant to be effectively non-existent; the limits are so large
 (at least on 64-bit machines) that there should not be any point at which they
@@ -1493,14 +1485,14 @@ be hit.
 
 bc(1) recognizes the following environment variables:
 
-  * **POSIXLY_CORRECT**
+**POSIXLY_CORRECT**
 
-    If this variable exists (no matter the contents), bc(1) behaves as if
+:   If this variable exists (no matter the contents), bc(1) behaves as if
     the **-s** option was given.
 
-  * **BC_ENV_ARGS**
+**BC_ENV_ARGS**
 
-    This is another way to give command-line arguments to bc(1). They should be
+:   This is another way to give command-line arguments to bc(1). They should be
     in the same format as all other command-line arguments. These are always
     processed first, so any files given in **BC_ENV_ARGS** will be processed
     before arguments and files given on the command-line. This gives the user
@@ -1521,16 +1513,16 @@ bc(1) recognizes the following environment variables:
     complexity of the parsing, though such files are still supported on the
     command-line where the parsing is done by the shell.
 
-  * **BC_LINE_LENGTH**
+**BC_LINE_LENGTH**
 
-    If this environment variable exists and contains an integer that is greater
+:   If this environment variable exists and contains an integer that is greater
     than **1** and is less than **UINT16_MAX** (**2\^16-1**), bc(1) will output
     lines to that length, including the backslash (**\\**). The default line
     length is **70**.
 
-  * **BC_EXPR_EXIT**
+**BC_EXPR_EXIT**
 
-    If this variable exists (no matter the contents), bc(1) will exit
+:   If this variable exists (no matter the contents), bc(1) will exit
     immediately after executing expressions and files given by the **-e** and/or
     **-f** command-line options (and any equivalents).
 
@@ -1538,13 +1530,13 @@ bc(1) recognizes the following environment variables:
 
 bc(1) returns the following exit statuses:
 
-  * **0**
+**0**
 
-    No error.
+:   No error.
 
-  * **1**
+**1**
 
-    A math error occurred. This follows standard practice of using **1** for
+:   A math error occurred. This follows standard practice of using **1** for
     expected errors, since math errors will happen in the process of normal
     execution.
 
@@ -1558,9 +1550,9 @@ bc(1) returns the following exit statuses:
     (**\^**), places (**\@**), left shift (**\<\<**), and right shift (**\>\>**)
     operators and their corresponding assignment operators.
 
-  * **2**
+**2**
 
-    A parse error occurred.
+:   A parse error occurred.
 
     Parse errors include unexpected **EOF**, using an invalid character, failing
     to find the end of a string or comment, using a token where it is invalid,
@@ -1573,9 +1565,9 @@ bc(1) returns the following exit statuses:
     variable as a reference, and using any extensions when the option **-s** or
     any equivalents were given.
 
-  * **3**
+**3**
 
-    A runtime error occurred.
+:   A runtime error occurred.
 
     Runtime errors include assigning an invalid number to **ibase**, **obase**,
     or **scale**; give a bad expression to a **read()** call, calling **read()**
@@ -1583,9 +1575,9 @@ bc(1) returns the following exit statuses:
     arguments to functions, attempting to call an undefined function, and
     attempting to use a **void** function call as a value in an expression.
 
-  * **4**
+**4**
 
-    A fatal error occurred.
+:   A fatal error occurred.
 
     Fatal errors include memory allocation errors, I/O errors, failing to open
     files, attempting to use files that do not have only ASCII characters (bc(1)

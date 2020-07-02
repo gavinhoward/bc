@@ -57,12 +57,11 @@ implementations.
 .SH OPTIONS
 .PP
 The following are the options that bc(1) accepts.
-.IP \[bu] 2
-\f[B]\-g\f[], \f[B]\-\-global\-stacks\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-g\f[], \f[B]\-\-global\-stacks\f[]
 Turns the globals \f[B]ibase\f[], \f[B]obase\f[], \f[B]scale\f[], and
 \f[B]seed\f[] into stacks.
+.RS
 .PP
 This has the effect that a copy of the current value of all four are
 pushed onto a stack for every function call, as well as popped when
@@ -151,95 +150,86 @@ is ignored.
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-h\f[], \f[B]\-\-help\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-h\f[], \f[B]\-\-help\f[]
 Prints a usage message and quits.
+.RS
 .RE
-.IP \[bu] 2
-\f[B]\-i\f[], \f[B]\-\-interactive\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-i\f[], \f[B]\-\-interactive\f[]
 Forces interactive mode.
 (See the \f[B]INTERACTIVE MODE\f[] section.)
+.RS
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-l\f[], \f[B]\-\-mathlib\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-l\f[], \f[B]\-\-mathlib\f[]
 Sets \f[B]scale\f[] (see the \f[B]SYNTAX\f[] section) to \f[B]20\f[] and
 loads the included math library and the extended math library before
 running any code, including any expressions or files specified on the
 command line.
+.RS
 .PP
 To learn what is in the libraries, see the \f[B]LIBRARY\f[] section.
 .RE
-.IP \[bu] 2
-\f[B]\-P\f[], \f[B]\-\-no\-prompt\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-P\f[], \f[B]\-\-no\-prompt\f[]
 Disables the prompt in TTY mode.
 (The prompt is only enabled in TTY mode.
 See the \f[B]TTY MODE\f[] section) This is mostly for those users that
 do not want a prompt or are not used to having them in bc(1).
 Most of those users would want to put this option in
 \f[B]BC_ENV_ARGS\f[] (see the \f[B]ENVIRONMENT VARIABLES\f[] section).
+.RS
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-q\f[], \f[B]\-\-quiet\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-q\f[], \f[B]\-\-quiet\f[]
 Do not print copyright header.
 bc(1) will also suppress the header in non\-interactive mode.
+.RS
 .PP
 This is mostly for compatibility with the GNU
 bc(1) (https://www.gnu.org/software/bc/).
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-s\f[], \f[B]\-\-standard\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-s\f[], \f[B]\-\-standard\f[]
 Process exactly the language defined by the
 standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 and error if any extensions are used.
+.RS
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-v\f[], \f[B]\-V\f[], \f[B]\-\-version\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-v\f[], \f[B]\-V\f[], \f[B]\-\-version\f[]
 Print the version information (copyright header) and exit.
+.RS
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-w\f[], \f[B]\-\-warn\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-w\f[], \f[B]\-\-warn\f[]
 Like \f[B]\-s\f[] and \f[B]\-\-standard\f[], except that warnings (and
 not errors) are printed for non\-standard extensions and execution
 continues normally.
+.RS
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-e\f[] \f[I]expr\f[], \f[B]\-\-expression\f[]=\f[I]expr\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-e\f[] \f[I]expr\f[], \f[B]\-\-expression\f[]=\f[I]expr\f[]
 Evaluates \f[I]expr\f[].
 If multiple expressions are given, they are evaluated in order.
 If files are given as well (see below), the expressions and files are
 evaluated in the order given.
 This means that if a file is given before an expression, the file is
 read in and evaluated first.
+.RS
 .PP
 In other bc(1) implementations, this option causes the program to
 execute the expressions and then exit.
@@ -248,13 +238,12 @@ the \f[B]ENVIRONMENT VARIABLES\f[] section).
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\-f\f[] \f[I]file\f[], \f[B]\-\-file\f[]=\f[I]file\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-f\f[] \f[I]file\f[], \f[B]\-\-file\f[]=\f[I]file\f[]
 Reads in \f[I]file\f[] and evaluates it.
 If expressions are also given (see above), the expressions are evaluated
 in the order given.
+.RS
 .PP
 In other bc(1) implementations, this option causes the program to
 execute the files and then exit.
@@ -570,122 +559,109 @@ extension\f[].
 The following arithmetic and logical operators can be used.
 They are listed in order of decreasing precedence.
 Operators in the same group have the same precedence.
-.IP \[bu] 2
-\f[B]++\f[] \f[B]\-\-\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]++\f[] \f[B]\-\-\f[]
 Type: Prefix and Postfix
+.RS
 .PP
 Associativity: None
 .PP
 Description: \f[B]increment\f[], \f[B]decrement\f[]
 .RE
-.IP \[bu] 2
-\f[B]\-\f[] \f[B]!\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-\f[] \f[B]!\f[]
 Type: Prefix
+.RS
 .PP
 Associativity: None
 .PP
 Description: \f[B]negation\f[], \f[B]boolean not\f[]
 .RE
-.IP \[bu] 2
-\f[B]$\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]$\f[]
 Type: Postfix
+.RS
 .PP
 Associativity: None
 .PP
 Description: \f[B]truncation\f[]
 .RE
-.IP \[bu] 2
-\f[B]\@\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\@\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Right
 .PP
 Description: \f[B]set precision\f[]
 .RE
-.IP \[bu] 2
-\f[B]^\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]^\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Right
 .PP
 Description: \f[B]power\f[]
 .RE
-.IP \[bu] 2
-\f[B]*\f[] \f[B]/\f[] \f[B]%\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]*\f[] \f[B]/\f[] \f[B]%\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Left
 .PP
 Description: \f[B]multiply\f[], \f[B]divide\f[], \f[B]modulus\f[]
 .RE
-.IP \[bu] 2
-\f[B]+\f[] \f[B]\-\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]+\f[] \f[B]\-\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Left
 .PP
 Description: \f[B]add\f[], \f[B]subtract\f[]
 .RE
-.IP \[bu] 2
-\f[B]<<\f[] \f[B]>>\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]<<\f[] \f[B]>>\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Left
 .PP
 Description: \f[B]shift left\f[], \f[B]shift right\f[]
 .RE
-.IP \[bu] 2
-\f[B]=\f[] \f[B]<<=\f[] \f[B]>>=\f[] \f[B]+=\f[] \f[B]\-=\f[]
-\f[B]*=\f[] \f[B]/=\f[] \f[B]%=\f[] \f[B]^=\f[] \f[B]\@=\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]=\f[] \f[B]<<=\f[] \f[B]>>=\f[] \f[B]+=\f[] \f[B]\-=\f[] \f[B]*=\f[] \f[B]/=\f[] \f[B]%=\f[] \f[B]^=\f[] \f[B]\@=\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Right
 .PP
 Description: \f[B]assignment\f[]
 .RE
-.IP \[bu] 2
-\f[B]==\f[] \f[B]<=\f[] \f[B]>=\f[] \f[B]!=\f[] \f[B]<\f[] \f[B]>\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]==\f[] \f[B]<=\f[] \f[B]>=\f[] \f[B]!=\f[] \f[B]<\f[] \f[B]>\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Left
 .PP
 Description: \f[B]relational\f[]
 .RE
-.IP \[bu] 2
-\f[B]&&\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]&&\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Left
 .PP
 Description: \f[B]boolean and\f[]
 .RE
-.IP \[bu] 2
-\f[B]||\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]||\f[]
 Type: Binary
+.RS
 .PP
 Associativity: Left
 .PP
@@ -693,48 +669,42 @@ Description: \f[B]boolean or\f[]
 .RE
 .PP
 The operators will be described in more detail below.
-.IP \[bu] 2
-\f[B]++\f[] \f[B]\-\-\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]++\f[] \f[B]\-\-\f[]
 The prefix and postfix \f[B]increment\f[] and \f[B]decrement\f[]
 operators behave exactly like they would in C.
 They require a named expression (see the \f[I]Named Expressions\f[]
 subsection) as an operand.
+.RS
 .PP
 The prefix versions of these operators are more efficient; use them
 where possible.
 .RE
-.IP \[bu] 2
-\f[B]\-\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-\f[]
 The \f[B]negation\f[] operator returns \f[B]0\f[] if a user attempts to
 negate any expression with the value \f[B]0\f[].
 Otherwise, a copy of the expression with its sign flipped is returned.
+.RS
 .RE
-.IP \[bu] 2
-\f[B]!\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]!\f[]
 The \f[B]boolean not\f[] operator returns \f[B]1\f[] if the expression
 is \f[B]0\f[], or \f[B]0\f[] otherwise.
+.RS
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]$\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]$\f[]
 The \f[B]truncation\f[] operator returns a copy of the given expression
 with all of its \f[I]scale\f[] removed.
+.RS
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]\@\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\@\f[]
 The \f[B]set precision\f[] operator takes two expressions and returns a
 copy of the first with its \f[I]scale\f[] equal to the value of the
 second expression.
@@ -742,28 +712,25 @@ That could either mean that the number is returned without change (if
 the \f[I]scale\f[] of the first expression matches the value of the
 second expression), extended (if it is less), or truncated (if it is
 more).
+.RS
 .PP
 The second expression must be an integer (no \f[I]scale\f[]) and
 non\-negative.
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]^\f[]
-.RS 2
+.TP
+.B \f[B]^\f[]
 The \f[B]power\f[] operator (not the \f[B]exclusive or\f[] operator, as
-it would be in
-.IP "C)" 3
-takes two expressions and raises the first to the power of the value of
-the second.
+it would be in C) takes two expressions and raises the first to the
+power of the value of the second.
+.RS
 .PP
 The second expression must be an integer (no \f[I]scale\f[]), and if it
 is negative, the first value must be non\-zero.
 .RE
-.IP \[bu] 2
-\f[B]*\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]*\f[]
 The \f[B]multiply\f[] operator takes two expressions, multiplies them,
 and returns the product.
 If \f[B]a\f[] is the \f[I]scale\f[] of the first expression and
@@ -771,79 +738,72 @@ If \f[B]a\f[] is the \f[I]scale\f[] of the first expression and
 \f[I]scale\f[] of the result is equal to
 \f[B]min(a+b,max(scale,a,b))\f[] where \f[B]min()\f[] and \f[B]max()\f[]
 return the obvious values.
+.RS
 .RE
-.IP \[bu] 2
-\f[B]/\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]/\f[]
 The \f[B]divide\f[] operator takes two expressions, divides them, and
 returns the quotient.
 The \f[I]scale\f[] of the result shall be the value of \f[B]scale\f[].
+.RS
 .PP
 The second expression must be non\-zero.
 .RE
-.IP \[bu] 2
-\f[B]%\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]%\f[]
 The \f[B]modulus\f[] operator takes two expressions, \f[B]a\f[] and
 \f[B]b\f[], and evaluates them by 1) Computing \f[B]a/b\f[] to current
 \f[B]scale\f[] and 2) Using the result of step 1 to calculate
 \f[B]a\-(a/b)*b\f[] to \f[I]scale\f[]
 \f[B]max(scale+scale(b),scale(a))\f[].
+.RS
 .PP
 The second expression must be non\-zero.
 .RE
-.IP \[bu] 2
-\f[B]+\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]+\f[]
 The \f[B]add\f[] operator takes two expressions, \f[B]a\f[] and
 \f[B]b\f[], and returns the sum, with a \f[I]scale\f[] equal to the max
 of the \f[I]scale\f[]s of \f[B]a\f[] and \f[B]b\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]\-\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]\-\f[]
 The \f[B]subtract\f[] operator takes two expressions, \f[B]a\f[] and
 \f[B]b\f[], and returns the difference, with a \f[I]scale\f[] equal to
 the max of the \f[I]scale\f[]s of \f[B]a\f[] and \f[B]b\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]<<\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]<<\f[]
 The \f[B]left shift\f[] operator takes two expressions, \f[B]a\f[] and
 \f[B]b\f[], and returns a copy of the value of \f[B]a\f[] with its
 decimal point moved \f[B]b\f[] places to the right.
+.RS
 .PP
 The second expression must be an integer (no \f[I]scale\f[]) and
 non\-negative.
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]>>\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]>>\f[]
 The \f[B]right shift\f[] operator takes two expressions, \f[B]a\f[] and
 \f[B]b\f[], and returns a copy of the value of \f[B]a\f[] with its
 decimal point moved \f[B]b\f[] places to the left.
+.RS
 .PP
 The second expression must be an integer (no \f[I]scale\f[]) and
 non\-negative.
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]=\f[] \f[B]<<=\f[] \f[B]>>=\f[] \f[B]+=\f[] \f[B]\-=\f[]
-\f[B]*=\f[] \f[B]/=\f[] \f[B]%=\f[] \f[B]^=\f[] \f[B]\@=\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]=\f[] \f[B]<<=\f[] \f[B]>>=\f[] \f[B]+=\f[] \f[B]\-=\f[] \f[B]*=\f[] \f[B]/=\f[] \f[B]%=\f[] \f[B]^=\f[] \f[B]\@=\f[]
 The \f[B]assignment\f[] operators take two expressions, \f[B]a\f[] and
 \f[B]b\f[] where \f[B]a\f[] is a named expression (see the \f[I]Named
 Expressions\f[] subsection).
+.RS
 .PP
 For \f[B]=\f[], \f[B]b\f[] is copied and the result is assigned to
 \f[B]a\f[].
@@ -854,14 +814,13 @@ corresponding arithmetic operator and the result is assigned to
 The \f[B]assignment\f[] operators that correspond to operators that are
 extensions are themselves \f[B]non\-portable extensions\f[].
 .RE
-.IP \[bu] 2
-\f[B]==\f[] \f[B]<=\f[] \f[B]>=\f[] \f[B]!=\f[] \f[B]<\f[] \f[B]>\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]==\f[] \f[B]<=\f[] \f[B]>=\f[] \f[B]!=\f[] \f[B]<\f[] \f[B]>\f[]
 The \f[B]relational\f[] operators compare two expressions, \f[B]a\f[]
 and \f[B]b\f[], and if the relation holds, according to C language
 semantics, the result is \f[B]1\f[].
 Otherwise, it is \f[B]0\f[].
+.RS
 .PP
 Note that unlike in C, these operators have a lower precedence than the
 \f[B]assignment\f[] operators, which means that \f[B]a=b>c\f[] is
@@ -873,23 +832,21 @@ requires, these operators can appear anywhere any other expressions can
 be used.
 This allowance is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]&&\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]&&\f[]
 The \f[B]boolean and\f[] operator takes two expressions and returns
 \f[B]1\f[] if both expressions are non\-zero, \f[B]0\f[] otherwise.
+.RS
 .PP
 This is \f[I]not\f[] a short\-circuit operator.
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE
-.IP \[bu] 2
-\f[B]||\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]||\f[]
 The \f[B]boolean or\f[] operator takes two expressions and returns
 \f[B]1\f[] if one of the expressions is non\-zero, \f[B]0\f[] otherwise.
+.RS
 .PP
 This is \f[I]not\f[] a short\-circuit operator.
 .PP
@@ -992,24 +949,56 @@ If they are, there are backslash escape sequences that are interpreted
 specially.
 What those sequences are, and what they cause to be printed, are shown
 below:
-.IP \[bu] 2
-\f[B]\\a\f[]: \f[B]\\a\f[]
-.IP \[bu] 2
-\f[B]\\b\f[]: \f[B]\\b\f[]
-.IP \[bu] 2
-\f[B]\\\\\f[]: \f[B]\\\f[]
-.IP \[bu] 2
-\f[B]\\e\f[]: \f[B]\\\f[]
-.IP \[bu] 2
-\f[B]\\f\f[]: \f[B]\\f\f[]
-.IP \[bu] 2
-\f[B]\\n\f[]: \f[B]\\n\f[]
-.IP \[bu] 2
-\f[B]\\q\f[]: \f[B]"\f[]
-.IP \[bu] 2
-\f[B]\\r\f[]: \f[B]\\r\f[]
-.IP \[bu] 2
-\f[B]\\t\f[]: \f[B]\\t\f[]
+.PP
+.TS
+tab(@);
+l l.
+T{
+\f[B]\\a\f[]
+T}@T{
+\f[B]\\a\f[]
+T}
+T{
+\f[B]\\b\f[]
+T}@T{
+\f[B]\\b\f[]
+T}
+T{
+\f[B]\\\\\f[]
+T}@T{
+\f[B]\\\f[]
+T}
+T{
+\f[B]\\e\f[]
+T}@T{
+\f[B]\\\f[]
+T}
+T{
+\f[B]\\f\f[]
+T}@T{
+\f[B]\\f\f[]
+T}
+T{
+\f[B]\\n\f[]
+T}@T{
+\f[B]\\n\f[]
+T}
+T{
+\f[B]\\q\f[]
+T}@T{
+\f[B]"\f[]
+T}
+T{
+\f[B]\\r\f[]
+T}@T{
+\f[B]\\r\f[]
+T}
+T{
+\f[B]\\t\f[]
+T}@T{
+\f[B]\\t\f[]
+T}
+.TE
 .PP
 Any other character following a backslash causes the backslash and
 character to be printed as\-is.
@@ -1142,57 +1131,51 @@ are given.
 The
 standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 defines the following functions for the math library:
-.IP \[bu] 2
-\f[B]s(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]s(x)\f[]
 Returns the sine of \f[B]x\f[], which is assumed to be in radians.
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]c(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]c(x)\f[]
 Returns the cosine of \f[B]x\f[], which is assumed to be in radians.
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]a(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]a(x)\f[]
 Returns the arctangent of \f[B]x\f[], in radians.
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]l(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]l(x)\f[]
 Returns the natural logarithm of \f[B]x\f[].
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]e(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]e(x)\f[]
 Returns the mathematical constant \f[B]e\f[] raised to the power of
 \f[B]x\f[].
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]j(x, n)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]j(x, n)\f[]
 Returns the bessel integer order \f[B]n\f[] (truncated) of \f[B]x\f[].
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
@@ -1205,121 +1188,106 @@ options are given since they are not part of the library defined by the
 standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html).
 .PP
 The extended library is a \f[B]non\-portable extension\f[].
-.IP \[bu] 2
-\f[B]p(x, y)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]p(x, y)\f[]
 Calculates \f[B]x\f[] to the power of \f[B]y\f[], even if \f[B]y\f[] is
 not an integer, and returns the result to the current \f[B]scale\f[].
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]r(x, p)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]r(x, p)\f[]
 Returns \f[B]x\f[] rounded to \f[B]p\f[] decimal places according to the
 rounding mode round half away from
 \f[B]0\f[] (https://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero).
+.RS
 .RE
-.IP \[bu] 2
-\f[B]ceil(x, p)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]ceil(x, p)\f[]
 Returns \f[B]x\f[] rounded to \f[B]p\f[] decimal places according to the
 rounding mode round away from
 \f[B]0\f[] (https://en.wikipedia.org/wiki/Rounding#Rounding_away_from_zero).
+.RS
 .RE
-.IP \[bu] 2
-\f[B]f(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]f(x)\f[]
 Returns the factorial of the truncated absolute value of \f[B]x\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]perm(n, k)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]perm(n, k)\f[]
 Returns the permutation of the truncated absolute value of \f[B]n\f[] of
 the truncated absolute value of \f[B]k\f[], if \f[B]k <= n\f[].
 If not, it returns \f[B]0\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]comb(n, k)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]comb(n, k)\f[]
 Returns the combination of the truncated absolute value of \f[B]n\f[] of
 the truncated absolute value of \f[B]k\f[], if \f[B]k <= n\f[].
 If not, it returns \f[B]0\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]l2(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]l2(x)\f[]
 Returns the logarithm base \f[B]2\f[] of \f[B]x\f[].
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]l10(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]l10(x)\f[]
 Returns the logarithm base \f[B]10\f[] of \f[B]x\f[].
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]log(x, b)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]log(x, b)\f[]
 Returns the logarithm base \f[B]b\f[] of \f[B]x\f[].
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]cbrt(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]cbrt(x)\f[]
 Returns the cube root of \f[B]x\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]root(x, n)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]root(x, n)\f[]
 Calculates the truncated value of \f[B]n\f[], \f[B]r\f[], and returns
 the \f[B]r\f[]th root of \f[B]x\f[] to the current \f[B]scale\f[].
+.RS
 .PP
 If \f[B]r\f[] is \f[B]0\f[] or negative, this raises an error and causes
 bc(1) to reset (see the \f[B]RESET\f[] section).
 It also raises an error and causes bc(1) to reset if \f[B]r\f[] is even
 and \f[B]x\f[] is negative.
 .RE
-.IP \[bu] 2
-\f[B]pi(p)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]pi(p)\f[]
 Returns \f[B]pi\f[] to \f[B]p\f[] decimal places.
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]t(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]t(x)\f[]
 Returns the tangent of \f[B]x\f[], which is assumed to be in radians.
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]a2(y, x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]a2(y, x)\f[]
 Returns the arctangent of \f[B]y/x\f[], in radians.
 If both \f[B]y\f[] and \f[B]x\f[] are equal to \f[B]0\f[], it raises an
 error and causes bc(1) to reset (see the \f[B]RESET\f[] section).
@@ -1333,6 +1301,7 @@ If \f[B]x\f[] is equal to \f[B]0\f[], and \f[B]y\f[] is greater than
 \f[B]0\f[], it returns \f[B]pi/2\f[].
 If \f[B]x\f[] is equal to \f[B]0\f[], and \f[B]y\f[] is less than
 \f[B]0\f[], it returns \f[B]\-pi/2\f[].
+.RS
 .PP
 This function is the same as the \f[B]atan2()\f[] function in many
 programming languages.
@@ -1340,33 +1309,30 @@ programming languages.
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]sin(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]sin(x)\f[]
 Returns the sine of \f[B]x\f[], which is assumed to be in radians.
+.RS
 .PP
 This is an alias of \f[B]s(x)\f[].
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]cos(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]cos(x)\f[]
 Returns the cosine of \f[B]x\f[], which is assumed to be in radians.
+.RS
 .PP
 This is an alias of \f[B]c(x)\f[].
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]tan(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]tan(x)\f[]
 Returns the tangent of \f[B]x\f[], which is assumed to be in radians.
+.RS
 .PP
 If \f[B]x\f[] is equal to \f[B]1\f[] or \f[B]\-1\f[], this raises an
 error and causes bc(1) to reset (see the \f[B]RESET\f[] section).
@@ -1376,21 +1342,18 @@ This is an alias of \f[B]t(x)\f[].
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]atan(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]atan(x)\f[]
 Returns the arctangent of \f[B]x\f[], in radians.
+.RS
 .PP
 This is an alias of \f[B]a(x)\f[].
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]atan2(y, x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]atan2(y, x)\f[]
 Returns the arctangent of \f[B]y/x\f[], in radians.
 If both \f[B]y\f[] and \f[B]x\f[] are equal to \f[B]0\f[], it raises an
 error and causes bc(1) to reset (see the \f[B]RESET\f[] section).
@@ -1404,6 +1367,7 @@ If \f[B]x\f[] is equal to \f[B]0\f[], and \f[B]y\f[] is greater than
 \f[B]0\f[], it returns \f[B]pi/2\f[].
 If \f[B]x\f[] is equal to \f[B]0\f[], and \f[B]y\f[] is less than
 \f[B]0\f[], it returns \f[B]\-pi/2\f[].
+.RS
 .PP
 This function is the same as the \f[B]atan2()\f[] function in many
 programming languages.
@@ -1413,28 +1377,24 @@ This is an alias of \f[B]a2(y, x)\f[].
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]r2d(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]r2d(x)\f[]
 Converts \f[B]x\f[] from radians to degrees and returns the result.
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]d2r(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]d2r(x)\f[]
 Converts \f[B]x\f[] from degrees to radians and returns the result.
+.RS
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[] subsection below).
 .RE
-.IP \[bu] 2
-\f[B]frand(p)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]frand(p)\f[]
 Generates a pseudo\-random number between \f[B]0\f[] (inclusive) and
 \f[B]1\f[] (exclusive) with the number of decimal digits after the
 decimal point equal to the truncated absolute value of \f[B]p\f[].
@@ -1442,11 +1402,10 @@ If \f[B]p\f[] is not \f[B]0\f[], then calling this function will change
 the value of \f[B]seed\f[].
 If \f[B]p\f[] is \f[B]0\f[], then \f[B]0\f[] is returned, and
 \f[B]seed\f[] is \f[I]not\f[] changed.
+.RS
 .RE
-.IP \[bu] 2
-\f[B]ifrand(i, p)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]ifrand(i, p)\f[]
 Generates a pseudo\-random number that is between \f[B]0\f[] (inclusive)
 and the truncated absolute value of \f[B]i\f[] (exclusive) with the
 number of decimal digits after the decimal point equal to the truncated
@@ -1455,68 +1414,61 @@ If the absolute value of \f[B]i\f[] is greater than or equal to
 \f[B]2\f[], and \f[B]p\f[] is not \f[B]0\f[], then calling this function
 will change the value of \f[B]seed\f[]; otherwise, \f[B]0\f[] is
 returned and \f[B]seed\f[] is not changed.
+.RS
 .RE
-.IP \[bu] 2
-\f[B]srand(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]srand(x)\f[]
 Returns \f[B]x\f[] with its sign flipped with probability \f[B]0.5\f[].
 In other words, it randomizes the sign of \f[B]x\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]brand()\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]brand()\f[]
 Returns a random boolean value (either \f[B]0\f[] or \f[B]1\f[]).
+.RS
 .RE
-.IP \[bu] 2
-\f[B]ubytes(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]ubytes(x)\f[]
 Returns the numbers of unsigned integer bytes required to hold the
 truncated absolute value of \f[B]x\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]sbytes(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]sbytes(x)\f[]
 Returns the numbers of signed, two\[aq]s\-complement integer bytes
 required to hold the truncated value of \f[B]x\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]hex(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]hex(x)\f[]
 Outputs the hexadecimal (base \f[B]16\f[]) representation of \f[B]x\f[].
+.RS
 .PP
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]binary(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]binary(x)\f[]
 Outputs the binary (base \f[B]2\f[]) representation of \f[B]x\f[].
+.RS
 .PP
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]output(x, b)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]output(x, b)\f[]
 Outputs the base \f[B]b\f[] representation of \f[B]x\f[].
+.RS
 .PP
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]uint(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]uint(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 an unsigned integer in as few power of two bytes as possible.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer or is negative, an error message is
 printed instead, but bc(1) is not reset (see the \f[B]RESET\f[]
@@ -1525,14 +1477,13 @@ section).
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]int(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]int(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 a signed, two\[aq]s\-complement integer in as few power of two bytes as
 possible.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer, an error message is printed instead,
 but bc(1) is not reset (see the \f[B]RESET\f[] section).
@@ -1540,13 +1491,12 @@ but bc(1) is not reset (see the \f[B]RESET\f[] section).
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]uintn(x, n)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]uintn(x, n)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 an unsigned integer in \f[B]n\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer, is negative, or cannot fit into
 \f[B]n\f[] bytes, an error message is printed instead, but bc(1) is not
@@ -1555,13 +1505,12 @@ reset (see the \f[B]RESET\f[] section).
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]intn(x, n)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]intn(x, n)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 a signed, two\[aq]s\-complement integer in \f[B]n\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer or cannot fit into \f[B]n\f[] bytes, an
 error message is printed instead, but bc(1) is not reset (see the
@@ -1570,13 +1519,12 @@ error message is printed instead, but bc(1) is not reset (see the
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]uint8(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]uint8(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 an unsigned integer in \f[B]1\f[] byte.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer, is negative, or cannot fit into
 \f[B]1\f[] byte, an error message is printed instead, but bc(1) is not
@@ -1585,13 +1533,12 @@ reset (see the \f[B]RESET\f[] section).
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]int8(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]int8(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 a signed, two\[aq]s\-complement integer in \f[B]1\f[] byte.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer or cannot fit into \f[B]1\f[] byte, an
 error message is printed instead, but bc(1) is not reset (see the
@@ -1600,13 +1547,12 @@ error message is printed instead, but bc(1) is not reset (see the
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]uint16(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]uint16(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 an unsigned integer in \f[B]2\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer, is negative, or cannot fit into
 \f[B]2\f[] bytes, an error message is printed instead, but bc(1) is not
@@ -1615,13 +1561,12 @@ reset (see the \f[B]RESET\f[] section).
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]int16(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]int16(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 a signed, two\[aq]s\-complement integer in \f[B]2\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer or cannot fit into \f[B]2\f[] bytes, an
 error message is printed instead, but bc(1) is not reset (see the
@@ -1630,13 +1575,12 @@ error message is printed instead, but bc(1) is not reset (see the
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]uint32(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]uint32(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 an unsigned integer in \f[B]4\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer, is negative, or cannot fit into
 \f[B]4\f[] bytes, an error message is printed instead, but bc(1) is not
@@ -1645,13 +1589,12 @@ reset (see the \f[B]RESET\f[] section).
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]int32(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]int32(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 a signed, two\[aq]s\-complement integer in \f[B]4\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer or cannot fit into \f[B]4\f[] bytes, an
 error message is printed instead, but bc(1) is not reset (see the
@@ -1660,13 +1603,12 @@ error message is printed instead, but bc(1) is not reset (see the
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]uint64(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]uint64(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 an unsigned integer in \f[B]8\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer, is negative, or cannot fit into
 \f[B]8\f[] bytes, an error message is printed instead, but bc(1) is not
@@ -1675,13 +1617,12 @@ reset (see the \f[B]RESET\f[] section).
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]int64(x)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]int64(x)\f[]
 Outputs the representation, in binary and hexadecimal, of \f[B]x\f[] as
 a signed, two\[aq]s\-complement integer in \f[B]8\f[] bytes.
 Both outputs are split into bytes separated by spaces.
+.RS
 .PP
 If \f[B]x\f[] is not an integer or cannot fit into \f[B]8\f[] bytes, an
 error message is printed instead, but bc(1) is not reset (see the
@@ -1690,47 +1631,43 @@ error message is printed instead, but bc(1) is not reset (see the
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]hex_uint(x, n)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]hex_uint(x, n)\f[]
 Outputs the representation of the truncated absolute value of \f[B]x\f[]
 as an unsigned integer in hexadecimal using \f[B]n\f[] bytes.
 Not all of the value will be output if \f[B]n\f[] is too small.
+.RS
 .PP
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]binary_uint(x, n)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]binary_uint(x, n)\f[]
 Outputs the representation of the truncated absolute value of \f[B]x\f[]
 as an unsigned integer in binary using \f[B]n\f[] bytes.
 Not all of the value will be output if \f[B]n\f[] is too small.
+.RS
 .PP
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]output_uint(x, n)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]output_uint(x, n)\f[]
 Outputs the representation of the truncated absolute value of \f[B]x\f[]
 as an unsigned integer in the current \f[B]obase\f[] (see the
 \f[B]SYNTAX\f[] section) using \f[B]n\f[] bytes.
 Not all of the value will be output if \f[B]n\f[] is too small.
+.RS
 .PP
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
 .RE
-.IP \[bu] 2
-\f[B]output_byte(x, i)\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]output_byte(x, i)\f[]
 Outputs byte \f[B]i\f[] of the truncated absolute value of \f[B]x\f[],
 where \f[B]0\f[] is the least significant byte and \f[B]number_of_bytes
 \- 1\f[] is the most significant byte.
+.RS
 .PP
 This is a \f[B]void\f[] function (see the \f[I]Void Functions\f[]
 subsection of the \f[B]FUNCTIONS\f[] section).
@@ -1835,105 +1772,92 @@ always at least twice as large as the integer type used to store digits.
 .SH LIMITS
 .PP
 The following are the limits on bc(1):
-.IP \[bu] 2
-\f[B]BC_LONG_BIT\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_LONG_BIT\f[]
 The number of bits in the \f[B]long\f[] type in the environment where
 bc(1) was built.
 This determines how many decimal digits can be stored in a single large
 integer (see the \f[B]PERFORMANCE\f[] section).
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_BASE_DIGS\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_BASE_DIGS\f[]
 The number of decimal digits per large integer (see the
 \f[B]PERFORMANCE\f[] section).
 Depends on \f[B]BC_LONG_BIT\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_BASE_POW\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_BASE_POW\f[]
 The max decimal number that each large integer can store (see
 \f[B]BC_BASE_DIGS\f[]) plus \f[B]1\f[].
 Depends on \f[B]BC_BASE_DIGS\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_OVERFLOW_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_OVERFLOW_MAX\f[]
 The max number that the overflow type (see the \f[B]PERFORMANCE\f[]
 section) can hold.
 Depends on \f[B]BC_LONG_BIT\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_BASE_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_BASE_MAX\f[]
 The maximum output base.
 Set at \f[B]BC_BASE_POW\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_DIM_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_DIM_MAX\f[]
 The maximum size of arrays.
 Set at \f[B]SIZE_MAX\-1\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_SCALE_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_SCALE_MAX\f[]
 The maximum \f[B]scale\f[].
 Set at \f[B]BC_OVERFLOW_MAX\-1\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_STRING_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_STRING_MAX\f[]
 The maximum length of strings.
 Set at \f[B]BC_OVERFLOW_MAX\-1\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_NAME_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_NAME_MAX\f[]
 The maximum length of identifiers.
 Set at \f[B]BC_OVERFLOW_MAX\-1\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_NUM_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_NUM_MAX\f[]
 The maximum length of a number (in decimal digits), which includes
 digits after the decimal point.
 Set at \f[B]BC_OVERFLOW_MAX\-1\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_RAND_MAX\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_RAND_MAX\f[]
 The maximum integer (inclusive) returned by the \f[B]rand()\f[] operand.
 Set at \f[B]2^BC_LONG_BIT\-1\f[].
+.RS
 .RE
-.IP \[bu] 2
-Exponent
-.RS 2
-.PP
+.TP
+.B Exponent
 The maximum allowable exponent (positive or negative).
 Set at \f[B]BC_OVERFLOW_MAX\f[].
+.RS
 .RE
-.IP \[bu] 2
-Number of vars
-.RS 2
-.PP
+.TP
+.B Number of vars
 The maximum number of vars/arrays.
 Set at \f[B]SIZE_MAX\-1\f[].
+.RS
 .RE
 .PP
-Actual values can be queried with the \f[B]limits\f[] statement.
+The actual values can be queried with the \f[B]limits\f[] statement.
 .PP
 These limits are meant to be effectively non\-existent; the limits are
 so large (at least on 64\-bit machines) that there should not be any
@@ -1942,17 +1866,14 @@ In fact, memory should be exhausted before these limits should be hit.
 .SH ENVIRONMENT VARIABLES
 .PP
 bc(1) recognizes the following environment variables:
-.IP \[bu] 2
-\f[B]POSIXLY_CORRECT\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]POSIXLY_CORRECT\f[]
 If this variable exists (no matter the contents), bc(1) behaves as if
 the \f[B]\-s\f[] option was given.
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_ENV_ARGS\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_ENV_ARGS\f[]
 This is another way to give command\-line arguments to bc(1).
 They should be in the same format as all other command\-line arguments.
 These are always processed first, so any files given in
@@ -1962,6 +1883,7 @@ This gives the user the ability to set up "standard" options and files
 to be used at every invocation.
 The most useful thing for such files to contain would be useful
 functions that the user might want every time bc(1) runs.
+.RS
 .PP
 The code that parses \f[B]BC_ENV_ARGS\f[] will correctly handle quoted
 arguments, but it does not understand escape sequences.
@@ -1980,41 +1902,37 @@ However, handling a file with both kinds of quotes in
 parsing, though such files are still supported on the command\-line
 where the parsing is done by the shell.
 .RE
-.IP \[bu] 2
-\f[B]BC_LINE_LENGTH\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_LINE_LENGTH\f[]
 If this environment variable exists and contains an integer that is
 greater than \f[B]1\f[] and is less than \f[B]UINT16_MAX\f[]
 (\f[B]2^16\-1\f[]), bc(1) will output lines to that length, including
 the backslash (\f[B]\\\f[]).
 The default line length is \f[B]70\f[].
+.RS
 .RE
-.IP \[bu] 2
-\f[B]BC_EXPR_EXIT\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]BC_EXPR_EXIT\f[]
 If this variable exists (no matter the contents), bc(1) will exit
 immediately after executing expressions and files given by the
 \f[B]\-e\f[] and/or \f[B]\-f\f[] command\-line options (and any
 equivalents).
+.RS
 .RE
 .SH EXIT STATUS
 .PP
 bc(1) returns the following exit statuses:
-.IP \[bu] 2
-\f[B]0\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]0\f[]
 No error.
+.RS
 .RE
-.IP \[bu] 2
-\f[B]1\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]1\f[]
 A math error occurred.
 This follows standard practice of using \f[B]1\f[] for expected errors,
 since math errors will happen in the process of normal execution.
+.RS
 .PP
 Math errors include divide by \f[B]0\f[], taking the square root of a
 negative number, using a negative number as a bound for the
@@ -2028,11 +1946,10 @@ power (\f[B]^\f[]), places (\f[B]\@\f[]), left shift (\f[B]<<\f[]), and
 right shift (\f[B]>>\f[]) operators and their corresponding assignment
 operators.
 .RE
-.IP \[bu] 2
-\f[B]2\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]2\f[]
 A parse error occurred.
+.RS
 .PP
 Parse errors include unexpected \f[B]EOF\f[], using an invalid
 character, failing to find the end of a string or comment, using a token
@@ -2046,11 +1963,10 @@ block, attempting to return a value from a \f[B]void\f[] function,
 attempting to use a variable as a reference, and using any extensions
 when the option \f[B]\-s\f[] or any equivalents were given.
 .RE
-.IP \[bu] 2
-\f[B]3\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]3\f[]
 A runtime error occurred.
+.RS
 .PP
 Runtime errors include assigning an invalid number to \f[B]ibase\f[],
 \f[B]obase\f[], or \f[B]scale\f[]; give a bad expression to a
@@ -2059,11 +1975,10 @@ Runtime errors include assigning an invalid number to \f[B]ibase\f[],
 to functions, attempting to call an undefined function, and attempting
 to use a \f[B]void\f[] function call as a value in an expression.
 .RE
-.IP \[bu] 2
-\f[B]4\f[]
-.RS 2
-.PP
+.TP
+.B \f[B]4\f[]
 A fatal error occurred.
+.RS
 .PP
 Fatal errors include memory allocation errors, I/O errors, failing to
 open files, attempting to use files that do not have only ASCII

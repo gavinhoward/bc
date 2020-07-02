@@ -64,39 +64,39 @@ as the last command-line argument or define the environment variable
 
 The following are the options that dc(1) accepts.
 
-  * **-h**, **--help**
+**-h**, **--help**
 
-    Prints a usage message and quits.
+:   Prints a usage message and quits.
 
-  * **-v**, **-V**, **--version**
+**-v**, **-V**, **--version**
 
-    Print the version information (copyright header) and exit.
+:   Print the version information (copyright header) and exit.
 
-  * **-i**, **--interactive**
+**-i**, **--interactive**
 
-    Forces interactive mode. (See the **INTERACTIVE MODE** section.)
+:   Forces interactive mode. (See the **INTERACTIVE MODE** section.)
 
     This is a **non-portable extension**.
 
-  * **-P**, **--no-prompt**
+**-P**, **--no-prompt**
 
-    Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
+:   Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
     See the **TTY MODE** section) This is mostly for those users that do not
     want a prompt or are not used to having them in dc(1). Most of those users
     would want to put this option in **DC_ENV_ARGS**.
 
     This is a **non-portable extension**.
 
-  * **-x** **--extended-register**
+**-x** **--extended-register**
 
-    Enables extended register mode. See the *Extended Register Mode* subsection
+:   Enables extended register mode. See the *Extended Register Mode* subsection
     of the **REGISTERS** section for more information.
 
     This is a **non-portable extension**.
 
-  * **-e** *expr*, **--expression**=*expr*
+**-e** *expr*, **--expression**=*expr*
 
-    Evaluates *expr*. If multiple expressions are given, they are evaluated in
+:   Evaluates *expr*. If multiple expressions are given, they are evaluated in
     order. If files are given as well (see below), the expressions and files are
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
@@ -107,9 +107,9 @@ The following are the options that dc(1) accepts.
 
     This is a **non-portable extension**.
 
-  * **-f** *file*, **--file**=*file*
+**-f** *file*, **--file**=*file*
 
-    Reads in *file* and evaluates it. If expressions are also given (see above),
+:   Reads in *file* and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
 
     In other dc(1) implementations, this option causes the program to execute
@@ -201,21 +201,21 @@ The valid commands are listed below.
 
 These commands are used for printing.
 
-  * **p**
+**p**
 
-    Prints the value on top of the stack, whether number or string, and prints a
+:   Prints the value on top of the stack, whether number or string, and prints a
     newline after.
 
     This does not alter the stack.
 
-  * **n**
+**n**
 
-    Prints the value on top of the stack, whether number or string, and pops it
+:   Prints the value on top of the stack, whether number or string, and pops it
     off of the stack.
 
-  * **P**
+**P**
 
-    Pops a value off the stack.
+:   Pops a value off the stack.
 
     If the value is a number, it is truncated and the absolute value of the
     result is printed as though **obase** is **UCHAR_MAX+1** and each digit is
@@ -225,9 +225,9 @@ These commands are used for printing.
 
     This is a **non-portable extension**.
 
-  * **f**
+**f**
 
-    Prints the entire contents of the stack, in order from newest to oldest,
+:   Prints the entire contents of the stack, in order from newest to oldest,
     without altering anything.
 
     Users should use this command when they get lost.
@@ -236,36 +236,36 @@ These commands are used for printing.
 
 These are the commands used for arithmetic.
 
-  * **+**
+**+**
 
-    The top two values are popped off the stack, added, and the result is pushed
+:   The top two values are popped off the stack, added, and the result is pushed
     onto the stack. The *scale* of the result is equal to the max *scale* of
     both operands.
 
-  * **-**
+**-**
 
-    The top two values are popped off the stack, subtracted, and the result is
+:   The top two values are popped off the stack, subtracted, and the result is
     pushed onto the stack. The *scale* of the result is equal to the max
     *scale* of both operands.
 
-  * **\***
+**\***
 
-    The top two values are popped off the stack, multiplied, and the result is
+:   The top two values are popped off the stack, multiplied, and the result is
     pushed onto the stack. If **a** is the *scale* of the first expression and
     **b** is the *scale* of the second expression, the *scale* of the result
     is equal to **min(a+b,max(scale,a,b))** where **min()** and **max()** return
     the obvious values.
 
-  * **/**
+**/**
 
-    The top two values are popped off the stack, divided, and the result is
+:   The top two values are popped off the stack, divided, and the result is
     pushed onto the stack. The *scale* of the result is equal to **scale**.
 
     The first value popped off of the stack must be non-zero.
 
-  * **%**
+**%**
 
-    The top two values are popped off the stack, remaindered, and the result is
+:   The top two values are popped off the stack, remaindered, and the result is
     pushed onto the stack.
 
     Remaindering is equivalent to 1) Computing **a/b** to current **scale**, and
@@ -274,9 +274,9 @@ These are the commands used for arithmetic.
 
     The first value popped off of the stack must be non-zero.
 
-  * **~**
+**~**
 
-    The top two values are popped off the stack, divided and remaindered, and
+:   The top two values are popped off the stack, divided and remaindered, and
     the results (divided first, remainder second) are pushed onto the stack.
     This is equivalent to **x y / x y %** except that **x** and **y** are only
     evaluated once.
@@ -285,42 +285,42 @@ These are the commands used for arithmetic.
 
     This is a **non-portable extension**.
 
-  * **\^**
+**\^**
 
-    The top two values are popped off the stack, the second is raised to the
+:   The top two values are popped off the stack, the second is raised to the
     power of the first, and the result is pushed onto the stack.
 
     The first value popped off of the stack must be an integer, and if that
     value is negative, the second value popped off of the stack must be
     non-zero.
 
-  * **v**
+**v**
 
-    The top value is popped off the stack, its square root is computed, and the
+:   The top value is popped off the stack, its square root is computed, and the
     result is pushed onto the stack. The *scale* of the result is equal to
     **scale**.
 
     The value popped off of the stack must be non-negative.
 
-  * **\_**
+**\_**
 
-    If this command *immediately* precedes a number (i.e., no spaces or other
+:   If this command *immediately* precedes a number (i.e., no spaces or other
     commands), then that number is input as a negative number.
 
     Otherwise, the top value on the stack is popped and copied, and the copy is
     negated and pushed onto the stack. This behavior without a number is a
     **non-portable extension**.
 
-  * **b**
+**b**
 
-    The top value is popped off the stack, and if it is zero, it is pushed back
+:   The top value is popped off the stack, and if it is zero, it is pushed back
     onto the stack. Otherwise, its absolute value is pushed onto the stack.
 
     This is a **non-portable extension**.
 
-  * **|**
+**|**
 
-    The top three values are popped off the stack, a modular exponentiation is
+:   The top three values are popped off the stack, a modular exponentiation is
     computed, and the result is pushed onto the stack.
 
     The first value popped is used as the reduction modulus and must be an
@@ -330,53 +330,53 @@ These are the commands used for arithmetic.
 
     This is a **non-portable extension**.
 
-  * **G**
+**G**
 
-    The top two values are popped off of the stack, they are compared, and a
+:   The top two values are popped off of the stack, they are compared, and a
     **1** is pushed if they are equal, or **0** otherwise.
 
     This is a **non-portable extension**.
 
-  * **N**
+**N**
 
-    The top value is popped off of the stack, and if it a **0**, a **1** is
+:   The top value is popped off of the stack, and if it a **0**, a **1** is
     pushed; otherwise, a **0** is pushed.
 
     This is a **non-portable extension**.
 
-  * **(**
+**(**
 
-    The top two values are popped off of the stack, they are compared, and a
+:   The top two values are popped off of the stack, they are compared, and a
     **1** is pushed if the first is less than the second, or **0** otherwise.
 
     This is a **non-portable extension**.
 
-  * **{**
+**{**
 
-    The top two values are popped off of the stack, they are compared, and a
+:   The top two values are popped off of the stack, they are compared, and a
     **1** is pushed if the first is less than or equal to the second, or **0**
     otherwise.
 
     This is a **non-portable extension**.
 
-  * **)**
+**)**
 
-    The top two values are popped off of the stack, they are compared, and a
+:   The top two values are popped off of the stack, they are compared, and a
     **1** is pushed if the first is greater than the second, or **0** otherwise.
 
     This is a **non-portable extension**.
 
-  * **}**
+**}**
 
-    The top two values are popped off of the stack, they are compared, and a
+:   The top two values are popped off of the stack, they are compared, and a
     **1** is pushed if the first is greater than or equal to the second, or
     **0** otherwise.
 
     This is a **non-portable extension**.
 
-  * **M**
+**M**
 
-    The top two values are popped off of the stack. If they are both non-zero, a
+:   The top two values are popped off of the stack. If they are both non-zero, a
     **1** is pushed onto the stack. If either of them is zero, or both of them
     are, then a **0** is pushed onto the stack.
 
@@ -385,9 +385,9 @@ These are the commands used for arithmetic.
 
     This is a **non-portable extension**.
 
-  * **m**
+**m**
 
-    The top two values are popped off of the stack. If at least one of them is
+:   The top two values are popped off of the stack. If at least one of them is
     non-zero, a **1** is pushed onto the stack. If both of them are zero, then a
     **0** is pushed onto the stack.
 
@@ -400,44 +400,44 @@ These are the commands used for arithmetic.
 
 These commands control the stack.
 
-  * **c**
+**c**
 
-    Removes all items from ("clears") the stack.
+:   Removes all items from ("clears") the stack.
 
-  * **d**
+**d**
 
-    Copies the item on top of the stack ("duplicates") and pushes the copy onto
+:   Copies the item on top of the stack ("duplicates") and pushes the copy onto
     the stack.
 
-  * **r**
+**r**
 
-    Swaps ("reverses") the two top items on the stack.
+:   Swaps ("reverses") the two top items on the stack.
 
-  * **R**
+**R**
 
-    Pops ("removes") the top value from the stack.
+:   Pops ("removes") the top value from the stack.
 
 ## Register Control
 
 These commands control registers (see the **REGISTERS** section).
 
-  * **s***r*
+**s***r*
 
-    Pops the value off the top of the stack and stores it into register *r*.
+:   Pops the value off the top of the stack and stores it into register *r*.
 
-  * **l***r*
+**l***r*
 
-    Copies the value in register *r* and pushes it onto the stack. This does not
+:   Copies the value in register *r* and pushes it onto the stack. This does not
     alter the contents of *r*.
 
-  * **S***r*
+**S***r*
 
-    Pops the value off the top of the (main) stack and pushes it onto the stack
+:   Pops the value off the top of the (main) stack and pushes it onto the stack
     of register *r*. The previous value of the register becomes inaccessible.
 
-  * **L***r*
+**L***r*
 
-    Pops the value off the top of the stack for register *r* and push it onto
+:   Pops the value off the top of the stack for register *r* and push it onto
     the main stack. The previous value in the stack for register *r*, if any, is
     now accessible via the **l***r* command.
 
@@ -446,55 +446,55 @@ These commands control registers (see the **REGISTERS** section).
 These commands control the values of **ibase**, **obase**, and **scale**. Also
 see the **SYNTAX** section.
 
-  * **i**
+**i**
 
-    Pops the value off of the top of the stack and uses it to set **ibase**,
+:   Pops the value off of the top of the stack and uses it to set **ibase**,
     which must be between **2** and **16**, inclusive.
 
     If the value on top of the stack has any *scale*, the *scale* is ignored.
 
-  * **o**
+**o**
 
-    Pops the value off of the top of the stack and uses it to set **obase**,
+:   Pops the value off of the top of the stack and uses it to set **obase**,
     which must be between **2** and **DC_BASE_MAX**, inclusive (see the
     **LIMITS** section).
 
     If the value on top of the stack has any *scale*, the *scale* is ignored.
 
-  * **k**
+**k**
 
-    Pops the value off of the top of the stack and uses it to set **scale**,
+:   Pops the value off of the top of the stack and uses it to set **scale**,
     which must be non-negative.
 
     If the value on top of the stack has any *scale*, the *scale* is ignored.
 
-  * **I**
+**I**
 
-    Pushes the current value of **ibase** onto the main stack.
+:   Pushes the current value of **ibase** onto the main stack.
 
-  * **O**
+**O**
 
-    Pushes the current value of **obase** onto the main stack.
+:   Pushes the current value of **obase** onto the main stack.
 
-  * **K**
+**K**
 
-    Pushes the current value of **scale** onto the main stack.
+:   Pushes the current value of **scale** onto the main stack.
 
-  * **T**
+**T**
 
-    Pushes the maximum allowable value of **ibase** onto the main stack.
-
-    This is a **non-portable extension**.
-
-  * **U**
-
-    Pushes the maximum allowable value of **obase** onto the main stack.
+:   Pushes the maximum allowable value of **ibase** onto the main stack.
 
     This is a **non-portable extension**.
 
-  * **V**
+**U**
 
-    Pushes the maximum allowable value of **scale** onto the main stack.
+:   Pushes the maximum allowable value of **obase** onto the main stack.
+
+    This is a **non-portable extension**.
+
+**V**
+
+:   Pushes the maximum allowable value of **scale** onto the main stack.
 
     This is a **non-portable extension**.
 
@@ -513,9 +513,9 @@ Strings can also be executed as macros. For example, if the string **[1pR]** is
 executed as a macro, then the code **1pR** is executed, meaning that the **1**
 will be printed with a newline after and then popped from the stack.
 
-  * **\[**_characters_**\]**
+**\[**_characters_**\]**
 
-    Makes a string containing *characters* and pushes it onto the stack.
+:   Makes a string containing *characters* and pushes it onto the stack.
 
     If there are brackets (**\[** and **\]**) in the string, then they must be
     balanced. Unbalanced brackets can be escaped using a backslash (**\\**)
@@ -525,9 +525,9 @@ will be printed with a newline after and then popped from the stack.
     (even another backslash) is put into the string verbatim, but the (first)
     backslash is not.
 
-  * **a**
+**a**
 
-    The value on top of the stack is popped.
+:   The value on top of the stack is popped.
 
     If it is a number, it is truncated and its absolute value is taken. The
     result mod **UCHAR_MAX+1** is calculated. If that result is **0**, push an
@@ -541,9 +541,9 @@ will be printed with a newline after and then popped from the stack.
 
     This is a **non-portable extension**.
 
-  * **x**
+**x**
 
-    Pops a value off of the top of the stack.
+:   Pops a value off of the top of the stack.
 
     If it is a number, it is pushed back onto the stack.
 
@@ -552,9 +552,9 @@ will be printed with a newline after and then popped from the stack.
     This behavior is the norm whenever a macro is executed, whether by this
     command or by the conditional execution commands below.
 
-  * **\>***r*
+**\>***r*
 
-    Pops two values off of the stack that must be numbers and compares them. If
+:   Pops two values off of the stack that must be numbers and compares them. If
     the first value is greater than the second, then the contents of register
     *r* are executed.
 
@@ -564,119 +564,119 @@ will be printed with a newline after and then popped from the stack.
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
-  * **>***r***e***s*
+**>***r***e***s*
 
-    Like the above, but will execute register *s* if the comparison fails.
+:   Like the above, but will execute register *s* if the comparison fails.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
     This is a **non-portable extension**.
 
-  * **!\>***r*
+**!\>***r*
 
-    Pops two values off of the stack that must be numbers and compares them. If
+:   Pops two values off of the stack that must be numbers and compares them. If
     the first value is not greater than the second (less than or equal to), then
     the contents of register *r* are executed.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
-  * **!\>***r***e***s*
+**!\>***r***e***s*
 
-    Like the above, but will execute register *s* if the comparison fails.
+:   Like the above, but will execute register *s* if the comparison fails.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
     This is a **non-portable extension**.
 
-  * **\<***r*
+**\<***r*
 
-    Pops two values off of the stack that must be numbers and compares them. If
+:   Pops two values off of the stack that must be numbers and compares them. If
     the first value is less than the second, then the contents of register *r*
     are executed.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
-  * **\<***r***e***s*
+**\<***r***e***s*
 
-    Like the above, but will execute register *s* if the comparison fails.
+:   Like the above, but will execute register *s* if the comparison fails.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
     This is a **non-portable extension**.
 
-  * **!\<***r*
+**!\<***r*
 
-    Pops two values off of the stack that must be numbers and compares them. If
+:   Pops two values off of the stack that must be numbers and compares them. If
     the first value is not less than the second (greater than or equal to), then
     the contents of register *r* are executed.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
-  * **!\<***r***e***s*
+**!\<***r***e***s*
 
-    Like the above, but will execute register *s* if the comparison fails.
+:   Like the above, but will execute register *s* if the comparison fails.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
     This is a **non-portable extension**.
 
-  * **=***r*
+**=***r*
 
-    Pops two values off of the stack that must be numbers and compares them. If
+:   Pops two values off of the stack that must be numbers and compares them. If
     the first value is equal to the second, then the contents of register *r*
     are executed.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
-  * **=***r***e***s*
+**=***r***e***s*
 
-    Like the above, but will execute register *s* if the comparison fails.
+:   Like the above, but will execute register *s* if the comparison fails.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
     This is a **non-portable extension**.
 
-  * **!=***r*
+**!=***r*
 
-    Pops two values off of the stack that must be numbers and compares them. If
+:   Pops two values off of the stack that must be numbers and compares them. If
     the first value is not equal to the second, then the contents of register
     *r* are executed.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
-  * **!=***r***e***s*
+**!=***r***e***s*
 
-    Like the above, but will execute register *s* if the comparison fails.
+:   Like the above, but will execute register *s* if the comparison fails.
 
     If either or both of the values are not numbers, dc(1) will raise an error
     and reset (see the **RESET** section).
 
     This is a **non-portable extension**.
 
-  * **?**
+**?**
 
-    Reads a line from the **stdin** and executes it. This is to allow macros to
+:   Reads a line from the **stdin** and executes it. This is to allow macros to
     request input from users.
 
-  * **q**
+**q**
 
-    During execution of a macro, this exits the execution of that macro and the
+:   During execution of a macro, this exits the execution of that macro and the
     execution of the macro that executed it. If there are no macros, or only one
     macro executing, dc(1) exits.
 
-  * **Q**
+**Q**
 
-    Pops a value from the stack which must be non-negative and is used the
+:   Pops a value from the stack which must be non-negative and is used the
     number of macro executions to pop off of the execution stack. If the number
     of levels to pop is greater than the number of executing macros, dc(1)
     exits.
@@ -685,39 +685,39 @@ will be printed with a newline after and then popped from the stack.
 
 These commands query status of the stack or its top value.
 
-  * **Z**
+**Z**
 
-    Pops a value off of the stack.
+:   Pops a value off of the stack.
 
     If it is a number, calculates the number of significant decimal digits it
     has and pushes the result.
 
     If it is a string, pushes the number of characters the string has.
 
-  * **X**
+**X**
 
-    Pops a value off of the stack.
+:   Pops a value off of the stack.
 
     If it is a number, pushes the *scale* of the value onto the stack.
 
     If it is a string, pushes **0**.
 
-  * **z**
+**z**
 
-    Pushes the current stack depth (before execution of this command).
+:   Pushes the current stack depth (before execution of this command).
 
 ## Arrays
 
 These commands manipulate arrays.
 
-  * **:***r*
+**:***r*
 
-    Pops the top two values off of the stack. The second value will be stored in
+:   Pops the top two values off of the stack. The second value will be stored in
     the array *r* (see the **REGISTERS** section), indexed by the first value.
 
-  * **;***r*
+**;***r*
 
-    Pops the value on top of the stack and uses it as an index into the array
+:   Pops the value on top of the stack and uses it as an index into the array
     *r*. The selected value is then pushed onto the stack.
 
 # REGISTERS
@@ -784,60 +784,60 @@ twice as large as the integer type used to store digits.
 
 The following are the limits on dc(1):
 
-  * **DC_LONG_BIT**
+**DC_LONG_BIT**
 
-    The number of bits in the **long** type in the environment where dc(1) was
+:   The number of bits in the **long** type in the environment where dc(1) was
     built. This determines how many decimal digits can be stored in a single
     large integer (see the **PERFORMANCE** section).
 
-  * **DC_BASE_DIGS**
+**DC_BASE_DIGS**
 
-    The number of decimal digits per large integer (see the **PERFORMANCE**
+:   The number of decimal digits per large integer (see the **PERFORMANCE**
     section). Depends on **DC_LONG_BIT**.
 
-  * **DC_BASE_POW**
+**DC_BASE_POW**
 
-    The max decimal number that each large integer can store (see
+:   The max decimal number that each large integer can store (see
     **DC_BASE_DIGS**) plus **1**. Depends on **DC_BASE_DIGS**.
 
-  * **DC_OVERFLOW_MAX**
+**DC_OVERFLOW_MAX**
 
-    The max number that the overflow type (see the **PERFORMANCE** section) can
+:   The max number that the overflow type (see the **PERFORMANCE** section) can
     hold. Depends on **DC_LONG_BIT**.
 
-  * **DC_BASE_MAX**
+**DC_BASE_MAX**
 
-    The maximum output base. Set at **DC_BASE_POW**.
+:   The maximum output base. Set at **DC_BASE_POW**.
 
-  * **DC_DIM_MAX**
+**DC_DIM_MAX**
 
-    The maximum size of arrays. Set at **SIZE_MAX-1**.
+:   The maximum size of arrays. Set at **SIZE_MAX-1**.
 
-  * **DC_SCALE_MAX**
+**DC_SCALE_MAX**
 
-    The maximum **scale**. Set at **DC_OVERFLOW_MAX-1**.
+:   The maximum **scale**. Set at **DC_OVERFLOW_MAX-1**.
 
-  * **DC_STRING_MAX**
+**DC_STRING_MAX**
 
-    The maximum length of strings. Set at **DC_OVERFLOW_MAX-1**.
+:   The maximum length of strings. Set at **DC_OVERFLOW_MAX-1**.
 
-  * **DC_NAME_MAX**
+**DC_NAME_MAX**
 
-    The maximum length of identifiers. Set at **DC_OVERFLOW_MAX-1**.
+:   The maximum length of identifiers. Set at **DC_OVERFLOW_MAX-1**.
 
-  * **DC_NUM_MAX**
+**DC_NUM_MAX**
 
-    The maximum length of a number (in decimal digits), which includes digits
+:   The maximum length of a number (in decimal digits), which includes digits
     after the decimal point. Set at **DC_OVERFLOW_MAX-1**.
 
-  * Exponent
+Exponent
 
-    The maximum allowable exponent (positive or negative). Set at
+:   The maximum allowable exponent (positive or negative). Set at
     **DC_OVERFLOW_MAX**.
 
-  * Number of vars
+Number of vars
 
-    The maximum number of vars/arrays. Set at **SIZE_MAX-1**.
+:   The maximum number of vars/arrays. Set at **SIZE_MAX-1**.
 
 These limits are meant to be effectively non-existent; the limits are so large
 (at least on 64-bit machines) that there should not be any point at which they
@@ -848,9 +848,9 @@ be hit.
 
 dc(1) recognizes the following environment variables:
 
-  * **DC_ENV_ARGS**
+**DC_ENV_ARGS**
 
-    This is another way to give command-line arguments to dc(1). They should be
+:   This is another way to give command-line arguments to dc(1). They should be
     in the same format as all other command-line arguments. These are always
     processed first, so any files given in **DC_ENV_ARGS** will be processed
     before arguments and files given on the command-line. This gives the user
@@ -872,16 +872,16 @@ dc(1) recognizes the following environment variables:
     complexity of the parsing, though such files are still supported on the
     command-line where the parsing is done by the shell.
 
-  * **DC_LINE_LENGTH**
+**DC_LINE_LENGTH**
 
-    If this environment variable exists and contains an integer that is greater
+:   If this environment variable exists and contains an integer that is greater
     than **1** and is less than **UINT16_MAX** (**2\^16-1**), dc(1) will output
     lines to that length, including the backslash newline combo. The default
     line length is **70**.
 
-  * **DC_EXPR_EXIT**
+**DC_EXPR_EXIT**
 
-    If this variable exists (no matter the contents), dc(1) will exit
+:   If this variable exists (no matter the contents), dc(1) will exit
     immediately after executing expressions and files given by the **-e** and/or
     **-f** command-line options (and any equivalents).
 
@@ -889,13 +889,13 @@ dc(1) recognizes the following environment variables:
 
 dc(1) returns the following exit statuses:
 
-  * **0**
+**0**
 
-    No error.
+:   No error.
 
-  * **1**
+**1**
 
-    A math error occurred. This follows standard practice of using **1** for
+:   A math error occurred. This follows standard practice of using **1** for
     expected errors, since math errors will happen in the process of normal
     execution.
 
@@ -907,26 +907,26 @@ dc(1) returns the following exit statuses:
     Converting to a hardware integer happens for the second operand of the power
     (**\^**) operator.
 
-  * **2**
+**2**
 
-    A parse error occurred.
+:   A parse error occurred.
 
     Parse errors include unexpected **EOF**, using an invalid character, failing
     to find the end of a string or comment, and using a token where it is
     invalid.
 
-  * **3**
+**3**
 
-    A runtime error occurred.
+:   A runtime error occurred.
 
     Runtime errors include assigning an invalid number to **ibase**, **obase**,
     or **scale**; give a bad expression to a **read()** call, calling **read()**
     inside of a **read()** call, type errors, and attempting an operation when
     the stack has too few elements.
 
-  * **4**
+**4**
 
-    A fatal error occurred.
+:   A fatal error occurred.
 
     Fatal errors include memory allocation errors, I/O errors, failing to open
     files, attempting to use files that do not have only ASCII characters (dc(1)

@@ -54,7 +54,7 @@ especially) the GNU bc(1).
 
 The following are the options that bc(1) accepts.
 
-  * **-g**, **--global-stacks**
+**-g**, **--global-stacks**
 
     Turns the globals **ibase**, **obase**, and **scale** into stacks.
 
@@ -107,27 +107,27 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
-  * **-h**, **--help**
+**-h**, **--help**
 
-    Prints a usage message and quits.
+:   Prints a usage message and quits.
 
-  * **-i**, **--interactive**
+**-i**, **--interactive**
 
-    Forces interactive mode. (See the **INTERACTIVE MODE** section.)
+:   Forces interactive mode. (See the **INTERACTIVE MODE** section.)
 
     This is a **non-portable extension**.
 
-  * **-l**, **--mathlib**
+**-l**, **--mathlib**
 
-    Sets **scale** (see the **SYNTAX** section) to **20** and loads the included
+:   Sets **scale** (see the **SYNTAX** section) to **20** and loads the included
     math library before running any code, including any expressions or files
     specified on the command line.
 
     To learn what is in the library, see the **LIBRARY** section.
 
-  * **-P**, **--no-prompt**
+**-P**, **--no-prompt**
 
-    Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
+:   Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
     See the **TTY MODE** section) This is mostly for those users that do not
     want a prompt or are not used to having them in bc(1). Most of those users
     would want to put this option in **BC_ENV_ARGS** (see the
@@ -135,38 +135,38 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
-  * **-q**, **--quiet**
+**-q**, **--quiet**
 
-    Do not print copyright header. bc(1) will also suppress the header in
+:   Do not print copyright header. bc(1) will also suppress the header in
     non-interactive mode.
 
     This is mostly for compatibility with the [GNU bc(1)][2].
 
     This is a **non-portable extension**.
 
-  * **-s**, **--standard**
+**-s**, **--standard**
 
-    Process exactly the language defined by the [standard][1] and error if any
+:   Process exactly the language defined by the [standard][1] and error if any
     extensions are used.
 
     This is a **non-portable extension**.
 
-  * **-v**, **-V**, **--version**
+**-v**, **-V**, **--version**
 
-    Print the version information (copyright header) and exit.
+:   Print the version information (copyright header) and exit.
 
     This is a **non-portable extension**.
 
-  * **-w**, **--warn**
+**-w**, **--warn**
 
-    Like **-s** and **--standard**, except that warnings (and not errors) are
+:   Like **-s** and **--standard**, except that warnings (and not errors) are
     printed for non-standard extensions and execution continues normally.
 
     This is a **non-portable extension**.
 
-  * **-e** *expr*, **--expression**=*expr*
+**-e** *expr*, **--expression**=*expr*
 
-    Evaluates *expr*. If multiple expressions are given, they are evaluated in
+:   Evaluates *expr*. If multiple expressions are given, they are evaluated in
     order. If files are given as well (see below), the expressions and files are
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
@@ -177,9 +177,9 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
-  * **-f** *file*, **--file**=*file*
+**-f** *file*, **--file**=*file*
 
-    Reads in *file* and evaluates it. If expressions are also given (see above),
+:   Reads in *file* and evaluates it. If expressions are also given (see above),
     the expressions are evaluated in the order given.
 
     In other bc(1) implementations, this option causes the program to execute
@@ -356,73 +356,73 @@ The following arithmetic and logical operators can be used. They are listed in
 order of decreasing precedence. Operators in the same group have the same
 precedence.
 
-  * **++** **--**
+**++** **--**
 
-    Type: Prefix and Postfix
+:   Type: Prefix and Postfix
 
     Associativity: None
 
     Description: **increment**, **decrement**
 
-  * **-** **!**
+**-** **!**
 
-    Type: Prefix
+:   Type: Prefix
 
     Associativity: None
 
     Description: **negation**, **boolean not**
 
-  * **\^**
+**\^**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Right
 
     Description: **power**
 
-  * **\*** **/** **%**
+**\*** **/** **%**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **multiply**, **divide**, **modulus**
 
-  * **+** **-**
+**+** **-**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **add**, **subtract**
 
-  * **=** **+=** **-=** **\*=** **/=** **%=** **\^=**
+**=** **+=** **-=** **\*=** **/=** **%=** **\^=**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Right
 
     Description: **assignment**
 
-  * **==** **\<=** **\>=** **!=** **\<** **\>**
+**==** **\<=** **\>=** **!=** **\<** **\>**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **relational**
 
-  * **&&**
+**&&**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
     Description: **boolean and**
 
-  * **||**
+**||**
 
-    Type: Binary
+:   Type: Binary
 
     Associativity: Left
 
@@ -430,84 +430,84 @@ precedence.
 
 The operators will be described in more detail below.
 
-  * **++** **--**
+**++** **--**
 
-    The prefix and postfix **increment** and **decrement** operators behave
+:   The prefix and postfix **increment** and **decrement** operators behave
     exactly like they would in C. They require a named expression (see the
     *Named Expressions* subsection) as an operand.
 
     The prefix versions of these operators are more efficient; use them where
     possible.
 
-  * **-**
+**-**
 
-    The **negation** operator returns **0** if a user attempts to negate any
+:   The **negation** operator returns **0** if a user attempts to negate any
     expression with the value **0**. Otherwise, a copy of the expression with
     its sign flipped is returned.
 
-  * **!**
+**!**
 
-    The **boolean not** operator returns **1** if the expression is **0**, or
+:   The **boolean not** operator returns **1** if the expression is **0**, or
     **0** otherwise.
 
     This is a **non-portable extension**.
 
-  * **\^**
+**\^**
 
-    The **power** operator (not the **exclusive or** operator, as it would be in
+:   The **power** operator (not the **exclusive or** operator, as it would be in
     C) takes two expressions and raises the first to the power of the value of
     the second.
 
     The second expression must be an integer (no *scale*), and if it is
     negative, the first value must be non-zero.
 
-  * **\***
+**\***
 
-    The **multiply** operator takes two expressions, multiplies them, and
+:   The **multiply** operator takes two expressions, multiplies them, and
     returns the product. If **a** is the *scale* of the first expression and
     **b** is the *scale* of the second expression, the *scale* of the result is
     equal to **min(a+b,max(scale,a,b))** where **min()** and **max()** return
     the obvious values.
 
-  * **/**
+**/**
 
-    The **divide** operator takes two expressions, divides them, and returns the
+:   The **divide** operator takes two expressions, divides them, and returns the
     quotient. The *scale* of the result shall be the value of **scale**.
 
     The second expression must be non-zero.
 
-  * **%**
+**%**
 
-    The **modulus** operator takes two expressions, **a** and **b**, and
+:   The **modulus** operator takes two expressions, **a** and **b**, and
     evaluates them by 1) Computing **a/b** to current **scale** and 2) Using the
     result of step 1 to calculate **a-(a/b)\*b** to *scale*
     **max(scale+scale(b),scale(a))**.
 
     The second expression must be non-zero.
 
-  * **+**
+**+**
 
-    The **add** operator takes two expressions, **a** and **b**, and returns the
+:   The **add** operator takes two expressions, **a** and **b**, and returns the
     sum, with a *scale* equal to the max of the *scale*s of **a** and **b**.
 
-  * **-**
+**-**
 
-    The **subtract** operator takes two expressions, **a** and **b**, and
+:   The **subtract** operator takes two expressions, **a** and **b**, and
     returns the difference, with a *scale* equal to the max of the *scale*s of
     **a** and **b**.
 
-  * **=** **+=** **-=** **\*=** **/=** **%=** **\^=**
+**=** **+=** **-=** **\*=** **/=** **%=** **\^=**
 
-    The **assignment** operators take two expressions, **a** and **b** where
+:   The **assignment** operators take two expressions, **a** and **b** where
     **a** is a named expression (see the *Named Expressions* subsection).
 
     For **=**, **b** is copied and the result is assigned to **a**. For all
     others, **a** and **b** are applied as operands to the corresponding
     arithmetic operator and the result is assigned to **a**.
 
-  * **==** **\<=** **\>=** **!=** **\<** **\>**
+**==** **\<=** **\>=** **!=** **\<** **\>**
 
-    The **relational** operators compare two expressions, **a** and **b**, and
+:   The **relational** operators compare two expressions, **a** and **b**, and
     if the relation holds, according to C language semantics, the result is
     **1**. Otherwise, it is **0**.
 
@@ -519,18 +519,18 @@ The operators will be described in more detail below.
     any other expressions can be used. This allowance is a
     **non-portable extension**.
 
-  * **&&**
+**&&**
 
-    The **boolean and** operator takes two expressions and returns **1** if both
+:   The **boolean and** operator takes two expressions and returns **1** if both
     expressions are non-zero, **0** otherwise.
 
     This is *not* a short-circuit operator.
 
     This is a **non-portable extension**.
 
-  * **||**
+**||**
 
-    The **boolean or** operator takes two expressions and returns **1** if one
+:   The **boolean or** operator takes two expressions and returns **1** if one
     of the expressions is non-zero, **0** otherwise.
 
     This is *not* a short-circuit operator.
@@ -595,23 +595,17 @@ The "expressions" in a **print** statement may also be strings. If they are, the
 are backslash escape sequences that are interpreted specially. What those
 sequences are, and what they cause to be printed, are shown below:
 
-  * **\\a**: **\\a**
-
-  * **\\b**: **\\b**
-
-  * **\\\\**: **\\**
-
-  * **\\e**: **\\**
-
-  * **\\f**: **\\f**
-
-  * **\\n**: **\\n**
-
-  * **\\q**: **"**
-
-  * **\\r**: **\\r**
-
-  * **\\t**: **\\t**
+-------- -------
+**\\a**  **\\a**
+**\\b**  **\\b**
+**\\\\** **\\**
+**\\e**  **\\**
+**\\f**  **\\f**
+**\\n**  **\\n**
+**\\q**  **"**
+**\\r**  **\\r**
+**\\t**  **\\t**
+-------- -------
 
 Any other character following a backslash causes the backslash and character to
 be printed as-is.
@@ -719,44 +713,44 @@ command-line flags are given.
 
 The [standard][1] defines the following functions for the math library:
 
-  * **s(x)**
+**s(x)**
 
-    Returns the sine of **x**, which is assumed to be in radians.
-
-    This is a transcendental function (see the *Transcendental Functions*
-    subsection below).
-
-  * **c(x)**
-
-    Returns the cosine of **x**, which is assumed to be in radians.
+:   Returns the sine of **x**, which is assumed to be in radians.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **a(x)**
+**c(x)**
 
-    Returns the arctangent of **x**, in radians.
-
-    This is a transcendental function (see the *Transcendental Functions*
-    subsection below).
-
-  * **l(x)**
-
-    Returns the natural logarithm of **x**.
+:   Returns the cosine of **x**, which is assumed to be in radians.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **e(x)**
+**a(x)**
 
-    Returns the mathematical constant **e** raised to the power of **x**.
+:   Returns the arctangent of **x**, in radians.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
 
-  * **j(x, n)**
+**l(x)**
 
-    Returns the bessel integer order **n** (truncated) of **x**.
+:   Returns the natural logarithm of **x**.
+
+    This is a transcendental function (see the *Transcendental Functions*
+    subsection below).
+
+**e(x)**
+
+:   Returns the mathematical constant **e** raised to the power of **x**.
+
+    This is a transcendental function (see the *Transcendental Functions*
+    subsection below).
+
+**j(x, n)**
+
+:   Returns the bessel integer order **n** (truncated) of **x**.
 
     This is a transcendental function (see the *Transcendental Functions*
     subsection below).
@@ -821,62 +815,62 @@ twice as large as the integer type used to store digits.
 
 The following are the limits on bc(1):
 
-  * **BC_LONG_BIT**
+**BC_LONG_BIT**
 
-    The number of bits in the **long** type in the environment where bc(1) was
+:   The number of bits in the **long** type in the environment where bc(1) was
     built. This determines how many decimal digits can be stored in a single
     large integer (see the **PERFORMANCE** section).
 
-  * **BC_BASE_DIGS**
+**BC_BASE_DIGS**
 
-    The number of decimal digits per large integer (see the **PERFORMANCE**
+:   The number of decimal digits per large integer (see the **PERFORMANCE**
     section). Depends on **BC_LONG_BIT**.
 
-  * **BC_BASE_POW**
+**BC_BASE_POW**
 
-    The max decimal number that each large integer can store (see
+:   The max decimal number that each large integer can store (see
     **BC_BASE_DIGS**) plus **1**. Depends on **BC_BASE_DIGS**.
 
-  * **BC_OVERFLOW_MAX**
+**BC_OVERFLOW_MAX**
 
-    The max number that the overflow type (see the **PERFORMANCE** section) can
+:   The max number that the overflow type (see the **PERFORMANCE** section) can
     hold. Depends on **BC_LONG_BIT**.
 
-  * **BC_BASE_MAX**
+**BC_BASE_MAX**
 
-    The maximum output base. Set at **BC_BASE_POW**.
+:   The maximum output base. Set at **BC_BASE_POW**.
 
-  * **BC_DIM_MAX**
+**BC_DIM_MAX**
 
-    The maximum size of arrays. Set at **SIZE_MAX-1**.
+:   The maximum size of arrays. Set at **SIZE_MAX-1**.
 
-  * **BC_SCALE_MAX**
+**BC_SCALE_MAX**
 
-    The maximum **scale**. Set at **BC_OVERFLOW_MAX-1**.
+:   The maximum **scale**. Set at **BC_OVERFLOW_MAX-1**.
 
-  * **BC_STRING_MAX**
+**BC_STRING_MAX**
 
-    The maximum length of strings. Set at **BC_OVERFLOW_MAX-1**.
+:   The maximum length of strings. Set at **BC_OVERFLOW_MAX-1**.
 
-  * **BC_NAME_MAX**
+**BC_NAME_MAX**
 
-    The maximum length of identifiers. Set at **BC_OVERFLOW_MAX-1**.
+:   The maximum length of identifiers. Set at **BC_OVERFLOW_MAX-1**.
 
-  * **BC_NUM_MAX**
+**BC_NUM_MAX**
 
-    The maximum length of a number (in decimal digits), which includes digits
+:   The maximum length of a number (in decimal digits), which includes digits
     after the decimal point. Set at **BC_OVERFLOW_MAX-1**.
 
-  * Exponent
+Exponent
 
-    The maximum allowable exponent (positive or negative). Set at
+:   The maximum allowable exponent (positive or negative). Set at
     **BC_OVERFLOW_MAX**.
 
-  * Number of vars
+Number of vars
 
-    The maximum number of vars/arrays. Set at **SIZE_MAX-1**.
+:   The maximum number of vars/arrays. Set at **SIZE_MAX-1**.
 
-Actual values can be queried with the **limits** statement.
+The actual values can be queried with the **limits** statement.
 
 These limits are meant to be effectively non-existent; the limits are so large
 (at least on 64-bit machines) that there should not be any point at which they
@@ -887,14 +881,14 @@ be hit.
 
 bc(1) recognizes the following environment variables:
 
-  * **POSIXLY_CORRECT**
+**POSIXLY_CORRECT**
 
-    If this variable exists (no matter the contents), bc(1) behaves as if
+:   If this variable exists (no matter the contents), bc(1) behaves as if
     the **-s** option was given.
 
-  * **BC_ENV_ARGS**
+**BC_ENV_ARGS**
 
-    This is another way to give command-line arguments to bc(1). They should be
+:   This is another way to give command-line arguments to bc(1). They should be
     in the same format as all other command-line arguments. These are always
     processed first, so any files given in **BC_ENV_ARGS** will be processed
     before arguments and files given on the command-line. This gives the user
@@ -915,16 +909,16 @@ bc(1) recognizes the following environment variables:
     complexity of the parsing, though such files are still supported on the
     command-line where the parsing is done by the shell.
 
-  * **BC_LINE_LENGTH**
+**BC_LINE_LENGTH**
 
-    If this environment variable exists and contains an integer that is greater
+:   If this environment variable exists and contains an integer that is greater
     than **1** and is less than **UINT16_MAX** (**2\^16-1**), bc(1) will output
     lines to that length, including the backslash (**\\**). The default line
     length is **70**.
 
-  * **BC_EXPR_EXIT**
+**BC_EXPR_EXIT**
 
-    If this variable exists (no matter the contents), bc(1) will exit
+:   If this variable exists (no matter the contents), bc(1) will exit
     immediately after executing expressions and files given by the **-e** and/or
     **-f** command-line options (and any equivalents).
 
@@ -932,13 +926,13 @@ bc(1) recognizes the following environment variables:
 
 bc(1) returns the following exit statuses:
 
-  * **0**
+**0**
 
-    No error.
+:   No error.
 
-  * **1**
+**1**
 
-    A math error occurred. This follows standard practice of using **1** for
+:   A math error occurred. This follows standard practice of using **1** for
     expected errors, since math errors will happen in the process of normal
     execution.
 
@@ -950,9 +944,9 @@ bc(1) returns the following exit statuses:
     Converting to a hardware integer happens for the second operand of the power
     (**\^**) operator and the corresponding assignment operator.
 
-  * **2**
+**2**
 
-    A parse error occurred.
+:   A parse error occurred.
 
     Parse errors include unexpected **EOF**, using an invalid character, failing
     to find the end of a string or comment, using a token where it is invalid,
@@ -965,9 +959,9 @@ bc(1) returns the following exit statuses:
     variable as a reference, and using any extensions when the option **-s** or
     any equivalents were given.
 
-  * **3**
+**3**
 
-    A runtime error occurred.
+:   A runtime error occurred.
 
     Runtime errors include assigning an invalid number to **ibase**, **obase**,
     or **scale**; give a bad expression to a **read()** call, calling **read()**
@@ -975,9 +969,9 @@ bc(1) returns the following exit statuses:
     arguments to functions, attempting to call an undefined function, and
     attempting to use a **void** function call as a value in an expression.
 
-  * **4**
+**4**
 
-    A fatal error occurred.
+:   A fatal error occurred.
 
     Fatal errors include memory allocation errors, I/O errors, failing to open
     files, attempting to use files that do not have only ASCII characters (bc(1)
