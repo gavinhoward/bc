@@ -69,13 +69,13 @@
 #ifndef BC_RAND_H
 #define BC_RAND_H
 
-#if BC_ENABLE_EXTRA_MATH
-
 #include <stdint.h>
 #include <inttypes.h>
 
 #include <vector.h>
 #include <num.h>
+
+#if BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLE_RAND
 
