@@ -110,8 +110,16 @@ typedef struct BcNum {
 } BcNum;
 
 #if BC_ENABLE_EXTRA_MATH
+
+#ifndef BC_ENABLE_RAND
+#define BC_ENABLE_RAND (1)
+#endif // BC_ENABLE_RAND
+
+#if BC_ENABLE_RAND
 // Forward declaration
 struct BcRNG;
+#endif // BC_ENABLE_RAND
+
 #endif // BC_ENABLE_EXTRA_MATH
 
 #define BC_NUM_MIN_BASE (BC_NUM_BIGDIG_C(2))

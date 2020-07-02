@@ -77,12 +77,6 @@
 #include <vector.h>
 #include <num.h>
 
-#if BC_ENABLE_EXTRA_MATH
-#ifndef BC_ENABLE_RAND
-#define BC_ENABLE_RAND (1)
-#endif // BC_ENABLE_RAND
-#endif // BC_ENABLE_EXTRA_MATH
-
 #if BC_ENABLE_RAND
 
 typedef ulong (*BcRandUlong)(void*);

@@ -66,8 +66,6 @@
  *
  */
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,6 +77,8 @@
 #include <num.h>
 #include <rand.h>
 #include <vm.h>
+
+#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 #if !BC_RAND_BUILTIN
 
