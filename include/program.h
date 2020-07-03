@@ -87,6 +87,7 @@ typedef struct BcProgram {
 	BcNum strmb;
 #endif // DC_ENABLED
 
+	BcNum zero;
 	BcNum one;
 
 #if BC_ENABLED
@@ -99,6 +100,7 @@ typedef struct BcProgram {
 	BcDig strmb_num[BC_NUM_BIGDIG_LOG10];
 #endif // DC_ENABLED
 
+	BcDig zero_num[BC_PROG_ONE_CAP];
 	BcDig one_num[BC_PROG_ONE_CAP];
 
 } BcProgram;

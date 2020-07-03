@@ -252,6 +252,7 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			break;
 		}
 
+		case BC_RESULT_ZERO:
 		case BC_RESULT_ONE:
 		{
 			// Do nothing.
@@ -300,6 +301,7 @@ void bc_result_free(void *result) {
 		case BC_RESULT_ARRAY_ELEM:
 		case BC_RESULT_STR:
 		case BC_RESULT_CONSTANT:
+		case BC_RESULT_ZERO:
 		case BC_RESULT_ONE:
 #if BC_ENABLED
 		case BC_RESULT_VOID:

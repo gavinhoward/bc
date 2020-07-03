@@ -588,6 +588,7 @@ const char* bc_inst_names[] = {
 	"BC_INST_ARRAY",
 #endif // BC_ENABLED
 
+	"BC_INST_ZERO",
 	"BC_INST_ONE",
 
 #if BC_ENABLED
@@ -952,6 +953,7 @@ const BcDig bc_num_bigdigMax[] = {
 
 const size_t bc_num_bigdigMax_size = sizeof(bc_num_bigdigMax) / sizeof(BcDig);
 
+const char bc_parse_zero[] = "0";
 const char bc_parse_one[] = "1";
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";

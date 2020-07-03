@@ -129,6 +129,7 @@ typedef enum BcInst {
 	BC_INST_ARRAY,
 #endif // BC_ENABLED
 
+	BC_INST_ZERO,
 	BC_INST_ONE,
 
 #if BC_ENABLED
@@ -255,6 +256,7 @@ typedef enum BcResultType {
 	BC_RESULT_CONSTANT,
 	BC_RESULT_TEMP,
 
+	BC_RESULT_ZERO,
 	BC_RESULT_ONE,
 
 #if BC_ENABLED

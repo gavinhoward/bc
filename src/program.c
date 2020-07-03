@@ -263,6 +263,12 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 			break;
 		}
 
+		case BC_RESULT_ZERO:
+		{
+			n = &p->zero;
+			break;
+		}
+
 		case BC_RESULT_ONE:
 		{
 			n = &p->one;
@@ -1727,6 +1733,8 @@ void bc_program_init(BcProgram *p) {
 	bc_rand_init(&p->rng);
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
+	bc_num_setup(&p->zero, p->zero_num, BC_PROG_ONE_CAP);
+
 	bc_num_setup(&p->one, p->one_num, BC_PROG_ONE_CAP);
 	bc_num_one(&p->one);
 
@@ -1970,12 +1978,13 @@ void bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_ZERO:
 			case BC_INST_ONE:
 #if BC_ENABLED
 			case BC_INST_LAST:
 #endif // BC_ENABLED
 			{
-				r.t = BC_RESULT_ONE + (inst - BC_INST_ONE);
+				r.t = BC_RESULT_ZERO + (inst - BC_INST_ZERO);
 				bc_vec_push(&p->results, &r);
 				break;
 			}

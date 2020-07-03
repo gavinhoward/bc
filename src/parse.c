@@ -94,6 +94,10 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 	size_t idx;
 	BcConst c;
 
+	if (bc_parse_zero[0] == string[0] && bc_parse_zero[1] == string[1]) {
+		bc_parse_push(p, BC_INST_ZERO);
+		return;
+	}
 	if (bc_parse_one[0] == string[0] && bc_parse_one[1] == string[1]) {
 		bc_parse_push(p, BC_INST_ONE);
 		return;
