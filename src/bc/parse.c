@@ -1213,7 +1213,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				// I can just add the instruction because
 				// negative will already be taken care of.
 				bc_parse_push(p, BC_INST_TRUNC);
-				rprn = can_assign = false;
+				rprn = can_assign = incdec = false;
 				get_token = true;
 				flags &= ~(BC_PARSE_ARRAY);
 				break;
