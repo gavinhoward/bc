@@ -1456,6 +1456,8 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 
 		nexprs -= !BC_PARSE_OP_PREFIX(top);
 		bc_vec_pop(&p->ops);
+
+		incdec = false;
 	}
 
 	if (BC_ERR(nexprs != 1)) bc_parse_err(p, BC_ERROR_PARSE_EXPR);
