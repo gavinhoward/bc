@@ -256,7 +256,6 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 			break;
 		}
 
-		case BC_RESULT_CONSTANT:
 		case BC_RESULT_STR:
 		{
 			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));
@@ -311,7 +310,6 @@ void bc_result_free(void *result) {
 #endif // BC_ENABLED
 		case BC_RESULT_ARRAY_ELEM:
 		case BC_RESULT_STR:
-		case BC_RESULT_CONSTANT:
 		case BC_RESULT_ZERO:
 		case BC_RESULT_ONE:
 #if BC_ENABLED

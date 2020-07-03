@@ -182,38 +182,6 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
 	switch (r->t) {
 
-		case BC_RESULT_CONSTANT:
-		{
-			BcConst *c = bc_vec_item(p->consts, r->d.loc.loc);
-			BcBigDig base = BC_PROG_IBASE(p);
-
-			if (c->base != base) {
-
-				if (c->num.num == NULL) {
-					BC_SIG_LOCK;
-					bc_num_init(&c->num, BC_NUM_RDX(strlen(c->val)));
-					BC_SIG_UNLOCK;
-				}
-
-				// bc_num_parse() should only do operations that cannot fail.
-				bc_num_parse(&c->num, c->val, base, !c->val[1]);
-
-				c->base = base;
-			}
-
-			BC_SIG_LOCK;
-
-			n = &r->d.n;
-
-			r->t = BC_RESULT_TEMP;
-
-			bc_num_createCopy(n, &c->num);
-
-			BC_SIG_UNLOCK;
-
-			break;
-		}
-
 		case BC_RESULT_STR:
 		case BC_RESULT_TEMP:
 		case BC_RESULT_IBASE:
@@ -352,7 +320,7 @@ static void bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 {
 	BcResultType lt, min;
 
-	min = BC_RESULT_CONSTANT - ((unsigned int) (BC_IS_BC << 1));
+	min = BC_RESULT_TEMP - ((unsigned int) (BC_IS_BC));
 
 	bc_program_binPrep(p, l, ln, r, rn, 0);
 
@@ -404,6 +372,33 @@ static BcResult* bc_program_prepResult(BcProgram *p) {
 	bc_vec_push(&p->results, &res);
 
 	return bc_vec_top(&p->results);
+}
+
+static void bc_program_const(BcProgram *p, const char *code, size_t *bgn) {
+
+	BcResult *r = bc_program_prepResult(p);
+	BcConst *c = bc_vec_item(p->consts, bc_program_index(code, bgn));
+	BcBigDig base = BC_PROG_IBASE(p);
+
+	if (c->base != base) {
+
+		if (c->num.num == NULL) {
+			BC_SIG_LOCK;
+			bc_num_init(&c->num, BC_NUM_RDX(strlen(c->val)));
+			BC_SIG_UNLOCK;
+		}
+
+		// bc_num_parse() should only do operations that cannot fail.
+		bc_num_parse(&c->num, c->val, base, !c->val[1]);
+
+		c->base = base;
+	}
+
+	BC_SIG_LOCK;
+
+	bc_num_createCopy(&r->d.n, &c->num);
+
+	BC_SIG_UNLOCK;
 }
 
 static void bc_program_op(BcProgram *p, uchar inst) {
@@ -1971,18 +1966,7 @@ void bc_program_exec(BcProgram *p) {
 
 			case BC_INST_NUM:
 			{
-				r.t = BC_RESULT_CONSTANT;
-				r.d.loc.loc = bc_program_index(code, &ip->idx);
-				bc_vec_push(&p->results, &r);
-#if DC_ENABLED
-				// We need to load the constant right away in dc because
-				// "functions" are fluid and we could call another function
-				// that could try to use the value.
-				if (!BC_IS_BC) {
-					BcResult *rptr = bc_vec_top(&p->results);
-					bc_program_num(p, rptr);
-				}
-#endif // DC_ENABLED
+				bc_program_const(p, code, &ip->idx);
 				break;
 			}
 

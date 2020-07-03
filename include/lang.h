@@ -253,7 +253,6 @@ typedef enum BcResultType {
 
 	BC_RESULT_STR,
 
-	BC_RESULT_CONSTANT,
 	BC_RESULT_TEMP,
 
 	BC_RESULT_ZERO,
