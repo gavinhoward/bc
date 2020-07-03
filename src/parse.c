@@ -64,24 +64,19 @@ static void bc_parse_update(BcParse *p, uchar inst, size_t idx) {
 
 void bc_parse_addString(BcParse *p) {
 
-	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
+	BcVec *strs = BC_IS_BC ? &p->func->strs : p->prog->strs;
 	size_t idx;
 
 	BC_SIG_LOCK;
 
 	if (BC_IS_BC) {
 		const char *str = bc_vm_strdup(p->l.str.v);
-		idx = f->strs.len;
-		bc_vec_push(&f->strs, &str);
+		idx = strs->len;
+		bc_vec_push(strs, &str);
 	}
 #if DC_ENABLED
 	else idx = bc_program_insertFunc(p->prog, p->l.str.v) - BC_PROG_REQ_FUNCS;
 #endif // DC_ENABLED
-
-#ifndef NDEBUG
-	f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
-	assert(f->strs.len > idx);
-#endif // NDEBUG
 
 	bc_parse_update(p, BC_INST_STR, idx);
 
@@ -90,7 +85,7 @@ void bc_parse_addString(BcParse *p) {
 
 static void bc_parse_addNum(BcParse *p, const char *string) {
 
-	BcFunc *f = BC_IS_BC ? p->func : bc_vec_item(&p->prog->fns, BC_PROG_MAIN);
+	BcVec *consts = BC_IS_BC ? &p->func->consts : p->prog->consts;
 	size_t idx;
 	BcConst c;
 
@@ -103,7 +98,7 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 		return;
 	}
 
-	idx = f->consts.len;
+	idx = consts->len;
 
 	BC_SIG_LOCK;
 
@@ -111,7 +106,7 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 	c.base = BC_NUM_BIGDIG_MAX;
 
 	bc_num_clear(&c.num);
-	bc_vec_push(&f->consts, &c);
+	bc_vec_push(consts, &c);
 
 	bc_parse_update(p, BC_INST_NUM, idx);
 

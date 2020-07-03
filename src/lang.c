@@ -96,37 +96,39 @@ void bc_func_init(BcFunc *f, const char *name) {
 
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
 
-	// This is necessary for not allocating memory where it isn't used.
-	// dc does not use strings except in the main function. The else part
-	// is necessary to stop uninitiazed data errors in valgrind.
-	if (BC_IS_BC || !strcmp(name, bc_func_main))
-		bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
-#if BC_ENABLE_FUNC_FREE
-	else bc_vec_clear(&f->strs);
-#endif // BC_ENABLE_FUNC_FREE
-
-	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
 #if BC_ENABLED
 	if (BC_IS_BC) {
+
+		bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
+		bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
+
 		bc_vec_init(&f->autos, sizeof(BcLoc), NULL);
 		bc_vec_init(&f->labels, sizeof(size_t), NULL);
+
 		f->nparams = 0;
 		f->voidfn = false;
 	}
 #endif // BC_ENABLED
+
 	f->name = name;
 }
 
 void bc_func_reset(BcFunc *f) {
+
 	BC_SIG_ASSERT_LOCKED;
 	assert(f != NULL);
+
 	bc_vec_npop(&f->code, f->code.len);
-	bc_vec_npop(&f->strs, f->strs.len);
-	bc_vec_npop(&f->consts, f->consts.len);
+
 #if BC_ENABLED
 	if (BC_IS_BC) {
+
+		bc_vec_npop(&f->strs, f->strs.len);
+		bc_vec_npop(&f->consts, f->consts.len);
+
 		bc_vec_npop(&f->autos, f->autos.len);
 		bc_vec_npop(&f->labels, f->labels.len);
+
 		f->nparams = 0;
 		f->voidfn = false;
 	}
@@ -134,17 +136,23 @@ void bc_func_reset(BcFunc *f) {
 }
 
 void bc_func_free(void *func) {
+
 #if BC_ENABLE_FUNC_FREE
 
 	BcFunc *f = (BcFunc*) func;
+
 	BC_SIG_ASSERT_LOCKED;
 	assert(f != NULL);
+
 	bc_vec_free(&f->code);
-	bc_vec_free(&f->strs);
-	bc_vec_free(&f->consts);
+
 #if BC_ENABLED
 #ifndef NDEBUG
 	if (BC_IS_BC) {
+
+		bc_vec_free(&f->strs);
+		bc_vec_free(&f->consts);
+
 		bc_vec_free(&f->autos);
 		bc_vec_free(&f->labels);
 	}

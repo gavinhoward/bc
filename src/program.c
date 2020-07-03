@@ -566,9 +566,6 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 	assert(BC_PROG_STACK(&p->results, idx + 1));
 
-	assert(BC_IS_BC ||
-	       p->strs == &((BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN))->strs);
-
 	r = bc_vec_item_rev(&p->results, idx);
 
 #if BC_ENABLED
@@ -1620,7 +1617,6 @@ static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr) {
 		ip = bc_vec_item_rev(&p->stack, 0);
 		bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, ip->func));
 	}
-	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
 }
 
 size_t bc_program_insertFunc(BcProgram *p, const char *name) {
@@ -1649,9 +1645,7 @@ size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 		bc_program_addFunc(p, &f, id_ptr);
 
 #if DC_ENABLED
-		if (!BC_IS_BC && strcmp(name, bc_func_main) &&
-		    strcmp(name, bc_func_read))
-		{
+		if (!BC_IS_BC && idx >= BC_PROG_REQ_FUNCS) {
 			bc_vec_push(p->strs, &id_ptr->name);
 			assert(p->strs->len == p->fns.len - BC_PROG_REQ_FUNCS);
 		}
@@ -1690,7 +1684,11 @@ void bc_program_free(BcProgram *p) {
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 #if DC_ENABLED
-	if (!BC_IS_BC) bc_vec_free(&p->tail_calls);
+	if (!BC_IS_BC) {
+		bc_vec_free(&p->tail_calls);
+		bc_vec_free(&p->strs_v);
+		bc_vec_free(&p->consts_v);
+	}
 #endif // DC_ENABLED
 }
 #endif // NDEBUG
@@ -1717,6 +1715,11 @@ void bc_program_init(BcProgram *p) {
 
 #if DC_ENABLED
 	if (!BC_IS_BC) {
+
+		bc_vec_init(&p->consts_v, sizeof(BcConst), bc_const_free);
+		p->consts = &p->consts_v;
+		bc_vec_init(&p->strs_v, sizeof(char*), bc_string_free);
+		p->strs = &p->strs_v;
 
 		bc_vec_init(&p->tail_calls, sizeof(size_t), NULL);
 		i = 0;
@@ -1802,7 +1805,6 @@ void bc_program_exec(BcProgram *p) {
 #endif // NDEBUG
 
 	if (BC_IS_BC) bc_program_setVecs(p, func);
-	else bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
 
 	while (ip->idx < func->code.len) {
 

@@ -418,33 +418,7 @@ static void bc_vm_clean(void) {
 
 		size_t i;
 
-		for (i = 0; i < vm.prog.vars.len; ++i) {
-			BcVec *arr = bc_vec_item(&vm.prog.vars, i);
-			BcNum *n = bc_vec_top(arr);
-			if (arr->len != 1 || BC_PROG_STR(n)) break;
-		}
-
-		if (i == vm.prog.vars.len) {
-
-			for (i = 0; i < vm.prog.arrs.len; ++i) {
-
-				BcVec *arr = bc_vec_item(&vm.prog.arrs, i);
-				size_t j;
-
-				assert(arr->len == 1);
-
-				arr = bc_vec_top(arr);
-
-				for (j = 0; j < arr->len; ++j) {
-					BcNum *n = bc_vec_item(arr, j);
-					if (BC_PROG_STR(n)) break;
-				}
-
-				if (j != arr->len) break;
-			}
-
-			good = (i == vm.prog.arrs.len);
-		}
+		good = true;
 
 		for (i = 0; good && i < vm.prog.results.len; ++i) {
 			BcResult *r = (BcResult*) bc_vec_item(&vm.prog.results, i);
@@ -456,14 +430,20 @@ static void bc_vm_clean(void) {
 	// If this condition is true, we can get rid of strings,
 	// constants, and code. This is an idea from busybox.
 	if (good && vm.prog.stack.len == 1 && ip->idx == f->code.len) {
+
 #if BC_ENABLED
 		if (BC_IS_BC) {
 			bc_vec_npop(&f->labels, f->labels.len);
 			bc_vec_npop(&f->strs, f->strs.len);
+			bc_vec_npop(&f->consts, f->consts.len);
 		}
 #endif // BC_ENABLED
-		bc_vec_npop(&f->consts, f->consts.len);
+
 		bc_vec_npop(&f->code, f->code.len);
+
+		// Note to self: you cannot delete strings and functions. Deal with it.
+		if (!BC_IS_BC) bc_vec_npop(vm.prog.consts, vm.prog.consts->len);
+
 		ip->idx = 0;
 	}
 }

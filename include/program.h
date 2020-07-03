@@ -81,6 +81,9 @@ typedef struct BcProgram {
 	BcVec arr_map;
 
 #if DC_ENABLED
+	BcVec consts_v;
+	BcVec strs_v;
+
 	BcVec tail_calls;
 
 	BcBigDig strm;
