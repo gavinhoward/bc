@@ -198,7 +198,8 @@ This is a \f[B]non\-portable extension\f[].
 .RE
 .TP
 .B \f[B]\-f\f[] \f[I]file\f[], \f[B]\-\-file\f[]=\f[I]file\f[]
-Reads in \f[I]file\f[] and evaluates it.
+Reads in \f[I]file\f[] and evaluates it, line by line, as though it were
+read through \f[B]stdin\f[].
 If expressions are also given (see above), the expressions are evaluated
 in the order given.
 .RS
@@ -1013,6 +1014,9 @@ If built in an environment where \f[B]BC_LONG_BIT\f[] is \f[B]32\f[]
 then each integer has \f[B]4\f[] decimal digits.
 This value (the number of decimal digits per large integer) is called
 \f[B]BC_BASE_DIGS\f[].
+.PP
+The actual values of \f[B]BC_LONG_BIT\f[] and \f[B]BC_BASE_DIGS\f[] can
+be queried with the \f[B]limits\f[] statement.
 .PP
 In addition, this bc(1) uses an even larger integer for overflow
 checking.

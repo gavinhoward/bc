@@ -109,8 +109,9 @@ The following are the options that dc(1) accepts.
 
 **-f** *file*, **--file**=*file*
 
-:   Reads in *file* and evaluates it. If expressions are also given (see above),
-    the expressions are evaluated in the order given.
+:   Reads in *file* and evaluates it, line by line, as though it were read
+    through **stdin**. If expressions are also given (see above), the
+    expressions are evaluated in the order given.
 
     In other dc(1) implementations, this option causes the program to execute
     the files and then exit. This dc(1) does not, unless the

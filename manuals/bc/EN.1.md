@@ -179,8 +179,9 @@ The following are the options that bc(1) accepts.
 
 **-f** *file*, **--file**=*file*
 
-:   Reads in *file* and evaluates it. If expressions are also given (see above),
-    the expressions are evaluated in the order given.
+:   Reads in *file* and evaluates it, line by line, as though it were read
+    through **stdin**. If expressions are also given (see above), the
+    expressions are evaluated in the order given.
 
     In other bc(1) implementations, this option causes the program to execute
     the files and then exit. This bc(1) does not, unless the
@@ -806,6 +807,9 @@ built in a environment where **BC_LONG_BIT** (see the **LIMITS** section) is
 where **BC_LONG_BIT** is **32** then each integer has **4** decimal digits. This
 value (the number of decimal digits per large integer) is called
 **BC_BASE_DIGS**.
+
+The actual values of **BC_LONG_BIT** and **BC_BASE_DIGS** can be queried with
+the **limits** statement.
 
 In addition, this bc(1) uses an even larger integer for overflow checking. This
 integer type depends on the value of **BC_LONG_BIT**, but is always at least
