@@ -446,12 +446,9 @@ static void bc_vm_clean(void) {
 			good = (i == vm.prog.arrs.len);
 		}
 
-		if (good) {
-
-			for (i = 0; good && i < vm.prog.results.len; ++i) {
-				BcResult *r = (BcResult*) bc_vec_item(&vm.prog.results, i);
-				good = BC_VM_SAFE_RESULT(r);
-			}
+		for (i = 0; good && i < vm.prog.results.len; ++i) {
+			BcResult *r = (BcResult*) bc_vec_item(&vm.prog.results, i);
+			good = BC_VM_SAFE_RESULT(r);
 		}
 	}
 #endif // DC_ENABLED
