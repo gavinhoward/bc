@@ -96,10 +96,11 @@ void bc_func_init(BcFunc *f, const char *name) {
 
 	bc_vec_init(&f->code, sizeof(uchar), NULL);
 
+	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
+
 #if BC_ENABLED
 	if (BC_IS_BC) {
 
-		bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
 		bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
 
 		bc_vec_init(&f->autos, sizeof(BcLoc), NULL);
@@ -120,11 +121,12 @@ void bc_func_reset(BcFunc *f) {
 
 	bc_vec_npop(&f->code, f->code.len);
 
+	bc_vec_npop(&f->consts, f->consts.len);
+
 #if BC_ENABLED
 	if (BC_IS_BC) {
 
 		bc_vec_npop(&f->strs, f->strs.len);
-		bc_vec_npop(&f->consts, f->consts.len);
 
 		bc_vec_npop(&f->autos, f->autos.len);
 		bc_vec_npop(&f->labels, f->labels.len);
@@ -146,12 +148,13 @@ void bc_func_free(void *func) {
 
 	bc_vec_free(&f->code);
 
+	bc_vec_free(&f->consts);
+
 #if BC_ENABLED
 #ifndef NDEBUG
 	if (BC_IS_BC) {
 
 		bc_vec_free(&f->strs);
-		bc_vec_free(&f->consts);
 
 		bc_vec_free(&f->autos);
 		bc_vec_free(&f->labels);

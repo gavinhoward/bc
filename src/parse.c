@@ -85,7 +85,7 @@ void bc_parse_addString(BcParse *p) {
 
 static void bc_parse_addNum(BcParse *p, const char *string) {
 
-	BcVec *consts = BC_IS_BC ? &p->func->consts : p->prog->consts;
+	BcVec *consts = &p->func->consts;
 	size_t idx;
 	BcConst c;
 

@@ -52,7 +52,7 @@ static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr);
 
 static inline void bc_program_setVecs(BcProgram *p, BcFunc *f) {
 	p->consts = &f->consts;
-	p->strs = &f->strs;
+	if (BC_IS_BC) p->strs = &f->strs;
 }
 
 static inline void bc_program_type_num(BcResult *r, BcNum *n) {
@@ -1613,8 +1613,8 @@ static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr) {
 	bc_vec_push(&p->fns, f);
 
 	// This is to make sure pointers are updated if the array was moved.
-	if (BC_IS_BC && p->stack.len) {
-		ip = bc_vec_item_rev(&p->stack, 0);
+	if (p->stack.len) {
+		ip = bc_vec_top(&p->stack);
 		bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, ip->func));
 	}
 }
@@ -1687,7 +1687,6 @@ void bc_program_free(BcProgram *p) {
 	if (!BC_IS_BC) {
 		bc_vec_free(&p->tail_calls);
 		bc_vec_free(&p->strs_v);
-		bc_vec_free(&p->consts_v);
 	}
 #endif // DC_ENABLED
 }
@@ -1716,8 +1715,6 @@ void bc_program_init(BcProgram *p) {
 #if DC_ENABLED
 	if (!BC_IS_BC) {
 
-		bc_vec_init(&p->consts_v, sizeof(BcConst), bc_const_free);
-		p->consts = &p->consts_v;
 		bc_vec_init(&p->strs_v, sizeof(char*), bc_string_free);
 		p->strs = &p->strs_v;
 
@@ -1775,7 +1772,7 @@ void bc_program_reset(BcProgram *p) {
 
 	f = bc_vec_item(&p->fns, BC_PROG_MAIN);
 	ip = bc_vec_top(&p->stack);
-	if (BC_IS_BC) bc_program_setVecs(p, f);
+	bc_program_setVecs(p, f);
 	ip->idx = f->code.len;
 
 	if (vm.sig) {
@@ -1790,7 +1787,7 @@ void bc_program_exec(BcProgram *p) {
 	size_t idx;
 	BcResult r, *ptr;
 	BcInstPtr *ip = bc_vec_top(&p->stack);
-	BcFunc *func = bc_vec_item(&p->fns, ip->func);
+	BcFunc *func = (BcFunc*) bc_vec_item(&p->fns, ip->func);
 	char *code = func->code.v;
 	bool cond = false;
 #if BC_ENABLED
@@ -1804,7 +1801,7 @@ void bc_program_exec(BcProgram *p) {
 	jmp_bufs_len = vm.jmp_bufs.len;
 #endif // NDEBUG
 
-	if (BC_IS_BC) bc_program_setVecs(p, func);
+	bc_program_setVecs(p, func);
 
 	while (ip->idx < func->code.len) {
 
@@ -1877,7 +1874,7 @@ void bc_program_exec(BcProgram *p) {
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
 
-				if (BC_IS_BC) bc_program_setVecs(p, func);
+				bc_program_setVecs(p, func);
 
 				break;
 			}
@@ -1904,7 +1901,7 @@ void bc_program_exec(BcProgram *p) {
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
 
-				if (BC_IS_BC) bc_program_setVecs(p, func);
+				bc_program_setVecs(p, func);
 
 				break;
 			}
@@ -1977,6 +1974,15 @@ void bc_program_exec(BcProgram *p) {
 				r.t = BC_RESULT_CONSTANT;
 				r.d.loc.loc = bc_program_index(code, &ip->idx);
 				bc_vec_push(&p->results, &r);
+#if DC_ENABLED
+				// We need to load the constant right away in dc because
+				// "functions" are fluid and we could call another function
+				// that could try to use the value.
+				if (!BC_IS_BC) {
+					BcResult *rptr = bc_vec_top(&p->results);
+					bc_program_num(p, rptr);
+				}
+#endif // DC_ENABLED
 				break;
 			}
 
@@ -2088,6 +2094,7 @@ void bc_program_exec(BcProgram *p) {
 				ip = bc_vec_top(&p->stack);
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
+				bc_program_setVecs(p, func);
 				break;
 			}
 
@@ -2111,6 +2118,7 @@ void bc_program_exec(BcProgram *p) {
 				ip = bc_vec_top(&p->stack);
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
+				bc_program_setVecs(p, func);
 				break;
 			}
 
@@ -2175,6 +2183,7 @@ void bc_program_exec(BcProgram *p) {
 				ip = bc_vec_top(&p->stack);
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
+				bc_program_setVecs(p, func);
 				break;
 			}
 
@@ -2206,6 +2215,7 @@ void bc_program_exec(BcProgram *p) {
 				ip = bc_vec_top(&p->stack);
 				func = bc_vec_item(&p->fns, ip->func);
 				code = func->code.v;
+				bc_program_setVecs(p, func);
 				break;
 			}
 #endif // DC_ENABLED
