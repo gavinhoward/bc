@@ -44,6 +44,9 @@ def run(cmd, env=None):
 script = sys.argv[0]
 testdir = os.path.dirname(script)
 
+if testdir == "":
+	testdir = os.getcwd()
+
 print("\nWARNING: This script is for distro and package maintainers.")
 print("It is for finding the optimal Karatsuba number.")
 print("Though it only needs to be run once per release/platform,")
