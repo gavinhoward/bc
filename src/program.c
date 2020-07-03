@@ -55,7 +55,7 @@ static inline void bc_program_setVecs(BcProgram *p, BcFunc *f) {
 	p->strs = &f->strs;
 }
 
-static void bc_program_type_num(BcResult *r, BcNum *n) {
+static inline void bc_program_type_num(BcResult *r, BcNum *n) {
 
 #if BC_ENABLED
 	assert(r->t != BC_RESULT_VOID);
