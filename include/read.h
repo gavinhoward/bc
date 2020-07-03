@@ -55,5 +55,6 @@
 BcStatus bc_read_line(BcVec *vec, const char *prompt);
 void bc_read_file(const char *path, char **buf);
 BcStatus bc_read_chars(BcVec *vec, const char *prompt);
+bool bc_read_buf(BcVec *vec, char *buf, size_t *buf_len);
 
 #endif // BC_READ_H

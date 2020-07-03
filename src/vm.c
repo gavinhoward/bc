@@ -706,8 +706,29 @@ static void bc_vm_exec(const char* env_exp_exit) {
 #endif // BC_ENABLED
 
 	if (vm.exprs.len) {
+
+		BcVec buf;
+		size_t len = vm.exprs.len - 1;
+		bool more;
+
+		BC_SIG_LOCK;
+
+		bc_vec_init(&buf, sizeof(uchar), NULL);
+
+		BC_SIG_UNLOCK;
+
 		bc_lex_file(&vm.prs.l, bc_program_exprs_name);
-		bc_vm_process(vm.exprs.v, false);
+
+		do {
+
+			more = bc_read_buf(&buf, vm.exprs.v, &len);
+			bc_vec_pushByte(&buf, '\0');
+			bc_vm_process(buf.v, false);
+
+			bc_vec_npop(&buf, buf.len);
+
+		} while (more);
+
 		if (getenv(env_exp_exit) != NULL) return;
 	}
 
