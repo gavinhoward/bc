@@ -729,6 +729,8 @@ static void bc_vm_exec(const char* env_exp_exit) {
 
 		} while (more);
 
+		bc_vec_free(&buf);
+
 		if (getenv(env_exp_exit) != NULL) return;
 	}
 
