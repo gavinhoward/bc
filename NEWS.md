@@ -1,10 +1,14 @@
 # News
 
-## 3.0.4
+## 3.1.0
 
-This is a production release that fixes four bugs and improves manpages for
-FreeBSD. Because this release fixes bugs, **users and package maintainers should
-update to this version as soon as possible**.
+This is a production release that adjusts one behavior, fixes four bugs, and
+improves manpages for FreeBSD. Because this release fixes bugs, **users and
+package maintainers should update to this version as soon as possible**.
+
+The behavior that was adjusted was how code from the `-e` and `-f` arguments
+(and equivalents) were executed. They used to be executed as one big chunk, but
+in this release, they are now executed line-by-line.
 
 The first bug fix in how output to `stdout` was handled in `SIGINT`. If a
 `SIGINT` came in, the `stdout` buffer was not correctly flushed. In fact, a
