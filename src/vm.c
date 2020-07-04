@@ -734,6 +734,11 @@ static void bc_vm_exec(const char* env_exp_exit) {
 
 		BC_SIG_LOCK;
 		bc_vec_free(&buf);
+
+#ifndef NDEBUG
+		BC_UNSETJMP;
+#endif // NDEBUG
+
 		BC_SIG_UNLOCK;
 
 		if (getenv(env_exp_exit) != NULL) return;
