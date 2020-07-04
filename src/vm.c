@@ -693,6 +693,7 @@ static void bc_vm_exec(const char* env_exp_exit) {
 
 	size_t i;
 	bool has_file = false;
+	BcVec buf;
 
 #if BC_ENABLED
 	if (BC_IS_BC && (vm.flags & BC_FLAG_L)) {
@@ -707,12 +708,16 @@ static void bc_vm_exec(const char* env_exp_exit) {
 
 	if (vm.exprs.len) {
 
-		BcVec buf;
 		size_t len = vm.exprs.len - 1;
 		bool more;
 
 		BC_SIG_LOCK;
 		bc_vec_init(&buf, sizeof(uchar), NULL);
+
+#ifndef NDEBUG
+		BC_SETJMP_LOCKED(err);
+#endif // NDEBUG
+
 		BC_SIG_UNLOCK;
 
 		bc_lex_file(&vm.prs.l, bc_program_exprs_name);
@@ -742,6 +747,13 @@ static void bc_vm_exec(const char* env_exp_exit) {
 	}
 
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
+
+#ifndef NDEBUG
+err:
+	BC_SIG_MAYLOCK;
+	bc_vec_free(&buf);
+	BC_LONGJMP_CONT;
+#endif // NDEBUG
 }
 
 void  bc_vm_boot(int argc, char *argv[], const char *env_len,
