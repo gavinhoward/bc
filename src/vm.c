@@ -439,8 +439,10 @@ static void bc_vm_clean(void) {
 		}
 #endif // BC_ENABLED
 
+#if DC_ENABLED
 		// Note to self: you cannot delete strings and functions. Deal with it.
 		if (!BC_IS_BC) bc_vec_npop(vm.prog.consts, vm.prog.consts->len);
+#endif // DC_ENABLED
 
 		bc_vec_npop(&f->code, f->code.len);
 

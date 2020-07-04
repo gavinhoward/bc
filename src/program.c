@@ -1751,6 +1751,10 @@ void bc_program_init(BcProgram *p) {
 	bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
 	bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
 	bc_vec_push(&p->stack, &ip);
+
+	bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));
+
+	assert(p->consts != NULL && p->strs != NULL);
 }
 
 void bc_program_reset(BcProgram *p) {
