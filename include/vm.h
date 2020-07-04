@@ -91,28 +91,60 @@
 #define isatty _isatty
 #endif // _WIN32
 
+#if DC_ENABLED
 #define DC_FLAG_X (UINTMAX_C(1)<<0)
+#endif // DC_ENABLED
+
+#if BC_ENABLED
 #define BC_FLAG_W (UINTMAX_C(1)<<1)
 #define BC_FLAG_S (UINTMAX_C(1)<<2)
 #define BC_FLAG_Q (UINTMAX_C(1)<<3)
 #define BC_FLAG_L (UINTMAX_C(1)<<4)
-#define BC_FLAG_I (UINTMAX_C(1)<<5)
-#define BC_FLAG_G (UINTMAX_C(1)<<6)
+#define BC_FLAG_G (UINTMAX_C(1)<<5)
+#endif // BC_ENABLED
+
+#define BC_FLAG_I (UINTMAX_C(1)<<6)
 #define BC_FLAG_P (UINTMAX_C(1)<<7)
 #define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
 #define BC_FLAG_TTY (UINTMAX_C(1)<<9)
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
 #define BC_TTY (vm.flags & BC_FLAG_TTY)
 
+#if BC_ENABLED
+
 #define BC_S (BC_ENABLED && (vm.flags & BC_FLAG_S))
 #define BC_W (BC_ENABLED && (vm.flags & BC_FLAG_W))
 #define BC_L (BC_ENABLED && (vm.flags & BC_FLAG_L))
-#define BC_I (vm.flags & BC_FLAG_I)
 #define BC_G (BC_ENABLED && (vm.flags & BC_FLAG_G))
-#define DC_X (DC_ENABLED && (vm.flags & DC_FLAG_X))
+
+#endif // BC_ENABLED
+
+#if DC_ENABLED
+#define DC_X (vm.flags & DC_FLAG_X)
+#endif // DC_ENABLED
+
+#define BC_I (vm.flags & BC_FLAG_I)
 #define BC_P (vm.flags & BC_FLAG_P)
 
+#if BC_ENABLED
+
+#define BC_IS_POSIX (BC_S || BC_W)
+
+#if DC_ENABLED
+#define BC_IS_BC (vm.name[0] != 'd')
+#else // DC_ENABLED
+#define BC_IS_BC (1)
+#endif // DC_ENABLED
+
+#else // BC_ENABLED
+#define BC_IS_BC (0)
+#endif // BC_ENABLED
+
+#if BC_ENABLED
 #define BC_USE_PROMPT (!BC_P && BC_TTY && !BC_IS_POSIX)
+#else // BC_ENABLED
+#define BC_USE_PROMPT (!BC_P && BC_TTY)
+#endif // BC_ENABLED
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -130,9 +162,6 @@
 
 #define BC_MAX_EXP ((ulong) (BC_NUM_BIGDIG_MAX))
 #define BC_MAX_VARS ((ulong) (SIZE_MAX - 1))
-
-#define BC_IS_BC (BC_ENABLED && (!DC_ENABLED || vm.name[0] != 'd'))
-#define BC_IS_POSIX (BC_S || BC_W)
 
 #if BC_DEBUG_CODE
 #define BC_VM_JMP bc_vm_jmp(__func__)
