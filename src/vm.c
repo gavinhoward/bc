@@ -753,6 +753,9 @@ static void bc_vm_exec(const char* env_exp_exit) {
 
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
 
+// These are all protected by ifndef NDEBUG because if these are needed, bc is
+// goingi to exit anyway, and I see no reason to include this code in a release
+// build when the OS is going to free all of the resources anyway.
 #ifndef NDEBUG
 	return;
 
