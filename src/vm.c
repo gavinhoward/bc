@@ -831,7 +831,9 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	bc_vm_envArgs(env_args);
 	bc_args(argc, argv);
 
+#if BC_ENABLED
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
+#endif // BC_ENABLED
 
 	vm.maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_POSIX_IBASE;
 	vm.maxes[BC_PROG_GLOBALS_OBASE] = BC_MAX_OBASE;
@@ -841,8 +843,10 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	vm.maxes[BC_PROG_MAX_RAND] = ((BcRand) 0) - 1;
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
+#if BC_ENABLED
 	if (BC_IS_BC && !BC_IS_POSIX)
 		vm.maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_IBASE;
+#endif // BC_ENABLED
 
 	if (BC_IS_BC && BC_I && !(vm.flags & BC_FLAG_Q)) bc_vm_info(NULL);
 

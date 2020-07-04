@@ -89,6 +89,7 @@ static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
 	return res;
 }
 
+#if BC_ENABLED
 static void bc_program_prepGlobals(BcProgram *p) {
 
 	size_t i;
@@ -115,6 +116,7 @@ static void bc_program_popGlobals(BcProgram *p, bool reset) {
 	bc_rand_pop(&p->rng, reset);
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 }
+#endif // BC_ENABLED
 
 static void bc_program_pushBigdig(BcProgram *p, BcBigDig dig, BcResultType type)
 {
@@ -460,7 +462,9 @@ static void bc_program_read(BcProgram *p) {
 	if (BC_ERR(parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF))
 		bc_vm_err(BC_ERROR_EXEC_READ_EXPR);
 
+#if BC_ENABLED
 	if (BC_G) bc_program_prepGlobals(p);
+#endif // BC_ENABLED
 
 	ip.func = BC_PROG_READ;
 	ip.idx = 0;
@@ -471,6 +475,7 @@ static void bc_program_read(BcProgram *p) {
 
 	bc_vec_pushByte(&f->code, vm.read_ret);
 	bc_vec_push(&p->stack, &ip);
+
 #if DC_ENABLED
 	if (!BC_IS_BC) {
 		size_t temp = 0;
@@ -1767,7 +1772,9 @@ void bc_program_reset(BcProgram *p) {
 	bc_vec_npop(&p->stack, p->stack.len - 1);
 	bc_vec_npop(&p->results, p->results.len);
 
+#if BC_ENABLED
 	if (BC_G) bc_program_popGlobals(p, true);
+#endif // BC_ENABLED
 
 	f = bc_vec_item(&p->fns, BC_PROG_MAIN);
 	ip = bc_vec_top(&p->stack);

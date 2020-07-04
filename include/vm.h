@@ -98,11 +98,11 @@
 #if BC_ENABLED
 #define BC_FLAG_W (UINTMAX_C(1)<<1)
 #define BC_FLAG_S (UINTMAX_C(1)<<2)
-#define BC_FLAG_Q (UINTMAX_C(1)<<3)
-#define BC_FLAG_L (UINTMAX_C(1)<<4)
-#define BC_FLAG_G (UINTMAX_C(1)<<5)
+#define BC_FLAG_L (UINTMAX_C(1)<<3)
+#define BC_FLAG_G (UINTMAX_C(1)<<4)
 #endif // BC_ENABLED
 
+#define BC_FLAG_Q (UINTMAX_C(1)<<5)
 #define BC_FLAG_I (UINTMAX_C(1)<<6)
 #define BC_FLAG_P (UINTMAX_C(1)<<7)
 #define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
@@ -137,6 +137,7 @@
 #endif // DC_ENABLED
 
 #else // BC_ENABLED
+#define BC_IS_POSIX (0)
 #define BC_IS_BC (0)
 #endif // BC_ENABLED
 
