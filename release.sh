@@ -86,7 +86,6 @@ configure() {
 	header "$_configure_header"
 	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" GEN_HOST="$_configure_GEN_HOST" \
 		LONG_BIT="$_configure_LONG_BIT" ./configure.sh $_configure_configure_flags > /dev/null
-
 }
 
 build() {
