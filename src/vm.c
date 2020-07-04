@@ -712,9 +712,7 @@ static void bc_vm_exec(const char* env_exp_exit) {
 		bool more;
 
 		BC_SIG_LOCK;
-
 		bc_vec_init(&buf, sizeof(uchar), NULL);
-
 		BC_SIG_UNLOCK;
 
 		bc_lex_file(&vm.prs.l, bc_program_exprs_name);
@@ -729,7 +727,9 @@ static void bc_vm_exec(const char* env_exp_exit) {
 
 		} while (more);
 
+		BC_SIG_LOCK;
 		bc_vec_free(&buf);
+		BC_SIG_UNLOCK;
 
 		if (getenv(env_exp_exit) != NULL) return;
 	}
