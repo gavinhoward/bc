@@ -754,6 +754,8 @@ static void bc_vm_exec(const char* env_exp_exit) {
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
 
 #ifndef NDEBUG
+	return;
+
 err:
 	BC_SIG_MAYLOCK;
 	bc_vec_free(&buf);
