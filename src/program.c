@@ -589,6 +589,7 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 		size_t i = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
 
+		bc_file_flush(&vm.fout);
 		str = *((char**) bc_vec_item(p->strs, i));
 
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
@@ -842,7 +843,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 
 	if (right->t == BC_RESULT_STR || BC_PROG_STR(r)) {
 
-		size_t idx = right->d.loc.loc;
+		size_t idx = right->t == BC_RESULT_STR ? right->d.loc.loc : r->scale;
 
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
 			BC_SIG_LOCK;
