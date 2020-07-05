@@ -992,8 +992,13 @@ static void bc_program_pushArray(BcProgram *p, const char *restrict code,
 
 	r.t = BC_RESULT_ARRAY_ELEM;
 	r.d.loc.idx = (size_t) temp;
+
+	BC_SIG_LOCK;
+
 	bc_vec_pop(&p->results);
 	bc_vec_push(&p->results, &r);
+
+	BC_SIG_UNLOCK;
 }
 
 #if BC_ENABLED
