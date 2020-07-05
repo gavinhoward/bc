@@ -399,8 +399,10 @@ static void bc_parse_incdec(BcParse *p, BcInst *prev, bool *can_assign,
 		// right here, we need to increment this.
 		*nexs = *nexs + 1;
 
-		if (type == BC_LEX_NAME)
-			bc_parse_name(p, prev, can_assign, flags | BC_PARSE_NOCALL);
+		if (type == BC_LEX_NAME) {
+			uint8_t flags2 = flags & ~BC_PARSE_ARRAY;
+			bc_parse_name(p, prev, can_assign, flags2 | BC_PARSE_NOCALL);
+		}
 		else if (type >= BC_LEX_KW_LAST && type <= BC_LEX_KW_OBASE) {
 			bc_parse_push(p, type - BC_LEX_KW_LAST + BC_INST_LAST);
 			bc_lex_next(&p->l);
