@@ -46,8 +46,23 @@
 #define bc_lex_err(l, e) (bc_vm_error((e), (l)->line))
 #define bc_lex_verr(l, e, ...) (bc_vm_error((e), (l)->line, __VA_ARGS__))
 
+#if BC_ENABLED
+
+#if DC_ENABLED
 #define BC_LEX_NEG_CHAR (BC_IS_BC ? '-' : '_')
 #define BC_LEX_LAST_NUM_CHAR (BC_IS_BC ? 'Z' : 'F')
+#else // DC_ENABLED
+#define BC_LEX_NEG_CHAR ('-')
+#define BC_LEX_LAST_NUM_CHAR ('Z')
+#endif // DC_ENABLED
+
+#else // BC_ENABLED
+
+#define BC_LEX_NEG_CHAR ('_')
+#define BC_LEX_LAST_NUM_CHAR ('F')
+
+#endif // BC_ENABLED
+
 #define BC_LEX_NUM_CHAR(c, pt, int_only)                          \
 	(isdigit(c) || ((c) >= 'A' && (c) <= BC_LEX_LAST_NUM_CHAR) || \
 	 ((c) == '.' && !(pt) && !(int_only)))

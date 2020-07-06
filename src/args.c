@@ -184,7 +184,7 @@ void bc_args(int argc, char *argv[]) {
 #if DC_ENABLED
 			case 'x':
 			{
-				assert(!BC_IS_BC);
+				assert(BC_IS_DC);
 				vm.flags |= DC_FLAG_X;
 				break;
 			}
@@ -205,7 +205,7 @@ void bc_args(int argc, char *argv[]) {
 
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) vm.status);
-	if (vm.exprs.len > 1 || !BC_IS_BC) vm.flags |= BC_FLAG_Q;
+	if (vm.exprs.len > 1 || BC_IS_DC) vm.flags |= BC_FLAG_Q;
 
 	if (opts.optind < (size_t) argc)
 		bc_vec_init(&vm.files, sizeof(char*), NULL);

@@ -102,7 +102,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 		case BC_OPT_BC_ONLY:
 		case BC_OPT_DC_ONLY:
 		{
-			if (type == -1 || (type == BC_OPT_BC_ONLY && !BC_IS_BC) ||
+			if (type == -1 || (type == BC_OPT_BC_ONLY && BC_IS_DC) ||
 			    (type == BC_OPT_DC_ONLY && BC_IS_BC))
 			{
 				char str[2] = {0, 0};
@@ -212,7 +212,7 @@ int bc_opt_parse(BcOpt *o, const BcOptLong *longopts) {
 			o->optopt = longopts[i].val;
 			arg = bc_opt_longoptsArg(option);
 
-			if ((longopts[i].type == BC_OPT_BC_ONLY && !BC_IS_BC) ||
+			if ((longopts[i].type == BC_OPT_BC_ONLY && BC_IS_DC) ||
 			    (longopts[i].type == BC_OPT_DC_ONLY && BC_IS_BC))
 			{
 				bc_opt_error(BC_ERROR_FATAL_OPTION, o->optopt, name);

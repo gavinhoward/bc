@@ -132,13 +132,16 @@
 
 #if DC_ENABLED
 #define BC_IS_BC (vm.name[0] != 'd')
+#define BC_IS_DC (vm.name[0] == 'd')
 #else // DC_ENABLED
 #define BC_IS_BC (1)
+#define BC_IS_DC (0)
 #endif // DC_ENABLED
 
 #else // BC_ENABLED
 #define BC_IS_POSIX (0)
 #define BC_IS_BC (0)
+#define BC_IS_DC (1)
 #endif // BC_ENABLED
 
 #if BC_ENABLED

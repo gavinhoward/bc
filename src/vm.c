@@ -191,11 +191,13 @@ void bc_vm_error(BcError e, size_t line, ...) {
 			bc_file_putchar(&vm.ferr, ' ');
 			bc_file_puts(&vm.ferr, f->name);
 
+#if BC_ENABLED
 			if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
 			    ip->func != BC_PROG_READ)
 			{
 				bc_file_puts(&vm.ferr, "()");
 			}
+#endif // BC_ENABLED
 		}
 	}
 
@@ -414,7 +416,7 @@ static void bc_vm_clean(void) {
 #endif // BC_ENABLED
 
 #if DC_ENABLED
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 
 		size_t i;
 
@@ -441,7 +443,7 @@ static void bc_vm_clean(void) {
 
 #if DC_ENABLED
 		// Note to self: you cannot delete strings and functions. Deal with it.
-		if (!BC_IS_BC) bc_vec_npop(vm.prog.consts, vm.prog.consts->len);
+		if (BC_IS_DC) bc_vec_npop(vm.prog.consts, vm.prog.consts->len);
 #endif // DC_ENABLED
 
 		bc_vec_npop(&f->code, f->code.len);
@@ -479,7 +481,7 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 
 		bc_program_exec(&vm.prog);
 
-		assert(!BC_IS_BC || vm.prog.results.len == 0);
+		assert(BC_IS_DC || vm.prog.results.len == 0);
 
 		if (BC_I) bc_file_flush(&vm.fout);
 

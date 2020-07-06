@@ -68,7 +68,7 @@ static inline void bc_program_type_num(BcResult *r, BcNum *n) {
 static void bc_program_type_match(BcResult *r, BcType t) {
 
 #if DC_ENABLED
-	assert(!BC_IS_BC || BC_NO_ERR(r->t != BC_RESULT_STR));
+	assert(BC_IS_DC || BC_NO_ERR(r->t != BC_RESULT_STR));
 #endif // DC_ENABLED
 
 	if (BC_ERR((r->t != BC_RESULT_ARRAY) != (!t)))
@@ -284,7 +284,7 @@ static void bc_program_binPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	assert(p != NULL && l != NULL && ln != NULL && r != NULL && rn != NULL);
 
 #ifndef BC_PROG_NO_STACK_CHECK
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 		if (BC_ERR(!BC_PROG_STACK(&p->results, idx + 2)))
 			bc_vm_err(BC_ERROR_EXEC_STACK);
 	}
@@ -332,7 +332,7 @@ static void bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 		bc_vm_err(BC_ERROR_EXEC_TYPE);
 
 #if DC_ENABLED
-	if(!BC_IS_BC) {
+	if(BC_IS_DC) {
 
 		bool good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
 		             lt <= BC_RESULT_ARRAY_ELEM);
@@ -349,7 +349,7 @@ static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, size_t idx) {
 	assert(p != NULL && r != NULL && n != NULL);
 
 #ifndef BC_PROG_NO_STACK_CHECK
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 		if (BC_ERR(!BC_PROG_STACK(&p->results, idx + 1)))
 			bc_vm_err(BC_ERROR_EXEC_STACK);
 	}
@@ -477,7 +477,7 @@ static void bc_program_read(BcProgram *p) {
 	bc_vec_push(&p->stack, &ip);
 
 #if DC_ENABLED
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 		size_t temp = 0;
 		bc_vec_push(&p->tail_calls, &temp);
 	}
@@ -516,7 +516,7 @@ static void bc_program_printString(const char *restrict str) {
 	size_t i, len = strlen(str);
 
 #if DC_ENABLED
-	if (!len && !BC_IS_BC) {
+	if (!len && BC_IS_DC) {
 		bc_vm_putchar('\0');
 		return;
 	}
@@ -558,7 +558,7 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	assert(p != NULL);
 
 #ifndef BC_PROG_NO_STACK_CHECK
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 		if (BC_ERR(!BC_PROG_STACK(&p->results, idx + 1)))
 			bc_vm_err(BC_ERROR_EXEC_STACK);
 	}
@@ -740,7 +740,7 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 	bool var = (t == BC_TYPE_VAR);
 
 #if DC_ENABLED
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 
 		if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
 			bc_vm_err(BC_ERROR_EXEC_STACK);
@@ -767,7 +767,7 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 	vec = bc_program_vec(p, idx, t);
 
 #if DC_ENABLED
-	if (!BC_IS_BC && (ptr->t == BC_RESULT_STR || BC_PROG_STR(n))) {
+	if (BC_IS_DC && (ptr->t == BC_RESULT_STR || BC_PROG_STR(n))) {
 		if (BC_ERR(!var)) bc_vm_err(BC_ERROR_EXEC_TYPE);
 		bc_program_assignStr(p, ptr, vec, true);
 		return;
@@ -895,7 +895,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		}
 		else {
 			min = BC_NUM_MIN_BASE;
-			if (BC_ENABLE_EXTRA_MATH && ob && (!BC_IS_BC || !BC_IS_POSIX))
+			if (BC_ENABLE_EXTRA_MATH && ob && (BC_IS_DC || !BC_IS_POSIX))
 				min = 0;
 			max = vm.maxes[ob + BC_PROG_GLOBALS_IBASE];
 			v = p->globals_v + BC_PROG_GLOBALS_IBASE + ob;
@@ -935,7 +935,7 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 	r.d.loc.loc = idx;
 
 #if DC_ENABLED
-	if (!BC_IS_BC && (pop || copy)) {
+	if (BC_IS_DC && (pop || copy)) {
 
 		BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
@@ -1176,7 +1176,7 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 #ifndef BC_PROG_NO_STACK_CHECK
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 		if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
 			bc_vm_err(BC_ERROR_EXEC_STACK);
 	}
@@ -1651,7 +1651,7 @@ size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 		bc_program_addFunc(p, &f, id_ptr);
 
 #if DC_ENABLED
-		if (!BC_IS_BC && idx >= BC_PROG_REQ_FUNCS) {
+		if (BC_IS_DC && idx >= BC_PROG_REQ_FUNCS) {
 			bc_vec_push(p->strs, &id_ptr->name);
 			assert(p->strs->len == p->fns.len - BC_PROG_REQ_FUNCS);
 		}
@@ -1690,7 +1690,7 @@ void bc_program_free(BcProgram *p) {
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 #if DC_ENABLED
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 		bc_vec_free(&p->tail_calls);
 		bc_vec_free(&p->strs_v);
 	}
@@ -1719,7 +1719,7 @@ void bc_program_init(BcProgram *p) {
 	}
 
 #if DC_ENABLED
-	if (!BC_IS_BC) {
+	if (BC_IS_DC) {
 
 		bc_vec_init(&p->strs_v, sizeof(char*), bc_string_free);
 		p->strs = &p->strs_v;
