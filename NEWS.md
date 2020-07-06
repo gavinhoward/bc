@@ -2,7 +2,7 @@
 
 ## 3.1.0
 
-This is a production release that adjusts one behavior, fixes four bugs, and
+This is a production release that adjusts one behavior, fixes eight bugs, and
 improves manpages for FreeBSD. Because this release fixes bugs, **users and
 package maintainers should update to this version as soon as possible**.
 
@@ -24,6 +24,12 @@ items onto and out of vectors.
 The fourth bug fixed was that `bc` could leave extra items on the stack and
 thus, not properly clean up some memory. (The memory would still get
 `free()`'ed, but it would not be `free()`'ed when it could have been.)
+
+The next two bugs were bugs in `bc`'s parser that caused crashes when executing
+the resulting code.
+
+The last two bugs were crashes in `dc` that resulted from mishandling of
+strings.
 
 The manpage improvement was done by switching from [ronn][20] to [Pandoc][21] to
 generate manpages. Pandoc generates much cleaner manpages and doesn't leave
