@@ -261,6 +261,10 @@ Other projects based on this bc are:
 * [toybox `bc`][9]. The maintainer has also made his own changes, so bugs in the
   toybox `bc` should be reported there.
 
+* [FreeBSD `bc`][23]. While the `bc` in FreeBSD is kept up-to-date, it is better
+  to report bugs there, and the maintainers of the package will contact me if
+  necessary.
+
 ## Language
 
 This `bc` is written in pure ISO C99, using POSIX 2008 APIs.
@@ -328,3 +332,4 @@ Folders:
 [20]: https://git.yzena.com/gavin/bc
 [21]: https://gavinhoward.com/2020/04/i-am-moving-away-from-github/
 [22]: https://www.deepl.com/translator
+[23]: https://github.com/freebsd/freebsd/tree/master/contrib/bc
