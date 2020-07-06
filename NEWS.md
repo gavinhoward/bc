@@ -1,5 +1,10 @@
 # News
 
+## 3.1.1
+
+This is a production release that adds two Spanish locales. Users do ***NOT***
+need to upgrade, unless they want those locales.
+
 ## 3.1.0
 
 This is a production release that adjusts one behavior, fixes eight bugs, and
