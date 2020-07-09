@@ -1,5 +1,10 @@
 # News
 
+## 3.1.2
+
+This is a production release that fixes locale installation on NetBSD. Users do
+***NOT*** need to upgrade.
+
 ## 3.1.1
 
 This is a production release that adds two Spanish locales. Users do ***NOT***
