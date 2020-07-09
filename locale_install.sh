@@ -205,11 +205,11 @@ for file in $locales_dir/*.msg; do
 		fi
 	fi
 
-	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
-
 	if [ -L "$file" ]; then
 		continue
 	fi
+
+	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
 
 	gencatfile "$loc" "$file"
 
