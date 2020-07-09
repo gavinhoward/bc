@@ -2,8 +2,11 @@
 
 ## 3.1.2
 
-This is a production release that fixes locale installation on NetBSD. Users do
+This is a production release that adds a way to install *all* locales. Users do
 ***NOT*** need to upgrade.
+
+For package maintainers wishing to make use of the change, just pass `-l` to
+`configure.sh`.
 
 ## 3.1.1
 
