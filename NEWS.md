@@ -1,5 +1,14 @@
 # News
 
+## 3.1.3
+
+This is a production release that fixes one minor bug: if `bc` was invoked like
+the following, it would error:
+
+```
+echo "if (1 < 3) 1" | bc
+```
+
 ## 3.1.2
 
 This is a production release that adds a way to install *all* locales. Users do
