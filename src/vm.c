@@ -602,8 +602,11 @@ restart:
 		else if (BC_ERR(string))
 			bc_parse_err(&vm.prs, BC_ERROR_PARSE_STRING);
 #if BC_ENABLED
-		else if (BC_IS_BC && BC_ERR(BC_PARSE_NO_EXEC(&vm.prs)))
-			bc_parse_err(&vm.prs, BC_ERROR_PARSE_BLOCK);
+		else if (BC_IS_BC && BC_ERR(BC_PARSE_NO_EXEC(&vm.prs))) {
+			if (BC_PARSE_TOP_FLAG(&vm.prs) == BC_PARSE_FLAG_IF_END)
+				bc_vm_process("else {}", true);
+			else bc_parse_err(&vm.prs, BC_ERROR_PARSE_BLOCK);
+		}
 #endif // BC_ENABLED
 	}
 
