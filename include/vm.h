@@ -279,12 +279,6 @@
 
 #define BC_VM_INVALID_CATALOG ((nl_catd) -1)
 
-// dc does not use is_stdin.
-#if !BC_ENABLED
-#define bc_vm_process(text, is_stdin) bc_vm_process(text)
-#else // BC_ENABLED
-#endif // BC_ENABLED
-
 typedef struct BcVm {
 
 	volatile sig_atomic_t status;
