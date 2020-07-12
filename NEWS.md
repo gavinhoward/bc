@@ -1,5 +1,10 @@
 # News
 
+## 3.1.4
+
+This is a production release that fixes one bug. The bug is like the one in the
+last release except it applies if files are being executed.
+
 ## 3.1.3
 
 This is a production release that fixes one minor bug: if `bc` was invoked like
