@@ -179,10 +179,10 @@ static void bc_parse_params(BcParse *p, uint8_t flags) {
 
 	bc_lex_next(&p->l);
 
-	for (nparams = 0; p->l.t != BC_LEX_RPAREN; ++nparams) {
+	flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
+	flags |= (BC_PARSE_ARRAY | BC_PARSE_NEEDVAL);
 
-		flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
-		flags |= (BC_PARSE_ARRAY | BC_PARSE_NEEDVAL);
+	for (nparams = 0; p->l.t != BC_LEX_RPAREN; ++nparams) {
 
 		bc_parse_expr_status(p, flags, bc_parse_next_param);
 
