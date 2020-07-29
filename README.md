@@ -333,5 +333,5 @@ Folders:
 [21]: https://gavinhoward.com/2020/04/i-am-moving-away-from-github/
 [22]: https://www.deepl.com/translator
 [23]: https://svnweb.freebsd.org/base/head/contrib/bc/
-[24]: https://bugs.freebsd.org/bugzilla/
+[24]: https://bugs.freebsd.org/
 [25]: https://reviews.freebsd.org/
