@@ -855,8 +855,6 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 		vm.maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_IBASE;
 #endif // BC_ENABLED
 
-	if (BC_IS_BC && BC_I && !(vm.flags & BC_FLAG_Q)) bc_vm_info(NULL);
-
 	BC_SIG_UNLOCK;
 
 	bc_vm_exec(env_exp_exit);

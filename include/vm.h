@@ -102,11 +102,10 @@
 #define BC_FLAG_G (UINTMAX_C(1)<<4)
 #endif // BC_ENABLED
 
-#define BC_FLAG_Q (UINTMAX_C(1)<<5)
-#define BC_FLAG_I (UINTMAX_C(1)<<6)
-#define BC_FLAG_P (UINTMAX_C(1)<<7)
-#define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
-#define BC_FLAG_TTY (UINTMAX_C(1)<<9)
+#define BC_FLAG_I (UINTMAX_C(1)<<5)
+#define BC_FLAG_P (UINTMAX_C(1)<<6)
+#define BC_FLAG_TTYIN (UINTMAX_C(1)<<7)
+#define BC_FLAG_TTY (UINTMAX_C(1)<<8)
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
 #define BC_TTY (vm.flags & BC_FLAG_TTY)
 
