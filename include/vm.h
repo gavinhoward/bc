@@ -303,6 +303,7 @@ typedef struct BcVm {
 	uint16_t nchars;
 	uint16_t line_len;
 
+	bool no_exit_exprs;
 	bool eof;
 
 	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
@@ -353,7 +354,7 @@ typedef struct BcVm {
 
 void bc_vm_info(const char* const help);
 void bc_vm_boot(int argc, char *argv[], const char *env_len,
-                const char* const env_args, const char* env_exp_quit);
+                const char* const env_args);
 void bc_vm_shutdown(void);
 
 void bc_vm_printf(const char *fmt, ...);

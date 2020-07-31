@@ -698,7 +698,7 @@ static void bc_vm_gettext(void) {
 #endif // BC_ENABLE_NLS
 }
 
-static void bc_vm_exec(const char* env_exp_exit) {
+static void bc_vm_exec(void) {
 
 	size_t i;
 	bool has_file = false;
@@ -750,7 +750,7 @@ static void bc_vm_exec(const char* env_exp_exit) {
 
 		BC_SIG_UNLOCK;
 
-		if (getenv(env_exp_exit) != NULL) return;
+		if (!vm.no_exit_exprs) return;
 	}
 
 	for (i = 0; i < vm.files.len; ++i) {
@@ -776,7 +776,7 @@ err:
 }
 
 void  bc_vm_boot(int argc, char *argv[], const char *env_len,
-                 const char* const env_args, const char* env_exp_exit)
+                 const char* const env_args)
 {
 	int ttyin, ttyout, ttyerr;
 	struct sigaction sa;
@@ -857,5 +857,5 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	BC_SIG_UNLOCK;
 
-	bc_vm_exec(env_exp_exit);
+	bc_vm_exec();
 }

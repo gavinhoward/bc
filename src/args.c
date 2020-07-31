@@ -114,7 +114,8 @@ void bc_args(int argc, char *argv[]) {
 
 			case 'f':
 			{
-				bc_args_file(opts.optarg);
+				if (!strcmp(opts.optarg, "-")) vm.no_exit_exprs = true;
+				else bc_args_file(opts.optarg);
 				break;
 			}
 
@@ -206,7 +207,7 @@ void bc_args(int argc, char *argv[]) {
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) vm.status);
 
-	if (opts.optind < (size_t) argc)
+	if (opts.optind < (size_t) argc && vm.files.v == NULL)
 		bc_vec_init(&vm.files, sizeof(char*), NULL);
 
 	for (i = opts.optind; i < (size_t) argc; ++i)
