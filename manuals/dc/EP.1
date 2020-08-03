@@ -130,6 +130,9 @@ in the order given.
 After processing all expressions and files, dc(1) will exit, unless
 \f[B]\-\f[] (\f[B]stdin\f[]) was given as an argument at least once to
 \f[B]\-f\f[] or \f[B]\-\-file\f[].
+However, if any other \f[B]\-e\f[], \f[B]\-\-expression\f[],
+\f[B]\-f\f[], or \f[B]\-\-file\f[] arguments are given after that, bc(1)
+will give a fatal error and exit.
 .PP
 This is a \f[B]non\-portable extension\f[].
 .RE

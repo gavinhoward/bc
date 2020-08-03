@@ -111,6 +111,8 @@ The following are the options that dc(1) accepts.
 
     After processing all expressions and files, dc(1) will exit, unless **-**
     (**stdin**) was given as an argument at least once to **-f** or **--file**.
+    However, if any other **-e**, **--expression**, **-f**, or **--file**
+    arguments are given after that, bc(1) will give a fatal error and exit.
 
     This is a **non-portable extension**.
 
