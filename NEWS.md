@@ -2,7 +2,7 @@
 
 ## 3.1.4
 
-This is a production release that fixes one bug, changes one behavior, and
+This is a production release that fixes one bug, changes two behaviors, and
 removes one environment variable.
 
 The bug is like the one in the last release except it applies if files are being
@@ -13,8 +13,11 @@ The behavior that was changed is that `bc` now exits when given `-e`, `-f`,
 `stdin` as the file), `bc` does not exit. If `-f-` exists and is not the last of
 the `-e` and `-f` options (and equivalents), `bc` gives a fatal error and exits.
 
-Finally, I removed the `BC_EXPR_EXIT` and `DC_EXPR_EXIT` environment variables
+Next, I removed the `BC_EXPR_EXIT` and `DC_EXPR_EXIT` environment variables
 since their use is not needed with the behavior change.
+
+Finally, I made it so `bc` does not print the header, though the `-q` and
+`--quiet` options were kept for compatibility with GNU `bc`.
 
 ## 3.1.3
 
