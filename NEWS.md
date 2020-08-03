@@ -10,7 +10,7 @@ executed. I also made the fix more general.
 
 The behavior that was changed is that `bc` now exits when given `-e`, `-f`,
 `--expression` or `--file`. However, if the last one of those is `-f-` (using
-`stdin` as the file, `bc` does not exit. If `-f-` exists and is not the last of
+`stdin` as the file), `bc` does not exit. If `-f-` exists and is not the last of
 the `-e` and `-f` options (and equivalents), `bc` gives a fatal error and exits.
 
 Finally, I removed the `BC_EXPR_EXIT` and `DC_EXPR_EXIT` environment variables
