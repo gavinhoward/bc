@@ -1271,7 +1271,7 @@ static void bc_program_divmod(BcProgram *p) {
 	BcNum *n1, *n2;
 	size_t req;
 
-	res2 = bc_program_prepResult(p);
+	bc_program_prepResult(p);
 	res = bc_program_prepResult(p);
 
 	// Update the pointer, just in case.
