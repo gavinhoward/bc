@@ -1271,11 +1271,12 @@ static void bc_program_divmod(BcProgram *p) {
 	BcNum *n1, *n2;
 	size_t req;
 
-	bc_program_prepResult(p);
-	res = bc_program_prepResult(p);
+	bc_vec_expand(&p->results, p->results.len + 2);
 
-	// Update the pointer, just in case.
-	res2 = bc_vec_item_rev(&p->results, 1);
+	// We don't need to update the pointer because
+	// the capacity is enough due to the line above.
+	res2 = bc_program_prepResult(p);
+	res = bc_program_prepResult(p);
 
 	bc_program_binOpPrep(p, &opd1, &n1, &opd2, &n2, 2);
 
