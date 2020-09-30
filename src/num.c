@@ -1656,7 +1656,7 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 		memset(buffer, 0, BC_BASE_DIGS * sizeof(size_t));
 
 		for (j = 0; n9 && j < BC_BASE_DIGS; ++j) {
-			buffer[j] = n9 % BC_BASE;
+			buffer[j] = ((size_t) n9) % BC_BASE;
 			n9 /= BC_BASE;
 		}
 
