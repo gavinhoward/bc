@@ -183,7 +183,7 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
 
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
-                      struct BcRNG *restrict rng);
+                  struct BcRNG *restrict rng);
 void bc_num_rng(const BcNum *restrict n, struct BcRNG *rng);
 void bc_num_createFromRNG(BcNum *restrict n, struct BcRNG *rng);
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
@@ -221,7 +221,7 @@ void bc_num_one(BcNum *restrict n);
 ssize_t bc_num_cmpZero(const BcNum *n);
 
 void bc_num_parse(BcNum *restrict n, const char *restrict val,
-                      BcBigDig base, bool letter);
+                  BcBigDig base, bool letter);
 void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
 #if DC_ENABLED
 void bc_num_stream(BcNum *restrict n, BcBigDig base);
