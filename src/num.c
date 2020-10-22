@@ -52,7 +52,7 @@ static inline ssize_t bc_num_neg(size_t n, bool neg) {
 	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
 }
 
-ssize_t bc_num_cmpZero(const BcNum *n) {
+ssize_t inline bc_num_cmpZero(const BcNum *n) {
 	return bc_num_neg((n)->len != 0, (n)->neg);
 }
 
