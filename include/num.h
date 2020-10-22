@@ -221,8 +221,7 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 void bc_num_one(BcNum *restrict n);
 ssize_t bc_num_cmpZero(const BcNum *n);
 
-void bc_num_parse(BcNum *restrict n, const char *restrict val,
-                  BcBigDig base, bool letter);
+void bc_num_parse(BcNum *restrict n, const char *restrict val, BcBigDig base);
 void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
 #if DC_ENABLED
 void bc_num_stream(BcNum *restrict n, BcBigDig base);

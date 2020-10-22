@@ -2088,14 +2088,13 @@ size_t bc_num_len(const BcNum *restrict n) {
 	return len;
 }
 
-void bc_num_parse(BcNum *restrict n, const char *restrict val,
-                  BcBigDig base, bool letter)
-{
+void bc_num_parse(BcNum *restrict n, const char *restrict val, BcBigDig base) {
+
 	assert(n != NULL && val != NULL && base);
 	assert(base >= BC_NUM_MIN_BASE && base <= vm.maxes[BC_PROG_GLOBALS_IBASE]);
 	assert(bc_num_strValid(val));
 
-	if (letter) {
+	if (!val[1]) {
 		BcBigDig dig = bc_num_parseChar(val[0], BC_NUM_MAX_LBASE);
 		bc_num_bigdig2num(n, dig);
 	}

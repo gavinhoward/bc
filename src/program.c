@@ -391,7 +391,7 @@ static void bc_program_const(BcProgram *p, const char *code, size_t *bgn) {
 		}
 
 		// bc_num_parse() should only do operations that cannot fail.
-		bc_num_parse(&c->num, c->val, base, !c->val[1]);
+		bc_num_parse(&c->num, c->val, base);
 
 		c->base = base;
 	}
