@@ -2496,6 +2496,15 @@ size_t bc_num_mulReq(const BcNum *a, const BcNum *b, size_t scale) {
 	return rdx;
 }
 
+size_t bc_num_divReq(const BcNum *a, const BcNum *b, size_t scale) {
+	size_t max, rdx;
+	rdx = bc_vm_growSize(a->rdx, b->rdx);
+	max = BC_NUM_RDX(scale);
+	max = bc_vm_growSize(BC_MAX(max, rdx), 1);
+	rdx = bc_vm_growSize(bc_num_int(a), max);
+	return rdx;
+}
+
 size_t bc_num_powReq(const BcNum *a, const BcNum *b, size_t scale) {
 	BC_UNUSED(scale);
 	return bc_vm_growSize(bc_vm_growSize(a->len, b->len), 1);
@@ -2521,11 +2530,11 @@ void bc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 }
 
 void bc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	bc_num_binary(a, b, c, scale, bc_num_d, bc_num_mulReq(a, b, scale));
+	bc_num_binary(a, b, c, scale, bc_num_d, bc_num_divReq(a, b, scale));
 }
 
 void bc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	bc_num_binary(a, b, c, scale, bc_num_rem, bc_num_mulReq(a, b, scale));
+	bc_num_binary(a, b, c, scale, bc_num_rem, bc_num_divReq(a, b, scale));
 }
 
 void bc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {

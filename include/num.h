@@ -205,6 +205,7 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 size_t bc_num_addReq(const BcNum* a, const BcNum* b, size_t scale);
 
 size_t bc_num_mulReq(const BcNum *a, const BcNum *b, size_t scale);
+size_t bc_num_divReq(const BcNum *a, const BcNum *b, size_t scale);
 size_t bc_num_powReq(const BcNum *a, const BcNum *b, size_t scale);
 #if BC_ENABLE_EXTRA_MATH
 size_t bc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale);

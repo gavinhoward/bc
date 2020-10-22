@@ -981,7 +981,7 @@ const BcNumBinaryOp bc_program_ops[] = {
 };
 
 const BcNumBinaryOpReq bc_program_opReqs[] = {
-	bc_num_powReq, bc_num_mulReq, bc_num_mulReq, bc_num_mulReq,
+	bc_num_powReq, bc_num_mulReq, bc_num_divReq, bc_num_divReq,
 	bc_num_addReq, bc_num_addReq,
 #if BC_ENABLE_EXTRA_MATH
 	bc_num_placesReq, bc_num_placesReq, bc_num_placesReq,
