@@ -2112,8 +2112,7 @@ void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline) {
 	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
 	else if (base == BC_BASE) bc_num_printDecimal(n);
 #if BC_ENABLE_EXTRA_MATH
-	else if (base == 0 || base == 1)
-		bc_num_printExponent(n, base != 0);
+	else if (base == 0 || base == 1) bc_num_printExponent(n, base != 0);
 #endif // BC_ENABLE_EXTRA_MATH
 	else bc_num_printBase(n, base);
 
@@ -2126,9 +2125,7 @@ void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 	// its preconditions are met. Those preconditions include both parameters
 	// being non-NULL, n being non-negative, and n being less than vm.max. If
 	// all of that is true, then we can just convert without worrying about
-	// negative errors or overflow. We also don't care about signals because
-	// this function should execute in only a few iterations, meaning that
-	// ignoring signals here should be fine.
+	// negative errors or overflow.
 
 	BcBigDig r = 0;
 
