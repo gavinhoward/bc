@@ -880,7 +880,7 @@ if [ "$extra_math" -eq 0 ]; then
 fi
 
 if [ "$library" -eq 1 ]; then
-	unneeded="$unneeded args.c file.c main.c opt.c read.c"
+	unneeded="$unneeded args.c file.c main.c bc.c dc.c opt.c read.c"
 fi
 
 # Print out the values; this is for debugging.

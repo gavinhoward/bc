@@ -343,8 +343,10 @@ typedef struct BcVm {
 	BcNum max;
 	BcDig max_num[BC_NUM_BIGDIG_LOG10];
 
+#if !BC_ENABLE_LIBRARY
 	BcFile fout;
 	BcFile ferr;
+#endif // !BC_ENABLE_LIBRARY
 
 #if BC_ENABLE_NLS
 	nl_catd catalog;

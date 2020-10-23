@@ -115,6 +115,7 @@ static void bc_vm_sig(int sig) {
 	if (!vm.sig_lock) BC_VM_JMP;
 }
 
+#if !BC_ENABLE_LIBRARY
 void bc_vm_info(const char* const help) {
 
 	BC_SIG_ASSERT_LOCKED;
@@ -132,6 +133,7 @@ void bc_vm_info(const char* const help) {
 
 	bc_file_flush(&vm.fout);
 }
+#endif // !BC_ENABLE_LIBRARY
 
 void bc_vm_error(BcError e, size_t line, ...) {
 
@@ -156,6 +158,8 @@ void bc_vm_error(BcError e, size_t line, ...) {
 #endif // BC_ENABLED
 
 	BC_SIG_TRYLOCK(lock);
+
+#if !BC_ENABLE_LIBRARY
 
 	// Make sure all of stdout is written first.
 	s = bc_file_flushErr(&vm.fout);
@@ -204,6 +208,8 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	bc_file_puts(&vm.ferr, "\n\n");
 
 	s = bc_file_flushErr(&vm.ferr);
+
+#endif // !BC_ENABLE_LIBRARY
 
 	vm.status = s == BC_STATUS_ERROR_FATAL ?
 	    (sig_atomic_t) s : (sig_atomic_t) (uchar) (id + 1);
@@ -325,8 +331,10 @@ void bc_vm_shutdown(void) {
 	}
 #endif // NDEBUG
 
+#if !BC_ENABLE_LIBRARY
 	bc_file_free(&vm.fout);
 	bc_file_free(&vm.ferr);
+#endif // !BC_ENABLE_LIBRARY
 }
 
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
