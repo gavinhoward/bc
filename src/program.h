@@ -38,7 +38,7 @@
 
 #include <stddef.h>
 
-#include <status.h>
+#include "status.h"
 #include "parse.h"
 #include "lang.h"
 #include "num.h"

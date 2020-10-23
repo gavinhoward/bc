@@ -37,8 +37,6 @@
 
 #include <ctype.h>
 
-#include <status.h>
-#include "lex.h"
 #include "dc.h"
 #include "vm.h"
 

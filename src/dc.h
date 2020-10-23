@@ -38,7 +38,7 @@
 
 #if DC_ENABLED
 
-#include <status.h>
+#include "status.h"
 #include "lex.h"
 #include "parse.h"
 

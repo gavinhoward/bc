@@ -42,7 +42,7 @@
 
 #include <setjmp.h>
 
-#include <status.h>
+#include "status.h"
 #include "vm.h"
 #include "bc.h"
 #include "dc.h"

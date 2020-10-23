@@ -38,7 +38,7 @@
 
 #include <stdbool.h>
 
-#include <status.h>
+#include "status.h"
 #include "vector.h"
 #include "num.h"
 

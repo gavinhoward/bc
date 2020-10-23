@@ -41,7 +41,7 @@
 #include <limits.h>
 #include <stdbool.h>
 
-#include <status.h>
+#include "status.h"
 #include "lex.h"
 #include "parse.h"
 

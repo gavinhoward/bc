@@ -42,8 +42,6 @@
 
 #include <setjmp.h>
 
-#include "lex.h"
-#include "parse.h"
 #include "bc.h"
 #include "num.h"
 #include "vm.h"

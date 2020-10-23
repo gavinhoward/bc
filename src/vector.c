@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <status.h>
 #include "vector.h"
 #include "lang.h"
 #include "vm.h"

@@ -56,7 +56,6 @@
 
 #endif // _WIN32
 
-#include <status.h>
 #include "vector.h"
 #include "args.h"
 #include "vm.h"

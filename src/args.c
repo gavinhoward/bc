@@ -41,10 +41,8 @@
 
 #include <unistd.h>
 
-#include <status.h>
 #include "vector.h"
 #include "read.h"
-#include "vm.h"
 #include "args.h"
 #include "opt.h"
 

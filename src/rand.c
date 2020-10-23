@@ -73,7 +73,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <status.h>
+#include "status.h"
 #include "rand.h"
 #include "vm.h"
 

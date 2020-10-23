@@ -38,7 +38,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <status.h>
 #include "lex.h"
 #include "vm.h"
 #include "bc.h"

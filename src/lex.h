@@ -39,7 +39,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <status.h>
+#include "status.h"
 #include "vector.h"
 #include "lang.h"
 

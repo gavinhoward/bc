@@ -40,7 +40,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <status.h>
+#include "status.h"
 #include "vector.h"
 #include "lex.h"
 #include "lang.h"

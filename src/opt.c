@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <status.h>
+#include "status.h"
 #include "opt.h"
 #include "vm.h"
 

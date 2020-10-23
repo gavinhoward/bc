@@ -36,7 +36,7 @@
 #ifndef BC_ARGS_H
 #define BC_ARGS_H
 
-#include <status.h>
+#include "status.h"
 #include "vm.h"
 
 void bc_args(int argc, char *argv[]);

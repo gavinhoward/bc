@@ -37,7 +37,6 @@
 
 #include <string.h>
 
-#include <status.h>
 #include "dc.h"
 #include "vm.h"
 

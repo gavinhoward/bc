@@ -41,7 +41,6 @@
 #include <setjmp.h>
 #include <limits.h>
 
-#include <status.h>
 #include "num.h"
 #include "rand.h"
 #include "vm.h"

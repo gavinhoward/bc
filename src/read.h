@@ -38,7 +38,7 @@
 
 #include <stdlib.h>
 
-#include <status.h>
+#include "status.h"
 #include "vector.h"
 
 #ifndef BC_ENABLE_PROMPT
