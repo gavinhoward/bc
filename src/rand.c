@@ -74,9 +74,8 @@
 #include <unistd.h>
 
 #include <status.h>
-#include <num.h>
-#include <rand.h>
-#include <vm.h>
+#include "rand.h"
+#include "vm.h"
 
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 

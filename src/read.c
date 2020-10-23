@@ -45,10 +45,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <read.h>
-#include <history.h>
-#include <program.h>
-#include <vm.h>
+#include "read.h"
+#include "history.h"
+#include "program.h"
+#include "vm.h"
 
 static bool bc_read_binary(const char *buf, size_t size) {
 

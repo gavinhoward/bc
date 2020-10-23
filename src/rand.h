@@ -72,8 +72,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include <vector.h>
-#include <num.h>
+#include "vector.h"
+#include "num.h"
 
 #if BC_ENABLE_EXTRA_MATH
 

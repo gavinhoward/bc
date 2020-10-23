@@ -52,11 +52,14 @@
 #endif // BC_ENABLE_NLS
 
 #include <status.h>
-#include <num.h>
-#include <parse.h>
-#include <program.h>
-#include <history.h>
-#include <file.h>
+#include "num.h"
+#include "parse.h"
+#include "program.h"
+#include "history.h"
+
+#if !BC_ENABLE_LIBRARY
+#include "file.h"
+#endif // !BC_ENABLE_LIBRARY
 
 #if !BC_ENABLED && !DC_ENABLED
 #error Must define BC_ENABLED, DC_ENABLED, or both

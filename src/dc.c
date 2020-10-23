@@ -38,8 +38,8 @@
 #include <string.h>
 
 #include <status.h>
-#include <dc.h>
-#include <vm.h>
+#include "dc.h"
+#include "vm.h"
 
 void dc_main(int argc, char **argv) {
 

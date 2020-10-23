@@ -791,11 +791,11 @@ if [ "$hist" -eq 1 ]; then
 	printf 'Testing history...\n'
 
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
-	flags="$flags -DBC_ENABLE_NLS=$nls"
+	flags="$flags -DBC_ENABLE_NLS=$nls -DBC_ENABLE_LIBRARY=0"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "src/history/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "src/history.c" -o "$scriptdir/history.o"
 
 	err="$?"
 
@@ -864,7 +864,7 @@ fi
 unneeded=""
 
 if [ "$hist" -eq 0 ]; then
-	unneeded="$unneeded history/history.c"
+	unneeded="$unneeded history.c"
 fi
 
 if [ "$bc" -eq 0 ]; then
@@ -876,7 +876,7 @@ if [ "$dc" -eq 0 ]; then
 fi
 
 if [ "$extra_math" -eq 0 ]; then
-	unneeded="$unneeded rand/rand.c"
+	unneeded="$unneeded rand.c"
 fi
 
 if [ "$library" -eq 1 ]; then

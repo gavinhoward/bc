@@ -42,8 +42,8 @@
 #include <stdbool.h>
 
 #include <status.h>
-#include <lex.h>
-#include <parse.h>
+#include "lex.h"
+#include "parse.h"
 
 void bc_main(int argc, char **argv);
 

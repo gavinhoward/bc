@@ -44,8 +44,8 @@
 #include <string.h>
 
 #include <status.h>
-#include <opt.h>
-#include <vm.h>
+#include "opt.h"
+#include "vm.h"
 
 static inline bool bc_opt_longoptsEnd(const BcOptLong *longopts, size_t i) {
 	return !longopts[i].name && !longopts[i].val;

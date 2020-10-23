@@ -41,10 +41,10 @@
 #include <setjmp.h>
 
 #include <status.h>
-#include <parse.h>
-#include <dc.h>
-#include <program.h>
-#include <vm.h>
+#include "parse.h"
+#include "dc.h"
+#include "program.h"
+#include "vm.h"
 
 static void dc_parse_register(BcParse *p, bool var) {
 

@@ -40,8 +40,8 @@
 #include <stddef.h>
 
 #include <status.h>
-#include <vector.h>
-#include <lang.h>
+#include "vector.h"
+#include "lang.h"
 
 #define bc_lex_err(l, e) (bc_vm_error((e), (l)->line))
 #define bc_lex_verr(l, e, ...) (bc_vm_error((e), (l)->line, __VA_ARGS__))

@@ -45,13 +45,15 @@
 static const char* const bc_gen_header =
 	"// Copyright (c) 2018-2020 Gavin D. Howard and contributors.\n"
 	"// Licensed under the 2-clause BSD license.\n"
-	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n";
+	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n\n";
 
-static const char* const bc_gen_include = "#include <%s>\n\n";
+/*static const char* const bc_gen_include = "#include \"%s\"\n\n";*/
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
+static const char* const bc_gen_label_extern = "extern const char *%s;\n\n";
 static const char* const bc_gen_ifdef = "#if %s\n";
 static const char* const bc_gen_endif = "#endif // %s\n";
 static const char* const bc_gen_name = "const char %s[] = {\n";
+static const char* const bc_gen_name_extern = "extern const char %s[];\n\n";
 
 #define IO_ERR (1)
 #define INVALID_INPUT_FILE (2)
@@ -89,8 +91,9 @@ int main(int argc, char *argv[]) {
 	if (!out) goto out_err;
 
 	if (fprintf(out, bc_gen_header, argv[1]) < 0) goto err;
+	if (has_label && fprintf(out, bc_gen_label_extern, label) < 0) goto err;
+	if (fprintf(out, bc_gen_name_extern, name) < 0) goto err;
 	if (has_define && fprintf(out, bc_gen_ifdef, define) < 0) goto err;
-	if (fprintf(out, bc_gen_include, include) < 0) goto err;
 	if (has_label && fprintf(out, bc_gen_label, label, argv[1]) < 0) goto err;
 	if (fprintf(out, bc_gen_name, name) < 0) goto err;
 

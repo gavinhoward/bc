@@ -57,11 +57,11 @@
 #endif // _WIN32
 
 #include <status.h>
-#include <vector.h>
-#include <args.h>
-#include <vm.h>
-#include <read.h>
-#include <bc.h>
+#include "vector.h"
+#include "args.h"
+#include "vm.h"
+#include "read.h"
+#include "bc.h"
 
 #if BC_DEBUG_CODE
 BC_NORETURN void bc_vm_jmp(const char* f) {

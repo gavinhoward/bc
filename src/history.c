@@ -160,11 +160,11 @@
 #include <sys/ioctl.h>
 #include <sys/select.h>
 
-#include <vector.h>
-#include <history.h>
-#include <read.h>
-#include <file.h>
-#include <vm.h>
+#include "vector.h"
+#include "history.h"
+#include "read.h"
+#include "file.h"
+#include "vm.h"
 
 static void bc_history_add(BcHistory *h, char *line);
 static void bc_history_add_empty(BcHistory *h);

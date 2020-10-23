@@ -39,9 +39,9 @@
 #include <string.h>
 
 #include <status.h>
-#include <lex.h>
-#include <vm.h>
-#include <bc.h>
+#include "lex.h"
+#include "vm.h"
+#include "bc.h"
 
 void bc_lex_invalidChar(BcLex *l, char c) {
 	l->t = BC_LEX_INVALID;

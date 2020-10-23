@@ -42,11 +42,11 @@
 
 #include <setjmp.h>
 
-#include <lex.h>
-#include <parse.h>
-#include <bc.h>
-#include <num.h>
-#include <vm.h>
+#include "lex.h"
+#include "parse.h"
+#include "bc.h"
+#include "num.h"
+#include "vm.h"
 
 static void bc_parse_else(BcParse *p);
 static void bc_parse_stmt(BcParse *p);

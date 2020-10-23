@@ -42,9 +42,9 @@
 #include <limits.h>
 
 #include <status.h>
-#include <num.h>
-#include <rand.h>
-#include <vm.h>
+#include "num.h"
+#include "rand.h"
+#include "vm.h"
 
 static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 

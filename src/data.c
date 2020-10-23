@@ -33,15 +33,15 @@
  *
  */
 
-#include <args.h>
-#include <lex.h>
-#include <parse.h>
-#include <bc.h>
-#include <dc.h>
-#include <num.h>
-#include <rand.h>
-#include <program.h>
-#include <vm.h>
+#include "args.h"
+#include "lex.h"
+#include "parse.h"
+#include "bc.h"
+#include "dc.h"
+#include "num.h"
+#include "rand.h"
+#include "program.h"
+#include "vm.h"
 
 #if BC_ENABLED
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";

@@ -43,9 +43,9 @@
 #include <setjmp.h>
 
 #include <status.h>
-#include <vm.h>
-#include <bc.h>
-#include <dc.h>
+#include "vm.h"
+#include "bc.h"
+#include "dc.h"
 
 char output_bufs[BC_VM_BUF_SIZE];
 BcVm vm;

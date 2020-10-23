@@ -41,11 +41,11 @@
 #include <limits.h>
 
 #include <status.h>
-#include <vector.h>
-#include <lex.h>
-#include <parse.h>
-#include <program.h>
-#include <vm.h>
+#include "vector.h"
+#include "lex.h"
+#include "parse.h"
+#include "program.h"
+#include "vm.h"
 
 void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 	p->fidx = fidx;

@@ -38,8 +38,8 @@
 #include <string.h>
 
 #include <status.h>
-#include <bc.h>
-#include <vm.h>
+#include "bc.h"
+#include "vm.h"
 
 void bc_main(int argc, char **argv) {
 

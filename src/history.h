@@ -100,11 +100,11 @@
 #include <sys/select.h>
 
 #include <status.h>
-#include <vector.h>
-#include <read.h>
+#include "vector.h"
+#include "read.h"
 
 #if BC_DEBUG_CODE
-#include <file.h>
+#include "file.h"
 #endif // BC_DEBUG_CODE
 
 #define BC_HIST_DEF_COLS (80)
