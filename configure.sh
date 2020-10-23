@@ -47,7 +47,7 @@ usage() {
 
 	printf 'usage: %s -h\n' "$script"
 	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-EfgGHlMNPT] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '       %s [-bD|-dB|-c] [-aEfgGHlMNPT] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '       %s \\\n' "$script"
 	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]      \\\n'
 	printf '           [--debug --disable-extra-math --disable-generated-tests]        \\\n'
@@ -58,6 +58,10 @@ usage() {
 	printf '           [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]       \\\n'
 	printf '           [--force]                                                       \\\n'
 	printf '\n'
+	printf '    -a, --enable-library\n'
+	printf '        Build the libbc instead of the programs. This is meant to be used with\n'
+	printf '        Other software like programming languages that want to make use of the\n'
+	printf '        parsing and math capabilities. This option will install headers as well.\n'
 	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d", "--dc-only", "-B", or\n'
 	printf '        "--disable-bc" are specified too.\n'
@@ -257,56 +261,55 @@ replace() {
 	substring_replace "$_replace_str" "%%$_replace_needle%%" "$_replace_replacement"
 }
 
-gen_file_lists() {
+gen_file_list() {
 
-	if [ "$#" -lt 3 ]; then
+	if [ "$#" -lt 1 ]; then
 		err_exit "Invalid number of args to $0"
 	fi
 
-	_gen_file_lists_contents="$1"
+	_gen_file_list_contents="$1"
 	shift
 
-	_gen_file_lists_filedir="$1"
-	shift
+	p=$(pwd)
 
-	_gen_file_lists_typ="$1"
-	shift
+	cd "$scriptdir"
 
-	# If there is an extra argument, and it
-	# is zero, we keep the file lists empty.
-	if [ "$#" -gt 0 ]; then
-		_gen_file_lists_use="$1"
-	else
-		_gen_file_lists_use="1"
-	fi
+	if [ "$#" -ge 1 ]; then
 
-	_gen_file_lists_needle_src="${_gen_file_lists_typ}SRC"
-	_gen_file_lists_needle_obj="${_gen_file_lists_typ}OBJ"
-	_gen_file_lists_needle_gcda="${_gen_file_lists_typ}GCDA"
-	_gen_file_lists_needle_gcno="${_gen_file_lists_typ}GCNO"
-
-	if [ "$_gen_file_lists_use" -ne 0 ]; then
-
-		_gen_file_lists_replacement=$(cd "$_gen_file_lists_filedir" && find . ! -name . -prune -name "*.c" | cut -d/ -f2 | sed "s@^@$_gen_file_lists_filedir/@g" | tr '\n' ' ')
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_src" "$_gen_file_lists_replacement")
-
-		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "c" "o")
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_obj" "$_gen_file_lists_replacement")
-
-		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "o" "gcda")
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcda" "$_gen_file_lists_replacement")
-
-		_gen_file_lists_replacement=$(replace_exts "$_gen_file_lists_replacement" "gcda" "gcno")
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcno" "$_gen_file_lists_replacement")
+		while [ "$#" -ge 1 ]; do
+			a="$1"
+			shift
+			args="$args ! -wholename src/${a}"
+		done
 
 	else
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_src" "")
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_obj" "")
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcda" "")
-		_gen_file_lists_contents=$(replace "$_gen_file_lists_contents" "$_gen_file_lists_needle_gcno" "")
+		args="-print"
 	fi
 
-	printf '%s\n' "$_gen_file_lists_contents"
+	_gen_file_list_needle_src="SRC"
+	_gen_file_list_needle_obj="OBJ"
+	_gen_file_list_needle_gcda="GCDA"
+	_gen_file_list_needle_gcno="GCNO"
+
+	_gen_file_list_replacement=$(find src/ -depth -name "*.c" $args | tr '\n' ' ')
+	_gen_file_list_contents=$(replace "$_gen_file_list_contents" \
+		"$_gen_file_list_needle_src" "$_gen_file_list_replacement")
+
+	_gen_file_list_replacement=$(replace_exts "$_gen_file_list_replacement" "c" "o")
+	_gen_file_list_contents=$(replace "$_gen_file_list_contents" \
+		"$_gen_file_list_needle_obj" "$_gen_file_list_replacement")
+
+	_gen_file_list_replacement=$(replace_exts "$_gen_file_list_replacement" "o" "gcda")
+	_gen_file_list_contents=$(replace "$_gen_file_list_contents" \
+		"$_gen_file_list_needle_gcda" "$_gen_file_list_replacement")
+
+	_gen_file_list_replacement=$(replace_exts "$_gen_file_list_replacement" "gcda" "gcno")
+	_gen_file_list_contents=$(replace "$_gen_file_list_contents" \
+		"$_gen_file_list_needle_gcno" "$_gen_file_list_replacement")
+
+	cd "$p"
+
+	printf '%s\n' "$_gen_file_list_contents"
 }
 
 bc_only=0
@@ -324,10 +327,12 @@ prompt=1
 force=0
 strip_bin=1
 all_locales=0
+library=0
 
-while getopts "bBcdDEfgGhHk:lMNO:PST-" opt; do
+while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
 
 	case "$opt" in
+		a) library=1 ;;
 		b) bc_only=1 ;;
 		B) dc_only=1 ;;
 		c) coverage=1 ;;
@@ -352,6 +357,7 @@ while getopts "bBcdDEfgGhHk:lMNO:PST-" opt; do
 			LONG_OPTARG="${arg#*=}"
 			case $arg in
 				help) usage ;;
+				enable-library) library=1 ;;
 				bc-only) bc_only=1 ;;
 				dc-only) dc_only=1 ;;
 				coverage) coverage=1 ;;
@@ -689,6 +695,15 @@ else
 	uninstall_man_prereqs=""
 fi
 
+if [ "$library" -ne 0 ]; then
+	nls=0
+	hist=0
+	prompt=0
+	ALL_PREREQ="library"
+else
+	ALL_PREREQ="execs"
+fi
+
 if [ "$nls" -ne 0 ]; then
 
 	set +e
@@ -846,6 +861,28 @@ if [ "$manpage_args" = "" ]; then
 	manpage_args="A"
 fi
 
+unneeded=""
+
+if [ "$hist" -eq 0 ]; then
+	unneeded="$unneeded history/history.c"
+fi
+
+if [ "$bc" -eq 0 ]; then
+	unneeded="$unneeded bc/bc.c bc/lex.c bc/parse.c"
+fi
+
+if [ "$dc" -eq 0 ]; then
+	unneeded="$unneeded dc/dc.c dc/lex.c dc/parse.c"
+fi
+
+if [ "$extra_math" -eq 0 ]; then
+	unneeded="$unneeded rand/rand.c"
+fi
+
+if [ "$library" -eq 1 ]; then
+	unneeded="$unneeded args.c file.c main.c opt.c read.c"
+fi
+
 # Print out the values; this is for debugging.
 if [ "$bc" -ne 0 ]; then
 	printf 'Building bc\n'
@@ -858,6 +895,7 @@ else
 	printf 'Not building dc\n'
 fi
 printf '\n'
+printf 'BC_ENABLE_LIBRARY=%s\n\n' "$library"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
@@ -892,16 +930,17 @@ replacement='*** WARNING: Autogenerated from Makefile.in. DO NOT MODIFY ***'
 
 contents=$(replace "$contents" "$needle" "$replacement")
 
-contents=$(gen_file_lists "$contents" "$scriptdir/src" "")
-contents=$(gen_file_lists "$contents" "$scriptdir/src/bc" "BC_" "$bc")
-contents=$(gen_file_lists "$contents" "$scriptdir/src/dc" "DC_" "$dc")
-contents=$(gen_file_lists "$contents" "$scriptdir/src/history" "HISTORY_" "$hist")
-contents=$(gen_file_lists "$contents" "$scriptdir/src/rand" "RAND_" "$extra_math")
+if [ "$unneeded" = "" ]; then
+	contents=$(gen_file_list "$contents")
+else
+	contents=$(gen_file_list "$contents" $unneeded)
+fi
 
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
 contents=$(replace "$contents" "DC_ENABLED" "$dc")
 contents=$(replace "$contents" "LINK" "$link")
 
+contents=$(replace "$contents" "LIBRARY" "$library")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
@@ -932,6 +971,8 @@ contents=$(replace "$contents" "INSTALL_LOCALES_PREREQS" "$install_locales_prere
 contents=$(replace "$contents" "UNINSTALL_MAN_PREREQS" "$uninstall_man_prereqs")
 contents=$(replace "$contents" "UNINSTALL_PREREQS" "$uninstall_prereqs")
 contents=$(replace "$contents" "UNINSTALL_LOCALES_PREREQS" "$uninstall_locales_prereqs")
+
+contents=$(replace "$contents" "ALL_PREREQ" "$ALL_PREREQ")
 
 contents=$(replace "$contents" "EXECUTABLES" "$executables")
 contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
