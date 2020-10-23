@@ -45,23 +45,24 @@ usage() {
 		_usage_val=0
 	fi
 
-	printf 'usage: %s -h\n' "$script"
-	printf '       %s --help\n' "$script"
-	printf '       %s [-bD|-dB|-c] [-aEfgGHlMNPT] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
-	printf '       %s \\\n' "$script"
-	printf '           [--bc-only --disable-dc|--dc-only --disable-bc|--coverage]      \\\n'
-	printf '           [--debug --disable-extra-math --disable-generated-tests]        \\\n'
-	printf '           [--disable-history --disable-man-pages --disable-nls]           \\\n'
-	printf '           [--disable-prompt --disable-strip] [--install-all-locales]      \\\n'
-	printf '           [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]               \\\n'
-	printf '           [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR] \\\n'
-	printf '           [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]       \\\n'
-	printf '           [--force]                                                       \\\n'
+	printf 'usage:\n'
+	printf '    %s -h\n' "$script"
+	printf '    %s --help\n' "$script"
+	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlMNPT] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '    %s \\\n' "$script"
+	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]\\\n'
+	printf '       [--force --debug --disable-extra-math --disable-generated-tests]    \\\n'
+	printf '       [--disable-history --disable-man-pages --disable-nls]               \\\n'
+	printf '       [--disable-prompt --disable-strip] [--install-all-locales]          \\\n'
+	printf '       [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]                   \\\n'
+	printf '       [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]     \\\n'
+	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]           \\\n'
 	printf '\n'
-	printf '    -a, --enable-library\n'
+	printf '    -a, --library\n'
 	printf '        Build the libbc instead of the programs. This is meant to be used with\n'
 	printf '        Other software like programming languages that want to make use of the\n'
-	printf '        parsing and math capabilities. This option will install headers as well.\n'
+	printf '        parsing and math capabilities. This option will install headers using\n'
+	printf '        `make install`.\n'
 	printf '    -b, --bc-only\n'
 	printf '        Build bc only. It is an error if "-d", "--dc-only", "-B", or\n'
 	printf '        "--disable-bc" are specified too.\n'
@@ -357,7 +358,7 @@ while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
 			LONG_OPTARG="${arg#*=}"
 			case $arg in
 				help) usage ;;
-				enable-library) library=1 ;;
+				library) library=1 ;;
 				bc-only) bc_only=1 ;;
 				dc-only) dc_only=1 ;;
 				coverage) coverage=1 ;;
@@ -458,6 +459,12 @@ done
 
 if [ "$bc_only" -eq 1 ] && [ "$dc_only" -eq 1 ]; then
 	usage "Can only specify one of -b(-D) or -d(-B)"
+fi
+
+if [ "$library" -ne 0 ]; then
+	if [ "$bc_only" -eq 1 ] || [ "$dc_only" -eq 1 ]; then
+		usage "Must not specify -b(-D) or -d(-B) when building the library"
+	fi
 fi
 
 case $karatsuba_len in
