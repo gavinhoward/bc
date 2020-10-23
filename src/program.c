@@ -1832,6 +1832,8 @@ void bc_program_exec(BcProgram *p) {
 				bc_vec_pop(&p->results);
 			}
 			// Fallthrough.
+			BC_FALLTHROUGH
+
 			case BC_INST_JUMP:
 			{
 				idx = bc_program_index(code, &ip->idx);

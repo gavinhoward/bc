@@ -163,6 +163,12 @@ typedef enum BcError {
 #define BC_MUST_RETURN
 #endif // __STDC_VERSION__
 
+#ifdef __clang__
+#define BC_FALLTHROUGH __attribute__((fallthrough));
+#else // __clang__
+#define BC_FALLTHROUGH
+#endif // __clang__
+
 // Workarounds for AIX's POSIX incompatibility.
 #ifndef SIZE_MAX
 #define SIZE_MAX __SIZE_MAX__

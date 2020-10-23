@@ -1249,6 +1249,8 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 					bc_parse_err(p, BC_ERROR_PARSE_ASSIGN);
 			}
 			// Fallthrough.
+			BC_FALLTHROUGH
+
 			case BC_LEX_OP_POWER:
 			case BC_LEX_OP_MULTIPLY:
 			case BC_LEX_OP_DIVIDE:

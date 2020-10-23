@@ -132,6 +132,8 @@ static void dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			bc_lex_next(&p->l);
 		}
 		// Fallthrough.
+		BC_FALLTHROUGH
+
 		case BC_LEX_NUMBER:
 		{
 			bc_parse_number(p);

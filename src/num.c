@@ -2137,14 +2137,25 @@ void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 	// There is a small speed win from unrolling the loop here, and since it
 	// only adds 53 bytes, I decided that it was worth it.
 	switch (n->len - n->rdx) {
+
 		case 3:
+		{
 			r = (BcBigDig) n->num[n->rdx + 2];
-			// Fallthrough.
+		}
+		// Fallthrough.
+		BC_FALLTHROUGH
+
 		case 2:
+		{
 			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx + 1];
-			// Fallthrough.
+		}
+		// Fallthrough.
+		BC_FALLTHROUGH
+
 		case 1:
+		{
 			r = r * BC_BASE_POW + (BcBigDig) n->num[n->rdx];
+		}
 	}
 
 	*result = r;
