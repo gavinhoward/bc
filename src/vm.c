@@ -62,6 +62,9 @@
 #include "read.h"
 #include "bc.h"
 
+char output_bufs[BC_VM_BUF_SIZE];
+BcVm vm;
+
 #if BC_DEBUG_CODE
 BC_NORETURN void bc_vm_jmp(const char* f) {
 #else // BC_DEBUG_CODE
@@ -89,6 +92,7 @@ BC_NORETURN void bc_vm_jmp(void) {
 	siglongjmp(*((sigjmp_buf*) bc_vec_top(&vm.jmp_bufs)), 1);
 }
 
+#if !BC_ENABLE_LIBRARY
 static void bc_vm_sig(int sig) {
 
 	// There is already a signal in flight.
@@ -114,7 +118,6 @@ static void bc_vm_sig(int sig) {
 	if (!vm.sig_lock) BC_VM_JMP;
 }
 
-#if !BC_ENABLE_LIBRARY
 void bc_vm_info(const char* const help) {
 
 	BC_SIG_ASSERT_LOCKED;
@@ -327,6 +330,7 @@ void bc_vm_shutdown(void) {
 #endif // BC_ENABLE_HISTORY
 
 #ifndef NDEBUG
+#if !BC_ENABLE_LIBRARY
 	bc_vec_free(&vm.env_args);
 	free(vm.env_args_buffer);
 	bc_vec_free(&vm.files);
@@ -334,6 +338,7 @@ void bc_vm_shutdown(void) {
 
 	bc_program_free(&vm.prog);
 	bc_parse_free(&vm.prs);
+#endif // !BC_ENABLE_LIBRARY
 
 	{
 		size_t i;
@@ -398,11 +403,12 @@ char* bc_vm_strdup(const char *str) {
 
 	s = strdup(str);
 
-	if (BC_ERR(!s)) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(!s)) bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
 
 	return s;
 }
 
+#if !BC_ENABLE_LIBRARY
 void bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
@@ -417,12 +423,18 @@ void bc_vm_printf(const char *fmt, ...) {
 
 	BC_SIG_UNLOCK;
 }
+#endif // !BC_ENABLE_LIBRARY
 
 void bc_vm_putchar(int c) {
+#if BC_ENABLE_LIBRARY
+	bc_vec_pushByte(&vm.out, (uchar) c);
+#else // BC_ENABLE_LIBRARY
 	bc_file_putchar(&vm.fout, (uchar) c);
 	vm.nchars = (c == '\n' ? 0 : vm.nchars + 1);
+#endif // BC_ENABLE_LIBRARY
 }
 
+#if !BC_ENABLE_LIBRARY
 static void bc_vm_clean(void) {
 
 	BcVec *fns = &vm.prog.fns;
@@ -796,8 +808,8 @@ err:
 #endif // NDEBUG
 }
 
-void  bc_vm_boot(int argc, char *argv[], const char *env_len,
-                 const char* const env_args)
+void bc_vm_boot(int argc, char *argv[], const char *env_len,
+                const char* const env_args)
 {
 	int ttyin, ttyout, ttyerr;
 	struct sigaction sa;
@@ -824,10 +836,7 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	if (BC_TTY) sigaction(SIGHUP, &sa, NULL);
 #endif // BC_ENABLE_HISTORY
 
-	memcpy(vm.max_num, bc_num_bigdigMax,
-	       bc_num_bigdigMax_size * sizeof(BcDig));
-	bc_num_setup(&vm.max, vm.max_num, BC_NUM_BIGDIG_LOG10);
-	vm.max.len = bc_num_bigdigMax_size;
+	bc_vm_init();
 
 	vm.file = NULL;
 
@@ -842,8 +851,6 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 	bc_vec_clear(&vm.files);
 	bc_vec_clear(&vm.exprs);
-
-	bc_vec_init(&vm.temps, sizeof(BcNum), NULL);
 
 	bc_program_init(&vm.prog);
 	bc_parse_init(&vm.prs, &vm.prog, BC_PROG_MAIN);
@@ -863,6 +870,23 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
 #endif // BC_ENABLED
 
+	BC_SIG_UNLOCK;
+
+	bc_vm_exec();
+}
+#endif // !BC_ENABLE_LIBRARY
+
+void bc_vm_init(void) {
+
+	BC_SIG_ASSERT_LOCKED;
+
+	memcpy(vm.max_num, bc_num_bigdigMax,
+	       bc_num_bigdigMax_size * sizeof(BcDig));
+	bc_num_setup(&vm.max, vm.max_num, BC_NUM_BIGDIG_LOG10);
+	vm.max.len = bc_num_bigdigMax_size;
+
+	bc_vec_init(&vm.temps, sizeof(BcNum), NULL);
+
 	vm.maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_POSIX_IBASE;
 	vm.maxes[BC_PROG_GLOBALS_OBASE] = BC_MAX_OBASE;
 	vm.maxes[BC_PROG_GLOBALS_SCALE] = BC_MAX_SCALE;
@@ -872,11 +896,11 @@ void  bc_vm_boot(int argc, char *argv[], const char *env_len,
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 #if BC_ENABLED
+#if !BC_ENABLE_LIBRARY
 	if (BC_IS_BC && !BC_IS_POSIX)
+#endif // !BC_ENABLE_LIBRARY
+	{
 		vm.maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_IBASE;
+	}
 #endif // BC_ENABLED
-
-	BC_SIG_UNLOCK;
-
-	bc_vm_exec();
 }

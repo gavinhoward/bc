@@ -36,6 +36,7 @@
 #ifndef BC_VM_H
 #define BC_VM_H
 
+#include <assert.h>
 #include <stddef.h>
 #include <limits.h>
 
@@ -94,6 +95,8 @@
 #define isatty _isatty
 #endif // _WIN32
 
+#if !BC_ENABLE_LIBRARY
+
 #if DC_ENABLED
 #define DC_FLAG_X (UINTMAX_C(1)<<0)
 #endif // DC_ENABLED
@@ -151,6 +154,8 @@
 #else // BC_ENABLED
 #define BC_USE_PROMPT (!BC_P && BC_TTY)
 #endif // BC_ENABLED
+
+#endif // !BC_ENABLE_LIBRARY
 
 #define BC_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define BC_MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -293,18 +298,34 @@ typedef struct BcVm {
 	volatile sig_atomic_t status;
 	volatile sig_atomic_t sig_pop;
 
+#if !BC_ENABLE_LIBRARY
 	BcParse prs;
 	BcProgram prog;
+#endif // BC_ENABLE_LIBRARY
 
 	BcVec jmp_bufs;
 
 	BcVec temps;
 
+#if BC_ENABLE_LIBRARY
+	BcVec out;
+
+	BcRNG rng;
+
+	BcError err;
+	bool abrt;
+
+	volatile sig_atomic_t running;
+#endif // BC_ENABLE_LIBRARY
+
+#if !BC_ENABLE_LIBRARY
 	const char* file;
 
 	const char *sigmsg;
+#endif // BC_ENABLE_LIBRARY
 	volatile sig_atomic_t sig_lock;
 	volatile sig_atomic_t sig;
+#if !BC_ENABLE_LIBRARY
 	uchar siglen;
 
 	uchar read_ret;
@@ -315,9 +336,11 @@ typedef struct BcVm {
 
 	bool no_exit_exprs;
 	bool eof;
+#endif // BC_ENABLE_LIBRARY
 
 	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
 
+#if !BC_ENABLE_LIBRARY
 	BcVec files;
 	BcVec exprs;
 
@@ -338,14 +361,17 @@ typedef struct BcVm {
 	const char *err_msgs[BC_ERR_NELEMS];
 
 	const char *locale;
+#endif // BC_ENABLE_LIBRARY
 
 	BcBigDig last_base;
 	BcBigDig last_pow;
 	BcBigDig last_exp;
 	BcBigDig last_rem;
 
+#if !BC_ENABLE_LIBRARY
 	char *env_args_buffer;
 	BcVec env_args;
+#endif // BC_ENABLE_LIBRARY
 
 	BcNum max;
 	BcDig max_num[BC_NUM_BIGDIG_LOG10];
@@ -353,7 +379,6 @@ typedef struct BcVm {
 #if !BC_ENABLE_LIBRARY
 	BcFile fout;
 	BcFile ferr;
-#endif // !BC_ENABLE_LIBRARY
 
 #if BC_ENABLE_NLS
 	nl_catd catalog;
@@ -361,12 +386,14 @@ typedef struct BcVm {
 
 	char *buf;
 	size_t buf_len;
+#endif // !BC_ENABLE_LIBRARY
 
 } BcVm;
 
 void bc_vm_info(const char* const help);
 void bc_vm_boot(int argc, char *argv[], const char *env_len,
                 const char* const env_args);
+void bc_vm_init(void);
 void bc_vm_shutdown(void);
 
 void bc_vm_printf(const char *fmt, ...);

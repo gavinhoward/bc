@@ -277,7 +277,7 @@ static void bc_rand_seedZeroes(BcRNG *r, BcRNGData *rng, size_t idx) {
 	}
 }
 
-static void bc_rand_srand(BcRNGData *rng) {
+void bc_rand_srand(BcRNGData *rng) {
 
 	int fd;
 

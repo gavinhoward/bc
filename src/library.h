@@ -29,62 +29,56 @@
  *
  * *****************************************************************************
  *
- * The entry point for bc.
+ * The private header for libbc.
  *
  */
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef LIBBC_PRIVATE_H
+#define LIBBC_PRIVATE_H
 
-#include <locale.h>
-#include <libgen.h>
+#include <bc.h>
 
-#include <setjmp.h>
+#include "num.h"
 
-#include "status.h"
-#include "vm.h"
-#include "bc.h"
-#include "dc.h"
+#define BC_FUNC_HEADER_LOCK(l) \
+	do {                       \
+		BC_SIG_LOCK;           \
+		vm.running = 0;        \
+		BC_SETJMP_LOCKED(l);   \
+	} while (0)
 
-int main(int argc, char *argv[]) {
+#define BC_FUNC_FOOTER_UNLOCK(e) \
+	do {                         \
+		BC_SIG_ASSERT_LOCKED;    \
+		e = vm.err;              \
+		vm.running = 0;          \
+		BC_LONGJMP_STOP;         \
+		BC_UNSETJMP;             \
+		vm.sig_lock = 0;         \
+	} while (0)
 
-	int s;
-	char *name;
-	size_t len = strlen(BC_EXECPREFIX);
+#define BC_FUNC_HEADER(l) \
+	do {                  \
+		vm.running = 0;   \
+		BC_SETJMP(l);     \
+	} while (0)
 
-	vm.locale = setlocale(LC_ALL, "");
+#define BC_FUNC_FOOTER(e) \
+	do {                  \
+		e = vm.err;       \
+		vm.running = 0;   \
+		BC_LONGJMP_STOP;  \
+		BC_UNSETJMP;      \
+		vm.sig_lock = 0;  \
+	} while (0)
 
-	name = strrchr(argv[0], '/');
-	vm.name = (name == NULL) ? argv[0] : name + 1;
+#define BC_FUNC_RESETJMP(l)   \
+	do {                      \
+		BC_SIG_ASSERT_LOCKED; \
+		BC_UNSETJMP;          \
+		BC_SETJMP_LOCKED(l);  \
+	} while (0)
 
-	if (strlen(vm.name) > len) vm.name += len;
+#endif // LIBBC_PRIVATE_H
 
-	BC_SIG_LOCK;
-
-	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
-
-	BC_SETJMP_LOCKED(exit);
-
-#if !DC_ENABLED
-	bc_main(argc, argv);
-#elif !BC_ENABLED
-	dc_main(argc, argv);
-#else
-	if (BC_IS_BC) bc_main(argc, argv);
-	else dc_main(argc, argv);
-#endif
-
-exit:
-	BC_SIG_MAYLOCK;
-
-	s = !BC_STATUS_IS_ERROR(vm.status) ? BC_STATUS_SUCCESS : (int) vm.status;
-
-	bc_vm_shutdown();
-
-#ifndef NDEBUG
-	bc_vec_free(&vm.jmp_bufs);
-#endif // NDEBUG
-
-	return s;
-}
+typedef void (*BcNumSqrtOp)(BcNum*, BcNum*, size_t scale);

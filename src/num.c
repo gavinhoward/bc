@@ -327,7 +327,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 	}
 }
 
-static void bc_num_extend(BcNum *restrict n, size_t places) {
+void bc_num_extend(BcNum *restrict n, size_t places) {
 
 	size_t places_rdx;
 
@@ -482,7 +482,7 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	bc_num_clean(n);
 }
 
-static void bc_num_shiftRight(BcNum *restrict n, size_t places) {
+void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 	BcBigDig dig;
 	size_t places_rdx, scale, scale_mod, int_len, expand;
@@ -1588,11 +1588,13 @@ int_err:
 	BC_LONGJMP_CONT;
 }
 
-static void bc_num_printNewline(void) {
+static inline void bc_num_printNewline(void) {
+#if !BC_ENABLE_LIBRARY
 	if (vm.nchars >= vm.line_len - 1) {
 		bc_vm_putchar('\\');
 		bc_vm_putchar('\n');
 	}
+#endif // !BC_ENABLE_LIBRARY
 }
 
 static void bc_num_putchar(int c) {
@@ -1600,14 +1602,14 @@ static void bc_num_putchar(int c) {
 	bc_vm_putchar(c);
 }
 
-#if DC_ENABLED
+#if DC_ENABLED && !BC_ENABLE_LIBRARY
 static void bc_num_printChar(size_t n, size_t len, bool rdx) {
 	BC_UNUSED(rdx);
 	BC_UNUSED(len);
 	assert(len == 1);
 	bc_vm_putchar((uchar) n);
 }
-#endif // DC_ENABLED
+#endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 
 static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
 
@@ -1986,11 +1988,11 @@ static void bc_num_printBase(BcNum *restrict n, BcBigDig base) {
 	n->neg = neg;
 }
 
-#if DC_ENABLED
+#if DC_ENABLED && !BC_ENABLE_LIBRARY
 void bc_num_stream(BcNum *restrict n, BcBigDig base) {
 	bc_num_printNum(n, base, 1, bc_num_printChar);
 }
-#endif // DC_ENABLED
+#endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 
 void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 	assert(n != NULL);
@@ -2561,9 +2563,7 @@ void bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
-	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, rdx, req, digs, digs1, digs2, resscale;
-	BcDig half_digs[1];
+	size_t rdx, len, req;
 
 	assert(a != NULL && b != NULL && a != b);
 
@@ -2580,6 +2580,18 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	bc_num_init(b, bc_vm_growSize(req, 1));
 
 	BC_SIG_UNLOCK;
+
+	bc_num_sr(a, b, scale);
+}
+
+void bc_num_sr(BcNum *restrict a, BcNum *restrict b, size_t scale) {
+
+	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
+	size_t pow, len, rdx, digs, digs1, digs2, resscale;
+	BcDig half_digs[1];
+
+	assert(a != NULL && b != NULL && a != b);
+	assert(a->num != NULL && b->num != NULL);
 
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(b, scale);
@@ -2663,16 +2675,23 @@ err:
 
 void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
-	BcNum num2, *ptr_a;
-	bool init = false;
 	size_t ts, len;
+	BcNum *ptr_a;
+#if !BC_ENABLE_LIBRARY
+	BcNum num2;
+	bool init = false;
+#endif // BC_ENABLE_LIBRARY
 
 	ts = BC_MAX(scale + b->scale, a->scale);
 	len = bc_num_mulReq(a, b, ts);
 
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(c != d && a != d && b != d && b != c);
+#if BC_ENABLE_LIBRARY
+	assert(c != a);
+#endif // BC_ENABLE_LIBRARY
 
+#if !BC_ENABLE_LIBRARY
 	if (c == a) {
 
 		memcpy(&num2, c, sizeof(BcNum));
@@ -2688,7 +2707,9 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 		BC_SIG_UNLOCK;
 	}
-	else {
+	else
+#endif // BC_ENABLE_LIBRARY
+	{
 		ptr_a = a;
 		bc_num_expand(c, len);
 	}
@@ -2713,12 +2734,14 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	assert(d->rdx <= d->len || !d->len);
 	assert(!d->len || d->num[d->len - 1] || d->rdx == d->len);
 
+#if !BC_ENABLE_LIBRARY
 err:
 	if (init) {
 		BC_SIG_MAYLOCK;
 		bc_num_free(&num2);
 		BC_LONGJMP_CONT;
 	}
+#endif // !BC_ENABLE_LIBRARY
 }
 
 #if DC_ENABLED

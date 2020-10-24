@@ -43,6 +43,8 @@
 #include "program.h"
 #include "vm.h"
 
+#if !BC_ENABLE_LIBRARY
+
 #if BC_ENABLED
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
 const uchar bc_sig_msg_len = (uchar) (sizeof(bc_sig_msg) - 1);
@@ -664,12 +666,6 @@ const char* bc_inst_names[] = {
 };
 #endif // BC_DEBUG_CODE
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-
-const BcRandState bc_rand_multiplier = BC_RAND_MULTIPLIER;
-
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-
 #if BC_ENABLED
 const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
@@ -713,6 +709,8 @@ const BcLexKeyword bc_lex_kws[] = {
 const size_t bc_lex_kws_len = sizeof(bc_lex_kws) / sizeof(BcLexKeyword);
 
 const char* const bc_parse_const1 = "1";
+const char bc_parse_zero[] = "0";
+const char bc_parse_one[] = "1";
 
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.
@@ -937,6 +935,14 @@ const uchar dc_parse_insts[] = {
 };
 #endif // DC_ENABLED
 
+#endif // !BC_ENABLE_LIBRARY
+
+#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+
+const BcRandState bc_rand_multiplier = BC_RAND_MULTIPLIER;
+
+#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+
 #if BC_LONG_BIT >= 64
 const BcDig bc_num_bigdigMax[] = {
 	709551616U,
@@ -952,9 +958,6 @@ const BcDig bc_num_bigdigMax[] = {
 #endif // BC_LONG_BIT >= 64
 
 const size_t bc_num_bigdigMax_size = sizeof(bc_num_bigdigMax) / sizeof(BcDig);
-
-const char bc_parse_zero[] = "0";
-const char bc_parse_one[] = "1";
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
@@ -972,6 +975,8 @@ const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {
 	1000000000,
 #endif // BC_BASE_DIGS > 4
 };
+
+#if !BC_ENABLE_LIBRARY
 
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
@@ -1002,3 +1007,5 @@ const char bc_program_ready_msg[] = "ready for more input\n";
 const size_t bc_program_ready_msg_len = sizeof(bc_program_ready_msg) - 1;
 const char bc_program_esc_chars[] = "ab\\efnqrt";
 const char bc_program_esc_seqs[] = "\a\b\\\\\f\n\"\r\t";
+
+#endif // !BC_ENABLE_LIBRARY

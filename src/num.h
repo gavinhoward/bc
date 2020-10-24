@@ -46,6 +46,8 @@
 #include "status.h"
 #include "vector.h"
 
+#include <bc.h>
+
 #ifndef BC_ENABLE_EXTRA_MATH
 #define BC_ENABLE_EXTRA_MATH (1)
 #endif // BC_ENABLE_EXTRA_MATH
@@ -54,24 +56,7 @@
 
 typedef unsigned long ulong;
 
-// For some reason, LONG_BIT is not defined in some versions of gcc.
-// I define it here to the minimum accepted value in the POSIX standard.
-#ifndef LONG_BIT
-#define LONG_BIT (32)
-#endif // LONG_BIT
-
-#ifndef BC_LONG_BIT
-#define BC_LONG_BIT LONG_BIT
-#endif // BC_LONG_BIT
-
-#if BC_LONG_BIT > LONG_BIT
-#error BC_LONG_BIT cannot be greater than LONG_BIT
-#endif // BC_LONG_BIT > LONG_BIT
-
 #if BC_LONG_BIT >= 64
-
-typedef int_least32_t BcDig;
-typedef uint64_t BcBigDig;
 
 #define BC_NUM_BIGDIG_MAX ((BcBigDig) UINT64_MAX)
 
@@ -81,9 +66,6 @@ typedef uint64_t BcBigDig;
 #define BC_NUM_BIGDIG_C UINT64_C
 
 #elif BC_LONG_BIT >= 32
-
-typedef int_least16_t BcDig;
-typedef uint32_t BcBigDig;
 
 #define BC_NUM_BIGDIG_MAX ((BcBigDig) UINT32_MAX)
 
@@ -200,6 +182,7 @@ void bc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 void bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
 void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale);
+void bc_num_sr(BcNum *restrict a, BcNum *restrict b, size_t scale);
 void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale);
 
 size_t bc_num_addReq(const BcNum* a, const BcNum* b, size_t scale);
@@ -212,6 +195,9 @@ size_t bc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
 
 void bc_num_truncate(BcNum *restrict n, size_t places);
+void bc_num_extend(BcNum *restrict n, size_t places);
+void bc_num_shiftRight(BcNum *restrict n, size_t places);
+
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
 
 #if DC_ENABLED

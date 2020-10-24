@@ -46,6 +46,8 @@
 #define DC_ENABLED (1)
 #endif // DC_ENABLED
 
+#include <bc.h>
+
 typedef enum BcStatus {
 
 	BC_STATUS_SUCCESS = 0,
