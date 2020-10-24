@@ -62,8 +62,9 @@
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
 #define bc_parse_pushIndex(p, idx) (bc_vec_pushIndex(&(p)->func->code, (idx)))
 
-#define bc_parse_err(p, e) (bc_vm_error((e), (p)->l.line))
-#define bc_parse_verr(p, e, ...) (bc_vm_error((e), (p)->l.line, __VA_ARGS__))
+#define bc_parse_err(p, e) (bc_vm_handleError((e), (p)->l.line))
+#define bc_parse_verr(p, e, ...) \
+	(bc_vm_handleError((e), (p)->l.line, __VA_ARGS__))
 
 typedef struct BcParseNext {
 	uchar len;

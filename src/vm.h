@@ -273,8 +273,15 @@
 
 #define BC_VM_SAFE_RESULT(r) ((r)->t >= BC_RESULT_TEMP)
 
-#define bc_vm_err(e) (bc_vm_error((e), 0))
-#define bc_vm_verr(e, ...) (bc_vm_error((e), 0, __VA_ARGS__))
+#if BC_ENABLE_LIBRARY
+#define bc_vm_error(e, l, ...) (bc_vm_handleError((e)))
+#define bc_vm_err(e) (bc_vm_handleError((e)))
+#define bc_vm_verr(e, ...) (bc_vm_handleError((e)))
+#else // BC_ENABLE_LIBRARY
+#define bc_vm_error(e, l, ...) (bc_vm_handleError((e), (l), __VA_ARGS__))
+#define bc_vm_err(e) (bc_vm_handleError((e), 0))
+#define bc_vm_verr(e, ...) (bc_vm_handleError((e), 0, __VA_ARGS__))
+#endif // BC_ENABLE_LIBRARY
 
 #define BC_STATUS_IS_ERROR(s) \
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
@@ -328,7 +335,7 @@ typedef struct BcVm {
 	const char *func_header;
 
 	const char *err_ids[BC_ERR_IDX_NELEMS + BC_ENABLED];
-	const char *err_msgs[BC_ERROR_NELEMS];
+	const char *err_msgs[BC_ERR_NELEMS];
 
 	const char *locale;
 
@@ -376,7 +383,11 @@ void bc_vm_jmp(const char *f);
 void bc_vm_jmp(void);
 #endif // BC_DEBUG_CODE
 
-void bc_vm_error(BcError e, size_t line, ...);
+#if BC_ENABLE_LIBRARY
+void bc_vm_handleError(BcErr e);
+#else // BC_ENABLE_LIBRARY
+void bc_vm_handleError(BcErr e, size_t line, ...);
+#endif // BC_ENABLE_LIBRARY
 
 extern const char bc_copyright[];
 extern const char* const bc_err_line;

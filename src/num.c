@@ -437,7 +437,7 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	if (!places) return;
 	if (places > n->scale) {
 		size_t size = bc_vm_growSize(BC_NUM_RDX(places - n->scale), n->len);
-		if (size > SIZE_MAX - 1) bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+		if (size > SIZE_MAX - 1) bc_vm_err(BC_ERR_MATH_OVERFLOW);
 	}
 	if (BC_NUM_ZERO(n)) {
 		if (n->scale >= places) n->scale -= places;
@@ -549,7 +549,7 @@ static void bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 static void bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
                          BcBigDig *v)
 {
-	if (BC_ERR(b->rdx)) bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	if (BC_ERR(b->rdx)) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 	bc_num_copy(c, a);
 	bc_num_bigdig(b, v);
 }
@@ -1096,7 +1096,7 @@ static void bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	size_t len;
 	BcNum cpa, cpb;
 
-	if (BC_NUM_ZERO(b)) bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(b)) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(c, scale);
 		return;
@@ -1169,7 +1169,7 @@ static void bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	BcNum temp;
 	bool neg;
 
-	if (BC_NUM_ZERO(b)) bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(b)) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(c, ts);
 		bc_num_setToZero(d, ts);
@@ -1234,14 +1234,14 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	size_t i, powrdx, resrdx;
 	bool neg, zero;
 
-	if (BC_ERR(b->rdx)) bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	if (BC_ERR(b->rdx)) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 
 	if (BC_NUM_ZERO(b)) {
 		bc_num_one(c);
 		return;
 	}
 	if (BC_NUM_ZERO(a)) {
-		if (b->neg) bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
+		if (b->neg) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 		bc_num_setToZero(c, scale);
 		return;
 	}
@@ -2164,9 +2164,9 @@ void bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 
 	assert(n != NULL && result != NULL);
 
-	if (BC_ERR(n->neg)) bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_ERR(n->neg)) bc_vm_err(BC_ERR_MATH_NEGATIVE);
 	if (BC_ERR(bc_num_cmp(n, &vm.max) >= 0))
-		bc_vm_err(BC_ERROR_MATH_OVERFLOW);
+		bc_vm_err(BC_ERR_MATH_OVERFLOW);
 
 	bc_num_bigdig2(n, result);
 }
@@ -2226,8 +2226,7 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	intn.len = bc_num_int(n);
 
 	// This assert is here because it has to be true. It is also here to justify
-	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
-	// below.
+	// the use of BC_ERR_SIGNAL_ONLY() on each of the divmod's and mod's below.
 	assert(BC_NUM_NONZERO(&vm.max));
 
 	if (BC_NUM_NONZERO(&frac)) {
@@ -2301,7 +2300,7 @@ void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	bc_num_mul(&vm.max, &vm.max, &pow, 0);
 
-	// Because this is true, we can just use BC_ERROR_SIGNAL_ONLY() below when
+	// Because this is true, we can just use BC_ERR_SIGNAL_ONLY() below when
 	// dividing by pow.
 	assert(BC_NUM_NONZERO(&pow));
 
@@ -2346,8 +2345,8 @@ void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 
 	assert(a != b);
 
-	if (BC_ERR(a->neg)) bc_vm_err(BC_ERROR_MATH_NEGATIVE);
-	if (BC_ERR(a->rdx)) bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+	if (BC_ERR(a->neg)) bc_vm_err(BC_ERR_MATH_NEGATIVE);
+	if (BC_ERR(a->rdx)) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return;
 
 	cmp = bc_num_cmp(a, &vm.max);
@@ -2402,8 +2401,7 @@ void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	c2 = &cp2;
 
 	// This assert is here because it has to be true. It is also here to justify
-	// the use of BC_ERROR_SIGNAL_ONLY() on each of the divmod's and mod's
-	// below.
+	// the use of BC_ERR_SIGNAL_ONLY() on each of the divmod's and mod's below.
 	assert(BC_NUM_NONZERO(&vm.max));
 
 	while (BC_NUM_NONZERO(c1)) {
@@ -2569,7 +2567,7 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	assert(a != NULL && b != NULL && a != b);
 
-	if (BC_ERR(a->neg)) bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_ERR(a->neg)) bc_vm_err(BC_ERR_MATH_NEGATIVE);
 
 	if (a->scale > scale) scale = a->scale;
 
@@ -2732,10 +2730,10 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(a != d && b != d && c != d);
 
-	if (BC_ERR(BC_NUM_ZERO(c))) bc_vm_err(BC_ERROR_MATH_DIVIDE_BY_ZERO);
-	if (BC_ERR(b->neg)) bc_vm_err(BC_ERROR_MATH_NEGATIVE);
+	if (BC_ERR(BC_NUM_ZERO(c))) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
+	if (BC_ERR(b->neg)) bc_vm_err(BC_ERR_MATH_NEGATIVE);
 	if (BC_ERR(a->rdx || b->rdx || c->rdx))
-		bc_vm_err(BC_ERROR_MATH_NON_INTEGER);
+		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 
 	bc_num_expand(d, c->len);
 

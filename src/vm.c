@@ -134,7 +134,24 @@ void bc_vm_info(const char* const help) {
 }
 #endif // !BC_ENABLE_LIBRARY
 
-void bc_vm_error(BcError e, size_t line, ...) {
+#if BC_ENABLE_LIBRARY
+void bc_vm_handleError(BcErr e) {
+
+	assert(e < BC_ERR_NELEMS);
+	assert(!vm.sig_pop);
+
+	BC_SIG_LOCK;
+
+	if (e <= BC_ERR_MATH_DIVIDE_BY_ZERO)
+		vm.err = (BcError) (e - BC_ERR_MATH_NEGATIVE + BC_ERROR_MATH_NEGATIVE);
+	else if (vm.abrt) abort();
+	else if (e == BC_ERR_FATAL_ALLOC_ERR) vm.err = BC_ERROR_FATAL_ALLOC_ERR;
+	else vm.err = BC_ERROR_FATAL_UNKNOWN_ERR;
+
+	BC_VM_JMP;
+}
+#else // BC_ENABLE_LIBRARY
+void bc_vm_handleError(BcErr e, size_t line, ...) {
 
 	BcStatus s;
 	va_list args;
@@ -142,11 +159,11 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	const char* err_type = vm.err_ids[id];
 	sig_atomic_t lock;
 
-	assert(e < BC_ERROR_NELEMS);
+	assert(e < BC_ERR_NELEMS);
 	assert(!vm.sig_pop);
 
 #if BC_ENABLED
-	if (!BC_S && e >= BC_ERROR_POSIX_START) {
+	if (!BC_S && e >= BC_ERR_POSIX_START) {
 		if (BC_W) {
 			// Make sure to not return an error.
 			id = UCHAR_MAX;
@@ -157,8 +174,6 @@ void bc_vm_error(BcError e, size_t line, ...) {
 #endif // BC_ENABLED
 
 	BC_SIG_TRYLOCK(lock);
-
-#if !BC_ENABLE_LIBRARY
 
 	// Make sure all of stdout is written first.
 	s = bc_file_flushErr(&vm.fout);
@@ -207,8 +222,6 @@ void bc_vm_error(BcError e, size_t line, ...) {
 	bc_file_puts(&vm.ferr, "\n\n");
 
 	s = bc_file_flushErr(&vm.ferr);
-
-#endif // !BC_ENABLE_LIBRARY
 
 	vm.status = s == BC_STATUS_ERROR_FATAL ?
 	    (sig_atomic_t) s : (sig_atomic_t) (uchar) (id + 1);
@@ -266,7 +279,7 @@ static void bc_vm_envArgs(const char* const env_args_name) {
 				buf += 1;
 				start = buf;
 			}
-			else if (instr) bc_vm_error(BC_ERROR_FATAL_OPTION, 0, start);
+			else if (instr) bc_vm_error(BC_ERR_FATAL_OPTION, 0, start);
 		}
 		else buf += 1;
 	}
@@ -298,6 +311,7 @@ static size_t bc_vm_envLen(const char *var) {
 
 	return len;
 }
+#endif // BC_ENABLE_LIBRARY
 
 void bc_vm_shutdown(void) {
 
@@ -339,14 +353,14 @@ void bc_vm_shutdown(void) {
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
 	if (BC_ERR(res >= SIZE_MAX || (n != 0 && res / n != size)))
-		bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+		bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
 	return res;
 }
 
 inline size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t res = a + b;
 	if (BC_ERR(res >= SIZE_MAX || res < a || res < b))
-		bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+		bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
 	return res;
 }
 
@@ -358,7 +372,7 @@ void* bc_vm_malloc(size_t n) {
 
 	ptr = malloc(n);
 
-	if (BC_ERR(ptr == NULL)) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(ptr == NULL)) bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
 
 	return ptr;
 }
@@ -371,7 +385,7 @@ void* bc_vm_realloc(void *ptr, size_t n) {
 
 	temp = realloc(ptr, n);
 
-	if (BC_ERR(temp == NULL)) bc_vm_err(BC_ERROR_FATAL_ALLOC_ERR);
+	if (BC_ERR(temp == NULL)) bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
 
 	return temp;
 }
@@ -498,7 +512,7 @@ static void bc_vm_endif(void) {
 	if (good) {
 		while (BC_PARSE_IF_END(&vm.prs)) bc_vm_process("else {}");
 	}
-	else bc_parse_err(&vm.prs, BC_ERROR_PARSE_BLOCK);
+	else bc_parse_err(&vm.prs, BC_ERR_PARSE_BLOCK);
 }
 #endif // BC_ENABLED
 
@@ -611,9 +625,9 @@ restart:
 
 	if (!BC_STATUS_IS_ERROR(s)) {
 		if (BC_ERR(comment))
-			bc_parse_err(&vm.prs, BC_ERROR_PARSE_COMMENT);
+			bc_parse_err(&vm.prs, BC_ERR_PARSE_COMMENT);
 		else if (BC_ERR(string))
-			bc_parse_err(&vm.prs, BC_ERROR_PARSE_STRING);
+			bc_parse_err(&vm.prs, BC_ERR_PARSE_STRING);
 #if BC_ENABLED
 		else if (BC_IS_BC) bc_vm_endif();
 #endif // BC_ENABLED
@@ -659,7 +673,7 @@ static void bc_vm_defaultMsgs(void) {
 
 	for (i = 0; i < BC_ERR_IDX_NELEMS + BC_ENABLED; ++i)
 		vm.err_ids[i] = bc_errs[i];
-	for (i = 0; i < BC_ERROR_NELEMS; ++i) vm.err_msgs[i] = bc_err_msgs[i];
+	for (i = 0; i < BC_ERR_NELEMS; ++i) vm.err_msgs[i] = bc_err_msgs[i];
 }
 
 static void bc_vm_gettext(void) {
@@ -690,7 +704,7 @@ static void bc_vm_gettext(void) {
 	i = 0;
 	id = bc_err_ids[i];
 
-	for (set = id + 3, msg = 1; i < BC_ERROR_NELEMS; ++i, ++msg) {
+	for (set = id + 3, msg = 1; i < BC_ERR_NELEMS; ++i, ++msg) {
 
 		if (id != bc_err_ids[i]) {
 			msg = 1;

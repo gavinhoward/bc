@@ -107,7 +107,7 @@ void bc_args(int argc, char *argv[]) {
 			case 'e':
 			{
 				if (vm.no_exit_exprs)
-					bc_vm_verr(BC_ERROR_FATAL_OPTION, "-e (--expression)");
+					bc_vm_verr(BC_ERR_FATAL_OPTION, "-e (--expression)");
 				bc_args_exprs(opts.optarg);
 				break;
 			}
@@ -117,7 +117,7 @@ void bc_args(int argc, char *argv[]) {
 				if (!strcmp(opts.optarg, "-")) vm.no_exit_exprs = true;
 				else {
 					if (vm.no_exit_exprs)
-						bc_vm_verr(BC_ERROR_FATAL_OPTION, "-f (--file)");
+						bc_vm_verr(BC_ERR_FATAL_OPTION, "-f (--file)");
 					bc_args_file(opts.optarg);
 				}
 				break;

@@ -179,7 +179,7 @@ static ulong bc_rand_frand(void *ptr) {
 
 	nread = read(fd, buf, sizeof(ulong));
 
-	if (BC_ERR(nread != sizeof(ulong))) bc_vm_err(BC_ERROR_FATAL_IO_ERR);
+	if (BC_ERR(nread != sizeof(ulong))) bc_vm_err(BC_ERR_FATAL_IO_ERR);
 
 	return *((ulong*) buf);
 }
