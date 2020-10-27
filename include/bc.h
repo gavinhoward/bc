@@ -46,6 +46,7 @@ typedef enum BcError {
 
 	BC_ERROR_SUCCESS,
 
+	BC_ERROR_INVALID_NUM,
 	BC_ERROR_SIGNAL,
 
 	BC_ERROR_MATH_NEGATIVE,
@@ -102,21 +103,10 @@ typedef uint32_t BcRandInt;
 
 typedef size_t BcNumber;
 
-typedef struct BcMaybe {
-
-	union {
-
-		BcError err;
-		BcNumber num;
-
-	} data;
-
-	bool err;
-
-} BcMaybe;
-
 BcError libbc_init(bool abortOnFatal);
 void libbc_dtor(void);
+
+void libbc_gc(void);
 
 size_t libbc_scale(void);
 void libbc_setScale(size_t scale);
@@ -128,62 +118,68 @@ void libbc_setObase(size_t obase);
 bool libbc_abortOnFatalError(void);
 void libbc_setAbortOnFatalError(bool abrt);
 
+BcError libbc_num_error(const BcNumber n);
+
 void libbc_handleSignal(void);
 
-BcMaybe libbc_num_init(void);
-BcMaybe libbc_num_initReq(size_t req);
+BcNumber libbc_num_init(void);
+BcNumber libbc_num_initReq(size_t req);
 BcError libbc_num_copy(const BcNumber d, const BcNumber s);
-BcMaybe libbc_num_dup(const BcNumber s);
-void libbc_num_free(const BcNumber n);
+BcNumber libbc_num_dup(const BcNumber s);
+void libbc_num_free(BcNumber n);
 
+bool libbc_num_neg(const BcNumber n);
 size_t libbc_num_scale(const BcNumber n);
 size_t libbc_num_len(const BcNumber n);
 
 BcError libbc_num_bigdig(const BcNumber n, BcBigDig *result);
-BcMaybe libbc_num_bigdig2num_create(const BcBigDig val);
-BcError libbc_num_bigdig2num(const BcNumber n, const BcBigDig val);
+BcNumber libbc_num_bigdig2num(const BcBigDig val);
+BcError libbc_num_bigdig2num_err(const BcNumber n, const BcBigDig val);
 
-BcMaybe libbc_num_add_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_add(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_add(const BcNumber a, const BcNumber b);
+BcError libbc_num_add_err(const BcNumber a, const BcNumber b, const BcNumber c);
 
-BcMaybe libbc_num_sub_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_sub(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_sub(const BcNumber a, const BcNumber b);
+BcError libbc_num_sub_err(const BcNumber a, const BcNumber b, const BcNumber c);
 
-BcMaybe libbc_num_mul_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_mul(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_mul(const BcNumber a, const BcNumber b);
+BcError libbc_num_mul_err(const BcNumber a, const BcNumber b, const BcNumber c);
 
-BcMaybe libbc_num_div_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_div(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_div(const BcNumber a, const BcNumber b);
+BcError libbc_num_div_err(const BcNumber a, const BcNumber b, const BcNumber c);
 
-BcMaybe libbc_num_mod_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_mod(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_mod(const BcNumber a, const BcNumber b);
+BcError libbc_num_mod_err(const BcNumber a, const BcNumber b, const BcNumber c);
 
-BcMaybe libbc_num_pow_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_pow(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_pow(const BcNumber a, const BcNumber b);
+BcError libbc_num_pow_err(const BcNumber a, const BcNumber b, const BcNumber c);
 
 #if BC_ENABLE_EXTRA_MATH
-BcMaybe libbc_num_places_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_places(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_places(const BcNumber a, const BcNumber b);
+BcError libbc_num_places_err(const BcNumber a, const BcNumber b,
+                             const BcNumber c);
 
-BcMaybe libbc_num_lshift_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_lshift(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_lshift(const BcNumber a, const BcNumber b);
+BcError libbc_num_lshift_err(const BcNumber a, const BcNumber b,
+                             const BcNumber c);
 
-BcMaybe libbc_num_rshift_create(const BcNumber a, const BcNumber b);
-BcError libbc_num_rshift(const BcNumber a, const BcNumber b, const BcNumber c);
+BcNumber libbc_num_rshift(const BcNumber a, const BcNumber b);
+BcError libbc_num_rshift_err(const BcNumber a, const BcNumber b,
+                             const BcNumber c);
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcMaybe libbc_num_sqrt_create(const BcNumber a);
-BcError libbc_num_sqrt(const BcNumber a, const BcNumber b);
+BcNumber libbc_num_sqrt(const BcNumber a);
+BcError libbc_num_sqrt_err(const BcNumber a, const BcNumber b);
 
-BcError libbc_num_divmod_create(const BcNumber a, const BcNumber b,
-                                BcNumber *c, BcNumber *d);
 BcError libbc_num_divmod(const BcNumber a, const BcNumber b,
-                         const BcNumber c, const BcNumber d);
+                         BcNumber *c, BcNumber *d);
+BcError libbc_num_divmod_err(const BcNumber a, const BcNumber b,
+                             const BcNumber c, const BcNumber d);
 
-BcMaybe libbc_num_modexp_create(const BcNumber a, const BcNumber b,
-                                const BcNumber c);
-BcError libbc_num_modexp(const BcNumber a, const BcNumber b,
-                         const BcNumber c, const BcNumber d);
+BcNumber libbc_num_modexp(const BcNumber a, const BcNumber b,
+                          const BcNumber c);
+BcError libbc_num_modexp_err(const BcNumber a, const BcNumber b,
+                             const BcNumber c, const BcNumber d);
 
 size_t libbc_num_addReq(const BcNumber a, const BcNumber b);
 size_t libbc_num_mulReq(const BcNumber a, const BcNumber b);
@@ -197,30 +193,31 @@ size_t libbc_num_placesReq(const BcNumber a, const BcNumber b);
 BcError libbc_num_setScale(const BcNumber n, const size_t scale);
 ssize_t libbc_num_cmp(const BcNumber a, const BcNumber b);
 
+void libbc_num_zero(const BcNumber n);
 void libbc_num_one(const BcNumber n);
 ssize_t libbc_num_cmpZero(const BcNumber n);
 
-BcMaybe libbc_num_parse_create(const char *restrict val, const BcBigDig base);
-BcError libbc_num_parse(const BcNumber n, const char *restrict val,
-                        const BcBigDig base);
+BcNumber libbc_num_parse(const char *restrict val, const BcBigDig base);
+BcError libbc_num_parse_err(const BcNumber n, const char *restrict val,
+                            const BcBigDig base);
 char* libbc_num_string(const BcNumber n, const BcBigDig base);
 
 #if BC_ENABLE_EXTRA_MATH
-BcMaybe libbc_num_irand_create(const BcNumber a);
-BcError libbc_num_irand(BcNumber a, BcNumber b);
+BcNumber libbc_num_irand(const BcNumber a);
+BcError libbc_num_irand_err(BcNumber a, BcNumber b);
 
-BcMaybe libbc_num_frand_create(size_t places);
-BcError libbc_num_frand(const BcNumber n, size_t places);
+BcNumber libbc_num_frand(size_t places);
+BcError libbc_num_frand_err(const BcNumber n, size_t places);
 
-BcMaybe libbc_num_ifrand_create(const BcNumber a, size_t places);
-BcError libbc_num_ifrand(const BcNumber a, size_t places, const BcNumber b);
+BcNumber libbc_num_ifrand(const BcNumber a, size_t places);
+BcError libbc_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b);
 
 BcError libbc_num_seedWithNum(const BcNumber n);
 BcError libbc_num_seedWithUlongs(unsigned long state1, unsigned long state2,
                                  unsigned long inc1, unsigned long inc2);
 BcError libbc_num_reseed(void);
-BcMaybe libbc_num_seed2num_create(void);
-BcError libbc_num_seed2num(BcNumber n);
+BcNumber libbc_num_seed2num(void);
+BcError libbc_num_seed2num_err(BcNumber n);
 
 BcRandInt libbc_rand_int(void);
 BcRandInt libbc_rand_bounded(BcRandInt bound);

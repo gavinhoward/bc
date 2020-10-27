@@ -40,11 +40,12 @@
 
 #include "num.h"
 
-#define BC_FUNC_HEADER_LOCK(l) \
-	do {                       \
-		BC_SIG_LOCK;           \
-		BC_SETJMP_LOCKED(l);   \
-		vm.running = 0;        \
+#define BC_FUNC_HEADER_LOCK(l)     \
+	do {                           \
+		BC_SIG_LOCK;               \
+		BC_SETJMP_LOCKED(l);       \
+		vm.err = BC_ERROR_SUCCESS; \
+		vm.running = 0;            \
 	} while (0)
 
 #define BC_FUNC_FOOTER_UNLOCK(e) \
@@ -57,19 +58,26 @@
 		vm.sig_lock = 0;         \
 	} while (0)
 
-#define BC_FUNC_HEADER(l) \
-	do {                  \
-		BC_SETJMP(l);     \
-		vm.running = 0;   \
+#define BC_FUNC_HEADER(l)          \
+	do {                           \
+		BC_SETJMP(l);              \
+		vm.err = BC_ERROR_SUCCESS; \
+		vm.running = 0;            \
 	} while (0)
 
-#define BC_FUNC_FOOTER(e) \
-	do {                  \
-		e = vm.err;       \
-		vm.running = 0;   \
-		BC_UNSETJMP;      \
-		BC_LONGJMP_STOP;  \
-		vm.sig_lock = 0;  \
+#define BC_FUNC_FOOTER_NO_ERR \
+	do {                      \
+		vm.running = 0;       \
+		BC_UNSETJMP;          \
+		BC_LONGJMP_STOP;      \
+		vm.sig_lock = 0;      \
+	} while (0)
+
+
+#define BC_FUNC_FOOTER(e)      \
+	do {                       \
+		e = vm.err;            \
+		BC_FUNC_FOOTER_NO_ERR; \
 	} while (0)
 
 #define BC_FUNC_RESETJMP(l)   \
@@ -81,22 +89,30 @@
 
 #endif // LIBBC_PRIVATE_H
 
-#define BC_MAYBE_SETUP(m, e, i)                \
-	do {                                       \
-		(m).err = ((e) != BC_ERROR_SUCCESS);   \
-		if (BC_ERR((m).err)) m.data.err = (e); \
-		else (m).data.num = (i);             \
+#define BC_MAYBE_SETUP(e, n, i)                     \
+	do {                                            \
+		if (BC_ERR((e) != BC_ERROR_SUCCESS)) {      \
+			if ((n).num != NULL) bc_num_free(&(n)); \
+			i = 0 - (BcNumber) (e);                 \
+		}                                           \
+		else i = libbc_num_insert(&(n));            \
 	} while (0)
 
-#define BC_MAYBE_SETUP_FREE(m, e, n)                \
-	do {                                            \
-		BC_FUNC_FOOTER(e);                          \
-		m.err = ((e) != BC_ERROR_SUCCESS);          \
-		if (BC_ERR(m.err)) {                        \
-			if ((n).num != NULL) bc_num_free(&(n)); \
-			m.data.err = (e);                       \
-		}                                           \
-		else m.data.num = libbc_num_insert(&n);     \
+#define BC_CHECK_NUM(n)                                       \
+	do {                                                      \
+		if (BC_ERR((n) >= vm.nums.len)) {                     \
+			if (n > 0 - (BcNumber) BC_ERROR_NELEMS) return n; \
+			else return 0 - (BcNumber) BC_ERROR_INVALID_NUM;  \
+		}                                                     \
+	} while (0)
+
+#define BC_CHECK_NUM_ERR(n)                                   \
+	do {                                                      \
+		if (BC_ERR((n) >= vm.nums.len)) {                     \
+			if (n > 0 - (BcNumber) BC_ERROR_NELEMS)           \
+				return (BcError) (0 - n);                     \
+			else return BC_ERROR_INVALID_NUM;                 \
+		}                                                     \
 	} while (0)
 
 #define BC_NUM(i) ((BcNum*) bc_vec_item(&vm.nums, (i)))

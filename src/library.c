@@ -45,6 +45,8 @@
 #include "num.h"
 #include "vm.h"
 
+static void libbc_num_destruct(void *num);
+
 void libbc_handleSignal(void) {
 
 	// Signal already in flight.
@@ -63,8 +65,6 @@ BcError libbc_init(bool abortOnFatal) {
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	memset(&vm, 0, sizeof(BcVm));
-
 	vm.jmp_bufs.v = NULL;
 	vm.out.v = NULL;
 
@@ -76,7 +76,7 @@ BcError libbc_init(bool abortOnFatal) {
 
 	bc_vm_init();
 
-	bc_vec_init(&vm.nums, sizeof(BcNum), bc_num_free);
+	bc_vec_init(&vm.nums, sizeof(BcNum), libbc_num_destruct);
 	bc_vec_init(&vm.free_nums, sizeof(BcNumber), NULL);
 
 	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
@@ -109,7 +109,17 @@ void libbc_dtor(void) {
 
 	bc_vm_shutdown();
 
+#ifndef NDEBUG
+	memset(&vm, 0, sizeof(BcVm));
+#endif // NDEBUG
+
 	BC_SIG_UNLOCK;
+}
+
+void libbc_gc(void) {
+	bc_vec_npop(&vm.nums, vm.nums.len);
+	bc_vec_npop(&vm.free_nums, vm.free_nums.len);
+	bc_vm_freeTemps();
 }
 
 size_t libbc_scale(void) {
@@ -144,6 +154,14 @@ void libbc_setAbortOnFatalError(bool abrt) {
 	vm.abrt = abrt;
 }
 
+BcError libbc_num_error(const BcNumber n) {
+	if (n >= vm.nums.len) {
+		if (n > 0 - (BcNumber) BC_ERROR_NELEMS) return (BcError) (0 - n);
+		else return BC_ERROR_INVALID_NUM;
+	}
+	else return BC_ERROR_SUCCESS;
+}
+
 static BcNumber libbc_num_insert(BcNum *restrict n) {
 
 	BcNumber idx;
@@ -167,16 +185,15 @@ static BcNumber libbc_num_insert(BcNum *restrict n) {
 	return idx;
 }
 
-BcMaybe libbc_num_init(void) {
+BcNumber libbc_num_init(void) {
 	return libbc_num_initReq(BC_NUM_DEF_SIZE);
 }
 
-BcMaybe libbc_num_initReq(size_t req) {
+BcNumber libbc_num_initReq(size_t req) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum n;
-	size_t idx;
+	BcNumber idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -184,12 +201,10 @@ BcMaybe libbc_num_initReq(size_t req) {
 
 	bc_num_init(&n, req);
 
-	idx = libbc_num_insert(&n);
-
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	BC_MAYBE_SETUP(m, e, idx);
-	return m;
+	BC_MAYBE_SETUP(e, n, idx);
+	return idx;
 }
 
 BcError libbc_num_copy(const BcNumber d, const BcNumber s) {
@@ -214,10 +229,9 @@ err:
 	return e;
 }
 
-BcMaybe libbc_num_dup(const BcNumber s) {
+BcNumber libbc_num_dup(const BcNumber s) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum *src, dest;
 	BcNumber idx;
 
@@ -235,15 +249,50 @@ BcMaybe libbc_num_dup(const BcNumber s) {
 
 	bc_num_createCopy(&dest, src);
 
-	idx = libbc_num_insert(&dest);
-
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	BC_MAYBE_SETUP(m, e, idx);
-	return m;
+	BC_MAYBE_SETUP(e, dest, idx);
+	return idx;
+}
+
+static void libbc_num_destruct(void *num) {
+
+	BcNum *n = (BcNum*) num;
+
+	assert(n != NULL);
+
+	if (n->num == NULL) return;
+
+	bc_num_free(num);
+	bc_num_clear(num);
+}
+
+static void libbc_num_dtor(BcNumber n, BcNum *restrict num) {
+
+	BC_SIG_ASSERT_LOCKED;
+
+	assert(num != NULL && num->num != NULL);
+
+	libbc_num_destruct(num);
+	bc_vec_push(&vm.free_nums, &n);
 }
 
 void libbc_num_free(BcNumber n) {
+
+	BcNum *num;
+
+	BC_SIG_LOCK;
+
+	assert(n < vm.nums.len);
+
+	num = BC_NUM(n);
+
+	libbc_num_dtor(n, num);
+
+	BC_SIG_UNLOCK;
+}
+
+bool libbc_num_neg(const BcNumber n) {
 
 	BcNum *num;
 
@@ -253,14 +302,7 @@ void libbc_num_free(BcNumber n) {
 
 	assert(num != NULL && num->num != NULL);
 
-	BC_SIG_LOCK;
-
-	bc_num_free(num);
-	bc_num_clear(num);
-	bc_vec_push(&vm.free_nums, &n);
-	n = (size_t) -1;
-
-	BC_SIG_UNLOCK;
+	return num->neg;
 }
 
 size_t libbc_num_scale(const BcNumber n) {
@@ -310,10 +352,9 @@ err:
 	return e;
 }
 
-BcMaybe libbc_num_bigdig2num_create(const BcBigDig val) {
+BcNumber libbc_num_bigdig2num(const BcBigDig val) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum n;
 	BcNumber idx;
 
@@ -322,18 +363,19 @@ BcMaybe libbc_num_bigdig2num_create(const BcBigDig val) {
 	bc_vec_grow(&vm.nums, 1);
 
 	bc_num_createFromBigdig(&n, val);
-	idx = libbc_num_insert(&n);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	BC_MAYBE_SETUP(m, e, idx);
-	return m;
+	BC_MAYBE_SETUP(e, n, idx);
+	return idx;
 }
 
-BcError libbc_num_bigdig2num(const BcNumber n, const BcBigDig val) {
+BcError libbc_num_bigdig2num_err(const BcNumber n, const BcBigDig val) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *num;
+
+	BC_CHECK_NUM_ERR(n);
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -350,15 +392,17 @@ err:
 	return e;
 }
 
-static BcMaybe libbc_num_binary_create(const BcNumber a, const BcNumber b,
-                                       const BcNumBinaryOp op,
-                                       const BcNumBinaryOpReq req)
+static BcNumber libbc_num_binary(const BcNumber a, const BcNumber b,
+                                 const BcNumBinaryOp op,
+                                 const BcNumBinaryOpReq req)
 {
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum *aptr, *bptr;
 	BcNum c;
 	BcNumber idx;
+
+	BC_CHECK_NUM(a);
+	BC_CHECK_NUM(b);
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -382,16 +426,22 @@ static BcMaybe libbc_num_binary_create(const BcNumber a, const BcNumber b,
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP_FREE(m, e, c);
+	libbc_num_dtor(a, aptr);
+	if (b != a) libbc_num_dtor(b, bptr);
+	BC_MAYBE_SETUP(e, c, idx);
 
-	return m;
+	return idx;
 }
 
-static BcError libbc_num_binary(const BcNumber a, const BcNumber b,
-                                const BcNumber c, const BcNumBinaryOp op)
+static BcError libbc_num_binary_err(const BcNumber a, const BcNumber b,
+                                    const BcNumber c, const BcNumBinaryOp op)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr;
+
+	BC_CHECK_NUM_ERR(a);
+	BC_CHECK_NUM_ERR(b);
+	BC_CHECK_NUM_ERR(c);
 
 	BC_FUNC_HEADER(err);
 
@@ -411,86 +461,98 @@ err:
 	return e;
 }
 
-BcMaybe libbc_num_add_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_add, bc_num_addReq);
+BcNumber libbc_num_add(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_add, bc_num_addReq);
 }
 
-BcError libbc_num_add(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_add);
+BcError libbc_num_add_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_add);
 }
 
-BcMaybe libbc_num_sub_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_sub, bc_num_addReq);
+BcNumber libbc_num_sub(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_sub, bc_num_addReq);
 }
 
-BcError libbc_num_sub(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_sub);
+BcError libbc_num_sub_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_sub);
 }
 
-BcMaybe libbc_num_mul_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_mul, bc_num_mulReq);
+BcNumber libbc_num_mul(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_mul, bc_num_mulReq);
 }
 
-BcError libbc_num_mul(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_mul);
+BcError libbc_num_mul_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_mul);
 }
 
-BcMaybe libbc_num_div_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_div, bc_num_divReq);
+BcNumber libbc_num_div(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_div, bc_num_divReq);
 }
 
-BcError libbc_num_div(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_div);
+BcError libbc_num_div_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_div);
 }
 
-BcMaybe libbc_num_mod_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_mod, bc_num_divReq);
+BcNumber libbc_num_mod(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_mod, bc_num_divReq);
 }
 
-BcError libbc_num_mod(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_mod);
+BcError libbc_num_mod_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_mod);
 }
 
-BcMaybe libbc_num_pow_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_pow, bc_num_powReq);
+BcNumber libbc_num_pow(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_pow, bc_num_powReq);
 }
 
-BcError libbc_num_pow(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_pow);
+BcError libbc_num_pow_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_pow);
 }
 
 #if BC_ENABLE_EXTRA_MATH
-BcMaybe libbc_num_places_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_places, bc_num_placesReq);
+BcNumber libbc_num_places(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_places, bc_num_placesReq);
 }
 
-BcError libbc_num_places(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_places);
+BcError libbc_num_places_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_places);
 }
 
-BcMaybe libbc_num_lshift_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_lshift, bc_num_placesReq);
+BcNumber libbc_num_lshift(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary(a, b, bc_num_lshift, bc_num_placesReq);
 }
 
-BcError libbc_num_lshift(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_lshift);
+BcError libbc_num_lshift_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_lshift);
 }
 
-BcMaybe libbc_num_rshift_create(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary_create(a, b, bc_num_rshift, bc_num_placesReq);
+BcNumber libbc_num_rshift(const BcNumber a, const BcNumber b)
+{
+	return libbc_num_binary(a, b, bc_num_rshift, bc_num_placesReq);
 }
 
-BcError libbc_num_rshift(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return libbc_num_binary(a, b, c, bc_num_lshift);
+BcError libbc_num_rshift_err(const BcNumber a, const BcNumber b, const BcNumber c)
+{
+	return libbc_num_binary_err(a, b, c, bc_num_lshift);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcMaybe libbc_num_sqrt_create(const BcNumber a) {
+BcNumber libbc_num_sqrt(const BcNumber a) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum *aptr;
 	BcNum b;
+	BcNumber idx;
+
+	BC_CHECK_NUM(a);
 
 	BC_FUNC_HEADER(err);
 
@@ -505,19 +567,19 @@ BcMaybe libbc_num_sqrt_create(const BcNumber a) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+	libbc_num_dtor(a, aptr);
+	BC_MAYBE_SETUP(e, b, idx);
 
-	m.err = (e == BC_ERROR_SUCCESS);
-
-	if (BC_ERR(m.err)) m.data.err = e;
-	else m.data.num = libbc_num_insert(&b);
-
-	return m;
+	return idx;
 }
 
-BcError libbc_num_sqrt(const BcNumber a, const BcNumber b)
-{
+BcError libbc_num_sqrt_err(const BcNumber a, const BcNumber b) {
+
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
+
+	BC_CHECK_NUM_ERR(a);
+	BC_CHECK_NUM_ERR(b);
 
 	BC_FUNC_HEADER(err);
 
@@ -537,13 +599,16 @@ err:
 	return e;
 }
 
-BcError libbc_num_divmod_create(const BcNumber a, const BcNumber b,
-                                BcNumber *c, BcNumber *d)
+BcError libbc_num_divmod(const BcNumber a, const BcNumber b,
+                         BcNumber *c, BcNumber *d)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	size_t req;
 	BcNum *aptr, *bptr;
 	BcNum cnum, dnum;
+
+	BC_CHECK_NUM_ERR(a);
+	BC_CHECK_NUM_ERR(b);
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -572,6 +637,9 @@ BcError libbc_num_divmod_create(const BcNumber a, const BcNumber b,
 err:
 	BC_SIG_MAYLOCK;
 
+	libbc_num_dtor(a, aptr);
+	if (b != a) libbc_num_dtor(b, bptr);
+
 	if (BC_ERR(vm.err)) {
 		if (cnum.num != NULL) bc_num_free(&cnum);
 		if (dnum.num != NULL) bc_num_free(&dnum);
@@ -586,11 +654,16 @@ err:
 	return e;
 }
 
-BcError libbc_num_divmod(const BcNumber a, const BcNumber b,
-                         const BcNumber c, const BcNumber d)
+BcError libbc_num_divmod_err(const BcNumber a, const BcNumber b,
+                             const BcNumber c, const BcNumber d)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
+
+	BC_CHECK_NUM_ERR(a);
+	BC_CHECK_NUM_ERR(b);
+	BC_CHECK_NUM_ERR(c);
+	BC_CHECK_NUM_ERR(d);
 
 	BC_FUNC_HEADER(err);
 
@@ -616,14 +689,17 @@ err:
 	return e;
 }
 
-BcMaybe libbc_num_modexp_create(const BcNumber a, const BcNumber b,
-                                const BcNumber c)
+BcNumber libbc_num_modexp(const BcNumber a, const BcNumber b, const BcNumber c)
 {
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	size_t req;
 	BcNum *aptr, *bptr, *cptr;
 	BcNum d;
+	BcNumber idx;
+
+	BC_CHECK_NUM(a);
+	BC_CHECK_NUM(b);
+	BC_CHECK_NUM(c);
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -650,16 +726,26 @@ BcMaybe libbc_num_modexp_create(const BcNumber a, const BcNumber b,
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP_FREE(m, e, d);
 
-	return m;
+	libbc_num_dtor(a, aptr);
+	if (b != a) libbc_num_dtor(b, bptr);
+	if (c != a && c != b) libbc_num_dtor(c, cptr);
+
+	BC_MAYBE_SETUP(e, d, idx);
+
+	return idx;
 }
 
-BcError libbc_num_modexp(const BcNumber a, const BcNumber b,
-                         const BcNumber c, const BcNumber d)
+BcError libbc_num_modexp_err(const BcNumber a, const BcNumber b,
+                             const BcNumber c, const BcNumber d)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
+
+	BC_CHECK_NUM_ERR(a);
+	BC_CHECK_NUM_ERR(b);
+	BC_CHECK_NUM_ERR(c);
+	BC_CHECK_NUM_ERR(d);
 
 	BC_FUNC_HEADER(err);
 
@@ -684,8 +770,9 @@ err:
 	return e;
 }
 
-size_t libbc_num_req(const BcNumber a, const BcNumber b, const BcReqOp op) {
-
+static size_t libbc_num_req(const BcNumber a, const BcNumber b,
+                            const BcReqOp op)
+{
 	BcNum *aptr, *bptr;
 
 	assert(a < vm.nums.len && b < vm.nums.len);
@@ -725,6 +812,8 @@ BcError libbc_num_setScale(const BcNumber n, size_t scale) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+
+	BC_CHECK_NUM_ERR(n);
 
 	BC_FUNC_HEADER(err);
 
@@ -797,11 +886,11 @@ ssize_t libbc_num_cmpZero(const BcNumber n) {
 	return bc_num_cmpZero(nptr);
 }
 
-BcMaybe libbc_num_parse_create(const char *restrict val, const BcBigDig base) {
+BcNumber libbc_num_parse(const char *restrict val, const BcBigDig base) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum n;
+	BcNumber idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -819,16 +908,18 @@ BcMaybe libbc_num_parse_create(const char *restrict val, const BcBigDig base) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP_FREE(m, e, n);
+	BC_MAYBE_SETUP(e, n, idx);
 
-	return m;
+	return idx;
 }
 
-BcError libbc_num_parse(const BcNumber n, const char *restrict val,
-                        const BcBigDig base)
+BcError libbc_num_parse_err(const BcNumber n, const char *restrict val,
+                            const BcBigDig base)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+
+	BC_CHECK_NUM_ERR(n);
 
 	BC_FUNC_HEADER(err);
 
@@ -857,6 +948,8 @@ char* libbc_num_string(const BcNumber n, const BcBigDig base) {
 	BcNum *nptr;
 	char *str = NULL;
 
+	if (BC_ERR(n >= vm.nums.len)) return str;
+
 	BC_FUNC_HEADER(err);
 
 	assert(n < vm.nums.len);
@@ -871,21 +964,20 @@ char* libbc_num_string(const BcNumber n, const BcBigDig base) {
 
 err:
 	BC_SIG_MAYLOCK;
-	vm.running = 0;
-	BC_UNSETJMP;
-	BC_LONGJMP_STOP;
-	vm.sig_lock = 0;
+	BC_FUNC_FOOTER_NO_ERR;
 
 	return str;
 }
 
 #if BC_ENABLE_EXTRA_MATH
-BcMaybe libbc_num_irand_create(const BcNumber a) {
+BcNumber libbc_num_irand(const BcNumber a) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum *aptr;
 	BcNum b;
+	BcNumber idx;
+
+	BC_CHECK_NUM(a);
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -907,15 +999,19 @@ BcMaybe libbc_num_irand_create(const BcNumber a) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP_FREE(m, e, b);
+	libbc_num_dtor(a, aptr);
+	BC_MAYBE_SETUP(e, b, idx);
 
-	return m;
+	return idx;
 }
 
-BcError libbc_num_irand(const BcNumber a, const BcNumber b) {
+BcError libbc_num_irand_err(const BcNumber a, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
+
+	BC_CHECK_NUM_ERR(a);
+	BC_CHECK_NUM_ERR(b);
 
 	BC_FUNC_HEADER(err);
 
@@ -971,11 +1067,11 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcMaybe libbc_num_frand_create(size_t places) {
+BcNumber libbc_num_frand(size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum n;
+	BcNumber idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -991,15 +1087,17 @@ BcMaybe libbc_num_frand_create(size_t places) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP_FREE(m, e, n);
+	BC_MAYBE_SETUP(e, n, idx);
 
-	return m;
+	return idx;
 }
 
-BcError libbc_num_frand(const BcNumber n, size_t places) {
+BcError libbc_num_frand_err(const BcNumber n, size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+
+	BC_CHECK_NUM_ERR(n);
 
 	BC_FUNC_HEADER(err);
 
@@ -1046,12 +1144,14 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcMaybe libbc_num_ifrand_create(const BcNumber a, size_t places) {
+BcNumber libbc_num_ifrand(const BcNumber a, size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum *aptr;
 	BcNum b;
+	BcNumber idx;
+
+	BC_CHECK_NUM(a);
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -1073,15 +1173,19 @@ BcMaybe libbc_num_ifrand_create(const BcNumber a, size_t places) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP_FREE(m, e, b);
+	libbc_num_dtor(a, aptr);
+	BC_MAYBE_SETUP(e, b, idx);
 
-	return m;
+	return idx;
 }
 
-BcError libbc_num_ifrand(const BcNumber a, size_t places, const BcNumber b) {
-
+BcError libbc_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b)
+{
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
+
+	BC_CHECK_NUM_ERR(a);
+	BC_CHECK_NUM_ERR(b);
 
 	BC_FUNC_HEADER(err);
 
@@ -1105,6 +1209,8 @@ BcError libbc_num_seedWithNum(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+
+	BC_CHECK_NUM_ERR(n);
 
 	BC_FUNC_HEADER(err);
 
@@ -1151,11 +1257,11 @@ err:
 	return e;
 }
 
-BcMaybe libbc_num_seed2num_create(void) {
+BcNumber libbc_num_seed2num(void) {
 
 	BcError e = BC_ERROR_SUCCESS;
-	BcMaybe m;
 	BcNum n;
+	BcNumber idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -1169,15 +1275,17 @@ BcMaybe libbc_num_seed2num_create(void) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP_FREE(m, e, n);
+	BC_MAYBE_SETUP(e, n, idx);
 
-	return m;
+	return idx;
 }
 
-BcError libbc_num_seed2num(const BcNumber n) {
+BcError libbc_num_seed2num_err(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+
+	BC_CHECK_NUM_ERR(n);
 
 	BC_FUNC_HEADER(err);
 

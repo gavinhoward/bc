@@ -402,6 +402,7 @@ void bc_vm_boot(int argc, char *argv[], const char *env_len,
                 const char* const env_args);
 void bc_vm_init(void);
 void bc_vm_shutdown(void);
+void bc_vm_freeTemps(void);
 
 void bc_vm_printf(const char *fmt, ...);
 void bc_vm_putchar(int c);

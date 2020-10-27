@@ -340,13 +340,8 @@ void bc_vm_shutdown(void) {
 	bc_parse_free(&vm.prs);
 #endif // !BC_ENABLE_LIBRARY
 
-	{
-		size_t i;
-		for (i = 0; i < vm.temps.len; ++i)
-			free(((BcNum*) bc_vec_item(&vm.temps, i))->num);
-
-		bc_vec_free(&vm.temps);
-	}
+	bc_vm_freeTemps();
+	bc_vec_free(&vm.temps);
 #endif // NDEBUG
 
 #if !BC_ENABLE_LIBRARY
@@ -354,6 +349,17 @@ void bc_vm_shutdown(void) {
 	bc_file_free(&vm.ferr);
 #endif // !BC_ENABLE_LIBRARY
 }
+
+#if !defined(NDEBUG) || BC_ENABLE_LIBRARY
+void bc_vm_freeTemps(void) {
+
+	size_t i;
+
+	for (i = 0; i < vm.temps.len; ++i) {
+		free(((BcNum*) bc_vec_item(&vm.temps, i))->num);
+	}
+}
+#endif // !defined(NDEBUG) || BC_ENABLE_LIBRARY
 
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
