@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 typedef enum BcError {
 
