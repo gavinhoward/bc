@@ -2057,7 +2057,7 @@ void bc_num_createCopy(BcNum *d, const BcNum *s) {
 
 void bc_num_createFromBigdig(BcNum *n, BcBigDig val) {
 	BC_SIG_ASSERT_LOCKED;
-	bc_num_init(n, (BC_NUM_BIGDIG_LOG10 - 1) / BC_BASE_DIGS + 1);
+	bc_num_init(n, BC_NUM_BIGDIG_LOG10);
 	bc_num_bigdig2num(n, val);
 }
 
