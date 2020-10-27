@@ -713,7 +713,7 @@ static void bc_parse_for(BcParse *p) {
 		// Set this for the next call to bc_parse_number.
 		// This is safe to set because the current token
 		// is a semicolon, which has no string requirement.
-		bc_vec_string(&p->l.str, strlen(bc_parse_const1), bc_parse_const1);
+		bc_vec_string(&p->l.str, sizeof(bc_parse_one), bc_parse_one);
 		bc_parse_number(p);
 
 		bc_parse_err(p, BC_ERR_POSIX_FOR);

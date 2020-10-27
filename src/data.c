@@ -666,6 +666,9 @@ const char* bc_inst_names[] = {
 };
 #endif // BC_DEBUG_CODE
 
+const char bc_parse_zero[2] = "0";
+const char bc_parse_one[2] = "1";
+
 #if BC_ENABLED
 const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
@@ -707,10 +710,6 @@ const BcLexKeyword bc_lex_kws[] = {
 };
 
 const size_t bc_lex_kws_len = sizeof(bc_lex_kws) / sizeof(BcLexKeyword);
-
-const char* const bc_parse_const1 = "1";
-const char bc_parse_zero[] = "0";
-const char bc_parse_one[] = "1";
 
 // This is an array that corresponds to token types. An entry is
 // true if the token is valid in an expression, false otherwise.

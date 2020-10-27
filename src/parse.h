@@ -111,7 +111,7 @@ void bc_parse_updateFunc(BcParse *p, size_t fidx);
 void bc_parse_pushName(const BcParse* p, char *name, bool var);
 void bc_parse_text(BcParse *p, const char *text);
 
-extern const char bc_parse_zero[];
-extern const char bc_parse_one[];
+extern const char bc_parse_zero[2];
+extern const char bc_parse_one[2];
 
 #endif // BC_PARSE_H
