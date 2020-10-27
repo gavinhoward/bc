@@ -308,9 +308,16 @@ typedef struct BcVm {
 	BcVec temps;
 
 #if BC_ENABLE_LIBRARY
+	BcVec nums;
+	BcVec free_nums;
+
 	BcVec out;
 
 	BcRNG rng;
+
+	size_t scale;
+	size_t ibase;
+	size_t obase;
 
 	BcError err;
 	bool abrt;

@@ -81,4 +81,24 @@
 
 #endif // LIBBC_PRIVATE_H
 
-typedef void (*BcNumSqrtOp)(BcNum*, BcNum*, size_t scale);
+#define BC_MAYBE_SETUP(m, e, i)                \
+	do {                                       \
+		(m).err = ((e) != BC_ERROR_SUCCESS);   \
+		if (BC_ERR((m).err)) m.data.err = (e); \
+		else (m).data.num = (i);             \
+	} while (0)
+
+#define BC_MAYBE_SETUP_FREE(m, e, n)                \
+	do {                                            \
+		BC_FUNC_FOOTER(e);                          \
+		m.err = ((e) != BC_ERROR_SUCCESS);          \
+		if (BC_ERR(m.err)) {                        \
+			if ((n).num != NULL) bc_num_free(&(n)); \
+			m.data.err = (e);                       \
+		}                                           \
+		else m.data.num = libbc_num_insert(&n);     \
+	} while (0)
+
+#define BC_NUM(i) ((BcNum*) bc_vec_item(&vm.nums, (i)))
+
+typedef size_t (*BcReqOp)(const BcNum*, const BcNum*, size_t);

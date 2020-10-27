@@ -68,16 +68,23 @@ BcError libbc_init(bool abortOnFatal) {
 	vm.jmp_bufs.v = NULL;
 	vm.out.v = NULL;
 
+	vm.scale = 0;
+	vm.ibase = 10;
+	vm.obase= 10;
+
 	vm.abrt = abortOnFatal;
 
 	bc_vm_init();
+
+	bc_vec_init(&vm.nums, sizeof(BcNum), bc_num_free);
+	bc_vec_init(&vm.free_nums, sizeof(BcNumber), NULL);
 
 	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
 	bc_vec_init(&vm.out, sizeof(uchar), NULL);
 	bc_rand_init(&vm.rng);
 
 err:
-	if (vm.err) {
+	if (BC_ERR(vm.err)) {
 		if (vm.out.v != NULL) bc_vec_free(vm.out.v);
 		if (vm.jmp_bufs.v != NULL) bc_vec_free(vm.jmp_bufs.v);
 	}
@@ -91,183 +98,312 @@ void libbc_dtor(void) {
 
 	BC_SIG_LOCK;
 
-	bc_vm_shutdown();
-
 #ifndef NDEBUG
 	bc_rand_free(&vm.rng);
 	bc_vec_free(&vm.out);
 	bc_vec_free(&vm.jmp_bufs);
+
+	bc_vec_free(&vm.free_nums);
+	bc_vec_free(&vm.nums);
 #endif // NDEBUG
+
+	bc_vm_shutdown();
 
 	BC_SIG_UNLOCK;
 }
 
-void libbc_abortOnFatalError(bool abrt) {
+size_t libbc_scale(void) {
+	return vm.scale;
+}
+
+void libbc_setScale(size_t scale) {
+	vm.scale = scale;
+}
+
+size_t libbc_ibase(void) {
+	return vm.ibase;
+}
+
+void libbc_setIbase(size_t ibase) {
+	vm.ibase = ibase;
+}
+
+size_t libbc_obase(void) {
+	return vm.obase;
+}
+
+void libbc_setObase(size_t obase) {
+	vm.obase = obase;
+}
+
+bool libbc_abortOnFatalError(void) {
+	return vm.abrt;
+}
+
+void libbc_setAbortOnFatalError(bool abrt) {
 	vm.abrt = abrt;
 }
 
-BcError libbc_num_init(BcNum *restrict n) {
-	return libbc_num_initReq(n, BC_NUM_DEF_SIZE);
+static BcNumber libbc_num_insert(BcNum *restrict n) {
+
+	BcNumber idx;
+
+	if (vm.free_nums.len) {
+
+		BcNum *ptr;
+
+		idx = *((BcNumber*) bc_vec_top(&vm.free_nums));
+
+		bc_vec_pop(&vm.free_nums);
+
+		ptr = bc_vec_item(&vm.nums, idx);
+		memcpy(ptr, n, sizeof(BcNum));
+	}
+	else {
+		idx = vm.nums.len;
+		bc_vec_push(&vm.nums, n);
+	}
+
+	return idx;
 }
 
-BcError libbc_num_initReq(BcNum *restrict n, size_t req) {
+BcMaybe libbc_num_init(void) {
+	return libbc_num_initReq(BC_NUM_DEF_SIZE);
+}
+
+BcMaybe libbc_num_initReq(size_t req) {
 
 	BcError e = BC_ERROR_SUCCESS;
+	BcMaybe m;
+	BcNum n;
+	size_t idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(n, req);
+	bc_vec_grow(&vm.nums, 1);
+
+	bc_num_init(&n, req);
+
+	idx = libbc_num_insert(&n);
+
+err:
+	BC_FUNC_FOOTER_UNLOCK(e);
+	BC_MAYBE_SETUP(m, e, idx);
+	return m;
+}
+
+BcError libbc_num_copy(const BcNumber d, const BcNumber s) {
+
+	BcError e = BC_ERROR_SUCCESS;
+	BcNum *dest, *src;
+
+	BC_FUNC_HEADER_LOCK(err);
+
+	assert(d < vm.nums.len && s < vm.nums.len);
+
+	dest = BC_NUM(d);
+	src = BC_NUM(s);
+
+	assert(dest != NULL && src != NULL);
+	assert(dest->num != NULL && src->num != NULL);
+
+	bc_num_copy(dest, src);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
 	return e;
 }
 
-BcError libbc_num_copy(BcNum *d, const BcNum *s) {
+BcMaybe libbc_num_dup(const BcNumber s) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(d->num != NULL && s->num != NULL);
+	BcMaybe m;
+	BcNum *src, dest;
+	BcNumber idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_copy(d, s);
+	bc_vec_grow(&vm.nums, 1);
+
+	assert(s < vm.nums.len);
+
+	src = BC_NUM(s);
+
+	assert(src != NULL && src->num != NULL);
+
+	bc_num_clear(&dest);
+
+	bc_num_createCopy(&dest, src);
+
+	idx = libbc_num_insert(&dest);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	return e;
+	BC_MAYBE_SETUP(m, e, idx);
+	return m;
 }
 
-BcError libbc_num_copy_create(BcNum *d, const BcNum *s) {
+void libbc_num_free(BcNumber n) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BcNum *num;
 
-	assert(s->num != NULL);
+	assert(n < vm.nums.len);
 
-	BC_FUNC_HEADER_LOCK(err);
+	num = BC_NUM(n);
 
-	bc_num_createCopy(d, s);
+	assert(num != NULL && num->num != NULL);
 
-err:
-	BC_FUNC_FOOTER_UNLOCK(e);
-	return e;
-}
-
-void libbc_num_clear(BcNum *restrict n) {
-	assert(n->num != NULL);
-	bc_num_clear(n);
-}
-
-void libbc_num_free(BcNum *num) {
 	BC_SIG_LOCK;
+
 	bc_num_free(num);
+	bc_num_clear(num);
+	bc_vec_push(&vm.free_nums, &n);
+	n = (size_t) -1;
+
 	BC_SIG_UNLOCK;
 }
 
-void libbc_num_dtor(void *num) {
-	BC_SIG_LOCK;
-	bc_num_free(num);
-	BC_SIG_UNLOCK;
+size_t libbc_num_scale(const BcNumber n) {
+
+	BcNum *num;
+
+	assert(n < vm.nums.len);
+
+	num = BC_NUM(n);
+
+	assert(num != NULL && num->num != NULL);
+
+	return bc_num_scale(num);
 }
 
-size_t libbc_num_scale(const BcNum *restrict n) {
-	assert(n->num != NULL);
-	return bc_num_scale(n);
+size_t libbc_num_len(const BcNumber n) {
+
+	BcNum *num;
+
+	assert(n < vm.nums.len);
+
+	num = BC_NUM(n);
+
+	assert(num != NULL && num->num != NULL);
+
+	return bc_num_len(num);
 }
 
-size_t libbc_num_len(const BcNum *restrict n) {
-	assert(n->num != NULL);
-	return bc_num_len(n);
-}
-
-BcError libbc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
+BcError libbc_num_bigdig(const BcNumber n, BcBigDig *result) {
 
 	BcError e = BC_ERROR_SUCCESS;
+	BcNum *num;
 
-	assert(n != NULL);
-	assert(n->num != NULL);
+	BC_FUNC_HEADER_LOCK(err);
+
+	assert(n < vm.nums.len);
 	assert(result != NULL);
 
-	BC_FUNC_HEADER_LOCK(err);
+	num = BC_NUM(n);
 
-	bc_num_bigdig(n, result);
+	assert(num != NULL && num->num != NULL);
+
+	bc_num_bigdig(num, result);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
 	return e;
 }
 
-BcError libbc_num_bigdig2num_create(BcNum *n, BcBigDig val) {
+BcMaybe libbc_num_bigdig2num_create(const BcBigDig val) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL);
+	BcMaybe m;
+	BcNum n;
+	BcNumber idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_createFromBigdig(n, val);
+	bc_vec_grow(&vm.nums, 1);
+
+	bc_num_createFromBigdig(&n, val);
+	idx = libbc_num_insert(&n);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	return e;
+	BC_MAYBE_SETUP(m, e, idx);
+	return m;
 }
 
-BcError libbc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
+BcError libbc_num_bigdig2num(const BcNumber n, const BcBigDig val) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL);
-	assert(n->num != NULL);
+	BcNum *num;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_bigdig2num(n, val);
+	assert(n < vm.nums.len);
+
+	num = BC_NUM(n);
+
+	assert(num != NULL && num->num != NULL);
+
+	bc_num_bigdig2num(num, val);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
 	return e;
 }
 
-static BcError libbc_num_binary_create(BcNum *a, BcNum *b, BcNum *c,
-                                       size_t scale, BcNumBinaryOp op,
-                                       BcNumBinaryOpReq req)
+static BcMaybe libbc_num_binary_create(const BcNumber a, const BcNumber b,
+                                       const BcNumBinaryOp op,
+                                       const BcNumBinaryOpReq req)
 {
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && b != NULL && c != NULL);
-	assert(a->num != NULL && b->num != NULL);
-
-	bc_num_clear(c);
+	BcMaybe m;
+	BcNum *aptr, *bptr;
+	BcNum c;
+	BcNumber idx;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(c, req(a, b, scale));
+	bc_vec_grow(&vm.nums, 1);
+
+	assert(a < vm.nums.len && b < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+
+	assert(aptr != NULL && bptr != NULL);
+	assert(aptr->num != NULL && bptr->num != NULL);
+
+	bc_num_clear(&c);
+
+	bc_num_init(&c, req(aptr, bptr, vm.scale));
 
 	BC_SIG_UNLOCK;
 
-	op(a, b, c, scale);
+	op(aptr, bptr, &c, vm.scale);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_MAYBE_SETUP_FREE(m, e, c);
 
-	if (vm.err && c->num != NULL) bc_num_free(c);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return m;
 }
 
-static BcError libbc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
-                                BcNumBinaryOp op)
+static BcError libbc_num_binary(const BcNumber a, const BcNumber b,
+                                const BcNumber c, const BcNumBinaryOp op)
 {
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && b != NULL && c != NULL);
-	assert(a->num != NULL && b->num != NULL);
+	BcNum *aptr, *bptr, *cptr;
 
 	BC_FUNC_HEADER(err);
 
-	op(a, b, c, scale);
+	assert(a < vm.nums.len && b < vm.nums.len && c < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+	cptr = BC_NUM(c);
+
+	assert(aptr->num != NULL && bptr->num != NULL && cptr->num != NULL);
+
+	op(aptr, bptr, cptr, vm.scale);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -275,94 +411,125 @@ err:
 	return e;
 }
 
-BcError libbc_num_add_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_add, bc_num_addReq);
+BcMaybe libbc_num_add_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_add, bc_num_addReq);
 }
 
-BcError libbc_num_add(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_add);
+BcError libbc_num_add(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_add);
 }
 
-BcError libbc_num_sub_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_sub, bc_num_addReq);
+BcMaybe libbc_num_sub_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_sub, bc_num_addReq);
 }
 
-BcError libbc_num_sub(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_sub);
+BcError libbc_num_sub(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_sub);
 }
 
-BcError libbc_num_mul_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_mul, bc_num_mulReq);
+BcMaybe libbc_num_mul_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_mul, bc_num_mulReq);
 }
 
-BcError libbc_num_mul(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_mul);
+BcError libbc_num_mul(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_mul);
 }
 
-BcError libbc_num_div_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_div, bc_num_divReq);
+BcMaybe libbc_num_div_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_div, bc_num_divReq);
 }
 
-BcError libbc_num_div(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_div);
+BcError libbc_num_div(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_div);
 }
 
-BcError libbc_num_mod_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_mod, bc_num_divReq);
+BcMaybe libbc_num_mod_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_mod, bc_num_divReq);
 }
 
-BcError libbc_num_mod(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_mod);
+BcError libbc_num_mod(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_mod);
 }
 
-BcError libbc_num_pow_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_pow, bc_num_powReq);
+BcMaybe libbc_num_pow_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_pow, bc_num_powReq);
 }
 
-BcError libbc_num_pow(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_pow);
+BcError libbc_num_pow(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_pow);
 }
 
 #if BC_ENABLE_EXTRA_MATH
-BcError libbc_num_places_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_places,
-	                               bc_num_placesReq);
+BcMaybe libbc_num_places_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_places, bc_num_placesReq);
 }
 
-BcError libbc_num_places(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_places);
+BcError libbc_num_places(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_places);
 }
 
-BcError libbc_num_lshift_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_lshift,
-	                               bc_num_placesReq);
+BcMaybe libbc_num_lshift_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_lshift, bc_num_placesReq);
 }
 
-BcError libbc_num_lshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_lshift);
+BcError libbc_num_lshift(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_lshift);
 }
 
-BcError libbc_num_rshift_create(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary_create(a, b, c, scale, bc_num_rshift,
-	                               bc_num_placesReq);
+BcMaybe libbc_num_rshift_create(const BcNumber a, const BcNumber b) {
+	return libbc_num_binary_create(a, b, bc_num_rshift, bc_num_placesReq);
 }
 
-BcError libbc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
-	return libbc_num_binary(a, b, c, scale, bc_num_lshift);
+BcError libbc_num_rshift(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return libbc_num_binary(a, b, c, bc_num_lshift);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-static BcError libbc_num_sqrtHelper(BcNum *restrict a, BcNum *restrict b,
-                                    size_t scale, BcNumSqrtOp op)
-{
-	BcError e = BC_ERROR_SUCCESS;
+BcMaybe libbc_num_sqrt_create(const BcNumber a) {
 
-	assert(a != NULL && b != NULL && a != b);
-	assert(a->num != NULL && b->num != NULL);
+	BcError e = BC_ERROR_SUCCESS;
+	BcMaybe m;
+	BcNum *aptr;
+	BcNum b;
 
 	BC_FUNC_HEADER(err);
 
-	op(a, b, scale);
+	bc_vec_grow(&vm.nums, 1);
+
+	assert(a < vm.nums.len);
+
+	aptr = BC_NUM(a);
+
+	bc_num_sqrt(aptr, &b, vm.scale);
+
+err:
+	BC_SIG_MAYLOCK;
+	BC_FUNC_FOOTER(e);
+
+	m.err = (e == BC_ERROR_SUCCESS);
+
+	if (BC_ERR(m.err)) m.data.err = e;
+	else m.data.num = libbc_num_insert(&b);
+
+	return m;
+}
+
+BcError libbc_num_sqrt(const BcNumber a, const BcNumber b)
+{
+	BcError e = BC_ERROR_SUCCESS;
+	BcNum *aptr, *bptr;
+
+	BC_FUNC_HEADER(err);
+
+	assert(a < vm.nums.len && b < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+
+	assert(aptr != NULL && bptr != NULL);
+	assert(aptr->num != NULL && bptr->num != NULL);
+
+	bc_num_sr(aptr, bptr, vm.scale);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -370,47 +537,48 @@ err:
 	return e;
 }
 
-BcError libbc_num_sqrt_create(BcNum *restrict a, BcNum *restrict b,
-                              size_t scale)
-{
-	return libbc_num_sqrtHelper(a, b, scale, bc_num_sqrt);
-}
-
-BcError libbc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale)
-{
-	return libbc_num_sqrtHelper(a, b, scale, bc_num_sr);
-}
-
-BcError libbc_num_divmod_create(BcNum *a, BcNum *b,
-                                BcNum *c, BcNum *d, size_t scale)
+BcError libbc_num_divmod_create(const BcNumber a, const BcNumber b,
+                                BcNumber *c, BcNumber *d)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	size_t req;
-
-	assert(a != NULL && b != NULL && c != NULL && d != NULL);
-	assert(a != c && a != d && b != c && b != d && c != d);
-	assert(a->num != NULL && b->num != NULL);
-
-	bc_num_clear(c);
-	bc_num_clear(d);
-
-	req = bc_num_divReq(a, b, scale);
+	BcNum *aptr, *bptr;
+	BcNum cnum, dnum;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(c, req);
-	bc_num_init(d, req);
+	bc_vec_grow(&vm.nums, 2);
+
+	assert(c != NULL && d != NULL);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+
+	assert(aptr != NULL && bptr != NULL);
+	assert(aptr->num != NULL && bptr->num != NULL);
+
+	bc_num_clear(&cnum);
+	bc_num_clear(&dnum);
+
+	req = bc_num_divReq(aptr, bptr, vm.scale);
+
+	bc_num_init(&cnum, req);
+	bc_num_init(&dnum, req);
 
 	BC_SIG_UNLOCK;
 
-	bc_num_divmod(a, b, c, d, scale);
+	bc_num_divmod(aptr, bptr, &cnum, &dnum, vm.scale);
 
 err:
 	BC_SIG_MAYLOCK;
 
-	if (vm.err) {
-		if(c->num != NULL) bc_num_free(c);
-		if(d->num != NULL) bc_num_free(d);
+	if (BC_ERR(vm.err)) {
+		if (cnum.num != NULL) bc_num_free(&cnum);
+		if (dnum.num != NULL) bc_num_free(&dnum);
+	}
+	else {
+		*c = libbc_num_insert(&cnum);
+		*d = libbc_num_insert(&dnum);
 	}
 
 	BC_FUNC_FOOTER(e);
@@ -418,18 +586,29 @@ err:
 	return e;
 }
 
-BcError libbc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
-
+BcError libbc_num_divmod(const BcNumber a, const BcNumber b,
+                         const BcNumber c, const BcNumber d)
+{
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && b != NULL && c != NULL && d != NULL);
-	assert(a != c && a != d && b != c && b != d && c != d);
-	assert(a->num != NULL && b->num != NULL);
-	assert(c->num != NULL && d->num != NULL);
+	BcNum *aptr, *bptr, *cptr, *dptr;
 
 	BC_FUNC_HEADER(err);
 
-	bc_num_divmod(a, b, c, d, scale);
+	assert(a < vm.nums.len && b < vm.nums.len);
+	assert(c < vm.nums.len && d < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+	cptr = BC_NUM(c);
+	dptr = BC_NUM(d);
+
+	assert(aptr != NULL && bptr != NULL && cptr != NULL && dptr != NULL);
+	assert(aptr != cptr && aptr != dptr && bptr != cptr && bptr != dptr);
+	assert(cptr != dptr);
+	assert(aptr->num != NULL && bptr->num != NULL);
+	assert(cptr->num != NULL && dptr->num != NULL);
+
+	bc_num_divmod(aptr, bptr, cptr, dptr, vm.scale);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -437,49 +616,67 @@ err:
 	return e;
 }
 
-BcError libbc_num_modexp_create(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d)
+BcMaybe libbc_num_modexp_create(const BcNumber a, const BcNumber b,
+                                const BcNumber c)
 {
 	BcError e = BC_ERROR_SUCCESS;
+	BcMaybe m;
 	size_t req;
-
-	assert(a != NULL && b != NULL && c != NULL && d != NULL);
-	assert(a != c && a != d && b != c && b != d && c != d);
-	assert(a->num != NULL && b->num != NULL && c->num != NULL);
-
-	bc_num_clear(d);
-
-	req = bc_num_divReq(a, c, 0);
+	BcNum *aptr, *bptr, *cptr;
+	BcNum d;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(d, req);
+	bc_vec_grow(&vm.nums, 1);
+
+	assert(a < vm.nums.len && b < vm.nums.len && c < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+	cptr = BC_NUM(c);
+
+	assert(aptr != NULL && bptr != NULL && cptr != NULL);
+	assert(aptr->num != NULL && bptr->num != NULL && cptr->num != NULL);
+
+	bc_num_clear(&d);
+
+	req = bc_num_divReq(aptr, cptr, 0);
+
+	bc_num_init(&d, req);
 
 	BC_SIG_UNLOCK;
 
-	bc_num_modexp(a, b, c, d);
+	bc_num_modexp(aptr, bptr, cptr, &d);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_MAYBE_SETUP_FREE(m, e, d);
 
-	if (vm.err && d->num != NULL) bc_num_free(d);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return m;
 }
 
-BcError libbc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
-
+BcError libbc_num_modexp(const BcNumber a, const BcNumber b,
+                         const BcNumber c, const BcNumber d)
+{
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && b != NULL && c != NULL && d != NULL);
-	assert(a != d && b != d && c != d);
-	assert(a->num != NULL && b->num != NULL && c->num != NULL);
-	assert(d->num != NULL);
+	BcNum *aptr, *bptr, *cptr, *dptr;
 
 	BC_FUNC_HEADER(err);
 
-	bc_num_modexp(a, b, c, d);
+	assert(a < vm.nums.len && b < vm.nums.len && c < vm.nums.len);
+	assert(d < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+	cptr = BC_NUM(c);
+	dptr = BC_NUM(d);
+
+	assert(aptr != NULL && bptr != NULL && cptr != NULL && dptr != NULL);
+	assert(aptr != dptr && bptr != dptr && cptr != dptr);
+	assert(aptr->num != NULL && bptr->num != NULL && cptr->num != NULL);
+	assert(dptr->num != NULL);
+
+	bc_num_modexp(aptr, bptr, cptr, dptr);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -487,38 +684,58 @@ err:
 	return e;
 }
 
-size_t libbc_num_addReq(const BcNum* a, const BcNum* b, size_t scale) {
-	return bc_num_addReq(a, b, scale);
+size_t libbc_num_req(const BcNumber a, const BcNumber b, const BcReqOp op) {
+
+	BcNum *aptr, *bptr;
+
+	assert(a < vm.nums.len && b < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+
+	assert(aptr != NULL && bptr != NULL);
+	assert(aptr->num != NULL && bptr->num != NULL);
+
+	return op(aptr, bptr, vm.scale);
 }
 
-size_t libbc_num_mulReq(const BcNum *a, const BcNum *b, size_t scale) {
-	return bc_num_mulReq(a, b, scale);
+size_t libbc_num_addReq(const BcNumber a, const BcNumber b) {
+	return libbc_num_req(a, b, bc_num_addReq);
 }
 
-size_t libbc_num_divReq(const BcNum *a, const BcNum *b, size_t scale) {
-	return bc_num_divReq(a, b, scale);
+size_t libbc_num_mulReq(const BcNumber a, const BcNumber b) {
+	return libbc_num_req(a, b, bc_num_mulReq);
 }
 
-size_t libbc_num_powReq(const BcNum *a, const BcNum *b, size_t scale) {
-	return bc_num_powReq(a, b, scale);
+size_t libbc_num_divReq(const BcNumber a, const BcNumber b) {
+	return libbc_num_req(a, b, bc_num_divReq);
+}
+
+size_t libbc_num_powReq(const BcNumber a, const BcNumber b) {
+	return libbc_num_req(a, b, bc_num_powReq);
 }
 
 #if BC_ENABLE_EXTRA_MATH
-size_t libbc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale) {
-	return bc_num_placesReq(a, b, scale);
+size_t libbc_num_placesReq(const BcNumber a, const BcNumber b) {
+	return libbc_num_req(a, b, bc_num_placesReq);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcError libbc_num_setScale(struct BcNum *restrict n, size_t scale) {
+BcError libbc_num_setScale(const BcNumber n, size_t scale) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL && n->num != NULL);
+	BcNum *nptr;
 
 	BC_FUNC_HEADER(err);
 
-	if (scale > n->scale) bc_num_extend(n, scale - n->scale);
-	else if (scale < n->scale) bc_num_truncate(n, n->scale - scale);
+	assert(n < vm.nums.len);
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	if (scale > nptr->scale) bc_num_extend(nptr, scale - nptr->scale);
+	else if (scale < nptr->scale) bc_num_truncate(nptr, nptr->scale - scale);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -526,57 +743,108 @@ err:
 	return e;
 }
 
-ssize_t libbc_num_cmp(const struct BcNum *a, const struct BcNum *b) {
-	return bc_num_cmp(a, b);
+ssize_t libbc_num_cmp(const BcNumber a, const BcNumber b) {
+
+	BcNum *aptr, *bptr;
+
+	assert(a < vm.nums.len && b < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+
+	assert(aptr != NULL && bptr != NULL);
+	assert(aptr->num != NULL && bptr->num != NULL);
+
+	return bc_num_cmp(aptr, bptr);
 }
 
-void libbc_num_one(struct BcNum *restrict n) {
-	bc_num_one(n);
+void libbc_num_zero(const BcNumber n) {
+
+	BcNum *nptr;
+
+	assert(n < vm.nums.len);
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	bc_num_zero(nptr);
 }
 
-ssize_t libbc_num_cmpZero(const struct BcNum *n) {
-	return bc_num_cmpZero(n);
+void libbc_num_one(const BcNumber n) {
+
+	BcNum *nptr;
+
+	assert(n < vm.nums.len);
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	bc_num_one(nptr);
 }
 
-BcError libbc_num_parse_create(BcNum *restrict n, const char *restrict val,
-                               BcBigDig base)
-{
+ssize_t libbc_num_cmpZero(const BcNumber n) {
+
+	BcNum *nptr;
+
+	assert(n < vm.nums.len);
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	return bc_num_cmpZero(nptr);
+}
+
+BcMaybe libbc_num_parse_create(const char *restrict val, const BcBigDig base) {
+
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL && n->num != NULL);
-	assert(val != NULL);
-
-	bc_num_clear(n);
+	BcMaybe m;
+	BcNum n;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(n, BC_NUM_DEF_SIZE);
+	bc_vec_grow(&vm.nums, 1);
+
+	assert(val != NULL);
+
+	bc_num_clear(&n);
+
+	bc_num_init(&n, BC_NUM_DEF_SIZE);
 
 	BC_SIG_UNLOCK;
 
-	bc_num_parse(n, val, base);
+	bc_num_parse(&n, val, base);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_MAYBE_SETUP_FREE(m, e, n);
 
-	if (vm.err && n->num != NULL) bc_num_free(n);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return m;
 }
 
-BcError libbc_num_parse(BcNum *restrict n, const char *restrict val,
-                        BcBigDig base)
+BcError libbc_num_parse(const BcNumber n, const char *restrict val,
+                        const BcBigDig base)
 {
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL && n->num != NULL);
-	assert(val != NULL);
+	BcNum *nptr;
 
 	BC_FUNC_HEADER(err);
 
-	bc_num_parse(n, val, base);
+	assert(val != NULL);
+	assert(n < vm.nums.len);
+
+	if (!bc_num_strValid(val)) {
+		vm.err = BC_ERROR_PARSE_INVALID_NUM;
+		goto err;
+	}
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	bc_num_parse(nptr, val, base);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -584,69 +852,82 @@ err:
 	return e;
 }
 
-BcError libbc_num_string(BcNum *restrict n, BcBigDig base, char** str) {
+char* libbc_num_string(const BcNumber n, const BcBigDig base) {
 
-	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL && n->num != NULL);
-	assert(str != NULL);
-
-	*str = NULL;
+	BcNum *nptr;
+	char *str = NULL;
 
 	BC_FUNC_HEADER(err);
 
-	bc_num_print(n, base, false);
+	assert(n < vm.nums.len);
 
-	*str = bc_vm_strdup(vm.out.v);
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	bc_num_print(nptr, base, false);
+
+	str = bc_vm_strdup(vm.out.v);
 
 err:
 	BC_SIG_MAYLOCK;
+	vm.running = 0;
+	BC_UNSETJMP;
+	BC_LONGJMP_STOP;
+	vm.sig_lock = 0;
 
-	if (vm.err && *str != NULL) free(*str);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return str;
 }
 
 #if BC_ENABLE_EXTRA_MATH
-BcError libbc_num_irand_create(const BcNum *restrict a, BcNum *restrict b) {
+BcMaybe libbc_num_irand_create(const BcNumber a) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && a->num != NULL);
-	assert(b != NULL);
-
-	bc_num_clear(b);
+	BcMaybe m;
+	BcNum *aptr;
+	BcNum b;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(b, BC_NUM_DEF_SIZE);
+	bc_vec_grow(&vm.nums, 1);
+
+	assert(a < vm.nums.len);
+
+	aptr = BC_NUM(a);
+
+	assert(aptr != NULL && aptr->num != NULL);
+
+	bc_num_clear(&b);
+
+	bc_num_init(&b, BC_NUM_DEF_SIZE);
 
 	BC_SIG_UNLOCK;
 
-	bc_num_irand(a, b, &vm.rng);
+	bc_num_irand(aptr, &b, &vm.rng);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_MAYBE_SETUP_FREE(m, e, b);
 
-	if (vm.err && b->num != NULL) bc_num_free(b);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return m;
 }
 
-BcError libbc_num_irand(const BcNum *restrict a, BcNum *restrict b) {
+BcError libbc_num_irand(const BcNumber a, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && a->num != NULL);
-	assert(b != NULL && b->num != NULL);
+	BcNum *aptr, *bptr;
 
 	BC_FUNC_HEADER(err);
 
-	bc_num_irand(a, b, &vm.rng);
+	assert(a < vm.nums.len && b < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+
+	assert(aptr != NULL && aptr->num != NULL);
+	assert(bptr != NULL && bptr->num != NULL);
+
+	bc_num_irand(aptr, bptr, &vm.rng);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -690,41 +971,45 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcError libbc_num_frand_create(BcNum *restrict b, size_t places) {
+BcMaybe libbc_num_frand_create(size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(b != NULL);
-
-	bc_num_clear(b);
+	BcMaybe m;
+	BcNum n;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(b, BC_NUM_DEF_SIZE);
+	bc_vec_grow(&vm.nums, 1);
+
+	bc_num_clear(&n);
+
+	bc_num_init(&n, BC_NUM_DEF_SIZE);
 
 	BC_SIG_UNLOCK;
 
-	libbc_num_frandHelper(b, places);
+	libbc_num_frandHelper(&n, places);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_MAYBE_SETUP_FREE(m, e, n);
 
-	if (vm.err && b->num != NULL) bc_num_free(b);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return m;
 }
 
-BcError libbc_num_frand(BcNum *restrict b, size_t places) {
+BcError libbc_num_frand(const BcNumber n, size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(b != NULL && b->num != NULL);
+	BcNum *nptr;
 
 	BC_FUNC_HEADER(err);
 
-	libbc_num_frandHelper(b, places);
+	assert(n < vm.nums.len);
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	libbc_num_frandHelper(nptr, places);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -750,7 +1035,7 @@ static void libbc_num_ifrandHelper(BcNum *restrict a, BcNum *restrict b,
 	BC_SIG_UNLOCK;
 
 	bc_num_irand(a, &ir, &vm.rng);
-	libbc_num_frand(&fr, places);
+	libbc_num_frandHelper(&fr, places);
 
 	bc_num_add(&ir, &fr, b, 0);
 
@@ -761,44 +1046,54 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcError libbc_num_ifrand_create(BcNum *restrict a, BcNum *restrict b,
-                                size_t places)
-{
+BcMaybe libbc_num_ifrand_create(const BcNumber a, size_t places) {
+
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && a->num != NULL);
-	assert(b != NULL);
-
-	bc_num_clear(b);
+	BcMaybe m;
+	BcNum *aptr;
+	BcNum b;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(b, BC_NUM_DEF_SIZE);
+	bc_vec_grow(&vm.nums, 1);
+
+	assert(a < vm.nums.len);
+
+	aptr = BC_NUM(a);
+
+	assert(aptr != NULL && aptr->num != NULL);
+
+	bc_num_clear(&b);
+
+	bc_num_init(&b, BC_NUM_DEF_SIZE);
 
 	BC_SIG_UNLOCK;
 
-	libbc_num_ifrandHelper(a, b, places);
+	libbc_num_ifrandHelper(aptr, &b, places);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_MAYBE_SETUP_FREE(m, e, b);
 
-	if (vm.err && b->num != NULL) bc_num_free(b);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return m;
 }
 
-BcError libbc_num_ifrand(BcNum *restrict a, BcNum *restrict b, size_t places) {
+BcError libbc_num_ifrand(const BcNumber a, size_t places, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(a != NULL && a->num != NULL);
-	assert(b != NULL && b->num != NULL);
+	BcNum *aptr, *bptr;
 
 	BC_FUNC_HEADER(err);
 
-	libbc_num_ifrandHelper(a, b, places);
+	assert(a < vm.nums.len && b < vm.nums.len);
+
+	aptr = BC_NUM(a);
+	bptr = BC_NUM(b);
+
+	assert(aptr != NULL && aptr->num != NULL);
+	assert(bptr != NULL && bptr->num != NULL);
+
+	libbc_num_ifrandHelper(aptr, bptr, places);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -806,15 +1101,20 @@ err:
 	return e;
 }
 
-BcError libbc_num_seedWithNum(const BcNum *restrict n) {
+BcError libbc_num_seedWithNum(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL && n->num != NULL);
+	BcNum *nptr;
 
 	BC_FUNC_HEADER(err);
 
-	bc_num_rng(n, &vm.rng);
+	assert(n < vm.nums.len);
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	bc_num_rng(nptr, &vm.rng);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -851,41 +1151,43 @@ err:
 	return e;
 }
 
-BcError libbc_num_seed2num_create(BcNum *restrict n) {
+BcMaybe libbc_num_seed2num_create(void) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL);
-
-	bc_num_clear(n);
+	BcMaybe m;
+	BcNum n;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_num_init(n, BC_NUM_DEF_SIZE);
+	bc_num_clear(&n);
+
+	bc_num_init(&n, BC_NUM_DEF_SIZE);
 
 	BC_SIG_UNLOCK;
 
-	bc_num_createFromRNG(n, bc_vec_top(&vm.rng.v));
+	bc_num_createFromRNG(&n, bc_vec_top(&vm.rng.v));
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_MAYBE_SETUP_FREE(m, e, n);
 
-	if (vm.err && n->num != NULL) bc_num_free(n);
-
-	BC_FUNC_FOOTER(e);
-
-	return e;
+	return m;
 }
 
-BcError libbc_num_seed2num(BcNum *restrict n) {
+BcError libbc_num_seed2num(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
-
-	assert(n != NULL && n->num != NULL);
+	BcNum *nptr;
 
 	BC_FUNC_HEADER(err);
 
-	bc_num_createFromRNG(n, bc_vec_top(&vm.rng.v));
+	assert(n < vm.nums.len);
+
+	nptr = BC_NUM(n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	bc_num_createFromRNG(nptr, bc_vec_top(&vm.rng.v));
 
 err:
 	BC_SIG_MAYLOCK;
