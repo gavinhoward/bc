@@ -45,9 +45,9 @@
 #include "num.h"
 #include "vm.h"
 
-static void libbc_num_destruct(void *num);
+static void bcl_num_destruct(void *num);
 
-void libbc_handleSignal(void) {
+void bcl_handleSignal(void) {
 
 	// Signal already in flight.
 	if (vm.sig) return;
@@ -59,7 +59,7 @@ void libbc_handleSignal(void) {
 	if (!vm.sig_lock && vm.running) BC_VM_JMP;
 }
 
-BcError libbc_init(bool abortOnFatal) {
+BcError bcl_init(bool abortOnFatal) {
 
 	BcError e = BC_ERROR_SUCCESS;
 
@@ -76,7 +76,7 @@ BcError libbc_init(bool abortOnFatal) {
 
 	bc_vm_init();
 
-	bc_vec_init(&vm.nums, sizeof(BcNum), libbc_num_destruct);
+	bc_vec_init(&vm.nums, sizeof(BcNum), bcl_num_destruct);
 	bc_vec_init(&vm.free_nums, sizeof(BcNumber), NULL);
 
 	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
@@ -94,7 +94,7 @@ err:
 	return e;
 }
 
-void libbc_dtor(void) {
+void bcl_dtor(void) {
 
 	BC_SIG_LOCK;
 
@@ -116,45 +116,45 @@ void libbc_dtor(void) {
 	BC_SIG_UNLOCK;
 }
 
-void libbc_gc(void) {
+void bcl_gc(void) {
 	bc_vec_npop(&vm.nums, vm.nums.len);
 	bc_vec_npop(&vm.free_nums, vm.free_nums.len);
 	bc_vm_freeTemps();
 }
 
-size_t libbc_scale(void) {
+size_t bcl_scale(void) {
 	return vm.scale;
 }
 
-void libbc_setScale(size_t scale) {
+void bcl_setScale(size_t scale) {
 	vm.scale = scale;
 }
 
-size_t libbc_ibase(void) {
+size_t bcl_ibase(void) {
 	return vm.ibase;
 }
 
-void libbc_setIbase(size_t ibase) {
+void bcl_setIbase(size_t ibase) {
 	vm.ibase = ibase;
 }
 
-size_t libbc_obase(void) {
+size_t bcl_obase(void) {
 	return vm.obase;
 }
 
-void libbc_setObase(size_t obase) {
+void bcl_setObase(size_t obase) {
 	vm.obase = obase;
 }
 
-bool libbc_abortOnFatalError(void) {
+bool bcl_abortOnFatalError(void) {
 	return vm.abrt;
 }
 
-void libbc_setAbortOnFatalError(bool abrt) {
+void bcl_setAbortOnFatalError(bool abrt) {
 	vm.abrt = abrt;
 }
 
-BcError libbc_num_error(const BcNumber n) {
+BcError bcl_num_error(const BcNumber n) {
 	if (n >= vm.nums.len) {
 		if (n > 0 - (BcNumber) BC_ERROR_NELEMS) return (BcError) (0 - n);
 		else return BC_ERROR_INVALID_NUM;
@@ -162,7 +162,7 @@ BcError libbc_num_error(const BcNumber n) {
 	else return BC_ERROR_SUCCESS;
 }
 
-static BcNumber libbc_num_insert(BcNum *restrict n) {
+static BcNumber bcl_num_insert(BcNum *restrict n) {
 
 	BcNumber idx;
 
@@ -185,11 +185,11 @@ static BcNumber libbc_num_insert(BcNum *restrict n) {
 	return idx;
 }
 
-BcNumber libbc_num_init(void) {
-	return libbc_num_initReq(BC_NUM_DEF_SIZE);
+BcNumber bcl_num_init(void) {
+	return bcl_num_initReq(BC_NUM_DEF_SIZE);
 }
 
-BcNumber libbc_num_initReq(size_t req) {
+BcNumber bcl_num_initReq(size_t req) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
@@ -207,7 +207,7 @@ err:
 	return idx;
 }
 
-BcError libbc_num_copy(const BcNumber d, const BcNumber s) {
+BcError bcl_num_copy(const BcNumber d, const BcNumber s) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *dest, *src;
@@ -229,7 +229,7 @@ err:
 	return e;
 }
 
-BcNumber libbc_num_dup(const BcNumber s) {
+BcNumber bcl_num_dup(const BcNumber s) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *src, dest;
@@ -255,7 +255,7 @@ err:
 	return idx;
 }
 
-static void libbc_num_destruct(void *num) {
+static void bcl_num_destruct(void *num) {
 
 	BcNum *n = (BcNum*) num;
 
@@ -267,17 +267,17 @@ static void libbc_num_destruct(void *num) {
 	bc_num_clear(num);
 }
 
-static void libbc_num_dtor(BcNumber n, BcNum *restrict num) {
+static void bcl_num_dtor(BcNumber n, BcNum *restrict num) {
 
 	BC_SIG_ASSERT_LOCKED;
 
 	assert(num != NULL && num->num != NULL);
 
-	libbc_num_destruct(num);
+	bcl_num_destruct(num);
 	bc_vec_push(&vm.free_nums, &n);
 }
 
-void libbc_num_free(BcNumber n) {
+void bcl_num_free(BcNumber n) {
 
 	BcNum *num;
 
@@ -287,12 +287,12 @@ void libbc_num_free(BcNumber n) {
 
 	num = BC_NUM(n);
 
-	libbc_num_dtor(n, num);
+	bcl_num_dtor(n, num);
 
 	BC_SIG_UNLOCK;
 }
 
-bool libbc_num_neg(const BcNumber n) {
+bool bcl_num_neg(const BcNumber n) {
 
 	BcNum *num;
 
@@ -305,7 +305,7 @@ bool libbc_num_neg(const BcNumber n) {
 	return num->neg;
 }
 
-size_t libbc_num_scale(const BcNumber n) {
+size_t bcl_num_scale(const BcNumber n) {
 
 	BcNum *num;
 
@@ -318,7 +318,7 @@ size_t libbc_num_scale(const BcNumber n) {
 	return bc_num_scale(num);
 }
 
-size_t libbc_num_len(const BcNumber n) {
+size_t bcl_num_len(const BcNumber n) {
 
 	BcNum *num;
 
@@ -331,7 +331,7 @@ size_t libbc_num_len(const BcNumber n) {
 	return bc_num_len(num);
 }
 
-BcError libbc_num_bigdig(const BcNumber n, BcBigDig *result) {
+BcError bcl_num_bigdig(const BcNumber n, BcBigDig *result) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *num;
@@ -352,7 +352,7 @@ err:
 	return e;
 }
 
-BcNumber libbc_num_bigdig2num(const BcBigDig val) {
+BcNumber bcl_num_bigdig2num(const BcBigDig val) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
@@ -370,7 +370,7 @@ err:
 	return idx;
 }
 
-BcError libbc_num_bigdig2num_err(const BcNumber n, const BcBigDig val) {
+BcError bcl_num_bigdig2num_err(const BcNumber n, const BcBigDig val) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *num;
@@ -392,9 +392,9 @@ err:
 	return e;
 }
 
-static BcNumber libbc_num_binary(const BcNumber a, const BcNumber b,
-                                 const BcNumBinaryOp op,
-                                 const BcNumBinaryOpReq req)
+static BcNumber bcl_num_binary(const BcNumber a, const BcNumber b,
+                               const BcNumBinaryOp op,
+                               const BcNumBinaryOpReq req)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
@@ -426,15 +426,15 @@ static BcNumber libbc_num_binary(const BcNumber a, const BcNumber b,
 
 err:
 	BC_SIG_MAYLOCK;
-	libbc_num_dtor(a, aptr);
-	if (b != a) libbc_num_dtor(b, bptr);
+	bcl_num_dtor(a, aptr);
+	if (b != a) bcl_num_dtor(b, bptr);
 	BC_MAYBE_SETUP(e, c, idx);
 
 	return idx;
 }
 
-static BcError libbc_num_binary_err(const BcNumber a, const BcNumber b,
-                                    const BcNumber c, const BcNumBinaryOp op)
+static BcError bcl_num_binary_err(const BcNumber a, const BcNumber b,
+                                  const BcNumber c, const BcNumBinaryOp op)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr;
@@ -461,91 +461,81 @@ err:
 	return e;
 }
 
-BcNumber libbc_num_add(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_add, bc_num_addReq);
+BcNumber bcl_num_add(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_add, bc_num_addReq);
 }
 
-BcError libbc_num_add_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_add);
+BcError bcl_num_add_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_add);
 }
 
-BcNumber libbc_num_sub(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_sub, bc_num_addReq);
+BcNumber bcl_num_sub(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_sub, bc_num_addReq);
 }
 
-BcError libbc_num_sub_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_sub);
+BcError bcl_num_sub_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_sub);
 }
 
-BcNumber libbc_num_mul(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_mul, bc_num_mulReq);
+BcNumber bcl_num_mul(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_mul, bc_num_mulReq);
 }
 
-BcError libbc_num_mul_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_mul);
+BcError bcl_num_mul_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_mul);
 }
 
-BcNumber libbc_num_div(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_div, bc_num_divReq);
+BcNumber bcl_num_div(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_div, bc_num_divReq);
 }
 
-BcError libbc_num_div_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_div);
+BcError bcl_num_div_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_div);
 }
 
-BcNumber libbc_num_mod(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_mod, bc_num_divReq);
+BcNumber bcl_num_mod(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_mod, bc_num_divReq);
 }
 
-BcError libbc_num_mod_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_mod);
+BcError bcl_num_mod_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_mod);
 }
 
-BcNumber libbc_num_pow(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_pow, bc_num_powReq);
+BcNumber bcl_num_pow(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_pow, bc_num_powReq);
 }
 
-BcError libbc_num_pow_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_pow);
+BcError bcl_num_pow_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_pow);
 }
 
 #if BC_ENABLE_EXTRA_MATH
-BcNumber libbc_num_places(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_places, bc_num_placesReq);
+BcNumber bcl_num_places(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_places, bc_num_placesReq);
 }
 
-BcError libbc_num_places_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_places);
+BcError bcl_num_places_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_places);
 }
 
-BcNumber libbc_num_lshift(const BcNumber a, const BcNumber b) {
-	return libbc_num_binary(a, b, bc_num_lshift, bc_num_placesReq);
+BcNumber bcl_num_lshift(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_lshift, bc_num_placesReq);
 }
 
-BcError libbc_num_lshift_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_lshift);
+BcError bcl_num_lshift_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_lshift);
 }
 
-BcNumber libbc_num_rshift(const BcNumber a, const BcNumber b)
-{
-	return libbc_num_binary(a, b, bc_num_rshift, bc_num_placesReq);
+BcNumber bcl_num_rshift(const BcNumber a, const BcNumber b) {
+	return bcl_num_binary(a, b, bc_num_rshift, bc_num_placesReq);
 }
 
-BcError libbc_num_rshift_err(const BcNumber a, const BcNumber b, const BcNumber c)
-{
-	return libbc_num_binary_err(a, b, c, bc_num_lshift);
+BcError bcl_num_rshift_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+	return bcl_num_binary_err(a, b, c, bc_num_lshift);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcNumber libbc_num_sqrt(const BcNumber a) {
+BcNumber bcl_num_sqrt(const BcNumber a) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr;
@@ -567,13 +557,13 @@ BcNumber libbc_num_sqrt(const BcNumber a) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
-	libbc_num_dtor(a, aptr);
+	bcl_num_dtor(a, aptr);
 	BC_MAYBE_SETUP(e, b, idx);
 
 	return idx;
 }
 
-BcError libbc_num_sqrt_err(const BcNumber a, const BcNumber b) {
+BcError bcl_num_sqrt_err(const BcNumber a, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
@@ -599,8 +589,8 @@ err:
 	return e;
 }
 
-BcError libbc_num_divmod(const BcNumber a, const BcNumber b,
-                         BcNumber *c, BcNumber *d)
+BcError bcl_num_divmod(const BcNumber a, const BcNumber b,
+                       BcNumber *c, BcNumber *d)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	size_t req;
@@ -637,16 +627,16 @@ BcError libbc_num_divmod(const BcNumber a, const BcNumber b,
 err:
 	BC_SIG_MAYLOCK;
 
-	libbc_num_dtor(a, aptr);
-	if (b != a) libbc_num_dtor(b, bptr);
+	bcl_num_dtor(a, aptr);
+	if (b != a) bcl_num_dtor(b, bptr);
 
 	if (BC_ERR(vm.err)) {
 		if (cnum.num != NULL) bc_num_free(&cnum);
 		if (dnum.num != NULL) bc_num_free(&dnum);
 	}
 	else {
-		*c = libbc_num_insert(&cnum);
-		*d = libbc_num_insert(&dnum);
+		*c = bcl_num_insert(&cnum);
+		*d = bcl_num_insert(&dnum);
 	}
 
 	BC_FUNC_FOOTER(e);
@@ -654,8 +644,8 @@ err:
 	return e;
 }
 
-BcError libbc_num_divmod_err(const BcNumber a, const BcNumber b,
-                             const BcNumber c, const BcNumber d)
+BcError bcl_num_divmod_err(const BcNumber a, const BcNumber b,
+                           const BcNumber c, const BcNumber d)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
@@ -689,8 +679,8 @@ err:
 	return e;
 }
 
-BcNumber libbc_num_modexp(const BcNumber a, const BcNumber b, const BcNumber c)
-{
+BcNumber bcl_num_modexp(const BcNumber a, const BcNumber b, const BcNumber c) {
+
 	BcError e = BC_ERROR_SUCCESS;
 	size_t req;
 	BcNum *aptr, *bptr, *cptr;
@@ -727,17 +717,17 @@ BcNumber libbc_num_modexp(const BcNumber a, const BcNumber b, const BcNumber c)
 err:
 	BC_SIG_MAYLOCK;
 
-	libbc_num_dtor(a, aptr);
-	if (b != a) libbc_num_dtor(b, bptr);
-	if (c != a && c != b) libbc_num_dtor(c, cptr);
+	bcl_num_dtor(a, aptr);
+	if (b != a) bcl_num_dtor(b, bptr);
+	if (c != a && c != b) bcl_num_dtor(c, cptr);
 
 	BC_MAYBE_SETUP(e, d, idx);
 
 	return idx;
 }
 
-BcError libbc_num_modexp_err(const BcNumber a, const BcNumber b,
-                             const BcNumber c, const BcNumber d)
+BcError bcl_num_modexp_err(const BcNumber a, const BcNumber b,
+                           const BcNumber c, const BcNumber d)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
@@ -770,8 +760,7 @@ err:
 	return e;
 }
 
-static size_t libbc_num_req(const BcNumber a, const BcNumber b,
-                            const BcReqOp op)
+static size_t bcl_num_req(const BcNumber a, const BcNumber b, const BcReqOp op)
 {
 	BcNum *aptr, *bptr;
 
@@ -786,29 +775,29 @@ static size_t libbc_num_req(const BcNumber a, const BcNumber b,
 	return op(aptr, bptr, vm.scale);
 }
 
-size_t libbc_num_addReq(const BcNumber a, const BcNumber b) {
-	return libbc_num_req(a, b, bc_num_addReq);
+size_t bcl_num_addReq(const BcNumber a, const BcNumber b) {
+	return bcl_num_req(a, b, bc_num_addReq);
 }
 
-size_t libbc_num_mulReq(const BcNumber a, const BcNumber b) {
-	return libbc_num_req(a, b, bc_num_mulReq);
+size_t bcl_num_mulReq(const BcNumber a, const BcNumber b) {
+	return bcl_num_req(a, b, bc_num_mulReq);
 }
 
-size_t libbc_num_divReq(const BcNumber a, const BcNumber b) {
-	return libbc_num_req(a, b, bc_num_divReq);
+size_t bcl_num_divReq(const BcNumber a, const BcNumber b) {
+	return bcl_num_req(a, b, bc_num_divReq);
 }
 
-size_t libbc_num_powReq(const BcNumber a, const BcNumber b) {
-	return libbc_num_req(a, b, bc_num_powReq);
+size_t bcl_num_powReq(const BcNumber a, const BcNumber b) {
+	return bcl_num_req(a, b, bc_num_powReq);
 }
 
 #if BC_ENABLE_EXTRA_MATH
-size_t libbc_num_placesReq(const BcNumber a, const BcNumber b) {
-	return libbc_num_req(a, b, bc_num_placesReq);
+size_t bcl_num_placesReq(const BcNumber a, const BcNumber b) {
+	return bcl_num_req(a, b, bc_num_placesReq);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
-BcError libbc_num_setScale(const BcNumber n, size_t scale) {
+BcError bcl_num_setScale(const BcNumber n, size_t scale) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
@@ -832,7 +821,7 @@ err:
 	return e;
 }
 
-ssize_t libbc_num_cmp(const BcNumber a, const BcNumber b) {
+ssize_t bcl_num_cmp(const BcNumber a, const BcNumber b) {
 
 	BcNum *aptr, *bptr;
 
@@ -847,7 +836,7 @@ ssize_t libbc_num_cmp(const BcNumber a, const BcNumber b) {
 	return bc_num_cmp(aptr, bptr);
 }
 
-void libbc_num_zero(const BcNumber n) {
+void bcl_num_zero(const BcNumber n) {
 
 	BcNum *nptr;
 
@@ -860,7 +849,7 @@ void libbc_num_zero(const BcNumber n) {
 	bc_num_zero(nptr);
 }
 
-void libbc_num_one(const BcNumber n) {
+void bcl_num_one(const BcNumber n) {
 
 	BcNum *nptr;
 
@@ -873,7 +862,7 @@ void libbc_num_one(const BcNumber n) {
 	bc_num_one(nptr);
 }
 
-ssize_t libbc_num_cmpZero(const BcNumber n) {
+ssize_t bcl_num_cmpZero(const BcNumber n) {
 
 	BcNum *nptr;
 
@@ -886,7 +875,7 @@ ssize_t libbc_num_cmpZero(const BcNumber n) {
 	return bc_num_cmpZero(nptr);
 }
 
-BcNumber libbc_num_parse(const char *restrict val, const BcBigDig base) {
+BcNumber bcl_num_parse(const char *restrict val, const BcBigDig base) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
@@ -913,8 +902,8 @@ err:
 	return idx;
 }
 
-BcError libbc_num_parse_err(const BcNumber n, const char *restrict val,
-                            const BcBigDig base)
+BcError bcl_num_parse_err(const BcNumber n, const char *restrict val,
+                          const BcBigDig base)
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
@@ -943,7 +932,7 @@ err:
 	return e;
 }
 
-char* libbc_num_string(const BcNumber n, const BcBigDig base) {
+char* bcl_num_string(const BcNumber n, const BcBigDig base) {
 
 	BcNum *nptr;
 	char *str = NULL;
@@ -970,7 +959,7 @@ err:
 }
 
 #if BC_ENABLE_EXTRA_MATH
-BcNumber libbc_num_irand(const BcNumber a) {
+BcNumber bcl_num_irand(const BcNumber a) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr;
@@ -999,13 +988,13 @@ BcNumber libbc_num_irand(const BcNumber a) {
 
 err:
 	BC_SIG_MAYLOCK;
-	libbc_num_dtor(a, aptr);
+	bcl_num_dtor(a, aptr);
 	BC_MAYBE_SETUP(e, b, idx);
 
 	return idx;
 }
 
-BcError libbc_num_irand_err(const BcNumber a, const BcNumber b) {
+BcError bcl_num_irand_err(const BcNumber a, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
@@ -1031,7 +1020,7 @@ err:
 	return e;
 }
 
-static void libbc_num_frandHelper(BcNum *restrict b, size_t places) {
+static void bcl_num_frandHelper(BcNum *restrict b, size_t places) {
 
 	BcNum exp, pow, ten;
 	BcDig exp_digs[BC_NUM_BIGDIG_LOG10];
@@ -1067,7 +1056,7 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcNumber libbc_num_frand(size_t places) {
+BcNumber bcl_num_frand(size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
@@ -1083,7 +1072,7 @@ BcNumber libbc_num_frand(size_t places) {
 
 	BC_SIG_UNLOCK;
 
-	libbc_num_frandHelper(&n, places);
+	bcl_num_frandHelper(&n, places);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1092,7 +1081,7 @@ err:
 	return idx;
 }
 
-BcError libbc_num_frand_err(const BcNumber n, size_t places) {
+BcError bcl_num_frand_err(const BcNumber n, size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
@@ -1107,7 +1096,7 @@ BcError libbc_num_frand_err(const BcNumber n, size_t places) {
 
 	assert(nptr != NULL && nptr->num != NULL);
 
-	libbc_num_frandHelper(nptr, places);
+	bcl_num_frandHelper(nptr, places);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1115,8 +1104,8 @@ err:
 	return e;
 }
 
-static void libbc_num_ifrandHelper(BcNum *restrict a, BcNum *restrict b,
-                                   size_t places)
+static void bcl_num_ifrandHelper(BcNum *restrict a, BcNum *restrict b,
+                                 size_t places)
 {
 	BcNum ir, fr;
 
@@ -1133,7 +1122,7 @@ static void libbc_num_ifrandHelper(BcNum *restrict a, BcNum *restrict b,
 	BC_SIG_UNLOCK;
 
 	bc_num_irand(a, &ir, &vm.rng);
-	libbc_num_frandHelper(&fr, places);
+	bcl_num_frandHelper(&fr, places);
 
 	bc_num_add(&ir, &fr, b, 0);
 
@@ -1144,7 +1133,7 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcNumber libbc_num_ifrand(const BcNumber a, size_t places) {
+BcNumber bcl_num_ifrand(const BcNumber a, size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr;
@@ -1169,18 +1158,18 @@ BcNumber libbc_num_ifrand(const BcNumber a, size_t places) {
 
 	BC_SIG_UNLOCK;
 
-	libbc_num_ifrandHelper(aptr, &b, places);
+	bcl_num_ifrandHelper(aptr, &b, places);
 
 err:
 	BC_SIG_MAYLOCK;
-	libbc_num_dtor(a, aptr);
+	bcl_num_dtor(a, aptr);
 	BC_MAYBE_SETUP(e, b, idx);
 
 	return idx;
 }
 
-BcError libbc_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b)
-{
+BcError bcl_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b) {
+
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
 
@@ -1197,7 +1186,7 @@ BcError libbc_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b)
 	assert(aptr != NULL && aptr->num != NULL);
 	assert(bptr != NULL && bptr->num != NULL);
 
-	libbc_num_ifrandHelper(aptr, bptr, places);
+	bcl_num_ifrandHelper(aptr, bptr, places);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1205,7 +1194,7 @@ err:
 	return e;
 }
 
-BcError libbc_num_seedWithNum(const BcNumber n) {
+BcError bcl_num_seedWithNum(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
@@ -1228,8 +1217,8 @@ err:
 	return e;
 }
 
-BcError libbc_num_seedWithUlongs(unsigned long state1, unsigned long state2,
-                                 unsigned long inc1, unsigned long inc2)
+BcError bcl_num_seedWithUlongs(unsigned long state1, unsigned long state2,
+                               unsigned long inc1, unsigned long inc2)
 {
 	BcError e = BC_ERROR_SUCCESS;
 
@@ -1243,7 +1232,7 @@ err:
 	return e;
 }
 
-BcError libbc_num_reseed(void) {
+BcError bcl_num_reseed(void) {
 
 	BcError e = BC_ERROR_SUCCESS;
 
@@ -1257,7 +1246,7 @@ err:
 	return e;
 }
 
-BcNumber libbc_num_seed2num(void) {
+BcNumber bcl_num_seed2num(void) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
@@ -1280,7 +1269,7 @@ err:
 	return idx;
 }
 
-BcError libbc_num_seed2num_err(const BcNumber n) {
+BcError bcl_num_seed2num_err(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
@@ -1303,11 +1292,11 @@ err:
 	return e;
 }
 
-BcRandInt libbc_rand_int(void) {
+BcRandInt bcl_rand_int(void) {
 	return (BcRandInt) bc_rand_int(&vm.rng);
 }
 
-BcRandInt libbc_rand_bounded(BcRandInt bound) {
+BcRandInt bcl_rand_bounded(BcRandInt bound) {
 	return (BcRandInt) bc_rand_bounded(&vm.rng, (BcRand) bound);
 }
 

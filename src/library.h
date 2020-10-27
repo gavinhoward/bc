@@ -29,7 +29,7 @@
  *
  * *****************************************************************************
  *
- * The private header for libbc.
+ * The private header for the bc library.
  *
  */
 
@@ -87,15 +87,13 @@
 		BC_SETJMP_LOCKED(l);  \
 	} while (0)
 
-#endif // LIBBC_PRIVATE_H
-
 #define BC_MAYBE_SETUP(e, n, i)                     \
 	do {                                            \
 		if (BC_ERR((e) != BC_ERROR_SUCCESS)) {      \
 			if ((n).num != NULL) bc_num_free(&(n)); \
 			i = 0 - (BcNumber) (e);                 \
 		}                                           \
-		else i = libbc_num_insert(&(n));            \
+		else i = bcl_num_insert(&(n));              \
 	} while (0)
 
 #define BC_CHECK_NUM(n)                                       \
@@ -118,3 +116,5 @@
 #define BC_NUM(i) ((BcNum*) bc_vec_item(&vm.nums, (i)))
 
 typedef size_t (*BcReqOp)(const BcNum*, const BcNum*, size_t);
+
+#endif // LIBBC_PRIVATE_H
