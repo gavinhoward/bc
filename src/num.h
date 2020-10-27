@@ -204,9 +204,11 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
 void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
 #endif // DC_ENABLED
 
+void bc_num_zero(BcNum *restrict n);
 void bc_num_one(BcNum *restrict n);
 ssize_t bc_num_cmpZero(const BcNum *n);
 
+bool bc_num_strValid(const char *restrict val);
 void bc_num_parse(BcNum *restrict n, const char *restrict val, BcBigDig base);
 void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
 #if DC_ENABLED

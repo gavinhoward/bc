@@ -83,7 +83,7 @@ static void bc_num_setToZero(BcNum *restrict n, size_t scale) {
 	n->neg = false;
 }
 
-static inline void bc_num_zero(BcNum *restrict n) {
+void bc_num_zero(BcNum *restrict n) {
 	bc_num_setToZero(n, 0);
 }
 
@@ -1396,8 +1396,8 @@ err:
 	}
 }
 
-#ifndef NDEBUG
-static bool bc_num_strValid(const char *val) {
+#if !defined(NDEBUG) || BC_ENABLE_LIBRARY
+bool bc_num_strValid(const char *restrict val) {
 
 	bool radix = false;
 	size_t i, len = strlen(val);
@@ -1421,7 +1421,7 @@ static bool bc_num_strValid(const char *val) {
 
 	return true;
 }
-#endif // NDEBUG
+#endif // !defined(NDEBUG) || BC_ENABLE_LIBRARY
 
 static BcBigDig bc_num_parseChar(char c, size_t base_t) {
 
