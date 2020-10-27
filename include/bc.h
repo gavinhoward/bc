@@ -107,6 +107,7 @@ BcError bcl_init(bool abortOnFatal);
 void bcl_dtor(void);
 
 void bcl_gc(void);
+void bcl_freeAll(void);
 
 size_t bcl_scale(void);
 void bcl_setScale(size_t scale);

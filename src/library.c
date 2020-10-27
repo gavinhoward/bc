@@ -117,6 +117,10 @@ void bcl_dtor(void) {
 }
 
 void bcl_gc(void) {
+	bc_vm_freeTemps();
+}
+
+void bcl_freeAll(void) {
 	bc_vec_npop(&vm.nums, vm.nums.len);
 	bc_vec_npop(&vm.free_nums, vm.free_nums.len);
 	bc_vm_freeTemps();
