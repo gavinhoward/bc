@@ -43,8 +43,8 @@
 #define BC_FUNC_HEADER_LOCK(l) \
 	do {                       \
 		BC_SIG_LOCK;           \
-		vm.running = 0;        \
 		BC_SETJMP_LOCKED(l);   \
+		vm.running = 0;        \
 	} while (0)
 
 #define BC_FUNC_FOOTER_UNLOCK(e) \
@@ -52,23 +52,23 @@
 		BC_SIG_ASSERT_LOCKED;    \
 		e = vm.err;              \
 		vm.running = 0;          \
-		BC_LONGJMP_STOP;         \
 		BC_UNSETJMP;             \
+		BC_LONGJMP_STOP;         \
 		vm.sig_lock = 0;         \
 	} while (0)
 
 #define BC_FUNC_HEADER(l) \
 	do {                  \
-		vm.running = 0;   \
 		BC_SETJMP(l);     \
+		vm.running = 0;   \
 	} while (0)
 
 #define BC_FUNC_FOOTER(e) \
 	do {                  \
 		e = vm.err;       \
 		vm.running = 0;   \
-		BC_LONGJMP_STOP;  \
 		BC_UNSETJMP;      \
+		BC_LONGJMP_STOP;  \
 		vm.sig_lock = 0;  \
 	} while (0)
 
