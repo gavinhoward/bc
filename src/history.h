@@ -99,7 +99,7 @@
 #include <unistd.h>
 #include <sys/select.h>
 
-#include <status.h>
+#include "status.h"
 #include "vector.h"
 #include "read.h"
 
