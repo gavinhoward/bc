@@ -1270,7 +1270,7 @@ static void bc_program_divmod(BcProgram *p) {
 	BcNum *n1, *n2;
 	size_t req;
 
-	bc_vec_expand(&p->results, p->results.len + 2);
+	bc_vec_grow(&p->results, 2);
 
 	// We don't need to update the pointer because
 	// the capacity is enough due to the line above.

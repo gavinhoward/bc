@@ -672,7 +672,7 @@ static void bc_history_refresh(BcHistory *h) {
  */
 static void bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen)
 {
-	bc_vec_expand(&h->buf, bc_vm_growSize(h->buf.len, clen));
+	bc_vec_grow(&h->buf, clen);
 
 	if (h->pos == BC_HIST_BUF_LEN(h)) {
 
