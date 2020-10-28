@@ -65,6 +65,8 @@ typedef unsigned long ulong;
 
 #define BC_NUM_BIGDIG_C UINT64_C
 
+typedef int_least32_t BcDig;
+
 #elif BC_LONG_BIT >= 32
 
 #define BC_NUM_BIGDIG_MAX ((BcBigDig) UINT32_MAX)
@@ -73,6 +75,8 @@ typedef unsigned long ulong;
 #define BC_BASE_POW (10000)
 
 #define BC_NUM_BIGDIG_C UINT32_C
+
+typedef int_least16_t BcDig;
 
 #else
 

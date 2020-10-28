@@ -49,105 +49,111 @@ static void bcl_num_destruct(void *num);
 
 void bcl_handleSignal(void) {
 
-	// Signal already in flight.
-	if (vm.sig) return;
+	// Signal already in flight, or bc is not executing.
+	if (vm.sig || !vm.running) return;
 
 	vm.sig = 1;
 
 	assert(vm.jmp_bufs.len);
 
-	if (!vm.sig_lock && vm.running) BC_VM_JMP;
+	if (!vm.sig_lock) BC_VM_JMP;
 }
 
-BcError bcl_init(bool abortOnFatal) {
+BcError bcl_init(void) {
 
 	BcError e = BC_ERROR_SUCCESS;
 
+	vm.refs += 1;
+
+	if (vm.refs > 1) return e;
+
 	BC_FUNC_HEADER_LOCK(err);
 
+	vm.ctxts.v = NULL;
 	vm.jmp_bufs.v = NULL;
 	vm.out.v = NULL;
 
-	vm.scale = 0;
-	vm.ibase = 10;
-	vm.obase= 10;
-
-	vm.abrt = abortOnFatal;
+	vm.abrt = false;
 
 	bc_vm_init();
 
-	bc_vec_init(&vm.nums, sizeof(BcNum), bcl_num_destruct);
-	bc_vec_init(&vm.free_nums, sizeof(BcNumber), NULL);
-
+	bc_vec_init(&vm.ctxts, sizeof(BcContext), NULL);
 	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
 	bc_vec_init(&vm.out, sizeof(uchar), NULL);
 	bc_rand_init(&vm.rng);
 
 err:
 	if (BC_ERR(vm.err)) {
-		if (vm.out.v != NULL) bc_vec_free(vm.out.v);
-		if (vm.jmp_bufs.v != NULL) bc_vec_free(vm.jmp_bufs.v);
+		if (vm.out.v != NULL) bc_vec_free(&vm.out);
+		if (vm.jmp_bufs.v != NULL) bc_vec_free(&vm.jmp_bufs);
+		if (vm.ctxts.v != NULL) bc_vec_free(&vm.ctxts);
 	}
 
 	BC_FUNC_FOOTER_UNLOCK(e);
 
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
-void bcl_dtor(void) {
+BcError bcl_pushContext(BcContext ctxt) {
+
+	BcError e = BC_ERROR_SUCCESS;
+
+	BC_FUNC_HEADER_LOCK(err);
+
+	bc_vec_push(&vm.ctxts, &ctxt);
+
+err:
+	BC_FUNC_FOOTER_UNLOCK(e);
+	return e;
+}
+
+void bcl_popContext(void) {
+	if (vm.ctxts.len) bc_vec_pop(&vm.ctxts);
+}
+
+BcContext bcl_context(void) {
+	if (!vm.ctxts.len) return NULL;
+	return *((BcContext*) bc_vec_top(&vm.ctxts));
+}
+
+void bcl_free(void) {
 
 	BC_SIG_LOCK;
+
+	vm.refs -= 1;
+
+	if (vm.refs) return;
 
 #ifndef NDEBUG
 	bc_rand_free(&vm.rng);
 	bc_vec_free(&vm.out);
 	bc_vec_free(&vm.jmp_bufs);
 
-	bc_vec_free(&vm.free_nums);
-	bc_vec_free(&vm.nums);
+	{
+		size_t i;
+
+		for (i = 0; i < vm.ctxts.len; ++i) {
+			BcContext ctxt = *((BcContext*) bc_vec_item(&vm.ctxts, i));
+			bcl_ctxt_free(ctxt);
+		}
+	}
+
+	bc_vec_free(&vm.ctxts);
 #endif // NDEBUG
 
 	bc_vm_shutdown();
 
-#ifndef NDEBUG
 	memset(&vm, 0, sizeof(BcVm));
-#endif // NDEBUG
 
 	BC_SIG_UNLOCK;
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 }
 
 void bcl_gc(void) {
 	bc_vm_freeTemps();
-}
-
-void bcl_freeAll(void) {
-	bc_vec_npop(&vm.nums, vm.nums.len);
-	bc_vec_npop(&vm.free_nums, vm.free_nums.len);
-	bc_vm_freeTemps();
-}
-
-size_t bcl_scale(void) {
-	return vm.scale;
-}
-
-void bcl_setScale(size_t scale) {
-	vm.scale = scale;
-}
-
-size_t bcl_ibase(void) {
-	return vm.ibase;
-}
-
-void bcl_setIbase(size_t ibase) {
-	vm.ibase = ibase;
-}
-
-size_t bcl_obase(void) {
-	return vm.obase;
-}
-
-void bcl_setObase(size_t obase) {
-	vm.obase = obase;
 }
 
 bool bcl_abortOnFatalError(void) {
@@ -158,33 +164,104 @@ void bcl_setAbortOnFatalError(bool abrt) {
 	vm.abrt = abrt;
 }
 
+BcContext bcl_ctxt_create(void) {
+
+	BcContext ctxt = NULL;
+
+	BC_FUNC_HEADER_LOCK(err);
+
+	ctxt = bc_vm_malloc(sizeof(BcContext));
+
+	bc_vec_init(&ctxt->nums, sizeof(BcNum), bcl_num_destruct);
+	bc_vec_init(&ctxt->free_nums, sizeof(BcNumber), NULL);
+
+	ctxt->scale = 0;
+	ctxt->ibase = 10;
+	ctxt->obase= 10;
+
+err:
+	if (BC_ERR(vm.err && ctxt != NULL)) {
+		if (ctxt->nums.v != NULL) bc_vec_free(&ctxt->nums);
+		free(ctxt);
+		ctxt = NULL;
+	}
+
+	BC_FUNC_FOOTER_NO_ERR;
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
+	return ctxt;
+}
+
+void bcl_ctxt_free(BcContext ctxt) {
+	bc_vec_free(&ctxt->free_nums);
+	bc_vec_free(&ctxt->nums);
+	free(ctxt);
+}
+
+void bcl_ctxt_freeAll(BcContext ctxt) {
+	bc_vec_npop(&ctxt->nums, ctxt->nums.len);
+	bc_vec_npop(&ctxt->free_nums, ctxt->free_nums.len);
+}
+
+size_t bcl_ctxt_scale(BcContext ctxt) {
+	return ctxt->scale;
+}
+
+void bcl_ctxt_setScale(BcContext ctxt, size_t scale) {
+	ctxt->scale = scale;
+}
+
+size_t bcl_ctxt_ibase(BcContext ctxt) {
+	return ctxt->ibase;
+}
+
+void bcl_ctxt_setIbase(BcContext ctxt, size_t ibase) {
+	ctxt->ibase = ibase;
+}
+
+size_t bcl_ctxt_obase(BcContext ctxt) {
+	return ctxt->obase;
+}
+
+void bcl_ctxt_setObase(BcContext ctxt, size_t obase) {
+	ctxt->obase = obase;
+}
+
 BcError bcl_num_error(const BcNumber n) {
-	if (n >= vm.nums.len) {
+
+	BcContext ctxt;
+
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	if (n >= ctxt->nums.len) {
 		if (n > 0 - (BcNumber) BC_ERROR_NELEMS) return (BcError) (0 - n);
 		else return BC_ERROR_INVALID_NUM;
 	}
 	else return BC_ERROR_SUCCESS;
 }
 
-static BcNumber bcl_num_insert(BcNum *restrict n) {
+static BcNumber bcl_num_insert(BcContext ctxt, BcNum *restrict n) {
 
 	BcNumber idx;
 
-	if (vm.free_nums.len) {
+	if (ctxt->free_nums.len) {
 
 		BcNum *ptr;
 
-		idx = *((BcNumber*) bc_vec_top(&vm.free_nums));
+		idx = *((BcNumber*) bc_vec_top(&ctxt->free_nums));
 
-		bc_vec_pop(&vm.free_nums);
+		bc_vec_pop(&ctxt->free_nums);
 
-		ptr = bc_vec_item(&vm.nums, idx);
+		ptr = bc_vec_item(&ctxt->nums, idx);
 		memcpy(ptr, n, sizeof(BcNum));
 	}
 	else {
-		idx = vm.nums.len;
-		bc_vec_push(&vm.nums, n);
+		idx = ctxt->nums.len;
+		bc_vec_push(&ctxt->nums, n);
 	}
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -198,30 +275,67 @@ BcNumber bcl_num_initReq(size_t req) {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
 	BcNumber idx;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
 	bc_num_init(&n, req);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	BC_MAYBE_SETUP(e, n, idx);
+	BC_MAYBE_SETUP(ctxt, e, n, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return idx;
+}
+
+static void bcl_num_dtor(BcContext ctxt, BcNumber n, BcNum *restrict num) {
+
+	BC_SIG_ASSERT_LOCKED;
+
+	assert(num != NULL && num->num != NULL);
+
+	bcl_num_destruct(num);
+	bc_vec_push(&ctxt->free_nums, &n);
+}
+
+void bcl_num_free(BcNumber n) {
+
+	BcNum *num;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT_ASSERT(ctxt);
+
+	BC_SIG_LOCK;
+
+	assert(n < ctxt->nums.len);
+
+	num = BC_NUM(ctxt, n);
+
+	bcl_num_dtor(ctxt, n, num);
+
+	BC_SIG_UNLOCK;
 }
 
 BcError bcl_num_copy(const BcNumber d, const BcNumber s) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *dest, *src;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT_ERR(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	assert(d < vm.nums.len && s < vm.nums.len);
+	assert(d < ctxt->nums.len && s < ctxt->nums.len);
 
-	dest = BC_NUM(d);
-	src = BC_NUM(s);
+	dest = BC_NUM(ctxt, d);
+	src = BC_NUM(ctxt, s);
 
 	assert(dest != NULL && src != NULL);
 	assert(dest->num != NULL && src->num != NULL);
@@ -230,6 +344,9 @@ BcError bcl_num_copy(const BcNumber d, const BcNumber s) {
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -238,14 +355,17 @@ BcNumber bcl_num_dup(const BcNumber s) {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *src, dest;
 	BcNumber idx;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(s < vm.nums.len);
+	assert(s < ctxt->nums.len);
 
-	src = BC_NUM(s);
+	src = BC_NUM(ctxt, s);
 
 	assert(src != NULL && src->num != NULL);
 
@@ -255,7 +375,10 @@ BcNumber bcl_num_dup(const BcNumber s) {
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	BC_MAYBE_SETUP(e, dest, idx);
+	BC_MAYBE_SETUP(ctxt, e, dest, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return idx;
 }
 
@@ -271,38 +394,16 @@ static void bcl_num_destruct(void *num) {
 	bc_num_clear(num);
 }
 
-static void bcl_num_dtor(BcNumber n, BcNum *restrict num) {
-
-	BC_SIG_ASSERT_LOCKED;
-
-	assert(num != NULL && num->num != NULL);
-
-	bcl_num_destruct(num);
-	bc_vec_push(&vm.free_nums, &n);
-}
-
-void bcl_num_free(BcNumber n) {
-
-	BcNum *num;
-
-	BC_SIG_LOCK;
-
-	assert(n < vm.nums.len);
-
-	num = BC_NUM(n);
-
-	bcl_num_dtor(n, num);
-
-	BC_SIG_UNLOCK;
-}
-
 bool bcl_num_neg(const BcNumber n) {
 
 	BcNum *num;
+	BcContext ctxt;
 
-	assert(n < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	num = BC_NUM(n);
+	assert(n < ctxt->nums.len);
+
+	num = BC_NUM(ctxt, n);
 
 	assert(num != NULL && num->num != NULL);
 
@@ -312,10 +413,13 @@ bool bcl_num_neg(const BcNumber n) {
 size_t bcl_num_scale(const BcNumber n) {
 
 	BcNum *num;
+	BcContext ctxt;
 
-	assert(n < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	num = BC_NUM(n);
+	assert(n < ctxt->nums.len);
+
+	num = BC_NUM(ctxt, n);
 
 	assert(num != NULL && num->num != NULL);
 
@@ -325,10 +429,13 @@ size_t bcl_num_scale(const BcNumber n) {
 size_t bcl_num_len(const BcNumber n) {
 
 	BcNum *num;
+	BcContext ctxt;
 
-	assert(n < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	num = BC_NUM(n);
+	assert(n < ctxt->nums.len);
+
+	num = BC_NUM(ctxt, n);
 
 	assert(num != NULL && num->num != NULL);
 
@@ -339,13 +446,16 @@ BcError bcl_num_bigdig(const BcNumber n, BcBigDig *result) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *num;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT_ERR(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 	assert(result != NULL);
 
-	num = BC_NUM(n);
+	num = BC_NUM(ctxt, n);
 
 	assert(num != NULL && num->num != NULL);
 
@@ -353,6 +463,9 @@ BcError bcl_num_bigdig(const BcNumber n, BcBigDig *result) {
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -361,16 +474,22 @@ BcNumber bcl_num_bigdig2num(const BcBigDig val) {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
 	BcNumber idx;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
 	bc_num_createFromBigdig(&n, val);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
-	BC_MAYBE_SETUP(e, n, idx);
+	BC_MAYBE_SETUP(ctxt, e, n, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return idx;
 }
 
@@ -378,14 +497,17 @@ BcError bcl_num_bigdig2num_err(const BcNumber n, const BcBigDig val) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *num;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(n);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 
-	num = BC_NUM(n);
+	num = BC_NUM(ctxt, n);
 
 	assert(num != NULL && num->num != NULL);
 
@@ -393,6 +515,9 @@ BcError bcl_num_bigdig2num_err(const BcNumber n, const BcBigDig val) {
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -404,35 +529,40 @@ static BcNumber bcl_num_binary(const BcNumber a, const BcNumber b,
 	BcNum *aptr, *bptr;
 	BcNum c;
 	BcNumber idx;
+	BcContext ctxt;
 
-	BC_CHECK_NUM(a);
-	BC_CHECK_NUM(b);
+	BC_CHECK_CTXT(ctxt);
+
+	BC_CHECK_NUM(ctxt, a);
+	BC_CHECK_NUM(ctxt, b);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < vm.nums.len && b < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
 
 	assert(aptr != NULL && bptr != NULL);
 	assert(aptr->num != NULL && bptr->num != NULL);
 
 	bc_num_clear(&c);
 
-	bc_num_init(&c, req(aptr, bptr, vm.scale));
+	bc_num_init(&c, req(aptr, bptr, ctxt->scale));
 
 	BC_SIG_UNLOCK;
 
-	op(aptr, bptr, &c, vm.scale);
+	op(aptr, bptr, &c, ctxt->scale);
 
 err:
 	BC_SIG_MAYLOCK;
-	bcl_num_dtor(a, aptr);
-	if (b != a) bcl_num_dtor(b, bptr);
-	BC_MAYBE_SETUP(e, c, idx);
+	bcl_num_dtor(ctxt, a, aptr);
+	if (b != a) bcl_num_dtor(ctxt, b, bptr);
+	BC_MAYBE_SETUP(ctxt, e, c, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -442,26 +572,32 @@ static BcError bcl_num_binary_err(const BcNumber a, const BcNumber b,
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(a);
-	BC_CHECK_NUM_ERR(b);
-	BC_CHECK_NUM_ERR(c);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, a);
+	BC_CHECK_NUM_ERR(ctxt, b);
+	BC_CHECK_NUM_ERR(ctxt, c);
 
 	BC_FUNC_HEADER(err);
 
-	assert(a < vm.nums.len && b < vm.nums.len && c < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len && c < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
-	cptr = BC_NUM(c);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
+	cptr = BC_NUM(ctxt, c);
 
 	assert(aptr->num != NULL && bptr->num != NULL && cptr->num != NULL);
 
-	op(aptr, bptr, cptr, vm.scale);
+	op(aptr, bptr, cptr, ctxt->scale);
 
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -545,24 +681,29 @@ BcNumber bcl_num_sqrt(const BcNumber a) {
 	BcNum *aptr;
 	BcNum b;
 	BcNumber idx;
+	BcContext ctxt;
 
-	BC_CHECK_NUM(a);
+	BC_CHECK_CTXT(ctxt);
+
+	BC_CHECK_NUM(ctxt, a);
 
 	BC_FUNC_HEADER(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < vm.nums.len);
+	assert(a < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
+	aptr = BC_NUM(ctxt, a);
 
-	bc_num_sqrt(aptr, &b, vm.scale);
+	bc_num_sqrt(aptr, &b, ctxt->scale);
 
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
-	bcl_num_dtor(a, aptr);
-	BC_MAYBE_SETUP(e, b, idx);
+	bcl_num_dtor(ctxt, a, aptr);
+	BC_MAYBE_SETUP(ctxt, e, b, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -571,25 +712,31 @@ BcError bcl_num_sqrt_err(const BcNumber a, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(a);
-	BC_CHECK_NUM_ERR(b);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, a);
+	BC_CHECK_NUM_ERR(ctxt, b);
 
 	BC_FUNC_HEADER(err);
 
-	assert(a < vm.nums.len && b < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
 
 	assert(aptr != NULL && bptr != NULL);
 	assert(aptr->num != NULL && bptr->num != NULL);
 
-	bc_num_sr(aptr, bptr, vm.scale);
+	bc_num_sr(aptr, bptr, ctxt->scale);
 
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -600,18 +747,21 @@ BcError bcl_num_divmod(const BcNumber a, const BcNumber b,
 	size_t req;
 	BcNum *aptr, *bptr;
 	BcNum cnum, dnum;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(a);
-	BC_CHECK_NUM_ERR(b);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, a);
+	BC_CHECK_NUM_ERR(ctxt, b);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 2);
+	bc_vec_grow(&ctxt->nums, 2);
 
 	assert(c != NULL && d != NULL);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
 
 	assert(aptr != NULL && bptr != NULL);
 	assert(aptr->num != NULL && bptr->num != NULL);
@@ -619,31 +769,33 @@ BcError bcl_num_divmod(const BcNumber a, const BcNumber b,
 	bc_num_clear(&cnum);
 	bc_num_clear(&dnum);
 
-	req = bc_num_divReq(aptr, bptr, vm.scale);
+	req = bc_num_divReq(aptr, bptr, ctxt->scale);
 
 	bc_num_init(&cnum, req);
 	bc_num_init(&dnum, req);
 
 	BC_SIG_UNLOCK;
 
-	bc_num_divmod(aptr, bptr, &cnum, &dnum, vm.scale);
+	bc_num_divmod(aptr, bptr, &cnum, &dnum, ctxt->scale);
 
 err:
 	BC_SIG_MAYLOCK;
 
-	bcl_num_dtor(a, aptr);
-	if (b != a) bcl_num_dtor(b, bptr);
+	bcl_num_dtor(ctxt, a, aptr);
+	if (b != a) bcl_num_dtor(ctxt, b, bptr);
 
 	if (BC_ERR(vm.err)) {
 		if (cnum.num != NULL) bc_num_free(&cnum);
 		if (dnum.num != NULL) bc_num_free(&dnum);
 	}
 	else {
-		*c = bcl_num_insert(&cnum);
-		*d = bcl_num_insert(&dnum);
+		*c = bcl_num_insert(ctxt, &cnum);
+		*d = bcl_num_insert(ctxt, &dnum);
 	}
 
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return e;
 }
@@ -653,21 +805,24 @@ BcError bcl_num_divmod_err(const BcNumber a, const BcNumber b,
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(a);
-	BC_CHECK_NUM_ERR(b);
-	BC_CHECK_NUM_ERR(c);
-	BC_CHECK_NUM_ERR(d);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, a);
+	BC_CHECK_NUM_ERR(ctxt, b);
+	BC_CHECK_NUM_ERR(ctxt, c);
+	BC_CHECK_NUM_ERR(ctxt, d);
 
 	BC_FUNC_HEADER(err);
 
-	assert(a < vm.nums.len && b < vm.nums.len);
-	assert(c < vm.nums.len && d < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len);
+	assert(c < ctxt->nums.len && d < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
-	cptr = BC_NUM(c);
-	dptr = BC_NUM(d);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
+	cptr = BC_NUM(ctxt, c);
+	dptr = BC_NUM(ctxt, d);
 
 	assert(aptr != NULL && bptr != NULL && cptr != NULL && dptr != NULL);
 	assert(aptr != cptr && aptr != dptr && bptr != cptr && bptr != dptr);
@@ -675,11 +830,14 @@ BcError bcl_num_divmod_err(const BcNumber a, const BcNumber b,
 	assert(aptr->num != NULL && bptr->num != NULL);
 	assert(cptr->num != NULL && dptr->num != NULL);
 
-	bc_num_divmod(aptr, bptr, cptr, dptr, vm.scale);
+	bc_num_divmod(aptr, bptr, cptr, dptr, ctxt->scale);
 
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -690,20 +848,23 @@ BcNumber bcl_num_modexp(const BcNumber a, const BcNumber b, const BcNumber c) {
 	BcNum *aptr, *bptr, *cptr;
 	BcNum d;
 	BcNumber idx;
+	BcContext ctxt;
 
-	BC_CHECK_NUM(a);
-	BC_CHECK_NUM(b);
-	BC_CHECK_NUM(c);
+	BC_CHECK_CTXT(ctxt);
+
+	BC_CHECK_NUM(ctxt, a);
+	BC_CHECK_NUM(ctxt, b);
+	BC_CHECK_NUM(ctxt, c);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < vm.nums.len && b < vm.nums.len && c < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len && c < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
-	cptr = BC_NUM(c);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
+	cptr = BC_NUM(ctxt, c);
 
 	assert(aptr != NULL && bptr != NULL && cptr != NULL);
 	assert(aptr->num != NULL && bptr->num != NULL && cptr->num != NULL);
@@ -721,11 +882,13 @@ BcNumber bcl_num_modexp(const BcNumber a, const BcNumber b, const BcNumber c) {
 err:
 	BC_SIG_MAYLOCK;
 
-	bcl_num_dtor(a, aptr);
-	if (b != a) bcl_num_dtor(b, bptr);
-	if (c != a && c != b) bcl_num_dtor(c, cptr);
+	bcl_num_dtor(ctxt, a, aptr);
+	if (b != a) bcl_num_dtor(ctxt, b, bptr);
+	if (c != a && c != b) bcl_num_dtor(ctxt, c, cptr);
 
-	BC_MAYBE_SETUP(e, d, idx);
+	BC_MAYBE_SETUP(ctxt, e, d, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -735,21 +898,24 @@ BcError bcl_num_modexp_err(const BcNumber a, const BcNumber b,
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(a);
-	BC_CHECK_NUM_ERR(b);
-	BC_CHECK_NUM_ERR(c);
-	BC_CHECK_NUM_ERR(d);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, a);
+	BC_CHECK_NUM_ERR(ctxt, b);
+	BC_CHECK_NUM_ERR(ctxt, c);
+	BC_CHECK_NUM_ERR(ctxt, d);
 
 	BC_FUNC_HEADER(err);
 
-	assert(a < vm.nums.len && b < vm.nums.len && c < vm.nums.len);
-	assert(d < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len && c < ctxt->nums.len);
+	assert(d < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
-	cptr = BC_NUM(c);
-	dptr = BC_NUM(d);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
+	cptr = BC_NUM(ctxt, c);
+	dptr = BC_NUM(ctxt, d);
 
 	assert(aptr != NULL && bptr != NULL && cptr != NULL && dptr != NULL);
 	assert(aptr != dptr && bptr != dptr && cptr != dptr);
@@ -761,22 +927,28 @@ BcError bcl_num_modexp_err(const BcNumber a, const BcNumber b,
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
 static size_t bcl_num_req(const BcNumber a, const BcNumber b, const BcReqOp op)
 {
 	BcNum *aptr, *bptr;
+	BcContext ctxt;
 
-	assert(a < vm.nums.len && b < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len);
+
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
 
 	assert(aptr != NULL && bptr != NULL);
 	assert(aptr->num != NULL && bptr->num != NULL);
 
-	return op(aptr, bptr, vm.scale);
+	return op(aptr, bptr, ctxt->scale);
 }
 
 size_t bcl_num_addReq(const BcNumber a, const BcNumber b) {
@@ -805,14 +977,17 @@ BcError bcl_num_setScale(const BcNumber n, size_t scale) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(n);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 
-	nptr = BC_NUM(n);
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -822,17 +997,23 @@ BcError bcl_num_setScale(const BcNumber n, size_t scale) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
 ssize_t bcl_num_cmp(const BcNumber a, const BcNumber b) {
 
 	BcNum *aptr, *bptr;
+	BcContext ctxt;
 
-	assert(a < vm.nums.len && b < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len);
+
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
 
 	assert(aptr != NULL && bptr != NULL);
 	assert(aptr->num != NULL && bptr->num != NULL);
@@ -843,10 +1024,13 @@ ssize_t bcl_num_cmp(const BcNumber a, const BcNumber b) {
 void bcl_num_zero(const BcNumber n) {
 
 	BcNum *nptr;
+	BcContext ctxt;
 
-	assert(n < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	nptr = BC_NUM(n);
+	assert(n < ctxt->nums.len);
+
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -856,10 +1040,13 @@ void bcl_num_zero(const BcNumber n) {
 void bcl_num_one(const BcNumber n) {
 
 	BcNum *nptr;
+	BcContext ctxt;
 
-	assert(n < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	nptr = BC_NUM(n);
+	assert(n < ctxt->nums.len);
+
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -869,10 +1056,13 @@ void bcl_num_one(const BcNumber n) {
 ssize_t bcl_num_cmpZero(const BcNumber n) {
 
 	BcNum *nptr;
+	BcContext ctxt;
 
-	assert(n < vm.nums.len);
+	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	nptr = BC_NUM(n);
+	assert(n < ctxt->nums.len);
+
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -884,10 +1074,13 @@ BcNumber bcl_num_parse(const char *restrict val, const BcBigDig base) {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
 	BcNumber idx;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
 	assert(val != NULL);
 
@@ -901,7 +1094,9 @@ BcNumber bcl_num_parse(const char *restrict val, const BcBigDig base) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP(e, n, idx);
+	BC_MAYBE_SETUP(ctxt, e, n, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -911,20 +1106,23 @@ BcError bcl_num_parse_err(const BcNumber n, const char *restrict val,
 {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(n);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
 
 	BC_FUNC_HEADER(err);
 
 	assert(val != NULL);
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 
 	if (!bc_num_strValid(val)) {
 		vm.err = BC_ERROR_PARSE_INVALID_NUM;
 		goto err;
 	}
 
-	nptr = BC_NUM(n);
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -933,6 +1131,9 @@ BcError bcl_num_parse_err(const BcNumber n, const char *restrict val,
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -940,14 +1141,17 @@ char* bcl_num_string(const BcNumber n, const BcBigDig base) {
 
 	BcNum *nptr;
 	char *str = NULL;
+	BcContext ctxt;
 
-	if (BC_ERR(n >= vm.nums.len)) return str;
+	BC_CHECK_CTXT_ASSERT(ctxt);
+
+	if (BC_ERR(n >= ctxt->nums.len)) return str;
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 
-	nptr = BC_NUM(n);
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -957,9 +1161,46 @@ char* bcl_num_string(const BcNumber n, const BcBigDig base) {
 
 err:
 	BC_SIG_MAYLOCK;
+
+	bcl_num_dtor(ctxt, n, nptr);
+
 	BC_FUNC_FOOTER_NO_ERR;
 
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return str;
+}
+
+BcError bcl_num_string_err(const BcNumber n, const BcBigDig base, char **str) {
+
+	BcError e = BC_ERROR_SUCCESS;
+	BcNum *nptr;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
+
+	BC_FUNC_HEADER(err);
+
+	assert(str != NULL);
+	assert(n < ctxt->nums.len);
+
+	nptr = BC_NUM(ctxt, n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	bc_num_print(nptr, base, false);
+
+	*str = bc_vm_strdup(vm.out.v);
+
+err:
+	BC_SIG_MAYLOCK;
+	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
+	return e;
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -969,16 +1210,19 @@ BcNumber bcl_num_irand(const BcNumber a) {
 	BcNum *aptr;
 	BcNum b;
 	BcNumber idx;
+	BcContext ctxt;
 
-	BC_CHECK_NUM(a);
+	BC_CHECK_CTXT(ctxt);
+
+	BC_CHECK_NUM(ctxt, a);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < vm.nums.len);
+	assert(a < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
+	aptr = BC_NUM(ctxt, a);
 
 	assert(aptr != NULL && aptr->num != NULL);
 
@@ -992,8 +1236,10 @@ BcNumber bcl_num_irand(const BcNumber a) {
 
 err:
 	BC_SIG_MAYLOCK;
-	bcl_num_dtor(a, aptr);
-	BC_MAYBE_SETUP(e, b, idx);
+	bcl_num_dtor(ctxt, a, aptr);
+	BC_MAYBE_SETUP(ctxt, e, b, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -1002,16 +1248,19 @@ BcError bcl_num_irand_err(const BcNumber a, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(a);
-	BC_CHECK_NUM_ERR(b);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, a);
+	BC_CHECK_NUM_ERR(ctxt, b);
 
 	BC_FUNC_HEADER(err);
 
-	assert(a < vm.nums.len && b < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
 
 	assert(aptr != NULL && aptr->num != NULL);
 	assert(bptr != NULL && bptr->num != NULL);
@@ -1021,6 +1270,9 @@ BcError bcl_num_irand_err(const BcNumber a, const BcNumber b) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -1065,10 +1317,13 @@ BcNumber bcl_num_frand(size_t places) {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
 	BcNumber idx;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
 	bc_num_clear(&n);
 
@@ -1080,7 +1335,9 @@ BcNumber bcl_num_frand(size_t places) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP(e, n, idx);
+	BC_MAYBE_SETUP(ctxt, e, n, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -1089,14 +1346,17 @@ BcError bcl_num_frand_err(const BcNumber n, size_t places) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(n);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 
-	nptr = BC_NUM(n);
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -1105,6 +1365,9 @@ BcError bcl_num_frand_err(const BcNumber n, size_t places) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -1143,16 +1406,19 @@ BcNumber bcl_num_ifrand(const BcNumber a, size_t places) {
 	BcNum *aptr;
 	BcNum b;
 	BcNumber idx;
+	BcContext ctxt;
 
-	BC_CHECK_NUM(a);
+	BC_CHECK_CTXT(ctxt);
+
+	BC_CHECK_NUM(ctxt, a);
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	bc_vec_grow(&vm.nums, 1);
+	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < vm.nums.len);
+	assert(a < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
+	aptr = BC_NUM(ctxt, a);
 
 	assert(aptr != NULL && aptr->num != NULL);
 
@@ -1166,8 +1432,10 @@ BcNumber bcl_num_ifrand(const BcNumber a, size_t places) {
 
 err:
 	BC_SIG_MAYLOCK;
-	bcl_num_dtor(a, aptr);
-	BC_MAYBE_SETUP(e, b, idx);
+	bcl_num_dtor(ctxt, a, aptr);
+	BC_MAYBE_SETUP(ctxt, e, b, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -1176,16 +1444,19 @@ BcError bcl_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(a);
-	BC_CHECK_NUM_ERR(b);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, a);
+	BC_CHECK_NUM_ERR(ctxt, b);
 
 	BC_FUNC_HEADER(err);
 
-	assert(a < vm.nums.len && b < vm.nums.len);
+	assert(a < ctxt->nums.len && b < ctxt->nums.len);
 
-	aptr = BC_NUM(a);
-	bptr = BC_NUM(b);
+	aptr = BC_NUM(ctxt, a);
+	bptr = BC_NUM(ctxt, b);
 
 	assert(aptr != NULL && aptr->num != NULL);
 	assert(bptr != NULL && bptr->num != NULL);
@@ -1195,6 +1466,9 @@ BcError bcl_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -1202,14 +1476,17 @@ BcError bcl_num_seedWithNum(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(n);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 
-	nptr = BC_NUM(n);
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -1218,17 +1495,25 @@ BcError bcl_num_seedWithNum(const BcNumber n) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
-BcError bcl_num_seedWithUlongs(unsigned long state1, unsigned long state2,
-                               unsigned long inc1, unsigned long inc2)
+BcError bcl_num_seed(unsigned char seed[BC_SEED_SIZE])
 {
 	BcError e = BC_ERROR_SUCCESS;
+	size_t i;
+	unsigned long vals[BC_SEED_ULONGS];
 
 	BC_FUNC_HEADER(err);
 
-	bc_rand_seed(&vm.rng, state1, state2, inc1, inc2);
+	for (i = 0; i < BC_SEED_SIZE; ++i) {
+		vals[i / sizeof(long)] |= seed[i] << (CHAR_BIT * (i % sizeof(long)));
+	}
+
+	bc_rand_seed(&vm.rng, vals[0], vals[1], vals[2], vals[3]);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1247,6 +1532,9 @@ BcError bcl_num_reseed(void) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 
@@ -1255,6 +1543,9 @@ BcNumber bcl_num_seed2num(void) {
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum n;
 	BcNumber idx;
+	BcContext ctxt;
+
+	BC_CHECK_CTXT(ctxt);
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -1268,7 +1559,9 @@ BcNumber bcl_num_seed2num(void) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_MAYBE_SETUP(e, n, idx);
+	BC_MAYBE_SETUP(ctxt, e, n, idx);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
 }
@@ -1277,14 +1570,17 @@ BcError bcl_num_seed2num_err(const BcNumber n) {
 
 	BcError e = BC_ERROR_SUCCESS;
 	BcNum *nptr;
+	BcContext ctxt;
 
-	BC_CHECK_NUM_ERR(n);
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < vm.nums.len);
+	assert(n < ctxt->nums.len);
 
-	nptr = BC_NUM(n);
+	nptr = BC_NUM(ctxt, n);
 
 	assert(nptr != NULL && nptr->num != NULL);
 
@@ -1293,6 +1589,9 @@ BcError bcl_num_seed2num_err(const BcNumber n) {
 err:
 	BC_SIG_MAYLOCK;
 	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
 	return e;
 }
 

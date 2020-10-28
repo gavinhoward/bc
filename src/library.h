@@ -87,34 +87,67 @@
 		BC_SETJMP_LOCKED(l);  \
 	} while (0)
 
-#define BC_MAYBE_SETUP(e, n, i)                     \
+#define BC_MAYBE_SETUP(c, e, n, i)                  \
 	do {                                            \
 		if (BC_ERR((e) != BC_ERROR_SUCCESS)) {      \
 			if ((n).num != NULL) bc_num_free(&(n)); \
 			i = 0 - (BcNumber) (e);                 \
 		}                                           \
-		else i = bcl_num_insert(&(n));              \
+		else i = bcl_num_insert(c, &(n));           \
 	} while (0)
 
-#define BC_CHECK_NUM(n)                                       \
+#define BC_CHECK_CTXT(c)                                    \
+	do {                                                    \
+		c = bcl_context();                                  \
+		if (BC_ERR(c == NULL)) {                            \
+			return 0 - (BcNumber) BC_ERROR_INVALID_CONTEXT; \
+		}                                                   \
+	} while (0)
+
+#define BC_CHECK_CTXT_ERR(c)                 \
+	do {                                     \
+		c = bcl_context();                   \
+		if (BC_ERR(c == NULL)) {             \
+			return BC_ERROR_INVALID_CONTEXT; \
+		}                                    \
+	} while (0)
+
+#define BC_CHECK_CTXT_ASSERT(c) \
+	do {                        \
+		c = bcl_context();      \
+		assert(c != NULL);      \
+	} while (0)
+
+#define BC_CHECK_NUM(c, n)                                    \
 	do {                                                      \
-		if (BC_ERR((n) >= vm.nums.len)) {                     \
+		if (BC_ERR((n) >= (c)->nums.len)) {                   \
 			if (n > 0 - (BcNumber) BC_ERROR_NELEMS) return n; \
 			else return 0 - (BcNumber) BC_ERROR_INVALID_NUM;  \
 		}                                                     \
 	} while (0)
 
-#define BC_CHECK_NUM_ERR(n)                                   \
+#define BC_CHECK_NUM_ERR(c, n)                                \
 	do {                                                      \
-		if (BC_ERR((n) >= vm.nums.len)) {                     \
+		if (BC_ERR((n) >= (c)->nums.len)) {                   \
 			if (n > 0 - (BcNumber) BC_ERROR_NELEMS)           \
 				return (BcError) (0 - n);                     \
 			else return BC_ERROR_INVALID_NUM;                 \
 		}                                                     \
 	} while (0)
 
-#define BC_NUM(i) ((BcNum*) bc_vec_item(&vm.nums, (i)))
+#define BC_NUM(c, i) ((BcNum*) bc_vec_item(&(c)->nums, (i)))
 
 typedef size_t (*BcReqOp)(const BcNum*, const BcNum*, size_t);
+
+typedef struct BcCtxt {
+
+	size_t scale;
+	size_t ibase;
+	size_t obase;
+
+	BcVec nums;
+	BcVec free_nums;
+
+} BcCtxt;
 
 #endif // LIBBC_PRIVATE_H

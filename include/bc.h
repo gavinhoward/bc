@@ -42,30 +42,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-typedef enum BcError {
-
-	BC_ERROR_SUCCESS,
-
-	BC_ERROR_INVALID_NUM,
-	BC_ERROR_SIGNAL,
-
-	BC_ERROR_MATH_NEGATIVE,
-	BC_ERROR_MATH_NON_INTEGER,
-	BC_ERROR_MATH_OVERFLOW,
-	BC_ERROR_MATH_DIVIDE_BY_ZERO,
-
-	BC_ERROR_PARSE_INVALID_NUM,
-
-	BC_ERROR_FATAL_ALLOC_ERR,
-	BC_ERROR_FATAL_UNKNOWN_ERR,
-
-	BC_ERROR_NELEMS,
-
-} BcError;
-
-#define BC_ERROR_IDX_MATH (0)
-#define BC_ERROR_IDX_FATAL (1)
-#define BC_ERROR_IDX_NELEMS (2)
+#define BC_SEED_ULONGS (4)
+#define BC_SEED_SIZE (sizeof(long) * BC_SEED_ULONGS)
 
 // For some reason, LONG_BIT is not defined in some versions of gcc.
 // I define it here to the minimum accepted value in the POSIX standard.
@@ -83,16 +61,12 @@ typedef enum BcError {
 
 #if BC_LONG_BIT >= 64
 
-typedef int_least32_t BcDig;
 typedef uint64_t BcBigDig;
-
 typedef uint64_t BcRandInt;
 
 #elif BC_LONG_BIT >= 32
 
-typedef int_least16_t BcDig;
 typedef uint32_t BcBigDig;
-
 typedef uint32_t BcRandInt;
 
 #else
@@ -101,23 +75,55 @@ typedef uint32_t BcRandInt;
 
 #endif // BC_LONG_BIT >= 64
 
+typedef enum BcError {
+
+	BC_ERROR_SUCCESS,
+
+	BC_ERROR_INVALID_NUM,
+	BC_ERROR_INVALID_CONTEXT,
+	BC_ERROR_SIGNAL,
+
+	BC_ERROR_MATH_NEGATIVE,
+	BC_ERROR_MATH_NON_INTEGER,
+	BC_ERROR_MATH_OVERFLOW,
+	BC_ERROR_MATH_DIVIDE_BY_ZERO,
+
+	BC_ERROR_PARSE_INVALID_NUM,
+
+	BC_ERROR_FATAL_ALLOC_ERR,
+	BC_ERROR_FATAL_UNKNOWN_ERR,
+
+	BC_ERROR_NELEMS,
+
+} BcError;
+
 typedef size_t BcNumber;
 
-BcError bcl_init(bool abortOnFatal);
-void bcl_dtor(void);
+struct BcCtxt;
 
-void bcl_gc(void);
-void bcl_freeAll(void);
+typedef struct BcCtxt* BcContext;
 
-size_t bcl_scale(void);
-void bcl_setScale(size_t scale);
-size_t bcl_ibase(void);
-void bcl_setIbase(size_t ibase);
-size_t bcl_obase(void);
-void bcl_setObase(size_t obase);
+BcError bcl_init(void);
+void bcl_free(void);
 
 bool bcl_abortOnFatalError(void);
 void bcl_setAbortOnFatalError(bool abrt);
+
+void bcl_gc(void);
+
+BcError bcl_pushContext(BcContext ctxt);
+void bcl_popContext(void);
+BcContext bcl_context(void);
+
+void bcl_ctxt_free(BcContext ctxt);
+void bcl_ctxt_freeAll(BcContext ctxt);
+
+size_t bcl_ctxt_scale(BcContext ctxt);
+void bcl_setScale(BcContext ctxt, size_t scale);
+size_t bcl_ibase(BcContext ctxt);
+void bcl_setIbase(BcContext ctxt, size_t ibase);
+size_t bcl_obase(BcContext ctxt);
+void bcl_setObase(BcContext ctxt, size_t obase);
 
 BcError bcl_num_error(const BcNumber n);
 
@@ -201,6 +207,7 @@ BcNumber bcl_num_parse(const char *restrict val, const BcBigDig base);
 BcError bcl_num_parse_err(const BcNumber n, const char *restrict val,
                           const BcBigDig base);
 char* bcl_num_string(const BcNumber n, const BcBigDig base);
+BcError bcl_num_string_err(const BcNumber n, const BcBigDig base, char **str);
 
 #if BC_ENABLE_EXTRA_MATH
 BcNumber bcl_num_irand(const BcNumber a);
@@ -213,8 +220,7 @@ BcNumber bcl_num_ifrand(const BcNumber a, size_t places);
 BcError bcl_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b);
 
 BcError bcl_num_seedWithNum(const BcNumber n);
-BcError bcl_num_seedWithUlongs(unsigned long state1, unsigned long state2,
-                               unsigned long inc1, unsigned long inc2);
+BcError bcl_num_seed(unsigned char seed[BC_SEED_SIZE]);
 BcError bcl_num_reseed(void);
 BcNumber bcl_num_seed2num(void);
 BcError bcl_num_seed2num_err(BcNumber n);
