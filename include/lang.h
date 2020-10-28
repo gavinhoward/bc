@@ -38,9 +38,9 @@
 
 #include <stdbool.h>
 
-#include "status.h"
-#include "vector.h"
-#include "num.h"
+#include <status.h>
+#include <vector.h>
+#include <num.h>
 
 #if BC_ENABLED
 #define BC_INST_IS_ASSIGN(i) \

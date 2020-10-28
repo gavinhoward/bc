@@ -38,9 +38,9 @@
 
 #if DC_ENABLED
 
-#include "status.h"
-#include "lex.h"
-#include "parse.h"
+#include <status.h>
+#include <lex.h>
+#include <parse.h>
 
 void dc_main(int argc, char **argv);
 

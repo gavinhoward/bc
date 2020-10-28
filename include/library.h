@@ -36,9 +36,9 @@
 #ifndef LIBBC_PRIVATE_H
 #define LIBBC_PRIVATE_H
 
-#include <bc.h>
+#include <bcl.h>
 
-#include "num.h"
+#include <num.h>
 
 #define BC_FUNC_HEADER_LOCK(l)     \
 	do {                           \

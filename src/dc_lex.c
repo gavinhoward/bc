@@ -37,8 +37,8 @@
 
 #include <ctype.h>
 
-#include "dc.h"
-#include "vm.h"
+#include <dc.h>
+#include <vm.h>
 
 bool dc_lex_negCommand(BcLex *l) {
 	char c = l->buf[l->i];

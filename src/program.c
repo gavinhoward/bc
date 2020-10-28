@@ -43,10 +43,10 @@
 
 #include <time.h>
 
-#include "read.h"
-#include "parse.h"
-#include "program.h"
-#include "vm.h"
+#include <read.h>
+#include <parse.h>
+#include <program.h>
+#include <vm.h>
 
 static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr);
 

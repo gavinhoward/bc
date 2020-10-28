@@ -73,9 +73,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "status.h"
-#include "rand.h"
-#include "vm.h"
+#include <status.h>
+#include <rand.h>
+#include <vm.h>
 
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 

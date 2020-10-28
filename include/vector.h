@@ -40,7 +40,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "status.h"
+#include <status.h>
 
 #define BC_VEC_INVALID_IDX (SIZE_MAX)
 #define BC_VEC_START_CAP (UINTMAX_C(1)<<5)

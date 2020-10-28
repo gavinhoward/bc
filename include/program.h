@@ -38,11 +38,11 @@
 
 #include <stddef.h>
 
-#include "status.h"
-#include "parse.h"
-#include "lang.h"
-#include "num.h"
-#include "rand.h"
+#include <status.h>
+#include <parse.h>
+#include <lang.h>
+#include <num.h>
+#include <rand.h>
 
 #define BC_PROG_GLOBALS_IBASE (0)
 #define BC_PROG_GLOBALS_OBASE (1)

@@ -40,9 +40,9 @@
 #include <string.h>
 #include <setjmp.h>
 
-#include "dc.h"
-#include "program.h"
-#include "vm.h"
+#include <dc.h>
+#include <program.h>
+#include <vm.h>
 
 static void dc_parse_register(BcParse *p, bool var) {
 

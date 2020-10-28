@@ -37,9 +37,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vector.h"
-#include "lang.h"
-#include "vm.h"
+#include <vector.h>
+#include <lang.h>
+#include <vm.h>
 
 void bc_vec_grow(BcVec *restrict v, size_t n) {
 

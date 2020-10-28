@@ -43,10 +43,9 @@
 
 #include <sys/types.h>
 
-#include "status.h"
-#include "vector.h"
-
-#include <bc.h>
+#include <status.h>
+#include <vector.h>
+#include <bcl.h>
 
 #ifndef BC_ENABLE_EXTRA_MATH
 #define BC_ENABLE_EXTRA_MATH (1)

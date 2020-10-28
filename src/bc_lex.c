@@ -39,8 +39,8 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "bc.h"
-#include "vm.h"
+#include <bc.h>
+#include <vm.h>
 
 static void bc_lex_identifier(BcLex *l) {
 

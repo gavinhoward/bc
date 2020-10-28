@@ -38,8 +38,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "file.h"
-#include "vm.h"
+#include <file.h>
+#include <vm.h>
 
 static void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH])
 {

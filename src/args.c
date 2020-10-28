@@ -41,10 +41,10 @@
 
 #include <unistd.h>
 
-#include "vector.h"
-#include "read.h"
-#include "args.h"
-#include "opt.h"
+#include <vector.h>
+#include <read.h>
+#include <args.h>
+#include <opt.h>
 
 static const BcOptLong bc_args_lopt[] = {
 

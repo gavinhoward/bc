@@ -56,11 +56,11 @@
 
 #endif // _WIN32
 
-#include "vector.h"
-#include "args.h"
-#include "vm.h"
-#include "read.h"
-#include "bc.h"
+#include <vector.h>
+#include <args.h>
+#include <vm.h>
+#include <read.h>
+#include <bc.h>
 
 char output_bufs[BC_VM_BUF_SIZE];
 BcVm vm;

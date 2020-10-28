@@ -37,8 +37,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lang.h"
-#include "vm.h"
+#include <lang.h>
+#include <vm.h>
 
 #ifndef NDEBUG
 void bc_id_free(void *id) {

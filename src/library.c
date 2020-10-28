@@ -41,9 +41,9 @@
 
 #include <bc.h>
 
-#include "library.h"
-#include "num.h"
-#include "vm.h"
+#include <library.h>
+#include <num.h>
+#include <vm.h>
 
 static void bcl_num_destruct(void *num);
 

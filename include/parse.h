@@ -40,10 +40,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "status.h"
-#include "vector.h"
-#include "lex.h"
-#include "lang.h"
+#include <status.h>
+#include <vector.h>
+#include <lex.h>
+#include <lang.h>
 
 #define BC_PARSE_REL (UINTMAX_C(1)<<0)
 #define BC_PARSE_PRINT (UINTMAX_C(1)<<1)

@@ -42,10 +42,10 @@
 
 #include <setjmp.h>
 
-#include "status.h"
-#include "vm.h"
-#include "bc.h"
-#include "dc.h"
+#include <status.h>
+#include <vm.h>
+#include <bc.h>
+#include <dc.h>
 
 int main(int argc, char *argv[]) {
 

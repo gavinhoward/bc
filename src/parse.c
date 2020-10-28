@@ -40,9 +40,9 @@
 
 #include <limits.h>
 
-#include "parse.h"
-#include "program.h"
-#include "vm.h"
+#include <parse.h>
+#include <program.h>
+#include <vm.h>
 
 void bc_parse_updateFunc(BcParse *p, size_t fidx) {
 	p->fidx = fidx;
