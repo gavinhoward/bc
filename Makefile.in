@@ -83,7 +83,8 @@ BC_EXEC = $(BIN)/$(EXEC_PREFIX)$(BC)
 DC_EXEC = $(BIN)/$(EXEC_PREFIX)$(DC)
 
 LIB = libbc
-LIBBC = $(BIN)/$(LIB).a
+LIB_NAME = $(LIB).a
+LIBBC = $(BIN)/$(LIB_NAME)
 
 MANUALS = manuals
 BC_MANPAGE_NAME = $(EXEC_PREFIX)$(BC)$(EXEC_SUFFIX).1
@@ -92,12 +93,22 @@ BC_MD = $(BC_MANPAGE).md
 DC_MANPAGE_NAME = $(EXEC_PREFIX)$(DC)$(EXEC_SUFFIX).1
 DC_MANPAGE = $(MANUALS)/$(DC).1
 DC_MD = $(DC_MANPAGE).md
+BCL_MANPAGE_NAME = bcl.3
+BCL_MANPAGE = $(MANUALS)/$(BCL_MANPAGE_NAME)
+BCL_MD = $(BCL_MANPAGE).md
 
 MANPAGE_INSTALL_ARGS = -Dm644
+BINARY_INSTALL_ARGS = -Dm755
+
+BCL_HEADER_NAME = bc.h
+BCL_HEADER = include/$(BCL_HEADER_NAME)
 
 %%DESTDIR%%
 BINDIR = %%BINDIR%%
+INCLUDEDIR = %%INCLUDEDIR%%
+LIBDIR = %%LIBDIR%%
 MAN1DIR = %%MAN1DIR%%
+MAN3DIR = %%MAN3DIR%%
 MAIN_EXEC = $(EXEC_PREFIX)$(%%MAIN_EXEC%%)$(EXEC_SUFFIX)
 EXEC = $(%%EXEC%%)
 NLSPATH = %%NLSPATH%%
@@ -114,7 +125,7 @@ BC_LONG_BIT = %%LONG_BIT%%
 RM = rm
 MKDIR = mkdir
 
-INSTALL = ./install.sh
+INSTALL = ./exec-install.sh
 SAFE_INSTALL = ./safe-install.sh
 LINK = ./link.sh
 MANPAGE = ./manpage.sh
@@ -260,6 +271,7 @@ extra_math:
 manpages:
 	$(MANPAGE) bc
 	$(MANPAGE) dc
+	$(MANPAGE) bcl
 
 clean_gen:
 	@$(RM) -f $(GEN_EXEC)
@@ -327,8 +339,19 @@ install_bc_manpage:
 install_dc_manpage:
 	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(DC_MANPAGE) $(DESTDIR)$(MAN1DIR)/$(DC_MANPAGE_NAME)
 
-install:%%INSTALL_LOCALES_PREREQS%%%%INSTALL_PREREQS%%
+install_bcl_manpage:
+	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(BCL_MANPAGE) $(DESTDIR)$(MAN3DIR)/$(BCL_MANPAGE_NAME)
+
+install_bcl_header:
+	$(SAFE_INSTALL) $(MANPAGE_INSTALL_ARGS) $(BCL_HEADER) $(DESTDIR)$(INCLUDEDIR)/$(BCL_HEADER_NAME)
+
+install_execs:
 	$(INSTALL) $(DESTDIR)$(BINDIR) "$(EXEC_SUFFIX)"
+
+install_library:
+	$(SAFE_INSTALL) $(BINARY_INSTALL_ARGS) $(LIBBC) $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
+
+install:%%INSTALL_LOCALES_PREREQS%%%%INSTALL_MAN_PREREQS%%%%INSTALL_PREREQS%%
 
 uninstall_locales:
 	$(LOCALE_UNINSTALL) $(NLSPATH) $(MAIN_EXEC) $(DESTDIR)
@@ -344,5 +367,14 @@ uninstall_dc_manpage:
 
 uninstall_dc:
 	$(RM) -f $(DESTDIR)$(BINDIR)/$(EXEC_PREFIX)$(DC)$(EXEC_SUFFIX)
+
+uninstall_library:
+	$(RM) -f $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
+
+uninstall_bcl_header:
+	$(RM) -f $(DESTDIR)$(INCLUDEDIR)/$(BCL_HEADER_NAME)
+
+uninstall_bcl_manpage:
+	$(RM) -f $(DESTDIR)$(MAN3DIR)/$(BCL_MANPAGE_NAME)
 
 uninstall:%%UNINSTALL_LOCALES_PREREQS%%%%UNINSTALL_MAN_PREREQS%%%%UNINSTALL_PREREQS%%

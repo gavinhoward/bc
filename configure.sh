@@ -127,8 +127,14 @@ usage() {
 	printf '        If PREFIX is "/usr", install path will be "/usr/bin".\n'
 	printf '        Default is "/usr/local".\n'
 	printf '    --bindir BINDIR\n'
-	printf '        The directory to install binaries. Overrides "$BINDIR" if it exists.\n'
+	printf '        The directory to install binaries in. Overrides "$BINDIR" if it exists.\n'
 	printf '        Default is "$PREFIX/bin".\n'
+	printf '    --includedir INCLUDEDIR\n'
+	printf '        The directory to install headers in. Overrides "$INCLUDEDIR" if it\n'
+	printf '        exists. Default is "$PREFIX/include".\n'
+	printf '    --libdir LIBDIR\n'
+	printf '        The directory to install libraries in. Overrides "$LIBDIR" if it exists.\n'
+	printf '        Default is "$PREFIX/lib".\n'
 	printf '    --datarootdir DATAROOTDIR\n'
 	printf '        The root location for data files. Overrides "$DATAROOTDIR" if it exists.\n'
 	printf '        Default is "$PREFIX/share".\n'
@@ -141,6 +147,9 @@ usage() {
 	printf '    --man1dir MAN1DIR\n'
 	printf '        The location to install Section 1 manpages to. Overrides "$MAN1DIR" if\n'
 	printf '        it exists. Default is "$MANDIR/man1".\n'
+	printf '    --man3dir MAN3DIR\n'
+	printf '        The location to install Section 3 manpages to. Overrides "$MAN3DIR" if\n'
+	printf '        it exists. Default is "$MANDIR/man3".\n'
 	printf '\n'
 	printf 'In addition, the following environment variables are used:\n'
 	printf '\n'
@@ -162,12 +171,18 @@ usage() {
 	printf '    LDFLAGS      Linker flags. Default is "".\n'
 	printf '    PREFIX       The prefix to install to. Default is "/usr/local".\n'
 	printf '                 If PREFIX is "/usr", install path will be "/usr/bin".\n'
-	printf '    BINDIR       The directory to install binaries. Default is "$PREFIX/bin".\n'
+	printf '    BINDIR       The directory to install binaries in. Default is "$PREFIX/bin".\n'
+	printf '    INCLUDEDIR   The directory to install header files in. Default is\n'
+	printf '                 "$PREFIX/include".\n'
+	printf '    LIBDIR       The directory to install libraries in. Default is\n'
+	printf '                 "$PREFIX/lib".\n'
 	printf '    DATAROOTDIR  The root location for data files. Default is "$PREFIX/share".\n'
 	printf '    DATADIR      The location for data files. Default is "$DATAROOTDIR".\n'
 	printf '    MANDIR       The location to install manpages to. Default is "$DATADIR/man".\n'
 	printf '    MAN1DIR      The location to install Section 1 manpages to. Default is\n'
 	printf '                 "$MANDIR/man1".\n'
+	printf '    MAN3DIR      The location to install Section 3 manpages to. Default is\n'
+	printf '                 "$MANDIR/man3".\n'
 	printf '    NLSPATH      The location to install locale catalogs to. Must be an absolute\n'
 	printf '                 path (or contain one). This is treated the same as the POSIX\n'
 	printf '                 definition of $NLSPATH (see POSIX environment variables for\n'
@@ -378,6 +393,20 @@ while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
 					fi
 					BINDIR="$2"
 					shift ;;
+				includedir=?*) INCLUDEDIR="$LONG_OPTARG" ;;
+				includedir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					INCLUDEDIR="$2"
+					shift ;;
+				libdir=?*) LIBDIR="$LONG_OPTARG" ;;
+				libdir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					LIBDIR="$2"
+					shift ;;
 				datarootdir=?*) DATAROOTDIR="$LONG_OPTARG" ;;
 				datarootdir)
 					if [ "$#" -lt 2 ]; then
@@ -405,6 +434,13 @@ while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
 						usage "No argument given for '--$arg' option"
 					fi
 					MAN1DIR="$2"
+					shift ;;
+				man3dir=?*) MAN3DIR="$LONG_OPTARG" ;;
+				man3dir)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					MAN3DIR="$2"
 					shift ;;
 				localedir=?*) LOCALEDIR="$LONG_OPTARG" ;;
 				localedir)
@@ -580,7 +616,8 @@ if [ "$bc_only" -eq 1 ]; then
 	dc_time_test="@printf 'No dc tests to run\\\\n'"
 	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
-	install_prereqs=" install_bc_manpage"
+	install_prereqs=" install_execs"
+	install_man_prereqs=" install_bc_manpage"
 	uninstall_prereqs=" uninstall_bc"
 	uninstall_man_prereqs=" uninstall_bc_manpage"
 
@@ -603,7 +640,8 @@ elif [ "$dc_only" -eq 1 ]; then
 
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
-	install_prereqs=" install_dc_manpage"
+	install_prereqs=" install_execs"
+	install_man_prereqs=" install_dc_manpage"
 	uninstall_prereqs=" uninstall_dc"
 	uninstall_man_prereqs=" uninstall_dc_manpage"
 
@@ -619,9 +657,17 @@ else
 	karatsuba="@\$(KARATSUBA) 30 0 \$(BC_EXEC)"
 	karatsuba_test="@\$(KARATSUBA) 1 100 \$(BC_EXEC)"
 
-	install_prereqs=" install_bc_manpage install_dc_manpage"
-	uninstall_prereqs=" uninstall_bc uninstall_dc"
-	uninstall_man_prereqs=" uninstall_bc_manpage uninstall_dc_manpage"
+	if [ "$library" -eq 0 ]; then
+		install_prereqs=" install_execs"
+		install_man_prereqs=" install_bc_manpage install_dc_manpage"
+		uninstall_prereqs=" uninstall_bc uninstall_dc"
+		uninstall_man_prereqs=" uninstall_bc_manpage uninstall_dc_manpage"
+	else
+		install_prereqs=" install_library install_bcl_header"
+		install_man_prereqs=" install_bcl_manpage"
+		uninstall_prereqs=" uninstall_library uninstall_bcl_header"
+		uninstall_man_prereqs=" uninstall_bcl_manpage"
+	fi
 
 fi
 
@@ -677,6 +723,14 @@ if [ -z "${BINDIR+set}" ]; then
 	BINDIR="$PREFIX/bin"
 fi
 
+if [ -z "${INCLUDEDIR+set}" ]; then
+	INCLUDEDIR="$PREFIX/include"
+fi
+
+if [ -z "${LIBDIR+set}" ]; then
+	LIBDIR="$PREFIX/lib"
+fi
+
 if [ "$install_manpages" -ne 0 ] || [ "$nls" -ne 0 ]; then
 	if [ -z "${DATAROOTDIR+set}" ]; then
 		DATAROOTDIR="$PREFIX/share"
@@ -697,12 +751,17 @@ if [ "$install_manpages" -ne 0 ]; then
 		MAN1DIR="$MANDIR/man1"
 	fi
 
+	if [ -z "${MAN3DIR+set}" ]; then
+		MAN3DIR="$MANDIR/man3"
+	fi
+
 else
-	install_prereqs=""
+	install_man_prereqs=""
 	uninstall_man_prereqs=""
 fi
 
 if [ "$library" -ne 0 ]; then
+	extra_math=1
 	nls=0
 	hist=0
 	prompt=0
@@ -925,10 +984,13 @@ printf 'CPPFLAGS=%s\n' "$CPPFLAGS"
 printf 'LDFLAGS=%s\n' "$LDFLAGS"
 printf 'PREFIX=%s\n' "$PREFIX"
 printf 'BINDIR=%s\n' "$BINDIR"
+printf 'INCLUDEDIR=%s\n' "$INCLUDEDIR"
+printf 'LIBDIR=%s\n' "$LIBDIR"
 printf 'DATAROOTDIR=%s\n' "$DATAROOTDIR"
 printf 'DATADIR=%s\n' "$DATADIR"
 printf 'MANDIR=%s\n' "$MANDIR"
 printf 'MAN1DIR=%s\n' "$MAN1DIR"
+printf 'MAN3DIR=%s\n' "$MAN3DIR"
 printf 'NLSPATH=%s\n' "$NLSPATH"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
 printf 'EXECPREFIX=%s\n' "$EXECPREFIX"
@@ -970,7 +1032,10 @@ contents=$(replace "$contents" "DESTDIR" "$destdir")
 contents=$(replace "$contents" "EXECSUFFIX" "$EXECSUFFIX")
 contents=$(replace "$contents" "EXECPREFIX" "$EXECPREFIX")
 contents=$(replace "$contents" "BINDIR" "$BINDIR")
+contents=$(replace "$contents" "INCLUDEDIR" "$INCLUDEDIR")
+contents=$(replace "$contents" "LIBDIR" "$LIBDIR")
 contents=$(replace "$contents" "MAN1DIR" "$MAN1DIR")
+contents=$(replace "$contents" "MAN3DIR" "$MAN3DIR")
 contents=$(replace "$contents" "CFLAGS" "$CFLAGS")
 contents=$(replace "$contents" "HOSTCFLAGS" "$HOSTCFLAGS")
 contents=$(replace "$contents" "CPPFLAGS" "$CPPFLAGS")
@@ -980,6 +1045,7 @@ contents=$(replace "$contents" "HOSTCC" "$HOSTCC")
 contents=$(replace "$contents" "COVERAGE_OUTPUT" "$COVERAGE_OUTPUT")
 contents=$(replace "$contents" "COVERAGE_PREREQS" "$COVERAGE_PREREQS")
 contents=$(replace "$contents" "INSTALL_PREREQS" "$install_prereqs")
+contents=$(replace "$contents" "INSTALL_MAN_PREREQS" "$install_man_prereqs")
 contents=$(replace "$contents" "INSTALL_LOCALES" "$install_locales")
 contents=$(replace "$contents" "INSTALL_LOCALES_PREREQS" "$install_locales_prereqs")
 contents=$(replace "$contents" "UNINSTALL_MAN_PREREQS" "$uninstall_man_prereqs")

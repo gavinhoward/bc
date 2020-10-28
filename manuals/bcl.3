@@ -1,0 +1,62 @@
+.\"
+.\" SPDX-License-Identifier: BSD-2-Clause
+.\"
+.\" Copyright (c) 2018-2020 Gavin D. Howard and contributors.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" * Redistributions of source code must retain the above copyright notice,
+.\"   this list of conditions and the following disclaimer.
+.\"
+.\" * Redistributions in binary form must reproduce the above copyright notice,
+.\"   this list of conditions and the following disclaimer in the documentation
+.\"   and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH "BCL" "3" "October 2020" "Gavin D. Howard" "Libraries Manual"
+.SH NAME
+.PP
+bcl - library of arbitrary precision decimal arithmetic
+.SH SYNOPSIS
+.PP
+\f[I]#include <bc.h>\f[R]
+.PP
+\f[B]#define BC_SEED_ULONGS\f[R]
+.PP
+\f[B]#define BC_SEED_SIZE\f[R]
+.PP
+\f[B]typedef unsigned long BcBigDig;\f[R]
+.PP
+\f[B]typedef unsigned long BcRandInt;\f[R]
+.PP
+\f[B]typedef enum BcError;\f[R]
+.PP
+\f[B]typedef size_t BcNumber;\f[R]
+.PP
+\f[B]struct BcCtxt;\f[R]
+.PP
+\f[B]typedef struct BcCtxt* BcContext;\f[R]
+.PP
+\f[B]BcError bc_init(void);\f[R]
+.PP
+\f[B]void bcl_free(void);\f[R]
+.PP
+\f[B]bool bcl_abortOnFatalError(void);\f[R]
+.PP
+\f[B]void bcl_setAbortOnFatalError(bool\f[R] \f[I]abrt\f[R]\f[B]);\f[R]
+.PP
+\f[B]void bcl_gc(void);\f[R]
+.PP
+\f[B]BcError bcl_pushContext(BcContext\f[R] \f[I]ctxt\f[R]\f[B]);\f[R]
