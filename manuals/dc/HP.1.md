@@ -30,7 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 # Name
 
-dc - arbitrary-precision reverse-Polish notation calculator
+dc - arbitrary-precision decimal reverse-Polish notation calculator
 
 # SYNOPSIS
 

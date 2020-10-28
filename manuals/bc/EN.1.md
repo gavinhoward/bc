@@ -30,7 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 # NAME
 
-bc - arbitrary-precision arithmetic language and calculator
+bc - arbitrary-precision decimal arithmetic language and calculator
 
 # SYNOPSIS
 
