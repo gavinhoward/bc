@@ -289,7 +289,8 @@ These are the commands used for arithmetic.
 **\^**
 
 :   The top two values are popped off the stack, the second is raised to the
-    power of the first, and the result is pushed onto the stack.
+    power of the first, and the result is pushed onto the stack. The *scale* of
+    the result is equal to **scale**.
 
     The first value popped off of the stack must be an integer, and if that
     value is negative, the second value popped off of the stack must be

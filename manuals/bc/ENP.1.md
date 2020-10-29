@@ -453,7 +453,7 @@ The operators will be described in more detail below.
 
 :   The **power** operator (not the **exclusive or** operator, as it would be in
     C) takes two expressions and raises the first to the power of the value of
-    the second.
+    the second. The *scale* of the result is equal to **scale**.
 
     The second expression must be an integer (no *scale*), and if it is
     negative, the first value must be non-zero.

@@ -528,7 +528,7 @@ This means that \f[B]A\f[R] alone always equals decimal \f[B]10\f[R] and
 .PP
 In addition, bc(1) accepts numbers in scientific notation.
 These have the form \f[B]<number>e<integer>\f[R].
-The power (the portion after the \f[B]e\f[R]) must be an integer.
+The exponent (the portion after the \f[B]e\f[R]) must be an integer.
 An example is \f[B]1.89237e9\f[R], which is equal to
 \f[B]1892370000\f[R].
 Negative exponents are also allowed, so \f[B]4.2890e-3\f[R] is equal to
@@ -717,6 +717,7 @@ This is a \f[B]non-portable extension\f[R].
 The \f[B]power\f[R] operator (not the \f[B]exclusive or\f[R] operator,
 as it would be in C) takes two expressions and raises the first to the
 power of the value of the second.
+The \f[I]scale\f[R] of the result is equal to \f[B]scale\f[R].
 .RS
 .PP
 The second expression must be an integer (no \f[I]scale\f[R]), and if it
@@ -1182,6 +1183,9 @@ Calculates \f[B]x\f[R] to the power of \f[B]y\f[R], even if \f[B]y\f[R]
 is not an integer, and returns the result to the current
 \f[B]scale\f[R].
 .RS
+.PP
+It is an error if \f[B]y\f[R] is negative and \f[B]x\f[R] is
+\f[B]0\f[R].
 .PP
 This is a transcendental function (see the \f[I]Transcendental
 Functions\f[R] subsection below).

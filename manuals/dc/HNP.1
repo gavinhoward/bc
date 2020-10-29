@@ -256,7 +256,7 @@ This means that \f[B]A\f[R] alone always equals decimal \f[B]10\f[R] and
 .PP
 In addition, dc(1) accepts numbers in scientific notation.
 These have the form \f[B]<number>e<integer>\f[R].
-The power (the portion after the \f[B]e\f[R]) must be an integer.
+The exponent (the portion after the \f[B]e\f[R]) must be an integer.
 An example is \f[B]1.89237e9\f[R], which is equal to
 \f[B]1892370000\f[R].
 Negative exponents are also allowed, so \f[B]4.2890e_3\f[R] is equal to
@@ -387,6 +387,7 @@ This is a \f[B]non-portable extension\f[R].
 \f[B]\[ha]\f[R]
 The top two values are popped off the stack, the second is raised to the
 power of the first, and the result is pushed onto the stack.
+The \f[I]scale\f[R] of the result is equal to \f[B]scale\f[R].
 .RS
 .PP
 The first value popped off of the stack must be an integer, and if that
