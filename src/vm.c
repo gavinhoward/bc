@@ -145,11 +145,13 @@ void bc_vm_handleError(BcErr e) {
 
 	BC_SIG_LOCK;
 
-	if (e <= BC_ERR_MATH_DIVIDE_BY_ZERO)
-		vm.err = (BcError) (e - BC_ERR_MATH_NEGATIVE + BC_ERROR_MATH_NEGATIVE);
+	if (e <= BC_ERR_MATH_DIVIDE_BY_ZERO) {
+		vm.err = (BclError) (e - BC_ERR_MATH_NEGATIVE +
+		                     BCL_ERROR_MATH_NEGATIVE);
+	}
 	else if (vm.abrt) abort();
-	else if (e == BC_ERR_FATAL_ALLOC_ERR) vm.err = BC_ERROR_FATAL_ALLOC_ERR;
-	else vm.err = BC_ERROR_FATAL_UNKNOWN_ERR;
+	else if (e == BC_ERR_FATAL_ALLOC_ERR) vm.err = BCL_ERROR_FATAL_ALLOC_ERR;
+	else vm.err = BCL_ERROR_FATAL_UNKNOWN_ERR;
 
 	BC_VM_JMP;
 }

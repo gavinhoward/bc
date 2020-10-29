@@ -55,6 +55,8 @@
 
 typedef unsigned long ulong;
 
+typedef BclBigDig BcBigDig;
+
 #if BC_LONG_BIT >= 64
 
 #define BC_NUM_BIGDIG_MAX ((BcBigDig) UINT64_MAX)

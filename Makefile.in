@@ -82,7 +82,7 @@ DC = dc
 BC_EXEC = $(BIN)/$(EXEC_PREFIX)$(BC)
 DC_EXEC = $(BIN)/$(EXEC_PREFIX)$(DC)
 
-LIB = libbc
+LIB = libbcl
 LIB_NAME = $(LIB).a
 LIBBC = $(BIN)/$(LIB_NAME)
 

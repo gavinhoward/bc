@@ -314,7 +314,7 @@ typedef struct BcVm {
 
 	BcRNG rng;
 
-	BcError err;
+	BclError err;
 	bool abrt;
 
 	unsigned int refs;

@@ -36,10 +36,10 @@
 #if BC_ENABLE_LIBRARY
 
 #include <setjmp.h>
-
 #include <string.h>
+#include <time.h>
 
-#include <bc.h>
+#include <bcl.h>
 
 #include <library.h>
 #include <num.h>
@@ -59,9 +59,9 @@ void bcl_handleSignal(void) {
 	if (!vm.sig_lock) BC_VM_JMP;
 }
 
-BcError bcl_init(void) {
+BclError bcl_init(void) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 
 	vm.refs += 1;
 
@@ -77,9 +77,10 @@ BcError bcl_init(void) {
 
 	bc_vm_init();
 
-	bc_vec_init(&vm.ctxts, sizeof(BcContext), NULL);
+	bc_vec_init(&vm.ctxts, sizeof(BclContext), NULL);
 	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
 	bc_vec_init(&vm.out, sizeof(uchar), NULL);
+	srand((unsigned int) time(NULL));
 	bc_rand_init(&vm.rng);
 
 err:
@@ -96,9 +97,9 @@ err:
 	return e;
 }
 
-BcError bcl_pushContext(BcContext ctxt) {
+BclError bcl_pushContext(BclContext ctxt) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -113,9 +114,9 @@ void bcl_popContext(void) {
 	if (vm.ctxts.len) bc_vec_pop(&vm.ctxts);
 }
 
-BcContext bcl_context(void) {
+BclContext bcl_context(void) {
 	if (!vm.ctxts.len) return NULL;
-	return *((BcContext*) bc_vec_top(&vm.ctxts));
+	return *((BclContext*) bc_vec_top(&vm.ctxts));
 }
 
 void bcl_free(void) {
@@ -135,7 +136,7 @@ void bcl_free(void) {
 		size_t i;
 
 		for (i = 0; i < vm.ctxts.len; ++i) {
-			BcContext ctxt = *((BcContext*) bc_vec_item(&vm.ctxts, i));
+			BclContext ctxt = *((BclContext*) bc_vec_item(&vm.ctxts, i));
 			bcl_ctxt_free(ctxt);
 		}
 	}
@@ -164,16 +165,16 @@ void bcl_setAbortOnFatalError(bool abrt) {
 	vm.abrt = abrt;
 }
 
-BcContext bcl_ctxt_create(void) {
+BclContext bcl_ctxt_create(void) {
 
-	BcContext ctxt = NULL;
+	BclContext ctxt = NULL;
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	ctxt = bc_vm_malloc(sizeof(BcContext));
+	ctxt = bc_vm_malloc(sizeof(BclContext));
 
 	bc_vec_init(&ctxt->nums, sizeof(BcNum), bcl_num_destruct);
-	bc_vec_init(&ctxt->free_nums, sizeof(BcNumber), NULL);
+	bc_vec_init(&ctxt->free_nums, sizeof(BclNumber), NULL);
 
 	ctxt->scale = 0;
 	ctxt->ibase = 10;
@@ -193,63 +194,65 @@ err:
 	return ctxt;
 }
 
-void bcl_ctxt_free(BcContext ctxt) {
+void bcl_ctxt_free(BclContext ctxt) {
 	bc_vec_free(&ctxt->free_nums);
 	bc_vec_free(&ctxt->nums);
 	free(ctxt);
 }
 
-void bcl_ctxt_freeAll(BcContext ctxt) {
+void bcl_ctxt_freeNums(BclContext ctxt) {
 	bc_vec_npop(&ctxt->nums, ctxt->nums.len);
 	bc_vec_npop(&ctxt->free_nums, ctxt->free_nums.len);
 }
 
-size_t bcl_ctxt_scale(BcContext ctxt) {
+size_t bcl_ctxt_scale(BclContext ctxt) {
 	return ctxt->scale;
 }
 
-void bcl_ctxt_setScale(BcContext ctxt, size_t scale) {
+void bcl_ctxt_setScale(BclContext ctxt, size_t scale) {
 	ctxt->scale = scale;
 }
 
-size_t bcl_ctxt_ibase(BcContext ctxt) {
+size_t bcl_ctxt_ibase(BclContext ctxt) {
 	return ctxt->ibase;
 }
 
-void bcl_ctxt_setIbase(BcContext ctxt, size_t ibase) {
+void bcl_ctxt_setIbase(BclContext ctxt, size_t ibase) {
+	if (ibase < BC_NUM_MIN_BASE) ibase = BC_NUM_MIN_BASE;
+	else if (ibase > BC_NUM_MAX_IBASE) ibase = BC_NUM_MAX_IBASE;
 	ctxt->ibase = ibase;
 }
 
-size_t bcl_ctxt_obase(BcContext ctxt) {
+size_t bcl_ctxt_obase(BclContext ctxt) {
 	return ctxt->obase;
 }
 
-void bcl_ctxt_setObase(BcContext ctxt, size_t obase) {
+void bcl_ctxt_setObase(BclContext ctxt, size_t obase) {
 	ctxt->obase = obase;
 }
 
-BcError bcl_num_error(const BcNumber n) {
+BclError bcl_num_err(BclNumber n) {
 
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
 	if (n >= ctxt->nums.len) {
-		if (n > 0 - (BcNumber) BC_ERROR_NELEMS) return (BcError) (0 - n);
-		else return BC_ERROR_INVALID_NUM;
+		if (n > 0 - (BclNumber) BCL_ERROR_NELEMS) return (BclError) (0 - n);
+		else return BCL_ERROR_INVALID_NUM;
 	}
-	else return BC_ERROR_SUCCESS;
+	else return BCL_ERROR_SUCCESS;
 }
 
-static BcNumber bcl_num_insert(BcContext ctxt, BcNum *restrict n) {
+static BclNumber bcl_num_insert(BclContext ctxt, BcNum *restrict n) {
 
-	BcNumber idx;
+	BclNumber idx;
 
 	if (ctxt->free_nums.len) {
 
 		BcNum *ptr;
 
-		idx = *((BcNumber*) bc_vec_top(&ctxt->free_nums));
+		idx = *((BclNumber*) bc_vec_top(&ctxt->free_nums));
 
 		bc_vec_pop(&ctxt->free_nums);
 
@@ -266,16 +269,16 @@ static BcNumber bcl_num_insert(BcContext ctxt, BcNum *restrict n) {
 	return idx;
 }
 
-BcNumber bcl_num_init(void) {
-	return bcl_num_initReq(BC_NUM_DEF_SIZE);
+BclNumber bcl_num_create(void) {
+	return bcl_num_create_req(BC_NUM_DEF_SIZE);
 }
 
-BcNumber bcl_num_initReq(size_t req) {
+BclNumber bcl_num_create_req(size_t req) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum n;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -294,7 +297,7 @@ err:
 	return idx;
 }
 
-static void bcl_num_dtor(BcContext ctxt, BcNumber n, BcNum *restrict num) {
+static void bcl_num_dtor(BclContext ctxt, BclNumber n, BcNum *restrict num) {
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -304,10 +307,10 @@ static void bcl_num_dtor(BcContext ctxt, BcNumber n, BcNum *restrict num) {
 	bc_vec_push(&ctxt->free_nums, &n);
 }
 
-void bcl_num_free(BcNumber n) {
+void bcl_num_free(BclNumber n) {
 
 	BcNum *num;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -322,11 +325,11 @@ void bcl_num_free(BcNumber n) {
 	BC_SIG_UNLOCK;
 }
 
-BcError bcl_num_copy(const BcNumber d, const BcNumber s) {
+BclError bcl_num_copy(BclNumber d, BclNumber s) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *dest, *src;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -350,12 +353,12 @@ err:
 	return e;
 }
 
-BcNumber bcl_num_dup(const BcNumber s) {
+BclNumber bcl_num_dup(BclNumber s) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *src, dest;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -394,10 +397,10 @@ static void bcl_num_destruct(void *num) {
 	bc_num_clear(num);
 }
 
-bool bcl_num_neg(const BcNumber n) {
+bool bcl_num_neg(BclNumber n) {
 
 	BcNum *num;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -410,10 +413,26 @@ bool bcl_num_neg(const BcNumber n) {
 	return num->neg;
 }
 
-size_t bcl_num_scale(const BcNumber n) {
+void bcl_num_setNeg(BclNumber n, bool neg) {
 
 	BcNum *num;
-	BcContext ctxt;
+	BclContext ctxt;
+
+	BC_CHECK_CTXT_ASSERT(ctxt);
+
+	assert(n < ctxt->nums.len);
+
+	num = BC_NUM(ctxt, n);
+
+	assert(num != NULL && num->num != NULL);
+
+	num->neg = neg;
+}
+
+size_t bcl_num_scale(BclNumber n) {
+
+	BcNum *num;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -426,10 +445,40 @@ size_t bcl_num_scale(const BcNumber n) {
 	return bc_num_scale(num);
 }
 
-size_t bcl_num_len(const BcNumber n) {
+BclError bcl_num_setScale(BclNumber n, size_t scale) {
+
+	BclError e = BCL_ERROR_SUCCESS;
+	BcNum *nptr;
+	BclContext ctxt;
+
+	BC_CHECK_CTXT_ERR(ctxt);
+
+	BC_CHECK_NUM_ERR(ctxt, n);
+
+	BC_FUNC_HEADER(err);
+
+	assert(n < ctxt->nums.len);
+
+	nptr = BC_NUM(ctxt, n);
+
+	assert(nptr != NULL && nptr->num != NULL);
+
+	if (scale > nptr->scale) bc_num_extend(nptr, scale - nptr->scale);
+	else if (scale < nptr->scale) bc_num_truncate(nptr, nptr->scale - scale);
+
+err:
+	BC_SIG_MAYLOCK;
+	BC_FUNC_FOOTER(e);
+
+	assert(!vm.running && !vm.sig && !vm.sig_lock);
+
+	return e;
+}
+
+size_t bcl_num_len(BclNumber n) {
 
 	BcNum *num;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -442,11 +491,11 @@ size_t bcl_num_len(const BcNumber n) {
 	return bc_num_len(num);
 }
 
-BcError bcl_num_bigdig(const BcNumber n, BcBigDig *result) {
+BclError bcl_num_bigdig(BclNumber n, BclBigDig *result) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *num;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -469,12 +518,12 @@ err:
 	return e;
 }
 
-BcNumber bcl_num_bigdig2num(const BcBigDig val) {
+BclNumber bcl_num_bigdig2num(BclBigDig val) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum n;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -493,11 +542,11 @@ err:
 	return idx;
 }
 
-BcError bcl_num_bigdig2num_err(const BcNumber n, const BcBigDig val) {
+BclError bcl_num_bigdig2num_err(BclNumber n, BclBigDig val) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *num;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -521,15 +570,15 @@ err:
 	return e;
 }
 
-static BcNumber bcl_num_binary(const BcNumber a, const BcNumber b,
-                               const BcNumBinaryOp op,
-                               const BcNumBinaryOpReq req)
+static BclNumber bcl_num_binary(BclNumber a, BclNumber b,
+                                const BcNumBinaryOp op,
+                                const BcNumBinaryOpReq req)
 {
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
 	BcNum c;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -567,12 +616,12 @@ err:
 	return idx;
 }
 
-static BcError bcl_num_binary_err(const BcNumber a, const BcNumber b,
-                                  const BcNumber c, const BcNumBinaryOp op)
+static BclError bcl_num_binary_err(BclNumber a, BclNumber b, BclNumber c,
+                                  const BcNumBinaryOp op)
 {
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -601,87 +650,77 @@ err:
 	return e;
 }
 
-BcNumber bcl_num_add(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_add(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_add, bc_num_addReq);
 }
 
-BcError bcl_num_add_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_add_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_add);
 }
 
-BcNumber bcl_num_sub(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_sub(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_sub, bc_num_addReq);
 }
 
-BcError bcl_num_sub_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_sub_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_sub);
 }
 
-BcNumber bcl_num_mul(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_mul(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_mul, bc_num_mulReq);
 }
 
-BcError bcl_num_mul_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_mul_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_mul);
 }
 
-BcNumber bcl_num_div(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_div(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_div, bc_num_divReq);
 }
 
-BcError bcl_num_div_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_div_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_div);
 }
 
-BcNumber bcl_num_mod(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_mod(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_mod, bc_num_divReq);
 }
 
-BcError bcl_num_mod_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_mod_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_mod);
 }
 
-BcNumber bcl_num_pow(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_pow(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_pow, bc_num_powReq);
 }
 
-BcError bcl_num_pow_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_pow_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_pow);
 }
 
-#if BC_ENABLE_EXTRA_MATH
-BcNumber bcl_num_places(const BcNumber a, const BcNumber b) {
-	return bcl_num_binary(a, b, bc_num_places, bc_num_placesReq);
-}
-
-BcError bcl_num_places_err(const BcNumber a, const BcNumber b, const BcNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_places);
-}
-
-BcNumber bcl_num_lshift(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_lshift(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_lshift, bc_num_placesReq);
 }
 
-BcError bcl_num_lshift_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_lshift_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_lshift);
 }
 
-BcNumber bcl_num_rshift(const BcNumber a, const BcNumber b) {
+BclNumber bcl_num_rshift(BclNumber a, BclNumber b) {
 	return bcl_num_binary(a, b, bc_num_rshift, bc_num_placesReq);
 }
 
-BcError bcl_num_rshift_err(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclError bcl_num_rshift_err(BclNumber a, BclNumber b, BclNumber c) {
 	return bcl_num_binary_err(a, b, c, bc_num_lshift);
 }
-#endif // BC_ENABLE_EXTRA_MATH
 
-BcNumber bcl_num_sqrt(const BcNumber a) {
+BclNumber bcl_num_sqrt(BclNumber a) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr;
 	BcNum b;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -708,11 +747,11 @@ err:
 	return idx;
 }
 
-BcError bcl_num_sqrt_err(const BcNumber a, const BcNumber b) {
+BclError bcl_num_sqrt_err(BclNumber a, BclNumber b) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -740,14 +779,13 @@ err:
 	return e;
 }
 
-BcError bcl_num_divmod(const BcNumber a, const BcNumber b,
-                       BcNumber *c, BcNumber *d)
-{
-	BcError e = BC_ERROR_SUCCESS;
+BclError bcl_num_divmod(BclNumber a, BclNumber b, BclNumber *c, BclNumber *d) {
+
+	BclError e = BCL_ERROR_SUCCESS;
 	size_t req;
 	BcNum *aptr, *bptr;
 	BcNum cnum, dnum;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -800,12 +838,11 @@ err:
 	return e;
 }
 
-BcError bcl_num_divmod_err(const BcNumber a, const BcNumber b,
-                           const BcNumber c, const BcNumber d)
+BclError bcl_num_divmod_err(BclNumber a, BclNumber b, BclNumber c, BclNumber d)
 {
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -841,14 +878,14 @@ err:
 	return e;
 }
 
-BcNumber bcl_num_modexp(const BcNumber a, const BcNumber b, const BcNumber c) {
+BclNumber bcl_num_modexp(BclNumber a, BclNumber b, BclNumber c) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	size_t req;
 	BcNum *aptr, *bptr, *cptr;
 	BcNum d;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -893,12 +930,11 @@ err:
 	return idx;
 }
 
-BcError bcl_num_modexp_err(const BcNumber a, const BcNumber b,
-                           const BcNumber c, const BcNumber d)
+BclError bcl_num_modexp_err(BclNumber a, BclNumber b, BclNumber c, BclNumber d)
 {
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr, *bptr, *cptr, *dptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -933,10 +969,10 @@ err:
 	return e;
 }
 
-static size_t bcl_num_req(const BcNumber a, const BcNumber b, const BcReqOp op)
+static size_t bcl_num_req(BclNumber a, BclNumber b, BcReqOp op)
 {
 	BcNum *aptr, *bptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -951,62 +987,30 @@ static size_t bcl_num_req(const BcNumber a, const BcNumber b, const BcReqOp op)
 	return op(aptr, bptr, ctxt->scale);
 }
 
-size_t bcl_num_addReq(const BcNumber a, const BcNumber b) {
+size_t bcl_num_add_req(BclNumber a, BclNumber b) {
 	return bcl_num_req(a, b, bc_num_addReq);
 }
 
-size_t bcl_num_mulReq(const BcNumber a, const BcNumber b) {
+size_t bcl_num_mul_req(BclNumber a, BclNumber b) {
 	return bcl_num_req(a, b, bc_num_mulReq);
 }
 
-size_t bcl_num_divReq(const BcNumber a, const BcNumber b) {
+size_t bcl_num_div_req(BclNumber a, BclNumber b) {
 	return bcl_num_req(a, b, bc_num_divReq);
 }
 
-size_t bcl_num_powReq(const BcNumber a, const BcNumber b) {
+size_t bcl_num_pow_req(BclNumber a, BclNumber b) {
 	return bcl_num_req(a, b, bc_num_powReq);
 }
 
-#if BC_ENABLE_EXTRA_MATH
-size_t bcl_num_placesReq(const BcNumber a, const BcNumber b) {
+size_t bcl_num_shift_req(BclNumber a, BclNumber b) {
 	return bcl_num_req(a, b, bc_num_placesReq);
 }
-#endif // BC_ENABLE_EXTRA_MATH
 
-BcError bcl_num_setScale(const BcNumber n, size_t scale) {
-
-	BcError e = BC_ERROR_SUCCESS;
-	BcNum *nptr;
-	BcContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, n);
-
-	BC_FUNC_HEADER(err);
-
-	assert(n < ctxt->nums.len);
-
-	nptr = BC_NUM(ctxt, n);
-
-	assert(nptr != NULL && nptr->num != NULL);
-
-	if (scale > nptr->scale) bc_num_extend(nptr, scale - nptr->scale);
-	else if (scale < nptr->scale) bc_num_truncate(nptr, nptr->scale - scale);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-ssize_t bcl_num_cmp(const BcNumber a, const BcNumber b) {
+ssize_t bcl_num_cmp(BclNumber a, BclNumber b) {
 
 	BcNum *aptr, *bptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -1021,10 +1025,10 @@ ssize_t bcl_num_cmp(const BcNumber a, const BcNumber b) {
 	return bc_num_cmp(aptr, bptr);
 }
 
-void bcl_num_zero(const BcNumber n) {
+void bcl_num_zero(BclNumber n) {
 
 	BcNum *nptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -1037,10 +1041,10 @@ void bcl_num_zero(const BcNumber n) {
 	bc_num_zero(nptr);
 }
 
-void bcl_num_one(const BcNumber n) {
+void bcl_num_one(BclNumber n) {
 
 	BcNum *nptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -1053,28 +1057,13 @@ void bcl_num_one(const BcNumber n) {
 	bc_num_one(nptr);
 }
 
-ssize_t bcl_num_cmpZero(const BcNumber n) {
+BclNumber bcl_num_parse(const char *restrict val) {
 
-	BcNum *nptr;
-	BcContext ctxt;
-
-	BC_CHECK_CTXT_ASSERT(ctxt);
-
-	assert(n < ctxt->nums.len);
-
-	nptr = BC_NUM(ctxt, n);
-
-	assert(nptr != NULL && nptr->num != NULL);
-
-	return bc_num_cmpZero(nptr);
-}
-
-BcNumber bcl_num_parse(const char *restrict val, const BcBigDig base) {
-
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum n;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
+	bool neg;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -1084,13 +1073,24 @@ BcNumber bcl_num_parse(const char *restrict val, const BcBigDig base) {
 
 	assert(val != NULL);
 
+	neg = (val[0] == '-');
+
+	if (neg) val += 1;
+
+	if (!bc_num_strValid(val)) {
+		vm.err = BCL_ERROR_PARSE_INVALID_STR;
+		goto err;
+	}
+
 	bc_num_clear(&n);
 
 	bc_num_init(&n, BC_NUM_DEF_SIZE);
 
 	BC_SIG_UNLOCK;
 
-	bc_num_parse(&n, val, base);
+	bc_num_parse(&n, val, ctxt->ibase);
+
+	n.neg = neg;
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1101,12 +1101,12 @@ err:
 	return idx;
 }
 
-BcError bcl_num_parse_err(const BcNumber n, const char *restrict val,
-                          const BcBigDig base)
-{
-	BcError e = BC_ERROR_SUCCESS;
+BclError bcl_num_parse_err(BclNumber n, const char *restrict val) {
+
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *nptr;
-	BcContext ctxt;
+	BclContext ctxt;
+	bool neg;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -1117,8 +1117,12 @@ BcError bcl_num_parse_err(const BcNumber n, const char *restrict val,
 	assert(val != NULL);
 	assert(n < ctxt->nums.len);
 
+	neg = (val[0] == '-');
+
+	if (neg) val += 1;
+
 	if (!bc_num_strValid(val)) {
-		vm.err = BC_ERROR_PARSE_INVALID_NUM;
+		vm.err = BCL_ERROR_PARSE_INVALID_STR;
 		goto err;
 	}
 
@@ -1126,7 +1130,9 @@ BcError bcl_num_parse_err(const BcNumber n, const char *restrict val,
 
 	assert(nptr != NULL && nptr->num != NULL);
 
-	bc_num_parse(nptr, val, base);
+	bc_num_parse(nptr, val, ctxt->ibase);
+
+	nptr->neg = neg;
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1137,11 +1143,11 @@ err:
 	return e;
 }
 
-char* bcl_num_string(const BcNumber n, const BcBigDig base) {
+char* bcl_num_string(BclNumber n) {
 
 	BcNum *nptr;
 	char *str = NULL;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
@@ -1155,7 +1161,7 @@ char* bcl_num_string(const BcNumber n, const BcBigDig base) {
 
 	assert(nptr != NULL && nptr->num != NULL);
 
-	bc_num_print(nptr, base, false);
+	bc_num_print(nptr, ctxt->obase, false);
 
 	str = bc_vm_strdup(vm.out.v);
 
@@ -1171,11 +1177,11 @@ err:
 	return str;
 }
 
-BcError bcl_num_string_err(const BcNumber n, const BcBigDig base, char **str) {
+BclError bcl_num_string_err(BclNumber n, char **str) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *nptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -1190,7 +1196,7 @@ BcError bcl_num_string_err(const BcNumber n, const BcBigDig base, char **str) {
 
 	assert(nptr != NULL && nptr->num != NULL);
 
-	bc_num_print(nptr, base, false);
+	bc_num_print(nptr, ctxt->obase, false);
 
 	*str = bc_vm_strdup(vm.out.v);
 
@@ -1203,14 +1209,13 @@ err:
 	return e;
 }
 
-#if BC_ENABLE_EXTRA_MATH
-BcNumber bcl_num_irand(const BcNumber a) {
+BclNumber bcl_num_irand(BclNumber a) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr;
 	BcNum b;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -1244,11 +1249,11 @@ err:
 	return idx;
 }
 
-BcError bcl_num_irand_err(const BcNumber a, const BcNumber b) {
+BclError bcl_num_irand_err(BclNumber a, BclNumber b) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -1312,12 +1317,12 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcNumber bcl_num_frand(size_t places) {
+BclNumber bcl_num_frand(size_t places) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum n;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -1342,11 +1347,11 @@ err:
 	return idx;
 }
 
-BcError bcl_num_frand_err(const BcNumber n, size_t places) {
+BclError bcl_num_frand_err(size_t places, BclNumber n) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *nptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -1400,13 +1405,13 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BcNumber bcl_num_ifrand(const BcNumber a, size_t places) {
+BclNumber bcl_num_ifrand(BclNumber a, size_t places) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr;
 	BcNum b;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -1440,11 +1445,11 @@ err:
 	return idx;
 }
 
-BcError bcl_num_ifrand_err(const BcNumber a, size_t places, const BcNumber b) {
+BclError bcl_num_ifrand_err(BclNumber a, size_t places, BclNumber b) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *aptr, *bptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -1472,11 +1477,11 @@ err:
 	return e;
 }
 
-BcError bcl_num_seedWithNum(const BcNumber n) {
+BclError bcl_rand_seedWithNum(BclNumber n) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *nptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -1501,16 +1506,18 @@ err:
 	return e;
 }
 
-BcError bcl_num_seed(unsigned char seed[BC_SEED_SIZE])
-{
-	BcError e = BC_ERROR_SUCCESS;
+BclError bcl_rand_seed(unsigned char seed[BC_SEED_SIZE]) {
+
+	BclError e = BCL_ERROR_SUCCESS;
 	size_t i;
-	unsigned long vals[BC_SEED_ULONGS];
+	ulong vals[BC_SEED_ULONGS];
 
 	BC_FUNC_HEADER(err);
 
 	for (i = 0; i < BC_SEED_SIZE; ++i) {
-		vals[i / sizeof(long)] |= seed[i] << (CHAR_BIT * (i % sizeof(long)));
+		ulong val = ((ulong) seed[i]) << (((ulong) CHAR_BIT) *
+		                                  (i % sizeof(ulong)));
+		vals[i / sizeof(long)] |= val;
 	}
 
 	bc_rand_seed(&vm.rng, vals[0], vals[1], vals[2], vals[3]);
@@ -1521,29 +1528,16 @@ err:
 	return e;
 }
 
-BcError bcl_num_reseed(void) {
-
-	BcError e = BC_ERROR_SUCCESS;
-
-	BC_FUNC_HEADER(err);
-
+void bcl_rand_reseed(void) {
 	bc_rand_srand(bc_vec_top(&vm.rng.v));
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
 }
 
-BcNumber bcl_num_seed2num(void) {
+BclNumber bcl_rand_seed2num(void) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum n;
-	BcNumber idx;
-	BcContext ctxt;
+	BclNumber idx;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT(ctxt);
 
@@ -1566,11 +1560,11 @@ err:
 	return idx;
 }
 
-BcError bcl_num_seed2num_err(const BcNumber n) {
+BclError bcl_rand_seed2num_err(BclNumber n) {
 
-	BcError e = BC_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_SUCCESS;
 	BcNum *nptr;
-	BcContext ctxt;
+	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
@@ -1595,14 +1589,13 @@ err:
 	return e;
 }
 
-BcRandInt bcl_rand_int(void) {
-	return (BcRandInt) bc_rand_int(&vm.rng);
+BclRandInt bcl_rand_int(void) {
+	return (BclRandInt) bc_rand_int(&vm.rng);
 }
 
-BcRandInt bcl_rand_bounded(BcRandInt bound) {
-	return (BcRandInt) bc_rand_bounded(&vm.rng, (BcRand) bound);
+BclRandInt bcl_rand_bounded(BclRandInt bound) {
+	if (bound <= 1) return 0;
+	return (BclRandInt) bc_rand_bounded(&vm.rng, (BcRand) bound);
 }
-
-#endif // BC_ENABLE_EXTRA_MATH
 
 #endif // BC_ENABLE_LIBRARY
