@@ -293,6 +293,23 @@
 
 #define BC_VM_INVALID_CATALOG ((nl_catd) -1)
 
+#if BC_DEBUG_CODE
+#define BC_VM_FUNC_ENTER                                     \
+	do {                                                     \
+		bc_file_printf(&vm.ferr, "Entering %s\n", __func__); \
+		bc_file_flush(&vm.ferr);                             \
+	} while (0);
+
+#define BC_VM_FUNC_EXIT                                     \
+	do {                                                    \
+		bc_file_printf(&vm.ferr, "Leaving %s\n", __func__); \
+		bc_file_flush(&vm.ferr);                            \
+	} while (0);
+#else // BC_DEBUG_CODE
+#define BC_VM_FUNC_ENTER
+#define BC_VM_FUNC_EXIT
+#endif // BC_DEBUG_CODE
+
 typedef struct BcVm {
 
 	volatile sig_atomic_t status;
