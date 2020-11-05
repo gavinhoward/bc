@@ -419,6 +419,9 @@ static void bc_program_op(BcProgram *p, uchar inst) {
 
 	BC_SIG_UNLOCK;
 
+	assert(BC_NUM_RDX_VALID(n1));
+	assert(BC_NUM_RDX_VALID(n2));
+
 	bc_program_ops[idx](n1, n2, &res->d.n, BC_PROG_SCALE(p));
 
 	bc_program_retire(p, 1, 2);
@@ -495,6 +498,12 @@ exec_err:
 static void bc_program_rand(BcProgram *p) {
 	BcRand rand = bc_rand_int(&p->rng);
 	bc_program_pushBigdig(p, (BcBigDig) rand, BC_RESULT_TEMP);
+#ifndef NDEBUG
+	{
+		BcResult *r = bc_vec_top(&p->results);
+		assert(BC_NUM_RDX_VALID_NP(r->d.n));
+	}
+#endif // NDEBUG
 }
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
@@ -604,7 +613,7 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 void bc_program_negate(BcResult *r, BcNum *n) {
 	bc_num_copy(&r->d.n, n);
-	if (BC_NUM_NONZERO(&r->d.n)) r->d.n.neg = !r->d.n.neg;
+	if (BC_NUM_NONZERO(&r->d.n)) BC_NUM_NEG_TGL_NP(r->d.n);
 }
 
 void bc_program_not(BcResult *r, BcNum *n) {
@@ -870,6 +879,9 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 
 		if (!use_val)
 			inst -= (BC_INST_ASSIGN_POWER_NO_VAL - BC_INST_ASSIGN_POWER);
+
+		assert(BC_NUM_RDX_VALID(l));
+		assert(BC_NUM_RDX_VALID(r));
 
 		bc_program_ops[inst - BC_INST_ASSIGN_POWER](l, r, l, scale);
 	}
@@ -1202,7 +1214,7 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 		BC_SIG_UNLOCK;
 
-		res->d.n.neg = false;
+		BC_NUM_NEG_CLR_NP(res->d.n);
 	}
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 	else if (inst == BC_INST_IRAND) {
@@ -1345,7 +1357,7 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	BC_SIG_UNLOCK;
 
 	bc_num_truncate(&num, num.scale);
-	num.neg = false;
+	BC_NUM_NEG_CLR_NP(num);
 
 	// This is guaranteed to not have a divide by 0
 	// because strmb is equal to UCHAR_MAX + 1.

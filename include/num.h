@@ -93,7 +93,6 @@ typedef struct BcNum {
 	size_t scale;
 	size_t len;
 	size_t cap;
-	bool neg;
 } BcNum;
 
 #if BC_ENABLE_EXTRA_MATH
@@ -136,6 +135,29 @@ struct BcRNG;
 
 #define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_DIGS - 1))
 #define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_DIGS)
+
+#define BC_NUM_RDX_VAL(n) ((n)->rdx >> 1)
+#define BC_NUM_RDX_VAL_NP(n) ((n).rdx >> 1)
+#define BC_NUM_RDX_SET(n, v) \
+	((n)->rdx = (((v) << 1) | ((n)->rdx & (BcBigDig) 1)))
+#define BC_NUM_RDX_SET_NP(n, v) \
+	((n).rdx = (((v) << 1) | ((n).rdx & (BcBigDig) 1)))
+#define BC_NUM_RDX_SET_NEG(n, v, neg) \
+	((n)->rdx = (((v) << 1) | (neg)))
+
+#define BC_NUM_RDX_VALID(n) \
+	(BC_NUM_ZERO(n) || BC_NUM_RDX_VAL(n) * BC_BASE_DIGS >= (n)->scale)
+#define BC_NUM_RDX_VALID_NP(n) \
+	((!(n).len) || BC_NUM_RDX_VAL_NP(n) * BC_BASE_DIGS >= (n).scale)
+
+#define BC_NUM_NEG(n) ((n)->rdx & ((BcBigDig) 1))
+#define BC_NUM_NEG_NP(n) ((n).rdx & ((BcBigDig) 1))
+#define BC_NUM_NEG_CLR(n) ((n)->rdx &= ~((BcBigDig) 1))
+#define BC_NUM_NEG_CLR_NP(n) ((n).rdx &= ~((BcBigDig) 1))
+#define BC_NUM_NEG_SET(n) ((n)->rdx |= ((BcBigDig) 1))
+#define BC_NUM_NEG_TGL(n) ((n)->rdx ^= ((BcBigDig) 1))
+#define BC_NUM_NEG_TGL_NP(n) ((n).rdx ^= ((BcBigDig) 1))
+#define BC_NUM_NEG_VAL(n, v) (((n)->rdx & ~((BcBigDig) 1)) | (v))
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
