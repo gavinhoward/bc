@@ -946,7 +946,14 @@ const BcRandState bc_rand_multiplier = BC_RAND_MULTIPLIER;
 const BcDig bc_num_bigdigMax[] = {
 	709551616U,
 	446744073U,
-	18U
+	18U,
+};
+const BcDig bc_num_bigdigMax2[] = {
+	768211456U,
+	374607431U,
+	938463463U,
+	282366920U,
+	340U,
 };
 #else // BC_LONG_BIT >= 64
 const BcDig bc_num_bigdigMax[] = {
@@ -954,9 +961,17 @@ const BcDig bc_num_bigdigMax[] = {
 	9496U,
 	42U,
 };
+const BcDig bc_num_bigdigMax2[] = {
+	1616U,
+	955U,
+	737U,
+	6744U,
+	1844U,
+};
 #endif // BC_LONG_BIT >= 64
 
 const size_t bc_num_bigdigMax_size = sizeof(bc_num_bigdigMax) / sizeof(BcDig);
+const size_t bc_num_bigdigMax2_size = sizeof(bc_num_bigdigMax2) / sizeof(BcDig);
 
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 

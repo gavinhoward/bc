@@ -2195,11 +2195,8 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
-	BcNum pow, temp, temp2, intn, frac;
+	BcNum temp, temp2, intn, frac;
 	BcRand state1, state2, inc1, inc2;
-	BcDig pow_num[BC_RAND_NUM_SIZE];
-
-	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
 
 	BC_SIG_LOCK;
 
@@ -2212,14 +2209,13 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 	BC_SIG_UNLOCK;
 
-	bc_num_mul(&vm.max, &vm.max, &pow, 0);
 
 	memcpy(frac.num, n->num, BC_NUM_SIZE(n->rdx));
 	frac.len = n->rdx;
 	frac.rdx = n->rdx;
 	frac.scale = n->scale;
 
-	bc_num_mul(&frac, &pow, &temp, 0);
+	bc_num_mul(&frac, &vm.max2, &temp, 0);
 
 	bc_num_truncate(&temp, temp.scale);
 	bc_num_copy(&frac, &temp);
@@ -2278,8 +2274,7 @@ err:
 void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	BcRand s1, s2, i1, i2;
-	BcNum pow, conv, temp1, temp2, temp3;
-	BcDig pow_num[BC_RAND_NUM_SIZE];
+	BcNum conv, temp1, temp2, temp3;
 	BcDig temp1_num[BC_RAND_NUM_SIZE], temp2_num[BC_RAND_NUM_SIZE];
 	BcDig conv_num[BC_NUM_BIGDIG_LOG10];
 
@@ -2291,20 +2286,17 @@ void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	BC_SIG_UNLOCK;
 
-	bc_num_setup(&pow, pow_num, sizeof(pow_num) / sizeof(BcDig));
 	bc_num_setup(&temp1, temp1_num, sizeof(temp1_num) / sizeof(BcDig));
 	bc_num_setup(&temp2, temp2_num, sizeof(temp2_num) / sizeof(BcDig));
 	bc_num_setup(&conv, conv_num, sizeof(conv_num) / sizeof(BcDig));
 
 	// This assert is here because it has to be true. It is also here to justify
-	// the assumption that pow is not zero.
+	// the assumption that vm.max2 is not zero.
 	assert(BC_NUM_NONZERO(&vm.max));
 
-	bc_num_mul(&vm.max, &vm.max, &pow, 0);
-
 	// Because this is true, we can just use BC_ERR_SIGNAL_ONLY() below when
-	// dividing by pow.
-	assert(BC_NUM_NONZERO(&pow));
+	// dividing by vm.max2.
+	assert(BC_NUM_NONZERO(&vm.max2));
 
 	bc_rand_getRands(rng, &s1, &s2, &i1, &i2);
 
@@ -2316,7 +2308,7 @@ void bc_num_createFromRNG(BcNum *restrict n, BcRNG *rng) {
 
 	bc_num_add(&conv, &temp1, &temp2, 0);
 
-	bc_num_div(&temp2, &pow, &temp3, BC_RAND_STATE_BITS);
+	bc_num_div(&temp2, &vm.max2, &temp3, BC_RAND_STATE_BITS);
 
 	bc_num_bigdig2num(&conv, (BcBigDig) i2);
 

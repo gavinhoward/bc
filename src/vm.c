@@ -890,8 +890,12 @@ void bc_vm_init(void) {
 
 	memcpy(vm.max_num, bc_num_bigdigMax,
 	       bc_num_bigdigMax_size * sizeof(BcDig));
+	memcpy(vm.max2_num, bc_num_bigdigMax2,
+	       bc_num_bigdigMax2_size * sizeof(BcDig));
 	bc_num_setup(&vm.max, vm.max_num, BC_NUM_BIGDIG_LOG10);
+	bc_num_setup(&vm.max2, vm.max2_num, BC_NUM_BIGDIG_LOG10);
 	vm.max.len = bc_num_bigdigMax_size;
+	vm.max2.len = bc_num_bigdigMax2_size;
 
 	bc_vec_init(&vm.temps, sizeof(BcNum), NULL);
 

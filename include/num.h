@@ -231,6 +231,8 @@ extern const char bc_num_hex_digits[];
 extern const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1];
 
 extern const BcDig bc_num_bigdigMax[];
+extern const BcDig bc_num_bigdigMax2[];
 extern const size_t bc_num_bigdigMax_size;
+extern const size_t bc_num_bigdigMax2_size;
 
 #endif // BC_NUM_H

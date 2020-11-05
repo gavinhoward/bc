@@ -395,7 +395,9 @@ typedef struct BcVm {
 #endif // BC_ENABLE_LIBRARY
 
 	BcNum max;
+	BcNum max2;
 	BcDig max_num[BC_NUM_BIGDIG_LOG10];
+	BcDig max2_num[BC_NUM_BIGDIG_LOG10];
 
 #if !BC_ENABLE_LIBRARY
 	BcFile fout;
