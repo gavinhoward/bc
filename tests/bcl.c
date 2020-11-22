@@ -44,11 +44,31 @@ void err(BclError e) {
 int main(void) {
 
 	BclError e;
+	BclContext ctxt;
 
 	e = bcl_init();
 	err(e);
 
-	bcl_init();
+	e = bcl_init();
+	err(e);
+
+	ctxt = bcl_ctxt_create();
+
+	bcl_pushContext(ctxt);
+
+	ctxt = bcl_ctxt_create();
+
+	bcl_pushContext(ctxt);
+
+	bcl_popContext();
+
+	bcl_ctxt_free(ctxt);
+
+	ctxt = bcl_context();
+
+	bcl_popContext();
+
+	bcl_ctxt_free(ctxt);
 
 	bcl_free();
 
