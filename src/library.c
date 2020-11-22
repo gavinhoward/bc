@@ -200,9 +200,11 @@ err:
 }
 
 void bcl_ctxt_free(BclContext ctxt) {
+	BC_SIG_LOCK;
 	bc_vec_free(&ctxt->free_nums);
 	bc_vec_free(&ctxt->nums);
 	free(ctxt);
+	BC_SIG_UNLOCK;
 }
 
 void bcl_ctxt_freeNums(BclContext ctxt) {
