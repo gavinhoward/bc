@@ -65,6 +65,13 @@
 		vm.running = 0;             \
 	} while (0)
 
+#define BC_FUNC_HEADER_INIT(l)      \
+	do {                            \
+		BC_SETJMP_LOCKED(l);        \
+		vm.err = BCL_ERROR_SUCCESS; \
+		vm.running = 0;             \
+	} while (0)
+
 #define BC_FUNC_FOOTER_NO_ERR \
 	do {                      \
 		vm.running = 0;       \

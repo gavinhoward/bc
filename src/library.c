@@ -67,19 +67,23 @@ BclError bcl_init(void) {
 
 	if (vm.refs > 1) return e;
 
-	BC_FUNC_HEADER_LOCK(err);
-
 	vm.ctxts.v = NULL;
 	vm.jmp_bufs.v = NULL;
 	vm.out.v = NULL;
 
 	vm.abrt = false;
 
+	BC_SIG_LOCK;
+
+	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
+
+	BC_FUNC_HEADER_INIT(err);
+
 	bc_vm_init();
 
 	bc_vec_init(&vm.ctxts, sizeof(BclContext), NULL);
-	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
 	bc_vec_init(&vm.out, sizeof(uchar), NULL);
+
 	srand((unsigned int) time(NULL));
 	bc_rand_init(&vm.rng);
 

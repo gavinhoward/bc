@@ -86,6 +86,7 @@ BC_NORETURN void bc_vm_jmp(void) {
 	assert(vm.jmp_bufs.len - (size_t) vm.sig_pop);
 #endif // NDEBUG
 
+	if (vm.jmp_bufs.len == 0) abort();
 	if (vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);
 	else vm.sig_pop = 1;
 
