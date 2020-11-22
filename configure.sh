@@ -578,6 +578,8 @@ link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
+tests="test_bc timeconst test_dc"
+
 bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 \$(BC_EXEC)"
 bc_time_test="@tests/all.sh bc $extra_math 1 $generate_tests 1 \$(BC_EXEC)"
 
@@ -667,6 +669,7 @@ else
 		install_man_prereqs=" install_bcl_manpage"
 		uninstall_prereqs=" uninstall_library uninstall_bcl_header"
 		uninstall_man_prereqs=" uninstall_bcl_manpage"
+		tests="test_library"
 	fi
 
 fi
@@ -1057,6 +1060,7 @@ contents=$(replace "$contents" "ALL_PREREQ" "$ALL_PREREQ")
 contents=$(replace "$contents" "EXECUTABLES" "$executables")
 contents=$(replace "$contents" "MAIN_EXEC" "$main_exec")
 contents=$(replace "$contents" "EXEC" "$executable")
+contents=$(replace "$contents" "TESTS" "$tests")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
 contents=$(replace "$contents" "BC_TIME_TEST" "$bc_time_test")

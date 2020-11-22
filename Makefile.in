@@ -85,6 +85,9 @@ DC_EXEC = $(BIN)/$(EXEC_PREFIX)$(DC)
 LIB = libbcl
 LIB_NAME = $(LIB).a
 LIBBC = $(BIN)/$(LIB_NAME)
+BCL = bcl
+BCL_TEST = $(BIN)/$(BCL)
+BCL_TEST_C = tests/$(BCL).c
 
 MANUALS = manuals
 BC_MANPAGE_NAME = $(EXEC_PREFIX)$(BC)$(EXEC_SUFFIX).1
@@ -221,7 +224,7 @@ help:
 
 check: test
 
-test: test_bc timeconst test_dc
+test: %%TESTS%%
 
 test_bc:
 	%%BC_TEST%%
@@ -239,6 +242,12 @@ time_test_dc:
 
 timeconst:
 	%%TIMECONST%%
+
+library_test: library
+	$(CC) $(CFLAGS) $(BCL_TEST_C) $(LIBBC) -o $(BCL_TEST)
+
+test_library: library_test
+	$(BCL_TEST)
 
 valgrind: valgrind_bc valgrind_dc
 
