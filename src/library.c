@@ -410,7 +410,7 @@ bool bcl_num_neg(BclNumber n) {
 
 	assert(num != NULL && num->num != NULL);
 
-	return num->neg;
+	return BC_NUM_NEG(num) != 0;
 }
 
 void bcl_num_setNeg(BclNumber n, bool neg) {
@@ -426,7 +426,7 @@ void bcl_num_setNeg(BclNumber n, bool neg) {
 
 	assert(num != NULL && num->num != NULL);
 
-	num->neg = neg;
+	BC_NUM_NEG_VAL(num, neg);
 }
 
 size_t bcl_num_scale(BclNumber n) {
@@ -1090,7 +1090,7 @@ BclNumber bcl_num_parse(const char *restrict val) {
 
 	bc_num_parse(&n, val, ctxt->ibase);
 
-	n.neg = neg;
+	BC_NUM_NEG_VAL_NP(n, neg);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1132,7 +1132,7 @@ BclError bcl_num_parse_err(BclNumber n, const char *restrict val) {
 
 	bc_num_parse(nptr, val, ctxt->ibase);
 
-	nptr->neg = neg;
+	BC_NUM_NEG_VAL(nptr, neg);
 
 err:
 	BC_SIG_MAYLOCK;

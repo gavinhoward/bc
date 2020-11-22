@@ -158,6 +158,7 @@ struct BcRNG;
 #define BC_NUM_NEG_TGL(n) ((n)->rdx ^= ((BcBigDig) 1))
 #define BC_NUM_NEG_TGL_NP(n) ((n).rdx ^= ((BcBigDig) 1))
 #define BC_NUM_NEG_VAL(n, v) (((n)->rdx & ~((BcBigDig) 1)) | (v))
+#define BC_NUM_NEG_VAL_NP(n, v) (((n).rdx & ~((BcBigDig) 1)) | (v))
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
