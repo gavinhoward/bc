@@ -48,6 +48,10 @@ int main(void) {
 	e = bcl_init();
 	err(e);
 
+	bcl_init();
+
+	bcl_free();
+
 	bcl_free();
 
 	return 0;

@@ -125,11 +125,11 @@ BclContext bcl_context(void) {
 
 void bcl_free(void) {
 
-	BC_SIG_LOCK;
-
 	vm.refs -= 1;
 
 	if (vm.refs) return;
+
+	BC_SIG_LOCK;
 
 #ifndef NDEBUG
 	bc_rand_free(&vm.rng);
