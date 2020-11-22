@@ -34,6 +34,7 @@
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <bcl.h>
 
@@ -45,12 +46,15 @@ int main(void) {
 
 	BclError e;
 	BclContext ctxt;
+	size_t scale;
 
 	e = bcl_init();
 	err(e);
 
 	e = bcl_init();
 	err(e);
+
+	bcl_setAbortOnFatalError(true);
 
 	ctxt = bcl_ctxt_create();
 
@@ -59,6 +63,16 @@ int main(void) {
 	ctxt = bcl_ctxt_create();
 
 	bcl_pushContext(ctxt);
+
+	scale = 10;
+	bcl_ctxt_setScale(ctxt, scale);
+
+	scale = bcl_ctxt_scale(ctxt);
+	if (scale != 10) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	bcl_ctxt_freeNums(ctxt);
+
+	bcl_gc();
 
 	bcl_popContext();
 
