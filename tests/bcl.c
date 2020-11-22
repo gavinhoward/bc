@@ -48,5 +48,7 @@ int main(void) {
 	e = bcl_init();
 	err(e);
 
+	bcl_free();
+
 	return 0;
 }

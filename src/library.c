@@ -134,7 +134,6 @@ void bcl_free(void) {
 #ifndef NDEBUG
 	bc_rand_free(&vm.rng);
 	bc_vec_free(&vm.out);
-	bc_vec_free(&vm.jmp_bufs);
 
 	{
 		size_t i;
@@ -150,9 +149,11 @@ void bcl_free(void) {
 
 	bc_vm_shutdown();
 
-	memset(&vm, 0, sizeof(BcVm));
+	bc_vec_free(&vm.jmp_bufs);
 
 	BC_SIG_UNLOCK;
+
+	memset(&vm, 0, sizeof(BcVm));
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
 }
