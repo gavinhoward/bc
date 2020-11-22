@@ -47,7 +47,6 @@ static const char* const bc_gen_header =
 	"// Licensed under the 2-clause BSD license.\n"
 	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n\n";
 
-/*static const char* const bc_gen_include = "#include \"%s\"\n\n";*/
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
 static const char* const bc_gen_label_extern = "extern const char *%s;\n\n";
 static const char* const bc_gen_ifdef = "#if %s\n";
