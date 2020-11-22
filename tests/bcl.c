@@ -47,6 +47,7 @@ int main(void) {
 	BclError e;
 	BclContext ctxt;
 	size_t scale;
+	BclNumber n, n2;
 
 	e = bcl_init();
 	err(e);
@@ -69,6 +70,13 @@ int main(void) {
 
 	scale = bcl_ctxt_scale(ctxt);
 	if (scale != 10) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	n = bcl_num_create();
+
+	n2 = bcl_num_dup(n);
+	bcl_num_copy(n, n2);
+
+	bcl_num_free(n);
 
 	bcl_ctxt_freeNums(ctxt);
 
