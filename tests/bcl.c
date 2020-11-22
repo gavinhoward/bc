@@ -55,7 +55,11 @@ int main(void) {
 	e = bcl_init();
 	err(e);
 
+	if (bcl_abortOnFatalError()) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
 	bcl_setAbortOnFatalError(true);
+
+	if (!bcl_abortOnFatalError()) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
 	ctxt = bcl_ctxt_create();
 
@@ -66,10 +70,23 @@ int main(void) {
 	bcl_pushContext(ctxt);
 
 	scale = 10;
+
 	bcl_ctxt_setScale(ctxt, scale);
 
 	scale = bcl_ctxt_scale(ctxt);
 	if (scale != 10) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	scale = 16;
+
+	bcl_ctxt_setIbase(ctxt, scale);
+
+	scale = bcl_ctxt_ibase(ctxt);
+	if (scale != 16) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	bcl_ctxt_setObase(ctxt, scale);
+
+	scale = bcl_ctxt_obase(ctxt);
+	if (scale != 16) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
 	n = bcl_num_create();
 
