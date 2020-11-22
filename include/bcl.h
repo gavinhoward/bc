@@ -99,9 +99,9 @@ typedef enum BclError {
 
 typedef size_t BclNumber;
 
-struct BcCtxt;
+struct BclCtxt;
 
-typedef struct BcCtxt* BclContext;
+typedef struct BclCtxt* BclContext;
 
 void bcl_handleSignal(void);
 

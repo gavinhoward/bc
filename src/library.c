@@ -176,7 +176,7 @@ BclContext bcl_ctxt_create(void) {
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	ctxt = bc_vm_malloc(sizeof(BclContext));
+	ctxt = bc_vm_malloc(sizeof(BclCtxt));
 
 	bc_vec_init(&ctxt->nums, sizeof(BcNum), bcl_num_destruct);
 	bc_vec_init(&ctxt->free_nums, sizeof(BclNumber), NULL);

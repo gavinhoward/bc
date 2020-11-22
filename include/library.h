@@ -146,7 +146,7 @@
 
 typedef size_t (*BcReqOp)(const BcNum*, const BcNum*, size_t);
 
-typedef struct BcCtxt {
+typedef struct BclCtxt {
 
 	size_t scale;
 	size_t ibase;
@@ -155,6 +155,6 @@ typedef struct BcCtxt {
 	BcVec nums;
 	BcVec free_nums;
 
-} BcCtxt;
+} BclCtxt;
 
 #endif // LIBBC_PRIVATE_H
