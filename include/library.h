@@ -40,12 +40,12 @@
 
 #include <num.h>
 
-#define BC_FUNC_HEADER_LOCK(l)      \
-	do {                            \
-		BC_SIG_LOCK;                \
-		BC_SETJMP_LOCKED(l);        \
-		vm.err = BCL_ERROR_SUCCESS; \
-		vm.running = 0;             \
+#define BC_FUNC_HEADER_LOCK(l)   \
+	do {                         \
+		BC_SIG_LOCK;             \
+		BC_SETJMP_LOCKED(l);     \
+		vm.err = BCL_ERROR_NONE; \
+		vm.running = 0;          \
 	} while (0)
 
 #define BC_FUNC_FOOTER_UNLOCK(e) \
@@ -58,18 +58,18 @@
 		vm.sig_lock = 0;         \
 	} while (0)
 
-#define BC_FUNC_HEADER(l)           \
-	do {                            \
-		BC_SETJMP(l);               \
-		vm.err = BCL_ERROR_SUCCESS; \
-		vm.running = 0;             \
+#define BC_FUNC_HEADER(l)        \
+	do {                         \
+		BC_SETJMP(l);            \
+		vm.err = BCL_ERROR_NONE; \
+		vm.running = 0;          \
 	} while (0)
 
-#define BC_FUNC_HEADER_INIT(l)      \
-	do {                            \
-		BC_SETJMP_LOCKED(l);        \
-		vm.err = BCL_ERROR_SUCCESS; \
-		vm.running = 0;             \
+#define BC_FUNC_HEADER_INIT(l)   \
+	do {                         \
+		BC_SETJMP_LOCKED(l);     \
+		vm.err = BCL_ERROR_NONE; \
+		vm.running = 0;          \
 	} while (0)
 
 #define BC_FUNC_FOOTER_NO_ERR \
@@ -94,20 +94,22 @@
 		BC_SETJMP_LOCKED(l);  \
 	} while (0)
 
-#define BC_MAYBE_SETUP(c, e, n, i)                  \
+#define BC_MAYBE_SETUP(c, e, n, idx)                \
 	do {                                            \
-		if (BC_ERR((e) != BCL_ERROR_SUCCESS)) {     \
+		if (BC_ERR((e) != BCL_ERROR_NONE)) {        \
 			if ((n).num != NULL) bc_num_free(&(n)); \
-			i = 0 - (BclNumber) (e);                \
+			idx.i = 0 - (size_t) (e);               \
 		}                                           \
-		else i = bcl_num_insert(c, &(n));           \
+		else idx = bcl_num_insert(c, &(n));         \
 	} while (0)
 
 #define BC_CHECK_CTXT(c)                                      \
 	do {                                                      \
 		c = bcl_context();                                    \
 		if (BC_ERR(c == NULL)) {                              \
-			return 0 - (BclNumber) BCL_ERROR_INVALID_CONTEXT; \
+			BclNumber n_num;                                  \
+			n_num.i = 0 - (size_t) BCL_ERROR_INVALID_CONTEXT; \
+			return n_num;                                     \
 		}                                                     \
 	} while (0)
 
@@ -125,24 +127,28 @@
 		assert(c != NULL);      \
 	} while (0)
 
-#define BC_CHECK_NUM(c, n)                                      \
-	do {                                                        \
-		if (BC_ERR((n) >= (c)->nums.len)) {                     \
-			if (n > 0 - (BclNumber) BCL_ERROR_NELEMS) return n; \
-			else return 0 - (BclNumber) BCL_ERROR_INVALID_NUM;  \
-		}                                                       \
+#define BC_CHECK_NUM(c, n)                                         \
+	do {                                                           \
+		if (BC_ERR((n).i >= (c)->nums.len)) {                      \
+			if ((n).i > 0 - (size_t) BCL_ERROR_NELEMS) return (n); \
+			else {                                                 \
+				BclNumber n_num;                                   \
+				n_num.i = 0 - (size_t) BCL_ERROR_INVALID_NUM;      \
+				return n_num;                                      \
+			}                                                      \
+		}                                                          \
 	} while (0)
 
-#define BC_CHECK_NUM_ERR(c, n)                                  \
-	do {                                                        \
-		if (BC_ERR((n) >= (c)->nums.len)) {                     \
-			if (n > 0 - (BclNumber) BCL_ERROR_NELEMS)           \
-				return (BclError) (0 - n);                      \
-			else return BCL_ERROR_INVALID_NUM;                  \
-		}                                                       \
+#define BC_CHECK_NUM_ERR(c, n)                         \
+	do {                                               \
+		if (BC_ERR((n).i >= (c)->nums.len)) {          \
+			if ((n).i > 0 - (size_t) BCL_ERROR_NELEMS) \
+				return (BclError) (0 - (n).i);         \
+			else return BCL_ERROR_INVALID_NUM;         \
+		}                                              \
 	} while (0)
 
-#define BC_NUM(c, i) ((BcNum*) bc_vec_item(&(c)->nums, (i)))
+#define BC_NUM(c, n) ((BcNum*) bc_vec_item(&(c)->nums, (n).i))
 
 typedef size_t (*BcReqOp)(const BcNum*, const BcNum*, size_t);
 

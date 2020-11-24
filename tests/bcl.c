@@ -38,8 +38,8 @@
 
 #include <bcl.h>
 
-void err(BclError e) {
-	if (e != BCL_ERROR_SUCCESS) exit((int) e);
+static void err(BclError e) {
+	if (e != BCL_ERROR_NONE) exit((int) e);
 }
 
 int main(void) {

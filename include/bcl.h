@@ -77,7 +77,7 @@ typedef uint32_t BclRandInt;
 
 typedef enum BclError {
 
-	BCL_ERROR_SUCCESS,
+	BCL_ERROR_NONE,
 
 	BCL_ERROR_INVALID_NUM,
 	BCL_ERROR_INVALID_CONTEXT,
@@ -97,7 +97,11 @@ typedef enum BclError {
 
 } BclError;
 
-typedef size_t BclNumber;
+typedef struct BclNumber {
+
+	size_t i;
+
+} BclNumber;
 
 struct BclCtxt;
 
@@ -128,7 +132,7 @@ void bcl_ctxt_setIbase(BclContext ctxt, size_t ibase);
 size_t bcl_ctxt_obase(BclContext ctxt);
 void bcl_ctxt_setObase(BclContext ctxt, size_t obase);
 
-BclError bcl_num_err(BclNumber n);
+BclError bcl_err(BclNumber n);
 
 BclNumber bcl_num_create(void);
 BclNumber bcl_num_create_req(size_t req);
@@ -142,75 +146,37 @@ size_t bcl_num_scale(BclNumber n);
 BclError bcl_num_setScale(BclNumber n, size_t scale);
 size_t bcl_num_len(BclNumber n);
 
-BclError bcl_num_bigdig(BclNumber n, BclBigDig *result);
-BclNumber bcl_num_bigdig2num(BclBigDig val);
-BclError bcl_num_bigdig2num_err(BclNumber n, BclBigDig val);
+BclError bcl_bigdig(BclNumber n, BclBigDig *result);
+BclNumber bcl_bigdig2num(BclBigDig val);
 
-BclNumber bcl_num_add(BclNumber a, BclNumber b);
-BclError bcl_num_add_err(BclNumber a, BclNumber b, BclNumber c);
+BclNumber bcl_add(BclNumber a, BclNumber b);
+BclNumber bcl_sub(BclNumber a, BclNumber b);
+BclNumber bcl_mul(BclNumber a, BclNumber b);
+BclNumber bcl_div(BclNumber a, BclNumber b);
+BclNumber bcl_mod(BclNumber a, BclNumber b);
+BclNumber bcl_pow(BclNumber a, BclNumber b);
+BclNumber bcl_lshift(BclNumber a, BclNumber b);
+BclNumber bcl_rshift(BclNumber a, BclNumber b);
+BclNumber bcl_sqrt(BclNumber a);
+BclError bcl_divmod(BclNumber a, BclNumber b, BclNumber *c, BclNumber *d);
+BclNumber bcl_modexp(BclNumber a, BclNumber b, BclNumber c);
 
-BclNumber bcl_num_sub(BclNumber a, BclNumber b);
-BclError bcl_num_sub_err(BclNumber a, BclNumber b, BclNumber c);
+ssize_t bcl_cmp(BclNumber a, BclNumber b);
 
-BclNumber bcl_num_mul(BclNumber a, BclNumber b);
-BclError bcl_num_mul_err(BclNumber a, BclNumber b, BclNumber c);
+void bcl_zero(BclNumber n);
+void bcl_one(BclNumber n);
 
-BclNumber bcl_num_div(BclNumber a, BclNumber b);
-BclError bcl_num_div_err(BclNumber a, BclNumber b, BclNumber c);
+BclNumber bcl_parse(const char *restrict val);
+char* bcl_string(BclNumber n);
 
-BclNumber bcl_num_mod(BclNumber a, BclNumber b);
-BclError bcl_num_mod_err(BclNumber a, BclNumber b, BclNumber c);
-
-BclNumber bcl_num_pow(BclNumber a, BclNumber b);
-BclError bcl_num_pow_err(BclNumber a, BclNumber b, BclNumber c);
-
-BclNumber bcl_num_lshift(BclNumber a, BclNumber b);
-BclError bcl_num_lshift_err(BclNumber a, BclNumber b, BclNumber c);
-
-BclNumber bcl_num_rshift(BclNumber a, BclNumber b);
-BclError bcl_num_rshift_err(BclNumber a, BclNumber b, BclNumber c);
-
-BclNumber bcl_num_sqrt(BclNumber a);
-BclError bcl_num_sqrt_err(BclNumber a, BclNumber b);
-
-BclError bcl_num_divmod(BclNumber a, BclNumber b, BclNumber *c, BclNumber *d);
-BclError bcl_num_divmod_err(BclNumber a, BclNumber b, BclNumber c, BclNumber d);
-
-BclNumber bcl_num_modexp(BclNumber a, BclNumber b, BclNumber c);
-BclError bcl_num_modexp_err(BclNumber a, BclNumber b, BclNumber c, BclNumber d);
-
-size_t bcl_num_add_req(BclNumber a, BclNumber b);
-size_t bcl_num_mul_req(BclNumber a, BclNumber b);
-size_t bcl_num_div_req(BclNumber a, BclNumber b);
-size_t bcl_num_pow_req(BclNumber a, BclNumber b);
-
-size_t bcl_num_shift_req(BclNumber a, BclNumber b);
-
-ssize_t bcl_num_cmp(BclNumber a, BclNumber b);
-
-void bcl_num_zero(BclNumber n);
-void bcl_num_one(BclNumber n);
-
-BclNumber bcl_num_parse(const char *restrict val);
-BclError bcl_num_parse_err(BclNumber n, const char *restrict val);
-char* bcl_num_string(BclNumber n);
-BclError bcl_num_string_err(BclNumber n, char **str);
-
-BclNumber bcl_num_irand(BclNumber a);
-BclError bcl_num_irand_err(BclNumber a, BclNumber b);
-
-BclNumber bcl_num_frand(size_t places);
-BclError bcl_num_frand_err(size_t places, BclNumber n);
-
-BclNumber bcl_num_ifrand(BclNumber a, size_t places);
-BclError bcl_num_ifrand_err(BclNumber a, size_t places, BclNumber b);
+BclNumber bcl_irand(BclNumber a);
+BclNumber bcl_frand(size_t places);
+BclNumber bcl_ifrand(BclNumber a, size_t places);
 
 BclError bcl_rand_seedWithNum(BclNumber n);
 BclError bcl_rand_seed(unsigned char seed[BC_SEED_SIZE]);
 void bcl_rand_reseed(void);
 BclNumber bcl_rand_seed2num(void);
-BclError bcl_rand_seed2num_err(BclNumber n);
-
 BclRandInt bcl_rand_int(void);
 BclRandInt bcl_rand_bounded(BclRandInt bound);
 

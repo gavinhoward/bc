@@ -34,25 +34,22 @@ bcl - library of arbitrary precision decimal arithmetic
 
 # SYNOPSIS
 
+## Use
+
 *#include <bcl.h>*
 
-**#define BCL_SEED_ULONGS**
+Link with *-lbcl*.
 
-**#define BCL_SEED_SIZE**
+## Signals
 
-**typedef unsigned long BclBigDig;**
-
-**typedef unsigned long BclRandInt;**
-
-**typedef enum BclError BclError;**
-
-**typedef size_t BclNumber;**
-
-**struct BclCtxt;**
-
-**typedef struct BclCtxt\* BclContext;**
+This procedure will allow clients to use signals to interrupt computations
+running in bcl(3).
 
 **void bcl_handleSignal(***void***);**
+
+## Setup
+
+These items allow clients to set up bcl(3).
 
 **BclError bcl_init(***void***);**
 
@@ -64,15 +61,24 @@ bcl - library of arbitrary precision decimal arithmetic
 
 **void bcl_gc(***void***);**
 
+## Contexts
+
+These items will allow clients to handle contexts, which are isolated from each
+other. This allows more than one client to use bcl(3) in the same program.
+
+**struct BclCtxt;**
+
+**typedef struct BclCtxt\* BclContext;**
+
+**BclContext bcl_ctxt_create(***void***);**
+
+**void bcl_ctxt_free(BclContext** *ctxt***);**
+
 **BclError bcl_pushContext(BclContext** *ctxt***);**
 
 **void bcl_popContext(***void***);**
 
 **BclContext bcl_context(***void***);**
-
-**BclContext bcl_ctxt_create(***void***);**
-
-**void bcl_ctxt_free(BclContext** *ctxt***);**
 
 **void bcl_ctxt_freeNums(BclContext** *ctxt***);**
 
@@ -88,11 +94,22 @@ bcl - library of arbitrary precision decimal arithmetic
 
 **void bcl_ctxt_setObase(BclContext** *ctxt***, size_t** *obase***);**
 
-**BclError bcl_num_err(BclNumber** *n***);**
+## Errors
+
+These items allow clients to handle errors.
+
+**typedef enum BclError BclError;**
+
+**BclError bcl_err(BclNumber** *n***);**
+
+## Numbers
+
+These items allow clients to manipulate and query the arbitrary-precision
+numbers managed by bcl(3).
+
+**typedef struct { size_t i; } BclNumber;**
 
 **BclNumber bcl_num_create(***void***);**
-
-**BclNumber bcl_num_create_req(size_t** *req***);**
 
 **BclError bcl_num_copy(BclNumber** *d***, BclNumber** *s***);**
 
@@ -110,91 +127,72 @@ bcl - library of arbitrary precision decimal arithmetic
 
 **size_t bcl_num_len(BclNumber** *n***);**
 
-**BclError bcl_num_bigdig(BclNumber** *n***, BclBigDig \****result***);**
+## Conversion
 
-**BclNumber bcl_num_bigdig2num(BclBigDig** *val***);**
+These items allow clients to convert numbers into and from strings and integers.
 
-**BclError bcl_num_bigdig2num_err(BclNumber** *n***, BclBigDig** *val***);**
+**BclNumber bcl_parse(const char \*restrict** *val***);**
 
-**BclNumber bcl_num_add(BclNumber** *a***, BclNumber** *b***);**
+**char\* bcl_string(BclNumber** *n***);**
 
-**BclError bcl_num_add_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**BclError bcl_bigdig(BclNumber** *n***, BclBigDig \****result***);**
 
-**BclNumber bcl_num_sub(BclNumber** *a***, BclNumber** *b***);**
+**BclNumber bcl_bigdig2num(BclBigDig** *val***);**
 
-**BclError bcl_num_sub_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+## Math
 
-**BclNumber bcl_num_mul(BclNumber** *a***, BclNumber** *b***);**
+These items allow clients to run math on numbers.
 
-**BclError bcl_num_mul_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**BclNumber bcl_add(BclNumber** *a***, BclNumber** *b***);**
 
-**BclNumber bcl_num_div(BclNumber** *a***, BclNumber** *b***);**
+**BclNumber bcl_sub(BclNumber** *a***, BclNumber** *b***);**
 
-**BclError bcl_num_div_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**BclNumber bcl_mul(BclNumber** *a***, BclNumber** *b***);**
 
-**BclNumber bcl_num_mod(BclNumber** *a***, BclNumber** *b***);**
+**BclNumber bcl_div(BclNumber** *a***, BclNumber** *b***);**
 
-**BclError bcl_num_mod_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**BclNumber bcl_mod(BclNumber** *a***, BclNumber** *b***);**
 
-**BclNumber bcl_num_pow(BclNumber** *a***, BclNumber** *b***);**
+**BclNumber bcl_pow(BclNumber** *a***, BclNumber** *b***);**
 
-**BclError bcl_num_pow_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**BclNumber bcl_lshift(BclNumber** *a***, BclNumber** *b***);**
 
-**BclNumber bcl_num_lshift(BclNumber** *a***, BclNumber** *b***);**
+**BclNumber bcl_rshift(BclNumber** *a***, BclNumber** *b***);**
 
-**BclError bcl_num_lshift_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**BclNumber bcl_sqrt(BclNumber** *a***);**
 
-**BclNumber bcl_num_rshift(BclNumber** *a***, BclNumber** *b***);**
+**BclError bcl_divmod(BclNumber** *a***, BclNumber** *b***, BclNumber \****c***, BclNumber \****d***);**
 
-**BclError bcl_num_rshift_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**BclNumber bcl_modexp(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
 
-**BclNumber bcl_num_sqrt(BclNumber** *a***);**
+## Miscellaneous
 
-**BclError bcl_num_sqrt_err(BclNumber** *a***, BclNumber** *b***);**
+These items are miscellaneous.
 
-**BclError bcl_num_divmod(BclNumber** *a***, BclNumber** *b***, BclNumber \****c***, BclNumber \****d***);**
+**void bcl_zero(BclNumber** *n***);**
 
-**BclError bcl_num_divmod_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***, BclNumber** *d***);**
+**void bcl_one(BclNumber** *n***);**
 
-**BclNumber bcl_num_modexp(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***);**
+**ssize_t bcl_cmp(BclNumber** *a***, BclNumber** *b***);**
 
-**BclError bcl_num_modexp_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***, BclNumber** *d***);**
+## Pseudo-Random Number Generator
 
-**size_t bcl_num_add_req(BclNumber** *a***, BclNumber** *b***);**
+These items allow clients to manipulate the seeded pseudo-random number
+generator in bcl(3).
 
-**size_t bcl_num_mul_req(BclNumber** *a***, BclNumber** *b***);**
+**#define BCL_SEED_ULONGS**
 
-**size_t bcl_num_div_req(BclNumber** *a***, BclNumber** *b***);**
+**#define BCL_SEED_SIZE**
 
-**size_t bcl_num_pow_req(BclNumber** *a***, BclNumber** *b***);**
+**typedef unsigned long BclBigDig;**
 
-**size_t bcl_num_shift_req(BclNumber** *a***, BclNumber** *b***);**
+**typedef unsigned long BclRandInt;**
 
-**ssize_t bcl_num_cmp(BclNumber** *a***, BclNumber** *b***);**
+**BclNumber bcl_irand(BclNumber** *a***);**
 
-**void bcl_num_zero(BclNumber** *n***);**
+**BclNumber bcl_frand(size_t** *places***);**
 
-**void bcl_num_one(BclNumber** *n***);**
-
-**BclNumber bcl_num_parse(const char \*restrict** *val***);**
-
-**BclError bcl_num_parse_err(BclNumber** *n***, const char \*restrict** *val***);**
-
-**char\* bcl_num_string(BclNumber** *n***);**
-
-**BclError bcl_num_string_err(BclNumber** *n***, char \*\****str***);**
-
-**BclNumber bcl_num_irand(BclNumber** *a***);**
-
-**BclError bcl_num_irand_err(BclNumber** *a***, BclNumber** *b***);**
-
-**BclNumber bcl_num_frand(size_t** *places***);**
-
-**BclError bcl_num_frand_err(size_t** *places***, BclNumber** *n***);**
-
-**BclNumber bcl_num_ifrand(BclNumber** *a***, size_t** *places***);**
-
-**BclError bcl_num_ifrand_err(BclNumber** *a***, size_t** *places***, BclNumber** *b***);**
+**BclNumber bcl_ifrand(BclNumber** *a***, size_t** *places***);**
 
 **BclError bcl_rand_seedWithNum(BclNumber** *n***);**
 
@@ -204,13 +202,9 @@ bcl - library of arbitrary precision decimal arithmetic
 
 **BclNumber bcl_rand_seed2num(***void***);**
 
-**BclError bcl_rand_seed2num_err(BclNumber** *n***);**
-
 **BclRandInt bcl_rand_int(***void***);**
 
 **BclRandInt bcl_rand_bounded(BclRandInt** *bound***);**
-
-Link with *-lbcl*.
 
 # DESCRIPTION
 
@@ -223,33 +217,74 @@ properly. (See the **SIGNAL HANDLING** section.)
 All of the items in its interface are described below. See the documentation for
 each function for what each function can return.
 
-**BCL_SEED_ULONGS**
+## Signals
 
-:   The number of **unsigned long**'s in a seed for bcl(3)'s random number
-    generator.
+**void bcl_handleSignal(***void***)**
 
-**BCL_SEED_SIZE**
+:   An async-signal-safe function that can be called from a signal handler. If
+    called from a signal handler on the same thread as any executing bcl(3)
+    functions, it will interrupt the functions and force them to return early.
+    It is undefined behavior if this function is called from a thread that is
+    *not* executing any bcl(3) functions while any bcl(3) functions are
+    executing.
 
-:   The size, in **char**'s, of a seed for bcl(3)'s random number generator.
+    If execution *is* interrupted, **bcl_handleSignal(***void***)** does *not*
+    return to its caller.
 
-**BclBigDig**
+    See the **SIGNAL HANDLING** section.
 
-:   bcl(3)'s overflow type (see the **PERFORMANCE** section).
+## Setup
 
-**BclRandInt**
+**BclError bcl_init(***void***)**
 
-:   An unsigned integer type returned by bcl(3)'s random number generator.
+:   Initializes this library. This function can be called multiple times, but
+    each call must be matched by a call to **bcl_free(***void***)**. This is to
+    make it possible for multiple libraries and applications to initialize
+    bcl(3) without problem.
 
-**BclError**
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
 
-:   An **enum** of possible error codes. See the **ERRORS** section for a
-    complete listing the codes.
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-**BclNumber**
+    This function must be the first one clients call. Calling any other
+    function without calling this one first is undefined behavior.
 
-:   A handle to an arbitrary-precision number. The actual number type is not
-    exposed; the **BclNumber** handle is the only way clients can refer to
-    instances of arbitrary-precision numbers.
+**void bcl_free(***void***)**
+
+:   Decrements bcl(3)'s reference count and frees the data associated with it if
+    the reference count is **0**.
+
+    This function must be the last one clients call. Calling this function
+    before calling any other function is undefined behavior.
+
+**bool bcl_abortOnFatalError(***void***)**
+
+:   Queries and returns the current state of calling **abort()** on fatal
+    errors. If **true** is returned, bcl(3) will cause a **SIGABRT** if a fatal
+    error occurs.
+
+    If activated, clients do not need to check for fatal errors.
+
+**void bcl_setAbortOnFatalError(bool** *abrt***)**
+
+:   Sets the state of calling **abort()** on fatal errors. If *abrt* is
+    **false**, bcl(3) will not cause a **SIGABRT** on fatal errors after the
+    call. If *abrt* is **true**, bcl(3) will cause a **SIGABRT** on fatal errors
+    after the call.
+
+    If activated, clients do not need to check for fatal errors.
+
+**void bcl_gc(***void***)**
+
+:   Garbage collects cached instances of arbitrary-precision numbers. This only
+    frees the memory of numbers that are *not* in use, so it is safe to call at
+    any time.
+
+## Contexts
+
+All procedures that take a **BclContext** parameter a require a valid context as
+an argument.
 
 **struct BclCtxt**
 
@@ -282,72 +317,25 @@ each function for what each function can return.
 
     Numbers created in one context are not valid in another context. It is
     undefined behavior to use a number created in a different context. Contexts
-    are meant to separate the numbers used by different clients in the same
+    are meant to isolate the numbers used by different clients in the same
     application.
 
-**void bcl_handleSignal(***void***)**
+**BclContext bcl_ctxt_create(***void***)**
 
-:   An async-signal-safe function that can be called from a signal handler. If
-    called from a signal handler on the same thread as any executing bcl(3)
-    functions, it will interrupt the functions and force them to return early.
-    It is undefined behavior if this function is called from a thread that is
-    *not* executing any bcl(3) functions while any bcl(3) functions are
-    executing.
+:   Creates a context and returns it. Returns **NULL** if there was an error.
 
-    If execution *is* interrupted, **bcl_handleSignal(***void***)** does *not*
-    return to its caller.
+**void bcl_ctxt_free(BclContext** *ctxt***)**
 
-    See the **SIGNAL HANDLING** section.
-
-**BclError bcl_init(***void***)**
-
-:   Initializes this library. This function can be called multiple times, but
-    each call must be matched by a call to **bcl_free(***void***)**. This is to
-    make it possible for multiple libraries and applications to initialize
-    bcl(3) without problem.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    This function must be the first one clients call. Calling any other
-    function without calling this one first is undefined behavior.
-
-**void bcl_free(***void***)**
-
-:   Decrements bcl(3)'s reference count and frees the data associated with it if
-    the reference count is **0**.
-
-    This function must be the last one clients call. Calling this function
-    before calling any other function is undefined behavior.
-
-**bool bcl_abortOnFatalError(***void***)**
-
-:   Queries and returns the current state of calling **abort()** on fatal
-    errors. If **true** is returned, bcl(3) will cause a **SIGABRT** if a fatal
-    error occurs.
-
-**void bcl_setAbortOnFatalError(bool** *abrt***)**
-
-:   Sets the state of calling **abort()** on fatal errors. If *abrt* is
-    **false**, bcl(3) will not cause a **SIGABRT** on fatal errors after the
-    call. If *abrt* is **true**, bcl(3) will cause a **SIGABRT** on fatal errors
-    after the call.
-
-**void bcl_gc(***void***)**
-
-:   Garbage collects cached instances of arbitrary-precision numbers. This only
-    frees the memory of numbers that are *not* in use, so it is safe to call at
-    any time.
+:   Frees *ctxt*, after which it is no longer valid. It is undefined behavior to
+    attempt to use an invalid context.
 
 **BclError bcl_pushContext(BclContext** *ctxt***)**
 
 :   Pushes *ctxt* onto bcl(3)'s stack of contexts. *ctxt* must have been created
     with **bcl_ctxt_create(***void***)**.
 
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
 
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
@@ -361,43 +349,24 @@ each function for what each function can return.
 
 :   Returns the current context, or **NULL** if no context exists.
 
-**BclContext bcl_ctxt_create(***void***)**
-
-:   Creates a context and returns it. Returns **NULL** if there was an error.
-
-**void bcl_ctxt_free(BclContext** *ctxt***)**
-
-:   Frees *ctxt*, after which it is no longer valid. It is undefined behavior to
-    attempt to use an invalid context.
-
-    *ctxt* must be valid.
-
 **void bcl_ctxt_freeNums(BclContext** *ctxt***)**
 
 :   Frees all numbers in use that are associated with *ctxt*. It is undefined
     behavior to attempt to use a number associated with *ctxt* after calling
-    this function unless such numbers have been created with
-    **bcl_num_create(***void***)** and/or **bcl_num_create_req(size_t)**.
-
-    *ctxt* must be valid.
+    this procedure unless such numbers have been created with
+    **bcl_num_create(***void***)** after calling this procedure.
 
 **size_t bcl_ctxt_scale(BclContext** *ctxt***)**
 
 :   Returns the **scale** for given context.
 
-    *ctxt* must be valid.
-
 **void bcl_ctxt_setScale(BclContext** *ctxt***, size_t** *scale***)**
 
 :   Sets the **scale** for the given context to the argument *scale*.
 
-    *ctxt* must be valid.
-
 **size_t bcl_ctxt_ibase(BclContext** *ctxt***)**
 
 :   Returns the **ibase** for the given context.
-
-    *ctxt* must be valid.
 
 **void bcl_ctxt_setIbase(BclContext** *ctxt***, size_t** *ibase***)**
 
@@ -405,98 +374,84 @@ each function for what each function can return.
     argument *ibase* is invalid, it clamped, so an *ibase* of **0** or **1** is
     clamped to **2**, and any values above **36** are clamped to **36**.
 
-    *ctxt* must be valid.
-
 **size_t bcl_ctxt_obase(BclContext** *ctxt***)**
 
 :   Returns the **obase** for the given context.
-
-    *ctxt* must be valid.
 
 **void bcl_ctxt_setObase(BclContext** *ctxt***, size_t** *obase***)**
 
 :   Sets the **obase** for the given context to the argument *obase*.
 
-    *ctxt* must be valid.
+## Errors
 
-**BclError bcl_num_err(BclNumber** *n***)**
+**BclError**
+
+:   An **enum** of possible error codes. See the **ERRORS** section for a
+    complete listing the codes.
+
+**BclError bcl_err(BclNumber** *n***)**
 
 :   Checks for errors in a **BclNumber**. All functions that can return a
     **BclNumber** can encode an error in the number, and this function will
     return the error, if any. If there was no error, it will return
-    **BCL_ERROR_SUCCESS**.
+    **BCL_ERROR_NONE**.
 
     There must be a valid current context.
+
+## Numbers
+
+All procedures in this section require a valid current context.
+
+**BclNumber**
+
+:   A handle to an arbitrary-precision number. The actual number type is not
+    exposed; the **BclNumber** handle is the only way clients can refer to
+    instances of arbitrary-precision numbers.
 
 **BclNumber bcl_num_create(***void***)**
 
 :   Creates and returns a **BclNumber**.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
 	* **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a current context.
-
-**BclNumber bcl_num_create_req(size_t** *req***)**
-
-:   Creates and returns a **BclNumber** with a capacity of *req*. This is best
-    used in conjunction with the **bcl_num\_\*\_req()** functions.
-
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
-
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
 
 **BclError bcl_num_copy(BclNumber** *d***, BclNumber** *s***)**
 
 :   Copies *s* into *d*.
 
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
 
     * **BCL_ERROR_INVALID_NUM**
     * **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
 
 **BclNumber bcl_num_dup(BclNumber** *s***)**
 
 :   Creates and returns a new **BclNumber** that is a copy of *s*.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
 **void bcl_num_free(BclNumber** *n***)**
 
 :   Frees *n*. It is undefined behavior to use *n* after calling this function.
-
-    There must be a valid current context.
 
 **bool bcl_num_neg(BclNumber** *n***)**
 
 :   Returns **true** if *n* is negative, **false** otherwise.
 
-    There must be a valid current context.
-
 **void bcl_num_setNeg(BclNumber** *n***, bool** *neg***)**
 
 :   Sets *n*'s sign to *neg*, where **true** is negative, and **false** is
     positive.
-
-    There must be a valid current context.
 
 **size_t bcl_num_scale(BclNumber** *n***)**
 
@@ -505,71 +460,95 @@ each function for what each function can return.
     The *scale* of a number is the number of decimal places it has after the
     radix (decimal point).
 
-    There must be a valid current context.
-
 **BclError bcl_num_setScale(BclNumber** *n***, size_t** *scale***)**
 
 :   Sets the *scale* of *n* to the argument *scale*. If the argument *scale* is
     greater than the *scale* of *n*, *n* is extended. If the argument *scale* is
     less than the *scale* of *n*, *n* is truncated.
 
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
 
     * **BCL_ERROR_INVALID_NUM**
     * **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
 **size_t bcl_num_len(BclNumber** *n***)**
 
 :   Returns the number of *significant decimal digits* in *n*.
 
-    There must be a valid current context.
+## Conversion
 
-**BclError bcl_num_bigdig(BclNumber** *n***, BclBigDig \****result***)**
+All procedures in this section require a valid current context.
+
+All procedures in this section consume the given **BclNumber** arguments that
+are not given to pointer arguments. See the **Consumption and Propagation**
+subsection below.
+
+**BclNumber bcl_parse(const char \*restrict** *val***)**
+
+:   Parses a number string according to the current context's **ibase** and
+    returns the resulting number.
+
+    *val* must be non-**NULL** and a valid string. See
+    **BCL_ERROR_PARSE_INVALID_STR** in the **ERRORS** section for more
+    information.
+
+    bcl(3) will encode an error in the return value, if there was one. The error
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
+
+    * **BCL_ERROR_INVALID_NUM**
+	* **BCL_ERROR_INVALID_CONTEXT**
+    * **BCL_ERROR_PARSE_INVALID_STR**
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
+
+**char\* bcl_string(BclNumber** *n***)**
+
+:   Returns a string representation of *n* according the the current context's
+    **ibase**. The string is dynamically allocated and must be freed by the
+    caller.
+
+    *n* is consumed; it cannot be used after the call. See the
+    **Consumption and Propagation** subsection below.
+
+**BclError bcl_bigdig(BclNumber** *n***, BclBigDig \****result***)**
 
 :   Converts *n* into a **BclBigDig** and returns the result in the space
     pointed to by *result*.
 
     *a* must be smaller than **BC_OVERFLOW_MAX**. See the **LIMITS** section.
 
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
 
     * **BCL_ERROR_INVALID_NUM**
     * **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_MATH_OVERFLOW**
 
-    There must be a valid current context.
+    *n* is consumed; it cannot be used after the call. See the
+    **Consumption and Propagation** subsection below.
 
-**BclNumber bcl_num_bigdig2num(BclBigDig** *val***)**
+**BclNumber bcl_bigdig2num(BclBigDig** *val***)**
 
 :   Creates a **BclNumber** from *val*.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
 	* **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
+## Math
 
-**BclError bcl_num_bigdig2num_err(BclNumber** *n***, BclBigDig** *val***)**
+All procedures in this section require a valid current context.
 
-:   Sets *n* to the same value as *val*.
+All procedures in this section can return the following errors:
 
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+* **BCL_ERROR_INVALID_NUM**
+* **BCL_ERROR_INVALID_CONTEXT**
+* **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_add(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_add(BclNumber** *a***, BclNumber** *b***)**
 
 :   Adds *a* and *b* and returns the result. The *scale* of the result is the
     max of the *scale*s of *a* and *b*.
@@ -580,33 +559,13 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_add_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Adds *a* and *b* and returns the result in *c*. The *scale* of the result is
-    the max of the *scale*s of *a* and *b*.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_sub(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_sub(BclNumber** *a***, BclNumber** *b***)**
 
 :   Subtracts *b* from *a* and returns the result. The *scale* of the result is
     the max of the *scale*s of *a* and *b*.
@@ -617,33 +576,13 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_sub_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Subtracts *b* from *a* and returns the result in *c*. The *scale* of the
-    result is the max of the *scale*s of *a* and *b*.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_mul(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_mul(BclNumber** *a***, BclNumber** *b***)**
 
 :   Multiplies *a* and *b* and returns the result. If *ascale* is the *scale* of
     *a* and *bscale* is the *scale* of *b*, the *scale* of the result is equal
@@ -656,35 +595,13 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_mul_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Multiplies *a* and *b* and returns the result in *c*. If *ascale* is the
-    *scale* of *a* and *bscale* is the *scale* of *b*, the *scale* of the result
-    is equal to **min(ascale+bscale,max(scale,ascale,bscale))**, where **min()**
-    and **max()** return the obvious values.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_div(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_div(BclNumber** *a***, BclNumber** *b***)**
 
 :   Divides *a* by *b* and returns the result. The *scale* of the result is the
     *scale* of the current context.
@@ -697,37 +614,14 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
 	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_div_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Divides *a* by *b* and returns the result in *c*. The *scale* of the result
-    is the *scale* of the current context.
-
-    *b* cannot be **0**.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_mod(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_mod(BclNumber** *a***, BclNumber** *b***)**
 
 :   Divides *a* by *b* to the *scale* of the current context, computes the
     modulus **a-(a/b)\*b**, and returns the modulus.
@@ -740,37 +634,14 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
 	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_mod_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Divides *a* by *b* to the *scale* of the current context, computes the
-    modulus **a-(a/b)\*b**, and returns the modulus in *c*.
-
-    *b* cannot be **0**.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_pow(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_pow(BclNumber** *a***, BclNumber** *b***)**
 
 :   Calculates *a* to the power of *b* to the *scale* of the current context.
     *b* must be an integer, but can be negative. If it is negative, *a* must
@@ -786,7 +657,7 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
@@ -795,35 +666,7 @@ each function for what each function can return.
 	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_pow_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Calculates *a* to the power of *b* to the *scale* of the current context and
-    returns the result in *c*. *b* must be an integer, but can be negative. If
-    it is negative, *a* must be non-zero.
-
-    *b* must be an integer. If *b* is negative, *a* must not be **0**.
-
-    *a* must be smaller than **BC_OVERFLOW_MAX**. See the **LIMITS** section.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-	* **BCL_ERROR_MATH_OVERFLOW**
-	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_lshift(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_lshift(BclNumber** *a***, BclNumber** *b***)**
 
 :   Shifts *a* left (moves the radix right) by *b* places and returns the
     result. This is done in decimal. *b* must be an integer.
@@ -836,37 +679,14 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
 	* **BCL_ERROR_MATH_NON_INTEGER**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_lshift_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Shifts *a* left (moves the radix right) by *b* places and returns the
-    result in *c*. This is done in decimal. *b* must be an integer.
-
-    *b* must be an integer.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_rshift(BclNumber** *a***, BclNumber** *b***)**
+**BclNumber bcl_rshift(BclNumber** *a***, BclNumber** *b***)**
 
 :   Shifts *a* right (moves the radix left) by *b* places and returns the
     result. This is done in decimal. *b* must be an integer.
@@ -879,37 +699,14 @@ each function for what each function can return.
     *a* and *b* can be the same number.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
 	* **BCL_ERROR_MATH_NON_INTEGER**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_rshift_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
-
-:   Shifts *a* right (moves the radix left) by *b* places and returns the
-    result in *c*. This is done in decimal. *b* must be an integer.
-
-    *b* must be an integer.
-
-    *a*, *b*, and *c* are *not* consumed.
-
-    *a*, *b*, and *c* can be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_sqrt(BclNumber** *a***)**
+**BclNumber bcl_sqrt(BclNumber** *a***)**
 
 :   Calculates the square root of *a* and returns the result. The *scale* of the
     result is equal to the **scale** of the current context.
@@ -920,37 +717,14 @@ each function for what each function can return.
     **Consumption and Propagation** subsection below.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
 	* **BCL_ERROR_MATH_NEGATIVE**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_sqrt_err(BclNumber** *a***, BclNumber** *b***)**
-
-:   Calculates the square root of *a* and returns the result in *b*. The *scale*
-    of the result is equal to the **scale** of the current context.
-
-    *a* cannot be negative.
-
-    *a* and *b* are *not* consumed.
-
-    *a* and *b* *cannot* be the same number.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NEGATIVE**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclError bcl_num_divmod(BclNumber** *a***, BclNumber** *b***, BclNumber \****c***, BclNumber \****d***)**
+**BclError bcl_divmod(BclNumber** *a***, BclNumber** *b***, BclNumber \****c***, BclNumber \****d***)**
 
 :   Divides *a* by *b* and returns the quotient in a new number which is put
     into the space pointed to by *c*, and puts the modulus in a new number which
@@ -964,38 +738,15 @@ each function for what each function can return.
     *c* and *d* cannot point to the same place, nor can they point to the space
     occupied by *a* or *b*.
 
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
 	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
-
-**BclError bcl_num_divmod_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***, BclNumber** *d***)**
-
-:   Divides *a* by *b* and returns the quotient in *c*, and the modulus in *d*.
-
-	*b* cannot be **0**.
-
-    *a*, *b*, *c*, and *d* are *not* consumed.
-
-    *c* and *d* cannot be the same number, nor can either of them be the same
-    number as *a* or *b*.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_modexp(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
+**BclNumber bcl_modexp(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***)**
 
 :   Computes a modular exponentiation where *a* is the base, *b* is the
     exponent, and *c* is the modulus, and returns the result. The *scale* of the
@@ -1008,7 +759,7 @@ each function for what each function can return.
     **Consumption and Propagation** subsection below.
 
     bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
     * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
@@ -1017,429 +768,20 @@ each function for what each function can return.
 	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
-    There must be a valid current context.
+## Miscellaneous
 
-**BclError bcl_num_modexp_err(BclNumber** *a***, BclNumber** *b***, BclNumber** *c***, BclNumber** *d***)**
-
-:   Computes a modular exponentiation where *a* is the base, *b* is the
-    exponent, and *c* is the modulus, and returns the result in *d*. The *scale* of the
-    result is equal to the **scale** of the current context.
-
-    *a*, *b*, *c*, and *d* are *not* consumed.
-
-    *a*, *b*, and *c* cannot be the same number as *d*.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NEGATIVE**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-	* **BCL_ERROR_MATH_DIVIDE_BY_ZERO**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**size_t bcl_num_add_req(BclNumber** *a***, BclNumber** *b***)**
-
-:   Calculates and returns the space required for adding *a* and *b* together
-    in the current context, including the current **scale**. This can also be
-    used to calculate the space needed to subtract *b* from *a*.
-
-    *a* and *b* are *not* consumed.
-
-    *a* and *b* must be valid numbers.
-
-    There must be a valid current context.
-
-**size_t bcl_num_mul_req(BclNumber** *a***, BclNumber** *b***)**
-
-:   Calculates and returns the space required for multiplying *a* and *b*
-    together in the current context, including the current **scale**
-
-    *a* and *b* are *not* consumed.
-
-    *a* and *b* must be valid numbers.
-
-    There must be a valid current context.
-
-**size_t bcl_num_div_req(BclNumber** *a***, BclNumber** *b***)**
-
-:   Calculates and returns the space required for dividing *a* by *b* in the
-    current context, including the current **scale**.
-
-    *a* and *b* are *not* consumed.
-
-    *a* and *b* must be valid numbers.
-
-    There must be a valid current context.
-
-**size_t bcl_num_pow_req(BclNumber** *a***, BclNumber** *b***)**
-
-:   Calculates and returns the space required for raising *a* to the power of
-    *b* in the current context, including the current **scale**.
-
-    *a* and *b* are *not* consumed.
-
-    *a* and *b* must be valid numbers.
-
-    There must be a valid current context.
-
-**size_t bcl_num_shift_req(BclNumber** *a***, BclNumber** *b***)**
-
-:   Calculates and returns the space required for shifting *a* *b* places,
-    either left or right, in the current context, including the current
-    **scale**.
-
-    *a* and *b* are *not* consumed.
-
-    *a* and *b* must be valid numbers.
-
-    There must be a valid current context.
-
-**ssize_t bcl_num_cmp(BclNumber** *a***, BclNumber** *b***)**
-
-:   Compares *a* and *b* and returns **0** if *a* and *b* are equal, **<0** if
-    *a* is less than *b*, and **>0** if *a* is greater than *b*.
-
-    *a* and *b* are *not* consumed.
-
-    There must be a valid current context.
-
-**void bcl_num_zero(BclNumber** *n***)**
+**void bcl_zero(BclNumber** *n***)**
 
 :   Sets *n* to **0**.
 
-	*n* is *not* consumed.
-
-    There must be a valid current context.
-
-**void bcl_num_one(BclNumber** *n***)**
+**void bcl_one(BclNumber** *n***)**
 
 :   Sets *n* to **1**.
 
-	*n* is *not* consumed.
+**ssize_t bcl_cmp(BclNumber** *a***, BclNumber** *b***)**
 
-    There must be a valid current context.
-
-**BclNumber bcl_num_parse(const char \*restrict** *val***)**
-
-:   Parses a number string according to the current context's **ibase** and
-    returns the resulting number.
-
-    *val* must be non-**NULL** and a valid string. See
-    **BCL_ERROR_PARSE_INVALID_STR** in the **RETURN VALUE** section for more
-    information.
-
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclError bcl_num_parse_err(BclNumber** *n***, const char \*restrict** *val***)**
-
-:   Parses the number string *val* according to the current context's **ibase**
-    and sets *n* to the resulting number.
-
-    *val* must be non-**NULL** and a valid string. See
-    **BCL_ERROR_PARSE_INVALID_STR** in the **RETURN VALUE** section for more
-    information.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**char\* bcl_num_string(BclNumber** *n***)**
-
-:   Returns a string representation of *n* according the the current context's
-    **ibase**. The string is dynamically allocated and must be freed by the
-    caller.
-
-    *n* is consumed; it cannot be used after the call. See the
-    **Consumption and Propagation** subsection below.
-
-    There must be a valid current context.
-
-**BclError bcl_num_string_err(BclNumber** *n***, char \*\****str***)**
-
-:   Returns, in the space pointed to by *str*, a string representation of *n*
-    according the the current context's **ibase**. The string is dynamically
-    allocated and must be freed by the caller.
-
-    *n* is *not* consumed.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-**BclNumber bcl_num_irand(BclNumber** *a***)**
-
-:   Returns a random number that is not larger than *a* in a new number. If *a*
-    is **0** or **1**, the new number is equal to **0**. The bound is unlimited,
-    so it is not bound to the size of **BclRandInt**. This is done by generating
-    as many random numbers as necessary, multiplying them by certain exponents,
-    and adding them all together.
-
-    *a* must be an integer and non-negative.
-
-    *a* is consumed; it cannot be used after the call. See the
-    **Consumption and Propagation** subsection below.
-
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NEGATIVE**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclError bcl_num_irand_err(BclNumber** *a***, BclNumber** *b***)**
-
-:   Returns a random number that is not larger than *a* in *b*. If *a* is **0**
-    or **1**, *b* is equal to **0**. The bound can be unlimited; it is not bound
-    to the size of **BclRandInt**. This is done by generating as many random
-    numbers as necessary, multiplying them by certain exponents, and adding them
-    all together.
-
-    *a* must be an integer and non-negative.
-
-    *a* and *b* are *not* consumed.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NEGATIVE**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclNumber bcl_num_frand(size_t** *places***)**
-
-:   Returns a random number between **0** (inclusive) and **1** (exclusive) that
-    has *places* decimal digits after the radix (decimal point). There are no
-    limits on *places*.
-
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
-
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclError bcl_num_frand_err(size_t** *places***, BclNumber** *n***)**
-
-:   Returns in *n* a random number between **0** (inclusive) and **1**
-    (exclusive) that has *places* decimal digits after the radix (decimal
-    point). There are no limits on *places*.
-
-    *n* is *not* consumed.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclNumber bcl_num_ifrand(BclNumber** *a***, size_t** *places***)**
-
-:   Returns a random number less than *a* with *places* decimal digits after the
-    radix (decimal point). There are no limits on *a* or *places*.
-
-    *a* must be an integer and non-negative.
-
-    *a* is consumed; it cannot be used after the call. See the
-    **Consumption and Propagation** subsection below.
-
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NEGATIVE**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclError bcl_num_ifrand_err(BclNumber** *a***, size_t** *places***, BclNumber** *b***)**
-
-:   Returns in *b* a random number less than *a* with *places* decimal digits
-    after the radix (decimal point). There are no limits on *a* or *places*.
-
-    *a* must be an integer and non-negative.
-
-    *a* and *b* are *not* consumed.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-	* **BCL_ERROR_MATH_NEGATIVE**
-	* **BCL_ERROR_MATH_NON_INTEGER**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclError bcl_rand_seedWithNum(BclNumber** *n***)**
-
-:   Seeds the PRNG with *n*.
-
-    *n* is *not* consumed.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-
-    There must be a valid current context.
-
-    Note that if **bcl_rand_seed2num(***void***)** or
-    **bcl_rand_seed2num_err(BclNumber)** are called right after this function,
-    they are not guaranteed to return a number equal to *n*.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclError bcl_rand_seed(unsigned char** *seed***[***BC_SEED_SIZE***])**
-
-:   Seeds the PRNG with the bytes in *seed*.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-	* **BCL_ERROR_INVALID_CONTEXT**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**void bcl_rand_reseed(***void***)**
-
-:   Reseeds the PRNG with the default reseeding behavior. First, it attempts to
-    read data from **/dev/urandom** and falls back to **libc**'s **rand()**.
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclNumber bcl_rand_seed2num(***void***)**
-
-:   Returns the current seed of the PRNG as a **BclNumber**.
-
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_num_err(BclNumber)**. Possible errors include:
-
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclError bcl_rand_seed2num_err(BclNumber** *n***)**
-
-:   Returns the current seed of the PRNG in *n*.
-
-    *n* is *not* consumed.
-
-    If there was no error, **BCL_ERROR_SUCCESS** is returned. Otherwise,
-    this function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclRandInt bcl_rand_int(***void***)**
-
-:   Returns a random integer between **0** and **BC_RAND_MAX** (inclusive).
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-**BclRandInt bcl_rand_bounded(BclRandInt** *bound***)**
-
-:   Returns a random integer between **0** and *bound* (exclusive). Bias is
-    removed before returning the integer.
-
-    There must be a valid current context.
-
-    For more information on the pseudo-random number generator used by bcl(3),
-    see the **Pseudo-Random Number Generator** subsection below.
-
-## Consumption and Propagation
-
-Some functions are listed as consuming some or all of their arguments. This
-means that the arguments are freed, regardless of if there were errors or not.
-
-This is to enable compact code like the following:
-
-    BclNumber n = bcl_num_add(bcl_num_mul(a, b), bcl_num_div(c, d));
-
-If arguments to those functions were not consumed, memory would be leaked until
-reclaimed with **bcl_ctxt_freeNums(BclContext)**.
-
-When errors occur, they are propagated through. The result should always be
-checked with **bcl_num_err(BclNumber)**, so the example above should properly
-be:
-
-    BclNumber n = bcl_num_add(bcl_num_mul(a, b), bcl_num_div(c, d));
-    if (bc_num_err(n) != BCL_ERROR_SUCCESS) {
-        // Handle the error.
-    }
+:   Compares *a* and *b* and returns **0** if *a* and *b* are equal, **<0** if
+    *a* is less than *b*, and **>0** if *a* is greater than *b*.
 
 ## Pseudo-Random Number Generator
 
@@ -1460,12 +802,171 @@ If necessary, the PRNG can be reseeded with one of the following functions:
 * **bcl_rand_seed(unsigned char[BC_SEED_SIZE])**
 * **bcl_rand_reseed(***void***)**
 
+The following items allow clients to use the pseudo-random number generator. All
+procedures require a valid current context.
+
+**BCL_SEED_ULONGS**
+
+:   The number of **unsigned long**'s in a seed for bcl(3)'s random number
+    generator.
+
+**BCL_SEED_SIZE**
+
+:   The size, in **char**'s, of a seed for bcl(3)'s random number generator.
+
+**BclBigDig**
+
+:   bcl(3)'s overflow type (see the **PERFORMANCE** section).
+
+**BclRandInt**
+
+:   An unsigned integer type returned by bcl(3)'s random number generator.
+
+**BclNumber bcl_irand(BclNumber** *a***)**
+
+:   Returns a random number that is not larger than *a* in a new number. If *a*
+    is **0** or **1**, the new number is equal to **0**. The bound is unlimited,
+    so it is not bound to the size of **BclRandInt**. This is done by generating
+    as many random numbers as necessary, multiplying them by certain exponents,
+    and adding them all together.
+
+    *a* must be an integer and non-negative.
+
+    *a* is consumed; it cannot be used after the call. See the
+    **Consumption and Propagation** subsection below.
+
+    This procedure requires a valid current context.
+
+    bcl(3) will encode an error in the return value, if there was one. The error
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
+
+    * **BCL_ERROR_INVALID_NUM**
+	* **BCL_ERROR_INVALID_CONTEXT**
+	* **BCL_ERROR_MATH_NEGATIVE**
+	* **BCL_ERROR_MATH_NON_INTEGER**
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
+
+**BclNumber bcl_frand(size_t** *places***)**
+
+:   Returns a random number between **0** (inclusive) and **1** (exclusive) that
+    has *places* decimal digits after the radix (decimal point). There are no
+    limits on *places*.
+
+    This procedure requires a valid current context.
+
+    bcl(3) will encode an error in the return value, if there was one. The error
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
+
+	* **BCL_ERROR_INVALID_CONTEXT**
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
+
+**BclNumber bcl_ifrand(BclNumber** *a***, size_t** *places***)**
+
+:   Returns a random number less than *a* with *places* decimal digits after the
+    radix (decimal point). There are no limits on *a* or *places*.
+
+    *a* must be an integer and non-negative.
+
+    *a* is consumed; it cannot be used after the call. See the
+    **Consumption and Propagation** subsection below.
+
+    This procedure requires a valid current context.
+
+    bcl(3) will encode an error in the return value, if there was one. The error
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
+
+    * **BCL_ERROR_INVALID_NUM**
+	* **BCL_ERROR_INVALID_CONTEXT**
+	* **BCL_ERROR_MATH_NEGATIVE**
+	* **BCL_ERROR_MATH_NON_INTEGER**
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
+
+**BclError bcl_rand_seedWithNum(BclNumber** *n***)**
+
+:   Seeds the PRNG with *n*.
+
+    *n* is *not* consumed.
+
+    This procedure requires a valid current context.
+
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
+
+    * **BCL_ERROR_INVALID_NUM**
+	* **BCL_ERROR_INVALID_CONTEXT**
+
+    Note that if **bcl_rand_seed2num(***void***)** or
+    **bcl_rand_seed2num_err(BclNumber)** are called right after this function,
+    they are not guaranteed to return a number equal to *n*.
+
+**BclError bcl_rand_seed(unsigned char** *seed***[***BC_SEED_SIZE***])**
+
+:   Seeds the PRNG with the bytes in *seed*.
+
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
+
+	* **BCL_ERROR_INVALID_CONTEXT**
+
+**void bcl_rand_reseed(***void***)**
+
+:   Reseeds the PRNG with the default reseeding behavior. First, it attempts to
+    read data from **/dev/urandom** and falls back to **libc**'s **rand()**.
+
+    This procedure cannot fail.
+
+**BclNumber bcl_rand_seed2num(***void***)**
+
+:   Returns the current seed of the PRNG as a **BclNumber**.
+
+    This procedure requires a valid current context.
+
+    bcl(3) will encode an error in the return value, if there was one. The error
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
+
+	* **BCL_ERROR_INVALID_CONTEXT**
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
+
+**BclRandInt bcl_rand_int(***void***)**
+
+:   Returns a random integer between **0** and **BC_RAND_MAX** (inclusive).
+
+    This procedure cannot fail.
+
+**BclRandInt bcl_rand_bounded(BclRandInt** *bound***)**
+
+:   Returns a random integer between **0** and *bound* (exclusive). Bias is
+    removed before returning the integer.
+
+    This procedure cannot fail.
+
+## Consumption and Propagation
+
+Some functions are listed as consuming some or all of their arguments. This
+means that the arguments are freed, regardless of if there were errors or not.
+
+This is to enable compact code like the following:
+
+    BclNumber n = bcl_num_add(bcl_num_mul(a, b), bcl_num_div(c, d));
+
+If arguments to those functions were not consumed, memory would be leaked until
+reclaimed with **bcl_ctxt_freeNums(BclContext)**.
+
+When errors occur, they are propagated through. The result should always be
+checked with **bcl_err(BclNumber)**, so the example above should properly
+be:
+
+    BclNumber n = bcl_num_add(bcl_num_mul(a, b), bcl_num_div(c, d));
+    if (bc_num_err(n) != BCL_ERROR_NONE) {
+        // Handle the error.
+    }
+
 # ERRORS
 
 Most functions in bcl(3) return, directly or indirectly, any one of the error
 codes defined in **BclError**. The complete list of codes is the following:
 
-**BCL_ERROR_SUCCESS**
+**BCL_ERROR_NONE**
 
 :   Success; no error occurred.
 

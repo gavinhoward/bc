@@ -61,7 +61,7 @@ void bcl_handleSignal(void) {
 
 BclError bcl_init(void) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 
 	vm.refs += 1;
 
@@ -103,7 +103,7 @@ err:
 
 BclError bcl_pushContext(BclContext ctxt) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 
 	BC_FUNC_HEADER_LOCK(err);
 
@@ -239,17 +239,17 @@ void bcl_ctxt_setObase(BclContext ctxt, size_t obase) {
 	ctxt->obase = obase;
 }
 
-BclError bcl_num_err(BclNumber n) {
+BclError bcl_err(BclNumber n) {
 
 	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
 
-	if (n >= ctxt->nums.len) {
-		if (n > 0 - (BclNumber) BCL_ERROR_NELEMS) return (BclError) (0 - n);
+	if (n.i >= ctxt->nums.len) {
+		if (n.i > 0 - (size_t) BCL_ERROR_NELEMS) return (BclError) (0 - n.i);
 		else return BCL_ERROR_INVALID_NUM;
 	}
-	else return BCL_ERROR_SUCCESS;
+	else return BCL_ERROR_NONE;
 }
 
 static BclNumber bcl_num_insert(BclContext ctxt, BcNum *restrict n) {
@@ -264,11 +264,11 @@ static BclNumber bcl_num_insert(BclContext ctxt, BcNum *restrict n) {
 
 		bc_vec_pop(&ctxt->free_nums);
 
-		ptr = bc_vec_item(&ctxt->nums, idx);
+		ptr = bc_vec_item(&ctxt->nums, idx.i);
 		memcpy(ptr, n, sizeof(BcNum));
 	}
 	else {
-		idx = ctxt->nums.len;
+		idx.i = ctxt->nums.len;
 		bc_vec_push(&ctxt->nums, n);
 	}
 
@@ -278,12 +278,8 @@ static BclNumber bcl_num_insert(BclContext ctxt, BcNum *restrict n) {
 }
 
 BclNumber bcl_num_create(void) {
-	return bcl_num_create_req(BC_NUM_DEF_SIZE);
-}
 
-BclNumber bcl_num_create_req(size_t req) {
-
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum n;
 	BclNumber idx;
 	BclContext ctxt;
@@ -294,7 +290,7 @@ BclNumber bcl_num_create_req(size_t req) {
 
 	bc_vec_grow(&ctxt->nums, 1);
 
-	bc_num_init(&n, req);
+	bc_num_init(&n, BC_NUM_DEF_SIZE);
 
 err:
 	BC_FUNC_FOOTER_UNLOCK(e);
@@ -324,7 +320,7 @@ void bcl_num_free(BclNumber n) {
 
 	BC_SIG_LOCK;
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	num = BC_NUM(ctxt, n);
 
@@ -335,7 +331,7 @@ void bcl_num_free(BclNumber n) {
 
 BclError bcl_num_copy(BclNumber d, BclNumber s) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *dest, *src;
 	BclContext ctxt;
 
@@ -343,7 +339,7 @@ BclError bcl_num_copy(BclNumber d, BclNumber s) {
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	assert(d < ctxt->nums.len && s < ctxt->nums.len);
+	assert(d.i < ctxt->nums.len && s.i < ctxt->nums.len);
 
 	dest = BC_NUM(ctxt, d);
 	src = BC_NUM(ctxt, s);
@@ -363,7 +359,7 @@ err:
 
 BclNumber bcl_num_dup(BclNumber s) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *src, dest;
 	BclNumber idx;
 	BclContext ctxt;
@@ -374,7 +370,7 @@ BclNumber bcl_num_dup(BclNumber s) {
 
 	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(s < ctxt->nums.len);
+	assert(s.i < ctxt->nums.len);
 
 	src = BC_NUM(ctxt, s);
 
@@ -412,7 +408,7 @@ bool bcl_num_neg(BclNumber n) {
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	num = BC_NUM(ctxt, n);
 
@@ -428,7 +424,7 @@ void bcl_num_setNeg(BclNumber n, bool neg) {
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	num = BC_NUM(ctxt, n);
 
@@ -444,7 +440,7 @@ size_t bcl_num_scale(BclNumber n) {
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	num = BC_NUM(ctxt, n);
 
@@ -455,7 +451,7 @@ size_t bcl_num_scale(BclNumber n) {
 
 BclError bcl_num_setScale(BclNumber n, size_t scale) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *nptr;
 	BclContext ctxt;
 
@@ -465,7 +461,7 @@ BclError bcl_num_setScale(BclNumber n, size_t scale) {
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	nptr = BC_NUM(ctxt, n);
 
@@ -490,7 +486,7 @@ size_t bcl_num_len(BclNumber n) {
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	num = BC_NUM(ctxt, n);
 
@@ -499,9 +495,9 @@ size_t bcl_num_len(BclNumber n) {
 	return bc_num_len(num);
 }
 
-BclError bcl_num_bigdig(BclNumber n, BclBigDig *result) {
+BclError bcl_bigdig(BclNumber n, BclBigDig *result) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *num;
 	BclContext ctxt;
 
@@ -509,7 +505,7 @@ BclError bcl_num_bigdig(BclNumber n, BclBigDig *result) {
 
 	BC_FUNC_HEADER_LOCK(err);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 	assert(result != NULL);
 
 	num = BC_NUM(ctxt, n);
@@ -519,6 +515,7 @@ BclError bcl_num_bigdig(BclNumber n, BclBigDig *result) {
 	bc_num_bigdig(num, result);
 
 err:
+	bcl_num_dtor(ctxt, n, num);
 	BC_FUNC_FOOTER_UNLOCK(e);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -526,9 +523,9 @@ err:
 	return e;
 }
 
-BclNumber bcl_num_bigdig2num(BclBigDig val) {
+BclNumber bcl_bigdig2num(BclBigDig val) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum n;
 	BclNumber idx;
 	BclContext ctxt;
@@ -550,39 +547,11 @@ err:
 	return idx;
 }
 
-BclError bcl_num_bigdig2num_err(BclNumber n, BclBigDig val) {
-
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *num;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, n);
-
-	BC_FUNC_HEADER_LOCK(err);
-
-	assert(n < ctxt->nums.len);
-
-	num = BC_NUM(ctxt, n);
-
-	assert(num != NULL && num->num != NULL);
-
-	bc_num_bigdig2num(num, val);
-
-err:
-	BC_FUNC_FOOTER_UNLOCK(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-static BclNumber bcl_num_binary(BclNumber a, BclNumber b,
+static BclNumber bcl_binary(BclNumber a, BclNumber b,
                                 const BcNumBinaryOp op,
                                 const BcNumBinaryOpReq req)
 {
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *aptr, *bptr;
 	BcNum c;
 	BclNumber idx;
@@ -597,7 +566,7 @@ static BclNumber bcl_num_binary(BclNumber a, BclNumber b,
 
 	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < ctxt->nums.len && b < ctxt->nums.len);
+	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
 
 	aptr = BC_NUM(ctxt, a);
 	bptr = BC_NUM(ctxt, b);
@@ -616,7 +585,7 @@ static BclNumber bcl_num_binary(BclNumber a, BclNumber b,
 err:
 	BC_SIG_MAYLOCK;
 	bcl_num_dtor(ctxt, a, aptr);
-	if (b != a) bcl_num_dtor(ctxt, b, bptr);
+	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
 	BC_MAYBE_SETUP(ctxt, e, c, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -624,107 +593,41 @@ err:
 	return idx;
 }
 
-static BclError bcl_num_binary_err(BclNumber a, BclNumber b, BclNumber c,
-                                  const BcNumBinaryOp op)
-{
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *aptr, *bptr, *cptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, a);
-	BC_CHECK_NUM_ERR(ctxt, b);
-	BC_CHECK_NUM_ERR(ctxt, c);
-
-	BC_FUNC_HEADER(err);
-
-	assert(a < ctxt->nums.len && b < ctxt->nums.len && c < ctxt->nums.len);
-
-	aptr = BC_NUM(ctxt, a);
-	bptr = BC_NUM(ctxt, b);
-	cptr = BC_NUM(ctxt, c);
-
-	assert(aptr->num != NULL && bptr->num != NULL && cptr->num != NULL);
-
-	op(aptr, bptr, cptr, ctxt->scale);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
+BclNumber bcl_add(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_add, bc_num_addReq);
 }
 
-BclNumber bcl_num_add(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_add, bc_num_addReq);
+BclNumber bcl_sub(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_sub, bc_num_addReq);
 }
 
-BclError bcl_num_add_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_add);
+BclNumber bcl_mul(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_mul, bc_num_mulReq);
 }
 
-BclNumber bcl_num_sub(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_sub, bc_num_addReq);
+BclNumber bcl_div(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_div, bc_num_divReq);
 }
 
-BclError bcl_num_sub_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_sub);
+BclNumber bcl_mod(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_mod, bc_num_divReq);
 }
 
-BclNumber bcl_num_mul(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_mul, bc_num_mulReq);
+BclNumber bcl_pow(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_pow, bc_num_powReq);
 }
 
-BclError bcl_num_mul_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_mul);
+BclNumber bcl_lshift(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_lshift, bc_num_placesReq);
 }
 
-BclNumber bcl_num_div(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_div, bc_num_divReq);
+BclNumber bcl_rshift(BclNumber a, BclNumber b) {
+	return bcl_binary(a, b, bc_num_rshift, bc_num_placesReq);
 }
 
-BclError bcl_num_div_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_div);
-}
+BclNumber bcl_sqrt(BclNumber a) {
 
-BclNumber bcl_num_mod(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_mod, bc_num_divReq);
-}
-
-BclError bcl_num_mod_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_mod);
-}
-
-BclNumber bcl_num_pow(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_pow, bc_num_powReq);
-}
-
-BclError bcl_num_pow_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_pow);
-}
-
-BclNumber bcl_num_lshift(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_lshift, bc_num_placesReq);
-}
-
-BclError bcl_num_lshift_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_lshift);
-}
-
-BclNumber bcl_num_rshift(BclNumber a, BclNumber b) {
-	return bcl_num_binary(a, b, bc_num_rshift, bc_num_placesReq);
-}
-
-BclError bcl_num_rshift_err(BclNumber a, BclNumber b, BclNumber c) {
-	return bcl_num_binary_err(a, b, c, bc_num_lshift);
-}
-
-BclNumber bcl_num_sqrt(BclNumber a) {
-
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *aptr;
 	BcNum b;
 	BclNumber idx;
@@ -738,7 +641,7 @@ BclNumber bcl_num_sqrt(BclNumber a) {
 
 	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < ctxt->nums.len);
+	assert(a.i < ctxt->nums.len);
 
 	aptr = BC_NUM(ctxt, a);
 
@@ -755,41 +658,9 @@ err:
 	return idx;
 }
 
-BclError bcl_num_sqrt_err(BclNumber a, BclNumber b) {
+BclError bcl_divmod(BclNumber a, BclNumber b, BclNumber *c, BclNumber *d) {
 
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *aptr, *bptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, a);
-	BC_CHECK_NUM_ERR(ctxt, b);
-
-	BC_FUNC_HEADER(err);
-
-	assert(a < ctxt->nums.len && b < ctxt->nums.len);
-
-	aptr = BC_NUM(ctxt, a);
-	bptr = BC_NUM(ctxt, b);
-
-	assert(aptr != NULL && bptr != NULL);
-	assert(aptr->num != NULL && bptr->num != NULL);
-
-	bc_num_sr(aptr, bptr, ctxt->scale);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-BclError bcl_num_divmod(BclNumber a, BclNumber b, BclNumber *c, BclNumber *d) {
-
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	size_t req;
 	BcNum *aptr, *bptr;
 	BcNum cnum, dnum;
@@ -828,7 +699,7 @@ err:
 	BC_SIG_MAYLOCK;
 
 	bcl_num_dtor(ctxt, a, aptr);
-	if (b != a) bcl_num_dtor(ctxt, b, bptr);
+	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
 
 	if (BC_ERR(vm.err)) {
 		if (cnum.num != NULL) bc_num_free(&cnum);
@@ -846,49 +717,9 @@ err:
 	return e;
 }
 
-BclError bcl_num_divmod_err(BclNumber a, BclNumber b, BclNumber c, BclNumber d)
-{
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *aptr, *bptr, *cptr, *dptr;
-	BclContext ctxt;
+BclNumber bcl_modexp(BclNumber a, BclNumber b, BclNumber c) {
 
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, a);
-	BC_CHECK_NUM_ERR(ctxt, b);
-	BC_CHECK_NUM_ERR(ctxt, c);
-	BC_CHECK_NUM_ERR(ctxt, d);
-
-	BC_FUNC_HEADER(err);
-
-	assert(a < ctxt->nums.len && b < ctxt->nums.len);
-	assert(c < ctxt->nums.len && d < ctxt->nums.len);
-
-	aptr = BC_NUM(ctxt, a);
-	bptr = BC_NUM(ctxt, b);
-	cptr = BC_NUM(ctxt, c);
-	dptr = BC_NUM(ctxt, d);
-
-	assert(aptr != NULL && bptr != NULL && cptr != NULL && dptr != NULL);
-	assert(aptr != cptr && aptr != dptr && bptr != cptr && bptr != dptr);
-	assert(cptr != dptr);
-	assert(aptr->num != NULL && bptr->num != NULL);
-	assert(cptr->num != NULL && dptr->num != NULL);
-
-	bc_num_divmod(aptr, bptr, cptr, dptr, ctxt->scale);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-BclNumber bcl_num_modexp(BclNumber a, BclNumber b, BclNumber c) {
-
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	size_t req;
 	BcNum *aptr, *bptr, *cptr;
 	BcNum d;
@@ -905,7 +736,8 @@ BclNumber bcl_num_modexp(BclNumber a, BclNumber b, BclNumber c) {
 
 	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < ctxt->nums.len && b < ctxt->nums.len && c < ctxt->nums.len);
+	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
+	assert(c.i < ctxt->nums.len);
 
 	aptr = BC_NUM(ctxt, a);
 	bptr = BC_NUM(ctxt, b);
@@ -928,8 +760,8 @@ err:
 	BC_SIG_MAYLOCK;
 
 	bcl_num_dtor(ctxt, a, aptr);
-	if (b != a) bcl_num_dtor(ctxt, b, bptr);
-	if (c != a && c != b) bcl_num_dtor(ctxt, c, cptr);
+	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
+	if (c.i != a.i && c.i != b.i) bcl_num_dtor(ctxt, c, cptr);
 
 	BC_MAYBE_SETUP(ctxt, e, d, idx);
 
@@ -938,91 +770,14 @@ err:
 	return idx;
 }
 
-BclError bcl_num_modexp_err(BclNumber a, BclNumber b, BclNumber c, BclNumber d)
-{
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *aptr, *bptr, *cptr, *dptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, a);
-	BC_CHECK_NUM_ERR(ctxt, b);
-	BC_CHECK_NUM_ERR(ctxt, c);
-	BC_CHECK_NUM_ERR(ctxt, d);
-
-	BC_FUNC_HEADER(err);
-
-	assert(a < ctxt->nums.len && b < ctxt->nums.len && c < ctxt->nums.len);
-	assert(d < ctxt->nums.len);
-
-	aptr = BC_NUM(ctxt, a);
-	bptr = BC_NUM(ctxt, b);
-	cptr = BC_NUM(ctxt, c);
-	dptr = BC_NUM(ctxt, d);
-
-	assert(aptr != NULL && bptr != NULL && cptr != NULL && dptr != NULL);
-	assert(aptr != dptr && bptr != dptr && cptr != dptr);
-	assert(aptr->num != NULL && bptr->num != NULL && cptr->num != NULL);
-	assert(dptr->num != NULL);
-
-	bc_num_modexp(aptr, bptr, cptr, dptr);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-static size_t bcl_num_req(BclNumber a, BclNumber b, BcReqOp op)
-{
-	BcNum *aptr, *bptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ASSERT(ctxt);
-
-	assert(a < ctxt->nums.len && b < ctxt->nums.len);
-
-	aptr = BC_NUM(ctxt, a);
-	bptr = BC_NUM(ctxt, b);
-
-	assert(aptr != NULL && bptr != NULL);
-	assert(aptr->num != NULL && bptr->num != NULL);
-
-	return op(aptr, bptr, ctxt->scale);
-}
-
-size_t bcl_num_add_req(BclNumber a, BclNumber b) {
-	return bcl_num_req(a, b, bc_num_addReq);
-}
-
-size_t bcl_num_mul_req(BclNumber a, BclNumber b) {
-	return bcl_num_req(a, b, bc_num_mulReq);
-}
-
-size_t bcl_num_div_req(BclNumber a, BclNumber b) {
-	return bcl_num_req(a, b, bc_num_divReq);
-}
-
-size_t bcl_num_pow_req(BclNumber a, BclNumber b) {
-	return bcl_num_req(a, b, bc_num_powReq);
-}
-
-size_t bcl_num_shift_req(BclNumber a, BclNumber b) {
-	return bcl_num_req(a, b, bc_num_placesReq);
-}
-
-ssize_t bcl_num_cmp(BclNumber a, BclNumber b) {
+ssize_t bcl_cmp(BclNumber a, BclNumber b) {
 
 	BcNum *aptr, *bptr;
 	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	assert(a < ctxt->nums.len && b < ctxt->nums.len);
+	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
 
 	aptr = BC_NUM(ctxt, a);
 	bptr = BC_NUM(ctxt, b);
@@ -1033,14 +788,14 @@ ssize_t bcl_num_cmp(BclNumber a, BclNumber b) {
 	return bc_num_cmp(aptr, bptr);
 }
 
-void bcl_num_zero(BclNumber n) {
+void bcl_zero(BclNumber n) {
 
 	BcNum *nptr;
 	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	nptr = BC_NUM(ctxt, n);
 
@@ -1049,14 +804,14 @@ void bcl_num_zero(BclNumber n) {
 	bc_num_zero(nptr);
 }
 
-void bcl_num_one(BclNumber n) {
+void bcl_one(BclNumber n) {
 
 	BcNum *nptr;
 	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	nptr = BC_NUM(ctxt, n);
 
@@ -1065,9 +820,9 @@ void bcl_num_one(BclNumber n) {
 	bc_num_one(nptr);
 }
 
-BclNumber bcl_num_parse(const char *restrict val) {
+BclNumber bcl_parse(const char *restrict val) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum n;
 	BclNumber idx;
 	BclContext ctxt;
@@ -1109,49 +864,7 @@ err:
 	return idx;
 }
 
-BclError bcl_num_parse_err(BclNumber n, const char *restrict val) {
-
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *nptr;
-	BclContext ctxt;
-	bool neg;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, n);
-
-	BC_FUNC_HEADER(err);
-
-	assert(val != NULL);
-	assert(n < ctxt->nums.len);
-
-	neg = (val[0] == '-');
-
-	if (neg) val += 1;
-
-	if (!bc_num_strValid(val)) {
-		vm.err = BCL_ERROR_PARSE_INVALID_STR;
-		goto err;
-	}
-
-	nptr = BC_NUM(ctxt, n);
-
-	assert(nptr != NULL && nptr->num != NULL);
-
-	bc_num_parse(nptr, val, ctxt->ibase);
-
-	BC_NUM_NEG_VAL(nptr, neg);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-char* bcl_num_string(BclNumber n) {
+char* bcl_string(BclNumber n) {
 
 	BcNum *nptr;
 	char *str = NULL;
@@ -1159,11 +872,11 @@ char* bcl_num_string(BclNumber n) {
 
 	BC_CHECK_CTXT_ASSERT(ctxt);
 
-	if (BC_ERR(n >= ctxt->nums.len)) return str;
+	if (BC_ERR(n.i >= ctxt->nums.len)) return str;
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	nptr = BC_NUM(ctxt, n);
 
@@ -1185,41 +898,9 @@ err:
 	return str;
 }
 
-BclError bcl_num_string_err(BclNumber n, char **str) {
+BclNumber bcl_irand(BclNumber a) {
 
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *nptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, n);
-
-	BC_FUNC_HEADER(err);
-
-	assert(str != NULL);
-	assert(n < ctxt->nums.len);
-
-	nptr = BC_NUM(ctxt, n);
-
-	assert(nptr != NULL && nptr->num != NULL);
-
-	bc_num_print(nptr, ctxt->obase, false);
-
-	*str = bc_vm_strdup(vm.out.v);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-BclNumber bcl_num_irand(BclNumber a) {
-
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *aptr;
 	BcNum b;
 	BclNumber idx;
@@ -1233,7 +914,7 @@ BclNumber bcl_num_irand(BclNumber a) {
 
 	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < ctxt->nums.len);
+	assert(a.i < ctxt->nums.len);
 
 	aptr = BC_NUM(ctxt, a);
 
@@ -1257,39 +938,7 @@ err:
 	return idx;
 }
 
-BclError bcl_num_irand_err(BclNumber a, BclNumber b) {
-
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *aptr, *bptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, a);
-	BC_CHECK_NUM_ERR(ctxt, b);
-
-	BC_FUNC_HEADER(err);
-
-	assert(a < ctxt->nums.len && b < ctxt->nums.len);
-
-	aptr = BC_NUM(ctxt, a);
-	bptr = BC_NUM(ctxt, b);
-
-	assert(aptr != NULL && aptr->num != NULL);
-	assert(bptr != NULL && bptr->num != NULL);
-
-	bc_num_irand(aptr, bptr, &vm.rng);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-static void bcl_num_frandHelper(BcNum *restrict b, size_t places) {
+static void bcl_frandHelper(BcNum *restrict b, size_t places) {
 
 	BcNum exp, pow, ten;
 	BcDig exp_digs[BC_NUM_BIGDIG_LOG10];
@@ -1325,9 +974,9 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BclNumber bcl_num_frand(size_t places) {
+BclNumber bcl_frand(size_t places) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum n;
 	BclNumber idx;
 	BclContext ctxt;
@@ -1344,7 +993,7 @@ BclNumber bcl_num_frand(size_t places) {
 
 	BC_SIG_UNLOCK;
 
-	bcl_num_frandHelper(&n, places);
+	bcl_frandHelper(&n, places);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1355,37 +1004,8 @@ err:
 	return idx;
 }
 
-BclError bcl_num_frand_err(size_t places, BclNumber n) {
-
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *nptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, n);
-
-	BC_FUNC_HEADER(err);
-
-	assert(n < ctxt->nums.len);
-
-	nptr = BC_NUM(ctxt, n);
-
-	assert(nptr != NULL && nptr->num != NULL);
-
-	bcl_num_frandHelper(nptr, places);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
-static void bcl_num_ifrandHelper(BcNum *restrict a, BcNum *restrict b,
-                                 size_t places)
+static void bcl_ifrandHelper(BcNum *restrict a, BcNum *restrict b,
+                             size_t places)
 {
 	BcNum ir, fr;
 
@@ -1402,7 +1022,7 @@ static void bcl_num_ifrandHelper(BcNum *restrict a, BcNum *restrict b,
 	BC_SIG_UNLOCK;
 
 	bc_num_irand(a, &ir, &vm.rng);
-	bcl_num_frandHelper(&fr, places);
+	bcl_frandHelper(&fr, places);
 
 	bc_num_add(&ir, &fr, b, 0);
 
@@ -1413,9 +1033,9 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-BclNumber bcl_num_ifrand(BclNumber a, size_t places) {
+BclNumber bcl_ifrand(BclNumber a, size_t places) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *aptr;
 	BcNum b;
 	BclNumber idx;
@@ -1429,7 +1049,7 @@ BclNumber bcl_num_ifrand(BclNumber a, size_t places) {
 
 	bc_vec_grow(&ctxt->nums, 1);
 
-	assert(a < ctxt->nums.len);
+	assert(a.i < ctxt->nums.len);
 
 	aptr = BC_NUM(ctxt, a);
 
@@ -1441,7 +1061,7 @@ BclNumber bcl_num_ifrand(BclNumber a, size_t places) {
 
 	BC_SIG_UNLOCK;
 
-	bcl_num_ifrandHelper(aptr, &b, places);
+	bcl_ifrandHelper(aptr, &b, places);
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1453,41 +1073,9 @@ err:
 	return idx;
 }
 
-BclError bcl_num_ifrand_err(BclNumber a, size_t places, BclNumber b) {
-
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *aptr, *bptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, a);
-	BC_CHECK_NUM_ERR(ctxt, b);
-
-	BC_FUNC_HEADER(err);
-
-	assert(a < ctxt->nums.len && b < ctxt->nums.len);
-
-	aptr = BC_NUM(ctxt, a);
-	bptr = BC_NUM(ctxt, b);
-
-	assert(aptr != NULL && aptr->num != NULL);
-	assert(bptr != NULL && bptr->num != NULL);
-
-	bcl_num_ifrandHelper(aptr, bptr, places);
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
-}
-
 BclError bcl_rand_seedWithNum(BclNumber n) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum *nptr;
 	BclContext ctxt;
 
@@ -1497,7 +1085,7 @@ BclError bcl_rand_seedWithNum(BclNumber n) {
 
 	BC_FUNC_HEADER(err);
 
-	assert(n < ctxt->nums.len);
+	assert(n.i < ctxt->nums.len);
 
 	nptr = BC_NUM(ctxt, n);
 
@@ -1516,7 +1104,7 @@ err:
 
 BclError bcl_rand_seed(unsigned char seed[BC_SEED_SIZE]) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	size_t i;
 	ulong vals[BC_SEED_ULONGS];
 
@@ -1542,7 +1130,7 @@ void bcl_rand_reseed(void) {
 
 BclNumber bcl_rand_seed2num(void) {
 
-	BclError e = BCL_ERROR_SUCCESS;
+	BclError e = BCL_ERROR_NONE;
 	BcNum n;
 	BclNumber idx;
 	BclContext ctxt;
@@ -1566,35 +1154,6 @@ err:
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
 	return idx;
-}
-
-BclError bcl_rand_seed2num_err(BclNumber n) {
-
-	BclError e = BCL_ERROR_SUCCESS;
-	BcNum *nptr;
-	BclContext ctxt;
-
-	BC_CHECK_CTXT_ERR(ctxt);
-
-	BC_CHECK_NUM_ERR(ctxt, n);
-
-	BC_FUNC_HEADER(err);
-
-	assert(n < ctxt->nums.len);
-
-	nptr = BC_NUM(ctxt, n);
-
-	assert(nptr != NULL && nptr->num != NULL);
-
-	bc_num_createFromRNG(nptr, bc_vec_top(&vm.rng.v));
-
-err:
-	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
-
-	assert(!vm.running && !vm.sig && !vm.sig_lock);
-
-	return e;
 }
 
 BclRandInt bcl_rand_int(void) {

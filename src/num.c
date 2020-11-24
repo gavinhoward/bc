@@ -1391,8 +1391,11 @@ static void bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
                           BcNumBinaryOp op, size_t req)
 {
-	BcNum num2, *ptr_a, *ptr_b;
+	BcNum *ptr_a, *ptr_b;
+#if !BC_ENABLE_LIBRARY
+	BcNum num2;
 	bool init = false;
+#endif // !BC_ENABLE_LIBRARY
 
 	assert(a != NULL && b != NULL && c != NULL && op != NULL);
 
@@ -1401,6 +1404,7 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 	BC_SIG_LOCK;
 
+#if !BC_ENABLE_LIBRARY
 	if (c == a) {
 
 		ptr_a = &num2;
@@ -1408,8 +1412,13 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 		memcpy(ptr_a, c, sizeof(BcNum));
 		init = true;
 	}
-	else ptr_a = a;
+	else
+#endif // !BC_ENABLE_LIBRARY
+	{
+		ptr_a = a;
+	}
 
+#if !BC_ENABLE_LIBRARY
 	if (c == b) {
 
 		ptr_b = &num2;
@@ -1419,8 +1428,13 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 			init = true;
 		}
 	}
-	else ptr_b = b;
+	else
+#endif // !BC_ENABLE_LIBRARY
+	{
+		ptr_b = b;
+	}
 
+#if !BC_ENABLE_LIBRARY
 	if (init) {
 
 		bc_num_init(c, req);
@@ -1428,7 +1442,9 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 		BC_SETJMP_LOCKED(err);
 		BC_SIG_UNLOCK;
 	}
-	else {
+	else
+#endif // !BC_ENABLE_LIBRARY
+	{
 		BC_SIG_UNLOCK;
 		bc_num_expand(c, req);
 	}
@@ -1440,12 +1456,14 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 	assert(BC_NUM_RDX_VALID(c));
 	assert(!c->len || c->num[c->len - 1] || BC_NUM_RDX_VAL(c) == c->len);
 
+#if !BC_ENABLE_LIBRARY
 err:
 	if (init) {
 		BC_SIG_MAYLOCK;
 		bc_num_free(&num2);
 		BC_LONGJMP_CONT;
 	}
+#endif // !BC_ENABLE_LIBRARY
 }
 
 #if !defined(NDEBUG) || BC_ENABLE_LIBRARY
