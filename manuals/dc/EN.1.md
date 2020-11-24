@@ -1021,6 +1021,6 @@ None are known. Report bugs at https://git.yzena.com/gavin/bc.
 
 # AUTHOR
 
-Gavin D. Howard <yzena.tech@gmail.com> and contributors.
+Gavin D. Howard <gavin@yzena.com> and contributors.
 
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
