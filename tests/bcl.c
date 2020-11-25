@@ -35,11 +35,12 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <bcl.h>
 
 static void err(BclError e) {
-	if (e != BCL_ERROR_NONE) exit((int) e);
+	if (e != BCL_ERROR_NONE) abort();
 }
 
 int main(void) {
@@ -47,7 +48,8 @@ int main(void) {
 	BclError e;
 	BclContext ctxt;
 	size_t scale;
-	BclNumber n, n2;
+	BclNumber n, n2, n3, n4, n5, n6;
+	char* res;
 
 	e = bcl_init();
 	err(e);
@@ -88,10 +90,39 @@ int main(void) {
 	scale = bcl_ctxt_obase(ctxt);
 	if (scale != 16) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
+	bcl_ctxt_setIbase(ctxt, 10);
+	bcl_ctxt_setObase(ctxt, 10);
+
 	n = bcl_num_create();
 
 	n2 = bcl_dup(n);
 	bcl_copy(n, n2);
+
+	n3 = bcl_parse("2938");
+	err(bcl_err(n3));
+
+	n4 = bcl_parse("-28390.9108273");
+	err(bcl_err(n4));
+
+	if (!bcl_num_neg(n4)) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	n3 = bcl_add(n3, n4);
+	err(bcl_err(n3));
+
+	res = bcl_string(bcl_dup(n3));
+	if (strcmp(res, "-25452.9108273")) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	n4 = bcl_parse("8937458902.2890347");
+	err(bcl_err(n4));
+
+	e = bcl_divmod(n4, n3, &n5, &n6);
+	err(e);
+
+	if (strcmp(bcl_string(n5), "-351137.0060159482"))
+		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	if (strcmp(bcl_string(n6), ".00000152374405414"))
+		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
 	bcl_num_free(n);
 
