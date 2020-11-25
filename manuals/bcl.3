@@ -106,11 +106,6 @@ arbitrary-precision numbers managed by bcl(3).
 .PP
 \f[B]BclNumber bcl_num_create(\f[R]\f[I]void\f[R]\f[B]);\f[R]
 .PP
-\f[B]BclError bcl_num_copy(BclNumber\f[R] \f[I]d\f[R]\f[B],
-BclNumber\f[R] \f[I]s\f[R]\f[B]);\f[R]
-.PP
-\f[B]BclNumber bcl_num_dup(BclNumber\f[R] \f[I]s\f[R]\f[B]);\f[R]
-.PP
 \f[B]void bcl_num_free(BclNumber\f[R] \f[I]n\f[R]\f[B]);\f[R]
 .PP
 \f[B]bool bcl_num_neg(BclNumber\f[R] \f[I]n\f[R]\f[B]);\f[R]
@@ -184,6 +179,11 @@ These items are miscellaneous.
 .PP
 \f[B]ssize_t bcl_cmp(BclNumber\f[R] \f[I]a\f[R]\f[B], BclNumber\f[R]
 \f[I]b\f[R]\f[B]);\f[R]
+.PP
+\f[B]BclError bcl_copy(BclNumber\f[R] \f[I]d\f[R]\f[B], BclNumber\f[R]
+\f[I]s\f[R]\f[B]);\f[R]
+.PP
+\f[B]BclNumber bcl_dup(BclNumber\f[R] \f[I]s\f[R]\f[B]);\f[R]
 .SS Pseudo-Random Number Generator
 .PP
 These items allow clients to manipulate the seeded pseudo-random number
@@ -441,36 +441,6 @@ Creates and returns a \f[B]BclNumber\f[R].
 bcl(3) will encode an error in the return value, if there was one.
 The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
 Possible errors include:
-.IP \[bu] 2
-\f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
-\f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
-.RE
-.TP
-\f[B]BclError bcl_num_copy(BclNumber\f[R] \f[I]d\f[R]\f[B], BclNumber\f[R] \f[I]s\f[R]\f[B])\f[R]
-Copies \f[I]s\f[R] into \f[I]d\f[R].
-.RS
-.PP
-If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
-Otherwise, this function can return:
-.IP \[bu] 2
-\f[B]BCL_ERROR_INVALID_NUM\f[R]
-.IP \[bu] 2
-\f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
-.IP \[bu] 2
-\f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
-.RE
-.TP
-\f[B]BclNumber bcl_num_dup(BclNumber\f[R] \f[I]s\f[R]\f[B])\f[R]
-Creates and returns a new \f[B]BclNumber\f[R] that is a copy of
-\f[I]s\f[R].
-.RS
-.PP
-bcl(3) will encode an error in the return value, if there was one.
-The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
-Possible errors include:
-.IP \[bu] 2
-\f[B]BCL_ERROR_INVALID_NUM\f[R]
 .IP \[bu] 2
 \f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
 .IP \[bu] 2
@@ -918,6 +888,36 @@ Compares \f[I]a\f[R] and \f[I]b\f[R] and returns \f[B]0\f[R] if
 \f[I]a\f[R] and \f[I]b\f[R] are equal, \f[B]<0\f[R] if \f[I]a\f[R] is
 less than \f[I]b\f[R], and \f[B]>0\f[R] if \f[I]a\f[R] is greater than
 \f[I]b\f[R].
+.TP
+\f[B]BclError bcl_copy(BclNumber\f[R] \f[I]d\f[R]\f[B], BclNumber\f[R] \f[I]s\f[R]\f[B])\f[R]
+Copies \f[I]s\f[R] into \f[I]d\f[R].
+.RS
+.PP
+If there was no error, \f[B]BCL_ERROR_NONE\f[R] is returned.
+Otherwise, this function can return:
+.IP \[bu] 2
+\f[B]BCL_ERROR_INVALID_NUM\f[R]
+.IP \[bu] 2
+\f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
+.IP \[bu] 2
+\f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
+.RE
+.TP
+\f[B]BclNumber bcl_dup(BclNumber\f[R] \f[I]s\f[R]\f[B])\f[R]
+Creates and returns a new \f[B]BclNumber\f[R] that is a copy of
+\f[I]s\f[R].
+.RS
+.PP
+bcl(3) will encode an error in the return value, if there was one.
+The error can be queried with \f[B]bcl_err(BclNumber)\f[R].
+Possible errors include:
+.IP \[bu] 2
+\f[B]BCL_ERROR_INVALID_NUM\f[R]
+.IP \[bu] 2
+\f[B]BCL_ERROR_INVALID_CONTEXT\f[R]
+.IP \[bu] 2
+\f[B]BCL_ERROR_FATAL_ALLOC_ERR\f[R]
+.RE
 .SS Pseudo-Random Number Generator
 .PP
 The pseudo-random number generator in bcl(3) is a \f[I]seeded\f[R] PRNG.

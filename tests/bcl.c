@@ -90,8 +90,8 @@ int main(void) {
 
 	n = bcl_num_create();
 
-	n2 = bcl_num_dup(n);
-	bcl_num_copy(n, n2);
+	n2 = bcl_dup(n);
+	bcl_copy(n, n2);
 
 	bcl_num_free(n);
 

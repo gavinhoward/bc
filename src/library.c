@@ -329,7 +329,7 @@ void bcl_num_free(BclNumber n) {
 	BC_SIG_UNLOCK;
 }
 
-BclError bcl_num_copy(BclNumber d, BclNumber s) {
+BclError bcl_copy(BclNumber d, BclNumber s) {
 
 	BclError e = BCL_ERROR_NONE;
 	BcNum *dest, *src;
@@ -357,7 +357,7 @@ err:
 	return e;
 }
 
-BclNumber bcl_num_dup(BclNumber s) {
+BclNumber bcl_dup(BclNumber s) {
 
 	BclError e = BCL_ERROR_NONE;
 	BcNum *src, dest;

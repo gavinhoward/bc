@@ -136,8 +136,8 @@ BclError bcl_err(BclNumber n);
 
 BclNumber bcl_num_create(void);
 BclNumber bcl_num_create_req(size_t req);
-BclError bcl_num_copy(BclNumber d, BclNumber s);
-BclNumber bcl_num_dup(BclNumber s);
+BclError bcl_copy(BclNumber d, BclNumber s);
+BclNumber bcl_dup(BclNumber s);
 void bcl_num_free(BclNumber n);
 
 bool bcl_num_neg(BclNumber n);

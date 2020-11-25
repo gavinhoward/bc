@@ -111,10 +111,6 @@ numbers managed by bcl(3).
 
 **BclNumber bcl_num_create(***void***);**
 
-**BclError bcl_num_copy(BclNumber** *d***, BclNumber** *s***);**
-
-**BclNumber bcl_num_dup(BclNumber** *s***);**
-
 **void bcl_num_free(BclNumber** *n***);**
 
 **bool bcl_num_neg(BclNumber** *n***);**
@@ -174,6 +170,10 @@ These items are miscellaneous.
 **void bcl_one(BclNumber** *n***);**
 
 **ssize_t bcl_cmp(BclNumber** *a***, BclNumber** *b***);**
+
+**BclError bcl_copy(BclNumber** *d***, BclNumber** *s***);**
+
+**BclNumber bcl_dup(BclNumber** *s***);**
 
 ## Pseudo-Random Number Generator
 
@@ -415,28 +415,6 @@ All procedures in this section require a valid current context.
     bcl(3) will encode an error in the return value, if there was one. The error
     can be queried with **bcl_err(BclNumber)**. Possible errors include:
 
-	* **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-**BclError bcl_num_copy(BclNumber** *d***, BclNumber** *s***)**
-
-:   Copies *s* into *d*.
-
-    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
-    function can return:
-
-    * **BCL_ERROR_INVALID_NUM**
-    * **BCL_ERROR_INVALID_CONTEXT**
-    * **BCL_ERROR_FATAL_ALLOC_ERR**
-
-**BclNumber bcl_num_dup(BclNumber** *s***)**
-
-:   Creates and returns a new **BclNumber** that is a copy of *s*.
-
-    bcl(3) will encode an error in the return value, if there was one. The error
-    can be queried with **bcl_err(BclNumber)**. Possible errors include:
-
-    * **BCL_ERROR_INVALID_NUM**
 	* **BCL_ERROR_INVALID_CONTEXT**
     * **BCL_ERROR_FATAL_ALLOC_ERR**
 
@@ -782,6 +760,28 @@ All procedures in this section can return the following errors:
 
 :   Compares *a* and *b* and returns **0** if *a* and *b* are equal, **<0** if
     *a* is less than *b*, and **>0** if *a* is greater than *b*.
+
+**BclError bcl_copy(BclNumber** *d***, BclNumber** *s***)**
+
+:   Copies *s* into *d*.
+
+    If there was no error, **BCL_ERROR_NONE** is returned. Otherwise, this
+    function can return:
+
+    * **BCL_ERROR_INVALID_NUM**
+    * **BCL_ERROR_INVALID_CONTEXT**
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
+
+**BclNumber bcl_dup(BclNumber** *s***)**
+
+:   Creates and returns a new **BclNumber** that is a copy of *s*.
+
+    bcl(3) will encode an error in the return value, if there was one. The error
+    can be queried with **bcl_err(BclNumber)**. Possible errors include:
+
+    * **BCL_ERROR_INVALID_NUM**
+	* **BCL_ERROR_INVALID_CONTEXT**
+    * **BCL_ERROR_FATAL_ALLOC_ERR**
 
 ## Pseudo-Random Number Generator
 
