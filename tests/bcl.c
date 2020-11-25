@@ -198,6 +198,12 @@ int main(void) {
 	n4 = bcl_rand_seed2num();
 	err(bcl_err(n4));
 
+	n5 = bcl_parse("10");
+	err(bcl_err(n5));
+
+	n6 = bcl_modexp(bcl_dup(n5), bcl_dup(n5), bcl_dup(n5));
+	err(bcl_err(n6));
+
 	bcl_num_free(n);
 
 	bcl_ctxt_freeNums(ctxt);
