@@ -112,17 +112,37 @@ int main(void) {
 	res = bcl_string(bcl_dup(n3));
 	if (strcmp(res, "-25452.9108273")) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
+	free(res);
+
 	n4 = bcl_parse("8937458902.2890347");
 	err(bcl_err(n4));
 
-	e = bcl_divmod(n4, n3, &n5, &n6);
+	e = bcl_divmod(bcl_dup(n4), n3, &n5, &n6);
 	err(e);
 
-	if (strcmp(bcl_string(n5), "-351137.0060159482"))
+	res = bcl_string(n5);
+
+	if (strcmp(res, "-351137.0060159482"))
 		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
-	if (strcmp(bcl_string(n6), ".00000152374405414"))
+	free(res);
+
+	res = bcl_string(n6);
+
+	if (strcmp(res, ".00000152374405414"))
 		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	free(res);
+
+	n4 = bcl_sqrt(n4);
+	err(bcl_err(n4));
+
+	res = bcl_string(n4);
+
+	if (strcmp(res, "94538.1346457028"))
+		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	free(res);
 
 	bcl_num_free(n);
 
