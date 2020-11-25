@@ -650,8 +650,8 @@ BclNumber bcl_sqrt(BclNumber a) {
 
 err:
 	BC_SIG_MAYLOCK;
-	BC_FUNC_FOOTER(e);
 	bcl_num_dtor(ctxt, a, aptr);
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, b, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -764,6 +764,7 @@ err:
 	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
 	if (c.i != a.i && c.i != b.i) bcl_num_dtor(ctxt, c, cptr);
 
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, d, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -887,6 +888,7 @@ char* bcl_string(BclNumber n) {
 	bc_vec_npop(&vm.out, vm.out.len);
 
 	bc_num_print(nptr, ctxt->obase, false);
+	bc_vec_pushByte(&vm.out, '\0');
 
 	BC_SIG_LOCK;
 	str = bc_vm_strdup(vm.out.v);
