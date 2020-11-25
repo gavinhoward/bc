@@ -586,6 +586,7 @@ err:
 	BC_SIG_MAYLOCK;
 	bcl_num_dtor(ctxt, a, aptr);
 	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, c, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -704,13 +705,13 @@ err:
 	if (BC_ERR(vm.err)) {
 		if (cnum.num != NULL) bc_num_free(&cnum);
 		if (dnum.num != NULL) bc_num_free(&dnum);
+	BC_FUNC_FOOTER(e);
 	}
 	else {
+		BC_FUNC_FOOTER(e);
 		*c = bcl_num_insert(ctxt, &cnum);
 		*d = bcl_num_insert(ctxt, &dnum);
 	}
-
-	BC_FUNC_FOOTER(e);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
 
@@ -853,10 +854,11 @@ BclNumber bcl_parse(const char *restrict val) {
 
 	bc_num_parse(&n, val, ctxt->ibase);
 
-	BC_NUM_NEG_VAL_NP(n, neg);
+	n.rdx = BC_NUM_NEG_VAL_NP(n, neg);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, n, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -882,13 +884,14 @@ char* bcl_string(BclNumber n) {
 
 	assert(nptr != NULL && nptr->num != NULL);
 
+	bc_vec_npop(&vm.out, vm.out.len);
+
 	bc_num_print(nptr, ctxt->obase, false);
 
+	BC_SIG_LOCK;
 	str = bc_vm_strdup(vm.out.v);
 
 err:
-	BC_SIG_MAYLOCK;
-
 	bcl_num_dtor(ctxt, n, nptr);
 
 	BC_FUNC_FOOTER_NO_ERR;

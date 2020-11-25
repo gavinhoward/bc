@@ -45,7 +45,7 @@
 		BC_SIG_LOCK;             \
 		BC_SETJMP_LOCKED(l);     \
 		vm.err = BCL_ERROR_NONE; \
-		vm.running = 0;          \
+		vm.running = 1;          \
 	} while (0)
 
 #define BC_FUNC_FOOTER_UNLOCK(e) \
@@ -62,14 +62,14 @@
 	do {                         \
 		BC_SETJMP(l);            \
 		vm.err = BCL_ERROR_NONE; \
-		vm.running = 0;          \
+		vm.running = 1;          \
 	} while (0)
 
 #define BC_FUNC_HEADER_INIT(l)   \
 	do {                         \
 		BC_SETJMP_LOCKED(l);     \
 		vm.err = BCL_ERROR_NONE; \
-		vm.running = 0;          \
+		vm.running = 1;          \
 	} while (0)
 
 #define BC_FUNC_FOOTER_NO_ERR \
@@ -79,7 +79,6 @@
 		BC_LONGJMP_STOP;      \
 		vm.sig_lock = 0;      \
 	} while (0)
-
 
 #define BC_FUNC_FOOTER(e)      \
 	do {                       \
