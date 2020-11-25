@@ -936,6 +936,7 @@ BclNumber bcl_irand(BclNumber a) {
 err:
 	BC_SIG_MAYLOCK;
 	bcl_num_dtor(ctxt, a, aptr);
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, b, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -1002,6 +1003,7 @@ BclNumber bcl_frand(size_t places) {
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, n, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -1071,6 +1073,7 @@ BclNumber bcl_ifrand(BclNumber a, size_t places) {
 err:
 	BC_SIG_MAYLOCK;
 	bcl_num_dtor(ctxt, a, aptr);
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, b, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
@@ -1150,10 +1153,11 @@ BclNumber bcl_rand_seed2num(void) {
 
 	BC_SIG_UNLOCK;
 
-	bc_num_createFromRNG(&n, bc_vec_top(&vm.rng.v));
+	bc_num_createFromRNG(&n, &vm.rng);
 
 err:
 	BC_SIG_MAYLOCK;
+	BC_FUNC_FOOTER(e);
 	BC_MAYBE_SETUP(ctxt, e, n, idx);
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
