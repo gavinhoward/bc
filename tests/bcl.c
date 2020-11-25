@@ -50,6 +50,7 @@ int main(void) {
 	size_t scale;
 	BclNumber n, n2, n3, n4, n5, n6;
 	char* res;
+	BclBigDig b = 0;
 
 	e = bcl_init();
 	err(e);
@@ -137,12 +138,65 @@ int main(void) {
 	n4 = bcl_sqrt(n4);
 	err(bcl_err(n4));
 
-	res = bcl_string(n4);
+	res = bcl_string(bcl_dup(n4));
 
 	if (strcmp(res, "94538.1346457028"))
 		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
 	free(res);
+
+	e = bcl_num_setScale(n4, 20);
+	err(e);
+
+	res = bcl_string(bcl_dup(n4));
+
+	if (strcmp(res, "94538.13464570280000000000"))
+		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	free(res);
+
+	e = bcl_num_setScale(n4, 0);
+	err(e);
+
+	res = bcl_string(bcl_dup(n4));
+
+	if (strcmp(res, "94538"))
+		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	free(res);
+
+	e = bcl_bigdig(n4, &b);
+	err(e);
+
+	if (b != 94538) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	n4 = bcl_bigdig2num(b);
+	err(bcl_err(n4));
+
+	res = bcl_string(bcl_dup(n4));
+
+	if (strcmp(res, "94538"))
+		err(BCL_ERROR_FATAL_UNKNOWN_ERR);
+
+	free(res);
+
+	n4 = bcl_frand(10);
+	err(bcl_err(n4));
+
+	n4 = bcl_lshift(n4, bcl_bigdig2num(10));
+	err(bcl_err(n4));
+
+	n3 = bcl_irand(n4);
+	err(bcl_err(n3));
+
+	n2 = bcl_ifrand(bcl_dup(n3), 10);
+	err(bcl_err(n2));
+
+	e = bcl_rand_seedWithNum(n3);
+	err(e);
+
+	n4 = bcl_rand_seed2num();
+	err(bcl_err(n4));
 
 	bcl_num_free(n);
 
