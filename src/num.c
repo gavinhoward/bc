@@ -2783,22 +2783,15 @@ err:
 void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 	size_t ts, len;
-	BcNum *ptr_a;
-#if !BC_ENABLE_LIBRARY
-	BcNum num2;
+	BcNum *ptr_a, num2;
 	bool init = false;
-#endif // BC_ENABLE_LIBRARY
 
 	ts = BC_MAX(scale + b->scale, a->scale);
 	len = bc_num_mulReq(a, b, ts);
 
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(c != d && a != d && b != d && b != c);
-#if BC_ENABLE_LIBRARY
-	assert(c != a);
-#endif // BC_ENABLE_LIBRARY
 
-#if !BC_ENABLE_LIBRARY
 	if (c == a) {
 
 		memcpy(&num2, c, sizeof(BcNum));
@@ -2814,9 +2807,7 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 
 		BC_SIG_UNLOCK;
 	}
-	else
-#endif // BC_ENABLE_LIBRARY
-	{
+	else {
 		ptr_a = a;
 		bc_num_expand(c, len);
 	}
@@ -2844,14 +2835,12 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	assert(BC_NUM_RDX_VAL(d) <= d->len || !d->len);
 	assert(!d->len || d->num[d->len - 1] || BC_NUM_RDX_VAL(d) == d->len);
 
-#if !BC_ENABLE_LIBRARY
 err:
 	if (init) {
 		BC_SIG_MAYLOCK;
 		bc_num_free(&num2);
 		BC_LONGJMP_CONT;
 	}
-#endif // !BC_ENABLE_LIBRARY
 }
 
 #if DC_ENABLED
