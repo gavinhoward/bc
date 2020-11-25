@@ -136,8 +136,6 @@ BclError bcl_err(BclNumber n);
 
 BclNumber bcl_num_create(void);
 BclNumber bcl_num_create_req(size_t req);
-BclError bcl_copy(BclNumber d, BclNumber s);
-BclNumber bcl_dup(BclNumber s);
 void bcl_num_free(BclNumber n);
 
 bool bcl_num_neg(BclNumber n);
@@ -145,6 +143,9 @@ void bcl_num_setNeg(BclNumber n, bool neg);
 size_t bcl_num_scale(BclNumber n);
 BclError bcl_num_setScale(BclNumber n, size_t scale);
 size_t bcl_num_len(BclNumber n);
+
+BclError bcl_copy(BclNumber d, BclNumber s);
+BclNumber bcl_dup(BclNumber s);
 
 BclError bcl_bigdig(BclNumber n, BclBigDig *result);
 BclNumber bcl_bigdig2num(BclBigDig val);
