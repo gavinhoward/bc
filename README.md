@@ -107,6 +107,18 @@ other locations, use the `PREFIX` environment variable when running
 `configure.sh` or pass the `--prefix=<prefix>` option to `configure.sh`. See the
 [build manual][5], or run `./configure.sh --help`, for more details.
 
+### Library
+
+This `bc` does provide a way to build a math library with C bindings. This is
+done by the `-a` or `--library` options to `configure.sh`:
+
+```
+./configure.sh -a
+```
+
+When building the library, the executables are not built. For more information,
+see the [build manual][5].
+
 ### Package and Distro Maintainers
 
 #### Recommended Compiler
