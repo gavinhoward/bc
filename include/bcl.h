@@ -108,6 +108,7 @@ struct BclCtxt;
 typedef struct BclCtxt* BclContext;
 
 void bcl_handleSignal(void);
+bool bcl_running(void);
 
 BclError bcl_init(void);
 void bcl_free(void);

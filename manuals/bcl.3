@@ -41,6 +41,8 @@ This procedure will allow clients to use signals to interrupt
 computations running in bcl(3).
 .PP
 \f[B]void bcl_handleSignal(\f[R]\f[I]void\f[R]\f[B]);\f[R]
+.PP
+\f[B]bool bcl_running(\f[R]\f[I]void\f[R]\f[B]);\f[R]
 .SS Setup
 .PP
 These items allow clients to set up bcl(3).
@@ -247,6 +249,17 @@ functions are executing.
 If execution \f[I]is\f[R] interrupted,
 \f[B]bcl_handleSignal(\f[R]\f[I]void\f[R]\f[B])\f[R] does \f[I]not\f[R]
 return to its caller.
+.PP
+See the \f[B]SIGNAL HANDLING\f[R] section.
+.RE
+.TP
+\f[B]bool bcl_running(\f[R]\f[I]void\f[R]\f[B])\f[R]
+An async-signal-safe function that can be called from a signal handler.
+It will return \f[B]true\f[R] if any bcl(3) procedures are running,
+which means it is safe to call
+\f[B]bcl_handleSignal(\f[R]\f[I]void\f[R]\f[B])\f[R].
+Otherwise, it returns \f[B]false\f[R].
+.RS
 .PP
 See the \f[B]SIGNAL HANDLING\f[R] section.
 .RE

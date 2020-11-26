@@ -47,6 +47,8 @@ running in bcl(3).
 
 **void bcl_handleSignal(***void***);**
 
+**bool bcl_running(***void***);**
+
 ## Setup
 
 These items allow clients to set up bcl(3).
@@ -230,6 +232,15 @@ each function for what each function can return.
 
     If execution *is* interrupted, **bcl_handleSignal(***void***)** does *not*
     return to its caller.
+
+    See the **SIGNAL HANDLING** section.
+
+**bool bcl_running(***void***)**
+
+:   An async-signal-safe function that can be called from a signal handler. It
+    will return **true** if any bcl(3) procedures are running, which means it is
+    safe to call **bcl_handleSignal(***void***)**. Otherwise, it returns
+    **false**.
 
     See the **SIGNAL HANDLING** section.
 
