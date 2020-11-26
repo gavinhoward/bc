@@ -136,7 +136,6 @@ void bcl_ctxt_setObase(BclContext ctxt, size_t obase);
 BclError bcl_err(BclNumber n);
 
 BclNumber bcl_num_create(void);
-BclNumber bcl_num_create_req(size_t req);
 void bcl_num_free(BclNumber n);
 
 bool bcl_num_neg(BclNumber n);
