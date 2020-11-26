@@ -1,5 +1,14 @@
 # News
 
+## 3.2.0
+
+This is a production release that has one bug fix and a major addition.
+
+The bug fix was a missing `auto` variable in the bessel `j()` function in the
+math library.
+
+The major addition is a way to build a library
+
 ## 3.1.6
 
 This is a production release that fixes a new warning from Clang 12 for FreeBSD

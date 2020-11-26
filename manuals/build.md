@@ -300,6 +300,9 @@ functionality for `bc` and `dc` are both enabled, though the executables are
 To build an optimized version of the library, users can pass optimization
 options to `configure.sh` or include them in `CFLAGS`.
 
+The library API can be found in `manuals/bcl.3.md` or `man bcl` once the library
+is installed.
+
 ### `bc` Only
 
 To build `bc` only (no `dc`), use any one of the following commands for the

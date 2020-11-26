@@ -119,6 +119,12 @@ done by the `-a` or `--library` options to `configure.sh`:
 When building the library, the executables are not built. For more information,
 see the [build manual][5].
 
+The library API can be found in `manuals/bcl.3` or `man bcl` once the library is
+installed.
+
+The library API can be found in [`manuals/bcl.3.md`][26] or `man bcl` once the
+library is installed.
+
 ### Package and Distro Maintainers
 
 #### Recommended Compiler
@@ -347,3 +353,4 @@ Folders:
 [23]: https://svnweb.freebsd.org/base/head/contrib/bc/
 [24]: https://bugs.freebsd.org/
 [25]: https://reviews.freebsd.org/
+[26]: ./manuals/bcl.3.md
