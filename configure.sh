@@ -941,22 +941,24 @@ if [ "$hist" -eq 0 ]; then
 fi
 
 if [ "$bc" -eq 0 ]; then
-	unneeded="$unneeded bc/bc.c bc/lex.c bc/parse.c"
+	unneeded="$unneeded bc.c bc_lex.c bc_parse.c"
 fi
 
 if [ "$dc" -eq 0 ]; then
-	unneeded="$unneeded dc/dc.c dc/lex.c dc/parse.c"
+	unneeded="$unneeded dc.c dc_lex.c dc_parse.c"
 fi
 
 if [ "$extra_math" -eq 0 ]; then
 	unneeded="$unneeded rand.c"
 fi
 
-if [ "$library" -eq 1 ]; then
+if [ "$library" -ne 0 ]; then
 	unneeded="$unneeded args.c opt.c read.c file.c main.c"
 	unneeded="$unneeded lang.c lex.c parse.c program.c"
 	unneeded="$unneeded bc.c bc_lex.c bc_parse.c"
 	unneeded="$unneeded dc.c dc_lex.c dc_parse.c"
+else
+	unneeded="$unneeded library.c"
 fi
 
 # Print out the values; this is for debugging.

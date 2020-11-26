@@ -63,7 +63,7 @@ static const char* const bc_gen_name_extern = "extern const char %s[];\n\n";
 int main(int argc, char *argv[]) {
 
 	FILE *in, *out;
-	char *label, *define, *name, *include;
+	char *label, *define, *name;
 	int c, count, slashes, err = IO_ERR;
 	bool has_label, has_define, remove_tabs;
 
@@ -73,15 +73,14 @@ int main(int argc, char *argv[]) {
 	}
 
 	name = argv[3];
-	include = argv[4];
 
-	has_label = (argc > 5 && strcmp("", argv[5]) != 0);
-	label = has_label ? argv[5] : "";
+	has_label = (argc > 4 && strcmp("", argv[4]) != 0);
+	label = has_label ? argv[4] : "";
 
-	has_define = (argc > 6 && strcmp("", argv[6]) != 0);
-	define = has_define ? argv[6] : "";
+	has_define = (argc > 5 && strcmp("", argv[5]) != 0);
+	define = has_define ? argv[5] : "";
 
-	remove_tabs = (argc > 7);
+	remove_tabs = (argc > 6);
 
 	in = fopen(argv[1], "r");
 	if (!in) return INVALID_INPUT_FILE;

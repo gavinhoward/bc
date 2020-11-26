@@ -430,7 +430,7 @@ void bcl_num_setNeg(BclNumber n, bool neg) {
 
 	assert(num != NULL && num->num != NULL);
 
-	BC_NUM_NEG_VAL(num, neg);
+	num->rdx = BC_NUM_NEG_VAL(num, neg);
 }
 
 size_t bcl_num_scale(BclNumber n) {
@@ -853,7 +853,7 @@ BclNumber bcl_parse(const char *restrict val) {
 
 	BC_SIG_UNLOCK;
 
-	bc_num_parse(&n, val, ctxt->ibase);
+	bc_num_parse(&n, val, (BcBigDig) ctxt->ibase);
 
 	n.rdx = BC_NUM_NEG_VAL_NP(n, neg);
 
@@ -887,7 +887,7 @@ char* bcl_string(BclNumber n) {
 
 	bc_vec_npop(&vm.out, vm.out.len);
 
-	bc_num_print(nptr, ctxt->obase, false);
+	bc_num_print(nptr, (BcBigDig) ctxt->obase, false);
 	bc_vec_pushByte(&vm.out, '\0');
 
 	BC_SIG_LOCK;
@@ -956,7 +956,7 @@ static void bcl_frandHelper(BcNum *restrict b, size_t places) {
 	ten.num[0] = 10;
 	ten.len = 1;
 
-	bc_num_bigdig2num(&exp, (unsigned long) places);
+	bc_num_bigdig2num(&exp, (BcBigDig) places);
 
 	bc_num_clear(&pow);
 
