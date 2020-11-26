@@ -709,7 +709,9 @@ err:
 	if (BC_ERR(vm.err)) {
 		if (cnum.num != NULL) bc_num_free(&cnum);
 		if (dnum.num != NULL) bc_num_free(&dnum);
-	BC_FUNC_FOOTER(e);
+		c->i = 0 - (size_t) BCL_ERROR_INVALID_NUM;
+		d->i = c->i;
+		BC_FUNC_FOOTER(e);
 	}
 	else {
 		BC_FUNC_FOOTER(e);
