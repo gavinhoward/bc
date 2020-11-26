@@ -1,5 +1,12 @@
 # News
 
+## 3.2.1
+
+This is a production release that has one fix for `bcl(3)`. It is technically
+not a bug fix since the behavior is undefined, but the `BclNumber`s that
+`bcl_divmod()` returns will be set to `BCL_ERROR_INVALID_NUM` if there is an
+error. Previously, they were not set.
+
 ## 3.2.0
 
 This is a production release that has one bug fix and a major addition.
