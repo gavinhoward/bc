@@ -59,8 +59,8 @@ void bcl_handleSignal(void) {
 	if (!vm.sig_lock) BC_VM_JMP;
 }
 
-void bcl_running(void) {
-	return vm.running;
+bool bcl_running(void) {
+	return vm.running != 0;
 }
 
 BclError bcl_init(void) {
