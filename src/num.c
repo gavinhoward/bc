@@ -571,7 +571,7 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	BcDig *ptr_c, *ptr_l, *ptr_r;
 	size_t i, min_rdx, max_rdx, diff, a_int, b_int, min_len, max_len, max_int;
 	size_t len_l, len_r, ardx, brdx;
-	bool b_neg, do_sub, do_rev_sub, carry;
+	bool b_neg, do_sub, do_rev_sub, carry, c_neg;
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
@@ -703,8 +703,8 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	// The result has the same sign as a, unless the operation was a
 	// reverse subtraction (b - a).
-	c->rdx = BC_NUM_RDX_SET_NEG(c, max_rdx, BC_NUM_NEG(a) !=
-	                            (do_sub && do_rev_sub));
+	c_neg = BC_NUM_NEG(a) != (do_sub && do_rev_sub);
+	BC_NUM_RDX_SET_NEG(c, max_rdx, c_neg);
 	c->len = max_len;
 	c->scale = BC_MAX(a->scale, b->scale);
 
@@ -2664,7 +2664,9 @@ void bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
-	size_t rdx, len, req;
+	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
+	size_t pow, len, rdx, req, digs, digs1, digs2, resscale;
+	BcDig half_digs[1];
 
 	assert(a != NULL && b != NULL && a != b);
 
@@ -2681,15 +2683,6 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 	bc_num_init(b, bc_vm_growSize(req, 1));
 
 	BC_SIG_UNLOCK;
-
-	bc_num_sr(a, b, scale);
-}
-
-void bc_num_sr(BcNum *restrict a, BcNum *restrict b, size_t scale) {
-
-	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
-	size_t pow, len, rdx, digs, digs1, digs2, resscale;
-	BcDig half_digs[1];
 
 	assert(a != NULL && b != NULL && a != b);
 	assert(a->num != NULL && b->num != NULL);
