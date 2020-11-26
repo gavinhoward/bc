@@ -119,11 +119,10 @@ done by the `-a` or `--library` options to `configure.sh`:
 When building the library, the executables are not built. For more information,
 see the [build manual][5].
 
-The library API can be found in `manuals/bcl.3` or `man bcl` once the library is
-installed.
-
 The library API can be found in [`manuals/bcl.3.md`][26] or `man bcl` once the
 library is installed.
+
+The library is built as `bin/libbcl.a`.
 
 ### Package and Distro Maintainers
 

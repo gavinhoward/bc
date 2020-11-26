@@ -303,6 +303,8 @@ options to `configure.sh` or include them in `CFLAGS`.
 The library API can be found in `manuals/bcl.3.md` or `man bcl` once the library
 is installed.
 
+The library is built as `bin/libbcl.a`.
+
 ### `bc` Only
 
 To build `bc` only (no `dc`), use any one of the following commands for the
