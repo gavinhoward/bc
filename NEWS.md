@@ -1,5 +1,10 @@
 # News
 
+## 3.2.2
+
+This is a production release that fixes a portability bug in `configure.sh`. The
+bug was using the GNU `find` extension `-wholename`.
+
 ## 3.2.1
 
 This is a production release that has one fix for `bcl(3)`. It is technically
