@@ -1,5 +1,12 @@
 # News
 
+## 3.2.3
+
+This is a production release that fixes a bug in `gen/strgen.sh`. I recently
+changed `gen/strgen.c`, but I did not change `gen/strgen.sh`.
+
+Users that do not use `gen/strgen.sh` do not need to upgrade.
+
 ## 3.2.2
 
 This is a production release that fixes a portability bug in `configure.sh`. The
