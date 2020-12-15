@@ -173,7 +173,7 @@ typedef enum BcErr {
 #endif // defined(__has_attribute) && __has_attribute(fallthrough)
 #else // defined(__clang__) || defined(__GNUC__)
 #define BC_FALLTHROUGH
-#endif //defined(__clang__) || defined(__GNUC__)
+#endif // defined(__clang__) || defined(__GNUC__)
 
 // Workarounds for AIX's POSIX incompatibility.
 #ifndef SIZE_MAX
