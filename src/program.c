@@ -723,13 +723,13 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 }
 
 #if DC_ENABLED
-static void bc_program_assignStr(BcProgram *p, BcResult *r,
+static void bc_program_assignStr(BcProgram *p, size_t idx,
                                  BcVec *v, bool push)
 {
 	BcNum n2;
 
 	bc_num_clear(&n2);
-	n2.scale = r->d.loc.loc;
+	n2.scale = idx;
 
 	assert(BC_PROG_STACK(&p->results, 1 + !push));
 
@@ -778,7 +778,7 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 #if DC_ENABLED
 	if (BC_IS_DC && (ptr->t == BC_RESULT_STR || BC_PROG_STR(n))) {
 		if (BC_ERR(!var)) bc_vm_err(BC_ERR_EXEC_TYPE);
-		bc_program_assignStr(p, ptr, vec, true);
+		bc_program_assignStr(p, ptr->d.loc.loc, vec, true);
 		return;
 	}
 #endif // DC_ENABLED
@@ -864,7 +864,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		}
 		else {
 			BcVec *v = bc_program_vec(p, left->d.loc.loc, BC_TYPE_VAR);
-			bc_program_assignStr(p, right, v, false);
+			bc_program_assignStr(p, idx, v, false);
 		}
 
 		return;
