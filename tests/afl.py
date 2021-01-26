@@ -89,6 +89,10 @@ def get_children(dir, get_files):
 	dirs.sort()
 	return dirs
 
+
+def exe_name(d):
+	return "bc" if d == "bc1" or d == "bc2" or d == "bc3" else "dc"
+
 script = sys.argv[0]
 testdir = os.path.dirname(script)
 
@@ -115,15 +119,19 @@ if asan:
 if len(sys.argv) >= idx + 2:
 	resultsdir = sys.argv[idx + 1]
 else:
-	if exedir == "bc":
-		resultsdir = testdir + "/../../results"
+	if exedir == "bc1":
+		resultsdir = testdir + "/fuzzing/bc_outputs1"
+	if exedir == "bc2":
+		resultsdir = testdir + "/fuzzing/bc_outputs1"
+	if exedir == "bc3":
+		resultsdir = testdir + "/fuzzing/bc_outputs1"
 	else:
-		resultsdir = testdir + "/../../results_dc"
+		resultsdir = testdir + "/fuzzing/dc_outputs"
 
 if len(sys.argv) >= idx + 3:
 	exe = sys.argv[idx + 2]
 else:
-	exe = testdir + "/../bin/" + exedir
+	exe = testdir + "/../bin/" + exe_name(exedir)
 
 exebase = os.path.basename(exe)
 
