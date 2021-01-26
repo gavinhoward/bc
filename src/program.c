@@ -1254,8 +1254,10 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 			{
 #if DC_ENABLED
 				if (!BC_PROG_NUM(opd, num)) {
+
 					size_t idx;
 					char *str;
+
 					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->scale;
 					str = *((char**) bc_vec_item(p->strs, idx));
 					val = (BcBigDig) strlen(str);
