@@ -777,8 +777,13 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 
 #if DC_ENABLED
 	if (BC_IS_DC && (ptr->t == BC_RESULT_STR || BC_PROG_STR(n))) {
+
+		size_t str_idx = ptr->t == BC_RESULT_STR ? ptr->d.loc.loc : n->scale;
+
 		if (BC_ERR(!var)) bc_vm_err(BC_ERR_EXEC_TYPE);
-		bc_program_assignStr(p, ptr->d.loc.loc, vec, true);
+
+		bc_program_assignStr(p, str_idx, vec, true);
+
 		return;
 	}
 #endif // DC_ENABLED
