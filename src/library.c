@@ -151,9 +151,7 @@ void bcl_free(void) {
 	bc_vec_free(&vm.ctxts);
 #endif // NDEBUG
 
-	bc_vm_shutdown();
-
-	bc_vec_free(&vm.jmp_bufs);
+	bc_vm_atexit();
 
 	BC_SIG_UNLOCK;
 

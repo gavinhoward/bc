@@ -143,7 +143,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 			BC_SIG_UNLOCK;
 
-			bc_vm_err(BC_ERR_FATAL_IO_ERR);
+			bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 		}
 
 		BC_SIG_UNLOCK;

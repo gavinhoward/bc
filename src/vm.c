@@ -138,6 +138,16 @@ void bc_vm_info(const char* const help) {
 }
 #endif // !BC_ENABLE_LIBRARY
 
+#if !BC_ENABLE_LIBRARY
+BC_NORETURN
+#endif // !BC_ENABLE_LIBRARY
+void bc_vm_fatalError(BcErr e) {
+	bc_vm_err(e);
+#if !BC_ENABLE_LIBRARY
+	abort();
+#endif // !BC_ENABLE_LIBRARY
+}
+
 #if BC_ENABLE_LIBRARY
 void bc_vm_handleError(BcErr e) {
 
@@ -229,8 +239,12 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 
 	s = bc_file_flushErr(&vm.ferr);
 
-	vm.status = s == BC_STATUS_ERROR_FATAL ?
-	    (sig_atomic_t) s : (sig_atomic_t) (uchar) (id + 1);
+	// Because this function is called by a BC_NORETURN function when fatal
+	// errors happen, we need to make sure to exit on fatal errors. This will
+	// be faster anyway. This function *cannot jump when a fatal error occurs!*
+	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) exit(bc_vm_atexit((int) s));
+
+	vm.status = (sig_atomic_t) (uchar) (id + 1);
 
 	if (BC_ERR(vm.status)) BC_VM_JMP;
 
@@ -367,14 +381,14 @@ void bc_vm_freeTemps(void) {
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
 	if (BC_ERR(res >= SIZE_MAX || (n != 0 && res / n != size)))
-		bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
+		bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 	return res;
 }
 
 inline size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t res = a + b;
 	if (BC_ERR(res >= SIZE_MAX || res < a || res < b))
-		bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
+		bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 	return res;
 }
 
@@ -386,7 +400,7 @@ void* bc_vm_malloc(size_t n) {
 
 	ptr = malloc(n);
 
-	if (BC_ERR(ptr == NULL)) bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
+	if (BC_ERR(ptr == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 
 	return ptr;
 }
@@ -399,7 +413,7 @@ void* bc_vm_realloc(void *ptr, size_t n) {
 
 	temp = realloc(ptr, n);
 
-	if (BC_ERR(temp == NULL)) bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
+	if (BC_ERR(temp == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 
 	return temp;
 }
@@ -412,7 +426,7 @@ char* bc_vm_strdup(const char *str) {
 
 	s = strdup(str);
 
-	if (BC_ERR(!s)) bc_vm_err(BC_ERR_FATAL_ALLOC_ERR);
+	if (BC_ERR(s == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 
 	return s;
 }
@@ -917,3 +931,27 @@ void bc_vm_init(void) {
 	}
 #endif // BC_ENABLED
 }
+
+#if BC_ENABLE_LIBRARY
+void bc_vm_atexit(void) {
+
+	bc_vm_shutdown();
+
+#ifndef NDEBUG
+	bc_vec_free(&vm.jmp_bufs);
+#endif // NDEBUG
+}
+#else // BC_ENABLE_LIBRARY
+int bc_vm_atexit(int status) {
+
+	int s = BC_STATUS_IS_ERROR(status) ? status : BC_STATUS_SUCCESS;
+
+	bc_vm_shutdown();
+
+#ifndef NDEBUG
+	bc_vec_free(&vm.jmp_bufs);
+#endif // NDEBUG
+
+	return s;
+}
+#endif // BC_ENABLE_LIBRARY

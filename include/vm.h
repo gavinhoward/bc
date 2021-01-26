@@ -436,8 +436,12 @@ void bc_vm_jmp(void);
 
 #if BC_ENABLE_LIBRARY
 void bc_vm_handleError(BcErr e);
+void bc_vm_fatalError(BcErr e);
+void bc_vm_atexit(void);
 #else // BC_ENABLE_LIBRARY
 void bc_vm_handleError(BcErr e, size_t line, ...);
+BC_NORETURN void bc_vm_fatalError(BcErr e);
+int bc_vm_atexit(int status);
 #endif // BC_ENABLE_LIBRARY
 
 extern const char bc_copyright[];
