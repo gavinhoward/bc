@@ -1801,6 +1801,7 @@ void bc_program_reset(BcProgram *p) {
 #endif // BC_ENABLED
 
 	f = bc_vec_item(&p->fns, BC_PROG_MAIN);
+	bc_vec_npop(&f->code, f->code.len);
 	ip = bc_vec_top(&p->stack);
 	bc_program_setVecs(p, f);
 	memset(ip, 0, sizeof(BcInstPtr));
