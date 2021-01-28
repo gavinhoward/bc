@@ -130,7 +130,7 @@ void bc_lex_number(BcLex *l, char start) {
 
 	l->t = BC_LEX_NUMBER;
 
-	bc_vec_npop(&l->str, l->str.len);
+	bc_vec_popAll(&l->str);
 	bc_vec_push(&l->str, &start);
 
 	l->i += bc_lex_num(l, start, false);

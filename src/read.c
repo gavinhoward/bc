@@ -96,7 +96,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	BC_SIG_ASSERT_NOT_LOCKED;
 
-	bc_vec_npop(vec, vec->len);
+	bc_vec_popAll(vec);
 
 #if BC_ENABLE_PROMPT
 	if (BC_USE_PROMPT) {

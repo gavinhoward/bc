@@ -454,7 +454,7 @@ static void bc_program_read(BcProgram *p) {
 	BC_SIG_UNLOCK;
 
 	bc_lex_file(&parse.l, bc_program_stdin_name);
-	bc_vec_npop(&f->code, f->code.len);
+	bc_vec_popAll(&f->code);
 
 	s = bc_read_line(&buf, BC_IS_BC ? "read> " : "?> ");
 	if (s == BC_STATUS_EOF) bc_vm_err(BC_ERR_EXEC_READ_EXPR);
@@ -1585,7 +1585,7 @@ err:
 	BC_SIG_MAYLOCK;
 	bc_parse_free(&prs);
 	f = bc_vec_item(&p->fns, fidx);
-	bc_vec_npop(&f->code, f->code.len);
+	bc_vec_popAll(&f->code);
 exit:
 	bc_vec_pop(&p->results);
 	BC_LONGJMP_CONT;
@@ -1794,7 +1794,7 @@ void bc_program_reset(BcProgram *p) {
 	BC_SIG_ASSERT_LOCKED;
 
 	bc_vec_npop(&p->stack, p->stack.len - 1);
-	bc_vec_npop(&p->results, p->results.len);
+	bc_vec_popAll(&p->results);
 
 #if BC_ENABLED
 	if (BC_G) bc_program_popGlobals(p, true);
@@ -2152,7 +2152,7 @@ void bc_program_exec(BcProgram *p) {
 
 			case BC_INST_CLEAR_STACK:
 			{
-				bc_vec_npop(&p->results, p->results.len);
+				bc_vec_popAll(&p->results);
 				break;
 			}
 

@@ -491,18 +491,18 @@ static void bc_vm_clean(void) {
 
 #if BC_ENABLED
 		if (BC_IS_BC) {
-			bc_vec_npop(&f->labels, f->labels.len);
-			bc_vec_npop(&f->strs, f->strs.len);
-			bc_vec_npop(&f->consts, f->consts.len);
+			bc_vec_popAll(&f->labels);
+			bc_vec_popAll(&f->strs);
+			bc_vec_popAll(&f->consts);
 		}
 #endif // BC_ENABLED
 
 #if DC_ENABLED
 		// Note to self: you cannot delete strings and functions. Deal with it.
-		if (BC_IS_DC) bc_vec_npop(vm.prog.consts, vm.prog.consts->len);
+		if (BC_IS_DC) bc_vec_popAll(vm.prog.consts);
 #endif // DC_ENABLED
 
-		bc_vec_npop(&f->code, f->code.len);
+		bc_vec_popAll(&f->code);
 
 		ip->idx = 0;
 	}
@@ -798,7 +798,7 @@ static void bc_vm_exec(void) {
 			bc_vec_pushByte(&buf, '\0');
 			bc_vm_process(buf.v);
 
-			bc_vec_npop(&buf, buf.len);
+			bc_vec_popAll(&buf);
 
 		} while (more);
 

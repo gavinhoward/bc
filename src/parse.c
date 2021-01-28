@@ -159,9 +159,9 @@ void bc_parse_reset(BcParse *p) {
 #if BC_ENABLED
 	if (BC_IS_BC) {
 		bc_vec_npop(&p->flags, p->flags.len - 1);
-		bc_vec_npop(&p->exits, p->exits.len);
-		bc_vec_npop(&p->conds, p->conds.len);
-		bc_vec_npop(&p->ops, p->ops.len);
+		bc_vec_popAll(&p->exits);
+		bc_vec_popAll(&p->conds);
+		bc_vec_popAll(&p->ops);
 	}
 #endif // BC_ENABLED
 
