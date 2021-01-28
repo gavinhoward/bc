@@ -56,8 +56,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Rand
 
-The files `src/rand.c` and `include/rand.h` are *also* under the following
-copyrights and license:
+The files `src/rand.c` and `include/rand.h` are under the following copyrights
+and license:
 
 Copyright (c) 2014-2017 Melissa O'Neill and PCG Project contributors
 Copyright (c) 2018-2021 Gavin D. Howard <yzena.tech@gmail.com>
