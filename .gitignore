@@ -62,5 +62,7 @@ perf.data.old
 *.html
 *.profraw
 
+core.*
+
 cscope*.out
 tags
