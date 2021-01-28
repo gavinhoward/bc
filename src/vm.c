@@ -239,12 +239,18 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 
 	s = bc_file_flushErr(&vm.ferr);
 
+#if !BC_ENABLE_AFL
 	// Because this function is called by a BC_NORETURN function when fatal
 	// errors happen, we need to make sure to exit on fatal errors. This will
 	// be faster anyway. This function *cannot jump when a fatal error occurs!*
 	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) exit(bc_vm_atexit((int) s));
-
-	vm.status = (sig_atomic_t) (uchar) (id + 1);
+#else // !BC_ENABLE_AFL
+	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) vm.status = (sig_atomic_t) s;
+	else
+#endif // !BC_ENABLE_AFL
+	{
+		vm.status = (sig_atomic_t) (uchar) (id + 1);
+	}
 
 	if (BC_ERR(vm.status)) BC_VM_JMP;
 
@@ -673,10 +679,16 @@ err:
 
 	bc_vm_clean();
 
+#if !BC_ENABLE_AFL
 	assert(vm.status != BC_STATUS_ERROR_FATAL);
 
 	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
 	            vm.status : BC_STATUS_SUCCESS;
+#else // !BC_ENABLE_AFL
+	vm.status = vm.status == BC_STATUS_ERROR_FATAL ||
+	            vm.status == BC_STATUS_QUIT || !BC_I ?
+	            vm.status : BC_STATUS_SUCCESS;
+#endif // !BC_ENABLE_AFL
 
 	if (!vm.status && !vm.eof) {
 		bc_vec_empty(&buffer);
@@ -761,10 +773,6 @@ static void bc_vm_exec(void) {
 	bool has_file = false;
 	BcVec buf;
 
-#if BC_ENABLE_AFL
-	__AFL_INIT();
-#endif // BC_ENABLE_AFL
-
 #if BC_ENABLED
 	if (BC_IS_BC && (vm.flags & BC_FLAG_L)) {
 
@@ -820,6 +828,10 @@ static void bc_vm_exec(void) {
 		has_file = true;
 		bc_vm_file(path);
 	}
+
+#if BC_ENABLE_AFL
+	__AFL_INIT();
+#endif // BC_ENABLE_AFL
 
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
 

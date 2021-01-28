@@ -50,8 +50,6 @@
 #ifndef __AFL_HAVE_MANUAL_CONTROL
 #error Must compile with afl-clang-fast for fuzzing
 #endif // __AFL_HAVE_MANUAL_CONTROL
-#undef BC_ENABLE_RAND
-#define BC_ENABLE_RAND (0)
 #endif // BC_ENABLE_AFL
 
 #include <bcl.h>
