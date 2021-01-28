@@ -262,6 +262,15 @@ void bc_rand_srand(BcRNGData *rng) {
 		bc_rand_fill(rng, bc_rand_frand, &fd);
 		close(fd);
 	}
+	else {
+
+		fd = open("/dev/random", O_RDONLY);
+
+		if (BC_NO_ERR(fd >= 0)) {
+			bc_rand_fill(rng, bc_rand_frand, &fd);
+			close(fd);
+		}
+	}
 
 	while (BC_ERR(BC_RAND_ZERO(rng))) bc_rand_fill(rng, bc_rand_rand, NULL);
 
