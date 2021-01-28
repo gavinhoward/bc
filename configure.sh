@@ -48,7 +48,7 @@ usage() {
 	printf 'usage:\n'
 	printf '    %s -h\n' "$script"
 	printf '    %s --help\n' "$script"
-	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlMNPT] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlMNPTz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '    %s \\\n' "$script"
 	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]\\\n'
 	printf '       [--force --debug --disable-extra-math --disable-generated-tests]    \\\n'
@@ -122,6 +122,8 @@ usage() {
 	printf '    -T, --disable-strip\n'
 	printf '        Disable stripping symbols from the compiled binary or binaries.\n'
 	printf '        Stripping symbols only happens when debug mode is off.\n'
+	printf '    -z, --enable-fuzz-mode\n'
+	printf '        Enable fuzzing mode. THIS IS FOR DEVELOPMENT ONLY.\n'
 	printf '    --prefix PREFIX\n'
 	printf '        The prefix to install to. Overrides "$PREFIX" if it exists.\n'
 	printf '        If PREFIX is "/usr", install path will be "/usr/bin".\n'
@@ -355,8 +357,9 @@ force=0
 strip_bin=1
 all_locales=0
 library=0
+fuzz=0
 
-while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
+while getopts "abBcdDEfgGhHk:lMNO:PSTz-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -378,6 +381,7 @@ while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
 		O) optimization="$OPTARG" ;;
 		P) prompt=0 ;;
 		T) strip_bin=0 ;;
+		z) fuzz=1 ;;
 		-)
 			arg="$1"
 			arg="${arg#--}"
@@ -483,6 +487,7 @@ while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
 				disable-nls) nls=0 ;;
 				disable-prompt) prompt=0 ;;
 				disable-strip) strip_bin=0 ;;
+				enable-fuzz-mode) fuzz=1 ;;
 				install-all-locales) all_locales=1 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
@@ -492,7 +497,7 @@ while getopts "abBcdDEfgGhHk:lMNO:PST-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				disable-man-pages* | disable-nls* | disable-strip*)
 					usage "No arg allowed for --$arg option" ;;
-				install-all-locales*)
+				enable-fuzz-mode* | install-all-locales*)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
@@ -710,6 +715,14 @@ else
 	default_target_prereqs="$second_target"
 	default_target_cmd="\$(LINK) \$(BIN) \$(EXEC_PREFIX)\$(DC)"
 
+fi
+
+if [ "$fuzz" -ne 0 ]; then
+	debug=1
+	hist=0
+	prompt=0
+	nls=0
+	optimization="3"
 fi
 
 if [ "$debug" -eq 1 ]; then
@@ -1009,6 +1022,7 @@ printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
 printf 'BC_ENABLE_PROMPT=%s\n' "$prompt"
+printf 'BC_ENABLE_AFL=%s\n' "$fuzz"
 printf '\n'
 printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
 printf '\n'
@@ -1073,6 +1087,8 @@ contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "PROMPT" "$prompt")
+contents=$(replace "$contents" "FUZZ" "$fuzz")
+
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")
 contents=$(replace "$contents" "DC_HELP_O" "$dc_help")

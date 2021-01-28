@@ -138,14 +138,14 @@ void bc_vm_info(const char* const help) {
 }
 #endif // !BC_ENABLE_LIBRARY
 
-#if !BC_ENABLE_LIBRARY
+#if !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
 BC_NORETURN
-#endif // !BC_ENABLE_LIBRARY
+#endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
 void bc_vm_fatalError(BcErr e) {
 	bc_vm_err(e);
-#if !BC_ENABLE_LIBRARY
+#if !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
 	abort();
-#endif // !BC_ENABLE_LIBRARY
+#endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
 }
 
 #if BC_ENABLE_LIBRARY
@@ -759,6 +759,10 @@ static void bc_vm_exec(void) {
 	size_t i;
 	bool has_file = false;
 	BcVec buf;
+
+#if BC_ENABLE_AFL
+	__AFL_INIT();
+#endif // BC_ENABLE_AFL
 
 #if BC_ENABLED
 	if (BC_IS_BC && (vm.flags & BC_FLAG_L)) {

@@ -440,7 +440,10 @@ void bc_vm_fatalError(BcErr e);
 void bc_vm_atexit(void);
 #else // BC_ENABLE_LIBRARY
 void bc_vm_handleError(BcErr e, size_t line, ...);
-BC_NORETURN void bc_vm_fatalError(BcErr e);
+#if !BC_ENABLE_AFL
+BC_NORETURN
+#endif // _!BC_ENABLE_AFL
+void bc_vm_fatalError(BcErr e);
 int bc_vm_atexit(int status);
 #endif // BC_ENABLE_LIBRARY
 
