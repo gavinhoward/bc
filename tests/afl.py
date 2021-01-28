@@ -116,17 +116,21 @@ if asan:
 		usage()
 	exedir = sys.argv[idx]
 
+print("exedir: {}".format(exedir))
+
 if len(sys.argv) >= idx + 2:
 	resultsdir = sys.argv[idx + 1]
 else:
 	if exedir == "bc1":
 		resultsdir = testdir + "/fuzzing/bc_outputs1"
-	if exedir == "bc2":
-		resultsdir = testdir + "/fuzzing/bc_outputs1"
-	if exedir == "bc3":
-		resultsdir = testdir + "/fuzzing/bc_outputs1"
+	elif exedir == "bc2":
+		resultsdir = testdir + "/fuzzing/bc_outputs2"
+	elif exedir == "bc3":
+		resultsdir = testdir + "/fuzzing/bc_outputs3"
 	else:
 		resultsdir = testdir + "/fuzzing/dc_outputs"
+
+print("resultsdir: {}".format(resultsdir))
 
 if len(sys.argv) >= idx + 3:
 	exe = sys.argv[idx + 2]
