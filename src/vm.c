@@ -673,8 +673,9 @@ err:
 
 	bc_vm_clean();
 
-	vm.status = vm.status == BC_STATUS_ERROR_FATAL ||
-	            vm.status == BC_STATUS_QUIT || !BC_I ?
+	assert(vm.status != BC_STATUS_ERROR_FATAL);
+
+	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
 	            vm.status : BC_STATUS_SUCCESS;
 
 	if (!vm.status && !vm.eof) {

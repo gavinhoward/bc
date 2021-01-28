@@ -1721,7 +1721,6 @@ void bc_program_init(BcProgram *p) {
 
 	BcInstPtr ip;
 	size_t i;
-	BcBigDig val = BC_BASE;
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -1731,8 +1730,8 @@ void bc_program_init(BcProgram *p) {
 	memset(&ip, 0, sizeof(BcInstPtr));
 
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) {
+		BcBigDig val = i == BC_PROG_GLOBALS_SCALE ? 0 : BC_BASE;
 		bc_vec_init(p->globals_v + i, sizeof(BcBigDig), NULL);
-		val = i == BC_PROG_GLOBALS_SCALE ? 0 : val;
 		bc_vec_push(p->globals_v + i, &val);
 		p->globals[i] = val;
 	}
@@ -1804,7 +1803,7 @@ void bc_program_reset(BcProgram *p) {
 	f = bc_vec_item(&p->fns, BC_PROG_MAIN);
 	ip = bc_vec_top(&p->stack);
 	bc_program_setVecs(p, f);
-	ip->idx = f->code.len;
+	memset(ip, 0, sizeof(BcInstPtr));
 
 	if (vm.sig) {
 		bc_file_write(&vm.fout, bc_program_ready_msg, bc_program_ready_msg_len);
