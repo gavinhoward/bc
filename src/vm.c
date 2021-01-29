@@ -243,7 +243,8 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 	// Because this function is called by a BC_NORETURN function when fatal
 	// errors happen, we need to make sure to exit on fatal errors. This will
 	// be faster anyway. This function *cannot jump when a fatal error occurs!*
-	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) exit(bc_vm_atexit((int) s));
+	if (BC_ERR(id == BC_ERR_IDX_FATAL || s == BC_STATUS_ERROR_FATAL))
+		exit(bc_vm_atexit((int) BC_STATUS_ERROR_FATAL));
 #else // !BC_ENABLE_AFL
 	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) vm.status = (sig_atomic_t) s;
 	else
