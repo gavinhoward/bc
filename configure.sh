@@ -772,6 +772,7 @@ elif [ "$bc_only" -eq 1 ]; then
 
 	default_target="\$(BC_EXEC)"
 	second_target="\$(DC_EXEC)"
+	tests="test_bc timeconst"
 
 elif [ "$dc_only" -eq 1 ]; then
 
@@ -794,6 +795,8 @@ elif [ "$dc_only" -eq 1 ]; then
 	install_man_prereqs=" install_dc_manpage"
 	uninstall_prereqs=" uninstall_dc"
 	uninstall_man_prereqs=" uninstall_dc_manpage"
+
+	tests="test_dc"
 
 else
 
