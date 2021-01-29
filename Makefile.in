@@ -89,6 +89,11 @@ DC = dc
 BC_EXEC = $(BIN)/$(EXEC_PREFIX)$(BC)
 DC_EXEC = $(BIN)/$(EXEC_PREFIX)$(DC)
 
+BC_TEST_OUTPUTS = tests/bc_outputs
+BC_FUZZ_OUTPUTS = tests/fuzzing/bc_outputs1 tests/fuzzing/bc_outputs2 tests/fuzzing/bc_outputs3
+DC_TEST_OUTPUTS = tests/dc_outputs
+DC_FUZZ_OUTPUTS = tests/fuzzing/dc_outputs
+
 LIB = libbcl
 LIB_NAME = $(LIB).a
 LIBBC = $(BIN)/$(LIB_NAME)
@@ -146,6 +151,8 @@ LOCALE_INSTALL = ./locale_install.sh
 LOCALE_UNINSTALL = ./locale_uninstall.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
+
+TEST_STARS = "***********************************************************************"
 
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
@@ -245,19 +252,49 @@ check: test
 
 test: %%TESTS%%
 
-test_bc:
-	%%BC_TEST%%
+test_bc: test_bc_header test_bc_tests test_bc_stdin test_bc_scripts test_bc_read test_bc_errors test_bc_other
+	@printf '\nAll bc tests passed.\n\n$(TEST_STARS)\n'
 
-test_dc:
-	%%DC_TEST%%
+test_bc_tests:%%BC_TESTS%%
 
-time_test: time_test_bc timeconst time_test_dc
+test_bc_scripts:%%BC_SCRIPT_TESTS%%
 
-time_test_bc:
-	%%BC_TIME_TEST%%
+test_bc_stdin:
+	@sh tests/stdin.sh bc %%BC_TEST_EXEC%%
 
-time_test_dc:
-	%%DC_TIME_TEST%%
+test_bc_read:
+	@sh tests/read.sh bc %%BC_TEST_EXEC%%
+
+test_bc_errors:
+	@sh tests/errors.sh bc %%BC_TEST_EXEC%%
+
+test_bc_other:
+	@sh tests/other.sh bc %%BC_TEST_EXEC%%
+
+test_bc_header:
+	@printf '$(TEST_STARS)\n\nRunning bc tests...\n\n'
+
+test_dc: test_dc_header test_dc_tests test_dc_stdin test_dc_scripts test_dc_read test_dc_errors test_dc_other
+	@printf '\nAll dc tests passed.\n\n$(TEST_STARS)\n'
+
+test_dc_tests:%%DC_TESTS%%
+
+test_dc_scripts:%%DC_SCRIPT_TESTS%%
+
+test_dc_stdin:
+	@sh tests/stdin.sh dc %%DC_TEST_EXEC%%
+
+test_dc_read:
+	@sh tests/read.sh dc %%DC_TEST_EXEC%%
+
+test_dc_errors:
+	@sh tests/errors.sh dc %%DC_TEST_EXEC%%
+
+test_dc_other:
+	@sh tests/other.sh dc %%DC_TEST_EXEC%%
+
+test_dc_header:
+	@printf '$(TEST_STARS)\n\nRunning dc tests...\n\n'
 
 timeconst:
 	%%TIMECONST%%
@@ -267,14 +304,6 @@ library_test: $(LIBBC)
 
 test_library: library_test
 	$(BCL_TEST)
-
-valgrind: valgrind_bc valgrind_dc
-
-valgrind_bc:
-	%%VG_BC_TEST%%
-
-valgrind_dc:
-	%%VG_DC_TEST%%
 
 karatsuba:
 	%%KARATSUBA%%
@@ -315,6 +344,8 @@ clean:%%CLEAN_PREREQS%%
 	@$(RM) -f $(BC_LIB2_C) $(BC_LIB2_O)
 	@$(RM) -f $(BC_HELP_C) $(BC_HELP_O)
 	@$(RM) -f $(DC_HELP_C) $(DC_HELP_O)
+	@$(RM) -fr $(BC_TEST_OUTPUTS) $(DC_TEST_OUTPUTS)
+	@$(RM) -fr $(BC_FUZZ_OUTPUTS) $(DC_FUZZ_OUTPUTS)
 
 clean_config: clean
 	@printf 'Cleaning config...\n'

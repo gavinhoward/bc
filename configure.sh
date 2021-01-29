@@ -48,7 +48,7 @@ usage() {
 	printf 'usage:\n'
 	printf '    %s -h\n' "$script"
 	printf '    %s --help\n' "$script"
-	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlMNPTz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlMNPtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '    %s \\\n' "$script"
 	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]\\\n'
 	printf '       [--force --debug --disable-extra-math --disable-generated-tests]    \\\n'
@@ -119,9 +119,13 @@ usage() {
 	printf '        Disables the prompt in the built bc. The prompt will never show up,\n'
 	printf '        or in other words, it will be permanently disabled and cannot be\n'
 	printf '        enabled.\n'
+	printf '    -t, --enable-test-timing\n'
+	printf '        Enable the timing of tests. This is for development only.\n'
 	printf '    -T, --disable-strip\n'
 	printf '        Disable stripping symbols from the compiled binary or binaries.\n'
 	printf '        Stripping symbols only happens when debug mode is off.\n'
+	printf '    -v, --enable-valgrind\n'
+	printf '        Enable a build appropriate for valgrind. For development only.\n'
 	printf '    -z, --enable-fuzz-mode\n'
 	printf '        Enable fuzzing mode. THIS IS FOR DEVELOPMENT ONLY.\n'
 	printf '    --prefix PREFIX\n'
@@ -341,6 +345,113 @@ gen_file_list() {
 	printf '%s\n' "$_gen_file_list_contents"
 }
 
+gen_tests() {
+
+	_gen_tests_name="$1"
+	shift
+
+	_gen_tests_uname="$1"
+	shift
+
+	_gen_tests_extra_math="$1"
+	shift
+
+	_gen_tests_time_tests="$1"
+	shift
+
+	_gen_tests_extra_required=$(cat tests/extra_required.txt)
+
+	for _gen_tests_t in $(cat "$scriptdir/tests/$_gen_tests_name/all.txt"); do
+
+		if [ "$_gen_tests_extra_math" -eq 0 ]; then
+
+			if [ -z "${_gen_tests_extra_required##*$_gen_tests_t*}" ]; then
+				printf 'test_%s_%s:\n\t@printf "%s %s test not is not needed\\n"\n\n' \
+					"$_gen_tests_name" "$_gen_tests_t" "$_gen_tests_name" \
+					"$_gen_tests_t" >> "$scriptdir/Makefile"
+				continue
+			fi
+
+		fi
+
+		printf 'test_%s_%s:\n\t@sh tests/test.sh %s %s %s %s %s\n\n' \
+			"$_gen_tests_name" "$_gen_tests_t" "$_gen_tests_name" \
+			"$_gen_tests_t" "$generate_tests" "$time_tests" \
+			"$*" >> "$scriptdir/Makefile"
+
+	done
+}
+
+gen_test_targets() {
+
+	_gen_test_targets_name="$1"
+	shift
+
+	_gen_test_targets_tests=$(cat "$scriptdir/tests/${_gen_test_targets_name}/all.txt")
+
+	for _gen_test_targets_t in $_gen_test_targets_tests; do
+		printf ' test_%s_%s' "$_gen_test_targets_name" "$_gen_test_targets_t"
+	done
+
+	printf '\n'
+}
+
+get_script_tests() {
+
+	_get_script_tests_name="$1"
+	shift
+
+	_get_script_tests_tests=$(find "$scriptdir/tests/$_get_script_tests_name/scripts" \
+		-name "*.${_get_script_tests_name}" -type f | sort | tr '\n' ' ')
+
+	printf '%s\n' "$_get_script_tests_tests"
+}
+
+gen_script_tests() {
+
+	_gen_script_tests_name="$1"
+	shift
+
+	_gen_script_tests_extra_math="$1"
+	shift
+
+	_gen_script_tests_generate="$1"
+	shift
+
+	_gen_script_tests_time="$1"
+	shift
+
+	_gen_script_tests_tests=$(get_script_tests "$_gen_script_tests_name")
+
+	for _gen_script_tests_t in $_gen_script_tests_tests; do
+
+		_gen_script_tests_f=$(basename "$_gen_script_tests_t")
+		_gen_script_tests_b=$(basename "$_gen_script_tests_f" ".${_gen_script_tests_name}")
+
+		printf 'test_%s_script_%s:\n\t@sh tests/script.sh %s %s %s 1 %s %s %s\n\n' \
+			"$_gen_script_tests_name" "$_gen_script_tests_b" "$_gen_script_tests_name" \
+			"$_gen_script_tests_f" "$_gen_script_tests_extra_math" "$_gen_script_tests_generate" \
+			"$_gen_script_tests_time" "$*" >> "$scriptdir/Makefile"
+	done
+}
+
+gen_script_test_targets() {
+
+	_gen_script_test_targets_name="$1"
+	shift
+
+	_gen_script_test_targets_tests=$(get_script_tests "$_gen_script_test_targets_name")
+
+	for _gen_script_test_targets_t in $_gen_script_test_targets_tests; do
+		_gen_script_test_targets_b=$(basename "$_gen_script_test_targets_t" \
+			".$_gen_script_test_targets_name")
+		printf ' test_%s_script_%s' "$_gen_script_test_targets_name" \
+			"$_gen_script_test_targets_b"
+	done
+
+	printf '\n'
+}
+
 bc_only=0
 dc_only=0
 coverage=0
@@ -358,8 +469,10 @@ strip_bin=1
 all_locales=0
 library=0
 fuzz=0
+time_tests=0
+vg=0
 
-while getopts "abBcdDEfgGhHk:lMNO:PSTz-" opt; do
+while getopts "abBcdDEfgGhHk:lMNO:PStTvz-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -380,7 +493,9 @@ while getopts "abBcdDEfgGhHk:lMNO:PSTz-" opt; do
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		P) prompt=0 ;;
+		t) time_tests=1 ;;
 		T) strip_bin=0 ;;
+		v) vg=1 ;;
 		z) fuzz=1 ;;
 		-)
 			arg="$1"
@@ -487,6 +602,8 @@ while getopts "abBcdDEfgGhHk:lMNO:PSTz-" opt; do
 				disable-nls) nls=0 ;;
 				disable-prompt) prompt=0 ;;
 				disable-strip) strip_bin=0 ;;
+				enable-test-timing) time_tests=1 ;;
+				enable-valgrind) vg=1 ;;
 				enable-fuzz-mode) fuzz=1 ;;
 				install-all-locales) all_locales=1 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
@@ -497,7 +614,9 @@ while getopts "abBcdDEfgGhHk:lMNO:PSTz-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				disable-man-pages* | disable-nls* | disable-strip*)
 					usage "No arg allowed for --$arg option" ;;
-				enable-fuzz-mode* | install-all-locales*)
+				enable-fuzz-mode* | enable-test-timing* | enable-valgrind*)
+					usage "No arg allowed for --$arg option" ;;
+				install-all-locales*)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
@@ -597,21 +716,19 @@ executable="BC_EXEC"
 tests="test_bc timeconst test_dc"
 
 bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 \$(BC_EXEC)"
-bc_time_test="@tests/all.sh bc $extra_math 1 $generate_tests 1 \$(BC_EXEC)"
-
 dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 \$(DC_EXEC)"
-dc_time_test="@tests/all.sh dc $extra_math 1 $generate_tests 1 \$(DC_EXEC)"
 
 timeconst="@tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
-if [ "$debug" -ne 0 ]; then
-	vg_bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(BC_EXEC)"
-	vg_dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 valgrind \$(VALGRIND_ARGS) \$(DC_EXEC)"
+if [ "$vg" -ne 0 ]; then
+	debug=1
+	bc_test_exec='valgrind $(VALGRIND_ARGS) $(BC_EXEC)'
+	dc_test_exec='valgrind $(VALGRIND_ARGS) $(DC_EXEC)'
 else
-	vg_bc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
-	vg_dc_test="@printf 'Cannot run valgrind without debug flags\\\\n'"
+	bc_test_exec='$(BC_EXEC)'
+	dc_test_exec='$(DC_EXEC)'
 fi
 
 karatsuba="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
@@ -653,8 +770,6 @@ elif [ "$bc_only" -eq 1 ]; then
 	executables="bc"
 
 	dc_test="@printf 'No dc tests to run\\\\n'"
-	dc_time_test="@printf 'No dc tests to run\\\\n'"
-	vg_dc_test="@printf 'No dc tests to run\\\\n'"
 
 	install_prereqs=" install_execs"
 	install_man_prereqs=" install_bc_manpage"
@@ -678,8 +793,6 @@ elif [ "$dc_only" -eq 1 ]; then
 	executable="DC_EXEC"
 
 	bc_test="@printf 'No bc tests to run\\\\n'"
-	bc_time_test="@printf 'No bc tests to run\\\\n'"
-	vg_bc_test="@printf 'No bc tests to run\\\\n'"
 
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
@@ -1005,6 +1118,11 @@ if [ "$manpage_args" = "" ]; then
 	manpage_args="A"
 fi
 
+bc_tests=$(gen_test_targets bc)
+bc_script_tests=$(gen_script_test_targets bc)
+dc_tests=$(gen_test_targets dc)
+dc_script_tests=$(gen_script_test_targets dc)
+
 # Print out the values; this is for debugging.
 if [ "$bc" -ne 0 ]; then
 	printf 'Building bc\n'
@@ -1082,6 +1200,13 @@ contents=$(replace "$contents" "HEADERS" "$headers")
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
 contents=$(replace "$contents" "DC_ENABLED" "$dc")
 
+contents=$(replace "$contents" "BC_TESTS" "$bc_tests")
+contents=$(replace "$contents" "BC_SCRIPT_TESTS" "$bc_script_tests")
+contents=$(replace "$contents" "BC_TEST_EXEC" "$bc_test_exec")
+contents=$(replace "$contents" "DC_TESTS" "$dc_tests")
+contents=$(replace "$contents" "DC_SCRIPT_TESTS" "$dc_script_tests")
+contents=$(replace "$contents" "DC_TEST_EXEC" "$dc_test_exec")
+
 contents=$(replace "$contents" "LIBRARY" "$library")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
@@ -1139,10 +1264,7 @@ contents=$(replace "$contents" "EXEC" "$executable")
 contents=$(replace "$contents" "TESTS" "$tests")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
-contents=$(replace "$contents" "BC_TIME_TEST" "$bc_time_test")
-
 contents=$(replace "$contents" "DC_TEST" "$dc_test")
-contents=$(replace "$contents" "DC_TIME_TEST" "$dc_time_test")
 
 contents=$(replace "$contents" "VG_BC_TEST" "$vg_bc_test")
 contents=$(replace "$contents" "VG_DC_TEST" "$vg_dc_test")
@@ -1160,7 +1282,17 @@ contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")
 contents=$(replace "$contents" "CLEAN_PREREQS" "$CLEAN_PREREQS")
 contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
 
-printf '%s\n%s\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"
+printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"
+
+if [ "$bc" -ne 0 ]; then
+	gen_tests bc BC "$extra_math" "$time_tests" $bc_test_exec
+	gen_script_tests bc "$extra_math" "$generate_tests" "$time_tests" $bc_test_exec
+fi
+
+if [ "$dc" -ne 0 ]; then
+	gen_tests dc DC "$extra_math" "$time_tests" $dc_test_exec
+	gen_script_tests dc "$extra_math" "$generate_tests" "$time_tests" $dc_test_exec
+fi
 
 cd "$scriptdir"
 

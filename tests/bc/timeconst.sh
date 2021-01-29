@@ -88,4 +88,4 @@ done
 rm -f "$out1"
 rm -f "$out2"
 
-printf 'pass\n'
+exec printf 'pass\n'

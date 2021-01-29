@@ -38,35 +38,7 @@ if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	err_exit "usage: $script dir [run_extra_tests] [run_stack_tests] [gen_tests] [time_tests] [exec args...]" 1
-fi
-
-if [ "$#" -lt 1 ]; then
-	extra=1
-else
-	extra="$1"
-	shift
-fi
-
-if [ "$#" -lt 1 ]; then
-	run_stack_tests=1
-else
-	run_stack_tests="$1"
-	shift
-fi
-
-if [ "$#" -lt 1 ]; then
-	generate_tests=1
-else
-	generate_tests="$1"
-	shift
-fi
-
-if [ "$#" -lt 1 ]; then
-	time_tests=0
-else
-	time_tests="$1"
-	shift
+	err_exit "usage: $script dir [exec args...]" 1
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -76,43 +48,11 @@ else
 	shift
 fi
 
-stars="***********************************************************************"
-printf '%s\n' "$stars"
-
 if [ "$d" = "bc" ]; then
 	halt="quit"
 else
 	halt="q"
 fi
-
-unset BC_ENV_ARGS
-unset BC_LINE_LENGTH
-unset DC_ENV_ARGS
-unset DC_LINE_LENGTH
-
-printf '\nRunning %s tests...\n\n' "$d"
-
-while read t; do
-
-	if [ "$extra" -eq 0  ]; then
-		if [ "$t" = "trunc" ] || [ "$t" = "places" ] || [ "$t" = "shift" ] || \
-		   [ "$t" = "lib2" ] || [ "$t" = "scientific" ] || [ "$t" = "rand" ] || \
-		   [ "$t" = "engineering" ]
-		then
-			printf 'Skipping %s %s\n' "$d" "$t"
-			continue
-		fi
-	fi
-
-	sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$time_tests" "$exe" "$@"
-
-done < "$testdir/$d/all.txt"
-
-sh "$testdir/stdin.sh" "$d" "$exe" "$@"
-
-sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" "$time_tests" "$exe" "$@"
-sh "$testdir/read.sh" "$d" "$exe" "$@"
-sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
 num=100000000000000000000000000000000000000000000000000000000000000000000000000000
 numres="$num"
@@ -132,15 +72,26 @@ else
 	num="$num pR"
 fi
 
+set +e
+
 printf '\nRunning %s quit test...' "$d"
 
 printf '%s\n' "$halt" | "$exe" "$@" > /dev/null 2>&1
 
+checktest_retcode "$d" "$?" "quit"
+
 if [ "$d" = bc ]; then
+
 	printf '%s\n' "quit" | "$exe" "$@" > /dev/null 2>&1
+
+	checktest_retcode "$d" "$?" quit
+
 	two=$("$exe" "$@" -e 1+1 -e quit)
+
+	checktest_retcode "$d" "$?" quit
+
 	if [ "$two" != "2" ]; then
-		err_exit "$d failed a quit test" 1
+		err_exit "$d failed test quit" 1
 	fi
 fi
 
@@ -155,15 +106,30 @@ fi
 printf 'Running %s environment var tests...' "$d"
 
 if [ "$d" = "bc" ]; then
+
 	export BC_ENV_ARGS=" '-l' '' -q"
 	export BC_EXPR_EXIT="1"
+
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
+
+	checktest_retcode "$d" "$?" "environment var"
+
 	"$exe" -e 4 "$@" > /dev/null
+
+	err="$?"
+	checktest_retcode "$d" "$?" "environment var"
 else
+
 	export DC_ENV_ARGS="'-x'"
 	export DC_EXPR_EXIT="1"
+
 	printf '4s stuff\n' | "$exe" "$@" > /dev/null
+
+	checktest_retcode "$d" "$?" "environment var"
+
 	"$exe" -e 4pR "$@" > /dev/null
+
+	checktest_retcode "$d" "$?" "environment var"
 fi
 
 printf 'pass\n'
@@ -178,14 +144,14 @@ printf '%s\n' "$numres" > "$out1"
 export "$line_var"=80
 printf '%s\n' "$num" | "$exe" "$@" > "$out2"
 
-diff "$out1" "$out2"
+checktest "$d" "$?" "environment var" "$out1" "$out2"
 
 printf '%s\n' "$num70" > "$out1"
 
 export "$line_var"=2147483647
 printf '%s\n' "$num" | "$exe" "$@" > "$out2"
 
-diff "$out1" "$out2"
+checktest "$d" "$?" "environment var" "$out1" "$out2"
 
 printf 'pass\n'
 
@@ -199,62 +165,64 @@ printf '%s\n%s\n%s\n%s\n' "$results" "$results" "$results" "$results" > "$out1"
 
 "$exe" "$@" -e "$exprs" -f "$f" --expression "$exprs" --file "$f" -e "$halt" > "$out2"
 
-diff "$out1" "$out2"
+checktest "$d" "$?" "arg" "$out1" "$out2"
 
 printf '%s\n' "$halt" | "$exe" "$@" -- "$f" "$f" "$f" "$f" > "$out2"
 
-diff "$out1" "$out2"
+checktest "$d" "$?" "arg" "$out1" "$out2"
 
 if [ "$d" = "bc" ]; then
 	printf '%s\n' "$halt" | "$exe" "$@" -i > /dev/null 2>&1
 fi
 
 printf '%s\n' "$halt" | "$exe" "$@" -h > /dev/null
+checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -P > /dev/null
+checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -v > /dev/null
+checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
-
-set +e
+checktest_retcode "$d" "$?" "arg"
 
 "$exe" "$@" -f "saotehasotnehasthistohntnsahxstnhalcrgxgrlpyasxtsaosysxsatnhoy.txt" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "invalid file argument" "$out2" "$d"
+checkerrtest "$d" "$err" "invalid file argument" "$out2" "$d"
 
 "$exe" "$@" "-$opt" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "invalid option argument" "$out2" "$d"
+checkerrtest "$d" "$err" "invalid option argument" "$out2" "$d"
 
 "$exe" "$@" "--$lopt" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "invalid long option argument" "$out2" "$d"
+checkerrtest "$d" "$err" "invalid long option argument" "$out2" "$d"
 
 "$exe" "$@" "-u" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "unrecognized option argument" "$out2" "$d"
+checkerrtest "$d" "$err" "unrecognized option argument" "$out2" "$d"
 
 "$exe" "$@" "--uniform" -e "$exprs" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
+checkerrtest "$d" "$err" "unrecognized long option argument" "$out2" "$d"
 
 "$exe" "$@" -f > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "missing required argument to short option" "$out2" "$d"
+checkerrtest "$d" "$err" "missing required argument to short option" "$out2" "$d"
 
 "$exe" "$@" --file > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "missing required argument to long option" "$out2" "$d"
+checkerrtest "$d" "$err" "missing required argument to long option" "$out2" "$d"
 
 "$exe" "$@" --version=5 > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "given argument to long option with no argument" "$out2" "$d"
+checkerrtest "$d" "$err" "given argument to long option with no argument" "$out2" "$d"
 
 printf 'pass\n'
 
@@ -263,7 +231,7 @@ printf 'Running %s directory test...' "$d"
 "$exe" "$@" "$testdir" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "directory" "$out2" "$d"
+checkerrtest "$d" "$err" "directory" "$out2" "$d"
 
 printf 'pass\n'
 
@@ -274,7 +242,7 @@ bin="/bin/sh"
 "$exe" "$@" "$bin" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "binary file" "$out2" "$d"
+checkerrtest "$d" "$err" "binary file" "$out2" "$d"
 
 printf 'pass\n'
 
@@ -283,7 +251,7 @@ printf 'Running %s binary stdin test...' "$d"
 cat "$bin" | "$exe" "$@" > /dev/null 2> "$out2"
 err="$?"
 
-checktest "$d" "$err" "binary stdin" "$out2" "$d"
+checkerrtest "$d" "$err" "binary stdin" "$out2" "$d"
 
 printf 'pass\n'
 
@@ -292,14 +260,12 @@ if [ "$d" = "bc" ]; then
 	printf 'Running %s limits tests...' "$d"
 	printf 'limits\n' | "$exe" "$@" > "$out2" /dev/null 2>&1
 
+	checktest_retcode "$d" "$?" "limits"
+
 	if [ ! -s "$out2" ]; then
 		err_exit "$d did not produce output on the limits test" 1
 	fi
 
-	printf 'pass\n'
+	exec printf 'pass\n'
 
 fi
-
-printf '\nAll %s tests passed.\n' "$d"
-
-printf '\n%s\n' "$stars"

@@ -38,6 +38,8 @@ tests/fuzzing/bc_outputs1/*
 tests/fuzzing/bc_outputs2/*
 tests/fuzzing/bc_outputs3/*
 tests/fuzzing/dc_outputs/*
+tests/bc_outputs/*
+tests/dc_outputs/*
 
 .gdb_history
 
