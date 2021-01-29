@@ -33,6 +33,12 @@ script=$(basename "$script")
 
 . "$scriptdir/functions.sh"
 
+cd "$scriptdir"
+
+if [ -f ./Makefile ]; then
+	make clean_tests > /dev/null
+fi
+
 usage() {
 
 	if [ $# -gt 0 ]; then
