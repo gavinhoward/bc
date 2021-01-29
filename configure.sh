@@ -396,17 +396,6 @@ gen_test_targets() {
 	printf '\n'
 }
 
-get_script_tests() {
-
-	_get_script_tests_name="$1"
-	shift
-
-	_get_script_tests_tests=$(find "$scriptdir/tests/$_get_script_tests_name/scripts" \
-		-name "*.${_get_script_tests_name}" -type f | sort | tr '\n' ' ')
-
-	printf '%s\n' "$_get_script_tests_tests"
-}
-
 gen_script_tests() {
 
 	_gen_script_tests_name="$1"
@@ -421,11 +410,10 @@ gen_script_tests() {
 	_gen_script_tests_time="$1"
 	shift
 
-	_gen_script_tests_tests=$(get_script_tests "$_gen_script_tests_name")
+	_gen_script_tests_tests=$(cat "$scriptdir/tests/$_gen_script_tests_name/scripts/all.txt")
 
-	for _gen_script_tests_t in $_gen_script_tests_tests; do
+	for _gen_script_tests_f in $_gen_script_tests_tests; do
 
-		_gen_script_tests_f=$(basename "$_gen_script_tests_t")
 		_gen_script_tests_b=$(basename "$_gen_script_tests_f" ".${_gen_script_tests_name}")
 
 		printf 'test_%s_script_%s:\n\t@sh tests/script.sh %s %s %s 1 %s %s %s\n\n' \
@@ -440,10 +428,10 @@ gen_script_test_targets() {
 	_gen_script_test_targets_name="$1"
 	shift
 
-	_gen_script_test_targets_tests=$(get_script_tests "$_gen_script_test_targets_name")
+	_gen_script_test_targets_tests=$(cat "$scriptdir/tests/$_gen_script_test_targets_name/scripts/all.txt")
 
-	for _gen_script_test_targets_t in $_gen_script_test_targets_tests; do
-		_gen_script_test_targets_b=$(basename "$_gen_script_test_targets_t" \
+	for _gen_script_test_targets_f in $_gen_script_test_targets_tests; do
+		_gen_script_test_targets_b=$(basename "$_gen_script_test_targets_f" \
 			".$_gen_script_test_targets_name")
 		printf ' test_%s_script_%s' "$_gen_script_test_targets_name" \
 			"$_gen_script_test_targets_b"
