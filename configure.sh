@@ -36,7 +36,7 @@ script=$(basename "$script")
 cd "$scriptdir"
 
 if [ -f ./Makefile ]; then
-	make clean_tests > /dev/null
+	make clean_config > /dev/null
 fi
 
 usage() {
