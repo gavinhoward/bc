@@ -47,7 +47,7 @@ header() {
 }
 
 do_make() {
-	make -j12 "$@"
+	make -j16 "$@"
 }
 
 configure() {
