@@ -372,7 +372,7 @@ gen_tests() {
 		if [ "$_gen_tests_extra_math" -eq 0 ]; then
 
 			if [ -z "${_gen_tests_extra_required##*$_gen_tests_t*}" ]; then
-				printf 'test_%s_%s:\n\t@printf "%s %s test not is not needed\\n"\n\n' \
+				printf 'test_%s_%s:\n\t@printf "Skipping %s %s\\n"\n\n' \
 					"$_gen_tests_name" "$_gen_tests_t" "$_gen_tests_name" \
 					"$_gen_tests_t" >> "$scriptdir/Makefile"
 				continue
