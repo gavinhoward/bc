@@ -35,10 +35,6 @@ script=$(basename "$script")
 
 cd "$scriptdir"
 
-if [ -f ./Makefile ]; then
-	make clean_config > /dev/null
-fi
-
 usage() {
 
 	if [ $# -gt 0 ]; then
@@ -54,7 +50,7 @@ usage() {
 	printf 'usage:\n'
 	printf '    %s -h\n' "$script"
 	printf '    %s --help\n' "$script"
-	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlmMNPtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '    %s [-a|-bD|-dB|-c] [-CEfgGHlmMNPtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '    %s \\\n' "$script"
 	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]\\\n'
 	printf '       [--force --debug --disable-extra-math --disable-generated-tests]    \\\n'
@@ -79,6 +75,8 @@ usage() {
 	printf '        Generate test coverage code. Requires gcov and regcovr.\n'
 	printf '        It is an error if either "-b" ("-D") or "-d" ("-B") is specified.\n'
 	printf '        Requires a compiler that use gcc-compatible coverage options\n'
+	printf '    -C, --disable-clean\n'
+	printf '        Disable the clean that configure.sh does before configure.\n'
 	printf '    -d, --dc-only\n'
 	printf '        Build dc only. It is an error if "-b", "--bc-only", "-D", or\n'
 	printf '        "--disable-dc" are specified too.\n'
@@ -468,6 +466,7 @@ fuzz=0
 time_tests=0
 vg=0
 memcheck=0
+clean=1
 
 while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 
@@ -476,6 +475,7 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 		b) bc_only=1 ;;
 		B) dc_only=1 ;;
 		c) coverage=1 ;;
+		C) clean=0 ;;
 		d) dc_only=1 ;;
 		D) bc_only=1 ;;
 		E) extra_math=0 ;;
@@ -593,6 +593,7 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 					shift ;;
 				disable-bc) dc_only=1 ;;
 				disable-dc) bc_only=1 ;;
+				disable-clean) clean=0 ;;
 				disable-extra-math) extra_math=0 ;;
 				disable-generated-tests) generate_tests=0 ;;
 				disable-history) hist=0 ;;
@@ -607,7 +608,8 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 				install-all-locales) all_locales=1 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
-				disable-bc* | disable-dc* | disable-extra-math*)
+				disable-bc* | disable-dc* | disable-clean*)
+				disable-extra-math*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-generated-tests* | disable-history*)
 					usage "No arg allowed for --$arg option" ;;
@@ -626,6 +628,12 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 	esac
 
 done
+
+if [ "$clean" -ne 0 ]; then
+	if [ -f ./Makefile ]; then
+		make clean_config > /dev/null
+	fi
+fi
 
 if [ "$bc_only" -eq 1 ] && [ "$dc_only" -eq 1 ]; then
 	usage "Can only specify one of -b(-D) or -d(-B)"
