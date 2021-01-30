@@ -52,6 +52,10 @@
 #endif // __AFL_HAVE_MANUAL_CONTROL
 #endif // BC_ENABLE_AFL
 
+#ifndef BC_ENABLE_MEMCHECK
+#define BC_ENABLE_MEMCHECK (0)
+#endif // BC_ENABLE_MEMCHECK
+
 #include <bcl.h>
 
 typedef enum BcStatus {

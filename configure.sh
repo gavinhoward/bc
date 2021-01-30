@@ -54,7 +54,7 @@ usage() {
 	printf 'usage:\n'
 	printf '    %s -h\n' "$script"
 	printf '    %s --help\n' "$script"
-	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlMNPtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
+	printf '    %s [-a|-bD|-dB|-c] [-EfgGHlmMNPtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '    %s \\\n' "$script"
 	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]\\\n'
 	printf '       [--force --debug --disable-extra-math --disable-generated-tests]    \\\n'
@@ -113,6 +113,8 @@ usage() {
 	printf '        Installs all locales, regardless of how many are on the system. This\n'
 	printf '        option is useful for package maintainers who want to make sure that\n'
 	printf '        a package contains all of the locales that end users might need.\n'
+	printf '    -m, --enable-memcheck\n'
+	printf '        Enable memcheck mode, to ensure no memory leaks. For development only.\n'
 	printf '    -M, --disable-man-pages\n'
 	printf '        Disable installing manpages.\n'
 	printf '    -N, --disable-nls\n'
@@ -465,8 +467,9 @@ library=0
 fuzz=0
 time_tests=0
 vg=0
+memcheck=0
 
-while getopts "abBcdDEfgGhHk:lMNO:PStTvz-" opt; do
+while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -483,6 +486,7 @@ while getopts "abBcdDEfgGhHk:lMNO:PStTvz-" opt; do
 		H) hist=0 ;;
 		k) karatsuba_len="$OPTARG" ;;
 		l) all_locales=1 ;;
+		m) memcheck=1 ;;
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
@@ -599,6 +603,7 @@ while getopts "abBcdDEfgGhHk:lMNO:PStTvz-" opt; do
 				enable-test-timing) time_tests=1 ;;
 				enable-valgrind) vg=1 ;;
 				enable-fuzz-mode) fuzz=1 ;;
+				enable-memcheck) memcheck=1 ;;
 				install-all-locales) all_locales=1 ;;
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
@@ -610,7 +615,7 @@ while getopts "abBcdDEfgGhHk:lMNO:PStTvz-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				enable-fuzz-mode* | enable-test-timing* | enable-valgrind*)
 					usage "No arg allowed for --$arg option" ;;
-				install-all-locales*)
+				enable-memcheck* | install-all-locales*)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
@@ -1115,6 +1120,10 @@ if [ "$manpage_args" = "" ]; then
 	manpage_args="A"
 fi
 
+if [ "$vg" -ne 0 ]; then
+	memcheck=1
+fi
+
 bc_tests=$(gen_test_targets bc)
 bc_script_tests=$(gen_script_test_targets bc)
 dc_tests=$(gen_test_targets dc)
@@ -1210,6 +1219,7 @@ contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
 contents=$(replace "$contents" "PROMPT" "$prompt")
 contents=$(replace "$contents" "FUZZ" "$fuzz")
+contents=$(replace "$contents" "MEMCHECK" "$memcheck")
 
 contents=$(replace "$contents" "BC_LIB_O" "$bc_lib")
 contents=$(replace "$contents" "BC_HELP_O" "$bc_help")

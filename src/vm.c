@@ -138,14 +138,14 @@ void bc_vm_info(const char* const help) {
 }
 #endif // !BC_ENABLE_LIBRARY
 
-#if !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
+#if !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 BC_NORETURN
-#endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
+#endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 void bc_vm_fatalError(BcErr e) {
 	bc_vm_err(e);
-#if !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
+#if !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 	abort();
-#endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_AFL
+#endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 }
 
 #if BC_ENABLE_LIBRARY
@@ -239,16 +239,16 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 
 	s = bc_file_flushErr(&vm.ferr);
 
-#if !BC_ENABLE_AFL
+#if !BC_ENABLE_MEMCHECK
 	// Because this function is called by a BC_NORETURN function when fatal
 	// errors happen, we need to make sure to exit on fatal errors. This will
 	// be faster anyway. This function *cannot jump when a fatal error occurs!*
 	if (BC_ERR(id == BC_ERR_IDX_FATAL || s == BC_STATUS_ERROR_FATAL))
 		exit(bc_vm_atexit((int) BC_STATUS_ERROR_FATAL));
-#else // !BC_ENABLE_AFL
+#else // !BC_ENABLE_MEMCHECK
 	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) vm.status = (sig_atomic_t) s;
 	else
-#endif // !BC_ENABLE_AFL
+#endif // !BC_ENABLE_MEMCHECK
 	{
 		vm.status = (sig_atomic_t) (uchar) (id + 1);
 	}
@@ -680,16 +680,16 @@ err:
 
 	bc_vm_clean();
 
-#if !BC_ENABLE_AFL
+#if !BC_ENABLE_MEMCHECK
 	assert(vm.status != BC_STATUS_ERROR_FATAL);
 
 	vm.status = vm.status == BC_STATUS_QUIT || !BC_I ?
 	            vm.status : BC_STATUS_SUCCESS;
-#else // !BC_ENABLE_AFL
+#else // !BC_ENABLE_MEMCHECK
 	vm.status = vm.status == BC_STATUS_ERROR_FATAL ||
 	            vm.status == BC_STATUS_QUIT || !BC_I ?
 	            vm.status : BC_STATUS_SUCCESS;
-#endif // !BC_ENABLE_AFL
+#endif // !BC_ENABLE_MEMCHECK
 
 	if (!vm.status && !vm.eof) {
 		bc_vec_empty(&buffer);
