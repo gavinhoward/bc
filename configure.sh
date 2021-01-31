@@ -609,6 +609,7 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 				help* | bc-only* | dc-only* | coverage* | debug*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-bc* | disable-dc* | disable-clean*)
+					usage "No arg allowed for --$arg option" ;;
 				disable-extra-math*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-generated-tests* | disable-history*)
