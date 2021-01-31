@@ -1215,9 +1215,13 @@ contents=$(replace "$contents" "HEADERS" "$headers")
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
 contents=$(replace "$contents" "DC_ENABLED" "$dc")
 
+contents=$(replace "$contents" "BC_ALL_TESTS" "$bc_test")
 contents=$(replace "$contents" "BC_TESTS" "$bc_tests")
 contents=$(replace "$contents" "BC_SCRIPT_TESTS" "$bc_script_tests")
 contents=$(replace "$contents" "BC_TEST_EXEC" "$bc_test_exec")
+contents=$(replace "$contents" "TIMECONST_ALL_TESTS" "$timeconst")
+
+contents=$(replace "$contents" "DC_ALL_TESTS" "$dc_test")
 contents=$(replace "$contents" "DC_TESTS" "$dc_tests")
 contents=$(replace "$contents" "DC_SCRIPT_TESTS" "$dc_script_tests")
 contents=$(replace "$contents" "DC_TEST_EXEC" "$dc_test_exec")

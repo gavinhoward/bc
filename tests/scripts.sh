@@ -78,7 +78,9 @@ fi
 
 scriptdir="$testdir/$d/scripts"
 
-for s in $scriptdir/*.$d; do
+scripts=$(cat "$scriptdir/all.txt")
+
+for s in $scripts; do
 
 	f=$(basename "$s")
 	sh "$testdir/script.sh" "$d" "$f" "$run_extra_tests" "$run_stack_tests" \

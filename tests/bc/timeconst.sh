@@ -57,6 +57,11 @@ if [ ! -f "$timeconst" ]; then
 	exit 0
 fi
 
+unset BC_ENV_ARGS
+unset BC_LINE_LENGTH
+unset DC_ENV_ARGS
+unset DC_LINE_LENGTH
+
 printf 'Running %s...' "$base"
 
 nums=$(printf 'for (i = 0; i <= 1000; ++i) { i }\n' | bc)
