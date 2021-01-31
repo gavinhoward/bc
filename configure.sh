@@ -1204,7 +1204,7 @@ IFS=$'\n'
 
 for f in $src_files; do
 	o=$(replace_ext "$f" "c" "o")
-	SRC_TARGETS=$(printf '%s\n\n%s: %s %s\n\t$(CC) $(CFLAGS) -o "%s" -c "%s"\n' \
+	SRC_TARGETS=$(printf '%s\n\n%s: %s %s\n\t$(CC) $(CFLAGS) -o %s -c %s\n' \
 		"$SRC_TARGETS" "$o" "$headers" "$f" "$o" "$f")
 done
 
