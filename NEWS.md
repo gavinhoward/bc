@@ -1,5 +1,16 @@
 # News
 
+## 3.2.6
+
+This is a production release that fixes the build on FreeBSD.
+
+There was a syntax error in `configure.sh` that the Linux shell did not catch,
+and FreeBSD depends on the existence of `tests/all.sh`.
+
+All users that already upgraded to `3.2.5` should update to this release, with
+my apologies for the poor release of `3.2.5`. Other users should skip `3.2.5` in
+favor of this version.
+
 ## 3.2.5
 
 This is a production release that fixes several bugs and adds a couple small
