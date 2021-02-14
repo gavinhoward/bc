@@ -253,7 +253,7 @@ replace_ext() {
 	_replace_ext_ext1="$2"
 	_replace_ext_ext2="$3"
 
-	_replace_ext_result=${_replace_ext_file%.$_replace_ext_ext1}.$_replace_ext_ext2
+	_replace_ext_result="${_replace_ext_file%.$_replace_ext_ext1}.$_replace_ext_ext2"
 
 	printf '%s\n' "$_replace_ext_result"
 }
