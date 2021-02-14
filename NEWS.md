@@ -1,5 +1,14 @@
 # News
 
+## 3.2.7
+
+This is a production release that removes a small non-portable shell operation
+in `configure.sh`. This problem was only noticed on OpenBSD, not FreeBSD or
+Linux.
+
+Non-OpenBSD users do ***NOT*** need to upgrade, although NetBSD users may also
+need to upgrade.
+
 ## 3.2.6
 
 This is a production release that fixes the build on FreeBSD.
