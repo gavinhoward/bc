@@ -174,10 +174,10 @@ The following are the options that bc(1) accepts.
     If this option is given on the command-line (i.e., not in **BC_ENV_ARGS**,
     see the **ENVIRONMENT VARIABLES** section), then after processing all
     expressions and files, bc(1) will exit, unless **-** (**stdin**) was given
-    as an argument at least once to **-f** or **--file**, whether on the command
-    line or in **BC_ENV_ARGS**. However, if any other **-e**, **--expression**,
-    **-f**, or **--file** arguments are given after **-f-** or equivalent is
-    given, bc(1) will give a fatal error and exit.
+    as an argument at least once to **-f** or **--file**, whether on the
+    command-line or in **BC_ENV_ARGS**. However, if any other **-e**,
+    **--expression**, **-f**, or **--file** arguments are given after **-f-** or
+    equivalent is given, bc(1) will give a fatal error and exit.
 
     This is a **non-portable extension**.
 
