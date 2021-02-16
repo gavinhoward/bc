@@ -101,8 +101,13 @@ The following are the options that dc(1) accepts.
     evaluated in the order given. This means that if a file is given before an
     expression, the file is read in and evaluated first.
 
-    After processing all expressions and files, dc(1) will exit, unless **-**
-    (**stdin**) was given as an argument at least once to **-f** or **--file**.
+    If this option is given on the command-line (i.e., not in **DC_ENV_ARGS**,
+    see the **ENVIRONMENT VARIABLES** section), then after processing all
+    expressions and files, dc(1) will exit, unless **-** (**stdin**) was given
+    as an argument at least once to **-f** or **--file**, whether on the command
+    line or in **DC_ENV_ARGS**. However, if any other **-e**, **--expression**,
+    **-f**, or **--file** arguments are given after **-f-** or equivalent is
+    given, dc(1) will give a fatal error and exit.
 
     This is a **non-portable extension**.
 
@@ -112,10 +117,12 @@ The following are the options that dc(1) accepts.
     through **stdin**. If expressions are also given (see above), the
     expressions are evaluated in the order given.
 
-    After processing all expressions and files, dc(1) will exit, unless **-**
-    (**stdin**) was given as an argument at least once to **-f** or **--file**.
-    However, if any other **-e**, **--expression**, **-f**, or **--file**
-    arguments are given after that, bc(1) will give a fatal error and exit.
+    If this option is given on the command-line (i.e., not in **DC_ENV_ARGS**,
+    see the **ENVIRONMENT VARIABLES** section), then after processing all
+    expressions and files, dc(1) will exit, unless **-** (**stdin**) was given
+    as an argument at least once to **-f** or **--file**. However, if any other
+    **-e**, **--expression**, **-f**, or **--file** arguments are given after
+    **-f-** or equivalent is given, dc(1) will give a fatal error and exit.
 
     This is a **non-portable extension**.
 
@@ -868,7 +875,7 @@ dc(1) recognizes the following environment variables:
 
     The quote parsing will handle either kind of quotes, **'** or **"**. Thus,
     if you have a file with any number of single quotes in the name, you can use
-    double quotes as the outside quotes, as in **"some 'bc' file.bc"**, and vice
+    double quotes as the outside quotes, as in **"some 'dc' file.dc"**, and vice
     versa if you have a file with double quotes. However, handling a file with
     both kinds of quotes in **DC_ENV_ARGS** is not supported due to the
     complexity of the parsing, though such files are still supported on the
