@@ -130,7 +130,9 @@ All long options are **non-portable extensions**.
 
 # STDOUT
 
-Any non-error output is written to **stdout**.
+Any non-error output is written to **stdout**. In addition, if history (see the
+**HISTORY** section) and the prompt (see the **TTY MODE** section) are enabled,
+both are output to **stdout**.
 
 **Note**: Unlike other dc(1) implementations, this dc(1) will issue a fatal
 error (see the **EXIT STATUS** section) if it cannot write to **stdout**, so if

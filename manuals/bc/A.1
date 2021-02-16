@@ -268,6 +268,9 @@ All long options are \f[B]non-portable extensions\f[R].
 .SH STDOUT
 .PP
 Any non-error output is written to \f[B]stdout\f[R].
+In addition, if history (see the \f[B]HISTORY\f[R] section) and the
+prompt (see the \f[B]TTY MODE\f[R] section) are enabled, both are output
+to \f[B]stdout\f[R].
 .PP
 \f[B]Note\f[R]: Unlike other bc(1) implementations, this bc(1) will
 issue a fatal error (see the \f[B]EXIT STATUS\f[R] section) if it cannot
