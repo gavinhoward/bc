@@ -1,5 +1,11 @@
 # News
 
+## 3.3.1
+
+This is a production release that fixes a bug.
+
+The bug was in the reporting of number length when the value was 0.
+
 ## 3.3.0
 
 This is a production release that changes one behavior and fixes documentation
