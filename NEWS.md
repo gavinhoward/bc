@@ -1,5 +1,10 @@
 # News
 
+## 3.3.2
+
+This is a production release that fixes a divide-by-zero bug in `root()` in the
+[extended math library][16]. All previous versions with `root()` have the bug.
+
 ## 3.3.1
 
 This is a production release that fixes a bug.
