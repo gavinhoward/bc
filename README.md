@@ -2,6 +2,10 @@
 
 [![Coverity Scan Build Status][17]][18]
 
+***WARNING: The warning below is temporarily wrong. I cannot get my Gitea
+instance to work, and while I cannot, GitHub will be the official location of
+this `bc`.***
+
 ***WARNING: This project has moved to [https://git.yzena.com/][20] for [these
 reasons][21], though GitHub will remain a mirror.***
 
