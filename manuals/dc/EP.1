@@ -1127,8 +1127,15 @@ bc(1) IEEE Std 1003.1-2017
 specification.
 .SH BUGS
 .PP
-None are known.
-Report bugs at https://git.yzena.com/gavin/bc.
+There is currently a bug with the interaction between history and when a
+string that does not end with a newline is printed.
+If using such a string as a \f[B]read()\f[R] prompt, then calling
+\f[B]read()\f[R], if backspace or any other history input is used, the
+prompt disappears.
+.PP
+There are plans to fix this bug, but there is no fix yet.
+.PP
+Report any other bugs at https://git.yzena.com/gavin/bc.
 .SH AUTHOR
 .PP
 Gavin D.

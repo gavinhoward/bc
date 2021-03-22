@@ -1071,7 +1071,14 @@ use a period (**.**) as a radix point, regardless of the value of
 
 # BUGS
 
-None are known. Report bugs at https://git.yzena.com/gavin/bc.
+There is currently a bug with the interaction between history and when a string
+that does not end with a newline is printed. If using such a string as a
+**read()** prompt, then calling **read()**, if backspace or any other history
+input is used, the prompt disappears.
+
+There are plans to fix this bug, but there is no fix yet.
+
+Report any other bugs at https://git.yzena.com/gavin/bc.
 
 # AUTHORS
 
