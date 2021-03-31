@@ -341,6 +341,7 @@ clean_gen:
 
 clean:%%CLEAN_PREREQS%%
 	@printf 'Cleaning files...\n'
+	@$(RM) -f src/*.tmp gen/*.tmp
 	@$(RM) -f $(OBJ)
 	@$(RM) -f $(BC_EXEC)
 	@$(RM) -f $(DC_EXEC)
