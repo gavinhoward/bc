@@ -456,7 +456,9 @@ static void bc_program_read(BcProgram *p) {
 	bc_lex_file(&parse.l, bc_program_stdin_name);
 	bc_vec_popAll(&f->code);
 
-	s = bc_read_line(&buf, BC_IS_BC ? "read> " : "?> ");
+	if (BC_R) s = bc_read_line(&buf, "");
+	else s = bc_read_line(&buf, BC_IS_BC ? "read> " : "?> ");
+
 	if (s == BC_STATUS_EOF) bc_vm_err(BC_ERR_EXEC_READ_EXPR);
 
 	bc_parse_text(&parse, buf.v);
