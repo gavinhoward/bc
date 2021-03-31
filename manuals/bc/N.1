@@ -2060,15 +2060,8 @@ numbers that use a period (\f[B].\f[R]) as a radix point, regardless of
 the value of \f[B]LC_NUMERIC\f[R].
 .SH BUGS
 .PP
-There is currently a bug with the interaction between history and when a
-string that does not end with a newline is printed.
-If using such a string as a \f[B]read()\f[R] prompt, then calling
-\f[B]read()\f[R], if backspace or any other history input is used, the
-prompt disappears.
-.PP
-There are plans to fix this bug, but there is no fix yet.
-.PP
-Report any other bugs at https://git.yzena.com/gavin/bc.
+None are known.
+Report bugs at https://git.yzena.com/gavin/bc.
 .SH AUTHORS
 .PP
 Gavin D.
