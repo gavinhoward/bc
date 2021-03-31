@@ -181,7 +181,7 @@ The following are the options that bc(1) accepts.
 
 {{ A E H N EH EN HN EHN }}
 :   Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
-    See the **TTY MODE** section) This is mostly for those users that do not
+    See the **TTY MODE** section.) This is mostly for those users that do not
     want a prompt or are not used to having them in bc(1). Most of those users
     would want to put this option in **BC_ENV_ARGS** (see the
     **ENVIRONMENT VARIABLES** section).

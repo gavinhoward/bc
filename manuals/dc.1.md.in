@@ -82,7 +82,7 @@ The following are the options that dc(1) accepts.
 
 {{ A E H N EH EN HN EHN }}
 :   Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
-    See the **TTY MODE** section) This is mostly for those users that do not
+    See the **TTY MODE** section.) This is mostly for those users that do not
     want a prompt or are not used to having them in dc(1). Most of those users
     would want to put this option in **DC_ENV_ARGS**.
 {{ end }}
