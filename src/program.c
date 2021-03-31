@@ -2268,9 +2268,9 @@ void bc_program_exec(BcProgram *p) {
 #if BC_DEBUG_CODE
 #if BC_ENABLED && DC_ENABLED
 void bc_program_printStackDebug(BcProgram *p) {
-	bc_file_puts(&vm.fout, "-------------- Stack ----------\n");
+	bc_file_puts(&vm.fout, bc_flush_err, "-------------- Stack ----------\n");
 	bc_program_printStack(p);
-	bc_file_puts(&vm.fout, "-------------- Stack End ------\n");
+	bc_file_puts(&vm.fout, bc_flush_err, "-------------- Stack End ------\n");
 }
 
 static void bc_program_printIndex(const char *restrict code,
@@ -2324,7 +2324,7 @@ void bc_program_printInst(const BcProgram *p, const char *restrict code,
 		if (inst == BC_INST_CALL) bc_program_printIndex(code, bgn);
 	}
 
-	bc_vm_putchar('\n');
+	bc_vm_putchar('\n', bc_flush_err);
 }
 
 void bc_program_code(const BcProgram* p) {
@@ -2344,7 +2344,7 @@ void bc_program_code(const BcProgram* p) {
 
 		bc_vm_printf("func[%zu]:\n", ip.func);
 		while (ip.idx < f->code.len) bc_program_printInst(p, code, &ip.idx);
-		bc_file_puts(&vm.fout, "\n\n");
+		bc_file_puts(&vm.fout, bc_flush_err, "\n\n");
 	}
 }
 #endif // BC_ENABLED && DC_ENABLED

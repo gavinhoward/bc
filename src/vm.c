@@ -76,9 +76,9 @@ BC_NORETURN void bc_vm_jmp(void) {
 	BC_SIG_MAYLOCK;
 
 #if BC_DEBUG_CODE
-	bc_file_puts(&vm.ferr, "Longjmp: ");
-	bc_file_puts(&vm.ferr, f);
-	bc_file_putchar(&vm.ferr, '\n');
+	bc_file_puts(&vm.ferr, bc_flush_none, "Longjmp: ");
+	bc_file_puts(&vm.ferr, bc_flush_none, f);
+	bc_file_putchar(&vm.ferr, bc_flush_none, '\n');
 	bc_file_flush(&vm.ferr, bc_flush_none);
 #endif // BC_DEBUG_CODE
 
@@ -131,7 +131,7 @@ void bc_vm_info(const char* const help) {
 
 	if (help) {
 		bc_file_putchar(&vm.fout, bc_flush_none, '\n');
-		bc_file_printf(&vm.fout, bc_flush_none, help, vm.name, vm.name);
+		bc_file_printf(&vm.fout, help, vm.name, vm.name);
 	}
 
 	bc_file_flush(&vm.fout, bc_flush_err);
@@ -203,7 +203,7 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 	bc_file_putchar(&vm.ferr, bc_flush_none, '\n');
 	bc_file_puts(&vm.ferr, bc_flush_none, err_type);
 	bc_file_putchar(&vm.ferr, bc_flush_none, ' ');
-	bc_file_vprintf(&vm.ferr, bc_flush_none, vm.err_msgs[e], args);
+	bc_file_vprintf(&vm.ferr, vm.err_msgs[e], args);
 	va_end(args);
 
 	if (BC_NO_ERR(vm.file)) {
@@ -213,7 +213,7 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 		if (line) {
 			bc_file_puts(&vm.ferr, bc_flush_none, "\n    ");
 			bc_file_puts(&vm.ferr, bc_flush_none, vm.file);
-			bc_file_printf(&vm.ferr, bc_flush_none, bc_err_line, line);
+			bc_file_printf(&vm.ferr, bc_err_line, line);
 		}
 		else {
 
@@ -446,7 +446,7 @@ void bc_vm_printf(const char *fmt, ...) {
 	BC_SIG_LOCK;
 
 	va_start(args, fmt);
-	bc_file_vprintf(&vm.fout, bc_flush_none, fmt, args);
+	bc_file_vprintf(&vm.fout, fmt, args);
 	va_end(args);
 
 	vm.nchars = 0;

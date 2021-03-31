@@ -88,6 +88,7 @@ BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type)
 
 	if (f->len) {
 
+#if BC_ENABLE_HISTORY
 		if (f->buf[f->len - 1] != '\n' &&
 		    (type == BC_FLUSH_SAVE_EXTRAS_CLEAR ||
 		     type == BC_FLUSH_SAVE_EXTRAS_NO_CLEAR))
@@ -102,6 +103,7 @@ BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type)
 		}
 		else if (type >= BC_FLUSH_NO_EXTRAS_CLEAR)
 			bc_vec_popAll(&vm.history.extras);
+#endif // BC_ENABLE_HISTORY
 
 		s = bc_file_output(f->fd, f->buf, f->len);
 		f->len = 0;
@@ -140,18 +142,17 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 	}
 }
 
-void bc_file_printf(BcFile *restrict f, BcFlushType type, const char *fmt, ...)
+void bc_file_printf(BcFile *restrict f, const char *fmt, ...)
 {
 	va_list args;
 
 	va_start(args, fmt);
-	bc_file_vprintf(f, type, fmt, args);
+	bc_file_vprintf(f, fmt, args);
 	va_end(args);
 }
 
-void bc_file_vprintf(BcFile *restrict f, BcFlushType type,
-                     const char *fmt, va_list args)
-{
+void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
+
 	char *percent;
 	const char *ptr = fmt;
 	char buf[BC_FILE_ULL_LENGTH];
@@ -162,7 +163,7 @@ void bc_file_vprintf(BcFile *restrict f, BcFlushType type,
 
 		if (percent != ptr) {
 			size_t len = (size_t) (percent - ptr);
-			bc_file_write(f, type, ptr, len);
+			bc_file_write(f, bc_flush_none, ptr, len);
 		}
 
 		c = percent[1];
@@ -171,13 +172,13 @@ void bc_file_vprintf(BcFile *restrict f, BcFlushType type,
 
 			uchar uc = (uchar) va_arg(args, int);
 
-			bc_file_putchar(f, type, uc);
+			bc_file_putchar(f, bc_flush_none, uc);
 		}
 		else if (c == 's') {
 
 			char *s = va_arg(args, char*);
 
-			bc_file_puts(f, type, s);
+			bc_file_puts(f, bc_flush_none, s);
 		}
 #if BC_DEBUG_CODE
 		else if (c == 'd') {
@@ -185,14 +186,14 @@ void bc_file_vprintf(BcFile *restrict f, BcFlushType type,
 			int d = va_arg(args, int);
 
 			if (d < 0) {
-				bc_file_putchar(f, '-');
+				bc_file_putchar(f, bc_flush_none, '-');
 				d = -d;
 			}
 
-			if (!d) bc_file_putchar(f, '0');
+			if (!d) bc_file_putchar(f, bc_flush_none, '0');
 			else {
 				bc_file_ultoa((unsigned long long) d, buf);
-				bc_file_puts(f, buf);
+				bc_file_puts(f, bc_flush_none, buf);
 			}
 		}
 #endif // BC_DEBUG_CODE
@@ -205,17 +206,17 @@ void bc_file_vprintf(BcFile *restrict f, BcFlushType type,
 			if (c == 'z') ull = (unsigned long long) va_arg(args, size_t);
 			else ull = (unsigned long long) va_arg(args, unsigned long);
 
-			if (!ull) bc_file_putchar(f, type, '0');
+			if (!ull) bc_file_putchar(f, bc_flush_none, '0');
 			else {
 				bc_file_ultoa(ull, buf);
-				bc_file_puts(f, type, buf);
+				bc_file_puts(f, bc_flush_none, buf);
 			}
 		}
 
 		ptr = percent + 2 + (c == 'l' || c == 'z');
 	}
 
-	if (ptr[0]) bc_file_puts(f, type, ptr);
+	if (ptr[0]) bc_file_puts(f, bc_flush_none, ptr);
 }
 
 void bc_file_puts(BcFile *restrict f, BcFlushType type, const char *str) {

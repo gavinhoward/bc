@@ -563,7 +563,7 @@ static size_t bc_history_columns(void) {
 
 		// Restore position.
 		if (cols > start) {
-			bc_file_printf(&vm.fout, bc_flush_none, "\x1b[%zuD", cols - start);
+			bc_file_printf(&vm.fout, "\x1b[%zuD", cols - start);
 			bc_file_flush(&vm.fout, bc_flush_none);
 		}
 
@@ -670,7 +670,7 @@ static void bc_history_refresh(BcHistory *h) {
 	// Move cursor to original position.
 	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
 
-	if (colpos) bc_file_printf(&vm.fout, bc_flush_none, "\r\x1b[%zuC", colpos);
+	if (colpos) bc_file_printf(&vm.fout, "\r\x1b[%zuC", colpos);
 
 	bc_file_flush(&vm.fout, bc_flush_none);
 }

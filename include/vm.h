@@ -423,6 +423,10 @@ void bc_vm_init(void);
 void bc_vm_shutdown(void);
 void bc_vm_freeTemps(void);
 
+#if !BC_ENABLE_HISTORY
+#define bc_vm_putchar(c, t) bc_vm_putchar(c)
+#endif // !BC_ENABLE_HISTORY
+
 void bc_vm_printf(const char *fmt, ...);
 void bc_vm_putchar(int c, BcFlushType type);
 size_t bc_vm_arraySize(size_t n, size_t size);
