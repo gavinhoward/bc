@@ -89,20 +89,23 @@ BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type)
 	if (f->len) {
 
 #if BC_ENABLE_HISTORY
-		if (f->buf[f->len - 1] != '\n' &&
-		    (type == BC_FLUSH_SAVE_EXTRAS_CLEAR ||
-		     type == BC_FLUSH_SAVE_EXTRAS_NO_CLEAR))
-		{
-			size_t i;
+		if (BC_TTY) {
+			if (f->buf[f->len - 1] != '\n' &&
+			    (type == BC_FLUSH_SAVE_EXTRAS_CLEAR ||
+			     type == BC_FLUSH_SAVE_EXTRAS_NO_CLEAR))
+			{
+				size_t i;
 
-			for (i = f->len - 2; i < f->len && f->buf[i] != '\n'; --i);
+				for (i = f->len - 2; i < f->len && f->buf[i] != '\n'; --i);
 
-			i += 1;
+				i += 1;
 
-			bc_vec_string(&vm.history.extras, f->len - i, f->buf + i);
+				bc_vec_string(&vm.history.extras, f->len - i, f->buf + i);
+			}
+			else if (type >= BC_FLUSH_NO_EXTRAS_CLEAR) {
+				bc_vec_popAll(&vm.history.extras);
+			}
 		}
-		else if (type >= BC_FLUSH_NO_EXTRAS_CLEAR)
-			bc_vec_popAll(&vm.history.extras);
 #endif // BC_ENABLE_HISTORY
 
 		s = bc_file_output(f->fd, f->buf, f->len);
