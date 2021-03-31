@@ -130,6 +130,12 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
+**-R**, **-\-no-read-prompt**
+
+:   Because bc(1) was built without support for prompts, this option is a no-op.
+
+    This is a **non-portable extension**.
+
 **-q**, **-\-quiet**
 
 :   This option is for compatibility with the [GNU bc(1)][2]; it is a no-op.

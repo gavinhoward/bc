@@ -84,6 +84,12 @@ The following are the options that dc(1) accepts.
 
     This is a **non-portable extension**.
 
+**-R**, **-\-no-read-prompt**
+
+:   This option is a no-op.
+
+    This is a **non-portable extension**.
+
 **-x** **-\-extended-register**
 
 :   Enables extended register mode. See the *Extended Register Mode* subsection
