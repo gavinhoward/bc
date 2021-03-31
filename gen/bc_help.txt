@@ -101,7 +101,11 @@ Options:
 
   -P  --no-prompt
 
-      Disable the prompt in interactive mode.
+      Disable the prompts in interactive mode.
+
+  -R  --no-read-prompt
+
+      Disable the read prompt in interactive mode.
 
   -q  --quiet
 
