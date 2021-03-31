@@ -1655,15 +1655,15 @@ int_err:
 static inline void bc_num_printNewline(void) {
 #if !BC_ENABLE_LIBRARY
 	if (vm.nchars >= vm.line_len - 1) {
-		bc_vm_putchar('\\');
-		bc_vm_putchar('\n');
+		bc_vm_putchar('\\', bc_flush_none);
+		bc_vm_putchar('\n', bc_flush_err);
 	}
 #endif // !BC_ENABLE_LIBRARY
 }
 
 static void bc_num_putchar(int c) {
 	if (c != '\n') bc_num_printNewline();
-	bc_vm_putchar(c);
+	bc_vm_putchar(c, bc_flush_save);
 }
 
 #if DC_ENABLED && !BC_ENABLE_LIBRARY
@@ -1671,7 +1671,7 @@ static void bc_num_printChar(size_t n, size_t len, bool rdx) {
 	BC_UNUSED(rdx);
 	BC_UNUSED(len);
 	assert(len == 1);
-	bc_vm_putchar((uchar) n);
+	bc_vm_putchar((uchar) n, bc_flush_save);
 }
 #endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 

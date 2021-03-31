@@ -100,8 +100,8 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 #if BC_ENABLE_PROMPT
 	if (BC_USE_PROMPT) {
-		bc_file_puts(&vm.fout, prompt);
-		bc_file_flush(&vm.fout);
+		bc_file_puts(&vm.fout, bc_flush_none, prompt);
+		bc_file_flush(&vm.fout, bc_flush_none);
 	}
 #endif // BC_ENABLE_PROMPT
 
@@ -132,9 +132,10 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				vm.status = (sig_atomic_t) BC_STATUS_SUCCESS;
 #if BC_ENABLE_PROMPT
-				if (BC_USE_PROMPT) bc_file_puts(&vm.fout, prompt);
+				if (BC_USE_PROMPT)
+					bc_file_puts(&vm.fout, bc_flush_none, prompt);
 #endif // BC_ENABLE_PROMPT
-				bc_file_flush(&vm.fout);
+				bc_file_flush(&vm.fout, bc_flush_none);
 
 				BC_SIG_UNLOCK;
 

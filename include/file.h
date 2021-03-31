@@ -51,15 +51,30 @@ typedef struct BcFile {
 
 } BcFile;
 
+typedef enum BcFlushType {
+
+	BC_FLUSH_NO_EXTRAS_NO_CLEAR,
+	BC_FLUSH_SAVE_EXTRAS_NO_CLEAR,
+	BC_FLUSH_NO_EXTRAS_CLEAR,
+	BC_FLUSH_SAVE_EXTRAS_CLEAR,
+
+} BcFlushType;
+
 void bc_file_init(BcFile *f, int fd, char *buf, size_t cap);
 void bc_file_free(BcFile *f);
 
-void bc_file_putchar(BcFile *restrict f, uchar c);
-BcStatus bc_file_flushErr(BcFile *restrict f);
-void bc_file_flush(BcFile *restrict f);
-void bc_file_write(BcFile *restrict f, const char *buf, size_t n);
-void bc_file_printf(BcFile *restrict f, const char *fmt, ...);
-void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args);
-void bc_file_puts(BcFile *restrict f, const char *str);
+void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c);
+BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type);
+void bc_file_flush(BcFile *restrict f, BcFlushType type);
+void bc_file_write(BcFile *restrict f, BcFlushType type,
+                   const char *buf, size_t n);
+void bc_file_printf(BcFile *restrict f, BcFlushType type, const char *fmt, ...);
+void bc_file_vprintf(BcFile *restrict f, BcFlushType type,
+                     const char *fmt, va_list args);
+void bc_file_puts(BcFile *restrict f, BcFlushType type, const char *str);
+
+extern const BcFlushType bc_flush_none;
+extern const BcFlushType bc_flush_err;
+extern const BcFlushType bc_flush_save;
 
 #endif // BC_FILE_H

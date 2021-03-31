@@ -514,7 +514,7 @@ static void bc_program_printChars(const char *str) {
 	const char *nl;
 	size_t len = vm.nchars + strlen(str);
 
-	bc_file_puts(&vm.fout, str);
+	bc_file_puts(&vm.fout, bc_flush_save, str);
 	nl = strrchr(str, '\n');
 
 	if (nl != NULL) len = strlen(nl + 1);
@@ -528,7 +528,7 @@ static void bc_program_printString(const char *restrict str) {
 
 #if DC_ENABLED
 	if (!len && BC_IS_DC) {
-		bc_vm_putchar('\0');
+		bc_vm_putchar('\0', bc_flush_save);
 		return;
 	}
 #endif // DC_ENABLED
@@ -551,11 +551,11 @@ static void bc_program_printString(const char *restrict str) {
 			else {
 				// Just print the backslash. The following
 				// character will be printed later.
-				bc_vm_putchar('\\');
+				bc_vm_putchar('\\', bc_flush_save);
 			}
 		}
 
-		bc_vm_putchar(c);
+		bc_vm_putchar(c, bc_flush_save);
 	}
 }
 
@@ -600,13 +600,14 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 		size_t i = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
 
-		bc_file_flush(&vm.fout);
+		bc_file_flush(&vm.fout, bc_flush_save);
 		str = *((char**) bc_vec_item(p->strs, i));
 
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
 		else {
 			bc_program_printString(str);
-			if (inst == BC_INST_PRINT) bc_vm_putchar('\n');
+			if (inst == BC_INST_PRINT)
+				bc_vm_putchar('\n', bc_flush_err);
 		}
 	}
 
@@ -1809,8 +1810,9 @@ void bc_program_reset(BcProgram *p) {
 	memset(ip, 0, sizeof(BcInstPtr));
 
 	if (vm.sig) {
-		bc_file_write(&vm.fout, bc_program_ready_msg, bc_program_ready_msg_len);
-		bc_file_flush(&vm.fout);
+		bc_file_write(&vm.fout, bc_flush_none, bc_program_ready_msg,
+		              bc_program_ready_msg_len);
+		bc_file_flush(&vm.fout, bc_flush_err);
 		vm.sig = 0;
 	}
 }
@@ -1932,7 +1934,7 @@ void bc_program_exec(BcProgram *p) {
 			{
 				// We want to flush output before
 				// this in case there is a prompt.
-				bc_file_flush(&vm.fout);
+				bc_file_flush(&vm.fout, bc_flush_save);
 
 				bc_program_read(p);
 

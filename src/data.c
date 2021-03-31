@@ -172,6 +172,10 @@ const char* const bc_err_msgs[] = {
 
 };
 
+const BcFlushType bc_flush_none = BC_FLUSH_NO_EXTRAS_NO_CLEAR;
+const BcFlushType bc_flush_err = BC_FLUSH_NO_EXTRAS_CLEAR;
+const BcFlushType bc_flush_save = BC_FLUSH_SAVE_EXTRAS_CLEAR;
+
 #if BC_ENABLE_HISTORY
 const char *bc_history_bad_terms[] = { "dumb", "cons25", "emacs", NULL };
 

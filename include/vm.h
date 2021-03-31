@@ -424,7 +424,7 @@ void bc_vm_shutdown(void);
 void bc_vm_freeTemps(void);
 
 void bc_vm_printf(const char *fmt, ...);
-void bc_vm_putchar(int c);
+void bc_vm_putchar(int c, BcFlushType type);
 size_t bc_vm_arraySize(size_t n, size_t size);
 size_t bc_vm_growSize(size_t a, size_t b);
 void* bc_vm_malloc(size_t n);
