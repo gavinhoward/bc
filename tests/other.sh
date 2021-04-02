@@ -148,6 +148,12 @@ else
 		easter_res="$testdir/dc_outputs/easter.txt"
 		easter_out="$testdir/dc_outputs/easter_results.txt"
 
+		outdir=$(dirname "$easter_out")
+
+		if [ ! -d "$outdir" ]; then
+			mkdir -p "$outdir"
+		fi
+
 		printf '4 April 2021\n' > "$easter_res"
 
 		"$testdir/dc/scripts/easter.sh" "$exe" 2021 | head -c12 > "$easter_out"
