@@ -52,6 +52,7 @@
 
 #endif // BC_ENABLE_NLS
 
+#include <version.h>
 #include <status.h>
 #include <num.h>
 #include <parse.h>

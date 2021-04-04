@@ -523,8 +523,6 @@ header "Running math library under --standard"
 
 printf 'quit\n' | bin/bc -ls
 
-version=$(make version)
-
 do_make clean_tests
 
 if [ "$test_with_clang" -ne 0 ]; then
@@ -573,7 +571,7 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
 		printf '\n'
-		printf '    <github_release> %s release.sh RELEASE.md\\\n' "$version"
+		printf '    <github_release> <version> release.sh RELEASE.md\\\n'
 		printf '    tests/afl.py tests/radamsa.sh tests/radamsa.txt tests/randmath.py \\\n'
 		printf '    tests/fuzzing/ tests/bc/scripts/timeconst.bc\n'
 
