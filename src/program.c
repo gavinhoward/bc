@@ -1468,7 +1468,7 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 	for (i = 0; val && i < p->tail_calls.len; ++i) {
 		size_t calls = *((size_t*) bc_vec_item_rev(&p->tail_calls, i)) + 1;
 		if (calls >= val) val = 0;
-		else val -= calls;
+		else val -= (BcBigDig) calls;
 	}
 
 	if (i == p->stack.len) {

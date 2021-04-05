@@ -78,22 +78,27 @@
 
 #ifndef MAINEXEC
 #define MAINEXEC bc
-#endif
+#endif // MAINEXEC
 
+#ifndef _WIN32
 #ifndef EXECPREFIX
 #define EXECPREFIX
-#endif
+#endif // EXECPREFIX
+#else // _WIN32
+#undef EXECPREFIX
+#endif // _WIN32
 
 #define GEN_STR(V) #V
 #define GEN_STR2(V) GEN_STR(V)
 
 #define BC_VERSION GEN_STR2(VERSION)
-#define BC_EXECPREFIX GEN_STR2(EXECPREFIX)
 #define BC_MAINEXEC GEN_STR2(MAINEXEC)
+#define BC_BUILD_TYPE GEN_STR2(BUILD_TYPE)
 
-// Windows has deprecated isatty().
-#ifdef _WIN32
-#define isatty _isatty
+#ifndef _WIN32
+#define BC_EXECPREFIX GEN_STR2(EXECPREFIX)
+#else // _WIN32
+#define BC_EXECPREFIX ""
 #endif // _WIN32
 
 #if !BC_ENABLE_LIBRARY
@@ -435,6 +440,8 @@ size_t bc_vm_growSize(size_t a, size_t b);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
+char* bc_vm_getenv(const char* var);
+void bc_vm_getenvFree(char* var);
 
 #if BC_DEBUG_CODE
 void bc_vm_jmp(const char *f);

@@ -38,7 +38,10 @@
 #include <string.h>
 
 #include <locale.h>
+
+#ifndef _WIN32
 #include <libgen.h>
+#endif // _WIN32
 
 #include <setjmp.h>
 
@@ -55,7 +58,7 @@ int main(int argc, char *argv[]) {
 
 	vm.locale = setlocale(LC_ALL, "");
 
-	name = strrchr(argv[0], '/');
+	name = strrchr(argv[0], BC_FILE_SEP);
 	vm.name = (name == NULL) ? argv[0] : name + 1;
 
 	if (strlen(vm.name) > len) vm.name += len;

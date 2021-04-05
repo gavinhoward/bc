@@ -1389,7 +1389,7 @@ static void bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 #endif // BC_ENABLE_EXTRA_MATH
 
 static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
-                          BcNumBinaryOp op, size_t req)
+                          BcNumBinOp op, size_t req)
 {
 	BcNum *ptr_a, *ptr_b, num2;
 	bool init = false;

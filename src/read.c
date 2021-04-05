@@ -43,12 +43,29 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif // _WIN32
 
 #include <read.h>
 #include <history.h>
 #include <program.h>
 #include <vm.h>
+
+static int bc_read_open(const char* path, int mode) {
+
+	int fd;
+
+#ifndef _WIN32
+	fd = open(path, mode);
+#else // _WIN32
+	fd = -1;
+	open(&fd, path, mode);
+#endif
+
+	return fd;
+}
 
 static bool bc_read_binary(const char *buf, size_t size) {
 
@@ -194,7 +211,8 @@ void bc_read_file(const char *path, char **buf) {
 
 	assert(path != NULL);
 
-	fd = open(path, O_RDONLY);
+	fd = bc_read_open(path, O_RDONLY);
+
 	if (BC_ERR(fd < 0)) bc_vm_verr(BC_ERR_FATAL_FILE_ERR, path);
 	if (BC_ERR(fstat(fd, &pstat) == -1)) goto malloc_err;
 
