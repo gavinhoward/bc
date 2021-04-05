@@ -30,6 +30,7 @@
 usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
 	printf '          [run_sanitizers] [run_valgrind] [run_64_bit] [run_gen_script]\n'
+	printf '          [test_c11] [test_128_bit]\n'
 	exit 1
 }
 
@@ -216,8 +217,10 @@ runconfigseries() {
 
 	if [ "$run_64_bit" -ne 0 ]; then
 
-		runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
-			"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
+		if [ "$test_128_bit" -ne 0 ]; then
+			runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
+				"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
+		fi
 
 		if [ "$run_gen_script" -ne 0 ]; then
 			runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
@@ -307,7 +310,10 @@ runtests() {
 	shift
 
 	runtestseries "-std=c99 $_runtests_CFLAGS" "$_runtests_CC" "$_runtests_configure_flags" "$_runtests_run_tests"
-	runtestseries "-std=c11 $_runtests_CFLAGS" "$_runtests_CC" "$_runtests_configure_flags" "$_runtests_run_tests"
+
+	if [ "$test_c11" -ne 0 ]; then
+		runtestseries "-std=c11 $_runtests_CFLAGS" "$_runtests_CC" "$_runtests_configure_flags" "$_runtests_run_tests"
+	fi
 }
 
 karatsuba() {
@@ -496,6 +502,20 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	run_gen_script=0
+fi
+
+if [ "$#" -gt 0 ]; then
+	test_c11="$1"
+	shift
+else
+	test_c11=0
+fi
+
+if [ "$#" -gt 0 ]; then
+	test_128_bit="$1"
+	shift
+else
+	test_128_bit=0
 fi
 
 if [ "$run_64_bit" -ne 0 ]; then
