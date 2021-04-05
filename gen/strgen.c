@@ -62,7 +62,7 @@ static const char* const bc_gen_name_extern = "extern const char %s[];\n\n";
 
 #define MAX_WIDTH (74)
 
-void open_file(FILE** f, const char* filename, const char* mode) {
+static void open_file(FILE** f, const char* filename, const char* mode) {
 
 #ifndef _WIN32
 	*f = fopen(filename, mode);
@@ -72,7 +72,7 @@ void open_file(FILE** f, const char* filename, const char* mode) {
 #endif // _WIN32
 }
 
-int output_label(FILE* out, const char* label, const char* name) {
+static int output_label(FILE* out, const char* label, const char* name) {
 
 #ifndef _WIN32
 	return fprintf(out, bc_gen_label, label, name);
