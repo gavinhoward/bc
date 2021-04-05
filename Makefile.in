@@ -350,6 +350,7 @@ clean:%%CLEAN_PREREQS%%
 	@$(RM) -f $(DC_HELP_C) $(DC_HELP_O)
 	@$(RM) -fr $(BC_TEST_OUTPUTS) $(DC_TEST_OUTPUTS)
 	@$(RM) -fr $(BC_FUZZ_OUTPUTS) $(DC_FUZZ_OUTPUTS)
+	@$(RM) -fr Debug/ Release/
 
 clean_config: clean
 	@printf 'Cleaning config...\n'
