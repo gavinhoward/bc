@@ -460,7 +460,7 @@ These commands control registers (see the **REGISTERS** section).
 :   Pops the value off the top of the (main) stack and pushes it onto the stack
     of register *r*. The previous value of the register becomes inaccessible.
 
-**L**_r
+**L**_r_
 
 :   Pops the value off the top of the stack for register *r* and push it onto
     the main stack. The previous value in the stack for register *r*, if any, is
