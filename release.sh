@@ -591,8 +591,9 @@ if [ "$run_tests" -ne 0 ]; then
 		printf '\n'
 		printf 'Then run the GitHub release script as follows:\n'
 		printf '\n'
-		printf '    <github_release> <version> release.sh RELEASE.md\\\n'
-		printf '    tests/afl.py tests/radamsa.sh tests/radamsa.txt tests/randmath.py \\\n'
+		printf '    <github_release> <version> .gitignore .gitattributes\\\n'
+		printf '    manpage.sh release.sh RELEASE.md tests/afl.py\\\n'
+		printf '    tests/radamsa.sh tests/radamsa.txt tests/randmath.py\\\n'
 		printf '    tests/fuzzing/ tests/bc/scripts/timeconst.bc\n'
 
 	fi
