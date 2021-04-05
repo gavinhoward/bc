@@ -140,7 +140,6 @@ static void bc_vm_sigaction(void) {
 #else // _WIN32
 
 	signal(SIGTERM, bc_vm_sig);
-	signal(SIGINT, bc_vm_sig);
 
 #endif // _WIN32
 }
