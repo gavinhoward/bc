@@ -1,5 +1,11 @@
 # News
 
+## 4.0.2
+
+This is a production release that fixes one bug: if no files are used and the
+first statement on `stdin` is invalid, `scale` would not be set to `20` even if
+`-l` was used.
+
 ## 4.0.1
 
 This is a production release that only adds one thing: flushing output when it
