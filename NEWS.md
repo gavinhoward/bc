@@ -2,9 +2,12 @@
 
 ## 4.0.2
 
-This is a production release that fixes one bug: if no files are used and the
-first statement on `stdin` is invalid, `scale` would not be set to `20` even if
-`-l` was used.
+This is a production release that fixes two bugs:
+
+1.	If no files are used and the first statement on `stdin` is invalid, `scale`
+	would not be set to `20` even if `-l` was used.
+2.	When using history, `bc` failed to respond properly to `SIGSTOP` and
+	`SIGTSTP`.
 
 ## 4.0.1
 
