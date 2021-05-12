@@ -435,7 +435,7 @@ build_set() {
 clang_flags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
 clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
 clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
-clang_flags="$clang_flags -Wno-implicit-fallthrough"
+clang_flags="$clang_flags -Wno-implicit-fallthrough -Wno-unused-macros"
 gcc_flags="-Wno-maybe-uninitialized -Wno-clobbered"
 
 cflags="-Wall -Wextra -Werror -pedantic -Wno-conditional-uninitialized"
