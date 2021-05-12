@@ -29,7 +29,7 @@
 
 # For OpenBSD, run using the following:
 #
-# ./release.sh 0 0 1 1 0 0 1 0 0 0
+# ./release.sh 1 0 1 1 0 0 1 0 0 0
 #
 # For Linux, run two separate ones (in different directories), like so:
 #
