@@ -36,7 +36,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <locale.h>
 
@@ -60,7 +59,9 @@ int main(int argc, char *argv[]) {
 	vm.locale = setlocale(LC_ALL, "");
 
 #if BC_ENABLE_HISTORY
-	if (pledge("rpath stdio tty", NULL)) abort();
+	bc_pledge("rpath stdio tty unveil", NULL);
+#else // BC_ENABLE_HISTORY
+	bc_pledge("rpath stdio unveil", NULL);
 #endif // BC_ENABLE_HISTORY
 
 	name = strrchr(argv[0], BC_FILE_SEP);

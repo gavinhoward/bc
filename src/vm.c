@@ -498,11 +498,32 @@ void bc_vm_putchar(int c, BcFlushType type) {
 #endif // BC_ENABLE_LIBRARY
 }
 
-#ifndef __OpenBSD__
-int pledge(const char* promises, const char* execpromises) {
+#ifdef __OpenBSD__
+BC_NORETURN void bc_abortm(const char* msg) {
+	bc_file_puts(&vm.ferr, bc_flush_none, msg);
+	bc_file_puts(&vm.ferr, bc_flush_none, "; this is a bug");
+	bc_file_flush(&vm.ferr, bc_flush_none);
+	abort();
+}
+
+void bc_pledge(const char *promises, const char* execpromises) {
+	int r = pledge(promises, execpromises);
+	if (r) bc_abortm("pledge() failed");
+}
+
+static void bc_unveil(const char *path, const char *permissions) {
+	int r = unveil(path, permissions);
+	if (r) bc_abortm("unveil() failed");
+}
+#else // __OpenBSD__
+void bc_pledge(const char *promises, const char *execpromises) {
 	BC_UNUSED(promises);
 	BC_UNUSED(execpromises);
-	return 0;
+}
+
+static void bc_unveil(const char *path, const char *permissions) {
+	BC_UNUSED(path);
+	BC_UNUSED(permissions);
 }
 #endif // __OpenBSD__
 
@@ -898,13 +919,21 @@ static void bc_vm_exec(void) {
 	__AFL_INIT();
 #endif // BC_ENABLE_AFL
 
+	bc_unveil("/dev/urandom", "r");
+	bc_unveil("/dev/random", "r");
+	bc_unveil(NULL, NULL);
+
 #if BC_ENABLE_HISTORY
-	// We need to keep tty if history is enabled.
-	if (!BC_TTY || vm.history.badTerm) {
-		// We need to keep rpath for the times when we read from /dev/urandom.
-		if (pledge("rpath stdio", NULL)) abort();
+	// We need to keep tty if history is enabled, and we need
+	// to keep rpath for the times when we read from /dev/urandom.
+	if (BC_TTY && !vm.history.badTerm) {
+		bc_pledge("rpath stdio tty", NULL);
 	}
+	else
 #endif // BC_ENABLE_HISTORY
+	{
+		bc_pledge("rpath stdio", NULL);
+	}
 
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
 
