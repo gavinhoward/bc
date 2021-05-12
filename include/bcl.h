@@ -171,6 +171,13 @@ typedef uint32_t BclRandInt;
 
 #else // _WIN32
 #define BC_FILE_SEP '/'
+
+#ifdef __GNUC__
+#ifdef __OpenBSD__
+#define inline
+#endif // __OpenBSD__
+#endif // __GNUC__
+
 #endif // _WIN32
 
 #if BC_ENABLE_LIBRARY
