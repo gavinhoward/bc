@@ -38,4 +38,10 @@
 
 #define VERSION 4.0.2
 
+#ifdef BC_TEST_OPENBSD
+#ifdef __OpenBSD__
+#error On OpenBSD without _BSD_SOURCE
+#endif // __OpenBSD__
+#endif // BC_TEST_OPENBSD
+
 #endif // BC_VERSION_H

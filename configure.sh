@@ -1053,6 +1053,23 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
+# Test OpenBSD
+set +e
+printf 'Testing for OpenBSD...\n'
+
+flags="-DBC_TEST_OPENBSD"
+"$CC" $CPPFLAGS $CFLAGS $flags -E "include/version.h" > /dev/null 2>&1
+
+err="$?"
+
+if [ "$err" -ne 0 ]; then
+	printf 'On OpenBSD. Using _BSD_SOURCE.\n\n'
+	bsd="-D_BSD_SOURCE"
+else
+	printf 'Not on OpenBSD.\n\n'
+	bsd=""
+fi
+
 if [ "$library" -eq 1 ]; then
 	bc_lib=""
 fi
@@ -1298,6 +1315,8 @@ contents=$(replace "$contents" "GEN" "$GEN")
 contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")
 contents=$(replace "$contents" "CLEAN_PREREQS" "$CLEAN_PREREQS")
 contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
+
+contents=$(replace "$contents" "BSD" "$bsd")
 
 printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"
 

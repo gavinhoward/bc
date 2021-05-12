@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <signal.h>
 
@@ -497,6 +498,14 @@ void bc_vm_putchar(int c, BcFlushType type) {
 #endif // BC_ENABLE_LIBRARY
 }
 
+#ifndef __OpenBSD__
+int pledge(const char* promises, const char* execpromises) {
+	BC_UNUSED(promises);
+	BC_UNUSED(execpromises);
+	return 0;
+}
+#endif // __OpenBSD__
+
 char* bc_vm_getenv(const char* var) {
 
 	char* ret;
@@ -888,6 +897,14 @@ static void bc_vm_exec(void) {
 #if BC_ENABLE_AFL
 	__AFL_INIT();
 #endif // BC_ENABLE_AFL
+
+#if BC_ENABLE_HISTORY
+	// We need to keep tty if history is enabled.
+	if (!BC_TTY || vm.history.badTerm) {
+		// We need to keep rpath for the times when we read from /dev/urandom.
+		if (pledge("rpath stdio", NULL)) abort();
+	}
+#endif // BC_ENABLE_HISTORY
 
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
 
