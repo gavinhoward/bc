@@ -27,6 +27,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# For OpenBSD, run using the following:
+#
+# ./release.sh 0 0 1 1 0 0 1 0 0 0
+#
+# For Linux, run two separate ones (in different directories), like so:
+#
+# ./release.sh 1 1 1 0 1 0 1 0 1 0
+# ./release.sh 1 1 0 1 0 1 1 0 1 0
+
 usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
 	printf '          [run_sanitizers] [run_valgrind] [run_64_bit] [run_gen_script]\n'
