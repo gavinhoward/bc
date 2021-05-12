@@ -498,6 +498,7 @@ void bc_vm_putchar(int c, BcFlushType type) {
 #endif // BC_ENABLE_LIBRARY
 }
 
+#if !BC_ENABLE_LIBRARY
 #ifdef __OpenBSD__
 BC_NORETURN static void bc_abortm(const char* msg) {
 	bc_file_puts(&vm.ferr, bc_flush_none, msg);
@@ -526,6 +527,7 @@ static void bc_unveil(const char *path, const char *permissions) {
 	BC_UNUSED(permissions);
 }
 #endif // __OpenBSD__
+#endif // !BC_ENABLE_LIBRARY
 
 char* bc_vm_getenv(const char* var) {
 
