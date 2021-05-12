@@ -499,7 +499,7 @@ void bc_vm_putchar(int c, BcFlushType type) {
 }
 
 #ifdef __OpenBSD__
-BC_NORETURN void bc_abortm(const char* msg) {
+BC_NORETURN static void bc_abortm(const char* msg) {
 	bc_file_puts(&vm.ferr, bc_flush_none, msg);
 	bc_file_puts(&vm.ferr, bc_flush_none, "; this is a bug");
 	bc_file_flush(&vm.ferr, bc_flush_none);
