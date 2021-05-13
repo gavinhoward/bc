@@ -512,11 +512,15 @@ void bc_pledge(const char *promises, const char* execpromises) {
 	if (r) bc_abortm("pledge() failed");
 }
 
+#if BC_ENABLE_EXTRA_MATH
 static void bc_unveil(const char *path, const char *permissions) {
 	int r = unveil(path, permissions);
 	if (r) bc_abortm("unveil() failed");
 }
+#endif // BC_ENABLE_EXTRA_MATH
+
 #else // __OpenBSD__
+
 void bc_pledge(const char *promises, const char *execpromises) {
 	BC_UNUSED(promises);
 	BC_UNUSED(execpromises);
@@ -921,9 +925,11 @@ static void bc_vm_exec(void) {
 	__AFL_INIT();
 #endif // BC_ENABLE_AFL
 
+#if BC_ENABLE_EXTRA_MATH
 	bc_unveil("/dev/urandom", "r");
 	bc_unveil("/dev/random", "r");
 	bc_unveil(NULL, NULL);
+#endif // BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLE_HISTORY
 	// We need to keep tty if history is enabled, and we need
