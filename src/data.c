@@ -59,6 +59,30 @@ const char bc_copyright[] =
 	"Report bugs at: https://git.yzena.com/gavin/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
+#if BC_ENABLE_EXTRA_MATH
+
+#if BC_ENABLE_HISTORY
+const char bc_pledge_start[] = "rpath stdio tty unveil";
+const char bc_pledge_end_history[] = "rpath stdio tty";
+#else // BC_ENABLE_HISTORY
+const char bc_pledge_start[] = "rpath stdio unveil";
+#endif // BC_ENABLE_HISTORY
+
+const char bc_pledge_end[] = "rpath stdio";
+
+#else // BC_ENABLE_EXTRA_MATH
+
+#if BC_ENABLE_HISTORY
+const char bc_pledge_start[] = "rpath stdio tty";
+const char bc_pledge_end_history[] = "stdio tty";
+#else // BC_ENABLE_HISTORY
+const char bc_pledge_start[] = "rpath stdio";
+#endif // BC_ENABLE_HISTORY
+
+const char bc_pledge_end[] = "stdio";
+
+#endif // BC_ENABLE_EXTRA_MATH
+
 const char* const bc_err_func_header = "Function:";
 const char* const bc_err_line = ":%zu";
 

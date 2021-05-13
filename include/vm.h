@@ -471,6 +471,10 @@ extern const char *bc_errs[];
 extern const uchar bc_err_ids[];
 extern const char* const bc_err_msgs[];
 
+extern const char bc_pledge_start[];
+extern const char bc_pledge_end_history[];
+extern const char bc_pledge_end[];
+
 extern BcVm vm;
 extern char output_bufs[BC_VM_BUF_SIZE];
 

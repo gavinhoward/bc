@@ -929,12 +929,12 @@ static void bc_vm_exec(void) {
 	// We need to keep tty if history is enabled, and we need
 	// to keep rpath for the times when we read from /dev/urandom.
 	if (BC_TTY && !vm.history.badTerm) {
-		bc_pledge("rpath stdio tty", NULL);
+		bc_pledge(bc_pledge_end_history, NULL);
 	}
 	else
 #endif // BC_ENABLE_HISTORY
 	{
-		bc_pledge("rpath stdio", NULL);
+		bc_pledge(bc_pledge_end, NULL);
 	}
 
 	if (BC_IS_BC || !has_file) bc_vm_stdin();

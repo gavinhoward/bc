@@ -58,11 +58,7 @@ int main(int argc, char *argv[]) {
 
 	vm.locale = setlocale(LC_ALL, "");
 
-#if BC_ENABLE_HISTORY
-	bc_pledge("rpath stdio tty unveil", NULL);
-#else // BC_ENABLE_HISTORY
-	bc_pledge("rpath stdio unveil", NULL);
-#endif // BC_ENABLE_HISTORY
+	bc_pledge(bc_pledge_start, NULL);
 
 	name = strrchr(argv[0], BC_FILE_SEP);
 	vm.name = (name == NULL) ? argv[0] : name + 1;
