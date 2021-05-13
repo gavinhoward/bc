@@ -55,6 +55,12 @@ system.
 
 ## Build
 
+This `bc` should build unmodified on any POSIX-compliant system or on Windows
+starting with Windows 10 (though earlier versions may work).
+
+For more complex build requirements than the ones below, see the
+[build manual][5].
+
 ### Windows
 
 There is no guarantee that this `bc` will work on any version of Windows earlier
@@ -95,12 +101,6 @@ msbuild -property:Configuration=<config> bcl.sln
 where `<config>` is either one of `Debug` or `Release`.
 
 ### POSIX-Compatible Systems
-
-This `bc` should build unmodified on any POSIX-compliant system or on Windows
-starting with Windows 10 (though earlier versions may work).
-
-For more complex build requirements than the ones below, see the
-[build manual][5].
 
 On POSIX-compatible systems, `bc` is built as `bin/bc` and `dc` is built as
 `bin/dc` by default. On Windows, they are built as `Release/bc/bc.exe` and
