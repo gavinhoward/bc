@@ -526,10 +526,13 @@ void bc_pledge(const char *promises, const char *execpromises) {
 	BC_UNUSED(execpromises);
 }
 
+#if BC_ENABLE_EXTRA_MATH
 static void bc_unveil(const char *path, const char *permissions) {
 	BC_UNUSED(path);
 	BC_UNUSED(permissions);
 }
+#endif // BC_ENABLE_EXTRA_MATH
+
 #endif // __OpenBSD__
 #endif // !BC_ENABLE_LIBRARY
 
