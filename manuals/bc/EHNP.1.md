@@ -603,17 +603,32 @@ The "expressions" in a **print** statement may also be strings. If they are, the
 are backslash escape sequences that are interpreted specially. What those
 sequences are, and what they cause to be printed, are shown below:
 
--------- -------
-**\\a**  **\\a**
-**\\b**  **\\b**
-**\\\\** **\\**
-**\\e**  **\\**
-**\\f**  **\\f**
-**\\n**  **\\n**
-**\\q**  **"**
-**\\r**  **\\r**
-**\\t**  **\\t**
--------- -------
+**\\a**
+:   **\\a**
+
+**\\b**
+:   **\\b**
+
+**\\\\**
+:   **\\**
+
+**\\e**
+:   **\\**
+
+**\\f**
+:   **\\f**
+
+**\\n**
+:   **\\n**
+
+**\\q**
+:   **"**
+
+**\\r**
+:   **\\r**
+
+**\\t**
+:   **\\t**
 
 Any other character following a backslash causes the backslash and character to
 be printed as-is.
