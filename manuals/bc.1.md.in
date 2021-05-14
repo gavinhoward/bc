@@ -52,8 +52,8 @@ especially) the GNU bc(1). It also has many extensions and extra features beyond
 other implementations.
 {{ end }}
 {{ E EN EP ENP }}
-This bc(1) is a drop-in replacement for *any* bc(1), including (and
-especially) the GNU bc(1).
+This bc(1) is a drop-in replacement for *any* bc(1), including (and especially)
+the GNU bc(1).
 {{ end }}
 
 # OPTIONS

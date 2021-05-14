@@ -46,8 +46,8 @@ Such differences will be noted in this document.
 After parsing and handling options, this bc(1) reads any files given on the
 command line and executes them before reading from **stdin**.
 
-This bc(1) is a drop-in replacement for *any* bc(1), including (and
-especially) the GNU bc(1).
+This bc(1) is a drop-in replacement for *any* bc(1), including (and especially)
+the GNU bc(1).
 
 # OPTIONS
 
