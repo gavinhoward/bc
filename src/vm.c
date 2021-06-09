@@ -408,7 +408,6 @@ void bc_vm_shutdown(void) {
 #endif // !BC_ENABLE_LIBRARY
 }
 
-#if !defined(NDEBUG) || BC_ENABLE_LIBRARY
 void bc_vm_freeTemps(void) {
 
 	size_t i;
@@ -416,8 +415,9 @@ void bc_vm_freeTemps(void) {
 	for (i = 0; i < vm.temps.len; ++i) {
 		free(((BcNum*) bc_vec_item(&vm.temps, i))->num);
 	}
+
+	vm.temps.len = 0;
 }
-#endif // !defined(NDEBUG) || BC_ENABLE_LIBRARY
 
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
@@ -441,7 +441,14 @@ void* bc_vm_malloc(size_t n) {
 
 	ptr = malloc(n);
 
-	if (BC_ERR(ptr == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+	if (BC_ERR(ptr == NULL)) {
+
+		bc_vm_freeTemps();
+
+		ptr = malloc(n);
+
+		if (BC_ERR(ptr == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+	}
 
 	return ptr;
 }
@@ -454,7 +461,14 @@ void* bc_vm_realloc(void *ptr, size_t n) {
 
 	temp = realloc(ptr, n);
 
-	if (BC_ERR(temp == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+	if (BC_ERR(temp == NULL)) {
+
+		bc_vm_freeTemps();
+
+		temp = realloc(ptr, n);
+
+		if (BC_ERR(temp == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+	}
 
 	return temp;
 }
@@ -467,7 +481,14 @@ char* bc_vm_strdup(const char *str) {
 
 	s = strdup(str);
 
-	if (BC_ERR(s == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+	if (BC_ERR(s == NULL)) {
+
+		bc_vm_freeTemps();
+
+		s = strdup(str);
+
+		if (BC_ERR(s == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+	}
 
 	return s;
 }

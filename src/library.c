@@ -162,7 +162,6 @@ void bcl_free(void) {
 
 void bcl_gc(void) {
 	bc_vm_freeTemps();
-	vm.temps.len = 0;
 }
 
 bool bcl_abortOnFatalError(void) {
