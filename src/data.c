@@ -59,6 +59,8 @@ const char bc_copyright[] =
 	"Report bugs at: https://git.yzena.com/gavin/bc\n\n"
 	"This is free software with ABSOLUTELY NO WARRANTY.\n";
 
+#ifdef __OpenBSD__
+
 #if BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLE_HISTORY
@@ -82,6 +84,14 @@ const char bc_pledge_start[] = "rpath stdio";
 const char bc_pledge_end[] = "stdio";
 
 #endif // BC_ENABLE_EXTRA_MATH
+
+#else // __OpenBSD__
+
+const char bc_pledge_start[] = "";
+const char bc_pledge_end_history[] = "";
+const char bc_pledge_end[] = "";
+
+#endif // __OpenBSD__
 
 const char* const bc_err_func_header = "Function:";
 const char* const bc_err_line = ":%zu";
