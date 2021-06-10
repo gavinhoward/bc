@@ -211,6 +211,11 @@ void bc_read_file(const char *path, char **buf) {
 
 	assert(path != NULL);
 
+#ifndef NDEBUG
+	// Need this to quiet MSan.
+	memset(&pstat, 0, sizeof(struct stat));
+#endif // NDEBUG
+
 	fd = bc_read_open(path, O_RDONLY);
 
 	if (BC_ERR(fd < 0)) bc_vm_verr(BC_ERR_FATAL_FILE_ERR, path);
