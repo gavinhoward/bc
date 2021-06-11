@@ -162,6 +162,8 @@ struct BcRNG;
 
 #define BC_NUM_SIZE(n) ((n) * sizeof(BcDig))
 
+#define BC_NUM_MAX_TEMPS (1 << 20)
+
 #if BC_DEBUG_CODE
 #define BC_NUM_PRINT(x) fprintf(stderr, "%s = %lu\n", #x, (unsigned long)(x))
 #define DUMP_NUM bc_num_dump
