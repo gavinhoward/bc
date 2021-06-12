@@ -68,7 +68,7 @@ The following are the options that bc(1) accepts.
     This has the effect that a copy of the current value of all four are pushed
 {{ end }}
 {{ E EH EN EP EHN EHP ENP EHNP }}
-    Turns the globals **ibase**, **obase**, and **scale** into stacks.
+:   Turns the globals **ibase**, **obase**, and **scale** into stacks.
 
     This has the effect that a copy of the current value of all three are pushed
 {{ end }}
