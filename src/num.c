@@ -47,6 +47,13 @@
 
 static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
+static inline size_t bc_num_mulOverflow(size_t a, size_t b) {
+	size_t res = a * b;
+	if (BC_ERR(res >= SIZE_MAX || (a != 0 && res / a != b)))
+		bc_vm_err(BC_ERR_MATH_OVERFLOW);
+	return res;
+}
+
 static inline ssize_t bc_num_neg(size_t n, bool neg) {
 	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
 }
@@ -1309,7 +1316,8 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	BC_SIG_UNLOCK;
 
 	if (!neg) {
-		size_t max = BC_MAX(scale, a->scale), scalepow = a->scale * pow;
+		size_t max = BC_MAX(scale, a->scale), scalepow;
+		scalepow = bc_num_mulOverflow(a->scale, pow);
 		scale = BC_MIN(scalepow, max);
 	}
 
