@@ -54,63 +54,78 @@ the command line and executes them before reading from \f[B]stdin\f[R].
 .SH OPTIONS
 .PP
 The following are the options that bc(1) accepts.
-.PP
+.TP
 \f[B]-g\f[R], \f[B]--global-stacks\f[R]
+Turns the globals \f[B]ibase\f[R], \f[B]obase\f[R], and \f[B]scale\f[R]
+into stacks.
+.RS
+.PP
+This has the effect that a copy of the current value of all three are
+pushed onto a stack for every function call, as well as popped when
+every function returns.
+This means that functions can assign to any and all of those globals
+without worrying that the change will affect other functions.
+Thus, a hypothetical function named \f[B]output(x,b)\f[R] that simply
+printed \f[B]x\f[R] in base \f[B]b\f[R] could be written like this:
 .IP
 .nf
 \f[C]
-Turns the globals **ibase**, **obase**, and **scale** into stacks.
-
-This has the effect that a copy of the current value of all three are pushed
-onto a stack for every function call, as well as popped when every function
-returns. This means that functions can assign to any and all of those
-globals without worrying that the change will affect other functions.
-Thus, a hypothetical function named **output(x,b)** that simply printed
-**x** in base **b** could be written like this:
-
-    define void output(x, b) {
-        obase=b
-        x
-    }
-
-instead of like this:
-
-    define void output(x, b) {
-        auto c
-        c=obase
-        obase=b
-        x
-        obase=c
-    }
-
-This makes writing functions much easier.
-
-However, since using this flag means that functions cannot set **ibase**,
-**obase**, or **scale** globally, functions that are made to do so cannot
-work anymore. There are two possible use cases for that, and each has a
-solution.
-
-First, if a function is called on startup to turn bc(1) into a number
-converter, it is possible to replace that capability with various shell
-aliases. Examples:
-
-    alias d2o=\[dq]bc -e ibase=A -e obase=8\[dq]
-    alias h2b=\[dq]bc -e ibase=G -e obase=2\[dq]
-
-Second, if the purpose of a function is to set **ibase**, **obase**, or
-**scale** globally for any other purpose, it could be split into one to
-three functions (based on how many globals it sets) and each of those
-functions could return the desired value for a global.
-
-If the behavior of this option is desired for every run of bc(1), then users
-could make sure to define **BC_ENV_ARGS** and include this option (see the
-**ENVIRONMENT VARIABLES** section for more details).
-
-If **-s**, **-w**, or any equivalents are used, this option is ignored.
-
-This is a **non-portable extension**.
+define void output(x, b) {
+    obase=b
+    x
+}
 \f[R]
 .fi
+.PP
+instead of like this:
+.IP
+.nf
+\f[C]
+define void output(x, b) {
+    auto c
+    c=obase
+    obase=b
+    x
+    obase=c
+}
+\f[R]
+.fi
+.PP
+This makes writing functions much easier.
+.PP
+However, since using this flag means that functions cannot set
+\f[B]ibase\f[R], \f[B]obase\f[R], or \f[B]scale\f[R] globally, functions
+that are made to do so cannot work anymore.
+There are two possible use cases for that, and each has a solution.
+.PP
+First, if a function is called on startup to turn bc(1) into a number
+converter, it is possible to replace that capability with various shell
+aliases.
+Examples:
+.IP
+.nf
+\f[C]
+alias d2o=\[dq]bc -e ibase=A -e obase=8\[dq]
+alias h2b=\[dq]bc -e ibase=G -e obase=2\[dq]
+\f[R]
+.fi
+.PP
+Second, if the purpose of a function is to set \f[B]ibase\f[R],
+\f[B]obase\f[R], or \f[B]scale\f[R] globally for any other purpose, it
+could be split into one to three functions (based on how many globals it
+sets) and each of those functions could return the desired value for a
+global.
+.PP
+If the behavior of this option is desired for every run of bc(1), then
+users could make sure to define \f[B]BC_ENV_ARGS\f[R] and include this
+option (see the \f[B]ENVIRONMENT VARIABLES\f[R] section for more
+details).
+.PP
+If \f[B]-s\f[R], \f[B]-w\f[R], or any equivalents are used, this option
+is ignored.
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
 .TP
 \f[B]-h\f[R], \f[B]--help\f[R]
 Prints a usage message and quits.
@@ -1140,8 +1155,9 @@ since math errors will happen in the process of normal execution.
 .PP
 Math errors include divide by \f[B]0\f[R], taking the square root of a
 negative number, attempting to convert a negative number to a hardware
-integer, overflow when converting a number to a hardware integer, and
-attempting to use a non-integer where an integer is required.
+integer, overflow when converting a number to a hardware integer,
+overflow when calculating the size of a number, and attempting to use a
+non-integer where an integer is required.
 .PP
 Converting to a hardware integer happens for the second operand of the
 power (\f[B]\[ha]\f[R]) operator and the corresponding assignment

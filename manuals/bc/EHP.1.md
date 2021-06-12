@@ -52,7 +52,7 @@ The following are the options that bc(1) accepts.
 
 **-g**, **-\-global-stacks**
 
-    Turns the globals **ibase**, **obase**, and **scale** into stacks.
+:   Turns the globals **ibase**, **obase**, and **scale** into stacks.
 
     This has the effect that a copy of the current value of all three are pushed
     onto a stack for every function call, as well as popped when every function
@@ -949,8 +949,9 @@ bc(1) returns the following exit statuses:
 
     Math errors include divide by **0**, taking the square root of a negative
     number, attempting to convert a negative number to a hardware integer,
-    overflow when converting a number to a hardware integer, and attempting to
-    use a non-integer where an integer is required.
+    overflow when converting a number to a hardware integer, overflow when
+    calculating the size of a number, and attempting to use a non-integer where
+    an integer is required.
 
     Converting to a hardware integer happens for the second operand of the power
     (**\^**) operator and the corresponding assignment operator.

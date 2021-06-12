@@ -1092,8 +1092,9 @@ dc(1) returns the following exit statuses:
     Math errors include divide by **0**, taking the square root of a negative
     number, using a negative number as a bound for the pseudo-random number
     generator, attempting to convert a negative number to a hardware integer,
-    overflow when converting a number to a hardware integer, and attempting to
-    use a non-integer where an integer is required.
+    overflow when converting a number to a hardware integer, overflow when
+    calculating the size of a number, and attempting to use a non-integer where
+    an integer is required.
 
     Converting to a hardware integer happens for the second operand of the power
     (**\^**), places (**\@**), left shift (**H**), and right shift (**h**)
