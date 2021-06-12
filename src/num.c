@@ -1840,9 +1840,8 @@ static void bc_num_printFixup(BcNum *restrict n, BcBigDig rem,
 	n->len = len + idx;
 }
 
-static void bc_num_printPrepare(BcNum *restrict n, BcBigDig rem,
-                                BcBigDig pow)
-{
+static void bc_num_printPrepare(BcNum *restrict n, BcBigDig rem, BcBigDig pow) {
+
 	size_t i;
 
 	for (i = 0; i < n->len; ++i) bc_num_printFixup(n, rem, pow, i);
