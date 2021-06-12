@@ -31,6 +31,10 @@
 #
 # ./release.sh 1 0 1 0 0 0 1 0 0 0
 #
+# For FreeBSD, run using the following:
+#
+# ./release.sh 1 0 1 0 0 0 1 0 1 0
+#
 # For Linux, run two separate ones (in different directories), like so:
 #
 # ./release.sh 1 1 1 0 1 0 1 0 1 0
