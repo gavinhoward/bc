@@ -161,7 +161,9 @@ void bcl_free(void) {
 }
 
 void bcl_gc(void) {
+	BC_SIG_LOCK;
 	bc_vm_freeTemps();
+	BC_SIG_UNLOCK;
 }
 
 bool bcl_abortOnFatalError(void) {
