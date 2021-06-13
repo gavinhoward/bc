@@ -49,8 +49,7 @@ static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
 static inline size_t bc_num_mulOverflow(size_t a, size_t b) {
 	size_t res = a * b;
-	if (BC_ERR(res >= SIZE_MAX || (a != 0 && res / a != b)))
-		bc_vm_err(BC_ERR_MATH_OVERFLOW);
+	if (BC_ERR(BC_VM_MUL_OVERFLOW(a, b, res))) bc_vm_err(BC_ERR_MATH_OVERFLOW);
 	return res;
 }
 
@@ -2110,8 +2109,9 @@ void bc_num_free(void *num) {
 
 	assert(n != NULL);
 
-	if (n->cap == BC_NUM_DEF_SIZE && vm.temps.len < BC_NUM_MAX_TEMPS)
-		bc_vec_push(&vm.temps, n);
+	if (n->cap == BC_NUM_DEF_SIZE && vm.temps.len < BC_NUM_MAX_TEMPS) {
+		if (!bc_vm_addTemp(n)) free(n->num);
+	}
 	else free(n->num);
 }
 

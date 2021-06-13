@@ -301,6 +301,9 @@
 
 #define BC_VM_INVALID_CATALOG ((nl_catd) -1)
 
+#define BC_VM_MUL_OVERFLOW(a, b, r) \
+	((r) >= SIZE_MAX || ((a) != 0 && (r) / (a) != (b)))
+
 #if BC_DEBUG_CODE
 #define BC_VM_FUNC_ENTER                                     \
 	do {                                                     \
@@ -427,6 +430,7 @@ void bc_vm_boot(int argc, char *argv[], const char *env_len,
                 const char* const env_args);
 void bc_vm_init(void);
 void bc_vm_shutdown(void);
+bool bc_vm_addTemp(const BcNum *n);
 void bc_vm_freeTemps(void);
 
 #if !BC_ENABLE_HISTORY

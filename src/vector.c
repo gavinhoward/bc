@@ -36,19 +36,25 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <vector.h>
 #include <lang.h>
 #include <vm.h>
 
+static size_t bc_vec_growSize(size_t cap, size_t len, size_t n) {
+	len += n;
+	if (len > SIZE_MAX / 2) return len;
+	while (cap < len) cap += n;
+	return cap;
+}
+
 void bc_vec_grow(BcVec *restrict v, size_t n) {
 
-	size_t len, cap = v->cap;
+	size_t cap;
 	sig_atomic_t lock;
 
-	len = bc_vm_growSize(v->len, n);
-
-	while (cap < len) cap = bc_vm_growSize(cap, cap);
+	cap = bc_vec_growSize(v->cap, v->len, n);
 
 	BC_SIG_TRYLOCK(lock);
 	v->v = bc_vm_realloc(v->v, bc_vm_arraySize(cap, v->size));
@@ -56,14 +62,48 @@ void bc_vec_grow(BcVec *restrict v, size_t n) {
 	BC_SIG_TRYUNLOCK(lock);
 }
 
-void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
+static bool bc_vec_grow_try(BcVec *restrict v, size_t n) {
+
+	size_t len, cap;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	cap = bc_vec_growSize(v->cap, v->len, n);
+
+	len = cap * v->size;
+
+	if (BC_VM_MUL_OVERFLOW(cap, v->size, len)) return false;
+
+	v->v = realloc(v->v, len);
+
+	if (BC_ERR(v->v == NULL)) return false;
+
+	v->cap = cap;
+
+	return true;
+}
+
+static inline void bc_vec_initHelper(BcVec *restrict v, size_t esize,
+                                     BcVecFree dtor)
+{
 	BC_SIG_ASSERT_LOCKED;
 	assert(v != NULL && esize);
 	v->size = esize;
 	v->cap = BC_VEC_START_CAP;
 	v->len = 0;
 	v->dtor = dtor;
+}
+
+bool bc_vec_init_try(BcVec *restrict v, size_t esize, BcVecFree dtor) {
+	v->v = malloc(bc_vm_arraySize(BC_VEC_START_CAP, esize));
+	if (BC_ERR(v->v == NULL)) return false;
+	bc_vec_initHelper(v, esize, dtor);
+	return true;
+}
+
+void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
 	v->v = bc_vm_malloc(bc_vm_arraySize(BC_VEC_START_CAP, esize));
+	bc_vec_initHelper(v, esize, dtor);
 }
 
 void bc_vec_expand(BcVec *restrict v, size_t req) {
@@ -143,6 +183,24 @@ void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
 
 inline void bc_vec_push(BcVec *restrict v, const void *data) {
 	bc_vec_npush(v, 1, data);
+}
+
+bool bc_vec_push_try(BcVec *restrict v, const void *data) {
+
+	sig_atomic_t lock;
+
+	assert(v != NULL && data != NULL);
+
+	BC_SIG_TRYLOCK(lock);
+
+	if (v->len == v->cap && !bc_vec_grow_try(v, 1)) return false;
+
+	memcpy(v->v + (v->size * v->len), data, v->size);
+	v->len += 1;
+
+	BC_SIG_TRYUNLOCK(lock);
+
+	return true;
 }
 
 void bc_vec_pushByte(BcVec *restrict v, uchar data) {

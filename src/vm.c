@@ -399,7 +399,6 @@ void bc_vm_shutdown(void) {
 #endif // !BC_ENABLE_LIBRARY
 
 	bc_vm_freeTemps();
-	bc_vec_free(&vm.temps);
 #endif // NDEBUG
 
 #if !BC_ENABLE_LIBRARY
@@ -408,20 +407,35 @@ void bc_vm_shutdown(void) {
 #endif // !BC_ENABLE_LIBRARY
 }
 
+bool bc_vm_addTemp(const BcNum *n) {
+
+	// The destructor has to be NULL or else the number will be freed when
+	// bc_vec_init() attempts to pop it off the vector, which will lead to
+	// double frees, invalid writes, the whole nine yards.
+	if (vm.temps.cap == 0 && !bc_vec_init_try(&vm.temps, sizeof(BcNum), NULL))
+		return false;
+
+	return bc_vec_push_try(&vm.temps, n);
+}
+
 void bc_vm_freeTemps(void) {
 
 	size_t i;
+
+	if (!vm.temps.cap) return;
 
 	for (i = 0; i < vm.temps.len; ++i) {
 		free(((BcNum*) bc_vec_item(&vm.temps, i))->num);
 	}
 
+	bc_vec_free(&vm.temps);
+	vm.temps.cap = 0;
 	vm.temps.len = 0;
 }
 
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
 	size_t res = n * size;
-	if (BC_ERR(res >= SIZE_MAX || (n != 0 && res / n != size)))
+	if (BC_ERR(BC_VM_MUL_OVERFLOW(n, size, res)))
 		bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 	return res;
 }
@@ -1055,8 +1069,6 @@ void bc_vm_init(void) {
 	bc_num_setup(&vm.max2, vm.max2_num, BC_NUM_BIGDIG_LOG10);
 	vm.max.len = bc_num_bigdigMax_size;
 	vm.max2.len = bc_num_bigdigMax2_size;
-
-	bc_vec_init(&vm.temps, sizeof(BcNum), NULL);
 
 	vm.maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_POSIX_IBASE;
 	vm.maxes[BC_PROG_GLOBALS_OBASE] = BC_MAX_OBASE;
