@@ -39,6 +39,10 @@
 #
 # ./release.sh 1 1 1 0 1 0 1 0 1 0
 # ./release.sh 1 1 0 1 0 1 1 0 1 0
+#
+# If this script fails on any platform when starting the Karatsuba test, check
+# that Python is installed, especially if the error says something like:
+# "karatsuba.py: not found".
 
 usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
