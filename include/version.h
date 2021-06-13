@@ -36,7 +36,7 @@
 #ifndef BC_VERSION_H
 #define BC_VERSION_H
 
-#define VERSION 4.0.2
+#define VERSION 4.1.0
 
 #ifdef BC_TEST_OPENBSD
 #ifdef __OpenBSD__

@@ -1,5 +1,19 @@
 # News
 
+## 4.1.0
+
+This is a production release with several changes:
+
+* Support for OpenBSD's `pledge()` and `unveil()` were added.
+* Fix bugs in the manuals.
+* Fix a possible multiplication overflow in power.
+* Temporary numbers are garbage collected if allocation fails, and the
+  allocation is retried. This is to make `bc` and `dc` more resilient to running
+  out of memory.
+* `bc` and `dc` now do not give fatal errors when trying to allocate more space
+  for temporary numbers. Instead, more temporary numbers are just freed.
+* The number of temporary numbers is now limited.
+
 ## 4.0.2
 
 This is a production release that fixes two bugs:
