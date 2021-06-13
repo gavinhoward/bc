@@ -421,11 +421,15 @@ bool bc_vm_addTemp(const BcNum *n) {
 void bc_vm_freeTemps(void) {
 
 	size_t i;
+#if BC_ENABLE_LIBRARY
 	sig_atomic_t lock;
+#endif // BC_ENABLE_LIBRARY
 
 	if (!vm.temps.cap) return;
 
+#if BC_ENABLE_LIBRARY
 	BC_SIG_TRYLOCK(lock);
+#endif // BC_ENABLE_LIBRARY
 
 	for (i = 0; i < vm.temps.len; ++i) {
 		free(((BcNum*) bc_vec_item(&vm.temps, i))->num);
@@ -435,7 +439,9 @@ void bc_vm_freeTemps(void) {
 	vm.temps.cap = 0;
 	vm.temps.len = 0;
 
+#if BC_ENABLE_LIBRARY
 	BC_SIG_TRYUNLOCK(lock);
+#endif // BC_ENABLE_LIBRARY
 }
 
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
