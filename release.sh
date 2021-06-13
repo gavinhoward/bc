@@ -37,8 +37,15 @@
 #
 # For Linux, run two separate ones (in different directories), like so:
 #
-# ./release.sh 1 1 1 0 1 0 1 0 1 0
-# ./release.sh 1 1 0 1 0 1 1 0 1 0
+# ./release.sh 1 1 1 0 0 0 1 0 1 0
+# ./release.sh 1 1 0 1 0 0 1 0 1 0
+#
+# If you want to run sanitizers or valgrind, you can't do it with generated
+# tests because they take too long, so if you would like to do that, use the
+# following:
+#
+# ./release.sh 1 0 1 0 1 0 1 0 1 0
+# ./release.sh 1 0 0 1 0 1 1 0 1 0
 #
 # If this script fails on any platform when starting the Karatsuba test, check
 # that Python is installed, especially if the error says something like:
