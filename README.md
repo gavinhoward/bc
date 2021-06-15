@@ -272,6 +272,11 @@ releases with additional features. However, it *is* actively maintained, so if
 any bugs are found, they will be fixed in new releases. Also, additional
 translations will also be added as they are provided.
 
+### Development
+
+If I (Gavin D. Howard) get [hit by a bus][27] and future programmers need to
+handle work themselves, the best place to start is the [Development manual][28].
+
 ## Comparison to GNU `bc`
 
 This `bc` compares favorably to GNU `bc`.
@@ -409,3 +414,5 @@ Folders:
 [24]: https://bugs.freebsd.org/
 [25]: https://reviews.freebsd.org/
 [26]: ./manuals/bcl.3.md
+[27]: https://en.wikipedia.org/wiki/Bus_factor
+[28]: ./manuals/development.md
