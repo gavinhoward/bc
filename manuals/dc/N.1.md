@@ -55,11 +55,6 @@ command-line should be used to set up a standard environment. For example, if a
 user wants the **scale** always set to **10**, they can set **DC_ENV_ARGS** to
 **-e 10k**, and this dc(1) will always start with a **scale** of **10**.
 
-If users want to have dc(1) exit after processing all input from **-e** and
-**-f** arguments (and their equivalents), then they can just simply add **-e q**
-as the last command-line argument or define the environment variable
-**DC_EXPR_EXIT**.
-
 # OPTIONS
 
 The following are the options that dc(1) accepts.
@@ -1068,12 +1063,6 @@ dc(1) recognizes the following environment variables:
     than **1** and is less than **UINT16_MAX** (**2\^16-1**), dc(1) will output
     lines to that length, including the backslash newline combo. The default
     line length is **70**.
-
-**DC_EXPR_EXIT**
-
-:   If this variable exists (no matter the contents), dc(1) will exit
-    immediately after executing expressions and files given by the **-e** and/or
-    **-f** command-line options (and any equivalents).
 
 # EXIT STATUS
 

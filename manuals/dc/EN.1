@@ -25,7 +25,7 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH "DC" "1" "April 2021" "Gavin D. Howard" "General Commands Manual"
+.TH "DC" "1" "June 2021" "Gavin D. Howard" "General Commands Manual"
 .SH Name
 .PP
 dc - arbitrary-precision decimal reverse-Polish notation calculator
@@ -63,11 +63,6 @@ standard environment.
 For example, if a user wants the \f[B]scale\f[R] always set to
 \f[B]10\f[R], they can set \f[B]DC_ENV_ARGS\f[R] to \f[B]-e 10k\f[R],
 and this dc(1) will always start with a \f[B]scale\f[R] of \f[B]10\f[R].
-.PP
-If users want to have dc(1) exit after processing all input from
-\f[B]-e\f[R] and \f[B]-f\f[R] arguments (and their equivalents), then
-they can just simply add \f[B]-e q\f[R] as the last command-line
-argument or define the environment variable \f[B]DC_EXPR_EXIT\f[R].
 .SH OPTIONS
 .PP
 The following are the options that dc(1) accepts.
@@ -1004,12 +999,6 @@ greater than \f[B]1\f[R] and is less than \f[B]UINT16_MAX\f[R]
 (\f[B]2\[ha]16-1\f[R]), dc(1) will output lines to that length,
 including the backslash newline combo.
 The default line length is \f[B]70\f[R].
-.TP
-\f[B]DC_EXPR_EXIT\f[R]
-If this variable exists (no matter the contents), dc(1) will exit
-immediately after executing expressions and files given by the
-\f[B]-e\f[R] and/or \f[B]-f\f[R] command-line options (and any
-equivalents).
 .SH EXIT STATUS
 .PP
 dc(1) returns the following exit statuses:
