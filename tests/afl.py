@@ -127,8 +127,10 @@ else:
 		resultsdir = testdir + "/fuzzing/bc_outputs2"
 	elif exedir == "bc3":
 		resultsdir = testdir + "/fuzzing/bc_outputs3"
-	else:
+	elif exedir == "dc":
 		resultsdir = testdir + "/fuzzing/dc_outputs"
+	else:
+		raise ValueError("exedir must be either bc1, bc2, bc3, or dc");
 
 print("resultsdir: {}".format(resultsdir))
 
