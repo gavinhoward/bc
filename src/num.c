@@ -1350,6 +1350,8 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	bscale = bc_num_checkInt(b);
 
+	BC_SETJMP(bigdig_err);
+
 	BC_SIG_LOCK;
 
 	neg = BC_NUM_NEG(b);
@@ -1358,6 +1360,8 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	b->rdx = BC_NUM_NEG_VAL(b, neg);
 
 	bc_num_createCopy(&copy, a);
+
+	BC_UNSETJMP;
 
 	BC_SETJMP_LOCKED(err);
 
@@ -1403,6 +1407,7 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&copy);
+bigdig_err:
 	bc_num_unshiftRdx(b, bscale);
 	BC_LONGJMP_CONT;
 }
@@ -2485,6 +2490,8 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	ascale = bc_num_checkInt(a);
 
+	BC_SETJMP(alloc_err);
+
 	cmp = bc_num_cmp(a, &vm.max);
 
 	if (cmp <= 0) {
@@ -2505,7 +2512,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 		// so we can use bc_num_bigdig2() here.
 		bc_num_bigdig2num(b, r);
 
-		return;
+		goto alloc_err;
 	}
 
 	// In the case where a is less than rng->max, we have to make sure we have
@@ -2524,6 +2531,8 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 	bc_num_init(&pow, BC_NUM_DEF_SIZE);
 	bc_num_one(&pow);
 	bc_num_setup(&rand, rand_num, sizeof(rand_num) / sizeof(BcDig));
+
+	BC_UNSETJMP;
 
 	BC_SETJMP_LOCKED(err);
 
@@ -2611,6 +2620,8 @@ err:
 	bc_num_free(&mod);
 	bc_num_free(&cp2);
 	bc_num_free(&cp);
+alloc_err:
+	BC_SIG_MAYLOCK;
 	bc_num_unshiftRdx(a, ascale);
 	BC_LONGJMP_CONT;
 }
