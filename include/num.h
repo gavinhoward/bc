@@ -195,7 +195,7 @@ void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result);
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
 
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
+void bc_num_irand(BcNum *restrict a, BcNum *restrict b,
                   struct BcRNG *restrict rng);
 void bc_num_rng(const BcNum *restrict n, struct BcRNG *rng);
 void bc_num_createFromRNG(BcNum *restrict n, struct BcRNG *rng);

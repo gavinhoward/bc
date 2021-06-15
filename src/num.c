@@ -398,6 +398,30 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 	bc_num_clean(a);
 }
 
+static size_t bc_num_shiftRdx(BcNum *restrict n) {
+
+	size_t rdx = BC_NUM_RDX_VAL(n), scale = n->scale;
+
+	n->len -= rdx;
+	n->num += rdx;
+
+	BC_NUM_RDX_SET(n, 0);
+	n->scale = 0;
+
+	return scale;
+}
+
+static void bc_num_unshiftRdx(BcNum *restrict n, size_t scale) {
+
+	size_t rdx = BC_NUM_RDX(scale);
+
+	n->len += rdx;
+	n->num -= rdx;
+
+	BC_NUM_RDX_SET(n, rdx);
+	n->scale = scale;
+}
+
 static size_t bc_num_shiftZero(BcNum *restrict n) {
 
 	size_t i;
@@ -562,13 +586,38 @@ static void bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 	bc_num_div(&one, a, b, scale);
 }
 
+static size_t bc_num_checkInt(BcNum *restrict b) {
+
+	bool zero;
+	size_t i, rdx;
+
+	if (!BC_NO_ERR(BC_NUM_RDX_VAL(b))) return 0;
+
+	zero = true;
+	rdx = BC_NUM_RDX_VAL(b);
+
+	for (i = 0; zero && i < rdx; ++i) zero = (b->num[i] == 0);
+
+	if (BC_ERR(!zero)) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+
+	return bc_num_shiftRdx(b);
+}
+
 #if BC_ENABLE_EXTRA_MATH
-static void bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
+static void bc_num_intop(const BcNum *a, BcNum *b, BcNum *restrict c,
                          BcBigDig *v)
 {
-	if (BC_ERR(BC_NUM_RDX_VAL(b))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+	size_t scale = bc_num_checkInt(b);
+
+	BC_SETJMP(exit);
+
 	bc_num_copy(c, a);
 	bc_num_bigdig(b, v);
+
+exit:
+	BC_SIG_MAYLOCK;
+	bc_num_unshiftRdx(b, scale);
+	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1281,10 +1330,8 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcNum copy;
 	BcBigDig pow = 0;
-	size_t i, powrdx, resrdx;
+	size_t i, powrdx, resrdx, bscale;
 	bool neg, zero;
-
-	if (BC_ERR(BC_NUM_RDX_VAL(b))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 
 	if (BC_NUM_ZERO(b)) {
 		bc_num_one(c);
@@ -1300,6 +1347,8 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 		else bc_num_inv(a, c, scale);
 		return;
 	}
+
+	bscale = bc_num_checkInt(b);
 
 	BC_SIG_LOCK;
 
@@ -1354,6 +1403,7 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&copy);
+	bc_num_unshiftRdx(b, bscale);
 	BC_LONGJMP_CONT;
 }
 
@@ -2417,9 +2467,8 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
-                  BcRNG *restrict rng)
-{
+void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
+
 	BcRand r;
 	BcBigDig modl;
 	BcNum pow, pow2, cp, cp2, mod, temp1, temp2, rand;
@@ -2427,12 +2476,14 @@ void bc_num_irand(const BcNum *restrict a, BcNum *restrict b,
 	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
 	bool carry;
 	ssize_t cmp;
+	size_t ascale;
 
 	assert(a != b);
 
 	if (BC_ERR(BC_NUM_NEG(a))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
-	if (BC_ERR(BC_NUM_RDX_VAL(a))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return;
+
+	ascale = bc_num_checkInt(a);
 
 	cmp = bc_num_cmp(a, &vm.max);
 
@@ -2560,6 +2611,7 @@ err:
 	bc_num_free(&mod);
 	bc_num_free(&cp2);
 	bc_num_free(&cp);
+	bc_num_unshiftRdx(a, ascale);
 	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
@@ -2849,14 +2901,23 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	BcNum base, exp, two, temp;
 	BcDig two_digs[2];
+	size_t ascale, bscale = 0, cscale = 0;
 
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(a != d && b != d && c != d);
 
 	if (BC_ERR(BC_NUM_ZERO(c))) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_ERR(BC_NUM_NEG(b))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
-	if (BC_ERR(BC_NUM_RDX_VAL(a) || BC_NUM_RDX_VAL(b) || BC_NUM_RDX_VAL(c)))
-		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+
+	BC_SIG_LOCK;
+
+	BC_SETJMP_LOCKED(int_err);
+
+	ascale = bc_num_checkInt(a);
+	bscale = bc_num_checkInt(b);
+	cscale = bc_num_checkInt(c);
+
+	BC_SIG_UNLOCK;
 
 	bc_num_expand(d, c->len);
 
@@ -2866,6 +2927,8 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
 	bc_num_init(&temp, b->len + 1);
 	bc_num_createCopy(&exp, b);
+
+	BC_UNSETJMP;
 
 	BC_SETJMP_LOCKED(err);
 
@@ -2907,6 +2970,10 @@ err:
 	bc_num_free(&exp);
 	bc_num_free(&temp);
 	bc_num_free(&base);
+int_err:
+	bc_num_unshiftRdx(c, cscale);
+	bc_num_unshiftRdx(b, bscale);
+	bc_num_unshiftRdx(a, ascale);
 	BC_LONGJMP_CONT;
 	assert(!BC_NUM_NEG(d) || d->len);
 	assert(BC_NUM_RDX_VALID(d));
