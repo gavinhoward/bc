@@ -1118,6 +1118,16 @@ The extended library is a **non-portable extension**.
     reset (see the **RESET** section). It also raises an error and causes bc(1)
     to reset if **r** is even and **x** is negative.
 
+**gcd(a, b)**
+
+:   Returns the greatest common divisor (factor) of the truncated absolute value
+    of **a** and the truncated absolute value of **b**.
+
+**lcm(a, b)**
+
+:   Returns the least common multiple of the truncated absolute value of **a**
+    and the truncated absolute value of **b**.
+
 **pi(p)**
 
 :   Returns **pi** to **p** decimal places.
