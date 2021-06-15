@@ -33,7 +33,7 @@ script="$0"
 
 testdir=$(dirname "${script}")
 
-. "$testdir/../functions.sh"
+. "$testdir/../scripts/functions.sh"
 
 if [ "$#" -lt 2 ]; then
 	printf 'usage: %s dir script [run_extra_tests] [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"

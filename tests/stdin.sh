@@ -33,7 +33,7 @@ script="$0"
 
 testdir=$(dirname "$script")
 
-. "$testdir/../functions.sh"
+. "$testdir/../scripts/functions.sh"
 
 if [ "$#" -lt 1 ]; then
 	printf 'usage: %s dir [exe [args...]]\n' "$0"

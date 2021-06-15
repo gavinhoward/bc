@@ -29,23 +29,23 @@
 
 # For OpenBSD, run using the following:
 #
-# ./release.sh 1 0 1 0 0 0 1 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 1 0 0 0
 #
 # For FreeBSD, run using the following:
 #
-# ./release.sh 1 0 1 0 0 0 1 0 1 0
+# scripts/release.sh 1 0 1 0 0 0 1 0 1 0
 #
 # For Linux, run two separate ones (in different directories), like so:
 #
-# ./release.sh 1 1 1 0 0 0 1 0 1 0
-# ./release.sh 1 1 0 1 0 0 1 0 1 0
+# scripts/release.sh 1 1 1 0 0 0 1 0 1 0
+# scripts/release.sh 1 1 0 1 0 0 1 0 1 0
 #
 # If you want to run sanitizers or valgrind, you can't do it with generated
 # tests because they take too long, so if you would like to do that, use the
 # following:
 #
-# ./release.sh 1 0 1 0 1 0 1 0 1 0
-# ./release.sh 1 0 0 1 0 1 1 0 1 0
+# scripts/release.sh 1 0 1 0 1 0 1 0 1 0
+# scripts/release.sh 1 0 0 1 0 1 1 0 1 0
 #
 # If this script fails on any platform when starting the Karatsuba test, check
 # that Python is installed, especially if the error says something like:
@@ -616,7 +616,7 @@ if [ "$run_tests" -ne 0 ]; then
 		printf 'Then run the GitHub release script as follows:\n'
 		printf '\n'
 		printf '    <github_release> <version> .gitignore .gitattributes\\\n'
-		printf '    manpage.sh release.sh RELEASE.md tests/afl.py\\\n'
+		printf '    scripts/manpage.sh scripts/release.sh RELEASE.md tests/afl.py\\\n'
 		printf '    tests/radamsa.sh tests/radamsa.txt tests/randmath.py\\\n'
 		printf '    tests/fuzzing/ tests/bc/scripts/timeconst.bc\n'
 

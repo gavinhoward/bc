@@ -31,7 +31,7 @@ script="$0"
 scriptdir=$(dirname "$script")
 script=$(basename "$script")
 
-. "$scriptdir/functions.sh"
+. "$scriptdir/scripts/functions.sh"
 
 cd "$scriptdir"
 

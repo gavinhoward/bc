@@ -324,8 +324,8 @@ running tests during install. **If `bc` segfaults while running arg tests when
 updating, it is because the global locale files have not been replaced. Make
 sure to either prevent the test suite from running on update or remove the old
 locale files before updating.** (Removing the locale files can be done with
-`make uninstall` or by running the `locale_uninstall.sh` script.) Once this is
-done, `bc` should install without problems.*
+`make uninstall` or by running the [`locale_uninstall.sh`][22] script.) Once
+this is done, `bc` should install without problems.*
 
 *Second, **the option to build without signal support has been removed**. See
 below for the reasons why.*
@@ -1098,7 +1098,7 @@ not thoroughly tested.
 [1]: https://docs.microsoft.com/en-us/windows/wsl/install-win10
 [2]: https://pkg.musl.cc/bc/
 [3]: http://lcamtuf.coredump.cx/afl/
-[4]: ./karatsuba.py
+[4]: ./scripts/karatsuba.py
 [5]: ./README.md
 [6]: ./configure.sh
 [7]: https://github.com/rain-1/linenoise-mob
@@ -1106,7 +1106,7 @@ not thoroughly tested.
 [9]: ./manuals/bc/A.1.md
 [10]: ./manuals/dc/A.1.md
 [11]: https://scan.coverity.com/projects/gavinhoward-bc
-[12]: ./locale_install.sh
+[12]: ./scripts/locale_install.sh
 [13]: ./manuals/build.md
 [14]: https://github.com/stesser
 [15]: https://github.com/bugcrazy
@@ -1116,3 +1116,4 @@ not thoroughly tested.
 [19]: ./manuals/benchmarks.md
 [20]: https://github.com/apjanke/ronn-ng
 [21]: https://pandoc.org/
+[22]: ./scripts/locale_uninstall.sh

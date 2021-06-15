@@ -32,7 +32,7 @@ set -e
 script="$0"
 testdir=$(dirname "$script")
 
-. "$testdir/../functions.sh"
+. "$testdir/../scripts/functions.sh"
 
 if [ "$#" -ge 1 ]; then
 	d="$1"

@@ -61,7 +61,7 @@ shift
 
 dir=$(dirname "$script")
 
-. "$dir/../functions.sh"
+. "$dir/../scripts/functions.sh"
 
 bcdir="$dir/../bin"
 

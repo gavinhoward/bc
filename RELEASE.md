@@ -17,11 +17,11 @@ This is the checklist for cutting a release.
 8.	Find ASan crashes on AFL test cases.
 9.	Fix ASan crashes.
 10.	Build with xstatic.
-11.	Run and pass the `release.sh` script on my own machine.
-12.	Run and pass the `release.sh` script, without generated tests and
+11.	Run and pass the `scripts/release.sh` script on my own machine.
+12.	Run and pass the `scripts/release.sh` script, without generated tests and
 	sanitizers, on FreeBSD.
-13.	Run and pass the `release.sh` script, without generated tests, sanitizers,
-	and 64-bit, on Thalheim's ARM server.
+13.	Run and pass the `scripts/release.sh` script, without generated tests,
+	sanitizers, and 64-bit, on an ARM server.
 14.	Run and pass the release script, with no generated tests, no clang, no
 	sanitizers, and no valgrind, on NetBSD.
 15.	Run and pass the release script, with no generated tests, no clang, no

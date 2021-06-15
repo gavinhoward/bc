@@ -25,8 +25,8 @@ Brute force multiplication is used below `BC_NUM_KARATSUBA_LEN` digits. It is
 polynomial (`O(n^2)`), but since Karatsuba requires both more intermediate
 values (which translate to memory allocations) and a few more additions, there
 is a "break even" point in the number of digits where brute force multiplication
-is faster than Karatsuba. There is a script (`$ROOT/karatsuba.py`) that will
-find the break even point on a particular machine.
+is faster than Karatsuba. There is a script (`$ROOT/scripts/karatsuba.py`) that
+will find the break even point on a particular machine.
 
 ***WARNING: The Karatsuba script requires Python 3.***
 

@@ -143,13 +143,15 @@ BC_ENABLE_MEMCHECK = %%MEMCHECK%%
 RM = rm
 MKDIR = mkdir
 
-INSTALL = ./exec-install.sh
-SAFE_INSTALL = ./safe-install.sh
-LINK = ./link.sh
-MANPAGE = ./manpage.sh
-KARATSUBA = ./karatsuba.py
-LOCALE_INSTALL = ./locale_install.sh
-LOCALE_UNINSTALL = ./locale_uninstall.sh
+SCRIPTS = ./scripts
+
+INSTALL = $(SCRIPTS)/exec-install.sh
+SAFE_INSTALL = $(SCRIPTS)/safe-install.sh
+LINK = $(SCRIPTS)/link.sh
+MANPAGE = $(SCRIPTS)/manpage.sh
+KARATSUBA = $(SCRIPTS)/karatsuba.py
+LOCALE_INSTALL = $(SCRIPTS)/locale_install.sh
+LOCALE_UNINSTALL = $(SCRIPTS)/locale_uninstall.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
 

@@ -243,7 +243,7 @@ allowed.
 ##### Karatsuba Number
 
 Package and distro maintainers have one tool at their disposal to build this
-`bc` in the optimal configuration: `karatsuba.py`.
+`bc` in the optimal configuration: `scripts/karatsuba.py`.
 
 This script is not a compile-time or runtime prerequisite; it is for package and
 distro maintainers to run once when a package is being created. It finds the
@@ -371,20 +371,10 @@ Files:
 	bcl.vcxproj.filters  The Visual Studio filters file for bcl.
 	configure            A symlink to configure.sh to make packaging easier.
 	configure.sh         The configure script.
-	functions.sh         A script with functions used by other scripts.
-	install.sh           Install script.
-	karatsuba.py         Script to find the optimal Karatsuba number.
 	LICENSE.md           A Markdown form of the BSD 2-clause License.
-	link.sh              A script to link dc to bc.
-	locale_install.sh    A script to install locales, if desired.
-	locale_uninstall.sh  A script to uninstall locales.
 	Makefile.in          The Makefile template.
-	manpage.sh           Script to generate man pages from markdown files
-	                     (maintainer use only).
 	NOTICE.md            List of contributors and copyright owners.
 	RELEASE.md           A checklist for making a release (maintainer use only).
-	release.sh           A script to test for release (maintainer use only).
-	safe-install.sh      Safe install script from musl libc.
 
 Folders:
 
@@ -393,6 +383,7 @@ Folders:
 	locales  Locale files, in .msg format. Patches welcome for translations.
 	manuals  Manuals for both programs.
 	src      All source code.
+	scripts  A bunch of shell scripts to help with development and building.
 	tests    All tests.
 
 [1]: https://www.gnu.org/software/bc/
