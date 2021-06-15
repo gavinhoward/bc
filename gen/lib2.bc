@@ -129,6 +129,37 @@ define root(x,n){
 	return r@s
 }
 define cbrt(x){return root(x,3)}
+define gcd(a,b){
+	auto g,s
+	if(!b)return a
+	s=scale
+	scale=0
+	a=abs(a)$
+	b=abs(b)$
+	if(a<b){
+		g=a
+		a=b
+		b=g
+	}
+	while(b){
+		g=a%b
+		a=b
+		b=g
+	}
+	scale=s
+	return a
+}
+define lcm(a,b){
+	auto r,s
+	if(!a&&!b)return 0
+	s=scale
+	scale=0
+	a=abs(a)$
+	b=abs(b)$
+	r=a*b/gcd(a,b)
+	scale=s
+	return r
+}
 define pi(s){
 	auto t,v
 	if(s==0)return 3
