@@ -444,7 +444,7 @@ inline size_t bc_vm_arraySize(size_t n, size_t size) {
 
 inline size_t bc_vm_growSize(size_t a, size_t b) {
 	size_t res = a + b;
-	if (BC_ERR(res >= SIZE_MAX || res < a || res < b))
+	if (BC_ERR(res >= SIZE_MAX || res < a))
 		bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 	return res;
 }
