@@ -30,6 +30,8 @@ execute strings as though they were functions.
 	* How the locales are used.
 * Why generated manpages (including markdown) are checked into git.
 * How all manpage versions are generated.
+* Fuzzing.
+	* Including my `tmuxp` files.
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
