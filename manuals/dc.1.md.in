@@ -913,7 +913,8 @@ These commands query status of the stack or its top value.
 :   Pops a value off of the stack.
 
     If it is a number, calculates the number of significant decimal digits it
-    has and pushes the result.
+    has and pushes the result. It will push **1** if the argument is **0** with
+    no decimal places.
 
     If it is a string, pushes the number of characters the string has.
 
