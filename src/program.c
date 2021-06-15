@@ -1354,7 +1354,7 @@ static void bc_program_stackLen(BcProgram *p) {
 static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 
 	BcNum num;
-	BcBigDig val = 0;
+	BcBigDig val;
 
 	bc_num_clear(&num);
 
@@ -1376,7 +1376,7 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	// This is also guaranteed to not error because num is in the range
 	// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
 	// it is not negative.
-	bc_num_bigdig2(&num, &val);
+	val = bc_num_bigdig2(&num);
 
 num_err:
 	BC_SIG_MAYLOCK;

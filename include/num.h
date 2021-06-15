@@ -191,7 +191,7 @@ size_t bc_num_scale(const BcNum *restrict n);
 size_t bc_num_len(const BcNum *restrict n);
 
 void bc_num_bigdig(const BcNum *restrict n, BcBigDig *result);
-void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result);
+BcBigDig bc_num_bigdig2(const BcNum *restrict n);
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
 
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND

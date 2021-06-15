@@ -2067,7 +2067,7 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		if (fracp2.len < nrdx) fracp2.len = nrdx;
 
 		// fracp is guaranteed to be non-negative and small enough.
-		bc_num_bigdig2(&fracp2, &dig);
+		dig = bc_num_bigdig2(&fracp2);
 
 		bc_num_bigdig2num(&digit, dig);
 		bc_num_sub(&fracp2, &digit, &fracp1, 0);
@@ -2254,18 +2254,18 @@ void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline) {
 	if (newline) bc_num_putchar('\n');
 }
 
-void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
+BcBigDig bc_num_bigdig2(const BcNum *restrict n) {
 
 	// This function returns no errors because it's guaranteed to succeed if
-	// its preconditions are met. Those preconditions include both parameters
-	// being non-NULL, n being non-negative, and n being less than vm.max. If
-	// all of that is true, then we can just convert without worrying about
-	// negative errors or overflow.
+	// its preconditions are met. Those preconditions include both n needs to
+	// be non-NULL, n being non-negative, and n being less than vm.max. If all
+	// of that is true, then we can just convert without worrying about negative
+	// errors or overflow.
 
 	BcBigDig r = 0;
 	size_t nrdx = BC_NUM_RDX_VAL(n);
 
-	assert(n != NULL && result != NULL);
+	assert(n != NULL);
 	assert(!BC_NUM_NEG(n));
 	assert(bc_num_cmp(n, &vm.max) < 0);
 	assert(n->len - nrdx <= 3);
@@ -2294,7 +2294,7 @@ void bc_num_bigdig2(const BcNum *restrict n, BcBigDig *result) {
 		}
 	}
 
-	*result = r;
+	return r;
 }
 
 void bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
@@ -2305,7 +2305,7 @@ void bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 	if (BC_ERR(bc_num_cmp(n, &vm.max) >= 0))
 		bc_vm_err(BC_ERR_MATH_OVERFLOW);
 
-	bc_num_bigdig2(n, result);
+	*result = bc_num_bigdig2(n);
 }
 
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
@@ -2376,8 +2376,8 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 		// quotient and remainder are both guaranteed to be less than vm.max,
 		// which means we can use bc_num_bigdig2() here and not worry about
 		// overflow.
-		bc_num_bigdig2(&temp2, (BcBigDig*) &state1);
-		bc_num_bigdig2(&temp, (BcBigDig*) &state2);
+		state1 = (BcRand) bc_num_bigdig2(&temp2);
+		state2 = (BcRand) bc_num_bigdig2(&temp);
 	}
 	else state1 = state2 = 0;
 
@@ -2387,7 +2387,7 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 		// Because temp2 is the mod of vm.max, from above, it is guaranteed
 		// to be small enough to use bc_num_bigdig2().
-		bc_num_bigdig2(&temp2, (BcBigDig*) &inc1);
+		inc1 = (BcRand) bc_num_bigdig2(&temp2);
 
 		if (bc_num_cmp(&temp, &vm.max) >= 0) {
 			bc_num_copy(&temp2, &temp);
@@ -2396,7 +2396,7 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 		// The if statement above ensures that temp is less than vm.max, which
 		// means that we can use bc_num_bigdig2() here.
-		bc_num_bigdig2(&temp, (BcBigDig*) &inc2);
+		inc2 = (BcRand) bc_num_bigdig2(&temp);
 	}
 	else inc1 = inc2 = 0;
 
@@ -2498,7 +2498,9 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 		BcRand bits = 0;
 
-		if (cmp < 0) bc_num_bigdig2(a, (BcBigDig*) &bits);
+		// We made sure that a is less than vm.max,
+		// so we can use bc_num_bigdig2() here.
+		if (cmp < 0) bits = (BcRand) bc_num_bigdig2(a);
 
 		// This condition means that bits is a power of 2. In that case, we
 		// can just grab a full-size int and mask out the unneeded bits.
@@ -2508,8 +2510,6 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 		if (!(bits & (bits - 1))) r = bc_rand_int(rng) & (bits - 1);
 		else r = bc_rand_bounded(rng, bits);
 
-		// We made sure that r is less than vm.max,
-		// so we can use bc_num_bigdig2() here.
 		bc_num_bigdig2num(b, r);
 
 		goto alloc_err;
@@ -2555,7 +2555,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 		// Because mod is the mod of vm.max, it is guaranteed to be smaller,
 		// which means we can use bc_num_bigdig2() here.
-		bc_num_bigdig(&mod, &modl);
+		modl = bc_num_bigdig2(&mod);
 
 		if (bc_num_cmp(c1, &vm.max) < 0) {
 
