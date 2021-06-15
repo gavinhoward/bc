@@ -548,7 +548,7 @@ else
 	bits=32
 fi
 
-cd "$scriptdir"
+cd "$scriptdir/.."
 
 if [ "$test_with_clang" -ne 0 ]; then
 	defcc="clang"
