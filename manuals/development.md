@@ -22,6 +22,9 @@ languages. `bc`'s language looks similar to C, with infix notation and includes
 functions, while `dc` uses [Reverse Polish Notation][4] and allows the user to
 execute strings as though they were functions.
 
+In addition, it is also possible to build the arbitrary-precision math into a
+library, named `bcl`.
+
 ## TODO
 
 * The purpose of every file.
@@ -32,6 +35,7 @@ execute strings as though they were functions.
 * How all manpage versions are generated.
 * Fuzzing.
 	* Including my `tmuxp` files.
+	* Can't use `libdislocator.so`.
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
