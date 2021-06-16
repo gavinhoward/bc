@@ -1728,6 +1728,16 @@ static void bc_num_putchar(int c, bool bslash) {
 	bc_vm_putchar(c, bc_flush_save);
 }
 
+#if DC_ENABLED && !BC_ENABLE_LIBRARY
+static void bc_num_printChar(size_t n, size_t len, bool rdx, bool bslash) {
+	BC_UNUSED(rdx);
+	BC_UNUSED(len);
+	BC_UNUSED(bslash);
+	assert(len == 1);
+	bc_vm_putchar((uchar) n, bc_flush_save);
+}
+#endif // DC_ENABLED && !BC_ENABLE_LIBRARY
+
 static void bc_num_printDigits(size_t n, size_t len, bool rdx, bool bslash) {
 
 	size_t exp, pow;
@@ -2117,16 +2127,7 @@ static void bc_num_printBase(BcNum *restrict n, BcBigDig base, bool newline) {
 
 #if DC_ENABLED && !BC_ENABLE_LIBRARY
 void bc_num_stream(BcNum *restrict n, BcBigDig base) {
-
-	uchar v;
-	size_t rdx;
-
-	BC_UNUSED(base);
-
-	rdx = BC_NUM_RDX_VAL(n);
-	v = n->len > rdx ? (uchar) (n->num[rdx] & 255) : 0;
-
-	bc_vm_putchar(v, bc_flush_save);
+	bc_num_printNum(n, base, 1, bc_num_printChar, false);
 }
 #endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 
