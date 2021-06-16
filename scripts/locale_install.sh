@@ -181,7 +181,7 @@ fi
 
 "$scriptdir/locale_uninstall.sh" "$nlspath" "$main_exec" "$destdir"
 
-locales_dir="$scriptdir/locales"
+locales_dir="$scriptdir/../locales"
 
 # What this does is if installing to a package, it installs all locales that
 # match supported charsets instead of installing all directly supported locales.

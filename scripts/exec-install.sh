@@ -47,7 +47,7 @@ shift
 exec_suffix="$1"
 shift
 
-bindir="$scriptdir/bin"
+bindir="$scriptdir/../bin"
 
 for exe in $bindir/*; do
 

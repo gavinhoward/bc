@@ -106,7 +106,7 @@ set -e
 
 script="$0"
 scriptdir=$(dirname "$script")
-manualsdir="$scriptdir/manuals"
+manualsdir="$scriptdir/../manuals"
 
 . "$scriptdir/functions.sh"
 

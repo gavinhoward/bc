@@ -139,12 +139,12 @@ build() {
 
 	header "$_build_header"
 
-	do_make > /dev/null 2> "$scriptdir/.test.txt"
+	do_make > /dev/null 2> "$scriptdir/../.test.txt"
 
-	if [ -s "$scriptdir/.test.txt" ]; then
+	if [ -s "$scriptdir/../.test.txt" ]; then
 		printf '%s generated warning(s):\n' "$_build_CC"
 		printf '\n'
-		cat "$scriptdir/.test.txt"
+		cat "$scriptdir/../.test.txt"
 		exit 1
 	fi
 }
