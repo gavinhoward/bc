@@ -1723,53 +1723,55 @@ static inline void bc_num_printNewline(void) {
 #endif // !BC_ENABLE_LIBRARY
 }
 
-static void bc_num_putchar(int c) {
-	if (c != '\n') bc_num_printNewline();
+static void bc_num_putchar(int c, bool bslash) {
+	if (c != '\n' && bslash) bc_num_printNewline();
 	bc_vm_putchar(c, bc_flush_save);
 }
 
 #if DC_ENABLED && !BC_ENABLE_LIBRARY
-static void bc_num_printChar(size_t n, size_t len, bool rdx) {
+static void bc_num_printChar(size_t n, size_t len, bool rdx, bool bslash) {
 	BC_UNUSED(rdx);
 	BC_UNUSED(len);
+	BC_UNUSED(bslash);
 	assert(len == 1);
 	bc_vm_putchar((uchar) n, bc_flush_save);
 }
 #endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 
-static void bc_num_printDigits(size_t n, size_t len, bool rdx) {
+static void bc_num_printDigits(size_t n, size_t len, bool rdx, bool bslash) {
 
 	size_t exp, pow;
 
-	bc_num_putchar(rdx ? '.' : ' ');
+	bc_num_putchar(rdx ? '.' : ' ', true);
 
 	for (exp = 0, pow = 1; exp < len - 1; ++exp, pow *= BC_BASE);
 
 	for (exp = 0; exp < len; pow /= BC_BASE, ++exp) {
 		size_t dig = n / pow;
 		n -= dig * pow;
-		bc_num_putchar(((uchar) dig) + '0');
+		bc_num_putchar(((uchar) dig) + '0', bslash || exp != len - 1);
 	}
 }
 
-static void bc_num_printHex(size_t n, size_t len, bool rdx) {
+static void bc_num_printHex(size_t n, size_t len, bool rdx, bool bslash) {
 
 	BC_UNUSED(len);
+	BC_UNUSED(bslash);
 
 	assert(len == 1);
 
-	if (rdx) bc_num_putchar('.');
+	if (rdx) bc_num_putchar('.', true);
 
-	bc_num_putchar(bc_num_hex_digits[n]);
+	bc_num_putchar(bc_num_hex_digits[n], bslash);
 }
 
-static void bc_num_printDecimal(const BcNum *restrict n) {
+static void bc_num_printDecimal(const BcNum *restrict n, bool newline) {
 
 	size_t i, j, rdx = BC_NUM_RDX_VAL(n);
 	bool zero = true;
 	size_t buffer[BC_BASE_DIGS];
 
-	if (BC_NUM_NEG(n)) bc_num_putchar('-');
+	if (BC_NUM_NEG(n)) bc_num_putchar('-', true);
 
 	for (i = n->len - 1; i < n->len; --i) {
 
@@ -1791,14 +1793,18 @@ static void bc_num_printDecimal(const BcNum *restrict n) {
 		for (j = BC_BASE_DIGS - 1; j < BC_BASE_DIGS && j >= temp; --j) {
 			bool print_rdx = (irdx & (j == BC_BASE_DIGS - 1));
 			zero = (zero && buffer[j] == 0);
-			if (!zero) bc_num_printHex(buffer[j], 1, print_rdx);
+			if (!zero) {
+				bc_num_printHex(buffer[j], 1, print_rdx,
+				                !newline || (j > temp || i != 0));
+			}
 		}
 	}
 }
 
 #if BC_ENABLE_EXTRA_MATH
-static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
-
+static void bc_num_printExponent(const BcNum *restrict n,
+                                 bool eng, bool newline)
+{
 	size_t places, mod, nrdx = BC_NUM_RDX_VAL(n);
 	bool neg = (n->len <= nrdx);
 	BcNum temp, exp;
@@ -1836,20 +1842,20 @@ static void bc_num_printExponent(const BcNum *restrict n, bool eng) {
 		bc_num_shiftRight(&temp, places);
 	}
 
-	bc_num_printDecimal(&temp);
-	bc_num_putchar('e');
+	bc_num_printDecimal(&temp, newline);
+	bc_num_putchar('e', !newline);
 
 	if (!places) {
-		bc_num_printHex(0, 1, false);
+		bc_num_printHex(0, 1, false, !newline);
 		goto exit;
 	}
 
-	if (neg) bc_num_putchar('-');
+	if (neg) bc_num_putchar('-', true);
 
 	bc_num_setup(&exp, digs, BC_NUM_BIGDIG_LOG10);
 	bc_num_bigdig2num(&exp, (BcBigDig) places);
 
-	bc_num_printDecimal(&exp);
+	bc_num_printDecimal(&exp, newline);
 
 exit:
 	BC_SIG_MAYLOCK;
@@ -1919,20 +1925,20 @@ static void bc_num_printPrepare(BcNum *restrict n, BcBigDig rem, BcBigDig pow) {
 	}
 }
 
-static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
-                            size_t len, BcNumDigitOp print)
+static void bc_num_printNum(BcNum *restrict n, BcBigDig base, size_t len,
+                            BcNumDigitOp print, bool newline)
 {
 	BcVec stack;
 	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
 	BcBigDig dig = 0, *ptr, acc, exp;
-	size_t i, j, nrdx;
+	size_t i, j, nrdx, idigits;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
 
 	assert(base > 1);
 
 	if (BC_NUM_ZERO(n)) {
-		print(0, len, false);
+		print(0, len, false, !newline);
 		return;
 	}
 
@@ -2030,7 +2036,8 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	for (i = 0; i < stack.len; ++i) {
 		ptr = bc_vec_item_rev(&stack, i);
 		assert(ptr != NULL);
-		print(*ptr, len, false);
+		print(*ptr, len, false, !newline ||
+		      (n->scale != 0 || i == stack.len - 1));
 	}
 
 	if (!n->scale) goto err;
@@ -2057,7 +2064,7 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 	fracp2.scale = n->scale;
 	BC_NUM_RDX_SET_NP(fracp2, BC_NUM_RDX(fracp2.scale));
 
-	while (bc_num_intDigits(n1) < n->scale + 1) {
+	while ((idigits = bc_num_intDigits(n1)) <= n->scale) {
 
 		bc_num_expand(&fracp2, fracp1.len + 1);
 		bc_num_mulArray(&fracp1, base, &fracp2);
@@ -2072,7 +2079,7 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base,
 		bc_num_bigdig2num(&digit, dig);
 		bc_num_sub(&fracp2, &digit, &fracp1, 0);
 
-		print(dig, len, radix);
+		print(dig, len, radix, !newline || idigits != n->scale);
 		bc_num_mulArray(n1, base, n2);
 
 		radix = false;
@@ -2094,13 +2101,13 @@ err:
 	BC_LONGJMP_CONT;
 }
 
-static void bc_num_printBase(BcNum *restrict n, BcBigDig base) {
+static void bc_num_printBase(BcNum *restrict n, BcBigDig base, bool newline) {
 
 	size_t width;
 	BcNumDigitOp print;
 	bool neg = BC_NUM_NEG(n);
 
-	if (neg) bc_num_putchar('-');
+	if (neg) bc_num_putchar('-', true);
 
 	BC_NUM_NEG_CLR(n);
 
@@ -2114,13 +2121,13 @@ static void bc_num_printBase(BcNum *restrict n, BcBigDig base) {
 		print = bc_num_printDigits;
 	}
 
-	bc_num_printNum(n, base, width, print);
+	bc_num_printNum(n, base, width, print, newline);
 	n->rdx = BC_NUM_NEG_VAL(n, neg);
 }
 
 #if DC_ENABLED && !BC_ENABLE_LIBRARY
 void bc_num_stream(BcNum *restrict n, BcBigDig base) {
-	bc_num_printNum(n, base, 1, bc_num_printChar);
+	bc_num_printNum(n, base, 1, bc_num_printChar, false);
 }
 #endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 
@@ -2238,14 +2245,15 @@ void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline) {
 
 	bc_num_printNewline();
 
-	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false);
-	else if (base == BC_BASE) bc_num_printDecimal(n);
+	if (BC_NUM_ZERO(n)) bc_num_printHex(0, 1, false, !newline);
+	else if (base == BC_BASE) bc_num_printDecimal(n, newline);
 #if BC_ENABLE_EXTRA_MATH
-	else if (base == 0 || base == 1) bc_num_printExponent(n, base != 0);
+	else if (base == 0 || base == 1)
+		bc_num_printExponent(n, base != 0, newline);
 #endif // BC_ENABLE_EXTRA_MATH
-	else bc_num_printBase(n, base);
+	else bc_num_printBase(n, base, newline);
 
-	if (newline) bc_num_putchar('\n');
+	if (newline) bc_num_putchar('\n', false);
 }
 
 BcBigDig bc_num_bigdig2(const BcNum *restrict n) {

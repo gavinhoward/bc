@@ -144,8 +144,14 @@ elif [ "$generate" -eq 0 ]; then
 	printf 'Skipping %s script %s\n' "$d" "$f"
 	exit 0
 else
+	# This sed is used to remove an incompatibility with GNU bc. If there is
+	# only one more character to print at the end of BC_LINE_LENGTH, GNU bc
+	# still prints a backslash+newline+digit combo. OpenBSD doesn't, which is
+	# correct, so my bc doesn't as well. The sed script edits numbers that end
+	# with just one digit on a line by itself to put it on the same line as
+	# others.
 	printf 'Generating %s results...' "$f"
-	printf '%s\n' "$halt" | "$d" "$s" > "$results"
+	printf '%s\n' "$halt" | "$d" "$s" | sed -n -f "$testdir/script.sed" > "$results"
 	printf 'done\n'
 	res="$results"
 fi
