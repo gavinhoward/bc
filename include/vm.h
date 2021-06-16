@@ -284,6 +284,8 @@
 #define BC_VM_STDERR_BUF_SIZE (1<<10)
 #define BC_VM_STDIN_BUF_SIZE (BC_VM_STDERR_BUF_SIZE - 1)
 
+#define BC_VM_MAX_TEMPS (1 << 9)
+
 #define BC_VM_SAFE_RESULT(r) ((r)->t >= BC_RESULT_TEMP)
 
 #if BC_ENABLE_LIBRARY
@@ -333,7 +335,7 @@ typedef struct BcVm {
 
 	BcVec jmp_bufs;
 
-	BcVec temps;
+	size_t temps_len;
 
 #if BC_ENABLE_LIBRARY
 
@@ -430,7 +432,8 @@ void bc_vm_boot(int argc, char *argv[], const char *env_len,
                 const char* const env_args);
 void bc_vm_init(void);
 void bc_vm_shutdown(void);
-bool bc_vm_addTemp(const BcNum *n);
+void bc_vm_addTemp(BcDig *num);
+BcDig* bc_vm_takeTemp(void);
 void bc_vm_freeTemps(void);
 
 #if !BC_ENABLE_HISTORY

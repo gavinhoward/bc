@@ -2141,12 +2141,8 @@ void bc_num_init(BcNum *restrict n, size_t req) {
 
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 
-	if (req == BC_NUM_DEF_SIZE && vm.temps.len) {
-		BcNum *nptr = bc_vec_top(&vm.temps);
-		num = nptr->num;
-		bc_vec_pop(&vm.temps);
-	}
-	else num = bc_vm_malloc(BC_NUM_SIZE(req));
+	if (req != BC_NUM_DEF_SIZE || (num = bc_vm_takeTemp()) == NULL)
+		num = bc_vm_malloc(BC_NUM_SIZE(req));
 
 	bc_num_setup(n, num, req);
 }
@@ -2164,9 +2160,7 @@ void bc_num_free(void *num) {
 
 	assert(n != NULL);
 
-	if (n->cap == BC_NUM_DEF_SIZE && vm.temps.len < BC_NUM_MAX_TEMPS) {
-		if (!bc_vm_addTemp(n)) free(n->num);
-	}
+	if (n->cap == BC_NUM_DEF_SIZE) bc_vm_addTemp(n->num);
 	else free(n->num);
 }
 

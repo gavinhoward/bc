@@ -64,6 +64,7 @@
 #include <read.h>
 #include <bc.h>
 
+BcDig* temps_buf[BC_VM_MAX_TEMPS];
 char output_bufs[BC_VM_BUF_SIZE];
 BcVm vm;
 
@@ -407,15 +408,18 @@ void bc_vm_shutdown(void) {
 #endif // !BC_ENABLE_LIBRARY
 }
 
-bool bc_vm_addTemp(const BcNum *n) {
+void bc_vm_addTemp(BcDig *num) {
+	if (vm.temps_len == BC_VM_MAX_TEMPS) free(num);
+	else {
+		temps_buf[vm.temps_len] = num;
+		vm.temps_len += 1;
+	}
+}
 
-	// The destructor has to be NULL or else the number will be freed when
-	// bc_vec_init() attempts to pop it off the vector, which will lead to
-	// double frees, invalid writes, the whole nine yards.
-	if (vm.temps.cap == 0 && !bc_vec_init_try(&vm.temps, sizeof(BcNum), NULL))
-		return false;
-
-	return bc_vec_push_try(&vm.temps, n);
+BcDig* bc_vm_takeTemp(void) {
+	if (!vm.temps_len) return NULL;
+	vm.temps_len -= 1;
+	return temps_buf[vm.temps_len];
 }
 
 void bc_vm_freeTemps(void) {
@@ -424,15 +428,13 @@ void bc_vm_freeTemps(void) {
 
 	BC_SIG_ASSERT_LOCKED;
 
-	if (!vm.temps.cap) return;
+	if (!vm.temps_len) return;
 
-	for (i = 0; i < vm.temps.len; ++i) {
-		free(((BcNum*) bc_vec_item(&vm.temps, i))->num);
+	for (i = 0; i < vm.temps_len; ++i) {
+		free(temps_buf[i]);
 	}
 
-	bc_vec_free(&vm.temps);
-	vm.temps.cap = 0;
-	vm.temps.len = 0;
+	vm.temps_len = 0;
 }
 
 inline size_t bc_vm_arraySize(size_t n, size_t size) {
