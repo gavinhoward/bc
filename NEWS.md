@@ -4,7 +4,9 @@
 
 This is a production release with several changes:
 
-* Support for OpenBSD's `pledge()` and `unveil()` were added.
+* Add support for OpenBSD's `pledge()` and `unveil()`.
+* Fix `dc` `P` command, which GNU `dc` gets wrong, and I blindly copied like a
+  fool.
 * Fix bugs in the manuals.
 * Fix a possible multiplication overflow in power.
 * Temporary numbers are garbage collected if allocation fails, and the
