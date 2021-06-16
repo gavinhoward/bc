@@ -2117,8 +2117,16 @@ static void bc_num_printBase(BcNum *restrict n, BcBigDig base, bool newline) {
 
 #if DC_ENABLED && !BC_ENABLE_LIBRARY
 void bc_num_stream(BcNum *restrict n, BcBigDig base) {
+
+	uchar v;
+	size_t rdx;
+
 	BC_UNUSED(base);
-	bc_vm_putchar((uchar) (n->num[BC_NUM_RDX_VAL(n)] & 255), bc_flush_save);
+
+	rdx = BC_NUM_RDX_VAL(n);
+	v = n->len > rdx ? (uchar) (n->num[rdx] & 255) : 0;
+
+	bc_vm_putchar(v, bc_flush_save);
 }
 #endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 
