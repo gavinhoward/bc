@@ -64,7 +64,7 @@
 #include <read.h>
 #include <bc.h>
 
-BcDig* temps_buf[BC_VM_MAX_TEMPS];
+static BcDig* temps_buf[BC_VM_MAX_TEMPS];
 char output_bufs[BC_VM_BUF_SIZE];
 BcVm vm;
 
