@@ -61,7 +61,6 @@ typedef struct BcVec {
 } BcVec;
 
 void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor);
-bool bc_vec_init_try(BcVec *restrict v, size_t esize, BcVecFree dtor);
 void bc_vec_expand(BcVec *restrict v, size_t req);
 void bc_vec_grow(BcVec *restrict v, size_t n);
 
@@ -69,7 +68,6 @@ void bc_vec_npop(BcVec *restrict v, size_t n);
 void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx);
 
 void bc_vec_push(BcVec *restrict v, const void *data);
-bool bc_vec_push_try(BcVec *restrict v, const void *data);
 void bc_vec_npush(BcVec *restrict v, size_t n, const void *data);
 void bc_vec_pushByte(BcVec *restrict v, uchar data);
 void bc_vec_pushIndex(BcVec *restrict v, size_t idx);
