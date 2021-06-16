@@ -2906,7 +2906,7 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	BcNum base, exp, two, temp;
 	BcDig two_digs[2];
-	size_t ascale, bscale = 0, cscale = 0;
+	size_t ascale = 0, bscale = 0, cscale = 0;
 
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(a != d && b != d && c != d);
