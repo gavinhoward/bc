@@ -277,9 +277,9 @@ translations will also be added as they are provided.
 If I (Gavin D. Howard) get [hit by a bus][27] and future programmers need to
 handle work themselves, the best place to start is the [Development manual][28].
 
-## Comparison to GNU `bc`
+## Comparison to GNU `bc` and `dc`
 
-This `bc` compares favorably to GNU `bc`.
+This `bc` compares favorably to GNU `bc` and `dc`.
 
 * This `bc` builds natively on Windows.
 * It has more extensions, which make this `bc` more useful for scripting.
@@ -293,6 +293,7 @@ This `bc` compares favorably to GNU `bc`.
   it on the file `tests/bc/power.txt` in this repo, GNU `bc` gets all the right
   answers, but it fails to wrap the numbers at the proper place when outputting
   to a file.
+* GNU `dc`'s `P` command is wrong for values above 255.
 * This `bc` is faster. (See [Performance](#performance).)
 
 ### Performance
