@@ -413,7 +413,11 @@ static size_t bc_num_shiftRdx(BcNum *restrict n) {
 
 static void bc_num_unshiftRdx(BcNum *restrict n, size_t scale) {
 
-	size_t rdx = BC_NUM_RDX(scale);
+	size_t rdx;
+
+	if (!scale || scale == SIZE_MAX) return;
+
+	rdx = BC_NUM_RDX(scale);
 
 	n->len += rdx;
 	n->num -= rdx;
@@ -598,7 +602,7 @@ static size_t bc_num_checkInt(BcNum *restrict b) {
 
 	for (i = 0; zero && i < rdx; ++i) zero = (b->num[i] == 0);
 
-	if (BC_ERR(!zero)) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+	if (BC_ERR(!zero)) return SIZE_MAX;
 
 	return bc_num_shiftRdx(b);
 }
@@ -608,6 +612,8 @@ static void bc_num_intop(const BcNum *a, BcNum *b, BcNum *restrict c,
                          BcBigDig *v)
 {
 	size_t scale = bc_num_checkInt(b);
+
+	if (BC_ERR(BC_NUM_CHECKINT_FAIL(scale))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 
 	BC_SETJMP(exit);
 
@@ -1349,6 +1355,9 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	}
 
 	bscale = bc_num_checkInt(b);
+
+	if (BC_ERR(BC_NUM_CHECKINT_FAIL(bscale)))
+		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 
 	BC_SETJMP(bigdig_err);
 
@@ -2492,6 +2501,9 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	ascale = bc_num_checkInt(a);
 
+	if (BC_ERR(BC_NUM_CHECKINT_FAIL(ascale)))
+		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+
 	BC_SETJMP(alloc_err);
 
 	cmp = bc_num_cmp(a, &vm.max);
@@ -2922,15 +2934,17 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	if (BC_ERR(BC_NUM_ZERO(c))) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_ERR(BC_NUM_NEG(b))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
 
-	BC_SIG_LOCK;
-
-	BC_SETJMP_LOCKED(int_err);
-
 	ascale = bc_num_checkInt(a);
 	bscale = bc_num_checkInt(b);
 	cscale = bc_num_checkInt(c);
 
-	BC_SIG_UNLOCK;
+	BC_SETJMP(int_err);
+
+	if (BC_ERR(BC_NUM_CHECKINT_FAIL(ascale) || BC_NUM_CHECKINT_FAIL(bscale) ||
+	           BC_NUM_CHECKINT_FAIL(cscale)))
+	{
+		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+	}
 
 	bc_num_expand(d, c->len);
 
