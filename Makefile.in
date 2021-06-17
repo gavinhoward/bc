@@ -388,7 +388,7 @@ clean_tests: clean clean_config clean_coverage
 	@$(RM) -f tests/bc/scripts/divide.txt
 	@$(RM) -f tests/bc/scripts/multiply.txt
 	@$(RM) -f tests/bc/scripts/subtract.txt
-	@$(RM) -f tests/dc/scripts/prime.txt tests/dc/scripts/stream.txt
+	@$(RM) -f tests/dc/scripts/prime.txt
 	@$(RM) -f .log_*.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt
 	@$(RM) -f .test.txt
