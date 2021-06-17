@@ -165,7 +165,7 @@ try:
 
 			for test in tests:
 
-				cmd = [ "{}/tests/test.sh".format(testdir), "bc", test, "0", "0", exe ]
+				cmd = [ "{}/../tests/test.sh".format(testdir), "bc", test, "0", "0", exe ]
 
 				p = subprocess.run(cmd + sys.argv[args_idx:], stderr=subprocess.PIPE)
 
@@ -179,7 +179,7 @@ try:
 
 			for script in scripts:
 
-				cmd = [ "{}/tests/script.sh".format(testdir), "bc", script + ".bc",
+				cmd = [ "{}/../tests/script.sh".format(testdir), "bc", script + ".bc",
 				        "0", "1", "1", "0", exe ]
 
 				p = subprocess.run(cmd + sys.argv[args_idx:], stderr=subprocess.PIPE)
@@ -198,7 +198,7 @@ try:
 
 			for j in range(0, nruns):
 
-				cmd = [ exe, "{}/tests/bc/power.txt".format(testdir) ]
+				cmd = [ exe, "{}/../tests/bc/power.txt".format(testdir) ]
 
 				start = time.perf_counter()
 				p = subprocess.run(cmd, input=indata, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
