@@ -326,7 +326,8 @@ The following are valid operands in bc(1):
 2.	Array indices (**I[E]**).
 3.	**(E)**: The value of **E** (used to change precedence).
 4.	**sqrt(E)**: The square root of **E**. **E** must be non-negative.
-5.	**length(E)**: The number of significant decimal digits in **E**.
+5.	**length(E)**: The number of significant decimal digits in **E**. Returns
+	**1** for **0** with no decimal places.
 6.	**length(I[])**: The number of elements in the array **I**. This is a
 	**non-portable extension**.
 7.	**scale(E)**: The *scale* of **E**.

@@ -699,7 +699,8 @@ These commands query status of the stack or its top value.
 :   Pops a value off of the stack.
 
     If it is a number, calculates the number of significant decimal digits it
-    has and pushes the result.
+    has and pushes the result. It will push **1** if the argument is **0** with
+    no decimal places.
 
     If it is a string, pushes the number of characters the string has.
 
@@ -736,7 +737,8 @@ registers do not interfere with array registers.)
 
 Each register is also its own stack, so the current register value is the top of
 the stack for the register. All registers, when first referenced, have one value
-(**0**) in their stack.
+(**0**) in their stack, and it is a runtime error to attempt to pop that item
+off of the register stack.
 
 In non-extended register mode, a register name is just the single character that
 follows any command that needs a register name. The only exception is a newline

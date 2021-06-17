@@ -466,6 +466,7 @@ Array indices (\f[B]I[E]\f[R]).
 .IP " 5." 4
 \f[B]length(E)\f[R]: The number of significant decimal digits in
 \f[B]E\f[R].
+Returns \f[B]1\f[R] for \f[B]0\f[R] with no decimal places.
 .IP " 6." 4
 \f[B]length(I[])\f[R]: The number of elements in the array \f[B]I\f[R].
 This is a \f[B]non-portable extension\f[R].
@@ -1249,6 +1250,14 @@ causes bc(1) to reset (see the \f[B]RESET\f[R] section).
 It also raises an error and causes bc(1) to reset if \f[B]r\f[R] is even
 and \f[B]x\f[R] is negative.
 .RE
+.TP
+\f[B]gcd(a, b)\f[R]
+Returns the greatest common divisor (factor) of the truncated absolute
+value of \f[B]a\f[R] and the truncated absolute value of \f[B]b\f[R].
+.TP
+\f[B]lcm(a, b)\f[R]
+Returns the least common multiple of the truncated absolute value of
+\f[B]a\f[R] and the truncated absolute value of \f[B]b\f[R].
 .TP
 \f[B]pi(p)\f[R]
 Returns \f[B]pi\f[R] to \f[B]p\f[R] decimal places.

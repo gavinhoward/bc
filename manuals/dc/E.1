@@ -800,6 +800,8 @@ Pops a value off of the stack.
 .PP
 If it is a number, calculates the number of significant decimal digits
 it has and pushes the result.
+It will push \f[B]1\f[R] if the argument is \f[B]0\f[R] with no decimal
+places.
 .PP
 If it is a string, pushes the number of characters the string has.
 .RE
@@ -837,7 +839,8 @@ Registers are names that can store strings, numbers, and arrays.
 Each register is also its own stack, so the current register value is
 the top of the stack for the register.
 All registers, when first referenced, have one value (\f[B]0\f[R]) in
-their stack.
+their stack, and it is a runtime error to attempt to pop that item off
+of the register stack.
 .PP
 In non-extended register mode, a register name is just the single
 character that follows any command that needs a register name.

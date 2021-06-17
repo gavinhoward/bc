@@ -376,7 +376,8 @@ The following are valid operands in bc(1):
 2.	Array indices (**I[E]**).
 3.	**(E)**: The value of **E** (used to change precedence).
 4.	**sqrt(E)**: The square root of **E**. **E** must be non-negative.
-5.	**length(E)**: The number of significant decimal digits in **E**.
+5.	**length(E)**: The number of significant decimal digits in **E**. Returns
+	**1** for **0** with no decimal places.
 6.	**length(I[])**: The number of elements in the array **I**. This is a
 	**non-portable extension**.
 7.	**scale(E)**: The *scale* of **E**.
@@ -1022,6 +1023,16 @@ The extended library is a **non-portable extension**.
     If **r** is **0** or negative, this raises an error and causes bc(1) to
     reset (see the **RESET** section). It also raises an error and causes bc(1)
     to reset if **r** is even and **x** is negative.
+
+**gcd(a, b)**
+
+:   Returns the greatest common divisor (factor) of the truncated absolute value
+    of **a** and the truncated absolute value of **b**.
+
+**lcm(a, b)**
+
+:   Returns the least common multiple of the truncated absolute value of **a**
+    and the truncated absolute value of **b**.
 
 **pi(p)**
 
