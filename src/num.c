@@ -2998,7 +2998,7 @@ int_err:
 void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline) {
 	bc_file_puts(&vm.fout, bc_flush_none, name);
 	bc_file_puts(&vm.fout, bc_flush_none, ": ");
-	bc_num_printDecimal(n);
+	bc_num_printDecimal(n, true);
 	bc_file_putchar(&vm.fout, bc_flush_err, '\n');
 	if (emptyline) bc_file_putchar(&vm.fout, bc_flush_err, '\n');
 	vm.nchars = 0;

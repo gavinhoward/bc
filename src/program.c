@@ -1846,6 +1846,11 @@ void bc_program_exec(BcProgram *p) {
 
 		uchar inst = (uchar) code[(ip->idx)++];
 
+#if BC_DEBUG_CODE
+		bc_file_printf(&vm.ferr, "inst: %s\n", bc_inst_names[inst]);
+		bc_file_flush(&vm.ferr, bc_flush_none);
+#endif // BC_DEBUG_CODE
+
 		switch (inst) {
 
 #if BC_ENABLED
