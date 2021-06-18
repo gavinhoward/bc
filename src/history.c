@@ -937,6 +937,11 @@ static void bc_history_swap(BcHistory *h) {
 	}
 }
 
+static void bc_history_raise(BcHistory *h, int sig) {
+	bc_history_disableRaw(h);
+	raise(sig);
+}
+
 /**
  * Handle escape sequences.
  */
@@ -1281,10 +1286,14 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 			default:
 			{
-				if (c >= BC_ACTION_CTRL_A && c <= BC_ACTION_CTRL_Z) {
+				if ((c >= BC_ACTION_CTRL_A && c <= BC_ACTION_CTRL_Z) ||
+				    c == BC_ACTION_CTRL_BSLASH)
+				{
 					bc_history_printCtrl(h, c);
-					if (c == BC_ACTION_CTRL_Z) raise(SIGTSTP);
-					if (c == BC_ACTION_CTRL_S) raise(SIGSTOP);
+					if (c == BC_ACTION_CTRL_Z) bc_history_raise(h, SIGTSTP);
+					if (c == BC_ACTION_CTRL_S) bc_history_raise(h, SIGSTOP);
+					if (c == BC_ACTION_CTRL_BSLASH)
+						bc_history_raise(h, SIGQUIT);
 				}
 				else bc_history_edit_insert(h, cbuf, nread);
 				break;

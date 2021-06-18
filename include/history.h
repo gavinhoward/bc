@@ -171,6 +171,7 @@ typedef enum BcHistoryAction {
 	BC_ACTION_CTRL_W = 23,
 	BC_ACTION_CTRL_Z = 26,
 	BC_ACTION_ESC = 27,
+	BC_ACTION_CTRL_BSLASH = 28,
 	BC_ACTION_BACKSPACE =  127
 
 } BcHistoryAction;
