@@ -136,8 +136,6 @@ struct BcRNG;
 #define BC_NUM_ROUND_POW(s) (bc_vm_growSize((s), BC_BASE_DIGS - 1))
 #define BC_NUM_RDX(s) (BC_NUM_ROUND_POW(s) / BC_BASE_DIGS)
 
-#define BC_NUM_CHECKINT_FAIL(s) ((s) == SIZE_MAX)
-
 #define BC_NUM_RDX_VAL(n) ((n)->rdx >> 1)
 #define BC_NUM_RDX_VAL_NP(n) ((n).rdx >> 1)
 #define BC_NUM_RDX_SET(n, v) \

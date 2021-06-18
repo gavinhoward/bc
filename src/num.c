@@ -398,32 +398,16 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 	bc_num_clean(a);
 }
 
-static size_t bc_num_shiftRdx(BcNum *restrict n) {
+static void bc_num_shiftRdx(const BcNum *restrict n, BcNum *restrict r) {
 
-	size_t rdx = BC_NUM_RDX_VAL(n), scale = n->scale;
+	size_t rdx = BC_NUM_RDX_VAL(n);
 
-	n->len -= rdx;
-	n->num += rdx;
+	r->len = n->len - rdx;
+	r->cap = n->cap - rdx;
+	r->num = n->num + rdx;
 
-	BC_NUM_RDX_SET(n, 0);
-	n->scale = 0;
-
-	return scale;
-}
-
-static void bc_num_unshiftRdx(BcNum *restrict n, size_t scale) {
-
-	size_t rdx;
-
-	if (!scale || scale == SIZE_MAX) return;
-
-	rdx = BC_NUM_RDX(scale);
-
-	n->len += rdx;
-	n->num -= rdx;
-
-	BC_NUM_RDX_SET(n, rdx);
-	n->scale = scale;
+	BC_NUM_RDX_SET_NEG(r, 0, BC_NUM_NEG(n));
+	r->scale = 0;
 }
 
 static size_t bc_num_shiftZero(BcNum *restrict n) {
@@ -590,40 +574,37 @@ static void bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 	bc_num_div(&one, a, b, scale);
 }
 
-static size_t bc_num_checkInt(BcNum *restrict b) {
+static bool bc_num_nonInt(const BcNum *restrict n, BcNum *restrict r) {
 
 	bool zero;
-	size_t i, rdx;
+	size_t i, rdx = BC_NUM_RDX_VAL(n);
 
-	if (!BC_NO_ERR(BC_NUM_RDX_VAL(b))) return 0;
+	if (!rdx) {
+		memcpy(r, n, sizeof(BcNum));
+		return false;
+	}
 
 	zero = true;
-	rdx = BC_NUM_RDX_VAL(b);
 
-	for (i = 0; zero && i < rdx; ++i) zero = (b->num[i] == 0);
+	for (i = 0; zero && i < rdx; ++i) zero = (n->num[i] == 0);
 
-	if (BC_ERR(!zero)) return SIZE_MAX;
+	if (BC_ERR(!zero)) return true;
 
-	return bc_num_shiftRdx(b);
+	bc_num_shiftRdx(n, r);
+
+	return false;
 }
 
 #if BC_ENABLE_EXTRA_MATH
-static void bc_num_intop(const BcNum *a, BcNum *b, BcNum *restrict c,
+static void bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
                          BcBigDig *v)
 {
-	size_t scale = bc_num_checkInt(b);
+	BcNum temp;
 
-	if (BC_ERR(BC_NUM_CHECKINT_FAIL(scale))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
-
-	BC_SETJMP(exit);
+	if (BC_ERR(bc_num_nonInt(b, &temp))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 
 	bc_num_copy(c, a);
-	bc_num_bigdig(b, v);
-
-exit:
-	BC_SIG_MAYLOCK;
-	bc_num_unshiftRdx(b, scale);
-	BC_LONGJMP_CONT;
+	bc_num_bigdig(&temp, v);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1334,43 +1315,35 @@ err:
 
 static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	BcNum copy;
+	BcNum copy, btemp;
 	BcBigDig pow = 0;
-	size_t i, powrdx, resrdx, bscale;
+	size_t i, powrdx, resrdx;
 	bool neg, zero;
 
-	if (BC_NUM_ZERO(b)) {
+
+	if (BC_ERR(bc_num_nonInt(b, &btemp))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+	if (BC_NUM_ZERO(&btemp)) {
 		bc_num_one(c);
 		return;
 	}
 	if (BC_NUM_ZERO(a)) {
-		if (BC_NUM_NEG(b)) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
+		if (BC_NUM_NEG_NP(btemp)) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 		bc_num_setToZero(c, scale);
 		return;
 	}
-	if (BC_NUM_ONE(b)) {
-		if (!BC_NUM_NEG(b)) bc_num_copy(c, a);
+	if (BC_NUM_ONE(&btemp)) {
+		if (!BC_NUM_NEG_NP(btemp)) bc_num_copy(c, a);
 		else bc_num_inv(a, c, scale);
 		return;
 	}
 
-	bscale = bc_num_checkInt(b);
-
-	if (BC_ERR(BC_NUM_CHECKINT_FAIL(bscale)))
-		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
-
-	BC_SETJMP(bigdig_err);
+	neg = BC_NUM_NEG_NP(btemp);
+	BC_NUM_NEG_CLR_NP(btemp);
+	bc_num_bigdig(&btemp, &pow);
 
 	BC_SIG_LOCK;
 
-	neg = BC_NUM_NEG(b);
-	BC_NUM_NEG_CLR(b);
-	bc_num_bigdig(b, &pow);
-	b->rdx = BC_NUM_NEG_VAL(b, neg);
-
 	bc_num_createCopy(&copy, a);
-
-	BC_UNSETJMP;
 
 	BC_SETJMP_LOCKED(err);
 
@@ -1416,8 +1389,6 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&copy);
-bigdig_err:
-	bc_num_unshiftRdx(b, bscale);
 	BC_LONGJMP_CONT;
 }
 
@@ -2487,7 +2458,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	BcRand r;
 	BcBigDig modl;
-	BcNum pow, pow2, cp, cp2, mod, temp1, temp2, rand;
+	BcNum pow, pow2, cp, cp2, mod, temp1, temp2, rand, atemp;
 	BcNum *p1, *p2, *t1, *t2, *c1, *c2, *tmp;
 	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
 	bool carry;
@@ -2499,14 +2470,9 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 	if (BC_ERR(BC_NUM_NEG(a))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return;
 
-	ascale = bc_num_checkInt(a);
+	if (BC_ERR(bc_num_nonInt(a, &atemp))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 
-	if (BC_ERR(BC_NUM_CHECKINT_FAIL(ascale)))
-		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
-
-	BC_SETJMP(alloc_err);
-
-	cmp = bc_num_cmp(a, &vm.max);
+	cmp = bc_num_cmp(&atemp, &vm.max);
 
 	if (cmp <= 0) {
 
@@ -2514,7 +2480,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 		// We made sure that a is less than vm.max,
 		// so we can use bc_num_bigdig2() here.
-		if (cmp < 0) bits = (BcRand) bc_num_bigdig2(a);
+		if (cmp < 0) bits = (BcRand) bc_num_bigdig2(&atemp);
 
 		// This condition means that bits is a power of 2. In that case, we
 		// can just grab a full-size int and mask out the unneeded bits.
@@ -2526,7 +2492,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 		bc_num_bigdig2num(b, r);
 
-		goto alloc_err;
+		return;
 	}
 
 	// In the case where a is less than rng->max, we have to make sure we have
@@ -2535,7 +2501,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	BC_SIG_LOCK;
 
-	bc_num_createCopy(&cp, a);
+	bc_num_createCopy(&cp, &atemp);
 
 	bc_num_init(&cp2, cp.len);
 	bc_num_init(&mod, BC_NUM_BIGDIG_LOG10);
@@ -2545,8 +2511,6 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 	bc_num_init(&pow, BC_NUM_DEF_SIZE);
 	bc_num_one(&pow);
 	bc_num_setup(&rand, rand_num, sizeof(rand_num) / sizeof(BcDig));
-
-	BC_UNSETJMP;
 
 	BC_SETJMP_LOCKED(err);
 
@@ -2634,9 +2598,6 @@ err:
 	bc_num_free(&mod);
 	bc_num_free(&cp2);
 	bc_num_free(&cp);
-alloc_err:
-	BC_SIG_MAYLOCK;
-	bc_num_unshiftRdx(a, ascale);
 	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
@@ -2924,7 +2885,7 @@ err:
 #if DC_ENABLED
 void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
-	BcNum base, exp, two, temp;
+	BcNum base, exp, two, temp, atemp, btemp, ctemp;
 	BcDig two_digs[2];
 	size_t ascale = 0, bscale = 0, cscale = 0;
 
@@ -2934,28 +2895,20 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	if (BC_ERR(BC_NUM_ZERO(c))) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_ERR(BC_NUM_NEG(b))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
 
-	ascale = bc_num_checkInt(a);
-	bscale = bc_num_checkInt(b);
-	cscale = bc_num_checkInt(c);
-
-	BC_SETJMP(int_err);
-
-	if (BC_ERR(BC_NUM_CHECKINT_FAIL(ascale) || BC_NUM_CHECKINT_FAIL(bscale) ||
-	           BC_NUM_CHECKINT_FAIL(cscale)))
+	if (BC_ERR(bc_num_nonInt(a, &atemp) || bc_num_nonInt(b, &btemp) ||
+	           bc_num_nonInt(c, &ctemp)))
 	{
 		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
 	}
 
-	bc_num_expand(d, c->len);
+	bc_num_expand(d, ctemp.len);
 
 	BC_SIG_LOCK;
 
-	bc_num_init(&base, c->len);
+	bc_num_init(&base, ctemp.len);
 	bc_num_setup(&two, two_digs, sizeof(two_digs) / sizeof(BcDig));
-	bc_num_init(&temp, b->len + 1);
-	bc_num_createCopy(&exp, b);
-
-	BC_UNSETJMP;
+	bc_num_init(&temp, btemp.len + 1);
+	bc_num_createCopy(&exp, &btemp);
 
 	BC_SETJMP_LOCKED(err);
 
@@ -2966,7 +2919,7 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	bc_num_one(d);
 
 	// We already checked for 0.
-	bc_num_rem(a, c, &base, 0);
+	bc_num_rem(&atemp, &ctemp, &base, 0);
 
 	while (BC_NUM_NONZERO(&exp)) {
 
@@ -2981,7 +2934,7 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 			bc_num_mul(d, &base, &temp, 0);
 
 			// We already checked for 0.
-			bc_num_rem(&temp, c, d, 0);
+			bc_num_rem(&temp, &ctemp, d, 0);
 		}
 
 		assert(BC_NUM_RDX_VALID_NP(base));
@@ -2989,7 +2942,7 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 		bc_num_mul(&base, &base, &temp, 0);
 
 		// We already checked for 0.
-		bc_num_rem(&temp, c, &base, 0);
+		bc_num_rem(&temp, &ctemp, &base, 0);
 	}
 
 err:
@@ -2997,10 +2950,6 @@ err:
 	bc_num_free(&exp);
 	bc_num_free(&temp);
 	bc_num_free(&base);
-int_err:
-	bc_num_unshiftRdx(c, cscale);
-	bc_num_unshiftRdx(b, bscale);
-	bc_num_unshiftRdx(a, ascale);
 	BC_LONGJMP_CONT;
 	assert(!BC_NUM_NEG(d) || d->len);
 	assert(BC_NUM_RDX_VALID(d));
