@@ -246,9 +246,32 @@ However, tabs at the beginning of lines are kept for two reasons:
 
 For more details about the algorithms used, see the [algorithms manual][25].
 
-#### `lib2.bc`
+However, there are a few snares for unwary programmers.
 
-TODO: Document algorithms.
+First, all constants must be one digit. This is because otherwise, multi-digit
+constants could be interpreted wrongly if the user uses a different `ibase`.
+This does not happen with single-digit numbers because they are guaranteed to be
+interpreted what number they would be if the `ibase` was as high as possible.
+
+This is why `A` is used in the library instead of `10`, and things like `2*9*A`
+for `180` in [`lib2.bc`][26].
+
+As an alternative, you can set `ibase` in the function, but if you do, make sure
+to set it with a single-digit number and beware the snare below...
+
+Second, `scale`, `ibase`, and `obase` must be safely restored before returning
+from any function in the library. This is because without the `-g` option,
+functions are allowed to change any of the globals.
+
+Third, all local variables in a function must be declared in an `auto` statement
+before doing anything else. This includes arrays. However, function parameters
+are considered predeclared.
+
+Fourth, and this is only a snare for `lib.bc`, not [`lib2.bc`][26], the code
+must not use *any* extensions. It has to work when users use the `-s` or `-w`
+flags.
+
+#### `lib2.bc`
 
 A `bc` script containing the [extended math library][7].
 
@@ -257,9 +280,10 @@ extraneous whitespace, except for tabs at the beginning of lines.
 
 For more details about the algorithms used, see the [algorithms manual][25].
 
-#### `strgen.c`
+Also, be sure to check [`lib.bc`][8] for the snares that can trip up unwary
+programmers when writing code for `lib2.bc`.
 
-TODO: Document actual source file.
+#### `strgen.c`
 
 Code for the program to generate C strings from text files. This is the original
 program, although [`strgen.sh`][9] was added later.
@@ -289,8 +313,6 @@ takes, and how it works.
 
 #### `strgen.sh`
 
-TODO: Document actual source file.
-
 An `sh` script that will generate C strings that uses only POSIX utilities. This
 exists for those situations where a host C99 compiler is not available, and the
 environment limits mentioned above in [`strgen.c`][15] don't matter.
@@ -304,6 +326,8 @@ how it works.
 
 * Document all code assumptions with asserts.
 * Document all functions with Doxygen comments.
+* Compilers and their quirks, as well as warning settings on Clang.
+* My vim-bc repo.
 * The purpose of every file.
 * How locale works.
 	* How locales are installed.
@@ -312,7 +336,8 @@ how it works.
 * How all manpage versions are generated.
 * Fuzzing.
 	* Including my `tmuxp` files.
-	* Can't use `libdislocator.so`.
+	* Can't use `libdislocator.so`. It causes crashes when it can't allocate
+	  memory.
 	* Use `AFL_HARDEN` during build for hardening.
 	* Use `CC=afl-clang-lto` and `CFLAGS="-flto"`.
 
@@ -341,3 +366,4 @@ how it works.
 [23]: #history
 [24]: https://clang.llvm.org/docs/ClangFormat.html
 [25]: ./algorithms.md
+[26]: #lib2bc
