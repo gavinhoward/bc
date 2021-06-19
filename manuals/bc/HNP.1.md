@@ -1597,10 +1597,10 @@ bc(1) returns the following exit statuses:
 :   A runtime error occurred.
 
     Runtime errors include assigning an invalid number to **ibase**, **obase**,
-    or **scale**; give a bad expression to a **read()** call, calling **read()**
-    inside of a **read()** call, type errors, passing the wrong number of
-    arguments to functions, attempting to call an undefined function, and
-    attempting to use a **void** function call as a value in an expression.
+    or **scale**; giving a bad expression to a **read()** call, calling
+    **read()** inside of a **read()** call, type errors, passing the wrong
+    number of arguments to functions, attempting to call an undefined function,
+    and attempting to use a **void** function call as a value in an expression.
 
 **4**
 
