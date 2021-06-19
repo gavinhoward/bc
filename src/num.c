@@ -2463,7 +2463,6 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
 	bool carry;
 	ssize_t cmp;
-	size_t ascale;
 
 	assert(a != b);
 
@@ -2887,7 +2886,6 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	BcNum base, exp, two, temp, atemp, btemp, ctemp;
 	BcDig two_digs[2];
-	size_t ascale = 0, bscale = 0, cscale = 0;
 
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(a != d && b != d && c != d);

@@ -176,28 +176,28 @@ static int output_label(FILE* out, const char* label, const char* name) {
  * Anything surrounded by square brackets may not be in the final generated
  * source file.
  *
- * The required parameters are:
+ * The required command-line parameters are:
  *
- * @param input   Input filename.
- * @param output  Output filename.
- * @param name    The name of the char array.
+ * input   Input filename.
+ * output  Output filename.
+ * name    The name of the char array.
  *
  * The optional parameters are:
  *
- * @param label   If given, a label for the char array. See the comment for the
- *                output_label() function. It is meant as a "filename" for the
- *                text when processed by bc and dc. If label is given, then the
- *                <Label Extern> and <Label Definition> will exist in the
- *                generated source file.
- * @param define  If given, a preprocessor macro that should be used as a guard
- *                for the char array and its label. If define is given, then
- *                <Preprocessor Guard Begin> will exist in the form
- *                "#if <define>" as part of the generated source file, and
- *                <Preprocessor Guard End> will exist in the form
- *                "endif // <define>".
- * @param rmtabs  If this parameter exists, it must be an integer. If it is
- *                non-zero, then tabs are removed from the input file text
- *                before outputting to the output char array.
+ * label        If given, a label for the char array. See the comment for the
+ *              output_label() function. It is meant as a "filename" for the
+ *              text when processed by bc and dc. If label is given, then the
+ *              <Label Extern> and <Label Definition> will exist in the
+ *              generated source file.
+ * define       If given, a preprocessor macro that should be used as a guard
+ *              for the char array and its label. If define is given, then
+ *              <Preprocessor Guard Begin> will exist in the form
+ *              "#if <define>" as part of the generated source file, and
+ *              <Preprocessor Guard End> will exist in the form
+ *              "endif // <define>".
+ * remove_tabs  If this parameter exists, it must be an integer. If it is
+ *              non-zero, then tabs are removed from the input file text before
+ *              outputting to the output char array.
  *
  * All text files that are transformed have license comments. This program finds
  * the end of that comment and strips it out as well.
@@ -210,7 +210,7 @@ int main(int argc, char *argv[]) {
 	bool has_label, has_define, remove_tabs;
 
 	if (argc < 4) {
-		printf("usage: %s input output name [label [define [rmtabs]]]\n",
+		printf("usage: %s input output name [label [define [remove_tabs]]]\n",
 		       argv[0]);
 		return INVALID_PARAMS;
 	}

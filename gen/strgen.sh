@@ -36,7 +36,7 @@ progname=${0##*/}
 # script generates a string literal, not a char array. To understand the
 # consequences of that, see manuals/development.md#strgenc.
 if [ $# -lt 3 ]; then
-	echo "usage: $progname input output name [label [define [rmtabs]]]"
+	echo "usage: $progname input output name [label [define [remove_tabs]]]"
 	exit 1
 fi
 

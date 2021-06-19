@@ -962,7 +962,7 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 
 		if (BC_ERR(!BC_PROG_STACK(v, 2 - copy))) {
 			const char *name = bc_map_name(&p->var_map, idx);
-			bc_vm_verr(BC_ERR_EXEC_STACK_REGISTER, name);;
+			bc_vm_verr(BC_ERR_EXEC_STACK_REGISTER, name);
 		}
 
 		assert(BC_PROG_STACK(v, 2 - copy));
