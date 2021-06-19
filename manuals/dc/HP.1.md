@@ -1105,11 +1105,11 @@ dc(1) returns the following exit statuses:
 
 :   A runtime error occurred.
 
-    Runtime errors include assigning an invalid number to any globals
-    (**ibase**, **obase**, or **scale**), giving a bad expression to a
-    **read()** call, calling **read()** inside of a **read()** call, type errors
-    (including attempting to execute a number), and attempting an operation when
-    the stack has too few elements.
+    Runtime errors include assigning an invalid number to any global (**ibase**,
+    **obase**, or **scale**), giving a bad expression to a **read()** call,
+    calling **read()** inside of a **read()** call, type errors (including
+    attempting to execute a number), and attempting an operation when the stack
+    has too few elements.
 
 **4**
 
