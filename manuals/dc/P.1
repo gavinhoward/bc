@@ -1002,7 +1002,22 @@ If it is a string, pushes \f[B]0\f[R].
 .RE
 .TP
 \f[B]z\f[R]
-Pushes the current stack depth (before execution of this command).
+Pushes the current depth of the stack (before execution of this command)
+onto the stack.
+.TP
+\f[B]y\f[R]\f[I]r\f[R]
+Pushes the current stack depth of the register \f[I]r\f[R] onto the main
+stack.
+.RS
+.PP
+Because each register has a depth of \f[B]1\f[R] (with the value
+\f[B]0\f[R] in the top item) when dc(1) starts, dc(1) requires that each
+register\[cq]s stack must always have at least one item; dc(1) will give
+an error and reset otherwise (see the RESET section).
+This means that this command will never push \f[B]0\f[R].
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
 .SS Arrays
 .PP
 These commands manipulate arrays.
@@ -1230,11 +1245,12 @@ token where it is invalid.
 A runtime error occurred.
 .RS
 .PP
-Runtime errors include assigning an invalid number to \f[B]ibase\f[R],
-\f[B]obase\f[R], or \f[B]scale\f[R]; give a bad expression to a
-\f[B]read()\f[R] call, calling \f[B]read()\f[R] inside of a
-\f[B]read()\f[R] call, type errors, and attempting an operation when the
-stack has too few elements.
+Runtime errors include assigning an invalid number to any globals
+(\f[B]ibase\f[R], \f[B]obase\f[R], or \f[B]scale\f[R]), give a bad
+expression to a \f[B]read()\f[R] call, calling \f[B]read()\f[R] inside
+of a \f[B]read()\f[R] call, type errors (including attempting to execute
+a number), and attempting an operation when the stack has too few
+elements.
 .RE
 .TP
 \f[B]4\f[R]

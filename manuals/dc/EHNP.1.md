@@ -714,7 +714,19 @@ These commands query status of the stack or its top value.
 
 **z**
 
-:   Pushes the current stack depth (before execution of this command).
+:   Pushes the current depth of the stack (before execution of this command)
+    onto the stack.
+
+**y**_r_
+
+:   Pushes the current stack depth of the register *r* onto the main stack.
+
+    Because each register has a depth of **1** (with the value **0** in the
+    top item) when dc(1) starts, dc(1) requires that each register's stack must
+    always have at least one item; dc(1) will give an error and reset otherwise
+    (see the RESET section). This means that this command will never push **0**.
+
+    This is a **non-portable extension**.
 
 ## Arrays
 
@@ -925,10 +937,11 @@ dc(1) returns the following exit statuses:
 
 :   A runtime error occurred.
 
-    Runtime errors include assigning an invalid number to **ibase**, **obase**,
-    or **scale**; give a bad expression to a **read()** call, calling **read()**
-    inside of a **read()** call, type errors, and attempting an operation when
-    the stack has too few elements.
+    Runtime errors include assigning an invalid number to any globals
+    (**ibase**, **obase**, or **scale**), give a bad expression to a **read()**
+    call, calling **read()** inside of a **read()** call, type errors (including
+    attempting to execute a number), and attempting an operation when the stack
+    has too few elements.
 
 **4**
 
