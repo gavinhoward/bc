@@ -119,7 +119,7 @@ define root(x,n){
 	m=(x<0)
 	x=abs(x)
 	p=n-1
-	q=10^ceil((length(x$)/n)$,0)
+	q=A^ceil((length(x$)/n)$,0)
 	while(r!=q){
 		r=q
 		q=(p*r+x/r^p)/n
@@ -223,7 +223,7 @@ define d2r(x){
 }
 define frand(p){
 	p=abs(p)$
-	return irand(10^p)>>p
+	return irand(A^p)>>p
 }
 define ifrand(i,p){return irand(abs(i)$)+frand(p)}
 define srand(x){
@@ -241,26 +241,20 @@ define void output(x,b){
 define void hex(x){output(x,G)}
 define void binary(x){output(x,2)}
 define ubytes(x){
-	auto p,b,i
-	b=ibase
-	ibase=A
+	auto p,i
 	x=abs(x)$
 	i=2^8
 	for(p=1;i-1<x;p*=2){i*=i}
-	ibase=b
 	return p
 }
 define sbytes(x){
-	auto p,b,n,z
+	auto p,n,z
 	z=(x<0)
 	x=abs(x)
 	x=x$
 	n=ubytes(x)
-	b=ibase
-	ibase=A
 	p=2^(n*8-1)
 	if(x>p||(!z&&x==p))n*=2
-	ibase=b
 	return n
 }
 define void output_byte(x,i){
@@ -271,7 +265,7 @@ define void output_byte(x,i){
 	scale=0
 	x=abs(x)$
 	b=x/(2^(i*8))
-	b%=2^8
+	b%=256
 	y=log(256,obase)
 	if(b>1)p=log(b,obase)+1
 	else p=b
@@ -281,15 +275,12 @@ define void output_byte(x,i){
 	ibase=j
 }
 define void output_uint(x,n){
-	auto i,b
-	b=ibase
-	ibase=A
+	auto i
 	for(i=n-1;i>=0;--i){
 		output_byte(x,i)
 		if(i)print" "
 		else print"\n"
 	}
-	ibase=b
 }
 define void hex_uint(x,n){
 	auto o
