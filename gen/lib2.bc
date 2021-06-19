@@ -171,12 +171,12 @@ define pi(s){
 	return v@s
 }
 define t(x){
-	auto s,c,l
+	auto s,c
 	l=scale
 	scale+=2
 	s=s(x)
 	c=c(x)
-	scale=l
+	scale-=2
 	return s/c
 }
 define a2(y,x){
