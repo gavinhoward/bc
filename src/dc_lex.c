@@ -54,7 +54,7 @@ static void dc_lex_register(BcLex *l) {
 		bc_lex_whitespace(l);
 		c = l->buf[l->i];
 
-		if (!isalnum(c) && c != '_')
+		if (BC_ERR(!isalnum(c) && c != '_'))
 			bc_lex_verr(l, BC_ERR_PARSE_CHAR, c);
 
 		l->i += 1;
