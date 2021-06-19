@@ -40,15 +40,19 @@
 
 #include <errno.h>
 
+// For some reason, Windows needs this header.
 #ifndef _WIN32
 #include <libgen.h>
 #endif // _WIN32
 
+// This is exactly what it looks like. It just slaps a simple license header on
+// the generated C source file.
 static const char* const bc_gen_header =
 	"// Copyright (c) 2018-2021 Gavin D. Howard and contributors.\n"
 	"// Licensed under the 2-clause BSD license.\n"
 	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n\n";
 
+// These are just format strings used to generate the C source.
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
 static const char* const bc_gen_label_extern = "extern const char *%s;\n\n";
 static const char* const bc_gen_ifdef = "#if %s\n";
@@ -56,10 +60,14 @@ static const char* const bc_gen_endif = "#endif // %s\n";
 static const char* const bc_gen_name = "const char %s[] = {\n";
 static const char* const bc_gen_name_extern = "extern const char %s[];\n\n";
 
+// Error codes. We can't use 0 because these are used as exit statuses, and 0
+// as an exit status is not an error.
 #define IO_ERR (1)
 #define INVALID_INPUT_FILE (2)
 #define INVALID_PARAMS (3)
 
+// This is the max width to print characters to the screen. This is to ensure
+// that lines don't go over 80 characters.
 #define MAX_WIDTH (74)
 
 static void open_file(FILE** f, const char* filename, const char* mode) {
@@ -118,7 +126,7 @@ int main(int argc, char *argv[]) {
 	bool has_label, has_define, remove_tabs;
 
 	if (argc < 5) {
-		printf("usage: %s input output name header [label [define [remove_tabs]]]\n", argv[0]);
+		printf("usage: %s input output name [label [define [remove_tabs]]]\n", argv[0]);
 		return INVALID_PARAMS;
 	}
 

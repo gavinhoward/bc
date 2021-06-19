@@ -63,9 +63,9 @@ a complexity of `O((n*log(n))^log_2(3))` which is favorable to the
 This `bc` implements the fast algorithm [Newton's Method][4] (also known as the
 Newton-Raphson Method, or the [Babylonian Method][5]) to perform the square root
 operation. Its complexity is `O(log(n)*n^2)` as it requires one division per
-iteration.
+iteration, and it doubles the amount of correct digits per iteration.
 
-### Sine and Cosine (`bc` Only)
+### Sine and Cosine (`bc` Math Library Only)
 
 This `bc` uses the series
 
@@ -89,7 +89,7 @@ impossible and unnecessary.) Therefore, I recommend that users do their
 calculations with the precision (`scale`) set to at least 1 greater than is
 needed.
 
-### Exponentiation (`bc` Only)
+### Exponentiation (`bc` Math Library Only)
 
 This `bc` uses the series
 
@@ -109,7 +109,7 @@ to reduce `x`. It has a complexity of `O(n^3)`.
 their calculations with the precision (`scale`) set to at least 1 greater than
 is needed.
 
-### Natural Logarithm (`bc` Only)
+### Natural Logarithm (`bc` Math Library Only)
 
 This `bc` uses the series
 
@@ -130,7 +130,7 @@ to sufficiently reduce `x`. It has a complexity of `O(n^3)`.
 their calculations with the precision (`scale`) set to at least 1 greater than
 is needed.
 
-### Arctangent (`bc` Only)
+### Arctangent (`bc` Math Library Only)
 
 This `bc` uses the series
 
@@ -150,7 +150,7 @@ to reduce `x` to small enough. It has a complexity of `O(n^3)`.
 their calculations with the precision (`scale`) set to at least 1 greater than
 is needed.
 
-### Bessel (`bc` Only)
+### Bessel (`bc` Math Library Only)
 
 This `bc` uses the series
 

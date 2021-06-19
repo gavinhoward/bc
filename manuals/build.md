@@ -78,8 +78,6 @@ where `<config>` is either one of `Debug` or `Release`.
 Building `bc`, `dc`, and `bcl` (the library) is more complex than on Windows
 because many build options are supported.
 
-<a name="cross-compiling"/>
-
 ### Cross Compiling
 
 To cross-compile this `bc`, an appropriate compiler must be present and assigned
@@ -107,8 +105,6 @@ details.
 
 If an emulator is necessary to run the bootstrap binaries, it can be set with
 the environment variable `GEN_EMU`.
-
-<a name="build-environment-variables"/>
 
 ### Build Environment Variables
 
@@ -322,8 +318,6 @@ produced by `HOSTCC` (or `HOST_CC`) need to be run under an emulator to work.
 
 Defaults to empty.
 
-<a name="build-options"/>
-
 ### Build Options
 
 This `bc` comes with several build options, all of which are enabled by default.
@@ -395,8 +389,6 @@ Those commands are all equivalent.
 
 ***Warning***: It is an error to use those options if `dc` has also been
 disabled (see above).
-
-<a name="build-history"/>
 
 #### History
 

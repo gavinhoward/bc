@@ -31,7 +31,7 @@ usage() {
 	if [ $# -eq 1 ]; then
 		printf '%s\n' "$1"
 	fi
-	printf "usage: %s NLSPATH main_exec [DESTDIR]\n" "$0" 1>&2
+	printf "usage: %s [-l] NLSPATH main_exec [DESTDIR]\n" "$0" 1>&2
 	exit 1
 }
 
