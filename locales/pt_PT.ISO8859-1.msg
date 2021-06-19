@@ -91,9 +91,10 @@ $set 5
 5 "chamada read() recursiva"
 6 "tipo errado de variável ou elemento de matriz"
 7 "pilha tem poucos elementos"
-8 "número incorreto de parâmetros - esperado: %zu, obtido: %zu"
-9 "função indefinida: %s()"
-10 "um valor 'void' não pode ser usado em uma expressão"
+8 "pilha para registo \"%s\" tem poucos elementos"
+9 "número incorreto de parâmetros - esperado: %zu, obtido: %zu"
+10 "função indefinida: %s()"
+11 "um valor 'void' não pode ser usado em uma expressão"
 
 $ Fatal errors.
 $set 6

@@ -91,9 +91,10 @@ $set 5
 5 "recursive read() call"
 6 "variable or array element is the wrong type"
 7 "stack has too few elements"
-8 "wrong number of parameters; need %zu, have %zu"
-9 "undefined function: %s()"
-10 "cannot use a void value in an expression"
+8 "stack for register \"%s\" has too few elements"
+9 "wrong number of parameters; need %zu, have %zu"
+10 "undefined function: %s()"
+11 "cannot use a void value in an expression"
 
 $ Fatal errors.
 $set 6

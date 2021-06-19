@@ -115,7 +115,7 @@ const uchar bc_err_ids[] = {
 
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
-	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
+	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE,
@@ -156,8 +156,9 @@ const char* const bc_err_msgs[] = {
 	"variable or array element is the wrong type",
 #if DC_ENABLED
 	"stack has too few elements",
+	"stack for register \"%s\" has too few elements",
 #else // DC_ENABLED
-	NULL,
+	NULL, NULL,
 #endif // DC_ENABLED
 #if BC_ENABLED
 	"wrong number of parameters; need %zu, have %zu",

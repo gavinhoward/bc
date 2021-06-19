@@ -91,9 +91,10 @@ $set 5
 5 "recursieve read() call"
 6 "Variabele of matrix-element is het verkeerde type"
 7 "Stapel heeft te weinig elementen"
-8 "Verkeerd aantal parameters; hebben %zu nodig, hebben %zu"
-9 "ongedefinieerde functie: %s()"
-10 "kan geen nietige waarde in een uitdrukking gebruiken"
+8 "Stapel voor register %s heeft te weinig elementen"
+9 "Verkeerd aantal parameters; hebben %zu nodig, hebben %zu"
+10 "ongedefinieerde functie: %s()"
+11 "kan geen nietige waarde in een uitdrukking gebruiken"
 
 $ Fatale fouten.
 $set 6

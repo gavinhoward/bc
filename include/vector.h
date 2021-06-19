@@ -89,6 +89,9 @@ void bc_vec_free(void *vec);
 bool bc_map_insert(BcVec *restrict v, const char *name,
                    size_t idx, size_t *restrict i);
 size_t bc_map_index(const BcVec *restrict v, const char *name);
+#if DC_ENABLED
+char* bc_map_name(const BcVec *restrict v, size_t idx);
+#endif // DC_ENABLED
 
 #define bc_vec_pop(v) (bc_vec_npop((v), 1))
 #define bc_vec_popAll(v) (bc_vec_npop((v), (v)->len))

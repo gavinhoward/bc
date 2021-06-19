@@ -91,9 +91,10 @@ $set 5
 5 "recursion en la invocación de read()"
 6 "variable o elemento del matriz de tipo equivocado"
 7 "la pila no ha demaciado elementos"
-8 "la función no tiene un número de argumentos correcto; necessita %zu, tiene %zu"
-9 "la función no esta definida: %s()"
-10 "no puede utilizar un valor vacío en una expresión"
+8 "la pila del registro \"%s\" no ha demaciado elementos"
+9 "la función no tiene un número de argumentos correcto; necessita %zu, tiene %zu"
+10 "la función no esta definida: %s()"
+11 "no puede utilizar un valor vacío en una expresión"
 
 $ Fatal errors.
 $set 6

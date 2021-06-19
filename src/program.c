@@ -960,7 +960,10 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 		BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
 		BcNum *num = bc_vec_top(v);
 
-		if (BC_ERR(!BC_PROG_STACK(v, 2 - copy))) bc_vm_err(BC_ERR_EXEC_STACK);
+		if (BC_ERR(!BC_PROG_STACK(v, 2 - copy))) {
+			const char *name = bc_map_name(&p->var_map, idx);
+			bc_vm_verr(BC_ERR_EXEC_STACK_REGISTER, name);;
+		}
 
 		assert(BC_PROG_STACK(v, 2 - copy));
 

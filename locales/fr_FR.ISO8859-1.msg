@@ -91,9 +91,10 @@ $set 5
 5 "appel read() récursif"
 6 "mauvais type de variable ou d'élément de tableau"
 7 "pile sous-remplie"
-8 "nombre incorrect de paramètres - attendus : %zu, obtenus : %zu"
-9 "fonction non définie : %s()"
-10 "une valeur 'void' est inutilisable dans une expression"
+8 "pile pour le registre \"%s\" sous-remplie"
+9 "nombre incorrect de paramètres - attendus : %zu, obtenus : %zu"
+10 "fonction non définie : %s()"
+11 "une valeur 'void' est inutilisable dans une expression"
 
 $ Fatal errors.
 $set 6

@@ -91,9 +91,10 @@ $set 5
 5 "powtarzalne wywołanie read()"
 6 "element zmienny lub tablicowy jest niewłaściwym typem"
 7 "stos ma zbyt mało elementów"
-8 "niewłaściwa liczba parametrów; potrzeba %zu, mają %zu"
-9 "niezdefiniowana funkcja: %s()"
-10 "nie może użyć wartości pustej w wyrażeniu"
+8 "stos dla rejestru \"%s\" ma zbyt mało elementów"
+9 "niewłaściwa liczba parametrów; potrzeba %zu, mają %zu"
+10 "niezdefiniowana funkcja: %s()"
+11 "nie może użyć wartości pustej w wyrażeniu"
 
 $ Fatalne błędy.
 $set 6

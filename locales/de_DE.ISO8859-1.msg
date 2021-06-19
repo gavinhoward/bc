@@ -91,9 +91,10 @@ $set 5
 5 "rekursiver read()-Aufruf"
 6 "Variable oder Feld-Element hat den falschen Typ"
 7 "Stapel hat zu wenig Elemente"
-8 "falsche Anzahl der Parameter: benötigt %zu, hat %zu"
-9 "undefinierte Funktion: %s()"
-10 "kann keinen ungültigen Wert in einem Ausdruck verwenden"
+8 "Stapel für Register \"%s\" hat zu wenig Elemente"
+9 "falsche Anzahl der Parameter: benötigt %zu, hat %zu"
+10 "undefinierte Funktion: %s()"
+11 "kann keinen ungültigen Wert in einem Ausdruck verwenden"
 
 $ Fatal errors.
 $set 6

@@ -355,3 +355,17 @@ size_t bc_map_index(const BcVec *restrict v, const char *name) {
 	return strcmp(name, ((BcId*) bc_vec_item(v, i))->name) ?
 	    BC_VEC_INVALID_IDX : i;
 }
+
+#if DC_ENABLED
+char* bc_map_name(const BcVec *restrict v, size_t idx) {
+
+	size_t i, len = v->len;
+
+	for (i = 0; i < len; ++i) {
+		BcId* id = (BcId*) bc_vec_item(v, i);
+		if (id->idx == idx) return id->name;
+	}
+
+	return "";
+}
+#endif // DC_ENABLED
