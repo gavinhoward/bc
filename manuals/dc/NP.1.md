@@ -881,10 +881,11 @@ These commands query status of the stack or its top value.
 
 :   Pushes the current stack depth of the register *r* onto the main stack.
 
-    Because each register has a depth of **1** (with the value **0** in the
-    top item) when dc(1) starts, dc(1) requires that each register's stack must
+    Because each register has a depth of **1** (with the value **0** in the top
+    item) when dc(1) starts, dc(1) requires that each register's stack must
     always have at least one item; dc(1) will give an error and reset otherwise
-    (see the RESET section). This means that this command will never push **0**.
+    (see the **RESET** section). This means that this command will never push
+    **0**.
 
     This is a **non-portable extension**.
 
