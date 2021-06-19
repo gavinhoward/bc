@@ -61,6 +61,8 @@ static void dc_lex_register(BcLex *l) {
 		bc_lex_name(l);
 	}
 	else {
+		if (BC_ERR(l->buf[l->i - 1] == '\n'))
+			bc_lex_verr(l, BC_ERR_PARSE_CHAR, '\n');
 		bc_vec_popAll(&l->str);
 		bc_vec_pushByte(&l->str, (uchar) l->buf[l->i - 1]);
 		bc_vec_pushByte(&l->str, '\0');
