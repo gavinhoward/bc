@@ -168,6 +168,12 @@ static void dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			break;
 		}
 
+		case BC_LEX_REG_STACK_LEVEL:
+		{
+			dc_parse_mem(p, BC_INST_REG_STACK_LEN, true, false);
+			break;
+		}
+
 		case BC_LEX_STORE_IBASE:
 		case BC_LEX_STORE_OBASE:
 		case BC_LEX_STORE_SCALE:

@@ -1350,6 +1350,15 @@ static void bc_program_modexp(BcProgram *p) {
 	bc_program_retire(p, 1, 3);
 }
 
+static void bc_program_regStackLen(BcProgram *p, const char *restrict code,
+                                   size_t *restrict bgn)
+{
+	size_t idx = bc_program_index(code, bgn);
+	BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
+
+	bc_program_pushBigdig(p, (BcBigDig) v->len, BC_RESULT_TEMP);
+}
+
 static void bc_program_stackLen(BcProgram *p) {
 	bc_program_pushBigdig(p, (BcBigDig) p->results.len, BC_RESULT_TEMP);
 }
@@ -2172,6 +2181,12 @@ void bc_program_exec(BcProgram *p) {
 			case BC_INST_CLEAR_STACK:
 			{
 				bc_vec_popAll(&p->results);
+				break;
+			}
+
+			case BC_INST_REG_STACK_LEN:
+			{
+				bc_program_regStackLen(p, code, &ip->idx);
 				break;
 			}
 
