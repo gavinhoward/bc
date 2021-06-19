@@ -1,5 +1,6 @@
 decimal
 length
+stack_len
 add
 subtract
 multiply
