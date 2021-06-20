@@ -154,10 +154,10 @@ void bc_parse_reset(BcParse *p) {
 
 	p->l.i = p->l.len;
 	p->l.t = BC_LEX_EOF;
-	p->auto_part = false;
 
 #if BC_ENABLED
 	if (BC_IS_BC) {
+		p->auto_part = false;
 		bc_vec_npop(&p->flags, p->flags.len - 1);
 		bc_vec_popAll(&p->exits);
 		bc_vec_popAll(&p->conds);
@@ -207,12 +207,12 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 		bc_vec_init(&p->conds, sizeof(size_t), NULL);
 		bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
 		bc_vec_init(&p->buf, sizeof(char), NULL);
+		p->auto_part = false;
 	}
 #endif // BC_ENABLED
 
 	bc_lex_init(&p->l);
 
 	p->prog = prog;
-	p->auto_part = false;
 	bc_parse_updateFunc(p, func);
 }

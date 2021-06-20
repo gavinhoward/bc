@@ -97,7 +97,9 @@ typedef struct BcParse {
 	BcFunc *func;
 	size_t fidx;
 
+#if BC_ENABLED
 	bool auto_part;
+#endif // BC_ENABLED
 
 } BcParse;
 
