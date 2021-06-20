@@ -50,6 +50,7 @@ static void bc_parse_else(BcParse *p);
 static void bc_parse_stmt(BcParse *p);
 static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
                                        BcParseNext next);
+static void bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next);
 
 static bool bc_parse_inst_isLeaf(BcInst t) {
 	return (t >= BC_INST_NUM && t <= BC_INST_MAXSCALE) ||
@@ -1517,7 +1518,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 	return BC_PARSE_STATUS_SUCCESS;
 }
 
-void bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next) {
+static void bc_parse_expr_status(BcParse *p, uint8_t flags, BcParseNext next) {
 
 	BcParseStatus s = bc_parse_expr_err(p, flags, next);
 
