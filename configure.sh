@@ -1058,7 +1058,7 @@ set +e
 printf 'Testing for OpenBSD...\n'
 
 flags="-DBC_TEST_OPENBSD"
-"$CC" $CPPFLAGS $CFLAGS $flags -E "include/version.h" > /dev/null 2>&1
+"$CC" $CPPFLAGS $CFLAGS $flags -I./include -E "include/status.h" > /dev/null 2>&1
 
 err="$?"
 

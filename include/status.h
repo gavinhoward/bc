@@ -38,6 +38,12 @@
 
 #include <stdint.h>
 
+#ifdef BC_TEST_OPENBSD
+#ifdef __OpenBSD__
+#error On OpenBSD without _BSD_SOURCE
+#endif // __OpenBSD__
+#endif // BC_TEST_OPENBSD
+
 #ifndef BC_ENABLED
 #define BC_ENABLED (1)
 #endif // BC_ENABLED
