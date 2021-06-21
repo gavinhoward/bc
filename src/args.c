@@ -48,6 +48,7 @@
 #include <args.h>
 #include <opt.h>
 
+/// The list of long options.
 static const BcOptLong bc_args_lopt[] = {
 
 	{ "expression", BC_OPT_REQUIRED, 'e' },
@@ -72,6 +73,10 @@ static const BcOptLong bc_args_lopt[] = {
 
 };
 
+/**
+ * Adds @a str to the list of expressions to execute later.
+ * @param str  The string to add to the list of expressions.
+ */
 static void bc_args_exprs(const char *str) {
 	BC_SIG_ASSERT_LOCKED;
 	if (vm.exprs.v == NULL) bc_vec_init(&vm.exprs, sizeof(uchar), NULL);
@@ -79,6 +84,11 @@ static void bc_args_exprs(const char *str) {
 	bc_vec_concat(&vm.exprs, "\n");
 }
 
+/**
+ * Adds the contents of @a file to the list of expressions to execute later.
+ * @param file  The name of the file whose contents should be added to the list
+ *              of expressions to execute.
+ */
 static void bc_args_file(const char *file) {
 
 	char *buf;
@@ -222,6 +232,8 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) vm.status);
 
+	// We need to make sure the files list is initialized. We don't want to
+	// initialize it if there are no files because it's just a waste of memory.
 	if (opts.optind < (size_t) argc && vm.files.v == NULL)
 		bc_vec_init(&vm.files, sizeof(char*), NULL);
 

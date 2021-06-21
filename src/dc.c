@@ -40,7 +40,7 @@
 #include <dc.h>
 #include <vm.h>
 
-void dc_main(int argc, char **argv) {
+void dc_main(int argc, char *argv[]) {
 
 	vm.read_ret = BC_INST_POP_EXEC;
 	vm.help = dc_help;

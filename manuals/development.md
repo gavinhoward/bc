@@ -188,16 +188,34 @@ The code style is as follows:
 * Code lines are grouped into what I call "paragraphs." Basically, lines that
   seem like they should go together are grouped together. This one comes down
   to judgment.
+* Bodies of `if` statements, `else` statements, and loops that are one line
+  long are put on the same line as the statement, unless the header is more than
+  one line long, and/or, the body cannot fit into 80 characters.
+* If single-line bodies are on a separate line from their headers, and the
+  headers are only a single line, then no braces are used.
+* However, braces are *always* used if they contain another `if` statement or
+  loop.
+* Loops with empty bodies are ended with a semicolon.
+* Expressions that return a boolean value are surrounded by paretheses.
+* Macro backslashes are aligned as far to the left as possible.
+* Binary operators have spaces on both sides.
+* If a line with binary operators overflows 80 character, a newline is inserted
+  *after* binary operators.
+* Function modifiers and return types are on the same line as the function name.
+* With one exception, `goto`'s are only used to jump to the end of a function
+  for cleanup.
 
 ### ClangFormat
-
-TODO: Attempt once more to make ClangFormat work.
 
 I attempted twice to use [ClangFormat][24] to impose a standard, machine-useful
 style on `bc`. Both failed. Otherwise, the style in this repo would be more
 consistent.
 
 ## Repo Structure
+
+Functions are documented with Doxygen-style doc comments. Functions that appear
+in headers are documented in the headers, while static functions are documented
+where they are defined.
 
 ### `gen/`
 

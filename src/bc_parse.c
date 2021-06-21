@@ -335,7 +335,7 @@ static void bc_parse_builtin(BcParse *p, BcLexType type,
 }
 
 static void bc_parse_scale(BcParse *p, BcInst *type,
-                               bool *can_assign, uint8_t flags)
+                           bool *can_assign, uint8_t flags)
 {
 	bc_lex_next(&p->l);
 

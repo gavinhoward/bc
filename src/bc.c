@@ -40,7 +40,7 @@
 #include <bc.h>
 #include <vm.h>
 
-void bc_main(int argc, char **argv) {
+void bc_main(int argc, char *argv[]) {
 
 	vm.read_ret = BC_INST_RET;
 	vm.help = bc_help;

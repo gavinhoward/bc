@@ -39,8 +39,13 @@
 #include <status.h>
 #include <vm.h>
 
+/**
+ * Processes command-line arguments.
+ * @param argc        How many arguments there are.
+ * @param argv        The array of arguments.
+ * @param exit_exprs  True if bc/dc should exit there are expressions, false
+ *                    otherwise.
+ */
 void bc_args(int argc, char *argv[], bool exit_exprs);
-
-extern const char* const bc_args_env_name;
 
 #endif // BC_ARGS_H

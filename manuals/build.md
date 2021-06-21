@@ -392,8 +392,8 @@ disabled (see above).
 
 #### History
 
-To disable signal handling, pass either the `-H` flag or the `--disable-history`
-option to `configure.sh`, as follows:
+To disable hisory, pass either the `-H` flag or the `--disable-history` option
+to `configure.sh`, as follows:
 
 ```
 ./configure.sh -H
@@ -510,13 +510,13 @@ multiplication to brute force, `O(n^2)` multiplication. It can be set by passing
 the `-k` flag or the `--karatsuba-len` option to `configure.sh` as follows:
 
 ```
-./configure.sh -k64
-./configure.sh --karatsuba-len 64
+./configure.sh -k32
+./configure.sh --karatsuba-len 32
 ```
 
 Both commands are equivalent.
 
-Default is `64`.
+Default is `32`.
 
 ***WARNING***: The Karatsuba Length must be a **integer** greater than or equal
 to `16` (to prevent stack overflow). If it is not, `configure.sh` will give an
