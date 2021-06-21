@@ -99,18 +99,17 @@ struct BcProgram;
 
 /**
  * A function pointer to call when more parsing is needed.
- * @param BcParse*  The parser.
+ * @param p  The parser.
  */
-typedef void (*BcParseParse)(struct BcParse*);
+typedef void (*BcParseParse)(struct BcParse* p);
 
 /**
  * A function pointer to call when an expression needs to be parsed. This can
  * happen for read() expressions or dc strings.
- * @param BcParse*  The parser.
- * @param uint8_t   The flags for what is allowed or required. (See flags
- *                  above.)
+ * @param p      The parser.
+ * @param flags  The flags for what is allowed or required. (See flags above.)
  */
-typedef void (*BcParseExpr)(struct BcParse*, uint8_t);
+typedef void (*BcParseExpr)(struct BcParse* p, uint8_t flags);
 
 /// The parser struct.
 typedef struct BcParse {

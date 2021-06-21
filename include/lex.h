@@ -403,9 +403,9 @@ struct BcLex;
 /**
  * A function pointer to call when another token is needed. Mostly called by the
  * parser.
- * @param BcLex*  The lexer.
+ * @param l  The lexer.
  */
-typedef void (*BcLexNext)(struct BcLex*);
+typedef void (*BcLexNext)(struct BcLex* l);
 
 /// The lexer.
 typedef struct BcLex {
