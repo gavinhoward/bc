@@ -356,9 +356,6 @@ gen_tests() {
 	_gen_tests_name="$1"
 	shift
 
-	_gen_tests_uname="$1"
-	shift
-
 	_gen_tests_extra_math="$1"
 	shift
 
@@ -723,8 +720,8 @@ executable="BC_EXEC"
 
 tests="test_bc timeconst test_dc"
 
-bc_test="@tests/all.sh bc $extra_math 1 $generate_tests 0 \$(BC_EXEC)"
-dc_test="@tests/all.sh dc $extra_math 1 $generate_tests 0 \$(DC_EXEC)"
+bc_test="@tests/all.sh bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
+dc_test="@tests/all.sh dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
 
 timeconst="@tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
@@ -945,7 +942,7 @@ if [ "$nls" -ne 0 ]; then
 	printf 'Testing NLS...\n'
 
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
-	flags="$flags -DBC_ENABLE_HISTORY=$hist"
+	flags="$flags -DBC_ENABLE_HISTORY=$hist -DBC_ENABLE_LIBRARY=0"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
@@ -1321,12 +1318,12 @@ contents=$(replace "$contents" "BSD" "$bsd")
 printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"
 
 if [ "$bc" -ne 0 ]; then
-	gen_tests bc BC "$extra_math" "$time_tests" $bc_test_exec
+	gen_tests bc "$extra_math" "$time_tests" $bc_test_exec
 	gen_script_tests bc "$extra_math" "$generate_tests" "$time_tests" $bc_test_exec
 fi
 
 if [ "$dc" -ne 0 ]; then
-	gen_tests dc DC "$extra_math" "$time_tests" $dc_test_exec
+	gen_tests dc "$extra_math" "$time_tests" $dc_test_exec
 	gen_script_tests dc "$extra_math" "$generate_tests" "$time_tests" $dc_test_exec
 fi
 

@@ -155,7 +155,7 @@ LOCALE_UNINSTALL = $(SCRIPTS)/locale_uninstall.sh
 
 VALGRIND_ARGS = --error-exitcode=100 --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
 
-TEST_STARS = "***********************************************************************"
+TEST_STARS = ***********************************************************************
 
 BC_NUM_KARATSUBA_LEN = %%KARATSUBA_LEN%%
 
