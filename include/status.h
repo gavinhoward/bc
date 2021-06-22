@@ -54,7 +54,7 @@
 
 #if BC_ENABLE_AFL
 #ifndef __AFL_HAVE_MANUAL_CONTROL
-#error Must compile with afl-clang-fast for fuzzing
+#error Must compile with afl-clang-fast or afl-clang-lto for fuzzing
 #endif // __AFL_HAVE_MANUAL_CONTROL
 #endif // BC_ENABLE_AFL
 

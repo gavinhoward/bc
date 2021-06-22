@@ -1,10 +1,10 @@
 # Development
 
-This document is supposed to contain all of the knowledge necessary to develop
-`bc` and `dc`.
-
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
+
+This document is supposed to contain all of the knowledge necessary to develop
+`bc` and `dc`.
 
 This document will reference other parts of the repository. That is so a lot of
 the documentation can be closest to the part of the repo where it is actually
@@ -16,7 +16,8 @@ This repository contains an implementation of both [POSIX `bc`][2] and [Unix
 `dc`][3].
 
 POSIX `bc` is a standard utility required for POSIX systems. `dc` is a
-historical utility that was included in early Unix. They both are
+historical utility that was included in early Unix and even predates both Unix
+and C. They both are
 arbitrary-precision command-line calculators with their own programming
 languages. `bc`'s language looks similar to C, with infix notation and includes
 functions, while `dc` uses [Reverse Polish Notation][4] and allows the user to
@@ -161,6 +162,29 @@ deferring to the above values.
 Keep these values in mind for the rest of this document, and for exploring any
 other part of this repo.
 
+But before I go on, I want to talk about portability in particular.
+
+Most of these principles just require good attention and care, but portability
+is different. Sometimes, it requires pulling in code from other places and
+adapting it. In other words, sometimes I need to duplicate and adapt code.
+
+This happened in a few cases:
+
+* Option parsing (see [`include/opt.h`][35]).
+* History (see [`include/history.h`][36]).
+* Pseudo-Random Number Generator (see [`include/rand.h`][37]).
+
+This was done because I decided to ensure that `bc`'s dependencies were
+basically zero. In particular, either users have a normal install of Windows or
+they have a POSIX system.
+
+A POSIX system limited me to C99, `sh`, and zero external dependencies. That
+last item is why I pull code into `bc`: if I pull it in, it's not an external
+dependency.
+
+That's why `bc` has duplicated code. Remove it, and you risk `bc` not being
+portable to some platforms.
+
 ## Code Style
 
 TODO
@@ -216,6 +240,127 @@ consistent.
 Functions are documented with Doxygen-style doc comments. Functions that appear
 in headers are documented in the headers, while static functions are documented
 where they are defined.
+
+### `bcl.sln`
+
+A Visual Studio solution file for `bcl`. This, along with [`bcl.vcxproj`][63]
+and [`bcl.vcxproj.filters`][64] is what makes it possible to build `bcl` on
+Windows.
+
+### `bcl.vcxproj`
+
+A Visual Studio project file for `bcl`. This, along with [`bcl.sln`][65] and
+[`bcl.vcxproj.filters`][64] is what makes it possible to build `bcl` on Windows.
+
+### `bcl.vcxproj.filters`
+
+A Visual Studio filters file for `bcl`. This, along with [`bcl.sln`][65] and
+[`bcl.vcxproj`][63] is what makes it possible to build `bcl` on Windows.
+
+### `bc.sln`
+
+A Visual Studio solution file for `bc`. This, along with [`bc.vcxproj`][66]
+and [`bc.vcxproj.filters`][67] is what makes it possible to build `bc` on
+Windows.
+
+### `bc.vcxproj`
+
+A Visual Studio project file for `bcl`. This, along with [`bc.sln`][68] and
+[`bc.vcxproj.filters`][67] is what makes it possible to build `bc` on Windows.
+
+### `bc.vcxproj.filters`
+
+A Visual Studio filters file for `bc`. This, along with [`bc.sln`][68] and
+[`bc.vcxproj`][66] is what makes it possible to build `bc` on Windows.
+
+### `configure`
+
+A symlink to [`configure.sh`][69].
+
+### `configure.sh`
+
+This is the script to configure `bc` and `bcl` for building.
+
+This `bc` has a custom build system. The reason for this is because of
+*portability*.
+
+If `bc` used an outside build system, that build system would be an external
+dependency. Thus, I had to write a build system for `bc` that used nothing but
+C99 and POSIX utilities.
+
+One of those utilities is POSIX `sh`, which technically implements a
+Turing-complete programming language. It's a terrible one, but it works.
+
+A user that wants to build `bc` on a POSIX system (not Windows) first runs
+`configure.sh` with the options he wants. `configure.sh` uses those options and
+the `Makefile` template ([`Makefile.in`][70]) to generate an actual valid
+`Makefile`. Then `make` can do the rest.
+
+For more information about the build process, see the [build manual][14].
+
+For more information about shell scripts, see [POSIX Shell Scripts][76].
+
+`configure.sh` does the following:
+
+1.	It processes command-line arguments and figure out what the user wants to
+	build.
+2.	It reads in [`Makefile.in`][70].
+3.	One-by-one, it replaces placeholders (in [`Makefile.in`][70]) of the form
+	`%%<placeholder_name>%%` based on the build type.
+4.	It appends a list of file targets based on the build type.
+5.	It appends the correct test targets.
+6.	It copies the correct manpage and markdown manual for `bc` and `dc` into a
+	location from which they can be copied for install.
+7.	It does a `make clean` to reset the build state.
+
+### `.gitattributes`
+
+A `.gitattributes` file. This is needed to preserve the `crlf` line endings in
+the Visual Studio files.
+
+### `.gitignore`
+
+The `.gitignore`
+
+### `LICENSE.md`
+
+This is the `LICENSE` file, including the licenses of various software that I
+have borrowed.
+
+### `Makefile.in`
+
+This is the `Makefile` template for [`configure.sh`][69] to use for generating a
+`Makefile`.
+
+For more information, see [`configure.sh`][69] and the [build manual][14].
+
+Because of portability, the generated `Makefile.in` should be a pure [POSIX
+`make`][74]-compatible `Makefile` (minus the placeholders). Here are a few
+snares for the unwary programmer in this file:
+
+1.	No extensions allowed, including and especially GNU extensions.
+2.	If new headers are added, they must also be added to `Makefile.in`.
+3.	Don't delete the `.POSIX:` empty target at the top; that's what tells `make`
+	implementations that pure [POSIX `make`][74] is needed.
+
+In particular, there is no way to set up variables other than the `=` operator.
+There are no conditionals, so all of the conditional stuff must be in
+[`configure.sh`][69]. This is, in fact, why [`configure.sh`][69] exists in the
+first place: [POSIX `make`][74] is barebones and only does a build with no
+configuration.
+
+### `NEWS.md`
+
+A running changelog with an entry for each version. This should be updated at
+the same time that [`include/version.h`][75] is.
+
+### `NOTICE.md`
+
+The `NOTICE` file with proper attributions.
+
+### `README.md`
+
+The `README`. Read it.
 
 ### `gen/`
 
@@ -340,11 +485,287 @@ the exact same things, so see the comments in [`strgen.c`][15] for more detail
 about that, and see the comments in `strgen.sh` for more details about it and
 how it works.
 
-## TODO
+For more information about shell scripts, see [POSIX Shell Scripts][76].
+
+### `include/`
+
+A folder containing the headers.
+
+The headers are not included among the source code because I like it better that
+way. Also there were folders within `src/` at one point, and I did not want to
+see `#include "../some_header.h"` or things like that.
+
+So all headers are here, even though only one (`bcl.h`) is meant for end users
+(to be installed in `INCLUDEDIR`).
+
+#### `args.h`
+
+This file is the API for processing command-line arguments.
+
+#### `bc.h`
+
+This header is the API for `bc`-only items. This includes the `bc_main()`
+function and the `bc`-specific lexing and parsing items.
+
+The `bc` parser is perhaps the most sensitive part of the entire codebase. See
+the documentation in `bc.h` for more information.
+
+The code associated with this header is in [`src/bc.c`][40],
+[`src/bc_lex.c`][41], and [`src/bc_parse.c`][42].
+
+#### `bcl.h`
+
+This header is the API for the `bcl` library.
+
+This header is meant for distribution to end users and contains the API that end
+users of `bcl` can use in their own software.
+
+The code associated with this header is in [`src/library.c`][43].
+
+#### `dc.h`
+
+This header is the API for `dc`-only items. This includes the `dc_main()`
+function and the `dc`-specific lexing and parsing items.
+
+The code associated with this header is in [`src/dc.c`][44],
+[`src/dc_lex.c`][45], and [`src/dc_parse.c`][46].
+
+#### `file.h`
+
+This header is for `bc`'s internal buffered I/O API.
+
+Why did I implement my own buffered I/O for `bc`? Because I use `setjmp()` and
+`longjmp()` for error handling, and the buffered I/O in `libc` does not interact
+well with the use of those procedures.
+
+For more information about `bc`'s error handling and custom buffered I/O, see
+[`vm.h`][27] and the notes about version [`3.0.0`][32] in the [`NEWS`][32].
+
+The code associated with this header is in [`src/file.c`][47].
+
+#### `history.h`
+
+This header is for `bc`'s implementation of command-line editing/history, which
+is based on a [UTF-8-aware fork][28] of [`linenoise`][29].
+
+The code associated with this header is in [`src/history.c`][48].
+
+#### `lang.h`
+
+This header defines the data structures and bytecode used for actual execution
+of `bc` and `dc` code.
+
+Yes, it's misnamed; that's an accident of history where the first things I put
+into it all seemed related to the `bc` language.
+
+The code associated with this header is in [`src/lang.c`][49].
+
+#### `lex.h`
+
+This header defines the common items that both programs need for lexing.
+
+The code associated with this header is in [`src/lex.c`][50],
+[`src/bc_lex.c`][41], and [`src/dc_lex.c`][45].
+
+#### `library.h`
+
+This header defines the things needed for `bcl` that users should *not* have
+access to. In other words, [`bcl.h`][30] is the *public* header for the library,
+and this header is the *private* header for the library.
+
+The code associated with this header is in [`src/library.c`][43].
+
+#### `num.h`
+
+This header is the API for numbers and math.
+
+The code associated with this header is in [`src/num.c`][39].
+
+#### `opt.h`
+
+This header is the API for parsing command-line arguments.
+
+It's different from [`args.h`][31] in that [`args.h`][31] is for the main code
+to process the command-line arguments into global data *after* they have already
+been parsed by `opt.h` into proper tokens. In other words, `opt.h` actually
+parses the command-line arguments, and [`args.h`][31] turns that parsed data
+into flags (bits), strings, and expressions that will be used later.
+
+Why are they separate? Because originally, `bc` used `getopt_long()` for
+parsing, so [`args.h`][31] was the only one that existed. After it was
+discovered that `getopt_long()` has different behavior on different platforms, I
+adapted a [public-domain option parsing library][34] to do the job instead. And
+in doing so, I gave it its own header.
+
+They could probably be combined, but I don't really care enough at this point.
+
+The code associated with this header is in [`src/opt.c`][51].
+
+#### `parse.h`
+
+This header defines the common items that both programs need for parsing.
+
+Note that the parsers don't produce abstract syntax trees (AST's) or any
+intermediate representations. They produce bytecode directly. In other words,
+they don't have special data structures except what they need to do their job.
+
+The code associated with this header is in [`src/parse.c`][50],
+[`src/bc_lex.c`][42], and [`src/dc_lex.c`][46].
+
+#### `program.h`
+
+This header defines the items needed to manage the data structures in
+[`lang.h`][38] as well as any helper functions needed to generate bytecode or
+execute it.
+
+The code associated with this header is in [`src/program.c`][53].
+
+#### `rand.h`
+
+This header defines the API for the pseudo-random number generator (PRNG).
+
+The PRNG only generates fixed-size integers. The magic of generating random
+numbers of arbitrary size is actually given to the code that does math
+([`src/num.c`][39]).
+
+The code associated with this header is in [`src/rand.c`][54].
+
+#### `read.h`
+
+This header defines the API for reading from files and `stdin`.
+
+Thus, [`file.h`][55] is really for buffered *output*, while this file is for
+*input*. There is no buffering needed for `bc`'s inputs.
+
+The code associated with this header is in [`src/read.c`][56].
+
+#### `status.h`
+
+This header has a few things:
+
+* Compiler-specific fixes.
+* Platform-specific fixes.
+* A list of possible errors that internal `bc` code can use.
+
+There is no code associated with this header.
+
+#### `vector.h`
+
+This header defines the API for the vectors (resizable arrays) that are used for
+data structures.
+
+Vectors are what do the heavy lifting in almost all of `bc`'s data structures.
+Even the maps of identifiers and arrays use vectors.
+
+#### `version.h`
+
+This header defines the version of `bc`.
+
+There is no code associated with this header.
+
+#### `vm.h`
+
+This header defines the code for setting up and running `bc` and `dc`. It is so
+named because I think of it as the "virtual machine" of `bc`, though that is
+probably not true as [`program.h`][57] is probably the "virtual machine". Thus,
+the name is more historical accident.
+
+The code associated with this header is in [`src/vm.c`][58].
+
+### `locales/`
+
+This folder contains a bunch of `.msg` files and soft links to the real `.msg`
+files. This is how locale support is implemented in `bc`.
+
+The files are in the format required by the [`gencat`][59] POSIX utility. They
+all have the same messages, in the same order, with the same numbering, under
+the same groups. This is because the locale system expects those messages in
+that order.
+
+The softlinks exist because for many locales, they would contain the exact same
+information. To prevent duplication, they are simply linked to a master copy.
+
+The naming format for all files is:
+
+```
+<language_code>_<country_code>.<encoding>.msg
+```
+
+This naming format must be followed for all locale files.
+
+### `manuals/`
+
+This folder contains the documentation for `bc`, `dc`, and `bcl`, along with a
+few other manuals.
+
+#### `algorithms.md`
+
+This file explains the mathematical algorithms that are used.
+
+The hope is that this file will guide people in understanding how the math code
+works.
+
+#### `bc.1.md.in`
+
+This file is a template for the markdown version of the `bc` manual and
+manpages.
+
+For more information about how the manpages and markdown manuals are generated,
+see [`scripts/manpage.sh`][60].
+
+#### `bcl.3`
+
+This is the manpage for the `bcl` library. It is generated from
+[`bcl.3.md`][61] using [`scripts/manpage.sh`][60].
+
+For the reason why I check generated data into the repo, see
+[`scripts/manpage.sh`][60].
+
+#### `bcl.3.md`
+
+This is the markdown manual for the `bcl` library. It is the source for the
+generated [`bcl.3`][62] file.
+
+#### `benchmarks.md`
+
+This is a document that compares this `bc` to GNU `bc` in various benchmarks. It
+was last updated when version `3.0.0` was released.
+
+It has very little documentation value, other than showing what compiler options
+are useful for performance.
+
+#### `build.md`
+
+This is the [build manual][14].
+
+This `bc` has a custom build system. The reason for this is because of
+*portability*.
+
+If `bc` used an outside build system, that build system would be an external
+dependency. Thus, I had to write a build system for `bc` that used nothing but
+C99 and POSIX utilities, including barebones [POSIX `make`][74].
+
+For more information about the build system, see the [build manual][14],
+[`configure.sh`][69], and [`Makefile.in`][70].
+
+#### `dc.1.md.in`
+
+This file is a template for the markdown version of the `dc` manual and
+manpages.
+
+For more information about how the manpages and markdown manuals are generated,
+see [`scripts/manpage.sh`][60].
+
+#### `development.md`
+
+The file you are reading right now.
+
+TODO:
 
 * Document all code assumptions with asserts.
 * Document all functions with Doxygen comments.
 * Compilers and their quirks, as well as warning settings on Clang.
+	* My various `bc` aliases.
 * My vim-bc repo.
 * The purpose of every file.
 * How locale works.
@@ -359,13 +780,94 @@ how it works.
 	* Use `AFL_HARDEN` during build for hardening.
 	* Use `CC=afl-clang-lto` and `CFLAGS="-flto"`.
 
+#### `header_bcl.txt`
+
+Used by [`scripts/manpage.sh`][60] to give the [`bcl.3`][62] manpage a proper
+header.
+
+For more information, see [`scripts/manpage.sh`][60].
+
+#### `header_bc.txt`
+
+Used by [`scripts/manpage.sh`][60] to give the [generated `bc` manpages][79] a
+proper header.
+
+For more information, see [`scripts/manpage.sh`][60].
+
+#### `header_dc.txt`
+
+Used by [`scripts/manpage.sh`][60] to give the [generated `dc` manpages][80] a
+proper header.
+
+For more information, see [`scripts/manpage.sh`][60].
+
+#### `header.txt`
+
+Used by [`scripts/manpage.sh`][60] to give all generated manpages a license
+header.
+
+For more information, see [`scripts/manpage.sh`][60].
+
+#### `release.md`
+
+A checklist that I try to somewhat follow when making a release.
+
+### `scripts/`
+
+This folder contains helper scripts. Most of them are written in pure [POSIX
+`sh`][72], but one ([`karatsuba.py`][78]) is written in Python 3.
+
+For more information about the shell scripts, see [POSIX Shell Scripts][76].
+
+### `src/`
+
+### `tests/`
+
+## POSIX Shell Scripts
+
+There is a lot of shell scripts in this repository, and every single one of them
+is written in pure [POSIX `sh`][72].
+
+The reason that they are written in [POSIX `sh`][72] is for *portability*: POSIX
+systems are only guaranteed to have a barebones implementation of `sh`
+available.
+
+There are *many* snares for unwary programmers attempting to modify
+[`configure.sh`][69], any of the scripts in this directory, [`strgen.sh`][9], or
+any of the scripts in [`tests/`][77]. Here are some of them:
+
+1.	No `bash`-isms.
+2.	Only POSIX standard utilities are allowed.
+3.	Only command-line options defined in the POSIX standard for POSIX utilities
+	are allowed.
+4.	Only the standardized behavior of POSIX utilities is allowed.
+5.	Functions return data by *printing* it. Using `return` sets their exit code.
+
+In other words, the script must only use what is standardized in the [`sh`][72]
+and [Shell Command Language][73] standards in POSIX. This is *hard*. It precludes
+things like `local` and the `[[ ]]` notation.
+
+These are *enormous* restrictions and must be tested properly. I put out at
+least one release with a change to `configure.sh` that wasn't portable. That was
+an embarrassing mistake.
+
+The lack of `local`, by the way, is why variables in functions are named with
+the form:
+
+```
+_<function_name>_<var_name>
+```
+
+This is done to prevent any clashes of variable names with already existing
+names. And this applies to *all* shell scripts.
+
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
 [3]: https://en.wikipedia.org/wiki/Dc_(Unix)
 [4]: https://en.wikipedia.org/wiki/Reverse_Polish_notation
-[5]: ../manuals/A.1.md#standard-library
+[5]: ./bc/A.1.md#standard-library
 [6]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
-[7]: ../manuals/A.1.md#extended-library
+[7]: ./bc/A.1.md#extended-library
 [8]: #libbc
 [9]: #strgensh
 [10]: https://vimeo.com/230142234
@@ -385,3 +887,57 @@ how it works.
 [24]: https://clang.llvm.org/docs/ClangFormat.html
 [25]: ./algorithms.md
 [26]: #lib2bc
+[27]: #vmh
+[28]: https://github.com/rain-1/linenoise-mob
+[29]: https://github.com/antirez/linenoise
+[30]: #bclh
+[31]: #argsh
+[32]: ../NEWS.md#3-0-0
+[33]: ../NEWS.md
+[34]: https://github.com/skeeto/optparse
+[35]: #opth
+[36]: #historyh
+[37]: #randh
+[38]: #langh
+[39]: #numc
+[40]: #bcc
+[41]: #bc_lexc
+[42]: #bc_parsec
+[43]: #libraryc
+[44]: #dcc
+[45]: #dc_lexc
+[46]: #dc_parsec
+[47]: #filec
+[48]: #historyc
+[49]: #langc
+[50]: #lexc
+[51]: #optc
+[52]: #parsec
+[53]: #programc
+[54]: #randc
+[55]: #fileh
+[56]: #readc
+[57]: #programh
+[58]: #vmc
+[59]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/gencat.html#top
+[60]: #manpagesh
+[61]: #bcl3md
+[62]: #bcl3
+[63]: #bclvcxproj
+[64]: #bclvcxprojfilters
+[65]: #bclsln
+[66]: #bcvcxproj
+[67]: #bcvcxprojfilters
+[68]: #bcsln
+[69]: #configuresh
+[70]: #makefilein
+[71]: #functionsh
+[72]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/sh.html#top
+[73]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18
+[74]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/make.html#top
+[75]: #versionh
+[76]: ##posix-shell-scripts
+[77]: #tests
+[78]: #karatsubapy
+[79]: #bc
+[80]: #dc

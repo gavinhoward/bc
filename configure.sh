@@ -35,6 +35,8 @@ script=$(basename "$script")
 
 cd "$scriptdir"
 
+# Simply prints the help message and quits based on the argument.
+# @param val  The value to pass to exit. Must be an integer.
 usage() {
 
 	if [ $# -gt 0 ]; then
@@ -243,6 +245,13 @@ usage() {
 	exit "$_usage_val"
 }
 
+# Replaces a file extension in a filename. This is used mostly to turn filenames
+# like `src/num.c` into `src/num.o`. In other words, it helps to link targets to
+# the files they depend on.
+#
+# @param file  The filename.
+# @param ext1  The extension to replace.
+# @param ext2  The new extension.
 replace_ext() {
 
 	if [ "$#" -ne 3 ]; then
@@ -258,6 +267,13 @@ replace_ext() {
 	printf '%s\n' "$_replace_ext_result"
 }
 
+# Replaces a file extension in every filename given in a list. The list is just
+# a space-separated list of words, so filenames are expected to *not* have
+# spaces in them. See the documentation for `replace_ext()`.
+#
+# @param files  The list of space-separated filenames to replace extensions for.
+# @param ext1   The extension to replace.
+# @param ext2   The new extension.
 replace_exts() {
 
 	if [ "$#" -ne 3 ]; then
@@ -276,6 +292,14 @@ replace_exts() {
 	printf '%s\n' "$_replace_exts_result"
 }
 
+# Finds a placeholder in @a str and replaces it. This is the workhorse of
+# configure.sh. It's what replaces placeholders in Makefile.in with the data
+# needed for the chosen build. Below, you will see a lot of calls to this
+# function.
+#
+# @param str          The string to find and replace placeholders in.
+# @param needle       The placeholder name.
+# @param replacement  The string to use to replace the placeholder.
 replace() {
 
 	if [ "$#" -ne 3 ]; then
@@ -289,6 +313,9 @@ replace() {
 	substring_replace "$_replace_str" "%%$_replace_needle%%" "$_replace_replacement"
 }
 
+# This function finds all the source files that need to be built. If there is
+# only one argument and it is empty, then all source files are built. Otherwise,
+# the arguments are all assumed to be source files that should *not* be built.
 find_src_files() {
 
 	if [ "$#" -ge 1 ] && [ "$1" != "" ]; then
@@ -306,6 +333,11 @@ find_src_files() {
 	printf '%s\n' $(find src/ -depth -name "*.c" $_find_src_files_args)
 }
 
+# This function generates a list of files to go into the Makefile. It generates
+# the list of object files, as well as the list of test coverage files.
+#
+# @param contents  The contents of the Makefile template to put the list of
+#                  files into.
 gen_file_list() {
 
 	if [ "$#" -lt 1 ]; then
@@ -351,6 +383,13 @@ gen_file_list() {
 	printf '%s\n' "$_gen_file_list_contents"
 }
 
+# Generates the proper test targets for each test to have its own target. This
+# allows `make test` to run in parallel.
+#
+# @param name        Which calculator to generate tests for.
+# @param extra_math  An integer that, if non-zero, activates extra math tests.
+# @param time_tests  An integer that, if non-zero, tells the test suite to time
+#                    the execution of each test.
 gen_tests() {
 
 	_gen_tests_name="$1"
@@ -385,6 +424,10 @@ gen_tests() {
 	done
 }
 
+# Generates a list of test targets that will be used as prerequisites for other
+# targets.
+#
+# @param name  The name of the calculator to generate test targets for.
 gen_test_targets() {
 
 	_gen_test_targets_name="$1"
@@ -399,6 +442,14 @@ gen_test_targets() {
 	printf '\n'
 }
 
+# Generates the proper script test targets for each script test to have its own
+# target. This allows `make test` to run in parallel.
+#
+# @param name        Which calculator to generate tests for.
+# @param extra_math  An integer that, if non-zero, activates extra math tests.
+# @param generate    An integer that, if non-zero, activates generated tests.
+# @param time_tests  An integer that, if non-zero, tells the test suite to time
+#                    the execution of each test.
 gen_script_tests() {
 
 	_gen_script_tests_name="$1"
@@ -426,6 +477,10 @@ gen_script_tests() {
 	done
 }
 
+# Generates a list of script test targets that will be used as prerequisites for
+# other targets.
+#
+# @param name  The name of the calculator to generate script test targets for.
 gen_script_test_targets() {
 
 	_gen_script_test_targets_name="$1"
@@ -443,6 +498,12 @@ gen_script_test_targets() {
 	printf '\n'
 }
 
+# This is a list of defaults, but it is also the list of possible options for
+# users to change.
+#
+# The development options are: force (force options even if they fail), valgrind
+# (build in a way suitable for valgrind testing), memcheck (same as valgrind),
+# and fuzzing (build in a way suitable for fuzzing).
 bc_only=0
 dc_only=0
 coverage=0
@@ -465,6 +526,9 @@ vg=0
 memcheck=0
 clean=1
 
+# getopts is a POSIX utility, but it cannot handle long options. Thus, the
+# handling of long options is done by hand, and that's the reason that short and
+# long options cannot be mixed.
 while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 
 	case "$opt" in
@@ -627,22 +691,28 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 
 done
 
+# Sometimes, developers don't want configure.sh to do a config clean. But
+# sometimes they do.
 if [ "$clean" -ne 0 ]; then
 	if [ -f ./Makefile ]; then
 		make clean_config > /dev/null
 	fi
 fi
 
+# It is an error to say that bc only should be built and likewise for dc.
 if [ "$bc_only" -eq 1 ] && [ "$dc_only" -eq 1 ]; then
 	usage "Can only specify one of -b(-D) or -d(-B)"
 fi
 
+# The library is mutually exclusive to the calculators, so it's an error to
+# give an option for either of them.
 if [ "$library" -ne 0 ]; then
 	if [ "$bc_only" -eq 1 ] || [ "$dc_only" -eq 1 ]; then
 		usage "Must not specify -b(-D) or -d(-B) when building the library"
 	fi
 fi
 
+# KARATSUBA_LEN must be an integer and must be 16 or greater.
 case $karatsuba_len in
 	(*[!0-9]*|'') usage "KARATSUBA_LEN is not a number" ;;
 	(*) ;;
@@ -665,6 +735,11 @@ fi
 if [ -z "$CC" ]; then
 	CC="c99"
 else
+
+	# I had users complain that, if they gave CFLAGS as part of CC, which
+	# autotools allows in its braindead way, the build would fail with an error.
+	# I don't like adjusting for autotools, but oh well. These lines puts the
+	# stuff after the first space into CFLAGS.
 	ccbase=$(basename "$CC")
 	suffix=" *"
 	prefix="* "
@@ -690,6 +765,8 @@ elif [ -z "$HOSTCC" ]; then
 fi
 
 if [ "$HOSTCC" != "$CC" ]; then
+
+	# Like above, this splits HOSTCC and HOSTCFLAGS.
 	ccbase=$(basename "$HOSTCC")
 	suffix=" *"
 	prefix="* "
@@ -751,6 +828,8 @@ second_target_prereqs=""
 second_target_cmd="$default_target_cmd"
 second_target="\$(BC_EXEC)"
 
+# This if/else if chain is for setting the defaults that change based on whether
+# the library is being built, bc only, dc only, or both calculators.
 if [ "$library" -ne 0 ]; then
 
 	extra_math=1
@@ -838,6 +917,7 @@ else
 
 fi
 
+# We need specific stuff for fuzzing.
 if [ "$fuzz" -ne 0 ]; then
 	debug=1
 	hist=0
@@ -846,6 +926,7 @@ if [ "$fuzz" -ne 0 ]; then
 	optimization="3"
 fi
 
+# This sets some necessary things for debug mode.
 if [ "$debug" -eq 1 ]; then
 
 	if [ -z "$CFLAGS" ] && [ -z "$optimization" ]; then
@@ -855,16 +936,20 @@ if [ "$debug" -eq 1 ]; then
 	CFLAGS="-g $CFLAGS"
 
 else
+
 	CPPFLAGS="-DNDEBUG $CPPFLAGS"
+
 	if [ "$strip_bin" -ne 0 ]; then
 		LDFLAGS="-s $LDFLAGS"
 	fi
 fi
 
+# Set optimization CFLAGS.
 if [ -n "$optimization" ]; then
 	CFLAGS="-O$optimization $CFLAGS"
 fi
 
+# Set test coverage defaults.
 if [ "$coverage" -eq 1 ]; then
 
 	if [ "$bc_only" -eq 1 ] || [ "$dc_only" -eq 1 ]; then
@@ -884,6 +969,8 @@ else
 	COVERAGE_PREREQS=""
 fi
 
+
+# Set some defaults.
 if [ -z "${DESTDIR+set}" ]; then
 	destdir=""
 else
@@ -906,12 +993,16 @@ if [ -z "${LIBDIR+set}" ]; then
 	LIBDIR="$PREFIX/lib"
 fi
 
+# Set a default for the DATAROOTDIR. This is done if either manpages will be
+# installed, or locales are enabled because that's probably where NLS_PATH
+# points.
 if [ "$install_manpages" -ne 0 ] || [ "$nls" -ne 0 ]; then
 	if [ -z "${DATAROOTDIR+set}" ]; then
 		DATAROOTDIR="$PREFIX/share"
 	fi
 fi
 
+# Set defaults for manpage environment variables.
 if [ "$install_manpages" -ne 0 ]; then
 
 	if [ -z "${DATADIR+set}" ]; then
@@ -935,6 +1026,9 @@ else
 	uninstall_man_prereqs=""
 fi
 
+# Here is where we test NLS (the locale system). This is done by trying to
+# compile src/vm.c, which has the relevant code. If it fails, then it is
+# disabled.
 if [ "$nls" -ne 0 ]; then
 
 	set +e
@@ -1015,6 +1109,7 @@ else
 	install_locales="\$(LOCALE_INSTALL) \$(NLSPATH) \$(MAIN_EXEC) \$(DESTDIR)"
 fi
 
+# Like the above tested locale support, this tests history.
 if [ "$hist" -eq 1 ]; then
 
 	set +e
@@ -1050,7 +1145,14 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
-# Test OpenBSD
+# Test OpenBSD. This is not in an if statement because regardless of whatever
+# the user says, we need to know if we are on OpenBSD to activate _BSD_SOURCE.
+# No, I cannot `#define _BSD_SOURCE` in a header because OpenBSD's patched GCC
+# and Clang complain that that is only allowed for system headers. Sigh....So we
+# have to check at configure time and set it on the compiler command-line. And
+# we have to set it because we also set _POSIX_C_SOURCE, which OpenBSD headers
+# detect, and when they detect it, they turn off _BSD_SOURCE unless it is
+# specifically requested.
 set +e
 printf 'Testing for OpenBSD...\n'
 
@@ -1077,6 +1179,8 @@ else
 	BC_LIB2_O=""
 fi
 
+# These lines set the appropriate targets based on whether `gen/strgen.c` or
+# `gen/strgen.sh` is used.
 GEN="strgen"
 GEN_EXEC_TARGET="\$(HOSTCC) \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
 CLEAN_PREREQS=" clean_gen"
@@ -1095,6 +1199,7 @@ manpage_args=""
 unneeded=""
 headers="\$(HEADERS)"
 
+# This series of if statements figure out what source files are *not* needed.
 if [ "$extra_math" -eq 0 ]; then
 	manpage_args="E"
 	unneeded="$unneeded rand.c"
@@ -1139,6 +1244,12 @@ else
 	unneeded="$unneeded library.c"
 fi
 
+# library.c is not needed under normal circumstances.
+if [ "$unneeded" = "" ]; then
+	unneeded="library.c"
+fi
+
+# This sets the appropriate manpage for a full build.
 if [ "$manpage_args" = "" ]; then
 	manpage_args="A"
 fi
@@ -1147,6 +1258,7 @@ if [ "$vg" -ne 0 ]; then
 	memcheck=1
 fi
 
+# Generate the test targets and prerequisites.
 bc_tests=$(gen_test_targets bc)
 bc_script_tests=$(gen_script_test_targets bc)
 dc_tests=$(gen_test_targets dc)
@@ -1196,6 +1308,9 @@ printf 'LONG_BIT=%s\n' "$LONG_BIT"
 printf 'GEN_HOST=%s\n' "$GEN_HOST"
 printf 'GEN_EMU=%s\n' "$GEN_EMU"
 
+# This is where the real work begins. This is the point at which the Makefile.in
+# template is edited and output to the Makefile.
+
 contents=$(cat "$scriptdir/Makefile.in")
 
 needle="WARNING"
@@ -1203,14 +1318,14 @@ replacement='*** WARNING: Autogenerated from Makefile.in. DO NOT MODIFY ***'
 
 contents=$(replace "$contents" "$needle" "$replacement")
 
-if [ "$unneeded" = "" ]; then
-	unneeded="library.c"
-fi
-
+# The contents are edited to have the list of files to build.
 contents=$(gen_file_list "$contents" $unneeded)
 
 SRC_TARGETS=""
 
+# This line and loop generates the individual targets for source files. I used
+# to just use an implicit target, but that was found to be inadequate when I
+# added the library.
 src_files=$(find_src_files $unneeded)
 
 for f in $src_files; do
@@ -1219,6 +1334,7 @@ for f in $src_files; do
 		"$SRC_TARGETS" "$o" "$headers" "$f" "$o" "$f")
 done
 
+# Replace all the placeholders.
 contents=$(replace "$contents" "HEADERS" "$headers")
 
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
@@ -1315,8 +1431,10 @@ contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
 
 contents=$(replace "$contents" "BSD" "$bsd")
 
+# Do the first print to the Makefile.
 printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"
 
+# Generate the individual test targets.
 if [ "$bc" -ne 0 ]; then
 	gen_tests bc "$extra_math" "$time_tests" $bc_test_exec
 	gen_script_tests bc "$extra_math" "$generate_tests" "$time_tests" $bc_test_exec
@@ -1329,6 +1447,7 @@ fi
 
 cd "$scriptdir"
 
+# Copy the correct manuals to the expected places.
 cp -f manuals/bc/$manpage_args.1.md manuals/bc.1.md
 cp -f manuals/bc/$manpage_args.1 manuals/bc.1
 cp -f manuals/dc/$manpage_args.1.md manuals/dc.1.md

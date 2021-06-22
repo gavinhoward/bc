@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # SPDX-License-Identifier: BSD-2-Clause
 #
@@ -27,10 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-# This script is only really useful for running under bash and on Linux.
-# It tests the code to free temps in order to make an allocation work.
-# In order to see it work, I suggest adding code after the following line in
-# src/vm.c:
+# This script is only really useful for running on Linux. It tests the code to
+# free temps in order to make an allocation work. In order to see it work, I
+# suggest adding code after the following line in src/vm.c:
 #
 # if (BC_ERR(ptr == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 #
@@ -39,7 +38,9 @@
 # bc_file_printf(&vm.ferr, "If you see this, the code worked.\n");
 # bc_file_flush(&vm.ferr, bc_flush_none);
 #
-# If you do not see the that message printed, the code did not work.
+# If you do not see the that message printed, the code did not work. Or, in the
+# case of some allocators, like jemalloc, the allocator just isn't great with
+# turning a bunch of small allocations into a bigger allocation,
 
 script="$0"
 scriptdir=$(dirname "$script")

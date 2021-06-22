@@ -412,7 +412,7 @@ diameter of the universe in Planck lengths.
 
 (For 32-bit, these numbers are either 32 integer digits or 12 integer digits and
 20 fractional digits. These are also quite big, and going much bigger on a
-32-bit system seems a little pointless since 12 digits in just under a trillion
+32-bit system seems a little pointless since 12 digits is just under a trillion
 and 20 fractional digits is still enough for about any use since `10^-20` light
 years is just under a millimeter.)
 

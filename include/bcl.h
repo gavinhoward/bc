@@ -66,6 +66,10 @@
 #error BC_LONG_BIT cannot be greater than LONG_BIT
 #endif // BC_LONG_BIT > LONG_BIT
 
+// BclBigDig is a fixed-size integer type that bcl can convert numbers to.
+//
+// BclRandInt is the type of fixed-size integer natively returned by the
+// pseudo-random number generator.
 #if BC_LONG_BIT >= 64
 
 typedef uint64_t BclBigDig;
@@ -87,6 +91,9 @@ typedef uint32_t BclRandInt;
 #endif // BC_ENABLE_LIBRARY
 
 #if BC_ENABLE_LIBRARY
+
+// For more information about the items here, see the either the
+// manuals/bcl.3.md or manuals/bcl.3 manuals.
 
 typedef enum BclError {
 
