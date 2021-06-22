@@ -64,33 +64,33 @@
   <ItemGroup>
     <CustomBuild Include="gen\strgen.c">
       <Message>Building strgen</Message>
-      <Command>CL /Fo:$(Configuration)\$(ProjectName)\ /Fe:$(Configuration)\$(ProjectName)\strgen.exe gen\strgen.c</Command>
+      <Command>CL /Fo:$(Configuration)\$(Platform)\$(ProjectName)\ /Fe:$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe gen\strgen.c</Command>
       <Inputs>gen\strgen.c</Inputs>
-      <Outputs>$(Configuration)\$(ProjectName)\strgen.exe</Outputs>
+      <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe</Outputs>
     </CustomBuild>
     <CustomBuild Include="gen\lib.bc">
-      <Message>Generating $(Configuration)\$(ProjectName)/lib.c</Message>
-      <Command>START $(Configuration)\$(ProjectName)/strgen gen\lib.bc $(Configuration)\$(ProjectName)/lib.c bc_lib bc_lib_name BC_ENABLED 1</Command>
-      <Inputs>$(Configuration)\$(ProjectName)\strgen.exe;gen\lib.bc</Inputs>
-      <Outputs>$(Configuration)\$(ProjectName)\lib.c</Outputs>
+      <Message>Generating $(Configuration)\$(Platform)\$(ProjectName)/lib.c</Message>
+      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\lib.bc $(Configuration)\$(Platform)\$(ProjectName)/lib.c bc_lib bc_lib_name BC_ENABLED 1</Command>
+      <Inputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe;gen\lib.bc</Inputs>
+      <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\lib.c</Outputs>
     </CustomBuild>
     <CustomBuild Include="gen\lib2.bc">
-      <Message>Generating $(Configuration)\$(ProjectName)/lib2.c</Message>
-      <Command>START $(Configuration)\$(ProjectName)/strgen gen\lib2.bc $(Configuration)\$(ProjectName)/lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
-      <Inputs>$(Configuration)\$(ProjectName)\strgen.exe;gen\lib2.bc</Inputs>
-      <Outputs>$(Configuration)\$(ProjectName)\lib2.c</Outputs>
+      <Message>Generating $(Configuration)\$(Platform)\$(ProjectName)/lib2.c</Message>
+      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\lib2.bc $(Configuration)\$(ProjectName)/lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
+      <Inputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe;gen\lib2.bc</Inputs>
+      <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\lib2.c</Outputs>
     </CustomBuild>
     <CustomBuild Include="gen\bc_help.txt">
-      <Message>Generating $(Configuration)\$(ProjectName)/bc_help.c</Message>
-      <Command>START $(Configuration)\$(ProjectName)/strgen gen\bc_help.txt $(Configuration)\$(ProjectName)\bc_help.c bc_help "" BC_ENABLED</Command>
-      <Inputs>$(Configuration)\$(ProjectName)\strgen.exe;gen\bc_help.txt</Inputs>
-      <Outputs>$(Configuration)\$(ProjectName)\bc_help.c</Outputs>
+      <Message>Generating $(Configuration)\$(Platform)\$(ProjectName)/bc_help.c</Message>
+      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\bc_help.txt $(Configuration)\$(ProjectName)\bc_help.c bc_help "" BC_ENABLED</Command>
+      <Inputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe;gen\bc_help.txt</Inputs>
+      <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\bc_help.c</Outputs>
     </CustomBuild>
     <CustomBuild Include="gen\dc_help.txt">
-      <Message>Generating $(Configuration)\$(ProjectName)/dc_help.c</Message>
-      <Command>START $(Configuration)\$(ProjectName)/strgen gen\dc_help.txt $(Configuration)\$(ProjectName)\dc_help.c dc_help "" DC_ENABLED</Command>
-      <Inputs>$(Configuration)\$(ProjectName)\strgen.exe;gen\dc_help.txt</Inputs>
-      <Outputs>$(Configuration)\$(ProjectName)\dc_help.c</Outputs>
+      <Message>Generating $(Configuration)\$(Platform)\$(ProjectName)/dc_help.c</Message>
+      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\dc_help.txt $(Configuration)\$(ProjectName)\dc_help.c dc_help "" DC_ENABLED</Command>
+      <Inputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe;gen\dc_help.txt</Inputs>
+      <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\dc_help.c</Outputs>
     </CustomBuild>
   </ItemGroup>
   <PropertyGroup>
@@ -99,23 +99,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -135,7 +135,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;bcrypt.lib;ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(ProjectName)\dc.exe"</Command>
+      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\dc.exe"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying bc to dc...</Message>
@@ -161,7 +161,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(ProjectName)\dc.exe"</Command>
+      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\dc.exe"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying bc to dc...</Message>
@@ -185,7 +185,7 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;bcrypt.lib;ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(ProjectName)\dc.exe"</Command>
+      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\dc.exe"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying bc to dc...</Message>
@@ -210,17 +210,17 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;bcrypt.lib;ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(ProjectName)\dc.exe"</Command>
+      <Command>copy /b "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\bc.exe" "$(SolutionDir)\$(Configuration)\$(Platform)\$(ProjectName)\dc.exe"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copying bc to dc...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(Configuration)\$(ProjectName)\lib.c" />
-    <ClCompile Include="$(Configuration)\$(ProjectName)\lib2.c" />
-    <ClCompile Include="$(Configuration)\$(ProjectName)\bc_help.c" />
-    <ClCompile Include="$(Configuration)\$(ProjectName)\dc_help.c" />
+    <ClCompile Include="$(Configuration)\$(Platform)\$(ProjectName)\lib.c" />
+    <ClCompile Include="$(Configuration)\$(Platform)\$(ProjectName)\lib2.c" />
+    <ClCompile Include="$(Configuration)\$(Platform)\$(ProjectName)\bc_help.c" />
+    <ClCompile Include="$(Configuration)\$(Platform)\$(ProjectName)\dc_help.c" />
     <ClCompile Include="src\args.c" />
     <ClCompile Include="src\bc.c" />
     <ClCompile Include="src\bc_lex.c" />
