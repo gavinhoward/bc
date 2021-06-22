@@ -94,10 +94,25 @@
 
 #include <signal.h>
 
+#ifndef _WIN32
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/select.h>
+#else // _WIN32
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif // WIN32_LEAN_AND_MEAN
+
+#include <Windows.h>
+#include <io.h>
+#include <conio.h>
+
+#define strncasecmp _strnicmp
+#define strcasecmp  _stricmp
+
+#endif // _WIN32
 
 #include <status.h>
 #include <vector.h>

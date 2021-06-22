@@ -29,7 +29,7 @@
  *
  * *****************************************************************************
  *
- * Definitions for processing command-line arguments.
+ * The version of bc.
  *
  */
 

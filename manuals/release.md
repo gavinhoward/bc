@@ -46,16 +46,17 @@ test if I did not change any of the math code.
 	* Release/`x86` for `bc`.
 	* Release/`x86` for `dc`.
 	* Release/`x86` for `bcl`.
-22. Boot back into Linux.
-23.	Run `make clean_tests`.
-24.	Run the `scripts/package.sh` script.
-25.	Upload the custom tarball and Windows builds to Yzena Gitea.
-26.	Add output from `scripts/package.sh` to Yzena Gitea release notes.
-27.	Edit Yzena Gitea release notes for the changelog.
-28.	Upload the custom tarball to GitHub.
-29.	Add output from `scripts/package.sh` to GitHub release notes.
-30.	Edit GitHub release notes for the changelog.
-31.	Notify the following:
+22.	Put the builds where Linux can access them.
+23. Boot back into Linux.
+24.	Run `make clean_tests`.
+25.	Run the `scripts/package.sh` script.
+26.	Upload the custom tarball and Windows builds to Yzena Gitea.
+27.	Add output from `scripts/package.sh` to Yzena Gitea release notes.
+28.	Edit Yzena Gitea release notes for the changelog.
+29.	Upload the custom tarball to GitHub.
+30.	Add output from `scripts/package.sh` to GitHub release notes.
+31.	Edit GitHub release notes for the changelog.
+32.	Notify the following:
 	* FreeBSD
 	* Adelie Linux
 	* Ataraxia Linux
@@ -63,7 +64,7 @@ test if I did not change any of the math code.
 	* xstatic
 	* OpenBSD
 	* NetBSD
-32.	Submit new packages for the following:
+33.	Submit new packages for the following:
 	* Alpine Linux
 	* Void Linux
 	* Gentoo Linux

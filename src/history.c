@@ -148,18 +148,21 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <strings.h>
 #include <ctype.h>
 
 #include <signal.h>
-
-#include <termios.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifndef _WIN32
+#include <strings.h>
+#include <termios.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
+#endif // _WIN32
 
+#include <status.h>
 #include <vector.h>
 #include <history.h>
 #include <read.h>
