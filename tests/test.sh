@@ -103,7 +103,7 @@ if [ ! -f "$name" ]; then
 	fi
 
 	printf 'Generating %s %s...' "$d" "$t"
-	"$testdir/$d/scripts/$t.$d" > "$name"
+	"$d" "$testdir/$d/scripts/$t.$d" > "$name"
 	printf 'done\n'
 fi
 
