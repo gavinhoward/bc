@@ -39,6 +39,7 @@ scriptdir=$(dirname "$script")
 
 INSTALL="$scriptdir/safe-install.sh"
 
+# Process command-line arguments.
 test "$#" -ge 2 || usage
 
 installdir="$1"
@@ -49,6 +50,8 @@ shift
 
 bindir="$scriptdir/../bin"
 
+# Install or symlink, depending on the type of file. If it's a file, install it.
+# If it's a symlink, create an equivalent in the install directory.
 for exe in $bindir/*; do
 
 	base=$(basename "$exe")

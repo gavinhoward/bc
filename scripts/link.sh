@@ -32,6 +32,7 @@ usage() {
 	exit 1
 }
 
+# Command-line processing.
 test "$#" -gt 1 || usage
 
 bindir="$1"
@@ -40,11 +41,13 @@ shift
 link="$1"
 shift
 
-
+# For each executable...
 for exe in "$bindir"/*; do
 
+	# If the executable is *not* a link (is our target)...
 	if [ ! -L "$exe" ]; then
 
+		# We do fancy things to preserve the extension of the executable.
 		base=$(basename "$exe")
 		ext="${base##*.}"
 

@@ -27,6 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Just print the usage and exit with an error.
 usage() {
 	if [ $# -eq 1 ]; then
 		printf '%s\n' "$1"
@@ -35,6 +36,9 @@ usage() {
 	exit 1
 }
 
+# Run gencat on one file.
+# @param loc   The location of the resulting cat file.
+# @param file  The file to use as the source for the cat file.
 gencatfile() {
 
 	_gencatfile_loc="$1"
@@ -47,6 +51,10 @@ gencatfile() {
 	gencat "$_gencatfile_loc" "$_gencatfile_file" > /dev/null 2>&1
 }
 
+# Return an exit code based on whether a locale exists.
+# @param locales  The list of locales.
+# @param locale   The locale to search for.
+# @param destdir  The DESTDIR that locales should be installed to.
 localeexists() {
 
 	_localeexists_locales="$1"
@@ -69,6 +77,9 @@ localeexists() {
 	return $?
 }
 
+# Split a path into its components. They will be separated by newlines, so paths
+# cannot have newlines in them.
+# @param path  The path to split.
 splitpath() {
 
 	_splitpath_path="$1"
@@ -99,6 +110,9 @@ splitpath() {
 	printf '%s' "$_splitpath_list"
 }
 
+# Generate a relative path from one path to another.
+# @param path1  The target path.
+# @param path2  The other path.
 relpath() {
 
 	_relpath_path1="$1"
@@ -107,6 +121,7 @@ relpath() {
 	_relpath_path2="$1"
 	shift
 
+	# Very carefully set IFS in a portable way. No, you cannot do IFS=$'\n'.
 	_relpath_nl=$(printf '\nx')
 	_relpath_nl="${_relpath_nl%x}"
 
@@ -118,6 +133,12 @@ relpath() {
 
 	IFS="$_relpath_nl"
 
+	# What this function does is find the parts that are the same and then
+	# calculates the difference based on how many folders up and down you must
+	# go.
+
+	# This first loop basically removes the parts that are the same between
+	# them.
 	for _relpath_part in $_relpath_temp1; do
 
 		_relpath_temp2="${_relpath_splitpath2#$_relpath_part$_relpath_nl}"
@@ -131,12 +152,14 @@ relpath() {
 
 	done
 
+	# Go up the appropriate number of times.
 	for _relpath_part in $_relpath_splitpath2; do
 		_relpath_path="../$_relpath_path"
 	done
 
 	_relpath_path="${_relpath_path%../}"
 
+	# Go down the appropriate number of times.
 	for _relpath_part in $_relpath_splitpath1; do
 		_relpath_path="$_relpath_path$_relpath_part/"
 	done
@@ -153,8 +176,10 @@ scriptdir=$(dirname "$script")
 
 . "$scriptdir/functions.sh"
 
+# Set a default.
 all_locales=0
 
+# Process command-line args.
 while getopts "l" opt; do
 
 	case "$opt" in
@@ -179,6 +204,7 @@ else
 	destdir=""
 fi
 
+# Uninstall locales first.
 "$scriptdir/locale_uninstall.sh" "$nlspath" "$main_exec" "$destdir"
 
 locales_dir="$scriptdir/../locales"
@@ -191,12 +217,16 @@ else
 	locales=$(locale -m)
 fi
 
+# For each relevant .msg file, run gencat.
 for file in $locales_dir/*.msg; do
 
 	locale=$(basename "$file" ".msg")
 
+	# If we are not installing all locales, there's a possibility we need to
+	# skip this one.
 	if [ "$all_locales" -eq 0 ]; then
 
+		# Check if the locale exists and if not skip.
 		localeexists "$locales" "$locale" "$destdir"
 		err="$?"
 
@@ -205,20 +235,27 @@ for file in $locales_dir/*.msg; do
 		fi
 	fi
 
+	# We skip the symlinks for now.
 	if [ -L "$file" ]; then
 		continue
 	fi
 
+	# Generate the proper location for the cat file.
 	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
 
 	gencatfile "$loc" "$file"
 
 done
 
+# Now that we have done the non-symlinks, it's time to do the symlinks. Think
+# that this second loop is unnecessary and that you can combine the two? Well,
+# make sure that when you figure out you are wrong that you add to this comment
+# with your story. Fortunately for me, I learned fast.
 for file in $locales_dir/*.msg; do
 
 	locale=$(basename "$file" ".msg")
 
+	# Do the same skip as the above loop.
 	if [ "$all_locales" -eq 0 ]; then
 
 		localeexists "$locales" "$locale" "$destdir"
@@ -229,12 +266,18 @@ for file in $locales_dir/*.msg; do
 		fi
 	fi
 
+	# Generate the proper location for the cat file.
 	loc=$(gen_nlspath "$destdir/$nlspath" "$locale" "$main_exec")
 
+	# Make sure the directory exists.
 	mkdir -p $(dirname "$loc")
 
+	# Make sure to skip non-symlinks; they are already done.
 	if [ -L "$file" ]; then
 
+		# This song and dance is because we want to generate relative symlinks.
+		# They take less space, but also, they are more resilient to being
+		# moved.
 		link=$(readlink "$file")
 		linkdir=$(dirname "$file")
 		locale=$(basename "$link" .msg)
@@ -242,10 +285,14 @@ for file in $locales_dir/*.msg; do
 		relloc="${loc##$destdir/}"
 		rel=$(relpath "$linksrc" "$relloc")
 
+		# If the target file doesn't exist (because it's for a locale that is
+		# not installed), generate it anyway. It's easier this way.
 		if [ ! -f "$destdir/$linksrc" ]; then
 			gencatfile "$destdir/$linksrc" "$linkdir/$link"
 		fi
 
+		# Finally, symlink to the install of the generated cat file that
+		# corresponds to the correct msg file.
 		ln -fs "$rel" "$loc"
 	fi
 

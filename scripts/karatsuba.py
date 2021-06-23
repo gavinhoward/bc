@@ -32,12 +32,14 @@ import sys
 import subprocess
 import time
 
+# Print the usage and exit with an error.
 def usage():
 	print("usage: {} [num_iterations test_num exe]".format(script))
 	print("\n    num_iterations is the number of times to run each karatsuba number; default is 4")
 	print("\n    test_num is the last Karatsuba number to run through tests")
 	sys.exit(1)
 
+# Run a command. This is basically an alias.
 def run(cmd, env=None):
 	return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 
@@ -47,6 +49,7 @@ testdir = os.path.dirname(script)
 if testdir == "":
 	testdir = os.getcwd()
 
+# We want to be in the root directory.
 os.chdir(testdir + "/..")
 
 print("\nWARNING: This script is for distro and package maintainers.")
@@ -56,9 +59,11 @@ print("it takes forever to run.")
 print("You have been warned.\n")
 print("Note: If you send an interrupt, it will report the current best number.\n")
 
+# This script has to be run by itself.
 if __name__ != "__main__":
 	usage()
 
+# These constants can be changed, but I found they work well enough.
 mx = 520
 mx2 = mx // 2
 mn = 16
@@ -67,6 +72,7 @@ num = "9" * mx
 
 args_idx = 4
 
+# Command-line processing.
 if len(sys.argv) >= 2:
 	num_iterations = int(sys.argv[1])
 else:
@@ -84,6 +90,7 @@ else:
 
 exedir = os.path.dirname(exe)
 
+# Some basic tests.
 indata = "for (i = 0; i < 100; ++i) {} * {}\n"
 indata += "1.23456789^100000\n1.23456789^100000\nhalt"
 indata = indata.format(num, num).encode()
@@ -93,12 +100,14 @@ nums = []
 runs = []
 nruns = num_iterations + 1
 
+# We build the list first because I want to just edit slots.
 for i in range(0, nruns):
 	runs.append(0)
 
 tests = [ "multiply", "modulus", "power", "sqrt" ]
 scripts = [ "multiply" ]
 
+# Test Link-Time Optimization.
 print("Testing CFLAGS=\"-flto\"...")
 
 flags = dict(os.environ)
@@ -123,6 +132,7 @@ else:
 
 p = run([ "make", "clean" ])
 
+# Test parallel build. My machine has 16 cores.
 print("Testing \"make -j16\"")
 
 if p.returncode != 0:
@@ -138,13 +148,17 @@ else:
 	makecmd = [ "make" ]
 	print("Not using \"make -j16\"")
 
+# Set the max if the user did.
 if test_num != 0:
 	mx2 = test_num
 
+# This is the meat here.
 try:
 
+	# For each possible KARATSUBA_LEN...
 	for i in range(mn, mx2 + 1):
 
+		# Configure and compile.
 		print("\nCompiling...\n")
 
 		p = run([ "./configure.sh", "-O3", "-k{}".format(i) ], config_env)
@@ -159,6 +173,7 @@ try:
 			print("make returned an error ({}); exiting...".format(p.returncode))
 			sys.exit(p.returncode)
 
+		# Test if desired.
 		if (test_num >= i):
 
 			print("Running tests for Karatsuba Num: {}\n".format(i))
@@ -192,6 +207,7 @@ try:
 
 			print("")
 
+		# If testing was *not* desired, assume the user wanted to time it.
 		elif test_num == 0:
 
 			print("Timing Karatsuba Num: {}".format(i), end='', flush=True)
@@ -218,11 +234,16 @@ try:
 			print(", Time: {}".format(times[i - mn]))
 
 except KeyboardInterrupt:
+	# When timing, we want to quit when the user tells us to. However, we also
+	# want to report the best run, so we make sure to grab the times here before
+	# moving on.
 	nums = nums[0:i]
 	times = times[0:i]
 
+# If running timed tests...
 if test_num == 0:
 
+	# Report the optimal KARATSUBA_LEN
 	opt = nums[times.index(min(times))]
 
 	print("\n\nOptimal Karatsuba Num (for this machine): {}".format(opt))

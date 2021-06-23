@@ -39,6 +39,7 @@ scriptdir=$(dirname "$script")
 
 INSTALL="$scriptdir/safe-install.sh"
 
+# Process command-line arguments.
 test "$#" -ge 2 || usage
 
 nlspath="$1"

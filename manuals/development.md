@@ -711,7 +711,7 @@ This file is a template for the markdown version of the `bc` manual and
 manpages.
 
 For more information about how the manpages and markdown manuals are generated,
-see [`scripts/manpage.sh`][60].
+and for why, see [`scripts/manpage.sh`][60].
 
 #### `bcl.3`
 
@@ -754,7 +754,7 @@ This file is a template for the markdown version of the `dc` manual and
 manpages.
 
 For more information about how the manpages and markdown manuals are generated,
-see [`scripts/manpage.sh`][60].
+and for why, see [`scripts/manpage.sh`][60].
 
 #### `development.md`
 
@@ -812,12 +812,132 @@ For more information, see [`scripts/manpage.sh`][60].
 
 A checklist that I try to somewhat follow when making a release.
 
+#### `bc/`
+
+A folder containing the `bc` manuals.
+
+Each `bc` manual corresponds to a [build type][81]. See that link for more
+details.
+
+For each manual, there are two copies: the markdown version generated from the
+template, and the manpage generated from the markdown version.
+
+#### `dc/`
+
+A folder containing the `dc` manuals.
+
+Each `dc` manual corresponds to a [build type][81]. See that link for more
+details.
+
+For each manual, there are two copies: the markdown version generated from the
+template, and the manpage generated from the markdown version.
+
 ### `scripts/`
 
 This folder contains helper scripts. Most of them are written in pure [POSIX
 `sh`][72], but one ([`karatsuba.py`][78]) is written in Python 3.
 
 For more information about the shell scripts, see [POSIX Shell Scripts][76].
+
+#### `exec-install.sh`
+
+This script is the magic behind making sure `dc` is installed properly if it's
+a symlink to `bc`. It checks to see if it is a link, and if so, it just creates
+a new symlink in the install directory. Of course, it also installs `bc` itself,
+or `dc` when it's alone.
+
+#### `functions.sh`
+
+This file is a bunch of common functions for most of the POSIX shell scripts. It
+is not supposed to be run; instead, it is *sourced* by other POSIX shell
+scripts, like so:
+
+```
+. "$scriptdir/functions.sh"
+```
+
+or the equivalent, depending on where the sourcing script is.
+
+For more information about the shell scripts, see [POSIX Shell Scripts][76].
+
+#### `fuzz_prep.sh`
+
+Fuzzing is a regular activity when I am preparing for a release.
+
+This script handles all the options and such for building a fuzzable binary.
+Instead of having to remember a bunch of options, I just put them in this script
+and run the script when I want to fuzz.
+
+For more information about fuzzing, see [Fuzzing][82].
+
+#### `karatsuba.py`
+
+This script has two major differences from most of the other scripts:
+
+* It's in Python 3.
+* It's meant for software packagers.
+
+This script breaks my rule of only POSIX utilities necessary for package
+maintainers, but there's a very good reason for that: it's only meant to be run
+*once* when the package is created for the first time, and maybe not even then.
+
+You see, this script does two things: it tests the Karatsuba implementation at
+various settings for `KARATSUBA_LEN`, and it figures out what the optimal
+`KARATSUBA_LEN` is for the machine that it is running on.
+
+Package maintainers can use this script, when creating a package for this `bc`,
+to figure out what is optimal for their users. Then they don't have to run it
+ever again. So this script only has to run on the packagers machine.
+
+I tried to write the script in `sh`, by the way, and I finally accepted the
+tradeoff of using Python 3 when it became too hard.
+
+However, I also mentioned that it's for testing Karatsuba with various settings
+of `KARATSUBA_LEN`. Package maintainers will want to run the test suite, right?
+
+Yes, but this script is not part of the test suite; it's used for testing in the
+[`scripts/release.sh`][83] script, which is maintainer use only.
+
+However, there is one snare with `karatsuba.py`: I didn't want the user to have
+to install any Python libraries to run it. Keep that in mind if you change it.
+
+#### `link.sh`
+
+This script is the magic behind making `dc` a symlink of `bc` when both
+calculators are built.
+
+#### `locale_install.sh`
+
+This script does what its name says: it installs locales.
+
+It turns out that this is complicated.
+
+There is a magic environment variable, `$NLSPATH`, that tells you how and where
+you are supposed to install locales.
+
+Yes, *how*. And where.
+
+Obviously, from it's name, it's a path, and that's the where. The *how* is more
+complicated.
+
+It's actually *not* a path, but a path template. It's a format string, and it
+can have a few format specifiers. For more information on that, see [this link][84].
+
+For more information on locales, see [Locales][85].
+
+#### `locale_uninstall.sh`
+
+This script does what its name says: it uninstalls locales.
+
+This is far less complicated than installing locales. I basically generate a
+wildcard path and then list all paths that fit that wildcard. Then I delete each
+one of those paths. Easy.
+
+For more information on locales, see [Locales][85].
+
+#### `manpage.sh`
+
+
 
 ### `src/`
 
@@ -860,6 +980,10 @@ _<function_name>_<var_name>
 
 This is done to prevent any clashes of variable names with already existing
 names. And this applies to *all* shell scripts.
+
+## Locales
+
+## Fuzzing
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
@@ -941,3 +1065,8 @@ names. And this applies to *all* shell scripts.
 [78]: #karatsubapy
 [79]: #bc
 [80]: #dc
+[81]: ./build.md#build-type
+[82]: #fuzzine
+[83]: ../scripts/release.sh`
+[84]: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
+[85]: #locales

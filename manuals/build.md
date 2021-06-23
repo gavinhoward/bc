@@ -130,7 +130,7 @@ automatically moved into CFLAGS.
 
 Defaults to `c99`.
 
-### `HOSTCC` or `HOST_CC`
+#### `HOSTCC` or `HOST_CC`
 
 C compiler for the host system, used only in [cross compiling][6]. Must be
 compatible with POSIX `c99` behavior and options.
@@ -409,6 +409,8 @@ platform that does not support the terminal handling that is required.
 completely portable. If the `bc` does not work on your platform, your first step
 should be to retry with history disabled.
 
+This option affects the [build type][7].
+
 #### NLS (Locale Support)
 
 To disable locale support (use only English), pass either the `-N` flag or the
@@ -424,19 +426,7 @@ Both commands are equivalent.
 NLS (locale support) is automatically disabled when building for Windows or on
 another platform that does not support the POSIX locale API or utilities.
 
-#### Prompt
-
-By default, `bc` and `dc` print a prompt when in interactive mode. They both
-have the command-line option `-P`/`--no-prompt`, which turns that off, but it
-can be disabled permanently in the build by passing the `-P` flag or the
-`--disable-prompt` option to `configure.sh`, as follows:
-
-```
-./configure.sh -P
-./configure.sh --disable-prompt
-```
-
-Both commands are equivalent.
+This option affects the [build type][7].
 
 #### Locales
 
@@ -491,17 +481,7 @@ This `bc` also has a larger library that is only enabled if extra operators and
 the pseudo-random number generator are. More information about the functions can
 be found in the Extended Library section of the full manual.
 
-#### Manpages
-
-To disable installing manpages, pass either the `-M` flag or the
-`--disable-man-pages` option to `configure.sh` as follows:
-
-```
-./configure.sh -M
-./configure.sh --disable-man-pages
-```
-
-Both commands are equivalent.
+This option affects the [build type][7].
 
 #### Karatsuba Length
 
@@ -552,6 +532,18 @@ environment variable is overridden.
 ***WARNING***: If any long command-line options are used, the long form of all
 other command-line options must be used. Mixing long and short options is not
 supported.
+
+##### Manpages
+
+To disable installing manpages, pass either the `-M` flag or the
+`--disable-man-pages` option to `configure.sh` as follows:
+
+```
+./configure.sh -M
+./configure.sh --disable-man-pages
+```
+
+Both commands are equivalent.
 
 ### Optimization
 
@@ -632,6 +624,25 @@ The build and install can then be run as normal:
 make
 make install
 ```
+
+### Build Type
+
+`bc` and `dc` have 8 build types, affected by the [History][8], [NLS (Locale
+Support)][9], and [Extra Math][10] build options.
+
+The build types are as follows:
+
+* `A`: Nothing disabled.
+* `E`: Extra math disabled.
+* `H`: History disabled.
+* `N`: NLS disabled.
+* `EH`: Extra math and History disabled.
+* `EN`: Extra math and NLS disabled.
+* `HN`: History and NLS disabled.
+* `EHN`: Extra math, History, and NLS all disabled.
+
+These build types correspond to the generated manuals in `manuals/bc` and
+`manuals/dc`.
 
 ### Binary Size
 
@@ -741,3 +752,7 @@ Both commands are equivalent.
 [4]: #build-environment-variables
 [5]: #build-options
 [6]: #cross-compiling
+[7]: #build-type
+[8]: #history
+[9]: #nls-locale-support
+[10]: #extra-math
