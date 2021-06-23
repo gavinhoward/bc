@@ -589,7 +589,6 @@ optimization=""
 generate_tests=1
 install_manpages=1
 nls=1
-prompt=1
 force=0
 strip_bin=1
 all_locales=0
@@ -933,7 +932,6 @@ if [ "$library" -ne 0 ]; then
 	extra_math=1
 	nls=0
 	hist=0
-	prompt=0
 	bc=1
 	dc=1
 
@@ -1019,7 +1017,6 @@ fi
 if [ "$fuzz" -ne 0 ]; then
 	debug=1
 	hist=0
-	prompt=0
 	nls=0
 	optimization="3"
 fi
@@ -1314,10 +1311,6 @@ fi
 
 if [ "$nls" -eq 0 ]; then
 	manpage_args="${manpage_args}N"
-fi
-
-if [ "$prompt" -eq 0 ]; then
-	manpage_args="${manpage_args}P"
 fi
 
 if [ "$bc" -eq 0 ]; then

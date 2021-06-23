@@ -110,7 +110,7 @@ manualsdir="$scriptdir/../manuals"
 
 . "$scriptdir/functions.sh"
 
-ARGS="A E H N P EH EN EP HN HP NP EHN EHP ENP HNP EHNP"
+ARGS="A E H N EH EN HN EHN"
 ALL=0
 NOSKIP=1
 SKIP=2

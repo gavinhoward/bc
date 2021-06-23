@@ -75,21 +75,15 @@ The following are the options that dc(1) accepts.
 
 **-P**, **-\-no-prompt**
 
-{{ A E H N EH EN HN EHN }}
 :   Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
     See the **TTY MODE** section.) This is mostly for those users that do not
     want a prompt or are not used to having them in dc(1). Most of those users
     would want to put this option in **DC_ENV_ARGS**.
-{{ end }}
-{{ P EP HP NP EHP ENP HNP EHNP }}
-:   This option is a no-op.
-{{ end }}
 
     This is a **non-portable extension**.
 
 **-R**, **-\-no-read-prompt**
 
-{{ A E H N EH EN HN EHN }}
 :   Disables the read prompt in TTY mode. (The read prompt is only enabled in
     TTY mode. See the **TTY MODE** section.) This is mostly for those users that
     do not want a read prompt or are not used to having them in dc(1). Most of
@@ -99,10 +93,6 @@ The following are the options that dc(1) accepts.
 
     This option does not disable the regular prompt because the read prompt is
     only used when the **?** command is used.
-{{ end }}
-{{ P EP HP NP EHP ENP HNP EHNP }}
-:   This option is a no-op.
-{{ end }}
 
     This is a **non-portable extension**.
 
@@ -194,7 +184,7 @@ The max allowable value for **ibase** can be queried in dc(1) programs with the
 output results. It is the "output" base, or the number base used for outputting
 numbers. **obase** is initially **10**. The max allowable value for **obase** is
 **DC_BASE_MAX** and can be queried with the **U** command. The min allowable
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 value for **obase** is **0**. If **obase** is **0**, values are output in
 scientific notation, and if **obase** is **1**, values are output in engineering
 notation. Otherwise, values are output in the specified base.
@@ -202,7 +192,7 @@ notation. Otherwise, values are output in the specified base.
 Outputting in scientific and engineering notations are **non-portable
 extensions**.
 {{ end }}
-{{ E EH EN EP EHN EHP ENP EHNP }}
+{{ E EH EN EHN }}
 value for **obase** is **2**. Values are output in the specified base.
 {{ end }}
 
@@ -213,7 +203,7 @@ exceptions). **scale** is initially **0**. **scale** cannot be negative. The max
 allowable value for **scale** can be queried in dc(1) programs with the **V**
 command.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 **seed** is a register containing the current seed for the pseudo-random number
 generator. If the current value of **seed** is queried and stored, then if it is
 assigned to **seed** later, the pseudo-random number generator is guaranteed to
@@ -259,7 +249,7 @@ if they were valid digits, regardless of the value of **ibase**. This means that
 **A** alone always equals decimal **10** and **F** alone always equals decimal
 **15**.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 In addition, dc(1) accepts numbers in scientific notation. These have the form
 **\<number\>e\<integer\>**. The exponent (the portion after the **e**) must be
 an integer. An example is **1.89237e9**, which is equal to **1892370000**.
@@ -283,7 +273,7 @@ The valid commands are listed below.
 
 These commands are used for printing.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 Note that both scientific notation and engineering notation are available for
 printing numbers. Scientific notation is activated by assigning **0** to
 **obase** using **0o**, and engineering notation is activated by assigning **1**
@@ -424,7 +414,7 @@ These are the commands used for arithmetic.
 
     This is a **non-portable extension**.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 **\$**
 
 :   The top value is popped off the stack and copied, and the copy is truncated
@@ -526,7 +516,7 @@ These are the commands used for arithmetic.
 
     This is a **non-portable extension**.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 ## Pseudo-Random Number Generator
 
 dc(1) has a built-in pseudo-random number generator. These commands query the
@@ -612,11 +602,11 @@ These commands control registers (see the **REGISTERS** section).
 
 ## Parameters
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 These commands control the values of **ibase**, **obase**, **scale**, and
 **seed**. Also see the **SYNTAX** section.
 {{ end }}
-{{ E EH EN EP EHN EHP ENP EHNP }}
+{{ E EH EN EHN }}
 These commands control the values of **ibase**, **obase**, and **scale**. Also
 see the **SYNTAX** section.
 {{ end }}
@@ -631,11 +621,11 @@ see the **SYNTAX** section.
 **o**
 
 :   Pops the value off of the top of the stack and uses it to set **obase**,
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
     which must be between **0** and **DC_BASE_MAX**, inclusive (see the
     **LIMITS** section and the **NUMBERS** section).
 {{ end }}
-{{ E EH EN EP EHN EHP ENP EHNP }}
+{{ E EH EN EHN }}
     which must be between **2** and **DC_BASE_MAX**, inclusive (see the
     **LIMITS** section).
 {{ end }}
@@ -649,7 +639,7 @@ see the **SYNTAX** section.
 
     If the value on top of the stack has any *scale*, the *scale* is ignored.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 **j**
 
 :   Pops the value off of the top of the stack and uses it to set **seed**. The
@@ -686,7 +676,7 @@ see the **SYNTAX** section.
 
 :   Pushes the current value of **scale** onto the main stack.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 **J**
 
 :   Pushes the current value of **seed** onto the main stack.
@@ -712,7 +702,7 @@ see the **SYNTAX** section.
 
     This is a **non-portable extension**.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 **W**
 
 :   Pushes the maximum (inclusive) integer that can be generated with the **'**
@@ -1068,7 +1058,7 @@ The following are the limits on dc(1):
 :   The maximum length of a number (in decimal digits), which includes digits
     after the decimal point. Set at **DC_OVERFLOW_MAX-1**.
 
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
 **DC_RAND_MAX**
 
 :   The maximum integer (inclusive) returned by the **'** command, if dc(1). Set
@@ -1166,7 +1156,7 @@ dc(1) returns the following exit statuses:
     execution.
 
     Math errors include divide by **0**, taking the square root of a negative
-{{ A H N P HN HP NP HNP }}
+{{ A H N HN }}
     number, using a negative number as a bound for the pseudo-random number
     generator, attempting to convert a negative number to a hardware integer,
     overflow when converting a number to a hardware integer, overflow when
@@ -1177,7 +1167,7 @@ dc(1) returns the following exit statuses:
     (**\^**), places (**\@**), left shift (**H**), and right shift (**h**)
     operators.
 {{ end }}
-{{ E EH EN EP EHN EHP ENP EHNP }}
+{{ E EH EN EHN }}
     number, attempting to convert a negative number to a hardware integer,
     overflow when converting a number to a hardware integer, overflow when
     calculating the size of a number, and attempting to use a non-integer where
@@ -1243,14 +1233,12 @@ done for the current input.
 If **stdin**, **stdout**, and **stderr** are all connected to a TTY, dc(1) turns
 on "TTY mode."
 
-{{ A E N P EN EP NP ENP }}
+{{ A E N EN }}
 TTY mode is required for history to be enabled (see the **COMMAND LINE HISTORY**
 section). It is also required to enable special handling for **SIGINT** signals.
 {{ end }}
 
-{{ A E H N EH EN HN EHN }}
 The prompt is enabled in TTY mode.
-{{ end }}
 
 TTY mode is different from interactive mode because interactive mode is required
 in the [bc(1) specification][1], and interactive mode requires only **stdin**
@@ -1277,16 +1265,16 @@ rest of the files could still be executed without problem, allowing the user to
 continue.
 
 **SIGTERM** and **SIGQUIT** cause dc(1) to clean up and exit, and it uses the
-{{ A E N P EN EP NP ENP }}
+{{ A E N EN }}
 default handler for all other signals. The one exception is **SIGHUP**; in that
 case, when dc(1) is in TTY mode, a **SIGHUP** will cause dc(1) to clean up and
 exit.
 {{ end }}
-{{ H EH HN HP EHN EHP HNP EHNP }}
+{{ H EH HN EHN }}
 default handler for all other signals.
 {{ end }}
 
-{{ A E N P EN EP NP ENP }}
+{{ A E N EN }}
 # COMMAND LINE HISTORY
 
 dc(1) supports interactive command-line editing. If dc(1) is in TTY mode (see
@@ -1296,7 +1284,7 @@ and edited with the arrow keys.
 **Note**: tabs are converted to 8 spaces.
 {{ end }}
 
-{{ A E H P EH EP HP EHP }}
+{{ A E H EH }}
 # LOCALES
 
 This dc(1) ships with support for adding error messages for different locales
