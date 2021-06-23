@@ -127,10 +127,10 @@ Environment variables:
 
       If an integer and non-zero, enable TTY mode when it is available.
 
-      Overrides the default, which is %s.
+      Overrides the default, which is TTY mode %s.
 
   DC_PROMPT
 
       If an integer and non-zero, enable prompt when TTY mode is possible.
 
-      Overrides the default, which is %s.
+      Overrides the default, which is prompt %s.
