@@ -1793,7 +1793,8 @@ turn it on in other cases.
 
 In interactive mode, bc(1) attempts to recover from errors (see the **RESET**
 section), and in normal execution, flushes **stdout** as soon as execution is
-done for the current input.
+done for the current input. It is also required to enable special handling for
+**SIGINT** signals.
 
 # TTY MODE
 
@@ -1802,12 +1803,13 @@ on "TTY mode."
 
 {{ A E N P EN EP NP ENP }}
 TTY mode is required for history to be enabled (see the **COMMAND LINE HISTORY**
-section). It is also required to enable special handling for **SIGINT** signals.
+section).
 {{ end }}
 
-{{ A E H N EH EN HN EHN }}
-The prompt is enabled in TTY mode.
-{{ end }}
+The prompt is enabled in TTY mode, subject to the **BC_PROMPT** environment
+variable (see the **ENVIRONMENT VARIABLES** section), the **-P** command-line
+option, and the **-\-no-prompt** command-line option (see the **OPTIONS**
+section).
 
 TTY mode is different from interactive mode because interactive mode is required
 in the [bc(1) specification][1], and interactive mode requires only **stdin**
