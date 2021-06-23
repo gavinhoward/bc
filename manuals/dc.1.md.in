@@ -1124,6 +1124,33 @@ dc(1) recognizes the following environment variables:
     lines to that length, including the backslash newline combo. The default
     line length is **70**.
 
+**DC_SIGINT_RESET**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes dc(1) reset on **SIGINT**, rather than exit, and zero makes
+    dc(1) exit.
+
+    This overrides the default, which can be queried with the **-h** or
+    **-\-help** options.
+
+**DC_TTY_MODE**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes dc(1) use TTY mode (see the **TTY MODE** section) when it is
+    available, and zero makes dc(1) not use TTY mode.
+
+    This overrides the default, which can be queried with the **-h** or
+    **-\-help** options.
+
+**DC_PROMPT**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes dc(1) use a prompt when the TTY mode (see the **TTY MODE**
+    section) is available, and zero makes dc(1) not use a prompt.
+
+    This overrides the default, which can be queried with the **-h** or
+    **-\-help** options.
+
 # EXIT STATUS
 
 dc(1) returns the following exit statuses:

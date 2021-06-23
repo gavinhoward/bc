@@ -1664,6 +1664,42 @@ bc(1) recognizes the following environment variables:
     lines to that length, including the backslash (**\\**). The default line
     length is **70**.
 
+**BC_BANNER**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value activates the copyright banner when bc(1) is in interactive mode,
+    while zero deactivates it.
+
+    This overrides the default, which can be queried with the **-h** or
+    **-\-help** options.
+
+**BC_SIGINT_RESET**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes bc(1) reset on **SIGINT**, rather than exit, and zero makes
+    bc(1) exit.
+
+    This overrides the default, which can be queried with the **-h** or
+    **-\-help** options.
+
+**BC_TTY_MODE**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes bc(1) use TTY mode (see the **TTY MODE** section) when it is
+    available, and zero makes bc(1) not use TTY mode.
+
+    This overrides the default, which can be queried with the **-h** or
+    **-\-help** options.
+
+**BC_PROMPT**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes bc(1) use a prompt when the TTY mode (see the **TTY MODE**
+    section) is available, and zero makes bc(1) not use a prompt.
+
+    This overrides the default, which can be queried with the **-h** or
+    **-\-help** options.
+
 # EXIT STATUS
 
 bc(1) returns the following exit statuses:

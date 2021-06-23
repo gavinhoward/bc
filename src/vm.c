@@ -157,9 +157,39 @@ void bc_vm_info(const char* const help) {
 	bc_file_puts(&vm.fout, bc_flush_none, bc_copyright);
 
 	if (help) {
+
 		bc_file_putchar(&vm.fout, bc_flush_none, '\n');
-		bc_file_printf(&vm.fout, help, vm.name, vm.name,
-		               BC_VERSION, BC_BUILD_TYPE);
+
+#if BC_ENABLED
+		if (BC_IS_BC) {
+
+			const char* const banner = BC_DEFAULT_BANNER ? "to" : "to not";
+			const char* const sigint = BC_DEFAULT_SIGINT_RESET ? "to reset" :
+			                           "to exit";
+			const char* const tty = BC_DEFAULT_TTY_MODE ? "enabled" :
+			                        "disabled";
+			const char* const prompt = BC_DEFAULT_PROMPT ? "enabled" :
+			                           "disabled";
+
+			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
+			               BC_BUILD_TYPE, banner, sigint, tty, prompt);
+		}
+#endif // BC_ENABLED
+
+#if DC_ENABLED
+		if (BC_IS_DC)
+		{
+			const char* const sigint = DC_DEFAULT_SIGINT_RESET ? "to reset" :
+			                           "to exit";
+			const char* const tty = DC_DEFAULT_TTY_MODE ? "enabled" :
+			                        "disabled";
+			const char* const prompt = DC_DEFAULT_PROMPT ? "enabled" :
+			                           "disabled";
+
+			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
+			               BC_BUILD_TYPE, sigint, tty, prompt);
+		}
+#endif // DC_ENABLED
 	}
 
 	bc_file_flush(&vm.fout, bc_flush_none);
