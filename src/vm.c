@@ -101,11 +101,11 @@ static void bc_vm_sig(int sig) {
 
 	// There is already a signal in flight.
 	if (vm.status == (sig_atomic_t) BC_STATUS_QUIT || vm.sig) {
-		if (!BC_TTY || sig != SIGINT) vm.status = BC_STATUS_QUIT;
+		if (!BC_I || sig != SIGINT) vm.status = BC_STATUS_QUIT;
 		return;
 	}
 
-	if (BC_TTY && sig == SIGINT) {
+	if (sig == SIGINT && BC_SIGINT && BC_I) {
 
 		int err = errno;
 
@@ -162,7 +162,7 @@ void bc_vm_info(const char* const help) {
 		               BC_VERSION, BC_BUILD_TYPE);
 	}
 
-	bc_file_flush(&vm.fout, bc_flush_err);
+	bc_file_flush(&vm.fout, bc_flush_none);
 }
 #endif // !BC_ENABLE_LIBRARY
 
@@ -284,6 +284,40 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 	if (BC_ERR(vm.status)) BC_VM_JMP;
 
 	BC_SIG_TRYUNLOCK(lock);
+}
+
+static char* bc_vm_getenv(const char* var) {
+
+	char* ret;
+
+#ifndef _WIN32
+	ret = getenv(var);
+#else // _WIN32
+	_dupenv_s(&ret, NULL, var);
+#endif // _WIN32
+
+	return ret;
+}
+
+static void bc_vm_getenvFree(char* val) {
+	BC_UNUSED(val);
+#ifdef _WIN32
+	free(val);
+#endif // _WIN32
+}
+
+static void bc_vm_setenvFlag(const char* const var, int def, uint16_t flag) {
+
+	char* val = bc_vm_getenv(var);
+
+	if (val == NULL) {
+		if (def) vm.flags |= flag;
+		else vm.flags &= ~(flag);
+	}
+	else if (strtoul(val, NULL, 0)) vm.flags |= flag;
+	else vm.flags &= ~(flag);
+
+	bc_vm_getenvFree(val);
 }
 
 static void bc_vm_envArgs(const char* const env_args_name) {
@@ -538,6 +572,7 @@ void bc_vm_putchar(int c, BcFlushType type) {
 }
 
 #if !BC_ENABLE_LIBRARY
+
 #ifdef __OpenBSD__
 BC_NORETURN static void bc_abortm(const char* msg) {
 	bc_file_puts(&vm.ferr, bc_flush_none, msg);
@@ -573,29 +608,7 @@ static void bc_unveil(const char *path, const char *permissions) {
 #endif // BC_ENABLE_EXTRA_MATH
 
 #endif // __OpenBSD__
-#endif // !BC_ENABLE_LIBRARY
 
-char* bc_vm_getenv(const char* var) {
-
-	char* ret;
-
-#ifndef _WIN32
-	ret = getenv(var);
-#else // _WIN32
-	_dupenv_s(&ret, NULL, var);
-#endif // _WIN32
-
-	return ret;
-}
-
-void bc_vm_getenvFree(char* var) {
-	BC_UNUSED(var);
-#ifdef _WIN32
-	free(var);
-#endif // _WIN32
-}
-
-#if !BC_ENABLE_LIBRARY
 static void bc_vm_clean(void) {
 
 	BcVec *fns = &vm.prog.fns;
@@ -1000,20 +1013,37 @@ err:
 #endif // NDEBUG
 }
 
-void bc_vm_boot(int argc, char *argv[], const char *env_len,
-                const char* const env_args)
-{
-	int ttyin, ttyout, ttyerr;
+void bc_vm_boot(int argc, char *argv[]) {
 
-	BC_SIG_ASSERT_LOCKED;
+	int ttyin, ttyout, ttyerr;
+	bool tty;
+	const char* const env_len = BC_IS_BC ? "BC_LINE_LENGTH" : "DC_LINE_LENGTH";
+	const char* const env_args = BC_IS_BC ? "BC_ENV_ARGS" : "DC_ENV_ARGS";
+	const char* const env_sigint = BC_IS_BC ? "BC_SIGINT_RESET" :
+	                                          "DC_SIGINT_RESET";
+	int env_sigint_def = BC_IS_BC ? BC_DEFAULT_SIGINT_RESET :
+	                                DC_DEFAULT_SIGINT_RESET;
+	const char* const env_tty = BC_IS_BC ? "BC_TTY_MODE" : "DC_TTY_MODE";
+	int env_tty_def = BC_IS_BC ? BC_DEFAULT_TTY_MODE : DC_DEFAULT_TTY_MODE;
+#if BC_ENABLE_HISTORY
+	const char* const env_history = BC_IS_BC ? "BC_HISTORY" : "DC_HISTORY";
+	int env_history_def = BC_IS_BC ? BC_DEFAULT_HISTORY : DC_DEFAULT_HISTORY;
+#endif // BC_ENABLE_HISTORY
+	const char* const env_prompt = BC_IS_BC ? "BC_PROMPT" : "DC_PROMPT";
+	int env_prompt_def = BC_IS_BC ? BC_DEFAULT_PROMPT : DC_DEFAULT_PROMPT;
 
 	ttyin = isatty(STDIN_FILENO);
 	ttyout = isatty(STDOUT_FILENO);
 	ttyerr = isatty(STDERR_FILENO);
+	tty = (ttyin != 0 && ttyout != 0 && ttyerr != 0);
 
 	vm.flags |= ttyin ? BC_FLAG_TTYIN : 0;
-	vm.flags |= (ttyin != 0 && ttyout != 0 && ttyerr != 0) ? BC_FLAG_TTY : 0;
+	vm.flags |= tty ? BC_FLAG_TTY : 0;
 	vm.flags |= ttyin && ttyout ? BC_FLAG_I : 0;
+
+	// Set defaults.
+	vm.flags |= BC_TTY ? BC_FLAG_P | BC_FLAG_R : 0;
+	vm.flags |= BC_I ? BC_FLAG_Q : 0;
 
 	bc_vm_sigaction();
 
@@ -1036,15 +1066,29 @@ void bc_vm_boot(int argc, char *argv[], const char *env_len,
 	bc_program_init(&vm.prog);
 	bc_parse_init(&vm.prs, &vm.prog, BC_PROG_MAIN);
 
+	bc_vm_setenvFlag(env_sigint, BC_I ? env_sigint_def : 0, BC_FLAG_SIGINT);
+
+	if (BC_TTY) {
+
+		bc_vm_setenvFlag(env_tty, env_tty_def, BC_FLAG_TTY);
+		bc_vm_setenvFlag(env_prompt, tty ? env_prompt_def : 0, BC_FLAG_P);
+
 #if BC_ENABLE_HISTORY
-	if (BC_TTY) bc_history_init(&vm.history);
+		bc_vm_setenvFlag(env_history, tty ? env_history_def : 0,
+		                 BC_FLAG_HISTORY);
+		if (BC_HISTORY) bc_history_init(&vm.history);
 #endif // BC_ENABLE_HISTORY
+	}
 
 #if BC_ENABLED
 	if (BC_IS_BC) {
+
 		char* var = bc_vm_getenv("POSIXLY_CORRECT");
+
 		vm.flags |= BC_FLAG_S * (var != NULL);
 		bc_vm_getenvFree(var);
+
+		bc_vm_setenvFlag("BC_BANNER", BC_DEFAULT_BANNER, BC_FLAG_Q);
 	}
 #endif // BC_ENABLED
 
@@ -1053,6 +1097,14 @@ void bc_vm_boot(int argc, char *argv[], const char *env_len,
 
 #if BC_ENABLED
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
+#endif // BC_ENABLED
+
+#if BC_ENABLED
+	if (BC_IS_BC && BC_I && (vm.flags & BC_FLAG_Q)) {
+		bc_vm_info(NULL);
+		bc_file_putchar(&vm.fout, bc_flush_none, '\n');
+		bc_file_flush(&vm.fout, bc_flush_none);
+	}
 #endif // BC_ENABLED
 
 	BC_SIG_UNLOCK;

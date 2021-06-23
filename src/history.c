@@ -576,7 +576,6 @@ static size_t bc_history_columns(void) {
 	return ws.ws_col;
 }
 
-#if BC_ENABLE_PROMPT
 /**
  * Check if text is an ANSI escape sequence.
  */
@@ -624,7 +623,6 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 
 	return bc_history_colPos(buf, buf_len, buf_len);
 }
-#endif // BC_ENABLE_PROMPT
 
 /**
  * Rewrites the currently edited line accordingly to the buffer content,
@@ -660,10 +658,7 @@ static void bc_history_refresh(BcHistory *h) {
 	}
 
 	// Write the prompt, if desired.
-#if BC_ENABLE_PROMPT
-	if (BC_USE_PROMPT)
-		bc_file_write(&vm.fout, bc_flush_none, h->prompt, h->plen);
-#endif // BC_ENABLE_PROMPT
+	if (BC_PROMPT) bc_file_write(&vm.fout, bc_flush_none, h->prompt, h->plen);
 
 	bc_file_write(&vm.fout, bc_flush_none, buf, BC_HIST_BUF_LEN(h));
 
@@ -696,9 +691,7 @@ static void bc_history_edit_insert(BcHistory *h, const char *cbuf, size_t clen)
 		bc_vec_pushByte(&h->buf, '\0');
 
 		len = BC_HIST_BUF_LEN(h) + h->extras.len - 1;
-#if BC_ENABLE_PROMPT
 		colpos = bc_history_promptColLen(h->prompt, h->plen);
-#endif // BC_ENABLE_PROMPT
 		colpos += bc_history_colPos(h->buf.v, len, len);
 
 		if (colpos < h->cols) {
@@ -1137,8 +1130,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 	// line below or add anything like it.
 	// bc_file_write(&vm.fout, bc_flush_none, h->extras.v, h->extras.len - 1);
 
-#if BC_ENABLE_PROMPT
-	if (BC_USE_PROMPT) {
+	if (BC_PROMPT) {
 
 		h->prompt = prompt;
 		h->plen = strlen(prompt);
@@ -1147,7 +1139,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 		bc_file_write(&vm.fout, bc_flush_none, prompt, h->plen);
 		bc_file_flush(&vm.fout, bc_flush_none);
 	}
-#endif // BC_ENABLE_PROMPT
 
 	for (;;) {
 
@@ -1179,11 +1170,18 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 			case BC_ACTION_CTRL_C:
 			{
 				bc_history_printCtrl(h, c);
+
+				if (!BC_SIGINT) {
+					vm.status = BC_STATUS_QUIT;
+					BC_VM_JMP;
+				}
+
 				bc_file_write(&vm.fout, bc_flush_none, vm.sigmsg, vm.siglen);
 				bc_file_write(&vm.fout, bc_flush_none, bc_program_ready_msg,
 				              bc_program_ready_msg_len);
 				bc_history_reset(h);
 				bc_history_refresh(h);
+
 				break;
 			}
 

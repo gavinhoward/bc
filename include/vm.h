@@ -114,13 +114,18 @@
 #define BC_FLAG_G (UINTMAX_C(1)<<4)
 #endif // BC_ENABLED
 
-#define BC_FLAG_I (UINTMAX_C(1)<<5)
-#define BC_FLAG_P (UINTMAX_C(1)<<6)
-#define BC_FLAG_R (UINTMAX_C(1)<<7)
+#define BC_FLAG_Q (UINTMAX_C(1)<<5)
+#define BC_FLAG_I (UINTMAX_C(1)<<6)
+#define BC_FLAG_P (UINTMAX_C(1)<<7)
+#define BC_FLAG_R (UINTMAX_C(1)<<8)
 #define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
 #define BC_FLAG_TTY (UINTMAX_C(1)<<9)
+#define BC_FLAG_HISTORY (UINTMAX_C(1)<<10)
+#define BC_FLAG_SIGINT (UINTMAX_C(1)<<11)
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
 #define BC_TTY (vm.flags & BC_FLAG_TTY)
+#define BC_HISTORY (vm.flags & BC_FLAG_HISTORY)
+#define BC_SIGINT (vm.flags & BC_FLAG_SIGINT)
 
 #if BC_ENABLED
 
@@ -158,9 +163,9 @@
 #endif // BC_ENABLED
 
 #if BC_ENABLED
-#define BC_USE_PROMPT (!BC_P && BC_TTY && !BC_IS_POSIX)
+#define BC_PROMPT (BC_P && !BC_IS_POSIX)
 #else // BC_ENABLED
-#define BC_USE_PROMPT (!BC_P && BC_TTY)
+#define BC_PROMPT (BC_P)
 #endif // BC_ENABLED
 
 #endif // !BC_ENABLE_LIBRARY
@@ -428,8 +433,7 @@ typedef struct BcVm {
 } BcVm;
 
 void bc_vm_info(const char* const help);
-void bc_vm_boot(int argc, char *argv[], const char *env_len,
-                const char* const env_args);
+void bc_vm_boot(int argc, char *argv[]);
 void bc_vm_init(void);
 void bc_vm_shutdown(void);
 void bc_vm_addTemp(BcDig *num);
@@ -447,8 +451,6 @@ size_t bc_vm_growSize(size_t a, size_t b);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
-char* bc_vm_getenv(const char* var);
-void bc_vm_getenvFree(char* var);
 
 void bc_pledge(const char *promises, const char *execpromises);
 

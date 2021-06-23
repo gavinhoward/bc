@@ -54,13 +54,13 @@ usage() {
 	printf '    %s --help\n' "$script"
 	printf '    %s [-a|-bD|-dB|-c] [-CEfgGHlmMNPtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\n' "$script"
 	printf '    %s \\\n' "$script"
-	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]\\\n'
-	printf '       [--force --debug --disable-extra-math --disable-generated-tests]    \\\n'
-	printf '       [--disable-history --disable-man-pages --disable-nls]               \\\n'
-	printf '       [--disable-prompt --disable-strip] [--install-all-locales]          \\\n'
-	printf '       [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]                   \\\n'
-	printf '       [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]     \\\n'
-	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]           \\\n'
+	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]  \\\n'
+	printf '       [--force --debug --disable-extra-math --disable-generated-tests]      \\\n'
+	printf '       [--disable-history --disable-man-pages --disable-nls --disable-strip] \\\n'
+	printf '       [--install-all-locales] [--opt=OPT_LEVEL]                             \\\n'
+	printf '       [--karatsuba-len=KARATSUBA_LEN]                                       \\\n'
+	printf '       [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]       \\\n'
+	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]             \\\n'
 	printf '\n'
 	printf '    -a, --library\n'
 	printf '        Build the libbc instead of the programs. This is meant to be used with\n'
@@ -123,10 +123,14 @@ usage() {
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
 	printf '        This is passed through to the compiler, so it must be supported.\n'
-	printf '    -P, --disable-prompt\n'
-	printf '        Disables the prompt in the built bc. The prompt will never show up,\n'
-	printf '        or in other words, it will be permanently disabled and cannot be\n'
-	printf '        enabled.\n'
+	printf '    -s SETTING, --set-default-on SETTING\n'
+	printf '        Set the default named by SETTING to on. See below for possible values\n'
+	printf '        for SETTING. For multiple instances of the -s or -S for the the same\n'
+	printf '        setting, the last one is used.\n'
+	printf '    -S SETTING, --set-default-off SETTING\n'
+	printf '        Set the default named by SETTING to off. See below for possible values\n'
+	printf '        for SETTING. For multiple instances of the -s or -S for the the same\n'
+	printf '        setting, the last one is used.\n'
 	printf '    -t, --enable-test-timing\n'
 	printf '        Enable the timing of tests. This is for development only.\n'
 	printf '    -T, --disable-strip\n'
@@ -241,6 +245,58 @@ usage() {
 	printf '\n'
 	printf 'WARNING: even though `configure.sh` supports both option types, short and\n'
 	printf 'long, it does not support handling both at the same time. Use only one type.\n'
+	printf '\n'
+	printf 'Settings\n'
+	printf '========\n'
+	printf '\n'
+	printf 'bc and dc have some settings that, while they cannot be removed by build time\n'
+	printf 'options, can have their defaults changed at build time by packagers. Users are\n'
+	printf 'also able to change each setting with environment variables.\n'
+	printf '\n'
+	printf 'The following is a table of settings, along with their default values and the\n'
+	printf 'environment variables users can use to change them. (For the defaults, non-zero\n'
+	printf 'means on, and zero means off.)\n'
+	printf '\n'
+	printf '| Setting         | Description            | Default      | Env Variable    |\n'
+	printf '| =============== | ====================== | ============ | =============== |\n'
+	printf '| bc.banner       | Whether to display the |            0 | BC_BANNER       |\n'
+	printf '|                 | bc version banner when |              |                 |\n'
+	printf '|                 | in interactive mode.   |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| bc.sigint_reset | Whether SIGINT should  |            1 | BC_SIGINT_RESET |\n'
+	printf '|                 | reset bc, instead of   |              |                 |\n'
+	printf '|                 | exiting, when in       |              |                 |\n'
+	printf '|                 | interactive mode.      |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| dc.sigint_reset | Whether SIGINT should  |            1 | DC_SIGINT_RESET |\n'
+	printf '|                 | reset dc, instead of   |              |                 |\n'
+	printf '|                 | exiting, when in       |              |                 |\n'
+	printf '|                 | interactive mode.      |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| bc.tty_mode     | Whether TTY mode for   |            1 | BC_TTY_MODE     |\n'
+	printf '|                 | bc should be on when   |              |                 |\n'
+	printf '|                 | available.             |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| dc.tty_mode     | Whether TTY mode for   |            0 | BC_TTY_MODE     |\n'
+	printf '|                 | dc should be on when   |              |                 |\n'
+	printf '|                 | available.             |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| bc.history      | Whether history should | $BC_TTY_MODE | BC_HISTORY      |\n'
+	printf '|                 | be on for bc when in   |              |                 |\n'
+	printf '|                 | TTY mode.              |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| dc.history      | Whether history should | $DC_TTY_MODE | DC_HISTORY      |\n'
+	printf '|                 | be on for dc when in   |              |                 |\n'
+	printf '|                 | TTY mode.              |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| bc.prompt       | Whether the prompt for | $BC_TTY_MODE | BC_PROMPT       |\n'
+	printf '|                 | bc should be on in TTY |              |                 |\n'
+	printf '|                 | mode.                  |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| dc.prompt       | Whether the prompt for | $DC_TTY_MODE | DC_PROMPT       |\n'
+	printf '|                 | dc should be on in TTY |              |                 |\n'
+	printf '|                 | mode.                  |              |                 |\n'
+	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
 
 	exit "$_usage_val"
 }
@@ -477,6 +533,34 @@ gen_script_tests() {
 	done
 }
 
+set_default() {
+
+	_set_default_on="$1"
+	shift
+
+	_set_default_name="$1"
+	shift
+
+	# The reason that the variables that are being set do not have the same
+	# non-collision avoidance that the other variables do is that we *do* want
+	# the settings of these variables to leak out of the function. They adjust
+	# the settings outside of the function.
+	case "$_set_default_name" in
+
+		bc.banner) bc_default_banner="$_set_default_on" ;;
+		bc.sigint_reset) bc_default_sigint_reset="$_set_default_on" ;;
+		dc.sigint_reset) dc_default_sigint_reset="$_set_default_on" ;;
+		bc.tty_mode) bc_default_tty_mode="$_set_default_on" ;;
+		dc.tty_mode) dc_default_tty_mode="$_set_default_on" ;;
+		bc.history) bc_default_history="$_set_default_on" ;;
+		dc.history) dc_default_history="$_set_default_on" ;;
+		bc.prompt) bc_default_prompt="$_set_default_on" ;;
+		dc.prompt) dc_default_prompt="$_set_default_on" ;;
+		?) usage "Invalid setting: $_set_default_name" ;;
+
+	esac
+}
+
 # Generates a list of script test targets that will be used as prerequisites for
 # other targets.
 #
@@ -526,10 +610,22 @@ vg=0
 memcheck=0
 clean=1
 
+# The empty strings are because they depend on TTY mode. If they are directly
+# set, though, they will be integers. We test for empty strings later.
+bc_default_banner=0
+bc_default_sigint_reset=1
+dc_default_sigint_reset=1
+bc_default_tty_mode=1
+dc_default_tty_mode=0
+bc_default_history=""
+dc_default_history=""
+bc_default_prompt=""
+dc_default_prompt=""
+
 # getopts is a POSIX utility, but it cannot handle long options. Thus, the
 # handling of long options is done by hand, and that's the reason that short and
 # long options cannot be mixed.
-while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
+while getopts "abBcdDEfgGhHk:lMmNO:S:s:tTvz-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -551,7 +647,8 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
-		P) prompt=0 ;;
+		S) set_default 0 "$OPTARG" ;;
+		s) set_default 1 "$OPTARG" ;;
 		t) time_tests=1 ;;
 		T) strip_bin=0 ;;
 		v) vg=1 ;;
@@ -652,6 +749,20 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 					fi
 					optimization="$1"
 					shift ;;
+				set-default-on=?*) set_default 1 "$LONG_OPTARG" ;;
+				set-default-on)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					set_default 1 "$1"
+					shift ;;
+				set-default-off=?*) set_default 0 "$LONG_OPTARG" ;;
+				set-default-off)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					set_default 0 "$1"
+					shift ;;
 				disable-bc) dc_only=1 ;;
 				disable-dc) bc_only=1 ;;
 				disable-clean) clean=0 ;;
@@ -660,7 +771,6 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 				disable-history) hist=0 ;;
 				disable-man-pages) install_manpages=0 ;;
 				disable-nls) nls=0 ;;
-				disable-prompt) prompt=0 ;;
 				disable-strip) strip_bin=0 ;;
 				enable-test-timing) time_tests=1 ;;
 				enable-valgrind) vg=1 ;;
@@ -686,7 +796,7 @@ while getopts "abBcdDEfgGhHk:lMmNO:PStTvz-" opt; do
 			esac
 			shift
 			OPTIND=1 ;;
-		?) usage "Invalid option $opt" ;;
+		?) usage "Invalid option: $opt" ;;
 	esac
 
 done
@@ -1036,7 +1146,7 @@ if [ "$nls" -ne 0 ]; then
 	printf 'Testing NLS...\n'
 
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
-	flags="$flags -DBC_ENABLE_HISTORY=$hist -DBC_ENABLE_LIBRARY=0"
+	flags="$flags -DBC_ENABLE_HISTORY=$hist -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
@@ -1117,7 +1227,7 @@ if [ "$hist" -eq 1 ]; then
 	printf 'Testing history...\n'
 
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
-	flags="$flags -DBC_ENABLE_NLS=$nls -DBC_ENABLE_LIBRARY=0"
+	flags="$flags -DBC_ENABLE_NLS=$nls -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
@@ -1156,7 +1266,7 @@ fi
 set +e
 printf 'Testing for OpenBSD...\n'
 
-flags="-DBC_TEST_OPENBSD"
+flags="-DBC_TEST_OPENBSD -DBC_ENABLE_AFL=0"
 "$CC" $CPPFLAGS $CFLAGS $flags -I./include -E "include/status.h" > /dev/null 2>&1
 
 err="$?"
@@ -1258,6 +1368,22 @@ if [ "$vg" -ne 0 ]; then
 	memcheck=1
 fi
 
+if [ "$bc_default_history" = "" ]; then
+	bc_default_history="$bc_default_tty_mode"
+fi
+
+if [ "$dc_default_history" = "" ]; then
+	dc_default_history="$dc_default_tty_mode"
+fi
+
+if [ "$bc_default_prompt" = "" ]; then
+	bc_default_prompt="$bc_default_tty_mode"
+fi
+
+if [ "$dc_default_prompt" = "" ]; then
+	dc_default_prompt="$dc_default_tty_mode"
+fi
+
 # Generate the test targets and prerequisites.
 bc_tests=$(gen_test_targets bc)
 bc_script_tests=$(gen_script_test_targets bc)
@@ -1280,7 +1406,6 @@ printf 'BC_ENABLE_LIBRARY=%s\n\n' "$library"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
 printf 'BC_ENABLE_NLS=%s\n' "$nls"
-printf 'BC_ENABLE_PROMPT=%s\n' "$prompt"
 printf 'BC_ENABLE_AFL=%s\n' "$fuzz"
 printf '\n'
 printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
@@ -1307,6 +1432,18 @@ printf 'DESTDIR=%s\n' "$DESTDIR"
 printf 'LONG_BIT=%s\n' "$LONG_BIT"
 printf 'GEN_HOST=%s\n' "$GEN_HOST"
 printf 'GEN_EMU=%s\n' "$GEN_EMU"
+printf '\n'
+printf 'Setting Defaults\n'
+printf '================\n'
+printf 'bc.banner=%s\n' "$bc_default_banner"
+printf 'bc.sigint_reset=%s\n' "$bc_default_sigint_reset"
+printf 'dc.sigint_reset=%s\n' "$dc_default_sigint_reset"
+printf 'bc.tty_mode=%s\n' "$bc_default_tty_mode"
+printf 'dc.tty_mode=%s\n' "$dc_default_tty_mode"
+printf 'bc.history=%s\n' "$bc_default_history"
+printf 'dc.history=%s\n' "$dc_default_history"
+printf 'bc.prompt=%s\n' "$bc_default_prompt"
+printf 'dc.prompt=%s\n' "$dc_default_prompt"
 
 # This is where the real work begins. This is the point at which the Makefile.in
 # template is edited and output to the Makefile.
@@ -1357,7 +1494,6 @@ contents=$(replace "$contents" "LIBRARY" "$library")
 contents=$(replace "$contents" "HISTORY" "$hist")
 contents=$(replace "$contents" "EXTRA_MATH" "$extra_math")
 contents=$(replace "$contents" "NLS" "$nls")
-contents=$(replace "$contents" "PROMPT" "$prompt")
 contents=$(replace "$contents" "FUZZ" "$fuzz")
 contents=$(replace "$contents" "MEMCHECK" "$memcheck")
 
@@ -1430,6 +1566,16 @@ contents=$(replace "$contents" "CLEAN_PREREQS" "$CLEAN_PREREQS")
 contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
 
 contents=$(replace "$contents" "BSD" "$bsd")
+
+contents=$(replace "$contents" "BC_DEFAULT_BANNER" "$bc_default_banner")
+contents=$(replace "$contents" "BC_DEFAULT_SIGINT_RESET" "$bc_default_sigint_reset")
+contents=$(replace "$contents" "DC_DEFAULT_SIGINT_RESET" "$dc_default_sigint_reset")
+contents=$(replace "$contents" "BC_DEFAULT_TTY_MODE" "$bc_default_tty_mode")
+contents=$(replace "$contents" "DC_DEFAULT_TTY_MODE" "$dc_default_tty_mode")
+contents=$(replace "$contents" "BC_DEFAULT_HISTORY" "$bc_default_history")
+contents=$(replace "$contents" "DC_DEFAULT_HISTORY" "$dc_default_history")
+contents=$(replace "$contents" "BC_DEFAULT_PROMPT" "$bc_default_prompt")
+contents=$(replace "$contents" "DC_DEFAULT_PROMPT" "$dc_default_prompt")
 
 # Do the first print to the Makefile.
 printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"

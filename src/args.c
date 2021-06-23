@@ -153,13 +153,13 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 			case 'P':
 			{
-				vm.flags |= BC_FLAG_P;
+				vm.flags &= ~(BC_FLAG_P);
 				break;
 			}
 
 			case 'R':
 			{
-				vm.flags |= BC_FLAG_R;
+				vm.flags &= ~(BC_FLAG_R);
 				break;
 			}
 
@@ -231,6 +231,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) vm.status);
+	if (!BC_IS_BC || vm.exprs.len > 1) vm.flags &= ~(BC_FLAG_Q);
 
 	// We need to make sure the files list is initialized. We don't want to
 	// initialize it if there are no files because it's just a waste of memory.

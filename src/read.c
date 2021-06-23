@@ -115,12 +115,10 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	bc_vec_popAll(vec);
 
-#if BC_ENABLE_PROMPT
-	if (BC_USE_PROMPT) {
+	if (BC_PROMPT) {
 		bc_file_puts(&vm.fout, bc_flush_none, prompt);
 		bc_file_flush(&vm.fout, bc_flush_none);
 	}
-#endif // BC_ENABLE_PROMPT
 
 	if (bc_read_buf(vec, vm.buf, &vm.buf_len)) {
 		bc_vec_pushByte(vec, '\0');
@@ -147,11 +145,10 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 				assert(vm.sig);
 
+				vm.sig = 0;
 				vm.status = (sig_atomic_t) BC_STATUS_SUCCESS;
-#if BC_ENABLE_PROMPT
-				if (BC_USE_PROMPT)
-					bc_file_puts(&vm.fout, bc_flush_none, prompt);
-#endif // BC_ENABLE_PROMPT
+				bc_file_puts(&vm.fout, bc_flush_none, bc_program_ready_msg);
+				if (BC_PROMPT) bc_file_puts(&vm.fout, bc_flush_none, prompt);
 				bc_file_flush(&vm.fout, bc_flush_none);
 
 				BC_SIG_UNLOCK;
@@ -187,7 +184,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	BcStatus s;
 
 #if BC_ENABLE_HISTORY
-	if (BC_TTY && !vm.history.badTerm)
+	if (BC_HISTORY && !vm.history.badTerm)
 		s = bc_history_line(&vm.history, vec, prompt);
 	else s = bc_read_chars(vec, prompt);
 #else // BC_ENABLE_HISTORY

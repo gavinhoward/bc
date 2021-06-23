@@ -29,23 +29,23 @@
 
 # For OpenBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 1 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 1 1 0 0 0
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 1 0 1 0
+# scripts/release.sh 1 0 1 0 0 0 1 1 0 1 0
 #
 # For Linux, run two separate ones (in different directories), like so:
 #
-# scripts/release.sh 1 1 1 0 0 0 1 0 1 0
-# scripts/release.sh 1 1 0 1 0 0 1 0 1 0
+# scripts/release.sh 1 1 1 0 0 0 1 1 0 1 0
+# scripts/release.sh 1 1 0 1 0 0 1 1 0 1 0
 #
 # If you want to run sanitizers or valgrind, you can't do it with generated
 # tests because they take too long, so if you would like to do that, use the
 # following:
 #
-# scripts/release.sh 1 0 1 0 1 0 1 0 1 0
-# scripts/release.sh 1 0 0 1 0 1 1 0 1 0
+# scripts/release.sh 1 0 1 0 1 0 0 1 0 1 0
+# scripts/release.sh 1 0 0 1 0 1 0 1 0 1 0
 #
 # If this script fails on any platform when starting the Karatsuba test, check
 # that Python is installed, especially if the error says something like:
@@ -53,8 +53,8 @@
 
 usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
-	printf '          [run_sanitizers] [run_valgrind] [run_64_bit] [run_gen_script]\n'
-	printf '          [test_c11] [test_128_bit]\n'
+	printf '          [run_sanitizers] [run_valgrind] [test_settings] [run_64_bit] \n'
+	printf '          [run_gen_script] [test_c11] [test_128_bit]\n'
 	exit 1
 }
 
@@ -265,6 +265,34 @@ runconfigseries() {
 	fi
 }
 
+runsettingsseries() {
+
+	_runsettingsseries_CFLAGS="$1"
+	shift
+
+	_runsettingsseries_CC="$1"
+	shift
+
+	_runsettingsseries_configure_flags="$1"
+	shift
+
+	_runsettingsseries_run_tests="$1"
+	shift
+
+	if [ "$test_settings" -ne 0 ]; then
+
+		while read _runsettingsseries_s; do
+			runconfigseries "$_runsettingsseries_CFLAGS" "$_runsettingsseries_CC" \
+				"$_runsettingsseries_configure_flags $_runsettingsseries_s" \
+				"$_runsettingsseries_run_tests"
+		done < "$scriptdir/settings.txt"
+
+	else
+		runconfigseries "$_runsettingsseries_CFLAGS" "$_runsettingsseries_CC" \
+			"$_runsettingsseries_configure_flags" "$_runsettingsseries_run_tests"
+	fi
+}
+
 runtestseries() {
 
 	_runtestseries_CFLAGS="$1"
@@ -279,14 +307,14 @@ runtestseries() {
 	_runtestseries_run_tests="$1"
 	shift
 
-	_runtestseries_flags="E H N P EH EN EP HN HP NP EHN EHP ENP HNP EHNP"
+	_runtestseries_flags="E H N EH EN HN EHN"
 
-	runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+	runsettingsseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
 		"$_runtestseries_configure_flags" "$_runtestseries_run_tests"
 
-	for f in $_runtestseries_flags; do
-		runconfigseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
-			"$_runtestseries_configure_flags -$f" "$_runtestseries_run_tests"
+	for _runtestseries_f in $_runtestseries_flags; do
+		runsettingsseries "$_runtestseries_CFLAGS" "$_runtestseries_CC" \
+			"$_runtestseries_configure_flags -$_runtestseries_f" "$_runtestseries_run_tests"
 	done
 }
 
@@ -512,6 +540,13 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	run_valgrind=1
+fi
+
+if [ "$#" -gt 0 ]; then
+	test_settings="$1"
+	shift
+else
+	test_settings=1
 fi
 
 if [ "$#" -gt 0 ]; then

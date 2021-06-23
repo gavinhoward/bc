@@ -157,12 +157,6 @@
 #define lndebug(fmt, ...)
 #endif // BC_DEBUG_CODE
 
-#if !BC_ENABLE_PROMPT
-#define bc_history_line(h, vec, prompt) bc_history_line(h, vec)
-#define bc_history_raw(h, prompt) bc_history_raw(h)
-#define bc_history_edit(h, prompt) bc_history_edit(h)
-#endif // BC_ENABLE_PROMPT
-
 typedef enum BcHistoryAction {
 
 	BC_ACTION_NULL = 0,
@@ -206,13 +200,11 @@ typedef struct BcHistory {
 	/// Any material printed without a trailing newline.
 	BcVec extras;
 
-#if BC_ENABLE_PROMPT
 	/// Prompt to display.
 	const char *prompt;
 
 	/// Prompt length.
 	size_t plen;
-#endif // BC_ENABLE_PROMPT
 
 	/// Prompt column length.
 	size_t pcol;
