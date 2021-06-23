@@ -281,14 +281,6 @@ usage() {
 	printf '|                 | dc should be on when   |              |                 |\n'
 	printf '|                 | available.             |              |                 |\n'
 	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| bc.history      | Whether history should | $BC_TTY_MODE | BC_HISTORY      |\n'
-	printf '|                 | be on for bc when in   |              |                 |\n'
-	printf '|                 | TTY mode.              |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| dc.history      | Whether history should | $DC_TTY_MODE | DC_HISTORY      |\n'
-	printf '|                 | be on for dc when in   |              |                 |\n'
-	printf '|                 | TTY mode.              |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
 	printf '| bc.prompt       | Whether the prompt for | $BC_TTY_MODE | BC_PROMPT       |\n'
 	printf '|                 | bc should be on in TTY |              |                 |\n'
 	printf '|                 | mode.                  |              |                 |\n'
@@ -552,8 +544,6 @@ set_default() {
 		dc.sigint_reset) dc_default_sigint_reset="$_set_default_on" ;;
 		bc.tty_mode) bc_default_tty_mode="$_set_default_on" ;;
 		dc.tty_mode) dc_default_tty_mode="$_set_default_on" ;;
-		bc.history) bc_default_history="$_set_default_on" ;;
-		dc.history) dc_default_history="$_set_default_on" ;;
 		bc.prompt) bc_default_prompt="$_set_default_on" ;;
 		dc.prompt) dc_default_prompt="$_set_default_on" ;;
 		?) usage "Invalid setting: $_set_default_name" ;;
@@ -617,8 +607,6 @@ bc_default_sigint_reset=1
 dc_default_sigint_reset=1
 bc_default_tty_mode=1
 dc_default_tty_mode=0
-bc_default_history=""
-dc_default_history=""
 bc_default_prompt=""
 dc_default_prompt=""
 
@@ -1368,14 +1356,6 @@ if [ "$vg" -ne 0 ]; then
 	memcheck=1
 fi
 
-if [ "$bc_default_history" = "" ]; then
-	bc_default_history="$bc_default_tty_mode"
-fi
-
-if [ "$dc_default_history" = "" ]; then
-	dc_default_history="$dc_default_tty_mode"
-fi
-
 if [ "$bc_default_prompt" = "" ]; then
 	bc_default_prompt="$bc_default_tty_mode"
 fi
@@ -1440,8 +1420,6 @@ printf 'bc.sigint_reset=%s\n' "$bc_default_sigint_reset"
 printf 'dc.sigint_reset=%s\n' "$dc_default_sigint_reset"
 printf 'bc.tty_mode=%s\n' "$bc_default_tty_mode"
 printf 'dc.tty_mode=%s\n' "$dc_default_tty_mode"
-printf 'bc.history=%s\n' "$bc_default_history"
-printf 'dc.history=%s\n' "$dc_default_history"
 printf 'bc.prompt=%s\n' "$bc_default_prompt"
 printf 'dc.prompt=%s\n' "$dc_default_prompt"
 
@@ -1572,8 +1550,6 @@ contents=$(replace "$contents" "BC_DEFAULT_SIGINT_RESET" "$bc_default_sigint_res
 contents=$(replace "$contents" "DC_DEFAULT_SIGINT_RESET" "$dc_default_sigint_reset")
 contents=$(replace "$contents" "BC_DEFAULT_TTY_MODE" "$bc_default_tty_mode")
 contents=$(replace "$contents" "DC_DEFAULT_TTY_MODE" "$dc_default_tty_mode")
-contents=$(replace "$contents" "BC_DEFAULT_HISTORY" "$bc_default_history")
-contents=$(replace "$contents" "DC_DEFAULT_HISTORY" "$dc_default_history")
 contents=$(replace "$contents" "BC_DEFAULT_PROMPT" "$bc_default_prompt")
 contents=$(replace "$contents" "DC_DEFAULT_PROMPT" "$dc_default_prompt")
 

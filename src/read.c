@@ -184,7 +184,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	BcStatus s;
 
 #if BC_ENABLE_HISTORY
-	if (BC_HISTORY && !vm.history.badTerm)
+	if (BC_TTY && !vm.history.badTerm)
 		s = bc_history_line(&vm.history, vec, prompt);
 	else s = bc_read_chars(vec, prompt);
 #else // BC_ENABLE_HISTORY

@@ -120,11 +120,9 @@
 #define BC_FLAG_R (UINTMAX_C(1)<<8)
 #define BC_FLAG_TTYIN (UINTMAX_C(1)<<8)
 #define BC_FLAG_TTY (UINTMAX_C(1)<<9)
-#define BC_FLAG_HISTORY (UINTMAX_C(1)<<10)
-#define BC_FLAG_SIGINT (UINTMAX_C(1)<<11)
+#define BC_FLAG_SIGINT (UINTMAX_C(1)<<10)
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
 #define BC_TTY (vm.flags & BC_FLAG_TTY)
-#define BC_HISTORY (vm.flags & BC_FLAG_HISTORY)
 #define BC_SIGINT (vm.flags & BC_FLAG_SIGINT)
 
 #if BC_ENABLED

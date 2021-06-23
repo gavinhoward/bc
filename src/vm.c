@@ -1025,10 +1025,6 @@ void bc_vm_boot(int argc, char *argv[]) {
 	                                DC_DEFAULT_SIGINT_RESET;
 	const char* const env_tty = BC_IS_BC ? "BC_TTY_MODE" : "DC_TTY_MODE";
 	int env_tty_def = BC_IS_BC ? BC_DEFAULT_TTY_MODE : DC_DEFAULT_TTY_MODE;
-#if BC_ENABLE_HISTORY
-	const char* const env_history = BC_IS_BC ? "BC_HISTORY" : "DC_HISTORY";
-	int env_history_def = BC_IS_BC ? BC_DEFAULT_HISTORY : DC_DEFAULT_HISTORY;
-#endif // BC_ENABLE_HISTORY
 	const char* const env_prompt = BC_IS_BC ? "BC_PROMPT" : "DC_PROMPT";
 	int env_prompt_def = BC_IS_BC ? BC_DEFAULT_PROMPT : DC_DEFAULT_PROMPT;
 
@@ -1074,9 +1070,7 @@ void bc_vm_boot(int argc, char *argv[]) {
 		bc_vm_setenvFlag(env_prompt, tty ? env_prompt_def : 0, BC_FLAG_P);
 
 #if BC_ENABLE_HISTORY
-		bc_vm_setenvFlag(env_history, tty ? env_history_def : 0,
-		                 BC_FLAG_HISTORY);
-		if (BC_HISTORY) bc_history_init(&vm.history);
+		if (BC_TTY) bc_history_init(&vm.history);
 #endif // BC_ENABLE_HISTORY
 	}
 
