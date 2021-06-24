@@ -520,6 +520,10 @@ This header is the API for the `bcl` library.
 This header is meant for distribution to end users and contains the API that end
 users of `bcl` can use in their own software.
 
+This header, because it's the public header, is also the root header. That means
+that it has platform-specific fixes for Windows. (If the fixes were not in this
+header, the build would fail on Windows.)
+
 The code associated with this header is in [`src/library.c`][43].
 
 #### `dc.h`
@@ -642,11 +646,8 @@ The code associated with this header is in [`src/read.c`][56].
 
 #### `status.h`
 
-This header has a few things:
-
-* Compiler-specific fixes.
-* Platform-specific fixes.
-* A list of possible errors that internal `bc` code can use.
+This header has a list of possible errors that internal `bc` code can use. It
+also some compiler-specific and platform-specific fixes.
 
 There is no code associated with this header.
 

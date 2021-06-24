@@ -101,6 +101,13 @@
 #define BC_FALLTHROUGH
 #endif // defined(__clang__) || defined(__GNUC__)
 
+#ifdef __GNUC__
+#ifdef __OpenBSD__
+// The OpenBSD GCC doesn't like inline.
+#define inline
+#endif // __OpenBSD__
+#endif // __GNUC__
+
 // Workarounds for AIX's POSIX incompatibility.
 #ifndef SIZE_MAX
 #define SIZE_MAX __SIZE_MAX__
@@ -120,46 +127,6 @@
 #ifndef SIG_ATOMIC_MAX
 #define SIG_ATOMIC_MAX __SIG_ATOMIC_MAX__
 #endif // SIG_ATOMIC_MAX
-
-// Windows has deprecated isatty() and the rest of these.
-// Or doesn't have them.
-#ifdef _WIN32
-
-// This one is special. Windows did not like me defining an
-// inline function that was not given a definition in a header
-// file. This suppresses that by making inline functions non-inline.
-#define inline
-
-#define restrict __restrict
-#define strdup _strdup
-#define write(f, b, s) _write((f), (b), (unsigned int) (s))
-#define read(f, b, s) _read((f), (b), (unsigned int) (s))
-#define close _close
-#define open(f, n, m) _sopen_s(f, n, m, _SH_DENYNO, _S_IREAD | _S_IWRITE)
-#define sigjmp_buf jmp_buf
-#define sigsetjmp(j, s) setjmp(j)
-#define siglongjmp longjmp
-#define isatty _isatty
-#define STDIN_FILENO _fileno(stdin)
-#define STDOUT_FILENO _fileno(stdout)
-#define STDERR_FILENO _fileno(stderr)
-#define ssize_t SSIZE_T
-#define S_ISDIR(m) ((m) & _S_IFDIR)
-#define O_RDONLY _O_RDONLY
-#define stat _stat
-#define fstat _fstat
-#define BC_FILE_SEP '\\'
-
-#else // _WIN32
-#define BC_FILE_SEP '/'
-
-#ifdef __GNUC__
-#ifdef __OpenBSD__
-#define inline
-#endif // __OpenBSD__
-#endif // __GNUC__
-
-#endif // _WIN32
 
 #include <bcl.h>
 
