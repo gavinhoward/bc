@@ -76,19 +76,19 @@
     </CustomBuild>
     <CustomBuild Include="gen\lib2.bc">
       <Message>Generating $(Configuration)\$(Platform)\$(ProjectName)/lib2.c</Message>
-      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\lib2.bc $(Configuration)\$(ProjectName)/lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
+      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\lib2.bc $(Configuration)\$(Platform)\$(ProjectName)/lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
       <Inputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe;gen\lib2.bc</Inputs>
       <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\lib2.c</Outputs>
     </CustomBuild>
     <CustomBuild Include="gen\bc_help.txt">
       <Message>Generating $(Configuration)\$(Platform)\$(ProjectName)/bc_help.c</Message>
-      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\bc_help.txt $(Configuration)\$(ProjectName)\bc_help.c bc_help "" BC_ENABLED</Command>
+      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\bc_help.txt $(Configuration)\$(Platform)\$(ProjectName)\bc_help.c bc_help "" BC_ENABLED</Command>
       <Inputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe;gen\bc_help.txt</Inputs>
       <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\bc_help.c</Outputs>
     </CustomBuild>
     <CustomBuild Include="gen\dc_help.txt">
       <Message>Generating $(Configuration)\$(Platform)\$(ProjectName)/dc_help.c</Message>
-      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\dc_help.txt $(Configuration)\$(ProjectName)\dc_help.c dc_help "" DC_ENABLED</Command>
+      <Command>START $(Configuration)\$(Platform)\$(ProjectName)/strgen gen\dc_help.txt $(Configuration)\$(Platform)\$(ProjectName)\dc_help.c dc_help "" DC_ENABLED</Command>
       <Inputs>$(Configuration)\$(Platform)\$(ProjectName)\strgen.exe;gen\dc_help.txt</Inputs>
       <Outputs>$(Configuration)\$(Platform)\$(ProjectName)\dc_help.c</Outputs>
     </CustomBuild>
@@ -119,7 +119,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=0;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=HN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=1;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=N;BC_DEFAULT_BANNER=1;BC_DEFAULT_SIGINT_RESET=0;DC_DEFAULT_SIGINT_RESET=0;BC_DEFAULT_TTY_MODE=1;DC_DEFAULT_TTY_MODE=1;BC_DEFAULT_PROMPT=1;DC_DEFAULT_PROMPT=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -130,7 +130,7 @@
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;bcrypt.lib;ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -143,7 +143,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=0;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=HN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=1;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=N;BC_DEFAULT_BANNER=1;BC_DEFAULT_SIGINT_RESET=0;DC_DEFAULT_SIGINT_RESET=0;BC_DEFAULT_TTY_MODE=1;DC_DEFAULT_TTY_MODE=1;BC_DEFAULT_PROMPT=1;DC_DEFAULT_PROMPT=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -169,7 +169,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=0;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=HN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=1;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=N;BC_DEFAULT_BANNER=1;BC_DEFAULT_SIGINT_RESET=0;DC_DEFAULT_SIGINT_RESET=0;BC_DEFAULT_TTY_MODE=1;DC_DEFAULT_TTY_MODE=1;BC_DEFAULT_PROMPT=1;DC_DEFAULT_PROMPT=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -193,7 +193,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=0;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=HN</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);BC_ENABLED=1;DC_ENABLED=1;BC_ENABLE_EXTRA_MATH=1;BC_ENABLE_HISTORY=1;BC_ENABLE_NLS=0;BC_DEBUG_CODE=0;BC_ENABLE_LIBRARY=0;EXECSUFFIX=.exe;BUILD_TYPE=N;BC_DEFAULT_BANNER=1;BC_DEFAULT_SIGINT_RESET=0;DC_DEFAULT_SIGINT_RESET=0;BC_DEFAULT_TTY_MODE=1;DC_DEFAULT_TTY_MODE=1;BC_DEFAULT_PROMPT=1;DC_DEFAULT_PROMPT=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
@@ -205,7 +205,7 @@
     </ClCompile>
     <Link>
       <TargetMachine>MachineX64</TargetMachine>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;bcrypt.lib;ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>

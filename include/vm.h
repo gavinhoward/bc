@@ -452,6 +452,9 @@ char* bc_vm_strdup(const char *str);
 
 void bc_pledge(const char *promises, const char *execpromises);
 
+char* bc_vm_getenv(const char* var);
+void bc_vm_getenvFree(char* val);
+
 #if BC_DEBUG_CODE
 void bc_vm_jmp(const char *f);
 #else // BC_DEBUG_CODE

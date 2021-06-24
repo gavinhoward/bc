@@ -85,10 +85,6 @@
 
 #if BC_ENABLE_HISTORY
 
-#ifdef _WIN32
-#error History is not supported on Windows.
-#endif // _WIN32
-
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -234,8 +230,12 @@ typedef struct BcHistory {
 	/// The history index we are currently editing.
 	size_t idx;
 
+#ifndef _WIN32
 	/// The original terminal state.
 	struct termios orig_termios;
+#else // _WIN32
+	DWORD orig_console_mode;
+#endif // _WIN32
 
 	/// These next three are here because pahole found a 4 byte hole here.
 
@@ -248,6 +248,7 @@ typedef struct BcHistory {
 	/// Whether the terminal is bad.
 	bool badTerm;
 
+#ifndef _WIN32
 	/// This is to check if stdin has more data.
 	fd_set rdset;
 
@@ -256,6 +257,7 @@ typedef struct BcHistory {
 
 	/// This is to check if stdin has more data.
 	sigset_t sigmask;
+#endif // _WIN32
 
 } BcHistory;
 

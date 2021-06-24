@@ -321,7 +321,10 @@ static size_t bc_history_prevLen(const char *buf, size_t pos, size_t *col_len) {
 		bc_history_codePoint(buf + pos, len, &cp);
 
 		if (!bc_history_comboChar(cp)) {
-			if (col_len != NULL) *col_len = 1 + (bc_history_wchar(cp) != 0);
+
+			if (col_len != NULL)
+				*col_len = ((size_t) 1) + (bc_history_wchar(cp) != 0);
+
 			return end - pos;
 		}
 	}
@@ -336,9 +339,19 @@ static ssize_t bc_history_read(char *buf, size_t n) {
 
 	BC_SIG_LOCK;
 
+#ifndef _WIN32
 	do {
 		ret = read(STDIN_FILENO, buf, n);
 	} while (ret == EINTR);
+#else // _WIN32
+	bool good;
+	DWORD read;
+	HANDLE hn = GetStdHandle(STD_INPUT_HANDLE);
+
+	good = ReadConsole(hn, buf, (DWORD) n, &read, NULL);
+
+	ret = (read != 1) ? -1 : 1;
+#endif // _WIN32
 
 	BC_SIG_UNLOCK;
 
@@ -420,15 +433,17 @@ static size_t bc_history_colPos(const char *buf, size_t buf_len, size_t pos) {
 static inline bool bc_history_isBadTerm(void) {
 
 	size_t i;
-	char *term = getenv("TERM");
+	bool ret = false;
+	char *term = bc_vm_getenv("TERM");
 
 	if (term == NULL) return false;
 
-	for (i = 0; bc_history_bad_terms[i]; ++i) {
-		if (!strcasecmp(term, bc_history_bad_terms[i])) return true;
-	}
+	for (i = 0; !ret && bc_history_bad_terms[i]; ++i)
+		ret = (!strcasecmp(term, bc_history_bad_terms[i]));
 
-	return false;
+	bc_vm_getenvFree(term);
+
+	return ret;
 }
 
 /**
@@ -436,6 +451,7 @@ static inline bool bc_history_isBadTerm(void) {
  */
 static void bc_history_enableRaw(BcHistory *h) {
 
+#ifndef _WIN32
 	struct termios raw;
 	int err;
 
@@ -479,6 +495,7 @@ static void bc_history_enableRaw(BcHistory *h) {
 	BC_SIG_UNLOCK;
 
 	if (BC_ERR(err < 0)) bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+#endif // _WIN32
 
 	h->rawMode = true;
 }
@@ -492,8 +509,10 @@ static void bc_history_disableRaw(BcHistory *h) {
 
 	BC_SIG_TRYLOCK(lock);
 
+#ifndef _WIN32
 	if (BC_ERR(tcsetattr(STDIN_FILENO, TCSAFLUSH, &h->orig_termios) != -1))
 		h->rawMode = false;
+#endif // _WIN32
 
 	BC_SIG_TRYUNLOCK(lock);
 }
@@ -542,6 +561,7 @@ static size_t bc_history_cursorPos(void) {
  */
 static size_t bc_history_columns(void) {
 
+#ifndef _WIN32
 	struct winsize ws;
 	int ret;
 
@@ -576,6 +596,15 @@ static size_t bc_history_columns(void) {
 	}
 
 	return ws.ws_col;
+#else // _WIN32
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+		return 80;
+	}
+
+	return ((size_t) (csbi.srWindow.Right)) - csbi.srWindow.Left + 1;
+#endif // _WIN32
+
 }
 
 /**
@@ -929,7 +958,7 @@ static void bc_history_swap(BcHistory *h) {
 		memcpy(h->buf.v + h->pos - pcl, h->buf.v + h->pos, ncl);
 		memcpy(h->buf.v + h->pos - pcl + ncl, auxb, pcl);
 
-		h->pos += -pcl + ncl;
+		h->pos += ((~pcl) + 1) + ncl;
 
 		bc_history_refresh(h);
 	}
@@ -1112,7 +1141,10 @@ static void bc_history_printCtrl(BcHistory *h, unsigned int c) {
 	bc_vec_npop(&h->buf, sizeof(str));
 	bc_vec_pushByte(&h->buf, '\0');
 
-	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D) {
+#ifndef _WIN32
+	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D)
+#endif // _WIN32
+	{
 		bc_file_write(&vm.fout, bc_flush_none, newline, sizeof(newline) - 1);
 		bc_history_refresh(h);
 	}
@@ -1169,6 +1201,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				break;
 			}
 
+#ifndef _WIN32
 			case BC_ACTION_CTRL_C:
 			{
 				bc_history_printCtrl(h, c);
@@ -1186,6 +1219,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 				break;
 			}
+#endif // _WIN32
 
 			case BC_ACTION_BACKSPACE:
 			case BC_ACTION_CTRL_H:
@@ -1194,12 +1228,14 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				break;
 			}
 
+#ifndef _WIN32
 			// Act as end-of-file.
 			case BC_ACTION_CTRL_D:
 			{
 				bc_history_printCtrl(h, c);
 				return BC_STATUS_EOF;
 			}
+#endif // _WIN32
 
 			// Swaps current character with previous.
 			case BC_ACTION_CTRL_T:
@@ -1293,10 +1329,15 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				    c == BC_ACTION_CTRL_BSLASH)
 				{
 					bc_history_printCtrl(h, c);
+#ifndef _WIN32
 					if (c == BC_ACTION_CTRL_Z) bc_history_raise(h, SIGTSTP);
 					if (c == BC_ACTION_CTRL_S) bc_history_raise(h, SIGSTOP);
 					if (c == BC_ACTION_CTRL_BSLASH)
 						bc_history_raise(h, SIGQUIT);
+#else // _WIN32
+					vm.status = BC_STATUS_QUIT;
+					BC_VM_JMP;
+#endif // _WIN32
 				}
 				else bc_history_edit_insert(h, cbuf, nread);
 				break;
@@ -1308,9 +1349,13 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 }
 
 static inline bool bc_history_stdinHasData(BcHistory *h) {
+#ifndef _WIN32
 	int n;
 	return pselect(1, &h->rdset, NULL, NULL, &h->ts, &h->sigmask) > 0 ||
 	       (ioctl(STDIN_FILENO, FIONREAD, &n) >= 0 && n > 0);
+#else // _WIN32
+	return false;
+#endif // _WIN32
 }
 
 /**
@@ -1412,6 +1457,7 @@ void bc_history_init(BcHistory *h) {
 	bc_vec_init(&h->history, sizeof(char*), bc_history_string_free);
 	bc_vec_init(&h->extras, sizeof(char), NULL);
 
+#ifndef _WIN32
 	FD_ZERO(&h->rdset);
 	FD_SET(STDIN_FILENO, &h->rdset);
 	h->ts.tv_sec = 0;
@@ -1419,14 +1465,29 @@ void bc_history_init(BcHistory *h) {
 
 	sigemptyset(&h->sigmask);
 	sigaddset(&h->sigmask, SIGINT);
+#endif // _WIN32
 
 	h->rawMode = h->stdin_has_data = false;
 	h->badTerm = bc_history_isBadTerm();
+
+#ifdef _WIN32
+	if (!h->badTerm) {
+		SetConsoleCP(CP_UTF8);
+		SetConsoleOutputCP(CP_UTF8);
+		GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &h->orig_console_mode);
+		SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE),
+		               ENABLE_VIRTUAL_TERMINAL_INPUT);
+	}
+#endif // _WIN32
 }
 
 void bc_history_free(BcHistory *h) {
 	BC_SIG_ASSERT_LOCKED;
+#ifndef _WIN32
 	bc_history_disableRaw(h);
+#else // _WIN32
+	SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), h->orig_console_mode);
+#endif // _WIN32
 #ifndef NDEBUG
 	bc_vec_free(&h->buf);
 	bc_vec_free(&h->history);

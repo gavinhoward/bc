@@ -38,7 +38,6 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <signal.h>
 
@@ -46,6 +45,7 @@
 
 #ifndef _WIN32
 
+#include <unistd.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -142,6 +142,7 @@ static void bc_vm_sigaction(void) {
 #else // _WIN32
 
 	signal(SIGTERM, bc_vm_sig);
+	signal(SIGINT, bc_vm_sig);
 
 #endif // _WIN32
 }
@@ -316,7 +317,7 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 	BC_SIG_TRYUNLOCK(lock);
 }
 
-static char* bc_vm_getenv(const char* var) {
+char* bc_vm_getenv(const char* var) {
 
 	char* ret;
 
@@ -329,7 +330,7 @@ static char* bc_vm_getenv(const char* var) {
 	return ret;
 }
 
-static void bc_vm_getenvFree(char* val) {
+void bc_vm_getenvFree(char* val) {
 	BC_UNUSED(val);
 #ifdef _WIN32
 	free(val);
