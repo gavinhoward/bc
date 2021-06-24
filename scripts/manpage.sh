@@ -27,79 +27,118 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Print the usage and exit with an error.
 usage() {
 	printf "usage: %s manpage\n" "$0" 1>&2
 	exit 1
 }
 
-print_manpage() {
-
-	_print_manpage_md="$1"
-	shift
-
-	_print_manpage_out="$1"
-	shift
-
-	cat "$manualsdir/header.txt" > "$_print_manpage_out"
-	cat "$manualsdir/header_${manpage}.txt" >> "$_print_manpage_out"
-
-	pandoc -f commonmark_x -t man "$_print_manpage_md" >> "$_print_manpage_out"
-
-}
-
+# Generate a manpage and print it to a file.
+# @param md   The markdown manual to generate a manpage for.
+# @param out  The file to print the manpage to.
 gen_manpage() {
 
-	_gen_manpage_args="$1"
+	_gen_manpage_md="$1"
 	shift
 
-	_gen_manpage_status="$ALL"
-	_gen_manpage_out="$manualsdir/$manpage/$_gen_manpage_args.1"
-	_gen_manpage_md="$manualsdir/$manpage/$_gen_manpage_args.1.md"
-	_gen_manpage_temp="$manualsdir/temp.1.md"
-	_gen_manpage_ifs="$IFS"
+	_gen_manpage_out="$1"
+	shift
 
-	rm -rf "$_gen_manpage_out" "$_gen_manpage_md"
+	cat "$manualsdir/header.txt" > "$_gen_manpage_out"
+	cat "$manualsdir/header_${manpage}.txt" >> "$_gen_manpage_out"
 
+	pandoc -f commonmark_x -t man "$_gen_manpage_md" >> "$_gen_manpage_out"
+}
+
+# Generate a manual from a template and print it to a file before generating
+# its manpage.
+# param args  The type of markdown manual to generate. This is a string that
+#             corresponds to build type (see the Build Type section of the
+#             manuals/build.md manual).
+gen_manual() {
+
+	_gen_manual_args="$1"
+	shift
+
+	# Set up some local variables. $manualsdir and $manpage from from the
+	# variables outside the function.
+	_gen_manual_status="$ALL"
+	_gen_manual_out="$manualsdir/$manpage/$_gen_manual_args.1"
+	_gen_manual_md="$manualsdir/$manpage/$_gen_manual_args.1.md"
+	_gen_manual_temp="$manualsdir/temp.1.md"
+
+	# We need to set IFS, so we store it here for restoration later.
+	_gen_manual_ifs="$IFS"
+
+	# Remove the files that will be generated.
+	rm -rf "$_gen_manual_out" "$_gen_manual_md"
+
+	# Here is the magic. This loop reads the template line-by-line, and based on
+	# _gen_manual_status, either prints it to the markdown manual or not.
+	#
+	# Here is how the template is set up: it is a normal markdown file except
+	# that there are sections surrounded tags that look like this:
+	#
+	# {{ <build_type_list> }}
+	# ...
+	# {{ end }}
+	#
+	# Those tags mean that whatever build types are found in the
+	# <build_type_list> get to keep that section. Otherwise, skip.
+	#
+	# Obviously, the tag itself and its end are not printed to the markdown
+	# manual.
 	while IFS= read -r line; do
 
+		# If we have found an end, reset the status.
 		if [ "$line" = "{{ end }}" ]; then
 
-			if [ "$_gen_manpage_status" -eq "$ALL" ]; then
+			# Some error checking. This helps when editing the templates.
+			if [ "$_gen_manual_status" -eq "$ALL" ]; then
 				err_exit "{{ end }} tag without corresponding start tag" 2
 			fi
 
-			_gen_manpage_status="$ALL"
+			_gen_manual_status="$ALL"
 
-		elif [ "${line#\{\{* $_gen_manpage_args *\}\}}" != "$line" ]; then
+		# We have found a tag that allows our build type to use it.
+		elif [ "${line#\{\{* $_gen_manual_args *\}\}}" != "$line" ]; then
 
-			if [ "$_gen_manpage_status" -ne "$ALL" ]; then
+			# More error checking. We don't want tags nested.
+			if [ "$_gen_manual_status" -ne "$ALL" ]; then
 				err_exit "start tag nested in start tag" 3
 			fi
 
-			_gen_manpage_status="$NOSKIP"
+			_gen_manual_status="$NOSKIP"
 
+		# We have found a tag that is *not* allowed for our build type.
 		elif [ "${line#\{\{*\}\}}" != "$line" ]; then
 
-			if [ "$_gen_manpage_status" -ne "$ALL" ]; then
+			if [ "$_gen_manual_status" -ne "$ALL" ]; then
 				err_exit "start tag nested in start tag" 3
 			fi
 
-			_gen_manpage_status="$SKIP"
+			_gen_manual_status="$SKIP"
 
+		# This is for normal lines. If we are not skipping, print.
 		else
-			if [ "$_gen_manpage_status" -ne "$SKIP" ]; then
-				printf '%s\n' "$line" >> "$_gen_manpage_temp"
+			if [ "$_gen_manual_status" -ne "$SKIP" ]; then
+				printf '%s\n' "$line" >> "$_gen_manual_temp"
 			fi
 		fi
 
 	done < "$manualsdir/${manpage}.1.md.in"
 
-	uniq "$_gen_manpage_temp" "$_gen_manpage_md"
-	rm -rf "$_gen_manpage_temp"
+	# Remove multiple blank lines.
+	uniq "$_gen_manual_temp" "$_gen_manual_md"
 
-	IFS="$_gen_manpage_ifs"
+	# Remove the temp file.
+	rm -rf "$_gen_manual_temp"
 
-	print_manpage "$_gen_manpage_md" "$_gen_manpage_out"
+	# Reset IFS.
+	IFS="$_gen_manual_ifs"
+
+	# Generate the manpage.
+	gen_manpage "$_gen_manual_md" "$_gen_manual_out"
 }
 
 set -e
@@ -110,11 +149,14 @@ manualsdir="$scriptdir/../manuals"
 
 . "$scriptdir/functions.sh"
 
+# Constants for use later. If the set of build types is changed, $ARGS must be
+# updated.
 ARGS="A E H N EH EN HN EHN"
 ALL=0
 NOSKIP=1
 SKIP=2
 
+# Process command-line arguments.
 test "$#" -eq 1 || usage
 
 manpage="$1"
@@ -122,10 +164,12 @@ shift
 
 if [ "$manpage" != "bcl" ]; then
 
+	# Generate a manual and manpage for each build type.
 	for a in $ARGS; do
-		gen_manpage "$a"
+		gen_manual "$a"
 	done
 
 else
-	print_manpage "$manualsdir/${manpage}.3.md" "$manualsdir/${manpage}.3"
+	# For bcl, just generate the manpage.
+	gen_manpage "$manualsdir/${manpage}.3.md" "$manualsdir/${manpage}.3"
 fi

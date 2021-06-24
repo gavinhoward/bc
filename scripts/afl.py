@@ -32,10 +32,23 @@ import sys
 import shutil
 import subprocess
 
+
+# Print the usage and exit with an error.
 def usage():
 	print("usage: {} [--asan] dir [results_dir [exe options...]]".format(script))
+	print("       The valid values for dir are: 'bc1', 'bc2', 'bc3', and 'dc'.")
 	sys.exit(1)
 
+
+# Check for a crash.
+# @param exebase  The calculator that crashed.
+# @param out      The file to copy the crash file to.
+# @param error    The error code (negative).
+# @param file     The crash file.
+# @param type     The type of run that caused the crash. This is just a string
+#                 that would make sense to the user.
+# @param test     The contents of the crash file, or which line caused the crash
+#                 for a run through stdin.
 def check_crash(exebase, out, error, file, type, test):
 	if error < 0:
 		print("\n{} crashed ({}) on {}:\n".format(exebase, -error, type))
@@ -45,6 +58,21 @@ def check_crash(exebase, out, error, file, type, test):
 		print("\nexiting...")
 		sys.exit(error)
 
+
+# Runs a test. This function is used to ensure that if a test times out, it is
+# discarded. Otherwise, some tests result in incredibly long runtimes. We need
+# to ignore those.
+#
+# @param cmd      The command to run.
+# @param exebase  The calculator to test.
+# @param tout     The timeout to use.
+# @param indata   The data to push through stdin for the test.
+# @param out      The file to copy the test file to if it causes a crash.
+# @param file     The test file.
+# @param type     The type of test. This is just a string that would make sense
+#                 to the user.
+# @param test     The test. It could be an entire file, or just one line.
+# @param environ  The environment to run the command under.
 def run_test(cmd, exebase, tout, indata, out, file, type, test, environ=None):
 	try:
 		p = subprocess.run(cmd, timeout=tout, input=indata, stdout=subprocess.PIPE,
@@ -53,6 +81,13 @@ def run_test(cmd, exebase, tout, indata, out, file, type, test, environ=None):
 	except subprocess.TimeoutExpired:
 		print("\n    {} timed out. Continuing...\n".format(exebase))
 
+
+# Creates and runs a test. This basically just takes a file, runs it through the
+# appropriate calculator as a whole file, then runs it through the calculator
+# using stdin.
+# @param file     The file to test.
+# @param tout     The timeout to use.
+# @param environ  The environment to run under.
 def create_test(file, tout, environ=None):
 
 	print("    {}".format(file))
@@ -78,6 +113,10 @@ def create_test(file, tout, environ=None):
 	         "running {} through stdin".format(file), file, environ)
 
 
+# Get the children of a directory.
+# @param dir        The directory to get the children of.
+# @param get_files  True if files should be gotten, false if directories should
+#                   be gotten.
 def get_children(dir, get_files):
 	dirs = []
 	with os.scandir(dir) as it:
@@ -90,12 +129,17 @@ def get_children(dir, get_files):
 	return dirs
 
 
+# Returns the correct executable name for the directory under test.
+# @param d  The directory under test.
 def exe_name(d):
 	return "bc" if d == "bc1" or d == "bc2" or d == "bc3" else "dc"
 
+
+# Housekeeping.
 script = sys.argv[0]
 testdir = os.path.dirname(script)
 
+# Must run this script alone.
 if __name__ != "__main__":
 	usage()
 
@@ -110,6 +154,7 @@ exedir = sys.argv[idx]
 
 asan = (exedir == "--asan")
 
+# We could possibly run under ASan. See later for what that means.
 if asan:
 	idx += 1
 	if len(sys.argv) < idx + 1:
@@ -118,6 +163,7 @@ if asan:
 
 print("exedir: {}".format(exedir))
 
+# Grab the correct directory of AFL++ results.
 if len(sys.argv) >= idx + 2:
 	resultsdir = sys.argv[idx + 1]
 else:
@@ -134,6 +180,7 @@ else:
 
 print("resultsdir: {}".format(resultsdir))
 
+# More command-line processing.
 if len(sys.argv) >= idx + 3:
 	exe = sys.argv[idx + 2]
 else:
@@ -141,6 +188,7 @@ else:
 
 exebase = os.path.basename(exe)
 
+# Use the correct options.
 if exebase == "bc":
 	halt = "halt\n"
 	options = "-lq"
@@ -148,6 +196,7 @@ else:
 	halt = "q\n"
 	options = "-x"
 
+# More command-line processing.
 if len(sys.argv) >= idx + 4:
 	exe = [ exe, sys.argv[idx + 3:], options ]
 else:
@@ -161,6 +210,7 @@ print(os.path.realpath(os.getcwd()))
 
 dirs = get_children(resultsdir, False)
 
+# Set the correct ASAN_OPTIONS.
 if asan:
 	env = os.environ.copy()
 	env['ASAN_OPTIONS'] = 'abort_on_error=1:allocator_may_return_null=1'
@@ -171,15 +221,18 @@ for d in dirs:
 
 	print(d)
 
+	# Check the crash files.
 	files = get_children(d + "/crashes/", True)
 
 	for file in files:
 		file = d + "/crashes/" + file
 		create_test(file, timeout)
 
+	# If we are running under ASan, we want to check all files. Otherwise, skip.
 	if not asan:
 		continue
 
+	# Check all of the test cases found by AFL++.
 	files = get_children(d + "/queue/", True)
 
 	for file in files:
@@ -187,4 +240,3 @@ for d in dirs:
 		create_test(file, timeout * 2, env)
 
 print("Done")
-

@@ -27,6 +27,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# This script is NOT meant to be run! It is meant to be sourced by other
+# scripts.
+
+# Reads and follows a link until it finds a real file. This is here because the
+# readlink utility is not part of the POSIX standard. Sigh...
+# @param f  The link to find the original file for.
 readlink() {
 
 	_readlink_f="$1"
@@ -51,6 +57,9 @@ readlink() {
 	printf '%s' "${_readlink_f##*$_readlink_d/}"
 }
 
+# Quick function for exiting with an error.
+# @param 1  A message to print.
+# @param 2  The exit code to use.
 err_exit() {
 
 	if [ "$#" -ne 2 ]; then
@@ -62,6 +71,10 @@ err_exit() {
 	exit "$2"
 }
 
+# Check the return code on a test and exit with a fail if it's non-zero.
+# @param d     The calculator under test.
+# @param err   The return code.
+# @param name  The name of the test.
 checktest_retcode() {
 
 	_checktest_retcode_d="$1"
@@ -79,6 +92,14 @@ checktest_retcode() {
 	fi
 }
 
+# Check the result of a test. First, it checks the error code using
+# checktest_retcode(). Then it checks the output against the expected output
+# and fails if it doesn't match.
+# @param d             The calculator under test.
+# @param err           The error code.
+# @param name          The name of the test.
+# @param test_path     The path to the test.
+# @param results_name  The path to the file with the expected result.
 checktest() {
 
 	_checktest_d="$1"
@@ -109,6 +130,11 @@ checktest() {
 	fi
 }
 
+# Die. With a message.
+# @param d     The calculator under test.
+# @param msg   The message to print.
+# @param name  The name of the test.
+# @param err   The return code from the test.
 die() {
 
 	_die_d="$1"
@@ -128,6 +154,10 @@ die() {
 	err_exit "$_die_str" "$_die_err"
 }
 
+# Check that a test did not crash and die if it did.
+# @param d      The calculator under test.
+# @param error  The error code.
+# @param name   The name of the test.
 checkcrash() {
 
 	_checkcrash_d="$1"
@@ -145,6 +175,12 @@ checkcrash() {
 	fi
 }
 
+# Check that a test had an error or crash.
+# @param d        The calculator under test.
+# @param error    The error code.
+# @param name     The name of the test.
+# @param out      The file that the test results were output to.
+# @param exebase  The name of the executable.
 checkerrtest()
 {
 	_checkerrtest_d="$1"
@@ -191,6 +227,16 @@ checkerrtest()
 	fi
 }
 
+# Replace a substring in a string with another. This function is the *real*
+# workhorse behind configure.sh's generation of a Makefile.
+#
+# This function uses a sed call that uses exclamation points `!` as delimiters.
+# As a result, needle can never contain an exclamation point. Oh well.
+#
+# @param str          The string that will have any of the needle replaced by
+#                     replacement.
+# @param needle       The needle to replace in str with replacement.
+# @param replacement  The replacement for needle in str.
 substring_replace() {
 
 	_substring_replace_str="$1"
@@ -208,6 +254,13 @@ substring_replace() {
 	printf '%s' "$_substring_replace_result"
 }
 
+# Generates an NLS path based on the locale and executable name.
+#
+# This is a monstrosity for a reason.
+#
+# @param nlspath   The $NLSPATH
+# @param locale    The locale.
+# @param execname  The name of the executable.
 gen_nlspath() {
 
 	_gen_nlspath_nlspath="$1"
@@ -219,22 +272,27 @@ gen_nlspath() {
 	_gen_nlspath_execname="$1"
 	shift
 
+	# Split the locale into its modifier and other parts.
 	_gen_nlspath_char="@"
 	_gen_nlspath_modifier="${_gen_nlspath_locale#*$_gen_nlspath_char}"
 	_gen_nlspath_tmplocale="${_gen_nlspath_locale%%$_gen_nlspath_char*}"
 
+	# Split the locale into charset and other parts.
 	_gen_nlspath_char="."
 	_gen_nlspath_charset="${_gen_nlspath_tmplocale#*$_gen_nlspath_char}"
 	_gen_nlspath_tmplocale="${_gen_nlspath_tmplocale%%$_gen_nlspath_char*}"
 
+	# Check for an empty charset.
 	if [ "$_gen_nlspath_charset" = "$_gen_nlspath_tmplocale" ]; then
 		_gen_nlspath_charset=""
 	fi
 
+	# Split the locale into territory and language.
 	_gen_nlspath_char="_"
 	_gen_nlspath_territory="${_gen_nlspath_tmplocale#*$_gen_nlspath_char}"
 	_gen_nlspath_language="${_gen_nlspath_tmplocale%%$_gen_nlspath_char*}"
 
+	# Check for empty territory and language.
 	if [ "$_gen_nlspath_territory" = "$_gen_nlspath_tmplocale" ]; then
 		_gen_nlspath_territory=""
 	fi
@@ -243,6 +301,8 @@ gen_nlspath() {
 		_gen_nlspath_language=""
 	fi
 
+	# Prepare to replace the format specifiers. This is done by wrapping the in
+	# pipe characters. It just makes it easier to split them later.
 	_gen_nlspath_needles="%%:%L:%N:%l:%t:%c"
 
 	_gen_nlspath_needles=$(printf '%s' "$_gen_nlspath_needles" | tr ':' '\n')
@@ -251,6 +311,7 @@ gen_nlspath() {
 		_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "$_gen_nlspath_i" "|$_gen_nlspath_i|")
 	done
 
+	# Replace all the format specifiers.
 	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%%" "%")
 	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%L" "$_gen_nlspath_locale")
 	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%N" "$_gen_nlspath_execname")
@@ -258,7 +319,9 @@ gen_nlspath() {
 	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%t" "$_gen_nlspath_territory")
 	_gen_nlspath_nlspath=$(substring_replace "$_gen_nlspath_nlspath" "%c" "$_gen_nlspath_charset")
 
+	# Get rid of pipe characters.
 	_gen_nlspath_nlspath=$(printf '%s' "$_gen_nlspath_nlspath" | tr -d '|')
 
+	# Return the result.
 	printf '%s' "$_gen_nlspath_nlspath"
 }

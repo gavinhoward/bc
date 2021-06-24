@@ -27,8 +27,34 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Just print the usage and exit with an error.
+usage() {
+	printf 'usage: %s [-a] [afl_compiler]\n' "$0" 1>&2
+	printf '\n'
+	printf '       If -a is given, then an ASan ready build is created.\n'
+	printf '       Otherwise, a normal fuzz build is created.\n'
+	printf '       The ASan-ready build is for running under\n'
+	printf '       `tests/afl.py --asan`, which checks that there were no\n'
+	printf '       memory errors in any path found by the fuzzer.\n'
+	printf '       It might also be useful to run scripts/randmath.py on an\n'
+	printf '       ASan-ready binary.\n'
+	exit 1
+}
+
 script="$0"
 scriptdir=$(dirname "$script")
+
+asan=0
+
+# Process command-line arguments.
+while getopts "a" opt; do
+
+	case "$opt" in
+		a) asan=1 ; shift ;;
+		?) usage "Invalid option: $opt" ;;
+	esac
+
+done
 
 if [ $# -lt 1 ]; then
 	CC=afl-clang-lto
@@ -36,12 +62,20 @@ else
 	CC="$1"
 fi
 
+# We want this for extra sensitive crashing
 AFL_HARDEN=1
 
 cd "$scriptdir/.."
 
 set -e
 
-CC="$CC" CFLAGS="-flto" ./configure.sh -gO3 -z
+if [ "$asan" -ne 0 ]; then
+	CFLAGS="-flto -fsanitize=address"
+else
+	CFLAGS="-flto"
+fi
+
+# We want a debug build because asserts are counted as crashes too.
+CC="$CC" CFLAGS="$CFLAGS" ./configure.sh -gO3 -z
 
 make -j16

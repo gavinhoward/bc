@@ -41,22 +41,32 @@
 #
 # And repeat. You can also test various environment variable sets with them.
 
+# Print the usage and exit with an error.
+usage() {
+	printf 'usage: %s index\n' "$0" 1>&2
+	exit 1
+}
+
 script="$0"
 scriptdir=$(dirname "$script")
 
 cd "$scriptdir/.."
+
+test "$#" -eq 1 || usage
 
 target="$1"
 shift
 
 line=0
 
+# This loop just loops until it gets to the right line. Quick and dirty.
 while read s; do
 
 	line=$(printf '%s + 1\n' "$line" | bc)
 
 	if [ "$line" -eq "$target" ]; then
 
+		# Configure, build, and exit.
 		./configure.sh -O3 $s
 
 		make -j16 > /dev/null

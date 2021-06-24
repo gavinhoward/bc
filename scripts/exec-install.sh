@@ -27,6 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Print usage and exit with an error.
 usage() {
 	printf "usage: %s install_dir exec_suffix\n" "$0" 1>&2
 	exit 1

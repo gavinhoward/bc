@@ -539,7 +539,8 @@ Why did I implement my own buffered I/O for `bc`? Because I use `setjmp()` and
 well with the use of those procedures.
 
 For more information about `bc`'s error handling and custom buffered I/O, see
-[`vm.h`][27] and the notes about version [`3.0.0`][32] in the [`NEWS`][32].
+[Error Handling][97], along with [`vm.h`][27] and the notes about version
+[`3.0.0`][32] in the [`NEWS`][32].
 
 The code associated with this header is in [`src/file.c`][47].
 
@@ -711,7 +712,7 @@ This file is a template for the markdown version of the `bc` manual and
 manpages.
 
 For more information about how the manpages and markdown manuals are generated,
-and for why, see [`scripts/manpage.sh`][60].
+and for why, see [`scripts/manpage.sh`][60] and [Manuals][86].
 
 #### `bcl.3`
 
@@ -719,7 +720,7 @@ This is the manpage for the `bcl` library. It is generated from
 [`bcl.3.md`][61] using [`scripts/manpage.sh`][60].
 
 For the reason why I check generated data into the repo, see
-[`scripts/manpage.sh`][60].
+[`scripts/manpage.sh`][60] and [Manuals][86].
 
 #### `bcl.3.md`
 
@@ -754,7 +755,7 @@ This file is a template for the markdown version of the `dc` manual and
 manpages.
 
 For more information about how the manpages and markdown manuals are generated,
-and for why, see [`scripts/manpage.sh`][60].
+and for why, see [`scripts/manpage.sh`][60] and [Manuals][86].
 
 #### `development.md`
 
@@ -785,28 +786,32 @@ TODO:
 Used by [`scripts/manpage.sh`][60] to give the [`bcl.3`][62] manpage a proper
 header.
 
-For more information, see [`scripts/manpage.sh`][60].
+For more information about generating manuals, see [`scripts/manpage.sh`][60]
+and [Manuals][86].
 
 #### `header_bc.txt`
 
 Used by [`scripts/manpage.sh`][60] to give the [generated `bc` manpages][79] a
 proper header.
 
-For more information, see [`scripts/manpage.sh`][60].
+For more information about generating manuals, see [`scripts/manpage.sh`][60]
+and [Manuals][86].
 
 #### `header_dc.txt`
 
 Used by [`scripts/manpage.sh`][60] to give the [generated `dc` manpages][80] a
 proper header.
 
-For more information, see [`scripts/manpage.sh`][60].
+For more information about generating manuals, see [`scripts/manpage.sh`][60]
+and [Manuals][86].
 
 #### `header.txt`
 
 Used by [`scripts/manpage.sh`][60] to give all generated manpages a license
 header.
 
-For more information, see [`scripts/manpage.sh`][60].
+For more information about generating manuals, see [`scripts/manpage.sh`][60]
+and [Manuals][86].
 
 #### `release.md`
 
@@ -838,6 +843,21 @@ This folder contains helper scripts. Most of them are written in pure [POSIX
 `sh`][72], but one ([`karatsuba.py`][78]) is written in Python 3.
 
 For more information about the shell scripts, see [POSIX Shell Scripts][76].
+
+#### `afl.py`
+
+This script is meant to be used as part of the fuzzing workflow.
+
+It does one of two things: checks for valid crashes, or runs `bc` and or `dc`
+under all of the paths found by AFL++.
+
+See [Fuzzing][82] for more information about fuzzing, including this script.
+
+#### `alloc.sh`
+
+This script is a quick and dirty script to test whether or not the garbage
+collection mechanism of the [`BcNum` caching][96] works. It has been little-used
+because it tests something that is not important to correctness.
 
 #### `exec-install.sh`
 
@@ -872,10 +892,15 @@ For more information about fuzzing, see [Fuzzing][82].
 
 #### `karatsuba.py`
 
-This script has two major differences from most of the other scripts:
+This script has at least one of two major differences from most of the other
+scripts:
 
 * It's in Python 3.
 * It's meant for software packagers.
+
+For example, [`scripts/afl.py`][94] and [`scripts/randmath.py`][95] are both in
+Python 3, but they are not meant for the end user or software packagers and are
+not included in source distributions. But this script is.
 
 This script breaks my rule of only POSIX utilities necessary for package
 maintainers, but there's a very good reason for that: it's only meant to be run
@@ -917,13 +942,8 @@ you are supposed to install locales.
 
 Yes, *how*. And where.
 
-Obviously, from it's name, it's a path, and that's the where. The *how* is more
-complicated.
-
-It's actually *not* a path, but a path template. It's a format string, and it
-can have a few format specifiers. For more information on that, see [this link][84].
-
-For more information on locales, see [Locales][85].
+But now is not the place to rant about `$NLSPATH`. For more information on
+locales and `$NLSPATH`, see [Locales][85].
 
 #### `locale_uninstall.sh`
 
@@ -937,7 +957,132 @@ For more information on locales, see [Locales][85].
 
 #### `manpage.sh`
 
+This script is the one that generates markdown manuals from a template and a
+manpage from a markdown manual.
 
+For more information about generating manuals, see [Manuals][86].
+
+#### `package.sh`
+
+This script is what helps `bc` maintainers cut a release. It does the following:
+
+1.	Creates the appropriate `git` tag.
+2.	Pushes the `git` tag.
+3.	Copies the repo to a temp directory.
+4.	Removes files that should not be included in source distributions.
+5.	Creates the tarballs.
+6.	Signs the tarballs.
+7.	Zips and signs the Windows executables if they exist.
+8.	Calculates and outputs SHA512 and SHA256 sums for all of the files,
+	including the signatures.
+
+This script is for `bc` maintainers to use when cutting a release. It is not
+meant for outside use. This means that some non-POSIX utilities can be used,
+such as `git` and `gpg`.
+
+In addition, before using this script, it expects that the folders that Windows
+generated when building `bc`, `dc`, and `bcl`, are in the parent directory of
+the repo, exactly as Windows generated them. If they are not there, then it will
+not zip and sign, nor calculate sums of, the Windows executables.
+
+Because this script creates a tag and pushes it, it should *only* be run *ONCE*
+per release.
+
+#### `radamsa.sh`
+
+A script to test `bc`'s command-line expression parsing code, which, while
+simple, strives to handle as much as possible.
+
+What this script does is it uses the test cases in [`radamsa.txt`][98] an input
+to the [Radamsa fuzzer][99].
+
+The reason I use [Radamsa][99] instead of AFL++ is because it is easier to use
+with varying command-line arguments, which is what's needed here. (AFL++ is best
+when testing input from `stdin`.)
+
+This script does also do fuzzing on the AFL++ inputs, but it's not as effective
+at that, so I don't really use it for that either.
+
+This script was only really used once; I have not had to touch the command-line
+expression parsing code since.
+
+#### `radamsa.txt`
+
+Initial test cases for the [`radamsa.sh`][100] script.
+
+#### `randmath.py`
+
+This script generates random math problems and checks that `bc`'s and `dc`'s
+output matches the GNU `bc` and `dc`. (For this reason, it is necessary to have
+GNU `bc` and `dc` installed before using this script.)
+
+One snare: be sure that this script is using the GNU `bc` and `dc`, not a
+previously-installed version of this `bc` and `dc`.
+
+If you want to check for memory issues or failing asserts, you can build the
+`bc` using `./scripts/fuzz_prep.sh -a`, and then run it under this script. Any
+errors or crashes should be caught by the script and given to the user as part
+of the "checklist" (see below).
+
+The basic idea behind this script is that it generates as many math problems as
+it can, biasing towards situations that may be likely to have bugs, and testing
+each math problem against GNU `bc` or `dc`.
+
+If GNU `bc` or `dc` fails, it just continues. If this `bc` or `dc` fails, it
+stores that problem. If the output mismatches, it also stores the problem.
+
+Then, when the user sends a `SIGINT`, the script stops testing and goes into
+report mode. One-by-one, it will go through the "checklist," the list of failed
+problems, and present each problem to the user, as well as whether this `bc` or
+`dc` crashed, and its output versus GNU. Then the user can decide to add them as
+test cases, which it does automatically to the appropriate test file.
+
+#### `release_settings.txt`
+
+A text file of settings combinations that [`release.sh`][83] uses to ensure that
+`bc` and `dc` build and work with various default settings. [`release.sh`][83]
+simply reads it line by line and uses each line for one build.
+
+#### `release.sh`
+
+This script is for `bc` maintainers only. It runs `bc`, `dc`, and `bcl` through
+a gauntlet that is mostly meant to be used in preparation for a release.
+
+It does the following:
+
+1.	Builds every build type, with every setting combo in
+	[`release_settings.txt`][93] with both calculators, `bc` alone, and `dc`
+	alone.
+2.	Builds every build type, with every setting combo in
+	[`release_settings.txt`][93] with both calculators, `bc` alone, and `dc`
+	alone for 32-bit.
+3.	Does #1 and #2 for Debug, Release, Release with Debug Info, and Min Size
+	Release builds.
+4.	Runs the test suite on every build, if desired.
+5.	Runs the test suite under [ASan, UBSan, and MSan][21] for every build
+	type/setting combo.
+6.	Runs [`scripts/karatsuba.py`][78] in test mode.
+7.	Runs the test suite for both calculators, `bc` alone, and `dc` alone under
+	[valgrind][20] and errors if there are any memory bugs or memory leaks.
+
+#### `safe-install.sh`
+
+A script copied from [musl][101] to atomically install files.
+
+#### `test_settings.sh`
+
+A quick and dirty script to help automate rebuilding while manually testing the
+various default settings.
+
+This script uses [`test_settings.txt`][103] to generate the various settings
+combos.
+
+For more information about settings, see [Settings][102] in the [build
+manual][14].
+
+#### `test_settings.txt`
+
+A list of the various settings combos to be used by [`test_settings.sh`][104].
 
 ### `src/`
 
@@ -979,11 +1124,115 @@ _<function_name>_<var_name>
 ```
 
 This is done to prevent any clashes of variable names with already existing
-names. And this applies to *all* shell scripts.
+names. And this applies to *all* shell scripts. However, there are a few times
+when that naming convention is *not* used; all of them are because those
+functions are required to change variables in the parent script.
+
+### Maintainer-Only Scripts
+
+If a script is meant to be used for maintainers (of `bc`, not package
+maintainers), then rules 2, 3, and 4 don't need to be followed as much because
+it is assumed that maintainers will be able to install whatever tools are
+necessary to do the job.
+
+## Manuals
+
+The manuals for `bc` are all generated, and the manpages for `bc`, `dc`, and
+`bcl` are also generated.
+
+Why?
+
+I don't like the format of manpages, and I am not confident in my ability to
+write them. Also, they are not easy to read on the web.
+
+So that explains why `bcl`'s manpage is generated from its markdown version. But
+why are the markdown versions of the `bc` and `dc` generated?
+
+Because the content of the manuals needs to change based on the [build
+type][81]. For example, if `bc` was built with no history support, it should not
+have the **COMMAND LINE HISTORY** section in its manual. If it did, that would
+just confuse users.
+
+So the markdown manuals for `bc` and `dc` are generated from templates
+([`manuals/bc.1.md.in`][89] and [`manuals/dc.1.md.in`][90]). And from there,
+the manpages are generated from the generated manuals.
+
+The generated manpage for `bcl` ([`manuals/bcl.3`][62]) is checked into version
+control, and the generated markdown manuals and manpages for `bc`
+([`manuals/bc`][91]) and `dc` ([`manuals/dc`][92]) are as well.
+
+This is because generating the manuals and manpages requires a heavy dependency
+that only maintainers should care about: [Pandoc][92]. Because users should not
+have to install *any* dependencies, the files are generated, checked into
+version control, and included in distribution tarballs.
+
+For more on how generating manuals and manpages works, see
+[`scripts/manpage.sh`][60].
 
 ## Locales
 
+The locale system of `bc` is enormously complex, but that's because
+POSIX-compatible locales are terrible.
+
+How are they terrible?
+
+First, `gencat` does not work for generating cross-compilation. In other words,
+it does not generate machine-portable files. There's nothing I can do about
+this except for warn users.
+
+Second, the format of `.msg` files is...interesting. Thank goodness it is text
+because otherwise, it would be impossible to get them right.
+
+Third, `.msg` files are not used. In other words, `gencat` exists. Why?
+
+Fourth, `$NLSPATH` is an awful way to set where and *how* to install locales.
+
+Yes, where and *how*.
+
+Obviously, from it's name, it's a path, and that's the where. The *how* is more
+complicated.
+
+It's actually *not* a path, but a path template. It's a format string, and it
+can have a few format specifiers. For more information on that, see [this
+link][84]. But in essence, those format specifiers configure how each locale is
+supposed to be installed.
+
+With all those problems, why use POSIX locales? Portability, as always. I can't
+assume that `gettext` will be available, but I *can* pretty well assume that
+POSIX locales will be available.
+
+The locale system of `bc` includes all files under [`locales/`][85],
+[`scripts/locale_install.sh`][87], [`scripts/locale_uninstall.sh`][88],
+[`scripts/functions.sh`][105], and the parts of the build system needed to
+activate it. There is also code in [`src/vm.c`][58] for loading the current
+locale.
+
 ## Fuzzing
+
+## Code Concepts
+
+This section is about concepts that, if understood, will make it easier to
+understand the code as it is written.
+
+The concepts in this section are not found in a single source file, but they are
+littered throughout the code. That's why I am writing them all down in a single
+place.
+
+### Error Handling
+
+### Lexing
+
+### Parsing
+
+### Bytecode
+
+#### Bytecode Indices
+
+### Function Pointers
+
+### Strings as Numbers
+
+### Caching of Numbers
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
@@ -1066,7 +1315,27 @@ names. And this applies to *all* shell scripts.
 [79]: #bc
 [80]: #dc
 [81]: ./build.md#build-type
-[82]: #fuzzine
-[83]: ../scripts/release.sh`
+[82]: #fuzzing
+[83]: #releasesh
 [84]: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
 [85]: #locales
+[86]: #manuals
+[87]: #locale_installsh
+[88]: #locale_uninstallsh
+[89]: #bc1mdin
+[90]: #dc1mdin
+[91]: #bc
+[92]: https://pandoc.org/
+[93]: #release_settingstxt
+[94]: #aflpy
+[95]: #randmathpy
+[96]: #caching-of-numbers
+[97]: #error-handling
+[98]: #radamsatxt
+[99]: https://gitlab.com/akihe/radamsa
+[100]: #radamsash
+[101]: https://musl.libc.org/
+[102]: ./build.md#settings
+[103]: #test_settingstxt
+[104]: #test_settingssh
+[105]: #functionssh

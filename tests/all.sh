@@ -90,15 +90,14 @@ unset BC_LINE_LENGTH
 unset DC_ENV_ARGS
 unset DC_LINE_LENGTH
 
+extra_required=$(cat "$testdir/extra_required.txt")
+
 printf '\nRunning %s tests...\n\n' "$d"
 
 while read t; do
 
-	if [ "$extra" -eq 0  ]; then
-		if [ "$t" = "trunc" ] || [ "$t" = "places" ] || [ "$t" = "shift" ] || \
-		   [ "$t" = "lib2" ] || [ "$t" = "scientific" ] || [ "$t" = "rand" ] || \
-		   [ "$t" = "engineering" ]
-		then
+	if [ "$extra" -eq 0 ]; then
+		if [ -z "${extra_required##*$t*}" ]; then
 			printf 'Skipping %s %s\n' "$d" "$t"
 			continue
 		fi

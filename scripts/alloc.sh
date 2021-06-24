@@ -51,6 +51,9 @@ virtlimit=1000000
 
 ulimit -v $virtlimit
 
+# This script is designed to allocate lots of memory with a lot of caching of
+# numbers (the function f() specifically). Then, it's designed allocate one
+# large number and grow it until allocation failure (the function g()).
 "$scriptdir/../bin/bc" <<*EOF
 
 define f(i, n) {

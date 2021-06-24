@@ -3,15 +3,15 @@
 This is the checklist for cutting a release.
 
 For a lot of these steps, they are only needed if the code that would be
-affected was changed. For example, I don't need to run the `randmath.py`
+affected was changed. For example, I don't need to run the `scripts/randmath.py`
 test if I did not change any of the math code.
 
 1.	Update the README.
 2.	Update the manuals.
 3.	Test history manually.
 4.	Test with POSIX test suite.
-5.	Run the randmath.py script an excessive amount and add failing tests to
-	test suite.
+5.	Run the `scripts/randmath.py` script an excessive amount and add failing
+	tests to test suite.
 	* debug
 	* release
 	* minrelease

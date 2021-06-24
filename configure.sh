@@ -345,6 +345,9 @@ replace_exts() {
 # needed for the chosen build. Below, you will see a lot of calls to this
 # function.
 #
+# Note that needle can never contain an exclamation point. For more information,
+# see substring_replace() in scripts/functions.sh.
+#
 # @param str          The string to find and replace placeholders in.
 # @param needle       The placeholder name.
 # @param replacement  The string to use to replace the placeholder.
@@ -449,7 +452,7 @@ gen_tests() {
 	_gen_tests_time_tests="$1"
 	shift
 
-	_gen_tests_extra_required=$(cat tests/extra_required.txt)
+	_gen_tests_extra_required=$(cat "$scriptdir/tests/extra_required.txt")
 
 	for _gen_tests_t in $(cat "$scriptdir/tests/$_gen_tests_name/all.txt"); do
 
@@ -1173,7 +1176,10 @@ if [ "$nls" -ne 0 ]; then
 
 			printf 'gencat works.\n\n'
 
-			if [ "$HOSTCC" != "$CC" ]; then
+			# It turns out that POSIX locales are really terrible, and running
+			# gencat on one machine is not guaranteed to make those cat files
+			# portable to another machine, so we had better warn the user here.
+			if [ "$HOSTCC" != "$CC" ] || [ "$HOSTCFLAGS" != "$CFLAGS" ]; then
 				printf 'Cross-compile detected.\n\n'
 				printf 'WARNING: Catalog files generated with gencat may not be portable\n'
 				printf '         across different architectures.\n\n'

@@ -51,6 +51,8 @@
 # that Python is installed, especially if the error says something like:
 # "karatsuba.py: not found".
 
+# Print the usage and exit with an error. Each parameter should be an integer.
+# Non-zero activates, and zero deactivates.
 usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
 	printf '          [run_sanitizers] [run_valgrind] [test_settings] [run_64_bit] \n'
@@ -58,6 +60,8 @@ usage() {
 	exit 1
 }
 
+# Print a header with a message. This is just to make it easy to track progress.
+# @param msg  The message to print in the header.
 header() {
 
 	_header_msg="$1"
@@ -71,10 +75,17 @@ header() {
 	printf '\n'
 }
 
+# Easy way to call make.
 do_make() {
 	make -j16 "$@"
 }
 
+# Run configure.sh.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param GEN_HOST         The setting for GEN_HOST.
+# @param LONG_BIT         The setting for LONG_BIT.
 configure() {
 
 	_configure_CFLAGS="$1"
@@ -92,16 +103,19 @@ configure() {
 	_configure_LONG_BIT="$1"
 	shift
 
+	# Make sure to not generate tests if necessary.
 	if [ "$gen_tests" -eq 0 ]; then
 		_configure_configure_flags="-G $_configure_configure_flags"
 	fi
 
+	# Choose the right extra flags.
 	if [ "$_configure_CC" = "clang" ]; then
 		_configure_CFLAGS="$clang_flags $_configure_CFLAGS"
 	elif [ "$_configure_CC" = "gcc" ]; then
 		_configure_CFLAGS="$gcc_flags $_configure_CFLAGS"
 	fi
 
+	# Print the header and do the job.
 	_configure_header=$(printf 'Running ./configure.sh %s ...' "$_configure_configure_flags")
 	_configure_header=$(printf "$_configure_header\n    CC=\"%s\"\n" "$_configure_CC")
 	_configure_header=$(printf "$_configure_header\n    CFLAGS=\"%s\"\n" "$_configure_CFLAGS")
@@ -113,6 +127,14 @@ configure() {
 		LONG_BIT="$_configure_LONG_BIT" ./configure.sh $_configure_configure_flags > /dev/null
 }
 
+# Build with make. This function also captures and outputs any warnings if they
+# exists because as far as I am concerned, warnings are not acceptable for
+# release.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param GEN_HOST         The setting for GEN_HOST.
+# @param LONG_BIT         The setting for LONG_BIT.
 build() {
 
 	_build_CFLAGS="$1"
@@ -139,6 +161,7 @@ build() {
 
 	header "$_build_header"
 
+	# Capture and print warnings.
 	do_make > /dev/null 2> "$scriptdir/../.test.txt"
 
 	if [ -s "$scriptdir/../.test.txt" ]; then
@@ -149,6 +172,7 @@ build() {
 	fi
 }
 
+# Run tests with make.
 runtest() {
 
 	header "Running tests"
@@ -160,6 +184,14 @@ runtest() {
 	fi
 }
 
+# Builds and runs tests with both calculators, then bc only, then dc only. If
+# run_tests is false, then it just does the builds.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param GEN_HOST         The setting for GEN_HOST.
+# @param LONG_BIT         The setting for LONG_BIT.
+# @param run_tests        Whether to run tests or not.
 runconfigtests() {
 
 	_runconfigtests_CFLAGS="$1"
@@ -225,6 +257,13 @@ runconfigtests() {
 	do_make clean
 }
 
+# Builds and runs tests with runconfigtests(), but also does 64-bit, 32-bit, and
+# 128-bit rand, if requested. It also does it with the gen script (strgen.sh) if
+# requested. If run_tests is false, it just does the builds.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param run_tests        Whether to run tests or not.
 runconfigseries() {
 
 	_runconfigseries_CFLAGS="$1"
@@ -265,6 +304,12 @@ runconfigseries() {
 	fi
 }
 
+# Builds and runs tests with each setting combo running runconfigseries(). If
+# run_tests is false, it just does the builds.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param run_tests        Whether to run tests or not.
 runsettingsseries() {
 
 	_runsettingsseries_CFLAGS="$1"
@@ -293,6 +338,12 @@ runsettingsseries() {
 	fi
 }
 
+# Builds and runs tests with each build type running runsettingsseries(). If
+# run_tests is false, it just does the builds.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param run_tests        Whether to run tests or not.
 runtestseries() {
 
 	_runtestseries_CFLAGS="$1"
@@ -318,6 +369,12 @@ runtestseries() {
 	done
 }
 
+# Builds and runs the tests for bcl. If run_tests is false, it just does the
+# builds.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param run_tests        Whether to run tests or not.
 runlibtests() {
 
 	_runlibtests_CFLAGS="$1"
@@ -347,6 +404,12 @@ runlibtests() {
 	fi
 }
 
+# Builds and runs tests under C99, then C11, if requested, using
+# runtestseries(). If run_tests is false, it just does the builds.
+# @param CFLAGS           The CFLAGS.
+# @param CC               The C compiler.
+# @param configure_flags  The flags for configure.sh itself.
+# @param run_tests        Whether to run tests or not.
 runtests() {
 
 	_runtests_CFLAGS="$1"
@@ -368,12 +431,14 @@ runtests() {
 	fi
 }
 
+# Runs the karatsuba tests.
 karatsuba() {
 
 	header "Running Karatsuba tests"
 	do_make karatsuba_test
 }
 
+# Builds and runs under valgrind. It runs both, bc only, then dc only.
 vg() {
 
 	header "Running valgrind"
@@ -400,6 +465,10 @@ vg() {
 	do_make clean_config
 }
 
+# Builds the debug series and runs the tests if run_tests allows. If sanitizers
+# are enabled, it also does UBSan.
+# @param CC               The C compiler.
+# @param run_tests        Whether to run tests or not.
 debug() {
 
 	_debug_CC="$1"
@@ -421,6 +490,9 @@ debug() {
 	fi
 }
 
+# Builds the release series and runs the test if run_tests allows.
+# @param CC               The C compiler.
+# @param run_tests        Whether to run tests or not.
 release() {
 
 	_release_CC="$1"
@@ -434,6 +506,10 @@ release() {
 	runlibtests "$release" "$_release_CC" "-O3" "$_release_run_tests"
 }
 
+# Builds the release debug series and runs the test if run_tests allows. If
+# sanitizers are enabled, it also does ASan and MSan.
+# @param CC               The C compiler.
+# @param run_tests        Whether to run tests or not.
 reldebug() {
 
 	_reldebug_CC="$1"
@@ -457,6 +533,9 @@ reldebug() {
 	fi
 }
 
+# Builds the min size release series and runs the test if run_tests allows.
+# @param CC               The C compiler.
+# @param run_tests        Whether to run tests or not.
 minsize() {
 
 	_minsize_CC="$1"
@@ -470,6 +549,10 @@ minsize() {
 	runlibtests "$release" "$_minsize_CC" "-Os" "$_minsize_run_tests"
 }
 
+# Builds all sets: debug, release, release debug, and min size, and runs the
+# tests if run_tests allows.
+# @param CC               The C compiler.
+# @param run_tests        Whether to run tests or not.
 build_set() {
 
 	_build_set_CC="$1"
@@ -484,14 +567,18 @@ build_set() {
 	minsize "$_build_set_CC" "$_build_set_run_tests"
 }
 
+# Set some strict warning flags. Clang's -Weverything can be way too strict, so
+# we actually have to turn off some things.
 clang_flags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
 clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
 clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
 clang_flags="$clang_flags -Wno-implicit-fallthrough -Wno-unused-macros"
 gcc_flags="-Wno-maybe-uninitialized -Wno-clobbered"
 
+# Common CFLAGS.
 cflags="-Wall -Wextra -Werror -pedantic -Wno-conditional-uninitialized"
 
+# Common debug and release flags.
 debug="$cflags -fno-omit-frame-pointer"
 release="$cflags -DNDEBUG"
 
@@ -500,6 +587,7 @@ set -e
 script="$0"
 scriptdir=$(dirname "$script")
 
+# Whether to run tests.
 if [ "$#" -gt 0 ]; then
 	run_tests="$1"
 	shift
@@ -507,6 +595,8 @@ else
 	run_tests=1
 fi
 
+# Whether to generate tests. On platforms like OpenBSD, there is no GNU bc to
+# generate tests, so this must be off.
 if [ "$#" -gt 0 ]; then
 	gen_tests="$1"
 	shift
@@ -514,6 +604,7 @@ else
 	gen_tests=1
 fi
 
+# Whether to test with clang.
 if [ "$#" -gt 0 ]; then
 	test_with_clang="$1"
 	shift
@@ -521,6 +612,7 @@ else
 	test_with_clang=1
 fi
 
+# Whether to test with gcc.
 if [ "$#" -gt 0 ]; then
 	test_with_gcc="$1"
 	shift
@@ -528,6 +620,7 @@ else
 	test_with_gcc=1
 fi
 
+# Whether to test with sanitizers.
 if [ "$#" -gt 0 ]; then
 	run_sanitizers="$1"
 	shift
@@ -535,6 +628,7 @@ else
 	run_sanitizers=1
 fi
 
+# Whether to test with valgrind.
 if [ "$#" -gt 0 ]; then
 	run_valgrind="$1"
 	shift
@@ -542,6 +636,7 @@ else
 	run_valgrind=1
 fi
 
+# Whether to test all settings combos.
 if [ "$#" -gt 0 ]; then
 	test_settings="$1"
 	shift
@@ -549,6 +644,7 @@ else
 	test_settings=1
 fi
 
+# Whether to test 64-bit in addition to 32-bit.
 if [ "$#" -gt 0 ]; then
 	run_64_bit="$1"
 	shift
@@ -556,6 +652,7 @@ else
 	run_64_bit=1
 fi
 
+# Whether to test with strgen.sh in addition to strgen.c.
 if [ "$#" -gt 0 ]; then
 	run_gen_script="$1"
 	shift
@@ -563,6 +660,7 @@ else
 	run_gen_script=0
 fi
 
+# Whether to test on C11 in addition to C99.
 if [ "$#" -gt 0 ]; then
 	test_c11="$1"
 	shift
@@ -570,6 +668,7 @@ else
 	test_c11=0
 fi
 
+# Whether to test 128-bit integers in addition to no 128-bit integers.
 if [ "$#" -gt 0 ]; then
 	test_128_bit="$1"
 	shift
@@ -585,6 +684,7 @@ fi
 
 cd "$scriptdir/.."
 
+# Setup a default compiler.
 if [ "$test_with_clang" -ne 0 ]; then
 	defcc="clang"
 elif [ "$test_with_gcc" -ne 0 ]; then
@@ -600,14 +700,17 @@ build "$debug" "$defcc" "-g" "1" "$bits"
 
 header "Running math library under --standard"
 
+# Make sure the math library is POSIX compliant.
 printf 'quit\n' | bin/bc -ls
 
 do_make clean_tests
 
+# Run the clang build sets.
 if [ "$test_with_clang" -ne 0 ]; then
 	build_set "clang" "$run_tests"
 fi
 
+# Run the gcc build sets.
 if [ "$test_with_gcc" -ne 0 ]; then
 	build_set "gcc" "$run_tests"
 fi
@@ -616,8 +719,10 @@ if [ "$run_tests" -ne 0 ]; then
 
 	build "$release" "$defcc" "-O3" "1" "$bits"
 
+	# Run karatsuba.
 	karatsuba
 
+	# Valgrind.
 	if [ "$run_valgrind" -ne 0 -a "$test_with_gcc" -ne 0 ]; then
 		vg
 	fi
@@ -625,36 +730,20 @@ if [ "$run_tests" -ne 0 ]; then
 	printf '\n'
 	printf 'Tests successful.\n'
 
-	set +e
+	# I just assume that I am going to be fuzzing when I am done.
+	header "Building for AFL++..."
 
-	command -v afl-gcc > /dev/null 2>&1
-	err="$?"
+	"$scriptdir/fuzz_prep.sh"
 
-	set -e
-
-	if [ "$err" -eq 0 ]; then
-
-		header "Configuring for afl-gcc..."
-
-		configure "$debug $gcc_flags -DBC_ENABLE_RAND=0" "afl-gcc" "-HNP -gO3" "1" "$bits"
-
-		printf '\n'
-		printf 'Run make\n'
-		printf '\n'
-		printf 'Then run %s/tests/randmath.py and the fuzzer.\n' "$scriptdir"
-		printf '\n'
-		printf 'Then run ASan on the fuzzer test cases with the following build:\n'
-		printf '\n'
-		printf '    CFLAGS="-fsanitize=address -fno-omit-frame-pointer -DBC_ENABLE_RAND=0" ./configure.sh -gO3 -HNPS\n'
-		printf '    make\n'
-		printf '\n'
-		printf 'Then run the GitHub release script as follows:\n'
-		printf '\n'
-		printf '    <github_release> <version> .gitignore .gitattributes\\\n'
-		printf '    scripts/manpage.sh scripts/release.sh RELEASE.md tests/afl.py\\\n'
-		printf '    tests/radamsa.sh tests/radamsa.txt tests/randmath.py\\\n'
-		printf '    tests/fuzzing/ tests/bc/scripts/timeconst.bc\n'
-
-	fi
+	printf '\n'
+	printf 'Ready for scripts/randmath.py and for fuzzing.\n'
+	printf '\n'
+	printf 'Run scripts/randmath.py if you changed any math code.\n'
+	printf '\n'
+	printf 'Then if there are no problems, run the fuzzer.\n'
+	printf '\n'
+	printf 'Then run `scripts/fuzz_prep.sh -a`.\n'
+	printf '\n'
+	printf 'Then run `scripts/afl.py --asan`.\n'
 
 fi

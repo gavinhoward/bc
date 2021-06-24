@@ -70,13 +70,14 @@ make clean_tests > /dev/null 2> /dev/null
 # doing. In fact, you cannot run it again if users have already started to use
 # the old version of the tag.
 if git rev-parse "$version" > /dev/null 2>&1; then
-	git push --delete origin "$version" > /dev/null 2> /dev/null
-	git tag --delete "$version" > /dev/null 2> /dev/null
+	:
+	#git push --delete origin "$version" > /dev/null 2> /dev/null
+	#git tag --delete "$version" > /dev/null 2> /dev/null
 fi
 
-git push > /dev/null 2> /dev/null
-git tg "$version" -m "$tag_msg" > /dev/null 2> /dev/null
-git push --tags > /dev/null 2> /dev/null
+#git push > /dev/null 2> /dev/null
+#git tg "$version" -m "$tag_msg" > /dev/null 2> /dev/null
+#git push --tags > /dev/null 2> /dev/null
 
 # This line grabs the names of all of the files in .gitignore that still exist.
 ignores=$(git check-ignore * **/*)
@@ -109,15 +110,18 @@ manuals/header_bc.txt
 manuals/header_dc.txt
 manuals/header.txt
 manuals/release.md
+scripts/afl.py
+scripts/alloc.sh
 scripts/fuzz_prep.sh
 scripts/manpage.sh
 scripts/package.sh
+scripts/radamsa.sh
+scripts/radamsa.txt
+scripts/randmath.py
+scripts/release_settings.txt
 scripts/release.sh
-tests/afl.py
-tests/alloc.sh
-tests/radamsa.sh
-tests/radamsa.txt
-tests/randmath.py
+scripts/test_settings.sh
+scripts/test_settings.txt
 tests/bc/scripts/timeconst.bc
 *EOF
 )

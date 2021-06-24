@@ -184,7 +184,7 @@ while getopts "l" opt; do
 
 	case "$opt" in
 		l) all_locales=1 ; shift ;;
-		?) usage "Invalid option $opt" ;;
+		?) usage "Invalid option: $opt" ;;
 	esac
 
 done

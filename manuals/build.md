@@ -428,22 +428,6 @@ another platform that does not support the POSIX locale API or utilities.
 
 This option affects the [build type][7].
 
-#### Locales
-
-By default, `bc` and `dc` do not install all locales, but only the enabled
-locales. If `DESTDIR` exists and is not empty, then they will install all of
-the locales that exist on the system. The `-l` flag or `--install-all-locales`
-option skips all of that and just installs all of the locales that `bc` and `dc`
-have, regardless. To enable that behavior, you can pass the `-l` flag or the
-`--install-all-locales` option to `configure.sh`, as follows:
-
-```
-./configure.sh -l
-./configure.sh --install-all-locales
-```
-
-Both commands are equivalent.
-
 #### Extra Math
 
 This `bc` has 7 extra operators:
@@ -502,6 +486,75 @@ Default is `32`.
 to `16` (to prevent stack overflow). If it is not, `configure.sh` will give an
 error.
 
+#### Settings
+
+This `bc` and `dc` have a few settings to override default behavior.
+
+The defaults for these settings can be set by package maintainers, and the
+settings themselves can be overriden by users.
+
+To set a default to **on**, use the `-s` or `--set-default-on` option to
+`configure.sh`, with the name of the setting, as follows:
+
+```
+./configure.sh -s bc.banner
+./configure.sh --set-default-on=bc.banner
+```
+
+Both commands are equivalent.
+
+To set a default to **off**, use the `-S` or `--set-default-off` option to
+`configure.sh`, with the name of the setting, as follows:
+
+```
+./configure.sh -S bc.banner
+./configure.sh --set-default-off=bc.banner
+```
+
+Both commands are equivalent.
+
+Users can override the default settings set by packagers with environment
+variables. If the environment variable has an integer, then the setting is
+turned **on** for a non-zero integer, and **off** for zero.
+
+The table of the available settings, along with their defaults and the
+environment variables to override them, is below:
+
+```
+| Setting         | Description            | Default      | Env Variable    |
+| =============== | ====================== | ============ | =============== |
+| bc.banner       | Whether to display the |            0 | BC_BANNER       |
+|                 | bc version banner when |              |                 |
+|                 | in interactive mode.   |              |                 |
+| --------------- | ---------------------- | ------------ | --------------- |
+| bc.sigint_reset | Whether SIGINT should  |            1 | BC_SIGINT_RESET |
+|                 | reset bc, instead of   |              |                 |
+|                 | exiting, when in       |              |                 |
+|                 | interactive mode.      |              |                 |
+| --------------- | ---------------------- | ------------ | --------------- |
+| dc.sigint_reset | Whether SIGINT should  |            1 | DC_SIGINT_RESET |
+|                 | reset dc, instead of   |              |                 |
+|                 | exiting, when in       |              |                 |
+|                 | interactive mode.      |              |                 |
+| --------------- | ---------------------- | ------------ | --------------- |
+| bc.tty_mode     | Whether TTY mode for   |            1 | BC_TTY_MODE     |
+|                 | bc should be on when   |              |                 |
+|                 | available.             |              |                 |
+| --------------- | ---------------------- | ------------ | --------------- |
+| dc.tty_mode     | Whether TTY mode for   |            0 | BC_TTY_MODE     |
+|                 | dc should be on when   |              |                 |
+|                 | available.             |              |                 |
+| --------------- | ---------------------- | ------------ | --------------- |
+| bc.prompt       | Whether the prompt for | $BC_TTY_MODE | BC_PROMPT       |
+|                 | bc should be on in TTY |              |                 |
+|                 | mode.                  |              |                 |
+| --------------- | ---------------------- | ------------ | --------------- |
+| dc.prompt       | Whether the prompt for | $DC_TTY_MODE | DC_PROMPT       |
+|                 | dc should be on in TTY |              |                 |
+|                 | mode.                  |              |                 |
+| --------------- | ---------------------- | ------------ | --------------- |
+```
+
 #### Install Options
 
 The relevant `autotools`-style install options are supported in `configure.sh`:
@@ -541,6 +594,22 @@ To disable installing manpages, pass either the `-M` flag or the
 ```
 ./configure.sh -M
 ./configure.sh --disable-man-pages
+```
+
+Both commands are equivalent.
+
+##### Locales
+
+By default, `bc` and `dc` do not install all locales, but only the enabled
+locales. If `DESTDIR` exists and is not empty, then they will install all of
+the locales that exist on the system. The `-l` flag or `--install-all-locales`
+option skips all of that and just installs all of the locales that `bc` and `dc`
+have, regardless. To enable that behavior, you can pass the `-l` flag or the
+`--install-all-locales` option to `configure.sh`, as follows:
+
+```
+./configure.sh -l
+./configure.sh --install-all-locales
 ```
 
 Both commands are equivalent.

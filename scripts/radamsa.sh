@@ -27,30 +27,43 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# This script uses some non-POSIX behavior, but since it's meant for bc
+# maintainers only, I can accept that.
+
+# Get an entry from the file. If an argument exists, it is an index. Get that
+# line. Otherwise, get a random line.
 getentry() {
 
+	# Figure out if we get a specific or random line.
 	if [ $# -gt 0 ]; then
 		entnum="$1"
 	else
 		entnum=0
 	fi
 
+	# Get data from stdin and figure out how many lines there are.
 	e=$(cat -)
 	num=$(printf '%s\n' "$e" | wc -l)
 
+	# Figure out what line we are going to get. Uses bc's own PRNG.
 	if [ "$entnum" -eq 0 ]; then
 		rand=$(printf 'irand(%s) + 1\n' "$num" | "$bcdir/bc")
 	else
 		rand="$entnum"
 	fi
 
+	# Get the line.
 	ent=$(printf '%s\n' "$e" | tail -n +$rand | head -n 1)
 
 	printf '%s\n' "$ent"
 }
 
 script="$0"
+dir=$(dirname "$script")
 
+. "$dir/functions.sh"
+
+# Command-line processing.
 if [ "$#" -lt 1 ]; then
 	printf 'usage: %s dir\n' "$0"
 	exit 1
@@ -59,23 +72,20 @@ fi
 d="$1"
 shift
 
-dir=$(dirname "$script")
-
-. "$dir/../scripts/functions.sh"
-
 bcdir="$dir/../bin"
 
+# Figure out the correct input directory.
 if [ "$d" = "bc" ]; then
-	inputs="$dir/../../inputs"
+	inputs="$dir/../tests/fuzzing/bc_inputs1"
 	opts="-lq"
 elif [ "$d" = "dc" ]; then
-	inputs="$dir/../../inputs_dc"
+	inputs="$dir/../test/fuzzing/dc_inputs"
 	opts="-x"
 else
 	err_exit "wrong type of executable" 1
 fi
 
-export ASAN_OPTIONS="abort_on_error=1"
+export ASAN_OPTIONS="abort_on_error=1:allocator_may_return_null=1"
 
 entries=$(cat "$dir/radamsa.txt")
 
@@ -83,8 +93,10 @@ IFS=$'\n'
 
 go=1
 
+# Infinite loop.
 while [ "$go" -ne 0 ]; do
 
+	# If we are running bc, fuzz command-line arguments in BC_ENV_ARGS.
 	if [ "$d" = "bc" ]; then
 
 		entry=$(cat -- "$dir/radamsa.txt" | getentry)
@@ -109,6 +121,7 @@ while [ "$go" -ne 0 ]; do
 	l=$(cat "$inputs/$f" | wc -l)
 	ll=$(printf '%s^2\n' "$l" | bc)
 
+	# Fuzz on the AFL++ inputs.
 	for i in $(seq 1 2); do
 		data=$(cat "$inputs/$f" | radamsa -n 1)
 		printf '%s\n' "$data" > "$dir/../.log_${d}_test.txt"
