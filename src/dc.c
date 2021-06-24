@@ -40,6 +40,11 @@
 #include <dc.h>
 #include <vm.h>
 
+/**
+ * The main function for dc.
+ * @param argc  The number of arguments.
+ * @param argv  The arguments.
+ */
 void dc_main(int argc, char *argv[]) {
 
 	vm.read_ret = BC_INST_POP_EXEC;

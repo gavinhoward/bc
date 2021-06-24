@@ -122,19 +122,31 @@
 #include <file.h>
 #endif // BC_DEBUG_CODE
 
+/// Default columns.
 #define BC_HIST_DEF_COLS (80)
+
+/// Max number of history entries.
 #define BC_HIST_MAX_LEN (128)
+
+/// Max length of a line.
 #define BC_HIST_MAX_LINE (4095)
+
+/// Max size for cursor position buffer.
 #define BC_HIST_SEQ_SIZE (64)
 
+/// The number of entries in the history.
 #define BC_HIST_BUF_LEN(h) ((h)->buf.len - 1)
+
+/// Read n characters into s and check the error.
 #define BC_HIST_READ(s, n) (bc_history_read((s), (n)) == -1)
 
+/// Markers for direction when using arrow keys.
 #define BC_HIST_NEXT (false)
 #define BC_HIST_PREV (true)
 
 #if BC_DEBUG_CODE
 
+// These are just for debugging.
 #define BC_HISTORY_DEBUG_BUF_SIZE (1024)
 
 #define lndebug(...)                                                        \
@@ -157,6 +169,7 @@
 #define lndebug(fmt, ...)
 #endif // BC_DEBUG_CODE
 
+/// An enum of useful actions.
 typedef enum BcHistoryAction {
 
 	BC_ACTION_NULL = 0,
@@ -246,23 +259,55 @@ typedef struct BcHistory {
 
 } BcHistory;
 
+/**
+ * Get a line from stdin using history. This returns a status because I don't
+ * want to throw errors while the terminal is in raw mode.
+ * @param h       The history data.
+ * @param vec     A vector to put the line into.
+ * @param prompt  The prompt to display, if desired.
+ */
 BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt);
 
+/**
+ * Initialize history data.
+ * @param h  The struct to initialize.
+ */
 void bc_history_init(BcHistory *h);
+
+/**
+ * Free history data (and recook the terminal).
+ * @param h  The struct to free.
+ */
 void bc_history_free(BcHistory *h);
 
+// A list of terminals that don't work.
 extern const char *bc_history_bad_terms[];
+
+// A tab in history and its length.
 extern const char bc_history_tab[];
 extern const size_t bc_history_tab_len;
+
+// A ctrl+c string.
 extern const char bc_history_ctrlc[];
+
+// UTF-8 data arrays.
 extern const uint32_t bc_history_wchars[][2];
 extern const size_t bc_history_wchars_len;
 extern const uint32_t bc_history_combo_chars[];
 extern const size_t bc_history_combo_chars_len;
+
 #if BC_DEBUG_CODE
+
+// Debug data.
 extern BcFile bc_history_debug_fp;
 extern char *bc_history_debug_buf;
-void bc_history_printKeyCodes(BcHistory* l);
+
+/**
+ * A function to print keycodes for debugging.
+ * @param h  The history data.
+ */
+void bc_history_printKeyCodes(BcHistory* h);
+
 #endif // BC_DEBUG_CODE
 
 #endif // BC_ENABLE_HISTORY

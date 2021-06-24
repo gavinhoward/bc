@@ -264,6 +264,22 @@ The following are the options that bc(1) accepts.
 
 All long options are **non-portable extensions**.
 
+# STDIN
+
+If no files or expressions are given by the **-f**, **-\-file**, **-e**, or
+**-\-expression** options, then bc(1) read from **stdin**.
+
+However, there are a few caveats to this.
+
+First, **stdin** is evaluated a line at a time. The only exception to this is if
+the parse cannot complete. That means that starting a string without ending it
+or starting a function, **if** statement, or loop without ending it will also
+cause bc(1) to not execute.
+
+Second, after an **if** statement, bc(1) doesn't know if an **else** statement
+will follow, so it will not execute until it knows there will not be an **else**
+statement.
+
 # STDOUT
 
 Any non-error output is written to **stdout**. In addition, if history (see the

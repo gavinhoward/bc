@@ -48,31 +48,6 @@
 #include <args.h>
 #include <opt.h>
 
-/// The list of long options.
-static const BcOptLong bc_args_lopt[] = {
-
-	{ "expression", BC_OPT_REQUIRED, 'e' },
-	{ "file", BC_OPT_REQUIRED, 'f' },
-	{ "help", BC_OPT_NONE, 'h' },
-	{ "interactive", BC_OPT_NONE, 'i' },
-	{ "no-prompt", BC_OPT_NONE, 'P' },
-	{ "no-read-prompt", BC_OPT_NONE, 'R' },
-#if BC_ENABLED
-	{ "global-stacks", BC_OPT_BC_ONLY, 'g' },
-	{ "mathlib", BC_OPT_BC_ONLY, 'l' },
-	{ "quiet", BC_OPT_BC_ONLY, 'q' },
-	{ "standard", BC_OPT_BC_ONLY, 's' },
-	{ "warn", BC_OPT_BC_ONLY, 'w' },
-#endif // BC_ENABLED
-	{ "version", BC_OPT_NONE, 'v' },
-	{ "version", BC_OPT_NONE, 'V' },
-#if DC_ENABLED
-	{ "extended-register", BC_OPT_DC_ONLY, 'x' },
-#endif // DC_ENABLED
-	{ NULL, 0, 0 },
-
-};
-
 /**
  * Adds @a str to the list of expressions to execute later.
  * @param str  The string to add to the list of expressions.
@@ -97,11 +72,20 @@ static void bc_args_file(const char *file) {
 
 	vm.file = file;
 
-	bc_read_file(file, &buf);
+	buf = bc_read_file(file);
+
+	assert(buf != NULL);
+
 	bc_args_exprs(buf);
 	free(buf);
 }
 
+/**
+ * Processes command-line arguments.
+ * @param argc        The number of arguments.
+ * @param argv        The arguments.
+ * @param exit_exprs  Whether to exit if expressions are encountered.
+ */
 void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 	int c;
@@ -113,6 +97,8 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 	bc_opt_init(&opts, argv);
 
+	// This loop should look familiar to anyone who has used getopt() or
+	// getopt_long() in C.
 	while ((c = bc_opt_parse(&opts, bc_args_lopt)) != -1) {
 
 		switch (c) {

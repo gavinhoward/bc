@@ -45,24 +45,40 @@ bool dc_lex_negCommand(BcLex *l) {
 	return !BC_LEX_NUM_CHAR(c, false, false);
 }
 
+/**
+ * Processes a dc command that needs a register. This is where the
+ * extended-register extension is implemented.
+ * @param l  The lexer.
+ */
 static void dc_lex_register(BcLex *l) {
 
+	// If extended register is enabled and the character is whitespace...
 	if (DC_X && isspace(l->buf[l->i - 1])) {
 
 		char c;
 
+		// Eat the whitespace.
 		bc_lex_whitespace(l);
 		c = l->buf[l->i];
 
-		if (BC_ERR(!isalnum(c) && c != '_'))
+		// Check for a letter or underscore.
+		if (BC_ERR(!isalpha(c) && c != '_'))
 			bc_lex_verr(l, BC_ERR_PARSE_CHAR, c);
 
+		// Parse a normal identifier.
 		l->i += 1;
 		bc_lex_name(l);
 	}
 	else {
-		if (BC_ERR(l->buf[l->i - 1] == '\n'))
-			bc_lex_verr(l, BC_ERR_PARSE_CHAR, '\n');
+
+		// I don't allow newlines because newlines are used for controlling when
+		// execution happens, and allowing newlines would just be complex. For
+		// the same reason, I don't allow the '[' character; it would just be
+		// too complex.
+		if (BC_ERR(l->buf[l->i - 1] == '\n' || l->buf[l->i - 1] == '['))
+			bc_lex_verr(l, BC_ERR_PARSE_CHAR, l->buf[l->i - 1]);
+
+		// Set the lexer string and token.
 		bc_vec_popAll(&l->str);
 		bc_vec_pushByte(&l->str, (uchar) l->buf[l->i - 1]);
 		bc_vec_pushByte(&l->str, '\0');
@@ -70,16 +86,27 @@ static void dc_lex_register(BcLex *l) {
 	}
 }
 
+/**
+ * Parse a dc string. Since dc's strings need to check for balanced brackets, we
+ * can't just parse bc and dc strings with different start and end characters.
+ * Oh, and dc strings need to check for escaped brackets.
+ * @param l  The lexer.
+ */
 static void dc_lex_string(BcLex *l) {
 
 	size_t depth = 1, nls = 0, i = l->i;
 	char c;
 
+	// Set the token and clear the string.
 	l->t = BC_LEX_STR;
 	bc_vec_popAll(&l->str);
 
+	// This is the meat. As long as we don't run into the NUL byte, and we have
+	// "depth", which means we haven't completely balanced brackets yet, we
+	// continue eating the string.
 	for (; (c = l->buf[i]) && depth; ++i) {
 
+		// Check for escaped brackets and set the depths as appropriate.
 		if (c == '\\') {
 			c = l->buf[++i];
 			if (!c) break;
@@ -89,11 +116,13 @@ static void dc_lex_string(BcLex *l) {
 			depth -= (c == ']');
 		}
 
+		// We want to adjust the line in the lexer as necessary.
 		nls += (c == '\n');
 
 		if (depth) bc_vec_push(&l->str, &c);
 	}
 
+	// Obviously, if we didn't balance, that's an error.
 	if (BC_ERR(c == '\0' && depth)) {
 		l->i = i;
 		bc_lex_err(l, BC_ERR_PARSE_STRING);
@@ -105,11 +134,17 @@ static void dc_lex_string(BcLex *l) {
 	l->line += nls;
 }
 
+/**
+ * Lex a dc token. This is the dc implementation of BcLexNext.
+ * @param l  The lexer.
+ */
 void dc_lex_token(BcLex *l) {
 
 	char c = l->buf[l->i++], c2;
 	size_t i;
 
+	// If the last token was a command that needs a register, we need to parse a
+	// register, so do so.
 	for (i = 0; i < dc_lex_regs_len; ++i) {
 		if (l->last == dc_lex_regs[i]) {
 			dc_lex_register(l);
@@ -117,13 +152,16 @@ void dc_lex_token(BcLex *l) {
 		}
 	}
 
+	// These lines are for tokens that easily correspond to one character. We
+	// just set the token.
 	if (c >= '"' && c <= '~' &&
 	    (l->t = dc_lex_tokens[(c - '"')]) != BC_LEX_INVALID)
 	{
 		return;
 	}
 
-	// This is the workhorse of the lexer.
+	// This is the workhorse of the lexer when more complicated things are
+	// needed.
 	switch (c) {
 
 		case '\0':
@@ -138,6 +176,8 @@ void dc_lex_token(BcLex *l) {
 			break;
 		}
 
+		// We don't have the ! command, so we always expect certain things
+		// after the exclamation point.
 		case '!':
 		{
 			c2 = l->buf[l->i];

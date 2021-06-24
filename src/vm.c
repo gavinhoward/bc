@@ -742,7 +742,9 @@ static void bc_vm_file(const char *file) {
 
 	BC_SIG_LOCK;
 
-	bc_read_file(file, &data);
+	data = bc_read_file(file);
+
+	assert(data != NULL);
 
 	BC_SETJMP_LOCKED(err);
 

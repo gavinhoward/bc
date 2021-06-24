@@ -36,6 +36,7 @@
 #ifndef BC_VERSION_H
 #define BC_VERSION_H
 
-#define VERSION 4.1.0
+// The current version.
+#define VERSION 5.0.0
 
 #endif // BC_VERSION_H

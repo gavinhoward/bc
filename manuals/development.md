@@ -553,6 +553,9 @@ The code associated with this header is in [`src/file.c`][47].
 This header is for `bc`'s implementation of command-line editing/history, which
 is based on a [UTF-8-aware fork][28] of [`linenoise`][29].
 
+At one point, I attempted to get history to work on Windows. It did not work
+out. Windows
+
 The code associated with this header is in [`src/history.c`][48].
 
 #### `lang.h`
@@ -1086,6 +1089,28 @@ manual][14].
 A list of the various settings combos to be used by [`test_settings.sh`][104].
 
 ### `src/`
+
+This folder is, obviously, where the actual meat, the source code, is.
+
+#### `args.c`
+
+Code for processing command-line arguments.
+
+#### `bc.c`
+
+The code for the `bc` main function `bc_main()`.
+
+#### `bc_lex.c`
+
+The code for lexing that only `bc` needs.
+
+#### `dc.c`
+
+The code for the `dc` main function `dc_main()`.
+
+#### `dc_lex.c`
+
+The code for lexing that only `dc` needs.
 
 ### `tests/`
 

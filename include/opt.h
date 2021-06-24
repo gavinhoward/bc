@@ -41,6 +41,7 @@
 #define BC_OPT_H
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct BcOpt {
 	char **argv;

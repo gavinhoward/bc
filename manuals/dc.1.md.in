@@ -42,18 +42,14 @@ dc(1) is an arbitrary-precision calculator. It uses a stack (reverse Polish
 notation) to store numbers and results of computations. Arithmetic operations
 pop arguments off of the stack and push the results.
 
-If no files are given on the command-line as extra arguments (i.e., not as
-**-f** or **-\-file** arguments), then dc(1) reads from **stdin**. Otherwise,
-those files are processed, and dc(1) will then exit.
+If no files are given on the command-line, then dc(1) reads from **stdin** (see
+the **STDIN** section). Otherwise, those files are processed, and dc(1) will
+then exit.
 
-This is different from the dc(1) on OpenBSD and possibly other dc(1)
-implementations, where **-e** (**-\-expression**) and **-f** (**-\-file**)
-arguments cause dc(1) to execute them and exit. The reason for this is that this
-dc(1) allows users to set arguments in the environment variable **DC_ENV_ARGS**
-(see the **ENVIRONMENT VARIABLES** section). Any expressions given on the
-command-line should be used to set up a standard environment. For example, if a
-user wants the **scale** always set to **10**, they can set **DC_ENV_ARGS** to
-**-e 10k**, and this dc(1) will always start with a **scale** of **10**.
+If a user wants to set up a standard environment, they can use **DC_ENV_ARGS**
+(see the **ENVIRONMENT VARIABLES** section). For example, if a user wants the
+**scale** always set to **10**, they can set **DC_ENV_ARGS** to **-e 10k**, and
+this dc(1) will always start with a **scale** of **10**.
 
 # OPTIONS
 
@@ -136,6 +132,25 @@ The following are the options that dc(1) accepts.
     This is a **non-portable extension**.
 
 All long options are **non-portable extensions**.
+
+# STDIN
+
+If no files are given on the command-line and no files or expressions are given
+by the **-f**, **-\-file**, **-e**, or **-\-expression** options, then dc(1)
+read from **stdin**.
+
+However, there are a few caveats to this.
+
+First, **stdin** is evaluated a line at a time. The only exception to this is if
+a string has been finished, but not ended. This means that, except for escaped
+brackets, all brackets must be balanced before dc(1) parses and executes.
+
+Second, as a consequence of the above, if the user attempts to use the left
+bracket character, **[**, as a register name, dc(1) will not execute until a
+balancing right bracket, **]** is given. Then it will give an error since it is
+an error to use the left bracket as register name (see the **REGISTERS**
+section). In fact, this is why it is an error.
+
 
 # STDOUT
 
@@ -958,8 +973,9 @@ the stack for the register. All registers, when first referenced, have one value
 off of the register stack.
 
 In non-extended register mode, a register name is just the single character that
-follows any command that needs a register name. The only exception is a newline
-(**'\\n'**); it is a parse error for a newline to be used as a register name.
+follows any command that needs a register name. The only exceptions are: a
+newline (**'\\n'**) and a left bracket (**'['**); it is a parse error for a
+newline or a left bracket to be used as a register name.
 
 ## Extended Register Mode
 

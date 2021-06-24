@@ -33,6 +33,7 @@
  *
  */
 
+#include <opt.h>
 #include <args.h>
 #include <lex.h>
 #include <parse.h>
@@ -92,6 +93,31 @@ const char bc_pledge_end_history[] = "";
 const char bc_pledge_end[] = "";
 
 #endif // __OpenBSD__
+
+/// The list of long options.
+const BcOptLong bc_args_lopt[] = {
+
+	{ "expression", BC_OPT_REQUIRED, 'e' },
+	{ "file", BC_OPT_REQUIRED, 'f' },
+	{ "help", BC_OPT_NONE, 'h' },
+	{ "interactive", BC_OPT_NONE, 'i' },
+	{ "no-prompt", BC_OPT_NONE, 'P' },
+	{ "no-read-prompt", BC_OPT_NONE, 'R' },
+#if BC_ENABLED
+	{ "global-stacks", BC_OPT_BC_ONLY, 'g' },
+	{ "mathlib", BC_OPT_BC_ONLY, 'l' },
+	{ "quiet", BC_OPT_BC_ONLY, 'q' },
+	{ "standard", BC_OPT_BC_ONLY, 's' },
+	{ "warn", BC_OPT_BC_ONLY, 'w' },
+#endif // BC_ENABLED
+	{ "version", BC_OPT_NONE, 'v' },
+	{ "version", BC_OPT_NONE, 'V' },
+#if DC_ENABLED
+	{ "extended-register", BC_OPT_DC_ONLY, 'x' },
+#endif // DC_ENABLED
+	{ NULL, 0, 0 },
+
+};
 
 const char* const bc_err_func_header = "Function:";
 const char* const bc_err_line = ":%zu";

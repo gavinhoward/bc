@@ -891,6 +891,10 @@ elif [ -z "${HOSTCFLAGS+set}" ]; then
 	HOSTCFLAGS="$HOST_CFLAGS"
 fi
 
+# Store these for the cross compilation detection later.
+OLDCFLAGS="$CFLAGS"
+OLDHOSTCFLAGS="$HOSTCFLAGS"
+
 link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
@@ -1179,7 +1183,7 @@ if [ "$nls" -ne 0 ]; then
 			# It turns out that POSIX locales are really terrible, and running
 			# gencat on one machine is not guaranteed to make those cat files
 			# portable to another machine, so we had better warn the user here.
-			if [ "$HOSTCC" != "$CC" ] || [ "$HOSTCFLAGS" != "$CFLAGS" ]; then
+			if [ "$HOSTCC" != "$CC" ] || [ "$OLDHOSTCFLAGS" != "$OLDCFLAGS" ]; then
 				printf 'Cross-compile detected.\n\n'
 				printf 'WARNING: Catalog files generated with gencat may not be portable\n'
 				printf '         across different architectures.\n\n'

@@ -174,6 +174,7 @@ static void bc_history_add_empty(BcHistory *h);
 
 /**
  * Check if the code is a wide character.
+ * @param cp  The codepoint to check.
  */
 static bool bc_history_wchar(uint32_t cp) {
 
@@ -196,6 +197,7 @@ static bool bc_history_wchar(uint32_t cp) {
 
 /**
  * Check if the code is a combining character.
+ * @param cp  The codepoint to check.
  */
 static bool bc_history_comboChar(uint32_t cp) {
 

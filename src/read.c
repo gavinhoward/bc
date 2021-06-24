@@ -53,6 +53,11 @@
 #include <program.h>
 #include <vm.h>
 
+/**
+ * A portability file open function.
+ * @param path  The path to the file to open.
+ * @param mode  The mode to open in.
+ */
 static int bc_read_open(const char* path, int mode) {
 
 	int fd;
@@ -67,6 +72,11 @@ static int bc_read_open(const char* path, int mode) {
 	return fd;
 }
 
+/**
+ * Returns true if the buffer data is non-ASCII.
+ * @param buf   The buffer to test.
+ * @param size  The size of the buffer.
+ */
 static bool bc_read_binary(const char *buf, size_t size) {
 
 	size_t i;
@@ -197,12 +207,13 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	return s;
 }
 
-void bc_read_file(const char *path, char **buf) {
+char* bc_read_file(const char *path) {
 
 	BcErr e = BC_ERR_FATAL_IO_ERR;
 	size_t size, r;
 	struct stat pstat;
 	int fd;
+	char* buf;
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -224,25 +235,26 @@ void bc_read_file(const char *path, char **buf) {
 	}
 
 	size = (size_t) pstat.st_size;
-	*buf = bc_vm_malloc(size + 1);
+	buf = bc_vm_malloc(size + 1);
 
-	r = (size_t) read(fd, *buf, size);
+	r = (size_t) read(fd, buf, size);
 	if (BC_ERR(r != size)) goto read_err;
 
-	(*buf)[size] = '\0';
+	buf[size] = '\0';
 
-	if (BC_ERR(bc_read_binary(*buf, size))) {
+	if (BC_ERR(bc_read_binary(buf, size))) {
 		e = BC_ERR_FATAL_BIN_FILE;
 		goto read_err;
 	}
 
 	close(fd);
 
-	return;
+	return buf;
 
 read_err:
-	free(*buf);
+	free(buf);
 malloc_err:
 	close(fd);
 	bc_vm_verr(e, path);
+	return NULL;
 }

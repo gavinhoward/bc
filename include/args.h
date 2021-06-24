@@ -37,6 +37,7 @@
 #define BC_ARGS_H
 
 #include <status.h>
+#include <opt.h>
 #include <vm.h>
 
 /**
@@ -47,5 +48,8 @@
  *                    otherwise.
  */
 void bc_args(int argc, char *argv[], bool exit_exprs);
+
+// A reference to the list of long options.
+extern const BcOptLong bc_args_lopt[];
 
 #endif // BC_ARGS_H
