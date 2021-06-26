@@ -1070,10 +1070,6 @@ void bc_vm_boot(int argc, char *argv[]) {
 	vm.flags |= tty ? BC_FLAG_TTY : 0;
 	vm.flags |= ttyin && ttyout ? BC_FLAG_I : 0;
 
-	// Set defaults.
-	vm.flags |= BC_TTY ? BC_FLAG_P | BC_FLAG_R : 0;
-	vm.flags |= BC_I ? BC_FLAG_Q : 0;
-
 	bc_vm_sigaction();
 
 	bc_vm_init();
@@ -1095,7 +1091,22 @@ void bc_vm_boot(int argc, char *argv[]) {
 	bc_program_init(&vm.prog);
 	bc_parse_init(&vm.prs, &vm.prog, BC_PROG_MAIN);
 
-	bc_vm_setenvFlag(env_sigint, BC_I ? env_sigint_def : 0, BC_FLAG_SIGINT);
+#if BC_ENABLED
+	if (BC_IS_BC) {
+
+		char* var = bc_vm_getenv("POSIXLY_CORRECT");
+
+		vm.flags |= BC_FLAG_S * (var != NULL);
+		bc_vm_getenvFree(var);
+	}
+#endif // BC_ENABLED
+
+	bc_vm_envArgs(env_args);
+	bc_args(argc, argv, true);
+
+	// Set defaults.
+	vm.flags |= BC_TTY ? BC_FLAG_P | BC_FLAG_R : 0;
+	vm.flags |= BC_I ? BC_FLAG_Q : 0;
 
 	if (BC_TTY) {
 
@@ -1107,20 +1118,12 @@ void bc_vm_boot(int argc, char *argv[]) {
 #endif // BC_ENABLE_HISTORY
 	}
 
+	if (BC_I) {
+		bc_vm_setenvFlag(env_sigint, env_sigint_def, BC_FLAG_SIGINT);
 #if BC_ENABLED
-	if (BC_IS_BC) {
-
-		char* var = bc_vm_getenv("POSIXLY_CORRECT");
-
-		vm.flags |= BC_FLAG_S * (var != NULL);
-		bc_vm_getenvFree(var);
-
 		bc_vm_setenvFlag("BC_BANNER", BC_DEFAULT_BANNER, BC_FLAG_Q);
-	}
 #endif // BC_ENABLED
-
-	bc_vm_envArgs(env_args);
-	bc_args(argc, argv, true);
+	}
 
 #if BC_ENABLED
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
