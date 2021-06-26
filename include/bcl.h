@@ -49,8 +49,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-// Windows has deprecated isatty() and the rest of these.
-// Or doesn't have them.
+// Windows has deprecated isatty() and the rest of these. Or doesn't have them.
+// So these are just fixes for Windows.
 #ifdef _WIN32
 
 // This one is special. Windows did not like me defining an
@@ -99,6 +99,9 @@
 #error BC_LONG_BIT cannot be greater than LONG_BIT
 #endif // BC_LONG_BIT > LONG_BIT
 
+// For more information about the items here, see the either the
+// manuals/bcl.3.md or manuals/bcl.3 manuals.
+
 // BclBigDig is a fixed-size integer type that bcl can convert numbers to.
 //
 // BclRandInt is the type of fixed-size integer natively returned by the
@@ -124,9 +127,6 @@ typedef uint32_t BclRandInt;
 #endif // BC_ENABLE_LIBRARY
 
 #if BC_ENABLE_LIBRARY
-
-// For more information about the items here, see the either the
-// manuals/bcl.3.md or manuals/bcl.3 manuals.
 
 typedef enum BclError {
 

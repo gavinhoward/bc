@@ -104,34 +104,8 @@ void bc_lex_token(BcLex *l);
 // The following section is for flags needed when parsing bc code. These flags
 // are complicated, but necessary. Why you ask? Because bc's standard is awful.
 //
-// The standard says that either semicolons or newlines can end statements.
-// Trying to parse the end of a statement when it can either be a newline or a
-// semicolon is subtle. Doing it in the presence of control flow constructs that
-// do not have to use braces is even harder.
-//
-// And then comes the biggest complication of all: bc has to assume that it is
-// *always* at a REPL (Read-Eval-Print Loop). bc is, first and foremost, an
-// *interactive* utility.
-//
-// All of this means that bc has to be able to partially parse something, store
-// enough data to recreate that state later, and return, making sure to not
-// execute anything in the meantime.
-//
-// *That* is what these flags are: they are the state that bc is saving for
-// itself.
-//
-// It saves them in a stack, by the way, because it's possible to nest
-// structures, just like any other programming language. Thus, not only does it
-// have to store state, it needs to do it arbitrarily, and still be able to
-// come back to it.
-//
-// So bc stores its parser state with flags in a stack. Careful setting of these
-// flags, along with properly using them and maintaining the flag stack, are
-// what make bc parsing work, but it's complicated. In fact, the bc parser is
-// the single most subtle, fickle, and sensitive piece of code in the entire
-// codebase. Only one thing came close once: square root, and that was only
-// sensitive because I wrote it wrong. This parser is pretty good, and it is
-// *still* sensitive.
+// If you don't believe me, go read the bc Parsing section of the Development
+// manual (manuals/development.md). Then come back.
 //
 // In other words, these flags are the sign declaring, "Here be dragons."
 

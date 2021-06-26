@@ -42,34 +42,28 @@
 #include <vector.h>
 #include <num.h>
 
-#if BC_ENABLED
-#define BC_INST_IS_ASSIGN(i) \
-	((i) == BC_INST_ASSIGN || (i) == BC_INST_ASSIGN_NO_VAL)
-#define BC_INST_USE_VAL(i) ((i) <= BC_INST_ASSIGN)
-#else // BC_ENABLED
-#define BC_INST_IS_ASSIGN(i) ((i) == BC_INST_ASSIGN_NO_VAL)
-#define BC_INST_USE_VAL(i) (false)
-#endif // BC_ENABLED
-
-#ifndef NDEBUG
-#define BC_ENABLE_FUNC_FREE (1)
-#else // NDEBUG
-#define BC_ENABLE_FUNC_FREE DC_ENABLED
-#endif // NDEBUG
-
+/// The instructions for bytecode.
 typedef enum BcInst {
 
 #if BC_ENABLED
+
+	/// Postfix increment and decrement. Prefix are translated into
+	/// BC_INST_ONE with either BC_INST_ASSIGN_PLUS or BC_INST_ASSIGN_MINUS.
 	BC_INST_INC = 0,
 	BC_INST_DEC,
 #endif // BC_ENABLED
 
+	/// Unary negation.
 	BC_INST_NEG,
+
+	/// Boolean not.
 	BC_INST_BOOL_NOT,
 #if BC_ENABLE_EXTRA_MATH
+	/// Truncation operator.
 	BC_INST_TRUNC,
 #endif // BC_ENABLE_EXTRA_MATH
 
+	/// These should be self-explanatory.
 	BC_INST_POWER,
 	BC_INST_MULTIPLY,
 	BC_INST_DIVIDE,
@@ -78,12 +72,16 @@ typedef enum BcInst {
 	BC_INST_MINUS,
 
 #if BC_ENABLE_EXTRA_MATH
+
+	/// Places operator.
 	BC_INST_PLACES,
 
+	/// Shift operators.
 	BC_INST_LSHIFT,
 	BC_INST_RSHIFT,
 #endif // BC_ENABLE_EXTRA_MATH
 
+	/// Comparison operators.
 	BC_INST_REL_EQ,
 	BC_INST_REL_LE,
 	BC_INST_REL_GE,
@@ -91,10 +89,12 @@ typedef enum BcInst {
 	BC_INST_REL_LT,
 	BC_INST_REL_GT,
 
+	/// Boolean or and and.
 	BC_INST_BOOL_OR,
 	BC_INST_BOOL_AND,
 
 #if BC_ENABLED
+	/// Same as the normal operators, but assigment. So ^=, *=, /=, etc.
 	BC_INST_ASSIGN_POWER,
 	BC_INST_ASSIGN_MULTIPLY,
 	BC_INST_ASSIGN_DIVIDE,
@@ -102,12 +102,20 @@ typedef enum BcInst {
 	BC_INST_ASSIGN_PLUS,
 	BC_INST_ASSIGN_MINUS,
 #if BC_ENABLE_EXTRA_MATH
+	/// Places and shift assignment operators.
 	BC_INST_ASSIGN_PLACES,
 	BC_INST_ASSIGN_LSHIFT,
 	BC_INST_ASSIGN_RSHIFT,
 #endif // BC_ENABLE_EXTRA_MATH
+
+	/// Normal assignment.
 	BC_INST_ASSIGN,
 
+	/// bc and dc detect when the value from an assignment is not necessary.
+	/// For example, a plain assignment statement means the value is never used.
+	/// In those cases, we can get lots of performance back by not even creating
+	/// a copy at all. In fact, it saves a copy, a push onto the results stack,
+	/// a pop from the results stack, and a free. Definitely worth it to detect.
 	BC_INST_ASSIGN_POWER_NO_VAL,
 	BC_INST_ASSIGN_MULTIPLY_NO_VAL,
 	BC_INST_ASSIGN_DIVIDE_NO_VAL,
@@ -115,50 +123,84 @@ typedef enum BcInst {
 	BC_INST_ASSIGN_PLUS_NO_VAL,
 	BC_INST_ASSIGN_MINUS_NO_VAL,
 #if BC_ENABLE_EXTRA_MATH
+	/// Same as above.
 	BC_INST_ASSIGN_PLACES_NO_VAL,
 	BC_INST_ASSIGN_LSHIFT_NO_VAL,
 	BC_INST_ASSIGN_RSHIFT_NO_VAL,
 #endif // BC_ENABLE_EXTRA_MATH
 #endif // BC_ENABLED
+
+	/// Normal assignment that pushes no value on the stack.
 	BC_INST_ASSIGN_NO_VAL,
 
+	/// Push a constant onto the results stack.
 	BC_INST_NUM,
+
+	/// Push a variable onto the results stack.
 	BC_INST_VAR,
+
+	/// Push an array element onto the results stack.
 	BC_INST_ARRAY_ELEM,
 #if BC_ENABLED
+	/// Push an array onto the results stack. This is different from pushing an
+	/// array *element* onto the results stack; it pushes a reference to the
+	/// whole array. This is needed in bc for function arguments that are
+	/// arrays.
 	BC_INST_ARRAY,
 #endif // BC_ENABLED
 
+	/// Push a zero or a one onto the stack. These are special cased because it
+	/// does help performance, particularly for one since inc/dec operators
+	/// use it.
 	BC_INST_ZERO,
 	BC_INST_ONE,
 
 #if BC_ENABLED
+	/// Push the last printed value onto the stack.
 	BC_INST_LAST,
 #endif // BC_ENABLED
+
+	/// Push the value of any of the globals onto the stack.
 	BC_INST_IBASE,
 	BC_INST_OBASE,
 	BC_INST_SCALE,
+
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+	/// Push the value of the seed global onto the stack.
 	BC_INST_SEED,
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+
+	/// These are builtin functions.
 	BC_INST_LENGTH,
 	BC_INST_SCALE_FUNC,
 	BC_INST_SQRT,
 	BC_INST_ABS,
+
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+	/// Another builtin function.
 	BC_INST_IRAND,
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+
+	/// Another builtin function.
 	BC_INST_READ,
+
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+	/// Another builtin function.
 	BC_INST_RAND,
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+
+	/// Return the max for the various globals.
 	BC_INST_MAXIBASE,
 	BC_INST_MAXOBASE,
 	BC_INST_MAXSCALE,
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+	/// Return the max value returned by rand().
 	BC_INST_MAXRAND,
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
+	/// This is slightly misnamed versus BC_INST_PRINT_POP. Well, it is in bc.
+	/// dc uses this instruction to print, but not pop. That's valid in dc.
+	/// However, in bc, it is *never* valid to print without popping.
 	BC_INST_PRINT,
 	BC_INST_PRINT_POP,
 	BC_INST_STR,
@@ -317,6 +359,24 @@ void bc_result_free(void *result);
 
 void bc_array_expand(BcVec *a, size_t len);
 int bc_id_cmp(const BcId *e1, const BcId *e2);
+
+/// Returns non-zero if the instruction i is an assignment instruction.
+#if BC_ENABLED
+#define BC_INST_IS_ASSIGN(i) \
+	((i) == BC_INST_ASSIGN || (i) == BC_INST_ASSIGN_NO_VAL)
+#define BC_INST_USE_VAL(i) ((i) <= BC_INST_ASSIGN)
+#else // BC_ENABLED
+#define BC_INST_IS_ASSIGN(i) ((i) == BC_INST_ASSIGN_NO_VAL)
+#define BC_INST_USE_VAL(i) (false)
+#endif // BC_ENABLED
+
+// In bc, functions are never freed until the end. So we only free them if
+// dc is enabled or in debug mode.
+#ifndef NDEBUG
+#define BC_ENABLE_FUNC_FREE (1)
+#else // NDEBUG
+#define BC_ENABLE_FUNC_FREE DC_ENABLED
+#endif // NDEBUG
 
 #if BC_DEBUG_CODE
 extern const char* bc_inst_names[];

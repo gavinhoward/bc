@@ -63,20 +63,14 @@ void bc_vec_grow(BcVec *restrict v, size_t n) {
 	BC_SIG_TRYUNLOCK(lock);
 }
 
-static inline void bc_vec_initHelper(BcVec *restrict v, size_t esize,
-                                     BcVecFree dtor)
-{
+void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
 	BC_SIG_ASSERT_LOCKED;
 	assert(v != NULL && esize);
+	v->v = bc_vm_malloc(bc_vm_arraySize(BC_VEC_START_CAP, esize));
 	v->size = esize;
 	v->cap = BC_VEC_START_CAP;
 	v->len = 0;
 	v->dtor = dtor;
-}
-
-void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor) {
-	v->v = bc_vm_malloc(bc_vm_arraySize(BC_VEC_START_CAP, esize));
-	bc_vec_initHelper(v, esize, dtor);
 }
 
 void bc_vec_expand(BcVec *restrict v, size_t req) {

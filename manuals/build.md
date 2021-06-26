@@ -39,11 +39,16 @@ accepted build options.
 
 ## Windows
 
-On Windows, this `bc` can be built using Visual Studio or MSBuild.
+For releases, Windows builds of `bc`, `dc`, and `bcl` are available for download
+from <https://git.yzena.com/gavin/bc> and GitHub.
 
-However, only one build configuration (besides Debug or Release) is supported:
-extra math and prompt enabled, history and NLS (locale support) disabled, with
-both calculators built.
+However, if you wish to build it yourself, this `bc` can be built using Visual
+Studio or MSBuild.
+
+Unfortunately, only one build configuration (besides Debug or Release) is
+supported: extra math, and history enabled, NLS (locale support) disabled, with
+both calculators built. The default [settings][11] are `BC_BANNER=1`,
+`{BC,DC}_SIGINT_RESET=0`, `{BC,DC}_TTY_MODE=1`, `{BC,DC}_PROMPT=1`.
 
 The library can also be built on Windows.
 
@@ -344,7 +349,7 @@ To build the math library, use the following commands for the configure step:
 
 Both commands are equivalent.
 
-When the library is built, history, prompt, and locales are disabled, and the
+When the library is built, history and locales are disabled, and the
 functionality for `bc` and `dc` are both enabled, though the executables are
 *not* built. This is because the library's options clash with the executables.
 
@@ -648,7 +653,7 @@ make install
 Building with link-time optimization (`-flto` in clang) can further increase the
 performance. I ***highly*** recommend doing so.
 
-I do **NOT*** recommend building with `-march=native`; doing so reduces this
+I do ***NOT*** recommend building with `-march=native`; doing so reduces this
 `bc`'s performance.
 
 Manual stripping is not necessary; non-debug builds are automatically stripped
@@ -825,3 +830,4 @@ Both commands are equivalent.
 [8]: #history
 [9]: #nls-locale-support
 [10]: #extra-math
+[11]: #settings

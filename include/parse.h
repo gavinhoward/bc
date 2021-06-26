@@ -134,10 +134,10 @@ typedef struct BcParse {
 	BcVec conds;
 
 	/// A stack of operators. When parsing expressions, the bc parser uses the
-	/// shunting yard algorithm, which requires a stack of operators. This can
+	/// Shunting-Yard algorithm, which requires a stack of operators. This can
 	/// hold the stack for multiple expressions at once because the expressions
-	/// stack as well. For more information, see @a bc_parse_expr_err() in
-	/// src/bc_parse.c.
+	/// stack as well. For more information, see the Expression Parsing section
+	/// of the Development manual (manuals/development.md).
 	BcVec ops;
 
 	/// A buffer to temporarily store a string in. This is because the lexer

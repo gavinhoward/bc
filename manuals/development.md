@@ -1090,6 +1090,8 @@ A list of the various settings combos to be used by [`test_settings.sh`][104].
 
 ### `src/`
 
+TODO
+
 This folder is, obviously, where the actual meat, the source code, is.
 
 #### `args.c`
@@ -1113,6 +1115,12 @@ The code for the `dc` main function `dc_main()`.
 The code for lexing that only `dc` needs.
 
 ### `tests/`
+
+TODO
+
+## Test Suite
+
+TODO
 
 ## POSIX Shell Scripts
 
@@ -1235,6 +1243,15 @@ locale.
 
 ## Fuzzing
 
+TODO
+
+## Debugging
+
+TODO
+
+* `BC_DEBUG_CODE`.
+	* Hidden behind a `#define` to ensure it does not leak into actual code.
+
 ## Code Concepts
 
 This section is about concepts that, if understood, will make it easier to
@@ -1244,21 +1261,348 @@ The concepts in this section are not found in a single source file, but they are
 littered throughout the code. That's why I am writing them all down in a single
 place.
 
+### Asserts
+
+If you asked me what procedure is used the most in `bc`, I would reply without
+hesitation, "`assert()`."
+
+I use `assert()` everywhere. In fact, it is what made fuzzing with AFL++ so
+effective. AFL++ is incredibly good at finding crashes, and a failing `assert()`
+counts as one.
+
+So while a lot of bad bugs might have corrupted data and *not* caused crashes,
+because I put in so many `assert()`'s, they were *turned into* crashing bugs,
+and AFL++ found them.
+
+By far, the most bugs it found this way was in the `bc` parser. (See the [`bc`
+Parsing][110] for more information.) And even though I was careful to put
+`assert()`'s everywhere, most parser bugs manifested during execution of
+bytecode because the virtual machine assumes the bytecode is valid.
+
+Sidenote: one of those bugs caused an infinite recursion when running the sine
+(`s()`) function in the math library, so yes, parser bugs can be *very* weird.
+
+Anyway, they way I did `assert()`'s was like this: whenever I realized that I
+had put assumptions into the code, I would put an `assert()` there to test it
+**and** to *document* it.
+
+Yes, documentation. In fact, by far the best documentation of the code in `bc`
+is actually the `assert()`'s. The only time I would not put an `assert()` to
+test an assumption is if that assumption was already tested by an `assert()`
+earlier.
+
+As an example, if a function calls another function and passes a pointer that
+the caller previously `assert()`'ed was *not* `NULL`, then the callee does not
+have to `assert()` it too, unless *also* called by another function that does
+not `assert()` that.
+
+These show up most often in two places: function preconditions and function
+postconditions.
+
+Function preconditions are `assert()`'s that test conditions relating to the
+arguments a function was given. They appear at the top of the function, usually
+before anything else (except maybe initializing a local variable).
+
+Function postconditions are `assert()`'s that test the return values or other
+conditions when a function exits. These are at the bottom of a function or just
+before a `return` statement.
+
+The other `assert()`'s cover various miscellaneous assumptions.
+
+If you change the code, I ***HIGHLY*** suggest that you use `assert()`'s to
+document your assumptions. And don't remove them when AFL++ gleefully crashes
+`bc` and `dc` over and over again.
+
+### Vectors
+
+TODO
+
+In `bc`, vectors mean resizable arrays, and they are the most fundamental piece
+of code in the entire codebase.
+
+I wrote a [vector implementation][112], which I used to guide my decisions, but
+I wrote a new one so that `bc` would not have a dependency. I also didn't make
+it as sophisticated; the one in `bc` is very simple.
+
+Vectors store some information about the type that they hold:
+
+* The size (as returned by `sizeof`).
+* The destructor.
+
+If the destructor is `NULL`, it is counted as the type not having a destructor.
+
+But by storing the size, the vector can then allocate `size * cap` bytes, where
+`cap` is the capacity. Then, when growing the vector, the `cap` is doubled again
+and again until it is bigger than the requested size.
+
+But to store items, or to push items, or even to return items, the vector has to
+figure out where they are, since to it, the array just looks like an array of
+bytes.
+
+It does this by calculating a pointer to the underlying type with
+`v + (i * size)`, where `v` is the array of bytes, `i` is the index of the
+desired element, and `size` is the size of the underlying type.
+
+Doing that, vectors can avoid undefined behavior (because `char` pointers can
+be cast to any other pointer type), while calculating the exact position of
+every element.
+
+Because it can do that, it can figure out where to push new elements by
+calculating `v + (len * size)`, where `len` is the number of items actually in
+the vector.
+
+By the way, `len` is different from `cap`. While cap is the amount of storage
+*available*, `len` is the number of actual elements in the vector at the present
+point in time.
+
+#### Maps
+
 ### Error Handling
 
-### Lexing
+TODO
 
-### Parsing
+* Note about vectors and numbers needing special treatment for error handling.
 
-### Bytecode
+### Execution
+
+TODO
+
+* Bytecode.
+* Stack machine.
 
 #### Bytecode Indices
 
-### Function Pointers
+TODO
+
+### Lexing
+
+TODO
+
+### `dc` Parsing
+
+(In fact, the easiness of parsing [Reverse Polish notation][108] is probably
+why it was used for `dc` when it was first created at Bell Labs.)
+
+### `bc` Parsing
+
+`bc`'s parser is, by far, the most sensitive piece of code in this software, and
+there is a very big reason for that: `bc`'s standard is awful and defined a very
+poor language.
+
+The standard says that either semicolons or newlines can end statements. Trying
+to parse the end of a statement when it can either be a newline or a semicolon
+is subtle. Doing it in the presence of control flow constructs that do not have
+to use braces is even harder.
+
+And then comes the biggest complication of all: `bc` has to assume that it is
+*always* at a REPL (Read-Eval-Print Loop). `bc` is, first and foremost, an
+*interactive* utility.
+
+#### Flags
+
+All of this means that `bc` has to be able to partially parse something, store
+enough data to recreate that state later, and return, making sure to not
+execute anything in the meantime.
+
+*That* is what the flags in [`include/bc.h`][106] are: they are the state that
+`bc` is saving for itself.
+
+It saves them in a stack, by the way, because it's possible to nest
+structures, just like any other programming language. Thus, not only does it
+have to store state, it needs to do it arbitrarily, and still be able to
+come back to it.
+
+So `bc` stores its parser state with flags in a stack. Careful setting of these
+flags, along with properly using them and maintaining the flag stack, are what
+make `bc` parsing work, but it's complicated. In fact, as I mentioned, the `bc`
+parser is the single most subtle, fickle, and sensitive piece of code in the
+entire codebase. Only one thing came close once: square root, and that was only
+sensitive because I wrote it wrong. This parser is pretty good, and it is
+*still* sensitive. And flags are the reason why.
+
+For more information about what individual flags there are, see the comments in
+[`include/bc.h`][106].
+
+#### Labels
+
+`bc`'s language is Turing-complete. That means that code needs the ability to
+jump around, specifically to implement control flow like `if` statements and
+loops.
+
+`bc` handles this while parsing with what I called "labels."
+
+Labels are markers in the bytecode. They are stored in functions alongside the
+bytecode, and they are just indices into the bytecode.
+
+When the `bc` parser creates a label, it pushes an index onto the labels array,
+and the index of the label in that array is the index that will be inserted into
+the bytecode.
+
+Then, when a jump happens, the index pulled out of the bytecode is used to index
+the labels array, and the label (index) at the index is then used to set the
+instruction pointer.
+
+#### Cond Labels
+
+"Cond" labels are so-called because they are used by conditionals.
+
+The key to them is that they come *before* the code that uses them. In other
+words, when jumping to a condition, code is jumping *backwards*.
+
+This means that when a cond label is created, the value that should go there is
+well-known. Cond labels are easy.
+
+However, they are still stored on a stack so that the parser knows what cond
+label to use.
+
+#### Exit Labels
+
+Exit labels are not so easy.
+
+"Exit" labels are so-called because they are used by code "exiting" out of `if`
+statements or loops.
+
+The key to them is that they come *after* the code that uses them. In other
+words, when jumping to an exit, code is jumping *forwards*.
+
+But this means that when an exit label is created, the value that should go
+there is *not* known. The code that needs it must be parsed and generated first.
+
+That means that exit labels are created with the index of `SIZE_MAX`, which is
+then specifically checked for with an assert in `bc_program_exec()` before using
+those indices.
+
+There should ***NEVER*** be a case when an exit label is not filled in properly
+if the parser has no bugs. This is because every `if` statement, every loop,
+must have an exit, so the exit must be set. If not, there is a bug.
+
+Exit labels are also stored on a stack so that the parser knows what exit label
+to use.
+
+#### Expression Parsing
+
+`bc` has expressions like you might expect in a typical programming language.
+This means [infix notation][107].
+
+One thing about infix notation is that you can't just generate code straight
+from it like you can with [Reverse Polish notation][108]. It requires more work
+to shape it into a form that works for execution on a stack machine.
+
+That extra work is called the [Shunting-Yard algorithm][109], and the form it
+translates infix notation into is...[Reverse Polish notation][108].
+
+In order to understand the rest of this section, you must understand the
+[Shunting-Yard algorithm][109]. Go do that before you read on.
+
+##### Operator Stack
+
+In `bc`, the [Shunting-Yard algorithm][109] is implemented with bytecode as the
+output and an explicit operator stack (the `ops` field in `BcParse`) as the
+operator stack. It stores tokens from `BcLex`.
+
+However, there is one **HUGE** hangup: multiple expressions can stack. This
+means that multiple expressions can be parsed at one time (think an array element
+expression in the middle of a larger expression). Because of that, we need to
+keep track of where the previous expression ended. That's what `start` parameter
+to `bc_parse_operator()` is.
+
+Parsing multiple expressions on one operator stack only works because
+expressions can only *stack*; this means that, if an expression begins before
+another ends, it must *also* end before that other expression ends. This
+property ensures that operators will never interfere with each other on the
+operator stack.
+
+##### Recursion
+
+Because expressions can stack, parsing expressions actually requires recursion.
+Well, it doesn't *require* it, but the code is much more readable that way.
+
+This recursion is indirect; the functions that `bc_parse_expr_err()` (the actual
+expression parsing function) calls can, in turn, call it.
+
+##### Expression Flags
+
+There is one more big thing: not all expressions in `bc` are equal.
+
+Some expressions have requirements that others don't have. For example, only
+array arguments can be arrays (which are technically not expressions, but are
+treated as such for parsing), and some operators (in POSIX) are not allowed in
+certain places.
+
+For this reason, functions that are part of the expression parsing
+infrastructure in `bc`'s parser usually take a `flags` argument. This is meant
+to be passed to children, and somewhere, they will be checked to ensure that the
+resulting expression meets its requirements.
+
+There are also places where the flags are changed. This is because the
+requirements change.
+
+Maintaining the integrity of the requirements flag set is an important part of
+the `bc` parser. However, they do not have to be stored on a stack because their
+stack is implicit from the recursion that expression parsing uses.
+
+### Callbacks
+
+There are many places in `bc` and `dc` where function pointers are used:
+
+* To implement destructors in vectors. (See the [Vectors][111] section.)
+* To select the correct lex and parse functions for `bc` and `dc`.
+* To select the correct function to execute unary operators.
+* To select the correct function to execute binary operators.
+* To calculate the correct number size for binary operators.
+* To print a "digit" of a number.
+* To seed the pseudo-random number generator.
+
+And there might be more.
+
+In every case, they are used for reducing the amount of code. Instead of
+`if`/`else` chains, such as:
+
+```
+if (BC_IS_BC) {
+	bc_parse_parse(vm.parse);
+}
+else {
+	dc_parse_parse(vm.parse);
+}
+```
+
+The best example of this is `bc_num_binary()`. It is called by every binary
+operator. It figures out if it needs to allocate space for a new `BcNum`. If so,
+it allocates the space and then calls the function pointer to the *true*
+operation.
+
+Doing it like that shrunk the code *immensely*. First, instead of every single
+binary operator duplicating the allocation code, it only exists in one place.
+Second, `bc_num_binary()` itself does not have a massive `if`/`else` chain or a
+`switch` statement.
+
+But perhaps the most important use was for destructors in vectors.
+
+Most of the data structures in `bc` are stored in vectors. If I hadn't made
+destructors available for vectors, then ensuring that `bc` had no memory leaks
+would have been nigh impossible. As it is, I check `bc` for memory leaks every
+release when I change the code, and I have not released `bc` after version
+`1.0.0` with any memory leaks, as far as I can remember anyway.
+
+### Numbers
+
+TODO
 
 ### Strings as Numbers
 
+TODO
+
 ### Caching of Numbers
+
+TODO
+
+### Pseudo-Random Number Generator
+
+TODO
+
+* Integer portion is increment.
+* Real portion is the real seed.
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
@@ -1365,3 +1709,10 @@ place.
 [103]: #test_settingstxt
 [104]: #test_settingssh
 [105]: #functionssh
+[106]: #bch
+[107]: https://en.wikipedia.org/wiki/Infix_notation
+[108]: https://en.wikipedia.org/wiki/Reverse_Polish_notation
+[109]: https://en.wikipedia.org/wiki/Shunting-yard_algorithm
+[110]: #bc-parsing
+[111]: #vectors
+[112]: https://git.yzena.com/Yzena/Yc/src/branch/master/include/yc/vector.h
