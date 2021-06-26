@@ -1052,14 +1052,6 @@ void bc_vm_boot(int argc, char *argv[]) {
 	bool tty;
 	const char* const env_len = BC_IS_BC ? "BC_LINE_LENGTH" : "DC_LINE_LENGTH";
 	const char* const env_args = BC_IS_BC ? "BC_ENV_ARGS" : "DC_ENV_ARGS";
-	const char* const env_sigint = BC_IS_BC ? "BC_SIGINT_RESET" :
-	                                          "DC_SIGINT_RESET";
-	int env_sigint_def = BC_IS_BC ? BC_DEFAULT_SIGINT_RESET :
-	                                DC_DEFAULT_SIGINT_RESET;
-	const char* const env_tty = BC_IS_BC ? "BC_TTY_MODE" : "DC_TTY_MODE";
-	int env_tty_def = BC_IS_BC ? BC_DEFAULT_TTY_MODE : DC_DEFAULT_TTY_MODE;
-	const char* const env_prompt = BC_IS_BC ? "BC_PROMPT" : "DC_PROMPT";
-	int env_prompt_def = BC_IS_BC ? BC_DEFAULT_PROMPT : DC_DEFAULT_PROMPT;
 
 	ttyin = isatty(STDIN_FILENO);
 	ttyout = isatty(STDOUT_FILENO);
@@ -1110,6 +1102,11 @@ void bc_vm_boot(int argc, char *argv[]) {
 
 	if (BC_TTY) {
 
+		const char* const env_tty = BC_IS_BC ? "BC_TTY_MODE" : "DC_TTY_MODE";
+		int env_tty_def = BC_IS_BC ? BC_DEFAULT_TTY_MODE : DC_DEFAULT_TTY_MODE;
+		const char* const env_prompt = BC_IS_BC ? "BC_PROMPT" : "DC_PROMPT";
+		int env_prompt_def = BC_IS_BC ? BC_DEFAULT_PROMPT : DC_DEFAULT_PROMPT;
+
 		bc_vm_setenvFlag(env_tty, env_tty_def, BC_FLAG_TTY);
 		bc_vm_setenvFlag(env_prompt, tty ? env_prompt_def : 0, BC_FLAG_P);
 
@@ -1119,6 +1116,12 @@ void bc_vm_boot(int argc, char *argv[]) {
 	}
 
 	if (BC_I) {
+
+		const char* const env_sigint = BC_IS_BC ? "BC_SIGINT_RESET" :
+		                                          "DC_SIGINT_RESET";
+		int env_sigint_def = BC_IS_BC ? BC_DEFAULT_SIGINT_RESET :
+		                                DC_DEFAULT_SIGINT_RESET;
+
 		bc_vm_setenvFlag(env_sigint, env_sigint_def, BC_FLAG_SIGINT);
 #if BC_ENABLED
 		bc_vm_setenvFlag("BC_BANNER", BC_DEFAULT_BANNER, BC_FLAG_Q);
