@@ -48,8 +48,6 @@
 #include <program.h>
 #include <vm.h>
 
-static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr);
-
 static inline void bc_program_setVecs(BcProgram *p, BcFunc *f) {
 	p->consts = &f->consts;
 	if (BC_IS_BC) p->strs = &f->strs;
@@ -154,7 +152,6 @@ size_t bc_program_search(BcProgram *p, const char *id, bool var) {
 
 	BcVec *v, *map;
 	size_t i;
-	BcResultData data;
 
 	v = var ? &p->vars : &p->arrs;
 	map = var ? &p->var_map : &p->arr_map;
@@ -162,8 +159,8 @@ size_t bc_program_search(BcProgram *p, const char *id, bool var) {
 	BC_SIG_LOCK;
 
 	if (bc_map_insert(map, id, v->len, &i)) {
-		bc_array_init(&data.v, var);
-		bc_vec_push(v, &data.v);
+		BcVec *temp = bc_vec_pushEmpty(v);
+		bc_array_init(temp, var);
 	}
 
 	BC_SIG_UNLOCK;
@@ -366,10 +363,9 @@ static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, size_t idx) {
 
 static BcResult* bc_program_prepResult(BcProgram *p) {
 
-	BcResult res;
+	BcResult *res = bc_vec_pushEmpty(&p->results);
 
-	bc_result_clear(&res);
-	bc_vec_push(&p->results, &res);
+	bc_result_clear(res);
 
 	return bc_vec_top(&p->results);
 }
@@ -726,17 +722,18 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 static void bc_program_assignStr(BcProgram *p, size_t idx,
                                  BcVec *v, bool push)
 {
-	BcNum n2;
-
-	bc_num_clear(&n2);
-	n2.scale = idx;
+	BcNum *n;
 
 	assert(BC_PROG_STACK(&p->results, 1 + !push));
 
 	if (!push) bc_vec_pop(v);
 
 	bc_vec_npop(&p->results, 1 + !push);
-	bc_vec_push(v, &n2);
+
+	n = bc_vec_pushEmpty(v);
+
+	bc_num_clear(n);
+	n->scale = idx;
 }
 #endif // DC_ENABLED
 
@@ -1070,7 +1067,6 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 	BcFunc *f;
 	BcVec *v;
 	BcLoc *a;
-	BcResultData param;
 	BcResult *arg;
 
 	ip.idx = 0;
@@ -1117,13 +1113,17 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 		v = bc_program_vec(p, a->loc, (BcType) a->idx);
 
 		if (a->idx == BC_TYPE_VAR) {
-			bc_num_init(&param.n, BC_NUM_DEF_SIZE);
-			bc_vec_push(v, &param.n);
+			BcNum *n = bc_vec_pushEmpty(v);
+			bc_num_init(n, BC_NUM_DEF_SIZE);
 		}
 		else {
+
+			BcVec *v2;
+
 			assert(a->idx == BC_TYPE_ARRAY);
-			bc_array_init(&param.v, true);
-			bc_vec_push(v, &param.v);
+
+			v2 = bc_vec_pushEmpty(v);
+			bc_array_init(v2, true);
 		}
 	}
 
@@ -1640,14 +1640,15 @@ static void bc_program_pushSeed(BcProgram *p) {
 }
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
-static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr) {
+static void bc_program_addFunc(BcProgram *p, BcId *id_ptr) {
 
 	BcInstPtr *ip;
+	BcFunc *f;
 
 	BC_SIG_ASSERT_LOCKED;
 
+	f = bc_vec_pushEmpty(&p->fns);
 	bc_func_init(f, id_ptr->name);
-	bc_vec_push(&p->fns, f);
 
 	// This is to make sure pointers are updated if the array was moved.
 	if (p->stack.len) {
@@ -1659,7 +1660,6 @@ static void bc_program_addFunc(BcProgram *p, BcFunc *f, BcId *id_ptr) {
 size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 
 	BcId *id_ptr;
-	BcFunc f;
 	bool new;
 	size_t idx;
 
@@ -1679,7 +1679,7 @@ size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 	}
 	else {
 
-		bc_program_addFunc(p, &f, id_ptr);
+		bc_program_addFunc(p, id_ptr);
 
 #if DC_ENABLED
 		if (BC_IS_DC && idx >= BC_PROG_REQ_FUNCS) {

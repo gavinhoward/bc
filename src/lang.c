@@ -202,18 +202,16 @@ void bc_array_expand(BcVec *a, size_t len) {
 	bc_vec_expand(a, len);
 
 	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
-		BcNum n;
 		while (len > a->len) {
-			bc_num_init(&n, BC_NUM_DEF_SIZE);
-			bc_vec_push(a, &n);
+			BcNum *n = bc_vec_pushEmpty(a);
+			bc_num_init(n, BC_NUM_DEF_SIZE);
 		}
 	}
 	else {
-		BcVec v;
 		assert(a->size == sizeof(BcVec) && a->dtor == bc_vec_free);
 		while (len > a->len) {
-			bc_array_init(&v, true);
-			bc_vec_push(a, &v);
+			BcVec *v = bc_vec_pushEmpty(a);
+			bc_array_init(v, true);
 		}
 	}
 }

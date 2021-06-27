@@ -152,7 +152,27 @@ inline void bc_vec_push(BcVec *restrict v, const void *data) {
 	bc_vec_npush(v, 1, data);
 }
 
-void bc_vec_pushByte(BcVec *restrict v, uchar data) {
+void* bc_vec_pushEmpty(BcVec *restrict v) {
+
+	sig_atomic_t lock;
+	void *ptr;
+
+	assert(v != NULL);
+
+	BC_SIG_TRYLOCK(lock);
+
+	if (v->len + 1 > v->cap) bc_vec_grow(v, 1);
+
+	ptr = v->v + v->size * v->len;
+
+	v->len += 1;
+
+	BC_SIG_TRYUNLOCK(lock);
+
+	return ptr;
+}
+
+inline void bc_vec_pushByte(BcVec *restrict v, uchar data) {
 	assert(v != NULL && v->size == sizeof(uchar));
 	bc_vec_npush(v, 1, &data);
 }

@@ -398,10 +398,9 @@ void bc_rand_getRands(BcRNG *r, BcRand *s1, BcRand *s2, BcRand *i1, BcRand *i2)
 }
 
 void bc_rand_push(BcRNG *r) {
-	BcRNGData rng;
-	memset(&rng, 0, sizeof(BcRNGData));
-	if (r->v.len > 0) bc_rand_copy(&rng, bc_vec_top(&r->v));
-	bc_vec_push(&r->v, &rng);
+	BcRNGData *rng = bc_vec_pushEmpty(&r->v);
+	memset(rng, 0, sizeof(BcRNGData));
+	if (r->v.len > 1) bc_rand_copy(rng, bc_vec_item_rev(&r->v, 1));
 }
 
 void bc_rand_pop(BcRNG *r, bool reset) {

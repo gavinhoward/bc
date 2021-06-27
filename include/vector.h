@@ -69,6 +69,7 @@ void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx);
 
 void bc_vec_push(BcVec *restrict v, const void *data);
 void bc_vec_npush(BcVec *restrict v, size_t n, const void *data);
+void* bc_vec_pushEmpty(BcVec *restrict v);
 void bc_vec_pushByte(BcVec *restrict v, uchar data);
 void bc_vec_pushIndex(BcVec *restrict v, size_t idx);
 void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str);

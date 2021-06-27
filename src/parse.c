@@ -67,9 +67,9 @@ void bc_parse_addString(BcParse *p) {
 	BC_SIG_LOCK;
 
 	if (BC_IS_BC) {
-		const char *str = bc_vm_strdup(p->l.str.v);
-		idx = strs->len;
-		bc_vec_push(strs, &str);
+		char **str = bc_vec_pushEmpty(strs);
+		*str = bc_vm_strdup(p->l.str.v);
+		idx = strs->len - 1;
 	}
 #if DC_ENABLED
 	else idx = bc_program_insertFunc(p->prog, p->l.str.v) - BC_PROG_REQ_FUNCS;
@@ -84,7 +84,7 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 
 	BcVec *consts = &p->func->consts;
 	size_t idx;
-	BcConst c;
+	BcConst *c;
 
 	if (bc_parse_zero[0] == string[0] && bc_parse_zero[1] == string[1]) {
 		bc_parse_push(p, BC_INST_ZERO);
@@ -99,11 +99,12 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 
 	BC_SIG_LOCK;
 
-	c.val = bc_vm_strdup(string);
-	c.base = BC_NUM_BIGDIG_MAX;
+	c = bc_vec_pushEmpty(consts);
 
-	bc_num_clear(&c.num);
-	bc_vec_push(consts, &c);
+	c->val = bc_vm_strdup(string);
+	c->base = BC_NUM_BIGDIG_MAX;
+
+	bc_num_clear(&c->num);
 
 	bc_parse_update(p, BC_INST_NUM, idx);
 
