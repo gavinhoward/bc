@@ -76,8 +76,8 @@
 /// @param pt     If a decimal point has already been seen.
 /// @param int_only  True if the number is expected to be an int only, false if
 ///                  non-integers are allowed.
-#define BC_LEX_NUM_CHAR(c, pt, int_only)                          \
-	(isdigit(c) || ((c) >= 'A' && (c) <= BC_LEX_LAST_NUM_CHAR) || \
+#define BC_LEX_NUM_CHAR(c, pt, int_only)                               \
+	(isdigit(c) != 0 || ((c) >= 'A' && (c) <= BC_LEX_LAST_NUM_CHAR) || \
 	 ((c) == '.' && !(pt) && !(int_only)))
 
 /// An enum of lex token types.

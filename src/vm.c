@@ -265,7 +265,7 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 	bc_file_vprintf(&vm.ferr, vm.err_msgs[e], args);
 	va_end(args);
 
-	if (BC_NO_ERR(vm.file)) {
+	if (BC_NO_ERR(vm.file != NULL)) {
 
 		// This is the condition for parsing vs runtime.
 		// If line is not 0, it is parsing.
