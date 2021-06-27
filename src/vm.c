@@ -1079,9 +1079,6 @@ void bc_vm_boot(int argc, char *argv[]) {
 	}
 #endif // BC_ENABLED
 
-	bc_vm_envArgs(env_args);
-	bc_args(argc, argv, true);
-
 	// Set defaults.
 	vm.flags |= BC_TTY ? BC_FLAG_P | BC_FLAG_R : 0;
 	vm.flags |= BC_I ? BC_FLAG_Q : 0;
@@ -1100,6 +1097,9 @@ void bc_vm_boot(int argc, char *argv[]) {
 		if (BC_TTY) bc_history_init(&vm.history);
 #endif // BC_ENABLE_HISTORY
 	}
+
+	bc_vm_envArgs(env_args);
+	bc_args(argc, argv, true);
 
 	if (BC_I) {
 
