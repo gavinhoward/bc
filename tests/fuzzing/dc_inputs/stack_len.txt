@@ -1,15 +1,1 @@
-zp
-zp
-zp
-zp
-sa
-yap
-Sa
-yap
-Sa
-yapR
-La
-yapR
-La
-yap
-zp
+../../dc/stack_len.txt
