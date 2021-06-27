@@ -334,6 +334,9 @@ typedef struct BcVm {
 #if !BC_ENABLE_LIBRARY
 	BcParse prs;
 	BcProgram prog;
+
+	BcVec line_buf;
+	BcVec buffer;
 #endif // !BC_ENABLE_LIBRARY
 
 	BcVec jmp_bufs;
@@ -374,6 +377,7 @@ typedef struct BcVm {
 	bool no_exit_exprs;
 	bool exit_exprs;
 	bool eof;
+	bool is_stdin;
 #endif // !BC_ENABLE_LIBRARY
 
 	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
@@ -449,6 +453,8 @@ size_t bc_vm_growSize(size_t a, size_t b);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
+
+bool bc_vm_readLine(bool clear);
 
 void bc_pledge(const char *promises, const char *execpromises);
 

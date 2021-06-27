@@ -72,10 +72,8 @@ static void dc_lex_register(BcLex *l) {
 	else {
 
 		// I don't allow newlines because newlines are used for controlling when
-		// execution happens, and allowing newlines would just be complex. For
-		// the same reason, I don't allow the '[' character; it would just be
-		// too complex.
-		if (BC_ERR(l->buf[l->i - 1] == '\n' || l->buf[l->i - 1] == '['))
+		// execution happens, and allowing newlines would just be complex.
+		if (BC_ERR(l->buf[l->i - 1] == '\n'))
 			bc_lex_verr(l, BC_ERR_PARSE_CHAR, l->buf[l->i - 1]);
 
 		// Set the lexer string and token.
@@ -94,33 +92,49 @@ static void dc_lex_register(BcLex *l) {
  */
 static void dc_lex_string(BcLex *l) {
 
-	size_t depth = 1, nls = 0, i = l->i;
+	size_t depth, nls, i;
 	char c;
+	bool got_more;
 
 	// Set the token and clear the string.
 	l->t = BC_LEX_STR;
 	bc_vec_popAll(&l->str);
 
-	// This is the meat. As long as we don't run into the NUL byte, and we have
-	// "depth", which means we haven't completely balanced brackets yet, we
-	// continue eating the string.
-	for (; (c = l->buf[i]) && depth; ++i) {
+	do {
 
-		// Check for escaped brackets and set the depths as appropriate.
-		if (c == '\\') {
-			c = l->buf[++i];
-			if (!c) break;
+		depth = 1;
+		nls = 0;
+		got_more = false;
+
+		assert(!l->is_stdin || l->buf == vm.buffer.v);
+
+		// This is the meat. As long as we don't run into the NUL byte, and we
+		// have "depth", which means we haven't completely balanced brackets
+		// yet, we continue eating the string.
+		for (i = l->i; (c = l->buf[i]) && depth; ++i) {
+
+			// Check for escaped brackets and set the depths as appropriate.
+			if (c == '\\') {
+				c = l->buf[++i];
+				if (!c) break;
+			}
+			else {
+				depth += (c == '[');
+				depth -= (c == ']');
+			}
+
+			// We want to adjust the line in the lexer as necessary.
+			nls += (c == '\n');
+
+			if (depth) bc_vec_push(&l->str, &c);
 		}
-		else {
-			depth += (c == '[');
-			depth -= (c == ']');
+
+		if (BC_ERR(c == '\0' && depth)) {
+			if (!vm.eof && l->is_stdin) got_more = bc_lex_readLine(l);
+			if (got_more) bc_vec_popAll(&l->str);
 		}
 
-		// We want to adjust the line in the lexer as necessary.
-		nls += (c == '\n');
-
-		if (depth) bc_vec_push(&l->str, &c);
-	}
+	} while (got_more && depth);
 
 	// Obviously, if we didn't balance, that's an error.
 	if (BC_ERR(c == '\0' && depth)) {

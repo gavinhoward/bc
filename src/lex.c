@@ -55,23 +55,38 @@ void bc_lex_lineComment(BcLex *l) {
 void bc_lex_comment(BcLex *l) {
 
 	size_t i, nlines = 0;
-	const char *buf = l->buf;
-	bool end = false;
+	const char *buf;
+	bool end = false, got_more;
 	char c;
 
 	l->i += 1;
 	l->t = BC_LEX_WHITESPACE;
 
-	for (i = l->i; !end; i += !end) {
+	do {
 
-		for (; (c = buf[i]) && c != '*'; ++i) nlines += (c == '\n');
+		buf = l->buf;
+		got_more = false;
 
-		if (BC_ERR(!c || buf[i + 1] == '\0')) {
-			l->i = i;
-			bc_lex_err(l, BC_ERR_PARSE_COMMENT);
+		assert(!vm.is_stdin || buf == vm.buffer.v);
+
+		for (i = l->i; !end; i += !end) {
+
+			for (; (c = buf[i]) && c != '*'; ++i) nlines += (c == '\n');
+
+			if (BC_ERR(!c || buf[i + 1] == '\0')) {
+
+				if (!vm.eof && l->is_stdin) got_more = bc_lex_readLine(l);
+
+				break;
+			}
+
+			end = (buf[i + 1] == '/');
 		}
+	} while (got_more && !end);
 
-		end = buf[i + 1] == '/';
+	if (!end) {
+		l->i = i;
+		bc_lex_err(l, BC_ERR_PARSE_COMMENT);
 	}
 
 	l->i = i + 2;
@@ -220,11 +235,25 @@ void bc_lex_next(BcLex *l) {
 	} while (l->t == BC_LEX_WHITESPACE);
 }
 
-void bc_lex_text(BcLex *l, const char *text) {
-	assert(l != NULL && text != NULL);
+static void bc_lex_fixText(BcLex *l, const char *text, size_t len) {
 	l->buf = text;
+	l->len = len;
+}
+
+bool bc_lex_readLine(BcLex *l) {
+
+	bool good = bc_vm_readLine(false);
+
+	bc_lex_fixText(l, vm.buffer.v, vm.buffer.len - 1);
+
+	return good;
+}
+
+void bc_lex_text(BcLex *l, const char *text, bool is_stdin) {
+	assert(l != NULL && text != NULL);
+	bc_lex_fixText(l, text, strlen(text));
 	l->i = 0;
-	l->len = strlen(text);
 	l->t = l->last = BC_LEX_INVALID;
+	l->is_stdin = is_stdin;
 	bc_lex_next(l);
 }

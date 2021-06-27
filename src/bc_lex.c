@@ -90,17 +90,31 @@ static void bc_lex_identifier(BcLex *l) {
 static void bc_lex_string(BcLex *l) {
 
 	// We need to keep track of newlines to increment them properly.
-	size_t len, nlines = 0, i = l->i;
-	const char *buf = l->buf;
+	size_t len, nlines, i;
+	const char *buf;
 	char c;
+	bool got_more;
 
 	l->t = BC_LEX_STR;
 
-	// Fortunately for us, bc doesn't escape quotes. Instead, the equivalent is
-	// '\q', which makes this loop simpler.
-	for (; (c = buf[i]) && c != '"'; ++i) nlines += (c == '\n');
+	do {
 
-	if (BC_ERR(c == '\0')) {
+		nlines = 0;
+		buf = l->buf;
+		got_more = false;
+
+		assert(!vm.is_stdin || buf == vm.buffer.v);
+
+		// Fortunately for us, bc doesn't escape quotes. Instead, the equivalent
+		// is '\q', which makes this loop simpler.
+		for (i = l->i; (c = buf[i]) && c != '"'; ++i) nlines += (c == '\n');
+
+		if (BC_ERR(c == '\0') && !vm.eof && l->is_stdin)
+			got_more = bc_lex_readLine(l);
+
+	} while (got_more && c != '"');
+
+	if (c != '"') {
 		l->i = i;
 		bc_lex_err(l, BC_ERR_PARSE_STRING);
 	}

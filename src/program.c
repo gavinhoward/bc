@@ -461,7 +461,7 @@ static void bc_program_read(BcProgram *p) {
 
 	if (s == BC_STATUS_EOF) bc_vm_err(BC_ERR_EXEC_READ_EXPR);
 
-	bc_parse_text(&parse, buf.v);
+	bc_parse_text(&parse, buf.v, false);
 	vm.expr(&parse, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
 
 	if (BC_ERR(parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF))
@@ -1564,7 +1564,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 		BC_SIG_UNLOCK;
 
-		bc_parse_text(&prs, str);
+		bc_parse_text(&prs, str, false);
 		vm.expr(&prs, BC_PARSE_NOCALL);
 
 		BC_SIG_LOCK;

@@ -690,9 +690,9 @@ static void bc_vm_clean(void) {
 	}
 }
 
-static void bc_vm_process(const char *text) {
+static void bc_vm_process(const char *text, bool is_stdin) {
 
-	bc_parse_text(&vm.prs, text);
+	bc_parse_text(&vm.prs, text, is_stdin);
 
 	do {
 
@@ -727,7 +727,14 @@ static void bc_vm_endif(void) {
 	}
 
 	if (good) {
-		while (BC_PARSE_IF_END(&vm.prs)) bc_vm_process("else {}");
+
+		bool is_stdin = vm.is_stdin;
+
+		vm.is_stdin = false;
+
+		while (BC_PARSE_IF_END(&vm.prs)) bc_vm_process("else {}", false);
+
+		vm.is_stdin = is_stdin;
 	}
 	else bc_parse_err(&vm.prs, BC_ERR_PARSE_BLOCK);
 }
@@ -751,7 +758,7 @@ static void bc_vm_file(const char *file) {
 
 	BC_SIG_UNLOCK;
 
-	bc_vm_process(data);
+	bc_vm_process(data, false);
 
 #if BC_ENABLED
 	if (BC_IS_BC) bc_vm_endif();
@@ -770,87 +777,66 @@ err:
 	BC_LONGJMP_CONT;
 }
 
+bool bc_vm_readLine(bool clear) {
+
+	BcStatus s;
+	bool good;
+
+	if (clear) bc_vec_empty(&vm.buffer);
+
+	bc_vec_empty(&vm.line_buf);
+
+	if (vm.eof) return false;
+
+	do {
+		s = bc_read_line(&vm.line_buf, ">>> ");
+		vm.eof = (s == BC_STATUS_EOF);
+	} while (!(s) && !vm.eof && vm.line_buf.len < 1);
+
+	good = (vm.line_buf.len > 1);
+
+	if (good) bc_vec_concat(&vm.buffer, vm.line_buf.v);
+
+	return good;
+}
+
 static void bc_vm_stdin(void) {
 
 	BcStatus s;
-	BcVec buf, buffer;
-	size_t string = 0;
-	bool comment = false, hash = false;
+	bool clear = true;
+
+	vm.is_stdin = true;
 
 	bc_lex_file(&vm.prs.l, bc_program_stdin_name);
 
 	BC_SIG_LOCK;
-	bc_vec_init(&buffer, sizeof(uchar), NULL);
-	bc_vec_init(&buf, sizeof(uchar), NULL);
-	bc_vec_pushByte(&buffer, '\0');
+	bc_vec_init(&vm.buffer, sizeof(uchar), NULL);
+	bc_vec_init(&vm.line_buf, sizeof(uchar), NULL);
 	BC_SETJMP_LOCKED(err);
 	BC_SIG_UNLOCK;
 
+// This label is because errors can cause jumps to end up at the err label
+// below. If that happens, and the error should be cleared and execution
+// continue, then we need to jump back.
 restart:
 
-	// This loop is complex because the vm tries not to send any lines that end
-	// with a backslash to the parser. The reason for that is because the parser
-	// treats a backslash+newline combo as whitespace, per the bc spec. In that
-	// case, and for strings and comments, the parser will expect more stuff.
-	while ((!(s = bc_read_line(&buf, ">>> ")) ||
-	        (vm.eof = (s == BC_STATUS_EOF))) && buf.len > 1)
-	{
-		char c2, *str = buf.v;
-		size_t i, len = buf.len - 1;
+	while (bc_vm_readLine(clear)) {
 
-		for (i = 0; i < len; ++i) {
+		size_t len = vm.buffer.len - 1;
+		const char *str = vm.buffer.v;
 
-			bool notend = len > i + 1;
-			uchar c = (uchar) str[i];
+		clear = (len < 2 || str[len - 2] != '\\' || str[len - 1] != '\n');
+		if (!clear) continue;
 
-			hash = (!comment && !string && ((hash && c != '\n') ||
-			                                (!hash && c == '#')));
-
-			if (!hash && !comment && (i - 1 > len || str[i - 1] != '\\')) {
-				if (BC_IS_BC) string ^= (c == '"');
-				else if (c == ']') string -= 1;
-				else if (c == '[') string += 1;
-			}
-
-			if (BC_IS_BC && !hash && !string && notend) {
-
-				c2 = str[i + 1];
-
-				if (c == '/' && !comment && c2 == '*') {
-					comment = true;
-					i += 1;
-				}
-				else if (c == '*' && comment && c2 == '/') {
-					comment = false;
-					i += 1;
-				}
-			}
-		}
-
-		bc_vec_concat(&buffer, buf.v);
-
-		if (string || comment) continue;
-		if (len >= 2 && str[len - 2] == '\\' && str[len - 1] == '\n') continue;
-#if BC_ENABLE_HISTORY
-		if (vm.history.stdin_has_data) continue;
-#endif // BC_ENABLE_HISTORY
-
-		bc_vm_process(buffer.v);
-		bc_vec_empty(&buffer);
+		bc_vm_process(vm.buffer.v, true);
 
 		if (vm.eof) break;
 		else bc_vm_clean();
 	}
 
-	if (!BC_STATUS_IS_ERROR(s)) {
-		if (BC_ERR(comment))
-			bc_parse_err(&vm.prs, BC_ERR_PARSE_COMMENT);
-		else if (BC_ERR(string))
-			bc_parse_err(&vm.prs, BC_ERR_PARSE_STRING);
 #if BC_ENABLED
-		else if (BC_IS_BC) bc_vm_endif();
+	if (!BC_STATUS_IS_ERROR(s) && BC_IS_BC) bc_vm_endif();
 #endif // BC_ENABLED
-	}
 
 err:
 	BC_SIG_MAYLOCK;
@@ -869,14 +855,14 @@ err:
 #endif // !BC_ENABLE_MEMCHECK
 
 	if (!vm.status && !vm.eof) {
-		bc_vec_empty(&buffer);
+		bc_vec_empty(&vm.buffer);
 		BC_LONGJMP_STOP;
 		BC_SIG_UNLOCK;
 		goto restart;
 	}
 
-	bc_vec_free(&buf);
-	bc_vec_free(&buffer);
+	bc_vec_free(&vm.line_buf);
+	bc_vec_free(&vm.buffer);
 
 	BC_LONGJMP_CONT;
 }
@@ -885,7 +871,7 @@ err:
 static void bc_vm_load(const char *name, const char *text) {
 
 	bc_lex_file(&vm.prs.l, name);
-	bc_parse_text(&vm.prs, text);
+	bc_parse_text(&vm.prs, text, false);
 
 	while (vm.prs.l.t != BC_LEX_EOF) vm.parse(&vm.prs);
 }
@@ -984,7 +970,7 @@ static void bc_vm_exec(void) {
 
 			more = bc_read_buf(&buf, vm.exprs.v, &len);
 			bc_vec_pushByte(&buf, '\0');
-			bc_vm_process(buf.v);
+			bc_vm_process(buf.v, false);
 
 			bc_vec_popAll(&buf);
 

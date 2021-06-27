@@ -139,18 +139,11 @@ If no files are given on the command-line and no files or expressions are given
 by the **-f**, **-\-file**, **-e**, or **-\-expression** options, then dc(1)
 read from **stdin**.
 
-However, there are a few caveats to this.
+However, there is a caveat to this.
 
 First, **stdin** is evaluated a line at a time. The only exception to this is if
 a string has been finished, but not ended. This means that, except for escaped
 brackets, all brackets must be balanced before dc(1) parses and executes.
-
-Second, as a consequence of the above, if the user attempts to use the left
-bracket character, **[**, as a register name, dc(1) will not execute until a
-balancing right bracket, **]** is given. Then it will give an error since it is
-an error to use the left bracket as register name (see the **REGISTERS**
-section). In fact, this is why it is an error.
-
 
 # STDOUT
 

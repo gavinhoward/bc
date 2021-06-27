@@ -433,6 +433,8 @@ typedef struct BcLex {
 	/// the string.
 	BcVec str;
 
+	bool is_stdin;
+
 } BcLex;
 
 /**
@@ -458,10 +460,11 @@ void bc_lex_file(BcLex *l, const char *file);
 
 /**
  * Sets the text the lexer will lex.
- * @param l     The lexer.
- * @param text  The text to lex.
+ * @param l         The lexer.
+ * @param text      The text to lex.
+ * @param is_stdin  True if the text is from stdin, false otherwise.
  */
-void bc_lex_text(BcLex *l, const char *text);
+void bc_lex_text(BcLex *l, const char *text, bool is_stdin);
 
 /**
  * Generic next function for the parser to call. It takes care of calling the
@@ -517,5 +520,11 @@ void bc_lex_commonTokens(BcLex *l, char c);
  * @param c  The problem character.
  */
 void bc_lex_invalidChar(BcLex *l, char c);
+
+/**
+ * Reads a line from stdin and puts it into the lexer's buffer.
+ * @param l         The lexer.
+ */
+bool bc_lex_readLine(BcLex *l);
 
 #endif // BC_LEX_H
