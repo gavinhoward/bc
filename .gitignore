@@ -55,6 +55,15 @@ tests/bc/scripts/add.txt
 tests/bc/scripts/divide.txt
 tests/bc/scripts/multiply.txt
 tests/bc/scripts/subtract.txt
+benchmarks/bc/add.txt
+benchmarks/bc/divide.txt
+benchmarks/bc/multiply.txt
+benchmarks/bc/subtract.txt
+benchmarks/bc/arrays.txt
+benchmarks/bc/arrays_and_numbers.txt
+benchmarks/bc/constants.txt
+benchmarks/bc/strings.txt
+benchmarks/bc/functions.txt
 perf.data
 perf.data.old
 *.gcda

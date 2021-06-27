@@ -102,6 +102,7 @@ extras=$(cat <<*EOF
 .git/
 .gitignore
 .gitattributes
+benchmarks/
 manuals/bc.1.md.in
 manuals/dc.1.md.in
 manuals/development.md
@@ -112,6 +113,7 @@ manuals/header.txt
 manuals/release.md
 scripts/afl.py
 scripts/alloc.sh
+scripts/benchmark.sh
 scripts/fuzz_prep.sh
 scripts/manpage.sh
 scripts/package.sh

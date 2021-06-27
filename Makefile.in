@@ -370,7 +370,19 @@ clean:%%CLEAN_PREREQS%%
 	@$(RM) -f $(DC_HELP_C) $(DC_HELP_O)
 	@$(RM) -fr Debug/ Release/
 
-clean_config: clean
+clean_benchmarks:
+	@printf 'Cleaning benchmarks...\n'
+	@$(RM) -f benchmarks/bc/add.txt
+	@$(RM) -f benchmarks/bc/subtract.txt
+	@$(RM) -f benchmarks/bc/multiply.txt
+	@$(RM) -f benchmarks/bc/divide.txt
+	@$(RM) -f benchmarks/bc/arrays.txt
+	@$(RM) -f benchmarks/bc/arrays_and_numbers.txt
+	@$(RM) -f benchmarks/bc/constants.txt
+	@$(RM) -f benchmarks/bc/strings.txt
+	@$(RM) -f benchmarks/bc/functions.txt
+
+clean_config: clean clean_benchmarks
 	@printf 'Cleaning config...\n'
 	@$(RM) -f Makefile
 	@$(RM) -f $(BC_MD) $(DC_MD)
