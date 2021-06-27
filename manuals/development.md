@@ -649,8 +649,12 @@ The code associated with this header is in [`src/read.c`][56].
 
 #### `status.h`
 
-This header has a list of possible errors that internal `bc` code can use. It
-also some compiler-specific and platform-specific fixes.
+This header has several things:
+
+* A list of possible errors that internal `bc` code can use.
+* Compiler-specific fixes.
+* Platform-specific fixes.
+* Macros for `bc`'s [error handling][97].
 
 There is no code associated with this header.
 

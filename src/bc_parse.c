@@ -1237,7 +1237,7 @@ static void bc_parse_stmt(BcParse *p) {
 			// Quit is a compile-time command. We don't exit directly,
 			// so the vm can clean up. Limits do the same thing.
 			vm.status = BC_STATUS_QUIT;
-			BC_VM_JMP;
+			BC_JMP;
 			break;
 		}
 

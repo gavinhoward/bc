@@ -119,7 +119,7 @@ static void bc_vm_sig(int sig) {
 
 	assert(vm.jmp_bufs.len);
 
-	if (!vm.sig_lock) BC_VM_JMP;
+	if (!vm.sig_lock) BC_JMP;
 }
 
 static void bc_vm_sigaction(void) {
@@ -201,7 +201,7 @@ void bc_vm_info(const char* const help) {
 BC_NORETURN
 #endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 void bc_vm_fatalError(BcErr e) {
-	bc_vm_err(e);
+	bc_err(e);
 #if !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 	abort();
 #endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
@@ -223,7 +223,7 @@ void bc_vm_handleError(BcErr e) {
 	else if (e == BC_ERR_FATAL_ALLOC_ERR) vm.err = BCL_ERROR_FATAL_ALLOC_ERR;
 	else vm.err = BCL_ERROR_FATAL_UNKNOWN_ERR;
 
-	BC_VM_JMP;
+	BC_JMP;
 }
 #else // BC_ENABLE_LIBRARY
 void bc_vm_handleError(BcErr e, size_t line, ...) {
@@ -255,7 +255,7 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 
 	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) {
 		vm.status = (sig_atomic_t) s;
-		BC_VM_JMP;
+		BC_JMP;
 	}
 
 	va_start(args, line);
@@ -312,7 +312,7 @@ void bc_vm_handleError(BcErr e, size_t line, ...) {
 		vm.status = (sig_atomic_t) (uchar) (id + 1);
 	}
 
-	if (BC_ERR(vm.status)) BC_VM_JMP;
+	if (BC_ERR(vm.status)) BC_JMP;
 
 	BC_SIG_TRYUNLOCK(lock);
 }
@@ -404,7 +404,7 @@ static void bc_vm_envArgs(const char* const env_args_name) {
 				buf += 1;
 				start = buf;
 			}
-			else if (instr) bc_vm_error(BC_ERR_FATAL_OPTION, 0, start);
+			else if (instr) bc_error(BC_ERR_FATAL_OPTION, 0, start);
 		}
 		else buf += 1;
 	}

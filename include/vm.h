@@ -185,103 +185,6 @@
 #define BC_MAX_EXP ((ulong) (BC_NUM_BIGDIG_MAX))
 #define BC_MAX_VARS ((ulong) (SIZE_MAX - 1))
 
-#if BC_DEBUG_CODE
-#define BC_VM_JMP bc_vm_jmp(__func__)
-#else // BC_DEBUG_CODE
-#define BC_VM_JMP bc_vm_jmp()
-#endif // BC_DEBUG_CODE
-
-#define BC_SIG_EXC \
-	BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS || vm.sig)
-#define BC_NO_SIG_EXC \
-	BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS && !vm.sig)
-
-#ifndef NDEBUG
-#define BC_SIG_ASSERT_LOCKED do { assert(vm.sig_lock); } while (0)
-#define BC_SIG_ASSERT_NOT_LOCKED do { assert(vm.sig_lock == 0); } while (0)
-#else // NDEBUG
-#define BC_SIG_ASSERT_LOCKED
-#define BC_SIG_ASSERT_NOT_LOCKED
-#endif // NDEBUG
-
-#define BC_SIG_LOCK               \
-	do {                          \
-		BC_SIG_ASSERT_NOT_LOCKED; \
-		vm.sig_lock = 1;          \
-	} while (0)
-
-#define BC_SIG_UNLOCK              \
-	do {                           \
-		BC_SIG_ASSERT_LOCKED;      \
-		vm.sig_lock = 0;           \
-		if (BC_SIG_EXC) BC_VM_JMP; \
-	} while (0)
-
-#define BC_SIG_MAYLOCK   \
-	do {                 \
-		vm.sig_lock = 1; \
-	} while (0)
-
-#define BC_SIG_MAYUNLOCK           \
-	do {                           \
-		vm.sig_lock = 0;           \
-		if (BC_SIG_EXC) BC_VM_JMP; \
-	} while (0)
-
-#define BC_SIG_TRYLOCK(v) \
-	do {                  \
-		v = vm.sig_lock;  \
-		vm.sig_lock = 1;  \
-	} while (0)
-
-#define BC_SIG_TRYUNLOCK(v)                \
-	do {                                   \
-		vm.sig_lock = (v);                 \
-		if (!(v) && BC_SIG_EXC) BC_VM_JMP; \
-	} while (0)
-
-#define BC_SETJMP(l)                     \
-	do {                                 \
-		sigjmp_buf sjb;                  \
-		BC_SIG_LOCK;                     \
-		if (sigsetjmp(sjb, 0)) {         \
-			assert(BC_SIG_EXC);          \
-			goto l;                      \
-		}                                \
-		bc_vec_push(&vm.jmp_bufs, &sjb); \
-		BC_SIG_UNLOCK;                   \
-	} while (0)
-
-#define BC_SETJMP_LOCKED(l)               \
-	do {                                  \
-		sigjmp_buf sjb;                   \
-		BC_SIG_ASSERT_LOCKED;             \
-		if (sigsetjmp(sjb, 0)) {          \
-			assert(BC_SIG_EXC);           \
-			goto l;                       \
-		}                                 \
-		bc_vec_push(&vm.jmp_bufs, &sjb);  \
-	} while (0)
-
-#define BC_LONGJMP_CONT                             \
-	do {                                            \
-		BC_SIG_ASSERT_LOCKED;                       \
-		if (!vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);  \
-		BC_SIG_UNLOCK;                              \
-	} while (0)
-
-#define BC_UNSETJMP               \
-	do {                          \
-		BC_SIG_ASSERT_LOCKED;     \
-		bc_vec_pop(&vm.jmp_bufs); \
-	} while (0)
-
-#define BC_LONGJMP_STOP    \
-	do {                   \
-		vm.sig_pop = 0;    \
-		vm.sig = 0;        \
-	} while (0)
-
 #define BC_VM_BUF_SIZE (1<<12)
 #define BC_VM_STDOUT_BUF_SIZE (1<<11)
 #define BC_VM_STDERR_BUF_SIZE (1<<10)
@@ -291,40 +194,10 @@
 
 #define BC_VM_SAFE_RESULT(r) ((r)->t >= BC_RESULT_TEMP)
 
-#if BC_ENABLE_LIBRARY
-#define bc_vm_error(e, l, ...) (bc_vm_handleError((e)))
-#define bc_vm_err(e) (bc_vm_handleError((e)))
-#define bc_vm_verr(e, ...) (bc_vm_handleError((e)))
-#else // BC_ENABLE_LIBRARY
-#define bc_vm_error(e, l, ...) (bc_vm_handleError((e), (l), __VA_ARGS__))
-#define bc_vm_err(e) (bc_vm_handleError((e), 0))
-#define bc_vm_verr(e, ...) (bc_vm_handleError((e), 0, __VA_ARGS__))
-#endif // BC_ENABLE_LIBRARY
-
-#define BC_STATUS_IS_ERROR(s) \
-	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
-
 #define BC_VM_INVALID_CATALOG ((nl_catd) -1)
 
 #define BC_VM_MUL_OVERFLOW(a, b, r) \
 	((r) >= SIZE_MAX || ((a) != 0 && (r) / (a) != (b)))
-
-#if BC_DEBUG_CODE
-#define BC_VM_FUNC_ENTER                                     \
-	do {                                                     \
-		bc_file_printf(&vm.ferr, "Entering %s\n", __func__); \
-		bc_file_flush(&vm.ferr, bc_flush_none);              \
-	} while (0);
-
-#define BC_VM_FUNC_EXIT                                     \
-	do {                                                    \
-		bc_file_printf(&vm.ferr, "Leaving %s\n", __func__); \
-		bc_file_flush(&vm.ferr, bc_flush_none);             \
-	} while (0);
-#else // BC_DEBUG_CODE
-#define BC_VM_FUNC_ENTER
-#define BC_VM_FUNC_EXIT
-#endif // BC_DEBUG_CODE
 
 typedef struct BcVm {
 
@@ -431,6 +304,10 @@ typedef struct BcVm {
 	char *buf;
 	size_t buf_len;
 #endif // !BC_ENABLE_LIBRARY
+
+#if BC_DEBUG_CODE
+	size_t func_depth;
+#endif // BC_DEBUG_CODE
 
 } BcVm;
 

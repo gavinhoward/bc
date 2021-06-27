@@ -127,7 +127,7 @@ void bc_file_flush(BcFile *restrict f, BcFlushType type) {
 
 		if (s == BC_STATUS_EOF) {
 			vm.status = (sig_atomic_t) s;
-			BC_VM_JMP;
+			BC_JMP;
 		}
 		else bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 	}

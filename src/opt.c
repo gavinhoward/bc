@@ -63,8 +63,8 @@ static const char* bc_opt_longopt(const BcOptLong *longopts, int c) {
 }
 
 static void bc_opt_error(BcErr err, int c, const char *str) {
-	if (err == BC_ERR_FATAL_OPTION) bc_vm_error(err, 0, str);
-	else bc_vm_error(err, 0, (int) c, str);
+	if (err == BC_ERR_FATAL_OPTION) bc_error(err, 0, str);
+	else bc_error(err, 0, (int) c, str);
 }
 
 static int bc_opt_type(const BcOptLong *longopts, char c) {

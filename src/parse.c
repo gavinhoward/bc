@@ -167,7 +167,7 @@ void bc_parse_reset(BcParse *p) {
 
 	bc_program_reset(p->prog);
 
-	if (BC_ERR(vm.status)) BC_VM_JMP;
+	if (BC_ERR(vm.status)) BC_JMP;
 }
 
 void bc_parse_free(BcParse *p) {

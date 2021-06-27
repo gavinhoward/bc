@@ -1208,7 +1208,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 				if (!BC_SIGINT) {
 					vm.status = BC_STATUS_QUIT;
-					BC_VM_JMP;
+					BC_JMP;
 				}
 
 				bc_file_write(&vm.fout, bc_flush_none, vm.sigmsg, vm.siglen);
@@ -1336,7 +1336,7 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 						bc_history_raise(h, SIGQUIT);
 #else // _WIN32
 					vm.status = BC_STATUS_QUIT;
-					BC_VM_JMP;
+					BC_JMP;
 #endif // _WIN32
 				}
 				else bc_history_edit_insert(h, cbuf, nread);

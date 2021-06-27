@@ -49,7 +49,7 @@ static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
 static inline size_t bc_num_mulOverflow(size_t a, size_t b) {
 	size_t res = a * b;
-	if (BC_ERR(BC_VM_MUL_OVERFLOW(a, b, res))) bc_vm_err(BC_ERR_MATH_OVERFLOW);
+	if (BC_ERR(BC_VM_MUL_OVERFLOW(a, b, res))) bc_err(BC_ERR_MATH_OVERFLOW);
 	return res;
 }
 
@@ -460,7 +460,7 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	if (!places) return;
 	if (places > n->scale) {
 		size_t size = bc_vm_growSize(BC_NUM_RDX(places - n->scale), n->len);
-		if (size > SIZE_MAX - 1) bc_vm_err(BC_ERR_MATH_OVERFLOW);
+		if (size > SIZE_MAX - 1) bc_err(BC_ERR_MATH_OVERFLOW);
 	}
 	if (BC_NUM_ZERO(n)) {
 		if (n->scale >= places) n->scale -= places;
@@ -601,7 +601,7 @@ static void bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
 {
 	BcNum temp;
 
-	if (BC_ERR(bc_num_nonInt(b, &temp))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+	if (BC_ERR(bc_num_nonInt(b, &temp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 
 	bc_num_copy(c, a);
 	bc_num_bigdig(&temp, v);
@@ -1175,7 +1175,7 @@ static void bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	size_t len, cpardx;
 	BcNum cpa, cpb;
 
-	if (BC_NUM_ZERO(b)) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(b)) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(c, scale);
 		return;
@@ -1252,7 +1252,7 @@ static void bc_num_r(BcNum *a, BcNum *b, BcNum *restrict c,
 	BcNum temp;
 	bool neg;
 
-	if (BC_NUM_ZERO(b)) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
+	if (BC_NUM_ZERO(b)) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_NUM_ZERO(a)) {
 		bc_num_setToZero(c, ts);
 		bc_num_setToZero(d, ts);
@@ -1321,13 +1321,13 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	bool neg, zero;
 
 
-	if (BC_ERR(bc_num_nonInt(b, &btemp))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+	if (BC_ERR(bc_num_nonInt(b, &btemp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 	if (BC_NUM_ZERO(&btemp)) {
 		bc_num_one(c);
 		return;
 	}
 	if (BC_NUM_ZERO(a)) {
-		if (BC_NUM_NEG_NP(btemp)) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
+		if (BC_NUM_NEG_NP(btemp)) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 		bc_num_setToZero(c, scale);
 		return;
 	}
@@ -2283,9 +2283,8 @@ void bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
 
 	assert(n != NULL && result != NULL);
 
-	if (BC_ERR(BC_NUM_NEG(n))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
-	if (BC_ERR(bc_num_cmp(n, &vm.max) >= 0))
-		bc_vm_err(BC_ERR_MATH_OVERFLOW);
+	if (BC_ERR(BC_NUM_NEG(n))) bc_err(BC_ERR_MATH_NEGATIVE);
+	if (BC_ERR(bc_num_cmp(n, &vm.max) >= 0)) bc_err(BC_ERR_MATH_OVERFLOW);
 
 	*result = bc_num_bigdig2(n);
 }
@@ -2466,10 +2465,10 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	assert(a != b);
 
-	if (BC_ERR(BC_NUM_NEG(a))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
+	if (BC_ERR(BC_NUM_NEG(a))) bc_err(BC_ERR_MATH_NEGATIVE);
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return;
 
-	if (BC_ERR(bc_num_nonInt(a, &atemp))) bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+	if (BC_ERR(bc_num_nonInt(a, &atemp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 
 	cmp = bc_num_cmp(&atemp, &vm.max);
 
@@ -2715,7 +2714,7 @@ void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
 	assert(a != NULL && b != NULL && a != b);
 
-	if (BC_ERR(BC_NUM_NEG(a))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
+	if (BC_ERR(BC_NUM_NEG(a))) bc_err(BC_ERR_MATH_NEGATIVE);
 
 	if (a->scale > scale) scale = a->scale;
 
@@ -2890,13 +2889,13 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(a != d && b != d && c != d);
 
-	if (BC_ERR(BC_NUM_ZERO(c))) bc_vm_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
-	if (BC_ERR(BC_NUM_NEG(b))) bc_vm_err(BC_ERR_MATH_NEGATIVE);
+	if (BC_ERR(BC_NUM_ZERO(c))) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
+	if (BC_ERR(BC_NUM_NEG(b))) bc_err(BC_ERR_MATH_NEGATIVE);
 
 	if (BC_ERR(bc_num_nonInt(a, &atemp) || bc_num_nonInt(b, &btemp) ||
 	           bc_num_nonInt(c, &ctemp)))
 	{
-		bc_vm_err(BC_ERR_MATH_NON_INTEGER);
+		bc_err(BC_ERR_MATH_NON_INTEGER);
 	}
 
 	bc_num_expand(d, ctemp.len);

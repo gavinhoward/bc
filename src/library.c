@@ -56,7 +56,7 @@ void bcl_handleSignal(void) {
 
 	assert(vm.jmp_bufs.len);
 
-	if (!vm.sig_lock) BC_VM_JMP;
+	if (!vm.sig_lock) BC_JMP;
 }
 
 bool bcl_running(void) {

@@ -253,14 +253,199 @@ typedef enum BcErr {
 
 } BcErr;
 
+// The indices of each category of error in bc_errs[], and used in bc_err_ids[]
+// to associate actual errors with their categories.
 #define BC_ERR_IDX_MATH (0)
 #define BC_ERR_IDX_PARSE (1)
 #define BC_ERR_IDX_EXEC (2)
 #define BC_ERR_IDX_FATAL (3)
 #define BC_ERR_IDX_NELEMS (4)
 
+// If bc is enabled, we add an extra category for POSIX warnings.
 #if BC_ENABLED
 #define BC_ERR_IDX_WARN (BC_ERR_IDX_NELEMS)
 #endif // BC_ENABLED
+
+// BC_JMP is what to use when activating an "exception", i.e., a longjmp(). With
+// debug code, it will print the name of the function it jumped from.
+#if BC_DEBUG_CODE
+#define BC_JMP bc_vm_jmp(__func__)
+#else // BC_DEBUG_CODE
+#define BC_JMP bc_vm_jmp()
+#endif // BC_DEBUG_CODE
+
+/// Returns true if an exception is in flight, false otherwise.
+#define BC_SIG_EXC \
+	BC_UNLIKELY(vm.status != (sig_atomic_t) BC_STATUS_SUCCESS || vm.sig)
+
+/// Returns true if there is *no* exception in flight, false otherwise.
+#define BC_NO_SIG_EXC \
+	BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS && !vm.sig)
+
+// These two assert whether signals are locked or not, respectively. There are
+// non-async-signal-safe functions in bc, and they *must* have signals locked.
+// Other functions are expected to *not* have signals locked, for reasons. So
+// these are pre-built asserts (no-ops in non-debug mode) that check that
+// signals are locked or not.
+#ifndef NDEBUG
+#define BC_SIG_ASSERT_LOCKED do { assert(vm.sig_lock); } while (0)
+#define BC_SIG_ASSERT_NOT_LOCKED do { assert(vm.sig_lock == 0); } while (0)
+#else // NDEBUG
+#define BC_SIG_ASSERT_LOCKED
+#define BC_SIG_ASSERT_NOT_LOCKED
+#endif // NDEBUG
+
+/// Locks signals.
+#define BC_SIG_LOCK               \
+	do {                          \
+		BC_SIG_ASSERT_NOT_LOCKED; \
+		vm.sig_lock = 1;          \
+	} while (0)
+
+/// Unlocks signals. If a signal happened, then this will cause a jump.
+#define BC_SIG_UNLOCK           \
+	do {                        \
+		BC_SIG_ASSERT_LOCKED;   \
+		vm.sig_lock = 0;        \
+		if (BC_SIG_EXC) BC_JMP; \
+	} while (0)
+
+/// Locks signals, regardless of if they are already locked. This is really only
+/// used after labels that longjmp() goes to after the jump because the cleanup
+/// code must have signals locked, and BC_LONGJMP_CONT will unlock signals if it
+/// doesn't jump.
+#define BC_SIG_MAYLOCK   \
+	do {                 \
+		vm.sig_lock = 1; \
+	} while (0)
+
+/// Unlocks signals, regardless of if they were already unlocked. If a signal
+/// happened, then this will cause a jump.
+#define BC_SIG_MAYUNLOCK        \
+	do {                        \
+		vm.sig_lock = 0;        \
+		if (BC_SIG_EXC) BC_JMP; \
+	} while (0)
+
+/// Locks signals, but stores the old lock state, to be restored later by
+/// BC_SIG_TRYUNLOCK.
+#define BC_SIG_TRYLOCK(v) \
+	do {                  \
+		v = vm.sig_lock;  \
+		vm.sig_lock = 1;  \
+	} while (0)
+
+/// Restores the previous state of a signal lock, and if it is now unlocked,
+/// initiates an exception/jump.
+#define BC_SIG_TRYUNLOCK(v)             \
+	do {                                \
+		vm.sig_lock = (v);              \
+		if (!(v) && BC_SIG_EXC) BC_JMP; \
+	} while (0)
+
+/// Sets a jump, and sets it up as well so that if a longjmp() happens, bc will
+/// immediately goto a label where some cleanup code is. This one assumes that
+/// signals are not locked and will lock them, set the jump, and unlock them.
+/// Setting the jump also includes pushing the jmp_buf onto the jmp_buf stack.
+#define BC_SETJMP(l)                     \
+	do {                                 \
+		sigjmp_buf sjb;                  \
+		BC_SIG_LOCK;                     \
+		if (sigsetjmp(sjb, 0)) {         \
+			assert(BC_SIG_EXC);          \
+			goto l;                      \
+		}                                \
+		bc_vec_push(&vm.jmp_bufs, &sjb); \
+		BC_SIG_UNLOCK;                   \
+	} while (0)
+
+/// Sets a jump like BC_SETJMP, but unlike BC_SETJMP, it assumes signals are
+/// locked and will just set the jump.
+#define BC_SETJMP_LOCKED(l)               \
+	do {                                  \
+		sigjmp_buf sjb;                   \
+		BC_SIG_ASSERT_LOCKED;             \
+		if (sigsetjmp(sjb, 0)) {          \
+			assert(BC_SIG_EXC);           \
+			goto l;                       \
+		}                                 \
+		bc_vec_push(&vm.jmp_bufs, &sjb);  \
+	} while (0)
+
+/// Used after cleanup labels set by BC_SETJMP and BC_SETJMP_LOCKED to jump to
+/// the next place. This is what continues the stack unwinding.
+#define BC_LONGJMP_CONT                             \
+	do {                                            \
+		BC_SIG_ASSERT_LOCKED;                       \
+		if (!vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);  \
+		BC_SIG_UNLOCK;                              \
+	} while (0)
+
+/// Unsets a jump. It always assumes signals are locked. This basically just
+/// pops a jmp_buf off of the stack of jmp_bufs, and since the jump mechanism
+/// always jumps to the location at the top of the stack, this effectively
+/// undoes a setjmp().
+#define BC_UNSETJMP               \
+	do {                          \
+		BC_SIG_ASSERT_LOCKED;     \
+		bc_vec_pop(&vm.jmp_bufs); \
+	} while (0)
+
+/// Stops a stack unwinding. Technically, a stack unwinding needs to be done
+/// manually, but it will always be done unless certain flags are cleared. This
+/// clears the flags.
+#define BC_LONGJMP_STOP    \
+	do {                   \
+		vm.sig_pop = 0;    \
+		vm.sig = 0;        \
+	} while (0)
+
+// Various convenience macros for calling the bc's error handling routine.
+#if BC_ENABLE_LIBRARY
+#define bc_error(e, l, ...) (bc_vm_handleError((e)))
+#define bc_err(e) (bc_vm_handleError((e)))
+#define bc_verr(e, ...) (bc_vm_handleError((e)))
+#else // BC_ENABLE_LIBRARY
+#define bc_error(e, l, ...) (bc_vm_handleError((e), (l), __VA_ARGS__))
+#define bc_err(e) (bc_vm_handleError((e), 0))
+#define bc_verr(e, ...) (bc_vm_handleError((e), 0, __VA_ARGS__))
+#endif // BC_ENABLE_LIBRARY
+
+/// Returns true if status s is an error, false otherwise.
+#define BC_STATUS_IS_ERROR(s) \
+	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
+
+// Convenience macros that can be placed at the beginning and exits of functions
+// for easy marking of where functions are entered and exited.
+#if BC_DEBUG_CODE
+#define BC_FUNC_ENTER                                              \
+	do {                                                           \
+		size_t bc_func_enter_i;                                    \
+		for (bc_func_enter_i = 0; bc_func_enter_i < vm.func_depth; \
+		     ++bc_func_enter_i)                                    \
+		{                                                          \
+			bc_file_puts(&vm.ferr, bc_flush_none, "  ");           \
+		}                                                          \
+		vm.func_depth += 1;                                        \
+		bc_file_printf(&vm.ferr, "Entering %s\n", __func__);       \
+		bc_file_flush(&vm.ferr, bc_flush_none);                    \
+	} while (0);
+
+#define BC_FUNC_EXIT                                               \
+	do {                                                           \
+		size_t bc_func_enter_i;                                    \
+		vm.func_depth -= 1;                                        \
+		for (bc_func_enter_i = 0; bc_func_enter_i < vm.func_depth; \
+		     ++bc_func_enter_i)                                    \
+		{                                                          \
+			bc_file_puts(&vm.ferr, bc_flush_none, "  ");           \
+		}                                                          \
+		bc_file_printf(&vm.ferr, "Leaving %s\n", __func__);        \
+		bc_file_flush(&vm.ferr, bc_flush_none);                    \
+	} while (0);
+#else // BC_DEBUG_CODE
+#define BC_FUNC_ENTER
+#define BC_FUNC_EXIT
+#endif // BC_DEBUG_CODE
 
 #endif // BC_STATUS_H

@@ -106,7 +106,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 			case 'e':
 			{
 				if (vm.no_exit_exprs)
-					bc_vm_verr(BC_ERR_FATAL_OPTION, "-e (--expression)");
+					bc_verr(BC_ERR_FATAL_OPTION, "-e (--expression)");
 				bc_args_exprs(opts.optarg);
 				vm.exit_exprs = (exit_exprs || vm.exit_exprs);
 				break;
@@ -117,7 +117,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 				if (!strcmp(opts.optarg, "-")) vm.no_exit_exprs = true;
 				else {
 					if (vm.no_exit_exprs)
-						bc_vm_verr(BC_ERR_FATAL_OPTION, "-f (--file)");
+						bc_verr(BC_ERR_FATAL_OPTION, "-f (--file)");
 					bc_args_file(opts.optarg);
 					vm.exit_exprs = (exit_exprs || vm.exit_exprs);
 				}
@@ -203,7 +203,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 #endif // DC_ENABLED
 
 #ifndef NDEBUG
-			// We shouldn't get here because bc_opt_error()/bc_vm_error() should
+			// We shouldn't get here because bc_opt_error()/bc_error() should
 			// longjmp() out.
 			case '?':
 			case ':':

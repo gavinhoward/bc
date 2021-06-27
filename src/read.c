@@ -202,7 +202,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 #endif // BC_ENABLE_HISTORY
 
 	if (BC_ERR(bc_read_binary(vec->v, vec->len - 1)))
-		bc_vm_verr(BC_ERR_FATAL_BIN_FILE, bc_program_stdin_name);
+		bc_verr(BC_ERR_FATAL_BIN_FILE, bc_program_stdin_name);
 
 	return s;
 }
@@ -226,7 +226,7 @@ char* bc_read_file(const char *path) {
 
 	fd = bc_read_open(path, O_RDONLY);
 
-	if (BC_ERR(fd < 0)) bc_vm_verr(BC_ERR_FATAL_FILE_ERR, path);
+	if (BC_ERR(fd < 0)) bc_verr(BC_ERR_FATAL_FILE_ERR, path);
 	if (BC_ERR(fstat(fd, &pstat) == -1)) goto malloc_err;
 
 	if (BC_ERR(S_ISDIR(pstat.st_mode))) {
@@ -255,6 +255,6 @@ read_err:
 	free(buf);
 malloc_err:
 	close(fd);
-	bc_vm_verr(e, path);
+	bc_verr(e, path);
 	return NULL;
 }
