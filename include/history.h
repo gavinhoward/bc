@@ -237,10 +237,7 @@ typedef struct BcHistory {
 	DWORD orig_console_mode;
 #endif // _WIN32
 
-	/// These next three are here because pahole found a 4 byte hole here.
-
-	/// This is to signal that there is more, so we don't process yet.
-	bool stdin_has_data;
+	/// These next two are here because pahole found a 4 byte hole here.
 
 	/// Whether we are in rawmode.
 	bool rawMode;

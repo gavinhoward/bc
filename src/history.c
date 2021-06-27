@@ -1358,52 +1358,42 @@ static inline bool bc_history_stdinHasData(BcHistory *h) {
 #endif // _WIN32
 }
 
-/**
- * This function calls the line editing function bc_history_edit()
- * using the STDIN file descriptor set in raw mode.
- */
-static BcStatus bc_history_raw(BcHistory *h, const char *prompt) {
-
-	BcStatus s;
-
-	assert(vm.fout.len == 0);
-
-	bc_history_enableRaw(h);
-
-	s = bc_history_edit(h, prompt);
-
-	h->stdin_has_data = bc_history_stdinHasData(h);
-	if (!h->stdin_has_data) bc_history_disableRaw(h);
-
-	bc_file_write(&vm.fout, bc_flush_none, "\n", 1);
-	bc_file_flush(&vm.fout, bc_flush_none);
-
-	return s;
-}
-
 BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 	BcStatus s;
 	char* line;
 
-	s = bc_history_raw(h, prompt);
+	assert(vm.fout.len == 0);
+
+	bc_history_enableRaw(h);
+
+	do {
+
+		s = bc_history_edit(h, prompt);
+
+		bc_file_write(&vm.fout, bc_flush_none, "\n", 1);
+		bc_file_flush(&vm.fout, bc_flush_none);
+
+		if (h->buf.v[0]) {
+
+			BC_SIG_LOCK;
+
+			line = bc_vm_strdup(h->buf.v);
+
+			BC_SIG_UNLOCK;
+
+			bc_history_add(h, line);
+		}
+		else bc_history_add_empty(h);
+
+		bc_vec_concat(vec, h->buf.v);
+		bc_vec_concat(vec, "\n");
+
+	} while (!s && bc_history_stdinHasData(h));
+
 	assert(!s || s == BC_STATUS_EOF);
 
-	bc_vec_string(vec, BC_HIST_BUF_LEN(h), h->buf.v);
-
-	if (h->buf.v[0]) {
-
-		BC_SIG_LOCK;
-
-		line = bc_vm_strdup(h->buf.v);
-
-		BC_SIG_UNLOCK;
-
-		bc_history_add(h, line);
-	}
-	else bc_history_add_empty(h);
-
-	bc_vec_concat(vec, "\n");
+	bc_history_disableRaw(h);
 
 	return s;
 }
@@ -1467,7 +1457,7 @@ void bc_history_init(BcHistory *h) {
 	sigaddset(&h->sigmask, SIGINT);
 #endif // _WIN32
 
-	h->rawMode = h->stdin_has_data = false;
+	h->rawMode = false;
 	h->badTerm = bc_history_isBadTerm();
 
 #ifdef _WIN32
