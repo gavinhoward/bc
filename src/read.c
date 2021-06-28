@@ -148,10 +148,7 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 			if (errno == EINTR) {
 
-				if (vm.status == (sig_atomic_t) BC_STATUS_QUIT) {
-					BC_SIG_UNLOCK;
-					return BC_STATUS_QUIT;
-				}
+				if (vm.status == (sig_atomic_t) BC_STATUS_QUIT) BC_JMP;
 
 				assert(vm.sig);
 

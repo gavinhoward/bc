@@ -789,6 +789,9 @@ bool bc_vm_readLine(bool clear) {
 	if (vm.eof) return false;
 
 	do {
+		// bc_read_line() must always return either BC_STATUS_SUCCESS or
+		// BC_STATUS_EOF. Everything else, it and whatever it calls, must jump
+		// out instead.
 		s = bc_read_line(&vm.line_buf, ">>> ");
 		vm.eof = (s == BC_STATUS_EOF);
 	} while (!(s) && !vm.eof && vm.line_buf.len < 1);
@@ -802,7 +805,6 @@ bool bc_vm_readLine(bool clear) {
 
 static void bc_vm_stdin(void) {
 
-	BcStatus s;
 	bool clear = true;
 
 	vm.is_stdin = true;
@@ -835,7 +837,7 @@ restart:
 	}
 
 #if BC_ENABLED
-	if (!BC_STATUS_IS_ERROR(s) && BC_IS_BC) bc_vm_endif();
+	if (BC_IS_BC) bc_vm_endif();
 #endif // BC_ENABLED
 
 err:
