@@ -1227,7 +1227,7 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 		BC_SIG_LOCK;
 
-		bc_num_init(&res->d.n, num->len - num->rdx);
+		bc_num_init(&res->d.n, num->len - BC_NUM_RDX_VAL(num));
 
 		BC_SIG_UNLOCK;
 
