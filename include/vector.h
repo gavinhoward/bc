@@ -79,7 +79,7 @@ typedef enum BcDtorType {
 } BcDtorType;
 
 typedef struct BcVec {
-	char *v;
+	char *restrict v;
 	size_t len;
 	size_t cap;
 	BcSize size;
