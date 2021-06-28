@@ -64,6 +64,7 @@ benchmarks/bc/arrays_and_numbers.txt
 benchmarks/bc/constants.txt
 benchmarks/bc/strings.txt
 benchmarks/bc/functions.txt
+benchmarks/dc/modexp.txt
 perf.data
 perf.data.old
 *.gcda

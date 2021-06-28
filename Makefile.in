@@ -381,6 +381,7 @@ clean_benchmarks:
 	@$(RM) -f benchmarks/bc/constants.txt
 	@$(RM) -f benchmarks/bc/strings.txt
 	@$(RM) -f benchmarks/bc/functions.txt
+	@$(RM) -f benchmarks/dc/modexp.txt
 
 clean_config: clean clean_benchmarks
 	@printf 'Cleaning config...\n'
