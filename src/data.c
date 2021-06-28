@@ -42,6 +42,7 @@
 #include <num.h>
 #include <rand.h>
 #include <program.h>
+#include <history.h>
 #include <vm.h>
 
 #if !BC_ENABLE_LIBRARY
@@ -231,6 +232,26 @@ const char* const bc_err_msgs[] = {
 	"POSIX requires the left brace be on the same line as the function header",
 #endif // BC_ENABLED
 
+};
+
+const BcVecFree bc_vec_dtors[] = {
+	NULL,
+	bc_vec_free,
+	bc_num_free,
+#if !BC_ENABLE_LIBRARY
+#ifndef NDEBUG
+	bc_id_free,
+#endif // NDEBUG
+	bc_const_free,
+	bc_string_free,
+	bc_func_free,
+	bc_result_free,
+#if BC_ENABLE_HISTORY
+	bc_history_string_free,
+#endif // BC_ENABLE_HISTORY
+#else // !BC_ENABLE_LIBRARY
+	bcl_num_destruct,
+#endif // !BC_ENABLE_LIBRARY
 };
 
 #if BC_ENABLE_HISTORY

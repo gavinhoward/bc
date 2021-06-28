@@ -409,7 +409,7 @@ void bc_rand_pop(BcRNG *r, bool reset) {
 
 void bc_rand_init(BcRNG *r) {
 	BC_SIG_ASSERT_LOCKED;
-	bc_vec_init(&r->v, sizeof(BcRNGData), NULL);
+	bc_vec_init(&r->v, sizeof(BcRNGData), BC_DTOR_NONE);
 	bc_rand_push(r);
 }
 

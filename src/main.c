@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
 
 	BC_SIG_LOCK;
 
-	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
+	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), BC_DTOR_NONE);
 
 	BC_SETJMP_LOCKED(exit);
 

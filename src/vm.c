@@ -369,7 +369,7 @@ static void bc_vm_envArgs(const char* const env_args_name) {
 
 	assert(buf != NULL);
 
-	bc_vec_init(&vm.env_args, sizeof(char*), NULL);
+	bc_vec_init(&vm.env_args, sizeof(char*), BC_DTOR_NONE);
 	bc_vec_push(&vm.env_args, &env_args_name);
 
 	while (*buf) {
@@ -810,8 +810,8 @@ static void bc_vm_stdin(void) {
 	bc_lex_file(&vm.prs.l, bc_program_stdin_name);
 
 	BC_SIG_LOCK;
-	bc_vec_init(&vm.buffer, sizeof(uchar), NULL);
-	bc_vec_init(&vm.line_buf, sizeof(uchar), NULL);
+	bc_vec_init(&vm.buffer, sizeof(uchar), BC_DTOR_NONE);
+	bc_vec_init(&vm.line_buf, sizeof(uchar), BC_DTOR_NONE);
 	BC_SETJMP_LOCKED(err);
 	BC_SIG_UNLOCK;
 
@@ -956,7 +956,7 @@ static void bc_vm_exec(void) {
 		bool more;
 
 		BC_SIG_LOCK;
-		bc_vec_init(&buf, sizeof(uchar), NULL);
+		bc_vec_init(&buf, sizeof(uchar), BC_DTOR_NONE);
 
 #ifndef NDEBUG
 		BC_SETJMP_LOCKED(err);

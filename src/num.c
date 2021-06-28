@@ -1959,7 +1959,7 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base, size_t len,
 
 	BC_SIG_LOCK;
 
-	bc_vec_init(&stack, sizeof(BcBigDig), NULL);
+	bc_vec_init(&stack, sizeof(BcBigDig), BC_DTOR_NONE);
 	bc_num_init(&fracp1, nrdx);
 
 	bc_num_createCopy(&intp, n);

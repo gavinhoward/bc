@@ -52,15 +52,41 @@ typedef void (*BcVecFree)(void*);
 // Forward declaration.
 struct BcId;
 
+#if BC_LONG_BIT >= 64
+typedef uint32_t BcSize;
+#else // BC_LONG_BIT >= 64
+typedef uint16_t BcSize;
+#endif // BC_LONG_BIT >= 64
+
+typedef enum BcDtorType {
+	BC_DTOR_NONE,
+	BC_DTOR_VEC,
+	BC_DTOR_NUM,
+#if !BC_ENABLE_LIBRARY
+#ifndef NDEBUG
+	BC_DTOR_ID,
+#endif // NDEBUG
+	BC_DTOR_CONST,
+	BC_DTOR_STRING,
+	BC_DTOR_FUNC,
+	BC_DTOR_RESULT,
+#if BC_ENABLE_HISTORY
+	BC_DTOR_HISTORY_STRING,
+#endif // BC_ENABLE_HISTORY
+#else // !BC_ENABLE_LIBRARY
+	BC_DTOR_BCL_NUM,
+#endif // !BC_ENABLE_LIBRARY
+} BcDtorType;
+
 typedef struct BcVec {
 	char *v;
 	size_t len;
 	size_t cap;
-	size_t size;
-	BcVecFree dtor;
+	BcSize size;
+	BcSize dtor;
 } BcVec;
 
-void bc_vec_init(BcVec *restrict v, size_t esize, BcVecFree dtor);
+void bc_vec_init(BcVec *restrict v, size_t esize, BcDtorType dtor);
 void bc_vec_expand(BcVec *restrict v, size_t req);
 void bc_vec_grow(BcVec *restrict v, size_t n);
 
@@ -99,9 +125,11 @@ char* bc_map_name(const BcVec *restrict v, size_t idx);
 #define bc_vec_top(v) (bc_vec_item_rev((v), 0))
 
 #ifndef NDEBUG
-#define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), bc_id_free))
+#define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), BC_DTOR_ID))
 #else // NDEBUG
-#define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), NULL))
+#define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), BC_DTOR_NONE))
 #endif // NDEBUG
+
+extern const BcVecFree bc_vec_dtors[];
 
 #endif // BC_VECTOR_H

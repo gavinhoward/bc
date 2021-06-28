@@ -202,12 +202,12 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 
 #if BC_ENABLED
 	if (BC_IS_BC) {
-		bc_vec_init(&p->flags, sizeof(uint16_t), NULL);
+		bc_vec_init(&p->flags, sizeof(uint16_t), BC_DTOR_NONE);
 		bc_vec_push(&p->flags, &flag);
-		bc_vec_init(&p->exits, sizeof(BcInstPtr), NULL);
-		bc_vec_init(&p->conds, sizeof(size_t), NULL);
-		bc_vec_init(&p->ops, sizeof(BcLexType), NULL);
-		bc_vec_init(&p->buf, sizeof(char), NULL);
+		bc_vec_init(&p->exits, sizeof(BcInstPtr), BC_DTOR_NONE);
+		bc_vec_init(&p->conds, sizeof(size_t), BC_DTOR_NONE);
+		bc_vec_init(&p->ops, sizeof(BcLexType), BC_DTOR_NONE);
+		bc_vec_init(&p->buf, sizeof(char), BC_DTOR_NONE);
 		p->auto_part = false;
 	}
 #endif // BC_ENABLED

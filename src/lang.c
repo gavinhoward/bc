@@ -94,17 +94,17 @@ void bc_func_init(BcFunc *f, const char *name) {
 
 	assert(f != NULL && name != NULL);
 
-	bc_vec_init(&f->code, sizeof(uchar), NULL);
+	bc_vec_init(&f->code, sizeof(uchar), BC_DTOR_NONE);
 
-	bc_vec_init(&f->consts, sizeof(BcConst), bc_const_free);
+	bc_vec_init(&f->consts, sizeof(BcConst), BC_DTOR_CONST);
 
 #if BC_ENABLED
 	if (BC_IS_BC) {
 
-		bc_vec_init(&f->strs, sizeof(char*), bc_string_free);
+		bc_vec_init(&f->strs, sizeof(char*), BC_DTOR_STRING);
 
-		bc_vec_init(&f->autos, sizeof(BcLoc), NULL);
-		bc_vec_init(&f->labels, sizeof(size_t), NULL);
+		bc_vec_init(&f->autos, sizeof(BcLoc), BC_DTOR_NONE);
+		bc_vec_init(&f->labels, sizeof(size_t), BC_DTOR_NONE);
 
 		f->nparams = 0;
 		f->voidfn = false;
@@ -169,8 +169,8 @@ void bc_func_free(void *func) {
 
 void bc_array_init(BcVec *a, bool nums) {
 	BC_SIG_ASSERT_LOCKED;
-	if (nums) bc_vec_init(a, sizeof(BcNum), bc_num_free);
-	else bc_vec_init(a, sizeof(BcVec), bc_vec_free);
+	if (nums) bc_vec_init(a, sizeof(BcNum), BC_DTOR_NUM);
+	else bc_vec_init(a, sizeof(BcVec), BC_DTOR_VEC);
 	bc_array_expand(a, 1);
 }
 
@@ -201,14 +201,14 @@ void bc_array_expand(BcVec *a, size_t len) {
 
 	bc_vec_expand(a, len);
 
-	if (a->size == sizeof(BcNum) && a->dtor == bc_num_free) {
+	if (a->size == sizeof(BcNum) && a->dtor == BC_DTOR_NUM) {
 		while (len > a->len) {
 			BcNum *n = bc_vec_pushEmpty(a);
 			bc_num_init(n, BC_NUM_DEF_SIZE);
 		}
 	}
 	else {
-		assert(a->size == sizeof(BcVec) && a->dtor == bc_vec_free);
+		assert(a->size == sizeof(BcVec) && a->dtor == BC_DTOR_VEC);
 		while (len > a->len) {
 			BcVec *v = bc_vec_pushEmpty(a);
 			bc_array_init(v, true);

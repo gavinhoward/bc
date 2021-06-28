@@ -279,6 +279,12 @@ void bc_history_init(BcHistory *h);
  */
 void bc_history_free(BcHistory *h);
 
+/**
+ * Frees strings used by history.
+ * @param str  The string to free.
+ */
+void bc_history_string_free(void *str);
+
 // A list of terminals that don't work.
 extern const char *bc_history_bad_terms[];
 

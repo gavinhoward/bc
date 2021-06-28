@@ -440,7 +440,7 @@ static void bc_program_read(BcProgram *p) {
 
 	file = vm.file;
 	bc_parse_init(&parse, p, BC_PROG_READ);
-	bc_vec_init(&buf, sizeof(char), NULL);
+	bc_vec_init(&buf, sizeof(char), BC_DTOR_NONE);
 
 	BC_SETJMP_LOCKED(exec_err);
 
@@ -805,7 +805,7 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx,
 
 		if (ref || (ref_size && t == BC_TYPE_REF)) {
 
-			bc_vec_init(rv, sizeof(uchar), NULL);
+			bc_vec_init(rv, sizeof(uchar), BC_DTOR_NONE);
 
 			if (ref) {
 
@@ -1743,7 +1743,7 @@ void bc_program_init(BcProgram *p) {
 
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i) {
 		BcBigDig val = i == BC_PROG_GLOBALS_SCALE ? 0 : BC_BASE;
-		bc_vec_init(p->globals_v + i, sizeof(BcBigDig), NULL);
+		bc_vec_init(p->globals_v + i, sizeof(BcBigDig), BC_DTOR_NONE);
 		bc_vec_push(p->globals_v + i, &val);
 		p->globals[i] = val;
 	}
@@ -1751,10 +1751,10 @@ void bc_program_init(BcProgram *p) {
 #if DC_ENABLED
 	if (BC_IS_DC) {
 
-		bc_vec_init(&p->strs_v, sizeof(char*), bc_string_free);
+		bc_vec_init(&p->strs_v, sizeof(char*), BC_DTOR_STRING);
 		p->strs = &p->strs_v;
 
-		bc_vec_init(&p->tail_calls, sizeof(size_t), NULL);
+		bc_vec_init(&p->tail_calls, sizeof(size_t), BC_DTOR_NONE);
 		i = 0;
 		bc_vec_push(&p->tail_calls, &i);
 
@@ -1778,19 +1778,19 @@ void bc_program_init(BcProgram *p) {
 	if (BC_IS_BC) bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
 
-	bc_vec_init(&p->fns, sizeof(BcFunc), bc_func_free);
+	bc_vec_init(&p->fns, sizeof(BcFunc), BC_DTOR_FUNC);
 	bc_map_init(&p->fn_map);
 	bc_program_insertFunc(p, bc_func_main);
 	bc_program_insertFunc(p, bc_func_read);
 
-	bc_vec_init(&p->vars, sizeof(BcVec), bc_vec_free);
+	bc_vec_init(&p->vars, sizeof(BcVec), BC_DTOR_VEC);
 	bc_map_init(&p->var_map);
 
-	bc_vec_init(&p->arrs, sizeof(BcVec), bc_vec_free);
+	bc_vec_init(&p->arrs, sizeof(BcVec), BC_DTOR_VEC);
 	bc_map_init(&p->arr_map);
 
-	bc_vec_init(&p->results, sizeof(BcResult), bc_result_free);
-	bc_vec_init(&p->stack, sizeof(BcInstPtr), NULL);
+	bc_vec_init(&p->results, sizeof(BcResult), BC_DTOR_RESULT);
+	bc_vec_init(&p->stack, sizeof(BcInstPtr), BC_DTOR_NONE);
 	bc_vec_push(&p->stack, &ip);
 
 	bc_program_setVecs(p, (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN));

@@ -54,7 +54,7 @@
  */
 static void bc_args_exprs(const char *str) {
 	BC_SIG_ASSERT_LOCKED;
-	if (vm.exprs.v == NULL) bc_vec_init(&vm.exprs, sizeof(uchar), NULL);
+	if (vm.exprs.v == NULL) bc_vec_init(&vm.exprs, sizeof(uchar), BC_DTOR_NONE);
 	bc_vec_concat(&vm.exprs, str);
 	bc_vec_concat(&vm.exprs, "\n");
 }
@@ -222,7 +222,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 	// We need to make sure the files list is initialized. We don't want to
 	// initialize it if there are no files because it's just a waste of memory.
 	if (opts.optind < (size_t) argc && vm.files.v == NULL)
-		bc_vec_init(&vm.files, sizeof(char*), NULL);
+		bc_vec_init(&vm.files, sizeof(char*), BC_DTOR_NONE);
 
 	for (i = opts.optind; i < (size_t) argc; ++i)
 		bc_vec_push(&vm.files, argv + i);

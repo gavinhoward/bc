@@ -1433,7 +1433,7 @@ static void bc_history_add_empty(BcHistory *h) {
 	bc_vec_push(&h->history, &line);
 }
 
-static void bc_history_string_free(void *str) {
+void bc_history_string_free(void *str) {
 	char *s = *((char**) str);
 	BC_SIG_ASSERT_LOCKED;
 	if (s[0]) free(s);
@@ -1443,9 +1443,9 @@ void bc_history_init(BcHistory *h) {
 
 	BC_SIG_ASSERT_LOCKED;
 
-	bc_vec_init(&h->buf, sizeof(char), NULL);
-	bc_vec_init(&h->history, sizeof(char*), bc_history_string_free);
-	bc_vec_init(&h->extras, sizeof(char), NULL);
+	bc_vec_init(&h->buf, sizeof(char), BC_DTOR_NONE);
+	bc_vec_init(&h->history, sizeof(char*), BC_DTOR_HISTORY_STRING);
+	bc_vec_init(&h->extras, sizeof(char), BC_DTOR_NONE);
 
 #ifndef _WIN32
 	FD_ZERO(&h->rdset);
