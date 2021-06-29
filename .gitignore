@@ -65,6 +65,7 @@ benchmarks/bc/constants.txt
 benchmarks/bc/strings.txt
 benchmarks/bc/functions.txt
 benchmarks/dc/modexp.txt
+scripts/ministat
 perf.data
 perf.data.old
 *.gcda
