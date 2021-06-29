@@ -30,5 +30,5 @@
 max = 1000000
 
 for (i = 0; i < max; ++i) {
-	print "define a", i, "(n) {\n\tn\n}\n"
+	print "define etsna", i, "(n) {\n\tn\n}\n"
 }

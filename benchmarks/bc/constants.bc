@@ -30,5 +30,10 @@
 max = 1000000
 
 for (i = 0; i < max; ++i) {
-	print "a = ", i, "\n"
+
+	print "c = ", i, "\n"
+
+	for (j = 0; j < max; ++j) {
+		print "d = ", i, ".", j, "\n"
+	}
 }
