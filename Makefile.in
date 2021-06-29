@@ -153,6 +153,9 @@ MKDIR = mkdir
 
 SCRIPTS = ./scripts
 
+MINISTAT = ministat
+MINISTAT_EXEC = $(SCRIPTS)/$(MINISTAT)
+
 INSTALL = $(SCRIPTS)/exec-install.sh
 SAFE_INSTALL = $(SCRIPTS)/safe-install.sh
 LINK = $(SCRIPTS)/link.sh
@@ -238,6 +241,9 @@ $(BIN):
 	$(MKDIR) -p $(BIN)
 
 headers: %%HEADERS%%
+
+ministat:
+	$(HOSTCC) $(HOSTCFLAGS) -lm -o $(MINISTAT_EXEC) scripts/ministat.c
 
 help:
 	@printf 'available targets:\n'
@@ -342,12 +348,6 @@ coverage_output:
 
 coverage:%%COVERAGE_PREREQS%%
 
-libcname:
-	@printf '%s' "$(BC_LIB_C)"
-
-extra_math:
-	@printf '%s' "$(BC_ENABLE_EXTRA_MATH)"
-
 manpages:
 	$(MANPAGE) bc
 	$(MANPAGE) dc
@@ -372,6 +372,7 @@ clean:%%CLEAN_PREREQS%%
 
 clean_benchmarks:
 	@printf 'Cleaning benchmarks...\n'
+	@$(RM) -f $(MINISTAT_EXEC)
 	@$(RM) -f benchmarks/bc/add.txt
 	@$(RM) -f benchmarks/bc/subtract.txt
 	@$(RM) -f benchmarks/bc/multiply.txt

@@ -116,6 +116,7 @@ scripts/alloc.sh
 scripts/benchmark.sh
 scripts/fuzz_prep.sh
 scripts/manpage.sh
+scripts/ministat.c
 scripts/package.sh
 scripts/radamsa.sh
 scripts/radamsa.txt

@@ -29,12 +29,44 @@
 
 # Just print the usage and exit with an error.
 usage() {
-	printf 'usage: %s [-a] dir benchmark...\n' "$0" 1>&2
+	printf 'usage: %s [-n runs] dir benchmark...\n' "$0" 1>&2
+	printf '       -n runs is how many runs to run the benchmark, default 10.\n'
+	printf '\n'
+	printf 'The fields are put in this order:\n'
+	printf '1.  Elapsed Time\n'
+	printf '2.  System Time\n'
+	printf '3.  User Time\n'
+	printf '4.  Max RSS\n'
+	printf '5.  Average RSS\n'
+	printf '6.  Average Total Memory Use\n'
+	printf '7.  Average Unshared Data\n'
+	printf '8.  Average Unshared Stack\n'
+	printf '9.  Average Shared Text\n'
+	printf '10. Major Page Faults\n'
+	printf '11. Minor Page Faults\n'
+	printf '12. Swaps\n'
+	printf '13. Involuntary Context Switches\n'
+	printf '14. Voluntary Context Switches\n'
+	printf '15. Inputs\n'
+	printf '16. Outputs\n'
+	printf '17. Signals Delivered\n'
 	exit 1
 }
 
 script="$0"
 scriptdir=$(dirname "$script")
+
+runs=10
+
+# Process command-line arguments.
+while getopts "n:" opt; do
+
+	case "$opt" in
+		n) runs="$OPTARG" ; shift ;;
+		?) usage "Invalid option: $opt" ;;
+	esac
+
+done
 
 if [ "$#" -lt 2 ]; then
 	usage
@@ -83,11 +115,21 @@ fi
 for b in $benchmarks; do
 
 	if [ ! -f "./benchmarks/$d/$b.txt" ]; then
-		printf 'Benchmarking generation of benchmarks/%s/%s.txt...\n' "$d" "$b"
+		printf 'Benchmarking generation of benchmarks/%s/%s.txt...\n' "$d" "$b" >&2
 		printf '%s\n' "$halt" | /usr/bin/time -v bin/$d $opts "./benchmarks/$d/$b.$d" \
 			> "./benchmarks/$d/$b.txt"
 	fi
 done
 
-printf 'Benchmarking %s...\n' "$files"
-printf '%s\n' "$halt" | /usr/bin/time -v bin/$d $opts $files > /dev/null
+format="%e %S %U %M %t %K %D %p %X %F %R %W %c %w %I %O %k"
+
+printf 'Benchmarking %s...\n' "$files" >&2
+
+i=0
+
+while [ "$i" -lt "$runs" ]; do
+
+	printf '%s\n' "$halt" | /usr/bin/time -f "$format" bin/$d $opts $files 2>&1 > /dev/null
+
+	i=$(printf '%s + 1\n' "$i" | bin/bc)
+done
