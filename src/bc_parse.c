@@ -353,13 +353,15 @@ static void bc_parse_name(BcParse *p, BcInst *type,
                           bool *can_assign, uint8_t flags)
 {
 	char *name;
+	BcVec *slabs;
+	size_t len;
 
 	BC_SIG_LOCK;
 
 	// We want a copy of the name since the lexer might overwrite its copy.
-	name = bc_vm_strdup(p->l.str.v);
-
-	BC_SETJMP_LOCKED(err);
+	slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ ?
+	        &vm.main_slabs : &vm.other_slabs;
+	name = bc_vm_strdup2(p->l.str.v, slabs);
 
 	BC_SIG_UNLOCK;
 
@@ -412,11 +414,6 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 		bc_parse_push(p, BC_INST_VAR);
 		bc_parse_pushName(p, name, true);
 	}
-
-err:
-	BC_SIG_MAYLOCK;
-	free(name);
-	BC_LONGJMP_CONT;
 }
 
 static void bc_parse_noArgBuiltin(BcParse *p, BcInst inst) {

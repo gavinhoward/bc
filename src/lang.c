@@ -48,17 +48,10 @@ void bc_id_free(void *id) {
 }
 #endif // NDEBUG
 
-void bc_string_free(void *string) {
-	BC_SIG_ASSERT_LOCKED;
-	assert(string != NULL && (*((char**) string)) != NULL);
-	if (BC_IS_BC) free(*((char**) string));
-}
-
 void bc_const_free(void *constant) {
 	BcConst *c = constant;
 	BC_SIG_ASSERT_LOCKED;
 	assert(c->val != NULL);
-	free(c->val);
 	bc_num_free(&c->num);
 }
 
@@ -101,7 +94,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 #if BC_ENABLED
 	if (BC_IS_BC) {
 
-		bc_vec_init(&f->strs, sizeof(char*), BC_DTOR_STRING);
+		bc_vec_init(&f->strs, sizeof(char*), BC_DTOR_NONE);
 
 		bc_vec_init(&f->autos, sizeof(BcLoc), BC_DTOR_NONE);
 		bc_vec_init(&f->labels, sizeof(size_t), BC_DTOR_NONE);

@@ -49,6 +49,21 @@ typedef unsigned char uchar;
 
 typedef void (*BcVecFree)(void*);
 
+#define BC_SLAB_SIZE (4096)
+
+typedef struct BcSlab {
+	char *s;
+	size_t len;
+} BcSlab;
+
+void bc_slab_init(BcSlab *s);
+
+char* bc_slab_add(BcSlab *s, const char *str, size_t len);
+void bc_slab_clear(BcSlab *s);
+void bc_slab_undo(BcSlab *s, size_t len);
+
+void bc_slab_free(void *slab);
+
 // Forward declaration.
 struct BcId;
 
@@ -66,8 +81,8 @@ typedef enum BcDtorType {
 #ifndef NDEBUG
 	BC_DTOR_ID,
 #endif // NDEBUG
+	BC_DTOR_SLAB,
 	BC_DTOR_CONST,
-	BC_DTOR_STRING,
 	BC_DTOR_FUNC,
 	BC_DTOR_RESULT,
 #if BC_ENABLE_HISTORY
@@ -98,6 +113,7 @@ void bc_vec_npush(BcVec *restrict v, size_t n, const void *data);
 void* bc_vec_pushEmpty(BcVec *restrict v);
 void bc_vec_pushByte(BcVec *restrict v, uchar data);
 void bc_vec_pushIndex(BcVec *restrict v, size_t idx);
+void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx);
 void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str);
 void bc_vec_concat(BcVec *restrict v, const char *restrict str);
 void bc_vec_empty(BcVec *restrict v);
@@ -124,11 +140,7 @@ char* bc_map_name(const BcVec *restrict v, size_t idx);
 #define bc_vec_popAll(v) (bc_vec_npop((v), (v)->len))
 #define bc_vec_top(v) (bc_vec_item_rev((v), 0))
 
-#ifndef NDEBUG
-#define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), BC_DTOR_ID))
-#else // NDEBUG
 #define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), BC_DTOR_NONE))
-#endif // NDEBUG
 
 extern const BcVecFree bc_vec_dtors[];
 

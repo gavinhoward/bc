@@ -1751,7 +1751,7 @@ void bc_program_init(BcProgram *p) {
 #if DC_ENABLED
 	if (BC_IS_DC) {
 
-		bc_vec_init(&p->strs_v, sizeof(char*), BC_DTOR_STRING);
+		bc_vec_init(&p->strs_v, sizeof(char*), BC_DTOR_NONE);
 		p->strs = &p->strs_v;
 
 		bc_vec_init(&p->tail_calls, sizeof(size_t), BC_DTOR_NONE);

@@ -42,6 +42,38 @@
 #include <lang.h>
 #include <vm.h>
 
+void bc_slab_init(BcSlab *s) {
+	s->s = bc_vm_malloc(BC_SLAB_SIZE);
+	s->len = 0;
+}
+
+char* bc_slab_add(BcSlab *s, const char *str, size_t len) {
+
+	char *ptr;
+
+	assert(s != NULL);
+	assert(str != NULL);
+	assert(len == strlen(str) + 1);
+
+	if (s->len + len > BC_SLAB_SIZE) return NULL;
+
+	ptr = (char*) (s->s + s->len);
+
+	strcpy(ptr, str);
+
+	s->len += len;
+
+	return ptr;
+}
+
+void bc_slab_clear(BcSlab *s) {
+	s->len = 0;
+}
+
+void bc_slab_free(void *slab) {
+	free(((BcSlab*) slab)->s);
+}
+
 void bc_vec_grow(BcVec *restrict v, size_t n) {
 
 	size_t cap, len;
@@ -201,7 +233,7 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 	bc_vec_npush(v, amt + 1, nums);
 }
 
-static void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
+void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 
 	sig_atomic_t lock;
 
@@ -357,7 +389,7 @@ bool bc_map_insert(BcVec *restrict v, const char *name,
 	if (*i != v->len && !strcmp(name, ((BcId*) bc_vec_item(v, *i))->name))
 		return false;
 
-	id.name = bc_vm_strdup(name);
+	id.name = bc_vm_strdup2(name, &vm.other_slabs);
 	id.idx = idx;
 
 	bc_vec_pushAt(v, &id, *i);

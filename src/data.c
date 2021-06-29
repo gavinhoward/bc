@@ -242,8 +242,8 @@ const BcVecFree bc_vec_dtors[] = {
 #ifndef NDEBUG
 	bc_id_free,
 #endif // NDEBUG
+	bc_slab_free,
 	bc_const_free,
-	bc_string_free,
 	bc_func_free,
 	bc_result_free,
 #if BC_ENABLE_HISTORY

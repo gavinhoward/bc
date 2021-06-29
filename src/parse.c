@@ -68,7 +68,9 @@ void bc_parse_addString(BcParse *p) {
 
 	if (BC_IS_BC) {
 		char **str = bc_vec_pushEmpty(strs);
-		*str = bc_vm_strdup(p->l.str.v);
+		BcVec *slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ ?
+		               &vm.main_slabs : &vm.other_slabs;
+		*str = bc_vm_strdup2(p->l.str.v, slabs);
 		idx = strs->len - 1;
 	}
 #if DC_ENABLED
@@ -85,6 +87,7 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 	BcVec *consts = &p->func->consts;
 	size_t idx;
 	BcConst *c;
+	BcVec *slabs;
 
 	if (bc_parse_zero[0] == string[0] && bc_parse_zero[1] == string[1]) {
 		bc_parse_push(p, BC_INST_ZERO);
@@ -99,9 +102,12 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 
 	BC_SIG_LOCK;
 
+	slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ ?
+	        &vm.main_const_slab : &vm.other_slabs;
+
 	c = bc_vec_pushEmpty(consts);
 
-	c->val = bc_vm_strdup(string);
+	c->val = bc_vm_strdup2(string, slabs);
 	c->base = BC_NUM_BIGDIG_MAX;
 
 	bc_num_clear(&c->num);
