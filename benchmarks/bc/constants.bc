@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-max = 10000
+max = 1000
 max2 = 1000
 
 for (i = 0; i < max; ++i) {
