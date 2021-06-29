@@ -27,13 +27,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-max = 1000000
+max = 10000
+max2 = 1000
 
 for (i = 0; i < max; ++i) {
 
 	print "c = ", i, "\n"
+	print "e = 0.", i, "\n"
 
-	for (j = 0; j < max; ++j) {
+	for (j = 0; j < max2; ++j) {
 		print "d = ", i, ".", j, "\n"
 	}
 }

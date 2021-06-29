@@ -27,9 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-max = 1000000
+max = 10000000
 
-print "\qasotehnuasnotehustnaoheusntaoheustnaoheusntaoehunsatoheuastoehuaosnetuhaosetnuhaosentuahoesntuahoeuhstoeunhatoehusanotehusatnoheus\q"
+print "\qasotehnuasnotehustnaoheusntaoheustnaoheusntaoehunsatoheuastoehuaosnetuhaosetnuhaosentuahoesntuahoeuhstoeunhatoehusanotehusatnoheus\q\n"
 
 for (i = 0; i < max; ++i) {
 	print "\qabc", i, " = ", i, "\\n\q\n"
