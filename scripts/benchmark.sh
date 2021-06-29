@@ -29,7 +29,7 @@
 
 # Just print the usage and exit with an error.
 usage() {
-	printf 'usage: %s [-a] dir benchmark\n' "$0" 1>&2
+	printf 'usage: %s [-a] dir benchmark...\n' "$0" 1>&2
 	exit 1
 }
 
@@ -40,13 +40,37 @@ if [ "$#" -lt 2 ]; then
 	usage
 fi
 
+cd "$scriptdir/.."
+
 d="$1"
 shift
 
-benchmark="$1"
-shift
+benchmarks=""
 
-cd "$scriptdir/.."
+while [ "$#" -gt 0 ]; do
+
+	if [ "$benchmarks" = "" ]; then
+		benchmarks="$1"
+	else
+		benchmarks="$benchmarks $1"
+	fi
+
+	shift
+done
+
+files=""
+
+for b in $benchmarks; do
+
+	f=$(printf "benchmarks/%s/%s.txt" "$d" "$b")
+
+	if [ "$files" = "" ]; then
+		files="$f"
+	else
+		files="$files $f"
+	fi
+
+done
 
 if [ "$d" = "bc" ]; then
 	opts="-lq"
@@ -56,12 +80,14 @@ else
 	halt="q"
 fi
 
-if [ ! -f "./benchmarks/$d/$benchmark.txt" ]; then
-	printf 'Benchmarking generation of benchmarks/%s/%s.txt...\n' "$d" "$benchmark"
-	printf '%s\n' "$halt" | /usr/bin/time -v bin/$d $opts "./benchmarks/$d/$benchmark.$d" \
-		> "./benchmarks/$d/$benchmark.txt"
-fi
+for b in $benchmarks; do
 
-printf 'Benchmarking benchmarks/%s/%s.txt...\n' "$d" "$benchmark"
-printf '%s\n' "$halt" | /usr/bin/time -v bin/$d $opts "./benchmarks/$d/$benchmark.txt" \
-	> /dev/null
+	if [ ! -f "./benchmarks/$d/$b.txt" ]; then
+		printf 'Benchmarking generation of benchmarks/%s/%s.txt...\n' "$d" "$b"
+		printf '%s\n' "$halt" | /usr/bin/time -v bin/$d $opts "./benchmarks/$d/$b.$d" \
+			> "./benchmarks/$d/$b.txt"
+	fi
+done
+
+printf 'Benchmarking %s...\n' "$files"
+printf '%s\n' "$halt" | /usr/bin/time -v bin/$d $opts $files > /dev/null
