@@ -30,6 +30,6 @@
 max = 1000000
 
 for (i = 0; i < max; ++i) {
-	print "b", i, "[100] = 1\n"
+	print "b", i, "[100] = ", i, "\n"
 }
 
