@@ -872,7 +872,26 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 	}
 #endif // DC_ENABLED
 
-	if (BC_INST_IS_ASSIGN(inst)) bc_num_copy(l, r);
+	if (BC_INST_IS_ASSIGN(inst)) {
+
+		// BC_RESULT_TEMP, BC_RESULT_IBASE, BC_RESULT_OBASE, BC_RESULT_SCALE,
+		// and BC_RESULT_SEED all have temporary copies. Because that's the
+		// case, we can free the left and just move the value over. We set the
+		// type of right to BC_RESULT_ZERO in order to prevent it from being
+		// freed. We also don't have to worry about BC_RESULT_STR because it's
+		// take care of above.
+		if (right->t == BC_RESULT_TEMP || right->t >= BC_RESULT_IBASE) {
+
+			BC_SIG_LOCK;
+
+			bc_num_free(l);
+			memcpy(l, r, sizeof(BcNum));
+			right->t = BC_RESULT_ZERO;
+
+			BC_SIG_UNLOCK;
+		}
+		else bc_num_copy(l, r);
+	}
 #if BC_ENABLED
 	else {
 
