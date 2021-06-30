@@ -306,7 +306,9 @@ typedef struct BcVm {
 
 	BcVec main_const_slab;
 	BcVec main_slabs;
+#if BC_ENABLED
 	BcVec other_slabs;
+#endif // BC_ENABLED
 #endif // !BC_ENABLE_LIBRARY
 
 #if BC_DEBUG_CODE
@@ -334,7 +336,6 @@ size_t bc_vm_growSize(size_t a, size_t b);
 void* bc_vm_malloc(size_t n);
 void* bc_vm_realloc(void *ptr, size_t n);
 char* bc_vm_strdup(const char *str);
-char* bc_vm_strdup2(const char *str, BcVec *slabs);
 
 bool bc_vm_readLine(bool clear);
 

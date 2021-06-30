@@ -462,13 +462,16 @@ void bc_vm_shutdown(void) {
 
 	bc_program_free(&vm.prog);
 	bc_parse_free(&vm.prs);
+
+#if BC_ENABLED
+	if (BC_IS_BC) bc_slabvec_free(&vm.other_slabs);
+#endif // BC_ENABLED
+
+	bc_slabvec_free(&vm.main_slabs);
+	bc_slabvec_free(&vm.main_const_slab);
 #endif // !BC_ENABLE_LIBRARY
 
 	bc_vm_freeTemps();
-
-	bc_vec_free(&vm.other_slabs);
-	bc_vec_free(&vm.main_slabs);
-	bc_vec_free(&vm.main_const_slab);
 #endif // NDEBUG
 
 #if !BC_ENABLE_LIBRARY
@@ -581,59 +584,6 @@ char* bc_vm_strdup(const char *str) {
 }
 
 #if !BC_ENABLE_LIBRARY
-char* bc_vm_strdup2(const char *str, BcVec *slabs) {
-
-	char *s;
-	size_t len;
-	BcSlab slab;
-	BcSlab *slab_ptr;
-
-	BC_SIG_ASSERT_LOCKED;
-
-	assert(slabs != NULL);
-	assert(str != NULL);
-
-	len = strlen(str) + 1;
-
-	if (BC_UNLIKELY(len > 128)) {
-
-		size_t idx = slabs->len ? slabs->len - 1 : 0;
-
-		slab.len = BC_SLAB_SIZE;
-		slab.s = strdup(str);
-
-		if (BC_ERR(slab.s == NULL)) {
-
-			bc_vm_freeTemps();
-
-			slab.s = strdup(str);
-
-			if (BC_ERR(slab.s == NULL))
-				bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
-		}
-
-		bc_vec_pushAt(slabs, &slab, idx);
-
-		return slab.s;
-	}
-
-	slab_ptr = bc_vec_top(slabs);
-	s = bc_slab_add(slab_ptr, str, len);
-
-	if (s == NULL) {
-
-		slab_ptr = bc_vec_pushEmpty(slabs);
-
-		bc_slab_init(slab_ptr);
-
-		s = bc_slab_add(slab_ptr, str, len);
-
-		assert(s != NULL);
-	}
-
-	return s;
-}
-
 void bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
@@ -730,21 +680,25 @@ static void bc_vm_clean(void) {
 
 #if BC_ENABLED
 		if (BC_IS_BC) {
+
 			bc_vec_popAll(&f->labels);
 			bc_vec_popAll(&f->strs);
 			bc_vec_popAll(&f->consts);
-			bc_vec_npop(&vm.main_const_slab, vm.main_const_slab.len - 1);
-			bc_slab_clear(bc_vec_top(&vm.main_const_slab));
-			bc_vec_npop(&vm.main_slabs, vm.main_slabs.len - 1);
-			bc_slab_clear(bc_vec_top(&vm.main_slabs));
-			bc_vec_npop(&vm.other_slabs, vm.other_slabs.len - 1);
-			bc_slab_clear(bc_vec_top(&vm.other_slabs));
+
+			// I can't clear out the other_slabs because it has functions,
+			// consts, strings, vars, and arrays. It has strings from *other*
+			// functions, specifically.
+			bc_slabvec_clear(&vm.main_const_slab);
+			bc_slabvec_clear(&vm.main_slabs);
 		}
 #endif // BC_ENABLED
 
 #if DC_ENABLED
 		// Note to self: you cannot delete strings and functions. Deal with it.
-		if (BC_IS_DC) bc_vec_popAll(vm.prog.consts);
+		if (BC_IS_DC) {
+			bc_vec_popAll(vm.prog.consts);
+			bc_slabvec_clear(&vm.main_const_slab);
+		}
 #endif // DC_ENABLED
 
 		bc_vec_popAll(&f->code);
@@ -1199,8 +1153,6 @@ void bc_vm_boot(int argc, char *argv[]) {
 
 void bc_vm_init(void) {
 
-	BcSlab *slab;
-
 	BC_SIG_ASSERT_LOCKED;
 
 	memcpy(vm.max_num, bc_num_bigdigMax,
@@ -1229,17 +1181,15 @@ void bc_vm_init(void) {
 	}
 #endif // BC_ENABLED
 
-	bc_vec_init(&vm.main_const_slab, sizeof(BcSlab), BC_DTOR_SLAB);
-	slab = bc_vec_pushEmpty(&vm.main_const_slab);
-	bc_slab_init(slab);
+#if !BC_ENABLE_LIBRARY
 
-	bc_vec_init(&vm.main_slabs, sizeof(BcSlab), BC_DTOR_SLAB);
-	slab = bc_vec_pushEmpty(&vm.main_slabs);
-	bc_slab_init(slab);
+	bc_slabvec_init(&vm.main_const_slab);
+	bc_slabvec_init(&vm.main_slabs);
 
-	bc_vec_init(&vm.other_slabs, sizeof(BcSlab), BC_DTOR_SLAB);
-	slab = bc_vec_pushEmpty(&vm.other_slabs);
-	bc_slab_init(slab);
+#if BC_ENABLED
+	if (BC_IS_BC) bc_slabvec_init(&vm.other_slabs);
+#endif // BC_ENABLED
+#endif // !BC_ENABLE_LIBRARY
 }
 
 #if BC_ENABLE_LIBRARY

@@ -49,21 +49,6 @@ typedef unsigned char uchar;
 
 typedef void (*BcVecFree)(void*);
 
-#define BC_SLAB_SIZE (4096)
-
-typedef struct BcSlab {
-	char *s;
-	size_t len;
-} BcSlab;
-
-void bc_slab_init(BcSlab *s);
-
-char* bc_slab_add(BcSlab *s, const char *str, size_t len);
-void bc_slab_clear(BcSlab *s);
-void bc_slab_undo(BcSlab *s, size_t len);
-
-void bc_slab_free(void *slab);
-
 // Forward declaration.
 struct BcId;
 
@@ -143,5 +128,25 @@ char* bc_map_name(const BcVec *restrict v, size_t idx);
 #define bc_map_init(v) (bc_vec_init((v), sizeof(BcId), BC_DTOR_NONE))
 
 extern const BcVecFree bc_vec_dtors[];
+
+#if !BC_ENABLE_LIBRARY
+
+#define BC_SLAB_SIZE (4096)
+
+typedef struct BcSlab {
+	char *s;
+	size_t len;
+} BcSlab;
+
+void bc_slab_free(void *slab);
+
+void bc_slabvec_init(BcVec* v);
+char* bc_slabvec_strdup(BcVec *v, const char *str);
+void bc_slabvec_undo(BcVec *v, size_t len);
+void bc_slabvec_clear(BcVec *v);
+
+#define bc_slabvec_free bc_vec_free
+
+#endif // !BC_ENABLE_LIBRARY
 
 #endif // BC_VECTOR_H

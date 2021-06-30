@@ -66,15 +66,25 @@ void bc_parse_addString(BcParse *p) {
 
 	BC_SIG_LOCK;
 
+#if BC_ENABLED
 	if (BC_IS_BC) {
+
 		char **str = bc_vec_pushEmpty(strs);
+
 		BcVec *slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ ?
 		               &vm.main_slabs : &vm.other_slabs;
-		*str = bc_vm_strdup2(p->l.str.v, slabs);
+
+		*str = bc_slabvec_strdup(slabs, p->l.str.v);
 		idx = strs->len - 1;
 	}
 #if DC_ENABLED
-	else idx = bc_program_insertFunc(p->prog, p->l.str.v) - BC_PROG_REQ_FUNCS;
+	else
+#endif // DC_ENABLED
+#endif // BC_ENABLED
+#if DC_ENABLED
+	{
+		idx = bc_program_insertFunc(p->prog, p->l.str.v) - BC_PROG_REQ_FUNCS;
+	}
 #endif // DC_ENABLED
 
 	bc_parse_update(p, BC_INST_STR, idx);
@@ -102,12 +112,16 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 
 	BC_SIG_LOCK;
 
-	slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ ?
+#if BC_ENABLED
+	slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ || BC_IS_DC ?
 	        &vm.main_const_slab : &vm.other_slabs;
+#else // BC_ENABLED
+	slabs = &vm.main_const_slab;
+#endif // BC_ENABLED
 
 	c = bc_vec_pushEmpty(consts);
 
-	c->val = bc_vm_strdup2(string, slabs);
+	c->val = bc_slabvec_strdup(slabs, string);
 	c->base = BC_NUM_BIGDIG_MAX;
 
 	bc_num_clear(&c->num);
@@ -190,6 +204,7 @@ void bc_parse_free(BcParse *p) {
 		bc_vec_free(&p->conds);
 		bc_vec_free(&p->ops);
 		bc_vec_free(&p->buf);
+		bc_slabvec_free(&p->slab);
 	}
 #endif // BC_ENABLED
 
@@ -214,6 +229,7 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 		bc_vec_init(&p->conds, sizeof(size_t), BC_DTOR_NONE);
 		bc_vec_init(&p->ops, sizeof(BcLexType), BC_DTOR_NONE);
 		bc_vec_init(&p->buf, sizeof(char), BC_DTOR_NONE);
+		bc_slabvec_init(&p->slab);
 		p->auto_part = false;
 	}
 #endif // BC_ENABLED

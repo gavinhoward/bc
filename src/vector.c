@@ -42,38 +42,6 @@
 #include <lang.h>
 #include <vm.h>
 
-void bc_slab_init(BcSlab *s) {
-	s->s = bc_vm_malloc(BC_SLAB_SIZE);
-	s->len = 0;
-}
-
-char* bc_slab_add(BcSlab *s, const char *str, size_t len) {
-
-	char *ptr;
-
-	assert(s != NULL);
-	assert(str != NULL);
-	assert(len == strlen(str) + 1);
-
-	if (s->len + len > BC_SLAB_SIZE) return NULL;
-
-	ptr = (char*) (s->s + s->len);
-
-	strcpy(ptr, str);
-
-	s->len += len;
-
-	return ptr;
-}
-
-void bc_slab_clear(BcSlab *s) {
-	s->len = 0;
-}
-
-void bc_slab_free(void *slab) {
-	free(((BcSlab*) slab)->s);
-}
-
 void bc_vec_grow(BcVec *restrict v, size_t n) {
 
 	size_t cap, len;
@@ -144,6 +112,7 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
 
 	char* ptr, *data;
+	sig_atomic_t lock;
 
 	assert(v != NULL);
 	assert(idx + n < v->len);
@@ -151,7 +120,7 @@ void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
 	ptr = bc_vec_item(v, idx);
 	data = bc_vec_item(v, idx + n);
 
-	BC_SIG_LOCK;
+	BC_SIG_TRYLOCK(lock);
 
 	if (v->dtor) {
 
@@ -164,7 +133,7 @@ void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
 	v->len -= n;
 	memmove(ptr, data, (v->len - idx) * v->size);
 
-	BC_SIG_UNLOCK;
+	BC_SIG_TRYUNLOCK(lock);
 }
 
 void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
@@ -377,6 +346,7 @@ bool bc_map_insert(BcVec *restrict v, const char *name,
                    size_t idx, size_t *restrict i)
 {
 	BcId id;
+	BcVec *slabs;
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -389,7 +359,9 @@ bool bc_map_insert(BcVec *restrict v, const char *name,
 	if (*i != v->len && !strcmp(name, ((BcId*) bc_vec_item(v, *i))->name))
 		return false;
 
-	id.name = bc_vm_strdup2(name, &vm.other_slabs);
+	slabs = BC_IS_DC ? &vm.main_slabs : &vm.other_slabs;
+
+	id.name = bc_slabvec_strdup(slabs, name);
 	id.idx = idx;
 
 	bc_vec_pushAt(v, &id, *i);
@@ -424,3 +396,135 @@ char* bc_map_name(const BcVec *restrict v, size_t idx) {
 	return "";
 }
 #endif // DC_ENABLED
+
+#if !BC_ENABLE_LIBRARY
+static void bc_slab_init(BcSlab *s) {
+	s->s = bc_vm_malloc(BC_SLAB_SIZE);
+	s->len = 0;
+}
+
+static char* bc_slab_add(BcSlab *s, const char *str, size_t len) {
+
+	char *ptr;
+
+	assert(s != NULL);
+	assert(str != NULL);
+	assert(len == strlen(str) + 1);
+
+	if (s->len + len > BC_SLAB_SIZE) return NULL;
+
+	ptr = (char*) (s->s + s->len);
+
+	strcpy(ptr, str);
+
+	s->len += len;
+
+	return ptr;
+}
+
+void bc_slab_free(void *slab) {
+	free(((BcSlab*) slab)->s);
+}
+
+void bc_slabvec_init(BcVec* v) {
+
+	BcSlab *slab;
+
+	assert(v != NULL);
+
+	bc_vec_init(v, sizeof(BcSlab), BC_DTOR_SLAB);
+	slab = bc_vec_pushEmpty(v);
+	bc_slab_init(slab);
+}
+
+char* bc_slabvec_strdup(BcVec *v, const char *str) {
+
+	char *s;
+	size_t len;
+	BcSlab slab;
+	BcSlab *slab_ptr;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	assert(v != NULL && v->len);
+
+	assert(str != NULL);
+
+	len = strlen(str) + 1;
+
+	if (BC_UNLIKELY(len > 128)) {
+
+		size_t idx = v->len - 1;
+
+		// SIZE_MAX is a marker for these standalone allocations.
+		slab.len = SIZE_MAX;
+		slab.s = bc_vm_strdup(str);
+
+		bc_vec_pushAt(v, &slab, idx);
+
+		return slab.s;
+	}
+
+	slab_ptr = bc_vec_top(v);
+	s = bc_slab_add(slab_ptr, str, len);
+
+	if (BC_UNLIKELY(s == NULL)) {
+
+		slab_ptr = bc_vec_pushEmpty(v);
+
+		bc_slab_init(slab_ptr);
+
+		s = bc_slab_add(slab_ptr, str, len);
+
+		assert(s != NULL);
+	}
+
+	return s;
+}
+
+void bc_slabvec_undo(BcVec *v, size_t len) {
+
+	BcSlab *s;
+
+	assert(v != NULL && v->len);
+
+	s = bc_vec_top(v);
+
+	if (s->len == 0) {
+
+		assert(v->len > 1);
+
+		s = bc_vec_item_rev(v, 1);
+
+		if (s->len == SIZE_MAX) {
+			bc_vec_npopAt(v, 1, 0);
+			return;
+		}
+
+		bc_vec_pop(v);
+	}
+
+	s->len -= len;
+}
+
+void bc_slabvec_clear(BcVec *v) {
+
+	BcSlab *s;
+	bool again;
+
+	do {
+		s = bc_vec_item(v, 0);
+
+		assert(s->len != SIZE_MAX || v->len > 1);
+
+		again = (s->len == SIZE_MAX);
+
+		if (again) bc_vec_npopAt(v, 1, 0);
+
+	} while(again);
+
+	if (v->len > 1) bc_vec_npop(v, v->len - 1);
+
+	s->len = 0;
+}
+#endif // !BC_ENABLE_LIBRARY
