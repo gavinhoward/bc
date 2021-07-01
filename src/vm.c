@@ -1014,10 +1014,6 @@ static void bc_vm_exec(void) {
 		bc_vm_file(path);
 	}
 
-#if BC_ENABLE_AFL
-	__AFL_INIT();
-#endif // BC_ENABLE_AFL
-
 #if BC_ENABLE_EXTRA_MATH
 	bc_unveil("/dev/urandom", "r");
 	bc_unveil("/dev/random", "r");
@@ -1035,6 +1031,10 @@ static void bc_vm_exec(void) {
 	{
 		bc_pledge(bc_pledge_end, NULL);
 	}
+
+#if BC_ENABLE_AFL
+	__AFL_INIT();
+#endif // BC_ENABLE_AFL
 
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
 
@@ -1084,6 +1084,16 @@ void bc_vm_boot(int argc, char *argv[]) {
 
 	bc_vec_clear(&vm.files);
 	bc_vec_clear(&vm.exprs);
+
+#if !BC_ENABLE_LIBRARY
+
+	bc_slabvec_init(&vm.main_const_slab);
+	bc_slabvec_init(&vm.main_slabs);
+
+#if BC_ENABLED
+	if (BC_IS_BC) bc_slabvec_init(&vm.other_slabs);
+#endif // BC_ENABLED
+#endif // !BC_ENABLE_LIBRARY
 
 	bc_program_init(&vm.prog);
 	bc_parse_init(&vm.prs, &vm.prog, BC_PROG_MAIN);
@@ -1180,16 +1190,6 @@ void bc_vm_init(void) {
 		vm.maxes[BC_PROG_GLOBALS_IBASE] = BC_NUM_MAX_IBASE;
 	}
 #endif // BC_ENABLED
-
-#if !BC_ENABLE_LIBRARY
-
-	bc_slabvec_init(&vm.main_const_slab);
-	bc_slabvec_init(&vm.main_slabs);
-
-#if BC_ENABLED
-	if (BC_IS_BC) bc_slabvec_init(&vm.other_slabs);
-#endif // BC_ENABLED
-#endif // !BC_ENABLE_LIBRARY
 }
 
 #if BC_ENABLE_LIBRARY
