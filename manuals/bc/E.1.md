@@ -1172,7 +1172,7 @@ If bc(1) can be in TTY mode (see the **TTY MODE** section), history can be
 enabled. This means that command-line history can only be enabled when
 **stdin**, **stdout**, and **stderr** are all connected to a TTY.
 
-Like TTY mode itself, it can be turned on or off with the environment variable:
+Like TTY mode itself, it can be turned on or off with the environment variable
 **BC_TTY_MODE** (see the **ENVIRONMENT VARIABLES** section).
 
 If history is enabled, previous lines can be recalled and edited with the arrow
