@@ -27,6 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# This script depends on the GNU time utility, but I am okay with that because
+# this script is only for maintainers.
+
 # Just print the usage and exit with an error.
 usage() {
 	printf 'usage: %s [-n runs] dir benchmark...\n' "$0" 1>&2

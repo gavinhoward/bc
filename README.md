@@ -277,6 +277,16 @@ translations will also be added as they are provided.
 If I (Gavin D. Howard) get [hit by a bus][27] and future programmers need to
 handle work themselves, the best place to start is the [Development manual][28].
 
+## Vim Syntax
+
+I have developed (using other people's code to start) [`vim` syntax files][29]
+for this `bc` and `dc`, including the extensions.
+
+## `bc` Libs
+
+I have gathered some excellent [`bc` and `dc` libraries][30]. These libraries
+may prove useful to any serious users.
+
 ## Comparison to GNU `bc`
 
 This `bc` compares favorably to GNU `bc`.
@@ -407,3 +417,5 @@ Folders:
 [26]: ./manuals/bcl.3.md
 [27]: https://en.wikipedia.org/wiki/Bus_factor
 [28]: ./manuals/development.md
+[29]: https://git.yzena.com/gavin/vim-bc
+[30]: https://git.yzena.com/gavin/bc_libs

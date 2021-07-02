@@ -175,6 +175,10 @@ static void bc_parse_createCondLabel(BcParse *p, size_t idx) {
  * targeted by code that comes *before* the label. Since we have to parse that
  * code first, and don't know how long it will be, we need to just make sure to
  * reserve a slot to be filled in later when we know.
+ *
+ * By the way, this uses BcInstPtr because it was convenient. The field idx
+ * holds the index, and the field func holds the loop boolean.
+ *
  * @param p     The parser.
  * @param idx   The index of the label's position.
  * @param loop  True if the exit label is for a loop or not.

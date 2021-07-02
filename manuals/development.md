@@ -6,6 +6,9 @@ bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
 This document is supposed to contain all of the knowledge necessary to develop
 `bc` and `dc`.
 
+In addition, this document is meant to add to the [oral tradition of software
+engineering][118], as described by Bryan Cantrill.
+
 This document will reference other parts of the repository. That is so a lot of
 the documentation can be closest to the part of the repo where it is actually
 necessary.
@@ -191,10 +194,11 @@ TODO
 
 The code style for `bc` is...weird, and that comes from historical accident.
 
-In [History][23], I mentioned how I got my `bc` in toybox. Well, in order to do
-that, my `bc` originally had toybox style. Eventually, I changed to using tabs,
-and assuming they were 4 spaces wide, but other than that, I basically kept the
-same style, with some exceptions that are more or less dependent on my taste.
+In [History][23], I mentioned how I got my `bc` in [toybox][16]. Well, in order
+to do that, my `bc` originally had toybox style. Eventually, I changed to using
+tabs, and assuming they were 4 spaces wide, but other than that, I basically
+kept the same style, with some exceptions that are more or less dependent on my
+taste.
 
 The code style is as follows:
 
@@ -231,9 +235,9 @@ The code style is as follows:
 
 ### ClangFormat
 
-I attempted twice to use [ClangFormat][24] to impose a standard, machine-useful
-style on `bc`. Both failed. Otherwise, the style in this repo would be more
-consistent.
+I attempted three times to use [ClangFormat][24] to impose a standard,
+machine-useful style on `bc`. All three failed. Otherwise, the style in this
+repo would be more consistent.
 
 ## Repo Structure
 
@@ -543,8 +547,8 @@ Why did I implement my own buffered I/O for `bc`? Because I use `setjmp()` and
 well with the use of those procedures.
 
 For more information about `bc`'s error handling and custom buffered I/O, see
-[Error Handling][97], along with [`vm.h`][27] and the notes about version
-[`3.0.0`][32] in the [`NEWS`][32].
+[Error Handling][97] and [Custom I/O][114], along with [`vm.h`][27] and the
+notes about version [`3.0.0`][32] in the [`NEWS`][32].
 
 The code associated with this header is in [`src/file.c`][47].
 
@@ -738,7 +742,7 @@ generated [`bcl.3`][62] file.
 #### `benchmarks.md`
 
 This is a document that compares this `bc` to GNU `bc` in various benchmarks. It
-was last updated when version `3.0.0` was released.
+was last updated when version [`3.0.0`][32] was released.
 
 It has very little documentation value, other than showing what compiler options
 are useful for performance.
@@ -857,7 +861,7 @@ For more information about the shell scripts, see [POSIX Shell Scripts][76].
 This script is meant to be used as part of the fuzzing workflow.
 
 It does one of two things: checks for valid crashes, or runs `bc` and or `dc`
-under all of the paths found by AFL++.
+under all of the paths found by [AFL++][125].
 
 See [Fuzzing][82] for more information about fuzzing, including this script.
 
@@ -1004,15 +1008,7 @@ simple, strives to handle as much as possible.
 What this script does is it uses the test cases in [`radamsa.txt`][98] an input
 to the [Radamsa fuzzer][99].
 
-The reason I use [Radamsa][99] instead of AFL++ is because it is easier to use
-with varying command-line arguments, which is what's needed here. (AFL++ is best
-when testing input from `stdin`.)
-
-This script does also do fuzzing on the AFL++ inputs, but it's not as effective
-at that, so I don't really use it for that either.
-
-This script was only really used once; I have not had to touch the command-line
-expression parsing code since.
+For more information, see the [Radamsa][128] section.
 
 #### `radamsa.txt`
 
@@ -1126,6 +1122,16 @@ TODO
 
 TODO
 
+* Normal files and results files.
+* Scripts.
+* Generating tests.
+* Error tests.
+* `stdin` tests.
+* `read` tests.
+* Other tests.
+* Coverage stuff.
+* Valgrind and sanitizers.
+
 ## POSIX Shell Scripts
 
 There is a lot of shell scripts in this repository, and every single one of them
@@ -1164,7 +1170,7 @@ _<function_name>_<var_name>
 This is done to prevent any clashes of variable names with already existing
 names. And this applies to *all* shell scripts. However, there are a few times
 when that naming convention is *not* used; all of them are because those
-functions are required to change variables in the parent script.
+functions are required to change variables in the global scope.
 
 ### Maintainer-Only Scripts
 
@@ -1249,12 +1255,280 @@ locale.
 
 TODO
 
-## Debugging
+The quality of this `bc` is directly related to the amount of fuzzing I did. As
+such, I spent a lot of work making the fuzzing convenient and fast, though I do
+admit that it took me a long time to admit that it did need to be faster.
+
+First, there were several things which make fuzzing fast:
+
+* Using [AFL++][125]'s deferred initialization.
+* Splitting `bc`'s corpuses.
+* Parallel fuzzing.
+
+Second, there are several things which make fuzzing convenient:
+
+* Preprepared input corpuses.
+* [`scripts/fuzz_prep.sh`][119].
+* `tmux` and `tmuxp` configs.
+* [`scripts/afl.py`][94].
+
+### Fuzzing Performance
 
 TODO
 
-* `BC_DEBUG_CODE`.
-	* Hidden behind a `#define` to ensure it does not leak into actual code.
+Fuzzing with [AFL++][125] can be ***SLOW***. Spending the time to make it as
+fast as possible is well worth the time.
+
+However, there is a caveat to the above: it is easy to make [AFL++][125] crash,
+be unstable, or be unable to find "paths" (see [AFL++ Quickstart][129]) if the performance
+enhancements are done poorly.
+
+To stop [AFL++][125] from crashing on test cases, and to be stable, these are
+the requirements:
+
+* The state at startup must be *exactly* the same.
+* The virtual memory setup at startup must be *exactly* the same.
+
+The first isn't too hard; it's the second that is difficult.
+
+`bc` allocates a lot of memory at start. ("A lot" is relative; it's far less
+than most programs.) After going through an execution run, however, some of that
+memory, while it could be cleared and reset, is in different places because of
+vectors. Since vectors reallocate, their allocations are not guaranteed to be in
+the same place.
+
+So to make all three work, I had to set up the deferred initialization and
+persistent mode *before* any memory was allocated (except for `vm.jmp_bufs`,
+which is probably what caused the stability to drop below 100%). However, using
+deferred alone let me put the [AFL++][125] initialization further back. This
+works because [AFL++][125] sets up a `fork()` server that `fork()`'s `bc` right
+at that call. Thus, every run has the exact same virtual memory setup, and each
+run can skip all of the setup code.
+
+I tested `bc` using [AFL++][125]'s deferred initialization, plus persistent
+mode, plus shared memory fuzzing. In order to do it safely, with stability above
+99%, all of that was actually *slower* than using just deferred initialization
+with the initialization *right before* `stdin` was read. And as a bonus, the
+stability in that situation is 100%.
+
+As a result, my [AFL++][125] setup only uses deferred initialization. That's the
+`__AFL_INIT()` call.
+
+On top of that, while `dc` is plenty fast under fuzzing (because of a faster
+parser and less test cases), `bc` can be slow. So I have split the `bc` input
+corpus into three parts, and I set fuzzers to run on each individually. This
+means that they will duplicate work, but they will also find more stuff.
+
+On top of all of that, each input corpus (the three `bc` corpuses and the one
+`dc` corpus) is set to run with 4 fuzzers. That works out perfectly for two
+reasons: first, my machine has 16 cores, and second, the [AFL++][125] docs
+recommend 4 parallel fuzzers, at least, to run different "power schedules."
+
+### Convenience
+
+The preprepared input corpuses are contained in the
+`tests/fuzzing/bc_inputs{1,2,3}/`, and `tests/fuzzing/dc_inputs` directories.
+There are three `bc` directories and only one `dc` directory because `bc`'s
+input corpuses are about three times as large, and `bc` is a larger program;
+it's going to need much more fuzzing.
+
+(They do share code though, so fuzzing all of them still tests a lot of the same
+math code.)
+
+The next feature of convenience is the [`scripts/fuzz_prep.sh`][119] script. It
+assumes the existence of `afl-clang-lto` in the `$PATH`, but if that exists, it
+automatically configures and builds `bc` with a fuzz-ideal build.
+
+A fuzz-ideal build has several things:
+
+* `afl-clang-lto` as the compiler. (See [AFL++ Quickstart][129].)
+* Debug mode, to crash as easily as possible.
+* Full optimization (including [Link-Time Optimization][126]), for performance.
+* [AFL++][125]'s deferred initialization (see [Fuzzing Performance][127] above).
+
+To add to that, in `tests/fuzzing/`, there are two `yaml` files:
+[`tests/fuzzing/bc_afl.yaml`][120] and
+[`tests/fuzzing/bc_afl_continue.yaml`][121]. These files are meant to be used
+with [`tmux`][122] and [`tmuxp`][123]. While other programmers will have to
+adjust the `start_directory` item, once it is adjusted, then using this command:
+
+```
+tmuxp load tests/fuzzing/bc_afl.yaml
+```
+
+will start fuzzing.
+
+In other words, to start fuzzing, the sequence is:
+
+```
+./scripts/fuzz_prep.sh
+tmuxp load tests/fuzzing/bc_afl.yaml
+```
+
+Doing that will load, in `tmux`, 16 separate instances of [AFL++][125], 12 on
+`bc` and 4 on `dc`. The outputs will be put into the
+`tests/fuzzing/bc_outputs{1,2,3}/` and `tests/fuzzing/dc_outputs/` directories.
+
+Sometimes, [AFL++][125] will report crashes when there are none. When crashes
+are reported, I always run the following command:
+
+```
+./scripts/afl.py <dir>
+```
+
+where `dir` is one of `bc1`, `bc2`, `bc3`, or `dc`, depending on which of the
+16 instances reported the crash. If it was one of the first four (`bc11` through
+`bc14`), I use `bc1`. If it was one of the second four (`bc21` through `bc24`, I
+use `bc2`. If it was one of the third four (`bc31` through `bc34`, I use `bc3`.
+And if it was `dc`, I use `dc`.
+
+The [`scripts/afl.py`][94] script will report whether [AFL++][125] correctly
+reported a crash or not. If so, it will copy the crashing test case to
+`.test.txt` and tell you whether it was from running it as a file or through
+`stdin`.
+
+From there, I personally always investigate the crash and fix it. Then, when the
+crash is fixed, I either move `.test.txt` to `tests/bc/errors/<idx>.txt` as an
+error test (if it produces an error) or I create a new `tests/bc/misc<idx>.txt`
+test for it and a corresponding results file. (See [Test Suite][124] for more
+information about the test suite.) In either case, `<idx>` is the next number
+for a file in that particular place. For example, if the last file in
+`tests/bc/errors/` is `tests/bc/errors/18.txt`, I move `.test.txt` to
+`tests/bc/error/19.txt`.
+
+Then I immediately run [`scripts/afl.py`][94] again to find the next crash
+because often, [AFL++][125] found multiple test cases that trigger the same
+crash. If it finds another, I repeat the process until it is happy.
+
+Once it *is* happy, I do the same `fuzz_prep.sh`, `tmuxp load` sequence and
+restart fuzzing. Why do I restart instead of continuing? Because with the
+changes, the test outputs could be stale and invalid.
+
+However, there *is* a case where I continue: if [`scripts/afl.py`][94] finds
+that every crash reported by [AFL++][125] is invalid. If that's the case, I can
+just continue with the command:
+
+```
+tmuxp load tests/fuzzing/bc_afl_continue.yaml
+```
+
+(Note: I admit that I usually run [`scripts/afl.py`][94] while the fuzzer is
+still running, so often, I don't find a need to continue since there was no
+stop. However, the capability is there, if needed.)
+
+In addition, my fuzzing setup, including the `tmux` and `tmuxp` configs,
+automatically set up [AFL++][125] power schedules (see [Fuzzing
+Performance][127] above). They also set up the parallel fuzzing such that there
+is one fuzzer in each group of 4 that does deterministic fuzzing. It's always
+the first one in each group.
+
+For more information about deterministic fuzzing, see the [AFL++][125]
+documentation.
+
+### Corpuses
+
+I occasionally add to the input corpuses. These files come from new files in the
+[Test Suite][124]. In fact, I use soft links when the files are the same.
+
+However, when I add new files to an input corpus, I sometimes reduce the size of
+the file by removing some redundancies.
+
+### AFL++ Quickstart
+
+The way [AFL++][125] works is complicated.
+
+First, it is the one to invoke the compiler. It leverages the compiler to add
+code to the binary to help it know when certain branches are taken.
+
+Then, when fuzzing, it uses that branch information to generate information
+about the "path" that was taken through the binary.
+
+I don't know what AFL++ counts as a new path, but each new path is added to an
+output corpus, and it is later used as a springboard to find new paths.
+
+This is what makes AFL++ so effective: it's not just blindly thrashing a binary;
+it adapts to the binary by leveraging information about paths.
+
+### Fuzzing Runs
+
+For doing a fuzzing run, I expect about a week or two where my computer is
+basically unusable, except for text editing and light web browsing.
+
+Yes, it can take two weeks for me to do a full fuzzing run, and that does *not*
+include the time needed to find and fix crashes; it only counts the time on the
+*last* run, the one that does not find any crashes. This means that the entire
+process can take a month or more.
+
+What I use as an indicator that the fuzzing run is good enough is when the
+number of "Pending" paths (see [AFL++ Quickstart][129] above) for all fuzzer
+instances, except maybe the deterministic instances, is below 50. And even then,
+I try to let deterministic instances get that far as well.
+
+You can see how many pending paths are left in the "path geometry" section of
+the [AFL++][125] dashboard.
+
+Also, to make [AFL++][125] quit, you need to send it a `SIGINT`, either with
+`Ctrl+c` or some other method. It will not quit until you tell it to.
+
+### Radamsa
+
+I rarely use [Radamsa][99] instead of [AFL++][125]. In fact, it's only happened
+once.
+
+The reason I use [Radamsa][99] instead of [AFL++][125] is because it is easier
+to use with varying command-line arguments, which was needed for testing `bc`'s
+command-line expression parsing code, and [AFL++][125] is best when testing
+input from `stdin`.
+
+[`scripts/radamsa.sh`][100] does also do fuzzing on the [AFL++][125] inputs, but
+it's not as effective at that, so I don't really use it for that either.
+
+[`scripts/radamsa.sh`][100] and [Radamsa][99] were only really used once; I have
+not had to touch the command-line expression parsing code since.
+
+### [AddressSanitizer][21] with Fuzzing
+
+One advantage of using [AFL++][125] is that it saves every test case that
+generated a new path (see [AFL++ Quickstart][129] above), and it doesn't delete
+them when the user makes it quit.
+
+Keeping them around is not a good idea, for several reasons:
+
+* They are frequently large.
+* There are a lot of them.
+* They go stale; after `bc` is changed, the generated paths may not be valid
+  anymore.
+
+However, before they are deleted, they can definitely be leveraged for even
+*more* bug squashing by running *all* of the paths through a build of `bc` with
+[AddressSanitizer][21].
+
+This can easily be done with these four commands:
+
+```
+./scripts/fuzz_prep.sh -a
+./scripts/afl.py --asan bc1
+./scripts/afl.py --asan bc2
+./scripts/afl.py --asan bc3
+./scripts/afl.py --asan dc
+```
+
+(By the way, the last four commands could be run in separate terminals to do the
+processing in parallel.)
+
+These commands build an [ASan][21]-enabled build of `bc` and `dc` and then they
+run `bc` and `dc` on all of the found crashes and path output corpuses. This is
+to check that no path or crash has found any memory errors, including memory
+leaks.
+
+Because the output corpuses can contain test cases that generate infinite loops
+in `bc` or `dc`, [`scripts/afl.py`][94] has a timeout of 8 seconds, which is far
+greater than the timeout that [AFL++][125] uses and should be enough to catch
+any crash.
+
+If [AFL++][125] fails to find crashes *and* [ASan][21] fails to find memory
+errors on the outputs of [AFL++][125], that is an excellent indicator of very
+few bugs in `bc`, and a release can be made with confidence.
 
 ## Code Concepts
 
@@ -1265,18 +1539,22 @@ The concepts in this section are not found in a single source file, but they are
 littered throughout the code. That's why I am writing them all down in a single
 place.
 
+### [Async-Signal-Safe][115] Signal Handling
+
+TODO
+
 ### Asserts
 
 If you asked me what procedure is used the most in `bc`, I would reply without
 hesitation, "`assert()`."
 
-I use `assert()` everywhere. In fact, it is what made fuzzing with AFL++ so
-effective. AFL++ is incredibly good at finding crashes, and a failing `assert()`
-counts as one.
+I use `assert()` everywhere. In fact, it is what made fuzzing with [AFL++][125]
+so effective. [AFL++][125] is incredibly good at finding crashes, and a failing
+`assert()` counts as one.
 
 So while a lot of bad bugs might have corrupted data and *not* caused crashes,
 because I put in so many `assert()`'s, they were *turned into* crashing bugs,
-and AFL++ found them.
+and [AFL++][125] found them.
 
 By far, the most bugs it found this way was in the `bc` parser. (See the [`bc`
 Parsing][110] for more information.) And even though I was careful to put
@@ -1300,8 +1578,14 @@ the caller previously `assert()`'ed was *not* `NULL`, then the callee does not
 have to `assert()` it too, unless *also* called by another function that does
 not `assert()` that.
 
-These show up most often in two places: function preconditions and function
-postconditions.
+At first glance, it may seem like putting asserts for pointers being non-`NULL`
+everywhere would actually be good, but unfortunately, not for fuzzing. Each
+`assert()` is a branch, and [AFL++][125] rates its own effectiveness based on
+how many branches it covers. If there are too many `assert()`'s, it may think
+that it is not being effective and that more fuzzing is needed.
+
+This means that `assert()`'s show up most often in two places: function
+preconditions and function postconditions.
 
 Function preconditions are `assert()`'s that test conditions relating to the
 arguments a function was given. They appear at the top of the function, usually
@@ -1314,19 +1598,17 @@ before a `return` statement.
 The other `assert()`'s cover various miscellaneous assumptions.
 
 If you change the code, I ***HIGHLY*** suggest that you use `assert()`'s to
-document your assumptions. And don't remove them when AFL++ gleefully crashes
-`bc` and `dc` over and over again.
+document your assumptions. And don't remove them when [AFL++][125] gleefully
+crashes `bc` and `dc` over and over again.
 
 ### Vectors
-
-TODO
 
 In `bc`, vectors mean resizable arrays, and they are the most fundamental piece
 of code in the entire codebase.
 
-I wrote a [vector implementation][112], which I used to guide my decisions, but
-I wrote a new one so that `bc` would not have a dependency. I also didn't make
-it as sophisticated; the one in `bc` is very simple.
+I had previously written a [vector implementation][112], which I used to guide
+my decisions, but I wrote a new one so that `bc` would not have a dependency. I
+also didn't make it as sophisticated; the one in `bc` is very simple.
 
 Vectors store some information about the type that they hold:
 
@@ -1355,17 +1637,158 @@ Because it can do that, it can figure out where to push new elements by
 calculating `v + (len * size)`, where `len` is the number of items actually in
 the vector.
 
-By the way, `len` is different from `cap`. While cap is the amount of storage
+By the way, `len` is different from `cap`. While `cap` is the amount of storage
 *available*, `len` is the number of actual elements in the vector at the present
 point in time.
 
+Growing the vector happens when `len` is equal to `cap` *before* pushing new
+items, not after.
+
+#### Pointer Invalidation
+
+There is one big danger with the vectors as currently implemented: pointer
+invalidation.
+
+If a piece of code receives a pointer from a vector, then adds an item to the
+vector before they finish using the pointer, that code must then update the
+pointer from the vector again.
+
+This is because any pointer inside the vector is calculated based off of the
+array in the vector, and when the vector grows, it can `realloc()` the array,
+which may move it in memory. If that is done, any pointer returned by
+`bc_vec_item()`, `bc_vec_top()` and `bc_vec_item_rev()` will be invalid.
+
+This fact was the single most common cause of crashes in the early days of this
+`bc`; wherever I have put a comment about pointers becoming invalidated and
+updating them with another call to `bc_vec_item()` and friends, *do **NOT**
+remove that code!*
+
 #### Maps
+
+Maps in `bc` are...not.
+
+They are really a combination of two vectors. Those combinations are easily
+recognized in the source because one vector is named `<name>s` (plural), and the
+other is named `<name>_map`.
+
+There are currently three, all in `BcProgram`:
+
+* `fns` and `fn_map` (`bc` functions).
+* `vars` and `var_map` (variables).
+* `arrs` and `arr_map` (arrays).
+
+They work like this: the `<name>_map` vector holds `BcId`'s, which just holds a
+string and an index. The string is the name of the item, and the index is the
+index of that item in the `<name>s` vector.
+
+Obviously, I could have just done a linear search for items in the `<name>s`
+vector, but that would be slow with a lot of functions/variables/arrays.
+Instead, I ensure that whenever an item is inserted into the `<name>_map`
+vector, the item is inserted in sorted order. This means that the `<name>_map`
+is always sorted (by the names of the items).
+
+So when looking up an item in the "map", what is really done is this:
+
+1.	A binary search is carried out on the names in the `<name>_map` vector.
+2.	When one is found, it returns the index in the `<name>_map` vector where the
+	item was found.
+3.	This index is then used to retrieve the `BcId`.
+4.	The index from the `BcId` is then used to index into the `<name>s` vector,
+	which returns the *actual* desired item.
+
+Why were the `<name>s` and `<name>_map` vectors not combined for ease? The
+answer is that sometime, when attempting to insert into the "map", code might
+find that something is already there. For example, a function with that name may
+already exist, or the variable might already exist.
+
+If the insert fails, then the name already exists, and the inserting code can
+forego creating a new item to put into the vector. However, if there is no item,
+the inserting code must create a new item and insert it.
+
+If the two vectors were combined together, it would not be possible to separate
+the steps such that creating a new item could be avoided if it already exists.
+
+### Command-Line History
+
+TODO
 
 ### Error Handling
 
 TODO
 
 * Note about vectors and numbers needing special treatment for error handling.
+
+The error handling on `bc` got an overhall for version [`3.0.0`][32], and it
+became one of the things that taught me the most about C in particular and
+programming in general.
+
+Before then, error handling was manual. Almost all functions returned a
+`BcStatus` indicating if an error had occurred. This led to a proliferation of
+lines like:
+
+```
+if (BC_ERR(s)) return s;
+```
+
+In fact, a quick and dirty count of such lines in version `2.7.2` (the last
+version before [`3.0.0`][32] turned up 252 occurrences of that sort of line.
+
+And that didn't even guarantee that return values were checked *everywhere*.
+
+But before I can continue, let me back up a bit.
+
+From the beginning, I decided that I would not do what GNU `bc` does on errors;
+it tries to find a point at which it can recover. Instead, I decided that I
+would have `bc` reset to a clean slate, which I believed, would reduce the
+number of bugs where an unclean state caused errors with continuing execution.
+
+So from the beginning, errors would essentially unwind the stack until they got
+to a safe place from which to clean the slate, reset, and ask for more input.
+
+Well, if that weren't enough, `bc` also has to handle [POSIX signals][113]. As
+such, it had a signal handler that set a flag. But it could not safely interrupt
+execution, so that's all it could do.
+
+In order to actually respond to the signal, I had to litter checks for the flag
+*everywhere* in the code. And I mean *everywhere*. They had to be checked on
+every iteration of *every* loop. They had to be checked going into and out of
+certain functions.
+
+It was a mess.
+
+But fortunately for me, signals did the same thing that errors did: they unwound
+the stack to the *same* place.
+
+Do you see where I am going with this?
+
+It turns out that what I needed was a [async-signal-safe][115] form of what
+programmers call "exceptions" in other languages.
+
+I knew that [`setjmp()`][116] and [`longjmp()`][117] are used in C to implement
+exceptions, so I thought I would learn how to use them. How hard could it be?
+
+Quite hard, it turns out, especially in the presence of signals. And that's
+because there are many snares:
+
+1.	The value of any local variables are not guaranteed to be preserved after a
+	`longjmp()` back into a function.
+2.	While `longjmp()` is required to be [async-signal-safe][115], if it is
+	invoked by a signal handler that interrupted a non-[async-signal-safe][115]
+	function, then the behavior is undefined.
+
+Oh boy.
+
+For number 1, the answer to this is to hide data that must stay changed behind
+pointers. Only the *pointers* are considered local, so as long as I didn't do
+any modifying pointer arithmetic, pointers and their data would be safe. For
+cases where I have local data that must change and stay changed, I needed to
+*undo* the `setjmp()`, do the change, and the *redo* the `setjmp()`.
+
+#### Custom I/O
+
+TODO
+
+* Talk about interaction with command-line history.
 
 ### Execution
 
@@ -1597,16 +2020,42 @@ TODO
 
 TODO
 
-### Caching of Numbers
-
-TODO
-
 ### Pseudo-Random Number Generator
 
 TODO
 
 * Integer portion is increment.
 * Real portion is the real seed.
+
+## Debugging
+
+TODO
+
+* `BC_DEBUG_CODE`.
+	* Hidden behind a `#define` to ensure it does not leak into actual code.
+
+## Performance
+
+TODO
+
+* `BC_ERR`/`BC_UNLIKELY`
+* `BC_NO_ERR`/`BC_LIKELY`
+* Link-time optimization.
+
+### Benchmarks
+
+TODO
+
+* Need to generate benchmarks and run them.
+* `ministat`.
+
+### Caching of Numbers
+
+TODO
+
+### Slabs and Slab Vectors
+
+TODO
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
@@ -1720,3 +2169,20 @@ TODO
 [110]: #bc-parsing
 [111]: #vectors
 [112]: https://git.yzena.com/Yzena/Yc/src/branch/master/include/yc/vector.h
+[113]: https://en.wikipedia.org/wiki/Signal_(IPC)
+[114]: #custom-io
+[115]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_04_03_03
+[116]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/setjmp.html
+[117]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/longjmp.html
+[118]: https://www.youtube.com/watch?v=4PaWFYm0kEw
+[119]: #fuzz_prepsh
+[120]: #bc_aflyaml
+[121]: #bc_afl_continueyaml
+[122]: https://github.com/tmux/tmux
+[123]: https://tmuxp.git-pull.com/
+[124]: #test-suite
+[125]: https://aflplus.plus/
+[126]: #link-time-optimization
+[127]: #fuzzing-performance
+[128]: #radamsa
+[129]: #afl-quickstart
