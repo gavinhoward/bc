@@ -46,20 +46,12 @@ of computations.
 Arithmetic operations pop arguments off of the stack and push the
 results.
 .PP
-If no files are given on the command-line as extra arguments (i.e., not
-as \f[B]-f\f[R] or \f[B]--file\f[R] arguments), then dc(1) reads from
-\f[B]stdin\f[R].
+If no files are given on the command-line, then dc(1) reads from
+\f[B]stdin\f[R] (see the \f[B]STDIN\f[R] section).
 Otherwise, those files are processed, and dc(1) will then exit.
 .PP
-This is different from the dc(1) on OpenBSD and possibly other dc(1)
-implementations, where \f[B]-e\f[R] (\f[B]--expression\f[R]) and
-\f[B]-f\f[R] (\f[B]--file\f[R]) arguments cause dc(1) to execute them
-and exit.
-The reason for this is that this dc(1) allows users to set arguments in
-the environment variable \f[B]DC_ENV_ARGS\f[R] (see the \f[B]ENVIRONMENT
-VARIABLES\f[R] section).
-Any expressions given on the command-line should be used to set up a
-standard environment.
+If a user wants to set up a standard environment, they can use
+\f[B]DC_ENV_ARGS\f[R] (see the \f[B]ENVIRONMENT VARIABLES\f[R] section).
 For example, if a user wants the \f[B]scale\f[R] always set to
 \f[B]10\f[R], they can set \f[B]DC_ENV_ARGS\f[R] to \f[B]-e 10k\f[R],
 and this dc(1) will always start with a \f[B]scale\f[R] of \f[B]10\f[R].
@@ -163,6 +155,19 @@ This is a \f[B]non-portable extension\f[R].
 .RE
 .PP
 All long options are \f[B]non-portable extensions\f[R].
+.SH STDIN
+.PP
+If no files are given on the command-line and no files or expressions
+are given by the \f[B]-f\f[R], \f[B]--file\f[R], \f[B]-e\f[R], or
+\f[B]--expression\f[R] options, then dc(1) read from \f[B]stdin\f[R].
+.PP
+However, there is a caveat to this.
+.PP
+First, \f[B]stdin\f[R] is evaluated a line at a time.
+The only exception to this is if a string has been finished, but not
+ended.
+This means that, except for escaped brackets, all brackets must be
+balanced before dc(1) parses and executes.
 .SH STDOUT
 .PP
 Any non-error output is written to \f[B]stdout\f[R].
@@ -859,8 +864,9 @@ of the register stack.
 .PP
 In non-extended register mode, a register name is just the single
 character that follows any command that needs a register name.
-The only exception is a newline (\f[B]`\[rs]n'\f[R]); it is a parse
-error for a newline to be used as a register name.
+The only exceptions are: a newline (\f[B]`\[rs]n'\f[R]) and a left
+bracket (\f[B]`['\f[R]); it is a parse error for a newline or a left
+bracket to be used as a register name.
 .SS Extended Register Mode
 .PP
 Unlike most other dc(1) implentations, this dc(1) provides nearly
@@ -1017,6 +1023,51 @@ greater than \f[B]1\f[R] and is less than \f[B]UINT16_MAX\f[R]
 (\f[B]2\[ha]16-1\f[R]), dc(1) will output lines to that length,
 including the backslash newline combo.
 The default line length is \f[B]70\f[R].
+.TP
+\f[B]DC_SIGINT_RESET\f[R]
+If this environment variable exists and contains an integer, then a
+non-zero value makes dc(1) reset on \f[B]SIGINT\f[R], rather than exit,
+and zero makes dc(1) exit.
+.RS
+.PP
+If dc(1) is not in interactive mode (see the \f[B]INTERACTIVE MODE\f[R]
+section), then this environment variable has no effect because dc(1)
+exits on \f[B]SIGINT\f[R] when not in interactive mode.
+.PP
+This environment variable overrides the default, which can be queried
+with the \f[B]-h\f[R] or \f[B]--help\f[R] options.
+.RE
+.TP
+\f[B]DC_TTY_MODE\f[R]
+If this environment variable exists and contains an integer, then a
+non-zero value makes dc(1) use TTY mode (see the \f[B]TTY MODE\f[R]
+section) when it is available, and zero makes dc(1) not use TTY mode.
+.RS
+.PP
+If TTY mode is \f[I]not\f[R] available, then this environment variable
+has no effect.
+.PP
+This environment variable overrides the default, which can be queried
+with the \f[B]-h\f[R] or \f[B]--help\f[R] options.
+.RE
+.TP
+\f[B]DC_PROMPT\f[R]
+If this environment variable exists and contains an integer, then a
+non-zero value makes dc(1) use a prompt when the TTY mode (see the
+\f[B]TTY MODE\f[R] section) is available, and zero makes dc(1) not use a
+prompt.
+If this environment variable does not exist and \f[B]DC_TTY_MODE\f[R]
+does, then the value of the \f[B]DC_TTY_MODE\f[R] environment variable
+is used.
+.RS
+.PP
+If TTY mode is \f[I]not\f[R] available, then this environment variable
+has no effect.
+.PP
+This environment variable or the \f[B]DC_TTY_MODE\f[R] environment
+variable override the default, which can be queried with the
+\f[B]-h\f[R] or \f[B]--help\f[R] options.
+.RE
 .SH EXIT STATUS
 .PP
 dc(1) returns the following exit statuses:
@@ -1094,24 +1145,52 @@ and \f[B]--interactive\f[R] option can turn it on in other cases.
 In interactive mode, dc(1) attempts to recover from errors (see the
 \f[B]RESET\f[R] section), and in normal execution, flushes
 \f[B]stdout\f[R] as soon as execution is done for the current input.
+dc(1) may also reset on \f[B]SIGINT\f[R] instead of exit, depending on
+the contents or default for the \f[B]DC_SIGINT_RESET\f[R] environment
+variable.
 .SH TTY MODE
 .PP
 If \f[B]stdin\f[R], \f[B]stdout\f[R], and \f[B]stderr\f[R] are all
-connected to a TTY, dc(1) turns on \[lq]TTY mode.\[rq]
+connected to a TTY, dc(1) can turn on \[lq]TTY mode,\[rq] subject to
+some settings.
 .PP
-The prompt is enabled in TTY mode.
+If there is the environment variable \f[B]DC_TTY_MODE\f[R] in the
+environment (see the \f[B]ENVIRONMENT VARIABLES\f[R] section), then if
+that environment variable contains a non-zero integer, then dc(1) will
+turn on TTY mode when \f[B]stdin\f[R], \f[B]stdout\f[R], and
+\f[B]stderr\f[R] are all connected to a TTY.
+.PP
+If the environment variable \f[B]DC_TTY_MODE\f[R] does \f[I]not\f[R]
+exist, the default setting is used.
+The default setting can be queried with the \f[B]-h\f[R] or
+\f[B]--help\f[R] options.
 .PP
 TTY mode is different from interactive mode because interactive mode is
 required in the bc(1)
 specification (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
 and interactive mode requires only \f[B]stdin\f[R] and \f[B]stdout\f[R]
 to be connected to a terminal.
+.SS Prompt
+.PP
+If dc(1) can be in TTY mode, a prompt can be enabled.
+Like TTY mode itself, it can be turned on or off with an environment
+variable: \f[B]DC_PROMPT\f[R] (see the \f[B]ENVIRONMENT VARIABLES\f[R]
+section).
+.PP
+If the environment variable \f[B]DC_PROMPT\f[R] is a non-zero integer,
+then command-line history is turned on when \f[B]stdin\f[R],
+\f[B]stdout\f[R], and \f[B]stderr\f[R] are connected to a TTY and the
+\f[B]-P\f[R] and \f[B]--no-prompt\f[R] options were not used.
+The read prompt will be turned on under the same conditions, except that
+the \f[B]-R\f[R] and \f[B]--no-read-prompt\f[R] options must also not be
+used.
 .SH SIGNAL HANDLING
 .PP
 Sending a \f[B]SIGINT\f[R] will cause dc(1) to stop execution of the
 current input.
-If dc(1) is in TTY mode (see the \f[B]TTY MODE\f[R] section), it will
-reset (see the \f[B]RESET\f[R] section).
+If dc(1) is in TTY mode (see the \f[B]TTY MODE\f[R] section) and/or the
+\f[B]DC_SIGINT_RESET\f[R] environment variable, or its default, is
+non-zero, dc(1) will reset (see the \f[B]RESET\f[R] section).
 Otherwise, it will clean up and exit.
 .PP
 Note that \[lq]current input\[rq] can mean one of two things.
@@ -1135,7 +1214,7 @@ exit, and it uses the default handler for all other signals.
 .SH LOCALES
 .PP
 This dc(1) ships with support for adding error messages for different
-locales and thus, supports \f[B]LC_MESSAGS\f[R].
+locales and thus, supports \f[B]LC_MESSAGES\f[R].
 .SH SEE ALSO
 .PP
 bc(1)

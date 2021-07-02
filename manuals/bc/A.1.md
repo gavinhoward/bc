@@ -227,6 +227,22 @@ The following are the options that bc(1) accepts.
 
 All long options are **non-portable extensions**.
 
+# STDIN
+
+If no files or expressions are given by the **-f**, **-\-file**, **-e**, or
+**-\-expression** options, then bc(1) read from **stdin**.
+
+However, there are a few caveats to this.
+
+First, **stdin** is evaluated a line at a time. The only exception to this is if
+the parse cannot complete. That means that starting a string without ending it
+or starting a function, **if** statement, or loop without ending it will also
+cause bc(1) to not execute.
+
+Second, after an **if** statement, bc(1) doesn't know if an **else** statement
+will follow, so it will not execute until it knows there will not be an **else**
+statement.
+
 # STDOUT
 
 Any non-error output is written to **stdout**. In addition, if history (see the
@@ -1568,6 +1584,59 @@ bc(1) recognizes the following environment variables:
     lines to that length, including the backslash (**\\**). The default line
     length is **70**.
 
+**BC_BANNER**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value activates the copyright banner when bc(1) is in interactive mode,
+    while zero deactivates it.
+
+    If bc(1) is not in interactive mode (see the **INTERACTIVE MODE** section),
+    then this environment variable has no effect because bc(1) does not print
+    the banner when not in interactive mode.
+
+    This environment variable overrides the default, which can be queried with
+    the **-h** or **-\-help** options.
+
+**BC_SIGINT_RESET**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes bc(1) reset on **SIGINT**, rather than exit, and zero makes
+    bc(1) exit.
+
+    If bc(1) is not in interactive mode (see the **INTERACTIVE MODE** section),
+    then this environment variable has no effect because bc(1) exits on
+    **SIGINT** when not in interactive mode.
+
+    This environment variable overrides the default, which can be queried with
+    the **-h** or **-\-help** options.
+
+**BC_TTY_MODE**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes bc(1) use TTY mode (see the **TTY MODE** section) when it is
+    available, and zero makes bc(1) not use TTY mode.
+
+    If TTY mode is *not* available, then this environment variable has no
+    effect.
+
+    This environment variable overrides the default, which can be queried with
+    the **-h** or **-\-help** options.
+
+**BC_PROMPT**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes bc(1) use a prompt when the TTY mode (see the **TTY MODE**
+    section) is available, and zero makes bc(1) not use a prompt. If this
+    environment variable does not exist and **BC_TTY_MODE** does, then the value
+    of the **BC_TTY_MODE** environment variable is used.
+
+    If TTY mode is *not* available, then this environment variable has no
+    effect.
+
+    This environment variable or the **BC_TTY_MODE** environment variable
+    override the default, which can be queried with the **-h** or **-\-help**
+    options.
+
 # EXIT STATUS
 
 bc(1) returns the following exit statuses:
@@ -1650,27 +1719,52 @@ turn it on in other cases.
 
 In interactive mode, bc(1) attempts to recover from errors (see the **RESET**
 section), and in normal execution, flushes **stdout** as soon as execution is
-done for the current input.
+done for the current input. bc(1) may also reset on **SIGINT** instead of exit,
+depending on the contents or default for the **BC_SIGINT_RESET** environment
+variable.
 
 # TTY MODE
 
-If **stdin**, **stdout**, and **stderr** are all connected to a TTY, bc(1) turns
-on "TTY mode."
+If **stdin**, **stdout**, and **stderr** are all connected to a TTY, bc(1) can
+turn on "TTY mode," subject to some settings.
 
-TTY mode is required for history to be enabled (see the **COMMAND LINE HISTORY**
-section). It is also required to enable special handling for **SIGINT** signals.
+If there is the environment variable **BC_TTY_MODE** in the environment (see the
+**ENVIRONMENT VARIABLES** section), then if that environment variable contains a
+non-zero integer, then bc(1) will turn on TTY mode when **stdin**, **stdout**,
+and **stderr** are all connected to a TTY.
 
-The prompt is enabled in TTY mode.
+If the environment variable **BC_TTY_MODE** does *not* exist, the default
+setting is used. The default setting can be queried with the **-h** or
+**-\-help** options.
 
 TTY mode is different from interactive mode because interactive mode is required
 in the [bc(1) specification][1], and interactive mode requires only **stdin**
 and **stdout** to be connected to a terminal.
 
+## Command-Line History
+
+Command-line history can only be enabled if TTY mode can be, i.e., that
+**stdin**, **stdout**, and **stderr** are connected to a TTY. See the **COMMAND
+LINE HISTORY** section for more information.
+
+## Prompt
+
+If bc(1) can be in TTY mode, a prompt can be enabled. Like TTY mode itself, it
+can be turned on or off with an environment variable: **BC_PROMPT** (see the
+**ENVIRONMENT VARIABLES** section).
+
+If the environment variable **BC_PROMPT** is a non-zero integer, then
+command-line history is turned on when **stdin**, **stdout**, and **stderr** are
+connected to a TTY and the **-P** and **-\-no-prompt** options were not used.
+The read prompt will be turned on under the same conditions, except that the
+**-R** and **-\-no-read-prompt** options must also not be used.
+
 # SIGNAL HANDLING
 
 Sending a **SIGINT** will cause bc(1) to stop execution of the current input. If
-bc(1) is in TTY mode (see the **TTY MODE** section), it will reset (see the
-**RESET** section). Otherwise, it will clean up and exit.
+bc(1) is in TTY mode (see the **TTY MODE** section) and/or the
+**BC_SIGINT_RESET** environment variable, or its default, is non-zero, bc(1)
+will reset (see the **RESET** section). Otherwise, it will clean up and exit.
 
 Note that "current input" can mean one of two things. If bc(1) is processing
 input from **stdin** in TTY mode, it will ask for more input. If bc(1) is
@@ -1693,9 +1787,17 @@ exit.
 
 # COMMAND LINE HISTORY
 
-bc(1) supports interactive command-line editing. If bc(1) is in TTY mode (see
-the **TTY MODE** section), history is enabled. Previous lines can be recalled
-and edited with the arrow keys.
+bc(1) supports interactive command-line editing.
+
+If bc(1) can be in TTY mode (see the **TTY MODE** section), history can be
+enabled. This means that command-line history can only be enabled when
+**stdin**, **stdout**, and **stderr** are all connected to a TTY.
+
+Like TTY mode itself, it can be turned on or off with the environment variable:
+**BC_TTY_MODE** (see the **ENVIRONMENT VARIABLES** section).
+
+If history is enabled, previous lines can be recalled and edited with the arrow
+keys.
 
 **Note**: tabs are converted to 8 spaces.
 

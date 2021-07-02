@@ -259,6 +259,23 @@ This is a \f[B]non-portable extension\f[R].
 .RE
 .PP
 All long options are \f[B]non-portable extensions\f[R].
+.SH STDIN
+.PP
+If no files or expressions are given by the \f[B]-f\f[R],
+\f[B]--file\f[R], \f[B]-e\f[R], or \f[B]--expression\f[R] options, then
+bc(1) read from \f[B]stdin\f[R].
+.PP
+However, there are a few caveats to this.
+.PP
+First, \f[B]stdin\f[R] is evaluated a line at a time.
+The only exception to this is if the parse cannot complete.
+That means that starting a string without ending it or starting a
+function, \f[B]if\f[R] statement, or loop without ending it will also
+cause bc(1) to not execute.
+.PP
+Second, after an \f[B]if\f[R] statement, bc(1) doesn\[cq]t know if an
+\f[B]else\f[R] statement will follow, so it will not execute until it
+knows there will not be an \f[B]else\f[R] statement.
 .SH STDOUT
 .PP
 Any non-error output is written to \f[B]stdout\f[R].
@@ -1144,6 +1161,65 @@ greater than \f[B]1\f[R] and is less than \f[B]UINT16_MAX\f[R]
 (\f[B]2\[ha]16-1\f[R]), bc(1) will output lines to that length,
 including the backslash (\f[B]\[rs]\f[R]).
 The default line length is \f[B]70\f[R].
+.TP
+\f[B]BC_BANNER\f[R]
+If this environment variable exists and contains an integer, then a
+non-zero value activates the copyright banner when bc(1) is in
+interactive mode, while zero deactivates it.
+.RS
+.PP
+If bc(1) is not in interactive mode (see the \f[B]INTERACTIVE MODE\f[R]
+section), then this environment variable has no effect because bc(1)
+does not print the banner when not in interactive mode.
+.PP
+This environment variable overrides the default, which can be queried
+with the \f[B]-h\f[R] or \f[B]--help\f[R] options.
+.RE
+.TP
+\f[B]BC_SIGINT_RESET\f[R]
+If this environment variable exists and contains an integer, then a
+non-zero value makes bc(1) reset on \f[B]SIGINT\f[R], rather than exit,
+and zero makes bc(1) exit.
+.RS
+.PP
+If bc(1) is not in interactive mode (see the \f[B]INTERACTIVE MODE\f[R]
+section), then this environment variable has no effect because bc(1)
+exits on \f[B]SIGINT\f[R] when not in interactive mode.
+.PP
+This environment variable overrides the default, which can be queried
+with the \f[B]-h\f[R] or \f[B]--help\f[R] options.
+.RE
+.TP
+\f[B]BC_TTY_MODE\f[R]
+If this environment variable exists and contains an integer, then a
+non-zero value makes bc(1) use TTY mode (see the \f[B]TTY MODE\f[R]
+section) when it is available, and zero makes bc(1) not use TTY mode.
+.RS
+.PP
+If TTY mode is \f[I]not\f[R] available, then this environment variable
+has no effect.
+.PP
+This environment variable overrides the default, which can be queried
+with the \f[B]-h\f[R] or \f[B]--help\f[R] options.
+.RE
+.TP
+\f[B]BC_PROMPT\f[R]
+If this environment variable exists and contains an integer, then a
+non-zero value makes bc(1) use a prompt when the TTY mode (see the
+\f[B]TTY MODE\f[R] section) is available, and zero makes bc(1) not use a
+prompt.
+If this environment variable does not exist and \f[B]BC_TTY_MODE\f[R]
+does, then the value of the \f[B]BC_TTY_MODE\f[R] environment variable
+is used.
+.RS
+.PP
+If TTY mode is \f[I]not\f[R] available, then this environment variable
+has no effect.
+.PP
+This environment variable or the \f[B]BC_TTY_MODE\f[R] environment
+variable override the default, which can be queried with the
+\f[B]-h\f[R] or \f[B]--help\f[R] options.
+.RE
 .SH EXIT STATUS
 .PP
 bc(1) returns the following exit statuses:
@@ -1233,29 +1309,58 @@ and \f[B]--interactive\f[R] option can turn it on in other cases.
 In interactive mode, bc(1) attempts to recover from errors (see the
 \f[B]RESET\f[R] section), and in normal execution, flushes
 \f[B]stdout\f[R] as soon as execution is done for the current input.
+bc(1) may also reset on \f[B]SIGINT\f[R] instead of exit, depending on
+the contents or default for the \f[B]BC_SIGINT_RESET\f[R] environment
+variable.
 .SH TTY MODE
 .PP
 If \f[B]stdin\f[R], \f[B]stdout\f[R], and \f[B]stderr\f[R] are all
-connected to a TTY, bc(1) turns on \[lq]TTY mode.\[rq]
+connected to a TTY, bc(1) can turn on \[lq]TTY mode,\[rq] subject to
+some settings.
 .PP
-TTY mode is required for history to be enabled (see the \f[B]COMMAND
-LINE HISTORY\f[R] section).
-It is also required to enable special handling for \f[B]SIGINT\f[R]
-signals.
+If there is the environment variable \f[B]BC_TTY_MODE\f[R] in the
+environment (see the \f[B]ENVIRONMENT VARIABLES\f[R] section), then if
+that environment variable contains a non-zero integer, then bc(1) will
+turn on TTY mode when \f[B]stdin\f[R], \f[B]stdout\f[R], and
+\f[B]stderr\f[R] are all connected to a TTY.
 .PP
-The prompt is enabled in TTY mode.
+If the environment variable \f[B]BC_TTY_MODE\f[R] does \f[I]not\f[R]
+exist, the default setting is used.
+The default setting can be queried with the \f[B]-h\f[R] or
+\f[B]--help\f[R] options.
 .PP
 TTY mode is different from interactive mode because interactive mode is
 required in the bc(1)
 specification (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
 and interactive mode requires only \f[B]stdin\f[R] and \f[B]stdout\f[R]
 to be connected to a terminal.
+.SS Command-Line History
+.PP
+Command-line history can only be enabled if TTY mode can be, i.e., that
+\f[B]stdin\f[R], \f[B]stdout\f[R], and \f[B]stderr\f[R] are connected to
+a TTY.
+See the \f[B]COMMAND LINE HISTORY\f[R] section for more information.
+.SS Prompt
+.PP
+If bc(1) can be in TTY mode, a prompt can be enabled.
+Like TTY mode itself, it can be turned on or off with an environment
+variable: \f[B]BC_PROMPT\f[R] (see the \f[B]ENVIRONMENT VARIABLES\f[R]
+section).
+.PP
+If the environment variable \f[B]BC_PROMPT\f[R] is a non-zero integer,
+then command-line history is turned on when \f[B]stdin\f[R],
+\f[B]stdout\f[R], and \f[B]stderr\f[R] are connected to a TTY and the
+\f[B]-P\f[R] and \f[B]--no-prompt\f[R] options were not used.
+The read prompt will be turned on under the same conditions, except that
+the \f[B]-R\f[R] and \f[B]--no-read-prompt\f[R] options must also not be
+used.
 .SH SIGNAL HANDLING
 .PP
 Sending a \f[B]SIGINT\f[R] will cause bc(1) to stop execution of the
 current input.
-If bc(1) is in TTY mode (see the \f[B]TTY MODE\f[R] section), it will
-reset (see the \f[B]RESET\f[R] section).
+If bc(1) is in TTY mode (see the \f[B]TTY MODE\f[R] section) and/or the
+\f[B]BC_SIGINT_RESET\f[R] environment variable, or its default, is
+non-zero, bc(1) will reset (see the \f[B]RESET\f[R] section).
 Otherwise, it will clean up and exit.
 .PP
 Note that \[lq]current input\[rq] can mean one of two things.
@@ -1281,9 +1386,19 @@ TTY mode, a \f[B]SIGHUP\f[R] will cause bc(1) to clean up and exit.
 .SH COMMAND LINE HISTORY
 .PP
 bc(1) supports interactive command-line editing.
-If bc(1) is in TTY mode (see the \f[B]TTY MODE\f[R] section), history is
-enabled.
-Previous lines can be recalled and edited with the arrow keys.
+.PP
+If bc(1) can be in TTY mode (see the \f[B]TTY MODE\f[R] section),
+history can be enabled.
+This means that command-line history can only be enabled when
+\f[B]stdin\f[R], \f[B]stdout\f[R], and \f[B]stderr\f[R] are all
+connected to a TTY.
+.PP
+Like TTY mode itself, it can be turned on or off with the environment
+variable: \f[B]BC_TTY_MODE\f[R] (see the \f[B]ENVIRONMENT VARIABLES\f[R]
+section).
+.PP
+If history is enabled, previous lines can be recalled and edited with
+the arrow keys.
 .PP
 \f[B]Note\f[R]: tabs are converted to 8 spaces.
 .SH LOCALES
