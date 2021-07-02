@@ -76,6 +76,9 @@ The following are the options that dc(1) accepts.
     want a prompt or are not used to having them in dc(1). Most of those users
     would want to put this option in **DC_ENV_ARGS**.
 
+    These options override the **DC_PROMPT** and **DC_TTY_MODE** environment
+    variables (see the **ENVIRONMENT VARIABLES** section).
+
     This is a **non-portable extension**.
 
 **-R**, **-\-no-read-prompt**
@@ -89,6 +92,10 @@ The following are the options that dc(1) accepts.
 
     This option does not disable the regular prompt because the read prompt is
     only used when the **?** command is used.
+
+    These options *do* override the **DC_PROMPT** and **DC_TTY_MODE**
+    environment variables (see the **ENVIRONMENT VARIABLES** section), but only
+    for the read prompt.
 
     This is a **non-portable extension**.
 
@@ -925,41 +932,43 @@ dc(1) recognizes the following environment variables:
 
 **DC_SIGINT_RESET**
 
-:   If this environment variable exists and contains an integer, then a non-zero
-    value makes dc(1) reset on **SIGINT**, rather than exit, and zero makes
-    dc(1) exit.
-
-    If dc(1) is not in interactive mode (see the **INTERACTIVE MODE** section),
+:   If dc(1) is not in interactive mode (see the **INTERACTIVE MODE** section),
     then this environment variable has no effect because dc(1) exits on
     **SIGINT** when not in interactive mode.
+
+    However, when dc(1) is in interactive mode, then if this environment
+    variable exists and contains an integer, a non-zero value makes dc(1) reset
+    on **SIGINT**, rather than exit, and zero makes dc(1) exit. If this
+    environment variable exists and is *not* an integer, then dc(1) will exit on
+    **SIGINT**.
 
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.
 
 **DC_TTY_MODE**
 
-:   If this environment variable exists and contains an integer, then a non-zero
-    value makes dc(1) use TTY mode (see the **TTY MODE** section) when it is
-    available, and zero makes dc(1) not use TTY mode.
+:   If TTY mode is *not* available (see the **TTY MODE** section), then this
+    environment variable has no effect.
 
-    If TTY mode is *not* available, then this environment variable has no
-    effect.
+    However, when TTY mode is available, then if this environment variable
+    exists and contains an integer, then a non-zero value makes dc(1) use TTY
+    mode, and zero makes dc(1) not use TTY mode.
 
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.
 
 **DC_PROMPT**
 
-:   If this environment variable exists and contains an integer, then a non-zero
-    value makes dc(1) use a prompt when the TTY mode (see the **TTY MODE**
-    section) is available, and zero makes dc(1) not use a prompt. If this
-    environment variable does not exist and **DC_TTY_MODE** does, then the value
-    of the **DC_TTY_MODE** environment variable is used.
+:   If TTY mode is *not* available (see the **TTY MODE** section), then this
+    environment variable has no effect.
 
-    If TTY mode is *not* available, then this environment variable has no
-    effect.
+    However, when TTY mode is available, then if this environment variable
+    exists and contains an integer, a non-zero value makes dc(1) use a prompt,
+    and zero or a non-integer makes dc(1) not use a prompt. If this environment
+    variable does not exist and **DC_TTY_MODE** does, then the value of the
+    **DC_TTY_MODE** environment variable is used.
 
-    This environment variable or the **DC_TTY_MODE** environment variable
+    This environment variable and the **DC_TTY_MODE** environment variable
     override the default, which can be queried with the **-h** or **-\-help**
     options.
 
@@ -1031,23 +1040,26 @@ checking, and its normal behavior can be forced by using the **-i** flag or
 Like bc(1), dc(1) has an interactive mode and a non-interactive mode.
 Interactive mode is turned on automatically when both **stdin** and **stdout**
 are hooked to a terminal, but the **-i** flag and **-\-interactive** option can
-turn it on in other cases.
+turn it on in other situations.
 
 In interactive mode, dc(1) attempts to recover from errors (see the **RESET**
 section), and in normal execution, flushes **stdout** as soon as execution is
 done for the current input. dc(1) may also reset on **SIGINT** instead of exit,
-depending on the contents or default for the **DC_SIGINT_RESET** environment
-variable.
+depending on the contents of, or default for, the **DC_SIGINT_RESET**
+environment variable (see the **ENVIRONMENT VARIABLES** section).
 
 # TTY MODE
 
-If **stdin**, **stdout**, and **stderr** are all connected to a TTY, dc(1) can
-turn on "TTY mode," subject to some settings.
+If **stdin**, **stdout**, and **stderr** are all connected to a TTY, then "TTY
+mode" is considered to be available, and thus, dc(1) can turn on TTY mode,
+subject to some settings.
 
 If there is the environment variable **DC_TTY_MODE** in the environment (see the
 **ENVIRONMENT VARIABLES** section), then if that environment variable contains a
-non-zero integer, then dc(1) will turn on TTY mode when **stdin**, **stdout**,
-and **stderr** are all connected to a TTY.
+non-zero integer, dc(1) will turn on TTY mode when **stdin**, **stdout**, and
+**stderr** are all connected to a TTY. If the **DC_TTY_MODE** environment
+variable exists but is *not* a non-zero integer, then dc(1) will not turn TTY
+mode on.
 
 If the environment variable **DC_TTY_MODE** does *not* exist, the default
 setting is used. The default setting can be queried with the **-h** or
@@ -1059,28 +1071,39 @@ and **stdout** to be connected to a terminal.
 
 ## Prompt
 
-If dc(1) can be in TTY mode, a prompt can be enabled. Like TTY mode itself, it
+If TTY mode is available, then a prompt can be enabled. Like TTY mode itself, it
 can be turned on or off with an environment variable: **DC_PROMPT** (see the
 **ENVIRONMENT VARIABLES** section).
 
-If the environment variable **DC_PROMPT** is a non-zero integer, then
-command-line history is turned on when **stdin**, **stdout**, and **stderr** are
-connected to a TTY and the **-P** and **-\-no-prompt** options were not used.
-The read prompt will be turned on under the same conditions, except that the
-**-R** and **-\-no-read-prompt** options must also not be used.
+If the environment variable **DC_PROMPT** exists and is a non-zero integer, then
+the prompt is turned on when **stdin**, **stdout**, and **stderr** are connected
+to a TTY and the **-P** and **-\-no-prompt** options were not used. The read
+prompt will be turned on under the same conditions, except that the **-R** and
+**-\-no-read-prompt** options must also not be used.
+
+However, if **DC_PROMPT** does not exist, the prompt can be enabled or disabled
+with the **DC_TTY_MODE** environment variable, the **-P** and **-\-no-prompt**
+options, and the **-R** and **-\-no-read-prompt** options. See the **ENVIRONMENT
+VARIABLES** and **OPTIONS** sections for more details.
 
 # SIGNAL HANDLING
 
-Sending a **SIGINT** will cause dc(1) to stop execution of the current input. If
-dc(1) is in TTY mode (see the **TTY MODE** section) and/or the
-**DC_SIGINT_RESET** environment variable, or its default, is non-zero, dc(1)
-will reset (see the **RESET** section). Otherwise, it will clean up and exit.
+Sending a **SIGINT** will cause dc(1) to do one of two things.
+
+If dc(1) is not in interactive mode (see the **INTERACTIVE MODE** section), or
+the **DC_SIGINT_RESET** environment variable (see the **ENVIRONMENT VARIABLES**
+section), or its default, is either not an integer or it is zero, dc(1) will
+exit.
+
+However, if dc(1) is in interactive mode, and the **DC_SIGINT_RESET** or its
+default is an integer and non-zero, then dc(1) will stop executing the current
+input and reset (see the **RESET** section) upon receiving a **SIGINT**.
 
 Note that "current input" can mean one of two things. If dc(1) is processing
-input from **stdin** in TTY mode, it will ask for more input. If dc(1) is
-processing input from a file in TTY mode, it will stop processing the file and
-start processing the next file, if one exists, or ask for input from **stdin**
-if no other file exists.
+input from **stdin** in interactive mode, it will ask for more input. If dc(1)
+is processing input from a file in interactive mode, it will stop processing the
+file and start processing the next file, if one exists, or ask for input from
+**stdin** if no other file exists.
 
 This means that if a **SIGINT** is sent to dc(1) as it is executing a file, it
 can seem as though dc(1) did not respond to the signal since it will immediately
