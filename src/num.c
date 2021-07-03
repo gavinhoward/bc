@@ -2892,6 +2892,12 @@ void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 	if (BC_ERR(BC_NUM_ZERO(c))) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_ERR(BC_NUM_NEG(b))) bc_err(BC_ERR_MATH_NEGATIVE);
 
+#ifndef NDEBUG
+	// This is entirely for quieting a useless scan-build error.
+	btemp.len = 0;
+	ctemp.len = 0;
+#endif // NDEBUG
+
 	if (BC_ERR(bc_num_nonInt(a, &atemp) || bc_num_nonInt(b, &btemp) ||
 	           bc_num_nonInt(c, &ctemp)))
 	{

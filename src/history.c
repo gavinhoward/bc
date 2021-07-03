@@ -286,6 +286,7 @@ static size_t bc_history_nextLen(const char *buf, size_t buf_len,
 
 	if (bc_history_comboChar(cp)) {
 		// Currently unreachable?
+		if (col_len != NULL) *col_len = 0;
 		return 0;
 	}
 

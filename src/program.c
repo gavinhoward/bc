@@ -1382,6 +1382,11 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	BcNum num;
 	BcBigDig val;
 
+#ifndef NDEBUG
+	// This is entirely to satisfy a useless scan-build error.
+	val = 0;
+#endif // NDEBUG
+
 	bc_num_clear(&num);
 
 	BC_SETJMP(num_err);
