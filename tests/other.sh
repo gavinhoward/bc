@@ -211,6 +211,8 @@ printf '%s\n' "$halt" | "$exe" "$@" -h > /dev/null
 checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -P > /dev/null
 checktest_retcode "$d" "$?" "arg"
+printf '%s\n' "$halt" | "$exe" "$@" -R > /dev/null
+checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -v > /dev/null
 checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null

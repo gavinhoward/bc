@@ -62,7 +62,7 @@ if [ ! -d "$outdir" ]; then
 fi
 
 if [ "$d" = "bc" ]; then
-	options="-ilq"
+	options="-lq"
 else
 	options="-x"
 fi
