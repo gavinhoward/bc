@@ -560,6 +560,10 @@ environment variables to override them, is below:
 | --------------- | ---------------------- | ------------ | --------------- |
 ```
 
+These settings are not meant to be changed on a whim. They are meant to ensure
+that this bc and dc will conform to the expectations of the user on each
+platform.
+
 #### Install Options
 
 The relevant `autotools`-style install options are supported in `configure.sh`:

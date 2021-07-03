@@ -289,6 +289,10 @@ usage() {
 	printf '|                 | dc should be on in TTY |              |                 |\n'
 	printf '|                 | mode.                  |              |                 |\n'
 	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '\n'
+	printf 'These settings are not meant to be changed on a whim. They are meant to ensure\n'
+	printf 'that this bc and dc will conform to the expectations of the user on each\n'
+	printf 'platform.\n'
 
 	exit "$_usage_val"
 }
