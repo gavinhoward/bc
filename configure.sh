@@ -63,7 +63,7 @@ usage() {
 	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]             \\\n'
 	printf '\n'
 	printf '    -a, --library\n'
-	printf '        Build the libbc instead of the programs. This is meant to be used with\n'
+	printf '        Build the libbcl instead of the programs. This is meant to be used with\n'
 	printf '        Other software like programming languages that want to make use of the\n'
 	printf '        parsing and math capabilities. This option will install headers using\n'
 	printf '        `make install`.\n'
@@ -74,7 +74,7 @@ usage() {
 	printf '        Disable bc. It is an error if "-b", "--bc-only", "-D", or "--disable-dc"\n'
 	printf '        are specified too.\n'
 	printf '    -c, --coverage\n'
-	printf '        Generate test coverage code. Requires gcov and regcovr.\n'
+	printf '        Generate test coverage code. Requires gcov and gcovr.\n'
 	printf '        It is an error if either "-b" ("-D") or "-d" ("-B") is specified.\n'
 	printf '        Requires a compiler that use gcc-compatible coverage options\n'
 	printf '    -C, --disable-clean\n'
@@ -1067,7 +1067,7 @@ if [ "$coverage" -eq 1 ]; then
 
 	COVERAGE_OUTPUT="@gcov -pabcdf \$(GCDA) \$(BC_GCDA) \$(DC_GCDA) \$(HISTORY_GCDA) \$(RAND_GCDA)"
 	COVERAGE_OUTPUT="$COVERAGE_OUTPUT;\$(RM) -f \$(GEN)*.gc*"
-	COVERAGE_OUTPUT="$COVERAGE_OUTPUT;gcovr --html-details --output index.html"
+	COVERAGE_OUTPUT="$COVERAGE_OUTPUT;gcovr --exclude-unreachable-branches --exclude-throw-branches --html-details --output index.html"
 	COVERAGE_PREREQS=" test coverage_output"
 
 else
@@ -1292,7 +1292,7 @@ fi
 # `gen/strgen.sh` is used.
 GEN="strgen"
 GEN_EXEC_TARGET="\$(HOSTCC) \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
-CLEAN_PREREQS=" clean_gen"
+CLEAN_PREREQS=" clean_gen clean_coverage"
 
 if [ -z "${GEN_HOST+set}" ]; then
 	GEN_HOST=1
@@ -1300,7 +1300,7 @@ else
 	if [ "$GEN_HOST" -eq 0 ]; then
 		GEN="strgen.sh"
 		GEN_EXEC_TARGET="@printf 'Do not need to build gen/strgen.c\\\\n'"
-		CLEAN_PREREQS=""
+		CLEAN_PREREQS=" clean_coverage"
 	fi
 fi
 

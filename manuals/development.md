@@ -20,13 +20,12 @@ This repository contains an implementation of both [POSIX `bc`][2] and [Unix
 
 POSIX `bc` is a standard utility required for POSIX systems. `dc` is a
 historical utility that was included in early Unix and even predates both Unix
-and C. They both are
-arbitrary-precision command-line calculators with their own programming
-languages. `bc`'s language looks similar to C, with infix notation and includes
-functions, while `dc` uses [Reverse Polish Notation][4] and allows the user to
-execute strings as though they were functions.
+and C. They both are arbitrary-precision command-line calculators with their own
+programming languages. `bc`'s language looks similar to C, with infix notation
+and including functions, while `dc` uses [Reverse Polish Notation][4] and allows
+the user to execute strings as though they were functions.
 
-In addition, it is also possible to build the arbitrary-precision math into a
+In addition, it is also possible to build the arbitrary-precision math as a
 library, named `bcl`.
 
 **Note**: for ease, I will refer to both programs as `bc` in this document.
@@ -165,6 +164,8 @@ deferring to the above values.
 Keep these values in mind for the rest of this document, and for exploring any
 other part of this repo.
 
+### Portability
+
 But before I go on, I want to talk about portability in particular.
 
 Most of these principles just require good attention and care, but portability
@@ -188,9 +189,130 @@ dependency.
 That's why `bc` has duplicated code. Remove it, and you risk `bc` not being
 portable to some platforms.
 
-## Code Style
+## Useful External Tools
 
-TODO
+I have a few tools external to `bc` that are useful:
+
+* A [Vim plugin with syntax files made specifically for my `bc` and `dc`][132].
+* A [repo of `bc` and `dc` scripts][133].
+* A set of `bash` aliases (see below).
+* A `.bcrc` file with items useful for my `bash` setup (see below).
+
+My `bash` aliases are these:
+
+```sh
+alias makej='make -j16'
+alias mcmake='make clean && make'
+alias mcmakej='make clean && make -j16'
+alias bcdebug='CPPFLAGS="-DBC_DEBUG_CODE=1" CFLAGS="-Weverything -Wno-padded \
+    -Wno-switch-enum -Wno-format-nonliteral -Wno-cast-align \
+    -Wno-unreachable-code-return -Wno-missing-noreturn \
+    -Wno-disabled-macro-expansion -Wno-unreachable-code -Wall -Wextra \
+    -pedantic -std=c99" ./configure.sh'
+alias bcconfig='CFLAGS="-Weverything -Wno-padded -Wno-switch-enum \
+    -Wno-format-nonliteral -Wno-cast-align -Wno-unreachable-code-return \
+    -Wno-missing-noreturn -Wno-disabled-macro-expansion -Wno-unreachable-code \
+    -Wall -Wextra -pedantic -std=c99" ./configure.sh'
+alias bcnoassert='CPPFLAGS="-DNDEBUG" CFLAGS="-Weverything -Wno-padded \
+    -Wno-switch-enum -Wno-format-nonliteral -Wno-cast-align \
+    -Wno-unreachable-code-return -Wno-missing-noreturn \
+    -Wno-disabled-macro-expansion -Wno-unreachable-code -Wall -Wextra \
+    -pedantic -std=c99" ./configure.sh'
+alias bcdebugnoassert='CPPFLAGS="-DNDEBUG -DBC_DEBUG_CODE=1" \
+    CFLAGS="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral \
+    -Wno-cast-align -Wno-unreachable-code-return -Wno-missing-noreturn \
+    -Wno-disabled-macro-expansion -Wno-unreachable-code -Wall -Wextra \
+    -pedantic -std=c99" ./configure.sh'
+alias bcunset='unset BC_LINE_LENGTH && unset BC_ENV_ARGS'
+```
+
+`makej` runs `make` with all of my cores.
+
+`mcmake` runs `make clean` before running `make`. It will take a target on the
+command-line.
+
+`mcmakej` is a combination of `makej` and `mcmake`.
+
+`bcdebug` configures `bc` for a full debug build, including `BC_DEBUG_CODE` (see
+[Debugging][134] below).
+
+`bcconfig` configures `bc` with Clang (Clang is my personal default compiler)
+using full warnings, with a few really loud and useless warnings turned off.
+
+`bcnoassert` configures `bc` to not have asserts built in.
+
+`bcdebugnoassert` is like `bcnoassert`, except it also configures `bc` for debug
+mode.
+
+`bcunset` unsets my personal `bc` environment variables, which are set to:
+
+```sh
+export BC_ENV_ARGS="-l $HOME/.bcrc"
+export BC_LINE_LENGTH="74"
+```
+
+Unsetting these environment variables are necessary for running
+[`scripts/release.sh`][83] because otherwise, it will error when attempting to
+run `bc -s` on my `$HOME/.bcrc`.
+
+Speaking of which, the contents of that file are:
+
+```bc
+define void print_time_unit(t){
+	if(t<10)print "0"
+	if(t<1&&t)print "0"
+	print t,":"
+}
+define void sec2time(t){
+	auto s,m,h,d,r
+	r=scale
+	scale=0
+	t=abs(t)
+	s=t%60
+	t-=s
+	m=t/60%60
+	t-=m
+	h=t/3600%24
+	t-=h
+	d=t/86400
+	if(d)print_time_unit(d)
+	if(h)print_time_unit(h)
+	print_time_unit(m)
+	if(s<10)print "0"
+	if(s<1&&s)print "0"
+	s
+	scale=r
+}
+define minutes(secs){
+	return secs/60;
+}
+define hours(secs){
+	return secs/3600;
+}
+define days(secs){
+	return secs/3600/24;
+}
+define years(secs){
+	return secs/3600/24/365.25;
+}
+define fbrand(b,p){
+	auto l,s,t
+	b=abs(b)$
+	if(b<2)b=2
+	s=scale
+	t=b^abs(p)$
+	l=ceil(l2(t),0)
+	if(l>scale)scale=l
+	t=irand(t)/t
+	scale=s
+	return t
+}
+define ifbrand(i,b,p){return irand(abs(i)$)+fbrand(b,p)}
+```
+
+This allows me to use `bc` as part of my `bash` prompt.
+
+## Code Style
 
 The code style for `bc` is...weird, and that comes from historical accident.
 
@@ -206,6 +328,8 @@ The code style is as follows:
 * Tabs are used at the beginning of lines for indent.
 * Spaces are used for alignment.
 * Lines are limited to 80 characters, period.
+* Pointer asterisk (`*`) goes with the variable (on the right), not the type,
+  unless it is for a pointer type returned from a function.
 * The opening brace is put on the same line as the header for the function,
   loop, or `if` statement.
 * Unless the header is more than one line, in which case the opening brace is
@@ -218,7 +342,8 @@ The code style is as follows:
   to judgment.
 * Bodies of `if` statements, `else` statements, and loops that are one line
   long are put on the same line as the statement, unless the header is more than
-  one line long, and/or, the body cannot fit into 80 characters.
+  one line long, and/or, the header and body cannot fit into 80 characters with
+  a space inbetween them.
 * If single-line bodies are on a separate line from their headers, and the
   headers are only a single line, then no braces are used.
 * However, braces are *always* used if they contain another `if` statement or
@@ -227,11 +352,21 @@ The code style is as follows:
 * Expressions that return a boolean value are surrounded by paretheses.
 * Macro backslashes are aligned as far to the left as possible.
 * Binary operators have spaces on both sides.
-* If a line with binary operators overflows 80 character, a newline is inserted
+* If a line with binary operators overflows 80 characters, a newline is inserted
   *after* binary operators.
 * Function modifiers and return types are on the same line as the function name.
 * With one exception, `goto`'s are only used to jump to the end of a function
   for cleanup.
+* All structs, enums, and unions are `typedef`'ed.
+* All constant data is in one file: [`src/data.c`][131], but the corresponding
+  `extern` declarations are in the appropriate header file.
+* All local variables are declared at the beginning of the scope where they
+  appear. They may be initialized at that point, if it does not invoke UB or
+  otherwise cause bugs.
+* All precondition `assert()`'s (see [Asserts][135]) come *after* local variable
+  declarations.
+* Besides short `if` statements and loops, there should *never* be more than one
+  statement per line.
 
 ### ClangFormat
 
@@ -286,7 +421,7 @@ A symlink to [`configure.sh`][69].
 This is the script to configure `bc` and `bcl` for building.
 
 This `bc` has a custom build system. The reason for this is because of
-*portability*.
+[*portability*][136].
 
 If `bc` used an outside build system, that build system would be an external
 dependency. Thus, I had to write a build system for `bc` that used nothing but
@@ -338,9 +473,9 @@ This is the `Makefile` template for [`configure.sh`][69] to use for generating a
 
 For more information, see [`configure.sh`][69] and the [build manual][14].
 
-Because of portability, the generated `Makefile.in` should be a pure [POSIX
-`make`][74]-compatible `Makefile` (minus the placeholders). Here are a few
-snares for the unwary programmer in this file:
+Because of [portability][136], the generated `Makefile.in` should be a pure
+[POSIX `make`][74]-compatible `Makefile` (minus the placeholders). Here are a
+few snares for the unwary programmer in this file:
 
 1.	No extensions allowed, including and especially GNU extensions.
 2.	If new headers are added, they must also be added to `Makefile.in`.
@@ -752,7 +887,7 @@ are useful for performance.
 This is the [build manual][14].
 
 This `bc` has a custom build system. The reason for this is because of
-*portability*.
+[*portability*][136].
 
 If `bc` used an outside build system, that build system would be an external
 dependency. Thus, I had to write a build system for `bc` that used nothing but
@@ -777,21 +912,7 @@ TODO:
 
 * Document all code assumptions with asserts.
 * Document all functions with Doxygen comments.
-* Compilers and their quirks, as well as warning settings on Clang.
-	* My various `bc` aliases.
-* My vim-bc repo.
 * The purpose of every file.
-* How locale works.
-	* How locales are installed.
-	* How the locales are used.
-* Why generated manpages (including markdown) are checked into git.
-* How all manpage versions are generated.
-* Fuzzing.
-	* Including my `tmuxp` files.
-	* Can't use `libdislocator.so`. It causes crashes when it can't allocate
-	  memory.
-	* Use `AFL_HARDEN` during build for hardening.
-	* Use `CC=afl-clang-lto` and `CFLAGS="-flto"`.
 
 #### `header_bcl.txt`
 
@@ -1092,7 +1213,8 @@ A list of the various settings combos to be used by [`test_settings.sh`][104].
 
 TODO
 
-This folder is, obviously, where the actual meat, the source code, is.
+This folder is, obviously, where the actual heart and soul of `bc`, the source
+code, is.
 
 #### `args.c`
 
@@ -1129,8 +1251,153 @@ TODO
 * `stdin` tests.
 * `read` tests.
 * Other tests.
-* Coverage stuff.
-* Valgrind and sanitizers.
+* Integration with the build system.
+
+While the source code may be the heart and soul of `bc`, the test suite is the
+arms and legs: it gives `bc` the power to do anything it needs to do.
+
+The test suite is what allowed `bc` to climb to such high heights of quality.
+This even goes for fuzzing because fuzzing depends on the test suite for its
+input corpuses. (See the [Fuzzing][82] section.)
+
+Understanding how the test suite works should be, I think, the first thing that
+maintainers learn. This is because the test suite, properly used, gives
+confidence that changes have not caused bugs or regressions.
+
+That is why I spent the time to make the test suite as easy to use and as fast
+as possible.
+
+To use the test suite (assuming `bc` and/or `dc` are already built), run the
+following command:
+
+```
+make test
+```
+
+That's it. That's all.
+
+It will return an error code if the test suite failed. It will also print out
+information about the failure.
+
+If you want the test suite to go fast, then run the following command:
+
+```
+make -j<cores> test
+```
+
+Where `<cores>` is the number of cores that your computer has. Of course, this
+requires a `make` implementation that supports that option, but most do. (And I
+will use this convention throughout the rest of this section.)
+
+I have even tried as much as possible, to put longer-running tests near the
+beginning of the run so that the entire suite runs as fast as possible.
+
+However, if you want to be sure which test is failing, then running a bare
+`make test` is a great way to do that.
+
+But enough about how you have no excuses to use the test suite as much as
+possible; let's talk about how it works and what you *can* do with it.
+
+### Test Suite Portability
+
+The test suite is meant to be run by users and packagers as part of their
+install process.
+
+This puts some constraints on the test suite, but the biggest is that the test
+suite must be as [portable as `bc` itself][136].
+
+This means that the test suite must be implemented in pure POSIX `make`, `sh`,
+and C99.
+
+#### Testing History
+
+Unfortunately, testing history as part of the automatic test suite is not really
+possible, or rather, it is not easy with portable tools, and since the test
+suite is designed to be run by users, it needs to use portable tools.
+
+However, history can be tested manually, and I do suggest doing so for any
+release that changed any history code.
+
+### Test Coverage
+
+In order to get test coverage information, you need `gcc`, `gcov`, and `gcovr`.
+
+If you have them, run the following commands:
+
+```
+CC=gcc ./configure -gO3 -c
+make -j<cores>
+make coverage
+```
+
+Note that `make coverage` does not have a `-j<cores>` part; it cannot be run in
+parallel. If you try, you will get errors. And note that `CC=gcc` is used.
+
+After running those commands, you can open your web browser and open the
+`index.html` file in the root directory of the repo. From there, you can explore
+all of the coverage results.
+
+If you see lines or branches that you think you could hit with a manual
+execution, do such manual execution, and then run the following command:
+
+```
+make coverage_output
+```
+
+and the coverage output will be updated.
+
+If you want to rerun `make coverage`, you must do a `make clean` and build
+first, like this:
+
+```
+make clean
+make -j<cores>
+make coverage
+```
+
+Otherwise, you will get errors.
+
+Note that history does, by default, show no coverage at all. This is because, as
+mentioned above, testing history with the test suite is not really possible.
+
+However, it can be tested manually before running `make coverage_output`. Then
+it should start showing coverage.
+
+### [AddressSanitizer][21] and Friends
+
+To run the test suite under [AddressSanitizer][21] or any of its friends, use
+the following commands:
+
+```
+CFLAGS="-fsanitize=<sanitizer> ./configure -gO3 -m
+make -j<cores>
+make -j<cores> test
+```
+
+where `<sanitizer>` is the correct name of the desired sanitizer. There is one
+exception to the above: `UndefinedBehaviorSanitizer` should be run on a build
+that has zero optimization, so for `UBSan`, use the following commands:
+
+```
+CFLAGS="-fsanitize=undefined" ./configure -gO0 -m
+make -j<cores>
+make -j<cores> test
+```
+
+### [Valgrind][20]
+
+To run the test suite under [Valgrind][20], run the following commands:
+
+```
+./configure -gO3 -v
+make -j<cores>
+make -j<cores> test
+```
+
+It really is that easy. I have directly added infrastructure to the build system
+and the test suite to ensure that if [Valgrind][20] detects any memory errors or
+any memory leaks at all, it will tell the test suite infrastructure to report an
+error and exit accordingly.
 
 ## POSIX Shell Scripts
 
@@ -1247,13 +1514,16 @@ POSIX locales will be available.
 
 The locale system of `bc` includes all files under [`locales/`][85],
 [`scripts/locale_install.sh`][87], [`scripts/locale_uninstall.sh`][88],
-[`scripts/functions.sh`][105], and the parts of the build system needed to
-activate it. There is also code in [`src/vm.c`][58] for loading the current
-locale.
+[`scripts/functions.sh`][105], the `bc_err_*` constants in [`src/data.c`][131],
+and the parts of the build system needed to activate it. There is also code in
+[`src/vm.c`][58] (in `bc_vm_gettext()` for loading the current locale.
+
+If the order of error messages and/or categories are changed, the order of
+errors must be changed in the enum, the default error messages and categories in
+[`src/data.c`][131], and all of the messages and categories in the `.msg` files
+under [`locales/`][85].
 
 ## Fuzzing
-
-TODO
 
 The quality of this `bc` is directly related to the amount of fuzzing I did. As
 such, I spent a lot of work making the fuzzing convenient and fast, though I do
@@ -1274,14 +1544,12 @@ Second, there are several things which make fuzzing convenient:
 
 ### Fuzzing Performance
 
-TODO
-
 Fuzzing with [AFL++][125] can be ***SLOW***. Spending the time to make it as
 fast as possible is well worth the time.
 
 However, there is a caveat to the above: it is easy to make [AFL++][125] crash,
-be unstable, or be unable to find "paths" (see [AFL++ Quickstart][129]) if the performance
-enhancements are done poorly.
+be unstable, or be unable to find "paths" (see [AFL++ Quickstart][129]) if the
+performance enhancements are done poorly.
 
 To stop [AFL++][125] from crashing on test cases, and to be stable, these are
 the requirements:
@@ -1314,6 +1582,13 @@ stability in that situation is 100%.
 As a result, my [AFL++][125] setup only uses deferred initialization. That's the
 `__AFL_INIT()` call.
 
+(Note: there is one more big item that must be done in order to have 100%
+stability: the pseudo-random number generator *must* start with *exactly* the
+same seed for every run. This is set up with the `tmux` and `tmuxp` configs that
+I talk about below in [Convenience][130]. This seed is set before the
+`__AFL_INIT()` call, so setting it has no runtime cost for each run, but without
+it, stability would be abysmal.)
+
 On top of that, while `dc` is plenty fast under fuzzing (because of a faster
 parser and less test cases), `bc` can be slow. So I have split the `bc` input
 corpus into three parts, and I set fuzzers to run on each individually. This
@@ -1345,11 +1620,19 @@ A fuzz-ideal build has several things:
 * Debug mode, to crash as easily as possible.
 * Full optimization (including [Link-Time Optimization][126]), for performance.
 * [AFL++][125]'s deferred initialization (see [Fuzzing Performance][127] above).
+* And `AFL_HARDEN=1` during the build to harden the build. See the [AFL++][125]
+  documentation for more information.
 
-To add to that, in `tests/fuzzing/`, there are two `yaml` files:
-[`tests/fuzzing/bc_afl.yaml`][120] and
-[`tests/fuzzing/bc_afl_continue.yaml`][121]. These files are meant to be used
-with [`tmux`][122] and [`tmuxp`][123]. While other programmers will have to
+There is one big thing that a fuzz-ideal build does *not* have: it does not use
+[AFL++][125]'s `libdislocator.so`. This is because `libdislocator.so` crashes if
+it fails to allocate memory. I do not want to consider those as crashes because
+my `bc` does, in fact, handle them gracefully by exiting with a set error code.
+So `libdislocator.so` is not an option.
+
+However, to add to [`scripts/fuzz_prep.sh`][119] making a fuzz-ideal build, in
+`tests/fuzzing/`, there are two `yaml` files: [`tests/fuzzing/bc_afl.yaml`][120]
+and [`tests/fuzzing/bc_afl_continue.yaml`][121]. These files are meant to be
+used with [`tmux`][122] and [`tmuxp`][123]. While other programmers will have to
 adjust the `start_directory` item, once it is adjusted, then using this command:
 
 ```
@@ -1433,7 +1716,7 @@ I occasionally add to the input corpuses. These files come from new files in the
 However, when I add new files to an input corpus, I sometimes reduce the size of
 the file by removing some redundancies.
 
-### AFL++ Quickstart
+### [AFL++][125] Quickstart
 
 The way [AFL++][125] works is complicated.
 
@@ -1542,6 +1825,11 @@ place.
 ### [Async-Signal-Safe][115] Signal Handling
 
 TODO
+
+* Async-signal-safe functions in handlers.
+* `volatile sig_atomic_t`.
+* Setting flags to specific values, to make it atomic. (No adds because it
+  might not be atomic at that point.)
 
 ### Asserts
 
@@ -1796,6 +2084,11 @@ TODO
 
 * Bytecode.
 * Stack machine.
+* `stack` vs. `results`.
+* `BcInstPtr` for marking where execution is.
+* Variables are arrays, in order to push arguments on them and to implement
+  autos.
+* Arrays are arrays as well.
 
 #### Bytecode Indices
 
@@ -2057,6 +2350,16 @@ TODO
 
 TODO
 
+## `bcl`
+
+TODO
+
+* What is included.
+* What is *not* included.
+* Contexts and why.
+* Signal handling.
+* Encapsulation of numbers.
+
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
 [3]: https://en.wikipedia.org/wiki/Dc_(Unix)
@@ -2186,3 +2489,10 @@ TODO
 [127]: #fuzzing-performance
 [128]: #radamsa
 [129]: #afl-quickstart
+[130]: #convenience
+[131]: #datac
+[132]: https://git.yzena.com/gavin/vim-bc
+[133]: https://git.yzena.com/gavin/bc_libs
+[134]: #debugging
+[135]: #asserts
+[136]: #portability

@@ -204,6 +204,8 @@ checkerrtest()
 		die "$_checkerrtest_d" "returned no error" "$_checkerrtest_name" 127
 	fi
 
+	# This is to check for memory errors with Valgrind, which is told to return
+	# 100 on memory errors.
 	if [ "$_checkerrtest_error" -eq 100 ]; then
 
 		_checkerrtest_output=$(cat "$_checkerrtest_out")
