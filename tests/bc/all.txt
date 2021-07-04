@@ -24,6 +24,7 @@ scientific
 engineering
 globals
 strings
+strings2
 letters
 exponent
 log
@@ -44,3 +45,4 @@ misc7
 void
 rand
 lib2
+recursive_arrays

@@ -51,10 +51,13 @@ print_results.txt
 bessel.txt
 bessel_results.txt
 prime.txt
+strings2.txt
+strings2_results.txt
 tests/bc/scripts/add.txt
 tests/bc/scripts/divide.txt
 tests/bc/scripts/multiply.txt
 tests/bc/scripts/subtract.txt
+tests/bc/scripts/strings2.txt
 benchmarks/bc/add.txt
 benchmarks/bc/divide.txt
 benchmarks/bc/multiply.txt

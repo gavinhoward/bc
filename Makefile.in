@@ -413,6 +413,7 @@ clean_tests: clean clean_config clean_coverage
 	@$(RM) -f tests/bc/parse.txt tests/bc/parse_results.txt
 	@$(RM) -f tests/bc/print.txt tests/bc/print_results.txt
 	@$(RM) -f tests/bc/bessel.txt tests/bc/bessel_results.txt
+	@$(RM) -f tests/bc/strings2.txt tests/bc/strings2_results.txt
 	@$(RM) -f tests/bc/scripts/bessel.txt
 	@$(RM) -f tests/bc/scripts/parse.txt
 	@$(RM) -f tests/bc/scripts/print.txt
@@ -420,6 +421,7 @@ clean_tests: clean clean_config clean_coverage
 	@$(RM) -f tests/bc/scripts/divide.txt
 	@$(RM) -f tests/bc/scripts/multiply.txt
 	@$(RM) -f tests/bc/scripts/subtract.txt
+	@$(RM) -f tests/bc/scripts/strings2.txt
 	@$(RM) -f tests/dc/scripts/prime.txt
 	@$(RM) -f .log_*.txt
 	@$(RM) -f .math.txt .results.txt .ops.txt
