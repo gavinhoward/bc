@@ -241,10 +241,10 @@ const BcVecFree bc_vec_dtors[] = {
 #if !BC_ENABLE_LIBRARY
 #ifndef NDEBUG
 	bc_id_free,
+	bc_func_free,
 #endif // NDEBUG
 	bc_slab_free,
 	bc_const_free,
-	bc_func_free,
 	bc_result_free,
 #if BC_ENABLE_HISTORY
 	bc_history_string_free,

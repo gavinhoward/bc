@@ -1802,7 +1802,11 @@ void bc_program_init(BcProgram *p) {
 	if (BC_IS_BC) bc_num_init(&p->last, BC_NUM_DEF_SIZE);
 #endif // BC_ENABLED
 
+#ifndef NDEBUG
 	bc_vec_init(&p->fns, sizeof(BcFunc), BC_DTOR_FUNC);
+#else // NDEBUG
+	bc_vec_init(&p->fns, sizeof(BcFunc), BC_DTOR_NONE);
+#endif // NDEBUG
 	bc_map_init(&p->fn_map);
 	bc_program_insertFunc(p, bc_func_main);
 	bc_program_insertFunc(p, bc_func_read);
