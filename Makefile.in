@@ -331,6 +331,47 @@ test_dc_header:
 timeconst:
 	%%TIMECONST%%
 
+test_history: test_history_header test_bc_history test_dc_history
+	@printf '\nAll history tests passed.\n\n$(TEST_STARS)\n'
+
+test_bc_history:%%BC_HISTORY_TEST_PREREQS%%
+
+test_bc_history_all: test_bc_history1 test_bc_history2 test_bc_history3 test_bc_history4
+
+test_bc_history_skip:
+	@printf 'No bc history tests to run\n'
+
+test_bc_history1:
+	@sh tests/history.sh bc 1 %%BC_TEST_EXEC%%
+
+test_bc_history2:
+	@sh tests/history.sh bc 2 %%BC_TEST_EXEC%%
+
+test_bc_history3:
+	@sh tests/history.sh bc 3 %%BC_TEST_EXEC%%
+
+test_bc_history4:
+	@sh tests/history.sh bc 4 %%BC_TEST_EXEC%%
+
+test_dc_history:%%DC_HISTORY_TEST_PREREQS%%
+
+test_dc_history_all: test_dc_history1 test_dc_history2 test_dc_history3
+
+test_dc_history_skip:
+	@printf 'No dc history tests to run\n'
+
+test_dc_history1:
+	@sh tests/history.sh dc 1 %%DC_TEST_EXEC%%
+
+test_dc_history2:
+	@sh tests/history.sh dc 2 %%DC_TEST_EXEC%%
+
+test_dc_history3:
+	@sh tests/history.sh dc 3 %%DC_TEST_EXEC%%
+
+test_history_header:
+	@printf '$(TEST_STARS)\n\nRunning history tests...\n\n'
+
 library_test: $(LIBBC)
 	$(CC) $(CFLAGS) $(BCL_TEST_C) $(LIBBC) -o $(BCL_TEST)
 

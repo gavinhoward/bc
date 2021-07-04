@@ -903,7 +903,7 @@ link="@printf 'No link necessary\\\\n'"
 main_exec="BC"
 executable="BC_EXEC"
 
-tests="test_bc timeconst test_dc"
+tests="test_bc timeconst test_dc test_history"
 
 bc_test="@tests/all.sh bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
 dc_test="@tests/all.sh dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
@@ -920,6 +920,9 @@ else
 	bc_test_exec='$(BC_EXEC)'
 	dc_test_exec='$(DC_EXEC)'
 fi
+
+test_bc_history_prereqs="test_bc_history_all"
+test_dc_history_prereqs="test_dc_history_all"
 
 karatsuba="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
 karatsuba_test="@printf 'karatsuba cannot be run because one of bc or dc is not built\\\\n'"
@@ -950,6 +953,8 @@ if [ "$library" -ne 0 ]; then
 	default_target_cmd="ar -r -cu \$(LIBBC) \$(OBJ)"
 	default_target="\$(LIBBC)"
 	tests="test_library"
+	test_bc_history_prereqs=" test_bc_history_skip"
+	test_dc_history_prereqs=" test_dc_history_skip"
 
 elif [ "$bc_only" -eq 1 ]; then
 
@@ -961,6 +966,7 @@ elif [ "$bc_only" -eq 1 ]; then
 	executables="bc"
 
 	dc_test="@printf 'No dc tests to run\\\\n'"
+	test_dc_history_prereqs=" test_dc_history_skip"
 
 	install_prereqs=" install_execs"
 	install_man_prereqs=" install_bc_manpage"
@@ -969,7 +975,7 @@ elif [ "$bc_only" -eq 1 ]; then
 
 	default_target="\$(BC_EXEC)"
 	second_target="\$(DC_EXEC)"
-	tests="test_bc timeconst"
+	tests="test_bc timeconst test_history"
 
 elif [ "$dc_only" -eq 1 ]; then
 
@@ -985,6 +991,7 @@ elif [ "$dc_only" -eq 1 ]; then
 	executable="DC_EXEC"
 
 	bc_test="@printf 'No bc tests to run\\\\n'"
+	test_bc_history_prereqs=" test_bc_history_skip"
 
 	timeconst="@printf 'timeconst cannot be run because bc is not built\\\\n'"
 
@@ -993,7 +1000,7 @@ elif [ "$dc_only" -eq 1 ]; then
 	uninstall_prereqs=" uninstall_dc"
 	uninstall_man_prereqs=" uninstall_dc_manpage"
 
-	tests="test_dc"
+	tests="test_dc test_history"
 
 else
 
@@ -1252,6 +1259,11 @@ if [ "$hist" -eq 1 ]; then
 
 	set -e
 
+fi
+
+if [ "$hist" -eq 0 ]; then
+	test_bc_history_prereqs=" test_bc_history_skip"
+	test_dc_history_prereqs=" test_dc_history_skip"
 fi
 
 # Test OpenBSD. This is not in an if statement because regardless of whatever
@@ -1532,7 +1544,9 @@ contents=$(replace "$contents" "EXEC" "$executable")
 contents=$(replace "$contents" "TESTS" "$tests")
 
 contents=$(replace "$contents" "BC_TEST" "$bc_test")
+contents=$(replace "$contents" "BC_HISTORY_TEST_PREREQS" "$test_bc_history_prereqs")
 contents=$(replace "$contents" "DC_TEST" "$dc_test")
+contents=$(replace "$contents" "DC_HISTORY_TEST_PREREQS" "$test_dc_history_prereqs")
 
 contents=$(replace "$contents" "VG_BC_TEST" "$vg_bc_test")
 contents=$(replace "$contents" "VG_DC_TEST" "$vg_dc_test")
