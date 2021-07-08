@@ -1261,9 +1261,13 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
+# We have to disable the history tests if it is disabled.
 if [ "$hist" -eq 0 ]; then
 	test_bc_history_prereqs=" test_bc_history_skip"
 	test_dc_history_prereqs=" test_dc_history_skip"
+	history_tests="@printf 'History not built; skipping history tests...\\\\n'"
+else
+	history_tests="@printf '\$(TEST_STARS)\\\\n\\\\nRunning history tests...\\\\n\\\\n' \&\& tests/history.sh bc -a \&\& tests/history.sh dc -a \&\& printf '\\\\nAll history tests passed.\\\\n\\\\n\$(TEST_STARS)\\\\n'"
 fi
 
 # Test OpenBSD. This is not in an if statement because regardless of whatever
@@ -1547,6 +1551,7 @@ contents=$(replace "$contents" "BC_TEST" "$bc_test")
 contents=$(replace "$contents" "BC_HISTORY_TEST_PREREQS" "$test_bc_history_prereqs")
 contents=$(replace "$contents" "DC_TEST" "$dc_test")
 contents=$(replace "$contents" "DC_HISTORY_TEST_PREREQS" "$test_dc_history_prereqs")
+contents=$(replace "$contents" "HISTORY_TESTS" "$history_tests")
 
 contents=$(replace "$contents" "VG_BC_TEST" "$vg_bc_test")
 contents=$(replace "$contents" "VG_DC_TEST" "$vg_dc_test")

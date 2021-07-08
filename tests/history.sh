@@ -33,26 +33,46 @@ testdir=$(dirname "$script")
 
 . "$testdir/../scripts/functions.sh"
 
+# usage: history.sh dir -a|idx
+
+py=$(command -v python3)
+err=$?
+
+if [ "$err" -ne 0 ]; then
+
+	py=$(command -v python)
+	err=$?
+
+	if [ "$err" -ne 0 ]; then
+		printf 'Could not find Python 3.\n'
+		printf 'Skipping %s history tests...\n' "$d"
+		exit 0
+	fi
+fi
+
 d="$1"
 shift
 
 idx="$1"
 shift
 
-py=$(command -v python3)
-err=$?
+if [ "$idx" = "-a" ]; then
+	idx=$("$py" "$testdir/history.py" "$d" -a)
+	idx=$(printf '%s - 1\n' "$idx" | bc)
+	st=0
+else
+	st="$idx"
+fi
 
-if [ "$err" -eq 0 ]; then
+for i in $(seq "$st" "$idx"); do
 
-	printf 'Running %s history test %d...' "$d" "$idx"
+	printf 'Running %s history test %d...' "$d" "$i"
 
-	"$py" "$testdir/history.py" "$d" "$idx" "$@"
+	"$py" "$testdir/history.py" "$d" "$i" "$@"
 	err=$?
 
-	checktest_retcode "$d" "$err" "$d $idx history tests"
+	checktest_retcode "$d" "$err" "$d history tests $i"
 
 	printf 'pass\n'
-else
-	printf 'Could not find Python 3.\n'
-	printf 'Skipping %s history test...\n' "$d"
-fi
+
+done
