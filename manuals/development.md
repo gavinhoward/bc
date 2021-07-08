@@ -1523,6 +1523,10 @@ errors must be changed in the enum, the default error messages and categories in
 [`src/data.c`][131], and all of the messages and categories in the `.msg` files
 under [`locales/`][85].
 
+## Static Analysis
+
+TODO
+
 ## Fuzzing
 
 The quality of this `bc` is directly related to the amount of fuzzing I did. As

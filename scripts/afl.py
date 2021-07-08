@@ -137,7 +137,7 @@ def exe_name(d):
 
 # Housekeeping.
 script = sys.argv[0]
-testdir = os.path.dirname(script)
+scriptdir = os.path.dirname(script)
 
 # Must run this script alone.
 if __name__ != "__main__":
@@ -168,13 +168,13 @@ if len(sys.argv) >= idx + 2:
 	resultsdir = sys.argv[idx + 1]
 else:
 	if exedir == "bc1":
-		resultsdir = testdir + "/fuzzing/bc_outputs1"
+		resultsdir = scriptdir + "/fuzzing/bc_outputs1"
 	elif exedir == "bc2":
-		resultsdir = testdir + "/fuzzing/bc_outputs2"
+		resultsdir = scriptdir + "/fuzzing/bc_outputs2"
 	elif exedir == "bc3":
-		resultsdir = testdir + "/fuzzing/bc_outputs3"
+		resultsdir = scriptdir + "/fuzzing/bc_outputs3"
 	elif exedir == "dc":
-		resultsdir = testdir + "/fuzzing/dc_outputs"
+		resultsdir = scriptdir + "/fuzzing/dc_outputs"
 	else:
 		raise ValueError("exedir must be either bc1, bc2, bc3, or dc");
 
@@ -184,7 +184,7 @@ print("resultsdir: {}".format(resultsdir))
 if len(sys.argv) >= idx + 3:
 	exe = sys.argv[idx + 2]
 else:
-	exe = testdir + "/../bin/" + exe_name(exedir)
+	exe = scriptdir + "/../bin/" + exe_name(exedir)
 
 exebase = os.path.basename(exe)
 
@@ -204,7 +204,7 @@ else:
 for i in range(4, len(sys.argv)):
 	exe.append(sys.argv[i])
 
-out = testdir + "/../.test.txt"
+out = scriptdir + "/../.test.txt"
 
 print(os.path.realpath(os.getcwd()))
 

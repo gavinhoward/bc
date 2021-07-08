@@ -951,8 +951,8 @@ static void bc_history_swap(BcHistory *h) {
 	ncl = bc_history_nextLen(h->buf.v, BC_HIST_BUF_LEN(h), h->pos, NULL);
 
 	// To perform a swap we need:
-	// * nonzero char length to the left
-	// * not at the end of the line
+	// * Nonzero char length to the left.
+	// * To not be at the end of the line.
 	if (pcl && h->pos != BC_HIST_BUF_LEN(h) && pcl < 5 && ncl < 5) {
 
 		memcpy(auxb, h->buf.v + h->pos - pcl, pcl);
