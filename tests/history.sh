@@ -53,5 +53,6 @@ if [ "$err" -eq 0 ]; then
 
 	printf 'pass\n'
 else
+	printf 'Could not find Python 3.\n'
 	printf 'Skipping %s history test...\n' "$d"
 fi
