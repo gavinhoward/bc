@@ -663,7 +663,7 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 static void bc_history_refresh(BcHistory *h) {
 
 	char* buf = h->buf.v;
-	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos;
+	size_t colpos, len = BC_HIST_BUF_LEN(h), pos = h->pos, extras_len = 0;
 
 	bc_file_flush(&vm.fout, bc_flush_none);
 
@@ -684,21 +684,31 @@ static void bc_history_refresh(BcHistory *h) {
 
 	// Take the extra stuff into account.
 	if (h->extras.len > 1) {
-		len += h->extras.len - 1;
-		pos += h->extras.len - 1;
-		bc_file_write(&vm.fout, bc_flush_none, h->extras.v, h->extras.len - 1);
+
+		extras_len = h->extras.len - 1;
+
+		bc_vec_grow(&h->buf, extras_len);
+
+		len += extras_len;
+		pos += extras_len;
+
+		bc_file_write(&vm.fout, bc_flush_none, h->extras.v, extras_len);
 	}
 
 	// Write the prompt, if desired.
 	if (BC_PROMPT) bc_file_write(&vm.fout, bc_flush_none, h->prompt, h->plen);
 
-	bc_file_write(&vm.fout, bc_flush_none, buf, BC_HIST_BUF_LEN(h));
+	bc_file_write(&vm.fout, bc_flush_none, h->buf.v, len);
 
 	// Erase to right.
 	bc_file_write(&vm.fout, bc_flush_none, "\x1b[0K", 4);
 
+	// We need to be sure to grow this.
+	if (pos >= h->buf.len - extras_len)
+		bc_vec_grow(&h->buf, pos + extras_len);
+
 	// Move cursor to original position.
-	colpos = bc_history_colPos(buf, len, pos) + h->pcol;
+	colpos = bc_history_colPos(h->buf.v, len - extras_len, pos) + h->pcol;
 
 	if (colpos) bc_file_printf(&vm.fout, "\r\x1b[%zuC", colpos);
 
