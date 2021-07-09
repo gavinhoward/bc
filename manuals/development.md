@@ -533,7 +533,7 @@ useful.
 #### `lib.bc`
 
 A `bc` script containing the [standard math library][5] required by POSIX. See
-the [POSIX standard][6] for what is required.
+the [POSIX standard][2] for what is required.
 
 This file does not have any extraneous whitespace, except for tabs at the
 beginning of lines. That is because this data goes directly into the binary,
@@ -1252,6 +1252,8 @@ TODO
 * `read` tests.
 * Other tests.
 * Integration with the build system.
+* Skipping tests.
+* Adding tests.
 
 While the source code may be the heart and soul of `bc`, the test suite is the
 arms and legs: it gives `bc` the power to do anything it needs to do.
@@ -1298,6 +1300,98 @@ However, if you want to be sure which test is failing, then running a bare
 But enough about how you have no excuses to use the test suite as much as
 possible; let's talk about how it works and what you *can* do with it.
 
+### History Tests
+
+There are automatic tests for history; however, they have dependencies: Python 3
+and [`pexpect`][137].
+
+As a result, because I need the [test suite to be portable][138], like the rest
+of `bc`, the history tests are carefully guarded with things to ensure that they
+are skipped, rather than failing if Python and [`pexpect`][137] are not
+installed. For this reason, there is a `sh` script, [`tests/history.sh`][140]
+that runs the actual script, [`tests/history.py`][139].
+
+I have added as many tests as I could to cover as many lines and branches as
+possible. I could have done more, but doing so would have required a lot of
+time.
+
+I have tried to make it as easy as possible to run the history tests. They will
+run automatically if you use the `make test` command, and they will also use
+parallel execution with `make -j<cores> test`.
+
+All of the tests are contained in [`tests/history.py`][139]. The reason for this
+is because they are in Python, and I don't have an easy way of including Python
+(or at the very least, I am not familiar enough with Python to do that). So they
+are all in the same file to make it easier on me.
+
+Each test is one function in the script. They all take the same number and type
+of arguments:
+
+1.	`exe`: the executable to run.
+2.	`args`: the arguments to pass to the executable.
+3.	`env`: the environment.
+
+Each function creates a child process with `pexpect.spawn` and then tests with
+that child. Then the function returns the child to the caller, who closes it
+and checks its error code against its expected error code.
+
+Yes, the error code is not a success all the time. This is because of the UTF-8
+tests; `bc` gives a fatal error on any non-ASCII data because ASCII is all `bc`
+is required to handle, per the [standard][2].
+
+So in [`tests/history.py`][139], there are four main arrays:
+
+* `bc` test functions,
+* `bc` expected error codes.
+* `dc` test functions.
+* `dc` expected error codes.
+
+[`tests/history.py`][139] takes an index as an argument; that index is what test
+it should run. That index is used to index into the proper test and error code
+array.
+
+If you need to add more history tests, you need to do the following:
+
+1.	Add the function for that test to [`tests/history.py`][139].
+2.	Add the function to the proper array of tests.
+3.	Add the expected error code to the proper array of error codes.
+4.	Add a target for the test to [`Makefile.in`][70].
+5.	Add that target as a prerequisite to either `test_bc_history` or
+	`test_dc_history`.
+
+You do not need to do anything to add the test to `history_all_tests` (see
+[Section Tests][141] below) because the scripts will automatically run all of
+the tests properly.
+
+### Linux `timeconst.bc` Script
+
+One special script that `bc`'s test suite will use is the [Linux `timeconst.bc`
+script][6].
+
+I made the test suite able to use this script because the reason the
+[toybox][16] maintainer wanted my `bc` is because of this script, and I wanted
+to be sure that it would run correctly on the script.
+
+However, it is not part of the distribution, nor is it part of the repository.
+The reason for this is because [`timeconst.bc`][6] is under the GPL, while this
+repo is under a BSD license.
+
+If you want `bc` to run tests on [`timeconst.bc`][6], download it and place it
+at `tests/bc/scripts/timeconst.bc`. If it is there, the test suite will
+automatically run its tests; otherwise, it will skip it.
+
+### Section Tests
+
+While the test suite has a lot of targets in order to get parallel execution,
+there are five targets that allow you to run each section, or all, of the test
+suite as one unit:
+
+* `bc_all_tests` (`bc` tests)
+* `timeconst_all_tests` ([Linux `timeconst.bc` script][6] tests)
+* `dc_all_tests` (`dc` tests)
+* `history_all_tests` (history tests)
+* `run_all_tests` (combination of the previous four)
+
 ### Test Suite Portability
 
 The test suite is meant to be run by users and packagers as part of their
@@ -1308,15 +1402,6 @@ suite must be as [portable as `bc` itself][136].
 
 This means that the test suite must be implemented in pure POSIX `make`, `sh`,
 and C99.
-
-#### Testing History
-
-Unfortunately, testing history as part of the automatic test suite is not really
-possible, or rather, it is not easy with portable tools, and since the test
-suite is designed to be run by users, it needs to use portable tools.
-
-However, history can be tested manually, and I do suggest doing so for any
-release that changed any history code.
 
 ### Test Coverage
 
@@ -2371,7 +2456,7 @@ TODO
 [3]: https://en.wikipedia.org/wiki/Dc_(Unix)
 [4]: https://en.wikipedia.org/wiki/Reverse_Polish_notation
 [5]: ./bc/A.1.md#standard-library
-[6]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
+[6]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc
 [7]: ./bc/A.1.md#extended-library
 [8]: #libbc
 [9]: #strgensh
@@ -2502,3 +2587,8 @@ TODO
 [134]: #debugging
 [135]: #asserts
 [136]: #portability
+[137]: https://pexpect.readthedocs.io/en/stable/
+[138]: #test-suite-portability
+[139]: #historypy
+[140]: #historysh
+[141]: #section-tests
