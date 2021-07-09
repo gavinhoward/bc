@@ -35,6 +35,7 @@ testdir=$(dirname "$script")
 
 # usage: history.sh dir -a|idx
 
+# If Python does not exist, then just skip.
 py=$(command -v python3)
 err=$?
 
@@ -50,12 +51,16 @@ if [ "$err" -ne 0 ]; then
 	fi
 fi
 
+# d is "bc" or "dc"
 d="$1"
 shift
 
+# idx is either an index of the test to run or "-a". If it is "-a", then all
+# tests are run.
 idx="$1"
 shift
 
+# Set the test range correctly for all tests or one test. st is the start index.
 if [ "$idx" = "-a" ]; then
 	idx=$("$py" "$testdir/history.py" "$d" -a)
 	idx=$(printf '%s - 1\n' "$idx" | bc)
@@ -64,6 +69,7 @@ else
 	st="$idx"
 fi
 
+# Run all of the tests.
 for i in $(seq "$st" "$idx"); do
 
 	printf 'Running %s history test %d...' "$d" "$i"

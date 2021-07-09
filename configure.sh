@@ -1261,11 +1261,11 @@ if [ "$hist" -eq 1 ]; then
 
 fi
 
-# We have to disable the history tests if it is disabled.
-if [ "$hist" -eq 0 ]; then
+# We have to disable the history tests if it is disabled or valgrind is on.
+if [ "$hist" -eq 0 ] || [ "$vg" -ne 0 ]; then
 	test_bc_history_prereqs=" test_bc_history_skip"
 	test_dc_history_prereqs=" test_dc_history_skip"
-	history_tests="@printf 'History not built; skipping history tests...\\\\n'"
+	history_tests="@printf 'Skipping history tests...\\\\n'"
 else
 	history_tests="@printf '\$(TEST_STARS)\\\\n\\\\nRunning history tests...\\\\n\\\\n' \&\& tests/history.sh bc -a \&\& tests/history.sh dc -a \&\& printf '\\\\nAll history tests passed.\\\\n\\\\n\$(TEST_STARS)\\\\n'"
 fi
@@ -1331,6 +1331,9 @@ if [ "$extra_math" -eq 0 ]; then
 else
 	headers="$headers \$(EXTRA_MATH_HEADERS)"
 fi
+
+# All of these next if statements set the build type and mark certain source
+# files as unneeded so that they won't have targets generated for them.
 
 if [ "$hist" -eq 0 ]; then
 	manpage_args="${manpage_args}H"
