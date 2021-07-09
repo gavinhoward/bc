@@ -204,11 +204,9 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 
 void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 
-	sig_atomic_t lock;
-
 	assert(v != NULL && data != NULL && idx <= v->len);
 
-	BC_SIG_TRYLOCK(lock);
+	BC_SIG_ASSERT_LOCKED;
 
 	if (idx == v->len) bc_vec_push(v, data);
 	else {
@@ -225,8 +223,6 @@ void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 		memmove(ptr + esize, ptr, esize * (v->len++ - idx));
 		memmove(ptr, data, esize);
 	}
-
-	BC_SIG_TRYUNLOCK(lock);
 }
 
 void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {

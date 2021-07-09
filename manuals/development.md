@@ -1357,11 +1357,13 @@ make coverage
 
 Otherwise, you will get errors.
 
-Note that history does, by default, show no coverage at all. This is because, as
-mentioned above, testing history with the test suite is not really possible.
+If you want to run tests in parallel, you can do this:
 
-However, it can be tested manually before running `make coverage_output`. Then
-it should start showing coverage.
+```
+make -j<cores>
+make -j<cores> test
+make coverage_output
+```
 
 ### [AddressSanitizer][21] and Friends
 
