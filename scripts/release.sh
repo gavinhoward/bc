@@ -487,13 +487,13 @@ debug() {
 	runtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 
 	if [ "$_debug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runtests "$debug -fsanitize=undefined" "$_debug_CC" "-g" "$_debug_run_tests"
+		runtests "$debug -fsanitize=undefined" "$_debug_CC" "-gm" "$_debug_run_tests"
 	fi
 
 	runlibtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 
 	if [ "$_debug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runlibtests "$debug -fsanitize=undefined" "$_debug_CC" "-g" "$_debug_run_tests"
+		runlibtests "$debug -fsanitize=undefined" "$_debug_CC" "-gm" "$_debug_run_tests"
 	fi
 }
 
@@ -528,15 +528,15 @@ reldebug() {
 	runtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 
 	if [ "$_reldebug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runtests "$debug -fsanitize=address" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
-		runtests "$debug -fsanitize=memory" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
+		runtests "$debug -fsanitize=address" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
+		runtests "$debug -fsanitize=memory" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
 	fi
 
 	runlibtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 
 	if [ "$_reldebug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
-		runlibtests "$debug -fsanitize=address" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
-		runlibtests "$debug -fsanitize=memory" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
+		runlibtests "$debug -fsanitize=address" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
+		runlibtests "$debug -fsanitize=memory" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
 	fi
 }
 
