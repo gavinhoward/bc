@@ -513,7 +513,7 @@ BclError bcl_bigdig(BclNumber n, BclBigDig *result) {
 
 	assert(num != NULL && num->num != NULL);
 
-	bc_num_bigdig(num, result);
+	*result = bc_num_bigdig(num);
 
 err:
 	bcl_num_dtor(ctxt, n, num);

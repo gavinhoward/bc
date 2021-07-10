@@ -921,7 +921,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		BcBigDig *ptr, *ptr_t, val, max, min;
 		BcErr e;
 
-		bc_num_bigdig(l, &val);
+		val = bc_num_bigdig(l);
 		e = left->t - BC_RESULT_IBASE + BC_ERR_EXEC_IBASE;
 
 		if (sc) {
@@ -1029,7 +1029,7 @@ static void bc_program_pushArray(BcProgram *p, const char *restrict code,
 #endif // BC_ENABLED
 
 	bc_program_prep(p, &operand, &num, 0);
-	bc_num_bigdig(num, &temp);
+	temp = bc_num_bigdig(num);
 
 	r.t = BC_RESULT_ARRAY_ELEM;
 	r.d.loc.idx = (size_t) temp;
@@ -1499,7 +1499,7 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 	else {
 
 		bc_program_prep(p, &opnd, &num, 0);
-		bc_num_bigdig(num, &val);
+		val = bc_num_bigdig(num);
 
 		bc_vec_pop(&p->results);
 	}

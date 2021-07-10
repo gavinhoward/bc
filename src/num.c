@@ -596,15 +596,15 @@ static bool bc_num_nonInt(const BcNum *restrict n, BcNum *restrict r) {
 }
 
 #if BC_ENABLE_EXTRA_MATH
-static void bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c,
-                         BcBigDig *v)
+static BcBigDig bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
 	BcNum temp;
 
 	if (BC_ERR(bc_num_nonInt(b, &temp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 
 	bc_num_copy(c, a);
-	bc_num_bigdig(&temp, v);
+
+	return bc_num_bigdig(&temp);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -1339,7 +1339,7 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	neg = BC_NUM_NEG_NP(btemp);
 	BC_NUM_NEG_CLR_NP(btemp);
-	bc_num_bigdig(&btemp, &pow);
+	pow = bc_num_bigdig(&btemp);
 
 	BC_SIG_LOCK;
 
@@ -1395,11 +1395,11 @@ err:
 #if BC_ENABLE_EXTRA_MATH
 static void bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	BcBigDig val = 0;
+	BcBigDig val;
 
 	BC_UNUSED(scale);
 
-	bc_num_intop(a, b, c, &val);
+	val = bc_num_intop(a, b, c);
 
 	if (val < c->scale) bc_num_truncate(c, c->scale - val);
 	else if (val > c->scale) bc_num_extend(c, val - c->scale);
@@ -1407,22 +1407,22 @@ static void bc_num_place(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 static void bc_num_left(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	BcBigDig val = 0;
+	BcBigDig val;
 
 	BC_UNUSED(scale);
 
-	bc_num_intop(a, b, c, &val);
+	val = bc_num_intop(a, b, c);
 
 	bc_num_shiftLeft(c, (size_t) val);
 }
 
 static void bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
-	BcBigDig val = 0;
+	BcBigDig val;
 
 	BC_UNUSED(scale);
 
-	bc_num_intop(a, b, c, &val);
+	val = bc_num_intop(a, b, c);
 
 	if (BC_NUM_ZERO(c)) return;
 
@@ -2279,14 +2279,14 @@ BcBigDig bc_num_bigdig2(const BcNum *restrict n) {
 	return r;
 }
 
-void bc_num_bigdig(const BcNum *restrict n, BcBigDig *result) {
+BcBigDig bc_num_bigdig(const BcNum *restrict n) {
 
-	assert(n != NULL && result != NULL);
+	assert(n != NULL);
 
 	if (BC_ERR(BC_NUM_NEG(n))) bc_err(BC_ERR_MATH_NEGATIVE);
 	if (BC_ERR(bc_num_cmp(n, &vm.max) >= 0)) bc_err(BC_ERR_MATH_OVERFLOW);
 
-	*result = bc_num_bigdig2(n);
+	return bc_num_bigdig2(n);
 }
 
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
