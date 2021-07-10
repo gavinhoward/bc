@@ -43,6 +43,7 @@
 #include <rand.h>
 #include <program.h>
 #include <history.h>
+#include <library.h>
 #include <vm.h>
 
 #if !BC_ENABLE_LIBRARY
@@ -234,6 +235,8 @@ const char* const bc_err_msgs[] = {
 
 };
 
+#endif // !BC_ENABLE_LIBRARY
+
 const BcVecFree bc_vec_dtors[] = {
 	NULL,
 	bc_vec_free,
@@ -253,6 +256,8 @@ const BcVecFree bc_vec_dtors[] = {
 	bcl_num_destruct,
 #endif // !BC_ENABLE_LIBRARY
 };
+
+#if !BC_ENABLE_LIBRARY
 
 #if BC_ENABLE_HISTORY
 const BcFlushType bc_flush_none = BC_FLUSH_NO_EXTRAS_NO_CLEAR;

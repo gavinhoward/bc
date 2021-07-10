@@ -320,6 +320,7 @@ void bc_vec_free(void *vec) {
 	free(v->v);
 }
 
+#if !BC_ENABLE_LIBRARY
 static size_t bc_map_find(const BcVec *restrict v, const char *name) {
 
 	size_t low = 0, high = v->len;
@@ -397,7 +398,6 @@ char* bc_map_name(const BcVec *restrict v, size_t idx) {
 }
 #endif // DC_ENABLED
 
-#if !BC_ENABLE_LIBRARY
 static void bc_slab_init(BcSlab *s) {
 	s->s = bc_vm_malloc(BC_SLAB_SIZE);
 	s->len = 0;

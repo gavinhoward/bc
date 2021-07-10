@@ -45,8 +45,6 @@
 #include <num.h>
 #include <vm.h>
 
-static void bcl_num_destruct(void *num);
-
 void bcl_handleSignal(void) {
 
 	// Signal already in flight, or bc is not executing.
@@ -79,14 +77,14 @@ BclError bcl_init(void) {
 
 	BC_SIG_LOCK;
 
-	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), NULL);
+	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), BC_DTOR_NONE);
 
 	BC_FUNC_HEADER_INIT(err);
 
 	bc_vm_init();
 
-	bc_vec_init(&vm.ctxts, sizeof(BclContext), NULL);
-	bc_vec_init(&vm.out, sizeof(uchar), NULL);
+	bc_vec_init(&vm.ctxts, sizeof(BclContext), BC_DTOR_NONE);
+	bc_vec_init(&vm.out, sizeof(uchar), BC_DTOR_NONE);
 
 	srand((unsigned int) time(NULL));
 	bc_rand_init(&vm.rng);
@@ -182,8 +180,8 @@ BclContext bcl_ctxt_create(void) {
 
 	ctxt = bc_vm_malloc(sizeof(BclCtxt));
 
-	bc_vec_init(&ctxt->nums, sizeof(BcNum), bcl_num_destruct);
-	bc_vec_init(&ctxt->free_nums, sizeof(BclNumber), NULL);
+	bc_vec_init(&ctxt->nums, sizeof(BcNum), BC_DTOR_BCL_NUM);
+	bc_vec_init(&ctxt->free_nums, sizeof(BclNumber), BC_DTOR_NONE);
 
 	ctxt->scale = 0;
 	ctxt->ibase = 10;
@@ -392,7 +390,7 @@ err:
 	return idx;
 }
 
-static void bcl_num_destruct(void *num) {
+void bcl_num_destruct(void *num) {
 
 	BcNum *n = (BcNum*) num;
 
