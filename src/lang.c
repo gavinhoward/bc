@@ -59,7 +59,7 @@ void bc_const_free(void *constant) {
 void bc_func_insert(BcFunc *f, BcProgram *p, char *name,
                     BcType type, size_t line)
 {
-	BcLoc a;
+	BcAuto a;
 	size_t i, idx;
 
 	assert(f != NULL);
@@ -67,15 +67,17 @@ void bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 	idx = bc_program_search(p, name, type == BC_TYPE_VAR);
 
 	for (i = 0; i < f->autos.len; ++i) {
-		BcLoc *id = bc_vec_item(&f->autos, i);
-		if (BC_ERR(idx == id->loc && type == (BcType) id->idx)) {
+
+		BcAuto *aptr = bc_vec_item(&f->autos, i);
+
+		if (BC_ERR(idx == aptr->idx && type == aptr->type)) {
 			const char *array = type == BC_TYPE_ARRAY ? "[]" : "";
 			bc_error(BC_ERR_PARSE_DUP_LOCAL, line, name, array);
 		}
 	}
 
-	a.loc = idx;
-	a.idx = type;
+	a.idx = idx;
+	a.type = type;
 
 	bc_vec_push(&f->autos, &a);
 }
@@ -96,7 +98,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 
 		bc_vec_init(&f->strs, sizeof(char*), BC_DTOR_NONE);
 
-		bc_vec_init(&f->autos, sizeof(BcLoc), BC_DTOR_NONE);
+		bc_vec_init(&f->autos, sizeof(BcAuto), BC_DTOR_NONE);
 		bc_vec_init(&f->labels, sizeof(size_t), BC_DTOR_NONE);
 
 		f->nparams = 0;

@@ -339,6 +339,16 @@ typedef enum BcType {
 #endif // BC_ENABLED
 } BcType;
 
+#if BC_ENABLED
+typedef struct BcAuto {
+
+	size_t idx;
+
+	BcType type;
+
+} BcAuto;
+#endif // BC_ENABLED
+
 struct BcProgram;
 
 void bc_func_init(BcFunc *f, const char* name);

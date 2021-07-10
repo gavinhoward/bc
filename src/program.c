@@ -1085,7 +1085,7 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 	size_t i, nparams = bc_program_index(code, idx);
 	BcFunc *f;
 	BcVec *v;
-	BcLoc *a;
+	BcAuto *a;
 	BcResult *arg;
 
 	ip.idx = 0;
@@ -1114,14 +1114,17 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 		// If I have already pushed to a var, I need to make sure I
 		// get the previous version, not the already pushed one.
 		if (arg->t == BC_RESULT_VAR || arg->t == BC_RESULT_ARRAY) {
+
 			for (j = 0; j < i && last; ++j) {
-				BcLoc *loc = bc_vec_item(&f->autos, nparams - 1 - j);
-				last = (arg->d.loc.loc != loc->loc ||
-				        (!loc->idx) != (arg->t == BC_RESULT_VAR));
+
+				BcAuto *aptr = bc_vec_item(&f->autos, nparams - 1 - j);
+
+				last = (arg->d.loc.loc != aptr->idx ||
+				        (!aptr->type) != (arg->t == BC_RESULT_VAR));
 			}
 		}
 
-		bc_program_copyToVar(p, a->loc, (BcType) a->idx, last);
+		bc_program_copyToVar(p, a->idx, a->type, last);
 	}
 
 	BC_SIG_LOCK;
@@ -1129,9 +1132,9 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 	for (; i < f->autos.len; ++i) {
 
 		a = bc_vec_item(&f->autos, i);
-		v = bc_program_vec(p, a->loc, (BcType) a->idx);
+		v = bc_program_vec(p, a->idx, a->type);
 
-		if (a->idx == BC_TYPE_VAR) {
+		if (a->type == BC_TYPE_VAR) {
 			BcNum *n = bc_vec_pushEmpty(v);
 			bc_num_init(n, BC_NUM_DEF_SIZE);
 		}
@@ -1139,7 +1142,7 @@ static void bc_program_call(BcProgram *p, const char *restrict code,
 
 			BcVec *v2;
 
-			assert(a->idx == BC_TYPE_ARRAY);
+			assert(a->type == BC_TYPE_ARRAY);
 
 			v2 = bc_vec_pushEmpty(v);
 			bc_array_init(v2, true);
@@ -1186,8 +1189,8 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 	// We need to pop arguments as well, so this takes that into account.
 	for (i = 0; i < f->autos.len; ++i) {
 
-		BcLoc *a = bc_vec_item(&f->autos, i);
-		BcVec *v = bc_program_vec(p, a->loc, (BcType) a->idx);
+		BcAuto *a = bc_vec_item(&f->autos, i);
+		BcVec *v = bc_program_vec(p, a->idx, a->type);
 
 		bc_vec_pop(v);
 	}
