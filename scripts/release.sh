@@ -456,17 +456,22 @@ vg() {
 		_vg_bits=32
 	fi
 
-	build "$debug" "gcc" "-O0 -gv" "1" "$_vg_bits"
+	build "$debug" "gcc" "-O3 -gv" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O0 -gvb" "1" "$_vg_bits"
+	build "$debug" "gcc" "-O3 -gvb" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O0 -gvd" "1" "$_vg_bits"
+	build "$debug" "gcc" "-O3 -gvd" "1" "$_vg_bits"
+	runtest test
+
+	do_make clean_config
+
+	build "$debug" "gcc" "-O3 -gva" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
@@ -474,8 +479,8 @@ vg() {
 
 # Builds the debug series and runs the tests if run_tests allows. If sanitizers
 # are enabled, it also does UBSan.
-# @param CC               The C compiler.
-# @param run_tests        Whether to run tests or not.
+# @param CC         The C compiler.
+# @param run_tests  Whether to run tests or not.
 debug() {
 
 	_debug_CC="$1"
@@ -498,8 +503,8 @@ debug() {
 }
 
 # Builds the release series and runs the test if run_tests allows.
-# @param CC               The C compiler.
-# @param run_tests        Whether to run tests or not.
+# @param CC         The C compiler.
+# @param run_tests  Whether to run tests or not.
 release() {
 
 	_release_CC="$1"
@@ -515,8 +520,8 @@ release() {
 
 # Builds the release debug series and runs the test if run_tests allows. If
 # sanitizers are enabled, it also does ASan and MSan.
-# @param CC               The C compiler.
-# @param run_tests        Whether to run tests or not.
+# @param CC         The C compiler.
+# @param run_tests  Whether to run tests or not.
 reldebug() {
 
 	_reldebug_CC="$1"
@@ -541,8 +546,8 @@ reldebug() {
 }
 
 # Builds the min size release series and runs the test if run_tests allows.
-# @param CC               The C compiler.
-# @param run_tests        Whether to run tests or not.
+# @param CC         The C compiler.
+# @param run_tests  Whether to run tests or not.
 minsize() {
 
 	_minsize_CC="$1"
@@ -558,8 +563,8 @@ minsize() {
 
 # Builds all sets: debug, release, release debug, and min size, and runs the
 # tests if run_tests allows.
-# @param CC               The C compiler.
-# @param run_tests        Whether to run tests or not.
+# @param CC         The C compiler.
+# @param run_tests  Whether to run tests or not.
 build_set() {
 
 	_build_set_CC="$1"
