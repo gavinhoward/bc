@@ -355,7 +355,11 @@ bool bc_map_insert(BcVec *restrict v, const char *name,
 	if (*i != v->len && !strcmp(name, ((BcId*) bc_vec_item(v, *i))->name))
 		return false;
 
+#if BC_ENABLED
 	slabs = BC_IS_DC ? &vm.main_slabs : &vm.other_slabs;
+#else // BC_ENABLED
+	slabs = &vm.main_slabs;
+#endif // BC_ENABLED
 
 	id.name = bc_slabvec_strdup(slabs, name);
 	id.idx = idx;
