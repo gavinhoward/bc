@@ -40,14 +40,6 @@
 #include <lang.h>
 #include <vm.h>
 
-#ifndef NDEBUG
-void bc_id_free(void *id) {
-	BC_SIG_ASSERT_LOCKED;
-	assert(id != NULL);
-	free(((BcId*) id)->name);
-}
-#endif // NDEBUG
-
 void bc_const_free(void *constant) {
 	BcConst *c = constant;
 	BC_SIG_ASSERT_LOCKED;

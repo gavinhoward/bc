@@ -109,17 +109,25 @@ void bc_lex_token(BcLex *l);
 //
 // In other words, these flags are the sign declaring, "Here be dragons."
 
-/// This returns a pointer to the set of flags at the top of the flag stack.
-/// @a p is expected to be a BcParse pointer.
+/**
+ * This returns a pointer to the set of flags at the top of the flag stack.
+ * @a p is expected to be a BcParse pointer.
+ * @param p  The parser.
+ * @return   A pointer to the top flag set.
+ */
 #define BC_PARSE_TOP_FLAG_PTR(p) ((uint16_t*) bc_vec_top(&(p)->flags))
 
-/// This returns the flag set at the top of the flag stack. @a p is expected to
-/// be a BcParse pointer.
+/**
+ * This returns the flag set at the top of the flag stack. @a p is expected to
+ * be a BcParse pointer.
+ * @param p  The parser.
+ * @return   The top flag set.
+ */
 #define BC_PARSE_TOP_FLAG(p) (*(BC_PARSE_TOP_FLAG_PTR(p)))
 
 // After this point, all flag #defines are in sets of 2: one to define the flag,
 // and one to define a way to grab the flag from the flag set at the top of the
-// flag stack.
+// flag stack. All `p` arguments are pointers to a BcParse.
 
 // This flag is set if the parser has seen a left brace.
 #define BC_PARSE_FLAG_BRACE (UINTMAX_C(1)<<0)
@@ -167,62 +175,122 @@ void bc_lex_token(BcLex *l);
 #define BC_PARSE_FLAG_IF_END (UINTMAX_C(1)<<8)
 #define BC_PARSE_IF_END(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_IF_END)
 
-/// This returns true if bc is in a state where it should not execute any code
-/// at all.
+/**
+ * This returns true if bc is in a state where it should not execute any code
+ * at all.
+ * @param p  The parser.
+ * @return   True if execution cannot proceed, false otherwise.
+ */
 #define BC_PARSE_NO_EXEC(p) ((p)->flags.len != 1 || BC_PARSE_TOP_FLAG(p) != 0)
 
-/// This returns true if the token @a t is a statement delimiter, which is
-/// either a newline or a semicolon.
+/**
+ * This returns true if the token @a t is a statement delimiter, which is
+ * either a newline or a semicolon.
+ * @param t  The token to check.
+ * @return   True if t is a statement delimiter token; false otherwise.
+ */
 #define BC_PARSE_DELIMITER(t) \
 	((t) == BC_LEX_SCOLON || (t) == BC_LEX_NLINE || (t) == BC_LEX_EOF)
 
-/// This is poorly named, but it basically returns whether or not the current
-/// state is valid for the end of an else statement.
+/**
+ * This is poorly named, but it basically returns whether or not the current
+ * state is valid for the end of an else statement.
+ * @param f  The flag set to be checked.
+ * @return   True if the state is valid for the end of an else statement.
+ */
 #define BC_PARSE_BLOCK_STMT(f) \
 	((f) & (BC_PARSE_FLAG_ELSE | BC_PARSE_FLAG_LOOP_INNER))
 
-/// This returns the value of the data for an operator with precedence @a p and
-/// associativity @a l (true if left associative, false otherwise). This is used
-/// to construct an array of operators, bc_parse_ops, in src/data.c.
+/**
+ * This returns the value of the data for an operator with precedence @a p and
+ * associativity @a l (true if left associative, false otherwise). This is used
+ * to construct an array of operators, bc_parse_ops, in src/data.c.
+ * @param p  The precedence.
+ * @param l  True if the operator is left associative, false otherwise.
+ * @return   The data for the operator.
+ */
 #define BC_PARSE_OP(p, l) (((p) & ~(BC_LEX_CHAR_MSB(1))) | (BC_LEX_CHAR_MSB(l)))
 
-/// Returns the operator data for the lex token @a t.
+/**
+ * Returns the operator data for the lex token @a t.
+ * @param t  The token to return operator data for.
+ * @return   The operator data for @a t.
+ */
 #define BC_PARSE_OP_DATA(t) bc_parse_ops[((t) - BC_LEX_OP_INC)]
 
-/// Returns non-zero if operator @a op is left associative, zero otherwise.
+/**
+ * Returns non-zero if operator @a op is left associative, zero otherwise.
+ * @param op  The operator to test for associativity.
+ * @return    Non-zero if the operator is left associative, zero otherwise.
+ */
 #define BC_PARSE_OP_LEFT(op) (BC_PARSE_OP_DATA(op) & BC_LEX_CHAR_MSB(1))
 
-/// Returns the precedence of operator @a op. Lower number means higher
-/// precedence.
+/**
+ * Returns the precedence of operator @a op. Lower number means higher
+ * precedence.
+ * @param op  The operator to return the precedence of.
+ * @return    The precedence of @a op.
+ */
 #define BC_PARSE_OP_PREC(op) (BC_PARSE_OP_DATA(op) & ~(BC_LEX_CHAR_MSB(1)))
 
-/// A macro to easily define a series of bits for whether a lex token is an
-/// expression token or not. It takes 8 expression bits, corresponding to the 8
-/// bits in a uint8_t. You can see this in use for bc_parse_exprs in src/data.c.
+/**
+ * A macro to easily define a series of bits for whether a lex token is an
+ * expression token or not. It takes 8 expression bits, corresponding to the 8
+ * bits in a uint8_t. You can see this in use for bc_parse_exprs in src/data.c.
+ * @param e1  The first bit.
+ * @param e2  The second bit.
+ * @param e3  The third bit.
+ * @param e4  The fourth bit.
+ * @param e5  The fifth bit.
+ * @param e6  The sixth bit.
+ * @param e7  The seventh bit.
+ * @param e8  The eighth bit.
+ * @return    An expression entry for bc_parse_exprs[].
+ */
 #define BC_PARSE_EXPR_ENTRY(e1, e2, e3, e4, e5, e6, e7, e8)  \
 	((UINTMAX_C(e1) << 7) | (UINTMAX_C(e2) << 6) | (UINTMAX_C(e3) << 5) | \
 	 (UINTMAX_C(e4) << 4) | (UINTMAX_C(e5) << 3) | (UINTMAX_C(e6) << 2) | \
 	 (UINTMAX_C(e7) << 1) | (UINTMAX_C(e8) << 0))
 
-/// Returns true if token @a i is a token that belongs in an expression.
+/**
+ * Returns true if token @a i is a token that belongs in an expression.
+ * @param i  The token to test.
+ * @return   True if i is an expression token, false otherwise.
+ */
 #define BC_PARSE_EXPR(i) \
 	(bc_parse_exprs[(((i) & (uchar) ~(0x07)) >> 3)] & (1 << (7 - ((i) & 0x07))))
 
-/// Returns the operator (by lex token) that is at the top of the operator
-/// stack.
+/**
+ * Returns the operator (by lex token) that is at the top of the operator
+ * stack.
+ * @param p  The parser.
+ * @return   The operator that is at the top of the operator stack, as a lex
+ *           token.
+ */
 #define BC_PARSE_TOP_OP(p) (*((BcLexType*) bc_vec_top(&(p)->ops)))
 
-/// Returns true if bc has a "leaf" token. A "leaf" token is one that can stand
-/// alone in an expression. For example, a number by itself can be an
-/// expression, but a binary operator, while valid for an expression, cannot
-/// be alone in the expression. It must have an expression to the left and right
-/// of itself. See the documentation for @a bc_parse_expr_err() in
-/// src/bc_parse.c.
+/**
+ * Returns true if bc has a "leaf" token. A "leaf" token is one that can stand
+ * alone in an expression. For example, a number by itself can be an expression,
+ * but a binary operator, while valid for an expression, cannot be alone in the
+ * expression. It must have an expression to the left and right of itself. See
+ * the documentation for @a bc_parse_expr_err() in src/bc_parse.c.
+ * @param prev      The previous token as an instruction.
+ * @param bin_last  True if that last operator was a binary operator, false
+ *                  otherwise.
+ * @param rparen    True if the last operator was a right paren.
+ * return           True if the last token was a leaf token, false otherwise.
+ */
 #define BC_PARSE_LEAF(prev, bin_last, rparen) \
 	(!(bin_last) && ((rparen) || bc_parse_inst_isLeaf(prev)))
 
-/// This returns true if the token @a t should be treated as though it's a
-/// variable. This goes for actual variables, array elements, and globals.
+/**
+ * This returns true if the token @a t should be treated as though it's a
+ * variable. This goes for actual variables, array elements, and globals.
+ * @param t  The token to test.
+ * @return   True if @a t should be treated as though it's a variable, false
+ *           otherwise.
+ */
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 #define BC_PARSE_INST_VAR(t) \
 	((t) >= BC_INST_VAR && (t) <= BC_INST_SEED && (t) != BC_INST_ARRAY)
@@ -231,18 +299,30 @@ void bc_lex_token(BcLex *l);
 	((t) >= BC_INST_VAR && (t) <= BC_INST_SCALE && (t) != BC_INST_ARRAY)
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
-/// Returns true if the previous token @a p (in the form of a bytecode
-/// instruction) is a prefix operator. The fact that it is for bytecode
-/// instructions is what makes it different from @a BC_PARSE_OP_PREFIX below.
-#define BC_PARSE_PREV_PREFIX(p) \
-	((p) >= BC_INST_NEG && (p) <= BC_INST_BOOL_NOT)
+/**
+ * Returns true if the previous token @a p (in the form of a bytecode
+ * instruction) is a prefix operator. The fact that it is for bytecode
+ * instructions is what makes it different from @a BC_PARSE_OP_PREFIX below.
+ * @param p  The previous token.
+ * @return   True if @a p is a prefix operator.
+ */
+#define BC_PARSE_PREV_PREFIX(p) ((p) >= BC_INST_NEG && (p) <= BC_INST_BOOL_NOT)
 
-/// Returns true if token @a t is a prefix operator.
+/**
+ * Returns true if token @a t is a prefix operator.
+ * @param t  The token to test.
+ * @return   True if @a t is a prefix operator, false otherwise.
+ */
 #define BC_PARSE_OP_PREFIX(t) ((t) == BC_LEX_OP_BOOL_NOT || (t) == BC_LEX_NEG)
 
-// We can calculate the conversion between tokens and exprs by subtracting the
-// position of the first operator in the lex enum and adding the position of
-// the first in the expr enum. Note: This only works for binary operators.
+/**
+ * We can calculate the conversion between tokens and bytecode instructions by
+ * subtracting the position of the first operator in the lex enum and adding the
+ * position of the first in the instruction enum. Note: This only works for
+ * binary operators.
+ * @param t  The token to turn into an instruction.
+ * @return   The token as an instruction.
+ */
 #define BC_PARSE_TOKEN_INST(t) ((uchar) ((t) - BC_LEX_NEG + BC_INST_NEG))
 
 /// A struct that holds data about what tokens should be expected next. There
@@ -253,8 +333,13 @@ void bc_lex_token(BcLex *l);
 /// Obviously, @a len is the number of tokens in the @a tokens array. If more
 /// than 4 is needed in the future, @a tokens will have to be changed.
 typedef struct BcParseNext {
+
+	/// The number of tokens in the tokens array.
 	uchar len;
+
+	/// The tokens that can be expected next.
 	uchar tokens[4];
+
 } BcParseNext;
 
 /// A macro to construct an array literal of tokens from a parameter list.

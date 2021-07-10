@@ -26,13 +26,13 @@ and including functions, while `dc` uses [Reverse Polish Notation][4] and allows
 the user to execute strings as though they were functions.
 
 In addition, it is also possible to build the arbitrary-precision math as a
-library, named `bcl`.
+library, named [`bcl`][156].
 
 **Note**: for ease, I will refer to both programs as `bc` in this document.
 However, if I say "just `bc`," I am referring to just `bc`, and if I say `dc`, I
 am referring to just `dc`.
 
-## History
+### History
 
 This project started in January 2018 when a certain individual on IRC, hearing
 that I knew how to write parsers, asked me to write a `bc` parser for his math
@@ -73,7 +73,7 @@ And that is why I am writing this document: someday, someone else is going to
 want to change my code, and this document is my attempt to make it as simple as
 possible.
 
-## Values
+### Values
 
 [According to Bryan Cantrill][10], all software has values. I think he's
 correct, though I [added one value for programming languages in particular][11].
@@ -164,7 +164,7 @@ deferring to the above values.
 Keep these values in mind for the rest of this document, and for exploring any
 other part of this repo.
 
-### Portability
+#### Portability
 
 But before I go on, I want to talk about portability in particular.
 
@@ -188,6 +188,19 @@ dependency.
 
 That's why `bc` has duplicated code. Remove it, and you risk `bc` not being
 portable to some platforms.
+
+## Suggested Course
+
+TODO
+
+1.	Understand the build.
+2.	Test suite.
+3.	Code concepts.
+4.	Repo structure.
+5.	Headers.
+6.	Source code.
+
+From less detail to more.
 
 ## Useful External Tools
 
@@ -382,19 +395,21 @@ where they are defined.
 
 ### `bcl.sln`
 
-A Visual Studio solution file for `bcl`. This, along with [`bcl.vcxproj`][63]
-and [`bcl.vcxproj.filters`][64] is what makes it possible to build `bcl` on
-Windows.
+A Visual Studio solution file for [`bcl`][156]. This, along with
+[`bcl.vcxproj`][63] and [`bcl.vcxproj.filters`][64] is what makes it possible to
+build [`bcl`][156] on Windows.
 
 ### `bcl.vcxproj`
 
-A Visual Studio project file for `bcl`. This, along with [`bcl.sln`][65] and
-[`bcl.vcxproj.filters`][64] is what makes it possible to build `bcl` on Windows.
+A Visual Studio project file for [`bcl`][156]. This, along with [`bcl.sln`][65]
+and [`bcl.vcxproj.filters`][64] is what makes it possible to build [`bcl`][156]
+on Windows.
 
 ### `bcl.vcxproj.filters`
 
-A Visual Studio filters file for `bcl`. This, along with [`bcl.sln`][65] and
-[`bcl.vcxproj`][63] is what makes it possible to build `bcl` on Windows.
+A Visual Studio filters file for [`bcl`][156]. This, along with [`bcl.sln`][65]
+and [`bcl.vcxproj`][63] is what makes it possible to build [`bcl`][156] on
+Windows.
 
 ### `bc.sln`
 
@@ -404,7 +419,7 @@ Windows.
 
 ### `bc.vcxproj`
 
-A Visual Studio project file for `bcl`. This, along with [`bc.sln`][68] and
+A Visual Studio project file for `bc`. This, along with [`bc.sln`][68] and
 [`bc.vcxproj.filters`][67] is what makes it possible to build `bc` on Windows.
 
 ### `bc.vcxproj.filters`
@@ -418,7 +433,7 @@ A symlink to [`configure.sh`][69].
 
 ### `configure.sh`
 
-This is the script to configure `bc` and `bcl` for building.
+This is the script to configure `bc` and [`bcl`][156] for building.
 
 This `bc` has a custom build system. The reason for this is because of
 [*portability*][136].
@@ -435,7 +450,8 @@ A user that wants to build `bc` on a POSIX system (not Windows) first runs
 the `Makefile` template ([`Makefile.in`][70]) to generate an actual valid
 `Makefile`. Then `make` can do the rest.
 
-For more information about the build process, see the [build manual][14].
+For more information about the build process, see the [Build System][142]
+section and the [build manual][14].
 
 For more information about shell scripts, see [POSIX Shell Scripts][76].
 
@@ -445,8 +461,8 @@ For more information about shell scripts, see [POSIX Shell Scripts][76].
 	build.
 2.	It reads in [`Makefile.in`][70].
 3.	One-by-one, it replaces placeholders (in [`Makefile.in`][70]) of the form
-	`%%<placeholder_name>%%` based on the build type.
-4.	It appends a list of file targets based on the build type.
+	`%%<placeholder_name>%%` based on the [build type][81].
+4.	It appends a list of file targets based on the [build type][81].
 5.	It appends the correct test targets.
 6.	It copies the correct manpage and markdown manual for `bc` and `dc` into a
 	location from which they can be copied for install.
@@ -471,7 +487,8 @@ have borrowed.
 This is the `Makefile` template for [`configure.sh`][69] to use for generating a
 `Makefile`.
 
-For more information, see [`configure.sh`][69] and the [build manual][14].
+For more information, see [`configure.sh`][69], the [Build System][142] section,
+and the [build manual][14].
 
 Because of [portability][136], the generated `Makefile.in` should be a pure
 [POSIX `make`][74]-compatible `Makefile` (minus the placeholders). Here are a
@@ -520,6 +537,9 @@ differences from GNU and BSD `bc`'s. It also directs users to the manpage.
 The reason for this is because otherwise, the help would be far too long to be
 useful.
 
+**Warning**: The text has some `printf()` format specifiers. You need to make
+sure the format specifiers match the arguments given to `bc_file_printf()`.
+
 #### `dc_help.txt`
 
 A text file containing the text displayed for `dc -h` or `dc --help`.
@@ -529,6 +549,9 @@ differences from GNU and BSD `dc`'s. It also directs users to the manpage.
 
 The reason for this is because otherwise, the help would be far too long to be
 useful.
+
+**Warning**: The text has some `printf()` format specifiers. You need to make
+sure the format specifiers match the arguments given to `bc_file_printf()`.
 
 #### `lib.bc`
 
@@ -634,8 +657,8 @@ The headers are not included among the source code because I like it better that
 way. Also there were folders within `src/` at one point, and I did not want to
 see `#include "../some_header.h"` or things like that.
 
-So all headers are here, even though only one (`bcl.h`) is meant for end users
-(to be installed in `INCLUDEDIR`).
+So all headers are here, even though only one ([`bcl.h`][30]) is meant for end
+users (to be installed in `INCLUDEDIR`).
 
 #### `args.h`
 
@@ -654,10 +677,10 @@ The code associated with this header is in [`src/bc.c`][40],
 
 #### `bcl.h`
 
-This header is the API for the `bcl` library.
+This header is the API for the [`bcl`][156] library.
 
 This header is meant for distribution to end users and contains the API that end
-users of `bcl` can use in their own software.
+users of [`bcl`][156] can use in their own software.
 
 This header, because it's the public header, is also the root header. That means
 that it has platform-specific fixes for Windows. (If the fixes were not in this
@@ -716,9 +739,9 @@ The code associated with this header is in [`src/lex.c`][50],
 
 #### `library.h`
 
-This header defines the things needed for `bcl` that users should *not* have
-access to. In other words, [`bcl.h`][30] is the *public* header for the library,
-and this header is the *private* header for the library.
+This header defines the things needed for [`bcl`][156] that users should *not*
+have access to. In other words, [`bcl.h`][30] is the *public* header for the
+library, and this header is the *private* header for the library.
 
 The code associated with this header is in [`src/library.c`][43].
 
@@ -843,8 +866,8 @@ This naming format must be followed for all locale files.
 
 ### `manuals/`
 
-This folder contains the documentation for `bc`, `dc`, and `bcl`, along with a
-few other manuals.
+This folder contains the documentation for `bc`, `dc`, and [`bcl`][156], along
+with a few other manuals.
 
 #### `algorithms.md`
 
@@ -863,7 +886,7 @@ and for why, see [`scripts/manpage.sh`][60] and [Manuals][86].
 
 #### `bcl.3`
 
-This is the manpage for the `bcl` library. It is generated from
+This is the manpage for the [`bcl`][156] library. It is generated from
 [`bcl.3.md`][61] using [`scripts/manpage.sh`][60].
 
 For the reason why I check generated data into the repo, see
@@ -871,7 +894,7 @@ For the reason why I check generated data into the repo, see
 
 #### `bcl.3.md`
 
-This is the markdown manual for the `bcl` library. It is the source for the
+This is the markdown manual for the [`bcl`][156] library. It is the source for the
 generated [`bcl.3`][62] file.
 
 #### `benchmarks.md`
@@ -893,8 +916,8 @@ If `bc` used an outside build system, that build system would be an external
 dependency. Thus, I had to write a build system for `bc` that used nothing but
 C99 and POSIX utilities, including barebones [POSIX `make`][74].
 
-For more information about the build system, see the [build manual][14],
-[`configure.sh`][69], and [`Makefile.in`][70].
+for more information about the build system, see the [build system][142]
+section, the [build manual][14], [`configure.sh`][69], and [`Makefile.in`][70].
 
 #### `dc.1.md.in`
 
@@ -1028,7 +1051,7 @@ For more information about fuzzing, see [Fuzzing][82].
 This script has at least one of two major differences from most of the other
 scripts:
 
-* It's in Python 3.
+* It's written in Python 3.
 * It's meant for software packagers.
 
 For example, [`scripts/afl.py`][94] and [`scripts/randmath.py`][95] are both in
@@ -1051,10 +1074,11 @@ I tried to write the script in `sh`, by the way, and I finally accepted the
 tradeoff of using Python 3 when it became too hard.
 
 However, I also mentioned that it's for testing Karatsuba with various settings
-of `KARATSUBA_LEN`. Package maintainers will want to run the test suite, right?
+of `KARATSUBA_LEN`. Package maintainers will want to run the [test suite][124],
+right?
 
-Yes, but this script is not part of the test suite; it's used for testing in the
-[`scripts/release.sh`][83] script, which is maintainer use only.
+Yes, but this script is not part of the [test suite][124]; it's used for testing
+in the [`scripts/release.sh`][83] script, which is maintainer use only.
 
 However, there is one snare with `karatsuba.py`: I didn't want the user to have
 to install any Python libraries to run it. Keep that in mind if you change it.
@@ -1114,9 +1138,9 @@ meant for outside use. This means that some non-POSIX utilities can be used,
 such as `git` and `gpg`.
 
 In addition, before using this script, it expects that the folders that Windows
-generated when building `bc`, `dc`, and `bcl`, are in the parent directory of
-the repo, exactly as Windows generated them. If they are not there, then it will
-not zip and sign, nor calculate sums of, the Windows executables.
+generated when building `bc`, `dc`, and [`bcl`][156], are in the parent
+directory of the repo, exactly as Windows generated them. If they are not there,
+then it will not zip and sign, nor calculate sums of, the Windows executables.
 
 Because this script creates a tag and pushes it, it should *only* be run *ONCE*
 per release.
@@ -1170,25 +1194,26 @@ simply reads it line by line and uses each line for one build.
 
 #### `release.sh`
 
-This script is for `bc` maintainers only. It runs `bc`, `dc`, and `bcl` through
-a gauntlet that is mostly meant to be used in preparation for a release.
+This script is for `bc` maintainers only. It runs `bc`, `dc`, and [`bcl`][156]
+through a gauntlet that is mostly meant to be used in preparation for a release.
 
 It does the following:
 
-1.	Builds every build type, with every setting combo in
+1.	Builds every [build type][81], with every setting combo in
 	[`release_settings.txt`][93] with both calculators, `bc` alone, and `dc`
 	alone.
-2.	Builds every build type, with every setting combo in
+2.	Builds every [build type][81], with every setting combo in
 	[`release_settings.txt`][93] with both calculators, `bc` alone, and `dc`
 	alone for 32-bit.
 3.	Does #1 and #2 for Debug, Release, Release with Debug Info, and Min Size
 	Release builds.
-4.	Runs the test suite on every build, if desired.
-5.	Runs the test suite under [ASan, UBSan, and MSan][21] for every build
+4.	Runs the [test suite][124] on every build, if desired.
+5.	Runs the [test suite][124] under [ASan, UBSan, and MSan][21] for every build
 	type/setting combo.
 6.	Runs [`scripts/karatsuba.py`][78] in test mode.
-7.	Runs the test suite for both calculators, `bc` alone, and `dc` alone under
-	[valgrind][20] and errors if there are any memory bugs or memory leaks.
+7.	Runs the [test suite][124] for both calculators, `bc` alone, and `dc` alone
+	under [valgrind][20] and errors if there are any memory bugs or memory
+	leaks.
 
 #### `safe-install.sh`
 
@@ -1216,6 +1241,18 @@ TODO
 This folder is, obviously, where the actual heart and soul of `bc`, the source
 code, is.
 
+All of the source files are in one folder; this simplifies the build system
+immensely.
+
+There are separate files for `bc` and `dc` specific code ([`bc.c`][40],
+[`bc_lex.c`][41], [`bc_parse.c`][42], [`dc.c`][44], [`dc_lex.c`][45], and
+[`dc_parse.c`][46]) where possible because it is cleaner to exclude an entire
+source file from a build than to have `#if`/`#endif` preprocessor guards.
+
+That said, it was easier in many cases to use preprocessor macros where both
+calculators used much of the same code and data structures, so there is a
+liberal sprinkling of them through the code.
+
 #### `args.c`
 
 Code for processing command-line arguments.
@@ -1228,6 +1265,14 @@ The code for the `bc` main function `bc_main()`.
 
 The code for lexing that only `bc` needs.
 
+#### `bc_parse.c`
+
+TODO
+
+#### `data.c`
+
+TODO
+
 #### `dc.c`
 
 The code for the `dc` main function `dc_main()`.
@@ -1236,24 +1281,257 @@ The code for the `dc` main function `dc_main()`.
 
 The code for lexing that only `dc` needs.
 
+#### `dc_parse.c`
+
+TODO
+
+#### `file.c`
+
+TODO
+
+#### `history.c`
+
+TODO
+
+#### `lang.c`
+
+TODO
+
+#### `lex.c`
+
+TODO
+
+#### `library.c`
+
+TODO
+
+#### `main.c`
+
+TODO
+
+#### `num.c`
+
+TODO
+
+#### `opt.c`
+
+TODO
+
+#### `parse.c`
+
+TODO
+
+#### `program.c`
+
+TODO
+
+#### `rand.c`
+
+TODO
+
+#### `read.c`
+
+TODO
+
+#### `vector.c`
+
+TODO
+
+#### `vm.c`
+
+TODO
+
 ### `tests/`
 
 TODO
 
-## Test Suite
+#### `all.sh`
 
 TODO
 
-* Normal files and results files.
-* Scripts.
-* Generating tests.
-* Error tests.
-* `stdin` tests.
-* `read` tests.
-* Other tests.
-* Integration with the build system.
-* Skipping tests.
-* Adding tests.
+#### `all.txt`
+
+TODO
+
+#### `bcl.c`
+
+TODO
+
+#### `errors.sh`
+
+TODO
+
+#### `extra_required.txt`
+
+TODO
+
+#### `history.py`
+
+TODO
+
+#### `history.sh`
+
+TODO
+
+#### `other.sh`
+
+TODO
+
+#### `read.sh`
+
+TODO
+
+#### `script.sed`
+
+TODO
+
+#### `script.sh`
+
+TODO
+
+#### `scripts.sh`
+
+TODO
+
+#### `stdin.sh`
+
+TODO
+
+#### `test.sh`
+
+TODO
+
+#### `bc/`
+
+TODO
+
+##### `all.txt`
+
+TODO
+
+##### `errors.txt`
+
+TODO
+
+##### `posix_errors.txt`
+
+TODO
+
+##### `timeconst.sh`
+
+TODO
+
+##### `errors/`
+
+TODO
+
+##### `scripts/`
+
+TODO
+
+###### `all.txt`
+
+TODO
+
+#### `dc/`
+
+TODO
+
+##### `all.txt`
+
+TODO
+
+##### `errors.txt`
+
+TODO
+
+##### `errors/`
+
+TODO
+
+##### `scripts/`
+
+TODO
+
+###### `all.txt`
+
+TODO
+
+#### `fuzzing/`
+
+TODO
+
+##### `bc_afl_continue.yaml`
+
+TODO
+
+##### `bc_afl.yaml`
+
+TODO
+
+##### `bc_inputs1/`
+
+TODO
+
+##### `bc_inputs2/`
+
+TODO
+
+##### `bc_inputs3/`
+
+TODO
+
+##### `dc_inputs/`
+
+TODO
+
+## Build System
+
+The build system is described in detail in the [build manual][14], so
+maintainers should start there. This section, however, describes some parts of
+the build system that only maintainers will care about.
+
+### Clean Targets
+
+`bc` has a default `make clean` target that cleans up the build files. However,
+because `bc`'s build system can generate many different types of files, there
+are other clean targets that may be useful:
+
+* `make clean_gen` cleans the `gen/strgen` executable generated from
+  [`gen/strgen.c`][15]. It has no prerequisites.
+* `make clean` cleans object files, `*.cat` files (see the [Locales][85]
+  section), executables, and files generated from text files in [`gen/`][145],
+  including `gen/strgen` if it was built. So this has a prerequisite on
+  `make clean_gen` in normal use.
+* `make clean_benchmarks` cleans [benchmarks][144], including the `ministat`
+  executable. It has no prerequisites.
+* `make clean_config` cleans the generated `Makefile` and the manuals that
+  [`configure.sh`][69] copied in preparation for install. It also depends on
+  `make clean` and `make clean_benchmarks`, so it cleans those items too. This
+  is the target that [`configure.sh`][69] uses before it does its work.
+* `make clean_coverage` cleans the generated coverage files for the [test
+  suite][124]'s [code coverage][146] capabilities. It has no prerequisites. This
+  is useful if the code coverage tools are giving errors.
+* `make clean_tests` cleans *everything*. It has prerequisites on all previous
+  clean targets, but it also cleans all of the [generated tests][143].
+
+When adding more generated files, you may need to add them to one of these
+targets and/or add a target for them especially.
+
+### Preprocessor Macros
+
+TODO
+
+`bc` and `dc` use *a lot* of preprocessor macros to ensure that each build type:
+
+* builds,
+* works under the [test suite][124], and
+* excludes as much code as possible from all builds.
+
+This section will explain the preprocessor style of `bc` and `dc`, as well as
+provide an explanation of the macros used.
+
+## Test Suite
 
 While the source code may be the heart and soul of `bc`, the test suite is the
 arms and legs: it gives `bc` the power to do anything it needs to do.
@@ -1300,6 +1578,148 @@ However, if you want to be sure which test is failing, then running a bare
 But enough about how you have no excuses to use the test suite as much as
 possible; let's talk about how it works and what you *can* do with it.
 
+### Standard Tests
+
+The heavy lifting of testing the math in `bc`, as well as basic scripting, is
+done by the "standard tests" for each calculator.
+
+These tests use the files in the [`tests/bc/`][161] and [`tests/dc/`][162]
+directories (except for [`tests/bc/all.txt`][163], [`tests/bc/errors.txt`][164],
+[`tests/bc/posix_errors.txt`][165], [`tests/bc/timeconst.sh`][166],
+[`tests/dc/all.txt`][167], and [`tests/dc/errors.txt`][168]), which are called
+the "standard test directories."
+
+For every test, there is the test file and the results file. The test files have
+names of the form `<test>.txt`, where `<test>` is the name of the test, and the
+results files have names of the form `<test>_results.txt`.
+
+If the test file exists but the results file does not, the results for that test
+are generated by a GNU-compatible `bc` or `dc`. See the [Generated Tests][143]
+section.
+
+The `all.txt` file in each standard tests directory is what tells the test suite
+and [build system][142] what tests there are, and the tests are either run in
+that order, or in the case of parallel `make`, that is the order that the
+targets are listed as prerequisites of `make test`.
+
+If the test exists in the `all.txt` file but does not *actually* exist, the test
+and its results are generated by a GNU-compatible `bc` or `dc`. See the
+[Generated Tests][143] section.
+
+To add a non-generated standard test, do the following:
+
+* Add the test file (`<test>.txt` in the standard tests directory).
+* Add the results file (`<test>_results.txt` in the standard tests directory).
+  You can skip this step if just the results file needs to be generated. See the
+  [Generated Tests][147] section for more information.
+* Add the name of the test to the `all.txt` file in the standard tests
+  directory, putting it in the order it should be in. If possible, I would put
+  longer tests near the beginning because they will start running earlier with
+  parallel `make`. I always keep `decimal` first, though, as a smoke test.
+
+If you need to add a generated standard test, see the [Generated Tests][147]
+section for how to do that.
+
+Some standard tests need to be skipped in certain cases. That is handled by the
+[build system][142]. See the [Integration with the Build System][147] section
+for more details.
+
+#### `bc` Standard Tests
+
+TODO
+
+* List of all standard tests with what they test.
+
+#### `dc` Standard Tests
+
+TODO
+
+* List of all standard tests with what they test.
+
+### Script Tests
+
+TODO
+
+* Use the global stacks flag.
+
+The heavy lifting of testing the scripting of `bc` is done by the "script tests"
+for each calculator.
+
+These tests use the files in the [`tests/bc/scripts/`][169] and
+[`tests/dc/scripts/`][170] directories (except for
+[`tests/bc/scripts/all.txt`][171] and [`tests/dc/scripts/all.txt`][172]), which
+are called the "script test directories."
+
+To add a script test, do the following:
+
+* Add the test file (`<test>.bc` or `<test>.dc` in the script tests directory).
+* Add the results file (`<test>.txt` in the script tests directory). You can
+  skip this step if just the results file needs to be generated. See the
+  [Generated Tests][147] section for more information.
+* Add the name of the test to the `all.txt` file in the script tests directory,
+  putting it in the order it should be in. If possible, I would put longer tests
+  near the beginning because they will start running earlier with parallel
+  `make`.
+
+Some script tests need to be skipped in certain cases. That is handled by the
+[build system][142]. See the [Integration with the Build System][147] section
+for more details.
+
+#### `bc` Script Tests
+
+TODO
+
+* List of all script tests with what they test.
+
+#### `dc` Script Tests
+
+TODO
+
+* List of all script tests with what they test.
+
+### Error Tests
+
+TODO
+
+* POSIX tests for `bc`.
+* Run files *and* through `stdin` with `cat`.
+* Adding tests.
+
+### `stdin` Tests
+
+TODO
+
+* Adding tests.
+
+### `read()` Tests
+
+TODO
+
+* Adding tests.
+
+### Other Tests
+
+TODO
+
+* Adding tests.
+
+### Linux `timeconst.bc` Script
+
+One special script that `bc`'s test suite will use is the [Linux `timeconst.bc`
+script][6].
+
+I made the test suite able to use this script because the reason the
+[toybox][16] maintainer wanted my `bc` is because of this script, and I wanted
+to be sure that it would run correctly on the script.
+
+However, it is not part of the distribution, nor is it part of the repository.
+The reason for this is because [`timeconst.bc`][6] is under the GPL, while this
+repo is under a BSD license.
+
+If you want `bc` to run tests on [`timeconst.bc`][6], download it and place it
+at `tests/bc/scripts/timeconst.bc`. If it is there, the test suite will
+automatically run its tests; otherwise, it will skip it.
+
 ### History Tests
 
 There are automatic tests for history; however, they have dependencies: Python 3
@@ -1312,8 +1732,8 @@ installed. For this reason, there is a `sh` script, [`tests/history.sh`][140]
 that runs the actual script, [`tests/history.py`][139].
 
 I have added as many tests as I could to cover as many lines and branches as
-possible. I could have done more, but doing so would have required a lot of
-time.
+possible. I guess I could have done more, but doing so would have required a lot
+of time.
 
 I have tried to make it as easy as possible to run the history tests. They will
 run automatically if you use the `make test` command, and they will also use
@@ -1360,27 +1780,55 @@ If you need to add more history tests, you need to do the following:
 	`test_dc_history`.
 
 You do not need to do anything to add the test to `history_all_tests` (see
-[Section Tests][141] below) because the scripts will automatically run all of
-the tests properly.
+[Group Tests][141] below) because the scripts will automatically run all of the
+tests properly.
 
-### Linux `timeconst.bc` Script
+### Generated Tests
 
-One special script that `bc`'s test suite will use is the [Linux `timeconst.bc`
-script][6].
+Some tests are *large*, and as such, it is impractical to check them into `git`.
+Instead, the tests depend on the existence of a GNU-compatible `bc` in the
+`PATH`, which is then used to generate the tests.
 
-I made the test suite able to use this script because the reason the
-[toybox][16] maintainer wanted my `bc` is because of this script, and I wanted
-to be sure that it would run correctly on the script.
+If [`configure.sh`][69] was run with the `-G` argument, which disables generated
+tests, then `make test` and friends will automatically skip generated tests.
+This is useful to do on platforms that are not guaranteed to have a
+GNU-compatible `bc` installed.
 
-However, it is not part of the distribution, nor is it part of the repository.
-The reason for this is because [`timeconst.bc`][6] is under the GPL, while this
-repo is under a BSD license.
+However, adding a generated test is a complicated because you have to figure out
+*where* you want to put the file to generate the test.
 
-If you want `bc` to run tests on [`timeconst.bc`][6], download it and place it
-at `tests/bc/scripts/timeconst.bc`. If it is there, the test suite will
-automatically run its tests; otherwise, it will skip it.
+For example, `bc`'s test suite will automatically use a GNU-compatible `bc` to
+generate a `<test>_results.txt` file in the [standard tests][149] directory
+(either `tests/bc/` or `tests/dc/`) if none exists for the `<test>` test. If no
+`<test>.txt` file exists in the [standard tests][149] directory, then `bc`'s
+test suite will look for a `<test>.bc` or `<test>.dc` file in the [script
+tests][150] directory (either `tests/bc/scripts` or `tests/dc/scripts`), and if
+that exists, it will use that script to generate the `<test>.txt` file in the
+[standard tests][149] directory after which it will generate the
+`<test>_results.txt` file in the [standard tests][149] directory.
 
-### Section Tests
+So you can choose to either:
+
+* Have a test in the [standard tests][149] directory without a corresponding
+  `*_results.txt` file, or
+* Have a script in the [script tests][150] directory to generate the
+  corresponding file in the standard test directory before generating the
+  corresponding `*_results.txt` file.
+
+Adding a script has a double benefit: the script itself can be used as a test.
+However, script test results can also be generated.
+
+If `bc` is asked to run a script test, then if the script does not exist, `bc`'s
+test suite returns an error. If it *does* exist, but no corresponding
+`<test>.txt` file exists in the [script tests][150] directory, then a
+GNU-compatible `bc` is used to generate the `<test>.txt` results file.
+
+If generated tests are disabled through [`configure.sh`][69], then these tests
+are not generated if they do not exist. However, if they *do* exist, then they
+are run. This can happen if a `make clean_tests` was not run between a build
+that generated tests and a build that will not.
+
+### Group Tests
 
 While the test suite has a lot of targets in order to get parallel execution,
 there are five targets that allow you to run each section, or all, of the test
@@ -1392,6 +1840,101 @@ suite as one unit:
 * `history_all_tests` (history tests)
 * `run_all_tests` (combination of the previous four)
 
+In addition, there are more fine-grained targets available:
+
+* `test_bc` runs all `bc` tests (except history tests).
+* `test_dc` runs all `dc` tests (except history tests).
+* `test_bc_tests` runs all `bc` [standard tests][149].
+* `test_dc_tests` runs all `dc` [standard tests][149].
+* `test_bc_scripts` runs all `bc` [script tests][150].
+* `test_dc_scripts` runs all `dc` [script tests][150].
+* `test_bc_stdin` runs the `bc` [`stdin` tests][152].
+* `test_dc_stdin` runs the `dc` [`stdin` tests][152].
+* `test_bc_read` runs the `bc` [`read()` tests][153].
+* `test_dc_read` runs the `dc` [`read()` tests][153].
+* `test_bc_errors` runs the `bc` [error tests][151].
+* `test_dc_errors` runs the `dc` [error tests][151].
+* `test_bc_other` runs the `bc` [other tests][151].
+* `test_dc_other` runs the `dc` [other tests][151].
+* `timeconst` runs the tests for the [Linux `timeconst.bc` script][6].
+* `test_history` runs all history tests.
+* `test_bc_history` runs all `bc` history tests.
+* `test_dc_history` runs all `dc` history tests.
+
+All of the above tests are parallelizable.
+
+### Individual Tests
+
+In addition to all of the above, individual test targets are available. These
+are mostly useful for attempting to fix a singular test failure.
+
+These tests are:
+
+* `test_bc_<test>`, where `<test>` is the name of a `bc` [standard test][149].
+  The name is the name of the test file without the `.txt` extension. It is the
+  name printed by the test suite when running the test.
+* `test_dc_<test>`, where `<test>` is the name of a `dc` [standard test][149].
+  The name is the name of the test file without the `.txt` extension. It is the
+  name printed by the test suite when running the test.
+* `test_bc_script_<test>`, where `<test>` is the name of a `bc` [script
+  test][150]. The name of the test is the name of the script without the `.bc`
+  extension.
+* `test_dc_script_<test>`, where `<test>` is the name of a `dc` [script
+  test][150]. The name of the test is the name of the script without the `.dc`
+  extension.
+* `test_bc_history<idx>` runs the `bc` history test with index `<idx>`.
+* `test_dc_history<idx>` runs the `dc` history test with index `<idx>`.
+
+### [`bcl`][156] Test
+
+When [`bcl`][156] is built, the [build system][142] automatically ensures that
+`make test` runs the [`bcl`][156] test instead of the `bc` and `dc` tests.
+
+There is only one test, and it is built from [`tests/bcl.c`][158].
+
+The reason the test is in C is because [`bcl`][156] is a C library; I did not
+want to have to write C code *and* POSIX `sh` scripts to run it.
+
+The reason there is only one test is because most of the code for the library is
+tested by virtue of testing `bc` and `dc`; the test needs to only ensure that
+the library bindings and plumbing do not interfere with the underlying code.
+
+However, just because there is only one test does not mean that it doesn't test
+more than one thing. The code actually handles a series of tests, along with
+error checking to ensure that nothing went wrong.
+
+To add a [`bcl`][156] test, just figure out what test you want, figure out where
+in the [`tests/bcl.c`][158] would be best to put it, and put it there. Do as
+much error checking as possible, and use the `err(BclError)` function. Ensure
+that all memory is freed because that test is run through [Valgrind][159] and
+[AddressSanitizer][160].
+
+### Integration with the Build System
+
+If it was not obvious by now, the test suite is heavily integrated into the
+[build system][142], but the integration goes further than just making the test
+suite easy to run from `make` and generating individual and group tests.
+
+The big problem the test suite has is that some `bc` code, stuff that is
+important to test, is only in *some* builds. This includes all of the extra math
+extensions, for example.
+
+So the test suite needs to have some way of turning off the tests that depend on
+certain [build types][81] when those [build types][81] are not used.
+
+This is the reason the is tightly integrated with the [build system][142]: the
+[build system][142] knows what [build type][81] was used and can tell the test
+suite to turn off the tests that do not apply.
+
+It does this with arguments to the test scripts that are either a `1` or a `0`,
+depending on whether tests of that type should be enabled or not. These
+arguments are why I suggest, in the [Test Scripts][148] section, to always use a
+`make` target to run the test suite or any individual test. I have added a lot
+of targets to make this easy and as fast as possible.
+
+In addition to all of that, the build system is responsible for selecting the
+`bc`/`dc` tests or the [`bcl` test][157].
+
 ### Test Suite Portability
 
 The test suite is meant to be run by users and packagers as part of their
@@ -1402,6 +1945,24 @@ suite must be as [portable as `bc` itself][136].
 
 This means that the test suite must be implemented in pure POSIX `make`, `sh`,
 and C99.
+
+#### Test Scripts
+
+To accomplish the portability, the test suite is run by a bunch of `sh` scripts
+that have the constraints laid out in [POSIX Shell Scripts][76].
+
+However, that means they have some quirks, made worse by the fact that there are
+[generated tests][143] and [tests that need to be skipped, but only
+sometimes][147].
+
+This means that a lot of the scripts take an awkward number and type of
+arguments. Some arguments are strings, but most are integers, like
+[`scripts/release.sh`][83].
+
+It is for this reason that I do not suggest running the test scripts directly.
+Instead, always use an appropriate `make` target, which already knows the
+correct arguments for the test because of the [integration with the build
+system][147].
 
 ### Test Coverage
 
@@ -1449,6 +2010,8 @@ make -j<cores>
 make -j<cores> test
 make coverage_output
 ```
+
+and that will generate coverage output correctly.
 
 ### [AddressSanitizer][21] and Friends
 
@@ -1535,8 +2098,8 @@ necessary to do the job.
 
 ## Manuals
 
-The manuals for `bc` are all generated, and the manpages for `bc`, `dc`, and
-`bcl` are also generated.
+The manuals for `bc` and `dc` are all generated, and the manpages for `bc`,
+`dc`, and `bcl` are also generated.
 
 Why?
 
@@ -1560,9 +2123,13 @@ control, and the generated markdown manuals and manpages for `bc`
 ([`manuals/bc`][91]) and `dc` ([`manuals/dc`][92]) are as well.
 
 This is because generating the manuals and manpages requires a heavy dependency
-that only maintainers should care about: [Pandoc][92]. Because users should not
-have to install *any* dependencies, the files are generated, checked into
+that only maintainers should care about: [Pandoc][92]. Because users [should not
+have to install *any* dependencies][136], the files are generated, checked into
 version control, and included in distribution tarballs.
+
+If you run [`configure.sh`][69], you have an easy way of generating the markdown
+manuals and manpages: just run `make manpages`. This target calls
+[`scripts/manpage.sh`][60] appropriately for `bc`, `dc`, and `bcl`.
 
 For more on how generating manuals and manpages works, see
 [`scripts/manpage.sh`][60].
@@ -1603,7 +2170,7 @@ The locale system of `bc` includes all files under [`locales/`][85],
 [`scripts/locale_install.sh`][87], [`scripts/locale_uninstall.sh`][88],
 [`scripts/functions.sh`][105], the `bc_err_*` constants in [`src/data.c`][131],
 and the parts of the build system needed to activate it. There is also code in
-[`src/vm.c`][58] (in `bc_vm_gettext()` for loading the current locale.
+[`src/vm.c`][58] (in `bc_vm_gettext()`) for loading the current locale.
 
 If the order of error messages and/or categories are changed, the order of
 errors must be changed in the enum, the default error messages and categories in
@@ -1613,6 +2180,8 @@ under [`locales/`][85].
 ## Static Analysis
 
 TODO
+
+* `scan-build make`
 
 ## Fuzzing
 
@@ -2169,7 +2738,15 @@ TODO
 
 * Talk about interaction with command-line history.
 
-### Execution
+### Functions
+
+TODO
+
+#### Main and Read Functions
+
+TODO
+
+#### Execution
 
 TODO
 
@@ -2181,9 +2758,19 @@ TODO
   autos.
 * Arrays are arrays as well.
 
-#### Bytecode Indices
+##### Bytecode
 
 TODO
+
+###### Bytecode Indices
+
+TODO
+
+##### Variables
+
+TODO
+
+##### Arrays
 
 ### Lexing
 
@@ -2432,6 +3019,8 @@ TODO
 
 * Need to generate benchmarks and run them.
 * `ministat`.
+* Adding benchmarks. Including to `.gitignore` and the `clean_benchmarks`
+  target.
 
 ### Caching of Numbers
 
@@ -2450,6 +3039,8 @@ TODO
 * Contexts and why.
 * Signal handling.
 * Encapsulation of numbers.
+* Numbers can encode errors.
+	* But sometimes errors are returned directly.
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
@@ -2532,11 +3123,11 @@ TODO
 [79]: #bc
 [80]: #dc
 [81]: ./build.md#build-type
-[82]: #fuzzing
+[82]: #fuzzing-1
 [83]: #releasesh
 [84]: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
-[85]: #locales
-[86]: #manuals
+[85]: #locales-1
+[86]: #manuals-1
 [87]: #locale_installsh
 [88]: #locale_uninstallsh
 [89]: #bc1mdin
@@ -2591,4 +3182,35 @@ TODO
 [138]: #test-suite-portability
 [139]: #historypy
 [140]: #historysh
-[141]: #section-tests
+[141]: #group-tests
+[142]: #build-system
+[143]: #generated-tests
+[144]: #benchmarks
+[145]: #gen
+[146]: #test-coverage
+[147]: #integration-with-the-build-system
+[148]: #test-scripts
+[149]: #standard-tests
+[150]: #script-tests
+[151]: #error-tests
+[152]: #stdin-tests
+[153]: #read-tests
+[154]: #other-tests
+[155]: #history-tests
+[156]: #bcl
+[157]: #bcl-test
+[158]: #bclc
+[159]: #valgrind
+[160]: #addresssanitizer-and-friends
+[161]: #bc-1
+[162]: #dc-1
+[163]: #alltxt-1
+[164]: #errorstxt
+[165]: #posix_errorstxt
+[166]: #timeconstsh
+[167]: #alltxt-3
+[168]: #errorstxt-1
+[169]: #scripts-1
+[170]: #scripts-2
+[171]: #alltxt-2
+[172]: #alltxt-4

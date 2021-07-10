@@ -64,7 +64,6 @@ typedef enum BcDtorType {
 	BC_DTOR_NUM,
 #if !BC_ENABLE_LIBRARY
 #ifndef NDEBUG
-	BC_DTOR_ID,
 	BC_DTOR_FUNC,
 #endif // NDEBUG
 	BC_DTOR_SLAB,

@@ -42,11 +42,19 @@
 
 #define BC_FILE_ULL_LENGTH (21)
 
+/// The file struct.
 typedef struct BcFile {
 
+	// The actual file descriptor.
 	int fd;
+
+	// The buffer for the file.
 	char *buf;
+
+	// The length (number of actual chars) in the buffer.
 	size_t len;
+
+	// The capacity (max number of chars) of the buffer.
 	size_t cap;
 
 } BcFile;
@@ -114,6 +122,7 @@ void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c);
  * a very bad deal to throw another error.
  * @param f     The file to flush.
  * @param type  The flush type.
+ * @return      A status indicating if an error occurred.
  */
 BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type);
 

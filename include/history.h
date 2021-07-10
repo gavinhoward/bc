@@ -130,10 +130,18 @@
 /// Max size for cursor position buffer.
 #define BC_HIST_SEQ_SIZE (64)
 
-/// The number of entries in the history.
+/**
+ * The number of entries in the history.
+ * @param h  The history data.
+ */
 #define BC_HIST_BUF_LEN(h) ((h)->buf.len - 1)
 
-/// Read n characters into s and check the error.
+/**
+ * Read n characters into s and check the error.
+ * @param s  The buffer to read into.
+ * @param n  The number of bytes to read.
+ * @return   True if there was an error, false otherwise.
+ */
 #define BC_HIST_READ(s, n) (bc_history_read((s), (n)) == -1)
 
 /// Markers for direction when using arrow keys.
@@ -143,6 +151,7 @@
 #if BC_DEBUG_CODE
 
 // These are just for debugging.
+
 #define BC_HISTORY_DEBUG_BUF_SIZE (1024)
 
 #define lndebug(...)                                                        \
@@ -165,7 +174,8 @@
 #define lndebug(fmt, ...)
 #endif // BC_DEBUG_CODE
 
-/// An enum of useful actions.
+/// An enum of useful actions. To understand what these mean, check terminal
+/// emulators for their shortcuts or the VT100 codes.
 typedef enum BcHistoryAction {
 
 	BC_ACTION_NULL = 0,
@@ -264,6 +274,10 @@ typedef struct BcHistory {
  * @param h       The history data.
  * @param vec     A vector to put the line into.
  * @param prompt  The prompt to display, if desired.
+ * @return        A status indicating an error, if any. Returning a status here
+ *                is better because if we throw an error out of history, we
+ *                leave the terminal in raw mode or in some other half-baked
+ *                state.
  */
 BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt);
 

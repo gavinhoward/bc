@@ -429,8 +429,8 @@ typedef struct BcLex {
 	BcLexType last;
 
 	/// A string to store extra data for tokens. For example, the @a BC_LEX_STR
-	/// token really needs to store the actualy string, and numbers also need
-	/// the string.
+	/// token really needs to store the actual string, and numbers also need the
+	/// string.
 	BcVec str;
 
 	bool is_stdin;
