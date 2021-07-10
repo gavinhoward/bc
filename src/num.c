@@ -2457,11 +2457,11 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	BcRand r;
 	BcBigDig modl;
-	BcNum pow, pow2, cp, cp2, mod, temp1, temp2, rand, atemp;
-	BcNum *p1, *p2, *t1, *t2, *c1, *c2, *tmp;
+	BcNum atemp;
 	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
 	bool carry;
 	ssize_t cmp;
+	size_t i, len;
 
 	assert(a != b);
 
@@ -2470,133 +2470,26 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	if (BC_ERR(bc_num_nonInt(a, &atemp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 
-	cmp = bc_num_cmp(&atemp, &vm.max);
+	assert(atemp.len);
 
-	if (cmp <= 0) {
+	len = atemp.len - 1;
 
-		BcRand bits = 0;
+	for (i = 0; i < len; ++i)
+		b->num[i] = (BcDig) bc_rand_bounded(rng, BC_BASE_POW);
 
-		// We made sure that a is less than vm.max,
-		// so we can use bc_num_bigdig2() here.
-		if (cmp < 0) bits = (BcRand) bc_num_bigdig2(&atemp);
-
-		// This condition means that bits is a power of 2. In that case, we
-		// can just grab a full-size int and mask out the unneeded bits.
-		// Also, this condition says that 0 is a power of 2, which works for
-		// us, since a value of 0 means a == rng->max. The bitmask will mask
-		// nothing in that case as well.
-		if (!(bits & (bits - 1))) r = bc_rand_int(rng) & (bits - 1);
-		else r = bc_rand_bounded(rng, bits);
-
-		bc_num_bigdig2num(b, r);
-
-		return;
+	// Do the last digit explicitly because the bound must be right. But only
+	// do it if the limb does not equal 1. If it does, we have already hit the
+	// limit.
+	if (atemp.num[i] != 1) {
+		b->num[i] = (BcDig) bc_rand_bounded(rng, atemp.num[i]);
+		b->len = atemp.len;
 	}
+	// We want 1 less len in the case where we skip the last limb.
+	else b->len = len;
 
-	// In the case where a is less than rng->max, we have to make sure we have
-	// an exclusive bound. This ensures that it happens. (See below.)
-	carry = (cmp < 0);
-
-	BC_SIG_LOCK;
-
-	bc_num_createCopy(&cp, &atemp);
-
-	bc_num_init(&cp2, cp.len);
-	bc_num_init(&mod, BC_NUM_BIGDIG_LOG10);
-	bc_num_init(&temp1, BC_NUM_DEF_SIZE);
-	bc_num_init(&temp2, BC_NUM_DEF_SIZE);
-	bc_num_init(&pow2, BC_NUM_DEF_SIZE);
-	bc_num_init(&pow, BC_NUM_DEF_SIZE);
-	bc_num_one(&pow);
-	bc_num_setup(&rand, rand_num, sizeof(rand_num) / sizeof(BcDig));
-
-	BC_SETJMP_LOCKED(err);
-
-	BC_SIG_UNLOCK;
-
-	p1 = &pow;
-	p2 = &pow2;
-	t1 = &temp1;
-	t2 = &temp2;
-	c1 = &cp;
-	c2 = &cp2;
-
-	// This assert is here because it has to be true. It is also here to justify
-	// the use of BC_ERR_SIGNAL_ONLY() on each of the divmod's and mod's below.
-	assert(BC_NUM_NONZERO(&vm.max));
-
-	while (BC_NUM_NONZERO(c1)) {
-
-		bc_num_divmod(c1, &vm.max, c2, &mod, 0);
-
-		// Because mod is the mod of vm.max, it is guaranteed to be smaller,
-		// which means we can use bc_num_bigdig2() here.
-		modl = bc_num_bigdig2(&mod);
-
-		if (bc_num_cmp(c1, &vm.max) < 0) {
-
-			// In this case, if there is no carry, then we know we can generate
-			// an integer *equal* to modl. Thus, we add one if there is no
-			// carry. Otherwise, we add zero, and we are still bounded properly.
-			// Since the last portion is guaranteed to be greater than 1, we
-			// know modl isn't 0 unless there is no carry.
-			modl += !carry;
-
-			if (modl == 1) r = 0;
-			else if (!modl) r = bc_rand_int(rng);
-			else r = bc_rand_bounded(rng, (BcRand) modl);
-		}
-		else {
-			if (modl) modl -= carry;
-			r = bc_rand_int(rng);
-			carry = (r >= (BcRand) modl);
-		}
-
-		bc_num_bigdig2num(&rand, r);
-
-		assert(BC_NUM_RDX_VALID_NP(rand));
-		assert(BC_NUM_RDX_VALID(p1));
-
-		bc_num_mul(&rand, p1, p2, 0);
-		bc_num_add(p2, t1, t2, 0);
-
-		if (BC_NUM_NONZERO(c2)) {
-
-			assert(BC_NUM_RDX_VALID_NP(vm.max));
-			assert(BC_NUM_RDX_VALID(p1));
-
-			bc_num_mul(&vm.max, p1, p2, 0);
-
-			tmp = p1;
-			p1 = p2;
-			p2 = tmp;
-
-			tmp = c1;
-			c1 = c2;
-			c2 = tmp;
-		}
-		else c1 = c2;
-
-		tmp = t1;
-		t1 = t2;
-		t2 = tmp;
-	}
-
-	bc_num_copy(b, t1);
 	bc_num_clean(b);
 
 	assert(BC_NUM_RDX_VALID(b));
-
-err:
-	BC_SIG_MAYLOCK;
-	bc_num_free(&pow);
-	bc_num_free(&pow2);
-	bc_num_free(&temp2);
-	bc_num_free(&temp1);
-	bc_num_free(&mod);
-	bc_num_free(&cp2);
-	bc_num_free(&cp);
-	BC_LONGJMP_CONT;
 }
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
