@@ -489,16 +489,8 @@ clean:%%CLEAN_PREREQS%%
 clean_benchmarks:
 	@printf 'Cleaning benchmarks...\n'
 	@$(RM) -f $(MINISTAT_EXEC)
-	@$(RM) -f benchmarks/bc/add.txt
-	@$(RM) -f benchmarks/bc/subtract.txt
-	@$(RM) -f benchmarks/bc/multiply.txt
-	@$(RM) -f benchmarks/bc/divide.txt
-	@$(RM) -f benchmarks/bc/arrays.txt
-	@$(RM) -f benchmarks/bc/arrays_and_numbers.txt
-	@$(RM) -f benchmarks/bc/constants.txt
-	@$(RM) -f benchmarks/bc/strings.txt
-	@$(RM) -f benchmarks/bc/functions.txt
-	@$(RM) -f benchmarks/dc/modexp.txt
+	@$(RM) -f benchmarks/bc/*.txt
+	@$(RM) -f benchmarks/dc/*.txt
 
 clean_config: clean clean_benchmarks
 	@printf 'Cleaning config...\n'
