@@ -583,7 +583,9 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	n = bc_program_num(p, r);
 
 	if (BC_PROG_NUM(r, n)) {
+#if BC_ENABLED
 		assert(inst != BC_INST_PRINT_STR);
+#endif // BC_ENABLED
 		bc_num_print(n, BC_PROG_OBASE(p), !pop);
 #if BC_ENABLED
 		if (BC_IS_BC) bc_num_copy(&p->last, n);
@@ -596,8 +598,11 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 		bc_file_flush(&vm.fout, bc_flush_save);
 		str = *((char**) bc_vec_item(p->strs, i));
 
+#if BC_ENABLED
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
-		else {
+		else
+#endif // BC_ENABLED
+		{
 			bc_program_printString(str);
 			if (inst == BC_INST_PRINT)
 				bc_vm_putchar('\n', bc_flush_err);
@@ -2074,7 +2079,9 @@ void bc_program_exec(BcProgram *p) {
 
 			case BC_INST_PRINT:
 			case BC_INST_PRINT_POP:
+#if BC_ENABLED
 			case BC_INST_PRINT_STR:
+#endif // BC_ENABLED
 			{
 				bc_program_print(p, inst, 0);
 				bc_file_flush(&vm.fout, bc_flush_save);
