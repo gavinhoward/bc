@@ -41,7 +41,11 @@
 #include <status.h>
 #include <vector.h>
 
-/// Returns true if c is a non-ASCII char.
+/**
+ * Returns true if @a c is a non-ASCII (invalid) char.
+ * @param c  The character to test.
+ * @return   True if @a c is an invalid char.
+ */
 #define BC_READ_BIN_CHAR(c) (((c) < ' ' && !isspace((c))) || ((uchar) c) > '~')
 
 /**

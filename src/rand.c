@@ -126,8 +126,8 @@ static void bc_rand_setModified(BcRNGData *r) {
 #if BC_RAND_BUILTIN
 	r->inc |= (BcRandState) 1UL;
 #else // BC_RAND_BUILTIN
-	r->inc.lo |= (uint_fast64_t) 1UL;
 #endif // BC_RAND_BUILTIN
+	r->inc.lo |= (uint_fast64_t) 1UL;
 }
 
 static void bc_rand_clearModified(BcRNGData *r) {
@@ -164,7 +164,7 @@ static ulong bc_rand_frand(void* ptr) {
 	return *((ulong*)buf);
 }
 #else // _WIN32
-static ulong bc_rand_winrand(void* ptr) {
+static ulong bc_rand_winrand(void *ptr) {
 
 	ulong buf[1];
 	NTSTATUS s;
@@ -173,7 +173,8 @@ static ulong bc_rand_winrand(void* ptr) {
 
 	buf[0] = 0;
 
-	s = BCryptGenRandom(NULL, (char*) buf, sizeof(ulong), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+	s = BCryptGenRandom(NULL, (char*) buf, sizeof(ulong),
+	                    BCRYPT_USE_SYSTEM_PREFERRED_RNG);
 
 	if (BC_ERR(!BCRYPT_SUCCESS(s))) buf[0] = 0;
 

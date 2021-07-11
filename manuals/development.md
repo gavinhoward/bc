@@ -2666,7 +2666,7 @@ TODO
 
 * Note about vectors and numbers needing special treatment for error handling.
 
-The error handling on `bc` got an overhall for version [`3.0.0`][32], and it
+The error handling on `bc` got an overhaul for version [`3.0.0`][32], and it
 became one of the things that taught me the most about C in particular and
 programming in general.
 
@@ -2732,6 +2732,16 @@ any modifying pointer arithmetic, pointers and their data would be safe. For
 cases where I have local data that must change and stay changed, I needed to
 *undo* the `setjmp()`, do the change, and the *redo* the `setjmp()`.
 
+For number 2, `bc` needs some way to tell the signal handler that it cannot do a
+`longjmp()`. This is done by "locking" signals with a `volatile sig_atomic_t`.
+(For more information, see the [Async-Signal-Safe Signal Handling][173]
+section.) For every function that calls a function that is not
+async-signal-safe, they first need to use `BC_SIG_LOCK` to lock signals, and
+afterward, use `BC_SIG_UNLOCK` to unlock signals.
+
+`BC_SIG_UNLOCK` has another requirement: it must check for signals or errors and
+jump if necessary.
+
 #### Custom I/O
 
 TODO
@@ -2743,6 +2753,14 @@ TODO
 TODO
 
 #### Main and Read Functions
+
+TODO
+
+#### `dc` Strings
+
+TODO
+
+##### Tail Calls
 
 TODO
 
@@ -2772,11 +2790,15 @@ TODO
 
 ##### Arrays
 
+TODO
+
 ### Lexing
 
 TODO
 
 ### `dc` Parsing
+
+TODO
 
 (In fact, the easiness of parsing [Reverse Polish notation][108] is probably
 why it was used for `dc` when it was first created at Bell Labs.)
@@ -3214,3 +3236,4 @@ TODO
 [170]: #scripts-2
 [171]: #alltxt-2
 [172]: #alltxt-4
+[173]: #async-signal-safe-signal-handling

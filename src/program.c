@@ -1409,7 +1409,7 @@ static uchar bc_program_asciifyNum(BcProgram *p, BcNum *n) {
 	BC_NUM_NEG_CLR_NP(num);
 
 	// This is guaranteed to not have a divide by 0
-	// because strmb is equal to UCHAR_MAX + 1.
+	// because strmb is equal to 256.
 	bc_num_mod(&num, &p->strmb, &num, 0);
 
 	// This is also guaranteed to not error because num is in the range
@@ -1477,7 +1477,7 @@ static void bc_program_printStream(BcProgram *p) {
 
 	assert(n != NULL);
 
-	if (BC_PROG_NUM(r, n)) bc_num_stream(n, p->strm);
+	if (BC_PROG_NUM(r, n)) bc_num_stream(n);
 	else {
 		size_t idx = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
 		bc_program_printChars(*((char**) bc_vec_item(p->strs, idx)));
@@ -1790,9 +1790,8 @@ void bc_program_init(BcProgram *p) {
 		i = 0;
 		bc_vec_push(&p->tail_calls, &i);
 
-		p->strm = UCHAR_MAX + 1;
 		bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
-		bc_num_bigdig2num(&p->strmb, p->strm);
+		bc_num_bigdig2num(&p->strmb, BC_NUM_STREAM_BASE);
 	}
 #endif // DC_ENABLED
 

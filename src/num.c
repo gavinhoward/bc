@@ -2106,8 +2106,8 @@ static void bc_num_printBase(BcNum *restrict n, BcBigDig base, bool newline) {
 }
 
 #if DC_ENABLED && !BC_ENABLE_LIBRARY
-void bc_num_stream(BcNum *restrict n, BcBigDig base) {
-	bc_num_printNum(n, base, 1, bc_num_printChar, false);
+void bc_num_stream(BcNum *restrict n) {
+	bc_num_printNum(n, BC_NUM_STREAM_BASE, 1, bc_num_printChar, false);
 }
 #endif // DC_ENABLED && !BC_ENABLE_LIBRARY
 
@@ -2168,7 +2168,7 @@ void bc_num_createCopy(BcNum *d, const BcNum *s) {
 	bc_num_copy(d, s);
 }
 
-void bc_num_createFromBigdig(BcNum *n, BcBigDig val) {
+void bc_num_createFromBigdig(BcNum *restrict n, BcBigDig val) {
 	BC_SIG_ASSERT_LOCKED;
 	bc_num_init(n, BC_NUM_BIGDIG_LOG10);
 	bc_num_bigdig2num(n, val);
@@ -2182,9 +2182,15 @@ size_t bc_num_len(const BcNum *restrict n) {
 
 	size_t len = n->len;
 
+	// Always return at least 1.
 	if (BC_NUM_ZERO(n)) return n->scale ? n->scale : 1;
 
+	// If this is true, there is no integer portion of the number.
 	if (BC_NUM_RDX_VAL(n) == len) {
+
+		// We have to take into account the fact that some of the digits right
+		// after the decimal could be zero. If that is the case, we need to
+		// ignore them until we hit the first non-zero digit.
 
 		size_t zero, scale;
 
@@ -2197,6 +2203,7 @@ size_t bc_num_len(const BcNum *restrict n) {
 
 		len = len * BC_BASE_DIGS - zero - (BC_BASE_DIGS - scale);
 	}
+	// Otherwise, count the number of int digits and return that plus the scale.
 	else len = bc_num_intDigits(n) + n->scale;
 
 	return len;
@@ -2345,7 +2352,7 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	intn.len = bc_num_int(n);
 
 	// This assert is here because it has to be true. It is also here to justify
-	// the use of BC_ERR_SIGNAL_ONLY() on each of the divmod's and mod's below.
+	// some optimizations.
 	assert(BC_NUM_NONZERO(&vm.max));
 
 	if (BC_NUM_NONZERO(&frac)) {

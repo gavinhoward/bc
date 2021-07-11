@@ -45,55 +45,89 @@
 #include <lex.h>
 #include <lang.h>
 
-// the following are flags that can be passed to @a BcParseExpr functions. They
+// The following are flags that can be passed to @a BcParseExpr functions. They
 // define the requirements that the parsed expression must meet to not have an
 // error thrown.
 
-// A flag that requires that the expression is valid for conditionals in for
-// loops, while loops, and if statements. This is because POSIX requires that
-// certain operators are *only* used in those cases. It's whacked, but that's
-// how it is.
+/// A flag that requires that the expression is valid for conditionals in for
+/// loops, while loops, and if statements. This is because POSIX requires that
+/// certain operators are *only* used in those cases. It's whacked, but that's
+/// how it is.
 #define BC_PARSE_REL (UINTMAX_C(1)<<0)
 
-// A flag that requires that the expression is valid for a print statement.
+/// A flag that requires that the expression is valid for a print statement.
 #define BC_PARSE_PRINT (UINTMAX_C(1)<<1)
 
-// A flag that requires that the expression does *not* have any function call.
+/// A flag that requires that the expression does *not* have any function call.
 #define BC_PARSE_NOCALL (UINTMAX_C(1)<<2)
 
-// A flag that requires that the expression does *not* have a read() expression.
+/// A flag that requires that the expression does *not* have a read() expression.
 #define BC_PARSE_NOREAD (UINTMAX_C(1)<<3)
 
-// A flag that *allows* (rather than requires) that an array appear in the
-// expression. This is mostly used as parameters in bc.
+/// A flag that *allows* (rather than requires) that an array appear in the
+/// expression. This is mostly used as parameters in bc.
 #define BC_PARSE_ARRAY (UINTMAX_C(1)<<4)
 
-// A flag that requires that the expression is not empty and returns a value.
+/// A flag that requires that the expression is not empty and returns a value.
 #define BC_PARSE_NEEDVAL (UINTMAX_C(1)<<5)
 
-// Returns true if the current parser state allows parsing, false otherwise.
 #if BC_ENABLED
+
+/**
+ * Returns true if the current parser state allows parsing, false otherwise.
+ * @param p  The parser.
+ * @return   True if parsing can proceed, false otherwise.
+ */
 #define BC_PARSE_CAN_PARSE(p) \
 	((p).l.t != BC_LEX_EOF && (p).l.t != BC_LEX_KW_DEFINE)
+
 #else // BC_ENABLED
+
+/**
+ * Returns true if the current parser state allows parsing, false otherwise.
+ * @param p  The parser.
+ * @return   True if parsing can proceed, false otherwise.
+ */
 #define BC_PARSE_CAN_PARSE(p) ((p).l.t != BC_LEX_EOF)
+
 #endif // BC_ENABLED
 
-// Pushes the instruction @a i onto the bytecode vector for the current
-// function.
+/**
+ * Pushes the instruction @a i onto the bytecode vector for the current
+ * function.
+ * @param p  The parser.
+ * @param i  The instruction to push onto the bytecode vector.
+ */
 #define bc_parse_push(p, i) (bc_vec_pushByte(&(p)->func->code, (uchar) (i)))
 
-// Pushes an index onto the bytecode vector. For more information, see
-// @a bc_vec_pushIndex() in src/vector.c and @a bc_program_index() in
-// src/program.c.
+/**
+ * Pushes an index onto the bytecode vector. For more information, see
+ * @a bc_vec_pushIndex() in src/vector.c and @a bc_program_index() in
+ * src/program.c.
+ * @param p    The parser.
+ * @param idx  The index to push onto the bytecode vector.
+ */
 #define bc_parse_pushIndex(p, idx) (bc_vec_pushIndex(&(p)->func->code, (idx)))
 
-// Two convencience macros for throwing errors in parse code. They take care of
-// plumbing like passing in the current line the lexer is on.
+/**
+ * A convenience macro for throwing errors in parse code. They take care of
+ * plumbing like passing in the current line the lexer is on.
+ * @param p  The parser.
+ * @param e  The error.
+ */
 #define bc_parse_err(p, e) (bc_vm_handleError((e), (p)->l.line))
+
+/**
+ * A convenience macro for throwing errors in parse code. They take care of
+ * plumbing like passing in the current line the lexer is on.
+ * @param p    The parser.
+ * @param e    The error.
+ * @param ...  The varags that are needed.
+ */
 #define bc_parse_verr(p, e, ...) \
 	(bc_vm_handleError((e), (p)->l.line, __VA_ARGS__))
 
+// Forward declarations.
 struct BcParse;
 struct BcProgram;
 
