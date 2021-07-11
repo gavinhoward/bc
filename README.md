@@ -1,7 +1,5 @@
 # `bc`
 
-[![Coverity Scan Build Status][17]][18]
-
 ***WARNING: This project has moved to [https://git.yzena.com/][20] for [these
 reasons][21], though GitHub will remain a mirror.***
 
@@ -22,6 +20,8 @@ For more information, see the `dc`'s full manual.
 This `bc` also provides `bc`'s math as a library with C bindings, called `bcl`.
 
 For more information, see the full manual for `bcl`.
+
+## License
 
 This `bc` is Free and Open Source Software (FOSS). It is offered under the BSD
 2-clause License. Full license text may be found in the [`LICENSE.md`][4] file.
@@ -279,12 +279,12 @@ handle work themselves, the best place to start is the [Development manual][28].
 
 ## Vim Syntax
 
-I have developed (using other people's code to start) [`vim` syntax files][29]
+I have developed (using other people's code to start) [`vim` syntax files][17]
 for this `bc` and `dc`, including the extensions.
 
 ## `bc` Libs
 
-I have gathered some excellent [`bc` and `dc` libraries][30]. These libraries
+I have gathered some excellent [`bc` and `dc` libraries][18]. These libraries
 may prove useful to any serious users.
 
 ## Comparison to GNU `bc`
@@ -405,8 +405,8 @@ Folders:
 [10]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [11]: http://semver.org/
 [12]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
-[17]: https://img.shields.io/coverity/scan/16609.svg
-[18]: https://scan.coverity.com/projects/gavinhoward-bc
+[17]: https://git.yzena.com/gavin/vim-bc
+[18]: https://git.yzena.com/gavin/bc_libs
 [19]: ./manuals/benchmarks.md
 [20]: https://git.yzena.com/gavin/bc
 [21]: https://gavinhoward.com/2020/04/i-am-moving-away-from-github/
@@ -417,5 +417,3 @@ Folders:
 [26]: ./manuals/bcl.3.md
 [27]: https://en.wikipedia.org/wiki/Bus_factor
 [28]: ./manuals/development.md
-[29]: https://git.yzena.com/gavin/vim-bc
-[30]: https://git.yzena.com/gavin/bc_libs
