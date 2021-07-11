@@ -303,11 +303,11 @@ typedef enum BcErr {
 	} while (0)
 
 /// Unlocks signals. If a signal happened, then this will cause a jump.
-#define BC_SIG_UNLOCK           \
-	do {                        \
-		BC_SIG_ASSERT_LOCKED;   \
-		vm.sig_lock = 0;        \
-		if (BC_SIG_EXC) BC_JMP; \
+#define BC_SIG_UNLOCK         \
+	do {                      \
+		BC_SIG_ASSERT_LOCKED; \
+		vm.sig_lock = 0;      \
+		if (vm.sig) BC_JMP;   \
 	} while (0)
 
 /// Locks signals, regardless of if they are already locked. This is really only
@@ -321,26 +321,31 @@ typedef enum BcErr {
 
 /// Unlocks signals, regardless of if they were already unlocked. If a signal
 /// happened, then this will cause a jump.
-#define BC_SIG_MAYUNLOCK        \
-	do {                        \
-		vm.sig_lock = 0;        \
-		if (BC_SIG_EXC) BC_JMP; \
+#define BC_SIG_MAYUNLOCK    \
+	do {                    \
+		vm.sig_lock = 0;    \
+		if (vm.sig) BC_JMP; \
 	} while (0)
 
-/// Locks signals, but stores the old lock state, to be restored later by
-/// BC_SIG_TRYUNLOCK.
+/*
+ * Locks signals, but stores the old lock state, to be restored later by
+ * BC_SIG_TRYUNLOCK.
+ * @param v  The variable to store the old lock state to.
+ */
 #define BC_SIG_TRYLOCK(v) \
 	do {                  \
 		v = vm.sig_lock;  \
 		vm.sig_lock = 1;  \
 	} while (0)
 
-/// Restores the previous state of a signal lock, and if it is now unlocked,
-/// initiates an exception/jump.
-#define BC_SIG_TRYUNLOCK(v)             \
-	do {                                \
-		vm.sig_lock = (v);              \
-		if (!(v) && BC_SIG_EXC) BC_JMP; \
+/* Restores the previous state of a signal lock, and if it is now unlocked,
+ * initiates an exception/jump.
+ * @param v  The old lock state.
+ */
+#define BC_SIG_TRYUNLOCK(v)         \
+	do {                            \
+		vm.sig_lock = (v);          \
+		if (!(v) && vm.sig) BC_JMP; \
 	} while (0)
 
 /// Sets a jump, and sets it up as well so that if a longjmp() happens, bc will
@@ -351,6 +356,7 @@ typedef enum BcErr {
 	do {                                 \
 		sigjmp_buf sjb;                  \
 		BC_SIG_LOCK;                     \
+		bc_vec_grow(&vm.jmp_bufs, 1);    \
 		if (sigsetjmp(sjb, 0)) {         \
 			assert(BC_SIG_EXC);          \
 			goto l;                      \
@@ -359,26 +365,34 @@ typedef enum BcErr {
 		BC_SIG_UNLOCK;                   \
 	} while (0)
 
-/// Sets a jump like BC_SETJMP, but unlike BC_SETJMP, it assumes signals are
-/// locked and will just set the jump.
-#define BC_SETJMP_LOCKED(l)               \
-	do {                                  \
-		sigjmp_buf sjb;                   \
-		BC_SIG_ASSERT_LOCKED;             \
-		if (sigsetjmp(sjb, 0)) {          \
-			assert(BC_SIG_EXC);           \
-			goto l;                       \
-		}                                 \
-		bc_vec_push(&vm.jmp_bufs, &sjb);  \
+/**
+ * Sets a jump like BC_SETJMP, but unlike BC_SETJMP, it assumes signals are
+ * locked and will just set the jump. This grows the jmp_bufs vector first to
+ * prevent a fatal error from happening after the setjmp().
+ * param l  The label to jump to on a longjmp().
+ */
+#define BC_SETJMP_LOCKED(l)              \
+	do {                                 \
+		sigjmp_buf sjb;                  \
+		BC_SIG_ASSERT_LOCKED;            \
+		bc_vec_grow(&vm.jmp_bufs, 1);    \
+		if (sigsetjmp(sjb, 0)) {         \
+			assert(BC_SIG_EXC);          \
+			goto l;                      \
+		}                                \
+		bc_vec_push(&vm.jmp_bufs, &sjb); \
 	} while (0)
 
 /// Used after cleanup labels set by BC_SETJMP and BC_SETJMP_LOCKED to jump to
-/// the next place. This is what continues the stack unwinding.
-#define BC_LONGJMP_CONT                             \
-	do {                                            \
-		BC_SIG_ASSERT_LOCKED;                       \
-		if (!vm.sig_pop) bc_vec_pop(&vm.jmp_bufs);  \
-		BC_SIG_UNLOCK;                              \
+/// the next place. This is what continues the stack unwinding. This basically
+/// copies BC_SIG_UNLOCK into itself, but that is because its condition for
+/// jumping is BC_SIG_EXC, not just that a signal happened.
+#define BC_LONGJMP_CONT                            \
+	do {                                           \
+		BC_SIG_ASSERT_LOCKED;                      \
+		if (!vm.sig_pop) bc_vec_pop(&vm.jmp_bufs); \
+		vm.sig_lock = 0;                           \
+		if (BC_SIG_EXC) BC_JMP;                    \
 	} while (0)
 
 /// Unsets a jump. It always assumes signals are locked. This basically just
