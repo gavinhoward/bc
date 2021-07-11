@@ -78,12 +78,12 @@ fi
 
 printf 'Running %s command-line error tests...' "$d"
 
-printf '%s\n' "$halt" | "$exe" -e "1+1" -f- -e "2+2" 2> "$out" > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" -e "1+1" -f- -e "2+2" 2> "$out" > /dev/null
 err="$?"
 
 checkerrtest "$d" "$err" "command-line -e test" "$out" "$exebase"
 
-printf '%s\n' "$halt" | "$exe" -e "1+1" -f- -f "$testdir/$d/decimal.txt" 2> "$out" > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" -e "1+1" -f- -f "$testdir/$d/decimal.txt" 2> "$out" > /dev/null
 err="$?"
 
 checkerrtest "$d" "$err" "command-line -f test" "$out" "$exebase"
