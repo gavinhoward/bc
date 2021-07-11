@@ -126,8 +126,8 @@ static void bc_rand_setModified(BcRNGData *r) {
 #if BC_RAND_BUILTIN
 	r->inc |= (BcRandState) 1UL;
 #else // BC_RAND_BUILTIN
-#endif // BC_RAND_BUILTIN
 	r->inc.lo |= (uint_fast64_t) 1UL;
+#endif // BC_RAND_BUILTIN
 }
 
 static void bc_rand_clearModified(BcRNGData *r) {
