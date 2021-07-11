@@ -252,7 +252,7 @@ These commands are used for printing.
 :   Pops a value off the stack.
 
     If the value is a number, it is truncated and the absolute value of the
-    result is printed as though **obase** is **UCHAR_MAX+1** and each digit is
+    result is printed as though **obase** is **256** and each digit is
     interpreted as an ASCII character, making it a byte stream.
 
     If the value is a string, it is printed without a trailing newline.
@@ -565,9 +565,9 @@ will be printed with a newline after and then popped from the stack.
 :   The value on top of the stack is popped.
 
     If it is a number, it is truncated and its absolute value is taken. The
-    result mod **UCHAR_MAX+1** is calculated. If that result is **0**, push an
-    empty string; otherwise, push a one-character string where the character is
-    the result of the mod interpreted as an ASCII character.
+    result mod **256** is calculated. If that result is **0**, push an empty
+    string; otherwise, push a one-character string where the character is the
+    result of the mod interpreted as an ASCII character.
 
     If it is a string, then a new string is made. If the original string is
     empty, the new string is empty. If it is not, then the first character of

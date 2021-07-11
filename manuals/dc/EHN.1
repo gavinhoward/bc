@@ -285,9 +285,8 @@ Pops a value off the stack.
 .RS
 .PP
 If the value is a number, it is truncated and the absolute value of the
-result is printed as though \f[B]obase\f[R] is \f[B]UCHAR_MAX+1\f[R] and
-each digit is interpreted as an ASCII character, making it a byte
-stream.
+result is printed as though \f[B]obase\f[R] is \f[B]256\f[R] and each
+digit is interpreted as an ASCII character, making it a byte stream.
 .PP
 If the value is a string, it is printed without a trailing newline.
 .PP
@@ -633,7 +632,7 @@ The value on top of the stack is popped.
 .RS
 .PP
 If it is a number, it is truncated and its absolute value is taken.
-The result mod \f[B]UCHAR_MAX+1\f[R] is calculated.
+The result mod \f[B]256\f[R] is calculated.
 If that result is \f[B]0\f[R], push an empty string; otherwise, push a
 one-character string where the character is the result of the mod
 interpreted as an ASCII character.
