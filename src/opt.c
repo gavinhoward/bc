@@ -59,6 +59,8 @@ static const char* bc_opt_longopt(const BcOptLong *longopts, int c) {
 		if (longopts[i].val == c) return longopts[i].name;
 	}
 
+	BC_UNREACHABLE
+
 	return "NULL";
 }
 
@@ -240,6 +242,8 @@ int bc_opt_parse(BcOpt *o, const BcOptLong *longopts) {
 	}
 
 	bc_opt_error(BC_ERR_FATAL_OPTION, 0, option);
+
+	BC_UNREACHABLE
 
 	return -1;
 }

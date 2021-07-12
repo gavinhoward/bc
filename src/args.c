@@ -209,6 +209,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 			case ':':
 			default:
 			{
+				BC_UNREACHABLE
 				abort();
 			}
 #endif // NDEBUG

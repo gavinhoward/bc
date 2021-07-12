@@ -115,20 +115,18 @@ static size_t bc_lex_num(BcLex *l, char start, bool int_only) {
 	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, pt, int_only) ||
 	                             (c == '\\' && buf[i + 1] == '\n')); ++i)
 	{
+		// I don't need to test that the next character is a newline because
+		// the loop condition above ensures that.
 		if (c == '\\') {
 
-			if (buf[i + 1] == '\n') {
+			i += 2;
 
-				i += 2;
+			// Make sure to eat whitespace at the beginning of the line.
+			while(isspace(buf[i]) && buf[i] != '\n') i += 1;
 
-				// Make sure to eat whitespace at the beginning of the line.
-				while(isspace(buf[i]) && buf[i] != '\n') i += 1;
+			c = buf[i];
 
-				c = buf[i];
-
-				if (!BC_LEX_NUM_CHAR(c, pt, int_only)) break;
-			}
-			else break;
+			if (!BC_LEX_NUM_CHAR(c, pt, int_only)) break;
 		}
 
 		last_pt = (c == '.');

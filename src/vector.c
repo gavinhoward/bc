@@ -394,6 +394,8 @@ char* bc_map_name(const BcVec *restrict v, size_t idx) {
 		if (id->idx == idx) return id->name;
 	}
 
+	BC_UNREACHABLE
+
 	return "";
 }
 #endif // DC_ENABLED

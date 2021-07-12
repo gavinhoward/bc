@@ -160,11 +160,7 @@
 #define BC_IS_DC (1)
 #endif // BC_ENABLED
 
-#if BC_ENABLED
-#define BC_PROMPT (BC_P && !BC_IS_POSIX)
-#else // BC_ENABLED
 #define BC_PROMPT (BC_P)
-#endif // BC_ENABLED
 
 #endif // !BC_ENABLE_LIBRARY
 

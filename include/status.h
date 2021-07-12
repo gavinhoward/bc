@@ -87,19 +87,49 @@
 #define BC_MUST_RETURN
 #endif // __STDC_VERSION__
 
+#define BC_HAS_UNREACHABLE (0)
+
+// GCC and Clang complain if fallthroughs are not marked with their special
+// attribute. Jerks. This creates a define for marking the fallthroughs that is
+// nothing on other compilers.
 #if defined(__clang__) || defined(__GNUC__)
+
 #if defined(__has_attribute)
+
 #if __has_attribute(fallthrough)
 #define BC_FALLTHROUGH __attribute__((fallthrough));
 #else // __has_attribute(fallthrough)
 #define BC_FALLTHROUGH
 #endif // __has_attribute(fallthrough)
+
+#ifdef __GNUC__
+
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+#undef BC_HAS_UNREACHABLE
+#define BC_HAS_UNREACHABLE (1)
+#endif // __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+
+#else // __GNUC__
+
+#if __clang_major__ >= 4
+#undef BC_HAS_UNREACHABLE
+#define BC_HAS_UNREACHABLE (1)
+#endif // __clang_major__ >= 4
+
+#endif // __GNUC__
+
 #else // defined(__has_attribute)
 #define BC_FALLTHROUGH
 #endif // defined(__has_attribute)
 #else // defined(__clang__) || defined(__GNUC__)
 #define BC_FALLTHROUGH
 #endif // defined(__clang__) || defined(__GNUC__)
+
+#if BC_HAS_UNREACHABLE
+#define BC_UNREACHABLE __builtin_unreachable();
+#else // BC_HAS_UNREACHABLE
+#define BC_UNREACHABLE
+#endif // BC_HAS_UNREACHABLE
 
 #ifdef __GNUC__
 #ifdef __OpenBSD__
