@@ -636,10 +636,12 @@ static void bc_parse_return(BcParse *p) {
 		if (!paren || p->l.last != BC_LEX_RPAREN) {
 			bc_parse_err(p, BC_ERR_POSIX_RET);
 		}
-		else if (BC_ERR(p->func->voidfn))
-			bc_parse_verr(p, BC_ERR_PARSE_RET_VOID, p->func->name);
 
-		bc_parse_push(p, BC_INST_RET);
+		if (BC_ERR(p->func->voidfn)) {
+			if (s != BC_PARSE_STATUS_EMPTY_EXPR)
+				bc_parse_verr(p, BC_ERR_PARSE_RET_VOID, p->func->name);
+		}
+		else bc_parse_push(p, BC_INST_RET);
 	}
 }
 
