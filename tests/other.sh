@@ -258,6 +258,16 @@ err="$?"
 
 checkerrtest "$d" "$err" "given argument to long option with no argument" "$out2" "$d"
 
+"$exe" "$@" -: > /dev/null 2> "$out2"
+err="$?"
+
+checkerrtest "$d" "$err" "colon short option" "$out2" "$d"
+
+"$exe" "$@" --: > /dev/null 2> "$out2"
+err="$?"
+
+checkerrtest "$d" "$err" "colon long option" "$out2" "$d"
+
 printf 'pass\n'
 
 printf 'Running %s directory test...' "$d"
