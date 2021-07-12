@@ -170,7 +170,6 @@ const char* const bc_err_msgs[] = {
 	"memory allocation failed",
 	"I/O error",
 	"cannot open file: %s",
-	"file is not ASCII: %s",
 	"path is a directory: %s",
 	"bad command-line option: \"%s\"",
 	"option requires an argument: '%c' (\"%s\")",

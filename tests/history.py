@@ -89,26 +89,26 @@ def bc_banner(child):
 # @param args  The arguments to pass to the executable.
 # @param env   The environment.
 # @param idx   The index of the UTF-8 stress string.
-def test_utf8(exe, args, env, idx):
+def test_utf8(exe, args, env, idx, bc=True):
 
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8')
+	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8', codec_errors='ignore')
 
 	try:
 
 		# Write the stress string.
 		child.send(utf8_stress_strs[idx])
 		child.send("\n")
-		time.sleep(1)
+		child.expect("Parse error: bad character")
 
-		# Sleeping ensure the child has time to die.
-		if child.isalive():
-			print("child did not give a fatal error")
-			print(str(child))
-			print(str(child.buffer))
-			sys.exit(1)
+		if bc:
+			child.send("quit")
+		else:
+			child.send("q")
+
+		child.send("\n")
 
 		child.wait()
 
@@ -129,12 +129,12 @@ def test_utf8(exe, args, env, idx):
 # @param exe   The executable.
 # @param args  The arguments to pass to the executable.
 # @param env   The environment.
-def test_utf8_0(exe, args, env):
+def test_utf8_0(exe, args, env, bc=True):
 
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8')
+	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8', codec_errors='ignore')
 
 	try:
 
@@ -143,13 +143,14 @@ def test_utf8_0(exe, args, env):
 		child.send("\x1b[D\x1b[D\x1b[D\x1b\x1b[A\xe2\x84\x90")
 		child.send("\n")
 
-		# Sleeping ensure the child has time to die.
-		time.sleep(1)
-		if child.isalive():
-			print("child did not give a fatal error")
-			print(str(child))
-			print(str(child.buffer))
-			sys.exit(1)
+		child.expect("Parse error: bad character")
+
+		if bc:
+			child.send("quit")
+		else:
+			child.send("q")
+
+		child.send("\n")
 
 		child.wait()
 
@@ -167,20 +168,20 @@ def test_utf8_0(exe, args, env):
 	return child
 
 
-def test_utf8_1(exe, args, env):
-	return test_utf8(exe, args, env, 0)
+def test_utf8_1(exe, args, env, bc=True):
+	return test_utf8(exe, args, env, 0, bc)
 
 
-def test_utf8_2(exe, args, env):
-	return test_utf8(exe, args, env, 1)
+def test_utf8_2(exe, args, env, bc=True):
+	return test_utf8(exe, args, env, 1, bc)
 
 
-def test_utf8_3(exe, args, env):
-	return test_utf8(exe, args, env, 2)
+def test_utf8_3(exe, args, env, bc=True):
+	return test_utf8(exe, args, env, 2, bc)
 
 
-def test_utf8_4(exe, args, env):
-	return test_utf8(exe, args, env, 3)
+def test_utf8_4(exe, args, env, bc=True):
+	return test_utf8(exe, args, env, 3, bc)
 
 
 # This tests a SIGINT with reset followed by a SIGQUIT.
@@ -345,6 +346,26 @@ def test_sigstop(exe, args, env):
 		sys.exit(2)
 
 	return child
+
+
+def test_bc_utf8_0(exe, args, env):
+	return test_utf8_0(exe, args, env, True)
+
+
+def test_bc_utf8_1(exe, args, env):
+	return test_utf8_1(exe, args, env, True)
+
+
+def test_bc_utf8_2(exe, args, env):
+	return test_utf8_2(exe, args, env, True)
+
+
+def test_bc_utf8_3(exe, args, env):
+	return test_utf8_3(exe, args, env, True)
+
+
+def test_bc_utf8_4(exe, args, env):
+	return test_utf8_4(exe, args, env, True)
 
 
 # Basic bc test.
@@ -787,6 +808,26 @@ def test_bc12(exe, args, env):
 	return child
 
 
+def test_dc_utf8_0(exe, args, env):
+	return test_utf8_0(exe, args, env, False)
+
+
+def test_dc_utf8_1(exe, args, env):
+	return test_utf8_1(exe, args, env, False)
+
+
+def test_dc_utf8_2(exe, args, env):
+	return test_utf8_2(exe, args, env, False)
+
+
+def test_dc_utf8_3(exe, args, env):
+	return test_utf8_3(exe, args, env, False)
+
+
+def test_dc_utf8_4(exe, args, env):
+	return test_utf8_4(exe, args, env, False)
+
+
 # Basic dc test.
 # @param exe   The executable.
 # @param args  The arguments to pass to the executable.
@@ -880,11 +921,11 @@ def test_dc3(exe, args, env):
 
 # The array of bc tests.
 bc_tests = [
-	test_utf8_0,
-	test_utf8_1,
-	test_utf8_2,
-	test_utf8_3,
-	test_utf8_4,
+	test_bc_utf8_0,
+	test_bc_utf8_1,
+	test_bc_utf8_2,
+	test_bc_utf8_3,
+	test_bc_utf8_4,
 	test_sigint_sigquit,
 	test_eof,
 	test_sigint,
@@ -904,58 +945,18 @@ bc_tests = [
 	test_bc12,
 ]
 
-# The array of bc error codes.
-bc_expected_codes = [
-	4,
-	4,
-	4,
-	4,
-	4,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
-]
-
 # The array of dc tests.
 dc_tests = [
-	test_utf8_0,
-	test_utf8_1,
-	test_utf8_2,
-	test_utf8_3,
+	test_dc_utf8_0,
+	test_dc_utf8_1,
+	test_dc_utf8_2,
+	test_dc_utf8_3,
 	test_sigint_sigquit,
 	test_eof,
 	test_sigint,
 	test_dc1,
 	test_dc2,
 	test_dc3,
-]
-
-# The array of dc error codes.
-dc_expected_codes = [
-	4,
-	4,
-	4,
-	4,
-	0,
-	0,
-	0,
-	0,
-	0,
-	0,
 ]
 
 
@@ -1017,12 +1018,10 @@ if exebase == "bc":
 	halt = "halt\n"
 	options = "-lq"
 	test_array = bc_tests
-	expected_codes = bc_expected_codes
 else:
 	halt = "q\n"
 	options = "-x"
 	test_array = dc_tests
-	expected_codes = dc_expected_codes
 
 # More command-line processing.
 if len(sys.argv) > idx + 1:
@@ -1049,11 +1048,9 @@ child = test_array[test_idx](exe[0], exe[1:], env)
 
 child.close()
 
-# Make sure we got the expected exit code.
-exp = expected_codes[test_idx]
 exit = child.exitstatus
 
-if exit != exp:
-	print("child failed; expected exit code {}, got {}".format(exp, exit))
+if exit != 0:
+	print("child failed; expected exit code 0, got {}".format(exit))
 	print(str(child))
 	sys.exit(1)

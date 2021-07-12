@@ -102,11 +102,7 @@ $set 6
 1 "Alokacja pamiêci nie powiod³a siê"
 2 "B³±d we/wy"
 3 "nie móg³ otworzyæ pliku: %s"
-4 "plik nie jest ASCII: %s"
-5 "¶cie¿ka to katalog: %s"
-6 "nieprawid³owa opcja wiersza poleceñ: '%c' (\"%s\")"
-
-$set 7
-
-1 "opcja wymaga argumentu: '%c' (\"%s\")"
-2 "opcja nie wymaga ¿adnych argumentów: '%c' (\"%s\")"
+4 "¶cie¿ka to katalog: %s"
+5 "nieprawid³owa opcja wiersza poleceñ: \"%s\""
+6 "opcja wymaga argumentu: '%c' (\"%s\")"
+7 "opcja nie wymaga ¿adnych argumentów: '%c' (\"%s\")"

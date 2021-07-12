@@ -72,22 +72,6 @@ static int bc_read_open(const char* path, int mode) {
 	return fd;
 }
 
-/**
- * Returns true if the buffer data is non-ASCII.
- * @param buf   The buffer to test.
- * @param size  The size of the buffer.
- */
-static bool bc_read_binary(const char *buf, size_t size) {
-
-	size_t i;
-
-	for (i = 0; i < size; ++i) {
-		if (BC_ERR(BC_READ_BIN_CHAR(buf[i]))) return true;
-	}
-
-	return false;
-}
-
 bool bc_read_buf(BcVec *vec, char *buf, size_t *buf_len) {
 
 	char *nl;
@@ -198,9 +182,6 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	s = bc_read_chars(vec, prompt);
 #endif // BC_ENABLE_HISTORY
 
-	if (BC_ERR(bc_read_binary(vec->v, vec->len - 1)))
-		bc_verr(BC_ERR_FATAL_BIN_FILE, bc_program_stdin_name);
-
 	return s;
 }
 
@@ -238,11 +219,6 @@ char* bc_read_file(const char *path) {
 	if (BC_ERR(r != size)) goto read_err;
 
 	buf[size] = '\0';
-
-	if (BC_ERR(bc_read_binary(buf, size))) {
-		e = BC_ERR_FATAL_BIN_FILE;
-		goto read_err;
-	}
 
 	close(fd);
 

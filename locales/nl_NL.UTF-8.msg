@@ -102,11 +102,7 @@ $set 6
 1 "geheugentoewijzing mislukt"
 2 "I/O-fout"
 3 "kon geen file openen: %s"
-4 "bestand is niet ASCII: %s"
-5 "pad is een directory: %s"
-6 "ongeldige opdrachtregeloptie: '%c' (%s)"
-
-$set 7
-
-1 "optie vereist een argument: '%c' (\"%s\")"
-2 "optie neemt geen argumenten aan: '%c' (\"%s\")"
+4 "pad is een directory: %s"
+5 "ongeldige opdrachtregeloptie: %s"
+6 "optie vereist een argument: '%c' (\"%s\")"
+7 "optie neemt geen argumenten aan: '%c' (\"%s\")"
