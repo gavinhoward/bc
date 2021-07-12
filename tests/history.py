@@ -2,6 +2,7 @@
 
 import os, sys
 import time
+import signal
 
 try:
 	import pexpect
@@ -25,10 +26,10 @@ escapes = [
 ]
 
 # UTF-8 stress tests.
-utf8_stress1 = "\xe1\x86\xac\xe1\xb8\xb0\xe4\x8b\x94\xe4\x97\x85\xe3\x9c\xb2\xe0\xb2\xa4\xe5\x92\xa1\xe4\x92\xa2\xe5\xb2\xa4\xe4\xb3\xb0\xe7\xa8\xa8\xe2\xa3\xa1\xe5\xb6\xa3\xe3\xb7\xa1\xe5\xb6\x8f\xe2\xb5\x90\xe4\x84\xba\xe5\xb5\x95\xe0\xa8\x85\xe5\xa5\xb0\xe7\x97\x9a\xe3\x86\x9c\xe4\x8a\x9b\xe6\x8b\x82\xe4\x85\x99\xe0\xab\xa9\xe2\x9e\x8b\xe4\x9b\xbf\xe1\x89\xac\xe7\xab\xb3\xcd\xbf\xe1\x85\xa0\xe2\x9d\x84\xe4\xba\xa7\xe7\xbf\xb7\xe4\xae\x8a\xe0\xaf\xb7\xe1\xbb\x88\xe4\xb7\x92\xe4\xb3\x9c\xe3\x9b\xa0\xe2\x9e\x95\xe5\x82\x8e\xe1\x97\x8b\xe1\x8f\xaf\xe0\xa8\x95\xe4\x86\x90\xe6\x82\x99\xe7\x99\x90\xe3\xba\xa8"
-utf8_stress2 = "\xe9\x9f\xa0\xec\x8b\xa7\xeb\x8f\xb3\xeb\x84\xa8\xed\x81\x9a\xee\x88\x96\xea\x89\xbf\xeb\xae\xb4\xee\xb5\x80\xed\x94\xb7\xea\x89\xb2\xea\xb8\x8c\xef\xbf\xbd\xee\x88\x83\xec\xb5\x9c\xeb\xa6\x99\xee\xb9\xa6\xea\xb1\x86\xe9\xb3\xac\xeb\x82\xbd\xea\xaa\x81\xed\x8d\xbc\xee\x97\xb9\xef\xa6\xb1\xed\x95\x90\xee\xa3\xb3\xef\xa0\xa5\xe9\xbb\x99\xed\x97\xb6\xea\xaa\x88\xef\x9f\x88\xeb\xae\xa9\xec\xad\x80\xee\xbe\xad\xe9\x94\xbb\xeb\x81\xa5\xe9\x89\x97\xea\xb2\x89\xec\x9a\x9e\xeb\xa9\xb0\xeb\x9b\xaf\xea\xac\x90\xef\x9e\xbb\xef\xbf\xbd\xef\xbb\xbc\xef\xbf\xbd\xef\x9a\xa3\xef\xa8\x81\xe9\x8c\x90\xef\xbf\xbd"
-utf8_stress3 = "\xea\xb3\xbb\xef\xbf\xbd\xe4\xa3\xb9\xe6\x98\xb2\xef\x91\xa7\xe8\x9c\xb4\xe1\xbd\x9b\xe6\xa1\xa2\xe3\x8e\x8f\xe2\x9a\xa6\xef\x84\x8a\xe7\x8f\xa2\xe7\x95\xa3\xea\xb0\xb4\xef\xad\xb1\xe9\xb6\xb6\xe0\xb9\x85\xe2\xb6\x9b\xeb\x80\x81\xe5\xbd\xbb\xea\x96\x92\xe4\x94\xbe\xea\xa2\x9a\xef\xb1\xa4\xee\x96\xb0\xed\x96\x94\xed\x96\x9e\xe3\x90\xb9\xef\xbf\xbd\xe9\xbc\xb3\xeb\xb5\xa1\xee\xb1\x80\xe2\x96\xbf\xe2\xb6\xbe\xea\xa0\xa9\xef\xbf\xbd\xe7\xba\x9e\xe2\x8a\x90\xe4\xbd\xa7\xef\xbf\xbd\xe2\xb5\x9f\xe9\x9c\x98\xe7\xb4\xb3\xe3\xb1\x94\xe7\xb1\xa0\xeb\x8e\xbc\xe2\x8a\x93\xe6\x90\xa7\xef\x93\xa7\xe7\xa1\xa4"
-utf8_stress4 = "\xe1\xa0\xb4\xe1\xa1\xaa\xe1\xa3\xb7\xe1\xa1\x8f\xe1\xa0\x87\xe1\xa1\xab\xe1\xa2\xb9\xe1\xa2\x82\xe1\xa3\x88\xe1\xa1\x9c\xe1\xa3\xa7\xe1\xa1\x87\xe1\xa0\x8e\xe1\xa3\xa8\xe1\xa1\xaf\xe1\xa0\xa8\xe1\xa3\x8f\xe1\xa0\xba\xe1\xa1\x90\xe1\xa1\xad\xe1\xa2\xad\xe1\xa0\x91\xe1\xa0\xbf\xe1\xa1\xaf\xe1\xa3\xb5\xe1\xa0\x96\xe1\xa1\x89\xe1\xa0\xbe\xe1\xa1\xa9\xe1\xa0\x86\xe1\xa3\x8b\xe1\xa0\x96\xe1\xa2\x9d\xe1\xa2\x88\xe1\xa0\x9b\xe1\xa1\x88\xe1\xa0\xb8\xe1\xa2\x98\xe1\xa2\xa8\xe1\xa0\x96\xe1\xa3\x98\xe1\xa1\xb6\xe1\xa0\xa4\xe1\xa3\xac\xe1\xa2\xbc\xe1\xa2\xb6\xe1\xa1\xae\xe1\xa0\xbd\xe1\xa0\x86\xe1\xa3\xaa"
+utf8_stress1 = "ᆬḰ䋔䗅㜲ತ咡䒢岤䳰稨⣡嶣㷡嶏ⵐ䄺嵕ਅ奰痚㆜䊛拂䅙૩➋䛿ቬ竳Ϳᅠ❄产翷䮊௷Ỉ䷒䳜㛠➕傎ᗋᏯਕ䆐悙癐㺨"
+utf8_stress2 = "韠싧돳넨큚ꉿ뮴픷ꉲ긌�최릙걆鳬낽ꪁ퍼鈴핐黙헶ꪈ뮩쭀锻끥鉗겉욞며뛯꬐�ﻼ�度錐�"
+utf8_stress3 = "곻�䣹昲蜴Ὓ桢㎏⚦珢畣갴ﭱ鶶ๅ⶛뀁彻ꖒ䔾ꢚﱤ햔햞㐹�鼳뵡▿ⶾ꠩�纞⊐佧�ⵟ霘紳㱔籠뎼⊓搧硤"
+utf8_stress4 = "ᄀ𖢾🏴��"
 
 # An easy array for UTF-8 tests.
 utf8_stress_strs = [
@@ -93,7 +94,7 @@ def test_utf8(exe, args, env, idx):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8', codec_errors='ignore')
+	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8')
 
 	try:
 
@@ -267,6 +268,85 @@ def test_sigint(exe, args, env):
 	return child
 
 
+# Test for SIGTSTP.
+# @param exe   The executable.
+# @param args  The arguments to pass to the executable.
+# @param env   The environment.
+def test_sigtstp(exe, args, env):
+
+	child = pexpect.spawn(exe, args=args, env=env)
+
+	try:
+		child.send("\t")
+		child.expect("        ")
+		child.send("\x13")
+		time.sleep(1)
+		if not child.isalive():
+			print("child exited early")
+			print(str(child))
+			print(str(child.buffer))
+			sys.exit(1)
+		child.kill(signal.SIGCONT)
+		write_str(child, "quit")
+		child.send("\n")
+		child.wait()
+	except pexpect.TIMEOUT:
+		print("timed out")
+		print(str(child))
+		sys.exit(2)
+	except pexpect.EOF:
+		print("EOF")
+		print(str(child))
+		print(str(child.buffer))
+		print(str(child.before))
+		sys.exit(2)
+
+	return child
+
+
+# Test for SIGSTOP.
+# @param exe   The executable.
+# @param args  The arguments to pass to the executable.
+# @param env   The environment.
+def test_sigstop(exe, args, env):
+
+	child = pexpect.spawn(exe, args=args, env=env)
+
+	try:
+		child.send("\t")
+		child.expect("        ")
+		child.send("\x14")
+		time.sleep(1)
+		if not child.isalive():
+			print("child exited early")
+			print(str(child))
+			print(str(child.buffer))
+			sys.exit(1)
+		child.send("\x13")
+		time.sleep(1)
+		if not child.isalive():
+			print("child exited early")
+			print(str(child))
+			print(str(child.buffer))
+			sys.exit(1)
+		child.kill(signal.SIGCONT)
+		write_str(child, "quit")
+		child.send("\n")
+		child.wait()
+	except pexpect.TIMEOUT:
+		print("timed out")
+		print(str(child))
+		sys.exit(2)
+	except pexpect.EOF:
+		print("EOF")
+		print(str(child))
+		print(str(child.buffer))
+		print(str(child.before))
+		sys.exit(2)
+
+	return child
+
+
 # Basic bc test.
 # @param exe   The executable.
 # @param args  The arguments to pass to the executable.
@@ -340,6 +420,9 @@ def test_bc3(exe, args, env):
 
 	try:
 		bc_banner(child)
+		child.send("\x1b[D\x1b[D\x1b[C\x1b[C")
+		child.send("\n")
+		child.expect(prompt)
 		child.send("12\x1b[D3\x1b[C4\x1bOD5\x1bOC6")
 		child.send("\n")
 		check_line(child, "132546")
@@ -376,6 +459,9 @@ def test_bc4(exe, args, env):
 
 	try:
 		bc_banner(child)
+		child.send("\x1b[A\x1bOA\x1b[B\x1bOB")
+		child.send("\n")
+		child.expect(prompt)
 		write_str(child, "15")
 		check_line(child, "15")
 		write_str(child, "2^16")
@@ -475,7 +561,25 @@ def test_bc7(exe, args, env):
 
 	try:
 		bc_banner(child)
+		child.send("\x1bb\x1bb\x1bf\x1bf")
+		child.send("\n")
+		child.expect(prompt)
+		child.send("\x1b[0~\x1b[3a")
+		child.send("\n")
+		child.expect(prompt)
+		child.send("\x1b[0;4\x1b[0A")
+		child.send("\n")
+		child.expect(prompt)
+		child.send("        ")
+		child.send("\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb")
+		child.send("\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf")
+		child.send("\n")
+		child.expect(prompt)
 		write_str(child, "12 + 34 + 56 + 78 + 90")
+		check_line(child, "270")
+		child.send("\x1b[A")
+		child.send("\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb")
+		child.send("\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf")
 		check_line(child, "270")
 		child.send("\x1b[A")
 		child.send("\x1bh\x1bh\x1bf + 14 ")
@@ -538,6 +642,9 @@ def test_bc9(exe, args, env):
 
 	try:
 		bc_banner(child)
+		child.send("\x1b[0;5D\x1b[0;5D\x1b[0;5D\x1b[0;5C\x1b[0;5D\x1bd\x1b[3~\x1b[d\x1b[d\x1b[d\x1b[d\x7f\x7f\x7f")
+		child.send("\n")
+		child.expect(prompt)
 		write_str(child, "12 + 34 + 56 + 78 + 90")
 		check_line(child, "270")
 		child.send("\x1b[A")
@@ -548,6 +655,9 @@ def test_bc9(exe, args, env):
 		child.send("\x17\x17")
 		child.send("\n")
 		check_line(child, "46")
+		child.send("\x17\x17")
+		child.send("\n")
+		child.expect(prompt)
 		write_str(child, "quit")
 		child.send("\n")
 		child.wait()
@@ -575,6 +685,12 @@ def test_bc10(exe, args, env):
 
 	try:
 		bc_banner(child)
+		child.send("\x1b[3~\x1b[3~")
+		child.send("\n")
+		child.expect(prompt)
+		child.send("    \x1b[3~\x1b[3~")
+		child.send("\n")
+		child.expect(prompt)
 		write_str(child, "12 + 34 + 56 + 78 + 90")
 		check_line(child, "270")
 		child.send("\x1b[A\x1b[A\x1b[A\x1b[B\x1b[B\x1b[B\x1b[A")
@@ -612,11 +728,49 @@ def test_bc11(exe, args, env):
 
 	try:
 		bc_banner(child)
+		child.send("\x1b[A\x02\x14")
+		child.send("\n")
+		child.expect(prompt)
 		write_str(child, "12 + 34 + 56 + 78")
 		check_line(child, "180")
 		child.send("\x1b[A\x02\x14")
 		check_line(child, "189")
 		write_str(child, "quit")
+		child.send("\n")
+		child.wait()
+	except pexpect.TIMEOUT:
+		print("timed out")
+		print(str(child))
+		sys.exit(2)
+	except pexpect.EOF:
+		print("EOF")
+		print(str(child))
+		print(str(child.buffer))
+		print(str(child.before))
+		sys.exit(2)
+
+	return child
+
+
+# Non-fatal error.
+# @param exe   The executable.
+# @param args  The arguments to pass to the executable.
+# @param env   The environment.
+def test_bc12(exe, args, env):
+
+	child = pexpect.spawn(exe, args=args, env=env)
+
+	try:
+		bc_banner(child)
+		child.send("12 +")
+		child.send("\n")
+		time.sleep(1)
+		if not child.isalive():
+			print("child exited early")
+			print(str(child))
+			print(str(child.buffer))
+			sys.exit(1)
+		child.send("quit")
 		child.send("\n")
 		child.wait()
 	except pexpect.TIMEOUT:
@@ -734,6 +888,8 @@ bc_tests = [
 	test_sigint_sigquit,
 	test_eof,
 	test_sigint,
+	test_sigtstp,
+	test_sigstop,
 	test_bc1,
 	test_bc2,
 	test_bc3,
@@ -745,6 +901,7 @@ bc_tests = [
 	test_bc9,
 	test_bc10,
 	test_bc11,
+	test_bc12,
 ]
 
 # The array of bc error codes.
@@ -754,6 +911,8 @@ bc_expected_codes = [
 	4,
 	4,
 	4,
+	0,
+	0,
 	0,
 	0,
 	0,

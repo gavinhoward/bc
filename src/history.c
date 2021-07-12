@@ -309,7 +309,7 @@ static size_t bc_history_nextLen(const char *buf, size_t buf_len,
 /**
  * Get length of previous grapheme.
  */
-static size_t bc_history_prevLen(const char *buf, size_t pos, size_t *col_len) {
+static size_t bc_history_prevLen(const char *buf, size_t pos) {
 
 	size_t end = pos;
 
@@ -321,13 +321,10 @@ static size_t bc_history_prevLen(const char *buf, size_t pos, size_t *col_len) {
 		pos -= len;
 		bc_history_codePoint(buf + pos, len, &cp);
 
-		if (!bc_history_comboChar(cp)) {
-
-			if (col_len != NULL)
-				*col_len = ((size_t) 1) + (bc_history_wchar(cp) != 0);
-
-			return end - pos;
-		}
+		// The original linenoise-mob had an extra parameter col_len, like
+		// bc_history_nextLen(), which, if not NULL, was set in this if
+		// statement. However, we always passed NULL, so just skip that.
+		if (!bc_history_comboChar(cp)) return end - pos;
 	}
 
 	// Currently unreachable?
@@ -372,7 +369,7 @@ static BcStatus bc_history_readCode(char *buf, size_t buf_len,
 	n = bc_history_read(buf, 1);
 	if (BC_ERR(n <= 0)) goto err;
 
-	uchar byte = (uchar) buf[0];
+	uchar byte = ((uchar*) buf)[0];
 
 	if ((byte & 0x80) != 0) {
 
@@ -408,7 +405,7 @@ err:
 }
 
 /**
- * Get column length from begining of buffer to current byte position.
+ * Get column length from beginning of buffer to current byte position.
  */
 static size_t bc_history_colPos(const char *buf, size_t buf_len, size_t pos) {
 
@@ -609,31 +606,6 @@ static size_t bc_history_columns(void) {
 }
 
 /**
- * Check if text is an ANSI escape sequence.
- */
-static bool bc_history_ansiEscape(const char *buf, size_t buf_len, size_t *len)
-{
-	if (buf_len > 2 && !memcmp("\033[", buf, 2)) {
-
-		size_t off = 2;
-
-		while (off < buf_len) {
-
-			char c = buf[off++];
-
-			if ((c >= 'A' && c <= 'K' && c != 'I') ||
-			    c == 'S' || c == 'T' || c == 'f' || c == 'm')
-			{
-				*len = off;
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-/**
  * Get column length of prompt text.
  */
 static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
@@ -641,17 +613,9 @@ static size_t bc_history_promptColLen(const char *prompt, size_t plen) {
 	char buf[BC_HIST_MAX_LINE + 1];
 	size_t buf_len = 0, off = 0;
 
-	while (off < plen) {
-
-		size_t len;
-
-		if (bc_history_ansiEscape(prompt + off, plen - off, &len)) {
-			off += len;
-			continue;
-		}
-
-		buf[buf_len++] = prompt[off++];
-	}
+	// The original linenoise-mob checked for ANSI escapes here on the prompt. I
+	// know the prompts do not have ANSI escapes. I deleted the code.
+	while (off < plen) buf[buf_len++] = prompt[off++];
 
 	return bc_history_colPos(buf, buf_len, buf_len);
 }
@@ -677,7 +641,7 @@ static void bc_history_refresh(BcHistory *h) {
 	}
 
 	while (h->pcol + bc_history_colPos(buf, len, len) > h->cols)
-		len -= bc_history_prevLen(buf, len, NULL);
+		len -= bc_history_prevLen(buf, len);
 
 	// Cursor to left edge.
 	bc_file_write(&vm.fout, bc_flush_none, "\r", 1);
@@ -766,7 +730,7 @@ static void bc_history_edit_left(BcHistory *h) {
 
 	if (h->pos <= 0) return;
 
-	h->pos -= bc_history_prevLen(h->buf.v, h->pos, NULL);
+	h->pos -= bc_history_prevLen(h->buf.v, h->pos);
 
 	bc_history_refresh(h);
 }
@@ -905,7 +869,7 @@ static void bc_history_edit_backspace(BcHistory *h) {
 
 	if (!h->pos || !len) return;
 
-	chlen = bc_history_prevLen(h->buf.v, h->pos, NULL);
+	chlen = bc_history_prevLen(h->buf.v, h->pos);
 
 	memmove(h->buf.v + h->pos - chlen, h->buf.v + h->pos, len - h->pos);
 
@@ -957,7 +921,7 @@ static void bc_history_swap(BcHistory *h) {
 	size_t pcl, ncl;
 	char auxb[5];
 
-	pcl = bc_history_prevLen(h->buf.v, h->pos, NULL);
+	pcl = bc_history_prevLen(h->buf.v, h->pos);
 	ncl = bc_history_nextLen(h->buf.v, BC_HIST_BUF_LEN(h), h->pos, NULL);
 
 	// To perform a swap we need:
@@ -1081,7 +1045,7 @@ static void bc_history_escape(BcHistory *h) {
 			}
 		}
 		// ESC O sequences.
-		else if (c == 'O') {
+		else {
 
 			switch (seq[1]) {
 
