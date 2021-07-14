@@ -1005,7 +1005,7 @@ static void bc_vm_exec(void) {
 
 		BC_SIG_UNLOCK;
 
-		if (!vm.no_exit_exprs && vm.exit_exprs) return;
+		if (!vm.no_exprs && vm.exit_exprs) return;
 	}
 
 	for (i = 0; i < vm.files.len; ++i) {
@@ -1022,6 +1022,7 @@ static void bc_vm_exec(void) {
 #endif // BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLE_HISTORY
+
 	// We need to keep tty if history is enabled, and we need
 	// to keep rpath for the times when we read from /dev/urandom.
 	if (BC_TTY && !vm.history.badTerm) {

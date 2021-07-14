@@ -141,10 +141,6 @@ static void bc_lex_assign(BcLex *l, BcLexType with, BcLexType without) {
 	else l->t = without;
 }
 
-/**
- * Lex a bc token. This is the bc implementation of BcLexNext.
- * @param l  The lexer.
- */
 void bc_lex_token(BcLex *l) {
 
 	// We increment here. This means that all lexing needs to take that into

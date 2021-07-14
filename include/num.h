@@ -706,23 +706,25 @@ size_t bc_num_placesReq(const BcNum *a, const BcNum *b, size_t scale);
 #endif // BC_ENABLE_EXTRA_MATH
 
 /**
- * Truncate @a n *by* @a places decimal places.
+ * Truncate @a n *by* @a places decimal places. This only extends places *after*
+ * the decimal point.
  * @param n       The number to truncate.
  * @param places  The number of places to truncate @a n by.
  */
 void bc_num_truncate(BcNum *restrict n, size_t places);
 
 /**
- * Extend @a n *by* @a places decimal places.
+ * Extend @a n *by* @a places decimal places. This only extends places *after*
+ * the decimal point.
  * @param n       The number to truncate.
  * @param places  The number of places to extend @a n by.
  */
 void bc_num_extend(BcNum *restrict n, size_t places);
 
 /**
- * Shifts @a n right by @a places decimal places. This is a helper for
- * bc_num_rshift(), and would be static to src/num.c, except that src/library.c
- * uses it for efficiency when executing its frand.
+ * Shifts @a n right by @a places decimal places. This is the workhorse of the
+ * right shift operator, and would be static to src/num.c, except that
+ * src/library.c uses it for efficiency when executing its frand.
  * @param n       The number to shift right.
  * @param places  The number of decimal places to shift @a n right by.
  */

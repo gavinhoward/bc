@@ -144,8 +144,8 @@ void bc_lex_token(BcLex *l);
 #define BC_PARSE_FLAG_FUNC (UINTMAX_C(1)<<2)
 #define BC_PARSE_FUNC(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_FUNC)
 
-// This flag is set if the parser is parsing a body, whether of a function, an
-// if statement, or a loop.
+// This flag is set if the parser is expecting to parse a body, whether of a
+// function, an if statement, or a loop.
 #define BC_PARSE_FLAG_BODY (UINTMAX_C(1)<<3)
 #define BC_PARSE_BODY(p) (BC_PARSE_TOP_FLAG(p) & BC_PARSE_FLAG_BODY)
 

@@ -45,26 +45,56 @@
 #include <rand.h>
 #include <vm.h>
 
+// Before you try to understand this code, see the development manual
+// (manuals/development.md#numbers).
+
 static void bc_num_m(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale);
 
+/**
+ * Multiply two numbers and throw a math error if they overflow.
+ * @param a  The first operand.
+ * @param b  The second operand.
+ * @return   The product of the two operands.
+ */
 static inline size_t bc_num_mulOverflow(size_t a, size_t b) {
 	size_t res = a * b;
 	if (BC_ERR(BC_VM_MUL_OVERFLOW(a, b, res))) bc_err(BC_ERR_MATH_OVERFLOW);
 	return res;
 }
 
+/**
+ * Conditionally negate @a n based on @a neg. Algorithm taken from
+ * https://graphics.stanford.edu/~seander/bithacks.html#ConditionalNegate .
+ * @param n    The value to turn into a signed value and negate.
+ * @param neg  The condition to negate or not.
+ */
 static inline ssize_t bc_num_neg(size_t n, bool neg) {
 	return (((ssize_t) n) ^ -((ssize_t) neg)) + neg;
 }
 
+/**
+ * Compare a BcNum against zero.
+ * @param n  The number to compare.
+ * @return   -1 if the number is less than 0, 1 if greater, and 0 if equal.
+ */
 ssize_t bc_num_cmpZero(const BcNum *n) {
 	return bc_num_neg((n)->len != 0, BC_NUM_NEG(n));
 }
 
+/**
+ * Return the number of integer limbs in a BcNum. This is the opposite of rdx.
+ * @param n  The number to return the amount of integer limbs for.
+ * @return   The amount of integer limbs in @a n.
+ */
 static inline size_t bc_num_int(const BcNum *n) {
 	return n->len ? n->len - BC_NUM_RDX_VAL(n) : 0;
 }
 
+/**
+ * Expand a number's allocation capacity to at least req limbs.
+ * @param n    The number to expand.
+ * @param req  The number limbs to expand the allocation capacity to.
+ */
 static void bc_num_expand(BcNum *restrict n, size_t req) {
 
 	assert(n != NULL);
@@ -82,6 +112,11 @@ static void bc_num_expand(BcNum *restrict n, size_t req) {
 	}
 }
 
+/**
+ * Set a number to 0 with the specified scale.
+ * @param n      The number to set to zero.
+ * @param scale  The scale to set the number to.
+ */
 static void bc_num_setToZero(BcNum *restrict n, size_t scale) {
 	assert(n != NULL);
 	n->scale = scale;
@@ -98,17 +133,34 @@ void bc_num_one(BcNum *restrict n) {
 	n->num[0] = 1;
 }
 
+/**
+ * "Cleans" a number, which means reducing the length if the most significant
+ * limbs are zero.
+ * @param n  The number to clean.
+ */
 static void bc_num_clean(BcNum *restrict n) {
 
+	// Reduce the length.
 	while (BC_NUM_NONZERO(n) && !n->num[n->len - 1]) n->len -= 1;
 
+	// Special cases.
 	if (BC_NUM_ZERO(n)) n->rdx = 0;
 	else {
+
+		// len must be at least as much as rdx.
 		size_t rdx = BC_NUM_RDX_VAL(n);
 		if (n->len < rdx) n->len = rdx;
 	}
 }
 
+/**
+ * Returns the log base 10 of @a i. I could have done this with floating-point
+ * math, and in fact, I originally did. However, that was the only
+ * floating-point code in the entire codebase, and I decided I didn't want any.
+ * This is fast enough. Also, it might handle larger numbers better.
+ * @param i  The number to return the log base 10 of.
+ * @return   The log base 10 of @a i.
+ */
 static size_t bc_num_log10(size_t i) {
 	size_t len;
 	for (len = 1; i; i /= BC_BASE, ++len);
@@ -116,19 +168,41 @@ static size_t bc_num_log10(size_t i) {
 	return len - 1;
 }
 
+/**
+ * Returns the number of decimal digits in a limb that are zero starting at the
+ * most significant digits. This basically returns how much of the limb is used.
+ * @param n  The number.
+ * @return   The number of decimal digits that are 0 starting at the most
+ *           significant digits.
+ */
 static inline size_t bc_num_zeroDigits(const BcDig *n) {
 	assert(*n >= 0);
 	assert(((size_t) *n) < BC_BASE_POW);
 	return BC_BASE_DIGS - bc_num_log10((size_t) *n);
 }
 
+/**
+ * Return the total number of integer digits in a number. This is the opposite
+ * of scale, like bc_num_int() is the opposite of rdx.
+ * @param n  The number.
+ * @return   The number of integer digits in @a n.
+ */
 static size_t bc_num_intDigits(const BcNum *n) {
 	size_t digits = bc_num_int(n) * BC_BASE_DIGS;
 	if (digits > 0) digits -= bc_num_zeroDigits(n->num + n->len - 1);
 	return digits;
 }
 
-static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
+/**
+ * Returns the number of limbs of a number that are non-zero starting at the
+ * most significant limbs. This expects that there are *no* integer limbs in the
+ * number because it is specifically to figure out how many zero limbs after the
+ * decimal place to ignore. If there are zero limbs after non-zero limbs, they
+ * are counted as non-zero limbs.
+ * @param n  The number.
+ * @return   The number of non-zero limbs after the decimal point.
+ */
+static size_t bc_num_nonZeroLen(const BcNum *restrict n) {
 	size_t i, len = n->len;
 	assert(len == BC_NUM_RDX_VAL(n));
 	for (i = len - 1; i < len && !n->num[i]; --i);
@@ -136,6 +210,14 @@ static size_t bc_num_nonzeroLen(const BcNum *restrict n) {
 	return i + 1;
 }
 
+/**
+ * Performs a one-limb add with a carry.
+ * @param a      The first limb.
+ * @param b      The second limb.
+ * @param carry  An in/out parameter; the carry in from the previous add and the
+ *               carry out from this add.
+ * @return       The resulting limb sum.
+ */
 static BcDig bc_num_addDigits(BcDig a, BcDig b, bool *carry) {
 
 	assert(((BcBigDig) BC_BASE_POW) * 2 == ((BcDig) BC_BASE_POW) * 2);
@@ -152,6 +234,14 @@ static BcDig bc_num_addDigits(BcDig a, BcDig b, bool *carry) {
 	return a;
 }
 
+/**
+ * Performs a one-limb subtract with a carry.
+ * @param a      The first limb.
+ * @param b      The second limb.
+ * @param carry  An in/out parameter; the carry in from the previous subtract
+ *               and the carry out from this subtract.
+ * @return       The resulting limb difference.
+ */
 static BcDig bc_num_subDigits(BcDig a, BcDig b, bool *carry) {
 
 	assert(a < BC_BASE_POW);
@@ -167,6 +257,12 @@ static BcDig bc_num_subDigits(BcDig a, BcDig b, bool *carry) {
 	return a - b;
 }
 
+/**
+ * Add two BcDig arrays and store the result in the first array.
+ * @param a    The first operand and out array.
+ * @param b    The second operand.
+ * @param len  The length of @a b.
+ */
 static void bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
                              size_t len)
 {
@@ -175,9 +271,16 @@ static void bc_num_addArrays(BcDig *restrict a, const BcDig *restrict b,
 
 	for (i = 0; i < len; ++i) a[i] = bc_num_addDigits(a[i], b[i], &carry);
 
+	// Take care of the extra limbs in the bigger array.
 	for (; carry; ++i) a[i] = bc_num_addDigits(a[i], 0, &carry);
 }
 
+/**
+ * Subtract two BcDig arrays and store the result in the first array.
+ * @param a    The first operand and out array.
+ * @param b    The second operand.
+ * @param len  The length of @a b.
+ */
 static void bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
                              size_t len)
 {
@@ -186,9 +289,17 @@ static void bc_num_subArrays(BcDig *restrict a, const BcDig *restrict b,
 
 	for (i = 0; i < len; ++i) a[i] = bc_num_subDigits(a[i], b[i], &carry);
 
+	// Take care of the extra limbs in the bigger array.
 	for (; carry; ++i) a[i] = bc_num_subDigits(a[i], 0, &carry);
 }
 
+/**
+ * Multiply a BcNum array by a one-limb number. This is a faster version of
+ * multiplication for when we can use it.
+ * @param a  The BcNum to multiply by the one-limb number.
+ * @param b  The one limb of the one-limb number.
+ * @param c  The return parameter.
+ */
 static void bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
                             BcNum *restrict c)
 {
@@ -197,10 +308,13 @@ static void bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 
 	assert(b <= BC_BASE_POW);
 
+	// Make sure the return parameter is big enough.
 	if (a->len + 1 > c->cap) bc_num_expand(c, a->len + 1);
 
+	// We want the entire return parameter to be zero for cleaning later.
 	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
+	// Actual multiplication loop.
 	for (i = 0; i < a->len; ++i) {
 		BcBigDig in = ((BcBigDig) a->num[i]) * b + carry;
 		c->num[i] = in % BC_BASE_POW;
@@ -208,17 +322,28 @@ static void bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	}
 
 	assert(carry < BC_BASE_POW);
+
+	// Finishing touches.
 	c->num[i] = (BcDig) carry;
 	c->len = a->len;
 	c->len += (carry != 0);
 
 	bc_num_clean(c);
 
+	// Postconditions.
 	assert(!BC_NUM_NEG(c) || BC_NUM_NONZERO(c));
 	assert(BC_NUM_RDX_VAL(c) <= c->len || !c->len);
 	assert(!c->len || c->num[c->len - 1] || BC_NUM_RDX_VAL(c) == c->len);
 }
 
+/**
+ * Divide a BcNum array by a one-limb number. This is a faster version of divide
+ * for when we can use it.
+ * @param a    The BcNum to multiply by the one-limb number.
+ * @param b    The one limb of the one-limb number.
+ * @param c    The return parameter for the quotient.
+ * @param rem  The return parameter for the remainder.
+ */
 static void bc_num_divArray(const BcNum *restrict a, BcBigDig b,
                             BcNum *restrict c, BcBigDig *rem)
 {
@@ -227,6 +352,7 @@ static void bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 
 	assert(c->cap >= a->len);
 
+	// Actual division loop.
 	for (i = a->len - 1; i < a->len; --i) {
 		BcBigDig in = ((BcBigDig) a->num[i]) + carry * BC_BASE_POW;
 		assert(in / b < BC_BASE_POW);
@@ -234,15 +360,24 @@ static void bc_num_divArray(const BcNum *restrict a, BcBigDig b,
 		carry = in % b;
 	}
 
+	// Finishing touches.
 	c->len = a->len;
 	bc_num_clean(c);
 	*rem = carry;
 
+	// Postconditions.
 	assert(!BC_NUM_NEG(c) || BC_NUM_NONZERO(c));
 	assert(BC_NUM_RDX_VAL(c) <= c->len || !c->len);
 	assert(!c->len || c->num[c->len - 1] || BC_NUM_RDX_VAL(c) == c->len);
 }
 
+/**
+ * Compare two BcDig arrays and return >0 if @a b is greater, <0 if @a b is
+ * less, and 0 if equal. Both @a a and @a b must have the same length.
+ * @param a    The first array.
+ * @param b    The second array.
+ * @param len  The minimum length of the arrays.
+ */
 static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
                               size_t len)
 {
@@ -261,7 +396,10 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 	assert(a != NULL && b != NULL);
 
+	// Same num? Equal.
 	if (a == b) return 0;
+
+	// Easy cases.
 	if (BC_NUM_ZERO(a)) return bc_num_neg(b->len != 0, !BC_NUM_NEG(b));
 	if (BC_NUM_ZERO(b)) return bc_num_cmpZero(a);
 	if (BC_NUM_NEG(a)) {
@@ -270,16 +408,20 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 	}
 	else if (BC_NUM_NEG(b)) return 1;
 
+	// Get the number of int limbs in each number and get the difference.
 	a_int = bc_num_int(a);
 	b_int = bc_num_int(b);
 	a_int -= b_int;
 
+	// If there's a difference, then just return the comparison.
 	if (a_int) return neg ? -((ssize_t) a_int) : (ssize_t) a_int;
 
+	// Get the rdx's and figure out the max.
 	ardx = BC_NUM_RDX_VAL(a);
 	brdx = BC_NUM_RDX_VAL(b);
 	a_max = (ardx > brdx);
 
+	// Set variables based on the above.
 	if (a_max) {
 		min = brdx;
 		diff = ardx - brdx;
@@ -293,10 +435,14 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 		min_num = a->num;
 	}
 
+	// Do a full limb-by-limb comparison.
 	cmp = bc_num_compare(max_num, min_num, b_int + min);
 
+	// If we found a difference, return it based on state.
 	if (cmp) return bc_num_neg((size_t) cmp, !a_max == !neg);
 
+	// If there was no difference, then the final step is to check which number
+	// has greater or lesser limbs beyond the other's.
 	for (max_num -= diff, i = diff - 1; i < diff; --i) {
 		if (max_num[i]) return bc_num_neg(1, !a_max == !neg);
 	}
@@ -310,22 +456,32 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 	if (!places) return;
 
+	// Grab these needed values; places_rdx is the rdx equivalent to places like
+	// rdx is to scale.
 	nrdx = BC_NUM_RDX_VAL(n);
 	places_rdx = nrdx ? nrdx - BC_NUM_RDX(n->scale - places) : 0;
+
+	// We cannot truncate more places than we have.
 	assert(places <= n->scale && (BC_NUM_ZERO(n) || places_rdx <= n->len));
 
 	n->scale -= places;
 	BC_NUM_RDX_SET(n, nrdx - places_rdx);
 
+	// Only when the number is nonzero do we need to do the hard stuff.
 	if (BC_NUM_NONZERO(n)) {
 
 		size_t pow;
 
+		// This calculates how many decimal digits are in the least significant
+		// limb.
 		pow = n->scale % BC_BASE_DIGS;
 		pow = pow ? BC_BASE_DIGS - pow : 0;
 		pow = bc_num_pow10[pow];
 
 		n->len -= places_rdx;
+
+		// We have to move limbs to maintain invariants. The limbs must begin at
+		// the beginning of the BcNum array.
 		memmove(n->num, n->num + places_rdx, BC_NUM_SIZE(n->len));
 
 		// Clear the lower part of the last digit.
@@ -340,20 +496,27 @@ void bc_num_extend(BcNum *restrict n, size_t places) {
 	size_t nrdx, places_rdx;
 
 	if (!places) return;
+
+	// Easy case with zero; set the scale.
 	if (BC_NUM_ZERO(n)) {
 		n->scale += places;
 		return;
 	}
 
+	// Grab these needed values; places_rdx is the rdx equivalent to places like
+	// rdx is to scale.
 	nrdx = BC_NUM_RDX_VAL(n);
 	places_rdx = BC_NUM_RDX(places + n->scale) - nrdx;
 
+	// This is the hard case. We need to expand the number, move the limbs, and
+	// set the limbs that were just cleared.
 	if (places_rdx) {
 		bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
 		memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
 		memset(n->num, 0, BC_NUM_SIZE(places_rdx));
 	}
 
+	// Finally, set scale and rdx.
 	BC_NUM_RDX_SET(n, nrdx + places_rdx);
 	n->scale += places;
 	n->len += places_rdx;
@@ -361,24 +524,40 @@ void bc_num_extend(BcNum *restrict n, size_t places) {
 	assert(BC_NUM_RDX_VAL(n) == BC_NUM_RDX(n->scale));
 }
 
+/**
+ * Retires (finishes) a multiplication or division operation.
+ */
 static void bc_num_retireMul(BcNum *restrict n, size_t scale,
                              bool neg1, bool neg2)
 {
+	// Make sure scale is correct.
 	if (n->scale < scale) bc_num_extend(n, scale - n->scale);
 	else bc_num_truncate(n, n->scale - scale);
 
 	bc_num_clean(n);
+
+	// We need to ensure rdx is correct.
 	if (BC_NUM_NONZERO(n)) n->rdx = BC_NUM_NEG_VAL(n, !neg1 != !neg2);
 }
 
+/**
+ * Splits a number into two BcNum's. This is used in Karatsuba.
+ * @param n    The number to split.
+ * @param idx  The index to split at.
+ * @param a    An out parameter; the low part of @a n.
+ * @param b    An out parameter; the high part of @a n.
+ */
 static void bc_num_split(const BcNum *restrict n, size_t idx,
                          BcNum *restrict a, BcNum *restrict b)
 {
+	// We want a and b to be clear.
 	assert(BC_NUM_ZERO(a));
 	assert(BC_NUM_ZERO(b));
 
+	// The usual case.
 	if (idx < n->len) {
 
+		// Set the fields first.
 		b->len = n->len - idx;
 		a->len = idx;
 		a->scale = b->scale = 0;
@@ -388,16 +567,25 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 		assert(a->cap >= a->len);
 		assert(b->cap >= b->len);
 
+		// Copy the arrays. This is not necessary for safety, but it is faster,
+		// for some reason.
 		memcpy(b->num, n->num + idx, BC_NUM_SIZE(b->len));
 		memcpy(a->num, n->num, BC_NUM_SIZE(idx));
 
 		bc_num_clean(b);
 	}
+	// If the index is weird, just skip the split.
 	else bc_num_copy(a, n);
 
 	bc_num_clean(a);
 }
 
+/**
+ * Copies a number into another, but shifts the rdx so that the result number
+ * only sees the integer part of the source number.
+ * @param n  The number to copy.
+ * @param r  The result number with a shifted rdx, len, and num.
+ */
 static void bc_num_shiftRdx(const BcNum *restrict n, BcNum *restrict r) {
 
 	size_t rdx = BC_NUM_RDX_VAL(n);
@@ -410,10 +598,17 @@ static void bc_num_shiftRdx(const BcNum *restrict n, BcNum *restrict r) {
 	r->scale = 0;
 }
 
+/**
+ * Shifts a number so that all of the least significant limbs of the number are
+ * skipped. This must be undone by bc_num_unshiftZero().
+ * @param n  The number to shift.
+ */
 static size_t bc_num_shiftZero(BcNum *restrict n) {
 
 	size_t i;
 
+	// If we don't have an integer, that is a problem, but it's also a bug
+	// because the caller should have set everything up right.
 	assert(!BC_NUM_RDX_VAL(n) || BC_NUM_ZERO(n));
 
 	for (i = 0; i < n->len && !n->num[i]; ++i);
@@ -424,11 +619,25 @@ static size_t bc_num_shiftZero(BcNum *restrict n) {
 	return i;
 }
 
+/**
+ * Undo the damage done by bc_num_unshiftZero(). This must be called like all
+ * cleanup functions: after a label used by setjmp() and longjmp().
+ * @param n           The number to unshift.
+ * @param places_rdx  The amount the number was originally shift.
+ */
 static void bc_num_unshiftZero(BcNum *restrict n, size_t places_rdx) {
 	n->len += places_rdx;
 	n->num -= places_rdx;
 }
 
+/**
+ * Shifts the digits right within a number by no more than BC_BASE_DIGS - 1.
+ * This is the final step on shifting numbers with the shift operators. It
+ * depends on the caller to shift the limbs properly because all it does is
+ * ensure that the rdx point is realigned to be between limbs.
+ * @param n    The number to shift digits in.
+ * @param dig  The number of places to shift right.
+ */
 static void bc_num_shift(BcNum *restrict n, BcBigDig dig) {
 
 	size_t i, len = n->len;
@@ -437,9 +646,12 @@ static void bc_num_shift(BcNum *restrict n, BcBigDig dig) {
 
 	assert(dig < BC_BASE_DIGS);
 
+	// Figure out the parameters for division.
 	pow = bc_num_pow10[dig];
 	dig = bc_num_pow10[BC_BASE_DIGS - dig];
 
+	// Run a series of divisions and mods with carries across the entire number
+	// array. This effectively shifts everything over.
 	for (i = len - 1; i < len; --i) {
 		BcBigDig in, temp;
 		in = ((BcBigDig) ptr[i]);
@@ -451,6 +663,12 @@ static void bc_num_shift(BcNum *restrict n, BcBigDig dig) {
 	assert(!carry);
 }
 
+/**
+ * Shift a number left by a certain number of places. This is the workhorse of
+ * the left shift operator.
+ * @param n       The number to shift left.
+ * @param places  The amount of places to shift @a n left by.
+ */
 static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 
 	BcBigDig dig;
@@ -458,37 +676,59 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	bool shift;
 
 	if (!places) return;
+
+	// Make sure to grow the number if necessary.
 	if (places > n->scale) {
 		size_t size = bc_vm_growSize(BC_NUM_RDX(places - n->scale), n->len);
 		if (size > SIZE_MAX - 1) bc_err(BC_ERR_MATH_OVERFLOW);
 	}
+
+	// If zero, we can just set the scale and bail.
 	if (BC_NUM_ZERO(n)) {
 		if (n->scale >= places) n->scale -= places;
 		else n->scale = 0;
 		return;
 	}
 
+	// When I changed bc to have multiple digits per limb, this was the hardest
+	// code to change. This and shift right. Make sure you understand this
+	// before attempting anything.
+
+	// This is how many limbs we will shift.
 	dig = (BcBigDig) (places % BC_BASE_DIGS);
 	shift = (dig != 0);
+
+	// Convert places to a rdx value.
 	places_rdx = BC_NUM_RDX(places);
 
+	// If the number is not an integer, we need special care. The reason an
+	// integer doesn't is because left shift would only extend the integer,
+	// whereas a non-integer might have its fractional part eliminated or only
+	// partially eliminated.
 	if (n->scale) {
 
 		size_t nrdx = BC_NUM_RDX_VAL(n);
 
+		// If the number's rdx is bigger, that's the hard case.
 		if (nrdx >= places_rdx) {
 
 			size_t mod = n->scale % BC_BASE_DIGS, revdig;
 
+			// We want mod to be in the range [1, BC_BASE_DIGS], not
+			// [0, BC_BASE_DIGS).
 			mod = mod ? mod : BC_BASE_DIGS;
+
+			// We need to reverse dig to get the actual number of digits.
 			revdig = dig ? BC_BASE_DIGS - dig : 0;
 
+			// If the two overflow BC_BASE_DIGS, we need to move an extra place.
 			if (mod + revdig > BC_BASE_DIGS) places_rdx = 1;
 			else places_rdx = 0;
 		}
 		else places_rdx -= nrdx;
 	}
 
+	// If this is non-zero, we need an extra place, so expand, move, and set.
 	if (places_rdx) {
 		bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
 		memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
@@ -496,6 +736,7 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 		n->len += places_rdx;
 	}
 
+	// Set the scale appropriately.
 	if (places > n->scale) {
 		n->scale = 0;
 		BC_NUM_RDX_SET(n, 0);
@@ -505,6 +746,7 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 		BC_NUM_RDX_SET(n, BC_NUM_RDX(n->scale));
 	}
 
+	// Finally, shift within limbs.
 	if (shift) bc_num_shift(n, BC_BASE_DIGS - dig);
 
 	bc_num_clean(n);
@@ -517,20 +759,29 @@ void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 	bool shift;
 
 	if (!places) return;
+
+	// If zero, we can just set the scale and bail.
 	if (BC_NUM_ZERO(n)) {
 		n->scale += places;
 		bc_num_expand(n, BC_NUM_RDX(n->scale));
 		return;
 	}
 
+	// Amount within a limb we have to shift by.
 	dig = (BcBigDig) (places % BC_BASE_DIGS);
 	shift = (dig != 0);
+
 	scale = n->scale;
+
+	// Figure out how the scale is affected.
 	scale_mod = scale % BC_BASE_DIGS;
 	scale_mod = scale_mod ? scale_mod : BC_BASE_DIGS;
+
+	// We need to know the int length and rdx for places.
 	int_len = bc_num_int(n);
 	places_rdx = BC_NUM_RDX(places);
 
+	// If we are going to shift past a limb boundary or not, set accordingly.
 	if (scale_mod + dig > BC_BASE_DIGS) {
 		expand = places_rdx - 1;
 		places_rdx = 1;
@@ -540,16 +791,21 @@ void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 		places_rdx = 0;
 	}
 
+	// Clamp expanding.
 	if (expand > int_len) expand -= int_len;
 	else expand = 0;
 
+	// Extend, expand, and zero.
 	bc_num_extend(n, places_rdx * BC_BASE_DIGS);
 	bc_num_expand(n, bc_vm_growSize(expand, n->len));
 	memset(n->num + n->len, 0, BC_NUM_SIZE(expand));
+
+	// Set the fields.
 	n->len += expand;
 	n->scale = 0;
 	BC_NUM_RDX_SET(n, 0);
 
+	// Finally, shift within limbs.
 	if (shift) bc_num_shift(n, dig);
 
 	n->scale = scale + places;
@@ -561,13 +817,26 @@ void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 	assert(BC_NUM_RDX_VAL(n) == BC_NUM_RDX(n->scale));
 }
 
-static void bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
-
+/**
+ * Invert @a into @a b at the current scale.
+ * @param a      The number to invert.
+ * @param b      The return parameter. This must be preallocated.
+ * @param scale  The current scale.
+ */
+static inline void bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 	assert(BC_NUM_NONZERO(a));
-
 	bc_num_div(&vm.one, a, b, scale);
 }
 
+/**
+ * Tests if a number is a integer with scale or not. Returns true if the number
+ * is not an integer. If it is, its integer shifted form is copied into the
+ * result parameter for use where only integers are allowed.
+ * @param n  The integer to test and shift.
+ * @param r  The number to store the shifted result into. This number should
+ *           *not* be allocated.
+ * @return   True if the number is a non-integer, false otherwise.
+ */
 static bool bc_num_nonInt(const BcNum *restrict n, BcNum *restrict r) {
 
 	bool zero;
@@ -590,6 +859,15 @@ static bool bc_num_nonInt(const BcNum *restrict n, BcNum *restrict r) {
 }
 
 #if BC_ENABLE_EXTRA_MATH
+
+/**
+ * Execute common code for an operater that needs an integer for the second
+ * operand and return the integer operand as a BcBigDig.
+ * @param a  The first operand.
+ * @param b  The second operand.
+ * @param c  The result operand.
+ * @return   The second operand as a hardware integer.
+ */
 static BcBigDig bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c)
 {
 	BcNum temp;
@@ -611,7 +889,7 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
 	// Because this function doesn't need to use scale (per the bc spec),
 	// I am hijacking it to say whether it's doing an add or a subtract.
-	// Convert substraction to addition of negative second operand.
+	// And then I convert substraction to addition of negative second operand.
 
 	if (BC_NUM_ZERO(b)) {
 		bc_num_copy(c, a);
@@ -624,7 +902,7 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	}
 
 	// Invert sign of b if it is to be subtracted. This operation must
-	// preced the tests for any of the operands being zero.
+	// precede the tests for any of the operands being zero.
 	b_neg = (BC_NUM_NEG(b) != sub);
 
 	// Actually add the numbers if their signs are equal, else subtract.
@@ -720,18 +998,24 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 	// After dealing with possible low array elements that depend on only one
 	// operand, the actual add or subtract can be performed as if the rdx of
 	// both operands was the same.
+	//
 	// Inlining takes care of eliminating constant zero arguments to
 	// addDigit/subDigit (checked in disassembly of resulting bc binary
 	// compiled with gcc and clang).
 	if (do_sub) {
+
 		for (i = 0; i < min_len; ++i)
 			ptr_c[i] = bc_num_subDigits(ptr_l[i], ptr_r[i], &carry);
+
 		for (; i < len_l; ++i) ptr_c[i] = bc_num_subDigits(ptr_l[i], 0, &carry);
 	}
 	else {
+
 		for (i = 0; i < min_len; ++i)
 			ptr_c[i] = bc_num_addDigits(ptr_l[i], ptr_r[i], &carry);
+
 		for (; i < len_l; ++i) ptr_c[i] = bc_num_addDigits(ptr_l[i], 0, &carry);
+
 		ptr_c[i] = bc_num_addDigits(0, 0, &carry);
 	}
 
@@ -803,7 +1087,7 @@ static void bc_num_shiftAddSub(BcNum *restrict n, const BcNum *restrict a,
 	op(n->num + shift, a->num, a->len);
 }
 
-static void bc_num_k(BcNum *a, BcNum *b, BcNum *restrict c) {
+static void bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 	size_t max, max2, total;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
@@ -1224,8 +1508,8 @@ static void bc_num_d(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 	// We want an extra zero in front to make things simpler.
 	cpa.num[cpa.len++] = 0;
 
-	if (cpardx == cpa.len) cpa.len = bc_num_nonzeroLen(&cpa);
-	if (BC_NUM_RDX_VAL_NP(cpb) == cpb.len) cpb.len = bc_num_nonzeroLen(&cpb);
+	if (cpardx == cpa.len) cpa.len = bc_num_nonZeroLen(&cpa);
+	if (BC_NUM_RDX_VAL_NP(cpb) == cpb.len) cpb.len = bc_num_nonZeroLen(&cpb);
 	cpb.scale = 0;
 	BC_NUM_RDX_SET_NP(cpb, 0);
 
@@ -1794,7 +2078,7 @@ static void bc_num_printExponent(const BcNum *restrict n,
 
 	if (neg) {
 
-		size_t i, idx = bc_num_nonzeroLen(n) - 1;
+		size_t i, idx = bc_num_nonZeroLen(n) - 1;
 
 		places = 1;
 
@@ -2188,7 +2472,7 @@ size_t bc_num_len(const BcNum *restrict n) {
 
 		size_t zero, scale;
 
-		len = bc_num_nonzeroLen(n);
+		len = bc_num_nonZeroLen(n);
 
 		scale = n->scale % BC_BASE_DIGS;
 		scale = scale ? scale : BC_BASE_DIGS;
@@ -2456,12 +2740,7 @@ err:
 
 void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
-	BcRand r;
-	BcBigDig modl;
 	BcNum atemp;
-	BcDig rand_num[BC_NUM_BIGDIG_LOG10];
-	bool carry;
-	ssize_t cmp;
 	size_t i, len;
 
 	assert(a != b);
@@ -2482,7 +2761,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 	// do it if the limb does not equal 1. If it does, we have already hit the
 	// limit.
 	if (atemp.num[i] != 1) {
-		b->num[i] = (BcDig) bc_rand_bounded(rng, atemp.num[i]);
+		b->num[i] = (BcDig) bc_rand_bounded(rng, (BcRand) atemp.num[i]);
 		b->len = atemp.len;
 	}
 	// We want 1 less len in the case where we skip the last limb.

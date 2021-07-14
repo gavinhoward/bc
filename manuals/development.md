@@ -2482,6 +2482,12 @@ The concepts in this section are not found in a single source file, but they are
 littered throughout the code. That's why I am writing them all down in a single
 place.
 
+### Memory Management
+
+TODO
+
+* Ownership.
+
 ### [Async-Signal-Safe][115] Signal Handling
 
 TODO
@@ -2561,9 +2567,10 @@ also didn't make it as sophisticated; the one in `bc` is very simple.
 Vectors store some information about the type that they hold:
 
 * The size (as returned by `sizeof`).
-* The destructor.
+* An enum designating the destructor.
 
-If the destructor is `NULL`, it is counted as the type not having a destructor.
+If the destructor is `BC_DTOR_NONE`, it is counted as the type not having a
+destructor.
 
 But by storing the size, the vector can then allocate `size * cap` bytes, where
 `cap` is the capacity. Then, when growing the vector, the `cap` is doubled again
@@ -2591,6 +2598,10 @@ point in time.
 
 Growing the vector happens when `len` is equal to `cap` *before* pushing new
 items, not after.
+
+To add a destructor, you need to add an enum item to `BcDtorType` in
+[`include/vector.h`][174] and add the actual destructor in the same place as the
+enum item in the `bc_vec_dtors[]` array in [`src/data.c`][131].
 
 #### Pointer Invalidation
 
@@ -3009,6 +3020,10 @@ release when I change the code, and I have not released `bc` after version
 
 TODO
 
+* Define limbs.
+* Little-endian.
+* The decimal point is always between limbs, never within a limb.
+
 ### Strings as Numbers
 
 TODO
@@ -3237,3 +3252,4 @@ TODO
 [171]: #alltxt-2
 [172]: #alltxt-4
 [173]: #async-signal-safe-signal-handling
+[174]: #vectorh

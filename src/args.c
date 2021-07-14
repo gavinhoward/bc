@@ -105,7 +105,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 			case 'e':
 			{
-				if (vm.no_exit_exprs)
+				if (vm.no_exprs)
 					bc_verr(BC_ERR_FATAL_OPTION, "-e (--expression)");
 				bc_args_exprs(opts.optarg);
 				vm.exit_exprs = (exit_exprs || vm.exit_exprs);
@@ -114,9 +114,9 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 			case 'f':
 			{
-				if (!strcmp(opts.optarg, "-")) vm.no_exit_exprs = true;
+				if (!strcmp(opts.optarg, "-")) vm.no_exprs = true;
 				else {
-					if (vm.no_exit_exprs)
+					if (vm.no_exprs)
 						bc_verr(BC_ERR_FATAL_OPTION, "-f (--file)");
 					bc_args_file(opts.optarg);
 					vm.exit_exprs = (exit_exprs || vm.exit_exprs);
@@ -218,6 +218,8 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 	if (version) bc_vm_info(NULL);
 	if (do_exit) exit((int) vm.status);
+
+	// We do not print the banner if expressions are used or dc is used.
 	if (!BC_IS_BC || vm.exprs.len > 1) vm.flags &= ~(BC_FLAG_Q);
 
 	// We need to make sure the files list is initialized. We don't want to
@@ -225,6 +227,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 	if (opts.optind < (size_t) argc && vm.files.v == NULL)
 		bc_vec_init(&vm.files, sizeof(char*), BC_DTOR_NONE);
 
+	// Add all the files to the vector.
 	for (i = opts.optind; i < (size_t) argc; ++i)
 		bc_vec_push(&vm.files, argv + i);
 }

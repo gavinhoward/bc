@@ -91,7 +91,9 @@ const char bc_pledge_end[] = "stdio";
 #else // __OpenBSD__
 
 const char bc_pledge_start[] = "";
+#if BC_ENABLE_HISTORY
 const char bc_pledge_end_history[] = "";
+#endif // BC_ENABLE_HISTORY
 const char bc_pledge_end[] = "";
 
 #endif // __OpenBSD__

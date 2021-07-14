@@ -38,6 +38,7 @@
 
 #include <stdint.h>
 
+// This is used by configure.sh to test for OpenBSD.
 #ifdef BC_TEST_OPENBSD
 #ifdef __OpenBSD__
 #error On OpenBSD without _BSD_SOURCE
@@ -52,6 +53,7 @@
 #define DC_ENABLED (1)
 #endif // DC_ENABLED
 
+// This is error checking for fuzz builds.
 #if BC_ENABLE_AFL
 #ifndef __AFL_HAVE_MANUAL_CONTROL
 #error Must compile with afl-clang-fast or afl-clang-lto for fuzzing
@@ -62,23 +64,54 @@
 #define BC_ENABLE_MEMCHECK (0)
 #endif // BC_ENABLE_MEMCHECK
 
+/**
+ * Mark a variable as unused.
+ * @param e  The variable to mark as unused.
+ */
 #define BC_UNUSED(e) ((void) (e))
 
+// If users want, they can define this to something like __builtin_expect(e, 1).
+// It might give a performance improvement.
 #ifndef BC_LIKELY
+
+/**
+ * Mark a branch expression as likely.
+ * @param e  The expression to mark as likely.
+ */
 #define BC_LIKELY(e) (e)
+
 #endif // BC_LIKELY
 
+// If users want, they can define this to something like __builtin_expect(e, 0).
+// It might give a performance improvement.
 #ifndef BC_UNLIKELY
+
+/**
+ * Mark a branch expression as unlikely.
+ * @param e  The expression to mark as unlikely.
+ */
 #define BC_UNLIKELY(e) (e)
+
 #endif // BC_UNLIKELY
 
+/**
+ * Mark a branch expression as an error, if true.
+ * @param e  The expression to mark as an error, if true.
+ */
 #define BC_ERR(e) BC_UNLIKELY(e)
+
+/**
+ * Mark a branch expression as not an error, if true.
+ * @param e  The expression to mark as not an error, if true.
+ */
 #define BC_NO_ERR(s) BC_LIKELY(s)
 
+// Disable extra debug code by default.
 #ifndef BC_DEBUG_CODE
 #define BC_DEBUG_CODE (0)
 #endif // BC_DEBUG_CODE
 
+// We want to be able to use _Noreturn on C11 compilers.
 #if __STDC_VERSION__ >= 201100L
 #include <stdnoreturn.h>
 #define BC_NORETURN _Noreturn
@@ -158,10 +191,12 @@
 #define SIG_ATOMIC_MAX __SIG_ATOMIC_MAX__
 #endif // SIG_ATOMIC_MAX
 
+// Yes, this has to be here.
 #include <bcl.h>
 
 #if BC_ENABLED
 
+// All of these set defaults for settings.
 #ifndef BC_DEFAULT_BANNER
 #define BC_DEFAULT_BANNER (0)
 #endif // BC_DEFAULT_BANNER
@@ -182,6 +217,7 @@
 
 #if DC_ENABLED
 
+// All of these set defaults for settings.
 #ifndef DC_DEFAULT_SIGINT_RESET
 #define DC_DEFAULT_SIGINT_RESET (1)
 #endif // DC_DEFAULT_SIGINT_RESET
@@ -200,103 +236,245 @@
 
 #endif // DC_ENABLED
 
+/// Statuses, which mark either which category of error happened, or some other
+/// status that matters.
 typedef enum BcStatus {
 
+	/// Normal status.
 	BC_STATUS_SUCCESS = 0,
+
+	/// Math error.
 	BC_STATUS_ERROR_MATH,
+
+	/// Parse (and lex) error.
 	BC_STATUS_ERROR_PARSE,
+
+	/// Runtime error.
 	BC_STATUS_ERROR_EXEC,
+
+	/// Fatal error.
 	BC_STATUS_ERROR_FATAL,
+
+	/// EOF status.
 	BC_STATUS_EOF,
+
+	/// Quit status. This means that bc/dc is in the process of quitting.
 	BC_STATUS_QUIT,
 
 } BcStatus;
 
+/// Errors, which are more specific errors.
 typedef enum BcErr {
 
+	// Math errors.
+
+	/// Negative number used when not allowed.
 	BC_ERR_MATH_NEGATIVE,
+
+	/// Non-integer used when not allowed.
 	BC_ERR_MATH_NON_INTEGER,
+
+	/// Conversion to a hardware integer would overflow.
 	BC_ERR_MATH_OVERFLOW,
+
+	/// Divide by zero.
 	BC_ERR_MATH_DIVIDE_BY_ZERO,
 
+	// Fatal errors.
+
+	/// An allocation or reallocation failed.
 	BC_ERR_FATAL_ALLOC_ERR,
+
+	/// I/O failure.
 	BC_ERR_FATAL_IO_ERR,
+
+	/// File error, such as permissions or file does not exist.
 	BC_ERR_FATAL_FILE_ERR,
+
+	/// Attempted to read a directory as a file error.
 	BC_ERR_FATAL_PATH_DIR,
+
+	/// Invalid option error.
 	BC_ERR_FATAL_OPTION,
+
+	/// Option with required argument not given an argument.
 	BC_ERR_FATAL_OPTION_NO_ARG,
+
+	/// Option with no argument given an argument.
 	BC_ERR_FATAL_OPTION_ARG,
 
+	// Runtime errors.
+
+	/// Invalid ibase value.
 	BC_ERR_EXEC_IBASE,
+
+	/// Invalid obase value.
 	BC_ERR_EXEC_OBASE,
+
+	/// Invalid scale value.
 	BC_ERR_EXEC_SCALE,
+
+	/// Invalid expression parsed by read().
 	BC_ERR_EXEC_READ_EXPR,
+
+	/// read() used within an expression given to a read() call.
 	BC_ERR_EXEC_REC_READ,
+
+	/// Type error.
 	BC_ERR_EXEC_TYPE,
 
+	/// Stack has too few elements error.
 	BC_ERR_EXEC_STACK,
+
+	/// Register stack has too few elements error.
 	BC_ERR_EXEC_STACK_REGISTER,
 
+	/// Wrong number of arguments error.
 	BC_ERR_EXEC_PARAMS,
+
+	/// Undefined function error.
 	BC_ERR_EXEC_UNDEF_FUNC,
+
+	/// Void value used in an expression error.
 	BC_ERR_EXEC_VOID_VAL,
 
+	// Parse (and lex errors).
+
+	/// EOF encountered when not expected error.
 	BC_ERR_PARSE_EOF,
+
+	/// Invalid character error.
 	BC_ERR_PARSE_CHAR,
+
+	/// Invalid string (no ending quote) error.
 	BC_ERR_PARSE_STRING,
+
+	/// Invalid comment (no end found) error.
 	BC_ERR_PARSE_COMMENT,
+
+	/// Invalid token encountered error.
 	BC_ERR_PARSE_TOKEN,
+
 #if BC_ENABLED
+
+	/// Invalid expression error.
 	BC_ERR_PARSE_EXPR,
+
+	/// Expression is empty error.
 	BC_ERR_PARSE_EMPTY_EXPR,
+
+	/// Print statement is invalid error.
 	BC_ERR_PARSE_PRINT,
+
+	/// Function definition is invalid error.
 	BC_ERR_PARSE_FUNC,
+
+	/// Assignment is invalid error.
 	BC_ERR_PARSE_ASSIGN,
+
+	/// No auto identifiers given for an auto statement error.
 	BC_ERR_PARSE_NO_AUTO,
+
+	/// Duplicate local (parameter or auto) error.
 	BC_ERR_PARSE_DUP_LOCAL,
+
+	/// Invalid block (within braces) error.
 	BC_ERR_PARSE_BLOCK,
+
+	/// Invalid return statement for void functions.
 	BC_ERR_PARSE_RET_VOID,
+
+	/// Reference attached to a variable, not an array, error.
 	BC_ERR_PARSE_REF_VAR,
 
+	// POSIX-only errors.
+
+	/// Name length greater than 1 error.
 	BC_ERR_POSIX_NAME_LEN,
+
+	/// Non-POSIX comment used error.
 	BC_ERR_POSIX_COMMENT,
+
+	/// Non-POSIX keyword error.
 	BC_ERR_POSIX_KW,
+
+	/// Non-POSIX . (last) error.
 	BC_ERR_POSIX_DOT,
+
+	/// Non-POSIX return error.
 	BC_ERR_POSIX_RET,
+
+	/// Non-POSIX boolean operator used error.
 	BC_ERR_POSIX_BOOL,
+
+	/// POSIX relation operator used outside if, while, or for statements error.
 	BC_ERR_POSIX_REL_POS,
+
+	/// Multiple POSIX relation operators used in an if, while, or for statement
+	/// error.
 	BC_ERR_POSIX_MULTIREL,
+
+	/// Empty statements in POSIX for loop error.
 	BC_ERR_POSIX_FOR,
+
+	/// Non-POSIX exponential (scientific or engineering) number used error.
 	BC_ERR_POSIX_EXP_NUM,
+
+	/// Non-POSIX array reference error.
 	BC_ERR_POSIX_REF,
+
+	/// Non-POSIX void error.
 	BC_ERR_POSIX_VOID,
+
+	/// Non-POSIX brace position used error.
 	BC_ERR_POSIX_BRACE,
+
 #endif // BC_ENABLED
 
+	// Number of elements.
 	BC_ERR_NELEMS,
 
 #if BC_ENABLED
+
+	/// A marker for the start of POSIX errors.
 	BC_ERR_POSIX_START = BC_ERR_POSIX_NAME_LEN,
+
+	/// A marker for the end of POSIX errors.
 	BC_ERR_POSIX_END = BC_ERR_POSIX_BRACE,
+
 #endif // BC_ENABLED
 
 } BcErr;
 
 // The indices of each category of error in bc_errs[], and used in bc_err_ids[]
 // to associate actual errors with their categories.
+
+/// Math error category.
 #define BC_ERR_IDX_MATH (0)
+
+/// Parse (and lex) error category.
 #define BC_ERR_IDX_PARSE (1)
+
+/// Runtime error category.
 #define BC_ERR_IDX_EXEC (2)
+
+/// Fatal error category.
 #define BC_ERR_IDX_FATAL (3)
+
+/// Number of categories.
 #define BC_ERR_IDX_NELEMS (4)
 
 // If bc is enabled, we add an extra category for POSIX warnings.
 #if BC_ENABLED
+
+/// POSIX warning category.
 #define BC_ERR_IDX_WARN (BC_ERR_IDX_NELEMS)
+
 #endif // BC_ENABLED
 
-// BC_JMP is what to use when activating an "exception", i.e., a longjmp(). With
-// debug code, it will print the name of the function it jumped from.
+/// Do a longjmp(). This is what to use when activating an "exception", i.e., a
+/// longjmp(). With debug code, it will print the name of the function it jumped
+/// from.
 #if BC_DEBUG_CODE
 #define BC_JMP bc_vm_jmp(__func__)
 #else // BC_DEBUG_CODE
@@ -311,17 +489,34 @@ typedef enum BcErr {
 #define BC_NO_SIG_EXC \
 	BC_LIKELY(vm.status == (sig_atomic_t) BC_STATUS_SUCCESS && !vm.sig)
 
-// These two assert whether signals are locked or not, respectively. There are
-// non-async-signal-safe functions in bc, and they *must* have signals locked.
-// Other functions are expected to *not* have signals locked, for reasons. So
-// these are pre-built asserts (no-ops in non-debug mode) that check that
-// signals are locked or not.
 #ifndef NDEBUG
+
+/// Assert that signals are locked. There are non-async-signal-safe functions in
+/// bc, and they *must* have signals locked. Other functions are expected to
+/// *not* have signals locked, for reasons. So this is a pre-built assert
+/// (no-op in non-debug mode) that check that signals are locked.
 #define BC_SIG_ASSERT_LOCKED do { assert(vm.sig_lock); } while (0)
+
+/// Assert that signals are unlocked. There are non-async-signal-safe functions
+/// in bc, and they *must* have signals locked. Other functions are expected to
+/// *not* have signals locked, for reasons. So this is a pre-built assert
+/// (no-op in non-debug mode) that check that signals are unlocked.
 #define BC_SIG_ASSERT_NOT_LOCKED do { assert(vm.sig_lock == 0); } while (0)
+
 #else // NDEBUG
+
+/// Assert that signals are locked. There are non-async-signal-safe functions in
+/// bc, and they *must* have signals locked. Other functions are expected to
+/// *not* have signals locked, for reasons. So this is a pre-built assert
+/// (no-op in non-debug mode) that check that signals are locked.
 #define BC_SIG_ASSERT_LOCKED
+
+/// Assert that signals are unlocked. There are non-async-signal-safe functions
+/// in bc, and they *must* have signals locked. Other functions are expected to
+/// *not* have signals locked, for reasons. So this is a pre-built assert
+/// (no-op in non-debug mode) that check that signals are unlocked.
 #define BC_SIG_ASSERT_NOT_LOCKED
+
 #endif // NDEBUG
 
 /// Locks signals.
@@ -377,10 +572,15 @@ typedef enum BcErr {
 		if (!(v) && vm.sig) BC_JMP; \
 	} while (0)
 
-/// Sets a jump, and sets it up as well so that if a longjmp() happens, bc will
-/// immediately goto a label where some cleanup code is. This one assumes that
-/// signals are not locked and will lock them, set the jump, and unlock them.
-/// Setting the jump also includes pushing the jmp_buf onto the jmp_buf stack.
+/**
+ * Sets a jump, and sets it up as well so that if a longjmp() happens, bc will
+ * immediately goto a label where some cleanup code is. This one assumes that
+ * signals are not locked and will lock them, set the jump, and unlock them.
+ * Setting the jump also includes pushing the jmp_buf onto the jmp_buf stack.
+ * This grows the jmp_bufs vector first to prevent a fatal error from happening
+ * after the setjmp().
+ * param l  The label to jump to on a longjmp().
+ */
 #define BC_SETJMP(l)                     \
 	do {                                 \
 		sigjmp_buf sjb;                  \
@@ -437,24 +637,64 @@ typedef enum BcErr {
 /// Stops a stack unwinding. Technically, a stack unwinding needs to be done
 /// manually, but it will always be done unless certain flags are cleared. This
 /// clears the flags.
-#define BC_LONGJMP_STOP    \
-	do {                   \
-		vm.sig_pop = 0;    \
-		vm.sig = 0;        \
+#define BC_LONGJMP_STOP \
+	do {                \
+		vm.sig_pop = 0; \
+		vm.sig = 0;     \
 	} while (0)
 
 // Various convenience macros for calling the bc's error handling routine.
 #if BC_ENABLE_LIBRARY
+
+/**
+ * Call bc's error handling routine.
+ * @param e    The error.
+ * @param l    The line of the script that the error happened.
+ * @param ...  Extra arguments for error messages as necessary.
+ */
 #define bc_error(e, l, ...) (bc_vm_handleError((e)))
+
+/**
+ * Call bc's error handling routine.
+ * @param e  The error.
+ */
 #define bc_err(e) (bc_vm_handleError((e)))
+
+/**
+ * Call bc's error handling routine.
+ * @param e  The error.
+ */
 #define bc_verr(e, ...) (bc_vm_handleError((e)))
+
 #else // BC_ENABLE_LIBRARY
+
+/**
+ * Call bc's error handling routine.
+ * @param e    The error.
+ * @param l    The line of the script that the error happened.
+ * @param ...  Extra arguments for error messages as necessary.
+ */
 #define bc_error(e, l, ...) (bc_vm_handleError((e), (l), __VA_ARGS__))
+
+/**
+ * Call bc's error handling routine.
+ * @param e  The error.
+ */
 #define bc_err(e) (bc_vm_handleError((e), 0))
+
+/**
+ * Call bc's error handling routine.
+ * @param e  The error.
+ */
 #define bc_verr(e, ...) (bc_vm_handleError((e), 0, __VA_ARGS__))
+
 #endif // BC_ENABLE_LIBRARY
 
-/// Returns true if status s is an error, false otherwise.
+/**
+ * Returns true if status @a s is an error, false otherwise.
+ * @param s  The status to test.
+ * @return   True if @a s is an error, false otherwise.
+ */
 #define BC_STATUS_IS_ERROR(s) \
 	((s) >= BC_STATUS_ERROR_MATH && (s) <= BC_STATUS_ERROR_FATAL)
 
