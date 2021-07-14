@@ -231,13 +231,13 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
 		case BC_RESULT_ZERO:
 		{
-			n = &p->zero;
+			n = &vm.zero;
 			break;
 		}
 
 		case BC_RESULT_ONE:
 		{
-			n = &p->one;
+			n = &vm.one;
 			break;
 		}
 
@@ -1799,11 +1799,6 @@ void bc_program_init(BcProgram *p) {
 	srand((unsigned int) time(NULL));
 	bc_rand_init(&p->rng);
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-
-	bc_num_setup(&p->zero, p->zero_num, BC_PROG_ONE_CAP);
-
-	bc_num_setup(&p->one, p->one_num, BC_PROG_ONE_CAP);
-	bc_num_one(&p->one);
 
 #if BC_ENABLED
 	if (BC_IS_BC) bc_num_init(&p->last, BC_NUM_DEF_SIZE);

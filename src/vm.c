@@ -1166,6 +1166,13 @@ void bc_vm_init(void) {
 
 	BC_SIG_ASSERT_LOCKED;
 
+#if !BC_ENABLE_LIBRARY
+	bc_num_setup(&vm.zero, vm.zero_num, BC_VM_ONE_CAP);
+
+	bc_num_setup(&vm.one, vm.one_num, BC_VM_ONE_CAP);
+	bc_num_one(&vm.one);
+#endif // !BC_ENABLE_LIBRARY
+
 	memcpy(vm.max_num, bc_num_bigdigMax,
 	       bc_num_bigdigMax_size * sizeof(BcDig));
 	memcpy(vm.max2_num, bc_num_bigdigMax2,

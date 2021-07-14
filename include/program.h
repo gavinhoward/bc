@@ -63,9 +63,6 @@
 /// The length of the globals array.
 #define BC_PROG_GLOBALS_LEN (3 + BC_ENABLE_EXTRA_MATH)
 
-/// The capacity of the one BcNum, which is a constant.
-#define BC_PROG_ONE_CAP (1)
-
 typedef struct BcProgram {
 
 	/// The array of globals values.
@@ -128,12 +125,6 @@ typedef struct BcProgram {
 
 #endif // DC_ENABLED
 
-	/// A BcNum set to constant 0.
-	BcNum zero;
-
-	/// A BcNum set to constant 1.
-	BcNum one;
-
 #if BC_ENABLED
 
 	/// The last printed value for bc.
@@ -149,12 +140,6 @@ typedef struct BcProgram {
 	BcDig strmb_num[BC_NUM_BIGDIG_LOG10];
 
 #endif // DC_ENABLED
-
-	// The BcDig array for the zero BcNum.
-	BcDig zero_num[BC_PROG_ONE_CAP];
-
-	// The BcDig array for the one BcNum.
-	BcDig one_num[BC_PROG_ONE_CAP];
 
 } BcProgram;
 

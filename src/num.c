@@ -563,15 +563,9 @@ void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 
 static void bc_num_inv(BcNum *a, BcNum *b, size_t scale) {
 
-	BcNum one;
-	BcDig num[2];
-
 	assert(BC_NUM_NONZERO(a));
 
-	bc_num_setup(&one, num, sizeof(num) / sizeof(BcDig));
-	bc_num_one(&one);
-
-	bc_num_div(&one, a, b, scale);
+	bc_num_div(&vm.one, a, b, scale);
 }
 
 static bool bc_num_nonInt(const BcNum *restrict n, BcNum *restrict r) {
