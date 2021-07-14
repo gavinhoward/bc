@@ -3,6 +3,11 @@
 print "scale = 20\n"
 print "x = 1234567890 * 10^(-scale)\n"
 print "len = 1 + 2 * scale\n"
+print "scale += 10\n"
+
+scale = 20
+x = 1234567890 * 10^(-scale)
+len = 1 + 2 * scale
 
 scale += 10
 
