@@ -193,14 +193,17 @@ portable to some platforms.
 
 TODO
 
-1.	Understand the build.
+0.	`bc` Spec.
+1.	Manpages.
 2.	Test suite.
-3.	Code concepts.
-4.	Repo structure.
-5.	Headers.
-6.	Source code.
+3.	Understand the build.
+4.	Algorithms manual.
+5.	Code concepts.
+6.	Repo structure.
+7.	Headers.
+8.	Source code.
 
-From less detail to more.
+From requirements to high level to low level.
 
 ## Useful External Tools
 
@@ -2807,14 +2810,20 @@ TODO
 
 TODO
 
-### `dc` Parsing
+### Parsing
+
+TODO
+
+* Parsing generates bytecode directly, no AST.
+
+#### `dc` Parsing
 
 TODO
 
 (In fact, the easiness of parsing [Reverse Polish notation][108] is probably
 why it was used for `dc` when it was first created at Bell Labs.)
 
-### `bc` Parsing
+#### `bc` Parsing
 
 `bc`'s parser is, by far, the most sensitive piece of code in this software, and
 there is a very big reason for that: `bc`'s standard is awful and defined a very
@@ -2829,7 +2838,7 @@ And then comes the biggest complication of all: `bc` has to assume that it is
 *always* at a REPL (Read-Eval-Print Loop). `bc` is, first and foremost, an
 *interactive* utility.
 
-#### Flags
+##### Flags
 
 All of this means that `bc` has to be able to partially parse something, store
 enough data to recreate that state later, and return, making sure to not
@@ -2854,7 +2863,7 @@ sensitive because I wrote it wrong. This parser is pretty good, and it is
 For more information about what individual flags there are, see the comments in
 [`include/bc.h`][106].
 
-#### Labels
+##### Labels
 
 `bc`'s language is Turing-complete. That means that code needs the ability to
 jump around, specifically to implement control flow like `if` statements and
@@ -2873,7 +2882,7 @@ Then, when a jump happens, the index pulled out of the bytecode is used to index
 the labels array, and the label (index) at the index is then used to set the
 instruction pointer.
 
-#### Cond Labels
+##### Cond Labels
 
 "Cond" labels are so-called because they are used by conditionals.
 
@@ -2886,7 +2895,7 @@ well-known. Cond labels are easy.
 However, they are still stored on a stack so that the parser knows what cond
 label to use.
 
-#### Exit Labels
+##### Exit Labels
 
 Exit labels are not so easy.
 
@@ -2910,7 +2919,7 @@ must have an exit, so the exit must be set. If not, there is a bug.
 Exit labels are also stored on a stack so that the parser knows what exit label
 to use.
 
-#### Expression Parsing
+##### Expression Parsing
 
 `bc` has expressions like you might expect in a typical programming language.
 This means [infix notation][107].
@@ -2925,7 +2934,7 @@ translates infix notation into is...[Reverse Polish notation][108].
 In order to understand the rest of this section, you must understand the
 [Shunting-Yard algorithm][109]. Go do that before you read on.
 
-##### Operator Stack
+###### Operator Stack
 
 In `bc`, the [Shunting-Yard algorithm][109] is implemented with bytecode as the
 output and an explicit operator stack (the `ops` field in `BcParse`) as the
@@ -2943,7 +2952,7 @@ another ends, it must *also* end before that other expression ends. This
 property ensures that operators will never interfere with each other on the
 operator stack.
 
-##### Recursion
+###### Recursion
 
 Because expressions can stack, parsing expressions actually requires recursion.
 Well, it doesn't *require* it, but the code is much more readable that way.
@@ -2951,7 +2960,7 @@ Well, it doesn't *require* it, but the code is much more readable that way.
 This recursion is indirect; the functions that `bc_parse_expr_err()` (the actual
 expression parsing function) calls can, in turn, call it.
 
-##### Expression Flags
+###### Expression Flags
 
 There is one more big thing: not all expressions in `bc` are equal.
 
@@ -3024,6 +3033,13 @@ TODO
 * Little-endian.
 * The decimal point is always between limbs, never within a limb.
 
+#### Math Concepts
+
+TODO
+
+* Math functions start with error checking, move to allocation, move to
+  assumption assurance, and *then* do the math.
+
 ### Strings as Numbers
 
 TODO
@@ -3034,6 +3050,9 @@ TODO
 
 * Integer portion is increment.
 * Real portion is the real seed.
+	* Why I did that: because in base 10, I know how many decimal places a base
+	  2^N needs to be represented exactly.
+* PRNG is the PCG PRNG by Melissa O'Neill.
 
 ## Debugging
 

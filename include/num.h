@@ -377,9 +377,9 @@ typedef void (*BcNumBinaryOp)(BcNum* a, BcNum* b, BcNum* c, size_t scale);
  * A function type for binary operators *after* @a c has been properly
  * allocated. At this point, *nothing* should be pointing to @a c (in any way
  * that matters, anyway).
- * @param a      The first parameter.
- * @param b      The second parameter.
- * @param c      The return value.
+ * @param a      The first operand.
+ * @param b      The second operand.
+ * @param c      The return parameter.
  * @param scale  The current scale.
  */
 typedef void (*BcNumBinOp)(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale);
