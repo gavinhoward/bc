@@ -1090,15 +1090,15 @@ static void bc_program_incdec(BcProgram *p, uchar inst) {
 
 	BC_SIG_UNLOCK;
 
+	// Create the proper assignment.
 	res.t = BC_RESULT_ONE;
-	inst2 = BC_INST_ASSIGN_PLUS + (inst & 0x01);
+	inst2 = BC_INST_ASSIGN_PLUS_NO_VAL + (inst & 0x01);
 
 	bc_vec_push(&p->results, &res);
 	bc_program_assign(p, inst2);
 
 	BC_SIG_LOCK;
 
-	bc_vec_pop(&p->results);
 	bc_vec_push(&p->results, &copy);
 
 	BC_UNSETJMP;
