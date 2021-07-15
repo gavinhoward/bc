@@ -460,6 +460,9 @@ static void bc_program_read(BcProgram *p) {
 		// We need a separate input buffer.
 		bc_vec_init(&vm.read_buf, sizeof(char), BC_DTOR_NONE);
 	}
+	// This needs to be updated because the parser could have been used
+	// somewhere else
+	else bc_parse_updateFunc(&vm.read_prs, BC_PROG_READ);
 
 	BC_SETJMP_LOCKED(exec_err);
 
@@ -1614,15 +1617,26 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 		BC_SIG_LOCK;
 
-		bc_parse_init(&prs, p, fidx);
-		bc_lex_file(&prs.l, vm.file);
+		if (!BC_PARSE_IS_INITED(&vm.read_prs, p)) {
+
+			bc_parse_init(&vm.read_prs, p, fidx);
+
+			// Initialize this too because bc_vm_shutdown() expects them to be
+			// initialized togther.
+			bc_vec_init(&vm.read_buf, sizeof(char), BC_DTOR_NONE);
+		}
+		// This needs to be updated because the parser could have been used
+		// somewhere else
+		else bc_parse_updateFunc(&vm.read_prs, fidx);
+
+		bc_lex_file(&vm.read_prs.l, vm.file);
 
 		BC_SETJMP_LOCKED(err);
 
 		BC_SIG_UNLOCK;
 
-		bc_parse_text(&prs, str, false);
-		vm.expr(&prs, BC_PARSE_NOCALL);
+		bc_parse_text(&vm.read_prs, str, false);
+		vm.expr(&vm.read_prs, BC_PARSE_NOCALL);
 
 		BC_SIG_LOCK;
 
@@ -1630,9 +1644,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 		// We can just assert this here because
 		// dc should parse everything until EOF.
-		assert(prs.l.t == BC_LEX_EOF);
-
-		bc_parse_free(&prs);
+		assert(vm.read_prs.l.t == BC_LEX_EOF);
 
 		BC_SIG_UNLOCK;
 	}
@@ -1657,7 +1669,6 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 err:
 	BC_SIG_MAYLOCK;
-	bc_parse_free(&prs);
 	f = bc_vec_item(&p->fns, fidx);
 	bc_vec_popAll(&f->code);
 exit:
