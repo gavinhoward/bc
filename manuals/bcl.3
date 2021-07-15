@@ -231,6 +231,9 @@ bcl(3) is async-signal-safe if
 \f[B]bcl_handleSignal(\f[R]\f[I]void\f[R]\f[B])\f[R] is used properly.
 (See the \f[B]SIGNAL HANDLING\f[R] section.)
 .PP
+bcl(3) assumes that it is allowed to use the \f[B]bcl_\f[R] and
+\f[B]bc_\f[R] prefixes for symbol names without collision.
+.PP
 All of the items in its interface are described below.
 See the documentation for each function for what each function can
 return.
