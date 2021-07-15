@@ -71,6 +71,14 @@
 /// A flag that requires that the expression is not empty and returns a value.
 #define BC_PARSE_NEEDVAL (UINTMAX_C(1)<<5)
 
+/**
+ * Returns true if the parser has been initialized.
+ * @param p    The parser.
+ * @param prg  The program.
+ * @return     True if @a p has been initialized, false otherwise.
+ */
+#define BC_PARSE_IS_INITED(p, prg) ((p)->prog == (prg))
+
 #if BC_ENABLED
 
 /**

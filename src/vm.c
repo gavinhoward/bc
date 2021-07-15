@@ -461,6 +461,11 @@ void bc_vm_shutdown(void) {
 	bc_vec_free(&vm.files);
 	bc_vec_free(&vm.exprs);
 
+	if (BC_PARSE_IS_INITED(&vm.read_prs, &vm.prog)) {
+		bc_vec_free(&vm.read_buf);
+		bc_parse_free(&vm.read_prs);
+	}
+
 	bc_program_free(&vm.prog);
 	bc_parse_free(&vm.prs);
 

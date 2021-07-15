@@ -372,6 +372,12 @@ typedef struct BcVm {
 	/// are necessary for parsing, such as a comment that spans multiple lines.
 	BcVec buffer;
 
+	/// A parser to parse read expressions.
+	BcParse read_prs;
+
+	/// A buffer for read expressions.
+	BcVec read_buf;
+
 #endif // !BC_ENABLE_LIBRARY
 
 	/// A vector of jmp_bufs for doing a jump series. This allows exception-type

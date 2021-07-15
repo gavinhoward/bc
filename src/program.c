@@ -421,16 +421,20 @@ static void bc_program_op(BcProgram *p, uchar inst) {
 	bc_program_retire(p, 1, 2);
 }
 
+/**
+ * Executes a read() or ? command.
+ * @param p  The program.
+ */
 static void bc_program_read(BcProgram *p) {
 
 	BcStatus s;
-	BcParse parse;
-	BcVec buf;
 	BcInstPtr ip;
 	size_t i;
 	const char* file;
 	BcFunc *f = bc_vec_item(&p->fns, BC_PROG_READ);
 
+	// If we are already executing a read, that is an error. So look for a read
+	// and barf.
 	for (i = 0; i < p->stack.len; ++i) {
 		BcInstPtr *ip_ptr = bc_vec_item(&p->stack, i);
 		if (ip_ptr->func == BC_PROG_READ) bc_err(BC_ERR_EXEC_REC_READ);
@@ -438,32 +442,53 @@ static void bc_program_read(BcProgram *p) {
 
 	BC_SIG_LOCK;
 
+	// Save the filename because we are going to overwrite it.
 	file = vm.file;
-	bc_parse_init(&parse, p, BC_PROG_READ);
-	bc_vec_init(&buf, sizeof(char), BC_DTOR_NONE);
+
+	if (!BC_PARSE_IS_INITED(&vm.read_prs, p)) {
+
+		// We need to parse, but we don't want to use the existing parser
+		// because it has state it needs to keep. (It could have a partial parse
+		// state.) So we create a new parser, just for this.
+		bc_parse_init(&vm.read_prs, p, BC_PROG_READ);
+
+		// We need a separate input buffer.
+		bc_vec_init(&vm.read_buf, sizeof(char), BC_DTOR_NONE);
+	}
 
 	BC_SETJMP_LOCKED(exec_err);
 
 	BC_SIG_UNLOCK;
 
-	bc_lex_file(&parse.l, bc_program_stdin_name);
+	// Set up the lexer and the read function.
+	bc_lex_file(&vm.read_prs.l, bc_program_stdin_name);
 	bc_vec_popAll(&f->code);
 
-	if (!BC_R) s = bc_read_line(&buf, "");
-	else s = bc_read_line(&buf, BC_IS_BC ? "read> " : "?> ");
+	// Read a line.
+	if (!BC_R) s = bc_read_line(&vm.read_buf, "");
+	else s = bc_read_line(&vm.read_buf, BC_IS_BC ? "read> " : "?> ");
 
+	// We should *not* have run into EOF.
 	if (s == BC_STATUS_EOF) bc_err(BC_ERR_EXEC_READ_EXPR);
 
-	bc_parse_text(&parse, buf.v, false);
-	vm.expr(&parse, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
+	// Parse *one* expression.
+	bc_parse_text(&vm.read_prs, vm.read_buf.v, false);
+	vm.expr(&vm.read_prs, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
 
-	if (BC_ERR(parse.l.t != BC_LEX_NLINE && parse.l.t != BC_LEX_EOF))
+	// We *must* have a valid expression. A semicolon cannot end an expression,
+	// although EOF can.
+	if (BC_ERR(vm.read_prs.l.t != BC_LEX_NLINE &&
+	           vm.read_prs.l.t != BC_LEX_EOF))
+	{
 		bc_err(BC_ERR_EXEC_READ_EXPR);
+	}
 
 #if BC_ENABLED
+	// Push on the globals stack if necessary.
 	if (BC_G) bc_program_prepGlobals(p);
 #endif // BC_ENABLED
 
+	// Set up a new BcInstPtr.
 	ip.func = BC_PROG_READ;
 	ip.idx = 0;
 	ip.len = p->results.len;
@@ -471,10 +496,12 @@ static void bc_program_read(BcProgram *p) {
 	// Update this pointer, just in case.
 	f = bc_vec_item(&p->fns, BC_PROG_READ);
 
+	// We want a return instruction to simplify things.
 	bc_vec_pushByte(&f->code, vm.read_ret);
 	bc_vec_push(&p->stack, &ip);
 
 #if DC_ENABLED
+	// We need a new tail call entry for dc.
 	if (BC_IS_DC) {
 		size_t temp = 0;
 		bc_vec_push(&p->tail_calls, &temp);
@@ -483,8 +510,6 @@ static void bc_program_read(BcProgram *p) {
 
 exec_err:
 	BC_SIG_MAYLOCK;
-	bc_parse_free(&parse);
-	bc_vec_free(&buf);
 	vm.file = file;
 	BC_LONGJMP_CONT;
 }
