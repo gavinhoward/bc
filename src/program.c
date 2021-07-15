@@ -361,13 +361,18 @@ static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, size_t idx) {
 	bc_program_type_num(*r, *n);
 }
 
+/**
+ * Prepares and returns a clean result for the result of an operation.
+ * @param p  The program.
+ * @return   A clean result.
+ */
 static BcResult* bc_program_prepResult(BcProgram *p) {
 
 	BcResult *res = bc_vec_pushEmpty(&p->results);
 
 	bc_result_clear(res);
 
-	return bc_vec_top(&p->results);
+	return res;
 }
 
 static void bc_program_const(BcProgram *p, const char *code, size_t *bgn) {
