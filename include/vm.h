@@ -628,7 +628,8 @@ void bc_vm_info(const char* const help);
 void bc_vm_boot(int argc, char *argv[]);
 
 /**
- * Initializes some of the BcVm global.
+ * Initializes some of the BcVm global. This is separate to make things easier
+ * on the library code.
  */
 void bc_vm_init(void);
 
@@ -796,9 +797,9 @@ void bc_vm_handleError(BcErr e, size_t line, ...);
  * Handle a fatal error.
  * @param e  The error.
  */
-#if !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
+#if !BC_ENABLE_MEMCHECK
 BC_NORETURN
-#endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
+#endif // !BC_ENABLE_MEMCHECK
 void bc_vm_fatalError(BcErr e);
 
 /**

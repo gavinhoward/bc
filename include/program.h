@@ -194,7 +194,9 @@ typedef struct BcProgram {
 
 /**
  * Retires (completes the execution of) an instruction. Some instructions
- * require special retirement, but most can use this.
+ * require special retirement, but most can use this. This basically pops the
+ * operands while preserving the result (which we assumed was pushed before the
+ * actual operation).
  * @param p     The program.
  * @param nres  The number of results returned by the instruction.
  * @param nops  The number of operands used by the instruction.

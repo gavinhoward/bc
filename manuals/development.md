@@ -2485,6 +2485,18 @@ The concepts in this section are not found in a single source file, but they are
 littered throughout the code. That's why I am writing them all down in a single
 place.
 
+### POSIX Mode
+
+TODO
+
+#### Standard Mode
+
+TODO
+
+#### Warning Mode
+
+TODO
+
 ### Memory Management
 
 TODO
@@ -2803,6 +2815,10 @@ TODO
 TODO
 
 ##### Arrays
+
+TODO
+
+###### Array References
 
 TODO
 
