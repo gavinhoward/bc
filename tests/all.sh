@@ -34,6 +34,7 @@ testdir=$(dirname "$script")
 
 . "$testdir/../scripts/functions.sh"
 
+# Command-line processing.
 if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
@@ -79,23 +80,28 @@ fi
 stars="***********************************************************************"
 printf '%s\n' "$stars"
 
+# Set stuff for the correct calculator.
 if [ "$d" = "bc" ]; then
 	halt="quit"
 else
 	halt="q"
 fi
 
+# I use these, so unset them to make the tests work.
 unset BC_ENV_ARGS
 unset BC_LINE_LENGTH
 unset DC_ENV_ARGS
 unset DC_LINE_LENGTH
 
+# Get the list of tests that require extra math.
 extra_required=$(cat "$testdir/extra_required.txt")
 
 printf '\nRunning %s tests...\n\n' "$d"
 
+# Run the tests one at a time.
 while read t; do
 
+	# If it requires extra, then skip if we don't have it.
 	if [ "$extra" -eq 0 ]; then
 		if [ -z "${extra_required##*$t*}" ]; then
 			printf 'Skipping %s %s\n' "$d" "$t"
@@ -107,13 +113,20 @@ while read t; do
 
 done < "$testdir/$d/all.txt"
 
+# stdin tests.
 sh "$testdir/stdin.sh" "$d" "$exe" "$@"
 
+# Script tests.
 sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" \
 	"$time_tests" "$exe" "$@"
+
+# Read tests.
 sh "$testdir/read.sh" "$d" "$exe" "$@"
+
+# Error tests.
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
+# Other tests.
 sh "$testdir/other.sh" "$d" "$exe" "$@"
 
 printf '\nAll %s tests passed.\n' "$d"

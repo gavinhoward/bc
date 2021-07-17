@@ -390,7 +390,7 @@ static void bc_vm_setenvFlag(const char* const var, int def, uint16_t flag) {
 
 /**
  * Parses the arguments in {B,D]C_ENV_ARGS.
- * @param env_arg_name  The environment variable to use.
+ * @param env_args_name  The environment variable to use.
  */
 static void bc_vm_envArgs(const char* const env_args_name) {
 
@@ -1400,12 +1400,13 @@ void bc_vm_init(void) {
 	BC_SIG_ASSERT_LOCKED;
 
 #if !BC_ENABLE_LIBRARY
-	// Set up the constant BcNum's.
+	// Set up the constant zero.
 	bc_num_setup(&vm.zero, vm.zero_num, BC_VM_ONE_CAP);
+#endif // !BC_ENABLE_LIBRARY
 
+	// Set up more constant BcNum's.
 	bc_num_setup(&vm.one, vm.one_num, BC_VM_ONE_CAP);
 	bc_num_one(&vm.one);
-#endif // !BC_ENABLE_LIBRARY
 
 	// Set up more constant BcNum's.
 	memcpy(vm.max_num, bc_num_bigdigMax,

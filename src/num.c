@@ -1460,7 +1460,7 @@ static void bc_num_divExtend(BcNum *restrict a, BcNum *restrict b,
 
 /**
  * Actually does division. This is a rewrite of my original code by Stefan Esser
- * <se@freebsd.org>.
+ * from FreeBSD.
  * @param a      The first operand.
  * @param b      The second operand.
  * @param c      The return parameter.
@@ -1821,8 +1821,8 @@ static void bc_num_p(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 
 	BcNum copy, btemp;
 	BcBigDig exp;
-	size_t i, powrdx, resrdx;
-	bool neg, zero;
+	size_t powrdx, resrdx;
+	bool neg;
 
 	if (BC_ERR(bc_num_nonInt(b, &btemp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 

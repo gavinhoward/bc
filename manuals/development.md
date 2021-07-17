@@ -1448,6 +1448,10 @@ TODO
 
 TODO
 
+##### `read_errors.txt`
+
+TODO
+
 ##### `errors/`
 
 TODO
@@ -1589,8 +1593,9 @@ done by the "standard tests" for each calculator.
 These tests use the files in the [`tests/bc/`][161] and [`tests/dc/`][162]
 directories (except for [`tests/bc/all.txt`][163], [`tests/bc/errors.txt`][164],
 [`tests/bc/posix_errors.txt`][165], [`tests/bc/timeconst.sh`][166],
-[`tests/dc/all.txt`][167], and [`tests/dc/errors.txt`][168]), which are called
-the "standard test directories."
+[`tests/dc/all.txt`][167], [`tests/dc/errors.txt`][168], and
+[`tests/dc/read_errors.txt`][175]), which are called the "standard test
+directories."
 
 For every test, there is the test file and the results file. The test files have
 names of the form `<test>.txt`, where `<test>` is the name of the test, and the
@@ -1685,7 +1690,9 @@ TODO
 TODO
 
 * POSIX tests for `bc`.
-* Run files *and* through `stdin` with `cat`.
+* One test per line on files in standard test directory.
+* One test per file in errors directory.
+	* Run files *and* through `stdin` with `cat`.
 * Adding tests.
 
 ### `stdin` Tests
@@ -3288,3 +3295,4 @@ TODO
 [172]: #alltxt-4
 [173]: #async-signal-safe-signal-handling
 [174]: #vectorh
+[175]: #read_errorstxt

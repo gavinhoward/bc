@@ -171,8 +171,8 @@
 
 /**
  * A header to check the number in the context and return an error encoded as a
- * number if it is bad.
  * @param c  The context.
+ * number if it is bad.
  * @param n  The BclNumber.
  */
 #define BC_CHECK_NUM(c, n)                                         \

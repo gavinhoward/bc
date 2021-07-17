@@ -169,6 +169,16 @@
 #include <file.h>
 #include <vm.h>
 
+#if BC_DEBUG_CODE
+
+/// A file for outputting to when debugging.
+BcFile bc_history_debug_fp;
+
+/// A buffer for the above file.
+char *bc_history_debug_buf;
+
+#endif // BC_DEBUG_CODE
+
 /**
  * Checks if the code is a wide character.
  * @param cp  The codepoint to check.
@@ -358,7 +368,7 @@ static size_t bc_history_prevLen(const char *buf, size_t pos) {
  * Reads @a n characters from stdin.
  * @param buf  The buffer to read into. The caller is responsible for making
  *             sure this is big enough for @a n.
- * @param      The number of characters to read.
+ * @param n    The number of characters to read.
  * @return     The number of characters read or less than 0 on error.
  */
 static ssize_t bc_history_read(char *buf, size_t n) {

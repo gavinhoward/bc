@@ -84,7 +84,8 @@ static void bc_lex_identifier(BcLex *l) {
 }
 
 /**
- * Parses a bc string.
+ * Parses a bc string. This is separate from dc strings because dc strings need
+ * to be balanced.
  * @param l  The lexer.
  */
 static void bc_lex_string(BcLex *l) {
@@ -114,11 +115,13 @@ static void bc_lex_string(BcLex *l) {
 
 	} while (got_more && c != '"');
 
+	// If the string did not end properly, barf.
 	if (c != '"') {
 		l->i = i;
 		bc_lex_err(l, BC_ERR_PARSE_STRING);
 	}
 
+	// Set the temp string to the parsed string.
 	len = i - l->i;
 	bc_vec_string(&l->str, len, l->buf + l->i);
 

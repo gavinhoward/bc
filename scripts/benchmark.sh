@@ -82,6 +82,7 @@ shift
 
 benchmarks=""
 
+# Create the list of benchmarks from the arguments.
 while [ "$#" -gt 0 ]; do
 
 	if [ "$benchmarks" = "" ]; then
@@ -95,6 +96,7 @@ done
 
 files=""
 
+# Create the list of files from the benchmarks.
 for b in $benchmarks; do
 
 	f=$(printf "benchmarks/%s/%s.txt" "$d" "$b")
@@ -115,6 +117,7 @@ else
 	halt="q"
 fi
 
+# Generate all of the benchmarks.
 for b in $benchmarks; do
 
 	if [ ! -f "./benchmarks/$d/$b.txt" ]; then
@@ -124,15 +127,19 @@ for b in $benchmarks; do
 	fi
 done
 
+# We use this format to make things easier to use with ministat.
 format="%e %S %U %M %t %K %D %p %X %F %R %W %c %w %I %O %k"
 
 printf 'Benchmarking %s...\n' "$files" >&2
 
 i=0
 
+# Run the benchmarks as many times as told to.
 while [ "$i" -lt "$runs" ]; do
 
 	printf '%s\n' "$halt" | /usr/bin/time -f "$format" bin/$d $opts $files 2>&1 > /dev/null
 
+	# Might as well use the existing bc.
 	i=$(printf '%s + 1\n' "$i" | bin/bc)
+
 done

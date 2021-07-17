@@ -41,9 +41,13 @@
 #include <vm.h>
 
 void bc_const_free(void *constant) {
+
 	BcConst *c = constant;
+
 	BC_SIG_ASSERT_LOCKED;
+
 	assert(c->val != NULL);
+
 	bc_num_free(&c->num);
 }
 
@@ -54,23 +58,32 @@ void bc_func_insert(BcFunc *f, BcProgram *p, char *name,
 	BcAuto a;
 	size_t i, idx;
 
+	// The function must *always* be valid.
 	assert(f != NULL);
 
+	// Get the index of the variable.
 	idx = bc_program_search(p, name, type == BC_TYPE_VAR);
 
+	// Search through all of the other autos/parameters.
 	for (i = 0; i < f->autos.len; ++i) {
 
+		// Get the auto.
 		BcAuto *aptr = bc_vec_item(&f->autos, i);
 
+		// If they match, barf.
 		if (BC_ERR(idx == aptr->idx && type == aptr->type)) {
+
 			const char *array = type == BC_TYPE_ARRAY ? "[]" : "";
+
 			bc_error(BC_ERR_PARSE_DUP_LOCAL, line, name, array);
 		}
 	}
 
+	// Set the auto.
 	a.idx = idx;
 	a.type = type;
 
+	// Push it.
 	bc_vec_push(&f->autos, &a);
 }
 #endif // BC_ENABLED
@@ -86,6 +99,7 @@ void bc_func_init(BcFunc *f, const char *name) {
 	bc_vec_init(&f->consts, sizeof(BcConst), BC_DTOR_CONST);
 
 #if BC_ENABLED
+	// Only bc needs these things.
 	if (BC_IS_BC) {
 
 		bc_vec_init(&f->strs, sizeof(char*), BC_DTOR_NONE);
@@ -149,9 +163,14 @@ void bc_func_free(void *func) {
 #endif // NDEBUG
 
 void bc_array_init(BcVec *a, bool nums) {
+
 	BC_SIG_ASSERT_LOCKED;
+
+	// Set the proper vector.
 	if (nums) bc_vec_init(a, sizeof(BcNum), BC_DTOR_NUM);
 	else bc_vec_init(a, sizeof(BcVec), BC_DTOR_VEC);
+
+	// We always want at least one item in the array.
 	bc_array_expand(a, 1);
 }
 
@@ -164,12 +183,21 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 	assert(d != NULL && s != NULL);
 	assert(d != s && d->size == s->size && d->dtor == s->dtor);
 
+	// Make sure to destroy everything currently in d.
 	bc_vec_popAll(d);
+
+	// Preexpand.
 	bc_vec_expand(d, s->cap);
 	d->len = s->len;
 
 	for (i = 0; i < s->len; ++i) {
-		BcNum *dnum = bc_vec_item(d, i), *snum = bc_vec_item(s, i);
+
+		BcNum *dnum, *snum;
+
+		dnum = bc_vec_item(d, i);
+		snum = bc_vec_item(s, i);
+
+		// We have to create a copy of the number as well.
 		bc_num_createCopy(dnum, snum);
 	}
 }
@@ -182,14 +210,22 @@ void bc_array_expand(BcVec *a, size_t len) {
 
 	bc_vec_expand(a, len);
 
+	// If this is true, then we have a num array.
 	if (a->size == sizeof(BcNum) && a->dtor == BC_DTOR_NUM) {
+
+		// Initialize numbers until we reach the target.
 		while (len > a->len) {
 			BcNum *n = bc_vec_pushEmpty(a);
 			bc_num_init(n, BC_NUM_DEF_SIZE);
 		}
 	}
 	else {
+
 		assert(a->size == sizeof(BcVec) && a->dtor == BC_DTOR_VEC);
+
+		// Recursively initialize arrays until we reach the target. Having the
+		// second argument of bc_array_init() be true will activate the base
+		// case, so we're safe.
 		while (len > a->len) {
 			BcVec *v = bc_vec_pushEmpty(a);
 			bc_array_init(v, true);
@@ -209,8 +245,10 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 
 	BC_SIG_ASSERT_LOCKED;
 
+	// d is assumed to not be valid yet.
 	d->t = src->t;
 
+	// Yes, it depends on what type.
 	switch (d->t) {
 
 		case BC_RESULT_TEMP:
@@ -253,6 +291,7 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_LAST:
 		{
 #ifndef NDEBUG
+			// We should *never* try copying either of these.
 			abort();
 #endif // NDEBUG
 		}

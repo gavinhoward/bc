@@ -34,6 +34,7 @@ testdir=$(dirname "$script")
 
 . "$testdir/../scripts/functions.sh"
 
+# Command-line processing.
 if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
@@ -54,11 +55,13 @@ else
 	halt="q"
 fi
 
+# For tests later.
 num=100000000000000000000000000000000000000000000000000000000000000000000000000000
 numres="$num"
 num70="10000000000000000000000000000000000000000000000000000000000000000000\\
 0000000000"
 
+# Set stuff for the correct calculator.
 if [ "$d" = "bc" ]; then
 	halt="halt"
 	opt="x"
@@ -80,6 +83,7 @@ printf '%s\n' "$halt" | "$exe" "$@" > /dev/null 2>&1
 
 checktest_retcode "$d" "$?" "quit"
 
+# bc has two halt or quit commands, so test the second as well.
 if [ "$d" = bc ]; then
 
 	printf '%s\n' "quit" | "$exe" "$@" > /dev/null 2>&1
@@ -98,10 +102,6 @@ fi
 printf 'pass\n'
 
 base=$(basename "$exe")
-
-if [ "$base" != "bc" -a "$base" != "dc" ]; then
-	exit 0
-fi
 
 printf 'Running %s environment var tests...' "$d"
 
@@ -138,6 +138,9 @@ else
 
 	set +e
 
+	# dc has an extra test for a case that someone found running this easter.dc
+	# script. It went into an infinite loop, so we want to check that we did not
+	# regress.
 	printf 'three\n' | cut -c1-3 > /dev/null
 	err=$?
 

@@ -375,47 +375,51 @@ void bc_parse_expr(BcParse *p, uint8_t flags);
  */
 void bc_parse_parse(BcParse *p);
 
-// References to the signal message and its length.
+/// References to the signal message and its length.
 extern const char bc_sig_msg[];
 extern const uchar bc_sig_msg_len;
 
-// An array of bits that are set if the corresponding lex token is valid in an
-// expression.
+/// A reference to an array of bits that are set if the corresponding lex token
+/// is valid in an expression.
 extern const uint8_t bc_parse_exprs[];
 
-// An array of bc operators.
+/// A reference to an array of bc operators.
 extern const uchar bc_parse_ops[];
 
 // References to the various instances of BcParseNext's.
 
-// What tokens are valid as next tokens when parsing normal expressions. More
-// accurately. these are the tokens that are valid for *ending* the expression.
+/// A reference to what tokens are valid as next tokens when parsing normal
+/// expressions. More accurately. these are the tokens that are valid for
+/// *ending* the expression.
 extern const BcParseNext bc_parse_next_expr;
 
-// What tokens are valid as next tokens when parsing function parameters (well,
-// actually arguments).
-extern const BcParseNext bc_parse_next_param;
+/// A reference to what tokens are valid as next tokens when parsing function
+/// parameters (well, actually arguments).
+extern const BcParseNext bc_parse_next_arg;
 
-// What tokens are valid as next tokens when parsing a print statement.
+/// A reference to what tokens are valid as next tokens when parsing a print
+/// statement.
 extern const BcParseNext bc_parse_next_print;
 
-// What tokens are valid as next tokens when parsing things like loop headers
-// and builtin functions where the only thing expected is a right paren.
-//
-// The name is an artifact of history, and is related to @a BC_PARSE_REL (see
-// include/parse.h). It refers to how POSIX only allows some operators as part
-// of the conditional of for loops, while loops, and if statements.
+/// A reference to what tokens are valid as next tokens when parsing things like
+/// loop headers and builtin functions where the only thing expected is a right
+/// paren.
+///
+/// The name is an artifact of history, and is related to @a BC_PARSE_REL (see
+/// include/parse.h). It refers to how POSIX only allows some operators as part
+/// of the conditional of for loops, while loops, and if statements.
 extern const BcParseNext bc_parse_next_rel;
 
 // What tokens are valid as next tokens when parsing an array element
 // expression.
 extern const BcParseNext bc_parse_next_elem;
 
-// What tokens are valid as next tokens when parsing the first two parts of a
-// for loop header.
+/// A reference to what tokens are valid as next tokens when parsing the first
+/// two parts of a for loop header.
 extern const BcParseNext bc_parse_next_for;
 
-// What tokens are valid as next tokens when parsing a read expression.
+/// A reference to what tokens are valid as next tokens when parsing a read
+/// expression.
 extern const BcParseNext bc_parse_next_read;
 
 #else // BC_ENABLED

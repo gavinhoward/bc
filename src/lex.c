@@ -62,28 +62,39 @@ void bc_lex_comment(BcLex *l) {
 	l->i += 1;
 	l->t = BC_LEX_WHITESPACE;
 
+	// This loop is complex because it might need to request more data from
+	// stdin if the comment is not ended. This loop is taken until the comment
+	// is finished or we have EOF.
 	do {
 
 		buf = l->buf;
 		got_more = false;
 
+		// If we are in stdin mode, the buffer must be the one used for stdin.
 		assert(!vm.is_stdin || buf == vm.buffer.v);
 
+		// Find the end of the comment.
 		for (i = l->i; !end; i += !end) {
 
+			// While we don't have an asterisk, eat, but increment nlines.
 			for (; (c = buf[i]) && c != '*'; ++i) nlines += (c == '\n');
 
+			// If this is true, we need to request more data.
 			if (BC_ERR(!c || buf[i + 1] == '\0')) {
 
+				// Read more.
 				if (!vm.eof && l->is_stdin) got_more = bc_lex_readLine(l);
 
 				break;
 			}
 
+			// If this turns true, we found the end. Yay!
 			end = (buf[i + 1] == '/');
 		}
+
 	} while (got_more && !end);
 
+	// If we didn't find the end, barf.
 	if (!end) {
 		l->i = i;
 		bc_lex_err(l, BC_ERR_PARSE_COMMENT);
@@ -94,8 +105,12 @@ void bc_lex_comment(BcLex *l) {
 }
 
 void bc_lex_whitespace(BcLex *l) {
+
 	char c;
+
 	l->t = BC_LEX_WHITESPACE;
+
+	// Eat. We don't eat newlines because they can be special.
 	for (c = l->buf[l->i]; c != '\n' && isspace(c); c = l->buf[++l->i]);
 }
 
@@ -105,6 +120,13 @@ void bc_lex_commonTokens(BcLex *l, char c) {
 	else bc_lex_whitespace(l);
 }
 
+/**
+ * Parses a number.
+ * @param l         The lexer.
+ * @param start     The start character.
+ * @param int_only  Whether this function should only look for an integer. This
+ *                  is used to implement the exponent of scientific notation.
+ */
 static size_t bc_lex_num(BcLex *l, char start, bool int_only) {
 
 	const char *buf = l->buf + l->i;
@@ -112,6 +134,10 @@ static size_t bc_lex_num(BcLex *l, char start, bool int_only) {
 	char c;
 	bool last_pt, pt = (start == '.');
 
+	// This loop looks complex. It is not. It is asking if the character is not
+	// a nul byte and it if it a valid num character based on what we have found
+	// thus far, or whether it is a backslash followed by a newline. I can do
+	// i+1 on the buffer because the buffer must have a nul byte.
 	for (i = 0; (c = buf[i]) && (BC_LEX_NUM_CHAR(c, pt, int_only) ||
 	                             (c == '\\' && buf[i + 1] == '\n')); ++i)
 	{
@@ -126,11 +152,18 @@ static size_t bc_lex_num(BcLex *l, char start, bool int_only) {
 
 			c = buf[i];
 
+			// If the next character is not a number character, bail.
 			if (!BC_LEX_NUM_CHAR(c, pt, int_only)) break;
 		}
 
+		// Did we find the radix point?
 		last_pt = (c == '.');
+
+		// If we did, and we already have one, then break because it's not part
+		// of this number.
 		if (pt && last_pt) break;
+
+		// Set whether we have found a radix point.
 		pt = pt || last_pt;
 
 		bc_vec_push(&l->str, &c);
@@ -143,34 +176,42 @@ void bc_lex_number(BcLex *l, char start) {
 
 	l->t = BC_LEX_NUMBER;
 
+	// Make sure the string is clear.
 	bc_vec_popAll(&l->str);
 	bc_vec_push(&l->str, &start);
 
+	// Parse the number.
 	l->i += bc_lex_num(l, start, false);
 
 #if BC_ENABLE_EXTRA_MATH
 	{
 		char c = l->buf[l->i];
 
+		// Do we have a number in scientific notation?
 		if (c == 'e') {
 
 #if BC_ENABLED
+			// Barf for POSIX.
 			if (BC_IS_POSIX) bc_lex_err(l, BC_ERR_POSIX_EXP_NUM);
 #endif // BC_ENABLED
 
+			// Push the e.
 			bc_vec_push(&l->str, &c);
 			l->i += 1;
 			c = l->buf[l->i];
 
+			// Check for negative specifically because bc_lex_num() does not.
 			if (c == BC_LEX_NEG_CHAR) {
 				bc_vec_push(&l->str, &c);
 				l->i += 1;
 				c = l->buf[l->i];
 			}
 
+			// We must have a number character, so barf if not.
 			if (BC_ERR(!BC_LEX_NUM_CHAR(c, false, true)))
 				bc_lex_verr(l, BC_ERR_PARSE_CHAR, c);
 
+			// Parse the exponent.
 			l->i += bc_lex_num(l, 0, true);
 		}
 	}
@@ -187,8 +228,10 @@ void bc_lex_name(BcLex *l) {
 
 	l->t = BC_LEX_NAME;
 
+	// Should be obvious. It's looking for valid characters.
 	while ((c >= 'a' && c <= 'z') || isdigit(c) || c == '_') c = buf[++i];
 
+	// Set the string to the identifier.
 	bc_vec_string(&l->str, i, buf);
 
 	// Increment the index. We minus 1 because it has already been incremented.
@@ -218,12 +261,16 @@ void bc_lex_next(BcLex *l) {
 	assert(l != NULL);
 
 	l->last = l->t;
+
+	// If this wasn't here, the line number would be off.
 	l->line += (l->i != 0 && l->buf[l->i - 1] == '\n');
 
+	// If the last token was EOF, someone called this one too many times.
 	if (BC_ERR(l->last == BC_LEX_EOF)) bc_lex_err(l, BC_ERR_PARSE_EOF);
 
 	l->t = BC_LEX_EOF;
 
+	// We are done if this is true.
 	if (l->i == l->len) return;
 
 	// Loop until failure or we don't have whitespace. This
@@ -233,6 +280,13 @@ void bc_lex_next(BcLex *l) {
 	} while (l->t == BC_LEX_WHITESPACE);
 }
 
+/**
+ * Updates the buffer and len so that they are not invalidated when the stdin
+ * buffer grows.
+ * @param l     The lexer.
+ * @param text  The text.
+ * @param len   The length of the text.
+ */
 static void bc_lex_fixText(BcLex *l, const char *text, size_t len) {
 	l->buf = text;
 	l->len = len;

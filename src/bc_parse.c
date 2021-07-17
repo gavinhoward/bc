@@ -291,7 +291,7 @@ static void bc_parse_args(BcParse *p, uint8_t flags) {
 	// Count the arguments and parse them.
 	for (nargs = 0; p->l.t != BC_LEX_RPAREN; ++nargs) {
 
-		bc_parse_expr_status(p, flags, bc_parse_next_param);
+		bc_parse_expr_status(p, flags, bc_parse_next_arg);
 
 		comma = (p->l.t == BC_LEX_COMMA);
 		if (comma) bc_lex_next(&p->l);

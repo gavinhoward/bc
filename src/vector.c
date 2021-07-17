@@ -50,8 +50,10 @@ void bc_vec_grow(BcVec *restrict v, size_t n) {
 	cap = v->cap;
 	len = v->len + n;
 
+	// If this is true, we might overflow.
 	if (len > SIZE_MAX / 2) cap = len;
 	else {
+		// Keep doubling until larger.
 		while (cap < len) cap += cap;
 	}
 
@@ -64,9 +66,13 @@ void bc_vec_grow(BcVec *restrict v, size_t n) {
 }
 
 void bc_vec_init(BcVec *restrict v, size_t esize, BcDtorType dtor) {
+
 	BC_SIG_ASSERT_LOCKED;
+
 	assert(v != NULL && esize);
+
 	v->v = bc_vm_malloc(bc_vm_arraySize(BC_VEC_START_CAP, esize));
+
 	v->size = (BcSize) esize;
 	v->cap = BC_VEC_START_CAP;
 	v->len = 0;
@@ -77,6 +83,7 @@ void bc_vec_expand(BcVec *restrict v, size_t req) {
 
 	assert(v != NULL);
 
+	// Only expand if necessary.
 	if (v->cap < req) {
 
 		sig_atomic_t lock;
@@ -100,9 +107,12 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 
 	if (!v->dtor) v->len -= n;
 	else {
+
 		const BcVecFree d = bc_vec_dtors[v->dtor];
 		size_t esize = v->size;
 		size_t len = v->len - n;
+
+		// Loop through and manually destruct every element.
 		while (v->len > len) d(v->v + (esize * --v->len));
 	}
 
@@ -117,6 +127,7 @@ void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
 	assert(v != NULL);
 	assert(idx + n < v->len);
 
+	// Grab start and end pointers.
 	ptr = bc_vec_item(v, idx);
 	data = bc_vec_item(v, idx + n);
 
@@ -127,6 +138,7 @@ void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
 		size_t i;
 		const BcVecFree d = bc_vec_dtors[v->dtor];
 
+		// Destroy every popped item.
 		for (i = 0; i < n; ++i) d(bc_vec_item(v, idx + i));
 	}
 
@@ -145,10 +157,12 @@ void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
 
 	BC_SIG_TRYLOCK(lock);
 
+	// Grow if necessary.
 	if (v->len + n > v->cap) bc_vec_grow(v, n);
 
 	esize = v->size;
 
+	// Copy the elements in.
 	memcpy(v->v + (esize * v->len), data, esize * n);
 	v->len += n;
 
@@ -168,10 +182,10 @@ void* bc_vec_pushEmpty(BcVec *restrict v) {
 
 	BC_SIG_TRYLOCK(lock);
 
+	// Grow if necessary.
 	if (v->len + 1 > v->cap) bc_vec_grow(v, 1);
 
 	ptr = v->v + v->size * v->len;
-
 	v->len += 1;
 
 	BC_SIG_TRYUNLOCK(lock);
@@ -191,6 +205,7 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 	assert(v != NULL);
 	assert(v->size == sizeof(uchar));
 
+	// Encode the index.
 	for (amt = 0; idx; ++amt) {
 		nums[amt + 1] = (uchar) idx;
 		idx &= ((size_t) ~(UCHAR_MAX));
@@ -199,6 +214,7 @@ void bc_vec_pushIndex(BcVec *restrict v, size_t idx) {
 
 	nums[0] = amt;
 
+	// Push the index onto the vector.
 	bc_vec_npush(v, amt + 1, nums);
 }
 
@@ -208,12 +224,14 @@ void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 
 	BC_SIG_ASSERT_LOCKED;
 
+	// Do the easy case.
 	if (idx == v->len) bc_vec_push(v, data);
 	else {
 
 		char *ptr;
 		size_t esize;
 
+		// Grow if necessary.
 		if (v->len == v->cap) bc_vec_grow(v, 1);
 
 		esize = v->size;
@@ -221,7 +239,7 @@ void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 		ptr = v->v + esize * idx;
 
 		memmove(ptr + esize, ptr, esize * (v->len++ - idx));
-		memmove(ptr, data, esize);
+		memcpy(ptr, data, esize);
 	}
 }
 
@@ -257,6 +275,7 @@ void bc_vec_concat(BcVec *restrict v, const char *restrict str) {
 
 	BC_SIG_TRYLOCK(lock);
 
+	// If there is already a string, erase its nul byte.
 	if (v->len) v->len -= 1;
 
 	bc_vec_npush(v, strlen(str) + 1, str);
@@ -321,6 +340,16 @@ void bc_vec_free(void *vec) {
 }
 
 #if !BC_ENABLE_LIBRARY
+
+/**
+ * Finds a name in a map by binary search. Returns the index where the item
+ * *would* be if it doesn't exist. Callers are responsible for checking that the
+ * item exists at the index.
+ * @param v     The map.
+ * @param name  The name to find.
+ * @return      The index of the item with @a name, or where the item would be
+ *              if it does not exist.
+ */
 static size_t bc_map_find(const BcVec *restrict v, const char *name) {
 
 	size_t low = 0, high = v->len;
@@ -378,8 +407,10 @@ size_t bc_map_index(const BcVec *restrict v, const char *name) {
 
 	i = bc_map_find(v, name);
 
+	// If out of range, return invalid.
 	if (i >= v->len) return BC_VEC_INVALID_IDX;
 
+	// Make sure the item exists.
 	return strcmp(name, ((BcId*) bc_vec_item(v, i))->name) ?
 	    BC_VEC_INVALID_IDX : i;
 }
@@ -400,11 +431,24 @@ char* bc_map_name(const BcVec *restrict v, size_t idx) {
 }
 #endif // DC_ENABLED
 
+/**
+ * Initializes a single slab.
+ * @param s  The slab to initialize.
+ */
 static void bc_slab_init(BcSlab *s) {
 	s->s = bc_vm_malloc(BC_SLAB_SIZE);
 	s->len = 0;
 }
 
+/**
+ * Adds a string to a slab and returns a pointer to it, or NULL if it could not
+ * be added.
+ * @param s    The slab to add to.
+ * @param str  The string to add.
+ * @param len  The length of the string, including its nul byte.
+ * @return     A pointer to the new string in the slab, or NULL if it could not
+ *             be added.
+ */
 static char* bc_slab_add(BcSlab *s, const char *str, size_t len) {
 
 	char *ptr;
@@ -435,6 +479,8 @@ void bc_slabvec_init(BcVec* v) {
 	assert(v != NULL);
 
 	bc_vec_init(v, sizeof(BcSlab), BC_DTOR_SLAB);
+
+	// We always want to have at least one slab.
 	slab = bc_vec_pushEmpty(v);
 	bc_slab_init(slab);
 }
@@ -454,6 +500,7 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 
 	len = strlen(str) + 1;
 
+	// If the len is greater than 128, then just allocate it with malloc.
 	if (BC_UNLIKELY(len > 128)) {
 
 		size_t idx = v->len - 1;
@@ -462,18 +509,21 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 		slab.len = SIZE_MAX;
 		slab.s = bc_vm_strdup(str);
 
+		// This makes the direct malloc() allocation the second-to-last slab in
+		// the slab vector, thus always keeping a valid slab last.
 		bc_vec_pushAt(v, &slab, idx);
 
 		return slab.s;
 	}
 
+	// Add to a slab.
 	slab_ptr = bc_vec_top(v);
 	s = bc_slab_add(slab_ptr, str, len);
 
+	// If it couldn't be added, add a slab and try again.
 	if (BC_UNLIKELY(s == NULL)) {
 
 		slab_ptr = bc_vec_pushEmpty(v);
-
 		bc_slab_init(slab_ptr);
 
 		s = bc_slab_add(slab_ptr, str, len);
@@ -492,21 +542,35 @@ void bc_slabvec_undo(BcVec *v, size_t len) {
 
 	s = bc_vec_top(v);
 
+	// If this is true, there are no allocations in this slab, so we need to
+	// discard it. Well, maybe...
 	if (s->len == 0) {
 
+		// The reason this is true is because while undo can *empty* a slab
+		// vector, it should *never* go beyond that. If it does, then the
+		// calling code screwed up.
 		assert(v->len > 1);
 
+		// Get the second to last slab.
 		s = bc_vec_item_rev(v, 1);
 
+		// If it is a lone allocation, destroy it instead of the last (empty)
+		// slab.
 		if (s->len == SIZE_MAX) {
 			bc_vec_npopAt(v, 1, 0);
 			return;
 		}
 
+		// If we reach this point, we know the second-to-last slab is a valid
+		// slab, so we can discard the last slab.
 		bc_vec_pop(v);
 	}
 
+	// Remove the string. The reason we can do this even with the if statement
+	// is that s was updated to the second-to-last slab (now last slab).
 	s->len -= len;
+
+	assert(s->len == 0 || !s->s[s->len - 1]);
 }
 
 void bc_slabvec_clear(BcVec *v) {
@@ -514,19 +578,30 @@ void bc_slabvec_clear(BcVec *v) {
 	BcSlab *s;
 	bool again;
 
+	// This complicated loop exists because of standalone allocations over 128
+	// bytes.
 	do {
+
+		// Get the first slab.
 		s = bc_vec_item(v, 0);
 
+		// Either the slab must be valid (not standalone), or there must be
+		// another slab.
 		assert(s->len != SIZE_MAX || v->len > 1);
 
+		// Do we have to loop again? We do if it's a standalone allocation.
 		again = (s->len == SIZE_MAX);
 
+		// Pop the standalone allocation, not the one after it.
 		if (again) bc_vec_npopAt(v, 1, 0);
 
 	} while(again);
 
+	// If we get here, we know that the first slab is a valid slab. We want to
+	// pop all of the other slabs.
 	if (v->len > 1) bc_vec_npop(v, v->len - 1);
 
+	// Empty the first slab.
 	s->len = 0;
 }
 #endif // !BC_ENABLE_LIBRARY

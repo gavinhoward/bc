@@ -35,6 +35,7 @@ testdir=$(dirname "${script}")
 
 . "$testdir/../scripts/functions.sh"
 
+# Command-line processing.
 if [ "$#" -lt 2 ]; then
 	printf 'usage: %s dir script [run_extra_tests] [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"
 	exit 1
@@ -81,6 +82,7 @@ else
 	exe="$testdir/../bin/$d"
 fi
 
+# Set stuff for the correct calculator.
 if [ "$d" = "bc" ]; then
 
 	if [ "$run_stack_tests" -ne 0 ]; then
@@ -100,10 +102,12 @@ scriptdir="$testdir/$d/scripts"
 
 name="${f%.*}"
 
+# We specifically want to skip this because it is handled specially.
 if [ "$f" = "timeconst.bc" ]; then
 	exit 0
 fi
 
+# Skip the tests that require extra math if we don't have it.
 if [ "$run_extra_tests" -eq 0 ]; then
 	if [ "$f" = "rand.bc" ]; then
 		printf 'Skipping %s script: %s\n' "$d" "$f"
@@ -111,6 +115,8 @@ if [ "$run_extra_tests" -eq 0 ]; then
 	fi
 fi
 
+# Skip the tests that require global stacks flag if we are not allowed to run
+# them.
 if [ "$run_stack_tests" -eq 0 ]; then
 
 	if [ "$f" = "globals.bc" -o "$f" = "references.bc" -o "$f" = "rand.bc" ]; then
@@ -123,10 +129,12 @@ fi
 out="$testdir/${d}_outputs/${name}_script_results.txt"
 outdir=$(dirname "$out")
 
+# Make sure the directory exists.
 if [ ! -d "$outdir" ]; then
 	mkdir -p "$outdir"
 fi
 
+# I use these, so unset them to make the tests work.
 unset BC_ENV_ARGS
 unset BC_LINE_LENGTH
 unset DC_ENV_ARGS
@@ -160,6 +168,7 @@ set +e
 
 printf 'Running %s script %s...' "$d" "$f"
 
+# Yes this is poor timing, but it works.
 if [ "$time_tests" -ne 0 ]; then
 	printf '\n'
 	printf '%s\n' "$halt" | /usr/bin/time -p "$exe" "$@" $options "$s" > "$out"

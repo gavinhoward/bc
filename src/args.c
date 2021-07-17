@@ -80,12 +80,6 @@ static void bc_args_file(const char *file) {
 	free(buf);
 }
 
-/**
- * Processes command-line arguments.
- * @param argc        The number of arguments.
- * @param argv        The arguments.
- * @param exit_exprs  Whether to exit if expressions are encountered.
- */
 void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 	int c;
@@ -105,22 +99,32 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 			case 'e':
 			{
+				// Barf if not allowed.
 				if (vm.no_exprs)
 					bc_verr(BC_ERR_FATAL_OPTION, "-e (--expression)");
+
+				// Add the expressions and set exit.
 				bc_args_exprs(opts.optarg);
 				vm.exit_exprs = (exit_exprs || vm.exit_exprs);
+
 				break;
 			}
 
 			case 'f':
 			{
+				// Figure out if exiting on expressions is disabled.
 				if (!strcmp(opts.optarg, "-")) vm.no_exprs = true;
 				else {
+
+					// Barf if not allowed.
 					if (vm.no_exprs)
 						bc_verr(BC_ERR_FATAL_OPTION, "-f (--file)");
+
+				// Add the expressions and set exit.
 					bc_args_file(opts.optarg);
 					vm.exit_exprs = (exit_exprs || vm.exit_exprs);
 				}
+
 				break;
 			}
 

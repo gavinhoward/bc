@@ -76,16 +76,22 @@ bool bc_read_buf(BcVec *vec, char *buf, size_t *buf_len) {
 
 	char *nl;
 
+	// If nothing there, return.
 	if (!*buf_len) return false;
 
+	// Find the newline.
 	nl = strchr(buf, '\n');
 
+	// If a newline exists...
 	if (nl != NULL) {
 
+		// Get the size of the data up to, and including, the newline.
 		size_t nllen = (size_t) ((nl + 1) - buf);
 
 		nllen = *buf_len >= nllen ? nllen : *buf_len;
 
+		// Move data into the vector, and move the rest of the data in the
+		// buffer up.
 		bc_vec_npush(vec, nllen, buf);
 		*buf_len -= nllen;
 		memmove(buf, nl + 1, *buf_len + 1);
@@ -93,6 +99,7 @@ bool bc_read_buf(BcVec *vec, char *buf, size_t *buf_len) {
 		return true;
 	}
 
+	// Just put the data into the vector.
 	bc_vec_npush(vec, *buf_len, buf);
 	*buf_len = 0;
 
@@ -107,37 +114,49 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 	BC_SIG_ASSERT_NOT_LOCKED;
 
+	// Clear the vector.
 	bc_vec_popAll(vec);
 
+	// Handle the prompt, if desired.
 	if (BC_PROMPT) {
 		bc_file_puts(&vm.fout, bc_flush_none, prompt);
 		bc_file_flush(&vm.fout, bc_flush_none);
 	}
 
+	// Try reading from the buffer, and if successful, just return.
 	if (bc_read_buf(vec, vm.buf, &vm.buf_len)) {
 		bc_vec_pushByte(vec, '\0');
 		return BC_STATUS_SUCCESS;
 	}
 
+	// Loop until we have something.
 	while (!done) {
 
 		ssize_t r;
 
 		BC_SIG_LOCK;
 
+		// Read data from stdin.
 		r = read(STDIN_FILENO, vm.buf + vm.buf_len,
 		         BC_VM_STDIN_BUF_SIZE - vm.buf_len);
 
+		// If there was an error...
 		if (BC_UNLIKELY(r < 0)) {
 
+			// If interupted...
 			if (errno == EINTR) {
 
+				// Jump out if we are supposed to quit, which certain signals
+				// will require.
 				if (vm.status == (sig_atomic_t) BC_STATUS_QUIT) BC_JMP;
 
 				assert(vm.sig);
 
+				// Clear the signal and status.
 				vm.sig = 0;
 				vm.status = (sig_atomic_t) BC_STATUS_SUCCESS;
+
+				// Print the ready message and prompt again.
 				bc_file_puts(&vm.fout, bc_flush_none, bc_program_ready_msg);
 				if (BC_PROMPT) bc_file_puts(&vm.fout, bc_flush_none, prompt);
 				bc_file_flush(&vm.fout, bc_flush_none);
@@ -149,22 +168,27 @@ BcStatus bc_read_chars(BcVec *vec, const char *prompt) {
 
 			BC_SIG_UNLOCK;
 
+			// If we get here, it's bad. Barf.
 			bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 		}
 
 		BC_SIG_UNLOCK;
 
+		// If we read nothing, make sure to terminate the string and return EOF.
 		if (r == 0) {
 			bc_vec_pushByte(vec, '\0');
 			return BC_STATUS_EOF;
 		}
 
+		// Add to the buffer.
 		vm.buf_len += (size_t) r;
 		vm.buf[vm.buf_len] = '\0';
 
+		// Read from the buffer.
 		done = bc_read_buf(vec, vm.buf, &vm.buf_len);
 	}
 
+	// Terminate the string.
 	bc_vec_pushByte(vec, '\0');
 
 	return BC_STATUS_SUCCESS;
@@ -175,6 +199,7 @@ BcStatus bc_read_line(BcVec *vec, const char *prompt) {
 	BcStatus s;
 
 #if BC_ENABLE_HISTORY
+	// Get a line from either history or manual reading.
 	if (BC_TTY && !vm.history.badTerm)
 		s = bc_history_line(&vm.history, vec, prompt);
 	else s = bc_read_chars(vec, prompt);
@@ -204,20 +229,29 @@ char* bc_read_file(const char *path) {
 
 	fd = bc_read_open(path, O_RDONLY);
 
+	// If we can't read a file, we just barf.
 	if (BC_ERR(fd < 0)) bc_verr(BC_ERR_FATAL_FILE_ERR, path);
+
+	// The reason we call fstat is to eliminate TOCTOU race conditions. This
+	// way, we have an open file, so it's not going anywhere.
 	if (BC_ERR(fstat(fd, &pstat) == -1)) goto malloc_err;
 
+	// Make sure it's not a directory.
 	if (BC_ERR(S_ISDIR(pstat.st_mode))) {
 		e = BC_ERR_FATAL_PATH_DIR;
 		goto malloc_err;
 	}
 
+	// Get the size of the file and allocate that much.
 	size = (size_t) pstat.st_size;
 	buf = bc_vm_malloc(size + 1);
 
+	// Read the file. We just bail if a signal interrupts. This is so that users
+	// can interrupt the reading of big files if they want.
 	r = (size_t) read(fd, buf, size);
 	if (BC_ERR(r != size)) goto read_err;
 
+	// Got to have a nul byte.
 	buf[size] = '\0';
 
 	close(fd);

@@ -47,6 +47,8 @@
  */
 void bc_main(int argc, char *argv[]) {
 
+	// All of these just set bc-specific items in BcVm.
+
 	vm.read_ret = BC_INST_RET;
 	vm.help = bc_help;
 	vm.sigmsg = bc_sig_msg;

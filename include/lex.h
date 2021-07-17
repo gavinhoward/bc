@@ -71,11 +71,14 @@
 
 #endif // BC_ENABLED
 
-/// Returns true if c is a valid number character.
-/// @param c      The char to check.
-/// @param pt     If a decimal point has already been seen.
-/// @param int_only  True if the number is expected to be an int only, false if
-///                  non-integers are allowed.
+/**
+ * Returns true if c is a valid number character.
+ * @param c         The char to check.
+ * @param pt        If a decimal point has already been seen.
+ * @param int_only  True if the number is expected to be an int only, false if
+ *                  non-integers are allowed.
+ * @return          True if @a c is a valid number character.
+ */
 #define BC_LEX_NUM_CHAR(c, pt, int_only)                               \
 	(isdigit(c) != 0 || ((c) >= 'A' && (c) <= BC_LEX_LAST_NUM_CHAR) || \
 	 ((c) == '.' && !(pt) && !(int_only)))

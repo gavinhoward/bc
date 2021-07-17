@@ -545,16 +545,10 @@ typedef struct BcVm {
 	/// A BcNum set to constant 0.
 	BcNum zero;
 
+#endif // !BC_ENABLE_LIBRARY
+
 	/// A BcNum set to constant 1.
 	BcNum one;
-
-	// The BcDig array for the zero BcNum.
-	BcDig zero_num[BC_VM_ONE_CAP];
-
-	// The BcDig array for the one BcNum.
-	BcDig one_num[BC_VM_ONE_CAP];
-
-#endif // !BC_ENABLE_LIBRARY
 
 	/// A BcNum holding the max number held by a BcBigDig plus 1.
 	BcNum max;
@@ -568,7 +562,13 @@ typedef struct BcVm {
 	/// The BcDig array for max2.
 	BcDig max2_num[BC_NUM_BIGDIG_LOG10];
 
+	// The BcDig array for the one BcNum.
+	BcDig one_num[BC_VM_ONE_CAP];
+
 #if !BC_ENABLE_LIBRARY
+
+	// The BcDig array for the zero BcNum.
+	BcDig zero_num[BC_VM_ONE_CAP];
 
 	/// The stdout file.
 	BcFile fout;

@@ -49,14 +49,22 @@
 #if !BC_ENABLE_LIBRARY
 
 #if BC_ENABLED
+
+/// The bc signal message and its length.
 const char bc_sig_msg[] = "\ninterrupt (type \"quit\" to exit)\n";
 const uchar bc_sig_msg_len = (uchar) (sizeof(bc_sig_msg) - 1);
+
 #endif // BC_ENABLED
+
 #if DC_ENABLED
+
+/// The dc signal message and its length.
 const char dc_sig_msg[] = "\ninterrupt (type \"q\" to exit)\n";
 const uchar dc_sig_msg_len = (uchar) (sizeof(dc_sig_msg) - 1);
+
 #endif // DC_ENABLED
 
+/// The copyright banner.
 const char bc_copyright[] =
 	"Copyright (c) 2018-2021 Gavin D. Howard and contributors\n"
 	"Report bugs at: https://git.yzena.com/gavin/bc\n\n"
@@ -67,38 +75,64 @@ const char bc_copyright[] =
 #if BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLE_HISTORY
+
+/// The pledges for starting bc.
 const char bc_pledge_start[] = "rpath stdio tty unveil";
+
+/// The final pledges with history enabled.
 const char bc_pledge_end_history[] = "rpath stdio tty";
+
 #else // BC_ENABLE_HISTORY
+
+/// The pledges for starting bc.
 const char bc_pledge_start[] = "rpath stdio unveil";
+
 #endif // BC_ENABLE_HISTORY
 
+/// The final pledges with history history disabled.
 const char bc_pledge_end[] = "rpath stdio";
 
 #else // BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLE_HISTORY
+
+/// The pledges for starting bc.
 const char bc_pledge_start[] = "rpath stdio tty";
+
+/// The final pledges with history enabled.
 const char bc_pledge_end_history[] = "stdio tty";
+
 #else // BC_ENABLE_HISTORY
+
+/// The pledges for starting bc.
 const char bc_pledge_start[] = "rpath stdio";
+
 #endif // BC_ENABLE_HISTORY
 
+/// The final pledges with history history disabled.
 const char bc_pledge_end[] = "stdio";
 
 #endif // BC_ENABLE_EXTRA_MATH
 
 #else // __OpenBSD__
 
+/// The pledges for starting bc.
 const char bc_pledge_start[] = "";
+
 #if BC_ENABLE_HISTORY
+
+/// The final pledges with history enabled.
 const char bc_pledge_end_history[] = "";
+
 #endif // BC_ENABLE_HISTORY
+
+/// The final pledges with history history disabled.
 const char bc_pledge_end[] = "";
 
 #endif // __OpenBSD__
 
-/// The list of long options.
+/// The list of long options. There is a zero set at the end for detecting the
+/// end.
 const BcOptLong bc_args_lopt[] = {
 
 	{ "expression", BC_OPT_REQUIRED, 'e' },
@@ -123,9 +157,13 @@ const BcOptLong bc_args_lopt[] = {
 
 };
 
+/// The function header for error messages.
 const char* const bc_err_func_header = "Function:";
+
+/// The line format string for error messages.
 const char* const bc_err_line = ":%zu";
 
+/// The default error category strings.
 const char *bc_errs[] = {
 	"Math error:",
 	"Parse error:",
@@ -136,6 +174,7 @@ const char *bc_errs[] = {
 #endif // BC_ENABLED
 };
 
+/// The error category for each error.
 const uchar bc_err_ids[] = {
 
 	BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH, BC_ERR_IDX_MATH,
@@ -162,6 +201,8 @@ const uchar bc_err_ids[] = {
 
 };
 
+/// The default error messages. There are NULL pointers because the positions
+/// must be preserved for the locales.
 const char* const bc_err_msgs[] = {
 
 	"negative number",
@@ -238,6 +279,7 @@ const char* const bc_err_msgs[] = {
 
 #endif // !BC_ENABLE_LIBRARY
 
+/// The destructors corresponding to BcDtorType enum items.
 const BcVecFree bc_vec_dtors[] = {
 	NULL,
 	bc_vec_free,
@@ -260,18 +302,28 @@ const BcVecFree bc_vec_dtors[] = {
 #if !BC_ENABLE_LIBRARY
 
 #if BC_ENABLE_HISTORY
+
+/// A flush type for not clearing current extras but not saving new ones either.
 const BcFlushType bc_flush_none = BC_FLUSH_NO_EXTRAS_NO_CLEAR;
+
+/// A flush type for clearing extras and not saving new ones.
 const BcFlushType bc_flush_err = BC_FLUSH_NO_EXTRAS_CLEAR;
+
+/// A flush type for clearing previous extras and saving new ones.
 const BcFlushType bc_flush_save = BC_FLUSH_SAVE_EXTRAS_CLEAR;
 #endif // BC_ENABLE_HISTORY
 
 #if BC_ENABLE_HISTORY
+
+/// A list of known bad terminals.
 const char *bc_history_bad_terms[] = { "dumb", "cons25", "emacs", NULL };
 
+/// A constant for tabs and its length. My tab handling is dumb and always
+/// outputs the entire thing.
 const char bc_history_tab[] = "        ";
 const size_t bc_history_tab_len = sizeof(bc_history_tab) - 1;
 
-// These are listed in ascending order for efficiency.
+/// A list of wide chars. These are listed in ascending order for efficiency.
 const uint32_t bc_history_wchars[][2] = {
 	{ 0x1100, 0x115F },
 	{ 0x231A, 0x231B },
@@ -379,10 +431,12 @@ const uint32_t bc_history_wchars[][2] = {
 	{ 0x30000, 0x3FFFD },
 };
 
+/// The length of the wide chars list.
 const size_t bc_history_wchars_len =
 	sizeof(bc_history_wchars) / sizeof(bc_history_wchars[0]);
 
-// These are listed in ascending order for efficiency.
+/// A list of combining characters in Unicode. These are listed in ascending
+/// order for efficiency.
 const uint32_t bc_history_combo_chars[] = {
 	0x0300,0x0301,0x0302,0x0303,0x0304,0x0305,0x0306,0x0307,
 	0x0308,0x0309,0x030A,0x030B,0x030C,0x030D,0x030E,0x030F,
@@ -598,19 +652,20 @@ const uint32_t bc_history_combo_chars[] = {
 	0xE01EC,0xE01ED,0xE01EE,0xE01EF,
 };
 
+/// The length of the combining characters list.
 const size_t bc_history_combo_chars_len =
 	sizeof(bc_history_combo_chars) / sizeof(bc_history_combo_chars[0]);
-
-#if BC_DEBUG_CODE
-BcFile bc_history_debug_fp;
-char *bc_history_debug_buf;
-#endif // BC_DEBUG_CODE
 #endif // BC_ENABLE_HISTORY
 
+/// The human-readable name of the main function in bc source code.
 const char bc_func_main[] = "(main)";
+
+/// The human-readable name of the read function in bc source code.
 const char bc_func_read[] = "(read)";
 
 #if BC_DEBUG_CODE
+
+/// A list of names of instructions for easy debugging output.
 const char* bc_inst_names[] = {
 
 #if BC_ENABLED
@@ -758,12 +813,18 @@ const char* bc_inst_names[] = {
 	"BC_INST_NQUIT",
 #endif // DC_ENABLED
 };
+
 #endif // BC_DEBUG_CODE
 
+/// A constant string for 0.
 const char bc_parse_zero[2] = "0";
+
+/// A constant string for 1.
 const char bc_parse_one[2] = "1";
 
 #if BC_ENABLED
+
+/// A list of keywords for bc.
 const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
@@ -803,10 +864,11 @@ const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("else", 4, false),
 };
 
+/// The length of the list of bc keywords.
 const size_t bc_lex_kws_len = sizeof(bc_lex_kws) / sizeof(BcLexKeyword);
 
-// This is an array that corresponds to token types. An entry is
-// true if the token is valid in an expression, false otherwise.
+/// An array of booleans that correspond to token types. An entry is true if the
+/// token is valid in an expression, false otherwise.
 const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
@@ -835,7 +897,7 @@ const uint8_t bc_parse_exprs[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
-// This is an array of data for operators that correspond to token types.
+/// An array of data for operators that correspond to token types.
 const uchar bc_parse_ops[] = {
 	BC_PARSE_OP(0, false), BC_PARSE_OP(0, false),
 	BC_PARSE_OP(1, false), BC_PARSE_OP(1, false),
@@ -861,20 +923,42 @@ const uchar bc_parse_ops[] = {
 };
 
 // These identify what tokens can come after expressions in certain cases.
+
+/// The valid next tokens for normal expressions.
 const BcParseNext bc_parse_next_expr =
 	BC_PARSE_NEXT(4, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_RBRACE, BC_LEX_EOF);
-const BcParseNext bc_parse_next_param =
+
+/// The valid next tokens for function argument expressions.
+const BcParseNext bc_parse_next_arg =
 	BC_PARSE_NEXT(2, BC_LEX_RPAREN, BC_LEX_COMMA);
+
+/// The valid next tokens for expressions in print statements.
 const BcParseNext bc_parse_next_print =
 	BC_PARSE_NEXT(4, BC_LEX_COMMA, BC_LEX_NLINE, BC_LEX_SCOLON, BC_LEX_EOF);
+
+/// The valid next tokens for if statement conditions or loop conditions. This
+/// is used in for loops for the update expression and for builtin function.
+///
+/// The name is an artifact of history, and is related to @a BC_PARSE_REL (see
+/// include/parse.h). It refers to how POSIX only allows some operators as part
+/// of the conditional of for loops, while loops, and if statements.
 const BcParseNext bc_parse_next_rel = BC_PARSE_NEXT(1, BC_LEX_RPAREN);
+
+/// The valid next tokens for array element expressions.
 const BcParseNext bc_parse_next_elem = BC_PARSE_NEXT(1, BC_LEX_RBRACKET);
+
+/// The valid next tokens for for loop initialization expressions and condition
+/// expressions.
 const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
+
+/// The valid next tokens for read expressions.
 const BcParseNext bc_parse_next_read =
 	BC_PARSE_NEXT(2, BC_LEX_NLINE, BC_LEX_EOF);
 #endif // BC_ENABLED
 
 #if DC_ENABLED
+
+/// A list of instructions that need register arguments in dc.
 const uint8_t dc_lex_regs[] = {
 	BC_LEX_OP_REL_EQ, BC_LEX_OP_REL_LE, BC_LEX_OP_REL_GE, BC_LEX_OP_REL_NE,
 	BC_LEX_OP_REL_LT, BC_LEX_OP_REL_GT, BC_LEX_SCOLON, BC_LEX_COLON,
@@ -882,8 +966,13 @@ const uint8_t dc_lex_regs[] = {
 	BC_LEX_STORE_PUSH, BC_LEX_REG_STACK_LEVEL,
 };
 
+/// The length of the list of register instructions.
 const size_t dc_lex_regs_len = sizeof(dc_lex_regs) / sizeof(uint8_t);
 
+/// A list corresponding to characters starting at double quote ("). If an entry
+/// is BC_LEX_INVALID, then that character needs extra lexing in dc. If it does
+/// not, the character can trivially be replaced by the entry. Positions are
+/// kept because it corresponds to the ASCII table.
 const uchar dc_lex_tokens[] = {
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 	BC_LEX_KW_IRAND,
@@ -961,6 +1050,9 @@ const uchar dc_lex_tokens[] = {
 	BC_LEX_INVALID
 };
 
+/// A list of instructions that correspond to lex tokens. If an entry is
+/// BC_INST_INVALID, that lex token needs extra parsing in the dc parser.
+/// Otherwise, the token can trivially be replaced by the entry.
 const uchar dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLED
@@ -1032,16 +1124,21 @@ const uchar dc_parse_insts[] = {
 
 #if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
+/// A constant for the rand multiplier.
 const BcRandState bc_rand_multiplier = BC_RAND_MULTIPLIER;
 
 #endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
 
 #if BC_LONG_BIT >= 64
+
+/// A constant array for the max of a bigdig number as a BcDig array.
 const BcDig bc_num_bigdigMax[] = {
 	709551616U,
 	446744073U,
 	18U,
 };
+
+/// A constant array for the max of 2 times a bigdig number as a BcDig array.
 const BcDig bc_num_bigdigMax2[] = {
 	768211456U,
 	374607431U,
@@ -1049,12 +1146,17 @@ const BcDig bc_num_bigdigMax2[] = {
 	282366920U,
 	340U,
 };
+
 #else // BC_LONG_BIT >= 64
+
+/// A constant array for the max of a bigdig number as a BcDig array.
 const BcDig bc_num_bigdigMax[] = {
 	7296U,
 	9496U,
 	42U,
 };
+
+/// A constant array for the max of 2 times a bigdig number as a BcDig array.
 const BcDig bc_num_bigdigMax2[] = {
 	1616U,
 	955U,
@@ -1062,13 +1164,19 @@ const BcDig bc_num_bigdigMax2[] = {
 	6744U,
 	1844U,
 };
+
 #endif // BC_LONG_BIT >= 64
 
+/// The size of the bigdig max array.
 const size_t bc_num_bigdigMax_size = sizeof(bc_num_bigdigMax) / sizeof(BcDig);
+
+/// The size of the bigdig max times 2 array.
 const size_t bc_num_bigdigMax2_size = sizeof(bc_num_bigdigMax2) / sizeof(BcDig);
 
+/// A string of digits for easy conversion from characters to digits.
 const char bc_num_hex_digits[] = "0123456789ABCDEF";
 
+/// An array for easy conversion from exponent to power of 10.
 const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {
 	1,
 	10,
@@ -1086,6 +1194,8 @@ const BcBigDig bc_num_pow10[BC_BASE_DIGS + 1] = {
 
 #if !BC_ENABLE_LIBRARY
 
+/// An array of functions for binary operators corresponding to the order of
+/// the instructions for the operators.
 const BcNumBinaryOp bc_program_ops[] = {
 	bc_num_pow, bc_num_mul, bc_num_div, bc_num_mod, bc_num_add, bc_num_sub,
 #if BC_ENABLE_EXTRA_MATH
@@ -1093,6 +1203,8 @@ const BcNumBinaryOp bc_program_ops[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
+/// An array of functions for binary operators allocation requests corresponding
+/// to the order of the instructions for the operators.
 const BcNumBinaryOpReq bc_program_opReqs[] = {
 	bc_num_powReq, bc_num_mulReq, bc_num_divReq, bc_num_divReq,
 	bc_num_addReq, bc_num_addReq,
@@ -1101,6 +1213,8 @@ const BcNumBinaryOpReq bc_program_opReqs[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
+/// An array of unary operator functions corresponding to the order of the
+/// instructions.
 const BcProgramUnary bc_program_unarys[] = {
 	bc_program_negate, bc_program_not,
 #if BC_ENABLE_EXTRA_MATH
@@ -1108,12 +1222,22 @@ const BcProgramUnary bc_program_unarys[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
+/// A filename for when parsing expressions.
 const char bc_program_exprs_name[] = "<exprs>";
 
+/// A filename for when parsing stdin..
 const char bc_program_stdin_name[] = "<stdin>";
+
+/// A ready message for SIGINT catching.
 const char bc_program_ready_msg[] = "ready for more input\n";
+
+/// The length of the ready message.
 const size_t bc_program_ready_msg_len = sizeof(bc_program_ready_msg) - 1;
+
+/// A list of escape characters that a print statement should treat specially.
 const char bc_program_esc_chars[] = "ab\\efnqrt";
+
+/// A list of characters corresponding to the escape characters above.
 const char bc_program_esc_seqs[] = "\a\b\\\\\f\n\"\r\t";
 
 #endif // !BC_ENABLE_LIBRARY

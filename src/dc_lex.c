@@ -85,9 +85,9 @@ static void dc_lex_register(BcLex *l) {
 }
 
 /**
- * Parse a dc string. Since dc's strings need to check for balanced brackets, we
- * can't just parse bc and dc strings with different start and end characters.
- * Oh, and dc strings need to check for escaped brackets.
+ * Parses a dc string. Since dc's strings need to check for balanced brackets,
+ * we can't just parse bc and dc strings with different start and end
+ * characters. Oh, and dc strings need to check for escaped brackets.
  * @param l  The lexer.
  */
 static void dc_lex_string(BcLex *l) {
@@ -149,7 +149,7 @@ static void dc_lex_string(BcLex *l) {
 }
 
 /**
- * Lex a dc token. This is the dc implementation of BcLexNext.
+ * Lexes a dc token. This is the dc implementation of BcLexNext.
  * @param l  The lexer.
  */
 void dc_lex_token(BcLex *l) {
@@ -160,6 +160,8 @@ void dc_lex_token(BcLex *l) {
 	// If the last token was a command that needs a register, we need to parse a
 	// register, so do so.
 	for (i = 0; i < dc_lex_regs_len; ++i) {
+
+		// If the token is a register token, take care of it and return.
 		if (l->last == dc_lex_regs[i]) {
 			dc_lex_register(l);
 			return;
@@ -202,6 +204,7 @@ void dc_lex_token(BcLex *l) {
 			else bc_lex_invalidChar(l, c);
 
 			l->i += 1;
+
 			break;
 		}
 
@@ -214,9 +217,13 @@ void dc_lex_token(BcLex *l) {
 		case '.':
 		{
 			c2 = l->buf[l->i];
+
+			// If the character after is a number, this dot is part of a number.
+			// Otherwise, it's the BSD dot (equivalent to last).
 			if (BC_NO_ERR(BC_LEX_NUM_CHAR(c2, true, false)))
 				bc_lex_number(l, c);
 			else bc_lex_invalidChar(l, c);
+
 			break;
 		}
 

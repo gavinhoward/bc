@@ -35,6 +35,7 @@ testdir=$(dirname "$script")
 
 . "$testdir/../scripts/functions.sh"
 
+# Command-line processing.
 if [ "$#" -lt 1 ]; then
 	printf 'usage: %s dir [exe [args...]]\n' "$0"
 	printf 'valid dirs are:\n'
@@ -57,10 +58,12 @@ fi
 out="$testdir/${d}_outputs/stdin_results.txt"
 outdir=$(dirname "$out")
 
+# Make sure the directory exists.
 if [ ! -d "$outdir" ]; then
 	mkdir -p "$outdir"
 fi
 
+# Set stuff for the correct calculator.
 if [ "$d" = "bc" ]; then
 	options="-lq"
 else
@@ -73,9 +76,11 @@ set +e
 
 printf 'Running %s stdin tests...' "$d"
 
+# Run the file through stdin.
 cat "$testdir/$d/stdin.txt" | "$exe" "$@" "$options" > "$out" 2> /dev/null
 checktest "$d" "$?" "stdin" "$testdir/$d/stdin_results.txt" "$out"
 
+# bc has some more tests; run those.
 if [ "$d" = "bc" ]; then
 
 	cat "$testdir/$d/stdin1.txt" | "$exe" "$@" "$options" > "$out" 2> /dev/null

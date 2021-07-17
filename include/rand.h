@@ -52,6 +52,16 @@
 
 #if BC_ENABLE_RAND
 
+#if BC_ENABLE_LIBRARY
+#define BC_RAND_USE_FREE (1)
+#else // BC_ENABLE_LIBRARY
+#ifndef NDEBUG
+#define BC_RAND_USE_FREE (1)
+#else // NDEBUG
+#define BC_RAND_USE_FREE (0)
+#endif // NDEBUG
+#endif // BC_ENABLE_LIBRARY
+
 /**
  * A function to return a random unsigned long.
  * @param ptr  A void ptr to some data that will help generate the random ulong.
@@ -436,7 +446,7 @@ typedef struct BcRNG {
  */
 void bc_rand_init(BcRNG *r);
 
-#ifndef NDEBUG
+#if BC_RAND_USE_FREE
 
 /**
  * Frees a BcRNG. This is only in debug builds because it would only be freed on
@@ -445,7 +455,7 @@ void bc_rand_init(BcRNG *r);
  */
 void bc_rand_free(BcRNG *r);
 
-#endif // NDEBUG
+#endif // BC_RAND_USE_FREE
 
 /**
  * Returns a random integer from the PRNG.
