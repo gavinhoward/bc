@@ -210,7 +210,7 @@ generator in bcl(3).
 \f[I]n\f[R]\f[B]);\f[R]
 .PP
 \f[B]BclError bcl_rand_seed(unsigned char\f[R]
-\f[I]seed\f[R]\f[B][\f[R]\f[I]BC_SEED_SIZE\f[R]\f[B]]);\f[R]
+\f[I]seed\f[R]\f[B][\f[R]\f[I]BCL_SEED_SIZE\f[R]\f[B]]);\f[R]
 .PP
 \f[B]void bcl_rand_reseed(\f[R]\f[I]void\f[R]\f[B]);\f[R]
 .PP
@@ -955,7 +955,8 @@ functions:
 .IP \[bu] 2
 \f[B]bcl_rand_seedWithNum(BclNumber)\f[R]
 .IP \[bu] 2
-\f[B]bcl_rand_seed(unsigned char[\f[R]\f[I]BC_SEED_SIZE\f[R]\f[B]])\f[R]
+\f[B]bcl_rand_seed(unsigned
+char[\f[R]\f[I]BCL_SEED_SIZE\f[R]\f[B]])\f[R]
 .IP \[bu] 2
 \f[B]bcl_rand_reseed(\f[R]\f[I]void\f[R]\f[B])\f[R]
 .PP
@@ -1078,7 +1079,7 @@ function, they are not guaranteed to return a number equal to
 \f[I]n\f[R].
 .RE
 .TP
-\f[B]BclError bcl_rand_seed(unsigned char\f[R] \f[I]seed\f[R]\f[B][\f[R]\f[I]BC_SEED_SIZE\f[R]\f[B]])\f[R]
+\f[B]BclError bcl_rand_seed(unsigned char\f[R] \f[I]seed\f[R]\f[B][\f[R]\f[I]BCL_SEED_SIZE\f[R]\f[B]])\f[R]
 Seeds the PRNG with the bytes in \f[I]seed\f[R].
 .RS
 .PP

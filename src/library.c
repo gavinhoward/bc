@@ -1113,15 +1113,16 @@ err:
 	return e;
 }
 
-BclError bcl_rand_seed(unsigned char seed[BC_SEED_SIZE]) {
+BclError bcl_rand_seed(unsigned char seed[BCL_SEED_SIZE]) {
 
 	BclError e = BCL_ERROR_NONE;
 	size_t i;
-	ulong vals[BC_SEED_ULONGS];
+	ulong vals[BCL_SEED_ULONGS];
 
 	BC_FUNC_HEADER(err);
 
-	for (i = 0; i < BC_SEED_SIZE; ++i) {
+	// Fill the array.
+	for (i = 0; i < BCL_SEED_SIZE; ++i) {
 		ulong val = ((ulong) seed[i]) << (((ulong) CHAR_BIT) *
 		                                  (i % sizeof(ulong)));
 		vals[i / sizeof(long)] |= val;

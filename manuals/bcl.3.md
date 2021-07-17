@@ -198,7 +198,7 @@ generator in bcl(3).
 
 **BclError bcl_rand_seedWithNum(BclNumber** _n_**);**
 
-**BclError bcl_rand_seed(unsigned char** _seed_**[**_BC_SEED_SIZE_**]);**
+**BclError bcl_rand_seed(unsigned char** _seed_**[**_BCL_SEED_SIZE_**]);**
 
 **void bcl_rand_reseed(**_void_**);**
 
@@ -813,7 +813,7 @@ remaining fairly portable.
 If necessary, the PRNG can be reseeded with one of the following functions:
 
 * **bcl_rand_seedWithNum(BclNumber)**
-* **bcl_rand_seed(unsigned char[**_BC_SEED_SIZE_**])**
+* **bcl_rand_seed(unsigned char[**_BCL_SEED_SIZE_**])**
 * **bcl_rand_reseed(**_void_**)**
 
 The following items allow clients to use the pseudo-random number generator. All
@@ -913,7 +913,7 @@ procedures require a valid current context.
     **bcl_rand_seed2num_err(BclNumber)** are called right after this function,
     they are not guaranteed to return a number equal to *n*.
 
-**BclError bcl_rand_seed(unsigned char** _seed_**[**_BC_SEED_SIZE_**])**
+**BclError bcl_rand_seed(unsigned char** _seed_**[**_BCL_SEED_SIZE_**])**
 
 :   Seeds the PRNG with the bytes in *seed*.
 

@@ -82,8 +82,8 @@
 #define BC_FILE_SEP '/'
 #endif // _WIN32
 
-#define BC_SEED_ULONGS (4)
-#define BC_SEED_SIZE (sizeof(long) * BC_SEED_ULONGS)
+#define BCL_SEED_ULONGS (4)
+#define BCL_SEED_SIZE (sizeof(long) * BCL_SEED_ULONGS)
 
 // For some reason, LONG_BIT is not defined in some versions of gcc.
 // I define it here to the minimum accepted value in the POSIX standard.
@@ -228,7 +228,7 @@ BclNumber bcl_frand(size_t places);
 BclNumber bcl_ifrand(BclNumber a, size_t places);
 
 BclError bcl_rand_seedWithNum(BclNumber n);
-BclError bcl_rand_seed(unsigned char seed[BC_SEED_SIZE]);
+BclError bcl_rand_seed(unsigned char seed[BCL_SEED_SIZE]);
 void bcl_rand_reseed(void);
 BclNumber bcl_rand_seed2num(void);
 BclRandInt bcl_rand_int(void);
