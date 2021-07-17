@@ -217,7 +217,10 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 	}
 
 	if (version) bc_vm_info(NULL);
-	if (do_exit) exit((int) vm.status);
+	if (do_exit) {
+		vm.status = (sig_atomic_t) BC_STATUS_QUIT;
+		BC_JMP;
+	}
 
 	// We do not print the banner if expressions are used or dc is used.
 	if (!BC_IS_BC || vm.exprs.len > 1) vm.flags &= ~(BC_FLAG_Q);
