@@ -1472,24 +1472,24 @@ static void bc_parse_stmt(BcParse *p) {
 		case BC_LEX_KW_LENGTH:
 		case BC_LEX_KW_OBASE:
 		case BC_LEX_KW_SCALE:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_SEED:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_SQRT:
 		case BC_LEX_KW_ABS:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_IRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_READ:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_RAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_MAXIBASE:
 		case BC_LEX_KW_MAXOBASE:
 		case BC_LEX_KW_MAXSCALE:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_MAXRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 		{
 			bc_parse_expr_status(p, BC_PARSE_PRINT, bc_parse_next_expr);
 			break;
@@ -1560,9 +1560,9 @@ static void bc_parse_stmt(BcParse *p) {
 			bc_vm_printf("BC_STRING_MAX    = %lu\n", BC_MAX_STRING);
 			bc_vm_printf("BC_NAME_MAX      = %lu\n", BC_MAX_NAME);
 			bc_vm_printf("BC_NUM_MAX       = %lu\n", BC_MAX_NUM);
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			bc_vm_printf("BC_RAND_MAX      = %lu\n", BC_MAX_RAND);
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 			bc_vm_printf("MAX Exponent     = %lu\n", BC_MAX_EXP);
 			bc_vm_printf("Number of vars   = %lu\n", BC_MAX_VARS);
 
@@ -1910,9 +1910,9 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 			case BC_LEX_KW_IBASE:
 			case BC_LEX_KW_LAST:
 			case BC_LEX_KW_OBASE:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_SEED:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				// All of these are leaves and cannot come right after a leaf.
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
@@ -1932,9 +1932,9 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 			case BC_LEX_KW_LENGTH:
 			case BC_LEX_KW_SQRT:
 			case BC_LEX_KW_ABS:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_IRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				// All of these are leaves and cannot come right after a leaf.
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
@@ -1950,15 +1950,15 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 			}
 
 			case BC_LEX_KW_READ:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_RAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_MAXIBASE:
 			case BC_LEX_KW_MAXOBASE:
 			case BC_LEX_KW_MAXSCALE:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_MAXRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				// All of these are leaves and cannot come right after a leaf.
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))

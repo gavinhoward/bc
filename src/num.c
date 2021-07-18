@@ -3238,7 +3238,7 @@ void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val) {
 	n->len = i;
 }
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 
 void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
@@ -3439,7 +3439,7 @@ void bc_num_irand(BcNum *restrict a, BcNum *restrict b, BcRNG *restrict rng) {
 
 	assert(BC_NUM_RDX_VALID(b));
 }
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 size_t bc_num_addReq(const BcNum *a, const BcNum *b, size_t scale) {
 

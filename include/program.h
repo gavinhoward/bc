@@ -71,12 +71,12 @@ typedef struct BcProgram {
 	/// The array of globals stacks.
 	BcVec globals_v[BC_PROG_GLOBALS_LEN];
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 
 	/// The pseudo-random number generator.
 	BcRNG rng;
 
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// The results stack.
 	BcVec results;

@@ -284,10 +284,10 @@ typedef enum BcLexType {
 	/// bc scale keyword.
 	BC_LEX_KW_SCALE,
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// bc seed keyword.
 	BC_LEX_KW_SEED,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// bc length keyword.
 	BC_LEX_KW_LENGTH,
@@ -301,10 +301,10 @@ typedef enum BcLexType {
 	/// bc abs keyword.
 	BC_LEX_KW_ABS,
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// bc irand keyword.
 	BC_LEX_KW_IRAND,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// bc quit keyword.
 	BC_LEX_KW_QUIT,
@@ -312,10 +312,10 @@ typedef enum BcLexType {
 	/// bc read keyword.
 	BC_LEX_KW_READ,
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// bc rand keyword.
 	BC_LEX_KW_RAND,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// bc maxibase keyword.
 	BC_LEX_KW_MAXIBASE,
@@ -326,10 +326,10 @@ typedef enum BcLexType {
 	/// bc maxscale keyword.
 	BC_LEX_KW_MAXSCALE,
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// bc maxrand keyword.
 	BC_LEX_KW_MAXRAND,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// bc else keyword.
 	BC_LEX_KW_ELSE,

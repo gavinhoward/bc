@@ -56,7 +56,7 @@
 #include <rand.h>
 #include <vm.h>
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 
 #if !BC_RAND_BUILTIN
 
@@ -578,4 +578,4 @@ void bc_rand_free(BcRNG *r) {
 }
 #endif // BC_RAND_USE_FREE
 
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH

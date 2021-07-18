@@ -138,14 +138,8 @@ typedef struct BcNum {
 
 #if BC_ENABLE_EXTRA_MATH
 
-#ifndef BC_ENABLE_RAND
-#define BC_ENABLE_RAND (1)
-#endif // BC_ENABLE_RAND
-
-#if BC_ENABLE_RAND
 // Forward declaration
 struct BcRNG;
-#endif // BC_ENABLE_RAND
 
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -516,7 +510,7 @@ BcBigDig bc_num_bigdig2(const BcNum *restrict n);
  */
 void bc_num_bigdig2num(BcNum *restrict n, BcBigDig val);
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 
 /**
  * Generates a random arbitrary-size integer less than or equal to @a a and
@@ -542,7 +536,7 @@ void bc_num_rng(const BcNum *restrict n, struct BcRNG *rng);
  */
 void bc_num_createFromRNG(BcNum *restrict n, struct BcRNG *rng);
 
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 /**
  * The add function. This is a BcNumBinaryOp function.

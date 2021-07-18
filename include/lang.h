@@ -165,10 +165,10 @@ typedef enum BcInst {
 	BC_INST_OBASE,
 	BC_INST_SCALE,
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// Push the value of the seed global onto the stack.
 	BC_INST_SEED,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// These are builtin functions.
 	BC_INST_LENGTH,
@@ -176,27 +176,27 @@ typedef enum BcInst {
 	BC_INST_SQRT,
 	BC_INST_ABS,
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// Another builtin function.
 	BC_INST_IRAND,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// Another builtin function.
 	BC_INST_READ,
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// Another builtin function.
 	BC_INST_RAND,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// Return the max for the various globals.
 	BC_INST_MAXIBASE,
 	BC_INST_MAXOBASE,
 	BC_INST_MAXSCALE,
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	/// Return the max value returned by rand().
 	BC_INST_MAXRAND,
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	/// This is slightly misnamed versus BC_INST_PRINT_POP. Well, it is in bc.
 	/// dc uses this instruction to print, but not pop. That's valid in dc.

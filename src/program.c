@@ -130,9 +130,9 @@ static void bc_program_prepGlobals(BcProgram *p) {
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i)
 		bc_vec_push(p->globals_v + i, p->globals + i);
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	bc_rand_push(&p->rng);
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 }
 
 /**
@@ -152,9 +152,9 @@ static void bc_program_popGlobals(BcProgram *p, bool reset) {
 		p->globals[i] = BC_PROG_GLOBAL(v);
 	}
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	bc_rand_pop(&p->rng, reset);
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 }
 
 /**
@@ -724,7 +724,7 @@ exec_err:
 	BC_LONGJMP_CONT;
 }
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 
 /**
  * Execute a rand().
@@ -745,7 +745,7 @@ static void bc_program_rand(BcProgram *p) {
 	}
 #endif // NDEBUG
 }
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 /**
  * Prints a series of characters, without escapes.
@@ -1362,10 +1362,10 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		*ptr = val;
 		*ptr_t = val;
 	}
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	// To assign to steed, let bc_num_rng() do its magic.
 	else if (left->t == BC_RESULT_SEED) bc_num_rng(l, &p->rng);
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	BC_SIG_LOCK;
 
@@ -1741,11 +1741,11 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 	bool len = (inst == BC_INST_LENGTH);
 
 	// Ensure we have a valid builtin.
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_IRAND);
-#else // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#else // BC_ENABLE_EXTRA_MATH
 	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_ABS);
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 #ifndef BC_PROG_NO_STACK_CHECK
 	// Check stack for dc.
@@ -1782,7 +1782,7 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 		BC_NUM_NEG_CLR_NP(res->d.n);
 	}
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	// irand() is easy.
 	else if (inst == BC_INST_IRAND) {
 
@@ -1794,7 +1794,7 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 		bc_num_irand(num, &res->d.n, &p->rng);
 	}
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 	// Everything else is...not easy.
 	else {
@@ -2330,7 +2330,7 @@ static void bc_program_pushGlobal(BcProgram *p, uchar inst) {
 	bc_program_pushBigdig(p, p->globals[inst - BC_INST_IBASE], t);
 }
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 
 /**
  * Pushes the value of seed on the stack.
@@ -2353,7 +2353,7 @@ static void bc_program_pushSeed(BcProgram *p) {
 	bc_num_createFromRNG(&res->d.n, &p->rng);
 }
 
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 /**
  * Adds a function to the fns array. The function's ID must have already been
@@ -2445,9 +2445,9 @@ void bc_program_free(BcProgram *p) {
 	if (BC_IS_BC) bc_num_free(&p->last);
 #endif // BC_ENABLED
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	bc_rand_free(&p->rng);
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 #if DC_ENABLED
 	if (BC_IS_DC) {
@@ -2499,12 +2499,12 @@ void bc_program_init(BcProgram *p) {
 	}
 #endif // DC_ENABLED
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 	// We need to initialize srand() just in case /dev/urandom and /dev/random
 	// are not available.
 	srand((unsigned int) time(NULL));
 	bc_rand_init(&p->rng);
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLED
 	if (BC_IS_BC) bc_num_init(&p->last, BC_NUM_DEF_SIZE);

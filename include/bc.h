@@ -291,13 +291,13 @@ void bc_lex_token(BcLex *l);
  * @return   True if @a t should be treated as though it's a variable, false
  *           otherwise.
  */
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 #define BC_PARSE_INST_VAR(t) \
 	((t) >= BC_INST_VAR && (t) <= BC_INST_SEED && (t) != BC_INST_ARRAY)
-#else // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#else // BC_ENABLE_EXTRA_MATH
 #define BC_PARSE_INST_VAR(t) \
 	((t) >= BC_INST_VAR && (t) <= BC_INST_SCALE && (t) != BC_INST_ARRAY)
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 /**
  * Returns true if the previous token @a p (in the form of a bytecode

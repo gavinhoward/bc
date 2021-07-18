@@ -50,8 +50,6 @@
 
 #if BC_ENABLE_EXTRA_MATH
 
-#if BC_ENABLE_RAND
-
 #if BC_ENABLE_LIBRARY
 #define BC_RAND_USE_FREE (1)
 #else // BC_ENABLE_LIBRARY
@@ -515,8 +513,6 @@ void bc_rand_srand(BcRNGData *rng);
 
 /// A reference to a constant multiplier.
 extern const BcRandState bc_rand_multiplier;
-
-#endif // BC_ENABLE_RAND
 
 #endif // BC_ENABLE_EXTRA_MATH
 
