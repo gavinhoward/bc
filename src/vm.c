@@ -1314,7 +1314,9 @@ void bc_vm_boot(int argc, char *argv[]) {
 #endif // BC_ENABLED
 #endif // !BC_ENABLE_LIBRARY
 
-	// Initialize the program and main parser.
+	// Initialize the program and main parser. These have to be in this order
+	// because the program has to be initialized first, since a pointer to it is
+	// passed to the parser.
 	bc_program_init(&vm.prog);
 	bc_parse_init(&vm.prs, &vm.prog, BC_PROG_MAIN);
 

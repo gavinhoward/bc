@@ -191,19 +191,28 @@ portable to some platforms.
 
 ## Suggested Course
 
-TODO
+I do have a suggested course for programmers to follow when trying to understand
+this codebase. The order is this:
 
-0.	`bc` Spec.
-1.	Manpages.
-2.	Test suite.
-3.	Understand the build.
-4.	Algorithms manual.
-5.	Code concepts.
-6.	Repo structure.
-7.	Headers.
-8.	Source code.
+1.	`bc` Spec.
+2.	Manpages.
+3.	Test suite.
+4.	Understand the build.
+5.	Algorithms manual.
+6.	Code concepts.
+7.	Repo structure.
+8.	Headers.
+9.	Source code.
 
-From requirements to high level to low level.
+This order roughly follows this order:
+
+1. High-level requirements
+2. Low-level requirements
+3. High-level implementation
+4. Low-level implementation
+
+In other words, first understand what the code is *supposed* to do, then
+understand the code itself.
 
 ## Useful External Tools
 
@@ -703,12 +712,8 @@ The code associated with this header is in [`src/dc.c`][44],
 
 This header is for `bc`'s internal buffered I/O API.
 
-Why did I implement my own buffered I/O for `bc`? Because I use `setjmp()` and
-`longjmp()` for error handling, and the buffered I/O in `libc` does not interact
-well with the use of those procedures.
-
 For more information about `bc`'s error handling and custom buffered I/O, see
-[Error Handling][97] and [Custom I/O][114], along with [`vm.h`][27] and the
+[Error Handling][97] and [Custom I/O][114], along with [`status.h`][176] and the
 notes about version [`3.0.0`][32] in the [`NEWS`][32].
 
 The code associated with this header is in [`src/file.c`][47].
@@ -718,8 +723,7 @@ The code associated with this header is in [`src/file.c`][47].
 This header is for `bc`'s implementation of command-line editing/history, which
 is based on a [UTF-8-aware fork][28] of [`linenoise`][29].
 
-At one point, I attempted to get history to work on Windows. It did not work
-out. Windows
+For more information, see the [Command-Line History][189] section.
 
 The code associated with this header is in [`src/history.c`][48].
 
@@ -795,7 +799,8 @@ The code associated with this header is in [`src/program.c`][53].
 
 #### `rand.h`
 
-This header defines the API for the pseudo-random number generator (PRNG).
+This header defines the API for the [pseudo-random number generator
+(PRNG)][179].
 
 The PRNG only generates fixed-size integers. The magic of generating random
 numbers of arbitrary size is actually given to the code that does math
@@ -839,10 +844,11 @@ There is no code associated with this header.
 
 #### `vm.h`
 
-This header defines the code for setting up and running `bc` and `dc`. It is so
-named because I think of it as the "virtual machine" of `bc`, though that is
-probably not true as [`program.h`][57] is probably the "virtual machine". Thus,
-the name is more historical accident.
+This header defines the API for setting up and running `bc` and `dc`.
+
+It is so named because I think of it as the "virtual machine" of `bc`, though
+that is probably not true as [`program.h`][57] is probably the "virtual machine"
+API. Thus, the name is more historical accident.
 
 The code associated with this header is in [`src/vm.c`][58].
 
@@ -933,12 +939,6 @@ and for why, see [`scripts/manpage.sh`][60] and [Manuals][86].
 #### `development.md`
 
 The file you are reading right now.
-
-TODO:
-
-* Document all code assumptions with asserts.
-* Document all functions with Doxygen comments.
-* The purpose of every file.
 
 #### `header_bcl.txt`
 
@@ -1239,8 +1239,6 @@ A list of the various settings combos to be used by [`test_settings.sh`][104].
 
 ### `src/`
 
-TODO
-
 This folder is, obviously, where the actual heart and soul of `bc`, the source
 code, is.
 
@@ -1260,237 +1258,379 @@ liberal sprinkling of them through the code.
 
 Code for processing command-line arguments.
 
+The header for this file is [`include/args.h`][31].
+
 #### `bc.c`
 
 The code for the `bc` main function `bc_main()`.
+
+The header for this file is [`include/bc.h`][106].
 
 #### `bc_lex.c`
 
 The code for lexing that only `bc` needs.
 
+The headers for this file are [`include/lex.h`][180] and [`include/bc.h`][106].
+
 #### `bc_parse.c`
 
-TODO
+The code for parsing that only `bc` needs. This code is the most complex and
+subtle in the entire codebase.
+
+The headers for this file are [`include/parse.h`][181] and
+[`include/bc.h`][106].
 
 #### `data.c`
 
-TODO
+Due to [historical accident][23] because of a desire to get my `bc` into
+[toybox][16], all of the constant data that `bc` needs is all in one file. This
+is that file.
+
+There is no code in this file, but a lot of the const data has a heavy influence
+on code, including the order of data in arrays because that order has to
+correspond to the order of other things elsewhere in the codebase. If you change
+the order of something in this file, run `make test`, and get errors, you
+changed something that depends on the order that you messed up.
+
+Almost all headers have `extern` references to items in this file.
 
 #### `dc.c`
 
 The code for the `dc` main function `dc_main()`.
 
+The header for this file is [`include/dc.h`][182].
+
 #### `dc_lex.c`
 
 The code for lexing that only `dc` needs.
 
+The headers for this file are [`include/lex.h`][180] and [`include/dc.h`][182].
+
 #### `dc_parse.c`
 
-TODO
+The code for parsing that only `dc` needs.
+
+The headers for this file are [`include/parse.h`][181] and
+[`include/bc.h`][182].
 
 #### `file.c`
 
-TODO
+The code for `bc`'s implementation of buffered I/O. For more information about
+why I implemented my own buffered I/O, see [`include/file.h`][55], [Error
+Handling][97], and [Custom I/O][114], along with [`status.h`][176] and the notes
+about version [`3.0.0`][32] in the [`NEWS`][32].
+
+The header for this file is [`include/file.h`][55].
 
 #### `history.c`
 
-TODO
+The code for `bc`'s implementation of command-line editing/history, which is
+based on a [UTF-8-aware fork][28] of [`linenoise`][29].
+
+For more information, see the [Command-Line History][189] section.
+
+The header for this file is [`include/history.h`][36].
 
 #### `lang.c`
 
-TODO
+The data structures used for actual execution of `bc` and `dc` code.
+
+While execution is done in [`src/program.c`][53], this file defines functions
+for initializing, copying, and freeing the data structures, which is somewhat
+orthogonal to actual execution.
+
+Yes, it's misnamed; that's an accident of history where the first things I put
+into it all seemed related to the `bc` language.
+
+The header for this file is [`include/lang.h`][38].
 
 #### `lex.c`
 
-TODO
+The code for the common things that both programs need for lexing.
+
+The header for this file is [`include/lex.h`][180].
 
 #### `library.c`
 
-TODO
+The code to implement the public API of the `bcl` library.
+
+The code in this file does a lot to ensure that clients do not have to worry
+about internal `bc` details, especially error handling with `setjmp()` and
+`longjmp()`. That and encapsulating the handling of numbers are the bulk of what
+the code in this file actually does because most of the library is still
+implemented in [`src/num.c`][39].
+
+The headers for this file are [`include/bcl.h`][30] and
+[`include/library.h`][183].
 
 #### `main.c`
 
-TODO
+The entry point for both programs; this is the `main()` function.
+
+This file has no headers associated with it.
 
 #### `num.c`
 
-TODO
+The code for all of the arbitrary-precision [numbers][177] and [math][178] in
+`bc`.
+
+The header for this file is [`include/num.h`][184].
 
 #### `opt.c`
 
-TODO
+The code for parsing command-line options.
+
+The header for this file is [`include/opt.h`][35].
 
 #### `parse.c`
 
-TODO
+The code for the common items that both programs need for parsing.
+
+The header for this file is [`include/parse.h`][181].
 
 #### `program.c`
 
-TODO
+The code for the actual execution engine for `bc` and `dc` code.
+
+The header for this file is [`include/program.h`][57].
 
 #### `rand.c`
 
-TODO
+The code for the [pseudo-random number generator (PRNG)][179] and the special
+stack handling it needs.
+
+The PRNG only generates fixed-size integers. The magic of generating random
+numbers of arbitrary size is actually given to the code that does math
+([`src/num.c`][39]).
+
+The header for this file is [`include/rand.h`][37].
 
 #### `read.c`
 
-TODO
+The code for reading from files and `stdin`.
+
+The header for this file is [`include/read.h`][185].
 
 #### `vector.c`
 
-TODO
+The code for [vectors][111], [maps][186], and [slab vectors][187], along with
+slabs.
+
+The header for this file is [`include/vector.h`][174].
 
 #### `vm.c`
 
-TODO
+The code for setting up and running `bc` and `dc`.
+
+It is so named because I think of it as the "virtual machine" of `bc`, though
+that is probably not true as [`program.h`][57] is probably the "virtual machine"
+code. Thus, the name is more historical accident.
+
+The header for this file is [`include/vm.h`][27].
 
 ### `tests/`
 
-TODO
+This directory contains the entire [test suite][124] and its infrastructure.
 
 #### `all.sh`
 
-TODO
+A convenience script for the `make run_all_tests` target (see the [Group
+Tests][141] section for more information).
 
 #### `all.txt`
 
-TODO
+The file with the names of the calculators. This is to make it easier for the
+test scripts to know where the standard and other test directories are.
 
 #### `bcl.c`
 
-TODO
+The test for the [`bcl`][156] API. For more information, see the [`bcl`
+Test][157] section.
 
 #### `errors.sh`
 
-TODO
+The script to run the error tests for each calculator. For more information, see
+the [Error Tests][151] section.
 
 #### `extra_required.txt`
 
-TODO
+The file with the list of tests which both calculators have that need the [Extra
+Math build option][188]. This exists to make it easy for test scripts to skip
+those tests when the [Extra Math build option][188] is disabled.
 
 #### `history.py`
 
-TODO
+The file with all of the history tests. For more information, see the [History
+Tests][155] section.
 
 #### `history.sh`
 
-TODO
+The script to integrate [`history.py`][139] into the build system in a portable
+way, and to skip it if necessary.
 
 #### `other.sh`
 
-TODO
+The script to run the "other" (miscellaneous) tests for each calculator. For
+more information, see the [Other Tests][154] section.
 
 #### `read.sh`
 
-TODO
+The script to run the read tests for each calculator. For more information, see
+the [`read()` Tests][153] section.
 
 #### `script.sed`
 
-TODO
+The `sed` script to edit the output of GNU `bc` when generating script tests.
+For more information, see the [Script Tests][150] section.
 
 #### `script.sh`
 
-TODO
+The script for running one script test. For more information, see the [Script
+Tests][150] section.
 
 #### `scripts.sh`
 
-TODO
+The script to help the `make run_all_tests` (see the [Group Tests][141] section)
+run all of the script tests.
 
 #### `stdin.sh`
 
-TODO
+The script to run the `stdin` tests for each calculator. For more information,
+see the [`stdin` Tests][152] section.
 
 #### `test.sh`
 
-TODO
+The script to run one standard test. For more information, see the [Standard
+Tests][149] section.
 
 #### `bc/`
 
-TODO
+The standard tests directory for `bc`. For more information, see the [Standard
+Tests][149] section.
 
 ##### `all.txt`
 
-TODO
+The file to tell the build system and `make run_all_tests` (see the [Group
+Tests][141] section) what standard tests to run for `bc`, as well as in what
+order.
+
+This file just lists the test names, one per line.
 
 ##### `errors.txt`
 
-TODO
+The initial error test file for `bc`. This file has one test per line. See the
+[Error Tests][151] section for more information.
 
 ##### `posix_errors.txt`
 
-TODO
+The file of tests for POSIX compatibility for `bc`. This file has one test per
+line. For more information, see the [Error Tests][151] section.
 
 ##### `timeconst.sh`
 
-TODO
+The script to run the `bc` tests that use the [Linux `timeconst.bc` script][6].
+For more information, see the [Linux `timeconst.bc` Script][191]section.
 
 ##### `errors/`
 
-TODO
+The directory with error tests for `bc`, most discovered by AFL++ (see the
+[Fuzzing][82] section). There is one test per file. For more information, see
+the [Error Tests][151] section.
 
 ##### `scripts/`
 
-TODO
+The script tests directory for `bc`. For more information, see the [Script
+Tests][150] section.
 
 ###### `all.txt`
 
-TODO
+A file to tell the build system and `make run_all_tests` (see the [Group
+Tests][141] section) what script tests to run for `bc`, as well as in what
+order.
+
+This file just lists the test names, one per line.
 
 #### `dc/`
 
-TODO
+The standard tests directory for `dc`. For more information, see the [Standard
+Tests][149] section.
 
 ##### `all.txt`
 
-TODO
+The file to tell the build system and `make run_all_tests` (see the [Group
+Tests][141] section) what standard tests to run for `dc`, as well as in what
+order.
+
+This file just lists the test names, one per line.
 
 ##### `errors.txt`
 
-TODO
+The initial error test file for `dc`. This file has one test per line. See the
+[Error Tests][151] section for more information.
 
 ##### `read_errors.txt`
 
-TODO
+The file of tests errors with the `?` command (`read()` in `bc`). This file has
+one test per line. See the [Error Tests][151] section for more information.
 
 ##### `errors/`
 
-TODO
+The directory with error tests for `dc`, most discovered by AFL++ (see the
+[Fuzzing][82] section). There is one test per file. For more information, see
+the [Error Tests][151] section.
 
 ##### `scripts/`
 
-TODO
+The script tests directory for `dc`. For more information, see the [Script
+Tests][150] section.
 
 ###### `all.txt`
 
-TODO
+The file to tell the build system and `make run_all_tests` (see the [Group
+Tests][141] section) what script tests to run for `dc`, as well as in what
+order.
+
+This file just lists the test names, one per line.
 
 #### `fuzzing/`
 
-TODO
+The directory containing the fuzzing infrastructure. For more information, see
+the [Fuzzing][82] section.
 
 ##### `bc_afl_continue.yaml`
 
-TODO
+The [`tmuxp`][123] config (for use with [`tmux`][122]) for easily restarting a
+fuzz run. For more information, see the [Convenience][130] subsection of the
+[Fuzzing][82] section.
 
 ##### `bc_afl.yaml`
 
-TODO
+The [`tmuxp`][123] config (for use with [`tmux`][122]) for easily starting a
+fuzz run. For more information, see the [Convenience][130] subsection of the
+[Fuzzing][82] section.
+
+Be aware that this will delete all previous unsaved fuzzing tests in the output
+directories.
 
 ##### `bc_inputs1/`
 
-TODO
+The fuzzing input directory for the first third of inputs for `bc`. For more
+information, see the [Corpuses][192] subsection of the [Fuzzing][82] section.
 
 ##### `bc_inputs2/`
 
-TODO
+The fuzzing input directory for the second third of inputs for `bc`. For more
+information, see the [Corpuses][192] subsection of the [Fuzzing][82] section.
 
 ##### `bc_inputs3/`
 
-TODO
+The fuzzing input directory for the third third of inputs for `bc`. For more
+information, see the [Corpuses][192] subsection of the [Fuzzing][82] section.
 
 ##### `dc_inputs/`
 
-TODO
+The fuzzing input directory for the inputs for `dc`. For more information, see
+the [Corpuses][192] subsection of the [Fuzzing][82] section.
 
 ## Build System
 
@@ -1527,8 +1667,6 @@ targets and/or add a target for them especially.
 
 ### Preprocessor Macros
 
-TODO
-
 `bc` and `dc` use *a lot* of preprocessor macros to ensure that each build type:
 
 * builds,
@@ -1537,6 +1675,124 @@ TODO
 
 This section will explain the preprocessor style of `bc` and `dc`, as well as
 provide an explanation of the macros used.
+
+#### Style
+
+The style of macro use in `bc` is pretty straightforward: I avoid depending on
+macro definitions and instead, I set defaults if the macro is not defined and
+then test the value if the macro with a plain `#if`.
+
+(Some examples of setting defaults are in [`include/status.h`][176], just above
+the definition of the `BcStatus` enum.)
+
+In other words, I use `#if` instead of `#ifndef` or `#ifdef`, where possible.
+
+There are a couple of cases where I went with standard stuff instead. For
+example, to test whether I am in debug mode or not, I still use the standard
+`#ifndef NDEBUG`.
+
+#### Standard Macros
+
+`BC_ENABLED`
+
+:   This macro expands to `1` if `bc` is enabled, `0` if disabled.
+
+`DC_ENABLED`
+
+:   This macro expands to `1` if `dc` is enabled, `0` if disabled.
+
+`BUILD_TYPE`
+
+:   The macro expands to the build type, which is one of: `A`, `E`, `H`, `N`,
+    `EH`, `EN`, `HN`, `EHN`. This build type is used in the help text to direct
+    the user to the correct markdown manual in the `git.yzena.com` website.
+
+`EXECPREFIX`
+
+:   Thist macro expands to the prefix on the executable name. This is used to
+    allow `bc` and `dc` to skip the prefix when finding out which calculator is
+    executing.
+
+`BC_NUM_KARATSUBA_LEN`
+
+:   This macro expands to an integer, which is the length of numbers below which
+    the Karatsuba multiplication algorithm switches to brute-force
+    multiplication.
+
+`BC_ENABLE_EXTRA_MATH`
+
+:   This macro expands to `1` if the [Extra Math build option][188] is enabled,
+    `0` if disabled.
+
+`BC_ENABLE_HISTORY`
+
+:   This macro expands to `1` if the [History build option][193] is enabled, `0`
+    if disabled.
+
+`BC_ENABLE_NLS`
+
+:   This macro expands to `1` if the [NLS build option][193] (for locales) is
+    enabled, `0` if disabled.
+
+`BC_ENABLE_LIBRARY`
+
+:   This macro expands to `1` if the [`bcl` library][156] is enabled, `0` if
+    disabled. If this is enabled, building the calculators themselves is
+    disabled, but both `BC_ENABLED` and `DC_ENABLED` must be non-zero.
+
+`BC_ENABLE_MEMCHECK`
+
+:   This macro expands to `1` if `bc` has been built for use with Valgrind's
+    [Memcheck][194], `0` otherwise. This ensures that fatal errors still free
+    all of their memory when exiting. `bc` does not do that normally because
+    what's the point?
+
+`BC_ENABLE_AFL`
+
+:   This macro expands to `1` if `bc` has been built for fuzzing with
+    [AFL++][125], `0` otherwise.. See the [Fuzzing][82] section for more
+    information.
+
+`BC_DEFAULT_BANNER`
+
+:   This macro expands to the default value for displaying the `bc` banner.
+
+`BC_DEFAULT_SIGINT_RESET`
+
+:   The macro expands to the default value for whether or not `bc` should reset
+    on `SIGINT` or quit.
+
+`BC_DEFAULT_TTY_MODE`
+
+:   The macro expands to the default value for whether or not `bc` should use
+    TTY mode when it available.
+
+`BC_DEFAULT_PROMPT`
+
+:   This macro expands to the default value for whether or not `bc` should use a
+    prompt when TTY mode is available.
+
+`DC_DEFAULT_SIGINT_RESET`
+
+:   The macro expands to the default value for whether or not `dc` should reset
+    on `SIGINT` or quit.
+
+`DC_DEFAULT_TTY_MODE`
+
+:   The macro expands to the default value for whether or not `dc` should use
+    TTY mode when it available.
+
+`DC_DEFAULT_PROMPT`
+
+:   This macro expands to the default value for whether or not `dc` should use a
+    prompt when TTY mode is available.
+
+`BC_DEBUG_CODE`
+
+:   If this macro expands to a non-zero integer, then `bc` is built with *a lot*
+    of extra debugging code. This is never set by the build system and must be
+    set by the programmer manually. This should never be set in builds given to
+    end users. For more information, see the [Debugging][134] section.
 
 ## Test Suite
 
@@ -1548,8 +1804,9 @@ This even goes for fuzzing because fuzzing depends on the test suite for its
 input corpuses. (See the [Fuzzing][82] section.)
 
 Understanding how the test suite works should be, I think, the first thing that
-maintainers learn. This is because the test suite, properly used, gives
-confidence that changes have not caused bugs or regressions.
+maintainers learn after learning what `bc` and `dc` should do. This is because
+the test suite, properly used, gives confidence that changes have not caused
+bugs or regressions.
 
 That is why I spent the time to make the test suite as easy to use and as fast
 as possible.
@@ -1632,23 +1889,317 @@ Some standard tests need to be skipped in certain cases. That is handled by the
 [build system][142]. See the [Integration with the Build System][147] section
 for more details.
 
+In addition to all of the above, the standard test directory is not only the
+directory for the standard tests of each calculator, it is also the parent
+directory of all other test directories for each calculator.
+
 #### `bc` Standard Tests
 
-TODO
+The list of current (17 July 2021) standard tests for `bc` is below:
 
-* List of all standard tests with what they test.
+decimal
+
+:   Tests decimal parsing and printing.
+
+print
+
+:   Tests printing in every base from decimal. This is near the top for
+    performance of parallel testing.
+
+parse
+
+:   Tests parsing in any base and outputting in decimal. This is near the top
+    for performance of parallel testing.
+
+lib2
+
+:   Tests the extended math library. This is near the top for performance of
+    parallel testing.
+
+print2
+
+:   Tests printing at the extreme values of `obase`.
+
+length
+
+:   Tests the `length()` builtin function.
+
+scale
+
+:   Tests the `scale()` builtin function.
+
+shift
+
+:   Tests the left (`<<`) and right (`>>`) shift operators.
+
+add
+
+:   Tests addition.
+
+subtract
+
+:   Tests subtraction.
+
+multiply
+
+:   Tests multiplication.
+
+divide
+
+:   Tests division.
+
+modulus
+
+:   Tests modulus.
+
+power
+
+:   Tests power (exponentiation).
+
+sqrt
+
+:   Tests the `sqrt()` (square root) builtin function.
+
+trunc
+
+:   Tests the truncation (`$`) operator.
+
+places
+
+:   Tests the places (`@`) operator.
+
+vars
+
+:   Tests some usage of variables. This one came from [AFL++][125] I think.
+
+boolean
+
+:   Tests boolean operators.
+
+comp
+
+:   Tests comparison operators.
+
+abs
+
+:   Tests the `abs()` builtin function.
+
+assignments
+
+:   Tests assignment operators, including increment/decrement operators.
+
+functions
+
+:   Tests functions, specifically function parameters being replaced before they
+    themselves are used. See the comment in `bc_program_call()` about the last
+    condition.
+
+scientific
+
+:   Tests scientific notation.
+
+engineering
+
+:   Tests engineering notation.
+
+globals
+
+:   Tests that assigning to globals affects callers.
+
+strings
+
+:   Tests strings.
+
+strings2
+
+:   Tests string allocation in slabs, to ensure slabs work.
+
+letters
+
+:   Tests single and double letter numbers to ensure they behave differently.
+    Single-letter numbers always be set to the same value, regardless of
+    `ibase`.
+
+exponent
+
+:   Tests the `e()` function in the math library.
+
+log
+
+:   Tests the `l()` function in the math library.
+
+pi
+
+:   Tests that `bc` produces the right value of pi for numbers with varying
+    `scale` values.
+
+arctangent
+
+:   Tests the `a()` function in the math library.
+
+sine
+
+:   Tests the `s()` function in the math library.
+
+cosine
+
+:   Tests the `c()` function in the math library.
+
+bessel
+
+:   Tests the `j()` function in the math library.
+
+arrays
+
+:   Test arrays.
+
+misc
+
+:   Miscellaneous tests. I named it this because at the time, I struggled to
+    classify them, but it's really testing multi-line numbers.
+
+misc1
+
+:   A miscellaneous test found by [AFL++][125].
+
+misc2
+
+:   A miscellaneous test found by [AFL++][125].
+
+misc3
+
+:   A miscellaneous test found by [AFL++][125].
+
+misc4
+
+:   A miscellaneous test found by [AFL++][125].
+
+misc5
+
+:   A miscellaneous test found by [AFL++][125].
+
+misc6
+
+:   A miscellaneous test found by [AFL++][125].
+
+misc7
+
+:   A miscellaneous test found by [AFL++][125].
+
+void
+
+:   Tests void functions.
+
+rand
+
+:   Tests the pseudo-random number generator and its special stack handling.
+
+recursive_arrays
+
+:   Tests the slab vector undo ability in used in `bc_parse_name()`.
 
 #### `dc` Standard Tests
 
-TODO
+The list of current (17 July 2021) standard tests for `dc` is below:
 
-* List of all standard tests with what they test.
+decimal
+
+:   Tests decimal parsing and printing.
+
+length
+
+:   Tests the `length()` builtin function.
+
+stack_len
+
+:   Tests taking the length of the results stack.
+
+add
+
+:   Tests addition.
+
+subtract
+
+:   Tests subtraction.
+
+multiply
+
+:   Tests multiplication.
+
+divide
+
+:   Tests division.
+
+modulus
+
+:   Tests modulus.
+
+divmod
+
+:   Tests divmod.
+
+power
+
+:   Tests power (exponentiation).
+
+sqrt
+
+:   Tests the `sqrt()` (square root) builtin function.
+
+modexp
+
+:   Tests modular exponentiation.
+
+boolean
+
+:   Tests boolean operators.
+
+negate
+
+:   Tests negation as a command and as part of numbers.
+
+trunc
+
+:   Tests the truncation (`$`) operator.
+
+places
+
+:   Tests the places (`@`) operator.
+
+shift
+
+:   Tests the left (`<<`) and right (`>>`) shift operators.
+
+abs
+
+:   Tests the `abs()` builtin function.
+
+scientific
+
+:   Tests scientific notation.
+
+engineering
+
+:   Tests engineering notation.
+
+vars
+
+:   Tests some usage of variables. This one came from [AFL++][125] I think.
+
+misc
+
+:   Miscellaneous tests. I named it this because at the time, I struggled to
+    classify them.
+
+strings
+
+:   Tests strings.
+
+rand
+
+:   Tests the pseudo-random number generator and its special stack handling.
 
 ### Script Tests
-
-TODO
-
-* Use the global stacks flag.
 
 The heavy lifting of testing the scripting of `bc` is done by the "script tests"
 for each calculator.
@@ -1673,45 +2224,210 @@ Some script tests need to be skipped in certain cases. That is handled by the
 [build system][142]. See the [Integration with the Build System][147] section
 for more details.
 
+Another unique thing about the script tests, at least for `bc`: they test the
+`-g` and `--global-stacks` flags. This means that all of the script tests for
+`bc` are written assuming the `-g` flag was given on the command-line
+
+There is one extra piece of script tests: [`tests/script.sed`][190]. This `sed`
+script is used to remove an incompatibility with GNU `bc`.
+
+If there is only one more character to print at the end of `BC_LINE_LENGTH`, GNU
+`bc` still prints a backslash+newline+digit combo. OpenBSD doesn't, which is
+correct according to my reading of the `bc` spec, so my `bc` doesn't as well.
+
+The `sed` script edits numbers that end with just one digit on a line by itself
+to put it on the same line as others.
+
 #### `bc` Script Tests
 
-TODO
+The list of current (17 July 2021) script tests for `bc` is below:
 
-* List of all script tests with what they test.
+print.bc
+
+:   Tests printing even harder than the print standard test.
+
+multiply.bc
+
+:   Tests multiplication even harder than the multiply standard test.
+
+divide.bc
+
+:   Tests division even harder than the divide standard test.
+
+subtract.bc
+
+:   Tests subtraction even harder than the subtract standard test.
+
+add.bc
+
+:   Tests addition even harder than the add standard test.
+
+parse.bc
+
+:   Tests parsing even harder than the parse standard test.
+
+array.bc
+
+:   Tests arrays even harder than the arrays standard test.
+
+atan.bc
+
+:   Tests arctangent even harder than the arctangent standard test.
+
+bessel.bc
+
+:   Tests bessel even harder than the bessel standard test.
+
+functions.bc
+
+:   Tests functions even harder than the functions standard test.
+
+globals.bc
+
+:   Tests global stacks directly.
+
+len.bc
+
+:   Tests the `length()` builtin on arrays.
+
+rand.bc
+
+:   Tests the random number generator in the presence of global stacks.
+
+references.bc
+
+:   Tests functions with array reference parameters.
+
+screen.bc
+
+:   A random script provided by an early user that he used to calculate the size
+    of computer screens
+
+strings2.bc
+
+:   Tests escaping in strings.
 
 #### `dc` Script Tests
 
-TODO
+The list of current (17 July 2021) script tests for `dc` is below:
 
-* List of all script tests with what they test.
+prime.dc
+
+:   Tests scripting by generating the first 100,000 primes.
+
+asciify.dc
+
+:   Tests the asciify command.
+
+stream.dc
+
+:   Tests the stream command.
+
+array.dc
+
+:   Tests arrays.
+
+else.dc
+
+:   Tests else clauses on conditional execution commands.
+
+factorial.dc
+
+:   Tests scripting with factorial.
+
+loop.dc
+
+:   Tests scripting by implementing loops.
+
+quit.dc
+
+:   Tests the quit command in the presence of tail calls.
+
+weird.dc
+
+:   A miscellaneous test.
 
 ### Error Tests
 
-TODO
+One of the most useful parts of the `bc` test suite, in my opinion, is the heavy
+testing of error conditions.
 
-* POSIX tests for `bc`.
-* One test per line on files in standard test directory.
-* One test per file in errors directory.
-	* Run files *and* through `stdin` with `cat`.
-* Adding tests.
+Just about every error condition I can think of is tested, along with many
+machine-generated (by [AFL++][125]) ones.
+
+However, because the error tests will often return error codes, they require
+different infrastructure from the rest of the test suite, which assumes that
+the calculator under test will return successfully. A lot of that infrastructure
+is in the [`scripts/functions.sh`][105] script, but it basically allows the
+calculator to exit with an error code and then tests that there *was* an error
+code.
+
+The error tests for each calculator are spread through two directories, due to
+historical accident. These two directories are the standard test directory (see
+the [Standard Tests][149] section) and the `errors/` directory directly
+underneath the standard tests directory.
+
+This split is convenient, however, because the tests in each directory are
+treated differently.
+
+The error tests in the standard test directory, which include `errors.txt` for
+both calculators, `posix_errors.txt` for `bc`, and `read_errors.txt` for `dc`,
+are read line-by-line and shoved through `stdin`, and each line is considered a
+separate test. For this reason, there can't be any blank lines in the error
+files in the standard tests directory because a blank line causes a successful
+exit.
+
+On the other hand, the tests in the `errors/` directory below the standard tests
+directory are considered to be one test per file, and they are used differently.
+They are shoved into the calculator through `stdin`, but they are also executed
+on the command-line.
+
+To add an error test, first figure out which kind you want.
+
+Is it a simple one-liner, and you don't care if it's tested through a file?
+
+Then put it in one of the error files in the standard test directory. I would
+only put POSIX errors in the `posix_errors.txt` file for `bc`, and only `read()`
+errors in the `read_errors.txt` file for `dc`; all others I would put in the
+respective `errors.txt` file.
+
+On the other hand, if you care if the error is run as a file on the
+command-line, or the error requires multiple lines to reproduce, then put the
+test in the respective `errors/` directory.
+
+After that, you are done; the test suite will automatically pick up the new
+test, and you don't have to tell the test suite the expected results.
 
 ### `stdin` Tests
 
-TODO
+The `stdin` tests specifically test the lexing and parsing of multi-line
+comments and strings. This is important because when reading from `stdin`, the
+calculators can only read one line at a time, so partial parses are possible.
 
-* Adding tests.
+To add `stdin` tests, just add the tests to the `stdin.txt` file in the
+respective standard tests directory, and add the expected results in the
+`stdin_results.txt` in the respective standard tests directory.
 
 ### `read()` Tests
 
-TODO
+The `read()` tests are meant to test the `read()` builtin function, to ensure
+that the parsing and execution is correct.
 
-* Adding tests.
+Each line is one test, as that is the nature of using the `read()` function, so
+to add a test, just add it as another line in the `read.txt` file in the
+respective standard tests directory, and add its result to the
+`read_results.txt` file in the respective standard tests directory.
 
 ### Other Tests
 
-TODO
+The "other" tests are just random tests that I could not easily classify under
+other types of tests. They usually include things like command-line parsing and
+environment variable testing.
 
-* Adding tests.
+To add an other test, it requires adding the programming for it to
+[`tests/other.sh`][195] because all of the tests are written specifically in
+that script. It would be best to use the infrastructure in
+[`scripts/functions.sh`][105].
 
 ### Linux `timeconst.bc` Script
 
@@ -2189,9 +2905,28 @@ under [`locales/`][85].
 
 ## Static Analysis
 
-TODO
+I do *some* static analysis on `bc`.
 
-* `scan-build make`
+I used to use [Coverity][196], but I stopped using it when it started giving me
+too many false positives and also because it had a vulnerability.
+
+However, I still use the [Clang Static Analyzer][197] through
+[`scan-build`][19]. I only use it in debug mode because I have to add some
+special code to make it not complain about things that are definitely not a
+problem.
+
+The most frequent example of false positives is where a local is passed to a
+function to be initialized. [`scan-build`][19] misses that fact, so I
+pre-initialize such locals to prevent the warnings.
+
+To run `scan-build`, do the following:
+
+```
+make clean
+scan-build make
+```
+
+`scan-build` will print its warnings to `stdout`.
 
 ## Fuzzing
 
@@ -2322,6 +3057,9 @@ Doing that will load, in `tmux`, 16 separate instances of [AFL++][125], 12 on
 `bc` and 4 on `dc`. The outputs will be put into the
 `tests/fuzzing/bc_outputs{1,2,3}/` and `tests/fuzzing/dc_outputs/` directories.
 
+(Note that loading that config will also delete all unsaved [AFL++][125] output
+from the output directories.)
+
 Sometimes, [AFL++][125] will report crashes when there are none. When crashes
 are reported, I always run the following command:
 
@@ -2385,6 +3123,9 @@ I occasionally add to the input corpuses. These files come from new files in the
 
 However, when I add new files to an input corpus, I sometimes reduce the size of
 the file by removing some redundancies.
+
+And then, when adding to the `bc` corpuses, I try to add them evenly so that
+each corpus will take about the same amount of time to get to a finished state.
 
 ### [AFL++][125] Quickstart
 
@@ -2494,39 +3235,123 @@ place.
 
 ### POSIX Mode
 
-TODO
+POSIX mode is `bc`-only.
+
+In fact, POSIX mode is two different modes: Standard Mode and Warning Mode.
+These modes are designed to help users write POSIX-compatible `bc` scripts.
 
 #### Standard Mode
 
-TODO
+Standard Mode is activated with the `-s` or `--standard` flags.
+
+In this mode, `bc` will error if any constructs are used that are not strictly
+compatible with the [POSIX `bc` specification][2].
 
 #### Warning Mode
 
-TODO
+Warning Mode is activated with the `-w` or `--warn` flags.
+
+In this mode, `bc` will issue warnings, but continue, if any constructs are used
+that are not strictly compatible with the [POSIX `bc` specification][2].
 
 ### Memory Management
 
-TODO
+The memory management in `bc` is simple: everything is owned by one thing.
 
-* Ownership.
+If something is in a vector, it is owned by that vector.
+
+If something is contained in a struct, it is owned by that struct with one
+exception: structs can be given pointers to other things, but only if those
+other things will outlast the struct itself.
+
+As an example, the `BcParse` struct has a pointer to the one `BcProgram` in
+`bc`. This is okay because the program is initialized first and deallocated
+last.
+
+In other words, it's simple: if a field in a struct is a pointer, then unless
+that pointer is directly allocated by the struct (like the vector array or the
+number limb array), that struct does not own the item at that pointer.
+Otherwise, the struct *does* own the item.
 
 ### [Async-Signal-Safe][115] Signal Handling
 
-TODO
+`bc` is not the typical Unix utility. Most Unix utilities are I/O bound, but
+`bc` is, by and large, CPU-bound. This has several consequences, but the biggest
+is that there is no easy way to allow signals to interrupt it.
 
-* Async-signal-safe functions in handlers.
-* `volatile sig_atomic_t`.
-* Setting flags to specific values, to make it atomic. (No adds because it
-  might not be atomic at that point.)
+This consequence is not obvious, but it comes from the fact that a lot of I/O
+operations can be interrupted and return [`EINTR`][198]. This makes such I/O
+calls natural places for allowing signals to interrupt execution, even when the
+signal comes during execution, and not interrupting I/O calls. The way this is
+done is setting a flag in the signal handler, which is checked around the time
+of the I/O call, when it is convenient.
+
+Alternatively, I/O bound programs can use the [self-pipe trick][199].
+
+Neither of these are possible in `bc` because the execution of math code can
+take a long time. If a signal arrives during this long execution time, setting a
+flag like an I/O bound application and waiting until the next I/O call could
+take seconds, minutes, hours, or even days. (Last I checked, my `bc` takes a
+week to calculate a million digits of pi, and it's not slow as far as `bc`
+implementations go.)
+
+Thus, using just the technique of setting the flag just will not work for an
+interactive calculator.
+
+Well, it can, but it requires a lot of code and massive inefficiencies. I know
+this because that was the original implementation.
+
+The original implementation set a flag and just exit the signal handler. Then,
+on just about every loop header, I have a check for the signal flag. These
+checks happened on every iteration of every loop. It was a massive waste because
+it was polling, and [polling is evil][200].
+
+So for version [3.0.0][32], I expended a lot of effort to change the
+implementation.
+
+In the new system, code *outside* the signal handler sets a flag (`vm.sig_lock`)
+to tell the signal handler whether it can use `longjmp()` to stop the current
+execution. If so, it does. If not, it sets a flag, which then is used by the
+code outside the signal handler that set the `vm.sig_lock` flag. When that code
+unsets `vm.sig_lock`, it checks to see if a signal happened, and if so, that
+code executes the `longjmp()` and stops the current execution.
+
+Other than that, the rest of the interrupt-based implementation is best
+described in the [Error Handling][97].
+
+However, there are rules for signal handlers that I must lay out.
+
+First, signal handlers can only call [async-signal-safe][115] functions.
+
+Second, any field set or read by both the signal handler and normal code must be
+a `volatile sig_atomic_t`.
+
+Third, when setting such fields, they must be set to constants and no math can
+be done on them. This restriction and the above restriction exist in order to
+ensure that the setting of the fields is always atomic with respect to signals.
+
+These rules exist for *any* code using Unix signal handlers, not just `bc`.
+
+#### Vectors and Numbers
+
+Vectors and numbers needed special consideration with the interrupt-based signal
+handling.
+
+When vectors and numbers are about to allocate, or *reallocate* their arrays,
+they need to lock signals to ensure that they do not call `malloc()` and friends
+and get interrupted by a signal because, as you will see in the [Error
+Handling][97] section, `longjmp()` cannot be used in a signal handler if it may
+be able to interrupt a non-[async-signal-safe][115] function like `malloc()` and
+friends.
 
 ### Asserts
 
 If you asked me what procedure is used the most in `bc`, I would reply without
 hesitation, "`assert()`."
 
-I use `assert()` everywhere. In fact, it is what made fuzzing with [AFL++][125]
-so effective. [AFL++][125] is incredibly good at finding crashes, and a failing
-`assert()` counts as one.
+I use `assert()` everywhere. In fact, it is what made [fuzzing][82] with
+[AFL++][125] so effective. [AFL++][125] is incredibly good at finding crashes,
+and a failing `assert()` counts as one.
 
 So while a lot of bad bugs might have corrupted data and *not* caused crashes,
 because I put in so many `assert()`'s, they were *turned into* crashing bugs,
@@ -2689,15 +3514,64 @@ the inserting code must create a new item and insert it.
 If the two vectors were combined together, it would not be possible to separate
 the steps such that creating a new item could be avoided if it already exists.
 
+#### Slabs and Slab Vectors
+
+`bc` allocates *a lot* of small strings, and small allocations are the toughest
+for general-purpose allocators to handle efficiently.
+
+Because of that reason, I decided to create a system for allocating small
+strings using something that I call a "slab vector" after [slab
+allocators][201].
+
+These vectors allocate what I call "slabs," which are just an allocation of a
+single page with a length to tell the slab how much of the slab is used.
+
+The vector itself holds slabs, and when the slab vector is asked to allocate a
+string, it attempts to in the last slab. If that slab cannot do so, it allocates
+a new slab and allocates from that.
+
+There is one exception: if a string is going to be bigger than 128 bytes, then
+the string is directly allocated, and a slab is created with that pointer and a
+length of `SIZE_MAX`, which tells the slab vector that it is a direct
+allocation. Then, the last slab is pushed into the next spot and the new special
+slab is put into the vacated spot. This ensures that a non-special slab is
+always last.
+
+Not only that, but a slab vector can be used as a stack allocator. If the string
+needs to be deallocated, the length of the string is passed to the slab vector
+which deallocates it using that information. This allows a stack of allocations.
+
 ### Command-Line History
 
-TODO
+When I first wrote `bc`, I immediately started using it in order to eat my own
+dog food.
+
+It sucked, and the biggest reason why was because of the lack of command-line
+history.
+
+At first, I just dealt with it, not knowing how command-line history might be
+implemented.
+
+Eventually, I caved and attempted to adapt [`linenoise-mob`][28], which I had
+known about for some time.
+
+It turned out to be easier than I thought; the hardest part was the tedious
+renaming of everything to fit the `bc` naming scheme.
+
+Understanding command-line history in `bc` is really about understanding VT-100
+escape codes, so I would start there.
+
+Now, the history implementation of `bc` has been adapted far beyond that initial
+adaptation to make the command-line history implementation perfect for `bc`
+alone, including integrating it into `bc`'s [Custom I/O][114] and making sure
+that it does not disturb output that did not end with a newline.
+
+On top of that, at one point, I attempted to get history to work on Windows. It
+barely worked after a lot of work and a lot of portability code, but even with
+all of that, it does not have at least one feature: multi-line pasting from the
+clipboard.
 
 ### Error Handling
-
-TODO
-
-* Note about vectors and numbers needing special treatment for error handling.
 
 The error handling on `bc` got an overhaul for version [`3.0.0`][32], and it
 became one of the things that taught me the most about C in particular and
@@ -2749,7 +3623,7 @@ I knew that [`setjmp()`][116] and [`longjmp()`][117] are used in C to implement
 exceptions, so I thought I would learn how to use them. How hard could it be?
 
 Quite hard, it turns out, especially in the presence of signals. And that's
-because there are many snares:
+because there are a few big snares:
 
 1.	The value of any local variables are not guaranteed to be preserved after a
 	`longjmp()` back into a function.
@@ -2777,57 +3651,14 @@ jump if necessary.
 
 #### Custom I/O
 
-TODO
+Why did I implement my own buffered I/O for `bc`? Because I use `setjmp()` and
+`longjmp()` for error handling (see the [Error Handling][97] section), and the
+buffered I/O in `libc` does not interact well with the use of those procedures;
+all of the buffered I/O API is basically non-[async-signal-safe][115].
 
-* Talk about interaction with command-line history.
-
-### Functions
-
-TODO
-
-#### Main and Read Functions
-
-TODO
-
-#### `dc` Strings
-
-TODO
-
-##### Tail Calls
-
-TODO
-
-#### Execution
-
-TODO
-
-* Bytecode.
-* Stack machine.
-* `stack` vs. `results`.
-* `BcInstPtr` for marking where execution is.
-* Variables are arrays, in order to push arguments on them and to implement
-  autos.
-* Arrays are arrays as well.
-
-##### Bytecode
-
-TODO
-
-###### Bytecode Indices
-
-TODO
-
-##### Variables
-
-TODO
-
-##### Arrays
-
-TODO
-
-###### Array References
-
-TODO
+Implementing custom buffered I/O had other benefits. First, it allowed me to
+tightly integrate history with the I/O code. Second, it allowed me to make
+changes to history in order to make it adapt to user prompts.
 
 ### Lexing
 
@@ -3004,6 +3835,83 @@ Maintaining the integrity of the requirements flag set is an important part of
 the `bc` parser. However, they do not have to be stored on a stack because their
 stack is implicit from the recursion that expression parsing uses.
 
+### Functions
+
+Functions, in `bc`, are data structures that contain the bytecode and data
+produced by the parsers. Functions are what the `BcProgram` program executes.
+
+#### Main and Read Functions
+
+There are two functions that always exist, which I call the "main" and "read"
+functions.
+
+The "main" function is the function in which any code and data outside other
+functions is put. Basically, it is the function where the scripting code ends
+up.
+
+The "read" function is the function that is reset and parsed every time a call
+to the `read()` builtin function happens.
+
+#### `dc` Strings
+
+In `dc`, strings can be executed, and since there are no actual "functions" in
+`dc`, strings are handled as functions. In fact, they are effectively translated
+into functions by parsing.
+
+##### Tail Calls
+
+Since strings in `dc` are functions, and the fact that `dc` has no native loops,
+such loops are implemented in `dc` code using strings with conditional execution
+commands at the end of strings.
+
+When such conditional execution, or even unconditional execution, commands are
+the very last commands in a string, then `dc` can perform a [tail call][202].
+
+This is done by recording the fact that a tail call happened, done by
+incrementing an integer on a stack. When a string is executed *without* a tail
+call, a new entry is pushed onto the stack with the integer `1`.
+
+When a string finally quits that followed tail calls, its stack entry is popped,
+eliminating all of those tail calls.
+
+Why perform tail calls? Because otherwise, `dc` would be subject to the same
+thing that plagues [functional programming languages][203]: stack overflow. In
+`dc`'s case, that would manifest itself as a growing [heap][204], because the
+execution stack is stored on the heap, until a fatal allocation failure would
+occur.
+
+#### Execution
+
+TODO
+
+* Bytecode.
+* Stack machine.
+* `stack` vs. `results`.
+* `BcInstPtr` for marking where execution is.
+* Variables are arrays, in order to push arguments on them and to implement
+  autos.
+* Arrays are arrays as well.
+
+##### Bytecode
+
+TODO
+
+###### Bytecode Indices
+
+TODO
+
+##### Variables
+
+TODO
+
+##### Arrays
+
+TODO
+
+###### Array References
+
+TODO
+
 ### Callbacks
 
 There are many places in `bc` and `dc` where function pointers are used:
@@ -3102,10 +4010,6 @@ TODO
   target.
 
 ### Caching of Numbers
-
-TODO
-
-### Slabs and Slab Vectors
 
 TODO
 
@@ -3296,3 +4200,32 @@ TODO
 [173]: #async-signal-safe-signal-handling
 [174]: #vectorh
 [175]: #read_errorstxt
+[176]: #statush
+[177]: #numbers
+[178]: #math-concepts
+[179]: #pseudo-random-number-generator
+[180]: #lexh
+[181]: #parseh
+[182]: #dch
+[183]: #libraryh
+[184]: #numh
+[185]: #readh
+[186]: #maps
+[187]: #slabs-and-slab-vectors
+[188]: ./build.md#extra-math
+[189]: #command-line-history
+[190]: #scriptsed
+[191]: #linux-timeconstbc-script
+[192]: #corpuses
+[193]: ./build.md#history
+[194]: https://www.valgrind.org/docs/manual/mc-manual.html
+[195]: #othersh
+[196]: https://scan.coverity.com/
+[197]: https://clang-analyzer.llvm.org/
+[198]: https://unix.stackexchange.com/questions/253349/eintr-is-there-a-rationale-behind-it
+[199]: https://cr.yp.to/docs/selfpipe.html
+[200]: https://skarnet.org/cgi-bin/archive.cgi?2:mss:1607:201701:dfblejammjllfkggpcph
+[201]: https://slembcke.github.io/2020/10/12/CustomAllocators.html#1-slab-allocator
+[202]: https://en.wikipedia.org/wiki/Tail_call
+[203]: https://en.wikipedia.org/wiki/Functional_programming_language
+[204]: https://en.wikipedia.org/wiki/C_dynamic_memory_allocation
