@@ -532,8 +532,8 @@ void bc_vm_shutdown(void) {
 		bc_parse_free(&vm.read_prs);
 	}
 
-	bc_program_free(&vm.prog);
 	bc_parse_free(&vm.prs);
+	bc_program_free(&vm.prog);
 
 #if BC_ENABLED
 	if (BC_IS_BC) bc_slabvec_free(&vm.other_slabs);
