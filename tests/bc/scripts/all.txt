@@ -1,9 +1,9 @@
 multiply.bc
 divide.bc
+subtract.bc
+add.bc
 print.bc
 parse.bc
-add.bc
-subtract.bc
 array.bc
 atan.bc
 bessel.bc
