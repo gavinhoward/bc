@@ -2575,16 +2575,28 @@ void bc_program_exec(BcProgram *p) {
 
 	size_t idx;
 	BcResult r, *ptr;
-	BcInstPtr *ip = bc_vec_top(&p->stack);
-	BcFunc *func = (BcFunc*) bc_vec_item(&p->fns, ip->func);
-	char *code = func->code.v;
+	BcInstPtr *ip;
+	BcFunc *func;
+	char *code;
 	bool cond = false;
+	uchar inst;
 #if BC_ENABLED
 	BcNum *num;
 #endif // BC_ENABLED
 #ifndef NDEBUG
 	size_t jmp_bufs_len;
 #endif // NDEBUG
+
+#if BC_HAS_COMPUTED_GOTO
+	BC_PROG_LBLS;
+#endif // BC_HAS_COMPUTED_GOTO
+
+	func = (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN);
+	bc_vec_pushByte(&func->code, BC_INST_INVALID);
+
+	ip = bc_vec_top(&p->stack);
+	func = (BcFunc*) bc_vec_item(&p->fns, ip->func);
+	code = func->code.v;
 
 #ifndef NDEBUG
 	jmp_bufs_len = vm.jmp_bufs.len;
@@ -2594,33 +2606,48 @@ void bc_program_exec(BcProgram *p) {
 	bc_program_setVecs(p, func);
 
 	// This loop is the heart of the execution engine. It *is* the engine.
-	while (ip->idx < func->code.len) {
+	while (true) {
 
 		BC_SIG_ASSERT_NOT_LOCKED;
 
+#if BC_HAS_COMPUTED_GOTO
+
+		BC_PROG_JUMP(inst, code, ip);
+
+#else // BC_HAS_COMPUTED_GOTO
+
 		// Get the next instruction and increment the index.
-		uchar inst = (uchar) code[(ip->idx)++];
+		inst = (uchar) code[(ip->idx)++];
+
+#endif // BC_HAS_COMPUTED_GOTO
 
 #if BC_DEBUG_CODE
 		bc_file_printf(&vm.ferr, "inst: %s\n", bc_inst_names[inst]);
 		bc_file_flush(&vm.ferr, bc_flush_none);
 #endif // BC_DEBUG_CODE
 
-		switch (inst) {
+#if !BC_HAS_COMPUTED_GOTO
+		switch (inst)
+#endif // !BC_HAS_COMPUTED_GOTO
+		{
 
 #if BC_ENABLED
 			// This just sets up the condition for the unconditional jump below,
 			// which checks the condition, if necessary.
-			case BC_INST_JUMP_ZERO:
+			BC_PROG_LBL(BC_INST_JUMP_ZERO):
 			{
+
 				bc_program_prep(p, &ptr, &num, 0);
+
 				cond = !bc_num_cmpZero(num);
 				bc_vec_pop(&p->results);
+
+				BC_PROG_DIRECT_JUMP(BC_INST_JUMP)
 			}
 			// Fallthrough.
-			BC_FALLTHROUGH
+			BC_PROG_FALLTHROUGH
 
-			case BC_INST_JUMP:
+			BC_PROG_LBL(BC_INST_JUMP):
 			{
 				idx = bc_program_index(code, &ip->idx);
 
@@ -2638,10 +2665,10 @@ void bc_program_exec(BcProgram *p) {
 					ip->idx = *addr;
 				}
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_CALL:
+			BC_PROG_LBL(BC_INST_CALL):
 			{
 				assert(BC_IS_BC);
 
@@ -2654,29 +2681,29 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_INC:
-			case BC_INST_DEC:
+			BC_PROG_LBL(BC_INST_INC):
+			BC_PROG_LBL(BC_INST_DEC):
 			{
 				bc_program_incdec(p, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_HALT:
+			BC_PROG_LBL(BC_INST_HALT):
 			{
 				vm.status = BC_STATUS_QUIT;
 
 				// Just jump out. The jump series will take care of everything.
 				BC_JMP;
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_RET:
-			case BC_INST_RET0:
-			case BC_INST_RET_VOID:
+			BC_PROG_LBL(BC_INST_RET):
+			BC_PROG_LBL(BC_INST_RET0):
+			BC_PROG_LBL(BC_INST_RET_VOID):
 			{
 				bc_program_return(p, inst);
 
@@ -2687,24 +2714,24 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 #endif // BC_ENABLED
 
-			case BC_INST_BOOL_OR:
-			case BC_INST_BOOL_AND:
-			case BC_INST_REL_EQ:
-			case BC_INST_REL_LE:
-			case BC_INST_REL_GE:
-			case BC_INST_REL_NE:
-			case BC_INST_REL_LT:
-			case BC_INST_REL_GT:
+			BC_PROG_LBL(BC_INST_BOOL_OR):
+			BC_PROG_LBL(BC_INST_BOOL_AND):
+			BC_PROG_LBL(BC_INST_REL_EQ):
+			BC_PROG_LBL(BC_INST_REL_LE):
+			BC_PROG_LBL(BC_INST_REL_GE):
+			BC_PROG_LBL(BC_INST_REL_NE):
+			BC_PROG_LBL(BC_INST_REL_LT):
+			BC_PROG_LBL(BC_INST_REL_GT):
 			{
 				bc_program_logical(p, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_READ:
+			BC_PROG_LBL(BC_INST_READ):
 			{
 				// We want to flush output before
 				// this in case there is a prompt.
@@ -2719,93 +2746,93 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-			case BC_INST_RAND:
+#if BC_ENABLE_EXTRA_MATH
+			BC_PROG_LBL(BC_INST_RAND):
 			{
 				bc_program_rand(p);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
-			case BC_INST_MAXIBASE:
-			case BC_INST_MAXOBASE:
-			case BC_INST_MAXSCALE:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-			case BC_INST_MAXRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+			BC_PROG_LBL(BC_INST_MAXIBASE):
+			BC_PROG_LBL(BC_INST_MAXOBASE):
+			BC_PROG_LBL(BC_INST_MAXSCALE):
+#if BC_ENABLE_EXTRA_MATH
+			BC_PROG_LBL(BC_INST_MAXRAND):
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				BcBigDig dig = vm.maxes[inst - BC_INST_MAXIBASE];
 				bc_program_pushBigdig(p, dig, BC_RESULT_TEMP);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_VAR:
+			BC_PROG_LBL(BC_INST_VAR):
 			{
 				bc_program_pushVar(p, code, &ip->idx, false, false);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_ARRAY_ELEM:
+			BC_PROG_LBL(BC_INST_ARRAY_ELEM):
 #if BC_ENABLED
-			case BC_INST_ARRAY:
+			BC_PROG_LBL(BC_INST_ARRAY):
 #endif // BC_ENABLED
 			{
 				bc_program_pushArray(p, code, &ip->idx, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_IBASE:
-			case BC_INST_SCALE:
-			case BC_INST_OBASE:
+			BC_PROG_LBL(BC_INST_IBASE):
+			BC_PROG_LBL(BC_INST_SCALE):
+			BC_PROG_LBL(BC_INST_OBASE):
 			{
 				bc_program_pushGlobal(p, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-			case BC_INST_SEED:
+#if BC_ENABLE_EXTRA_MATH
+			BC_PROG_LBL(BC_INST_SEED):
 			{
 				bc_program_pushSeed(p);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
-			case BC_INST_LENGTH:
-			case BC_INST_SCALE_FUNC:
-			case BC_INST_SQRT:
-			case BC_INST_ABS:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
-			case BC_INST_IRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+			BC_PROG_LBL(BC_INST_LENGTH):
+			BC_PROG_LBL(BC_INST_SCALE_FUNC):
+			BC_PROG_LBL(BC_INST_SQRT):
+			BC_PROG_LBL(BC_INST_ABS):
+#if BC_ENABLE_EXTRA_MATH
+			BC_PROG_LBL(BC_INST_IRAND):
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				bc_program_builtin(p, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_NUM:
+			BC_PROG_LBL(BC_INST_NUM):
 			{
 				bc_program_const(p, code, &ip->idx);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_ZERO:
-			case BC_INST_ONE:
+			BC_PROG_LBL(BC_INST_ZERO):
+			BC_PROG_LBL(BC_INST_ONE):
 #if BC_ENABLED
-			case BC_INST_LAST:
+			BC_PROG_LBL(BC_INST_LAST):
 #endif // BC_ENABLED
 			{
 				r.t = BC_RESULT_ZERO + (inst - BC_INST_ZERO);
 				bc_vec_push(&p->results, &r);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_PRINT:
-			case BC_INST_PRINT_POP:
+			BC_PROG_LBL(BC_INST_PRINT):
+			BC_PROG_LBL(BC_INST_PRINT_POP):
 #if BC_ENABLED
-			case BC_INST_PRINT_STR:
+			BC_PROG_LBL(BC_INST_PRINT_STR):
 #endif // BC_ENABLED
 			{
 				bc_program_print(p, inst, 0);
@@ -2813,76 +2840,76 @@ void bc_program_exec(BcProgram *p) {
 				// We want to flush right away to save the output for history,
 				// if history must preserve it when taking input.
 				bc_file_flush(&vm.fout, bc_flush_save);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_STR:
+			BC_PROG_LBL(BC_INST_STR):
 			{
 				// Set up the result and push.
 				r.t = BC_RESULT_STR;
 				r.d.loc.loc = bc_program_index(code, &ip->idx);
 				bc_vec_push(&p->results, &r);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_POWER:
-			case BC_INST_MULTIPLY:
-			case BC_INST_DIVIDE:
-			case BC_INST_MODULUS:
-			case BC_INST_PLUS:
-			case BC_INST_MINUS:
+			BC_PROG_LBL(BC_INST_POWER):
+			BC_PROG_LBL(BC_INST_MULTIPLY):
+			BC_PROG_LBL(BC_INST_DIVIDE):
+			BC_PROG_LBL(BC_INST_MODULUS):
+			BC_PROG_LBL(BC_INST_PLUS):
+			BC_PROG_LBL(BC_INST_MINUS):
 #if BC_ENABLE_EXTRA_MATH
-			case BC_INST_PLACES:
-			case BC_INST_LSHIFT:
-			case BC_INST_RSHIFT:
+			BC_PROG_LBL(BC_INST_PLACES):
+			BC_PROG_LBL(BC_INST_LSHIFT):
+			BC_PROG_LBL(BC_INST_RSHIFT):
 #endif // BC_ENABLE_EXTRA_MATH
 			{
 				bc_program_op(p, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_NEG:
-			case BC_INST_BOOL_NOT:
+			BC_PROG_LBL(BC_INST_NEG):
+			BC_PROG_LBL(BC_INST_BOOL_NOT):
 #if BC_ENABLE_EXTRA_MATH
-			case BC_INST_TRUNC:
+			BC_PROG_LBL(BC_INST_TRUNC):
 #endif // BC_ENABLE_EXTRA_MATH
 			{
 				bc_program_unary(p, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
 #if BC_ENABLED
-			case BC_INST_ASSIGN_POWER:
-			case BC_INST_ASSIGN_MULTIPLY:
-			case BC_INST_ASSIGN_DIVIDE:
-			case BC_INST_ASSIGN_MODULUS:
-			case BC_INST_ASSIGN_PLUS:
-			case BC_INST_ASSIGN_MINUS:
+			BC_PROG_LBL(BC_INST_ASSIGN_POWER):
+			BC_PROG_LBL(BC_INST_ASSIGN_MULTIPLY):
+			BC_PROG_LBL(BC_INST_ASSIGN_DIVIDE):
+			BC_PROG_LBL(BC_INST_ASSIGN_MODULUS):
+			BC_PROG_LBL(BC_INST_ASSIGN_PLUS):
+			BC_PROG_LBL(BC_INST_ASSIGN_MINUS):
 #if BC_ENABLE_EXTRA_MATH
-			case BC_INST_ASSIGN_PLACES:
-			case BC_INST_ASSIGN_LSHIFT:
-			case BC_INST_ASSIGN_RSHIFT:
+			BC_PROG_LBL(BC_INST_ASSIGN_PLACES):
+			BC_PROG_LBL(BC_INST_ASSIGN_LSHIFT):
+			BC_PROG_LBL(BC_INST_ASSIGN_RSHIFT):
 #endif // BC_ENABLE_EXTRA_MATH
-			case BC_INST_ASSIGN:
-			case BC_INST_ASSIGN_POWER_NO_VAL:
-			case BC_INST_ASSIGN_MULTIPLY_NO_VAL:
-			case BC_INST_ASSIGN_DIVIDE_NO_VAL:
-			case BC_INST_ASSIGN_MODULUS_NO_VAL:
-			case BC_INST_ASSIGN_PLUS_NO_VAL:
-			case BC_INST_ASSIGN_MINUS_NO_VAL:
+			BC_PROG_LBL(BC_INST_ASSIGN):
+			BC_PROG_LBL(BC_INST_ASSIGN_POWER_NO_VAL):
+			BC_PROG_LBL(BC_INST_ASSIGN_MULTIPLY_NO_VAL):
+			BC_PROG_LBL(BC_INST_ASSIGN_DIVIDE_NO_VAL):
+			BC_PROG_LBL(BC_INST_ASSIGN_MODULUS_NO_VAL):
+			BC_PROG_LBL(BC_INST_ASSIGN_PLUS_NO_VAL):
+			BC_PROG_LBL(BC_INST_ASSIGN_MINUS_NO_VAL):
 #if BC_ENABLE_EXTRA_MATH
-			case BC_INST_ASSIGN_PLACES_NO_VAL:
-			case BC_INST_ASSIGN_LSHIFT_NO_VAL:
-			case BC_INST_ASSIGN_RSHIFT_NO_VAL:
+			BC_PROG_LBL(BC_INST_ASSIGN_PLACES_NO_VAL):
+			BC_PROG_LBL(BC_INST_ASSIGN_LSHIFT_NO_VAL):
+			BC_PROG_LBL(BC_INST_ASSIGN_RSHIFT_NO_VAL):
 #endif // BC_ENABLE_EXTRA_MATH
 #endif // BC_ENABLED
-			case BC_INST_ASSIGN_NO_VAL:
+			BC_PROG_LBL(BC_INST_ASSIGN_NO_VAL):
 			{
 				bc_program_assign(p, inst);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_POP:
+			BC_PROG_LBL(BC_INST_POP):
 			{
 #ifndef BC_PROG_NO_STACK_CHECK
 				// dc must do a stack check, but bc does not.
@@ -2896,11 +2923,11 @@ void bc_program_exec(BcProgram *p) {
 
 				bc_vec_pop(&p->results);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
 #if DC_ENABLED
-			case BC_INST_POP_EXEC:
+			BC_PROG_LBL(BC_INST_POP_EXEC):
 			{
 				// If this fails, the dc parser got something wrong.
 				assert(BC_PROG_STACK(&p->stack, 2));
@@ -2916,23 +2943,23 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_MODEXP:
+			BC_PROG_LBL(BC_INST_MODEXP):
 			{
 				bc_program_modexp(p);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_DIVMOD:
+			BC_PROG_LBL(BC_INST_DIVMOD):
 			{
 				bc_program_divmod(p);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_EXECUTE:
-			case BC_INST_EXEC_COND:
+			BC_PROG_LBL(BC_INST_EXECUTE):
+			BC_PROG_LBL(BC_INST_EXEC_COND):
 			{
 				cond = (inst == BC_INST_EXEC_COND);
 
@@ -2945,34 +2972,34 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_PRINT_STACK:
+			BC_PROG_LBL(BC_INST_PRINT_STACK):
 			{
 				bc_program_printStack(p);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_CLEAR_STACK:
+			BC_PROG_LBL(BC_INST_CLEAR_STACK):
 			{
 				bc_vec_popAll(&p->results);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_REG_STACK_LEN:
+			BC_PROG_LBL(BC_INST_REG_STACK_LEN):
 			{
 				bc_program_regStackLen(p, code, &ip->idx);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_STACK_LEN:
+			BC_PROG_LBL(BC_INST_STACK_LEN):
 			{
 				bc_program_stackLen(p);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_DUPLICATE:
+			BC_PROG_LBL(BC_INST_DUPLICATE):
 			{
 				// Check the stack.
 				if (BC_ERR(!BC_PROG_STACK(&p->results, 1)))
@@ -2991,10 +3018,10 @@ void bc_program_exec(BcProgram *p) {
 
 				BC_SIG_UNLOCK;
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_SWAP:
+			BC_PROG_LBL(BC_INST_SWAP):
 			{
 				BcResult *ptr2;
 
@@ -3013,10 +3040,10 @@ void bc_program_exec(BcProgram *p) {
 				memcpy(ptr, ptr2, sizeof(BcResult));
 				memcpy(ptr2, &r, sizeof(BcResult));
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_ASCIIFY:
+			BC_PROG_LBL(BC_INST_ASCIIFY):
 			{
 				bc_program_asciify(p);
 
@@ -3027,32 +3054,32 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_PRINT_STREAM:
+			BC_PROG_LBL(BC_INST_PRINT_STREAM):
 			{
 				bc_program_printStream(p);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_LOAD:
-			case BC_INST_PUSH_VAR:
+			BC_PROG_LBL(BC_INST_LOAD):
+			BC_PROG_LBL(BC_INST_PUSH_VAR):
 			{
 				bool copy = (inst == BC_INST_LOAD);
 				bc_program_pushVar(p, code, &ip->idx, true, copy);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_PUSH_TO_VAR:
+			BC_PROG_LBL(BC_INST_PUSH_TO_VAR):
 			{
 				idx = bc_program_index(code, &ip->idx);
 				bc_program_copyToVar(p, idx, BC_TYPE_VAR, true);
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			case BC_INST_QUIT:
-			case BC_INST_NQUIT:
+			BC_PROG_LBL(BC_INST_QUIT):
+			BC_PROG_LBL(BC_INST_NQUIT):
 			{
 				bc_program_nquit(p, inst);
 
@@ -3063,15 +3090,24 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
+				BC_PROG_JUMP(inst, code, ip);
 			}
 #endif // DC_ENABLED
-#ifndef NDEBUG
+
+			BC_PROG_LBL(BC_INST_INVALID):
+			{
+				return;
+			}
+
+#if !BC_HAS_COMPUTED_GOTO
 			default:
 			{
+				BC_UNREACHABLE
+#ifndef NDEBUG
 				abort();
-			}
 #endif // NDEBUG
+			}
+#endif // !BC_HAS_COMPUTED_GOTO
 		}
 
 #ifndef NDEBUG

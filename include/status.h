@@ -121,6 +121,7 @@
 #endif // __STDC_VERSION__
 
 #define BC_HAS_UNREACHABLE (0)
+#define BC_HAS_COMPUTED_GOTO (0)
 
 // GCC and Clang complain if fallthroughs are not marked with their special
 // attribute. Jerks. This creates a define for marking the fallthroughs that is
@@ -175,6 +176,35 @@
 #endif // _WIN32
 
 #endif // BC_HAS_UNREACHABLE
+
+#ifdef __GNUC__
+
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+
+#undef BC_HAS_COMPUTED_GOTO
+#define BC_HAS_COMPUTED_GOTO (1)
+
+#endif // __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+
+#endif // __GNUC__
+
+#ifdef __clang__
+
+#if __clang_major__ >= 4
+
+#undef BC_HAS_COMPUTED_GOTO
+#define BC_HAS_COMPUTED_GOTO (1)
+
+#endif // __clang_major__ >= 4
+
+#endif // __GNUC__
+
+#ifdef BC_NO_COMPUTED_GOTO
+
+#undef BC_HAS_COMPUTED_GOTO
+#define BC_HAS_COMPUTED_GOTO (0)
+
+#endif // BC_NO_COMPUTED_GOTO
 
 #ifdef __GNUC__
 #ifdef __OpenBSD__

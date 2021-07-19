@@ -305,7 +305,7 @@ typedef enum BcInst {
 #endif // DC_ENABLED
 
 	/// Invalid instruction.
-	BC_INST_INVALID = UCHAR_MAX,
+	BC_INST_INVALID,
 
 } BcInst;
 
