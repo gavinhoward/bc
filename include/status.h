@@ -159,9 +159,21 @@
 #endif // defined(__clang__) || defined(__GNUC__)
 
 #if BC_HAS_UNREACHABLE
+
 #define BC_UNREACHABLE __builtin_unreachable();
+
 #else // BC_HAS_UNREACHABLE
+
+#ifdef _WIN32
+
+#define BC_UNREACHABLE __assume(0);
+
+#else // _WIN32
+
 #define BC_UNREACHABLE
+
+#endif // _WIN32
+
 #endif // BC_HAS_UNREACHABLE
 
 #ifdef __GNUC__
