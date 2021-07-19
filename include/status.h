@@ -206,8 +206,6 @@
 // Yes, this has to be here.
 #include <bcl.h>
 
-#if BC_ENABLED
-
 // All of these set defaults for settings.
 #ifndef BC_DEFAULT_BANNER
 #define BC_DEFAULT_BANNER (0)
@@ -225,10 +223,6 @@
 #define BC_DEFAULT_PROMPT BC_DEFAULT_TTY_MODE
 #endif // BC_DEFAULT_PROMPT
 
-#endif // BC_ENABLED
-
-#if DC_ENABLED
-
 // All of these set defaults for settings.
 #ifndef DC_DEFAULT_SIGINT_RESET
 #define DC_DEFAULT_SIGINT_RESET (1)
@@ -245,8 +239,6 @@
 #ifndef DC_DEFAULT_PROMPT
 #define DC_DEFAULT_PROMPT DC_DEFAULT_TTY_MODE
 #endif // DC_DEFAULT_PROMPT
-
-#endif // DC_ENABLED
 
 /// Statuses, which mark either which category of error happened, or some other
 /// status that matters.
