@@ -139,8 +139,8 @@ def test_utf8_0(exe, args, env, bc=True):
 	try:
 
 		# Just random UTF-8 I generated somewhow, plus ensuring that insert works.
-		write_str(child, "\xef\xb4\xaa\xc3\xa1\x61\xcc\x81\xcc\xb5\xcc\x97\xf0\x9f\x88\x90\x61\xcc\x83")
-		child.send("\x1b[D\x1b[D\x1b[D\x1b\x1b[A\xe2\x84\x90")
+		write_str(child, "ﴪáá̵̗🈐ã")
+		child.send("\x1b[D\x1b[D\x1b[D\x1b\x1b[Aℐ")
 		child.send("\n")
 
 		child.expect("Parse error: bad character")
@@ -1042,6 +1042,10 @@ env = {
 
 # Make sure to include the outside environment.
 env.update(os.environ)
+env.pop("BC_ENV_ARGS", None)
+env.pop("BC_LINE_LENGTH", None)
+env.pop("DC_ENV_ARGS", None)
+env.pop("DC_LINE_LENGTH", None)
 
 # Run the correct test.
 child = test_array[test_idx](exe[0], exe[1:], env)

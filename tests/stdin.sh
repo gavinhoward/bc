@@ -72,6 +72,12 @@ fi
 
 rm -f "$out"
 
+# I use these, so unset them to make the tests work.
+unset BC_ENV_ARGS
+unset BC_LINE_LENGTH
+unset DC_ENV_ARGS
+unset DC_LINE_LENGTH
+
 set +e
 
 printf 'Running %s stdin tests...' "$d"
