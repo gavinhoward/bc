@@ -2722,20 +2722,20 @@ void bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_INST_RAND:
 			{
 				bc_program_rand(p);
 				break;
 			}
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 			case BC_INST_MAXIBASE:
 			case BC_INST_MAXOBASE:
 			case BC_INST_MAXSCALE:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_INST_MAXRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				BcBigDig dig = vm.maxes[inst - BC_INST_MAXIBASE];
 				bc_program_pushBigdig(p, dig, BC_RESULT_TEMP);
@@ -2765,21 +2765,21 @@ void bc_program_exec(BcProgram *p) {
 				break;
 			}
 
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_INST_SEED:
 			{
 				bc_program_pushSeed(p);
 				break;
 			}
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 
 			case BC_INST_LENGTH:
 			case BC_INST_SCALE_FUNC:
 			case BC_INST_SQRT:
 			case BC_INST_ABS:
-#if BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#if BC_ENABLE_EXTRA_MATH
 			case BC_INST_IRAND:
-#endif // BC_ENABLE_EXTRA_MATH && BC_ENABLE_RAND
+#endif // BC_ENABLE_EXTRA_MATH
 			{
 				bc_program_builtin(p, inst);
 				break;
