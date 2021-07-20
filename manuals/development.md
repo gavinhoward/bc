@@ -1,5 +1,7 @@
 # Development
 
+Updated: 20 July 2021
+
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
 
@@ -529,6 +531,87 @@ The `NOTICE` file with proper attributions.
 ### `README.md`
 
 The `README`. Read it.
+
+### `benchmarks/`
+
+The folder containing files to generate benchmarks.
+
+Each of these files was made, at one time or another, to benchmark some
+experimental feature, so if it seems there is no rhyme or reason to these
+benchmarks, it is because there is none, besides historical accident.
+
+#### `bc/`
+
+The folder containing `bc` scripts to generate `bc` benchmarks.
+
+##### `add.bc`
+
+The file to generate the benchmark to benchmark addition in `bc`.
+
+##### `arrays_and_constants.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of array names
+and constants.
+
+##### `arrays.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of array names.
+
+##### `constants.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of constants.
+
+##### `divide.bc`
+
+The file to generate the benchmark to benchmark division in `bc`.
+
+##### `functions.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of functions.
+
+##### `irand_long.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of calls to
+`irand()` with large bounds.
+
+##### `irand_short.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of calls to
+`irand()` with small bounds.
+
+##### `lib.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of calls to
+heavy functions in `lib.bc`.
+
+##### `multiply.bc`
+
+The file to generate the benchmark to benchmark multiplication in `bc`.
+
+##### `postfix_incdec.bc`
+
+The file to generate the benchmark to benchmark `bc` using postfix increment and
+decrement operators.
+
+##### `power.bc`
+
+The file to generate the benchmark to benchmark power (exponentiation) in `bc`.
+
+##### `subtract.bc`
+
+The file to generate the benchmark to benchmark subtraction in `bc`.
+
+##### `strings.bc`
+
+The file to generate the benchmark to benchmark `bc` using lots of strings.
+
+#### `dc/`
+
+The folder containing `dc` scripts to generate `dc` benchmarks.
+
+##### `modexp.dc`
+
+The file to generate the benchmark to benchmark modular exponentiation in `dc`.
 
 ### `gen/`
 
@@ -1121,6 +1204,18 @@ This script is the one that generates markdown manuals from a template and a
 manpage from a markdown manual.
 
 For more information about generating manuals, see [Manuals][86].
+
+#### `ministat.c`
+
+This is a file copied [from FreeBSD][221] that calculates the standard
+statistical numbers, such as mean, average, and median, based on numbers
+obtained from a file.
+
+For more information, see the [FreeBSD ministat(1) manpage][222].
+
+This file allows `bc` to build the `scripts/ministat` executable using the
+command `make ministat`, and this executable helps programmers evaluate the
+results of [benchmarks][144] more accurately.
 
 #### `package.sh`
 
@@ -2846,7 +2941,7 @@ the manpages are generated from the generated manuals.
 
 The generated manpage for `bcl` ([`manuals/bcl.3`][62]) is checked into version
 control, and the generated markdown manuals and manpages for `bc`
-([`manuals/bc`][91]) and `dc` ([`manuals/dc`][92]) are as well.
+([`manuals/bc`][79]) and `dc` ([`manuals/dc`][80]) are as well.
 
 This is because generating the manuals and manpages requires a heavy dependency
 that only maintainers should care about: [Pandoc][92]. Because users [should not
@@ -3649,6 +3744,24 @@ afterward, use `BC_SIG_UNLOCK` to unlock signals.
 `BC_SIG_UNLOCK` has another requirement: it must check for signals or errors and
 jump if necessary.
 
+On top of all of that, *all* functions with cleanup needed to be able to run
+their cleanup. This meant that `longjmp()` could not just jump to the finish; it
+had to start what I call a "jump series," using a stack of `jmp_buf`'s
+(`jmp_bufs` in `BcVm`). Each `longjmp()` uses the top of the `jmp_bufs` stack to
+execute its jump. Then, if the cleanup code was executed because of a jump, the
+cleanup code was responsible for continuing the jump series by popping the
+previous item off the stack and using the new top of the stack for a jump.
+
+In this way, C++-style exceptions were implemented in pure C. Not fun, but it
+works. However, the order of operations matters, especially in the macros that
+help implement the error handling.
+
+For example, in `BC_UNSETJMP`, signals are unlocked before checking for signals.
+If a signal comes between, that's fine; it will still cause a jump to the right
+place. However, disabling the lock after could mean that a signal could come
+*after* checking for signals, but before signals were unlocked, causing the
+handling of the signal to be delayed.
+
 #### Custom I/O
 
 Why did I implement my own buffered I/O for `bc`? Because I use `setjmp()` and
@@ -4434,11 +4547,30 @@ at optimizing this `bc`. Use it.
 
 ### Benchmarks
 
-TODO
+To help programmers improve performance, I have built and assembled
+infrastructure to make benchmarking easy.
 
-* Need to generate benchmarks and run them.
-* `ministat`.
-* Adding benchmarks.
+First, in order to easily run benchmarks, I created
+[`scripts/benchmark.sh`][220].
+
+Second, I copied and adapted [`ministat.c`][223] [from FreeBSD][221], to make it
+easier to judge whether the results are significant or not.
+
+Third, I made the `make` clean target `make clean_benchmarks`, to clean
+`scripts/ministat` and the generated benchmark files.
+
+Fourth, I made it so [`scripts/benchmark.sh`][220] outputs the timing and memory
+data in a format that is easy for `scripts/ministat` to digest.
+
+To add a benchmark, add a script in the right directory to generate the
+benchmark. Yes, generate.
+
+All of the benchmarks are generated first, from `.bc` and `.dc` files in the
+[`benchmarks/bc/`][91] and [`benchmarks/dc/`][224]. This is so that massive
+amounts of data can be generated and then pushed through the calculators.
+
+If you need to benchmark `bc` or `dc` with simple loops, have the generator
+files simply print the loop code.
 
 ### Caching of Numbers
 
@@ -4460,15 +4592,79 @@ when I added it.
 
 ## `bcl`
 
-TODO
+At the request of one of my biggest users, I spent the time to make a build mode
+where the number and math code of `bc` could be wrapped into a library, which I
+called `bcl`.
 
-* What is included.
-* What is *not* included.
-* Contexts and why.
-* Signal handling.
-* Encapsulation of numbers.
-* Numbers can encode errors.
-	* But sometimes errors are returned directly.
+This mode is exclusive; `bc` and `dc` themselves are *not* built when building
+`bcl`.
+
+The only things in the `bc` math code that is not included is:
+
+* Printing newlines (clients do not care about `bc`'s line lenth restriction).
+* `dc`'s stream print.
+
+Even the [pseudo-random number generator][179] is included, with extra support
+for generating real numbers with it. (In `bc`, such support is in
+[`lib2.bc`][26].)
+
+### Signal Handling
+
+Like signal handling in `bc` proper (see the [Async-Signal-Safe Signal
+Handling][173] section), `bcl` has the infrastructure for signal handling.
+
+This infrastructure is different, however, as `bcl` assumes that clients will
+implement their own signal handling.
+
+So instead of doing signal handling on its own, `bcl` provides the capability to
+interrupt executions and return to the clients almost immediately. Like in `bc`,
+this is done with `setjmp()` and `longjmp()`, although the jump series is
+stopped before returning normally to client code.
+
+### Contexts
+
+Contexts were an idea by the same user that requested `bcl`. They are meant to
+make it so multiple clients in one program can keep their data separate from
+each other.
+
+### Numbers
+
+Numbers in `bcl` are literally indices into an encapsulated array of numbers,
+hidden in the context. These indices are then passed to clients to refer to
+numbers later.
+
+### Operand Consumption
+
+Most math functions in `bcl` "consume" their operand arguments; the arguments
+are freed, whether or not an error is returned.
+
+This is to make it easy to implement math code, like this:
+
+```
+n = bcl_add(bcl_mul(a, b), bcl_div(c, d));
+```
+
+If numbers need to be preserved, they can be with `bcl_dup()`:
+
+```
+n = bcl_add(bcl_mul(bcl_dup(a), bc_dup(b)), bcl_div(bcl_dup(c), bcl_dup(d)));
+```
+
+### Errors
+
+Errors can be encoded in the indices representing numbers, and where necessary,
+clients are responsible for checking those errors.
+
+The encoding of errors is this: if an error happens, the value `0-error` is
+returned. To decode, do the exact same thing. Thus, any index above
+`0-num_errors` is an error.
+
+If an index that represents an error is passed to a math function, that function
+propagates the error to its result and does not perform the math operation.
+
+All of this is to, once again, make it easy to implement the math code as above.
+
+However, where possible, errors are returned directly.
 
 [1]: https://en.wikipedia.org/wiki/Bus_factor
 [2]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html#top
@@ -4477,7 +4673,7 @@ TODO
 [5]: ./bc/A.1.md#standard-library
 [6]: https://github.com/torvalds/linux/blob/master/kernel/time/timeconst.bc
 [7]: ./bc/A.1.md#extended-library
-[8]: #libbc
+[8]: #libbc-2
 [9]: #strgensh
 [10]: https://vimeo.com/230142234
 [11]: https://gavinhoward.com/2019/12/values-for-yao/
@@ -4548,8 +4744,8 @@ TODO
 [76]: ##posix-shell-scripts
 [77]: #tests
 [78]: #karatsubapy
-[79]: #bc
-[80]: #dc
+[79]: #bc-1
+[80]: #dc-1
 [81]: ./build.md#build-type
 [82]: #fuzzing-1
 [83]: #releasesh
@@ -4613,7 +4809,7 @@ TODO
 [141]: #group-tests
 [142]: #build-system
 [143]: #generated-tests
-[144]: #benchmarks
+[144]: #benchmarks-1
 [145]: #gen
 [146]: #test-coverage
 [147]: #integration-with-the-build-system
@@ -4630,8 +4826,8 @@ TODO
 [158]: #bclc
 [159]: #valgrind
 [160]: #addresssanitizer-and-friends
-[161]: #bc-1
-[162]: #dc-1
+[161]: #bc-2
+[162]: #dc-2
 [163]: #alltxt-1
 [164]: #errorstxt
 [165]: #posix_errorstxt
@@ -4691,3 +4887,8 @@ TODO
 [217]: https://en.wikipedia.org/wiki/Profile-guided_optimization
 [218]: https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fexpect
 [219]: ./build.md#optimization
+[220]: #benchmarksh
+[221]: https://cgit.freebsd.org/src/tree/usr.bin/ministat/ministat.c
+[222]: https://www.freebsd.org/cgi/man.cgi?query=ministat&apropos=0&sektion=0&manpath=FreeBSD+13.0-RELEASE+and+Ports&arch=default&format=html
+[223]: #ministatc
+[224]: #dc
