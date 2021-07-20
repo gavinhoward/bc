@@ -582,7 +582,8 @@ typedef enum BcErr {
  * signals are not locked and will lock them, set the jump, and unlock them.
  * Setting the jump also includes pushing the jmp_buf onto the jmp_buf stack.
  * This grows the jmp_bufs vector first to prevent a fatal error from happening
- * after the setjmp().
+ * after the setjmp(). This is done because BC_SETJMP(l) is assumed to be used
+ * *before* the actual initialization calls that need the setjmp().
  * param l  The label to jump to on a longjmp().
  */
 #define BC_SETJMP(l)                     \
@@ -600,15 +601,15 @@ typedef enum BcErr {
 
 /**
  * Sets a jump like BC_SETJMP, but unlike BC_SETJMP, it assumes signals are
- * locked and will just set the jump. This grows the jmp_bufs vector first to
- * prevent a fatal error from happening after the setjmp().
+ * locked and will just set the jump. This does *not* have a call to
+ * bc_vec_grow() because it is assumed that BC_SETJMP_LOCKED(l) is used *after*
+ * the initializations that need the setjmp().
  * param l  The label to jump to on a longjmp().
  */
 #define BC_SETJMP_LOCKED(l)              \
 	do {                                 \
 		sigjmp_buf sjb;                  \
 		BC_SIG_ASSERT_LOCKED;            \
-		bc_vec_grow(&vm.jmp_bufs, 1);    \
 		if (sigsetjmp(sjb, 0)) {         \
 			assert(BC_SIG_EXC);          \
 			goto l;                      \
