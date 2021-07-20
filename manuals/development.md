@@ -3662,20 +3662,99 @@ changes to history in order to make it adapt to user prompts.
 
 ### Lexing
 
-TODO
+To simplify parsing, both calculators use lexers to turn the text into a more
+easily-parsable form.
+
+While some tokens are only one character long, others require many tokens, and
+some of those need to store all of the text corresponding to the token for use
+by the parsers. Tokens that need to store their corresponding text include, but
+are not limited to:
+
+* Strings.
+* Numbers.
+* Identifiers.
+
+For this purpose, the lexer has a [vector][111] named `str` to store the data
+for tokens. This data is overwritten if another token is lexed that needs to
+store data, so the parsers need to copy the data before calling the lexer again.
+
+Both lexers do some of the same things:
+
+* Lex identifiers into tokens, storing the identifier in `str`.
+* Lex number strings into tokens, storing the string in `str`.
+* Lex whitespace.
+* Lex comments.
+
+Other than that, and some common plumbing, the lexers have separate code.
+
+#### `dc` Lexing
+
+The `dc` lexer is remarkably simple; in fact, besides [`src/main.c`][205],
+[`src/bc.c`][40], and [`src/dc.c`][44], which just contain one function each,
+the only file smaller that [`src/dc_lex.c`][45] is [`src/args.c`][206], which
+just processes command-line arguments after they are parsed by
+[`src/opt.c`][51].
+
+For most characters, the `dc` lexer is able to convert directly from the
+character to its corresponding token. This happens using `dc_lex_tokens[]` in
+[`src/data.c`][131].
+
+`dc`'s lexer also has to lex the register name after lexing tokens for commands
+that need registers.
+
+And finally, `dc`'s lexer needs to parse `dc` strings, which is the only part of
+the `dc` lexer that is more complex than the `bc` lexer. This is because `dc`
+strings need to have a balanced number of brackets.
+
+#### `bc` Lexing
+
+The `bc` lexer is fairly simple. It does the following things:
+
+* Lexes `bc` strings.
+* Lexes `bc` identifiers. This is necessary because this is how `bc` keywords
+  are lexed. After ensuring that an identifier is not a keyword, the `bc` lexer
+  allows the common identifier function to take over.
+* Turns characters and groups of characters into `bc` operator tokens.
 
 ### Parsing
 
-TODO
+The difference between parsing `bc` and `dc` code is...vast. The `dc` parser is
+simple, while the `bc` parser is the most complex piece of code in the entire
+codebase.
 
-* Parsing generates bytecode directly, no AST.
+However, they both do some of the same things.
+
+First, the parsers do *not* use [abstract syntax trees][207]; instead, they
+directly generate the bytecode that will be executed by the `BcProgram` code.
+Even in the case of `bc`, this heavily simplifies the parsing because the
+[Shunting-Yard Algorithm][109] is designed to generate [Reverse Polish
+Notation][108], which is basically directly executable.
+
+Second, any extra data that the `BcProgram` needs for execution is stored into
+functions (see the [Functions][208] section). These include constants and
+strings.
 
 #### `dc` Parsing
 
-TODO
+The parser for `dc`, like its lexer, is remarkably simple. In fact, the easiness
+of lexing and parsing [Reverse Polish notation][108] is probably why it was used
+for `dc` when it was first created at Bell Labs.
 
-(In fact, the easiness of parsing [Reverse Polish notation][108] is probably
-why it was used for `dc` when it was first created at Bell Labs.)
+For most tokens, the `dc` parser is able to convert directly from the token
+to its corresponding instruction. This happens using `dc_parse_insts[]` in
+[`src/data.c`][131].
+
+`dc`'s parser also has to parse the register name for commands that need
+registers. This is the most complex part of the `dc` parser; each different
+register command needs to be parsed differently because most of them require two
+or more instructions to execute properly.
+
+For example, storing in a register requires a swap instruction and an assignment
+instruction.
+
+Another example are conditional execution instructions; they need to produce the
+instruction for the condition, and then they must parse a possible "else" part,
+which might not exist.
 
 #### `bc` Parsing
 
@@ -3882,35 +3961,162 @@ occur.
 
 #### Execution
 
-TODO
+Execution is handled by an interpreter implemented using `BcProgram` and code
+in [`src/program.c`][53].
 
-* Bytecode.
-* Stack machine.
-* `stack` vs. `results`.
-* `BcInstPtr` for marking where execution is.
-* Variables are arrays, in order to push arguments on them and to implement
-  autos.
-* Arrays are arrays as well.
+The interpreter is a mix between a [stack machine][210] and a [register
+machine][211]. It is a stack machine in that operations happen on a stack I call
+the "results stack," but it is a register machine in that items on the stack can
+be stored to and loaded from "registers" (`dc` terminology), variables (`bc`
+terminology), and arrays.
+
+##### Stacks
+
+There are two stacks in the interpreter:
+
+* The "results" stack (as mentioned above).
+* The "execution" stack.
+
+The results stack (the `results` field of the `BcProgram` struct) is the stack
+where the results of computations are stored. It is what makes the interpreter
+part [stack machine][210]. It is filled with `BcResult`'s.
+
+The execution stack (the `stack` field of the `BcProgram` struct) is the stack
+that tracks the current execution state of the interpreter. It is the presence
+of this separate stack that allows the interpreter to implement the machine as a
+loop, rather than recursively. It is filled with `BcInstPtr`'s, which are the
+"instruction pointers."
+
+These instruction pointers have three fields, all integers:
+
+* `func`, the index of the function that is currently executing.
+* `idx`, the index of the next bytecode instruction to execute in the function's
+  bytecode array.
+* `len`, which is the length of the results stack when the function started
+  executing. This is not used by `dc`, but it used by `bc` because functions
+  in `bc` should never affect the results stack of their callers.
+
+With these three fields, and always executing using the instruction pointer at
+the top of the execution stack, the interpreter can always keep track of its
+execution.
+
+When a function or a string starts executing, a new `BcInstPtr` is pushed onto
+the execution stack for it. This includes if a function was called recursively.
+And then, when the function or string returns, its `BcInstPtr` is popped off of
+the execution stack.
 
 ##### Bytecode
 
-TODO
+Execution of functions are done through bytecode produced directly by the
+parsers (see the [Parsing][209]). This bytecode is stored in the `code`
+[vector][111] of the `BcFunc` struct.
+
+This is a vector for two reasons:
+
+* It makes it easier to add bytecode to the vector in the parsers.
+* `bc` allows users to redefine functions.
+
+The reason I can use bytecode is because there are less than 256 instructions,
+so an `unsigned char` can store all the bytecodes.
 
 ###### Bytecode Indices
 
-TODO
+There is one other factor to bytecode: there are instructions that need to
+reference strings, constants, variables, or arrays. Bytecode need some way to
+reference those things.
+
+Fortunately, all of those things can be referenced in the same way: with indices
+because all of the items are in vectors.
+
+So `bc` has a way of encoding an index into bytecode. It does this by, after
+pushing the instruction that references anything, pushing a byte set to the
+length of the index in bytes, then the bytes of the index are pushed in
+little-endian order.
+
+Then, when the interpreter encounters an instruction that needs one or more
+items, it decodes the index or indices there and updates the `idx` field of the
+current `BcInstPtr` to point to the byte after the index or indices.
+
+One more thing: the encoder of the indices only pushes as many bytes as
+necessary to encode the index. It stops pushing when the index has no more bytes
+with any 1 bits.
 
 ##### Variables
 
-TODO
+In `bc`, the vector of variables, `vars` in `BcProgram`, is not a vector of
+numbers; it is a vector of vector of numbers. The first vector is the vector of
+variables, the second is the variable stack, and the last level is the actual
+number.
+
+This is because both `bc` and `dc` need variables to be stacks.
+
+For `dc`, registers are *defined* to be stacks.
+
+For `bc`, variables as stacks is how function arguments/parameters and function
+`auto` variables are implemented.
+
+When a function is called, and a value needs to be used as a function argument,
+a copy of the value is pushed onto the stack corresponding to the variable with
+the same name as the function's parameter. For `auto` variables, a new number
+set to zero is pushed onto each stack corresponding to the `auto` variables.
+(Zero is used because the [`bc` spec][2] requires that `auto` variables are set
+to zero.)
+
+It is in this way that the old value of the variable, which may not even be
+related to the function parameter or `auto` variable, is preserved while the
+variable is used as a function parameter or `auto` variable.
+
+When the function returns, of course, the stacks of the variables for the
+parameters and `auto`'s will have their top item popped, restoring the old value
+as it was before the function call.
 
 ##### Arrays
 
-TODO
+Like variables, arrays are also implemented as stacks. However, because they are
+arrays, there is yet another level; the `arrs` field in `BcProgram` is a vector
+of vectors of vectors of numbers. The first of the two levels is the vector of
+arrays, the second the stack of for each array, the third the actual array, and
+last the numbers in the array.
+
+`dc` has no need of this extra stack, but `bc` does because arrays can be
+function parameters themselves.
+
+When arrays are used for function arguments, they are copied with a deep copy;
+each item of the source vector is copied. This is because in `bc`, according to
+the [`bc` spec][2], all function arguments are passed by value.
+
+However, array references are possible (see below).
+
+When arrays are used as `auto`'s, a new vector is pushed with one element; if
+more elements are needed, the array is grown automatically, and new elements are
+given the value of zero.
+
+In fact, if *any* array is accessed and does not have an element at that index,
+the array is automaticall grown to that size, and all new elements are given the
+value zero. This behavior is guaranteed by the [`bc` spec][2].
 
 ###### Array References
 
-TODO
+Array references had to be implemented as vectors themselves because they must
+be pushed on the vectors stacks, which, as seen above, expect vectors
+themselves.
+
+So thus, references are implemented as vectors on the vector stacks. These
+vectors are not vectors of vectors themselves; they are vectors of bytes; in
+fact, the fact that they are byte vectors and not vector vectors is how a
+reference vector is detected.
+
+These reference vectors always have the same two things pushed: a byte encoding
+(the same way bytecode indices are) of the referenced vector's index in the
+`arrs` vector, and a byte encoding of the referenced vectors index in the vector
+stack.
+
+If an item in a referenced vector is needed, then the reference is dereferenced,
+and the item is returned.
+
+If a reference vector is passed to a function that does *not* expect a
+reference, the vector is dereferenced and a deep copy is done, in the same way
+as vectors are copied for normal array function parameters.
 
 ### Callbacks
 
@@ -3958,47 +4164,273 @@ release when I change the code, and I have not released `bc` after version
 
 ### Numbers
 
-TODO
+In order to do arbitrary-precision math, as `bc` must do, there must be some way
+of representing arbitrary-precision numbers. `BcNum` in [`include/num.h`][184]
+is `bc`'s.
 
-* Define limbs.
-* Little-endian.
-* The decimal point is always between limbs, never within a limb.
+(Note: the word ["limb"][214] is used below; it has a specific meaning when
+applied to arbitrary-precision numbers. It means one piece of the number. It can
+have a single digit, which is what GNU `bc` does, or it can have multiple, which
+is what this `bc` does.)
 
-#### Math Concepts
+This struct needs to store several things:
 
-TODO
+* The array of limbs of the number. This is the `num` field.
+* The location of the decimal point. This is the `rdx` (short for [radix][215])
+  field.
+* The number of limbs the number has. This is the `len` field.
+* Whether the number is negative or not. This is the least significant bit of
+  the `rdx` field. More on that later.
 
-* Math functions start with error checking, move to allocation, move to
-  assumption assurance, and *then* do the math.
+In addition, `bc`'s number stores the capacity of the limb array; this is the
+`cap` field.
+
+If the number needs to grow, and the capacity of the number is big enough, the
+number is not reallocated; the number of limbs is just added to.
+
+There is one additional wrinkle: to make the usual operations (binary operators)
+fast, the decimal point is *not* allowed to be in the middle of a limb; it must
+always be between limbs, after all limbs (integer) or before all limbs (real
+between -1 and 1).
+
+The reason for this is because addition, subtraction, multiplication, and
+division expect digits to be lined up on the decimal point. By requiring that it
+be between limbs, no extra alignment is needed, and those operations can proceed
+without extra overhead.
+
+This does make some operations, most notably extending, truncating, and
+shifting, more expensive, but the overhead is constant, and these operations are
+usually cheap compared to the binary operators anyway.
+
+This also requires something else: `bc` numbers need to know *exactly* how many
+decimal places they have after the decimal point. If the decimal point must be
+inbetween limbs, the last decimal place could be in the middle of a limb. The
+amount of decimal places in a number is carefully tracked and stored in the
+`scale` field, and this number must always coincide with the `rdx` field by the
+following formula:
+
+```
+scale + (BC_BASE_DIGS - 1) / BC_BASE_DIGS == rdx >> 1
+```
+
+(`BC_BASE_DIGS` is the number of decimal digits stored in one limb. It is 9 on
+64-bit systems and 4 on other systems.)
+
+Yes, `rdx` is shifted; that is because the negative bit is stored in the least
+significant bit of the `rdx` field, and the actual radix (amount of limbs after
+the decimal/radix point) is stored in the rest of the bits. This is safe because
+`BC_BASE_DIGS` is always at least 4, which means `rdx` will always need at least
+2 bits less than `scale`.
+
+In addition to `rdx` always matching `scale`, another invariant is that `rdx`
+must always be less than or equal to `len`. (Because `scale` may be greater than
+`rdx`, `scale` does not have to be less than or equal to `len`.)
+
+Another invariant is that `len` must always be less than or equal to `cap`, for
+obvious reasons.
+
+The last thing programmers need to know is that the limb array is stored in
+little-endian order. This means that the last decimal places are in the limb
+stored at index 0, and the most significant digits are stored at index `len-1`.
+
+This is done to make the most important operations fast. Addition and
+subtraction are done from least significant to most significant limbs, which
+means they can speed through memory in the way most computers are best at.
+Multiplication does the same, sort of, and with division, it matters less.
+Comparison does need to go backwards, but that's after exhausting all other
+alternatives, including for example, checking the length of the integer portion
+of each limb array.
+
+Finally, here are some possible special situations with numbers and what they
+mean:
+
+* `len == 0`: the number equals 0.
+* `len == 0 && scale != 0`: the number equals 0, but it has a `scale` value.
+  This is the only case where `scale` does not have to coincide with `rdx`
+  This can happen with division, for example, that sets a specific `scale` for
+  the result value but may produce 0.
+* `(rdx >> 1) < len`: the number is greater than or equal to 1, or less than or
+  equal to -1.
+* `(rdx >> 1) == len`: the number is greater than -1 and less than 1, not
+  including 0, although this will be true for 0 as well. However, 0 is always
+  assumed to be represented by `len == 0`.
+* `(rdx >> 1) == 0`: the number is an integer. In this case, `scale` must also
+  equal 0.
+
+#### Math Style
+
+When I wrote the math for `bc`, I adopted a certain style that, if known, will
+make it easier to understand the code. The style follows these rules:
+
+* `BcNum` arguments always come before arguments of other types.
+* Among the `BcNum` arguments, the operands always come first, and the `BcNum`
+  where the result(s) will be stored come last.
+* Error checking is placed first in the function.
+* Easy cases are placed next.
+* Preparation, such as allocating temporaries, comes next.
+* The actual math.
+* Cleanup and ensuring invariants.
+
+While these rules are not hard and fast, using them as a guide will probably
+help.
 
 ### Strings as Numbers
 
-TODO
+In `dc`, strings can be assigned to variables. This is a problem because the
+vectors for variable stacks expect `BcNum` structs only.
+
+While I could have made a union, I decided that the complexity of adding an
+entirely new type, with destructor and everything, was not worth it. Instead, I
+took advantage of the fact that `free()`, when passed a `NULL` pointer, will do
+nothing.
+
+Using that, I made it so `BcNum`'s could store strings instead. This is marked
+by the `BcNum` having a `NULL` limb array (`num`) and a `cap` of 0 (which should
+*never* happen with a real number, though the other fields could be 0).
+
+If this is the case, then the `BcNum` stores the index of the string in the
+`scale` field. This is used to actually load the string if necessary. This works
+because in `dc`, all strings are stored in the main function (see the [Main and
+Read Functions][216] section).
 
 ### Pseudo-Random Number Generator
 
-TODO
+In order to understand this section, I suggest you read the information in the
+manpages about the pseudo-random number generator (PRNG) first; that will help
+you understand the guarantees it has, which is important because this section
+delves into implementation details.
 
-* Integer portion is increment.
-* Real portion is the real seed.
-	* Why I did that: because in base 10, I know how many decimal places a base
-	  2^N needs to be represented exactly.
-* PRNG is the PCG PRNG by Melissa O'Neill.
+First, the PRNG I use is seeded; this is because most OS's have an excellent
+cryptographically secure PRNG available via command-line, usually
+`/dev/urandom`, but the only *seeded* PRNG available is usually `bash`'s
+`$RANDOM`, which is essentially a wrapper around C's `rand()`.
 
-## Debugging
+`rand()` is...bad. It is only guaranteed to return 15 bits of random data.
+Obviously, getting good random data out of that would be hard with that alone,
+but implementations also seem to be poor.
 
-TODO
+On top of that, `bc` is an arbitrary-precision calculator; if I made it able to
+generate random numbers, I could make it generate random numbers of any size,
+and since it would be seeded, results would be reproducible, when wanted.
 
-* `BC_DEBUG_CODE`.
-	* Hidden behind a `#define` to ensure it does not leak into actual code.
+So to get that, I needed a seeded PRNG with good characteristics. After scouring
+the Internet, I decided on the [PCG PRNG][215], mostly because of [this blog
+post][216]. Part of the reason was the behavior of the xoroshiro128+ author, who
+hates on PCG and its author, but also because PCG seemed to do better when
+tested by independent parties.
+
+After that decision, I faced a challenge: PCG requires 255 bits of seed: 128 for
+the actual seed, and 127 for the "increment." (Melissa O'Neill, the PCG author,
+likens the increment to selecting a codebook.)
+
+I could, of course, put the entire 255 bits into one massive arbitrary-precision
+number; `bc` is good at that, after all. But that didn't sit right with me
+because it would mean any seed selected by users would have the real portion
+ignored, which is stupid in a program like `bc`.
+
+Instead, I decided to make the integer portion the increment (clamped down to
+size), and the real portion the seed.
+
+In most cases, this would be a bad idea because you cannot, in general, know how
+many decimal places you need to represent any number with `n` real digits in
+base `b` in another base. However, there is an easy to how many decimal digits
+after the decimal point it takes to represent reals of base 2 in base 10: the
+power of two.
+
+It turns out that, for base 2 represented in base 10, the power of 2 is
+*exactly* how many digits are necessary to represent *any* number `n/2^p`, where
+`p` is the power of 2. This is because at every halving, the number of decimal
+places increases by 1:
+
+```
+0.5
+0.25
+0.125
+0.0625
+0.03125
+0.015625
+...
+```
+
+So the algorithm to convert all 255 bits of the seed is as follows:
+
+1.	Convert the increment to a `BcNum`.
+2.	Convert the seed to a `BcNum`.
+3.	Divide the seed by `2^128` with a `scale` of 128. (For 32-bit systems,
+	substitute 64 bits for 128.)
+4.	Add the two numbers together.
+
+Likewise, the algorithm to convert from a user-supplied number to a seed is:
+
+1.	Truncate a copy of the number.
+2.	Subtract the result from #1 from the original number. This gives the real
+	portion of the number.
+3.	Clamp the result of #1 to 127 (or 63) bits. This is the increment.
+4.	Multiply the result of #2 by `2^128`.
+5.	Truncate the result of #4. This is the seed.
+
+#### Generating Arbitrary-Precision Numbers
+
+I wrote a function (`bc_rand_bounded()`) that will return unbiased results with
+any bound below the max that PCG can generate.
+
+To generate an integer of arbitrary size using a bound, `bc` simply uses
+`bc_rand_bounded()` to generate numbers with a bound `10^BC_BASE_DIGS` for as
+many limbs as needed to satisfy the bigger bound.
+
+To generate numbers with arbitrary precision after the decimal point, `bc`
+merely generates an arbitrary precision integer with the bound `10^p`, where `p`
+is the desired number of decimal places, then divides in by `10^p` with a
+`scale` of `p`.
+
+## Debug Code
+
+Besides building `bc` in debug mode with the `-g` flag to [`configure.sh`][69],
+programmers can also add `-DBC_DEBUG_CODE=1` to the `CFLAGS`. This will enable
+the inclusion of *a lot* of extra code to assist with debugging.
+
+For more information, see all of the code guarded by `#if BC_DEBUG_CODE` in the
+[`include/`][212] directory and in the [`src/`][213] directory.
+
+Yes, all of the code is guarded by `#if` preprocessor statements; this is
+because the code should *never* be in a release build, and by making programmers
+add this manually (not even an option to [`configure.sh`][69], it is easier to
+ensure that never happens.
+
+However, that said, the extra debug code is useful; that was why I kept it in.
 
 ## Performance
 
-TODO
+While I have put in a lot of effort to make `bc` as fast as possible, there
+might be some things you can do to speed it up without changing the code.
 
-* `BC_ERR`/`BC_UNLIKELY`
-* `BC_NO_ERR`/`BC_LIKELY`
-* Link-time optimization.
+First, you can probably use [profile-guided optimization][217] to optimize even
+better, using the test suite to profile.
+
+Second, I included macros that might help branch placement and prediction:
+
+* `BC_ERR(e)`
+* `BC_UNLIKELY(e)`
+* `BC_NO_ERR(e)`
+* `BC_LIKELY(e)`
+
+`BC_ERR` is the same as `BC_UNLIKELY`, and `BC_NO_ERR` is the same as
+`BC_LIKELY`; I just added them to also document branches that lead to error
+conditions or *away* from error conditions.
+
+Anyway, if `BC_LIKELY` and `BC_UNLIKELY` are not defined during compilation,
+they expand to nothing but the argument they were given.
+
+They can, however, be defined to `__builtin_expect((e), 1)` and
+`__builtin_expect((e), 0)`, respectively, on GCC and Clang for better branch
+prediction and placement. (For more information about `__builtin_expect()` see
+the [GCC documentation][218].)
+
+There might be other compilers that can take advantage of that, but I don't know
+anything about that.
+
+Also, as stated in the [build manual][219], link-time optimization is excellent
+at optimizing this `bc`. Use it.
 
 ### Benchmarks
 
@@ -4006,12 +4438,25 @@ TODO
 
 * Need to generate benchmarks and run them.
 * `ministat`.
-* Adding benchmarks. Including to `.gitignore` and the `clean_benchmarks`
-  target.
+* Adding benchmarks.
 
 ### Caching of Numbers
 
-TODO
+In order to provide some performance boost, `bc` tries to reuse old `BcNum`'s
+that have the default capacity (`BC_NUM_DEF_SIZE`).
+
+It does this by allowing `bc_num_free()` to put the limb array onto a
+statically-allocated stack (it's just a global array with a set size). Then,
+when a `BcNum` with the default capacity is needed, `bc_num_init()` asks if any
+are available. If the answer is yes, the one on top of the stack is returned.
+Otherwise, `NULL` is returned, and `bc_num_free()` knows it needs to `malloc()`
+a new limb array.
+
+When the stack is filled, any numbers that `bc` attempts to put on it are just
+freed.
+
+This setup saved a few percent in my testing for version [3.0.0][32], which is
+when I added it.
 
 ## `bcl`
 
@@ -4202,7 +4647,7 @@ TODO
 [175]: #read_errorstxt
 [176]: #statush
 [177]: #numbers
-[178]: #math-concepts
+[178]: #math-style
 [179]: #pseudo-random-number-generator
 [180]: #lexh
 [181]: #parseh
@@ -4229,3 +4674,20 @@ TODO
 [202]: https://en.wikipedia.org/wiki/Tail_call
 [203]: https://en.wikipedia.org/wiki/Functional_programming_language
 [204]: https://en.wikipedia.org/wiki/C_dynamic_memory_allocation
+[205]: #mainc
+[206]: #argc
+[207]: https://en.wikipedia.org/wiki/Abstract_syntax_tree
+[208]: #functions
+[209]: #parsing
+[210]: https://en.wikipedia.org/wiki/Stack_machine
+[211]: https://en.wikipedia.org/wiki/Register_machine
+[212]: #include
+[213]: #src
+[214]: https://gmplib.org/manual/Nomenclature-and-Types
+[215]: https://en.wikipedia.org/wiki/Radix_point
+[216]: #main-and-read-functions
+[215]: https://www.pcg-random.org/
+[216]: https://lemire.me/blog/2017/08/22/testing-non-cryptographic-random-number-generators-my-results/
+[217]: https://en.wikipedia.org/wiki/Profile-guided_optimization
+[218]: https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html#index-_005f_005fbuiltin_005fexpect
+[219]: ./build.md#optimization

@@ -901,6 +901,7 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 		bc_num_copy(c, a);
 		return;
 	}
+
 	if (BC_NUM_ZERO(a)) {
 		bc_num_copy(c, b);
 		c->rdx = BC_NUM_NEG_VAL(c, BC_NUM_NEG(b) != sub);
