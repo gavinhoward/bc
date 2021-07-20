@@ -1044,10 +1044,10 @@ static void bcl_frandHelper(BcNum *restrict b, size_t places) {
 
 	BC_SIG_LOCK;
 
-	BC_SETJMP_LOCKED(err);
-
 	// Initialize the temporary that might need to grow.
 	bc_num_init(&pow, bc_num_powReq(&ten, &exp, 0));
+
+	BC_SETJMP_LOCKED(err);
 
 	BC_SIG_UNLOCK;
 
