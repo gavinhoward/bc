@@ -64,14 +64,13 @@ static void bc_lex_identifier(BcLex *l) {
 			// If the keyword has been redefined, break out of the loop and use
 			// it as a name. This depends on the parser ensuring that only
 			// non-POSIX keywords get redefined.
-			if (BC_REDEFINE && vm.redefined_kws[i]) break;
+			if (vm.redefined_kws[i]) break;
 
 			l->t = BC_LEX_KW_AUTO + (BcLexType) i;
 
 			// Warn or error, as appropriate for the mode, if the keyword is not
 			// in the POSIX standard.
-			if (!BC_LEX_KW_POSIX(kw))
-				bc_lex_verr(l, BC_ERR_POSIX_KW, kw->name);
+			if (!BC_LEX_KW_POSIX(kw)) bc_lex_verr(l, BC_ERR_POSIX_KW, kw->name);
 
 			// We minus 1 because the index has already been incremented.
 			l->i += n - 1;

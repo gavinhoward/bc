@@ -145,6 +145,7 @@ const BcOptLong bc_args_lopt[] = {
 	{ "global-stacks", BC_OPT_BC_ONLY, 'g' },
 	{ "mathlib", BC_OPT_BC_ONLY, 'l' },
 	{ "quiet", BC_OPT_BC_ONLY, 'q' },
+	{ "redefine", BC_OPT_REQUIRED_BC_ONLY, 'r' },
 	{ "standard", BC_OPT_BC_ONLY, 's' },
 	{ "warn", BC_OPT_BC_ONLY, 'w' },
 #endif // BC_ENABLED

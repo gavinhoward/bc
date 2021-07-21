@@ -50,9 +50,13 @@ This bc(1) is a drop-in replacement for *any* bc(1), including (and especially)
 the GNU bc(1).
 
 **Note**: If running this bc(1) on *any* script meant for another bc(1) gives a
-parse error, set the environment variable **BC_REDEFINE_KEYWORDS** to **1** (see
-the **ENVIRONMENT VARIABLES** section) and try again. It should parse correctly.
-If not, that is a bug and should be reported. See the **BUGS** section.
+parse error, it is probably because a word this bc(1) reserves as a keyword is
+used as the name of a function, variable, or array. To fix that, use the
+command-line option **-r** *keyword*, where *keyword* is the keyword that is
+used as a name in the script. For more information, see the **OPTIONS** section.
+
+If parsing scripts meant for other bc(1) implementations still does not work,
+that is a bug and should be reported. See the **BUGS** section.
 
 # OPTIONS
 
@@ -141,6 +145,36 @@ The following are the options that bc(1) accepts.
     variables (see the **ENVIRONMENT VARIABLES** section).
 
     This is a **non-portable extension**.
+
+**-r** *keyword*, **-\-redefine**=*keyword*
+
+:   Redefines *keyword* in order to allow it to be used as a function, variable,
+    or array name. This is useful when this bc(1) gives parse errors when
+    parsing scripts meant for other bc(1) implementations.
+
+    The keywords this bc(1) allows to be redefined are:
+
+    * **abs**
+    * **continue**
+    * **divmod**
+    * **else**
+    * **halt**
+    * **last**
+    * **limits**
+    * **maxibase**
+    * **maxobase**
+    * **maxscale**
+    * **modexp**
+    * **print**
+    * **read**
+
+    If any of those keywords are used as a function, variable, or array name in
+    a script, use this option with the keyword as the argument. If multiple are
+    used, use this option for all of them; it can be used multiple times.
+
+    It is a fatal error to redefine keywords mandated by the POSIX standard. It
+    is a fatal error to attempt to redefine words that this bc(1) does not
+    reserve as keywords.
 
 **-R**, **-\-no-read-prompt**
 
@@ -986,27 +1020,6 @@ bc(1) recognizes the following environment variables:
     If bc(1) is not in interactive mode (see the **INTERACTIVE MODE** section),
     then this environment variable has no effect because bc(1) does not print
     the banner when not in interactive mode.
-
-    This environment variable overrides the default, which can be queried with
-    the **-h** or **-\-help** options.
-
-**BC_REDEFINE_KEYWORDS**
-
-:   If this environment variable exists and contains an integer, then a non-zero
-    value makes bc(1) allow the user to redefine keywords that do not exist in
-    the bc standard, while zero causes bc(1) to give parse errors if keywords
-    are not used as expected.
-
-    This has several consequences.
-
-    First, if a keyword is used before it is redefined, then the keyword acts
-    normally.
-
-    Second, redefining a keyword precludes any future use of that keyword during
-    the execution of bc(1), except as the function that redefined it.
-
-    Third, if an error occurs during the parsing of a function whose name is a
-    redefined keyword, the keyword remains redefined, so it cannot be recovered.
 
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.

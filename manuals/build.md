@@ -533,11 +533,6 @@ environment variables to override them, is below:
 |                 | banner when in       |              |                      |
 |                 | interactive mode.    |              |                      |
 | --------------- | -------------------- | ------------ | -------------------- |
-| bc.redefine_kws | Whether to allow the |            0 | BC_REDEFINE_KEYWORDS |
-|                 | user to redefine bc  |              |                      |
-|                 | keywords as function |              |                      |
-|                 | names.               |              |                      |
-| --------------- | -------------------- | ------------ | -------------------- |
 | bc.sigint_reset | Whether SIGINT will  |            1 | BC_SIGINT_RESET      |
 |                 | reset bc, instead of |              |                      |
 |                 | exiting, when in     |              |                      |

@@ -150,31 +150,28 @@
 /// The flag for the global stacks option.
 #define BC_FLAG_G (UINTMAX_C(1)<<4)
 
-/// The flag for redefining keywords.
-#define BC_FLAG_REDEFINE_KWS (UINTMAX_C(1)<<5)
-
 #endif // BC_ENABLED
 
 /// The flag for quiet, though this one is reversed; the option clears the flag.
-#define BC_FLAG_Q (UINTMAX_C(1)<<6)
+#define BC_FLAG_Q (UINTMAX_C(1)<<5)
 
 /// The flag for interactive.
-#define BC_FLAG_I (UINTMAX_C(1)<<7)
+#define BC_FLAG_I (UINTMAX_C(1)<<6)
 
 /// The flag for prompt. This is also reversed; the option clears the flag.
-#define BC_FLAG_P (UINTMAX_C(1)<<8)
+#define BC_FLAG_P (UINTMAX_C(1)<<7)
 
 /// The flag for read prompt. This is also reversed; the option clears the flag.
-#define BC_FLAG_R (UINTMAX_C(1)<<9)
+#define BC_FLAG_R (UINTMAX_C(1)<<8)
 
 /// The flag for stdin being a TTY.
-#define BC_FLAG_TTYIN (UINTMAX_C(1)<<10)
+#define BC_FLAG_TTYIN (UINTMAX_C(1)<<9)
 
 /// The flag for TTY mode.
-#define BC_FLAG_TTY (UINTMAX_C(1)<<11)
+#define BC_FLAG_TTY (UINTMAX_C(1)<<10)
 
 /// The flag for reset on SIGINT.
-#define BC_FLAG_SIGINT (UINTMAX_C(1)<<12)
+#define BC_FLAG_SIGINT (UINTMAX_C(1)<<11)
 
 /// A convenience macro for getting the TTYIN flag.
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
@@ -198,9 +195,6 @@
 
 /// A convenience macro for getting the global stacks flag.
 #define BC_G (vm.flags & BC_FLAG_G)
-
-/// A convenience macro for getting the global redefine keywords flag.
-#define BC_REDEFINE (vm.flags & BC_FLAG_REDEFINE_KWS)
 
 #endif // BC_ENABLED
 

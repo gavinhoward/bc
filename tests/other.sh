@@ -114,7 +114,6 @@ printf 'Running %s environment var tests...' "$d"
 if [ "$d" = "bc" ]; then
 
 	export BC_ENV_ARGS=" '-l' '' -q"
-	export BC_EXPR_EXIT="1"
 
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
 
@@ -127,9 +126,9 @@ if [ "$d" = "bc" ]; then
 
 	printf 'pass\n'
 
-	printf 'Running Keyword Redefinition test...'
+	printf 'Running keyword redefinition test...'
 
-	export BC_REDEFINE_KEYWORDS=1
+	unset BC_ENV_ARGS
 
 	redefine_res="$testdir/bc_outputs/redefine.txt"
 	redefine_out="$testdir/bc_outputs/redefine_results.txt"
@@ -142,22 +141,20 @@ if [ "$d" = "bc" ]; then
 
 	printf '5\n0\n' > "$redefine_res"
 
-	"$exe" -e 'define print(x) { x }' -e 'print(5)' "$@" > "$redefine_out"
+	"$exe" --redefine=print -e 'define print(x) { x }' -e 'print(5)' "$@" > "$redefine_out"
 
 	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
 
 	printf '5\n0\n' > "$redefine_res"
 
-	"$exe" -e 'define void abs(x) { x }' -e 'abs(5);0' "$@" > "$redefine_out"
+	"$exe" -r "abs" -r "else" -e 'abs = 5;else = 0' -e 'abs;else' "$@" > "$redefine_out"
 
 	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
 
-	"$exe" -e 'define break(x) { x }' "$@" 2> "$redefine_out"
+	"$exe" -r "break" -e 'define break(x) { x }' "$@" 2> "$redefine_out"
 	err="$?"
 
 	checkerrtest "$d" "$err" "keyword redefinition error" "$redefine_out" "$d"
-
-	unset BC_REDEFINE_KEYWORDS
 
 	"$exe" -e 'define read(x) { x }' "$@" 2> "$redefine_out"
 	err="$?"

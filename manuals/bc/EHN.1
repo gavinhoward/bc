@@ -56,11 +56,16 @@ This bc(1) is a drop-in replacement for \f[I]any\f[R] bc(1), including
 (and especially) the GNU bc(1).
 .PP
 \f[B]Note\f[R]: If running this bc(1) on \f[I]any\f[R] script meant for
-another bc(1) gives a parse error, set the environment variable
-\f[B]BC_REDEFINE_KEYWORDS\f[R] to \f[B]1\f[R] (see the \f[B]ENVIRONMENT
-VARIABLES\f[R] section) and try again.
-It should parse correctly.
-If not, that is a bug and should be reported.
+another bc(1) gives a parse error, it is probably because a word this
+bc(1) reserves as a keyword is used as the name of a function, variable,
+or array.
+To fix that, use the command-line option \f[B]-r\f[R] \f[I]keyword\f[R],
+where \f[I]keyword\f[R] is the keyword that is used as a name in the
+script.
+For more information, see the \f[B]OPTIONS\f[R] section.
+.PP
+If parsing scripts meant for other bc(1) implementations still does not
+work, that is a bug and should be reported.
 See the \f[B]BUGS\f[R] section.
 .SH OPTIONS
 .PP
@@ -171,6 +176,51 @@ These options override the \f[B]BC_PROMPT\f[R] and \f[B]BC_TTY_MODE\f[R]
 environment variables (see the \f[B]ENVIRONMENT VARIABLES\f[R] section).
 .PP
 This is a \f[B]non-portable extension\f[R].
+.RE
+.TP
+\f[B]-r\f[R] \f[I]keyword\f[R], \f[B]--redefine\f[R]=\f[I]keyword\f[R]
+Redefines \f[I]keyword\f[R] in order to allow it to be used as a
+function, variable, or array name.
+This is useful when this bc(1) gives parse errors when parsing scripts
+meant for other bc(1) implementations.
+.RS
+.PP
+The keywords this bc(1) allows to be redefined are:
+.IP \[bu] 2
+\f[B]abs\f[R]
+.IP \[bu] 2
+\f[B]continue\f[R]
+.IP \[bu] 2
+\f[B]divmod\f[R]
+.IP \[bu] 2
+\f[B]else\f[R]
+.IP \[bu] 2
+\f[B]halt\f[R]
+.IP \[bu] 2
+\f[B]last\f[R]
+.IP \[bu] 2
+\f[B]limits\f[R]
+.IP \[bu] 2
+\f[B]maxibase\f[R]
+.IP \[bu] 2
+\f[B]maxobase\f[R]
+.IP \[bu] 2
+\f[B]maxscale\f[R]
+.IP \[bu] 2
+\f[B]modexp\f[R]
+.IP \[bu] 2
+\f[B]print\f[R]
+.IP \[bu] 2
+\f[B]read\f[R]
+.PP
+If any of those keywords are used as a function, variable, or array name
+in a script, use this option with the keyword as the argument.
+If multiple are used, use this option for all of them; it can be used
+multiple times.
+.PP
+It is a fatal error to redefine keywords mandated by the POSIX standard.
+It is a fatal error to attempt to redefine words that this bc(1) does
+not reserve as keywords.
 .RE
 .TP
 \f[B]-R\f[R], \f[B]--no-read-prompt\f[R]
@@ -1186,29 +1236,6 @@ interactive mode, while zero deactivates it.
 If bc(1) is not in interactive mode (see the \f[B]INTERACTIVE MODE\f[R]
 section), then this environment variable has no effect because bc(1)
 does not print the banner when not in interactive mode.
-.PP
-This environment variable overrides the default, which can be queried
-with the \f[B]-h\f[R] or \f[B]--help\f[R] options.
-.RE
-.TP
-\f[B]BC_REDEFINE_KEYWORDS\f[R]
-If this environment variable exists and contains an integer, then a
-non-zero value makes bc(1) allow the user to redefine keywords that do
-not exist in the bc standard, while zero causes bc(1) to give parse
-errors if keywords are not used as expected.
-.RS
-.PP
-This has several consequences.
-.PP
-First, if a keyword is used before it is redefined, then the keyword
-acts normally.
-.PP
-Second, redefining a keyword precludes any future use of that keyword
-during the execution of bc(1), except as the function that redefined it.
-.PP
-Third, if an error occurs during the parsing of a function whose name is
-a redefined keyword, the keyword remains redefined, so it cannot be
-recovered.
 .PP
 This environment variable overrides the default, which can be queried
 with the \f[B]-h\f[R] or \f[B]--help\f[R] options.
