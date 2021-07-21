@@ -110,10 +110,6 @@ typedef struct BcProgram {
 
 #if DC_ENABLED
 
-	/// An array of strings. This is for dc only because dc does not store
-	/// strings in functions.
-	BcVec strs_v;
-
 	/// A vector of tail calls. These are just integers, which are the number of
 	/// tail calls that have been executed for each function (string) on the
 	/// stack for dc. This is to prevent dc from constantly growing memory use
@@ -331,6 +327,14 @@ void bc_program_printStackDebug(BcProgram* p);
  * @return     The index of the variable or array in the correct array.
  */
 size_t bc_program_search(BcProgram *p, const char* id, bool var);
+
+/**
+ * Adds a string to a function and returns the string's index in the function.
+ * @param p     The program.
+ * @param str   The string to add.
+ * @param fidx  The index of the function to add to.
+ */
+size_t bc_program_addString(BcProgram *p, const char *str, size_t fidx);
 
 /**
  * Inserts a function into the program and returns the index of the function in

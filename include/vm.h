@@ -598,11 +598,11 @@ typedef struct BcVm {
 	//// The slab for all other strings for the main function.
 	BcVec main_slabs;
 
-#if BC_ENABLED
-
 	/// The slab for function names, strings in other functions, and constants
 	/// in other functions.
 	BcVec other_slabs;
+
+#if BC_ENABLED
 
 	/// An array of booleans for which bc keywords have been redefined if
 	/// BC_REDEFINE_KEYWORDS is non-zero.

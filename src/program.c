@@ -56,7 +56,7 @@
  */
 static inline void bc_program_setVecs(BcProgram *p, BcFunc *f) {
 	p->consts = &f->consts;
-	if (BC_IS_BC) p->strs = &f->strs;
+	p->strs = &f->strs;
 }
 
 /**
@@ -113,6 +113,52 @@ static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
 	}
 
 	return res;
+}
+
+/**
+ * Returns the location of a string from a result and its number. In BcLoc, loc
+ * is the function that has the string, idx is the string's index in the
+ * function.
+ * @param r  The result.
+ * @param n  The number tied to the result.
+ * @return   The location, function and index, of the string.
+ */
+static BcLoc bc_program_stringLoc(BcResult *r, BcNum *n) {
+
+	BcLoc loc;
+
+	// Get the function and index of the string.
+	if (r->t == BC_RESULT_STR) loc = r->d.loc;
+	else {
+		loc.loc = n->rdx;
+		loc.idx = n->scale;
+	}
+
+	return loc;
+}
+
+/**
+ * Returns the string with the corresponding indices.
+ * @param p     The BcProgram.
+ * @param fidx  The index of the function where the string is.
+ * @param sidx  The index of the string in the function.
+ * @return      The string in function at index @a fidx and at index @a sidx.
+ */
+static char* bc_program_getString(BcProgram *p, size_t fidx, size_t sidx) {
+	BcFunc *f = bc_vec_item(&p->fns, fidx);
+	return *((char**) bc_vec_item(&f->strs, sidx));
+}
+
+/**
+ * Returns a string from a result and its number.
+ * @param p  The program.
+ * @param r  The result.
+ * @param n  The number tied to the result.
+ * @return   The string corresponding to the result and number.
+ */
+static char* bc_program_string(BcProgram *p, BcResult *r, BcNum *n) {
+	BcLoc loc = bc_program_stringLoc(r, n);
+	return bc_program_getString(p, loc.loc, loc.idx);
 }
 
 #if BC_ENABLED
@@ -204,6 +250,27 @@ static void bc_program_pushBigdig(BcProgram *p, BcBigDig dig, BcResultType type)
 	bc_vec_push(&p->results, &res);
 
 	BC_SIG_UNLOCK;
+}
+
+size_t bc_program_addString(BcProgram *p, const char *str, size_t fidx) {
+
+	BcFunc *f;
+	char **str_ptr;
+	BcVec *slabs;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	// Push an empty string on the proper vector.
+	f = bc_vec_item(&p->fns, fidx);
+	str_ptr = bc_vec_pushEmpty(&f->strs);
+
+	// Figure out which slab vector to use.
+	slabs = fidx == BC_PROG_MAIN || fidx == BC_PROG_READ ?
+	        &vm.main_slabs : &vm.other_slabs;
+
+	*str_ptr = bc_slabvec_strdup(slabs, str);
+
+	return f->strs.len - 1;
 }
 
 size_t bc_program_search(BcProgram *p, const char *id, bool var) {
@@ -875,13 +942,9 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	}
 	else {
 
-		// The index of the number can either be stored in the scale of the
-		// number or in the BcLoc, depending on the type of result.
-		size_t i = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
-
 		// We want to flush any stuff in the stdout buffer first.
 		bc_file_flush(&vm.fout, bc_flush_save);
-		str = *((char**) bc_vec_item(p->strs, i));
+		str = bc_program_string(p, r, n);
 
 #if BC_ENABLED
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
@@ -889,6 +952,8 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 #endif // BC_ENABLED
 		{
 			bc_program_printString(str);
+
+			// Need to print a newline only in this case.
 			if (inst == BC_INST_PRINT)
 				bc_vm_putchar('\n', bc_flush_err);
 		}
@@ -1031,15 +1096,14 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 /**
  * Assigns a string to a variable.
  * @param p     The program.
- * @param idx   The index of the string.
+ * @param loc   The location of the string.
  * @param v     The stack for the variable.
  * @param push  Whether to push the string or not. To push means to move the
  *              string from the results stack and push it onto the variable
  *              stack.
  */
-static void bc_program_assignStr(BcProgram *p, size_t idx,
-                                 BcVec *v, bool push)
-{
+static void bc_program_assignStr(BcProgram *p, BcLoc loc, BcVec *v, bool push) {
+
 	BcNum *n;
 
 	assert(BC_PROG_STACK(&p->results, 1 + !push));
@@ -1053,7 +1117,10 @@ static void bc_program_assignStr(BcProgram *p, size_t idx,
 	n = bc_vec_pushEmpty(v);
 
 	bc_num_clear(n);
-	n->scale = idx;
+
+	// Set the location of the string.
+	n->rdx = loc.loc;
+	n->scale = loc.idx;
 }
 
 #endif // DC_ENABLED
@@ -1113,11 +1180,9 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 	// bc_program_assignStr().
 	if (BC_IS_DC && (ptr->t == BC_RESULT_STR || BC_PROG_STR(n))) {
 
-		size_t str_idx = ptr->t == BC_RESULT_STR ? ptr->d.loc.loc : n->scale;
-
 		if (BC_ERR(!var)) bc_err(BC_ERR_EXEC_TYPE);
 
-		bc_program_assignStr(p, str_idx, vec, true);
+		bc_program_assignStr(p, bc_program_stringLoc(ptr, n), vec, true);
 
 		return;
 	}
@@ -1132,6 +1197,7 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 		// If we get here, we are handling an array. This is one place we need
 		// to cast the number from bc_program_num() to a vector.
 		BcVec *v = (BcVec*) n, *rv = &r.d.v;
+
 #if BC_ENABLED
 
 		if (BC_IS_BC) {
@@ -1235,8 +1301,8 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 	// If we are assigning a string...
 	if (right->t == BC_RESULT_STR || BC_PROG_STR(r)) {
 
-		// Get the index of the string.
-		size_t idx = right->t == BC_RESULT_STR ? right->d.loc.loc : r->scale;
+		// Get the location of the string.
+		BcLoc loc = bc_program_stringLoc(right, r);
 
 		// If we are assigning to an array element...
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
@@ -1247,8 +1313,9 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			bc_num_free(l);
 			bc_num_clear(l);
 
-			// Set the index.
-			l->scale = idx;
+			// Set the location.
+			l->rdx = loc.loc;
+			l->scale = loc.idx;
 
 			// Now we can pop the results.
 			bc_vec_npop(&p->results, 2);
@@ -1260,7 +1327,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			// If we get here, we are assigning to a variable, which we can use
 			// bc_program_assignStr() for.
 			BcVec *v = bc_program_vec(p, left->d.loc.loc, BC_TYPE_VAR);
-			bc_program_assignStr(p, idx, v, false);
+			bc_program_assignStr(p, loc, v, false);
 		}
 
 		// By using bc_program_assignStr(), we short-circuited this, so return.
@@ -1440,7 +1507,8 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 		}
 		else {
 			// Set the string result.
-			r.d.loc.loc = num->scale;
+			r.d.loc.loc = num->rdx;
+			r.d.loc.idx = num->scale;
 			r.t = BC_RESULT_STR;
 		}
 
@@ -1826,12 +1894,10 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 				// If the item is a string...
 				if (!BC_PROG_NUM(opd, num)) {
 
-					size_t idx;
 					char *str;
 
-					// Get the index, then get the string, then get the length.
-					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->scale;
-					str = *((char**) bc_vec_item(p->strs, idx));
+					// Get the string, then get the length.
+					str = bc_program_string(p, opd, num);
 					val = (BcBigDig) strlen(str);
 				}
 				else
@@ -2012,9 +2078,10 @@ num_err:
 
 /**
  * Executes the "asciify" command in dc.
- * @param p  The program.
+ * @param p     The program.
+ * @param fidx  The index of the current function.
  */
-static void bc_program_asciify(BcProgram *p) {
+static void bc_program_asciify(BcProgram *p, size_t fidx) {
 
 	BcResult *r, res;
 	BcNum *n;
@@ -2032,18 +2099,12 @@ static void bc_program_asciify(BcProgram *p) {
 
 	assert(n != NULL);
 
-	// This is to ensure that the number of strings matches the number of
-	// functions.
-	assert(p->strs->len + BC_PROG_REQ_FUNCS == p->fns.len);
-
 	// Asciify.
 	if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
 	else {
 
-		// Get the index of the string, the string itself, then the first
-		// character.
-		size_t index = r->t == BC_RESULT_STR ? r->d.loc.loc : n->scale;
-		str2 = *((char**) bc_vec_item(p->strs, index));
+		// Get the string itself, then the first character.
+		str2 = bc_program_string(p, r, n);
 		c = (uchar) str2[0];
 	}
 
@@ -2051,16 +2112,15 @@ static void bc_program_asciify(BcProgram *p) {
 	str[0] = (char) c;
 	str[1] = '\0';
 
+	// Add the string to the data structures.
 	BC_SIG_LOCK;
-
-	// Insert the new "function."
-	idx = bc_program_insertFunc(p, str) - BC_PROG_REQ_FUNCS;
-
+	idx = bc_program_addString(p, str, fidx);
 	BC_SIG_UNLOCK;
 
 	// Set the result
 	res.t = BC_RESULT_STR;
-	res.d.loc.loc = idx;
+	res.d.loc.loc = fidx;
+	res.d.loc.idx = idx;
 
 	// Pop and push.
 	bc_vec_pop(&p->results);
@@ -2088,10 +2148,7 @@ static void bc_program_printStream(BcProgram *p) {
 
 	// Stream appropriately.
 	if (BC_PROG_NUM(r, n)) bc_num_stream(n);
-	else {
-		size_t idx = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
-		bc_program_printChars(*((char**) bc_vec_item(p->strs, idx)));
-	}
+	else bc_program_printChars(bc_program_string(p, r, n));
 
 	// Pop the operand.
 	bc_vec_pop(&p->results);
@@ -2210,6 +2267,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 		BC_UNSETJMP;
 		BC_SIG_UNLOCK;
 
+		fidx = n->rdx;
 		sidx = n->scale;
 	}
 	else {
@@ -2219,13 +2277,20 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 		// they are only put on the stack to be assigned to.
 		assert(r->t != BC_RESULT_VAR);
 
-		if (r->t == BC_RESULT_STR) sidx = r->d.loc.loc;
+		if (r->t == BC_RESULT_STR) {
+			fidx = r->d.loc.loc;
+			sidx = r->d.loc.idx;
+		}
 		else return;
 	}
 
-	// Get the function index, the string, and the function.
-	fidx = sidx + BC_PROG_REQ_FUNCS;
-	str = *((char**) bc_vec_item(p->strs, sidx));
+	// Get the string.
+	str = bc_program_getString(p, fidx, sidx);
+
+	// Get the function index and function.
+	BC_SIG_LOCK;
+	fidx = bc_program_insertFunc(p, str);
+	BC_SIG_UNLOCK;
 	f = bc_vec_item(&p->fns, fidx);
 
 	// If the function has not been parsed yet...
@@ -2298,8 +2363,12 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 err:
 	BC_SIG_MAYLOCK;
+
 	f = bc_vec_item(&p->fns, fidx);
+
+	// Make sure to erase the bytecode vector so dc knows it is not parsed.
 	bc_vec_popAll(&f->code);
+
 exit:
 	bc_vec_pop(&p->results);
 	BC_LONGJMP_CONT;
@@ -2399,28 +2468,19 @@ size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 	id_ptr = (BcId*) bc_vec_item(&p->fn_map, idx);
 	idx = id_ptr->idx;
 
-	// If the function is *not* new (the usual case)...
-	if (!new) {
-
-		// bc has to reset the function because it's about to be redefined.
-		if (BC_IS_BC) {
-			BcFunc *func = bc_vec_item(&p->fns, idx);
-			bc_func_reset(func);
-		}
-	}
-	else {
+	// If the function is new...
+	if (new) {
 
 		// Add the function to the fns array.
 		bc_program_addFunc(p, id_ptr);
-
-#if DC_ENABLED
-		// If this is dc, we need to add a string for the function too.
-		if (BC_IS_DC && idx >= BC_PROG_REQ_FUNCS) {
-			bc_vec_push(p->strs, &id_ptr->name);
-			assert(p->strs->len == p->fns.len - BC_PROG_REQ_FUNCS);
-		}
-#endif // DC_ENABLED
 	}
+#if BC_ENABLED
+	// bc has to reset the function because it's about to be redefined.
+	else if (BC_IS_BC) {
+		BcFunc *func = bc_vec_item(&p->fns, idx);
+		bc_func_reset(func);
+	}
+#endif // BC_ENABLED
 
 	return idx;
 }
@@ -2455,10 +2515,7 @@ void bc_program_free(BcProgram *p) {
 #endif // BC_ENABLE_EXTRA_MATH
 
 #if DC_ENABLED
-	if (BC_IS_DC) {
-		bc_vec_free(&p->tail_calls);
-		bc_vec_free(&p->strs_v);
-	}
+	if (BC_IS_DC) bc_vec_free(&p->tail_calls);
 #endif // DC_ENABLED
 }
 #endif // NDEBUG
@@ -2489,9 +2546,6 @@ void bc_program_init(BcProgram *p) {
 #if DC_ENABLED
 	// dc-only setup.
 	if (BC_IS_DC) {
-
-		bc_vec_init(&p->strs_v, sizeof(char*), BC_DTOR_NONE);
-		p->strs = &p->strs_v;
 
 		bc_vec_init(&p->tail_calls, sizeof(size_t), BC_DTOR_NONE);
 
@@ -2826,6 +2880,7 @@ void bc_program_exec(BcProgram *p) {
 				// Set up the result and push.
 				r.t = BC_RESULT_STR;
 				r.d.loc.loc = bc_program_index(code, &ip->idx);
+				r.d.loc.idx = bc_program_index(code, &ip->idx);
 				bc_vec_push(&p->results, &r);
 				break;
 			}
@@ -3023,7 +3078,7 @@ void bc_program_exec(BcProgram *p) {
 
 			case BC_INST_ASCIIFY:
 			{
-				bc_program_asciify(p);
+				bc_program_asciify(p, ip->func);
 
 				// Because we changed the execution stack and where we are
 				// executing, we have to update all of this.

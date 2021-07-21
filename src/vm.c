@@ -1307,11 +1307,8 @@ void bc_vm_boot(int argc, char *argv[]) {
 	// Initialize the slab vectors.
 	bc_slabvec_init(&vm.main_const_slab);
 	bc_slabvec_init(&vm.main_slabs);
+	bc_slabvec_init(&vm.other_slabs);
 
-#if BC_ENABLED
-	// Only bc needs this slab vector.
-	if (BC_IS_BC) bc_slabvec_init(&vm.other_slabs);
-#endif // BC_ENABLED
 #endif // !BC_ENABLE_LIBRARY
 
 	// Initialize the program and main parser. These have to be in this order
