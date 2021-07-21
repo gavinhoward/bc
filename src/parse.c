@@ -200,6 +200,7 @@ void bc_parse_reset(BcParse *p) {
 	if (BC_ERR(vm.status)) BC_JMP;
 }
 
+#ifndef NDEBUG
 void bc_parse_free(BcParse *p) {
 
 	BC_SIG_ASSERT_LOCKED;
@@ -219,6 +220,7 @@ void bc_parse_free(BcParse *p) {
 
 	bc_lex_free(&p->l);
 }
+#endif // NDEBUG
 
 void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 
