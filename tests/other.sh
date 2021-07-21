@@ -127,6 +127,45 @@ if [ "$d" = "bc" ]; then
 
 	printf 'pass\n'
 
+	printf 'Running Keyword Redefinition test...'
+
+	export BC_REDEFINE_KEYWORDS=1
+
+	redefine_res="$testdir/bc_outputs/redefine.txt"
+	redefine_out="$testdir/bc_outputs/redefine_results.txt"
+
+	outdir=$(dirname "$easter_out")
+
+	if [ ! -d "$outdir" ]; then
+		mkdir -p "$outdir"
+	fi
+
+	printf '5\n0\n' > "$redefine_res"
+
+	"$exe" -e 'define print(x) { x }' -e 'print(5)' "$@" > "$redefine_out"
+
+	checktest "$d" "$err" "Keyword redefinition" "$redefine_res" "$redefine_out"
+
+	printf '5\n0\n' > "$redefine_res"
+
+	"$exe" -e 'define void abs(x) { x }' -e 'abs(5);0' "$@" > "$redefine_out"
+
+	checktest "$d" "$err" "Keyword redefinition" "$redefine_res" "$redefine_out"
+
+	"$exe" -e 'define break(x) { x }' "$@" 2> "$redefine_out"
+	err="$?"
+
+	checkerrtest "$d" "$err" "Keyword redefinition error" "$redefine_out" "$d"
+
+	unset BC_REDEFINE_KEYWORDS
+
+	"$exe" -e 'define read(x) { x }' "$@" 2> "$redefine_out"
+	err="$?"
+
+	checkerrtest "$d" "$err" "Keyword redefinition error without BC_REDEFINE_KEYWORDS" "$redefine_out" "$d"
+
+	printf 'pass\n'
+
 else
 
 	export DC_ENV_ARGS="'-x'"
