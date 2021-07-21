@@ -49,6 +49,11 @@ command line and executes them before reading from **stdin**.
 This bc(1) is a drop-in replacement for *any* bc(1), including (and especially)
 the GNU bc(1).
 
+**Note**: If running this bc(1) on *any* script meant for another bc(1) gives a
+parse error, set the environment variable **BC_REDEFINE_KEYWORDS** to **1** (see
+the **ENVIRONMENT VARIABLES** section) and try again. It should parse correctly.
+If not, that is a bug and should be reported. See the **BUGS** section.
+
 # OPTIONS
 
 The following are the options that bc(1) accepts.
@@ -981,6 +986,27 @@ bc(1) recognizes the following environment variables:
     If bc(1) is not in interactive mode (see the **INTERACTIVE MODE** section),
     then this environment variable has no effect because bc(1) does not print
     the banner when not in interactive mode.
+
+    This environment variable overrides the default, which can be queried with
+    the **-h** or **-\-help** options.
+
+**BC_REDEFINE_KEYWORDS**
+
+:   If this environment variable exists and contains an integer, then a non-zero
+    value makes bc(1) allow the user to redefine keywords that do not exist in
+    the bc standard, while zero causes bc(1) to give parse errors if keywords
+    are not used as expected.
+
+    This has several consequences.
+
+    First, if a keyword is used before it is redefined, then the keyword acts
+    normally.
+
+    Second, redefining a keyword precludes any future use of that keyword during
+    the execution of bc(1), except as the function that redefined it.
+
+    Third, if an error occurs during the parsing of a function whose name is a
+    redefined keyword, the keyword remains redefined, so it cannot be recovered.
 
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.
