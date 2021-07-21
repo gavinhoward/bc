@@ -144,18 +144,18 @@ if [ "$d" = "bc" ]; then
 
 	"$exe" -e 'define print(x) { x }' -e 'print(5)' "$@" > "$redefine_out"
 
-	checktest "$d" "$err" "Keyword redefinition" "$redefine_res" "$redefine_out"
+	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
 
 	printf '5\n0\n' > "$redefine_res"
 
 	"$exe" -e 'define void abs(x) { x }' -e 'abs(5);0' "$@" > "$redefine_out"
 
-	checktest "$d" "$err" "Keyword redefinition" "$redefine_res" "$redefine_out"
+	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
 
 	"$exe" -e 'define break(x) { x }' "$@" 2> "$redefine_out"
 	err="$?"
 
-	checkerrtest "$d" "$err" "Keyword redefinition error" "$redefine_out" "$d"
+	checkerrtest "$d" "$err" "keyword redefinition error" "$redefine_out" "$d"
 
 	unset BC_REDEFINE_KEYWORDS
 
