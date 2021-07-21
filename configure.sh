@@ -257,38 +257,44 @@ usage() {
 	printf 'environment variables users can use to change them. (For the defaults, non-zero\n'
 	printf 'means on, and zero means off.)\n'
 	printf '\n'
-	printf '| Setting         | Description            | Default      | Env Variable    |\n'
-	printf '| =============== | ====================== | ============ | =============== |\n'
-	printf '| bc.banner       | Whether to display the |            0 | BC_BANNER       |\n'
-	printf '|                 | bc version banner when |              |                 |\n'
-	printf '|                 | in interactive mode.   |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| bc.sigint_reset | Whether SIGINT should  |            1 | BC_SIGINT_RESET |\n'
-	printf '|                 | reset bc, instead of   |              |                 |\n'
-	printf '|                 | exiting, when in       |              |                 |\n'
-	printf '|                 | interactive mode.      |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| dc.sigint_reset | Whether SIGINT should  |            1 | DC_SIGINT_RESET |\n'
-	printf '|                 | reset dc, instead of   |              |                 |\n'
-	printf '|                 | exiting, when in       |              |                 |\n'
-	printf '|                 | interactive mode.      |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| bc.tty_mode     | Whether TTY mode for   |            1 | BC_TTY_MODE     |\n'
-	printf '|                 | bc should be on when   |              |                 |\n'
-	printf '|                 | available.             |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| dc.tty_mode     | Whether TTY mode for   |            0 | BC_TTY_MODE     |\n'
-	printf '|                 | dc should be on when   |              |                 |\n'
-	printf '|                 | available.             |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| bc.prompt       | Whether the prompt for | $BC_TTY_MODE | BC_PROMPT       |\n'
-	printf '|                 | bc should be on in TTY |              |                 |\n'
-	printf '|                 | mode.                  |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
-	printf '| dc.prompt       | Whether the prompt for | $DC_TTY_MODE | DC_PROMPT       |\n'
-	printf '|                 | dc should be on in TTY |              |                 |\n'
-	printf '|                 | mode.                  |              |                 |\n'
-	printf '| --------------- | ---------------------- | ------------ | --------------- |\n'
+	printf '| Setting         | Description          | Default      | Env Variable         |\n'
+	printf '| =============== | ==================== | ============ | ==================== |\n'
+	printf '| bc.banner       | Whether to display   |            0 | BC_BANNER            |\n'
+	printf '|                 | the bc version       |              |                      |\n'
+	printf '|                 | banner when in       |              |                      |\n'
+	printf '|                 | interactive mode.    |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| bc.redefine_kws | Whether to allow the |            0 | BC_REDEFINE_KEYWORDS |\n'
+	printf '|                 | user to redefine bc  |              |                      |\n'
+	printf '|                 | keywords as function |              |                      |\n'
+	printf '|                 | names.               |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| bc.sigint_reset | Whether SIGINT will  |            1 | BC_SIGINT_RESET      |\n'
+	printf '|                 | reset bc, instead of |              |                      |\n'
+	printf '|                 | exiting, when in     |              |                      |\n'
+	printf '|                 | interactive mode.    |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| dc.sigint_reset | Whether SIGINT will  |            1 | DC_SIGINT_RESET      |\n'
+	printf '|                 | reset dc, instead of |              |                      |\n'
+	printf '|                 | exiting, when in     |              |                      |\n'
+	printf '|                 | interactive mode.    |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| bc.tty_mode     | Whether TTY mode for |            1 | BC_TTY_MODE          |\n'
+	printf '|                 | bc should be on when |              |                      |\n'
+	printf '|                 | available.           |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| dc.tty_mode     | Whether TTY mode for |            0 | BC_TTY_MODE          |\n'
+	printf '|                 | dc should be on when |              |                      |\n'
+	printf '|                 | available.           |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| bc.prompt       | Whether the prompt   | $BC_TTY_MODE | BC_PROMPT            |\n'
+	printf '|                 | for bc should be on  |              |                      |\n'
+	printf '|                 | in tty mode.         |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| dc.prompt       | Whether the prompt   | $DC_TTY_MODE | DC_PROMPT            |\n'
+	printf '|                 | for dc should be on  |              |                      |\n'
+	printf '|                 | in tty mode.         |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
 	printf '\n'
 	printf 'These settings are not meant to be changed on a whim. They are meant to ensure\n'
 	printf 'that this bc and dc will conform to the expectations of the user on each\n'
@@ -547,6 +553,7 @@ set_default() {
 	case "$_set_default_name" in
 
 		bc.banner) bc_default_banner="$_set_default_on" ;;
+		bc.redefine_keywords) bc_default_redefine_keywords="$_set_default_on" ;;
 		bc.sigint_reset) bc_default_sigint_reset="$_set_default_on" ;;
 		dc.sigint_reset) dc_default_sigint_reset="$_set_default_on" ;;
 		bc.tty_mode) bc_default_tty_mode="$_set_default_on" ;;
@@ -609,6 +616,7 @@ clean=1
 # The empty strings are because they depend on TTY mode. If they are directly
 # set, though, they will be integers. We test for empty strings later.
 bc_default_banner=0
+bc_default_redefine_keywords=0
 bc_default_sigint_reset=1
 dc_default_sigint_reset=1
 bc_default_tty_mode=1
@@ -1442,6 +1450,7 @@ printf '\n'
 printf 'Setting Defaults\n'
 printf '================\n'
 printf 'bc.banner=%s\n' "$bc_default_banner"
+printf 'bc.redefine_keywords=%s\n' "$bc_default_redefine_keywords"
 printf 'bc.sigint_reset=%s\n' "$bc_default_sigint_reset"
 printf 'dc.sigint_reset=%s\n' "$dc_default_sigint_reset"
 printf 'bc.tty_mode=%s\n' "$bc_default_tty_mode"
@@ -1575,6 +1584,7 @@ contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
 contents=$(replace "$contents" "BSD" "$bsd")
 
 contents=$(replace "$contents" "BC_DEFAULT_BANNER" "$bc_default_banner")
+contents=$(replace "$contents" "BC_DEFAULT_REDEFINE_KEYWORDS" "$bc_default_redefine_keywords")
 contents=$(replace "$contents" "BC_DEFAULT_SIGINT_RESET" "$bc_default_sigint_reset")
 contents=$(replace "$contents" "DC_DEFAULT_SIGINT_RESET" "$dc_default_sigint_reset")
 contents=$(replace "$contents" "BC_DEFAULT_TTY_MODE" "$bc_default_tty_mode")

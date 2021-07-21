@@ -1144,6 +1144,41 @@ static void bc_parse_loopExit(BcParse *p, BcLexType type) {
 }
 
 /**
+ * Redefines a keyword, if necessary.
+ * @param p  The parser.
+ */
+static void bc_parse_redefineKeyword(BcParse *p) {
+
+	// Must have a name, or a keyword that is going to be redefined.
+	if (BC_ERR(p->l.t != BC_LEX_NAME)) {
+
+		if (BC_REDEFINE && BC_PARSE_IS_KEYWORD(p->l.t)) {
+
+			size_t idx = p->l.t - BC_LEX_KW_AUTO;
+			const BcLexKeyword *kw = bc_lex_kws + idx;
+
+			// If this is true, the keyword can be redefined. We don't allow
+			// redefining POSIX keywords because that would be a disaster.
+			if (!vm.redefined_kws[idx] && !BC_LEX_KW_POSIX(kw)) {
+
+				vm.redefined_kws[idx] = true;
+
+				// Set the token to BC_LEX_NAME because bc_parse_func() is
+				// expecting that.
+				p->l.t = BC_LEX_NAME;
+
+				// Set the lexer's string to the name of the keyword to be used
+				// later in bc_parse_func(). I mean, the function *has* to have
+				// a name...
+				bc_vec_string(&p->l.str, BC_LEX_KW_LEN(kw), kw->name);
+			}
+			else bc_parse_err(p, BC_ERR_PARSE_FUNC);
+		}
+		else bc_parse_err(p, BC_ERR_PARSE_FUNC);
+	}
+}
+
+/**
  * Parse a function (header).
  * @param p  The parser.
  */
@@ -1155,22 +1190,30 @@ static void bc_parse_func(BcParse *p) {
 
 	bc_lex_next(&p->l);
 
-	// Must have a name.
-	if (BC_ERR(p->l.t != BC_LEX_NAME))
-		bc_parse_err(p, BC_ERR_PARSE_FUNC);
+	// Check for keyword redefinition.
+	bc_parse_redefineKeyword(p);
 
 	// If the name is "void", and POSIX is not on, mark as void.
 	voidfn = (!BC_IS_POSIX && p->l.t == BC_LEX_NAME &&
 	          !strcmp(p->l.str.v, "void"));
 
+	// We can safely do this because the expected token should not overwrite the
+	// function name.
 	bc_lex_next(&p->l);
+
+	// Check for keyword redefinition.
+	if (voidfn && p->l.t != BC_LEX_LPAREN) bc_parse_redefineKeyword(p);
 
 	// If we *don't* have another name, then void is the name of the function.
 	voidfn = (voidfn && p->l.t == BC_LEX_NAME);
 
 	// With a void function, allow POSIX to complain and get a new token.
 	if (voidfn) {
+
 		bc_parse_err(p, BC_ERR_POSIX_VOID);
+
+		// We can safely do this because the expected token should not overwrite
+		// the function name.
 		bc_lex_next(&p->l);
 	}
 

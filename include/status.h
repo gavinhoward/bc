@@ -113,11 +113,17 @@
 
 // We want to be able to use _Noreturn on C11 compilers.
 #if __STDC_VERSION__ >= 201100L
+
 #include <stdnoreturn.h>
 #define BC_NORETURN _Noreturn
+#define BC_C11 (1)
+
 #else // __STDC_VERSION__
+
 #define BC_NORETURN
 #define BC_MUST_RETURN
+#define BC_C11 (0)
+
 #endif // __STDC_VERSION__
 
 #define BC_HAS_UNREACHABLE (0)
@@ -207,9 +213,18 @@
 #include <bcl.h>
 
 // All of these set defaults for settings.
+
+#if BC_ENABLED
+
 #ifndef BC_DEFAULT_BANNER
 #define BC_DEFAULT_BANNER (0)
 #endif // BC_DEFAULT_BANNER
+
+#ifndef BC_DEFAULT_REDEFINE_KEYWORDS
+#define BC_DEFAULT_REDEFINE_KEYWORDS (0)
+#endif // BC_DEFAULT_REDEFINE_KEYWORDS
+
+#endif // BC_ENABLED
 
 #ifndef BC_DEFAULT_SIGINT_RESET
 #define BC_DEFAULT_SIGINT_RESET (1)

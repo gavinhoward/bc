@@ -1376,8 +1376,13 @@ void bc_vm_boot(int argc, char *argv[]) {
 	}
 
 #if BC_ENABLED
+
 	// Disable global stacks in POSIX mode.
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
+
+	bc_vm_setenvFlag("BC_REDEFINE_KEYWORDS", BC_DEFAULT_REDEFINE_KEYWORDS,
+	                 BC_FLAG_REDEFINE_KWS);
+
 #endif // BC_ENABLED
 
 #if BC_ENABLED

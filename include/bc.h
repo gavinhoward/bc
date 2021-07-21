@@ -90,6 +90,20 @@ typedef struct BcLexKeyword {
 #define BC_LEX_KW_ENTRY(a, b, c) \
 	{ .data = ((b) & ~(BC_LEX_CHAR_MSB(1))) | BC_LEX_CHAR_MSB(c), .name = a }
 
+#if BC_ENABLE_EXTRA_MATH
+
+/// A macro for the number of keywords bc has. This has to be updated if any are
+/// added. This is for the redefined_kws field of the BcVm struct.
+#define BC_LEX_NKWS (28)
+
+#else // BC_ENABLE_EXTRA_MATH
+
+/// A macro for the number of keywords bc has. This has to be updated if any are
+/// added. This is for the redefined_kws field of the BcVm struct.
+#define BC_LEX_NKWS (24)
+
+#endif // BC_ENABLE_EXTRA_MATH
+
 // The array of keywords and its length.
 extern const BcLexKeyword bc_lex_kws[];
 extern const size_t bc_lex_kws_len;
@@ -324,6 +338,13 @@ void bc_lex_token(BcLex *l);
  * @return   The token as an instruction.
  */
 #define BC_PARSE_TOKEN_INST(t) ((uchar) ((t) - BC_LEX_NEG + BC_INST_NEG))
+
+/**
+ * Returns true if the token is a bc keyword.
+ * @param t  The token to check.
+ * @return   True if @a t is a bc keyword, false otherwise.
+ */
+#define BC_PARSE_IS_KEYWORD(t) ((t) >= BC_LEX_KW_AUTO && (t) <= BC_LEX_KW_ELSE)
 
 /// A struct that holds data about what tokens should be expected next. There
 /// are a few instances of these, all named because they are used in specific
