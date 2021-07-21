@@ -2457,6 +2457,9 @@ is in the [`scripts/functions.sh`][105] script, but it basically allows the
 calculator to exit with an error code and then tests that there *was* an error
 code.
 
+Besides returning error codes, error tests also ensure that there is output from
+`stderr`. This is to make sure that an error message is always printed.
+
 The error tests for each calculator are spread through two directories, due to
 historical accident. These two directories are the standard test directory (see
 the [Standard Tests][149] section) and the `errors/` directory directly
