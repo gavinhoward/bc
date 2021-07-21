@@ -221,6 +221,7 @@ define r() { auto a[], 4; return a[0]; }
 define s() { auto a[ 4; return a[0]; }
 define void y() { return (1); }
 print uint(0)
+for (i = 0; i < 10; ++i) { print 4, 5 define
 4 + uint(4)
 s(uint(5))
 4 + 4 scale
@@ -250,6 +251,40 @@ abs
 sqrt(1
 length(1
 abs(1
+divmod 24
+modexp 23
+divmod(if
+modexp(if
+divmod(24)
+modexp(24)
+divmod(24 24)
+modexp(24 24)
+divmod(24,)
+modexp(24,)
+divmod(24,
+modexp(24,
+divmod(24,5
+modexp(24,5
+divmod(24,5)
+modexp(24,5)
+divmod(24,5,)
+modexp(24,5,)
+divmod(24,5,
+modexp(24,5,
+divmod(24,5,4
+modexp(24,5,4
+divmod(24,5,a
+modexp(24,5,a
+divmod(24,5,a[]
+divmod(24,5,a[
+divmod(24,5,a[2
+divmod(24,5,a[2]
+divmod(24,5,a[];
+modexp(24,5,a;
+divmod(24,5,a[];)
+modexp(24,5,a;)
+divmod(24,5,4)
+scale(4.5) modexp(25,5,5)
 scale(.2093
 a2(0,0)
 read
