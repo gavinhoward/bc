@@ -292,7 +292,7 @@ check: test
 
 test: %%TESTS%%
 
-test_bc: test_bc_header test_bc_tests test_bc_scripts test_bc_stdin test_bc_read test_bc_errors test_bc_other
+test_bc: test_bc_header test_bc_tests test_bc_scripts test_bc_errors test_bc_stdin test_bc_read test_bc_other
 	@printf '\nAll bc tests passed.\n\n$(TEST_STARS)\n'
 
 test_bc_tests:%%BC_TESTS%%
@@ -314,7 +314,7 @@ test_bc_other:
 test_bc_header:
 	@printf '$(TEST_STARS)\n\nRunning bc tests...\n\n'
 
-test_dc: test_dc_header test_dc_tests test_dc_scripts test_dc_stdin test_dc_read test_dc_errors test_dc_other
+test_dc: test_dc_header test_dc_tests test_dc_scripts test_dc_errors test_dc_stdin test_dc_read test_dc_other
 	@printf '\nAll dc tests passed.\n\n$(TEST_STARS)\n'
 
 test_dc_tests:%%DC_TESTS%%
