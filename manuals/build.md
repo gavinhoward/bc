@@ -526,38 +526,44 @@ The table of the available settings, along with their defaults and the
 environment variables to override them, is below:
 
 ```
-| Setting         | Description            | Default      | Env Variable    |
-| =============== | ====================== | ============ | =============== |
-| bc.banner       | Whether to display the |            0 | BC_BANNER       |
-|                 | bc version banner when |              |                 |
-|                 | in interactive mode.   |              |                 |
-| --------------- | ---------------------- | ------------ | --------------- |
-| bc.sigint_reset | Whether SIGINT should  |            1 | BC_SIGINT_RESET |
-|                 | reset bc, instead of   |              |                 |
-|                 | exiting, when in       |              |                 |
-|                 | interactive mode.      |              |                 |
-| --------------- | ---------------------- | ------------ | --------------- |
-| dc.sigint_reset | Whether SIGINT should  |            1 | DC_SIGINT_RESET |
-|                 | reset dc, instead of   |              |                 |
-|                 | exiting, when in       |              |                 |
-|                 | interactive mode.      |              |                 |
-| --------------- | ---------------------- | ------------ | --------------- |
-| bc.tty_mode     | Whether TTY mode for   |            1 | BC_TTY_MODE     |
-|                 | bc should be on when   |              |                 |
-|                 | available.             |              |                 |
-| --------------- | ---------------------- | ------------ | --------------- |
-| dc.tty_mode     | Whether TTY mode for   |            0 | BC_TTY_MODE     |
-|                 | dc should be on when   |              |                 |
-|                 | available.             |              |                 |
-| --------------- | ---------------------- | ------------ | --------------- |
-| bc.prompt       | Whether the prompt for | $BC_TTY_MODE | BC_PROMPT       |
-|                 | bc should be on in TTY |              |                 |
-|                 | mode.                  |              |                 |
-| --------------- | ---------------------- | ------------ | --------------- |
-| dc.prompt       | Whether the prompt for | $DC_TTY_MODE | DC_PROMPT       |
-|                 | dc should be on in TTY |              |                 |
-|                 | mode.                  |              |                 |
-| --------------- | ---------------------- | ------------ | --------------- |
+| Setting         | Description          | Default      | Env Variable         |
+| =============== | ==================== | ============ | ==================== |
+| bc.banner       | Whether to display   |            0 | BC_BANNER            |
+|                 | the bc version       |              |                      |
+|                 | banner when in       |              |                      |
+|                 | interactive mode.    |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| bc.redefine_kws | Whether to allow the |            0 | BC_REDEFINE_KEYWORDS |
+|                 | user to redefine bc  |              |                      |
+|                 | keywords as function |              |                      |
+|                 | names.               |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| bc.sigint_reset | Whether SIGINT will  |            1 | BC_SIGINT_RESET      |
+|                 | reset bc, instead of |              |                      |
+|                 | exiting, when in     |              |                      |
+|                 | interactive mode.    |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| dc.sigint_reset | Whether SIGINT will  |            1 | DC_SIGINT_RESET      |
+|                 | reset dc, instead of |              |                      |
+|                 | exiting, when in     |              |                      |
+|                 | interactive mode.    |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| bc.tty_mode     | Whether TTY mode for |            1 | BC_TTY_MODE          |
+|                 | bc should be on when |              |                      |
+|                 | available.           |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| dc.tty_mode     | Whether TTY mode for |            0 | BC_TTY_MODE          |
+|                 | dc should be on when |              |                      |
+|                 | available.           |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| bc.prompt       | Whether the prompt   | $BC_TTY_MODE | BC_PROMPT            |
+|                 | for bc should be on  |              |                      |
+|                 | in tty mode.         |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| dc.prompt       | Whether the prompt   | $DC_TTY_MODE | DC_PROMPT            |
+|                 | for dc should be on  |              |                      |
+|                 | in tty mode.         |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
 ```
 
 These settings are not meant to be changed on a whim. They are meant to ensure
