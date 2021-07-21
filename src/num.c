@@ -3777,7 +3777,6 @@ err:
 	}
 }
 
-#if DC_ENABLED
 void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d) {
 
 	BcNum base, exp, two, temp, atemp, btemp, ctemp;
@@ -3859,7 +3858,6 @@ err:
 	assert(BC_NUM_RDX_VALID(d));
 	assert(!d->len || d->num[d->len - 1] || BC_NUM_RDX_VAL(d) == d->len);
 }
-#endif // DC_ENABLED
 
 #if BC_DEBUG_CODE
 void bc_num_printDebug(const BcNum *n, const char *name, bool emptyline) {

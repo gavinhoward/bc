@@ -498,6 +498,96 @@ static void bc_parse_builtin(BcParse *p, BcLexType type,
 }
 
 /**
+ * Parses a builtin function that takes 3 arguments. This includes modexp() and
+ * divmod().
+ */
+static void bc_parse_builtin3(BcParse *p, BcLexType type,
+                              uint8_t flags, BcInst *prev)
+{
+	assert(type == BC_LEX_KW_MODEXP || type == BC_LEX_KW_DIVMOD);
+
+	// Must have a left paren.
+	bc_lex_next(&p->l);
+	if (BC_ERR(p->l.t != BC_LEX_LPAREN))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	bc_lex_next(&p->l);
+
+	// Change the flags as needed for parsing the argument.
+	flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
+	flags |= BC_PARSE_NEEDVAL;
+
+	bc_parse_expr_status(p, flags, bc_parse_next_builtin);
+
+	// Must have a comma.
+	if (BC_ERR(p->l.t != BC_LEX_COMMA))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	bc_lex_next(&p->l);
+
+	bc_parse_expr_status(p, flags, bc_parse_next_builtin);
+
+	// Must have a comma.
+	if (BC_ERR(p->l.t != BC_LEX_COMMA))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	bc_lex_next(&p->l);
+
+	// If it is a divmod, parse an array name. Otherwise, just parse another
+	// expression.
+	if (type == BC_LEX_KW_DIVMOD) {
+
+		// Must have a name.
+		if (BC_ERR(p->l.t != BC_LEX_NAME)) bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+		// This is safe because the next token should not overwrite the name.
+		bc_lex_next(&p->l);
+
+		// Must have a left bracket.
+		if (BC_ERR(p->l.t != BC_LEX_LBRACKET))
+			bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+		// This is safe because the next token should not overwrite the name.
+		bc_lex_next(&p->l);
+
+		// Must have a right bracket.
+		if (BC_ERR(p->l.t != BC_LEX_RBRACKET))
+			bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+		// This is safe because the next token should not overwrite the name.
+		bc_lex_next(&p->l);
+	}
+	else bc_parse_expr_status(p, flags, bc_parse_next_rel);
+
+	// Must have a right paren.
+	if (BC_ERR(p->l.t != BC_LEX_RPAREN))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	// Adjust previous based on the token and push it.
+	*prev = type - BC_LEX_KW_MODEXP + BC_INST_MODEXP;
+	bc_parse_push(p, *prev);
+
+	// If we have divmod, we need to assign the modulus to the array element, so
+	// we need to push the instructions for doing so.
+	if (type == BC_LEX_KW_DIVMOD) {
+
+		// The zeroth element.
+		bc_parse_push(p, BC_INST_ZERO);
+		bc_parse_push(p, BC_INST_ARRAY_ELEM);
+
+		// Push the array.
+		bc_parse_pushName(p, p->l.str.v, false);
+
+		// Swap them and assign. After this, the top item on the stack should
+		// be the quotient.
+		bc_parse_push(p, BC_INST_SWAP);
+		bc_parse_push(p, BC_INST_ASSIGN_NO_VAL);
+	}
+
+	bc_lex_next(&p->l);
+}
+
+/**
  * Parses the scale keyword. This is special because scale can be a value or a
  * builtin function.
  * @param p           The parser.
@@ -1485,6 +1575,8 @@ static void bc_parse_stmt(BcParse *p) {
 #if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_IRAND:
 #endif // BC_ENABLE_EXTRA_MATH
+		case BC_LEX_KW_MODEXP:
+		case BC_LEX_KW_DIVMOD:
 		case BC_LEX_KW_READ:
 #if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_RAND:
@@ -1994,6 +2086,22 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				bc_parse_scale(p, &prev, &can_assign, flags);
 
 				rprn = get_token = bin_last = false;
+				nexprs += 1;
+				flags &= ~(BC_PARSE_ARRAY);
+
+				break;
+			}
+
+			case BC_LEX_KW_MODEXP:
+			case BC_LEX_KW_DIVMOD:
+			{
+				// This is a leaf and cannot come right after a leaf.
+				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
+					bc_parse_err(p, BC_ERR_PARSE_EXPR);
+
+				bc_parse_builtin3(p, t, flags, &prev);
+
+				rprn = get_token = bin_last = incdec = can_assign = false;
 				nexprs += 1;
 				flags &= ~(BC_PARSE_ARRAY);
 

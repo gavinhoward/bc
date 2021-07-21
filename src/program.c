@@ -1858,10 +1858,8 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 	bc_program_retire(p, 1, 1);
 }
 
-#if DC_ENABLED
-
 /**
- * Executes a divmod for dc.
+ * Executes a divmod.
  * @param p  The program.
  */
 static void bc_program_divmod(BcProgram *p) {
@@ -1898,7 +1896,7 @@ static void bc_program_divmod(BcProgram *p) {
 }
 
 /**
- * Executes modular exponentiation for dc.
+ * Executes modular exponentiation.
  * @param p  The program.
  */
 static void bc_program_modexp(BcProgram *p) {
@@ -1906,8 +1904,13 @@ static void bc_program_modexp(BcProgram *p) {
 	BcResult *r1, *r2, *r3, *res;
 	BcNum *n1, *n2, *n3;
 
+#if DC_ENABLED
+
 	// Check the stack.
-	if (BC_ERR(!BC_PROG_STACK(&p->results, 3))) bc_err(BC_ERR_EXEC_STACK);
+	if (BC_IS_DC && BC_ERR(!BC_PROG_STACK(&p->results, 3)))
+		bc_err(BC_ERR_EXEC_STACK);
+
+#endif // DC_ENABLED
 
 	assert(BC_PROG_STACK(&p->results, 3));
 
@@ -1935,6 +1938,8 @@ static void bc_program_modexp(BcProgram *p) {
 
 	bc_program_retire(p, 1, 3);
 }
+
+#if DC_ENABLED
 
 /**
  * Gets the length of a register in dc and pushes it onto the results stack.
@@ -2899,6 +2904,18 @@ void bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_MODEXP:
+			{
+				bc_program_modexp(p);
+				break;
+			}
+
+			case BC_INST_DIVMOD:
+			{
+				bc_program_divmod(p);
+				break;
+			}
+
 #if DC_ENABLED
 			case BC_INST_POP_EXEC:
 			{
@@ -2916,18 +2933,6 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				break;
-			}
-
-			case BC_INST_MODEXP:
-			{
-				bc_program_modexp(p);
-				break;
-			}
-
-			case BC_INST_DIVMOD:
-			{
-				bc_program_divmod(p);
 				break;
 			}
 

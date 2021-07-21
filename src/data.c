@@ -825,7 +825,7 @@ const char bc_parse_one[2] = "1";
 
 #if BC_ENABLED
 
-/// A list of keywords for bc.
+/// A list of keywords for bc. This needs to be updated if keywords change.
 const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
@@ -851,6 +851,8 @@ const BcLexKeyword bc_lex_kws[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("irand", 5, false),
 #endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("modexp", 6, false),
+	BC_LEX_KW_ENTRY("divmod", 6, false),
 	BC_LEX_KW_ENTRY("quit", 4, true),
 	BC_LEX_KW_ENTRY("read", 4, false),
 #if BC_ENABLE_EXTRA_MATH
@@ -880,25 +882,64 @@ static_assert(sizeof(bc_lex_kws) / sizeof(BcLexKeyword) == BC_LEX_NKWS,
 #endif // BC_C11
 
 /// An array of booleans that correspond to token types. An entry is true if the
-/// token is valid in an expression, false otherwise.
+/// token is valid in an expression, false otherwise. This will need to change
+/// if tokens change.
 const uint8_t bc_parse_exprs[] = {
+
+	// Starts with BC_LEX_EOF.
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
+
+	// Starts with BC_LEX_OP_MULTIPLY if extra math is enabled, BC_LEX_OP_DIVIDE
+	// otherwise.
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+
+	// Starts with BC_LEX_OP_REL_EQ if extra math is enabled, BC_LEX_OP_REL_LT
+	// otherwise.
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+
 #if BC_ENABLE_EXTRA_MATH
+
+	// Starts with BC_LEX_OP_ASSIGN_POWER.
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+
+	// Starts with BC_LEX_OP_ASSIGN_RSHIFT.
 	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
+
+	// Starts with BC_LEX_RBRACKET.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
+
+	// Starts with BC_LEX_KW_BREAK.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
+
+	// Starts with BC_LEX_KW_HALT.
 	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, true, false),
-	BC_PARSE_EXPR_ENTRY(true, true, true, false, true, true, true, true),
-	BC_PARSE_EXPR_ENTRY(true, true, false, 0, 0, 0, 0, 0)
+
+	// Starts with BC_LEX_KW_SQRT.
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, false, true, true),
+
+	// Starts with BC_LEX_KW_MAXIBASE.
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, false, 0, 0, 0)
+
 #else // BC_ENABLE_EXTRA_MATH
+
+	// Starts with BC_LEX_OP_ASSIGN_PLUS.
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
+
+	// Starts with BC_LEX_COMMA.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
+
+	// Starts with BC_LEX_KW_AUTO.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
+
+	// Starts with BC_LEX_KW_WHILE.
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
-	BC_PARSE_EXPR_ENTRY(true, true, false, true, true, true, true, false)
+
+	// Starts with BC_LEX_KW_SQRT.
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, false, true, true, true),
+
+	// Starts with BC_LEX_KW_MAXSCALE,
+	BC_PARSE_EXPR_ENTRY(true, false, 0, 0, 0, 0, 0, 0)
+
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
@@ -959,6 +1000,11 @@ const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
 /// The valid next tokens for read expressions.
 const BcParseNext bc_parse_next_read =
 	BC_PARSE_NEXT(2, BC_LEX_NLINE, BC_LEX_EOF);
+
+/// The valid next tokens for the arguments of a builtin function with multiple
+/// arguments.
+const BcParseNext bc_parse_next_builtin = BC_PARSE_NEXT(1, BC_LEX_COMMA);
+
 #endif // BC_ENABLED
 
 #if DC_ENABLED
@@ -977,7 +1023,8 @@ const size_t dc_lex_regs_len = sizeof(dc_lex_regs) / sizeof(uint8_t);
 /// A list corresponding to characters starting at double quote ("). If an entry
 /// is BC_LEX_INVALID, then that character needs extra lexing in dc. If it does
 /// not, the character can trivially be replaced by the entry. Positions are
-/// kept because it corresponds to the ASCII table.
+/// kept because it corresponds to the ASCII table. This may need to be changed
+/// if tokens change.
 const uchar dc_lex_tokens[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_IRAND,
@@ -1051,13 +1098,14 @@ const uchar dc_lex_tokens[] = {
 	BC_LEX_KW_QUIT, BC_LEX_SWAP, BC_LEX_OP_ASSIGN, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_KW_SQRT, BC_LEX_INVALID, BC_LEX_EXECUTE,
 	BC_LEX_REG_STACK_LEVEL, BC_LEX_STACK_LEVEL,
-	BC_LEX_LBRACE, BC_LEX_OP_MODEXP, BC_LEX_RBRACE, BC_LEX_OP_DIVMOD,
+	BC_LEX_LBRACE, BC_LEX_KW_MODEXP, BC_LEX_RBRACE, BC_LEX_KW_DIVMOD,
 	BC_LEX_INVALID
 };
 
 /// A list of instructions that correspond to lex tokens. If an entry is
 /// BC_INST_INVALID, that lex token needs extra parsing in the dc parser.
-/// Otherwise, the token can trivially be replaced by the entry.
+/// Otherwise, the token can trivially be replaced by the entry. This needs to
+/// be updated if the tokens change.
 const uchar dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLED
@@ -1102,7 +1150,7 @@ const uchar dc_parse_insts[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_IRAND,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_INST_QUIT, BC_INST_INVALID,
+	BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_QUIT, BC_INST_INVALID,
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_RAND,
 #endif // BC_ENABLE_EXTRA_MATH
@@ -1112,7 +1160,7 @@ const uchar dc_parse_insts[] = {
 	BC_INST_MAXRAND,
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_INST_INVALID,
-	BC_INST_REL_EQ, BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_INVALID,
+	BC_INST_REL_EQ, BC_INST_INVALID,
 	BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_INVALID, BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP,
 	BC_INST_POP, BC_INST_ASCIIFY, BC_INST_PRINT_STREAM,

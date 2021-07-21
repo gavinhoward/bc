@@ -242,17 +242,16 @@ typedef enum BcInst {
 	/// Pop an item off of the results stack.
 	BC_INST_POP,
 
+	/// Modular exponentiation.
+	BC_INST_MODEXP,
+
+	/// Do divide and modulus at the same time.
+	BC_INST_DIVMOD,
+
 #if DC_ENABLED
 
 	/// dc's return; it pops an executing string off of the stack.
 	BC_INST_POP_EXEC,
-
-	/// Modular exponentiation.
-	BC_INST_MODEXP,
-
-	/// dc can do divide and modulus at the same time, thanks to being
-	/// stack-based. That's this one. It pushes two results onto the stack.
-	BC_INST_DIVMOD,
 
 	/// Unconditionally execute a string.
 	BC_INST_EXECUTE,

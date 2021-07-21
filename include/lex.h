@@ -93,11 +93,13 @@ typedef enum BcLexType {
 	BC_LEX_INVALID,
 
 #if BC_ENABLED
+
 	/// Increment operator.
 	BC_LEX_OP_INC,
 
 	/// Decrement operator.
 	BC_LEX_OP_DEC,
+
 #endif // BC_ENABLED
 
 	/// BC_LEX_NEG is not used in lexing; it is only for parsing. The lexer
@@ -107,9 +109,12 @@ typedef enum BcLexType {
 
 	/// Boolean not.
 	BC_LEX_OP_BOOL_NOT,
+
 #if BC_ENABLE_EXTRA_MATH
+
 	/// Truncation operator.
 	BC_LEX_OP_TRUNC,
+
 #endif // BC_ENABLE_EXTRA_MATH
 
 	/// Power operator.
@@ -183,7 +188,9 @@ typedef enum BcLexType {
 
 	/// Subtraction assignment operator.
 	BC_LEX_OP_ASSIGN_MINUS,
+
 #if BC_ENABLE_EXTRA_MATH
+
 	/// Places (truncate or extend) assignment operator.
 	BC_LEX_OP_ASSIGN_PLACES,
 
@@ -192,6 +199,7 @@ typedef enum BcLexType {
 
 	/// Right (decimal) shift assignment operator.
 	BC_LEX_OP_ASSIGN_RSHIFT,
+
 #endif // BC_ENABLE_EXTRA_MATH
 #endif // BC_ENABLED
 
@@ -240,7 +248,9 @@ typedef enum BcLexType {
 	// These keywords are in the order they are in for a reason. Don't change
 	// the order unless you want a bunch of weird failures in the test suite.
 	// In fact, almost all of these tokens are in a specific order for a reason.
+
 #if BC_ENABLED
+
 	/// bc auto keyword.
 	BC_LEX_KW_AUTO,
 
@@ -273,6 +283,7 @@ typedef enum BcLexType {
 
 	/// bc last keyword.
 	BC_LEX_KW_LAST,
+
 #endif // BC_ENABLED
 
 	/// bc ibase keyword.
@@ -285,8 +296,10 @@ typedef enum BcLexType {
 	BC_LEX_KW_SCALE,
 
 #if BC_ENABLE_EXTRA_MATH
+
 	/// bc seed keyword.
 	BC_LEX_KW_SEED,
+
 #endif // BC_ENABLE_EXTRA_MATH
 
 	/// bc length keyword.
@@ -302,9 +315,17 @@ typedef enum BcLexType {
 	BC_LEX_KW_ABS,
 
 #if BC_ENABLE_EXTRA_MATH
+
 	/// bc irand keyword.
 	BC_LEX_KW_IRAND,
+
 #endif // BC_ENABLE_EXTRA_MATH
+
+	/// bc modexp keyword.
+	BC_LEX_KW_MODEXP,
+
+	/// bc divmod keyword.
+	BC_LEX_KW_DIVMOD,
 
 	/// bc quit keyword.
 	BC_LEX_KW_QUIT,
@@ -313,8 +334,10 @@ typedef enum BcLexType {
 	BC_LEX_KW_READ,
 
 #if BC_ENABLE_EXTRA_MATH
+
 	/// bc rand keyword.
 	BC_LEX_KW_RAND,
+
 #endif // BC_ENABLE_EXTRA_MATH
 
 	/// bc maxibase keyword.
@@ -338,12 +361,6 @@ typedef enum BcLexType {
 
 	/// A special token for dc to calculate equal without a register.
 	BC_LEX_EQ_NO_REG,
-
-	/// Modexp operator.
-	BC_LEX_OP_MODEXP,
-
-	/// Divmod operator.
-	BC_LEX_OP_DIVMOD,
 
 	/// Colon (array) operator.
 	BC_LEX_COLON,

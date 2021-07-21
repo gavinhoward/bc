@@ -94,13 +94,13 @@ typedef struct BcLexKeyword {
 
 /// A macro for the number of keywords bc has. This has to be updated if any are
 /// added. This is for the redefined_kws field of the BcVm struct.
-#define BC_LEX_NKWS (28)
+#define BC_LEX_NKWS (30)
 
 #else // BC_ENABLE_EXTRA_MATH
 
 /// A macro for the number of keywords bc has. This has to be updated if any are
 /// added. This is for the redefined_kws field of the BcVm struct.
-#define BC_LEX_NKWS (24)
+#define BC_LEX_NKWS (26)
 
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -442,6 +442,10 @@ extern const BcParseNext bc_parse_next_for;
 /// A reference to what tokens are valid as next tokens when parsing a read
 /// expression.
 extern const BcParseNext bc_parse_next_read;
+
+/// A reference to what tokens are valid as next tokens when parsing a builtin
+/// function with multiple arguments.
+extern const BcParseNext bc_parse_next_builtin;
 
 #else // BC_ENABLED
 
