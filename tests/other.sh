@@ -119,7 +119,7 @@ if [ "$d" = "bc" ]; then
 
 	checktest_retcode "$d" "$?" "environment var"
 
-	"$exe" -e 4 "$@" > /dev/null
+	"$exe" "$@" -e 4 > /dev/null
 
 	err="$?"
 	checktest_retcode "$d" "$?" "environment var"
@@ -141,22 +141,22 @@ if [ "$d" = "bc" ]; then
 
 	printf '5\n0\n' > "$redefine_res"
 
-	"$exe" --redefine=print -e 'define print(x) { x }' -e 'print(5)' "$@" > "$redefine_out"
+	"$exe" "$@" --redefine=print -e 'define print(x) { x }' -e 'print(5)' > "$redefine_out"
 
 	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
 
 	printf '5\n0\n' > "$redefine_res"
 
-	"$exe" -r "abs" -r "else" -e 'abs = 5;else = 0' -e 'abs;else' "$@" > "$redefine_out"
+	"$exe" "$@" -r "abs" -r "else" -e 'abs = 5;else = 0' -e 'abs;else' > "$redefine_out"
 
 	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
 
-	"$exe" -r "break" -e 'define break(x) { x }' "$@" 2> "$redefine_out"
+	"$exe" "$@" -r "break" -e 'define break(x) { x }' 2> "$redefine_out"
 	err="$?"
 
 	checkerrtest "$d" "$err" "keyword redefinition error" "$redefine_out" "$d"
 
-	"$exe" -e 'define read(x) { x }' "$@" 2> "$redefine_out"
+	"$exe" "$@" -e 'define read(x) { x }' 2> "$redefine_out"
 	err="$?"
 
 	checkerrtest "$d" "$err" "Keyword redefinition error without BC_REDEFINE_KEYWORDS" "$redefine_out" "$d"
@@ -172,7 +172,7 @@ else
 
 	checktest_retcode "$d" "$?" "environment var"
 
-	"$exe" -e 4pR "$@" > /dev/null
+	"$exe" "$@" -e 4pR > /dev/null
 
 	checktest_retcode "$d" "$?" "environment var"
 
@@ -201,7 +201,7 @@ else
 
 		printf '4 April 2021\n' > "$easter_res"
 
-		"$testdir/dc/scripts/easter.sh" "$exe" 2021 | cut -c1-12 > "$easter_out"
+		"$testdir/dc/scripts/easter.sh" "$exe" 2021 "$@" | cut -c1-12 > "$easter_out"
 		err="$?"
 
 		checktest "$d" "$err" "Easter script" "$easter_res" "$easter_out"
