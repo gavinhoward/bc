@@ -2872,6 +2872,7 @@ void bc_program_exec(BcProgram *p) {
 				// We want to flush right away to save the output for history,
 				// if history must preserve it when taking input.
 				bc_file_flush(&vm.fout, bc_flush_save);
+
 				break;
 			}
 

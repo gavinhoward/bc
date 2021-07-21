@@ -535,10 +535,7 @@ void bc_vm_shutdown(void) {
 	bc_parse_free(&vm.prs);
 	bc_program_free(&vm.prog);
 
-#if BC_ENABLED
-	if (BC_IS_BC) bc_slabvec_free(&vm.other_slabs);
-#endif // BC_ENABLED
-
+	bc_slabvec_free(&vm.other_slabs);
 	bc_slabvec_free(&vm.main_slabs);
 	bc_slabvec_free(&vm.main_const_slab);
 #endif // !BC_ENABLE_LIBRARY
