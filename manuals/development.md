@@ -2193,6 +2193,14 @@ recursive_arrays
 
 :   Tests the slab vector undo ability in used in `bc_parse_name()`.
 
+divmod
+
+:   Tests divmod.
+
+modexp
+
+:   Tests modular exponentiation.
+
 #### `dc` Standard Tests
 
 The list of current (17 July 2021) standard tests for `dc` is below:
@@ -2203,11 +2211,15 @@ decimal
 
 length
 
-:   Tests the `length()` builtin function.
+:   Tests the `length()` builtin function, including for strings and arrays.
 
 stack_len
 
 :   Tests taking the length of the results stack.
+
+stack_len
+
+:   Tests taking the length of the execution stack.
 
 add
 
@@ -2293,6 +2305,10 @@ strings
 rand
 
 :   Tests the pseudo-random number generator and its special stack handling.
+
+exec_stack
+
+:   Tests the execution stack depth command.
 
 ### Script Tests
 
