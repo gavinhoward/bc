@@ -4408,8 +4408,8 @@ help.
 
 ### Strings as Numbers
 
-In `dc`, strings can be assigned to variables. This is a problem because the
-vectors for variable stacks expect `BcNum` structs only.
+Strings can be assigned to variables. This is a problem because the vectors for
+variable stacks expect `BcNum` structs only.
 
 While I could have made a union, I decided that the complexity of adding an
 entirely new type, with destructor and everything, was not worth it. Instead, I
@@ -4420,10 +4420,9 @@ Using that, I made it so `BcNum`'s could store strings instead. This is marked
 by the `BcNum` having a `NULL` limb array (`num`) and a `cap` of 0 (which should
 *never* happen with a real number, though the other fields could be 0).
 
-If this is the case, then the `BcNum` stores the index of the string in the
-`scale` field. This is used to actually load the string if necessary. This works
-because in `dc`, all strings are stored in the main function (see the [Main and
-Read Functions][216] section).
+If this is the case, then the `BcNum` stores the function that stores the string
+in the `rdx` field, and it stores the index of the string in the `scale` field.
+This is used to actually load the string if necessary.
 
 ### Pseudo-Random Number Generator
 
