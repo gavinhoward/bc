@@ -48,3 +48,4 @@ rand
 recursive_arrays
 divmod
 modexp
+bitfuncs
