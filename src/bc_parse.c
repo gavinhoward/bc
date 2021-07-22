@@ -1969,6 +1969,24 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				break;
 			}
 
+			case BC_LEX_STR:
+			{
+				// POSIX only allows strings alone.
+				if (BC_IS_POSIX) bc_parse_err(p, BC_ERR_POSIX_EXPR_STRING);
+
+				// A string is a leaf and cannot come right after a leaf.
+				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
+					bc_parse_err(p, BC_ERR_PARSE_EXPR);
+
+				bc_parse_addString(p);
+
+				get_token = true;
+				bin_last = rprn = false;
+				nexprs += 1;
+
+				break;
+			}
+
 			case BC_LEX_NAME:
 			{
 				// A name is a leaf and cannot come right after a leaf.

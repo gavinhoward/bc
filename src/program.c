@@ -84,11 +84,6 @@ static inline void bc_program_type_num(BcResult *r, BcNum *n) {
  * @param t  The type that the result should be.
  */
 static void bc_program_type_match(BcResult *r, BcType t) {
-
-#if DC_ENABLED
-	assert(BC_IS_DC || BC_NO_ERR(r->t != BC_RESULT_STR));
-#endif // DC_ENABLED
-
 	if (BC_ERR((r->t != BC_RESULT_ARRAY) != (!t))) bc_err(BC_ERR_EXEC_TYPE);
 }
 #endif // BC_ENABLED
@@ -554,21 +549,13 @@ static void bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	// Typecheck the left.
 	if (BC_ERR(lt >= min && lt <= BC_RESULT_ONE)) bc_err(BC_ERR_EXEC_TYPE);
 
-#if DC_ENABLED
+	// Strings can be assigned to variables. We are already good if we are
+	// assigning a string.
+	bool good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
+		         lt <= BC_RESULT_ARRAY_ELEM);
 
-	// In dc, strings can be assigned to variables.
-	if(BC_IS_DC) {
-
-		// We are already good if we are assigning a string.
-		bool good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
-		             lt <= BC_RESULT_ARRAY_ELEM);
-
-		// If not, type check for a number.
-		if (!good) bc_program_type_num(*r, *rn);
-	}
-#else
-	assert((*r)->t != BC_RESULT_STR);
-#endif // DC_ENABLED
+	// If not, type check for a number.
+	if (!good) bc_program_type_num(*r, *rn);
 }
 
 /**
@@ -596,10 +583,6 @@ static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, size_t idx) {
 	assert(BC_PROG_STACK(&p->results, idx + 1));
 
 	bc_program_operand(p, r, n, idx);
-
-#if DC_ENABLED
-	assert((*r)->t != BC_RESULT_VAR || !BC_PROG_STR(*n));
-#endif // DC_ENABLED
 
 	// dc does not allow strings in this case.
 	bc_program_type_num(*r, *n);
@@ -1091,8 +1074,6 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 	bc_program_retire(p, 1, 2);
 }
 
-#if DC_ENABLED
-
 /**
  * Assigns a string to a variable.
  * @param p     The program.
@@ -1123,8 +1104,6 @@ static void bc_program_assignStr(BcProgram *p, BcLoc loc, BcVec *v, bool push) {
 	n->scale = loc.idx;
 }
 
-#endif // DC_ENABLED
-
 /**
  * Copies a value to a variable. This is used for storing in dc as well as to
  * set function parameters to arguments in bc.
@@ -1148,37 +1127,33 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 #if DC_ENABLED
 	// Check the stack for dc.
 	if (BC_IS_DC) {
-
 		if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_err(BC_ERR_EXEC_STACK);
-
-		assert(BC_PROG_STACK(&p->results, 1));
-
-		bc_program_operand(p, &ptr, &n, 0);
 	}
 #endif
+
+	assert(BC_PROG_STACK(&p->results, 1));
+
+	bc_program_operand(p, &ptr, &n, 0);
 
 #if BC_ENABLED
 	// Get the variable for a bc function call.
 	if (BC_IS_BC)
 	{
 		// Type match the result.
-		ptr = bc_vec_top(&p->results);
 		bc_program_type_match(ptr, t);
 
 		// Get the variable or array, taking care to get the real item. We take
 		// care of last with arrays later.
-		if (last) n = bc_program_num(p, ptr);
-		else if (var)
+		if (!last && var)
 			n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 	}
 #endif // BC_ENABLED
 
 	vec = bc_program_vec(p, idx, t);
 
-#if DC_ENABLED
 	// We can shortcut in dc if it's assigning a string by using
 	// bc_program_assignStr().
-	if (BC_IS_DC && (ptr->t == BC_RESULT_STR || BC_PROG_STR(n))) {
+	if (ptr->t == BC_RESULT_STR || BC_PROG_STR(n)) {
 
 		if (BC_ERR(!var)) bc_err(BC_ERR_EXEC_TYPE);
 
@@ -1186,7 +1161,6 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 
 		return;
 	}
-#endif // DC_ENABLED
 
 	BC_SIG_LOCK;
 
@@ -1293,8 +1267,6 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 
 	bc_program_assignPrep(p, &left, &l, &right, &r);
 
-#if DC_ENABLED
-
 	// Assigning to a string should be impossible simply because of the parse.
 	assert(left->t != BC_RESULT_STR);
 
@@ -1333,7 +1305,6 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		// By using bc_program_assignStr(), we short-circuited this, so return.
 		return;
 	}
-#endif // DC_ENABLED
 
 	// If we have a normal assignment operator, not a math one...
 	if (BC_INST_IS_ASSIGN(inst)) {
@@ -1817,9 +1788,8 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 #ifndef BC_PROG_NO_STACK_CHECK
 	// Check stack for dc.
-	if (BC_IS_DC) {
-		if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_err(BC_ERR_EXEC_STACK);
-	}
+	if (BC_IS_DC && BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+		bc_err(BC_ERR_EXEC_STACK);
 #endif // BC_PROG_NO_STACK_CHECK
 
 	assert(BC_PROG_STACK(&p->results, 1));
@@ -1830,11 +1800,10 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 	assert(num != NULL);
 
-#if DC_ENABLED
-	// If we are dc, we need to ensure that strings and arrays are not passed to
-	// most builtins.
-	if (!len && inst != BC_INST_SCALE_FUNC) bc_program_type_num(opd, num);
-#endif // DC_ENABLED
+	// We need to ensure that strings and arrays aren't passed to most builtins.
+	// The scale function can take strings in dc.
+	if (!len && (inst != BC_INST_SCALE_FUNC || BC_IS_BC))
+		bc_program_type_num(opd, num);
 
 	// Square root is easy.
 	if (inst == BC_INST_SQRT) bc_num_sqrt(num, &res->d.n, BC_PROG_SCALE(p));
@@ -1890,7 +1859,6 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 			else
 #endif // BC_ENABLED
 			{
-#if DC_ENABLED
 				// If the item is a string...
 				if (!BC_PROG_NUM(opd, num)) {
 
@@ -1901,7 +1869,6 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 					val = (BcBigDig) strlen(str);
 				}
 				else
-#endif // DC_ENABLED
 				{
 					// Calculate the length of the number.
 					val = (BcBigDig) bc_num_len(num);

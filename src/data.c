@@ -909,7 +909,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
 
 	// Starts with BC_LEX_RBRACKET.
-	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, true, true, true, false),
 
 	// Starts with BC_LEX_KW_BREAK.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
@@ -929,7 +929,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
 
 	// Starts with BC_LEX_COMMA.
-	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, true),
 
 	// Starts with BC_LEX_KW_AUTO.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
