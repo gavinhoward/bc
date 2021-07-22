@@ -306,7 +306,7 @@ Printing numbers in scientific notation and/or engineering notation is a
 
     If the value is a number, it is truncated and the absolute value of the
     result is printed as though **obase** is **256** and each digit is
-    interpreted as an ASCII character, making it a byte stream.
+    interpreted as an 8-bit ASCII character, making it a byte stream.
 
     If the value is a string, it is printed without a trailing newline.
 
