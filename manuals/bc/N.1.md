@@ -212,6 +212,9 @@ The following are the options that bc(1) accepts.
     a script, use this option with the keyword as the argument. If multiple are
     used, use this option for all of them; it can be used multiple times.
 
+    Keywords are *not* redefined when parsing the builtin math library (see the
+    **LIBRARY** section).
+
     It is a fatal error to redefine keywords mandated by the POSIX standard. It
     is a fatal error to attempt to redefine words that this bc(1) does not
     reserve as keywords.
@@ -1283,6 +1286,31 @@ The extended library is a **non-portable extension**.
 
 :   Returns a random boolean value (either **0** or **1**).
 
+**band()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of the bitwise **and** operation between them.
+
+**bor()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of the bitwise **or** operation between them.
+
+**bxor()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of the bitwise **xor** operation between them.
+
+**blshift()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of **a** bit-shifted left by **b** places.
+
+**brshift()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the truncated result of **a** bit-shifted right by **b** places.
+
 **ubytes(x)**
 
 :   Returns the numbers of unsigned integer bytes required to hold the truncated
@@ -1292,6 +1320,20 @@ The extended library is a **non-portable extension**.
 
 :   Returns the numbers of signed, two's-complement integer bytes required to
     hold the truncated value of **x**.
+
+**s2u(x)**
+
+:   Returns **x** if it is non-negative. If it *is* negative, then it calculates
+    what **x** would be as a 2's-complement signed integer and returns the
+    non-negative integer that would have the same representation in binary.
+
+**s2un(x,n)**
+
+:   Returns **x** if it is non-negative. If it *is* negative, then it calculates
+    what **x** would be as a 2's-complement signed integer with **n** bytes and
+    returns the non-negative integer that would have the same representation in
+    binary. If **x** cannot fit into **n** 2's-complement signed bytes, it is
+    truncated to fit.
 
 **hex(x)**
 

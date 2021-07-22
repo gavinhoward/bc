@@ -243,6 +243,9 @@ in a script, use this option with the keyword as the argument.
 If multiple are used, use this option for all of them; it can be used
 multiple times.
 .PP
+Keywords are \f[I]not\f[R] redefined when parsing the builtin math
+library (see the \f[B]LIBRARY\f[R] section).
+.PP
 It is a fatal error to redefine keywords mandated by the POSIX standard.
 It is a fatal error to attempt to redefine words that this bc(1) does
 not reserve as keywords.

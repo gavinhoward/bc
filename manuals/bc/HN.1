@@ -274,6 +274,9 @@ in a script, use this option with the keyword as the argument.
 If multiple are used, use this option for all of them; it can be used
 multiple times.
 .PP
+Keywords are \f[I]not\f[R] redefined when parsing the builtin math
+library (see the \f[B]LIBRARY\f[R] section).
+.PP
 It is a fatal error to redefine keywords mandated by the POSIX standard.
 It is a fatal error to attempt to redefine words that this bc(1) does
 not reserve as keywords.
@@ -1579,6 +1582,31 @@ In other words, it randomizes the sign of \f[B]x\f[R].
 \f[B]brand()\f[R]
 Returns a random boolean value (either \f[B]0\f[R] or \f[B]1\f[R]).
 .TP
+\f[B]band()\f[R]
+Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
+and calculates and returns the result of the bitwise \f[B]and\f[R]
+operation between them.
+.TP
+\f[B]bor()\f[R]
+Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
+and calculates and returns the result of the bitwise \f[B]or\f[R]
+operation between them.
+.TP
+\f[B]bxor()\f[R]
+Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
+and calculates and returns the result of the bitwise \f[B]xor\f[R]
+operation between them.
+.TP
+\f[B]blshift()\f[R]
+Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
+and calculates and returns the result of \f[B]a\f[R] bit-shifted left by
+\f[B]b\f[R] places.
+.TP
+\f[B]brshift()\f[R]
+Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
+and calculates and returns the truncated result of \f[B]a\f[R]
+bit-shifted right by \f[B]b\f[R] places.
+.TP
 \f[B]ubytes(x)\f[R]
 Returns the numbers of unsigned integer bytes required to hold the
 truncated absolute value of \f[B]x\f[R].
@@ -1586,6 +1614,21 @@ truncated absolute value of \f[B]x\f[R].
 \f[B]sbytes(x)\f[R]
 Returns the numbers of signed, two\[cq]s-complement integer bytes
 required to hold the truncated value of \f[B]x\f[R].
+.TP
+\f[B]s2u(x)\f[R]
+Returns \f[B]x\f[R] if it is non-negative.
+If it \f[I]is\f[R] negative, then it calculates what \f[B]x\f[R] would
+be as a 2\[cq]s-complement signed integer and returns the non-negative
+integer that would have the same representation in binary.
+.TP
+\f[B]s2un(x,n)\f[R]
+Returns \f[B]x\f[R] if it is non-negative.
+If it \f[I]is\f[R] negative, then it calculates what \f[B]x\f[R] would
+be as a 2\[cq]s-complement signed integer with \f[B]n\f[R] bytes and
+returns the non-negative integer that would have the same representation
+in binary.
+If \f[B]x\f[R] cannot fit into \f[B]n\f[R] 2\[cq]s-complement signed
+bytes, it is truncated to fit.
 .TP
 \f[B]hex(x)\f[R]
 Outputs the hexadecimal (base \f[B]16\f[R]) representation of

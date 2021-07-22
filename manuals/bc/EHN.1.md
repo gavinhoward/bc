@@ -192,6 +192,9 @@ The following are the options that bc(1) accepts.
     a script, use this option with the keyword as the argument. If multiple are
     used, use this option for all of them; it can be used multiple times.
 
+    Keywords are *not* redefined when parsing the builtin math library (see the
+    **LIBRARY** section).
+
     It is a fatal error to redefine keywords mandated by the POSIX standard. It
     is a fatal error to attempt to redefine words that this bc(1) does not
     reserve as keywords.
