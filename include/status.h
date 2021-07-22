@@ -318,6 +318,9 @@ typedef enum BcErr {
 	/// Option with no argument given an argument.
 	BC_ERR_FATAL_OPTION_ARG,
 
+	/// Option argument is invalid.
+	BC_ERR_FATAL_ARG,
+
 	// Runtime errors.
 
 	/// Invalid ibase value.
@@ -444,6 +447,9 @@ typedef enum BcErr {
 	/// Non-POSIX brace position used error.
 	BC_ERR_POSIX_BRACE,
 
+	/// String used in expression.
+	BC_ERR_POSIX_EXPR_STRING,
+
 #endif // BC_ENABLED
 
 	// Number of elements.
@@ -455,7 +461,7 @@ typedef enum BcErr {
 	BC_ERR_POSIX_START = BC_ERR_POSIX_NAME_LEN,
 
 	/// A marker for the end of POSIX errors.
-	BC_ERR_POSIX_END = BC_ERR_POSIX_BRACE,
+	BC_ERR_POSIX_END = BC_ERR_POSIX_EXPR_STRING,
 
 #endif // BC_ENABLED
 

@@ -80,6 +80,7 @@ $set 4
 25 "POSIX laat geen exponentiële notatie toe"
 26 "POSIX staat geen arrayreferenties toe als functieparameters"
 27 "POSIX vereist dat de linkse beugel op dezelfde regel staat als de functiehoofding"
+28 "POSIX staat niet toe dat strings worden toegewezen aan variabelen of arrays"
 
 $ Runtime fouten.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "ongeldige opdrachtregeloptie: %s"
 6 "optie vereist een argument: '%c' (\"%s\")"
 7 "optie neemt geen argumenten aan: '%c' (\"%s\")"
+8 "ongeldige opdrachtregeloptie argument: %s"

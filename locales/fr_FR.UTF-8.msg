@@ -80,6 +80,7 @@ $set 4
 25 "POSIX interdit la notation exponentielle"
 26 "POSIX interdit les références à un tableau dans les paramètres d'une fonction"
 27 "POSIX impose que l'en-tête de la fonction et le '{' soient sur la même ligne"
+28 "POSIX interdit pas d'assigner des chaînes de caractères à des variables ou à des tableaux"
 
 $ Runtime errors.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "option de ligne de commande invalide : \"%s\""
 6 "l'option '%c' (\"%s\") requiert un argument"
 7 "l'option '%c' (\"%s\") ne prend pas d'argument"
+8 "argument d'option de ligne de commande invalide : \"%s\""

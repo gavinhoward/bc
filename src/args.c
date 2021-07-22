@@ -105,7 +105,7 @@ static void bc_args_redefine(const char *keyword) {
 		}
 	}
 
-	bc_error(BC_ERR_FATAL_OPTION, 0, keyword);
+	bc_error(BC_ERR_FATAL_ARG, 0, keyword);
 }
 
 #endif // BC_ENABLED

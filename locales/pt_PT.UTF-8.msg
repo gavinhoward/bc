@@ -80,6 +80,7 @@ $set 4
 25 "POSIX não permite notação exponencial"
 26 "POSIX não permite referências de matriz como parâmetros de função"
 27 "POSIX requer que o cabeçalho da função '{' estejam na mesma linha"
+28 "POSIX não permite a atribuição de cadeias de caracteres a variáveis ou matrizes"
 
 $ Runtime errors.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "opção de linha de comando inválida: \"%s\""
 6 "opção requer um argumento: '%c' (\"%s\")"
 7 "a opção não aceita argumentos: '%c' (\"%s\")"
+8 "argumento de opção de linha de comando inválido: \"%s\""

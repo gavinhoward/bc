@@ -80,6 +80,7 @@ $set 4
 25 "POSIX does not allow exponential notation"
 26 "POSIX does not allow array references as function parameters"
 27 "POSIX requires the left brace be on the same line as the function header"
+28 "POSIX does not allow strings to be assigned to variables or arrays"
 
 $ Runtime errors.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "invalid command-line option: \"%s\""
 6 "option requires an argument: '%c' (\"%s\")"
 7 "option takes no arguments: '%c' (\"%s\")"
+8 "invalid command-line option argument: \"%s\"

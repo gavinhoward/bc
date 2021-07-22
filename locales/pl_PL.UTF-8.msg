@@ -80,6 +80,7 @@ $set 4
 25 "POSIX nie pozwala na notację wykładniczą"
 26 "POSIX nie zezwala na odniesienia do tablicy jako parametrów funkcji"
 27 "POSIX wymaga, aby lewe usztywnienie znajdowało się na tej samej linii co nagłówek funkcji"
+28 "POSIX nie pozwala na przypisywanie ciągów znaków do zmiennych lub tablic"
 
 $ Błędy Runtime'u.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "nieprawidłowa opcja wiersza poleceń: \"%s\""
 6 "opcja wymaga argumentu: '%c' (\"%s\")"
 7 "opcja nie wymaga żadnych argumentów: '%c' (\"%s\")"
+8 "nieprawidłowa argument opcja wiersza poleceń: \"%s\""

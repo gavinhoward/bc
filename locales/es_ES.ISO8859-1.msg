@@ -80,6 +80,7 @@ $set 4
 25 "POSIX no permite una notación exponencial"
 26 "POSIX no permite una referencia a una matriz como un parámetro de función"
 27 "POSIX requiere el llave de la izquierda que sea en la misma línea que los parámetros de la función"
+28 "POSIX no permite asignar cadenas a variables o matrices"
 
 $ Runtime errors.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "una opción de línea de comandos no es válida: \"%s\""
 6 "una opción requiere un argumento: '%c' (\"%s\")"
 7 "una opción no tiene argumento: '%c' (\"%s\")"
+8 "uno argumento de opción de línea de comandos no es válido: \"%s\""

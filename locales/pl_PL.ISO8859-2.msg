@@ -80,6 +80,7 @@ $set 4
 25 "POSIX nie pozwala na notacjê wyk³adnicz±"
 26 "POSIX nie zezwala na odniesienia do tablicy jako parametrów funkcji"
 27 "POSIX wymaga, aby lewe usztywnienie znajdowa³o siê na tej samej linii co nag³ówek funkcji"
+28 "POSIX nie pozwala na przypisywanie ci±gów znaków do zmiennych lub tablic"
 
 $ B³êdy Runtime'u.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "nieprawid³owa opcja wiersza poleceñ: \"%s\""
 6 "opcja wymaga argumentu: '%c' (\"%s\")"
 7 "opcja nie wymaga ¿adnych argumentów: '%c' (\"%s\")"
+8 "nieprawid³owa argument opcja wiersza poleceñ: \"%s\""

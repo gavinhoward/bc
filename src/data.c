@@ -182,6 +182,7 @@ const uchar bc_err_ids[] = {
 
 	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
 	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+	BC_ERR_IDX_FATAL,
 
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -197,7 +198,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
 
 };
@@ -218,6 +219,7 @@ const char* const bc_err_msgs[] = {
 	"bad command-line option: \"%s\"",
 	"option requires an argument: '%c' (\"%s\")",
 	"option takes no arguments: '%c' (\"%s\")",
+	"bad option argument: \"%s\"",
 
 	"bad ibase: must be [%lu, %lu]",
 	"bad obase: must be [%lu, %lu]",
@@ -274,6 +276,7 @@ const char* const bc_err_msgs[] = {
 	"POSIX does not allow array references as function parameters",
 	"POSIX does not allow void functions",
 	"POSIX requires the left brace be on the same line as the function header",
+	"POSIX does not allow strings to be assigned to variables or arrays",
 #endif // BC_ENABLED
 
 };

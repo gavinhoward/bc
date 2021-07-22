@@ -80,6 +80,7 @@ $set 4
 25 "POSIX erlaubt keine exponentielle Notation"
 26 "POSIX erlaubt keine Feld-Referenzen als Funktionsparameter"
 27 "POSIX erfordert, dass die linke Klammer auf der gleichen Linie wie der Funktionskopf steht"
+28 "POSIX erlaubt keine Zuweisung von Strings an Variablen oder Arrays"
 
 $ Runtime errors.
 $set 5
@@ -106,3 +107,4 @@ $set 6
 5 "ungültige Befehlszeilenoption: \"%s\""
 6 "Option erfordert ein Argument: '%c' (\"%s\")"
 7 "Option benutzt keine Argumente: '%c' (\"%s\")"
+8 "ungültiges Argument der Befehlszeilenoption: \"%s\""
