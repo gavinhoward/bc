@@ -17,3 +17,17 @@ print "\d\n"
 "abc\\
 def
 "
+v = "string"
+v
+"stuff"
+print "\n"
+
+define v(v) {
+	print v, "\n"
+}
+
+v("stuff")
+v(v)
+
+length("ouch")
+length(v)

@@ -238,10 +238,10 @@ bytes(1) + 4
 a[2^63] = 1
 ibase = 100
 length(l[] + i[])
-length("string")
 abs("string")
 abs(a[])
 scale("string")
+v = "s"; scale(v)
 scale(b[])
 sqrt("string")
 sqrt(c[])
@@ -287,6 +287,15 @@ divmod(24,5,4)
 scale(4.5) modexp(25,5,5)
 scale(.2093
 a2(0,0)
+v = "stuff" + "other"
+v = "stuff"; v + v
+v = "stuff"; v * 3
+v = "stuff"; v - 3
+v = "stuff"; v / 3
+v = "stuff"; divmod(v, 3, a[])
+v = "stuff"; modexp(v, 3, 2)
+define f(x) { x * x }; f("stuff")
+define f(x) { x * x }; v = "stuff"; f(v)
 read
 read(
 read()
