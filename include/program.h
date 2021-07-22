@@ -116,10 +116,10 @@ typedef struct BcProgram {
 	/// because of pushing more and more string executions on the stack.
 	BcVec tail_calls;
 
-	/// A BcNum that has the proper base for asciify for dc.
-	BcNum strmb;
-
 #endif // DC_ENABLED
+
+	/// A BcNum that has the proper base for asciify.
+	BcNum strmb;
 
 #if BC_ENABLED
 
@@ -128,14 +128,10 @@ typedef struct BcProgram {
 
 #endif // BC_ENABLED
 
-#if DC_ENABLED
-
 	// The BcDig array for strmb. This uses BC_NUM_LONG_LOG10 because it is used
 	// in bc_num_ulong2num(), which attempts to realloc, unless it is big
 	// enough. This is big enough.
 	BcDig strmb_num[BC_NUM_BIGDIG_LOG10];
-
-#endif // DC_ENABLED
 
 } BcProgram;
 

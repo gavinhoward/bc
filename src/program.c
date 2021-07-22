@@ -2519,11 +2519,11 @@ void bc_program_init(BcProgram *p) {
 		// We want an item for the main function on the tail call stack.
 		i = 0;
 		bc_vec_push(&p->tail_calls, &i);
-
-		bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
-		bc_num_bigdig2num(&p->strmb, BC_NUM_STREAM_BASE);
 	}
 #endif // DC_ENABLED
+
+	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
+	bc_num_bigdig2num(&p->strmb, BC_NUM_STREAM_BASE);
 
 #if BC_ENABLE_EXTRA_MATH
 	// We need to initialize srand() just in case /dev/urandom and /dev/random

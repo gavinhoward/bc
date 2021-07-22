@@ -181,6 +181,9 @@ typedef enum BcInst {
 	BC_INST_IRAND,
 #endif // BC_ENABLE_EXTRA_MATH
 
+	/// Asciify.
+	BC_INST_ASCIIFY,
+
 	/// Another builtin function.
 	BC_INST_READ,
 
@@ -242,11 +245,17 @@ typedef enum BcInst {
 	/// Pop an item off of the results stack.
 	BC_INST_POP,
 
+	/// Swaps the top two items on the results stack.
+	BC_INST_SWAP,
+
 	/// Modular exponentiation.
 	BC_INST_MODEXP,
 
 	/// Do divide and modulus at the same time.
 	BC_INST_DIVMOD,
+
+	/// Turns a number into a string and prints it.
+	BC_INST_PRINT_STREAM,
 
 #if DC_ENABLED
 
@@ -258,12 +267,6 @@ typedef enum BcInst {
 
 	/// Conditionally execute a string.
 	BC_INST_EXEC_COND,
-
-	/// Asciify.
-	BC_INST_ASCIIFY,
-
-	/// Turns a number into a string and prints it.
-	BC_INST_PRINT_STREAM,
 
 	/// Prints each item on the results stack, separated by newlines.
 	BC_INST_PRINT_STACK,
@@ -280,9 +283,6 @@ typedef enum BcInst {
 	/// Pushes a copy of the item on the top of the results stack onto the
 	/// results stack.
 	BC_INST_DUPLICATE,
-
-	/// Swaps the top two items on the results stack.
-	BC_INST_SWAP,
 
 	/// Copies the value in a register and pushes the copy onto the results
 	/// stack.

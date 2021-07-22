@@ -854,6 +854,7 @@ const BcLexKeyword bc_lex_kws[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("irand", 5, false),
 #endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("asciify", 7, false),
 	BC_LEX_KW_ENTRY("modexp", 6, false),
 	BC_LEX_KW_ENTRY("divmod", 6, false),
 	BC_LEX_KW_ENTRY("quit", 4, true),
@@ -867,6 +868,7 @@ const BcLexKeyword bc_lex_kws[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("maxrand", 7, false),
 #endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("stream", 6, false),
 	BC_LEX_KW_ENTRY("else", 4, false),
 };
 
@@ -918,10 +920,10 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, true, false),
 
 	// Starts with BC_LEX_KW_SQRT.
-	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, false, true, true),
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, false, true),
 
 	// Starts with BC_LEX_KW_MAXIBASE.
-	BC_PARSE_EXPR_ENTRY(true, true, true, true, false, 0, 0, 0)
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, false, false, 0)
 
 #else // BC_ENABLE_EXTRA_MATH
 
@@ -938,10 +940,10 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
 
 	// Starts with BC_LEX_KW_SQRT.
-	BC_PARSE_EXPR_ENTRY(true, true, true, true, false, true, true, true),
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, false, true, true),
 
 	// Starts with BC_LEX_KW_MAXSCALE,
-	BC_PARSE_EXPR_ENTRY(true, false, 0, 0, 0, 0, 0, 0)
+	BC_PARSE_EXPR_ENTRY(true, true, false, false, 0, 0, 0, 0)
 
 #endif // BC_ENABLE_EXTRA_MATH
 };
@@ -1072,7 +1074,7 @@ const uchar dc_lex_tokens[] = {
 	BC_LEX_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_SCALE, BC_LEX_LOAD_POP, BC_LEX_OP_BOOL_AND, BC_LEX_OP_BOOL_NOT,
-	BC_LEX_KW_OBASE, BC_LEX_PRINT_STREAM, BC_LEX_NQUIT, BC_LEX_POP,
+	BC_LEX_KW_OBASE, BC_LEX_KW_STREAM, BC_LEX_NQUIT, BC_LEX_POP,
 	BC_LEX_STORE_PUSH, BC_LEX_KW_MAXIBASE, BC_LEX_KW_MAXOBASE,
 	BC_LEX_KW_MAXSCALE,
 #if BC_ENABLE_EXTRA_MATH
@@ -1083,7 +1085,7 @@ const uchar dc_lex_tokens[] = {
 	BC_LEX_SCALE_FACTOR,
 	BC_LEX_INVALID, BC_LEX_KW_LENGTH, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_OP_POWER, BC_LEX_NEG, BC_LEX_INVALID,
-	BC_LEX_ASCIIFY, BC_LEX_KW_ABS, BC_LEX_CLEAR_STACK, BC_LEX_DUPLICATE,
+	BC_LEX_KW_ASCIIFY, BC_LEX_KW_ABS, BC_LEX_CLEAR_STACK, BC_LEX_DUPLICATE,
 	BC_LEX_KW_ELSE, BC_LEX_PRINT_STACK, BC_LEX_INVALID,
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_RSHIFT,
@@ -1153,7 +1155,8 @@ const uchar dc_parse_insts[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_IRAND,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_QUIT, BC_INST_INVALID,
+	BC_INST_ASCIIFY, BC_INST_MODEXP, BC_INST_DIVMOD,
+	BC_INST_QUIT, BC_INST_INVALID,
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_RAND,
 #endif // BC_ENABLE_EXTRA_MATH
@@ -1162,11 +1165,11 @@ const uchar dc_parse_insts[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_MAXRAND,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_INST_INVALID,
+	BC_INST_PRINT_STREAM, BC_INST_INVALID,
 	BC_INST_REL_EQ, BC_INST_INVALID,
 	BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_INVALID, BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP,
-	BC_INST_POP, BC_INST_ASCIIFY, BC_INST_PRINT_STREAM,
+	BC_INST_POP,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_INVALID,

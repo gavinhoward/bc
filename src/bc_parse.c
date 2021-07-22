@@ -759,27 +759,29 @@ static void bc_parse_str(BcParse *p, char inst) {
  * Parses a print statement.
  * @param p  The parser.
  */
-static void bc_parse_print(BcParse *p) {
+static void bc_parse_print(BcParse *p, BcLexType type) {
 
 	BcLexType t;
 	bool comma = false;
+	BcInst inst = type == BC_LEX_KW_STREAM ?
+	              BC_INST_PRINT_STREAM : BC_INST_PRINT_POP;
 
 	bc_lex_next(&p->l);
 
 	t = p->l.t;
 
-	// A print statement has to have *something*.
+	// A print or stream statement has to have *something*.
 	if (bc_parse_isDelimiter(p)) bc_parse_err(p, BC_ERR_PARSE_PRINT);
 
 	do {
 
 		// If the token is a string, then print it with escapes.
 		// BC_INST_PRINT_POP plays that role for bc.
-		if (t == BC_LEX_STR) bc_parse_str(p, BC_INST_PRINT_POP);
+		if (t == BC_LEX_STR) bc_parse_str(p, inst);
 		else {
 			// We have an actual number; parse and add a print instruction.
 			bc_parse_expr_status(p, BC_PARSE_NEEDVAL, bc_parse_next_print);
-			bc_parse_push(p, BC_INST_PRINT_POP);
+			bc_parse_push(p, inst);
 		}
 
 		// Is the next token a comma?
@@ -1575,6 +1577,7 @@ static void bc_parse_stmt(BcParse *p) {
 #if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_IRAND:
 #endif // BC_ENABLE_EXTRA_MATH
+		case BC_LEX_KW_ASCIIFY:
 		case BC_LEX_KW_MODEXP:
 		case BC_LEX_KW_DIVMOD:
 		case BC_LEX_KW_READ:
@@ -1668,9 +1671,10 @@ static void bc_parse_stmt(BcParse *p) {
 			break;
 		}
 
+		case BC_LEX_KW_STREAM:
 		case BC_LEX_KW_PRINT:
 		{
-			bc_parse_print(p);
+			bc_parse_print(p, type);
 			break;
 		}
 
@@ -2050,6 +2054,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 #if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_IRAND:
 #endif // BC_ENABLE_EXTRA_MATH
+			case BC_LEX_KW_ASCIIFY:
 			{
 				// All of these are leaves and cannot come right after a leaf.
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))

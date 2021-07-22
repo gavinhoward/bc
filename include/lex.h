@@ -321,6 +321,9 @@ typedef enum BcLexType {
 
 #endif // BC_ENABLE_EXTRA_MATH
 
+	/// bc asciffy keyword.
+	BC_LEX_KW_ASCIIFY,
+
 	/// bc modexp keyword.
 	BC_LEX_KW_MODEXP,
 
@@ -353,6 +356,9 @@ typedef enum BcLexType {
 	/// bc maxrand keyword.
 	BC_LEX_KW_MAXRAND,
 #endif // BC_ENABLE_EXTRA_MATH
+
+	/// bc stream keyword.
+	BC_LEX_KW_STREAM,
 
 	/// bc else keyword.
 	BC_LEX_KW_ELSE,
@@ -389,12 +395,6 @@ typedef enum BcLexType {
 	/// Pop (remove) command.
 	BC_LEX_POP,
 
-	/// Asciify command.
-	BC_LEX_ASCIIFY,
-
-	/// Print stream command.
-	BC_LEX_PRINT_STREAM,
-
 	/// Store ibase command.
 	BC_LEX_STORE_IBASE,
 
@@ -408,12 +408,25 @@ typedef enum BcLexType {
 	/// Store seed command.
 	BC_LEX_STORE_SEED,
 #endif // BC_ENABLE_EXTRA_MATH
+
+	/// Load variable onto stack command.
 	BC_LEX_LOAD,
+
+	/// Pop off of variable stack onto results stack command.
 	BC_LEX_LOAD_POP,
+
+	/// Push onto variable stack command.
 	BC_LEX_STORE_PUSH,
+
+	/// Print with pop command.
 	BC_LEX_PRINT_POP,
+
+	/// Parameterized quit command.
 	BC_LEX_NQUIT,
+
+	/// Scale of number command.
 	BC_LEX_SCALE_FACTOR,
+
 #endif // DC_ENABLED
 
 } BcLexType;
