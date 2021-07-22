@@ -1143,11 +1143,17 @@ static void bc_vm_exec(void) {
 	// Load the math libraries.
 	if (BC_IS_BC && (vm.flags & BC_FLAG_L)) {
 
+		// Can't allow redefinitions in the builtin library.
+		vm.no_redefine = true;
+
 		bc_vm_load(bc_lib_name, bc_lib);
 
 #if BC_ENABLE_EXTRA_MATH
 		if (!BC_IS_POSIX) bc_vm_load(bc_lib2_name, bc_lib2);
 #endif // BC_ENABLE_EXTRA_MATH
+
+		// Make sure to clear this.
+		vm.no_redefine = false;
 
 		// Execute to ensure that all is hunky dory. Without this, scale can be
 		// set improperly.

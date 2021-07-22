@@ -473,6 +473,14 @@ typedef struct BcVm {
 	/// True if bc is currently reading from stdin.
 	bool is_stdin;
 
+#if BC_ENABLED
+
+	/// True if keywords should not be redefined. This is only true for the
+	/// builtin math libraries for bc.
+	bool no_redefine;
+
+#endif // BC_ENABLED
+
 #endif // !BC_ENABLE_LIBRARY
 
 	/// An array of maxes for the globals.

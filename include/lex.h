@@ -474,6 +474,8 @@ typedef struct BcLex {
 	/// string.
 	BcVec str;
 
+	/// If this is true, the lexer is processing stdin and can ask for more data
+	/// if a string or comment are not properly terminated.
 	bool is_stdin;
 
 } BcLex;
