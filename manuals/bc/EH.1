@@ -178,6 +178,27 @@ environment variables (see the \f[B]ENVIRONMENT VARIABLES\f[R] section).
 This is a \f[B]non-portable extension\f[R].
 .RE
 .TP
+\f[B]-R\f[R], \f[B]--no-read-prompt\f[R]
+Disables the read prompt in TTY mode.
+(The read prompt is only enabled in TTY mode.
+See the \f[B]TTY MODE\f[R] section.) This is mostly for those users that
+do not want a read prompt or are not used to having them in bc(1).
+Most of those users would want to put this option in
+\f[B]BC_ENV_ARGS\f[R] (see the \f[B]ENVIRONMENT VARIABLES\f[R] section).
+This option is also useful in hash bang lines of bc(1) scripts that
+prompt for user input.
+.RS
+.PP
+This option does not disable the regular prompt because the read prompt
+is only used when the \f[B]read()\f[R] built-in function is called.
+.PP
+These options \f[I]do\f[R] override the \f[B]BC_PROMPT\f[R] and
+\f[B]BC_TTY_MODE\f[R] environment variables (see the \f[B]ENVIRONMENT
+VARIABLES\f[R] section), but only for the read prompt.
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
+.TP
 \f[B]-r\f[R] \f[I]keyword\f[R], \f[B]--redefine\f[R]=\f[I]keyword\f[R]
 Redefines \f[I]keyword\f[R] in order to allow it to be used as a
 function, variable, or array name.
@@ -225,27 +246,6 @@ multiple times.
 It is a fatal error to redefine keywords mandated by the POSIX standard.
 It is a fatal error to attempt to redefine words that this bc(1) does
 not reserve as keywords.
-.RE
-.TP
-\f[B]-R\f[R], \f[B]--no-read-prompt\f[R]
-Disables the read prompt in TTY mode.
-(The read prompt is only enabled in TTY mode.
-See the \f[B]TTY MODE\f[R] section.) This is mostly for those users that
-do not want a read prompt or are not used to having them in bc(1).
-Most of those users would want to put this option in
-\f[B]BC_ENV_ARGS\f[R] (see the \f[B]ENVIRONMENT VARIABLES\f[R] section).
-This option is also useful in hash bang lines of bc(1) scripts that
-prompt for user input.
-.RS
-.PP
-This option does not disable the regular prompt because the read prompt
-is only used when the \f[B]read()\f[R] built-in function is called.
-.PP
-These options \f[I]do\f[R] override the \f[B]BC_PROMPT\f[R] and
-\f[B]BC_TTY_MODE\f[R] environment variables (see the \f[B]ENVIRONMENT
-VARIABLES\f[R] section), but only for the read prompt.
-.PP
-This is a \f[B]non-portable extension\f[R].
 .RE
 .TP
 \f[B]-q\f[R], \f[B]--quiet\f[R]

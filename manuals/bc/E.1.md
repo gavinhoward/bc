@@ -146,6 +146,24 @@ The following are the options that bc(1) accepts.
 
     This is a **non-portable extension**.
 
+**-R**, **-\-no-read-prompt**
+
+:   Disables the read prompt in TTY mode. (The read prompt is only enabled in
+    TTY mode. See the **TTY MODE** section.) This is mostly for those users that
+    do not want a read prompt or are not used to having them in bc(1). Most of
+    those users would want to put this option in **BC_ENV_ARGS** (see the
+    **ENVIRONMENT VARIABLES** section). This option is also useful in hash bang
+    lines of bc(1) scripts that prompt for user input.
+
+    This option does not disable the regular prompt because the read prompt is
+    only used when the **read()** built-in function is called.
+
+    These options *do* override the **BC_PROMPT** and **BC_TTY_MODE**
+    environment variables (see the **ENVIRONMENT VARIABLES** section), but only
+    for the read prompt.
+
+    This is a **non-portable extension**.
+
 **-r** *keyword*, **-\-redefine**=*keyword*
 
 :   Redefines *keyword* in order to allow it to be used as a function, variable,
@@ -177,24 +195,6 @@ The following are the options that bc(1) accepts.
     It is a fatal error to redefine keywords mandated by the POSIX standard. It
     is a fatal error to attempt to redefine words that this bc(1) does not
     reserve as keywords.
-
-**-R**, **-\-no-read-prompt**
-
-:   Disables the read prompt in TTY mode. (The read prompt is only enabled in
-    TTY mode. See the **TTY MODE** section.) This is mostly for those users that
-    do not want a read prompt or are not used to having them in bc(1). Most of
-    those users would want to put this option in **BC_ENV_ARGS** (see the
-    **ENVIRONMENT VARIABLES** section). This option is also useful in hash bang
-    lines of bc(1) scripts that prompt for user input.
-
-    This option does not disable the regular prompt because the read prompt is
-    only used when the **read()** built-in function is called.
-
-    These options *do* override the **BC_PROMPT** and **BC_TTY_MODE**
-    environment variables (see the **ENVIRONMENT VARIABLES** section), but only
-    for the read prompt.
-
-    This is a **non-portable extension**.
 
 **-q**, **-\-quiet**
 
