@@ -342,3 +342,112 @@ define void uint64(x){uintn(x,8)}
 define void int64(x){intn(x,8)}
 define void uint(x){uintn(x,ubytes(x))}
 define void int(x){intn(x,sbytes(x))}
+define band(a,b){
+	auto s,t,m,n
+	a=abs(a)$
+	b=abs(b)$
+	if(b>a){
+		t=b
+		b=a
+		a=t
+	}
+	s=scale
+	scale=0
+	t=1
+	while(b){
+		m=a%2
+		a/=2
+		n=b%2
+		b/=2
+		t*=2
+		t+=(m&&n)
+	}
+	while(t!=1){
+		m=t%2
+		t/=2
+		b*=2
+		b+=m
+	}
+	scale=s
+	return b
+}
+define bor(a,b){
+	auto s,t,m,n
+	a=abs(a)$
+	b=abs(b)$
+	if(b>a){
+		t=b
+		b=a
+		a=t
+	}
+	s=scale
+	scale=0
+	t=1
+	while(b){
+		m=a%2
+		a/=2
+		n=b%2
+		b/=2
+		t*=2
+		t+=(m||n)
+	}
+	while(a){
+		m=a%2
+		a/=2
+		t*=2
+		t+=m
+	}
+	while(t!=1){
+		m=t%2
+		t/=2
+		b*=2
+		b+=m
+	}
+	scale=s
+	return b
+}
+define bxor(a,b){
+	auto s,t,m,n
+	a=abs(a)$
+	b=abs(b)$
+	if(b>a){
+		t=b
+		b=a
+		a=t
+	}
+	s=scale
+	scale=0
+	t=1
+	while(b){
+		m=a%2
+		a/=2
+		n=b%2
+		b/=2
+		t*=2
+		t+=(m+n==1)
+	}
+	while(a){
+		m=a%2
+		a/=2
+		t*=2
+		t+=m
+	}
+	while(t!=1){
+		m=t%2
+		t/=2
+		b*=2
+		b+=m
+	}
+	scale=s
+	return b
+}
+define blshift(a,b){
+	a=abs(a)$
+	b=abs(b)$
+	return a*2^b
+}
+define brshift(a,b){
+	a=abs(a)$
+	b=abs(b)$
+	return (a/2^b)$
+}
