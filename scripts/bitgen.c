@@ -41,6 +41,10 @@
 
 #define NTESTS (100)
 
+/**
+ * Abort with an error message.
+ * @param msg  The error message.
+ */
 void err(const char *msg) {
 	fprintf(stderr, "%s\n", msg);
 	abort();
@@ -51,6 +55,7 @@ int main(void) {
 	uint64_t a = 0, b = 0;
 	size_t i;
 
+	// We attempt to open this or /dev/random to get random data.
 	int fd = open("/dev/urandom", O_RDONLY);
 
 	if (fd < 0) {
@@ -60,16 +65,20 @@ int main(void) {
 		if (fd < 0) err("cannot open a random number generator");
 	}
 
+	// Generate NTESTS tests.
 	for (i = 0; i < NTESTS; ++i) {
 
 		ssize_t nread;
 
+		// Generate random data for the first operand.
 		nread = read(fd, (char*) &a, sizeof(uint64_t));
 		if (nread != sizeof(uint64_t)) err("I/O error");
 
+		// Generate random data for the second operand.
 		nread = read(fd, (char*) &b, sizeof(uint64_t));
 		if (nread != sizeof(uint64_t)) err("I/O error");
 
+		// Output the tests to stdout.
 		printf("band(%lu, %lu)\n", a, b);
 		printf("bor(%lu, %lu)\n", a, b);
 		printf("bxor(%lu, %lu)\n", a, b);
@@ -78,6 +87,7 @@ int main(void) {
 		printf("blshift(%llu, %lu)\n", b & ((1ULL << 32) - 1), a & 31);
 		printf("brshift(%llu, %lu)\n", b & ((1ULL << 32) - 1), a & 31);
 
+		// Output the results to stderr.
 		fprintf(stderr, "%lu\n", a & b);
 		fprintf(stderr, "%lu\n", a | b);
 		fprintf(stderr, "%lu\n", a ^ b);

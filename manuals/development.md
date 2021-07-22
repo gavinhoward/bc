@@ -1,6 +1,6 @@
 # Development
 
-Updated: 20 July 2021
+Updated: 22 July 2021
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -1101,6 +1101,26 @@ This script is a quick and dirty script to test whether or not the garbage
 collection mechanism of the [`BcNum` caching][96] works. It has been little-used
 because it tests something that is not important to correctness.
 
+#### `benchmark.sh`
+
+A script making it easy to run benchmarks and to run the executable produced by
+[`ministat.c`][223] on them.
+
+For more information, see the [Benchmarks][144] section.
+
+#### `bitgen.c`
+
+A source file for an executable to generate tests for `bc`'s bitwise functions
+in [`gen/lib2.bc`][26]. The executable is `scripts/bitgen`, and it is built with
+`make bitgen`. It produces the test on `stdout` and the expected results on
+`stderr`. This means that to generat tests, use the following invokation:
+
+```
+scripts/bitgen > tests/bc/bitfuncs.txt 2> tests/bc/bitfuncs_results.txt
+```
+
+It calls `abort()` if it runs into an error.
+
 #### `exec-install.sh`
 
 This script is the magic behind making sure `dc` is installed properly if it's
@@ -2200,6 +2220,11 @@ divmod
 modexp
 
 :   Tests modular exponentiation.
+
+bitfuncs
+
+:   Tests the bitwise functions, `band()`, `bor()`, `bxor()`, `blshift()` and
+    `brshift()` in [`gen/lib2.bc`][26].
 
 #### `dc` Standard Tests
 
