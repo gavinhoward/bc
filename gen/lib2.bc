@@ -258,7 +258,19 @@ define sbytes(x){
 	return n
 }
 define s2un(x,n){
-	if(x<0)return 2^(n*8)-(-x)
+	auto t,u,s
+	x=x$
+	if(x<0){
+		x=abs(x)
+		s=scale
+		scale=0
+		t=n*8
+		u=2^(t-1)
+		if(x==u)return x
+		else if(x>u)x%=u
+		scale=s
+		return 2^(t)-x
+	}
 	return x
 }
 define s2u(x){return s2un(x,sbytes(x))}
