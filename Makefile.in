@@ -309,7 +309,7 @@ test_bc_errors:
 	@sh tests/errors.sh bc %%BC_TEST_EXEC%%
 
 test_bc_other:
-	@sh tests/other.sh bc %%BC_TEST_EXEC%%
+	@sh tests/other.sh bc $(BC_ENABLE_EXTRA_MATH) %%BC_TEST_EXEC%%
 
 test_bc_header:
 	@printf '$(TEST_STARS)\n\nRunning bc tests...\n\n'
@@ -331,7 +331,7 @@ test_dc_errors:
 	@sh tests/errors.sh dc %%DC_TEST_EXEC%%
 
 test_dc_other:
-	@sh tests/other.sh dc %%DC_TEST_EXEC%%
+	@sh tests/other.sh dc $(BC_ENABLE_EXTRA_MATH) %%DC_TEST_EXEC%%
 
 test_dc_header:
 	@printf '$(TEST_STARS)\n\nRunning dc tests...\n\n'

@@ -127,7 +127,7 @@ sh "$testdir/read.sh" "$d" "$exe" "$@"
 sh "$testdir/errors.sh" "$d" "$exe" "$@"
 
 # Other tests.
-sh "$testdir/other.sh" "$d" "$exe" "$@"
+sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@"
 
 printf '\nAll %s tests passed.\n' "$d"
 

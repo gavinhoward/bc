@@ -35,11 +35,16 @@ testdir=$(dirname "$script")
 . "$testdir/../scripts/functions.sh"
 
 # Command-line processing.
-if [ "$#" -ge 1 ]; then
+if [ "$#" -ge 2 ]; then
+
 	d="$1"
 	shift
+
+	extra_math="$1"
+	shift
+
 else
-	err_exit "usage: $script dir [exec args...]" 1
+	err_exit "usage: $script dir extra_math [exec args...]" 1
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -145,11 +150,17 @@ if [ "$d" = "bc" ]; then
 
 	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
 
-	printf '5\n0\n' > "$redefine_res"
-
 	"$exe" "$@" -r "abs" -r "else" -e 'abs = 5;else = 0' -e 'abs;else' > "$redefine_out"
 
 	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
+
+	if [ "$extra_math" -ne 0 ]; then
+
+		"$exe" "$@" -lr abs -e "perm(5, 1)" -e "0" > "$redefine_out"
+
+		checktest "$d" "$err" "keyword not redefined in builtin library" "$redefine_res" "$redefine_out"
+
+	fi
 
 	"$exe" "$@" -r "break" -e 'define break(x) { x }' 2> "$redefine_out"
 	err="$?"
