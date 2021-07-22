@@ -300,6 +300,10 @@ typedef enum BcInst {
 
 	/// Quit executing some number of strings.
 	BC_INST_NQUIT,
+
+	/// Push the depth of the execution stack onto the stack.
+	BC_INST_EXEC_STACK_LEN,
+
 #endif // DC_ENABLED
 
 	/// Invalid instruction.

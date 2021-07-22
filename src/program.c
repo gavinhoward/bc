@@ -2172,6 +2172,22 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 }
 
 /**
+ * Pushes the depth of the execution stack onto the stack.
+ * @param p  The program.
+ */
+static void bc_program_execStackLen(BcProgram *p) {
+
+	size_t i, amt, len = p->tail_calls.len;
+
+	amt = len;
+
+	for (i = 0; i < len; ++i)
+		amt += *((size_t*) bc_vec_item(&p->tail_calls, i));
+
+	bc_program_pushBigdig(p, (BcBigDig) amt, BC_RESULT_TEMP);
+}
+
+/**
  *
  * @param p     The program.
  * @param code  The bytecode vector to pull the register's index out of.
@@ -3086,6 +3102,12 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
+				break;
+			}
+
+			case BC_INST_EXEC_STACK_LEN:
+			{
+				bc_program_execStackLen(p);
 				break;
 			}
 #endif // DC_ENABLED

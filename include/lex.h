@@ -424,6 +424,9 @@ typedef enum BcLexType {
 	/// Parameterized quit command.
 	BC_LEX_NQUIT,
 
+	/// Execution stack depth command.
+	BC_LEX_EXEC_STACK_LENGTH,
+
 	/// Scale of number command. This is needed specifically for dc because bc
 	/// parses the scale function in parts.
 	BC_LEX_SCALE_FACTOR,
