@@ -2383,7 +2383,7 @@ static void bc_num_putchar(int c, bool bslash) {
 	bc_vm_putchar(c, bc_flush_save);
 }
 
-#if DC_ENABLED && !BC_ENABLE_LIBRARY
+#if !BC_ENABLE_LIBRARY
 
 /**
  * Prints a character for a number's digit. This is for printing for dc's P
@@ -2404,7 +2404,7 @@ static void bc_num_printChar(size_t n, size_t len, bool rdx, bool bslash) {
 	bc_vm_putchar((uchar) n, bc_flush_save);
 }
 
-#endif // DC_ENABLED && !BC_ENABLE_LIBRARY
+#endif // !BC_ENABLE_LIBRARY
 
 /**
  * Prints a series of characters for large bases. This is for printing in bases
@@ -3001,13 +3001,13 @@ static void bc_num_printBase(BcNum *restrict n, BcBigDig base, bool newline) {
 	n->rdx = BC_NUM_NEG_VAL(n, neg);
 }
 
-#if DC_ENABLED && !BC_ENABLE_LIBRARY
+#if !BC_ENABLE_LIBRARY
 
 void bc_num_stream(BcNum *restrict n) {
 	bc_num_printNum(n, BC_NUM_STREAM_BASE, 1, bc_num_printChar, false);
 }
 
-#endif // DC_ENABLED && !BC_ENABLE_LIBRARY
+#endif // !BC_ENABLE_LIBRARY
 
 void bc_num_setup(BcNum *restrict n, BcDig *restrict num, size_t cap) {
 	assert(n != NULL);

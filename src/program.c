@@ -1972,32 +1972,6 @@ static void bc_program_modexp(BcProgram *p) {
 	bc_program_retire(p, 1, 3);
 }
 
-#if DC_ENABLED
-
-/**
- * Gets the length of a register in dc and pushes it onto the results stack.
- * @param p     The program.
- * @param code  The bytecode vector to pull the register's index out of.
- * @param bgn   An in/out parameter; the start of the index in the bytecode
- *              vector, and will be updated to point after the index on return.
- */
-static void bc_program_regStackLen(BcProgram *p, const char *restrict code,
-                                   size_t *restrict bgn)
-{
-	size_t idx = bc_program_index(code, bgn);
-	BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
-
-	bc_program_pushBigdig(p, (BcBigDig) v->len, BC_RESULT_TEMP);
-}
-
-/**
- * Pushes the length of the results stack onto the results stack.
- * @param p  The program.
- */
-static void bc_program_stackLen(BcProgram *p) {
-	bc_program_pushBigdig(p, (BcBigDig) p->results.len, BC_RESULT_TEMP);
-}
-
 /**
  * Asciifies a number for dc. This is a helper for bc_program_asciify().
  * @param p  The program.
@@ -2119,6 +2093,32 @@ static void bc_program_printStream(BcProgram *p) {
 
 	// Pop the operand.
 	bc_vec_pop(&p->results);
+}
+
+#if DC_ENABLED
+
+/**
+ * Gets the length of a register in dc and pushes it onto the results stack.
+ * @param p     The program.
+ * @param code  The bytecode vector to pull the register's index out of.
+ * @param bgn   An in/out parameter; the start of the index in the bytecode
+ *              vector, and will be updated to point after the index on return.
+ */
+static void bc_program_regStackLen(BcProgram *p, const char *restrict code,
+                                   size_t *restrict bgn)
+{
+	size_t idx = bc_program_index(code, bgn);
+	BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
+
+	bc_program_pushBigdig(p, (BcBigDig) v->len, BC_RESULT_TEMP);
+}
+
+/**
+ * Pushes the length of the results stack onto the results stack.
+ * @param p  The program.
+ */
+static void bc_program_stackLen(BcProgram *p) {
+	bc_program_pushBigdig(p, (BcBigDig) p->results.len, BC_RESULT_TEMP);
 }
 
 /**
@@ -2811,6 +2811,20 @@ void bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_ASCIIFY:
+			{
+				bc_program_asciify(p, ip->func);
+
+				// Because we changed the execution stack and where we are
+				// executing, we have to update all of this.
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
+				bc_program_setVecs(p, func);
+
+				break;
+			}
+
 			case BC_INST_NUM:
 			{
 				bc_program_const(p, code, &ip->idx);
@@ -2927,6 +2941,28 @@ void bc_program_exec(BcProgram *p) {
 				break;
 			}
 
+			case BC_INST_SWAP:
+			{
+				BcResult *ptr2;
+
+				// Check the stack.
+				if (BC_ERR(!BC_PROG_STACK(&p->results, 2)))
+					bc_err(BC_ERR_EXEC_STACK);
+
+				assert(BC_PROG_STACK(&p->results, 2));
+
+				// Get the two items.
+				ptr = bc_vec_item_rev(&p->results, 0);
+				ptr2 = bc_vec_item_rev(&p->results, 1);
+
+				// Swap. It's just easiest to do it this way.
+				memcpy(&r, ptr, sizeof(BcResult));
+				memcpy(ptr, ptr2, sizeof(BcResult));
+				memcpy(ptr2, &r, sizeof(BcResult));
+
+				break;
+			}
+
 			case BC_INST_MODEXP:
 			{
 				bc_program_modexp(p);
@@ -2936,6 +2972,12 @@ void bc_program_exec(BcProgram *p) {
 			case BC_INST_DIVMOD:
 			{
 				bc_program_divmod(p);
+				break;
+			}
+
+			case BC_INST_PRINT_STREAM:
+			{
+				bc_program_printStream(p);
 				break;
 			}
 
@@ -3019,48 +3061,6 @@ void bc_program_exec(BcProgram *p) {
 
 				BC_SIG_UNLOCK;
 
-				break;
-			}
-
-			case BC_INST_SWAP:
-			{
-				BcResult *ptr2;
-
-				// Check the stack.
-				if (BC_ERR(!BC_PROG_STACK(&p->results, 2)))
-					bc_err(BC_ERR_EXEC_STACK);
-
-				assert(BC_PROG_STACK(&p->results, 2));
-
-				// Get the two items.
-				ptr = bc_vec_item_rev(&p->results, 0);
-				ptr2 = bc_vec_item_rev(&p->results, 1);
-
-				// Swap. It's just easiest to do it this way.
-				memcpy(&r, ptr, sizeof(BcResult));
-				memcpy(ptr, ptr2, sizeof(BcResult));
-				memcpy(ptr2, &r, sizeof(BcResult));
-
-				break;
-			}
-
-			case BC_INST_ASCIIFY:
-			{
-				bc_program_asciify(p, ip->func);
-
-				// Because we changed the execution stack and where we are
-				// executing, we have to update all of this.
-				ip = bc_vec_top(&p->stack);
-				func = bc_vec_item(&p->fns, ip->func);
-				code = func->code.v;
-				bc_program_setVecs(p, func);
-
-				break;
-			}
-
-			case BC_INST_PRINT_STREAM:
-			{
-				bc_program_printStream(p);
 				break;
 			}
 

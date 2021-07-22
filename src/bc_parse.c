@@ -798,6 +798,7 @@ static void bc_parse_print(BcParse *p, BcLexType type) {
 		}
 
 		t = p->l.t;
+
 	} while (true);
 
 	// If we have a comma but no token, that's bad.

@@ -734,8 +734,6 @@ void bc_num_shiftRight(BcNum *restrict n, size_t places);
  */
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
 
-#if DC_ENABLED
-
 /**
  * Modular exponentiation.
  * @param a      The first parameter.
@@ -744,8 +742,6 @@ ssize_t bc_num_cmp(const BcNum *a, const BcNum *b);
  * @param d      The return value.
  */
 void bc_num_modexp(BcNum *a, BcNum *b, BcNum *c, BcNum *restrict d);
-
-#endif // DC_ENABLED
 
 /**
  * Sets @a n to zero with a scale of zero.
@@ -797,7 +793,7 @@ void bc_num_parse(BcNum *restrict n, const char *restrict val, BcBigDig base);
  */
 void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
 
-#if DC_ENABLED
+#if !BC_ENABLE_LIBRARY
 
 /**
  * Prints a number as a character stream.
@@ -805,7 +801,7 @@ void bc_num_print(BcNum *restrict n, BcBigDig base, bool newline);
  */
 void bc_num_stream(BcNum *restrict n);
 
-#endif // DC_ENABLED
+#endif // !BC_ENABLE_LIBRARY
 
 #if BC_DEBUG_CODE
 
