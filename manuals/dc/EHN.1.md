@@ -716,6 +716,13 @@ will be printed with a newline after and then popped from the stack.
     of levels to pop is greater than the number of executing macros, dc(1)
     exits.
 
+**,**
+
+:   Pushes the depth of the execution stack onto the stack. The execution stack
+    is the stack of string executions. The number that is pushed onto the stack
+    is exactly as many as is needed to make dc(1) exit with the **Q** command,
+    so the sequence **,Q** will make dc(1) exit.
+
 ## Status
 
 These commands query status of the stack or its top value.
@@ -768,6 +775,12 @@ These commands manipulate arrays.
 
 :   Pops the value on top of the stack and uses it as an index into the array
     *r*. The selected value is then pushed onto the stack.
+
+**Y**_r_
+
+:   Pushes the length of the array *r* onto the stack.
+
+    This is a **non-portable extension**.
 
 # REGISTERS
 

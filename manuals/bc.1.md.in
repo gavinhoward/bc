@@ -516,13 +516,14 @@ The following are valid operands in bc(1):
 8.	**abs(E)**: The absolute value of **E**. This is a **non-portable
 	extension**.
 9.	**modexp(E, E, E)**: Modular exponentiation, where the first expression is
-	the base, the second is the exponent, and the third is the modulus. This is
-	a **non-portable extension**.
+	the base, the second is the exponent, and the third is the modulus. All
+	three values must be integers. The second argument must be non-negative. The
+	third argument must be non-zero. This is a **non-portable extension**.
 10.	**divmod(E, E, I[])**: Division and modulus in one operation. This is for
 	optimization. The first expression is the dividend, and the second is the
-	divisor. The return value is the quotient, and the modulus is stored in
-	index **0** of the provided array (the last argument). This is a
-	**non-portable extension**.
+	divisor, which must be non-zero. The return value is the quotient, and the
+	modulus is stored in index **0** of the provided array (the last argument).
+	This is a **non-portable extension**.
 11.	**asciify(E)**: If **E** is a string, returns a string that is the first
 	letter of its argument. If it is a number, calculates the number mod **256**
 	and returns that number as a one-character string. This is a **non-portable

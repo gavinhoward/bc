@@ -525,11 +525,15 @@ This is a \f[B]non-portable extension\f[R].
 \f[B]modexp(E, E, E)\f[R]: Modular exponentiation, where the first
 expression is the base, the second is the exponent, and the third is the
 modulus.
+All three values must be integers.
+The second argument must be non-negative.
+The third argument must be non-zero.
 This is a \f[B]non-portable extension\f[R].
 .IP "10." 4
 \f[B]divmod(E, E, I[])\f[R]: Division and modulus in one operation.
 This is for optimization.
-The first expression is the dividend, and the second is the divisor.
+The first expression is the dividend, and the second is the divisor,
+which must be non-zero.
 The return value is the quotient, and the modulus is stored in index
 \f[B]0\f[R] of the provided array (the last argument).
 This is a \f[B]non-portable extension\f[R].
