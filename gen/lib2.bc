@@ -257,6 +257,11 @@ define sbytes(x){
 	if(x>p||(!z&&x==p))n*=2
 	return n
 }
+define s2un(x,n){
+	if(x<0)return 2^(n*8)-(-x)
+	return x
+}
+define s2u(x){return s2un(x,sbytes(x))}
 define void output_byte(x,i){
 	auto j,p,y,b
 	j=ibase
@@ -323,7 +328,7 @@ define void intn(x,n){
 		print "Error: ",x," cannot fit into ",n," signed byte(s).\n"
 		return
 	}
-	if(x<0)x=2^(n*8)-(-x)
+	x=s2un(x,n)
 	binary_uint(x,n)
 	hex_uint(x,n)
 }
