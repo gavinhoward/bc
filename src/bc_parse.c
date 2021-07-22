@@ -749,7 +749,7 @@ static void bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
  * @param inst  The instruction corresponding to how the string was found and
  *              how it should be printed.
  */
-static void bc_parse_str(BcParse *p, char inst) {
+static void bc_parse_str(BcParse *p, BcInst inst) {
 	bc_parse_addString(p);
 	bc_parse_push(p, inst);
 	bc_lex_next(&p->l);
