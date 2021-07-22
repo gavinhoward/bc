@@ -60,7 +60,7 @@ $set 4
 5 "token inválido"
 6 "expressão inválida"
 7 "expressão vazia"
-8 "instrução de gravação inválida"
+8 "instrução de gravação ou de fluxo inválida"
 9 "definição de função inválida"
 10 "atribuição inválida: a parte esquerda deve ser 'scale', 'ibase', 'obase', 'last', uma variável ou um elemento da matriz"
 11 "nenhuma variável automática encontrada"

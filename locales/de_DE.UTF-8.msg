@@ -60,7 +60,7 @@ $set 4
 5 "ungültiges Token"
 6 "ungültiger Ausdruck"
 7 "leerer Ausdruck"
-8 "Ungültige Druckanweisung"
+8 "Ungültige Druck- oder Stream-Anweisung"
 9 "Ungültige Funktionsdefinition"
 10 "Ungültige Zuweisung: Die linke Seite muss \"scale\", \"ibase\", \"obase\", \"seed\", \"last\", \"var\" oder \"array element\" sein"
 11 "keine automatische Variable gefunden"

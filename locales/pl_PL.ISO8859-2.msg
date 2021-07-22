@@ -60,7 +60,7 @@ $set 4
 5 "niewa¿ny token"
 6 "niewa¿ne wyra¿enie"
 7 "puste wyra¿enie"
-8 "niewa¿ny wyci±g z wydruku"
+8 "nieprawid³owe polecenie drukowania lub przesy³ania strumienia"
 9 "nieprawid³owa definicja funkcji"
 10 "nieprawid³owe przyporz±dkowanie: lewa strona musi byæ elementem scale, ibase, obase, last, var lub element array"
 11 "nie znaleziono zmiennej automatycznej"

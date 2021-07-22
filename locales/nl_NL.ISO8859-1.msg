@@ -60,7 +60,7 @@ $set 4
 5 "ongeldige token"
 6 "ongeldige uitdrukking"
 7 "lege uitdrukking"
-8 "ongeldige afdruk"
+8 "ongeldige print- of stream-instructie"
 9 "ongeldige functiedefinitie"
 10 "ongeldige toewijzing: linkerzijde moet scale, ibase, obase, last, var of array element zijn"
 11 "geen autovariabele gevonden"

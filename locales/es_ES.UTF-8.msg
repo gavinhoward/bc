@@ -60,7 +60,7 @@ $set 4
 5 "el token no es válido"
 6 "la expresión no es válida"
 7 "la expresión es vacía"
-8 "la expresión de print no es válida"
+8 "la expresión de print o de stream no es válida"
 9 "la definición de función no es válida"
 10 "la asignación no es valida: en la izquierda debe ser scale, ibase, obase, last, var, o un elemento de matriz"
 11 "no se encontró ninguna variable automática"

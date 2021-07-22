@@ -60,7 +60,7 @@ $set 4
 5 "invalid token"
 6 "invalid expression"
 7 "empty expression"
-8 "invalid print statement"
+8 "invalid print or stream statement"
 9 "invalid function definition"
 10 "invalid assignment: left side must be scale, ibase, obase, seed, last, var, or array element"
 11 "no auto variable found"

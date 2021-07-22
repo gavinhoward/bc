@@ -249,7 +249,7 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLED
 	"bad expression",
 	"empty expression",
-	"bad print statement",
+	"bad print or stream statement",
 	"bad function definition",
 	("bad assignment: left side must be scale, ibase, "
 		"obase, seed, last, var, or array element"),

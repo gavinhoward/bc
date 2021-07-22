@@ -60,7 +60,7 @@ $set 4
 5 "symbole invalide"
 6 "expression invalide"
 7 "expression vide"
-8 "instruction d'écriture invalide"
+8 "instruction d'écriture ou de flux invalide"
 9 "définition de fonction invalide"
 10 "affectation invalide : la partie gauche doit être 'scale', 'ibase', 'obase', 'seed', 'last', une variable ou une case de tableau"
 11 "aucune variable auto trouvée"
