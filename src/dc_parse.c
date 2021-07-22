@@ -230,6 +230,19 @@ static void dc_parse_token(BcParse *p, BcLexType t, uint8_t flags) {
 			break;
 		}
 
+		case BC_LEX_ARRAY_LENGTH:
+		{
+			// Need to push the array first, based on how length is implemented.
+			bc_parse_push(p, BC_INST_ARRAY);
+			dc_parse_register(p, false);
+
+			bc_parse_push(p, BC_INST_LENGTH);
+
+			get_token = true;
+
+			break;
+		}
+
 		default:
 		{
 			// All other tokens should be taken care of by the caller, or they

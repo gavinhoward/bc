@@ -338,9 +338,7 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 		}
 
 		case BC_RESULT_VAR:
-#if BC_ENABLED
 		case BC_RESULT_ARRAY:
-#endif // BC_ENABLED
 		case BC_RESULT_ARRAY_ELEM:
 		{
 			BcVec *v;
@@ -1509,14 +1507,12 @@ static void bc_program_pushArray(BcProgram *p, const char *restrict code,
 	// Get the index of the array.
 	r.d.loc.loc = bc_program_index(code, bgn);
 
-#if BC_ENABLED
 	// Doing an array is easy; just set the result type and finish.
 	if (inst == BC_INST_ARRAY) {
 		r.t = BC_RESULT_ARRAY;
 		bc_vec_push(&p->results, &r);
 		return;
 	}
-#endif // BC_ENABLED
 
 	// Grab the top element of the results stack for the array index.
 	bc_program_prep(p, &operand, &num, 0);
@@ -1841,24 +1837,25 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 		// Well, scale() is easy, but length() is not.
 		if (len) {
 
-#if BC_ENABLED
 			// If we are bc and we have an array...
-			if (BC_IS_BC && opd->t == BC_RESULT_ARRAY) {
+			if (opd->t == BC_RESULT_ARRAY) {
 
 				// Yes, this is one place where we need to cast the number from
 				// bc_program_num() to a vector.
 				BcVec *v = (BcVec*) num;
 
+#if BC_ENABLED
 				// Dereference the array, if necessary.
-				if (v->size == sizeof(uchar)) v = bc_program_dereference(p, v);
+				if (BC_IS_BC && v->size == sizeof(uchar))
+					v = bc_program_dereference(p, v);
+#endif // BC_ENABLED
 
 				assert(v->size == sizeof(BcNum));
 
 				val = (BcBigDig) v->len;
 			}
-			else
-#endif // BC_ENABLED
-			{
+			else {
+
 				// If the item is a string...
 				if (!BC_PROG_NUM(opd, num)) {
 
@@ -2775,9 +2772,7 @@ void bc_program_exec(BcProgram *p) {
 			}
 
 			case BC_INST_ARRAY_ELEM:
-#if BC_ENABLED
 			case BC_INST_ARRAY:
-#endif // BC_ENABLED
 			{
 				bc_program_pushArray(p, code, &ip->idx, inst);
 				break;

@@ -424,8 +424,13 @@ typedef enum BcLexType {
 	/// Parameterized quit command.
 	BC_LEX_NQUIT,
 
-	/// Scale of number command.
+	/// Scale of number command. This is needed specifically for dc because bc
+	/// parses the scale function in parts.
 	BC_LEX_SCALE_FACTOR,
+
+	/// Array length command. This is needed specifically for dc because bc
+	/// just reuses its length keyword.
+	BC_LEX_ARRAY_LENGTH,
 
 #endif // DC_ENABLED
 

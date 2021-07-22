@@ -266,9 +266,7 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		}
 
 		case BC_RESULT_VAR:
-#if BC_ENABLED
 		case BC_RESULT_ARRAY:
-#endif // BC_ENABLED
 		case BC_RESULT_ARRAY_ELEM:
 		{
 			memcpy(&d->d.loc, &src->d.loc, sizeof(BcLoc));
@@ -325,9 +323,7 @@ void bc_result_free(void *result) {
 		}
 
 		case BC_RESULT_VAR:
-#if BC_ENABLED
 		case BC_RESULT_ARRAY:
-#endif // BC_ENABLED
 		case BC_RESULT_ARRAY_ELEM:
 		case BC_RESULT_STR:
 		case BC_RESULT_ZERO:

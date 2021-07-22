@@ -141,13 +141,12 @@ typedef enum BcInst {
 
 	/// Push an array element onto the results stack.
 	BC_INST_ARRAY_ELEM,
-#if BC_ENABLED
+
 	/// Push an array onto the results stack. This is different from pushing an
 	/// array *element* onto the results stack; it pushes a reference to the
 	/// whole array. This is needed in bc for function arguments that are
-	/// arrays.
+	/// arrays. It is also needed for returning the length of an array.
 	BC_INST_ARRAY,
-#endif // BC_ENABLED
 
 	/// Push a zero or a one onto the stack. These are special cased because it
 	/// does help performance, particularly for one since inc/dec operators
@@ -392,10 +391,9 @@ typedef enum BcResultType {
 	/// Result is an array element.
 	BC_RESULT_ARRAY_ELEM,
 
-#if BC_ENABLED
-	/// Result is an array. This is only allowed for function arguments.
+	/// Result is an array. This is only allowed for function arguments or
+	/// returning the length of the array.
 	BC_RESULT_ARRAY,
-#endif // BC_ENABLED
 
 	/// Result is a string.
 	BC_RESULT_STR,
