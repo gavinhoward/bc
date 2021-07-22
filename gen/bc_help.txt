@@ -108,6 +108,17 @@ Options:
 
       Disable the read prompt in interactive mode.
 
+  -r  keyword  --redefine=keyword
+
+      Redefines "keyword" and allows it to be used as a function, variable, and
+      array name. This is useful when this bc gives parse errors on scripts
+      meant for other bc implementations.
+
+      Only keywords that are not in the POSIX bc spec may be redefined.
+
+      It is a fatal error to attempt to redefine a keyword that cannot be
+      redefined or does not exist.
+
   -q  --quiet
 
       Don't print version and copyright.
