@@ -107,4 +107,4 @@ $set 6
 5 "invalid command-line option: \"%s\""
 6 "option requires an argument: '%c' (\"%s\")"
 7 "option takes no arguments: '%c' (\"%s\")"
-8 "invalid command-line option argument: \"%s\"
+8 "invalid command-line option argument: \"%s\""
