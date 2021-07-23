@@ -37,15 +37,8 @@
 #
 # For Linux, run two separate ones (in different checkouts), like so:
 #
-# scripts/release.sh 1 1 1 0 0 0 1 1 0 1 0
-# scripts/release.sh 1 1 0 1 0 0 1 1 0 1 0
-#
-# If you want to run sanitizers or Valgrind, be aware that generated tests can
-# take a long time with them. To run the sanitizers or Valgrind without
-# generated tests, use the following:
-#
-# scripts/release.sh 1 0 1 0 1 0 0 1 0 1 0
-# scripts/release.sh 1 0 0 1 0 1 0 1 0 1 0
+# scripts/release.sh 1 1 1 0 1 0 1 1 0 1 0
+# scripts/release.sh 1 1 0 1 0 1 1 1 0 1 0
 #
 # Yes, I usually do sanitizers with Clang and Valgrind with GCC.
 #
