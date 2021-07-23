@@ -42,6 +42,14 @@ This is a major production release with several changes:
 * Added the ability for users to redefine keywords. This is another reason this
   is `5.0.0`.
 * Added `dc`'s modular exponentiation and divmod to `bc`.
+* Added the ability to assign strings to variables and array elements and pass
+  them to function in `bc`.
+* Added `dc`'s asciify command and stream printing to `bc`.
+* Added a command to `dc` (`Y`) to get the length of an array.
+* Added a command to `dc` (`,`) to get the depth of the execution stack.
+* Added bitwise and, or, xor, left shift, and right shift functions to
+  `lib2.bc`.
+* Added the functions `s2u(x)` and `s2un(x,n)`, to `lib2.bc`.
 
 ## 4.0.2
 
