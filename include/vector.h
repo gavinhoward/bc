@@ -412,7 +412,6 @@ void bc_slabvec_undo(BcVec *restrict v, size_t len);
 
 #endif // BC_ENABLED
 
-
 /**
  * Clears a slab vector. This deallocates all but the first slab and clears the
  * first slab.
@@ -422,6 +421,30 @@ void bc_slabvec_clear(BcVec *restrict v);
 
 /// A convenience macro for freeing a vector of slabs.
 #define bc_slabvec_free bc_vec_free
+
+#ifndef _WIN32
+
+/**
+ * A macro to get rid of a warning on Windows.
+ * @param d  The destination string.
+ * @param l  The length of the destination string. This has to be big enough to
+ *           contain @a s.
+ * @param s  The source string.
+ */
+#define strcpy(d, l, s) strcpy(d, s)
+
+#else // _WIN32
+
+/**
+ * A macro to get rid of a warning on Windows.
+ * @param d  The destination string.
+ * @param l  The length of the destination string. This has to be big enough to
+ *           contain @a s.
+ * @param s  The source string.
+ */
+#define strcpy(d, l, s) strcpy_s(d, l, s)
+
+#endif // _WIN32
 
 #endif // !BC_ENABLE_LIBRARY
 
