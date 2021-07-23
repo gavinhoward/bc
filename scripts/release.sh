@@ -704,7 +704,7 @@ fi
 export ASAN_OPTIONS="abort_on_error=1,allocator_may_return_null=1"
 export UBSAN_OPTIONS="print_stack_trace=1,silence_unsigned_overflow=1"
 
-build "$debug" "$defcc" "-g" "1" "$bits"
+build "$debug -std=c99" "$defcc" "-g" "1" "$bits"
 
 header "Running math library under --standard"
 
