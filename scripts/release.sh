@@ -337,7 +337,7 @@ runsettingsseries() {
 			runconfigseries "$_runsettingsseries_CFLAGS" "$_runsettingsseries_CC" \
 				"$_runsettingsseries_configure_flags $_runsettingsseries_s" \
 				"$_runsettingsseries_run_tests"
-		done < "$scriptdir/settings.txt"
+		done < "$scriptdir/release_settings.txt"
 
 	else
 		runconfigseries "$_runsettingsseries_CFLAGS" "$_runsettingsseries_CC" \
