@@ -534,6 +534,8 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 	return s;
 }
 
+#if BC_ENABLED
+
 void bc_slabvec_undo(BcVec *v, size_t len) {
 
 	BcSlab *s;
@@ -572,6 +574,8 @@ void bc_slabvec_undo(BcVec *v, size_t len) {
 
 	assert(s->len == 0 || !s->s[s->len - 1]);
 }
+
+#endif // BC_ENABLED
 
 void bc_slabvec_clear(BcVec *v) {
 

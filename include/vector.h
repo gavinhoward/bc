@@ -403,6 +403,7 @@ void bc_slabvec_init(BcVec *restrict v);
 char* bc_slabvec_strdup(BcVec *restrict v, const char *str);
 
 #if BC_ENABLED
+
 /**
  * Undoes the last allocation on the slab vector. This allows bc to have a
  * heap-based stacks for strings. This is used by the bc parser.
