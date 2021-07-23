@@ -709,7 +709,7 @@ void bc_pledge(const char *promises, const char* execpromises) {
 /**
  * A convenience and portability function for OpenBSD's unveil().
  * @param path         The path.
- * @param permmisions  The permissions for the path.
+ * @param permissions  The permissions for the path.
  */
 static void bc_unveil(const char *path, const char *permissions) {
 	int r = unveil(path, permissions);
