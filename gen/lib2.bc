@@ -355,7 +355,7 @@ define void int64(x){intn(x,8)}
 define void uint(x){uintn(x,ubytes(x))}
 define void int(x){intn(x,sbytes(x))}
 define band(a,b){
-	auto s,t,m,n
+	auto s,t,m[],n[]
 	a=abs(a)$
 	b=abs(b)$
 	if(b>a){
@@ -367,24 +367,21 @@ define band(a,b){
 	scale=0
 	t=1
 	while(b){
-		m=a%2
-		a/=2
-		n=b%2
-		b/=2
+		a=divmod(a,2,m[])
+		b=divmod(b,2,n[])
 		t*=2
-		t+=(m&&n)
+		t+=(m[0]&&n[0])
 	}
 	while(t!=1){
-		m=t%2
-		t/=2
+		t=divmod(t,2,m[])
 		b*=2
-		b+=m
+		b+=m[0]
 	}
 	scale=s
 	return b
 }
 define bor(a,b){
-	auto s,t,m,n
+	auto s,t,m[],n[]
 	a=abs(a)$
 	b=abs(b)$
 	if(b>a){
@@ -396,30 +393,26 @@ define bor(a,b){
 	scale=0
 	t=1
 	while(b){
-		m=a%2
-		a/=2
-		n=b%2
-		b/=2
+		a=divmod(a,2,m[])
+		b=divmod(b,2,n[])
 		t*=2
-		t+=(m||n)
+		t+=(m[0]||n[0])
 	}
 	while(a){
-		m=a%2
-		a/=2
+		a=divmod(a,2,m[])
 		t*=2
-		t+=m
+		t+=m[0]
 	}
 	while(t!=1){
-		m=t%2
-		t/=2
+		t=divmod(t,2,m[])
 		b*=2
-		b+=m
+		b+=m[0]
 	}
 	scale=s
 	return b
 }
 define bxor(a,b){
-	auto s,t,m,n
+	auto s,t,m[],n[]
 	a=abs(a)$
 	b=abs(b)$
 	if(b>a){
@@ -431,24 +424,20 @@ define bxor(a,b){
 	scale=0
 	t=1
 	while(b){
-		m=a%2
-		a/=2
-		n=b%2
-		b/=2
+		a=divmod(a,2,m[])
+		b=divmod(b,2,n[])
 		t*=2
-		t+=(m+n==1)
+		t+=(m[0]+n[0]==1)
 	}
 	while(a){
-		m=a%2
-		a/=2
+		a=divmod(a,2,m[])
 		t*=2
-		t+=m
+		t+=m[0]
 	}
 	while(t!=1){
-		m=t%2
-		t/=2
+		t=divmod(t,2,m[])
 		b*=2
-		b+=m
+		b+=m[0]
 	}
 	scale=s
 	return b
