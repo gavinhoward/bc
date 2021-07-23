@@ -35,6 +35,11 @@
 #
 # scripts/release.sh 1 0 1 0 0 0 1 1 0 1 0
 #
+# There is one problem with running this script on FreeBSD: it takes overcommit
+# to the extreme. This means that some tests that try to create allocation
+# failures instead make bc and dc crash. So running this script on FreeBSD does
+# not work right now.
+#
 # For Linux, run two separate ones (in different checkouts), like so:
 #
 # scripts/release.sh 1 1 1 0 1 0 1 1 0 1 0
