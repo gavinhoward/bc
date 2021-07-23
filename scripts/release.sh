@@ -35,7 +35,7 @@
 #
 # scripts/release.sh 1 0 1 0 0 0 1 1 0 1 0
 #
-# For Linux, run two separate ones (in different directories), like so:
+# For Linux, run two separate ones (in different checkouts), like so:
 #
 # scripts/release.sh 1 1 1 0 0 0 1 1 0 1 0
 # scripts/release.sh 1 1 0 1 0 0 1 1 0 1 0
