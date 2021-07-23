@@ -331,7 +331,7 @@ def test_sigstop(exe, args, env):
 			print(str(child.buffer))
 			sys.exit(1)
 		child.kill(signal.SIGCONT)
-		write_str(child, "quit")
+		child.send("quit")
 		child.send("\n")
 		child.wait()
 	except pexpect.TIMEOUT:
