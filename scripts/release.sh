@@ -452,22 +452,22 @@ vg() {
 		_vg_bits=32
 	fi
 
-	build "$debug" "gcc" "-O3 -gv" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gv" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O3 -gvb" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gvb" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O3 -gvd" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gvd" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O3 -gva" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gva" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
