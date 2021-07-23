@@ -198,7 +198,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
 
 };
@@ -215,6 +215,7 @@ const char* const bc_err_msgs[] = {
 	"memory allocation failed",
 	"I/O error",
 	"cannot open file: %s",
+	"file is not text: %s",
 	"path is a directory: %s",
 	"bad command-line option: \"%s\"",
 	"option requires an argument: '%c' (\"%s\")",

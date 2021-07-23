@@ -306,6 +306,9 @@ typedef enum BcErr {
 	/// File error, such as permissions or file does not exist.
 	BC_ERR_FATAL_FILE_ERR,
 
+	/// File is binary, not text, error.
+	BC_ERR_FATAL_BIN_FILE,
+
 	/// Attempted to read a directory as a file error.
 	BC_ERR_FATAL_PATH_DIR,
 
