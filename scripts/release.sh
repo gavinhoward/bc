@@ -77,7 +77,10 @@ header() {
 
 # Easy way to call make.
 do_make() {
-	make -j16 "$@"
+	# No reason to do 64 except to see if I actually can overload my system. :)
+	# Well, also that it might actually improve throughput as other jobs can run
+	# while some are waiting.
+	make -j64 "$@"
 }
 
 # Run configure.sh.
