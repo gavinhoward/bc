@@ -2628,10 +2628,12 @@ void bc_program_exec(BcProgram *p) {
 
 #if BC_HAS_COMPUTED_GOTO
 	BC_PROG_LBLS;
-#endif // BC_HAS_COMPUTED_GOTO
 
+	// BC_INST_INVALID is a marker for the end so that we don't have to have an
+	// execution loop.
 	func = (BcFunc*) bc_vec_item(&p->fns, BC_PROG_MAIN);
 	bc_vec_pushByte(&func->code, BC_INST_INVALID);
+#endif // BC_HAS_COMPUTED_GOTO
 
 	ip = bc_vec_top(&p->stack);
 	func = (BcFunc*) bc_vec_item(&p->fns, ip->func);
@@ -2644,8 +2646,12 @@ void bc_program_exec(BcProgram *p) {
 	// Ensure the pointers are correct.
 	bc_program_setVecs(p, func);
 
-	// This loop is the heart of the execution engine. It *is* the engine.
-	while (true) {
+#if !BC_HAS_COMPUTED_GOTO
+	// This loop is the heart of the execution engine. It *is* the engine. For
+	// computed goto, it is ignored.
+	while (true)
+#endif // !BC_HAS_COMPUTED_GOTO
+	{
 
 		BC_SIG_ASSERT_NOT_LOCKED;
 
