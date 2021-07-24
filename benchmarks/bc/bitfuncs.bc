@@ -15,7 +15,6 @@ for (i = 0; i < max; ++i) {
 	print "bxor(", a, ", ", b, ")\n"
 	print "blshift(", a, ", ", b % 32, ")\n"
 	print "brshift(", a, ", ", b % 32, ")\n"
-	print "print ", i, ", \q\\n\q\n"
 }
 
 print "halt\n"
