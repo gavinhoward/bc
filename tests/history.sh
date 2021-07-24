@@ -72,10 +72,18 @@ fi
 # Run all of the tests.
 for i in $(seq "$st" "$idx"); do
 
-	printf 'Running %s history test %d...' "$d" "$i"
+	for j in $(seq 1 3); do
 
-	"$py" "$testdir/history.py" "$d" "$i" "$@"
-	err=$?
+		printf 'Running %s history test %d...' "$d" "$i"
+
+		"$py" "$testdir/history.py" "$d" "$i" "$@"
+		err=$?
+
+		if [ "$err" -eq 0 ]; then
+			break
+		fi
+
+	done
 
 	checktest_retcode "$d" "$err" "$d history tests $i"
 

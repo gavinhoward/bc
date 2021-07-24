@@ -1583,6 +1583,9 @@ Tests][155] section.
 The script to integrate [`history.py`][139] into the build system in a portable
 way, and to skip it if necessary.
 
+This script also re-runs the test three times if it fails. This is because
+`pexpect` can be flaky at times.
+
 #### `other.sh`
 
 The script to run the "other" (miscellaneous) tests for each calculator. For
