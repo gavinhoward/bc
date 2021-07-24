@@ -306,7 +306,7 @@ Printing numbers in scientific notation and/or engineering notation is a
 
     If the value is a number, it is truncated and the absolute value of the
     result is printed as though **obase** is **256** and each digit is
-    interpreted as an ASCII character, making it a byte stream.
+    interpreted as an 8-bit ASCII character, making it a byte stream.
 
     If the value is a string, it is printed without a trailing newline.
 
@@ -876,6 +876,13 @@ will be printed with a newline after and then popped from the stack.
     of levels to pop is greater than the number of executing macros, dc(1)
     exits.
 
+**,**
+
+:   Pushes the depth of the execution stack onto the stack. The execution stack
+    is the stack of string executions. The number that is pushed onto the stack
+    is exactly as many as is needed to make dc(1) exit with the **Q** command,
+    so the sequence **,Q** will make dc(1) exit.
+
 ## Status
 
 These commands query status of the stack or its top value.
@@ -928,6 +935,12 @@ These commands manipulate arrays.
 
 :   Pops the value on top of the stack and uses it as an index into the array
     *r*. The selected value is then pushed onto the stack.
+
+**Y**_r_
+
+:   Pushes the length of the array *r* onto the stack.
+
+    This is a **non-portable extension**.
 
 # REGISTERS
 

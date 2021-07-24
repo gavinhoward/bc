@@ -119,7 +119,7 @@ fi
 # them.
 if [ "$run_stack_tests" -eq 0 ]; then
 
-	if [ "$f" = "globals.bc" -o "$f" = "references.bc" -o "$f" = "rand.bc" ]; then
+	if [ "$f" = "globals.bc" ] || [ "$f" = "references.bc" ] || [ "$f" = "rand.bc" ]; then
 		printf 'Skipping %s script: %s\n' "$d" "$f"
 		exit 0
 	fi

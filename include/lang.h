@@ -141,13 +141,12 @@ typedef enum BcInst {
 
 	/// Push an array element onto the results stack.
 	BC_INST_ARRAY_ELEM,
-#if BC_ENABLED
+
 	/// Push an array onto the results stack. This is different from pushing an
 	/// array *element* onto the results stack; it pushes a reference to the
 	/// whole array. This is needed in bc for function arguments that are
-	/// arrays.
+	/// arrays. It is also needed for returning the length of an array.
 	BC_INST_ARRAY,
-#endif // BC_ENABLED
 
 	/// Push a zero or a one onto the stack. These are special cased because it
 	/// does help performance, particularly for one since inc/dec operators
@@ -180,6 +179,9 @@ typedef enum BcInst {
 	/// Another builtin function.
 	BC_INST_IRAND,
 #endif // BC_ENABLE_EXTRA_MATH
+
+	/// Asciify.
+	BC_INST_ASCIIFY,
 
 	/// Another builtin function.
 	BC_INST_READ,
@@ -242,29 +244,28 @@ typedef enum BcInst {
 	/// Pop an item off of the results stack.
 	BC_INST_POP,
 
-#if DC_ENABLED
-
-	/// dc's return; it pops an executing string off of the stack.
-	BC_INST_POP_EXEC,
+	/// Swaps the top two items on the results stack.
+	BC_INST_SWAP,
 
 	/// Modular exponentiation.
 	BC_INST_MODEXP,
 
-	/// dc can do divide and modulus at the same time, thanks to being
-	/// stack-based. That's this one. It pushes two results onto the stack.
+	/// Do divide and modulus at the same time.
 	BC_INST_DIVMOD,
+
+	/// Turns a number into a string and prints it.
+	BC_INST_PRINT_STREAM,
+
+#if DC_ENABLED
+
+	/// dc's return; it pops an executing string off of the stack.
+	BC_INST_POP_EXEC,
 
 	/// Unconditionally execute a string.
 	BC_INST_EXECUTE,
 
 	/// Conditionally execute a string.
 	BC_INST_EXEC_COND,
-
-	/// Asciify.
-	BC_INST_ASCIIFY,
-
-	/// Turns a number into a string and prints it.
-	BC_INST_PRINT_STREAM,
 
 	/// Prints each item on the results stack, separated by newlines.
 	BC_INST_PRINT_STACK,
@@ -281,9 +282,6 @@ typedef enum BcInst {
 	/// Pushes a copy of the item on the top of the results stack onto the
 	/// results stack.
 	BC_INST_DUPLICATE,
-
-	/// Swaps the top two items on the results stack.
-	BC_INST_SWAP,
 
 	/// Copies the value in a register and pushes the copy onto the results
 	/// stack.
@@ -302,6 +300,10 @@ typedef enum BcInst {
 
 	/// Quit executing some number of strings.
 	BC_INST_NQUIT,
+
+	/// Push the depth of the execution stack onto the stack.
+	BC_INST_EXEC_STACK_LEN,
+
 #endif // DC_ENABLED
 
 	/// Invalid instruction.
@@ -393,10 +395,9 @@ typedef enum BcResultType {
 	/// Result is an array element.
 	BC_RESULT_ARRAY_ELEM,
 
-#if BC_ENABLED
-	/// Result is an array. This is only allowed for function arguments.
+	/// Result is an array. This is only allowed for function arguments or
+	/// returning the length of the array.
 	BC_RESULT_ARRAY,
-#endif // BC_ENABLED
 
 	/// Result is a string.
 	BC_RESULT_STR,

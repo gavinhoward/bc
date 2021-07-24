@@ -50,6 +50,15 @@ This bc(1) is a drop-in replacement for *any* bc(1), including (and
 especially) the GNU bc(1). It also has many extensions and extra features beyond
 other implementations.
 
+**Note**: If running this bc(1) on *any* script meant for another bc(1) gives a
+parse error, it is probably because a word this bc(1) reserves as a keyword is
+used as the name of a function, variable, or array. To fix that, use the
+command-line option **-r** *keyword*, where *keyword* is the keyword that is
+used as a name in the script. For more information, see the **OPTIONS** section.
+
+If parsing scripts meant for other bc(1) implementations still does not work,
+that is a bug and should be reported. See the **BUGS** section.
+
 # OPTIONS
 
 The following are the options that bc(1) accepts.
@@ -170,6 +179,45 @@ The following are the options that bc(1) accepts.
     for the read prompt.
 
     This is a **non-portable extension**.
+
+**-r** *keyword*, **-\-redefine**=*keyword*
+
+:   Redefines *keyword* in order to allow it to be used as a function, variable,
+    or array name. This is useful when this bc(1) gives parse errors when
+    parsing scripts meant for other bc(1) implementations.
+
+    The keywords this bc(1) allows to be redefined are:
+
+    * **abs**
+    * **asciify**
+    * **continue**
+    * **divmod**
+    * **else**
+    * **halt**
+    * **irand**
+    * **last**
+    * **limits**
+    * **maxibase**
+    * **maxobase**
+    * **maxrand**
+    * **maxscale**
+    * **modexp**
+    * **print**
+    * **rand**
+    * **read**
+    * **seed**
+	* **stream**
+
+    If any of those keywords are used as a function, variable, or array name in
+    a script, use this option with the keyword as the argument. If multiple are
+    used, use this option for all of them; it can be used multiple times.
+
+    Keywords are *not* redefined when parsing the builtin math library (see the
+    **LIBRARY** section).
+
+    It is a fatal error to redefine keywords mandated by the POSIX standard. It
+    is a fatal error to attempt to redefine words that this bc(1) does not
+    reserve as keywords.
 
 **-q**, **-\-quiet**
 
@@ -404,31 +452,46 @@ The following are valid operands in bc(1):
 3.	**(E)**: The value of **E** (used to change precedence).
 4.	**sqrt(E)**: The square root of **E**. **E** must be non-negative.
 5.	**length(E)**: The number of significant decimal digits in **E**. Returns
-	**1** for **0** with no decimal places.
+	**1** for **0** with no decimal places. If given a string, the length of the
+	string is returned. Passing a string to **length(E)** is a **non-portable
+	extension**.
 6.	**length(I[])**: The number of elements in the array **I**. This is a
 	**non-portable extension**.
 7.	**scale(E)**: The *scale* of **E**.
 8.	**abs(E)**: The absolute value of **E**. This is a **non-portable
 	extension**.
-9.	**I()**, **I(E)**, **I(E, E)**, and so on, where **I** is an identifier for
+9.	**modexp(E, E, E)**: Modular exponentiation, where the first expression is
+	the base, the second is the exponent, and the third is the modulus. All
+	three values must be integers. The second argument must be non-negative. The
+	third argument must be non-zero. This is a **non-portable extension**.
+10.	**divmod(E, E, I[])**: Division and modulus in one operation. This is for
+	optimization. The first expression is the dividend, and the second is the
+	divisor, which must be non-zero. The return value is the quotient, and the
+	modulus is stored in index **0** of the provided array (the last argument).
+	This is a **non-portable extension**.
+11.	**asciify(E)**: If **E** is a string, returns a string that is the first
+	letter of its argument. If it is a number, calculates the number mod **256**
+	and returns that number as a one-character string. This is a **non-portable
+	extension**.
+12.	**I()**, **I(E)**, **I(E, E)**, and so on, where **I** is an identifier for
 	a non-**void** function (see the *Void Functions* subsection of the
 	**FUNCTIONS** section). The **E** argument(s) may also be arrays of the form
 	**I[]**, which will automatically be turned into array references (see the
 	*Array References* subsection of the **FUNCTIONS** section) if the
 	corresponding parameter in the function definition is an array reference.
-10.	**read()**: Reads a line from **stdin** and uses that as an expression. The
+13.	**read()**: Reads a line from **stdin** and uses that as an expression. The
 	result of that expression is the result of the **read()** operand. This is a
 	**non-portable extension**.
-11.	**maxibase()**: The max allowable **ibase**. This is a **non-portable
+14.	**maxibase()**: The max allowable **ibase**. This is a **non-portable
 	extension**.
-12.	**maxobase()**: The max allowable **obase**. This is a **non-portable
+15.	**maxobase()**: The max allowable **obase**. This is a **non-portable
 	extension**.
-13.	**maxscale()**: The max allowable **scale**. This is a **non-portable
+16.	**maxscale()**: The max allowable **scale**. This is a **non-portable
 	extension**.
-14.	**rand()**: A pseudo-random integer between **0** (inclusive) and
+17.	**rand()**: A pseudo-random integer between **0** (inclusive) and
 	**BC_RAND_MAX** (inclusive). Using this operand will change the value of
 	**seed**. This is a **non-portable extension**.
-15.	**irand(E)**: A pseudo-random integer between **0** (inclusive) and the
+18.	**irand(E)**: A pseudo-random integer between **0** (inclusive) and the
 	value of **E** (exclusive). If **E** is negative or is a non-integer
 	(**E**'s *scale* is not **0**), an error is raised, and bc(1) resets (see
 	the **RESET** section) while **seed** remains unchanged. If **E** is larger
@@ -439,7 +502,7 @@ The following are valid operands in bc(1):
 	change the value of **seed**, unless the value of **E** is **0** or **1**.
 	In that case, **0** is returned, and **seed** is *not* changed. This is a
 	**non-portable extension**.
-16.	**maxrand()**: The max integer returned by **rand()**. This is a
+19.	**maxrand()**: The max integer returned by **rand()**. This is a
 	**non-portable extension**.
 
 The integers generated by **rand()** and **irand(E)** are guaranteed to be as
@@ -755,14 +818,15 @@ The following items are statements:
 12.	**limits**
 13.	A string of characters, enclosed in double quotes
 14.	**print** **E** **,** ... **,** **E**
-15.	**I()**, **I(E)**, **I(E, E)**, and so on, where **I** is an identifier for
+15.	**stream** **E** **,** ... **,** **E**
+16.	**I()**, **I(E)**, **I(E, E)**, and so on, where **I** is an identifier for
 	a **void** function (see the *Void Functions* subsection of the
 	**FUNCTIONS** section). The **E** argument(s) may also be arrays of the form
 	**I[]**, which will automatically be turned into array references (see the
 	*Array References* subsection of the **FUNCTIONS** section) if the
 	corresponding parameter in the function definition is an array reference.
 
-Numbers 4, 9, 11, 12, 14, and 15 are **non-portable extensions**.
+Numbers 4, 9, 11, 12, 14, 15, and 16 are **non-portable extensions**.
 
 Also, as a **non-portable extension**, any or all of the expressions in the
 header of a for loop may be omitted. If the condition (second expression) is
@@ -800,6 +864,25 @@ either the **-s** or **-w** command-line options (or equivalents).
 Printing numbers in scientific notation and/or engineering notation is a
 **non-portable extension**.
 
+## Strings
+
+If strings appear as a statement by themselves, they are printed without a
+trailing newline.
+
+In addition to appearing as a lone statement by themselves, strings can be
+assigned to variables and array elements. They can also be passed to functions
+in variable parameters.
+
+If any statement that expects a string is given a variable that had a string
+assigned to it, the statement acts as though it had received a string.
+
+If any math operation is attempted on a string or a variable or array element
+that has been assigned a string, an error is raised, and bc(1) resets (see the
+**RESET** section).
+
+Assigning strings to variables and array elements and passing them to functions
+are **non-portable extensions**.
+
 ## Print Statement
 
 The "expressions" in a **print** statement may also be strings. If they are, there
@@ -829,6 +912,19 @@ be printed as-is.
 
 Any non-string expression in a print statement shall be assigned to **last**,
 like any other expression that is printed.
+
+## Stream Statement
+
+The "expressions in a **stream** statement may also be strings.
+
+If a **stream** statement is given a string, it prints the string as though the
+string had appeared as its own statement. In other words, the **stream**
+statement prints strings normally, without a newline.
+
+If a **stream** statement is given a number, a copy of it is truncated and its
+absolute value is calculated. The result is then printed as though **obase** is
+**256** and each digit is interpreted as an 8-bit ASCII character, making it a
+byte stream.
 
 ## Order of Evaluation
 
@@ -1190,6 +1286,31 @@ The extended library is a **non-portable extension**.
 
 :   Returns a random boolean value (either **0** or **1**).
 
+**band()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of the bitwise **and** operation between them.
+
+**bor()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of the bitwise **or** operation between them.
+
+**bxor()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of the bitwise **xor** operation between them.
+
+**blshift()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the result of **a** bit-shifted left by **b** places.
+
+**brshift()**
+
+:   Takes the truncated absolute value of both **a** and **b** and calculates
+    and returns the truncated result of **a** bit-shifted right by **b** places.
+
 **ubytes(x)**
 
 :   Returns the numbers of unsigned integer bytes required to hold the truncated
@@ -1199,6 +1320,20 @@ The extended library is a **non-portable extension**.
 
 :   Returns the numbers of signed, two's-complement integer bytes required to
     hold the truncated value of **x**.
+
+**s2u(x)**
+
+:   Returns **x** if it is non-negative. If it *is* negative, then it calculates
+    what **x** would be as a 2's-complement signed integer and returns the
+    non-negative integer that would have the same representation in binary.
+
+**s2un(x,n)**
+
+:   Returns **x** if it is non-negative. If it *is* negative, then it calculates
+    what **x** would be as a 2's-complement signed integer with **n** bytes and
+    returns the non-negative integer that would have the same representation in
+    binary. If **x** cannot fit into **n** 2's-complement signed bytes, it is
+    truncated to fit.
 
 **hex(x)**
 

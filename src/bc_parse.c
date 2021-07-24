@@ -498,6 +498,96 @@ static void bc_parse_builtin(BcParse *p, BcLexType type,
 }
 
 /**
+ * Parses a builtin function that takes 3 arguments. This includes modexp() and
+ * divmod().
+ */
+static void bc_parse_builtin3(BcParse *p, BcLexType type,
+                              uint8_t flags, BcInst *prev)
+{
+	assert(type == BC_LEX_KW_MODEXP || type == BC_LEX_KW_DIVMOD);
+
+	// Must have a left paren.
+	bc_lex_next(&p->l);
+	if (BC_ERR(p->l.t != BC_LEX_LPAREN))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	bc_lex_next(&p->l);
+
+	// Change the flags as needed for parsing the argument.
+	flags &= ~(BC_PARSE_PRINT | BC_PARSE_REL);
+	flags |= BC_PARSE_NEEDVAL;
+
+	bc_parse_expr_status(p, flags, bc_parse_next_builtin);
+
+	// Must have a comma.
+	if (BC_ERR(p->l.t != BC_LEX_COMMA))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	bc_lex_next(&p->l);
+
+	bc_parse_expr_status(p, flags, bc_parse_next_builtin);
+
+	// Must have a comma.
+	if (BC_ERR(p->l.t != BC_LEX_COMMA))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	bc_lex_next(&p->l);
+
+	// If it is a divmod, parse an array name. Otherwise, just parse another
+	// expression.
+	if (type == BC_LEX_KW_DIVMOD) {
+
+		// Must have a name.
+		if (BC_ERR(p->l.t != BC_LEX_NAME)) bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+		// This is safe because the next token should not overwrite the name.
+		bc_lex_next(&p->l);
+
+		// Must have a left bracket.
+		if (BC_ERR(p->l.t != BC_LEX_LBRACKET))
+			bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+		// This is safe because the next token should not overwrite the name.
+		bc_lex_next(&p->l);
+
+		// Must have a right bracket.
+		if (BC_ERR(p->l.t != BC_LEX_RBRACKET))
+			bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+		// This is safe because the next token should not overwrite the name.
+		bc_lex_next(&p->l);
+	}
+	else bc_parse_expr_status(p, flags, bc_parse_next_rel);
+
+	// Must have a right paren.
+	if (BC_ERR(p->l.t != BC_LEX_RPAREN))
+		bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+
+	// Adjust previous based on the token and push it.
+	*prev = type - BC_LEX_KW_MODEXP + BC_INST_MODEXP;
+	bc_parse_push(p, *prev);
+
+	// If we have divmod, we need to assign the modulus to the array element, so
+	// we need to push the instructions for doing so.
+	if (type == BC_LEX_KW_DIVMOD) {
+
+		// The zeroth element.
+		bc_parse_push(p, BC_INST_ZERO);
+		bc_parse_push(p, BC_INST_ARRAY_ELEM);
+
+		// Push the array.
+		bc_parse_pushName(p, p->l.str.v, false);
+
+		// Swap them and assign. After this, the top item on the stack should
+		// be the quotient.
+		bc_parse_push(p, BC_INST_SWAP);
+		bc_parse_push(p, BC_INST_ASSIGN_NO_VAL);
+	}
+
+	bc_lex_next(&p->l);
+}
+
+/**
  * Parses the scale keyword. This is special because scale can be a value or a
  * builtin function.
  * @param p           The parser.
@@ -659,7 +749,7 @@ static void bc_parse_minus(BcParse *p, BcInst *prev, size_t ops_bgn,
  * @param inst  The instruction corresponding to how the string was found and
  *              how it should be printed.
  */
-static void bc_parse_str(BcParse *p, char inst) {
+static void bc_parse_str(BcParse *p, BcInst inst) {
 	bc_parse_addString(p);
 	bc_parse_push(p, inst);
 	bc_lex_next(&p->l);
@@ -669,27 +759,29 @@ static void bc_parse_str(BcParse *p, char inst) {
  * Parses a print statement.
  * @param p  The parser.
  */
-static void bc_parse_print(BcParse *p) {
+static void bc_parse_print(BcParse *p, BcLexType type) {
 
 	BcLexType t;
 	bool comma = false;
+	BcInst inst = type == BC_LEX_KW_STREAM ?
+	              BC_INST_PRINT_STREAM : BC_INST_PRINT_POP;
 
 	bc_lex_next(&p->l);
 
 	t = p->l.t;
 
-	// A print statement has to have *something*.
+	// A print or stream statement has to have *something*.
 	if (bc_parse_isDelimiter(p)) bc_parse_err(p, BC_ERR_PARSE_PRINT);
 
 	do {
 
 		// If the token is a string, then print it with escapes.
 		// BC_INST_PRINT_POP plays that role for bc.
-		if (t == BC_LEX_STR) bc_parse_str(p, BC_INST_PRINT_POP);
+		if (t == BC_LEX_STR) bc_parse_str(p, inst);
 		else {
 			// We have an actual number; parse and add a print instruction.
 			bc_parse_expr_status(p, BC_PARSE_NEEDVAL, bc_parse_next_print);
-			bc_parse_push(p, BC_INST_PRINT_POP);
+			bc_parse_push(p, inst);
 		}
 
 		// Is the next token a comma?
@@ -706,6 +798,7 @@ static void bc_parse_print(BcParse *p) {
 		}
 
 		t = p->l.t;
+
 	} while (true);
 
 	// If we have a comma but no token, that's bad.
@@ -1156,13 +1249,14 @@ static void bc_parse_func(BcParse *p) {
 	bc_lex_next(&p->l);
 
 	// Must have a name.
-	if (BC_ERR(p->l.t != BC_LEX_NAME))
-		bc_parse_err(p, BC_ERR_PARSE_FUNC);
+	if (BC_ERR(p->l.t != BC_LEX_NAME)) bc_parse_err(p, BC_ERR_PARSE_FUNC);
 
 	// If the name is "void", and POSIX is not on, mark as void.
 	voidfn = (!BC_IS_POSIX && p->l.t == BC_LEX_NAME &&
 	          !strcmp(p->l.str.v, "void"));
 
+	// We can safely do this because the expected token should not overwrite the
+	// function name.
 	bc_lex_next(&p->l);
 
 	// If we *don't* have another name, then void is the name of the function.
@@ -1170,7 +1264,11 @@ static void bc_parse_func(BcParse *p) {
 
 	// With a void function, allow POSIX to complain and get a new token.
 	if (voidfn) {
+
 		bc_parse_err(p, BC_ERR_POSIX_VOID);
+
+		// We can safely do this because the expected token should not overwrite
+		// the function name.
 		bc_lex_next(&p->l);
 	}
 
@@ -1480,6 +1578,9 @@ static void bc_parse_stmt(BcParse *p) {
 #if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_IRAND:
 #endif // BC_ENABLE_EXTRA_MATH
+		case BC_LEX_KW_ASCIIFY:
+		case BC_LEX_KW_MODEXP:
+		case BC_LEX_KW_DIVMOD:
 		case BC_LEX_KW_READ:
 #if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_RAND:
@@ -1571,9 +1672,10 @@ static void bc_parse_stmt(BcParse *p) {
 			break;
 		}
 
+		case BC_LEX_KW_STREAM:
 		case BC_LEX_KW_PRINT:
 		{
-			bc_parse_print(p);
+			bc_parse_print(p, type);
 			break;
 		}
 
@@ -1872,6 +1974,24 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				break;
 			}
 
+			case BC_LEX_STR:
+			{
+				// POSIX only allows strings alone.
+				if (BC_IS_POSIX) bc_parse_err(p, BC_ERR_POSIX_EXPR_STRING);
+
+				// A string is a leaf and cannot come right after a leaf.
+				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
+					bc_parse_err(p, BC_ERR_PARSE_EXPR);
+
+				bc_parse_addString(p);
+
+				get_token = true;
+				bin_last = rprn = false;
+				nexprs += 1;
+
+				break;
+			}
+
 			case BC_LEX_NAME:
 			{
 				// A name is a leaf and cannot come right after a leaf.
@@ -1935,6 +2055,7 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 #if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_IRAND:
 #endif // BC_ENABLE_EXTRA_MATH
+			case BC_LEX_KW_ASCIIFY:
 			{
 				// All of these are leaves and cannot come right after a leaf.
 				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
@@ -1989,6 +2110,22 @@ static BcParseStatus bc_parse_expr_err(BcParse *p, uint8_t flags,
 				bc_parse_scale(p, &prev, &can_assign, flags);
 
 				rprn = get_token = bin_last = false;
+				nexprs += 1;
+				flags &= ~(BC_PARSE_ARRAY);
+
+				break;
+			}
+
+			case BC_LEX_KW_MODEXP:
+			case BC_LEX_KW_DIVMOD:
+			{
+				// This is a leaf and cannot come right after a leaf.
+				if (BC_ERR(BC_PARSE_LEAF(prev, bin_last, rprn)))
+					bc_parse_err(p, BC_ERR_PARSE_EXPR);
+
+				bc_parse_builtin3(p, t, flags, &prev);
+
+				rprn = get_token = bin_last = incdec = can_assign = false;
 				nexprs += 1;
 				flags &= ~(BC_PARSE_ARRAY);
 

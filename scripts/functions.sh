@@ -169,9 +169,12 @@ checkcrash() {
 	_checkcrash_name="$1"
 	shift
 
-	if [ "$_checkcrash_error" -gt 127 ]; then
+
+	if [ "$_checkcrash_error" -gt 127 ] && [ "$_checkcrash_error" -ne 137 ]; then
 		die "$_checkcrash_d" "crashed ($_checkcrash_error)" \
 			"$_checkcrash_name" "$_checkcrash_error"
+	elif [ "$_checkcrash_error" -eq 137 ]; then
+		printf 'Warning: Test %s caused %s to be killed...' "$_checkcrash_name" "$_checkcrash_d"
 	fi
 }
 
@@ -224,7 +227,7 @@ checkerrtest()
 
 	# Display the error messages if not directly running exe.
 	# This allows the script to print valgrind output.
-	if [ "$_checkerrtest_exebase" != "bc" -a "$_checkerrtest_exebase" != "dc" ]; then
+	if [ "$_checkerrtest_exebase" != "bc" ] && [ "$_checkerrtest_exebase" != "dc" ]; then
 		cat "$_checkerrtest_out"
 	fi
 }

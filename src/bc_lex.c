@@ -61,15 +61,22 @@ static void bc_lex_identifier(BcLex *l) {
 
 		if (!strncmp(buf, kw->name, n) && !isalnum(buf[n]) && buf[n] != '_') {
 
+			// If the keyword has been redefined, and redefinition is allowed
+			// (it is not allowed for builtin libraries), break out of the loop
+			// and use it as a name. This depends on the argument parser to
+			// ensure that only non-POSIX keywords get redefined.
+			if (!vm.no_redefine && vm.redefined_kws[i]) break;
+
 			l->t = BC_LEX_KW_AUTO + (BcLexType) i;
 
 			// Warn or error, as appropriate for the mode, if the keyword is not
 			// in the POSIX standard.
-			if (!BC_LEX_KW_POSIX(kw))
-				bc_lex_verr(l, BC_ERR_POSIX_KW, kw->name);
+			if (!BC_LEX_KW_POSIX(kw)) bc_lex_verr(l, BC_ERR_POSIX_KW, kw->name);
 
 			// We minus 1 because the index has already been incremented.
 			l->i += n - 1;
+
+			// Already have the token; bail.
 			return;
 		}
 	}

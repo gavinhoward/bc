@@ -155,6 +155,9 @@ SCRIPTS = ./scripts
 MINISTAT = ministat
 MINISTAT_EXEC = $(SCRIPTS)/$(MINISTAT)
 
+BITGEN = bitgen
+BITGEN_EXEC = $(SCRIPTS)/$(BITGEN)
+
 INSTALL = $(SCRIPTS)/exec-install.sh
 SAFE_INSTALL = $(SCRIPTS)/safe-install.sh
 LINK = $(SCRIPTS)/link.sh
@@ -241,8 +244,11 @@ $(BIN):
 
 headers: %%HEADERS%%
 
-ministat:
+$(MINISTAT):
 	$(HOSTCC) $(HOSTCFLAGS) -lm -o $(MINISTAT_EXEC) scripts/ministat.c
+
+$(BITGEN):
+	$(HOSTCC) $(HOSTCFLAGS) -lm -o $(BITGEN_EXEC) scripts/bitgen.c
 
 help:
 	@printf 'available targets:\n'
@@ -292,7 +298,7 @@ check: test
 
 test: %%TESTS%%
 
-test_bc: test_bc_header test_bc_tests test_bc_scripts test_bc_stdin test_bc_read test_bc_errors test_bc_other
+test_bc: test_bc_header test_bc_tests test_bc_scripts test_bc_errors test_bc_stdin test_bc_read test_bc_other
 	@printf '\nAll bc tests passed.\n\n$(TEST_STARS)\n'
 
 test_bc_tests:%%BC_TESTS%%
@@ -309,12 +315,12 @@ test_bc_errors:
 	@sh tests/errors.sh bc %%BC_TEST_EXEC%%
 
 test_bc_other:
-	@sh tests/other.sh bc %%BC_TEST_EXEC%%
+	@sh tests/other.sh bc $(BC_ENABLE_EXTRA_MATH) %%BC_TEST_EXEC%%
 
 test_bc_header:
 	@printf '$(TEST_STARS)\n\nRunning bc tests...\n\n'
 
-test_dc: test_dc_header test_dc_tests test_dc_scripts test_dc_stdin test_dc_read test_dc_errors test_dc_other
+test_dc: test_dc_header test_dc_tests test_dc_scripts test_dc_errors test_dc_stdin test_dc_read test_dc_other
 	@printf '\nAll dc tests passed.\n\n$(TEST_STARS)\n'
 
 test_dc_tests:%%DC_TESTS%%
@@ -331,7 +337,7 @@ test_dc_errors:
 	@sh tests/errors.sh dc %%DC_TEST_EXEC%%
 
 test_dc_other:
-	@sh tests/other.sh dc %%DC_TEST_EXEC%%
+	@sh tests/other.sh dc $(BC_ENABLE_EXTRA_MATH) %%DC_TEST_EXEC%%
 
 test_dc_header:
 	@printf '$(TEST_STARS)\n\nRunning dc tests...\n\n'
@@ -545,6 +551,7 @@ clean_tests: clean clean_config clean_coverage
 	@$(RM) -f tags .gdbbreakpoints .gdb_history .gdbsetup
 	@$(RM) -f cscope.*
 	@$(RM) -f bc.old
+	@$(RM) -f $(BITGEN_EXEC)
 
 install_locales:
 	%%INSTALL_LOCALES%%

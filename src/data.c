@@ -145,6 +145,7 @@ const BcOptLong bc_args_lopt[] = {
 	{ "global-stacks", BC_OPT_BC_ONLY, 'g' },
 	{ "mathlib", BC_OPT_BC_ONLY, 'l' },
 	{ "quiet", BC_OPT_BC_ONLY, 'q' },
+	{ "redefine", BC_OPT_REQUIRED_BC_ONLY, 'r' },
 	{ "standard", BC_OPT_BC_ONLY, 's' },
 	{ "warn", BC_OPT_BC_ONLY, 'w' },
 #endif // BC_ENABLED
@@ -181,6 +182,7 @@ const uchar bc_err_ids[] = {
 
 	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
 	BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL, BC_ERR_IDX_FATAL,
+	BC_ERR_IDX_FATAL,
 
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
 	BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC, BC_ERR_IDX_EXEC,
@@ -196,7 +198,7 @@ const uchar bc_err_ids[] = {
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
-	BC_ERR_IDX_PARSE,
+	BC_ERR_IDX_PARSE, BC_ERR_IDX_PARSE,
 #endif // BC_ENABLED
 
 };
@@ -213,10 +215,12 @@ const char* const bc_err_msgs[] = {
 	"memory allocation failed",
 	"I/O error",
 	"cannot open file: %s",
+	"file is not text: %s",
 	"path is a directory: %s",
 	"bad command-line option: \"%s\"",
 	"option requires an argument: '%c' (\"%s\")",
 	"option takes no arguments: '%c' (\"%s\")",
+	"bad option argument: \"%s\"",
 
 	"bad ibase: must be [%lu, %lu]",
 	"bad obase: must be [%lu, %lu]",
@@ -246,7 +250,7 @@ const char* const bc_err_msgs[] = {
 #if BC_ENABLED
 	"bad expression",
 	"empty expression",
-	"bad print statement",
+	"bad print or stream statement",
 	"bad function definition",
 	("bad assignment: left side must be scale, ibase, "
 		"obase, seed, last, var, or array element"),
@@ -273,6 +277,7 @@ const char* const bc_err_msgs[] = {
 	"POSIX does not allow array references as function parameters",
 	"POSIX does not allow void functions",
 	"POSIX requires the left brace be on the same line as the function header",
+	"POSIX does not allow strings to be assigned to variables or arrays",
 #endif // BC_ENABLED
 
 };
@@ -824,7 +829,7 @@ const char bc_parse_one[2] = "1";
 
 #if BC_ENABLED
 
-/// A list of keywords for bc.
+/// A list of keywords for bc. This needs to be updated if keywords change.
 const BcLexKeyword bc_lex_kws[] = {
 	BC_LEX_KW_ENTRY("auto", 4, true),
 	BC_LEX_KW_ENTRY("break", 5, true),
@@ -850,6 +855,9 @@ const BcLexKeyword bc_lex_kws[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("irand", 5, false),
 #endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("asciify", 7, false),
+	BC_LEX_KW_ENTRY("modexp", 6, false),
+	BC_LEX_KW_ENTRY("divmod", 6, false),
 	BC_LEX_KW_ENTRY("quit", 4, true),
 	BC_LEX_KW_ENTRY("read", 4, false),
 #if BC_ENABLE_EXTRA_MATH
@@ -861,32 +869,83 @@ const BcLexKeyword bc_lex_kws[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_ENTRY("maxrand", 7, false),
 #endif // BC_ENABLE_EXTRA_MATH
+	BC_LEX_KW_ENTRY("stream", 6, false),
 	BC_LEX_KW_ENTRY("else", 4, false),
 };
 
 /// The length of the list of bc keywords.
 const size_t bc_lex_kws_len = sizeof(bc_lex_kws) / sizeof(BcLexKeyword);
 
+#if BC_C11
+
+// This is here to ensure that BC_LEX_NKWS, which is needed for the
+// redefined_kws in BcVm, is correct. If it's correct under C11, it will be
+// correct under C99, and I did not know any other way of ensuring they remained
+// synchronized.
+static_assert(sizeof(bc_lex_kws) / sizeof(BcLexKeyword) == BC_LEX_NKWS,
+              "BC_LEX_NKWS is wrong.");
+
+#endif // BC_C11
+
 /// An array of booleans that correspond to token types. An entry is true if the
-/// token is valid in an expression, false otherwise.
+/// token is valid in an expression, false otherwise. This will need to change
+/// if tokens change.
 const uint8_t bc_parse_exprs[] = {
+
+	// Starts with BC_LEX_EOF.
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, true),
+
+	// Starts with BC_LEX_OP_MULTIPLY if extra math is enabled, BC_LEX_OP_DIVIDE
+	// otherwise.
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+
+	// Starts with BC_LEX_OP_REL_EQ if extra math is enabled, BC_LEX_OP_REL_LT
+	// otherwise.
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+
 #if BC_ENABLE_EXTRA_MATH
+
+	// Starts with BC_LEX_OP_ASSIGN_POWER.
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, true),
+
+	// Starts with BC_LEX_OP_ASSIGN_RSHIFT.
 	BC_PARSE_EXPR_ENTRY(true, true, false, false, true, true, false, false),
-	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, false),
+
+	// Starts with BC_LEX_RBRACKET.
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, true, true, true, false),
+
+	// Starts with BC_LEX_KW_BREAK.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
+
+	// Starts with BC_LEX_KW_HALT.
 	BC_PARSE_EXPR_ENTRY(false, true, true, true, true, true, true, false),
-	BC_PARSE_EXPR_ENTRY(true, true, true, false, true, true, true, true),
-	BC_PARSE_EXPR_ENTRY(true, true, false, 0, 0, 0, 0, 0)
+
+	// Starts with BC_LEX_KW_SQRT.
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, false, true),
+
+	// Starts with BC_LEX_KW_MAXIBASE.
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, false, false, 0)
+
 #else // BC_ENABLE_EXTRA_MATH
+
+	// Starts with BC_LEX_OP_ASSIGN_PLUS.
 	BC_PARSE_EXPR_ENTRY(true, true, true, false, false, true, true, false),
-	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, true, true),
+
+	// Starts with BC_LEX_COMMA.
+	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, true, true, true),
+
+	// Starts with BC_LEX_KW_AUTO.
 	BC_PARSE_EXPR_ENTRY(false, false, false, false, false, false, false, false),
+
+	// Starts with BC_LEX_KW_WHILE.
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
-	BC_PARSE_EXPR_ENTRY(true, true, false, true, true, true, true, false)
+
+	// Starts with BC_LEX_KW_SQRT.
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, false, true, true),
+
+	// Starts with BC_LEX_KW_MAXSCALE,
+	BC_PARSE_EXPR_ENTRY(true, true, false, false, 0, 0, 0, 0)
+
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
@@ -947,6 +1006,11 @@ const BcParseNext bc_parse_next_for = BC_PARSE_NEXT(1, BC_LEX_SCOLON);
 /// The valid next tokens for read expressions.
 const BcParseNext bc_parse_next_read =
 	BC_PARSE_NEXT(2, BC_LEX_NLINE, BC_LEX_EOF);
+
+/// The valid next tokens for the arguments of a builtin function with multiple
+/// arguments.
+const BcParseNext bc_parse_next_builtin = BC_PARSE_NEXT(1, BC_LEX_COMMA);
+
 #endif // BC_ENABLED
 
 #if DC_ENABLED
@@ -956,7 +1020,7 @@ const uint8_t dc_lex_regs[] = {
 	BC_LEX_OP_REL_EQ, BC_LEX_OP_REL_LE, BC_LEX_OP_REL_GE, BC_LEX_OP_REL_NE,
 	BC_LEX_OP_REL_LT, BC_LEX_OP_REL_GT, BC_LEX_SCOLON, BC_LEX_COLON,
 	BC_LEX_KW_ELSE, BC_LEX_LOAD, BC_LEX_LOAD_POP, BC_LEX_OP_ASSIGN,
-	BC_LEX_STORE_PUSH, BC_LEX_REG_STACK_LEVEL,
+	BC_LEX_STORE_PUSH, BC_LEX_REG_STACK_LEVEL, BC_LEX_ARRAY_LENGTH,
 };
 
 /// The length of the list of register instructions.
@@ -965,7 +1029,8 @@ const size_t dc_lex_regs_len = sizeof(dc_lex_regs) / sizeof(uint8_t);
 /// A list corresponding to characters starting at double quote ("). If an entry
 /// is BC_LEX_INVALID, then that character needs extra lexing in dc. If it does
 /// not, the character can trivially be replaced by the entry. Positions are
-/// kept because it corresponds to the ASCII table.
+/// kept because it corresponds to the ASCII table. This may need to be changed
+/// if tokens change.
 const uchar dc_lex_tokens[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_IRAND,
@@ -985,7 +1050,7 @@ const uchar dc_lex_tokens[] = {
 	BC_LEX_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_LPAREN, BC_LEX_RPAREN, BC_LEX_OP_MULTIPLY, BC_LEX_OP_PLUS,
-	BC_LEX_INVALID, BC_LEX_OP_MINUS, BC_LEX_INVALID, BC_LEX_OP_DIVIDE,
+	BC_LEX_EXEC_STACK_LENGTH, BC_LEX_OP_MINUS, BC_LEX_INVALID, BC_LEX_OP_DIVIDE,
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_INVALID,
@@ -1010,7 +1075,7 @@ const uchar dc_lex_tokens[] = {
 	BC_LEX_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_LEX_KW_SCALE, BC_LEX_LOAD_POP, BC_LEX_OP_BOOL_AND, BC_LEX_OP_BOOL_NOT,
-	BC_LEX_KW_OBASE, BC_LEX_PRINT_STREAM, BC_LEX_NQUIT, BC_LEX_POP,
+	BC_LEX_KW_OBASE, BC_LEX_KW_STREAM, BC_LEX_NQUIT, BC_LEX_POP,
 	BC_LEX_STORE_PUSH, BC_LEX_KW_MAXIBASE, BC_LEX_KW_MAXOBASE,
 	BC_LEX_KW_MAXSCALE,
 #if BC_ENABLE_EXTRA_MATH
@@ -1018,10 +1083,10 @@ const uchar dc_lex_tokens[] = {
 #else // BC_ENABLE_EXTRA_MATH
 	BC_LEX_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_LEX_SCALE_FACTOR,
-	BC_LEX_INVALID, BC_LEX_KW_LENGTH, BC_LEX_INVALID, BC_LEX_INVALID,
-	BC_LEX_INVALID, BC_LEX_OP_POWER, BC_LEX_NEG, BC_LEX_INVALID,
-	BC_LEX_ASCIIFY, BC_LEX_KW_ABS, BC_LEX_CLEAR_STACK, BC_LEX_DUPLICATE,
+	BC_LEX_SCALE_FACTOR, BC_LEX_ARRAY_LENGTH, BC_LEX_KW_LENGTH,
+	BC_LEX_INVALID, BC_LEX_INVALID, BC_LEX_INVALID,
+	BC_LEX_OP_POWER, BC_LEX_NEG, BC_LEX_INVALID,
+	BC_LEX_KW_ASCIIFY, BC_LEX_KW_ABS, BC_LEX_CLEAR_STACK, BC_LEX_DUPLICATE,
 	BC_LEX_KW_ELSE, BC_LEX_PRINT_STACK, BC_LEX_INVALID,
 #if BC_ENABLE_EXTRA_MATH
 	BC_LEX_OP_RSHIFT,
@@ -1039,13 +1104,14 @@ const uchar dc_lex_tokens[] = {
 	BC_LEX_KW_QUIT, BC_LEX_SWAP, BC_LEX_OP_ASSIGN, BC_LEX_INVALID,
 	BC_LEX_INVALID, BC_LEX_KW_SQRT, BC_LEX_INVALID, BC_LEX_EXECUTE,
 	BC_LEX_REG_STACK_LEVEL, BC_LEX_STACK_LEVEL,
-	BC_LEX_LBRACE, BC_LEX_OP_MODEXP, BC_LEX_RBRACE, BC_LEX_OP_DIVMOD,
+	BC_LEX_LBRACE, BC_LEX_KW_MODEXP, BC_LEX_RBRACE, BC_LEX_KW_DIVMOD,
 	BC_LEX_INVALID
 };
 
 /// A list of instructions that correspond to lex tokens. If an entry is
 /// BC_INST_INVALID, that lex token needs extra parsing in the dc parser.
-/// Otherwise, the token can trivially be replaced by the entry.
+/// Otherwise, the token can trivially be replaced by the entry. This needs to
+/// be updated if the tokens change.
 const uchar dc_parse_insts[] = {
 	BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLED
@@ -1090,6 +1156,7 @@ const uchar dc_parse_insts[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_IRAND,
 #endif // BC_ENABLE_EXTRA_MATH
+	BC_INST_ASCIIFY, BC_INST_MODEXP, BC_INST_DIVMOD,
 	BC_INST_QUIT, BC_INST_INVALID,
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_RAND,
@@ -1099,17 +1166,18 @@ const uchar dc_parse_insts[] = {
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_MAXRAND,
 #endif // BC_ENABLE_EXTRA_MATH
-	BC_INST_INVALID,
-	BC_INST_REL_EQ, BC_INST_MODEXP, BC_INST_DIVMOD, BC_INST_INVALID,
+	BC_INST_PRINT_STREAM, BC_INST_INVALID,
+	BC_INST_REL_EQ, BC_INST_INVALID,
 	BC_INST_EXECUTE, BC_INST_PRINT_STACK, BC_INST_CLEAR_STACK,
 	BC_INST_INVALID, BC_INST_STACK_LEN, BC_INST_DUPLICATE, BC_INST_SWAP,
-	BC_INST_POP, BC_INST_ASCIIFY, BC_INST_PRINT_STREAM,
+	BC_INST_POP,
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
 #if BC_ENABLE_EXTRA_MATH
 	BC_INST_INVALID,
 #endif // BC_ENABLE_EXTRA_MATH
 	BC_INST_INVALID, BC_INST_INVALID, BC_INST_INVALID,
-	BC_INST_PRINT_POP, BC_INST_NQUIT, BC_INST_SCALE_FUNC,
+	BC_INST_PRINT_POP, BC_INST_NQUIT, BC_INST_EXEC_STACK_LEN,
+	BC_INST_SCALE_FUNC, BC_INST_INVALID,
 };
 #endif // DC_ENABLED
 

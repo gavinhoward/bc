@@ -286,7 +286,8 @@ Pops a value off the stack.
 .PP
 If the value is a number, it is truncated and the absolute value of the
 result is printed as though \f[B]obase\f[R] is \f[B]256\f[R] and each
-digit is interpreted as an ASCII character, making it a byte stream.
+digit is interpreted as an 8-bit ASCII character, making it a byte
+stream.
 .PP
 If the value is a string, it is printed without a trailing newline.
 .PP
@@ -801,6 +802,13 @@ Pops a value from the stack which must be non-negative and is used the
 number of macro executions to pop off of the execution stack.
 If the number of levels to pop is greater than the number of executing
 macros, dc(1) exits.
+.TP
+\f[B],\f[R]
+Pushes the depth of the execution stack onto the stack.
+The execution stack is the stack of string executions.
+The number that is pushed onto the stack is exactly as many as is needed
+to make dc(1) exit with the \f[B]Q\f[R] command, so the sequence
+\f[B],Q\f[R] will make dc(1) exit.
 .SS Status
 .PP
 These commands query status of the stack or its top value.
@@ -857,6 +865,13 @@ The second value will be stored in the array \f[I]r\f[R] (see the
 Pops the value on top of the stack and uses it as an index into the
 array \f[I]r\f[R].
 The selected value is then pushed onto the stack.
+.TP
+\f[B]Y\f[R]\f[I]r\f[R]
+Pushes the length of the array \f[I]r\f[R] onto the stack.
+.RS
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
 .SH REGISTERS
 .PP
 Registers are names that can store strings, numbers, and arrays.

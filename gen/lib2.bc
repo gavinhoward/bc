@@ -257,6 +257,23 @@ define sbytes(x){
 	if(x>p||(!z&&x==p))n*=2
 	return n
 }
+define s2un(x,n){
+	auto t,u,s
+	x=x$
+	if(x<0){
+		x=abs(x)
+		s=scale
+		scale=0
+		t=n*8
+		u=2^(t-1)
+		if(x==u)return x
+		else if(x>u)x%=u
+		scale=s
+		return 2^(t)-x
+	}
+	return x
+}
+define s2u(x){return s2un(x,sbytes(x))}
 define void output_byte(x,i){
 	auto j,p,y,b
 	j=ibase
@@ -323,7 +340,7 @@ define void intn(x,n){
 		print "Error: ",x," cannot fit into ",n," signed byte(s).\n"
 		return
 	}
-	if(x<0)x=2^(n*8)-(-x)
+	x=s2un(x,n)
 	binary_uint(x,n)
 	hex_uint(x,n)
 }
@@ -337,3 +354,101 @@ define void uint64(x){uintn(x,8)}
 define void int64(x){intn(x,8)}
 define void uint(x){uintn(x,ubytes(x))}
 define void int(x){intn(x,sbytes(x))}
+define band(a,b){
+	auto s,t,m[],n[]
+	a=abs(a)$
+	b=abs(b)$
+	if(b>a){
+		t=b
+		b=a
+		a=t
+	}
+	s=scale
+	scale=0
+	t=1
+	while(b){
+		a=divmod(a,2,m[])
+		b=divmod(b,2,n[])
+		t*=2
+		t+=(m[0]&&n[0])
+	}
+	while(t!=1){
+		t=divmod(t,2,m[])
+		b*=2
+		b+=m[0]
+	}
+	scale=s
+	return b
+}
+define bor(a,b){
+	auto s,t,m[],n[]
+	a=abs(a)$
+	b=abs(b)$
+	if(b>a){
+		t=b
+		b=a
+		a=t
+	}
+	s=scale
+	scale=0
+	t=1
+	while(b){
+		a=divmod(a,2,m[])
+		b=divmod(b,2,n[])
+		t*=2
+		t+=(m[0]||n[0])
+	}
+	while(a){
+		a=divmod(a,2,m[])
+		t*=2
+		t+=m[0]
+	}
+	while(t!=1){
+		t=divmod(t,2,m[])
+		b*=2
+		b+=m[0]
+	}
+	scale=s
+	return b
+}
+define bxor(a,b){
+	auto s,t,m[],n[]
+	a=abs(a)$
+	b=abs(b)$
+	if(b>a){
+		t=b
+		b=a
+		a=t
+	}
+	s=scale
+	scale=0
+	t=1
+	while(b){
+		a=divmod(a,2,m[])
+		b=divmod(b,2,n[])
+		t*=2
+		t+=(m[0]+n[0]==1)
+	}
+	while(a){
+		a=divmod(a,2,m[])
+		t*=2
+		t+=m[0]
+	}
+	while(t!=1){
+		t=divmod(t,2,m[])
+		b*=2
+		b+=m[0]
+	}
+	scale=s
+	return b
+}
+define blshift(a,b){
+	a=abs(a)$
+	b=abs(b)$
+	return a*2^b
+}
+define brshift(a,b){
+	a=abs(a)$
+	b=abs(b)$
+	return (a/2^b)$
+}

@@ -29,23 +29,21 @@
 
 # For OpenBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 1 1 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 1 1 0 1 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 1 0
 #
-# For Linux, run two separate ones (in different directories), like so:
+# There is one problem with running this script on FreeBSD: it takes overcommit
+# to the extreme. This means that some tests that try to create allocation
+# failures instead make bc and dc crash. So running this script on FreeBSD does
+# not work right now.
 #
-# scripts/release.sh 1 1 1 0 0 0 1 1 0 1 0
-# scripts/release.sh 1 1 0 1 0 0 1 1 0 1 0
+# For Linux, run two separate ones (in different checkouts), like so:
 #
-# If you want to run sanitizers or Valgrind, be aware that generated tests can
-# take a long time with them. To run the sanitizers or Valgrind without
-# generated tests, use the following:
-#
-# scripts/release.sh 1 0 1 0 1 0 0 1 0 1 0
-# scripts/release.sh 1 0 0 1 0 1 0 1 0 1 0
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0
+# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0
 #
 # Yes, I usually do sanitizers with Clang and Valgrind with GCC.
 #
@@ -84,7 +82,10 @@ header() {
 
 # Easy way to call make.
 do_make() {
-	make -j16 "$@"
+	# No reason to do 64 except to see if I actually can overload my system. :)
+	# Well, also that it might actually improve throughput as other jobs can run
+	# while some are waiting.
+	make -j64 "$@"
 }
 
 # Run configure.sh.
@@ -337,7 +338,7 @@ runsettingsseries() {
 			runconfigseries "$_runsettingsseries_CFLAGS" "$_runsettingsseries_CC" \
 				"$_runsettingsseries_configure_flags $_runsettingsseries_s" \
 				"$_runsettingsseries_run_tests"
-		done < "$scriptdir/settings.txt"
+		done < "$scriptdir/release_settings.txt"
 
 	else
 		runconfigseries "$_runsettingsseries_CFLAGS" "$_runsettingsseries_CC" \
@@ -456,22 +457,22 @@ vg() {
 		_vg_bits=32
 	fi
 
-	build "$debug" "gcc" "-O3 -gv" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gv" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O3 -gvb" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gvb" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O3 -gvd" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gvd" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
 
-	build "$debug" "gcc" "-O3 -gva" "1" "$_vg_bits"
+	build "$debug -std=c99" "gcc" "-O3 -gva" "1" "$_vg_bits"
 	runtest test
 
 	do_make clean_config
@@ -489,16 +490,18 @@ debug() {
 	_debug_run_tests="$1"
 	shift
 
-	runtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 
 	if [ "$_debug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
 		runtests "$debug -fsanitize=undefined" "$_debug_CC" "-gm" "$_debug_run_tests"
+	else
+		runtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 	fi
 
-	runlibtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 
 	if [ "$_debug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
 		runlibtests "$debug -fsanitize=undefined" "$_debug_CC" "-gm" "$_debug_run_tests"
+	else
+		runlibtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 	fi
 }
 
@@ -530,18 +533,20 @@ reldebug() {
 	_reldebug_run_tests="$1"
 	shift
 
-	runtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 
 	if [ "$_reldebug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
 		runtests "$debug -fsanitize=address" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
 		runtests "$debug -fsanitize=memory" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
+	else
+		runtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 	fi
 
-	runlibtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 
 	if [ "$_reldebug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
 		runlibtests "$debug -fsanitize=address" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
 		runlibtests "$debug -fsanitize=memory" "$_reldebug_CC" "-mgO3" "$_reldebug_run_tests"
+	else
+		runlibtests "$debug" "$_reldebug_CC" "-gO3" "$_reldebug_run_tests"
 	fi
 }
 
@@ -708,7 +713,7 @@ fi
 export ASAN_OPTIONS="abort_on_error=1,allocator_may_return_null=1"
 export UBSAN_OPTIONS="print_stack_trace=1,silence_unsigned_overflow=1"
 
-build "$debug" "$defcc" "-g" "1" "$bits"
+build "$debug -std=c99" "$defcc" "-g" "1" "$bits"
 
 header "Running math library under --standard"
 

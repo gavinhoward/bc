@@ -535,10 +535,7 @@ void bc_vm_shutdown(void) {
 	bc_parse_free(&vm.prs);
 	bc_program_free(&vm.prog);
 
-#if BC_ENABLED
-	if (BC_IS_BC) bc_slabvec_free(&vm.other_slabs);
-#endif // BC_ENABLED
-
+	bc_slabvec_free(&vm.other_slabs);
 	bc_slabvec_free(&vm.main_slabs);
 	bc_slabvec_free(&vm.main_const_slab);
 #endif // !BC_ENABLE_LIBRARY
@@ -712,7 +709,7 @@ void bc_pledge(const char *promises, const char* execpromises) {
 /**
  * A convenience and portability function for OpenBSD's unveil().
  * @param path         The path.
- * @param permmisions  The permissions for the path.
+ * @param permissions  The permissions for the path.
  */
 static void bc_unveil(const char *path, const char *permissions) {
 	int r = unveil(path, permissions);
@@ -1146,11 +1143,17 @@ static void bc_vm_exec(void) {
 	// Load the math libraries.
 	if (BC_IS_BC && (vm.flags & BC_FLAG_L)) {
 
+		// Can't allow redefinitions in the builtin library.
+		vm.no_redefine = true;
+
 		bc_vm_load(bc_lib_name, bc_lib);
 
 #if BC_ENABLE_EXTRA_MATH
 		if (!BC_IS_POSIX) bc_vm_load(bc_lib2_name, bc_lib2);
 #endif // BC_ENABLE_EXTRA_MATH
+
+		// Make sure to clear this.
+		vm.no_redefine = false;
 
 		// Execute to ensure that all is hunky dory. Without this, scale can be
 		// set improperly.
@@ -1307,11 +1310,8 @@ void bc_vm_boot(int argc, char *argv[]) {
 	// Initialize the slab vectors.
 	bc_slabvec_init(&vm.main_const_slab);
 	bc_slabvec_init(&vm.main_slabs);
+	bc_slabvec_init(&vm.other_slabs);
 
-#if BC_ENABLED
-	// Only bc needs this slab vector.
-	if (BC_IS_BC) bc_slabvec_init(&vm.other_slabs);
-#endif // BC_ENABLED
 #endif // !BC_ENABLE_LIBRARY
 
 	// Initialize the program and main parser. These have to be in this order

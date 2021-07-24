@@ -113,11 +113,17 @@
 
 // We want to be able to use _Noreturn on C11 compilers.
 #if __STDC_VERSION__ >= 201100L
+
 #include <stdnoreturn.h>
 #define BC_NORETURN _Noreturn
+#define BC_C11 (1)
+
 #else // __STDC_VERSION__
+
 #define BC_NORETURN
 #define BC_MUST_RETURN
+#define BC_C11 (0)
+
 #endif // __STDC_VERSION__
 
 #define BC_HAS_UNREACHABLE (0)
@@ -237,9 +243,14 @@
 #include <bcl.h>
 
 // All of these set defaults for settings.
+
+#if BC_ENABLED
+
 #ifndef BC_DEFAULT_BANNER
 #define BC_DEFAULT_BANNER (0)
 #endif // BC_DEFAULT_BANNER
+
+#endif // BC_ENABLED
 
 #ifndef BC_DEFAULT_SIGINT_RESET
 #define BC_DEFAULT_SIGINT_RESET (1)
@@ -325,6 +336,9 @@ typedef enum BcErr {
 	/// File error, such as permissions or file does not exist.
 	BC_ERR_FATAL_FILE_ERR,
 
+	/// File is binary, not text, error.
+	BC_ERR_FATAL_BIN_FILE,
+
 	/// Attempted to read a directory as a file error.
 	BC_ERR_FATAL_PATH_DIR,
 
@@ -336,6 +350,9 @@ typedef enum BcErr {
 
 	/// Option with no argument given an argument.
 	BC_ERR_FATAL_OPTION_ARG,
+
+	/// Option argument is invalid.
+	BC_ERR_FATAL_ARG,
 
 	// Runtime errors.
 
@@ -463,6 +480,9 @@ typedef enum BcErr {
 	/// Non-POSIX brace position used error.
 	BC_ERR_POSIX_BRACE,
 
+	/// String used in expression.
+	BC_ERR_POSIX_EXPR_STRING,
+
 #endif // BC_ENABLED
 
 	// Number of elements.
@@ -474,7 +494,7 @@ typedef enum BcErr {
 	BC_ERR_POSIX_START = BC_ERR_POSIX_NAME_LEN,
 
 	/// A marker for the end of POSIX errors.
-	BC_ERR_POSIX_END = BC_ERR_POSIX_BRACE,
+	BC_ERR_POSIX_END = BC_ERR_POSIX_EXPR_STRING,
 
 #endif // BC_ENABLED
 

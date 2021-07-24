@@ -757,7 +757,7 @@ static void bc_history_refresh(BcHistory *h) {
 	// Write the prompt, if desired.
 	if (BC_PROMPT) bc_file_write(&vm.fout, bc_flush_none, h->prompt, h->plen);
 
-	bc_file_write(&vm.fout, bc_flush_none, h->buf.v, len);
+	bc_file_write(&vm.fout, bc_flush_none, h->buf.v, len - extras_len);
 
 	// Erase to right.
 	bc_file_write(&vm.fout, bc_flush_none, "\x1b[0K", 4);

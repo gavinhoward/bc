@@ -60,7 +60,7 @@ $set 4
 5 "ungültiges Token"
 6 "ungültiger Ausdruck"
 7 "leerer Ausdruck"
-8 "Ungültige Druckanweisung"
+8 "Ungültige Druck- oder Stream-Anweisung"
 9 "Ungültige Funktionsdefinition"
 10 "Ungültige Zuweisung: Die linke Seite muss \"scale\", \"ibase\", \"obase\", \"seed\", \"last\", \"var\" oder \"array element\" sein"
 11 "keine automatische Variable gefunden"
@@ -80,6 +80,7 @@ $set 4
 25 "POSIX erlaubt keine exponentielle Notation"
 26 "POSIX erlaubt keine Feld-Referenzen als Funktionsparameter"
 27 "POSIX erfordert, dass die linke Klammer auf der gleichen Linie wie der Funktionskopf steht"
+28 "POSIX erlaubt keine Zuweisung von Strings an Variablen oder Arrays"
 
 $ Runtime errors.
 $set 5
@@ -102,7 +103,9 @@ $set 6
 1 "Speicherzuweisung fehlgeschlagen"
 2 "Ein-Ausgabe-Fehler"
 3 "konnte die Datei nicht öffnen: %s"
-4 "Pfad ist ein Verzeichnis: %s"
-5 "ungültige Befehlszeilenoption: \"%s\""
-6 "Option erfordert ein Argument: '%c' (\"%s\")"
-7 "Option benutzt keine Argumente: '%c' (\"%s\")"
+4 "Datei ist nicht Text: %s"
+5 "Pfad ist ein Verzeichnis: %s"
+6 "ungültige Befehlszeilenoption: \"%s\""
+7 "Option erfordert ein Argument: '%c' (\"%s\")"
+8 "Option benutzt keine Argumente: '%c' (\"%s\")"
+9 "ungültiges Argument der Befehlszeilenoption: \"%s\""

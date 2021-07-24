@@ -56,7 +56,7 @@
  */
 static inline void bc_program_setVecs(BcProgram *p, BcFunc *f) {
 	p->consts = &f->consts;
-	if (BC_IS_BC) p->strs = &f->strs;
+	p->strs = &f->strs;
 }
 
 /**
@@ -84,11 +84,6 @@ static inline void bc_program_type_num(BcResult *r, BcNum *n) {
  * @param t  The type that the result should be.
  */
 static void bc_program_type_match(BcResult *r, BcType t) {
-
-#if DC_ENABLED
-	assert(BC_IS_DC || BC_NO_ERR(r->t != BC_RESULT_STR));
-#endif // DC_ENABLED
-
 	if (BC_ERR((r->t != BC_RESULT_ARRAY) != (!t))) bc_err(BC_ERR_EXEC_TYPE);
 }
 #endif // BC_ENABLED
@@ -113,6 +108,52 @@ static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
 	}
 
 	return res;
+}
+
+/**
+ * Returns the location of a string from a result and its number. In BcLoc, loc
+ * is the function that has the string, idx is the string's index in the
+ * function.
+ * @param r  The result.
+ * @param n  The number tied to the result.
+ * @return   The location, function and index, of the string.
+ */
+static BcLoc bc_program_stringLoc(BcResult *r, BcNum *n) {
+
+	BcLoc loc;
+
+	// Get the function and index of the string.
+	if (r->t == BC_RESULT_STR) loc = r->d.loc;
+	else {
+		loc.loc = n->rdx;
+		loc.idx = n->scale;
+	}
+
+	return loc;
+}
+
+/**
+ * Returns the string with the corresponding indices.
+ * @param p     The BcProgram.
+ * @param fidx  The index of the function where the string is.
+ * @param sidx  The index of the string in the function.
+ * @return      The string in function at index @a fidx and at index @a sidx.
+ */
+static char* bc_program_getString(BcProgram *p, size_t fidx, size_t sidx) {
+	BcFunc *f = bc_vec_item(&p->fns, fidx);
+	return *((char**) bc_vec_item(&f->strs, sidx));
+}
+
+/**
+ * Returns a string from a result and its number.
+ * @param p  The program.
+ * @param r  The result.
+ * @param n  The number tied to the result.
+ * @return   The string corresponding to the result and number.
+ */
+static char* bc_program_string(BcProgram *p, BcResult *r, BcNum *n) {
+	BcLoc loc = bc_program_stringLoc(r, n);
+	return bc_program_getString(p, loc.loc, loc.idx);
 }
 
 #if BC_ENABLED
@@ -206,6 +247,27 @@ static void bc_program_pushBigdig(BcProgram *p, BcBigDig dig, BcResultType type)
 	BC_SIG_UNLOCK;
 }
 
+size_t bc_program_addString(BcProgram *p, const char *str, size_t fidx) {
+
+	BcFunc *f;
+	char **str_ptr;
+	BcVec *slabs;
+
+	BC_SIG_ASSERT_LOCKED;
+
+	// Push an empty string on the proper vector.
+	f = bc_vec_item(&p->fns, fidx);
+	str_ptr = bc_vec_pushEmpty(&f->strs);
+
+	// Figure out which slab vector to use.
+	slabs = fidx == BC_PROG_MAIN || fidx == BC_PROG_READ ?
+	        &vm.main_slabs : &vm.other_slabs;
+
+	*str_ptr = bc_slabvec_strdup(slabs, str);
+
+	return f->strs.len - 1;
+}
+
 size_t bc_program_search(BcProgram *p, const char *id, bool var) {
 
 	BcVec *v, *map;
@@ -276,9 +338,7 @@ static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 		}
 
 		case BC_RESULT_VAR:
-#if BC_ENABLED
 		case BC_RESULT_ARRAY:
-#endif // BC_ENABLED
 		case BC_RESULT_ARRAY_ELEM:
 		{
 			BcVec *v;
@@ -487,21 +547,13 @@ static void bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 	// Typecheck the left.
 	if (BC_ERR(lt >= min && lt <= BC_RESULT_ONE)) bc_err(BC_ERR_EXEC_TYPE);
 
-#if DC_ENABLED
+	// Strings can be assigned to variables. We are already good if we are
+	// assigning a string.
+	bool good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
+		         lt <= BC_RESULT_ARRAY_ELEM);
 
-	// In dc, strings can be assigned to variables.
-	if(BC_IS_DC) {
-
-		// We are already good if we are assigning a string.
-		bool good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
-		             lt <= BC_RESULT_ARRAY_ELEM);
-
-		// If not, type check for a number.
-		if (!good) bc_program_type_num(*r, *rn);
-	}
-#else
-	assert((*r)->t != BC_RESULT_STR);
-#endif // DC_ENABLED
+	// If not, type check for a number.
+	if (!good) bc_program_type_num(*r, *rn);
 }
 
 /**
@@ -529,10 +581,6 @@ static void bc_program_prep(BcProgram *p, BcResult **r, BcNum **n, size_t idx) {
 	assert(BC_PROG_STACK(&p->results, idx + 1));
 
 	bc_program_operand(p, r, n, idx);
-
-#if DC_ENABLED
-	assert((*r)->t != BC_RESULT_VAR || !BC_PROG_STR(*n));
-#endif // DC_ENABLED
 
 	// dc does not allow strings in this case.
 	bc_program_type_num(*r, *n);
@@ -875,13 +923,9 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 	}
 	else {
 
-		// The index of the number can either be stored in the scale of the
-		// number or in the BcLoc, depending on the type of result.
-		size_t i = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
-
 		// We want to flush any stuff in the stdout buffer first.
 		bc_file_flush(&vm.fout, bc_flush_save);
-		str = *((char**) bc_vec_item(p->strs, i));
+		str = bc_program_string(p, r, n);
 
 #if BC_ENABLED
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
@@ -889,6 +933,8 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 #endif // BC_ENABLED
 		{
 			bc_program_printString(str);
+
+			// Need to print a newline only in this case.
 			if (inst == BC_INST_PRINT)
 				bc_vm_putchar('\n', bc_flush_err);
 		}
@@ -1026,20 +1072,17 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 	bc_program_retire(p, 1, 2);
 }
 
-#if DC_ENABLED
-
 /**
  * Assigns a string to a variable.
  * @param p     The program.
- * @param idx   The index of the string.
+ * @param loc   The location of the string.
  * @param v     The stack for the variable.
  * @param push  Whether to push the string or not. To push means to move the
  *              string from the results stack and push it onto the variable
  *              stack.
  */
-static void bc_program_assignStr(BcProgram *p, size_t idx,
-                                 BcVec *v, bool push)
-{
+static void bc_program_assignStr(BcProgram *p, BcLoc loc, BcVec *v, bool push) {
+
 	BcNum *n;
 
 	assert(BC_PROG_STACK(&p->results, 1 + !push));
@@ -1053,10 +1096,11 @@ static void bc_program_assignStr(BcProgram *p, size_t idx,
 	n = bc_vec_pushEmpty(v);
 
 	bc_num_clear(n);
-	n->scale = idx;
-}
 
-#endif // DC_ENABLED
+	// Set the location of the string.
+	n->rdx = loc.loc;
+	n->scale = loc.idx;
+}
 
 /**
  * Copies a value to a variable. This is used for storing in dc as well as to
@@ -1081,47 +1125,40 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 #if DC_ENABLED
 	// Check the stack for dc.
 	if (BC_IS_DC) {
-
 		if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_err(BC_ERR_EXEC_STACK);
-
-		assert(BC_PROG_STACK(&p->results, 1));
-
-		bc_program_operand(p, &ptr, &n, 0);
 	}
 #endif
+
+	assert(BC_PROG_STACK(&p->results, 1));
+
+	bc_program_operand(p, &ptr, &n, 0);
 
 #if BC_ENABLED
 	// Get the variable for a bc function call.
 	if (BC_IS_BC)
 	{
 		// Type match the result.
-		ptr = bc_vec_top(&p->results);
 		bc_program_type_match(ptr, t);
 
 		// Get the variable or array, taking care to get the real item. We take
 		// care of last with arrays later.
-		if (last) n = bc_program_num(p, ptr);
-		else if (var)
+		if (!last && var)
 			n = bc_vec_item_rev(bc_program_vec(p, ptr->d.loc.loc, t), 1);
 	}
 #endif // BC_ENABLED
 
 	vec = bc_program_vec(p, idx, t);
 
-#if DC_ENABLED
 	// We can shortcut in dc if it's assigning a string by using
 	// bc_program_assignStr().
-	if (BC_IS_DC && (ptr->t == BC_RESULT_STR || BC_PROG_STR(n))) {
-
-		size_t str_idx = ptr->t == BC_RESULT_STR ? ptr->d.loc.loc : n->scale;
+	if (ptr->t == BC_RESULT_STR || BC_PROG_STR(n)) {
 
 		if (BC_ERR(!var)) bc_err(BC_ERR_EXEC_TYPE);
 
-		bc_program_assignStr(p, str_idx, vec, true);
+		bc_program_assignStr(p, bc_program_stringLoc(ptr, n), vec, true);
 
 		return;
 	}
-#endif // DC_ENABLED
 
 	BC_SIG_LOCK;
 
@@ -1132,6 +1169,7 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 		// If we get here, we are handling an array. This is one place we need
 		// to cast the number from bc_program_num() to a vector.
 		BcVec *v = (BcVec*) n, *rv = &r.d.v;
+
 #if BC_ENABLED
 
 		if (BC_IS_BC) {
@@ -1227,16 +1265,14 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 
 	bc_program_assignPrep(p, &left, &l, &right, &r);
 
-#if DC_ENABLED
-
 	// Assigning to a string should be impossible simply because of the parse.
 	assert(left->t != BC_RESULT_STR);
 
 	// If we are assigning a string...
 	if (right->t == BC_RESULT_STR || BC_PROG_STR(r)) {
 
-		// Get the index of the string.
-		size_t idx = right->t == BC_RESULT_STR ? right->d.loc.loc : r->scale;
+		// Get the location of the string.
+		BcLoc loc = bc_program_stringLoc(right, r);
 
 		// If we are assigning to an array element...
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
@@ -1247,8 +1283,9 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			bc_num_free(l);
 			bc_num_clear(l);
 
-			// Set the index.
-			l->scale = idx;
+			// Set the location.
+			l->rdx = loc.loc;
+			l->scale = loc.idx;
 
 			// Now we can pop the results.
 			bc_vec_npop(&p->results, 2);
@@ -1260,13 +1297,12 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			// If we get here, we are assigning to a variable, which we can use
 			// bc_program_assignStr() for.
 			BcVec *v = bc_program_vec(p, left->d.loc.loc, BC_TYPE_VAR);
-			bc_program_assignStr(p, idx, v, false);
+			bc_program_assignStr(p, loc, v, false);
 		}
 
 		// By using bc_program_assignStr(), we short-circuited this, so return.
 		return;
 	}
-#endif // DC_ENABLED
 
 	// If we have a normal assignment operator, not a math one...
 	if (BC_INST_IS_ASSIGN(inst)) {
@@ -1440,7 +1476,8 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 		}
 		else {
 			// Set the string result.
-			r.d.loc.loc = num->scale;
+			r.d.loc.loc = num->rdx;
+			r.d.loc.idx = num->scale;
 			r.t = BC_RESULT_STR;
 		}
 
@@ -1470,14 +1507,12 @@ static void bc_program_pushArray(BcProgram *p, const char *restrict code,
 	// Get the index of the array.
 	r.d.loc.loc = bc_program_index(code, bgn);
 
-#if BC_ENABLED
 	// Doing an array is easy; just set the result type and finish.
 	if (inst == BC_INST_ARRAY) {
 		r.t = BC_RESULT_ARRAY;
 		bc_vec_push(&p->results, &r);
 		return;
 	}
-#endif // BC_ENABLED
 
 	// Grab the top element of the results stack for the array index.
 	bc_program_prep(p, &operand, &num, 0);
@@ -1749,9 +1784,8 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 #ifndef BC_PROG_NO_STACK_CHECK
 	// Check stack for dc.
-	if (BC_IS_DC) {
-		if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_err(BC_ERR_EXEC_STACK);
-	}
+	if (BC_IS_DC && BC_ERR(!BC_PROG_STACK(&p->results, 1)))
+		bc_err(BC_ERR_EXEC_STACK);
 #endif // BC_PROG_NO_STACK_CHECK
 
 	assert(BC_PROG_STACK(&p->results, 1));
@@ -1762,11 +1796,10 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 
 	assert(num != NULL);
 
-#if DC_ENABLED
-	// If we are dc, we need to ensure that strings and arrays are not passed to
-	// most builtins.
-	if (!len && inst != BC_INST_SCALE_FUNC) bc_program_type_num(opd, num);
-#endif // DC_ENABLED
+	// We need to ensure that strings and arrays aren't passed to most builtins.
+	// The scale function can take strings in dc.
+	if (!len && (inst != BC_INST_SCALE_FUNC || BC_IS_BC))
+		bc_program_type_num(opd, num);
 
 	// Square root is easy.
 	if (inst == BC_INST_SQRT) bc_num_sqrt(num, &res->d.n, BC_PROG_SCALE(p));
@@ -1804,38 +1837,35 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 		// Well, scale() is easy, but length() is not.
 		if (len) {
 
-#if BC_ENABLED
 			// If we are bc and we have an array...
-			if (BC_IS_BC && opd->t == BC_RESULT_ARRAY) {
+			if (opd->t == BC_RESULT_ARRAY) {
 
 				// Yes, this is one place where we need to cast the number from
 				// bc_program_num() to a vector.
 				BcVec *v = (BcVec*) num;
 
+#if BC_ENABLED
 				// Dereference the array, if necessary.
-				if (v->size == sizeof(uchar)) v = bc_program_dereference(p, v);
+				if (BC_IS_BC && v->size == sizeof(uchar))
+					v = bc_program_dereference(p, v);
+#endif // BC_ENABLED
 
 				assert(v->size == sizeof(BcNum));
 
 				val = (BcBigDig) v->len;
 			}
-			else
-#endif // BC_ENABLED
-			{
-#if DC_ENABLED
+			else {
+
 				// If the item is a string...
 				if (!BC_PROG_NUM(opd, num)) {
 
-					size_t idx;
 					char *str;
 
-					// Get the index, then get the string, then get the length.
-					idx = opd->t == BC_RESULT_STR ? opd->d.loc.loc : num->scale;
-					str = *((char**) bc_vec_item(p->strs, idx));
+					// Get the string, then get the length.
+					str = bc_program_string(p, opd, num);
 					val = (BcBigDig) strlen(str);
 				}
 				else
-#endif // DC_ENABLED
 				{
 					// Calculate the length of the number.
 					val = (BcBigDig) bc_num_len(num);
@@ -1858,10 +1888,8 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 	bc_program_retire(p, 1, 1);
 }
 
-#if DC_ENABLED
-
 /**
- * Executes a divmod for dc.
+ * Executes a divmod.
  * @param p  The program.
  */
 static void bc_program_divmod(BcProgram *p) {
@@ -1898,7 +1926,7 @@ static void bc_program_divmod(BcProgram *p) {
 }
 
 /**
- * Executes modular exponentiation for dc.
+ * Executes modular exponentiation.
  * @param p  The program.
  */
 static void bc_program_modexp(BcProgram *p) {
@@ -1906,8 +1934,13 @@ static void bc_program_modexp(BcProgram *p) {
 	BcResult *r1, *r2, *r3, *res;
 	BcNum *n1, *n2, *n3;
 
+#if DC_ENABLED
+
 	// Check the stack.
-	if (BC_ERR(!BC_PROG_STACK(&p->results, 3))) bc_err(BC_ERR_EXEC_STACK);
+	if (BC_IS_DC && BC_ERR(!BC_PROG_STACK(&p->results, 3)))
+		bc_err(BC_ERR_EXEC_STACK);
+
+#endif // DC_ENABLED
 
 	assert(BC_PROG_STACK(&p->results, 3));
 
@@ -1934,30 +1967,6 @@ static void bc_program_modexp(BcProgram *p) {
 	bc_num_modexp(n1, n2, n3, &res->d.n);
 
 	bc_program_retire(p, 1, 3);
-}
-
-/**
- * Gets the length of a register in dc and pushes it onto the results stack.
- * @param p     The program.
- * @param code  The bytecode vector to pull the register's index out of.
- * @param bgn   An in/out parameter; the start of the index in the bytecode
- *              vector, and will be updated to point after the index on return.
- */
-static void bc_program_regStackLen(BcProgram *p, const char *restrict code,
-                                   size_t *restrict bgn)
-{
-	size_t idx = bc_program_index(code, bgn);
-	BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
-
-	bc_program_pushBigdig(p, (BcBigDig) v->len, BC_RESULT_TEMP);
-}
-
-/**
- * Pushes the length of the results stack onto the results stack.
- * @param p  The program.
- */
-static void bc_program_stackLen(BcProgram *p) {
-	bc_program_pushBigdig(p, (BcBigDig) p->results.len, BC_RESULT_TEMP);
 }
 
 /**
@@ -2007,9 +2016,10 @@ num_err:
 
 /**
  * Executes the "asciify" command in dc.
- * @param p  The program.
+ * @param p     The program.
+ * @param fidx  The index of the current function.
  */
-static void bc_program_asciify(BcProgram *p) {
+static void bc_program_asciify(BcProgram *p, size_t fidx) {
 
 	BcResult *r, res;
 	BcNum *n;
@@ -2027,18 +2037,12 @@ static void bc_program_asciify(BcProgram *p) {
 
 	assert(n != NULL);
 
-	// This is to ensure that the number of strings matches the number of
-	// functions.
-	assert(p->strs->len + BC_PROG_REQ_FUNCS == p->fns.len);
-
 	// Asciify.
 	if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
 	else {
 
-		// Get the index of the string, the string itself, then the first
-		// character.
-		size_t index = r->t == BC_RESULT_STR ? r->d.loc.loc : n->scale;
-		str2 = *((char**) bc_vec_item(p->strs, index));
+		// Get the string itself, then the first character.
+		str2 = bc_program_string(p, r, n);
 		c = (uchar) str2[0];
 	}
 
@@ -2046,16 +2050,15 @@ static void bc_program_asciify(BcProgram *p) {
 	str[0] = (char) c;
 	str[1] = '\0';
 
+	// Add the string to the data structures.
 	BC_SIG_LOCK;
-
-	// Insert the new "function."
-	idx = bc_program_insertFunc(p, str) - BC_PROG_REQ_FUNCS;
-
+	idx = bc_program_addString(p, str, fidx);
 	BC_SIG_UNLOCK;
 
 	// Set the result
 	res.t = BC_RESULT_STR;
-	res.d.loc.loc = idx;
+	res.d.loc.loc = fidx;
+	res.d.loc.idx = idx;
 
 	// Pop and push.
 	bc_vec_pop(&p->results);
@@ -2083,13 +2086,36 @@ static void bc_program_printStream(BcProgram *p) {
 
 	// Stream appropriately.
 	if (BC_PROG_NUM(r, n)) bc_num_stream(n);
-	else {
-		size_t idx = (r->t == BC_RESULT_STR) ? r->d.loc.loc : n->scale;
-		bc_program_printChars(*((char**) bc_vec_item(p->strs, idx)));
-	}
+	else bc_program_printChars(bc_program_string(p, r, n));
 
 	// Pop the operand.
 	bc_vec_pop(&p->results);
+}
+
+#if DC_ENABLED
+
+/**
+ * Gets the length of a register in dc and pushes it onto the results stack.
+ * @param p     The program.
+ * @param code  The bytecode vector to pull the register's index out of.
+ * @param bgn   An in/out parameter; the start of the index in the bytecode
+ *              vector, and will be updated to point after the index on return.
+ */
+static void bc_program_regStackLen(BcProgram *p, const char *restrict code,
+                                   size_t *restrict bgn)
+{
+	size_t idx = bc_program_index(code, bgn);
+	BcVec *v = bc_program_vec(p, idx, BC_TYPE_VAR);
+
+	bc_program_pushBigdig(p, (BcBigDig) v->len, BC_RESULT_TEMP);
+}
+
+/**
+ * Pushes the length of the results stack onto the results stack.
+ * @param p  The program.
+ */
+static void bc_program_stackLen(BcProgram *p) {
+	bc_program_pushBigdig(p, (BcBigDig) p->results.len, BC_RESULT_TEMP);
 }
 
 /**
@@ -2143,6 +2169,22 @@ static void bc_program_nquit(BcProgram *p, uchar inst) {
 		bc_vec_npop(&p->stack, i);
 		bc_vec_npop(&p->tail_calls, i);
 	}
+}
+
+/**
+ * Pushes the depth of the execution stack onto the stack.
+ * @param p  The program.
+ */
+static void bc_program_execStackLen(BcProgram *p) {
+
+	size_t i, amt, len = p->tail_calls.len;
+
+	amt = len;
+
+	for (i = 0; i < len; ++i)
+		amt += *((size_t*) bc_vec_item(&p->tail_calls, i));
+
+	bc_program_pushBigdig(p, (BcBigDig) amt, BC_RESULT_TEMP);
 }
 
 /**
@@ -2205,6 +2247,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 		BC_UNSETJMP;
 		BC_SIG_UNLOCK;
 
+		fidx = n->rdx;
 		sidx = n->scale;
 	}
 	else {
@@ -2214,13 +2257,20 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 		// they are only put on the stack to be assigned to.
 		assert(r->t != BC_RESULT_VAR);
 
-		if (r->t == BC_RESULT_STR) sidx = r->d.loc.loc;
+		if (r->t == BC_RESULT_STR) {
+			fidx = r->d.loc.loc;
+			sidx = r->d.loc.idx;
+		}
 		else return;
 	}
 
-	// Get the function index, the string, and the function.
-	fidx = sidx + BC_PROG_REQ_FUNCS;
-	str = *((char**) bc_vec_item(p->strs, sidx));
+	// Get the string.
+	str = bc_program_getString(p, fidx, sidx);
+
+	// Get the function index and function.
+	BC_SIG_LOCK;
+	fidx = bc_program_insertFunc(p, str);
+	BC_SIG_UNLOCK;
 	f = bc_vec_item(&p->fns, fidx);
 
 	// If the function has not been parsed yet...
@@ -2293,8 +2343,12 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 err:
 	BC_SIG_MAYLOCK;
+
 	f = bc_vec_item(&p->fns, fidx);
+
+	// Make sure to erase the bytecode vector so dc knows it is not parsed.
 	bc_vec_popAll(&f->code);
+
 exit:
 	bc_vec_pop(&p->results);
 	BC_LONGJMP_CONT;
@@ -2394,28 +2448,19 @@ size_t bc_program_insertFunc(BcProgram *p, const char *name) {
 	id_ptr = (BcId*) bc_vec_item(&p->fn_map, idx);
 	idx = id_ptr->idx;
 
-	// If the function is *not* new (the usual case)...
-	if (!new) {
-
-		// bc has to reset the function because it's about to be redefined.
-		if (BC_IS_BC) {
-			BcFunc *func = bc_vec_item(&p->fns, idx);
-			bc_func_reset(func);
-		}
-	}
-	else {
+	// If the function is new...
+	if (new) {
 
 		// Add the function to the fns array.
 		bc_program_addFunc(p, id_ptr);
-
-#if DC_ENABLED
-		// If this is dc, we need to add a string for the function too.
-		if (BC_IS_DC && idx >= BC_PROG_REQ_FUNCS) {
-			bc_vec_push(p->strs, &id_ptr->name);
-			assert(p->strs->len == p->fns.len - BC_PROG_REQ_FUNCS);
-		}
-#endif // DC_ENABLED
 	}
+#if BC_ENABLED
+	// bc has to reset the function because it's about to be redefined.
+	else if (BC_IS_BC) {
+		BcFunc *func = bc_vec_item(&p->fns, idx);
+		bc_func_reset(func);
+	}
+#endif // BC_ENABLED
 
 	return idx;
 }
@@ -2450,10 +2495,7 @@ void bc_program_free(BcProgram *p) {
 #endif // BC_ENABLE_EXTRA_MATH
 
 #if DC_ENABLED
-	if (BC_IS_DC) {
-		bc_vec_free(&p->tail_calls);
-		bc_vec_free(&p->strs_v);
-	}
+	if (BC_IS_DC) bc_vec_free(&p->tail_calls);
 #endif // DC_ENABLED
 }
 #endif // NDEBUG
@@ -2485,19 +2527,16 @@ void bc_program_init(BcProgram *p) {
 	// dc-only setup.
 	if (BC_IS_DC) {
 
-		bc_vec_init(&p->strs_v, sizeof(char*), BC_DTOR_NONE);
-		p->strs = &p->strs_v;
-
 		bc_vec_init(&p->tail_calls, sizeof(size_t), BC_DTOR_NONE);
 
 		// We want an item for the main function on the tail call stack.
 		i = 0;
 		bc_vec_push(&p->tail_calls, &i);
-
-		bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
-		bc_num_bigdig2num(&p->strmb, BC_NUM_STREAM_BASE);
 	}
 #endif // DC_ENABLED
+
+	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
+	bc_num_bigdig2num(&p->strmb, BC_NUM_STREAM_BASE);
 
 #if BC_ENABLE_EXTRA_MATH
 	// We need to initialize srand() just in case /dev/urandom and /dev/random
@@ -2636,7 +2675,6 @@ void bc_program_exec(BcProgram *p) {
 			// which checks the condition, if necessary.
 			BC_PROG_LBL(BC_INST_JUMP_ZERO):
 			{
-
 				bc_program_prep(p, &ptr, &num, 0);
 
 				cond = !bc_num_cmpZero(num);
@@ -2776,9 +2814,7 @@ void bc_program_exec(BcProgram *p) {
 			}
 
 			BC_PROG_LBL(BC_INST_ARRAY_ELEM):
-#if BC_ENABLED
 			BC_PROG_LBL(BC_INST_ARRAY):
-#endif // BC_ENABLED
 			{
 				bc_program_pushArray(p, code, &ip->idx, inst);
 				BC_PROG_JUMP(inst, code, ip);
@@ -2812,6 +2848,20 @@ void bc_program_exec(BcProgram *p) {
 				BC_PROG_JUMP(inst, code, ip);
 			}
 
+			BC_PROG_LBL(BC_INST_ASCIIFY):
+			{
+				bc_program_asciify(p, ip->func);
+
+				// Because we changed the execution stack and where we are
+				// executing, we have to update all of this.
+				ip = bc_vec_top(&p->stack);
+				func = bc_vec_item(&p->fns, ip->func);
+				code = func->code.v;
+				bc_program_setVecs(p, func);
+
+				BC_PROG_JUMP(inst, code, ip);
+			}
+
 			BC_PROG_LBL(BC_INST_NUM):
 			{
 				bc_program_const(p, code, &ip->idx);
@@ -2840,6 +2890,7 @@ void bc_program_exec(BcProgram *p) {
 				// We want to flush right away to save the output for history,
 				// if history must preserve it when taking input.
 				bc_file_flush(&vm.fout, bc_flush_save);
+
 				BC_PROG_JUMP(inst, code, ip);
 			}
 
@@ -2848,6 +2899,7 @@ void bc_program_exec(BcProgram *p) {
 				// Set up the result and push.
 				r.t = BC_RESULT_STR;
 				r.d.loc.loc = bc_program_index(code, &ip->idx);
+				r.d.loc.idx = bc_program_index(code, &ip->idx);
 				bc_vec_push(&p->results, &r);
 				BC_PROG_JUMP(inst, code, ip);
 			}
@@ -2926,6 +2978,46 @@ void bc_program_exec(BcProgram *p) {
 				BC_PROG_JUMP(inst, code, ip);
 			}
 
+			BC_PROG_LBL(BC_INST_SWAP):
+			{
+				BcResult *ptr2;
+
+				// Check the stack.
+				if (BC_ERR(!BC_PROG_STACK(&p->results, 2)))
+					bc_err(BC_ERR_EXEC_STACK);
+
+				assert(BC_PROG_STACK(&p->results, 2));
+
+				// Get the two items.
+				ptr = bc_vec_item_rev(&p->results, 0);
+				ptr2 = bc_vec_item_rev(&p->results, 1);
+
+				// Swap. It's just easiest to do it this way.
+				memcpy(&r, ptr, sizeof(BcResult));
+				memcpy(ptr, ptr2, sizeof(BcResult));
+				memcpy(ptr2, &r, sizeof(BcResult));
+
+				BC_PROG_JUMP(inst, code, ip);
+			}
+
+			BC_PROG_LBL(BC_INST_MODEXP):
+			{
+				bc_program_modexp(p);
+				BC_PROG_JUMP(inst, code, ip);
+			}
+
+			BC_PROG_LBL(BC_INST_DIVMOD):
+			{
+				bc_program_divmod(p);
+				BC_PROG_JUMP(inst, code, ip);
+			}
+
+			BC_PROG_LBL(BC_INST_PRINT_STREAM):
+			{
+				bc_program_printStream(p);
+				BC_PROG_JUMP(inst, code, ip);
+			}
+
 #if DC_ENABLED
 			BC_PROG_LBL(BC_INST_POP_EXEC):
 			{
@@ -2943,18 +3035,6 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
-				BC_PROG_JUMP(inst, code, ip);
-			}
-
-			BC_PROG_LBL(BC_INST_MODEXP):
-			{
-				bc_program_modexp(p);
-				BC_PROG_JUMP(inst, code, ip);
-			}
-
-			BC_PROG_LBL(BC_INST_DIVMOD):
-			{
-				bc_program_divmod(p);
 				BC_PROG_JUMP(inst, code, ip);
 			}
 
@@ -3021,48 +3101,6 @@ void bc_program_exec(BcProgram *p) {
 				BC_PROG_JUMP(inst, code, ip);
 			}
 
-			BC_PROG_LBL(BC_INST_SWAP):
-			{
-				BcResult *ptr2;
-
-				// Check the stack.
-				if (BC_ERR(!BC_PROG_STACK(&p->results, 2)))
-					bc_err(BC_ERR_EXEC_STACK);
-
-				assert(BC_PROG_STACK(&p->results, 2));
-
-				// Get the two items.
-				ptr = bc_vec_item_rev(&p->results, 0);
-				ptr2 = bc_vec_item_rev(&p->results, 1);
-
-				// Swap. It's just easiest to do it this way.
-				memcpy(&r, ptr, sizeof(BcResult));
-				memcpy(ptr, ptr2, sizeof(BcResult));
-				memcpy(ptr2, &r, sizeof(BcResult));
-
-				BC_PROG_JUMP(inst, code, ip);
-			}
-
-			BC_PROG_LBL(BC_INST_ASCIIFY):
-			{
-				bc_program_asciify(p);
-
-				// Because we changed the execution stack and where we are
-				// executing, we have to update all of this.
-				ip = bc_vec_top(&p->stack);
-				func = bc_vec_item(&p->fns, ip->func);
-				code = func->code.v;
-				bc_program_setVecs(p, func);
-
-				BC_PROG_JUMP(inst, code, ip);
-			}
-
-			BC_PROG_LBL(BC_INST_PRINT_STREAM):
-			{
-				bc_program_printStream(p);
-				BC_PROG_JUMP(inst, code, ip);
-			}
-
 			BC_PROG_LBL(BC_INST_LOAD):
 			BC_PROG_LBL(BC_INST_PUSH_VAR):
 			{
@@ -3090,6 +3128,12 @@ void bc_program_exec(BcProgram *p) {
 				code = func->code.v;
 				bc_program_setVecs(p, func);
 
+				BC_PROG_JUMP(inst, code, ip);
+			}
+
+			BC_PROG_LBL(BC_INST_EXEC_STACK_LEN):
+			{
+				bc_program_execStackLen(p);
 				BC_PROG_JUMP(inst, code, ip);
 			}
 #endif // DC_ENABLED

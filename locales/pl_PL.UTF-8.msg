@@ -60,7 +60,7 @@ $set 4
 5 "nieważny token"
 6 "nieważne wyrażenie"
 7 "puste wyrażenie"
-8 "nieważny wyciąg z wydruku"
+8 "nieprawidłowe polecenie drukowania lub przesyłania strumienia"
 9 "nieprawidłowa definicja funkcji"
 10 "nieprawidłowe przyporządkowanie: lewa strona musi być elementem scale, ibase, obase, last, var lub element array"
 11 "nie znaleziono zmiennej automatycznej"
@@ -80,6 +80,7 @@ $set 4
 25 "POSIX nie pozwala na notację wykładniczą"
 26 "POSIX nie zezwala na odniesienia do tablicy jako parametrów funkcji"
 27 "POSIX wymaga, aby lewe usztywnienie znajdowało się na tej samej linii co nagłówek funkcji"
+28 "POSIX nie pozwala na przypisywanie ciągów znaków do zmiennych lub tablic"
 
 $ Błędy Runtime'u.
 $set 5
@@ -102,7 +103,9 @@ $set 6
 1 "Alokacja pamięci nie powiodła się"
 2 "Błąd we/wy"
 3 "nie mógł otworzyć pliku: %s"
-4 "ścieżka to katalog: %s"
-5 "nieprawidłowa opcja wiersza poleceń: \"%s\""
-6 "opcja wymaga argumentu: '%c' (\"%s\")"
-7 "opcja nie wymaga żadnych argumentów: '%c' (\"%s\")"
+4 "plik nie jest tekstem: %s"
+5 "ścieżka to katalog: %s"
+6 "nieprawidłowa opcja wiersza poleceń: \"%s\""
+7 "opcja wymaga argumentu: '%c' (\"%s\")"
+8 "opcja nie wymaga żadnych argumentów: '%c' (\"%s\")"
+9 "nieprawidłowa argument opcja wiersza poleceń: \"%s\""

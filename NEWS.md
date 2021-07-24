@@ -2,21 +2,21 @@
 
 ## 5.0.0
 
-This is a production release with several changes:
+This is a major production release with several changes:
 
-* Add support for OpenBSD's `pledge()` and `unveil()`.
-* Fix print bug where a backslash newline combo was printed even if only one
+* Added support for OpenBSD's `pledge()` and `unveil()`.
+* Fixed print bug where a backslash newline combo was printed even if only one
   digit was left, something I blindly copied from GNU `bc`, like a fool.
-* Fix bugs in the manuals.
-* Fix a possible multiplication overflow in power.
+* Fixed bugs in the manuals.
+* Fixed a possible multiplication overflow in power.
 * Temporary numbers are garbage collected if allocation fails, and the
   allocation is retried. This is to make `bc` and `dc` more resilient to running
   out of memory.
-* `bc` and `dc` now do not give fatal errors when trying to allocate more space
+* Made `bc` and `dc` not give fatal errors when trying to allocate more space
   for temporary numbers. Instead, more temporary numbers are just freed.
-* The number of temporary numbers is now limited.
-* Allow integers with non-zero `scale` to be used with power, places, and shift
-  operators.
+* Limited the number of temporary numbers.
+* Allowed integers with non-zero `scale` to be used with power, places, and
+  shift operators.
 * Added greatest common divisor and least common multiple to `lib2.bc`.
 * Added `SIGQUIT` handling to history.
 * Added a command to `dc` (`y`) to get the length of register stacks.
@@ -26,12 +26,30 @@ This is a production release with several changes:
   preferences for. This includes the `bc` banner, resetting on `SIGINT`, TTY
   mode, and prompt.
 * Added history support to Windows.
-* Made using `[` as a register name an error because it just cannot easily be
-  checked for without doing weird things on `stdin`.
-* Clarify the above situation in the manuals, since it can't really be avoided
-  with the terrible interaction of REPL and language constraints.
-* Add a new error type and message for `dc` when register stacks don't have
+* Fixed bugs with the handling of register names in `dc`.
+* Fixed bugs with multi-line comments and strings in both calculators.
+* Added a new error type and message for `dc` when register stacks don't have
   enough items.
+* Optimized string allocation.
+* Made `bc` and `dc` UTF-8 capable.
+* Fixed a bug with `void` functions.
+* Fixed a misspelled symbol in `bcl`. This is technically a breaking change,
+  which requires this to be `5.0.0`.
+* Added the ability for users to get the copyright banner back.
+* Added the ability for users to have `bc` and `dc` quit on `SIGINT`.
+* Added the ability for users to disable prompt and TTY mode by environment
+  variables.
+* Added the ability for users to redefine keywords. This is another reason this
+  is `5.0.0`.
+* Added `dc`'s modular exponentiation and divmod to `bc`.
+* Added the ability to assign strings to variables and array elements and pass
+  them to function in `bc`.
+* Added `dc`'s asciify command and stream printing to `bc`.
+* Added a command to `dc` (`Y`) to get the length of an array.
+* Added a command to `dc` (`,`) to get the depth of the execution stack.
+* Added bitwise and, or, xor, left shift, and right shift functions to
+  `lib2.bc`.
+* Added the functions `s2u(x)` and `s2un(x,n)`, to `lib2.bc`.
 
 ## 4.0.2
 

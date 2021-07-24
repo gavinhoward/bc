@@ -110,20 +110,16 @@ typedef struct BcProgram {
 
 #if DC_ENABLED
 
-	/// An array of strings. This is for dc only because dc does not store
-	/// strings in functions.
-	BcVec strs_v;
-
 	/// A vector of tail calls. These are just integers, which are the number of
 	/// tail calls that have been executed for each function (string) on the
 	/// stack for dc. This is to prevent dc from constantly growing memory use
 	/// because of pushing more and more string executions on the stack.
 	BcVec tail_calls;
 
-	/// A BcNum that has the proper base for asciify for dc.
-	BcNum strmb;
-
 #endif // DC_ENABLED
+
+	/// A BcNum that has the proper base for asciify.
+	BcNum strmb;
 
 #if BC_ENABLED
 
@@ -132,14 +128,10 @@ typedef struct BcProgram {
 
 #endif // BC_ENABLED
 
-#if DC_ENABLED
-
 	// The BcDig array for strmb. This uses BC_NUM_LONG_LOG10 because it is used
 	// in bc_num_ulong2num(), which attempts to realloc, unless it is big
 	// enough. This is big enough.
 	BcDig strmb_num[BC_NUM_BIGDIG_LOG10];
-
-#endif // DC_ENABLED
 
 } BcProgram;
 
@@ -262,11 +254,6 @@ typedef struct BcProgram {
  */
 #define BC_PROG_NUM(r, n) ((r)->t != BC_RESULT_STR && !BC_PROG_STR(n))
 
-/// This define removes the inst parameter because for dc, inst is always
-/// BC_INST_ARRAY_ELEM.
-#define bc_program_pushArray(p, code, bgn, inst) \
-	bc_program_pushArray(p, code, bgn)
-
 #endif // BC_ENABLED
 
 /**
@@ -331,6 +318,14 @@ void bc_program_printStackDebug(BcProgram* p);
  * @return     The index of the variable or array in the correct array.
  */
 size_t bc_program_search(BcProgram *p, const char* id, bool var);
+
+/**
+ * Adds a string to a function and returns the string's index in the function.
+ * @param p     The program.
+ * @param str   The string to add.
+ * @param fidx  The index of the function to add to.
+ */
+size_t bc_program_addString(BcProgram *p, const char *str, size_t fidx);
 
 /**
  * Inserts a function into the program and returns the index of the function in
@@ -482,6 +477,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_SQRT,                                                  \
 	&&lbl_BC_INST_ABS,                                                   \
 	&&lbl_BC_INST_IRAND,                                                 \
+	&&lbl_BC_INST_ASCIIFY,                                               \
 	&&lbl_BC_INST_READ,                                                  \
 	&&lbl_BC_INST_RAND,                                                  \
 	&&lbl_BC_INST_MAXIBASE,                                              \
@@ -500,24 +496,24 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_RET_VOID,                                              \
 	&&lbl_BC_INST_HALT,                                                  \
 	&&lbl_BC_INST_POP,                                                   \
-	&&lbl_BC_INST_POP_EXEC,                                              \
+	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_MODEXP,                                                \
 	&&lbl_BC_INST_DIVMOD,                                                \
+	&&lbl_BC_INST_PRINT_STREAM,                                          \
+	&&lbl_BC_INST_POP_EXEC,                                              \
 	&&lbl_BC_INST_EXECUTE,                                               \
 	&&lbl_BC_INST_EXEC_COND,                                             \
-	&&lbl_BC_INST_ASCIIFY,                                               \
-	&&lbl_BC_INST_PRINT_STREAM,                                          \
 	&&lbl_BC_INST_PRINT_STACK,                                           \
 	&&lbl_BC_INST_CLEAR_STACK,                                           \
 	&&lbl_BC_INST_REG_STACK_LEN,                                         \
 	&&lbl_BC_INST_STACK_LEN,                                             \
 	&&lbl_BC_INST_DUPLICATE,                                             \
-	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_LOAD,                                                  \
 	&&lbl_BC_INST_PUSH_VAR,                                              \
 	&&lbl_BC_INST_PUSH_TO_VAR,                                           \
 	&&lbl_BC_INST_QUIT,                                                  \
 	&&lbl_BC_INST_NQUIT,                                                 \
+	&&lbl_BC_INST_EXEC_STACK_LEN,                                        \
 	&&lbl_BC_INST_INVALID,                                               \
 }
 
@@ -570,6 +566,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_SCALE_FUNC,                                            \
 	&&lbl_BC_INST_SQRT,                                                  \
 	&&lbl_BC_INST_ABS,                                                   \
+	&&lbl_BC_INST_ASCIIFY,                                               \
 	&&lbl_BC_INST_READ,                                                  \
 	&&lbl_BC_INST_MAXIBASE,                                              \
 	&&lbl_BC_INST_MAXOBASE,                                              \
@@ -586,24 +583,24 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_RET_VOID,                                              \
 	&&lbl_BC_INST_HALT,                                                  \
 	&&lbl_BC_INST_POP,                                                   \
-	&&lbl_BC_INST_POP_EXEC,                                              \
+	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_MODEXP,                                                \
 	&&lbl_BC_INST_DIVMOD,                                                \
+	&&lbl_BC_INST_PRINT_STREAM,                                          \
+	&&lbl_BC_INST_POP_EXEC,                                              \
 	&&lbl_BC_INST_EXECUTE,                                               \
 	&&lbl_BC_INST_EXEC_COND,                                             \
-	&&lbl_BC_INST_ASCIIFY,                                               \
-	&&lbl_BC_INST_PRINT_STREAM,                                          \
 	&&lbl_BC_INST_PRINT_STACK,                                           \
 	&&lbl_BC_INST_CLEAR_STACK,                                           \
 	&&lbl_BC_INST_REG_STACK_LEN,                                         \
 	&&lbl_BC_INST_STACK_LEN,                                             \
 	&&lbl_BC_INST_DUPLICATE,                                             \
-	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_LOAD,                                                  \
 	&&lbl_BC_INST_PUSH_VAR,                                              \
 	&&lbl_BC_INST_PUSH_TO_VAR,                                           \
 	&&lbl_BC_INST_QUIT,                                                  \
 	&&lbl_BC_INST_NQUIT,                                                 \
+	&&lbl_BC_INST_EXEC_STACK_LEN,                                        \
 	&&lbl_BC_INST_INVALID,                                               \
 }
 
@@ -672,6 +669,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_SQRT,                                                  \
 	&&lbl_BC_INST_ABS,                                                   \
 	&&lbl_BC_INST_IRAND,                                                 \
+	&&lbl_BC_INST_ASCIIFY,                                               \
 	&&lbl_BC_INST_READ,                                                  \
 	&&lbl_BC_INST_RAND,                                                  \
 	&&lbl_BC_INST_MAXIBASE,                                              \
@@ -690,6 +688,10 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_RET_VOID,                                              \
 	&&lbl_BC_INST_HALT,                                                  \
 	&&lbl_BC_INST_POP,                                                   \
+	&&lbl_BC_INST_SWAP,                                                  \
+	&&lbl_BC_INST_MODEXP,                                                \
+	&&lbl_BC_INST_DIVMOD,                                                \
+	&&lbl_BC_INST_PRINT_STREAM,                                          \
 	&&lbl_BC_INST_INVALID,                                               \
 }
 
@@ -742,6 +744,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_SCALE_FUNC,                                            \
 	&&lbl_BC_INST_SQRT,                                                  \
 	&&lbl_BC_INST_ABS,                                                   \
+	&&lbl_BC_INST_ASCIIFY,                                               \
 	&&lbl_BC_INST_READ,                                                  \
 	&&lbl_BC_INST_MAXIBASE,                                              \
 	&&lbl_BC_INST_MAXOBASE,                                              \
@@ -758,6 +761,10 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_RET_VOID,                                              \
 	&&lbl_BC_INST_HALT,                                                  \
 	&&lbl_BC_INST_POP,                                                   \
+	&&lbl_BC_INST_SWAP,                                                  \
+	&&lbl_BC_INST_MODEXP,                                                \
+	&&lbl_BC_INST_DIVMOD,                                                \
+	&&lbl_BC_INST_PRINT_STREAM,                                          \
 	&&lbl_BC_INST_INVALID,                                               \
 }
 
@@ -794,6 +801,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_NUM,                                                   \
 	&&lbl_BC_INST_VAR,                                                   \
 	&&lbl_BC_INST_ARRAY_ELEM,                                            \
+	&&lbl_BC_INST_ARRAY,                                                 \
 	&&lbl_BC_INST_ZERO,                                                  \
 	&&lbl_BC_INST_ONE,                                                   \
 	&&lbl_BC_INST_IBASE,                                                 \
@@ -805,6 +813,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_SQRT,                                                  \
 	&&lbl_BC_INST_ABS,                                                   \
 	&&lbl_BC_INST_IRAND,                                                 \
+	&&lbl_BC_INST_ASCIIFY,                                               \
 	&&lbl_BC_INST_READ,                                                  \
 	&&lbl_BC_INST_RAND,                                                  \
 	&&lbl_BC_INST_MAXIBASE,                                              \
@@ -815,24 +824,24 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_PRINT_POP,                                             \
 	&&lbl_BC_INST_STR,                                                   \
 	&&lbl_BC_INST_POP,                                                   \
-	&&lbl_BC_INST_POP_EXEC,                                              \
+	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_MODEXP,                                                \
 	&&lbl_BC_INST_DIVMOD,                                                \
+	&&lbl_BC_INST_PRINT_STREAM,                                          \
+	&&lbl_BC_INST_POP_EXEC,                                              \
 	&&lbl_BC_INST_EXECUTE,                                               \
 	&&lbl_BC_INST_EXEC_COND,                                             \
-	&&lbl_BC_INST_ASCIIFY,                                               \
-	&&lbl_BC_INST_PRINT_STREAM,                                          \
 	&&lbl_BC_INST_PRINT_STACK,                                           \
 	&&lbl_BC_INST_CLEAR_STACK,                                           \
 	&&lbl_BC_INST_REG_STACK_LEN,                                         \
 	&&lbl_BC_INST_STACK_LEN,                                             \
 	&&lbl_BC_INST_DUPLICATE,                                             \
-	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_LOAD,                                                  \
 	&&lbl_BC_INST_PUSH_VAR,                                              \
 	&&lbl_BC_INST_PUSH_TO_VAR,                                           \
 	&&lbl_BC_INST_QUIT,                                                  \
 	&&lbl_BC_INST_NQUIT,                                                 \
+	&&lbl_BC_INST_EXEC_STACK_LEN,                                        \
 	&&lbl_BC_INST_INVALID,                                               \
 }
 
@@ -859,6 +868,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_NUM,                                                   \
 	&&lbl_BC_INST_VAR,                                                   \
 	&&lbl_BC_INST_ARRAY_ELEM,                                            \
+	&&lbl_BC_INST_ARRAY,                                                 \
 	&&lbl_BC_INST_ZERO,                                                  \
 	&&lbl_BC_INST_ONE,                                                   \
 	&&lbl_BC_INST_IBASE,                                                 \
@@ -868,6 +878,7 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_SCALE_FUNC,                                            \
 	&&lbl_BC_INST_SQRT,                                                  \
 	&&lbl_BC_INST_ABS,                                                   \
+	&&lbl_BC_INST_ASCIIFY,                                               \
 	&&lbl_BC_INST_READ,                                                  \
 	&&lbl_BC_INST_MAXIBASE,                                              \
 	&&lbl_BC_INST_MAXOBASE,                                              \
@@ -876,24 +887,24 @@ extern const char bc_program_esc_seqs[];
 	&&lbl_BC_INST_PRINT_POP,                                             \
 	&&lbl_BC_INST_STR,                                                   \
 	&&lbl_BC_INST_POP,                                                   \
-	&&lbl_BC_INST_POP_EXEC,                                              \
+	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_MODEXP,                                                \
 	&&lbl_BC_INST_DIVMOD,                                                \
+	&&lbl_BC_INST_PRINT_STREAM,                                          \
+	&&lbl_BC_INST_POP_EXEC,                                              \
 	&&lbl_BC_INST_EXECUTE,                                               \
 	&&lbl_BC_INST_EXEC_COND,                                             \
-	&&lbl_BC_INST_ASCIIFY,                                               \
-	&&lbl_BC_INST_PRINT_STREAM,                                          \
 	&&lbl_BC_INST_PRINT_STACK,                                           \
 	&&lbl_BC_INST_CLEAR_STACK,                                           \
 	&&lbl_BC_INST_REG_STACK_LEN,                                         \
 	&&lbl_BC_INST_STACK_LEN,                                             \
 	&&lbl_BC_INST_DUPLICATE,                                             \
-	&&lbl_BC_INST_SWAP,                                                  \
 	&&lbl_BC_INST_LOAD,                                                  \
 	&&lbl_BC_INST_PUSH_VAR,                                              \
 	&&lbl_BC_INST_PUSH_TO_VAR,                                           \
 	&&lbl_BC_INST_QUIT,                                                  \
 	&&lbl_BC_INST_NQUIT,                                                 \
+	&&lbl_BC_INST_EXEC_STACK_LEN,                                        \
 	&&lbl_BC_INST_INVALID,                                               \
 }
 

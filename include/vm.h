@@ -55,9 +55,11 @@
 #include <version.h>
 #include <status.h>
 #include <num.h>
+#include <lex.h>
 #include <parse.h>
 #include <program.h>
 #include <history.h>
+#include <bc.h>
 
 // We don't want to include this file for the library because it's unused.
 #if !BC_ENABLE_LIBRARY
@@ -163,13 +165,13 @@
 #define BC_FLAG_R (UINTMAX_C(1)<<8)
 
 /// The flag for stdin being a TTY.
-#define BC_FLAG_TTYIN (UINTMAX_C(1)<<10)
+#define BC_FLAG_TTYIN (UINTMAX_C(1)<<9)
 
 /// The flag for TTY mode.
-#define BC_FLAG_TTY (UINTMAX_C(1)<<11)
+#define BC_FLAG_TTY (UINTMAX_C(1)<<10)
 
 /// The flag for reset on SIGINT.
-#define BC_FLAG_SIGINT (UINTMAX_C(1)<<12)
+#define BC_FLAG_SIGINT (UINTMAX_C(1)<<11)
 
 /// A convenience macro for getting the TTYIN flag.
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
@@ -471,6 +473,14 @@ typedef struct BcVm {
 	/// True if bc is currently reading from stdin.
 	bool is_stdin;
 
+#if BC_ENABLED
+
+	/// True if keywords should not be redefined. This is only true for the
+	/// builtin math libraries for bc.
+	bool no_redefine;
+
+#endif // BC_ENABLED
+
 #endif // !BC_ENABLE_LIBRARY
 
 	/// An array of maxes for the globals.
@@ -596,11 +606,15 @@ typedef struct BcVm {
 	//// The slab for all other strings for the main function.
 	BcVec main_slabs;
 
-#if BC_ENABLED
-
 	/// The slab for function names, strings in other functions, and constants
 	/// in other functions.
 	BcVec other_slabs;
+
+#if BC_ENABLED
+
+	/// An array of booleans for which bc keywords have been redefined if
+	/// BC_REDEFINE_KEYWORDS is non-zero.
+	bool redefined_kws[BC_LEX_NKWS];
 
 #endif // BC_ENABLED
 #endif // !BC_ENABLE_LIBRARY

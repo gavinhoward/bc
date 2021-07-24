@@ -334,7 +334,7 @@ size_t bc_map_index(const BcVec *restrict v, const char *name);
  * @param idx  The index.
  * @return     The name of the item at @a idx.
  */
-char* bc_map_name(const BcVec *restrict v, size_t idx);
+const char* bc_map_name(const BcVec *restrict v, size_t idx);
 
 #endif // DC_ENABLED
 
@@ -403,6 +403,7 @@ void bc_slabvec_init(BcVec *restrict v);
 char* bc_slabvec_strdup(BcVec *restrict v, const char *str);
 
 #if BC_ENABLED
+
 /**
  * Undoes the last allocation on the slab vector. This allows bc to have a
  * heap-based stacks for strings. This is used by the bc parser.
@@ -410,7 +411,6 @@ char* bc_slabvec_strdup(BcVec *restrict v, const char *str);
 void bc_slabvec_undo(BcVec *restrict v, size_t len);
 
 #endif // BC_ENABLED
-
 
 /**
  * Clears a slab vector. This deallocates all but the first slab and clears the
@@ -421,6 +421,30 @@ void bc_slabvec_clear(BcVec *restrict v);
 
 /// A convenience macro for freeing a vector of slabs.
 #define bc_slabvec_free bc_vec_free
+
+#ifndef _WIN32
+
+/**
+ * A macro to get rid of a warning on Windows.
+ * @param d  The destination string.
+ * @param l  The length of the destination string. This has to be big enough to
+ *           contain @a s.
+ * @param s  The source string.
+ */
+#define strcpy(d, l, s) strcpy(d, s)
+
+#else // _WIN32
+
+/**
+ * A macro to get rid of a warning on Windows.
+ * @param d  The destination string.
+ * @param l  The length of the destination string. This has to be big enough to
+ *           contain @a s.
+ * @param s  The source string.
+ */
+#define strcpy(d, l, s) strcpy_s(d, l, s)
+
+#endif // _WIN32
 
 #endif // !BC_ENABLE_LIBRARY
 

@@ -80,6 +80,36 @@ static void bc_args_file(const char *file) {
 	free(buf);
 }
 
+#if BC_ENABLED
+
+/**
+ * Redefines a keyword, if it exists and is not a POSIX keyword. Otherwise, it
+ * throws a fatal error.
+ * @param keyword  The keyword to redefine.
+ */
+static void bc_args_redefine(const char *keyword) {
+
+	size_t i;
+
+	for (i = 0; i < bc_lex_kws_len; ++i) {
+
+		const BcLexKeyword *kw = bc_lex_kws + i;
+
+		if (!strcmp(keyword, kw->name)) {
+
+			if (BC_LEX_KW_POSIX(kw)) break;
+
+			vm.redefined_kws[i] = true;
+
+			return;
+		}
+	}
+
+	bc_error(BC_ERR_FATAL_ARG, 0, keyword);
+}
+
+#endif // BC_ENABLED
+
 void bc_args(int argc, char *argv[], bool exit_exprs) {
 
 	int c;
@@ -172,6 +202,12 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 			{
 				assert(BC_IS_BC);
 				// Do nothing.
+				break;
+			}
+
+			case 'r':
+			{
+				bc_args_redefine(opts.optarg);
 				break;
 			}
 

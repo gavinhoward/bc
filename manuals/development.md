@@ -1,6 +1,6 @@
 # Development
 
-Updated: 20 July 2021
+Updated: 22 July 2021
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -1101,6 +1101,26 @@ This script is a quick and dirty script to test whether or not the garbage
 collection mechanism of the [`BcNum` caching][96] works. It has been little-used
 because it tests something that is not important to correctness.
 
+#### `benchmark.sh`
+
+A script making it easy to run benchmarks and to run the executable produced by
+[`ministat.c`][223] on them.
+
+For more information, see the [Benchmarks][144] section.
+
+#### `bitgen.c`
+
+A source file for an executable to generate tests for `bc`'s bitwise functions
+in [`gen/lib2.bc`][26]. The executable is `scripts/bitgen`, and it is built with
+`make bitgen`. It produces the test on `stdout` and the expected results on
+`stderr`. This means that to generat tests, use the following invokation:
+
+```
+scripts/bitgen > tests/bc/bitfuncs.txt 2> tests/bc/bitfuncs_results.txt
+```
+
+It calls `abort()` if it runs into an error.
+
 #### `exec-install.sh`
 
 This script is the magic behind making sure `dc` is installed properly if it's
@@ -1562,6 +1582,9 @@ Tests][155] section.
 
 The script to integrate [`history.py`][139] into the build system in a portable
 way, and to skip it if necessary.
+
+This script also re-runs the test three times if it fails. This is because
+`pexpect` can be flaky at times.
 
 #### `other.sh`
 
@@ -2193,6 +2216,19 @@ recursive_arrays
 
 :   Tests the slab vector undo ability in used in `bc_parse_name()`.
 
+divmod
+
+:   Tests divmod.
+
+modexp
+
+:   Tests modular exponentiation.
+
+bitfuncs
+
+:   Tests the bitwise functions, `band()`, `bor()`, `bxor()`, `blshift()` and
+    `brshift()` in [`gen/lib2.bc`][26].
+
 #### `dc` Standard Tests
 
 The list of current (17 July 2021) standard tests for `dc` is below:
@@ -2203,11 +2239,15 @@ decimal
 
 length
 
-:   Tests the `length()` builtin function.
+:   Tests the `length()` builtin function, including for strings and arrays.
 
 stack_len
 
 :   Tests taking the length of the results stack.
+
+stack_len
+
+:   Tests taking the length of the execution stack.
 
 add
 
@@ -2293,6 +2333,10 @@ strings
 rand
 
 :   Tests the pseudo-random number generator and its special stack handling.
+
+exec_stack
+
+:   Tests the execution stack depth command.
 
 ### Script Tests
 
@@ -2456,6 +2500,9 @@ the calculator under test will return successfully. A lot of that infrastructure
 is in the [`scripts/functions.sh`][105] script, but it basically allows the
 calculator to exit with an error code and then tests that there *was* an error
 code.
+
+Besides returning error codes, error tests also ensure that there is output from
+`stderr`. This is to make sure that an error message is always printed.
 
 The error tests for each calculator are spread through two directories, due to
 historical accident. These two directories are the standard test directory (see
@@ -4389,8 +4436,8 @@ help.
 
 ### Strings as Numbers
 
-In `dc`, strings can be assigned to variables. This is a problem because the
-vectors for variable stacks expect `BcNum` structs only.
+Strings can be assigned to variables. This is a problem because the vectors for
+variable stacks expect `BcNum` structs only.
 
 While I could have made a union, I decided that the complexity of adding an
 entirely new type, with destructor and everything, was not worth it. Instead, I
@@ -4401,10 +4448,9 @@ Using that, I made it so `BcNum`'s could store strings instead. This is marked
 by the `BcNum` having a `NULL` limb array (`num`) and a `cap` of 0 (which should
 *never* happen with a real number, though the other fields could be 0).
 
-If this is the case, then the `BcNum` stores the index of the string in the
-`scale` field. This is used to actually load the string if necessary. This works
-because in `dc`, all strings are stored in the main function (see the [Main and
-Read Functions][216] section).
+If this is the case, then the `BcNum` stores the function that stores the string
+in the `rdx` field, and it stores the index of the string in the `scale` field.
+This is used to actually load the string if necessary.
 
 ### Pseudo-Random Number Generator
 

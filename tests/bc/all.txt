@@ -46,3 +46,6 @@ misc7
 void
 rand
 recursive_arrays
+divmod
+modexp
+bitfuncs

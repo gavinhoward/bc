@@ -75,6 +75,9 @@ typedef enum BcOptType {
 	/// An option that is bc-only.
 	BC_OPT_BC_ONLY,
 
+	/// An option that is bc-only that requires an argument.
+	BC_OPT_REQUIRED_BC_ONLY,
+
 	/// An option that is dc-only.
 	BC_OPT_DC_ONLY,
 

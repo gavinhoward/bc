@@ -61,6 +61,7 @@ tests/bc/scripts/strings2.txt
 benchmarks/bc/*.txt
 benchmarks/dc/*.txt
 scripts/ministat
+scripts/bitgen
 perf.data
 perf.data.old
 *.gcda

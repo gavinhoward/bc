@@ -7,3 +7,11 @@ atsnoheusntaohetisanhoest;nhqktseuhstasatohutsaotnesh;qtsethusanthaotsehnustanho
 \d
 abc\\
 def
+string
+stuff
+stuff
+0
+string
+0
+4
+6

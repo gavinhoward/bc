@@ -78,12 +78,28 @@ static const char* bc_opt_longopt(const BcOptLong *longopts, int c) {
 
 /**
  * Issues a fatal error for an option parsing failure.
- * @param err  The error.
- * @param c    The character for the failing option.
- * @param str  Either the string for the failing option, or the invalid option.
+ * @param err        The error.
+ * @param c          The character for the failing option.
+ * @param str        Either the string for the failing option, or the invalid
+ *                   option.
+ * @param use_short  True if the short option should be used for error printing,
+ *                   false otherwise.
  */
-static void bc_opt_error(BcErr err, int c, const char *str) {
-	if (err == BC_ERR_FATAL_OPTION) bc_error(err, 0, str);
+static void bc_opt_error(BcErr err, int c, const char *str, bool use_short) {
+
+	if (err == BC_ERR_FATAL_OPTION) {
+
+		if (use_short) {
+
+			char short_str[2];
+
+			short_str[0] = (char) c;
+			short_str[1] = '\0';
+
+			bc_error(err, 0, short_str);
+		}
+		else bc_error(err, 0, str);
+	}
 	else bc_error(err, 0, (int) c, str);
 }
 
@@ -146,7 +162,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 				str[0] = option[0];
 				o->optind += 1;
 
-				bc_opt_error(BC_ERR_FATAL_OPTION, option[0], str);
+				bc_opt_error(BC_ERR_FATAL_OPTION, option[0], str, true);
 			}
 		}
 		// Fallthrough.
@@ -168,6 +184,15 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 			break;
 		}
 
+		case BC_OPT_REQUIRED_BC_ONLY:
+		{
+			if (BC_IS_DC)
+				bc_opt_error(BC_ERR_FATAL_OPTION, option[0],
+				             bc_opt_longopt(longopts, option[0]), true);
+		}
+		// Fallthrough
+		BC_FALLTHROUGH
+
 		case BC_OPT_REQUIRED:
 		{
 			// Always go to the next argument.
@@ -184,7 +209,7 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
 			}
 			// No argument, barf.
 			else bc_opt_error(BC_ERR_FATAL_OPTION_NO_ARG, option[0],
-			                  bc_opt_longopt(longopts, option[0]));
+			                  bc_opt_longopt(longopts, option[0]), true);
 
 
 			ret = (int) option[0];
@@ -287,29 +312,31 @@ int bc_opt_parse(BcOpt *o, const BcOptLong *longopts) {
 
 			// Error if the option is invalid..
 			if ((longopts[i].type == BC_OPT_BC_ONLY && BC_IS_DC) ||
+			    (longopts[i].type == BC_OPT_REQUIRED_BC_ONLY && BC_IS_DC) ||
 			    (longopts[i].type == BC_OPT_DC_ONLY && BC_IS_BC))
 			{
-				bc_opt_error(BC_ERR_FATAL_OPTION, o->optopt, name);
+				bc_opt_error(BC_ERR_FATAL_OPTION, o->optopt, name, false);
 			}
 
 			// Error if we have an argument and should not.
 			if (longopts[i].type == BC_OPT_NONE && arg != NULL)
 			{
-				bc_opt_error(BC_ERR_FATAL_OPTION_ARG, o->optopt, name);
+				bc_opt_error(BC_ERR_FATAL_OPTION_ARG, o->optopt, name, false);
 			}
 
 			// Set the argument, or check the next argument if we don't have
 			// one.
 			if (arg != NULL) o->optarg = arg;
-			else if (longopts[i].type == BC_OPT_REQUIRED) {
-
+			else if (longopts[i].type == BC_OPT_REQUIRED ||
+			         longopts[i].type == BC_OPT_REQUIRED_BC_ONLY)
+			{
 				// Get the next argument.
 				o->optarg = o->argv[o->optind];
 
 				// All's good if it exists; otherwise, barf.
 				if (o->optarg != NULL) o->optind += 1;
 				else bc_opt_error(BC_ERR_FATAL_OPTION_NO_ARG,
-				                  o->optopt, name);
+				                  o->optopt, name, false);
 			}
 
 			return o->optopt;
@@ -317,7 +344,7 @@ int bc_opt_parse(BcOpt *o, const BcOptLong *longopts) {
 	}
 
 	// If we reach this point, the option is invalid.
-	bc_opt_error(BC_ERR_FATAL_OPTION, 0, option);
+	bc_opt_error(BC_ERR_FATAL_OPTION, 0, option, false);
 
 	BC_UNREACHABLE
 

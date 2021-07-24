@@ -68,38 +68,15 @@ static void bc_parse_update(BcParse *p, uchar inst, size_t idx) {
 
 void bc_parse_addString(BcParse *p) {
 
-	BcVec *strs = BC_IS_BC ? &p->func->strs : p->prog->strs;
 	size_t idx;
 
 	BC_SIG_LOCK;
 
-#if BC_ENABLED
-
-	// bc has different slab vectors than dc. dc also directly adds the string
-	// as a function.
-	if (BC_IS_BC) {
-
-		char **str = bc_vec_pushEmpty(strs);
-
-		// Figure out which slab vector to use.
-		BcVec *slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ ?
-		               &vm.main_slabs : &vm.other_slabs;
-
-		*str = bc_slabvec_strdup(slabs, p->l.str.v);
-		idx = strs->len - 1;
-	}
-#if DC_ENABLED
-	else
-#endif // DC_ENABLED
-#endif // BC_ENABLED
-#if DC_ENABLED
-	{
-		idx = bc_program_insertFunc(p->prog, p->l.str.v) - BC_PROG_REQ_FUNCS;
-	}
-#endif // DC_ENABLED
+	idx = bc_program_addString(p->prog, p->l.str.v, p->fidx);
 
 	// Push the string info.
-	bc_parse_update(p, BC_INST_STR, idx);
+	bc_parse_update(p, BC_INST_STR, p->fidx);
+	bc_parse_pushIndex(p, idx);
 
 	BC_SIG_UNLOCK;
 }
@@ -223,6 +200,7 @@ void bc_parse_reset(BcParse *p) {
 	if (BC_ERR(vm.status)) BC_JMP;
 }
 
+#ifndef NDEBUG
 void bc_parse_free(BcParse *p) {
 
 	BC_SIG_ASSERT_LOCKED;
@@ -242,6 +220,7 @@ void bc_parse_free(BcParse *p) {
 
 	bc_lex_free(&p->l);
 }
+#endif // NDEBUG
 
 void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 

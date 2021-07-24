@@ -35,11 +35,16 @@ testdir=$(dirname "$script")
 . "$testdir/../scripts/functions.sh"
 
 # Command-line processing.
-if [ "$#" -ge 1 ]; then
+if [ "$#" -ge 2 ]; then
+
 	d="$1"
 	shift
+
+	extra_math="$1"
+	shift
+
 else
-	err_exit "usage: $script dir [exec args...]" 1
+	err_exit "usage: $script dir extra_math [exec args...]" 1
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -114,16 +119,58 @@ printf 'Running %s environment var tests...' "$d"
 if [ "$d" = "bc" ]; then
 
 	export BC_ENV_ARGS=" '-l' '' -q"
-	export BC_EXPR_EXIT="1"
 
 	printf 's(.02893)\n' | "$exe" "$@" > /dev/null
 
 	checktest_retcode "$d" "$?" "environment var"
 
-	"$exe" -e 4 "$@" > /dev/null
+	"$exe" "$@" -e 4 > /dev/null
 
 	err="$?"
 	checktest_retcode "$d" "$?" "environment var"
+
+	printf 'pass\n'
+
+	printf 'Running keyword redefinition test...'
+
+	unset BC_ENV_ARGS
+
+	redefine_res="$testdir/bc_outputs/redefine.txt"
+	redefine_out="$testdir/bc_outputs/redefine_results.txt"
+
+	outdir=$(dirname "$easter_out")
+
+	if [ ! -d "$outdir" ]; then
+		mkdir -p "$outdir"
+	fi
+
+	printf '5\n0\n' > "$redefine_res"
+
+	"$exe" "$@" --redefine=print -e 'define print(x) { x }' -e 'print(5)' > "$redefine_out"
+
+	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
+
+	"$exe" "$@" -r "abs" -r "else" -e 'abs = 5;else = 0' -e 'abs;else' > "$redefine_out"
+
+	checktest "$d" "$err" "keyword redefinition" "$redefine_res" "$redefine_out"
+
+	if [ "$extra_math" -ne 0 ]; then
+
+		"$exe" "$@" -lr abs -e "perm(5, 1)" -e "0" > "$redefine_out"
+
+		checktest "$d" "$err" "keyword not redefined in builtin library" "$redefine_res" "$redefine_out"
+
+	fi
+
+	"$exe" "$@" -r "break" -e 'define break(x) { x }' 2> "$redefine_out"
+	err="$?"
+
+	checkerrtest "$d" "$err" "keyword redefinition error" "$redefine_out" "$d"
+
+	"$exe" "$@" -e 'define read(x) { x }' 2> "$redefine_out"
+	err="$?"
+
+	checkerrtest "$d" "$err" "Keyword redefinition error without BC_REDEFINE_KEYWORDS" "$redefine_out" "$d"
 
 	printf 'pass\n'
 
@@ -136,7 +183,7 @@ else
 
 	checktest_retcode "$d" "$?" "environment var"
 
-	"$exe" -e 4pR "$@" > /dev/null
+	"$exe" "$@" -e 4pR > /dev/null
 
 	checktest_retcode "$d" "$?" "environment var"
 
@@ -165,7 +212,7 @@ else
 
 		printf '4 April 2021\n' > "$easter_res"
 
-		"$testdir/dc/scripts/easter.sh" "$exe" 2021 | cut -c1-12 > "$easter_out"
+		"$testdir/dc/scripts/easter.sh" "$exe" 2021 "$@" | cut -c1-12 > "$easter_out"
 		err="$?"
 
 		checktest "$d" "$err" "Easter script" "$easter_res" "$easter_out"

@@ -46,7 +46,7 @@
  * @param c  The character to test.
  * @return   True if @a c is an invalid char.
  */
-#define BC_READ_BIN_CHAR(c) (((c) < ' ' && !isspace((c))) || ((uchar) c) > '~')
+#define BC_READ_BIN_CHAR(c) (!(c))
 
 /**
  * Reads a line from stdin after printing prompt, if desired.

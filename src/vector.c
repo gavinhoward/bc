@@ -416,7 +416,7 @@ size_t bc_map_index(const BcVec *restrict v, const char *name) {
 }
 
 #if DC_ENABLED
-char* bc_map_name(const BcVec *restrict v, size_t idx) {
+const char* bc_map_name(const BcVec *restrict v, size_t idx) {
 
 	size_t i, len = v->len;
 
@@ -461,7 +461,7 @@ static char* bc_slab_add(BcSlab *s, const char *str, size_t len) {
 
 	ptr = (char*) (s->s + s->len);
 
-	strcpy(ptr, str);
+	strcpy(ptr, len, str);
 
 	s->len += len;
 
@@ -534,6 +534,8 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 	return s;
 }
 
+#if BC_ENABLED
+
 void bc_slabvec_undo(BcVec *v, size_t len) {
 
 	BcSlab *s;
@@ -572,6 +574,8 @@ void bc_slabvec_undo(BcVec *v, size_t len) {
 
 	assert(s->len == 0 || !s->s[s->len - 1]);
 }
+
+#endif // BC_ENABLED
 
 void bc_slabvec_clear(BcVec *v) {
 

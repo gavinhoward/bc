@@ -60,7 +60,7 @@ $set 4
 5 "niewa¿ny token"
 6 "niewa¿ne wyra¿enie"
 7 "puste wyra¿enie"
-8 "niewa¿ny wyci±g z wydruku"
+8 "nieprawid³owe polecenie drukowania lub przesy³ania strumienia"
 9 "nieprawid³owa definicja funkcji"
 10 "nieprawid³owe przyporz±dkowanie: lewa strona musi byæ elementem scale, ibase, obase, last, var lub element array"
 11 "nie znaleziono zmiennej automatycznej"
@@ -80,6 +80,7 @@ $set 4
 25 "POSIX nie pozwala na notacjê wyk³adnicz±"
 26 "POSIX nie zezwala na odniesienia do tablicy jako parametrów funkcji"
 27 "POSIX wymaga, aby lewe usztywnienie znajdowa³o siê na tej samej linii co nag³ówek funkcji"
+28 "POSIX nie pozwala na przypisywanie ci±gów znaków do zmiennych lub tablic"
 
 $ B³êdy Runtime'u.
 $set 5
@@ -102,7 +103,9 @@ $set 6
 1 "Alokacja pamiêci nie powiod³a siê"
 2 "B³±d we/wy"
 3 "nie móg³ otworzyæ pliku: %s"
-4 "¶cie¿ka to katalog: %s"
-5 "nieprawid³owa opcja wiersza poleceñ: \"%s\""
-6 "opcja wymaga argumentu: '%c' (\"%s\")"
-7 "opcja nie wymaga ¿adnych argumentów: '%c' (\"%s\")"
+4 "plik nie jest tekstem: %s"
+5 "¶cie¿ka to katalog: %s"
+6 "nieprawid³owa opcja wiersza poleceñ: \"%s\""
+7 "opcja wymaga argumentu: '%c' (\"%s\")"
+8 "opcja nie wymaga ¿adnych argumentów: '%c' (\"%s\")"
+9 "nieprawid³owa argument opcja wiersza poleceñ: \"%s\""
