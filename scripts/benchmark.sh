@@ -32,8 +32,9 @@
 
 # Just print the usage and exit with an error.
 usage() {
-	printf 'usage: %s [-n runs] dir benchmark...\n' "$0" 1>&2
-	printf '       -n runs is how many runs to run the benchmark, default 10.\n'
+	printf 'usage: %s [-n<runs>] [-p<pause>] dir benchmark...\n' "$0" 1>&2
+	printf '    -n runs is how many runs to run the benchmark, default 10.\n'
+	printf '    -p pause is how many seconds to pause before running the benchmarks.\n'
 	printf '\n'
 	printf 'The fields are put in this order:\n'
 	printf '1.  Elapsed Time\n'
@@ -60,12 +61,14 @@ script="$0"
 scriptdir=$(dirname "$script")
 
 runs=10
+pause=0
 
 # Process command-line arguments.
-while getopts "n:" opt; do
+while getopts "n:p:" opt; do
 
 	case "$opt" in
 		n) runs="$OPTARG" ; shift ;;
+		p) pause="$OPTARG"; shift ;;
 		?) usage "Invalid option: $opt" ;;
 	esac
 
@@ -131,6 +134,10 @@ done
 format="%e %S %U %M %t %K %D %p %X %F %R %W %c %w %I %O %k"
 
 printf 'Benchmarking %s...\n' "$files" >&2
+
+if [ "$pause" -gt 0 ]; then
+	sleep "$pause"
+fi
 
 i=0
 
