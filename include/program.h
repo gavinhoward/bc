@@ -412,6 +412,19 @@ extern const char bc_program_esc_seqs[];
 #define BC_PROG_LBL(l) lbl_ ## l
 #define BC_PROG_FALLTHROUGH
 
+#if BC_C11
+
+#define BC_PROG_LBLS_SIZE (sizeof(bc_program_inst_lbls) / sizeof(void*))
+#define BC_PROG_LBLS_ASSERT \
+	static_assert(BC_PROG_LBLS_SIZE == BC_INST_INVALID + 1,\
+	              "bc_program_inst_lbls[] mismatches the instructions")
+
+#else // BC_C11
+
+#define BC_PROG_LBLS_ASSERT
+
+#endif // BC_C11
+
 #if BC_ENABLED
 
 #if DC_ENABLED

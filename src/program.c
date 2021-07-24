@@ -2628,6 +2628,7 @@ void bc_program_exec(BcProgram *p) {
 
 #if BC_HAS_COMPUTED_GOTO
 	BC_PROG_LBLS;
+	BC_PROG_LBLS_ASSERT;
 
 	// BC_INST_INVALID is a marker for the end so that we don't have to have an
 	// execution loop.
