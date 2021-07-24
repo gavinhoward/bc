@@ -334,7 +334,7 @@ size_t bc_map_index(const BcVec *restrict v, const char *name);
  * @param idx  The index.
  * @return     The name of the item at @a idx.
  */
-char* bc_map_name(const BcVec *restrict v, size_t idx);
+const char* bc_map_name(const BcVec *restrict v, size_t idx);
 
 #endif // DC_ENABLED
 
