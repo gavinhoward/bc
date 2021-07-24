@@ -67,10 +67,17 @@ pause=0
 while getopts "n:p:" opt; do
 
 	case "$opt" in
-		n) runs="$OPTARG" ; shift ;;
-		p) pause="$OPTARG"; shift ;;
+		n) runs="$OPTARG" ;;
+		p) pause="$OPTARG" ;;
 		?) usage "Invalid option: $opt" ;;
 	esac
+
+done
+
+while [ "$#" -gt 0 ] && [ "$OPTIND" -gt 1 ]; do
+
+	OPTIND=$(bin/bc -e "$OPTIND - 1")
+	shift
 
 done
 
