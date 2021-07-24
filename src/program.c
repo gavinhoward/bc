@@ -2649,7 +2649,7 @@ void bc_program_exec(BcProgram *p) {
 #if !BC_HAS_COMPUTED_GOTO
 	// This loop is the heart of the execution engine. It *is* the engine. For
 	// computed goto, it is ignored.
-	while (true)
+	while (ip->idx < func->code.len)
 #endif // !BC_HAS_COMPUTED_GOTO
 	{
 
@@ -3144,12 +3144,12 @@ void bc_program_exec(BcProgram *p) {
 			}
 #endif // DC_ENABLED
 
+#if BC_HAS_COMPUTED_GOTO
 			BC_PROG_LBL(BC_INST_INVALID):
 			{
 				return;
 			}
-
-#if !BC_HAS_COMPUTED_GOTO
+#else // BC_HAS_COMPUTED_GOTO
 			default:
 			{
 				BC_UNREACHABLE
@@ -3157,7 +3157,7 @@ void bc_program_exec(BcProgram *p) {
 				abort();
 #endif // NDEBUG
 			}
-#endif // !BC_HAS_COMPUTED_GOTO
+#endif // !C_HAS_COMPUTED_GOTO
 		}
 
 #ifndef NDEBUG
