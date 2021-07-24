@@ -29,11 +29,11 @@
 
 # For OpenBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0 0
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 0 1 0 1 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 1 0 0
 #
 # There is one problem with running this script on FreeBSD: it takes overcommit
 # to the extreme. This means that some tests that try to create allocation
@@ -42,15 +42,15 @@
 #
 # For Linux, run two separate ones (in different checkouts), like so:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0
-# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1
+# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0
 #
 # Yes, I usually do sanitizers with Clang and Valgrind with GCC.
 #
 # To run sanitizers or Valgrind with generated tests, use the following:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0
-# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1
+# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0
 #
 # If this script fails on any platform when starting the Karatsuba test, check
 # that Python is installed, especially if the error says something like:
@@ -61,7 +61,7 @@
 usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
 	printf '          [run_sanitizers] [run_valgrind] [test_settings] [run_64_bit] \n'
-	printf '          [run_gen_script] [test_c11] [test_128_bit]\n'
+	printf '          [run_gen_script] [test_c11] [test_128_bit] [test_computed_goto]\n'
 	exit 1
 }
 
@@ -693,10 +693,23 @@ else
 	test_128_bit=0
 fi
 
+# Whether to test with computed goto or not.
+if [ "$#" -gt 0 ]; then
+	test_computed_goto="$1"
+	shift
+else
+	test_computed_goto=0
+fi
+
 if [ "$run_64_bit" -ne 0 ]; then
 	bits=64
 else
 	bits=32
+fi
+
+if [ "$test_computed_goto" -eq 0 ]; then
+	clang_flags="-DBC_NO_COMPUTED_GOTO $clang_flags"
+	gcc_flags="-DBC_NO_COMPUTED_GOTO $gcc_flags"
 fi
 
 cd "$scriptdir/.."
