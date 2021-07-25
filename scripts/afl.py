@@ -168,13 +168,13 @@ if len(sys.argv) >= idx + 2:
 	resultsdir = sys.argv[idx + 1]
 else:
 	if exedir == "bc1":
-		resultsdir = scriptdir + "/fuzzing/bc_outputs1"
+		resultsdir = scriptdir + "/../tests/fuzzing/bc_outputs1"
 	elif exedir == "bc2":
-		resultsdir = scriptdir + "/fuzzing/bc_outputs2"
+		resultsdir = scriptdir + "/../tests/fuzzing/bc_outputs2"
 	elif exedir == "bc3":
-		resultsdir = scriptdir + "/fuzzing/bc_outputs3"
+		resultsdir = scriptdir + "/../tests/fuzzing/bc_outputs3"
 	elif exedir == "dc":
-		resultsdir = scriptdir + "/fuzzing/dc_outputs"
+		resultsdir = scriptdir + "/../tests/fuzzing/dc_outputs"
 	else:
 		raise ValueError("exedir must be either bc1, bc2, bc3, or dc");
 
