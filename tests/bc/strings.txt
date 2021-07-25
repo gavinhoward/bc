@@ -34,3 +34,10 @@ length(v)
 
 v = u = "test assign\n"
 print v, u
+
+define t() {
+	return "return test\n"
+}
+
+v = t()
+print v

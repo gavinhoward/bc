@@ -17,3 +17,4 @@ string
 6
 test assign
 test assign
+return test
