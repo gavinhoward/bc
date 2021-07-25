@@ -739,9 +739,7 @@ const char* bc_inst_names[] = {
 	"BC_INST_NUM",
 	"BC_INST_VAR",
 	"BC_INST_ARRAY_ELEM",
-#if BC_ENABLED
 	"BC_INST_ARRAY",
-#endif // BC_ENABLED
 
 	"BC_INST_ZERO",
 	"BC_INST_ONE",
@@ -762,6 +760,7 @@ const char* bc_inst_names[] = {
 #if BC_ENABLE_EXTRA_MATH
 	"BC_INST_IRAND",
 #endif // BC_ENABLE_EXTRA_MATH
+	"BC_INST_ASCIIFY",
 	"BC_INST_READ",
 #if BC_ENABLE_EXTRA_MATH
 	"BC_INST_RAND",
@@ -776,9 +775,9 @@ const char* bc_inst_names[] = {
 	"BC_INST_PRINT",
 	"BC_INST_PRINT_POP",
 	"BC_INST_STR",
+#if BC_ENABLED
 	"BC_INST_PRINT_STR",
 
-#if BC_ENABLED
 	"BC_INST_JUMP",
 	"BC_INST_JUMP_ZERO",
 
@@ -791,24 +790,23 @@ const char* bc_inst_names[] = {
 	"BC_INST_HALT",
 #endif // BC_ENABLED
 
-#if DC_ENABLED
 	"BC_INST_POP",
-	"BC_INST_POP_EXEC",
+	"BC_INST_SWAP",
 	"BC_INST_MODEXP",
 	"BC_INST_DIVMOD",
+	"BC_INST_PRINT_STREAM",
+
+#if DC_ENABLED
+	"BC_INST_POP_EXEC",
 
 	"BC_INST_EXECUTE",
 	"BC_INST_EXEC_COND",
-
-	"BC_INST_ASCIIFY",
-	"BC_INST_PRINT_STREAM",
 
 	"BC_INST_PRINT_STACK",
 	"BC_INST_CLEAR_STACK",
 	"BC_INST_REG_STACK_LEN",
 	"BC_INST_STACK_LEN",
 	"BC_INST_DUPLICATE",
-	"BC_INST_SWAP",
 
 	"BC_INST_LOAD",
 	"BC_INST_PUSH_VAR",
@@ -816,7 +814,11 @@ const char* bc_inst_names[] = {
 
 	"BC_INST_QUIT",
 	"BC_INST_NQUIT",
+
+	"BC_INST_EXEC_STACK_LEN",
 #endif // DC_ENABLED
+
+	"BC_INST_INVALID",
 };
 
 #endif // BC_DEBUG_CODE

@@ -403,11 +403,26 @@ extern const char bc_program_esc_seqs[];
 
 #if BC_HAS_COMPUTED_GOTO
 
+#if BC_DEBUG_CODE
+
+#define BC_PROG_JUMP(inst, code, ip)                                 \
+	do {                                                             \
+		inst = (uchar) (code)[(ip)->idx++];                          \
+		bc_file_printf(&vm.ferr, "inst: %s\n", bc_inst_names[inst]); \
+		bc_file_flush(&vm.ferr, bc_flush_none);                      \
+		goto *bc_program_inst_lbls[inst];                            \
+	} while (0)
+
+#else // BC_DEBUG_CODE
+
 #define BC_PROG_JUMP(inst, code, ip)        \
 	do {                                    \
 		inst = (uchar) (code)[(ip)->idx++]; \
 		goto *bc_program_inst_lbls[inst];   \
 	} while (0)
+
+#endif // BC_DEBUG_CODE
+
 #define BC_PROG_DIRECT_JUMP(l) goto lbl_ ## l;
 #define BC_PROG_LBL(l) lbl_ ## l
 #define BC_PROG_FALLTHROUGH
