@@ -482,7 +482,7 @@ static size_t bc_history_colPos(const char *buf, size_t buf_len, size_t pos) {
 	size_t ret = 0, off = 0;
 
 	// While we haven't reached the offset, get the length of the next grapheme.
-	while (off < pos) {
+	while (off < pos && pos < buf_len) {
 
 		size_t col_len, len;
 
