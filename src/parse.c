@@ -105,13 +105,9 @@ static void bc_parse_addNum(BcParse *p, const char *string) {
 
 	BC_SIG_LOCK;
 
-#if BC_ENABLED
 	// Get the right slab.
-	slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ || BC_IS_DC ?
+	slabs = p->fidx == BC_PROG_MAIN || p->fidx == BC_PROG_READ ?
 	        &vm.main_const_slab : &vm.other_slabs;
-#else // BC_ENABLED
-	slabs = &vm.main_const_slab;
-#endif // BC_ENABLED
 
 	// Push an empty constant.
 	c = bc_vec_pushEmpty(consts);
