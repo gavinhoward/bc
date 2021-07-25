@@ -242,6 +242,7 @@ abs("string")
 abs(a[])
 scale("string")
 v = "s"; scale(v)
+v += "string"
 scale(b[])
 sqrt("string")
 sqrt(c[])

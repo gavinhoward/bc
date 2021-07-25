@@ -1274,6 +1274,11 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		// Get the location of the string.
 		BcLoc loc = bc_program_stringLoc(right, r);
 
+#if BC_ENABLED
+		if (inst != BC_INST_ASSIGN && inst != BC_INST_ASSIGN_NO_VAL)
+			bc_err(BC_ERR_EXEC_TYPE);
+#endif // BC_ENABLED
+
 		// If we are assigning to an array element...
 		if (left->t == BC_RESULT_ARRAY_ELEM) {
 
