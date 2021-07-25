@@ -1,5 +1,4 @@
 session_name: bc_afl
-start_directory: ./
 
 windows:
   - window_name: control
@@ -8,10 +7,10 @@ windows:
       - shell_command:
         - echo core | doas tee /proc/sys/kernel/core_pattern
         - echo performance | doas tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-        - rm tests/fuzzing/bc_outputs1/*
-        - rm tests/fuzzing/bc_outputs2/*
-        - rm tests/fuzzing/bc_outputs3/*
-        - rm tests/fuzzing/dc_outputs/*
+        - rm -rf tests/fuzzing/bc_outputs1/
+        - rm -rf tests/fuzzing/bc_outputs2/
+        - rm -rf tests/fuzzing/bc_outputs3/
+        - rm -rf tests/fuzzing/dc_outputs/
   - window_name: bc11
     layout: even-horizontal
     panes:
