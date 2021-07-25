@@ -15,3 +15,5 @@ string
 0
 4
 6
+test assign
+test assign

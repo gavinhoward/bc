@@ -31,3 +31,6 @@ v(v)
 
 length("ouch")
 length(v)
+
+v = u = "test assign\n"
+print v, u

@@ -1300,6 +1300,17 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			bc_program_assignStr(p, loc, v, false);
 		}
 
+#if BC_ENABLED
+
+		// If this is true, the value is going to be used again, so we want to
+		// push a temporary with the string.
+		if (inst == BC_INST_ASSIGN) {
+			res.t = BC_RESULT_STR;
+			res.d.loc = loc;
+			bc_vec_push(&p->results, &res);
+		}
+#endif // BC_ENABLED
+
 		// By using bc_program_assignStr(), we short-circuited this, so return.
 		return;
 	}
