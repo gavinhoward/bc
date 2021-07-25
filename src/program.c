@@ -111,49 +111,14 @@ static size_t bc_program_index(const char *restrict code, size_t *restrict bgn)
 }
 
 /**
- * Returns the location of a string from a result and its number. In BcLoc, loc
- * is the function that has the string, idx is the string's index in the
- * function.
- * @param r  The result.
- * @param n  The number tied to the result.
- * @return   The location, function and index, of the string.
- */
-static BcLoc bc_program_stringLoc(BcResult *r, BcNum *n) {
-
-	BcLoc loc;
-
-	// Get the function and index of the string.
-	if (r->t == BC_RESULT_STR) loc = r->d.loc;
-	else {
-		loc.loc = n->rdx;
-		loc.idx = n->scale;
-	}
-
-	return loc;
-}
-
-/**
- * Returns the string with the corresponding indices.
- * @param p     The BcProgram.
- * @param fidx  The index of the function where the string is.
- * @param sidx  The index of the string in the function.
- * @return      The string in function at index @a fidx and at index @a sidx.
- */
-static char* bc_program_getString(BcProgram *p, size_t fidx, size_t sidx) {
-	BcFunc *f = bc_vec_item(&p->fns, fidx);
-	return *((char**) bc_vec_item(&f->strs, sidx));
-}
-
-/**
  * Returns a string from a result and its number.
  * @param p  The program.
- * @param r  The result.
  * @param n  The number tied to the result.
  * @return   The string corresponding to the result and number.
  */
-static char* bc_program_string(BcProgram *p, BcResult *r, BcNum *n) {
-	BcLoc loc = bc_program_stringLoc(r, n);
-	return bc_program_getString(p, loc.loc, loc.idx);
+static char* bc_program_string(BcProgram *p, const BcNum *n) {
+	BcFunc *f = bc_vec_item(&p->fns, n->rdx);
+	return *((char**) bc_vec_item(&f->strs, n->scale));
 }
 
 #if BC_ENABLED
@@ -549,8 +514,9 @@ static void bc_program_assignPrep(BcProgram *p, BcResult **l, BcNum **ln,
 
 	// Strings can be assigned to variables. We are already good if we are
 	// assigning a string.
-	bool good = (((*r)->t == BC_RESULT_STR || BC_PROG_STR(*rn)) &&
-		         lt <= BC_RESULT_ARRAY_ELEM);
+	bool good = ((*r)->t == BC_RESULT_STR && lt <= BC_RESULT_ARRAY_ELEM);
+
+	assert(BC_PROG_STR(*rn) || (*r)->t != BC_RESULT_STR);
 
 	// If not, type check for a number.
 	if (!good) bc_program_type_num(*r, *rn);
@@ -925,7 +891,7 @@ static void bc_program_print(BcProgram *p, uchar inst, size_t idx) {
 
 		// We want to flush any stuff in the stdout buffer first.
 		bc_file_flush(&vm.fout, bc_flush_save);
-		str = bc_program_string(p, r, n);
+		str = bc_program_string(p, n);
 
 #if BC_ENABLED
 		if (inst == BC_INST_PRINT_STR) bc_program_printChars(str);
@@ -1081,11 +1047,12 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
  *              string from the results stack and push it onto the variable
  *              stack.
  */
-static void bc_program_assignStr(BcProgram *p, BcLoc loc, BcVec *v, bool push) {
-
+static void bc_program_assignStr(BcProgram *p, BcNum *num, BcVec *v, bool push)
+{
 	BcNum *n;
 
 	assert(BC_PROG_STACK(&p->results, 1 + !push));
+	assert(num != NULL && num->num == NULL && num->cap == 0);
 
 	// If we are not pushing onto the variable stack, we need to replace the
 	// top of the variable stack.
@@ -1095,11 +1062,8 @@ static void bc_program_assignStr(BcProgram *p, BcLoc loc, BcVec *v, bool push) {
 
 	n = bc_vec_pushEmpty(v);
 
-	bc_num_clear(n);
-
-	// Set the location of the string.
-	n->rdx = loc.loc;
-	n->scale = loc.idx;
+	// We can just copy because the num should not have allocated anything.
+	memcpy(n, num, sizeof(BcNum));
 }
 
 /**
@@ -1151,11 +1115,13 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 
 	// We can shortcut in dc if it's assigning a string by using
 	// bc_program_assignStr().
-	if (ptr->t == BC_RESULT_STR || BC_PROG_STR(n)) {
+	if (ptr->t == BC_RESULT_STR) {
+
+		assert(BC_PROG_STR(n));
 
 		if (BC_ERR(!var)) bc_err(BC_ERR_EXEC_TYPE);
 
-		bc_program_assignStr(p, bc_program_stringLoc(ptr, n), vec, true);
+		bc_program_assignStr(p, n, vec, true);
 
 		return;
 	}
@@ -1163,7 +1129,10 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 	BC_SIG_LOCK;
 
 	// Just create and copy for a normal variable.
-	if (var) bc_num_createCopy(&r.d.n, n);
+	if (var) {
+		if (BC_PROG_STR(n)) memcpy(&r.d.n, n, sizeof(BcNum));
+		else bc_num_createCopy(&r.d.n, n);
+	}
 	else {
 
 		// If we get here, we are handling an array. This is one place we need
@@ -1269,10 +1238,9 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 	assert(left->t != BC_RESULT_STR);
 
 	// If we are assigning a string...
-	if (right->t == BC_RESULT_STR || BC_PROG_STR(r)) {
+	if (right->t == BC_RESULT_STR) {
 
-		// Get the location of the string.
-		BcLoc loc = bc_program_stringLoc(right, r);
+		assert(BC_PROG_STR(r));
 
 #if BC_ENABLED
 		if (inst != BC_INST_ASSIGN && inst != BC_INST_ASSIGN_NO_VAL)
@@ -1286,11 +1254,8 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 
 			// We need to free the number and clear it.
 			bc_num_free(l);
-			bc_num_clear(l);
 
-			// Set the location.
-			l->rdx = loc.loc;
-			l->scale = loc.idx;
+			memcpy(l, r, sizeof(BcNum));
 
 			// Now we can pop the results.
 			bc_vec_npop(&p->results, 2);
@@ -1302,7 +1267,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			// If we get here, we are assigning to a variable, which we can use
 			// bc_program_assignStr() for.
 			BcVec *v = bc_program_vec(p, left->d.loc.loc, BC_TYPE_VAR);
-			bc_program_assignStr(p, loc, v, false);
+			bc_program_assignStr(p, r, v, false);
 		}
 
 #if BC_ENABLED
@@ -1311,9 +1276,10 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		// push a temporary with the string.
 		if (inst == BC_INST_ASSIGN) {
 			res.t = BC_RESULT_STR;
-			res.d.loc = loc;
+			memcpy(&res.d.n, r, sizeof(BcNum));
 			bc_vec_push(&p->results, &res);
 		}
+
 #endif // BC_ENABLED
 
 		// By using bc_program_assignStr(), we short-circuited this, so return.
@@ -1491,9 +1457,9 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 			return;
 		}
 		else {
-			// Set the string result.
-			r.d.loc.loc = num->rdx;
-			r.d.loc.idx = num->scale;
+			// Set the string result. We can just memcpy because all of the
+			// fields in the num should be cleared.
+			memcpy(&r.d.n, num, sizeof(BcNum));
 			r.t = BC_RESULT_STR;
 		}
 
@@ -1744,9 +1710,21 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 		// Prepare and copy the return value.
 		bc_program_operand(p, &operand, &num, 1);
 
-		BC_SIG_LOCK;
+		if (BC_PROG_STR(num)) {
 
-		bc_num_createCopy(&res->d.n, num);
+			// We need to set this because otherwise, it will be a
+			// BC_RESULT_TEMP, and BC_RESULT_TEMP needs an actual number to make
+			// it easier to do type checking.
+			res->t = BC_RESULT_STR;
+
+			memcpy(&res->d.n, num, sizeof(BcNum));
+		}
+		else {
+
+			BC_SIG_LOCK;
+
+			bc_num_createCopy(&res->d.n, num);
+		}
 	}
 	// Void is easy; set the result.
 	else if (inst == BC_INST_RET_VOID) res->t = BC_RESULT_VOID;
@@ -1878,7 +1856,7 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
 					char *str;
 
 					// Get the string, then get the length.
-					str = bc_program_string(p, opd, num);
+					str = bc_program_string(p, num);
 					val = (BcBigDig) strlen(str);
 				}
 				else
@@ -2058,7 +2036,7 @@ static void bc_program_asciify(BcProgram *p, size_t fidx) {
 	else {
 
 		// Get the string itself, then the first character.
-		str2 = bc_program_string(p, r, n);
+		str2 = bc_program_string(p, n);
 		c = (uchar) str2[0];
 	}
 
@@ -2073,8 +2051,9 @@ static void bc_program_asciify(BcProgram *p, size_t fidx) {
 
 	// Set the result
 	res.t = BC_RESULT_STR;
-	res.d.loc.loc = fidx;
-	res.d.loc.idx = idx;
+	bc_num_clear(&res.d.n);
+	res.d.n.rdx = fidx;
+	res.d.n.scale = idx;
 
 	// Pop and push.
 	bc_vec_pop(&p->results);
@@ -2102,7 +2081,7 @@ static void bc_program_printStream(BcProgram *p) {
 
 	// Stream appropriately.
 	if (BC_PROG_NUM(r, n)) bc_num_stream(n);
-	else bc_program_printChars(bc_program_string(p, r, n));
+	else bc_program_printChars(bc_program_string(p, n));
 
 	// Pop the operand.
 	bc_vec_pop(&p->results);
@@ -2219,7 +2198,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 	char *str;
 	BcFunc *f;
 	BcInstPtr ip;
-	size_t fidx, sidx;
+	size_t fidx;
 	BcNum *n;
 
 	assert(p->stack.len == p->tail_calls.len);
@@ -2238,7 +2217,7 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 		bool exec;
 		size_t idx, then_idx, else_idx;
 
-		// Get the index of the "then" string and "else" string.
+		// Get the index of the "then" var and "else" var.
 		then_idx = bc_program_index(code, bgn);
 		else_idx = bc_program_index(code, bgn);
 
@@ -2262,9 +2241,6 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 
 		BC_UNSETJMP;
 		BC_SIG_UNLOCK;
-
-		fidx = n->rdx;
-		sidx = n->scale;
 	}
 	else {
 
@@ -2273,15 +2249,13 @@ static void bc_program_execStr(BcProgram *p, const char *restrict code,
 		// they are only put on the stack to be assigned to.
 		assert(r->t != BC_RESULT_VAR);
 
-		if (r->t == BC_RESULT_STR) {
-			fidx = r->d.loc.loc;
-			sidx = r->d.loc.idx;
-		}
-		else return;
+		if (r->t != BC_RESULT_STR) return;
 	}
 
+	assert(BC_PROG_STR(n));
+
 	// Get the string.
-	str = bc_program_getString(p, fidx, sidx);
+	str = bc_program_string(p, n);
 
 	// Get the function index and function.
 	BC_SIG_LOCK;
@@ -2921,8 +2895,9 @@ void bc_program_exec(BcProgram *p) {
 			{
 				// Set up the result and push.
 				r.t = BC_RESULT_STR;
-				r.d.loc.loc = bc_program_index(code, &ip->idx);
-				r.d.loc.idx = bc_program_index(code, &ip->idx);
+				bc_num_clear(&r.d.n);
+				r.d.n.rdx = bc_program_index(code, &ip->idx);
+				r.d.n.scale = bc_program_index(code, &ip->idx);
 				bc_vec_push(&p->results, &r);
 				BC_PROG_JUMP(inst, code, ip);
 			}

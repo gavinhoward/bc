@@ -1,6 +1,6 @@
 # Development
 
-Updated: 22 July 2021
+Updated: 25 July 2021
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -4448,9 +4448,19 @@ Using that, I made it so `BcNum`'s could store strings instead. This is marked
 by the `BcNum` having a `NULL` limb array (`num`) and a `cap` of 0 (which should
 *never* happen with a real number, though the other fields could be 0).
 
-If this is the case, then the `BcNum` stores the function that stores the string
-in the `rdx` field, and it stores the index of the string in the `scale` field.
-This is used to actually load the string if necessary.
+The `BcNum` stores the function that stores the string in the `rdx` field, and
+it stores the index of the string in the `scale` field. This is used to actually
+load the string if necessary.
+
+Note that historically, string information was stored in the `loc` field of
+the `d` union in a `BcResult`. This was changed recently to standardize; now,
+all string information are stored in the `n` field of the `d` union regardless.
+This means that all string information is stored in `BcNum`'s. This removes
+extra cases.
+
+Also, if a temp is made with a string, then the result type should still be
+`BC_RESULT_STR`, not `BC_RESULT_TEMP`. This is to make it easier to do type
+checks.
 
 ### Pseudo-Random Number Generator
 
