@@ -1289,6 +1289,9 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 	// If we have a normal assignment operator, not a math one...
 	if (BC_INST_IS_ASSIGN(inst)) {
 
+		// Assigning to a variable that has a string here is fine because there
+		// is no math done on it.
+
 		// BC_RESULT_TEMP, BC_RESULT_IBASE, BC_RESULT_OBASE, BC_RESULT_SCALE,
 		// and BC_RESULT_SEED all have temporary copies. Because that's the
 		// case, we can free the left and just move the value over. We set the
@@ -1314,6 +1317,11 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		// If we get here, we are doing a math assignment (+=, -=, etc.). So
 		// we need to prepare for a binary operator.
 		BcBigDig scale = BC_PROG_SCALE(p);
+
+		// At this point, the left side could still be a string because it could
+		// be a variable that has the string. If that's the case, we have a type
+		// error.
+		if (BC_PROG_STR(l)) bc_err(BC_ERR_EXEC_TYPE);
 
 		// Get the right type of assignment operator, whether val is used or
 		// NO_VAL for performance.
