@@ -491,6 +491,7 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 	size_t len;
 	BcSlab slab;
 	BcSlab *slab_ptr;
+	size_t alloc;
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -501,7 +502,7 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 	len = strlen(str) + 1;
 
 	// If the len is greater than 128, then just allocate it with malloc.
-	if (BC_UNLIKELY(len > 128)) {
+	if (BC_UNLIKELY(len > BC_SLAB_SIZE)) {
 
 		size_t idx = v->len - 1;
 
@@ -509,9 +510,10 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 		slab.len = SIZE_MAX;
 		slab.s = bc_vm_strdup(str);
 
-		// This makes the direct malloc() allocation the second-to-last slab in
-		// the slab vector, thus always keeping a valid slab last.
-		bc_vec_pushAt(v, &slab, idx);
+		bc_vec_push(v, &slab);
+
+		slab_ptr = bc_vec_pushEmpty(v);
+		bc_slab_init(slab_ptr);
 
 		return slab.s;
 	}
