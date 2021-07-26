@@ -1048,7 +1048,7 @@ static void bc_program_logical(BcProgram *p, uchar inst) {
 /**
  * Assigns a string to a variable.
  * @param p     The program.
- * @param loc   The location of the string.
+ * @param num   The location of the string as a BcNum.
  * @param v     The stack for the variable.
  * @param push  Whether to push the string or not. To push means to move the
  *              string from the results stack and push it onto the variable

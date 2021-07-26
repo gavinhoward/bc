@@ -491,7 +491,6 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 	size_t len;
 	BcSlab slab;
 	BcSlab *slab_ptr;
-	size_t alloc;
 
 	BC_SIG_ASSERT_LOCKED;
 
