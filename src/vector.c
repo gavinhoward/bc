@@ -502,16 +502,16 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 	len = strlen(str) + 1;
 
 	// If the len is greater than 128, then just allocate it with malloc.
-	if (BC_UNLIKELY(len > BC_SLAB_SIZE)) {
-
-		size_t idx = v->len - 1;
+	if (BC_UNLIKELY(len >= BC_SLAB_SIZE)) {
 
 		// SIZE_MAX is a marker for these standalone allocations.
 		slab.len = SIZE_MAX;
 		slab.s = bc_vm_strdup(str);
 
+		// Push the standalone slab.
 		bc_vec_push(v, &slab);
 
+		// Create a new real slab.
 		slab_ptr = bc_vec_pushEmpty(v);
 		bc_slab_init(slab_ptr);
 
@@ -561,13 +561,16 @@ void bc_slabvec_undo(BcVec *v, size_t len) {
 		// If it is a lone allocation, destroy it instead of the last (empty)
 		// slab.
 		if (s->len == SIZE_MAX) {
-			bc_vec_npopAt(v, 1, 0);
+			bc_vec_npopAt(v, 1, v->len - 2);
 			return;
 		}
 
 		// If we reach this point, we know the second-to-last slab is a valid
 		// slab, so we can discard the last slab.
 		bc_vec_pop(v);
+
+		// Get the new top of the stack.
+		s = bc_vec_top(v);
 	}
 
 	// Remove the string. The reason we can do this even with the if statement
