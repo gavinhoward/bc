@@ -571,7 +571,14 @@ void bc_slabvec_undo(BcVec *v, size_t len) {
 
 		// Get the new top of the stack.
 		s = bc_vec_top(v);
+
+		// If this is true, then some standalone slab was allocated after this
+		// slab when it had nothing in it. We already popped a slab, so we want
+		// to leave this one alone. To do that, we return early.
+		if (!s->len) return;
 	}
+
+	assert(s->len >= len);
 
 	// Remove the string. The reason we can do this even with the if statement
 	// is that s was updated to the second-to-last slab (now last slab).
