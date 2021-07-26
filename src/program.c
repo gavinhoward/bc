@@ -649,6 +649,7 @@ static void bc_program_read(BcProgram *p) {
 	BcInstPtr ip;
 	size_t i;
 	const char* file;
+	bool is_stdin;
 	BcFunc *f = bc_vec_item(&p->fns, BC_PROG_READ);
 
 	// If we are already executing a read, that is an error. So look for a read
@@ -662,6 +663,11 @@ static void bc_program_read(BcProgram *p) {
 
 	// Save the filename because we are going to overwrite it.
 	file = vm.file;
+	is_stdin = vm.is_stdin;
+
+	// It is a parse error if there needs to be more than one line, so we unset
+	// this to tell the lexer to not request more. We set it back later.
+	vm.is_stdin = false;
 
 	if (!BC_PARSE_IS_INITED(&vm.read_prs, p)) {
 
@@ -734,6 +740,7 @@ static void bc_program_read(BcProgram *p) {
 
 exec_err:
 	BC_SIG_MAYLOCK;
+	vm.is_stdin = is_stdin;
 	vm.file = file;
 	BC_LONGJMP_CONT;
 }
