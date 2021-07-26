@@ -364,7 +364,7 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 
 	// We want a copy of the name since the lexer might overwrite its copy.
 	len = p->l.str.len;
-	name = bc_slabvec_strdup(&p->slab, p->l.str.v);
+	name = bc_vm_strdup(p->l.str.v);
 
 	BC_SETJMP_LOCKED(err);
 
@@ -434,7 +434,7 @@ static void bc_parse_name(BcParse *p, BcInst *type,
 err:
 	// Need to make sure to unallocate the name.
 	BC_SIG_MAYLOCK;
-	bc_slabvec_undo(&p->slab, len);
+	free(name);
 	BC_LONGJMP_CONT;
 }
 

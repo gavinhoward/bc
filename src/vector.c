@@ -509,11 +509,7 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 		slab.s = bc_vm_strdup(str);
 
 		// Push the standalone slab.
-		bc_vec_push(v, &slab);
-
-		// Create a new real slab.
-		slab_ptr = bc_vec_pushEmpty(v);
-		bc_slab_init(slab_ptr);
+		bc_vec_pushAt(v, &slab, v->len - 1);
 
 		return slab.s;
 	}
@@ -535,59 +531,6 @@ char* bc_slabvec_strdup(BcVec *v, const char *str) {
 
 	return s;
 }
-
-#if BC_ENABLED
-
-void bc_slabvec_undo(BcVec *v, size_t len) {
-
-	BcSlab *s;
-
-	assert(v != NULL && v->len);
-
-	s = bc_vec_top(v);
-
-	// If this is true, there are no allocations in this slab, so we need to
-	// discard it. Well, maybe...
-	if (s->len == 0) {
-
-		// The reason this is true is because while undo can *empty* a slab
-		// vector, it should *never* go beyond that. If it does, then the
-		// calling code screwed up.
-		assert(v->len > 1);
-
-		// Get the second to last slab.
-		s = bc_vec_item_rev(v, 1);
-
-		// If it is a lone allocation, destroy it instead of the last (empty)
-		// slab.
-		if (s->len == SIZE_MAX) {
-			bc_vec_npopAt(v, 1, v->len - 2);
-			return;
-		}
-
-		// If we reach this point, we know the second-to-last slab is a valid
-		// slab, so we can discard the last slab.
-		bc_vec_pop(v);
-
-		// Get the new top of the stack.
-		s = bc_vec_top(v);
-
-		// If this is true, then some standalone slab was allocated after this
-		// slab when it had nothing in it. We already popped a slab, so we want
-		// to leave this one alone. To do that, we return early.
-		if (!s->len) return;
-	}
-
-	assert(s->len >= len);
-
-	// Remove the string. The reason we can do this even with the if statement
-	// is that s was updated to the second-to-last slab (now last slab).
-	s->len -= len;
-
-	assert(s->len == 0 || !s->s[s->len - 1]);
-}
-
-#endif // BC_ENABLED
 
 void bc_slabvec_clear(BcVec *v) {
 
@@ -621,3 +564,24 @@ void bc_slabvec_clear(BcVec *v) {
 	s->len = 0;
 }
 #endif // !BC_ENABLE_LIBRARY
+
+#if BC_DEBUG_CODE
+
+void bc_slabvec_print(BcVec *v, const char *func) {
+
+	size_t i;
+	BcSlab *s;
+
+	bc_file_printf(&vm.ferr, "%s\n", func);
+
+	for (i = 0; i < v->len; ++i) {
+		s = bc_vec_item(v, i);
+		bc_file_printf(&vm.ferr, "%zu { s = %zu, len = %zu }\n",
+		               i, (uintptr_t) s->s, s->len);
+	}
+
+	bc_file_puts(&vm.ferr, bc_flush_none, "\n");
+	bc_file_flush(&vm.ferr, bc_flush_none);
+}
+
+#endif // BC_DEBUG_CODE

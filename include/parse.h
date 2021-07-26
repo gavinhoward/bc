@@ -188,8 +188,6 @@ typedef struct BcParse {
 	/// overwrite the string stored in the lexer. This buffer is for copying
 	/// that string from the lexer to keep it safe.
 	BcVec buf;
-
-	BcVec slab;
 #endif // BC_ENABLED
 
 	/// A reference to the program to grab the current function when necessary.

@@ -210,7 +210,6 @@ void bc_parse_free(BcParse *p) {
 		bc_vec_free(&p->conds);
 		bc_vec_free(&p->ops);
 		bc_vec_free(&p->buf);
-		bc_slabvec_free(&p->slab);
 	}
 #endif // BC_ENABLED
 
@@ -240,7 +239,6 @@ void bc_parse_init(BcParse *p, BcProgram *prog, size_t func) {
 		bc_vec_init(&p->ops, sizeof(BcLexType), BC_DTOR_NONE);
 		bc_vec_init(&p->buf, sizeof(char), BC_DTOR_NONE);
 
-		bc_slabvec_init(&p->slab);
 		p->auto_part = false;
 	}
 #endif // BC_ENABLED

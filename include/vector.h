@@ -419,6 +419,16 @@ void bc_slabvec_undo(BcVec *restrict v, size_t len);
  */
 void bc_slabvec_clear(BcVec *restrict v);
 
+#if BC_DEBUG_CODE
+
+/**
+ * Prints all of the items in a slab vector, in order.
+ * @param v  The vector whose items will be printed.
+ */
+void bc_slabvec_print(BcVec *v, const char *func);
+
+#endif // BC_DEBUG_CODE
+
 /// A convenience macro for freeing a vector of slabs.
 #define bc_slabvec_free bc_vec_free
 
