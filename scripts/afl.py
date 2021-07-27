@@ -188,19 +188,22 @@ else:
 
 exebase = os.path.basename(exe)
 
+
 # Use the correct options.
 if exebase == "bc":
 	halt = "halt\n"
 	options = "-lq"
+	seed = ["-e", "seed = 1280937142.20981723890730892738902938071028973408912703984712093", "-f-" ]
 else:
 	halt = "q\n"
 	options = "-x"
+	seed = ["-e", "1280937142.20981723890730892738902938071028973408912703984712093j", "-f-" ]
 
 # More command-line processing.
 if len(sys.argv) >= idx + 4:
-	exe = [ exe, sys.argv[idx + 3:], options ]
+	exe = [ exe, sys.argv[idx + 3:], options ] + seed
 else:
-	exe = [ exe, options ]
+	exe = [ exe, options ] + seed
 for i in range(4, len(sys.argv)):
 	exe.append(sys.argv[i])
 
