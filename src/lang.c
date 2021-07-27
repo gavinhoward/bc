@@ -38,6 +38,7 @@
 #include <string.h>
 
 #include <lang.h>
+#include <program.h>
 #include <vm.h>
 
 void bc_const_free(void *constant) {
@@ -185,7 +186,10 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 	assert(d != NULL && s != NULL);
 	assert(d != s && d->size == s->size && d->dtor == s->dtor);
 
-	// Make sure to destroy everything currently in d.
+	// Make sure to destroy everything currently in d. This will put a lot of
+	// temps on the reuse list, so allocating later is not going to be as
+	// expensive as it seems. Also, it makes it easier to copy numbers that are
+	// strings.
 	bc_vec_popAll(d);
 
 	// Preexpand.
@@ -200,7 +204,8 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 		snum = bc_vec_item(s, i);
 
 		// We have to create a copy of the number as well.
-		bc_num_createCopy(dnum, snum);
+		if (BC_PROG_STR(snum)) memcpy(dnum, snum, sizeof(BcNum));
+		else bc_num_createCopy(dnum, snum);
 	}
 }
 
