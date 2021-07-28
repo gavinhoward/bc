@@ -36,6 +36,7 @@
 #ifndef BC_PROGRAM_H
 #define BC_PROGRAM_H
 
+#include <assert.h>
 #include <stddef.h>
 
 #include <status.h>
@@ -431,8 +432,8 @@ extern const char bc_program_esc_seqs[];
 
 #define BC_PROG_LBLS_SIZE (sizeof(bc_program_inst_lbls) / sizeof(void*))
 #define BC_PROG_LBLS_ASSERT \
-	_Static_assert(BC_PROG_LBLS_SIZE == BC_INST_INVALID + 1,\
-	               "bc_program_inst_lbls[] mismatches the instructions")
+	static_assert(BC_PROG_LBLS_SIZE == BC_INST_INVALID + 1,\
+	              "bc_program_inst_lbls[] mismatches the instructions")
 
 #else // BC_C11
 
