@@ -155,8 +155,8 @@ SCRIPTS = ./scripts
 MINISTAT = ministat
 MINISTAT_EXEC = $(SCRIPTS)/$(MINISTAT)
 
-BITGEN = bitgen
-BITGEN_EXEC = $(SCRIPTS)/$(BITGEN)
+BITFUNCGEN = bitfuncgen
+BITFUNCGEN_EXEC = $(SCRIPTS)/$(BITFUNCGEN)
 
 INSTALL = $(SCRIPTS)/exec-install.sh
 SAFE_INSTALL = $(SCRIPTS)/safe-install.sh
@@ -247,8 +247,8 @@ headers: %%HEADERS%%
 $(MINISTAT):
 	$(HOSTCC) $(HOSTCFLAGS) -lm -o $(MINISTAT_EXEC) scripts/ministat.c
 
-$(BITGEN):
-	$(HOSTCC) $(HOSTCFLAGS) -lm -o $(BITGEN_EXEC) scripts/bitgen.c
+$(BITFUNCGEN):
+	$(HOSTCC) $(HOSTCFLAGS) -lm -o $(BITFUNCGEN_EXEC) scripts/bitfuncgen.c
 
 help:
 	@printf 'available targets:\n'
@@ -551,7 +551,7 @@ clean_tests: clean clean_config clean_coverage
 	@$(RM) -f tags .gdbbreakpoints .gdb_history .gdbsetup
 	@$(RM) -f cscope.*
 	@$(RM) -f bc.old
-	@$(RM) -f $(BITGEN_EXEC)
+	@$(RM) -f $(BITFUNCGEN_EXEC)
 
 install_locales:
 	%%INSTALL_LOCALES%%

@@ -1108,15 +1108,16 @@ A script making it easy to run benchmarks and to run the executable produced by
 
 For more information, see the [Benchmarks][144] section.
 
-#### `bitgen.c`
+#### `bitfuncgen.c`
 
 A source file for an executable to generate tests for `bc`'s bitwise functions
-in [`gen/lib2.bc`][26]. The executable is `scripts/bitgen`, and it is built with
-`make bitgen`. It produces the test on `stdout` and the expected results on
-`stderr`. This means that to generat tests, use the following invokation:
+in [`gen/lib2.bc`][26]. The executable is `scripts/bitfuncgen`, and it is built
+with `make bitfuncgen`. It produces the test on `stdout` and the expected
+results on `stderr`. This means that to generat tests, use the following
+invokation:
 
 ```
-scripts/bitgen > tests/bc/bitfuncs.txt 2> tests/bc/bitfuncs_results.txt
+scripts/bitfuncgen > tests/bc/bitfuncs.txt 2> tests/bc/bitfuncs_results.txt
 ```
 
 It calls `abort()` if it runs into an error.
