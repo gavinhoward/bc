@@ -1,6 +1,6 @@
 # Development
 
-Updated: 25 July 2021
+Updated: 29 July 2021
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -2214,7 +2214,8 @@ rand
 
 recursive_arrays
 
-:   Tests the slab vector undo ability in used in `bc_parse_name()`.
+:   Tested the slab vector undo ability in used in `bc_parse_name()` when it
+    existed. Now used as a stress test.
 
 divmod
 
@@ -3678,10 +3679,6 @@ length of `SIZE_MAX`, which tells the slab vector that it is a direct
 allocation. Then, the last slab is pushed into the next spot and the new special
 slab is put into the vacated spot. This ensures that a non-special slab is
 always last.
-
-Not only that, but a slab vector can be used as a stack allocator. If the string
-needs to be deallocated, the length of the string is passed to the slab vector
-which deallocates it using that information. This allows a stack of allocations.
 
 ### Command-Line History
 
