@@ -446,7 +446,7 @@ define bnotn(x,n){
 	auto s,t,m[]
 	s=scale
 	scale=0
-	t=2^abs(n)$
+	t=2^(abs(n)$*8)
 	x=abs(x)$%t+t
 	t=1
 	while(x!=1){
@@ -457,28 +457,30 @@ define bnotn(x,n){
 	scale=s
 	return bunrev(t)
 }
-define bnot8(x){return bnotn(x,8)}
-define bnot16(x){return bnotn(x,G)}
-define bnot32(x){return bnotn(x,W)}
-define bnot64(x){return bnotn(x,2^6)}
+define bnot8(x){return bnotn(x,1)}
+define bnot16(x){return bnotn(x,2)}
+define bnot32(x){return bnotn(x,4)}
+define bnot64(x){return bnotn(x,8)}
+define bnot(x){return bnotn(x,ubytes(x))}
 define brevn(x,n){
 	auto s,t,m[]
 	s=scale
 	scale=0
-	t=2^abs(n)$
+	t=2^(abs(n)$*8)
 	x=abs(x)$%t+t
 	scale=s
 	return bunrev(x)
 }
-define brev8(x){return brevn(x,8)}
-define brev16(x){return brevn(x,G)}
-define brev32(x){return brevn(x,W)}
-define brev64(x){return brevn(x,2^6)}
+define brev8(x){return brevn(x,1)}
+define brev16(x){return brevn(x,2)}
+define brev32(x){return brevn(x,4)}
+define brev64(x){return brevn(x,8)}
+define brev(x){return brevn(x,ubytes(x))}
 define broln(x,p,n){
 	auto s,t,m[]
 	s=scale
 	scale=0
-	n=abs(n)$
+	n=abs(n)$*8
 	p=abs(p)$%n
 	t=2^n
 	x=abs(x)$%t
@@ -488,15 +490,16 @@ define broln(x,p,n){
 	scale=s
 	return x
 }
-define brol8(x,p){return broln(x,p,8)}
-define brol16(x,p){return broln(x,p,G)}
-define brol32(x,p){return broln(x,p,W)}
-define brol64(x,p){return broln(x,p,2^6)}
+define brol8(x,p){return broln(x,p,1)}
+define brol16(x,p){return broln(x,p,2)}
+define brol32(x,p){return broln(x,p,4)}
+define brol64(x,p){return broln(x,p,8)}
+define brol(x,p){return broln(x,p,ubytes(x))}
 define brorn(x,p,n){
 	auto s,t,m[]
 	s=scale
 	scale=0
-	n=abs(n)$
+	n=abs(n)$*8
 	p=abs(p)$%n
 	t=2^n
 	x=abs(x)$%t
@@ -506,19 +509,20 @@ define brorn(x,p,n){
 	scale=s
 	return x
 }
-define bror8(x,p){return brorn(x,p,8)}
-define bror16(x,p){return brorn(x,p,G)}
-define bror32(x,p){return brorn(x,p,W)}
-define bror64(x,p){return brorn(x,p,2^6)}
+define bror8(x,p){return brorn(x,p,1)}
+define bror16(x,p){return brorn(x,p,2)}
+define bror32(x,p){return brorn(x,p,4)}
+define bror64(x,p){return brorn(x,p,8)}
+define brol(x,p){return brorn(x,p,ubytes(x))}
 define bmodn(x,n){
 	auto s
 	s=scale
 	scale=0
-	x=abs(x)$%2^abs(n)$
+	x=abs(x)$%2^(abs(n)$*8)
 	scale=s
 	return x
 }
-define bmod8(x){return bmodn(x,8)}
-define bmod16(x){return bmodn(x,G)}
-define bmod32(x){return bmodn(x,W)}
-define bmod64(x){return bmodn(x,2^6)}
+define bmod8(x){return bmodn(x,1)}
+define bmod16(x){return bmodn(x,2)}
+define bmod32(x){return bmodn(x,4)}
+define bmod64(x){return bmodn(x,8)}
