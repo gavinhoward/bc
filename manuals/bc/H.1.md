@@ -1286,30 +1286,316 @@ The extended library is a **non-portable extension**.
 
 :   Returns a random boolean value (either **0** or **1**).
 
-**band()**
+**band(a, b)**
 
 :   Takes the truncated absolute value of both **a** and **b** and calculates
     and returns the result of the bitwise **and** operation between them.
 
-**bor()**
+    If you want to use signed two's complement arguments, use **s2u(x)** to
+    convert.
+
+**bor(a, b)**
 
 :   Takes the truncated absolute value of both **a** and **b** and calculates
     and returns the result of the bitwise **or** operation between them.
 
-**bxor()**
+    If you want to use signed two's complement arguments, use **s2u(x)** to
+    convert.
+
+**bxor(a, b)**
 
 :   Takes the truncated absolute value of both **a** and **b** and calculates
     and returns the result of the bitwise **xor** operation between them.
 
-**blshift()**
+    If you want to use signed two's complement arguments, use **s2u(x)** to
+    convert.
+
+**bshl(a, b)**
 
 :   Takes the truncated absolute value of both **a** and **b** and calculates
     and returns the result of **a** bit-shifted left by **b** places.
 
-**brshift()**
+    If you want to use signed two's complement arguments, use **s2u(x)** to
+    convert.
+
+**bshr(a, b)**
 
 :   Takes the truncated absolute value of both **a** and **b** and calculates
     and returns the truncated result of **a** bit-shifted right by **b** places.
+
+    If you want to use signed two's complement arguments, use **s2u(x)** to
+    convert.
+
+**bnotn(x, n)**
+
+:   Takes the truncated absolute value of **x** and does a bitwise not as though
+    it has the same number of bytes as the truncated absolute value of **n**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bnot8(x)**
+
+:   Does a bitwise not of the truncated absolute value of **x** as though it has
+    **8** binary digits (1 unsigned byte).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bnot16(x)**
+
+:   Does a bitwise not of the truncated absolute value of **x** as though it has
+    **16** binary digits (2 unsigned bytes).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bnot32(x)**
+
+:   Does a bitwise not of the truncated absolute value of **x** as though it has
+    **32** binary digits (4 unsigned bytes).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bnot64(x)**
+
+:   Does a bitwise not of the truncated absolute value of **x** as though it has
+    **64** binary digits (8 unsigned bytes).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bnot(x)**
+
+:   Does a bitwise not of the truncated absolute value of **x** as though it has
+    the minimum number of power of two unsigned bytes.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brevn(x, n)**
+
+:   Runs a bit reversal on the truncated absolute value of **x** as though it
+    has the same number of 8-bit bytes as the truncated absolute value of **n**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brev8(x)**
+
+:   Runs a bit reversal on the truncated absolute value of **x** as though it
+    has 8 binary digits (1 unsigned byte).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brev16(x)**
+
+:   Runs a bit reversal on the truncated absolute value of **x** as though it
+    has 16 binary digits (2 unsigned bytes).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brev32(x)**
+
+:   Runs a bit reversal on the truncated absolute value of **x** as though it
+    has 32 binary digits (4 unsigned bytes).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brev64(x)**
+
+:   Runs a bit reversal on the truncated absolute value of **x** as though it
+    has 64 binary digits (8 unsigned bytes).
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brev(x)**
+
+:   Runs a bit reversal on the truncated absolute value of **x** as though it
+    has the minimum number of power of two unsigned bytes.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**broln(x, p, n)**
+
+:   Does a left bitwise rotatation of the truncated absolute value of **x**, as
+    though it has the same number of unsigned 8-bit bytes as the truncated
+    absolute value of **n**, by the number of places equal to the truncated
+    absolute value of **p** modded by the **2** to the power of the number of
+    binary digits in **n** 8-bit bytes.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brol8(x, p)**
+
+:   Does a left bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **8** binary digits (**1** unsigned byte), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **8**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brol16(x, p)**
+
+:   Does a left bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **16** binary digits (**2** unsigned bytes), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **16**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brol32(x, p)**
+
+:   Does a left bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **32** binary digits (**2** unsigned bytes), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **32**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brol64(x, p)**
+
+:   Does a left bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **64** binary digits (**2** unsigned bytes), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **64**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brol(x, p)**
+
+:   Does a left bitwise rotatation of the truncated absolute value of **x**, as
+    though it has the minimum number of power of two unsigned 8-bit bytes, by
+    the number of places equal to the truncated absolute value of **p** modded
+    by 2 to the power of the number of binary digits in the minimum number of
+    8-bit bytes.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**brorn(x, p, n)**
+
+:   Does a right bitwise rotatation of the truncated absolute value of **x**, as
+    though it has the same number of unsigned 8-bit bytes as the truncated
+    absolute value of **n**, by the number of places equal to the truncated
+    absolute value of **p** modded by the **2** to the power of the number of
+    binary digits in **n** 8-bit bytes.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bror8(x, p)**
+
+:   Does a right bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **8** binary digits (**1** unsigned byte), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **8**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bror16(x, p)**
+
+:   Does a right bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **16** binary digits (**2** unsigned bytes), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **16**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bror32(x, p)**
+
+:   Does a right bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **32** binary digits (**2** unsigned bytes), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **32**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bror64(x, p)**
+
+:   Does a right bitwise rotatation of the truncated absolute value of **x**, as
+    though it has **64** binary digits (**2** unsigned bytes), by the number of
+    places equal to the truncated absolute value of **p** modded by **2** to the
+    power of **64**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bror(x, p)**
+
+:   Does a right bitwise rotatation of the truncated absolute value of **x**, as
+    though it has the minimum number of power of two unsigned 8-bit bytes, by
+    the number of places equal to the truncated absolute value of **p** modded
+    by 2 to the power of the number of binary digits in the minimum number of
+    8-bit bytes.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bmodn(x, n)**
+
+:   Returns the modulus of the truncated absolute value of **x** by **2** to the
+    power of the multiplication of the truncated absolute value of **n** and
+    **8**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bmod8(x, n)**
+
+:   Returns the modulus of the truncated absolute value of **x** by **2** to the
+    power of **8**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bmod16(x, n)**
+
+:   Returns the modulus of the truncated absolute value of **x** by **2** to the
+    power of **16**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bmod32(x, n)**
+
+:   Returns the modulus of the truncated absolute value of **x** by **2** to the
+    power of **32**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bmod64(x, n)**
+
+:   Returns the modulus of the truncated absolute value of **x** by **2** to the
+    power of **64**.
+
+    If you want to a use signed two's complement argument, use **s2u(x)** to
+    convert.
+
+**bunrev(t)**
+
+:   Assumes **t** is a bitwise-reversed number with an extra set bit one place
+    more significant than the real most significant bit (which was the least
+    significant bit in the original number). This number is reversed and
+    returned without the extra set bit.
+
+    This function is used to implement other bitwise functions; it is not meant
+    to be used by users, but it can be.
 
 **ubytes(x)**
 

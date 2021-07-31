@@ -1582,30 +1582,360 @@ In other words, it randomizes the sign of \f[B]x\f[R].
 \f[B]brand()\f[R]
 Returns a random boolean value (either \f[B]0\f[R] or \f[B]1\f[R]).
 .TP
-\f[B]band()\f[R]
+\f[B]band(a, b)\f[R]
 Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
 and calculates and returns the result of the bitwise \f[B]and\f[R]
 operation between them.
+.RS
+.PP
+If you want to use signed two\[cq]s complement arguments, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
 .TP
-\f[B]bor()\f[R]
+\f[B]bor(a, b)\f[R]
 Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
 and calculates and returns the result of the bitwise \f[B]or\f[R]
 operation between them.
+.RS
+.PP
+If you want to use signed two\[cq]s complement arguments, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
 .TP
-\f[B]bxor()\f[R]
+\f[B]bxor(a, b)\f[R]
 Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
 and calculates and returns the result of the bitwise \f[B]xor\f[R]
 operation between them.
+.RS
+.PP
+If you want to use signed two\[cq]s complement arguments, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
 .TP
-\f[B]blshift()\f[R]
+\f[B]bshl(a, b)\f[R]
 Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
 and calculates and returns the result of \f[B]a\f[R] bit-shifted left by
 \f[B]b\f[R] places.
+.RS
+.PP
+If you want to use signed two\[cq]s complement arguments, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
 .TP
-\f[B]brshift()\f[R]
+\f[B]bshr(a, b)\f[R]
 Takes the truncated absolute value of both \f[B]a\f[R] and \f[B]b\f[R]
 and calculates and returns the truncated result of \f[B]a\f[R]
 bit-shifted right by \f[B]b\f[R] places.
+.RS
+.PP
+If you want to use signed two\[cq]s complement arguments, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bnotn(x, n)\f[R]
+Takes the truncated absolute value of \f[B]x\f[R] and does a bitwise not
+as though it has the same number of bytes as the truncated absolute
+value of \f[B]n\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bnot8(x)\f[R]
+Does a bitwise not of the truncated absolute value of \f[B]x\f[R] as
+though it has \f[B]8\f[R] binary digits (1 unsigned byte).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bnot16(x)\f[R]
+Does a bitwise not of the truncated absolute value of \f[B]x\f[R] as
+though it has \f[B]16\f[R] binary digits (2 unsigned bytes).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bnot32(x)\f[R]
+Does a bitwise not of the truncated absolute value of \f[B]x\f[R] as
+though it has \f[B]32\f[R] binary digits (4 unsigned bytes).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bnot64(x)\f[R]
+Does a bitwise not of the truncated absolute value of \f[B]x\f[R] as
+though it has \f[B]64\f[R] binary digits (8 unsigned bytes).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bnot(x)\f[R]
+Does a bitwise not of the truncated absolute value of \f[B]x\f[R] as
+though it has the minimum number of power of two unsigned bytes.
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brevn(x, n)\f[R]
+Runs a bit reversal on the truncated absolute value of \f[B]x\f[R] as
+though it has the same number of 8-bit bytes as the truncated absolute
+value of \f[B]n\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brev8(x)\f[R]
+Runs a bit reversal on the truncated absolute value of \f[B]x\f[R] as
+though it has 8 binary digits (1 unsigned byte).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brev16(x)\f[R]
+Runs a bit reversal on the truncated absolute value of \f[B]x\f[R] as
+though it has 16 binary digits (2 unsigned bytes).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brev32(x)\f[R]
+Runs a bit reversal on the truncated absolute value of \f[B]x\f[R] as
+though it has 32 binary digits (4 unsigned bytes).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brev64(x)\f[R]
+Runs a bit reversal on the truncated absolute value of \f[B]x\f[R] as
+though it has 64 binary digits (8 unsigned bytes).
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brev(x)\f[R]
+Runs a bit reversal on the truncated absolute value of \f[B]x\f[R] as
+though it has the minimum number of power of two unsigned bytes.
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]broln(x, p, n)\f[R]
+Does a left bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has the same number of unsigned 8-bit bytes as
+the truncated absolute value of \f[B]n\f[R], by the number of places
+equal to the truncated absolute value of \f[B]p\f[R] modded by the
+\f[B]2\f[R] to the power of the number of binary digits in \f[B]n\f[R]
+8-bit bytes.
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brol8(x, p)\f[R]
+Does a left bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]8\f[R] binary digits (\f[B]1\f[R]
+unsigned byte), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]8\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brol16(x, p)\f[R]
+Does a left bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]16\f[R] binary digits (\f[B]2\f[R]
+unsigned bytes), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]16\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brol32(x, p)\f[R]
+Does a left bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]32\f[R] binary digits (\f[B]2\f[R]
+unsigned bytes), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]32\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brol64(x, p)\f[R]
+Does a left bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]64\f[R] binary digits (\f[B]2\f[R]
+unsigned bytes), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]64\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brol(x, p)\f[R]
+Does a left bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has the minimum number of power of two
+unsigned 8-bit bytes, by the number of places equal to the truncated
+absolute value of \f[B]p\f[R] modded by 2 to the power of the number of
+binary digits in the minimum number of 8-bit bytes.
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]brorn(x, p, n)\f[R]
+Does a right bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has the same number of unsigned 8-bit bytes as
+the truncated absolute value of \f[B]n\f[R], by the number of places
+equal to the truncated absolute value of \f[B]p\f[R] modded by the
+\f[B]2\f[R] to the power of the number of binary digits in \f[B]n\f[R]
+8-bit bytes.
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bror8(x, p)\f[R]
+Does a right bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]8\f[R] binary digits (\f[B]1\f[R]
+unsigned byte), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]8\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bror16(x, p)\f[R]
+Does a right bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]16\f[R] binary digits (\f[B]2\f[R]
+unsigned bytes), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]16\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bror32(x, p)\f[R]
+Does a right bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]32\f[R] binary digits (\f[B]2\f[R]
+unsigned bytes), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]32\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bror64(x, p)\f[R]
+Does a right bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has \f[B]64\f[R] binary digits (\f[B]2\f[R]
+unsigned bytes), by the number of places equal to the truncated absolute
+value of \f[B]p\f[R] modded by \f[B]2\f[R] to the power of \f[B]64\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bror(x, p)\f[R]
+Does a right bitwise rotatation of the truncated absolute value of
+\f[B]x\f[R], as though it has the minimum number of power of two
+unsigned 8-bit bytes, by the number of places equal to the truncated
+absolute value of \f[B]p\f[R] modded by 2 to the power of the number of
+binary digits in the minimum number of 8-bit bytes.
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bmodn(x, n)\f[R]
+Returns the modulus of the truncated absolute value of \f[B]x\f[R] by
+\f[B]2\f[R] to the power of the multiplication of the truncated absolute
+value of \f[B]n\f[R] and \f[B]8\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bmod8(x, n)\f[R]
+Returns the modulus of the truncated absolute value of \f[B]x\f[R] by
+\f[B]2\f[R] to the power of \f[B]8\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bmod16(x, n)\f[R]
+Returns the modulus of the truncated absolute value of \f[B]x\f[R] by
+\f[B]2\f[R] to the power of \f[B]16\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bmod32(x, n)\f[R]
+Returns the modulus of the truncated absolute value of \f[B]x\f[R] by
+\f[B]2\f[R] to the power of \f[B]32\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bmod64(x, n)\f[R]
+Returns the modulus of the truncated absolute value of \f[B]x\f[R] by
+\f[B]2\f[R] to the power of \f[B]64\f[R].
+.RS
+.PP
+If you want to a use signed two\[cq]s complement argument, use
+\f[B]s2u(x)\f[R] to convert.
+.RE
+.TP
+\f[B]bunrev(t)\f[R]
+Assumes \f[B]t\f[R] is a bitwise-reversed number with an extra set bit
+one place more significant than the real most significant bit (which was
+the least significant bit in the original number).
+This number is reversed and returned without the extra set bit.
+.RS
+.PP
+This function is used to implement other bitwise functions; it is not
+meant to be used by users, but it can be.
+.RE
 .TP
 \f[B]ubytes(x)\f[R]
 Returns the numbers of unsigned integer bytes required to hold the
