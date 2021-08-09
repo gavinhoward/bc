@@ -139,6 +139,7 @@ extras=$(cat <<*EOF
 benchmarks/
 manuals/bc.1.md.in
 manuals/dc.1.md.in
+manuals/benchmarks.md
 manuals/development.md
 manuals/header_bcl.txt
 manuals/header_bc.txt
@@ -148,6 +149,7 @@ manuals/release.md
 scripts/afl.py
 scripts/alloc.sh
 scripts/benchmark.sh
+scripts/bitfuncgen.c
 scripts/fuzz_prep.sh
 scripts/manpage.sh
 scripts/ministat.c
@@ -159,6 +161,9 @@ scripts/release_settings.txt
 scripts/release.sh
 scripts/test_settings.sh
 scripts/test_settings.txt
+tests/bc_outputs/
+tests/dc_outputs/
+tests/fuzzing/
 tests/bc/scripts/timeconst.bc
 *EOF
 )
