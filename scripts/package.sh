@@ -40,6 +40,7 @@
 # * sha256sum
 # * gpg
 # * zip
+# * unzip
 
 shasum() {
 
@@ -82,6 +83,11 @@ repo="$scriptdir/.."
 proj="bc"
 
 cd "$repo"
+
+if [ ! -f "../Debug.zig" ] || [ ! -f "../Release.zip" ]; then
+	printf 'Must have Windows builds!\n'
+	exit 1
+fi
 
 # We want the absolute path for later.
 repo=$(pwd)
@@ -182,6 +188,7 @@ mv "$projver.tar.xz" "$parent"
 
 cd "$parent"
 
+# Clean up old Windows stuff.
 if [ -d Win32_Debug ]; then
 	rm -rf Win32_Debug
 fi
@@ -196,6 +203,15 @@ fi
 
 if [ -d Win64_Release ]; then
 	rm -rf Win64_Release
+fi
+
+# Prepare Windows stuff.
+if [ ! -d Debug ]; then
+	unzip Debug.zip
+fi
+
+if [ ! -d Release ]; then
+	unzip Release.zip
 fi
 
 # Zip the Windows stuff.
