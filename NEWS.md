@@ -12,9 +12,8 @@ This is a major production release with several changes:
 * Temporary numbers are garbage collected if allocation fails, and the
   allocation is retried. This is to make `bc` and `dc` more resilient to running
   out of memory.
-* Made `bc` and `dc` not give fatal errors when trying to allocate more space
-  for temporary numbers. Instead, more temporary numbers are just freed.
-* Limited the number of temporary numbers.
+* Limited the number of temporary numbers and made the space for them static so
+  that allocating more space for them cannot fail.
 * Allowed integers with non-zero `scale` to be used with power, places, and
   shift operators.
 * Added greatest common divisor and least common multiple to `lib2.bc`.
@@ -43,12 +42,12 @@ This is a major production release with several changes:
   is `5.0.0`.
 * Added `dc`'s modular exponentiation and divmod to `bc`.
 * Added the ability to assign strings to variables and array elements and pass
-  them to function in `bc`.
+  them to functions in `bc`.
 * Added `dc`'s asciify command and stream printing to `bc`.
 * Added a command to `dc` (`Y`) to get the length of an array.
 * Added a command to `dc` (`,`) to get the depth of the execution stack.
-* Added bitwise and, or, xor, left shift, and right shift functions to
-  `lib2.bc`.
+* Added bitwise and, or, xor, left shift, right shift, reverse, left rotate,
+  right rotate, and mod functions to `lib2.bc`.
 * Added the functions `s2u(x)` and `s2un(x,n)`, to `lib2.bc`.
 
 ## 4.0.2
