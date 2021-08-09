@@ -84,7 +84,7 @@ proj="bc"
 
 cd "$repo"
 
-if [ ! -f "../Debug.zig" ] || [ ! -f "../Release.zip" ]; then
+if [ ! -f "../Debug.zip" ] || [ ! -f "../Release.zip" ]; then
 	printf 'Must have Windows builds!\n'
 	exit 1
 fi
