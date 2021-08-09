@@ -2645,14 +2645,15 @@ void bc_program_exec(BcProgram *p) {
 	func = (BcFunc*) bc_vec_item(&p->fns, ip->func);
 	code = func->code.v;
 
-#ifndef NDEBUG
-	jmp_bufs_len = vm.jmp_bufs.len;
-#endif // NDEBUG
-
 	// Ensure the pointers are correct.
 	bc_program_setVecs(p, func);
 
 #if !BC_HAS_COMPUTED_GOTO
+
+#ifndef NDEBUG
+	jmp_bufs_len = vm.jmp_bufs.len;
+#endif // NDEBUG
+
 	// This loop is the heart of the execution engine. It *is* the engine. For
 	// computed goto, it is ignored.
 	while (ip->idx < func->code.len)
