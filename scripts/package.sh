@@ -41,6 +41,40 @@
 # * gpg
 # * zip
 
+shasum() {
+
+	f="$1"
+	shift
+
+	# All this fancy stuff takes the sha512 and sha256 sums and signs it. The
+	# output after this point is what I usually copy into the release notes.
+	# (See manuals/release.md for more information.)
+	printf '$ sha512sum %s\n' "$f"
+	sha512sum "$f"
+	printf '\n'
+	printf '$ sha256sum %s\n' "$f"
+	sha256sum "$f"
+	printf '\n'
+	printf "$ stat -c '%%s  %%n'\n" "$f"
+	stat -c '%s  %n' "$f"
+
+	if [ -f "$f.sig" ]; then
+		rm -f "$f.sig"
+	fi
+
+	gpg --detach-sig -o "$f.sig" "$f" 2> /dev/null
+
+	printf '\n'
+	printf '$ sha512sum %s.sig\n' "$f"
+	sha512sum "$f.sig"
+	printf '\n'
+	printf '$ sha256sum %s.sig\n' "$f"
+	sha256sum "$f.sig"
+	printf '\n'
+	printf "$ stat -c '%%s  %%n'\n" "$f.sig"
+	stat -c '%s  %n' "$f.sig"
+}
+
 script="$0"
 scriptdir=$(dirname "$script")
 
@@ -144,30 +178,55 @@ mv "$projver.tar.xz" "$parent"
 
 cd "$parent"
 
-windows_builds=$(cat <<*EOF
-TODO
-*EOF
+if [ -d Win32_Debug ]; then
+	rm -rf Win32_Debug
+fi
 
-# All this fancy stuff takes the sha512 and sha256 sums and signs it. The
-# output after this point is what I usually copy into the release notes. (See
-# manuals/release.md for more information.)
-printf '$ sha512sum %s.tar.xz\n' "$projver"
-sha512sum "$projver.tar.xz"
-printf '\n'
-printf '$ sha256sum %s.tar.xz\n' "$projver"
-sha256sum "$projver.tar.xz"
-printf '\n'
-printf "$ stat -c '%%s  %%n'\n" "$projver.tar.xz"
-stat -c '%s  %n' "$projver.tar.xz"
+if [ -d Win32_Release ]; then
+	rm -rf Win32_Release
+fi
 
-gpg --detach-sig -o "$projver.tar.xz.sig" "$projver.tar.xz" 2> /dev/null
+if [ -d Win64_Debug ]; then
+	rm -rf Win64_Debug
+fi
+
+if [ -d Win64_Release ]; then
+	rm -rf Win64_Release
+fi
+
+# Zip the Windows stuff.
+mkdir Win32_Debug
+cp Debug/Win32/bc/bc.exe Win32_Debug
+cp Debug/Win32/bc/dc.exe Win32_Debug
+cp Debug/Win32/bcl/bcl.lib Win32_Debug
+
+mkdir Win32_Release
+cp Release/Win32/bc/bc.exe Win32_Release
+cp Release/Win32/bc/dc.exe Win32_Release
+cp Release/Win32/bcl/bcl.lib Win32_Release
+
+mkdir Win64_Debug
+cp Debug/x64/bc/bc.exe Win64_Debug
+cp Debug/x64/bc/dc.exe Win64_Debug
+cp Debug/x64/bcl/bcl.lib Win64_Debug
+
+mkdir Win64_Release
+cp Release/x64/bc/bc.exe Win64_Release
+cp Release/x64/bc/dc.exe Win64_Release
+cp Release/x64/bcl/bcl.lib Win64_Release
+
+zip -r Win32_Debug.zip Win32_Debug > /dev/null
+zip -r Win32_Release.zip Win32_Release > /dev/null
+zip -r Win64_Debug.zip Win64_Debug > /dev/null
+zip -r Win64_Release.zip Win64_Release > /dev/null
 
 printf '\n'
-printf '$ sha512sum %s.tar.xz.sig\n' "$projver"
-sha512sum "$projver.tar.xz.sig"
+shasum "$projver.tar.xz"
 printf '\n'
-printf '$ sha256sum %s.tar.xz.sig\n' "$projver"
-sha256sum "$projver.tar.xz.sig"
+shasum "Win32_Debug.zip"
 printf '\n'
-printf "$ stat -c '%%s  %%n'\n" "$projver.tar.xz.sig"
-stat -c '%s  %n' "$projver.tar.xz.sig"
+shasum "Win32_Release.zip"
+printf '\n'
+shasum "Win64_Debug.zip"
+printf '\n'
+shasum "Win64_Release.zip"
