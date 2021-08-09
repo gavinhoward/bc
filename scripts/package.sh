@@ -207,11 +207,11 @@ fi
 
 # Prepare Windows stuff.
 if [ ! -d Debug ]; then
-	unzip Debug.zip
+	unzip Debug.zip > /dev/null
 fi
 
 if [ ! -d Release ]; then
-	unzip Release.zip
+	unzip Release.zip > /dev/null
 fi
 
 # Zip the Windows stuff.
