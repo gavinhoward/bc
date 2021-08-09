@@ -2627,9 +2627,11 @@ void bc_program_exec(BcProgram *p) {
 #if BC_ENABLED
 	BcNum *num;
 #endif // BC_ENABLED
+#if !BC_HAS_COMPUTED_GOTO
 #ifndef NDEBUG
 	size_t jmp_bufs_len;
 #endif // NDEBUG
+#endif // !BC_HAS_COMPUTED_GOTO
 
 #if BC_HAS_COMPUTED_GOTO
 	BC_PROG_LBLS;
@@ -3165,15 +3167,17 @@ void bc_program_exec(BcProgram *p) {
 				abort();
 #endif // NDEBUG
 			}
-#endif // !C_HAS_COMPUTED_GOTO
+#endif // BC_HAS_COMPUTED_GOTO
 		}
 
+#if !BC_HAS_COMPUTED_GOTO
 #ifndef NDEBUG
 		// This is to allow me to use a debugger to see the last instruction,
 		// which will point to which function was the problem. But it's also a
 		// good smoke test for error handling changes.
 		assert(jmp_bufs_len == vm.jmp_bufs.len);
 #endif // NDEBUG
+#endif // !BC_HAS_COMPUTED_GOTO
 	}
 }
 
