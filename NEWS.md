@@ -1,5 +1,14 @@
 # News
 
+## 5.0.1
+
+This is a production release with two fixes:
+
+* Fix for the build on Mac OSX.
+* Fix for the build on Android.
+
+Users that do not use those platforms do ***NOT*** need to update.
+
 ## 5.0.0
 
 This is a major production release with several changes:
