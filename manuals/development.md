@@ -2805,6 +2805,19 @@ of targets to make this easy and as fast as possible.
 In addition to all of that, the build system is responsible for selecting the
 `bc`/`dc` tests or the [`bcl` test][157].
 
+### Output Directories
+
+During any run of the test suite, the test suite outputs the results of running
+various tests to files. These files are usually output to `tests/bc_outputs/`
+and `tests/dc_outputs/`.
+
+However, in some cases, it may be necessary to output test results to a
+different directory. If that is the case, set the environment variable
+`BC_TEST_OUTPUT_DIR` to the name of the directory.
+
+If that is done, then test results will be written to
+`$BC_TEST_OUTPUT_DIR/bc_outputs/` and `$BC_TEST_OUTPUT_DIR/dc_outputs/`.
+
 ### Test Suite Portability
 
 The test suite is meant to be run by users and packagers as part of their
