@@ -34,6 +34,8 @@ testdir=$(dirname "$script")
 
 . "$testdir/../scripts/functions.sh"
 
+outputdir=${BC_TEST_OUTPUT_DIR:-$testdir}
+
 # Command-line processing.
 if [ "$#" -eq 0 ]; then
 	printf 'usage: %s dir [exec args...]\n' "$script"
@@ -56,7 +58,7 @@ unset BC_LINE_LENGTH
 unset DC_ENV_ARGS
 unset DC_LINE_LENGTH
 
-out="$testdir/${d}_outputs/errors_results.txt"
+out="$outputdir/${d}_outputs/errors_results.txt"
 outdir=$(dirname "$out")
 
 # Make sure the directory exists.
