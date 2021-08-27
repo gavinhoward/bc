@@ -148,32 +148,10 @@ for testfile in $testdir/$d/*errors.txt; do
 
 done
 
-# I need to skip a test here on FreeBSD.
-os=$(uname)
-
-# The list of files we need to skip.
-skip_files="
-33.txt
-"
-
 # Test all the files in the errors directory. While the loop above does one test
 # for every line, this does one test per file, but it runs the file through
 # stdin and as a file on the command-line.
 for testfile in $testdir/$d/errors/*.txt; do
-
-	# If we are on FreeBSD...
-	if [ "$os" = "FreeBSD" ] && [ "$d" = "dc" ]; then
-
-		b=$(basename "$testfile")
-
-		# If the file is one of the skip files...
-		if [ -z "${skip_files##*$b*}" ]; then
-
-			printf 'On FreeBSD; skipping %s...\n' "$testfile"
-			continue
-
-		fi
-	fi
 
 	printf 'Running %s error file %s...' "$d" "$testfile"
 
