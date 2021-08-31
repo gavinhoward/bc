@@ -723,7 +723,7 @@ else
 	defcc="c99"
 fi
 
-export ASAN_OPTIONS="abort_on_error=1,allocator_may_return_null=1"
+export ASAN_OPTIONS="abort_on_error=1,allocator_may_return_null=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_invalid_pointer_pairs=2"
 export UBSAN_OPTIONS="print_stack_trace=1,silence_unsigned_overflow=1"
 
 build "$debug -std=c99" "$defcc" "-g" "1" "$bits"
