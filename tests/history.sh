@@ -91,11 +91,17 @@ fi
 # Run all of the tests.
 for i in $(seq "$st" "$idx"); do
 
+	if [ "$i" -eq 8 ] && [ "$d" = "bc" ]; then
+		limit=45
+	else
+		limit=30
+	fi
+
 	for j in $(seq 1 3); do
 
 		printf 'Running %s history test %d...' "$d" "$i"
 
-		"$to" 30 "$py" "$testdir/history.py" "$d" "$i" "$exe" "$@"
+		"$to" "$limit" "$py" "$testdir/history.py" "$d" "$i" "$exe" "$@"
 		err=$?
 
 		if [ "$err" -eq 0 ]; then
