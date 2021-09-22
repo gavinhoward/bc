@@ -90,6 +90,12 @@ def send(child, data):
 def wait(child):
 	if child.isalive():
 		child.sendeof()
+		time.sleep(1)
+		if child.isalive():
+			child.kill(signal.SIGTERM)
+			time.sleep(1)
+			if child.isalive():
+				child.kill(signal.SIGKILL)
 	child.wait()
 
 
