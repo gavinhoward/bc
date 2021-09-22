@@ -1014,7 +1014,7 @@ def usage():
 	print("       The valid values for dir are: 'bc' and 'dc'.")
 	print("       The max test_idx for bc is {}.".format(len(bc_tests) - 1))
 	print("       The max test_idx for dc is {}.".format(len(dc_tests) - 1))
-	print("       If -a is given, the number of test for dir is printed.")
+	print("       If -a is given, the number of tests for dir is printed.")
 	print("       No tests are run.")
 	sys.exit(1)
 
