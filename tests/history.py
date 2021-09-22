@@ -105,6 +105,17 @@ def bc_banner(child):
 	child.expect(prompt)
 
 
+# Exit the child. We have to read all of the data before doing so because
+# pexpect on FreeBSD will just hang on child.wait().
+def quit_child(child):
+	try:
+		while True:
+			child.read_nonblocking()
+	except Exception:
+		pass
+	child.wait()
+
+
 # Common UTF-8 testing function. The index is the index into utf8_stress_strs
 # for which stress string to use.
 # @param exe   The executable.
@@ -132,7 +143,7 @@ def test_utf8(exe, args, env, idx, bc=True):
 
 		child.send("\n")
 
-		child.wait()
+		quit_child(child)
 
 	except pexpect.TIMEOUT:
 		print("timed out")
@@ -174,7 +185,7 @@ def test_utf8_0(exe, args, env, bc=True):
 
 		child.send("\n")
 
-		child.wait()
+		quit_child(child)
 
 	except pexpect.TIMEOUT:
 		print("timed out")
@@ -219,7 +230,7 @@ def test_sigint_sigquit(exe, args, env):
 		child.expect("        ")
 		child.send("\x03")
 		child.send("\x1c")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -246,7 +257,7 @@ def test_eof(exe, args, env):
 		child.send("\t")
 		child.expect("        ")
 		child.send("\x04")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -276,7 +287,7 @@ def test_sigint(exe, args, env):
 		child.send("\t")
 		child.expect("        ")
 		child.send("\x03")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -312,7 +323,7 @@ def test_sigtstp(exe, args, env):
 		child.kill(signal.SIGCONT)
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -355,7 +366,7 @@ def test_sigstop(exe, args, env):
 		child.kill(signal.SIGCONT)
 		child.send("quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -406,7 +417,7 @@ def test_bc1(exe, args, env):
 		check_line(child, "1")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -438,7 +449,7 @@ def test_bc2(exe, args, env):
 		time.sleep(1)
 		child.sendintr()
 		child.sendline("quit")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -477,7 +488,7 @@ def test_bc3(exe, args, env):
 		check_line(child, "84531267")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -519,7 +530,7 @@ def test_bc4(exe, args, env):
 		check_line(child, "65536")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -547,7 +558,7 @@ def test_bc5(exe, args, env):
 		child.send("\x0c")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -579,7 +590,7 @@ def test_bc6(exe, args, env):
 		child.send("\n")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -630,7 +641,7 @@ def test_bc7(exe, args, env):
 		check_line(child, "284")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -660,7 +671,7 @@ def test_bc8(exe, args, env):
 		check_line(child, "13")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -703,7 +714,7 @@ def test_bc9(exe, args, env):
 		child.expect(prompt)
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -746,7 +757,7 @@ def test_bc10(exe, args, env):
 		check_line(child, "21")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -780,7 +791,7 @@ def test_bc11(exe, args, env):
 		check_line(child, "189")
 		write_str(child, "quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -815,7 +826,7 @@ def test_bc12(exe, args, env):
 			sys.exit(1)
 		child.send("quit")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -865,7 +876,7 @@ def test_dc1(exe, args, env):
 		check_line(child, "1")
 		write_str(child, "q")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -896,7 +907,7 @@ def test_dc2(exe, args, env):
 		time.sleep(1)
 		child.sendintr()
 		child.sendline("q")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
@@ -926,7 +937,7 @@ def test_dc3(exe, args, env):
 		check_line(child, "1")
 		write_str(child, "q")
 		child.send("\n")
-		child.wait()
+		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
 		print(str(child))
