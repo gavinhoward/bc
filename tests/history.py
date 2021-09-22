@@ -332,7 +332,8 @@ def test_sigtstp(exe, args, env):
 	try:
 		child.send("\t")
 		child.expect("        ")
-		child.send("\x13")
+		child.send("\r")
+		read_all(child)
 		time.sleep(1)
 		if not child.isalive():
 			print("child exited early")
