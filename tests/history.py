@@ -1116,7 +1116,7 @@ child.close()
 
 exit = child.exitstatus
 
-if exit != 0:
+if exit is not None and exit != 0:
 	print("child failed; expected exit code 0, got {}".format(exit))
 	print(str(child))
 	sys.exit(1)
