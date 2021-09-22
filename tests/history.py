@@ -105,14 +105,21 @@ def bc_banner(child):
 	child.expect(prompt)
 
 
-# Exit the child. We have to read all of the data before doing so because
-# pexpect on FreeBSD will just hang on child.wait().
-def quit_child(child):
+# Read all of the data output by the child.
+# @param child  The child to read output from.
+def read_all(child):
 	try:
 		while True:
 			child.read_nonblocking()
 	except Exception:
 		pass
+
+
+# Exit the child. We have to read all of the data before doing so because
+# pexpect on FreeBSD will just hang on child.wait().
+# @param child  The child to quit.
+def quit_child(child):
+	read_all(child)
 	child.wait()
 
 
