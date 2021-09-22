@@ -223,6 +223,9 @@ def test_utf8_4(exe, args, env, bc=True):
 # @param env   The environment.
 def test_sigint_sigquit(exe, args, env):
 
+	# Because both bc and dc use this, make sure the banner doesn't pop.
+	env["BC_BANNER"] = "0"
+
 	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
@@ -251,6 +254,9 @@ def test_sigint_sigquit(exe, args, env):
 # @param env   The environment.
 def test_eof(exe, args, env):
 
+	# Because both bc and dc use this, make sure the banner doesn't pop.
+	env["BC_BANNER"] = "0"
+
 	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
@@ -277,6 +283,9 @@ def test_eof(exe, args, env):
 # @param args  The arguments to pass to the executable.
 # @param env   The environment.
 def test_sigint(exe, args, env):
+
+	# Because both bc and dc use this, make sure the banner doesn't pop.
+	env["BC_BANNER"] = "0"
 
 	env["BC_SIGINT_RESET"] = "0"
 	env["DC_SIGINT_RESET"] = "0"
@@ -307,6 +316,9 @@ def test_sigint(exe, args, env):
 # @param args  The arguments to pass to the executable.
 # @param env   The environment.
 def test_sigtstp(exe, args, env):
+
+	# Because both bc and dc use this, make sure the banner doesn't pop.
+	env["BC_BANNER"] = "0"
 
 	child = pexpect.spawn(exe, args=args, env=env)
 
@@ -343,6 +355,9 @@ def test_sigtstp(exe, args, env):
 # @param args  The arguments to pass to the executable.
 # @param env   The environment.
 def test_sigstop(exe, args, env):
+
+	# Because both bc and dc use this, make sure the banner doesn't pop.
+	env["BC_BANNER"] = "0"
 
 	child = pexpect.spawn(exe, args=args, env=env)
 
