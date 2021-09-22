@@ -367,6 +367,9 @@ def test_sigstop(exe, args, env):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
+	env["BC_SIGINT_RESET"] = "0"
+	env["DC_SIGINT_RESET"] = "0"
+
 	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
