@@ -130,7 +130,7 @@ sh "$testdir/errors.sh" "$d" "$exe" "$@"
 sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@"
 
 # History tests.
-sh "$testdir/history.sh" "$d" -a
+sh "$testdir/history.sh" "$d" -a "$exe" "$@"
 
 printf '\nAll %s tests passed.\n' "$d"
 

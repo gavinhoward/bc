@@ -33,7 +33,7 @@ testdir=$(dirname "$script")
 
 . "$testdir/../scripts/functions.sh"
 
-# usage: history.sh dir -a|idx
+# usage: history.sh dir -a|idx [exe args...]
 
 # If Python does not exist, then just skip.
 py=$(command -v python3)
@@ -69,6 +69,16 @@ shift
 idx="$1"
 shift
 
+if [ "$#" -gt 0 ]; then
+
+	# exe is the executable to run.
+	exe="$1"
+	shift
+
+else
+	exe="$testdir/../bin/$d"
+fi
+
 # Set the test range correctly for all tests or one test. st is the start index.
 if [ "$idx" = "-a" ]; then
 	idx=$("$py" "$testdir/history.py" "$d" -a)
@@ -85,7 +95,7 @@ for i in $(seq "$st" "$idx"); do
 
 		printf 'Running %s history test %d...' "$d" "$i"
 
-		"$to" 30 "$py" "$testdir/history.py" "$d" "$i" "$@"
+		"$to" 30 "$py" "$testdir/history.py" "$d" "$i" "$exe" "$@"
 		err=$?
 
 		if [ "$err" -eq 0 ]; then
