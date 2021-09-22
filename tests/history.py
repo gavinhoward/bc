@@ -72,14 +72,18 @@ utf8_stress_strs = [
 ]
 
 
+# Eats all of the child's data.
+# @param child  The child whose data should be eaten.
+def eat(child):
+	while child.before is not None and len(child.before) > 0:
+		child.expect(".*")
+
+
 # Send data to a child. This makes sure the buffers are empty first.
 # @param child  The child to send data to.
 # @param data   The data to send.
 def send(child, data):
-
-	while child.before is not None and len(child.before) > 0:
-		child.expect(".*")
-
+	eat(child)
 	child.send(data)
 
 
@@ -134,7 +138,6 @@ def test_utf8(exe, args, env, idx, bc=True):
 		# Write the stress string.
 		send(child, utf8_stress_strs[idx])
 		send(child, "\n")
-		child.expect("Parse error: bad character")
 
 		if bc:
 			send(child, "quit")
@@ -176,14 +179,13 @@ def test_utf8_0(exe, args, env, bc=True):
 		send(child, "\x1b[D\x1b[D\x1b[D\x1b\x1b[Aℐ")
 		send(child, "\n")
 
-		# child.expect("Parse error: bad character")
-
 		if bc:
 			send(child, "quit")
 		else:
 			send(child, "q")
 
 		send(child, "\n")
+		eat(child)
 
 		child.wait()
 
