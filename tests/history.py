@@ -327,22 +327,22 @@ def test_sigtstp(exe, args, env):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
+	env["BC_SIGINT_RESET"] = "0"
+	env["DC_SIGINT_RESET"] = "0"
+
 	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		child.send("\t")
 		child.expect("        ")
-		child.send("\r")
-		read_all(child)
-		time.sleep(1)
+		child.send("\r\n")
+		child.expect(prompt)
 		if not child.isalive():
 			print("child exited early")
 			print(str(child))
 			print(str(child.buffer))
 			sys.exit(1)
-		child.kill(signal.SIGCONT)
-		write_str(child, "quit")
-		child.send("\n")
+		child.send("\x03")
 		quit_child(child)
 	except pexpect.TIMEOUT:
 		print("timed out")
