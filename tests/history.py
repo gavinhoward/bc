@@ -331,6 +331,10 @@ def test_sigint(exe, args, env):
 # @param env   The environment.
 def test_sigtstp(exe, args, env):
 
+	# This test does not work on FreeBSD, so skip.
+	if sys.platform.startswith("freebsd"):
+		sys.exit(0)
+
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
