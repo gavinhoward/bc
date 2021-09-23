@@ -27,8 +27,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-set -e
-
 script="$0"
 testdir=$(dirname "$script")
 
@@ -96,6 +94,8 @@ unset DC_LINE_LENGTH
 # Get the list of tests that require extra math.
 extra_required=$(cat "$testdir/extra_required.txt")
 
+pids=""
+
 printf '\nRunning %s tests...\n\n' "$d"
 
 # Run the tests one at a time.
@@ -109,28 +109,52 @@ while read t; do
 		fi
 	fi
 
-	sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$time_tests" "$exe" "$@"
+	sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$time_tests" "$exe" "$@" &
+	pids="$pids $!"
 
 done < "$testdir/$d/all.txt"
 
 # stdin tests.
-sh "$testdir/stdin.sh" "$d" "$exe" "$@"
+sh "$testdir/stdin.sh" "$d" "$exe" "$@" &
+pids="$pids $!"
 
 # Script tests.
 sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" \
-	"$time_tests" "$exe" "$@"
+	"$time_tests" "$exe" "$@" &
+pids="$pids $!"
 
 # Read tests.
-sh "$testdir/read.sh" "$d" "$exe" "$@"
+sh "$testdir/read.sh" "$d" "$exe" "$@" &
+pids="$pids $!"
 
 # Error tests.
-sh "$testdir/errors.sh" "$d" "$exe" "$@"
+sh "$testdir/errors.sh" "$d" "$exe" "$@" &
+pids="$pids $!"
 
 # Other tests.
-sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@"
+sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@" &
+pids="$pids $!"
 
 # History tests.
-sh "$testdir/history.sh" "$d" -a "$exe" "$@"
+sh "$testdir/history.sh" "$d" -a "$exe" "$@" &
+pids="$pids $!"
+
+exit_err=0
+
+for p in $pids; do
+
+	wait "$p"
+	err="$?"
+
+	if [ "$err" -ne 0 ]; then
+		printf 'A test failed!\n'
+		exit_err=1
+	fi
+done
+
+if [ "$exit_err" -ne 0 ]; then
+	exit 1
+fi
 
 printf '\nAll %s tests passed.\n' "$d"
 

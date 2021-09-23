@@ -27,11 +27,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-set -e
-
 script="$0"
 
 testdir=$(dirname "${script}")
+
+pids=""
 
 # Command-line processing.
 if [ "$#" -eq 0 ]; then
@@ -86,6 +86,25 @@ for s in $scripts; do
 
 	f=$(basename "$s")
 	sh "$testdir/script.sh" "$d" "$f" "$run_extra_tests" "$run_stack_tests" \
-		"$generate" "$time_tests" "$exe" "$@"
+		"$generate" "$time_tests" "$exe" "$@" &
+	pids="$pids $!"
 
 done
+
+exit_err=0
+
+for p in $pids; do
+
+	wait "$p"
+	err="$?"
+
+	if [ "$err" -ne 0 ]; then
+		printf 'A script failed!\n'
+		exit_err=1
+	fi
+
+done
+
+if [ "$exit_err" -ne 0 ]; then
+	exit 1
+fi

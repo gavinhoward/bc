@@ -35,6 +35,8 @@ testdir=$(dirname "$script")
 
 # usage: history.sh dir -a|idx [exe args...]
 
+pids=""
+
 # If Python does not exist, then just skip.
 py=$(command -v python3)
 err=$?
@@ -79,6 +81,14 @@ else
 	exe="$testdir/../bin/$d"
 fi
 
+if [ "$d" = "bc" ]; then
+	flip="! %s"
+	addone="%s + 1"
+else
+	flip="%s Np"
+	addone="%s 1+p"
+fi
+
 # Set the test range correctly for all tests or one test. st is the start index.
 if [ "$idx" = "-a" ]; then
 	idx=$("$py" "$testdir/history.py" "$d" -a)
@@ -91,27 +101,48 @@ fi
 # Run all of the tests.
 for i in $(seq "$st" "$idx"); do
 
-	if [ "$i" -eq 8 ] && [ "$d" = "bc" ]; then
-		limit=45
-	else
-		limit=30
-	fi
+	for j in $(seq 1 2); do
 
-	for j in $(seq 1 3); do
-
-		printf 'Running %s history test %d...' "$d" "$i"
-
-		"$to" "$limit" "$py" "$testdir/history.py" "$d" "$i" "$exe" "$@"
-		err=$?
-
-		if [ "$err" -eq 0 ]; then
-			break
-		fi
+		"$to" 10 "$py" "$testdir/history.py" "$d" "$i" "$exe" "$@" &
+		pids="$pids $!"
 
 	done
 
-	checktest_retcode "$d" "$err" "$d history tests $i"
+done
 
-	printf 'pass\n'
+i="$st"
+second=0
+good=0
+
+printf 'Checking %s history test %d...' "$d" "$i"
+
+for p in $pids; do
+
+	wait "$p"
+	err="$?"
+
+	if [ "$err" -eq 0 ]; then
+		good=1
+	fi
+
+	if [ "$good" -ne 0 ] || [ "$second" -ne 0 ]; then
+		checktest_retcode "$d" "$err" "$d history tests $i"
+	fi
+
+	second=$(printf "$flip" "$second" | "$exe")
+
+	if [ "$second" -eq 0 ]; then
+
+		# By this point, we know we have passed.
+		printf 'pass\n'
+
+		i=$(printf "$addone" "$i" | "$exe")
+		good=0
+
+		printf 'Checking %s history test %d...' "$d" "$i"
+	fi
 
 done
+
+# Print the last pass message.
+printf 'pass\n'
