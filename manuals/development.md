@@ -1869,7 +1869,7 @@ example, to test whether I am in debug mode or not, I still use the standard
 `BC_ENABLE_AFL`
 
 :   This macro expands to `1` if `bc` has been built for fuzzing with
-    [AFL++][125], `0` otherwise.. See the [Fuzzing][82] section for more
+    [AFL++][125], `0` otherwise. See the [Fuzzing][82] section for more
     information.
 
 `BC_DEFAULT_BANNER`
