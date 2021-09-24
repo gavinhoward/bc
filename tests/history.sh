@@ -53,15 +53,6 @@ if [ "$err" -ne 0 ]; then
 	fi
 fi
 
-to=$(command -v timeout)
-err=$?
-
-if [ "$err" -ne 0 ]; then
-	printf 'Could not find timeout.\n'
-	printf 'Skipping %s history tests...\n' "$d"
-	exit 0
-fi
-
 # d is "bc" or "dc"
 d="$1"
 shift
@@ -103,7 +94,7 @@ for i in $(seq "$st" "$idx"); do
 
 	for j in $(seq 1 2); do
 
-		"$to" 10 "$py" "$testdir/history.py" "$d" "$i" "$exe" "$@" &
+		"$py" "$testdir/history.py" "$d" "$i" "$exe" "$@" &
 		pids="$pids $!"
 
 	done

@@ -143,7 +143,7 @@ def test_utf8(exe, args, env, idx, bc=True):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8', codec_errors='ignore', timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8', codec_errors='ignore')
 
 	try:
 
@@ -182,7 +182,7 @@ def test_utf8_0(exe, args, env, bc=True):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8', codec_errors='ignore', timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env, encoding='utf-8', codec_errors='ignore')
 
 	try:
 
@@ -240,7 +240,7 @@ def test_sigint_sigquit(exe, args, env):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		send(child, "\t")
@@ -271,7 +271,7 @@ def test_eof(exe, args, env):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		send(child, "\t")
@@ -304,7 +304,7 @@ def test_sigint(exe, args, env):
 	env["BC_SIGINT_RESET"] = "0"
 	env["DC_SIGINT_RESET"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		send(child, "\t")
@@ -338,7 +338,7 @@ def test_sigtstp(exe, args, env):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		send(child, "\t")
@@ -377,7 +377,7 @@ def test_sigstop(exe, args, env):
 	# Because both bc and dc use this, make sure the banner doesn't pop.
 	env["BC_BANNER"] = "0"
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		send(child, "\t")
@@ -440,7 +440,7 @@ def test_bc_utf8_4(exe, args, env):
 # @param env   The environment.
 def test_bc1(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -473,7 +473,7 @@ def test_bc2(exe, args, env):
 
 	env["TERM"] = "dumb"
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -503,7 +503,7 @@ def test_bc2(exe, args, env):
 # @param env   The environment.
 def test_bc3(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -542,7 +542,7 @@ def test_bc3(exe, args, env):
 # @param env   The environment.
 def test_bc4(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -584,7 +584,7 @@ def test_bc4(exe, args, env):
 # @param env   The environment.
 def test_bc5(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -612,7 +612,7 @@ def test_bc5(exe, args, env):
 # @param env   The environment.
 def test_bc6(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -644,7 +644,7 @@ def test_bc6(exe, args, env):
 # @param env   The environment.
 def test_bc7(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -695,7 +695,7 @@ def test_bc7(exe, args, env):
 # @param env   The environment.
 def test_bc8(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -725,7 +725,7 @@ def test_bc8(exe, args, env):
 # @param env   The environment.
 def test_bc9(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -768,7 +768,7 @@ def test_bc9(exe, args, env):
 # @param env   The environment.
 def test_bc10(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -811,7 +811,7 @@ def test_bc10(exe, args, env):
 # @param env   The environment.
 def test_bc11(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -845,7 +845,7 @@ def test_bc11(exe, args, env):
 # @param env   The environment.
 def test_bc12(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		bc_banner(child)
@@ -900,7 +900,7 @@ def test_dc_utf8_4(exe, args, env):
 # @param env   The environment.
 def test_dc1(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		write_str(child, "1pR")
@@ -932,7 +932,7 @@ def test_dc2(exe, args, env):
 
 	env["TERM"] = "dumb"
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		child.sendline("1pR")
@@ -961,7 +961,7 @@ def test_dc2(exe, args, env):
 # @param env   The environment.
 def test_dc3(exe, args, env):
 
-	child = pexpect.spawn(exe, args=args, env=env, timeout=5)
+	child = pexpect.spawn(exe, args=args, env=env)
 
 	try:
 		write_str(child, "[1 15+pR]x")
