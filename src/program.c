@@ -285,7 +285,15 @@ static inline BcVec* bc_program_vec(const BcProgram *p, size_t idx, BcType type)
  */
 static BcNum* bc_program_num(BcProgram *p, BcResult *r) {
 
-	BcNum *n = NULL;
+	BcNum *n;
+
+#ifdef _WIN32
+	// Windows made it an error to not initialize this, so shut it up.
+	// I don't want to do this on other platforms because this procedure
+	// is one of the most heavily-used, and eliminating the initialization
+	// is a performance win.
+	n = NULL;
+#endif // _WIN32
 
 	switch (r->t) {
 
