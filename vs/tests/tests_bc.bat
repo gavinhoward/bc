@@ -1,7 +1,8 @@
 @echo off
 
 set scripts=..\..\tests\bc
-set bc=%~dp0\bc.exe -ql
+set bc=%~dp0\bc.exe
+set args=-ql
 
 del /f /q *.txt > NUL
 
@@ -58,15 +59,15 @@ trunc
 vars
 void
 ) do (
-if exist %scripts%\%%i.txt (
-	%bc% < %scripts%\%%i.txt > %%i_results.txt
+if exist "%scripts%\%%i.txt" (
+	"%bc%" "%args%" < "%scripts%\%%i.txt" > "%%i_results.txt"
 	
 	if errorlevel 1 (
 		echo FAIL_RUNTIME: %%i
 		goto :eof
 	)
 	
-	fc.exe /b %scripts%\%%i_results.txt %%i_results.txt > NUL
+	fc.exe "%scripts%\%%i_results.txt" "%%i_results.txt" > NUL
 	
 	if errorlevel 1 (
 		echo FAIL_RESULTS: %%i
