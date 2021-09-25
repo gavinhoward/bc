@@ -3,3 +3,5 @@
 bin/*
 lib/*
 src2/*
+tests/*.txt
+tests/*.exe
