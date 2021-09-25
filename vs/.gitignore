@@ -1,4 +1,5 @@
 *.vcxproj.user
 .vs/*
 bin/*
+lib/*
 src2/*
