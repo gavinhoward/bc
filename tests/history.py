@@ -75,7 +75,7 @@ utf8_stress_strs = [
 # Eats all of the child's data.
 # @param child  The child whose data should be eaten.
 def eat(child):
-	while child.before is not None and len(child.before) > 0:
+	while child.buffer is not None and len(child.buffer) > 0:
 		child.expect(".*")
 
 
