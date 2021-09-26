@@ -30,6 +30,7 @@
 import os, sys
 import time
 import signal
+import traceback
 
 try:
 	import pexpect
@@ -161,6 +162,7 @@ def test_utf8(exe, args, env, idx, bc=True):
 		wait(child)
 
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -202,6 +204,7 @@ def test_utf8_0(exe, args, env, bc=True):
 		wait(child)
 
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -249,6 +252,7 @@ def test_sigint_sigquit(exe, args, env):
 		send(child, "\x1c")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -279,6 +283,7 @@ def test_eof(exe, args, env):
 		send(child, "\x04")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -312,6 +317,7 @@ def test_sigint(exe, args, env):
 		send(child, "\x03")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -355,6 +361,7 @@ def test_sigtstp(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -401,6 +408,7 @@ def test_sigstop(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -452,6 +460,7 @@ def test_bc1(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -484,6 +493,7 @@ def test_bc2(exe, args, env):
 		child.sendline("quit")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -523,6 +533,7 @@ def test_bc3(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -565,6 +576,7 @@ def test_bc4(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -593,6 +605,7 @@ def test_bc5(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -625,6 +638,7 @@ def test_bc6(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -676,6 +690,7 @@ def test_bc7(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -706,6 +721,7 @@ def test_bc8(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -749,6 +765,7 @@ def test_bc9(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -792,6 +809,7 @@ def test_bc10(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -826,6 +844,7 @@ def test_bc11(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -861,6 +880,7 @@ def test_bc12(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -911,6 +931,7 @@ def test_dc1(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -942,6 +963,7 @@ def test_dc2(exe, args, env):
 		child.sendline("q")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
@@ -972,6 +994,7 @@ def test_dc3(exe, args, env):
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
+		traceback.print_tb(sys.exc_info()[2])
 		print("timed out")
 		print(str(child))
 		sys.exit(2)
