@@ -2606,8 +2606,13 @@ possible. I guess I could have done more, but doing so would have required a lot
 of time.
 
 I have tried to make it as easy as possible to run the history tests. They will
-run automatically if you use the `make test` command, and they will also use
-parallel execution with `make -j<cores> test`.
+run automatically if you use the `make test_history` command, and they will also
+use parallel execution with `make -j<cores> test_history`.
+
+However, the history tests are meant only to be run by maintainers of `bc`; they
+are *not* meant to be run by users and packagers. Thus, they are excluded from
+running with `make test` and [`tests/all.sh`][225]. However, they can be run
+from the [`scripts/release.sh`][83] script.
 
 All of the tests are contained in [`tests/history.py`][139]. The reason for this
 is because they are in Python, and I don't have an easy way of including Python
@@ -4959,3 +4964,4 @@ However, where possible, errors are returned directly.
 [222]: https://www.freebsd.org/cgi/man.cgi?query=ministat&apropos=0&sektion=0&manpath=FreeBSD+13.0-RELEASE+and+Ports&arch=default&format=html
 [223]: #ministatc
 [224]: #dc
+[225]: #allsh
