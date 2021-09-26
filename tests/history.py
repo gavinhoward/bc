@@ -351,7 +351,7 @@ def test_sigtstp(exe, args, env):
 			print(str(child.buffer))
 			sys.exit(1)
 		child.kill(signal.SIGCONT)
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -448,7 +448,7 @@ def test_bc1(exe, args, env):
 		check_line(child, "1")
 		write_str(child, "1")
 		check_line(child, "1")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -519,7 +519,7 @@ def test_bc3(exe, args, env):
 		send(child, "12\x1b[H3\x1bOH\x01\x1b[H45\x1bOF6\x05\x1b[F7\x1bOH8")
 		send(child, "\n")
 		check_line(child, "84531267")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -561,7 +561,7 @@ def test_bc4(exe, args, env):
 		send(child, "\x1b[A\x1bOA\x0e\x1b[A\x1b[A\x1b[A\x1b[B\x10\x1b[B\x1b[B\x1bOB\x1b[B\x1bOA")
 		send(child, "\n")
 		check_line(child, "65536")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -589,7 +589,7 @@ def test_bc5(exe, args, env):
 	try:
 		bc_banner(child)
 		send(child, "\x0c")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -621,7 +621,7 @@ def test_bc6(exe, args, env):
 		child.expect("Enter number: ")
 		send(child, "4\x1b[A\x1b[A")
 		send(child, "\n")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -672,7 +672,7 @@ def test_bc7(exe, args, env):
 		send(child, "\x1bh\x1bh\x1bf + 14 ")
 		send(child, "\n")
 		check_line(child, "284")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -702,7 +702,7 @@ def test_bc8(exe, args, env):
 		send(child, "12\x1b[D3\x1b[C4\x08\x7f")
 		send(child, "\n")
 		check_line(child, "13")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -745,7 +745,7 @@ def test_bc9(exe, args, env):
 		send(child, "\x17\x17")
 		send(child, "\n")
 		child.expect(prompt)
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -788,7 +788,7 @@ def test_bc10(exe, args, env):
 		check_line(child, "180")
 		send(child, "\x1b[A\x1521")
 		check_line(child, "21")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -822,7 +822,7 @@ def test_bc11(exe, args, env):
 		check_line(child, "180")
 		send(child, "\x1b[A\x02\x14")
 		check_line(child, "189")
-		write_str(child, "quit")
+		send(child, "quit")
 		send(child, "\n")
 		wait(child)
 	except pexpect.TIMEOUT:
