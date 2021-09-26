@@ -1082,7 +1082,7 @@ exebase = os.path.basename(exe)
 # Use the correct options.
 if exebase == "bc":
 	halt = "halt\n"
-	options = "-lq"
+	options = "-l"
 	test_array = bc_tests
 else:
 	halt = "q\n"
