@@ -135,10 +135,6 @@ pids="$pids $!"
 sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@" &
 pids="$pids $!"
 
-# History tests.
-sh "$testdir/history.sh" "$d" -a "$exe" "$@" &
-pids="$pids $!"
-
 exit_err=0
 
 for p in $pids; do
