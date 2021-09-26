@@ -35,8 +35,6 @@ testdir=$(dirname "$script")
 
 # usage: history.sh dir -a|idx [exe args...]
 
-pids=""
-
 # If Python does not exist, then just skip.
 py=$(command -v python3)
 err=$?
@@ -92,48 +90,21 @@ fi
 # Run all of the tests.
 for i in $(seq "$st" "$idx"); do
 
-	for j in $(seq 1 2); do
+	printf 'Running %s history test %d...' "$d" "$i"
 
-		"$py" "$testdir/history.py" "$d" "$i" "$exe" "$@" &
-		pids="$pids $!"
+	for j in $(seq 1 3); do
+
+		"$py" "$testdir/history.py" "$d" "$i" "$exe" "$@"
+		err="$?"
+
+		if [ "$err" -eq 0 ]; then
+			break
+		fi
 
 	done
 
-done
+	checktest_retcode "$d" "$err" "$d history test $i"
 
-i="$st"
-second=0
-good=0
-
-printf 'Checking %s history test %d...' "$d" "$i"
-
-for p in $pids; do
-
-	wait "$p"
-	err="$?"
-
-	if [ "$err" -eq 0 ]; then
-		good=1
-	fi
-
-	if [ "$good" -ne 0 ] || [ "$second" -ne 0 ]; then
-		checktest_retcode "$d" "$err" "$d history tests $i"
-	fi
-
-	second=$(printf "$flip" "$second" | "$exe")
-
-	if [ "$second" -eq 0 ]; then
-
-		# By this point, we know we have passed.
-		printf 'pass\n'
-
-		i=$(printf "$addone" "$i" | "$exe")
-		good=0
-
-		printf 'Checking %s history test %d...' "$d" "$i"
-	fi
+	printf 'pass\n'
 
 done
-
-# Print the last pass message.
-printf 'pass\n'
