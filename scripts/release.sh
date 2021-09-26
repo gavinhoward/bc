@@ -408,13 +408,13 @@ runlibtests() {
 	build "$_runlibtests_CFLAGS" "$_runlibtests_CC" "$_runlibtests_configure_flags" 1 64
 
 	if [ "$_runlibtests_run_tests" -ne 0 ]; then
-		runtest
+		runtest test
 	fi
 
 	build "$_runlibtests_CFLAGS" "$_runlibtests_CC" "$_runlibtests_configure_flags" 1 32
 
 	if [ "$_runlibtests_run_tests" -ne 0 ]; then
-		runtest
+		runtest test
 	fi
 }
 
