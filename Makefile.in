@@ -356,70 +356,70 @@ test_bc_history_skip:
 	@printf 'No bc history tests to run\n'
 
 test_bc_history0:
-	@sh scripts/history.sh bc 0 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 0 %%BC_TEST_EXEC%%
 
 test_bc_history1:
-	@sh scripts/history.sh bc 1 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 1 %%BC_TEST_EXEC%%
 
 test_bc_history2:
-	@sh scripts/history.sh bc 2 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 2 %%BC_TEST_EXEC%%
 
 test_bc_history3:
-	@sh scripts/history.sh bc 3 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 3 %%BC_TEST_EXEC%%
 
 test_bc_history4:
-	@sh scripts/history.sh bc 4 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 4 %%BC_TEST_EXEC%%
 
 test_bc_history5:
-	@sh scripts/history.sh bc 5 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 5 %%BC_TEST_EXEC%%
 
 test_bc_history6:
-	@sh scripts/history.sh bc 6 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 6 %%BC_TEST_EXEC%%
 
 test_bc_history7:
-	@sh scripts/history.sh bc 7 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 7 %%BC_TEST_EXEC%%
 
 test_bc_history8:
-	@sh scripts/history.sh bc 8 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 8 %%BC_TEST_EXEC%%
 
 test_bc_history9:
-	@sh scripts/history.sh bc 9 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 9 %%BC_TEST_EXEC%%
 
 test_bc_history10:
-	@sh scripts/history.sh bc 10 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 10 %%BC_TEST_EXEC%%
 
 test_bc_history11:
-	@sh scripts/history.sh bc 11 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 11 %%BC_TEST_EXEC%%
 
 test_bc_history12:
-	@sh scripts/history.sh bc 12 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 12 %%BC_TEST_EXEC%%
 
 test_bc_history13:
-	@sh scripts/history.sh bc 13 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 13 %%BC_TEST_EXEC%%
 
 test_bc_history14:
-	@sh scripts/history.sh bc 14 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 14 %%BC_TEST_EXEC%%
 
 test_bc_history15:
-	@sh scripts/history.sh bc 15 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 15 %%BC_TEST_EXEC%%
 
 test_bc_history16:
-	@sh scripts/history.sh bc 16 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 16 %%BC_TEST_EXEC%%
 
 test_bc_history17:
-	@sh scripts/history.sh bc 17 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 17 %%BC_TEST_EXEC%%
 
 test_bc_history18:
-	@sh scripts/history.sh bc 18 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 18 %%BC_TEST_EXEC%%
 
 test_bc_history19:
-	@sh scripts/history.sh bc 19 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 19 %%BC_TEST_EXEC%%
 
 test_bc_history20:
-	@sh scripts/history.sh bc 20 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 20 %%BC_TEST_EXEC%%
 
 test_bc_history21:
-	@sh scripts/history.sh bc 21 %%BC_TEST_EXEC%%
+	@sh tests/history.sh bc 21 %%BC_TEST_EXEC%%
 
 test_dc_history:%%DC_HISTORY_TEST_PREREQS%%
 
@@ -429,34 +429,34 @@ test_dc_history_skip:
 	@printf 'No dc history tests to run\n'
 
 test_dc_history0:
-	@sh scripts/history.sh dc 0 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 0 %%DC_TEST_EXEC%%
 
 test_dc_history1:
-	@sh scripts/history.sh dc 1 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 1 %%DC_TEST_EXEC%%
 
 test_dc_history2:
-	@sh scripts/history.sh dc 2 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 2 %%DC_TEST_EXEC%%
 
 test_dc_history3:
-	@sh scripts/history.sh dc 3 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 3 %%DC_TEST_EXEC%%
 
 test_dc_history4:
-	@sh scripts/history.sh dc 4 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 4 %%DC_TEST_EXEC%%
 
 test_dc_history5:
-	@sh scripts/history.sh dc 5 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 5 %%DC_TEST_EXEC%%
 
 test_dc_history6:
-	@sh scripts/history.sh dc 6 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 6 %%DC_TEST_EXEC%%
 
 test_dc_history7:
-	@sh scripts/history.sh dc 7 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 7 %%DC_TEST_EXEC%%
 
 test_dc_history8:
-	@sh scripts/history.sh dc 8 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 8 %%DC_TEST_EXEC%%
 
 test_dc_history9:
-	@sh scripts/history.sh dc 9 %%DC_TEST_EXEC%%
+	@sh tests/history.sh dc 9 %%DC_TEST_EXEC%%
 
 test_history_header:
 	@printf '$(TEST_STARS)\n\nRunning history tests...\n\n'
