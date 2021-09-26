@@ -81,6 +81,7 @@ def expect(child, data):
 # Eats all of the child's data.
 # @param child  The child whose data should be eaten.
 def eat(child):
+	time.sleep(1)
 	while child.buffer is not None and len(child.buffer) > 0:
 		expect(child, ".*")
 
