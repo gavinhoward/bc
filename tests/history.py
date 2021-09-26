@@ -73,11 +73,16 @@ utf8_stress_strs = [
 ]
 
 
+def expect(child, data):
+	time.sleep(1)
+	child.expect(data)
+
+
 # Eats all of the child's data.
 # @param child  The child whose data should be eaten.
 def eat(child):
 	while child.buffer is not None and len(child.buffer) > 0:
-		child.expect(".*")
+		expect(child, ".*")
 
 
 # Send data to a child. This makes sure the buffers are empty first.
@@ -105,7 +110,7 @@ def wait(child):
 def check_line(child, expected, prompt=">>> ", history=True):
 	send(child, "\n")
 	prefix = "\r\n" if history else ""
-	child.expect(prefix + expected + "\r\n" + prompt)
+	expect(child, prefix + expected + "\r\n" + prompt)
 
 
 # Write a string to output, checking all of the characters are output,
@@ -114,9 +119,9 @@ def write_str(child, s):
 	for c in s:
 		send(child, c)
 		if c in escapes:
-			child.expect("\\{}".format(c))
+			expect(child, "\\{}".format(c))
 		else:
-			child.expect(c)
+			expect(child, c)
 
 
 # Check the bc banner.
@@ -126,11 +131,11 @@ def bc_banner(child):
 	bc_banner2 = "Copyright \(c\) 2018-[2-9][0-9][0-9][0-9] Gavin D. Howard and contributors\r\n"
 	bc_banner3 = "Report bugs at: https://git.yzena.com/gavin/bc\r\n\r\n"
 	bc_banner4 = "This is free software with ABSOLUTELY NO WARRANTY.\r\n\r\n"
-	child.expect(bc_banner1)
-	child.expect(bc_banner2)
-	child.expect(bc_banner3)
-	child.expect(bc_banner4)
-	child.expect(prompt)
+	expect(child, bc_banner1)
+	expect(child, bc_banner2)
+	expect(child, bc_banner3)
+	expect(child, bc_banner4)
+	expect(child, prompt)
 
 
 # Common UTF-8 testing function. The index is the index into utf8_stress_strs
@@ -247,7 +252,7 @@ def test_sigint_sigquit(exe, args, env):
 
 	try:
 		send(child, "\t")
-		child.expect("        ")
+		expect(child, "        ")
 		send(child, "\x03")
 		send(child, "\x1c")
 		wait(child)
@@ -279,7 +284,7 @@ def test_eof(exe, args, env):
 
 	try:
 		send(child, "\t")
-		child.expect("        ")
+		expect(child, "        ")
 		send(child, "\x04")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -313,7 +318,7 @@ def test_sigint(exe, args, env):
 
 	try:
 		send(child, "\t")
-		child.expect("        ")
+		expect(child, "        ")
 		send(child, "\x03")
 		wait(child)
 	except pexpect.TIMEOUT:
@@ -348,7 +353,7 @@ def test_sigtstp(exe, args, env):
 
 	try:
 		send(child, "\t")
-		child.expect("        ")
+		expect(child, "        ")
 		send(child, "\x13")
 		time.sleep(1)
 		if not child.isalive():
@@ -388,7 +393,7 @@ def test_sigstop(exe, args, env):
 
 	try:
 		send(child, "\t")
-		child.expect("        ")
+		expect(child, "        ")
 		send(child, "\x14")
 		time.sleep(1)
 		if not child.isalive():
@@ -519,7 +524,7 @@ def test_bc3(exe, args, env):
 		bc_banner(child)
 		send(child, "\x1b[D\x1b[D\x1b[C\x1b[C")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		send(child, "12\x1b[D3\x1b[C4\x1bOD5\x1bOC6")
 		send(child, "\n")
 		check_line(child, "132546")
@@ -559,7 +564,7 @@ def test_bc4(exe, args, env):
 		bc_banner(child)
 		send(child, "\x1b[A\x1bOA\x1b[B\x1bOB")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		write_str(child, "15")
 		check_line(child, "15")
 		write_str(child, "2^16")
@@ -631,7 +636,7 @@ def test_bc6(exe, args, env):
 		bc_banner(child)
 		send(child, "print \"Enter number: \"")
 		send(child, "\n")
-		child.expect("Enter number: ")
+		expect(child, "Enter number: ")
 		send(child, "4\x1b[A\x1b[A")
 		send(child, "\n")
 		send(child, "quit")
@@ -664,18 +669,18 @@ def test_bc7(exe, args, env):
 		bc_banner(child)
 		send(child, "\x1bb\x1bb\x1bf\x1bf")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		send(child, "\x1b[0~\x1b[3a")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		send(child, "\x1b[0;4\x1b[0A")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		send(child, "        ")
 		send(child, "\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb\x1bb")
 		send(child, "\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf\x1bf")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		write_str(child, "12 + 34 + 56 + 78 + 90")
 		check_line(child, "270")
 		send(child, "\x1b[A")
@@ -747,7 +752,7 @@ def test_bc9(exe, args, env):
 		bc_banner(child)
 		send(child, "\x1b[0;5D\x1b[0;5D\x1b[0;5D\x1b[0;5C\x1b[0;5D\x1bd\x1b[3~\x1b[d\x1b[d\x1b[d\x1b[d\x7f\x7f\x7f")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		write_str(child, "12 + 34 + 56 + 78 + 90")
 		check_line(child, "270")
 		send(child, "\x1b[A")
@@ -760,7 +765,7 @@ def test_bc9(exe, args, env):
 		check_line(child, "46")
 		send(child, "\x17\x17")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		send(child, "quit")
 		send(child, "\n")
 		wait(child)
@@ -791,10 +796,10 @@ def test_bc10(exe, args, env):
 		bc_banner(child)
 		send(child, "\x1b[3~\x1b[3~")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		send(child, "    \x1b[3~\x1b[3~")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		write_str(child, "12 + 34 + 56 + 78 + 90")
 		check_line(child, "270")
 		send(child, "\x1b[A\x1b[A\x1b[A\x1b[B\x1b[B\x1b[B\x1b[A")
@@ -835,7 +840,7 @@ def test_bc11(exe, args, env):
 		bc_banner(child)
 		send(child, "\x1b[A\x02\x14")
 		send(child, "\n")
-		child.expect(prompt)
+		expect(child, prompt)
 		write_str(child, "12 + 34 + 56 + 78")
 		check_line(child, "180")
 		send(child, "\x1b[A\x02\x14")
