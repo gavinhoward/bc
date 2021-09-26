@@ -62,6 +62,7 @@ usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
 	printf '          [run_sanitizers] [run_valgrind] [test_settings] [run_64_bit] \n'
 	printf '          [run_gen_script] [test_c11] [test_128_bit] [test_computed_goto]\n'
+	printf '          [test_history]\n'
 	exit 1
 }
 
@@ -188,7 +189,12 @@ runtest() {
 	if [ "$#" -gt 0 ]; then
 		do_make "$@"
 	else
+
 		do_make test
+
+		if [ "$test_history" -ne 0 ]; then
+			do_make test_history
+		fi
 	fi
 }
 
@@ -578,7 +584,7 @@ build_set() {
 	_build_set_run_tests="$1"
 	shift
 
-	debug "$_build_set_CC" "$_build_set_run_tests"
+	#debug "$_build_set_CC" "$_build_set_run_tests"
 	release "$_build_set_CC" "$_build_set_run_tests"
 	reldebug "$_build_set_CC" "$_build_set_run_tests"
 	minsize "$_build_set_CC" "$_build_set_run_tests"
@@ -699,6 +705,14 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	test_computed_goto=0
+fi
+
+# Whether to test history or not.
+if [ "$#" -gt 0 ]; then
+	test_history="$1"
+	shift
+else
+	test_history=0
 fi
 
 if [ "$run_64_bit" -ne 0 ]; then
