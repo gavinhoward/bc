@@ -2366,7 +2366,7 @@ int_err:
  */
 static inline void bc_num_printNewline(void) {
 #if !BC_ENABLE_LIBRARY
-	if (vm.nchars >= vm.line_len - 1) {
+	if (vm.nchars >= vm.line_len - 1 && vm.line_len) {
 		bc_vm_putchar('\\', bc_flush_none);
 		bc_vm_putchar('\n', bc_flush_err);
 	}

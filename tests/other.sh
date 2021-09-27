@@ -64,6 +64,7 @@ fi
 
 # For tests later.
 num=100000000000000000000000000000000000000000000000000000000000000000000000000000
+num2="$num"
 numres="$num"
 num70="10000000000000000000000000000000000000000000000000000000000000000000\\
 0000000000"
@@ -234,16 +235,26 @@ printf '%s\n' "$numres" > "$out1"
 export "$line_var"=80
 printf '%s\n' "$num" | "$exe" "$@" > "$out2"
 
-checktest "$d" "$?" "environment var" "$out1" "$out2"
+checktest "$d" "$?" "line length" "$out1" "$out2"
 
 printf '%s\n' "$num70" > "$out1"
 
 export "$line_var"=2147483647
 printf '%s\n' "$num" | "$exe" "$@" > "$out2"
 
-checktest "$d" "$?" "environment var" "$out1" "$out2"
+checktest "$d" "$?" "line length 2" "$out1" "$out2"
+
+printf '%s\n' "$num2" > "$out1"
+
+export "$line_var"=62
+printf '%s\n' "$num" | "$exe" "$@" -C > "$out2"
+
+checktest "$d" "$?" "line length 3" "$out1" "$out2"
 
 printf 'pass\n'
+
+printf '%s\n' "$numres" > "$out1"
+export "$line_var"=2147483647
 
 printf 'Running %s arg tests...' "$d"
 

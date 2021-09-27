@@ -141,6 +141,7 @@ const BcOptLong bc_args_lopt[] = {
 	{ "file", BC_OPT_REQUIRED, 'f' },
 	{ "help", BC_OPT_NONE, 'h' },
 	{ "interactive", BC_OPT_NONE, 'i' },
+	{ "no-char-limit", BC_OPT_NONE, 'C' },
 	{ "no-prompt", BC_OPT_NONE, 'P' },
 	{ "no-read-prompt", BC_OPT_NONE, 'R' },
 #if BC_ENABLED
