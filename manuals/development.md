@@ -2610,9 +2610,12 @@ run automatically if you use the `make test_history` command, and they will also
 use parallel execution with `make -j<cores> test_history`.
 
 However, the history tests are meant only to be run by maintainers of `bc`; they
-are *not* meant to be run by users and packagers. Thus, they are excluded from
-running with `make test` and [`tests/all.sh`][225]. However, they can be run
-from the [`scripts/release.sh`][83] script.
+are *not* meant to be run by users and packagers. The reason for this is that
+they only seem to work reliably on Linux; `pexpect` seems to have issues on
+other platforms, especially timeout issues.
+
+Thus, they are excluded from running with `make test` and [`tests/all.sh`][225].
+However, they can be run from the [`scripts/release.sh`][83] script.
 
 All of the tests are contained in [`tests/history.py`][139]. The reason for this
 is because they are in Python, and I don't have an easy way of including Python

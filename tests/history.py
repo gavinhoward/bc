@@ -81,7 +81,7 @@ def expect(child, data):
 # @param child  The child whose data should be eaten.
 def eat(child):
 	while child.buffer is not None and len(child.buffer) > 0:
-		expect(child, ".*")
+		expect(child, ".+")
 
 
 # Send data to a child. This makes sure the buffers are empty first.
