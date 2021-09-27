@@ -287,6 +287,18 @@ checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
 checktest_retcode "$d" "$?" "arg"
 
+out=$(printf '0.1\n-0.1\n1.1\n-1.1\n0.1\n-0.1\n')
+printf '%s\n' "$out" > "$out1"
+
+if [ "$d" = "bc" ]; then
+	data=$(printf '0.1\n-0.1\n1.1\n-1.1\n.1\n-.1\n')
+else
+	data=$(printf '0.1pR\n_0.1pR\n1.1pR\n_1.1pR\n.1pR\n_.1pR\n')
+fi
+
+printf '%s\n' "$data" | "$exe" "$@" -z > "$out2"
+checktest "$d" "$?" "leading zero" "$out1" "$out2"
+
 "$exe" "$@" -f "saotehasotnehasthistohntnsahxstnhalcrgxgrlpyasxtsaosysxsatnhoy.txt" > /dev/null 2> "$out2"
 err="$?"
 
