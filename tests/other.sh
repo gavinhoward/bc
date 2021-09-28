@@ -75,12 +75,14 @@ if [ "$d" = "bc" ]; then
 	opt="x"
 	lopt="extended-register"
 	line_var="BC_LINE_LENGTH"
+	lltest="line_length()"
 else
 	halt="q"
 	opt="l"
 	lopt="mathlib"
 	line_var="DC_LINE_LENGTH"
 	num="$num pR"
+	lltest="gcpR"
 fi
 
 # I use these, so unset them to make the tests work.
@@ -251,6 +253,11 @@ printf '%s\n' "$num" | "$exe" "$@" -C > "$out2"
 
 checktest "$d" "$?" "line length 3" "$out1" "$out2"
 
+printf '0\n' > "$out1"
+printf '%s\n' "$lltest" | "$exe" "$@" -C > "$out2"
+
+checktest "$d" "$?" "line length 3" "$out1" "$out2"
+
 printf 'pass\n'
 
 printf '%s\n' "$numres" > "$out1"
@@ -298,6 +305,14 @@ fi
 
 printf '%s\n' "$data" | "$exe" "$@" -z > "$out2"
 checktest "$d" "$?" "leading zero" "$out1" "$out2"
+
+if [ "$d" = "bc" ] && [ "$extra_math" -ne 0 ]; then
+
+	printf '%s\n' "$halt" | "$exe" "$@" -lz "$testdir/bc/leadingzero.txt" > "$out2"
+
+	checktest "$d" "$?" "leading zero script" "$testdir/bc/leadingzero_results.txt" "$out2"
+
+fi
 
 "$exe" "$@" -f "saotehasotnehasthistohntnsahxstnhalcrgxgrlpyasxtsaosysxsatnhoy.txt" > /dev/null 2> "$out2"
 err="$?"
