@@ -1729,8 +1729,14 @@ void bc_parse_parse(BcParse *p) {
 
 	// Functions need special parsing.
 	else if (p->l.t == BC_LEX_KW_DEFINE) {
-		if (BC_ERR(BC_PARSE_NO_EXEC(p)))
-			bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+		if (BC_ERR(BC_PARSE_NO_EXEC(p))) {
+			if (p->flags.len == 1 &&
+			    BC_PARSE_TOP_FLAG(p) == BC_PARSE_FLAG_IF_END)
+			{
+				bc_parse_noElse(p);
+			}
+			else bc_parse_err(p, BC_ERR_PARSE_TOKEN);
+		}
 		bc_parse_func(p);
 	}
 
