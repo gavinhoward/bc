@@ -3999,7 +3999,7 @@ a table of which ASCII characters are already used:
 | `d`        | x     | Duplication of Top of Stack                |
 | `e`        | x     | Else in Conditional Execution of Registers |
 | `f`        | x     | Printing the Stack                         |
-| `g`        |       |                                            |
+| `g`        | x     | Global Settings                            |
 | `h`        | x     | Shift Right                                |
 | `i`        | x     | Set `ibase`                                |
 | `j`        | x     | Set `seed`                                 |
