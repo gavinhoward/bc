@@ -58,6 +58,7 @@ subtract
 trunc
 vars
 void
+leadingzero
 ) do (
 if exist "%scripts%\%%i.txt" (
 	"%bc%" "%args%" < "%scripts%\%%i.txt" > "%%i_results.txt"
@@ -79,4 +80,25 @@ if exist "%scripts%\%%i.txt" (
 	echo FAIL_NOT_EXIST: %%i
 	goto :eof
 )
+)
+
+if exist "%scripts%\leadingzero.txt" (
+	"%bc%" "%args%" -z < "%scripts%\leadingzero.txt" > "leadingzero_results.txt"
+
+	if errorlevel 1 (
+		echo FAIL_RUNTIME: %scripts%\leadingzero.txt
+		goto :eof
+	)
+
+	fc.exe "%scripts%\leadingzero_results.txt" "leadingzero_results.txt" > NUL
+
+	if errorlevel 1 (
+		echo FAIL_RESULTS: %scripts%\leadingzero.txt
+		goto :eof
+	)
+
+	echo PASS: %%i
+) else (
+	echo FAIL_NOT_EXIST: %scripts%\leadingzero.txt"
+	goto :eof
 )
