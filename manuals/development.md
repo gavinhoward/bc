@@ -2231,6 +2231,11 @@ bitfuncs
 :   Tests the bitwise functions, `band()`, `bor()`, `bxor()`, `blshift()` and
     `brshift()` in [`gen/lib2.bc`][26].
 
+leadingzero
+
+:   Tests the leading zero functionality and the `plz*()` and `pnlz*()`
+    functions in [`gen/lib2.bc`][26].
+
 #### `dc` Standard Tests
 
 The list of current (17 July 2021) standard tests for `dc` is below:
