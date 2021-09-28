@@ -3935,6 +3935,95 @@ Another example are conditional execution instructions; they need to produce the
 instruction for the condition, and then they must parse a possible "else" part,
 which might not exist.
 
+##### Existing Commands
+
+`dc` is based on commands, which are usually one letter. The following table is
+a table of which ASCII characters are already used:
+
+| Characters | Used? | For...                                     |
+|------------|-------|--------------------------------------------|
+| Space      | x     | Separator                                  |
+| `!`        | x     | Conditional Execution of Registers         |
+| `"`        | x     | Bounded Rand Operator                      |
+| `#`        | x     | Comments                                   |
+| `$`        | x     | Truncation                                 |
+| `%`        | x     | Modulus                                    |
+| `&`        |       |                                            |
+| `'`        | x     | Rand Operator                              |
+| `(`        | x     | Greater Than Operator                      |
+| `)`        | x     | Less Than Operator                         |
+| `*`        | x     | Multiplication                             |
+| `+`        | x     | Addition                                   |
+| `,`        | x     | Depth of Execution Stack                   |
+| `-`        | x     | Subtraction                                |
+| `.`        | x     | Numbers                                    |
+| `/`        | x     | Division                                   |
+| `0-9`      | x     | Numbers                                    |
+| `:`        | x     | Store into Array                           |
+| `;`        | x     | Load from Array                            |
+| `<`        | x     | Conditional Execution of Registers         |
+| `=`        | x     | Conditional Execution of Registers         |
+| `>`        | x     | Conditional Execution of Registers         |
+| `?`        | x     | Ask for User Input                         |
+| `@`        | x     | Places Operator                            |
+| `A-F`      | x     | Numbers                                    |
+| `G`        | x     | Equal Operator                             |
+| `H`        | x     | Shift Left                                 |
+| `I`        | x     | Push `ibase` onto Stack                    |
+| `J`        | x     | Push `seed` onto Stack                     |
+| `K`        | x     | Push `scale` onto Stack                    |
+| `L`        | x     | Pop off of Register                        |
+| `M`        | x     | Boolean And Operator                       |
+| `N`        | x     | Boolean Not Operator                       |
+| `O`        | x     | Push `obase` onto Stack                    |
+| `P`        | x     | Byte Stream Printing                       |
+| `Q`        | x     | Quit Some Number of Macros                 |
+| `R`        | x     | Pop Top of Stack                           |
+| `S`        | x     | Push onto Register                         |
+| `T`        | x     | Push Max `ibase` onto Stack                |
+| `U`        | x     | Push Max `obase` onto Stack                |
+| `V`        | x     | Push Max `scale` onto Stack                |
+| `W`        | x     | Push Max of `'` Operator                   |
+| `X`        | x     | Scale of a Number                          |
+| `Y`        | x     | Length of Array                            |
+| `Z`        | x     | Number of Significant Digits               |
+| `[`        | x     | Strings                                    |
+| `\\`       | x     | Escaping Brackets in Strings               |
+| `]`        | x     | Strings                                    |
+| `^`        | x     | Power                                      |
+| `_`        | x     | Negative Numbers and Negation              |
+| Backtick   |       |                                            |
+| `a`        | x     | Asciify                                    |
+| `b`        | x     | Absolute Value                             |
+| `c`        | x     | Clear Stack                                |
+| `d`        | x     | Duplication of Top of Stack                |
+| `e`        | x     | Else in Conditional Execution of Registers |
+| `f`        | x     | Printing the Stack                         |
+| `g`        |       |                                            |
+| `h`        | x     | Shift Right                                |
+| `i`        | x     | Set `ibase`                                |
+| `j`        | x     | Set `seed`                                 |
+| `k`        | x     | Set `scale`                                |
+| `l`        | x     | Load from Register                         |
+| `m`        | x     | Boolean Or Operator                        |
+| `n`        | x     | Print and Pop                              |
+| `o`        | x     | Set `obase`                                |
+| `p`        | x     | Print with Newline                         |
+| `q`        | x     | Quit Two Macros                            |
+| `r`        | x     | Swap Top Two Items                         |
+| `s`        | x     | Store into Register                        |
+| `t`        |       |                                            |
+| `u`        |       |                                            |
+| `v`        | x     | Square Root                                |
+| `w`        |       |                                            |
+| `x`        | x     | Execute String                             |
+| `y`        | x     | Current Depth of a Register                |
+| `z`        | x     | Current Depth of Stack                     |
+| `{`        | x     | Greater Than or Equal Operator             |
+| `|`        | x     | Moduler Exponentiation                     |
+| `}`        | x     | Less Than or Equal Operator                |
+| `~`        | x     | Division and Modulus Combined              |
+
 #### `bc` Parsing
 
 `bc`'s parser is, by far, the most sensitive piece of code in this software, and
