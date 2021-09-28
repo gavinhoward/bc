@@ -254,7 +254,7 @@ void dc_lex_token(BcLex *l) {
 
 			if (c2 == 'l') l->t = BC_LEX_KW_LINE_LENGTH;
 			else if (c2 == 'z') l->t = BC_LEX_KW_LEADING_ZERO;
-			else bc_lex_invalidChar(l, c);
+			else bc_lex_invalidChar(l, c2);
 
 			l->i += 1;
 
