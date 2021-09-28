@@ -4020,7 +4020,7 @@ a table of which ASCII characters are already used:
 | `y`        | x     | Current Depth of a Register                |
 | `z`        | x     | Current Depth of Stack                     |
 | `{`        | x     | Greater Than or Equal Operator             |
-| `|`        | x     | Moduler Exponentiation                     |
+| `\|`       | x     | Moduler Exponentiation                     |
 | `}`        | x     | Less Than or Equal Operator                |
 | `~`        | x     | Division and Modulus Combined              |
 
