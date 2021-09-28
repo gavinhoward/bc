@@ -252,7 +252,7 @@ void dc_lex_token(BcLex *l) {
 		{
 			c2 = l->buf[l->i];
 
-			if (c2 == 'c') l->t = BC_LEX_KW_LINE_LENGTH;
+			if (c2 == 'l') l->t = BC_LEX_KW_LINE_LENGTH;
 			else if (c2 == 'z') l->t = BC_LEX_KW_LEADING_ZERO;
 			else bc_lex_invalidChar(l, c);
 

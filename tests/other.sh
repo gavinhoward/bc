@@ -82,7 +82,7 @@ else
 	lopt="mathlib"
 	line_var="DC_LINE_LENGTH"
 	num="$num pR"
-	lltest="gcpR"
+	lltest="glpR"
 fi
 
 # I use these, so unset them to make the tests work.
@@ -249,12 +249,12 @@ checktest "$d" "$?" "line length 2" "$out1" "$out2"
 printf '%s\n' "$num2" > "$out1"
 
 export "$line_var"=62
-printf '%s\n' "$num" | "$exe" "$@" -C > "$out2"
+printf '%s\n' "$num" | "$exe" "$@" -L > "$out2"
 
 checktest "$d" "$?" "line length 3" "$out1" "$out2"
 
 printf '0\n' > "$out1"
-printf '%s\n' "$lltest" | "$exe" "$@" -C > "$out2"
+printf '%s\n' "$lltest" | "$exe" "$@" -L > "$out2"
 
 checktest "$d" "$?" "line length 3" "$out1" "$out2"
 

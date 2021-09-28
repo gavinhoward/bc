@@ -177,7 +177,7 @@ void bc_args(int argc, char *argv[], bool exit_exprs) {
 				break;
 			}
 
-			case 'C':
+			case 'L':
 			{
 				vm.line_len = 0;
 				break;
