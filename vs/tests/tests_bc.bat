@@ -83,22 +83,22 @@ if exist "%scripts%\%%i.txt" (
 )
 
 if exist "%scripts%\leadingzero.txt" (
-	"%bc%" "%args%" -z < "%scripts%\leadingzero.txt" > "leadingzero_results.txt"
+	"%bc%" "%args%" -z < "%scripts%\leadingzero.txt" > "leadingzero_z_results.txt"
 
 	if errorlevel 1 (
-		echo FAIL_RUNTIME: %scripts%\leadingzero.txt
+		echo FAIL_RUNTIME: leadingzero_z
 		goto :eof
 	)
 
-	fc.exe "%scripts%\leadingzero_results.txt" "leadingzero_results.txt" > NUL
+	fc.exe "%scripts%\leadingzero_results.txt" "leadingzero_z_results.txt" > NUL
 
 	if errorlevel 1 (
-		echo FAIL_RESULTS: %scripts%\leadingzero.txt
+		echo FAIL_RESULTS: leadingzero_z
 		goto :eof
 	)
 
-	echo PASS: %%i
+	echo PASS: leadingzero_z
 ) else (
-	echo FAIL_NOT_EXIST: %scripts%\leadingzero.txt"
+	echo FAIL_NOT_EXIST: leadingzero_z
 	goto :eof
 )
