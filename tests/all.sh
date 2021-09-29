@@ -32,12 +32,24 @@ testdir=$(dirname "$script")
 
 . "$testdir/../scripts/functions.sh"
 
+# We need to figure out if we should run stuff in parallel.
+pll=1
+
+while getopts "n" opt; do
+
+	case "$opt" in
+		n) pll=0 ; shift ; set -e ;;
+		?) usage "Invalid option: $opt" ;;
+	esac
+
+done
+
 # Command-line processing.
 if [ "$#" -ge 1 ]; then
 	d="$1"
 	shift
 else
-	err_exit "usage: $script dir [run_extra_tests] [run_stack_tests] [gen_tests] [time_tests] [exec args...]" 1
+	err_exit "usage: $script [-n] dir [run_extra_tests] [run_stack_tests] [gen_tests] [time_tests] [exec args...]" 1
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -109,47 +121,92 @@ while read t; do
 		fi
 	fi
 
-	sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$time_tests" "$exe" "$@" &
-	pids="$pids $!"
+	if [ "$pll" -ne 0 ]; then
+		sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$time_tests" "$exe" "$@" &
+		pids="$pids $!"
+	else
+		sh "$testdir/test.sh" "$d" "$t" "$generate_tests" "$time_tests" "$exe" "$@"
+	fi
 
 done < "$testdir/$d/all.txt"
 
 # stdin tests.
-sh "$testdir/stdin.sh" "$d" "$exe" "$@" &
-pids="$pids $!"
+if [ "$pll" -ne 0 ]; then
+	sh "$testdir/stdin.sh" "$d" "$exe" "$@" &
+	pids="$pids $!"
+else
+	sh "$testdir/stdin.sh" "$d" "$exe" "$@"
+fi
 
 # Script tests.
-sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" \
-	"$time_tests" "$exe" "$@" &
-pids="$pids $!"
+if [ "$pll" -ne 0 ]; then
+	sh "$testdir/scripts.sh" "$d" "$extra" "$run_stack_tests" "$generate_tests" \
+		"$time_tests" "$exe" "$@" &
+	pids="$pids $!"
+else
+	sh "$testdir/scripts.sh" -n "$d" "$extra" "$run_stack_tests" "$generate_tests" \
+		"$time_tests" "$exe" "$@"
+fi
 
 # Read tests.
-sh "$testdir/read.sh" "$d" "$exe" "$@" &
-pids="$pids $!"
+if [ "$pll" -ne 0 ]; then
+	sh "$testdir/read.sh" "$d" "$exe" "$@" &
+	pids="$pids $!"
+else
+	sh "$testdir/read.sh" "$d" "$exe" "$@"
+fi
 
 # Error tests.
-sh "$testdir/errors.sh" "$d" "$exe" "$@" &
-pids="$pids $!"
+if [ "$pll" -ne 0 ]; then
+	sh "$testdir/errors.sh" "$d" "$exe" "$@" &
+	pids="$pids $!"
+else
+	sh "$testdir/errors.sh" "$d" "$exe" "$@"
+fi
 
-# Other tests.
-sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@" &
-pids="$pids $!"
+# Test all the files in the errors directory. While the other error test (in
+# tests/errors.sh) does a test for every line, this does one test per file, but
+# it runs the file through stdin and as a file on the command-line.
+for testfile in $testdir/$d/errors/*.txt; do
 
-exit_err=0
+	b=$(basename "$testfile")
 
-for p in $pids; do
-
-	wait "$p"
-	err="$?"
-
-	if [ "$err" -ne 0 ]; then
-		printf 'A test failed!\n'
-		exit_err=1
+	if [ "$pll" -ne 0 ]; then
+		sh "$testdir/error.sh" "$d" "$b" "$@" &
+		pids="$pids $!"
+	else
+		sh "$testdir/error.sh" "$d" "$b" "$@"
 	fi
+
 done
 
-if [ "$exit_err" -ne 0 ]; then
-	exit 1
+# Other tests.
+if [ "$pll" -ne 0 ]; then
+	sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@" &
+	pids="$pids $!"
+else
+	sh "$testdir/other.sh" "$d" "$extra" "$exe" "$@"
+fi
+
+if [ "$pll" -ne 0 ]; then
+
+	exit_err=0
+
+	for p in $pids; do
+
+		wait "$p"
+		err="$?"
+
+		if [ "$err" -ne 0 ]; then
+			printf 'A test failed!\n'
+			exit_err=1
+		fi
+	done
+
+	if [ "$exit_err" -ne 0 ]; then
+		exit 1
+	fi
+
 fi
 
 printf '\nAll %s tests passed.\n' "$d"

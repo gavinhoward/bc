@@ -28,105 +28,72 @@
 #
 
 script="$0"
+testdir=$(dirname "$script")
 
-testdir=$(dirname "${script}")
+. "$testdir/../scripts/functions.sh"
 
-pids=""
-
-# We need to figure out if we should run stuff in parallel.
-pll=1
-
-while getopts "n" opt; do
-
-	case "$opt" in
-		n) pll=0 ; shift ; set -e ;;
-		?) usage "Invalid option: $opt" ;;
-	esac
-
-done
+outputdir=${BC_TEST_OUTPUT_DIR:-$testdir}
 
 # Command-line processing.
-if [ "$#" -eq 0 ]; then
-	printf 'usage: %s [-n] dir [run_extra_tests] [run_stack_tests] [generate_tests] [time_tests] [exec args...]\n' "$script"
+if [ "$#" -lt 2 ]; then
+	printf 'usage: %s dir test [exec args...]\n' "$script"
 	exit 1
 else
 	d="$1"
 	shift
-fi
 
-if [ "$#" -gt 0 ]; then
-	run_extra_tests="$1"
+	t="$1"
 	shift
-else
-	run_extra_tests=1
 fi
 
-if [ "$#" -gt 0 ]; then
-	run_stack_tests="$1"
-	shift
+if [ "$#" -lt 1 ]; then
+	exe="$testdir/../bin/$d"
 else
-	run_stack_tests=1
-fi
-
-if [ "$#" -gt 0 ]; then
-	generate="$1"
-	shift
-else
-	generate=1
-fi
-
-if [ "$#" -gt 0 ]; then
-	time_tests="$1"
-	shift
-else
-	time_tests=0
-fi
-
-if [ "$#" -gt 0 ]; then
 	exe="$1"
 	shift
+fi
+
+# I use these, so unset them to make the tests work.
+unset BC_ENV_ARGS
+unset BC_LINE_LENGTH
+unset DC_ENV_ARGS
+unset DC_LINE_LENGTH
+
+out="$outputdir/${d}_outputs/error_results_${t}"
+outdir=$(dirname "$out")
+
+# Make sure the directory exists.
+if [ ! -d "$outdir" ]; then
+	mkdir -p "$outdir"
+fi
+
+# Set stuff for the correct calculator.
+if [ "$d" = "bc" ]; then
+	opts="-l"
+	halt="halt"
+	read_call="read()"
+	read_expr="${read_call}\n5+5;"
 else
-	exe="$testdir/../bin/$d"
+	opts="-x"
+	halt="q"
 fi
 
-scriptdir="$testdir/$d/scripts"
+testfile="$testdir/$d/errors/$t"
 
-scripts=$(cat "$scriptdir/all.txt")
+printf 'Running %s error file %s...' "$d" "$t"
 
-# Run each script test individually.
-for s in $scripts; do
+printf '%s\n' "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
+err="$?"
 
-	f=$(basename "$s")
+checkerrtest "$d" "$err" "$testfile" "$out" "$exebase" > /dev/null
 
-	if [ "$pll" -ne 0 ]; then
-		sh "$testdir/script.sh" "$d" "$f" "$run_extra_tests" "$run_stack_tests" \
-			"$generate" "$time_tests" "$exe" "$@" &
-		pids="$pids $!"
-	else
-		sh "$testdir/script.sh" "$d" "$f" "$run_extra_tests" "$run_stack_tests" \
-			"$generate" "$time_tests" "$exe" "$@"
-	fi
+printf 'pass\n'
 
-done
+printf 'Running %s error file %s through cat...' "$d" "$t"
 
-if [ "$pll" -ne 0 ]; then
+cat "$testfile" | "$exe" "$@" $opts 2> "$out" > /dev/null
+err="$?"
 
-	exit_err=0
+checkcrash "$d" "$err" "$testfile"
 
-	for p in $pids; do
-
-		wait "$p"
-		err="$?"
-
-		if [ "$err" -ne 0 ]; then
-			printf 'A script failed!\n'
-			exit_err=1
-		fi
-
-	done
-
-	if [ "$exit_err" -ne 0 ]; then
-		exit 1
-	fi
-
-fi
+printf 'pass\n'
