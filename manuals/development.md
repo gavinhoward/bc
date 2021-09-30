@@ -1563,10 +1563,18 @@ test scripts to know where the standard and other test directories are.
 The test for the [`bcl`][156] API. For more information, see the [`bcl`
 Test][157] section.
 
+#### `error.sh`
+
+The script to run the file-based error tests in `tests/<calculator>/errors/` for
+each calculator. For more information, see the [Error Tests][151] section.
+
+This is a separate script so that each error file can be run separately and in
+parallel.
+
 #### `errors.sh`
 
-The script to run the error tests for each calculator. For more information, see
-the [Error Tests][151] section.
+The script to run the line-based error tests in `tests/<calculator>/errors.txt`
+for each calculator. For more information, see the [Error Tests][151] section.
 
 #### `extra_required.txt`
 
@@ -2521,15 +2529,16 @@ treated differently.
 
 The error tests in the standard test directory, which include `errors.txt` for
 both calculators, `posix_errors.txt` for `bc`, and `read_errors.txt` for `dc`,
-are read line-by-line and shoved through `stdin`, and each line is considered a
-separate test. For this reason, there can't be any blank lines in the error
-files in the standard tests directory because a blank line causes a successful
-exit.
+are run by [`tests/errors.sh`][226]. It reads them line-by-line and shoves the
+data through `stdin`. Each line is considered a separate test. For this reason,
+there can't be any blank lines in the error files in the standard tests
+directory because a blank line causes a successful exit.
 
 On the other hand, the tests in the `errors/` directory below the standard tests
-directory are considered to be one test per file, and they are used differently.
-They are shoved into the calculator through `stdin`, but they are also executed
-on the command-line.
+directory are run by [`tests/error.sh`][227] and are considered to be one test
+per file. As such, they are used differently. They are shoved into the
+calculator through `stdin`, but they are also executed by passing them on the
+command-line.
 
 To add an error test, first figure out which kind you want.
 
@@ -2542,7 +2551,8 @@ respective `errors.txt` file.
 
 On the other hand, if you care if the error is run as a file on the
 command-line, or the error requires multiple lines to reproduce, then put the
-test in the respective `errors/` directory.
+test in the respective `errors/` directory and run the [`configure.sh`][69]
+script again.
 
 After that, you are done; the test suite will automatically pick up the new
 test, and you don't have to tell the test suite the expected results.
@@ -5062,3 +5072,5 @@ However, where possible, errors are returned directly.
 [223]: #ministatc
 [224]: #dc
 [225]: #allsh
+[226]: #errorssh
+[227]: #errorsh
