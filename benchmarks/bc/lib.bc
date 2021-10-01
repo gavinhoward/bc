@@ -5,3 +5,7 @@ print "    v = pi(i)\n"
 print "    v = e(v)\n"
 print "    v = l(v)\n"
 print "}\n"
+
+print "halt\n"
+
+halt

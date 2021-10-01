@@ -33,3 +33,6 @@ for (i = 0; i < max; ++i) {
 	print "b", i, "[100] = ", i, "\n"
 }
 
+print "halt\n"
+
+halt

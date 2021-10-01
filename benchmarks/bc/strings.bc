@@ -34,3 +34,7 @@ print "\qasotehnuasnotehustnaoheusntaoheustnaoheusntaoehunsatoheuastoehuaosnetuh
 for (i = 0; i < max; ++i) {
 	print "\qabc", i, " = ", i, "\\n\q\n"
 }
+
+print "halt\n"
+
+halt

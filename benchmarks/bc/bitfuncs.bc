@@ -13,6 +13,6 @@ for (i = 0; i < max; ++i) {
 	print "band(", a, ", ", b, ")\n"
 	print "bor(", a, ", ", b, ")\n"
 	print "bxor(", a, ", ", b, ")\n"
-	print "blshift(", a, ", ", b % 32, ")\n"
-	print "brshift(", a, ", ", b % 32, ")\n"
+	print "bshl(", a, ", ", b % 32, ")\n"
+	print "bshr(", a, ", ", b % 32, ")\n"
 }
