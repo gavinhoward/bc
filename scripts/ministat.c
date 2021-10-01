@@ -10,10 +10,15 @@
  *
  */
 
+#ifdef __GNU_LIBRARY__
 #include <sys/cdefs.h>
+#endif // __GNU_LIBRARY__
 
 #include <sys/ioctl.h>
+
+#ifdef __GNU_LIBRARY__
 #include <sys/queue.h>
+#endif // __GNU_LIBRARY__
 
 #include <assert.h>
 #include <ctype.h>
