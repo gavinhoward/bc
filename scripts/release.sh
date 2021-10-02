@@ -588,7 +588,7 @@ build_set() {
 	_build_set_run_tests="$1"
 	shift
 
-	#debug "$_build_set_CC" "$_build_set_run_tests"
+	debug "$_build_set_CC" "$_build_set_run_tests"
 	release "$_build_set_CC" "$_build_set_run_tests"
 	reldebug "$_build_set_CC" "$_build_set_run_tests"
 	minsize "$_build_set_CC" "$_build_set_run_tests"
