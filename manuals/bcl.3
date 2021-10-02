@@ -55,6 +55,11 @@ These items allow clients to set up bcl(3).
 .PP
 \f[B]void bcl_setAbortOnFatalError(bool\f[R] \f[I]abrt\f[R]\f[B]);\f[R]
 .PP
+\f[B]bool bcl_leadingZeroes(\f[R]\f[I]void\f[R]\f[B]);\f[R]
+.PP
+\f[B]void bcl_setLeadingZeroes(bool\f[R]
+\f[I]leadingZeroes\f[R]\f[B]);\f[R]
+.PP
 \f[B]void bcl_gc(\f[R]\f[I]void\f[R]\f[B]);\f[R]
 .SS Contexts
 .PP
@@ -304,6 +309,8 @@ a fatal error occurs.
 .RS
 .PP
 If activated, clients do not need to check for fatal errors.
+.PP
+The default is \f[B]false\f[R].
 .RE
 .TP
 \f[B]void bcl_setAbortOnFatalError(bool\f[R] \f[I]abrt\f[R]\f[B])\f[R]
@@ -316,6 +323,23 @@ If \f[I]abrt\f[R] is \f[B]true\f[R], bcl(3) will cause a
 .PP
 If activated, clients do not need to check for fatal errors.
 .RE
+.TP
+\f[B]bool bcl_leadingZeroes(\f[R]\f[I]void\f[R]\f[B])\f[R]
+Queries and returns the state of whether leading zeroes are added to
+strings returned by \f[B]bcl_string()\f[R] when numbers are greater than
+\f[B]-1\f[R], less than \f[B]1\f[R], and not equal to \f[B]0\f[R].
+If \f[B]true\f[R] is returned, then leading zeroes will be added.
+.RS
+.PP
+The default is \f[B]false\f[R].
+.RE
+.TP
+\f[B]void bcl_setLeadingZeroes(bool\f[R] \f[I]leadingZeroes\f[R]\f[B])\f[R]
+Sets the state of whether leading zeroes are added to strings returned
+by \f[B]bcl_string()\f[R] when numbers are greater than \f[B]-1\f[R],
+less than \f[B]1\f[R], and not equal to \f[B]0\f[R].
+If \f[I]leadingZeroes\f[R] is \f[B]true\f[R], leading zeroes will be
+added to strings returned by \f[B]bcl_string()\f[R].
 .TP
 \f[B]void bcl_gc(\f[R]\f[I]void\f[R]\f[B])\f[R]
 Garbage collects cached instances of arbitrary-precision numbers.
