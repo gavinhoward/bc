@@ -2853,7 +2853,9 @@ void bc_program_exec(BcProgram *p) {
 			}
 
 			BC_PROG_LBL(BC_INST_LINE_LENGTH):
+#if BC_ENABLED
 			BC_PROG_LBL(BC_INST_GLOBAL_STACKS):
+#endif // BC_ENABLED
 			BC_PROG_LBL(BC_INST_LEADING_ZERO):
 			{
 				bc_program_globalSetting(p, inst);
