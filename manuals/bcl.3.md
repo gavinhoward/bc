@@ -220,8 +220,8 @@ bcl(3) is a library that implements arbitrary-precision decimal math, as
 bcl(3) is async-signal-safe if **bcl_handleSignal(**_void_**)** is used
 properly. (See the **SIGNAL HANDLING** section.)
 
-bcl(3) assumes that it is allowed to use the **bcl_** and **bc_** prefixes for
-symbol names without collision.
+bcl(3) assumes that it is allowed to use the **bcl**, **Bcl**, **bc**, and
+**Bc** prefixes for symbol names without collision.
 
 All of the items in its interface are described below. See the documentation for
 each function for what each function can return.
