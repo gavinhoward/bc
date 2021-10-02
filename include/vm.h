@@ -259,6 +259,10 @@
 /// A convenience macro for checking if the prompt is enabled.
 #define BC_PROMPT (BC_P)
 
+#else // !BC_ENABLE_LIBRARY
+
+#define BC_Z (vm.leading_zeroes)
+
 #endif // !BC_ENABLE_LIBRARY
 
 /**
@@ -411,6 +415,9 @@ typedef struct BcVm {
 
 	/// Whether or not bcl should abort on fatal errors.
 	bool abrt;
+
+	/// Whether or not to print leading zeros.
+	bool leading_zeroes;
 
 	/// The number of "references," or times that the library was initialized.
 	unsigned int refs;

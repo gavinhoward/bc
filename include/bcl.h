@@ -169,6 +169,8 @@ void bcl_free(void);
 
 bool bcl_abortOnFatalError(void);
 void bcl_setAbortOnFatalError(bool abrt);
+bool bcl_leadingZeroes(void);
+void bcl_setLeadingZeroes(bool leadingZeroes);
 
 void bcl_gc(void);
 
