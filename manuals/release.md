@@ -23,8 +23,8 @@ test if I did not change any of the math code.
 10.	Build on Windows, no errors or warnings.
 	* Debug/`x64`.
 	* Debug/`x86`.
-	* Release/`x64`.
-	* Release/`x86`.
+	* Release{MD,MT}/`x64`.
+	* Release{MD,MT}/`x86`.
 11.	Run and pass the `scripts/release.sh` script on my own machine.
 12.	Run and pass the `scripts/release.sh` script, without generated tests and
 	sanitizers, on FreeBSD.
@@ -42,10 +42,10 @@ test if I did not change any of the math code.
 21. Build all release versions of everything.
 	* Release/`x64` for `bc`.
 	* Release/`x64` for `dc`.
-	* Release/`x64` for `bcl`.
+	* Release{MD,MT}/`x64` for `bcl`.
 	* Release/`x86` for `bc`.
 	* Release/`x86` for `dc`.
-	* Release/`x86` for `bcl`.
+	* Release{MD,MT}/`x86` for `bcl`.
 22.	Put the builds where Linux can access them.
 23. Boot back into Linux.
 24.	Run `make clean_tests`.
