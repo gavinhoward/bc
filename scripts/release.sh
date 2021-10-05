@@ -29,11 +29,11 @@
 
 # For OpenBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0 0 0 0
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 0 1 0 1 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 1 0 0 0 0
 #
 # There is one problem with running this script on FreeBSD: it takes overcommit
 # to the extreme. This means that some tests that try to create allocation
@@ -42,15 +42,15 @@
 #
 # For Linux, run two separate ones (in different checkouts), like so:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0
-# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 1 0
+# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
 #
 # Yes, I usually do sanitizers with Clang and Valgrind with GCC.
 #
 # To run sanitizers or Valgrind with generated tests, use the following:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0
-# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 1 0
+# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
 #
 # The reason I run history tests with GCC and not with Clang is because Clang
 # already runs slower as a result of running with sanitizers, and the history
@@ -66,7 +66,7 @@ usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
 	printf '          [run_sanitizers] [run_valgrind] [test_settings] [run_64_bit] \n'
 	printf '          [run_gen_script] [test_c11] [test_128_bit] [test_computed_goto]\n'
-	printf '          [test_history]\n'
+	printf '          [test_karatsuba] [test_history]\n'
 	exit 1
 }
 
@@ -713,6 +713,14 @@ fi
 
 # Whether to test history or not.
 if [ "$#" -gt 0 ]; then
+	test_karatsuba="$1"
+	shift
+else
+	test_karatsuba=1
+fi
+
+# Whether to test history or not.
+if [ "$#" -gt 0 ]; then
 	test_history="$1"
 	shift
 else
@@ -768,7 +776,9 @@ if [ "$run_tests" -ne 0 ]; then
 	build "$release" "$defcc" "-O3" "1" "$bits"
 
 	# Run karatsuba.
-	karatsuba
+	if [ "$test_karatsuba" -ne 0 ]; then
+		karatsuba
+	fi
 
 	# Valgrind.
 	if [ "$run_valgrind" -ne 0 -a "$test_with_gcc" -ne 0 ]; then
