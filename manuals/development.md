@@ -2461,6 +2461,14 @@ strings2.bc
 
 :   Tests escaping in strings.
 
+ifs.bc
+
+:   Tests proper ending of `if` statements without `else` statements.
+
+ifs2.bc
+
+:   More tests proper ending of `if` statements without `else` statements.
+
 #### `dc` Script Tests
 
 The list of current (17 July 2021) script tests for `dc` is below:
