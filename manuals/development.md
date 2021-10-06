@@ -1,6 +1,6 @@
 # Development
 
-Updated: 29 July 2021
+Updated: 06 Oct 2021
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -406,40 +406,6 @@ repo would be more consistent.
 Functions are documented with Doxygen-style doc comments. Functions that appear
 in headers are documented in the headers, while static functions are documented
 where they are defined.
-
-### `bcl.sln`
-
-A Visual Studio solution file for [`bcl`][156]. This, along with
-[`bcl.vcxproj`][63] and [`bcl.vcxproj.filters`][64] is what makes it possible to
-build [`bcl`][156] on Windows.
-
-### `bcl.vcxproj`
-
-A Visual Studio project file for [`bcl`][156]. This, along with [`bcl.sln`][65]
-and [`bcl.vcxproj.filters`][64] is what makes it possible to build [`bcl`][156]
-on Windows.
-
-### `bcl.vcxproj.filters`
-
-A Visual Studio filters file for [`bcl`][156]. This, along with [`bcl.sln`][65]
-and [`bcl.vcxproj`][63] is what makes it possible to build [`bcl`][156] on
-Windows.
-
-### `bc.sln`
-
-A Visual Studio solution file for `bc`. This, along with [`bc.vcxproj`][66]
-and [`bc.vcxproj.filters`][67] is what makes it possible to build `bc` on
-Windows.
-
-### `bc.vcxproj`
-
-A Visual Studio project file for `bc`. This, along with [`bc.sln`][68] and
-[`bc.vcxproj.filters`][67] is what makes it possible to build `bc` on Windows.
-
-### `bc.vcxproj.filters`
-
-A Visual Studio filters file for `bc`. This, along with [`bc.sln`][68] and
-[`bc.vcxproj`][66] is what makes it possible to build `bc` on Windows.
 
 ### `configure`
 
@@ -1758,6 +1724,61 @@ information, see the [Corpuses][192] subsection of the [Fuzzing][82] section.
 
 The fuzzing input directory for the inputs for `dc`. For more information, see
 the [Corpuses][192] subsection of the [Fuzzing][82] section.
+
+### `vs/`
+
+The directory containing all of the materials needed to build `bc`, `dc`, and
+`bcl` on Windows.
+
+#### `bcl.sln`
+
+A Visual Studio solution file for [`bcl`][156]. This, along with
+[`bcl.vcxproj`][63] and [`bcl.vcxproj.filters`][64] is what makes it possible to
+build [`bcl`][156] on Windows.
+
+#### `bcl.vcxproj`
+
+A Visual Studio project file for [`bcl`][156]. This, along with [`bcl.sln`][65]
+and [`bcl.vcxproj.filters`][64] is what makes it possible to build [`bcl`][156]
+on Windows.
+
+#### `bcl.vcxproj.filters`
+
+A Visual Studio filters file for [`bcl`][156]. This, along with [`bcl.sln`][65]
+and [`bcl.vcxproj`][63] is what makes it possible to build [`bcl`][156] on
+Windows.
+
+#### `bc.sln`
+
+A Visual Studio solution file for `bc`. This, along with [`bc.vcxproj`][66]
+and [`bc.vcxproj.filters`][67] is what makes it possible to build `bc` on
+Windows.
+
+#### `bc.vcxproj`
+
+A Visual Studio project file for `bc`. This, along with [`bc.sln`][68] and
+[`bc.vcxproj.filters`][67] is what makes it possible to build `bc` on Windows.
+
+#### `bc.vcxproj.filters`
+
+A Visual Studio filters file for `bc`. This, along with [`bc.sln`][68] and
+[`bc.vcxproj`][66] is what makes it possible to build `bc` on Windows.
+
+#### `tests/`
+
+A directory of files to run tests on Windows.
+
+##### `tests_bc.bat`
+
+A file to run basic `bc` tests on Windows. It expects that it will be run from
+the directory containing it, and it also expects a `bc.exe` in the same
+directory.
+
+##### `tests_dc.bat`
+
+A file to run basic `dc` tests on Windows. It expects that it will be run from
+the directory containing it, and it also expects a `bc.exe` in the same
+directory.
 
 ## Build System
 
