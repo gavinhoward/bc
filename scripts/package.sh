@@ -203,7 +203,7 @@ if [ -d windows ]; then
 fi
 
 if [ -f windows.zip ]; then
-	rm -rf windows.zip
+	rm -rf $projver-windows.zip
 fi
 
 # Prepare Windows stuff.
@@ -213,6 +213,10 @@ mv vs windows
 # Remove unneeded Windows stuff.
 rm -rf windows/*.vcxproj.user
 rm -rf windows/src2
+rm -rf windows/tests
+rm -rf windows/*.sln
+rm -rf windows/*.vcxproj
+rm -rf windows/*.vcxproj.filters
 
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/*.obj
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/*.iobj
@@ -236,9 +240,9 @@ rm -rf windows/lib/{Win32,x64}/{Debug,ReleaseMD,ReleaseMT}/bcl.pdb
 rm -rf windows/lib/{Win32,x64}/{Debug,ReleaseMD,ReleaseMT}/bcl.vcxproj.FileListAbsolute.txt
 
 # Zip the Windows stuff.
-zip -r windows.zip windows > /dev/null
+zip -r $projver-windows.zip windows > /dev/null
 
 printf '\n'
 shasum "$projver.tar.xz"
 printf '\n'
-shasum "windows.zip"
+shasum "$projver-windows.zip"
