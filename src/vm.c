@@ -186,9 +186,11 @@ void bc_vm_info(const char* const help) {
 			                        "disabled";
 			const char* const prompt = BC_DEFAULT_PROMPT ? "enabled" :
 			                           "disabled";
+			const char* const expr = BC_DEFAULT_EXPR_EXIT ? "to exit" :
+			                           "to not exit";
 
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
-			               BC_BUILD_TYPE, banner, sigint, tty, prompt);
+			               BC_BUILD_TYPE, banner, sigint, tty, prompt, expr);
 		}
 #endif // BC_ENABLED
 
@@ -201,9 +203,11 @@ void bc_vm_info(const char* const help) {
 			                        "disabled";
 			const char* const prompt = DC_DEFAULT_PROMPT ? "enabled" :
 			                           "disabled";
+			const char* const expr = DC_DEFAULT_EXPR_EXIT ? "to exit" :
+			                           "to not exit";
 
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
-			               BC_BUILD_TYPE, sigint, tty, prompt);
+			               BC_BUILD_TYPE, sigint, tty, prompt, expr);
 		}
 #endif // DC_ENABLED
 	}
@@ -1172,7 +1176,7 @@ static void bc_vm_exec(void) {
 		BC_SIG_UNLOCK;
 
 		// Sometimes, executing expressions means we need to quit.
-		if (!vm.no_exprs && vm.exit_exprs) return;
+		if (!vm.no_exprs && vm.exit_exprs && BC_EXPR_EXIT) return;
 	}
 
 	// Process files.
@@ -1194,9 +1198,7 @@ static void bc_vm_exec(void) {
 
 	// We need to keep tty if history is enabled, and we need to keep rpath for
 	// the times when we read from /dev/urandom.
-	if (BC_TTY && !vm.history.badTerm) {
-		bc_pledge(bc_pledge_end_history, NULL);
-	}
+	if (BC_TTY && !vm.history.badTerm) bc_pledge(bc_pledge_end_history, NULL);
 	else
 #endif // BC_ENABLE_HISTORY
 	{
@@ -1233,6 +1235,8 @@ void bc_vm_boot(int argc, char *argv[]) {
 	bool tty;
 	const char* const env_len = BC_IS_BC ? "BC_LINE_LENGTH" : "DC_LINE_LENGTH";
 	const char* const env_args = BC_IS_BC ? "BC_ENV_ARGS" : "DC_ENV_ARGS";
+	const char* const env_exit = BC_IS_BC ? "BC_EXPR_EXIT" : "DC_EXPR_EXIT";
+	int env_exit_def = BC_IS_BC ? BC_DEFAULT_EXPR_EXIT : DC_DEFAULT_EXPR_EXIT;
 
 	// We need to know which of stdin, stdout, and stderr are tty's.
 	ttyin = isatty(STDIN_FILENO);
@@ -1269,6 +1273,8 @@ void bc_vm_boot(int argc, char *argv[]) {
 	// Set the line length by environment variable.
 	vm.line_len = (uint16_t) bc_vm_envLen(env_len);
 
+	bc_vm_setenvFlag(env_exit, env_exit_def, BC_FLAG_EXPR_EXIT);
+
 	// Clear the files and expressions vectors, just in case. This marks them as
 	// *not* allocated.
 	bc_vec_clear(&vm.files);
@@ -1289,26 +1295,22 @@ void bc_vm_boot(int argc, char *argv[]) {
 	bc_program_init(&vm.prog);
 	bc_parse_init(&vm.prs, &vm.prog, BC_PROG_MAIN);
 
-#if BC_ENABLED
-	// bc checks this environment variable to see if it should run in standard
-	// mode.
-	if (BC_IS_BC) {
-
-		char* var = bc_vm_getenv("POSIXLY_CORRECT");
-
-		vm.flags |= BC_FLAG_S * (var != NULL);
-		bc_vm_getenvFree(var);
-	}
-#endif // BC_ENABLED
-
 	// Set defaults.
 	vm.flags |= BC_TTY ? BC_FLAG_P | BC_FLAG_R : 0;
 	vm.flags |= BC_I ? BC_FLAG_Q : 0;
 
 #if BC_ENABLED
-	if (BC_IS_BC && BC_I) {
+	if (BC_IS_BC) {
+
+		// bc checks this environment variable to see if it should run in
+		// standard mode.
+		char* var = bc_vm_getenv("POSIXLY_CORRECT");
+
+		vm.flags |= BC_FLAG_S * (var != NULL);
+		bc_vm_getenvFree(var);
+
 		// Set whether we print the banner or not.
-		bc_vm_setenvFlag("BC_BANNER", BC_DEFAULT_BANNER, BC_FLAG_Q);
+		if (BC_I) bc_vm_setenvFlag("BC_BANNER", BC_DEFAULT_BANNER, BC_FLAG_Q);
 	}
 #endif // BC_ENABLED
 
@@ -1349,9 +1351,7 @@ void bc_vm_boot(int argc, char *argv[]) {
 #if BC_ENABLED
 	// Disable global stacks in POSIX mode.
 	if (BC_IS_POSIX) vm.flags &= ~(BC_FLAG_G);
-#endif // BC_ENABLED
 
-#if BC_ENABLED
 	// Print the banner if allowed. We have to be in bc, in interactive mode,
 	// and not be quieted by command-line option or environment variable.
 	if (BC_IS_BC && BC_I && (vm.flags & BC_FLAG_Q)) {

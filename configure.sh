@@ -290,6 +290,18 @@ usage() {
 	printf '|                 | for dc should be on  |              |                      |\n'
 	printf '|                 | in tty mode.         |              |                      |\n'
 	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| bc.expr_exit    | Whether to exit bc   |            1 | BC_EXPR_EXIT         |\n'
+	printf '|                 | if an expression or  |              |                      |\n'
+	printf '|                 | expression file is   |              |                      |\n'
+	printf '|                 | given with the -e or |              |                      |\n'
+	printf '|                 | -f options.          |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
+	printf '| dc.expr_exit    | Whether to exit dc   |            1 | DC_EXPR_EXIT         |\n'
+	printf '|                 | if an expression or  |              |                      |\n'
+	printf '|                 | expression file is   |              |                      |\n'
+	printf '|                 | given with the -e or |              |                      |\n'
+	printf '|                 | -f options.          |              |                      |\n'
+	printf '| --------------- | -------------------- | ------------ | -------------------- |\n'
 	printf '\n'
 	printf 'These settings are not meant to be changed on a whim. They are meant to ensure\n'
 	printf 'that this bc and dc will conform to the expectations of the user on each\n'
@@ -594,6 +606,8 @@ set_default() {
 		dc.tty_mode) dc_default_tty_mode="$_set_default_on" ;;
 		bc.prompt) bc_default_prompt="$_set_default_on" ;;
 		dc.prompt) dc_default_prompt="$_set_default_on" ;;
+		bc.expr_exit) bc_default_expr_exit="$_set_default_on";;
+		dc.expr_exit) dc_default_expr_exit="$_set_default_on";;
 		?) usage "Invalid setting: $_set_default_name" ;;
 
 	esac
@@ -656,6 +670,8 @@ bc_default_tty_mode=1
 dc_default_tty_mode=0
 bc_default_prompt=""
 dc_default_prompt=""
+bc_default_expr_exit=1
+dc_default_expr_exit=1
 
 # getopts is a POSIX utility, but it cannot handle long options. Thus, the
 # handling of long options is done by hand, and that's the reason that short and
@@ -1495,6 +1511,8 @@ printf 'bc.tty_mode=%s\n' "$bc_default_tty_mode"
 printf 'dc.tty_mode=%s\n' "$dc_default_tty_mode"
 printf 'bc.prompt=%s\n' "$bc_default_prompt"
 printf 'dc.prompt=%s\n' "$dc_default_prompt"
+printf 'bc.expr_exit=%s\n' "$bc_default_expr_exit"
+printf 'dc.expr_exit=%s\n' "$dc_default_expr_exit"
 
 # This is where the real work begins. This is the point at which the Makefile.in
 # template is edited and output to the Makefile.
@@ -1630,6 +1648,8 @@ contents=$(replace "$contents" "BC_DEFAULT_TTY_MODE" "$bc_default_tty_mode")
 contents=$(replace "$contents" "DC_DEFAULT_TTY_MODE" "$dc_default_tty_mode")
 contents=$(replace "$contents" "BC_DEFAULT_PROMPT" "$bc_default_prompt")
 contents=$(replace "$contents" "DC_DEFAULT_PROMPT" "$dc_default_prompt")
+contents=$(replace "$contents" "BC_DEFAULT_EXPR_EXIT" "$bc_default_expr_exit")
+contents=$(replace "$contents" "DC_DEFAULT_EXPR_EXIT" "$dc_default_expr_exit")
 
 # Do the first print to the Makefile.
 printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"
