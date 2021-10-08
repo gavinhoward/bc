@@ -439,7 +439,7 @@ test_bc_history21:
 
 test_dc_history:%%DC_HISTORY_TEST_PREREQS%%
 
-test_dc_history_all: test_dc_history0 test_dc_history1 test_dc_history2 test_dc_history3 test_dc_history4 test_dc_history5 test_dc_history6 test_dc_history7 test_dc_history8 test_dc_history9
+test_dc_history_all: test_dc_history0 test_dc_history1 test_dc_history2 test_dc_history3 test_dc_history4 test_dc_history5 test_dc_history6 test_dc_history7 test_dc_history8 test_dc_history9 test_dc_history10
 
 test_dc_history_skip:
 	@printf 'No dc history tests to run\n'
@@ -473,6 +473,9 @@ test_dc_history8:
 
 test_dc_history9:
 	@sh tests/history.sh dc 9 %%DC_TEST_EXEC%%
+
+test_dc_history10:
+	@sh tests/history.sh dc 10 %%DC_TEST_EXEC%%
 
 test_history_header:
 	@printf '$(TEST_STARS)\n\nRunning history tests...\n\n'

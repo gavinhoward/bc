@@ -1044,6 +1044,7 @@ dc_tests = [
 	test_dc_utf8_1,
 	test_dc_utf8_2,
 	test_dc_utf8_3,
+	test_dc_utf8_4,
 	test_sigint_sigquit,
 	test_eof,
 	test_sigint,
