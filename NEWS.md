@@ -1,5 +1,12 @@
 # News
 
+## 5.2.0
+
+This is a production release that adds a new feature.
+
+This feature is the ability to turn off exiting on expressions. It is also
+possible to set the default using `configure.sh`.
+
 ## 5.1.1
 
 This is a production release that completes a bug fix from `5.1.0`. The bug
