@@ -42,14 +42,14 @@
 #
 # For Linux, run two separate ones (in different checkouts), like so:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 1 0
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0
 # scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
 #
 # Yes, I usually do sanitizers with Clang and Valgrind with GCC.
 #
 # To run sanitizers or Valgrind with generated tests, use the following:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 1 0
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0
 # scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
 #
 # The reason I run history tests with GCC and not with Clang is because Clang

@@ -170,9 +170,9 @@ void bcl_free(void) {
 
 	bc_vm_atexit();
 
-	memset(&vm, 0, sizeof(BcVm));
-
 	BC_SIG_UNLOCK;
+
+	memset(&vm, 0, sizeof(BcVm));
 
 	assert(!vm.running && !vm.sig && !vm.sig_lock);
 }
