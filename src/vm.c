@@ -556,6 +556,8 @@ void bc_vm_shutdown(void) {
 
 void bc_vm_addTemp(BcDig *num) {
 
+	BC_SIG_ASSERT_LOCKED;
+
 	// If we don't have room, just free.
 	if (vm.temps_len == BC_VM_MAX_TEMPS) free(num);
 	else {
@@ -567,8 +569,13 @@ void bc_vm_addTemp(BcDig *num) {
 }
 
 BcDig* bc_vm_takeTemp(void) {
+
+	BC_SIG_ASSERT_LOCKED;
+
 	if (!vm.temps_len) return NULL;
+
 	vm.temps_len -= 1;
+
 	return temps_buf[vm.temps_len];
 }
 
@@ -664,8 +671,9 @@ char* bc_vm_strdup(const char *str) {
 void bc_vm_printf(const char *fmt, ...) {
 
 	va_list args;
+	sig_atomic_t lock;
 
-	BC_SIG_LOCK;
+	BC_SIG_TRYLOCK(lock);
 
 	va_start(args, fmt);
 	bc_file_vprintf(&vm.fout, fmt, args);
@@ -673,7 +681,7 @@ void bc_vm_printf(const char *fmt, ...) {
 
 	vm.nchars = 0;
 
-	BC_SIG_UNLOCK;
+	BC_SIG_TRYUNLOCK(lock);
 }
 #endif // !BC_ENABLE_LIBRARY
 
@@ -749,6 +757,8 @@ static void bc_vm_clean(void) {
 	BcInstPtr *ip = bc_vec_item(&vm.prog.stack, 0);
 	bool good = ((vm.status && vm.status != BC_STATUS_QUIT) || vm.sig);
 
+	BC_SIG_ASSERT_LOCKED;
+
 	// If all is good, go ahead and reset.
 	if (good) bc_program_reset(&vm.prog);
 
@@ -820,6 +830,8 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 
 	do {
 
+		BC_SIG_LOCK;
+
 #if BC_ENABLED
 		// If the first token is the keyword define, then we need to do this
 		// specially because bc thinks it may not be able to parse.
@@ -828,6 +840,8 @@ static void bc_vm_process(const char *text, bool is_stdin) {
 
 		// Parse it all.
 		while (BC_PARSE_CAN_PARSE(vm.prs)) vm.parse(&vm.prs);
+
+		BC_SIG_UNLOCK;
 
 		// Execute if possible.
 		if(BC_IS_DC || !BC_PARSE_NO_EXEC(&vm.prs)) bc_program_exec(&vm.prog);
@@ -905,6 +919,8 @@ bool bc_vm_readLine(bool clear) {
 	BcStatus s;
 	bool good;
 
+	BC_SIG_ASSERT_NOT_LOCKED;
+
 	// Clear the buffer if desired.
 	if (clear) bc_vec_empty(&vm.buffer);
 
@@ -973,7 +989,11 @@ restart:
 		bc_vm_process(vm.buffer.v, true);
 
 		if (vm.eof) break;
-		else bc_vm_clean();
+		else {
+			BC_SIG_LOCK;
+			bc_vm_clean();
+			BC_SIG_UNLOCK;
+		}
 	}
 
 #if BC_ENABLED
@@ -1026,7 +1046,11 @@ static void bc_vm_load(const char *name, const char *text) {
 	bc_lex_file(&vm.prs.l, name);
 	bc_parse_text(&vm.prs, text, false);
 
+	BC_SIG_LOCK;
+
 	while (vm.prs.l.t != BC_LEX_EOF) vm.parse(&vm.prs);
+
+	BC_SIG_UNLOCK;
 }
 
 #endif // BC_ENABLED
