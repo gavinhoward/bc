@@ -3835,6 +3835,8 @@ because there are a few big snares:
 2.	While `longjmp()` is required to be [async-signal-safe][115], if it is
 	invoked by a signal handler that interrupted a non-[async-signal-safe][115]
 	function, then the behavior is undefined.
+3.	Any mutation that is not guaranteed to be atomic with respect to signals may
+	be incomplete when a signal arrives.
 
 Oh boy.
 
@@ -3844,12 +3846,15 @@ any modifying pointer arithmetic, pointers and their data would be safe. For
 cases where I have local data that must change and stay changed, I needed to
 *undo* the `setjmp()`, do the change, and the *redo* the `setjmp()`.
 
-For number 2, `bc` needs some way to tell the signal handler that it cannot do a
-`longjmp()`. This is done by "locking" signals with a `volatile sig_atomic_t`.
-(For more information, see the [Async-Signal-Safe Signal Handling][173]
-section.) For every function that calls a function that is not
+For number 2 and number 3, `bc` needs some way to tell the signal handler that
+it cannot do a `longjmp()`. This is done by "locking" signals with a `volatile
+sig_atomic_t`. (For more information, see the [Async-Signal-Safe Signal
+Handling][173] section.) For every function that calls a function that is not
 async-signal-safe, they first need to use `BC_SIG_LOCK` to lock signals, and
 afterward, use `BC_SIG_UNLOCK` to unlock signals.
+
+Code also need to do this for all global, non-atomic mutation, which means that
+modifying any part of the `BcVm` global struct.
 
 `BC_SIG_UNLOCK` has another requirement: it must check for signals or errors and
 jump if necessary.
