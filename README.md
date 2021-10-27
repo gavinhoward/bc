@@ -58,8 +58,8 @@ system.
 This `bc` should build unmodified on any POSIX-compliant system or on Windows
 starting with Windows 10 (though earlier versions may work).
 
-For more complex build requirements than the ones below, see the
-[build manual][5].
+For more complex build requirements than the ones below, see the [build
+manual][5].
 
 ### Windows
 
@@ -76,38 +76,45 @@ support) disabled, with both calculators built.
 
 #### `bc`
 
-To build `bc`, you can open the `bc.sln` file in Visual Studio, select the
+To build `bc`, you can open the `vs/bc.sln` file in Visual Studio, select the
 configuration, and build.
 
 You can also build using MSBuild with the following from the root directory:
 
 ```
-msbuild -property:Configuration=<config> bc.sln
+msbuild -property:Configuration=<config> vs/bc.sln
 ```
 
 where `<config>` is either one of `Debug` or `Release`.
 
+On Windows, the calculators are built as `vs/bin/<platform>/<config>/bc.exe` and
+`vs/bin/<Platform>/<Config>/dc.exe`, where `<platform>` can be either `Win32` or
+`x64`, and `<config>` can be `Debug` or `Release`.
+
+**Note**: On Windows, `dc.exe` is just copied from `bc.exe`; it is not linked.
+Patches are welcome for a way to do that.
+
 #### `bcl` (Library)
 
-To build the library, you can open the `bcl.sln` file in Visual Studio, select
-the configuration, and build.
+To build the library, you can open the `vs/bcl.sln` file in Visual Studio,
+select the configuration, and build.
 
 You can also build using MSBuild with the following from the root directory:
 
 ```
-msbuild -property:Configuration=<config> bcl.sln
+msbuild -property:Configuration=<config> vs/bcl.sln
 ```
 
-where `<config>` is either one of `Debug` or `Release`.
+where `<config>` is either one of `Debug`, `ReleaseMD`, or `ReleaseMT`.
+
+On Windows, the library is built as `vs/lib/<platform>/<config>/bcl.lib`, where
+`<platform>` can be either `Win32` or `x64`, and `<config>` can be `Debug`,
+`ReleaseMD`, or `ReleaseMT`.
 
 ### POSIX-Compatible Systems
 
 On POSIX-compatible systems, `bc` is built as `bin/bc` and `dc` is built as
-`bin/dc` by default. On Windows, they are built as `Release/bc/bc.exe` and
-`Release/bc/dc.exe`.
-
-**Note**: On Windows, `dc.exe` is just copied from `bc.exe`; it is not linked.
-Patches are welcome for a way to do that.
+`bin/dc` by default.
 
 #### Default
 
