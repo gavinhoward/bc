@@ -205,6 +205,9 @@ usage() {
 	printf '                 path (or contain one). This is treated the same as the POSIX\n'
 	printf '                 definition of $NLSPATH (see POSIX environment variables for\n'
 	printf '                 more information). Default is "/usr/share/locale/%%L/%%N".\n'
+	printf '    PC_PATH      The location to install pkg-config files to. Must be an\n'
+	printf '                 path or contain one. Default is the first path given by the\n'
+	printf '                 output of `pkg-config --variable=pc_path pkg-config`.\n'
 	printf '    EXECSUFFIX   The suffix to append to the executable names, used to not\n'
 	printf '                 interfere with other installed bc executables. Default is "".\n'
 	printf '    EXECPREFIX   The prefix to append to the executable names, used to not\n'
@@ -1172,6 +1175,24 @@ if [ -z "${LIBDIR+set}" ]; then
 	LIBDIR="$PREFIX/lib"
 fi
 
+if [ -z "${PC_PATH+set}" ]; then
+
+	set +e
+
+	command -v pkg-config > /dev/null
+	err=$?
+
+	set -e
+
+	if [ "$err" -eq 0 ]; then
+		PC_PATH=$(pkg-config --variable=pc_path pkg-config)
+		PC_PATH="${PC_PATH%%:*}"
+	else
+		PC_PATH=""
+	fi
+
+fi
+
 # Set a default for the DATAROOTDIR. This is done if either manpages will be
 # installed, or locales are enabled because that's probably where NLS_PATH
 # points.
@@ -1424,14 +1445,46 @@ else
 	headers="$headers \$(DC_HEADERS)"
 fi
 
+# This convoluted mess does pull the version out. If you change the format of
+# include/version.h, you may have to change this line.
+version=$(cat include/version.h | grep "VERSION " - | awk '{ print $3 }' -)
+
 if [ "$library" -ne 0 ]; then
+
 	unneeded="$unneeded args.c opt.c read.c file.c main.c"
 	unneeded="$unneeded lang.c lex.c parse.c program.c"
 	unneeded="$unneeded bc.c bc_lex.c bc_parse.c"
 	unneeded="$unneeded dc.c dc_lex.c dc_parse.c"
 	headers="$headers \$(LIBRARY_HEADERS)"
+
+	if [ "$PC_PATH" != "" ]; then
+
+		contents=$(cat "$scriptdir/bcl.pc.in")
+
+		contents=$(replace "$contents" "INCLUDEDIR" "$INCLUDEDIR")
+		contents=$(replace "$contents" "LIBDIR" "$LIBDIR")
+		contents=$(replace "$contents" "VERSION" "$version")
+
+		printf '%s\n' "$contents" > "$scriptdir/bcl.pc"
+
+		pkg_config_install="\$(SAFE_INSTALL) \$(PC_INSTALL_ARGS) \"\$(BCL_PC)\" \"\$(DESTDIR)\$(PC_PATH)/\$(BCL_PC)\""
+		pkg_config_uninstall="\$(RM) -f \"\$(DESTDIR)\$(PC_PATH)/\$(BCL_PC)\""
+
+	else
+
+		pkg_config_install=""
+		pkg_config_uninstall=""
+
+	fi
+
 else
+
 	unneeded="$unneeded library.c"
+
+	PC_PATH=""
+	pkg_config_install=""
+	pkg_config_uninstall=""
+
 fi
 
 # library.c is not needed under normal circumstances.
@@ -1465,6 +1518,8 @@ dc_script_tests=$(gen_script_test_targets dc)
 dc_err_tests=$(gen_err_test_targets dc)
 
 # Print out the values; this is for debugging.
+printf 'Version: %s\n' "$version"
+
 if [ "$bc" -ne 0 ]; then
 	printf 'Building bc\n'
 else
@@ -1500,6 +1555,7 @@ printf 'MANDIR=%s\n' "$MANDIR"
 printf 'MAN1DIR=%s\n' "$MAN1DIR"
 printf 'MAN3DIR=%s\n' "$MAN3DIR"
 printf 'NLSPATH=%s\n' "$NLSPATH"
+printf 'PC_PATH=%s\n' "$PC_PATH"
 printf 'EXECSUFFIX=%s\n' "$EXECSUFFIX"
 printf 'EXECPREFIX=%s\n' "$EXECPREFIX"
 printf 'DESTDIR=%s\n' "$DESTDIR"
@@ -1605,6 +1661,10 @@ contents=$(replace "$contents" "INSTALL_LOCALES_PREREQS" "$install_locales_prere
 contents=$(replace "$contents" "UNINSTALL_MAN_PREREQS" "$uninstall_man_prereqs")
 contents=$(replace "$contents" "UNINSTALL_PREREQS" "$uninstall_prereqs")
 contents=$(replace "$contents" "UNINSTALL_LOCALES_PREREQS" "$uninstall_locales_prereqs")
+
+contents=$(replace "$contents" "PC_PATH" "$PC_PATH")
+contents=$(replace "$contents" "PKG_CONFIG_INSTALL" "$pkg_config_install")
+contents=$(replace "$contents" "PKG_CONFIG_UNINSTALL" "$pkg_config_uninstall")
 
 contents=$(replace "$contents" "DEFAULT_TARGET" "$default_target")
 contents=$(replace "$contents" "DEFAULT_TARGET_PREREQS" "$default_target_prereqs")

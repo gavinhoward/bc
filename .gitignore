@@ -33,6 +33,7 @@ dc_help.c
 config.mak
 timeconst.bc
 Makefile
+bcl.pc
 
 tests/fuzzing/bc_outputs1/*
 tests/fuzzing/bc_outputs2/*

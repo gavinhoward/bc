@@ -112,6 +112,10 @@ BCL_MD = $(BCL_MANPAGE).md
 
 MANPAGE_INSTALL_ARGS = -Dm644
 BINARY_INSTALL_ARGS = -Dm755
+PC_INSTALL_ARGS = $(MANPAGE_INSTALL_ARGS)
+
+BCL_PC = $(BCL).pc
+PC_PATH = %%PC_PATH%%
 
 BCL_HEADER_NAME = bcl.h
 BCL_HEADER = include/$(BCL_HEADER_NAME)
@@ -592,6 +596,7 @@ install_execs:
 
 install_library: install_bcl_header
 	$(SAFE_INSTALL) $(BINARY_INSTALL_ARGS) $(LIBBC) $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
+	%%PKG_CONFIG_INSTALL%%
 
 install:%%INSTALL_LOCALES_PREREQS%%%%INSTALL_MAN_PREREQS%%%%INSTALL_PREREQS%%
 
@@ -612,6 +617,7 @@ uninstall_dc:
 
 uninstall_library: uninstall_bcl_header
 	$(RM) -f $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
+	%%PKG_CONFIG_UNINSTALL%%
 
 uninstall_bcl_header:
 	$(RM) -f $(DESTDIR)$(INCLUDEDIR)/$(BCL_HEADER_NAME)
