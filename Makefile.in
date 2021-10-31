@@ -590,7 +590,7 @@ install_bcl_header:
 install_execs:
 	$(INSTALL) $(DESTDIR)$(BINDIR) "$(EXEC_SUFFIX)"
 
-install_library:
+install_library: install_bcl_header
 	$(SAFE_INSTALL) $(BINARY_INSTALL_ARGS) $(LIBBC) $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
 
 install:%%INSTALL_LOCALES_PREREQS%%%%INSTALL_MAN_PREREQS%%%%INSTALL_PREREQS%%
@@ -610,7 +610,7 @@ uninstall_dc_manpage:
 uninstall_dc:
 	$(RM) -f $(DESTDIR)$(BINDIR)/$(EXEC_PREFIX)$(DC)$(EXEC_SUFFIX)
 
-uninstall_library:
+uninstall_library: uninstall_bcl_header
 	$(RM) -f $(DESTDIR)$(LIBDIR)/$(LIB_NAME)
 
 uninstall_bcl_header:

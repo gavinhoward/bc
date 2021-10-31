@@ -1015,6 +1015,11 @@ if [ "$library" -ne 0 ]; then
 	test_bc_history_prereqs=" test_bc_history_skip"
 	test_dc_history_prereqs=" test_dc_history_skip"
 
+	install_prereqs=" install_library"
+	uninstall_prereqs=" uninstall_library"
+	install_man_prereqs=" install_bcl_manpage"
+	uninstall_man_prereqs=" uninstall_bcl_manpage"
+
 elif [ "$bc_only" -eq 1 ]; then
 
 	bc=1
