@@ -31,9 +31,9 @@ script="$0"
 scriptdir=$(dirname "$script")
 script=$(basename "$script")
 
-. "$scriptdir/scripts/functions.sh"
+builddir=$(pwd)
 
-cd "$scriptdir"
+. "$scriptdir/scripts/functions.sh"
 
 # Simply prints the help message and quits based on the argument.
 # @param val  The value to pass to exit. Must be an integer.
@@ -394,14 +394,14 @@ find_src_files() {
 		while [ "$#" -ge 1 ]; do
 			_find_src_files_a="${1## }"
 			shift
-			_find_src_files_args="$_find_src_files_args ! -path src/${_find_src_files_a}"
+			_find_src_files_args="$_find_src_files_args ! -path \"$scriptdir/src/${_find_src_files_a}\""
 		done
 
 	else
 		_find_src_files_args="-print"
 	fi
 
-	printf '%s\n' $(find src/ -depth -name "*.c" $_find_src_files_args)
+	printf '%s\n' $(find "$scriptdir/src/" -depth -name "*.c" $_find_src_files_args)
 }
 
 # This function generates a list of files to go into the Makefile. It generates
@@ -418,10 +418,6 @@ gen_file_list() {
 	_gen_file_list_contents="$1"
 	shift
 
-	p=$(pwd)
-
-	cd "$scriptdir"
-
 	if [ "$#" -ge 1 ]; then
 		_gen_file_list_unneeded="$@"
 	else
@@ -437,7 +433,14 @@ gen_file_list() {
 	_gen_file_list_contents=$(replace "$_gen_file_list_contents" \
 		"$_gen_file_list_needle_src" "$_gen_file_list_replacement")
 
-	_gen_file_list_replacement=$(replace_exts "$_gen_file_list_replacement" "c" "o")
+	_gen_file_list_cbases=""
+
+	for _gen_file_list_f in $_gen_file_list_replacement; do
+		_gen_file_list_b=$(basename "$_gen_file_list_f")
+		_gen_file_list_cbases="$_gen_file_list_cbases src/$_gen_file_list_b"
+	done
+
+	_gen_file_list_replacement=$(replace_exts "$_gen_file_list_cbases" "c" "o")
 	_gen_file_list_contents=$(replace "$_gen_file_list_contents" \
 		"$_gen_file_list_needle_obj" "$_gen_file_list_replacement")
 
@@ -448,8 +451,6 @@ gen_file_list() {
 	_gen_file_list_replacement=$(replace_exts "$_gen_file_list_replacement" "gcda" "gcno")
 	_gen_file_list_contents=$(replace "$_gen_file_list_contents" \
 		"$_gen_file_list_needle_gcno" "$_gen_file_list_replacement")
-
-	cd "$p"
 
 	printf '%s\n' "$_gen_file_list_contents"
 }
@@ -481,16 +482,16 @@ gen_std_tests() {
 			if [ -z "${_gen_std_tests_extra_required##*$_gen_std_tests_t*}" ]; then
 				printf 'test_%s_%s:\n\t@printf "Skipping %s %s\\n"\n\n' \
 					"$_gen_std_tests_name" "$_gen_std_tests_t" "$_gen_std_tests_name" \
-					"$_gen_std_tests_t" >> "$scriptdir/Makefile"
+					"$_gen_std_tests_t" >> "Makefile"
 				continue
 			fi
 
 		fi
 
-		printf 'test_%s_%s:\n\t@sh tests/test.sh %s %s %s %s %s\n\n' \
-			"$_gen_std_tests_name" "$_gen_std_tests_t" "$_gen_std_tests_name" \
+		printf 'test_%s_%s:\n\t@export BC_TEST_OUTPUT_DIR="%s/tests"; sh \$(TESTSDIR)/test.sh %s %s %s %s %s\n\n' \
+			"$_gen_std_tests_name" "$_gen_std_tests_t" "$builddir" "$_gen_std_tests_name" \
 			"$_gen_std_tests_t" "$generate_tests" "$time_tests" \
-			"$*" >> "$scriptdir/Makefile"
+			"$*" >> "Makefile"
 
 	done
 }
@@ -527,9 +528,9 @@ gen_err_tests() {
 
 	for _gen_err_tests_t in $_gen_err_tests_fs; do
 
-		printf 'test_%s_error_%s:\n\t@sh tests/error.sh %s %s %s\n\n' \
-			"$_gen_err_tests_name" "$_gen_err_tests_t" "$_gen_err_tests_name" \
-			"$_gen_err_tests_t" "$*" >> "$scriptdir/Makefile"
+		printf 'test_%s_error_%s:\n\t@export BC_TEST_OUTPUT_DIR="%s/tests"; sh \$(TESTSDIR)/error.sh %s %s %s\n\n' \
+			"$_gen_err_tests_name" "$_gen_err_tests_t" "$builddir" "$_gen_err_tests_name" \
+			"$_gen_err_tests_t" "$*" >> "Makefile"
 
 	done
 
@@ -581,10 +582,10 @@ gen_script_tests() {
 
 		_gen_script_tests_b=$(basename "$_gen_script_tests_f" ".${_gen_script_tests_name}")
 
-		printf 'test_%s_script_%s:\n\t@sh tests/script.sh %s %s %s 1 %s %s %s\n\n' \
-			"$_gen_script_tests_name" "$_gen_script_tests_b" "$_gen_script_tests_name" \
+		printf 'test_%s_script_%s:\n\t@export BC_TEST_OUTPUT_DIR="%s/tests"; sh \$(TESTSDIR)/script.sh %s %s %s 1 %s %s %s\n\n' \
+			"$_gen_script_tests_name" "$_gen_script_tests_b" "$builddir" "$_gen_script_tests_name" \
 			"$_gen_script_tests_f" "$_gen_script_tests_extra_math" "$_gen_script_tests_generate" \
-			"$_gen_script_tests_time" "$*" >> "$scriptdir/Makefile"
+			"$_gen_script_tests_time" "$*" >> "Makefile"
 	done
 }
 
@@ -965,12 +966,12 @@ executable="BC_EXEC"
 
 tests="test_bc timeconst test_dc"
 
-bc_test="@tests/all.sh bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
-bc_test_np="@tests/all.sh -n bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
-dc_test="@tests/all.sh dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
-dc_test_np="@tests/all.sh -n dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
+bc_test="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
+bc_test_np="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh -n bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
+dc_test="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
+dc_test_np="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh -n dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
 
-timeconst="@tests/bc/timeconst.sh tests/bc/scripts/timeconst.bc \$(BC_EXEC)"
+timeconst="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/bc/timeconst.sh \$(TESTSDIR)/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
 # In order to have cleanup at exit, we need to be in
 # debug mode, so don't run valgrind without that.
@@ -1237,14 +1238,14 @@ if [ "$nls" -ne 0 ]; then
 
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "src/vm.c" -o "$scriptdir/vm.o" > /dev/null 2>&1
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null 2>&1
 
 	err="$?"
 
-	rm -rf "$scriptdir/vm.o"
+	rm -rf "./vm.o"
 
 	# If this errors, it is probably because of building on Windows,
 	# and NLS is not supported on Windows, so disable it.
@@ -1260,11 +1261,11 @@ if [ "$nls" -ne 0 ]; then
 		printf 'NLS works.\n\n'
 
 		printf 'Testing gencat...\n'
-		gencat "$scriptdir/en_US.cat" "$scriptdir/locales/en_US.msg" > /dev/null 2>&1
+		gencat "./en_US.cat" "$scriptdir/locales/en_US.msg" > /dev/null 2>&1
 
 		err="$?"
 
-		rm -rf "$scriptdir/en_US.cat"
+		rm -rf "./en_US.cat"
 
 		if [ "$err" -ne 0 ]; then
 			printf 'gencat does not work.\n'
@@ -1321,14 +1322,14 @@ if [ "$hist" -eq 1 ]; then
 
 	flags="-DBC_ENABLE_HISTORY=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_NLS=$nls -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I./include/"
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "src/history.c" -o "$scriptdir/history.o" > /dev/null 2>&1
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/history.c" -o "./history.o" > /dev/null 2>&1
 
 	err="$?"
 
-	rm -rf "$scriptdir/history.o"
+	rm -rf "./history.o"
 
 	# If this errors, it is probably because of building on Windows,
 	# and history is not supported on Windows, so disable it.
@@ -1354,7 +1355,7 @@ if [ "$hist" -eq 0 ] || [ "$vg" -ne 0 ]; then
 	test_dc_history_prereqs=" test_dc_history_skip"
 	history_tests="@printf 'Skipping history tests...\\\\n'"
 else
-	history_tests="@printf '\$(TEST_STARS)\\\\n\\\\nRunning history tests...\\\\n\\\\n' \&\& tests/history.sh bc -a \&\& tests/history.sh dc -a \&\& printf '\\\\nAll history tests passed.\\\\n\\\\n\$(TEST_STARS)\\\\n'"
+	history_tests="@printf '\$(TEST_STARS)\\\\n\\\\nRunning history tests...\\\\n\\\\n' \&\& \$(TESTSDIR)/history.sh bc -a \&\& \$(TESTSDIR)/history.sh dc -a \&\& printf '\\\\nAll history tests passed.\\\\n\\\\n\$(TEST_STARS)\\\\n'"
 fi
 
 # Test OpenBSD. This is not in an if statement because regardless of whatever
@@ -1369,7 +1370,7 @@ set +e
 printf 'Testing for OpenBSD...\n'
 
 flags="-DBC_TEST_OPENBSD -DBC_ENABLE_AFL=0"
-"$CC" $CPPFLAGS $CFLAGS $flags -I./include -E "include/status.h" > /dev/null 2>&1
+"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/include/status.h" > /dev/null 2>&1
 
 err="$?"
 
@@ -1447,7 +1448,7 @@ fi
 
 # This convoluted mess does pull the version out. If you change the format of
 # include/version.h, you may have to change this line.
-version=$(cat include/version.h | grep "VERSION " - | awk '{ print $3 }' -)
+version=$(cat "$scriptdir/include/version.h" | grep "VERSION " - | awk '{ print $3 }' -)
 
 if [ "$library" -ne 0 ]; then
 
@@ -1465,7 +1466,7 @@ if [ "$library" -ne 0 ]; then
 		contents=$(replace "$contents" "LIBDIR" "$LIBDIR")
 		contents=$(replace "$contents" "VERSION" "$version")
 
-		printf '%s\n' "$contents" > "$scriptdir/bcl.pc"
+		printf '%s\n' "$contents" > "./bcl.pc"
 
 		pkg_config_install="\$(SAFE_INSTALL) \$(PC_INSTALL_ARGS) \"\$(BCL_PC)\" \"\$(DESTDIR)\$(PC_PATH)/\$(BCL_PC)\""
 		pkg_config_uninstall="\$(RM) -f \"\$(DESTDIR)\$(PC_PATH)/\$(BCL_PC)\""
@@ -1597,11 +1598,15 @@ src_files=$(find_src_files $unneeded)
 
 for f in $src_files; do
 	o=$(replace_ext "$f" "c" "o")
-	SRC_TARGETS=$(printf '%s\n\n%s: %s %s\n\t$(CC) $(CFLAGS) -o %s -c %s\n' \
+	o=$(basename "$o")
+	SRC_TARGETS=$(printf '%s\n\nsrc/%s: src %s %s\n\t$(CC) $(CFLAGS) -o src/%s -c %s\n' \
 		"$SRC_TARGETS" "$o" "$headers" "$f" "$o" "$f")
 done
 
 # Replace all the placeholders.
+contents=$(replace "$contents" "ROOTDIR" "$scriptdir")
+contents=$(replace "$contents" "BUILDDIR" "$builddir")
+
 contents=$(replace "$contents" "HEADERS" "$headers")
 
 contents=$(replace "$contents" "BC_ENABLED" "$bc")
@@ -1717,7 +1722,7 @@ contents=$(replace "$contents" "BC_DEFAULT_EXPR_EXIT" "$bc_default_expr_exit")
 contents=$(replace "$contents" "DC_DEFAULT_EXPR_EXIT" "$dc_default_expr_exit")
 
 # Do the first print to the Makefile.
-printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "$scriptdir/Makefile"
+printf '%s\n%s\n\n' "$contents" "$SRC_TARGETS" > "Makefile"
 
 # Generate the individual test targets.
 if [ "$bc" -ne 0 ]; then
@@ -1732,12 +1737,11 @@ if [ "$dc" -ne 0 ]; then
 	gen_err_tests dc $dc_test_exec
 fi
 
-cd "$scriptdir"
-
 # Copy the correct manuals to the expected places.
-cp -f manuals/bc/$manpage_args.1.md manuals/bc.1.md
-cp -f manuals/bc/$manpage_args.1 manuals/bc.1
-cp -f manuals/dc/$manpage_args.1.md manuals/dc.1.md
-cp -f manuals/dc/$manpage_args.1 manuals/dc.1
+mkdir -p manuals
+cp -f "$scriptdir/manuals/bc/$manpage_args.1.md" manuals/bc.1.md
+cp -f "$scriptdir/manuals/bc/$manpage_args.1" manuals/bc.1
+cp -f "$scriptdir/manuals/dc/$manpage_args.1.md" manuals/dc.1.md
+cp -f "$scriptdir/manuals/dc/$manpage_args.1" manuals/dc.1
 
 make clean > /dev/null
