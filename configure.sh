@@ -1253,7 +1253,7 @@ if [ "$nls" -ne 0 ]; then
 
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
-	flags=$(printf '%s -DBC_ENABLE_EXTRA_MATH=$extra_math "-I%s/include/"' "$flags" "$scriptdir")
+	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
 	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null 2>&1
