@@ -389,19 +389,34 @@ replace() {
 # the arguments are all assumed to be source files that should *not* be built.
 find_src_files() {
 
+	_find_src_files_args=""
+
 	if [ "$#" -ge 1 ] && [ "$1" != "" ]; then
 
 		while [ "$#" -ge 1 ]; do
 			_find_src_files_a="${1## }"
 			shift
-			_find_src_files_args="$_find_src_files_args ! -path \"$scriptdir/src/${_find_src_files_a}\""
+			_find_src_files_args=$(printf '%s\n%s/src/%s\n' "$_find_src_files_args" "$scriptdir" "${_find_src_files_a}")
 		done
 
-	else
-		_find_src_files_args="-print"
 	fi
 
-	printf '%s\n' $(find "$scriptdir/src/" -depth -name "*.c" $_find_src_files_args)
+	_find_src_files_files=$(find "$scriptdir/src/" -depth -name "*.c" -print)
+
+	_find_src_files_result=""
+
+	for _find_src_files_f in $_find_src_files_files; do
+
+		# If this is true, the file is part of args, and therefore, unneeded.
+		if [ "${_find_src_files_args##*$_find_src_files_f}" != "${_find_src_files_args}" ]; then
+			continue
+		fi
+
+		_find_src_files_result=$(printf '%s\n%s\n' "$_find_src_files_result" "$_find_src_files_f")
+
+	done
+
+	printf '%s\n' "$_find_src_files_result"
 }
 
 # This function generates a list of files to go into the Makefile. It generates
@@ -1238,7 +1253,7 @@ if [ "$nls" -ne 0 ]; then
 
 	flags="-DBC_ENABLE_NLS=1 -DBC_ENABLED=$bc -DDC_ENABLED=$dc"
 	flags="$flags -DBC_ENABLE_HISTORY=$hist -DBC_ENABLE_LIBRARY=0 -DBC_ENABLE_AFL=0"
-	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
+	flags=$(printf '%s -DBC_ENABLE_EXTRA_MATH=$extra_math "-I%s/include/"' "$flags" "$scriptdir")
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
 	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null 2>&1
