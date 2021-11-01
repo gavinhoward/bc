@@ -184,6 +184,24 @@ The library is built as `bin/libbcl.a` on POSIX-compatible systems or as
 
 #### Package and Distro Maintainers
 
+This section is for package and distro maintainers.
+
+##### Out-of-Source Builds
+
+Out-of-source builds are supported; just call `configure.sh` from the directory
+where the actual build will happen.
+
+For example, if the source is in `bc`, the build should happen in `build`, then
+call `configure.sh` and `make` like so:
+
+```
+../bc/configure.sh
+make
+```
+
+***WARNING***: The path to `configure.sh` from the build directory must not have
+spaces because `make` does not support target names with spaces.
+
 ##### Recommended Compiler
 
 When I ran benchmarks with my `bc` compiled under `clang`, it performed much
