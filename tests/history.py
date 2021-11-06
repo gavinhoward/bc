@@ -253,7 +253,7 @@ def test_sigint_sigquit(exe, args, env):
 		send(child, "\t")
 		expect(child, "        ")
 		send(child, "\x03")
-		send(child, "\x1c")
+		# send(child, "\x1c")
 		wait(child)
 	except pexpect.TIMEOUT:
 		traceback.print_tb(sys.exc_info()[2])
