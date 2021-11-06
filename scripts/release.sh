@@ -198,7 +198,7 @@ runtest() {
 		do_make test
 
 		if [ "$test_history" -ne 0 ]; then
-			make test_history
+			do_make test_history
 		fi
 	fi
 }
