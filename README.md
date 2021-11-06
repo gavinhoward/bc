@@ -398,16 +398,12 @@ Files:
 
 	.gitignore           The git ignore file (maintainer use only).
 	.gitattributes       The git attributes file (maintainer use only).
-	bc.sln               The Visual Studio solution file for bc.
-	bc.vcxproj           The Visual Studio project file for bc.
-	bc.vcxproj.filters   The Visual Studio filters file for bc.
-	bcl.sln              The Visual Studio solution file for bcl.
-	bcl.vcxproj          The Visual Studio project file for bcl.
-	bcl.vcxproj.filters  The Visual Studio filters file for bcl.
+	bcl.pc.in            A template pkg-config file for bcl.
 	configure            A symlink to configure.sh to make packaging easier.
 	configure.sh         The configure script.
 	LICENSE.md           A Markdown form of the BSD 2-clause License.
 	Makefile.in          The Makefile template.
+	NEWS.md              The changelog.
 	NOTICE.md            List of contributors and copyright owners.
 	RELEASE.md           A checklist for making a release (maintainer use only).
 
@@ -420,6 +416,7 @@ Folders:
 	src      All source code.
 	scripts  A bunch of shell scripts to help with development and building.
 	tests    All tests.
+	vs       Files needed for the build on Windows.
 
 [1]: https://www.gnu.org/software/bc/
 [4]: ./LICENSE.md
