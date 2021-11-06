@@ -43,14 +43,15 @@
 # For Linux, run two separate ones (in different checkouts), like so:
 #
 # scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0
-# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
+# ../scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
 #
-# Yes, I usually do sanitizers with Clang and Valgrind with GCC.
+# Yes, I usually do sanitizers with Clang and Valgrind with GCC, and I also do
+# out-of-source builds with GCC.
 #
 # To run sanitizers or Valgrind with generated tests, use the following:
 #
 # scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0
-# scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
+# ../scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
 #
 # The reason I run history tests with GCC and not with Clang is because Clang
 # already runs slower as a result of running with sanitizers, and the history
@@ -129,7 +130,7 @@ configure() {
 	fi
 
 	# Print the header and do the job.
-	_configure_header=$(printf 'Running ./configure.sh %s ...' "$_configure_configure_flags")
+	_configure_header=$(printf 'Running configure.sh %s ...' "$_configure_configure_flags")
 	_configure_header=$(printf "$_configure_header\n    CC=\"%s\"\n" "$_configure_CC")
 	_configure_header=$(printf "$_configure_header\n    CFLAGS=\"%s\"\n" "$_configure_CFLAGS")
 	_configure_header=$(printf "$_configure_header\n    LONG_BIT=%s" "$_configure_LONG_BIT")
@@ -137,7 +138,7 @@ configure() {
 
 	header "$_configure_header"
 	CFLAGS="$_configure_CFLAGS" CC="$_configure_CC" GEN_HOST="$_configure_GEN_HOST" \
-		LONG_BIT="$_configure_LONG_BIT" ./configure.sh $_configure_configure_flags > /dev/null
+		LONG_BIT="$_configure_LONG_BIT" "$real/configure.sh" $_configure_configure_flags > /dev/null
 }
 
 # Build with make. This function also captures and outputs any warnings if they
@@ -175,12 +176,12 @@ build() {
 	header "$_build_header"
 
 	# Capture and print warnings.
-	do_make > /dev/null 2> "$scriptdir/../.test.txt"
+	do_make > /dev/null 2> "./.test.txt"
 
-	if [ -s "$scriptdir/../.test.txt" ]; then
+	if [ -s "./.test.txt" ]; then
 		printf '%s generated warning(s):\n' "$_build_CC"
 		printf '\n'
-		cat "$scriptdir/../.test.txt"
+		cat "./.test.txt"
 		exit 1
 	fi
 }
@@ -613,6 +614,8 @@ set -e
 
 script="$0"
 scriptdir=$(dirname "$script")
+
+real=$(realpath "$scriptdir/../")
 
 # Whether to run tests.
 if [ "$#" -gt 0 ]; then
