@@ -741,8 +741,6 @@ if [ "$test_computed_goto" -eq 0 ]; then
 	gcc_flags="-DBC_NO_COMPUTED_GOTO $gcc_flags"
 fi
 
-cd "$scriptdir/.."
-
 # Setup a default compiler.
 if [ "$test_with_clang" -ne 0 ]; then
 	defcc="clang"
