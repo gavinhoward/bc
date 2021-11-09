@@ -113,7 +113,7 @@
       <AdditionalDependencies>bcrypt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>mklink $(OutDir)dc.exe bc.exe</Command>
+      <Command>copy /b /y $(OutDir)bc.exe $(OutDir)dc.exe</Command>
     </PostBuildEvent>
     <PreBuildEvent />
   </ItemDefinitionGroup>
