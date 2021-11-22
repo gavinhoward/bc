@@ -1759,6 +1759,14 @@ static void bc_parse_stmt(BcParse *p) {
 
 	// Make sure semicolons are eaten.
 	while (p->l.t == BC_LEX_SCOLON) bc_lex_next(&p->l);
+
+	// POSIX's grammar does not allow a function definition after a semicolon
+	// without a newline, so check specifically for that case and error if
+	// the POSIX standard flag is set.
+	if (p->l.last == BC_LEX_SCOLON && p->l.t == BC_LEX_KW_DEFINE && BC_IS_POSIX)
+	{
+		bc_parse_err(p, BC_ERR_POSIX_FUNC_AFTER_SEMICOLON);
+	}
 }
 
 void bc_parse_parse(BcParse *p) {
