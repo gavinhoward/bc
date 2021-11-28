@@ -37,7 +37,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if BC_ENABLE_NLS
 #include <locale.h>
+#endif // BC_ENABLE_NLS
 
 #ifndef _WIN32
 #include <libgen.h>
@@ -56,8 +58,10 @@ int main(int argc, char *argv[]) {
 	char *name;
 	size_t len = strlen(BC_EXECPREFIX);
 
+#if BC_ENABLE_NLS
 	// Must set the locale properly in order to have the right error messages.
 	vm.locale = setlocale(LC_ALL, "");
+#endif // BC_ENABLE_NLS
 
 	// Set the start pledge().
 	bc_pledge(bc_pledge_start, NULL);
