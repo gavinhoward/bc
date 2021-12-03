@@ -3791,7 +3791,7 @@ if (BC_ERR(s)) return s;
 ```
 
 In fact, a quick and dirty count of such lines in version `2.7.2` (the last
-version before [`3.0.0`][32] turned up 252 occurrences of that sort of line.
+version before [`3.0.0`][32]) turned up 252 occurrences of that sort of line.
 
 And that didn't even guarantee that return values were checked *everywhere*.
 
