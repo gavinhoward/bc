@@ -4720,7 +4720,7 @@ For more information, see all of the code guarded by `#if BC_DEBUG_CODE` in the
 
 Yes, all of the code is guarded by `#if` preprocessor statements; this is
 because the code should *never* be in a release build, and by making programmers
-add this manually (not even an option to [`configure.sh`][69], it is easier to
+add this manually (not even an option to [`configure.sh`][69]), it is easier to
 ensure that never happens.
 
 However, that said, the extra debug code is useful; that was why I kept it in.
