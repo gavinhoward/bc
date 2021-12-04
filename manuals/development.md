@@ -1857,7 +1857,7 @@ example, to test whether I am in debug mode or not, I still use the standard
 
 `EXECPREFIX`
 
-:   Thist macro expands to the prefix on the executable name. This is used to
+:   This macro expands to the prefix on the executable name. This is used to
     allow `bc` and `dc` to skip the prefix when finding out which calculator is
     executing.
 
