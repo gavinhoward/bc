@@ -95,7 +95,7 @@ usage() {
 	printf '    -f, --force\n'
 	printf '        Force use of all enabled options, even if they do not work. This\n'
 	printf '        option is to allow the maintainer a way to test that certain options\n'
-	printf '        are not failing invisibly. (Development only.)'
+	printf '        are not failing invisibly. (Development only.)\n'
 	printf '    -g, --debug\n'
 	printf '        Build in debug mode. Adds the "-g" flag, and if there are no\n'
 	printf '        other CFLAGS, and "-O" was not given, this also adds the "-O0"\n'
