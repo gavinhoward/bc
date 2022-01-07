@@ -3574,7 +3574,7 @@ bytecode because the virtual machine assumes the bytecode is valid.
 Sidenote: one of those bugs caused an infinite recursion when running the sine
 (`s()`) function in the math library, so yes, parser bugs can be *very* weird.
 
-Anyway, they way I did `assert()`'s was like this: whenever I realized that I
+Anyway, the way I did `assert()`'s was like this: whenever I realized that I
 had put assumptions into the code, I would put an `assert()` there to test it
 **and** to *document* it.
 
@@ -3919,7 +3919,7 @@ Other than that, and some common plumbing, the lexers have separate code.
 
 The `dc` lexer is remarkably simple; in fact, besides [`src/main.c`][205],
 [`src/bc.c`][40], and [`src/dc.c`][44], which just contain one function each,
-the only file smaller that [`src/dc_lex.c`][45] is [`src/args.c`][206], which
+the only file smaller than [`src/dc_lex.c`][45] is [`src/args.c`][206], which
 just processes command-line arguments after they are parsed by
 [`src/opt.c`][51].
 
@@ -4483,7 +4483,7 @@ release when I change the code, and I have not released `bc` after version
 
 In order to do arbitrary-precision math, as `bc` must do, there must be some way
 of representing arbitrary-precision numbers. `BcNum` in [`include/num.h`][184]
-is `bc`'s.
+is `bc`'s way of doing that.
 
 (Note: the word ["limb"][214] is used below; it has a specific meaning when
 applied to arbitrary-precision numbers. It means one piece of the number. It can
@@ -4507,7 +4507,7 @@ number is not reallocated; the number of limbs is just added to.
 
 There is one additional wrinkle: to make the usual operations (binary operators)
 fast, the decimal point is *not* allowed to be in the middle of a limb; it must
-always be between limbs, after all limbs (integer) or before all limbs (real
+always be between limbs, after all limbs (integer), or before all limbs (real
 between -1 and 1).
 
 The reason for this is because addition, subtraction, multiplication, and
