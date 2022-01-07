@@ -3288,13 +3288,13 @@ reported a crash or not. If so, it will copy the crashing test case to
 `stdin`.
 
 From there, I personally always investigate the crash and fix it. Then, when the
-crash is fixed, I either move `.test.txt` to `tests/bc/errors/<idx>.txt` as an
-error test (if it produces an error) or I create a new `tests/bc/misc<idx>.txt`
-test for it and a corresponding results file. (See [Test Suite][124] for more
-information about the test suite.) In either case, `<idx>` is the next number
-for a file in that particular place. For example, if the last file in
-`tests/bc/errors/` is `tests/bc/errors/18.txt`, I move `.test.txt` to
-`tests/bc/error/19.txt`.
+crash is fixed, I either move `.test.txt` to `tests/{bc,dc}/errors/<idx>.txt` as
+an error test (if it produces an error) or I create a new
+`tests/{bc,dc}/misc<idx>.txt` test for it and a corresponding results file. (See
+[Test Suite][124] for more information about the test suite.) In either case,
+`<idx>` is the next number for a file in that particular place. For example, if
+the last file in `tests/{bc,dc}/errors/` is `tests/{bc,dc}/errors/18.txt`, I
+move `.test.txt` to `tests/bc/error/19.txt`.
 
 Then I immediately run [`scripts/afl.py`][94] again to find the next crash
 because often, [AFL++][125] found multiple test cases that trigger the same
