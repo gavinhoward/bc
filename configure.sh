@@ -36,7 +36,7 @@ builddir=$(pwd)
 . "$scriptdir/scripts/functions.sh"
 
 # Simply prints the help message and quits based on the argument.
-# @param val  The value to pass to exit. Must be an integer.
+# @param msg  The help message to print.
 usage() {
 
 	if [ $# -gt 0 ]; then
