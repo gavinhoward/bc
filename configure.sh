@@ -535,7 +535,7 @@ gen_std_test_targets() {
 # This allows `make test_bc_errors` and `make test_dc_errors` to run in
 # parallel.
 #
-# @param name        Which calculator to generate tests for.
+# @param name  Which calculator to generate tests for.
 gen_err_tests() {
 
 	_gen_err_tests_name="$1"
