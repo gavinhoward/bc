@@ -66,10 +66,26 @@ int main(int argc, char *argv[]) {
 	// Set the start pledge().
 	bc_pledge(bc_pledge_start, NULL);
 
-	// Figure out the name of the calculator we are using. We can't use basename
-	// because it's not portable, but yes, this is stripping off the directory.
-	name = strrchr(argv[0], BC_FILE_SEP);
-	vm.name = (name == NULL) ? argv[0] : name + 1;
+	// Sometimes, argv[0] can be NULL. Better make sure to be robust against it.
+	if (argv[0] != NULL) {
+
+		// Figure out the name of the calculator we are using. We can't use
+		// basename because it's not portable, but yes, this is stripping off
+		// the directory.
+		name = strrchr(argv[0], BC_FILE_SEP);
+		vm.name = (name == NULL) ? argv[0] : name + 1;
+	}
+	else
+	{
+#if !DC_ENABLED
+		vm.name = "bc";
+#elif !BC_ENABLED
+		vm.name = "dc";
+#else
+		// Just default to bc in that case.
+		vm.name = "bc";
+#endif
+	}
 
 	// If the name is longer than the length of the prefix, skip the prefix.
 	if (strlen(vm.name) > len) vm.name += len;
