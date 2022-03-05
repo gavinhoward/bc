@@ -1091,6 +1091,10 @@ static void bc_vm_exprs(void) {
 		bc_vm_process(vm.buffer.v, false, true);
 	}
 
+	// If we were not supposed to clear, then we should process everything. This
+	// makes sure that errors get reported.
+	if (!clear) bc_vm_process(vm.buffer.v, false, true);
+
 err:
 
 	BC_SIG_MAYLOCK;
