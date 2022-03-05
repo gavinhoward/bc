@@ -181,17 +181,51 @@ if [ "$d" = "bc" ]; then
 	checkerrtest "$d" "$err" "Keyword redefinition error without BC_REDEFINE_KEYWORDS" "$redefine_out" "$d"
 
 	printf 'pass\n'
+	printf 'Running multiline comment expression file test...'
 
-	printf 'Running multiline expression file test...'
-
-	multiline_expr_res="$testdir/bc/misc1_results.txt"
+	multiline_expr_res=""
 	multiline_expr_out="$outputdir/bc_outputs/multiline_expr_results.txt"
 
 	# tests/bc/misc1.txt happens to have a multiline comment in it.
-	"$exe" "$@" -f tests/bc/misc1.txt > "$multiline_expr_out"
+	"$exe" "$@" -f "$testdir/bc/misc1.txt" > "$multiline_expr_out"
 	err="$?"
 
-	checktest "$d" "$err" "multiline expression file" "$multiline_expr_res" "$multiline_expr_out"
+	checktest "$d" "$err" "multiline comment in expression file" "$testdir/bc/misc1_results.txt" \
+		"$multiline_expr_out"
+
+	printf 'pass\n'
+	printf 'Running multiline comment expression file error test...'
+
+	"$exe" "$@" -f "$testdir/bc/errors/05.txt" 2> "$multiline_expr_out"
+	err="$?"
+
+	checkerrtest "$d" "$err" "multiline comment in expression file error" \
+		"$multiline_expr_out" "$d"
+
+	printf 'pass\n'
+	printf 'Running multiline string expression file test...'
+
+	# tests/bc/strings.txt happens to have a multiline string in it.
+	"$exe" "$@" -f "$testdir/bc/strings.txt" > "$multiline_expr_out"
+	err="$?"
+
+	checktest "$d" "$err" "multiline string in expression file" "$testdir/bc/strings_results.txt" \
+		"$multiline_expr_out"
+
+	printf 'pass\n'
+	printf 'Running multiline string expression file error test...'
+
+	"$exe" "$@" -f "$testdir/bc/errors/16.txt" 2> "$multiline_expr_out"
+	err="$?"
+
+	checkerrtest "$d" "$err" "multiline string in expression file with backslash error" \
+		"$multiline_expr_out" "$d"
+
+	"$exe" "$@" -f "$testdir/bc/errors/04.txt" 2> "$multiline_expr_out"
+	err="$?"
+
+	checkerrtest "$d" "$err" "multiline string in expression file error" \
+		"$multiline_expr_out" "$d"
 
 	printf 'pass\n'
 
