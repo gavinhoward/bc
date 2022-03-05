@@ -1279,18 +1279,6 @@ static void bc_vm_exec(void) {
 
 	// Execute from stdin. bc always does.
 	if (BC_IS_BC || !has_file) bc_vm_stdin();
-
-// These are all protected by ifndef NDEBUG because if these are needed, bc is
-// going to exit anyway, and I see no reason to include this code in a release
-// build when the OS is going to free all of the resources anyway.
-#ifndef NDEBUG
-	return;
-
-err:
-	BC_SIG_MAYLOCK;
-	bc_vec_free(&buf);
-	BC_LONGJMP_CONT;
-#endif // NDEBUG
 }
 
 void bc_vm_boot(int argc, char *argv[]) {
