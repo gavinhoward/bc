@@ -1209,7 +1209,6 @@ static void bc_vm_exec(void) {
 
 	size_t i;
 	bool has_file = false;
-	BcVec buf;
 
 #if BC_ENABLED
 	// Load the math libraries.
