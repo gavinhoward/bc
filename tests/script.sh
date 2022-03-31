@@ -157,6 +157,8 @@ else
 
 	set +e
 
+	# This is to check that the command exists. If not, we should not try to
+	# generate the test. Instead, we should just skip.
 	command -v "$d"
 	err="$?"
 
