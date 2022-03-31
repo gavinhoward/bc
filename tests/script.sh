@@ -154,6 +154,19 @@ elif [ "$generate" -eq 0 ]; then
 	printf 'Skipping %s script %s\n' "$d" "$f"
 	exit 0
 else
+
+	set +e
+
+	command -v "$d"
+	err="$?"
+
+	set -e
+
+	if [ "$err" -ne 0 ]; then
+		printf 'Could not find %s to generate results; skipping %s script %s\n' "$d" "$d" "$f"
+		exit 0
+	fi
+
 	# This sed, and the script, are to remove an incompatibility with GNU bc,
 	# where GNU bc is wrong. See the development manual
 	# (manuals/development.md#script-tests) for more information.
