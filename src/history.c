@@ -782,10 +782,11 @@ static void bc_history_refresh(BcHistory *h) {
 		bc_vec_grow(&h->buf, pos + extras_len);
 
 	// Move cursor to original position.
+	bc_file_putchar(&vm.fout, bc_flush_none, '\r');
 	colpos = bc_history_colPos(h->buf.v, len - extras_len, pos) + h->pcol;
 
 	// Set the cursor position again.
-	if (colpos) bc_file_printf(&vm.fout, "\r\x1b[%zuC", colpos);
+	if (colpos) bc_file_printf(&vm.fout, "\x1b[%zuC", colpos);
 
 	bc_file_flush(&vm.fout, bc_flush_none);
 }
