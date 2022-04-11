@@ -781,7 +781,9 @@ static void bc_history_refresh(BcHistory *h) {
 	if (pos >= h->buf.len - extras_len)
 		bc_vec_grow(&h->buf, pos + extras_len);
 
-	// Move cursor to original position.
+	// Move cursor to original position. Do NOT move the putchar of '\r' to the
+	// printf with colpos. That causes a bug where the cursor will go to the end
+	// of the line when there is no prompt.
 	bc_file_putchar(&vm.fout, bc_flush_none, '\r');
 	colpos = bc_history_colPos(h->buf.v, len - extras_len, pos) + h->pcol;
 
