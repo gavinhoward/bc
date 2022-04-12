@@ -1196,7 +1196,34 @@ static void bc_history_escape(BcHistory *h) {
 				if (BC_ERR(BC_HIST_READ(seq + 2, 1)))
 					bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 
-				if (seq[2] == '~' && c == '3') bc_history_edit_delete(h);
+				if (seq[2] == '~') {
+
+					switch(c) {
+
+						case '1':
+						{
+							bc_history_edit_home(h);
+							break;
+						}
+
+						case '3':
+						{
+							bc_history_edit_delete(h);
+							break;
+						}
+
+						case '4':
+						{
+							bc_history_edit_end(h);
+							break;
+						}
+
+						default:
+						{
+							break;
+						}
+					}
+				}
 				else if(seq[2] == ';') {
 
 					// Read two characters into seq.
