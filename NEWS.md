@@ -3,7 +3,7 @@
 ## 5.2.5
 
 This is a production release that fixes this `bc`'s behavior on `^D` to match
-GNU `bc`, unless there is nothing in the line, in which case it quits.
+GNU `bc`.
 
 ## 5.2.4
 
