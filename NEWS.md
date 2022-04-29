@@ -1,5 +1,10 @@
 # News
 
+## 5.2.5
+
+This is a production release that fixes this `bc`'s behavior on `^D` to match
+GNU `bc`, unless there is nothing in the line, in which case it quits.
+
 ## 5.2.4
 
 This is a production release that fixes two bugs in history:
