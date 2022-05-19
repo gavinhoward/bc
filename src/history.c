@@ -144,6 +144,166 @@
 
 #if BC_ENABLE_HISTORY
 
+#if BC_ENABLE_EDITLINE
+
+#include <string.h>
+#include <errno.h>
+
+#include <history.h>
+#include <vm.h>
+
+static char* prompt_global;
+
+static char* bc_history_prompt(EditLine *el) {
+	BC_UNUSED(el);
+	return prompt_global;
+}
+
+void bc_history_init(BcHistory *h) {
+
+	BcVec v;
+	char* home = getenv("HOME");
+
+	bc_vec_init(&v, 1, BC_DTOR_NONE);
+
+	// Initialize the path to the editrc. This is done manually because the
+	// libedit I used to test was failing with a NULL argument for the path,
+	// which was supposed to automatically do $HOME/.editrc. But it was failing,
+	// so I set it manually.
+	if (home == NULL) {
+		bc_vec_string(&v, bc_history_editrc_len - 1, bc_history_editrc + 1);
+	}
+	else {
+		bc_vec_string(&v, strlen(home), home);
+		bc_vec_concat(&v, bc_history_editrc);
+	}
+
+	h->hist = history_init();
+	if (BC_ERR(h->hist == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+
+	h->el = el_init(vm.name, stdin, stdout, stderr);
+	if (BC_ERR(h->el == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
+
+	// I want history and a prompt.
+	el_set(h->el, EL_HIST, history, h->hist);
+	el_set(h->el, EL_PROMPT, bc_history_prompt);
+
+	// I also want to get the user's .editrc.
+	el_source(h->el, v.v);
+
+	bc_vec_free(&v);
+
+	h->badTerm = false;
+	prompt_global = NULL;
+}
+
+void bc_history_free(BcHistory *h) {
+	if (prompt_global != NULL) free(prompt_global);
+	el_end(h->el);
+	history_end(h->hist);
+}
+
+BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
+
+	BcStatus s;
+	const char* line;
+	int len;
+
+	BC_SIG_LOCK;
+
+	// Make sure to set the prompt.
+	if (prompt_global != NULL) {
+
+		if (strcmp(prompt_global, prompt)) {
+			free(prompt_global);
+			prompt_global = bc_vm_strdup(prompt);
+		}
+	}
+	else prompt_global = bc_vm_strdup(prompt);
+
+	// Get the line.
+	line = el_gets(h->el, &len);
+
+	// If there is no line...
+	if (BC_ERR(line == NULL)) {
+
+		// If this is true, there was an error. Otherwise, it's just EOF.
+		if (len == -1) {
+			if (errno == ENOMEM) bc_err(BC_ERR_FATAL_ALLOC_ERR);
+			bc_err(BC_ERR_FATAL_IO_ERR);
+		}
+		else s = BC_STATUS_EOF;
+	}
+	// If there is a line...
+	else {
+		bc_vec_string(vec, strlen(line), line);
+		s = BC_STATUS_SUCCESS;
+	}
+
+	BC_SIG_UNLOCK;
+
+	return s;
+}
+
+#else // BC_ENABLE_EDITLINE
+
+#if BC_ENABLE_READLINE
+
+#include <assert.h>
+
+#include <history.h>
+#include <vm.h>
+
+void bc_history_init(BcHistory *h) {
+
+	h->line = NULL;
+	h->badTerm = false;
+
+	// I want no tab completion.
+	rl_bind_key('\t', rl_insert);
+}
+
+void bc_history_free(BcHistory *h) {
+	if (h->line != NULL) free(h->line);
+}
+
+BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
+
+	size_t len;
+
+	BC_SIG_LOCK;
+
+	// Get rid of the last line.
+	if (h->line != NULL) {
+		free(h->line);
+		h->line = NULL;
+	}
+
+	// Get the line.
+	h->line = readline(prompt);
+
+	// If there was a line, add it to the history. Otherwise, just return an
+	// empty line.
+	if (h->line != NULL && h->line[0]) {
+
+		add_history(h->line);
+
+		len = strlen(h->line);
+
+		bc_vec_expand(vec, len + 2);
+
+		bc_vec_string(vec, len, h->line);
+		bc_vec_concat(vec, "\n");
+	}
+	else bc_vec_string(vec, 2, "\n");
+
+	BC_SIG_UNLOCK;
+
+	return BC_STATUS_SUCCESS;
+}
+
+#else // BC_ENABLE_READLINE
+
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -1854,3 +2014,7 @@ void bc_history_printKeyCodes(BcHistory *h) {
 #endif // BC_DEBUG_CODE
 
 #endif // BC_ENABLE_HISTORY
+
+#endif // BC_ENABLE_READLINE
+
+#endif // BC_ENABLE_EDITLINE

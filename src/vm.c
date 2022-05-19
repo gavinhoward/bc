@@ -111,6 +111,14 @@ static void bc_vm_sig(int sig) {
 		return;
 	}
 
+#if BC_ENABLE_EDITLINE
+	// Editline needs this to resize the terminal.
+	if (sig == SIGWINCH) {
+		el_resize(vm.history.el);
+		return;
+	}
+#endif // BC_ENABLE_EDITLINE
+
 	// Only reset under these conditions; otherwise, quit.
 	if (sig == SIGINT && BC_SIGINT && BC_I) {
 
@@ -148,6 +156,11 @@ static void bc_vm_sigaction(void) {
 	sigaction(SIGQUIT, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
 
+#if BC_ENABLE_EDITLINE
+	// Editline needs this to resize the terminal.
+	sigaction(SIGWINCH, &sa, NULL);
+#endif // BC_ENABLE_EDITLINE
+
 #if BC_ENABLE_HISTORY
 	if (BC_TTY) sigaction(SIGHUP, &sa, NULL);
 #endif // BC_ENABLE_HISTORY
@@ -164,17 +177,30 @@ void bc_vm_info(const char* const help) {
 
 	BC_SIG_ASSERT_LOCKED;
 
+#if BC_ENABLE_LINE_LIB
+	// Print the banner.
+	puts(vm.name);
+	putchar(' ');
+	puts(BC_VERSION);
+	putchar('\n');
+	puts(bc_copyright);
+#else // BC_ENABLE_LINE_LIB
 	// Print the banner.
 	bc_file_puts(&vm.fout, bc_flush_none, vm.name);
 	bc_file_putchar(&vm.fout, bc_flush_none, ' ');
 	bc_file_puts(&vm.fout, bc_flush_none, BC_VERSION);
 	bc_file_putchar(&vm.fout, bc_flush_none, '\n');
 	bc_file_puts(&vm.fout, bc_flush_none, bc_copyright);
+#endif // BC_ENABLE_LINE_LIB
 
 	// Print the help.
 	if (help != NULL) {
 
+#if BC_ENABLE_LINE_LIB
+		putchar('\n');
+#else // BC_ENABLE_LINE_LIB
 		bc_file_putchar(&vm.fout, bc_flush_none, '\n');
+#endif // BC_ENABLE_LINE_LIB
 
 #if BC_ENABLED
 		if (BC_IS_BC) {
@@ -189,8 +215,13 @@ void bc_vm_info(const char* const help) {
 			const char* const expr = BC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                           "to not exit";
 
+#if BC_ENABLE_LINE_LIB
+			printf(help, vm.name, vm.name, BC_VERSION, BC_BUILD_TYPE, banner,
+			       sigint, tty, prompt, expr);
+#else // BC_ENABLE_LINE_LIB
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
 			               BC_BUILD_TYPE, banner, sigint, tty, prompt, expr);
+#endif // BC_ENABLE_LINE_LIB
 		}
 #endif // BC_ENABLED
 
@@ -206,14 +237,24 @@ void bc_vm_info(const char* const help) {
 			const char* const expr = DC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                           "to not exit";
 
+#if BC_ENABLE_LINE_LIB
+			printf(help, vm.name, vm.name, BC_VERSION, BC_BUILD_TYPE, sigint,
+			       tty, prompt, expr);
+#else // BC_ENABLE_LINE_LIB
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
 			               BC_BUILD_TYPE, sigint, tty, prompt, expr);
+#endif // BC_ENABLE_LINE_LIB
 		}
 #endif // DC_ENABLED
 	}
 
+#if BC_ENABLE_LINE_LIB
+	// Flush.
+	fflush(stdout);
+#else // BC_ENABLE_LINE_LIB
 	// Flush.
 	bc_file_flush(&vm.fout, bc_flush_none);
+#endif // BC_ENABLE_LINE_LIB
 }
 #endif // !BC_ENABLE_LIBRARY
 
@@ -1312,6 +1353,15 @@ void bc_vm_boot(int argc, char *argv[]) {
 	// Set the error messages.
 	bc_vm_gettext();
 
+#if BC_ENABLE_LINE_LIB
+	// Initialize the output file buffers.
+	bc_file_init(&vm.ferr, stderr);
+	bc_file_init(&vm.fout, stdout);
+
+	// Set the input buffer.
+	vm.buf = output_bufs;
+
+#else // BC_ENABLE_LINE_LIB
 	// Initialize the output file buffers. They each take portions of the global
 	// buffer. stdout gets more because it will probably have more data.
 	bc_file_init(&vm.ferr, STDERR_FILENO, output_bufs + BC_VM_STDOUT_BUF_SIZE,
@@ -1320,6 +1370,7 @@ void bc_vm_boot(int argc, char *argv[]) {
 
 	// Set the input buffer to the rest of the global buffer.
 	vm.buf = output_bufs + BC_VM_STDOUT_BUF_SIZE + BC_VM_STDERR_BUF_SIZE;
+#endif // BC_ENABLE_LINE_LIB
 
 	// Set the line length by environment variable.
 	vm.line_len = (uint16_t) bc_vm_envLen(env_len);

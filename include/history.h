@@ -83,9 +83,83 @@
 #define BC_ENABLE_HISTORY (1)
 #endif // BC_ENABLE_HISTORY
 
-#if BC_ENABLE_HISTORY
+#ifndef BC_ENABLE_EDITLINE
+#define BC_ENABLE_EDITLINE (0)
+#endif // BC_ENABLE_EDITLINE
+
+#ifndef BC_ENABLE_READLINE
+#define BC_ENABLE_READLINE (0)
+#endif // BC_ENABLE_READLINE
+
+#if BC_ENABLE_EDITLINE && BC_ENABLE_READLINE
+#error Must enable only one of editline or readline, not both.
+#endif // BC_ENABLE_EDITLINE && BC_ENABLE_READLINE
+
+#if BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
+#define BC_ENABLE_LINE_LIB (1)
+#else // BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
+#define BC_ENABLE_LINE_LIB (0)
+#endif // BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
+
+#if BC_ENABLE_LINE_LIB
 
 #include <stdbool.h>
+
+#include <status.h>
+#include <vector.h>
+
+#endif // BC_ENABLE_LINE_LIB
+
+#if BC_ENABLE_EDITLINE
+
+#include <stdio.h>
+#include <histedit.h>
+
+/**
+ * The history struct for editline.
+ */
+typedef struct BcHistory {
+
+	/// A place to store the current line.
+	EditLine *el;
+
+	/// The history.
+	History *hist;
+
+	/// Whether the terminal is bad. This is more or less not used.
+	bool badTerm;
+
+} BcHistory;
+
+// The path to the editrc and its length.
+extern const char bc_history_editrc[];
+extern const size_t bc_history_editrc_len;
+
+#else // BC_ENABLE_EDITLINE
+
+#if BC_ENABLE_READLINE
+
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
+/**
+ * The history struct for readline.
+ */
+typedef struct BcHistory {
+
+	/// A place to store the current line.
+	char *line;
+
+	/// Whether the terminal is bad. This is more or less not used.
+	bool badTerm;
+
+} BcHistory;
+
+#else // BC_ENABLE_READLINE
+
+#if BC_ENABLE_HISTORY
+
 #include <stddef.h>
 
 #include <signal.h>
@@ -273,31 +347,6 @@ typedef struct BcHistory {
 } BcHistory;
 
 /**
- * Get a line from stdin using history. This returns a status because I don't
- * want to throw errors while the terminal is in raw mode.
- * @param h       The history data.
- * @param vec     A vector to put the line into.
- * @param prompt  The prompt to display, if desired.
- * @return        A status indicating an error, if any. Returning a status here
- *                is better because if we throw an error out of history, we
- *                leave the terminal in raw mode or in some other half-baked
- *                state.
- */
-BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt);
-
-/**
- * Initialize history data.
- * @param h  The struct to initialize.
- */
-void bc_history_init(BcHistory *h);
-
-/**
- * Free history data (and recook the terminal).
- * @param h  The struct to free.
- */
-void bc_history_free(BcHistory *h);
-
-/**
  * Frees strings used by history.
  * @param str  The string to free.
  */
@@ -332,6 +381,39 @@ extern char *bc_history_debug_buf;
 void bc_history_printKeyCodes(BcHistory* h);
 
 #endif // BC_DEBUG_CODE
+
+#endif // BC_ENABLE_HISTORY
+
+#endif // BC_ENABLE_READLINE
+
+#endif // BC_ENABLE_EDITLINE
+
+#if BC_ENABLE_HISTORY
+
+/**
+ * Get a line from stdin using history. This returns a status because I don't
+ * want to throw errors while the terminal is in raw mode.
+ * @param h       The history data.
+ * @param vec     A vector to put the line into.
+ * @param prompt  The prompt to display, if desired.
+ * @return        A status indicating an error, if any. Returning a status here
+ *                is better because if we throw an error out of history, we
+ *                leave the terminal in raw mode or in some other half-baked
+ *                state.
+ */
+BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt);
+
+/**
+ * Initialize history data.
+ * @param h  The struct to initialize.
+ */
+void bc_history_init(BcHistory *h);
+
+/**
+ * Free history data (and recook the terminal).
+ * @param h  The struct to free.
+ */
+void bc_history_free(BcHistory *h);
 
 #endif // BC_ENABLE_HISTORY
 

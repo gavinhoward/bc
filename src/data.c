@@ -301,9 +301,9 @@ const BcVecFree bc_vec_dtors[] = {
 	bc_slab_free,
 	bc_const_free,
 	bc_result_free,
-#if BC_ENABLE_HISTORY
+#if BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 	bc_history_string_free,
-#endif // BC_ENABLE_HISTORY
+#endif // BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 #else // !BC_ENABLE_LIBRARY
 	bcl_num_destruct,
 #endif // !BC_ENABLE_LIBRARY
@@ -311,7 +311,15 @@ const BcVecFree bc_vec_dtors[] = {
 
 #if !BC_ENABLE_LIBRARY
 
-#if BC_ENABLE_HISTORY
+#if BC_ENABLE_EDITLINE
+
+/// The normal path to the editrc.
+const char bc_history_editrc[] = "/.editrc";
+const size_t bc_history_editrc_len = sizeof(bc_history_editrc) - 1;
+
+#endif // BC_ENABLE_EDITLINE
+
+#if BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 
 /// A flush type for not clearing current extras but not saving new ones either.
 const BcFlushType bc_flush_none = BC_FLUSH_NO_EXTRAS_NO_CLEAR;
@@ -321,9 +329,6 @@ const BcFlushType bc_flush_err = BC_FLUSH_NO_EXTRAS_CLEAR;
 
 /// A flush type for clearing previous extras and saving new ones.
 const BcFlushType bc_flush_save = BC_FLUSH_SAVE_EXTRAS_CLEAR;
-#endif // BC_ENABLE_HISTORY
-
-#if BC_ENABLE_HISTORY
 
 /// A list of known bad terminals.
 const char *bc_history_bad_terms[] = { "dumb", "cons25", "emacs", NULL };
@@ -665,7 +670,7 @@ const uint32_t bc_history_combo_chars[] = {
 /// The length of the combining characters list.
 const size_t bc_history_combo_chars_len =
 	sizeof(bc_history_combo_chars) / sizeof(bc_history_combo_chars[0]);
-#endif // BC_ENABLE_HISTORY
+#endif // BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 
 /// The human-readable name of the main function in bc source code.
 const char bc_func_main[] = "(main)";

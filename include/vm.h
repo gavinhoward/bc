@@ -320,6 +320,16 @@
 /// Returns the max number of variables that is allowed.
 #define BC_MAX_VARS ((ulong) (SIZE_MAX - 1))
 
+#if BC_ENABLE_LINE_LIB
+
+/// The size of the global buffer.
+#define BC_VM_BUF_SIZE (1<<10)
+
+/// The amount of the global buffer allocated to stdin.
+#define BC_VM_STDIN_BUF_SIZE (BC_VM_BUF_SIZE - 1)
+
+#else // BC_ENABLE_LINE_LIB
+
 /// The size of the global buffer.
 #define BC_VM_BUF_SIZE (1<<12)
 
@@ -331,6 +341,8 @@
 
 /// The amount of the global buffer allocated to stdin.
 #define BC_VM_STDIN_BUF_SIZE (BC_VM_STDERR_BUF_SIZE - 1)
+
+#endif // BC_ENABLE_LINE_LIB
 
 /// The max number of temporary BcNums that can be kept.
 #define BC_VM_MAX_TEMPS (1 << 9)
@@ -690,7 +702,7 @@ BcDig* bc_vm_takeTemp(void);
  */
 void bc_vm_freeTemps(void);
 
-#if !BC_ENABLE_HISTORY
+#if !BC_ENABLE_HISTORY || BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
 
 /**
  * Erases the flush argument if history does not exist because it does not
@@ -698,7 +710,7 @@ void bc_vm_freeTemps(void);
  */
 #define bc_vm_putchar(c, t) bc_vm_putchar(c)
 
-#endif // !BC_ENABLE_HISTORY
+#endif // !BC_ENABLE_HISTORY || BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
 
 /**
  * Print to stdout with limited formating.

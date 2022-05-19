@@ -38,9 +38,24 @@
 
 #include <stdarg.h>
 
+#include <history.h>
 #include <vector.h>
 
 #define BC_FILE_ULL_LENGTH (21)
+
+#if BC_ENABLE_LINE_LIB
+
+#include <stdio.h>
+
+/// The file struct.
+typedef struct BcFile {
+
+	// The file.
+	FILE* f;
+
+} BcFile;
+
+#else // BC_ENABLE_LINE_LIB
 
 /// The file struct.
 typedef struct BcFile {
@@ -59,7 +74,9 @@ typedef struct BcFile {
 
 } BcFile;
 
-#if BC_ENABLE_HISTORY
+#endif // BC_ENABLE_LINE_LIB
+
+#if BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 
 /// Types of flushing. These are important because of history and printing
 /// strings without newlines, something that users could use as their own
@@ -80,10 +97,10 @@ typedef enum BcFlushType {
 
 } BcFlushType;
 
-#else // BC_ENABLE_HISTORY
+#else // BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 
 // These make sure that the BcFlushType parameter disappears if history is not
-// used.
+// used, editline is used, or readline is used.
 
 #define bc_file_putchar(f, t, c) bc_file_putchar(f, c)
 #define bc_file_flushErr(f, t) bc_file_flushErr(f)
@@ -91,7 +108,20 @@ typedef enum BcFlushType {
 #define bc_file_write(f, t, b, n) bc_file_write(f, b, n)
 #define bc_file_puts(f, t, s) bc_file_puts(f, s)
 
-#endif // BC_ENABLE_HISTORY
+#endif // BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
+
+#if BC_ENABLE_LINE_LIB
+
+/**
+ * Initialize a file.
+ * @param f    The file to initialize.
+ * @param fd   The file descriptor.
+ * @param buf  The buffer for the file.
+ * @param cap  The capacity of the buffer.
+ */
+void bc_file_init(BcFile *f, FILE* file);
+
+#else // BC_ENABLE_LINE_LIB
 
 /**
  * Initialize a file.
@@ -101,6 +131,8 @@ typedef enum BcFlushType {
  * @param cap  The capacity of the buffer.
  */
 void bc_file_init(BcFile *f, int fd, char *buf, size_t cap);
+
+#endif // BC_ENABLE_LINE_LIB
 
 /**
  * Frees a file, including flushing it.
@@ -165,13 +197,13 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args);
  */
 void bc_file_puts(BcFile *restrict f, BcFlushType type, const char *str);
 
-#if BC_ENABLE_HISTORY
+#if BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 
 // Some constant flush types for ease of use.
 extern const BcFlushType bc_flush_none;
 extern const BcFlushType bc_flush_err;
 extern const BcFlushType bc_flush_save;
 
-#endif // BC_ENABLE_HISTORY
+#endif // BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 
 #endif // BC_FILE_H

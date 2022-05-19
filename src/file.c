@@ -44,6 +44,8 @@
 #include <file.h>
 #include <vm.h>
 
+#if !BC_ENABLE_LINE_LIB
+
 /**
  * Translates an integer into a string.
  * @param val  The value to translate.
@@ -109,11 +111,21 @@ static BcStatus bc_file_output(int fd, const char *buf, size_t n) {
 	return BC_STATUS_SUCCESS;
 }
 
+#endif // !BC_ENABLE_LINE_LIB
+
 BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type)
 {
 	BcStatus s;
 
 	BC_SIG_ASSERT_LOCKED;
+
+#if BC_ENABLE_LINE_LIB
+
+	// Just flush and propagate the error.
+	if (fflush(f->f) == EOF) s = BC_STATUS_ERROR_FATAL;
+	else s = BC_STATUS_SUCCESS;
+
+#else // BC_ENABLE_LINE_LIB
 
 	// If there is stuff to output...
 	if (f->len) {
@@ -152,6 +164,8 @@ BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type)
 	}
 	else s = BC_STATUS_SUCCESS;
 
+#endif // BC_ENABLE_LINE_LIB
+
 	return s;
 }
 
@@ -187,6 +201,21 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 
 	BC_SIG_TRYLOCK(lock);
 
+#if BC_ENABLE_LINE_LIB
+
+	ssize_t r = fwrite(buf, 1, n, f->f);
+
+	if (BC_ERR(r != n)) {
+
+		// If the file is stderr, then just exit. We don't want a stack overflow
+		// from recursion.
+		if (f->f == stderr) exit(BC_STATUS_ERROR_FATAL);
+
+		bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+	}
+
+#else // BC_ENABLE_LINE_LIB
+
 	// If we have enough to flush, do it.
 	if (n > f->cap - f->len) {
 		bc_file_flush(f, type);
@@ -221,6 +250,8 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 		f->len += n;
 	}
 
+#endif // BC_ENABLE_LINE_LIB
+
 	BC_SIG_TRYUNLOCK(lock);
 }
 
@@ -245,6 +276,15 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 	char buf[BC_FILE_ULL_LENGTH];
 
 	BC_SIG_ASSERT_LOCKED;
+
+#if BC_ENABLE_LINE_LIB
+
+	// Just print and propagate the error.
+	if (BC_ERR(vfprintf(f->f, fmt, args) < 0)) {
+		bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+	}
+
+#else // BC_ENABLE_LINE_LIB
 
 	// This is a poor man's printf(). While I could look up algorithms to make
 	// it as fast as possible, and should when I write the standard library for
@@ -326,6 +366,8 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 	// If we get here, there are no more percent signs, so we just output
 	// whatever is left.
 	if (ptr[0]) bc_file_puts(f, bc_flush_none, ptr);
+
+#endif // BC_ENABLE_LINE_LIB
 }
 
 void bc_file_puts(BcFile *restrict f, BcFlushType type, const char *str) {
@@ -338,6 +380,17 @@ void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c) {
 
 	BC_SIG_TRYLOCK(lock);
 
+#if BC_ENABLE_LINE_LIB
+
+	if (BC_ERR(fputc(c, f->f) == EOF)) {
+
+		if (f->f == stderr) exit(BC_STATUS_ERROR_FATAL);
+
+		bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+	}
+
+#else // BC_ENABLE_LINE_LIB
+
 	if (f->len == f->cap) bc_file_flush(f, type);
 
 	assert(f->len < f->cap);
@@ -345,8 +398,19 @@ void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c) {
 	f->buf[f->len] = (char) c;
 	f->len += 1;
 
+#endif // BC_ENABLE_LINE_LIB
+
 	BC_SIG_TRYUNLOCK(lock);
 }
+
+#if BC_ENABLE_LINE_LIB
+
+void bc_file_init(BcFile *f, FILE* file) {
+	BC_SIG_ASSERT_LOCKED;
+	f->f = file;
+}
+
+#else // BC_ENABLE_LINE_LIB
 
 void bc_file_init(BcFile *f, int fd, char *buf, size_t cap) {
 
@@ -357,6 +421,8 @@ void bc_file_init(BcFile *f, int fd, char *buf, size_t cap) {
 	f->len = 0;
 	f->cap = cap;
 }
+
+#endif // BC_ENABLE_LINE_LIB
 
 void bc_file_free(BcFile *f) {
 	BC_SIG_ASSERT_LOCKED;
