@@ -880,6 +880,8 @@ while getopts "abBcdDeEfgGhHk:lMmNO:rS:s:tTvz-" opt; do
 					usage "No arg allowed for --$arg option" ;;
 				enable-memcheck* | install-all-locales*)
 					usage "No arg allowed for --$arg option" ;;
+				enable-editline* | enable-readline*)
+					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
 			esac
