@@ -195,7 +195,27 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 
 	// If the output is large enough to flush by itself, just output it.
 	// Otherwise, put it into the buffer.
-	if (BC_UNLIKELY(n > f->cap - f->len)) bc_file_output(f->fd, buf, n);
+	if (BC_UNLIKELY(n > f->cap - f->len)) {
+
+		BcStatus s = bc_file_output(f->fd, buf, n);
+
+		if (BC_ERR(s)) {
+
+			// For EOF, set it and jump.
+			if (s == BC_STATUS_EOF) {
+				vm.status = (sig_atomic_t) s;
+				BC_SIG_TRYUNLOCK(lock);
+				BC_JMP;
+			}
+			// Blow up on fatal error. Okay, not blow up, just quit.
+			else {
+
+				if (f->f == stderr) exit(BC_STATUS_ERROR_FATAL);
+
+				bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+			}
+		}
+	}
 	else {
 		memcpy(f->buf + f->len, buf, n);
 		f->len += n;
