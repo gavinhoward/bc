@@ -208,12 +208,7 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 				BC_JMP;
 			}
 			// Blow up on fatal error. Okay, not blow up, just quit.
-			else {
-
-				if (f->f == stderr) exit(BC_STATUS_ERROR_FATAL);
-
-				bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
-			}
+			else bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 		}
 	}
 	else {
