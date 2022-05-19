@@ -172,7 +172,7 @@ void bc_vm_info(const char* const help) {
 	bc_file_puts(&vm.fout, bc_flush_none, bc_copyright);
 
 	// Print the help.
-	if (help) {
+	if (help != NULL) {
 
 		bc_file_putchar(&vm.fout, bc_flush_none, '\n');
 
