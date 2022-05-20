@@ -111,7 +111,6 @@ static void bc_vm_sig(int sig) {
 		return;
 	}
 
-#ifdef SIGWINCH
 #if BC_ENABLE_EDITLINE
 	// Editline needs this to resize the terminal.
 	if (sig == SIGWINCH) {
@@ -119,7 +118,6 @@ static void bc_vm_sig(int sig) {
 		return;
 	}
 #endif // BC_ENABLE_EDITLINE
-#endif // SIGWINCH
 
 	// Only reset under these conditions; otherwise, quit.
 	if (sig == SIGINT && BC_SIGINT && BC_I) {
@@ -158,12 +156,10 @@ static void bc_vm_sigaction(void) {
 	sigaction(SIGQUIT, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
 
-#ifdef SIGWINCH
 #if BC_ENABLE_EDITLINE
 	// Editline needs this to resize the terminal.
 	sigaction(SIGWINCH, &sa, NULL);
 #endif // BC_ENABLE_EDITLINE
-#endif // SIGWINCH
 
 #if BC_ENABLE_HISTORY
 	if (BC_TTY) sigaction(SIGHUP, &sa, NULL);

@@ -45,6 +45,13 @@
 #endif // __OpenBSD__
 #endif // BC_TEST_OPENBSD
 
+// This is used by configure.sh to test for FreeBSD.
+#ifdef BC_TEST_FREEBSD
+#ifdef __FreeBSD__
+#error On FreeBSD with _POSIX_C_SOURCE
+#endif // __FreeBSD__
+#endif // BC_TEST_FREEBSD
+
 #ifndef BC_ENABLED
 #define BC_ENABLED (1)
 #endif // BC_ENABLED
