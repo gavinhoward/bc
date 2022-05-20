@@ -179,11 +179,7 @@ void bc_vm_info(const char* const help) {
 
 #if BC_ENABLE_LINE_LIB
 	// Print the banner.
-	puts(vm.name);
-	putchar(' ');
-	puts(BC_VERSION);
-	putchar('\n');
-	puts(bc_copyright);
+	printf("%s %s\n%s", vm.name, BC_VERSION, bc_copyright);
 #else // BC_ENABLE_LINE_LIB
 	// Print the banner.
 	bc_file_puts(&vm.fout, bc_flush_none, vm.name);
