@@ -205,7 +205,7 @@ void bc_history_free(BcHistory *h) {
 
 BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
-	BcStatus s;
+	BcStatus s = BC_STATUS_SUCCESS;
 	const char* line;
 	int len;
 

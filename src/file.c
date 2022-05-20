@@ -205,7 +205,7 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 
 	ssize_t r = fwrite(buf, 1, n, f->f);
 
-	if (BC_ERR(r != n)) {
+	if (BC_ERR(r < 0 || n != (size_t) r)) {
 
 		// If the file is stderr, then just exit. We don't want a stack overflow
 		// from recursion.
@@ -266,10 +266,6 @@ void bc_file_printf(BcFile *restrict f, const char *fmt, ...)
 
 void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 
-	char *percent;
-	const char *ptr = fmt;
-	char buf[BC_FILE_ULL_LENGTH];
-
 	BC_SIG_ASSERT_LOCKED;
 
 #if BC_ENABLE_LINE_LIB
@@ -280,6 +276,10 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 	}
 
 #else // BC_ENABLE_LINE_LIB
+
+	char *percent;
+	const char *ptr = fmt;
+	char buf[BC_FILE_ULL_LENGTH];
 
 	// This is a poor man's printf(). While I could look up algorithms to make
 	// it as fast as possible, and should when I write the standard library for
