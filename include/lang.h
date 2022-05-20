@@ -329,8 +329,8 @@ typedef enum BcInst {
 } BcInst;
 
 #if BC_C11
-static_assert(BC_INST_INVALID <= UCHAR_MAX,
-              "Too many instructions to fit into an unsigned char");
+_Static_assert(BC_INST_INVALID <= UCHAR_MAX,
+               "Too many instructions to fit into an unsigned char");
 #endif // BC_C11
 
 /// Used by maps to identify where items are in the array.

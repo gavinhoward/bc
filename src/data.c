@@ -897,8 +897,8 @@ const size_t bc_lex_kws_len = sizeof(bc_lex_kws) / sizeof(BcLexKeyword);
 // redefined_kws in BcVm, is correct. If it's correct under C11, it will be
 // correct under C99, and I did not know any other way of ensuring they remained
 // synchronized.
-static_assert(sizeof(bc_lex_kws) / sizeof(BcLexKeyword) == BC_LEX_NKWS,
-              "BC_LEX_NKWS is wrong.");
+_Static_assert(sizeof(bc_lex_kws) / sizeof(BcLexKeyword) == BC_LEX_NKWS,
+               "BC_LEX_NKWS is wrong.");
 
 #endif // BC_C11
 
