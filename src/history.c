@@ -153,6 +153,7 @@
 #include <vm.h>
 
 static char* prompt_global;
+static HistEvent bc_history_event;
 
 static char* bc_history_prompt(EditLine *el) {
 	BC_UNUSED(el);
@@ -185,6 +186,9 @@ void bc_history_init(BcHistory *h) {
 	if (BC_ERR(h->el == NULL)) bc_vm_fatalError(BC_ERR_FATAL_ALLOC_ERR);
 
 	// I want history and a prompt.
+	history(h->hist, &bc_history_event, H_SETSIZE, 100);
+	history(h->hist, &bc_history_event, H_SETUNIQUE, 1);
+	el_set(h->el, EL_EDITOR, "emacs");
 	el_set(h->el, EL_HIST, history, h->hist);
 	el_set(h->el, EL_PROMPT, bc_history_prompt);
 
@@ -236,7 +240,13 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	}
 	// If there is a line...
 	else {
+
 		bc_vec_string(vec, strlen(line), line);
+
+		if (strcmp(line, "") && strcmp(line, "\n")) {
+			history(h->hist, &bc_history_event, H_ENTER, line);
+		}
+
 		s = BC_STATUS_SUCCESS;
 	}
 
