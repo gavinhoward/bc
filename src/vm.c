@@ -124,22 +124,29 @@ static void bc_vm_sig(int sig) {
 
 		int err = errno;
 
-		// Write the message.
-		if (write(STDOUT_FILENO, vm.sigmsg, vm.siglen) != (ssize_t) vm.siglen)
+#if BC_ENABLE_EDITLINE
+		if (write(STDOUT_FILENO, "^C", 2) != (ssize_t) 2) {
 			vm.status = BC_STATUS_ERROR_FATAL;
+		}
+#endif // BC_ENABLE_EDITLINE
+
+		// Write the message.
+		if (write(STDOUT_FILENO, vm.sigmsg, vm.siglen) != (ssize_t) vm.siglen) {
+			vm.status = BC_STATUS_ERROR_FATAL;
+		}
 		else vm.sig = 1;
 
 		errno = err;
 	}
 	else vm.status = BC_STATUS_QUIT;
 
-#if BC_ENABLE_READLINE
-	// Readline needs this to actually handle sigints correctly.
+#if BC_ENABLE_LINE_LIB
+	// Readline and Editline need this to actually handle sigints correctly.
 	if (sig == SIGINT && bc_history_inreadline) {
 		bc_history_inreadline = 0;
 		siglongjmp(bc_history_jmpbuf, 1);
 	}
-#endif // BC_ENABLE_READLINE
+#endif // BC_ENABLE_LINE_LIB
 
 	assert(vm.jmp_bufs.len);
 

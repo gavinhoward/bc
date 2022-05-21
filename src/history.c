@@ -148,9 +148,13 @@
 
 #include <string.h>
 #include <errno.h>
+#include <setjmp.h>
 
 #include <history.h>
 #include <vm.h>
+
+sigjmp_buf bc_history_jmpbuf;
+volatile sig_atomic_t bc_history_inreadline;
 
 static char* prompt_global;
 static HistEvent bc_history_event;
@@ -215,6 +219,13 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 	BC_SIG_LOCK;
 
+	if (sigsetjmp(bc_history_jmpbuf, 0)) {
+		bc_vec_string(vec, 1, "\n");
+		goto end;
+	}
+
+	bc_history_inreadline = 1;
+
 	// Make sure to set the prompt.
 	if (prompt_global != NULL) {
 
@@ -249,6 +260,10 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 		s = BC_STATUS_SUCCESS;
 	}
+
+end:
+
+	bc_history_inreadline = 0;
 
 	BC_SIG_UNLOCK;
 
