@@ -279,6 +279,7 @@ void bc_history_free(BcHistory *h) {
 
 BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
+	BcStatus s = BC_STATUS_SUCCESS;
 	size_t len;
 
 	BC_SIG_LOCK;
@@ -305,11 +306,15 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		bc_vec_string(vec, len, h->line);
 		bc_vec_concat(vec, "\n");
 	}
-	else bc_vec_string(vec, 2, "\n");
+	else if (h->line == NULL) {
+		bc_file_printf(&vm.fout, "%s", "^D");
+		s = BC_STATUS_EOF;
+	}
+	else bc_vec_string(vec, 1, "\n");
 
 	BC_SIG_UNLOCK;
 
-	return BC_STATUS_SUCCESS;
+	return s;
 }
 
 #else // BC_ENABLE_READLINE

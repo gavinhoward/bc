@@ -1067,6 +1067,10 @@ err:
 		goto restart;
 	}
 
+#if BC_ENABLE_LINE_LIB
+	if (vm.eof) bc_file_putchar(&vm.fout, bc_flush_none, '\n');
+#endif // BC_ENABLE_LINE_LIB
+
 #ifndef NDEBUG
 	// Since these are tied to this function, free them here. We only free in
 	// debug mode because stdin is always the last thing read.
