@@ -408,14 +408,15 @@ Files:
 
 Folders:
 
-	gen      The bc math library, help texts, and code to generate C source.
-	include  All header files.
-	locales  Locale files, in .msg format. Patches welcome for translations.
-	manuals  Manuals for both programs.
-	src      All source code.
-	scripts  A bunch of shell scripts to help with development and building.
-	tests    All tests.
-	vs       Files needed for the build on Windows.
+	benchmarks  A folder of benchmarks for various aspects of bc performance.
+	gen         The bc math library, help texts, and code to generate C source.
+	include     All header files.
+	locales     Locale files, in .msg format. Patches welcome for translations.
+	manuals     Manuals for both programs.
+	src         All source code.
+	scripts     A bunch of shell scripts to help with development and building.
+	tests       All tests.
+	vs          Files needed for the build on Windows.
 
 [1]: https://www.gnu.org/software/bc/
 [4]: ./LICENSE.md
