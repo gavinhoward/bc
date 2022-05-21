@@ -276,6 +276,7 @@ end:
 
 #include <assert.h>
 #include <setjmp.h>
+#include <string.h>
 
 #include <history.h>
 #include <vm.h>
