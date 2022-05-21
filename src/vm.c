@@ -138,7 +138,17 @@ static void bc_vm_sig(int sig) {
 
 		errno = err;
 	}
-	else vm.status = BC_STATUS_QUIT;
+	else {
+
+#if BC_ENABLE_EDITLINE
+		if (write(STDOUT_FILENO, "^C", 2) != (ssize_t) 2) {
+			vm.status = BC_STATUS_ERROR_FATAL;
+			return;
+		}
+#endif // BC_ENABLE_EDITLINE
+
+		vm.status = BC_STATUS_QUIT;
+	}
 
 #if BC_ENABLE_LINE_LIB
 	// Readline and Editline need this to actually handle sigints correctly.
