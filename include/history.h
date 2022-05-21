@@ -111,7 +111,7 @@
 #include <vector.h>
 
 extern sigjmp_buf bc_history_jmpbuf;
-extern volatile sig_atomic_t bc_history_inreadline;
+extern volatile sig_atomic_t bc_history_inlinelib;
 
 #endif // BC_ENABLE_LINE_LIB
 

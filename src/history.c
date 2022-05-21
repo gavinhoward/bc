@@ -154,14 +154,14 @@
 #include <vm.h>
 
 sigjmp_buf bc_history_jmpbuf;
-volatile sig_atomic_t bc_history_inreadline;
+volatile sig_atomic_t bc_history_inlinelib;
 
-static char* prompt_global;
+static char* bc_history_prompt;
 static HistEvent bc_history_event;
 
-static char* bc_history_prompt(EditLine *el) {
+static char* bc_history_promptFunc(EditLine *el) {
 	BC_UNUSED(el);
-	return prompt_global;
+	return bc_history_prompt;
 }
 
 void bc_history_init(BcHistory *h) {
@@ -194,7 +194,7 @@ void bc_history_init(BcHistory *h) {
 	history(h->hist, &bc_history_event, H_SETUNIQUE, 1);
 	el_set(h->el, EL_EDITOR, "emacs");
 	el_set(h->el, EL_HIST, history, h->hist);
-	el_set(h->el, EL_PROMPT, bc_history_prompt);
+	el_set(h->el, EL_PROMPT, bc_history_promptFunc);
 
 	// I also want to get the user's .editrc.
 	el_source(h->el, v.v);
@@ -202,11 +202,11 @@ void bc_history_init(BcHistory *h) {
 	bc_vec_free(&v);
 
 	h->badTerm = false;
-	prompt_global = NULL;
+	bc_history_prompt = NULL;
 }
 
 void bc_history_free(BcHistory *h) {
-	if (prompt_global != NULL) free(prompt_global);
+	if (bc_history_prompt != NULL) free(bc_history_prompt);
 	el_end(h->el);
 	history_end(h->hist);
 }
@@ -224,17 +224,17 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		goto end;
 	}
 
-	bc_history_inreadline = 1;
+	bc_history_inlinelib = 1;
 
 	// Make sure to set the prompt.
-	if (prompt_global != NULL) {
+	if (bc_history_prompt != NULL) {
 
-		if (strcmp(prompt_global, prompt)) {
-			free(prompt_global);
-			prompt_global = bc_vm_strdup(prompt);
+		if (strcmp(bc_history_prompt, prompt)) {
+			free(bc_history_prompt);
+			bc_history_prompt = bc_vm_strdup(prompt);
 		}
 	}
-	else prompt_global = bc_vm_strdup(prompt);
+	else bc_history_prompt = bc_vm_strdup(prompt);
 
 	// Get the line.
 	line = el_gets(h->el, &len);
@@ -263,7 +263,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 end:
 
-	bc_history_inreadline = 0;
+	bc_history_inlinelib = 0;
 
 	BC_SIG_UNLOCK;
 
@@ -281,7 +281,7 @@ end:
 #include <vm.h>
 
 sigjmp_buf bc_history_jmpbuf;
-volatile sig_atomic_t bc_history_inreadline;
+volatile sig_atomic_t bc_history_inlinelib;
 
 void bc_history_init(BcHistory *h) {
 
@@ -308,7 +308,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		goto end;
 	}
 
-	bc_history_inreadline = 1;
+	bc_history_inlinelib = 1;
 
 	// Get rid of the last line.
 	if (h->line != NULL) {
@@ -340,7 +340,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 end:
 
-	bc_history_inreadline = 0;
+	bc_history_inlinelib = 0;
 
 	BC_SIG_UNLOCK;
 

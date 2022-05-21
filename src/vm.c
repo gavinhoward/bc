@@ -152,8 +152,8 @@ static void bc_vm_sig(int sig) {
 
 #if BC_ENABLE_LINE_LIB
 	// Readline and Editline need this to actually handle sigints correctly.
-	if (sig == SIGINT && bc_history_inreadline) {
-		bc_history_inreadline = 0;
+	if (sig == SIGINT && bc_history_inlinelib) {
+		bc_history_inlinelib = 0;
 		siglongjmp(bc_history_jmpbuf, 1);
 	}
 #endif // BC_ENABLE_LINE_LIB
