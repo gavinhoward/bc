@@ -194,27 +194,14 @@ void bc_file_flush(BcFile *restrict f, BcFlushType type) {
 	BC_SIG_TRYUNLOCK(lock);
 }
 
+#if !BC_ENABLE_LINE_LIB
+
 void bc_file_write(BcFile *restrict f, BcFlushType type,
                    const char *buf, size_t n)
 {
 	sig_atomic_t lock;
 
 	BC_SIG_TRYLOCK(lock);
-
-#if BC_ENABLE_LINE_LIB
-
-	ssize_t r = fwrite(buf, 1, n, f->f);
-
-	if (BC_ERR(r < 0 || n != (size_t) r)) {
-
-		// If the file is stderr, then just exit. We don't want a stack overflow
-		// from recursion.
-		if (f->f == stderr) exit(BC_STATUS_ERROR_FATAL);
-
-		bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
-	}
-
-#else // BC_ENABLE_LINE_LIB
 
 	// If we have enough to flush, do it.
 	if (n > f->cap - f->len) {
@@ -245,10 +232,10 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 		f->len += n;
 	}
 
-#endif // BC_ENABLE_LINE_LIB
-
 	BC_SIG_TRYUNLOCK(lock);
 }
+
+#endif // BC_ENABLE_LINE_LIB
 
 void bc_file_printf(BcFile *restrict f, const char *fmt, ...)
 {
@@ -366,7 +353,14 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args) {
 }
 
 void bc_file_puts(BcFile *restrict f, BcFlushType type, const char *str) {
+#if BC_ENABLE_LINE_LIB
+	// This is used because of flushing issues with using bc_file_write() when
+	// bc is using a line library. It's also using printf() because puts()
+	// writes a newline.
+	bc_file_printf(f, "%s", str);
+#else // BC_ENABLE_LINE_LIB
 	bc_file_write(f, type, str, strlen(str));
+#endif // BC_ENABLE_LINE_LIB
 }
 
 void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c) {

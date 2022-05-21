@@ -702,7 +702,7 @@ BcDig* bc_vm_takeTemp(void);
  */
 void bc_vm_freeTemps(void);
 
-#if !BC_ENABLE_HISTORY || BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
+#if !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
 
 /**
  * Erases the flush argument if history does not exist because it does not
@@ -710,7 +710,7 @@ void bc_vm_freeTemps(void);
  */
 #define bc_vm_putchar(c, t) bc_vm_putchar(c)
 
-#endif // !BC_ENABLE_HISTORY || BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
+#endif // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
 
 /**
  * Print to stdout with limited formating.

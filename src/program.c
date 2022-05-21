@@ -2663,8 +2663,7 @@ void bc_program_reset(BcProgram *p) {
 
 	// Write the ready message for a signal, and clear the signal.
 	if (vm.sig) {
-		bc_file_write(&vm.fout, bc_flush_none, bc_program_ready_msg,
-		              bc_program_ready_msg_len);
+		bc_file_printf(&vm.fout, "%s", bc_program_ready_msg);
 		bc_file_flush(&vm.fout, bc_flush_err);
 		vm.sig = 0;
 	}

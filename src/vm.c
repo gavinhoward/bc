@@ -177,26 +177,13 @@ void bc_vm_info(const char* const help) {
 
 	BC_SIG_ASSERT_LOCKED;
 
-#if BC_ENABLE_LINE_LIB
 	// Print the banner.
-	printf("%s %s\n%s", vm.name, BC_VERSION, bc_copyright);
-#else // BC_ENABLE_LINE_LIB
-	// Print the banner.
-	bc_file_puts(&vm.fout, bc_flush_none, vm.name);
-	bc_file_putchar(&vm.fout, bc_flush_none, ' ');
-	bc_file_puts(&vm.fout, bc_flush_none, BC_VERSION);
-	bc_file_putchar(&vm.fout, bc_flush_none, '\n');
-	bc_file_puts(&vm.fout, bc_flush_none, bc_copyright);
-#endif // BC_ENABLE_LINE_LIB
+	bc_file_printf(&vm.fout, "%s %s\n%s", vm.name, BC_VERSION, bc_copyright);
 
 	// Print the help.
 	if (help != NULL) {
 
-#if BC_ENABLE_LINE_LIB
-		putchar('\n');
-#else // BC_ENABLE_LINE_LIB
 		bc_file_putchar(&vm.fout, bc_flush_none, '\n');
-#endif // BC_ENABLE_LINE_LIB
 
 #if BC_ENABLED
 		if (BC_IS_BC) {
@@ -211,13 +198,8 @@ void bc_vm_info(const char* const help) {
 			const char* const expr = BC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                           "to not exit";
 
-#if BC_ENABLE_LINE_LIB
-			printf(help, vm.name, vm.name, BC_VERSION, BC_BUILD_TYPE, banner,
-			       sigint, tty, prompt, expr);
-#else // BC_ENABLE_LINE_LIB
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
 			               BC_BUILD_TYPE, banner, sigint, tty, prompt, expr);
-#endif // BC_ENABLE_LINE_LIB
 		}
 #endif // BC_ENABLED
 
@@ -233,24 +215,14 @@ void bc_vm_info(const char* const help) {
 			const char* const expr = DC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                           "to not exit";
 
-#if BC_ENABLE_LINE_LIB
-			printf(help, vm.name, vm.name, BC_VERSION, BC_BUILD_TYPE, sigint,
-			       tty, prompt, expr);
-#else // BC_ENABLE_LINE_LIB
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
 			               BC_BUILD_TYPE, sigint, tty, prompt, expr);
-#endif // BC_ENABLE_LINE_LIB
 		}
 #endif // DC_ENABLED
 	}
 
-#if BC_ENABLE_LINE_LIB
-	// Flush.
-	fflush(stdout);
-#else // BC_ENABLE_LINE_LIB
 	// Flush.
 	bc_file_flush(&vm.fout, bc_flush_none);
-#endif // BC_ENABLE_LINE_LIB
 }
 #endif // !BC_ENABLE_LIBRARY
 
