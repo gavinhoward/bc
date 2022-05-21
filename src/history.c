@@ -260,9 +260,13 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 #if BC_ENABLE_READLINE
 
 #include <assert.h>
+#include <setjmp.h>
 
 #include <history.h>
 #include <vm.h>
+
+sigjmp_buf bc_history_jmpbuf;
+volatile sig_atomic_t bc_history_inreadline;
 
 void bc_history_init(BcHistory *h) {
 
@@ -283,6 +287,13 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	size_t len;
 
 	BC_SIG_LOCK;
+
+	if (sigsetjmp(bc_history_jmpbuf, 0)) {
+		bc_vec_string(vec, 1, "\n");
+		goto end;
+	}
+
+	bc_history_inreadline = 1;
 
 	// Get rid of the last line.
 	if (h->line != NULL) {
@@ -311,6 +322,10 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 		s = BC_STATUS_EOF;
 	}
 	else bc_vec_string(vec, 1, "\n");
+
+end:
+
+	bc_history_inreadline = 0;
 
 	BC_SIG_UNLOCK;
 

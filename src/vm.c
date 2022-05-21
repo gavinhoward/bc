@@ -133,6 +133,14 @@ static void bc_vm_sig(int sig) {
 	}
 	else vm.status = BC_STATUS_QUIT;
 
+#if BC_ENABLE_READLINE
+	// Readline needs this to actually handle sigints correctly.
+	if (sig == SIGINT && bc_history_inreadline) {
+		bc_history_inreadline = 0;
+		siglongjmp(bc_history_jmpbuf, 1);
+	}
+#endif // BC_ENABLE_READLINE
+
 	assert(vm.jmp_bufs.len);
 
 	// Only jump if signals are not locked. The jump will happen by whoever

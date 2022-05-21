@@ -140,6 +140,8 @@ extern const size_t bc_history_editrc_len;
 #if BC_ENABLE_READLINE
 
 #include <stdio.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -155,6 +157,9 @@ typedef struct BcHistory {
 	bool badTerm;
 
 } BcHistory;
+
+extern sigjmp_buf bc_history_jmpbuf;
+extern volatile sig_atomic_t bc_history_inreadline;
 
 #else // BC_ENABLE_READLINE
 
