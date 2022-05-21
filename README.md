@@ -405,7 +405,6 @@ Files:
 	Makefile.in          The Makefile template.
 	NEWS.md              The changelog.
 	NOTICE.md            List of contributors and copyright owners.
-	RELEASE.md           A checklist for making a release (maintainer use only).
 
 Folders:
 
