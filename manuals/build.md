@@ -433,6 +433,40 @@ should be to retry with history disabled.
 
 This option affects the [build type][7].
 
+##### Editline
+
+History support can be provided by editline, in order to implement `vi`-like
+keybindings and other features.
+
+To enable editline support pass either the `-e` flag or the `--enable-editline`
+option to `configure.sh`, as follows:
+
+```
+./configure.sh -e
+./configure.sh --enable-editline
+```
+
+Both commands are equivalent.
+
+This is ignored if history is disabled.
+
+##### Readline
+
+History support can be provided by readline, in order to implement `vi`-like
+keybindings and other features.
+
+To enable readline support pass either the `-r` flag or the `--enable-readline`
+option to `configure.sh`, as follows:
+
+```
+./configure.sh -r
+./configure.sh --enable-readline
+```
+
+Both commands are equivalent.
+
+This is ignored if history is disabled.
+
 #### NLS (Locale Support)
 
 To disable locale support (use only English), pass either the `-N` flag or the
