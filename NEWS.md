@@ -1,5 +1,14 @@
 # News
 
+## 5.3.0
+
+This is a production release that adds features.
+
+First, support for editline and readline history has been added. To use
+editline, pass `-e` to `configure.sh`, and to use readline, pass `-r`.
+
+Second, history support for Windows has been re-enabled.
+
 ## 5.2.5
 
 This is a production release that fixes this `bc`'s behavior on `^D` to match
