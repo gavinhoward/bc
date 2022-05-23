@@ -373,6 +373,7 @@ void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c) {
 
 	if (BC_ERR(fputc(c, f->f) == EOF)) {
 
+		// This is here to prevent a stack overflow from unbounded recursion.
 		if (f->f == stderr) exit(BC_STATUS_ERROR_FATAL);
 
 		bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);

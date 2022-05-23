@@ -169,6 +169,7 @@ void bc_history_init(BcHistory *h) {
 	BcVec v;
 	char* home = getenv("HOME");
 
+	// This will hold the true path to the editrc.
 	bc_vec_init(&v, 1, BC_DTOR_NONE);
 
 	// Initialize the path to the editrc. This is done manually because the
@@ -219,11 +220,13 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 	BC_SIG_LOCK;
 
+	// If the jump happens here, then a SIGINT occurred.
 	if (sigsetjmp(bc_history_jmpbuf, 0)) {
 		bc_vec_string(vec, 1, "\n");
 		goto end;
 	}
 
+	// This is so the signal handler can handle line libraries properly.
 	bc_history_inlinelib = 1;
 
 	// Make sure to set the prompt.
@@ -304,11 +307,13 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 
 	BC_SIG_LOCK;
 
+	// If the jump happens here, then a SIGINT occurred.
 	if (sigsetjmp(bc_history_jmpbuf, 0)) {
 		bc_vec_string(vec, 1, "\n");
 		goto end;
 	}
 
+	// This is so the signal handler can handle line libraries properly.
 	bc_history_inlinelib = 1;
 
 	// Get rid of the last line.
@@ -321,7 +326,7 @@ BcStatus bc_history_line(BcHistory *h, BcVec *vec, const char *prompt) {
 	h->line = readline(prompt);
 
 	// If there was a line, add it to the history. Otherwise, just return an
-	// empty line.
+	// empty line. Oh, and NULL actually means EOF.
 	if (h->line != NULL && h->line[0]) {
 
 		add_history(h->line);

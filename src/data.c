@@ -315,6 +315,8 @@ const BcVecFree bc_vec_dtors[] = {
 
 /// The normal path to the editrc.
 const char bc_history_editrc[] = "/.editrc";
+
+/// The length of the normal path to the editrc.
 const size_t bc_history_editrc_len = sizeof(bc_history_editrc) - 1;
 
 #endif // BC_ENABLE_EDITLINE

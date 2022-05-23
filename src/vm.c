@@ -125,9 +125,9 @@ static void bc_vm_sig(int sig) {
 		int err = errno;
 
 #if BC_ENABLE_EDITLINE
-		if (write(STDOUT_FILENO, "^C", 2) != (ssize_t) 2) {
+		// Editline needs this, for some unknown reason.
+		if (write(STDOUT_FILENO, "^C", 2) != (ssize_t) 2)
 			vm.status = BC_STATUS_ERROR_FATAL;
-		}
 #endif // BC_ENABLE_EDITLINE
 
 		// Write the message.

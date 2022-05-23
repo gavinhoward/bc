@@ -50,7 +50,8 @@
 /// The file struct.
 typedef struct BcFile {
 
-	// The file.
+	// The file. This is here simply to make the line lib code as compatible
+	// with the existing code as possible.
 	FILE* f;
 
 } BcFile;
@@ -114,10 +115,8 @@ typedef enum BcFlushType {
 
 /**
  * Initialize a file.
- * @param f    The file to initialize.
- * @param fd   The file descriptor.
- * @param buf  The buffer for the file.
- * @param cap  The capacity of the buffer.
+ * @param f     The file to initialize.
+ * @param file  The stdio file.
  */
 void bc_file_init(BcFile *f, FILE* file);
 
