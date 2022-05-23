@@ -1065,6 +1065,7 @@ err:
 	}
 
 #if BC_ENABLE_LINE_LIB
+	// I don't know why, but on EOF, the line libraries need another newline.
 	if (vm.eof) bc_file_putchar(&vm.fout, bc_flush_none, '\n');
 #endif // BC_ENABLE_LINE_LIB
 
