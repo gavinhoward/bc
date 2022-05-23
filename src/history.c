@@ -1617,8 +1617,8 @@ static void bc_history_reset(BcHistory *h) {
  */
 static void bc_history_printCtrl(BcHistory *h, unsigned int c) {
 
-	char str[3] = "^A";
-	const char newline[2] = "\n";
+	char str[3] = { '^', 'A', '\0' };
+	const char newline[2] = { '\n', '\0' };
 
 	BC_SIG_ASSERT_LOCKED;
 
