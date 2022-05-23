@@ -598,7 +598,7 @@ static ssize_t bc_history_read(char *buf, size_t n) {
 
 	good = ReadConsole(hn, buf, (DWORD) n, &read, NULL);
 
-	ret = (read != n) ? -1 : 1;
+	ret = (read != n || !good) ? -1 : 1;
 
 #endif // _WIN32
 
@@ -1628,15 +1628,14 @@ static void bc_history_printCtrl(BcHistory *h, unsigned int c) {
 	// Concatenate the string.
 	bc_vec_concat(&h->buf, str);
 
+	h->pos = BC_HIST_BUF_LEN(h);
 	bc_history_refresh(h);
 
 	// Pop the string.
 	bc_vec_npop(&h->buf, sizeof(str));
 	bc_vec_pushByte(&h->buf, '\0');
 
-#ifndef _WIN32
 	if (c != BC_ACTION_CTRL_C && c != BC_ACTION_CTRL_D)
-#endif // _WIN32
 	{
 		// We sometimes want to print a newline; for the times we don't; it's
 		// because newlines are taken care of elsewhere.
@@ -1710,7 +1709,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				break;
 			}
 
-#ifndef _WIN32
 			case BC_ACTION_CTRL_C:
 			{
 				bc_history_printCtrl(h, c);
@@ -1731,7 +1729,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 				break;
 			}
-#endif // _WIN32
 
 			case BC_ACTION_BACKSPACE:
 			case BC_ACTION_CTRL_H:
@@ -1740,7 +1737,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 				break;
 			}
 
-#ifndef _WIN32
 			// Act as end-of-file or delete-forward-char.
 			case BC_ACTION_CTRL_D:
 			{
@@ -1756,7 +1752,6 @@ static BcStatus bc_history_edit(BcHistory *h, const char *prompt) {
 
 				break;
 			}
-#endif // _WIN32
 
 			// Swaps current character with previous.
 			case BC_ACTION_CTRL_T:
@@ -1975,12 +1970,15 @@ void bc_history_init(BcHistory *h) {
 		}
 		else {
 
-			DWORD reqOut = ENABLE_VIRTUAL_TERMINAL_PROCESSING |
-			               DISABLE_NEWLINE_AUTO_RETURN;
-			DWORD reqIn = ENABLE_VIRTUAL_TERMINAL_INPUT;
+			DWORD reqOut = h->orig_out | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+			DWORD reqIn = h->orig_in | ENABLE_VIRTUAL_TERMINAL_INPUT;
 
-			if (!SetConsoleMode(in, h->orig_in | reqIn) ||
-			    !SetConsoleMode(out, h->orig_out | reqOut))
+			reqOut |= DISABLE_NEWLINE_AUTO_RETURN | ENABLE_PROCESSED_OUTPUT;
+			reqIn &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
+			reqIn &= ~(ENABLE_PROCESSED_INPUT);
+
+			if (!SetConsoleMode(in, reqIn) ||
+			    !SetConsoleMode(out, reqOut))
 			{
 				h->badTerm = true;
 				return;
