@@ -1963,22 +1963,27 @@ void bc_history_init(BcHistory *h) {
 	out = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	if (!h->badTerm) {
+
 		SetConsoleCP(CP_UTF8);
 		SetConsoleOutputCP(CP_UTF8);
+
 		if (!GetConsoleMode(in, &h->orig_in) ||
-			!GetConsoleMode(out, &h->orig_out))
+		    !GetConsoleMode(out, &h->orig_out))
 		{
 			h->badTerm = true;
 			return;
 		}
 		else {
+
 			DWORD reqOut = ENABLE_VIRTUAL_TERMINAL_PROCESSING |
-				DISABLE_NEWLINE_AUTO_RETURN;
+			               DISABLE_NEWLINE_AUTO_RETURN;
 			DWORD reqIn = ENABLE_VIRTUAL_TERMINAL_INPUT;
+
 			if (!SetConsoleMode(in, h->orig_in | reqIn) ||
-				!SetConsoleMode(out, h->orig_out | reqOut))
+			    !SetConsoleMode(out, h->orig_out | reqOut))
 			{
 				h->badTerm = true;
+				return;
 			}
 		}
 	}
