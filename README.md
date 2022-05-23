@@ -71,8 +71,8 @@ Also, if building with MSBuild, the MSBuild bundled with Visual Studio is
 required.
 
 **Note**: Unlike the POSIX-compatible platforms, only one build configuration is
-supported on Windows: extra math and prompt enabled, history and NLS (locale
-support) disabled, with both calculators built.
+supported on Windows: extra math and history enabled, NLS (locale support)
+disabled, with both calculators built.
 
 #### `bc`
 
@@ -178,9 +178,6 @@ see the [build manual][5].
 
 The library API can be found in [`manuals/bcl.3.md`][26] or `man bcl` once the
 library is installed.
-
-The library is built as `bin/libbcl.a` on POSIX-compatible systems or as
-`Release/bcl/bcl.lib` on Windows.
 
 #### Package and Distro Maintainers
 
@@ -289,8 +286,7 @@ with POSIX `bc`. The math has been tested with 40+ million random problems, so
 it is as correct as I can make it.
 
 This `bc` can be used as a drop-in replacement for any existing `bc`. This `bc`
-is also compatible with MinGW toolchains, though history is not supported on
-Windows.
+is also compatible with MinGW toolchains.
 
 In addition, this `bc` is considered complete; i.e., there will be no more
 releases with additional features. However, it *is* actively maintained, so if

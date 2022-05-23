@@ -46,7 +46,7 @@ However, if you wish to build it yourself, this `bc` can be built using Visual
 Studio or MSBuild.
 
 Unfortunately, only one build configuration (besides Debug or Release) is
-supported: extra math enabled, history and NLS (locale support) disabled, with
+supported: extra math and history enabled, NLS (locale support) disabled, with
 both calculators built. The default [settings][11] are `BC_BANNER=1`,
 `{BC,DC}_SIGINT_RESET=0`, `{BC,DC}_TTY_MODE=1`, `{BC,DC}_PROMPT=1`.
 
@@ -423,9 +423,6 @@ to `configure.sh`, as follows:
 ```
 
 Both commands are equivalent.
-
-History is automatically disabled when building for Windows or on another
-platform that does not support the terminal handling that is required.
 
 ***WARNING***: Of all of the code in the `bc`, this is the only code that is not
 completely portable. If the `bc` does not work on your platform, your first step

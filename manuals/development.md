@@ -3776,6 +3776,16 @@ barely worked after a lot of work and a lot of portability code, but even with
 all of that, it does not have at least one feature: multi-line pasting from the
 clipboard.
 
+#### Editline and Readline
+
+I also implemented an integration with both editline and readline, though not at
+the same time. This allows distributions that want to use either one in `bc` to
+do so. This enables users to use their `.editrc` and `.inputrc` settings.
+
+The integration is custom to each library, and it does *not* involve any of
+`bc`'s custom history code. It also required changes to `bc`'s [Custom
+I/O][114].
+
 ### Error Handling
 
 The error handling on `bc` got an overhaul for version [`3.0.0`][32], and it
