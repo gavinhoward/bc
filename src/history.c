@@ -1954,6 +1954,9 @@ void bc_history_init(BcHistory *h) {
 	h->rawMode = false;
 	h->badTerm = bc_history_isBadTerm();
 
+	// Just don't initialize with a bad terminal.
+	if (h->badTerm) return;
+
 #ifdef _WIN32
 
 	h->orig_in = 0;
@@ -1962,32 +1965,39 @@ void bc_history_init(BcHistory *h) {
 	in = GetStdHandle(STD_INPUT_HANDLE);
 	out = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	if (!h->badTerm) {
+	// Set the code pages.
+	SetConsoleCP(CP_UTF8);
+	SetConsoleOutputCP(CP_UTF8);
 
-		SetConsoleCP(CP_UTF8);
-		SetConsoleOutputCP(CP_UTF8);
+	// Get the original modes.
+	if (!GetConsoleMode(in, &h->orig_in) ||
+	    !GetConsoleMode(out, &h->orig_out))
+	{
+		// Just mark it as a bad terminal on error.
+		h->badTerm = true;
+		return;
+	}
+	else {
 
-		if (!GetConsoleMode(in, &h->orig_in) ||
-		    !GetConsoleMode(out, &h->orig_out))
+		// Set the new modes.
+		DWORD reqOut = h->orig_out | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+		DWORD reqIn = h->orig_in | ENABLE_VIRTUAL_TERMINAL_INPUT;
+
+		// The input handle requires turning *off* some modes. That's why
+		// history didn't work before; I didn't read the documentation
+		// closely enough to see that most modes were automaticall enabled,
+		// and they need to be turned off.
+		reqOut |= DISABLE_NEWLINE_AUTO_RETURN | ENABLE_PROCESSED_OUTPUT;
+		reqIn &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
+		reqIn &= ~(ENABLE_PROCESSED_INPUT);
+
+		// Set the modes; if there was an error, assume a bad terminal and
+		// quit.
+		if (!SetConsoleMode(in, reqIn) ||
+		    !SetConsoleMode(out, reqOut))
 		{
 			h->badTerm = true;
 			return;
-		}
-		else {
-
-			DWORD reqOut = h->orig_out | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-			DWORD reqIn = h->orig_in | ENABLE_VIRTUAL_TERMINAL_INPUT;
-
-			reqOut |= DISABLE_NEWLINE_AUTO_RETURN | ENABLE_PROCESSED_OUTPUT;
-			reqIn &= ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
-			reqIn &= ~(ENABLE_PROCESSED_INPUT);
-
-			if (!SetConsoleMode(in, reqIn) ||
-			    !SetConsoleMode(out, reqOut))
-			{
-				h->badTerm = true;
-				return;
-			}
 		}
 	}
 #endif // _WIN32
