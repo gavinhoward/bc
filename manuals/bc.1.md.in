@@ -349,7 +349,7 @@ All long options are **non-portable extensions**.
 # STDIN
 
 If no files or expressions are given by the **-f**, **-\-file**, **-e**, or
-**-\-expression** options, then bc(1) read from **stdin**.
+**-\-expression** options, then bc(1) reads from **stdin**.
 
 However, there are a few caveats to this.
 

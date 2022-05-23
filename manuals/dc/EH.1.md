@@ -163,7 +163,7 @@ All long options are **non-portable extensions**.
 
 If no files are given on the command-line and no files or expressions are given
 by the **-f**, **-\-file**, **-e**, or **-\-expression** options, then dc(1)
-read from **stdin**.
+reads from **stdin**.
 
 However, there is a caveat to this.
 
