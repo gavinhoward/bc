@@ -230,7 +230,8 @@ static int bc_opt_parseShort(BcOpt *o, const BcOptLong *longopts) {
  */
 static bool bc_opt_longoptsMatch(const char *name, const char *option) {
 
-	const char *a = option, *n = name;
+	const char *a = option;
+	const char *n = name;
 
 	// Can never match a NULL name.
 	if (name == NULL) return false;

@@ -121,7 +121,8 @@ void bc_vec_npop(BcVec *restrict v, size_t n) {
 
 void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
 
-	char* ptr, *data;
+	char *ptr;
+	char *data;
 	sig_atomic_t lock;
 
 	assert(v != NULL);

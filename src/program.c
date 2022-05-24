@@ -238,7 +238,8 @@ size_t bc_program_addString(BcProgram *p, const char *str, size_t fidx) {
 
 size_t bc_program_search(BcProgram *p, const char *id, bool var) {
 
-	BcVec *v, *map;
+	BcVec *v;
+	BcVec *map;
 	size_t i;
 
 	BC_SIG_ASSERT_LOCKED;
@@ -622,8 +623,11 @@ static void bc_program_const(BcProgram *p, const char *code, size_t *bgn) {
  */
 static void bc_program_op(BcProgram *p, uchar inst) {
 
-	BcResult *opd1, *opd2, *res;
-	BcNum *n1, *n2;
+	BcResult *opd1;
+	BcResult *opd2;
+	BcResult *res;
+	BcNum *n1;
+	BcNum *n2;
 	size_t idx = inst - BC_INST_POWER;
 
 	res = bc_program_prepResult(p);
@@ -963,7 +967,8 @@ void bc_program_trunc(BcResult *r, BcNum *n) {
  */
 static void bc_program_unary(BcProgram *p, uchar inst) {
 
-	BcResult *res, *ptr;
+	BcResult *res;
+	BcResult *ptr;
 	BcNum *num;
 
 	res = bc_program_prepResult(p);
@@ -988,8 +993,11 @@ static void bc_program_unary(BcProgram *p, uchar inst) {
  */
 static void bc_program_logical(BcProgram *p, uchar inst) {
 
-	BcResult *opd1, *opd2, *res;
-	BcNum *n1, *n2;
+	BcResult *opd1;
+	BcResult *opd2;
+	BcResult *res;
+	BcNum *n1;
+	BcNum *n2;
 	bool cond = 0;
 	ssize_t cmp;
 
@@ -1171,7 +1179,8 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 
 		// If we get here, we are handling an array. This is one place we need
 		// to cast the number from bc_program_num() to a vector.
-		BcVec *v = (BcVec*) n, *rv = &r.d.v;
+		BcVec *v = (BcVec*) n;
+		BcVec *rv = &r.d.v;
 
 #if BC_ENABLED
 
@@ -1262,8 +1271,11 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 static void bc_program_assign(BcProgram *p, uchar inst) {
 
 	// The local use_val is true when the assigned value needs to be copied.
-	BcResult *left, *right, res;
-	BcNum *l, *r;
+	BcResult *left;
+	BcResult *right;
+	BcResult res;
+	BcNum *l;
+	BcNum *r;
 	bool ob, sc, use_val = BC_INST_USE_VAL(inst);
 
 	bc_program_assignPrep(p, &left, &l, &right, &r);
@@ -1382,7 +1394,9 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 	if (ob || sc || left->t == BC_RESULT_IBASE) {
 
 		BcVec *v;
-		BcBigDig *ptr, *ptr_t, val, max, min;
+		BcBigDig *ptr;
+		BcBigDig *ptr_t;
+		BcBigDig val, max, min;
 
 		// Get the actual value.
 		val = bc_num_bigdig(l);
@@ -1528,7 +1542,8 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 static void bc_program_pushArray(BcProgram *p, const char *restrict code,
                                  size_t *restrict bgn, uchar inst)
 {
-	BcResult r, *operand;
+	BcResult r;
+	BcResult *operand;
 	BcNum *num;
 	BcBigDig temp;
 
@@ -1816,7 +1831,8 @@ static void bc_program_return(BcProgram *p, uchar inst) {
  */
 static void bc_program_builtin(BcProgram *p, uchar inst) {
 
-	BcResult *opd, *res;
+	BcResult *opd;
+	BcResult *res;
 	BcNum *num;
 	bool len = (inst == BC_INST_LENGTH);
 
@@ -1939,8 +1955,12 @@ static void bc_program_builtin(BcProgram *p, uchar inst) {
  */
 static void bc_program_divmod(BcProgram *p) {
 
-	BcResult *opd1, *opd2, *res, *res2;
-	BcNum *n1, *n2;
+	BcResult *opd1;
+	BcResult *opd2;
+	BcResult *res;
+	BcResult *res2;
+	BcNum *n1;
+	BcNum *n2;
 	size_t req;
 
 	// We grow first to avoid pointer invalidation.
@@ -1976,8 +1996,13 @@ static void bc_program_divmod(BcProgram *p) {
  */
 static void bc_program_modexp(BcProgram *p) {
 
-	BcResult *r1, *r2, *r3, *res;
-	BcNum *n1, *n2, *n3;
+	BcResult *r1;
+	BcResult *r2;
+	BcResult *r3;
+	BcResult *res;
+	BcNum *n1;
+	BcNum *n2;
+	BcNum *n3;
 
 #if DC_ENABLED
 
@@ -2068,7 +2093,8 @@ static void bc_program_asciify(BcProgram *p, size_t fidx) {
 
 	BcResult *r, res;
 	BcNum *n;
-	char str[2], *str2;
+	char str[2];
+	char *str2;
 	uchar c;
 	size_t idx;
 
@@ -2683,7 +2709,8 @@ void bc_program_reset(BcProgram *p) {
 void bc_program_exec(BcProgram *p) {
 
 	size_t idx;
-	BcResult r, *ptr;
+	BcResult r;
+	BcResult *ptr;
 	BcInstPtr *ip;
 	BcFunc *func;
 	char *code;

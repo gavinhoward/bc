@@ -198,7 +198,8 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 
 	for (i = 0; i < s->len; ++i) {
 
-		BcNum *dnum, *snum;
+		BcNum *dnum;
+		BcNum *snum;
 
 		dnum = bc_vec_item(d, i);
 		snum = bc_vec_item(s, i);

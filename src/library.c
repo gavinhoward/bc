@@ -379,7 +379,8 @@ void bcl_num_free(BclNumber n) {
 BclError bcl_copy(BclNumber d, BclNumber s) {
 
 	BclError e = BCL_ERROR_NONE;
-	BcNum *dest, *src;
+	BcNum *dest;
+	BcNum *src;
 	BclContext ctxt;
 
 	BC_CHECK_CTXT_ERR(ctxt);
@@ -606,7 +607,8 @@ static BclNumber bcl_binary(BclNumber a, BclNumber b, const BcNumBinaryOp op,
                             const BcNumBinaryOpReq req)
 {
 	BclError e = BCL_ERROR_NONE;
-	BcNum *aptr, *bptr;
+	BcNum *aptr;
+	BcNum *bptr;
 	BcNum c;
 	BclNumber idx;
 	BclContext ctxt;
@@ -721,7 +723,8 @@ BclError bcl_divmod(BclNumber a, BclNumber b, BclNumber *c, BclNumber *d) {
 
 	BclError e = BCL_ERROR_NONE;
 	size_t req;
-	BcNum *aptr, *bptr;
+	BcNum *aptr;
+	BcNum *bptr;
 	BcNum cnum, dnum;
 	BclContext ctxt;
 
@@ -795,7 +798,9 @@ BclNumber bcl_modexp(BclNumber a, BclNumber b, BclNumber c) {
 
 	BclError e = BCL_ERROR_NONE;
 	size_t req;
-	BcNum *aptr, *bptr, *cptr;
+	BcNum *aptr;
+	BcNum *bptr;
+	BcNum *cptr;
 	BcNum d;
 	BclNumber idx;
 	BclContext ctxt;
@@ -850,7 +855,8 @@ err:
 
 ssize_t bcl_cmp(BclNumber a, BclNumber b) {
 
-	BcNum *aptr, *bptr;
+	BcNum *aptr;
+	BcNum *bptr;
 	BclContext ctxt;
 
 	BC_CHECK_CTXT_ASSERT(ctxt);

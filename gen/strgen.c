@@ -204,8 +204,11 @@ static int output_label(FILE* out, const char* label, const char* name) {
  */
 int main(int argc, char *argv[]) {
 
-	FILE *in, *out;
-	char *label, *define, *name;
+	FILE *in;
+	FILE *out;
+	char *label;
+	char *define;
+	char *name;
 	int c, count, slashes, err = IO_ERR;
 	bool has_label, has_define, remove_tabs;
 

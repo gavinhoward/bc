@@ -391,7 +391,8 @@ static ssize_t bc_num_compare(const BcDig *restrict a, const BcDig *restrict b,
 ssize_t bc_num_cmp(const BcNum *a, const BcNum *b) {
 
 	size_t i, min, a_int, b_int, diff, ardx, brdx;
-	BcDig *max_num, *min_num;
+	BcDig *max_num;
+	BcDig *min_num;
 	bool a_max, neg = false;
 	ssize_t cmp;
 
@@ -902,7 +903,9 @@ static BcBigDig bc_num_intop(const BcNum *a, const BcNum *b, BcNum *restrict c)
  */
 static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 
-	BcDig *ptr_c, *ptr_l, *ptr_r;
+	BcDig *ptr_c;
+	BcDig *ptr_l;
+	BcDig *ptr_r;
 	size_t i, min_rdx, max_rdx, diff, a_int, b_int, min_len, max_len, max_int;
 	size_t len_l, len_r, ardx, brdx;
 	bool b_neg, do_sub, do_rev_sub, carry, c_neg;
@@ -1075,7 +1078,9 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 static void bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 	size_t i, alen = a->len, blen = b->len, clen;
-	BcDig *ptr_a = a->num, *ptr_b = b->num, *ptr_c;
+	BcDig *ptr_a = a->num;
+	BcDig *ptr_b = b->num;
+	BcDig *ptr_c;
 	BcBigDig sum = 0, carry = 0;
 
 	assert(sizeof(sum) >= sizeof(BcDig) * 2);
@@ -1159,7 +1164,8 @@ static void bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 	size_t max, max2, total;
 	BcNum l1, h1, l2, h2, m2, m1, z0, z1, z2, temp;
-	BcDig *digs, *dig_ptr;
+	BcDig *digs;
+	BcDig *dig_ptr;
 	BcNumShiftAddOp op;
 	bool aone = BC_NUM_ONE(a);
 
@@ -1999,7 +2005,9 @@ static void bc_num_right(BcNum *a, BcNum *b, BcNum *restrict c, size_t scale) {
 static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
                           BcNumBinOp op, size_t req)
 {
-	BcNum *ptr_a, *ptr_b, num2;
+	BcNum *ptr_a;
+	BcNum *ptr_b;
+	BcNum num2;
 	bool init = false;
 
 	assert(a != NULL && b != NULL && c != NULL && op != NULL);
@@ -2255,7 +2263,10 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 static void bc_num_parseBase(BcNum *restrict n, const char *restrict val,
                              BcBigDig base)
 {
-	BcNum temp, mult1, mult2, result1, result2, *m1, *m2, *ptr;
+	BcNum temp, mult1, mult2, result1, result2;
+	BcNum *m1;
+	BcNum *m2;
+	BcNum *ptr;
 	char c = 0;
 	bool zero = true;
 	BcBigDig v;
@@ -2752,8 +2763,12 @@ static void bc_num_printNum(BcNum *restrict n, BcBigDig base, size_t len,
                             BcNumDigitOp print, bool newline)
 {
 	BcVec stack;
-	BcNum intp, fracp1, fracp2, digit, flen1, flen2, *n1, *n2, *temp;
-	BcBigDig dig = 0, *ptr, acc, exp;
+	BcNum intp, fracp1, fracp2, digit, flen1, flen2;
+	BcNum *n1;
+	BcNum *n2;
+	BcNum *temp;
+	BcBigDig dig = 0, acc, exp;
+	BcBigDig *ptr;
 	size_t i, j, nrdx, idigits;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
@@ -3594,7 +3609,10 @@ void bc_num_rshift(BcNum *a, BcNum *b, BcNum *c, size_t scale) {
 
 void bc_num_sqrt(BcNum *restrict a, BcNum *restrict b, size_t scale) {
 
-	BcNum num1, num2, half, f, fprime, *x0, *x1, *temp;
+	BcNum num1, num2, half, f, fprime;
+	BcNum *x0;
+	BcNum *x1;
+	BcNum *temp;
 	size_t pow, len, rdx, req, resscale;
 	BcDig half_digs[1];
 

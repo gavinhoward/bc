@@ -829,7 +829,8 @@ static void bc_history_disableRaw(BcHistory *h) {
 static size_t bc_history_cursorPos(void) {
 
 	char buf[BC_HIST_SEQ_SIZE];
-	char *ptr, *ptr2;
+	char *ptr;
+	char *ptr2;
 	size_t cols, rows, i;
 
 	BC_SIG_ASSERT_LOCKED;
@@ -1173,7 +1174,8 @@ static void bc_history_edit_end(BcHistory *h) {
  */
 static void bc_history_edit_next(BcHistory *h, bool dir) {
 
-	const char *dup, *str;
+	const char *dup;
+	const char *str;
 
 	BC_SIG_ASSERT_LOCKED;
 
