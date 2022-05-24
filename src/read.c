@@ -110,6 +110,7 @@ bool bc_read_buf(BcVec *vec, char *buf, size_t *buf_len) {
 		// buffer up.
 		bc_vec_npush(vec, nllen, buf);
 		*buf_len -= nllen;
+		// NOLINTNEXTLINE
 		memmove(buf, nl + 1, *buf_len + 1);
 
 		return true;
@@ -248,6 +249,7 @@ char* bc_read_file(const char *path) {
 
 #ifndef NDEBUG
 	// Need this to quiet MSan.
+	// NOLINTNEXTLINE
 	memset(&pstat, 0, sizeof(struct stat));
 #endif // NDEBUG
 

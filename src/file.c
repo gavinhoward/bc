@@ -57,6 +57,7 @@ static void bc_file_ultoa(unsigned long long val, char buf[BC_FILE_ULL_LENGTH])
 	size_t i, len;
 
 	// We need to make sure the entire thing is zeroed.
+	// NOLINTNEXTLINE
 	memset(buf2, 0, BC_FILE_ULL_LENGTH);
 
 	// The i = 1 is to ensure that there is a null byte at the end.
@@ -228,6 +229,7 @@ void bc_file_write(BcFile *restrict f, BcFlushType type,
 		}
 	}
 	else {
+		// NOLINTNEXTLINE
 		memcpy(f->buf + f->len, buf, n);
 		f->len += n;
 	}

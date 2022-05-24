@@ -180,8 +180,12 @@ static void bc_rand_clearModified(BcRNGData *r) {
  * @param s  The source PRNG.
  */
 static void bc_rand_copy(BcRNGData *d, BcRNGData *s) {
+
 	bool unmod = BC_RAND_NOTMODIFIED(d);
+
+	// NOLINTNEXTLINE
 	memcpy(d, s, sizeof(BcRNGData));
+
 	if (!unmod) bc_rand_setModified(d);
 	else if (!BC_RAND_NOTMODIFIED(s)) bc_rand_clearModified(d);
 }
@@ -503,6 +507,7 @@ void bc_rand_seed(BcRNG *r, ulong state1, ulong state2, ulong inc1, ulong inc2)
 	// If the state is 0, use the increment as the state. Otherwise, seed it
 	// with the state.
 	if (!state1 && !state2) {
+		// NOLINTNEXTLINE
 		memcpy(&rng->state, &rng->inc, sizeof(BcRandState));
 		bc_rand_step(rng);
 	}
@@ -560,6 +565,7 @@ void bc_rand_push(BcRNG *r) {
 
 	// Make sure the PRNG is properly zeroed because that marks it as needing to
 	// be seeded.
+	// NOLINTNEXTLINE
 	memset(rng, 0, sizeof(BcRNGData));
 
 	// If there is another item, copy it too.

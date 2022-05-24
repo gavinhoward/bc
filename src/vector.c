@@ -143,6 +143,7 @@ void bc_vec_npopAt(BcVec *restrict v, size_t n, size_t idx) {
 	}
 
 	v->len -= n;
+	// NOLINTNEXTLINE
 	memmove(ptr, data, (v->len - idx) * v->size);
 
 	BC_SIG_TRYUNLOCK(lock);
@@ -163,6 +164,7 @@ void bc_vec_npush(BcVec *restrict v, size_t n, const void *data) {
 	esize = v->size;
 
 	// Copy the elements in.
+	// NOLINTNEXTLINE
 	memcpy(v->v + (esize * v->len), data, esize * n);
 	v->len += n;
 
@@ -238,7 +240,9 @@ void bc_vec_pushAt(BcVec *restrict v, const void *data, size_t idx) {
 
 		ptr = v->v + esize * idx;
 
+		// NOLINTNEXTLINE
 		memmove(ptr + esize, ptr, esize * (v->len++ - idx));
+		// NOLINTNEXTLINE
 		memcpy(ptr, data, esize);
 	}
 }
@@ -256,6 +260,7 @@ void bc_vec_string(BcVec *restrict v, size_t len, const char *restrict str) {
 
 	bc_vec_popAll(v);
 	bc_vec_expand(v, bc_vm_growSize(len, 1));
+	// NOLINTNEXTLINE
 	memcpy(v->v, str, len);
 	v->len = len;
 
@@ -311,6 +316,7 @@ void bc_vec_replaceAt(BcVec *restrict v, size_t idx, const void *data) {
 
 	if (v->dtor) bc_vec_dtors[v->dtor](ptr);
 
+	// NOLINTNEXTLINE
 	memcpy(ptr, data, v->size);
 }
 #endif // BC_ENABLE_HISTORY
@@ -461,6 +467,7 @@ static char* bc_slab_add(BcSlab *s, const char *str, size_t len) {
 
 	ptr = (char*) (s->s + s->len);
 
+	// NOLINTNEXTLINE
 	bc_strcpy(ptr, len, str);
 
 	s->len += len;

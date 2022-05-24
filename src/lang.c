@@ -204,7 +204,10 @@ void bc_array_copy(BcVec *d, const BcVec *s) {
 		snum = bc_vec_item(s, i);
 
 		// We have to create a copy of the number as well.
-		if (BC_PROG_STR(snum)) memcpy(dnum, snum, sizeof(BcNum));
+		if (BC_PROG_STR(snum)) {
+			// NOLINTNEXTLINE
+			memcpy(dnum, snum, sizeof(BcNum));
+		}
 		else bc_num_createCopy(dnum, snum);
 	}
 }
@@ -274,12 +277,14 @@ void bc_result_copy(BcResult *d, BcResult *src) {
 		case BC_RESULT_ARRAY:
 		case BC_RESULT_ARRAY_ELEM:
 		{
+			// NOLINTNEXTLINE
 			memcpy(&d->d.loc, &src->d.loc, sizeof(BcLoc));
 			break;
 		}
 
 		case BC_RESULT_STR:
 		{
+			// NOLINTNEXTLINE
 			memcpy(&d->d.n, &src->d.n, sizeof(BcNum));
 			break;
 		}

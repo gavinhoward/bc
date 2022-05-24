@@ -1093,6 +1093,7 @@ static void bc_program_assignStr(BcProgram *p, BcNum *num, BcVec *v, bool push)
 	n = bc_vec_pushEmpty(v);
 
 	// We can just copy because the num should not have allocated anything.
+	// NOLINTNEXTLINE
 	memcpy(n, num, sizeof(BcNum));
 }
 
@@ -1160,7 +1161,10 @@ static void bc_program_copyToVar(BcProgram *p, size_t idx, BcType t, bool last)
 
 	// Just create and copy for a normal variable.
 	if (var) {
-		if (BC_PROG_STR(n)) memcpy(&r.d.n, n, sizeof(BcNum));
+		if (BC_PROG_STR(n)) {
+			// NOLINTNEXTLINE
+			memcpy(&r.d.n, n, sizeof(BcNum));
+		}
 		else bc_num_createCopy(&r.d.n, n);
 	}
 	else {
@@ -1285,6 +1289,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			// We need to free the number and clear it.
 			bc_num_free(l);
 
+			// NOLINTNEXTLINE
 			memcpy(l, r, sizeof(BcNum));
 
 			// Now we can pop the results.
@@ -1306,6 +1311,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 		// push a temporary with the string.
 		if (inst == BC_INST_ASSIGN) {
 			res.t = BC_RESULT_STR;
+			// NOLINTNEXTLINE
 			memcpy(&res.d.n, r, sizeof(BcNum));
 			bc_vec_push(&p->results, &res);
 		}
@@ -1333,6 +1339,7 @@ static void bc_program_assign(BcProgram *p, uchar inst) {
 			BC_SIG_LOCK;
 
 			bc_num_free(l);
+			// NOLINTNEXTLINE
 			memcpy(l, r, sizeof(BcNum));
 			right->t = BC_RESULT_ZERO;
 
@@ -1497,6 +1504,7 @@ static void bc_program_pushVar(BcProgram *p, const char *restrict code,
 		else {
 			// Set the string result. We can just memcpy because all of the
 			// fields in the num should be cleared.
+			// NOLINTNEXTLINE
 			memcpy(&r.d.n, num, sizeof(BcNum));
 			r.t = BC_RESULT_STR;
 		}
@@ -1755,6 +1763,7 @@ static void bc_program_return(BcProgram *p, uchar inst) {
 			// it easier to do type checking.
 			res->t = BC_RESULT_STR;
 
+			// NOLINTNEXTLINE
 			memcpy(&res->d.n, num, sizeof(BcNum));
 		}
 		else {
@@ -2570,6 +2579,7 @@ void bc_program_init(BcProgram *p) {
 	assert(p != NULL);
 
 	// We want this clear.
+	// NOLINTNEXTLINE
 	memset(&ip, 0, sizeof(BcInstPtr));
 
 	// Setup the globals stacks and the current values.
@@ -2659,6 +2669,7 @@ void bc_program_reset(BcProgram *p) {
 	// Reset the instruction pointer.
 	ip = bc_vec_top(&p->stack);
 	bc_program_setVecs(p, f);
+	// NOLINTNEXTLINE
 	memset(ip, 0, sizeof(BcInstPtr));
 
 	// Write the ready message for a signal, and clear the signal.
@@ -3082,8 +3093,11 @@ void bc_program_exec(BcProgram *p) {
 				ptr2 = bc_vec_item_rev(&p->results, 1);
 
 				// Swap. It's just easiest to do it this way.
+				// NOLINTNEXTLINE
 				memcpy(&r, ptr, sizeof(BcResult));
+				// NOLINTNEXTLINE
 				memcpy(ptr, ptr2, sizeof(BcResult));
+				// NOLINTNEXTLINE
 				memcpy(ptr2, &r, sizeof(BcResult));
 
 				BC_PROG_JUMP(inst, code, ip);

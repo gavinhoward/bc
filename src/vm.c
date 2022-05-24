@@ -1483,8 +1483,10 @@ void bc_vm_init(void) {
 	bc_num_one(&vm.one);
 
 	// Set up more constant BcNum's.
+	// NOLINTNEXTLINE
 	memcpy(vm.max_num, bc_num_bigdigMax,
 	       bc_num_bigdigMax_size * sizeof(BcDig));
+	// NOLINTNEXTLINE
 	memcpy(vm.max2_num, bc_num_bigdigMax2,
 	       bc_num_bigdigMax2_size * sizeof(BcDig));
 	bc_num_setup(&vm.max, vm.max_num, BC_NUM_BIGDIG_LOG10);

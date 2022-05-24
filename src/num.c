@@ -312,6 +312,7 @@ static void bc_num_mulArray(const BcNum *restrict a, BcBigDig b,
 	if (a->len + 1 > c->cap) bc_num_expand(c, a->len + 1);
 
 	// We want the entire return parameter to be zero for cleaning later.
+	// NOLINTNEXTLINE
 	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
 	// Actual multiplication loop.
@@ -482,6 +483,7 @@ void bc_num_truncate(BcNum *restrict n, size_t places) {
 
 		// We have to move limbs to maintain invariants. The limbs must begin at
 		// the beginning of the BcNum array.
+		// NOLINTNEXTLINE
 		memmove(n->num, n->num + places_rdx, BC_NUM_SIZE(n->len));
 
 		// Clear the lower part of the last digit.
@@ -512,7 +514,9 @@ void bc_num_extend(BcNum *restrict n, size_t places) {
 	// set the limbs that were just cleared.
 	if (places_rdx) {
 		bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
+		// NOLINTNEXTLINE
 		memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
+		// NOLINTNEXTLINE
 		memset(n->num, 0, BC_NUM_SIZE(places_rdx));
 	}
 
@@ -569,7 +573,9 @@ static void bc_num_split(const BcNum *restrict n, size_t idx,
 
 		// Copy the arrays. This is not necessary for safety, but it is faster,
 		// for some reason.
+		// NOLINTNEXTLINE
 		memcpy(b->num, n->num + idx, BC_NUM_SIZE(b->len));
+		// NOLINTNEXTLINE
 		memcpy(a->num, n->num, BC_NUM_SIZE(idx));
 
 		bc_num_clean(b);
@@ -731,7 +737,9 @@ static void bc_num_shiftLeft(BcNum *restrict n, size_t places) {
 	// If this is non-zero, we need an extra place, so expand, move, and set.
 	if (places_rdx) {
 		bc_num_expand(n, bc_vm_growSize(n->len, places_rdx));
+		// NOLINTNEXTLINE
 		memmove(n->num + places_rdx, n->num, BC_NUM_SIZE(n->len));
+		// NOLINTNEXTLINE
 		memset(n->num, 0, BC_NUM_SIZE(places_rdx));
 		n->len += places_rdx;
 	}
@@ -798,6 +806,7 @@ void bc_num_shiftRight(BcNum *restrict n, size_t places) {
 	// Extend, expand, and zero.
 	bc_num_extend(n, places_rdx * BC_BASE_DIGS);
 	bc_num_expand(n, bc_vm_growSize(expand, n->len));
+	// NOLINTNEXTLINE
 	memset(n->num + n->len, 0, BC_NUM_SIZE(expand));
 
 	// Set the fields.
@@ -843,6 +852,7 @@ static bool bc_num_nonInt(const BcNum *restrict n, BcNum *restrict r) {
 	size_t i, rdx = BC_NUM_RDX_VAL(n);
 
 	if (!rdx) {
+		// NOLINTNEXTLINE
 		memcpy(r, n, sizeof(BcNum));
 		return false;
 	}
@@ -978,6 +988,7 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 			// !do_rev_sub && ardx > brdx || do_rev_sub && brdx > ardx
 			// The left operand has BcDig values that need to be copied,
 			// either from a or from b (in case of a reversed subtraction).
+			// NOLINTNEXTLINE
 			memcpy(ptr_c, ptr_l, BC_NUM_SIZE(diff));
 			ptr_l += diff;
 			len_l -= diff;
@@ -996,6 +1007,7 @@ static void bc_num_as(BcNum *a, BcNum *b, BcNum *restrict c, size_t sub) {
 			else {
 
 				// !do_sub && brdx > ardx
+				// NOLINTNEXTLINE
 				memcpy(ptr_c, ptr_r, BC_NUM_SIZE(diff));
 			}
 
@@ -1075,6 +1087,7 @@ static void bc_num_m_simp(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 
 	// If we don't memset, then we might have uninitialized data use later.
 	ptr_c = c->num;
+	// NOLINTNEXTLINE
 	memset(ptr_c, 0, BC_NUM_SIZE(c->cap));
 
 	// This is the actual multiplication loop. It uses the lattice form of long
@@ -1210,6 +1223,7 @@ static void bc_num_k(const BcNum *a, const BcNum *b, BcNum *restrict c) {
 	// First, set up c.
 	bc_num_expand(c, max);
 	c->len = max;
+	// NOLINTNEXTLINE
 	memset(c->num, 0, BC_NUM_SIZE(c->len));
 
 	// Split the parameters.
@@ -1485,6 +1499,7 @@ static void bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 	// This is a final time to make sure c is big enough and that its array is
 	// properly zeroed.
 	bc_num_expand(c, a->len);
+	// NOLINTNEXTLINE
 	memset(c->num, 0, c->cap * sizeof(BcDig));
 
 	// Setup.
@@ -1539,6 +1554,7 @@ static void bc_num_d_long(BcNum *restrict a, BcNum *restrict b,
 
 	// Make sure c can fit the new length.
 	bc_num_expand(c, a->len);
+	// NOLINTNEXTLINE
 	memset(c->num, 0, BC_NUM_SIZE(c->cap));
 
 	assert(c->scale >= scale);
@@ -1998,6 +2014,7 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 
 		ptr_a = &num2;
 
+		// NOLINTNEXTLINE
 		memcpy(ptr_a, c, sizeof(BcNum));
 		init = true;
 	}
@@ -2011,6 +2028,7 @@ static void bc_num_binary(BcNum *a, BcNum *b, BcNum *c, size_t scale,
 		ptr_b = &num2;
 
 		if (c != a) {
+			// NOLINTNEXTLINE
 			memcpy(ptr_b, c, sizeof(BcNum));
 			init = true;
 		}
@@ -2182,6 +2200,7 @@ static void bc_num_parseDecimal(BcNum *restrict n, const char *restrict val) {
 
 	// Expand and zero.
 	bc_num_expand(n, n->len);
+	// NOLINTNEXTLINE
 	memset(n->num, 0, BC_NUM_SIZE(n->len));
 
 	if (zero) {
@@ -2487,6 +2506,7 @@ static void bc_num_printDecimal(const BcNum *restrict n, bool newline) {
 		temp = n->scale % BC_BASE_DIGS;
 		temp = i || !temp ? 0 : BC_BASE_DIGS - temp;
 
+		// NOLINTNEXTLINE
 		memset(buffer, 0, BC_BASE_DIGS * sizeof(size_t));
 
 		// Fill the buffer with individual digits.
@@ -3059,6 +3079,7 @@ void bc_num_copy(BcNum *d, const BcNum *s) {
 	// properly preserved.
 	d->rdx = s->rdx;
 	d->scale = s->scale;
+	// NOLINTNEXTLINE
 	memcpy(d->num, s->num, BC_NUM_SIZE(d->len));
 }
 
@@ -3269,6 +3290,7 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 
 	assert(BC_NUM_RDX_VALID_NP(vm.max));
 
+	// NOLINTNEXTLINE
 	memcpy(frac.num, n->num, BC_NUM_SIZE(nrdx));
 	frac.len = nrdx;
 	BC_NUM_RDX_SET_NP(frac, nrdx);
@@ -3284,6 +3306,7 @@ void bc_num_rng(const BcNum *restrict n, BcRNG *rng) {
 	bc_num_copy(&frac, &temp);
 
 	// Get the integer.
+	// NOLINTNEXTLINE
 	memcpy(intn.num, n->num + nrdx, BC_NUM_SIZE(bc_num_int(n)));
 	intn.len = bc_num_int(n);
 
@@ -3729,6 +3752,7 @@ void bc_num_divmod(BcNum *a, BcNum *b, BcNum *c, BcNum *d, size_t scale) {
 	// Initialize or expand as necessary.
 	if (c == a) {
 
+		// NOLINTNEXTLINE
 		memcpy(&num2, c, sizeof(BcNum));
 		ptr_a = &num2;
 
