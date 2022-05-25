@@ -6,6 +6,7 @@ For a lot of these steps, they are only needed if the code that would be
 affected was changed. For example, I don't need to run the `scripts/randmath.py`
 test if I did not change any of the math code.
 
+0.	Run `./scripts/format.sh`.
 1.	Update the README.
 2.	Update the manuals.
 3.	Test history manually.
@@ -35,28 +36,29 @@ test if I did not change any of the math code.
 15.	Run and pass the release script, with no generated tests, no sanitizers, and
 	no valgrind, on OpenBSD.
 16.	Run `scan-build make`.
-17.	Repeat steps 3-16 again and repeat until nothing is found.
-18.	Update the benchmarks.
-19.	Update the version and `NEWS.md` and commit.
-20. Boot into Windows.
-21. Build all release versions of everything.
+17.	Run `./scripts/lint.sh`.
+18.	Repeat steps 3-16 again and repeat until nothing is found.
+19.	Update the benchmarks.
+20.	Update the version and `NEWS.md` and commit.
+21. Boot into Windows.
+22. Build all release versions of everything.
 	* Release/`x64` for `bc`.
 	* Release/`x64` for `dc`.
 	* Release{MD,MT}/`x64` for `bcl`.
 	* Release/`x86` for `bc`.
 	* Release/`x86` for `dc`.
 	* Release{MD,MT}/`x86` for `bcl`.
-22.	Put the builds where Linux can access them.
-23. Boot back into Linux.
-24.	Run `make clean_tests`.
-25.	Run the `scripts/package.sh` script.
-26.	Upload the custom tarball and Windows builds to Yzena Gitea.
-27.	Add output from `scripts/package.sh` to Yzena Gitea release notes.
-28.	Edit Yzena Gitea release notes for the changelog.
-29.	Upload the custom tarball to GitHub.
-30.	Add output from `scripts/package.sh` to GitHub release notes.
-31.	Edit GitHub release notes for the changelog.
-32.	Notify the following:
+23.	Put the builds where Linux can access them.
+24. Boot back into Linux.
+25.	Run `make clean_tests`.
+26.	Run the `scripts/package.sh` script.
+27.	Upload the custom tarball and Windows builds to Yzena Gitea.
+28.	Add output from `scripts/package.sh` to Yzena Gitea release notes.
+29.	Edit Yzena Gitea release notes for the changelog.
+30.	Upload the custom tarball to GitHub.
+31.	Add output from `scripts/package.sh` to GitHub release notes.
+32.	Edit GitHub release notes for the changelog.
+33.	Notify the following:
 	* FreeBSD
 	* Adelie Linux
 	* Ataraxia Linux
@@ -64,7 +66,7 @@ test if I did not change any of the math code.
 	* xstatic
 	* OpenBSD
 	* NetBSD
-33.	Submit new packages for the following:
+34.	Submit new packages for the following:
 	* Alpine Linux
 	* Void Linux
 	* Gentoo Linux
