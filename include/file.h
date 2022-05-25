@@ -48,8 +48,8 @@
 #include <stdio.h>
 
 /// The file struct.
-typedef struct BcFile {
-
+typedef struct BcFile
+{
 	// The file. This is here simply to make the line lib code as compatible
 	// with the existing code as possible.
 	FILE* f;
@@ -59,13 +59,13 @@ typedef struct BcFile {
 #else // BC_ENABLE_LINE_LIB
 
 /// The file struct.
-typedef struct BcFile {
-
+typedef struct BcFile
+{
 	// The actual file descriptor.
 	int fd;
 
 	// The buffer for the file.
-	char *buf;
+	char* buf;
 
 	// The length (number of actual chars) in the buffer.
 	size_t len;
@@ -82,8 +82,8 @@ typedef struct BcFile {
 /// Types of flushing. These are important because of history and printing
 /// strings without newlines, something that users could use as their own
 /// prompts.
-typedef enum BcFlushType {
-
+typedef enum BcFlushType
+{
 	/// Do not clear the stored partial line, but don't add to it.
 	BC_FLUSH_NO_EXTRAS_NO_CLEAR,
 
@@ -118,7 +118,8 @@ typedef enum BcFlushType {
  * @param f     The file to initialize.
  * @param file  The stdio file.
  */
-void bc_file_init(BcFile *f, FILE* file);
+void
+bc_file_init(BcFile* f, FILE* file);
 
 #else // BC_ENABLE_LINE_LIB
 
@@ -129,7 +130,8 @@ void bc_file_init(BcFile *f, FILE* file);
  * @param buf  The buffer for the file.
  * @param cap  The capacity of the buffer.
  */
-void bc_file_init(BcFile *f, int fd, char *buf, size_t cap);
+void
+bc_file_init(BcFile* f, int fd, char* buf, size_t cap);
 
 #endif // BC_ENABLE_LINE_LIB
 
@@ -137,7 +139,8 @@ void bc_file_init(BcFile *f, int fd, char *buf, size_t cap);
  * Frees a file, including flushing it.
  * @param f  The file to free.
  */
-void bc_file_free(BcFile *f);
+void
+bc_file_free(BcFile* f);
 
 /**
  * Print a char into the file.
@@ -145,7 +148,8 @@ void bc_file_free(BcFile *f);
  * @param type  The flush type.
  * @param c     The character to write.
  */
-void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c);
+void
+bc_file_putchar(BcFile* restrict f, BcFlushType type, uchar c);
 
 /**
  * Flush and return an error if it failed. This is meant to be used when needing
@@ -155,14 +159,16 @@ void bc_file_putchar(BcFile *restrict f, BcFlushType type, uchar c);
  * @param type  The flush type.
  * @return      A status indicating if an error occurred.
  */
-BcStatus bc_file_flushErr(BcFile *restrict f, BcFlushType type);
+BcStatus
+bc_file_flushErr(BcFile* restrict f, BcFlushType type);
 
 /**
  * Flush and throw an error on failure.
  * @param f     The file to flush.
  * @param type  The flush type.
  */
-void bc_file_flush(BcFile *restrict f, BcFlushType type);
+void
+bc_file_flush(BcFile* restrict f, BcFlushType type);
 
 /**
  * Write the contents of buf to the file.
@@ -171,22 +177,24 @@ void bc_file_flush(BcFile *restrict f, BcFlushType type);
  * @param buf   The buffer whose contents will be written to the file.
  * @param n     The length of buf.
  */
-void bc_file_write(BcFile *restrict f, BcFlushType type,
-                   const char *buf, size_t n);
+void
+bc_file_write(BcFile* restrict f, BcFlushType type, const char* buf, size_t n);
 
 /**
  * Write to the file like fprintf would. This is very rudimentary.
  * @param f    The file to flush.
  * @param fmt  The format string.
  */
-void bc_file_printf(BcFile *restrict f, const char *fmt, ...);
+void
+bc_file_printf(BcFile* restrict f, const char* fmt, ...);
 
 /**
  * Write to the file like vfprintf would. This is very rudimentary.
  * @param f    The file to flush.
  * @param fmt  The format string.
  */
-void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args);
+void
+bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args);
 
 /**
  * Write str to the file.
@@ -194,7 +202,8 @@ void bc_file_vprintf(BcFile *restrict f, const char *fmt, va_list args);
  * @param type  The flush type.
  * @param str   The string to write to the file.
  */
-void bc_file_puts(BcFile *restrict f, BcFlushType type, const char *str);
+void
+bc_file_puts(BcFile* restrict f, BcFlushType type, const char* str);
 
 #if BC_ENABLE_HISTORY && !BC_ENABLE_LINE_LIB
 

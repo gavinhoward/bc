@@ -47,17 +47,21 @@
  * Abort with an error message.
  * @param msg  The error message.
  */
-void err(const char *msg) {
+void
+err(const char* msg)
+{
 	fprintf(stderr, "%s\n", msg);
 	abort();
 }
 
-uint64_t rev(uint64_t a, size_t bits) {
-
+uint64_t
+rev(uint64_t a, size_t bits)
+{
 	size_t i;
 	uint64_t res = 0;
 
-	for (i = 0; i < bits; ++i) {
+	for (i = 0; i < bits; ++i)
+	{
 		res <<= 1;
 		res |= a & 1;
 		a >>= 1;
@@ -66,8 +70,9 @@ uint64_t rev(uint64_t a, size_t bits) {
 	return res;
 }
 
-uint64_t mod(uint64_t a, size_t bits) {
-
+uint64_t
+mod(uint64_t a, size_t bits)
+{
 	uint64_t mod;
 
 	if (bits < 64) mod = (uint64_t) ((1ULL << bits) - 1);
@@ -76,8 +81,9 @@ uint64_t mod(uint64_t a, size_t bits) {
 	return a & mod;
 }
 
-uint64_t rol(uint64_t a, uint64_t p, size_t bits) {
-
+uint64_t
+rol(uint64_t a, uint64_t p, size_t bits)
+{
 	uint64_t res;
 
 	assert(bits <= 64);
@@ -91,8 +97,9 @@ uint64_t rol(uint64_t a, uint64_t p, size_t bits) {
 	return mod(res, bits);
 }
 
-uint64_t ror(uint64_t a, uint64_t p, size_t bits) {
-
+uint64_t
+ror(uint64_t a, uint64_t p, size_t bits)
+{
 	uint64_t res;
 
 	assert(bits <= 64);
@@ -106,24 +113,25 @@ uint64_t ror(uint64_t a, uint64_t p, size_t bits) {
 	return mod(res, bits);
 }
 
-int main(void) {
-
+int
+main(void)
+{
 	uint64_t a = 0, b = 0, t;
 	size_t i;
 
 	// We attempt to open this or /dev/random to get random data.
 	int fd = open("/dev/urandom", O_RDONLY);
 
-	if (fd < 0) {
-
+	if (fd < 0)
+	{
 		fd = open("/dev/random", O_RDONLY);
 
 		if (fd < 0) err("cannot open a random number generator");
 	}
 
 	// Generate NTESTS tests.
-	for (i = 0; i < NTESTS; ++i) {
-
+	for (i = 0; i < NTESTS; ++i)
+	{
 		ssize_t nread;
 
 		// Generate random data for the first operand.

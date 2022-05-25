@@ -45,12 +45,14 @@
 #include <libgen.h>
 #endif // _WIN32
 
+// clang-format off
 // This is exactly what it looks like. It just slaps a simple license header on
 // the generated C source file.
 static const char* const bc_gen_header =
 	"// Copyright (c) 2018-2021 Gavin D. Howard and contributors.\n"
 	"// Licensed under the 2-clause BSD license.\n"
 	"// *** AUTOMATICALLY GENERATED FROM %s. DO NOT MODIFY. ***\n\n";
+// clang-format on
 
 // These are just format strings used to generate the C source.
 static const char* const bc_gen_label = "const char *%s = \"%s\";\n\n";
@@ -77,8 +79,9 @@ static const char* const bc_gen_name_extern = "extern const char %s[];\n\n";
  * @param filename  The name of the file.
  * @param mode      The mode to open the file in.
  */
-static void open_file(FILE** f, const char* filename, const char* mode) {
-
+static void
+open_file(FILE** f, const char* filename, const char* mode)
+{
 #ifndef _WIN32
 
 	*f = fopen(filename, mode);
@@ -112,8 +115,9 @@ static void open_file(FILE** f, const char* filename, const char* mode) {
  * @param name   The actual label text, which is a filename.
  * @return       Positive if no error, negative on error, just like *printf().
  */
-static int output_label(FILE* out, const char* label, const char* name) {
-
+static int
+output_label(FILE* out, const char* label, const char* name)
+{
 #ifndef _WIN32
 
 	return fprintf(out, bc_gen_label, label, name);
@@ -125,7 +129,10 @@ static int output_label(FILE* out, const char* label, const char* name) {
 	int ret;
 
 	// This loop counts how many backslashes there are in the label.
-	for (i = 0; i < len; ++i) count += (name[i] == '\\');
+	for (i = 0; i < len; ++i)
+	{
+		count += (name[i] == '\\');
+	}
 
 	buf = (char*) malloc(len + 1 + count);
 	if (buf == NULL) return -1;
@@ -136,11 +143,12 @@ static int output_label(FILE* out, const char* label, const char* name) {
 	// label byte-for-byte, unless it encounters a backslash, in which case, it
 	// copies the backslash twice to have it escaped properly in the string
 	// literal.
-	for (i = 0; i < len; ++i) {
-
+	for (i = 0; i < len; ++i)
+	{
 		buf[i + count] = name[i];
 
-		if (name[i] == '\\') {
+		if (name[i] == '\\')
+		{
 			count += 1;
 			buf[i + count] = name[i];
 		}
@@ -202,17 +210,19 @@ static int output_label(FILE* out, const char* label, const char* name) {
  * All text files that are transformed have license comments. This program finds
  * the end of that comment and strips it out as well.
  */
-int main(int argc, char *argv[]) {
-
-	FILE *in;
-	FILE *out;
-	char *label;
-	char *define;
-	char *name;
+int
+main(int argc, char* argv[])
+{
+	FILE* in;
+	FILE* out;
+	char* label;
+	char* define;
+	char* name;
 	int c, count, slashes, err = IO_ERR;
 	bool has_label, has_define, remove_tabs;
 
-	if (argc < 4) {
+	if (argc < 4)
+	{
 		printf("usage: %s input output name [label [define [remove_tabs]]]\n",
 		       argv[0]);
 		return INVALID_PARAMS;
@@ -244,29 +254,34 @@ int main(int argc, char *argv[]) {
 	c = count = slashes = 0;
 
 	// This is where the end of the license comment is found.
-	while (slashes < 2 && (c = fgetc(in)) >= 0) {
+	while (slashes < 2 && (c = fgetc(in)) >= 0)
+	{
 		slashes += (slashes == 1 && c == '/' && fgetc(in) == '\n');
 		slashes += (!slashes && c == '/' && fgetc(in) == '*');
 	}
 
 	// The file is invalid if the end of the license comment could not be found.
-	if (c < 0) {
+	if (c < 0)
+	{
 		err = INVALID_INPUT_FILE;
 		goto err;
 	}
 
 	// Do not put extra newlines at the beginning of the char array.
-	while ((c = fgetc(in)) == '\n');
+	while ((c = fgetc(in)) == '\n')
+	{
+		continue;
+	}
 
 	// This loop is what generates the actual char array. It counts how many
 	// chars it has printed per line in order to insert newlines at appropriate
 	// places. It also skips tabs if they should be removed.
-	while (c >= 0) {
-
+	while (c >= 0)
+	{
 		int val;
 
-		if (!remove_tabs || c != '\t') {
-
+		if (!remove_tabs || c != '\t')
+		{
 			if (!count && fputc('\t', out) == EOF) goto err;
 
 			val = fprintf(out, "%d,", c);
@@ -274,7 +289,8 @@ int main(int argc, char *argv[]) {
 
 			count += val;
 
-			if (count > MAX_WIDTH) {
+			if (count > MAX_WIDTH)
+			{
 				count = 0;
 				if (fputc('\n', out) == EOF) goto err;
 			}
