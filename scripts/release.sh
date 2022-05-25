@@ -312,6 +312,17 @@ runconfigseries() {
 		runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
 			"$_runconfigseries_configure_flags" 1 64 "$_runconfigseries_run_tests"
 
+		# Test Editline and Readline if history is not turned off.
+		if [ "${_runconfigseries_configure_flags#*H}" = "${_runconfigseries_configure_flags}" ]; then
+
+			runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
+				"$_runconfigseries_configure_flags -e" 1 64 "$_runconfigseries_run_tests"
+
+			runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
+				"$_runconfigseries_configure_flags -r" 1 64 "$_runconfigseries_run_tests"
+
+		fi
+
 	fi
 
 	runconfigtests "$_runconfigseries_CFLAGS" "$_runconfigseries_CC" \
