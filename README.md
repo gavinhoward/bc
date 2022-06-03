@@ -1,5 +1,10 @@
 # `bc`
 
+***WARNING: New user registration for https://git.yzena.com/ is disabled because
+of spam. If you need to report a bug with `bc`, email gavin at this site minus
+the `git.` part for an account, and I will create one for you. Or you can report
+an issue at [GitHub][29].***
+
 ***WARNING: This project has moved to [https://git.yzena.com/][20] for [these
 reasons][21], though GitHub will remain a mirror.***
 
@@ -435,3 +440,4 @@ Folders:
 [26]: ./manuals/bcl.3.md
 [27]: https://en.wikipedia.org/wiki/Bus_factor
 [28]: ./manuals/development.md
+[29]: https://github.com/gavinhoward/bc
