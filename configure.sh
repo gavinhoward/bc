@@ -1365,6 +1365,7 @@ if [ "$hist" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EDITLINE=$editline -DBC_ENABLE_READLINE=$readline"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
+	flags="$flags -I$INCLUDEDIR -L$LIBDIR"
 
 	if [ "$editline" -ne 0 ]; then
 		printf 'Testing editline...\n'
