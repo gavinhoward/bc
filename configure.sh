@@ -1365,17 +1365,8 @@ if [ "$hist" -eq 1 ]; then
 	flags="$flags -DBC_ENABLE_EDITLINE=$editline -DBC_ENABLE_READLINE=$readline"
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
-	flags="$flags -I$INCLUDEDIR -L$LIBDIR"
 
-	if [ "$editline" -ne 0 ]; then
-		printf 'Testing editline...\n'
-		"$CC" $CPPFLAGS $CFLAGS $flags -ledit -c "$scriptdir/src/history.c" -o "./history.o" > /dev/null 2>&1
-	elif [ "$readline" -ne 0 ]; then
-		printf 'Testing readline...\n'
-		"$CC" $CPPFLAGS $CFLAGS $flags -lreadline -c "$scriptdir/src/history.c" -o "./history.o" > /dev/null 2>&1
-	else
-		"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/history.c" -o "./history.o" > /dev/null 2>&1
-	fi
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/history.c" -o "./history.o" > /dev/null 2>&1
 
 	err="$?"
 
