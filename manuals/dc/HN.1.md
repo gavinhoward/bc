@@ -34,7 +34,7 @@ dc - arbitrary-precision decimal reverse-Polish notation calculator
 
 # SYNOPSIS
 
-**dc** [**-hiPRvVx**] [**-\-version**] [**-\-help**] [**-\-interactive**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-extended-register**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...]
+**dc** [**-hiPRvVx**] [**-\-version**] [**-\-help**] [**-\-interactive**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-extended-register**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...] [**-I** *ibase*] [**-\-ibase**=*ibase*] [**-O** *obase*] [**-\-obase**=*obase*] [**-S** *scale*] [**-\-scale**=*scale*] [**-E** *seed*] [**-\-seed**=*seed*]
 
 # DESCRIPTION
 
@@ -154,6 +154,42 @@ The following are the options that dc(1) accepts.
     as an argument at least once to **-f** or **-\-file**. However, if any other
     **-e**, **-\-expression**, **-f**, or **-\-file** arguments are given after
     **-f-** or equivalent is given, dc(1) will give a fatal error and exit.
+
+    This is a **non-portable extension**.
+
+**-I** *ibase*, **-\-ibase**=*ibase*
+
+:   Sets the builtin variable **ibase** to the value *ibase* assuming that
+    *ibase* is in base 10. It is a fatal error if *ibase* is not a valid number.
+
+    If multiple instances of this option are given, the last is used.
+
+    This is a **non-portable extension**.
+
+**-O** *obase*, **-\-obase**=*obase*
+
+:   Sets the builtin variable **obase** to the value *obase* assuming that
+    *obase* is in base 10. It is a fatal error if *obase* is not a valid number.
+
+    If multiple instances of this option are given, the last is used.
+
+    This is a **non-portable extension**.
+
+**-S** *scale*, **-\-scale**=*scale*
+
+:   Sets the builtin variable **scale** to the value *scale* assuming that
+    *scale* is in base 10. It is a fatal error if *scale* is not a valid number.
+
+    If multiple instances of this option are given, the last is used.
+
+    This is a **non-portable extension**.
+
+**-E** *seed*, **-\-seed**=*seed*
+
+:   Sets the builtin variable **seed** to the value *seed* assuming that *seed*
+    is in base 10. It is a fatal error if *seed* is not a valid number.
+
+    If multiple instances of this option are given, the last is used.
 
     This is a **non-portable extension**.
 
@@ -1195,8 +1231,8 @@ dc(1) recognizes the following environment variables:
 :   If any expressions or expression files are given on the command-line with
     **-e**, **-\-expression**, **-f**, or **-\-file**, then if this environment
     variable exists and contains an integer, a non-zero value makes dc(1) exit
-    after executing the expressions and expression files, and a non-zero value
-    makes dc(1) not exit.
+    after executing the expressions and expression files, and a zero value makes
+    dc(1) not exit.
 
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.

@@ -25,7 +25,9 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH "BC" "1" "June 2021" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "June 2022" "Gavin D. Howard" "General Commands Manual"
+.nh
+.ad l
 .SH NAME
 .PP
 bc - arbitrary-precision decimal arithmetic language and calculator
@@ -38,7 +40,11 @@ bc - arbitrary-precision decimal arithmetic language and calculator
 [\f[B]-e\f[R] \f[I]expr\f[R]]
 [\f[B]--expression\f[R]=\f[I]expr\f[R]\&...] [\f[B]-f\f[R]
 \f[I]file\f[R]\&...] [\f[B]--file\f[R]=\f[I]file\f[R]\&...]
-[\f[I]file\f[R]\&...]
+[\f[I]file\f[R]\&...] [\f[B]-I\f[R] \f[I]ibase\f[R]]
+[\f[B]--ibase\f[R]=\f[I]ibase\f[R]] [\f[B]-O\f[R] \f[I]obase\f[R]]
+[\f[B]--obase\f[R]=\f[I]obase\f[R]] [\f[B]-S\f[R] \f[I]scale\f[R]]
+[\f[B]--scale\f[R]=\f[I]scale\f[R]] [\f[B]-E\f[R] \f[I]seed\f[R]]
+[\f[B]--seed\f[R]=\f[I]seed\f[R]]
 .SH DESCRIPTION
 .PP
 bc(1) is an interactive processor for a language first standardized in
@@ -385,6 +391,50 @@ However, if any other \f[B]-e\f[R], \f[B]--expression\f[R],
 \f[B]-f\f[R], or \f[B]--file\f[R] arguments are given after
 \f[B]-f-\f[R] or equivalent is given, bc(1) will give a fatal error and
 exit.
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
+.TP
+\f[B]-I\f[R] \f[I]ibase\f[R], \f[B]--ibase\f[R]=\f[I]ibase\f[R]
+Sets the builtin variable \f[B]ibase\f[R] to the value \f[I]ibase\f[R]
+assuming that \f[I]ibase\f[R] is in base 10.
+It is a fatal error if \f[I]ibase\f[R] is not a valid number.
+.RS
+.PP
+If multiple instances of this option are given, the last is used.
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
+.TP
+\f[B]-O\f[R] \f[I]obase\f[R], \f[B]--obase\f[R]=\f[I]obase\f[R]
+Sets the builtin variable \f[B]obase\f[R] to the value \f[I]obase\f[R]
+assuming that \f[I]obase\f[R] is in base 10.
+It is a fatal error if \f[I]obase\f[R] is not a valid number.
+.RS
+.PP
+If multiple instances of this option are given, the last is used.
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
+.TP
+\f[B]-S\f[R] \f[I]scale\f[R], \f[B]--scale\f[R]=\f[I]scale\f[R]
+Sets the builtin variable \f[B]scale\f[R] to the value \f[I]scale\f[R]
+assuming that \f[I]scale\f[R] is in base 10.
+It is a fatal error if \f[I]scale\f[R] is not a valid number.
+.RS
+.PP
+If multiple instances of this option are given, the last is used.
+.PP
+This is a \f[B]non-portable extension\f[R].
+.RE
+.TP
+\f[B]-E\f[R] \f[I]seed\f[R], \f[B]--seed\f[R]=\f[I]seed\f[R]
+Sets the builtin variable \f[B]seed\f[R] to the value \f[I]seed\f[R]
+assuming that \f[I]seed\f[R] is in base 10.
+It is a fatal error if \f[I]seed\f[R] is not a valid number.
+.RS
+.PP
+If multiple instances of this option are given, the last is used.
 .PP
 This is a \f[B]non-portable extension\f[R].
 .RE
@@ -2565,8 +2615,7 @@ If any expressions or expression files are given on the command-line
 with \f[B]-e\f[R], \f[B]--expression\f[R], \f[B]-f\f[R], or
 \f[B]--file\f[R], then if this environment variable exists and contains
 an integer, a non-zero value makes bc(1) exit after executing the
-expressions and expression files, and a non-zero value makes bc(1) not
-exit.
+expressions and expression files, and a zero value makes bc(1) not exit.
 .RS
 .PP
 This environment variable overrides the default, which can be queried
