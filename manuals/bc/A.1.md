@@ -39,9 +39,10 @@ bc - arbitrary-precision decimal arithmetic language and calculator
 # DESCRIPTION
 
 bc(1) is an interactive processor for a language first standardized in 1991 by
-POSIX. (The current standard is [here][1].) The language provides unlimited
-precision decimal arithmetic and is somewhat C-like, but there are differences.
-Such differences will be noted in this document.
+POSIX. (The current standard is at
+https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .) The
+language provides unlimited precision decimal arithmetic and is somewhat C-like,
+but there are differences. Such differences will be noted in this document.
 
 After parsing and handling options, this bc(1) reads any files given on the
 command line and executes them before reading from **stdin**.
@@ -223,23 +224,29 @@ The following are the options that bc(1) accepts.
     Keywords are *not* redefined when parsing the builtin math library (see the
     **LIBRARY** section).
 
-    It is a fatal error to redefine keywords mandated by the POSIX standard. It
-    is a fatal error to attempt to redefine words that this bc(1) does not
-    reserve as keywords.
+    It is a fatal error to redefine keywords mandated by the POSIX standard
+    (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html). It is
+    a fatal error to attempt to redefine words that this bc(1) does not reserve
+    as keywords.
 
 **-q**, **-\-quiet**
 
-:   This option is for compatibility with the [GNU bc(1)][2]; it is a no-op.
-    Without this option, GNU bc(1) prints a copyright header. This bc(1) only
-    prints the copyright header if one or more of the **-v**, **-V**, or
-    **-\-version** options are given.
+:   This option is for compatibility with the GNU bc(1)
+    (https://www.gnu.org/software/bc/); it is a no-op. Without this option, GNU
+    bc(1) prints a copyright header. This bc(1) only prints the copyright header
+    if one or more of the **-v**, **-V**, or **-\-version** options are given
+    unless the **BC_BANNER** environment variable is set and contains a non-zero
+    integer or if this bc(1) was built with the header displayed by default. If
+    That is the case, then this option *does* prevent bc(1) from printing the
+    header.
 
     This is a **non-portable extension**.
 
 **-s**, **-\-standard**
 
-:   Process exactly the language defined by the [standard][1] and error if any
-    extensions are used.
+:   Process exactly the language defined by the standard
+    (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html) and
+    error if any extensions are used.
 
     This is a **non-portable extension**.
 
@@ -350,9 +357,10 @@ it is recommended that those scripts be changed to redirect **stderr** to
 # SYNTAX
 
 The syntax for bc(1) programs is mostly C-like, with some differences. This
-bc(1) follows the [POSIX standard][1], which is a much more thorough resource
-for the language this bc(1) accepts. This section is meant to be a summary and a
-listing of all the extensions to the standard.
+bc(1) follows the POSIX standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html), which is a
+much more thorough resource for the language this bc(1) accepts. This section is
+meant to be a summary and a listing of all the extensions to the standard.
 
 In the sections below, **E** means expression, **S** means statement, and **I**
 means identifier.
@@ -805,9 +813,10 @@ The operators will be described in more detail below.
     **assignment** operators, which means that **a=b\>c** is interpreted as
     **(a=b)\>c**.
 
-    Also, unlike the [standard][1] requires, these operators can appear anywhere
-    any other expressions can be used. This allowance is a
-    **non-portable extension**.
+    Also, unlike the standard
+    (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
+    requires, these operators can appear anywhere any other expressions can be
+    used. This allowance is a **non-portable extension**.
 
 **&&**
 
@@ -1054,7 +1063,9 @@ equivalents are given.
 
 ## Standard Library
 
-The [standard][1] defines the following functions for the math library:
+The standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html) defines the
+following functions for the math library:
 
 **s(x)**
 
@@ -1102,7 +1113,8 @@ The [standard][1] defines the following functions for the math library:
 
 The extended library is *not* loaded when the **-s**/**-\-standard** or
 **-w**/**-\-warn** options are given since they are not part of the library
-defined by the [standard][1].
+defined by the standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html).
 
 The extended library is a **non-portable extension**.
 
@@ -1119,12 +1131,14 @@ The extended library is a **non-portable extension**.
 **r(x, p)**
 
 :   Returns **x** rounded to **p** decimal places according to the rounding mode
-    [round half away from **0**][3].
+    round half away from **0**
+    (https://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero).
 
 **ceil(x, p)**
 
 :   Returns **x** rounded to **p** decimal places according to the rounding mode
-    [round away from **0**][6].
+    round away from **0**
+    (https://en.wikipedia.org/wiki/Rounding#Rounding_away_from_zero).
 
 **f(x)**
 
@@ -1888,10 +1902,11 @@ The extended library is a **non-portable extension**.
 
 ## Transcendental Functions
 
-All transcendental functions can return slightly inaccurate results (up to 1
-[ULP][4]). This is unavoidable, and [this article][5] explains why it is
-impossible and unnecessary to calculate exact results for the transcendental
-functions.
+All transcendental functions can return slightly inaccurate results, up to 1 ULP
+(https://en.wikipedia.org/wiki/Unit_in_the_last_place). This is unavoidable, and
+the  article at https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT explains
+why it is impossible and unnecessary to calculate exact results for the
+transcendental functions.
 
 Because of the possible inaccuracy, I recommend that users call those functions
 with the precision (**scale**) set to at least 1 higher than is necessary. If
@@ -2215,10 +2230,12 @@ checking, and its normal behavior can be forced by using the **-i** flag or
 
 # INTERACTIVE MODE
 
-Per the [standard][1], bc(1) has an interactive mode and a non-interactive mode.
-Interactive mode is turned on automatically when both **stdin** and **stdout**
-are hooked to a terminal, but the **-i** flag and **-\-interactive** option can
-turn it on in other situations.
+Per the standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html), bc(1) has
+an interactive mode and a non-interactive mode. Interactive mode is turned on
+automatically when both **stdin** and **stdout** are hooked to a terminal, but
+the **-i** flag and **-\-interactive** option can turn it on in other
+situations.
 
 In interactive mode, bc(1) attempts to recover from errors (see the **RESET**
 section), and in normal execution, flushes **stdout** as soon as execution is
@@ -2244,8 +2261,10 @@ setting is used. The default setting can be queried with the **-h** or
 **-\-help** options.
 
 TTY mode is different from interactive mode because interactive mode is required
-in the [bc(1) specification][1], and interactive mode requires only **stdin**
-and **stdout** to be connected to a terminal.
+in the bc(1) standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html), and
+interactive mode requires only **stdin** and **stdout** to be connected to a
+terminal.
 
 ## Command-Line History
 
@@ -2331,9 +2350,10 @@ dc(1)
 
 # STANDARDS
 
-bc(1) is compliant with the [IEEE Std 1003.1-2017 (“POSIX.1-2017”)][1]
-specification. The flags **-efghiqsvVw**, all long options, and the extensions
-noted above are extensions to that specification.
+bc(1) is compliant with the IEEE Std 1003.1-2017 (“POSIX.1-2017”) specification
+at https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html . The
+flags **-efghiqsvVw**, all long options, and the extensions noted above are
+extensions to that specification.
 
 Note that the specification explicitly says that bc(1) only accepts numbers that
 use a period (**.**) as a radix point, regardless of the value of
@@ -2349,10 +2369,3 @@ None are known. Report bugs at https://git.yzena.com/gavin/bc.
 # AUTHORS
 
 Gavin D. Howard <gavin@yzena.com> and contributors.
-
-[1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
-[2]: https://www.gnu.org/software/bc/
-[3]: https://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero
-[4]: https://en.wikipedia.org/wiki/Unit_in_the_last_place
-[5]: https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT
-[6]: https://en.wikipedia.org/wiki/Rounding#Rounding_away_from_zero

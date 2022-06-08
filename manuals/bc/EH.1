@@ -43,8 +43,8 @@ bc - arbitrary-precision decimal arithmetic language and calculator
 .PP
 bc(1) is an interactive processor for a language first standardized in
 1991 by POSIX.
-(The current standard is
-here (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html).)
+(The current standard is at
+https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .)
 The language provides unlimited precision decimal arithmetic and is
 somewhat C-like, but there are differences.
 Such differences will be noted in this document.
@@ -256,26 +256,32 @@ multiple times.
 Keywords are \f[I]not\f[R] redefined when parsing the builtin math
 library (see the \f[B]LIBRARY\f[R] section).
 .PP
-It is a fatal error to redefine keywords mandated by the POSIX standard.
+It is a fatal error to redefine keywords mandated by the POSIX standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html).
 It is a fatal error to attempt to redefine words that this bc(1) does
 not reserve as keywords.
 .RE
 .TP
 \f[B]-q\f[R], \f[B]--quiet\f[R]
-This option is for compatibility with the GNU
-bc(1) (https://www.gnu.org/software/bc/); it is a no-op.
+This option is for compatibility with the GNU bc(1)
+(https://www.gnu.org/software/bc/); it is a no-op.
 Without this option, GNU bc(1) prints a copyright header.
 This bc(1) only prints the copyright header if one or more of the
-\f[B]-v\f[R], \f[B]-V\f[R], or \f[B]--version\f[R] options are given.
+\f[B]-v\f[R], \f[B]-V\f[R], or \f[B]--version\f[R] options are given
+unless the \f[B]BC_BANNER\f[R] environment variable is set and contains
+a non-zero integer or if this bc(1) was built with the header displayed
+by default.
+If That is the case, then this option \f[I]does\f[R] prevent bc(1) from
+printing the header.
 .RS
 .PP
 This is a \f[B]non-portable extension\f[R].
 .RE
 .TP
 \f[B]-s\f[R], \f[B]--standard\f[R]
-Process exactly the language defined by the
-standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
-and error if any extensions are used.
+Process exactly the language defined by the standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html) and
+error if any extensions are used.
 .RS
 .PP
 This is a \f[B]non-portable extension\f[R].
@@ -404,8 +410,8 @@ redirect \f[B]stderr\f[R] to \f[B]/dev/null\f[R].
 .SH SYNTAX
 .PP
 The syntax for bc(1) programs is mostly C-like, with some differences.
-This bc(1) follows the POSIX
-standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
+This bc(1) follows the POSIX standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
 which is a much more thorough resource for the language this bc(1)
 accepts.
 This section is meant to be a summary and a listing of all the
@@ -812,8 +818,8 @@ Note that unlike in C, these operators have a lower precedence than the
 \f[B]assignment\f[R] operators, which means that \f[B]a=b>c\f[R] is
 interpreted as \f[B](a=b)>c\f[R].
 .PP
-Also, unlike the
-standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
+Also, unlike the standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 requires, these operators can appear anywhere any other expressions can
 be used.
 This allowance is a \f[B]non-portable extension\f[R].
@@ -1102,8 +1108,8 @@ All of the functions below are available when the \f[B]-l\f[R] or
 \f[B]--mathlib\f[R] command-line flags are given.
 .SS Standard Library
 .PP
-The
-standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
+The standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
 defines the following functions for the math library:
 .TP
 \f[B]s(x)\f[R]
@@ -1156,11 +1162,11 @@ Functions\f[R] subsection below).
 .RE
 .SS Transcendental Functions
 .PP
-All transcendental functions can return slightly inaccurate results (up
-to 1 ULP (https://en.wikipedia.org/wiki/Unit_in_the_last_place)).
-This is unavoidable, and this
-article (https://people.eecs.berkeley.edu/~wkahan/LOG10HAF.TXT) explains
-why it is impossible and unnecessary to calculate exact results for the
+All transcendental functions can return slightly inaccurate results, up
+to 1 ULP (https://en.wikipedia.org/wiki/Unit_in_the_last_place).
+This is unavoidable, and the article at
+https://people.eecs.berkeley.edu/\[ti]wkahan/LOG10HAF.TXT explains why
+it is impossible and unnecessary to calculate exact results for the
 transcendental functions.
 .PP
 Because of the possible inaccuracy, I recommend that users call those
@@ -1492,8 +1498,8 @@ checking, and its normal behavior can be forced by using the
 \f[B]-i\f[R] flag or \f[B]--interactive\f[R] option.
 .SH INTERACTIVE MODE
 .PP
-Per the
-standard (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
+Per the standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
 bc(1) has an interactive mode and a non-interactive mode.
 Interactive mode is turned on automatically when both \f[B]stdin\f[R]
 and \f[B]stdout\f[R] are hooked to a terminal, but the \f[B]-i\f[R] flag
@@ -1526,8 +1532,8 @@ The default setting can be queried with the \f[B]-h\f[R] or
 \f[B]--help\f[R] options.
 .PP
 TTY mode is different from interactive mode because interactive mode is
-required in the bc(1)
-specification (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
+required in the bc(1) standard
+(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html),
 and interactive mode requires only \f[B]stdin\f[R] and \f[B]stdout\f[R]
 to be connected to a terminal.
 .SS Prompt
@@ -1593,8 +1599,8 @@ dc(1)
 .SH STANDARDS
 .PP
 bc(1) is compliant with the IEEE Std 1003.1-2017
-(\[lq]POSIX.1-2017\[rq]) (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
-specification.
+(\[lq]POSIX.1-2017\[rq]) specification at
+https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .
 The flags \f[B]-efghiqsvVw\f[R], all long options, and the extensions
 noted above are extensions to that specification.
 .PP
