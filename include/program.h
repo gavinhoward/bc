@@ -384,7 +384,26 @@ bc_program_not(BcResult* r, BcNum* n);
 void
 bc_program_trunc(BcResult* r, BcNum* n);
 
+/**
+ * Assigns a value to the seed builtin variable.
+ * @param p    The program.
+ * @param val  The value to assign to the seed.
+ */
+void
+bc_program_assignSeed(BcProgram* p, BcNum* val);
+
 #endif // BC_ENABLE_EXTRA_MATH
+
+/**
+ * Assigns a value to a builtin value that is not seed.
+ * @param p      The program.
+ * @param scale  True if the builtin is scale.
+ * @param obase  True if the builtin is obase. This cannot be true at the same
+ *               time @a scale is.
+ * @param val    The value to assign to the builtin.
+ */
+void
+bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val);
 
 /// A reference to an array of binary operator functions.
 extern const BcNumBinaryOp bc_program_ops[];

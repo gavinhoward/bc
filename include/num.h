@@ -799,8 +799,6 @@ bc_num_one(BcNum* restrict n);
 ssize_t
 bc_num_cmpZero(const BcNum* n);
 
-#if !defined(NDEBUG) || BC_ENABLE_LIBRARY
-
 /**
  * Check a number string for validity and return true if it is, false otherwise.
  * The library needs this to check user-supplied strings, but in bc and dc, this
@@ -811,8 +809,6 @@ bc_num_cmpZero(const BcNum* n);
  */
 bool
 bc_num_strValid(const char* restrict val);
-
-#endif // !defined(NDEBUG) || BC_ENABLE_LIBRARY
 
 /**
  * Parses a number string into the number @a n according to @a base.

@@ -537,7 +537,8 @@ bc_vm_envArgs(const char* const env_args_name)
 	bc_vec_push(&vm.env_args, &buf);
 
 	// Parse the arguments.
-	bc_args((int) vm.env_args.len - 1, bc_vec_item(&vm.env_args, 0), false);
+	bc_args((int) vm.env_args.len - 1, bc_vec_item(&vm.env_args, 0), false,
+	        BC_PROG_SCALE(&vm.prog));
 }
 
 /**
@@ -1535,7 +1536,7 @@ bc_vm_boot(int argc, char* argv[])
 
 	// Process environment and command-line arguments.
 	bc_vm_envArgs(env_args);
-	bc_args(argc, argv, true);
+	bc_args(argc, argv, true, BC_PROG_SCALE(&vm.prog));
 
 	// If we are in interactive mode...
 	if (BC_I)

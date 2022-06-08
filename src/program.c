@@ -1336,6 +1336,69 @@ bc_program_copyToVar(BcProgram* p, size_t idx, BcType t, bool last)
 	BC_SIG_UNLOCK;
 }
 
+void
+bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val)
+{
+	BcVec* v;
+	BcBigDig* ptr;
+	BcBigDig* ptr_t;
+	BcBigDig max, min;
+
+	assert(!scale || !obase);
+
+	// Scale needs handling separate from ibase and obase.
+	if (scale)
+	{
+		// Set the min and max.
+		min = 0;
+		max = vm.maxes[BC_PROG_GLOBALS_SCALE];
+
+		// Get a pointer to the stack and to the current value.
+		v = p->globals_v + BC_PROG_GLOBALS_SCALE;
+		ptr_t = p->globals + BC_PROG_GLOBALS_SCALE;
+	}
+	else
+	{
+		// Set the min and max.
+		min = BC_NUM_MIN_BASE;
+		if (BC_ENABLE_EXTRA_MATH && obase && (BC_IS_DC || !BC_IS_POSIX))
+		{
+			min = 0;
+		}
+		max = vm.maxes[obase + BC_PROG_GLOBALS_IBASE];
+
+		// Get a pointer to the stack and to the current value.
+		v = p->globals_v + BC_PROG_GLOBALS_IBASE + obase;
+		ptr_t = p->globals + BC_PROG_GLOBALS_IBASE + obase;
+	}
+
+	// Check for error.
+	if (BC_ERR(val > max || val < min))
+	{
+		BcErr e;
+
+		// This grabs the right error.
+		if (scale) e = BC_ERR_EXEC_SCALE;
+		else if (obase) e = BC_ERR_EXEC_OBASE;
+		else e = BC_ERR_EXEC_IBASE;
+
+		bc_verr(e, min, max);
+	}
+
+	// Set the top of the stack and the actual global value.
+	ptr = bc_vec_top(v);
+	*ptr = val;
+	*ptr_t = val;
+}
+
+#if BC_ENABLE_EXTRA_MATH
+void
+bc_program_assignSeed(BcProgram* p, BcNum* val)
+{
+	bc_num_rng(val, &p->rng);
+}
+#endif // BC_ENABLE_EXTRA_MATH
+
 /**
  * Executes an assignment operator.
  * @param p     The program.
@@ -1472,57 +1535,14 @@ bc_program_assign(BcProgram* p, uchar inst)
 	// first part of the if statement handles them.
 	if (ob || sc || left->t == BC_RESULT_IBASE)
 	{
-		BcVec* v;
-		BcBigDig* ptr;
-		BcBigDig* ptr_t;
-		BcBigDig val, max, min;
-
 		// Get the actual value.
-		val = bc_num_bigdig(l);
+		BcBigDig val = bc_num_bigdig(l);
 
-		// Scale needs handling separate from ibase and obase.
-		if (sc)
-		{
-			// Set the min and max.
-			min = 0;
-			max = vm.maxes[BC_PROG_GLOBALS_SCALE];
-
-			// Get a pointer to the stack and to the current value.
-			v = p->globals_v + BC_PROG_GLOBALS_SCALE;
-			ptr_t = p->globals + BC_PROG_GLOBALS_SCALE;
-		}
-		else
-		{
-			// Set the min and max.
-			min = BC_NUM_MIN_BASE;
-			if (BC_ENABLE_EXTRA_MATH && ob && (BC_IS_DC || !BC_IS_POSIX))
-			{
-				min = 0;
-			}
-			max = vm.maxes[ob + BC_PROG_GLOBALS_IBASE];
-
-			// Get a pointer to the stack and to the current value.
-			v = p->globals_v + BC_PROG_GLOBALS_IBASE + ob;
-			ptr_t = p->globals + BC_PROG_GLOBALS_IBASE + ob;
-		}
-
-		// Check for error.
-		if (BC_ERR(val > max || val < min))
-		{
-			// This grabs the right error.
-			BcErr e = left->t - BC_RESULT_IBASE + BC_ERR_EXEC_IBASE;
-
-			bc_verr(e, min, max);
-		}
-
-		// Set the top of the stack and the actual global value.
-		ptr = bc_vec_top(v);
-		*ptr = val;
-		*ptr_t = val;
+		bc_program_assignBuiltin(p, sc, ob, val);
 	}
 #if BC_ENABLE_EXTRA_MATH
 	// To assign to steed, let bc_num_rng() do its magic.
-	else if (left->t == BC_RESULT_SEED) bc_num_rng(l, &p->rng);
+	else if (left->t == BC_RESULT_SEED) bc_program_assignSeed(p, l);
 #endif // BC_ENABLE_EXTRA_MATH
 
 	BC_SIG_LOCK;

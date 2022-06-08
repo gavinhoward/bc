@@ -47,6 +47,7 @@
 #include <read.h>
 #include <args.h>
 #include <opt.h>
+#include <num.h>
 
 /**
  * Adds @a str to the list of expressions to execute later.
@@ -83,6 +84,32 @@ bc_args_file(const char* file)
 	free(buf);
 }
 
+static BcBigDig
+bc_args_builtin(const char* arg)
+{
+	bool strvalid;
+	BcVec v;
+	BcNum n;
+	BcBigDig res;
+
+	strvalid = bc_num_strValid(arg);
+
+	if (BC_ERR(!strvalid))
+	{
+		bc_verr(BC_ERR_FATAL_ARG, arg);
+	}
+
+	bc_num_init(&n, 0);
+
+	bc_num_parse(&n, arg, 10);
+
+	res = bc_num_bigdig(&n);
+
+	bc_num_free(&n);
+
+	return res;
+}
+
 #if BC_ENABLED
 
 /**
@@ -117,12 +144,14 @@ bc_args_redefine(const char* keyword)
 #endif // BC_ENABLED
 
 void
-bc_args(int argc, char* argv[], bool exit_exprs)
+bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 {
 	int c;
 	size_t i;
 	bool do_exit = false, version = false;
 	BcOpt opts;
+	BcBigDig newscale = scale, ibase = BC_BASE, obase = BC_BASE;
+	char* seed = NULL;
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -182,6 +211,12 @@ bc_args(int argc, char* argv[], bool exit_exprs)
 				break;
 			}
 
+			case 'I':
+			{
+				ibase = bc_args_builtin(opts.optarg);
+				break;
+			}
+
 			case 'z':
 			{
 				vm.flags |= BC_FLAG_Z;
@@ -191,6 +226,12 @@ bc_args(int argc, char* argv[], bool exit_exprs)
 			case 'L':
 			{
 				vm.line_len = 0;
+				break;
+			}
+
+			case 'O':
+			{
+				obase = bc_args_builtin(opts.optarg);
 				break;
 			}
 
@@ -205,6 +246,26 @@ bc_args(int argc, char* argv[], bool exit_exprs)
 				vm.flags &= ~(BC_FLAG_R);
 				break;
 			}
+
+			case 'S':
+			{
+				newscale = bc_args_builtin(opts.optarg);
+				break;
+			}
+
+#if BC_ENABLE_EXTRA_MATH
+			case 'E':
+			{
+				if (BC_ERR(!bc_num_strValid(opts.optarg)))
+				{
+					bc_verr(BC_ERR_FATAL_ARG, opts.optarg);
+				}
+
+				seed = opts.optarg;
+
+				break;
+			}
+#endif // BC_ENABLE_EXTRA_MATH
 
 #if BC_ENABLED
 			case 'g':
@@ -300,5 +361,36 @@ bc_args(int argc, char* argv[], bool exit_exprs)
 	for (i = opts.optind; i < (size_t) argc; ++i)
 	{
 		bc_vec_push(&vm.files, argv + i);
+	}
+
+#if BC_ENABLE_EXTRA_MATH
+	if (seed != NULL)
+	{
+		BcNum n;
+
+		bc_num_init(&n, strlen(seed));
+
+		bc_num_parse(&n, seed, BC_BASE);
+
+		bc_program_assignSeed(&vm.prog, &n);
+
+		bc_num_free(&n);
+	}
+#endif // BC_ENABLE_EXTRA_MATH
+
+	if (newscale != scale)
+	{
+		bc_program_assignBuiltin(&vm.prog, true, false, newscale);
+	}
+
+	if (obase != BC_BASE)
+	{
+		bc_program_assignBuiltin(&vm.prog, false, true, obase);
+	}
+
+	// This is last to avoid it affecting the value of the others.
+	if (ibase != BC_BASE)
+	{
+		bc_program_assignBuiltin(&vm.prog, false, false, ibase);
 	}
 }

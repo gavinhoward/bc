@@ -2248,8 +2248,6 @@ err:
 	}
 }
 
-#if !defined(NDEBUG) || BC_ENABLE_LIBRARY
-
 /**
  * Tests a number string for validity. This function has a history; I originally
  * wrote it because I did not trust my parser. Over time, however, I came to
@@ -2293,7 +2291,6 @@ bc_num_strValid(const char* restrict val)
 
 	return true;
 }
-#endif // !defined(NDEBUG) || BC_ENABLE_LIBRARY
 
 /**
  * Parses one character and returns the digit that corresponds to that

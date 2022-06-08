@@ -145,10 +145,16 @@ const BcOptLong bc_args_lopt[] = {
 	{ "file", BC_OPT_REQUIRED, 'f' },
 	{ "help", BC_OPT_NONE, 'h' },
 	{ "interactive", BC_OPT_NONE, 'i' },
+	{ "ibase", BC_OPT_REQUIRED, 'I' },
 	{ "leading-zeroes", BC_OPT_NONE, 'z' },
 	{ "no-line-length", BC_OPT_NONE, 'L' },
+	{ "obase", BC_OPT_REQUIRED, 'O' },
 	{ "no-prompt", BC_OPT_NONE, 'P' },
 	{ "no-read-prompt", BC_OPT_NONE, 'R' },
+	{ "scale", BC_OPT_REQUIRED, 'S' },
+#if BC_ENABLE_EXTRA_MATH
+	{ "seed", BC_OPT_REQUIRED, 'E' },
+#endif // BC_ENABLE_EXTRA_MATH
 #if BC_ENABLED
 	{ "global-stacks", BC_OPT_BC_ONLY, 'g' },
 	{ "mathlib", BC_OPT_BC_ONLY, 'l' },
