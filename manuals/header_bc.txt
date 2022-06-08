@@ -1,1 +1,3 @@
-.TH "BC" "1" "June 2021" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "June 2022" "Gavin D. Howard" "General Commands Manual"
+.nh
+.ad l
