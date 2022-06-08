@@ -346,36 +346,6 @@ checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
 checktest_retcode "$d" "$?" "arg"
 
-if [ "$extra_math" -ne 0 ]; then
-
-	out=$(printf '14\n15\n16\n17.25\n')
-	printf '%s\n' "$out" > "$out1"
-
-	if [ "$d" = "bc" ]; then
-		data=$(printf 's=scale;i=ibase;o=obase;t=seed@2;ibase=A;obase=A;s;i;o;t;')
-	else
-		data=$(printf 'J2@OIKAiAopRpRpRpR')
-	fi
-
-else
-
-	out=$(printf '14\n10\n10\n')
-	printf '%s\n' "$out" > "$out1"
-
-	if [ "$d" = "bc" ]; then
-		data=$(printf 's=scale;i=ibase;o=obase;ibase=A;obase=A;s;i;o;')
-	else
-		data=$(printf 'OIKAiAopRpRpR')
-	fi
-
-fi
-
-printf '%s\n' "$data" | "$exe" "$@" -S14 -I15 -O16 -E17.25 > "$out2"
-checktest "$d" "$?" "builtin variable args" "$out1" "$out2"
-
-printf '%s\n' "$data" | "$exe" "$@" --scale=14 --ibase=15 --obase=16 --seed=17.25 > "$out2"
-checktest "$d" "$?" "builtin variable long args" "$out1" "$out2"
-
 out=$(printf '0.1\n-0.1\n1.1\n-1.1\n0.1\n-0.1\n')
 printf '%s\n' "$out" > "$out1"
 
@@ -445,6 +415,54 @@ checkerrtest "$d" "$err" "colon short option" "$out2" "$d"
 err="$?"
 
 checkerrtest "$d" "$err" "colon long option" "$out2" "$d"
+
+printf 'pass\n'
+
+printf 'Running %s builtin variable arg tests...' "$d"
+
+if [ "$extra_math" -ne 0 ]; then
+
+	out=$(printf '14\n15\n16\n17.25\n')
+	printf '%s\n' "$out" > "$out1"
+
+	if [ "$d" = "bc" ]; then
+		data=$(printf 's=scale;i=ibase;o=obase;t=seed@2;ibase=A;obase=A;s;i;o;t;')
+	else
+		data=$(printf 'J2@OIKAiAopRpRpRpR')
+	fi
+
+else
+
+	out=$(printf '14\n10\n10\n')
+	printf '%s\n' "$out" > "$out1"
+
+	if [ "$d" = "bc" ]; then
+		data=$(printf 's=scale;i=ibase;o=obase;ibase=A;obase=A;s;i;o;')
+	else
+		data=$(printf 'OIKAiAopRpRpR')
+	fi
+
+fi
+
+printf '%s\n' "$data" | "$exe" "$@" -S14 -I15 -O16 -E17.25 > "$out2"
+checktest "$d" "$?" "builtin variable args" "$out1" "$out2"
+
+printf '%s\n' "$data" | "$exe" "$@" --scale=14 --ibase=15 --obase=16 --seed=17.25 > "$out2"
+checktest "$d" "$?" "builtin variable long args" "$out1" "$out2"
+
+printf 'scale\n' | "$exe" "$@" --scale=18923c.rlg > /dev/null 2> "$out2"
+err="$?"
+
+checkerrtest "$d" "$err" "invalid command-line arg for builtin variable" "$out2" "$d"
+
+if [ "$extra_math" -ne 0 ]; then
+
+	printf 'seed\n' | "$exe" "$@" --seed=18923c.rlg > /dev/null 2> "$out2"
+	err="$?"
+
+	checkerrtest "$d" "$err" "invalid command-line arg for seed" "$out2" "$d"
+
+fi
 
 printf 'pass\n'
 
