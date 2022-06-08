@@ -62,6 +62,8 @@ else
 	halt="q"
 fi
 
+mkdir -p "$outputdir"
+
 # For tests later.
 num=100000000000000000000000000000000000000000000000000000000000000000000000000000
 num2="$num"
@@ -143,7 +145,7 @@ if [ "$d" = "bc" ]; then
 	redefine_res="$outputdir/bc_outputs/redefine.txt"
 	redefine_out="$outputdir/bc_outputs/redefine_results.txt"
 
-	outdir=$(dirname "$easter_out")
+	outdir=$(dirname "$redefine_out")
 
 	if [ ! -d "$outdir" ]; then
 		mkdir -p "$outdir"
@@ -343,6 +345,36 @@ printf '%s\n' "$halt" | "$exe" "$@" -v > /dev/null
 checktest_retcode "$d" "$?" "arg"
 printf '%s\n' "$halt" | "$exe" "$@" -V > /dev/null
 checktest_retcode "$d" "$?" "arg"
+
+if [ "$extra_math" -ne 0 ]; then
+
+	out=$(printf '14\n15\n16\n17.25\n')
+	printf '%s\n' "$out" > "$out1"
+
+	if [ "$d" = "bc" ]; then
+		data=$(printf 's=scale;i=ibase;o=obase;t=seed@2;ibase=A;obase=A;s;i;o;t;')
+	else
+		data=$(printf 'J2@OIKAiAopRpRpRpR')
+	fi
+
+else
+
+	out=$(printf '14\n10\n10\n')
+	printf '%s\n' "$out" > "$out1"
+
+	if [ "$d" = "bc" ]; then
+		data=$(printf 's=scale;i=ibase;o=obase;ibase=A;obase=A;s;i;o;')
+	else
+		data=$(printf 'OIKAiAopRpRpR')
+	fi
+
+fi
+
+printf '%s\n' "$data" | "$exe" "$@" -S14 -I15 -O16 -E17.25 > "$out2"
+checktest "$d" "$?" "builtin variable args" "$out1" "$out2"
+
+printf '%s\n' "$data" | "$exe" "$@" --scale=14 --ibase=15 --obase=16 --seed=17.25 > "$out2"
+checktest "$d" "$?" "builtin variable long args" "$out1" "$out2"
 
 out=$(printf '0.1\n-0.1\n1.1\n-1.1\n0.1\n-0.1\n')
 printf '%s\n' "$out" > "$out1"
