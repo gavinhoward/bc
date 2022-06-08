@@ -287,8 +287,8 @@ The following are the options that bc(1) accepts.
     if one or more of the **-v**, **-V**, or **-\-version** options are given
     unless the **BC_BANNER** environment variable is set and contains a non-zero
     integer or if this bc(1) was built with the header displayed by default. If
-    That is the case, then this option *does* prevent bc(1) from printing the
-    header.
+    *any* of that is the case, then this option *does* prevent bc(1) from
+    printing the header.
 
     This is a **non-portable extension**.
 
