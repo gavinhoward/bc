@@ -1534,13 +1534,9 @@ bc_vm_boot(int argc, char* argv[])
 #endif // BC_ENABLE_HISTORY
 	}
 
-	BC_SIG_UNLOCK;
-
 	// Process environment and command-line arguments.
 	bc_vm_envArgs(env_args);
 	bc_args(argc, argv, true, BC_PROG_SCALE(&vm.prog));
-
-	BC_SIG_LOCK;
 
 	// If we are in interactive mode...
 	if (BC_I)

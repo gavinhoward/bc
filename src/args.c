@@ -362,6 +362,8 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 		bc_vec_push(&vm.files, argv + i);
 	}
 
+	BC_SIG_UNLOCK;
+
 #if BC_ENABLE_EXTRA_MATH
 	if (seed != NULL)
 	{
@@ -392,4 +394,6 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 	{
 		bc_program_assignBuiltin(&vm.prog, false, false, ibase);
 	}
+
+	BC_SIG_LOCK;
 }
