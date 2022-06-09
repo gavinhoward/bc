@@ -88,7 +88,6 @@ static BcBigDig
 bc_args_builtin(const char* arg)
 {
 	bool strvalid;
-	BcVec v;
 	BcNum n;
 	BcBigDig res;
 
