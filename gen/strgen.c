@@ -141,7 +141,7 @@ bc_read_open(const char* path, int mode)
  * @param path  The path to the file.
  * @return      The contents of the file as a string.
  */
-char*
+static char*
 bc_read_file(const char* path)
 {
 	int e = IO_ERR;
@@ -186,7 +186,7 @@ bc_read_file(const char* path)
 		// Read the file. We just bail if a signal interrupts. This is so that
 		// users can interrupt the reading of big files if they want.
 		ssize_t r = read(fd, buf2, to_read);
-		if (BC_ERR(r < 0)) goto read_err;
+		if (BC_ERR(r < 0)) exit(e);
 		to_read -= (size_t) r;
 		buf2 += (size_t) r;
 	}
@@ -198,12 +198,6 @@ bc_read_file(const char* path)
 	close(fd);
 
 	return buf;
-
-read_err:
-	free(buf);
-malloc_err:
-	close(fd);
-	exit(e);
 }
 
 /**
@@ -460,7 +454,7 @@ main(int argc, char* argv[])
 			if (val < 0) goto err;
 
 			// Adjust the count.
-			count += val;
+			count += (unsigned int) val;
 			if (count > MAX_WIDTH)
 			{
 				count = 0;
