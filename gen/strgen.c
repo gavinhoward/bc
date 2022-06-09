@@ -33,6 +33,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,12 +41,29 @@
 
 #include <errno.h>
 
+#include <fcntl.h>
+#include <sys/stat.h>
+
+#ifndef _WIN32
+#include <unistd.h>
+#endif // _WIN32
+
 // For some reason, Windows needs this header.
 #ifndef _WIN32
 #include <libgen.h>
 #endif // _WIN32
 
+#define BC_ERR(v) (v)
+
 // clang-format off
+
+// The usage help.
+static const char* const bc_gen_usage =
+	"usage: %s input output exclude name [label [define [remove_tabs]]]\n";
+
+static const char* const bc_gen_ex_start = "{{ A H N HN }}";
+static const char* const bc_gen_ex_end = "{{ end }}";
+
 // This is exactly what it looks like. It just slaps a simple license header on
 // the generated C source file.
 static const char* const bc_gen_header =
@@ -94,6 +112,98 @@ open_file(FILE** f, const char* filename, const char* mode)
 	fopen_s(f, filename, mode);
 
 #endif // _WIN32
+}
+
+/**
+ * A portability file open function. This is copied from src/read.c. Make sure
+ * to update that if this changes.
+ * @param path  The path to the file to open.
+ * @param mode  The mode to open in.
+ */
+static int
+bc_read_open(const char* path, int mode)
+{
+	int fd;
+
+#ifndef _WIN32
+	fd = open(path, mode);
+#else // _WIN32
+	fd = -1;
+	open(&fd, path, mode);
+#endif
+
+	return fd;
+}
+
+/**
+ * Reads a file and returns the file as a string. This has been copied from
+ * src/read.c. Make sure to change that if this changes.
+ * @param path  The path to the file.
+ * @return      The contents of the file as a string.
+ */
+char*
+bc_read_file(const char* path)
+{
+	int e = IO_ERR;
+	size_t size, to_read;
+	struct stat pstat;
+	int fd;
+	char* buf;
+	char* buf2;
+
+	// This has been copied from src/read.c. Make sure to change that if this
+	// changes.
+
+	assert(path != NULL);
+
+#ifndef NDEBUG
+	// Need this to quiet MSan.
+	// NOLINTNEXTLINE
+	memset(&pstat, 0, sizeof(struct stat));
+#endif // NDEBUG
+
+	fd = bc_read_open(path, O_RDONLY);
+
+	// If we can't read a file, we just barf.
+	if (BC_ERR(fd < 0)) exit(INVALID_INPUT_FILE);
+
+	// The reason we call fstat is to eliminate TOCTOU race conditions. This
+	// way, we have an open file, so it's not going anywhere.
+	if (BC_ERR(fstat(fd, &pstat) == -1)) exit(INVALID_INPUT_FILE);
+
+	// Make sure it's not a directory.
+	if (BC_ERR(S_ISDIR(pstat.st_mode))) exit(INVALID_INPUT_FILE);
+
+	// Get the size of the file and allocate that much.
+	size = (size_t) pstat.st_size;
+	buf = malloc(size + 1);
+	if (buf == NULL) exit(INVALID_INPUT_FILE);
+	buf2 = buf;
+	to_read = size;
+
+	do
+	{
+		// Read the file. We just bail if a signal interrupts. This is so that
+		// users can interrupt the reading of big files if they want.
+		ssize_t r = read(fd, buf2, to_read);
+		if (BC_ERR(r < 0)) goto read_err;
+		to_read -= (size_t) r;
+		buf2 += (size_t) r;
+	}
+	while (to_read);
+
+	// Got to have a nul byte.
+	buf[size] = '\0';
+
+	close(fd);
+
+	return buf;
+
+read_err:
+	free(buf);
+malloc_err:
+	close(fd);
+	exit(e);
 }
 
 /**
@@ -186,9 +296,10 @@ output_label(FILE* out, const char* label, const char* name)
  *
  * The required command-line parameters are:
  *
- * input   Input filename.
- * output  Output filename.
- * name    The name of the char array.
+ * input    Input filename.
+ * output   Output filename.
+ * exclude  Whether to exclude extra math-only stuff.
+ * name     The name of the char array.
  *
  * The optional parameters are:
  *
@@ -213,36 +324,38 @@ output_label(FILE* out, const char* label, const char* name)
 int
 main(int argc, char* argv[])
 {
-	FILE* in;
+	char* in;
 	FILE* out;
 	char* label;
 	char* define;
 	char* name;
-	int c, count, slashes, err = IO_ERR;
-	bool has_label, has_define, remove_tabs;
+	unsigned int count, slashes, err = IO_ERR;
+	bool has_label, has_define, remove_tabs, exclude_extra_math;
+	size_t i;
 
-	if (argc < 4)
+	if (argc < 5)
 	{
-		printf("usage: %s input output name [label [define [remove_tabs]]]\n",
-		       argv[0]);
+		printf(bc_gen_usage, argv[0]);
 		return INVALID_PARAMS;
 	}
 
-	name = argv[3];
+	exclude_extra_math = (strtoul(argv[3], NULL, 10) != 0);
 
-	has_label = (argc > 4 && strcmp("", argv[4]) != 0);
-	label = has_label ? argv[4] : "";
+	name = argv[4];
 
-	has_define = (argc > 5 && strcmp("", argv[5]) != 0);
-	define = has_define ? argv[5] : "";
+	has_label = (argc > 5 && strcmp("", argv[5]) != 0);
+	label = has_label ? argv[5] : "";
 
-	remove_tabs = (argc > 6);
+	has_define = (argc > 6 && strcmp("", argv[6]) != 0);
+	define = has_define ? argv[6] : "";
 
-	open_file(&in, argv[1], "r");
-	if (!in) return INVALID_INPUT_FILE;
+	remove_tabs = (argc > 7);
+
+	in = bc_read_file(argv[1]);
+	if (in == NULL) return INVALID_INPUT_FILE;
 
 	open_file(&out, argv[2], "w");
-	if (!out) goto out_err;
+	if (out == NULL) goto out_err;
 
 	if (fprintf(out, bc_gen_header, argv[1]) < 0) goto err;
 	if (has_label && fprintf(out, bc_gen_label_extern, label) < 0) goto err;
@@ -251,44 +364,103 @@ main(int argc, char* argv[])
 	if (has_label && output_label(out, label, argv[1]) < 0) goto err;
 	if (fprintf(out, bc_gen_name, name) < 0) goto err;
 
-	c = count = slashes = 0;
+	i = count = slashes = 0;
 
 	// This is where the end of the license comment is found.
-	while (slashes < 2 && (c = fgetc(in)) >= 0)
+	while (slashes < 2 && in[i] > 0)
 	{
-		slashes += (slashes == 1 && c == '/' && fgetc(in) == '\n');
-		slashes += (!slashes && c == '/' && fgetc(in) == '*');
+		if (slashes == 1 && in[i] == '/' && in[i + 1] == '\n')
+		{
+			slashes += 1;
+			i += 1;
+		}
+		else if (!slashes && in[i] == '/' && in[i + 1] == '*')
+		{
+			slashes += 1;
+			i += 1;
+		}
+
+		i += 1;
 	}
 
 	// The file is invalid if the end of the license comment could not be found.
-	if (c < 0)
+	if (in[i] == 0)
 	{
 		err = INVALID_INPUT_FILE;
 		goto err;
 	}
 
+	i += 1;
+
 	// Do not put extra newlines at the beginning of the char array.
-	while ((c = fgetc(in)) == '\n')
+	while (in[i] == '\n')
 	{
-		continue;
+		i += 1;
 	}
 
 	// This loop is what generates the actual char array. It counts how many
 	// chars it has printed per line in order to insert newlines at appropriate
 	// places. It also skips tabs if they should be removed.
-	while (c >= 0)
+	while (in[i] > 0)
 	{
 		int val;
 
-		if (!remove_tabs || c != '\t')
+		if (!remove_tabs || in[i] != '\t')
 		{
+			// Check for excluding something for extra math.
+			if (in[i] == '{')
+			{
+				// If we found the start...
+				if (!strncmp(in + i, bc_gen_ex_start,
+				             strlen(bc_gen_ex_start)))
+				{
+					if (exclude_extra_math)
+					{
+						// Get past the braces.
+						i += 2;
+
+						// Find the end of the end.
+						while (in[i] != '{' && strncmp(in + i, bc_gen_ex_end,
+						                               strlen(bc_gen_ex_end)))
+						{
+							i += 1;
+						}
+
+						i += strlen(bc_gen_ex_end);
+
+						// Skip the last newline.
+						i += 1;
+						continue;
+					}
+					else
+					{
+						i += strlen(bc_gen_ex_start);
+
+						// Skip the last newline.
+						i += 1;
+						continue;
+					}
+				}
+				else if (!exclude_extra_math && !strncmp(in + i, bc_gen_ex_end,
+				                                         strlen(bc_gen_ex_end)))
+				{
+					i += strlen(bc_gen_ex_end);
+
+					// Skip the last newline.
+					i += 1;
+					continue;
+				}
+			}
+
+			// Print a tab if we are at the beginning of a line.
 			if (!count && fputc('\t', out) == EOF) goto err;
 
-			val = fprintf(out, "%d,", c);
+			// Print the character.
+			val = fprintf(out, "%d,", in[i]);
 			if (val < 0) goto err;
 
+			// Adjust the count.
 			count += val;
-
 			if (count > MAX_WIDTH)
 			{
 				count = 0;
@@ -296,7 +468,7 @@ main(int argc, char* argv[])
 			}
 		}
 
-		c = fgetc(in);
+		i += 1;
 	}
 
 	// Make sure the end looks nice and insert the NUL byte at the end.
@@ -308,6 +480,6 @@ main(int argc, char* argv[])
 err:
 	fclose(out);
 out_err:
-	fclose(in);
-	return err;
+	free(in);
+	return (int) err;
 }

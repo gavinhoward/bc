@@ -54,7 +54,8 @@
 #include <vm.h>
 
 /**
- * A portability file open function.
+ * A portability file open function. This is copied to gen/strgen.c. Make sure
+ * to update that if this changes.
  * @param path  The path to the file to open.
  * @param mode  The mode to open in.
  */
@@ -256,6 +257,9 @@ bc_read_file(const char* path)
 	int fd;
 	char* buf;
 	char* buf2;
+
+	// This has been copied to gen/strgen.c. Make sure to change that if this
+	// changes.
 
 	BC_SIG_ASSERT_LOCKED;
 

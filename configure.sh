@@ -244,11 +244,10 @@ usage() {
 	printf '                 "$HOSTCC" and run on the host machine. Using `gen/strgen.sh`\n'
 	printf '                 removes the need to compile and run an executable on the host\n'
 	printf '                 machine since `gen/strgen.sh` is a POSIX shell script. However,\n'
-	printf '                 `gen/lib2.bc` is perilously close to 4095 characters, the max\n'
-	printf '                 supported length of a string literal in C99 (and it could be\n'
-	printf '                 added to in the future), and `gen/strgen.sh` generates a string\n'
-	printf '                 literal instead of an array, as `gen/strgen.c` does. For most\n'
-	printf '                 production-ready compilers, this limit probably is not\n'
+	printf '                 `gen/lib2.bc` is over 4095 characters, the max supported length\n'
+	printf '                 of a string literal in C99, and `gen/strgen.sh` generates a\n'
+	printf '                 string literal instead of an array, as `gen/strgen.c` does. For\n'
+	printf '                 most production-ready compilers, this limit probably is not\n'
 	printf '                 enforced, but it could be. Both options are still available for\n'
 	printf '                 this reason. If you are sure your compiler does not have the\n'
 	printf '                 limit and do not want to compile and run a binary on the host\n'
@@ -1498,9 +1497,11 @@ headers="\$(HEADERS)"
 
 # This series of if statements figure out what source files are *not* needed.
 if [ "$extra_math" -eq 0 ]; then
+	exclude_extra_math=1
 	manpage_args="E"
 	unneeded="$unneeded rand.c"
 else
+	exclude_extra_math=0
 	headers="$headers \$(EXTRA_MATH_HEADERS)"
 fi
 
@@ -1712,6 +1713,7 @@ contents=$(replace "$contents" "DC_ERROR_TESTS" "$dc_err_tests")
 contents=$(replace "$contents" "DC_TEST_EXEC" "$dc_test_exec")
 
 contents=$(replace "$contents" "BUILD_TYPE" "$manpage_args")
+contents=$(replace "$contents" "EXCLUDE_EXTRA_MATH" "$exclude_extra_math")
 
 contents=$(replace "$contents" "LIBRARY" "$library")
 contents=$(replace "$contents" "HISTORY" "$hist")
