@@ -431,9 +431,15 @@ if [ "$extra_math" -ne 0 ]; then
 		data=$(printf 'J2@OIKAiAopRpRpRpR')
 	fi
 
+	printf '%s\n' "$data" | "$exe" "$@" -S14 -I15 -O16 -E17.25 > "$out2"
+	checktest "$d" "$?" "builtin variable args" "$out1" "$out2"
+
+	printf '%s\n' "$data" | "$exe" "$@" --scale=14 --ibase=15 --obase=16 --seed=17.25 > "$out2"
+	checktest "$d" "$?" "builtin variable long args" "$out1" "$out2"
+
 else
 
-	out=$(printf '14\n10\n10\n')
+	out=$(printf '14\n15\n16\n')
 	printf '%s\n' "$out" > "$out1"
 
 	if [ "$d" = "bc" ]; then
@@ -442,13 +448,13 @@ else
 		data=$(printf 'OIKAiAopRpRpR')
 	fi
 
+	printf '%s\n' "$data" | "$exe" "$@" -S14 -I15 -O16 > "$out2"
+	checktest "$d" "$?" "builtin variable args" "$out1" "$out2"
+
+	printf '%s\n' "$data" | "$exe" "$@" --scale=14 --ibase=15 --obase=16 > "$out2"
+	checktest "$d" "$?" "builtin variable long args" "$out1" "$out2"
+
 fi
-
-printf '%s\n' "$data" | "$exe" "$@" -S14 -I15 -O16 -E17.25 > "$out2"
-checktest "$d" "$?" "builtin variable args" "$out1" "$out2"
-
-printf '%s\n' "$data" | "$exe" "$@" --scale=14 --ibase=15 --obase=16 --seed=17.25 > "$out2"
-checktest "$d" "$?" "builtin variable long args" "$out1" "$out2"
 
 printf 'scale\n' | "$exe" "$@" --scale=18923c.rlg > /dev/null 2> "$out2"
 err="$?"
