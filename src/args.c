@@ -150,7 +150,9 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 	bool do_exit = false, version = false;
 	BcOpt opts;
 	BcBigDig newscale = scale, ibase = BC_BASE, obase = BC_BASE;
+#if BC_ENABLE_EXTRA_MATH
 	char* seed = NULL;
+#endif // BC_ENABLE_EXTRA_MATH
 
 	BC_SIG_ASSERT_LOCKED;
 
@@ -362,8 +364,6 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 		bc_vec_push(&vm.files, argv + i);
 	}
 
-	BC_SIG_UNLOCK;
-
 #if BC_ENABLE_EXTRA_MATH
 	if (seed != NULL)
 	{
@@ -371,13 +371,19 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 		bc_num_init(&n, strlen(seed));
 
+		BC_SIG_UNLOCK;
+
 		bc_num_parse(&n, seed, BC_BASE);
 
 		bc_program_assignSeed(&vm.prog, &n);
 
+		BC_SIG_LOCK;
+
 		bc_num_free(&n);
 	}
 #endif // BC_ENABLE_EXTRA_MATH
+
+	BC_SIG_UNLOCK;
 
 	if (newscale != scale)
 	{
