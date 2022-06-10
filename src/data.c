@@ -354,7 +354,7 @@ const char* bc_history_bad_terms[] = { "dumb", "cons25", "emacs", NULL };
 
 /// A constant for tabs and its length. My tab handling is dumb and always
 /// outputs the entire thing.
-const char bc_history_tab[] = "        ";
+const char bc_history_tab[] = "\t";
 const size_t bc_history_tab_len = sizeof(bc_history_tab) - 1;
 
 /// A list of wide chars. These are listed in ascending order for efficiency.
