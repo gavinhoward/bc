@@ -245,50 +245,50 @@
   <ItemGroup>
     <CustomBuild Include="..\gen\lib.bc">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib.c bc_lib bc_lib_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib.c 0 bc_lib bc_lib_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src2\lib.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib.c bc_lib bc_lib_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib.c 0 bc_lib bc_lib_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src2\lib.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\lib.c bc_lib bc_lib_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\lib.c 0 bc_lib bc_lib_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">src2\lib.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\lib.c bc_lib bc_lib_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\lib.c 0 bc_lib bc_lib_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">src2\lib.c</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\gen\lib2.bc">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib2.c 0 bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src2\lib2.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\lib2.c 0 bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src2\lib2.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\lib2.c 0 bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">src2\lib2.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\lib2.c bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\lib2.c 0 bc_lib2 bc_lib2_name BC_ENABLED 1</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">src2\lib2.c</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\gen\dc_help.txt">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c dc_help "" DC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c 0 dc_help "" DC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src2\dc_help.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c dc_help "" DC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c 0 dc_help "" DC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src2\dc_help.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c dc_help "" DC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c 0 dc_help "" DC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">src2\dc_help.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c dc_help "" DC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\dc_help.c 0 dc_help "" DC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">src2\dc_help.c</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\gen\bc_help.txt">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c bc_help "" BC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c 0 bc_help "" BC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src2\bc_help.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c bc_help "" BC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c 0 bc_help "" BC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src2\bc_help.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c bc_help "" BC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c 0 bc_help "" BC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">src2\bc_help.c</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c bc_help "" BC_ENABLED</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)strgen.exe %(Identity) src2\bc_help.c 0 bc_help "" BC_ENABLED</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">src2\bc_help.c</Outputs>
     </CustomBuild>
   </ItemGroup>
