@@ -432,8 +432,7 @@ main(int argc, char* argv[])
 			if (in[i] == '{')
 			{
 				// If we found the start...
-				if (!strncmp(in + i, bc_gen_ex_start,
-				             strlen(bc_gen_ex_start)))
+				if (!strncmp(in + i, bc_gen_ex_start, strlen(bc_gen_ex_start)))
 				{
 					if (exclude_extra_math)
 					{
@@ -464,8 +463,8 @@ main(int argc, char* argv[])
 						continue;
 					}
 				}
-				else if (!exclude_extra_math && !strncmp(in + i, bc_gen_ex_end,
-				                                         strlen(bc_gen_ex_end)))
+				else if (!exclude_extra_math &&
+				         !strncmp(in + i, bc_gen_ex_end, strlen(bc_gen_ex_end)))
 				{
 					i += strlen(bc_gen_ex_end);
 
