@@ -48,10 +48,13 @@
 #include <unistd.h>
 #endif // _WIN32
 
-// For some reason, Windows needs this header.
+// For some reason, Windows can't have this header.
 #ifndef _WIN32
 #include <libgen.h>
 #endif // _WIN32
+
+// This pulls in cross-platform stuff.
+#include "../include/bcl.h"
 
 #define BC_ERR(v) (v)
 
@@ -165,19 +168,35 @@ bc_read_file(const char* path)
 	fd = bc_read_open(path, O_RDONLY);
 
 	// If we can't read a file, we just barf.
-	if (BC_ERR(fd < 0)) exit(INVALID_INPUT_FILE);
+	if (BC_ERR(fd < 0))
+	{
+		fprintf(stderr, "Could not open file: %s\n", path);
+		exit(INVALID_INPUT_FILE);
+	}
 
 	// The reason we call fstat is to eliminate TOCTOU race conditions. This
 	// way, we have an open file, so it's not going anywhere.
-	if (BC_ERR(fstat(fd, &pstat) == -1)) exit(INVALID_INPUT_FILE);
+	if (BC_ERR(fstat(fd, &pstat) == -1))
+	{
+		fprintf(stderr, "Could not stat file: %s\n", path);
+		exit(INVALID_INPUT_FILE);
+	}
 
 	// Make sure it's not a directory.
-	if (BC_ERR(S_ISDIR(pstat.st_mode))) exit(INVALID_INPUT_FILE);
+	if (BC_ERR(S_ISDIR(pstat.st_mode)))
+	{
+		fprintf(stderr, "Path is directory: %s\n", path);
+		exit(INVALID_INPUT_FILE);
+	}
 
 	// Get the size of the file and allocate that much.
 	size = (size_t) pstat.st_size;
-	buf = malloc(size + 1);
-	if (buf == NULL) exit(INVALID_INPUT_FILE);
+	buf = (char*) malloc(size + 1);
+	if (buf == NULL)
+	{
+		fprintf(stderr, "Could not malloc\n");
+		exit(INVALID_INPUT_FILE);
+	}
 	buf2 = buf;
 	to_read = size;
 
@@ -320,8 +339,8 @@ main(int argc, char* argv[])
 {
 	char* in;
 	FILE* out;
-	char* label;
-	char* define;
+	const char* label;
+	const char* define;
 	char* name;
 	unsigned int count, slashes, err = IO_ERR;
 	bool has_label, has_define, remove_tabs, exclude_extra_math;
@@ -363,10 +382,11 @@ main(int argc, char* argv[])
 	// This is where the end of the license comment is found.
 	while (slashes < 2 && in[i] > 0)
 	{
-		if (slashes == 1 && in[i] == '/' && in[i + 1] == '\n')
+		if (slashes == 1 && in[i] == '*' && in[i + 1] == '/' &&
+		    (in[i + 2] == '\n' || in[i + 2] == '\r'))
 		{
 			slashes += 1;
-			i += 1;
+			i += 2;
 		}
 		else if (!slashes && in[i] == '/' && in[i + 1] == '*')
 		{
@@ -380,6 +400,7 @@ main(int argc, char* argv[])
 	// The file is invalid if the end of the license comment could not be found.
 	if (in[i] == 0)
 	{
+		fprintf(stderr, "Could not find end of license comment\n");
 		err = INVALID_INPUT_FILE;
 		goto err;
 	}
@@ -387,7 +408,7 @@ main(int argc, char* argv[])
 	i += 1;
 
 	// Do not put extra newlines at the beginning of the char array.
-	while (in[i] == '\n')
+	while (in[i] == '\n' || in[i] == '\r')
 	{
 		i += 1;
 	}
@@ -395,9 +416,15 @@ main(int argc, char* argv[])
 	// This loop is what generates the actual char array. It counts how many
 	// chars it has printed per line in order to insert newlines at appropriate
 	// places. It also skips tabs if they should be removed.
-	while (in[i] > 0)
+	while (in[i] != 0)
 	{
 		int val;
+
+		if (in[i] == '\r')
+		{
+			i += 1;
+			continue;
+		}
 
 		if (!remove_tabs || in[i] != '\t')
 		{
@@ -423,6 +450,7 @@ main(int argc, char* argv[])
 						i += strlen(bc_gen_ex_end);
 
 						// Skip the last newline.
+						if (in[i] == '\r') i += 1;
 						i += 1;
 						continue;
 					}
@@ -431,6 +459,7 @@ main(int argc, char* argv[])
 						i += strlen(bc_gen_ex_start);
 
 						// Skip the last newline.
+						if (in[i] == '\r') i += 1;
 						i += 1;
 						continue;
 					}
@@ -441,6 +470,7 @@ main(int argc, char* argv[])
 					i += strlen(bc_gen_ex_end);
 
 					// Skip the last newline.
+					if (in[i] == '\r') i += 1;
 					i += 1;
 					continue;
 				}
