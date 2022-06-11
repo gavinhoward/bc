@@ -261,7 +261,11 @@ bc_history_line(BcHistory* h, BcVec* vec, const char* prompt)
 			if (errno == ENOMEM) bc_err(BC_ERR_FATAL_ALLOC_ERR);
 			bc_err(BC_ERR_FATAL_IO_ERR);
 		}
-		else s = BC_STATUS_EOF;
+		else
+		{
+			bc_file_printf(&vm.fout, "\n");
+			s = BC_STATUS_EOF;
+		}
 	}
 	// If there is a line...
 	else
@@ -358,7 +362,7 @@ bc_history_line(BcHistory* h, BcVec* vec, const char* prompt)
 	}
 	else if (h->line == NULL)
 	{
-		bc_file_printf(&vm.fout, "%s", "^D");
+		bc_file_printf(&vm.fout, "%s\n", "^D");
 		s = BC_STATUS_EOF;
 	}
 	else bc_vec_string(vec, 1, "\n");
