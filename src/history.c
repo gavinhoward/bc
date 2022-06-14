@@ -163,7 +163,7 @@ static char*
 bc_history_promptFunc(EditLine* el)
 {
 	BC_UNUSED(el);
-	return bc_history_prompt;
+	return BC_PROMPT ? bc_history_prompt : "";
 }
 
 void
@@ -345,7 +345,7 @@ bc_history_line(BcHistory* h, BcVec* vec, const char* prompt)
 	}
 
 	// Get the line.
-	h->line = readline(prompt);
+	h->line = readline(BC_PROMPT ? prompt : "");
 
 	// If there was a line, add it to the history. Otherwise, just return an
 	// empty line. Oh, and NULL actually means EOF.
