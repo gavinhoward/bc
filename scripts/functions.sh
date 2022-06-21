@@ -371,10 +371,10 @@ filter_text() {
 	#
 	# Obviously, the tag itself and its end are not printed to the markdown
 	# manual.
-	while IFS= read -r line; do
+	while IFS= read -r _filter_text_line; do
 
 		# If we have found an end, reset the status.
-		if [ "$line" = "{{ end }}" ]; then
+		if [ "$_filter_text_line" = "{{ end }}" ]; then
 
 			# Some error checking. This helps when editing the templates.
 			if [ "$_filter_text_status" -eq "$ALL" ]; then
@@ -384,7 +384,7 @@ filter_text() {
 			_filter_text_status="$ALL"
 
 		# We have found a tag that allows our build type to use it.
-		elif [ "${line#\{\{* $_filter_text_buildtype *\}\}}" != "$line" ]; then
+		elif [ "${_filter_text_line#\{\{* $_filter_text_buildtype *\}\}}" != "$_filter_text_line" ]; then
 
 			# More error checking. We don't want tags nested.
 			if [ "$_filter_text_status" -ne "$ALL" ]; then
@@ -394,7 +394,7 @@ filter_text() {
 			_filter_text_status="$NOSKIP"
 
 		# We have found a tag that is *not* allowed for our build type.
-		elif [ "${line#\{\{*\}\}}" != "$line" ]; then
+		elif [ "${_filter_text_line#\{\{*\}\}}" != "$_filter_text_line" ]; then
 
 			if [ "$_filter_text_status" -ne "$ALL" ]; then
 				err_exit "start tag nested in start tag" 3
@@ -405,9 +405,10 @@ filter_text() {
 		# This is for normal lines. If we are not skipping, print.
 		else
 			if [ "$_filter_text_status" -ne "$SKIP" ]; then
-				if [ -n "$line" -o -n "$_filter_text_last_line" ]; then
-					printf '%s\n' "$line" >> "$_filter_text_out"
+				if [ "$_filter_text_line" != "$_filter_text_last_line" ]; then
+					printf '%s\n' "$_filter_text_line" >> "$_filter_text_out"
 				fi
+				_filter_text_last_line="$_filter_text_line"
 			fi
 		fi
 
