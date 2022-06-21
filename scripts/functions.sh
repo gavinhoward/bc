@@ -348,13 +348,13 @@ filter_text() {
 
 	# Set up some local variables.
 	_filter_text_status="$ALL"
-	_filter_text_temp="$_filter_text_out.tmp"
+	_filter_text_last_line=""
 
 	# We need to set IFS, so we store it here for restoration later.
 	_filter_text_ifs="$IFS"
 
 	# Remove the file- that will be generated.
-	rm -rf "$_filter_text_out" "$_filter_text_temp"
+	rm -rf "$_filter_text_out"
 
 	# Here is the magic. This loop reads the template line-by-line, and based on
 	# _filter_text_status, either prints it to the markdown manual or not.
@@ -405,17 +405,13 @@ filter_text() {
 		# This is for normal lines. If we are not skipping, print.
 		else
 			if [ "$_filter_text_status" -ne "$SKIP" ]; then
-				printf '%s\n' "$line" >> "$_filter_text_temp"
+				if [ -n "$line" -o -n "$_filter_text_last_line" ]; then
+					printf '%s\n' "$line" >> "$_filter_text_out"
+				fi
 			fi
 		fi
 
 	done < "$_filter_text_in"
-
-	# Remove multiple blank lines.
-	uniq "$_filter_text_temp" "$_filter_text_out"
-
-	# Remove the temp file.
-	#rm -rf "$_filter_text_temp"
 
 	# Reset IFS.
 	IFS="$_filter_text_ifs"
