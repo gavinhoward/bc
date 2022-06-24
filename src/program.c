@@ -541,6 +541,7 @@ bc_program_assignPrep(BcProgram* p, BcResult** l, BcNum** ln, BcResult** r,
                       BcNum** rn)
 {
 	BcResultType lt, min;
+	bool good;
 
 	// This is the min non-allowable result type. dc allows strings.
 	min = BC_RESULT_TEMP - ((unsigned int) (BC_IS_BC));
@@ -555,7 +556,7 @@ bc_program_assignPrep(BcProgram* p, BcResult** l, BcNum** ln, BcResult** r,
 
 	// Strings can be assigned to variables. We are already good if we are
 	// assigning a string.
-	bool good = ((*r)->t == BC_RESULT_STR && lt <= BC_RESULT_ARRAY_ELEM);
+	good = ((*r)->t == BC_RESULT_STR && lt <= BC_RESULT_ARRAY_ELEM);
 
 	assert(BC_PROG_STR(*rn) || (*r)->t != BC_RESULT_STR);
 

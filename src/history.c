@@ -670,6 +670,7 @@ static BcStatus
 bc_history_readCode(char* buf, size_t buf_len, uint32_t* cp, size_t* nread)
 {
 	ssize_t n;
+	uchar byte;
 
 	assert(buf_len >= 1);
 
@@ -683,7 +684,7 @@ bc_history_readCode(char* buf, size_t buf_len, uint32_t* cp, size_t* nread)
 	if (BC_ERR(n <= 0)) goto err;
 
 	// Get the byte.
-	uchar byte = ((uchar*) buf)[0];
+	byte = ((uchar*) buf)[0];
 
 	// Once again, this is the UTF-8 decoding algorithm, but it has reads
 	// instead of actual decoding.
@@ -1706,9 +1707,9 @@ bc_history_add(BcHistory* h, char* line)
 static void
 bc_history_add_empty(BcHistory* h)
 {
-	BC_SIG_ASSERT_LOCKED;
-
 	const char* line = "";
+
+	BC_SIG_ASSERT_LOCKED;
 
 	// If there is something already there...
 	if (h->history.len)

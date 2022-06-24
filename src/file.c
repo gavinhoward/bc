@@ -284,94 +284,96 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 
 #else // BC_ENABLE_LINE_LIB
 
-	char* percent;
-	const char* ptr = fmt;
-	char buf[BC_FILE_ULL_LENGTH];
-
-	// This is a poor man's printf(). While I could look up algorithms to make
-	// it as fast as possible, and should when I write the standard library for
-	// a new language, for bc, outputting is not the bottleneck. So we cheese it
-	// for now.
-
-	// Find each percent sign.
-	while ((percent = strchr(ptr, '%')) != NULL)
 	{
-		char c;
+		char* percent;
+		const char* ptr = fmt;
+		char buf[BC_FILE_ULL_LENGTH];
 
-		// If the percent sign is not where we are, write what's inbetween to
-		// the buffer.
-		if (percent != ptr)
+		// This is a poor man's printf(). While I could look up algorithms to make
+		// it as fast as possible, and should when I write the standard library for
+		// a new language, for bc, outputting is not the bottleneck. So we cheese it
+		// for now.
+
+		// Find each percent sign.
+		while ((percent = strchr(ptr, '%')) != NULL)
 		{
-			size_t len = (size_t) (percent - ptr);
-			bc_file_write(f, bc_flush_none, ptr, len);
-		}
+			char c;
 
-		c = percent[1];
+			// If the percent sign is not where we are, write what's inbetween to
+			// the buffer.
+			if (percent != ptr)
+			{
+				size_t len = (size_t) (percent - ptr);
+				bc_file_write(f, bc_flush_none, ptr, len);
+			}
 
-		// We only parse some format specifiers, the ones bc uses. If you add
-		// more, you need to make sure to add them here.
-		if (c == 'c')
-		{
-			uchar uc = (uchar) va_arg(args, int);
+			c = percent[1];
 
-			bc_file_putchar(f, bc_flush_none, uc);
-		}
-		else if (c == 's')
-		{
-			char* s = va_arg(args, char*);
+			// We only parse some format specifiers, the ones bc uses. If you add
+			// more, you need to make sure to add them here.
+			if (c == 'c')
+			{
+				uchar uc = (uchar) va_arg(args, int);
 
-			bc_file_puts(f, bc_flush_none, s);
-		}
+				bc_file_putchar(f, bc_flush_none, uc);
+			}
+			else if (c == 's')
+			{
+				char* s = va_arg(args, char*);
+
+				bc_file_puts(f, bc_flush_none, s);
+			}
 #if BC_DEBUG_CODE
-		// We only print signed integers in debug code.
-		else if (c == 'd')
-		{
-			int d = va_arg(args, int);
-
-			// Take care of negative. Let's not worry about overflow.
-			if (d < 0)
+			// We only print signed integers in debug code.
+			else if (c == 'd')
 			{
-				bc_file_putchar(f, bc_flush_none, '-');
-				d = -d;
-			}
+				int d = va_arg(args, int);
 
-			// Either print 0 or translate and print.
-			if (!d) bc_file_putchar(f, bc_flush_none, '0');
-			else
-			{
-				bc_file_ultoa((unsigned long long) d, buf);
-				bc_file_puts(f, bc_flush_none, buf);
+				// Take care of negative. Let's not worry about overflow.
+				if (d < 0)
+				{
+					bc_file_putchar(f, bc_flush_none, '-');
+					d = -d;
+				}
+
+				// Either print 0 or translate and print.
+				if (!d) bc_file_putchar(f, bc_flush_none, '0');
+				else
+				{
+					bc_file_ultoa((unsigned long long) d, buf);
+					bc_file_puts(f, bc_flush_none, buf);
+				}
 			}
-		}
 #endif // BC_DEBUG_CODE
-		else
-		{
-			unsigned long long ull;
-
-			// These are the ones that it expects from here. Fortunately, all of
-			// these are unsigned types, so they can use the same code, more or
-			// less.
-			assert((c == 'l' || c == 'z') && percent[2] == 'u');
-
-			if (c == 'z') ull = (unsigned long long) va_arg(args, size_t);
-			else ull = (unsigned long long) va_arg(args, unsigned long);
-
-			// Either print 0 or translate and print.
-			if (!ull) bc_file_putchar(f, bc_flush_none, '0');
 			else
 			{
-				bc_file_ultoa(ull, buf);
-				bc_file_puts(f, bc_flush_none, buf);
+				unsigned long long ull;
+
+				// These are the ones that it expects from here. Fortunately, all of
+				// these are unsigned types, so they can use the same code, more or
+				// less.
+				assert((c == 'l' || c == 'z') && percent[2] == 'u');
+
+				if (c == 'z') ull = (unsigned long long) va_arg(args, size_t);
+				else ull = (unsigned long long) va_arg(args, unsigned long);
+
+				// Either print 0 or translate and print.
+				if (!ull) bc_file_putchar(f, bc_flush_none, '0');
+				else
+				{
+					bc_file_ultoa(ull, buf);
+					bc_file_puts(f, bc_flush_none, buf);
+				}
 			}
+
+			// Increment to the next spot after the specifier.
+			ptr = percent + 2 + (c == 'l' || c == 'z');
 		}
 
-		// Increment to the next spot after the specifier.
-		ptr = percent + 2 + (c == 'l' || c == 'z');
+		// If we get here, there are no more percent signs, so we just output
+		// whatever is left.
+		if (ptr[0]) bc_file_puts(f, bc_flush_none, ptr);
 	}
-
-	// If we get here, there are no more percent signs, so we just output
-	// whatever is left.
-	if (ptr[0]) bc_file_puts(f, bc_flush_none, ptr);
 
 #endif // BC_ENABLE_LINE_LIB
 }
