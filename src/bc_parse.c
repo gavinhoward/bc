@@ -75,7 +75,7 @@ bc_parse_expr_status(BcParse* p, uint8_t flags, BcParseNext next);
 static bool
 bc_parse_inst_isLeaf(BcInst t)
 {
-	return (t >= BC_INST_NUM && t <= BC_INST_MAXSCALE) ||
+	return (t >= BC_INST_NUM && t <= BC_INST_LEADING_ZERO) ||
 #if BC_ENABLE_EXTRA_MATH
 	       t == BC_INST_TRUNC ||
 #endif // BC_ENABLE_EXTRA_MATH
