@@ -71,6 +71,7 @@ bc_parse_expr_status(BcParse* p, uint8_t flags, BcParseNext next);
  * Returns true if an instruction could only have come from a "leaf" expression.
  * For more on what leaf expressions are, read the comment for BC_PARSE_LEAF().
  * @param t  The instruction to test.
+ * @return   True if the instruction is a from a leaf expression.
  */
 static bool
 bc_parse_inst_isLeaf(BcInst t)
