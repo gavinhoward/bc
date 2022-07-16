@@ -159,7 +159,7 @@ else
 
 	# This is to check that the command exists. If not, we should not try to
 	# generate the test. Instead, we should just skip.
-	command -v "$d"
+	command -v "$d" 1>/dev/null 2>&1
 	err="$?"
 
 	set -e
