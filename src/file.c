@@ -289,18 +289,18 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 		const char* ptr = fmt;
 		char buf[BC_FILE_ULL_LENGTH];
 
-		// This is a poor man's printf(). While I could look up algorithms to make
-		// it as fast as possible, and should when I write the standard library for
-		// a new language, for bc, outputting is not the bottleneck. So we cheese it
-		// for now.
+		// This is a poor man's printf(). While I could look up algorithms to
+		// make it as fast as possible, and should when I write the standard
+		// library for a new language, for bc, outputting is not the bottleneck.
+		// So we cheese it for now.
 
 		// Find each percent sign.
 		while ((percent = strchr(ptr, '%')) != NULL)
 		{
 			char c;
 
-			// If the percent sign is not where we are, write what's inbetween to
-			// the buffer.
+			// If the percent sign is not where we are, write what's inbetween
+			// to the buffer.
 			if (percent != ptr)
 			{
 				size_t len = (size_t) (percent - ptr);
@@ -309,8 +309,8 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 
 			c = percent[1];
 
-			// We only parse some format specifiers, the ones bc uses. If you add
-			// more, you need to make sure to add them here.
+			// We only parse some format specifiers, the ones bc uses. If you
+			// add more, you need to make sure to add them here.
 			if (c == 'c')
 			{
 				uchar uc = (uchar) va_arg(args, int);
@@ -349,9 +349,9 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 			{
 				unsigned long long ull;
 
-				// These are the ones that it expects from here. Fortunately, all of
-				// these are unsigned types, so they can use the same code, more or
-				// less.
+				// These are the ones that it expects from here. Fortunately,
+				// all of these are unsigned types, so they can use the same
+				// code, more or less.
 				assert((c == 'l' || c == 'z') && percent[2] == 'u');
 
 				if (c == 'z') ull = (unsigned long long) va_arg(args, size_t);

@@ -3113,7 +3113,7 @@ bc_program_exec(BcProgram* p)
 #if BC_ENABLE_EXTRA_MATH
 			BC_PROG_LBL(BC_INST_MAXRAND):
 #endif // BC_ENABLE_EXTRA_MATH
-       // clang-format on
+			// clang-format on
 			{
 				BcBigDig dig = vm.maxes[inst - BC_INST_MAXIBASE];
 				bc_program_pushBigdig(p, dig, BC_RESULT_TEMP);
@@ -3177,7 +3177,7 @@ bc_program_exec(BcProgram* p)
 #if BC_ENABLE_EXTRA_MATH
 			BC_PROG_LBL(BC_INST_IRAND):
 #endif // BC_ENABLE_EXTRA_MATH
-       // clang-format on
+			// clang-format on
 			{
 				bc_program_builtin(p, inst);
 				BC_PROG_JUMP(inst, code, ip);
@@ -3215,7 +3215,7 @@ bc_program_exec(BcProgram* p)
 #if BC_ENABLED
 			BC_PROG_LBL(BC_INST_LAST):
 #endif // BC_ENABLED
-       // clang-format on
+			// clang-format on
 			{
 				r.t = BC_RESULT_ZERO + (inst - BC_INST_ZERO);
 				bc_vec_push(&p->results, &r);
@@ -3228,7 +3228,7 @@ bc_program_exec(BcProgram* p)
 #if BC_ENABLED
 			BC_PROG_LBL(BC_INST_PRINT_STR):
 #endif // BC_ENABLED
-       // clang-format on
+			// clang-format on
 			{
 				bc_program_print(p, inst, 0);
 
@@ -3264,7 +3264,7 @@ bc_program_exec(BcProgram* p)
 			BC_PROG_LBL(BC_INST_LSHIFT):
 			BC_PROG_LBL(BC_INST_RSHIFT):
 #endif // BC_ENABLE_EXTRA_MATH
-       // clang-format on
+			// clang-format on
 			{
 				bc_program_op(p, inst);
 				BC_PROG_JUMP(inst, code, ip);
@@ -3276,7 +3276,7 @@ bc_program_exec(BcProgram* p)
 #if BC_ENABLE_EXTRA_MATH
 			BC_PROG_LBL(BC_INST_TRUNC):
 #endif // BC_ENABLE_EXTRA_MATH
-       // clang-format on
+			// clang-format on
 			{
 				bc_program_unary(p, inst);
 				BC_PROG_JUMP(inst, code, ip);
