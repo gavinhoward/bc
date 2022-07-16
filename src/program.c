@@ -207,6 +207,7 @@ bc_program_dereference(const BcProgram* p, BcVec* vec)
 
 	return v;
 }
+
 #endif // BC_ENABLED
 
 /**
@@ -1340,10 +1341,12 @@ bc_program_copyToVar(BcProgram* p, size_t idx, BcType t, bool last)
 void
 bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val)
 {
-	BcVec* v;
-	BcBigDig* ptr;
 	BcBigDig* ptr_t;
 	BcBigDig max, min;
+#if BC_ENABLED
+	BcVec* v;
+	BcBigDig* ptr;
+#endif // BC_ENABLED
 
 	assert(!scale || !obase);
 
@@ -1354,8 +1357,12 @@ bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val)
 		min = 0;
 		max = vm.maxes[BC_PROG_GLOBALS_SCALE];
 
-		// Get a pointer to the stack and to the current value.
+#if BC_ENABLED
+		// Get a pointer to the stack.
 		v = p->globals_v + BC_PROG_GLOBALS_SCALE;
+#endif // BC_ENABLED
+
+		// Get a pointer to the current value.
 		ptr_t = p->globals + BC_PROG_GLOBALS_SCALE;
 	}
 	else
@@ -1368,8 +1375,12 @@ bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val)
 		}
 		max = vm.maxes[obase + BC_PROG_GLOBALS_IBASE];
 
-		// Get a pointer to the stack and to the current value.
+#if BC_ENABLED
+		// Get a pointer to the stack.
 		v = p->globals_v + BC_PROG_GLOBALS_IBASE + obase;
+#endif // BC_ENABLED
+
+		// Get a pointer to the current value.
 		ptr_t = p->globals + BC_PROG_GLOBALS_IBASE + obase;
 	}
 
@@ -1386,9 +1397,13 @@ bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val)
 		bc_verr(e, min, max);
 	}
 
-	// Set the top of the stack and the actual global value.
+#if BC_ENABLED
+	// Set the top of the stack.
 	ptr = bc_vec_top(v);
 	*ptr = val;
+#endif // BC_ENABLED
+
+	// Set the actual global variable.
 	*ptr_t = val;
 }
 
@@ -2723,11 +2738,13 @@ bc_program_free(BcProgram* p)
 
 	assert(p != NULL);
 
+#if BC_ENABLED
 	// Free the globals stacks.
 	for (i = 0; i < BC_PROG_GLOBALS_LEN; ++i)
 	{
 		bc_vec_free(p->globals_v + i);
 	}
+#endif // BC_ENABLED
 
 	bc_vec_free(&p->fns);
 	bc_vec_free(&p->fn_map);
@@ -2771,8 +2788,10 @@ bc_program_init(BcProgram* p)
 	{
 		BcBigDig val = i == BC_PROG_GLOBALS_SCALE ? 0 : BC_BASE;
 
+#if BC_ENABLED
 		bc_vec_init(p->globals_v + i, sizeof(BcBigDig), BC_DTOR_NONE);
 		bc_vec_push(p->globals_v + i, &val);
+#endif // BC_ENABLED
 
 		p->globals[i] = val;
 	}

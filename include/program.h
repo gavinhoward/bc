@@ -69,8 +69,10 @@ typedef struct BcProgram
 	/// The array of globals values.
 	BcBigDig globals[BC_PROG_GLOBALS_LEN];
 
+#if BC_ENABLED
 	/// The array of globals stacks.
 	BcVec globals_v[BC_PROG_GLOBALS_LEN];
+#endif // BC_ENABLED
 
 #if BC_ENABLE_EXTRA_MATH
 
