@@ -2735,7 +2735,9 @@ bc_program_insertFunc(BcProgram* p, const char* name)
 void
 bc_program_free(BcProgram* p)
 {
+#if BC_ENABLED
 	size_t i;
+#endif // BC_ENABLED
 
 	BC_SIG_ASSERT_LOCKED;
 
