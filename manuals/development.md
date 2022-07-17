@@ -1,6 +1,6 @@
 # Development
 
-Updated: 06 Oct 2021
+Updated: 17 Jul 2022
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -4605,6 +4605,25 @@ make it easier to understand the code. The style follows these rules:
 
 While these rules are not hard and fast, using them as a guide will probably
 help.
+
+#### Digit Clamping
+
+There is a question of what to do when parsing numbers and coming across digits
+that are greater than or equal to the current `ibase`. `bc` and `dc` do one of
+two things:
+
+* Clamp the digit to the maximum correct digit, or
+* Use the digit as-is, multiplying it by the `ibase` to the power of the digit's
+  position (starting from 0 at the least significant digit).
+
+The former behavior is what GNU `bc` does, and the latter is what GNU `dc`, the
+OpenBSD `bc`, and the OpenBSD `dc` do.
+
+It is possible to switch between the two with the `-c` and `-C` command-line
+options. However, it is important for developers to understand that both
+behaviors exist and should exist.
+
+The library only does clamping, however.
 
 ### Strings as Numbers
 
