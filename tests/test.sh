@@ -92,11 +92,11 @@ unset DC_LINE_LENGTH
 
 # Set stuff for the correct calculator.
 if [ "$d" = "bc" ]; then
-	options="-lqc"
+	options="-lq"
 	var="BC_LINE_LENGTH"
 	halt="halt"
 else
-	options="-c"
+	options=""
 	var="DC_LINE_LENGTH"
 	halt="q"
 fi
@@ -123,9 +123,11 @@ if [ ! -f "$results" ]; then
 	printf 'done\n'
 fi
 
-# We set this here because GNU dc does not have it.
-if [ "$d" = "dc" ]; then
-	options="-x"
+# We set this here because GNU bc and dc does not have these options.
+if [ "$d" = "bc" ]; then
+	options="-lqc"
+else
+	options="-xc"
 fi
 
 export $var=string
