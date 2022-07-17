@@ -36,52 +36,10 @@
 #ifndef BC_BCL_H
 #define BC_BCL_H
 
-#ifdef _WIN32
-#include <Windows.h>
-#include <BaseTsd.h>
-#include <stdio.h>
-#include <io.h>
-#endif // _WIN32
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
-#include <sys/types.h>
-
-// Windows has deprecated isatty() and the rest of these. Or doesn't have them.
-// So these are just fixes for Windows.
-#ifdef _WIN32
-
-// This one is special. Windows did not like me defining an
-// inline function that was not given a definition in a header
-// file. This suppresses that by making inline functions non-inline.
-#define inline
-
-#define restrict __restrict
-#define strdup _strdup
-#define write(f, b, s) _write((f), (b), (unsigned int) (s))
-#define read(f, b, s) _read((f), (b), (unsigned int) (s))
-#define close _close
-#define open(f, n, m) \
-	_sopen_s((f), (n), (m) | _O_BINARY, _SH_DENYNO, _S_IREAD | _S_IWRITE)
-#define sigjmp_buf jmp_buf
-#define sigsetjmp(j, s) setjmp(j)
-#define siglongjmp longjmp
-#define isatty _isatty
-#define STDIN_FILENO _fileno(stdin)
-#define STDOUT_FILENO _fileno(stdout)
-#define STDERR_FILENO _fileno(stderr)
-#define ssize_t SSIZE_T
-#define S_ISDIR(m) ((m) & (_S_IFDIR))
-#define O_RDONLY _O_RDONLY
-#define stat _stat
-#define fstat _fstat
-#define BC_FILE_SEP '\\'
-
-#else // _WIN32
-#define BC_FILE_SEP '/'
-#endif // _WIN32
 
 #define BCL_SEED_ULONGS (4)
 #define BCL_SEED_SIZE (sizeof(long) * BCL_SEED_ULONGS)
