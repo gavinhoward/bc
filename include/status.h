@@ -279,6 +279,10 @@
 #define BC_DEFAULT_EXPR_EXIT (1)
 #endif // BC_DEFAULT_EXPR_EXIT
 
+#ifndef BC_DEFAULT_DIGIT_CLAMP
+#define BC_DEFAULT_DIGIT_CLAMP (0)
+#endif // BC_DEFAULT_DIGIT_CLAMP
+
 // All of these set defaults for settings.
 #ifndef DC_DEFAULT_SIGINT_RESET
 #define DC_DEFAULT_SIGINT_RESET (1)
@@ -299,6 +303,10 @@
 #ifndef DC_DEFAULT_EXPR_EXIT
 #define DC_DEFAULT_EXPR_EXIT (1)
 #endif // DC_DEFAULT_EXPR_EXIT
+
+#ifndef DC_DEFAULT_DIGIT_CLAMP
+#define DC_DEFAULT_DIGIT_CLAMP (0)
+#endif // DC_DEFAULT_DIGIT_CLAMP
 
 /// Statuses, which mark either which category of error happened, or some other
 /// status that matters.

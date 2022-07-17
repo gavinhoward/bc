@@ -2311,7 +2311,7 @@ bc_num_parseChar(char c, size_t base)
 		c = BC_NUM_NUM_LETTER(c);
 
 		// If the digit is greater than the base, we clamp.
-		c = ((size_t) c) >= base ? (char) base - 1 : c;
+		if (BC_DIGIT_CLAMP) c = ((size_t) c) >= base ? (char) base - 1 : c;
 	}
 	// Straight convert the digit to a number.
 	else c -= '0';
@@ -2378,10 +2378,11 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 	i = mod ? BC_BASE_DIGS - mod : 0;
 	n->len = ((temp + i) / BC_BASE_DIGS);
 
-	// Expand and zero.
-	bc_num_expand(n, n->len);
+	// Expand and zero. The plus extra is in case the lack of clamping causes
+	// the number to overflow the original bounds.
+	bc_num_expand(n, n->len + (BC_DIGIT_CLAMP == 0));
 	// NOLINTNEXTLINE
-	memset(n->num, 0, BC_NUM_SIZE(n->len));
+	memset(n->num, 0, BC_NUM_SIZE(n->len + (BC_DIGIT_CLAMP == 0)));
 
 	if (zero)
 	{
@@ -2412,12 +2413,28 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 			{
 				// The index of the limb.
 				size_t idx = exp / BC_BASE_DIGS;
+				BcBigDig dig;
 
-				// Clamp for the base.
-				if (isupper(c)) c = '9';
+				if (isupper(c))
+				{
+					// Clamp for the base.
+					if (BC_DIGIT_CLAMP) c = 9;
+					else c = BC_NUM_NUM_LETTER(c);
+				}
+				else c -= '0';
 
-				// Add the digit to the limb.
-				n->num[idx] += (((BcBigDig) c) - '0') * pow;
+				// Add the digit to the limb. This takes care of overflow from
+				// lack of clamping.
+				dig = n->num[idx] + ((BcBigDig) c) * pow;
+				if (dig >= BC_BASE_POW)
+				{
+					// We cannot go over BC_BASE_POW with clamping.
+					assert(BC_DIGIT_CLAMP == 0);
+
+					n->num[idx + 1] = dig / BC_BASE_POW;
+					n->num[idx] = dig % BC_BASE_POW;
+				}
+				else n->num[idx] = (BcDig) dig;
 
 				// Adjust the power and exponent.
 				if ((exp + 1) % BC_BASE_DIGS == 0) pow = 1;
@@ -2425,6 +2442,9 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 			}
 		}
 	}
+
+	// Make sure to add one to the length if needed from lack of clamping.
+	n->len += (BC_DIGIT_CLAMP == 0 && n->num[n->len] != 0);
 }
 
 /**

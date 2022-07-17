@@ -237,9 +237,12 @@ bc_vm_info(const char* const help)
 			                                               "disabled";
 			const char* const expr = BC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                                                "to not exit";
+			const char* const clamp = BC_DEFAULT_DIGIT_CLAMP ? "to clamp":
+			                                                   "to not clamp";
 
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
-			               BC_BUILD_TYPE, banner, sigint, tty, prompt, expr);
+			               BC_BUILD_TYPE, banner, sigint, tty, prompt, expr,
+			               clamp);
 		}
 #endif // BC_ENABLED
 
@@ -254,9 +257,11 @@ bc_vm_info(const char* const help)
 			                                               "disabled";
 			const char* const expr = DC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                                                "to not exit";
+			const char* const clamp = DC_DEFAULT_DIGIT_CLAMP ? "to clamp":
+			                                                   "to not clamp";
 
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
-			               BC_BUILD_TYPE, sigint, tty, prompt, expr);
+			               BC_BUILD_TYPE, sigint, tty, prompt, expr, clamp);
 		}
 #endif // DC_ENABLED
 	}
@@ -826,6 +831,7 @@ bc_unveil(const char* path, const char* permissions)
 	int r = unveil(path, permissions);
 	if (r) bc_abortm("unveil() failed");
 }
+
 #endif // BC_ENABLE_EXTRA_MATH
 
 #else // __OpenBSD__
@@ -1428,7 +1434,11 @@ bc_vm_boot(int argc, char* argv[])
 	const char* const env_len = BC_IS_BC ? "BC_LINE_LENGTH" : "DC_LINE_LENGTH";
 	const char* const env_args = BC_IS_BC ? "BC_ENV_ARGS" : "DC_ENV_ARGS";
 	const char* const env_exit = BC_IS_BC ? "BC_EXPR_EXIT" : "DC_EXPR_EXIT";
+	const char* const env_clamp = BC_IS_BC ? "BC_DIGIT_CLAMP" :
+	                                         "DC_DIGIT_CLAMP";
 	int env_exit_def = BC_IS_BC ? BC_DEFAULT_EXPR_EXIT : DC_DEFAULT_EXPR_EXIT;
+	int env_clamp_def = BC_IS_BC ? BC_DEFAULT_DIGIT_CLAMP :
+	                               DC_DEFAULT_DIGIT_CLAMP;
 
 	// We need to know which of stdin, stdout, and stderr are tty's.
 	ttyin = isatty(STDIN_FILENO);
@@ -1476,6 +1486,7 @@ bc_vm_boot(int argc, char* argv[])
 	vm.line_len = (uint16_t) bc_vm_envLen(env_len);
 
 	bc_vm_setenvFlag(env_exit, env_exit_def, BC_FLAG_EXPR_EXIT);
+	bc_vm_setenvFlag(env_clamp, env_clamp_def, BC_FLAG_DIGIT_CLAMP);
 
 	// Clear the files and expressions vectors, just in case. This marks them as
 	// *not* allocated.

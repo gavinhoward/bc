@@ -638,8 +638,11 @@ bc_program_const(BcProgram* p, const char* code, size_t* bgn)
 		// Allocate if we haven't yet.
 		if (c->num.num == NULL)
 		{
+			// The plus 1 is in case of overflow with lack of clamping.
+			size_t len = strlen(c->val) + (BC_DIGIT_CLAMP == 0);
+
 			BC_SIG_LOCK;
-			bc_num_init(&c->num, BC_NUM_RDX(strlen(c->val)));
+			bc_num_init(&c->num, BC_NUM_RDX(len));
 			BC_SIG_UNLOCK;
 		}
 

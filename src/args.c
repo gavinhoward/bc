@@ -164,6 +164,18 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 	{
 		switch (c)
 		{
+			case 'c':
+			{
+				vm.flags |= BC_FLAG_DIGIT_CLAMP;
+				break;
+			}
+
+			case 'C':
+			{
+				vm.flags &= ~BC_FLAG_DIGIT_CLAMP;
+				break;
+			}
+
 			case 'e':
 			{
 				// Barf if not allowed.

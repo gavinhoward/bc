@@ -179,6 +179,9 @@
 /// The flag for exiting with expressions.
 #define BC_FLAG_EXPR_EXIT (UINTMAX_C(1) << 13)
 
+/// The flag for digit clamping.
+#define BC_FLAG_DIGIT_CLAMP (UINTMAX_C(1) << 14)
+
 /// A convenience macro for getting the TTYIN flag.
 #define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
 
@@ -225,6 +228,9 @@
 
 /// A convenience macro for getting the expression exit flag.
 #define BC_EXPR_EXIT (vm.flags & BC_FLAG_EXPR_EXIT)
+
+/// A convenience macro for getting the digit clamp flag.
+#define BC_DIGIT_CLAMP (vm.flags & BC_FLAG_DIGIT_CLAMP)
 
 #if BC_ENABLED
 
