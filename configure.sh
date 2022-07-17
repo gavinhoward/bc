@@ -1151,7 +1151,13 @@ if [ "$debug" -eq 1 ]; then
 		CFLAGS="-O0"
 	fi
 
-	CFLAGS="-g $CFLAGS"
+	ccbase=$(basename "$CC")
+
+	if [ "$ccbase" = "clang" ]; then
+		CFLAGS="-gdwarf-4 $CFLAGS"
+	else
+		CFLAGS="-g $CFLAGS"
+	fi
 
 else
 
