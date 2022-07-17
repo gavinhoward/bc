@@ -272,4 +272,7 @@ typedef struct BclCtxt
 
 } BclCtxt;
 
+// Define this to stop compiler errors.
+#define BC_DIGIT_CLAMP (1)
+
 #endif // LIBBC_PRIVATE_H

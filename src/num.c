@@ -44,6 +44,9 @@
 #include <num.h>
 #include <rand.h>
 #include <vm.h>
+#if BC_ENABLE_LIBRARY
+#include <library.h>
+#endif // BC_ENABLE_LIBRARY
 
 // Before you try to understand this code, see the development manual
 // (manuals/development.md#numbers).
@@ -2311,7 +2314,12 @@ bc_num_parseChar(char c, size_t base)
 		c = BC_NUM_NUM_LETTER(c);
 
 		// If the digit is greater than the base, we clamp.
-		if (BC_DIGIT_CLAMP) c = ((size_t) c) >= base ? (char) base - 1 : c;
+#if !BC_ENABLE_LIBRARY
+		if (BC_DIGIT_CLAMP)
+#endif // !BC_ENABLE_LIBRARY
+		{
+			c = ((size_t) c) >= base ? (char) base - 1 : c;
+		}
 	}
 	// Straight convert the digit to a number.
 	else c -= '0';
@@ -2418,14 +2426,15 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 				if (isupper(c))
 				{
 					// Clamp for the base.
-					if (BC_DIGIT_CLAMP) c = 9;
-					else c = BC_NUM_NUM_LETTER(c);
+					if (BC_DIGIT_CLAMP == 0) c = BC_NUM_NUM_LETTER(c);
+					else c = 9;
 				}
 				else c -= '0';
 
 				// Add the digit to the limb. This takes care of overflow from
 				// lack of clamping.
 				dig = n->num[idx] + ((BcBigDig) c) * pow;
+#if !BC_ENABLE_LIBRARY
 				if (dig >= BC_BASE_POW)
 				{
 					// We cannot go over BC_BASE_POW with clamping.
@@ -2434,7 +2443,11 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 					n->num[idx + 1] = dig / BC_BASE_POW;
 					n->num[idx] = dig % BC_BASE_POW;
 				}
-				else n->num[idx] = (BcDig) dig;
+				else
+#endif // !BC_ENABLE_LIBRARY
+				{
+					n->num[idx] = (BcDig) dig;
+				}
 
 				// Adjust the power and exponent.
 				if ((exp + 1) % BC_BASE_DIGS == 0) pow = 1;
@@ -2443,8 +2456,10 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 		}
 	}
 
+#if !BC_ENABLE_LIBRARY
 	// Make sure to add one to the length if needed from lack of clamping.
 	n->len += (BC_DIGIT_CLAMP == 0 && n->num[n->len] != 0);
+#endif // !BC_ENABLE_LIBRARY
 }
 
 /**
