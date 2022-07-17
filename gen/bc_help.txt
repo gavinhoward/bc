@@ -212,6 +212,8 @@ Environment variables:
       If an integer and non-zero, display the copyright banner in interactive
       mode.
 
+      If zero, disable the banner.
+
       Overrides the default, which is %s print the banner.
 
   BC_SIGINT_RESET
@@ -219,17 +221,23 @@ Environment variables:
       If an integer and non-zero, reset on SIGINT, rather than exit, when in
       interactive mode.
 
+      If zero, do not reset on SIGINT in all cases, but exit instead.
+
       Overrides the default, which is %s.
 
   BC_TTY_MODE
 
       If an integer and non-zero, enable TTY mode when it is available.
 
+      If zero, disable TTY mode in all cases.
+
       Overrides the default, which is TTY mode %s.
 
   BC_PROMPT
 
       If an integer and non-zero, enable prompt when TTY mode is possible.
+
+      If zero, disable prompt in all cases.
 
       Overrides the default, which is prompt %s.
 

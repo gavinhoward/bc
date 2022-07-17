@@ -52,15 +52,9 @@ but there are differences. Such differences will be noted in this document.
 After parsing and handling options, this bc(1) reads any files given on the
 command line and executes them before reading from **stdin**.
 
-{{ A H N HN }}
 This bc(1) is a drop-in replacement for *any* bc(1), including (and
 especially) the GNU bc(1). It also has many extensions and extra features beyond
 other implementations.
-{{ end }}
-{{ E EH EN EHN }}
-This bc(1) is a drop-in replacement for *any* bc(1), including (and especially)
-the GNU bc(1).
-{{ end }}
 
 **Note**: If running this bc(1) on *any* script meant for another bc(1) gives a
 parse error, it is probably because a word this bc(1) reserves as a keyword is
@@ -203,7 +197,7 @@ The following are the options that bc(1) accepts.
 
 **-h**, **-\-help**
 
-:   Prints a usage message and quits.
+:   Prints a usage message and exits.
 
 **-i**, **-\-interactive**
 
@@ -337,7 +331,7 @@ The following are the options that bc(1) accepts.
 
 **-v**, **-V**, **-\-version**
 
-:   Print the version information (copyright header) and exit.
+:   Print the version information (copyright header) and exits.
 
     This is a **non-portable extension**.
 
@@ -2221,7 +2215,8 @@ be hit.
 
 # ENVIRONMENT VARIABLES
 
-bc(1) recognizes the following environment variables:
+As **non-portable extensions**, bc(1) recognizes the following environment
+variables:
 
 **POSIXLY_CORRECT**
 

@@ -91,11 +91,11 @@ The following are the options that dc(1) accepts.
 
 **-h**, **-\-help**
 
-:   Prints a usage message and quits.
+:   Prints a usage message and exits.
 
 **-v**, **-V**, **-\-version**
 
-:   Print the version information (copyright header) and exit.
+:   Print the version information (copyright header) and exits.
 
 **-i**, **-\-interactive**
 
@@ -1219,7 +1219,8 @@ be hit.
 
 # ENVIRONMENT VARIABLES
 
-dc(1) recognizes the following environment variables:
+As **non-portable extensions**, dc(1) recognizes the following environment
+variables:
 
 **DC_ENV_ARGS**
 
