@@ -607,6 +607,18 @@ environment variables to override them, is below:
 |                 | for dc should be on  |              |                      |
 |                 | in tty mode.         |              |                      |
 | --------------- | -------------------- | ------------ | -------------------- |
+| bc.expr_exit    | Whether to exit bc   |            1 | BC_EXPR_EXIT         |
+|                 | if an expression or  |              |                      |
+|                 | expression file is   |              |                      |
+|                 | given with the -e or |              |                      |
+|                 | -f options.          |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| dc.expr_exit    | Whether to exit dc   |            1 | DC_EXPR_EXIT         |
+|                 | if an expression or  |              |                      |
+|                 | expression file is   |              |                      |
+|                 | given with the -e or |              |                      |
+|                 | -f options.          |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
 ```
 
 These settings are not meant to be changed on a whim. They are meant to ensure
