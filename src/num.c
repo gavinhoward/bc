@@ -2433,15 +2433,15 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 
 				// Add the digit to the limb. This takes care of overflow from
 				// lack of clamping.
-				dig = n->num[idx] + ((BcBigDig) c) * pow;
+				dig = ((BcBigDig) n->num[idx]) + ((BcBigDig) c) * pow;
 #if !BC_ENABLE_LIBRARY
 				if (dig >= BC_BASE_POW)
 				{
 					// We cannot go over BC_BASE_POW with clamping.
 					assert(BC_DIGIT_CLAMP == 0);
 
-					n->num[idx + 1] = dig / BC_BASE_POW;
-					n->num[idx] = dig % BC_BASE_POW;
+					n->num[idx + 1] = ((BcDig) dig) / BC_BASE_POW;
+					n->num[idx] = ((BcDig) dig) % BC_BASE_POW;
 				}
 				else
 #endif // !BC_ENABLE_LIBRARY
