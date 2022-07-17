@@ -92,11 +92,11 @@ unset DC_LINE_LENGTH
 
 # Set stuff for the correct calculator.
 if [ "$d" = "bc" ]; then
-	options="-lq"
+	options="-lqc"
 	var="BC_LINE_LENGTH"
 	halt="halt"
 else
-	options=""
+	options="-c"
 	var="DC_LINE_LENGTH"
 	halt="q"
 fi

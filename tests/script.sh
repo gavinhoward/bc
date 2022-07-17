@@ -88,15 +88,15 @@ fi
 if [ "$d" = "bc" ]; then
 
 	if [ "$run_stack_tests" -ne 0 ]; then
-		options="-lgq"
+		options="-lgqC"
 	else
-		options="-lq"
+		options="-lqC"
 	fi
 
 	halt="halt"
 
 else
-	options="-x"
+	options="-xC"
 	halt="q"
 fi
 
