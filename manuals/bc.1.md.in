@@ -69,6 +69,23 @@ that is a bug and should be reported. See the **BUGS** section.
 
 The following are the options that bc(1) accepts.
 
+**-C**, **-\-no-digit-clamp**
+
+:   Disables clamping of digits greater than or equal to the current **ibase**
+    when parsing numbers.
+
+    This means that the value added to a number from a digit is always that
+    digit's value multiplied by the value of ibase raised to the power of the
+    digit's position, which starts from 0 at the least significant digit.
+
+    If this and/or the **-c** or **-\-digit-clamp** options are given multiple
+    times, the last one given is used.
+
+    This option overrides the **BC_DIGIT_CLAMP** environment variable (see the
+    **ENVIRONMENT VARIABLES** section).
+
+    This is a **non-portable extension**.
+
 **-c**, **-\-digit-clamp**
 
 :   Enables clamping of digits greater than or equal to the current **ibase**
@@ -86,21 +103,49 @@ The following are the options that bc(1) accepts.
     **ENVIRONMENT VARIABLES** section).
 
     This is a **non-portable extension**.
+{{ A H N HN }}
 
-**-c**, **-\-digit-clamp**
+**-E** *seed*, **-\-seed**=*seed*
 
-:   Enables clamping of digits greater than or equal to the current **ibase**
-    when parsing numbers.
+:   Sets the builtin variable **seed** to the value *seed* assuming that *seed*
+    is in base 10. It is a fatal error if *seed* is not a valid number.
 
-    This means that the value added to a number from a digit is always that
-    digit's value multiplied by the value of ibase raised to the power of the
-    digit's position, which starts from 0 at the least significant digit.
+    If multiple instances of this option are given, the last is used.
 
-    If this and/or the **-C** or **-\-no-digit-clamp** options are given
-    multiple times, the last one given is used.
+    This is a **non-portable extension**.
+{{ end }}
 
-    This option overrides the **BC_DIGIT_CLAMP** environment variable (see the
-    **ENVIRONMENT VARIABLES** section).
+**-e** *expr*, **-\-expression**=*expr*
+
+:   Evaluates *expr*. If multiple expressions are given, they are evaluated in
+    order. If files are given as well (see the **-f** and **-\-file** options),
+    the expressions and files are evaluated in the order given. This means that
+    if a file is given before an expression, the file is read in and evaluated
+    first.
+
+    If this option is given on the command-line (i.e., not in **BC_ENV_ARGS**,
+    see the **ENVIRONMENT VARIABLES** section), then after processing all
+    expressions and files, bc(1) will exit, unless **-** (**stdin**) was given
+    as an argument at least once to **-f** or **-\-file**, whether on the
+    command-line or in **BC_ENV_ARGS**. However, if any other **-e**,
+    **-\-expression**, **-f**, or **-\-file** arguments are given after **-f-**
+    or equivalent is given, bc(1) will give a fatal error and exit.
+
+    This is a **non-portable extension**.
+
+**-f** *file*, **-\-file**=*file*
+
+:   Reads in *file* and evaluates it, line by line, as though it were read
+    through **stdin**. If expressions are also given (see the **-e** and
+    **-\-expression** options), the expressions are evaluated in the order
+    given.
+
+    If this option is given on the command-line (i.e., not in **BC_ENV_ARGS**,
+    see the **ENVIRONMENT VARIABLES** section), then after processing all
+    expressions and files, bc(1) will exit, unless **-** (**stdin**) was given
+    as an argument at least once to **-f** or **-\-file**. However, if any other
+    **-e**, **-\-expression**, **-f**, or **-\-file** arguments are given after
+    **-f-** or equivalent is given, bc(1) will give a fatal error and exit.
 
     This is a **non-portable extension**.
 
@@ -199,6 +244,15 @@ The following are the options that bc(1) accepts.
 
 :   Prints a usage message and exits.
 
+**-I** *ibase*, **-\-ibase**=*ibase*
+
+:   Sets the builtin variable **ibase** to the value *ibase* assuming that
+    *ibase* is in base 10. It is a fatal error if *ibase* is not a valid number.
+
+    If multiple instances of this option are given, the last is used.
+
+    This is a **non-portable extension**.
+
 **-i**, **-\-interactive**
 
 :   Forces interactive mode. (See the **INTERACTIVE MODE** section.)
@@ -229,6 +283,15 @@ The following are the options that bc(1) accepts.
     To learn what is in the library, see the **LIBRARY** section.
 {{ end }}
 
+**-O** *obase*, **-\-obase**=*obase*
+
+:   Sets the builtin variable **obase** to the value *obase* assuming that
+    *obase* is in base 10. It is a fatal error if *obase* is not a valid number.
+
+    If multiple instances of this option are given, the last is used.
+
+    This is a **non-portable extension**.
+
 **-P**, **-\-no-prompt**
 
 :   Disables the prompt in TTY mode. (The prompt is only enabled in TTY mode.
@@ -239,6 +302,19 @@ The following are the options that bc(1) accepts.
 
     These options override the **BC_PROMPT** and **BC_TTY_MODE** environment
     variables (see the **ENVIRONMENT VARIABLES** section).
+
+    This is a **non-portable extension**.
+
+**-q**, **-\-quiet**
+
+:   This option is for compatibility with the GNU bc(1)
+    (https://www.gnu.org/software/bc/); it is a no-op. Without this option, GNU
+    bc(1) prints a copyright header. This bc(1) only prints the copyright header
+    if one or more of the **-v**, **-V**, or **-\-version** options are given
+    unless the **BC_BANNER** environment variable is set and contains a non-zero
+    integer or if this bc(1) was built with the header displayed by default. If
+    *any* of that is the case, then this option *does* prevent bc(1) from
+    printing the header.
 
     This is a **non-portable extension**.
 
@@ -308,16 +384,12 @@ The following are the options that bc(1) accepts.
     a fatal error to attempt to redefine words that this bc(1) does not reserve
     as keywords.
 
-**-q**, **-\-quiet**
+**-S** *scale*, **-\-scale**=*scale*
 
-:   This option is for compatibility with the GNU bc(1)
-    (https://www.gnu.org/software/bc/); it is a no-op. Without this option, GNU
-    bc(1) prints a copyright header. This bc(1) only prints the copyright header
-    if one or more of the **-v**, **-V**, or **-\-version** options are given
-    unless the **BC_BANNER** environment variable is set and contains a non-zero
-    integer or if this bc(1) was built with the header displayed by default. If
-    *any* of that is the case, then this option *does* prevent bc(1) from
-    printing the header.
+:   Sets the builtin variable **scale** to the value *scale* assuming that
+    *scale* is in base 10. It is a fatal error if *scale* is not a valid number.
+
+    If multiple instances of this option are given, the last is used.
 
     This is a **non-portable extension**.
 
@@ -352,76 +424,6 @@ The following are the options that bc(1) accepts.
     the **LIBRARY** section).
 
     This is a **non-portable extension**.
-
-**-e** *expr*, **-\-expression**=*expr*
-
-:   Evaluates *expr*. If multiple expressions are given, they are evaluated in
-    order. If files are given as well (see below), the expressions and files are
-    evaluated in the order given. This means that if a file is given before an
-    expression, the file is read in and evaluated first.
-
-    If this option is given on the command-line (i.e., not in **BC_ENV_ARGS**,
-    see the **ENVIRONMENT VARIABLES** section), then after processing all
-    expressions and files, bc(1) will exit, unless **-** (**stdin**) was given
-    as an argument at least once to **-f** or **-\-file**, whether on the
-    command-line or in **BC_ENV_ARGS**. However, if any other **-e**,
-    **-\-expression**, **-f**, or **-\-file** arguments are given after **-f-**
-    or equivalent is given, bc(1) will give a fatal error and exit.
-
-    This is a **non-portable extension**.
-
-**-f** *file*, **-\-file**=*file*
-
-:   Reads in *file* and evaluates it, line by line, as though it were read
-    through **stdin**. If expressions are also given (see above), the
-    expressions are evaluated in the order given.
-
-    If this option is given on the command-line (i.e., not in **BC_ENV_ARGS**,
-    see the **ENVIRONMENT VARIABLES** section), then after processing all
-    expressions and files, bc(1) will exit, unless **-** (**stdin**) was given
-    as an argument at least once to **-f** or **-\-file**. However, if any other
-    **-e**, **-\-expression**, **-f**, or **-\-file** arguments are given after
-    **-f-** or equivalent is given, bc(1) will give a fatal error and exit.
-
-    This is a **non-portable extension**.
-
-**-I** *ibase*, **-\-ibase**=*ibase*
-
-:   Sets the builtin variable **ibase** to the value *ibase* assuming that
-    *ibase* is in base 10. It is a fatal error if *ibase* is not a valid number.
-
-    If multiple instances of this option are given, the last is used.
-
-    This is a **non-portable extension**.
-
-**-O** *obase*, **-\-obase**=*obase*
-
-:   Sets the builtin variable **obase** to the value *obase* assuming that
-    *obase* is in base 10. It is a fatal error if *obase* is not a valid number.
-
-    If multiple instances of this option are given, the last is used.
-
-    This is a **non-portable extension**.
-
-**-S** *scale*, **-\-scale**=*scale*
-
-:   Sets the builtin variable **scale** to the value *scale* assuming that
-    *scale* is in base 10. It is a fatal error if *scale* is not a valid number.
-
-    If multiple instances of this option are given, the last is used.
-
-    This is a **non-portable extension**.
-{{ A H N HN }}
-
-**-E** *seed*, **-\-seed**=*seed*
-
-:   Sets the builtin variable **seed** to the value *seed* assuming that *seed*
-    is in base 10. It is a fatal error if *seed* is not a valid number.
-
-    If multiple instances of this option are given, the last is used.
-
-    This is a **non-portable extension**.
-{{ end }}
 
 All long options are **non-portable extensions**.
 
