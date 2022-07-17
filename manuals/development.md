@@ -2530,6 +2530,11 @@ weird.dc
 
 :   A miscellaneous test.
 
+no_clamp.dc
+
+:   A test to ensure `dc` has the same behavior as the BSD `dc` with digi
+    clamping off when parsing numbers.
+
 ### Error Tests
 
 One of the most useful parts of the `bc` test suite, in my opinion, is the heavy

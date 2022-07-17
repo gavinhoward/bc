@@ -35,10 +35,10 @@ dc - arbitrary-precision decimal reverse-Polish notation calculator
 # SYNOPSIS
 
 {{ A H N HN }}
-**dc** [**-hiPRvVx**] [**-\-version**] [**-\-help**] [**-\-interactive**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-extended-register**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...] [**-I** *ibase*] [**-\-ibase**=*ibase*] [**-O** *obase*] [**-\-obase**=*obase*] [**-S** *scale*] [**-\-scale**=*scale*] [**-E** *seed*] [**-\-seed**=*seed*]
+**dc** [**-cChiPRvVx**] [**-\-version**] [**-\-help**] [**-\-digit-clamp**] [**-\-no-digit-clamp**] [**-\-interactive**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-extended-register**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...] [**-I** *ibase*] [**-\-ibase**=*ibase*] [**-O** *obase*] [**-\-obase**=*obase*] [**-S** *scale*] [**-\-scale**=*scale*] [**-E** *seed*] [**-\-seed**=*seed*]
 {{ end }}
 {{ E EH EN EHN }}
-**dc** [**-hiPRvVx**] [**-\-version**] [**-\-help**] [**-\-interactive**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-extended-register**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...]
+**dc** [**-cChiPRvVx**] [**-\-version**] [**-\-help**] [**-\-digit-clamp**] [**-\-no-digit-clamp**] [**-\-interactive**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-extended-register**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...]
 {{ end }}
 
 # DESCRIPTION
@@ -59,6 +59,35 @@ this dc(1) will always start with a **scale** of **10**.
 # OPTIONS
 
 The following are the options that dc(1) accepts.
+
+**-c**, **-\-digit-clamp**
+
+:   Enables clamping of digits greater than or equal to the current **ibase**
+    when parsing numbers.
+
+    This means that digits that the value added to a number from a digit that is
+    greater than or equal to the ibase is the value of ibase minus 1 all
+    multiplied by the value of ibase raised to the power of the digit's
+    position, which starts from 0 at the least significant digit.
+
+    If this and/or the **-C** or **-\-no-digit-clamp** options are given
+    multiple times, the last one given is used.
+
+    This is a **non-portable extension**.
+
+**-c**, **-\-digit-clamp**
+
+:   Enables clamping of digits greater than or equal to the current **ibase**
+    when parsing numbers.
+
+    This means that the value added to a number from a digit is always that
+    digit's value multiplied by the value of ibase raised to the power of the
+    digit's position, which starts from 0 at the least significant digit.
+
+    If this and/or the **-C** or **-\-no-digit-clamp** options are given
+    multiple times, the last one given is used.
+
+    This is a **non-portable extension**.
 
 **-h**, **-\-help**
 
@@ -1275,6 +1304,18 @@ dc(1) recognizes the following environment variables:
     variable exists and contains an integer, a non-zero value makes dc(1) exit
     after executing the expressions and expression files, and a zero value makes
     dc(1) not exit.
+
+    This environment variable overrides the default, which can be queried with
+    the **-h** or **-\-help** options.
+
+**DC_DIGIT_CLAMP**
+
+:   When parsing numbers and if this environment variable exists and contains an
+    integer, a non-zero value makes dc(1) clamp digits that are greater than or
+    equal to the current **ibase** so that all such digits are considered equal
+    to the **ibase** minus 1, and a zero value disables such clamping so that
+    those digits are always equal to their value, which is multiplied by the
+    power of the **ibase**.
 
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.

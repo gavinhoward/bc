@@ -35,10 +35,10 @@ bc - arbitrary-precision decimal arithmetic language and calculator
 # SYNOPSIS
 
 {{ A H N HN }}
-**bc** [**-ghilPqRsvVw**] [**-\-global-stacks**] [**-\-help**] [**-\-interactive**] [**-\-mathlib**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-quiet**] [**-\-standard**] [**-\-warn**] [**-\-version**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...] [**-I** *ibase*] [**-\-ibase**=*ibase*] [**-O** *obase*] [**-\-obase**=*obase*] [**-S** *scale*] [**-\-scale**=*scale*] [**-E** *seed*] [**-\-seed**=*seed*]
+**bc** [**-cCghilPqRsvVw**] [**-\-digit-clamp**] [**-\-no-digit-clamp**] [**-\-global-stacks**] [**-\-help**] [**-\-interactive**] [**-\-mathlib**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-quiet**] [**-\-standard**] [**-\-warn**] [**-\-version**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...] [**-I** *ibase*] [**-\-ibase**=*ibase*] [**-O** *obase*] [**-\-obase**=*obase*] [**-S** *scale*] [**-\-scale**=*scale*] [**-E** *seed*] [**-\-seed**=*seed*]
 {{ end }}
 {{ E EH EN EHN }}
-**bc** [**-ghilPqRsvVw**] [**-\-global-stacks**] [**-\-help**] [**-\-interactive**] [**-\-mathlib**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-quiet**] [**-\-standard**] [**-\-warn**] [**-\-version**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...]
+**bc** [**-cCghilPqRsvVw**] [**-\-digit-clamp**] [**-\-no-digit-clamp**] [**-\-global-stacks**] [**-\-help**] [**-\-interactive**] [**-\-mathlib**] [**-\-no-prompt**] [**-\-no-read-prompt**] [**-\-quiet**] [**-\-standard**] [**-\-warn**] [**-\-version**] [**-e** *expr*] [**-\-expression**=*expr*...] [**-f** *file*...] [**-\-file**=*file*...] [*file*...]
 {{ end }}
 
 # DESCRIPTION
@@ -74,6 +74,41 @@ that is a bug and should be reported. See the **BUGS** section.
 # OPTIONS
 
 The following are the options that bc(1) accepts.
+
+**-c**, **-\-digit-clamp**
+
+:   Enables clamping of digits greater than or equal to the current **ibase**
+    when parsing numbers.
+
+    This means that digits that the value added to a number from a digit that is
+    greater than or equal to the ibase is the value of ibase minus 1 all
+    multiplied by the value of ibase raised to the power of the digit's
+    position, which starts from 0 at the least significant digit.
+
+    If this and/or the **-C** or **-\-no-digit-clamp** options are given
+    multiple times, the last one given is used.
+
+    This option overrides the **BC_DIGIT_CLAMP** environment variable (see the
+    **ENVIRONMENT VARIABLES** section).
+
+    This is a **non-portable extension**.
+
+**-c**, **-\-digit-clamp**
+
+:   Enables clamping of digits greater than or equal to the current **ibase**
+    when parsing numbers.
+
+    This means that the value added to a number from a digit is always that
+    digit's value multiplied by the value of ibase raised to the power of the
+    digit's position, which starts from 0 at the least significant digit.
+
+    If this and/or the **-C** or **-\-no-digit-clamp** options are given
+    multiple times, the last one given is used.
+
+    This option overrides the **BC_DIGIT_CLAMP** environment variable (see the
+    **ENVIRONMENT VARIABLES** section).
+
+    This is a **non-portable extension**.
 
 **-g**, **-\-global-stacks**
 
@@ -2288,6 +2323,18 @@ bc(1) recognizes the following environment variables:
     variable exists and contains an integer, a non-zero value makes bc(1) exit
     after executing the expressions and expression files, and a zero value makes
     bc(1) not exit.
+
+    This environment variable overrides the default, which can be queried with
+    the **-h** or **-\-help** options.
+
+**BC_DIGIT_CLAMP**
+
+:   When parsing numbers and if this environment variable exists and contains an
+    integer, a non-zero value makes bc(1) clamp digits that are greater than or
+    equal to the current **ibase** so that all such digits are considered equal
+    to the **ibase** minus 1, and a zero value disables such clamping so that
+    those digits are always equal to their value, which is multiplied by the
+    power of the **ibase**.
 
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.

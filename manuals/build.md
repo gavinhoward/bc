@@ -619,6 +619,20 @@ environment variables to override them, is below:
 |                 | given with the -e or |              |                      |
 |                 | -f options.          |              |                      |
 | --------------- | -------------------- | ------------ | -------------------- |
+| bc.digit_clamp  | Whether to have bc   |            0 | BC_DIGIT_CLAMP       |
+|                 | clamp digits that    |              |                      |
+|                 | are greater than or  |              |                      |
+|                 | equal to the current |              |                      |
+|                 | ibase when parsing   |              |                      |
+|                 | numbers.             |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
+| dc.digit_clamp  | Whether to have dc   |            0 | DC_DIGIT_CLAMP       |
+|                 | clamp digits that    |              |                      |
+|                 | are greater than or  |              |                      |
+|                 | equal to the current |              |                      |
+|                 | ibase when parsing   |              |                      |
+|                 | numbers.             |              |                      |
+| --------------- | -------------------- | ------------ | -------------------- |
 ```
 
 These settings are not meant to be changed on a whim. They are meant to ensure
