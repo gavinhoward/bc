@@ -53,7 +53,7 @@ usage() {
 	printf '    %s -h\n' "$script"
 	printf '    %s --help\n' "$script"
 	printf '    %s [-a|-bD|-dB|-c] [-CeEfgGHlmMNrtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\\\n' "$script"
-	printf '       [-s SETTING] [-S SETTING]\n'
+	printf '       [-s SETTING] [-S SETTING] [-p TYPE]\n'
 	printf '    %s \\\n' "$script"
 	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]  \\\n'
 	printf '       [--force --debug --disable-extra-math --disable-generated-tests]      \\\n'
@@ -62,6 +62,7 @@ usage() {
 	printf '       [--install-all-locales] [--opt=OPT_LEVEL]                             \\\n'
 	printf '       [--karatsuba-len=KARATSUBA_LEN]                                       \\\n'
 	printf '       [--set-default-on=SETTING] [--set-default-off=SETTING]                \\\n'
+	printf '       [--predefined-build-type=TYPE]                                        \\\n'
 	printf '       [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]       \\\n'
 	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]\n'
 
@@ -136,6 +137,15 @@ usage() {
 	printf '        Set the optimization level. This can also be included in the CFLAGS,\n'
 	printf '        but it is provided, so maintainers can build optimized debug builds.\n'
 	printf '        This is passed through to the compiler, so it must be supported.\n'
+	printf '    -p TYPE, --predefined-build-type=TYPE\n'
+	printf '        Sets a given predefined build type with specific defaults. This is for\n'
+	printf '        easy setting of predefined builds. For example, to get a build that\n'
+	printf '        acts like the GNU bc by default, TYPE should be "GNU" (without the\n'
+	printf '        quotes) This option *must* come before any others that might change the\n'
+	printf '        build options. Currently supported values for TYPE include: "BSD" (for\n'
+	printf '        matching the BSD bc and BSD dc), "GNU" (for matching the GNU bc and\n'
+	printf '        dc), and "GDH" (for the preferred build of the author, Gavin D. Howard).\n'
+	printf '        This will also automatically enable a release build.\n'
 	printf '    -r, --enable-readline\n'
 	printf '        Enable the use of libreadline/readline. This is meant for those users\n'
 	printf '        that want vi-like or Emacs-like behavior in history.This option is\n'
@@ -665,6 +675,125 @@ set_default() {
 	esac
 }
 
+predefined_build() {
+
+	_predefined_build_type="$1"
+	shift
+
+	# The reason that the variables that are being set do not have the same
+	# non-collision avoidance that the other variables do is that we *do* want
+	# the settings of these variables to leak out of the function. They adjust
+	# the settings outside of the function.
+	case "$_predefined_build_type" in
+
+		BSD)
+			bc_only=0
+			dc_only=0
+			coverage=0
+			debug=0
+			optimization="3"
+			hist=1
+			editline=1
+			readline=0
+			extra_math=1
+			generate_tests=0
+			install_manpages=0
+			nls=1
+			force=0
+			strip_bin=1
+			all_locales=0
+			library=0
+			fuzz=0
+			time_tests=0
+			vg=0
+			memcheck=0
+			clean=1
+			bc_default_banner=0
+			bc_default_sigint_reset=1
+			dc_default_sigint_reset=1
+			bc_default_tty_mode=1
+			dc_default_tty_mode=0
+			bc_default_prompt=""
+			dc_default_prompt=""
+			bc_default_expr_exit=1
+			dc_default_expr_exit=1
+			bc_default_digit_clamp=0
+			dc_default_digit_clamp=0;;
+
+		GNU)
+			bc_only=0
+			dc_only=0
+			coverage=0
+			debug=0
+			optimization="3"
+			hist=1
+			editline=0
+			readline=0
+			extra_math=1
+			generate_tests=1
+			install_manpages=1
+			nls=1
+			force=0
+			strip_bin=1
+			all_locales=0
+			library=0
+			fuzz=0
+			time_tests=0
+			vg=0
+			memcheck=0
+			clean=1
+			bc_default_banner=1
+			bc_default_sigint_reset=1
+			dc_default_sigint_reset=0
+			bc_default_tty_mode=1
+			dc_default_tty_mode=0
+			bc_default_prompt=""
+			dc_default_prompt=""
+			bc_default_expr_exit=1
+			dc_default_expr_exit=1
+			bc_default_digit_clamp=1
+			dc_default_digit_clamp=0;;
+
+		GDH)
+			CFLAGS="-flto -Weverything -Wno-padded -Wno-disabled-macro-expansion -Wno-gnu-label-as-value"
+			bc_only=0
+			dc_only=0
+			coverage=0
+			debug=0
+			optimization="3"
+			hist=1
+			editline=0
+			readline=0
+			extra_math=1
+			generate_tests=0
+			install_manpages=0
+			nls=0
+			force=0
+			strip_bin=1
+			all_locales=0
+			library=0
+			fuzz=0
+			time_tests=0
+			vg=0
+			memcheck=0
+			clean=1
+			bc_default_banner=1
+			bc_default_sigint_reset=1
+			dc_default_sigint_reset=1
+			bc_default_tty_mode=1
+			dc_default_tty_mode=1
+			bc_default_prompt=""
+			dc_default_prompt=""
+			bc_default_expr_exit=0
+			dc_default_expr_exit=0
+			bc_default_digit_clamp=1
+			dc_default_digit_clamp=1;;
+
+		?|'') usage "Invalid user build: \"$_predefined_build_type\". Accepted types are BSD, GNU, and GDH.";;
+
+	esac
+}
+
 # Generates a list of script test targets that will be used as prerequisites for
 # other targets.
 #
@@ -732,7 +861,7 @@ dc_default_digit_clamp=0
 # getopts is a POSIX utility, but it cannot handle long options. Thus, the
 # handling of long options is done by hand, and that's the reason that short and
 # long options cannot be mixed.
-while getopts "abBcdDeEfgGhHk:lMmNO:rS:s:tTvz-" opt; do
+while getopts "abBcdDeEfgGhHk:lMmNO:p:rS:s:tTvz-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -755,6 +884,7 @@ while getopts "abBcdDeEfgGhHk:lMmNO:rS:s:tTvz-" opt; do
 		M) install_manpages=0 ;;
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
+		p) predefined_build "$OPTARG" ;;
 		r) readline=1 ;;
 		S) set_default 0 "$OPTARG" ;;
 		s) set_default 1 "$OPTARG" ;;
@@ -871,6 +1001,13 @@ while getopts "abBcdDeEfgGhHk:lMmNO:rS:s:tTvz-" opt; do
 						usage "No argument given for '--$arg' option"
 					fi
 					set_default 0 "$1"
+					shift ;;
+				predefined-build-type=?*) predefined_build "$LONG_OPTARG" ;;
+				predefined-build-type)
+					if [ "$#" -lt 2 ]; then
+						usage "No argument given for '--$arg' option"
+					fi
+					predefined_build "$1"
 					shift ;;
 				disable-bc) dc_only=1 ;;
 				disable-dc) bc_only=1 ;;
