@@ -175,14 +175,23 @@ build() {
 
 	header "$_build_header"
 
+	set +e
+
 	# Capture and print warnings.
 	do_make > /dev/null 2> "./.test.txt"
+	err=$?
+
+	set -e
 
 	if [ -s "./.test.txt" ]; then
 		printf '%s generated warning(s):\n' "$_build_CC"
 		printf '\n'
 		cat "./.test.txt"
 		exit 1
+	fi
+
+	if [ "$err" -ne 0 ]; then
+		exit "$err"
 	fi
 }
 
