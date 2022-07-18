@@ -43,7 +43,7 @@ usage() {
 
 		_usage_val=1
 
-		printf "%s\n\n" "$1"
+		printf '%s\n\n' "$1"
 
 	else
 		_usage_val=0
@@ -63,7 +63,12 @@ usage() {
 	printf '       [--karatsuba-len=KARATSUBA_LEN]                                       \\\n'
 	printf '       [--set-default-on=SETTING] [--set-default-off=SETTING]                \\\n'
 	printf '       [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]       \\\n'
-	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]             \\\n'
+	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]\n'
+
+	if [ "$_usage_val" -ne 0 ]; then
+		exit
+	fi
+
 	printf '\n'
 	printf '    -a, --library\n'
 	printf '        Build the libbcl instead of the programs. This is meant to be used with\n'
