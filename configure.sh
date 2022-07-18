@@ -1786,7 +1786,7 @@ printf '\n'
 printf 'BC_ENABLE_LIBRARY=%s\n\n' "$library"
 printf 'BC_ENABLE_HISTORY=%s\n' "$hist"
 printf 'BC_ENABLE_EXTRA_MATH=%s\n' "$extra_math"
-printf 'BC_ENABLE_NLS=%s\n' "$nls"
+printf 'BC_ENABLE_NLS=%s\n\n' "$nls"
 printf 'BC_ENABLE_AFL=%s\n' "$fuzz"
 printf '\n'
 printf 'BC_NUM_KARATSUBA_LEN=%s\n' "$karatsuba_len"
