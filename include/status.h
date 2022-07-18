@@ -102,9 +102,39 @@
 #define DC_ENABLED (1)
 #endif // DC_ENABLED
 
+#ifndef BC_ENABLE_EXTRA_MATH
+#define BC_ENABLE_EXTRA_MATH (1)
+#endif // BC_ENABLE_EXTRA_MATH
+
 #ifndef BC_ENABLE_LIBRARY
 #define BC_ENABLE_LIBRARY (0)
 #endif // BC_ENABLE_LIBRARY
+
+#ifndef BC_ENABLE_HISTORY
+#define BC_ENABLE_HISTORY (1)
+#endif // BC_ENABLE_HISTORY
+
+#ifndef BC_ENABLE_EDITLINE
+#define BC_ENABLE_EDITLINE (0)
+#endif // BC_ENABLE_EDITLINE
+
+#ifndef BC_ENABLE_READLINE
+#define BC_ENABLE_READLINE (0)
+#endif // BC_ENABLE_READLINE
+
+#ifndef BC_ENABLE_NLS
+#define BC_ENABLE_NLS (0)
+#endif // BC_ENABLE_NLS
+
+#if BC_ENABLE_EDITLINE && BC_ENABLE_READLINE
+#error Must enable only one of editline or readline, not both.
+#endif // BC_ENABLE_EDITLINE && BC_ENABLE_READLINE
+
+#if BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
+#define BC_ENABLE_LINE_LIB (1)
+#else // BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
+#define BC_ENABLE_LINE_LIB (0)
+#endif // BC_ENABLE_EDITLINE || BC_ENABLE_READLINE
 
 // This is error checking for fuzz builds.
 #if BC_ENABLE_AFL
@@ -173,7 +203,19 @@
 
 #else // __STDC_VERSION__
 
+#ifdef __clang__
+#if __has_attribute(noreturn)
+#define BC_NORETURN __attribute((noreturn))
+#else // __has_attribute(noreturn)
 #define BC_NORETURN
+#endif // __has_attribute(noreturn)
+
+#else // __clang__
+
+#define BC_NORETURN
+
+#endif // __clang__
+
 #define BC_MUST_RETURN
 #define BC_C11 (0)
 

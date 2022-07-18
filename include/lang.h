@@ -38,13 +38,14 @@
 
 #include <stdbool.h>
 
-#if BC_C11
-#include <assert.h>
-#endif // BC_C11
-
+// These have to come first to silence a warning on BC_C11 below.
 #include <status.h>
 #include <vector.h>
 #include <num.h>
+
+#if BC_C11
+#include <assert.h>
+#endif // BC_C11
 
 /// The instructions for bytecode.
 typedef enum BcInst

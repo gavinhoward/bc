@@ -1821,7 +1821,77 @@ bc_parse_stmt(BcParse* p)
 			break;
 		}
 
-		default:
+		case BC_LEX_EOF:
+		case BC_LEX_INVALID:
+		case BC_LEX_NEG:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_OP_TRUNC:
+#endif // BC_ENABLE_EXTRA_MATH
+		case BC_LEX_OP_POWER:
+		case BC_LEX_OP_MULTIPLY:
+		case BC_LEX_OP_DIVIDE:
+		case BC_LEX_OP_MODULUS:
+		case BC_LEX_OP_PLUS:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_OP_PLACES:
+		case BC_LEX_OP_LSHIFT:
+		case BC_LEX_OP_RSHIFT:
+#endif // BC_ENABLE_EXTRA_MATH
+		case BC_LEX_OP_REL_EQ:
+		case BC_LEX_OP_REL_LE:
+		case BC_LEX_OP_REL_GE:
+		case BC_LEX_OP_REL_NE:
+		case BC_LEX_OP_REL_LT:
+		case BC_LEX_OP_REL_GT:
+		case BC_LEX_OP_BOOL_OR:
+		case BC_LEX_OP_BOOL_AND:
+		case BC_LEX_OP_ASSIGN_POWER:
+		case BC_LEX_OP_ASSIGN_MULTIPLY:
+		case BC_LEX_OP_ASSIGN_DIVIDE:
+		case BC_LEX_OP_ASSIGN_MODULUS:
+		case BC_LEX_OP_ASSIGN_PLUS:
+		case BC_LEX_OP_ASSIGN_MINUS:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_OP_ASSIGN_PLACES:
+		case BC_LEX_OP_ASSIGN_LSHIFT:
+		case BC_LEX_OP_ASSIGN_RSHIFT:
+#endif // BC_ENABLE_EXTRA_MATH
+		case BC_LEX_OP_ASSIGN:
+		case BC_LEX_NLINE:
+		case BC_LEX_WHITESPACE:
+		case BC_LEX_RPAREN:
+		case BC_LEX_LBRACKET:
+		case BC_LEX_COMMA:
+		case BC_LEX_RBRACKET:
+		case BC_LEX_LBRACE:
+		case BC_LEX_KW_AUTO:
+		case BC_LEX_KW_DEFINE:
+#if DC_ENABLED
+		case BC_LEX_EQ_NO_REG:
+		case BC_LEX_COLON:
+		case BC_LEX_EXECUTE:
+		case BC_LEX_PRINT_STACK:
+		case BC_LEX_CLEAR_STACK:
+		case BC_LEX_REG_STACK_LEVEL:
+		case BC_LEX_STACK_LEVEL:
+		case BC_LEX_DUPLICATE:
+		case BC_LEX_SWAP:
+		case BC_LEX_POP:
+		case BC_LEX_STORE_IBASE:
+		case BC_LEX_STORE_OBASE:
+		case BC_LEX_STORE_SCALE:
+#if BC_ENABLE_EXTRA_MATH
+		case BC_LEX_STORE_SEED:
+#endif // BC_ENABLE_EXTRA_MATH
+		case BC_LEX_LOAD:
+		case BC_LEX_LOAD_POP:
+		case BC_LEX_STORE_PUSH:
+		case BC_LEX_PRINT_POP:
+		case BC_LEX_NQUIT:
+		case BC_LEX_EXEC_STACK_LENGTH:
+		case BC_LEX_SCALE_FACTOR:
+		case BC_LEX_ARRAY_LENGTH:
+#endif // DC_ENABLED
 		{
 			bc_parse_err(p, BC_ERR_PARSE_TOKEN);
 		}
@@ -2317,7 +2387,57 @@ bc_parse_expr_err(BcParse* p, uint8_t flags, BcParseNext next)
 				break;
 			}
 
-			default:
+			case BC_LEX_EOF:
+			case BC_LEX_INVALID:
+			case BC_LEX_NEG:
+			case BC_LEX_NLINE:
+			case BC_LEX_WHITESPACE:
+			case BC_LEX_LBRACKET:
+			case BC_LEX_COMMA:
+			case BC_LEX_RBRACKET:
+			case BC_LEX_LBRACE:
+			case BC_LEX_SCOLON:
+			case BC_LEX_RBRACE:
+			case BC_LEX_KW_AUTO:
+			case BC_LEX_KW_BREAK:
+			case BC_LEX_KW_CONTINUE:
+			case BC_LEX_KW_DEFINE:
+			case BC_LEX_KW_FOR:
+			case BC_LEX_KW_IF:
+			case BC_LEX_KW_LIMITS:
+			case BC_LEX_KW_RETURN:
+			case BC_LEX_KW_WHILE:
+			case BC_LEX_KW_HALT:
+			case BC_LEX_KW_PRINT:
+			case BC_LEX_KW_QUIT:
+			case BC_LEX_KW_STREAM:
+			case BC_LEX_KW_ELSE:
+#if DC_ENABLED
+			case BC_LEX_EQ_NO_REG:
+			case BC_LEX_COLON:
+			case BC_LEX_EXECUTE:
+			case BC_LEX_PRINT_STACK:
+			case BC_LEX_CLEAR_STACK:
+			case BC_LEX_REG_STACK_LEVEL:
+			case BC_LEX_STACK_LEVEL:
+			case BC_LEX_DUPLICATE:
+			case BC_LEX_SWAP:
+			case BC_LEX_POP:
+			case BC_LEX_STORE_IBASE:
+			case BC_LEX_STORE_OBASE:
+			case BC_LEX_STORE_SCALE:
+#if BC_ENABLE_EXTRA_MATH
+			case BC_LEX_STORE_SEED:
+#endif // BC_ENABLE_EXTRA_MATH
+			case BC_LEX_LOAD:
+			case BC_LEX_LOAD_POP:
+			case BC_LEX_STORE_PUSH:
+			case BC_LEX_PRINT_POP:
+			case BC_LEX_NQUIT:
+			case BC_LEX_EXEC_STACK_LENGTH:
+			case BC_LEX_SCALE_FACTOR:
+			case BC_LEX_ARRAY_LENGTH:
+#endif // DC_ENABLED
 			{
 #ifndef NDEBUG
 				// We should never get here, even in debug builds.

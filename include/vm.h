@@ -78,10 +78,6 @@
 #endif
 
 // Set defaults.
-//
-#ifndef BC_ENABLE_NLS
-#define BC_ENABLE_NLS (0)
-#endif // BC_ENABLE_NLS
 
 #ifndef MAINEXEC
 #define MAINEXEC bc

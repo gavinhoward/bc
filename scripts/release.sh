@@ -608,16 +608,11 @@ build_set() {
 
 # Set some strict warning flags. Clang's -Weverything can be way too strict, so
 # we actually have to turn off some things.
-clang_flags="-Weverything -Wno-padded -Wno-switch-enum -Wno-format-nonliteral"
-clang_flags="$clang_flags -Wno-cast-align -Wno-missing-noreturn -Wno-disabled-macro-expansion"
-clang_flags="$clang_flags -Wno-unreachable-code -Wno-unreachable-code-return"
-clang_flags="$clang_flags -Wno-implicit-fallthrough -Wno-unused-macros -Wno-gnu-label-as-value"
-# -Wno-undef is here because Clang seems to think BC_C11 is undefined, when it's defined.
-clang_flags="$clang_flags -Wno-undef"
-gcc_flags="-Wno-maybe-uninitialized -Wno-clobbered"
+clang_flags="-Weverything -Wno-padded -Wno-gnu-label-as-value"
+gcc_flags=""
 
 # Common CFLAGS.
-cflags="-Wall -Wextra -Werror -pedantic -Wno-conditional-uninitialized"
+cflags="-Wall -Wextra -Werror -pedantic"
 
 # Common debug and release flags.
 debug="$cflags -fno-omit-frame-pointer"

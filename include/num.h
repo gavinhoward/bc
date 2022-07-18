@@ -47,10 +47,6 @@
 #include <vector.h>
 #include <bcl.h>
 
-#ifndef BC_ENABLE_EXTRA_MATH
-#define BC_ENABLE_EXTRA_MATH (1)
-#endif // BC_ENABLE_EXTRA_MATH
-
 /// Everything in bc is base 10..
 #define BC_BASE (10)
 
