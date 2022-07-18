@@ -617,7 +617,7 @@ build_set() {
 
 # Set some strict warning flags. Clang's -Weverything can be way too strict, so
 # we actually have to turn off some things.
-clang_flags="-Weverything -Wno-padded -Wno-gnu-label-as-value -Wno-disabled-macro-expansion"
+clang_flags="-Weverything -Wno-padded -Wno-gnu-label-as-value"
 gcc_flags=""
 
 # Common CFLAGS.

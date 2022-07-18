@@ -717,7 +717,11 @@ bc_vm_freeTemps(void);
  * Erases the flush argument if history does not exist because it does not
  * matter if history does not exist.
  */
-#define bc_vm_putchar(c, t) bc_vm_putchar(c)
+#define bc_vm_putchar(c, t) bc_vm_putchar_impl(c)
+
+#else // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
+
+#define bc_vm_putchar(c, t) bc_vm_putchar_impl(c, t)
 
 #endif // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
 

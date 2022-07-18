@@ -755,7 +755,7 @@ predefined_build() {
 			dc_default_digit_clamp=0;;
 
 		GDH)
-			CFLAGS="-flto -Weverything -Wno-padded -Wno-disabled-macro-expansion -Wno-gnu-label-as-value"
+			CFLAGS="-flto -Weverything -Wno-padded -Wno-gnu-label-as-value -Werror -pedantic"
 			bc_only=0
 			dc_only=0
 			coverage=0
