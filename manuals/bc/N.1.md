@@ -39,10 +39,9 @@ bc - arbitrary-precision decimal arithmetic language and calculator
 # DESCRIPTION
 
 bc(1) is an interactive processor for a language first standardized in 1991 by
-POSIX. (The current standard is at
-https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .) The
-language provides unlimited precision decimal arithmetic and is somewhat C-like,
-but there are differences. Such differences will be noted in this document.
+POSIX. (See the **STANDARDS** section.) The language provides unlimited
+precision decimal arithmetic and is somewhat C-like, but there are differences.
+Such differences will be noted in this document.
 
 After parsing and handling options, this bc(1) reads any files given on the
 command line and executes them before reading from **stdin**.
@@ -77,7 +76,8 @@ The following are the options that bc(1) accepts.
     times, the last one given is used.
 
     This option overrides the **BC_DIGIT_CLAMP** environment variable (see the
-    **ENVIRONMENT VARIABLES** section).
+    **ENVIRONMENT VARIABLES** section) and the default, which can be queried
+    with the **-h** or **-\-help** options.
 
     This is a **non-portable extension**.
 
@@ -95,7 +95,8 @@ The following are the options that bc(1) accepts.
     multiple times, the last one given is used.
 
     This option overrides the **BC_DIGIT_CLAMP** environment variable (see the
-    **ENVIRONMENT VARIABLES** section).
+    **ENVIRONMENT VARIABLES** section) and the default, which can be queried
+    with the **-h** or **-\-help** options.
 
     This is a **non-portable extension**.
 
@@ -333,10 +334,9 @@ The following are the options that bc(1) accepts.
     Keywords are *not* redefined when parsing the builtin math library (see the
     **LIBRARY** section).
 
-    It is a fatal error to redefine keywords mandated by the POSIX standard
-    (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html). It is
-    a fatal error to attempt to redefine words that this bc(1) does not reserve
-    as keywords.
+    It is a fatal error to redefine keywords mandated by the POSIX standard (see
+    the **STANDARDS** section). It is a fatal error to attempt to redefine words
+    that this bc(1) does not reserve as keywords.
 
 **-S** *scale*, **-\-scale**=*scale*
 
@@ -349,9 +349,8 @@ The following are the options that bc(1) accepts.
 
 **-s**, **-\-standard**
 
-:   Process exactly the language defined by the standard
-    (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html) and
-    error if any extensions are used.
+:   Process exactly the language defined by the standard (see the **STANDARDS**
+    section) and error if any extensions are used.
 
     This is a **non-portable extension**.
 
@@ -430,8 +429,7 @@ it is recommended that those scripts be changed to redirect **stderr** to
 # SYNTAX
 
 The syntax for bc(1) programs is mostly C-like, with some differences. This
-bc(1) follows the POSIX standard
-(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html), which is a
+bc(1) follows the POSIX standard (see the **STANDARDS** section), which is a
 much more thorough resource for the language this bc(1) accepts. This section is
 meant to be a summary and a listing of all the extensions to the standard.
 
@@ -629,14 +627,40 @@ use a non-seeded pseudo-random number generator.
 
 Numbers are strings made up of digits, uppercase letters, and at most **1**
 period for a radix. Numbers can have up to **BC_NUM_MAX** digits. Uppercase
-letters are equal to **9** + their position in the alphabet (i.e., **A** equals
-**10**, or **9+1**). If a digit or letter makes no sense with the current value
-of **ibase**, they are set to the value of the highest valid digit in **ibase**.
+letters are equal to **9** plus their position in the alphabet, starting from
+**1** (i.e., **A** equals **10**, or **9+1**).
 
-Single-character numbers (i.e., **A** alone) take the value that they would have
-if they were valid digits, regardless of the value of **ibase**. This means that
-**A** alone always equals decimal **10** and **Z** alone always equals decimal
-**35**.
+If a digit or letter makes no sense with the current value of **ibase** (i.e.,
+they are greater than or equal to the current value of **ibase**), then the
+behavior depends on the existence of the **-c**/**-\-digit-clamp** or
+**-C**/**-\-no-digit-clamp** options (see the **OPTIONS** section), the
+existence and setting of the **BC_DIGIT_CLAMP** environment variable (see the
+**ENVIRONMENT VARIABLES** section), or the default, which can be queried with
+the **-h**/**-\-help** option.
+
+If clamping is off, then digits or letters that are greater than or equal to the
+current value of **ibase** are not changed. Instead, their given value is
+multiplied by the appropriate power of **ibase** and added into the number. This
+means that, with an **ibase** of **3**, the number **AB** is equal to
+**3\^1\*A+3\^0\*B**, which is **3** times **10** plus **11**, or **41**.
+
+If clamping is on, then digits or letters that are greater than or equal to the
+current value of **ibase** are set to the value of the highest valid digit in
+**ibase** before being multiplied by the appropriate power of **ibase** and
+added into the number. This means that, with an **ibase** of **3**, the number
+**AB** is equal to **3\^1\*2+3\^0\*2**, which is **3** times **2** plus **2**,
+or **8**.
+
+There is one exception to clamping: single-character numbers (i.e., **A**
+alone). Such numbers are never clamped and always take the value they would have
+in the highest possible **ibase**. This means that **A** alone always equals
+decimal **10** and **Z** alone always equals decimal **35**. This behavior is
+mandated by the standard (see the STANDARDS section) and is meant to provide an
+easy way to set the current **ibase** (with the **i** command) regardless of the
+current value of **ibase**.
+
+If clamping is on, and the clamped value of a character is needed, use a leading
+zero, i.e., for **A**, use **0A**.
 
 In addition, bc(1) accepts numbers in scientific notation. These have the form
 **\<number\>e\<integer\>**. The exponent (the portion after the **e**) must be
@@ -886,10 +910,9 @@ The operators will be described in more detail below.
     **assignment** operators, which means that **a=b\>c** is interpreted as
     **(a=b)\>c**.
 
-    Also, unlike the standard
-    (https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html)
-    requires, these operators can appear anywhere any other expressions can be
-    used. This allowance is a **non-portable extension**.
+    Also, unlike the standard (see the **STANDARDS** section) requires, these
+    operators can appear anywhere any other expressions can be used. This
+    allowance is a **non-portable extension**.
 
 **&&**
 
@@ -1136,9 +1159,8 @@ equivalents are given.
 
 ## Standard Library
 
-The standard
-(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html) defines the
-following functions for the math library:
+The standard (see the **STANDARDS** section) defines the following functions for
+the math library:
 
 **s(x)**
 
@@ -1186,8 +1208,7 @@ following functions for the math library:
 
 The extended library is *not* loaded when the **-s**/**-\-standard** or
 **-w**/**-\-warn** options are given since they are not part of the library
-defined by the standard
-(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html).
+defined by the standard (see the **STANDARDS** section).
 
 The extended library is a **non-portable extension**.
 
@@ -2238,6 +2259,9 @@ variables:
     those digits are always equal to their value, which is multiplied by the
     power of the **ibase**.
 
+    This never applies to single-digit numbers, as per the standard (see the
+    **STANDARDS** section).
+
     This environment variable overrides the default, which can be queried with
     the **-h** or **-\-help** options.
 
@@ -2316,12 +2340,10 @@ checking, and its normal behavior can be forced by using the **-i** flag or
 
 # INTERACTIVE MODE
 
-Per the standard
-(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html), bc(1) has
-an interactive mode and a non-interactive mode. Interactive mode is turned on
-automatically when both **stdin** and **stdout** are hooked to a terminal, but
-the **-i** flag and **-\-interactive** option can turn it on in other
-situations.
+Per the standard (see the **STANDARDS** section), bc(1) has an interactive mode
+and a non-interactive mode. Interactive mode is turned on automatically when
+both **stdin** and **stdout** are hooked to a terminal, but the **-i** flag and
+**-\-interactive** option can turn it on in other situations.
 
 In interactive mode, bc(1) attempts to recover from errors (see the **RESET**
 section), and in normal execution, flushes **stdout** as soon as execution is
@@ -2347,10 +2369,8 @@ setting is used. The default setting can be queried with the **-h** or
 **-\-help** options.
 
 TTY mode is different from interactive mode because interactive mode is required
-in the bc(1) standard
-(https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html), and
-interactive mode requires only **stdin** and **stdout** to be connected to a
-terminal.
+in the bc(1) standard (see the **STANDARDS** section), and interactive mode
+requires only **stdin** and **stdout** to be connected to a terminal.
 
 ## Command-Line History
 
