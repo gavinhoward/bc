@@ -2314,9 +2314,7 @@ bc_num_parseChar(char c, size_t base)
 		c = BC_NUM_NUM_LETTER(c);
 
 		// If the digit is greater than the base, we clamp.
-#if !BC_ENABLE_LIBRARY
 		if (BC_DIGIT_CLAMP)
-#endif // !BC_ENABLE_LIBRARY
 		{
 			c = ((size_t) c) >= base ? (char) base - 1 : c;
 		}
@@ -2388,9 +2386,9 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 
 	// Expand and zero. The plus extra is in case the lack of clamping causes
 	// the number to overflow the original bounds.
-	bc_num_expand(n, n->len + (BC_DIGIT_CLAMP == 0));
+	bc_num_expand(n, n->len + !BC_DIGIT_CLAMP);
 	// NOLINTNEXTLINE
-	memset(n->num, 0, BC_NUM_SIZE(n->len + (BC_DIGIT_CLAMP == 0)));
+	memset(n->num, 0, BC_NUM_SIZE(n->len + !BC_DIGIT_CLAMP));
 
 	if (zero)
 	{
@@ -2426,7 +2424,7 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 				if (isupper(c))
 				{
 					// Clamp for the base.
-					if (BC_DIGIT_CLAMP == 0) c = BC_NUM_NUM_LETTER(c);
+					if (!BC_DIGIT_CLAMP) c = BC_NUM_NUM_LETTER(c);
 					else c = 9;
 				}
 				else c -= '0';
@@ -2434,17 +2432,15 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 				// Add the digit to the limb. This takes care of overflow from
 				// lack of clamping.
 				dig = ((BcBigDig) n->num[idx]) + ((BcBigDig) c) * pow;
-#if !BC_ENABLE_LIBRARY
 				if (dig >= BC_BASE_POW)
 				{
 					// We cannot go over BC_BASE_POW with clamping.
-					assert(BC_DIGIT_CLAMP == 0);
+					assert(!BC_DIGIT_CLAMP);
 
 					n->num[idx + 1] = ((BcDig) dig) / BC_BASE_POW;
 					n->num[idx] = ((BcDig) dig) % BC_BASE_POW;
 				}
 				else
-#endif // !BC_ENABLE_LIBRARY
 				{
 					n->num[idx] = (BcDig) dig;
 				}
@@ -2456,10 +2452,8 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 		}
 	}
 
-#if !BC_ENABLE_LIBRARY
 	// Make sure to add one to the length if needed from lack of clamping.
-	n->len += (BC_DIGIT_CLAMP == 0 && n->num[n->len] != 0);
-#endif // !BC_ENABLE_LIBRARY
+	n->len += (!BC_DIGIT_CLAMP && n->num[n->len] != 0);
 }
 
 /**

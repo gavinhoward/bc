@@ -271,6 +271,8 @@
 
 #define BC_Z (vm.leading_zeroes)
 
+#define BC_DIGIT_CLAMP (vm.digit_clamp)
+
 #endif // !BC_ENABLE_LIBRARY
 
 /**
@@ -438,6 +440,10 @@ typedef struct BcVm
 
 	/// Whether or not to print leading zeros.
 	bool leading_zeroes;
+
+	/// Whether or not to clamp digits that are greater than or equal to the
+	/// current ibase.
+	bool digit_clamp;
 
 	/// The number of "references," or times that the library was initialized.
 	unsigned int refs;

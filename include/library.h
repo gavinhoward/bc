@@ -272,11 +272,4 @@ typedef struct BclCtxt
 
 } BclCtxt;
 
-#if BC_ENABLE_LIBRARY
-
-// Define this to stop compiler errors.
-#define BC_DIGIT_CLAMP (1)
-
-#endif // BC_ENABLE_LIBRARY
-
 #endif // LIBBC_PRIVATE_H

@@ -143,6 +143,12 @@ bcl_leadingZeroes(void);
 void
 bcl_setLeadingZeroes(bool leadingZeroes);
 
+bool
+bcl_digitClamp(void);
+
+void
+bcl_setDigitClamp(bool digitClamp);
+
 void
 bcl_gc(void);
 

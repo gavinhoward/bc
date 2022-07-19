@@ -98,6 +98,8 @@ bcl_init(void)
 	vm.out.v = NULL;
 
 	vm.abrt = false;
+	vm.leading_zeroes = false;
+	vm.digit_clamp = true;
 
 	// The jmp_bufs always has to be initialized first.
 	bc_vec_init(&vm.jmp_bufs, sizeof(sigjmp_buf), BC_DTOR_NONE);
@@ -221,6 +223,18 @@ void
 bcl_setLeadingZeroes(bool leadingZeroes)
 {
 	vm.leading_zeroes = leadingZeroes;
+}
+
+bool
+bcl_digitClamp(void)
+{
+	return vm.digit_clamp;
+}
+
+void
+bcl_setDigitClamp(bool digitClamp)
+{
+	vm.digit_clamp = digitClamp;
 }
 
 BclContext

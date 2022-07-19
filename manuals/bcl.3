@@ -63,6 +63,10 @@ These items allow clients to set up bcl(3).
 \f[I]leadingZeroes\f[R]\f[B]);\f[R]
 .PP
 \f[B]void bcl_gc(\f[R]\f[I]void\f[R]\f[B]);\f[R]
+.PP
+\f[B]bool bcl_digitClamp(\f[R]\f[I]void\f[R]\f[B]);\f[R]
+.PP
+\f[B]void bcl_setDigitClamp(bool\f[R] \f[I]digitClamp\f[R]\f[B]);\f[R]
 .SS Contexts
 .PP
 These items will allow clients to handle contexts, which are isolated
@@ -343,6 +347,35 @@ by \f[B]bcl_string()\f[R] when numbers are greater than \f[B]-1\f[R],
 less than \f[B]1\f[R], and not equal to \f[B]0\f[R].
 If \f[I]leadingZeroes\f[R] is \f[B]true\f[R], leading zeroes will be
 added to strings returned by \f[B]bcl_string()\f[R].
+.TP
+\f[B]bool bcl_digitClamp(\f[R]\f[I]void\f[R]\f[B])\f[R]
+Queries and returns the state of whether digits in number strings that
+are greater than or equal to the current \f[B]ibase\f[R] are clamped or
+not.
+.RS
+.PP
+If \f[B]true\f[R] is returned, then digits are treated as though they
+are equal to the value of \f[B]ibase\f[R] minus \f[B]1\f[R].
+If this is \f[I]not\f[R] true, then digits are treated as though they
+are equal to the value they would have if \f[B]ibase\f[R] was large
+enough.
+They are then multiplied by the appropriate power of \f[B]ibase\f[R].
+.PP
+For example, with clamping off and an \f[B]ibase\f[R] of \f[B]3\f[R],
+the string \[lq]AB\[rq] would equal \f[B]3\[ha]1*A+3\[ha]0*B\f[R], which
+is \f[B]3\f[R] times \f[B]10\f[R] plus \f[B]11\f[R], or \f[B]41\f[R],
+while with clamping on and an \f[B]ibase\f[R] of \f[B]3\f[R], the string
+\[lq]AB\[rq] would be equal to \f[B]3\[ha]1*2+3\[ha]0*2\f[R], which is
+\f[B]3\f[R] times \f[B]2\f[R] plus \f[B]2\f[R], or \f[B]8\f[R].
+.PP
+The default is \f[B]true\f[R].
+.RE
+.TP
+\f[B]void bcl_setDigitClamp(bool\f[R] \f[I]digitClamp\f[R]\f[B])\f[R]
+Sets the state of whether digits in number strings that are greater than
+or equal to the current \f[B]ibase\f[R] are clamped or not.
+For more information, see the
+\f[B]bcl_digitClamp(\f[R]\f[I]void\f[R]\f[B])\f[R] function.
 .TP
 \f[B]void bcl_gc(\f[R]\f[I]void\f[R]\f[B])\f[R]
 Garbage collects cached instances of arbitrary-precision numbers.

@@ -67,6 +67,10 @@ These items allow clients to set up bcl(3).
 
 **void bcl_gc(**_void_**);**
 
+**bool bcl_digitClamp(**_void_**);**
+
+**void bcl_setDigitClamp(bool** _digitClamp_**);**
+
 ## Contexts
 
 These items will allow clients to handle contexts, which are isolated from each
@@ -311,6 +315,31 @@ each function for what each function can return.
     **bcl_string()** when numbers are greater than **-1**, less than **1**, and
     not equal to **0**. If *leadingZeroes* is **true**, leading zeroes will be
     added to strings returned by **bcl_string()**.
+
+**bool bcl_digitClamp(**_void_**)**
+
+:   Queries and returns the state of whether digits in number strings that are
+    greater than or equal to the current **ibase** are clamped or not.
+
+    If **true** is returned, then digits are treated as though they are equal to
+    the value of **ibase** minus **1**. If this is *not* true, then digits are
+    treated as though they are equal to the value they would have if **ibase**
+    was large enough. They are then multiplied by the appropriate power of
+    **ibase**.
+
+    For example, with clamping off and an **ibase** of **3**, the string "AB"
+    would equal **3\^1\*A+3\^0\*B**, which is **3** times **10** plus **11**, or
+    **41**, while with clamping on and an **ibase** of **3**, the string "AB"
+    would be equal to **3\^1\*2+3\^0\*2**, which is **3** times **2** plus
+    **2**, or **8**.
+
+    The default is **true**.
+
+**void bcl_setDigitClamp(bool** _digitClamp_**)**
+
+:   Sets the state of whether digits in number strings that are greater than or
+    equal to the current **ibase** are clamped or not. For more information, see
+    the **bcl_digitClamp(**_void_**)** function.
 
 **void bcl_gc(**_void_**)**
 
