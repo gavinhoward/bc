@@ -29,11 +29,11 @@
 
 # For OpenBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 0 1 0 1 0 0 0 0
+# scripts/release.sh 1 0 1 0 0 0 0 1 0 1 0 0 0 0 1 1
 #
 # There is one problem with running this script on FreeBSD: it takes overcommit
 # to the extreme. This means that some tests that try to create allocation
@@ -42,16 +42,16 @@
 #
 # For Linux, run two separate ones (in different checkouts), like so:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0
-# cd build; ../scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0 1 1
+# cd build; ../scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1 1 1
 #
 # Yes, I usually do sanitizers with Clang and Valgrind with GCC, and I also do
 # out-of-source builds with GCC.
 #
 # To run sanitizers or Valgrind with generated tests, use the following:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0
-# cd build; ../scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1
+# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0 1 1
+# cd build; ../scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1 1 1
 #
 # The reason I run history tests with GCC and not with Clang is because Clang
 # already runs slower as a result of running with sanitizers, and the history
@@ -324,11 +324,15 @@ runconfigseries() {
 		# Test Editline and Readline if history is not turned off.
 		if [ "${_runconfigseries_configure_flags#*H}" = "${_runconfigseries_configure_flags}" ]; then
 
-			runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
-				"$_runconfigseries_configure_flags -e" 1 64 "$_runconfigseries_run_tests"
+			if [ "$test_editline" -ne 0 ]; then
+				runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
+					"$_runconfigseries_configure_flags -e" 1 64 "$_runconfigseries_run_tests"
+			fi
 
-			runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
-				"$_runconfigseries_configure_flags -r" 1 64 "$_runconfigseries_run_tests"
+			if [ "$test_readline" -ne 0 ]; then
+				runconfigtests "$_runconfigseries_CFLAGS -DBC_RAND_BUILTIN=0" "$_runconfigseries_CC" \
+					"$_runconfigseries_configure_flags -r" 1 64 "$_runconfigseries_run_tests"
+			fi
 
 		fi
 
@@ -745,6 +749,22 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	test_history=0
+fi
+
+# Whether to test editline or not.
+if [ "$#" -gt 0 ]; then
+	test_editline="$1"
+	shift
+else
+	test_editline=0
+fi
+
+# Whether to test editline or not.
+if [ "$#" -gt 0 ]; then
+	test_readline="$1"
+	shift
+else
+	test_readline=0
 fi
 
 if [ "$run_64_bit" -ne 0 ]; then
