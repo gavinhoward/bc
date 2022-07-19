@@ -755,7 +755,7 @@ bc_program_read(BcProgram* p)
 
 	// Read a line.
 	if (!BC_R) s = bc_read_line(&vm.read_buf, "");
-	else s = bc_read_line(&vm.read_buf, BC_IS_BC ? "read> " : "?> ");
+	else s = bc_read_line(&vm.read_buf, BC_VM_READ_PROMPT);
 
 	// We should *not* have run into EOF.
 	if (s == BC_STATUS_EOF) bc_err(BC_ERR_EXEC_READ_EXPR);
@@ -997,8 +997,8 @@ bc_program_print(BcProgram* p, uchar inst, size_t idx)
 		}
 	}
 
-	// bc always pops.
-	if (BC_IS_BC || pop) bc_vec_pop(&p->results);
+	// bc always pops. This macro makes sure that happens.
+	if (BC_PROGRAM_POP(pop)) bc_vec_pop(&p->results);
 }
 
 void

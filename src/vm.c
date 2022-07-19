@@ -1362,7 +1362,9 @@ static void
 bc_vm_exec(void)
 {
 	size_t i;
+#if DC_ENABLED
 	bool has_file = false;
+#endif // DC_ENABLED
 
 #if BC_ENABLED
 	// Load the math libraries.
@@ -1401,7 +1403,9 @@ bc_vm_exec(void)
 	{
 		char* path = *((char**) bc_vec_item(&vm.files, i));
 		if (!strcmp(path, "")) continue;
+#if DC_ENABLED
 		has_file = true;
+#endif // DC_ENABLED
 		bc_vm_file(path);
 	}
 
@@ -1432,7 +1436,7 @@ bc_vm_exec(void)
 #endif // BC_ENABLE_AFL
 
 	// Execute from stdin. bc always does.
-	if (BC_IS_BC || !has_file) bc_vm_stdin();
+	if (BC_VM_RUN_STDIN(has_file)) bc_vm_stdin();
 }
 
 void
@@ -1440,14 +1444,12 @@ bc_vm_boot(int argc, char* argv[])
 {
 	int ttyin, ttyout, ttyerr;
 	bool tty;
-	const char* const env_len = BC_IS_BC ? "BC_LINE_LENGTH" : "DC_LINE_LENGTH";
-	const char* const env_args = BC_IS_BC ? "BC_ENV_ARGS" : "DC_ENV_ARGS";
-	const char* const env_exit = BC_IS_BC ? "BC_EXPR_EXIT" : "DC_EXPR_EXIT";
-	const char* const env_clamp = BC_IS_BC ? "BC_DIGIT_CLAMP" :
-	                                         "DC_DIGIT_CLAMP";
-	int env_exit_def = BC_IS_BC ? BC_DEFAULT_EXPR_EXIT : DC_DEFAULT_EXPR_EXIT;
-	int env_clamp_def = BC_IS_BC ? BC_DEFAULT_DIGIT_CLAMP :
-	                               DC_DEFAULT_DIGIT_CLAMP;
+	const char* const env_len = BC_VM_LINE_LENGTH_STR;
+	const char* const env_args = BC_VM_ENV_ARGS_STR;
+	const char* const env_exit = BC_VM_EXPR_EXIT_STR;
+	const char* const env_clamp = BC_VM_DIGIT_CLAMP_STR;
+	int env_exit_def = BC_VM_EXPR_EXIT_DEF;
+	int env_clamp_def = BC_VM_DIGIT_CLAMP_DEF;
 
 	// We need to know which of stdin, stdout, and stderr are tty's.
 	ttyin = isatty(STDIN_FILENO);
@@ -1539,10 +1541,10 @@ bc_vm_boot(int argc, char* argv[])
 	// Are we in TTY mode?
 	if (BC_TTY)
 	{
-		const char* const env_tty = BC_IS_BC ? "BC_TTY_MODE" : "DC_TTY_MODE";
-		int env_tty_def = BC_IS_BC ? BC_DEFAULT_TTY_MODE : DC_DEFAULT_TTY_MODE;
-		const char* const env_prompt = BC_IS_BC ? "BC_PROMPT" : "DC_PROMPT";
-		int env_prompt_def = BC_IS_BC ? BC_DEFAULT_PROMPT : DC_DEFAULT_PROMPT;
+		const char* const env_tty = BC_VM_TTY_MODE_STR;
+		int env_tty_def = BC_VM_TTY_MODE_DEF;
+		const char* const env_prompt = BC_VM_PROMPT_STR;
+		int env_prompt_def = BC_VM_PROMPT_DEF;
 
 		// Set flags for TTY mode and prompt.
 		bc_vm_setenvFlag(env_tty, env_tty_def, BC_FLAG_TTY);
@@ -1561,10 +1563,8 @@ bc_vm_boot(int argc, char* argv[])
 	// If we are in interactive mode...
 	if (BC_I)
 	{
-		const char* const env_sigint = BC_IS_BC ? "BC_SIGINT_RESET" :
-		                                          "DC_SIGINT_RESET";
-		int env_sigint_def = BC_IS_BC ? BC_DEFAULT_SIGINT_RESET :
-		                                DC_DEFAULT_SIGINT_RESET;
+		const char* const env_sigint = BC_VM_SIGINT_RESET_STR;
+		int env_sigint_def = BC_VM_SIGINT_RESET_DEF;
 
 		// Set whether we reset on SIGINT or not.
 		bc_vm_setenvFlag(env_sigint, env_sigint_def, BC_FLAG_SIGINT);

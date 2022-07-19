@@ -241,6 +241,53 @@
 /// Returns true if dc is running.
 #define BC_IS_DC (vm.name[0] == 'd')
 
+/// Returns the correct read prompt.
+#define BC_VM_READ_PROMPT (BC_IS_BC ? "read> " : "?> ")
+
+/// Returns the string for the line length environment variable.
+#define BC_VM_LINE_LENGTH_STR (BC_IS_BC ? "BC_LINE_LENGTH" : "DC_LINE_LENGTH")
+
+/// Returns the string for the environment args environment variable.
+#define BC_VM_ENV_ARGS_STR (BC_IS_BC ? "BC_ENV_ARGS" : "DC_ENV_ARGS")
+
+/// Returns the string for the expression exit environment variable.
+#define BC_VM_EXPR_EXIT_STR (BC_IS_BC ? "BC_EXPR_EXIT" : "DC_EXPR_EXIT")
+
+/// Returns the default for the expression exit environment variable.
+#define BC_VM_EXPR_EXIT_DEF \
+	(BC_IS_BC ? BC_DEFAULT_EXPR_EXIT : DC_DEFAULT_EXPR_EXIT)
+
+/// Returns the string for the digit clamp environment variable.
+#define BC_VM_DIGIT_CLAMP_STR (BC_IS_BC ? "BC_DIGIT_CLAMP" : "DC_DIGIT_CLAMP")
+
+/// Returns the default for the digit clamp environment variable.
+#define BC_VM_DIGIT_CLAMP_DEF \
+	(BC_IS_BC ? BC_DEFAULT_DIGIT_CLAMP : DC_DEFAULT_DIGIT_CLAMP)
+
+/// Returns the string for the TTY mode environment variable.
+#define BC_VM_TTY_MODE_STR (BC_IS_BC ? "BC_TTY_MODE" : "DC_TTY_MODE")
+
+/// Returns the default for the TTY mode environment variable.
+#define BC_VM_TTY_MODE_DEF \
+	(BC_IS_BC ? BC_DEFAULT_TTY_MODE : DC_DEFAULT_TTY_MODE)
+
+/// Returns the string for the prompt environment variable.
+#define BC_VM_PROMPT_STR (BC_IS_BC ? "BC_PROMPT" : "DC_PROMPT")
+
+/// Returns the default for the prompt environment variable.
+#define BC_VM_PROMPT_DEF (BC_IS_BC ? BC_DEFAULT_PROMPT : DC_DEFAULT_PROMPT)
+
+/// Returns the string for the SIGINT reset environment variable.
+#define BC_VM_SIGINT_RESET_STR \
+	(BC_IS_BC ? "BC_SIGINT_RESET" : "DC_SIGINT_RESET")
+
+/// Returns the string for the SIGINT reset environment variable.
+#define BC_VM_SIGINT_RESET_DEF \
+	(BC_IS_BC ? BC_DEFAULT_SIGINT_RESET : DC_DEFAULT_SIGINT_RESET)
+
+/// Returns true if the calculator should run stdin.
+#define BC_VM_RUN_STDIN(has_file) (BC_IS_BC || !(has_file))
+
 #else // DC_ENABLED
 
 /// Returns true if bc is running.
@@ -248,6 +295,48 @@
 
 /// Returns true if dc is running.
 #define BC_IS_DC (0)
+
+/// Returns the correct read prompt.
+#define BC_VM_READ_PROMPT ("read> ")
+
+/// Returns the string for the line length environment variable.
+#define BC_VM_LINE_LENGTH_STR ("BC_LINE_LENGTH")
+
+/// Returns the string for the environment args environment variable.
+#define BC_VM_ENV_ARGS_STR ("BC_ENV_ARGS")
+
+/// Returns the string for the expression exit environment variable.
+#define BC_VM_EXPR_EXIT_STR ("BC_EXPR_EXIT")
+
+/// Returns the default for the expression exit environment variable.
+#define BC_VM_EXPR_EXIT_DEF (BC_DEFAULT_EXPR_EXIT)
+
+/// Returns the string for the digit clamp environment variable.
+#define BC_VM_DIGIT_CLAMP_STR ("BC_DIGIT_CLAMP")
+
+/// Returns the default for the digit clamp environment variable.
+#define BC_VM_DIGIT_CLAMP_DEF (BC_DEFAULT_DIGIT_CLAMP)
+
+/// Returns the string for the TTY mode environment variable.
+#define BC_VM_TTY_MODE_STR ("BC_TTY_MODE")
+
+/// Returns the default for the TTY mode environment variable.
+#define BC_VM_TTY_MODE_DEF (BC_DEFAULT_TTY_MODE)
+
+/// Returns the string for the prompt environment variable.
+#define BC_VM_PROMPT_STR ("BC_PROMPT")
+
+/// Returns the default for the SIGINT reset environment variable.
+#define BC_VM_PROMPT_DEF (BC_DEFAULT_PROMPT)
+
+/// Returns the string for the SIGINT reset environment variable.
+#define BC_VM_SIGINT_RESET_STR ("BC_SIGINT_RESET")
+
+/// Returns the string for the SIGINT reset environment variable.
+#define BC_VM_SIGINT_RESET_DEF (BC_DEFAULT_SIGINT_RESET)
+
+/// Returns true if the calculator should run stdin.
+#define BC_VM_RUN_STDIN(has_file) (BC_IS_BC)
 
 #endif // DC_ENABLED
 
@@ -261,6 +350,48 @@
 
 /// Returns true if dc is running.
 #define BC_IS_DC (1)
+
+/// Returns the correct read prompt.
+#define BC_VM_READ_PROMPT ("?> ")
+
+/// Returns the string for the line length environment variable.
+#define BC_VM_LINE_LENGTH_STR ("DC_LINE_LENGTH")
+
+/// Returns the string for the environment args environment variable.
+#define BC_VM_ENV_ARGS_STR ("DC_ENV_ARGS")
+
+/// Returns the string for the expression exit environment variable.
+#define BC_VM_EXPR_EXIT_STR ("DC_EXPR_EXIT")
+
+/// Returns the default for the expression exit environment variable.
+#define BC_VM_EXPR_EXIT_DEF (DC_DEFAULT_EXPR_EXIT)
+
+/// Returns the string for the digit clamp environment variable.
+#define BC_VM_DIGIT_CLAMP_STR ("DC_DIGIT_CLAMP")
+
+/// Returns the default for the digit clamp environment variable.
+#define BC_VM_DIGIT_CLAMP_DEF (DC_DEFAULT_DIGIT_CLAMP)
+
+/// Returns the string for the TTY mode environment variable.
+#define BC_VM_TTY_MODE_STR ("DC_TTY_MODE")
+
+/// Returns the default for the TTY mode environment variable.
+#define BC_VM_TTY_MODE_DEF (DC_DEFAULT_TTY_MODE)
+
+/// Returns the string for the prompt environment variable.
+#define BC_VM_PROMPT_STR ("DC_PROMPT")
+
+/// Returns the default for the SIGINT reset environment variable.
+#define BC_VM_PROMPT_DEF (DC_DEFAULT_PROMPT)
+
+/// Returns the string for the SIGINT reset environment variable.
+#define BC_VM_SIGINT_RESET_STR ("DC_SIGINT_RESET")
+
+/// Returns the string for the SIGINT reset environment variable.
+#define BC_VM_SIGINT_RESET_DEF (DC_DEFAULT_SIGINT_RESET)
+
+/// Returns true if the calculator should run stdin.
+#define BC_VM_RUN_STDIN(has_file) (!(has_file))
 
 #endif // BC_ENABLED
 
@@ -727,6 +858,7 @@ bc_vm_freeTemps(void);
 
 #else // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
 
+// This is here to satisfy a clang warning about recursive macros.
 #define bc_vm_putchar(c, t) bc_vm_putchar_impl(c, t)
 
 #endif // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB

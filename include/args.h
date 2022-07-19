@@ -51,6 +51,27 @@
 void
 bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale);
 
+#if BC_ENABLED
+
+#if DC_ENABLED
+
+/// Returns true if the banner should be quieted.
+#define BC_ARGS_SHOULD_BE_QUIET (BC_IS_DC || vm.exprs.len > 1)
+
+#else // DC_ENABLED
+
+/// Returns true if the banner should be quieted.
+#define BC_ARGS_SHOULD_BE_QUIET (vm.exprs.len > 1)
+
+#endif // DC_ENABLED
+
+#else // BC_ENABLED
+
+/// Returns true if the banner should be quieted.
+#define BC_ARGS_SHOULD_BE_QUIET (BC_IS_DC)
+
+#endif // BC_ENABLED
+
 // A reference to the list of long options.
 extern const BcOptLong bc_args_lopt[];
 

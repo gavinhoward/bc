@@ -197,11 +197,13 @@ bc_opt_parseShort(BcOpt* o, const BcOptLong* longopts)
 
 		case BC_OPT_REQUIRED_BC_ONLY:
 		{
+#if DC_ENABLED
 			if (BC_IS_DC)
 			{
 				bc_opt_error(BC_ERR_FATAL_OPTION, option[0],
 				             bc_opt_longopt(longopts, option[0]), true);
 			}
+#endif // DC_ENABLED
 
 			// Fallthrough
 			BC_FALLTHROUGH

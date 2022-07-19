@@ -208,16 +208,36 @@ typedef struct BcProgram
 
 /// This define disappears the parameter last because for dc only, last is
 /// always true.
-#define bc_program_copyToVar(p, name, t, last) bc_program_copyToVar(p, name, t)
+#define bc_program_copyToVar(p, name, t, last) \
+	bc_program_copyToVar_impl(p, name, t)
+
+/// Returns true if the calculator should pop after printing.
+#define BC_PROGRAM_POP(pop) (pop)
+
+#else // !BC_ENABLED
+
+// This is here to quiet a compiler warning.
+#define bc_program_copyToVar(p, name, t, last) \
+	bc_program_copyToVar_impl(p, name, t, last)
+
+/// Returns true if the calculator should pop after printing.
+#define BC_PROGRAM_POP(pop) (BC_IS_BC || (pop))
 
 #endif // !BC_ENABLED
 
+// This is here to satisfy a clang warning about recursive macros.
+#define bc_program_pushVar(p, code, bgn, pop, copy) \
+	bc_program_pushVar_impl(p, code, bgn, pop, copy)
+
 #else // DC_ENABLED
 
-/// This define disappears pop and copy because for bc, 'pop' and 'copy' are
-/// always false.
+// This define disappears pop and copy because for bc, 'pop' and 'copy' are
+// always false.
 #define bc_program_pushVar(p, code, bgn, pop, copy) \
-	bc_program_pushVar(p, code, bgn)
+	bc_program_pushVar_impl(p, code, bgn)
+
+/// Returns true if the calculator should pop after printing.
+#define BC_PROGRAM_POP(pop) (BC_IS_BC)
 
 // In debug mode, we want bc to check the stack, but otherwise, we don't because
 // the bc language implicitly mandates that the stack should always have enough

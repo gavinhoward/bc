@@ -98,6 +98,8 @@ typedef enum BcFlushType
 
 } BcFlushType;
 
+// These are here to satisfy a clang warning about recursive macros.
+
 #define bc_file_putchar(f, t, c) bc_file_putchar_impl(f, t, c)
 #define bc_file_flushErr(f, t) bc_file_flushErr_impl(f, t)
 #define bc_file_flush(f, t) bc_file_flush_impl(f, t)

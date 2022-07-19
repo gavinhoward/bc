@@ -276,10 +276,23 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 
 #if BC_ENABLE_LINE_LIB
 
-	// Just print and propagate the error.
-	if (BC_ERR(vfprintf(f->f, fmt, args) < 0))
 	{
-		bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+		int r;
+
+		// This mess is to silence a warning.
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#endif // __clang__
+		r = vfprintf(f->f, fmt, args);
+#ifdef __clang__
+#pragma clang diagnostic warning "-Wformat-nonliteral"
+#endif // __clang__
+
+		// Just print and propagate the error.
+		if (BC_ERR(r < 0))
+		{
+			bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+		}
 	}
 
 #else // BC_ENABLE_LINE_LIB

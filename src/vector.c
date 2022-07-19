@@ -432,11 +432,8 @@ bc_map_insert(BcVec* restrict v, const char* name, size_t idx,
 		return false;
 	}
 
-#if BC_ENABLED
-	slabs = BC_IS_DC ? &vm.main_slabs : &vm.other_slabs;
-#else // BC_ENABLED
-	slabs = &vm.main_slabs;
-#endif // BC_ENABLED
+	// This macro returns the correct slabs for the calculator.
+	slabs = BC_VEC_MAP_SLABS;
 
 	id.name = bc_slabvec_strdup(slabs, name);
 	id.idx = idx;

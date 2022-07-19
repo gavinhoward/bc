@@ -361,7 +361,7 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 	}
 
 	// We do not print the banner if expressions are used or dc is used.
-	if (!BC_IS_BC || vm.exprs.len > 1) vm.flags &= ~(BC_FLAG_Q);
+	if (BC_ARGS_SHOULD_BE_QUIET) vm.flags &= ~(BC_FLAG_Q);
 
 	// We need to make sure the files list is initialized. We don't want to
 	// initialize it if there are no files because it's just a waste of memory.
