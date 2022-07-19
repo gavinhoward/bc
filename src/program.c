@@ -2915,8 +2915,17 @@ bc_program_exec(BcProgram* p)
 #endif // !BC_HAS_COMPUTED_GOTO
 
 #if BC_HAS_COMPUTED_GOTO
+
+#if BC_CLANG
+#pragma clang diagnostic ignored "-Wgnu-label-as-value"
+#endif // BC_CLANG
+
 	BC_PROG_LBLS;
 	BC_PROG_LBLS_ASSERT;
+
+#if BC_CLANG
+#pragma clang diagnostic warning "-Wgnu-label-as-value"
+#endif // BC_CLANG
 
 	// BC_INST_INVALID is a marker for the end so that we don't have to have an
 	// execution loop.
