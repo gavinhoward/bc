@@ -755,7 +755,7 @@ predefined_build() {
 			dc_default_digit_clamp=0;;
 
 		GDH)
-			CFLAGS="-flto -Weverything -Wno-padded -Wno-gnu-label-as-value -Werror -pedantic"
+			CFLAGS="-flto -Weverything -Wno-padded -Wno-gnu-label-as-value -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
 			coverage=0
@@ -765,7 +765,7 @@ predefined_build() {
 			editline=0
 			readline=0
 			extra_math=1
-			generate_tests=0
+			generate_tests=1
 			install_manpages=0
 			nls=0
 			force=0
