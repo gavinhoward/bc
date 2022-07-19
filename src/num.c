@@ -3750,8 +3750,15 @@ bc_num_irand(BcNum* restrict a, BcNum* restrict b, BcRNG* restrict rng)
 	// If either of these are true, then the numbers are integers.
 	if (BC_NUM_ZERO(a) || BC_NUM_ONE(a)) return;
 
+#if BC_GCC
+	// This is here in GCC to quiet the "maybe-uninitialized" warning.
+	atemp.num = NULL;
+	atemp.len = 0;
+#endif // BC_GCC
+
 	if (BC_ERR(bc_num_nonInt(a, &atemp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 
+	assert(atemp.num != NULL);
 	assert(atemp.len);
 
 	len = atemp.len - 1;

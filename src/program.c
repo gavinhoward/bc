@@ -417,6 +417,14 @@ bc_program_num(BcProgram* p, BcResult* r)
 			break;
 		}
 #endif // BC_ENABLED
+
+#if BC_GCC
+		// This is here in GCC to quiet the "maybe-uninitialized" warning.
+		default:
+		{
+			abort();
+		}
+#endif // BC_GCC
 	}
 
 	return n;
