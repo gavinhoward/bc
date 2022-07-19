@@ -280,13 +280,13 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 		int r;
 
 		// This mess is to silence a warning.
-#ifdef __clang__
+#if BC_CLANG
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-#endif // __clang__
+#endif // BC_CLANG
 		r = vfprintf(f->f, fmt, args);
-#ifdef __clang__
+#ifdef BC_CLANG
 #pragma clang diagnostic warning "-Wformat-nonliteral"
-#endif // __clang__
+#endif // BC_CLANG
 
 		// Just print and propagate the error.
 		if (BC_ERR(r < 0))

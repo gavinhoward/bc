@@ -192,13 +192,13 @@ bc_vm_sigaction(void)
 
 	// This mess is to silence a warning on Clang with regards to glibc's
 	// sigaction handler, which activates the warning here.
-#ifdef __clang__
+#ifdef BC_CLANG
 #pragma clang diagnostic ignored "-Wdisabled-macro-expansion"
-#endif // __clang__
+#endif // BC_CLANG
 	sa.sa_handler = bc_vm_sig;
-#ifdef __clang__
+#ifdef BC_CLANG
 #pragma clang diagnostic warning "-Wdisabled-macro-expansion"
-#endif // __clang__
+#endif // BC_CLANG
 
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);

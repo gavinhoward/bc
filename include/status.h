@@ -194,36 +194,6 @@
 #define BC_DEBUG_CODE (0)
 #endif // BC_DEBUG_CODE
 
-// We want to be able to use _Noreturn on C11 compilers.
-#if __STDC_VERSION__ >= 201112L
-
-#include <stdnoreturn.h>
-#define BC_NORETURN _Noreturn
-#define BC_C11 (1)
-
-#else // __STDC_VERSION__
-
-#ifdef __clang__
-#if __has_attribute(noreturn)
-#define BC_NORETURN __attribute((noreturn))
-#else // __has_attribute(noreturn)
-#define BC_NORETURN
-#endif // __has_attribute(noreturn)
-
-#else // __clang__
-
-#define BC_NORETURN
-
-#endif // __clang__
-
-#define BC_MUST_RETURN
-#define BC_C11 (0)
-
-#endif // __STDC_VERSION__
-
-#define BC_HAS_UNREACHABLE (0)
-#define BC_HAS_COMPUTED_GOTO (0)
-
 #if defined(__clang__)
 #define BC_CLANG (1)
 #else // defined(__clang__)
@@ -235,6 +205,36 @@
 #else // defined(__GNUC__) && !BC_CLANG
 #define BC_GCC (0)
 #endif // defined(__GNUC__) && !BC_CLANG
+
+// We want to be able to use _Noreturn on C11 compilers.
+#if __STDC_VERSION__ >= 201112L
+
+#include <stdnoreturn.h>
+#define BC_NORETURN _Noreturn
+#define BC_C11 (1)
+
+#else // __STDC_VERSION__
+
+#if BC_CLANG
+#if __has_attribute(noreturn)
+#define BC_NORETURN __attribute((noreturn))
+#else // __has_attribute(noreturn)
+#define BC_NORETURN
+#endif // __has_attribute(noreturn)
+
+#else // BC_CLANG
+
+#define BC_NORETURN
+
+#endif // BC_CLANG
+
+#define BC_MUST_RETURN
+#define BC_C11 (0)
+
+#endif // __STDC_VERSION__
+
+#define BC_HAS_UNREACHABLE (0)
+#define BC_HAS_COMPUTED_GOTO (0)
 
 // GCC and Clang complain if fallthroughs are not marked with their special
 // attribute. Jerks. This creates a define for marking the fallthroughs that is
@@ -249,21 +249,21 @@
 #define BC_FALLTHROUGH
 #endif // __has_attribute(fallthrough)
 
-#ifdef __GNUC__
+#if BC_GCC
 
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
 #undef BC_HAS_UNREACHABLE
 #define BC_HAS_UNREACHABLE (1)
 #endif // __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
 
-#else // __GNUC__
+#else // BC_GCC
 
 #if __clang_major__ >= 4
 #undef BC_HAS_UNREACHABLE
 #define BC_HAS_UNREACHABLE (1)
 #endif // __clang_major__ >= 4
 
-#endif // __GNUC__
+#endif // BC_GCC
 
 #else // defined(__has_attribute)
 #define BC_FALLTHROUGH
@@ -290,7 +290,7 @@
 
 #endif // BC_HAS_UNREACHABLE
 
-#ifdef __GNUC__
+#if BC_GCC
 
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
 
@@ -299,9 +299,9 @@
 
 #endif // __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
 
-#endif // __GNUC__
+#endif // BC_GCC
 
-#ifdef __clang__
+#if BC_CLANG
 
 #if __clang_major__ >= 4
 
@@ -310,7 +310,7 @@
 
 #endif // __clang_major__ >= 4
 
-#endif // __GNUC__
+#endif // BC_CLANG
 
 #ifdef BC_NO_COMPUTED_GOTO
 
@@ -319,12 +319,12 @@
 
 #endif // BC_NO_COMPUTED_GOTO
 
-#ifdef __GNUC__
+#if BC_GCC
 #ifdef __OpenBSD__
 // The OpenBSD GCC doesn't like inline.
 #define inline
 #endif // __OpenBSD__
-#endif // __GNUC__
+#endif // BC_GCC
 
 // Workarounds for AIX's POSIX incompatibility.
 #ifndef SIZE_MAX
