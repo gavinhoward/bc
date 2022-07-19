@@ -355,6 +355,30 @@ following forms:
 --option=arg
 ```
 
+#### Predefined Builds
+
+To quickly get a release build of a `bc` and `dc` that is (by default)
+compatible with the BSD `bc` and `dc`, use the `-p` or `--predefined-build-type`
+options:
+
+```
+./configure.sh -pBSD
+./configure.sh --predefined-build-type=BSD
+```
+
+Both commands are equivalent.
+
+To quickly get a release build of a `bc` and `dc` that is (by default)
+compatible with the GNU `bc` and `dc`, use the `-p` or `--predefined-build-type`
+options:
+
+```
+./configure.sh -pGNU
+./configure.sh --predefined-build-type=GNU
+```
+
+Both commands are equivalent.
+
 #### Library
 
 To build the math library, use the following commands for the configure step:
