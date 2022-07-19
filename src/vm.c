@@ -668,6 +668,16 @@ bc_vm_takeTemp(void)
 	return temps_buf[vm.temps_len];
 }
 
+BcDig*
+bc_vm_getTemp(void)
+{
+	BC_SIG_ASSERT_LOCKED;
+
+	if (!vm.temps_len) return NULL;
+
+	return temps_buf[vm.temps_len - 1];
+}
+
 void
 bc_vm_freeTemps(void)
 {
@@ -1084,8 +1094,7 @@ bc_vm_readLine(bool clear)
 static void
 bc_vm_stdin(void)
 {
-	bool clear = true;
-
+	vm.clear = true;
 	vm.is_stdin = true;
 
 	// Set up the lexer.
@@ -1111,15 +1120,15 @@ bc_vm_stdin(void)
 restart:
 
 	// While we still read data from stdin.
-	while (bc_vm_readLine(clear))
+	while (bc_vm_readLine(vm.clear))
 	{
 		size_t len = vm.buffer.len - 1;
 		const char* str = vm.buffer.v;
 
 		// We don't want to clear the buffer when the line ends with a backslash
 		// because a backslash newline is special in bc.
-		clear = (len < 2 || str[len - 2] != '\\' || str[len - 1] != '\n');
-		if (!clear) continue;
+		vm.clear = (len < 2 || str[len - 2] != '\\' || str[len - 1] != '\n');
+		if (!vm.clear) continue;
 
 		// Process the data.
 		bc_vm_process(vm.buffer.v, true, false);
@@ -1200,7 +1209,7 @@ bc_vm_readBuf(bool clear)
 static void
 bc_vm_exprs(void)
 {
-	bool clear = true;
+	vm.clear = true;
 
 	// Prepare the lexer.
 	bc_lex_file(&vm.prs.l, bc_program_exprs_name);
@@ -1214,15 +1223,15 @@ bc_vm_exprs(void)
 	BC_SETJMP_LOCKED(err);
 	BC_SIG_UNLOCK;
 
-	while (bc_vm_readBuf(clear))
+	while (bc_vm_readBuf(vm.clear))
 	{
 		size_t len = vm.buffer.len - 1;
 		const char* str = vm.buffer.v;
 
 		// We don't want to clear the buffer when the line ends with a backslash
 		// because a backslash newline is special in bc.
-		clear = (len < 2 || str[len - 2] != '\\' || str[len - 1] != '\n');
-		if (!clear) continue;
+		vm.clear = (len < 2 || str[len - 2] != '\\' || str[len - 1] != '\n');
+		if (!vm.clear) continue;
 
 		// Process the data.
 		bc_vm_process(vm.buffer.v, false, true);
@@ -1230,7 +1239,7 @@ bc_vm_exprs(void)
 
 	// If we were not supposed to clear, then we should process everything. This
 	// makes sure that errors get reported.
-	if (!clear) bc_vm_process(vm.buffer.v, false, true);
+	if (!vm.clear) bc_vm_process(vm.buffer.v, false, true);
 
 err:
 

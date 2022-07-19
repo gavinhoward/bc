@@ -124,6 +124,10 @@ typedef struct BcProgram
 	/// A BcNum that has the proper base for asciify.
 	BcNum strmb;
 
+	// A BcNum to run asciify. This is to prevent GCC longjmp() clobbering
+	// warnings.
+	BcNum asciify;
+
 #if BC_ENABLED
 
 	/// The last printed value for bc.

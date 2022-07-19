@@ -688,7 +688,8 @@ bc_num_shiftRdx(const BcNum* restrict n, BcNum* restrict r)
 static size_t
 bc_num_shiftZero(BcNum* restrict n)
 {
-	size_t i;
+	// This is volatile to quiet a GCC warning about longjmp() clobbering.
+	volatile size_t i;
 
 	// If we don't have an integer, that is a problem, but it's also a bug
 	// because the caller should have set everything up right.
@@ -1432,7 +1433,14 @@ static void
 bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 {
 	BcNum cpa, cpb;
-	size_t ascale, bscale, ardx, brdx, azero = 0, bzero = 0, zero, len, rscale;
+	size_t ascale, bscale, ardx, brdx, zero, len, rscale;
+	// These are meant to quiet warnings on GCC about longjmp() clobbering.
+	// The problem is real here.
+	size_t scale1, scale2, realscale;
+	// These are meant to quiet the GCC longjmp() clobbering, even though it
+	// does not apply here.
+	volatile size_t azero;
+	volatile size_t bzero;
 
 	assert(BC_NUM_RDX_VALID(a));
 	assert(BC_NUM_RDX_VALID(b));
@@ -1443,10 +1451,10 @@ bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	bscale = b->scale;
 
 	// This sets the final scale according to the bc spec.
-	scale = BC_MAX(scale, ascale);
-	scale = BC_MAX(scale, bscale);
+	scale1 = BC_MAX(scale, ascale);
+	scale2 = BC_MAX(scale1, bscale);
 	rscale = ascale + bscale;
-	scale = BC_MIN(rscale, scale);
+	realscale = BC_MIN(rscale, scale2);
 
 	// If this condition is true, we can use bc_num_mulArray(), which would be
 	// much faster.
@@ -1543,7 +1551,7 @@ bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	bc_num_shiftLeft(c, (len - c->len) * BC_BASE_DIGS);
 	bc_num_shiftRight(c, ardx + brdx);
 
-	bc_num_retireMul(c, scale, BC_NUM_NEG(a), BC_NUM_NEG(b));
+	bc_num_retireMul(c, realscale, BC_NUM_NEG(a), BC_NUM_NEG(b));
 
 err:
 	BC_SIG_MAYLOCK;
@@ -1565,14 +1573,12 @@ bc_num_nonZeroDig(BcDig* restrict a, size_t len)
 {
 	size_t i;
 
-	bool nonzero = false;
-
-	for (i = len - 1; !nonzero && i < len; --i)
+	for (i = len - 1; i < len; --i)
 	{
-		nonzero = (a[i] != 0);
+		if (a[i] != 0) return true;
 	}
 
-	return nonzero;
+	return false;
 }
 
 /**
@@ -1634,9 +1640,20 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
               size_t scale)
 {
 	BcBigDig divisor;
-	size_t len, end, i, rdx;
+	size_t i, rdx;
+	// This is volatile and len 2 and reallen exist to quiet the GCC warning
+	// about clobbering on longjmp(). This one is possible, I think.
+	volatile size_t len;
+	size_t len2, reallen;
+	// This is volatile and realend exists to quiet the GCC warning about
+	// clobbering on longjmp(). This one is possible, I think.
+	volatile size_t end;
+	size_t realend;
 	BcNum cpb;
-	bool nonzero = false;
+	// This is volatile and realnonzero exists to quiet the GCC warning about
+	// clobbering on longjmp(). This one is possible, I think.
+	volatile bool nonzero;
+	bool realnonzero;
 
 	assert(b->len < a->len);
 
@@ -1681,25 +1698,37 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 
 			// Check bc_num_d(). In there, we grow a again and again. We do it
 			// again here; we *always* want to be sure it is big enough.
-			len = BC_MAX(a->len, b->len);
-			bc_num_expand(a, len + 1);
+			len2 = BC_MAX(a->len, b->len);
+			bc_num_expand(a, len2 + 1);
 
 			// Make a have a zero most significant limb to match the len.
-			if (len + 1 > a->len) a->len = len + 1;
+			if (len2 + 1 > a->len) a->len = len2 + 1;
 
 			// Grab the new divisor estimate, new because the shift has made it
 			// different.
-			len = b->len;
-			end = a->len - len;
-			divisor = (BcBigDig) b->num[len - 1];
+			reallen = b->len;
+			realend = a->len - reallen;
+			divisor = (BcBigDig) b->num[reallen - 1];
 
-			nonzero = bc_num_nonZeroDig(b->num, len - 1);
+			realnonzero = bc_num_nonZeroDig(b->num, reallen - 1);
 		}
+		else
+		{
+			reallen = len;
+			realend = end;
+			realnonzero = nonzero;
+		}
+	}
+	else
+	{
+		reallen = len;
+		realend = end;
+		realnonzero = false;
 	}
 
 	// If b has other nonzero limbs, we want the divisor to be one higher, so
 	// that it is an upper bound.
-	divisor += nonzero;
+	divisor += realnonzero;
 
 	// Make sure c can fit the new length.
 	bc_num_expand(c, a->len);
@@ -1718,7 +1747,7 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 	BC_SIG_UNLOCK;
 
 	// This is the actual division loop.
-	for (i = end - 1; i < end && i >= rdx && BC_NUM_NONZERO(a); --i)
+	for (i = realend - 1; i < realend && i >= rdx && BC_NUM_NONZERO(a); --i)
 	{
 		ssize_t cmp;
 		BcDig* n;
@@ -1768,7 +1797,7 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 			// And here's why it might take multiple trips: n might *still* be
 			// greater than b. So we have to loop again. That's what this is
 			// setting up for: the condition of the while loop.
-			if (nonzero) cmp = bc_num_divCmp(n, b, len);
+			if (realnonzero) cmp = bc_num_divCmp(n, b, len);
 			else cmp = -1;
 		}
 
@@ -1907,6 +1936,9 @@ bc_num_r(BcNum* a, BcNum* b, BcNum* restrict c, BcNum* restrict d, size_t scale,
          size_t ts)
 {
 	BcNum temp;
+	// realscale is meant to quiet a warning on GCC about longjmp() clobbering.
+	// This one is real.
+	size_t realscale;
 	bool neg;
 
 	if (BC_NUM_ZERO(b)) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
@@ -1930,14 +1962,15 @@ bc_num_r(BcNum* a, BcNum* b, BcNum* restrict c, BcNum* restrict d, size_t scale,
 	bc_num_d(a, b, c, scale);
 
 	// We want an extra digit so we can safely truncate.
-	if (scale) scale = ts + 1;
+	if (scale) realscale = ts + 1;
+	else realscale = scale;
 
 	assert(BC_NUM_RDX_VALID(c));
 	assert(BC_NUM_RDX_VALID(b));
 
 	// Implement the rest of the (a - (a / b) * b) formula.
-	bc_num_m(c, b, &temp, scale);
-	bc_num_sub(a, &temp, d, scale);
+	bc_num_m(c, b, &temp, realscale);
+	bc_num_sub(a, &temp, d, realscale);
 
 	// Extend if necessary.
 	if (ts > d->scale && BC_NUM_NONZERO(d)) bc_num_extend(d, ts - d->scale);
@@ -1998,7 +2031,9 @@ bc_num_p(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 {
 	BcNum copy, btemp;
 	BcBigDig exp;
-	size_t powrdx, resrdx;
+	// realscale is meant to quiet a warning on GCC about longjmp() clobbering.
+	// This one is real.
+	size_t powrdx, resrdx, realscale;
 	bool neg;
 
 	if (BC_ERR(bc_num_nonInt(b, &btemp))) bc_err(BC_ERR_MATH_NON_INTEGER);
@@ -2042,8 +2077,9 @@ bc_num_p(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	{
 		size_t max = BC_MAX(scale, a->scale), scalepow;
 		scalepow = bc_num_mulOverflow(a->scale, exp);
-		scale = BC_MIN(scalepow, max);
+		realscale = BC_MIN(scalepow, max);
 	}
+	else realscale = scale;
 
 	// This is only implementing the first exponentiation by squaring, until it
 	// reaches the first time where the square is actually used.
@@ -2079,10 +2115,10 @@ bc_num_p(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	}
 
 	// Invert if necessary.
-	if (neg) bc_num_inv(c, c, scale);
+	if (neg) bc_num_inv(c, c, realscale);
 
 	// Truncate if necessary.
-	if (c->scale > scale) bc_num_truncate(c, c->scale - scale);
+	if (c->scale > realscale) bc_num_truncate(c, c->scale - realscale);
 
 	bc_num_clean(c);
 
@@ -2159,12 +2195,18 @@ bc_num_right(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
  * Without these, this whole function would basically have to be duplicated for
  * *all* binary operators.
  *
+ * This function is surrounded by GCC warning guards because I did everything I
+ * could to make those warnings go away, but they would not.
+ *
  * @param a      The first operand.
  * @param b      The second operand.
  * @param c      The return parameter.
  * @param scale  The current scale.
  * @param req    The number of limbs needed to fit the result.
  */
+#if BC_GCC
+#pragma GCC diagnostic ignored "-Wclobbered"
+#endif // BC_GCC
 static void
 bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
               size_t req)
@@ -2172,7 +2214,6 @@ bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
 	BcNum* ptr_a;
 	BcNum* ptr_b;
 	BcNum num2;
-	bool init = false;
 
 	assert(a != NULL && b != NULL && c != NULL && op != NULL);
 
@@ -2181,41 +2222,16 @@ bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
 
 	BC_SIG_LOCK;
 
-	// Reallocate if c == a.
-	if (c == a)
-	{
-		ptr_a = &num2;
-
-		// NOLINTNEXTLINE
-		memcpy(ptr_a, c, sizeof(BcNum));
-		init = true;
-	}
-	else
-	{
-		ptr_a = a;
-	}
-
-	// Also reallocate if c == b.
-	if (c == b)
-	{
-		ptr_b = &num2;
-
-		if (c != a)
-		{
-			// NOLINTNEXTLINE
-			memcpy(ptr_b, c, sizeof(BcNum));
-			init = true;
-		}
-	}
-	else
-	{
-		ptr_b = b;
-	}
+	ptr_a = c == a ? &num2 : a;
+	ptr_b = c == b ? &num2 : b;
 
 	// Actually reallocate. If we don't reallocate, we want to expand at the
 	// very least.
-	if (init)
+	if (c == a || c == b)
 	{
+		// NOLINTNEXTLINE
+		memcpy(&num2, c, sizeof(BcNum));
+
 		bc_num_init(c, req);
 
 		// Must prepare for cleanup. We want this here so that locals that got
@@ -2243,13 +2259,16 @@ bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
 
 err:
 	// Cleanup only needed if we initialized c to a new number.
-	if (init)
+	if (c == a || c == b)
 	{
 		BC_SIG_MAYLOCK;
 		bc_num_free(&num2);
 		BC_LONGJMP_CONT;
 	}
 }
+#if BC_GCC
+#pragma GCC diagnostic warning "-Wclobbered"
+#endif // BC_GCC
 
 /**
  * Tests a number string for validity. This function has a history; I originally
@@ -2472,7 +2491,9 @@ bc_num_parseBase(BcNum* restrict n, const char* restrict val, BcBigDig base)
 	char c = 0;
 	bool zero = true;
 	BcBigDig v;
-	size_t i, digs, len = strlen(val);
+	size_t digs, len = strlen(val);
+	// This is volatile to quiet a warning on GCC about longjmp() clobbering.
+	volatile size_t i;
 
 	// If zero, just return because the number should be virgin (already 0).
 	for (i = 0; zero && i < len; ++i)
@@ -3297,9 +3318,10 @@ bc_num_init(BcNum* restrict n, size_t req)
 	req = req >= BC_NUM_DEF_SIZE ? req : BC_NUM_DEF_SIZE;
 
 	// If we can't use a temp, allocate.
-	if (req != BC_NUM_DEF_SIZE || (num = bc_vm_takeTemp()) == NULL)
+	if (req != BC_NUM_DEF_SIZE) num = bc_vm_malloc(BC_NUM_SIZE(req));
+	else
 	{
-		num = bc_vm_malloc(BC_NUM_SIZE(req));
+		num = bc_vm_getTemp() == NULL ? bc_vm_malloc(BC_NUM_SIZE(req)) : bc_vm_takeTemp();
 	}
 
 	bc_num_setup(n, num, req);
@@ -3912,7 +3934,9 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	BcNum* x0;
 	BcNum* x1;
 	BcNum* temp;
-	size_t pow, len, rdx, req, resscale;
+	// realscale is meant to quiet a warning on GCC about longjmp() clobbering.
+	// This one is real.
+	size_t pow, len, rdx, req, resscale, realscale;
 	BcDig half_digs[1];
 
 	assert(a != NULL && b != NULL && a != b);
@@ -3921,11 +3945,12 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 
 	// We want to calculate to a's scale if it is bigger so that the result will
 	// truncate properly.
-	if (a->scale > scale) scale = a->scale;
+	if (a->scale > scale) realscale = a->scale;
+	else realscale = scale;
 
 	// Set parameters for the result.
 	len = bc_vm_growSize(bc_num_intDigits(a), 1);
-	rdx = BC_NUM_RDX(scale);
+	rdx = BC_NUM_RDX(realscale);
 
 	// Square root needs half of the length of the parameter.
 	req = bc_vm_growSize(BC_MAX(rdx, BC_NUM_RDX_VAL(a)), len >> 1);
@@ -3945,7 +3970,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	// Easy case.
 	if (BC_NUM_ZERO(a))
 	{
-		bc_num_setToZero(b, scale);
+		bc_num_setToZero(b, realscale);
 		return;
 	}
 
@@ -3953,12 +3978,12 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	if (BC_NUM_ONE(a))
 	{
 		bc_num_one(b);
-		bc_num_extend(b, scale);
+		bc_num_extend(b, realscale);
 		return;
 	}
 
 	// Set the parameters again.
-	rdx = BC_NUM_RDX(scale);
+	rdx = BC_NUM_RDX(realscale);
 	rdx = BC_MAX(rdx, BC_NUM_RDX_VAL(a));
 	len = bc_vm_growSize(a->len, rdx);
 
@@ -4009,7 +4034,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 
 	// I can set the rdx here directly because neg should be false.
 	x0->scale = x0->rdx = 0;
-	resscale = (scale + BC_BASE_DIGS) + 2;
+	resscale = (realscale + BC_BASE_DIGS) + 2;
 
 	// This is the calculation loop. This compare goes to 0 eventually as the
 	// difference between the two numbers gets smaller than resscale.
@@ -4036,7 +4061,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 
 	// Copy to the result and truncate.
 	bc_num_copy(b, x0);
-	if (b->scale > scale) bc_num_truncate(b, b->scale - scale);
+	if (b->scale > realscale) bc_num_truncate(b, b->scale - realscale);
 
 	assert(!BC_NUM_NEG(b) || BC_NUM_NONZERO(b));
 	assert(BC_NUM_RDX_VALID(b));
@@ -4057,7 +4082,9 @@ bc_num_divmod(BcNum* a, BcNum* b, BcNum* c, BcNum* d, size_t scale)
 {
 	size_t ts, len;
 	BcNum *ptr_a, num2;
-	bool init = false;
+	// This is volatile to quiet a warning on GCC about clobbering with
+	// longjmp().
+	volatile bool init = false;
 
 	// The bulk of this function is just doing what bc_num_binary() does for the
 	// binary operators. However, it assumes that only c and a can be equal.

@@ -408,9 +408,9 @@ bc_program_num(BcProgram* p, BcResult* r)
 #ifndef NDEBUG
 		{
 			abort();
+			// Fallthrough
 		}
 #endif // NDEBUG
-       // Fallthrough
 		case BC_RESULT_LAST:
 		{
 			n = &p->last;
@@ -2193,7 +2193,7 @@ bc_program_modexp(BcProgram* p)
 static uchar
 bc_program_asciifyNum(BcProgram* p, BcNum* n)
 {
-	BcNum num;
+	// These are allocated to prevent clobbering warnings from GCC.
 	BcBigDig val;
 
 #ifndef NDEBUG
@@ -2201,33 +2201,21 @@ bc_program_asciifyNum(BcProgram* p, BcNum* n)
 	val = 0;
 #endif // NDEBUG
 
-	bc_num_clear(&num);
-
-	BC_SETJMP(num_err);
-
-	BC_SIG_LOCK;
-
-	bc_num_createCopy(&num, n);
-
-	BC_SIG_UNLOCK;
+	bc_num_copy(&p->asciify, n);
 
 	// We want to clear the scale and sign for easy mod later.
-	bc_num_truncate(&num, num.scale);
-	BC_NUM_NEG_CLR_NP(num);
+	bc_num_truncate(&p->asciify, p->asciify.scale);
+	BC_NUM_NEG_CLR(&p->asciify);
 
 	// This is guaranteed to not have a divide by 0
 	// because strmb is equal to 256.
-	bc_num_mod(&num, &p->strmb, &num, 0);
+	bc_num_mod(&p->asciify, &p->strmb, &p->asciify, 0);
 
 	// This is also guaranteed to not error because num is in the range
 	// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
 	// it is not negative.
-	val = bc_num_bigdig2(&num);
+	val = bc_num_bigdig2(&p->asciify);
 
-num_err:
-	BC_SIG_MAYLOCK;
-	bc_num_free(&num);
-	BC_LONGJMP_CONT;
 	return (uchar) val;
 }
 
@@ -2453,7 +2441,11 @@ bc_program_execStr(BcProgram* p, const char* restrict code,
 	if (cond)
 	{
 		bool exec;
-		size_t idx, then_idx, else_idx;
+		size_t then_idx;
+		// These are volatile to quiet warnings on GCC about clobbering with
+		// longjmp().
+		volatile size_t else_idx;
+		volatile size_t idx;
 
 		// Get the index of the "then" var and "else" var.
 		then_idx = bc_program_index(code, bgn);
@@ -2760,6 +2752,8 @@ bc_program_free(BcProgram* p)
 	bc_vec_free(&p->results);
 	bc_vec_free(&p->stack);
 
+	bc_num_free(&p->asciify);
+
 #if BC_ENABLED
 	if (BC_IS_BC) bc_num_free(&p->last);
 #endif // BC_ENABLED
@@ -2815,6 +2809,8 @@ bc_program_init(BcProgram* p)
 
 	bc_num_setup(&p->strmb, p->strmb_num, BC_NUM_BIGDIG_LOG10);
 	bc_num_bigdig2num(&p->strmb, BC_NUM_STREAM_BASE);
+
+	bc_num_init(&p->asciify, BC_NUM_DEF_SIZE);
 
 #if BC_ENABLE_EXTRA_MATH
 	// We need to initialize srand() just in case /dev/urandom and /dev/random

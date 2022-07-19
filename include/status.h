@@ -224,10 +224,22 @@
 #define BC_HAS_UNREACHABLE (0)
 #define BC_HAS_COMPUTED_GOTO (0)
 
+#if defined(__clang__)
+#define BC_CLANG (1)
+#else // defined(__clang__)
+#define BC_CLANG (0)
+#endif // defined(__clang__)
+
+#if defined(__GNUC__) && !BC_CLANG
+#define BC_GCC (1)
+#else // defined(__GNUC__) && !BC_CLANG
+#define BC_GCC (0)
+#endif // defined(__GNUC__) && !BC_CLANG
+
 // GCC and Clang complain if fallthroughs are not marked with their special
 // attribute. Jerks. This creates a define for marking the fallthroughs that is
 // nothing on other compilers.
-#if defined(__clang__) || defined(__GNUC__)
+#if BC_CLANG || BC_GCC
 
 #if defined(__has_attribute)
 
@@ -256,9 +268,9 @@
 #else // defined(__has_attribute)
 #define BC_FALLTHROUGH
 #endif // defined(__has_attribute)
-#else // defined(__clang__) || defined(__GNUC__)
+#else // BC_CLANG || BC_GCC
 #define BC_FALLTHROUGH
-#endif // defined(__clang__) || defined(__GNUC__)
+#endif // BC_CLANG || BC_GCC
 
 #if BC_HAS_UNREACHABLE
 

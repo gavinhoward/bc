@@ -643,6 +643,10 @@ typedef struct BcVm
 	/// True if bc is currently reading from stdin.
 	bool is_stdin;
 
+	/// True if bc should clear its buffers. This is BcVm to fill a hole and
+	/// also to avoid clobber warnings from GCC.
+	bool clear;
+
 #if BC_ENABLED
 
 	/// True if keywords should not be redefined. This is only true for the
@@ -836,11 +840,19 @@ void
 bc_vm_addTemp(BcDig* num);
 
 /**
- * Dish out a temp, or NULL if there are none.
+ * Return the temp on the top of the temp stack, or NULL if there are none.
  * @return  A temp, or NULL if none exist.
  */
 BcDig*
 bc_vm_takeTemp(void);
+
+/**
+ * Gets the top temp of the temp stack. This is separate from bc_vm_takeTemp()
+ * to quiet a GCC warning about longjmp() clobbering in bc_num_init().
+ * @return  A temp, or NULL if none exist.
+ */
+BcDig*
+bc_vm_getTemp(void);
 
 /**
  * Frees all temporaries.
