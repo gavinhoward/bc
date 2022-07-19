@@ -3321,7 +3321,8 @@ bc_num_init(BcNum* restrict n, size_t req)
 	if (req != BC_NUM_DEF_SIZE) num = bc_vm_malloc(BC_NUM_SIZE(req));
 	else
 	{
-		num = bc_vm_getTemp() == NULL ? bc_vm_malloc(BC_NUM_SIZE(req)) : bc_vm_takeTemp();
+		num = bc_vm_getTemp() == NULL ? bc_vm_malloc(BC_NUM_SIZE(req)) :
+		                                bc_vm_takeTemp();
 	}
 
 	bc_num_setup(n, num, req);

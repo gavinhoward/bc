@@ -246,7 +246,7 @@ bc_vm_info(const char* const help)
 			                                               "disabled";
 			const char* const expr = BC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                                                "to not exit";
-			const char* const clamp = BC_DEFAULT_DIGIT_CLAMP ? "to clamp":
+			const char* const clamp = BC_DEFAULT_DIGIT_CLAMP ? "to clamp" :
 			                                                   "to not clamp";
 
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
@@ -266,7 +266,7 @@ bc_vm_info(const char* const help)
 			                                               "disabled";
 			const char* const expr = DC_DEFAULT_EXPR_EXIT ? "to exit" :
 			                                                "to not exit";
-			const char* const clamp = DC_DEFAULT_DIGIT_CLAMP ? "to clamp":
+			const char* const clamp = DC_DEFAULT_DIGIT_CLAMP ? "to clamp" :
 			                                                   "to not clamp";
 
 			bc_file_printf(&vm.fout, help, vm.name, vm.name, BC_VERSION,
