@@ -347,7 +347,9 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 			default:
 			{
 				BC_UNREACHABLE
+#if !BC_CLANG
 				abort();
+#endif // !BC_CLANG
 			}
 #endif // NDEBUG
 		}

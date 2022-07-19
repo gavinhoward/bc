@@ -289,7 +289,9 @@ bc_vm_fatalError(BcErr e)
 	bc_err(e);
 #if !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 	BC_UNREACHABLE
+#if !BC_CLANG
 	abort();
+#endif // !BC_CLANG
 #endif // !BC_ENABLE_LIBRARY && !BC_ENABLE_MEMCHECK
 }
 

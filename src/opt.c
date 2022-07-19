@@ -77,7 +77,9 @@ bc_opt_longopt(const BcOptLong* longopts, int c)
 
 	BC_UNREACHABLE
 
+#if !BC_CLANG
 	return "NULL";
+#endif // !BC_CLANG
 }
 
 /**
@@ -377,7 +379,9 @@ bc_opt_parse(BcOpt* o, const BcOptLong* longopts)
 
 	BC_UNREACHABLE
 
+#if !BC_CLANG
 	return -1;
+#endif // !BC_CLANG
 }
 
 void

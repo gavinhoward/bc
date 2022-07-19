@@ -3564,9 +3564,9 @@ bc_program_exec(BcProgram* p)
 			default:
 			{
 				BC_UNREACHABLE
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !BC_CLANG
 				abort();
-#endif // NDEBUG
+#endif // !defined(NDEBUG) && !BC_CLANG
 			}
 #endif // BC_HAS_COMPUTED_GOTO
 		}

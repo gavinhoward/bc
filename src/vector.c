@@ -475,7 +475,9 @@ bc_map_name(const BcVec* restrict v, size_t idx)
 
 	BC_UNREACHABLE
 
+#if !BC_CLANG
 	return "";
+#endif // !BC_CLANG
 }
 #endif // DC_ENABLED
 
