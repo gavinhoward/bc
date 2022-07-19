@@ -1496,7 +1496,7 @@ bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	bc_num_init(&cpa, a->len + BC_NUM_RDX_VAL(a));
 	bc_num_init(&cpb, b->len + BC_NUM_RDX_VAL(b));
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(init_err);
 
 	BC_SIG_UNLOCK;
 
@@ -1556,8 +1556,10 @@ bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_unshiftZero(&cpb, bzero);
-	bc_num_free(&cpb);
 	bc_num_unshiftZero(&cpa, azero);
+init_err:
+	BC_SIG_MAYLOCK;
+	bc_num_free(&cpb);
 	bc_num_free(&cpa);
 	BC_LONGJMP_CONT;
 }
@@ -1714,14 +1716,12 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 		}
 		else
 		{
-			reallen = len;
 			realend = end;
 			realnonzero = nonzero;
 		}
 	}
 	else
 	{
-		reallen = len;
 		realend = end;
 		realnonzero = false;
 	}

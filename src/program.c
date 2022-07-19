@@ -2201,14 +2201,6 @@ bc_program_modexp(BcProgram* p)
 static uchar
 bc_program_asciifyNum(BcProgram* p, BcNum* n)
 {
-	// These are allocated to prevent clobbering warnings from GCC.
-	BcBigDig val;
-
-#ifndef NDEBUG
-	// This is entirely to satisfy a useless scan-build error.
-	val = 0;
-#endif // NDEBUG
-
 	bc_num_copy(&p->asciify, n);
 
 	// We want to clear the scale and sign for easy mod later.
@@ -2222,9 +2214,7 @@ bc_program_asciifyNum(BcProgram* p, BcNum* n)
 	// This is also guaranteed to not error because num is in the range
 	// [0, UCHAR_MAX], which is definitely in range for a BcBigDig. And
 	// it is not negative.
-	val = bc_num_bigdig2(&p->asciify);
-
-	return (uchar) val;
+	return (uchar) bc_num_bigdig2(&p->asciify);
 }
 
 /**
