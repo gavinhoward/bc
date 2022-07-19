@@ -1624,8 +1624,15 @@ flags="-DBC_TEST_OPENBSD -DBC_ENABLE_AFL=0"
 err="$?"
 
 if [ "$err" -ne 0 ]; then
+
 	printf 'On OpenBSD. Using _BSD_SOURCE.\n\n'
 	bsd="-D_BSD_SOURCE"
+
+	# Readline errors on OpenBSD, for some weird reason.
+	if [ "$readline" -ne 0 ]; then
+		usage "Cannot use readline on OpenBSD"
+	fi
+
 else
 	printf 'Not on OpenBSD.\n\n'
 	bsd=""
