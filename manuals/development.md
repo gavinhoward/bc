@@ -4712,6 +4712,11 @@ places increases by 1:
 ...
 ```
 
+This happens because because every decimal representation of `1/2^p` ends with a
+5 because 5 is half of 10. Because 5 is odd, half of it always ends with the
+digits 25, where 2 is where the previous 5 was, and the new 5 is one decimal
+place further right.
+
 So the algorithm to convert all 255 bits of the seed is as follows:
 
 1.	Convert the increment to a `BcNum`.
@@ -4762,10 +4767,10 @@ However, that said, the extra debug code is useful; that was why I kept it in.
 ## Performance
 
 While I have put in a lot of effort to make `bc` as fast as possible, there
-might be some things you can do to speed it up without changing the code.
+might be some things users can do to speed it up without changing the code.
 
-First, you can probably use [profile-guided optimization][217] to optimize even
-better, using the test suite to profile.
+First, users can probably use [profile-guided optimization][217] to optimize
+even better, using the test suite to profile.
 
 Second, I included macros that might help branch placement and prediction:
 
