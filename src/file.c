@@ -284,7 +284,7 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
 #endif // BC_CLANG
 		r = vfprintf(f->f, fmt, args);
-#ifdef BC_CLANG
+#if BC_CLANG
 #pragma clang diagnostic warning "-Wformat-nonliteral"
 #endif // BC_CLANG
 
