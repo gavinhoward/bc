@@ -52,13 +52,13 @@ usage() {
 	printf 'usage:\n'
 	printf '    %s -h\n' "$script"
 	printf '    %s --help\n' "$script"
-	printf '    %s [-a|-bD|-dB|-c] [-CeEfgGHlmMNrtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\\\n' "$script"
+	printf '    %s [-a|-bD|-dB|-c] [-CeEfgGHilmMNrtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\\\n' "$script"
 	printf '       [-s SETTING] [-S SETTING] [-p TYPE]\n'
 	printf '    %s \\\n' "$script"
 	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]  \\\n'
 	printf '       [--force --debug --disable-extra-math --disable-generated-tests]      \\\n'
 	printf '       [--disable-history --disable-man-pages --disable-nls --disable-strip] \\\n'
-	printf '       [--enable-editline] [--enable-readline]                               \\\n'
+	printf '       [--enable-editline] [--enable-readline] [--enable-internal-history]   \\\n'
 	printf '       [--install-all-locales] [--opt=OPT_LEVEL]                             \\\n'
 	printf '       [--karatsuba-len=KARATSUBA_LEN]                                       \\\n'
 	printf '       [--set-default-on=SETTING] [--set-default-off=SETTING]                \\\n'
@@ -96,9 +96,9 @@ usage() {
 	printf '        are specified too.\n'
 	printf '    -e, --enable-editline\n'
 	printf '        Enable the use of libedit/editline. This is meant for those users that\n'
-	printf '        want vi-like or Emacs-like behavior in history.This option is ignored if\n'
-	printf '        history is disabled. It is an error if this option is enabled when the\n'
-	printf '        -r/--enable-readline option is enabled.\n'
+	printf '        want vi-like or Emacs-like behavior in history. This option is ignored\n'
+	printf '        if history is disabled. If the -r or -i options are given with this\n'
+	printf '        option, the last occurrence of all of the three is used.\n'
 	printf '    -E, --disable-extra-math\n'
 	printf '        Disable extra math. This includes: "$" operator (truncate to integer),\n'
 	printf '        "@" operator (set number of decimal places), and r(x, p) (rounding\n'
@@ -120,6 +120,11 @@ usage() {
 	printf '        Print this help message and exit.\n'
 	printf '    -H, --disable-history\n'
 	printf '        Disable history.\n'
+	printf '    -i, --enable-internal-history\n'
+	printf '        Enable the internal history implementation and do not depend on either\n'
+	printf '        editline or readline. This option is ignored if history is disabled.\n'
+	printf '        If this option is given along with -e and -r, the last occurrence of\n'
+	printf '        all of the three is used.\n'
 	printf '    -k KARATSUBA_LEN, --karatsuba-len KARATSUBA_LEN\n'
 	printf '        Set the karatsuba length to KARATSUBA_LEN (default is 64).\n'
 	printf '        It is an error if KARATSUBA_LEN is not a number or is less than 16.\n'
@@ -148,9 +153,9 @@ usage() {
 	printf '        This will also automatically enable a release build.\n'
 	printf '    -r, --enable-readline\n'
 	printf '        Enable the use of libreadline/readline. This is meant for those users\n'
-	printf '        that want vi-like or Emacs-like behavior in history.This option is\n'
-	printf '        ignored if history is disabled. It is an error if this option is\n'
-	printf '        enabled when the -e/--enable-editline option is enabled.\n'
+	printf '        that want vi-like or Emacs-like behavior in history. This option is\n'
+	printf '        ignored if history is disabled. If this option is given along with -e\n'
+	printf '        and -r, the last occurrence of all of the three is used.\n'
 	printf '    -s SETTING, --set-default-on SETTING\n'
 	printf '        Set the default named by SETTING to on. See below for possible values\n'
 	printf '        for SETTING. For multiple instances of the -s or -S for the the same\n'
@@ -693,8 +698,7 @@ predefined_build() {
 			debug=0
 			optimization="3"
 			hist=1
-			editline=1
-			readline=0
+			hist_impl="editline"
 			extra_math=1
 			generate_tests=0
 			install_manpages=0
@@ -727,8 +731,7 @@ predefined_build() {
 			debug=0
 			optimization="3"
 			hist=1
-			editline=0
-			readline=0
+			hist_impl="internal"
 			extra_math=1
 			generate_tests=1
 			install_manpages=1
@@ -762,8 +765,7 @@ predefined_build() {
 			debug=0
 			optimization="3"
 			hist=1
-			editline=0
-			readline=0
+			hist_impl="internal"
 			extra_math=1
 			generate_tests=1
 			install_manpages=0
@@ -827,8 +829,7 @@ coverage=0
 karatsuba_len=32
 debug=0
 hist=1
-editline=0
-readline=0
+hist_impl="internal"
 extra_math=1
 optimization=""
 generate_tests=1
@@ -861,7 +862,7 @@ dc_default_digit_clamp=0
 # getopts is a POSIX utility, but it cannot handle long options. Thus, the
 # handling of long options is done by hand, and that's the reason that short and
 # long options cannot be mixed.
-while getopts "abBcdDeEfgGhHk:lMmNO:p:rS:s:tTvz-" opt; do
+while getopts "abBcdDeEfgGhHik:lMmNO:p:rS:s:tTvz-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -871,13 +872,14 @@ while getopts "abBcdDeEfgGhHk:lMmNO:p:rS:s:tTvz-" opt; do
 		C) clean=0 ;;
 		d) dc_only=1 ;;
 		D) bc_only=1 ;;
-		e) editline=1 ;;
+		e) hist_impl="editline" ;;
 		E) extra_math=0 ;;
 		f) force=1 ;;
 		g) debug=1 ;;
 		G) generate_tests=0 ;;
 		h) usage ;;
 		H) hist=0 ;;
+		i) hist_impl="internal" ;;
 		k) karatsuba_len="$OPTARG" ;;
 		l) all_locales=1 ;;
 		m) memcheck=1 ;;
@@ -885,7 +887,7 @@ while getopts "abBcdDeEfgGhHk:lMmNO:p:rS:s:tTvz-" opt; do
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		p) predefined_build "$OPTARG" ;;
-		r) readline=1 ;;
+		r) hist_impl="readline" ;;
 		S) set_default 0 "$OPTARG" ;;
 		s) set_default 1 "$OPTARG" ;;
 		t) time_tests=1 ;;
@@ -1018,8 +1020,9 @@ while getopts "abBcdDeEfgGhHk:lMmNO:p:rS:s:tTvz-" opt; do
 				disable-man-pages) install_manpages=0 ;;
 				disable-nls) nls=0 ;;
 				disable-strip) strip_bin=0 ;;
-				enable-editline) editline=1 ;;
-				enable-readline) readline=1 ;;
+				enable-editline) hist_impl="editline" ;;
+				enable-readline) hist_impl="readline" ;;
+				enable-internal-history) hist_impl="internal" ;;
 				enable-test-timing) time_tests=1 ;;
 				enable-valgrind) vg=1 ;;
 				enable-fuzz-mode) fuzz=1 ;;
@@ -1040,6 +1043,8 @@ while getopts "abBcdDeEfgGhHk:lMmNO:p:rS:s:tTvz-" opt; do
 				enable-memcheck* | install-all-locales*)
 					usage "No arg allowed for --$arg option" ;;
 				enable-editline* | enable-readline*)
+					usage "No arg allowed for --$arg option" ;;
+				enable-internal-history*)
 					usage "No arg allowed for --$arg option" ;;
 				'') break ;; # "--" terminates argument processing
 				* ) usage "Invalid option $LONG_OPTARG" ;;
@@ -1517,8 +1522,15 @@ fi
 # Like the above tested locale support, this tests history.
 if [ "$hist" -eq 1 ]; then
 
-	if [ "$editline" -ne 0 ] && [ "$readline" -ne 0 ]; then
-		usage "Must only enable one of readline or editline"
+	if [ "$hist_impl" = "editline" ]; then
+		editline=1
+		readline=0
+	elif [ "$hist_impl" = "readline" ]; then
+		editline=0
+		readline=1
+	else
+		editline=0
+		readline=0
 	fi
 
 	set +e
@@ -1552,6 +1564,11 @@ if [ "$hist" -eq 1 ]; then
 	fi
 
 	set -e
+
+else
+
+	editline=0
+	readline=0
 
 fi
 

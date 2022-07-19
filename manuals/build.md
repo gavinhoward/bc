@@ -459,7 +459,7 @@ This option affects the [build type][7].
 History support can be provided by editline, in order to implement `vi`-like
 keybindings and other features.
 
-To enable editline support pass either the `-e` flag or the `--enable-editline`
+To enable editline support, pass either the `-e` flag or the `--enable-editline`
 option to `configure.sh`, as follows:
 
 ```
@@ -471,12 +471,16 @@ Both commands are equivalent.
 
 This is ignored if history is disabled.
 
+This option is only used if it is after any other `-e`/`--enable-editline`
+options, any `-r`/`--enable-readline` options, and any
+`-i`/`--enable-internal-history` options.
+
 ##### Readline
 
 History support can be provided by readline, in order to implement `vi`-like
 keybindings and other features.
 
-To enable readline support pass either the `-r` flag or the `--enable-readline`
+To enable readline support, pass either the `-r` flag or the `--enable-readline`
 option to `configure.sh`, as follows:
 
 ```
@@ -487,6 +491,30 @@ option to `configure.sh`, as follows:
 Both commands are equivalent.
 
 This is ignored if history is disabled.
+
+This option is only used if it is after any other `-r`/`--enable-readline`
+options, any `-e`/`--enable-editline` options, and any
+`-i`/`--enable-internal-history` options.
+
+##### Internal History
+
+History support is also available as an internal implementation with no
+dependencies. This is the default if editline and readline are not selected.
+
+However, if `-p` option is used, then this option can be useful for selecting
+the internal history regardless of what the predefined build has.
+
+To enable the internal history, pass either the `-i` flag or the
+`--enable-internal-history` option to `configure.sh` as follows:
+
+```
+./configure.sh -i
+./configure.sh --enable-internal-history
+```
+
+This option is only used if it is after any other
+`-i`/`--enable-internal-history` options, any `-e`/`--enable-editline` options,
+and any `-r`/`--enable-readline` options.
 
 #### NLS (Locale Support)
 
