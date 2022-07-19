@@ -294,7 +294,7 @@ bc_vm_fatalError(BcErr e)
 }
 
 #if BC_ENABLE_LIBRARY
-void
+BC_NORETURN void
 bc_vm_handleError(BcErr e)
 {
 	assert(e < BC_ERR_NELEMS);
