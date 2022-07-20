@@ -985,6 +985,12 @@ bc_num_intop(const BcNum* a, const BcNum* b, BcNum* restrict c)
 {
 	BcNum temp;
 
+#if BC_GCC
+	temp.len = 0;
+	temp.rdx = 0;
+	temp.num = NULL;
+#endif // BC_GCC
+
 	if (BC_ERR(bc_num_nonInt(b, &temp))) bc_err(BC_ERR_MATH_NON_INTEGER);
 
 	bc_num_copy(c, a);
@@ -2036,7 +2042,16 @@ bc_num_p(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	size_t powrdx, resrdx, realscale;
 	bool neg;
 
+	// This is here to silence a warning from GCC
+#if BC_GCC
+	btemp.len = 0;
+	btemp.rdx = 0;
+	btemp.num = NULL;
+#endif // BC_GCC
+
 	if (BC_ERR(bc_num_nonInt(b, &btemp))) bc_err(BC_ERR_MATH_NON_INTEGER);
+
+	assert(btemp.len == 0 || btemp.num != NULL);
 
 	if (BC_NUM_ZERO(&btemp))
 	{
@@ -2195,18 +2210,12 @@ bc_num_right(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
  * Without these, this whole function would basically have to be duplicated for
  * *all* binary operators.
  *
- * This function is surrounded by GCC warning guards because I did everything I
- * could to make those warnings go away, but they would not.
- *
  * @param a      The first operand.
  * @param b      The second operand.
  * @param c      The return parameter.
  * @param scale  The current scale.
  * @param req    The number of limbs needed to fit the result.
  */
-#if BC_GCC
-#pragma GCC diagnostic ignored "-Wclobbered"
-#endif // BC_GCC
 static void
 bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
               size_t req)
@@ -2266,9 +2275,6 @@ err:
 		BC_LONGJMP_CONT;
 	}
 }
-#if BC_GCC
-#pragma GCC diagnostic warning "-Wclobbered"
-#endif // BC_GCC
 
 /**
  * Tests a number string for validity. This function has a history; I originally
