@@ -126,6 +126,12 @@
 #define BC_ENABLE_NLS (0)
 #endif // BC_ENABLE_NLS
 
+#ifdef __OpenBSD__
+#if BC_ENABLE_READLINE
+#error Cannot use readline on OpenBSD
+#endif // BC_ENABLE_READLINE
+#endif // __OpenBSD__
+
 #if BC_ENABLE_EDITLINE && BC_ENABLE_READLINE
 #error Must enable only one of editline or readline, not both.
 #endif // BC_ENABLE_EDITLINE && BC_ENABLE_READLINE
