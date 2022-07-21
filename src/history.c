@@ -566,9 +566,11 @@ bc_history_nextLen(const char* buf, size_t buf_len, size_t pos, size_t* col_len)
 	{
 		BC_UNREACHABLE
 
+#if !BC_CLANG
 		if (col_len != NULL) *col_len = 0;
 
 		return 0;
+#endif // !BC_CLANG
 	}
 
 	// Store the width of the character on screen.
@@ -617,7 +619,9 @@ bc_history_prevLen(const char* buf, size_t pos)
 
 	BC_UNREACHABLE
 
+#if !BC_CLANG
 	return 0;
+#endif // BC_CLANG
 }
 
 /**
