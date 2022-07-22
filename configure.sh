@@ -1879,13 +1879,13 @@ if [ "${NLSPATH#$PREFIX}" = "${NLSPATH}" ] && [ "$defprefix" -eq 0 ]; then
 	printf '         This is because they *MUST* be installed at a fixed location to even work,\n'
 	printf '         and that fixed location is $NLSPATH (%s).\n' "$NLSPATH"
 	printf '\n'
-	printf '         This location is *outside* of $PREFIX. If you do not wish to install locales\n'
-	printf '         outside of $PREFIX, you must disable NLS with the -N or --disable-nls\n'
-	printf '         options.\n'
+	printf '         This location is *outside* of $PREFIX. If you do not wish to install\n'
+	printf '         locales outside of $PREFIX, you must disable NLS with the -N or the\n'
+	printf '         --disable-nls options.\n'
 	printf '\n'
 	printf '         The author apologizes for the inconvenience, but the need to install the\n'
-	printf '         locales at a fixed location is mandated by POSIX. It is not possible for the\n'
-	printf '         author to change.\n'
+	printf '         locales at a fixed location is mandated by POSIX. It is not possible for\n'
+	printf '         the author to change.\n'
 	printf '\n***********************************************************************************\n'
 fi
 
