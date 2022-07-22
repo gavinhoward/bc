@@ -64,7 +64,8 @@ usage() {
 	printf '       [--set-default-on=SETTING] [--set-default-off=SETTING]                \\\n'
 	printf '       [--predefined-build-type=TYPE]                                        \\\n'
 	printf '       [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]       \\\n'
-	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]\n'
+	printf '       [--datadir=DATADIR] [--mandir=MANDIR] [--man1dir=MAN1DIR]             \\\n'
+	printf '       [--man3dir=MAN3DIR]\n'
 
 	if [ "$_usage_val" -ne 0 ]; then
 		exit
@@ -1401,7 +1402,7 @@ if [ -z "${PC_PATH+set}" ]; then
 fi
 
 # Set a default for the DATAROOTDIR. This is done if either manpages will be
-# installed, or locales are enabled because that's probably where NLS_PATH
+# installed, or locales are enabled because that's probably where NLSPATH
 # points.
 if [ "$install_manpages" -ne 0 ] || [ "$nls" -ne 0 ]; then
 	if [ -z "${DATAROOTDIR+set}" ]; then
