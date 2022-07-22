@@ -1376,8 +1376,12 @@ else
 	destdir="DESTDIR = $DESTDIR"
 fi
 
+# defprefix is for a warning about locales later.
 if [ -z "${PREFIX+set}" ]; then
 	PREFIX="/usr/local"
+	defprefix=1
+else
+	defprefix=0
 fi
 
 if [ -z "${BINDIR+set}" ]; then
@@ -1862,6 +1866,28 @@ printf 'bc.expr_exit=%s\n' "$bc_default_expr_exit"
 printf 'dc.expr_exit=%s\n' "$dc_default_expr_exit"
 printf 'bc.digit_clamp=%s\n' "$bc_default_digit_clamp"
 printf 'dc.digit_clamp=%s\n' "$dc_default_digit_clamp"
+
+# This code outputs a warning. The warning is to not surprise users when locales
+# are installed outside of the prefix. This warning is suppressed when the
+# default prefix is used, as well, so as not to panic users just installing by
+# hand. I believe this will be okay because NLSPATH is usually in /usr and the
+# default prefix is /usr/local, so they'll be close that way.
+if [ "${NLSPATH#$PREFIX}" = "${NLSPATH}" ] && [ "$defprefix" -eq 0 ]; then
+	printf '\n***********************************************************************************\n\n'
+	printf 'WARNING: Locales will *NOT* be installed in $PREFIX (%s).\n' "$PREFIX"
+	printf '\n'
+	printf '         This is because they *MUST* be installed at a fixed location to even work,\n'
+	printf '         and that fixed location is $NLSPATH (%s).\n' "$NLSPATH"
+	printf '\n'
+	printf '         This location is *outside* of $PREFIX. If you do not wish to install locales\n'
+	printf '         outside of $PREFIX, you must disable NLS with the -N or --disable-nls\n'
+	printf '         options.\n'
+	printf '\n'
+	printf '         The author apologizes for the inconvenience, but the need to install the\n'
+	printf '         locales at a fixed location is mandated by POSIX. It is not possible for the\n'
+	printf '         author to change.\n'
+	printf '\n***********************************************************************************\n'
+fi
 
 # This is where the real work begins. This is the point at which the Makefile.in
 # template is edited and output to the Makefile.
