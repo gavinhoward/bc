@@ -205,6 +205,10 @@ Can be overridden by passing the `--prefix` option to `configure.sh`.
 
 Defaults to `/usr/local`.
 
+***WARNING***: Locales ignore the prefix because they *must* be installed at a
+fixed location to work at all. If you do not want that to happen, you must
+disable locales (NLS) completely.
+
 #### `DESTDIR`
 
 Path to prepend onto `PREFIX`. This is mostly for distro and package
@@ -533,6 +537,10 @@ another platform that does not support the POSIX locale API or utilities.
 
 This option affects the [build type][7].
 
+***WARNING***: Locales ignore the prefix because they *must* be installed at a
+fixed location to work at all. If you do not want that to happen, you must
+disable locales (NLS) completely.
+
 #### Extra Math
 
 This `bc` has 7 extra operators:
@@ -715,6 +723,10 @@ They correspond to the environment variables `$PREFIX`, `$BINDIR`,
 `$DATAROOTDIR`, `$DATADIR`, `$MANDIR`, `$MAN1DIR`, and `$LOCALEDIR`,
 respectively.
 
+***WARNING***: Locales ignore the prefix because they *must* be installed at a
+fixed location to work at all. If you do not want that to happen, you must
+disable locales (NLS) completely.
+
 ***WARNING***: If the option is given, the value of the corresponding
 environment variable is overridden.
 
@@ -749,6 +761,10 @@ have, regardless. To enable that behavior, you can pass the `-l` flag or the
 ```
 
 Both commands are equivalent.
+
+***WARNING***: Locales ignore the prefix because they *must* be installed at a
+fixed location to work at all. If you do not want that to happen, you must
+disable locales (NLS) completely.
 
 ### Optimization
 
