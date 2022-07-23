@@ -1872,7 +1872,7 @@ printf 'dc.digit_clamp=%s\n' "$dc_default_digit_clamp"
 # default prefix is used, as well, so as not to panic users just installing by
 # hand. I believe this will be okay because NLSPATH is usually in /usr and the
 # default prefix is /usr/local, so they'll be close that way.
-if [ "${NLSPATH#$PREFIX}" = "${NLSPATH}" ] && [ "$defprefix" -eq 0 ]; then
+if [ "$nls" -ne 0 ] && [ "${NLSPATH#$PREFIX}" = "${NLSPATH}" ] && [ "$defprefix" -eq 0 ]; then
 	printf '\n********************************************************************************\n\n'
 	printf 'WARNING: Locales will *NOT* be installed in $PREFIX (%s).\n' "$PREFIX"
 	printf '\n'
