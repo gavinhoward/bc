@@ -1873,20 +1873,20 @@ printf 'dc.digit_clamp=%s\n' "$dc_default_digit_clamp"
 # hand. I believe this will be okay because NLSPATH is usually in /usr and the
 # default prefix is /usr/local, so they'll be close that way.
 if [ "${NLSPATH#$PREFIX}" = "${NLSPATH}" ] && [ "$defprefix" -eq 0 ]; then
-	printf '\n***********************************************************************************\n\n'
+	printf '\n********************************************************************************\n\n'
 	printf 'WARNING: Locales will *NOT* be installed in $PREFIX (%s).\n' "$PREFIX"
 	printf '\n'
-	printf '         This is because they *MUST* be installed at a fixed location to even work,\n'
-	printf '         and that fixed location is $NLSPATH (%s).\n' "$NLSPATH"
+	printf '         This is because they *MUST* be installed at a fixed location to even\n'
+	printf '         work, and that fixed location is $NLSPATH (%s).\n' "$NLSPATH"
 	printf '\n'
 	printf '         This location is *outside* of $PREFIX. If you do not wish to install\n'
 	printf '         locales outside of $PREFIX, you must disable NLS with the -N or the\n'
 	printf '         --disable-nls options.\n'
 	printf '\n'
-	printf '         The author apologizes for the inconvenience, but the need to install the\n'
-	printf '         locales at a fixed location is mandated by POSIX. It is not possible for\n'
-	printf '         the author to change.\n'
-	printf '\n***********************************************************************************\n'
+	printf '         The author apologizes for the inconvenience, but the need to install\n'
+	printf '         the locales at a fixed location is mandated by POSIX, and it is not\n'
+	printf '         possible for the author to change that requirement.\n'
+	printf '\n********************************************************************************\n'
 fi
 
 # This is where the real work begins. This is the point at which the Makefile.in
