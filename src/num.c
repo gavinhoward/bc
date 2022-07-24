@@ -2462,8 +2462,8 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 					// We cannot go over BC_BASE_POW with clamping.
 					assert(!BC_DIGIT_CLAMP);
 
-					n->num[idx + 1] = ((BcDig) dig) / BC_BASE_POW;
-					n->num[idx] = ((BcDig) dig) % BC_BASE_POW;
+					n->num[idx + 1] = (BcDig) (dig / BC_BASE_POW);
+					n->num[idx] = (BcDig) (dig % BC_BASE_POW);
 				}
 				else
 				{
