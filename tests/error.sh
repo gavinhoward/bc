@@ -80,20 +80,38 @@ fi
 
 testfile="$testdir/$d/errors/$t"
 
-printf 'Running %s error file %s...' "$d" "$t"
+printf 'Running %s error file %s with clamping...' "$d" "$t"
 
-printf '%s\n' "$halt" | "$exe" "$@" $opts "$testfile" 2> "$out" > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" $opts -c "$testfile" 2> "$out" > /dev/null
 err="$?"
 
 checkerrtest "$d" "$err" "$testfile" "$out" "$exebase" > /dev/null
 
 printf 'pass\n'
 
-printf 'Running %s error file %s through cat...' "$d" "$t"
+printf 'Running %s error file %s without clamping...' "$d" "$t"
 
-cat "$testfile" | "$exe" "$@" $opts 2> "$out" > /dev/null
+printf '%s\n' "$halt" | "$exe" "$@" $opts -C "$testfile" 2> "$out" > /dev/null
 err="$?"
 
-checkcrash "$d" "$err" "$testfile"
+checkerrtest "$d" "$err" "$testfile" "$out" "$exebase" > /dev/null
+
+printf 'pass\n'
+
+printf 'Running %s error file %s through cat with clamping...' "$d" "$t"
+
+cat "$testfile" | "$exe" "$@" $opts -c 2> "$out" > /dev/null
+err="$?"
+
+checkerrtest "$d" "$err" "$testfile" "$out" "$exebase"
+
+printf 'pass\n'
+
+printf 'Running %s error file %s through cat without clamping...' "$d" "$t"
+
+cat "$testfile" | "$exe" "$@" $opts -C 2> "$out" > /dev/null
+err="$?"
+
+checkerrtest "$d" "$err" "$testfile" "$out" "$exebase"
 
 printf 'pass\n'
