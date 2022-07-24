@@ -36,7 +36,7 @@ import subprocess
 # Print the usage and exit with an error.
 def usage():
 	print("usage: {} [--asan] dir [results_dir [exe options...]]".format(script))
-	print("       The valid values for dir are: 'bc1', 'bc2', 'bc3', and 'dc'.")
+	print("       The valid values for dir are: 'bc1', 'bc2', and 'dc'.")
 	sys.exit(1)
 
 
@@ -132,7 +132,7 @@ def get_children(dir, get_files):
 # Returns the correct executable name for the directory under test.
 # @param d  The directory under test.
 def exe_name(d):
-	return "bc" if d == "bc1" or d == "bc2" or d == "bc3" else "dc"
+	return "bc" if d == "bc1" or d == "bc2" else "dc"
 
 
 # Housekeeping.
@@ -171,12 +171,10 @@ else:
 		resultsdir = scriptdir + "/../tests/fuzzing/bc_outputs1"
 	elif exedir == "bc2":
 		resultsdir = scriptdir + "/../tests/fuzzing/bc_outputs2"
-	elif exedir == "bc3":
-		resultsdir = scriptdir + "/../tests/fuzzing/bc_outputs3"
 	elif exedir == "dc":
 		resultsdir = scriptdir + "/../tests/fuzzing/dc_outputs"
 	else:
-		raise ValueError("exedir must be either bc1, bc2, bc3, or dc");
+		raise ValueError("exedir must be either bc1, bc2, or dc");
 
 print("resultsdir: {}".format(resultsdir))
 

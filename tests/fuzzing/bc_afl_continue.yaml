@@ -14,109 +14,102 @@ windows:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 4
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p exploit -D -M bc11 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p exploit -D -M bc11 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: bc12
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 5
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p coe -S bc12 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p coe -S bc12 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: bc13
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 6
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p fast -S bc13 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p fast -S bc13 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: bc14
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 7
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p explore -S bc14 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc21
-    layout: even-horizontal
-    panes:
-      - shell_command:
-        - export AFL_AUTORESUME=1
-        - sleep 8
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p exploit -D -M bc21 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc22
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p explore -S bc14 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+  - window_name: bc15
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 9
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p coe -S bc22 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc23
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs1 -p exploit -D -S bc15 bin/bc -lqC -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+  - window_name: bc21
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 10
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p fast -S bc23 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc24
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p exploit -D -M bc21 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+  - window_name: bc22
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 11
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p explore -S bc24 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc31
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p coe -S bc22 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+  - window_name: bc23
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 12
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs3 -p exploit -D -M bc31 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc32
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p fast -S bc23 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+  - window_name: bc24
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 13
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs3 -p coe -S bc32 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc33
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p explore -S bc24 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+  - window_name: bc25
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
         - sleep 14
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs3 -p fast -S bc33 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
-  - window_name: bc34
-    layout: even-horizontal
-    panes:
-      - shell_command:
-        - export AFL_AUTORESUME=1
-        - sleep 15
-        - afl-fuzz -i- -o tests/fuzzing/bc_outputs3 -p explore -S bc34 bin/bc -lq -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i- -o tests/fuzzing/bc_outputs2 -p exploit -D -S bc25 bin/bc -lqC -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: dc11
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
-        - sleep 16
-        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p exploit -D -M dc11 bin/dc -x -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
+        - sleep 15
+        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p exploit -D -M dc11 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
   - window_name: dc12
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
-        - sleep 17
-        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p coe -S dc12 bin/dc -x -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
+        - sleep 16
+        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p coe -S dc12 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
   - window_name: dc13
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
-        - sleep 18
-        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p fast -S dc13 bin/dc -x -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
+        - sleep 17
+        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p fast -S dc13 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
   - window_name: dc14
     layout: even-horizontal
     panes:
       - shell_command:
         - export AFL_AUTORESUME=1
+        - sleep 18
+        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p explore -S dc14 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
+  - window_name: dc15
+    layout: even-horizontal
+    panes:
+      - shell_command:
+        - export AFL_AUTORESUME=1
         - sleep 19
-        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p explore -S dc14 bin/dc -x -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
+        - afl-fuzz -i- -o tests/fuzzing/dc_outputs -p exploit -D -S dc15 bin/dc -xC -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
