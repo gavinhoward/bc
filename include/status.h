@@ -83,7 +83,6 @@
 #define STDIN_FILENO _fileno(stdin)
 #define STDOUT_FILENO _fileno(stdout)
 #define STDERR_FILENO _fileno(stderr)
-#define ssize_t SSIZE_T
 #define S_ISDIR(m) ((m) & (_S_IFDIR))
 #define O_RDONLY _O_RDONLY
 #define stat _stat

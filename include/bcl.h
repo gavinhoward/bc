@@ -41,6 +41,17 @@
 #include <limits.h>
 #include <stdint.h>
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <BaseTsd.h>
+#include <stdio.h>
+#include <io.h>
+#endif // _WIN32
+
+#ifdef _WIN32
+#define ssize_t SSIZE_T
+#endif // _WIN32
+
 #define BCL_SEED_ULONGS (4)
 #define BCL_SEED_SIZE (sizeof(long) * BCL_SEED_ULONGS)
 
