@@ -1679,6 +1679,8 @@ else
 	BC_LIB2_O=""
 fi
 
+GEN_DIR="$scriptdir/gen"
+
 # These lines set the appropriate targets based on whether `gen/strgen.c` or
 # `gen/strgen.sh` is used.
 GEN="strgen"
@@ -2018,6 +2020,7 @@ contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
 contents=$(replace "$contents" "LONG_BIT" "$LONG_BIT")
 contents=$(replace "$contents" "LONG_BIT_DEFINE" "$LONG_BIT_DEFINE")
 
+contents=$(replace "$contents" "GEN_DIR" "$GEN_DIR")
 contents=$(replace "$contents" "GEN" "$GEN")
 contents=$(replace "$contents" "GEN_EXEC_TARGET" "$GEN_EXEC_TARGET")
 contents=$(replace "$contents" "CLEAN_PREREQS" "$CLEAN_PREREQS")

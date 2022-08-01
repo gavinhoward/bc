@@ -55,7 +55,7 @@ HISTORY_HEADERS = $(INCDIR)/history.h
 EXTRA_MATH_HEADERS = $(INCDIR)/rand.h
 LIBRARY_HEADERS = $(INCDIR)/bcl.h $(INCDIR)/library.h
 
-GEN_DIR = gen
+GEN_DIR = %%GEN_DIR%%
 GEN = %%GEN%%
 GEN_EXEC = $(GEN_DIR)/$(GEN)
 GEN_C = $(GENDIR)/$(GEN).c
