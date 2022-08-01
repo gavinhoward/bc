@@ -16,7 +16,7 @@ version bump.
 
 In addition, a convenience option (`-p`) to `configure.sh` was added to build a
 `bc` and `dc` that is by default compatible with either the BSD `bc` and `dc` or
-the GNU `bc` and `dc`. 
+the GNU `bc` and `dc`.
 
 ## 5.3.3
 
