@@ -844,20 +844,4 @@ if [ "$run_tests" -ne 0 ]; then
 	printf '\n'
 	printf 'Tests successful.\n'
 
-	# I just assume that I am going to be fuzzing when I am done.
-	header "Building for AFL++..."
-
-	"$scriptdir/fuzz_prep.sh"
-
-	printf '\n'
-	printf 'Ready for scripts/randmath.py and for fuzzing.\n'
-	printf '\n'
-	printf 'Run scripts/randmath.py if you changed any math code.\n'
-	printf '\n'
-	printf 'Then if there are no problems, run the fuzzer.\n'
-	printf '\n'
-	printf 'Then run `scripts/fuzz_prep.sh -a`.\n'
-	printf '\n'
-	printf 'Then run `scripts/afl.py --asan`.\n'
-
 fi
