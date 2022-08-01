@@ -124,7 +124,16 @@ configure() {
 
 	# Choose the right extra flags.
 	if [ "$_configure_CC" = "clang" ]; then
+
 		_configure_CFLAGS="$clang_flags $_configure_CFLAGS"
+
+		# We need to quiet this warning from Clang because configure.sh docs
+		# have this warning, so people should know. Also, I want this script to
+		# work.
+		if [ "$_configure_GEN_HOST" -eq 0 ]; then
+			_configure_CFLAGS="$_configure_CFLAGS -Wno-overlength-strings"
+		fi
+
 	elif [ "$_configure_CC" = "gcc" ]; then
 		_configure_CFLAGS="$gcc_flags $_configure_CFLAGS"
 	fi
