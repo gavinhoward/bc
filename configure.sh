@@ -1682,7 +1682,7 @@ fi
 # These lines set the appropriate targets based on whether `gen/strgen.c` or
 # `gen/strgen.sh` is used.
 GEN="strgen"
-GEN_EXEC_TARGET="\$(HOSTCC) \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
+GEN_EXEC_TARGET="\$(HOSTCC) -DBC_ENABLE_AFL=0 -I$scriptdir/include/  \$(HOSTCFLAGS) -o \$(GEN_EXEC) \$(GEN_C)"
 CLEAN_PREREQS=" clean_gen clean_coverage"
 
 if [ -z "${GEN_HOST+set}" ]; then
