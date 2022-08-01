@@ -33,7 +33,7 @@
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 0 1 1 0 0 0 0 1 0 1 0 0 0 1 1 1
+# scripts/release.sh 0 1 1 0 0 0 0 1 0 1 0 1 0 0 1 1
 #
 # There is one problem with running this script on FreeBSD: it takes overcommit
 # to the extreme. This means that some tests that try to create allocation
@@ -67,7 +67,7 @@ usage() {
 	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
 	printf '          [run_sanitizers] [run_valgrind] [test_settings] [run_64_bit] \n'
 	printf '          [run_gen_script] [test_c11] [test_128_bit] [test_computed_goto]\n'
-	printf '          [test_karatsuba] [test_history]\n'
+	printf '          [test_karatsuba] [test_history] [test_editline] [test_readline]\n'
 	exit 1
 }
 
