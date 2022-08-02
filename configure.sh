@@ -457,7 +457,7 @@ find_src_files() {
 
 	fi
 
-	_find_src_files_files=$(find "$scriptdir/src/" -depth -name "*.c" -print)
+	_find_src_files_files=$(find "$scriptdir/src/" -depth -name "*.c" -print | LC_ALL=C sort -z)
 
 	_find_src_files_result=""
 
