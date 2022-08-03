@@ -1104,7 +1104,7 @@ if [ -z "${LONG_BIT+set}" ]; then
 elif [ "$LONG_BIT" -lt 32 ]; then
 	usage "LONG_BIT is less than 32"
 else
-	LONG_BIT_DEFINE="-DBC_LONG_BIT=\$(BC_LONG_BIT)"
+	LONG_BIT_DEFINE="-DBC_LONG_BIT=$LONG_BIT"
 fi
 
 if [ -z "$CC" ]; then
@@ -2017,7 +2017,6 @@ contents=$(replace "$contents" "TIMECONST" "$timeconst")
 contents=$(replace "$contents" "KARATSUBA" "$karatsuba")
 contents=$(replace "$contents" "KARATSUBA_TEST" "$karatsuba_test")
 
-contents=$(replace "$contents" "LONG_BIT" "$LONG_BIT")
 contents=$(replace "$contents" "LONG_BIT_DEFINE" "$LONG_BIT_DEFINE")
 
 contents=$(replace "$contents" "GEN_DIR" "$GEN_DIR")
