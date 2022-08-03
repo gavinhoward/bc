@@ -130,11 +130,11 @@ struct BclCtxt;
 
 typedef struct BclCtxt* BclContext;
 
-void
-bcl_handleSignal(void);
+BclError
+bcl_start(void);
 
-bool
-bcl_running(void);
+void
+bcl_end(void);
 
 BclError
 bcl_init(void);

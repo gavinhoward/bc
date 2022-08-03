@@ -48,6 +48,7 @@
 #include <args.h>
 #include <opt.h>
 #include <num.h>
+#include <vm.h>
 
 /**
  * Adds @a str to the list of expressions to execute later.
@@ -57,9 +58,14 @@ static void
 bc_args_exprs(const char* str)
 {
 	BC_SIG_ASSERT_LOCKED;
-	if (vm.exprs.v == NULL) bc_vec_init(&vm.exprs, sizeof(uchar), BC_DTOR_NONE);
-	bc_vec_concat(&vm.exprs, str);
-	bc_vec_concat(&vm.exprs, "\n");
+
+	if (vm->exprs.v == NULL)
+	{
+		bc_vec_init(&vm->exprs, sizeof(uchar), BC_DTOR_NONE);
+	}
+
+	bc_vec_concat(&vm->exprs, str);
+	bc_vec_concat(&vm->exprs, "\n");
 }
 
 /**
@@ -74,7 +80,7 @@ bc_args_file(const char* file)
 
 	BC_SIG_ASSERT_LOCKED;
 
-	vm.file = file;
+	vm->file = file;
 
 	buf = bc_read_file(file);
 
@@ -131,7 +137,7 @@ bc_args_redefine(const char* keyword)
 		{
 			if (BC_LEX_KW_POSIX(kw)) break;
 
-			vm.redefined_kws[i] = true;
+			vm->redefined_kws[i] = true;
 
 			return;
 		}
@@ -166,27 +172,27 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 		{
 			case 'c':
 			{
-				vm.flags |= BC_FLAG_DIGIT_CLAMP;
+				vm->flags |= BC_FLAG_DIGIT_CLAMP;
 				break;
 			}
 
 			case 'C':
 			{
-				vm.flags &= ~BC_FLAG_DIGIT_CLAMP;
+				vm->flags &= ~BC_FLAG_DIGIT_CLAMP;
 				break;
 			}
 
 			case 'e':
 			{
 				// Barf if not allowed.
-				if (vm.no_exprs)
+				if (vm->no_exprs)
 				{
 					bc_verr(BC_ERR_FATAL_OPTION, "-e (--expression)");
 				}
 
 				// Add the expressions and set exit.
 				bc_args_exprs(opts.optarg);
-				vm.exit_exprs = (exit_exprs || vm.exit_exprs);
+				vm->exit_exprs = (exit_exprs || vm->exit_exprs);
 
 				break;
 			}
@@ -194,18 +200,18 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 			case 'f':
 			{
 				// Figure out if exiting on expressions is disabled.
-				if (!strcmp(opts.optarg, "-")) vm.no_exprs = true;
+				if (!strcmp(opts.optarg, "-")) vm->no_exprs = true;
 				else
 				{
 					// Barf if not allowed.
-					if (vm.no_exprs)
+					if (vm->no_exprs)
 					{
 						bc_verr(BC_ERR_FATAL_OPTION, "-f (--file)");
 					}
 
 					// Add the expressions and set exit.
 					bc_args_file(opts.optarg);
-					vm.exit_exprs = (exit_exprs || vm.exit_exprs);
+					vm->exit_exprs = (exit_exprs || vm->exit_exprs);
 				}
 
 				break;
@@ -213,14 +219,14 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 			case 'h':
 			{
-				bc_vm_info(vm.help);
+				bc_vm_info(vm->help);
 				do_exit = true;
 				break;
 			}
 
 			case 'i':
 			{
-				vm.flags |= BC_FLAG_I;
+				vm->flags |= BC_FLAG_I;
 				break;
 			}
 
@@ -232,13 +238,13 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 			case 'z':
 			{
-				vm.flags |= BC_FLAG_Z;
+				vm->flags |= BC_FLAG_Z;
 				break;
 			}
 
 			case 'L':
 			{
-				vm.line_len = 0;
+				vm->line_len = 0;
 				break;
 			}
 
@@ -250,13 +256,13 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 			case 'P':
 			{
-				vm.flags &= ~(BC_FLAG_P);
+				vm->flags &= ~(BC_FLAG_P);
 				break;
 			}
 
 			case 'R':
 			{
-				vm.flags &= ~(BC_FLAG_R);
+				vm->flags &= ~(BC_FLAG_R);
 				break;
 			}
 
@@ -284,21 +290,21 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 			case 'g':
 			{
 				assert(BC_IS_BC);
-				vm.flags |= BC_FLAG_G;
+				vm->flags |= BC_FLAG_G;
 				break;
 			}
 
 			case 'l':
 			{
 				assert(BC_IS_BC);
-				vm.flags |= BC_FLAG_L;
+				vm->flags |= BC_FLAG_L;
 				break;
 			}
 
 			case 'q':
 			{
 				assert(BC_IS_BC);
-				vm.flags &= ~(BC_FLAG_Q);
+				vm->flags &= ~(BC_FLAG_Q);
 				break;
 			}
 
@@ -311,14 +317,14 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 			case 's':
 			{
 				assert(BC_IS_BC);
-				vm.flags |= BC_FLAG_S;
+				vm->flags |= BC_FLAG_S;
 				break;
 			}
 
 			case 'w':
 			{
 				assert(BC_IS_BC);
-				vm.flags |= BC_FLAG_W;
+				vm->flags |= BC_FLAG_W;
 				break;
 			}
 #endif // BC_ENABLED
@@ -334,7 +340,7 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 			case 'x':
 			{
 				assert(BC_IS_DC);
-				vm.flags |= DC_FLAG_X;
+				vm->flags |= DC_FLAG_X;
 				break;
 			}
 #endif // DC_ENABLED
@@ -358,24 +364,24 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 	if (version) bc_vm_info(NULL);
 	if (do_exit)
 	{
-		vm.status = (sig_atomic_t) BC_STATUS_QUIT;
+		vm->status = (sig_atomic_t) BC_STATUS_QUIT;
 		BC_JMP;
 	}
 
 	// We do not print the banner if expressions are used or dc is used.
-	if (BC_ARGS_SHOULD_BE_QUIET) vm.flags &= ~(BC_FLAG_Q);
+	if (BC_ARGS_SHOULD_BE_QUIET) vm->flags &= ~(BC_FLAG_Q);
 
 	// We need to make sure the files list is initialized. We don't want to
 	// initialize it if there are no files because it's just a waste of memory.
-	if (opts.optind < (size_t) argc && vm.files.v == NULL)
+	if (opts.optind < (size_t) argc && vm->files.v == NULL)
 	{
-		bc_vec_init(&vm.files, sizeof(char*), BC_DTOR_NONE);
+		bc_vec_init(&vm->files, sizeof(char*), BC_DTOR_NONE);
 	}
 
 	// Add all the files to the vector.
 	for (i = opts.optind; i < (size_t) argc; ++i)
 	{
-		bc_vec_push(&vm.files, argv + i);
+		bc_vec_push(&vm->files, argv + i);
 	}
 
 #if BC_ENABLE_EXTRA_MATH
@@ -389,7 +395,7 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 		bc_num_parse(&n, seed, BC_BASE);
 
-		bc_program_assignSeed(&vm.prog, &n);
+		bc_program_assignSeed(&vm->prog, &n);
 
 		BC_SIG_LOCK;
 
@@ -401,18 +407,18 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 	if (newscale != scale)
 	{
-		bc_program_assignBuiltin(&vm.prog, true, false, newscale);
+		bc_program_assignBuiltin(&vm->prog, true, false, newscale);
 	}
 
 	if (obase != BC_BASE)
 	{
-		bc_program_assignBuiltin(&vm.prog, false, true, obase);
+		bc_program_assignBuiltin(&vm->prog, false, true, obase);
 	}
 
 	// This is last to avoid it affecting the value of the others.
 	if (ibase != BC_BASE)
 	{
-		bc_program_assignBuiltin(&vm.prog, false, false, ibase);
+		bc_program_assignBuiltin(&vm->prog, false, false, ibase);
 	}
 
 	BC_SIG_LOCK;

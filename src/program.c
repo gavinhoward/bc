@@ -247,8 +247,8 @@ bc_program_addString(BcProgram* p, const char* str, size_t fidx)
 
 	// Figure out which slab vector to use.
 	slabs = fidx == BC_PROG_MAIN || fidx == BC_PROG_READ ?
-	            &vm.main_slabs :
-	            &vm.other_slabs;
+	            &vm->main_slabs :
+	            &vm->other_slabs;
 
 	*str_ptr = bc_slabvec_strdup(slabs, str);
 
@@ -391,13 +391,13 @@ bc_program_num(BcProgram* p, BcResult* r)
 
 		case BC_RESULT_ZERO:
 		{
-			n = &vm.zero;
+			n = &vm->zero;
 			break;
 		}
 
 		case BC_RESULT_ONE:
 		{
-			n = &vm.one;
+			n = &vm->one;
 			break;
 		}
 
@@ -729,55 +729,55 @@ bc_program_read(BcProgram* p)
 	BC_SIG_LOCK;
 
 	// Save the filename because we are going to overwrite it.
-	file = vm.file;
-	is_stdin = vm.is_stdin;
+	file = vm->file;
+	is_stdin = vm->is_stdin;
 
 	// It is a parse error if there needs to be more than one line, so we unset
 	// this to tell the lexer to not request more. We set it back later.
-	vm.is_stdin = false;
+	vm->is_stdin = false;
 
-	if (!BC_PARSE_IS_INITED(&vm.read_prs, p))
+	if (!BC_PARSE_IS_INITED(&vm->read_prs, p))
 	{
 		// We need to parse, but we don't want to use the existing parser
 		// because it has state it needs to keep. (It could have a partial parse
 		// state.) So we create a new parser. This parser is in the BcVm struct
 		// so that it is not local, which means that a longjmp() could change
 		// it.
-		bc_parse_init(&vm.read_prs, p, BC_PROG_READ);
+		bc_parse_init(&vm->read_prs, p, BC_PROG_READ);
 
 		// We need a separate input buffer; that's why it is also in the BcVm
 		// struct.
-		bc_vec_init(&vm.read_buf, sizeof(char), BC_DTOR_NONE);
+		bc_vec_init(&vm->read_buf, sizeof(char), BC_DTOR_NONE);
 	}
 	// This needs to be updated because the parser could have been used
 	// somewhere else
-	else bc_parse_updateFunc(&vm.read_prs, BC_PROG_READ);
+	else bc_parse_updateFunc(&vm->read_prs, BC_PROG_READ);
 
-	BC_SETJMP_LOCKED(exec_err);
+	BC_SETJMP_LOCKED(vm, exec_err);
 
 	BC_SIG_UNLOCK;
 
 	// Set up the lexer and the read function.
-	bc_lex_file(&vm.read_prs.l, bc_program_stdin_name);
+	bc_lex_file(&vm->read_prs.l, bc_program_stdin_name);
 	bc_vec_popAll(&f->code);
 
 	// Read a line.
-	if (!BC_R) s = bc_read_line(&vm.read_buf, "");
-	else s = bc_read_line(&vm.read_buf, BC_VM_READ_PROMPT);
+	if (!BC_R) s = bc_read_line(&vm->read_buf, "");
+	else s = bc_read_line(&vm->read_buf, BC_VM_READ_PROMPT);
 
 	// We should *not* have run into EOF.
 	if (s == BC_STATUS_EOF) bc_err(BC_ERR_EXEC_READ_EXPR);
 
 	// Parse *one* expression, so is_stdin should be false.
-	bc_parse_text(&vm.read_prs, vm.read_buf.v, false, false);
+	bc_parse_text(&vm->read_prs, vm->read_buf.v, false, false);
 	BC_SIG_LOCK;
-	vm.expr(&vm.read_prs, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
+	vm->expr(&vm->read_prs, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
 	BC_SIG_UNLOCK;
 
 	// We *must* have a valid expression. A semicolon cannot end an expression,
 	// although EOF can.
-	if (BC_ERR(vm.read_prs.l.t != BC_LEX_NLINE &&
-	           vm.read_prs.l.t != BC_LEX_EOF))
+	if (BC_ERR(vm->read_prs.l.t != BC_LEX_NLINE &&
+	           vm->read_prs.l.t != BC_LEX_EOF))
 	{
 		bc_err(BC_ERR_EXEC_READ_EXPR);
 	}
@@ -796,7 +796,7 @@ bc_program_read(BcProgram* p)
 	f = bc_vec_item(&p->fns, BC_PROG_READ);
 
 	// We want a return instruction to simplify things.
-	bc_vec_pushByte(&f->code, vm.read_ret);
+	bc_vec_pushByte(&f->code, vm->read_ret);
 
 	// This lock is here to make sure dc's tail calls are the same length.
 	BC_SIG_LOCK;
@@ -813,9 +813,9 @@ bc_program_read(BcProgram* p)
 
 exec_err:
 	BC_SIG_MAYLOCK;
-	vm.is_stdin = is_stdin;
-	vm.file = file;
-	BC_LONGJMP_CONT;
+	vm->is_stdin = is_stdin;
+	vm->file = file;
+	BC_LONGJMP_CONT(vm);
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -850,12 +850,12 @@ static void
 bc_program_printChars(const char* str)
 {
 	const char* nl;
-	size_t len = vm.nchars + strlen(str);
+	size_t len = vm->nchars + strlen(str);
 	sig_atomic_t lock;
 
 	BC_SIG_TRYLOCK(lock);
 
-	bc_file_puts(&vm.fout, bc_flush_save, str);
+	bc_file_puts(&vm->fout, bc_flush_save, str);
 
 	// We need to update the number of characters, so we find the last newline
 	// and set the characters accordingly.
@@ -863,7 +863,7 @@ bc_program_printChars(const char* str)
 
 	if (nl != NULL) len = strlen(nl + 1);
 
-	vm.nchars = len > UINT16_MAX ? UINT16_MAX : (uint16_t) len;
+	vm->nchars = len > UINT16_MAX ? UINT16_MAX : (uint16_t) len;
 
 	BC_SIG_TRYUNLOCK(lock);
 }
@@ -907,7 +907,7 @@ bc_program_printString(const char* restrict str)
 				if (c == 'n')
 				{
 					BC_SIG_LOCK;
-					vm.nchars = UINT16_MAX;
+					vm->nchars = UINT16_MAX;
 					BC_SIG_UNLOCK;
 				}
 
@@ -990,7 +990,7 @@ bc_program_print(BcProgram* p, uchar inst, size_t idx)
 	else
 	{
 		// We want to flush any stuff in the stdout buffer first.
-		bc_file_flush(&vm.fout, bc_flush_save);
+		bc_file_flush(&vm->fout, bc_flush_save);
 		str = bc_program_string(p, n);
 
 #if BC_ENABLED
@@ -1366,7 +1366,7 @@ bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val)
 	{
 		// Set the min and max.
 		min = 0;
-		max = vm.maxes[BC_PROG_GLOBALS_SCALE];
+		max = vm->maxes[BC_PROG_GLOBALS_SCALE];
 
 #if BC_ENABLED
 		// Get a pointer to the stack.
@@ -1384,7 +1384,7 @@ bc_program_assignBuiltin(BcProgram* p, bool scale, bool obase, BcBigDig val)
 		{
 			min = 0;
 		}
-		max = vm.maxes[obase + BC_PROG_GLOBALS_IBASE];
+		max = vm->maxes[obase + BC_PROG_GLOBALS_IBASE];
 
 #if BC_ENABLED
 		// Get a pointer to the stack.
@@ -1732,7 +1732,7 @@ bc_program_incdec(BcProgram* p, uchar inst)
 	copy.t = BC_RESULT_TEMP;
 	bc_num_createCopy(&copy.d.n, num);
 
-	BC_SETJMP_LOCKED(exit);
+	BC_SETJMP_LOCKED(vm, exit);
 
 	BC_SIG_UNLOCK;
 
@@ -1747,7 +1747,7 @@ bc_program_incdec(BcProgram* p, uchar inst)
 
 	bc_vec_push(&p->results, &copy);
 
-	BC_UNSETJMP;
+	BC_UNSETJMP(vm);
 
 	BC_SIG_UNLOCK;
 
@@ -1757,7 +1757,7 @@ bc_program_incdec(BcProgram* p, uchar inst)
 exit:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&copy.d.n);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -2370,7 +2370,7 @@ bc_program_nquit(BcProgram* p, uchar inst)
 	// If we don't have enough executions, just quit.
 	if (i == p->stack.len)
 	{
-		vm.status = BC_STATUS_QUIT;
+		vm->status = BC_STATUS_QUIT;
 		BC_JMP;
 	}
 	else
@@ -2455,7 +2455,7 @@ bc_program_execStr(BcProgram* p, const char* restrict code,
 		idx = exec ? then_idx : else_idx;
 
 		BC_SIG_LOCK;
-		BC_SETJMP_LOCKED(exit);
+		BC_SETJMP_LOCKED(vm, exit);
 
 		// If we are supposed to execute, execute. If else_idx == SIZE_MAX, that
 		// means there was no else clause, so if execute is false and else does
@@ -2469,7 +2469,7 @@ bc_program_execStr(BcProgram* p, const char* restrict code,
 
 		if (BC_ERR(!BC_PROG_STR(n))) bc_err(BC_ERR_EXEC_TYPE);
 
-		BC_UNSETJMP;
+		BC_UNSETJMP(vm);
 		BC_SIG_UNLOCK;
 	}
 	else
@@ -2498,35 +2498,35 @@ bc_program_execStr(BcProgram* p, const char* restrict code,
 	{
 		BC_SIG_LOCK;
 
-		if (!BC_PARSE_IS_INITED(&vm.read_prs, p))
+		if (!BC_PARSE_IS_INITED(&vm->read_prs, p))
 		{
-			bc_parse_init(&vm.read_prs, p, fidx);
+			bc_parse_init(&vm->read_prs, p, fidx);
 
 			// Initialize this too because bc_vm_shutdown() expects them to be
 			// initialized togther.
-			bc_vec_init(&vm.read_buf, sizeof(char), BC_DTOR_NONE);
+			bc_vec_init(&vm->read_buf, sizeof(char), BC_DTOR_NONE);
 		}
 		// This needs to be updated because the parser could have been used
 		// somewhere else
-		else bc_parse_updateFunc(&vm.read_prs, fidx);
+		else bc_parse_updateFunc(&vm->read_prs, fidx);
 
-		bc_lex_file(&vm.read_prs.l, vm.file);
+		bc_lex_file(&vm->read_prs.l, vm->file);
 
-		BC_SETJMP_LOCKED(err);
+		BC_SETJMP_LOCKED(vm, err);
 
 		BC_SIG_UNLOCK;
 
 		// Parse.
-		bc_parse_text(&vm.read_prs, str, false, false);
+		bc_parse_text(&vm->read_prs, str, false, false);
 
 		BC_SIG_LOCK;
-		vm.expr(&vm.read_prs, BC_PARSE_NOCALL);
+		vm->expr(&vm->read_prs, BC_PARSE_NOCALL);
 
-		BC_UNSETJMP;
+		BC_UNSETJMP(vm);
 
 		// We can just assert this here because
 		// dc should parse everything until EOF.
-		assert(vm.read_prs.l.t == BC_LEX_EOF);
+		assert(vm->read_prs.l.t == BC_LEX_EOF);
 
 		BC_SIG_UNLOCK;
 	}
@@ -2575,7 +2575,7 @@ err:
 
 exit:
 	bc_vec_pop(&p->results);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -2625,7 +2625,7 @@ bc_program_globalSetting(BcProgram* p, uchar inst)
 	// Make sure the instruction is valid.
 	assert(inst >= BC_INST_LINE_LENGTH && inst <= BC_INST_LEADING_ZERO);
 
-	if (inst == BC_INST_LINE_LENGTH) val = (BcBigDig) vm.line_len;
+	if (inst == BC_INST_LINE_LENGTH) val = (BcBigDig) vm->line_len;
 #if BC_ENABLED
 	else if (inst == BC_INST_GLOBAL_STACKS) val = (BC_G != 0);
 #endif // BC_ENABLED
@@ -2876,11 +2876,11 @@ bc_program_reset(BcProgram* p)
 	memset(ip, 0, sizeof(BcInstPtr));
 
 	// Write the ready message for a signal, and clear the signal.
-	if (vm.sig)
+	if (vm->sig)
 	{
-		bc_file_printf(&vm.fout, "%s", bc_program_ready_msg);
-		bc_file_flush(&vm.fout, bc_flush_err);
-		vm.sig = 0;
+		bc_file_printf(&vm->fout, "%s", bc_program_ready_msg);
+		bc_file_flush(&vm->fout, bc_flush_err);
+		vm->sig = 0;
 	}
 }
 
@@ -2943,7 +2943,7 @@ bc_program_exec(BcProgram* p)
 #if !BC_HAS_COMPUTED_GOTO
 
 #ifndef NDEBUG
-	jmp_bufs_len = vm.jmp_bufs.len;
+	jmp_bufs_len = vm->jmp_bufs.len;
 #endif // NDEBUG
 
 	// This loop is the heart of the execution engine. It *is* the engine. For
@@ -2973,8 +2973,8 @@ bc_program_exec(BcProgram* p)
 #endif // BC_HAS_COMPUTED_GOTO
 
 #if BC_DEBUG_CODE
-		bc_file_printf(&vm.ferr, "inst: %s\n", bc_inst_names[inst]);
-		bc_file_flush(&vm.ferr, bc_flush_none);
+		bc_file_printf(&vm->ferr, "inst: %s\n", bc_inst_names[inst]);
+		bc_file_flush(&vm->ferr, bc_flush_none);
 #endif // BC_DEBUG_CODE
 
 #if !BC_HAS_COMPUTED_GOTO
@@ -3054,7 +3054,7 @@ bc_program_exec(BcProgram* p)
 			BC_PROG_LBL(BC_INST_HALT):
 			// clang-format on
 			{
-				vm.status = BC_STATUS_QUIT;
+				vm->status = BC_STATUS_QUIT;
 
 				// Just jump out. The jump series will take care of everything.
 				BC_JMP;
@@ -3104,7 +3104,7 @@ bc_program_exec(BcProgram* p)
 			{
 				// We want to flush output before
 				// this in case there is a prompt.
-				bc_file_flush(&vm.fout, bc_flush_save);
+				bc_file_flush(&vm->fout, bc_flush_save);
 
 				bc_program_read(p);
 
@@ -3139,7 +3139,7 @@ bc_program_exec(BcProgram* p)
 #endif // BC_ENABLE_EXTRA_MATH
 			// clang-format on
 			{
-				BcBigDig dig = vm.maxes[inst - BC_INST_MAXIBASE];
+				BcBigDig dig = vm->maxes[inst - BC_INST_MAXIBASE];
 				bc_program_pushBigdig(p, dig, BC_RESULT_TEMP);
 				BC_PROG_JUMP(inst, code, ip);
 			}
@@ -3258,7 +3258,7 @@ bc_program_exec(BcProgram* p)
 
 				// We want to flush right away to save the output for history,
 				// if history must preserve it when taking input.
-				bc_file_flush(&vm.fout, bc_flush_save);
+				bc_file_flush(&vm->fout, bc_flush_save);
 
 				BC_PROG_JUMP(inst, code, ip);
 			}
@@ -3598,7 +3598,7 @@ bc_program_exec(BcProgram* p)
 		// This is to allow me to use a debugger to see the last instruction,
 		// which will point to which function was the problem. But it's also a
 		// good smoke test for error handling changes.
-		assert(jmp_bufs_len == vm.jmp_bufs.len);
+		assert(jmp_bufs_len == vm->jmp_bufs.len);
 #endif // NDEBUG
 
 #endif // BC_HAS_COMPUTED_GOTO
@@ -3610,9 +3610,9 @@ bc_program_exec(BcProgram* p)
 void
 bc_program_printStackDebug(BcProgram* p)
 {
-	bc_file_puts(&vm.fout, bc_flush_err, "-------------- Stack ----------\n");
+	bc_file_puts(&vm->fout, bc_flush_err, "-------------- Stack ----------\n");
 	bc_program_printStack(p);
-	bc_file_puts(&vm.fout, bc_flush_err, "-------------- Stack End ------\n");
+	bc_file_puts(&vm->fout, bc_flush_err, "-------------- Stack End ------\n");
 }
 
 static void
@@ -3694,7 +3694,7 @@ bc_program_code(const BcProgram* p)
 		{
 			bc_program_printInst(p, code, &ip.idx);
 		}
-		bc_file_puts(&vm.fout, bc_flush_err, "\n\n");
+		bc_file_puts(&vm->fout, bc_flush_err, "\n\n");
 	}
 }
 #endif // BC_ENABLED && DC_ENABLED

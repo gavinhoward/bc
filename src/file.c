@@ -159,12 +159,12 @@ bc_file_flushErr(BcFile* restrict f, BcFlushType type)
 				i += 1;
 
 				// Save the extras.
-				bc_vec_string(&vm.history.extras, f->len - i, f->buf + i);
+				bc_vec_string(&vm->history.extras, f->len - i, f->buf + i);
 			}
 			// Else clear the extras if told to.
 			else if (type >= BC_FLUSH_NO_EXTRAS_CLEAR)
 			{
-				bc_vec_popAll(&vm.history.extras);
+				bc_vec_popAll(&vm->history.extras);
 			}
 		}
 #endif // BC_ENABLE_HISTORY
@@ -196,7 +196,7 @@ bc_file_flush(BcFile* restrict f, BcFlushType type)
 		// For EOF, set it and jump.
 		if (s == BC_STATUS_EOF)
 		{
-			vm.status = (sig_atomic_t) s;
+			vm->status = (sig_atomic_t) s;
 			BC_SIG_TRYUNLOCK(lock);
 			BC_JMP;
 		}
@@ -234,7 +234,7 @@ bc_file_write(BcFile* restrict f, BcFlushType type, const char* buf, size_t n)
 			// For EOF, set it and jump.
 			if (s == BC_STATUS_EOF)
 			{
-				vm.status = (sig_atomic_t) s;
+				vm->status = (sig_atomic_t) s;
 				BC_SIG_TRYUNLOCK(lock);
 				BC_JMP;
 			}

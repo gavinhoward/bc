@@ -453,18 +453,18 @@ bc_slabvec_print(BcVec* v, const char* func);
 #if DC_ENABLED
 
 /// Returns the set of slabs for the maps and the current calculator.
-#define BC_VEC_MAP_SLABS (BC_IS_DC ? &vm.main_slabs : &vm.other_slabs)
+#define BC_VEC_MAP_SLABS (BC_IS_DC ? &vm->main_slabs : &vm->other_slabs)
 
 #else // DC_ENABLED
 
 /// Returns the set of slabs for the maps and the current calculator.
-#define BC_VEC_MAP_SLABS (&vm.other_slabs)
+#define BC_VEC_MAP_SLABS (&vm->other_slabs)
 
 #endif // DC_ENABLED
 #else // BC_ENABLED
 
 /// Returns the set of slabs for the maps and the current calculator.
-#define BC_VEC_MAP_SLABS (&vm.main_slabs)
+#define BC_VEC_MAP_SLABS (&vm->main_slabs)
 
 #endif // BC_ENABLED
 

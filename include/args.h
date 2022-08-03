@@ -56,12 +56,12 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale);
 #if DC_ENABLED
 
 /// Returns true if the banner should be quieted.
-#define BC_ARGS_SHOULD_BE_QUIET (BC_IS_DC || vm.exprs.len > 1)
+#define BC_ARGS_SHOULD_BE_QUIET (BC_IS_DC || vm->exprs.len > 1)
 
 #else // DC_ENABLED
 
 /// Returns true if the banner should be quieted.
-#define BC_ARGS_SHOULD_BE_QUIET (vm.exprs.len > 1)
+#define BC_ARGS_SHOULD_BE_QUIET (vm->exprs.len > 1)
 
 #endif // DC_ENABLED
 

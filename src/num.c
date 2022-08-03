@@ -922,19 +922,6 @@ bc_num_shiftRight(BcNum* restrict n, size_t places)
 }
 
 /**
- * Invert @a into @a b at the current scale.
- * @param a      The number to invert.
- * @param b      The return parameter. This must be preallocated.
- * @param scale  The current scale.
- */
-static inline void
-bc_num_inv(BcNum* a, BcNum* b, size_t scale)
-{
-	assert(BC_NUM_NONZERO(a));
-	bc_num_div(&vm.one, a, b, scale);
-}
-
-/**
  * Tests if a number is a integer with scale or not. Returns true if the number
  * is not an integer. If it is, its integer shifted form is copied into the
  * result parameter for use where only integers are allowed.
@@ -1299,6 +1286,9 @@ bc_num_k(const BcNum* a, const BcNum* b, BcNum* restrict c)
 	BcDig* dig_ptr;
 	BcNumShiftAddOp op;
 	bool aone = BC_NUM_ONE(a);
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	assert(BC_NUM_ZERO(c));
 
@@ -1355,7 +1345,7 @@ bc_num_k(const BcNum* a, const BcNum* b, BcNum* restrict c)
 	max = bc_vm_growSize(max, max) + 1;
 	bc_num_init(&temp, max);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -1423,7 +1413,7 @@ err:
 	bc_num_free(&z2);
 	bc_num_free(&z1);
 	bc_num_free(&z0);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -1447,6 +1437,9 @@ bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	// does not apply here.
 	volatile size_t azero;
 	volatile size_t bzero;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	assert(BC_NUM_RDX_VALID(a));
 	assert(BC_NUM_RDX_VALID(b));
@@ -1502,7 +1495,7 @@ bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	bc_num_init(&cpa, a->len + BC_NUM_RDX_VAL(a));
 	bc_num_init(&cpb, b->len + BC_NUM_RDX_VAL(b));
 
-	BC_SETJMP_LOCKED(init_err);
+	BC_SETJMP_LOCKED(vm, init_err);
 
 	BC_SIG_UNLOCK;
 
@@ -1530,13 +1523,13 @@ bc_num_m(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	// jump.
 	BC_SIG_LOCK;
 
-	BC_UNSETJMP;
+	BC_UNSETJMP(vm);
 
 	// We want to ignore zero limbs.
 	azero = bc_num_shiftZero(&cpa);
 	bzero = bc_num_shiftZero(&cpb);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -1567,7 +1560,7 @@ init_err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&cpb);
 	bc_num_free(&cpa);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -1662,6 +1655,9 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 	// clobbering on longjmp(). This one is possible, I think.
 	volatile bool nonzero;
 	bool realnonzero;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	assert(b->len < a->len);
 
@@ -1748,7 +1744,7 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 
 	bc_num_init(&cpb, len + 1);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -1816,7 +1812,7 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&cpb);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -1831,6 +1827,9 @@ bc_num_d(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 {
 	size_t len, cpardx;
 	BcNum cpa, cpb;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	if (BC_NUM_ZERO(b)) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 
@@ -1867,7 +1866,7 @@ bc_num_d(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	bc_num_copy(&cpa, a);
 	bc_num_createCopy(&cpb, b);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -1922,7 +1921,7 @@ err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&cpb);
 	bc_num_free(&cpa);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -1946,6 +1945,9 @@ bc_num_r(BcNum* a, BcNum* b, BcNum* restrict c, BcNum* restrict d, size_t scale,
 	// This one is real.
 	size_t realscale;
 	bool neg;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	if (BC_NUM_ZERO(b)) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 
@@ -1960,7 +1962,7 @@ bc_num_r(BcNum* a, BcNum* b, BcNum* restrict c, BcNum* restrict d, size_t scale,
 
 	bc_num_init(&temp, d->cap);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -1988,7 +1990,7 @@ bc_num_r(BcNum* a, BcNum* b, BcNum* restrict c, BcNum* restrict d, size_t scale,
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&temp);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -2004,6 +2006,9 @@ bc_num_rem(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 {
 	BcNum c1;
 	size_t ts;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	ts = bc_vm_growSize(scale, b->scale);
 	ts = BC_MAX(ts, a->scale);
@@ -2013,7 +2018,7 @@ bc_num_rem(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	// Need a temp for the quotient.
 	bc_num_init(&c1, bc_num_mulReq(a, b, ts));
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -2022,7 +2027,7 @@ bc_num_rem(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&c1);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -2041,8 +2046,11 @@ bc_num_p(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 	// This one is real.
 	size_t powrdx, resrdx, realscale;
 	bool neg;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
-	// This is here to silence a warning from GCC
+	// This is here to silence a warning from GCC.
 #if BC_GCC
 	btemp.len = 0;
 	btemp.rdx = 0;
@@ -2082,7 +2090,7 @@ bc_num_p(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 
 	bc_num_createCopy(&copy, a);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -2140,7 +2148,7 @@ bc_num_p(BcNum* a, BcNum* b, BcNum* restrict c, size_t scale)
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&copy);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 #if BC_ENABLE_EXTRA_MATH
@@ -2223,6 +2231,9 @@ bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
 	BcNum* ptr_a;
 	BcNum* ptr_b;
 	BcNum num2;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = NULL;
+#endif // BC_ENABLE_LIBRARY
 
 	assert(a != NULL && b != NULL && c != NULL && op != NULL);
 
@@ -2238,6 +2249,10 @@ bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
 	// very least.
 	if (c == a || c == b)
 	{
+#if BC_ENABLE_LIBRARY
+		vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+
 		// NOLINTNEXTLINE
 		memcpy(&num2, c, sizeof(BcNum));
 
@@ -2245,7 +2260,7 @@ bc_num_binary(BcNum* a, BcNum* b, BcNum* c, size_t scale, BcNumBinOp op,
 
 		// Must prepare for cleanup. We want this here so that locals that got
 		// set stay set since a longjmp() is not guaranteed to preserve locals.
-		BC_SETJMP_LOCKED(err);
+		BC_SETJMP_LOCKED(vm, err);
 		BC_SIG_UNLOCK;
 	}
 	else
@@ -2272,7 +2287,7 @@ err:
 	{
 		BC_SIG_MAYLOCK;
 		bc_num_free(&num2);
-		BC_LONGJMP_CONT;
+		BC_LONGJMP_CONT(vm);
 	}
 }
 
@@ -2335,6 +2350,10 @@ bc_num_parseChar(char c, size_t base)
 	// If a letter...
 	if (isupper(c))
 	{
+#if BC_ENABLE_LIBRARY
+		BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+
 		// This returns the digit that directly corresponds with the letter.
 		c = BC_NUM_NUM_LETTER(c);
 
@@ -2362,6 +2381,9 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 	size_t len, i, temp, mod;
 	const char* ptr;
 	bool zero = true, rdx;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	// Eat leading zeroes.
 	for (i = 0; val[i] == '0'; ++i)
@@ -2500,6 +2522,9 @@ bc_num_parseBase(BcNum* restrict n, const char* restrict val, BcBigDig base)
 	size_t digs, len = strlen(val);
 	// This is volatile to quiet a warning on GCC about longjmp() clobbering.
 	volatile size_t i;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	// If zero, just return because the number should be virgin (already 0).
 	for (i = 0; zero && i < len; ++i)
@@ -2513,7 +2538,7 @@ bc_num_parseBase(BcNum* restrict n, const char* restrict val, BcBigDig base)
 	bc_num_init(&temp, BC_NUM_BIGDIG_LOG10);
 	bc_num_init(&mult1, BC_NUM_BIGDIG_LOG10);
 
-	BC_SETJMP_LOCKED(int_err);
+	BC_SETJMP_LOCKED(vm, int_err);
 
 	BC_SIG_UNLOCK;
 
@@ -2545,14 +2570,14 @@ bc_num_parseBase(BcNum* restrict n, const char* restrict val, BcBigDig base)
 	BC_SIG_LOCK;
 
 	// Unset the jump to reset in for these new initializations.
-	BC_UNSETJMP;
+	BC_UNSETJMP(vm);
 
 	bc_num_init(&mult2, BC_NUM_BIGDIG_LOG10);
 	bc_num_init(&result1, BC_NUM_DEF_SIZE);
 	bc_num_init(&result2, BC_NUM_DEF_SIZE);
 	bc_num_one(&mult1);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -2620,7 +2645,7 @@ int_err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&mult1);
 	bc_num_free(&temp);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -2631,7 +2656,7 @@ static inline void
 bc_num_printNewline(void)
 {
 #if !BC_ENABLE_LIBRARY
-	if (vm.nchars >= vm.line_len - 1 && vm.line_len)
+	if (vm->nchars >= vm->line_len - 1 && vm->line_len)
 	{
 		bc_vm_putchar('\\', bc_flush_none);
 		bc_vm_putchar('\n', bc_flush_err);
@@ -2812,12 +2837,15 @@ bc_num_printExponent(const BcNum* restrict n, bool eng, bool newline)
 	bool neg = (n->len <= nrdx);
 	BcNum temp, exp;
 	BcDig digs[BC_NUM_BIGDIG_LOG10];
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	BC_SIG_LOCK;
 
 	bc_num_createCopy(&temp, n);
 
-	BC_SETJMP_LOCKED(exit);
+	BC_SETJMP_LOCKED(vm, exit);
 
 	BC_SIG_UNLOCK;
 
@@ -2889,7 +2917,7 @@ bc_num_printExponent(const BcNum* restrict n, bool eng, bool newline)
 exit:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&temp);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
@@ -3026,6 +3054,9 @@ bc_num_printNum(BcNum* restrict n, BcBigDig base, size_t len,
 	size_t i, j, nrdx, idigits;
 	bool radix;
 	BcDig digit_digs[BC_NUM_BIGDIG_LOG10 + 1];
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	assert(base > 1);
 
@@ -3085,7 +3116,7 @@ bc_num_printNum(BcNum* restrict n, BcBigDig base, size_t len,
 	// intp will be the "integer part" of the number, so copy it.
 	bc_num_createCopy(&intp, n);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -3100,30 +3131,33 @@ bc_num_printNum(BcNum* restrict n, BcBigDig base, size_t len,
 	// exponent and power. That is to prevent us from calculating them every
 	// time because printing will probably happen multiple times on the same
 	// base.
-	if (base != vm.last_base)
+	if (base != vm->last_base)
 	{
-		vm.last_pow = 1;
-		vm.last_exp = 0;
+		vm->last_pow = 1;
+		vm->last_exp = 0;
 
 		// Calculate the exponent and power.
-		while (vm.last_pow * base <= BC_BASE_POW)
+		while (vm->last_pow * base <= BC_BASE_POW)
 		{
-			vm.last_pow *= base;
-			vm.last_exp += 1;
+			vm->last_pow *= base;
+			vm->last_exp += 1;
 		}
 
 		// Also, the remainder and base itself.
-		vm.last_rem = BC_BASE_POW - vm.last_pow;
-		vm.last_base = base;
+		vm->last_rem = BC_BASE_POW - vm->last_pow;
+		vm->last_base = base;
 	}
 
-	exp = vm.last_exp;
+	exp = vm->last_exp;
 
-	// If vm.last_rem is 0, then the base we are printing in is a divisor of
+	// If vm->last_rem is 0, then the base we are printing in is a divisor of
 	// BC_BASE_POW, which is the easy case because it means that BC_BASE_POW is
 	// a power of obase, and no conversion is needed. If it *is* 0, then we have
 	// the hard case, and we have to prepare the number for the base.
-	if (vm.last_rem != 0) bc_num_printPrepare(&intp, vm.last_rem, vm.last_pow);
+	if (vm->last_rem != 0)
+	{
+		bc_num_printPrepare(&intp, vm->last_rem, vm->last_pow);
+	}
 
 	// After the conversion comes the surprisingly easy part. From here on out,
 	// this is basically naive code that I wrote, adjusted for the larger bases.
@@ -3180,14 +3214,14 @@ bc_num_printNum(BcNum* restrict n, BcBigDig base, size_t len,
 	BC_SIG_LOCK;
 
 	// Reset the jump because some locals are changing.
-	BC_UNSETJMP;
+	BC_UNSETJMP(vm);
 
 	bc_num_init(&fracp2, nrdx);
 	bc_num_setup(&digit, digit_digs, sizeof(digit_digs) / sizeof(BcDig));
 	bc_num_init(&flen1, BC_NUM_BIGDIG_LOG10);
 	bc_num_init(&flen2, BC_NUM_BIGDIG_LOG10);
 
-	BC_SETJMP_LOCKED(frac_err);
+	BC_SETJMP_LOCKED(vm, frac_err);
 
 	BC_SIG_UNLOCK;
 
@@ -3249,7 +3283,7 @@ err:
 	bc_num_free(&fracp1);
 	bc_num_free(&intp);
 	bc_vec_free(&stack);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 /**
@@ -3433,8 +3467,14 @@ bc_num_len(const BcNum* restrict n)
 void
 bc_num_parse(BcNum* restrict n, const char* restrict val, BcBigDig base)
 {
+#ifndef NDEBUG
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+#endif // NDEBUG
+
 	assert(n != NULL && val != NULL && base);
-	assert(base >= BC_NUM_MIN_BASE && base <= vm.maxes[BC_PROG_GLOBALS_IBASE]);
+	assert(base >= BC_NUM_MIN_BASE && base <= vm->maxes[BC_PROG_GLOBALS_IBASE]);
 	assert(bc_num_strValid(val));
 
 	// A one character number is *always* parsed as though the base was the
@@ -3461,6 +3501,10 @@ bc_num_print(BcNum* restrict n, BcBigDig base, bool newline)
 
 	if (BC_NUM_NONZERO(n))
 	{
+#if BC_ENABLE_LIBRARY
+		BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+
 		// Print the sign.
 		if (BC_NUM_NEG(n)) bc_num_putchar('-', true);
 
@@ -3488,9 +3532,15 @@ bc_num_print(BcNum* restrict n, BcBigDig base, bool newline)
 BcBigDig
 bc_num_bigdig2(const BcNum* restrict n)
 {
+#ifndef NDEBUG
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+#endif // NDEBUG
+
 	// This function returns no errors because it's guaranteed to succeed if
 	// its preconditions are met. Those preconditions include both n needs to
-	// be non-NULL, n being non-negative, and n being less than vm.max. If all
+	// be non-NULL, n being non-negative, and n being less than vm->max. If all
 	// of that is true, then we can just convert without worrying about negative
 	// errors or overflow.
 
@@ -3499,7 +3549,7 @@ bc_num_bigdig2(const BcNum* restrict n)
 
 	assert(n != NULL);
 	assert(!BC_NUM_NEG(n));
-	assert(bc_num_cmp(n, &vm.max) < 0);
+	assert(bc_num_cmp(n, &vm->max) < 0);
 	assert(n->len - nrdx <= 3);
 
 	// There is a small speed win from unrolling the loop here, and since it
@@ -3534,6 +3584,10 @@ bc_num_bigdig2(const BcNum* restrict n)
 BcBigDig
 bc_num_bigdig(const BcNum* restrict n)
 {
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+
 	assert(n != NULL);
 
 	// This error checking is extremely important, and if you do not have a
@@ -3542,7 +3596,7 @@ bc_num_bigdig(const BcNum* restrict n)
 	// includes all instances of numbers inputted by the user or calculated by
 	// the user. Otherwise, you can call the faster bc_num_bigdig2().
 	if (BC_ERR(BC_NUM_NEG(n))) bc_err(BC_ERR_MATH_NEGATIVE);
-	if (BC_ERR(bc_num_cmp(n, &vm.max) >= 0)) bc_err(BC_ERR_MATH_OVERFLOW);
+	if (BC_ERR(bc_num_cmp(n, &vm->max) >= 0)) bc_err(BC_ERR_MATH_OVERFLOW);
 
 	return bc_num_bigdig2(n);
 }
@@ -3582,6 +3636,9 @@ bc_num_rng(const BcNum* restrict n, BcRNG* rng)
 	BcNum temp, temp2, intn, frac;
 	BcRand state1, state2, inc1, inc2;
 	size_t nrdx = BC_NUM_RDX_VAL(n);
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	// This function holds the secret of how I interpret a seed number for the
 	// PRNG. Well, it's actually in the development manual
@@ -3595,11 +3652,11 @@ bc_num_rng(const BcNum* restrict n, BcRNG* rng)
 	bc_num_init(&frac, nrdx);
 	bc_num_init(&intn, bc_num_int(n));
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
-	assert(BC_NUM_RDX_VALID_NP(vm.max));
+	assert(BC_NUM_RDX_VALID_NP(vm->max));
 
 	// NOLINTNEXTLINE
 	memcpy(frac.num, n->num, BC_NUM_SIZE(nrdx));
@@ -3608,11 +3665,11 @@ bc_num_rng(const BcNum* restrict n, BcRNG* rng)
 	frac.scale = n->scale;
 
 	assert(BC_NUM_RDX_VALID_NP(frac));
-	assert(BC_NUM_RDX_VALID_NP(vm.max2));
+	assert(BC_NUM_RDX_VALID_NP(vm->max2));
 
 	// Multiply the fraction and truncate so that it's an integer. The
 	// truncation is what clamps it, by the way.
-	bc_num_mul(&frac, &vm.max2, &temp, 0);
+	bc_num_mul(&frac, &vm->max2, &temp, 0);
 	bc_num_truncate(&temp, temp.scale);
 	bc_num_copy(&frac, &temp);
 
@@ -3623,17 +3680,17 @@ bc_num_rng(const BcNum* restrict n, BcRNG* rng)
 
 	// This assert is here because it has to be true. It is also here to justify
 	// some optimizations.
-	assert(BC_NUM_NONZERO(&vm.max));
+	assert(BC_NUM_NONZERO(&vm->max));
 
 	// If there *was* a fractional part...
 	if (BC_NUM_NONZERO(&frac))
 	{
 		// This divmod splits frac into the two state parts.
-		bc_num_divmod(&frac, &vm.max, &temp, &temp2, 0);
+		bc_num_divmod(&frac, &vm->max, &temp, &temp2, 0);
 
-		// frac is guaranteed to be smaller than vm.max * vm.max (pow).
-		// This means that when dividing frac by vm.max, as above, the
-		// quotient and remainder are both guaranteed to be less than vm.max,
+		// frac is guaranteed to be smaller than vm->max * vm->max (pow).
+		// This means that when dividing frac by vm->max, as above, the
+		// quotient and remainder are both guaranteed to be less than vm->max,
 		// which means we can use bc_num_bigdig2() here and not worry about
 		// overflow.
 		state1 = (BcRand) bc_num_bigdig2(&temp2);
@@ -3645,20 +3702,20 @@ bc_num_rng(const BcNum* restrict n, BcRNG* rng)
 	if (BC_NUM_NONZERO(&intn))
 	{
 		// This divmod splits intn into the two inc parts.
-		bc_num_divmod(&intn, &vm.max, &temp, &temp2, 0);
+		bc_num_divmod(&intn, &vm->max, &temp, &temp2, 0);
 
-		// Because temp2 is the mod of vm.max, from above, it is guaranteed
+		// Because temp2 is the mod of vm->max, from above, it is guaranteed
 		// to be small enough to use bc_num_bigdig2().
 		inc1 = (BcRand) bc_num_bigdig2(&temp2);
 
 		// Clamp the second inc part.
-		if (bc_num_cmp(&temp, &vm.max) >= 0)
+		if (bc_num_cmp(&temp, &vm->max) >= 0)
 		{
 			bc_num_copy(&temp2, &temp);
-			bc_num_mod(&temp2, &vm.max, &temp, 0);
+			bc_num_mod(&temp2, &vm->max, &temp, 0);
 		}
 
-		// The if statement above ensures that temp is less than vm.max, which
+		// The if statement above ensures that temp is less than vm->max, which
 		// means that we can use bc_num_bigdig2() here.
 		inc2 = (BcRand) bc_num_bigdig2(&temp);
 	}
@@ -3672,7 +3729,7 @@ err:
 	bc_num_free(&frac);
 	bc_num_free(&temp2);
 	bc_num_free(&temp);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 void
@@ -3682,12 +3739,15 @@ bc_num_createFromRNG(BcNum* restrict n, BcRNG* rng)
 	BcNum conv, temp1, temp2, temp3;
 	BcDig temp1_num[BC_RAND_NUM_SIZE], temp2_num[BC_RAND_NUM_SIZE];
 	BcDig conv_num[BC_NUM_BIGDIG_LOG10];
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	BC_SIG_LOCK;
 
 	bc_num_init(&temp3, 2 * BC_RAND_NUM_SIZE);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -3696,12 +3756,12 @@ bc_num_createFromRNG(BcNum* restrict n, BcRNG* rng)
 	bc_num_setup(&conv, conv_num, sizeof(conv_num) / sizeof(BcDig));
 
 	// This assert is here because it has to be true. It is also here to justify
-	// the assumption that vm.max is not zero.
-	assert(BC_NUM_NONZERO(&vm.max));
+	// the assumption that vm->max is not zero.
+	assert(BC_NUM_NONZERO(&vm->max));
 
 	// Because this is true, we can just ignore math errors that would happen
 	// otherwise.
-	assert(BC_NUM_NONZERO(&vm.max2));
+	assert(BC_NUM_NONZERO(&vm->max2));
 
 	bc_rand_getRands(rng, &s1, &s2, &i1, &i2);
 
@@ -3711,14 +3771,14 @@ bc_num_createFromRNG(BcNum* restrict n, BcRNG* rng)
 	assert(BC_NUM_RDX_VALID_NP(conv));
 
 	// Multiply by max to make room for the first piece of state.
-	bc_num_mul(&conv, &vm.max, &temp1, 0);
+	bc_num_mul(&conv, &vm->max, &temp1, 0);
 
 	// Add in the first piece of state.
 	bc_num_bigdig2num(&conv, (BcBigDig) s1);
 	bc_num_add(&conv, &temp1, &temp2, 0);
 
 	// Divide to make it an entirely fractional part.
-	bc_num_div(&temp2, &vm.max2, &temp3, BC_RAND_STATE_BITS);
+	bc_num_div(&temp2, &vm->max2, &temp3, BC_RAND_STATE_BITS);
 
 	// Now start on the increment parts. It's the same process without the
 	// divide, so put the second piece of increment into a number.
@@ -3727,7 +3787,7 @@ bc_num_createFromRNG(BcNum* restrict n, BcRNG* rng)
 	assert(BC_NUM_RDX_VALID_NP(conv));
 
 	// Multiply by max to make room for the first piece of increment.
-	bc_num_mul(&conv, &vm.max, &temp1, 0);
+	bc_num_mul(&conv, &vm->max, &temp1, 0);
 
 	// Add in the first piece of increment.
 	bc_num_bigdig2num(&conv, (BcBigDig) i1);
@@ -3741,7 +3801,7 @@ bc_num_createFromRNG(BcNum* restrict n, BcRNG* rng)
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&temp3);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 void
@@ -3952,6 +4012,9 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	// This one is real.
 	size_t pow, len, rdx, req, resscale, realscale;
 	BcDig half_digs[1];
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	assert(a != NULL && b != NULL && a != b);
 
@@ -4018,7 +4081,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	bc_num_init(&f, len);
 	bc_num_init(&fprime, len);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -4088,7 +4151,7 @@ err:
 	bc_num_free(&f);
 	bc_num_free(&num2);
 	bc_num_free(&num1);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 }
 
 void
@@ -4099,6 +4162,9 @@ bc_num_divmod(BcNum* a, BcNum* b, BcNum* c, BcNum* d, size_t scale)
 	// This is volatile to quiet a warning on GCC about clobbering with
 	// longjmp().
 	volatile bool init = false;
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	// The bulk of this function is just doing what bc_num_binary() does for the
 	// binary operators. However, it assumes that only c and a can be equal.
@@ -4123,7 +4189,7 @@ bc_num_divmod(BcNum* a, BcNum* b, BcNum* c, BcNum* d, size_t scale)
 
 		init = true;
 
-		BC_SETJMP_LOCKED(err);
+		BC_SETJMP_LOCKED(vm, err);
 
 		BC_SIG_UNLOCK;
 	}
@@ -4164,7 +4230,7 @@ err:
 	{
 		BC_SIG_MAYLOCK;
 		bc_num_free(&num2);
-		BC_LONGJMP_CONT;
+		BC_LONGJMP_CONT(vm);
 	}
 }
 
@@ -4173,12 +4239,14 @@ bc_num_modexp(BcNum* a, BcNum* b, BcNum* c, BcNum* restrict d)
 {
 	BcNum base, exp, two, temp, atemp, btemp, ctemp;
 	BcDig two_digs[2];
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
 
 	assert(a != NULL && b != NULL && c != NULL && d != NULL);
 	assert(a != d && b != d && c != d);
 
 	if (BC_ERR(BC_NUM_ZERO(c))) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
-
 	if (BC_ERR(BC_NUM_NEG(b))) bc_err(BC_ERR_MATH_NEGATIVE);
 
 #ifndef NDEBUG
@@ -4203,7 +4271,7 @@ bc_num_modexp(BcNum* a, BcNum* b, BcNum* c, BcNum* restrict d)
 	bc_num_init(&temp, btemp.len + 1);
 	bc_num_createCopy(&exp, &btemp);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
@@ -4245,7 +4313,7 @@ err:
 	bc_num_free(&exp);
 	bc_num_free(&temp);
 	bc_num_free(&base);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 	assert(!BC_NUM_NEG(d) || d->len);
 	assert(BC_NUM_RDX_VALID(d));
 	assert(!d->len || d->num[d->len - 1] || BC_NUM_RDX_VAL(d) == d->len);
@@ -4255,12 +4323,12 @@ err:
 void
 bc_num_printDebug(const BcNum* n, const char* name, bool emptyline)
 {
-	bc_file_puts(&vm.fout, bc_flush_none, name);
-	bc_file_puts(&vm.fout, bc_flush_none, ": ");
+	bc_file_puts(&vm->fout, bc_flush_none, name);
+	bc_file_puts(&vm->fout, bc_flush_none, ": ");
 	bc_num_printDecimal(n, true);
-	bc_file_putchar(&vm.fout, bc_flush_err, '\n');
-	if (emptyline) bc_file_putchar(&vm.fout, bc_flush_err, '\n');
-	vm.nchars = 0;
+	bc_file_putchar(&vm->fout, bc_flush_err, '\n');
+	if (emptyline) bc_file_putchar(&vm->fout, bc_flush_err, '\n');
+	vm->nchars = 0;
 }
 
 void
@@ -4270,19 +4338,19 @@ bc_num_printDigs(const BcDig* n, size_t len, bool emptyline)
 
 	for (i = len - 1; i < len; --i)
 	{
-		bc_file_printf(&vm.fout, " %lu", (unsigned long) n[i]);
+		bc_file_printf(&vm->fout, " %lu", (unsigned long) n[i]);
 	}
 
-	bc_file_putchar(&vm.fout, bc_flush_err, '\n');
-	if (emptyline) bc_file_putchar(&vm.fout, bc_flush_err, '\n');
-	vm.nchars = 0;
+	bc_file_putchar(&vm->fout, bc_flush_err, '\n');
+	if (emptyline) bc_file_putchar(&vm->fout, bc_flush_err, '\n');
+	vm->nchars = 0;
 }
 
 void
 bc_num_printWithDigs(const BcNum* n, const char* name, bool emptyline)
 {
-	bc_file_puts(&vm.fout, bc_flush_none, name);
-	bc_file_printf(&vm.fout, " len: %zu, rdx: %zu, scale: %zu\n", name, n->len,
+	bc_file_puts(&vm->fout, bc_flush_none, name);
+	bc_file_printf(&vm->fout, " len: %zu, rdx: %zu, scale: %zu\n", name, n->len,
 	               BC_NUM_RDX_VAL(n), n->scale);
 	bc_num_printDigs(n->num, n->len, emptyline);
 }
@@ -4292,19 +4360,19 @@ bc_num_dump(const char* varname, const BcNum* n)
 {
 	ulong i, scale = n->scale;
 
-	bc_file_printf(&vm.ferr, "\n%s = %s", varname,
+	bc_file_printf(&vm->ferr, "\n%s = %s", varname,
 	               n->len ? (BC_NUM_NEG(n) ? "-" : "+") : "0 ");
 
 	for (i = n->len - 1; i < n->len; --i)
 	{
 		if (i + 1 == BC_NUM_RDX_VAL(n))
 		{
-			bc_file_puts(&vm.ferr, bc_flush_none, ". ");
+			bc_file_puts(&vm->ferr, bc_flush_none, ". ");
 		}
 
 		if (scale / BC_BASE_DIGS != BC_NUM_RDX_VAL(n) - i - 1)
 		{
-			bc_file_printf(&vm.ferr, "%lu ", (unsigned long) n->num[i]);
+			bc_file_printf(&vm->ferr, "%lu ", (unsigned long) n->num[i]);
 		}
 		else
 		{
@@ -4315,17 +4383,17 @@ bc_num_dump(const char* varname, const BcNum* n)
 			if (mod != 0)
 			{
 				div = n->num[i] / ((BcDig) bc_num_pow10[(ulong) d]);
-				bc_file_printf(&vm.ferr, "%lu", (unsigned long) div);
+				bc_file_printf(&vm->ferr, "%lu", (unsigned long) div);
 			}
 
 			div = n->num[i] % ((BcDig) bc_num_pow10[(ulong) d]);
-			bc_file_printf(&vm.ferr, " ' %lu ", (unsigned long) div);
+			bc_file_printf(&vm->ferr, " ' %lu ", (unsigned long) div);
 		}
 	}
 
-	bc_file_printf(&vm.ferr, "(%zu | %zu.%zu / %zu) %lu\n", n->scale, n->len,
+	bc_file_printf(&vm->ferr, "(%zu | %zu.%zu / %zu) %lu\n", n->scale, n->len,
 	               BC_NUM_RDX_VAL(n), n->cap, (unsigned long) (void*) n->num);
 
-	bc_file_flush(&vm.ferr, bc_flush_err);
+	bc_file_flush(&vm->ferr, bc_flush_err);
 }
 #endif // BC_DEBUG_CODE

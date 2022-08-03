@@ -1461,7 +1461,13 @@ if [ "$nls" -ne 0 ]; then
 	flags="$flags -DBC_ENABLE_EXTRA_MATH=$extra_math -I$scriptdir/include/"
 	flags="$flags -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null 2>&1
+	ccbase=$(basename "$CC")
+
+	if [ "$ccbase" = "clang" ]; then
+		flags="$flags -Wno-unreachable-code"
+	fi
+
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null #2>&1
 
 	err="$?"
 

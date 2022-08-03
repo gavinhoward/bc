@@ -423,7 +423,7 @@ dc_parse_parse(BcParse* p)
 {
 	assert(p != NULL);
 
-	BC_SETJMP_LOCKED(exit);
+	BC_SETJMP_LOCKED(vm, exit);
 
 	// If we have EOF, someone called this function one too many times.
 	// Otherwise, parse.
@@ -433,9 +433,9 @@ dc_parse_parse(BcParse* p)
 exit:
 
 	// Need to reset if there was an error.
-	if (BC_SIG_EXC) bc_parse_reset(p);
+	if (BC_SIG_EXC(vm)) bc_parse_reset(p);
 
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 	BC_SIG_MAYLOCK;
 }
 #endif // DC_ENABLED

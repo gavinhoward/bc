@@ -179,54 +179,54 @@
 #define BC_FLAG_DIGIT_CLAMP (UINTMAX_C(1) << 14)
 
 /// A convenience macro for getting the TTYIN flag.
-#define BC_TTYIN (vm.flags & BC_FLAG_TTYIN)
+#define BC_TTYIN (vm->flags & BC_FLAG_TTYIN)
 
 /// A convenience macro for getting the TTY flag.
-#define BC_TTY (vm.flags & BC_FLAG_TTY)
+#define BC_TTY (vm->flags & BC_FLAG_TTY)
 
 /// A convenience macro for getting the SIGINT flag.
-#define BC_SIGINT (vm.flags & BC_FLAG_SIGINT)
+#define BC_SIGINT (vm->flags & BC_FLAG_SIGINT)
 
 #if BC_ENABLED
 
 /// A convenience macro for getting the POSIX error flag.
-#define BC_S (vm.flags & BC_FLAG_S)
+#define BC_S (vm->flags & BC_FLAG_S)
 
 /// A convenience macro for getting the POSIX warning flag.
-#define BC_W (vm.flags & BC_FLAG_W)
+#define BC_W (vm->flags & BC_FLAG_W)
 
 /// A convenience macro for getting the math library flag.
-#define BC_L (vm.flags & BC_FLAG_L)
+#define BC_L (vm->flags & BC_FLAG_L)
 
 /// A convenience macro for getting the global stacks flag.
-#define BC_G (vm.flags & BC_FLAG_G)
+#define BC_G (vm->flags & BC_FLAG_G)
 
 #endif // BC_ENABLED
 
 #if DC_ENABLED
 
 /// A convenience macro for getting the extended register flag.
-#define DC_X (vm.flags & DC_FLAG_X)
+#define DC_X (vm->flags & DC_FLAG_X)
 
 #endif // DC_ENABLED
 
 /// A convenience macro for getting the interactive flag.
-#define BC_I (vm.flags & BC_FLAG_I)
+#define BC_I (vm->flags & BC_FLAG_I)
 
 /// A convenience macro for getting the prompt flag.
-#define BC_P (vm.flags & BC_FLAG_P)
+#define BC_P (vm->flags & BC_FLAG_P)
 
 /// A convenience macro for getting the read prompt flag.
-#define BC_R (vm.flags & BC_FLAG_R)
+#define BC_R (vm->flags & BC_FLAG_R)
 
 /// A convenience macro for getting the leading zero flag.
-#define BC_Z (vm.flags & BC_FLAG_Z)
+#define BC_Z (vm->flags & BC_FLAG_Z)
 
 /// A convenience macro for getting the expression exit flag.
-#define BC_EXPR_EXIT (vm.flags & BC_FLAG_EXPR_EXIT)
+#define BC_EXPR_EXIT (vm->flags & BC_FLAG_EXPR_EXIT)
 
 /// A convenience macro for getting the digit clamp flag.
-#define BC_DIGIT_CLAMP (vm.flags & BC_FLAG_DIGIT_CLAMP)
+#define BC_DIGIT_CLAMP (vm->flags & BC_FLAG_DIGIT_CLAMP)
 
 #if BC_ENABLED
 
@@ -236,10 +236,10 @@
 #if DC_ENABLED
 
 /// Returns true if bc is running.
-#define BC_IS_BC (vm.name[0] != 'd')
+#define BC_IS_BC (vm->name[0] != 'd')
 
 /// Returns true if dc is running.
-#define BC_IS_DC (vm.name[0] == 'd')
+#define BC_IS_DC (vm->name[0] == 'd')
 
 /// Returns the correct read prompt.
 #define BC_VM_READ_PROMPT (BC_IS_BC ? "read> " : "?> ")
@@ -400,9 +400,9 @@
 
 #else // !BC_ENABLE_LIBRARY
 
-#define BC_Z (vm.leading_zeroes)
+#define BC_Z (vm->leading_zeroes)
 
-#define BC_DIGIT_CLAMP (vm.digit_clamp)
+#define BC_DIGIT_CLAMP (vm->digit_clamp)
 
 #endif // !BC_ENABLE_LIBRARY
 
@@ -579,15 +579,7 @@ typedef struct BcVm
 	/// The number of "references," or times that the library was initialized.
 	unsigned int refs;
 
-	/// Non-zero if bcl is running. This is volatile sig_atomic_t because it is
-	/// also used in the signal handler. See the development manual
-	/// (manuals/development.md#async-signal-safe-signal-handling) for more
-	/// information.
-	volatile sig_atomic_t running;
-
-#endif // BC_ENABLE_LIBRARY
-
-#if !BC_ENABLE_LIBRARY
+#else // BC_ENABLE_LIBRARY
 
 	/// A pointer to the filename of the current file. This is not owned by the
 	/// BcVm struct.
@@ -595,8 +587,6 @@ typedef struct BcVm
 
 	/// The message printed when SIGINT happens.
 	const char* sigmsg;
-
-#endif // !BC_ENABLE_LIBRARY
 
 	/// Non-zero when signals are "locked." This is volatile sig_atomic_t
 	/// because it is also used in the signal handler. See the development
@@ -610,8 +600,6 @@ typedef struct BcVm
 	/// (manuals/development.md#async-signal-safe-signal-handling) for more
 	/// information.
 	volatile sig_atomic_t sig;
-
-#if !BC_ENABLE_LIBRARY
 
 	/// The length of sigmsg.
 	uchar siglen;
@@ -654,13 +642,6 @@ typedef struct BcVm
 	bool no_redefine;
 
 #endif // BC_ENABLED
-
-#endif // !BC_ENABLE_LIBRARY
-
-	/// An array of maxes for the globals.
-	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
-
-#if !BC_ENABLE_LIBRARY
 
 	/// A vector of filenames to process.
 	BcVec files;
@@ -705,7 +686,10 @@ typedef struct BcVm
 	const char* locale;
 #endif // BC_ENABLE_NLS
 
-#endif // !BC_ENABLE_LIBRARY
+#endif // BC_ENABLE_LIBRARY
+
+	/// An array of maxes for the globals.
+	BcBigDig maxes[BC_PROG_GLOBALS_LEN + BC_ENABLE_EXTRA_MATH];
 
 	/// The last base used to parse.
 	BcBigDig last_base;
@@ -794,6 +778,8 @@ typedef struct BcVm
 
 #endif // BC_ENABLED
 #endif // !BC_ENABLE_LIBRARY
+
+	BcDig* temps_buf[BC_VM_MAX_TEMPS];
 
 #if BC_DEBUG_CODE
 
@@ -1077,10 +1063,17 @@ extern const char bc_pledge_end_history[];
 /// A reference to the end pledge() promises when *not* using history.
 extern const char bc_pledge_end[];
 
+#if !BC_ENABLE_LIBRARY
+
 /// A reference to the global data.
-extern BcVm vm;
+extern BcVm* vm;
+
+/// The global data.
+extern BcVm vm_data;
 
 /// A reference to the global output buffers.
 extern char output_bufs[BC_VM_BUF_SIZE];
+
+#endif // !BC_ENABLE_LIBRARY
 
 #endif // BC_VM_H

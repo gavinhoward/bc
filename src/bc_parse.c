@@ -402,7 +402,7 @@ bc_parse_name(BcParse* p, BcInst* type, bool* can_assign, uint8_t flags)
 	// We want a copy of the name since the lexer might overwrite its copy.
 	name = bc_vm_strdup(p->l.str.v);
 
-	BC_SETJMP_LOCKED(err);
+	BC_SETJMP_LOCKED(vm, err);
 
 	// We need the next token to see if it's just a variable or something more.
 	bc_lex_next(&p->l);
@@ -475,7 +475,7 @@ bc_parse_name(BcParse* p, BcInst* type, bool* can_assign, uint8_t flags)
 err:
 	// Need to make sure to unallocate the name.
 	free(name);
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 	BC_SIG_MAYLOCK;
 }
 
@@ -1091,9 +1091,9 @@ bc_parse_endif(BcParse* p)
 	{
 		// We set this to restore it later. We don't want the parser thinking
 		// that we are on stdin for this one because it will want more.
-		bool is_stdin = vm.is_stdin;
+		bool is_stdin = vm->is_stdin;
 
-		vm.is_stdin = false;
+		vm->is_stdin = false;
 
 		// End all of the if statements and loops.
 		while (p->flags.len > 1 || BC_PARSE_IF_END(p))
@@ -1102,10 +1102,10 @@ bc_parse_endif(BcParse* p)
 			if (p->flags.len > 1) bc_parse_endBody(p, false);
 		}
 
-		vm.is_stdin = is_stdin;
+		vm->is_stdin = is_stdin;
 	}
 	// If we reach here, a block was not properly closed, and we should error.
-	else bc_parse_err(&vm.prs, BC_ERR_PARSE_BLOCK);
+	else bc_parse_err(&vm->prs, BC_ERR_PARSE_BLOCK);
 }
 
 /**
@@ -1804,7 +1804,7 @@ bc_parse_stmt(BcParse* p)
 		{
 			// Quit is a compile-time command. We don't exit directly, so the vm
 			// can clean up.
-			vm.status = BC_STATUS_QUIT;
+			vm->status = BC_STATUS_QUIT;
 			BC_JMP;
 			break;
 		}
@@ -1926,7 +1926,7 @@ bc_parse_parse(BcParse* p)
 {
 	assert(p);
 
-	BC_SETJMP_LOCKED(exit);
+	BC_SETJMP_LOCKED(vm, exit);
 
 	// We should not let an EOF get here unless some partial parse was not
 	// completed, in which case, it's the user's fault.
@@ -1952,12 +1952,12 @@ bc_parse_parse(BcParse* p)
 exit:
 
 	// We need to reset on error.
-	if (BC_ERR(((vm.status && vm.status != BC_STATUS_QUIT) || vm.sig)))
+	if (BC_ERR(((vm->status && vm->status != BC_STATUS_QUIT) || vm->sig)))
 	{
 		bc_parse_reset(p);
 	}
 
-	BC_LONGJMP_CONT;
+	BC_LONGJMP_CONT(vm);
 	BC_SIG_MAYLOCK;
 }
 

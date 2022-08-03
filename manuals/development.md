@@ -4862,16 +4862,16 @@ for generating real numbers with it. (In `bc`, such support is in
 
 ### Signal Handling
 
-Like signal handling in `bc` proper (see the [Async-Signal-Safe Signal
-Handling][173] section), `bcl` has the infrastructure for signal handling.
+`bcl` does not have the capability for signal handling (as of version `6.0.0`).
 
-This infrastructure is different, however, as `bcl` assumes that clients will
-implement their own signal handling.
+### Threads
 
-So instead of doing signal handling on its own, `bcl` provides the capability to
-interrupt executions and return to the clients almost immediately. Like in `bc`,
-this is done with `setjmp()` and `longjmp()`, although the jump series is
-stopped before returning normally to client code.
+It is possible to use `bcl` across multiple threads. However, `bcl` must be
+initialized on each thread where it will be used.
+
+This is because `bcl` uses thread-specific data to store the "globals" for each
+thread. This is to ensure that threads do not stomp on each other's numbers or
+other data structures.
 
 ### Contexts
 

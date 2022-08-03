@@ -464,14 +464,14 @@ extern const char bc_program_esc_seqs[];
 #if BC_DEBUG_CODE
 
 // clang-format off
-#define BC_PROG_JUMP(inst, code, ip)                                 \
-	do                                                               \
-	{                                                                \
-		inst = (uchar) (code)[(ip)->idx++];                          \
-		bc_file_printf(&vm.ferr, "inst: %s\n", bc_inst_names[inst]); \
-		bc_file_flush(&vm.ferr, bc_flush_none);                      \
-		goto *bc_program_inst_lbls[inst];                            \
-	}                                                                \
+#define BC_PROG_JUMP(inst, code, ip)                                  \
+	do                                                                \
+	{                                                                 \
+		inst = (uchar) (code)[(ip)->idx++];                           \
+		bc_file_printf(&vm->ferr, "inst: %s\n", bc_inst_names[inst]); \
+		bc_file_flush(&vm->ferr, bc_flush_none);                      \
+		goto *bc_program_inst_lbls[inst];                             \
+	}                                                                 \
 	while (0)
 // clang-format on
 
