@@ -1,6 +1,6 @@
 # News
 
-## 5.4.0
+## 6.0.0
 
 This is a production release that fixes an oversight in the `bc` parser (that
 sometimes caused the wrong error message) and adds a feature for compatibility
@@ -11,12 +11,16 @@ manual][13]), it can be set with the `BC_DIGIT_CLAMP` and `DC_DIGIT_CLAMP`
 environment variables, and it can be set with the `-c` and `-C` command-line
 options.
 
-Turning off clamping was also added to the `bcl` library, requiring the minor
-version bump.
+Turning off clamping was also added to the `bcl` library.
 
-In addition, a convenience option (`-p`) to `configure.sh` was added to build a
-`bc` and `dc` that is by default compatible with either the BSD `bc` and `dc` or
-the GNU `bc` and `dc`.
+In addition, signal handling was removed from the `bcl` library in order to add
+the capability for multi-threading. This required a major version bump. I
+apologize to all library users (I don't know of any), but signals and threads do
+not play well together.
+
+To help with building, a convenience option (`-p`) to `configure.sh` was added
+to build a `bc` and `dc` that is by default compatible with either the BSD `bc`
+and `dc` or the GNU `bc` and `dc`.
 
 ## 5.3.3
 
