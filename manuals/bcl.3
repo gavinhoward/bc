@@ -295,7 +295,13 @@ Otherwise, this function can return:
 .PP
 This function must be the second one clients call.
 Calling any other function without calling \f[B]bcl_start()\f[R] and
-then this one first is undefined behavior.
+then this one first is undefined behavior, except in the case of new
+threads.
+New threads can safely call this function without calling
+\f[B]bcl_start()\f[R] if another thread has previously called
+\f[B]bcl_start()\f[R].
+But this function must still be the first function in bcl(3) called by
+that new thread.
 .RE
 .TP
 \f[B]void bcl_free(\f[R]\f[I]void\f[R]\f[B])\f[R]

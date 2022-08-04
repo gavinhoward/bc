@@ -268,7 +268,10 @@ each function for what each function can return.
 
     This function must be the second one clients call. Calling any other
     function without calling **bcl_start()** and then this one first is
-    undefined behavior.
+    undefined behavior, except in the case of new threads. New threads can
+    safely call this function without calling **bcl_start()** if another thread
+    has previously called **bcl_start()**. But this function must still be the
+    first function in bcl(3) called by that new thread.
 
 **void bcl_free(**_void_**)**
 
