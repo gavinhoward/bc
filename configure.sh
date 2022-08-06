@@ -778,7 +778,7 @@ predefined_build() {
 			hist_impl="internal"
 			extra_math=1
 			generate_tests=1
-			install_manpages=0
+			install_manpages=1
 			nls=0
 			force=0
 			strip_bin=1
