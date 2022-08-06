@@ -4424,8 +4424,8 @@ more elements are needed, the array is grown automatically, and new elements are
 given the value of zero.
 
 In fact, if *any* array is accessed and does not have an element at that index,
-the array is automaticall grown to that size, and all new elements are given the
-value zero. This behavior is guaranteed by the [`bc` spec][2].
+the array is automatically grown to that size, and all new elements are given
+the value zero. This behavior is guaranteed by the [`bc` spec][2].
 
 ###### Array References
 
@@ -4581,9 +4581,9 @@ mean:
   This is the only case where `scale` does not have to coincide with `rdx`
   This can happen with division, for example, that sets a specific `scale` for
   the result value but may produce 0.
-* `(rdx >> 1) < len`: the number is greater than or equal to 1, or less than or
+* `(rdx >> 1) == len`: the number is greater than or equal to 1, or less than or
   equal to -1.
-* `(rdx >> 1) == len`: the number is greater than -1 and less than 1, not
+* `(rdx >> 1) < len`: the number is greater than -1 and less than 1, not
   including 0, although this will be true for 0 as well. However, 0 is always
   assumed to be represented by `len == 0`.
 * `(rdx >> 1) == 0`: the number is an integer. In this case, `scale` must also
@@ -4623,7 +4623,7 @@ It is possible to switch between the two with the `-c` and `-C` command-line
 options. However, it is important for developers to understand that both
 behaviors exist and should exist.
 
-The library only does clamping, however.
+The library can also do both, and it is set in a global for each thread.
 
 ### Strings as Numbers
 
