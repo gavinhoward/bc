@@ -326,6 +326,9 @@ a fatal error occurs.
 .PP
 If activated, clients do not need to check for fatal errors.
 .PP
+This value is \f[I]thread-local\f[R]; it applies to just the thread it
+is read on.
+.PP
 The default is \f[B]false\f[R].
 .RE
 .TP
@@ -337,6 +340,9 @@ If \f[I]abrt\f[R] is \f[B]true\f[R], bcl(3) will cause a
 \f[B]SIGABRT\f[R] on fatal errors after the call.
 .RS
 .PP
+This value is \f[I]thread-local\f[R]; it applies to just the thread it
+is set on.
+.PP
 If activated, clients do not need to check for fatal errors.
 .RE
 .TP
@@ -347,6 +353,9 @@ strings returned by \f[B]bcl_string()\f[R] when numbers are greater than
 If \f[B]true\f[R] is returned, then leading zeroes will be added.
 .RS
 .PP
+This value is \f[I]thread-local\f[R]; it applies to just the thread it
+is read on.
+.PP
 The default is \f[B]false\f[R].
 .RE
 .TP
@@ -356,6 +365,11 @@ by \f[B]bcl_string()\f[R] when numbers are greater than \f[B]-1\f[R],
 less than \f[B]1\f[R], and not equal to \f[B]0\f[R].
 If \f[I]leadingZeroes\f[R] is \f[B]true\f[R], leading zeroes will be
 added to strings returned by \f[B]bcl_string()\f[R].
+.RS
+.PP
+This value is \f[I]thread-local\f[R]; it applies to just the thread it
+is set on.
+.RE
 .TP
 \f[B]bool bcl_digitClamp(\f[R]\f[I]void\f[R]\f[B])\f[R]
 Queries and returns the state of whether digits in number strings that
@@ -377,6 +391,9 @@ while with clamping on and an \f[B]ibase\f[R] of \f[B]3\f[R], the string
 \[lq]AB\[rq] would be equal to \f[B]3\[ha]1*2+3\[ha]0*2\f[R], which is
 \f[B]3\f[R] times \f[B]2\f[R] plus \f[B]2\f[R], or \f[B]8\f[R].
 .PP
+This value is \f[I]thread-local\f[R]; it applies to just the thread it
+is read on.
+.PP
 The default is \f[B]true\f[R].
 .RE
 .TP
@@ -385,6 +402,11 @@ Sets the state of whether digits in number strings that are greater than
 or equal to the current \f[B]ibase\f[R] are clamped or not.
 For more information, see the
 \f[B]bcl_digitClamp(\f[R]\f[I]void\f[R]\f[B])\f[R] function.
+.RS
+.PP
+This value is \f[I]thread-local\f[R]; it applies to just the thread it
+is set on.
+.RE
 .TP
 \f[B]void bcl_gc(\f[R]\f[I]void\f[R]\f[B])\f[R]
 Garbage collects cached instances of arbitrary-precision numbers.

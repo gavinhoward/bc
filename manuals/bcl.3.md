@@ -293,6 +293,8 @@ each function for what each function can return.
 
     If activated, clients do not need to check for fatal errors.
 
+    This value is *thread-local*; it applies to just the thread it is read on.
+
     The default is **false**.
 
 **void bcl_setAbortOnFatalError(bool** _abrt_**)**
@@ -301,6 +303,8 @@ each function for what each function can return.
     **false**, bcl(3) will not cause a **SIGABRT** on fatal errors after the
     call. If *abrt* is **true**, bcl(3) will cause a **SIGABRT** on fatal errors
     after the call.
+
+    This value is *thread-local*; it applies to just the thread it is set on.
 
     If activated, clients do not need to check for fatal errors.
 
@@ -311,6 +315,8 @@ each function for what each function can return.
     **1**, and not equal to **0**. If **true** is returned, then leading zeroes
     will be added.
 
+    This value is *thread-local*; it applies to just the thread it is read on.
+
     The default is **false**.
 
 **void bcl_setLeadingZeroes(bool** _leadingZeroes_**)**
@@ -319,6 +325,8 @@ each function for what each function can return.
     **bcl_string()** when numbers are greater than **-1**, less than **1**, and
     not equal to **0**. If *leadingZeroes* is **true**, leading zeroes will be
     added to strings returned by **bcl_string()**.
+
+    This value is *thread-local*; it applies to just the thread it is set on.
 
 **bool bcl_digitClamp(**_void_**)**
 
@@ -337,6 +345,8 @@ each function for what each function can return.
     would be equal to **3\^1\*2+3\^0\*2**, which is **3** times **2** plus
     **2**, or **8**.
 
+    This value is *thread-local*; it applies to just the thread it is read on.
+
     The default is **true**.
 
 **void bcl_setDigitClamp(bool** _digitClamp_**)**
@@ -344,6 +354,8 @@ each function for what each function can return.
 :   Sets the state of whether digits in number strings that are greater than or
     equal to the current **ibase** are clamped or not. For more information, see
     the **bcl_digitClamp(**_void_**)** function.
+
+    This value is *thread-local*; it applies to just the thread it is set on.
 
 **void bcl_gc(**_void_**)**
 
