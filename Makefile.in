@@ -302,11 +302,6 @@ help:
 	@printf '    time_test_dc    runs the dc test suite, displaying times for some things\n'
 	@printf '    timeconst       runs the test on the Linux timeconst.bc script,\n'
 	@printf '                    if it exists and bc has been built\n'
-	@printf '    valgrind        runs the test suite through valgrind\n'
-	@printf '    valgrind_bc     runs the bc test suite, if bc has been built,\n'
-	@printf '                    through valgrind\n'
-	@printf '    valgrind_dc     runs the dc test suite, if dc has been built,\n'
-	@printf '                    through valgrind\n'
 
 run_all_tests: bc_all_tests timeconst_all_tests dc_all_tests
 
