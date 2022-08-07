@@ -144,10 +144,20 @@ bcl_getspecific(void)
 BclError
 bcl_init(void)
 {
-	BclError e;
+	BclError e = BCL_ERROR_NONE;
 	BcVm* vm;
 
 	assert(tls != NULL);
+
+	vm = bcl_getspecific();
+	if (vm != NULL)
+	{
+		assert(vm->refs >= 1);
+
+		vm->refs += 1;
+
+		return e;
+	}
 
 	vm = bc_vm_malloc(sizeof(BcVm));
 	if (BC_ERR(vm == NULL)) return BCL_ERROR_FATAL_ALLOC_ERR;
@@ -160,7 +170,8 @@ bcl_init(void)
 	}
 
 	vm->refs += 1;
-	if (vm->refs > 1) return e;
+
+	assert(vm->refs == 1);
 
 	// Setting these to NULL ensures that if an error occurs, we only free what
 	// is necessary.
@@ -262,7 +273,8 @@ bcl_free(void)
 
 	bc_vm_atexit();
 
-	memset(vm, 0, sizeof(BcVm));
+	free(vm);
+	bcl_setspecific(NULL);
 }
 
 void
