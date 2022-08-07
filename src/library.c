@@ -169,6 +169,8 @@ bcl_init(void)
 		return e;
 	}
 
+	memset(vm, 0, sizeof(BcVm));
+
 	vm->refs += 1;
 
 	assert(vm->refs == 1);
