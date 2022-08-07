@@ -1189,9 +1189,11 @@ if [ "$vg" -ne 0 ]; then
 	debug=1
 	bc_test_exec='valgrind $(VALGRIND_ARGS) $(BC_EXEC)'
 	dc_test_exec='valgrind $(VALGRIND_ARGS) $(DC_EXEC)'
+	bcl_test_exec='valgrind $(VALGRIND_ARGS) $(BCL_TEST)'
 else
 	bc_test_exec='$(BC_EXEC)'
 	dc_test_exec='$(DC_EXEC)'
+	bcl_test_exec='$(BCL_TEST)'
 fi
 
 test_bc_history_prereqs="test_bc_history_all"
@@ -1947,6 +1949,8 @@ contents=$(replace "$contents" "DC_TESTS" "$dc_tests")
 contents=$(replace "$contents" "DC_SCRIPT_TESTS" "$dc_script_tests")
 contents=$(replace "$contents" "DC_ERROR_TESTS" "$dc_err_tests")
 contents=$(replace "$contents" "DC_TEST_EXEC" "$dc_test_exec")
+
+contents=$(replace "$contents" "BCL_TEST_EXEC" "$bcl_test_exec")
 
 contents=$(replace "$contents" "BUILD_TYPE" "$manpage_args")
 contents=$(replace "$contents" "EXCLUDE_EXTRA_MATH" "$exclude_extra_math")

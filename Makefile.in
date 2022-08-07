@@ -503,7 +503,7 @@ library_test: $(LIBBC)
 	$(CC) $(CFLAGS) $(BCL_TEST_C) $(LIBBC) -o $(BCL_TEST)
 
 test_library: library_test
-	$(BCL_TEST)
+	%%BCL_TEST_EXEC%%
 
 karatsuba:
 	%%KARATSUBA%%
