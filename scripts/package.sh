@@ -238,6 +238,7 @@ rm -rf windows/bin/{Win32,x64}/{Debug,Release}/bc.tlog
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/bc.pdb
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/bc.ipdb
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/bc.vcxproj.FileListAbsolute.txt
+rm -rf windows/bin/{Win32,x64}/{Debug,Release}/bc.Build.CppClean.log
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/strgen.exe
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/vc142.idb
 rm -rf windows/bin/{Win32,x64}/{Debug,Release}/vc142.pdb
@@ -249,6 +250,7 @@ rm -rf windows/lib/{Win32,x64}/{Debug,ReleaseMD,ReleaseMT}/bcl.tlog
 rm -rf windows/lib/{Win32,x64}/{Debug,ReleaseMD,ReleaseMT}/bcl.idb
 rm -rf windows/lib/{Win32,x64}/{Debug,ReleaseMD,ReleaseMT}/bcl.pdb
 rm -rf windows/lib/{Win32,x64}/{Debug,ReleaseMD,ReleaseMT}/bcl.vcxproj.FileListAbsolute.txt
+rm -rf windows/lib/{Win32,x64}/{Debug,ReleaseMD,ReleaseMT}/bcl.Build.CppClean.log
 
 # Zip the Windows stuff.
 zip -r $projver-windows.zip windows > /dev/null
