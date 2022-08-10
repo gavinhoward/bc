@@ -456,6 +456,19 @@ else
 
 fi
 
+if [ "$d" = "bc" ]; then
+
+	out=$(printf '100\n')
+	printf '%s\n' "$out" > "$out1"
+
+	printf 'scale\n' | "$exe" "$@" -S100 -l > "$out2"
+	checktest "$d" "$?" "builtin variable args with math lib" "$out1" "$out2"
+
+	printf 'scale\n' | "$exe" "$@" --scale=100 --mathlib > "$out2"
+	checktest "$d" "$?" "builtin variable long args with math lib" "$out1" "$out2"
+
+fi
+
 printf 'scale\n' | "$exe" "$@" --scale=18923c.rlg > /dev/null 2> "$out2"
 err="$?"
 
