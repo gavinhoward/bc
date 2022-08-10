@@ -46,10 +46,16 @@
  * @param argv        The array of arguments.
  * @param exit_exprs  True if bc/dc should exit when there are expressions,
  *                    false otherwise.
- * @param scale       The current scale.
+ * @param scale       A pointer to return the scale that the arguments set, if
+ *                    any.
+ * @param ibase       A pointer to return the ibase that the arguments set, if
+ *                    any.
+ * @param obase       A pointer to return the obase that the arguments set, if
+ *                    any.
  */
 void
-bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale);
+bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig* scale,
+        BcBigDig* ibase, BcBigDig* obase);
 
 #if BC_ENABLED
 

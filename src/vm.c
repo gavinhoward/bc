@@ -488,9 +488,16 @@ bc_vm_setenvFlag(const char* const var, int def, uint16_t flag)
 /**
  * Parses the arguments in {B,D]C_ENV_ARGS.
  * @param env_args_name  The environment variable to use.
+ * @param scale          A pointer to return the scale that the arguments set,
+ *                       if any.
+ * @param ibase          A pointer to return the ibase that the arguments set,
+ *                       if any.
+ * @param obase          A pointer to return the obase that the arguments set,
+ *                       if any.
  */
 static void
-bc_vm_envArgs(const char* const env_args_name)
+bc_vm_envArgs(const char* const env_args_name, size_t* scale, size_t* ibase,
+              size_t* obase)
 {
 	char *env_args = bc_vm_getenv(env_args_name), *buf, *start;
 	char instr = '\0';
@@ -568,7 +575,7 @@ bc_vm_envArgs(const char* const env_args_name)
 
 	// Parse the arguments.
 	bc_args((int) vm->env_args.len - 1, bc_vec_item(&vm->env_args, 0), false,
-	        BC_PROG_SCALE(&vm->prog));
+	        scale, ibase, obase);
 }
 
 /**
@@ -1510,6 +1517,12 @@ bc_vm_boot(int argc, char* argv[])
 	const char* const env_clamp = BC_VM_DIGIT_CLAMP_STR;
 	int env_exit_def = BC_VM_EXPR_EXIT_DEF;
 	int env_clamp_def = BC_VM_DIGIT_CLAMP_DEF;
+	size_t scale = SIZE_MAX;
+	size_t env_scale = SIZE_MAX;
+	size_t ibase = SIZE_MAX;
+	size_t env_ibase = SIZE_MAX;
+	size_t obase = SIZE_MAX;
+	size_t env_obase = SIZE_MAX;
 
 	// We need to know which of stdin, stdout, and stderr are tty's.
 	ttyin = isatty(STDIN_FILENO);
@@ -1617,8 +1630,39 @@ bc_vm_boot(int argc, char* argv[])
 	}
 
 	// Process environment and command-line arguments.
-	bc_vm_envArgs(env_args);
-	bc_args(argc, argv, true, BC_PROG_SCALE(&vm->prog));
+	bc_vm_envArgs(env_args, &env_scale, &env_ibase, &env_obase);
+	bc_args(argc, argv, true, &scale, &ibase, &obase);
+
+	// This section is here because we don't want the math library to stomp on
+	// the user's given value for scale. And we don't want ibase affecting how
+	// the scale is interpreted. Also, it's sectioned off just for this comment.
+	{
+		BC_SIG_UNLOCK;
+
+		scale = scale == SIZE_MAX ? env_scale : scale;
+		// Assign the library value only if it is used and no value was set.
+		scale = scale == SIZE_MAX && BC_L ? 20 : scale;
+		obase = obase == SIZE_MAX ? env_obase : obase;
+		ibase = ibase == SIZE_MAX ? env_ibase : ibase;
+
+		if (scale != SIZE_MAX)
+		{
+			bc_program_assignBuiltin(&vm->prog, true, false, scale);
+		}
+
+		if (obase != SIZE_MAX)
+		{
+			bc_program_assignBuiltin(&vm->prog, false, true, obase);
+		}
+
+		// This is last to avoid it affecting the value of the others.
+		if (ibase != SIZE_MAX)
+		{
+			bc_program_assignBuiltin(&vm->prog, false, false, ibase);
+		}
+
+		BC_SIG_LOCK;
+	}
 
 	// If we are in interactive mode...
 	if (BC_I)

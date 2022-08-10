@@ -149,13 +149,13 @@ bc_args_redefine(const char* keyword)
 #endif // BC_ENABLED
 
 void
-bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
+bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig* scale,
+        BcBigDig* ibase, BcBigDig* obase)
 {
 	int c;
 	size_t i;
 	bool do_exit = false, version = false;
 	BcOpt opts;
-	BcBigDig newscale = scale, ibase = BC_BASE, obase = BC_BASE;
 #if BC_ENABLE_EXTRA_MATH
 	char* seed = NULL;
 #endif // BC_ENABLE_EXTRA_MATH
@@ -232,7 +232,7 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 			case 'I':
 			{
-				ibase = bc_args_builtin(opts.optarg);
+				*ibase = bc_args_builtin(opts.optarg);
 				break;
 			}
 
@@ -250,7 +250,7 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 			case 'O':
 			{
-				obase = bc_args_builtin(opts.optarg);
+				*obase = bc_args_builtin(opts.optarg);
 				break;
 			}
 
@@ -268,7 +268,7 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 
 			case 'S':
 			{
-				newscale = bc_args_builtin(opts.optarg);
+				*scale = bc_args_builtin(opts.optarg);
 				break;
 			}
 
@@ -402,24 +402,4 @@ bc_args(int argc, char* argv[], bool exit_exprs, BcBigDig scale)
 		bc_num_free(&n);
 	}
 #endif // BC_ENABLE_EXTRA_MATH
-
-	BC_SIG_UNLOCK;
-
-	if (newscale != scale)
-	{
-		bc_program_assignBuiltin(&vm->prog, true, false, newscale);
-	}
-
-	if (obase != BC_BASE)
-	{
-		bc_program_assignBuiltin(&vm->prog, false, true, obase);
-	}
-
-	// This is last to avoid it affecting the value of the others.
-	if (ibase != BC_BASE)
-	{
-		bc_program_assignBuiltin(&vm->prog, false, false, ibase);
-	}
-
-	BC_SIG_LOCK;
 }
