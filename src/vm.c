@@ -1639,26 +1639,26 @@ bc_vm_boot(int argc, char* argv[])
 	{
 		BC_SIG_UNLOCK;
 
-		scale = scale == SIZE_MAX ? env_scale : scale;
+		scale = scale == BC_NUM_BIGDIG_MAX ? env_scale : scale;
 #if BC_ENABLED
 		// Assign the library value only if it is used and no value was set.
-		scale = scale == SIZE_MAX && BC_L ? 20 : scale;
+		scale = scale == BC_NUM_BIGDIG_MAX && BC_L ? 20 : scale;
 #endif // BC_ENABLED
-		obase = obase == SIZE_MAX ? env_obase : obase;
-		ibase = ibase == SIZE_MAX ? env_ibase : ibase;
+		obase = obase == BC_NUM_BIGDIG_MAX ? env_obase : obase;
+		ibase = ibase == BC_NUM_BIGDIG_MAX ? env_ibase : ibase;
 
-		if (scale != SIZE_MAX)
+		if (scale != BC_NUM_BIGDIG_MAX)
 		{
 			bc_program_assignBuiltin(&vm->prog, true, false, scale);
 		}
 
-		if (obase != SIZE_MAX)
+		if (obase != BC_NUM_BIGDIG_MAX)
 		{
 			bc_program_assignBuiltin(&vm->prog, false, true, obase);
 		}
 
 		// This is last to avoid it affecting the value of the others.
-		if (ibase != SIZE_MAX)
+		if (ibase != BC_NUM_BIGDIG_MAX)
 		{
 			bc_program_assignBuiltin(&vm->prog, false, false, ibase);
 		}
