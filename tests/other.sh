@@ -467,6 +467,24 @@ if [ "$d" = "bc" ]; then
 	printf 'scale\n' | "$exe" "$@" --scale=100 --mathlib > "$out2"
 	checktest "$d" "$?" "builtin variable long args with math lib" "$out1" "$out2"
 
+	export BC_ENV_ARGS="-l"
+
+	printf 'scale\n' | "$exe" "$@" -S100 > "$out2"
+	checktest "$d" "$?" "builtin variable args with math lib env arg" "$out1" "$out2"
+
+	printf 'scale\n' | "$exe" "$@" --scale=100 > "$out2"
+	checktest "$d" "$?" "builtin variable long args with math lib env arg" "$out1" "$out2"
+
+	export BC_ENV_ARGS="-S100"
+
+	printf 'scale\n' | "$exe" "$@" -l > "$out2"
+	checktest "$d" "$?" "builtin variable args with math lib arg" "$out1" "$out2"
+
+	export BC_ENV_ARGS="--scale=100"
+
+	printf 'scale\n' | "$exe" "$@" -l > "$out2"
+	checktest "$d" "$?" "builtin variable long args with math lib arg" "$out1" "$out2"
+
 fi
 
 printf 'scale\n' | "$exe" "$@" --scale=18923c.rlg > /dev/null 2> "$out2"
