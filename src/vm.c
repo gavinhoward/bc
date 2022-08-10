@@ -1640,8 +1640,10 @@ bc_vm_boot(int argc, char* argv[])
 		BC_SIG_UNLOCK;
 
 		scale = scale == SIZE_MAX ? env_scale : scale;
+#if BC_ENABLED
 		// Assign the library value only if it is used and no value was set.
 		scale = scale == SIZE_MAX && BC_L ? 20 : scale;
+#endif // BC_ENABLED
 		obase = obase == SIZE_MAX ? env_obase : obase;
 		ibase = ibase == SIZE_MAX ? env_ibase : ibase;
 
