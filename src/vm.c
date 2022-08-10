@@ -496,8 +496,8 @@ bc_vm_setenvFlag(const char* const var, int def, uint16_t flag)
  *                       if any.
  */
 static void
-bc_vm_envArgs(const char* const env_args_name, size_t* scale, size_t* ibase,
-              size_t* obase)
+bc_vm_envArgs(const char* const env_args_name, BcBigDig* scale, BcBigDig* ibase,
+              BcBigDig* obase)
 {
 	char *env_args = bc_vm_getenv(env_args_name), *buf, *start;
 	char instr = '\0';
@@ -1517,12 +1517,12 @@ bc_vm_boot(int argc, char* argv[])
 	const char* const env_clamp = BC_VM_DIGIT_CLAMP_STR;
 	int env_exit_def = BC_VM_EXPR_EXIT_DEF;
 	int env_clamp_def = BC_VM_DIGIT_CLAMP_DEF;
-	size_t scale = SIZE_MAX;
-	size_t env_scale = SIZE_MAX;
-	size_t ibase = SIZE_MAX;
-	size_t env_ibase = SIZE_MAX;
-	size_t obase = SIZE_MAX;
-	size_t env_obase = SIZE_MAX;
+	BcBigDig scale = BC_NUM_BIGDIG_MAX;
+	BcBigDig env_scale = BC_NUM_BIGDIG_MAX;
+	BcBigDig ibase = BC_NUM_BIGDIG_MAX;
+	BcBigDig env_ibase = BC_NUM_BIGDIG_MAX;
+	BcBigDig obase = BC_NUM_BIGDIG_MAX;
+	BcBigDig env_obase = BC_NUM_BIGDIG_MAX;
 
 	// We need to know which of stdin, stdout, and stderr are tty's.
 	ttyin = isatty(STDIN_FILENO);
