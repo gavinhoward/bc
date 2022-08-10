@@ -1469,7 +1469,7 @@ if [ "$nls" -ne 0 ]; then
 		flags="$flags -Wno-unreachable-code"
 	fi
 
-	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null #2>&1
+	"$CC" $CPPFLAGS $CFLAGS $flags -c "$scriptdir/src/vm.c" -o "./vm.o" > /dev/null 2>&1
 
 	err="$?"
 
