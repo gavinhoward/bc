@@ -1,5 +1,10 @@
 # News
 
+## 6.0.2
+
+This is a production release that fixes a bug where the `-l` option overrode the
+`-S` option.
+
 ## 6.0.1
 
 This is a production release that fixes memory bugs and memory leaks in `bcl`.
