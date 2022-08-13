@@ -53,6 +53,17 @@ else
 	shift
 fi
 
+os=$(uname)
+
+# Just skip tests that are problematic on FreeBSD. These tests can cause FreeBSD
+# to kill bc from memory exhaustion because of overcommit.
+if [ "$d" = "bc" ] && [ "$os" = "FreeBSD" ]; then
+	if [ "$t" = "33.txt" ]; then
+		printf 'Cannot run %s error file %s on FreeBSD. Skipping...\n' "$d" "$t"
+		exit 0
+	fi
+fi
+
 # I use these, so unset them to make the tests work.
 unset BC_ENV_ARGS
 unset BC_LINE_LENGTH
