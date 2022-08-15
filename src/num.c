@@ -266,8 +266,8 @@ static BcDig
 bc_num_addDigits(BcDig a, BcDig b, bool* carry)
 {
 	assert(((BcBigDig) BC_BASE_POW) * 2 == ((BcDig) BC_BASE_POW) * 2);
-	assert(a < BC_BASE_POW);
-	assert(b < BC_BASE_POW);
+	assert(a < BC_BASE_POW && a >= 0);
+	assert(b < BC_BASE_POW && b >= 0);
 
 	a += b + *carry;
 	*carry = (a >= BC_BASE_POW);
@@ -290,8 +290,8 @@ bc_num_addDigits(BcDig a, BcDig b, bool* carry)
 static BcDig
 bc_num_subDigits(BcDig a, BcDig b, bool* carry)
 {
-	assert(a < BC_BASE_POW);
-	assert(b < BC_BASE_POW);
+	assert(a < BC_BASE_POW && a >= 0);
+	assert(b < BC_BASE_POW && b >= 0);
 
 	b += *carry;
 	*carry = (a < b);
@@ -385,6 +385,7 @@ bc_num_mulArray(const BcNum* restrict a, BcBigDig b, BcNum* restrict c)
 
 	// Finishing touches.
 	c->num[i] = (BcDig) carry;
+	assert(c->num[i] >= 0 && c->num[i] < BC_BASE_POW);
 	c->len = a->len;
 	c->len += (carry != 0);
 
@@ -419,6 +420,7 @@ bc_num_divArray(const BcNum* restrict a, BcBigDig b, BcNum* restrict c,
 		BcBigDig in = ((BcBigDig) a->num[i]) + carry * BC_BASE_POW;
 		assert(in / b < BC_BASE_POW);
 		c->num[i] = (BcDig) (in / b);
+		assert(c->num[i] >= 0 && c->num[i] < BC_BASE_POW);
 		carry = in % b;
 	}
 
@@ -749,6 +751,7 @@ bc_num_shift(BcNum* restrict n, BcBigDig dig)
 		temp = carry * dig;
 		carry = in % pow;
 		ptr[i] = ((BcDig) (in / pow)) + (BcDig) temp;
+		assert(ptr[i] >= 0 && ptr[i] < BC_BASE_POW);
 	}
 
 	assert(!carry);
@@ -2486,10 +2489,14 @@ bc_num_parseDecimal(BcNum* restrict n, const char* restrict val)
 
 					n->num[idx + 1] = (BcDig) (dig / BC_BASE_POW);
 					n->num[idx] = (BcDig) (dig % BC_BASE_POW);
+					assert(n->num[idx] >= 0 && n->num[idx] < BC_BASE_POW);
+					assert(n->num[idx + 1] >= 0 &&
+					       n->num[idx + 1] < BC_BASE_POW);
 				}
 				else
 				{
 					n->num[idx] = (BcDig) dig;
+					assert(n->num[idx] >= 0 && n->num[idx] < BC_BASE_POW);
 				}
 
 				// Adjust the power and exponent.
