@@ -1184,10 +1184,10 @@ executable="BC_EXEC"
 
 tests="test_bc timeconst test_dc"
 
-bc_test="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
-bc_test_np="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh -n bc $extra_math 1 $generate_tests $time_tests \$(BC_EXEC)"
-dc_test="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
-dc_test_np="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh -n dc $extra_math 1 $generate_tests $time_tests \$(DC_EXEC)"
+bc_test="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh bc $extra_math 1 $generate_tests $problematic_tests $time_tests \$(BC_EXEC)"
+bc_test_np="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh -n bc $extra_math 1 $generate_tests $problematic_tests $time_tests \$(BC_EXEC)"
+dc_test="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh dc $extra_math 1 $generate_tests $problematic_tests $time_tests \$(DC_EXEC)"
+dc_test_np="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/all.sh -n dc $extra_math 1 $generate_tests $problematic_tests $time_tests \$(DC_EXEC)"
 
 timeconst="@export BC_TEST_OUTPUT_DIR=\"$builddir/tests\"; \$(TESTSDIR)/bc/timeconst.sh \$(TESTSDIR)/bc/scripts/timeconst.bc \$(BC_EXEC)"
 
