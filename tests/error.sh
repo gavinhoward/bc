@@ -36,14 +36,21 @@ outputdir=${BC_TEST_OUTPUT_DIR:-$testdir}
 
 # Command-line processing.
 if [ "$#" -lt 2 ]; then
-	printf 'usage: %s dir test [exec args...]\n' "$script"
+
+	printf 'usage: %s dir test problematic_tests [exec args...]\n' "$script"
 	exit 1
+
 else
+
 	d="$1"
 	shift
 
 	t="$1"
 	shift
+
+	problematic="$1"
+	shift
+
 fi
 
 if [ "$#" -lt 1 ]; then
@@ -53,13 +60,11 @@ else
 	shift
 fi
 
-os=$(uname)
-
 # Just skip tests that are problematic on FreeBSD. These tests can cause FreeBSD
 # to kill bc from memory exhaustion because of overcommit.
-if [ "$d" = "bc" ] && [ "$os" = "FreeBSD" ]; then
+if [ "$d" = "bc" ] && [ "$problematic" -eq 0 ]; then
 	if [ "$t" = "33.txt" ]; then
-		printf 'Cannot run %s error file %s on FreeBSD. Skipping...\n' "$d" "$t"
+		printf 'Skipping problematic %s error file %s...\n' "$d" "$t"
 		exit 0
 	fi
 fi

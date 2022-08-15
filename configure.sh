@@ -52,15 +52,15 @@ usage() {
 	printf 'usage:\n'
 	printf '    %s -h\n' "$script"
 	printf '    %s --help\n' "$script"
-	printf '    %s [-a|-bD|-dB|-c] [-CeEfgGHilmMNrtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\\\n' "$script"
+	printf '    %s [-a|-bD|-dB|-c] [-CeEfgGHilmMNPrtTvz] [-O OPT_LEVEL] [-k KARATSUBA_LEN]\\\n' "$script"
 	printf '       [-s SETTING] [-S SETTING] [-p TYPE]\n'
 	printf '    %s \\\n' "$script"
 	printf '       [--library|--bc-only --disable-dc|--dc-only --disable-bc|--coverage]  \\\n'
 	printf '       [--force --debug --disable-extra-math --disable-generated-tests]      \\\n'
 	printf '       [--disable-history --disable-man-pages --disable-nls --disable-strip] \\\n'
 	printf '       [--enable-editline] [--enable-readline] [--enable-internal-history]   \\\n'
-	printf '       [--install-all-locales] [--opt=OPT_LEVEL]                             \\\n'
-	printf '       [--karatsuba-len=KARATSUBA_LEN]                                       \\\n'
+	printf '       [--disable-problematic-tests] [--install-all-locales]                 \\\n'
+	printf '       [--opt=OPT_LEVEL] [--karatsuba-len=KARATSUBA_LEN]                     \\\n'
 	printf '       [--set-default-on=SETTING] [--set-default-off=SETTING]                \\\n'
 	printf '       [--predefined-build-type=TYPE]                                        \\\n'
 	printf '       [--prefix=PREFIX] [--bindir=BINDIR] [--datarootdir=DATAROOTDIR]       \\\n'
@@ -155,6 +155,9 @@ usage() {
 	printf '        matching the BSD bc and BSD dc), "GNU" (for matching the GNU bc and\n'
 	printf '        dc), and "GDH" (for the preferred build of the author, Gavin D. Howard).\n'
 	printf '        This will also automatically enable a release build.\n'
+	printf '    -P, --disable-problematic-tests\n'
+	printf '        Disables problematic tests. These tests usually include tests that\n'
+	printf '        can cause a SIGKILL because of too much memory usage.\n'
 	printf '    -r, --enable-readline\n'
 	printf '        Enable the use of libreadline/readline. This is meant for those users\n'
 	printf '        that want vi-like or Emacs-like behavior in history. This option is\n'
@@ -599,9 +602,9 @@ gen_err_tests() {
 
 	for _gen_err_tests_t in $_gen_err_tests_fs; do
 
-		printf 'test_%s_error_%s:\n\t@export BC_TEST_OUTPUT_DIR="%s/tests"; sh $(TESTSDIR)/error.sh %s %s %s\n\n' \
+		printf 'test_%s_error_%s:\n\t@export BC_TEST_OUTPUT_DIR="%s/tests"; sh $(TESTSDIR)/error.sh %s %s %s %s\n\n' \
 			"$_gen_err_tests_name" "$_gen_err_tests_t" "$builddir" "$_gen_err_tests_name" \
-			"$_gen_err_tests_t" "$*" >> "Makefile"
+			"$_gen_err_tests_t" "$problematic_tests" "$*" >> "Makefile"
 
 	done
 
@@ -854,6 +857,7 @@ time_tests=0
 vg=0
 memcheck=0
 clean=1
+problematic_tests=1
 
 # The empty strings are because they depend on TTY mode. If they are directly
 # set, though, they will be integers. We test for empty strings later.
@@ -872,7 +876,7 @@ dc_default_digit_clamp=0
 # getopts is a POSIX utility, but it cannot handle long options. Thus, the
 # handling of long options is done by hand, and that's the reason that short and
 # long options cannot be mixed.
-while getopts "abBcdDeEfgGhHik:lMmNO:p:rS:s:tTvz-" opt; do
+while getopts "abBcdDeEfgGhHik:lMmNO:p:PrS:s:tTvz-" opt; do
 
 	case "$opt" in
 		a) library=1 ;;
@@ -897,6 +901,7 @@ while getopts "abBcdDeEfgGhHik:lMmNO:p:rS:s:tTvz-" opt; do
 		N) nls=0 ;;
 		O) optimization="$OPTARG" ;;
 		p) predefined_build "$OPTARG" ;;
+		P) problematic_tests=0 ;;
 		r) hist_impl="readline" ;;
 		S) set_default 0 "$OPTARG" ;;
 		s) set_default 1 "$OPTARG" ;;
@@ -1030,6 +1035,7 @@ while getopts "abBcdDeEfgGhHik:lMmNO:p:rS:s:tTvz-" opt; do
 				disable-man-pages) install_manpages=0 ;;
 				disable-nls) nls=0 ;;
 				disable-strip) strip_bin=0 ;;
+				disable-problematic-tests) problematic_tests=0 ;;
 				enable-editline) hist_impl="editline" ;;
 				enable-readline) hist_impl="readline" ;;
 				enable-internal-history) hist_impl="internal" ;;
@@ -1047,6 +1053,8 @@ while getopts "abBcdDeEfgGhHik:lMmNO:p:rS:s:tTvz-" opt; do
 				disable-generated-tests* | disable-history*)
 					usage "No arg allowed for --$arg option" ;;
 				disable-man-pages* | disable-nls* | disable-strip*)
+					usage "No arg allowed for --$arg option" ;;
+				disable-problematic-tests*)
 					usage "No arg allowed for --$arg option" ;;
 				enable-fuzz-mode* | enable-test-timing* | enable-valgrind*)
 					usage "No arg allowed for --$arg option" ;;

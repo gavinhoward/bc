@@ -967,6 +967,22 @@ Both commands are equivalent.
 ***WARNING***: Both `bc` and `dc` must be built for test coverage. Otherwise,
 `configure.sh` will give an error.
 
+#### Problematic Tests
+
+Some tests are problematic, in that they can cause `SIGKILL` on FreeBSD or
+`SIGSEGV` on Linux from being killed by the "OOM Killer" part of the kernel. On
+Linux, these tests are usually fine, but on FreeBSD, they are usually a problem.
+
+To disable problematic tests, pass the `-P` flag or the
+`--disable-problematic-tests` option to `configure.sh` as follows:
+
+```
+./configure.sh -P
+./configure.sh --disable-problematic-tests
+```
+
+Both commands are equivalent.
+
 [1]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html
 [2]: https://www.gnu.org/software/bc/
 [3]: https://www.musl-libc.org/
