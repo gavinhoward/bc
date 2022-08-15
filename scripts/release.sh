@@ -29,11 +29,11 @@
 
 # For OpenBSD, run using the following:
 #
-# scripts/release.sh 1 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0
+# scripts/release.sh 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0
 #
 # For FreeBSD, run using the following:
 #
-# scripts/release.sh 1 1 1 0 0 0 0 1 0 1 0 1 0 0 1 1
+# scripts/release.sh 1 1 0 1 0 0 0 0 1 0 1 0 1 0 0 1 1
 #
 # There is one problem with running this script on FreeBSD: it takes overcommit
 # to the extreme. This means that some tests that try to create allocation
@@ -42,8 +42,8 @@
 #
 # For Linux, run two separate ones (in different checkouts), like so:
 #
-# scripts/release.sh 1 1 1 0 1 0 0 1 0 1 0 1 0 0 1 1
-# cd build; ../scripts/release.sh 1 1 0 1 0 1 0 1 0 1 0 0 1 1 1 1
+# scripts/release.sh 1 1 1 1 0 1 0 0 1 0 1 0 1 0 0 1 1
+# cd build; ../scripts/release.sh 1 1 1 0 1 0 1 0 1 0 1 0 0 1 1 1 1
 #
 # Yes, I usually do sanitizers with Clang and Valgrind with GCC, and I also do
 # out-of-source builds with GCC.
@@ -59,10 +59,11 @@
 # Print the usage and exit with an error. Each parameter should be an integer.
 # Non-zero activates, and zero deactivates.
 usage() {
-	printf 'usage: %s [run_tests] [generate_tests] [test_with_clang] [test_with_gcc] \n' "$script"
-	printf '          [run_sanitizers] [run_valgrind] [test_settings] [run_64_bit] \n'
-	printf '          [run_gen_script] [test_c11] [test_128_bit] [test_computed_goto]\n'
-	printf '          [test_karatsuba] [test_history] [test_editline] [test_readline]\n'
+	printf 'usage: %s [run_tests] [generate_tests] [run_problematic_tests] \n' "$script"
+	printf '          [test_with_clang] [test_with_gcc] [run_sanitizers] [run_valgrind] \n'
+	printf '          [test_settings] [run_64_bit] [run_gen_script] [test_c11] \n'
+	printf '          [test_128_bit] [test_computed_goto] [test_karatsuba] [test_history] \n'
+	printf '          [test_editline] [test_readline]\n'
 	exit 1
 }
 
@@ -115,6 +116,11 @@ configure() {
 	# Make sure to not generate tests if necessary.
 	if [ "$gen_tests" -eq 0 ]; then
 		_configure_configure_flags="-G $_configure_configure_flags"
+	fi
+
+	# Make sure to skip problematic tests if necessary.
+	if [ "$problematic_tests" -eq 0 ]; then
+		_configure_configure_flags="-P $_configure_configure_flags"
 	fi
 
 	# Choose the right extra flags.
@@ -666,6 +672,14 @@ if [ "$#" -gt 0 ]; then
 	shift
 else
 	gen_tests=1
+fi
+
+# Whether to run problematic tests. This needs to be off on FreeBSD.
+if [ "$#" -gt 0 ]; then
+	problematic_tests="$1"
+	shift
+else
+	problematic_tests=1
 fi
 
 # Whether to test with clang.
