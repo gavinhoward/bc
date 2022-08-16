@@ -500,7 +500,7 @@ test_history_header:
 	@printf '$(TEST_STARS)\n\nRunning history tests...\n\n'
 
 library_test: $(LIBBC)
-	$(CC) $(CFLAGS) $(BCL_TEST_C) $(LIBBC) -o $(BCL_TEST)
+	$(CC) $(CFLAGS) -lpthread $(BCL_TEST_C) $(LIBBC) -o $(BCL_TEST)
 
 test_library: library_test
 	%%BCL_TEST_EXEC%%
