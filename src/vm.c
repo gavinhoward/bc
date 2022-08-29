@@ -1091,6 +1091,7 @@ bc_vm_file(const char* file)
 #endif // BC_ENABLED
 
 err:
+
 	BC_SIG_MAYLOCK;
 
 	// Cleanup.
@@ -1305,6 +1306,10 @@ err:
 
 	// Cleanup.
 	bc_vm_clean();
+
+	// bc_program_reset(), called by bc_vm_clean(), resets the status.
+	// We want it to clear the sig_pop variable in case it was set.
+	if (vm->status == (sig_atomic_t) BC_STATUS_SUCCESS) BC_LONGJMP_STOP;
 
 	// Since this is tied to this function, free it here. We always free it here
 	// because bc_vm_stdin() may or may not use it later.
