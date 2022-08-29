@@ -2,7 +2,7 @@
 
 ## 6.0.2
 
-This is a production release that fixes two bugs
+This is a production release that fixes two bugs:
 
 * The `-l` option overrode the `-S` option.
 * A double-free and crash when sending a `SIGINT` while executing expressions
