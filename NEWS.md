@@ -1,5 +1,11 @@
 # News
 
+## 6.0.3
+
+This is a production release that fixes a build bug for cross-compilation.
+
+Users that do not need cross-compilation do ***NOT*** need to upgrade.
+
 ## 6.0.2
 
 This is a production release that fixes two bugs:
