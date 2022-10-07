@@ -1052,6 +1052,7 @@ bc_vm_endif(void)
 	bc_parse_endif(&vm->prs);
 	bc_program_exec(&vm->prog);
 }
+
 #endif // BC_ENABLED
 
 /**

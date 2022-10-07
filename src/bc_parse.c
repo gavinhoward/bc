@@ -207,7 +207,7 @@ bc_parse_createCondLabel(BcParse* p, size_t idx)
 	bc_vec_push(&p->conds, &idx);
 }
 
-/*
+/**
  * Creates an exit label to be filled in later by bc_parse_setLabel(). Also, why
  * create a label to be filled in later? Because exit labels are meant to be
  * targeted by code that comes *before* the label. Since we have to parse that
