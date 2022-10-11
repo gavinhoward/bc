@@ -80,26 +80,12 @@
  */
 #define BC_PARSE_IS_INITED(p, prg) ((p)->prog == (prg))
 
-#if BC_ENABLED
-
-/**
- * Returns true if the current parser state allows parsing, false otherwise.
- * @param p  The parser.
- * @return   True if parsing can proceed, false otherwise.
- */
-#define BC_PARSE_CAN_PARSE(p) \
-	((p).l.t != BC_LEX_EOF && (p).l.t != BC_LEX_KW_DEFINE)
-
-#else // BC_ENABLED
-
 /**
  * Returns true if the current parser state allows parsing, false otherwise.
  * @param p  The parser.
  * @return   True if parsing can proceed, false otherwise.
  */
 #define BC_PARSE_CAN_PARSE(p) ((p).l.t != BC_LEX_EOF)
-
-#endif // BC_ENABLED
 
 /**
  * Pushes the instruction @a i onto the bytecode vector for the current
