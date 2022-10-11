@@ -1091,9 +1091,9 @@ bc_parse_endif(BcParse* p)
 	{
 		// We set this to restore it later. We don't want the parser thinking
 		// that we are on stdin for this one because it will want more.
-		bool is_stdin = vm->is_stdin;
+		BcMode mode = vm->mode;
 
-		vm->is_stdin = false;
+		vm->mode = BC_MODE_FILE;
 
 		// End all of the if statements and loops.
 		while (p->flags.len > 1 || BC_PARSE_IF_END(p))
@@ -1102,7 +1102,7 @@ bc_parse_endif(BcParse* p)
 			if (p->flags.len > 1) bc_parse_endBody(p, false);
 		}
 
-		vm->is_stdin = is_stdin;
+		vm->mode = (uchar) mode;
 	}
 	// If we reach here, a block was not properly closed, and we should error.
 	else bc_parse_err(&vm->prs, BC_ERR_PARSE_BLOCK);
