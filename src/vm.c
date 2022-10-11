@@ -1009,22 +1009,12 @@ bc_vm_process(const char* text, bool is_stdin, bool is_exprs)
 	// Set up the parser.
 	bc_parse_text(&vm->prs, text, is_stdin, is_exprs);
 
-	do
+	while (vm->prs.l.t != BC_LEX_EOF)
 	{
+		// Parsing requires a signal lock. We also don't parse everything; we
+		// want to execute as soon as possible for *everything*.
 		BC_SIG_LOCK;
-
-#if BC_ENABLED
-		// If the first token is the keyword define, then we need to do this
-		// specially because bc thinks it may not be able to parse.
-		if (vm->prs.l.t == BC_LEX_KW_DEFINE) vm->parse(&vm->prs);
-#endif // BC_ENABLED
-
-		// Parse it all.
-		while (BC_PARSE_CAN_PARSE(vm->prs))
-		{
-			vm->parse(&vm->prs);
-		}
-
+		vm->parse(&vm->prs);
 		BC_SIG_UNLOCK;
 
 		// Execute if possible.
@@ -1035,7 +1025,6 @@ bc_vm_process(const char* text, bool is_stdin, bool is_exprs)
 		// Flush in interactive mode.
 		if (BC_I) bc_file_flush(&vm->fout, bc_flush_save);
 	}
-	while (vm->prs.l.t != BC_LEX_EOF);
 }
 
 #if BC_ENABLED
