@@ -2265,6 +2265,19 @@ leadingzero
 :   Tests the leading zero functionality and the `plz*()` and `pnlz*()`
     functions in [`gen/lib2.bc`][26].
 
+line_by_line1
+
+:   Tests the line-by-line behavior of `bc` with regards to `quit` in a function
+    definition.
+
+line_by_line2
+
+:   Tests the line-by-line behavior of `bc` with regards to `quit`.
+
+line_loop_quit
+
+:   Tests the behavior of `bc` with a `quit` after a single-line loop.
+
 #### `dc` Standard Tests
 
 The list of current (17 July 2021) standard tests for `dc` is below:
