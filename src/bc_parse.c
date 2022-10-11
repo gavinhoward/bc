@@ -255,7 +255,7 @@ bc_parse_operator(BcParse* p, BcLexType type, size_t start, size_t* nexprs)
 	uchar l, r = BC_PARSE_OP_PREC(type);
 	uchar left = BC_PARSE_OP_LEFT(type);
 
-	// While we haven't hit the stop point yet.
+	// While we haven't hit the stop point yet...
 	while (p->ops.len > start)
 	{
 		// Get the top operator.
