@@ -273,7 +273,9 @@ bc_parse_operator(BcParse* p, BcLexType type, size_t start, size_t* nexprs)
 		if (l >= r && (l != r || !left)) break;
 
 		// Do the housekeeping. In particular, make sure to note that one
-		// expression was consumed. (Two were, but another was added.)
+		// expression was consumed (well, two were, but another was added) if
+		// the operator was not a prefix operator. (Postfix operators are not
+		// handled by this function at all.)
 		bc_parse_push(p, BC_PARSE_TOKEN_INST(t));
 		bc_vec_pop(&p->ops);
 		*nexprs -= !BC_PARSE_OP_PREFIX(t);
