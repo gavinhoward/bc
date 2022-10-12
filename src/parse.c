@@ -173,13 +173,13 @@ bc_parse_number(BcParse* p)
 }
 
 void
-bc_parse_text(BcParse* p, const char* text, bool is_stdin, bool is_exprs)
+bc_parse_text(BcParse* p, const char* text, BcMode mode)
 {
 	BC_SIG_LOCK;
 
 	// Make sure the pointer isn't invalidated.
 	p->func = bc_vec_item(&p->prog->fns, p->fidx);
-	bc_lex_text(&p->l, text, is_stdin, is_exprs);
+	bc_lex_text(&p->l, text, mode);
 
 	BC_SIG_UNLOCK;
 }

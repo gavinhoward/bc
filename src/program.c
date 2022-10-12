@@ -715,7 +715,7 @@ bc_program_read(BcProgram* p)
 	BcInstPtr ip;
 	size_t i;
 	const char* file;
-	bool is_stdin;
+	BcMode mode;
 	BcFunc* f = bc_vec_item(&p->fns, BC_PROG_READ);
 
 	// If we are already executing a read, that is an error. So look for a read
@@ -730,11 +730,11 @@ bc_program_read(BcProgram* p)
 
 	// Save the filename because we are going to overwrite it.
 	file = vm->file;
-	is_stdin = vm->is_stdin;
+	mode = vm->mode;
 
 	// It is a parse error if there needs to be more than one line, so we unset
 	// this to tell the lexer to not request more. We set it back later.
-	vm->is_stdin = false;
+	vm->mode = BC_MODE_FILE;
 
 	if (!BC_PARSE_IS_INITED(&vm->read_prs, p))
 	{
@@ -768,8 +768,8 @@ bc_program_read(BcProgram* p)
 	// We should *not* have run into EOF.
 	if (s == BC_STATUS_EOF) bc_err(BC_ERR_EXEC_READ_EXPR);
 
-	// Parse *one* expression, so is_stdin should be false.
-	bc_parse_text(&vm->read_prs, vm->read_buf.v, false, false);
+	// Parse *one* expression, so mode should not be stdin.
+	bc_parse_text(&vm->read_prs, vm->read_buf.v, BC_MODE_FILE);
 	BC_SIG_LOCK;
 	vm->expr(&vm->read_prs, BC_PARSE_NOREAD | BC_PARSE_NEEDVAL);
 	BC_SIG_UNLOCK;
@@ -813,7 +813,7 @@ bc_program_read(BcProgram* p)
 
 exec_err:
 	BC_SIG_MAYLOCK;
-	vm->is_stdin = is_stdin;
+	vm->mode = (uchar) mode;
 	vm->file = file;
 	BC_LONGJMP_CONT(vm);
 }
@@ -2516,8 +2516,8 @@ bc_program_execStr(BcProgram* p, const char* restrict code,
 
 		BC_SIG_UNLOCK;
 
-		// Parse.
-		bc_parse_text(&vm->read_prs, str, false, false);
+		// Parse. Only one expression is needed, so stdin isn't used.
+		bc_parse_text(&vm->read_prs, str, BC_MODE_FILE);
 
 		BC_SIG_LOCK;
 		vm->expr(&vm->read_prs, BC_PARSE_NOCALL);

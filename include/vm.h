@@ -628,12 +628,8 @@ typedef struct BcVm
 	/// True if EOF was encountered.
 	bool eof;
 
-	/// True if bc is currently reading from stdin.
-	bool is_stdin;
-
-	/// True if bc should clear its buffers. This is BcVm to fill a hole and
-	/// also to avoid clobber warnings from GCC.
-	bool clear;
+	/// The mode that the program is in.
+	uchar mode;
 
 #if BC_ENABLED
 
