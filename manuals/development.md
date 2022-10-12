@@ -2274,9 +2274,14 @@ line_by_line2
 
 :   Tests the line-by-line behavior of `bc` with regards to `quit`.
 
-line_loop_quit
+line_loop_quit1
 
 :   Tests the behavior of `bc` with a `quit` after a single-line loop.
+
+line_loop_quit2
+
+:   Tests the behavior of `bc` with a `quit` after a single-line loop and a
+    newline escape.
 
 #### `dc` Standard Tests
 

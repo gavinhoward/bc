@@ -53,4 +53,5 @@ bitfuncs
 leadingzero
 line_by_line1
 line_by_line2
-line_loop_quit
+line_loop_quit1
+line_loop_quit2
