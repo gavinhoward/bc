@@ -261,7 +261,7 @@ bc_parse_operator(BcParse* p, BcLexType type, size_t start, size_t* nexprs)
 		// Get the top operator.
 		t = BC_PARSE_TOP_OP(p);
 
-		// If it's a right paren, we have reached the end of whatever expression
+		// If it's a left paren, we have reached the end of whatever expression
 		// this is no matter what.
 		if (t == BC_LEX_LPAREN) break;
 
