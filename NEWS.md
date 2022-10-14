@@ -1,5 +1,17 @@
 # News
 
+## 6.1.0
+
+This is a production release that fixes a discrepancy from the `bc` standard.
+
+The discrepancy was with regards to the behavior of the `quit` command. This
+`bc` used to quit whenever it encountered `quit` during parsing, even if it was
+parsing a full file. Now, `bc` only quits when encountering `quit` *after* it
+has executed all executable statements up to that point.
+
+This behavior is slightly different from GNU `bc`, but users will only notice
+the difference if they put `quit` on the same line as other statements.
+
 ## 6.0.4
 
 This is a production release that most users will not need to upgrade to.
