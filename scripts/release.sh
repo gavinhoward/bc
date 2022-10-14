@@ -633,6 +633,25 @@ build_set() {
 	minsize "$_build_set_CC" "$_build_set_run_tests"
 }
 
+# Unset all bc and dc environment variables. This is intended to allow this
+# script to run in a clean environment.
+unset POSIXLY_CORRECT
+unset BC_BANNER
+unset BC_ENV_ARGS
+unset DC_ENV_ARGS
+unset BC_LINE_LENGTH
+unset DC_LINE_LENGTH
+unset BC_SIGINT_RESET
+unset DC_SIGINT_RESET
+unset BC_TTY_MODE
+unset DC_TTY_MODE
+unset BC_PROMPT
+unset DC_PROMPT
+unset BC_EXPR_EXIT
+unset DC_EXPR_EXIT
+unset BC_DIGIT_CLAMP
+unset DC_DIGIT_CLAMP
+
 # Set some strict warning flags. Clang's -Weverything can be way too strict, so
 # we actually have to turn off some things.
 clang_flags="-Weverything -Wno-padded"
