@@ -368,6 +368,16 @@ bc_lex_readLine(BcLex* l)
 			good = bc_vm_readLine(false);
 			break;
 		}
+
+#ifdef __GNUC__
+#ifndef __clang__
+		default:
+		{
+			// We should never get here.
+			abort();
+		}
+#endif // __clang__
+#endif // __GNUC__
 	}
 
 	BC_SIG_LOCK;
