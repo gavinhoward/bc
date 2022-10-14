@@ -976,6 +976,19 @@ The **if** **else** statement does the same thing as in C.
 The **quit** statement causes bc(1) to quit, even if it is on a branch that will
 not be executed (it is a compile-time command).
 
+**Warning**: The behavior of this bc(1) on **quit** is slightly different from
+other bc(1) implementations. Other bc(1) implementations will exit as soon as
+they finish parsing the line that a **quit** command is on. This bc(1) will
+execute any completed and executable statements that occur before the **quit**
+statement before exiting.
+
+In other words, for the bc(1) code below:
+
+    for (i = 0; i < 3; ++i) i; quit
+
+Other bc(1) implementations will print nothing, and this bc(1) will print **0**,
+**1**, and **2** on successive lines before exiting.
+
 The **halt** statement causes bc(1) to quit, if it is executed. (Unlike **quit**
 if it is on a branch of an **if** statement that is not executed, bc(1) does not
 quit.)
@@ -2430,13 +2443,20 @@ at https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html . The
 flags **-efghiqsvVw**, all long options, and the extensions noted above are
 extensions to that specification.
 
+In addition, the behavior of the **quit** implements an interpretation of that
+specification that is different from all known implementations. For more
+information see the **Statements** subsection of the **SYNTAX** section.
+
 Note that the specification explicitly says that bc(1) only accepts numbers that
 use a period (**.**) as a radix point, regardless of the value of
 **LC_NUMERIC**.
 
 # BUGS
 
-None are known. Report bugs at https://git.yzena.com/gavin/bc.
+Before version **6.1.0**, this bc(1) had incorrect behavior for the **quit**
+statement.
+
+No other bugs are known. Report bugs at https://git.yzena.com/gavin/bc .
 
 # AUTHORS
 

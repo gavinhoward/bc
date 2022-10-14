@@ -25,7 +25,7 @@
 .\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.TH "BC" "1" "August 2022" "Gavin D. Howard" "General Commands Manual"
+.TH "BC" "1" "October 2022" "Gavin D. Howard" "General Commands Manual"
 .nh
 .ad l
 .SH NAME
@@ -1246,6 +1246,25 @@ The \f[B]if\f[R] \f[B]else\f[R] statement does the same thing as in C.
 .PP
 The \f[B]quit\f[R] statement causes bc(1) to quit, even if it is on a
 branch that will not be executed (it is a compile-time command).
+.PP
+\f[B]Warning\f[R]: The behavior of this bc(1) on \f[B]quit\f[R] is
+slightly different from other bc(1) implementations.
+Other bc(1) implementations will exit as soon as they finish parsing the
+line that a \f[B]quit\f[R] command is on.
+This bc(1) will execute any completed and executable statements that
+occur before the \f[B]quit\f[R] statement before exiting.
+.PP
+In other words, for the bc(1) code below:
+.IP
+.nf
+\f[C]
+for (i = 0; i < 3; ++i) i; quit
+\f[R]
+.fi
+.PP
+Other bc(1) implementations will print nothing, and this bc(1) will
+print \f[B]0\f[R], \f[B]1\f[R], and \f[B]2\f[R] on successive lines
+before exiting.
 .PP
 The \f[B]halt\f[R] statement causes bc(1) to quit, if it is executed.
 (Unlike \f[B]quit\f[R] if it is on a branch of an \f[B]if\f[R] statement
@@ -2926,6 +2945,12 @@ https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .
 The flags \f[B]-efghiqsvVw\f[R], all long options, and the extensions
 noted above are extensions to that specification.
 .PP
+In addition, the behavior of the \f[B]quit\f[R] implements an
+interpretation of that specification that is different from all known
+implementations.
+For more information see the \f[B]Statements\f[R] subsection of the
+\f[B]SYNTAX\f[R] section.
+.PP
 Note that the specification explicitly says that bc(1) only accepts
 numbers that use a period (\f[B].\f[R]) as a radix point, regardless of
 the value of \f[B]LC_NUMERIC\f[R].
@@ -2934,8 +2959,11 @@ This bc(1) supports error messages for different locales, and thus, it
 supports \f[B]LC_MESSAGES\f[R].
 .SH BUGS
 .PP
-None are known.
-Report bugs at https://git.yzena.com/gavin/bc.
+Before version \f[B]6.1.0\f[R], this bc(1) had incorrect behavior for
+the \f[B]quit\f[R] statement.
+.PP
+No other bugs are known.
+Report bugs at https://git.yzena.com/gavin/bc .
 .SH AUTHORS
 .PP
 Gavin D.

@@ -1473,7 +1473,7 @@ https://pubs.opengroup.org/onlinepubs/9699919799/utilities/bc.html .
 
 # BUGS
 
-None are known. Report bugs at https://git.yzena.com/gavin/bc.
+None are known. Report bugs at https://git.yzena.com/gavin/bc .
 
 # AUTHOR
 
