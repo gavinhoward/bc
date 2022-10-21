@@ -392,7 +392,11 @@ bc_parse_call(BcParse* p, const char* name, uint8_t flags)
 /**
  * Parses a name/identifier-based expression. It could be a variable, an array
  * element, an array itself (for function arguments), a function call, etc.
- *
+ * @param p           The parser.
+ * @param type        A pointer to return the resulting instruction.
+ * @param can_assign  A pointer to return true if the name can be assigned to,
+ *                    false otherwise.
+ * @param flags       Flags restricting what kind of expression the name can be.
  */
 static void
 bc_parse_name(BcParse* p, BcInst* type, bool* can_assign, uint8_t flags)
