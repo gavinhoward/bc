@@ -1913,7 +1913,7 @@ bc_parse_stmt(BcParse* p)
 	}
 
 	// Make sure semicolons are eaten.
-	while (p->l.t == BC_LEX_SCOLON)
+	while (p->l.t == BC_LEX_SCOLON || p->l.t == BC_LEX_NLINE)
 	{
 		bc_lex_next(&p->l);
 	}
