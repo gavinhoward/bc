@@ -649,9 +649,7 @@ bc_vm_shutdown(void)
 	bc_parse_free(&vm->prs);
 	bc_program_free(&vm->prog);
 
-	bc_slabvec_free(&vm->other_slabs);
-	bc_slabvec_free(&vm->main_slabs);
-	bc_slabvec_free(&vm->main_const_slab);
+	bc_slabvec_free(&vm->slabs);
 #endif // !BC_ENABLE_LIBRARY
 
 	bc_vm_freeTemps();
@@ -966,29 +964,16 @@ bc_vm_clean(void)
 	// constants, and code.
 	if (good && vm->prog.stack.len == 1 && ip->idx == f->code.len)
 	{
+		// XXX: Nothing can be popped in dc. Deal with it.
+
 #if BC_ENABLED
 		if (BC_IS_BC)
 		{
+			// XXX: you cannot delete strings, functions, or constants in bc.
+			// Deal with it.
 			bc_vec_popAll(&f->labels);
-			bc_vec_popAll(&f->strs);
-			bc_vec_popAll(&f->consts);
-
-			// I can't clear out the other_slabs because it has functions,
-			// consts, strings, vars, and arrays. It has strings from *other*
-			// functions, specifically.
-			bc_slabvec_clear(&vm->main_const_slab);
-			bc_slabvec_clear(&vm->main_slabs);
 		}
 #endif // BC_ENABLED
-
-#if DC_ENABLED
-		// Note to self: you cannot delete strings and functions. Deal with it.
-		if (BC_IS_DC)
-		{
-			bc_vec_popAll(vm->prog.consts);
-			bc_slabvec_clear(&vm->main_const_slab);
-		}
-#endif // DC_ENABLED
 
 		bc_vec_popAll(&f->code);
 
@@ -1581,10 +1566,8 @@ bc_vm_boot(int argc, char* argv[])
 
 #if !BC_ENABLE_LIBRARY
 
-	// Initialize the slab vectors.
-	bc_slabvec_init(&vm->main_const_slab);
-	bc_slabvec_init(&vm->main_slabs);
-	bc_slabvec_init(&vm->other_slabs);
+	// Initialize the slab vector.
+	bc_slabvec_init(&vm->slabs);
 
 #endif // !BC_ENABLE_LIBRARY
 

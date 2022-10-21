@@ -755,16 +755,9 @@ typedef struct BcVm
 	/// The number of items in the input buffer.
 	size_t buf_len;
 
-	/// The slab for constants in the main function. This is separate for
-	/// garbage collection reasons.
-	BcVec main_const_slab;
-
-	//// The slab for all other strings for the main function.
-	BcVec main_slabs;
-
-	/// The slab for function names, strings in other functions, and constants
-	/// in other functions.
-	BcVec other_slabs;
+	/// The slabs vector for constants, strings, function names, and other
+	/// string-like things.
+	BcVec slabs;
 
 #if BC_ENABLED
 

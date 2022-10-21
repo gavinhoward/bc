@@ -392,12 +392,6 @@ typedef struct BcFunc
 
 #endif // BC_ENABLED
 
-	/// The strings encountered in the function.
-	BcVec strs;
-
-	/// The constants encountered in the function.
-	BcVec consts;
-
 	/// The function's name.
 	const char* name;
 
