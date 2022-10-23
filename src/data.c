@@ -915,7 +915,7 @@ const uint8_t bc_parse_exprs[] = {
 	BC_PARSE_EXPR_ENTRY(false, false, true, true, true, true, true, false),
 
 	// Starts with BC_LEX_KW_SQRT.
-	BC_PARSE_EXPR_ENTRY(true, true,  true, true, true, true, true, false),
+	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, false),
 
 	// Starts with BC_LEX_KW_MAXIBASE.
 	BC_PARSE_EXPR_ENTRY(true, true, true, true, true, true, true, false),
