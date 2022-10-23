@@ -2070,6 +2070,9 @@ bc_program_builtin(BcProgram* p, uchar inst)
 				// bc_program_num() to a vector.
 				BcVec* v = (BcVec*) num;
 
+				// XXX: If this is changed, you should also change the similar
+				// code in bc_program_asciify().
+
 #if BC_ENABLED
 				// Dereference the array, if necessary.
 				if (BC_IS_BC && v->size == sizeof(uchar))
@@ -2239,19 +2242,18 @@ bc_program_asciifyNum(BcProgram* p, BcNum* n)
 }
 
 /**
- * Executes the "asciify" command in dc.
- * @param p     The program.
- * @param fidx  The index of the current function.
+ * Executes the "asciify" command in bc and dc.
+ * @param p  The program.
  */
 static void
-bc_program_asciify(BcProgram* p, size_t fidx)
+bc_program_asciify(BcProgram* p)
 {
 	BcResult *r, res;
 	BcNum* n;
-	char str[2];
-	char* str2;
 	uchar c;
 	size_t idx;
+	// This is in the outer scope because it has to be freed after a jump.
+	char* temp_str;
 
 	// Check the stack.
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_err(BC_ERR_EXEC_STACK);
@@ -2262,35 +2264,89 @@ bc_program_asciify(BcProgram* p, size_t fidx)
 	bc_program_operand(p, &r, &n, 0);
 
 	assert(n != NULL);
-	assert(r->t != BC_RESULT_ARRAY);
+	assert(BC_IS_BC || r->t != BC_RESULT_ARRAY);
 
-	// Asciify.
-	if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
-	else
+#if BC_ENABLED
+	// Handle arrays in bc specially.
+	if (r->t == BC_RESULT_ARRAY)
 	{
-		// Get the string itself, then the first character.
-		str2 = bc_program_string(p, n);
-		c = (uchar) str2[0];
+		// Yes, this is one place where we need to cast the number from
+		// bc_program_num() to a vector.
+		BcVec* v = (BcVec*) n;
+		size_t i;
+
+		// XXX: If this is changed, you should also change the similar code in
+		// bc_program_builtin().
+
+		// Dereference the array, if necessary.
+		if (v->size == sizeof(uchar))
+		{
+			v = bc_program_dereference(p, v);
+		}
+
+		assert(v->size == sizeof(BcNum));
+
+		// Allocate the string and set the jump for it.
+		BC_SIG_LOCK;
+		BC_SETJMP_LOCKED(vm, exit);
+		temp_str = bc_vm_malloc(v->len + 1);
+		BC_SIG_UNLOCK;
+
+		// Convert the array.
+		for (i = 0; i < v->len; ++i)
+		{
+			BcNum* num = (BcNum*) bc_vec_item(v, i);
+			temp_str[i] = (char) bc_program_asciifyNum(p, num);
+		}
+
+		temp_str[v->len] = '\0';
+
+		// Store the string in the slab and map, and free the temp string.
+		BC_SIG_LOCK;
+		idx = bc_program_addString(p, temp_str);
+		free(temp_str);
+		BC_UNSETJMP(vm);
+		BC_SIG_UNLOCK;
 	}
+	else
+#endif // BC_ENABLED
+	{
+		char str[2];
+		char* str2;
 
-	// Fill the resulting string.
-	str[0] = (char) c;
-	str[1] = '\0';
+		// Asciify.
+		if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
+		else
+		{
+			// Get the string itself, then the first character.
+			str2 = bc_program_string(p, n);
+			c = (uchar) str2[0];
+		}
 
-	// Add the string to the data structures.
-	BC_SIG_LOCK;
-	idx = bc_program_addString(p, str);
-	BC_SIG_UNLOCK;
+		// Fill the resulting string.
+		str[0] = (char) c;
+		str[1] = '\0';
+
+		// Add the string to the data structures.
+		BC_SIG_LOCK;
+		idx = bc_program_addString(p, str);
+		BC_SIG_UNLOCK;
+	}
 
 	// Set the result
 	res.t = BC_RESULT_STR;
 	bc_num_clear(&res.d.n);
-	res.d.n.rdx = fidx;
 	res.d.n.scale = idx;
 
 	// Pop and push.
 	bc_vec_pop(&p->results);
 	bc_vec_push(&p->results, &res);
+
+	return;
+
+exit:
+
+	free(temp_str);
 }
 
 /**
@@ -3222,7 +3278,7 @@ bc_program_exec(BcProgram* p)
 			BC_PROG_LBL(BC_INST_ASCIIFY):
 			// clang-format on
 			{
-				bc_program_asciify(p, ip->func);
+				bc_program_asciify(p);
 
 				// Because we changed the execution stack and where we are
 				// executing, we have to update all of this.
