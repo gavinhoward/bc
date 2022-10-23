@@ -33,6 +33,11 @@ These features were added because I realized that type-checking is necessary now
 that strings can be assigned to variables in `bc` and because they've always
 been assignable to variables in `dc`.
 
+The last added feature is the ability of the `asciify()` built-in function in
+`bc` to convert a full array of numbers into a string. This means that
+character-by-character printing will not be necessary, and more strings than
+just single-character ones will be able to be created.
+
 ## 6.0.4
 
 This is a production release that most users will not need to upgrade to.
