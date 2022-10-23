@@ -29,6 +29,15 @@ existed in.
 
   The first version without this bug is `6.1.0`.
 
+* In versions `5.0.0` until `6.0.4` (inclusive) of `bc`, there is another
+  out-of-bounds access if an array is passed to the `asciify()` built-in
+  function as the only argument. This happened because arrays are allowed as
+  function arguments, which allowed them to be used as arguments to `asciify()`,
+  but they should not have been allowed. However, since they were, the
+  `asciify()` code tried to access an argument that was not there.
+
+  The first version without this bug is `6.1.0`.
+
 * In version `6.0.0` of `bcl`, there is several use of initialized data that
   have the same root cause: I forgot to call `memset()` on the per-thread global
   data. This is because the data used to be *actually* global, which meant that

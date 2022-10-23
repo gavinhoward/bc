@@ -531,6 +531,8 @@ bc_parse_builtin(BcParse* p, BcLexType type, uint8_t flags, BcInst* prev)
 
 	// Since length can take arrays, we need to specially add that flag.
 	if (type == BC_LEX_KW_LENGTH) flags |= BC_PARSE_ARRAY;
+	// Otherwise, we need to clear it because it could be set.
+	else flags &= ~(BC_PARSE_ARRAY);
 
 	bc_parse_expr_status(p, flags, bc_parse_next_rel);
 

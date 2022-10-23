@@ -2236,6 +2236,7 @@ bc_program_asciify(BcProgram* p, size_t fidx)
 	bc_program_operand(p, &r, &n, 0);
 
 	assert(n != NULL);
+	assert(r->t != BC_RESULT_ARRAY);
 
 	// Asciify.
 	if (BC_PROG_NUM(r, n)) c = bc_program_asciifyNum(p, n);
