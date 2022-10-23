@@ -2252,8 +2252,10 @@ bc_program_asciify(BcProgram* p)
 	BcNum* n;
 	uchar c;
 	size_t idx;
+#if BC_ENABLED
 	// This is in the outer scope because it has to be freed after a jump.
 	char* temp_str;
+#endif // BC_ENABLED
 
 	// Check the stack.
 	if (BC_ERR(!BC_PROG_STACK(&p->results, 1))) bc_err(BC_ERR_EXEC_STACK);
@@ -2344,9 +2346,10 @@ bc_program_asciify(BcProgram* p)
 
 	return;
 
+#if BC_ENABLED
 exit:
-
 	free(temp_str);
+#endif // BC_ENABLED
 }
 
 /**
