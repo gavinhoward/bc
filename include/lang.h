@@ -178,6 +178,8 @@ typedef enum BcInst
 	BC_INST_SCALE_FUNC,
 	BC_INST_SQRT,
 	BC_INST_ABS,
+	BC_INST_IS_NUMBER,
+	BC_INST_IS_STRING,
 
 #if BC_ENABLE_EXTRA_MATH
 	/// Another builtin function.

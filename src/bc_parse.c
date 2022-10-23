@@ -1706,6 +1706,8 @@ bc_parse_stmt(BcParse* p)
 #endif // BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_SQRT:
 		case BC_LEX_KW_ABS:
+		case BC_LEX_KW_IS_NUMBER:
+		case BC_LEX_KW_IS_STRING:
 #if BC_ENABLE_EXTRA_MATH
 		case BC_LEX_KW_IRAND:
 #endif // BC_ENABLE_EXTRA_MATH
@@ -2307,6 +2309,8 @@ bc_parse_expr_err(BcParse* p, uint8_t flags, BcParseNext next)
 			case BC_LEX_KW_LENGTH:
 			case BC_LEX_KW_SQRT:
 			case BC_LEX_KW_ABS:
+			case BC_LEX_KW_IS_NUMBER:
+			case BC_LEX_KW_IS_STRING:
 #if BC_ENABLE_EXTRA_MATH
 			case BC_LEX_KW_IRAND:
 #endif // BC_ENABLE_EXTRA_MATH

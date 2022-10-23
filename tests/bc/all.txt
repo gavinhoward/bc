@@ -51,6 +51,8 @@ divmod
 modexp
 bitfuncs
 leadingzero
+is_number
+is_string
 line_by_line1
 line_by_line2
 line_loop_quit1

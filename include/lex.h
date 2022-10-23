@@ -317,6 +317,12 @@ typedef enum BcLexType
 	/// bc abs keyword.
 	BC_LEX_KW_ABS,
 
+	/// bc is_number keyword.
+	BC_LEX_KW_IS_NUMBER,
+
+	/// bc is_string keyword.
+	BC_LEX_KW_IS_STRING,
+
 #if BC_ENABLE_EXTRA_MATH
 
 	/// bc irand keyword.

@@ -581,6 +581,8 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_SCALE_FUNC,                       \
 		&&lbl_BC_INST_SQRT,                             \
 		&&lbl_BC_INST_ABS,                              \
+		&&lbl_BC_INST_IS_NUMBER,                        \
+		&&lbl_BC_INST_IS_STRING,                        \
 		&&lbl_BC_INST_IRAND,                            \
 		&&lbl_BC_INST_ASCIIFY,                          \
 		&&lbl_BC_INST_READ,                             \
@@ -675,6 +677,8 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_SCALE_FUNC,                       \
 		&&lbl_BC_INST_SQRT,                             \
 		&&lbl_BC_INST_ABS,                              \
+		&&lbl_BC_INST_IS_NUMBER,                        \
+		&&lbl_BC_INST_IS_STRING,                        \
 		&&lbl_BC_INST_ASCIIFY,                          \
 		&&lbl_BC_INST_READ,                             \
 		&&lbl_BC_INST_MAXIBASE,                         \
@@ -781,6 +785,8 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_SCALE_FUNC,                       \
 		&&lbl_BC_INST_SQRT,                             \
 		&&lbl_BC_INST_ABS,                              \
+		&&lbl_BC_INST_IS_NUMBER,                        \
+		&&lbl_BC_INST_IS_STRING,                        \
 		&&lbl_BC_INST_IRAND,                            \
 		&&lbl_BC_INST_ASCIIFY,                          \
 		&&lbl_BC_INST_READ,                             \
@@ -861,6 +867,8 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_SCALE_FUNC,                       \
 		&&lbl_BC_INST_SQRT,                             \
 		&&lbl_BC_INST_ABS,                              \
+		&&lbl_BC_INST_IS_NUMBER,                        \
+		&&lbl_BC_INST_IS_STRING,                        \
 		&&lbl_BC_INST_ASCIIFY,                          \
 		&&lbl_BC_INST_READ,                             \
 		&&lbl_BC_INST_MAXIBASE,                         \
@@ -933,6 +941,8 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_SCALE_FUNC,                       \
 		&&lbl_BC_INST_SQRT,                             \
 		&&lbl_BC_INST_ABS,                              \
+		&&lbl_BC_INST_IS_NUMBER,                        \
+		&&lbl_BC_INST_IS_STRING,                        \
 		&&lbl_BC_INST_IRAND,                            \
 		&&lbl_BC_INST_ASCIIFY,                          \
 		&&lbl_BC_INST_READ,                             \
@@ -1002,6 +1012,8 @@ extern const char bc_program_esc_seqs[];
 		&&lbl_BC_INST_SCALE_FUNC,                       \
 		&&lbl_BC_INST_SQRT,                             \
 		&&lbl_BC_INST_ABS,                              \
+		&&lbl_BC_INST_IS_NUMBER,                        \
+		&&lbl_BC_INST_IS_STRING,                        \
 		&&lbl_BC_INST_ASCIIFY,                          \
 		&&lbl_BC_INST_READ,                             \
 		&&lbl_BC_INST_MAXIBASE,                         \

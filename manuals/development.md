@@ -2299,7 +2299,7 @@ stack_len
 
 :   Tests taking the length of the results stack.
 
-stack_len
+exec_stack_len
 
 :   Tests taking the length of the execution stack.
 
@@ -2361,7 +2361,7 @@ shift
 
 abs
 
-:   Tests the `abs()` builtin function.
+:   Tests the `abs()` builtin function (the `b` command).
 
 scientific
 
@@ -2380,6 +2380,14 @@ misc
 :   Miscellaneous tests. I named it this because at the time, I struggled to
     classify them.
 
+misc1
+
+:   More miscellaneous tests. This used to be an error file
+    (`tests/dc/errors/15.txt`) due to the presence of a invalid `u` character.
+    However, starting with version `6.1.0`, `u` became a valid command
+    (`is_number()`), so the error file became valid. It was checked manually and
+    moved, and `tests/dc/errors/34.txt` became the new `tests/dc/errors/15.txt`.
+
 strings
 
 :   Tests strings.
@@ -2388,9 +2396,13 @@ rand
 
 :   Tests the pseudo-random number generator and its special stack handling.
 
-exec_stack
+is_number
 
-:   Tests the execution stack depth command.
+:   Tests the `is_number()` built-in function (the `u` command).
+
+is_string
+
+:   Tests the `is_number()` built-in function (the `t` command).
 
 ### Script Tests
 
@@ -4094,8 +4106,8 @@ a table of which ASCII characters are already used:
 | `q`        | x     | Quit Two Macros                            |
 | `r`        | x     | Swap Top Two Items                         |
 | `s`        | x     | Store into Register                        |
-| `t`        |       |                                            |
-| `u`        |       |                                            |
+| `t`        | x     | Equivalent of `bc`'s `is_number()`         |
+| `u`        | x     | Equivalent of `bc`'s `is_string()`         |
 | `v`        | x     | Square Root                                |
 | `w`        |       |                                            |
 | `x`        | x     | Execute String                             |

@@ -1975,7 +1975,7 @@ bc_program_builtin(BcProgram* p, uchar inst)
 #if BC_ENABLE_EXTRA_MATH
 	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_IRAND);
 #else // BC_ENABLE_EXTRA_MATH
-	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_ABS);
+	assert(inst >= BC_INST_LENGTH && inst <= BC_INST_IS_STRING);
 #endif // BC_ENABLE_EXTRA_MATH
 
 #ifndef BC_PROG_NO_STACK_CHECK
@@ -1996,7 +1996,8 @@ bc_program_builtin(BcProgram* p, uchar inst)
 
 	// We need to ensure that strings and arrays aren't passed to most builtins.
 	// The scale function can take strings in dc.
-	if (!len && (inst != BC_INST_SCALE_FUNC || BC_IS_BC))
+	if (!len && (inst != BC_INST_SCALE_FUNC || BC_IS_BC) &&
+	    inst != BC_INST_IS_NUMBER && inst != BC_INST_IS_STRING)
 	{
 		bc_program_type_num(opd, num);
 	}
@@ -2015,7 +2016,31 @@ bc_program_builtin(BcProgram* p, uchar inst)
 
 		BC_NUM_NEG_CLR_NP(res->d.n);
 	}
+
+	// Testing for number or string is easy.
+	else if (inst == BC_INST_IS_NUMBER || inst == BC_INST_IS_STRING)
+	{
+		bool cond;
+		bool is_str;
+
+		BC_SIG_LOCK;
+
+		bc_num_init(&res->d.n, BC_NUM_DEF_SIZE);
+
+		BC_SIG_UNLOCK;
+
+		// Test if the number is a string.
+		is_str = BC_PROG_STR(num);
+
+		// This confusing condition simply means that the instruction must be
+		// true if is_str is, or it must be false if is_str is. Otherwise, the
+		// returned value is false (0).
+		cond = ((inst == BC_INST_IS_STRING) == is_str);
+		if (cond) bc_num_one(&res->d.n);
+	}
+
 #if BC_ENABLE_EXTRA_MATH
+
 	// irand() is easy.
 	else if (inst == BC_INST_IRAND)
 	{
@@ -2027,6 +2052,7 @@ bc_program_builtin(BcProgram* p, uchar inst)
 
 		bc_num_irand(num, &res->d.n, &p->rng);
 	}
+
 #endif // BC_ENABLE_EXTRA_MATH
 
 	// Everything else is...not easy.
@@ -3181,6 +3207,8 @@ bc_program_exec(BcProgram* p)
 			BC_PROG_LBL(BC_INST_SCALE_FUNC):
 			BC_PROG_LBL(BC_INST_SQRT):
 			BC_PROG_LBL(BC_INST_ABS):
+			BC_PROG_LBL(BC_INST_IS_NUMBER):
+			BC_PROG_LBL(BC_INST_IS_STRING):
 #if BC_ENABLE_EXTRA_MATH
 			BC_PROG_LBL(BC_INST_IRAND):
 #endif // BC_ENABLE_EXTRA_MATH
