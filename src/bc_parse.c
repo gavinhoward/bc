@@ -735,7 +735,7 @@ bc_parse_incdec(BcParse* p, BcInst* prev, bool* can_assign, size_t* nexs,
 		if (type == BC_LEX_NAME)
 		{
 			// Parse the name.
-			uint8_t flags2 = flags & ~BC_PARSE_ARRAY;
+			uint8_t flags2 = flags & ~(BC_PARSE_ARRAY);
 			bc_parse_name(p, prev, can_assign, flags2 | BC_PARSE_NOCALL);
 		}
 		// Is the next token a global?
