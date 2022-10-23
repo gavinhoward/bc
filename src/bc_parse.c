@@ -549,6 +549,10 @@ bc_parse_builtin(BcParse* p, BcLexType type, uint8_t flags, BcInst* prev)
 /**
  * Parses a builtin function that takes 3 arguments. This includes modexp() and
  * divmod().
+ * @param p      The parser.
+ * @param type   The lex token.
+ * @param flags  The expression parsing flags for parsing the argument.
+ * @param prev   An out parameter; the previous instruction pointer.
  */
 static void
 bc_parse_builtin3(BcParse* p, BcLexType type, uint8_t flags, BcInst* prev)
