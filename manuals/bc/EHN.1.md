@@ -504,40 +504,48 @@ The following are valid operands in bc(1):
 7.	**scale(E)**: The *scale* of **E**.
 8.	**abs(E)**: The absolute value of **E**. This is a **non-portable
 	extension**.
-9.	**modexp(E, E, E)**: Modular exponentiation, where the first expression is
+9.	**is_number(E)**: **1** if the given argument is a number, **0** if it is a
+	string. This is a **non-portable extension**.
+10.	**is_string(E)**: **1** if the given argument is a string, **0** if it is a
+	number. This is a **non-portable extension**.
+11.	**modexp(E, E, E)**: Modular exponentiation, where the first expression is
 	the base, the second is the exponent, and the third is the modulus. All
 	three values must be integers. The second argument must be non-negative. The
 	third argument must be non-zero. This is a **non-portable extension**.
-10.	**divmod(E, E, I[])**: Division and modulus in one operation. This is for
+11.	**divmod(E, E, I[])**: Division and modulus in one operation. This is for
 	optimization. The first expression is the dividend, and the second is the
 	divisor, which must be non-zero. The return value is the quotient, and the
 	modulus is stored in index **0** of the provided array (the last argument).
 	This is a **non-portable extension**.
-11.	**asciify(E)**: If **E** is a string, returns a string that is the first
+12.	**asciify(E)**: If **E** is a string, returns a string that is the first
 	letter of its argument. If it is a number, calculates the number mod **256**
 	and returns that number as a one-character string. This is a **non-portable
 	extension**.
-12.	**I()**, **I(E)**, **I(E, E)**, and so on, where **I** is an identifier for
+13.	**asciify(I[])**: A string that is made up of the characters that would
+	result from running **asciify(E)** on each element of the array identified
+	by the argument. This allows creating multi-character strings and storing
+	them. This is a **non-portable extension**.
+14.	**I()**, **I(E)**, **I(E, E)**, and so on, where **I** is an identifier for
 	a non-**void** function (see the *Void Functions* subsection of the
 	**FUNCTIONS** section). The **E** argument(s) may also be arrays of the form
 	**I[]**, which will automatically be turned into array references (see the
 	*Array References* subsection of the **FUNCTIONS** section) if the
 	corresponding parameter in the function definition is an array reference.
-13.	**read()**: Reads a line from **stdin** and uses that as an expression. The
+15.	**read()**: Reads a line from **stdin** and uses that as an expression. The
 	result of that expression is the result of the **read()** operand. This is a
 	**non-portable extension**.
-14.	**maxibase()**: The max allowable **ibase**. This is a **non-portable
+16.	**maxibase()**: The max allowable **ibase**. This is a **non-portable
 	extension**.
-15.	**maxobase()**: The max allowable **obase**. This is a **non-portable
+17.	**maxobase()**: The max allowable **obase**. This is a **non-portable
 	extension**.
-16.	**maxscale()**: The max allowable **scale**. This is a **non-portable
+18.	**maxscale()**: The max allowable **scale**. This is a **non-portable
 	extension**.
-17.	**line_length()**: The line length set with **BC_LINE_LENGTH** (see the
+19.	**line_length()**: The line length set with **BC_LINE_LENGTH** (see the
 	**ENVIRONMENT VARIABLES** section). This is a **non-portable extension**.
-18.	**global_stacks()**: **0** if global stacks are not enabled with the **-g**
+20.	**global_stacks()**: **0** if global stacks are not enabled with the **-g**
 	or **-\-global-stacks** options, non-zero otherwise. See the **OPTIONS**
 	section. This is a **non-portable extension**.
-19.	**leading_zero()**: **0** if leading zeroes are not enabled with the **-z**
+21.	**leading_zero()**: **0** if leading zeroes are not enabled with the **-z**
 	or **--leading-zeroes** options, non-zero otherwise. See the **OPTIONS**
 	section. This is a **non-portable extension**.
 

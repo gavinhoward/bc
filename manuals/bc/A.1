@@ -711,6 +711,14 @@ This is a \f[B]non-portable extension\f[R].
 \f[B]abs(E)\f[R]: The absolute value of \f[B]E\f[R].
 This is a \f[B]non-portable extension\f[R].
 .IP " 9." 4
+\f[B]is_number(E)\f[R]: \f[B]1\f[R] if the given argument is a number,
+\f[B]0\f[R] if it is a string.
+This is a \f[B]non-portable extension\f[R].
+.IP "10." 4
+\f[B]is_string(E)\f[R]: \f[B]1\f[R] if the given argument is a string,
+\f[B]0\f[R] if it is a number.
+This is a \f[B]non-portable extension\f[R].
+.IP "11." 4
 \f[B]modexp(E, E, E)\f[R]: Modular exponentiation, where the first
 expression is the base, the second is the exponent, and the third is the
 modulus.
@@ -718,7 +726,7 @@ All three values must be integers.
 The second argument must be non-negative.
 The third argument must be non-zero.
 This is a \f[B]non-portable extension\f[R].
-.IP "10." 4
+.IP "12." 4
 \f[B]divmod(E, E, I[])\f[R]: Division and modulus in one operation.
 This is for optimization.
 The first expression is the dividend, and the second is the divisor,
@@ -726,13 +734,19 @@ which must be non-zero.
 The return value is the quotient, and the modulus is stored in index
 \f[B]0\f[R] of the provided array (the last argument).
 This is a \f[B]non-portable extension\f[R].
-.IP "11." 4
+.IP "13." 4
 \f[B]asciify(E)\f[R]: If \f[B]E\f[R] is a string, returns a string that
 is the first letter of its argument.
 If it is a number, calculates the number mod \f[B]256\f[R] and returns
 that number as a one-character string.
 This is a \f[B]non-portable extension\f[R].
-.IP "12." 4
+.IP "14." 4
+\f[B]asciify(I[])\f[R]: A string that is made up of the characters that
+would result from running \f[B]asciify(E)\f[R] on each element of the
+array identified by the argument.
+This allows creating multi-character strings and storing them.
+This is a \f[B]non-portable extension\f[R].
+.IP "15." 4
 \f[B]I()\f[R], \f[B]I(E)\f[R], \f[B]I(E, E)\f[R], and so on, where
 \f[B]I\f[R] is an identifier for a non-\f[B]void\f[R] function (see the
 \f[I]Void Functions\f[R] subsection of the \f[B]FUNCTIONS\f[R] section).
@@ -741,44 +755,44 @@ The \f[B]E\f[R] argument(s) may also be arrays of the form
 (see the \f[I]Array References\f[R] subsection of the
 \f[B]FUNCTIONS\f[R] section) if the corresponding parameter in the
 function definition is an array reference.
-.IP "13." 4
+.IP "16." 4
 \f[B]read()\f[R]: Reads a line from \f[B]stdin\f[R] and uses that as an
 expression.
 The result of that expression is the result of the \f[B]read()\f[R]
 operand.
 This is a \f[B]non-portable extension\f[R].
-.IP "14." 4
+.IP "17." 4
 \f[B]maxibase()\f[R]: The max allowable \f[B]ibase\f[R].
 This is a \f[B]non-portable extension\f[R].
-.IP "15." 4
+.IP "18." 4
 \f[B]maxobase()\f[R]: The max allowable \f[B]obase\f[R].
 This is a \f[B]non-portable extension\f[R].
-.IP "16." 4
+.IP "19." 4
 \f[B]maxscale()\f[R]: The max allowable \f[B]scale\f[R].
 This is a \f[B]non-portable extension\f[R].
-.IP "17." 4
+.IP "20." 4
 \f[B]line_length()\f[R]: The line length set with
 \f[B]BC_LINE_LENGTH\f[R] (see the \f[B]ENVIRONMENT VARIABLES\f[R]
 section).
 This is a \f[B]non-portable extension\f[R].
-.IP "18." 4
+.IP "21." 4
 \f[B]global_stacks()\f[R]: \f[B]0\f[R] if global stacks are not enabled
 with the \f[B]-g\f[R] or \f[B]--global-stacks\f[R] options, non-zero
 otherwise.
 See the \f[B]OPTIONS\f[R] section.
 This is a \f[B]non-portable extension\f[R].
-.IP "19." 4
+.IP "22." 4
 \f[B]leading_zero()\f[R]: \f[B]0\f[R] if leading zeroes are not enabled
 with the \f[B]-z\f[R] or \f[B]\[en]leading-zeroes\f[R] options, non-zero
 otherwise.
 See the \f[B]OPTIONS\f[R] section.
 This is a \f[B]non-portable extension\f[R].
-.IP "20." 4
+.IP "23." 4
 \f[B]rand()\f[R]: A pseudo-random integer between \f[B]0\f[R]
 (inclusive) and \f[B]BC_RAND_MAX\f[R] (inclusive).
 Using this operand will change the value of \f[B]seed\f[R].
 This is a \f[B]non-portable extension\f[R].
-.IP "21." 4
+.IP "24." 4
 \f[B]irand(E)\f[R]: A pseudo-random integer between \f[B]0\f[R]
 (inclusive) and the value of \f[B]E\f[R] (exclusive).
 If \f[B]E\f[R] is negative or is a non-integer (\f[B]E\f[R]\[cq]s
@@ -796,7 +810,7 @@ value of \f[B]E\f[R] is \f[B]0\f[R] or \f[B]1\f[R].
 In that case, \f[B]0\f[R] is returned, and \f[B]seed\f[R] is
 \f[I]not\f[R] changed.
 This is a \f[B]non-portable extension\f[R].
-.IP "22." 4
+.IP "25." 4
 \f[B]maxrand()\f[R]: The max integer returned by \f[B]rand()\f[R].
 This is a \f[B]non-portable extension\f[R].
 .PP
