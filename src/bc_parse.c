@@ -262,7 +262,8 @@ bc_parse_operator(BcParse* p, BcLexType type, size_t start, size_t* nexprs)
 		t = BC_PARSE_TOP_OP(p);
 
 		// If it's a left paren, we have reached the end of whatever expression
-		// this is no matter what.
+		// this is no matter what. We also don't pop the left paren because it
+		// will need to stay for the rest of the subexpression.
 		if (t == BC_LEX_LPAREN) break;
 
 		// Break for precedence. Precedence operates differently on left and
