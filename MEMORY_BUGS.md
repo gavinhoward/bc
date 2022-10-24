@@ -4,7 +4,7 @@ This is a list of all of the memory bugs that were found in *released* versions
 of `bc`, `dc`, or `bcl`. (Non-released commits with memory bugs do not count.)
 
 I made this list for two reasons: first, so users can know what versions of
-`bc`, `dc`, and `bcl` hav vulnerabilities, and two, I once had a perfect record
+`bc`, `dc`, and `bcl` have vulnerabilities, and two, I once had a perfect record
 and then found a couple, but forgot and claimed I still had a perfect record
 right after, which was embarrassing.
 
