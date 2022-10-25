@@ -2298,7 +2298,15 @@ bc_program_asciify(BcProgram* p)
 		for (i = 0; i < v->len; ++i)
 		{
 			BcNum* num = (BcNum*) bc_vec_item(v, i);
-			temp_str[i] = (char) bc_program_asciifyNum(p, num);
+
+			if (BC_PROG_STR(num))
+			{
+				temp_str[i] = (bc_program_string(p, num))[0];
+			}
+			else
+			{
+				temp_str[i] = (char) bc_program_asciifyNum(p, num);
+			}
 		}
 
 		temp_str[v->len] = '\0';
