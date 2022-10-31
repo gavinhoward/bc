@@ -4259,6 +4259,9 @@ another ends, it must *also* end before that other expression ends. This
 property ensures that operators will never interfere with each other on the
 operator stack.
 
+Also, the operator precedence is reversed: a lower precedence *value* means a
+higher precedence.
+
 ###### Recursion
 
 Because expressions can stack, parsing expressions actually requires recursion.

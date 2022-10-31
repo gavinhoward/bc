@@ -270,6 +270,8 @@ bc_parse_operator(BcParse* p, BcLexType type, size_t start, size_t* nexprs)
 		// right associativity, by the way. A left associative operator that
 		// matches the current precedence should take priority, but a right
 		// associative operator should not.
+		//
+		// Also, a lower precedence value means a higher precedence.
 		l = BC_PARSE_OP_PREC(t);
 		if (l >= r && (l != r || !left)) break;
 

@@ -926,7 +926,8 @@ const uint8_t bc_parse_exprs[] = {
 #endif // BC_ENABLE_EXTRA_MATH
 };
 
-/// An array of data for operators that correspond to token types.
+/// An array of data for operators that correspond to token types. Note that a
+/// lower precedence *value* means a higher precedence.
 const uchar bc_parse_ops[] = {
 	BC_PARSE_OP(0, false), BC_PARSE_OP(0, false), BC_PARSE_OP(1, false),
 	BC_PARSE_OP(1, false),
