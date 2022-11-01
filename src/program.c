@@ -2290,8 +2290,8 @@ bc_program_asciify(BcProgram* p)
 
 		// Allocate the string and set the jump for it.
 		BC_SIG_LOCK;
-		BC_SETJMP_LOCKED(vm, exit);
 		temp_str = bc_vm_malloc(v->len + 1);
+		BC_SETJMP_LOCKED(vm, exit);
 		BC_SIG_UNLOCK;
 
 		// Convert the array.
