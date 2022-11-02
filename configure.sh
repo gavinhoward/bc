@@ -714,7 +714,7 @@ predefined_build() {
 			hist=1
 			hist_impl="editline"
 			extra_math=1
-			generate_tests=0
+			generate_tests=$generate_tests
 			install_manpages=0
 			nls=1
 			force=0
@@ -747,7 +747,7 @@ predefined_build() {
 			hist=1
 			hist_impl="internal"
 			extra_math=1
-			generate_tests=1
+			generate_tests=$generate_tests
 			install_manpages=1
 			nls=1
 			force=0
