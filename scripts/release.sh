@@ -546,7 +546,6 @@ debug() {
 		runtests "$debug" "$_debug_CC" "-g" "$_debug_run_tests"
 	fi
 
-
 	if [ "$_debug_CC" = "clang" -a "$run_sanitizers" -ne 0 ]; then
 		runlibtests "$debug -fsanitize=undefined" "$_debug_CC" "-gm" "$_debug_run_tests"
 	else
