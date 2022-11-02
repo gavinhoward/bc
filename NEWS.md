@@ -1,5 +1,10 @@
 # News
 
+## 6.1.1
+
+This is a production release that fixes a build issue with predefined builds and
+generated tests.
+
 ## 6.1.0
 
 This is a production release that fixes a discrepancy from the `bc` standard,
