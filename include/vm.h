@@ -835,7 +835,7 @@ bc_vm_getTemp(void);
 void
 bc_vm_freeTemps(void);
 
-#if !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
+#if !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB || BC_ENABLE_LIBRARY
 
 /**
  * Erases the flush argument if history does not exist because it does not
@@ -843,12 +843,12 @@ bc_vm_freeTemps(void);
  */
 #define bc_vm_putchar(c, t) bc_vm_putchar_impl(c)
 
-#else // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
+#else // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB || BC_ENABLE_LIBRARY
 
 // This is here to satisfy a clang warning about recursive macros.
 #define bc_vm_putchar(c, t) bc_vm_putchar_impl(c, t)
 
-#endif // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB
+#endif // !BC_ENABLE_HISTORY || BC_ENABLE_LINE_LIB || BC_ENABLE_LIBRARY
 
 /**
  * Print to stdout with limited formating.
