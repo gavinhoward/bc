@@ -21,7 +21,8 @@ of the function.
 
 The second memory bug was caused by passing an array argument to the `asciify()`
 built-in function. In certain cases, that was wrongly allowed, and the
-interpreter just assumed everything was correct and accessed memory.
+interpreter just assumed everything was correct and accessed memory. Now that
+arrays are allowed as arguments (see below), this is not an issue.
 
 The first feature was the addition of the `is_number()` built-in function (`u`
 in `dc`) that returns 1 if the runtime argument is a number and 0 otherwise.
