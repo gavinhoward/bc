@@ -418,7 +418,7 @@ bc_map_find(const BcVec* restrict v, const char* name)
 
 	while (low < high)
 	{
-		size_t mid = (low + high) / 2;
+		size_t mid = low + (high - low) / 2;
 		const BcId* id = bc_vec_item(v, mid);
 		int result = strcmp(name, id->name);
 
