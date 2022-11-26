@@ -1019,13 +1019,6 @@ while getopts "abBcdDeEfgGhHik:lMmNO:p:PrS:s:tTvz-" opt; do
 					fi
 					MAN3DIR="$2"
 					shift ;;
-				localedir=?*) LOCALEDIR="$LONG_OPTARG" ;;
-				localedir)
-					if [ "$#" -lt 2 ]; then
-						usage "No argument given for '--$arg' option"
-					fi
-					LOCALEDIR="$2"
-					shift ;;
 				karatsuba-len=?*) karatsuba_len="$LONG_OPTARG" ;;
 				karatsuba-len)
 					if [ "$#" -lt 2 ]; then
