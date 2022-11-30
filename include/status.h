@@ -950,19 +950,33 @@ typedef enum BcMode
  * @param l    The line of the script that the error happened.
  * @param ...  Extra arguments for error messages as necessary.
  */
+#ifndef NDEBUG
+#define bc_error(e, l, ...) \
+	(bc_vm_handleError((e), __FILE__, __LINE__, (l), __VA_ARGS__))
+#else // NDEBUG
 #define bc_error(e, l, ...) (bc_vm_handleError((e), (l), __VA_ARGS__))
+#endif // NDEBUG
 
 /**
  * Call bc's error handling routine.
  * @param e  The error.
  */
+#ifndef NDEBUG
+#define bc_err(e) (bc_vm_handleError((e), __FILE__, __LINE__, 0))
+#else // NDEBUG
 #define bc_err(e) (bc_vm_handleError((e), 0))
+#endif // NDEBUG
 
 /**
  * Call bc's error handling routine.
  * @param e  The error.
  */
+#ifndef NDEBUG
+#define bc_verr(e, ...) \
+	(bc_vm_handleError((e), __FILE__, __LINE__, 0, __VA_ARGS__))
+#else // NDEBUG
 #define bc_verr(e, ...) (bc_vm_handleError((e), 0, __VA_ARGS__))
+#endif // NDEBUG
 
 #endif // BC_ENABLE_LIBRARY
 

@@ -2960,7 +2960,7 @@ bc_program_reset(BcProgram* p)
 	memset(ip, 0, sizeof(BcInstPtr));
 
 	// Write the ready message for a signal, and clear the signal.
-	if (vm->sig != SIGWINCH)
+	if (vm->sig != 0 && vm->sig != SIGWINCH)
 	{
 		bc_file_printf(&vm->fout, "%s", bc_program_ready_msg);
 		bc_file_flush(&vm->fout, bc_flush_err);

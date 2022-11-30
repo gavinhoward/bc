@@ -43,10 +43,30 @@
 #include <vector.h>
 #include <lang.h>
 
-// Two convencience macros for throwing errors in lex code. They take care of
-// plumbing like passing in the current line the lexer is on.
+/**
+ * A convenience macro for throwing errors in lex code. This takes care of
+ * plumbing like passing in the current line the lexer is on.
+ * @param l  The lexer.
+ * @param e  The error.
+ */
+#ifndef NDEBUG
+#define bc_lex_err(l, e) (bc_vm_handleError((e), __FILE__, __LINE__, (l)->line))
+#else // NDEBUG
 #define bc_lex_err(l, e) (bc_vm_handleError((e), (l)->line))
+#endif // NDEBUG
+
+/**
+ * A convenience macro for throwing errors in lex code. This takes care of
+ * plumbing like passing in the current line the lexer is on.
+ * @param l  The lexer.
+ * @param e  The error.
+ */
+#ifndef NDEBUG
+#define bc_lex_verr(l, e, ...) \
+	(bc_vm_handleError((e), __FILE__, __LINE__, (l)->line, __VA_ARGS__))
+#else // NDEBUG
 #define bc_lex_verr(l, e, ...) (bc_vm_handleError((e), (l)->line, __VA_ARGS__))
+#endif // NDEBUG
 
 // BC_LEX_NEG_CHAR returns the char that corresponds to negative for the
 // current calculator.

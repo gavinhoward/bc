@@ -343,8 +343,13 @@ bc_vm_handleError(BcErr e)
 	BC_JMP;
 }
 #else // BC_ENABLE_LIBRARY
+#ifndef NDEBUG
+void
+bc_vm_handleError(BcErr e, const char* file, int fline, size_t line, ...)
+#else // NDEBUG
 void
 bc_vm_handleError(BcErr e, size_t line, ...)
+#endif // NDEBUG
 {
 	BcStatus s;
 	va_list args;
@@ -419,6 +424,10 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 #endif // BC_ENABLED
 		}
 	}
+
+#ifndef NDEBUG
+	bc_file_printf(&vm->ferr, "\n    %s:%d", file, fline);
+#endif // NDEBUG
 
 	bc_file_puts(&vm->ferr, bc_flush_none, "\n\n");
 

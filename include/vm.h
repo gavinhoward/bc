@@ -993,15 +993,33 @@ bc_vm_atexit(void);
 
 #else // BC_ENABLE_LIBRARY
 
+#ifndef NDEBUG
+
+/**
+ * Handle an error. This is the true error handler. It will start a jump series
+ * if an error occurred. POSIX errors will not cause jumps when warnings are on
+ * or no POSIX errors are enabled.
+ * @param e      The error.
+ * @param file   The source file where the error occurred.
+ * @param fline  The line in the source file where the error occurred.
+ * @param line   The bc source line where the error occurred.
+ */
+void
+bc_vm_handleError(BcErr e, const char* file, int fline, size_t line, ...);
+
+#else // NDEBUG
+
 /**
  * Handle an error. This is the true error handler. It will start a jump series
  * if an error occurred. POSIX errors will not cause jumps when warnings are on
  * or no POSIX errors are enabled.
  * @param e     The error.
- * @param line  The source line where the error occurred.
+ * @param line  The bc source line where the error occurred.
  */
 void
 bc_vm_handleError(BcErr e, size_t line, ...);
+
+#endif // NDEBUG
 
 /**
  * Handle a fatal error.
