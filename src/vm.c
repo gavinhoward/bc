@@ -130,7 +130,17 @@ bc_vm_sig(int sig)
 	// Editline needs this to resize the terminal.
 	if (sig == SIGWINCH)
 	{
-		el_resize(vm->history.el);
+		if (BC_TTY)
+		{
+			el_resize(vm->history.el);
+		}
+		else
+		{
+			// This is necessary for handling a possible EINTR when history is
+			// not activated. Editline handles the EINTR otherwise.
+			vm->sig = 1;
+		}
+
 		return;
 	}
 #endif // BC_ENABLE_EDITLINE
