@@ -1973,7 +1973,7 @@ bc_parse_parse(BcParse* p)
 exit:
 
 	// We need to reset on error.
-	if (BC_ERR(((vm->status && vm->status != BC_STATUS_QUIT) || vm->sig)))
+	if (BC_ERR(((vm->status && vm->status != BC_STATUS_QUIT) || vm->sig != 0)))
 	{
 		bc_parse_reset(p);
 	}

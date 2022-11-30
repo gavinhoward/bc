@@ -120,7 +120,7 @@ static void
 bc_vm_sig(int sig)
 {
 	// There is already a signal in flight.
-	if (vm->status == (sig_atomic_t) BC_STATUS_QUIT || vm->sig)
+	if (vm->status == (sig_atomic_t) BC_STATUS_QUIT || vm->sig != 0)
 	{
 		if (!BC_I || sig != SIGINT) vm->status = BC_STATUS_QUIT;
 		return;
@@ -138,7 +138,7 @@ bc_vm_sig(int sig)
 		{
 			// This is necessary for handling a possible EINTR when history is
 			// not activated. Editline handles the EINTR otherwise.
-			vm->sig = 1;
+			vm->sig = sig;
 		}
 
 		return;
@@ -164,7 +164,7 @@ bc_vm_sig(int sig)
 		{
 			vm->status = BC_STATUS_ERROR_FATAL;
 		}
-		else vm->sig = 1;
+		else vm->sig = sig;
 
 		errno = err;
 	}
@@ -939,7 +939,7 @@ bc_vm_clean(void)
 	BcVec* fns = &vm->prog.fns;
 	BcFunc* f = bc_vec_item(fns, BC_PROG_MAIN);
 	BcInstPtr* ip = bc_vec_item(&vm->prog.stack, 0);
-	bool good = ((vm->status && vm->status != BC_STATUS_QUIT) || vm->sig);
+	bool good = ((vm->status && vm->status != BC_STATUS_QUIT) || vm->sig != 0);
 
 	BC_SIG_ASSERT_LOCKED;
 

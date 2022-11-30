@@ -171,20 +171,32 @@ bc_read_chars(BcVec* vec, const char* prompt)
 			// If interupted...
 			if (errno == EINTR)
 			{
+				int sig;
+
 				// Jump out if we are supposed to quit, which certain signals
 				// will require.
 				if (vm->status == (sig_atomic_t) BC_STATUS_QUIT) BC_JMP;
 
-				assert(vm->sig);
+				assert(vm->sig != 0);
+
+				sig = vm->sig;
 
 				// Clear the signal and status.
 				vm->sig = 0;
 				vm->status = (sig_atomic_t) BC_STATUS_SUCCESS;
 
-				// Print the ready message and prompt again.
-				bc_file_puts(&vm->fout, bc_flush_none, bc_program_ready_msg);
-				if (BC_PROMPT) bc_file_puts(&vm->fout, bc_flush_none, prompt);
-				bc_file_flush(&vm->fout, bc_flush_none);
+				// We don't want to print anything on a SIGWINCH.
+				if (sig != SIGWINCH)
+				{
+					// Print the ready message and prompt again.
+					bc_file_puts(&vm->fout, bc_flush_none,
+					             bc_program_ready_msg);
+					if (BC_PROMPT)
+					{
+						bc_file_puts(&vm->fout, bc_flush_none, prompt);
+					}
+					bc_file_flush(&vm->fout, bc_flush_none);
+				}
 
 				BC_SIG_UNLOCK;
 
