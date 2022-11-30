@@ -773,7 +773,7 @@ typedef enum BcMode
 	}                        \
 	while (0)
 
-/*
+/**
  * Locks signals, but stores the old lock state, to be restored later by
  * BC_SIG_TRYUNLOCK.
  * @param v  The variable to store the old lock state to.
@@ -786,7 +786,8 @@ typedef enum BcMode
 	}                     \
 	while (0)
 
-/* Restores the previous state of a signal lock, and if it is now unlocked,
+/**
+ * Restores the previous state of a signal lock, and if it is now unlocked,
  * initiates an exception/jump.
  * @param v  The old lock state.
  */
