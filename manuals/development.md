@@ -349,7 +349,22 @@ tabs, and assuming they were 4 spaces wide, but other than that, I basically
 kept the same style, with some exceptions that are more or less dependent on my
 taste.
 
-The code style is as follows:
+However, I later managed to get [ClangFormat][24] to work, so I changed the
+style to that.
+
+### ClangFormat
+
+The style is now defined as whatever [ClangFormat][24] outputs using the
+existing `.clang-format` file. More precisely, the style is whatever is output
+when the following command is run in the root directory:
+
+```
+./scripts/format.sh
+```
+
+### Historical Style
+
+The code style used to be:
 
 * Tabs are 4 spaces.
 * Tabs are used at the beginning of lines for indent.
@@ -394,12 +409,6 @@ The code style is as follows:
   declarations.
 * Besides short `if` statements and loops, there should *never* be more than one
   statement per line.
-
-### ClangFormat
-
-I attempted three times to use [ClangFormat][24] to impose a standard,
-machine-useful style on `bc`. All three failed. Otherwise, the style in this
-repo would be more consistent.
 
 ## Repo Structure
 
