@@ -185,8 +185,10 @@ bc_read_chars(BcVec* vec, const char* prompt)
 				vm->sig = 0;
 				vm->status = (sig_atomic_t) BC_STATUS_SUCCESS;
 
+#ifndef _WIN32
 				// We don't want to print anything on a SIGWINCH.
 				if (sig != SIGWINCH)
+#endif // _WIN32
 				{
 					// Print the ready message and prompt again.
 					bc_file_puts(&vm->fout, bc_flush_none,
