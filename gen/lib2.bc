@@ -250,8 +250,7 @@ define ubytes(x){
 define sbytes(x){
 	auto p,n,z
 	z=(x<0)
-	x=abs(x)
-	x=x$
+	x=abs(x)$
 	n=ubytes(x)
 	p=2^(n*8-1)
 	if(x>p||(!z&&x==p))n*=2
