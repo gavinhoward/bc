@@ -310,7 +310,7 @@ define void pnlznl(x){
 	print"\n"
 }
 define void output_byte(x,i){
-	auto j,p,y,b
+	auto j,p,y,b,s
 	j=ibase
 	ibase=A
 	s=scale
