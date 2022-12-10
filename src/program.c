@@ -2945,6 +2945,11 @@ bc_program_reset(BcProgram* p)
 	bc_vec_npop(&p->stack, p->stack.len - 1);
 	bc_vec_popAll(&p->results);
 
+#if DC_ENABLED
+	// We need to pop tail calls too.
+	if (BC_IS_DC) bc_vec_npop(&p->tail_calls, p->tail_calls.len - 1);
+#endif // DC_ENABLED
+
 #if BC_ENABLED
 	// Clear the globals' stacks.
 	if (BC_G) bc_program_popGlobals(p, true);
