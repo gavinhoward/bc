@@ -426,7 +426,7 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 	}
 
 #ifndef NDEBUG
-	bc_file_printf(&vm->ferr, "\n    %s:%d", file, fline);
+	bc_file_printf(&vm->ferr, "\n\n    %s:%d", file, fline);
 #endif // NDEBUG
 
 	bc_file_puts(&vm->ferr, bc_flush_none, "\n\n");
