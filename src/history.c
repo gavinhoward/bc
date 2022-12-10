@@ -1467,6 +1467,9 @@ bc_history_swap(BcHistory* h)
 
 	BC_SIG_ASSERT_LOCKED;
 
+	// If there are no characters, skip.
+	if (!h->pos) return;
+
 	// Get the length of the previous and next characters.
 	pcl = bc_history_prevLen(h->buf.v, h->pos);
 	ncl = bc_history_nextLen(h->buf.v, BC_HIST_BUF_LEN(h), h->pos, NULL);
