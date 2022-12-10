@@ -373,6 +373,8 @@ that all others do not.
   commands are `u` and `t` in `dc`.)
 * For `bc` only, the `divmod()` built-in function for computing a quotient and
   remainder at the same time.
+* For `bc` only, the `asciify()` built-in function for converting an array to a
+  string.
 * The `$` truncation operator. (It's the same in `bc` and `dc`.)
 * The `@` "set scale" operator. (It's the same in `bc` and `dc`.)
 * The decimal shift operators. (`<<` and `>>` in `bc`, `H` and `h` in `dc`.)
