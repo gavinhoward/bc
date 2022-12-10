@@ -174,9 +174,6 @@ const BcOptLong bc_args_lopt[] = {
 
 };
 
-/// The function header for error messages.
-const char* const bc_err_func_header = "Function:";
-
 /// The line format string for error messages.
 const char* const bc_err_line = ":%zu";
 

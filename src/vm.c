@@ -407,21 +407,23 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 		}
 		else
 		{
-			BcInstPtr* ip = bc_vec_item_rev(&vm->prog.stack, 0);
-			BcFunc* f = bc_vec_item(&vm->prog.fns, ip->func);
+			size_t i;
 
-			bc_file_puts(&vm->ferr, bc_flush_none, "\n    ");
-			bc_file_puts(&vm->ferr, bc_flush_none, vm->func_header);
-			bc_file_putchar(&vm->ferr, bc_flush_none, ' ');
-			bc_file_puts(&vm->ferr, bc_flush_none, f->name);
+			for (i = 0; i < vm->prog.stack.len; ++i)
+			{
+				BcInstPtr* ip = bc_vec_item_rev(&vm->prog.stack, i);
+				BcFunc* f = bc_vec_item(&vm->prog.fns, ip->func);
+
+				bc_file_printf(&vm->ferr, "\n    %zu: %s", i, f->name);
 
 #if BC_ENABLED
-			if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
-			    ip->func != BC_PROG_READ)
-			{
-				bc_file_puts(&vm->ferr, bc_flush_none, "()");
-			}
+				if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
+				    ip->func != BC_PROG_READ)
+				{
+					bc_file_puts(&vm->ferr, bc_flush_none, "()");
+				}
 #endif // BC_ENABLED
+			}
 		}
 	}
 
@@ -1350,8 +1352,6 @@ bc_vm_defaultMsgs(void)
 {
 	size_t i;
 
-	vm->func_header = bc_err_func_header;
-
 	// Load the error categories.
 	for (i = 0; i < BC_ERR_IDX_NELEMS + BC_ENABLED; ++i)
 	{
@@ -1374,7 +1374,7 @@ bc_vm_gettext(void)
 {
 #if BC_ENABLE_NLS
 	uchar id = 0;
-	int set = 1, msg = 1;
+	int set, msg = 1;
 	size_t i;
 
 	// If no locale, load the defaults.
@@ -1394,11 +1394,8 @@ bc_vm_gettext(void)
 		return;
 	}
 
-	// Load the function header.
-	vm->func_header = catgets(vm->catalog, set, msg, bc_err_func_header);
-
 	// Load the error categories.
-	for (set += 1; msg <= BC_ERR_IDX_NELEMS + BC_ENABLED; ++msg)
+	for (set = 1; msg <= BC_ERR_IDX_NELEMS + BC_ENABLED; ++msg)
 	{
 		vm->err_ids[msg - 1] = catgets(vm->catalog, set, msg, bc_errs[msg - 1]);
 	}
@@ -1408,13 +1405,13 @@ bc_vm_gettext(void)
 
 	// Load the error messages. In order to understand this loop, you must know
 	// the order of messages and categories in the enum and in the locale files.
-	for (set = id + 3, msg = 1; i < BC_ERR_NELEMS; ++i, ++msg)
+	for (set = id + 2, msg = 1; i < BC_ERR_NELEMS; ++i, ++msg)
 	{
 		if (id != bc_err_ids[i])
 		{
 			msg = 1;
 			id = bc_err_ids[i];
-			set = id + 3;
+			set = id + 2;
 		}
 
 		vm->err_msgs[i] = catgets(vm->catalog, set, msg, bc_err_msgs[i]);

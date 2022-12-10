@@ -668,9 +668,6 @@ typedef struct BcVm
 	/// The function to call to parse expressions.
 	BcParseExpr expr;
 
-	/// The text to display to label functions in error messages.
-	const char* func_header;
-
 	/// The names of the categories of errors.
 	const char* err_ids[BC_ERR_IDX_NELEMS + BC_ENABLED];
 
@@ -1044,9 +1041,6 @@ extern const char bc_copyright[];
 
 /// A reference to the format string for source code line printing.
 extern const char* const bc_err_line;
-
-/// A reference to the format string for source code function printing.
-extern const char* const bc_err_func_header;
 
 /// A reference to the array of default error category names.
 extern const char* bc_errs[];
