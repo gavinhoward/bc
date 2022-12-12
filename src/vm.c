@@ -68,10 +68,15 @@
 #endif // BC_ENABLE_LIBRARY
 
 #if !BC_ENABLE_LIBRARY
+
+size_t
+bc_vm_numDigits(size_t val);
+
 // The actual globals.
 char output_bufs[BC_VM_BUF_SIZE];
 BcVm vm_data;
 BcVm* vm = &vm_data;
+
 #endif // !BC_ENABLE_LIBRARY
 
 #if BC_DEBUG_CODE
@@ -407,14 +412,26 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 		}
 		else
 		{
-			size_t i;
+			size_t i, max_digits;
+
+			max_digits = bc_vm_numDigits(vm->prog.stack.len - 1);
 
 			for (i = 0; i < vm->prog.stack.len; ++i)
 			{
 				BcInstPtr* ip = bc_vec_item_rev(&vm->prog.stack, i);
 				BcFunc* f = bc_vec_item(&vm->prog.fns, ip->func);
+				size_t j, digits;
 
-				bc_file_printf(&vm->ferr, "\n    %zu: %s", i, f->name);
+				digits = bc_vm_numDigits(i);
+
+				bc_file_puts(&vm->ferr, bc_flush_none, "\n    ");
+
+				for (j = 0; j < max_digits - digits; ++j)
+				{
+					bc_file_putchar(&vm->ferr, bc_flush_none, ' ');
+				}
+
+				bc_file_printf(&vm->ferr, "%zu: %s", i, f->name);
 
 #if BC_ENABLED
 				if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
@@ -752,6 +769,25 @@ bc_vm_freeTemps(void)
 
 	vm->temps_len = 0;
 }
+
+#if !BC_ENABLE_LIBRARY
+
+size_t
+bc_vm_numDigits(size_t val)
+{
+	size_t digits = 0;
+
+	do
+	{
+		digits += 1;
+		val /= 10;
+	}
+	while (val != 0);
+
+	return digits;
+}
+
+#endif // !BC_ENABLE_LIBRARY
 
 inline size_t
 bc_vm_arraySize(size_t n, size_t size)
