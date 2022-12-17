@@ -174,9 +174,6 @@ const BcOptLong bc_args_lopt[] = {
 
 };
 
-/// The line format string for error messages.
-const char* const bc_err_line = ":%zu";
-
 // clang-format off
 
 /// The default error category strings.

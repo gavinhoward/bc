@@ -991,6 +991,12 @@ bc_vm_atexit(void);
 
 #else // BC_ENABLE_LIBRARY
 
+/**
+ * Prints a stack trace of the bc functions or dc strings currently executing.
+ */
+void
+bc_vm_printStackTrace(void);
+
 #ifndef NDEBUG
 
 /**
@@ -1039,9 +1045,6 @@ bc_vm_atexit(int status);
 
 /// A reference to the copyright header.
 extern const char bc_copyright[];
-
-/// A reference to the format string for source code line printing.
-extern const char* const bc_err_line;
 
 /// A reference to the array of default error category names.
 extern const char* bc_errs[];

@@ -2995,6 +2995,8 @@ bc_program_exec(BcProgram* p)
 #endif // NDEBUG
 #endif // !BC_HAS_COMPUTED_GOTO
 
+	BC_SETJMP(vm, end);
+
 #if BC_HAS_COMPUTED_GOTO
 
 #if BC_GCC
@@ -3649,7 +3651,7 @@ bc_program_exec(BcProgram* p)
 			BC_PROG_LBL(BC_INST_INVALID):
 			// clang-format on
 			{
-				return;
+				goto end;
 			}
 #else // BC_HAS_COMPUTED_GOTO
 			default:
@@ -3683,6 +3685,28 @@ bc_program_exec(BcProgram* p)
 
 #endif // BC_HAS_COMPUTED_GOTO
 	}
+
+end:
+	BC_SIG_MAYLOCK;
+
+	// This is here just to print a stack trace on interrupts. This is for
+	// finding infinite loops.
+	if (BC_SIG_INTERRUPT(vm))
+	{
+		BcStatus s;
+
+		bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
+
+		bc_vm_printStackTrace();
+
+		s = bc_file_flushErr(&vm->ferr, bc_flush_err);
+		if (BC_ERR(s != BC_STATUS_SUCCESS && vm->status == BC_STATUS_SUCCESS))
+		{
+			vm->status = s;
+		}
+	}
+
+	BC_LONGJMP_CONT(vm);
 }
 
 #if BC_DEBUG_CODE

@@ -124,31 +124,36 @@ bc_vm_jmp(void)
 static void
 bc_vm_sig(int sig)
 {
-	// There is already a signal in flight.
+#if BC_ENABLE_EDITLINE
+	// Editline needs this to resize the terminal. This also needs to come first
+	// because a resize always needs to happen.
+	if (sig == SIGWINCH)
+	{
+		if (BC_TTY)
+		{
+			el_resize(vm->history.el);
+
+			// If the signal was a SIGWINCH, clear it because we don't need to
+			// print a stack trace in that case.
+			if (vm->sig == SIGWINCH)
+			{
+				vm->sig = 0;
+			}
+		}
+
+		return;
+	}
+#endif // BC_ENABLE_EDITLINE
+
+	// There is already a signal in flight if this is true.
 	if (vm->status == (sig_atomic_t) BC_STATUS_QUIT || vm->sig != 0)
 	{
 		if (!BC_I || sig != SIGINT) vm->status = BC_STATUS_QUIT;
 		return;
 	}
 
-#if BC_ENABLE_EDITLINE
-	// Editline needs this to resize the terminal.
-	if (sig == SIGWINCH)
-	{
-		if (BC_TTY)
-		{
-			el_resize(vm->history.el);
-		}
-		else
-		{
-			// This is necessary for handling a possible EINTR when history is
-			// not activated. Editline handles the EINTR otherwise.
-			vm->sig = sig;
-		}
-
-		return;
-	}
-#endif // BC_ENABLE_EDITLINE
+	// We always want to set this because a stack trace can be printed if we do.
+	vm->sig = sig;
 
 	// Only reset under these conditions; otherwise, quit.
 	if (sig == SIGINT && BC_SIGINT && BC_I)
@@ -169,7 +174,6 @@ bc_vm_sig(int sig)
 		{
 			vm->status = BC_STATUS_ERROR_FATAL;
 		}
-		else vm->sig = sig;
 
 		errno = err;
 	}
@@ -408,47 +412,25 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 		{
 			bc_file_puts(&vm->ferr, bc_flush_none, "\n    ");
 			bc_file_puts(&vm->ferr, bc_flush_none, vm->file);
-			bc_file_printf(&vm->ferr, bc_err_line, line);
+			bc_file_printf(&vm->ferr, ":%zu\n", line);
 		}
 		else
 		{
-			size_t i, max_digits;
-
-			max_digits = bc_vm_numDigits(vm->prog.stack.len - 1);
-
-			for (i = 0; i < vm->prog.stack.len; ++i)
-			{
-				BcInstPtr* ip = bc_vec_item_rev(&vm->prog.stack, i);
-				BcFunc* f = bc_vec_item(&vm->prog.fns, ip->func);
-				size_t j, digits;
-
-				digits = bc_vm_numDigits(i);
-
-				bc_file_puts(&vm->ferr, bc_flush_none, "\n    ");
-
-				for (j = 0; j < max_digits - digits; ++j)
-				{
-					bc_file_putchar(&vm->ferr, bc_flush_none, ' ');
-				}
-
-				bc_file_printf(&vm->ferr, "%zu: %s", i, f->name);
-
-#if BC_ENABLED
-				if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
-				    ip->func != BC_PROG_READ)
-				{
-					bc_file_puts(&vm->ferr, bc_flush_none, "()");
-				}
-#endif // BC_ENABLED
-			}
+			// Print a stack trace.
+			bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
+			bc_vm_printStackTrace();
 		}
+	}
+	else
+	{
+		bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
 	}
 
 #ifndef NDEBUG
-	bc_file_printf(&vm->ferr, "\n\n    %s:%d", file, fline);
+	bc_file_printf(&vm->ferr, "\n    %s:%d\n", file, fline);
 #endif // NDEBUG
 
-	bc_file_puts(&vm->ferr, bc_flush_none, "\n\n");
+	bc_file_puts(&vm->ferr, bc_flush_none, "\n");
 
 	s = bc_file_flushErr(&vm->ferr, bc_flush_err);
 
@@ -785,6 +767,42 @@ bc_vm_numDigits(size_t val)
 	while (val != 0);
 
 	return digits;
+}
+
+void
+bc_vm_printStackTrace(void)
+{
+	size_t i, max_digits;
+
+	max_digits = bc_vm_numDigits(vm->prog.stack.len - 1);
+
+	for (i = 0; i < vm->prog.stack.len; ++i)
+	{
+		BcInstPtr* ip = bc_vec_item_rev(&vm->prog.stack, i);
+		BcFunc* f = bc_vec_item(&vm->prog.fns, ip->func);
+		size_t j, digits;
+
+		digits = bc_vm_numDigits(i);
+
+		bc_file_puts(&vm->ferr, bc_flush_none, "    ");
+
+		for (j = 0; j < max_digits - digits; ++j)
+		{
+			bc_file_putchar(&vm->ferr, bc_flush_none, ' ');
+		}
+
+		bc_file_printf(&vm->ferr, "%zu: %s", i, f->name);
+
+#if BC_ENABLED
+		if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
+		    ip->func != BC_PROG_READ)
+		{
+			bc_file_puts(&vm->ferr, bc_flush_none, "()");
+		}
+#endif // BC_ENABLED
+
+		bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
+	}
 }
 
 #endif // !BC_ENABLE_LIBRARY
