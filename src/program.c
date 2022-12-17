@@ -2964,11 +2964,7 @@ bc_program_reset(BcProgram* p)
 	// NOLINTNEXTLINE
 	memset(ip, 0, sizeof(BcInstPtr));
 
-#ifndef _WIN32
-	if (vm->sig != 0 && vm->sig != SIGWINCH)
-#else // _WIN32
-	if (vm->sig != 0)
-#endif // _WIN32
+	if (BC_SIG_INTERRUPT(vm))
 	{
 		// Write the ready message for a signal.
 		bc_file_printf(&vm->fout, "%s", bc_program_ready_msg);

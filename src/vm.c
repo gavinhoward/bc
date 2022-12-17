@@ -69,7 +69,7 @@
 
 #if !BC_ENABLE_LIBRARY
 
-size_t
+static inline size_t
 bc_vm_numDigits(size_t val);
 
 // The actual globals.
@@ -772,7 +772,7 @@ bc_vm_freeTemps(void)
 
 #if !BC_ENABLE_LIBRARY
 
-size_t
+static inline size_t
 bc_vm_numDigits(size_t val)
 {
 	size_t digits = 0;

@@ -954,6 +954,7 @@ bc_vm_getenvFree(char* val);
  */
 void
 bc_vm_jmp(const char* f);
+
 #else // BC_DEBUG_CODE
 
 /**

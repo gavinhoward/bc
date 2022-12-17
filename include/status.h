@@ -687,11 +687,18 @@ typedef enum BcMode
 
 /// Returns true if an exception is in flight, false otherwise.
 #define BC_SIG_EXC(vm) \
-	BC_UNLIKELY(vm->status != (sig_atomic_t) BC_STATUS_SUCCESS || vm->sig)
+	BC_UNLIKELY((vm)->status != (sig_atomic_t) BC_STATUS_SUCCESS || (vm)->sig)
 
 /// Returns true if there is *no* exception in flight, false otherwise.
 #define BC_NO_SIG_EXC(vm) \
-	BC_LIKELY(vm->status == (sig_atomic_t) BC_STATUS_SUCCESS && !vm->sig)
+	BC_LIKELY((vm)->status == (sig_atomic_t) BC_STATUS_SUCCESS && !(vm)->sig)
+
+#ifndef _WIN32
+#define BC_SIG_INTERRUPT(vm) \
+	BC_UNLIKELY((vm)->sig != 0 && (vm)->sig != SIGWINCH)
+#else // _WIN32
+#define BC_SIG_INTERRUPT(vm) BC_UNLIKELY((vm)->sig != 0)
+#endif // _WIN32
 
 #ifndef NDEBUG
 
