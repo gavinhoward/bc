@@ -231,7 +231,7 @@ bc_vm_sigaction(void)
 
 #if BC_ENABLE_EDITLINE
 	// Editline needs this to resize the terminal.
-	sigaction(SIGWINCH, &sa, NULL);
+	if (BC_TTY) sigaction(SIGWINCH, &sa, NULL);
 #endif // BC_ENABLE_EDITLINE
 
 #if BC_ENABLE_HISTORY
