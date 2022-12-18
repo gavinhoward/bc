@@ -2934,6 +2934,42 @@ bc_program_init(BcProgram* p)
 }
 
 void
+bc_program_printStackTrace(BcProgram* p)
+{
+	size_t i, max_digits;
+
+	max_digits = bc_vm_numDigits(p->stack.len - 1);
+
+	for (i = 0; i < p->stack.len; ++i)
+	{
+		BcInstPtr* ip = bc_vec_item_rev(&p->stack, i);
+		BcFunc* f = bc_vec_item(&p->fns, ip->func);
+		size_t j, digits;
+
+		digits = bc_vm_numDigits(i);
+
+		bc_file_puts(&vm->ferr, bc_flush_none, "    ");
+
+		for (j = 0; j < max_digits - digits; ++j)
+		{
+			bc_file_putchar(&vm->ferr, bc_flush_none, ' ');
+		}
+
+		bc_file_printf(&vm->ferr, "%zu: %s", i, f->name);
+
+#if BC_ENABLED
+		if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
+		    ip->func != BC_PROG_READ)
+		{
+			bc_file_puts(&vm->ferr, bc_flush_none, "()");
+		}
+#endif // BC_ENABLED
+
+		bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
+	}
+}
+
+void
 bc_program_reset(BcProgram* p)
 {
 	BcFunc* f;
@@ -3697,7 +3733,7 @@ end:
 
 		bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
 
-		bc_vm_printStackTrace();
+		bc_program_printStackTrace(p);
 
 		s = bc_file_flushErr(&vm->ferr, bc_flush_err);
 		if (BC_ERR(s != BC_STATUS_SUCCESS && vm->status == BC_STATUS_SUCCESS))

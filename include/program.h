@@ -320,6 +320,13 @@ bc_program_free(BcProgram* p);
 
 #endif // NDEBUG
 
+/**
+ * Prints a stack trace of the bc functions or dc strings currently executing.
+ * @param p  The program.
+ */
+void
+bc_program_printStackTrace(BcProgram* p);
+
 #if BC_DEBUG_CODE
 #if BC_ENABLED && DC_ENABLED
 

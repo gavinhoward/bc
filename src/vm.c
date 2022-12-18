@@ -69,9 +69,6 @@
 
 #if !BC_ENABLE_LIBRARY
 
-static inline size_t
-bc_vm_numDigits(size_t val);
-
 // The actual globals.
 char output_bufs[BC_VM_BUF_SIZE];
 BcVm vm_data;
@@ -418,7 +415,7 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 		{
 			// Print a stack trace.
 			bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
-			bc_vm_printStackTrace();
+			bc_program_printStackTrace(&vm->prog);
 		}
 	}
 	else
@@ -754,7 +751,7 @@ bc_vm_freeTemps(void)
 
 #if !BC_ENABLE_LIBRARY
 
-static inline size_t
+size_t
 bc_vm_numDigits(size_t val)
 {
 	size_t digits = 0;
@@ -767,42 +764,6 @@ bc_vm_numDigits(size_t val)
 	while (val != 0);
 
 	return digits;
-}
-
-void
-bc_vm_printStackTrace(void)
-{
-	size_t i, max_digits;
-
-	max_digits = bc_vm_numDigits(vm->prog.stack.len - 1);
-
-	for (i = 0; i < vm->prog.stack.len; ++i)
-	{
-		BcInstPtr* ip = bc_vec_item_rev(&vm->prog.stack, i);
-		BcFunc* f = bc_vec_item(&vm->prog.fns, ip->func);
-		size_t j, digits;
-
-		digits = bc_vm_numDigits(i);
-
-		bc_file_puts(&vm->ferr, bc_flush_none, "    ");
-
-		for (j = 0; j < max_digits - digits; ++j)
-		{
-			bc_file_putchar(&vm->ferr, bc_flush_none, ' ');
-		}
-
-		bc_file_printf(&vm->ferr, "%zu: %s", i, f->name);
-
-#if BC_ENABLED
-		if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
-		    ip->func != BC_PROG_READ)
-		{
-			bc_file_puts(&vm->ferr, bc_flush_none, "()");
-		}
-#endif // BC_ENABLED
-
-		bc_file_putchar(&vm->ferr, bc_flush_none, '\n');
-	}
 }
 
 #endif // !BC_ENABLE_LIBRARY

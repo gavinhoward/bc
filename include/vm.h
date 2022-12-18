@@ -992,10 +992,12 @@ bc_vm_atexit(void);
 #else // BC_ENABLE_LIBRARY
 
 /**
- * Prints a stack trace of the bc functions or dc strings currently executing.
+ * Calculates the number of decimal digits in the argument.
+ * @param val  The value to calculate the number of decimal digits in.
+ * @return     The number of decimal digits in @a val.
  */
-void
-bc_vm_printStackTrace(void);
+size_t
+bc_vm_numDigits(size_t val);
 
 #ifndef NDEBUG
 
