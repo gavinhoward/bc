@@ -2958,8 +2958,7 @@ bc_program_printStackTrace(BcProgram* p)
 		bc_file_printf(&vm->ferr, "%zu: %s", i, f->name);
 
 #if BC_ENABLED
-		if (BC_IS_BC && ip->func != BC_PROG_MAIN &&
-		    ip->func != BC_PROG_READ)
+		if (BC_IS_BC && ip->func != BC_PROG_MAIN && ip->func != BC_PROG_READ)
 		{
 			bc_file_puts(&vm->ferr, bc_flush_none, "()");
 		}
