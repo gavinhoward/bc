@@ -179,7 +179,7 @@ bc_read_chars(BcVec* vec, const char* prompt)
 
 				assert(vm->sig != 0);
 
-				sig = vm->sig;
+				sig = (int) vm->sig;
 
 				// Clear the signal and status.
 				vm->sig = 0;
