@@ -13,6 +13,7 @@ The bug fixes include:
 * A failure to clear the tail call list in `dc` on error.
 * A crash when attempting to swap characters in command-line history when no
   characters exist.
+* `SIGWINCH` was activated even when history was not.
 
 The new feature is that stack traces are now given for runtime errors. In debug
 mode, the C source file and line of errors are given as well.
