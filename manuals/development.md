@@ -2052,7 +2052,7 @@ directory of all other test directories for each calculator.
 
 #### `bc` Standard Tests
 
-The list of current (17 July 2021) standard tests for `bc` is below:
+The list of current (17 July 2022) standard tests for `bc` is below:
 
 decimal
 
@@ -2306,7 +2306,7 @@ line_loop_quit2
 
 #### `dc` Standard Tests
 
-The list of current (17 July 2021) standard tests for `dc` is below:
+The list of current (17 July 2022) standard tests for `dc` is below:
 
 decimal
 
@@ -2466,7 +2466,7 @@ to put it on the same line as others.
 
 #### `bc` Script Tests
 
-The list of current (17 July 2021) script tests for `bc` is below:
+The list of current (17 July 2022) script tests for `bc` is below:
 
 print.bc
 
@@ -2543,7 +2543,7 @@ ifs2.bc
 
 #### `dc` Script Tests
 
-The list of current (17 July 2021) script tests for `dc` is below:
+The list of current (17 July 2022) script tests for `dc` is below:
 
 prime.dc
 
