@@ -2496,6 +2496,13 @@ array.bc
 
 :   Tests arrays even harder than the arrays standard test.
 
+array2.bc
+
+:   Implements a test where an array element is passed as a parameter to a
+    function, and then another array is passed to a later parameter that is
+    named the same as the first array. This was added because of a bug found
+    while writing a script in bc.
+
 atan.bc
 
 :   Tests arctangent even harder than the arctangent standard test.
