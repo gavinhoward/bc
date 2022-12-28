@@ -355,6 +355,11 @@ typedef struct BcLoc
 	/// The index of the array element. Only used for array elements.
 	size_t idx;
 
+	/// The index of the array in the array stack. Only used for array elements.
+	/// This is to prevent a bug with getting the wrong array element. See the
+	/// tests/bc/scripts/array.bc test.
+	size_t stack_idx;
+
 } BcLoc;
 
 /// An entry for a constant.

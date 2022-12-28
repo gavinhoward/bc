@@ -346,7 +346,7 @@ bc_program_num(BcProgram* p, BcResult* r)
 			{
 				size_t idx = r->d.loc.idx;
 
-				v = bc_vec_top(v);
+				v = bc_vec_item(v, r->d.loc.stack_idx);
 
 #if BC_ENABLED
 				// If this is true, we have a reference vector, so dereference
@@ -1674,6 +1674,7 @@ bc_program_pushArray(BcProgram* p, const char* restrict code,
 	BcResult* operand;
 	BcNum* num;
 	BcBigDig temp;
+	BcVec* v;
 
 	// Get the index of the array.
 	r.d.loc.loc = bc_program_index(code, bgn);
@@ -1690,9 +1691,14 @@ bc_program_pushArray(BcProgram* p, const char* restrict code,
 	bc_program_prep(p, &operand, &num, 0);
 	temp = bc_num_bigdig(num);
 
+	v = bc_program_vec(p, r.d.loc.loc, BC_TYPE_ARRAY);
+
+	assert(v != NULL);
+
 	// Set the result.
 	r.t = BC_RESULT_ARRAY_ELEM;
 	r.d.loc.idx = (size_t) temp;
+	r.d.loc.stack_idx = v->len - 1;
 
 	BC_SIG_LOCK;
 
