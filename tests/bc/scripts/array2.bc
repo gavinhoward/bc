@@ -4,7 +4,7 @@ define z(x, a[]) {
 	return x + a[1]
 }
 
-define y(x, b[]) {
+define y(x, *b[]) {
 	return x + b[1]
 }
 
