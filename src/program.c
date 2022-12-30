@@ -1595,10 +1595,7 @@ bc_program_pushVar(BcProgram* p, const char* restrict code,
 
 	// Get the stack for the variable. This is used in both bc and dc.
 	v = bc_program_vec(p, idx, BC_TYPE_VAR);
-
-#if BC_ENABLED
 	r.d.loc.stack_idx = v->len - 1;
-#endif // BC_ENABLED
 
 #if DC_ENABLED
 	// If this condition is true, then we have the hard case, where we have to
