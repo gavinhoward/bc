@@ -6,10 +6,9 @@ For a lot of these steps, they are only needed if the code that would be
 affected was changed. For example, I don't need to run the `scripts/randmath.py`
 test if I did not change any of the math code.
 
-0.	Run `./scripts/format.sh`.
-1.	Update the README.
-2.	Update the manuals.
-3.	Test history manually.
+1.	Run `./scripts/format.sh`.
+2.	Update the README.
+3.	Update the manuals.
 4.	Test with POSIX test suite.
 5.	Run the `scripts/randmath.py` script an excessive amount and add failing
 	tests to test suite.
