@@ -6,7 +6,8 @@ This is a production release that fixes a bug.
 
 The bug was that if an array element was used as a parameter, and then a later
 parameter had the same name as the array whose element was used, `bc` would grab
-the element from the array parameter, not the actual element.
+the element from the new array parameter, not the actual element from before the
+function call.
 
 ## 6.2.1
 
