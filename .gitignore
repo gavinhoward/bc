@@ -84,3 +84,6 @@ vs/lib/*
 vs/src2/*
 vs/tests/*.txt
 vs/tests/*.exe
+
+compile_commands.json
+.cache/
