@@ -63,14 +63,25 @@ dir=$(dirname "$script")
 
 . "$dir/functions.sh"
 
+# Just print the usage and exit with an error. This can receive a message to
+# print.
+# @param 1  A message to print.
+usage() {
+	if [ $# -eq 1 ]; then
+		printf '%s\n\n' "$1"
+	fi
+	printf 'usage: %s dir\n' "$script"
+	exit 1
+}
+
 # Command-line processing.
 if [ "$#" -lt 1 ]; then
-	printf 'usage: %s dir\n' "$0"
-	exit 1
+	usage "Not enough arguments"
 fi
 
 d="$1"
 shift
+check_d_arg "$d"
 
 bcdir="$dir/../bin"
 

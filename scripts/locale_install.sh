@@ -28,6 +28,7 @@
 #
 
 # Just print the usage and exit with an error.
+# @param 1  A message to print.
 usage() {
 	if [ $# -eq 1 ]; then
 		printf '%s\n' "$1"
@@ -189,7 +190,7 @@ while getopts "l" opt; do
 
 done
 
-test "$#" -ge 2 || usage
+test "$#" -ge 2 || usage "Must have at least two arguments"
 
 nlspath="$1"
 shift

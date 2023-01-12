@@ -30,8 +30,13 @@
 # This script depends on the GNU time utility, but I am okay with that because
 # this script is only for maintainers.
 
-# Just print the usage and exit with an error.
+# Just print the usage and exit with an error. This can receive a message to
+# print.
+# @param 1  A message to print.
 usage() {
+	if [ $# -eq 1 ]; then
+		printf '%s\n\n' "$1"
+	fi
 	printf 'usage: %s [-n<runs>] [-p<pause>] dir benchmark...\n' "$0" 1>&2
 	printf '    -n runs is how many runs to run the benchmark, default 10.\n'
 	printf '    -p pause is how many seconds to pause before running the benchmarks.\n'
@@ -60,6 +65,8 @@ usage() {
 script="$0"
 scriptdir=$(dirname "$script")
 
+. "$scriptdir/functions.sh"
+
 runs=10
 pause=0
 
@@ -82,13 +89,14 @@ while [ "$#" -gt 0 ] && [ "$OPTIND" -gt 1 ]; do
 done
 
 if [ "$#" -lt 2 ]; then
-	usage
+	usage "Not enough arguments"
 fi
 
 cd "$scriptdir/.."
 
 d="$1"
 shift
+check_d_arg "$d"
 
 benchmarks=""
 

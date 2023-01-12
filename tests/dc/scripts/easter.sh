@@ -27,14 +27,33 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+set -e
+
+script="$0"
+
+testdir=$(dirname "${script}")
+
+# Just print the usage and exit with an error. This can receive a message to
+# print.
+# @param 1  A message to print.
+usage() {
+	if [ $# -eq 1 ]; then
+		printf '%s\n\n' "$1"
+	fi
+	printf 'usage: %s dc_exec year [options...]\n' "$script"
+	exit 1
+}
+
+. "$testdir/../../../scripts/functions.sh"
+
 if test $# -lt 2
 then
-	echo usage: $0 dc_exec year [options...]
-	exit 1
+	usage "Not enough arguments; need 2"
 fi
 
 dc_exec="$1"
 shift
+check_exec_arg "$dc_exec"
 
 year="$1"
 shift

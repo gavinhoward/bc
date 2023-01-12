@@ -27,9 +27,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-# Just print the usage and exit with an error.
+# Just print the usage and exit with an error. This can receive a message to
+# print.
+# @param 1  A message to print.
 usage() {
-	printf 'usage: %s [-a] [afl_compiler]\n' "$0" 1>&2
+	if [ $# -eq 1 ]; then
+		printf '%s\n\n' "$1"
+	fi
+	printf 'usage: %s [-a] [afl_compiler]\n' "$0"
 	printf '\n'
 	printf '       If -a is given, then an ASan ready build is created.\n'
 	printf '       Otherwise, a normal fuzz build is created.\n'

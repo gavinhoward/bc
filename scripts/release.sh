@@ -53,7 +53,11 @@
 
 # Print the usage and exit with an error. Each parameter should be an integer.
 # Non-zero activates, and zero deactivates.
+# @param 1  A message to print.
 usage() {
+	if [ $# -eq 1 ]; then
+		printf '%s\n\n' "$1"
+	fi
 	printf 'usage: %s [run_tests] [generate_tests] [run_problematic_tests] \n' "$script"
 	printf '          [test_with_clang] [test_with_gcc] [run_sanitizers] [run_valgrind] \n'
 	printf '          [test_settings] [run_64_bit] [run_gen_script] [test_c11] \n'
@@ -674,8 +678,10 @@ real=$(realpath "$scriptdir/../")
 if [ "$#" -gt 0 ]; then
 	run_tests="$1"
 	shift
+	check_bool_arg "$run_tests"
 else
 	run_tests=1
+	check_bool_arg "$run_tests"
 fi
 
 # Whether to generate tests. On platforms like OpenBSD, there is no GNU bc to
@@ -683,128 +689,160 @@ fi
 if [ "$#" -gt 0 ]; then
 	gen_tests="$1"
 	shift
+	check_bool_arg "$gen_tests"
 else
 	gen_tests=1
+	check_bool_arg "$gen_tests"
 fi
 
 # Whether to run problematic tests. This needs to be off on FreeBSD.
 if [ "$#" -gt 0 ]; then
 	problematic_tests="$1"
 	shift
+	check_bool_arg "$problematic_tests"
 else
 	problematic_tests=1
+	check_bool_arg "$problematic_tests"
 fi
 
 # Whether to test with clang.
 if [ "$#" -gt 0 ]; then
 	test_with_clang="$1"
 	shift
+	check_bool_arg "$test_with_clang"
 else
 	test_with_clang=1
+	check_bool_arg "$test_with_clang"
 fi
 
 # Whether to test with gcc.
 if [ "$#" -gt 0 ]; then
 	test_with_gcc="$1"
 	shift
+	check_bool_arg "$test_with_gcc"
 else
 	test_with_gcc=1
+	check_bool_arg "$test_with_clang"
 fi
 
 # Whether to test with sanitizers.
 if [ "$#" -gt 0 ]; then
 	run_sanitizers="$1"
+	check_bool_arg "$run_sanitizers"
 	shift
 else
 	run_sanitizers=1
+	check_bool_arg "$run_sanitizers"
 fi
 
 # Whether to test with valgrind.
 if [ "$#" -gt 0 ]; then
 	run_valgrind="$1"
 	shift
+	check_bool_arg "$run_valgrind"
 else
 	run_valgrind=1
+	check_bool_arg "$run_valgrind"
 fi
 
 # Whether to test all settings combos.
 if [ "$#" -gt 0 ]; then
 	test_settings="$1"
 	shift
+	check_bool_arg "$test_settings"
 else
 	test_settings=1
+	check_bool_arg "$test_settings"
 fi
 
 # Whether to test 64-bit in addition to 32-bit.
 if [ "$#" -gt 0 ]; then
 	run_64_bit="$1"
 	shift
+	check_bool_arg "$run_64_bit"
 else
 	run_64_bit=1
+	check_bool_arg "$run_64_bit"
 fi
 
 # Whether to test with strgen.sh in addition to strgen.c.
 if [ "$#" -gt 0 ]; then
 	run_gen_script="$1"
 	shift
+	check_bool_arg "$run_gen_script"
 else
 	run_gen_script=0
+	check_bool_arg "$run_gen_script"
 fi
 
 # Whether to test on C11 in addition to C99.
 if [ "$#" -gt 0 ]; then
 	test_c11="$1"
 	shift
+	check_bool_arg "$test_c11"
 else
 	test_c11=0
+	check_bool_arg "$test_c11"
 fi
 
 # Whether to test 128-bit integers in addition to no 128-bit integers.
 if [ "$#" -gt 0 ]; then
 	test_128_bit="$1"
 	shift
+	check_bool_arg "$test_128_bit"
 else
 	test_128_bit=0
+	check_bool_arg "$test_128_bit"
 fi
 
 # Whether to test with computed goto or not.
 if [ "$#" -gt 0 ]; then
 	test_computed_goto="$1"
 	shift
+	check_bool_arg "$test_computed_goto"
 else
 	test_computed_goto=0
+	check_bool_arg "$test_computed_goto"
 fi
 
 # Whether to test history or not.
 if [ "$#" -gt 0 ]; then
 	test_karatsuba="$1"
 	shift
+	check_bool_arg "$test_karatsuba"
 else
 	test_karatsuba=1
+	check_bool_arg "$test_karatsuba"
 fi
 
 # Whether to test history or not.
 if [ "$#" -gt 0 ]; then
 	test_history="$1"
 	shift
+	check_bool_arg "$test_history"
 else
 	test_history=0
+	check_bool_arg "$test_history"
 fi
 
 # Whether to test editline or not.
 if [ "$#" -gt 0 ]; then
 	test_editline="$1"
 	shift
+	check_bool_arg "$test_editline"
 else
 	test_editline=0
+	check_bool_arg "$test_editline"
 fi
 
 # Whether to test editline or not.
 if [ "$#" -gt 0 ]; then
 	test_readline="$1"
 	shift
+	check_bool_arg "$test_readline"
 else
 	test_readline=0
+	check_bool_arg "$test_readline"
 fi
 
 if [ "$run_64_bit" -ne 0 ]; then
