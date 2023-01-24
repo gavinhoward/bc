@@ -443,6 +443,10 @@ This `bc` uses the commit message guidelines laid out in [this blog post][10].
 
 This `bc` uses [semantic versioning][11].
 
+## AI-Free
+
+This repository is 100% AI-Free code.
+
 ## Contents
 
 Items labeled with `(maintainer use only)` are not included in release source
