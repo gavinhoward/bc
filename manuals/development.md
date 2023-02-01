@@ -1862,7 +1862,8 @@ example, to test whether I am in debug mode or not, I still use the standard
 
 :   The macro expands to the build type, which is one of: `A`, `E`, `H`, `N`,
     `EH`, `EN`, `HN`, `EHN`. This build type is used in the help text to direct
-    the user to the correct markdown manual in the `git.yzena.com` website.
+    the user to the correct markdown manual in the `git.gavinhoward.com`
+    website.
 
 `EXECPREFIX`
 
@@ -5110,8 +5111,8 @@ However, where possible, errors are returned directly.
 [129]: #afl-quickstart
 [130]: #convenience
 [131]: #datac
-[132]: https://git.yzena.com/gavin/vim-bc
-[133]: https://git.yzena.com/gavin/bc_libs
+[132]: https://git.gavinhoward.com/gavin/vim-bc
+[133]: https://git.gavinhoward.com/gavin/bc_libs
 [134]: #debugging
 [135]: #asserts
 [136]: #portability

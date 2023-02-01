@@ -51,9 +51,9 @@ test if I did not change any of the math code.
 24. Boot back into Linux.
 25.	Run `make clean_tests`.
 26.	Run the `scripts/package.sh` script.
-27.	Upload the custom tarball and Windows builds to Yzena Gitea.
-28.	Add output from `scripts/package.sh` to Yzena Gitea release notes.
-29.	Edit Yzena Gitea release notes for the changelog.
+27.	Upload the custom tarball and Windows builds to the Gavin Howard Gitea.
+28.	Add output from `scripts/package.sh` to Gavin Howard Gitea release notes.
+29.	Edit Gavin Howard Gitea release notes for the changelog.
 30.	Upload the custom tarball to GitHub.
 31.	Add output from `scripts/package.sh` to GitHub release notes.
 32.	Edit GitHub release notes for the changelog.
