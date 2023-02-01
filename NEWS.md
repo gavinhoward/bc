@@ -1,5 +1,13 @@
 # News
 
+## 6.2.3
+
+This is a production release that moves `bc` to <https://git.gavinhoward.com>.
+
+That's all it does: update links. Users do ***NOT*** need to upgrade; there are
+redirects that will stay in place indefinitely. This release is only for new
+users.
+
 ## 6.2.2
 
 This is a production release that fixes a bug.
