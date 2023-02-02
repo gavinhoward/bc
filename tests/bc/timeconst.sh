@@ -47,14 +47,13 @@ usage() {
 
 . "$testdir/../../scripts/functions.sh"
 
-# Gets the timeconst script, which could be a command-line argument.
+# Gets the timeconst script, which could be a command-line argument. I don't
+# need to check for error because we just skip if it doesn't work.
 if [ "$#" -gt 0 ]; then
 	timeconst="$1"
 	shift
-	check_file_arg "$timeconst"
 else
 	timeconst="$testdir/scripts/timeconst.bc"
-	check_file_arg "$timeconst"
 fi
 
 # Gets the executable, which could also be a command-line argument.
