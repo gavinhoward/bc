@@ -536,6 +536,7 @@ clean:%%CLEAN_PREREQS%%
 	@$(RM) -f $(BC_HELP_C) $(BC_HELP_O)
 	@$(RM) -f $(DC_HELP_C) $(DC_HELP_O)
 	@$(RM) -fr vs/bin/ vs/lib/
+	@$(RM) -f $(BCL_PC)
 
 clean_benchmarks:
 	@printf 'Cleaning benchmarks...\n'
@@ -548,6 +549,7 @@ clean_config: clean clean_benchmarks
 	@$(RM) -f Makefile
 	@$(RM) -f $(BC_MD) $(BC_MANPAGE)
 	@$(RM) -f $(DC_MD) $(DC_MANPAGE)
+	@$(RM) -f compile_commands.json
 
 clean_coverage:
 	@printf 'Cleaning coverage files...\n'
