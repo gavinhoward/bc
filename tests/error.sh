@@ -118,7 +118,7 @@ printf 'pass\n'
 
 printf 'Running %s error file %s without clamping...' "$d" "$t"
 
-printf '%s\n' "$halt" | "$exe" "$@" $opts -C "$testfile" 2> "$out" > /dev/null
+printf '%s\n' "$halt" 2> /dev/null | "$exe" "$@" $opts -C "$testfile" 2> "$out" > /dev/null
 err="$?"
 
 checkerrtest "$d" "$err" "$testfile" "$out" "$exebase" > /dev/null

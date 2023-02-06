@@ -540,7 +540,7 @@ printf 'pass\n'
 
 printf 'Running %s binary stdin test...' "$d"
 
-cat "$bin" | "$exe" "$@" > /dev/null 2> "$out2"
+cat "$bin" 2> /dev/null | "$exe" "$@" > /dev/null 2> "$out2"
 err="$?"
 
 checkerrtest "$d" "$err" "binary stdin" "$out2" "$d"
