@@ -360,7 +360,7 @@ main(int argc, char* argv[])
 	has_define = (argc > 6 && strcmp("", argv[6]) != 0);
 	define = has_define ? argv[6] : "";
 
-	remove_tabs = (argc > 7);
+	remove_tabs = (argc > 7 && atoi(argv[7]) != 0);
 
 	in = bc_read_file(argv[1]);
 	if (in == NULL) return INVALID_INPUT_FILE;
