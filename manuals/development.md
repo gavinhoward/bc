@@ -1,6 +1,6 @@
 # Development
 
-Updated: 17 Jul 2022
+Updated: 13 Feb 2023
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
