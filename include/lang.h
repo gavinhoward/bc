@@ -575,7 +575,7 @@ bc_func_insert(BcFunc* f, struct BcProgram* p, char* name, BcType type,
 void
 bc_func_reset(BcFunc* f);
 
-#ifndef NDEBUG
+#if BC_DEBUG
 /**
  * Frees a function. This is a destructor. This is only used in debug builds
  * because all functions are freed at exit. We free them in debug builds to
@@ -584,7 +584,7 @@ bc_func_reset(BcFunc* f);
  */
 void
 bc_func_free(void* func);
-#endif // NDEBUG
+#endif // BC_DEBUG
 
 /**
  * Initializes an array, which is the array type in bc and dc source code. Since

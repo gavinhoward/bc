@@ -1844,9 +1844,7 @@ the definition of the `BcStatus` enum.)
 
 In other words, I use `#if` instead of `#ifndef` or `#ifdef`, where possible.
 
-There are a couple of cases where I went with standard stuff instead. For
-example, to test whether I am in debug mode or not, I still use the standard
-`#ifndef NDEBUG`.
+There are a couple of cases where I went with standard stuff instead.
 
 #### Standard Macros
 

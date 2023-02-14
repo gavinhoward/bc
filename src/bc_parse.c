@@ -2462,11 +2462,11 @@ bc_parse_expr_err(BcParse* p, uint8_t flags, BcParseNext next)
 			case BC_LEX_ARRAY_LENGTH:
 #endif // DC_ENABLED
 			{
-#ifndef NDEBUG
+#if BC_DEBUG
 				// We should never get here, even in debug builds.
 				bc_parse_err(p, BC_ERR_PARSE_TOKEN);
 				break;
-#endif // NDEBUG
+#endif // BC_DEBUG
 			}
 		}
 

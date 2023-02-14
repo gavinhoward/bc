@@ -247,9 +247,9 @@ typedef struct BcProgram
 // In debug mode, we want bc to check the stack, but otherwise, we don't because
 // the bc language implicitly mandates that the stack should always have enough
 // items.
-#ifdef NDEBUG
+#ifdef BC_DEBUG
 #define BC_PROG_NO_STACK_CHECK
-#endif // NDEBUG
+#endif // BC_DEBUG
 
 #endif // DC_ENABLED
 
@@ -298,7 +298,7 @@ typedef void (*BcProgramUnary)(BcResult* r, BcNum* n);
 void
 bc_program_init(BcProgram* p);
 
-#ifndef NDEBUG
+#if BC_DEBUG
 
 /**
  * Frees a BcProgram. This is only used in debug builds because a BcProgram is
@@ -309,7 +309,7 @@ bc_program_init(BcProgram* p);
 void
 bc_program_free(BcProgram* p);
 
-#endif // NDEBUG
+#endif // BC_DEBUG
 
 /**
  * Prints a stack trace of the bc functions or dc strings currently executing.
