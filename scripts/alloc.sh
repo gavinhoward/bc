@@ -45,6 +45,8 @@
 script="$0"
 scriptdir=$(dirname "$script")
 
+. "$scriptdir/functions.sh"
+
 export LANG=C
 
 virtlimit=1000000

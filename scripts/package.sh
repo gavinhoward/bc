@@ -80,6 +80,8 @@ shasum() {
 script="$0"
 scriptdir=$(dirname "$script")
 
+. "$scriptdir/functions.sh"
+
 repo="$scriptdir/.."
 proj="bc"
 

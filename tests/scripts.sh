@@ -31,6 +31,8 @@ script="$0"
 
 testdir=$(dirname "${script}")
 
+. "$testdir/../scripts/functions.sh"
+
 # Just print the usage and exit with an error. This can receive a message to
 # print.
 # @param 1  A message to print.

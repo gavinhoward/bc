@@ -50,6 +50,8 @@ usage() {
 script="$0"
 scriptdir=$(dirname "$script")
 
+. "$scriptdir/functions.sh"
+
 cd "$scriptdir/.."
 
 test "$#" -eq 1 || usage

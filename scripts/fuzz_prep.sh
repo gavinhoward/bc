@@ -49,6 +49,8 @@ usage() {
 script="$0"
 scriptdir=$(dirname "$script")
 
+. "$scriptdir/functions.sh"
+
 asan=0
 
 # Process command-line arguments.

@@ -636,6 +636,13 @@ build_set() {
 	minsize "$_build_set_CC" "$_build_set_run_tests"
 }
 
+set -e
+
+script="$0"
+scriptdir=$(dirname "$script")
+
+. "$scriptdir/functions.sh"
+
 # Unset all bc and dc environment variables. This is intended to allow this
 # script to run in a clean environment.
 unset POSIXLY_CORRECT
@@ -666,11 +673,6 @@ cflags="-Wall -Wextra -Werror -pedantic"
 # Common debug and release flags.
 debug="$cflags -fno-omit-frame-pointer"
 release="$cflags -DNDEBUG"
-
-set -e
-
-script="$0"
-scriptdir=$(dirname "$script")
 
 real=$(realpath "$scriptdir/../")
 
