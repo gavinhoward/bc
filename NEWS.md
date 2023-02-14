@@ -2,9 +2,9 @@
 
 ## 6.2.5
 
-This is a production release that fixes a build bug that affected Android and
+This is a production release that fixes a test bug that affected Android and
 `mksh`. Users do ***NOT*** need to upgrade unless they use `mksh` or another
-affected shell.
+affected shell and need to run the test suite.
 
 ## 6.2.4
 
