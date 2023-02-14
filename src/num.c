@@ -4256,11 +4256,11 @@ bc_num_modexp(BcNum* a, BcNum* b, BcNum* c, BcNum* restrict d)
 	if (BC_ERR(BC_NUM_ZERO(c))) bc_err(BC_ERR_MATH_DIVIDE_BY_ZERO);
 	if (BC_ERR(BC_NUM_NEG(b))) bc_err(BC_ERR_MATH_NEGATIVE);
 
-#if BC_DEBUG
+#if BC_DEBUG || BC_GCC
 	// This is entirely for quieting a useless scan-build error.
 	btemp.len = 0;
 	ctemp.len = 0;
-#endif // BC_DEBUG
+#endif // BC_DEBUG || BC_GCC
 
 	// Eliminate fractional parts that are zero or error if they are not zero.
 	if (BC_ERR(bc_num_nonInt(a, &atemp) || bc_num_nonInt(b, &btemp) ||
