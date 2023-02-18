@@ -4,7 +4,7 @@
 
 This is a production release that fixes an install bug that affected locale
 installation of all locales when using `mksh`. Users do ***NOT*** need to
-upgrade if they don't use `mksh` and/or don't need to all locales.
+upgrade if they don't use `mksh` and/or don't need to install all locales.
 
 ## 6.2.5
 
