@@ -1,5 +1,11 @@
 # News
 
+## 6.2.6
+
+This is a production release that fixes an install bug that affected locale
+installation of all locales when using `mksh`. Users do ***NOT*** need to
+upgrade if they don't use `mksh` and/or don't need to all locales.
+
 ## 6.2.5
 
 This is a production release that fixes a test bug that affected Android and
