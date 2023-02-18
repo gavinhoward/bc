@@ -57,11 +57,12 @@ asan=0
 while getopts "a" opt; do
 
 	case "$opt" in
-		a) asan=1 ; shift ;;
+		a) asan=1 ;;
 		?) usage "Invalid option: $opt" ;;
 	esac
 
 done
+shift $(printf '%s - 1\n' "$OPTIND" | bc)
 
 if [ $# -lt 1 ]; then
 	CC=afl-clang-lto

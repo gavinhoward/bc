@@ -52,11 +52,12 @@ pll=1
 while getopts "n" opt; do
 
 	case "$opt" in
-		n) pll=0 ; shift ; set -e ;;
+		n) pll=0 ; set -e ;;
 		?) usage "Invalid option: $opt" ;;
 	esac
 
 done
+shift $(printf '%s - 1\n' "$OPTIND" | bc)
 
 # Command-line processing.
 if [ "$#" -eq 0 ]; then
