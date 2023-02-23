@@ -2,9 +2,11 @@
 
 ## 6.3.0
 
-This is a production release with a couple of manual fixes and a new feature for
-`dc`: there is now a command to query whether extended registers are enabled or
-not.
+This is a production release with a couple of fixes for manuals and a new
+feature for `dc`: there is now a command to query whether extended registers are
+enabled or not.
+
+Users who don't care do not need to upgrade.
 
 ## 6.2.6
 
