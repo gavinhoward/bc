@@ -1,5 +1,11 @@
 # News
 
+## 6.3.0
+
+This is a production release with a couple of manual fixes and a new feature for
+`dc`: there is now a command to query whether extended registers are enabled or
+not.
+
 ## 6.2.6
 
 This is a production release that fixes an install bug that affected locale
