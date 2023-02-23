@@ -277,6 +277,9 @@ typedef enum BcInst
 
 #if DC_ENABLED
 
+	/// dc extended registers command.
+	BC_INST_EXTENDED_REGISTERS,
+
 	/// dc's return; it pops an executing string off of the stack.
 	BC_INST_POP_EXEC,
 

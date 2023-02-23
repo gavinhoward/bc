@@ -409,6 +409,9 @@ typedef enum BcLexType
 
 #if DC_ENABLED
 
+	/// dc extended registers keyword.
+	BC_LEX_EXTENDED_REGISTERS,
+
 	/// A special token for dc to calculate equal without a register.
 	BC_LEX_EQ_NO_REG,
 

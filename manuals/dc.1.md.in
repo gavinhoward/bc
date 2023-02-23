@@ -1123,6 +1123,11 @@ other character produces a parse error (see the **ERRORS** section).
 :   Pushes the line length set by **DC_LINE_LENGTH** (see the **ENVIRONMENT
     VARIABLES** section) onto the stack.
 
+**gx**
+
+:   Pushes **1** onto the stack if extended register mode is on, **0**
+    otherwise.
+
 **gz**
 
 :   Pushes **0** onto the stack if the leading zero setting has not been enabled

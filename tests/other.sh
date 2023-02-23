@@ -273,8 +273,8 @@ else
 
 		printf 'Running dc Easter script...'
 
-		easter_res="$outputdir/dc_outputs/easter.txt"
-		easter_out="$outputdir/dc_outputs/easter_results.txt"
+		easter_out="$outputdir/dc_outputs/easter.txt"
+		easter_res="$outputdir/dc_outputs/easter_results.txt"
 
 		outdir=$(dirname "$easter_out")
 
@@ -287,10 +287,40 @@ else
 		"$testdir/dc/scripts/easter.sh" "$exe" 2021 "$@" 2> /dev/null | cut -c1-12 > "$easter_out"
 		err="$?"
 
-		checktest "$d" "$err" "Easter script" "$easter_res" "$easter_out"
+		checktest "$d" "$err" "Easter script" "$easter_out" "$easter_res"
 
 		printf 'pass\n'
 	fi
+
+	unset DC_ENV_ARGS
+	unset DC_EXPR_EXIT
+
+	printf 'Running dc extended register command tests...'
+
+	ext_reg_out="$outputdir/dc_outputs/ext_reg.txt"
+	ext_reg_res="$outputdir/dc_outputs/ext_reg_results.txt"
+
+	outdir=$(dirname "$ext_reg_out")
+
+	if [ ! -d "$outdir" ]; then
+		mkdir -p "$outdir"
+	fi
+
+	printf '0\n' > "$ext_reg_res"
+
+	"$exe" -e "gxpR" "$@" 2> /dev/null > "$ext_reg_out"
+	err="$?"
+
+	checktest "$d" "$err" "Extended register command" "$ext_reg_out" "$ext_reg_res"
+
+	printf '1\n' > "$ext_reg_res"
+
+	"$exe" -x -e "gxpR" "$@" 2> /dev/null > "$ext_reg_out"
+	err="$?"
+
+	checktest "$d" "$err" "Extended register command" "$ext_reg_out" "$ext_reg_res"
+
+	printf 'pass\n'
 
 fi
 

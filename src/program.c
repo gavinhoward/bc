@@ -2689,12 +2689,20 @@ bc_program_globalSetting(BcProgram* p, uchar inst)
 	BcBigDig val;
 
 	// Make sure the instruction is valid.
+#if DC_ENABLED
+	assert((inst >= BC_INST_LINE_LENGTH && inst <= BC_INST_LEADING_ZERO) ||
+	       (BC_IS_DC && inst == BC_INST_EXTENDED_REGISTERS));
+#else // DC_ENABLED
 	assert(inst >= BC_INST_LINE_LENGTH && inst <= BC_INST_LEADING_ZERO);
+#endif // DC_ENABLED
 
 	if (inst == BC_INST_LINE_LENGTH) val = (BcBigDig) vm->line_len;
 #if BC_ENABLED
 	else if (inst == BC_INST_GLOBAL_STACKS) val = (BC_G != 0);
 #endif // BC_ENABLED
+#if DC_ENABLED
+	else if (inst == BC_INST_EXTENDED_REGISTERS) val = (DC_X != 0);
+#endif // DC_ENABLED
 	else val = (BC_Z != 0);
 
 	// Push the global.
@@ -3246,6 +3254,9 @@ bc_program_exec(BcProgram* p)
 #if BC_ENABLED
 			BC_PROG_LBL(BC_INST_GLOBAL_STACKS):
 #endif // BC_ENABLED
+#if DC_ENABLED
+			BC_PROG_LBL(BC_INST_EXTENDED_REGISTERS):
+#endif // DC_ENABLE
 			BC_PROG_LBL(BC_INST_LEADING_ZERO):
 			// clang-format on
 			{
