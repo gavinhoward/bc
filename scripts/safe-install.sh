@@ -25,7 +25,7 @@ m) mode=$OPTARG ;;
 ?) usage ;;
 esac
 done
-shift $(printf '%s - 1\n' "$OPTIND" | bc)
+shift $(($OPTIND - 1))
 
 test "$#" -eq 2 || usage
 src=$1
