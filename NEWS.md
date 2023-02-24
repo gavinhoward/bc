@@ -1,5 +1,10 @@
 # News
 
+## 6.3.1
+
+This is a production release that fixes a `bc` dependency loop for minimal
+environments and Linux from Scratch.
+
 ## 6.3.0
 
 This is a production release with a couple of fixes for manuals and a new
