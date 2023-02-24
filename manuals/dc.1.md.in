@@ -1126,7 +1126,8 @@ other character produces a parse error (see the **ERRORS** section).
 **gx**
 
 :   Pushes **1** onto the stack if extended register mode is on, **0**
-    otherwise.
+    otherwise. See the *Extended Register Mode* subsection of the **REGISTERS**
+    section for more information.
 
 **gz**
 
