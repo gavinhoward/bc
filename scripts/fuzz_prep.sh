@@ -62,7 +62,7 @@ while getopts "a" opt; do
 	esac
 
 done
-shift $(printf '%s - 1\n' "$OPTIND" | bc)
+shift $(($OPTIND - 1))
 
 if [ $# -lt 1 ]; then
 	CC=afl-clang-lto

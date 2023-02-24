@@ -57,7 +57,7 @@ while getopts "n" opt; do
 	esac
 
 done
-shift $(printf '%s - 1\n' "$OPTIND" | bc)
+shift $(($OPTIND - 1))
 
 # Command-line processing.
 if [ "$#" -eq 0 ]; then

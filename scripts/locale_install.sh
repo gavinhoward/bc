@@ -189,7 +189,7 @@ while getopts "l" opt; do
 	esac
 
 done
-shift $(printf '%s - 1\n' "$OPTIND" | bc)
+shift $(($OPTIND - 1))
 
 test "$#" -ge 2 || usage "Must have at least two arguments"
 
