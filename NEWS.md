@@ -1,5 +1,10 @@
 # News
 
+## 6.3.2
+
+This is a production release that fixes a bug with `read()` and `?` where the
+buffer used to read from `stdin` was not cleared between calls.
+
 ## 6.3.1
 
 This is a production release that fixes a `bc` dependency loop for minimal
