@@ -201,6 +201,16 @@
  */
 #define BC_NUM(c, n) ((BcNum*) bc_vec_item(&(c)->nums, (n).i))
 
+#define BC_GROW_NUMS(ctxt)                   \
+	do                                       \
+	{                                        \
+		if ((ctxt)->free_nums.len == 0)      \
+		{                                    \
+			bc_vec_grow(&((ctxt)->nums), 1); \
+		}                                    \
+	}                                        \
+	while (0)
+
 /**
  * Frees a BcNum for bcl. This is a destructor.
  * @param num  The BcNum to free, as a void pointer.

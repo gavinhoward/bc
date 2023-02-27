@@ -502,7 +502,7 @@ bcl_num_create(void)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	bc_num_init(&n, BC_NUM_DEF_SIZE);
 
@@ -586,7 +586,7 @@ bcl_dup(BclNumber s)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	assert(s.i < ctxt->nums.len);
 
@@ -760,7 +760,7 @@ bcl_bigdig2num(BclBigDig val)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	bc_num_createFromBigdig(&n, val);
 
@@ -798,7 +798,7 @@ bcl_binary(BclNumber a, BclNumber b, const BcNumBinaryOp op,
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
 
@@ -890,7 +890,7 @@ bcl_sqrt(BclNumber a)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	assert(a.i < ctxt->nums.len);
 
@@ -924,7 +924,7 @@ bcl_divmod(BclNumber a, BclNumber b, BclNumber* c, BclNumber* d)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 2);
+	BC_GROW_NUMS(ctxt);
 
 	assert(c != NULL && d != NULL);
 
@@ -999,7 +999,7 @@ bcl_modexp(BclNumber a, BclNumber b, BclNumber c)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
 	assert(c.i < ctxt->nums.len);
@@ -1105,7 +1105,7 @@ bcl_parse(const char* restrict val)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	assert(val != NULL);
 
@@ -1193,7 +1193,7 @@ bcl_irand(BclNumber a)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	assert(a.i < ctxt->nums.len);
 
@@ -1274,7 +1274,7 @@ bcl_frand(size_t places)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	// Clear and initialize the number.
 	bc_num_clear(&n);
@@ -1339,7 +1339,7 @@ bcl_ifrand(BclNumber a, size_t places)
 
 	BC_FUNC_HEADER(vm, err);
 
-	bc_vec_grow(&ctxt->nums, 1);
+	BC_GROW_NUMS(ctxt);
 
 	assert(a.i < ctxt->nums.len);
 
