@@ -195,7 +195,7 @@ bcl_init(void)
 	bc_vec_init(&vm->ctxts, sizeof(BclContext), BC_DTOR_NONE);
 	bc_vec_init(&vm->out, sizeof(uchar), BC_DTOR_NONE);
 
-	// We need to seed this in case /dev/random and /dev/urandm don't work.
+	// We need to seed this in case /dev/random and /dev/urandom don't work.
 	srand((unsigned int) time(NULL));
 	bc_rand_init(&vm->rng);
 
@@ -227,6 +227,7 @@ bcl_pushContext(BclContext ctxt)
 	bc_vec_push(&vm->ctxts, &ctxt);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 	return e;
 }
@@ -507,6 +508,7 @@ bcl_num_create(void)
 	bc_num_init(&n, BC_NUM_DEF_SIZE);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, n, idx);
 
@@ -568,6 +570,7 @@ bcl_copy(BclNumber d, BclNumber s)
 	bc_num_copy(dest, src);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 
 	return e;
@@ -599,6 +602,7 @@ bcl_dup(BclNumber s)
 	bc_num_createCopy(&dest, src);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, dest, idx);
 
@@ -696,6 +700,7 @@ bcl_num_setScale(BclNumber n, size_t scale)
 	else if (scale < nptr->scale) bc_num_truncate(nptr, nptr->scale - scale);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 
 	return e;
@@ -741,6 +746,7 @@ bcl_bigdig(BclNumber n, BclBigDig* result)
 	*result = bc_num_bigdig(num);
 
 err:
+
 	bcl_num_dtor(ctxt, n, num);
 	BC_FUNC_FOOTER(vm, e);
 
@@ -765,6 +771,7 @@ bcl_bigdig2num(BclBigDig val)
 	bc_num_createFromBigdig(&n, val);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, n, idx);
 
@@ -899,6 +906,7 @@ bcl_sqrt(BclNumber a)
 	bc_num_sqrt(aptr, &b, ctxt->scale);
 
 err:
+
 	bcl_num_dtor(ctxt, a, aptr);
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, b, idx);
@@ -1131,6 +1139,7 @@ bcl_parse(const char* restrict val)
 	n.rdx = BC_NUM_NEG_VAL_NP(n, neg);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, n, idx);
 
@@ -1257,6 +1266,7 @@ bcl_frandHelper(BcNum* restrict b, size_t places)
 	bc_num_shiftRight(b, places);
 
 err:
+
 	bc_num_free(&pow);
 	BC_LONGJMP_CONT(vm);
 }
@@ -1319,6 +1329,7 @@ bcl_ifrandHelper(BcNum* restrict a, BcNum* restrict b, size_t places)
 	bc_num_add(&ir, &fr, b, 0);
 
 err:
+
 	bc_num_free(&fr);
 	bc_num_free(&ir);
 	BC_LONGJMP_CONT(vm);
@@ -1386,7 +1397,9 @@ bcl_rand_seedWithNum(BclNumber n)
 	bc_num_rng(nptr, &vm->rng);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
+
 	return e;
 }
 
@@ -1411,7 +1424,9 @@ bcl_rand_seed(unsigned char seed[BCL_SEED_SIZE])
 	bc_rand_seed(&vm->rng, vals[0], vals[1], vals[2], vals[3]);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
+
 	return e;
 }
 
@@ -1443,6 +1458,7 @@ bcl_rand_seed2num(void)
 	bc_num_createFromRNG(&n, &vm->rng);
 
 err:
+
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, n, idx);
 
