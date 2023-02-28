@@ -1061,7 +1061,9 @@ template, and the manpage generated from the markdown version.
 ### `scripts/`
 
 This folder contains helper scripts. Most of them are written in pure [POSIX
-`sh`][72], but one ([`karatsuba.py`][78]) is written in Python 3.
+`sh`][72], but three ([`afl.py`][94], [`karatsuba.py`][78], and
+[`randmath.py`][95]) are written in Python 3, and one ([`ministat.c`][223]) is
+written in C. [`ministat.c`][223] in particular is copied from elsewhere.
 
 For more information about the shell scripts, see [POSIX Shell Scripts][76].
 
