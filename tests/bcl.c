@@ -127,6 +127,7 @@ main(void)
 	n3 = bcl_add(n3, n4);
 	err(bcl_err(n3));
 	res = bcl_string(bcl_dup(n3));
+	if (res == NULL) err(BCL_ERROR_FATAL_ALLOC_ERR);
 	if (strcmp(res, "-25452.9108273")) err(BCL_ERROR_FATAL_UNKNOWN_ERR);
 
 	// We want to ensure all memory gets freed because we run this under
