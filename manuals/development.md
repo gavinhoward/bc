@@ -896,6 +896,8 @@ data structures.
 Vectors are what do the heavy lifting in almost all of `bc`'s data structures.
 Even the maps of identifiers and arrays use vectors.
 
+The code associated with this header is in [`src/vector.c`][228].
+
 #### `version.h`
 
 This header defines the version of `bc`.
@@ -5209,3 +5211,4 @@ However, where possible, errors are returned directly.
 [225]: #allsh
 [226]: #errorssh
 [227]: #errorsh
+[228]: #vectorc
