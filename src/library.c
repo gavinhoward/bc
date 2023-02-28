@@ -1079,7 +1079,7 @@ bcl_sqrt_keep(BclNumber a)
 
 static BclError
 bcl_divmod_helper(BclNumber a, BclNumber b, BclNumber* c, BclNumber* d,
-				  bool destruct)
+                  bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	size_t req;

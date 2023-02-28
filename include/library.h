@@ -89,7 +89,7 @@ typedef struct BclNum
  * Clears the generation index top byte in the BclNumber.
  * @param n  The BclNumber.
  */
-#define BCL_CLEAR_GEN(n)                                                        \
+#define BCL_CLEAR_GEN(n)                                                       \
 	do                                                                         \
 	{                                                                          \
 		(n).i &= ~(((size_t) UCHAR_MAX) << ((sizeof(size_t) - 1) * CHAR_BIT)); \
@@ -112,17 +112,16 @@ typedef struct BclNum
 	}                                    \
 	while (0)
 
-
-#define BCL_CHECK_NUM_VALID(c, bn)       \
-	do                                   \
-	{                                    \
-		size_t idx_ = BCL_NO_GEN(bn);    \
-		if ((c)->nums.len <= idx_)       \
-		{                                \
-			bcl_numIdxOutOfRange();      \
-		}                                \
-		BCL_CHECK_NUM_GEN(c, bn);        \
-	}                                    \
+#define BCL_CHECK_NUM_VALID(c, bn)    \
+	do                                \
+	{                                 \
+		size_t idx_ = BCL_NO_GEN(bn); \
+		if ((c)->nums.len <= idx_)    \
+		{                             \
+			bcl_numIdxOutOfRange();   \
+		}                             \
+		BCL_CHECK_NUM_GEN(c, bn);     \
+	}                                 \
 	while (0)
 
 /**
