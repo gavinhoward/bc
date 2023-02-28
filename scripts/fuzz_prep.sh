@@ -77,10 +77,10 @@ cd "$scriptdir/.."
 
 set -e
 
+CFLAGS="-flto -fstack-protector-all -fsanitize=shadow-call-stack -ffixed-x18 -fsanitize=cfi -fvisibility=hidden"
+
 if [ "$asan" -ne 0 ]; then
-	CFLAGS="-flto -fsanitize=address"
-else
-	CFLAGS="-flto"
+	CFLAGS="$CFLAGS -fsanitize=address"
 fi
 
 # We want a debug build because asserts are counted as crashes too.
