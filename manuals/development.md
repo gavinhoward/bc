@@ -1,6 +1,6 @@
 # Development
 
-Updated: 13 Feb 2023
+Updated: 27 Feb 2023
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -65,6 +65,8 @@ about things like fuzzing, [`scan-build`][19], [valgrind][20],
 [AddressSanitizer][21] (and the other sanitizers), and many other things.
 
 One of my happiest moments was when my `bc` was made the default in FreeBSD.
+Another happiest moment was when I found out that my `bc` had shipped with Mac
+OSX Ventura, without my knowledge.
 
 But since I believe in [finishing the software I write][22], I have done less
 work on `bc` over time, though there are still times when I put a lot of effort
