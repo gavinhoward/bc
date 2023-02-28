@@ -799,8 +799,8 @@ bcl_num_len(BclNumber n)
 	return bc_num_len(BCL_NUM_NUM(num));
 }
 
-BclError
-bcl_bigdig(BclNumber n, BclBigDig* result)
+static BclError
+bcl_bigdig_helper(BclNumber n, BclBigDig* result, bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	BclNum* num;
@@ -824,10 +824,26 @@ bcl_bigdig(BclNumber n, BclBigDig* result)
 
 err:
 
-	bcl_num_dtor(ctxt, n, num);
+	if (destruct)
+	{
+		bcl_num_dtor(ctxt, n, num);
+	}
+
 	BC_FUNC_FOOTER(vm, e);
 
 	return e;
+}
+
+BclError
+bcl_bigdig(BclNumber n, BclBigDig* result)
+{
+	return bcl_bigdig_helper(n, result, true);
+}
+
+BclError
+bcl_bigdig_keep(BclNumber n, BclBigDig* result)
+{
+	return bcl_bigdig_helper(n, result, false);
 }
 
 BclNumber
@@ -857,15 +873,17 @@ err:
 
 /**
  * Sets up and executes a binary operator operation.
- * @param a     The first operand.
- * @param b     The second operand.
- * @param op    The operation.
- * @param req   The function to get the size of the result for preallocation.
- * @return      The result of the operation.
+ * @param a         The first operand.
+ * @param b         The second operand.
+ * @param op        The operation.
+ * @param req       The function to get the size of the result for
+ *                  preallocation.
+ * @param destruct  True if the parameters should be consumed, false otherwise.
+ * @return          The result of the operation.
  */
 static BclNumber
 bcl_binary(BclNumber a, BclNumber b, const BcNumBinaryOp op,
-           const BcNumBinaryOpReq req)
+           const BcNumBinaryOpReq req, bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	BclNum* aptr;
@@ -901,9 +919,12 @@ bcl_binary(BclNumber a, BclNumber b, const BcNumBinaryOp op,
 
 err:
 
-	// Eat the operands.
-	bcl_num_dtor(ctxt, a, aptr);
-	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
+	if (destruct)
+	{
+		// Eat the operands.
+		bcl_num_dtor(ctxt, a, aptr);
+		if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
+	}
 
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, c, idx);
@@ -914,53 +935,101 @@ err:
 BclNumber
 bcl_add(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_add, bc_num_addReq);
+	return bcl_binary(a, b, bc_num_add, bc_num_addReq, true);
+}
+
+BclNumber
+bcl_add_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_add, bc_num_addReq, false);
 }
 
 BclNumber
 bcl_sub(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_sub, bc_num_addReq);
+	return bcl_binary(a, b, bc_num_sub, bc_num_addReq, true);
+}
+
+BclNumber
+bcl_sub_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_sub, bc_num_addReq, false);
 }
 
 BclNumber
 bcl_mul(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_mul, bc_num_mulReq);
+	return bcl_binary(a, b, bc_num_mul, bc_num_mulReq, true);
+}
+
+BclNumber
+bcl_mul_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_mul, bc_num_mulReq, false);
 }
 
 BclNumber
 bcl_div(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_div, bc_num_divReq);
+	return bcl_binary(a, b, bc_num_div, bc_num_divReq, true);
+}
+
+BclNumber
+bcl_div_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_div, bc_num_divReq, false);
 }
 
 BclNumber
 bcl_mod(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_mod, bc_num_divReq);
+	return bcl_binary(a, b, bc_num_mod, bc_num_divReq, true);
+}
+
+BclNumber
+bcl_mod_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_mod, bc_num_divReq, false);
 }
 
 BclNumber
 bcl_pow(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_pow, bc_num_powReq);
+	return bcl_binary(a, b, bc_num_pow, bc_num_powReq, true);
+}
+
+BclNumber
+bcl_pow_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_pow, bc_num_powReq, false);
 }
 
 BclNumber
 bcl_lshift(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_lshift, bc_num_placesReq);
+	return bcl_binary(a, b, bc_num_lshift, bc_num_placesReq, true);
+}
+
+BclNumber
+bcl_lshift_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_lshift, bc_num_placesReq, false);
 }
 
 BclNumber
 bcl_rshift(BclNumber a, BclNumber b)
 {
-	return bcl_binary(a, b, bc_num_rshift, bc_num_placesReq);
+	return bcl_binary(a, b, bc_num_rshift, bc_num_placesReq, true);
 }
 
 BclNumber
-bcl_sqrt(BclNumber a)
+bcl_rshift_keep(BclNumber a, BclNumber b)
+{
+	return bcl_binary(a, b, bc_num_rshift, bc_num_placesReq, false);
+}
+
+static BclNumber
+bcl_sqrt_helper(BclNumber a, bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	BclNum* aptr;
@@ -985,15 +1054,32 @@ bcl_sqrt(BclNumber a)
 
 err:
 
-	bcl_num_dtor(ctxt, a, aptr);
+	if (destruct)
+	{
+		bcl_num_dtor(ctxt, a, aptr);
+	}
+
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, b, idx);
 
 	return idx;
 }
 
-BclError
-bcl_divmod(BclNumber a, BclNumber b, BclNumber* c, BclNumber* d)
+BclNumber
+bcl_sqrt(BclNumber a)
+{
+	return bcl_sqrt_helper(a, true);
+}
+
+BclNumber
+bcl_sqrt_keep(BclNumber a)
+{
+	return bcl_sqrt_helper(a, false);
+}
+
+static BclError
+bcl_divmod_helper(BclNumber a, BclNumber b, BclNumber* c, BclNumber* d,
+				  bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	size_t req;
@@ -1036,9 +1122,12 @@ bcl_divmod(BclNumber a, BclNumber b, BclNumber* c, BclNumber* d)
 
 err:
 
-	// Eat the operands.
-	bcl_num_dtor(ctxt, a, aptr);
-	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
+	if (destruct)
+	{
+		// Eat the operands.
+		bcl_num_dtor(ctxt, a, aptr);
+		if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
+	}
 
 	// If there was an error...
 	if (BC_ERR(vm->err))
@@ -1065,8 +1154,20 @@ err:
 	return e;
 }
 
-BclNumber
-bcl_modexp(BclNumber a, BclNumber b, BclNumber c)
+BclError
+bcl_divmod(BclNumber a, BclNumber b, BclNumber* c, BclNumber* d)
+{
+	return bcl_divmod_helper(a, b, c, d, true);
+}
+
+BclError
+bcl_divmod_keep(BclNumber a, BclNumber b, BclNumber* c, BclNumber* d)
+{
+	return bcl_divmod_helper(a, b, c, d, false);
+}
+
+static BclNumber
+bcl_modexp_helper(BclNumber a, BclNumber b, BclNumber c, bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	size_t req;
@@ -1112,15 +1213,30 @@ bcl_modexp(BclNumber a, BclNumber b, BclNumber c)
 
 err:
 
-	// Eat the operands.
-	bcl_num_dtor(ctxt, a, aptr);
-	if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
-	if (c.i != a.i && c.i != b.i) bcl_num_dtor(ctxt, c, cptr);
+	if (destruct)
+	{
+		// Eat the operands.
+		bcl_num_dtor(ctxt, a, aptr);
+		if (b.i != a.i) bcl_num_dtor(ctxt, b, bptr);
+		if (c.i != a.i && c.i != b.i) bcl_num_dtor(ctxt, c, cptr);
+	}
 
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, d, idx);
 
 	return idx;
+}
+
+BclNumber
+bcl_modexp(BclNumber a, BclNumber b, BclNumber c)
+{
+	return bcl_modexp_helper(a, b, c, true);
+}
+
+BclNumber
+bcl_modexp_keep(BclNumber a, BclNumber b, BclNumber c)
+{
+	return bcl_modexp_helper(a, b, c, false);
 }
 
 ssize_t
@@ -1238,8 +1354,8 @@ err:
 	return idx;
 }
 
-char*
-bcl_string(BclNumber n)
+static char*
+bcl_string_helper(BclNumber n, bool destruct)
 {
 	BclNum* nptr;
 	char* str = NULL;
@@ -1272,16 +1388,31 @@ bcl_string(BclNumber n)
 
 err:
 
-	// Eat the operand.
-	bcl_num_dtor(ctxt, n, nptr);
+	if (destruct)
+	{
+		// Eat the operand.
+		bcl_num_dtor(ctxt, n, nptr);
+	}
 
 	BC_FUNC_FOOTER_NO_ERR(vm);
 
 	return str;
 }
 
-BclNumber
-bcl_irand(BclNumber a)
+char*
+bcl_string(BclNumber n)
+{
+	return bcl_string_helper(n, true);
+}
+
+char*
+bcl_string_keep(BclNumber n)
+{
+	return bcl_string_helper(n, false);
+}
+
+static BclNumber
+bcl_irand_helper(BclNumber a, bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	BclNum* aptr;
@@ -1312,13 +1443,28 @@ bcl_irand(BclNumber a)
 
 err:
 
-	// Eat the operand.
-	bcl_num_dtor(ctxt, a, aptr);
+	if (destruct)
+	{
+		// Eat the operand.
+		bcl_num_dtor(ctxt, a, aptr);
+	}
 
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, b, idx);
 
 	return idx;
+}
+
+BclNumber
+bcl_irand(BclNumber a)
+{
+	return bcl_irand_helper(a, true);
+}
+
+BclNumber
+bcl_irand_keep(BclNumber a)
+{
+	return bcl_irand_helper(a, false);
 }
 
 /**
@@ -1429,8 +1575,8 @@ err:
 	BC_LONGJMP_CONT(vm);
 }
 
-BclNumber
-bcl_ifrand(BclNumber a, size_t places)
+static BclNumber
+bcl_ifrand_helper(BclNumber a, size_t places, bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	BclNum* aptr;
@@ -1460,8 +1606,11 @@ bcl_ifrand(BclNumber a, size_t places)
 
 err:
 
-	// Eat the oprand.
-	bcl_num_dtor(ctxt, a, aptr);
+	if (destruct)
+	{
+		// Eat the oprand.
+		bcl_num_dtor(ctxt, a, aptr);
+	}
 
 	BC_FUNC_FOOTER(vm, e);
 	BC_MAYBE_SETUP(ctxt, e, b, idx);
@@ -1469,8 +1618,20 @@ err:
 	return idx;
 }
 
-BclError
-bcl_rand_seedWithNum(BclNumber n)
+BclNumber
+bcl_ifrand(BclNumber a, size_t places)
+{
+	return bcl_ifrand_helper(a, places, true);
+}
+
+BclNumber
+bcl_ifrand_keep(BclNumber a, size_t places)
+{
+	return bcl_ifrand_helper(a, places, false);
+}
+
+static BclError
+bcl_rand_seedWithNum_helper(BclNumber n, bool destruct)
 {
 	BclError e = BCL_ERROR_NONE;
 	BclNum* nptr;
@@ -1492,9 +1653,27 @@ bcl_rand_seedWithNum(BclNumber n)
 
 err:
 
+	if (destruct)
+	{
+		// Eat the oprand.
+		bcl_num_dtor(ctxt, n, nptr);
+	}
+
 	BC_FUNC_FOOTER(vm, e);
 
 	return e;
+}
+
+BclError
+bcl_rand_seedWithNum(BclNumber n)
+{
+	return bcl_rand_seedWithNum_helper(n, true);
+}
+
+BclError
+bcl_rand_seedWithNum_keep(BclNumber n)
+{
+	return bcl_rand_seedWithNum_helper(n, false);
 }
 
 BclError
