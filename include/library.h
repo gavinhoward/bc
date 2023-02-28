@@ -172,15 +172,14 @@ bcl_numIdxOutOfRange(void);
  */
 typedef BcNum BclNum;
 
-#define BCL_NO_GEN(n) (n)
-#define BCL_GET_GEN(n) (n)
+#define BCL_NO_GEN(n) ((n).i)
 #define BCL_NUM(c, n) ((BclNum*) bc_vec_item(&(c)->nums, (n).i))
 #define BCL_CLEAR_GEN(n) ((void) (n))
 
 #define BCL_CHECK_NUM_GEN(c, bn)
 #define BCL_CHECK_NUM_VALID(c, n)
 
-#define BCL_NUM_ARRAY(n) ((bn)->num)
+#define BCL_NUM_ARRAY(bn) ((bn)->num)
 #define BCL_NUM_ARRAY_NP(bn) ((bn).num)
 
 #define BCL_NUM_NUM(bn) (bn)
