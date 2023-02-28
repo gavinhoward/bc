@@ -526,7 +526,8 @@ bcl_num_insert(BclContext ctxt, BclNum* restrict n)
 		n->gen_idx = 0;
 #endif // BC_ENABLE_MEMCHECK
 
-		// Just push the number onto the vector.
+		// Just push the number onto the vector because the generation index is
+		// 0.
 		idx.i = ctxt->nums.len;
 		bc_vec_push(&ctxt->nums, n);
 	}
@@ -691,7 +692,7 @@ bcl_num_neg(BclNumber n)
 
 	BCL_CHECK_NUM_VALID(ctxt, n);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	num = BCL_NUM(ctxt, n);
 
@@ -711,7 +712,7 @@ bcl_num_setNeg(BclNumber n, bool neg)
 
 	BCL_CHECK_NUM_VALID(ctxt, n);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	num = BCL_NUM(ctxt, n);
 
@@ -731,7 +732,7 @@ bcl_num_scale(BclNumber n)
 
 	BCL_CHECK_NUM_VALID(ctxt, n);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	num = BCL_NUM(ctxt, n);
 
@@ -756,7 +757,7 @@ bcl_num_setScale(BclNumber n, size_t scale)
 
 	BC_FUNC_HEADER(vm, err);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	nptr = BCL_NUM(ctxt, n);
 
@@ -789,7 +790,7 @@ bcl_num_len(BclNumber n)
 
 	BCL_CHECK_NUM_VALID(ctxt, n);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	num = BCL_NUM(ctxt, n);
 
@@ -812,7 +813,7 @@ bcl_bigdig(BclNumber n, BclBigDig* result)
 
 	BC_FUNC_HEADER(vm, err);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 	assert(result != NULL);
 
 	num = BCL_NUM(ctxt, n);
@@ -883,7 +884,7 @@ bcl_binary(BclNumber a, BclNumber b, const BcNumBinaryOp op,
 
 	BCL_GROW_NUMS(ctxt);
 
-	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(a) < ctxt->nums.len && BCL_NO_GEN(b) < ctxt->nums.len);
 
 	aptr = BCL_NUM(ctxt, a);
 	bptr = BCL_NUM(ctxt, b);
@@ -976,7 +977,7 @@ bcl_sqrt(BclNumber a)
 
 	BCL_GROW_NUMS(ctxt);
 
-	assert(a.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(a) < ctxt->nums.len);
 
 	aptr = BCL_NUM(ctxt, a);
 
@@ -1087,8 +1088,8 @@ bcl_modexp(BclNumber a, BclNumber b, BclNumber c)
 
 	BCL_GROW_NUMS(ctxt);
 
-	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
-	assert(c.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(a) < ctxt->nums.len && BCL_NO_GEN(b) < ctxt->nums.len);
+	assert(BCL_NO_GEN(c) < ctxt->nums.len);
 
 	aptr = BCL_NUM(ctxt, a);
 	bptr = BCL_NUM(ctxt, b);
@@ -1135,7 +1136,7 @@ bcl_cmp(BclNumber a, BclNumber b)
 	BCL_CHECK_NUM_VALID(ctxt, a);
 	BCL_CHECK_NUM_VALID(ctxt, b);
 
-	assert(a.i < ctxt->nums.len && b.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(a) < ctxt->nums.len && BCL_NO_GEN(b) < ctxt->nums.len);
 
 	aptr = BCL_NUM(ctxt, a);
 	bptr = BCL_NUM(ctxt, b);
@@ -1157,7 +1158,7 @@ bcl_zero(BclNumber n)
 
 	BCL_CHECK_NUM_VALID(ctxt, n);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	nptr = BCL_NUM(ctxt, n);
 
@@ -1177,7 +1178,7 @@ bcl_one(BclNumber n)
 
 	BCL_CHECK_NUM_VALID(ctxt, n);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	nptr = BCL_NUM(ctxt, n);
 
@@ -1249,11 +1250,11 @@ bcl_string(BclNumber n)
 
 	BCL_CHECK_NUM_VALID(ctxt, n);
 
-	if (BC_ERR(n.i >= ctxt->nums.len)) return str;
+	if (BC_ERR(BCL_NO_GEN(n) >= ctxt->nums.len)) return str;
 
 	BC_FUNC_HEADER(vm, err);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	nptr = BCL_NUM(ctxt, n);
 
@@ -1297,7 +1298,7 @@ bcl_irand(BclNumber a)
 
 	BCL_GROW_NUMS(ctxt);
 
-	assert(a.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(a) < ctxt->nums.len);
 
 	aptr = BCL_NUM(ctxt, a);
 
@@ -1445,7 +1446,7 @@ bcl_ifrand(BclNumber a, size_t places)
 
 	BCL_GROW_NUMS(ctxt);
 
-	assert(a.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(a) < ctxt->nums.len);
 
 	aptr = BCL_NUM(ctxt, a);
 
@@ -1481,7 +1482,7 @@ bcl_rand_seedWithNum(BclNumber n)
 
 	BC_FUNC_HEADER(vm, err);
 
-	assert(n.i < ctxt->nums.len);
+	assert(BCL_NO_GEN(n) < ctxt->nums.len);
 
 	nptr = BCL_NUM(ctxt, n);
 

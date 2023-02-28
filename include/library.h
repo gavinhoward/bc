@@ -298,7 +298,8 @@ typedef BcNum BclNum;
 #define BC_CHECK_NUM(c, n)                                         \
 	do                                                             \
 	{                                                              \
-		if (BC_ERR((n).i >= (c)->nums.len))                        \
+		size_t no_gen_ = BCL_NO_GEN(n);                            \
+		if (BC_ERR(no_gen_ >= (c)->nums.len))                      \
 		{                                                          \
 			if ((n).i > 0 - (size_t) BCL_ERROR_NELEMS) return (n); \
 			else                                                   \
@@ -323,7 +324,8 @@ typedef BcNum BclNum;
 #define BC_CHECK_NUM_ERR(c, n)                         \
 	do                                                 \
 	{                                                  \
-		if (BC_ERR((n).i >= (c)->nums.len))            \
+		size_t no_gen_ = BCL_NO_GEN(n);                \
+		if (BC_ERR(no_gen_ >= (c)->nums.len))          \
 		{                                              \
 			if ((n).i > 0 - (size_t) BCL_ERROR_NELEMS) \
 			{                                          \

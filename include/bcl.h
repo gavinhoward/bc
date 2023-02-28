@@ -36,6 +36,9 @@
 #ifndef BC_BCL_H
 #define BC_BCL_H
 
+// TODO: Add a generation index when building with Valgrind to check for
+// use-after-free's or double frees.
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
