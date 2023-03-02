@@ -217,9 +217,13 @@ bcl_init(void)
 	bc_vec_init(&vm->ctxts, sizeof(BclContext), BC_DTOR_NONE);
 	bc_vec_init(&vm->out, sizeof(uchar), BC_DTOR_NONE);
 
+#if BC_ENABLE_EXTRA_MATH
+
 	// We need to seed this in case /dev/random and /dev/urandom don't work.
 	srand((unsigned int) time(NULL));
 	bc_rand_init(&vm->rng);
+
+#endif // BC_ENABLE_EXTRA_MATH
 
 err:
 
@@ -285,7 +289,9 @@ bcl_free(void)
 	vm->refs -= 1;
 	if (vm->refs) return;
 
+#if BC_ENABLE_EXTRA_MATH
 	bc_rand_free(&vm->rng);
+#endif // BC_ENABLE_EXTRA_MATH
 	bc_vec_free(&vm->out);
 
 	for (i = 0; i < vm->ctxts.len; ++i)
@@ -1411,6 +1417,8 @@ bcl_string_keep(BclNumber n)
 	return bcl_string_helper(n, false);
 }
 
+#if BC_ENABLE_EXTRA_MATH
+
 static BclNumber
 bcl_irand_helper(BclNumber a, bool destruct)
 {
@@ -1754,5 +1762,7 @@ bcl_rand_bounded(BclRandInt bound)
 	if (bound <= 1) return 0;
 	return (BclRandInt) bc_rand_bounded(&vm->rng, (BcRand) bound);
 }
+
+#endif // BC_ENABLE_EXTRA_MATH
 
 #endif // BC_ENABLE_LIBRARY
