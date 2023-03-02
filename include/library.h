@@ -247,17 +247,17 @@ typedef BcNum BclNum;
  * is bad.
  * @param c  The context.
  */
-#define BC_CHECK_CTXT(vm, c)                                  \
-	do                                                        \
-	{                                                         \
-		c = bcl_contextHelper(vm);                            \
-		if (BC_ERR(c == NULL))                                \
-		{                                                     \
-			BclNumber n_num;                                  \
-			n_num.i = 0 - (size_t) BCL_ERROR_INVALID_CONTEXT; \
-			return n_num;                                     \
-		}                                                     \
-	}                                                         \
+#define BC_CHECK_CTXT(vm, c)                                   \
+	do                                                         \
+	{                                                          \
+		c = bcl_contextHelper(vm);                             \
+		if (BC_ERR(c == NULL))                                 \
+		{                                                      \
+			BclNumber n_num_;                                  \
+			n_num_.i = 0 - (size_t) BCL_ERROR_INVALID_CONTEXT; \
+			return n_num_;                                     \
+		}                                                      \
+	}                                                          \
 	while (0)
 
 /**
