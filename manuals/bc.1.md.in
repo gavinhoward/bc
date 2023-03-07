@@ -1359,6 +1359,10 @@ The extended library is a **non-portable extension**.
 :   Returns the combination of the truncated absolute value of **n** of the
     truncated absolute value of **k**, if **k \<= n**. If not, it returns **0**.
 
+**fib(n)**
+
+:   Returns the Fibonacci number of the truncated absolute value of **n**.
+
 **l2(x)**
 
 :   Returns the logarithm base **2** of **x**.

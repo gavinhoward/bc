@@ -93,6 +93,18 @@ define comb(n,r){
 	scale=s
 	return f
 }
+define fib(n){
+	auto i,t,p,r
+	if(!n)return 0
+	n=abs(n)$
+	t=1
+	for (i=1;i<n;++i){
+		r=p
+		p=t
+		t+=r
+	}
+	return t
+}
 define log(x,b){
 	auto p,s
 	s=scale

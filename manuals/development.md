@@ -2211,6 +2211,10 @@ bessel
 
 :   Tests the `j()` function in the math library.
 
+fib
+
+:   Tests the `fib()` Fibonacci function in the extended math library.
+
 arrays
 
 :   Test arrays.
