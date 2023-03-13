@@ -1,6 +1,6 @@
 # Development
 
-Updated: 27 Feb 2023
+Updated: 13 Mar 2023
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -2500,6 +2500,11 @@ add.bc
 parse.bc
 
 :   Tests parsing even harder than the parse standard test.
+
+root.bc
+
+:   Tests that `root()` and `cbrt()` do not go into an infinite loop on a
+    pathological case found by a user.
 
 array.bc
 
