@@ -4,7 +4,7 @@ subtract.bc
 add.bc
 print.bc
 parse.bc
-cbrt.bc
+root.bc
 array.bc
 array2.bc
 atan.bc
