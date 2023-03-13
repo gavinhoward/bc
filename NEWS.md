@@ -4,7 +4,7 @@
 
 This is a production release that fixes an infinite loop bug in `root()` and
 `cbrt()` and adds the `fib()` function to the extended math library to calculate
-Fibonacci numbers
+Fibonacci numbers t
 
 ## 6.4.0
 

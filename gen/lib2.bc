@@ -132,7 +132,6 @@ define root(x,n){
 	}
 	scale=s+scale(x)+5
 	t=s+5
-	if(t>scale)t=scale
 	m=(x<0)
 	x=abs(x)
 	p=n-1
