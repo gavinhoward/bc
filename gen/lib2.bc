@@ -118,7 +118,7 @@ define log(x,b){
 define l2(x){return log(x,2)}
 define l10(x){return log(x,A)}
 define root(x,n){
-	auto s,m,r,q,p
+	auto s,t,m,r,q,p
 	if(n<0)sqrt(n)
 	n=n$
 	if(n==0)x/n
@@ -130,12 +130,14 @@ define root(x,n){
 		scale=s
 		sqrt(x)
 	}
-	scale=s+2
+	scale=s+scale(x)+5
+	t=s+5
+	if(t>scale)t=scale
 	m=(x<0)
 	x=abs(x)
 	p=n-1
 	q=A^ceil((length(x$)/n)$,0)
-	while(r!=q){
+	while(r@t!=q@t){
 		r=q
 		q=(p*r+x/r^p)/n
 	}
