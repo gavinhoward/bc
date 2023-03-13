@@ -126,7 +126,10 @@ define root(x,n){
 	if(n==2)return sqrt(x)
 	s=scale
 	scale=0
-	if(x<0&&n%2==0)sqrt(x)
+	if(x<0&&n%2==0){
+		scale=s
+		sqrt(x)
+	}
 	scale=s+2
 	m=(x<0)
 	x=abs(x)
