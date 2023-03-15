@@ -3,8 +3,8 @@
 ## 6.5.0
 
 This is a production release that fixes an infinite loop bug in `root()` and
-`cbrt()` and adds the `fib()` function to the extended math library to calculate
-Fibonacci numbers t
+`cbrt()`, fixes a bug with `BC_LINE_LENGTH=0`, and adds the `fib()` function to
+the extended math library to calculate Fibonacci numbers.
 
 ## 6.4.0
 
