@@ -623,9 +623,10 @@ bc_vm_envLen(const char* var)
 	{
 		// Parse it and clamp it if needed.
 		len = (size_t) strtol(lenv, NULL, 10);
-		if (len) {
-			if (len < 3 || len > UINT16_MAX) len = BC_NUM_PRINT_WIDTH;
-			else len--;
+		if (len != 0)
+		{
+			len -= 1;
+			if (len < 2 || len >= UINT16_MAX) len = BC_NUM_PRINT_WIDTH;
 		}
 	}
 	// Set the default.
