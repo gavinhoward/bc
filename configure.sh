@@ -772,7 +772,7 @@ predefined_build() {
 			dc_default_digit_clamp=0;;
 
 		GDH)
-			CFLAGS="-flto -Weverything -Wno-padded -Wno-reserved-macro-identifier -Werror -pedantic -std=c11"
+			CFLAGS="-flto -Weverything -Wno-padded -Wno-unsafe-buffer-usage -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
 			coverage=0
