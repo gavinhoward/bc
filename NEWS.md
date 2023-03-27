@@ -1,5 +1,10 @@
 # News
 
+## 6.6.0
+
+This is a production release with one change: the implementation of `irand()`
+was improved to call the PRNG less.
+
 ## 6.5.0
 
 This is a production release that fixes an infinite loop bug in `root()` and
