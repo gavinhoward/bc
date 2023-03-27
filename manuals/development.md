@@ -1,6 +1,6 @@
 # Development
 
-Updated: 13 Mar 2023
+Updated: 27 Mar 2023
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -2259,6 +2259,10 @@ void
 rand
 
 :   Tests the pseudo-random number generator and its special stack handling.
+
+rand_limits
+
+:   Tests the limits of the pseudo-random number generator `irand()`.
 
 recursive_arrays
 
