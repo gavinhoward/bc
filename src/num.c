@@ -3890,7 +3890,7 @@ bc_num_irand(BcNum* restrict a, BcNum* restrict b, BcRNG* restrict rng)
 		// last limb is 0.
 		else
 		{
-			b->num[i] = (BcDig) bc_rand_bounded(rng, BC_BASE_POW);
+			b->num[i - 1] = (BcDig) bc_rand_bounded(rng, BC_BASE_POW);
 			b->len = atemp.len - 1;
 		}
 	}
