@@ -1682,6 +1682,24 @@ else
 	CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 fi
 
+# Test Mac OSX. This is not in an if statement because regardless of whatever
+# the user says, we need to know if we are on Mac OSX. If we are, we have to set
+# _DARWIN_C_SOURCE.
+printf 'Testing for Mac OSX...\n'
+
+flags="-DBC_TEST_APPLE -DBC_ENABLE_AFL=0"
+"$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/src/vm.c" > /dev/null 2>&1
+
+err="$?"
+
+if [ "$err" -ne 0 ]; then
+	printf 'On Mac OSX. Using _DARWIN_C_SOURCE.\n\n'
+	apple="-D_DARWIN_C_SOURCE"
+else
+	printf 'Not on Mac OSX.\n\n'
+	apple=""
+fi
+
 # Test OpenBSD. This is not in an if statement because regardless of whatever
 # the user says, we need to know if we are on OpenBSD to activate _BSD_SOURCE.
 # No, I cannot `#define _BSD_SOURCE` in a header because OpenBSD's patched GCC
@@ -2073,6 +2091,7 @@ contents=$(replace "$contents" "CLEAN_PREREQS" "$CLEAN_PREREQS")
 contents=$(replace "$contents" "GEN_EMU" "$GEN_EMU")
 
 contents=$(replace "$contents" "BSD" "$bsd")
+contents=$(replace "$contents" "APPLE" "$apple")
 
 contents=$(replace "$contents" "BC_DEFAULT_BANNER" "$bc_default_banner")
 contents=$(replace "$contents" "BC_DEFAULT_SIGINT_RESET" "$bc_default_sigint_reset")
