@@ -1690,7 +1690,6 @@ fi
 # we have to set it because we also set _POSIX_C_SOURCE, which OpenBSD headers
 # detect, and when they detect it, they turn off _BSD_SOURCE unless it is
 # specifically requested.
-set +e
 printf 'Testing for OpenBSD...\n'
 
 flags="-DBC_TEST_OPENBSD -DBC_ENABLE_AFL=0"
@@ -1712,6 +1711,8 @@ else
 	printf 'Not on OpenBSD.\n\n'
 	bsd=""
 fi
+
+set -e
 
 if [ "$library" -eq 1 ]; then
 	bc_lib=""
