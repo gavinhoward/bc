@@ -66,8 +66,9 @@ test if I did not change any of the math code.
 	* OpenBSD
 	* NetBSD
 34.	Submit new packages for the following:
+	* Gentoo Linux
+	* Termux
+	* Linux from Scratch
 	* Alpine Linux
 	* Void Linux
-	* Gentoo Linux
-	* Linux from Scratch
 	* Arch Linux
