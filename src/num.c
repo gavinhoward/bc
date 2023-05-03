@@ -3515,8 +3515,9 @@ bc_num_print(BcNum* restrict n, BcBigDig base, bool newline)
 		// Print the sign.
 		if (BC_NUM_NEG(n)) bc_num_putchar('-', true);
 
-		// Print the leading zero if necessary.
-		if (BC_Z && BC_NUM_RDX_VAL(n) == n->len)
+		// Print the leading zero if necessary. We don't print when using
+		// scientific or engineering modes.
+		if (BC_Z && BC_NUM_RDX_VAL(n) == n->len && base != 0 && base != 1)
 		{
 			bc_num_printHex(0, 1, false, !newline);
 		}
