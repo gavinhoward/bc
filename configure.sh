@@ -806,7 +806,7 @@ predefined_build() {
 			dc_default_digit_clamp=1;;
 
 		DBG)
-			CFLAGS="-Weverything -Wno-padded -Werror -pedantic -std=c11"
+			CFLAGS="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Werror -pedantic -std=c11"
 			bc_only=0
 			dc_only=0
 			coverage=0
