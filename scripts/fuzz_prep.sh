@@ -83,6 +83,11 @@ if [ "$asan" -ne 0 ]; then
 	CFLAGS="$CFLAGS -fsanitize=address"
 fi
 
+# These are to get better instrumentation.
+export AFL_LLVM_LAF_SPLIT_SWITCHES=1
+export AFL_LLVM_LAF_TRANSFORM_COMPARES=1
+export AFL_LLVM_LAF_SPLIT_COMPARES=1
+
 # We want a debug build because asserts are counted as crashes too.
 CC="$CC" CFLAGS="$CFLAGS" ./configure.sh -gO3 -z
 
