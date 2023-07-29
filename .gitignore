@@ -70,6 +70,7 @@ perf.data.old
 *.gcno
 *.gcov
 *.html
+*.css
 *.profraw
 
 core.*
