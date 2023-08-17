@@ -48,6 +48,11 @@ target_link_libraries(
         "${PROJECT_NAME}_includes"
 )
 
+#if (HAVE_BCRYPT)
+if (WIN32)
+    target_link_libraries("${LIBRARY_NAME}" PUBLIC bcrypt.lib)
+endif ()
+
 set_target_properties("${LIBRARY_NAME}" PROPERTIES LINKER_LANGUAGE C)
 
 
@@ -62,7 +67,8 @@ source_group("${EXEC_NAME} Source Files" FILES "${Cli_Source_Files}")
 
 add_executable("${EXEC_NAME}" "${Cli_Source_Files}")
 
-target_link_libraries("${EXEC_NAME}" PRIVATE "${LIBRARY_NAME}")
+target_link_libraries("${EXEC_NAME}" PUBLIC "${LIBRARY_NAME}")
+
 set_target_properties("${EXEC_NAME}" PROPERTIES LINKER_LANGUAGE C)
 
 #################
@@ -75,7 +81,7 @@ include(GNUInstallDirs)
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY VERSION "${${PROJECT_NAME}_VERSION}")
 set_property(TARGET "${LIBRARY_NAME}" PROPERTY SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}")
 
-set(installable_libs # "${EXEC_NAME}"
+set(installable_libs
         "${LIBRARY_NAME}_includes"
         "${LIBRARY_NAME}")
 if (TARGET "${DEPENDANT_LIBRARY}")
@@ -91,11 +97,9 @@ install(TARGETS ${installable_libs}
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "${CMAKE_INSTALL_DATADIR}/${LIBRARY_NAME}")
 
-
 include(GenerateExportHeader)
 set(_export_file "${CMAKE_BINARY_DIR}/include/${PROJECT_NAME}_export.h")
 generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 
-message("_export_file = ${_export_file}")
 install(FILES "${_export_file}"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")

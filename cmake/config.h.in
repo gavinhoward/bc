@@ -1,9 +1,11 @@
 #ifndef BC_CONFIG_H
 #define BC_CONFIG_H
 
-#define BC_VERSION_MAJOR @bc_portable_VERSION_MAJOR@
-#define BC_VERSION_MINOR @bc_portable_VERSION_MINOR@
-#define BC_VERSION_PATCH @bc_portable_VERSION_PATCH@
-#define BC_VERSION       "@bc_portable_VERSION@"
+#define BC_VERSION_MAJOR @bc_VERSION_MAJOR@
+#define BC_VERSION_MINOR @bc_VERSION_MINOR@
+#define BC_VERSION_PATCH @bc_VERSION_PATCH@
+#define BC_VERSION       "@bc_VERSION@"
+#cmakedefine HAVE_BCRYPT
+
 
 #endif /* !BC_CONFIG_H */

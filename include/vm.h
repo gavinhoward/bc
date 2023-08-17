@@ -792,7 +792,7 @@ bc_vm_info(const char* const help);
  * @param argc  The count of arguments.
  * @param argv  The argument array.
  */
-void
+BC_EXPORT void
 bc_vm_boot(int argc, char* argv[]);
 
 /**
@@ -805,7 +805,7 @@ bc_vm_init(void);
 /**
  * Frees the BcVm global.
  */
-void
+BC_EXPORT void
 bc_vm_shutdown(void);
 
 /**

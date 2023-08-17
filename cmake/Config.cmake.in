@@ -1,4 +1,4 @@
 
 @PACKAGE_INIT@
 
-include ( "${CMAKE_CURRENT_LIST_DIR}/bc_portableTargets.cmake" )
+include ( "${CMAKE_CURRENT_LIST_DIR}/bcTargets.cmake" )

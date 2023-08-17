@@ -66,22 +66,10 @@ else ()
     )
 endif ()
 
-if (MSVC OR __COMPILER_MSVC OR CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom")
-else ()
-    include("${CMAKE_SOURCE_DIR}/cmake/modules/EnsureSymbol.cmake")
-    ensure_symbol(
-            TARGET      "${PROJECT_NAME}_compiler_flags"
-            SYMBOL      "asprintf"
-            INCLUDES    "stdio.h"
-            DEFINITIONS "_GNU_SOURCE" "_BSD_SOURCE"
-    )
-endif (MSVC OR __COMPILER_MSVC OR CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom")
-if (DEFINED HAVE_ASPRINTF)
-    set(CMAKE_C_EXTENSIONS ON)
-    add_compile_definitions(HAVE_ASPRINTF)
-endif (DEFINED HAVE_ASPRINTF)
+include(CheckSymbolExists)
+check_symbol_exists(BCryptGenRandom "windows.h;bcrypt.h" HAVE_BCRYPT)
 
-# configure a header file to pass the version number only
+# configure a header file to pass the version number and exist flags only
 configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.h.in"
         "${PROJECT_NAME}Config.h"
@@ -107,8 +95,8 @@ install(
 )
 include(InstallRequiredSystemLibraries)
 set(CPACK_BUNDLE_NAME "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VENDOR "SamuelMarks")
-set(CPACK_PACKAGE_DESCRIPTION "Frontend for C, concentrating on: generation from code; single-file analysis; modification; and emission (to C code).")
+set(CPACK_PACKAGE_VENDOR "Gavin Howard")
+set(CPACK_PACKAGE_DESCRIPTION "This is an implementation of the POSIX `bc` calculator")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
 if (APPLE)
     set(CPACK_BUNDLE_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Info.plist")
@@ -142,24 +130,3 @@ write_basic_package_version_file(
 )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}")
-
-
-### target install
-
-set(installable_libs # "${EXEC_NAME}"
-        "${LIBRARY_NAME}")
-if (TARGET "${DEPENDANT_LIBRARY}")
-    list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
-endif ()
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.13")
-    list(APPEND installable_libs "${PROJECT_NAME}_compiler_flags")
-endif ()
-install(TARGETS ${installable_libs}
-        EXPORT "${LIBRARY_NAME}Targets"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
-install(EXPORT "${LIBRARY_NAME}Targets" DESTINATION "${CMAKE_INSTALL_DATADIR}/${LIBRARY_NAME}")
-
-install(FILES ${Header_Files} #"${_export_file}"
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")

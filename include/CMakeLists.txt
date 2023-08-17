@@ -33,11 +33,6 @@ target_include_directories(
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-if (NOT DEFINED HAVE_ASPRINTF)
-    find_package(c89stringutils CONFIG REQUIRED)
-    target_link_libraries("${LIBRARY_NAME}" INTERFACE c89stringutils c89stringutils_compiler_flags)
-endif (NOT DEFINED HAVE_ASPRINTF)
-
 target_link_libraries(
         "${LIBRARY_NAME}"
         INTERFACE
