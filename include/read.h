@@ -40,6 +40,7 @@
 
 #include <status.h>
 #include <vector.h>
+#include "bc_export.h"
 
 /**
  * Returns true if @a c is a non-ASCII (invalid) char.
@@ -53,7 +54,7 @@
  * @param vec     The vector to put the stdin data into.
  * @param prompt  The prompt to print, if desired.
  */
-BcStatus
+BC_EXPORT BcStatus
 bc_read_line(BcVec* vec, const char* prompt);
 
 /**

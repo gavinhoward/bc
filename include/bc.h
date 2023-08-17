@@ -49,19 +49,19 @@
  * The main function for bc. It just sets variables and passes its arguments
  * through to @a bc_vm_boot().
  */
-void
+BC_EXPORT void
 bc_main(int argc, char* argv[]);
 
 // These are references to the help text, the library text, and the "filename"
 // for the library.
 extern const char bc_help[];
-extern const char bc_lib[];
-extern const char* bc_lib_name;
+extern BC_EXPORT const char bc_lib[];
+extern BC_EXPORT const char* bc_lib_name;
 
 // These are references to the second math library and its "filename."
 #if BC_ENABLE_EXTRA_MATH
-extern const char bc_lib2[];
-extern const char* bc_lib2_name;
+extern BC_EXPORT const char bc_lib2[];
+extern BC_EXPORT const char* bc_lib2_name;
 #endif // BC_ENABLE_EXTRA_MATH
 
 /**
@@ -411,7 +411,7 @@ bc_parse_parse(BcParse* p);
  * function definition, we know we can add an empty else clause.
  * @param p  The parser.
  */
-void
+BC_EXPORT void
 bc_parse_endif(BcParse* p);
 
 /// References to the signal message and its length.

@@ -79,6 +79,8 @@
 #ifndef BC_HISTORY_H
 #define BC_HISTORY_H
 
+#include "bc_export.h"
+
 // These must come before the #if BC_ENABLE_LINE_LIB below because status.h
 // defines it.
 #include <status.h>
@@ -340,7 +342,7 @@ typedef struct BcHistory
  * Frees strings used by history.
  * @param str  The string to free.
  */
-void
+BC_EXPORT void
 bc_history_string_free(void* str);
 
 // A list of terminals that don't work.
@@ -393,21 +395,21 @@ bc_history_printKeyCodes(BcHistory* h);
  *                leave the terminal in raw mode or in some other half-baked
  *                state.
  */
-BcStatus
+BC_EXPORT BcStatus
 bc_history_line(BcHistory* h, BcVec* vec, const char* prompt);
 
 /**
  * Initialize history data.
  * @param h  The struct to initialize.
  */
-void
+BC_EXPORT void
 bc_history_init(BcHistory* h);
 
 /**
  * Free history data (and recook the terminal).
  * @param h  The struct to free.
  */
-void
+BC_EXPORT void
 bc_history_free(BcHistory* h);
 
 #endif // BC_ENABLE_HISTORY
