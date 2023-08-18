@@ -5,6 +5,7 @@
 *.creator.user*
 *.cflags
 *.cxxflags
+*build*
 bin/*bc
 bin/*bc.exe
 bin/*dc
@@ -77,6 +78,8 @@ core.*
 
 cscope*.out
 tags
+
+.idea
 
 *.vcxproj.user
 vs/.vs/*

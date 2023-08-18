@@ -2,7 +2,7 @@ includedir=%%INCLUDEDIR%%
 libdir=%%LIBDIR%%
 
 Name: bcl
-Description: Implemention of arbitrary-precision math from the bc calculator.
+Description: Implementation of arbitrary-precision math from the bc calculator.
 Version: %%VERSION%%
 Cflags: -I${includedir}
 Libs: -L${libdir} -lbcl

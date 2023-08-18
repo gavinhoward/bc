@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 
-project(bc VERSION 0.0.1 LANGUAGES C)
+project(bc VERSION 6.6.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -11,14 +11,6 @@ if (NOT DEFINED MSVC_VERSION
         OR MSVC_VERSION STRGREATER "1900" # 2015
         OR NOT (CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom"))
     target_compile_features("${PROJECT_NAME}_compiler_flags" INTERFACE "c_std_${CMAKE_C_STANDARD}")
-elseif ((MSVC_VERSION STRLESS_EQUAL "1900"
-        OR CMAKE_C_COMPILER_ID STREQUAL "OpenWatcom"
-        OR CYGWIN)
-        AND NOT EXISTS "${CMAKE_BINARY_DIR}/c89stringutils_export.h")
-    file(COPY "${CMAKE_SOURCE_DIR}/c89stringutils/c89stringutils_export_pregen.h"
-            DESTINATION "${CMAKE_BINARY_DIR}")
-    file(RENAME "${CMAKE_BINARY_DIR}/c89stringutils_export_pregen.h"
-            "${CMAKE_BINARY_DIR}/c89stringutils_export.h")
 endif ()
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.15")
     # add compiler warning flags just when building this project via
@@ -80,7 +72,6 @@ configure_file(
 # Doing this at the end so that all definitions and link/include paths are
 # available for the sub-projects.
 #===============================================================================
-add_subdirectory("include")
 add_subdirectory("src")
 
 ###########
