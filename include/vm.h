@@ -146,6 +146,14 @@
 /// The flag for the global stacks option.
 #define BC_FLAG_G (UINTMAX_C(1) << 4)
 
+/**
+ * Loads a math library.
+ * @param name  The name of the library.
+ * @param text  The text of the source code.
+ */
+extern BCL_EXPORT void
+bc_vm_load(const char* name, const char* text);
+
 #endif // BC_ENABLED
 
 /// The flag for quiet, though this one is reversed; the option clears the flag.
@@ -792,7 +800,7 @@ bc_vm_info(const char* const help);
  * @param argc  The count of arguments.
  * @param argv  The argument array.
  */
-BC_EXPORT void
+extern BCL_EXPORT void
 bc_vm_boot(int argc, char* argv[]);
 
 /**
@@ -805,7 +813,7 @@ bc_vm_init(void);
 /**
  * Frees the BcVm global.
  */
-BC_EXPORT void
+extern BCL_EXPORT void
 bc_vm_shutdown(void);
 
 /**

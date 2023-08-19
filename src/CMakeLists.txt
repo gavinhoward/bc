@@ -2,7 +2,7 @@
 # Library #
 ###########
 
-set(LIBRARY_NAME "${PROJECT_NAME}")
+set(LIBRARY_NAME "${PROJECT_NAME}l")
 
 set(Header_Files
         "../include/args.h"
@@ -40,7 +40,6 @@ set(Source_Files
         "lang.c"
         "lex.c"
         "library.c"
-        "main.c"
         "num.c"
         "opt.c"
         "parse.c"
@@ -75,6 +74,14 @@ if (WIN32)
     target_link_libraries("${LIBRARY_NAME}" PUBLIC bcrypt.lib)
 endif ()
 
+target_compile_definitions(
+        "${LIBRARY_NAME}"
+        PUBLIC
+        BC_ENABLE_EXTRA_MATH=1
+        BC_ENABLE_HISTORY=1
+        BC_ENABLED=1
+)
+
 set_target_properties("${LIBRARY_NAME}" PROPERTIES LINKER_LANGUAGE C)
 
 
@@ -82,7 +89,7 @@ set_target_properties("${LIBRARY_NAME}" PROPERTIES LINKER_LANGUAGE C)
 # CLI #
 #######
 
-set(EXEC_NAME "${PROJECT_NAME}_cli")
+set(EXEC_NAME "${PROJECT_NAME}")
 
 set(Cli_Source_Files "main.c")
 source_group("${EXEC_NAME} Source Files" FILES "${Cli_Source_Files}")
@@ -110,8 +117,8 @@ generate_export_header("${LIBRARY_NAME}" EXPORT_FILE_NAME "${_export_file}")
 install(FILES ${Header_Files} "${_export_file}"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
-set(installable_libs
-        "${LIBRARY_NAME}")
+set(installable_libs # "${EXEC_NAME}"
+        "${LIBRARY_NAME}" )
 if (TARGET "${DEPENDANT_LIBRARY}")
     list(APPEND installable_libs "${DEPENDANT_LIBRARY}")
 endif ()

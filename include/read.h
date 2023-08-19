@@ -54,7 +54,7 @@
  * @param vec     The vector to put the stdin data into.
  * @param prompt  The prompt to print, if desired.
  */
-BC_EXPORT BcStatus
+extern BCL_EXPORT BcStatus
 bc_read_line(BcVec* vec, const char* prompt);
 
 /**

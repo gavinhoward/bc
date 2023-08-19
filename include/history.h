@@ -342,7 +342,7 @@ typedef struct BcHistory
  * Frees strings used by history.
  * @param str  The string to free.
  */
-BC_EXPORT void
+extern BCL_EXPORT void
 bc_history_string_free(void* str);
 
 // A list of terminals that don't work.
@@ -395,21 +395,21 @@ bc_history_printKeyCodes(BcHistory* h);
  *                leave the terminal in raw mode or in some other half-baked
  *                state.
  */
-BC_EXPORT BcStatus
+extern BCL_EXPORT BcStatus
 bc_history_line(BcHistory* h, BcVec* vec, const char* prompt);
 
 /**
  * Initialize history data.
  * @param h  The struct to initialize.
  */
-BC_EXPORT void
+extern BCL_EXPORT void
 bc_history_init(BcHistory* h);
 
 /**
  * Free history data (and recook the terminal).
  * @param h  The struct to free.
  */
-BC_EXPORT void
+extern BCL_EXPORT void
 bc_history_free(BcHistory* h);
 
 #endif // BC_ENABLE_HISTORY
