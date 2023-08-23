@@ -237,10 +237,10 @@ get clever.
 We then compute the integral portion of the power by computing the number to
 power of the integral portion of the exponent.
 
-Then we have the most clever trick: we add the length of that integer power to
-the `scale`. Why? Because this will ensure that the next part is calculated to
-at least as many digits as should be in the integer *plus* any extra `scale`
-that was wanted.
+Then we have the most clever trick: we add the length of that integer power (and
+a little extra) to the `scale`. Why? Because this will ensure that the next part
+is calculated to at least as many digits as should be in the integer *plus* any
+extra `scale` that was wanted.
 
 Then we check `z`, which, if it is not zero, is the original value of the
 number. If it is not zero, we need to take the take the reciprocal *again*

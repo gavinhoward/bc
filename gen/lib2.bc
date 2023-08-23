@@ -54,7 +54,7 @@ define p(x,y){
 	}
 	i=x^a
 	s=scale
-	scale+=length(i)
+	scale+=length(i)+5
 	if(z){
 		x=1/z
 		i=x^a
