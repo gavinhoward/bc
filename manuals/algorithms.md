@@ -194,7 +194,7 @@ The algorithm used is to use the formula `e(y*l(x))`.
 It has a complexity of `O(n^3)` because both `e()` and `l()` do.
 
 However, there are details to this algorithm, described by the author,
-TediusTimmy, in GitHub issue #69.
+TediusTimmy, in GitHub issue [#69][12].
 
 First, check if the exponent is 0. If it is, return 1 at the appropriate
 `scale`.
@@ -395,3 +395,4 @@ It has a complexity of `O(n^3)` because of arctangent.
 [9]: https://en.wikipedia.org/wiki/Root-finding_algorithms#Newton's_method_(and_similar_derivative-based_methods)
 [10]: https://en.wikipedia.org/wiki/Euclidean_algorithm
 [11]: https://en.wikipedia.org/wiki/Atan2#Definition_and_computation
+[12]: https://github.com/gavinhoward/bc/issues/69
