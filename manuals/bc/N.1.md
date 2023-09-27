@@ -1068,7 +1068,7 @@ like any other expression that is printed.
 
 ## Stream Statement
 
-The "expressions in a **stream** statement may also be strings.
+The expressions in a **stream** statement may also be strings.
 
 If a **stream** statement is given a string, it prints the string as though the
 string had appeared as its own statement. In other words, the **stream**
@@ -1268,6 +1268,10 @@ The extended library is a **non-portable extension**.
 
 :   Returns the combination of the truncated absolute value of **n** of the
     truncated absolute value of **k**, if **k \<= n**. If not, it returns **0**.
+
+**fib(n)**
+
+:   Returns the Fibonacci number of the truncated absolute value of **n**.
 
 **l2(x)**
 
