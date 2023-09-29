@@ -276,6 +276,8 @@ define frand(p){
 define ifrand(i,p){return irand(abs(i)$)+frand(p)}
 define i2rand(a,b){
 	auto n,x
+	a=a$
+	b=b$
 	if(a==b)return a
 	n=min(a,b)
 	x=max(a,b)
