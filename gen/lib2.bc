@@ -90,6 +90,14 @@ define f(n){
 	for(r=1;n>1;--n)r*=n
 	return r
 }
+define max(a,b){
+	if(a>b)return a
+	return b
+}
+define min(a,b){
+	if(a<b)return a
+	return b
+}
 define perm(n,k){
 	auto f,g,s
 	if(k>n)return 0
