@@ -1,22 +1,29 @@
 #! /usr/bin/bc -lq
 
-while (a == 0)
+for (i = 0; i < 10; ++i)
 {
-	a = rand()
-}
+	if (brand()) {
+		a = srand(ifrand(101, scale))
+	}
+	else {
+		a = srand(irand(101))
+	}
 
-while(b == 0)
-{
-	b = rand()
-}
+	if (brand()) {
+		b = srand(ifrand(101, scale))
+	}
+	else {
+		b = srand(irand(101))
+	}
 
-min = min(a, b)
-max = max(a, b)
+	min = min(a$, b$)
+	max = max(a$, b$)
 
-for (i = 0; i < 100; ++i)
-{
-	r = i2rand(a, b)
-	r >= min && r <= max
+	for (j = 0; j < 100; ++j)
+	{
+		r = i2rand(a, b)
+		r >= min && r <= max
+	}
 }
 
 halt
