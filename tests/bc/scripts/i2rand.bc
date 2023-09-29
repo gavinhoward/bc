@@ -1,0 +1,22 @@
+#! /usr/bin/bc -lq
+
+while (a == 0)
+{
+	a = rand()
+}
+
+while(b == 0)
+{
+	b = rand()
+}
+
+min = min(a, b)
+max = max(a, b)
+
+for (i = 0; i < 100; ++i)
+{
+	r = i2rand(a, b)
+	r >= min && r <= max
+}
+
+halt
