@@ -1,5 +1,10 @@
 # News
 
+## 6.7.0
+
+This is a production release with three new functions in the [extended math
+library][16]: `min()`, `max()`, and `i2rand()`.
+
 ## 6.6.1
 
 This is a production release with an improved `p()` function in the [extended
