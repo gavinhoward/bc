@@ -1,5 +1,10 @@
 # News
 
+## 6.7.1
+
+This is a production release with a bug fix for `SIGINT` only being handled
+once.
+
 ## 6.7.0
 
 This is a production release with three new functions in the [extended math
