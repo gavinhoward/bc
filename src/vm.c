@@ -121,6 +121,8 @@ bc_vm_jmp(void)
 static void
 bc_vm_sig(int sig)
 {
+	(void) write(STDERR_FILENO, "Z", 1);
+
 #if BC_ENABLE_EDITLINE
 	// Editline needs this to resize the terminal. This also needs to come first
 	// because a resize always needs to happen.
@@ -214,7 +216,7 @@ bc_vm_sigaction(void)
 	struct sigaction sa;
 
 	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
+	sa.sa_flags = BC_ENABLE_EDITLINE ? 0 : SA_NODEFER;
 
 	// This mess is to silence a warning on Clang with regards to glibc's
 	// sigaction handler, which activates the warning here.
