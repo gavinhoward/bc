@@ -1,5 +1,10 @@
 # News
 
+## 6.7.2
+
+This is a production release to remove some debugging code that I accidentally
+committed.
+
 ## 6.7.1
 
 This is a production release with a bug fix for `SIGINT` only being handled

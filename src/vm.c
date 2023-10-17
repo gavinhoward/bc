@@ -121,8 +121,6 @@ bc_vm_jmp(void)
 static void
 bc_vm_sig(int sig)
 {
-	(void) write(STDERR_FILENO, "Z", 1);
-
 #if BC_ENABLE_EDITLINE
 	// Editline needs this to resize the terminal. This also needs to come first
 	// because a resize always needs to happen.
