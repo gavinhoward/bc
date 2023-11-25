@@ -773,7 +773,7 @@ function, `strdup()`, which is not in POSIX 2001, and it is in the X/Open System
 Interfaces group 2001. It is, however, in POSIX 2008, and since POSIX 2008 is
 old enough to be supported anywhere that I care, that should be the requirement.
 
-Second, the BcVm global variable was put into `bss`. This actually slightly
+Second, the `BcVm` global variable was put into `bss`. This actually slightly
 reduces the size of the executable from a massive code shrink, and it will stop
 `bc` from allocating a large set of memory when `bc` starts.
 
