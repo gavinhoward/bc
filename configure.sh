@@ -456,7 +456,7 @@ find_src_files() {
 		while [ "$#" -ge 1 ]; do
 			_find_src_files_a="${1## }"
 			shift
-			_find_src_files_args=$(printf '%s\n%s\n' "$_find_src_files_args" "${_find_src_files_a}")
+			_find_src_files_args=$(printf '%s\n%s/src/%s\n' "$_find_src_files_args" "$scriptdir" "${_find_src_files_a}")
 		done
 
 	fi
@@ -467,10 +467,8 @@ find_src_files() {
 
 	for _find_src_files_f in $_find_src_files_files; do
 
-		_find_src_files_base=$(basename "$_find_src_files_f")
-
 		# If this is true, the file is part of args, and therefore, unneeded.
-		if [ "${_find_src_files_args##*$_find_src_files_base}" != "${_find_src_files_args}" ]; then
+		if [ "${_find_src_files_args##*$_find_src_files_f}" != "${_find_src_files_args}" ]; then
 			continue
 		fi
 
@@ -1867,6 +1865,8 @@ bc_err_tests=$(gen_err_test_targets bc)
 dc_tests=$(gen_std_test_targets dc)
 dc_script_tests=$(gen_script_test_targets dc)
 dc_err_tests=$(gen_err_test_targets dc)
+
+printf 'unneeded: %s\n' "$unneeded"
 
 # Print out the values; this is for debugging.
 printf 'Version: %s\n' "$version"
