@@ -1367,12 +1367,7 @@ if [ "$debug" -eq 1 ]; then
 	CFLAGS="-g $CFLAGS"
 
 else
-
 	CPPFLAGS="-DNDEBUG $CPPFLAGS"
-
-	if [ "$strip_bin" -ne 0 ]; then
-		LDFLAGS="-s $LDFLAGS"
-	fi
 fi
 
 # Set optimization CFLAGS.
@@ -1692,6 +1687,11 @@ if [ "$err" -ne 0 ]; then
 else
 	printf 'Not on Mac OSX.\n\n'
 	apple=""
+fi
+
+# We can't use the linker's strip flag on Mac OSX.
+if [ "$debug" -eq 0 ] && [ "$apple" == "" ] && [ "$strip_bin" -ne 0 ]; then
+	LDFLAGS="-s $LDFLAGS"
 fi
 
 # Test OpenBSD. This is not in an if statement because regardless of whatever
