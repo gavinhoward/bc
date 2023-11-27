@@ -27,6 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+# For Mac OSX from Ventura on, run using the following:
+#
+# scripts/release.sh 1 1 1 1 0 0 0 0 1 0 1 1 1 0 0 0 0
+#
 # For OpenBSD, run using the following:
 #
 # scripts/release.sh 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0
