@@ -29,7 +29,7 @@
 
 # For Mac OSX from Ventura on, run using the following:
 #
-# scripts/release.sh 1 1 1 1 0 0 0 0 1 0 1 1 1 0 0 0 0
+# scripts/release.sh 1 1 0 1 0 0 0 0 1 0 1 1 1 0 0 0 0
 #
 # For OpenBSD, run using the following:
 #
@@ -668,7 +668,7 @@ unset DC_DIGIT_CLAMP
 
 # Set some strict warning flags. Clang's -Weverything can be way too strict, so
 # we actually have to turn off some things.
-clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage"
+clang_flags="-Weverything -Wno-padded -Wno-unsafe-buffer-usage -Wno-poison-system-directories"
 gcc_flags="-Wno-clobbered"
 
 # Common CFLAGS.
