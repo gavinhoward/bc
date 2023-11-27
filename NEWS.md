@@ -1,5 +1,11 @@
 # News
 
+## 6.7.3
+
+This is a production release to fix the library build on Mac OSX.
+
+Users on other platforms do *not* need to update.
+
 ## 6.7.2
 
 This is a production release to remove some debugging code that I accidentally
