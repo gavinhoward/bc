@@ -263,3 +263,15 @@ printf '\n'
 shasum "$projver.tar.xz"
 printf '\n'
 shasum "$projver-windows.zip"
+
+mkdir -p "releases/$projver"
+mv $projver* "releases/$projver"
+
+# Clean up old Windows stuff.
+if [ -d windows ]; then
+	rm -rf windows
+fi
+
+if [ -f vs.zip ]; then
+	rm -rf vs.zip
+fi
