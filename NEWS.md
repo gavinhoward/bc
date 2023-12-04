@@ -1,5 +1,11 @@
 # News
 
+## 6.7.4
+
+This is a production release to fix problems in the `bc` manual.
+
+Users only need to update if desired.
+
 ## 6.7.3
 
 This is a production release to fix the library build on Mac OSX.
