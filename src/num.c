@@ -1631,6 +1631,431 @@ bc_num_divExtend(BcNum* restrict a, BcNum* restrict b, BcBigDig divisor)
 	bc_num_shiftLeft(b, pow);
 }
 
+
+// a, b are nonnegative integers
+static ssize_t
+__basic_cmp(
+	const BcDig* a, size_t alen,
+	const BcDig* b, size_t blen)
+{
+	size_t i;
+
+	if(alen > blen)
+	{
+		return 1;
+	}
+	if(alen < blen)
+	{
+		return -1;
+	}
+	for(i = alen-1; i < alen; i--)
+	{
+		if(a[i] > b[i])
+		{
+			return 1;
+		}
+		if(a[i] < b[i])
+		{
+			return -1;
+		}
+	}
+	return 0;
+}
+
+// a has enough space.
+static void
+__basic_inc(BcDig* restrict a, size_t* restrict palen)
+{
+	size_t i, alen = *palen;
+	for(i = 0; i < alen && a[i] == BC_BASE_POW-1; i++)
+	{
+		a[i] = 0;
+	}
+	if(i < alen)
+	{
+		a[i]++;
+	}
+	else
+	{
+		a[i++] = 1;
+		*palen = i;
+	}
+}
+
+// a > 0
+static void
+__basic_dec(BcDig* restrict a, size_t* restrict palen)
+{
+	size_t i, alen = *palen;
+
+	assert(*palen > 0);
+
+	for(i = 0; i < alen && a[i] <= 0; i++)
+	{
+		a[i] = BC_BASE_POW-1;
+	}
+	a[i]--;
+	for(i = alen-1; i < alen && a[i] <= 0; i--)
+	{
+		;
+	}
+	*palen = i+1;
+}
+
+static void
+__basic_fit(BcDig* restrict a, size_t* restrict palen)
+{
+	size_t i, alen = *palen;
+	for(i = alen-1; i < alen && a[i] <= 0; i--)
+	{
+		;
+	}
+	*palen = i+1;
+}
+
+// a, b are integers and 0 <= b <= a
+static void
+__basic_sub(
+	BcDig* restrict a,
+	size_t* restrict palen,
+	const BcDig* restrict b,
+	size_t blen)
+{
+	BcDig d, carry = 0;
+	size_t alen = *palen, i;
+
+	assert(__basic_cmp(a, *palen, b, blen) >= 0);
+
+	for(i = 0; i < blen; i++)
+	{
+		d = carry + a[i] - b[i];
+		if(d >= 0)
+		{
+			a[i] = d;
+			carry = 0;
+		}
+		else
+		{
+			a[i] = BC_BASE_POW + d;
+			carry = -1;
+		}
+	}
+	for(; i < alen && carry < 0; i++)
+	{
+		if(a[i] > 0)
+		{
+			a[i]--;
+			carry = 0;
+		}
+		else
+		{
+			a[i] = BC_BASE_POW - 1;
+			carry = -1;
+		}
+	}
+	for(i = alen-1; i < alen && a[i] <= 0; i--)
+	{
+		;
+	}
+	*palen = i+1;
+}
+
+// 0 < blen < alen
+static void
+__basic_div(
+	BcDig* restrict a, size_t alen,
+	const BcDig* restrict b, size_t blen,
+	BcDig* restrict c, size_t* restrict pclen)
+{
+	BcNum temp;
+	BcDig *aa, *t;
+	size_t i, j, aalen, tlen, diff;
+
+	assert(0 < blen && blen < alen);
+
+	bc_num_init(&temp, blen+1);
+	t = temp.num;
+
+	aalen = blen;
+	diff = alen - blen;
+	for(i = diff; i <= diff; i--)
+	{
+		BcDig res_dig = 0;
+		aa = a+i;
+		while(1)
+		{
+			BcDig dig;
+			int cmp = 0;
+
+			if(aalen > blen)
+			{
+				cmp = 1;
+				dig = (BcDig)( ( ((BcBigDig)aa[blen])*BC_BASE_POW + aa[blen-1] ) / (b[blen-1]+1) );
+			}
+			else if(aalen == blen)
+			{
+				dig = aa[blen-1] / ( b[blen-1]+1 );
+				if(dig <= 0)
+				{
+					dig = 1;
+				}
+				for(j = blen-1; j < blen; j--)
+				{
+					if(aa[j] > b[j])
+					{
+						cmp = 1;
+						break;
+					}
+					if(aa[j] < b[j])
+					{
+						cmp = -1;
+						break;
+					}
+				}
+			}
+			else
+			{
+				dig = 0;
+				cmp = -1;
+			}
+			if(cmp < 0)
+			{
+				break;
+			}
+
+			// aa >= dig * b
+			{
+				BcBigDig d, carry;
+				tlen = blen;
+				carry = 0;
+				for(j = 0; j < tlen; j++)
+				{
+					d = ((BcBigDig)b[j])*((BcBigDig)dig) + carry;
+					t[j] = d % BC_BASE_POW;
+					carry = d / BC_BASE_POW;
+				}
+				if(carry > 0)
+				{
+					t[tlen++] = (BcDig)carry;
+				}
+			}
+			__basic_sub(aa, &aalen, t, tlen);
+			res_dig += dig;
+		}
+		aalen++;
+		c[i] = res_dig;
+	}
+	bc_num_free(&temp);
+	for(i = diff; i <= diff && c[i] <= 0; i--)
+	{
+		;
+	}
+	*pclen = i+1;
+}
+
+
+
+
+/**
+ * Newton-Raphson division
+ * @param a      The first operand. Positive integer.
+ * @param b      The second operand. Positive integer.
+ * @param c      The return parameter. Initially 0
+ */
+
+/*
+
+1 < b < a < R^L
+a/b == a*(1/b)
+
+Newton-Raphson mehtod to get 1/b
+
+y = 1/x - b
+y' = -1/x^2
+X := X - ( 1/X - b ) / ( -1/(X^2) ) = X + ( X - b*X^2 ) = X*(2-b*X)
+X := X * ( 2 - b*X )
+
+Y = X*R^L
+X = Y*R^(-L)
+
+Y*R^(-L) := Y*R^(-L) * ( 2 - b*Y*R^(-L) )
+Y := Y * ( 2*R^L - b*Y ) * R^(-L)
+
+----
+
+Proof of correctness. (TeX)
+a,\ b,\ m,\ R\ \normal{1}{and}\ L\ \normal{1}{are\ positive\ integers\ \normal{1}{and}}\\ R\ge 2\\ R^{L-1}\le a<R^L\\ m\le \frac{1}{b}\cdot R^L<m+1\\ \normal{1}{then}\\ \frac{a}{R^L}m\le \frac{a}{b}<\frac{a}{R^L}\left(m+1\right)\\ \frac{am}{R^L}\le \frac{a}{b}<\frac{am}{R^L}+\frac{a}{R^L}<\frac{am}{R^L}+1\\ \left\lfloor \combi{\frac{am}{R^L}}\right\rfloor \le \left\lfloor \combi{\frac{a}{b}}\right\rfloor <\left\lfloor \combi{\frac{am}{R^L}+1}\right\rfloor +1\\ \left\lfloor \combi{\frac{am}{R^L}}\right\rfloor \le \left\lfloor \combi{\frac{a}{b}}\right\rfloor <\left\lfloor \combi{\frac{am}{R^L}}\right\rfloor +2\\ \left\lfloor \combi{\frac{a}{b}}\right\rfloor =\left\lfloor \combi{\frac{am}{R^L}}\right\rfloor \ \normal{1}{or}\ \left\lfloor \combi{\frac{am}{R^L}}\right\rfloor +1
+
+*/
+
+#if 1
+	#define NEWTON_RAPHSON_MIN_A_LEN 10000
+	#define NEWTON_RAPHSON_MIN_AB_DIFF 1000
+	#define MAX_BASIC_DIV_B_LEN 50
+#else	// for test
+	#define NEWTON_RAPHSON_MIN_A_LEN 1000
+	#define NEWTON_RAPHSON_MIN_AB_DIFF 100
+	#define MAX_BASIC_DIV_B_LEN 50
+#endif
+
+// len(b) >= NEWTON_RAPHSON_MIN_AB_DIFF. Long enough
+static void
+__newton_raphson_div(BcNum* restrict a, const BcNum* restrict b, BcNum* restrict c)
+{
+	BcNum y1, y2, tnum;
+	//BcNum aa = { .num = a->num, .len = a->len, .cap = a->cap, .rdx = a->rdx, .scale = a->scale };
+	BcNum aa = *a, cc = *c, shell;
+	size_t i, j, blen, prec;
+
+	__basic_fit(aa.num, &aa.len);
+	blen = b->len;
+	__basic_fit(b->num, &blen);
+
+	if(aa.len <= blen)
+	{
+		__basic_div(aa.num, aa.len, b->num, blen, cc.num, &cc.len);
+		return;
+	}
+
+	// Now, 2 <= len(b) < len(a)
+
+	prec = aa.len;
+
+	BC_SIG_LOCK;
+
+	bc_num_init(&y1, prec+1);
+	bc_num_init(&y2, 2*prec+1);
+	bc_num_init(&tnum, prec+1);
+
+	BC_SETJMP_LOCKED(vm, err);
+
+	BC_SIG_UNLOCK;
+
+	// tnum <-- 1 * R^prec
+	memset(tnum.num, 0, prec*sizeof(BcDig));
+	tnum.num[prec] = 1;
+	tnum.len = prec+1;
+
+	// Initial estimation of (1/b)*R^prec
+	if(blen <= MAX_BASIC_DIV_B_LEN)
+	{
+		__basic_div(tnum.num, tnum.len, b->num, blen, y1.num, &y1.len);
+	}
+	else
+	{
+		BcDig tb[MAX_BASIC_DIV_B_LEN+1];
+		size_t tblen, trunc_len = blen - MAX_BASIC_DIV_B_LEN;
+
+		tblen = MAX_BASIC_DIV_B_LEN;
+		memcpy(tb, b->num + trunc_len, tblen*sizeof(BcDig));
+		for(i = 0; i < trunc_len && b->num[i] <= 0; i++) { ; }
+		if(i < trunc_len)
+		{
+			__basic_inc(tb, &tblen);
+		}
+		__basic_div(tnum.num, tnum.len, tb, tblen, y1.num, &y1.len);
+		for(i = trunc_len, j = 0; i < y1.len; i++, j++)
+		{
+			y1.num[j] = y1.num[i];
+		}
+		y1.len = j;
+	}
+	// ( len(b) < len(a) ) ==> y1 > 0
+
+	while(1)
+	{
+		// tnum <-- b*y1;
+		bc_num_zero(&tnum);
+		bc_num_k(b, &y1, &tnum);
+		__basic_fit(tnum.num, &tnum.len);
+
+		// tnum = 2*R^prec - b*y1;
+		for(i = 0; i < tnum.len && 0 == tnum.num[i]; i++)
+		{
+			;
+		}
+		if(i < prec)
+		{
+			tnum.num[i] = BC_BASE_POW - tnum.num[i];
+			i++;
+			for(; i < tnum.len; i++)
+			{
+				tnum.num[i] = BC_BASE_POW-1 - tnum.num[i];
+			}
+			for(; i < prec; i++)
+			{
+				tnum.num[i] = BC_BASE_POW-1;
+			}
+		}
+		tnum.num[prec] = 1;
+		tnum.len = prec+1;
+
+		// y2 <-- y1*( 2*R^prec - b*y1 )
+		bc_num_zero(&y2);
+		bc_num_k(&y1, &tnum, &y2);
+		__basic_fit(y2.num, &y2.len);
+
+		// shell <-- y1*( 2*R^prec - b*y1 ) * R^(-prec)
+		shell = y2;
+		shell.num += prec;
+		if(shell.len > prec)
+		{
+			shell.len -= prec;
+		}
+		else
+		{
+			shell.len = 0;
+		}
+		shell.cap -= prec;
+
+		// new approx. <= prev approx --> break
+		if(__basic_cmp(shell.num, shell.len, y1.num, y1.len) <= 0)
+		{
+			break;
+		}
+
+		// y1 <-- y1*( 2*R^prec - b*y1 ) * R^(-prec)
+		memcpy(y1.num, shell.num, shell.len*sizeof(BcDig));
+		y1.len = shell.len;
+	}
+
+	// y2 <-- a * { approx. (1/b)*R^prec }
+	// y2 := { approx. (a/b) * R^prec }
+	bc_num_zero(&y2);
+	bc_num_k(a, &y1, &y2);
+	__basic_fit(y2.num, &y2.len);
+
+	// cc <-- { approx. (a/b) * R^prec } * R^(-prec)
+	// cc := ( approx. a/b }
+	cc.len = y2.len-prec;
+	memcpy(cc.num, y2.num + prec, cc.len*sizeof(BcDig));
+
+	// y1 <-- b * ( approx. a/b }
+	// y1 := { approx. a }
+	bc_num_zero(&y1);
+	bc_num_k(b, &cc, &y1);
+	__basic_fit(y1.num, &y1.len);
+
+	// aa -= { approx. a }
+	__basic_sub(aa.num, &aa.len, y1.num, y1.len);
+
+	// At most once...
+	while(__basic_cmp(aa.num, aa.len, b->num, blen) >= 0)
+	{
+		// aa -= b
+		__basic_sub(aa.num, &aa.len, b->num, blen);
+		
+		// cc += 1
+		__basic_inc(cc.num, &cc.len);
+	}
+err:
+	BC_SIG_MAYLOCK;
+	bc_num_free(&tnum);
+	bc_num_free(&y2);
+	bc_num_free(&y1);
+	BC_LONGJMP_CONT(vm);
+}
+
 /**
  * Actually does division. This is a rewrite of my original code by Stefan Esser
  * from FreeBSD.
@@ -1751,67 +2176,75 @@ bc_num_d_long(BcNum* restrict a, BcNum* restrict b, BcNum* restrict c,
 
 	BC_SIG_UNLOCK;
 
-	// This is the actual division loop.
-	for (i = realend - 1; i < realend && i >= rdx && BC_NUM_NONZERO(a); --i)
+	if( (a->len - rdx) < NEWTON_RAPHSON_MIN_A_LEN || len < NEWTON_RAPHSON_MIN_AB_DIFF || (a->len - rdx) < len + NEWTON_RAPHSON_MIN_AB_DIFF )
 	{
-		ssize_t cmp;
-		BcDig* n;
-		BcBigDig result;
-
-		n = a->num + i;
-		assert(n >= a->num);
-		result = 0;
-
-		cmp = bc_num_divCmp(n, b, len);
-
-		// This is true if n is greater than b, which means that division can
-		// proceed, so this inner loop is the part that implements one instance
-		// of the division.
-		while (cmp >= 0)
+		// This is the actual division loop.
+		for (i = realend - 1; i < realend && i >= rdx && BC_NUM_NONZERO(a); --i)
 		{
-			BcBigDig n1, dividend, quotient;
+			ssize_t cmp;
+			BcDig* n;
+			BcBigDig result;
 
-			// These should be named obviously enough. Just imagine that it's a
-			// division of one limb. Because that's what it is.
-			n1 = (BcBigDig) n[len];
-			dividend = n1 * BC_BASE_POW + (BcBigDig) n[len - 1];
-			quotient = (dividend / divisor);
+			n = a->num + i;
+			assert(n >= a->num);
+			result = 0;
 
-			// If this is true, then we can just subtract. Remember: setting
-			// quotient to 1 is not bad because we already know that n is
-			// greater than b.
-			if (quotient <= 1)
+			cmp = bc_num_divCmp(n, b, len);
+
+			// This is true if n is greater than b, which means that division can
+			// proceed, so this inner loop is the part that implements one instance
+			// of the division.
+			while (cmp >= 0)
 			{
-				quotient = 1;
-				bc_num_subArrays(n, b->num, len);
+				BcBigDig n1, dividend, quotient;
+
+				// These should be named obviously enough. Just imagine that it's a
+				// division of one limb. Because that's what it is.
+				n1 = (BcBigDig) n[len];
+				dividend = n1 * BC_BASE_POW + (BcBigDig) n[len - 1];
+				quotient = (dividend / divisor);
+
+				// If this is true, then we can just subtract. Remember: setting
+				// quotient to 1 is not bad because we already know that n is
+				// greater than b.
+				if (quotient <= 1)
+				{
+					quotient = 1;
+					bc_num_subArrays(n, b->num, len);
+				}
+				else
+				{
+					assert(quotient <= BC_BASE_POW);
+
+					// We need to multiply and subtract for a quotient above 1.
+					bc_num_mulArray(b, (BcBigDig) quotient, &cpb);
+					bc_num_subArrays(n, cpb.num, cpb.len);
+				}
+
+				// The result is the *real* quotient, by the way, but it might take
+				// multiple trips around this loop to get it.
+				result += quotient;
+				assert(result <= BC_BASE_POW);
+
+				// And here's why it might take multiple trips: n might *still* be
+				// greater than b. So we have to loop again. That's what this is
+				// setting up for: the condition of the while loop.
+				if (realnonzero) cmp = bc_num_divCmp(n, b, len);
+				else cmp = -1;
 			}
-			else
-			{
-				assert(quotient <= BC_BASE_POW);
 
-				// We need to multiply and subtract for a quotient above 1.
-				bc_num_mulArray(b, (BcBigDig) quotient, &cpb);
-				bc_num_subArrays(n, cpb.num, cpb.len);
-			}
+			assert(result < BC_BASE_POW);
 
-			// The result is the *real* quotient, by the way, but it might take
-			// multiple trips around this loop to get it.
-			result += quotient;
-			assert(result <= BC_BASE_POW);
-
-			// And here's why it might take multiple trips: n might *still* be
-			// greater than b. So we have to loop again. That's what this is
-			// setting up for: the condition of the while loop.
-			if (realnonzero) cmp = bc_num_divCmp(n, b, len);
-			else cmp = -1;
+			// Store the actual limb quotient.
+			c->num[i] = (BcDig) result;
 		}
-
-		assert(result < BC_BASE_POW);
-
-		// Store the actual limb quotient.
-		c->num[i] = (BcDig) result;
 	}
-
+	else
+	{
+		BcNum ta = { a->num+rdx, 0, 0, a->len - rdx, a->cap - rdx };
+		BcNum tc = { c->num+rdx, 0, 0, c->len - rdx, c->cap - rdx };
+		__newton_raphson_div(&ta, b, &tc);
+	}
 err:
 	BC_SIG_MAYLOCK;
 	bc_num_free(&cpb);
@@ -4061,6 +4494,10 @@ bc_num_rshift(BcNum* a, BcNum* b, BcNum* c, size_t scale)
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
+#define NEWTON_RAPHSON_SQRT
+
+#ifndef NEWTON_RAPHSON_SQRT
+
 void
 bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 {
@@ -4213,6 +4650,351 @@ err:
 	bc_num_free(&num1);
 	BC_LONGJMP_CONT(vm);
 }
+
+#else
+
+static BcBigDig
+__basic_sqrt(BcBigDig n)
+{
+	BcBigDig u = 0, v = BC_BASE_POW-1, m, d;
+
+	while(u <= v)
+	{
+		m = (u+v)/2;
+		d = m*m;
+		if(d < n)
+		{
+			u = m+1;	// u >= 1
+		}
+		else if(d > n)
+		{
+			v = m-1;	// d >= 1 ==> m >= 1 ==> v >= 0
+		}
+		else
+		{
+			return m;
+		}
+	}
+	return v;
+}
+
+/*
+s <-- max( {global scale}, scale(a) )
+b^2 <= a*R^(2s) < (b+1)^2
+( b*R^(-s) )^2 <= a < ( (b+1)*R^(-s) )^2
+*/
+
+/*
+
+	1. Calculate 1/sqrt(a) with y = x^(-2) - a
+	2. Calculate sqrt(a) from a*(1/sqrt(a))
+
+	Newton-Raphson iteration for y = x^(-2) - a
+	    x <- x*(3-a*x^2)/2
+
+	divide by 2 : Multiply by RADIX/2 and shift right by 1.
+
+	No division needed.
+
+X := X * ( 3 - b*X*X )
+
+Y = X*R^L
+X = Y*R^(-L)
+
+Y*R^(-L) := Y*R^(-L) * ( 3 - a*Y*Y*R^(-2*L) )
+Y := Y * ( 3*R^L - a*Y*Y*R^(-L) ) * R^(-L)
+
+
+Proof of correctness (TeX)
+a,\ R,\ L\normal{1}{\ :\ positive\ integers}\\ R\ge 2,\ 1\le a<R^L\\ m=\left\lfloor \combi{\sqrt{\frac{1}{a}}R^L}\right\rfloor \\ m\le \sqrt{\frac{1}{a}}R^L<m+1\\ ma\le a\sqrt{\frac{1}{a}}R^L<\left(m+1\right)a\\ maR^{-L}\le \sqrt{a}<maR^{-L}+aR^{-L}<maR^{-L}+1\\ \left\lfloor \combi{maR^{-L}}\right\rfloor \le \left\lfloor \combi{\sqrt{a}}\right\rfloor <\left\lfloor \combi{maR^{-L}+1}\right\rfloor +1\\ \left\lfloor \combi{maR^{-L}}\right\rfloor \le \left\lfloor \combi{\sqrt{a}}\right\rfloor <\left\lfloor \combi{maR^{-L}}\right\rfloor +2\\ \left\lfloor \combi{\sqrt{a}}\right\rfloor =\left\lfloor \combi{maR^{-L}}\right\rfloor \ \normal{1}{or}\ \left\lfloor maR^{-L}\right\rfloor +1
+
+*/
+
+// a >= 1
+// Get floor( sqrt( a * R^ashift ) )
+static void
+__newton_raphson_sqrt(BcNum* const restrict a, size_t ashift, BcNum* restrict b)
+{
+	BcNum y1, y2, tnum, shell;
+	size_t i, prec;
+
+	prec = bc_vm_growSize(a->len, ashift);
+	// now prec >= 1
+	if(prec&1) // odd
+	{
+		// make positive even
+		prec = bc_vm_growSize(prec, 1);
+	}
+	// new prec is positive even.
+	// and a*R^ashift < R^prec
+
+	BC_SIG_LOCK;
+
+	bc_num_init(&y1, bc_vm_growSize(bc_vm_growSize(prec, prec), 1)); // prepare 2*prec + 1 digits.
+	bc_num_init(&y2, 2*prec+1);	// already checked overflow.
+	bc_num_init(&tnum, 2*prec+1);	// already checked overflow.
+
+	BC_SETJMP_LOCKED(vm, err);
+
+	BC_SIG_UNLOCK;
+
+	// Let A = a * R^ashift
+	//
+	// R^(prec/2) / R^prec is good to be an initial estimation of sqrt(1/A)
+	// Proof)
+	// 0 < R^(prec/2) / R^prec = sqrt( 1 / R^prec ) < sqrt(1/A)   ( why? A = a*R^ashift < R^prec )
+	//
+	// If y1 = R^(prec/2) then R^prec <= A*y1*y1 < R^(2*prec)  ( So sliding down A*y1*y1 by prec digits possible )
+	// Proof)
+	// A*y1^2 = A*R^prec
+	// R^prec <= A*R^prec < R^prec * R^prec = R^(2*prec)
+	//
+	{
+		size_t half_prec = prec/2;
+		for(i = 0; i < half_prec; i++)
+		{
+			y1.num[i] = 0;
+		}
+		y1.num[half_prec] = 1;
+		y1.len = half_prec+1;
+	}
+
+	while(1)
+	{
+		// temp <-- a * y1
+		bc_num_zero(&tnum);
+		bc_num_k(a, &y1, &tnum);
+		__basic_fit(tnum.num, &tnum.len);
+
+		// y2 <-- a * y1 * y1
+		bc_num_zero(&y2);
+		bc_num_k(&tnum, &y1, &y2);
+		__basic_fit(y2.num, &y2.len);
+
+		// y2 <-- ( a * y1 * y1 ) / R^(prec-ashift)
+		// y2 <-- a*R^ashift * y1*y1 * R^(-prec)
+		if(y2.len > prec - ashift)
+		{
+			y2.len -= prec - ashift;
+			memmove(y2.num, y2.num + (prec - ashift), y2.len*sizeof(BcDig));
+		}
+		else
+		{
+			y2.len = 0;
+		}
+
+		// tnum <-- 3*R^prec - a*R^ashift * y1*y1 * R^(-prec)
+		for(i = 0; i < y2.len && 0 == y2.num[i]; i++) { ; }
+		if(i > 0)
+		{
+			memset(tnum.num, 0, i*sizeof(BcDig));
+		}
+		if(i < prec)
+		{
+			tnum.num[i] = BC_BASE_POW - y2.num[i];
+			for(i++; i < y2.len; i++)
+			{
+				tnum.num[i] = BC_BASE_POW-1 - y2.num[i];
+			}
+			for(; i < prec; i++)
+			{
+				tnum.num[i] = BC_BASE_POW-1;
+			}
+		}
+		tnum.num[prec] = 2;
+		tnum.len = prec + 1;
+
+		// y2 <-- y1 * ( 3*R^prec - a*R^ashift * y1*y1 * R^(-prec) )
+		bc_num_zero(&y2);
+		bc_num_k(&y1, &tnum, &y2);
+		__basic_fit(y2.num, &y2.len);
+
+		// y2 <-- y2 / 2
+		// y2 <-- y1 * ( 3*R^prec - a*R^ashift * y1*y1 * R^(-prec) ) / 2
+		// x/2 = ( x*(BC_BASE_POW/2) ) / BC_BASE_POW   ( multiply by BC_BASE_POW/2 and slide down by 1 digit )
+		{
+			BcBigDig ddig;
+			ddig = ( ((BcBigDig)y2.num[0]) * (BC_BASE_POW/2) ) / BC_BASE_POW;
+			for(i = 1; i < y2.len; i++)
+			{
+				ddig = ( (BcBigDig)y2.num[i] )*(BC_BASE_POW/2) + ddig;
+				y2.num[i-1] = (BcDig)(ddig % BC_BASE_POW);
+				ddig /= BC_BASE_POW;
+			}
+			if(ddig > 0)
+			{
+				y2.num[i-1] = (BcDig)ddig;
+			}
+			else
+			{
+				y2.len--;
+			}
+		}
+
+		// shell <-- y1 * ( 3*R^prec - a*R^ashift * y1*y1 * R^(-prec) ) * R^(-prec)
+		shell = y2;
+		shell.num += prec;
+		if(shell.len > prec)
+		{
+			shell.len -= prec;
+		}
+		else
+		{
+			shell.len = 0;
+		}
+		shell.cap -= prec;
+
+		// new approx. <= prev approx --> break
+		if(__basic_cmp(shell.num, shell.len, y1.num, y1.len) <= 0)
+		{
+			break;
+		}
+		// y1 <-- new approx.
+		memcpy(y1.num, shell.num, shell.len*sizeof(BcDig));
+		y1.len = shell.len;
+	}
+
+	// tnum <-- a * y1 / R^(prec-ashift)
+	// a * x1*R^prec / R^(prec-ashift)
+	// a*R^ashift * x1 --> approx. of sqrt(a*R^ashift)
+	bc_num_zero(&tnum);
+	bc_num_k(a, &y1, &tnum);
+	__basic_fit(tnum.num, &tnum.len);
+	if(tnum.len > prec - ashift)
+	{
+		b->len = tnum.len - (prec - ashift);
+		memcpy(b->num, tnum.num + (prec - ashift), b->len*sizeof(BcDig));
+	}
+	else
+	{
+		b->len = 0;
+	}
+
+	// check b+1
+	while(1)
+	{
+		int cmp = 0;
+
+		__basic_inc(b->num, &b->len);
+
+		bc_num_zero(&tnum);
+		bc_num_k(b, b, &tnum);
+		__basic_fit(tnum.num, &tnum.len);
+		if(tnum.len > a->len + ashift)
+		{
+			cmp = 1;
+		}
+		else if(tnum.len == a->len + ashift)
+		{
+			cmp = __basic_cmp(tnum.num + ashift, tnum.len - ashift, a->num, a->len);
+			if(0 == cmp)
+			{
+				for(i = 0; i < ashift && tnum.num[i] == 0; i++) { ; }
+				if(i < ashift)
+				{
+					cmp = 1;
+				}
+			}
+		}
+		else
+		{
+			cmp = -1;
+		}
+		if(0 == cmp)
+		{
+			break;
+		}
+		if(cmp > 0)
+		{
+			__basic_dec(b->num, &b->len);
+			break;
+		}
+	}
+err:
+	BC_SIG_MAYLOCK;
+	bc_num_free(&tnum);
+	bc_num_free(&y2);
+	bc_num_free(&y1);
+	BC_LONGJMP_CONT(vm);
+}
+
+void
+bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
+{
+	BcNum aa = *a, y1, y2;
+	size_t alen, ashift, rdx, realscale, prec;
+
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+
+	assert(a != NULL && b != NULL && a != b);
+
+	if (BC_ERR(BC_NUM_NEG(a))) bc_err(BC_ERR_MATH_NEGATIVE);
+
+	realscale = BC_MAX(a->scale, scale);
+	rdx = BC_NUM_RDX(realscale);
+
+	// ashift = 2*rdx - BC_NUM_RDX_VAL(a);
+	ashift = rdx - BC_NUM_RDX_VAL(a);
+	ashift = bc_vm_growSize(ashift, rdx);
+
+	aa.scale = 0;
+	aa.rdx = 0;
+	__basic_fit(aa.num, &aa.len);
+
+	// Let's calculate floor( sqrt( 1/aa ) * R^(ashift) ) ) * R^(-rdx)
+
+	BC_SIG_LOCK;
+
+	bc_num_init(b, bc_vm_growSize((aa.len/2)+1, rdx));
+
+	BC_SETJMP_LOCKED(vm, err);
+
+	BC_SIG_UNLOCK;
+
+	// Easy case.
+	if (BC_NUM_ZERO(&aa))
+	{
+		bc_num_setToZero(b, realscale);
+		return;
+	}
+
+	// Another easy case.
+	if (BC_NUM_ONE(&aa))
+	{
+		bc_num_one(b);
+		bc_num_extend(b, realscale);
+		return;
+	}
+
+	if(ashift <= 0 && aa.len <= 2)
+	{
+		// aa.len >= 1
+		BcBigDig n = (BcBigDig)aa.num[0];
+		if(2 == aa.len)
+		{
+			n += ((BcBigDig)aa.num[1])*BC_BASE_POW;
+		}
+		b->num[0] = (BcDig)__basic_sqrt(n);
+		b->len = 1;
+	}
+	else
+	{
+		__newton_raphson_sqrt(&aa, ashift, b);
+	}
+	BC_NUM_RDX_SET(b, rdx);
+	b->scale = rdx*BC_BASE_DIGS;
+	if(b->scale > realscale)
+	{
+		bc_num_truncate(b, b->scale - realscale);
+	}
+err:
+	BC_SIG_MAYLOCK;
+	BC_LONGJMP_CONT(vm);
+}
+
+#endif
 
 void
 bc_num_divmod(BcNum* a, BcNum* b, BcNum* c, BcNum* d, size_t scale)
