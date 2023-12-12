@@ -1904,16 +1904,15 @@ __newton_raphson_div(BcNum* restrict a, const BcNum* restrict b, BcNum* restrict
 {
 	BcNum y1, y2, tnum;
 	//BcNum aa = { .num = a->num, .len = a->len, .cap = a->cap, .rdx = a->rdx, .scale = a->scale };
-	BcNum aa = *a, cc = *c, shell;
-	size_t i, j, blen, prec;
+	BcNum aa = *a, bb = *b, cc = *c, shell;
+	size_t i, j, prec;
 
 	__basic_fit(aa.num, &aa.len);
-	blen = b->len;
-	__basic_fit(b->num, &blen);
+	__basic_fit(bb.num, &bb.len);
 
-	if(aa.len <= blen)
+	if(aa.len <= bb.len)
 	{
-		__basic_div(aa.num, aa.len, b->num, blen, cc.num, &cc.len);
+		__basic_div(aa.num, aa.len, bb.num, bb.len, cc.num, &cc.len);
 		return;
 	}
 
@@ -1937,18 +1936,18 @@ __newton_raphson_div(BcNum* restrict a, const BcNum* restrict b, BcNum* restrict
 	tnum.len = prec+1;
 
 	// Initial estimation of (1/b)*R^prec
-	if(blen <= MAX_BASIC_DIV_B_LEN)
+	if(bb.len <= MAX_BASIC_DIV_B_LEN)
 	{
-		__basic_div(tnum.num, tnum.len, b->num, blen, y1.num, &y1.len);
+		__basic_div(tnum.num, tnum.len, bb.num, bb.len, y1.num, &y1.len);
 	}
 	else
 	{
 		BcDig tb[MAX_BASIC_DIV_B_LEN+1];
-		size_t tblen, trunc_len = blen - MAX_BASIC_DIV_B_LEN;
+		size_t tblen, trunc_len = bb.len - MAX_BASIC_DIV_B_LEN;
 
 		tblen = MAX_BASIC_DIV_B_LEN;
-		memcpy(tb, b->num + trunc_len, tblen*sizeof(BcDig));
-		for(i = 0; i < trunc_len && b->num[i] <= 0; i++) { ; }
+		memcpy(tb, bb.num + trunc_len, tblen*sizeof(BcDig));
+		for(i = 0; i < trunc_len && bb.num[i] <= 0; i++) { ; }
 		if(i < trunc_len)
 		{
 			__basic_inc(tb, &tblen);
@@ -1966,7 +1965,7 @@ __newton_raphson_div(BcNum* restrict a, const BcNum* restrict b, BcNum* restrict
 	{
 		// tnum <-- b*y1;
 		bc_num_zero(&tnum);
-		bc_num_k(b, &y1, &tnum);
+		bc_num_k(&bb, &y1, &tnum);
 		__basic_fit(tnum.num, &tnum.len);
 
 		// tnum = 2*R^prec - b*y1;
@@ -2022,7 +2021,7 @@ __newton_raphson_div(BcNum* restrict a, const BcNum* restrict b, BcNum* restrict
 	// y2 <-- a * { approx. (1/b)*R^prec }
 	// y2 := { approx. (a/b) * R^prec }
 	bc_num_zero(&y2);
-	bc_num_k(a, &y1, &y2);
+	bc_num_k(&aa, &y1, &y2);
 	__basic_fit(y2.num, &y2.len);
 
 	// cc <-- { approx. (a/b) * R^prec } * R^(-prec)
@@ -2033,17 +2032,17 @@ __newton_raphson_div(BcNum* restrict a, const BcNum* restrict b, BcNum* restrict
 	// y1 <-- b * ( approx. a/b }
 	// y1 := { approx. a }
 	bc_num_zero(&y1);
-	bc_num_k(b, &cc, &y1);
+	bc_num_k(&bb, &cc, &y1);
 	__basic_fit(y1.num, &y1.len);
 
 	// aa -= { approx. a }
 	__basic_sub(aa.num, &aa.len, y1.num, y1.len);
 
 	// At most once...
-	while(__basic_cmp(aa.num, aa.len, b->num, blen) >= 0)
+	while(__basic_cmp(aa.num, aa.len, bb.num, bb.len) >= 0)
 	{
 		// aa -= b
-		__basic_sub(aa.num, &aa.len, b->num, blen);
+		__basic_sub(aa.num, &aa.len, bb.num, bb.len);
 		
 		// cc += 1
 		__basic_inc(cc.num, &cc.len);
