@@ -143,6 +143,7 @@ for b in $benchmarks; do
 		printf '%s\n' "$halt" | /usr/bin/time -v bin/$d $opts "./benchmarks/$d/$b.$d" \
 			> "./benchmarks/$d/$b.txt"
 	fi
+
 done
 
 # We use this format to make things easier to use with ministat.
