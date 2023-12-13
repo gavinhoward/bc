@@ -1,7 +1,5 @@
 # `bc`
 
-$\[ \left\lfloor \frac{am}{R^L} \right\rfloor \]$
-
 ***WARNING: New user registration for <https://git.gavinhoward.com/> is disabled
 because of spam. If you need to report a bug with `bc`, email gavin at this site
 minus the `git.` part for an account, and I will create one for you. Or you can

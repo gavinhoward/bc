@@ -1884,7 +1884,7 @@ Y := Y * ( 2*R^L - b*Y ) * R^(-L)
 ----
 
 Proof of correctness. (TeX)
-a,\ b,\ m,\ R\ \normal{1}{and}\ L\ \normal{1}{are\ positive\ integers\ \normal{1}{and}}\\ R\ge 2\\ R^{L-1}\le a<R^L\\ m\le \frac{1}{b}\cdot R^L<m+1\\ \normal{1}{then}\\ \frac{a}{R^L}m\le \frac{a}{b}<\frac{a}{R^L}\left(m+1\right)\\ \frac{am}{R^L}\le \frac{a}{b}<\frac{am}{R^L}+\frac{a}{R^L}<\frac{am}{R^L}+1\\ \left\lfloor \combi{\frac{am}{R^L}}\right\rfloor \le \left\lfloor \combi{\frac{a}{b}}\right\rfloor <\left\lfloor \combi{\frac{am}{R^L}+1}\right\rfloor +1\\ \left\lfloor \combi{\frac{am}{R^L}}\right\rfloor \le \left\lfloor \combi{\frac{a}{b}}\right\rfloor <\left\lfloor \combi{\frac{am}{R^L}}\right\rfloor +2\\ \left\lfloor \combi{\frac{a}{b}}\right\rfloor =\left\lfloor \combi{\frac{am}{R^L}}\right\rfloor \ \normal{1}{or}\ \left\lfloor \combi{\frac{am}{R^L}}\right\rfloor +1
+(newton-raphson-div.png)
 
 */
 
@@ -4704,8 +4704,8 @@ Y*R^(-L) := Y*R^(-L) * ( 3 - a*Y*Y*R^(-2*L) )
 Y := Y * ( 3*R^L - a*Y*Y*R^(-L) ) * R^(-L)
 
 
-Proof of correctness (TeX)
-a,\ R,\ L\normal{1}{\ :\ positive\ integers}\\ R\ge 2,\ 1\le a<R^L\\ m=\left\lfloor \combi{\sqrt{\frac{1}{a}}R^L}\right\rfloor \\ m\le \sqrt{\frac{1}{a}}R^L<m+1\\ ma\le a\sqrt{\frac{1}{a}}R^L<\left(m+1\right)a\\ maR^{-L}\le \sqrt{a}<maR^{-L}+aR^{-L}<maR^{-L}+1\\ \left\lfloor \combi{maR^{-L}}\right\rfloor \le \left\lfloor \combi{\sqrt{a}}\right\rfloor <\left\lfloor \combi{maR^{-L}+1}\right\rfloor +1\\ \left\lfloor \combi{maR^{-L}}\right\rfloor \le \left\lfloor \combi{\sqrt{a}}\right\rfloor <\left\lfloor \combi{maR^{-L}}\right\rfloor +2\\ \left\lfloor \combi{\sqrt{a}}\right\rfloor =\left\lfloor \combi{maR^{-L}}\right\rfloor \ \normal{1}{or}\ \left\lfloor maR^{-L}\right\rfloor +1
+Proof of correctness
+(newton-raphson-sqrt.png)
 
 */
 
