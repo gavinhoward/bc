@@ -1,0 +1,9 @@
+#! /usr/bin/bc -lq
+
+scale = 0
+max = 100000
+
+for (i = 0; i < max; ++i)
+{
+	print rand(), " / ", rand() + 1, "\n"
+}

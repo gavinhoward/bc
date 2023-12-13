@@ -565,6 +565,26 @@ heavy functions in `lib.bc`.
 
 The file to generate the benchmark to benchmark multiplication in `bc`.
 
+##### `newton_raphson_div_large.bc`
+
+The file to generate the benchmark to benchmark the Newton-Raphson division in
+[GitHub PR #72][229] with large numbers.
+
+##### `newton_raphson_div_small.bc`
+
+The file to generate the benchmark to benchmark the Newton-Raphson division in
+[GitHub PR #72][229] with small numbers.
+
+##### `newton_raphson_sqrt_large.bc`
+
+The file to generate the benchmark to benchmark the Newton-Raphson square root
+in [GitHub PR #72][229] with large numbers.
+
+##### `newton_raphson_sqrt_small.bc`
+
+The file to generate the benchmark to benchmark the Newton-Raphson square root
+in [GitHub PR #72][229] with small numbers.
+
 ##### `postfix_incdec.bc`
 
 The file to generate the benchmark to benchmark `bc` using postfix increment and
@@ -5227,3 +5247,4 @@ However, where possible, errors are returned directly.
 [226]: #errorssh
 [227]: #errorsh
 [228]: #vectorc
+[229]: https://github.com/gavinhoward/bc/pull/72

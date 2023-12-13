@@ -1,0 +1,10 @@
+#! /usr/bin/bc -lq
+
+scale = 0
+max = 10
+mexp = 1000000
+
+for (i = 0; i < max; ++i)
+{
+	print irand(10), "^", irand(mexp), " / ", irand(10) + 1, "^", irand(mexp), "\n"
+}
