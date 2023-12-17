@@ -4061,17 +4061,385 @@ bc_num_rshift(BcNum* a, BcNum* b, BcNum* c, size_t scale)
 }
 #endif // BC_ENABLE_EXTRA_MATH
 
+// a : nonnegative integer.
+static void
+bc_int_fit(BcNum* a)
+{
+	size_t i;
+	for (i = a->len - 1; i < a->len && !a->num[i]; i--)
+	{
+		;
+	}
+	a->len = i + 1;
+}
+
+// ddig >= 0
+static BcBigDig
+bc_int_simple_sqrt(BcBigDig ddig)
+{
+	BcBigDig u = 0, v = BC_BASE_POW - 1, m, d;
+
+	while (u <= v)
+	{
+		m = (u + v) / 2;
+		d = m * m;
+		if (d < ddig)
+		{
+			u = m + 1;
+		}
+		else if (d > ddig)
+		{
+			v = m - 1;
+		}
+		else
+		{
+			return m;
+		}
+	}
+	return v;
+}
+
+// a : nonnegative integer.
+static void
+bc_int_div_2(BcNum* a)
+{
+	BcBigDig dd;
+	size_t i;
+
+	if (!a->len)
+	{
+		return;
+	}
+	dd = ((BcBigDig) a->num[0]) * (BC_BASE_POW / 2);
+	dd /= BC_BASE_POW;
+	for (i = 1; i < a->len; i++)
+	{
+		dd += ((BcBigDig) a->num[i]) * (BC_BASE_POW / 2);
+		a->num[i - 1] = (BcDig) (dd % BC_BASE_POW);
+		dd /= BC_BASE_POW;
+	}
+	if (dd > 0)
+	{
+		a->num[i - 1] = (BcDig) dd;
+	}
+	else
+	{
+		a->len--;
+	}
+}
+
+// Compare { a * BASE^ashift } and b
+// a, b : positive integers
+static int
+bc_int_shift_compare(const BcNum* a, size_t ashift, const BcNum* b)
+{
+	size_t i;
+
+	assert(a->len > 0 && b->len > 0);
+
+	if (a->len + ashift > b->len)
+	{
+		return 1;
+	}
+	if (a->len + ashift < b->len)
+	{
+		return -1;
+	}
+	for (i = a->len - 1; i < a->len; i--)
+	{
+		if (a->num[i] > b->num[i + ashift])
+		{
+			return 1;
+		}
+		if (a->num[i] < b->num[i + ashift])
+		{
+			return -1;
+		}
+	}
+	for (i = 0; i < ashift; i++)
+	{
+		if (b->num[i])
+		{
+			return -1;
+		}
+	}
+	return 0;
+}
+
+// a, b : nonnegative integers
+// a += b * BASE^bshift
+static void
+bc_int_accumulate_array(BcNum* a, const BcNum* b, size_t bshift)
+{
+	size_t i, j, bblen;
+
+	BcDig d;
+	// BcDig is enough.
+	// 999,999,999*2+1 = 1,999,999,999 <= 2^31-1 = 2,147,483,647
+	// 999,999,999,999,999,999*2+1 <= 2^63-1 = 9,223,372,036,854,775,807
+
+	if (!b->len)
+	{
+		return;
+	}
+
+	bblen = b->len + bshift;
+	if (a->len < bblen)
+	{
+		memset(a->num + a->len, 0, (bblen - a->len) * sizeof(BcDig));
+		a->len = bblen;
+	}
+
+	d = 0;
+	for (i = 0, j = bshift; i < b->len; i++, j++)
+	{
+		d += a->num[j] + b->num[i];
+		a->num[j] = d % BC_BASE_POW;
+		d = (d >= BC_BASE_POW);
+	}
+	for (; j < a->len && d > 0; j++)
+	{
+		d += a->num[j];
+		a->num[j] = d % BC_BASE_POW;
+		d = (d >= BC_BASE_POW);
+	}
+	if (d > 0)
+	{
+		a->num[a->len++] = d;
+	}
+}
+
+// a -= b
+// a, b : nonnegative integers. a >= b
+static void
+bc_int_sub(BcNum* a, const BcNum* b)
+{
+	size_t i;
+	BcDig d;
+
+	d = 0;
+	for (i = 0; i < b->len; i++)
+	{
+		d += a->num[i] - b->num[i];
+		if (d >= 0)
+		{
+			a->num[i] = d;
+			d = 0;
+		}
+		else
+		{
+			a->num[i] = BC_BASE_POW + d;
+			d = -1;
+		}
+	}
+	for (; i < a->len && d; i++)
+	{
+		d += a->num[i];
+		if (d >= 0)
+		{
+			a->num[i] = d;
+			d = 0;
+		}
+		else
+		{
+			a->num[i] = BC_BASE_POW + d;
+			d = -1;
+		}
+	}
+	for (i = a->len - 1; i < a->len && !a->num[i]; i--)
+	{
+		;
+	}
+	a->len = i + 1;
+}
+
+static void
+bc_int_elementary_mul(const BcNum* restrict a, const BcNum* restrict b,
+                      BcNum* restrict c)
+{
+	BcNum temp;
+	size_t i, j;
+	BcDig d;
+	BcBigDig dd;
+
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+
+	if (!a->len || !b->len)
+	{
+		c->len = 0;
+		return;
+	}
+	memset(c->num, 0, (a->len + b->len) * sizeof(BcDig));
+
+	BC_SIG_LOCK;
+
+	bc_num_init(&temp, bc_vm_growSize(a->len, 1));
+
+	BC_SETJMP_LOCKED(vm, err);
+
+	BC_SIG_UNLOCK;
+
+	c->len = 0;
+	for (i = 0; i < b->len; i++)
+	{
+		d = b->num[i];
+
+		if (d)
+		{
+			dd = 0;
+			for (j = 0; j < a->len; j++)
+			{
+				dd += ((BcBigDig) a->num[j]) * ((BcBigDig) d);
+				temp.num[j] = (BcDig) (dd % BC_BASE_POW);
+				dd /= BC_BASE_POW;
+			}
+			if (dd)
+			{
+				temp.num[j++] = (BcDig) dd;
+			}
+			temp.len = j;
+
+			// c += temp * BASE^i
+			bc_int_accumulate_array(c, &temp, i);
+		}
+	}
+err:
+	BC_SIG_MAYLOCK;
+	bc_num_free(&temp);
+	BC_LONGJMP_CONT(vm);
+}
+
+static void
+bc_int_k_mul(const BcNum* restrict a, const BcNum* restrict b,
+             BcNum* restrict c)
+{
+	size_t i, half_size;
+	BcNum x0, x1, y0, y1, z1, z2, tx, ty;
+
+#if BC_ENABLE_LIBRARY
+	BcVm* vm = bcl_getspecific();
+#endif // BC_ENABLE_LIBRARY
+
+	if (a->len < BC_NUM_KARATSUBA_LEN || b->len < BC_NUM_KARATSUBA_LEN)
+	{
+		bc_int_elementary_mul(a, b, c);
+		return;
+	}
+	half_size = bc_vm_growSize(BC_MAX(a->len, b->len), 1) / 2;
+
+	if (a->len > half_size)
+	{
+		x1.num = a->num + half_size;
+		x1.len = a->len - half_size;
+		x0.num = a->num;
+		x0.len = half_size;
+		bc_int_fit(&x0);
+	}
+	else
+	{
+		x1.num = NULL;
+		x1.len = 0;
+		x0.num = a->num;
+		x0.len = a->len;
+	}
+
+	if (b->len > half_size)
+	{
+		y1.num = b->num + half_size;
+		y1.len = b->len - half_size;
+		y0.num = b->num;
+		y0.len = half_size;
+		bc_int_fit(&y0);
+	}
+	else
+	{
+		y1.num = NULL;
+		y1.len = 0;
+		y0.num = b->num;
+		y0.len = b->len;
+	}
+
+	z2.len = bc_vm_growSize(x1.len, y1.len);
+	tx.len = bc_vm_growSize(half_size, 1);
+	ty.len = bc_vm_growSize(half_size, 1);
+	z1.len = bc_vm_growSize(tx.len, ty.len);
+
+	BC_SIG_LOCK;
+
+	bc_num_init(&z2, z2.len);
+	bc_num_init(&tx, tx.len);
+	bc_num_init(&ty, ty.len);
+	bc_num_init(&z1, z1.len);
+
+	BC_SETJMP_LOCKED(vm, err);
+
+	BC_SIG_UNLOCK;
+
+	// z0 = x0*y0;
+	bc_int_k_mul(&x0, &y0, c);
+
+	// z2 = x1*y1;
+	bc_int_k_mul(&x1, &y1, &z2);
+
+	// z1 = (x1+x0)*(y1+y0)-z2-z0;
+
+	memcpy(tx.num, x1.num, x1.len * sizeof(BcDig));
+	tx.len = x1.len;
+	bc_int_accumulate_array(&tx, &x0, 0);
+
+	memcpy(ty.num, y1.num, y1.len * sizeof(BcDig));
+	ty.len = y1.len;
+	bc_int_accumulate_array(&ty, &y0, 0);
+
+	bc_int_k_mul(&tx, &ty, &z1);
+
+	bc_int_sub(&z1, &z2);
+	bc_int_sub(&z1, c);
+
+	// c already contains z0
+	// return x0*y0 + z1*r^m + z2*r^(2m)
+	bc_int_accumulate_array(c, &z1, half_size);
+	bc_int_accumulate_array(c, &z2, 2 * half_size);
+err:
+	BC_SIG_MAYLOCK;
+	bc_num_free(&z1);
+	bc_num_free(&ty);
+	bc_num_free(&tx);
+	bc_num_free(&z2);
+	BC_LONGJMP_CONT(vm);
+}
+
+#if BC_DEBUG_CODE
+#include <stdio.h>
+
+static void
+bc_int_test_print(const BcNum* a)
+{
+	size_t i;
+	for (i = a->len - 1; i < a->len; i--)
+	{
+		printf("%09d ", a->num[i]);
+	}
+	printf("\n");
+}
+#endif
+
 void
 bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 {
-	BcNum num1, num2, half, f, fprime;
+	BcNum aa, num1, num2, temp, shell, one;
 	BcNum* x0;
 	BcNum* x1;
-	BcNum* temp;
 	// realscale is meant to quiet a warning on GCC about longjmp() clobbering.
 	// This one is real.
-	size_t pow, len, rdx, req, resscale, realscale;
-	BcDig half_digs[1];
+	size_t i, a_shift, a_len, rdx, len, req, realscale;
+	size_t a_rdx = BC_NUM_RDX_VAL(a), scale_rdx = BC_NUM_RDX(scale);
+	BcDig dig_one;
+	BcBigDig dd, sqrt_dd;
+	size_t trunc_len;
+
 #if BC_ENABLE_LIBRARY
 	BcVm* vm = bcl_getspecific();
 #endif // BC_ENABLE_LIBRARY
@@ -4082,8 +4450,14 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 
 	// We want to calculate to a's scale if it is bigger so that the result will
 	// truncate properly.
-	if (a->scale > scale) realscale = a->scale;
-	else realscale = scale;
+	if (a->scale > scale)
+	{
+		realscale = a->scale;
+	}
+	else
+	{
+		realscale = scale;
+	}
 
 	// Set parameters for the result.
 	len = bc_vm_growSize(bc_num_intDigits(a), 1);
@@ -4091,13 +4465,14 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 
 	// Square root needs half of the length of the parameter.
 	req = bc_vm_growSize(BC_MAX(rdx, BC_NUM_RDX_VAL(a)), len >> 1);
+	req = bc_vm_growSize(req, 1);
 
 	BC_SIG_LOCK;
 
 	// Unlike the binary operators, this function is the only single parameter
 	// function and is expected to initialize the result. This means that it
 	// expects that b is *NOT* preallocated. We allocate it here.
-	bc_num_init(b, bc_vm_growSize(req, 1));
+	bc_num_init(b, req);
 
 	BC_SIG_UNLOCK;
 
@@ -4119,96 +4494,279 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 		return;
 	}
 
-	// Set the parameters again.
-	rdx = BC_NUM_RDX(realscale);
-	rdx = BC_MAX(rdx, BC_NUM_RDX_VAL(a));
-	len = bc_vm_growSize(a->len, rdx);
+	// Prepare for a * BASE^(2*new_scale)
+
+	// Skipping leading zeros.
+	aa = *a;
+	aa.scale = 0;
+	aa.rdx = 0;
+	for (i = aa.len - 1; i < a->len && !aa.num[i]; i--)
+	{
+		;
+	}
+	aa.len = i + 1;
+
+	if (a_rdx >= scale_rdx)
+	{
+		rdx = a_rdx;
+		a_shift = rdx;
+	}
+	else
+	{
+		rdx = scale_rdx;
+		a_shift = rdx - a_rdx;
+		a_shift = bc_vm_growSize(a_shift, rdx);
+	}
+
+	// New rdx == BC_NUM_RDX(resulting scale)
+
+	// Let A = aa * BASE^a_shift
+	a_len = aa.len + a_shift; // length of A
+	assert(a_len > 0);
+
+	// Compose an integer <= { (1 / sqrt(A)) * BASE^a_len } as large as
+	// possible.
+	// First, compose an integer >= sqrt(A) as small as possible.
+
+	if (a_len & 1) // odd
+	{
+		trunc_len = a_len - 1;
+		dd = (BcBigDig) aa.num[aa.len - 1];
+	}
+	else
+	{
+		trunc_len = a_len - 2;
+		dd = ((BcBigDig) aa.num[aa.len - 1]) * BC_BASE_POW +
+		     ((BcBigDig) aa.num[aa.len - 2]);
+	}
+	sqrt_dd = bc_int_simple_sqrt(dd);
+
+	// a : small integer and scale is 0
+	if (aa.len <= 2 && !a_shift)
+	{
+		b->num[0] = sqrt_dd;
+		b->rdx = 0;
+		b->scale = 0;
+		b->len = 1;
+		return;
+	}
+
+	// aa.len >= 3
+
+	num1.len = bc_vm_growSize(a_len / 2, 1);
+	num2.len = bc_vm_growSize(a_len, 1);
+	temp.len = bc_vm_growSize(a_len, num2.len);
+	// temp.len = a_len + a_len + 1 >= a_len + 4
+	// Enough space for ( flr(sqrt(A)) + 1 )^2
+
+	// 2*a_len + 1 + 2*aa.len + 1 + 1 + 1
 
 	BC_SIG_LOCK;
 
-	bc_num_init(&num1, len);
-	bc_num_init(&num2, len);
-	bc_num_setup(&half, half_digs, sizeof(half_digs) / sizeof(BcDig));
-
-	// There is a division by two in the formula. We setup a number that's 1/2
-	// so that we can use multiplication instead of heavy division.
-	bc_num_one(&half);
-	half.num[0] = BC_BASE_POW / 2;
-	half.len = 1;
-	BC_NUM_RDX_SET_NP(half, 1);
-	half.scale = 1;
-
-	bc_num_init(&f, len);
-	bc_num_init(&fprime, len);
+	bc_num_init(&num1, num1.len);
+	bc_num_init(&num2, num2.len);
+	bc_num_init(&temp, temp.len);
 
 	BC_SETJMP_LOCKED(vm, err);
 
 	BC_SIG_UNLOCK;
 
-	// Pointers for easy switching.
-	x0 = &num1;
-	x1 = &num2;
+	aa.rdx = 0;
+	aa.scale = 0;
+	num1.rdx = 0;
+	num1.scale = 0;
+	num2.rdx = 0;
+	num2.scale = 0;
+	temp.rdx = 0;
+	temp.scale = 0;
+	shell.rdx = 0;
+	shell.scale = 0;
 
-	// Start with 1.
-	bc_num_one(x0);
+	// Initialize 1
+	dig_one = 1;
+	one.num = &dig_one;
+	one.cap = 1;
+	one.len = 1;
+	one.rdx = 0;
+	one.scale = 0;
 
-	// The power of the operand is needed for the estimate.
-	pow = bc_num_intDigits(a);
-
-	// The code in this if statement calculates the initial estimate. First, if
-	// a is less than 0, then 0 is a good estimate. Otherwise, we want something
-	// in the same ballpark. That ballpark is pow.
-	if (pow)
+	num2.len = trunc_len / 2;
+	memset(num2.num, 0, num2.len * sizeof(BcDig));
+	if (sqrt_dd * sqrt_dd < dd)
 	{
-		// An odd number is served by starting with 2^((pow-1)/2), and an even
-		// number is served by starting with 6^((pow-2)/2). Why? Because math.
-		if (pow & 1) x0->num[0] = 2;
-		else x0->num[0] = 6;
+		sqrt_dd += 1;
+	}
+	else
+	{
+		for (i = 0; i < trunc_len && !aa.num[i]; i++)
+		{
+			;
+		}
+		if (i < trunc_len)
+		{
+			sqrt_dd += 1;
+		}
+	}
+	if (sqrt_dd < BC_BASE_POW)
+	{
+		num2.num[num2.len++] = sqrt_dd;
+	}
+	else
+	{
+		num2.num[num2.len++] = 0;
+		num2.num[num2.len++] = 1;
+	}
+	assert(num2.len <= num2.cap);
 
-		pow -= 2 - (pow & 1);
-		bc_num_shiftLeft(x0, pow / 2);
+	// BASE^a_len
+	memset(temp.num, 0, a_len * sizeof(BcDig));
+	temp.num[a_len] = 1;
+	temp.len = a_len + 1;
+	assert(temp.len <= temp.cap);
+
+	// The only one long division.
+	// Initial estimation of flr ( (1/sqrt(A)) * BASE^a_len )
+	bc_num_d(&temp, &num2, &num1, 0);
+	assert(num1.len <= num1.cap);
+	bc_int_fit(&num1);
+
+	while (1)
+	{
+		// x^2
+		bc_int_k_mul(&num1, &num1, &num2);
+		assert(num2.len <= num2.cap);
+
+		// aa * x^2
+		bc_int_k_mul(&aa, &num2, &temp);
+		assert(temp.len <= temp.cap);
+
+		// ( aa * x^2 ) / BASE^(a_len - a_shift)
+		// == ( aa * BASE^a_shift * x^2 ) / BASE^a_len
+		// == A * x^2 * BASE^(-alen)
+		num2.len = temp.len - (a_len - a_shift);
+		memcpy(num2.num, temp.num + (a_len - a_shift),
+		       num2.len * sizeof(BcDig));
+		assert(num2.len <= num2.cap);
+
+		// 3*BASE^a_len - A*x^2*BASE^(-alen)
+		for (i = 0; i < a_len && !num2.num[i]; i++)
+		{
+			;
+		}
+		if (i < a_len)
+		{
+			num2.num[i] = BC_BASE_POW - num2.num[i];
+			i++;
+			for (; i < num2.len; i++)
+			{
+				num2.num[i] = (BC_BASE_POW - 1) - num2.num[i];
+			}
+			for (; i < a_len; i++)
+			{
+				num2.num[i] = BC_BASE_POW - 1;
+			}
+		}
+		num2.num[a_len] = 2;
+		num2.len = a_len + 1;
+		assert(num2.len <= num2.cap);
+
+		// x*( 3*BASE^a_len - A*x^2*BASE^(-alen) )
+		bc_int_k_mul(&num1, &num2, &temp);
+		assert(temp.len <= temp.cap);
+
+		// ( x*( 3*BASE^a_len - A*x^2*BASE^(-alen) ) ) / 2
+		bc_int_div_2(&temp);
+		assert(temp.len <= temp.cap);
+
+		// ( (x*(3*BASE^a_len - A*x^2*BASE^(-alen)))/2 ) * BASE^(-alen)
+		shell.len = temp.len - a_len;
+		shell.num = temp.num + a_len;
+		bc_int_fit(&shell);
+
+		// flr((x*(3*BASE^a_len - A*x^2*BASE^(-a_len))/2) * BASE^(-a_len))
+		//
+		// is equal to or greater by 1 than
+		//
+		// flr((x*(3*BASE^(2*a_len) - A*x^2)/2) * BASE^(-2*a_len)) + 1
+		//
+		// Proof --> 2.png
+		bc_int_sub(&shell, &one);
+
+		if (bc_num_cmp(&shell, &num1) <= 0)
+		{
+			break;
+		}
+
+		num1.len = shell.len;
+		memcpy(num1.num, shell.num, num1.len * sizeof(BcDig));
+		assert(num1.len <= num1.cap);
 	}
 
-	// I can set the rdx here directly because neg should be false.
-	x0->scale = x0->rdx = 0;
-	resscale = (realscale + BC_BASE_DIGS) + 2;
+	// b <-- ( x * aa ) / BASE^(a_len - a_shift)
+	// == ( aa * BASE^a_shift * x ) / BASE^a_len
+	// == A * x * BASE^(-alen)
+	// --> about sqrt(A)
+	bc_int_k_mul(&aa, &num1, &temp);
+	assert(temp.len <= temp.cap);
+	b->len = temp.len - (a_len - a_shift);
+	assert(b->len <= b->cap);
+	memcpy(b->num, temp.num + (a_len - a_shift), b->len * sizeof(BcDig));
+	bc_int_fit(b);
 
-	// This is the calculation loop. This compare goes to 0 eventually as the
-	// difference between the two numbers gets smaller than resscale.
-	while (bc_num_cmp(x1, x0))
+	// Try b+1, b+2
+
+	// temp1 = b^2
+	bc_int_k_mul(b, b, &temp);
+	assert(temp.len <= temp.cap);
+
+	while (1)
 	{
-		assert(BC_NUM_NONZERO(x0));
+		//  Actually, this block runs twice at most.
 
-		// This loop directly corresponds to the iteration in Newton's method.
-		// If you know the formula, this loop makes sense. Go study the formula.
+		size_t i, j;
+		int cmp;
 
-		bc_num_div(a, x0, &f, resscale);
-		bc_num_add(x0, &f, &fprime, resscale);
+		// printf("inc b\n");
+		// getchar();
 
-		assert(BC_NUM_RDX_VALID_NP(fprime));
-		assert(BC_NUM_RDX_VALID_NP(half));
+		// b^2 + 2*b + 1 = (b+1)^2
+		// temp1 <= (b+1)^2
+		bc_int_accumulate_array(&temp, b, 0);
+		assert(temp.len <= temp.cap);
+		bc_int_accumulate_array(&temp, b, 0);
+		assert(temp.len <= temp.cap);
+		bc_int_accumulate_array(&temp, &one, 0);
+		assert(temp.len <= temp.cap);
 
-		bc_num_mul(&fprime, &half, x1, resscale);
+		// Compare A and (b+1)^2
+		cmp = bc_int_shift_compare(&aa, a_shift, &temp);
 
-		// Switch.
-		temp = x0;
-		x0 = x1;
-		x1 = temp;
+		// A < (b+1)^2
+		// return value is b
+		if (cmp < 0)
+		{
+			break;
+		}
+
+		// A >= (b+1)^2
+		// b <-- b+1
+		bc_int_accumulate_array(b, &one, 0);
+		assert(b->len <= b->cap);
+
+		// Lucky. A == (b+1)^2
+		if (cmp == 0)
+		{
+			// printf("Lucky!\n");
+			// getchar();
+			break;
+		}
 	}
-
-	// Copy to the result and truncate.
-	bc_num_copy(b, x0);
-	if (b->scale > realscale) bc_num_truncate(b, b->scale - realscale);
-
-	assert(!BC_NUM_NEG(b) || BC_NUM_NONZERO(b));
-	assert(BC_NUM_RDX_VALID(b));
-	assert(BC_NUM_RDX_VAL(b) <= b->len || !b->len);
-	assert(!b->len || b->num[b->len - 1] || BC_NUM_RDX_VAL(b) == b->len);
-
+	BC_NUM_RDX_SET(b, rdx);
+	b->scale = rdx * BC_BASE_DIGS;
+	bc_num_truncate(b, b->scale - realscale);
 err:
 	BC_SIG_MAYLOCK;
-	bc_num_free(&fprime);
-	bc_num_free(&f);
+	bc_num_free(&temp);
 	bc_num_free(&num2);
 	bc_num_free(&num1);
 	BC_LONGJMP_CONT(vm);
