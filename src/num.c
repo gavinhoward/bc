@@ -4316,7 +4316,7 @@ static void
 bc_int_k_mul(const BcNum* restrict a, const BcNum* restrict b,
              BcNum* restrict c)
 {
-	size_t i, half_size;
+	size_t half_size;
 	BcNum x0, x1, y0, y1, z1, z2, tx, ty;
 
 #if BC_ENABLE_LIBRARY
@@ -4436,8 +4436,6 @@ void
 bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 {
 	BcNum aa, num1, num2, temp, shell, one;
-	BcNum* x0;
-	BcNum* x1;
 	// realscale is meant to quiet a warning on GCC about longjmp() clobbering.
 	// This one is real.
 	size_t i, a_shift, a_len, rdx, len, req, realscale;
@@ -4557,7 +4555,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	// a : small integer and scale is 0
 	if (aa.len <= 2 && !a_shift)
 	{
-		b->num[0] = sqrt_dd;
+		b->num[0] = (BcDig) sqrt_dd;
 		b->rdx = 0;
 		b->scale = 0;
 		b->len = 1;
@@ -4622,7 +4620,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	}
 	if (sqrt_dd < BC_BASE_POW)
 	{
-		num2.num[num2.len++] = sqrt_dd;
+		num2.num[num2.len++] = (BcDig) sqrt_dd;
 	}
 	else
 	{
@@ -4736,7 +4734,6 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	{
 		//  Actually, this block runs twice at most.
 
-		size_t i, j;
 		int cmp;
 
 		// printf("inc b\n");
