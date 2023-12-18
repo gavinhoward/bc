@@ -4091,13 +4091,14 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 
 	// Square root needs half of the length of the parameter.
 	req = bc_vm_growSize(BC_MAX(rdx, BC_NUM_RDX_VAL(a)), len >> 1);
+	req = bc_vm_growSize(req, 1);
 
 	BC_SIG_LOCK;
 
 	// Unlike the binary operators, this function is the only single parameter
 	// function and is expected to initialize the result. This means that it
 	// expects that b is *NOT* preallocated. We allocate it here.
-	bc_num_init(b, bc_vm_growSize(req, 1));
+	bc_num_init(b, req);
 
 	BC_SIG_UNLOCK;
 
