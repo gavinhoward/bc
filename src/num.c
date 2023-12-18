@@ -4131,7 +4131,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	bc_num_init(&num2, len);
 	bc_num_setup(&half, half_digs, sizeof(half_digs) / sizeof(BcDig));
 
-	// There is a division by two in the formula. We setup a number that's 1/2
+	// There is a division by two in the formula. We set up a number that's 1/2
 	// so that we can use multiplication instead of heavy division.
 	bc_num_one(&half);
 	half.num[0] = BC_BASE_POW / 2;
