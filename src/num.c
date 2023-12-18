@@ -4133,11 +4133,10 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 
 	// There is a division by two in the formula. We set up a number that's 1/2
 	// so that we can use multiplication instead of heavy division.
-	bc_num_one(&half);
+	bc_num_setToZero(&half, 1);
 	half.num[0] = BC_BASE_POW / 2;
 	half.len = 1;
 	BC_NUM_RDX_SET_NP(half, 1);
-	half.scale = 1;
 
 	bc_num_init(&f, len);
 	bc_num_init(&fprime, len);
