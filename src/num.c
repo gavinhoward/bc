@@ -4379,21 +4379,26 @@ bc_int_k_mul(const BcNum* restrict a, const BcNum* restrict b,
 
 	// z0 = x0*y0;
 	bc_int_k_mul(&x0, &y0, c);
+	assert(c->len <= c->cap);
 
 	// z2 = x1*y1;
 	bc_int_k_mul(&x1, &y1, &z2);
+	assert(z2.len <= z2.cap);
 
 	// z1 = (x1+x0)*(y1+y0)-z2-z0;
 
 	memcpy(tx.num, x1.num, x1.len * sizeof(BcDig));
 	tx.len = x1.len;
 	bc_int_accumulate_array(&tx, &x0, 0);
+	assert(tx.len <= tx.cap);
 
 	memcpy(ty.num, y1.num, y1.len * sizeof(BcDig));
 	ty.len = y1.len;
 	bc_int_accumulate_array(&ty, &y0, 0);
+	assert(ty.len <= ty.cap);
 
 	bc_int_k_mul(&tx, &ty, &z1);
+	assert(z1.len <= z1.cap);
 
 	bc_int_sub(&z1, &z2);
 	bc_int_sub(&z1, c);
@@ -4760,6 +4765,10 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 			// getchar();
 			break;
 		}
+	}
+	if (b->len < rdx)
+	{
+		memset(b->num + b->len, 0, (rdx - b->len) * sizeof(BcDig));
 	}
 	BC_NUM_RDX_SET(b, rdx);
 	b->scale = rdx * BC_BASE_DIGS;
