@@ -4156,8 +4156,9 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	pow = bc_num_intDigits(a);
 
 	// The code in this if statement calculates the initial estimate. First, if
-	// a is less than 0, then 0 is a good estimate. Otherwise, we want something
-	// in the same ballpark. That ballpark is pow.
+	// a is less than 1, then 0 is a good estimate. Otherwise, we want something
+	// in the same ballpark. That ballpark is half of pow because the result
+	// will have half the digits.
 	if (pow)
 	{
 		// An odd number is served by starting with 2^((pow-1)/2), and an even
