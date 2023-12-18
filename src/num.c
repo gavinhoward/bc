@@ -4542,7 +4542,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	else
 	{
 		trunc_len = a_len - 2;
-		if (aa.len < 2)
+		if (aa.len >= 2)
 		{
 			dd = ((BcBigDig) aa.num[aa.len - 1]) * BC_BASE_POW +
 			     ((BcBigDig) aa.num[aa.len - 2]);
