@@ -4388,12 +4388,18 @@ bc_int_k_mul(const BcNum* restrict a, const BcNum* restrict b,
 
 	// z1 = (x1+x0)*(y1+y0)-z2-z0;
 
-	memcpy(tx.num, x1.num, x1.len * sizeof(BcDig));
+	if (x1.len > 0)
+	{
+		memcpy(tx.num, x1.num, x1.len * sizeof(BcDig));
+	}
 	tx.len = x1.len;
 	bc_int_accumulate_array(&tx, &x0, 0);
 	assert(tx.len <= tx.cap);
 
-	memcpy(ty.num, y1.num, y1.len * sizeof(BcDig));
+	if (y1.len > 0)
+	{
+		memcpy(ty.num, y1.num, y1.len * sizeof(BcDig));
+	}
 	ty.len = y1.len;
 	bc_int_accumulate_array(&ty, &y0, 0);
 	assert(ty.len <= ty.cap);
