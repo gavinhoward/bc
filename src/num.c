@@ -4271,6 +4271,7 @@ bc_int_elementary_mul(const BcNum* restrict a, const BcNum* restrict b,
 		c->len = 0;
 		return;
 	}
+	assert(c->cap >= a->len + b->len);
 	memset(c->num, 0, (a->len + b->len) * sizeof(BcDig));
 
 	BC_SIG_LOCK;
@@ -4541,8 +4542,15 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	else
 	{
 		trunc_len = a_len - 2;
-		dd = ((BcBigDig) aa.num[aa.len - 1]) * BC_BASE_POW +
-		     ((BcBigDig) aa.num[aa.len - 2]);
+		if (aa.len < 2)
+		{
+			dd = ((BcBigDig) aa.num[aa.len - 1]) * BC_BASE_POW +
+			     ((BcBigDig) aa.num[aa.len - 2]);
+		}
+		else
+		{
+			dd = ((BcBigDig) aa.num[aa.len - 1]) * BC_BASE_POW + ((BcBigDig) 0);
+		}
 	}
 	sqrt_dd = bc_int_simple_sqrt(dd);
 
@@ -4559,7 +4567,7 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 	// aa.len >= 3
 
 	num1.len = bc_vm_growSize(a_len / 2, 1);
-	num2.len = bc_vm_growSize(a_len, 1);
+	num2.len = bc_vm_growSize(num1.len, num1.len);
 	temp.len = bc_vm_growSize(a_len, num2.len);
 	// temp.len = a_len + a_len + 1 >= a_len + 4
 	// Enough space for ( flr(sqrt(A)) + 1 )^2
