@@ -4253,63 +4253,69 @@ bc_int_sub(BcNum* a, const BcNum* b)
 	a->len = i + 1;
 }
 
+// Rewritten based on Gavin's simple multiplication.
+// Gavin's is much faster than old naggamura's.
 static void
 bc_int_elementary_mul(const BcNum* restrict a, const BcNum* restrict b,
                       BcNum* restrict c)
 {
-	BcNum temp;
-	size_t i, j;
-	BcDig d;
-	BcBigDig dd;
-
-#if BC_ENABLE_LIBRARY
-	BcVm* vm = bcl_getspecific();
-#endif // BC_ENABLE_LIBRARY
+	BcBigDig digdig, bdig;
+	BcDig* pa;
+	BcDig* pb;
+	BcDig* pc;
+	size_t i, j, k, alen, blen;
 
 	if (!a->len || !b->len)
 	{
 		c->len = 0;
 		return;
 	}
-	assert(c->cap >= a->len + b->len);
-	memset(c->num, 0, (a->len + b->len) * sizeof(BcDig));
 
-	BC_SIG_LOCK;
+	/*
+	    for (i = 0; i < 1; i++)
+	        for (j = 0; j < 10000; j++)
 
-	bc_num_init(&temp, bc_vm_growSize(a->len, 1));
+	    would be better than
 
-	BC_SETJMP_LOCKED(vm, err);
-
-	BC_SIG_UNLOCK;
-
-	c->len = 0;
-	for (i = 0; i < b->len; i++)
+	    for (i = 0; i < 10000; i++)
+	        for (j = 0; j < 1; j++)
+	*/
+	if (a->len >= b->len)
 	{
-		d = b->num[i];
+		pa = a->num;
+		alen = a->len;
+		pb = b->num;
+		blen = b->len;
+	}
+	else
+	{
+		pa = b->num;
+		alen = b->len;
+		pb = a->num;
+		blen = a->len;
+	}
+	pc = c->num;
 
-		if (d)
+	memset(pc, 0, (alen + blen) * sizeof(BcDig));
+	for (i = 0; i < blen; i++)
+	{
+		bdig = pb[i];
+		if (bdig)
 		{
-			dd = 0;
-			for (j = 0; j < a->len; j++)
+			digdig = 0;
+			for (j = 0, k = i; j < alen; j++, k++)
 			{
-				dd += ((BcBigDig) a->num[j]) * ((BcBigDig) d);
-				temp.num[j] = (BcDig) (dd % BC_BASE_POW);
-				dd /= BC_BASE_POW;
+				digdig += (BcBigDig) pc[k] + (BcBigDig) pa[j] * bdig;
+				pc[k] = (BcDig) (digdig % BC_BASE_POW);
+				digdig /= BC_BASE_POW;
 			}
-			if (dd)
+			if (digdig)
 			{
-				temp.num[j++] = (BcDig) dd;
+				pc[k++] = (BcDig) digdig;
 			}
-			temp.len = j;
-
-			// c += temp * BASE^i
-			bc_int_accumulate_array(c, &temp, i);
 		}
 	}
-err:
-	BC_SIG_MAYLOCK;
-	bc_num_free(&temp);
-	BC_LONGJMP_CONT(vm);
+	c->len = k;
 }
 
 static void
