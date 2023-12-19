@@ -4706,13 +4706,14 @@ bc_num_sqrt(BcNum* restrict a, BcNum* restrict b, size_t scale)
 		shell.num = temp.num + a_len;
 		bc_int_fit(&shell);
 
-		// flr((x*(3*BASE^a_len - A*x^2*BASE^(-a_len))/2) * BASE^(-a_len))
+		// flr( ( y*(3*BASE^a_len - flr(A*y^2*BASE^(-a_len)) ) / 2 ) * BASE^(-a_len) )
 		//
 		// is equal to or greater by 1 than
 		//
-		// flr((x*(3*BASE^(2*a_len) - A*x^2)/2) * BASE^(-2*a_len)) + 1
+		// flr( ( y*(3*BASE^(2*a_len) - A*x^2 ) / 2 ) * BASE^(-2*a_len) )
 		//
-		// Proof --> 2.png
+		// Proof --> sqrt_2.png
+		// So, decrease 1
 		bc_int_sub(&shell, &one);
 
 		if (bc_num_cmp(&shell, &num1) <= 0)
