@@ -3212,7 +3212,7 @@ bc_num_printNum(BcNum* restrict n, BcBigDig base, size_t len,
 		// pushed, as a single character, to the next line. That's what that
 		// last argument does for bc.
 		print(*ptr, len, false,
-		      !newline || (n->scale != 0 || i == stack.len - 1));
+		      !newline || (n->scale != 0 || i < stack.len - 1));
 	}
 
 	// We are done if there is no fractional part.
