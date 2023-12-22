@@ -5,6 +5,11 @@ l = line_length()
 max = 128
 scale = 0
 
+obase=2
+2^99
+2^100
+2^105
+
 for (i = 2; i < max; ++i)
 {
 	obase=i
