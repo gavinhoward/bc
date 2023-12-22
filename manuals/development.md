@@ -1,6 +1,6 @@
 # Development
 
-Updated: 27 Mar 2023
+Updated: 22 Dec 2023
 
 This document is meant for the day when I (Gavin D. Howard) get [hit by a
 bus][1]. In other words, it's meant to make the [bus factor][1] a non-issue.
@@ -2504,6 +2504,10 @@ The list of current (27 February 2023) script tests for `bc` is below:
 print.bc
 
 :   Tests printing even harder than the print standard test.
+
+print2
+
+:   Tests printing at the extreme edge of line length in various bases.
 
 multiply.bc
 
