@@ -3,6 +3,7 @@
 l = line_length()
 
 max = 128
+scale = 0
 
 for (i = 2; i < max; ++i)
 {
@@ -15,13 +16,14 @@ for (i = 2; i < max; ++i)
 	}
 	else if (obase >= 17 && obase <= 100)
 	{
-		1 * i^(((l - 1)/3)$)
-		1 * i^((l/3)$)
-		1 * i^(((l + 1)/3)$)
+		l2 = l/3
+		1 * i^(l2 - 1)
+		1 * i^l2
+		1 * i^(l2 + 1)
 	}
 	else
 	{
-		l2 = (l/4)$
+		l2 = l/4
 		1 * i^(l2 - 1)
 		1 * i^l2
 		1 * i^(l2 + 1)
