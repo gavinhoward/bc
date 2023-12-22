@@ -3207,10 +3207,28 @@ bc_num_printNum(BcNum* restrict n, BcBigDig base, size_t len,
 		assert(ptr != NULL);
 
 		// While the first three arguments should be self-explanatory, the last
-		// needs explaining. I don't want to print a newline when the last digit
-		// to be printed could take the place of the backslash rather than being
-		// pushed, as a single character, to the next line. That's what that
-		// last argument does for bc.
+		// needs explaining. I don't want to print a backslash+newline when the
+		// last digit to be printed could take the place of the backslash rather
+		// than being pushed, as a single character, to the next line. That's
+		// what that last argument does for bc.
+		//
+		// First, it needs to check if newlines are completely disabled. If they
+		// are not disabled, it needs to check the next part.
+		//
+		// If the number has a scale, then because we are printing just the
+		// integer part, there will be at least two more characters (a radix
+		// point plus at least one digit). So if there is a scale, a backslash
+		// is necessary.
+		//
+		// Finally, the last condition checks to see if we are at the end of the
+		// stack. If we are *not* (i.e., the index is not one less than the
+		// stack length), then a backslash is necessary because there is at
+		// least one more character for at least one more digit). Otherwise, if
+		// the index is equal to one less than the stack length, we want to
+		// disable backslash printing.
+		//
+		// The function that prints bases 17 and above will take care of not
+		// printing a backslash in the right case.
 		print(*ptr, len, false,
 		      !newline || (n->scale != 0 || i < stack.len - 1));
 	}
