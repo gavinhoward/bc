@@ -25,7 +25,7 @@ windows:
         - unset BC_EXPR_EXIT
         - unset BC_DIGIT_CLAMP
         - sleep 15
-        - afl-fuzz -i tests/fuzzing/bc_inputs1 -o tests/fuzzing/bc_outputs1 -p exploit -D -M bc11 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i tests/fuzzing/bc_inputs1 -o tests/fuzzing/bc_outputs1 -p fast -D -M bc11 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: bc12
     layout: even-horizontal
     panes:
@@ -57,7 +57,7 @@ windows:
         - unset BC_EXPR_EXIT
         - unset BC_DIGIT_CLAMP
         - sleep 17
-        - afl-fuzz -i tests/fuzzing/bc_inputs1 -o tests/fuzzing/bc_outputs1 -p fast -S bc13 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i tests/fuzzing/bc_inputs1 -o tests/fuzzing/bc_outputs1 -p exploit -S bc13 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: bc14
     layout: even-horizontal
     panes:
@@ -105,7 +105,7 @@ windows:
         - unset BC_EXPR_EXIT
         - unset BC_DIGIT_CLAMP
         - sleep 23
-        - afl-fuzz -i tests/fuzzing/bc_inputs2 -o tests/fuzzing/bc_outputs2 -p exploit -D -M bc21 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i tests/fuzzing/bc_inputs2 -o tests/fuzzing/bc_outputs2 -p fast -D -M bc21 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: bc22
     layout: even-horizontal
     panes:
@@ -137,7 +137,7 @@ windows:
         - unset BC_EXPR_EXIT
         - unset BC_DIGIT_CLAMP
         - sleep 25
-        - afl-fuzz -i tests/fuzzing/bc_inputs2 -o tests/fuzzing/bc_outputs2 -p fast -S bc23 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
+        - afl-fuzz -i tests/fuzzing/bc_inputs2 -o tests/fuzzing/bc_outputs2 -p exploit -S bc23 bin/bc -lqc -e "seed = 1280937142.20981723890730892738902938071028973408912703984712093" -f-
   - window_name: bc24
     layout: even-horizontal
     panes:
@@ -183,7 +183,7 @@ windows:
         - unset DC_EXPR_EXIT
         - unset DC_DIGIT_CLAMP
         - sleep 28
-        - afl-fuzz -i tests/fuzzing/dc_inputs -o tests/fuzzing/dc_outputs -p exploit -D -M dc11 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
+        - afl-fuzz -i tests/fuzzing/dc_inputs -o tests/fuzzing/dc_outputs -p fast -D -M dc11 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
   - window_name: dc12
     layout: even-horizontal
     panes:
@@ -211,7 +211,7 @@ windows:
         - unset DC_EXPR_EXIT
         - unset DC_DIGIT_CLAMP
         - sleep 30
-        - afl-fuzz -i tests/fuzzing/dc_inputs -o tests/fuzzing/dc_outputs -p fast -S dc13 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
+        - afl-fuzz -i tests/fuzzing/dc_inputs -o tests/fuzzing/dc_outputs -p exploit -S dc13 bin/dc -xc -e "1280937142.20981723890730892738902938071028973408912703984712093j" -f-
   - window_name: dc14
     layout: even-horizontal
     panes:
