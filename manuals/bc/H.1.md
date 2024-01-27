@@ -811,6 +811,9 @@ The operators will be described in more detail below.
 :   The **boolean not** operator returns **1** if the expression is **0**, or
     **0** otherwise.
 
+    **Warning**: This operator has a **different precedence** than the
+    equivalent operator in GNU bc(1) and other bc(1) implementations!
+
     This is a **non-portable extension**.
 
 **\$**

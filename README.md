@@ -347,6 +347,8 @@ that is because it is more robust. See the [benchmarks][19].
 Below is a non-comprehensive list of extensions that this `bc` and `dc` have
 that all others do not.
 
+* **The `!` operator has higher precedence than the `!` operator in other `bc`
+  implementations.**
 * An extended math library. (See [here][30] for more information.)
 * A command-line prompt.
 * Turning on and off digit clamping. (Digit clamping is about how to treat
