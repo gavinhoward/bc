@@ -1347,7 +1347,7 @@ err:
  * @param name  The name of the library.
  * @param text  The text of the source code.
  */
-static void
+void
 bc_vm_load(const char* name, const char* text)
 {
 	bc_lex_file(&vm->prs.l, name);
