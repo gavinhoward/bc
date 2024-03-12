@@ -463,5 +463,18 @@ void
 bc_file_free(BcFile* f)
 {
 	BC_SIG_ASSERT_LOCKED;
-	bc_file_flush(f, bc_flush_none);
+
+	// XXX: Yes, we call the version that returns a status here, and then we
+	// ignore it.
+	//
+	// Here's why: if we are freeing the files, that means we are flushing
+	// purely to get the remaining data out before the program exits.
+	//
+	// However, if we were to call the function that handles the error, it would
+	// try to do this by jumping out, and by the time we want to flush to exit,
+	// the jmp_buf stack might be gone!
+	//
+	// So we can't just jump out; we need to *try* to flush and not handle the
+	// error. At that point, it's too late anyway.
+	(void) bc_file_flushErr(f, bc_flush_none);
 }
