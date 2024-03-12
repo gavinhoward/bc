@@ -447,7 +447,6 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 	if (BC_ERR(id == BC_ERR_IDX_FATAL || fout_s == BC_STATUS_ERROR_FATAL ||
 	           s == BC_STATUS_ERROR_FATAL))
 	{
-		(void) bc_vm_atexit(BC_STATUS_ERROR_FATAL);
 		exit((int) BC_STATUS_ERROR_FATAL);
 	}
 

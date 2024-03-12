@@ -203,10 +203,10 @@ bc_file_flush(BcFile* restrict f, BcFlushType type)
 		// Make sure to handle non-fatal I/O properly.
 		else if (!f->errors_fatal)
 		{
-			bc_err(BC_ERR_FATAL_IO_ERR);
+			bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 		}
 		// Blow up on fatal error. Okay, not blow up, just quit.
-		else bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+		else exit(BC_STATUS_ERROR_FATAL);
 	}
 
 	BC_SIG_TRYUNLOCK(lock);
@@ -246,10 +246,10 @@ bc_file_write(BcFile* restrict f, BcFlushType type, const char* buf, size_t n)
 			// Make sure to handle non-fatal I/O properly.
 			else if (!f->errors_fatal)
 			{
-				bc_err(BC_ERR_FATAL_IO_ERR);
+				bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 			}
 			// Blow up on fatal error. Okay, not blow up, just quit.
-			else bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
+			else exit(BC_STATUS_ERROR_FATAL);
 		}
 	}
 	else
@@ -302,13 +302,13 @@ bc_file_vprintf(BcFile* restrict f, const char* fmt, va_list args)
 		if (BC_ERR(r < 0))
 		{
 			// Make sure to handle non-fatal I/O properly.
-			if (f->errors_fatal)
+			if (!f->errors_fatal)
 			{
 				bc_vm_fatalError(BC_ERR_FATAL_IO_ERR);
 			}
 			else
 			{
-				bc_err(BC_ERR_FATAL_IO_ERR);
+				exit(BC_STATUS_ERROR_FATAL);
 			}
 		}
 	}
