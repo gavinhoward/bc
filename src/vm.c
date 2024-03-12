@@ -437,7 +437,11 @@ bc_vm_handleError(BcErr e, size_t line, ...)
 	// be faster anyway. This function *cannot jump when a fatal error occurs!*
 	if (BC_ERR(id == BC_ERR_IDX_FATAL || s == BC_STATUS_ERROR_FATAL))
 	{
-		exit(bc_vm_atexit((int) BC_STATUS_ERROR_FATAL));
+		int ret;
+
+		ret = (int) bc_vm_atexit(BC_STATUS_ERROR_FATAL);
+
+		exit(ret);
 	}
 #else // !BC_ENABLE_MEMCHECK
 	if (BC_ERR(s == BC_STATUS_ERROR_FATAL)) vm->status = (sig_atomic_t) s;
@@ -1528,7 +1532,7 @@ bc_vm_exec(void)
 	if (BC_VM_RUN_STDIN(has_file)) bc_vm_stdin();
 }
 
-void
+BcStatus
 bc_vm_boot(int argc, char* argv[])
 {
 	int ttyin, ttyout, ttyerr;
@@ -1716,6 +1720,11 @@ bc_vm_boot(int argc, char* argv[])
 
 	// Start executing.
 	bc_vm_exec();
+
+	BC_SIG_LOCK;
+
+	// Exit.
+	return bc_vm_atexit((BcStatus) vm->status);
 }
 #endif // !BC_ENABLE_LIBRARY
 
@@ -1786,11 +1795,11 @@ bc_vm_atexit(void)
 #endif // BC_DEBUG
 }
 #else // BC_ENABLE_LIBRARY
-int
-bc_vm_atexit(int status)
+BcStatus
+bc_vm_atexit(BcStatus status)
 {
 	// Set the status correctly.
-	int s = BC_STATUS_IS_ERROR(status) ? status : BC_STATUS_SUCCESS;
+	BcStatus s = BC_STATUS_IS_ERROR(status) ? status : BC_STATUS_SUCCESS;
 
 	bc_vm_shutdown();
 
