@@ -115,5 +115,5 @@ main(int argc, char* argv[])
 exit:
 	BC_SIG_MAYLOCK;
 
-	return vm->status;
+	return vm->status == BC_STATUS_QUIT ? BC_STATUS_SUCCESS : vm->status;
 }
