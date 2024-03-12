@@ -101,17 +101,19 @@ main(int argc, char* argv[])
 	BC_SETJMP_LOCKED(vm, exit);
 
 #if !DC_ENABLED
-	bc_main(argc, argv);
+	s = bc_main(argc, argv);
 #elif !BC_ENABLED
-	dc_main(argc, argv);
+	s = dc_main(argc, argv);
 #else
 	// BC_IS_BC uses vm->name, which was set above. So we're good.
 	if (BC_IS_BC) s = bc_main(argc, argv);
 	else s = dc_main(argc, argv);
 #endif
 
+	vm->status = (int) s;
+
 exit:
 	BC_SIG_MAYLOCK;
 
-	return (int) s;
+	return vm->status;
 }
