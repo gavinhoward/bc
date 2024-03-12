@@ -60,10 +60,10 @@
 #endif // __FreeBSD__
 #endif // BC_TEST_FREEBSD
 
-// This is used by configure.sh to test for Mac OSX.
+// This is used by configure.sh to test for macOS.
 #ifdef BC_TEST_APPLE
 #ifdef __APPLE__
-#error On Mac OSX without _DARWIN_C_SOURCE
+#error On macOS without _DARWIN_C_SOURCE
 #endif // __APPLE__
 #endif // BC_TEST_APPLE
 

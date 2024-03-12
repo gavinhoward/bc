@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-# For Mac OSX from Ventura on, run using the following:
+# For macOS from Ventura on, run using the following:
 #
 # scripts/release.sh 1 1 0 1 0 0 0 0 1 0 1 1 1 0 0 0 0
 #

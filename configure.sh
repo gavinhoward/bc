@@ -1671,10 +1671,10 @@ else
 	CPPFLAGS="$CPPFLAGS -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700"
 fi
 
-# Test Mac OSX. This is not in an if statement because regardless of whatever
-# the user says, we need to know if we are on Mac OSX. If we are, we have to set
+# Test macOS. This is not in an if statement because regardless of whatever the
+# user says, we need to know if we are on macOS. If we are, we have to set
 # _DARWIN_C_SOURCE.
-printf 'Testing for Mac OSX...\n'
+printf 'Testing for macOS...\n'
 
 flags="-DBC_TEST_APPLE -DBC_ENABLE_AFL=0"
 "$CC" $CPPFLAGS $CFLAGS $flags "-I$scriptdir/include" -E "$scriptdir/src/vm.c" > /dev/null 2>&1
@@ -1682,14 +1682,14 @@ flags="-DBC_TEST_APPLE -DBC_ENABLE_AFL=0"
 err="$?"
 
 if [ "$err" -ne 0 ]; then
-	printf 'On Mac OSX. Using _DARWIN_C_SOURCE.\n\n'
+	printf 'On macOS. Using _DARWIN_C_SOURCE.\n\n'
 	apple="-D_DARWIN_C_SOURCE"
 else
-	printf 'Not on Mac OSX.\n\n'
+	printf 'Not on macOS.\n\n'
 	apple=""
 fi
 
-# We can't use the linker's strip flag on Mac OSX.
+# We can't use the linker's strip flag on macOS.
 if [ "$debug" -eq 0 ] && [ "$apple" == "" ] && [ "$strip_bin" -ne 0 ]; then
 	LDFLAGS="-s $LDFLAGS"
 fi

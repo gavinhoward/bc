@@ -65,8 +65,8 @@ about things like fuzzing, [`scan-build`][19], [valgrind][20],
 [AddressSanitizer][21] (and the other sanitizers), and many other things.
 
 One of my happiest moments was when my `bc` was made the default in FreeBSD.
-Another happiest moment was when I found out that my `bc` had shipped with Mac
-OSX Ventura, without my knowledge.
+Another happiest moment was when I found out that my `bc` had shipped with macOS
+Ventura, without my knowledge.
 
 But since I believe in [finishing the software I write][22], I have done less
 work on `bc` over time, though there are still times when I put a lot of effort
