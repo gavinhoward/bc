@@ -308,14 +308,14 @@ else
 
 	printf '0\n' > "$ext_reg_res"
 
-	"$exe" "$@" -e "gxpR" 2> /dev/null > "$ext_reg_out"
+	printf '%s\n' "$halt" | "$exe" "$@" -e "gxpR" 2> /dev/null > "$ext_reg_out"
 	err="$?"
 
 	checktest "$d" "$err" "Extended register command" "$ext_reg_out" "$ext_reg_res"
 
 	printf '1\n' > "$ext_reg_res"
 
-	"$exe" "$@" -x -e "gxpR" 2> /dev/null > "$ext_reg_out"
+	printf '%s\n' "$halt" | "$exe" "$@" -x -e "gxpR" 2> /dev/null > "$ext_reg_out"
 	err="$?"
 
 	checktest "$d" "$err" "Extended register command" "$ext_reg_out" "$ext_reg_res"
