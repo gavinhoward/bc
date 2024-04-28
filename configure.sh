@@ -1690,7 +1690,7 @@ else
 fi
 
 # We can't use the linker's strip flag on macOS.
-if [ "$debug" -eq 0 ] && [ "$apple" == "" ] && [ "$strip_bin" -ne 0 ]; then
+if [ "$debug" -eq 0 ] && [ "$apple" = "" ] && [ "$strip_bin" -ne 0 ]; then
 	LDFLAGS="-s $LDFLAGS"
 fi
 
